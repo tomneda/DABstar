@@ -267,7 +267,6 @@ private:
   struct theTime localTime;
   struct theTime UTC;
   QString convertTime(int, int, int, int, int);
-  void set_buttonColors(QPushButton *, const QString &);
   QString footText();
   QString presetText();
   void cleanScreen();
@@ -423,30 +422,6 @@ private slots:
   void handle_autoBrowser(int);
   void handle_transmitterTags(int);
 
-  //
-  //	color handlers
-  void color_contentButton();
-  void color_detailButton();
-  void color_resetButton();
-  void color_scanButton();
-  void color_tiiButton();
-  //void color_correlationButton();
-  void color_spectrumButton();
-  void color_snrButton();
-  void color_devicewidgetButton();
-  void color_historyButton();
-  void color_sourcedumpButton();
-  void color_muteButton();
-  void color_prevChannelButton();
-  void color_nextChannelButton();
-  void color_prevServiceButton();
-  void color_nextServiceButton();
-  void color_dlTextButton();
-  void color_configButton();
-  void color_httpButton();
-  void color_set_coordinatesButton();
-  void color_loadTableButton();
-  //
   //	config handlers
   void handle_switchDelaySetting(int);
   void handle_orderAlfabetical();

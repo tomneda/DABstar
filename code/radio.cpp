@@ -175,29 +175,6 @@ static inline QString scanmodeText(int e)
   return QString(scanTextTable[e]);
 }
 
-#define  CONTENT_BUTTON    QString ("contentButton")
-#define DETAIL_BUTTON    QString ("detailButton")
-#define  RESET_BUTTON    QString ("resetButton")
-#define SCAN_BUTTON    QString ("scanButton")
-#define  TII_BUTTON    QString ("tiiButton")
-#define  CORRELATION_BUTTON  QString ("correlationButton")
-#define  SPECTRUM_BUTTON    QString ("spectrumButton")
-#define  SNR_BUTTON    QString ("snrButton")
-#define  DEVICEWIDGET_BUTTON  QString ("devicewidgetButton")
-#define  HISTORY_BUTTON    QString ("historyButton")
-#define  DUMP_BUTTON    QString ("dumpButton")
-#define  MUTE_BUTTON    QString ("muteButton")
-#define PREVCHANNEL_BUTTON  QString ("prevChannelButton")
-#define NEXTCHANNEL_BUTTON  QString ("nextChannelButton")
-#define PREVSERVICE_BUTTON  QString ("prevServiceButton")
-#define NEXTSERVICE_BUTTON  QString ("nextServiceButton")
-#define  DLTEXT_BUTTON    QString  ("dlTextButton")
-#define  CONFIG_BUTTON    QString ("configButton")
-#define  HTTP_BUTTON    QString ("httpButton")
-#define  SCHEDULE_BUTTON    QString ("scheduleButton")
-#define  SET_COORDINATES_BUTTON  QString ("set_coordinatesButton")
-#define  LOAD_TABLE_BUTTON  QString ("loadTableButton")
-
 static uint8_t convert(QString s)
 {
   if (s == "Mode 1")
@@ -527,33 +504,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   ficSuccess = 0;
   total_ficError = 0;
   total_fics = 0;
-  connect(configWidget.streamoutSelector, SIGNAL (activated(int)), this, SLOT (set_streamSelector(int)));
-  my_presetHandler.loadPresets(presetFile, presetSelector);
-  //
-  //	Connect the buttons for the color_settings
-  connect(configWidget.contentButton, SIGNAL (rightClicked()), this, SLOT (color_contentButton()));
-  connect(detailButton, SIGNAL (rightClicked()), this, SLOT (color_detailButton()));
-  connect(configWidget.resetButton, SIGNAL (rightClicked()), this, SLOT (color_resetButton()));
-  connect(scanButton, SIGNAL (rightClicked()), this, SLOT (color_scanButton()));
-  connect(configWidget.show_tiiButton, SIGNAL (rightClicked()), this, SLOT (color_tiiButton()));
-  //connect(configWidget.show_correlationButton, SIGNAL (rightClicked()), this, SLOT (color_correlationButton()));
-  connect(configWidget.show_spectrumButton, SIGNAL (rightClicked()), this, SLOT (color_spectrumButton()));
-  connect(configWidget.snrButton, SIGNAL (rightClicked()), this, SLOT (color_snrButton()));
-  connect(configWidget.devicewidgetButton, SIGNAL (rightClicked()), this, SLOT (color_devicewidgetButton()));
-  connect(historyButton, SIGNAL (rightClicked()), this, SLOT (color_historyButton()));
-  connect(configWidget.dumpButton, SIGNAL (rightClicked()), this, SLOT (color_sourcedumpButton()));
-  connect(configWidget.dlTextButton, SIGNAL (rightClicked()), this, SLOT (color_dlTextButton()));
-  connect(configButton, SIGNAL (rightClicked()), this, SLOT (color_configButton()));
-  connect(httpButton, SIGNAL (rightClicked()), this, SLOT (color_httpButton()));
-  connect(configWidget.set_coordinatesButton, SIGNAL (rightClicked()), this, SLOT (color_set_coordinatesButton()));
-  connect(configWidget.loadTableButton, SIGNAL (rightClicked()), this, SLOT (color_loadTableButton()));
-  connect(prevChannelButton, SIGNAL (rightClicked()), this, SLOT (color_prevChannelButton()));
-  connect(nextChannelButton, SIGNAL (rightClicked()), this, SLOT (color_nextChannelButton()));
-  connect(prevServiceButton, SIGNAL (rightClicked()), this, SLOT (color_prevServiceButton()));
-  connect(nextServiceButton, SIGNAL (rightClicked()), this, SLOT (color_nextServiceButton()));
 
+  connect(configWidget.streamoutSelector, SIGNAL (activated(int)), this, SLOT (set_streamSelector(int)));
   connect(theTechWindow, SIGNAL (handle_timeTable()), this, SLOT (handle_timeTable()));
-  connect(muteButton, SIGNAL (rightClicked()), this, SLOT (color_muteButton()));
+
+  my_presetHandler.loadPresets(presetFile, presetSelector);
 
   //	display the version
   copyrightLabel->setToolTip(footText());
@@ -607,10 +562,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   configWidget.frequencyDisplay->setAutoFillBackground(true);
   configWidget.cpuMonitor->setPalette(lcdPalette);
   configWidget.cpuMonitor->setAutoFillBackground(true);
-  set_Colors();
+
   localTimeDisplay->setStyleSheet("QLabel {background-color : gray; color: white}");
   runtimeDisplay->setStyleSheet("QLabel {background-color : gray; color: white}");
-  //
+
   //	add devices to the list
   configWidget.deviceSelector->addItem("select input");
   configWidget.deviceSelector->addItem("file input(.raw)");
@@ -4049,255 +4004,6 @@ void RadioInterface::new_channelIndex(int index)
   connect(channelSelector, SIGNAL (activated(const QString &)), this, SLOT (handle_channelSelector(const QString &)));
 }
 
-//
-/////////////////////////////////////////////////////////////////////////
-//	merely as a gadget, for each button the color can be set
-//	Lots of code, about 400 lines, just for a gadget
-//
-void RadioInterface::set_Colors()
-{
-  dabSettings->beginGroup("colorSettings");
-  QString contentButton_color = dabSettings->value(CONTENT_BUTTON + "_color", "white").toString();
-  QString contentButton_font = dabSettings->value(CONTENT_BUTTON + "_font", "black").toString();
-  QString detailButton_color = dabSettings->value(DETAIL_BUTTON + "_color", "white").toString();
-  QString detailButton_font = dabSettings->value(DETAIL_BUTTON + "_font", "black").toString();
-  QString resetButton_color = dabSettings->value(RESET_BUTTON + "_color", "white").toString();
-  QString resetButton_font = dabSettings->value(RESET_BUTTON + "_font", "black").toString();
-  QString scanButton_color = dabSettings->value(SCAN_BUTTON + "_color", "white").toString();
-  QString scanButton_font = dabSettings->value(SCAN_BUTTON + "_font", "black").toString();
-
-  QString tiiButton_color = dabSettings->value(TII_BUTTON + "_color", "white").toString();
-  QString tiiButton_font = dabSettings->value(TII_BUTTON + "_font", "black").toString();
-  QString correlationButton_color = dabSettings->value(CORRELATION_BUTTON + "_color", "white").toString();
-  QString correlationButton_font = dabSettings->value(CORRELATION_BUTTON + "_font", "black").toString();
-  QString spectrumButton_color = dabSettings->value(SPECTRUM_BUTTON + "_color", "white").toString();
-  QString spectrumButton_font = dabSettings->value(SPECTRUM_BUTTON + "_font", "black").toString();
-  QString snrButton_color = dabSettings->value(SNR_BUTTON + "_color", "white").toString();
-  QString snrButton_font = dabSettings->value(SNR_BUTTON + "_font", "black").toString();
-  QString devicewidgetButton_color = dabSettings->value(DEVICEWIDGET_BUTTON + "_color", "white").toString();
-  QString devicewidgetButton_font = dabSettings->value(DEVICEWIDGET_BUTTON + "_font", "black").toString();
-
-  QString historyButton_color = dabSettings->value(HISTORY_BUTTON + "_color", "white").toString();
-  QString historyButton_font = dabSettings->value(HISTORY_BUTTON + "_font", "black").toString();
-  QString dumpButton_color = dabSettings->value(DUMP_BUTTON + "_color", "white").toString();
-  QString dumpButton_font = dabSettings->value(DUMP_BUTTON + "_font", "black").toString();
-  QString muteButton_color = dabSettings->value(MUTE_BUTTON + "_color", "white").toString();
-  QString muteButton_font = dabSettings->value(MUTE_BUTTON + "_font", "black").toString();
-
-  QString prevChannelButton_color = dabSettings->value(PREVCHANNEL_BUTTON + "_color", "black").toString();
-  QString prevChannelButton_font = dabSettings->value(PREVCHANNEL_BUTTON + "_font", "white").toString();
-  QString nextChannelButton_color = dabSettings->value(NEXTCHANNEL_BUTTON + "_color", "black").toString();
-  QString nextChannelButton_font = dabSettings->value(NEXTCHANNEL_BUTTON + "_font", "white").toString();
-  QString prevServiceButton_color = dabSettings->value(PREVSERVICE_BUTTON + "_color", "blaCK").toString();
-  QString prevServiceButton_font = dabSettings->value(PREVSERVICE_BUTTON + "_font", "white").toString();
-  QString nextServiceButton_color = dabSettings->value(NEXTSERVICE_BUTTON + "_color", "black").toString();
-  QString nextServiceButton_font = dabSettings->value(NEXTSERVICE_BUTTON + "_font", "white").toString();
-
-  QString dlTextButton_color = dabSettings->value(DLTEXT_BUTTON + "_color", "black").toString();
-
-  QString dlTextButton_font = dabSettings->value(DLTEXT_BUTTON + "_font", "white").toString();
-  QString configButton_color = dabSettings->value(CONFIG_BUTTON + "_color", "black").toString();
-  QString configButton_font = dabSettings->value(CONFIG_BUTTON + "_font", "white").toString();
-  QString httpButton_color = dabSettings->value(HTTP_BUTTON + "_color", "black").toString();
-  QString httpButton_font = dabSettings->value(HTTP_BUTTON + "_font", "white").toString();
-  QString scheduleButton_color = dabSettings->value(SCHEDULE_BUTTON + "_color", "black").toString();
-  QString scheduleButton_font = dabSettings->value(SCHEDULE_BUTTON + "_font", "white").toString();
-  QString set_coordinatesButton_color = dabSettings->value(SET_COORDINATES_BUTTON + "_color", "white").toString();
-  QString set_coordinatesButton_font = dabSettings->value(SET_COORDINATES_BUTTON + "_font", "black").toString();
-
-  QString loadTableButton_color = dabSettings->value(LOAD_TABLE_BUTTON + "_color", "white").toString();
-  QString loadTableButton_font = dabSettings->value(LOAD_TABLE_BUTTON + "_font", "black").toString();
-  dabSettings->endGroup();
-
-  QString temp = "QPushButton {background-color: %1; color: %2}";
-  configWidget.contentButton->setStyleSheet(temp.arg(contentButton_color, contentButton_font));
-
-  configWidget.resetButton->setStyleSheet(temp.arg(resetButton_color, resetButton_font));
-
-  configWidget.show_tiiButton->setStyleSheet(temp.arg(tiiButton_color, tiiButton_font));
-
-  //configWidget.show_correlationButton->setStyleSheet(temp.arg(correlationButton_color, correlationButton_font));
-
-  configWidget.show_spectrumButton->setStyleSheet(temp.arg(spectrumButton_color, spectrumButton_font));
-
-  configWidget.snrButton->setStyleSheet(temp.arg(snrButton_color, snrButton_font));
-
-  configWidget.devicewidgetButton->setStyleSheet(temp.arg(devicewidgetButton_color, devicewidgetButton_font));
-
-  configWidget.dlTextButton->setStyleSheet(temp.arg(dlTextButton_color, dlTextButton_font));
-
-  configWidget.dumpButton->setStyleSheet(temp.arg(dumpButton_color, dumpButton_font));
-
-  configWidget.set_coordinatesButton->setStyleSheet(temp.arg(set_coordinatesButton_color, set_coordinatesButton_font));
-
-  configWidget.loadTableButton->setStyleSheet(temp.arg(loadTableButton_color, loadTableButton_font));
-
-  muteButton->setStyleSheet(temp.arg(muteButton_color, muteButton_font));
-
-  historyButton->setStyleSheet(temp.arg(historyButton_color, historyButton_font));
-
-  scanButton->setStyleSheet(temp.arg(scanButton_color, scanButton_font));
-
-
-  configButton->setStyleSheet(temp.arg(configButton_color, configButton_font));
-
-  httpButton->setStyleSheet(temp.arg(httpButton_color, httpButton_font));
-
-  detailButton->setStyleSheet(temp.arg(detailButton_color, detailButton_font));
-
-  prevChannelButton->setStyleSheet(temp.arg(prevChannelButton_color, prevChannelButton_font));
-
-  nextChannelButton->setStyleSheet(temp.arg(nextChannelButton_color, nextChannelButton_font));
-
-  prevServiceButton->setStyleSheet(temp.arg(prevServiceButton_color, prevServiceButton_font));
-
-  nextServiceButton->setStyleSheet(temp.arg(nextServiceButton_color, nextServiceButton_font));
-
-}
-
-void RadioInterface::color_contentButton()
-{
-  set_buttonColors(configWidget.contentButton, CONTENT_BUTTON);
-}
-
-void RadioInterface::color_detailButton()
-{
-  set_buttonColors(detailButton, DETAIL_BUTTON);
-}
-
-void RadioInterface::color_resetButton()
-{
-  set_buttonColors(configWidget.resetButton, RESET_BUTTON);
-}
-
-void RadioInterface::color_scanButton()
-{
-  set_buttonColors(scanButton, SCAN_BUTTON);
-}
-
-void RadioInterface::color_tiiButton()
-{
-  set_buttonColors(configWidget.show_tiiButton, TII_BUTTON);
-}
-
-//void RadioInterface::color_correlationButton()
-//{
-//  set_buttonColors(configWidget.show_correlationButton, CORRELATION_BUTTON);
-//}
-
-void RadioInterface::color_spectrumButton()
-{
-  set_buttonColors(configWidget.show_spectrumButton, SPECTRUM_BUTTON);
-}
-
-void RadioInterface::color_snrButton()
-{
-  set_buttonColors(configWidget.snrButton, SNR_BUTTON);
-}
-
-void RadioInterface::color_devicewidgetButton()
-{
-  set_buttonColors(configWidget.devicewidgetButton, DEVICEWIDGET_BUTTON);
-}
-
-void RadioInterface::color_historyButton()
-{
-  set_buttonColors(historyButton, HISTORY_BUTTON);
-}
-
-void RadioInterface::color_sourcedumpButton()
-{
-  set_buttonColors(configWidget.dumpButton, DUMP_BUTTON);
-}
-
-void RadioInterface::color_prevChannelButton()
-{
-  set_buttonColors(prevChannelButton, PREVCHANNEL_BUTTON);
-}
-
-void RadioInterface::color_nextChannelButton()
-{
-  set_buttonColors(nextChannelButton, NEXTCHANNEL_BUTTON);
-}
-
-void RadioInterface::color_prevServiceButton()
-{
-  set_buttonColors(prevServiceButton, PREVSERVICE_BUTTON);
-}
-
-void RadioInterface::color_nextServiceButton()
-{
-  set_buttonColors(nextServiceButton, NEXTSERVICE_BUTTON);
-}
-
-void RadioInterface::color_muteButton()
-{
-  set_buttonColors(muteButton, MUTE_BUTTON);
-}
-
-void RadioInterface::color_dlTextButton()
-{
-  set_buttonColors(configWidget.dlTextButton, DLTEXT_BUTTON);
-}
-
-void RadioInterface::color_configButton()
-{
-  set_buttonColors(configButton, CONFIG_BUTTON);
-}
-
-void RadioInterface::color_httpButton()
-{
-  set_buttonColors(httpButton, HTTP_BUTTON);
-}
-
-void RadioInterface::color_set_coordinatesButton()
-{
-  set_buttonColors(configWidget.set_coordinatesButton, SET_COORDINATES_BUTTON);
-}
-
-void RadioInterface::color_loadTableButton()
-{
-  set_buttonColors(configWidget.loadTableButton, LOAD_TABLE_BUTTON);
-}
-
-void RadioInterface::set_buttonColors(QPushButton * b, const QString & buttonName)
-{
-  colorSelector * selector;
-  int index;
-
-  selector = new colorSelector("button color");
-  index = selector->QDialog::exec();
-  QString baseColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-  selector = new colorSelector("text color");
-  index = selector->QDialog::exec();
-  QString textColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-  QString temp = "QPushButton {background-color: %1; color: %2}";
-  b->setStyleSheet(temp.arg(baseColor, textColor));
-
-  QString buttonColor = buttonName + "_color";
-  QString buttonFont = buttonName + "_font";
-
-  dabSettings->beginGroup("colorSettings");
-  dabSettings->setValue(buttonColor, baseColor);
-  dabSettings->setValue(buttonFont, textColor);
-  dabSettings->endGroup();
-
-  //	fprintf (stderr, "%s -> %s, %s -> %s\n",
-  //	                buttonColor. toLatin1 (). data (),
-  //	                baseColor. toLatin1 (). data (),
-  //	                buttonFont. toLatin1 (). data (),
-  //	                textColor. toLatin1 (). data ());
-}
 
 /////////////////////////////////////////////////////////////////////////
 //	External configuration items				//////

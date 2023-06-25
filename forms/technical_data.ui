@@ -50,7 +50,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="smallPushButton" name="framedumpButton">
+      <widget class="QPushButton" name="framedumpButton">
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DAB+ audio services are encoded in an AAC format. &lt;/p&gt;&lt;p&gt;Touching this button will show a menu to store the AAC frames into a file.&lt;/p&gt;&lt;p&gt;As usual, touching the button again will close the output file. Programs like vlc can handle such files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -60,7 +60,7 @@
       </widget>
      </item>
      <item>
-      <widget class="smallPushButton" name="audiodumpButton">
+      <widget class="QPushButton" name="audiodumpButton">
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The audio output can be saved as a file in uncompressed PCM format. &lt;/p&gt;&lt;p&gt;Touching this button will show a menu to save the PCM data into a file.&lt;/p&gt;&lt;p&gt;The output is a regular &amp;quot;.wav&amp;quot; file which can be handled by many other audio programs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -458,7 +458,7 @@
    <header>qwt_plot.h</header>
   </customwidget>
   <customwidget>
-   <class>smallPushButton</class>
+   <class>QPushButton</class>
    <extends>QPushButton</extends>
    <header>smallpushbutton.h</header>
   </customwidget>

@@ -269,7 +269,7 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="5">
-      <widget class="smallPushButton" name="set_coordinatesButton">
+      <widget class="QPushButton" name="set_coordinatesButton">
        <property name="font">
         <font>
          <pointsize>10</pointsize>
@@ -281,7 +281,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="smallPushButton" name="snrButton">
+      <widget class="QPushButton" name="snrButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -303,7 +303,7 @@
       </widget>
      </item>
      <item row="1" column="2">
-      <widget class="smallPushButton" name="show_spectrumButton">
+      <widget class="QPushButton" name="show_spectrumButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -325,7 +325,7 @@
       </widget>
      </item>
      <item row="1" column="3">
-      <widget class="smallPushButton" name="show_tiiButton">
+      <widget class="QPushButton" name="show_tiiButton">
        <property name="font">
         <font>
          <pointsize>10</pointsize>
@@ -340,7 +340,7 @@
       </widget>
      </item>
      <item row="1" column="4">
-      <widget class="smallPushButton" name="dumpButton">
+      <widget class="QPushButton" name="dumpButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -361,7 +361,7 @@
       </widget>
      </item>
      <item row="1" column="5">
-      <widget class="smallPushButton" name="loadTableButton">
+      <widget class="QPushButton" name="loadTableButton">
        <property name="font">
         <font>
          <pointsize>10</pointsize>
@@ -376,7 +376,7 @@
       </widget>
      </item>
      <item row="0" column="4">
-      <widget class="smallPushButton" name="resetButton">
+      <widget class="QPushButton" name="resetButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -397,7 +397,7 @@
       </widget>
      </item>
      <item row="0" column="3">
-      <widget class="smallPushButton" name="dlTextButton">
+      <widget class="QPushButton" name="dlTextButton">
        <property name="font">
         <font>
          <pointsize>10</pointsize>
@@ -412,7 +412,7 @@
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="smallPushButton" name="contentButton">
+      <widget class="QPushButton" name="contentButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -433,7 +433,7 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="smallPushButton" name="devicewidgetButton">
+      <widget class="QPushButton" name="devicewidgetButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -570,7 +570,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>smallPushButton</class>
+   <class>QPushButton</class>
    <extends>QPushButton</extends>
    <header>smallpushbutton.h</header>
   </customwidget>

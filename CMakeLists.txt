@@ -273,8 +273,6 @@ set(${objectName}_HDRS
         ./code/support/buttons/smallcombobox.h
         ./code/support/buttons/newpushbutton.h
         ./code/support/buttons/normalpushbutton.h
-        ./code/support/buttons/smallpushbutton.h
-        ./code/support/buttons/verysmallpushbutton.h
         ./code/support/buttons/smallqlistview.h
         ./code/support/buttons/smallspinbox.h
         ./code/scopes-qwt6/iqdisplay.h
@@ -360,8 +358,6 @@ set(${objectName}_SRCS
         ./code/support/buttons/smallcombobox.cpp
         ./code/support/buttons/newpushbutton.cpp
         ./code/support/buttons/normalpushbutton.cpp
-        ./code/support/buttons/smallpushbutton.cpp
-        ./code/support/buttons/verysmallpushbutton.cpp
         ./code/support/buttons/smallqlistview.cpp
         ./code/support/buttons/smallspinbox.cpp
         ./code/support/history-handler.cpp
@@ -420,8 +416,6 @@ set(${objectName}_MOCS
         ./code/support/buttons/smallcombobox.h
         ./code/support/buttons/newpushbutton.h
         ./code/support/buttons/normalpushbutton.h
-        ./code/support/buttons/smallpushbutton.h
-        ./code/support/buttons/verysmallpushbutton.h
         ./code/support/buttons/smallqlistview.h
         ./code/support/buttons/smallspinbox.h
         ./code/support/history-handler.h
