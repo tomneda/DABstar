@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon.png</file>
+        <file>./AUTHORS</file>
+        <file>./COPYING</file>
+    </qresource>
+</RCC>

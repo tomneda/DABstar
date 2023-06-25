@@ -1,0 +1,9 @@
+linux-bin
+cmake-build-debug
+cmake-build-release
+Makefile
+Output
+CMakeLists.txt.user
+.idea/
+build*/
+
