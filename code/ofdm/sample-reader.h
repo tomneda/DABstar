@@ -61,6 +61,7 @@ private:
   RingBuffer<cmplx> * spectrumBuffer;
   std::vector<cmplx> localBuffer;
   std::array<cmplx, INPUT_RATE> oscillatorTable{};
+  std::vector<cmplx> oneSampleBuffer;
 
   int32_t localCounter = 0;
   const int32_t bufferSize  = 32768;

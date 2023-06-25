@@ -36,7 +36,8 @@ static inline int16_t value_for_bit_pos(int16_t b)
 
 SampleReader::SampleReader(const RadioInterface * mr, deviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer) :
   theRig(iTheRig),
-  spectrumBuffer(iSpectrumBuffer)
+  spectrumBuffer(iSpectrumBuffer),
+  oneSampleBuffer(1)
 {
   localBuffer.resize(bufferSize);
   dumpfilePointer.store(nullptr);
@@ -65,41 +66,8 @@ float SampleReader::get_sLevel() const
 
 cmplx SampleReader::getSample(int32_t phaseOffset)
 {
-  corrector = phaseOffset;
-  if (!running.load()) throw 21;
-
-  ///	bufferContent is an indicator for the value of ... -> Samples()
-  if (bufferContent == 0)
-  {
-    _wait_for_sample_buffer_filled(2048);
-  }
-
-  if (!running.load()) throw 20;
-
-  cmplx temp;
-  theRig->getSamples(&temp, 1);
-  --bufferContent;
-
-  if (dumpfilePointer.load() != nullptr)
-  {
-    _dump_sample_to_file(temp);
-  }
-
-  if (localCounter < bufferSize)
-  {
-    localBuffer[localCounter] = temp;
-    ++localCounter;
-  }
-  //
-  //	OK, we have a sample!!
-  //	first: adjust frequency. We need Hz accuracy
-  currentPhase -= phaseOffset;
-  currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
-
-  temp *= oscillatorTable[currentPhase];
-  sLevel = 0.00001f * jan_abs(temp) + (1.0f - 0.00001f) * sLevel;
-
-  return temp;
+  getSamples(oneSampleBuffer, 0, 1, phaseOffset);
+  return oneSampleBuffer[0];
 }
 
 void SampleReader::getSamples(std::vector<cmplx> & v, int index, int32_t n, int32_t phaseOffset)
