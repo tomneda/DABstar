@@ -44,8 +44,8 @@
 #include        <qwt_picker_machine.h>
 #include        <qwt_scale_widget.h>
 #include        <QBrush>
+#include	"fft/fft-handler.h"
 
-#include	"fft-handler.h"
 class	RadioInterface;
 
 class	audioDisplay: public QObject {

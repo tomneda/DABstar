@@ -26,13 +26,12 @@
 #include  <cstdio>
 #include  <cstdint>
 #include  <vector>
-#include  "fft-handler.h"
+#include  "fft/fft-handler.h"
 #include  "phasetable.h"
 #include  "dab-constants.h"
 #include  "dab-params.h"
 #include  "process-params.h"
 #include  "ringbuffer.h"
-#include  "fft-handler.h"
 
 class RadioInterface;
 

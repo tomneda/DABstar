@@ -24,7 +24,7 @@
 #include  <cstdio>
 #include  <cinttypes>
 #include  <cstring>
-#include  "fft-complex.h"
+#include  "fft/fft-complex.h"
 
 static uint8_t table[] = {
   0017,    // 0 0 0 0 1 1 1 1		0

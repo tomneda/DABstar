@@ -21,10 +21,10 @@
  */
 #
 
-#ifndef  __FFT_HANDLER__
-#define  __FFT_HANDLER__
+#ifndef  FFT_HANDLER_H
+#define  FFT_HANDLER_H
 
-#include "dab-constants.h"
+#include "glob_defs.h"
 #include  <vector>
 #include  "kiss_fft.h"
 

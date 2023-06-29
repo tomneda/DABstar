@@ -51,7 +51,7 @@
 #include        <qwt_scale_widget.h>
 #include        <QBrush>
 
-#include	"fft-handler.h"
+#include	"fft/fft-handler.h"
 
 class	RadioInterface;
 

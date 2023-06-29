@@ -36,7 +36,7 @@
 #include        "phasetable.h"
 #include        "freq-interleaver.h"
 
-#include  "fft-handler.h"
+#include  "fft/fft-handler.h"
 
 class RadioInterface;
 class Backend;

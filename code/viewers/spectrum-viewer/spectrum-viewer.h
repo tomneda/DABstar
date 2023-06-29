@@ -57,7 +57,7 @@ constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
 constexpr int32_t SP_SPECTRUMOVRSMPFAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
 
-#include  "fft-handler.h"
+#include  "fft/fft-handler.h"
 
 class RadioInterface;
 class QSettings;

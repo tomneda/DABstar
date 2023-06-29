@@ -24,7 +24,7 @@
 #ifndef  FFT_COMPLEX_H
 #define  FFT_COMPLEX_H
 
-#include "dab-constants.h"
+#include "glob_defs.h"
 
 #ifdef __cplusplus
 extern "C" {

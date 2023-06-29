@@ -37,7 +37,8 @@ if (MINGW)
     #	add_definitions (-DSSE_AVAILABLE)
 endif ()
 
-add_definitions(-D__FFTW3__)
+#add_definitions(-D__FFTW3__)
+add_definitions(-D__KISS_FFT__)
 
 IF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.git")
     execute_process(
@@ -161,7 +162,6 @@ include_directories(
         ${QT_QTGUI_INCLUDE_DIR}
         ./code/helpers/pauzeslide
         ./code/support
-        ./code/fft
         ./code
         ./code/ofdm
         ./code/protection
@@ -195,8 +195,6 @@ set(${objectName}_HDRS
         ./code/radio.h
         ./code/pauzeslide/pauzeslide.h
         ./code/dab-processor.h
-        ./code/fft/fft-handler.h
-        ./code/fft/fft-complex.h
         ./code/eti-handler/eti-generator.h
         ./code/dab-constants.h
         ./code/mot-content-types.h
@@ -302,8 +300,6 @@ set(${objectName}_SRCS
         ./code/radio.cpp
         ./code/support/techdata.cpp
         ./code/dab-processor.cpp
-        ./code/fft/fft-handler.cpp
-        ./code/fft/fft-complex.cpp
         ./code/eti-handler/eti-generator.cpp
         ./code/ofdm/sample-reader.cpp
         ./code/ofdm/ofdm-decoder.cpp
@@ -935,6 +931,7 @@ add_executable(${objectName}
         )
 
 target_link_libraries(${objectName}
+        PRIVATE
         Qt5::Widgets
         Qt5::Network
         Qt5::Xml
@@ -961,3 +958,7 @@ configure_file(
 
 add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+
+add_subdirectory(code/fft)
+target_link_libraries(${objectName} PRIVATE fft)

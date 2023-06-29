@@ -10,7 +10,6 @@
 #define KISS_FFT_H
 
 #include <stdlib.h>
-#include <cstdio>
 #include <math.h>
 #include <string.h>
 

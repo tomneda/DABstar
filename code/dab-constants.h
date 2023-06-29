@@ -26,9 +26,9 @@
 #ifndef  DAB_CONSTANTS_H
 #define  DAB_CONSTANTS_H
 
+#include "glob_defs.h"
 #include  <QString>
 #include  <cmath>
-#include  <cstdint>
 #include  <cstdlib>
 #include  <cstdio>
 #include  <complex>
@@ -52,8 +52,6 @@
 
 typedef void * HINSTANCE;
 #endif
-
-using cmplx = std::complex<float>;
 
 #ifndef  M_PI
 # define M_PI           3.14159265358979323846  /* pi */
