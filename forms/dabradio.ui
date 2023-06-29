@@ -184,6 +184,16 @@
        </item>
        <item>
         <widget class="QPushButton" name="muteButton">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: red; color: white
+</string>
+         </property>
          <property name="text">
           <string>Mute</string>
          </property>
@@ -282,6 +292,9 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide or  show the configuration-control widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: darkgreen; color: white;</string>
+         </property>
          <property name="text">
           <string>Controls</string>
          </property>
@@ -291,6 +304,9 @@
         <widget class="QPushButton" name="httpButton">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start (or stop) a simple webserver for showing a map on which the locations of the transmitters found are shown&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(230, 97, 0); color: white;</string>
          </property>
          <property name="text">
           <string>Open Map</string>
@@ -302,6 +318,9 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a scan. The scanMode can be selected in the configuration-control widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: blue; color: white</string>
+         </property>
          <property name="text">
           <string>Scan</string>
          </property>
@@ -311,6 +330,9 @@
         <widget class="QPushButton" name="detailButton">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide a widget showing details of the currently selected service&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: yellow; color: black</string>
          </property>
          <property name="text">
           <string>Details</string>
@@ -331,11 +353,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>QPushButton</class>
-   <extends>QPushButton</extends>
-   <header>smallpushbutton.h</header>
-  </customwidget>
   <customwidget>
    <class>smallComboBox</class>
    <extends>QComboBox</extends>
