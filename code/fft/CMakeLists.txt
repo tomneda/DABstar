@@ -10,4 +10,9 @@ add_library(fft STATIC
         ./kiss_fftr.c
         )
 
-#message(STATUS "It's me the FFT! ----------------------")
+
+list(APPEND extraLibs ${FFTW3F_LIBRARIES})
+
+target_link_libraries(fft ${FFTW3F_LIBRARIES})
+
+#message(STATUS "It's me the FFT! ${FFTW3F_LIBRARIES} ----------------------")

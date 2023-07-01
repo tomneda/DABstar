@@ -37,8 +37,8 @@ if (MINGW)
     #	add_definitions (-DSSE_AVAILABLE)
 endif ()
 
-#add_definitions(-D__FFTW3__)
-add_definitions(-D__KISS_FFT__)
+add_definitions(-D__FFTW3__)
+#add_definitions(-D__KISS_FFT__)
 
 IF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.git")
     execute_process(
@@ -123,7 +123,7 @@ if (NOT FFTW3F_FOUND)
     message(FATAL_ERROR "please install FFTW3")
 endif ()
 include_directories(${FFTW_INCLUDE_DIRS})
-list(APPEND extraLibs ${FFTW3F_LIBRARIES})
+#list(APPEND extraLibs ${FFTW3F_LIBRARIES})
 
 
 find_package(zlib)
