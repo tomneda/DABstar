@@ -449,7 +449,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 #else
   picturesPath	= checkDir (QDir::homePath ());
 #endif
-  picturesPath += "Qt-DAB-files/";
+  picturesPath += PRJ_NAME "-files/";
   picturesPath = dabSettings->value("picturesPath", picturesPath).toString();
   picturesPath = checkDir(picturesPath);
   filePath = dabSettings->value("filePath", picturesPath).toString();
@@ -463,7 +463,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 #else
   epgPath		= checkDir (QDir::homePath ());
 #endif
-  epgPath += "Qt-DAB-files/";
+  epgPath += PRJ_NAME "-files/";
   epgPath = dabSettings->value("epgPath", epgPath).toString();
   epgPath = checkDir(epgPath);
   connect(&epgProcessor, SIGNAL (set_epgData(int, int, const QString &, const QString &)), this, SLOT (set_epgData(int, int, const QString &, const QString &)));
@@ -625,12 +625,12 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   bool hidden = dabSettings->value("hidden", 0).toInt() != 0;
   if (hidden)
   {
-    configButton->setText("show controls");
+    configButton->setText("Show Controls");
     configDisplay.hide();
   }
   else
   {
-    configButton->setText("hide controls");
+    configButton->setText("Hide Controls");
     configDisplay.show();
   }
 
@@ -687,7 +687,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   }
   if (hidden)
   {  // make it visible
-    configButton->setText("hide controls");
+    configButton->setText("Hide Controls");
     dabSettings->setValue("hidden", 0);
   }
   configDisplay.show();
@@ -4225,13 +4225,13 @@ void RadioInterface::handle_configButton()
 {
   if (!configDisplay.isHidden())
   {
-    configButton->setText("show controls");
+    configButton->setText("Show Controls");
     configDisplay.hide();
     dabSettings->setValue("hidden", 1);
   }
   else
   {
-    configButton->setText("hide controls");
+    configButton->setText("Hide Controls");
     configDisplay.show();
     dabSettings->setValue("hidden", 0);
   }
@@ -4473,7 +4473,7 @@ void RadioInterface::stop_etiHandler()
 
   my_dabProcessor->stop_etiGenerator();
   channel.etiActive = false;
-  scanButton->setText("eti");
+  scanButton->setText("ETI");
 }
 
 void RadioInterface::start_etiHandler()
@@ -4510,7 +4510,7 @@ void RadioInterface::handle_eti_activeSelector(int k)
     stopScanning(false);
     disconnect(scanButton, SIGNAL (clicked()), this, SLOT (handle_scanButton()));
     connect(scanButton, SIGNAL (clicked()), this, SLOT (handle_etiHandler()));
-    scanButton->setText("eti");
+    scanButton->setText("ETI");
     if (inputDevice->isFileInput())
     {  // restore the button' visibility
       scanButton->show();
