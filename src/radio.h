@@ -324,6 +324,7 @@ private:
   std::mutex locker;
   bool transmitterTags_local;
   void colorServiceName(const QString & s, QColor color, int fS, bool);
+  void write_warning_message(const QString & iMsg);
 
 signals:
   void set_newChannel(int);
@@ -375,7 +376,6 @@ public slots:
   void handle_contentSelector(const QString &);
 
   void http_terminate();
-
 
   //	Somehow, these must be connected to the GUI
 private slots:

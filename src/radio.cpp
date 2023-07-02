@@ -1544,8 +1544,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 #ifdef  HAVE_SDRPLAY_V2
                                                                                                                           if (s == "sdrplay-v2") {
 #ifdef	__MINGW32__
-	   QMessageBox::warning (this, tr ("Warning"),
-	                            tr ("If SDRuno is installed with drivers 3.10,\nV2.13 drivers will not work anymore, choose \"sdrplay\" instead\n"));
+	   QMessageBox::warning (this, tr ("Warning"), tr ("If SDRuno is installed with drivers 3.10,\nV2.13 drivers will not work anymore, choose \"sdrplay\" instead\n"));
 	   return nullptr;
 #endif
 	   try {
@@ -1553,13 +1552,11 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	      showButtons();
 	   }
 	   catch (const std::exception &e) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                               tr (e. what ()));
+	      QMessageBox::warning (this, tr ("Warning"), tr (e. what ()));
 	      return nullptr;
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                               tr ("sdrplay-v2 fails"));
+	      QMessageBox::warning (this, tr ("Warning"), tr ("sdrplay-v2 fails"));
 	      return nullptr;
 	   }
 	}
@@ -1614,13 +1611,11 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	      showButtons();
 	   }
 	   catch (const std::exception &e) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                               tr (e. what ()));
+	      QMessageBox::warning (this, tr ("Warning"), tr (e. what ()));
 	      return nullptr;
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                           tr ("airspy device fails"));
+	      QMessageBox::warning (this, tr ("Warning"), tr ("airspy device fails"));
 	      return nullptr;
 	   }
 	}
@@ -1654,13 +1649,11 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	      showButtons();
 	   }
 	   catch (const std::exception &e) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                               tr (e. what ()));
+	      QMessageBox::warning (this, tr ("Warning"), tr (e. what ()));
 	      return nullptr;
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                           tr ("lime device fails"));
+	      QMessageBox::warning (this, tr ("Warning"), tr ("lime device fails"));
 	      return nullptr;
 	   }
 	}
@@ -1673,13 +1666,11 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	      showButtons();
 	   }
 	   catch (const std::exception &e) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                               tr (e. what ()));
+	      QMessageBox::warning (this, tr ("Warning"), tr (e. what ()));
 	      return nullptr;
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                           tr ("pluto device fails"));
+	      QMessageBox::warning (this, tr ("Warning"), tr ("pluto device fails"));
 	      return nullptr;
 	   }
 	}
@@ -1697,13 +1688,11 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	                                               fmFrequency);
 	   }
 	   catch (const std::exception &e) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                               tr (e. what ()));
+	      QMessageBox::warning (this, tr ("Warning"), tr (e. what ()));
 	      return nullptr;
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                           tr ("pluto device fails"));
+	      QMessageBox::warning (this, tr ("Warning"), tr ("pluto device fails"));
 	      return nullptr;
 	   }
 	}
@@ -1717,8 +1706,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	      showButtons();
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                           tr ("rtl_tcp: no luck\n") );
+	      QMessageBox::warning (this, tr ("Warning"), tr ("rtl_tcp: no luck\n") );
 	      return nullptr;
 	   }
 	}
@@ -1731,8 +1719,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	      showButtons();
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                                  tr ("no elad device found\n"));
+	      QMessageBox::warning (this, tr ("Warning"), tr ("no elad device found\n"));
 	      return nullptr;
 	   }
 	}
@@ -1745,8 +1732,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	      showButtons();
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                                  tr ("no soapy device found\n"));
+	      QMessageBox::warning (this, tr ("Warning"), tr ("no soapy device found\n"));
 	      return nullptr;
 	   }
 	}
@@ -1761,8 +1747,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	      showButtons();
 	   }
 	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                            tr ("extio: no luck\n") );
+	      QMessageBox::warning (this, tr ("Warning"), tr ("extio: no luck\n") );
 	      return nullptr;
 	   }
 	}
@@ -3078,7 +3063,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
     my_dabProcessor->getParameters(serviceName, &s.SId, &s.SCIds);
     if (s.SId == 0)
     {
-      QMessageBox::warning(this, tr("Warning"), tr("insufficient data for this program\n"));
+      write_warning_message("insufficient data for this program (1)");
       return;
     }
     s.serviceName = service;
@@ -3262,7 +3247,7 @@ void RadioInterface::startService(dabService & s)
   }
   else
   {
-    QMessageBox::warning(this, tr("Warning"), tr("insufficient data for this program\n"));
+    write_warning_message("insufficient data for this program (2)");
     dabSettings->setValue("presetname", "");
   }
 }
@@ -3306,7 +3291,7 @@ void RadioInterface::startPacketservice(const QString & s)
   my_dabProcessor->dataforPacketService(s, &pd, 0);
   if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
   {
-    QMessageBox::warning(this, tr("sdr"), tr("still insufficient data for this service\n"));
+    write_warning_message("insufficient data for this program (3)");
     return;
   }
 
@@ -3349,6 +3334,7 @@ void RadioInterface::startPacketservice(const QString & s)
 void RadioInterface::cleanScreen()
 {
   serviceLabel->setText("");
+  dynamicLabel->setStyleSheet("color: white");
   dynamicLabel->setText("");
   theTechWindow->cleanUp();
   stereoLabel->setText("");
@@ -3419,7 +3405,7 @@ void RadioInterface::handle_serviceButton(direction d)
         my_dabProcessor->getParameters(serviceList.at(i).name, &s.SId, &s.SCIds);
         if (s.SId == 0)
         {
-          QMessageBox::warning(this, tr("Warning"), tr("insufficient data for this program\n"));
+          write_warning_message("insufficient data for this program (4)");
           break;
         }
         s.serviceName = serviceList.at(i).name;
@@ -3460,7 +3446,7 @@ void RadioInterface::setPresetService()
 
   if (channel.Eid == 0)
   {
-    QMessageBox::warning(this, tr("Warning"), tr("Oops, ensemble not yet recognized\nselect service manually\n"));
+    write_warning_message("ensemble not yet recognized");
     return;
   }
 
@@ -3475,12 +3461,19 @@ void RadioInterface::setPresetService()
   my_dabProcessor->getParameters(presetName, &s.SId, &s.SCIds);
   if (s.SId == 0)
   {
-    QMessageBox::warning(this, tr("Warning"), tr("insufficient data for this program\n"));
+    write_warning_message("insufficient data for this program (5)");
     return;
   }
 
   channel.nextService.valid = false;
   startService(s);
+}
+
+void RadioInterface::write_warning_message(const QString & iMsg)
+{
+  //QMessageBox::warning(this, "Warning", iMsg);
+  dynamicLabel->setStyleSheet("color: red");
+  dynamicLabel->setText(iMsg);
 }
 
 ///////////////////////////////////////////////////////////////////////////
