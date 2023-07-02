@@ -74,7 +74,6 @@ public:
   void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
   void showFrequency(float);
   void showIQ(int32_t);
-  void show_nullPeriod(float *, int);
   void showQuality(int32_t, float, float, float, float);
   void show_snr(float);
   void show_clockErr(int);

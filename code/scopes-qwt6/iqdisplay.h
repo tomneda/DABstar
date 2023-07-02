@@ -19,8 +19,8 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  __IQDISPLAY__
-#define  __IQDISPLAY__
+#ifndef  IQDISPLAY_H
+#define  IQDISPLAY_H
 
 #include  "dab-constants.h"
 #include  <vector>

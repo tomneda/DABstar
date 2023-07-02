@@ -22,6 +22,7 @@
 
 #include  "waterfall-scope.h"
 #include  <qwt_text.h>
+#include  <qpen.h>
 
 waterfallScope::waterfallScope(QwtPlot * scope, int displaySize, int rasterSize) :
   QwtPlotSpectrogram()

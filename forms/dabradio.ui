@@ -155,8 +155,7 @@ color: rgb(255, 255, 255);</string>
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The (name:channel) of each service found is stored in the history list. Selecting a service from this list is possible (but only makes sense if the (name:channel) is in reach of the decoder).&lt;/p&gt;&lt;p&gt;Clearing the list is by touching the right hand mouse click&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(230, 97, 0);
-color: rgb(255, 255, 255);</string>
+        <string notr="true">background-color: rgb(246, 211, 45); color: black;</string>
        </property>
        <property name="text">
         <string>Station List</string>

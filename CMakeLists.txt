@@ -71,27 +71,27 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 ######################################################################
 ######################################################################
 # select only one of these audio outputs
-set(USE_PORTAUDIO  ON)
-
-option(USE_PORTAUDIO  ON)
-option(QT_AUDIO      OFF)
-option(TCP_STREAMER  OFF)
+# set() overwrites the CMake cache entries
+set(USE_PORTAUDIO ON)
+set(QT_AUDIO OFF)
+set(TCP_STREAMER OFF)
 
 # select one or more devices (set to ON)
-option(AIRSPY        OFF)
-option(SDRPLAY_V2    OFF)
-option(SDRPLAY       OFF)
-option(RTLSDR_LINUX  OFF)
-option(RTLSDR_WIN    OFF)
-option(HACKRF        OFF)
-option(LIMESDR       OFF)
-option(RTL_TCP       OFF)
-option(PLUTO         OFF)
+# attention option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this
+option(AIRSPY OFF)
+option(SDRPLAY_V2 OFF)
+option(SDRPLAY OFF)
+option(RTLSDR_LINUX ON)
+option(RTLSDR_WIN OFF)
+option(HACKRF OFF)
+option(LIMESDR OFF)
+option(RTL_TCP OFF)
+option(PLUTO OFF)
 
 option(DATA_STREAMER OFF)
-option(VITERBI_SSE   OFF)
-option(VITERBI_NEON  OFF)
-option(FDK_AAC       OFF)
+option(VITERBI_SSE OFF)
+option(VITERBI_NEON OFF)
+option(FDK_AAC OFF)
 ######################################################################
 ######################################################################
 
@@ -274,6 +274,7 @@ set(${objectName}_HDRS
         ./code/support/buttons/smallqlistview.h
         ./code/support/buttons/smallspinbox.h
         ./code/scopes-qwt6/iqdisplay.h
+        ./code/scopes-qwt6/spectrogramdata.h
         ./code/scopes-qwt6/audio-display.h
         ./code/viewers/spectrum-viewer/spectrum-viewer.h
         ./code/viewers/spectrum-viewer/spectrum-scope.h
@@ -370,6 +371,7 @@ set(${objectName}_SRCS
         ./code/support/tii-library/tii-codes.cpp
         ./code/scopes-qwt6/iqdisplay.cpp
         ./code/scopes-qwt6/audio-display.cpp
+        ./code/scopes-qwt6/spectrogramdata.cpp
         ./code/viewers/spectrum-viewer/spectrum-viewer.cpp
         ./code/viewers/spectrum-viewer/spectrum-scope.cpp
         ./code/viewers/spectrum-viewer/waterfall-scope.cpp
@@ -447,7 +449,6 @@ set(${objectName}_UIS
         ./code/viewers/snr-viewer/snr-widget.ui
         ./code/qt-devices/xml-filereader/xmlfiles.ui
         )
-
 
 #########################################################################
 
@@ -940,8 +941,9 @@ target_link_libraries(${objectName}
         ${FAAD_LIBRARIES}
         ${CMAKE_DL_LIBS}
         )
+
 if (QT_AUDIO)
-    target_link_libraries(${objectName} Qt5::Multimedia)
+    target_link_libraries(${objectName} PRIVATE Qt5::Multimedia)
 endif (QT_AUDIO)
 
 INSTALL(TARGETS ${objectName} DESTINATION ${CMAKE_INSTALL_PREFIX})

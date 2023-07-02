@@ -290,11 +290,6 @@ void spectrumViewer::show_clockErr(int e)
   }
 }
 
-void spectrumViewer::show_nullPeriod(float * v, int amount)
-{
-  //myNullScope->show_nullPeriod(v, amount);
-}
-
 void spectrumViewer::rightMouseClick(const QPointF & point)
 {
   (void) point;
