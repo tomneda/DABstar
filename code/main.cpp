@@ -56,9 +56,9 @@ int main(int argc, char ** argv)
   int fmFrequency = 110000;
 
   //QTranslator theTranslator;
-  QCoreApplication::setOrganizationName("Lazy Chair Computing");
-  QCoreApplication::setOrganizationDomain("Lazy Chair Computing");
-  //QCoreApplication::setApplicationName ("qt-dab");
+  //QCoreApplication::setOrganizationName("Lazy Chair Computing");
+  //QCoreApplication::setOrganizationDomain("Lazy Chair Computing");
+  QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
 
   while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:s:")) != -1)

@@ -49,7 +49,7 @@ QString suggestedFileName;
 	for (int i = 0; i < theTime. length (); i ++)
 	   if (!isValid (theTime. at (i)))
 	      theTime. replace (i, 1, '-');
-	suggestedFileName = saveDir + "Qt-DAB-" + channel +
+	suggestedFileName = saveDir + PRJ_NAME "-" + channel +
 	                                          "-" + theTime + ".csv";
 	suggestedFileName        = QDir::toNativeSeparators (suggestedFileName);
 
@@ -234,7 +234,7 @@ SNDFILE	*theFile;
 
 FILE	*findfileNames::findScanDump_fileName		() {
 	QMessageBox::StandardButton resultButton =
-	             QMessageBox::question (nullptr, "Qt-DAB",
+	             QMessageBox::question (nullptr, PRJ_NAME,
 	                                    "save the scan?\n",
 	                                    QMessageBox::No | QMessageBox::Yes,
 	                                    QMessageBox::Yes);
@@ -252,7 +252,7 @@ FILE	*findfileNames::findScanDump_fileName		() {
 	   if (!isValid (theTime. at (i)))
 	      theTime. replace (i, 1, '-');
 	QString suggestedFileName =
-	                       saveDir + "Qt-DAB-scan" + "-" + theTime + ".csv";
+	                       saveDir + PRJ_NAME "-scan" + "-" + theTime + ".csv";
 
 	QString fileName = QFileDialog::
 	                     getSaveFileName (nullptr,
@@ -269,7 +269,7 @@ FILE	*findfileNames::findScanDump_fileName		() {
 
 FILE	*findfileNames::findSummary_fileName	() {
 	QMessageBox::StandardButton resultButton =
-	             QMessageBox::question (nullptr, "Qt-DAB",
+	             QMessageBox::question (nullptr, PRJ_NAME,
 	                                    "save summary?\n",
 	                                    QMessageBox::No | QMessageBox::Yes,
 	                                    QMessageBox::Yes);
@@ -287,7 +287,7 @@ FILE	*findfileNames::findSummary_fileName	() {
 	   if (!isValid (theTime. at (i)))
 	      theTime. replace (i, 1, '-');
 	QString suggestedFileName =
-	                  saveDir + "Qt-DAB-summary" + "-" + theTime + ".csv";
+	                  saveDir + PRJ_NAME "-summary" + "-" + theTime + ".csv";
 
 	QString fileName = QFileDialog::
 	                     getSaveFileName (nullptr,
@@ -311,7 +311,7 @@ QString	findfileNames::findskipFile_fileName	() {
 	   saveDir = saveDir + '/';
 
 	QString suggestedFileName =
-	                  saveDir + "Qt-DAB-skipFile" + ".xml";
+	                  saveDir + PRJ_NAME "-skipFile" + ".xml";
 
 	QString fileName =
 	   QFileDialog::getSaveFileName (nullptr,
@@ -339,7 +339,7 @@ QString theTime         = QDateTime::currentDateTime (). toString ();
 	   if (!isValid (theTime. at (i)))
 	      theTime. replace (i, 1, '-');
 
-        QString suggestedFileName = saveDir + "Qt-DAB-dlText"  +
+        QString suggestedFileName = saveDir + PRJ_NAME "-dlText"  +
                                                   "-" + theTime + ".txt";
         QString fileName;
 
@@ -371,7 +371,7 @@ QString theTime         = QDateTime::currentDateTime (). toString ();
 	   if (!isValid (theTime. at (i)))
 	      theTime. replace (i, 1, '-');
 
-        QString suggestedFileName = saveDir + "Qt-DAB-LOG"  +
+        QString suggestedFileName = saveDir + PRJ_NAME "-LOG"  +
                                                   "-" + theTime + ".txt";
 	QString fileName = 
               QFileDialog::getSaveFileName (nullptr,
@@ -413,7 +413,7 @@ QString suggestedFileName;
 	for (int i = 0; i < theTime. length (); i ++)
 	   if (!isValid (theTime. at (i)))
 	      theTime. replace (i, 1, '-');
-	suggestedFileName = saveDir + "Qt-DAB-Transmitters" +
+	suggestedFileName = saveDir +PRJ_NAME "-Transmitters" +
 	                                          "-" + theTime + ".csv";
 	suggestedFileName        = QDir::toNativeSeparators (suggestedFileName);
 

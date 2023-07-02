@@ -69,7 +69,7 @@ QDomElement root	= theTree. createElement ("SDR");
 
 	theTree. appendChild (root);
 	QDomElement theRecorder = theTree. createElement ("Recorder");
-	theRecorder. setAttribute ("Name", "Qt-DAB");
+	theRecorder. setAttribute ("Name", PRJ_NAME );
 	theRecorder. setAttribute ("Version", version);
 	root. appendChild (theRecorder);
 	QDomElement theDevice = theTree. createElement ("Device");

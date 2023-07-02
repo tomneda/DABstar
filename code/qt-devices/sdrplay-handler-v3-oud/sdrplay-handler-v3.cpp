@@ -459,10 +459,10 @@ void	sdrplayHandler_v3::
 	                    sdrplay_api_Update_Ext1_None);
 	if (params -> powerOverloadParams.powerOverloadChangeType ==
 	                                    sdrplay_api_Overload_Detected) {
-//	   fprintf (stderr, "Qt-DAB sdrplay_api_Overload_Detected");
+//	   fprintf (stderr, PRJ_NAME " sdrplay_api_Overload_Detected");
 	}
 	else {
-//	   fprintf (stderr, "Qt-DAB sdrplay_api_Overload Corrected");
+//	   fprintf (stderr, PRJ_NAME " sdrplay_api_Overload Corrected");
 	}
 }
 
