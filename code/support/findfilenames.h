@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C)  2015, 2016, 2017, 2018, 2019, 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,38 +19,38 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__FIND_FILENAMES_H
-#define	__FIND_FILENAMES_H
-//
+#ifndef  FIND_FILENAMES_H
+#define  FIND_FILENAMES_H
+
 //	just a convenience class to pack a number of functions
 //	dealing with getting a filename
-#include	<QSettings>
-#include	<QString>
-#include	<QDateTime>
-#include	<QDir>
-#include	<QFileDialog>
-#include	<QMessageBox>
-#include	<cstdio>
-#include	<sndfile.h>
+#include  <QSettings>
+#include  <QString>
+#include  <QDateTime>
+#include  <QDir>
+#include  <QFileDialog>
+#include  <QMessageBox>
+#include  <cstdio>
+#include  <sndfile.h>
 
-class	findfileNames {
-	QSettings	*dabSettings;
+class FindFileNames
+{
+  QSettings * dabSettings;
 public:
-		findfileNames			(QSettings *);
-		~findfileNames			();
-	FILE	*findContentDump_fileName	(const QString &channel);
-	FILE	*findFrameDump_fileName		(const QString &service, bool);
-	SNDFILE	*findAudioDump_fileName		(const QString &service, bool);
-	SNDFILE *findRawDump_fileName		(const QString &deviceName,
-	                                       	 const QString &channelName);
-	FILE	*findScanDump_fileName		();
-	FILE	*findSummary_fileName		();
-const	QString	findskipFile_fileName		();
-	QString	finddlText_fileName		(bool);
-	FILE	*findLogFileName		();
-	FILE	*find_ficDump_file		(const QString &);
-	QString findMaps_fileName		();
-	QString	find_eti_fileName		(const QString &, const QString &);
+  FindFileNames(QSettings *);
+  ~FindFileNames();
+  FILE * findContentDump_fileName(const QString & channel);
+  FILE * findFrameDump_fileName(const QString & service, bool);
+  SNDFILE * findAudioDump_fileName(const QString & service, bool);
+  SNDFILE * findRawDump_fileName(const QString & deviceName, const QString & channelName);
+  FILE * findScanDump_fileName();
+  FILE * findSummary_fileName();
+  const QString findskipFile_fileName();
+  QString finddlText_fileName(bool);
+  FILE * findLogFileName();
+  FILE * find_ficDump_file(const QString &);
+  QString findMaps_fileName();
+  QString find_eti_fileName(const QString &, const QString &);
 };
 
 #endif

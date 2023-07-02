@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2021
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,49 +19,54 @@
  *    along with dab-scanner; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__CONTENT_TABLE_H
-#define	__CONTENT_TABLE_H
+#ifndef  CONTENT_TABLE_H
+#define  CONTENT_TABLE_H
 
-#include	<QWidget>
-#include	<QObject>
-#include	<QScrollArea>
-#include	<QTableWidget>
-#include	<QStringList>
-#include	<QTableWidgetItem>
-#include	<QObject>
-#include	<QString>
-#include	<QByteArray>
+#include  <QWidget>
+#include  <QObject>
+#include  <QScrollArea>
+#include  <QTableWidget>
+#include  <QStringList>
+#include  <QTableWidgetItem>
+#include  <QObject>
+#include  <QString>
+#include  <QByteArray>
 
-class	RadioInterface;
-class	QSettings;
-class	audiodata;
+class RadioInterface;
+class QSettings;
+class audiodata;
 
-class	contentTable: public QObject {
+class contentTable : public QObject
+{
 Q_OBJECT
 public:
-		contentTable	(RadioInterface *, QSettings *,
-	                            const QString &, int);
-		~contentTable	();
-	void	show		();
-	void	hide		();
-	bool	isVisible	();
-	void	clearTable	();
-	void	addLine		(const QString &);
-	void	dump		(FILE *);
+  contentTable(RadioInterface *, QSettings *, const QString &, int);
+  ~contentTable();
+
+  void show();
+  void hide();
+  bool isVisible();
+  void clearTable();
+  void addLine(const QString &);
+  void dump(FILE *);
+
 private:
-	QString		channel;
-	int		columns;
-	RadioInterface	*theRadio;
-	QSettings	*dabSettings;
-	QScrollArea	*myWidget;
-	QTableWidget	*contentWidget;
-	int16_t		addRow	();
-	bool		is_clear;
+  QString channel;
+  int columns;
+  RadioInterface * theRadio;
+  QSettings * dabSettings;
+  QScrollArea * myWidget;
+  QTableWidget * contentWidget;
+  bool is_clear;
+
+  int16_t addRow();
+
 private slots:
-	void		selectService	(int, int);
-	void		dump		(int, int);
+  void selectService(int, int);
+  void dump(int, int);
+
 signals:
-	void		goService	(const QString &);
+  void goService(const QString &);
 };
 
 #endif

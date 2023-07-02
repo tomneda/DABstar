@@ -192,7 +192,7 @@ private:
   QFrame configDisplay;
   dlCache the_dlCache;
   TiiHandler tiiProcessor;
-  findfileNames filenameFinder;
+  FindFileNames filenameFinder;
   RingBuffer<int16_t> theTechData;
   httpHandler * mapHandler;
   processParams globals;
