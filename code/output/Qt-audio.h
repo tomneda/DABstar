@@ -34,7 +34,7 @@
 #include	"audio-base.h"
 #include	"Qt-audiodevice.h"
 
-class	Qt_Audio: public audioBase {
+class	Qt_Audio: public AudioBase {
 Q_OBJECT
 public:
 			Qt_Audio	(void);

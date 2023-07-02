@@ -26,7 +26,7 @@
 #include  <QMessageBox>
 #include  <QComboBox>
 
-audioSink::audioSink(int16_t latency) :
+AudioSink::AudioSink(int16_t latency) :
   _O_Buffer(8 * 32768)
 {
   int32_t i;
@@ -63,7 +63,7 @@ audioSink::audioSink(int16_t latency) :
   totalSamples = 1;
 }
 
-audioSink::~audioSink()
+AudioSink::~AudioSink()
 {
   if ((ostream != nullptr) && !Pa_IsStreamStopped(ostream))
   {
@@ -87,7 +87,7 @@ audioSink::~audioSink()
   }
 }
 
-bool audioSink::selectDevice(int16_t idx)
+bool AudioSink::selectDevice(int16_t idx)
 {
   PaError err;
   int16_t outputDevice;
@@ -155,7 +155,7 @@ bool audioSink::selectDevice(int16_t idx)
   return true;
 }
 
-void audioSink::restart()
+void AudioSink::restart()
 {
   PaError err;
 
@@ -174,7 +174,7 @@ void audioSink::restart()
   }
 }
 
-void audioSink::stop()
+void AudioSink::stop()
 {
   if (Pa_IsStreamStopped(ostream))
   {
@@ -193,7 +193,7 @@ void audioSink::stop()
 
 //
 //	helper
-bool audioSink::OutputrateIsSupported(int16_t device, int32_t Rate)
+bool AudioSink::OutputrateIsSupported(int16_t device, int32_t Rate)
 {
   PaStreamParameters * outputParameters = (PaStreamParameters *)alloca (sizeof(PaStreamParameters));
 
@@ -210,11 +210,11 @@ bool audioSink::OutputrateIsSupported(int16_t device, int32_t Rate)
  * 	... and the callback
  */
 
-int audioSink::paCallback_o(const void * inputBuffer, void * outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo * timeInfo, PaStreamCallbackFlags statusFlags, void * userData)
+int AudioSink::paCallback_o(const void * inputBuffer, void * outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo * timeInfo, PaStreamCallbackFlags statusFlags, void * userData)
 {
   RingBuffer<float> * outB;
   float * outp = (float *)outputBuffer;
-  audioSink * ud = reinterpret_cast <audioSink *>(userData);
+  AudioSink * ud = reinterpret_cast <AudioSink *>(userData);
   uint32_t actualSize;
   uint32_t i;
   (void)statusFlags;
@@ -222,7 +222,7 @@ int audioSink::paCallback_o(const void * inputBuffer, void * outputBuffer, unsig
   (void)timeInfo;
   if (ud->paCallbackReturn == paContinue)
   {
-    outB = &((reinterpret_cast < audioSink *> (userData))->_O_Buffer);
+    outB = &((reinterpret_cast < AudioSink *> (userData))->_O_Buffer);
     actualSize = outB->getDataFromBuffer(outp, 2 * framesPerBuffer);
     ud->theMissed += 2 * framesPerBuffer - actualSize;
     ud->totalSamples += 2 * framesPerBuffer;
@@ -235,12 +235,12 @@ int audioSink::paCallback_o(const void * inputBuffer, void * outputBuffer, unsig
   return ud->paCallbackReturn;
 }
 
-bool audioSink::hasMissed()
+bool AudioSink::hasMissed()
 {
   return true;
 }
 
-int32_t audioSink::missed()
+int32_t AudioSink::missed()
 {
   if (totalSamples == 0)
   {
@@ -252,7 +252,7 @@ int32_t audioSink::missed()
   return h;
 }
 
-void audioSink::audioOutput(float * b, int32_t amount)
+void AudioSink::audioOutput(float * b, int32_t amount)
 {
   if (_O_Buffer.GetRingBufferWriteAvailable() < 2 * amount)
   {
@@ -261,7 +261,7 @@ void audioSink::audioOutput(float * b, int32_t amount)
   _O_Buffer.putDataIntoBuffer(b, 2 * amount);
 }
 
-QString audioSink::outputChannelwithRate(int16_t ch, int32_t rate)
+QString AudioSink::outputChannelwithRate(int16_t ch, int32_t rate)
 {
   const PaDeviceInfo * deviceInfo;
   QString name = QString("");
@@ -288,27 +288,27 @@ QString audioSink::outputChannelwithRate(int16_t ch, int32_t rate)
   return name;
 }
 
-int16_t audioSink::invalidDevice()
+int16_t AudioSink::invalidDevice()
 {
   return numofDevices + 128;
 }
 
-bool audioSink::isValidDevice(int16_t dev)
+bool AudioSink::isValidDevice(int16_t dev)
 {
   return 0 <= dev && dev < numofDevices;
 }
 
-bool audioSink::selectDefaultDevice()
+bool AudioSink::selectDefaultDevice()
 {
   return selectDevice(Pa_GetDefaultOutputDevice());
 }
 
-int32_t audioSink::cardRate()
+int32_t AudioSink::cardRate()
 {
   return 48000;
 }
 
-bool audioSink::setupChannels(QComboBox * streamOutSelector)
+bool AudioSink::setupChannels(QComboBox * streamOutSelector)
 {
   uint16_t ocnt = 1;
   uint16_t i;
@@ -332,7 +332,7 @@ bool audioSink::setupChannels(QComboBox * streamOutSelector)
 }
 
 //
-int16_t audioSink::numberofDevices()
+int16_t AudioSink::numberofDevices()
 {
   return numofDevices;
 }

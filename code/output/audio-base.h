@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C)  2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -21,43 +20,47 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __AUDIO_BASE_H
-#define	__AUDIO_BASE_H
-#include	"dab-constants.h"
-#include	<cstdio>
-#include	<samplerate.h>
-#include	<sndfile.h>
-#include	<QMutex>
-#include	<QObject>
-#include	"newconverter.h"
-#include	"ringbuffer.h"
+#ifndef AUDIO_BASE_H
+#define AUDIO_BASE_H
+
+#include  "dab-constants.h"
+#include  <cstdio>
+#include  <samplerate.h>
+#include  <sndfile.h>
+#include  <QMutex>
+#include  <QObject>
+#include  "newconverter.h"
+#include  "ringbuffer.h"
 
 
-class	audioBase: public QObject {
+class AudioBase : public QObject
+{
 Q_OBJECT
 public:
-			audioBase		();
-virtual			~audioBase		();
-virtual	void		stop			();
-virtual	void		restart			();
-//
-	void		audioOut		(int16_t *, int32_t, int);
-	void		startDumping		(SNDFILE *);
-	void		stopDumping		();
-virtual	bool		hasMissed		();
-private:
-	void		audioOut_16000		(int16_t *, int32_t);
-	void		audioOut_24000		(int16_t *, int32_t);
-	void		audioOut_32000		(int16_t *, int32_t);
-	void		audioOut_48000		(int16_t *, int32_t);
-	void		audioReady		(float *, int32_t);
-	newConverter	converter_16;
-	newConverter	converter_24;
-	newConverter	converter_32;
-	SNDFILE		*dumpFile;
-	QMutex		myLocker;
-protected:
-virtual	void		audioOutput		(float *, int32_t);
-};
-#endif
+  AudioBase();
+  virtual ~AudioBase();
+  virtual void stop();
+  virtual void restart();
 
+  void audioOut(int16_t *, int32_t, int);
+  void startDumping(SNDFILE *);
+  void stopDumping();
+  virtual bool hasMissed();
+private:
+  void audioOut_16000(int16_t *, int32_t);
+  void audioOut_24000(int16_t *, int32_t);
+  void audioOut_32000(int16_t *, int32_t);
+  void audioOut_48000(int16_t *, int32_t);
+  void audioReady(float *, int32_t);
+
+  newConverter converter_16;
+  newConverter converter_24;
+  newConverter converter_32;
+  SNDFILE * dumpFile;
+  QMutex myLocker;
+
+protected:
+  virtual void audioOutput(float *, int32_t);
+};
+
+#endif

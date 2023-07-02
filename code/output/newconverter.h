@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,40 +19,37 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef	__NEW_CONVERTER__
-#define	__NEW_CONVERTER__
+#ifndef  NEW_CONVERTER_H
+#define  NEW_CONVERTER_H
 
-#include	<cmath>
-#include	<complex>
-#include	<cstdint>
-#include	<unistd.h>
-#include	<vector>
-#include	<limits>
-#include	<samplerate.h>
-#include	"dab-constants.h"
+#include  <cmath>
+#include  <complex>
+#include  <cstdint>
+#include  <unistd.h>
+#include  <vector>
+#include  <limits>
+#include  <samplerate.h>
+#include  "dab-constants.h"
 
-class	newConverter {
+class newConverter
+{
 private:
-	int32_t		inRate;
-	int32_t		outRate;
-	double		ratio;
-	int32_t		outputLimit;
-	int32_t		inputLimit;
-	SRC_STATE	*converter;
-	SRC_DATA	src_data;
-	std::vector<float> inBuffer;
-	std::vector<float> outBuffer;
-	int32_t		inp;
+  int32_t inRate;
+  int32_t outRate;
+  double ratio;
+  int32_t outputLimit;
+  int32_t inputLimit;
+  SRC_STATE * converter;
+  SRC_DATA src_data;
+  std::vector<float> inBuffer;
+  std::vector<float> outBuffer;
+  int32_t inp;
 public:
-		newConverter (int32_t inRate, int32_t outRate, 
-	                      int32_t inSize);
+  newConverter(int32_t inRate, int32_t outRate, int32_t inSize);
+  ~newConverter();
 
-		~newConverter();
-
-	bool	convert (cmplx v,
-	                       cmplx *out, int32_t *amount);
-
-int32_t	getOutputsize();
+  bool convert(cmplx v, cmplx * out, int32_t * amount);
+  int32_t getOutputsize();
 };
 
 #endif

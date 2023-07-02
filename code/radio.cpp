@@ -417,16 +417,16 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 
   //	Where do we leave the audio out?
   configWidget.streamoutSelector->hide();
-#ifdef  TCP_STREAMER
-                                                                                                                          soundOut		= new tcpStreamer	(20040);
-	theTechWindow		-> hide		();
-#elif  QT_AUDIO
-                                                                                                                          soundOut		= new Qt_Audio();
-	theTechWindow		-> hide		();
+#ifdef TCP_STREAMER
+  soundOut = new tcpStreamer(20040);
+  theTechWindow->hide();
+#elif QT_AUDIO
+  soundOut = new Qt_Audio();
+  theTechWindow->hide();
 #else
   //	just sound out
-  soundOut = new audioSink(latency);
-  ((audioSink *)soundOut)->setupChannels(configWidget.streamoutSelector);
+  soundOut = new AudioSink(latency);
+  ((AudioSink *)soundOut)->setupChannels(configWidget.streamoutSelector);
   configWidget.streamoutSelector->show();
   bool err;
   h = dabSettings->value("soundchannel", "default").toString();
@@ -435,12 +435,12 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   if (k != -1)
   {
     configWidget.streamoutSelector->setCurrentIndex(k);
-    err = !((audioSink *)soundOut)->selectDevice(k);
+    err = !((AudioSink *)soundOut)->selectDevice(k);
   }
 
   if ((k == -1) || err)
   {
-    ((audioSink *)soundOut)->selectDefaultDevice();
+    ((AudioSink *)soundOut)->selectDefaultDevice();
   }
 #endif
 
@@ -1332,9 +1332,11 @@ void RadioInterface::newAudio(int amount, int rate)
     {
       soundOut->audioOut(vec, amount, rate);
     }
-#ifdef  HAVE_PLUTO_RXTX
-                                                                                                                            if (streamerOut != nullptr)
-	      streamerOut	-> audioOut (vec, amount, rate);
+#ifdef HAVE_PLUTO_RXTX
+    if (streamerOut != nullptr)
+      {
+        streamerOut->audioOut(vec, amount, rate);
+      }
 #endif
     if (!theTechWindow->isHidden())
     {
@@ -1394,9 +1396,11 @@ void RadioInterface::TerminateProcess()
   {
     fclose(dlTextFile);
   }
-#ifdef  HAVE_PLUTO_RXTX
-                                                                                                                          if (streamerOut != nullptr)
-	   streamerOut	-> stop ();
+#ifdef HAVE_PLUTO_RXTX
+  if (streamerOut != nullptr)
+  {
+    streamerOut->stop();
+  }
 #endif
   if (my_dabProcessor != nullptr)
   {
@@ -1497,7 +1501,7 @@ void RadioInterface::updateTimeDisplay()
   }
   if (soundOut->hasMissed())
   {
-    int xxx = ((audioSink *)soundOut)->missed();
+    int xxx = ((AudioSink *)soundOut)->missed();
     if (!theTechWindow->isHidden())
     {
       theTechWindow->showMissed(xxx);
@@ -1520,7 +1524,7 @@ void RadioInterface::updateTimeDisplay()
 #ifndef  QT_AUDIO
     if (configWidget.streamoutSelector->isVisible())
     {
-      int xxx = ((audioSink *)soundOut)->missed();
+      int xxx = ((AudioSink *)soundOut)->missed();
       fprintf(stderr, "missed %d\n", xxx);
     }
 #endif
@@ -1604,7 +1608,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
   else
 #endif
 #ifdef  HAVE_AIRSPY
-                                                                                                                            if (s == "airspy") {
+  if (s == "airspy") {
 	   try {
 	      inputDevice	= new airspyHandler (dabSettings, version);
 	      showButtons();
@@ -1623,26 +1627,28 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	else
 #endif
 #ifdef  HAVE_HACKRF
-                                                                                                                            if (s == "hackrf") {
-	   try {
-	      inputDevice	= new hackrfHandler (dabSettings, version);
-	      showButtons();
-	   }
-	   catch (const std::exception &e) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                               tr (e. what ()));
-	      return nullptr;
-	   }
-	   catch (...) {
-	      QMessageBox::warning (this, tr ("Warning"),
-	                           tr ("hackrf device fails"));
-	      return nullptr;
-	   }
-	}
-	else
+  if (s == "hackrf")
+  {
+    try
+    {
+      inputDevice = new hackrfHandler(dabSettings, version);
+      showButtons();
+    }
+    catch (const std::exception & e)
+    {
+      QMessageBox::warning(this, tr("Warning"), tr(e.what()));
+      return nullptr;
+    }
+    catch (...)
+    {
+      QMessageBox::warning(this, tr("Warning"), tr("hackrf device fails"));
+      return nullptr;
+    }
+  }
+  else
 #endif
 #ifdef  HAVE_LIME
-                                                                                                                            if (s == "limeSDR") {
+     if (s == "limeSDR") {
 	   try {
 	      inputDevice = new limeHandler (dabSettings, version);
 	      showButtons();
@@ -1661,7 +1667,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	else
 #endif
 #ifdef  HAVE_PLUTO_2
-                                                                                                                            if (s == "pluto") {
+   if (s == "pluto") {
 	   try {
 	      inputDevice = new plutoHandler (dabSettings, version);
 	      showButtons();
@@ -1680,7 +1686,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	else
 #endif
 #ifdef  HAVE_PLUTO_RXTX
-                                                                                                                            if (s == "pluto-rxtx") {
+   if (s == "pluto-rxtx") {
 	   try {
 	      inputDevice = new plutoHandler (dabSettings,
 	                                      version, fmFrequency);
@@ -1704,7 +1710,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	else
 #endif
 #ifdef HAVE_RTL_TCP
-                                                                                                                            //	RTL_TCP might be working.
+   //	RTL_TCP might be working.
 	if (s == "rtl_tcp") {
 	   try {
 	      inputDevice = new rtl_tcp_client (dabSettings);
@@ -1719,7 +1725,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	else
 #endif
 #ifdef  HAVE_ELAD
-                                                                                                                            if (s == "elad-s1") {
+    if (s == "elad-s1") {
 	   try {
 	      inputDevice = new eladHandler (dabSettings);
 	      showButtons();
@@ -1733,7 +1739,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	else
 #endif
 #ifdef  HAVE_SOAPY
-                                                                                                                            if (s == "soapy") {
+    if (s == "soapy") {
 	   try {
 	      inputDevice	= new soapyHandler (dabSettings);
 	      showButtons();
@@ -1747,7 +1753,7 @@ deviceHandler * RadioInterface::setDevice(const QString & s)
 	else
 #endif
 #ifdef HAVE_EXTIO
-                                                                                                                            //	extio is - in its current settings - for Windows, it is a
+    //	extio is - in its current settings - for Windows, it is a
 //	wrap around the dll
 	if (s == "extio") {
 	   try {
@@ -2393,7 +2399,7 @@ void RadioInterface::set_streamSelector(int k)
     return;
   }
 #if  not defined (TCP_STREAMER) && not defined (QT_AUDIO)
-  ((audioSink *)(soundOut))->selectDevice(k);
+  ((AudioSink *)(soundOut))->selectDevice(k);
   dabSettings->setValue("soundchannel", configWidget.streamoutSelector->currentText());
 #else
   (void)k;

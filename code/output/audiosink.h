@@ -34,19 +34,19 @@
 
 class QComboBox;
 
-class audioSink : public audioBase
+class AudioSink : public AudioBase
 {
 Q_OBJECT
 public:
-  audioSink(int16_t);
-  ~audioSink();
+  AudioSink(int16_t);
+  ~AudioSink();
   bool setupChannels(QComboBox *);
   void stop();
   void restart(void);
   bool selectDevice(int16_t);
   bool selectDefaultDevice();
   int32_t missed();
-  bool hasMissed();
+  bool hasMissed() override;
 private:
   int16_t numberofDevices();
   QString outputChannelwithRate(int16_t, int32_t);

@@ -65,7 +65,7 @@
 
 class QSettings;
 class deviceHandler;
-class audioBase;
+class AudioBase;
 class common_fft;
 class historyHandler;
 class timeTableHandler;
@@ -220,7 +220,7 @@ private:
   dabStreamer		*streamerOut;
 #endif
   DabProcessor * my_dabProcessor;
-  audioBase * soundOut;
+  AudioBase * soundOut;
 #ifdef  DATA_STREAMER
   tcpServer		*dataStreamer;
 #endif
