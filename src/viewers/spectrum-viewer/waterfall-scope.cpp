@@ -112,7 +112,7 @@ void waterfallScope::display(const double * X_axis, double * Y1_value, double am
 
   plotgrid->setAxisScale(QwtPlot::xBottom, orig, orig + width);
   plotgrid->enableAxis(QwtPlot::xBottom);
-  Marker->setXValue(marker);
+  //Marker->setXValue(marker);
   this->attach(plotgrid);
   plotgrid->replot();
 }
