@@ -38,6 +38,7 @@ if (MINGW)
 endif ()
 
 add_definitions(-D__FFTW3__)
+#add_definitions(-D__KISS_FFT__)
 
 IF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.git")
     execute_process(
@@ -70,27 +71,27 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 ######################################################################
 ######################################################################
 # select only one of these audio outputs
-set(USE_PORTAUDIO  ON)
-
-option(USE_PORTAUDIO  ON)
-option(QT_AUDIO      OFF)
-option(TCP_STREAMER  OFF)
+# set() overwrites the CMake cache entries
+set(USE_PORTAUDIO ON)
+set(QT_AUDIO OFF)
+set(TCP_STREAMER OFF)
 
 # select one or more devices (set to ON)
-option(AIRSPY        OFF)
-option(SDRPLAY_V2    OFF)
-option(SDRPLAY       OFF)
-option(RTLSDR_LINUX  OFF)
-option(RTLSDR_WIN    OFF)
-option(HACKRF        OFF)
-option(LIMESDR       OFF)
-option(RTL_TCP       OFF)
-option(PLUTO         OFF)
+# attention option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this
+option(AIRSPY OFF)
+option(SDRPLAY_V2 OFF)
+option(SDRPLAY OFF)
+option(RTLSDR_LINUX ON)
+option(RTLSDR_WIN OFF)
+option(HACKRF OFF)
+option(LIMESDR OFF)
+option(RTL_TCP OFF)
+option(PLUTO OFF)
 
 option(DATA_STREAMER OFF)
-option(VITERBI_SSE   OFF)
-option(VITERBI_NEON  OFF)
-option(FDK_AAC       OFF)
+option(VITERBI_SSE OFF)
+option(VITERBI_NEON OFF)
+option(FDK_AAC OFF)
 ######################################################################
 ######################################################################
 
@@ -122,7 +123,7 @@ if (NOT FFTW3F_FOUND)
     message(FATAL_ERROR "please install FFTW3")
 endif ()
 include_directories(${FFTW_INCLUDE_DIRS})
-list(APPEND extraLibs ${FFTW3F_LIBRARIES})
+#list(APPEND extraLibs ${FFTW3F_LIBRARIES})
 
 
 find_package(zlib)
@@ -159,286 +160,283 @@ include_directories(
         ${QT5Widgets_INCLUDES}
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
-        ./code/helpers/pauzeslide
-        ./code/support
-        ./code/fft
-        ./code
-        ./code/ofdm
-        ./code/protection
-        ./code/backend
-        ./code/backend/audio
-        ./code/backend/data
-        ./code/backend/data/journaline
-        ./code/backend/data/mot
-        ./code/backend/data/epg-2
-        ./code/backend/data/epg
-        ./code/support
-        ./code/support/tii-library
-        ./code/support/buttons
-        ./code/support/viterbi-jan
-        ./code/support/viterbi-spiral
-        ./code/output
-        ./code/scopes-qwt6
-        ./code/viewers
-        ./code/viewers/spectrum-viewer
-        ./code/viewers/tii-viewer
-        ./code/viewers/snr-viewer
-        ./code/qt-devices
-        ./code/qt-devices/rawfiles-new
-        ./code/qt-devices/wavfiles-new
-        ./code/qt-devices/xml-filereader
-        ./code/eti-handler
+        src/helpers/pauzeslide
+        src/support
+        src
+        src/ofdm
+        src/protection
+        src/backend
+        src/backend/audio
+        src/backend/data
+        src/backend/data/journaline
+        src/backend/data/mot
+        src/backend/data/epg-2
+        src/backend/data/epg
+        src/support
+        src/support/tii-library
+        src/support/buttons
+        src/support/viterbi-jan
+        src/support/viterbi-spiral
+        src/output
+        src/scopes-qwt6
+        src/viewers
+        src/viewers/spectrum-viewer
+        src/viewers/tii-viewer
+        src/viewers/snr-viewer
+        src/qt-devices
+        src/qt-devices/rawfiles-new
+        src/qt-devices/wavfiles-new
+        src/qt-devices/xml-filereader
+        src/eti-handler
         /usr/include/
 )
 
 set(${objectName}_HDRS
-        ./code/radio.h
-        ./code/pauzeslide/pauzeslide.h
-        ./code/dab-processor.h
-        ./code/fft/fft-handler.h
-        ./code/fft/fft-complex.h
-        ./code/eti-handler/eti-generator.h
-        ./code/dab-constants.h
-        ./code/mot-content-types.h
-        ./code/ofdm/sample-reader.h
-        ./code/ofdm/phasereference.h
-        ./code/ofdm/ofdm-decoder.h
-        ./code/ofdm/phasetable.h
-        ./code/ofdm/freq-interleaver.h
-        ./code/ofdm/fib-decoder.h
-        ./code/ofdm/dab-config.h
-        ./code/ofdm/fib-table.h
-        ./code/ofdm/fic-handler.h
-        ./code/ofdm/tii-detector.h
-        ./code/ofdm/timesyncer.h
-        ./code/protection/protTables.h
-        ./code/protection/protection.h
-        ./code/protection/uep-protection.h
-        ./code/protection/eep-protection.h
-        ./code/backend/firecode-checker.h
-        ./code/backend/frame-processor.h
-        ./code/backend/charsets.h
-        ./code/backend/galois.h
-        ./code/backend/reed-solomon.h
-        ./code/backend/msc-handler.h
-        ./code/backend/backend.h
-        ./code/backend/backend-deconvolver.h
-        ./code/backend/backend-driver.h
-        ./code/backend/audio/mp4processor.h
-        ./code/backend/audio/bitWriter.h
-        ./code/backend/audio/mp2processor.h
-        ./code/backend/data/ip-datahandler.h
-        ./code/backend/data/tdc-datahandler.h
-        ./code/backend/data/journaline-datahandler.h
-        ./code/backend/data/journaline/dabdatagroupdecoder.h
-        ./code/backend/data/journaline/crc_8_16.h
-        ./code/backend/data/journaline/log.h
-        ./code/backend/data/journaline/newssvcdec_impl.h
-        ./code/backend/data/journaline/Splitter.h
-        ./code/backend/data/journaline/dabdgdec_impl.h
-        ./code/backend/data/journaline/newsobject.h
-        ./code/backend/data/journaline/NML.h
-        ./code/backend/data/epg/epgdec.h
-        ./code/backend/data/epg-2/epg-decoder.h
-        ./code/backend/data/virtual-datahandler.h
-        ./code/backend/data/pad-handler.h
-        ./code/backend/data/mot/mot-handler.h
-        ./code/backend/data/mot/mot-object.h
-        ./code/backend/data/mot/mot-dir.h
-        ./code/backend/data/data-processor.h
-        ./code/output/fir-filters.h
-        ./code/output/audio-base.h
-        ./code/output/newconverter.h
-        ./code/support/ringbuffer.h
-        ./code/support/Xtan2.h
-        ./code/support/dab-params.h
-        ./code/support/band-handler.h
-        ./code/support/dab-tables.h
-        ./code/support/viterbi-jan/viterbi-handler.h
-        ./code/support/viterbi-spiral/viterbi-spiral.h
-        ./code/support/preset-handler.h
-        ./code/support/presetcombobox.h
-        ./code/support/history-handler.h
-        ./code/support/color-selector.h
-        ./code/support/time-table.h
-        ./code/support/findfilenames.h
-        ./code/support/content-table.h
-        ./code/support/dl-cache.h
-        ./code/support/ITU_Region_1.h
-        ./code/support/coordinates.h
-        ./code/support/mapport.h
-        ./code/support/http-handler.h
-        ./code/support/converted_map.h
-        ./code/support/tii-library/tii-codes.h
-        ./code/support/buttons/smallcombobox.h
-        ./code/support/buttons/newpushbutton.h
-        ./code/support/buttons/normalpushbutton.h
-        ./code/support/buttons/smallqlistview.h
-        ./code/support/buttons/smallspinbox.h
-        ./code/scopes-qwt6/iqdisplay.h
-        ./code/scopes-qwt6/audio-display.h
-        ./code/viewers/spectrum-viewer/spectrum-viewer.h
-        ./code/viewers/spectrum-viewer/spectrum-scope.h
-        ./code/viewers/spectrum-viewer/waterfall-scope.h
-        ./code/viewers/spectrum-viewer/correlation-viewer.h
-        ./code/viewers/tii-viewer/tii-viewer.h
-        ./code/viewers/snr-viewer/snr-viewer.h
-        ./code/qt-devices/device-handler.h
-        ./code/qt-devices/device-exceptions.h
-        ./code/qt-devices/xml-filewriter.h
-        ./code/qt-devices/rawfiles-new/rawfiles.h
-        ./code/qt-devices/rawfiles-new/raw-reader.h
-        ./code/qt-devices/wavfiles-new/wavfiles.h
-        ./code/qt-devices/wavfiles-new/wav-reader.h
-        ./code/qt-devices/xml-filereader/element-reader.h
-        ./code/qt-devices/xml-filereader/xml-filereader.h
-        ./code/qt-devices/xml-filereader/xml-reader.h
-        ./code/qt-devices/xml-filereader/xml-descriptor.h
+        src/radio.h
+        src/pauzeslide/pauzeslide.h
+        src/dab-processor.h
+        src/eti-handler/eti-generator.h
+        src/dab-constants.h
+        src/mot-content-types.h
+        src/ofdm/sample-reader.h
+        src/ofdm/phasereference.h
+        src/ofdm/ofdm-decoder.h
+        src/ofdm/phasetable.h
+        src/ofdm/freq-interleaver.h
+        src/ofdm/fib-decoder.h
+        src/ofdm/dab-config.h
+        src/ofdm/fib-table.h
+        src/ofdm/fic-handler.h
+        src/ofdm/tii-detector.h
+        src/ofdm/timesyncer.h
+        src/protection/protTables.h
+        src/protection/protection.h
+        src/protection/uep-protection.h
+        src/protection/eep-protection.h
+        src/backend/firecode-checker.h
+        src/backend/frame-processor.h
+        src/backend/charsets.h
+        src/backend/galois.h
+        src/backend/reed-solomon.h
+        src/backend/msc-handler.h
+        src/backend/backend.h
+        src/backend/backend-deconvolver.h
+        src/backend/backend-driver.h
+        src/backend/audio/mp4processor.h
+        src/backend/audio/bitWriter.h
+        src/backend/audio/mp2processor.h
+        src/backend/data/ip-datahandler.h
+        src/backend/data/tdc-datahandler.h
+        src/backend/data/journaline-datahandler.h
+        src/backend/data/journaline/dabdatagroupdecoder.h
+        src/backend/data/journaline/crc_8_16.h
+        src/backend/data/journaline/log.h
+        src/backend/data/journaline/newssvcdec_impl.h
+        src/backend/data/journaline/Splitter.h
+        src/backend/data/journaline/dabdgdec_impl.h
+        src/backend/data/journaline/newsobject.h
+        src/backend/data/journaline/NML.h
+        src/backend/data/epg/epgdec.h
+        src/backend/data/epg-2/epg-decoder.h
+        src/backend/data/virtual-datahandler.h
+        src/backend/data/pad-handler.h
+        src/backend/data/mot/mot-handler.h
+        src/backend/data/mot/mot-object.h
+        src/backend/data/mot/mot-dir.h
+        src/backend/data/data-processor.h
+        src/output/fir-filters.h
+        src/output/audio-base.h
+        src/output/newconverter.h
+        src/support/ringbuffer.h
+        src/support/Xtan2.h
+        src/support/dab-params.h
+        src/support/band-handler.h
+        src/support/dab-tables.h
+        src/support/viterbi-jan/viterbi-handler.h
+        src/support/viterbi-spiral/viterbi-spiral.h
+        src/support/preset-handler.h
+        src/support/presetcombobox.h
+        src/support/history-handler.h
+        src/support/color-selector.h
+        src/support/time-table.h
+        src/support/findfilenames.h
+        src/support/content-table.h
+        src/support/dl-cache.h
+        src/support/ITU_Region_1.h
+        src/support/coordinates.h
+        src/support/mapport.h
+        src/support/http-handler.h
+        src/support/converted_map.h
+        src/support/tii-library/tii-codes.h
+        src/support/buttons/smallcombobox.h
+        src/support/buttons/newpushbutton.h
+        src/support/buttons/normalpushbutton.h
+        src/support/buttons/smallqlistview.h
+        src/support/buttons/smallspinbox.h
+        src/scopes-qwt6/iqdisplay.h
+        src/scopes-qwt6/spectrogramdata.h
+        src/scopes-qwt6/audio-display.h
+        src/viewers/spectrum-viewer/spectrum-viewer.h
+        src/viewers/spectrum-viewer/spectrum-scope.h
+        src/viewers/spectrum-viewer/waterfall-scope.h
+        src/viewers/spectrum-viewer/correlation-viewer.h
+        src/viewers/tii-viewer/tii-viewer.h
+        src/viewers/snr-viewer/snr-viewer.h
+        src/qt-devices/device-handler.h
+        src/qt-devices/device-exceptions.h
+        src/qt-devices/xml-filewriter.h
+        src/qt-devices/rawfiles-new/rawfiles.h
+        src/qt-devices/rawfiles-new/raw-reader.h
+        src/qt-devices/wavfiles-new/wavfiles.h
+        src/qt-devices/wavfiles-new/wav-reader.h
+        src/qt-devices/xml-filereader/element-reader.h
+        src/qt-devices/xml-filereader/xml-filereader.h
+        src/qt-devices/xml-filereader/xml-reader.h
+        src/qt-devices/xml-filereader/xml-descriptor.h
         )
 
 set(${objectName}_SRCS
         ${${objectName}_SRCS}
-        ./code/main.cpp
-        ./code/radio.cpp
-        ./code/support/techdata.cpp
-        ./code/dab-processor.cpp
-        ./code/fft/fft-handler.cpp
-        ./code/fft/fft-complex.cpp
-        ./code/eti-handler/eti-generator.cpp
-        ./code/ofdm/sample-reader.cpp
-        ./code/ofdm/ofdm-decoder.cpp
-        ./code/ofdm/phasereference.cpp
-        ./code/ofdm/phasetable.cpp
-        ./code/ofdm/freq-interleaver.cpp
-        ./code/ofdm/fib-decoder.cpp
-        ./code/ofdm/fic-handler.cpp
-        ./code/ofdm/tii-detector.cpp
-        ./code/ofdm/timesyncer.cpp
-        ./code/protection/protTables.cpp
-        ./code/protection/protection.cpp
-        ./code/protection/eep-protection.cpp
-        ./code/protection/uep-protection.cpp
-        ./code/backend/firecode-checker.cpp
-        ./code/backend/charsets.cpp
-        ./code/backend/galois.cpp
-        ./code/backend/reed-solomon.cpp
-        ./code/backend/msc-handler.cpp
-        ./code/backend/backend.cpp
-        ./code/backend/backend-deconvolver.cpp
-        ./code/backend/backend-driver.cpp
-        ./code/backend/audio/mp4processor.cpp
-        ./code/backend/audio/bitWriter.cpp
-        ./code/backend/audio/mp2processor.cpp
-        ./code/backend/data/ip-datahandler.cpp
-        ./code/backend/data/journaline-datahandler.cpp
-        ./code/backend/data/journaline/crc_8_16.c
-        ./code/backend/data/journaline/log.c
-        ./code/backend/data/journaline/newssvcdec_impl.cpp
-        ./code/backend/data/journaline/Splitter.cpp
-        ./code/backend/data/journaline/dabdgdec_impl.c
-        ./code/backend/data/journaline/newsobject.cpp
-        ./code/backend/data/journaline/NML.cpp
-        ./code/backend/data/epg-2/epg-decoder.cpp
-        ./code/backend/data/epg/epgdec.cpp
-        ./code/backend/data/tdc-datahandler.cpp
-        ./code/backend/data/pad-handler.cpp
-        ./code/backend/data/mot/mot-handler.cpp
-        ./code/backend/data/mot/mot-object.cpp
-        ./code/backend/data/mot/mot-dir.cpp
-        ./code/backend/data/data-processor.cpp
-        ./code/output/audio-base.cpp
-        ./code/output/newconverter.cpp
-        ./code/output/fir-filters.cpp
-        ./code/support/Xtan2.cpp
-        ./code/support/dab-params.cpp
-        ./code/support/band-handler.cpp
-        ./code/support/dab-tables.cpp
-        ./code/support/preset-handler.cpp
-        ./code/support/presetcombobox.cpp
-        ./code/support/buttons/smallcombobox.cpp
-        ./code/support/buttons/newpushbutton.cpp
-        ./code/support/buttons/normalpushbutton.cpp
-        ./code/support/buttons/smallqlistview.cpp
-        ./code/support/buttons/smallspinbox.cpp
-        ./code/support/history-handler.cpp
-        ./code/support/viterbi-jan/viterbi-handler.cpp
-        ./code/support/viterbi-spiral/viterbi-spiral.cpp
-        ./code/support/color-selector.cpp
-        ./code/support/time-table.cpp
-        ./code/support/findfilenames.cpp
-        ./code/support/content-table.cpp
-        ./code/support/ITU_Region_1.cpp
-        ./code/support/coordinates.cpp
-        ./code/support/mapport.cpp
-        ./code/support/http-handler.cpp
-        ./code/support/tii-library/tii-codes.cpp
-        ./code/scopes-qwt6/iqdisplay.cpp
-        ./code/scopes-qwt6/audio-display.cpp
-        ./code/viewers/spectrum-viewer/spectrum-viewer.cpp
-        ./code/viewers/spectrum-viewer/spectrum-scope.cpp
-        ./code/viewers/spectrum-viewer/waterfall-scope.cpp
-        ./code/viewers/spectrum-viewer/correlation-viewer.cpp
-        ./code/viewers/tii-viewer/tii-viewer.cpp
-        ./code/viewers/snr-viewer/snr-viewer.cpp
-        ./code/qt-devices/device-handler.cpp
-        ./code/qt-devices/xml-filewriter.cpp
-        ./code/qt-devices/rawfiles-new/rawfiles.cpp
-        ./code/qt-devices/rawfiles-new/raw-reader.cpp
-        ./code/qt-devices/wavfiles-new/wavfiles.cpp
-        ./code/qt-devices/wavfiles-new/wav-reader.cpp
-        ./code/qt-devices/xml-filereader/xml-filereader.cpp
-        ./code/qt-devices/xml-filereader/xml-reader.cpp
-        ./code/qt-devices/xml-filereader/xml-descriptor.cpp
+        src/main.cpp
+        src/radio.cpp
+        src/support/techdata.cpp
+        src/dab-processor.cpp
+        src/eti-handler/eti-generator.cpp
+        src/ofdm/sample-reader.cpp
+        src/ofdm/ofdm-decoder.cpp
+        src/ofdm/phasereference.cpp
+        src/ofdm/phasetable.cpp
+        src/ofdm/freq-interleaver.cpp
+        src/ofdm/fib-decoder.cpp
+        src/ofdm/fic-handler.cpp
+        src/ofdm/tii-detector.cpp
+        src/ofdm/timesyncer.cpp
+        src/protection/protTables.cpp
+        src/protection/protection.cpp
+        src/protection/eep-protection.cpp
+        src/protection/uep-protection.cpp
+        src/backend/firecode-checker.cpp
+        src/backend/charsets.cpp
+        src/backend/galois.cpp
+        src/backend/reed-solomon.cpp
+        src/backend/msc-handler.cpp
+        src/backend/backend.cpp
+        src/backend/backend-deconvolver.cpp
+        src/backend/backend-driver.cpp
+        src/backend/audio/mp4processor.cpp
+        src/backend/audio/bitWriter.cpp
+        src/backend/audio/mp2processor.cpp
+        src/backend/data/ip-datahandler.cpp
+        src/backend/data/journaline-datahandler.cpp
+        src/backend/data/journaline/crc_8_16.c
+        src/backend/data/journaline/log.c
+        src/backend/data/journaline/newssvcdec_impl.cpp
+        src/backend/data/journaline/Splitter.cpp
+        src/backend/data/journaline/dabdgdec_impl.c
+        src/backend/data/journaline/newsobject.cpp
+        src/backend/data/journaline/NML.cpp
+        src/backend/data/epg-2/epg-decoder.cpp
+        src/backend/data/epg/epgdec.cpp
+        src/backend/data/tdc-datahandler.cpp
+        src/backend/data/pad-handler.cpp
+        src/backend/data/mot/mot-handler.cpp
+        src/backend/data/mot/mot-object.cpp
+        src/backend/data/mot/mot-dir.cpp
+        src/backend/data/data-processor.cpp
+        src/output/audio-base.cpp
+        src/output/newconverter.cpp
+        src/output/fir-filters.cpp
+        src/support/Xtan2.cpp
+        src/support/dab-params.cpp
+        src/support/band-handler.cpp
+        src/support/dab-tables.cpp
+        src/support/preset-handler.cpp
+        src/support/presetcombobox.cpp
+        src/support/buttons/smallcombobox.cpp
+        src/support/buttons/newpushbutton.cpp
+        src/support/buttons/normalpushbutton.cpp
+        src/support/buttons/smallqlistview.cpp
+        src/support/buttons/smallspinbox.cpp
+        src/support/history-handler.cpp
+        src/support/viterbi-jan/viterbi-handler.cpp
+        src/support/viterbi-spiral/viterbi-spiral.cpp
+        src/support/color-selector.cpp
+        src/support/time-table.cpp
+        src/support/findfilenames.cpp
+        src/support/content-table.cpp
+        src/support/ITU_Region_1.cpp
+        src/support/coordinates.cpp
+        src/support/mapport.cpp
+        src/support/http-handler.cpp
+        src/support/tii-library/tii-codes.cpp
+        src/scopes-qwt6/iqdisplay.cpp
+        src/scopes-qwt6/audio-display.cpp
+        src/scopes-qwt6/spectrogramdata.cpp
+        src/viewers/spectrum-viewer/spectrum-viewer.cpp
+        src/viewers/spectrum-viewer/spectrum-scope.cpp
+        src/viewers/spectrum-viewer/waterfall-scope.cpp
+        src/viewers/spectrum-viewer/correlation-viewer.cpp
+        src/viewers/tii-viewer/tii-viewer.cpp
+        src/viewers/snr-viewer/snr-viewer.cpp
+        src/qt-devices/device-handler.cpp
+        src/qt-devices/xml-filewriter.cpp
+        src/qt-devices/rawfiles-new/rawfiles.cpp
+        src/qt-devices/rawfiles-new/raw-reader.cpp
+        src/qt-devices/wavfiles-new/wavfiles.cpp
+        src/qt-devices/wavfiles-new/wav-reader.cpp
+        src/qt-devices/xml-filereader/xml-filereader.cpp
+        src/qt-devices/xml-filereader/xml-reader.cpp
+        src/qt-devices/xml-filereader/xml-descriptor.cpp
         )
 
 set(${objectName}_MOCS
-        ./code/radio.h
-        ./code/support/techdata.h
-        ./code/dab-processor.h
-        ./code/output/audio-base.h
-        ./code/ofdm/sample-reader.h
-        ./code/ofdm/ofdm-decoder.h
-        ./code/ofdm/phasereference.h
-        ./code/ofdm/fib-decoder.h
-        ./code/ofdm/fic-handler.h
-        ./code/backend/audio/mp2processor.h
-        ./code/backend/audio/mp4processor.h
-        ./code/backend/data/virtual-datahandler.h
-        ./code/backend/data/pad-handler.h
-        ./code/backend/data/mot/mot-object.h
-        ./code/backend/data/ip-datahandler.h
-        ./code/backend/data/tdc-datahandler.h
-        ./code/backend/data/epg-2/epg-decoder.h
-        ./code/backend/data/data-processor.h
-        ./code/support/band-handler.h
-        ./code/support/preset-handler.h
-        ./code/support/presetcombobox.h
-        ./code/support/buttons/smallcombobox.h
-        ./code/support/buttons/newpushbutton.h
-        ./code/support/buttons/normalpushbutton.h
-        ./code/support/buttons/smallqlistview.h
-        ./code/support/buttons/smallspinbox.h
-        ./code/support/history-handler.h
-        ./code/support/color-selector.h
-        ./code/support/time-table.h
-        ./code/support/content-table.h
-        ./code/support/coordinates.h
-        ./code/support/mapport.h
-        ./code/support/http-handler.h
-        ./code/scopes-qwt6/iqdisplay.h
-        ./code/scopes-qwt6/audio-display.h
-        ./code/viewers/spectrum-viewer/spectrum-viewer.h
-        ./code/viewers/spectrum-viewer/spectrum-scope.h
-        ./code/viewers/spectrum-viewer/waterfall-scope.h
-        ./code/viewers/spectrum-viewer/correlation-viewer.h
-        ./code/viewers/tii-viewer/tii-viewer.h
-        ./code/viewers/snr-viewer/snr-viewer.h
-        ./code/qt-devices/rawfiles-new/rawfiles.h
-        ./code/qt-devices/rawfiles-new/raw-reader.h
-        ./code/qt-devices/wavfiles-new/wavfiles.h
-        ./code/qt-devices/wavfiles-new/wav-reader.h
-        ./code/qt-devices/xml-filereader/xml-filereader.h
-        ./code/qt-devices/xml-filereader/xml-reader.h
+        src/radio.h
+        src/support/techdata.h
+        src/dab-processor.h
+        src/output/audio-base.h
+        src/ofdm/sample-reader.h
+        src/ofdm/ofdm-decoder.h
+        src/ofdm/phasereference.h
+        src/ofdm/fib-decoder.h
+        src/ofdm/fic-handler.h
+        src/backend/audio/mp2processor.h
+        src/backend/audio/mp4processor.h
+        src/backend/data/virtual-datahandler.h
+        src/backend/data/pad-handler.h
+        src/backend/data/mot/mot-object.h
+        src/backend/data/ip-datahandler.h
+        src/backend/data/tdc-datahandler.h
+        src/backend/data/epg-2/epg-decoder.h
+        src/backend/data/data-processor.h
+        src/support/band-handler.h
+        src/support/preset-handler.h
+        src/support/presetcombobox.h
+        src/support/buttons/smallcombobox.h
+        src/support/buttons/newpushbutton.h
+        src/support/buttons/normalpushbutton.h
+        src/support/buttons/smallqlistview.h
+        src/support/buttons/smallspinbox.h
+        src/support/history-handler.h
+        src/support/color-selector.h
+        src/support/time-table.h
+        src/support/content-table.h
+        src/support/coordinates.h
+        src/support/mapport.h
+        src/support/http-handler.h
+        src/scopes-qwt6/iqdisplay.h
+        src/scopes-qwt6/audio-display.h
+        src/viewers/spectrum-viewer/spectrum-viewer.h
+        src/viewers/spectrum-viewer/spectrum-scope.h
+        src/viewers/spectrum-viewer/waterfall-scope.h
+        src/viewers/spectrum-viewer/correlation-viewer.h
+        src/viewers/tii-viewer/tii-viewer.h
+        src/viewers/snr-viewer/snr-viewer.h
+        src/qt-devices/rawfiles-new/rawfiles.h
+        src/qt-devices/rawfiles-new/raw-reader.h
+        src/qt-devices/wavfiles-new/wavfiles.h
+        src/qt-devices/wavfiles-new/wav-reader.h
+        src/qt-devices/xml-filereader/xml-filereader.h
+        src/qt-devices/xml-filereader/xml-reader.h
         )
 
 set(${objectName}_UIS
@@ -446,12 +444,11 @@ set(${objectName}_UIS
         ./forms/dabradio.ui
         ./forms/technical_data.ui
         ./forms/config-helper.ui
-        ./code/viewers/spectrum-viewer/scopewidget.ui
-        ./code/viewers/tii-viewer/tii-widget.ui
-        ./code/viewers/snr-viewer/snr-widget.ui
-        ./code/qt-devices/xml-filereader/xmlfiles.ui
+        src/viewers/spectrum-viewer/scopewidget.ui
+        src/viewers/tii-viewer/tii-widget.ui
+        src/viewers/snr-viewer/snr-widget.ui
+        src/qt-devices/xml-filereader/xmlfiles.ui
         )
-
 
 #########################################################################
 
@@ -463,15 +460,15 @@ if (FDK_AAC)
     include_directories(./specials/fdk-aac)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/backend/audio/fdk-aac.h
+            src/backend/audio/fdk-aac.h
             )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/backend/audio/fdk-aac.cpp
+            src/backend/audio/fdk-aac.cpp
             )
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/backend/audio/fdk-aac.h
+            src/backend/audio/fdk-aac.h
             )
     list(APPEND extraLibs ${FDK_AAC_LIBRARIES})
     add_definitions(-D__WITH_FDK_AAC__)
@@ -482,15 +479,15 @@ elseif (NOT FDK_AAC)
     endif ()
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            ./code/backend/audio/faad-decoder.h
+            src/backend/audio/faad-decoder.h
             )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/backend/audio/faad-decoder.cpp
+            src/backend/audio/faad-decoder.cpp
             )
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/backend/audio/faad-decoder.h
+            src/backend/audio/faad-decoder.h
             )
     add_definitions(-D__WITH_FAAD__)
 endif (FDK_AAC)
@@ -501,32 +498,32 @@ if (VITERBI_NEON)
     set(VITERBI_SSE false)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            ./code/support/viterbi-spiral/spiral-neon.h
+            src/support/viterbi-spiral/spiral-neon.h
             )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/support/viterbi-spiral/spiral-neon.c
+            src/support/viterbi-spiral/spiral-neon.c
             )
 
     add_definitions(-DNEON_AVAILABLE)
 elseif (VITERBI_SSE)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/support/viterbi-spiral/spiral-sse.h
+            src/support/viterbi-spiral/spiral-sse.h
             )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/support/viterbi-spiral/spiral-sse.c
+            src/support/viterbi-spiral/spiral-sse.c
             )
     add_definitions(-DSSE_AVAILABLE)
 else (VITERBI_SSE)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/support/viterbi-spiral/spiral-no-sse.h
+            src/support/viterbi-spiral/spiral-no-sse.h
             )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/support/viterbi-spiral/spiral-no-sse.c
+            src/support/viterbi-spiral/spiral-no-sse.c
             )
 endif (VITERBI_NEON)
 
@@ -536,30 +533,30 @@ endif (VITERBI_NEON)
 if (SDRPLAY_V2)
     set(${objectName}_UIS
             ${${objectName}_UIS}
-            ./code/qt-devices/sdrplay-handler-v2/sdrplay-widget-v2.ui
+            src/qt-devices/sdrplay-handler-v2/sdrplay-widget-v2.ui
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/sdrplay-handler-v2/sdrplay-handler-v2.h
-            ./code/qt-devices/sdrplay-handler-v2/sdrplayselect.h
+            src/qt-devices/sdrplay-handler-v2/sdrplay-handler-v2.h
+            src/qt-devices/sdrplay-handler-v2/sdrplayselect.h
             )
 
     include_directories(
-            ./code/qt-devices/sdrplay-handler-v2
+            src/qt-devices/sdrplay-handler-v2
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/sdrplay-handler-v2/sdrplay-handler-v2.h
-            ./code/qt-devices/sdrplay-handler-v2/sdrplayselect.h
-            ./code/qt-devices/sdrplay-handler-v2/mirsdrapi-rsp.h
+            src/qt-devices/sdrplay-handler-v2/sdrplay-handler-v2.h
+            src/qt-devices/sdrplay-handler-v2/sdrplayselect.h
+            src/qt-devices/sdrplay-handler-v2/mirsdrapi-rsp.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/sdrplay-handler-v2/sdrplay-handler-v2.cpp
-            ./code/qt-devices/sdrplay-handler-v2/sdrplayselect.cpp
+            src/qt-devices/sdrplay-handler-v2/sdrplay-handler-v2.cpp
+            src/qt-devices/sdrplay-handler-v2/sdrplayselect.cpp
             )
 
     add_definitions(-DHAVE_SDRPLAY_V2)
@@ -568,40 +565,40 @@ endif (SDRPLAY_V2)
 if (SDRPLAY)
     set(${objectName}_UIS
             ${${objectName}_UIS}
-            ./code/qt-devices/sdrplay-handler-v3/sdrplay-widget-v3.ui
+            src/qt-devices/sdrplay-handler-v3/sdrplay-widget-v3.ui
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/sdrplay-handler-v3/sdrplay-handler-v3.h
-            ./code/qt-devices/sdrplay-handler-v3/Rsp-device.h
+            src/qt-devices/sdrplay-handler-v3/sdrplay-handler-v3.h
+            src/qt-devices/sdrplay-handler-v3/Rsp-device.h
             )
 
     include_directories(
-            ./code/qt-devices/sdrplay-handler-v3
-            ./code/qt-devices/sdrplay-handler-v3/include
+            src/qt-devices/sdrplay-handler-v3
+            src/qt-devices/sdrplay-handler-v3/include
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/sdrplay-handler-v3/sdrplay-handler-v3.h
-            ./code/qt-devices/sdrplay-handler-v3/sdrplay-commands.h
-            ./code/qt-devices/sdrplay-handler-v3/include/sdrplay_api.h
-            ./code/qt-devices/sdrplay-handler-v3/Rsp-device.h
-            ./code/qt-devices/sdrplay-handler-v3/Rsp1A-handler.h
-            ./code/qt-devices/sdrplay-handler-v3/RspII-handler.h
-            ./code/qt-devices/sdrplay-handler-v3/RspDuo-handler.h
-            ./code/qt-devices/sdrplay-handler-v3/RspDx-handler.h
+            src/qt-devices/sdrplay-handler-v3/sdrplay-handler-v3.h
+            src/qt-devices/sdrplay-handler-v3/sdrplay-commands.h
+            src/qt-devices/sdrplay-handler-v3/include/sdrplay_api.h
+            src/qt-devices/sdrplay-handler-v3/Rsp-device.h
+            src/qt-devices/sdrplay-handler-v3/Rsp1A-handler.h
+            src/qt-devices/sdrplay-handler-v3/RspII-handler.h
+            src/qt-devices/sdrplay-handler-v3/RspDuo-handler.h
+            src/qt-devices/sdrplay-handler-v3/RspDx-handler.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/sdrplay-handler-v3/sdrplay-handler-v3.cpp
-            ./code/qt-devices/sdrplay-handler-v3/Rsp-device.cpp
-            ./code/qt-devices/sdrplay-handler-v3/Rsp1A-handler.cpp
-            ./code/qt-devices/sdrplay-handler-v3/RspII-handler.cpp
-            ./code/qt-devices/sdrplay-handler-v3/RspDuo-handler.cpp
-            ./code/qt-devices/sdrplay-handler-v3/RspDx-handler.cpp
+            src/qt-devices/sdrplay-handler-v3/sdrplay-handler-v3.cpp
+            src/qt-devices/sdrplay-handler-v3/Rsp-device.cpp
+            src/qt-devices/sdrplay-handler-v3/Rsp1A-handler.cpp
+            src/qt-devices/sdrplay-handler-v3/RspII-handler.cpp
+            src/qt-devices/sdrplay-handler-v3/RspDuo-handler.cpp
+            src/qt-devices/sdrplay-handler-v3/RspDx-handler.cpp
             )
 
     add_definitions(-DHAVE_SDRPLAY_V3)
@@ -616,13 +613,13 @@ if (AIRSPY)
 
     set(${objectName}_UIS
             ${${objectName}_UIS}
-            ./code/qt-devices/airspy-handler/airspy-widget.ui
+            src/qt-devices/airspy-handler/airspy-widget.ui
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/airspy-handler/airspy-handler.h
-            ./code/qt-devices/airspy-handler/airspyselect.h
+            src/qt-devices/airspy-handler/airspy-handler.h
+            src/qt-devices/airspy-handler/airspyselect.h
             )
 
     include_directories(
@@ -632,15 +629,15 @@ if (AIRSPY)
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/airspy-handler/airspy-handler.h
-            ./code/qt-devices/airspy-handler/airspyselect.h
-            ./code/qt-devices/airspy-handler/libairspy/airspy.h
+            src/qt-devices/airspy-handler/airspy-handler.h
+            src/qt-devices/airspy-handler/airspyselect.h
+            src/qt-devices/airspy-handler/libairspy/airspy.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/airspy-handler/airspy-handler.cpp
-            ./code/qt-devices/airspy-handler/airspyselect.cpp
+            src/qt-devices/airspy-handler/airspy-handler.cpp
+            src/qt-devices/airspy-handler/airspyselect.cpp
             )
 
     add_definitions(-DHAVE_AIRSPY)
@@ -649,28 +646,28 @@ endif (AIRSPY)
 if (HACKRF)
     set(${objectName}_UIS
             ${${objectName}_UIS}
-            ./code/qt-devices/hackrf-handler/hackrf-widget.ui
+            src/qt-devices/hackrf-handler/hackrf-widget.ui
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/hackrf-handler/hackrf-handler.h
+            src/qt-devices/hackrf-handler/hackrf-handler.h
             )
 
     include_directories(
-            ./code/qt-devices/hackrf-handler
-            ./code/qt-devices/hackrf-handler/libhackrf
+            src/qt-devices/hackrf-handler
+            src/qt-devices/hackrf-handler/libhackrf
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/hackrf-handler/hackrf-handler.h
-            ./code/qt-devices/hackrf-handler/libhackrf/hackrf.h
+            src/qt-devices/hackrf-handler/hackrf-handler.h
+            src/qt-devices/hackrf-handler/libhackrf/hackrf.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/hackrf-handler/hackrf-handler.cpp
+            src/qt-devices/hackrf-handler/hackrf-handler.cpp
             )
 
     add_definitions(-DHAVE_HACKRF)
@@ -679,26 +676,26 @@ endif (HACKRF)
 if (PLUTO)
     set(${objectName}_UIS
             ${${objectName}_UIS}
-            ./code/qt-devices/pluto-handler-2/pluto-widget.ui
+            src/qt-devices/pluto-handler-2/pluto-widget.ui
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/pluto-handler-2/pluto-handler.h
+            src/qt-devices/pluto-handler-2/pluto-handler.h
             )
 
     include_directories(
-            ./code/qt-devices/pluto-handler-2
+            src/qt-devices/pluto-handler-2
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/pluto-handler-2/pluto-handler.h
+            src/qt-devices/pluto-handler-2/pluto-handler.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/pluto-handler-2/pluto-handler.cpp
+            src/qt-devices/pluto-handler-2/pluto-handler.cpp
             )
 
     add_definitions(-DHAVE_PLUTO)
@@ -707,25 +704,25 @@ endif (PLUTO)
 if (LIMESDR)
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/lime-handler/lime-handler.h
-            ./code/qt-devices/lime-handler/lime-widget.h
+            src/qt-devices/lime-handler/lime-handler.h
+            src/qt-devices/lime-handler/lime-widget.h
             )
 
     include_directories(
-            ./code/qt-devices/lime-handler
+            src/qt-devices/lime-handler
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/lime-handler/lime-handler.h
-            ./code/qt-devices/lime-handler/lime-widget.h
-            ./code/qt-devices/lime-handler/LimeSuite.h
-            ./code/qt-devices/lime-handler/LMS7002M_parameters.h
+            src/qt-devices/lime-handler/lime-handler.h
+            src/qt-devices/lime-handler/lime-widget.h
+            src/qt-devices/lime-handler/LimeSuite.h
+            src/qt-devices/lime-handler/LMS7002M_parameters.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/lime-handler/lime-handler.cpp
+            src/qt-devices/lime-handler/lime-handler.cpp
             )
 
     add_definitions(-DHAVE_LIME)
@@ -734,31 +731,31 @@ endif (LIMESDR)
 if (RTLSDR_LINUX)
     set(${objectName}_UIS
             ${${objectName}_UIS}
-            ./code/qt-devices/rtlsdr-handler-linux/rtlsdr-widget.ui
+            src/qt-devices/rtlsdr-handler-linux/rtlsdr-widget.ui
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/rtlsdr-handler-linux/rtl-dongleselect.h
-            ./code/qt-devices/rtlsdr-handler-linux/rtlsdr-handler.h
+            src/qt-devices/rtlsdr-handler-linux/rtl-dongleselect.h
+            src/qt-devices/rtlsdr-handler-linux/rtlsdr-handler.h
             )
 
     include_directories(
-            ./code/qt-devices/rtlsdr-handler-linux/
+            src/qt-devices/rtlsdr-handler-linux/
     )
 
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/rtlsdr-handler-linux/rtlsdr-handler.h
-            ./code/qt-devices/rtlsdr-handler-linux/rtl-dongleselect.h
-            ./code/qt-devices/rtlsdr-handler-linux/rtl-sdr.h
-            ./code/qt-devices/rtlsdr-handler-linux/rtl-sdr_export.h
+            src/qt-devices/rtlsdr-handler-linux/rtlsdr-handler.h
+            src/qt-devices/rtlsdr-handler-linux/rtl-dongleselect.h
+            src/qt-devices/rtlsdr-handler-linux/rtl-sdr.h
+            src/qt-devices/rtlsdr-handler-linux/rtl-sdr_export.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/rtlsdr-handler-linux/rtlsdr-handler.cpp
-            ./code/qt-devices/rtlsdr-handler-linux/rtl-dongleselect.cpp
+            src/qt-devices/rtlsdr-handler-linux/rtlsdr-handler.cpp
+            src/qt-devices/rtlsdr-handler-linux/rtl-dongleselect.cpp
             )
 
     add_definitions(-DHAVE_RTLSDR)
@@ -767,13 +764,13 @@ endif ()
 if (RTLSDR_WIN)
     set(${objectName}_UIS
             ${${objectName}_UIS}
-            ./code/qt-devices/rtlsdr-handler-win/rtlsdr-widget.ui
+            src/qt-devices/rtlsdr-handler-win/rtlsdr-widget.ui
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/rtlsdr-handler-win/rtl-dongleselect.h
-            ./code/qt-devices/rtlsdr-handler-win/rtlsdr-handler.h
+            src/qt-devices/rtlsdr-handler-win/rtl-dongleselect.h
+            src/qt-devices/rtlsdr-handler-win/rtlsdr-handler.h
             )
 
     include_directories(
@@ -782,16 +779,16 @@ if (RTLSDR_WIN)
 
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/rtlsdr-handler-win/rtlsdr-handler.h
-            ./code/qt-devices/rtlsdr-handler-win/rtl-dongleselect.h
-            ./code/qt-devices/rtlsdr-handler-win/rtl-sdr.h
-            ./code/qt-devices/rtlsdr-handler-win/rtl-sdr_export.h
+            src/qt-devices/rtlsdr-handler-win/rtlsdr-handler.h
+            src/qt-devices/rtlsdr-handler-win/rtl-dongleselect.h
+            src/qt-devices/rtlsdr-handler-win/rtl-sdr.h
+            src/qt-devices/rtlsdr-handler-win/rtl-sdr_export.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/rtlsdr-handler-win/rtlsdr-handler.cpp
-            ./code/qt-devices/rtlsdr-handler-win/rtl-dongleselect.cpp
+            src/qt-devices/rtlsdr-handler-win/rtlsdr-handler.cpp
+            src/qt-devices/rtlsdr-handler-win/rtl-dongleselect.cpp
             )
 
     add_definitions(-DHAVE_RTLSDR)
@@ -803,16 +800,16 @@ if (TCP_STREAMER)
     find_package(Qt5Network REQUIRED)
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/output/tcp-streamer.h
+            src/output/tcp-streamer.h
             )
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            ./code/output/tcp-streamer.h
+            src/output/tcp-streamer.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/output/tcp-streamer.cpp
+            src/output/tcp-streamer.cpp
             )
 endif (TCP_STREAMER)
 
@@ -825,18 +822,18 @@ if (QT_AUDIO)
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/output/Qt-audio.h
-            ./code/output/Qt-audiodevice.h
+            src/output/Qt-audio.h
+            src/output/Qt-audiodevice.h
             )
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            ./code/output/Qt-audio.h
-            ./code/output/Qt-audiodevice.h
+            src/output/Qt-audio.h
+            src/output/Qt-audiodevice.h
             )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/output/Qt-audio.cpp
-            ./code/output/Qt-audiodevice.cpp
+            src/output/Qt-audio.cpp
+            src/output/Qt-audiodevice.cpp
             )
 endif (QT_AUDIO)
 
@@ -844,27 +841,27 @@ if (RTL_TCP)
     find_package(Qt5Network REQUIRED)
     set(${objectName}_UIS
             ${${objectName}_UIS}
-            ./code/qt-devices/rtl_tcp/rtl_tcp-widget.ui
+            src/qt-devices/rtl_tcp/rtl_tcp-widget.ui
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/qt-devices/rtl_tcp/rtl_tcp_client.h
+            src/qt-devices/rtl_tcp/rtl_tcp_client.h
             )
 
     include_directories(
-            ./code/qt-devices/rtl_tcp
+            src/qt-devices/rtl_tcp
             ${Qt5Network_INCLUDE_DIRS}
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/qt-devices/rtl_tcp/rtl_tcp_client.h
+            src/qt-devices/rtl_tcp/rtl_tcp_client.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/qt-devices/rtl_tcp/rtl_tcp_client.cpp
+            src/qt-devices/rtl_tcp/rtl_tcp_client.cpp
             )
 
     set(RTLTCP_lib Qt5::Network)
@@ -873,17 +870,17 @@ endif (RTL_TCP)
 
 if (DATA_STREAMER)
     include_directories(
-            ./code/server-thread
+            src/server-thread
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            ./code/server-thread/tcp-server.h
+            src/server-thread/tcp-server.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/server-thread/tcp-server.cpp
+            src/server-thread/tcp-server.cpp
             )
     add_definitions(-DDATA_STREAMER)
 endif (DATA_STREAMER)
@@ -896,22 +893,22 @@ if (USE_PORTAUDIO)
     list(APPEND extraLibs ${PORTAUDIO_LIBRARIES})
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            ./code/output/audiosink.h
+            src/output/audiosink.h
             )
 
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
-            ./code/output/audiosink.h
+            src/output/audiosink.h
             )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            ./code/output/audiosink.cpp
+            src/output/audiosink.cpp
             )
 endif (USE_PORTAUDIO)
 
 QT5_WRAP_UI(UIS ${${objectName}_UIS}
-        ./code/qt-devices/filereader-widget.ui)
+        src/qt-devices/filereader-widget.ui)
 
 include_directories(
         ${SDRPLAY_INCLUDES}
@@ -935,6 +932,7 @@ add_executable(${objectName}
         )
 
 target_link_libraries(${objectName}
+        PRIVATE
         Qt5::Widgets
         Qt5::Network
         Qt5::Xml
@@ -943,8 +941,9 @@ target_link_libraries(${objectName}
         ${FAAD_LIBRARIES}
         ${CMAKE_DL_LIBS}
         )
+
 if (QT_AUDIO)
-    target_link_libraries(${objectName} Qt5::Multimedia)
+    target_link_libraries(${objectName} PRIVATE Qt5::Multimedia)
 endif (QT_AUDIO)
 
 INSTALL(TARGETS ${objectName} DESTINATION ${CMAKE_INSTALL_PREFIX})
@@ -961,3 +960,7 @@ configure_file(
 
 add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+
+add_subdirectory(src/fft)
+target_link_libraries(${objectName} PRIVATE fft)

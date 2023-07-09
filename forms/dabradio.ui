@@ -77,6 +77,10 @@
              <string>&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;
 &lt;p&gt;Select the previous service on the list of services&lt;br /&gt;(the previous one of the first element is the last element of the list).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(28, 113, 216);
+color: rgb(255, 255, 255);</string>
+            </property>
             <property name="text">
              <string>-</string>
             </property>
@@ -86,6 +90,10 @@
            <widget class="QPushButton" name="nextServiceButton">
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head /&gt; &lt;body&gt;&lt;p&gt;Select the next service on the list of services &lt;br /&gt;(the next of the last element is the first element).&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(28, 113, 216);
+color: rgb(255, 255, 255);</string>
             </property>
             <property name="text">
              <string>+</string>
@@ -113,6 +121,10 @@
             <property name="toolTip">
              <string>Select the previous channel.</string>
             </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(145, 65, 172);
+color: rgb(255, 255, 255);</string>
+            </property>
             <property name="text">
              <string>-</string>
             </property>
@@ -122,6 +134,10 @@
            <widget class="QPushButton" name="nextChannelButton">
             <property name="toolTip">
              <string>Select the next channel of the list maintained in the channel selector.</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(145, 65, 172);
+color: rgb(255, 255, 255);</string>
             </property>
             <property name="text">
              <string>+</string>
@@ -137,6 +153,9 @@
       <widget class="newPushButton" name="historyButton">
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The (name:channel) of each service found is stored in the history list. Selecting a service from this list is possible (but only makes sense if the (name:channel) is in reach of the decoder).&lt;/p&gt;&lt;p&gt;Clearing the list is by touching the right hand mouse click&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(246, 211, 45); color: black;</string>
        </property>
        <property name="text">
         <string>Station List</string>
@@ -184,6 +203,16 @@
        </item>
        <item>
         <widget class="QPushButton" name="muteButton">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: red; color: white
+</string>
+         </property>
          <property name="text">
           <string>Mute</string>
          </property>
@@ -282,6 +311,9 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide or  show the configuration-control widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: darkgreen; color: white;</string>
+         </property>
          <property name="text">
           <string>Controls</string>
          </property>
@@ -291,6 +323,9 @@
         <widget class="QPushButton" name="httpButton">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start (or stop) a simple webserver for showing a map on which the locations of the transmitters found are shown&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(230, 97, 0); color: white;</string>
          </property>
          <property name="text">
           <string>Open Map</string>
@@ -302,6 +337,9 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a scan. The scanMode can be selected in the configuration-control widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: blue; color: white</string>
+         </property>
          <property name="text">
           <string>Scan</string>
          </property>
@@ -311,6 +349,9 @@
         <widget class="QPushButton" name="detailButton">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide a widget showing details of the currently selected service&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: yellow; color: black</string>
          </property>
          <property name="text">
           <string>Details</string>
@@ -331,11 +372,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>QPushButton</class>
-   <extends>QPushButton</extends>
-   <header>smallpushbutton.h</header>
-  </customwidget>
   <customwidget>
    <class>smallComboBox</class>
    <extends>QComboBox</extends>
