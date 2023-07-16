@@ -6,4 +6,4 @@ Output
 CMakeLists.txt.user
 .idea/
 build*/
-
+/exportToHTML/

@@ -15,3 +15,5 @@ For building there is one bigger difference to Qt-DAB: I maintain only one GUI v
 I will also not provide any precompiled setup packages, yet.
 
 I will do a more detailed description here later.
+
+![screenshot.png](screenshot.png)
