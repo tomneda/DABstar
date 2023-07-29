@@ -12,6 +12,7 @@
         <file>res/DABplusLogoWhite.png</file>
         <file>res/DABplusLogoBW.png</file>
         <file>res/DABplusLogoWB.png</file>
+        <file>res/DABplusLogoWBsoft.png</file>
         <file>./AUTHORS</file>
         <file>./COPYING</file>
     </qresource>
