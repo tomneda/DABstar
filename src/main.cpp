@@ -96,7 +96,7 @@ int main(int argc, char ** argv)
 //  QString locale = QLocale::system().name();
 //  qDebug() << "main:" << "Detected system language" << locale;
 //  setTranslator(&theTranslator, locale);
-  a.setWindowIcon(QIcon(":icon.png"));
+  a.setWindowIcon(QIcon(":res/icon3.png"));
 
   MyRadioInterface = new RadioInterface(dabSettings, presetsFileName, freqExtension, error_report, dataPort, clockPort, fmFrequency, nullptr);
   MyRadioInterface->show();
