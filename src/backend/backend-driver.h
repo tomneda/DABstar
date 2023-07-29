@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -21,28 +20,26 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__BACKEND_DRIVER__
-#define	__BACKEND_DRIVER__
+#ifndef  __BACKEND_DRIVER__
+#define  __BACKEND_DRIVER__
 
-#include	<vector>
-#include	<utility>
-#include	"dab-constants.h"
-#include	"frame-processor.h"
-#include	"radio.h"
+#include  <vector>
+#include  <utility>
+#include  "dab-constants.h"
+#include  "frame-processor.h"
+#include  "radio.h"
 
 
-class	backendDriver {
+class BackendDriver
+{
 public:
-	backendDriver	(RadioInterface *,
-	                 descriptorType *,
-	                 RingBuffer<int16_t> *,
-	                 RingBuffer<uint8_t> *,
-	                 RingBuffer<uint8_t> *,
-	                 FILE *);
-	~backendDriver();
-void	addtoFrame	(std::vector<uint8_t> outData);
+  BackendDriver(RadioInterface *, descriptorType *, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *);
+  ~BackendDriver();
+
+  void addtoFrame(std::vector<uint8_t> outData);
+
 private:
-	frameProcessor	* theProcessor;
+  frameProcessor * theProcessor;
 };
 
 #endif
