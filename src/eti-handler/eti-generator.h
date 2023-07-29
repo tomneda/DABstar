@@ -47,7 +47,7 @@
 #include	"ringbuffer.h"
 #include	"fic-handler.h"
 #include	"dab-params.h"
-#include  "Protection.h"
+#include  "protection.h"
 
 class	RadioInterface;
 

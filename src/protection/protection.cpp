@@ -23,7 +23,7 @@
  *	Simple base class for combining uep and eep deconvolvers
  */
 #include  <vector>
-#include  "Protection.h"
+#include  "protection.h"
 
 Protection::Protection(int16_t iBitRate) :
   ViterbiSpiral(24 * iBitRate, true),
