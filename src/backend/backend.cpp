@@ -124,7 +124,7 @@ void Backend::processSegment(int16_t * Data)
 
   for (i = 0; i < fragmentSize; i++)
   {
-    tempX[i] = interleaveData[(interleaverIndex + interleaveMap[i & 017]) & 017][i];
+    tempX[i] = interleaveData[(interleaverIndex + interleaveMap[i & 0x0F]) & 0x0F][i];
     interleaveData[interleaverIndex][i] = Data[i];
   }
 

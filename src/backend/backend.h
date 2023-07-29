@@ -66,7 +66,7 @@ public:
   int borf;
   FILE * dump;
 private:
-  backendDeconvolver deconvolver;
+  BackendDeconvolver deconvolver;
   std::vector<uint8_t> outV;
   backendDriver driver;
 #ifdef  __THREADED_BACKEND

@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2019
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,29 +19,30 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include	"backend-deconvolver.h"
-#include        "eep-protection.h"
-#include        "uep-protection.h"
+#include  "backend-deconvolver.h"
+#include  "eep-protection.h"
+#include  "uep-protection.h"
 
 
-	backendDeconvolver::backendDeconvolver (descriptorType *d) {
-        if (d -> shortForm) 
-	   protectionHandler    = new uep_protection (d -> bitRate,
-                                                      d -> protLevel);
-        else 
-           protectionHandler    = new eep_protection (d -> bitRate,
-                                                      d -> protLevel);
+BackendDeconvolver::BackendDeconvolver(descriptorType * d)
+{
+  if (d->shortForm)
+  {
+    protectionHandler = new UepProtection(d->bitRate, d->protLevel);
+  }
+  else
+  {
+    protectionHandler = new EepProtection(d->bitRate, d->protLevel);
+  }
 }
 
-	backendDeconvolver::~backendDeconvolver() {
-	delete protectionHandler;
+BackendDeconvolver::~BackendDeconvolver()
+{
+  delete protectionHandler;
 }
 
-void	backendDeconvolver::deconvolve	(int16_t	*rawBits_in,
-	                                 int32_t	length,
-	                                 uint8_t	*outData) {
-	   protectionHandler -> deconvolve (rawBits_in,
-	                                    length,
-	                                    outData);
+void BackendDeconvolver::deconvolve(int16_t * rawBits_in, int32_t length, uint8_t * outData)
+{
+  protectionHandler->deconvolve(rawBits_in, length, outData);
 }
 

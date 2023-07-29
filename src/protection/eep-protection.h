@@ -18,22 +18,20 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-
 #ifndef  EEP_PROTECTION_H
 #define  EEP_PROTECTION_H
 
 #include  <vector>
 #include  <cstdio>
 #include  <cstdint>
-#include  "protection.h"
+#include  "Protection.h"
 
-class eep_protection : public protection
+class EepProtection : public Protection
 {
 public:
-  eep_protection(int16_t, int16_t);
-  ~eep_protection();
-  bool deconvolve(int16_t *, int32_t, uint8_t *);
+  EepProtection(int16_t, int16_t);
+  ~EepProtection() override;
+  bool deconvolve(int16_t *, int32_t, uint8_t *) override;
 };
 
 #endif

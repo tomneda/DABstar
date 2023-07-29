@@ -59,18 +59,22 @@
 #endif
 
 
-static uint8_t Partab[] = {
-  0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0,
-  0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1,
-  0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1,
-  1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0,
-  0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1,
-  1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };
+static const uint8_t PARTAB[256] =
+{
+  0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+  1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+  1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+  0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+  1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+  0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+  0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+  1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0
+};
 
-//
-//	One could create the table above, i.e. a 256 entry
-//	odd-parity lookup table by the following function
-//	It is now precomputed
+
+
+#if 0
+// One could create the table above, i.e. a 256 entry odd-parity lookup table by the following function It is now precomputed
 void viterbiSpiral::partab_init(void)
 {
   int16_t i, cnt, ti;
@@ -90,17 +94,17 @@ void viterbiSpiral::partab_init(void)
     Partab[i] = cnt & 1;
   }
 }
+#endif
 
-int viterbiSpiral::parity(int x)
+int ViterbiSpiral::parity(int x)
 {
   /* Fold down to one byte */
   x ^= (x >> 16);
   x ^= (x >> 8);
-  return Partab[x];
-  //	return parityb(x);
+  return PARTAB[x];
 }
 
-static inline void renormalize(COMPUTETYPE * X, COMPUTETYPE threshold)
+static inline void renormalize(COMPUTETYPE * const X, const COMPUTETYPE threshold)
 {
   int32_t i;
 
@@ -127,7 +131,7 @@ static inline void renormalize(COMPUTETYPE * X, COMPUTETYPE threshold)
 //	There are (in mode 1) 3 ofdm blocks, giving 4 FIC blocks
 //	There all have a predefined length. In that case we use the
 //	"fast" (i.e. spiral) code, otherwise we use the generic code
-viterbiSpiral::viterbiSpiral(int16_t wordlength, bool spiral)
+ViterbiSpiral::ViterbiSpiral(int16_t wordlength, bool spiral)
 {
   int polys[RATE] = POLYS;
   int16_t i, state;
@@ -137,7 +141,7 @@ viterbiSpiral::viterbiSpiral(int16_t wordlength, bool spiral)
 
   frameBits = wordlength;
   this->spiral = spiral;
-  //	partab_init	();
+  //partab_init();
 
   // B I G N O T E	The spiral code uses (wordLength + (K - 1) * sizeof ...
   // However, the application then crashes, so something is not OK
@@ -178,7 +182,7 @@ viterbiSpiral::viterbiSpiral(int16_t wordlength, bool spiral)
 }
 
 
-viterbiSpiral::~viterbiSpiral(void)
+ViterbiSpiral::~ViterbiSpiral(void)
 {
 #ifdef  __MINGW32__
   _aligned_free (vp. decisions);
@@ -227,7 +231,7 @@ static inline uint8_t getbit(uint8_t v, int32_t o)
 //	Note that our DAB environment maps the softbits to -127 .. 127
 //	we have to map that onto 0 .. 255
 
-void viterbiSpiral::deconvolve(int16_t * input, uint8_t * output)
+void ViterbiSpiral::deconvolve(int16_t * input, uint8_t * output)
 {
   uint32_t i;
 
@@ -263,7 +267,7 @@ void viterbiSpiral::deconvolve(int16_t * input, uint8_t * output)
 }
 
 /* C-language butterfly */
-void viterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, struct v * vp, decision_t * d)
+void ViterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, struct v * vp, decision_t * d)
 {
   int32_t j, decision0, decision1;
   COMPUTETYPE metric, m0, m1, m2, m3;
@@ -294,7 +298,7 @@ void viterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, struct v * vp, decisi
  * Note that nbits is the number of decoded data bits, not the number
  * of symbols!
  */
-void viterbiSpiral::update_viterbi_blk_GENERIC(struct v * vp, COMPUTETYPE * syms, int16_t nbits)
+void ViterbiSpiral::update_viterbi_blk_GENERIC(struct v * vp, COMPUTETYPE * syms, int16_t nbits)
 {
   decision_t * d = (decision_t *)vp->decisions;
   int32_t s, i;
@@ -331,7 +335,7 @@ void FULL_SPIRAL_no_sse(int, COMPUTETYPE * Y, COMPUTETYPE * X, COMPUTETYPE * sym
 
 }
 
-void viterbiSpiral::update_viterbi_blk_SPIRAL(struct v * vp, COMPUTETYPE * syms, int16_t nbits)
+void ViterbiSpiral::update_viterbi_blk_SPIRAL(struct v * vp, COMPUTETYPE * syms, int16_t nbits)
 {
   decision_t * d = (decision_t *)vp->decisions;
   int32_t s;
@@ -353,7 +357,7 @@ void viterbiSpiral::update_viterbi_blk_SPIRAL(struct v * vp, COMPUTETYPE * syms,
 
 //
 /* Viterbi chainback */
-void viterbiSpiral::chainback_viterbi(struct v * vp, uint8_t * data, /* Decoded output data */
+void ViterbiSpiral::chainback_viterbi(struct v * vp, uint8_t * data, /* Decoded output data */
                                       int16_t nbits, /* Number of data bits */
                                       uint16_t endstate)
 { /*Terminal encoder state */
@@ -380,7 +384,7 @@ void viterbiSpiral::chainback_viterbi(struct v * vp, uint8_t * data, /* Decoded 
 }
 
 /* Initialize Viterbi decoder for start of new frame */
-void viterbiSpiral::init_viterbi(struct v * p, int16_t starting_state)
+void ViterbiSpiral::init_viterbi(struct v * p, int16_t starting_state)
 {
   struct v * vp = p;
   int32_t i;
