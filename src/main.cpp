@@ -96,7 +96,7 @@ int main(int argc, char ** argv)
 //  QString locale = QLocale::system().name();
 //  qDebug() << "main:" << "Detected system language" << locale;
 //  setTranslator(&theTranslator, locale);
-  a.setWindowIcon(QIcon(":icon.png"));
+  QApplication::setWindowIcon(QIcon(":res/DABplusLogoWBsoft.png")); // used for all dialog windows except main window (is overwritten)
 
   MyRadioInterface = new RadioInterface(dabSettings, presetsFileName, freqExtension, error_report, dataPort, clockPort, fmFrequency, nullptr);
   MyRadioInterface->show();

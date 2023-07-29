@@ -53,7 +53,7 @@ public:
   void get_fibBits(uint8_t *);
 private:
   DabParams params;
-  viterbiSpiral myViterbi;
+  ViterbiSpiral myViterbi;
   uint8_t bitBuffer_out[768];
   int16_t ofdm_input[2304];
   bool punctureTable[3072 + 24];

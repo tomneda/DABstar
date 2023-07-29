@@ -65,7 +65,7 @@ bool	fibValid  [16];
 //
 //	For each subchannel we create a
 //	deconvoluter and a descramble table up front
-protection *protTable [64]	= {nullptr};
+Protection *protTable [64]	= { nullptr};
 uint8_t	*descrambler [64]	= {nullptr};
 
 int16_t	temp [55296];
@@ -355,11 +355,11 @@ std::vector<parameter *> theParameters;
 
 	      if (protTable [i] == nullptr) {
 	         if (t -> uepFlag)
-	            protTable [i] = new uep_protection (t -> bitRate,
-	                                                    t -> protLevel);
+	            protTable [i] = new UepProtection (t-> bitRate,
+                                                 t -> protLevel);
 	         else
-	            protTable [i] = new eep_protection (t -> bitRate,
-	                                                    t -> protLevel);
+	            protTable [i] = new EepProtection (t-> bitRate,
+                                                 t -> protLevel);
 
 	         memset (shiftRegister, 1, 9);
 	         descrambler [i] = new uint8_t [24 * t -> bitRate];
@@ -381,8 +381,8 @@ std::vector<parameter *> theParameters;
 }
 
 /*static*/ void	process_subCh (int nr, parameter *p,
-	                       protection *prot,
-	                       uint8_t *desc) {
+                                Protection *prot,
+                                uint8_t *desc) {
 	std::unique_ptr<uint8_t[]> outVector{ new uint8_t[24 * p->bitRate] };
 	if (!outVector) {
 	   std::cerr << "process_subCh - alloc fail";
@@ -411,8 +411,8 @@ int	j, k;
 }
 
 void	etiGenerator::process_subCh (int nr, parameter *p,
-	                             protection *prot,
-	                             uint8_t *desc) {
+                                   Protection *prot,
+                                   uint8_t *desc) {
 	std::unique_ptr<uint8_t[]> outVector { new uint8_t[24 * p->bitRate] };
 	if (!outVector) {
 	   std::cerr << "process_subCh - alloc fail";

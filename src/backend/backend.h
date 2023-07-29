@@ -45,16 +45,18 @@ class RadioInterface;
 class	Backend:public QThread
 {
 #else
+
 class Backend
 {
 #endif
 public:
   Backend(RadioInterface * mr, descriptorType * d, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *, int);
   ~Backend();
+
   int32_t process(int16_t *, int16_t);
   void stopRunning();
-  //
-  //	we need sometimes to access the key parameters for decoding
+
+  // we need sometimes to access the key parameters for decoding
   int serviceId;
   int startAddr;
   int Length;
@@ -65,18 +67,19 @@ public:
   QString serviceName;
   int borf;
   FILE * dump;
+
 private:
-  backendDeconvolver deconvolver;
+  BackendDeconvolver deconvolver;
   std::vector<uint8_t> outV;
-  backendDriver driver;
+  BackendDriver driver;
 #ifdef  __THREADED_BACKEND
-  void	run();
-    atomic<bool>	running;
-    QSemaphore	freeSlots;
-    QSemaphore	usedSlots;
-    std::vector<int16_t>	theData [NUMBER_SLOTS];
-    int16_t		nextIn;
-    int16_t		nextOut;
+  void run();
+  atomic<bool> running;
+  QSemaphore freeSlots;
+  QSemaphore usedSlots;
+  std::vector<int16_t> theData[NUMBER_SLOTS];
+  int16_t nextIn;
+  int16_t nextOut;
 #endif
   void processSegment(int16_t * Data);
   RadioInterface * radioInterface;

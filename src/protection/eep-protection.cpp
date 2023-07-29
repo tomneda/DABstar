@@ -31,8 +31,8 @@
   *	equal error protection, bitRate and protLevel
   *	define the puncturing table
   */
-eep_protection::eep_protection(int16_t bitRate, int16_t protLevel) :
-  protection(bitRate, protLevel)
+EepProtection::EepProtection(int16_t bitRate, int16_t protLevel) :
+  Protection(bitRate)
 {
   int16_t viterbiCounter = 0;
   int16_t L1 = 0, L2 = 0;
@@ -157,11 +157,11 @@ eep_protection::eep_protection(int16_t bitRate, int16_t protLevel) :
   }
 }
 
-eep_protection::~eep_protection()
+EepProtection::~EepProtection()
 {
 }
 
-bool eep_protection::deconvolve(int16_t * v, int32_t size, uint8_t * outBuffer)
+bool EepProtection::deconvolve(int16_t * v, int32_t size, uint8_t * outBuffer)
 {
 
   int16_t inputCounter = 0;
@@ -176,7 +176,7 @@ bool eep_protection::deconvolve(int16_t * v, int32_t size, uint8_t * outBuffer)
     }
   }
 
-  viterbiSpiral::deconvolve(viterbiBlock.data(), outBuffer);
+  ViterbiSpiral::deconvolve(viterbiBlock.data(), outBuffer);
   return true;
 }
 

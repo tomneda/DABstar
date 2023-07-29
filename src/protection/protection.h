@@ -27,13 +27,13 @@
 #include  <vector>
 #include  "viterbi-spiral.h"
 
-extern uint8_t PI_X[];
+//extern uint8_t PI_X[];
 
-class protection : public viterbiSpiral
+class Protection : public ViterbiSpiral
 {
 public:
-  protection(int16_t, int16_t);
-  virtual         ~protection();
+  Protection(int16_t);
+  virtual ~Protection() = default;
   virtual bool deconvolve(int16_t *, int32_t, uint8_t *);
 protected:
   int16_t bitRate;

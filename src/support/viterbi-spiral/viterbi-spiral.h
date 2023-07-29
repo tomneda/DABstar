@@ -42,14 +42,14 @@ struct v
   decision_t * decisions;   /* decisions */
 };
 
-class viterbiSpiral
+class ViterbiSpiral
 {
 public:
-  viterbiSpiral(int16_t, bool spiral = false);
-  ~viterbiSpiral(void);
+  ViterbiSpiral(int16_t, bool spiral = false);
+  ~ViterbiSpiral(void);
   void deconvolve(int16_t *, uint8_t *);
-private:
 
+private:
   bool spiral;
   struct v vp;
   COMPUTETYPE Branchtab[NUMSTATES / 2 * RATE] __attribute__ ((aligned (16)));

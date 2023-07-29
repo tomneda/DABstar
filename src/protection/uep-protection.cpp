@@ -141,8 +141,8 @@ static int16_t findIndex(int16_t bitRate, int16_t protLevel)
   *	The bitRate and the protectionLevel determine the 
   *	depuncturing scheme.
   */
-uep_protection::uep_protection(int16_t bitRate, int16_t protLevel) :
-  protection(bitRate, protLevel)
+UepProtection::UepProtection(int16_t bitRate, int16_t protLevel) :
+  Protection(bitRate)
 {
   int16_t index;
   int16_t viterbiCounter = 0;
@@ -250,11 +250,11 @@ uep_protection::uep_protection(int16_t bitRate, int16_t protLevel) :
   }
 }
 
-uep_protection::~uep_protection()
+UepProtection::~UepProtection()
 {
 }
 
-bool uep_protection::deconvolve(int16_t * v, int32_t size, uint8_t * outBuffer)
+bool UepProtection::deconvolve(int16_t * v, int32_t size, uint8_t * outBuffer)
 {
   int16_t inputCounter = 0;
   //	clear the bits in the viterbiBlock,
@@ -269,6 +269,6 @@ bool uep_protection::deconvolve(int16_t * v, int32_t size, uint8_t * outBuffer)
       viterbiBlock[i] = v[inputCounter++];
     }
   }
-  viterbiSpiral::deconvolve(viterbiBlock.data(), outBuffer);
+  ViterbiSpiral::deconvolve(viterbiBlock.data(), outBuffer);
   return true;
 }

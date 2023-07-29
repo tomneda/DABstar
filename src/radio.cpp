@@ -277,6 +277,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
+
+  setWindowIcon(QIcon(":res/DABplusLogoWB.png"));
+
   //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
   setWindowTitle(PRJ_NAME);
   int x = dabSettings->value("mainWidget-x", 100).toInt();

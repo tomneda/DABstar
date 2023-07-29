@@ -47,7 +47,7 @@
 #include	"ringbuffer.h"
 #include	"fic-handler.h"
 #include	"dab-params.h"
-#include	"protection.h"
+#include  "protection.h"
 
 class	RadioInterface;
 
@@ -60,7 +60,7 @@ typedef	struct {
         int     bitRate;
         int     protLevel;
 	uint8_t	*dispersionVector;
-        protection *theDeconvolver;
+        Protection *theDeconvolver;
 } protDesc;
 
 class etiGenerator {
@@ -93,7 +93,7 @@ private:
 	int32_t		process_CIF		(int16_t *,
 	                                         uint8_t *, int32_t);
 	void		process_subCh		(int, parameter *,
-	                                         protection *prot, uint8_t *);
+                            Protection *prot, uint8_t *);
 
 	void		postProcess		(uint8_t *, int32_t);
 };

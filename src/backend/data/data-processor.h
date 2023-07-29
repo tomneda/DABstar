@@ -37,13 +37,13 @@ class	eep_deconvolve;
 class	virtual_dataHandler;
 class	packetdata;
 
-class	dataProcessor:public QObject, public frameProcessor {
+class	DataProcessor: public QObject, public frameProcessor {
 Q_OBJECT
 public:
-	dataProcessor	(RadioInterface *mr,
-	                 packetdata	*pd,
-	                 RingBuffer<uint8_t>	*dataBuffer);
-	~dataProcessor();
+	DataProcessor	(RadioInterface *mr,
+                  packetdata	*pd,
+                  RingBuffer<uint8_t>	*dataBuffer);
+	~DataProcessor();
 void	addtoFrame	(std::vector<uint8_t>);
 private:
 	RadioInterface	*myRadioInterface;

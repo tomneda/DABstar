@@ -1,3 +1,5 @@
+![DABLogo.png](res/DABLogo.png)
+
 # DABstar
 
 [DABstar](https://github.com/tomneda/DABstar) is derived from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab)
@@ -16,4 +18,4 @@ I will also not provide any precompiled setup packages, yet.
 
 I will do a more detailed description here later.
 
-![screenshot.png](screenshot.png)
+![screenshot.png](res/screenshot.png)
