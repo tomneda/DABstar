@@ -160,7 +160,7 @@ include_directories(
         ${QT5Widgets_INCLUDES}
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
-        src/helpers/pauzeslide
+        src/helpers/pauseslide
         src/support
         src
         src/ofdm
@@ -193,7 +193,7 @@ include_directories(
 
 set(${objectName}_HDRS
         src/radio.h
-        src/pauzeslide/pauzeslide.h
+        src/helpers/pauseslide/pause_slide.h
         src/dab-processor.h
         src/eti-handler/eti-generator.h
         src/dab-constants.h
@@ -299,6 +299,7 @@ set(${objectName}_SRCS
         ${${objectName}_SRCS}
         src/main.cpp
         src/radio.cpp
+        src/helpers/pauseslide/pause_slide.cpp
         src/support/techdata.cpp
         src/dab-processor.cpp
         src/eti-handler/eti-generator.cpp

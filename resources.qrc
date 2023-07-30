@@ -1,19 +1,19 @@
 <RCC>
-    <qresource prefix="/">
-        <file>res/icon1.png</file>
-        <file>res/icon2.png</file>
-        <file>res/icon3.png</file>
-        <file>res/DABLogo.png</file>
-        <file>res/DABLogoInv.png</file>
-        <file>res/DABLogoInvCrop.png</file>
-        <file>res/DABplusLogo.png</file>
-        <file>res/DABplusLogoCW.png</file>
-        <file>res/DABplusLogoBlack.png</file>
-        <file>res/DABplusLogoWhite.png</file>
-        <file>res/DABplusLogoBW.png</file>
-        <file>res/DABplusLogoWB.png</file>
-        <file>res/DABplusLogoWBsoft.png</file>
-        <file>./AUTHORS</file>
-        <file>./COPYING</file>
-    </qresource>
+  <qresource prefix="/">
+    <file>res/icon1.png</file>
+    <file>res/icon2.png</file>
+    <file>res/icon3.png</file>
+    <file>res/DABLogo.png</file>
+    <file>res/DABLogoInv.png</file>
+    <file>res/DABLogoInvCrop.png</file>
+    <file>res/DABplusLogo.png</file>
+    <file>res/DABplusLogoCW.png</file>
+    <file>res/DABplusLogoBlack.png</file>
+    <file>res/DABplusLogoWhite.png</file>
+    <file>res/DABplusLogoBW.png</file>
+    <file>res/DABplusLogoWB.png</file>
+    <file>res/DABplusLogoWBsoft.png</file>
+    <file>./AUTHORS</file>
+    <file>./COPYING</file>
+  </qresource>
 </RCC>
