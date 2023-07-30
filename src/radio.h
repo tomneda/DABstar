@@ -250,7 +250,7 @@ private:
   bool isMember(const std::vector<serviceId> &, serviceId);
   std::vector<serviceId> insert(std::vector<serviceId> &, serviceId, int);
 
-  void show_pauzeSlide();
+  void show_pause_slide();
   QTimer displayTimer;
   QTimer channelTimer;
   QTimer presetTimer;

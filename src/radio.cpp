@@ -108,7 +108,7 @@
 #include  "time-table.h"
 
 #include  "device-exceptions.h"
-#include  "pauzeslide.h"
+#include  "pause_slide.h"
 
 #ifdef  __MINGW32__
 #include <windows.h>
@@ -533,7 +533,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   connect(configWidget.eti_activeSelector, SIGNAL (stateChanged(int)), this, SLOT (handle_eti_activeSelector(int)));
 
   channel.etiActive = false;
-  show_pauzeSlide();
+  show_pause_slide();
 
   //	and start the timer(s)
   //	The displaytimer is there to show the number of
@@ -3184,7 +3184,7 @@ void RadioInterface::stopService(dabService & s)
       break;
     }
   }
-  show_pauzeSlide();
+  show_pause_slide();
   cleanScreen();
 }
 
@@ -3570,7 +3570,7 @@ void RadioInterface::stopChannel()
   usleep(1000);
   theTechWindow->cleanUp();
 
-  show_pauzeSlide();
+  show_pause_slide();
   presetTimer.stop();
   channelTimer.stop();
   channel.cleanChannel();
@@ -4404,19 +4404,12 @@ void RadioInterface::handle_onTop(int d)
   dabSettings->setValue("onTop", onTop ? 1 : 0);
 }
 
-void RadioInterface::show_pauzeSlide()
+void RadioInterface::show_pause_slide()
 {
   QPixmap p;
-  QByteArray theSlide;
-
-  theSlide.resize(sizeof(pauzeSlide));
-  for (uint32_t i = 0; i < sizeof(pauzeSlide); i++)
-  {
-    theSlide[i] = pauzeSlide[i];
-  }
-  p.loadFromData(theSlide, "png");
-  int w = 400;
-  int h = 2 * w / 3.5;
+  p.loadFromData(QByteArray::fromRawData(reinterpret_cast<const char *>(PAUSESLIDE), PAUSESLIDE_SIZE), "png");  // ignore obsolete last zero in data
+  int w = 320;
+  int h = 240;
   pictureLabel->setAlignment(Qt::AlignCenter);
   pictureLabel->setPixmap(p.scaled(w, h, Qt::KeepAspectRatio));
   pictureLabel->show();
