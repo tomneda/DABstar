@@ -1066,7 +1066,7 @@ void RadioInterface::save_MOTObject(QByteArray & result, QString name)
 }
 
 //	MOT slide, to show
-void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, QString pictureName, int dirs)
+void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, const QString & pictureName, int dirs)
 {
   const char * type;
   if (!running.load() || (pictureName == QString("")))
@@ -1126,10 +1126,30 @@ void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, QString p
 
   QPixmap p;
   p.loadFromData(data, type);
-  int w = 400;
-  int h = 2 * w / 3.5;
+  write_picture(p);
+}
+
+void RadioInterface::write_picture(const QPixmap & iPixMap) const
+{
+  //constexpr int w = 400;
+  //constexpr int h = 2 * w / 3.5;
+  constexpr int w = 320;
+  constexpr int h = 240;
+
+  // typical the MOT size is 320 : 240 , so only scale for other sizes
+  if (iPixMap.width() != w || iPixMap.height() != h)
+  {
+    qDebug("MOT w: %d, h: %d (scale)", iPixMap.width(), iPixMap.height());
+    pictureLabel->setPixmap(iPixMap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+  }
+  else
+  {
+    qDebug("MOT w: %d, h: %d", iPixMap.width(), iPixMap.height());
+    pictureLabel->setPixmap(iPixMap);
+  }
+  //pictureLabel->setFixedWidth(w+20);
+  //pictureLabel->setFixedHeight(h+20);
   pictureLabel->setAlignment(Qt::AlignCenter);
-  pictureLabel->setPixmap(p.scaled(w, h, Qt::KeepAspectRatio));
   pictureLabel->show();
 }
 
@@ -4408,11 +4428,7 @@ void RadioInterface::show_pause_slide()
 {
   QPixmap p;
   p.loadFromData(QByteArray::fromRawData(reinterpret_cast<const char *>(PAUSESLIDE), PAUSESLIDE_SIZE), "png");  // ignore obsolete last zero in data
-  int w = 320;
-  int h = 240;
-  pictureLabel->setAlignment(Qt::AlignCenter);
-  pictureLabel->setPixmap(p.scaled(w, h, Qt::KeepAspectRatio));
-  pictureLabel->show();
+  write_picture(p);
 }
 
 void RadioInterface::handle_portSelector()

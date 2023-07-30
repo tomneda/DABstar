@@ -306,7 +306,7 @@ private:
   void save_MOTObject(QByteArray &, QString);
 
   void save_MOTtext(QByteArray &, int, QString);
-  void show_MOTlabel(QByteArray &, int, QString, int);
+  void show_MOTlabel(QByteArray & data, int contentType, const QString & pictureName, int dirs);
 
   enum direction
   {
@@ -325,6 +325,7 @@ private:
   bool transmitterTags_local;
   void colorServiceName(const QString & s, QColor color, int fS, bool);
   void write_warning_message(const QString & iMsg);
+  void write_picture(const QPixmap & iPixMap) const;
 
 signals:
   void set_newChannel(int);
