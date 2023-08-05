@@ -23,9 +23,7 @@
 #include  <QSettings>
 #include  <QMessageBox>
 #include  <QFileDialog>
-#include  <QDebug>
 #include  <QDateTime>
-#include  <QFile>
 #include  <QStringList>
 #include  <QStringListModel>
 #include  <QMouseEvent>
@@ -33,16 +31,13 @@
 #include  <fstream>
 #include  "dab-constants.h"
 #include  "mot-content-types.h"
-#include  <iostream>
 #include  <numeric>
 #include  <unistd.h>
 #include  <vector>
 #include  "radio.h"
-#include  "band-handler.h"
 #include  "rawfiles.h"
 #include  "wavfiles.h"
 #include  "xml-filereader.h"
-#include  "color-selector.h"
 #include  "dab-tables.h"
 #include  "ITU_Region_1.h"
 #include  "coordinates.h"
@@ -101,9 +96,6 @@
 #include	"elad-handler.h"
 #endif
 
-#include  "spectrum-viewer.h"
-#include  "correlation-viewer.h"
-#include  "tii-viewer.h"
 #include  "history-handler.h"
 #include  "time-table.h"
 
@@ -2824,8 +2816,6 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.skipList_button, SIGNAL (clicked()), this, SLOT (handle_skipList_button()));
   disconnect(configWidget.skipFile_button, SIGNAL (clicked()), this, SLOT (handle_skipFile_button()));
 }
-//
-#include <QCloseEvent>
 
 void RadioInterface::closeEvent(QCloseEvent * event)
 {

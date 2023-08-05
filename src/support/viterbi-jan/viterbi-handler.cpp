@@ -22,7 +22,6 @@
  */
 
 #include	"viterbi-handler.h"
-#include	<cstdio>
 
 #define	K	7
 #define	Poly1	0133

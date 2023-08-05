@@ -23,7 +23,6 @@
 #include  "fic-handler.h"
 #include  "radio.h"
 #include  "protTables.h"
-#include  "dab-params.h"
 
 //	The 3072 bits of the serial motherword shall be split into
 //	24 blocks of 128 bits each.

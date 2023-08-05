@@ -66,7 +66,6 @@
 class QSettings;
 class deviceHandler;
 class AudioBase;
-class common_fft;
 class historyHandler;
 class timeTableHandler;
 class audioDisplay;

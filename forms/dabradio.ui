@@ -58,7 +58,7 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Presets are short cuts to services - possibly in ensembles in different channels - that are obtained by clicking with the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;right &lt;/span&gt;mouse button on the name of the service &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;in the list of services when selected&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Removing a name from the presets is by selecting the service in this combobox and touching the right hand mouse button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Presets are shortcuts to services - possibly in ensembles in different channels - that are obtained by clicking with the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;right &lt;/span&gt;mouse button on the name of the service &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;in the list of services when selected&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Removing a name from the presets is by selecting the service in this combobox and touching the right hand mouse button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <item>
              <property name="text">

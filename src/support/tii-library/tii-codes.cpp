@@ -22,12 +22,9 @@
 #include  <cstdio>
 #include  <QDir>
 #include  <QString>
-#include  <QStringList>
 #include  <math.h>
 #include  "dab-constants.h"
 #include  "tii-codes.h"
-#include  "ITU_Region_1.h"
-#include  <QSettings>
 #include  <QMessageBox>
 
 enum

@@ -21,8 +21,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include <include/mm_malloc.h>
 //#include <pmmintrin.h>
 #include <emmintrin.h>
-#include <xmmintrin.h>
-#include <mmintrin.h>
+//#include <xmmintrin.h>
+//#include <mmintrin.h>
 #include	"spiral-sse.h"
 void init_FULL_SPIRAL() {
 }

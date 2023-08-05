@@ -24,7 +24,6 @@
 //	up to 8 bits symsize
 
 #include  "galois.h"
-#include  <cstdio>
 
 galois::galois(uint16_t symsize, uint16_t gfpoly)
 {

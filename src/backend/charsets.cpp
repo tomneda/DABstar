@@ -24,7 +24,6 @@
  *	all rights acknowledged
  */
 #include "charsets.h"
-#include	<cstdint>
 /**
  * This table maps "EBU Latin" charset to corresponding
  * Unicode (UCS2-encoded) characters.

@@ -3,7 +3,6 @@
  * Copyright 2002 Phil Karn, KA9Q
  * May be used under the terms of the GNU General Public License (GPL)
  */
-#include  <cstdio>
 #include  "reed-solomon.h"
 #include  <cstring>
 

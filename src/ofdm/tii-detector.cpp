@@ -21,8 +21,6 @@
  */
 
 #include  "tii-detector.h"
-#include  <cstdio>
-#include  <cinttypes>
 #include  <cstring>
 #include  "fft/fft-complex.h"
 

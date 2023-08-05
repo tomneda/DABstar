@@ -23,19 +23,17 @@
 #include  "audiosink.h"
 #include  <cstdio>
 #include  <QDebug>
-#include  <QMessageBox>
 #include  <QComboBox>
 
 AudioSink::AudioSink(int16_t latency) :
   _O_Buffer(8 * 32768)
 {
   int32_t i;
-  this->latency = latency;
   if (latency <= 0)
   {
     latency = 1;
   }
-
+  this->latency = latency;
   this->CardRate = 48000;
   portAudio = false;
   writerRunning = false;

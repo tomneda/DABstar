@@ -60,7 +60,6 @@
 **/
 #include "newsobject.h"
 #include "cpplog.h"
-#include <cstdlib>
 #include <cstring>
 
 NewsObject::NewsObject(unsigned long len, const unsigned char *buf,

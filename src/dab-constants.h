@@ -116,9 +116,6 @@ static inline float get_db(float x)
 }
 //
 
-#define  MINIMUM(x, y)  ((x) < (y) ? x : y)
-#define  MAXIMUM(x, y)  ((x) > (y) ? x : y)
-
 template<typename T> inline void limit(T & ioVal, const T iLimitLeft, const T iLimitRight)
 {
   if (ioVal < iLimitLeft)
