@@ -12,4 +12,7 @@
 
 using cmplx = std::complex<float>;
 
+template<typename T>
+inline T conv_rad_to_deg(T iVal) { return iVal * (T)(180.0 / 3.14159265358979323846); }
+
 #endif // GLOB_DEFS_H

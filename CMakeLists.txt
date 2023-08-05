@@ -7,7 +7,7 @@ project(DABstar VERSION 1.0.0)
 set(objectName "dabstar")
 
 # special release version flags
-#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 #set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto")  # CMake adds -flto already to release version
 
@@ -274,6 +274,7 @@ set(${objectName}_HDRS
         src/support/buttons/smallqlistview.h
         src/support/buttons/smallspinbox.h
         src/scopes-qwt6/iqdisplay.h
+        src/scopes-qwt6/phase_carr_disp.h
         src/scopes-qwt6/spectrogramdata.h
         src/scopes-qwt6/audio-display.h
         src/viewers/spectrum-viewer/spectrum-viewer.h
@@ -371,6 +372,7 @@ set(${objectName}_SRCS
         src/support/http-handler.cpp
         src/support/tii-library/tii-codes.cpp
         src/scopes-qwt6/iqdisplay.cpp
+        src/scopes-qwt6/phase_carr_disp.cpp
         src/scopes-qwt6/audio-display.cpp
         src/scopes-qwt6/spectrogramdata.cpp
         src/viewers/spectrum-viewer/spectrum-viewer.cpp
@@ -425,6 +427,7 @@ set(${objectName}_MOCS
         src/support/mapport.h
         src/support/http-handler.h
         src/scopes-qwt6/iqdisplay.h
+        src/scopes-qwt6/phase_carr_disp.h
         src/scopes-qwt6/audio-display.h
         src/viewers/spectrum-viewer/spectrum-viewer.h
         src/viewers/spectrum-viewer/spectrum-scope.h

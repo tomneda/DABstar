@@ -21,6 +21,10 @@
  */
 
 #include  "spectrum-viewer.h"
+#include  "spectrum-scope.h"
+#include  "waterfall-scope.h"
+#include  "correlation-viewer.h"
+#include  "phase_carr_disp.h"
 #include  <QSettings>
 #include  "iqdisplay.h"
 #include  <QColor>
@@ -67,6 +71,7 @@ spectrumViewer::spectrumViewer(RadioInterface * mr, QSettings * dabSettings, Rin
   mySpectrumScope = new spectrumScope(dabScope, SP_DISPLAYSIZE, dabSettings);
   myWaterfallScope = new waterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
   myIQDisplay = new IQDisplay(iqDisplay);
+  mpPhaseVsCarrDisp = new PhaseVsCarrDisp(phaseCarrPlot);
   mpCorrelationViewer = new correlationViewer(impulseGrid, indexDisplay, dabSettings, mpCorrelationBuffer);
   //myNullScope = new nullScope(nullDisplay, 256, dabSettings);
   setBitDepth(12);
@@ -86,6 +91,7 @@ spectrumViewer::~spectrumViewer()
   myFrame.hide();
 
   delete mpCorrelationViewer;
+  delete mpPhaseVsCarrDisp;
   delete myIQDisplay;
   delete mySpectrumScope;
   delete myWaterfallScope;
@@ -212,12 +218,13 @@ bool spectrumViewer::isHidden()
 
 void spectrumViewer::showIQ(int amount)
 {
-  std::vector<cmplx> Values(amount); // amount typ 1536
+  std::vector<cmplx> values(amount); // amount typ 1536
+  std::vector<float> phase(amount);  // amount typ 1536
 
   const int scopeWidth = scopeSlider->value();
   const bool logIqScope = cbLogIqScope->isChecked();
 
-  const int32_t numRead = iqBuffer->getDataFromBuffer(Values.data(), (int32_t)Values.size());
+  const int32_t numRead = iqBuffer->getDataFromBuffer(values.data(), (int32_t)values.size());
 
   if (myFrame.isHidden())
   {
@@ -228,15 +235,17 @@ void spectrumViewer::showIQ(int amount)
 
   for (auto i = 0; i < numRead; i++)
   {
-    const float r = fabs(Values[i]);
+    const float r = fabs(values[i]);
 
     if (!std::isnan(r) && !std::isinf(r))
     {
+      const float phi = std::arg(values[i]);
+      phase[i] = conv_rad_to_deg(phi) + 180.0f;
+
       if (logIqScope)
       {
-        const float phi = std::arg(Values[i]);
         const float rl = log10f(1.0f + r); // no scaling necessary here due to averaging
-        Values[i] = rl * std::exp(cmplx(0, phi)); // retain phase only log the vector length
+        values[i] = rl * std::exp(cmplx(0, phi)); // retain phase only log the vector length
         avg += rl; // dividing due to similar looking lin <-> log
       }
       else
@@ -247,7 +256,8 @@ void spectrumViewer::showIQ(int amount)
   }
   avg /= (float)numRead;
 
-  myIQDisplay->display_iq(Values, (float)scopeWidth, avg);
+  myIQDisplay->display_iq(values, (float)scopeWidth, avg);
+  mpPhaseVsCarrDisp->disp_phase_carr_plot(std::move(phase));
 }
 
 void spectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr)

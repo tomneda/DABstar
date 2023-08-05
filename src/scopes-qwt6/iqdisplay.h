@@ -40,7 +40,6 @@
 #include  <qwt_plot_zoomer.h>
 #include  <qwt_plot_panner.h>
 #include  <qwt_plot_layout.h>
-#include  "dab-constants.h"
 
 class SpectrogramData;
 
@@ -49,7 +48,7 @@ class IQDisplay : public QObject, public QwtPlotSpectrogram
 Q_OBJECT
 public:
   IQDisplay(QwtPlot * plot);
-  ~IQDisplay();
+  ~IQDisplay() override;
   void display_iq(const std::vector<cmplx> & z, float scale, float ref);
 private:
   static constexpr int32_t RADIUS{ 100 };

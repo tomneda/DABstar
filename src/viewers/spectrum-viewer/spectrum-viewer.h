@@ -48,11 +48,6 @@
 #include  <QBrush>
 #include  <QTimer>
 
-#include  "spectrum-scope.h"
-#include  "waterfall-scope.h"
-#include  "correlation-viewer.h"
-//#include  "null-scope.h"
-
 constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
 constexpr int32_t SP_SPECTRUMOVRSMPFAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
@@ -62,7 +57,10 @@ constexpr int32_t SP_SPECTRUMOVRSMPFAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
 class RadioInterface;
 class QSettings;
 class IQDisplay;
+class PhaseVsCarrDisp;
 class correlationViewer;
+class spectrumScope;
+class waterfallScope;
 
 class spectrumViewer : public QObject, Ui_scopeWidget
 {
@@ -115,11 +113,12 @@ private:
   int32_t normalizer = 0;
   int32_t lastVcoFreq = 0;
 
-  IQDisplay * myIQDisplay;
-  spectrumScope * mySpectrumScope;
-  waterfallScope * myWaterfallScope;
+  PhaseVsCarrDisp * mpPhaseVsCarrDisp = nullptr;
+  IQDisplay * myIQDisplay = nullptr;
+  spectrumScope * mySpectrumScope = nullptr;
+  waterfallScope * myWaterfallScope = nullptr;
   correlationViewer * mpCorrelationViewer = nullptr;
-  //nullScope * myNullScope;
+
 private slots:
   void rightMouseClick(const QPointF &);
 };
