@@ -9,12 +9,13 @@
 PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
   mQwtPlot(ipPlot)
 {
+  //mDisplayColor = QColor(Qt::blue);
   mGridColor = QColor(Qt::lightGray);
-  mDisplayColor = QColor(Qt::blue);
   mCurveColor = QColor(Qt::yellow);
 
-  mQwtPlot->setCanvasBackground(mDisplayColor);
-
+  //mQwtPlot->setCanvasBackground(mDisplayColor);
+  mQwtPlot->enableAxis(QwtPlot::xBottom);
+  mQwtPlot->setAxisScale(QwtPlot::yLeft, -180.0, 180.0);
 
   mQwtGrid.setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
   mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
@@ -33,29 +34,28 @@ PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
 
 void PhaseVsCarrDisp::disp_phase_carr_plot(const std::vector<float> && iPhaseVec)
 {
-  const auto displaySize = (int32_t)iPhaseVec.size();
-  std::vector<float> x_axis_vec(displaySize);
-  std::vector<float> y_axis_vec(displaySize);
-
-  // TODO: how to handle zero?
-  for (int32_t i = -displaySize / 2; i < displaySize / 2; i++)
+  if (mDataSize != (int32_t)iPhaseVec.size())
   {
-    x_axis_vec.at(i + displaySize / 2) = (float)i;  // carrier number
-  }
-  
-  for (int32_t i = 0; i < displaySize; i++)
-  {
-    y_axis_vec.at(i) = iPhaseVec.at(i);
+    mDataSize = (int32_t)iPhaseVec.size();
+    _setup_x_axis();
   }
 
-  //mQwtPlotCurve.setBaseline(0);
-  //mQwtPlotCurve.setPaintAttribute(QwtPlotCurve::ImageBuffer);
-
-  mQwtPlot->setAxisScale(QwtPlot::xBottom, x_axis_vec[0], x_axis_vec[x_axis_vec.size() - 1]);
-  mQwtPlot->enableAxis(QwtPlot::xBottom);
-  mQwtPlot->setAxisScale(QwtPlot::yLeft, -180.0, 180.0);
-
-  mQwtPlotCurve.setSamples(x_axis_vec.data(), iPhaseVec.data(), displaySize);
+  mQwtPlotCurve.setSamples(mX_axis_vec.data(), iPhaseVec.data(), mDataSize);
   mQwtPlot->replot();
+}
+
+void PhaseVsCarrDisp::_setup_x_axis()
+{
+  const int32_t displaySizeHalf = mDataSize / 2;
+  mX_axis_vec.resize(mDataSize);
+
+  // the vector iPhaseVec does not contain data for the zero point, so skip the zero also in the x-vector
+  for (int32_t i = 0; i < displaySizeHalf; i++)
+  {
+    mX_axis_vec.at(i) = (float)(i - displaySizeHalf);
+    mX_axis_vec.at(i + displaySizeHalf) = (float)(i + 1);
+  }
+
+  mQwtPlot->setAxisScale(xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
 }
 

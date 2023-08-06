@@ -28,6 +28,9 @@ private:
   QColor mDisplayColor;
   QColor mGridColor;
   QColor mCurveColor;
+  int32_t mDataSize = 0;
+  std::vector<float> mX_axis_vec;
+  void _setup_x_axis();
 };
 
 #endif // PHASE_CARR_DISP_H
