@@ -31,22 +31,16 @@ PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
   mQwtPlot->replot();
 }
 
-PhaseVsCarrDisp::~PhaseVsCarrDisp()
-{
-  //detach();
-}
-
-
 void PhaseVsCarrDisp::disp_phase_carr_plot(const std::vector<float> && iPhaseVec)
 {
-  const int32_t displaySize = iPhaseVec.size();
+  const auto displaySize = (int32_t)iPhaseVec.size();
   std::vector<float> x_axis_vec(displaySize);
   std::vector<float> y_axis_vec(displaySize);
 
   // TODO: how to handle zero?
   for (int32_t i = -displaySize / 2; i < displaySize / 2; i++)
   {
-    x_axis_vec.at(i + displaySize / 2) = i;  // carrier number
+    x_axis_vec.at(i + displaySize / 2) = (float)i;  // carrier number
   }
   
   for (int32_t i = 0; i < displaySize; i++)
@@ -54,12 +48,12 @@ void PhaseVsCarrDisp::disp_phase_carr_plot(const std::vector<float> && iPhaseVec
     y_axis_vec.at(i) = iPhaseVec.at(i);
   }
 
-  mQwtPlotCurve.setBaseline(0);
+  //mQwtPlotCurve.setBaseline(0);
   //mQwtPlotCurve.setPaintAttribute(QwtPlotCurve::ImageBuffer);
 
   mQwtPlot->setAxisScale(QwtPlot::xBottom, x_axis_vec[0], x_axis_vec[x_axis_vec.size() - 1]);
   mQwtPlot->enableAxis(QwtPlot::xBottom);
-  mQwtPlot->setAxisScale(QwtPlot::yLeft, 0.0, 360.0);
+  mQwtPlot->setAxisScale(QwtPlot::yLeft, -180.0, 180.0);
 
   mQwtPlotCurve.setSamples(x_axis_vec.data(), iPhaseVec.data(), displaySize);
   mQwtPlot->replot();

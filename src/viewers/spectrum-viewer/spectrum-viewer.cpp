@@ -240,7 +240,7 @@ void spectrumViewer::showIQ(int amount)
     if (!std::isnan(r) && !std::isinf(r))
     {
       const float phi = std::arg(values[i]);
-      phase[i] = conv_rad_to_deg(phi) + 180.0f;
+      phase[i] = conv_rad_to_deg(phi);
 
       if (logIqScope)
       {

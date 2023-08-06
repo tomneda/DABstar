@@ -17,7 +17,7 @@ class PhaseVsCarrDisp : public QwtPlot
   Q_OBJECT
 public:
   PhaseVsCarrDisp(QwtPlot * plot);
-  ~PhaseVsCarrDisp() override;
+  ~PhaseVsCarrDisp() override = default;
 
   void disp_phase_carr_plot(const std::vector<float> && iPhaseVec);
 

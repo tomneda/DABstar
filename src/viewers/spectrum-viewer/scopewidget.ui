@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>scopeWidget</class>
  <widget class="QWidget" name="scopeWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1106</width>
+    <height>1357</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Scope Spectrum Correlation Statistics</string>
   </property>
@@ -13,9 +21,7 @@
        <item>
         <widget class="QwtPlot" name="phaseCarrPlot">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spectrumview. &lt;/p&gt;&lt;p&gt;The spectrum of the incoming
-                      signal is shown here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                    </string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Phase vs. Carrier&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows the phase in degree for each of the single carrier&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -60,9 +66,7 @@
          <item>
           <widget class="QwtPlot" name="iqDisplay">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;IQ constallation of the decoded signal. Ideally one sees 4
-                          dots, one in each quadrant&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                        </string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IQ constallation of the decoded signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ideally one sees 4 dots, one in each quadrant &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -418,6 +422,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
