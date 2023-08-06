@@ -19,7 +19,7 @@ PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
     QwtPlotMarker & m = mQwtPlotMarkerVec[idx];
     m.setLinePen(QPen(Qt::gray));
     m.setLineStyle(QwtPlotMarker::HLine);
-    m.setValue(10 + idx*10, -90.0 + 90.0 * idx);
+    m.setValue(0, -90.0 + 90.0 * idx);
     m.attach(mQwtPlot);
   }
 
