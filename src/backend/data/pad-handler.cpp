@@ -21,7 +21,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include	"pad-handler.h"
-#include	<cstring>
 #include	"radio.h"
 #include	"charsets.h"
 #include	"mot-object.h"

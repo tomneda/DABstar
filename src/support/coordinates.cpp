@@ -23,7 +23,6 @@
 #include	"coordinates.h"
 #include	<QDoubleValidator>
 #include	<QFormLayout>
-#include	<QFormLayout>
 #include	<QVBoxLayout>
 #include	<QSettings>
 

@@ -76,7 +76,6 @@
 # include <windows.h> // for GetTickCount
 #endif
 
-#include "dabdatagroupdecoder.h"
 #include "cpplog.h"
 #include "newssvcdec_impl.h"
 

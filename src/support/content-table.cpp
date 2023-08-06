@@ -23,7 +23,6 @@
 #include  <QSettings>
 #include  "content-table.h"
 #include  "radio.h"
-#include  "dab-constants.h"
 #include  "findfilenames.h"
 
 //static const char *uep_rates  [] = {nullptr, "7/20", "2/5", "1/2", "3/5", "3/4"};

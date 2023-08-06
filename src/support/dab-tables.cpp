@@ -19,10 +19,6 @@
  */
 #include "dab-tables.h"
 
-#include <cstring>
-#include <cstdlib>
-
-
 //	ETSI TS 101 756 V2.2.1: Registered Tables
 //	for Extended Country Code, Country Id, Language Code,
 //	Program Type, User Application Type, Content Type
