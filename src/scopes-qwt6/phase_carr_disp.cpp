@@ -4,24 +4,26 @@
 
 #include "glob_defs.h"
 #include "phase_carr_disp.h"
+#include <qwt_scale_div.h>
 #include <QPen>
 
 PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
   mQwtPlot(ipPlot)
 {
-  mGridColor = QColor(Qt::lightGray);
-  mCurveColor = QColor(Qt::yellow);
-
   mQwtPlot->enableAxis(QwtPlot::xBottom);
   mQwtPlot->setAxisScale(QwtPlot::yLeft, -180.0, 180.0);
 
-  mQwtGrid.setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
-  mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
-  mQwtGrid.enableXMin(true);
-  mQwtGrid.enableYMin(true);
-  mQwtGrid.attach(mQwtPlot);
+  // draw horizontal marker lines at -90, 0 , 90 degrees
+  for (uint32_t idx = 0; idx < mQwtPlotMarkerVec.size(); ++idx)
+  {
+    QwtPlotMarker & m = mQwtPlotMarkerVec[idx];
+    m.setLinePen(QPen(Qt::gray));
+    m.setLineStyle(QwtPlotMarker::HLine);
+    m.setValue(10 + idx*10, -90.0 + 90.0 * idx);
+    m.attach(mQwtPlot);
+  }
 
-  mQwtPlotCurve.setPen(QPen(mCurveColor, 2.0));
+  mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
   mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
   mQwtPlotCurve.attach(mQwtPlot);

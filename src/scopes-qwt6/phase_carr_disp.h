@@ -4,11 +4,10 @@
 #ifndef PHASE_CARR_DISP_H
 #define PHASE_CARR_DISP_H
 
-#include <QColor>
 #include <qcolor.h>
 #include <qwt.h>
 #include <qwt_plot.h>
-#include <qwt_plot_grid.h>
+#include <qwt_plot_marker.h>
 #include <qwt_plot_curve.h>
 #include <vector>
 
@@ -22,10 +21,8 @@ public:
 
 private:
   QwtPlot * const mQwtPlot = nullptr;
-  QwtPlotGrid	mQwtGrid;
   QwtPlotCurve mQwtPlotCurve;
-  QColor mGridColor;
-  QColor mCurveColor;
+  std::array<QwtPlotMarker, 3> mQwtPlotMarkerVec;
   int32_t mDataSize = 0;
   std::vector<float> mX_axis_vec;
 
