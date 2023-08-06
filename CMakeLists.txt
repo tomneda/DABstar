@@ -427,7 +427,6 @@ set(${objectName}_MOCS
         src/support/mapport.h
         src/support/http-handler.h
         src/scopes-qwt6/iqdisplay.h
-        src/scopes-qwt6/phase_carr_disp.h
         src/scopes-qwt6/audio-display.h
         src/viewers/spectrum-viewer/spectrum-viewer.h
         src/viewers/spectrum-viewer/spectrum-scope.h

@@ -9,11 +9,9 @@
 PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
   mQwtPlot(ipPlot)
 {
-  //mDisplayColor = QColor(Qt::blue);
   mGridColor = QColor(Qt::lightGray);
   mCurveColor = QColor(Qt::yellow);
 
-  //mQwtPlot->setCanvasBackground(mDisplayColor);
   mQwtPlot->enableAxis(QwtPlot::xBottom);
   mQwtPlot->setAxisScale(QwtPlot::yLeft, -180.0, 180.0);
 
@@ -25,7 +23,6 @@ PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
 
   mQwtPlotCurve.setPen(QPen(mCurveColor, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
-  mQwtPlotCurve.setRenderHint( QwtPlotItem::RenderAntialiased, false );
   mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
   mQwtPlotCurve.attach(mQwtPlot);
 
@@ -56,6 +53,6 @@ void PhaseVsCarrDisp::_setup_x_axis()
     mX_axis_vec.at(i + displaySizeHalf) = (float)(i + 1);
   }
 
-  mQwtPlot->setAxisScale(xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
+  mQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
 }
 
