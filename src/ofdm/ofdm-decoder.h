@@ -51,8 +51,6 @@ public:
 
   void processBlock_0(std::vector<cmplx>);
   void decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
-  void stop();
-  void reset();
 
 private:
   RadioInterface * const mpRadioInterface;
