@@ -35,31 +35,35 @@
 
 class RadioInterface;
 
-class PhaseReference : public QObject, public phaseTable
+class PhaseReference : public QObject, public PhaseTable
 {
 Q_OBJECT
 public:
-  PhaseReference(RadioInterface *, processParams *);
+  PhaseReference(const RadioInterface * const ipRadio, const processParams * const ipParam);
   ~PhaseReference() override = default;
 
   [[nodiscard]] int32_t find_index(std::vector<cmplx> iV, float iThreshold);
-  [[nodiscard]] int16_t estimate_carrier_offset(std::vector<cmplx> v) const;
-  [[nodiscard]] float phase(const std::vector<cmplx> & iV, int32_t iTs) const;
+  [[nodiscard]] int16_t estimate_carrier_offset(std::vector<cmplx> iV);
+  [[nodiscard]] static float phase(const std::vector<cmplx> & iV, int32_t iTs) ;
 
   static constexpr int16_t IDX_NOT_FOUND = 100;
 
 private:
+  static constexpr int16_t DIFFLENGTH = 128;
+  static constexpr int16_t SEARCHRANGE = (2 * 35);
+
+  std::array<float, SEARCHRANGE + DIFFLENGTH + 1> mComputedDiffs{};
+  std::array<float, DIFFLENGTH> mPhaseDifferences;
+
   const DabParams::SDabPar mDabPar;
-  const int16_t mDiffLength = 128;
   const int32_t mFramesPerSecond;
   int32_t mDisplayCounter = 0;
 
   fftHandler mFftForward;
   fftHandler mFftBackwards;
 
-  RingBuffer<float> * const mResponse;
+  RingBuffer<float> * const mpResponse;
   std::vector<cmplx> mRefTable;
-  std::vector<float> mPhaseDifferences;
   std::vector<float> mCorrPeakValues;
 
 signals:

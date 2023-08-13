@@ -28,35 +28,7 @@
   *	of the DAB standard
   */
 
-void FreqInterleaver::createMapper(int16_t V1, int16_t lwb, int16_t upb)
-{
-  int16_t tmp[mDabPar.T_u];
-  int16_t index = 0;
-  int16_t i;
-
-  tmp[0] = 0;
-  for (i = 1; i < mDabPar.T_u; i++)
-  {
-    tmp[i] = (13 * tmp[i - 1] + V1) % mDabPar.T_u;
-  }
-  for (i = 0; i < mDabPar.T_u; i++)
-  {
-    if (tmp[i] == mDabPar.T_u / 2)
-    {
-      continue;
-    }
-    if ((tmp[i] < lwb) || (tmp[i] > upb))
-    {
-      continue;
-    }
-    //	we now have a table with values from lwb .. upb
-    //
-    mPermTable.at(index++) = tmp[i] - mDabPar.T_u / 2;
-    //	we now have a table with values from lwb - T_u / 2 .. lwb + T_u / 2
-  }
-}
-
-FreqInterleaver::FreqInterleaver(uint8_t iDabMode) :
+FreqInterleaver::FreqInterleaver(const uint8_t iDabMode) :
   mDabPar(DabParams(iDabMode).get_dab_par())
 {
   mPermTable.resize(mDabPar.T_u);
@@ -71,4 +43,30 @@ FreqInterleaver::FreqInterleaver(uint8_t iDabMode) :
   }
 }
 
+void FreqInterleaver::createMapper(const int16_t iV1, const int16_t iLwb, const int16_t iUpb)
+{
+  int16_t tmp[mDabPar.T_u];
+  int16_t index = 0;
+  int16_t i;
 
+  tmp[0] = 0;
+  for (i = 1; i < mDabPar.T_u; i++)
+  {
+    tmp[i] = (13 * tmp[i - 1] + iV1) % mDabPar.T_u;
+  }
+  for (i = 0; i < mDabPar.T_u; i++)
+  {
+    if (tmp[i] == mDabPar.T_u / 2)
+    {
+      continue;
+    }
+    if ((tmp[i] < iLwb) || (tmp[i] > iUpb))
+    {
+      continue;
+    }
+    //	we now have a table with values from lwb .. upb
+    //
+    mPermTable.at(index++) = tmp[i] - mDabPar.T_u / 2;
+    //	we now have a table with values from lwb - T_u / 2 .. lwb + T_u / 2
+  }
+}

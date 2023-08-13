@@ -164,20 +164,11 @@ void correlationViewer::showCorrelation(int32_t dots, int marker, const QVector<
   float mmax = 0;
 
   responseBuffer->getDataFromBuffer(data, dots);
-//  if (myFrame.isHidden())
-//  {
-//    return;
-//  }
 
-  dabSettings->beginGroup("correlationViewer");
-  int plotLength = dabSettings->value("plotLength", 5).toInt() * 100;
-  dabSettings->endGroup();
-  if (plotLength > 1024)
-  {
-    plotLength = 1024;
-  }
+  constexpr int32_t plotLength = 700;
   double X_axis[plotLength];
   double Y_values[plotLength];
+
   for (i = 0; i < plotLength; i++)
   {
     X_axis[i] = marker - plotLength / 2 + i;
@@ -196,6 +187,7 @@ void correlationViewer::showCorrelation(int32_t dots, int marker, const QVector<
   {
     return;
   }
+
   lcount = 0;
   plotgrid->setAxisScale(QwtPlot::xBottom, (double)marker - plotLength / 2, (double)marker + plotLength / 2 - 1);
   plotgrid->enableAxis(QwtPlot::xBottom);
@@ -206,6 +198,7 @@ void correlationViewer::showCorrelation(int32_t dots, int marker, const QVector<
   spectrumCurve.setSamples(X_axis, Y_values, plotLength);
   plotgrid->replot();
   QString theText;
+
   if (v.size() > 0)
   {
     theText = "Best matches at ";

@@ -35,7 +35,7 @@
 class FreqInterleaver
 {
 public:
-  explicit FreqInterleaver(uint8_t iDabMode);
+  explicit FreqInterleaver(const uint8_t iDabMode);
   ~FreqInterleaver() = default;
 
   //	according to the standard, the map is a function from
@@ -46,7 +46,7 @@ private:
   const DabParams::SDabPar mDabPar;
   std::vector<int16_t> mPermTable;
 
-  void createMapper(int16_t V1, int16_t lwb, int16_t upb);
+  void createMapper(const int16_t iV1, const int16_t iLwb, const int16_t iUpb);
 };
 
 #endif

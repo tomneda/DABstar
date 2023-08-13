@@ -253,6 +253,11 @@ void spectrumViewer::showIQ(int amount)
         avg += r;
       }
     }
+    else
+    {
+      phase[i] = 0.0f;
+      values[i] = 0.0f;
+    }
   }
   avg /= (float)numRead;
 

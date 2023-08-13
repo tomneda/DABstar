@@ -87,13 +87,13 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
    *	Note that from here on, we are only interested in the
    *	"carriers", the useful carriers of the FFT output
    */
-  for (int16_t i = 0; i < mDabPar.K; i++)
+  for (int16_t carrierIdx = 0; carrierIdx < mDabPar.K; carrierIdx++)
   {
-    int16_t index = mFreqInterleaver.map_k_to_fft_bin(i);
+    int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(carrierIdx);
 
-    if (index < 0)
+    if (fftIdx < 0)
     {
-      index += mDabPar.T_u;
+      fftIdx += mDabPar.T_u;
     }
 
     /**
@@ -102,15 +102,15 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
      *	The carrier of a block is the reference for the carrier
      *	on the same position in the next block
      */
-    cmplx r1 = mFftBuffer[index] * conj(mPhaseReference[index]);
+    cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
     r1 *= phaseRotator; // fine correction of phase which can't be done in the time domain
-    mDataVector[i] = r1;
+    mDataVector[carrierIdx] = r1;
     const float ab1 = abs(r1);
 
     // split the real and the imaginary part and scale it
     // we make the bits into softbits in the range -127 .. 127 (+/- 255?)
-    oBits[i]             = (int16_t)(-(real(r1) * 255.0f) / ab1);
-    oBits[mDabPar.K + i] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
+    oBits[carrierIdx]             = (int16_t)(-(real(r1) * 255.0f) / ab1);
+    oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
   }
 
   //	From time to time we show the constellation of the current symbol
