@@ -181,7 +181,7 @@ private:
   RingBuffer<uint8_t> frameBuffer;
   RingBuffer<uint8_t> dataBuffer;
   RingBuffer<int16_t> audioBuffer;
-  spectrumViewer my_spectrumViewer;
+  SpectrumViewer my_spectrumViewer;
   //correlationViewer my_correlationViewer;
   tiiViewer my_tiiViewer;
   snrViewer my_snrViewer;

@@ -21,12 +21,12 @@
 class RadioInterface;
 class QSettings;
 
-class spectrumScope : public QObject
+class SpectrumScope : public QObject
 {
 Q_OBJECT
 public:
-  spectrumScope(QwtPlot *, int, QSettings *);
-  ~spectrumScope();
+  SpectrumScope(QwtPlot *, int, QSettings *);
+  ~SpectrumScope();
 
   void showSpectrum(const double *, double *, int, int);
   void setBitDepth(int);

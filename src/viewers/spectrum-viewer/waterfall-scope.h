@@ -40,12 +40,12 @@
 #include <QTimer>
 #include <stdint.h>
 
-class waterfallScope : public QObject, public QwtPlotSpectrogram
+class WaterfallScope : public QObject, public QwtPlotSpectrogram
 {
 Q_OBJECT
 public:
-  waterfallScope(QwtPlot *, int, int);
-  ~waterfallScope();
+  WaterfallScope(QwtPlot *, int, int);
+  ~WaterfallScope();
   void display(const double *, double *, double, int32_t);
 private:
   QwtPlot * plotgrid;

@@ -4,7 +4,7 @@
 #include  <QPen>
 #include  "color-selector.h"
 
-spectrumScope::spectrumScope(QwtPlot * dabScope, int displaySize, QSettings * dabSettings) :
+SpectrumScope::SpectrumScope(QwtPlot * dabScope, int displaySize, QSettings * dabSettings) :
   spectrumCurve("")
 {
   QString colorString = "black";
@@ -66,14 +66,13 @@ spectrumScope::spectrumScope(QwtPlot * dabScope, int displaySize, QSettings * da
   normalizer = 2048;
 }
 
-spectrumScope::~spectrumScope()
+SpectrumScope::~SpectrumScope()
 {
-
   delete Marker;
   delete grid;
 }
 
-void spectrumScope::showSpectrum(const double * X_axis, double * Y_value, int amplification, int frequency)
+void SpectrumScope::showSpectrum(const double * X_axis, double * Y_value, int amplification, int frequency)
 {
   const float factor = (float)amplification / 100.0f; // amplification is between [1..100], so factor ]0..100]
   const float levelBottomdB = get_db(0); // eg. about -42 (dB)
@@ -94,7 +93,7 @@ void spectrumScope::showSpectrum(const double * X_axis, double * Y_value, int am
   plotgrid->replot();
 }
 
-void spectrumScope::rightMouseClick(const QPointF & point)
+void SpectrumScope::rightMouseClick(const QPointF & point)
 {
   (void)point;
 
@@ -128,12 +127,12 @@ void spectrumScope::rightMouseClick(const QPointF & point)
   //plotgrid->setCanvasBackground(this->displayColor);
 }
 
-float spectrumScope::get_db(float x)
+float SpectrumScope::get_db(float x)
 {
   return 20 * log10((x + 1) / (float)(normalizer));
 }
 
-void spectrumScope::setBitDepth(int n)
+void SpectrumScope::setBitDepth(int n)
 {
   normalizer = n;
 }

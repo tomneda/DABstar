@@ -26,7 +26,7 @@
 #include  <QPen>
 #include  "color-selector.h"
 
-correlationViewer::correlationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<float> * b)
+CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<float> * b)
   : /*myFrame(nullptr),*/
     spectrumCurve("")
 {
@@ -96,7 +96,7 @@ correlationViewer::correlationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   plotgrid->enableAxis(QwtPlot::yLeft);
 }
 
-correlationViewer::~correlationViewer()
+CorrelationViewer::~CorrelationViewer()
 {
 //  dabSettings->beginGroup("correlationViewer");
 //  dabSettings->setValue("position-x", myFrame.pos().x());
@@ -108,7 +108,7 @@ correlationViewer::~correlationViewer()
 //  myFrame.hide();
 }
 
-void correlationViewer::showIndex(int32_t v)
+void CorrelationViewer::showIndex(int32_t v)
 {
   QString theText;
 
@@ -157,7 +157,7 @@ void correlationViewer::showIndex(int32_t v)
 
 static int lcount = 0;
 
-void correlationViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)
+void CorrelationViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)
 {
   uint16_t i;
   float data[dots];
@@ -210,12 +210,12 @@ void correlationViewer::showCorrelation(int32_t dots, int marker, const QVector<
   mpIndexDisplay->setText(theText);
 }
 
-float correlationViewer::get_db(float x)
+float CorrelationViewer::get_db(float x)
 {
   return 20 * log10((x + 1) / (float)(4 * 512));
 }
 
-void correlationViewer::rightMouseClick(const QPointF & point)
+void CorrelationViewer::rightMouseClick(const QPointF & point)
 {
   (void)point;
 

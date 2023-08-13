@@ -24,7 +24,7 @@
 #include  <qwt_text.h>
 #include  <qpen.h>
 
-waterfallScope::waterfallScope(QwtPlot * scope, int displaySize, int rasterSize) :
+WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize) :
   QwtPlotSpectrogram()
 {
   int i, j;
@@ -75,7 +75,7 @@ waterfallScope::waterfallScope(QwtPlot * scope, int displaySize, int rasterSize)
   plotgrid->replot();
 }
 
-waterfallScope::~waterfallScope()
+WaterfallScope::~WaterfallScope()
 {
   plotgrid->enableAxis(QwtPlot::yRight, false);
   plotgrid->enableAxis(QwtPlot::xBottom, false);
@@ -86,7 +86,7 @@ waterfallScope::~waterfallScope()
   //	delete	WaterfallData;
 }
 
-void waterfallScope::display(const double * X_axis, double * Y1_value, double amp, int32_t marker)
+void WaterfallScope::display(const double * X_axis, double * Y1_value, double amp, int32_t marker)
 {
   int orig = (int)(X_axis[0]);
   int width = (int)(X_axis[displaySize - 1] - orig);
