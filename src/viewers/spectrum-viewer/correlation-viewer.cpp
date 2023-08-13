@@ -135,7 +135,7 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
 
     for (int i = 0; i < v.size(); i++)
     {
-      txt += QString::number(v[i]);
+      txt += "<b>" + QString::number(v[i]) + "</b>"; // display in "bold"
 
       if (i > 0)
       {
