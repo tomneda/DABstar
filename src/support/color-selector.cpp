@@ -23,7 +23,21 @@
 #include  <QVBoxLayout>
 #include  "color-selector.h"
 
-colorSelector::colorSelector(const QString & topText)
+// /*static*/ const char ColorSelector::DISPCOLOR[]  = "Display Color";
+/*static*/ const char ColorSelector::GRIDCOLOR[]  = "Grid Color";
+/*static*/ const char ColorSelector::CURVECOLOR[] = "Curve Color";
+
+/*static*/ QString ColorSelector::show_dialog(const QString & iTopText)
+{
+  ColorSelector * selector = new ColorSelector(iTopText);
+  int index = selector->exec();
+  QString colStr = selector->getColor(index);
+  delete selector;
+  return (index != 0 ? colStr : "");
+}
+
+
+ColorSelector::ColorSelector(const QString & topText)
 {
   mpToptext = new QLabel(this);
   mpToptext->setText(topText);
@@ -43,12 +57,12 @@ colorSelector::colorSelector(const QString & topText)
   mSelectedItem = -1;
 }
 
-void colorSelector::select_color(QModelIndex s)
+void ColorSelector::select_color(QModelIndex s)
 {
   QDialog::done(s.row());
 }
 
-QString colorSelector::getColor(int index)
+QString ColorSelector::getColor(int index)
 {
   return mColors.at(index);
 }

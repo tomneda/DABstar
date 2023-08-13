@@ -182,27 +182,14 @@ float	snrViewer::get_db (float x) {
 }
 
 void	snrViewer::rightMouseClick	(const QPointF &point) {
-colorSelector *selector;
-int	index;
 	(void)point;
-	selector		= new colorSelector ("Display Color");
-	index			= selector -> QDialog::exec ();
-	QString displayColor	= selector -> getColor (index);
-	delete selector;
-	if (index == 0)
-	   return;
-	selector		= new colorSelector ("Grid Color");
-	index			= selector	-> QDialog::exec ();
-	QString gridColor	= selector	-> getColor (index);
-	delete selector;
-	if (index == 0)
-	   return;
-	selector		= new colorSelector ("Curve Color");
-	index			= selector	-> QDialog::exec ();
-	QString curveColor	= selector	-> getColor (index);
-	delete selector;
-	if (index == 0)
-	   return;
+
+//  const QString displayColor = ColorSelector::show_dialog(ColorSelector::DISPCOLOR);
+//  if (displayColor.isEmpty()) return;
+  const QString gridColor = ColorSelector::show_dialog(ColorSelector::GRIDCOLOR);
+  if (gridColor.isEmpty()) return;
+  const QString curveColor = ColorSelector::show_dialog(ColorSelector::CURVECOLOR);
+  if (curveColor.isEmpty()) return;
 
 	dabSettings	-> beginGroup ("snrViewer");
 	dabSettings	-> setValue ("displayColor", displayColor);

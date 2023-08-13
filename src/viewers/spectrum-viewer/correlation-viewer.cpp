@@ -217,36 +217,12 @@ float correlationViewer::get_db(float x)
 
 void correlationViewer::rightMouseClick(const QPointF & point)
 {
-  colorSelector * selector;
-  int index;
   (void)point;
 
-//  selector = new colorSelector("Display Color");
-//  index = selector->exec();
-//  QString displayColor = selector->getColor(index);
-//  delete selector;
-//  if (index == 0)
-//  {
-//    return;
-//  }
-
-  selector = new colorSelector("Grid Color");
-  index = selector->exec();
-  QString gridColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-
-  selector = new colorSelector("Curve Color");
-  index = selector->exec();
-  QString curveColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
+  const QString gridColor = ColorSelector::show_dialog(ColorSelector::GRIDCOLOR);
+  if (gridColor.isEmpty()) return;
+  const QString curveColor = ColorSelector::show_dialog(ColorSelector::CURVECOLOR);
+  if (curveColor.isEmpty()) return;
 
   dabSettings->beginGroup("correlationViewer");
   //dabSettings->setValue("displayColor", displayColor);

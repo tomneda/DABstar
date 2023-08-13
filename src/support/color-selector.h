@@ -30,12 +30,18 @@
 #include  <QStringList>
 #include  <cstdint>
 
-class colorSelector : public QDialog
+class ColorSelector : public QDialog
 {
 Q_OBJECT
 public:
-  colorSelector(const QString &);
-  ~colorSelector() = default;
+  //static const char DISPCOLOR[];
+  static const char GRIDCOLOR[];
+  static const char CURVECOLOR[];
+
+  ColorSelector(const QString &);
+  ~ColorSelector() = default;
+
+  static QString show_dialog(const QString & iTopText);
 
   QString getColor(int);
 
