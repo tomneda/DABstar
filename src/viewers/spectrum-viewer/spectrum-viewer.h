@@ -89,7 +89,7 @@ private:
   RingBuffer<cmplx> * iqBuffer;
   RingBuffer<float> * mpCorrelationBuffer = nullptr;
   QwtPlotPicker * lm_picker{};
-  QColor mDisplayColor;
+  //QColor mDisplayColor;
   QColor mGridColor;
   QColor mCurveColor;
 
@@ -118,9 +118,6 @@ private:
   spectrumScope * mySpectrumScope = nullptr;
   waterfallScope * myWaterfallScope = nullptr;
   correlationViewer * mpCorrelationViewer = nullptr;
-
-private slots:
-  void rightMouseClick(const QPointF &);
 };
 
 #endif

@@ -190,19 +190,19 @@ void	audioDisplay::rightMouseClick	(const QPointF &point) {
 colorSelector *selector;
 int	index;
 	(void)point;
-	selector		= new colorSelector ("display color");
+	selector		= new colorSelector ("Display Color");
 	index			= selector -> QDialog::exec ();
 	QString displayColor	= selector -> getColor (index);
 	delete selector;
 	if (index == 0)
 	   return;
-	selector		= new colorSelector ("grid color");
+	selector		= new colorSelector ("Grid Color");
 	index			= selector	-> QDialog::exec ();
 	QString gridColor	= selector	-> getColor (index);
 	delete selector;
 	if (index == 0)
 	   return;
-	selector		= new colorSelector ("curve color");
+	selector		= new colorSelector ("Curve Color");
 	index			= selector	-> QDialog::exec ();
 	QString curveColor	= selector	-> getColor (index);
 	delete selector;

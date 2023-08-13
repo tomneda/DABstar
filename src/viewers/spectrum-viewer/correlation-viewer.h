@@ -76,7 +76,7 @@ private:
   QwtPlot * plotgrid;
   QLabel * mpIndexDisplay;
   QwtPlotPicker * lm_picker;
-  QColor displayColor;
+  //QColor displayColor;
   QColor gridColor;
   QColor curveColor;
 

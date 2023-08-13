@@ -305,63 +305,6 @@ void spectrumViewer::show_clockErr(int e)
   }
 }
 
-void spectrumViewer::rightMouseClick(const QPointF & point)
-{
-  (void) point;
-  colorSelector * selector;
-  int index;
-  selector = new colorSelector("display color");
-  index = selector->QDialog::exec();
-  QString displayColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-  selector = new colorSelector("grid color");
-  index = selector->QDialog::exec();
-  QString gridColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-  selector = new colorSelector("curve color");
-  index = selector->QDialog::exec();
-  QString curveColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-
-  dabSettings->beginGroup("spectrumViewer");
-  dabSettings->setValue("displayColor", displayColor);
-  dabSettings->setValue("gridColor", gridColor);
-  dabSettings->setValue("curveColor", curveColor);
-  dabSettings->endGroup();
-
-  mDisplayColor = QColor(displayColor);
-  mGridColor = QColor(gridColor);
-  mCurveColor = QColor(curveColor);
-  spectrumCurve->setPen(QPen(mCurveColor, 2.0));
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid		-> setMajPen (QPen(this -> gridColor, 0,
-                                                     Qt::DotLine));
-#else
-  grid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
-#endif
-  grid->enableXMin(true);
-  grid->enableYMin(true);
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid		-> setMinPen (QPen(this -> gridColor, 0,
-                                                     Qt::DotLine));
-#else
-  grid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
-#endif
-  plotgrid->setCanvasBackground(mDisplayColor);
-}
-
 void spectrumViewer::showFrequency(float f)
 {
   frequencyDisplay->display(f);

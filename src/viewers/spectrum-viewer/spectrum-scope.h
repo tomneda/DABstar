@@ -35,7 +35,7 @@ private:
   QwtPlotCurve spectrumCurve;
   QSettings * dabSettings;
   QwtPlotPicker * lm_picker;
-  QColor displayColor;
+  //QColor displayColor;
   QColor gridColor;
   QColor curveColor;
 

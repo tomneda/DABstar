@@ -13,8 +13,8 @@ spectrumScope::spectrumScope(QwtPlot * dabScope, int displaySize, QSettings * da
   this->dabSettings = dabSettings;
   this->displaySize = displaySize;
   dabSettings->beginGroup("spectrumViewer");
-  colorString = dabSettings->value("displayColor", "black").toString();
-  displayColor = QColor(colorString);
+//  colorString = dabSettings->value("displayColor", "black").toString();
+//  displayColor = QColor(colorString);
   colorString = dabSettings->value("gridColor", "white").toString();
   gridColor = QColor(colorString);
   colorString = dabSettings->value("curveColor", "white").toString();
@@ -22,7 +22,7 @@ spectrumScope::spectrumScope(QwtPlot * dabScope, int displaySize, QSettings * da
   brush = dabSettings->value("brush", 0).toInt() == 1;
   dabSettings->endGroup();
   plotgrid = dabScope;
-  plotgrid->setCanvasBackground(displayColor);
+  //plotgrid->setCanvasBackground(displayColor);
   grid = new QwtPlotGrid;
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
   grid	-> setMajPen (QPen(gridColor, 0, Qt::DotLine));
@@ -98,15 +98,17 @@ void spectrumScope::rightMouseClick(const QPointF & point)
 {
   colorSelector * selector;
   int index;
-  selector = new colorSelector("display color");
-  index = selector->QDialog::exec();
-  QString displayColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-  selector = new colorSelector("grid color");
+
+//  selector = new colorSelector("Display Color");
+//  index = selector->QDialog::exec();
+//  QString displayColor = selector->getColor(index);
+//  delete selector;
+//  if (index == 0)
+//  {
+//    return;
+//  }
+
+  selector = new colorSelector("Grid Color");
   index = selector->QDialog::exec();
   QString gridColor = selector->getColor(index);
   delete selector;
@@ -114,7 +116,8 @@ void spectrumScope::rightMouseClick(const QPointF & point)
   {
     return;
   }
-  selector = new colorSelector("curve color");
+
+  selector = new colorSelector("Curve Color");
   index = selector->QDialog::exec();
   QString curveColor = selector->getColor(index);
   delete selector;
@@ -124,12 +127,12 @@ void spectrumScope::rightMouseClick(const QPointF & point)
   }
 
   dabSettings->beginGroup("spectrumViewer");
-  dabSettings->setValue("displayColor", displayColor);
+  //dabSettings->setValue("displayColor", displayColor);
   dabSettings->setValue("gridColor", gridColor);
   dabSettings->setValue("curveColor", curveColor);
   dabSettings->endGroup();
 
-  this->displayColor = QColor(displayColor);
+  //this->displayColor = QColor(displayColor);
   this->gridColor = QColor(gridColor);
   this->curveColor = QColor(curveColor);
   spectrumCurve.setPen(QPen(this->curveColor, 2.0));
@@ -145,7 +148,7 @@ void spectrumScope::rightMouseClick(const QPointF & point)
 #else
   grid->setMinorPen(QPen(this->gridColor, 0, Qt::DotLine));
 #endif
-  plotgrid->setCanvasBackground(this->displayColor);
+  //plotgrid->setCanvasBackground(this->displayColor);
 }
 
 float spectrumScope::get_db(float x)
