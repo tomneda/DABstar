@@ -107,14 +107,14 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
     mDataVector[carrierIdx] = r1;
     const float ab1 = abs(r1);
 
-    // split the real and the imaginary part and scale it
-    // we make the bits into softbits in the range -127 .. 127 (+/- 255?)
+    // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
+    // TODO: tomneda: is normalizing over one sample with ab1 ok? or better over the average of entire symbol?
     oBits[carrierIdx]             = (int16_t)(-(real(r1) * 255.0f) / ab1);
     oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
   }
 
   //	From time to time we show the constellation of the current symbol
-  if (++mShowCntIqScope > mDabPar.L)
+  if (++mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
   {
     mpIqBuffer->putDataIntoBuffer(mDataVector.data(), mDabPar.K);
     emit showIQ(mDabPar.K);
