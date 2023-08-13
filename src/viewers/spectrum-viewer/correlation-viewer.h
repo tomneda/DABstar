@@ -56,7 +56,7 @@ class correlationViewer : public QObject/*, Ui_scopeWidget*/
 Q_OBJECT
 public:
   correlationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<float> *);
-  ~correlationViewer();
+  ~correlationViewer() override;
   void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
   void showIndex(int32_t);
 //  void show();

@@ -61,7 +61,7 @@ private:
 
   int32_t mShowCntStatistics = 0;
   int32_t mShowCntIqScope = 0;
-  int16_t mNextShownOfdmSymbIdx = 1;
+  int32_t mNextShownOfdmSymbIdx = 1;
   std::vector<cmplx> mPhaseReference;
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mDataVector;
