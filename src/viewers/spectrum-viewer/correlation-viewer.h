@@ -56,17 +56,14 @@ class CorrelationViewer : public QObject/*, Ui_scopeWidget*/
 Q_OBJECT
 public:
   CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<float> *);
-  ~CorrelationViewer() override;
+  ~CorrelationViewer() override = default;
   void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
-  void showIndex(int32_t);
-//  void show();
-//  void hide();
-//  bool isHidden();
 
 private:
+  static QString _get_best_match_text(const QVector<int> & v);
+
   RadioInterface * myRadioInterface;
   QSettings * dabSettings;
-  //QFrame myFrame;
   QwtPlotCurve spectrumCurve;
   QwtPlotGrid grid;
   std::vector<int> indexVector;

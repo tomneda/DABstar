@@ -31,7 +31,6 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
     spectrumCurve("")
 {
   QString colorString = "black";
-  bool brush;
   //this->myRadioInterface = mr;
   this->dabSettings = s;
   this->responseBuffer = b;
@@ -43,34 +42,19 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   gridColor = QColor(colorString);
   colorString = dabSettings->value("curveColor", "white").toString();
   curveColor = QColor(colorString);
-  brush = dabSettings->value("brush", 0).toInt() == 1;
+  const bool brush = dabSettings->value("brush", 0).toInt() == 1;
   //int lengthSetting = dabSettings->value("plotLength", 3).toInt();
 
-//  int x = dabSettings->value("position-x", 100).toInt();
-//  int y = dabSettings->value("position-y", 100).toInt();
-//  int w = dabSettings->value("width", 50).toInt();
-//  int h = dabSettings->value("height", 30).toInt();
   dabSettings->endGroup();
-  //setupUi(&myFrame);
-
-  //myFrame.resize(QSize(w, h));
-  //myFrame.move(QPoint(x, y));
 
   plotgrid = pPlot;
   mpIndexDisplay = pLabel;
   //plotgrid->setCanvasBackground(displayColor);
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid. setMajPen (QPen(gridColor, 0, Qt::DotLine));
-#else
+
   grid.setMajorPen(QPen(gridColor, 0, Qt::DotLine));
-#endif
   grid.enableXMin(true);
   grid.enableYMin(true);
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid. setMinPen (QPen(gridColor, 0, Qt::DotLine));
-#else
   grid.setMinorPen(QPen(gridColor, 0, Qt::DotLine));
-#endif
   grid.attach(plotgrid);
 
   lm_picker = new QwtPlotPicker(plotgrid->canvas());
@@ -79,81 +63,21 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   lm_picker->setStateMachine(lpickerMachine);
   lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
   connect(lm_picker, SIGNAL (selected(const QPointF&)), this, SLOT (rightMouseClick(const QPointF &)));
-  //
-  //	set the length of the display
-  //correlationLength->setValue(lengthSetting);
-  //connect(correlationLength, SIGNAL (valueChanged(int)), this, SLOT (handle_correlationLength(int)));
+
   spectrumCurve.setPen(QPen(curveColor, 2.0));
   spectrumCurve.setOrientation(Qt::Horizontal);
   spectrumCurve.setBaseline(0);
+
   if (brush)
   {
     QBrush ourBrush(curveColor);
     ourBrush.setStyle(Qt::Dense3Pattern);
     spectrumCurve.setBrush(ourBrush);
   }
+
   spectrumCurve.attach(plotgrid);
   plotgrid->enableAxis(QwtPlot::yLeft);
 }
-
-CorrelationViewer::~CorrelationViewer()
-{
-//  dabSettings->beginGroup("correlationViewer");
-//  dabSettings->setValue("position-x", myFrame.pos().x());
-//  dabSettings->setValue("position-y", myFrame.pos().y());
-//  QSize size = myFrame.size();
-//  dabSettings->setValue("width", size.width());
-//  dabSettings->setValue("height", size.height());
-//  dabSettings->endGroup();
-//  myFrame.hide();
-}
-
-void CorrelationViewer::showIndex(int32_t v)
-{
-  QString theText;
-
-  if (v == -1)
-  {
-    indexVector.resize(0);
-    return;
-  }
-  if (v != 0)
-  {
-    indexVector.push_back(v);
-    return;
-  }
-
-  if (indexVector.size() < 2)
-  {
-    theText = QString(" ");
-  }
-  else
-  {
-    theText = QString(" trans ");
-    for (uint16_t i = 1; i < indexVector.size(); i++)
-    {
-      char t[255];
-      sprintf(t, " (%d -> %d usec) ", i, (indexVector.at(i) - indexVector.at(0)) / 2);
-      theText.append(t);
-    }
-  }
-  mpIndexDisplay->setText(theText);
-}
-
-//void correlationViewer::show()
-//{
-//  myFrame.show();
-//}
-//
-//void correlationViewer::hide()
-//{
-//  myFrame.hide();
-//}
-//
-//bool correlationViewer::isHidden()
-//{
-//  return myFrame.isHidden();
-//}
 
 static int lcount = 0;
 
@@ -197,17 +121,35 @@ void CorrelationViewer::showCorrelation(int32_t dots, int marker, const QVector<
   spectrumCurve.setBaseline(get_db(0));
   spectrumCurve.setSamples(X_axis, Y_values, plotLength);
   plotgrid->replot();
-  QString theText;
+
+  mpIndexDisplay->setText(_get_best_match_text(v));
+}
+
+QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
+{
+  QString txt;
 
   if (v.size() > 0)
   {
-    theText = "Best matches at ";
+    txt = "Best matches at (km/mi): ";
+
     for (int i = 0; i < v.size(); i++)
     {
-      theText += QString::number(v.at(i)) + " ";
+      txt += QString::number(v[i]);
+
+      if (i > 0)
+      {
+        // TODO: avoid fixed values
+        const double distKm = (double)(v[i] - v[0]) / 2048000.0 * 299792.458;
+        const double distMi = distKm * 0.6213711;
+        txt += " (" + QString::number(distKm, 'f', 1) + "/" + QString::number(distMi, 'f', 1) + ")";
+      }
+
+      if (i + 1 < v.size()) txt += ", ";
     }
   }
-  mpIndexDisplay->setText(theText);
+
+  return txt;
 }
 
 float CorrelationViewer::get_db(float x)
@@ -248,11 +190,4 @@ void CorrelationViewer::rightMouseClick(const QPointF & point)
 #endif
   //plotgrid->setCanvasBackground(this->displayColor);
 }
-
-//void correlationViewer::handle_correlationLength(int l)
-//{
-//  dabSettings->beginGroup("correlationViewer");
-//  dabSettings->setValue("plotLength", l);
-//  dabSettings->endGroup();
-//}
 
