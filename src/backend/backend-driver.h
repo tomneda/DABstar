@@ -33,7 +33,7 @@
 class BackendDriver
 {
 public:
-  BackendDriver(RadioInterface *, descriptorType *, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *);
+  BackendDriver(RadioInterface *, DescriptorType *, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *);
   ~BackendDriver();
 
   void addtoFrame(std::vector<uint8_t> outData);

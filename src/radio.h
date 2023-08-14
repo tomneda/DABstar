@@ -74,7 +74,7 @@ class audioDisplay;
 class	dabStreamer;
 #endif
 
-class techData;
+class TechData;
 
 #include  "ui_config-helper.h"
 
@@ -206,7 +206,7 @@ private:
   int maxDistance;
   void LOG(const QString &, const QString &);
   bool error_report;
-  techData * theTechWindow;
+  TechData * theTechWindow;
   Ui_configWidget configWidget;
   QSettings * dabSettings;
   int16_t tii_delay;
@@ -280,7 +280,7 @@ private:
   void stop_etiHandler();
   QString checkDir(const QString);
   //
-  void startAudioservice(audiodata *);
+  void startAudioservice(Audiodata *);
   void startPacketservice(const QString &);
   void startScanning();
   void stopScanning(bool);

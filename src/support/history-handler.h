@@ -30,7 +30,7 @@
 #include	<QModelIndex>
 
 class	RadioInterface;
-class	descriptorType;
+class	DescriptorType;
 
 class	historyHandler:public QListView {
 Q_OBJECT

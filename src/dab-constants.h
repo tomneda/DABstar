@@ -163,7 +163,7 @@ template<typename T> static inline T fixround(float v)
 #define    FORE_GROUND  0000
 #define    BACK_GROUND  0100
 
-class descriptorType
+class DescriptorType
 {
 public:
   uint8_t type;
@@ -179,18 +179,18 @@ public:
   int16_t bitRate;
   QString channel;  // just for presets
 public:
-  descriptorType()
+  DescriptorType()
   {
     defined = false;
     serviceName = "";
   }
 
-  virtual    ~descriptorType()
+  virtual    ~DescriptorType()
   {}
 };
 
 //	for service handling we define
-class packetdata : public descriptorType
+class packetdata : public DescriptorType
 {
 public:
   int16_t DSCTy;
@@ -206,7 +206,7 @@ public:
   }
 };
 
-class audiodata : public descriptorType
+class Audiodata : public DescriptorType
 {
 public:
   int16_t ASCTy;
@@ -215,7 +215,7 @@ public:
   int16_t compnr;
   int32_t fmFrequency;
 
-  audiodata()
+  Audiodata()
   {
     type = AUDIO_SERVICE;
     fmFrequency = -1;

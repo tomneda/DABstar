@@ -1604,7 +1604,7 @@ int FibDecoder::getSubChId(const QString & s, uint32_t dummy_SId)
   return subChId;
 }
 
-void FibDecoder::dataforAudioService(const QString & s, audiodata * ad)
+void FibDecoder::dataforAudioService(const QString & s, Audiodata * ad)
 {
   int serviceIndex;
 

@@ -34,14 +34,14 @@
 class RadioInterface;
 class QSettings;
 
-class techData : public QObject, public Ui_technical_data
+class TechData : public QObject, public Ui_technical_data
 {
 Q_OBJECT
 public:
-  techData(RadioInterface *, QSettings *, RingBuffer<int16_t> * audioData);
-  ~techData();
+  TechData(RadioInterface *, QSettings *, RingBuffer<int16_t> * audioData);
+  ~TechData();
 
-  void show_serviceData(audiodata *);
+  void show_serviceData(Audiodata *);
   void cleanUp();
   void show();
   void hide();

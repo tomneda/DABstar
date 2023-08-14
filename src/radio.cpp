@@ -289,7 +289,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   configDisplay.resize(QSize(wi, he));
   configDisplay.move(QPoint(x, y));
 
-  theTechWindow = new techData(this, dabSettings, &theTechData);
+  theTechWindow = new TechData(this, dabSettings, &theTechData);
   //
   //	Now we can set the checkbox as saved in the settings
   if (dabSettings->value("onTop", 0).toInt() == 1)
@@ -1292,7 +1292,7 @@ void RadioInterface::changeinConfiguration()
     {  // (re)start the service
       if (my_dabProcessor->is_audioService(ss))
       {
-        audiodata ad;
+        Audiodata ad;
         FILE * f = channel.backgroundServices.at(i).fd;
         my_dabProcessor->dataforAudioService(ss, &ad);
         my_dabProcessor->set_audioChannel(&ad, &audioBuffer, f, BACK_GROUND);
@@ -2149,8 +2149,8 @@ void RadioInterface::setStereo(bool b)
   {
     return;
   }
-
-  stereoLabel->setText(b ? "stereo" : "mono");
+  stereoLabel->setStyleSheet(b ? "color:#FF4444" : "color:#AAAAAA");
+  stereoLabel->setText(b ? "<b>STEREO</b>" : "<b>MONO</b>");
   stereoSetting = b;
 }
 
@@ -2887,7 +2887,7 @@ bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
     QMouseEvent * ev = static_cast<QMouseEvent *>(event);
     if (ev->buttons() & Qt::RightButton)
     {
-      audiodata ad;
+      Audiodata ad;
       packetdata pd;
       QString serviceName = this->ensembleDisplay->indexAt(ev->pos()).data().toString();
       serviceName = serviceName.right(16);
@@ -3221,7 +3221,7 @@ void RadioInterface::startService(dabService & s)
   font.setBold(true);
   serviceLabel->setFont(font);
   serviceLabel->setText(serviceName);
-  audiodata ad;
+  Audiodata ad;
 
   my_dabProcessor->dataforAudioService(serviceName, &ad);
   if (ad.defined)
@@ -3274,7 +3274,7 @@ void RadioInterface::colorService(QModelIndex ind, QColor c, int pt, bool italic
 }
 
 //
-void RadioInterface::startAudioservice(audiodata * ad)
+void RadioInterface::startAudioservice(Audiodata * ad)
 {
   channel.currentService.valid = true;
 
