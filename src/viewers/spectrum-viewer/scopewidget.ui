@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1127</width>
-    <height>1379</height>
+    <width>1000</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,11 +20,11 @@
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QwtPlot" name="impulseGrid">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>200</height>
+          </size>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display. Time synchronization is done by correlation.
@@ -55,6 +55,12 @@
        </item>
        <item>
         <widget class="QwtPlot" name="dabScope">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>200</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spectrumview. &lt;/p&gt;&lt;p&gt;The spectrum of the incoming
                       signal is shown here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
@@ -89,6 +95,12 @@
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="QwtPlot" name="iqDisplay">
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>400</height>
+            </size>
+           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IQ
                           constallation of the decoded signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ideally one sees 4 dots, one in each quadrant
@@ -406,6 +418,18 @@
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
         <widget class="QwtPlot" name="phaseCarrPlot">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>200</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Phase vs. Carrier&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows
                       the phase in degree for each of the single carrier&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
