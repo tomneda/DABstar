@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2015
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,51 +19,53 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-#ifndef	__DATA_PROCESSOR__
-#define	__DATA_PROCESSOR__
+#ifndef  DATA_PROCESSOR_H
+#define  DATA_PROCESSOR_H
 
-#include	<vector>
-#include	"frame-processor.h"
-#include	<cstdio>
-#include	<cstring>
-#include	<QObject>
-#include	"ringbuffer.h"
+#include  <vector>
+#include  "frame-processor.h"
+#include  <cstdio>
+#include  <cstring>
+#include  <QObject>
+#include  "ringbuffer.h"
 
-class	RadioInterface;
-class	virtual_dataHandler;
-class	packetdata;
+class RadioInterface;
 
-class	DataProcessor: public QObject, public frameProcessor {
+class virtual_dataHandler;
+
+class packetdata;
+
+class DataProcessor : public QObject, public frameProcessor
+{
 Q_OBJECT
 public:
-	DataProcessor	(RadioInterface *mr,
-                  packetdata	*pd,
-                  RingBuffer<uint8_t>	*dataBuffer);
-	~DataProcessor();
-void	addtoFrame	(std::vector<uint8_t>);
+  DataProcessor(RadioInterface * mr, packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
+  ~DataProcessor();
+
+  void addtoFrame(const std::vector<uint8_t> &);
+
 private:
-	RadioInterface	*myRadioInterface;
-	int16_t		bitRate;
-	uint8_t		DSCTy;
-	int16_t		appType;
-	int16_t		packetAddress;
-	uint8_t		DGflag;
-	int16_t		FEC_scheme;
-	RingBuffer<uint8_t>* dataBuffer;
-	int16_t		expectedIndex;
-	std::vector<uint8_t>	series;
-	uint8_t		packetState;
-	int32_t		streamAddress;		// int since we init with -1
-//
-//	result handlers
-	void		handleTDCAsyncstream 	(uint8_t *, int32_t);
-	void		handlePackets		(uint8_t *, int32_t);
-	void		handlePacket		(uint8_t *);
-	virtual_dataHandler *my_dataHandler;
-//
+  RadioInterface * myRadioInterface;
+  int16_t bitRate;
+  uint8_t DSCTy;
+  int16_t appType;
+  int16_t packetAddress;
+  uint8_t DGflag;
+  int16_t FEC_scheme;
+  RingBuffer<uint8_t> * dataBuffer;
+  int16_t expectedIndex;
+  std::vector<uint8_t> series;
+  uint8_t packetState;
+  int32_t streamAddress;    // int since we init with -1
+
+  //	result handlers
+  void handleTDCAsyncstream(const uint8_t *, int32_t);
+  void handlePackets(const uint8_t *, int32_t);
+  void handlePacket(const uint8_t *);
+  virtual_dataHandler * my_dataHandler;
+  
 signals:
-	void		show_mscErrors		(int);
+  void show_mscErrors(int);
 };
 
 #endif

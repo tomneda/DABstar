@@ -55,7 +55,7 @@ BackendDriver::~BackendDriver()
 }
 
 
-void BackendDriver::addtoFrame(std::vector<uint8_t> theData)
+void BackendDriver::addtoFrame(const std::vector<uint8_t> & theData)
 {
   theProcessor->addtoFrame(theData);
 }

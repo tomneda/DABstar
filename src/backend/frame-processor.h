@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2010 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -19,24 +18,31 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-#ifndef	__FRAME_PROCESSOR__
-#define	__FRAME_PROCESSOR__
-#include	<vector>
-#include	<cstdint>
-#include	<cstdio>
+#ifndef  FRAME_PROCESSOR_H
+#define  FRAME_PROCESSOR_H
+
+#include  <vector>
+#include  <cstdint>
+#include  <cstdio>
 
 //
 //	virtual class, just for providing a common base
 //	for the real decoder classes
 
-class	frameProcessor {
+class frameProcessor
+{
 public:
-		frameProcessor	()	{}
-virtual		~frameProcessor	()	{}
-virtual	void	addtoFrame	(std::vector<uint8_t> ) {
-	fprintf (stderr, "in frameprocessor\n");
-}
+  frameProcessor()
+  {}
+
+  virtual ~frameProcessor()
+  {}
+
+  virtual void addtoFrame(const std::vector<uint8_t> &)
+  {
+    fprintf(stderr, "in frameprocessor\n");
+  }
 };
+
 #endif
 
