@@ -420,7 +420,6 @@ set(${objectName}_MOCS
         src/support/buttons/smallqlistview.h
         src/support/buttons/smallspinbox.h
         src/support/history-handler.h
-        src/support/color-selector.h
         src/support/time-table.h
         src/support/content-table.h
         src/support/coordinates.h

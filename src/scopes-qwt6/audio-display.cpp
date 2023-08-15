@@ -46,9 +46,9 @@ QString	colorString;
 	   displayBuffer [i] = 0;
 	spectrumBuffer		= new cmplx [spectrumSize];
 	dabSettings	-> beginGroup ("audioDisplay");
-	colorString	= dabSettings -> value ("displayColor",
-	                                                 "black"). toString();
-	this	->	displayColor	= QColor (colorString);
+//	colorString	= dabSettings -> value ("displayColor",
+//	                                                 "black"). toString();
+//	this	->	displayColor	= QColor (colorString);
 	colorString	= dabSettings -> value ("gridColor",
 	                                                 "black"). toString();
 	this	->	gridColor	= QColor (colorString);
@@ -61,7 +61,7 @@ QString	colorString;
 	                                                   512).toInt();
 	dabSettings	-> endGroup ();
 
-	this	-> plotGrid	-> setCanvasBackground (displayColor);
+	//this	-> plotGrid	-> setCanvasBackground (displayColor);
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
 	grid. setMajPen (QPen(gridColor, 0, Qt::DotLine));
 #else
@@ -191,19 +191,17 @@ void	audioDisplay::rightMouseClick	(const QPointF &point) {
 
 //  const QString displayColor = ColorSelector::show_dialog(ColorSelector::DISPCOLOR);
 //  if (displayColor.isEmpty()) return;
-  const QString gridColor = ColorSelector::show_dialog(ColorSelector::GRIDCOLOR);
-  if (gridColor.isEmpty()) return;
-  const QString curveColor = ColorSelector::show_dialog(ColorSelector::CURVECOLOR);
-  if (curveColor.isEmpty()) return;
+  if (!ColorSelector::show_dialog(gridColor, ColorSelector::GRIDCOLOR)) return;
+  if (!ColorSelector::show_dialog(curveColor, ColorSelector::CURVECOLOR)) return;
 
 	dabSettings	-> beginGroup ("audioDisplay");
-	dabSettings	-> setValue ("displayColor", displayColor);
-	dabSettings	-> setValue ("gridColor", gridColor);
-	dabSettings	-> setValue ("curveColor", curveColor);
+	//dabSettings	-> setValue ("displayColor", displayColor.name());
+	dabSettings	-> setValue ("gridColor", gridColor.name());
+	dabSettings	-> setValue ("curveColor", curveColor.name());
 	dabSettings	-> endGroup ();
-	this		-> displayColor	= QColor (displayColor);
-	this		-> gridColor	= QColor (gridColor);
-	this		-> curveColor	= QColor (curveColor);
+//	this		-> displayColor	= QColor (displayColor);
+//	this		-> gridColor	= QColor (gridColor);
+//	this		-> curveColor	= QColor (curveColor);
 	spectrumCurve. setPen (QPen (this -> curveColor, 2.0));
 	if (brush) {
            QBrush ourBrush (this -> curveColor); 
@@ -223,5 +221,5 @@ void	audioDisplay::rightMouseClick	(const QPointF &point) {
 #else
 	grid. setMinorPen (QPen(this -> gridColor, 0, Qt::DotLine));
 #endif
-	plotGrid	-> setCanvasBackground (this -> displayColor);
+	//plotGrid	-> setCanvasBackground (this -> displayColor);
 }

@@ -161,20 +161,18 @@ void CorrelationViewer::rightMouseClick(const QPointF & point)
 {
   (void)point;
 
-  const QString gridColor = ColorSelector::show_dialog(ColorSelector::GRIDCOLOR);
-  if (gridColor.isEmpty()) return;
-  const QString curveColor = ColorSelector::show_dialog(ColorSelector::CURVECOLOR);
-  if (curveColor.isEmpty()) return;
+  if (!ColorSelector::show_dialog(gridColor, ColorSelector::GRIDCOLOR)) return;
+  if (!ColorSelector::show_dialog(curveColor, ColorSelector::CURVECOLOR)) return;
 
   dabSettings->beginGroup("correlationViewer");
-  //dabSettings->setValue("displayColor", displayColor);
-  dabSettings->setValue("gridColor", gridColor);
-  dabSettings->setValue("curveColor", curveColor);
+  //dabSettings->setValue("displayColor", displayColor.name());
+  dabSettings->setValue("gridColor", gridColor.name());
+  dabSettings->setValue("curveColor", curveColor.name());
   dabSettings->endGroup();
 
   //this->displayColor = QColor(displayColor);
-  this->gridColor = QColor(gridColor);
-  this->curveColor = QColor(curveColor);
+  //this->gridColor = QColor(gridColor);
+  //this->curveColor = QColor(curveColor);
   spectrumCurve.setPen(QPen(this->curveColor, 2.0));
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
   grid. setMajPen (QPen(this -> gridColor, 0, Qt::DotLine));

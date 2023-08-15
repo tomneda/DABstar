@@ -20,50 +20,21 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  <QVBoxLayout>
+#include  <QColorDialog>
 #include  "color-selector.h"
 
 // /*static*/ const char ColorSelector::DISPCOLOR[]  = "Display Color";
 /*static*/ const char ColorSelector::GRIDCOLOR[]  = "Grid Color";
 /*static*/ const char ColorSelector::CURVECOLOR[] = "Curve Color";
 
-/*static*/ QString ColorSelector::show_dialog(const QString & iTopText)
+/*static*/ bool ColorSelector::show_dialog(QColor & ioColor, const QString & iTopText)
 {
-  ColorSelector * selector = new ColorSelector(iTopText);
-  int index = selector->exec();
-  QString colStr = selector->getColor(index);
-  delete selector;
-  return (index != 0 ? colStr : "");
-}
-
-
-ColorSelector::ColorSelector(const QString & topText)
-{
-  mpToptext = new QLabel(this);
-  mpToptext->setText(topText);
-  mpSelectorDisplay = new QListView(this);
-  QVBoxLayout * layOut = new QVBoxLayout;
-  layOut->addWidget(mpToptext);
-  layOut->addWidget(mpSelectorDisplay);
-  setWindowTitle(tr("color select"));
-  setLayout(layOut);
-
-  mColors = QStringList();
-  mColors << "--Quit--" << "white" << "black" << "red" << "darkRed" << "green" << "darkGreen" << "blue" << "darkBlue"
-          << "cyan" << "darkCyan" << "magenta" << "darkMagenta" << "yellow" << "darkYellow" << "gray" << "darkGray";
-  mColorList.setStringList(mColors);
-  mpSelectorDisplay->setModel(&mColorList);
-  connect(mpSelectorDisplay, SIGNAL(clicked(QModelIndex)), this, SLOT(select_color(QModelIndex)));
-  mSelectedItem = -1;
-}
-
-void ColorSelector::select_color(QModelIndex s)
-{
-  QDialog::done(s.row());
-}
-
-QString ColorSelector::getColor(int index)
-{
-  return mColors.at(index);
+  QColor color = QColorDialog::getColor(ioColor, nullptr, iTopText);
+  if (color.isValid())
+  {
+    ioColor = color;
+    return true;
+  }
+  return false;
 }
 

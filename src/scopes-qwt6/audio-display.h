@@ -70,7 +70,7 @@ private:
 	float		Window [4 * 512];
 	fftHandler	fft;
 	QwtPlotPicker   *lm_picker;
-	QColor		displayColor;
+	//QColor		displayColor;
 	QColor		gridColor;
 	QColor		curveColor;
 	bool		brush;

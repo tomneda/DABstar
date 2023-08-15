@@ -23,37 +23,16 @@
 #ifndef  COLOR_SELECTOR_H
 #define  COLOR_SELECTOR_H
 
-#include  <QDialog>
-#include  <QLabel>
-#include  <QListView>
-#include  <QStringListModel>
-#include  <QStringList>
-#include  <cstdint>
+//#include  <cstdint>
 
-class ColorSelector : public QDialog
+class ColorSelector
 {
-Q_OBJECT
 public:
   //static const char DISPCOLOR[];
   static const char GRIDCOLOR[];
   static const char CURVECOLOR[];
 
-  ColorSelector(const QString &);
-  ~ColorSelector() = default;
-
-  static QString show_dialog(const QString & iTopText);
-
-  QString getColor(int);
-
-private:
-  QLabel * mpToptext;
-  QListView * mpSelectorDisplay;
-  QStringListModel mColorList;
-  QStringList mColors;
-  int16_t mSelectedItem = 0;
-
-private slots:
-  void select_color(QModelIndex);
+  static bool show_dialog(QColor & ioColor, const QString & iTopText);
 };
 
 #endif

@@ -16,9 +16,9 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int displaySize, QSettings * da
 //  colorString = dabSettings->value("displayColor", "black").toString();
 //  displayColor = QColor(colorString);
   colorString = dabSettings->value("gridColor", "white").toString();
-  gridColor = QColor(colorString);
+  mGridColor = QColor(colorString);
   colorString = dabSettings->value("curveColor", "white").toString();
-  curveColor = QColor(colorString);
+  mCurveColor = QColor(colorString);
   brush = dabSettings->value("brush", 0).toInt() == 1;
   dabSettings->endGroup();
   plotgrid = dabScope;
@@ -27,14 +27,14 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int displaySize, QSettings * da
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
   grid	-> setMajPen (QPen(gridColor, 0, Qt::DotLine));
 #else
-  grid->setMajorPen(QPen(gridColor, 0, Qt::DotLine));
+  grid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
 #endif
   grid->enableXMin(true);
   grid->enableYMin(true);
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
   grid	-> setMinPen (QPen(gridColor, 0, Qt::DotLine));
 #else
-  grid->setMinorPen(QPen(gridColor, 0, Qt::DotLine));
+  grid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
 #endif
   grid->attach(plotgrid);
 
@@ -45,13 +45,13 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int displaySize, QSettings * da
   lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
   connect(lm_picker, SIGNAL (selected(const QPointF&)), this, SLOT (rightMouseClick(const QPointF &)));
 
-  spectrumCurve.setPen(QPen(curveColor, 2.0));
+  spectrumCurve.setPen(QPen(mCurveColor, 2.0));
   spectrumCurve.setOrientation(Qt::Horizontal);
   spectrumCurve.setBaseline(get_db(0));
 
   if (brush)
   {
-    QBrush ourBrush(curveColor);
+    QBrush ourBrush(mCurveColor);
     ourBrush.setStyle(Qt::Dense3Pattern);
     spectrumCurve.setBrush(ourBrush);
   }
@@ -97,32 +97,30 @@ void SpectrumScope::rightMouseClick(const QPointF & point)
 {
   (void)point;
 
-  const QString gridColor = ColorSelector::show_dialog(ColorSelector::GRIDCOLOR);
-  if (gridColor.isEmpty()) return;
-  const QString curveColor = ColorSelector::show_dialog(ColorSelector::CURVECOLOR);
-  if (curveColor.isEmpty()) return;
+  if (!ColorSelector::show_dialog(mGridColor, ColorSelector::GRIDCOLOR)) return;
+  if (!ColorSelector::show_dialog(mCurveColor, ColorSelector::CURVECOLOR)) return;
 
   dabSettings->beginGroup("spectrumViewer");
-  //dabSettings->setValue("displayColor", displayColor);
-  dabSettings->setValue("gridColor", gridColor);
-  dabSettings->setValue("curveColor", curveColor);
+  //dabSettings->setValue("displayColor", mDisplayColor.name());
+  dabSettings->setValue("gridColor", mGridColor.name());
+  dabSettings->setValue("curveColor", mCurveColor.name());
   dabSettings->endGroup();
 
   //this->displayColor = QColor(displayColor);
-  this->gridColor = QColor(gridColor);
-  this->curveColor = QColor(curveColor);
-  spectrumCurve.setPen(QPen(this->curveColor, 2.0));
+  //this->gridColor = QColor(gridColor);
+  //this->curveColor = QColor(curveColor);
+  spectrumCurve.setPen(QPen(mCurveColor, 2.0));
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
   grid->setMajPen(QPen(this->gridColor, 0, Qt::DotLine));
 #else
-  grid->setMajorPen(QPen(this->gridColor, 0, Qt::DotLine));
+  grid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
 #endif
   grid->enableXMin(true);
   grid->enableYMin(true);
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
   grid->setMinPen(QPen(this->gridColor, 0, Qt::DotLine));
 #else
-  grid->setMinorPen(QPen(this->gridColor, 0, Qt::DotLine));
+  grid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
 #endif
   //plotgrid->setCanvasBackground(this->displayColor);
 }

@@ -42,9 +42,9 @@ QString	colorString	= "black";
 	plotLength	= dabSettings -> value ("snrLength", 312). toInt ();
 	plotHeight	= dabSettings -> value ("snrHeight", 15). toInt ();
 	delayCount	= dabSettings	-> value ("snrDelay", 5). toInt ();
-	colorString	= dabSettings -> value ("displayColor", "black").
-	                                                       toString ();
-	displayColor	= QColor (colorString);
+//	colorString	= dabSettings -> value ("displayColor", "black").
+//	                                                       toString ();
+//	displayColor	= QColor (colorString);
 	colorString	= dabSettings -> value ("gridColor",
 	                                               "white"). toString();
 	gridColor	= QColor (colorString);
@@ -67,7 +67,7 @@ QString	colorString	= "black";
 	connect (snrLengthSelector, SIGNAL (valueChanged (int)),
 	         this, SLOT (set_snrLength (int)));
 	plotgrid	= snrPlot;
-	plotgrid	-> setCanvasBackground (displayColor);
+	//plotgrid	-> setCanvasBackground (displayColor);
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
 	grid. setMajPen (QPen(gridColor, 0, Qt::DotLine));
 #else
@@ -186,20 +186,18 @@ void	snrViewer::rightMouseClick	(const QPointF &point) {
 
 //  const QString displayColor = ColorSelector::show_dialog(ColorSelector::DISPCOLOR);
 //  if (displayColor.isEmpty()) return;
-  const QString gridColor = ColorSelector::show_dialog(ColorSelector::GRIDCOLOR);
-  if (gridColor.isEmpty()) return;
-  const QString curveColor = ColorSelector::show_dialog(ColorSelector::CURVECOLOR);
-  if (curveColor.isEmpty()) return;
+  if (!ColorSelector::show_dialog(gridColor, ColorSelector::GRIDCOLOR)) return;
+  if (!ColorSelector::show_dialog(curveColor, ColorSelector::CURVECOLOR)) return;
 
 	dabSettings	-> beginGroup ("snrViewer");
-	dabSettings	-> setValue ("displayColor", displayColor);
-	dabSettings	-> setValue ("gridColor", gridColor);
-	dabSettings	-> setValue ("curveColor", curveColor);
+	//dabSettings	-> setValue ("displayColor", displayColor.name());
+	dabSettings	-> setValue ("gridColor", gridColor.name());
+	dabSettings	-> setValue ("curveColor", curveColor.name());
 	dabSettings	-> endGroup ();
 
-	this		-> displayColor	= QColor (displayColor);
-	this		-> gridColor	= QColor (gridColor);
-	this		-> curveColor	= QColor (curveColor);
+//	this		-> displayColor	= QColor (displayColor);
+//	this		-> gridColor	= QColor (gridColor);
+//	this		-> curveColor	= QColor (curveColor);
 	spectrum_curve. setPen (QPen(this -> curveColor, 2.0));
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
 	grid. setMajPen (QPen(this -> gridColor, 0,
@@ -217,7 +215,7 @@ void	snrViewer::rightMouseClick	(const QPointF &point) {
 	grid. setMinorPen (QPen(this -> gridColor, 0,
 	                                                   Qt::DotLine));
 #endif
-	plotgrid	->  setCanvasBackground (this -> displayColor);
+	//plotgrid	->  setCanvasBackground (this -> displayColor);
 }
 
 void	snrViewer::handle_snrDumpButton () {
