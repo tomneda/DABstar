@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>snr widget</string>
+   <string>SNR vs. Time</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

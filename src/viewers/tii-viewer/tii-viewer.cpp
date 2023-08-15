@@ -150,7 +150,7 @@ void	tiiViewer::showTransmitters	(QByteArray transmitters) {
 	   return;
 	}
 
-	QString t	= "transmitter IDs ";
+	QString t	= "Transmitter IDs ";
 	for (int i = 0; i < transmitters. size (); i += 2) {
 	   uint8_t mainId	= transmitters. at (i);
 	   uint8_t subId	= transmitters. at (i + 1);
