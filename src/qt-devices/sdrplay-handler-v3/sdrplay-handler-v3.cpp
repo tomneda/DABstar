@@ -123,7 +123,7 @@ std::string errorMessage (int errorCode) {
 	}
 
 	biasT           =
-               sdrplaySettings -> value ("biasT", 0). toInt () != 0;
+               sdrplaySettings -> value ("biasT_selector", 0). toInt () != 0;
         if (biasT)
            biasT_selector -> setChecked (true);
 	
@@ -198,7 +198,6 @@ int32_t	sdrplayHandler_v3::getVFOFrequency() {
 bool	sdrplayHandler_v3::restartReader	(int32_t newFreq) {
 restartRequest r (newFreq);
 
-	fprintf (stderr, "calling for %d\n", newFreq);
         if (receiverRuns. load ())
            return true;
         vfoFrequency    = newFreq;
@@ -319,8 +318,10 @@ void	sdrplayHandler_v3::set_biasT (int v) {
 biasT_Request r (biasT_selector -> isChecked () ? 1 : 0);
 
 	messageHandler (&r);
+	sdrplaySettings -> beginGroup ("sdrplaySettings_v3");
 	sdrplaySettings -> setValue ("biasT_selector",
 	                              biasT_selector -> isChecked () ? 1 : 0);
+	sdrplaySettings -> endGroup ();
 }
 
 void	sdrplayHandler_v3::set_selectAntenna	(const QString &s) {
@@ -805,14 +806,14 @@ ULONG APIkeyValue_length = 255;
 	Handle	= LoadLibrary (libname);
 	if (Handle == nullptr) {
 	   if (RegOpenKey (HKEY_LOCAL_MACHINE,
-	                   TEXT("Software\\MiricsSDR\\API"),
+//	                   TEXT ("Software\\MiricsSDR\\API"),
+	                   TEXT ("Software\\SDRplay\\Service\\API"),
 	                   &APIkey) != ERROR_SUCCESS) {
               fprintf (stderr,
 	           "failed to locate API registry entry, error = %d\n",
 	           (int)GetLastError());
-	      return nullptr;
 	   }
-
+	   else {
 	   RegQueryValueEx (APIkey,
 	                    (wchar_t *)L"Install_Dir",
 	                    nullptr,
@@ -829,10 +830,25 @@ ULONG APIkeyValue_length = 255;
 	   RegCloseKey(APIkey);
 
 	   Handle	= LoadLibrary (x);
+	   }
 	   if (Handle == nullptr) {
+	      FILE *f1 = fopen ("C:\\Program Files\\SDRplay\\API\\x86\\sdrplay_api.dll", "r");
+	      if (f1 == nullptr)
+	         fprintf (stderr, "Niet gevonden\n");
+	      else
+	         fclose (f1);
 	      const wchar_t *y =
 	              L"C:\\Program Files\\SDRplay\\API\\x86\\sdrplay_api.dll";
 	      Handle	= LoadLibrary (y);
+	   }
+	   if (Handle == nullptr) {
+	      fprintf (stderr, "second attempt failed, going for dlopen\n");
+	      const char *y =
+	           "C:\\Program Files\\SDRplay\\API\\x86\\sdrplay_api.dll";
+	      Handle		= (HINSTANCE)dlopen (y, RTLD_NOW);
+	      if (Handle == nullptr) {
+	         fprintf (stderr, "error report %s\n", dlerror());
+	      }
 	   }
 	   if (Handle == nullptr) {
 	      fprintf (stderr, "Failed to open sdrplay_api.dll\n");
