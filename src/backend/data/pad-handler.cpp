@@ -32,7 +32,7 @@
 padHandler::padHandler(RadioInterface * mr)
 {
   myRadioInterface = mr;
-  connect(this, SIGNAL (showLabel(QString)), mr, SLOT (showLabel(QString)));
+  connect(this, SIGNAL (showLabel(const QString &)), mr, SLOT (showLabel(const QString &)));
   connect(this, SIGNAL (show_motHandling(bool)), mr, SLOT (show_motHandling(bool)));
   currentSlide = nullptr;
   //

@@ -2107,7 +2107,7 @@ void RadioInterface::setSynced(bool b)
 //
 //	called from the PAD handler
 
-void RadioInterface::showLabel(QString s)
+void RadioInterface::showLabel(const QString & s)
 {
 #ifdef  HAVE_PLUTO_RXTX
                                                                                                                           if (streamerOut != nullptr)

@@ -56,6 +56,7 @@ mp4Processor::mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   connect(this, SIGNAL (show_aacErrors(int)), mr, SLOT (show_aacErrors(int)));
   connect(this, SIGNAL (isStereo(bool)), mr, SLOT (setStereo(bool)));
   connect(this, SIGNAL (newFrame(int)), mr, SLOT (newFrame(int)));
+  connect(this, SIGNAL (show_emptyLabel(const QString &)), mr, SLOT (showLabel(const QString &)));
   connect(this, SIGNAL (show_rsCorrections(int, int)), mr, SLOT (show_rsCorrections(int, int)));
 
 #ifdef  __WITH_FDK_AAC__
@@ -308,6 +309,10 @@ bool mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
           uint8_t L0 = buffer[count - 1];
           uint8_t L1 = buffer[count - 2];
           my_padhandler.processPAD(buffer, count - 3, L1, L0);
+        }
+        else // no PAD data, so no dynamic label
+        {
+          emit show_emptyLabel("");
         }
         //
         //	then handle the audio

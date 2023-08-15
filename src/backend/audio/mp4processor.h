@@ -98,6 +98,7 @@ signals:
   void isStereo(bool);
   void newFrame(int);
   void show_rsCorrections(int, int);
+  void show_emptyLabel(const QString &);
 };
 
 #endif
