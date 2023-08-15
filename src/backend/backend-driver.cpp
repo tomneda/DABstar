@@ -26,15 +26,15 @@
 
 //	Driver program for the selected backend. Embodying that in a separate class makes the "Backend" class simpler.
 
-BackendDriver::BackendDriver(RadioInterface * mr, descriptorType * d, RingBuffer<int16_t> * audioBuffer, RingBuffer<uint8_t> * dataBuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump)
+BackendDriver::BackendDriver(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * audioBuffer, RingBuffer<uint8_t> * dataBuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump)
 {
   if (d->type == AUDIO_SERVICE)
   {
-    if (((audiodata *)d)->ASCTy != 077)
+    if (((Audiodata *)d)->ASCTy != 077)
     {
       theProcessor = new mp2Processor(mr, d->bitRate, audioBuffer);
     }
-    else if (((audiodata *)d)->ASCTy == 077)
+    else if (((Audiodata *)d)->ASCTy == 077)
     {
       theProcessor = new mp4Processor(mr, d->bitRate, audioBuffer, frameBuffer, dump);
     }
@@ -55,7 +55,7 @@ BackendDriver::~BackendDriver()
 }
 
 
-void BackendDriver::addtoFrame(std::vector<uint8_t> theData)
+void BackendDriver::addtoFrame(const std::vector<uint8_t> & theData)
 {
   theProcessor->addtoFrame(theData);
 }

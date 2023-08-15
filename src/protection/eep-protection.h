@@ -31,7 +31,7 @@ class EepProtection : public Protection
 public:
   EepProtection(int16_t, int16_t);
   ~EepProtection() override;
-  bool deconvolve(int16_t *, int32_t, uint8_t *) override;
+  bool deconvolve(const int16_t *, int32_t, uint8_t *) override;
 };
 
 #endif

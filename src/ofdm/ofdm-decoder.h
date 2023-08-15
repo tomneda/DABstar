@@ -49,10 +49,8 @@ public:
     float PhaseCorr;
   };
 
-  void processBlock_0(std::vector<cmplx>);
+  void processBlock_0(std::vector<cmplx>);  // copy of vector is intended
   void decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
-  void stop();
-  void reset();
 
 private:
   RadioInterface * const mpRadioInterface;
@@ -63,7 +61,7 @@ private:
 
   int32_t mShowCntStatistics = 0;
   int32_t mShowCntIqScope = 0;
-  int16_t mNextShownOfdmSymbIdx = 1;
+  int32_t mNextShownOfdmSymbIdx = 1;
   std::vector<cmplx> mPhaseReference;
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mDataVector;

@@ -58,16 +58,17 @@ class RadioInterface;
 class QSettings;
 class IQDisplay;
 class PhaseVsCarrDisp;
-class correlationViewer;
-class spectrumScope;
-class waterfallScope;
+class CorrelationViewer;
+class SpectrumScope;
+class WaterfallScope;
 
-class spectrumViewer : public QObject, Ui_scopeWidget
+class SpectrumViewer : public QObject, Ui_scopeWidget
 {
 Q_OBJECT
 public:
-  spectrumViewer(RadioInterface *, QSettings *, RingBuffer<cmplx> *, RingBuffer<cmplx> *, RingBuffer<float> *);
-  ~spectrumViewer() override;
+  SpectrumViewer(RadioInterface *, QSettings *, RingBuffer<cmplx> *, RingBuffer<cmplx> *, RingBuffer<float> *);
+  ~SpectrumViewer() override;
+
   void showSpectrum(int32_t, int32_t);
   void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
   void showFrequency(float);
@@ -89,7 +90,7 @@ private:
   RingBuffer<cmplx> * iqBuffer;
   RingBuffer<float> * mpCorrelationBuffer = nullptr;
   QwtPlotPicker * lm_picker{};
-  QColor mDisplayColor;
+  //QColor mDisplayColor;
   QColor mGridColor;
   QColor mCurveColor;
 
@@ -115,13 +116,9 @@ private:
 
   PhaseVsCarrDisp * mpPhaseVsCarrDisp = nullptr;
   IQDisplay * myIQDisplay = nullptr;
-  spectrumScope * mySpectrumScope = nullptr;
-  waterfallScope * myWaterfallScope = nullptr;
-  correlationViewer * mpCorrelationViewer = nullptr;
-
-private slots:
-  void rightMouseClick(const QPointF &);
+  SpectrumScope * mySpectrumScope = nullptr;
+  WaterfallScope * myWaterfallScope = nullptr;
+  CorrelationViewer * mpCorrelationViewer = nullptr;
 };
 
 #endif
-

@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,31 +19,20 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-#ifndef	__COLOR_SELECTOR__
-#define	__COLOR_SELECTOR__
-#
-#include	<QDialog>
-#include	<QLabel>
-#include	<QListView>
-#include	<QStringListModel>
-#include	<QStringList>
-#include	<cstdint>
 
-class	colorSelector: public QDialog {
-Q_OBJECT
+#ifndef  COLOR_SELECTOR_H
+#define  COLOR_SELECTOR_H
+
+//#include  <cstdint>
+
+class ColorSelector
+{
 public:
-			colorSelector	(const QString &);
-			~colorSelector	();
-	QString		getColor	(int);
-private:
-	QLabel		*toptext;
-	QListView	*selectorDisplay;
-	QStringListModel colorList;
-	QStringList	colors;
-	int16_t		selectedItem;
-private slots:
-void	select_color	(QModelIndex);
+  //static const char DISPCOLOR[];
+  static const char GRIDCOLOR[];
+  static const char CURVECOLOR[];
+
+  static bool show_dialog(QColor & ioColor, const QString & iTopText);
 };
 
 #endif

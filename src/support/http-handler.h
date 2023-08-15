@@ -73,7 +73,7 @@ private:
   std::atomic<bool> running;
   std::thread threadHandle;
   std::string theMap(cmplx address);
-  std::string coordinatesToJson(std::vector<httpData> & t);
+  std::string coordinatesToJson(const std::vector<httpData> & t);
   std::vector<httpData> transmitterList;
   std::mutex locker;
   bool autoBrowser_off;

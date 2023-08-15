@@ -21,12 +21,12 @@
 class RadioInterface;
 class QSettings;
 
-class spectrumScope : public QObject
+class SpectrumScope : public QObject
 {
 Q_OBJECT
 public:
-  spectrumScope(QwtPlot *, int, QSettings *);
-  ~spectrumScope();
+  SpectrumScope(QwtPlot *, int, QSettings *);
+  ~SpectrumScope();
 
   void showSpectrum(const double *, double *, int, int);
   void setBitDepth(int);
@@ -35,9 +35,9 @@ private:
   QwtPlotCurve spectrumCurve;
   QSettings * dabSettings;
   QwtPlotPicker * lm_picker;
-  QColor displayColor;
-  QColor gridColor;
-  QColor curveColor;
+  //QColor mDisplayColor;
+  QColor mGridColor;
+  QColor mCurveColor;
 
   int normalizer;
   double X_axis[256];

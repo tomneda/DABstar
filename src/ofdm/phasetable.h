@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2013 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,31 +19,36 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-#ifndef	__PHASE_TABLE__
-#define	__PHASE_TABLE__
 
-#include	<cstdio>
-#include	<cstdint>
-#include	"dab-constants.h"
+#ifndef  PHASE_TABLE_H
+#define  PHASE_TABLE_H
 
-struct phasetableElement {
-	int32_t	kmin, kmax;
-	int32_t i;
-	int32_t n;
-};
+#include  <cstdio>
+#include  <cstdint>
+#include  "dab-constants.h"
 
-
-class phaseTable {
+class PhaseTable
+{
 public:
-		phaseTable 	(int16_t);
-		~phaseTable();
-	float	get_Phi		(int32_t);
-private:
+  struct SPhasetableElement
+  {
+    int32_t kmin;
+    int32_t kmax;
+    int32_t i;
+    int32_t n;
+  };
 
-	struct phasetableElement	*currentTable;
-	int16_t		Mode;
-	int32_t		h_table (int32_t i, int32_t j);
+  explicit PhaseTable(int16_t);
+  ~PhaseTable() = default;;
+
+  [[nodiscard]] float get_Phi(int32_t k) const;
+
+private:
+  const struct SPhasetableElement * mpCurrentTable;
+  const int16_t mMode;
+
+  int32_t h_table(int32_t i, int32_t j) const;
 };
+
 #endif
 

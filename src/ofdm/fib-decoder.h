@@ -47,7 +47,7 @@ public:
   void connect_channel();
   void disconnect_channel();
   bool syncReached();
-  void dataforAudioService(const QString &, audiodata *);
+  void dataforAudioService(const QString &, Audiodata *);
   void dataforPacketService(const QString &, packetdata *, int16_t);
   int getSubChId(const QString &, uint32_t);
   std::vector<serviceId> getServices(int);
@@ -70,10 +70,12 @@ public:
   std::vector<epgElement> find_epgData(uint32_t);
   QStringList basicPrint();
   int scanWidth();
+
 protected:
   void process_FIB(uint8_t *, uint16_t);
+
 private:
-  std::vector<serviceId> insert(std::vector<serviceId> & l, serviceId n, int order);
+  std::vector<serviceId> insert(const std::vector<serviceId> & l, serviceId n, int order);
   RadioInterface * myRadioInterface;
   dabConfig * currentConfig;
   dabConfig * nextConfig;

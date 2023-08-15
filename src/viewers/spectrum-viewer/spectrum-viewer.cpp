@@ -32,7 +32,7 @@
 #include  "color-selector.h"
 
 
-spectrumViewer::spectrumViewer(RadioInterface * mr, QSettings * dabSettings, RingBuffer<cmplx> * sbuffer, RingBuffer<cmplx> * ibuffer, RingBuffer<float> * cbuffer)
+SpectrumViewer::SpectrumViewer(RadioInterface * mr, QSettings * dabSettings, RingBuffer<cmplx> * sbuffer, RingBuffer<cmplx> * ibuffer, RingBuffer<float> * cbuffer)
   : Ui_scopeWidget(),
     myFrame(nullptr),
     fft(SP_SPECTRUMSIZE, false)
@@ -68,16 +68,16 @@ spectrumViewer::spectrumViewer(RadioInterface * mr, QSettings * dabSettings, Rin
                                  + 0.08 * cos((4.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1)));
   }
 
-  mySpectrumScope = new spectrumScope(dabScope, SP_DISPLAYSIZE, dabSettings);
-  myWaterfallScope = new waterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
+  mySpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, dabSettings);
+  myWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
   myIQDisplay = new IQDisplay(iqDisplay);
   mpPhaseVsCarrDisp = new PhaseVsCarrDisp(phaseCarrPlot);
-  mpCorrelationViewer = new correlationViewer(impulseGrid, indexDisplay, dabSettings, mpCorrelationBuffer);
+  mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, dabSettings, mpCorrelationBuffer);
   //myNullScope = new nullScope(nullDisplay, 256, dabSettings);
   setBitDepth(12);
 }
 
-spectrumViewer::~spectrumViewer()
+SpectrumViewer::~SpectrumViewer()
 {
   dabSettings->beginGroup("spectrumViewer");
   dabSettings->setValue("position-x", myFrame.pos().x());
@@ -98,7 +98,7 @@ spectrumViewer::~spectrumViewer()
   //delete myNullScope;
 }
 
-void spectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
+void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
 {
   (void)amount;
 
@@ -180,12 +180,12 @@ void spectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
   myWaterfallScope->display(X_axis.data(), Y2_values.data(), dabWaterfallAmplitude->value(), vfoFrequency / 1000);
 }
 
-float spectrumViewer::get_db(float x) const
+float SpectrumViewer::get_db(float x) const
 {
   return 20 * log10((x + 1) / (float)(normalizer));
 }
 
-void spectrumViewer::setBitDepth(int16_t d)
+void SpectrumViewer::setBitDepth(int16_t d)
 {
   if (d < 0 || d > 32)
   {
@@ -201,22 +201,22 @@ void spectrumViewer::setBitDepth(int16_t d)
   mySpectrumScope->setBitDepth(normalizer);
 }
 
-void spectrumViewer::show()
+void SpectrumViewer::show()
 {
   myFrame.show();
 }
 
-void spectrumViewer::hide()
+void SpectrumViewer::hide()
 {
   myFrame.hide();
 }
 
-bool spectrumViewer::isHidden()
+bool SpectrumViewer::isHidden()
 {
   return myFrame.isHidden();
 }
 
-void spectrumViewer::showIQ(int amount)
+void SpectrumViewer::showIQ(int amount)
 {
   std::vector<cmplx> values(amount); // amount typ 1536
   std::vector<float> phase(amount);  // amount typ 1536
@@ -253,6 +253,11 @@ void spectrumViewer::showIQ(int amount)
         avg += r;
       }
     }
+    else
+    {
+      phase[i] = 0.0f;
+      values[i] = 0.0f;
+    }
   }
   avg /= (float)numRead;
 
@@ -260,7 +265,7 @@ void spectrumViewer::showIQ(int amount)
   mpPhaseVsCarrDisp->disp_phase_carr_plot(std::move(phase));
 }
 
-void spectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr)
+void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr)
 {
   if (myFrame.isHidden())
   {
@@ -274,7 +279,7 @@ void spectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTime
   phaseCorrection->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
 }
 
-void spectrumViewer::show_snr(float snr)
+void SpectrumViewer::show_snr(float snr)
 {
   if (myFrame.isHidden())
   {
@@ -283,7 +288,7 @@ void spectrumViewer::show_snr(float snr)
   snrDisplay->display(snr);
 }
 
-void spectrumViewer::show_correction(int c)
+void SpectrumViewer::show_correction(int c)
 {
   if (myFrame.isHidden())
   {
@@ -292,7 +297,7 @@ void spectrumViewer::show_correction(int c)
   correctorDisplay->display(c);
 }
 
-void spectrumViewer::show_clockErr(int e)
+void SpectrumViewer::show_clockErr(int e)
 {
   if (!myFrame.isHidden())
   {
@@ -300,69 +305,12 @@ void spectrumViewer::show_clockErr(int e)
   }
 }
 
-void spectrumViewer::rightMouseClick(const QPointF & point)
-{
-  (void) point;
-  colorSelector * selector;
-  int index;
-  selector = new colorSelector("display color");
-  index = selector->QDialog::exec();
-  QString displayColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-  selector = new colorSelector("grid color");
-  index = selector->QDialog::exec();
-  QString gridColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-  selector = new colorSelector("curve color");
-  index = selector->QDialog::exec();
-  QString curveColor = selector->getColor(index);
-  delete selector;
-  if (index == 0)
-  {
-    return;
-  }
-
-  dabSettings->beginGroup("spectrumViewer");
-  dabSettings->setValue("displayColor", displayColor);
-  dabSettings->setValue("gridColor", gridColor);
-  dabSettings->setValue("curveColor", curveColor);
-  dabSettings->endGroup();
-
-  mDisplayColor = QColor(displayColor);
-  mGridColor = QColor(gridColor);
-  mCurveColor = QColor(curveColor);
-  spectrumCurve->setPen(QPen(mCurveColor, 2.0));
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid		-> setMajPen (QPen(this -> gridColor, 0,
-                                                     Qt::DotLine));
-#else
-  grid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
-#endif
-  grid->enableXMin(true);
-  grid->enableYMin(true);
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid		-> setMinPen (QPen(this -> gridColor, 0,
-                                                     Qt::DotLine));
-#else
-  grid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
-#endif
-  plotgrid->setCanvasBackground(mDisplayColor);
-}
-
-void spectrumViewer::showFrequency(float f)
+void SpectrumViewer::showFrequency(float f)
 {
   frequencyDisplay->display(f);
 }
 
-void spectrumViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)
+void SpectrumViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)
 {
   mpCorrelationViewer->showCorrelation(dots, marker, v);
 }

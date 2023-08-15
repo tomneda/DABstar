@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -19,50 +18,52 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#
-#ifndef __FAAD_DECODER__
-#define __FAAD_DECODER__
+#ifndef FAAD_DECODER_H
+#define FAAD_DECODER_H
+
 #include        <QObject>
 #include        "neaacdec.h"
 #include        "ringbuffer.h"
 
-class   RadioInterface;
+class RadioInterface;
 
-typedef struct {
-        int	rfa;
-        int	dacRate;
-        int	sbrFlag;
-        int	psFlag;
-        int	aacChannelMode;
-        int	mpegSurround;
-	int	CoreChConfig;
-	int	CoreSrIndex;
-	int	ExtensionSrIndex;
+typedef struct
+{
+  int rfa;
+  int dacRate;
+  int sbrFlag;
+  int psFlag;
+  int aacChannelMode;
+  int mpegSurround;
+  int CoreChConfig;
+  int CoreSrIndex;
+  int ExtensionSrIndex;
 } stream_parms;
 
 
-class	faadDecoder: public QObject{
+class faadDecoder : public QObject
+{
 Q_OBJECT
 public:
-        faadDecoder     (RadioInterface *mr,
-                         RingBuffer<int16_t> *buffer);
-        ~faadDecoder();
-int16_t	 MP42PCM         (stream_parms *sp,
-                         uint8_t buffer [],
-                         int16_t bufferLength);
+  faadDecoder(RadioInterface * mr, RingBuffer<int16_t> * buffer);
+  ~faadDecoder();
+
+  int16_t MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t bufferLength);
+
 private:
-bool    initialize      (stream_parms *);
+  bool initialize(stream_parms *);
 
-        bool            processorOK;
-        bool            aacInitialized;
-        uint32_t        aacCap;
-        NeAACDecHandle  aacHandle;
-        NeAACDecConfigurationPtr        aacConf;
-        NeAACDecFrameInfo       hInfo;
-        int32_t         baudRate;
-        RingBuffer<int16_t>     *audioBuffer;
-signals:
-        void                    newAudio (int, int);
+  bool processorOK;
+  bool aacInitialized;
+  uint32_t aacCap;
+  NeAACDecHandle aacHandle;
+  NeAACDecConfigurationPtr aacConf;
+  NeAACDecFrameInfo hInfo;
+  int32_t baudRate;
+  RingBuffer<int16_t> * audioBuffer;
+
+  signals:
+  void newAudio(int, int);
 };
-#endif
 
+#endif

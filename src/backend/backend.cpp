@@ -31,7 +31,7 @@
 #define CUSize  (4 * 16)
 
 //	fragmentsize == Length * CUSize
-Backend::Backend(RadioInterface * mr, descriptorType * d, RingBuffer<int16_t> * audiobuffer, RingBuffer<uint8_t> * databuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag) :
+Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * audiobuffer, RingBuffer<uint8_t> * databuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag) :
   deconvolver(d),
   outV(d->bitRate * 24),
   driver(mr, d, audiobuffer, databuffer, frameBuffer, dump)

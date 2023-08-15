@@ -69,7 +69,7 @@ void mscHandler::reset_Channel()
   locker.unlock();
 }
 
-void mscHandler::stop_service(descriptorType * d, int flag)
+void mscHandler::stop_service(DescriptorType * d, int flag)
 {
   fprintf(stderr, "obsolete function stopService\n");
   locker.lock();
@@ -104,7 +104,7 @@ void mscHandler::stop_service(int subchId, int flag)
   locker.unlock();
 }
 
-bool mscHandler::set_Channel(descriptorType * d, RingBuffer<int16_t> * audioBuffer, RingBuffer<uint8_t> * dataBuffer, FILE * dump, int flag)
+bool mscHandler::set_Channel(DescriptorType * d, RingBuffer<int16_t> * audioBuffer, RingBuffer<uint8_t> * dataBuffer, FILE * dump, int flag)
 {
   fprintf(stderr, "going to open %s\n", d->serviceName.toLatin1().data());
   //	locker. lock();

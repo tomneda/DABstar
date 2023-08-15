@@ -14,7 +14,7 @@
 class PhaseVsCarrDisp
 {
 public:
-  PhaseVsCarrDisp(QwtPlot * plot);
+  explicit PhaseVsCarrDisp(QwtPlot * plot);
   ~PhaseVsCarrDisp() = default;
 
   void disp_phase_carr_plot(const std::vector<float> && iPhaseVec);

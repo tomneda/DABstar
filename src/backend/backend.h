@@ -50,7 +50,7 @@ class Backend
 {
 #endif
 public:
-  Backend(RadioInterface * mr, descriptorType * d, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *, int);
+  Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *, int);
   ~Backend();
 
   int32_t process(int16_t *, int16_t);

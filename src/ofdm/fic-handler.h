@@ -45,7 +45,7 @@ Q_OBJECT
 public:
   FicHandler(RadioInterface *, uint8_t);
   ~FicHandler();
-  void process_ficBlock(std::vector<int16_t> & data, int32_t blkno);
+  void process_ficBlock(const std::vector<int16_t> & data, int32_t blkno);
   void stop();
   void restart();
   void start_ficDump(FILE *);
@@ -54,10 +54,10 @@ public:
 private:
   DabParams params;
   ViterbiSpiral myViterbi;
-  uint8_t bitBuffer_out[768];
-  int16_t ofdm_input[2304];
-  bool punctureTable[3072 + 24];
-  uint8_t fibBits[4 * 768];
+  std::array<uint8_t, 768> bitBuffer_out;
+  std::array<int16_t,2304> ofdm_input;
+  std::array<bool, 3072 + 24> punctureTable;
+  std::array<uint8_t, 4 * 768> fibBits;
 
   void process_ficInput(int16_t);
   int16_t index;

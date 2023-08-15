@@ -161,7 +161,7 @@ EepProtection::~EepProtection()
 {
 }
 
-bool EepProtection::deconvolve(int16_t * v, int32_t size, uint8_t * outBuffer)
+bool EepProtection::deconvolve(const int16_t * v, int32_t size, uint8_t * outBuffer)
 {
 
   int16_t inputCounter = 0;

@@ -51,15 +51,9 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mDataVector.resize(mDabPar.K);
 }
 
-void OfdmDecoder::stop()
-{}
-
-void OfdmDecoder::reset()
-{}
-
 /**
  */
-void OfdmDecoder::processBlock_0(std::vector<cmplx> buffer)
+void OfdmDecoder::processBlock_0(std::vector<cmplx> buffer) // copy is intended as used as fft buffer
 {
   mFftHandler.fft(buffer);
   /**
@@ -81,61 +75,46 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
 {
   memcpy(mFftBuffer.data(), &(buffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
-//  constexpr float MAX_PHASE_ANGLE = 10.0f / 360.0f * 2.0f * M_PI;
-//  limit(iPhaseCorr, -MAX_PHASE_ANGLE, MAX_PHASE_ANGLE);
-
-  // const cmplx phaseRotator = cmplx(cosf(iPhaseCorr), -sinf(iPhaseCorr));
   const cmplx phaseRotator = std::exp(cmplx(0.0f, -iPhaseCorr));
 
-  // fftlabel:
-  /**
-   *	first step: do the FFT
-   */
-
   mFftHandler.fft(mFftBuffer);
-
-  //const cmplx phaseShift = std::exp(cmplx(0.0f, 45.0f / 360.0f * 2.0f * M_PI));
-
 
   /**
    *	a little optimization: we do not interchange the
    *	positive/negative frequencies to their right positions.
    *	The de-interleaving understands this
-   */
-  // toBitsLabel:
-  /**
+   *
    *	Note that from here on, we are only interested in the
    *	"carriers", the useful carriers of the FFT output
    */
-  for (int16_t i = 0; i < mDabPar.K; i++)
+  for (int16_t carrierIdx = 0; carrierIdx < mDabPar.K; carrierIdx++)
   {
-    int16_t index = mFreqInterleaver.map_k_to_fft_bin(i);
+    int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(carrierIdx);
 
-    if (index < 0)
+    if (fftIdx < 0)
     {
-      index += mDabPar.T_u;
+      fftIdx += mDabPar.T_u;
     }
 
     /**
      *	decoding is computing the phase difference between
-     *	carriers w ith the same index in subsequent blocks.
+     *	carriers with the same index in subsequent blocks.
      *	The carrier of a block is the reference for the carrier
      *	on the same position in the next block
      */
-    cmplx r1 = mFftBuffer[index] * conj(mPhaseReference[index]);
+    cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
     r1 *= phaseRotator; // fine correction of phase which can't be done in the time domain
-    mDataVector[i] = r1;
+    mDataVector[carrierIdx] = r1;
     const float ab1 = abs(r1);
 
-    // split the real and the imaginary part and scale it
-    // we make the bits into softbits in the range -127 .. 127 (+/- 255?)
-    oBits[i] =             (int16_t)(-(real(r1) * 255.0f) / ab1);
-    oBits[mDabPar.K + i] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
+    // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
+    // TODO: tomneda: is normalizing over one sample with ab1 ok? or better over the average of entire symbol?
+    oBits[carrierIdx]             = (int16_t)(-(real(r1) * 255.0f) / ab1);
+    oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
   }
 
-  //	From time to time we show the constellation of symbol 2.
-
-  if (++mShowCntIqScope > mDabPar.L)
+  //	From time to time we show the constellation of the current symbol
+  if (++mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
   {
     mpIqBuffer->putDataIntoBuffer(mDataVector.data(), mDabPar.K);
     emit showIQ(mDabPar.K);
@@ -179,14 +158,15 @@ float OfdmDecoder::compute_mod_quality(const std::vector<cmplx> & v) const
   return sqrtf(squareVal / (float)mDabPar.K) / (float)M_PI * 180.0f; // in degree
 }
 
-//	While DAB symbols do not carry pilots, it is known that
-//	arg (carrier [i, j] * conj (carrier [i + 1, j])
-//	should be K * M_PI / 4,  (k in {1, 3, 5, 7}) so basically
-//	carriers in decoded symbols can be used as if they were pilots
-//
-//	so, with that in mind we experiment with formula 5.39
-//	and 5.40 from "OFDM Baseband Receiver Design for Wireless
-//	Communications (Chiueh and Tsai)"
+/*
+ * While DAB symbols do not carry pilots, it is known that
+ * arg (carrier [i, j] * conj (carrier [i + 1, j])
+ * should be K * M_PI / 4,  (k in {1, 3, 5, 7}) so basically
+ * carriers in decoded symbols can be used as if they were pilots
+ * so, with that in mind we experiment with formula 5.39
+ * and 5.40 from "OFDM Baseband Receiver Design for Wireless
+ * Communications (Chiueh and Tsai)"
+ */
 float OfdmDecoder::compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const
 {
   cmplx leftTerm;

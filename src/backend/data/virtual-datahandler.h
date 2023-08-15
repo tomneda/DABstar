@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,21 +19,24 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef		__VIRTUAL_DATAHANDLER__
-#define		__VIRTUAL_DATAHANDLER__
-#include	"dab-constants.h"
-#include	<QObject>
-#include	<vector>
+#ifndef  VIRTUAL_DATAHANDLER_H
+#define  VIRTUAL_DATAHANDLER_H
+
+#include  "dab-constants.h"
+#include  <QObject>
+#include  <vector>
 
 
-class	virtual_dataHandler:public QObject {
+class virtual_dataHandler : public QObject
+{
 Q_OBJECT
 public:
-		virtual_dataHandler	() {}
-virtual		~virtual_dataHandler	() {}
-virtual
-	void	add_mscDatagroup	(std::vector<uint8_t>) {}
+  virtual_dataHandler() = default;
+  virtual ~virtual_dataHandler() = default;
+
+  virtual void add_mscDatagroup(const std::vector<uint8_t> &)  {}
 };
+
 #endif
 
 

@@ -45,9 +45,10 @@ struct v
 class ViterbiSpiral
 {
 public:
-  ViterbiSpiral(int16_t, bool spiral = false);
-  ~ViterbiSpiral(void);
-  void deconvolve(int16_t *, uint8_t *);
+  explicit ViterbiSpiral(int16_t, bool spiral = false);
+  ~ViterbiSpiral();
+
+  void deconvolve(const int16_t *, uint8_t *);
 
 private:
   bool spiral;

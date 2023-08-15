@@ -71,7 +71,7 @@ public:
   std::vector<serviceId> getServices(int);
   bool is_audioService(const QString & s);
   bool is_packetService(const QString & s);
-  void dataforAudioService(const QString &, audiodata *);
+  void dataforAudioService(const QString &, Audiodata *);
   void dataforPacketService(const QString &, packetdata *, int16_t);
   int getSubChId(const QString &, uint32_t);
   uint8_t get_ecc();
@@ -89,9 +89,9 @@ public:
 
   //	for the mscHandler
   void reset_Services();
-  void stop_service(descriptorType *, int);
+  void stop_service(DescriptorType *, int);
   void stop_service(int, int);
-  bool set_audioChannel(audiodata *, RingBuffer<int16_t> *, FILE *, int);
+  bool set_audioChannel(Audiodata *, RingBuffer<int16_t> *, FILE *, int);
   bool set_dataChannel(packetdata *, RingBuffer<uint8_t> *, int);
   void set_tiiDetectorMode(bool);
 

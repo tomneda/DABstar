@@ -78,7 +78,7 @@ private:
 	QwtPlotGrid	grid;
 	RingBuffer<cmplx>	*tiiBuffer;
 	QwtPlotPicker	*lm_picker;
-	QColor		displayColor;
+	//QColor		displayColor;
 	QColor		gridColor;
 	QColor		curveColor;
 

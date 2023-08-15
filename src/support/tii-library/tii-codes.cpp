@@ -322,20 +322,20 @@ void TiiHandler::readFile(FILE * f)
   cache.resize(count);
 }
 
-int TiiHandler::readColumns(std::vector<QString> & v, char * b, int N)
+int TiiHandler::readColumns(std::vector<QString> & oV, const char * b, int N)
 {
   int charp = 0;
   std::array<char, 256> tb;
   int elementCount = 0;
   QString element;
-  v.resize(0);
+  oV.resize(0);
   while ((*b != 0) && (*b != '\n'))
   {
     if (*b == SEPARATOR)
     {
       tb[charp] = 0;
       QString ss = QString::fromUtf8(tb.data());
-      v.push_back(ss);
+      oV.push_back(ss);
       charp = 0;
       elementCount++;
       if (elementCount >= N)

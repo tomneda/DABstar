@@ -47,11 +47,11 @@ public:
   mscHandler(RadioInterface *, uint8_t, RingBuffer<uint8_t> *);
   ~mscHandler();
   void process_mscBlock(const std::vector<int16_t> & fbits, int16_t blkno);
-  bool set_Channel(descriptorType *, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *, int);
+  bool set_Channel(DescriptorType *, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *, int);
   //
   //
   void reset_Channel();
-  void stop_service(descriptorType *, int);
+  void stop_service(DescriptorType *, int);
   void stop_service(int, int);
 private:
   RadioInterface * myRadioInterface;

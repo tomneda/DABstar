@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1106</width>
-    <height>1357</height>
+    <width>975</width>
+    <height>646</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,18 +16,26 @@
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="4" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item row="0" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="QwtPlot" name="phaseCarrPlot">
+        <widget class="QwtPlot" name="impulseGrid">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>150</height>
+          </size>
+         </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Phase vs. Carrier&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows the phase in degree for each of the single carrier&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display. Time synchronization is done by correlation.
+                      The correlation result is depicted here. The selected &amp;quot;peak&amp;quot; is the one at (or near) sample 504.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                    </string>
          </property>
         </widget>
        </item>
       </layout>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QSlider" name="scopeAmplification">
@@ -47,6 +55,12 @@
        </item>
        <item>
         <widget class="QwtPlot" name="dabScope">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>150</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spectrumview. &lt;/p&gt;&lt;p&gt;The spectrum of the incoming
                       signal is shown here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
@@ -56,7 +70,7 @@
        </item>
       </layout>
      </item>
-     <item row="4" column="1">
+     <item row="2" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <property name="sizeConstraint">
         <enum>QLayout::SetFixedSize</enum>
@@ -65,8 +79,17 @@
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="QwtPlot" name="iqDisplay">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>100</height>
+            </size>
+           </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IQ constallation of the decoded signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ideally one sees 4 dots, one in each quadrant &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IQ
+                          constallation of the decoded signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ideally one sees 4 dots, one in each quadrant
+                          &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                        </string>
            </property>
           </widget>
          </item>
@@ -348,42 +371,7 @@
        </item>
       </layout>
      </item>
-     <item row="1" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QwtPlot" name="impulseGrid">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display. Time synchronization is done by correlation.
-                      The correlation result is depicted here. The selected &amp;quot;peak&amp;quot; is the one at (or near) sample 504.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                    </string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="indexDisplay">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If more than one transmitter is detected, the relative distance - in
-                  msec - is shown between the arrival time of the data of the transmitter that is used, and the arrival time of the data of
-                  the other transmitter.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                </string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
+     <item row="2" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QSlider" name="dabWaterfallAmplitude">
@@ -403,12 +391,53 @@
        </item>
        <item>
         <widget class="QwtPlot" name="dabWaterfall">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>100</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The waterfall of the spectrum of the incoming signal&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="3" column="0" colspan="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QwtPlot" name="phaseCarrPlot">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>150</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Phase vs. Carrier&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows
+                      the phase in degree for each of the single carrier&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                    </string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QLabel" name="indexDisplay">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If more than one transmitter is detected, the relative distance - in
+                  msec - is shown between the arrival time of the data of the transmitter that is used, and the arrival time of the data of
+                  the other transmitter.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                </string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

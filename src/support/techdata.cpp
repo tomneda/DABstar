@@ -27,7 +27,7 @@
 #include  "dab-tables.h"
 #include  "color-selector.h"
 
-techData::techData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * audioData) :
+TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * audioData) :
   myFrame(nullptr)
 {
   myRadioInterface = mr;
@@ -54,7 +54,7 @@ techData::techData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * aud
   connect(timeTable_button, SIGNAL (clicked()), this, SIGNAL (handle_timeTable()));
 }
 
-techData::~techData()
+TechData::~TechData()
 {
   dabSettings->beginGroup("techDataSettings");
   dabSettings->setValue("position-x", myFrame.pos().x());
@@ -66,7 +66,7 @@ techData::~techData()
   delete the_audioDisplay;
 }
 
-void techData::cleanUp()
+void TechData::cleanUp()
 {
   programName->setText(QString(""));
   rsCorrections->display(0);
@@ -86,7 +86,7 @@ void techData::cleanUp()
   audioRate->display(0);
 }
 
-void techData::show_serviceData(audiodata * ad)
+void TechData::show_serviceData(Audiodata * ad)
 {
   show_serviceName(ad->serviceName);
   show_serviceId(ad->SId);
@@ -101,23 +101,23 @@ void techData::show_serviceData(audiodata * ad)
   show_fm(ad->fmFrequency);
 }
 
-void techData::show()
+void TechData::show()
 {
   myFrame.show();
 }
 
-void techData::hide()
+void TechData::hide()
 {
   myFrame.hide();
 }
 
-bool techData::isHidden()
+bool TechData::isHidden()
 {
   return myFrame.isHidden();
 }
 
 
-void techData::show_frameErrors(int e)
+void TechData::show_frameErrors(int e)
 {
   QPalette p = frameError_display->palette();
   if (100 - 4 * e < 80)
@@ -133,7 +133,7 @@ void techData::show_frameErrors(int e)
   frameError_display->setValue(100 - 4 * e);
 }
 
-void techData::show_aacErrors(int e)
+void TechData::show_aacErrors(int e)
 {
   QPalette p = aacError_display->palette();
   if (100 - 4 * e < 80)
@@ -148,7 +148,7 @@ void techData::show_aacErrors(int e)
   aacError_display->setValue(100 - 4 * e);
 }
 
-void techData::show_rsErrors(int e)
+void TechData::show_rsErrors(int e)
 {
   QPalette p = rsError_display->palette();
   if (100 - 4 * e < 80)
@@ -163,19 +163,19 @@ void techData::show_rsErrors(int e)
   rsError_display->setValue(100 - 4 * e);
 }
 
-void techData::show_rsCorrections(int c, int ec)
+void TechData::show_rsCorrections(int c, int ec)
 {
   rsCorrections->display(c);
   ecCorrections->display(ec);
 }
 
-void techData::show_motHandling(bool b)
+void TechData::show_motHandling(bool b)
 {
 
   motAvailable->setStyleSheet(b ? "QLabel {background-color : green; color: white}" : "QLabel {background-color : red; color : white}");
 }
 
-void techData::show_timetableButton(bool b)
+void TechData::show_timetableButton(bool b)
 {
   if (b)
   {
@@ -187,7 +187,7 @@ void techData::show_timetableButton(bool b)
   }
 }
 
-void techData::show_frameDumpButton(bool b)
+void TechData::show_frameDumpButton(bool b)
 {
   if (b)
   {
@@ -199,42 +199,42 @@ void techData::show_frameDumpButton(bool b)
   }
 }
 
-void techData::show_serviceName(const QString & s)
+void TechData::show_serviceName(const QString & s)
 {
   programName->setText(s);
 }
 
-void techData::show_serviceId(int SId)
+void TechData::show_serviceId(int SId)
 {
   serviceIdDisplay->display(SId);
 }
 
-void techData::show_bitRate(int br)
+void TechData::show_bitRate(int br)
 {
   bitrateDisplay->display(br);
 }
 
-void techData::show_startAddress(int sa)
+void TechData::show_startAddress(int sa)
 {
   startAddressDisplay->display(sa);
 }
 
-void techData::show_length(int l)
+void TechData::show_length(int l)
 {
   lengthDisplay->display(l);
 }
 
-void techData::show_subChId(int subChId)
+void TechData::show_subChId(int subChId)
 {
   subChIdDisplay->display(subChId);
 }
 
-void techData::show_language(int l)
+void TechData::show_language(int l)
 {
   language->setText(getLanguage(l));
 }
 
-void techData::show_ASCTy(int a)
+void TechData::show_ASCTy(int a)
 {
   ASCTy->setText(a == 077 ? "DAB+" : "DAB");
   if (a == 077)
@@ -249,18 +249,18 @@ void techData::show_ASCTy(int a)
   }
 }
 
-void techData::show_uep(int shortForm, int protLevel)
+void TechData::show_uep(int shortForm, int protLevel)
 {
   QString protL = getProtectionLevel(shortForm, protLevel);
   uepField->setText(protL);
 }
 
-void techData::show_codeRate(int shortForm, int protLevel)
+void TechData::show_codeRate(int shortForm, int protLevel)
 {
   codeRate->setText(getCodeRate(shortForm, protLevel));
 }
 
-void techData::show_fm(int freq)
+void TechData::show_fm(int freq)
 {
   if (freq == -1)
   {
@@ -277,7 +277,7 @@ void techData::show_fm(int freq)
   }
 }
 
-void techData::audioDataAvailable(int amount, int rate)
+void TechData::audioDataAvailable(int amount, int rate)
 {
   int16_t buffer[amount];
 
@@ -288,7 +288,7 @@ void techData::audioDataAvailable(int amount, int rate)
   }
 }
 
-void techData::framedumpButton_text(const QString & text, int size)
+void TechData::framedumpButton_text(const QString & text, int size)
 {
   QFont font = framedumpButton->font();
   font.setPointSize(size);
@@ -297,7 +297,7 @@ void techData::framedumpButton_text(const QString & text, int size)
   framedumpButton->update();
 }
 
-void techData::audiodumpButton_text(const QString & text, int size)
+void TechData::audiodumpButton_text(const QString & text, int size)
 {
   QFont font = audiodumpButton->font();
   font.setPointSize(size);
@@ -306,17 +306,17 @@ void techData::audiodumpButton_text(const QString & text, int size)
   audiodumpButton->update();
 }
 
-void techData::showRate(int rate)
+void TechData::showRate(int rate)
 {
   audioRate->display(rate);
 }
 
-void techData::showMissed(int missed)
+void TechData::showMissed(int missed)
 {
   missedSamples->display(missed);
 }
 
-void techData::hideMissed()
+void TechData::hideMissed()
 {
   missedLabel->hide();
   missedSamples->hide();

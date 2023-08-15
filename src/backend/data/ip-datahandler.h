@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2015
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,29 +19,34 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef	__IP_DATAHANDLER__
-#define	__IP_DATAHANDLER__
-#include	"dab-constants.h"
-#include	"virtual-datahandler.h"
-#include	<vector>
-#include	"ringbuffer.h"
+#ifndef  IP_DATAHANDLER_H
+#define  IP_DATAHANDLER_H
 
-class	RadioInterface;
+#include  "dab-constants.h"
+#include  "virtual-datahandler.h"
+#include  <vector>
+#include  "ringbuffer.h"
 
-class	ip_dataHandler:public virtual_dataHandler {
+class RadioInterface;
+
+class ip_dataHandler : public virtual_dataHandler
+{
 Q_OBJECT
 public:
-		ip_dataHandler		(RadioInterface *,
-	                                 RingBuffer<uint8_t> *);
-		~ip_dataHandler();
-	void	add_mscDatagroup	(std::vector<uint8_t>);
+  ip_dataHandler(RadioInterface *, RingBuffer<uint8_t> *);
+  ~ip_dataHandler() override = default;
+
+  void add_mscDatagroup(const std::vector<uint8_t> &) override ;
+
 private:
-	void	process_ipVector	(std::vector<uint8_t>);
-	void	process_udpVector	(uint8_t *, int16_t);
-	int16_t	handledPackets;
-	RingBuffer<uint8_t>*	dataBuffer;
+  void process_ipVector(const std::vector<uint8_t> &);
+  void process_udpVector(const uint8_t *, int16_t);
+
+  int16_t handledPackets;
+  RingBuffer<uint8_t> * dataBuffer;
+
 signals:
-	void	writeDatagram		(int);
+  void writeDatagram(int);
 };
 
 #endif

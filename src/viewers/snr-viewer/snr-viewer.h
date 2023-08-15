@@ -78,7 +78,7 @@ private:
 	float		get_db		(float);
 	int16_t		displaySize;
 	QwtPlot		*plotgrid;
-        QColor          displayColor;
+        //QColor          displayColor;
         QColor          gridColor;
         QColor          curveColor;
 	int		plotLength;

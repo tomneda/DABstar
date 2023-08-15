@@ -74,7 +74,7 @@ class audioDisplay;
 class	dabStreamer;
 #endif
 
-class techData;
+class TechData;
 
 #include  "ui_config-helper.h"
 
@@ -181,7 +181,7 @@ private:
   RingBuffer<uint8_t> frameBuffer;
   RingBuffer<uint8_t> dataBuffer;
   RingBuffer<int16_t> audioBuffer;
-  spectrumViewer my_spectrumViewer;
+  SpectrumViewer my_spectrumViewer;
   //correlationViewer my_correlationViewer;
   tiiViewer my_tiiViewer;
   snrViewer my_snrViewer;
@@ -206,7 +206,7 @@ private:
   int maxDistance;
   void LOG(const QString &, const QString &);
   bool error_report;
-  techData * theTechWindow;
+  TechData * theTechWindow;
   Ui_configWidget configWidget;
   QSettings * dabSettings;
   int16_t tii_delay;
@@ -242,12 +242,11 @@ private:
   SNDFILE * rawDumper;
   SNDFILE * audioDumper;
   FILE * scanDumpFile;
-  void set_Colors();
   void set_channelButton(int);
   QStandardItemModel model;
   std::vector<serviceId> serviceList;
   bool isMember(const std::vector<serviceId> &, serviceId);
-  std::vector<serviceId> insert(std::vector<serviceId> &, serviceId, int);
+  std::vector<serviceId> insert(const std::vector<serviceId> &, serviceId, int);
 
   void show_pause_slide();
   QTimer displayTimer;
@@ -280,7 +279,7 @@ private:
   void stop_etiHandler();
   QString checkDir(const QString);
   //
-  void startAudioservice(audiodata *);
+  void startAudioservice(Audiodata *);
   void startPacketservice(const QString &);
   void startScanning();
   void stopScanning(bool);

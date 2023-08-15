@@ -1,4 +1,3 @@
-#
 /******************************************************************************
 ** kjmp2 -- a minimal MPEG-1 Audio Layer II decoder library                  **
 *******************************************************************************
@@ -26,77 +25,79 @@
 //	for use in the sdr-j DAB/DAB+ receiver
 //	all rights remain where they belong
 
-#ifndef __MP2PROCESSOR__
-#define	__MP2PROCESSOR__
+#ifndef MP2PROCESSOR_H
+#define MP2PROCESSOR_H
 
-#include	<utility>
-#include	<cstdio>
-#include	<cstdint>
-#include	<cmath>
-#include	<QObject>
-#include	<cstdio>
-#include	"frame-processor.h"
-#include	"ringbuffer.h"
-#include	"pad-handler.h"
+#include  <utility>
+#include  <cstdio>
+#include  <cstdint>
+#include  <cmath>
+#include  <QObject>
+#include  <cstdio>
+#include  "frame-processor.h"
+#include  "ringbuffer.h"
+#include  "pad-handler.h"
 
 #define KJMP2_MAX_FRAME_SIZE    1440  // the maximum size of a frame
 #define KJMP2_SAMPLES_PER_FRAME 1152  // the number of samples per frame
 
 // quantizer specification structure
-struct quantizer_spec {
-	int32_t nlevels;
-	uint8_t grouping;
-	uint8_t cw_bits;
+struct quantizer_spec
+{
+  int32_t nlevels;
+  uint8_t grouping;
+  uint8_t cw_bits;
 };
 
-class	RadioInterface;
+class RadioInterface;
 
-class	mp2Processor: public QObject, public frameProcessor {
+class mp2Processor : public QObject, public frameProcessor
+{
 Q_OBJECT
 public:
-			mp2Processor	(RadioInterface *,
-	                                 int16_t,
-	                                 RingBuffer<int16_t> *);
-			~mp2Processor();
-	void		addtoFrame	(std::vector<uint8_t>);
+  mp2Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *);
+  ~mp2Processor();
+  void addtoFrame(const std::vector<uint8_t> &);
 
 private:
-	RadioInterface	*myRadioInterface;
-	int16_t		bitRate;
-	padHandler	my_padhandler;
-	int32_t		mp2sampleRate	(uint8_t *);
-	int32_t		mp2decodeFrame	(uint8_t *, int16_t *);
-	RingBuffer<int16_t>	*buffer;
-	int32_t		baudRate;
-	void		setSamplerate		(int32_t);
-	struct quantizer_spec *read_allocation (int, int);
-	void		read_samples	(struct quantizer_spec *, int, int *);
-	int32_t		get_bits	(int32_t);
-	int16_t		V [2][1024];
-	int16_t		Voffs;
-	int16_t		N [64][32];
-	struct quantizer_spec *allocation[2][32];
-	int32_t		scfsi[2][32];
-	int32_t		scalefactor[2][32][3];
-	int32_t		sample[2][32][3];
-	int32_t		U[512];
+  RadioInterface * myRadioInterface;
+  int16_t bitRate;
+  padHandler my_padhandler;
+  int32_t mp2sampleRate(uint8_t *);
+  int32_t mp2decodeFrame(uint8_t *, int16_t *);
+  RingBuffer<int16_t> * buffer;
+  int32_t baudRate;
+  void setSamplerate(int32_t);
+  struct quantizer_spec * read_allocation(int, int);
+  void read_samples(struct quantizer_spec *, int, int *);
+  int32_t get_bits(int32_t);
+  int16_t V[2][1024];
+  int16_t Voffs;
+  int16_t N[64][32];
+  struct quantizer_spec * allocation[2][32];
+  int32_t scfsi[2][32];
+  int32_t scalefactor[2][32][3];
+  int32_t sample[2][32][3];
+  int32_t U[512];
 
-	int32_t		bit_window;
-	int32_t		bits_in_window;
-	uint8_t		*frame_pos;
-	uint8_t		* MP2frame;
+  int32_t bit_window;
+  int32_t bits_in_window;
+  uint8_t * frame_pos;
+  uint8_t * MP2frame;
 
-	int16_t		MP2framesize;
-	int16_t		MP2Header_OK;
-	int16_t		MP2headerCount;
-	int16_t		MP2bitCount;
-	void		addbittoMP2	(uint8_t *, uint8_t, int16_t);
-	int16_t		numberofFrames;
-	int16_t		errorFrames;
+  int16_t MP2framesize;
+  int16_t MP2Header_OK;
+  int16_t MP2headerCount;
+  int16_t MP2bitCount;
+  void addbittoMP2(uint8_t *, uint8_t, int16_t);
+  int16_t numberofFrames;
+  int16_t errorFrames;
+  
 signals:
-	void		show_frameErrors	(int);
-	void		newAudio		(int, int);
-	void		isStereo		(bool);
+  void show_frameErrors(int);
+  void newAudio(int, int);
+  void isStereo(bool);
 };
+
 #endif
 

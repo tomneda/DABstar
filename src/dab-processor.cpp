@@ -453,7 +453,7 @@ int DabProcessor::getSubChId(const QString & s, uint32_t SId)
 
 bool DabProcessor::is_audioService(const QString & s)
 {
-  audiodata ad;
+  Audiodata ad;
   mFicHandler.dataforAudioService(s, &ad);
   return ad.defined;
 }
@@ -465,7 +465,7 @@ bool DabProcessor::is_packetService(const QString & s)
   return pd.defined;
 }
 
-void DabProcessor::dataforAudioService(const QString & s, audiodata * d)
+void DabProcessor::dataforAudioService(const QString & s, Audiodata * d)
 {
   mFicHandler.dataforAudioService(s, d);
 }
@@ -530,7 +530,7 @@ int DabProcessor::scanWidth()
   }
 }
 
-[[maybe_unused]] void DabProcessor::stop_service(descriptorType * d, int flag)
+[[maybe_unused]] void DabProcessor::stop_service(DescriptorType * d, int flag)
 {
   fprintf(stderr, "function obsolete\n");
   if (!mScanMode)
@@ -547,7 +547,7 @@ void DabProcessor::stop_service(int subChId, int flag)
   }
 }
 
-bool DabProcessor::set_audioChannel(audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag)
+bool DabProcessor::set_audioChannel(Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag)
 {
   if (!mScanMode)
   {

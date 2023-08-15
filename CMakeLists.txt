@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
-project(DABstar VERSION 1.0.0)
+project(DABstar VERSION 1.0.1)
 ##############################
 
 set(objectName "dabstar")
@@ -420,7 +420,6 @@ set(${objectName}_MOCS
         src/support/buttons/smallqlistview.h
         src/support/buttons/smallspinbox.h
         src/support/history-handler.h
-        src/support/color-selector.h
         src/support/time-table.h
         src/support/content-table.h
         src/support/coordinates.h

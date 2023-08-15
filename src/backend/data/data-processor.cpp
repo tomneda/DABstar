@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2015 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -19,9 +18,6 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-
-
 #include  "dab-constants.h"
 #include  "radio.h"
 #include  "data-processor.h"
@@ -76,7 +72,7 @@ DataProcessor::~DataProcessor()
 }
 
 
-void DataProcessor::addtoFrame(std::vector<uint8_t> outV)
+void DataProcessor::addtoFrame(const std::vector<uint8_t> & outV)
 {
   //	There is - obviously - some exception, that is
   //	when the DG flag is on and there are no datagroups for DSCTy5
@@ -94,7 +90,7 @@ void DataProcessor::addtoFrame(std::vector<uint8_t> outV)
 //
 //	While for a full mix data and audio there will be a single packet in a
 //	data compartment, for an empty mix, there may be many more
-void DataProcessor::handlePackets(uint8_t * data, int32_t length)
+void DataProcessor::handlePackets(const uint8_t * data, int32_t length)
 {
   while (true)
   {
@@ -119,7 +115,7 @@ void DataProcessor::handlePackets(uint8_t * data, int32_t length)
 //	there may be multiple streams, to be identified by
 //	the address. For the time being we only handle a single
 //	stream!!!!
-void DataProcessor::handlePacket(uint8_t * data)
+void DataProcessor::handlePacket(const uint8_t * data)
 {
   int32_t packetLength = (getBits_2(data, 0) + 1) * 24;
   int16_t continuityIndex = getBits_2(data, 2);
@@ -150,8 +146,10 @@ void DataProcessor::handlePacket(uint8_t * data)
     return;
   }    // padding packet
   //
-  if (packetAddress != address)  // sorry
+  if (packetAddress != address)
+  {  // sorry
     return;
+  }
 
   //	assemble the full MSC datagroup
 
@@ -162,17 +160,23 @@ void DataProcessor::handlePacket(uint8_t * data)
       packetState = 1;
       series.resize(usefulLength * 8);
       for (uint16_t i = 0; i < series.size(); i++)
+      {
         series[i] = data[24 + i];
+      }
     }
     else if (firstLast == 03)
     {  // single packet, mostly padding
       series.resize(usefulLength * 8);
       for (uint16_t i = 0; i < series.size(); i++)
+      {
         series[i] = data[24 + i];
+      }
       my_dataHandler->add_mscDatagroup(series);
     }
     else
-      series.resize(0);  // packetState remains 0
+    {
+      series.resize(0);
+    }  // packetState remains 0
   }
   else if (packetState == 01)
   {  // within a series
@@ -181,14 +185,18 @@ void DataProcessor::handlePacket(uint8_t * data)
       int32_t currentLength = series.size();
       series.resize(currentLength + 8 * usefulLength);
       for (uint16_t i = 0; i < 8 * usefulLength; i++)
+      {
         series[currentLength + i] = data[24 + i];
+      }
     }
     else if (firstLast == 01)
     {  // last packet
       int32_t currentLength = series.size();
       series.resize(currentLength + 8 * usefulLength);
       for (uint16_t i = 0; i < 8 * usefulLength; i++)
+      {
         series[currentLength + i] = data[24 + i];
+      }
 
       my_dataHandler->add_mscDatagroup(series);
       packetState = 0;
@@ -198,7 +206,9 @@ void DataProcessor::handlePacket(uint8_t * data)
       packetState = 1;
       series.resize(usefulLength * 8);
       for (uint16_t i = 0; i < series.size(); i++)
+      {
         series[i] = data[24 + i];
+      }
     }
     else
     {
@@ -208,10 +218,8 @@ void DataProcessor::handlePacket(uint8_t * data)
   }
 }
 
-//
-//
 //	Really no idea what to do here
-void DataProcessor::handleTDCAsyncstream(uint8_t * data, int32_t length)
+void DataProcessor::handleTDCAsyncstream(const uint8_t * data, int32_t length)
 {
   int16_t packetLength = (getBits_2(data, 0) + 1) * 24;
   int16_t continuityIndex = getBits_2(data, 2);
@@ -227,6 +235,7 @@ void DataProcessor::handleTDCAsyncstream(uint8_t * data, int32_t length)
   (void)address;
   (void)command;
   (void)usefulLength;
+
   if (!check_CRC_bits(data, packetLength * 8))
   {
     return;

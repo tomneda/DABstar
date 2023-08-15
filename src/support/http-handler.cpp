@@ -203,6 +203,8 @@ void httpHandler::run()
       if (strstr(url, "/data.json"))
       {
         content = coordinatesToJson(transmitterList);
+        transmitterList.clear();
+
         if (content != "")
         {
           ctype = "application/json;charset=utf-8";
@@ -372,6 +374,8 @@ L1:	      if ((xx = recv (ClientSocket, buffer, 4096, 0)) < 0) {
         bool jsonUpdate	= false;
         if (strstr (url, "/data.json")) {
            content	= coordinatesToJson (transmitterList);
+           transmitterList.clear();
+
            if (content != "") {
               ctype	= "application/json;charset=utf-8";
               jsonUpdate	= true;
@@ -505,7 +509,7 @@ std::string dotNumber(float f)
 }
 
 //
-std::string httpHandler::coordinatesToJson(std::vector<httpData> & t)
+std::string httpHandler::coordinatesToJson(const std::vector<httpData> & t)
 {
   char buf[512];
   QString Jsontxt;
@@ -548,7 +552,6 @@ std::string httpHandler::coordinatesToJson(std::vector<httpData> & t)
              (int)(t[i].power * 100));
     Jsontxt += QString(buf);
   }
-  t.resize(0);
   locker.unlock();
   Jsontxt += "\n]\n";
   //	fprintf (stderr, "Json = %s\n", Jsontxt. toLatin1 (). data ());

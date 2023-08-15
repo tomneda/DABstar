@@ -163,7 +163,7 @@ template<typename T> static inline T fixround(float v)
 #define    FORE_GROUND  0000
 #define    BACK_GROUND  0100
 
-class descriptorType
+class DescriptorType
 {
 public:
   uint8_t type;
@@ -179,18 +179,18 @@ public:
   int16_t bitRate;
   QString channel;  // just for presets
 public:
-  descriptorType()
+  DescriptorType()
   {
     defined = false;
     serviceName = "";
   }
 
-  virtual    ~descriptorType()
+  virtual    ~DescriptorType()
   {}
 };
 
 //	for service handling we define
-class packetdata : public descriptorType
+class packetdata : public DescriptorType
 {
 public:
   int16_t DSCTy;
@@ -206,7 +206,7 @@ public:
   }
 };
 
-class audiodata : public descriptorType
+class Audiodata : public DescriptorType
 {
 public:
   int16_t ASCTy;
@@ -215,7 +215,7 @@ public:
   int16_t compnr;
   int32_t fmFrequency;
 
-  audiodata()
+  Audiodata()
   {
     type = AUDIO_SERVICE;
     fmFrequency = -1;
@@ -238,7 +238,7 @@ typedef struct
 //	just some locals
 //
 //	generic, up to 16 bits
-static inline uint16_t getBits(uint8_t * d, int32_t offset, int16_t size)
+static inline uint16_t getBits(const uint8_t * d, int32_t offset, int16_t size)
 {
   int16_t i;
   uint16_t res = 0;
@@ -251,12 +251,12 @@ static inline uint16_t getBits(uint8_t * d, int32_t offset, int16_t size)
   return res;
 }
 
-static inline uint16_t getBits_1(uint8_t * d, int32_t offset)
+static inline uint16_t getBits_1(const uint8_t * d, int32_t offset)
 {
   return (d[offset] & 0x01);
 }
 
-static inline uint16_t getBits_2(uint8_t * d, int32_t offset)
+static inline uint16_t getBits_2(const uint8_t * d, int32_t offset)
 {
   uint16_t res = d[offset];
   res <<= 1;
@@ -264,7 +264,7 @@ static inline uint16_t getBits_2(uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_3(uint8_t * d, int32_t offset)
+static inline uint16_t getBits_3(const uint8_t * d, int32_t offset)
 {
   uint16_t res = d[offset];
   res <<= 1;
@@ -274,7 +274,7 @@ static inline uint16_t getBits_3(uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_4(uint8_t * d, int32_t offset)
+static inline uint16_t getBits_4(const uint8_t * d, int32_t offset)
 {
   uint16_t res = d[offset];
   res <<= 1;
@@ -286,7 +286,7 @@ static inline uint16_t getBits_4(uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_5(uint8_t * d, int32_t offset)
+static inline uint16_t getBits_5(const uint8_t * d, int32_t offset)
 {
   uint16_t res = d[offset];
   res <<= 1;
@@ -300,7 +300,7 @@ static inline uint16_t getBits_5(uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_6(uint8_t * d, int32_t offset)
+static inline uint16_t getBits_6(const uint8_t * d, int32_t offset)
 {
   uint16_t res = d[offset];
   res <<= 1;
@@ -316,7 +316,7 @@ static inline uint16_t getBits_6(uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_7(uint8_t * d, int32_t offset)
+static inline uint16_t getBits_7(const uint8_t * d, int32_t offset)
 {
   uint16_t res = d[offset];
   res <<= 1;
@@ -334,7 +334,7 @@ static inline uint16_t getBits_7(uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_8(uint8_t * d, int32_t offset)
+static inline uint16_t getBits_8(const uint8_t * d, int32_t offset)
 {
   uint16_t res = d[offset];
   res <<= 1;
@@ -355,7 +355,7 @@ static inline uint16_t getBits_8(uint8_t * d, int32_t offset)
 }
 
 
-static inline uint32_t getLBits(uint8_t * d, int32_t offset, int16_t amount)
+static inline uint32_t getLBits(const uint8_t * d, int32_t offset, int16_t amount)
 {
   uint32_t res = 0;
   int16_t i;
@@ -368,23 +368,20 @@ static inline uint32_t getLBits(uint8_t * d, int32_t offset, int16_t amount)
   return res;
 }
 
-static inline bool check_CRC_bits(uint8_t * in, int32_t size)
+static inline bool check_CRC_bits(const uint8_t * const iIn, const int32_t iSize)
 {
   static const uint8_t crcPolynome[] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 };  // MSB .. LSB
-  int32_t i, f;
+  int32_t f;
   uint8_t b[16];
   int16_t Sum = 0;
 
   memset(b, 1, 16);
 
-  for (i = size - 16; i < size; i++)
+  for (int32_t i = 0; i < iSize; i++)
   {
-    in[i] ^= 1;
-  }
+    const uint8_t invBit = (i >= iSize - 16 ? 1 : 0);
 
-  for (i = 0; i < size; i++)
-  {
-    if ((b[0] ^ in[i]) == 1)
+    if ((b[0] ^ (iIn[i] ^ invBit)) == 1)
     {
       for (f = 0; f < 15; f++)
       {
@@ -399,7 +396,7 @@ static inline bool check_CRC_bits(uint8_t * in, int32_t size)
     }
   }
 
-  for (i = 0; i < 16; i++)
+  for (int32_t i = 0; i < 16; i++)
   {
     Sum += b[i];
   }
@@ -407,7 +404,7 @@ static inline bool check_CRC_bits(uint8_t * in, int32_t size)
   return Sum == 0;
 }
 
-static inline bool check_crc_bytes(uint8_t * msg, int32_t len)
+static inline bool check_crc_bytes(const uint8_t * const msg, const int32_t len)
 {
   int i, j;
   uint16_t accumulator = 0xFFFF;

@@ -61,34 +61,33 @@ public:
   bool tiiFile(const QString &);
   QString get_transmitterName(const QString &, uint16_t, uint8_t, uint8_t);
   void get_coordinates(float *, float *, float *, const QString &, const QString &);
-  int distance_2(float, float, float, float) const;
-  double distance(float, float, float, float) const;
+  [[nodiscard]] int distance_2(float, float, float, float) const;
+  [[nodiscard]] double distance(float, float, float, float) const;
   int corner(float, float, float, float);
   bool is_black(uint16_t, uint8_t, uint8_t);
   void set_black(uint16_t, uint8_t, uint8_t);
   void loadTable(const QString & tf);
   bool valid();
+
 private:
   std::vector<black> blackList;
   std::vector<cacheElement> cache;
   QString tiifileName;
-
   void * handler;
-
-  float convert(const QString & s) const;
-  uint16_t get_Eid(const QString & s) const;
-  uint8_t get_mainId(const QString & s) const;
-  uint8_t get_subId(const QString & s) const;
-  int readColumns(std::vector<QString> &, char *, int);
-  void readFile(FILE *);
-  char * eread(char *, int, FILE *);
   uint8_t shift;
-
   HINSTANCE Handle;
-  bool loadFunctions();
   init_tii_P init_tii_L;
   close_tii_P close_tii_L;
   loadTable_P loadTable_L;
+
+  [[nodiscard]] float convert(const QString & s) const;
+  [[nodiscard]] uint16_t get_Eid(const QString & s) const;
+  [[nodiscard]] uint8_t get_mainId(const QString & s) const;
+  [[nodiscard]] uint8_t get_subId(const QString & s) const;
+  int readColumns(std::vector<QString> & oV, const char *, int);
+  void readFile(FILE *);
+  char * eread(char *, int, FILE *);
+  bool loadFunctions();
 };
 
 #endif

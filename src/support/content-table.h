@@ -34,7 +34,7 @@
 
 class RadioInterface;
 class QSettings;
-class audiodata;
+class Audiodata;
 
 class contentTable : public QObject
 {

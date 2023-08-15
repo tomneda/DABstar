@@ -42,10 +42,10 @@
   *	The data is sent through to the fib processor
   */
 
-FicHandler::FicHandler(RadioInterface * mr, uint8_t dabMode)
-  : FibDecoder(mr),
-    params(dabMode),
-    myViterbi(768, true)
+FicHandler::FicHandler(RadioInterface * mr, uint8_t dabMode) :
+  FibDecoder(mr),
+  params(dabMode),
+  myViterbi(768, true)
 {
   int16_t i, j, k;
   int local = 0;
@@ -72,7 +72,7 @@ FicHandler::FicHandler(RadioInterface * mr, uint8_t dabMode)
   //	(even through all instances, so we could create a static
   //	table), we make an punctureTable that contains the indices of
   //	the ofdmInput table
-  memset(punctureTable, 0, (3072 + 24) * sizeof(uint8_t));
+  memset(punctureTable.data(), 0, (3072 + 24) * sizeof(uint8_t));
   for (i = 0; i < 21; i++)
   {
     for (k = 0; k < 32 * 4; k++)
@@ -139,7 +139,7 @@ FicHandler::~FicHandler()
   *	The function is called with a blkno. This should be 1, 2 or 3
   *	for each time 2304 bits are in, we call process_ficInput
   */
-void FicHandler::process_ficBlock(std::vector<int16_t> & data, int32_t blkno)
+void FicHandler::process_ficBlock(const std::vector<int16_t> & data, int32_t blkno)
 {
   int32_t i;
 
@@ -202,7 +202,7 @@ void FicHandler::process_ficInput(int16_t ficno)
     *	Now we have the full word ready for deconvolution
     *	deconvolution is according to DAB standard section 11.2
     */
-  myViterbi.deconvolve(viterbiBlock, bitBuffer_out);
+  myViterbi.deconvolve(viterbiBlock, bitBuffer_out.data());
   /**
     *	if everything worked as planned, we now have a
     *	768 bit vector containing three FIB's

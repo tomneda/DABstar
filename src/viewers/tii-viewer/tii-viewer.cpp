@@ -42,9 +42,9 @@ bool	brush;
 	this	-> tiiBuffer		= sbuffer;
 
 	dabSettings	-> beginGroup ("tiiViewer");
-	colorString	= dabSettings -> value ("displayColor",
-	                                                 "black"). toString();
-	displayColor	= QColor (colorString);
+//	colorString	= dabSettings -> value ("displayColor",
+//	                                                 "black"). toString();
+//	displayColor	= QColor (colorString);
 	colorString	= dabSettings -> value ("gridColor",
 	                                                 "black"). toString();
 	gridColor	= QColor (colorString);
@@ -66,7 +66,7 @@ bool	brush;
 	myFrame. hide();
 	memset (displayBuffer, 0, TII_DISPLAYSIZE * sizeof (double));
 	plotgrid	= tiiGrid;
-	plotgrid	-> setCanvasBackground (displayColor);
+	//plotgrid	-> setCanvasBackground (displayColor);
 //	grid		= new QwtPlotGrid;
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
 	grid. setMajPen (QPen(gridColor, 0, Qt::DotLine));
@@ -275,36 +275,21 @@ bool	tiiViewer::isHidden () {
 }
 
 void	tiiViewer::rightMouseClick	(const QPointF &point) {
-colorSelector *selector;
-int	index;
 	(void)point;
-	selector		= new colorSelector ("display color");
-	index			= selector -> QDialog::exec ();
-	QString displayColor	= selector -> getColor (index);
-	delete selector;
-	if (index == 0)
-	   return;
-	selector		= new colorSelector ("grid color");
-	index			= selector	-> QDialog::exec ();
-	QString gridColor	= selector	-> getColor (index);
-	delete selector;
-	if (index == 0)
-	   return;
-	selector		= new colorSelector ("curve color");
-	index			= selector	-> QDialog::exec ();
-	QString curveColor	= selector	-> getColor (index);
-	delete selector;
-	if (index == 0)
-	   return;
+
+//  const QString displayColor = ColorSelector::show_dialog(ColorSelector::DISPCOLOR);
+//  if (displayColor.isEmpty()) return;
+  if (!ColorSelector::show_dialog(gridColor, ColorSelector::GRIDCOLOR)) return;
+  if (!ColorSelector::show_dialog(curveColor, ColorSelector::CURVECOLOR)) return;
 
 	dabSettings	-> beginGroup ("tiiViewer");
-	dabSettings	-> setValue ("displayColor", displayColor);
-	dabSettings	-> setValue ("gridColor", gridColor);
-	dabSettings	-> setValue ("curveColor", curveColor);
+	//dabSettings	-> setValue ("displayColor", displayColor.name());
+	dabSettings	-> setValue ("gridColor", gridColor.name());
+	dabSettings	-> setValue ("curveColor", curveColor.name());
 	dabSettings	-> endGroup ();
-	this		-> displayColor	= QColor (displayColor);
-	this		-> gridColor	= QColor (gridColor);
-	this		-> curveColor	= QColor (curveColor);
+//	this		-> displayColor	= QColor (displayColor);
+//	this		-> gridColor	= QColor (gridColor);
+//	this		-> curveColor	= QColor (curveColor);
 	spectrumCurve. setPen (QPen (this -> curveColor, 2.0));
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
 	grid. setMajPen (QPen(this -> gridColor, 0, Qt::DotLine));
@@ -318,7 +303,7 @@ int	index;
 #else
 	grid. setMinorPen (QPen(this -> gridColor, 0, Qt::DotLine));
 #endif
-	plotgrid	-> setCanvasBackground (this -> displayColor);
+	//plotgrid	-> setCanvasBackground (this -> displayColor);
 }
 
 static

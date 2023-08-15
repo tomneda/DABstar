@@ -49,7 +49,7 @@ public:
   void setRunning(bool b);
   float get_sLevel() const;
   cmplx getSample(int32_t);
-  void getSamples(std::vector<cmplx> & v, int index, int32_t n, int32_t phase);
+  void getSamples(std::vector<cmplx> & oV, int index, int32_t n, int32_t phase);
   void startDumping(SNDFILE *);
   void stopDumping();
 

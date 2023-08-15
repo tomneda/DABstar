@@ -32,16 +32,14 @@
   *	The class inherits from the phaseTable.
   */
 
-PhaseReference::PhaseReference(RadioInterface * const mr, processParams * const p)
-  : phaseTable(p->dabMode),
-    mDabPar(DabParams(p->dabMode).get_dab_par()),
-  //mDiffLength(p->diff_length), // use default
+PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const processParams * const ipParam)
+  : PhaseTable(ipParam->dabMode),
+    mDabPar(DabParams(ipParam->dabMode).get_dab_par()),
     mFramesPerSecond(2048000 / mDabPar.T_F),
     mFftForward(mDabPar.T_u, false),
     mFftBackwards(mDabPar.T_u, true),
-    mResponse(p->responseBuffer),
+    mpResponse(ipParam->responseBuffer),
     mRefTable(mDabPar.T_u, { 0, 0 }),
-    mPhaseDifferences(mDiffLength),
     mCorrPeakValues(mDabPar.T_u / 2)
 {
   for (int32_t i = 1; i <= mDabPar.K / 2; i++)
@@ -55,12 +53,12 @@ PhaseReference::PhaseReference(RadioInterface * const mr, processParams * const 
   // prepare a table for the coarse frequency synchronization
   // can be a static one, actually, we are only interested in
   // the ones with a null
-  for (int32_t i = 1; i <= mDiffLength; i++)
+  for (int32_t i = 1; i <= DIFFLENGTH; i++)
   {
     mPhaseDifferences[i - 1] = abs(arg(mRefTable[(mDabPar.T_u + i + 0) % mDabPar.T_u] * conj(mRefTable[(mDabPar.T_u + i + 1) % mDabPar.T_u])));
   }
 
-  connect(this, &PhaseReference::show_correlation, mr, &RadioInterface::showCorrelation);
+  connect(this, &PhaseReference::show_correlation, ipRadio, &RadioInterface::showCorrelation);
 }
 
 /**
@@ -73,7 +71,7 @@ PhaseReference::PhaseReference(RadioInterface * const mr, processParams * const 
   *	looking for.
   */
 
-int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // copy of iV is indented
+int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // copy of iV is intended
 {
   mFftForward.fft(iV); // in-place FFT
 
@@ -141,12 +139,14 @@ int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // c
     return (int32_t)(-abs(maxL / sum) - 1);
   }
 
-  if (mResponse != nullptr)
+  if (mpResponse != nullptr)
   {
-    if (++mDisplayCounter > mFramesPerSecond / 2)
+    ++mDisplayCounter;
+
+    if (mDisplayCounter > mFramesPerSecond / 2)
     {
-      mResponse->putDataIntoBuffer(mCorrPeakValues.data(), mCorrPeakValues.size());
-      emit show_correlation(mCorrPeakValues.size(), mDabPar.T_g, indices);
+      mpResponse->putDataIntoBuffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
+      emit show_correlation((int32_t)mCorrPeakValues.size(), mDabPar.T_g, indices);
       mDisplayCounter = 0;
     }
   }
@@ -155,24 +155,17 @@ int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // c
   return maxIndex;
 }
 
-//
-//
-//	an approach that works fine is to correlate the phasedifferences
-//	between subsequent carriers
-constexpr int16_t SEARCH_RANGE = (2 * 35);
-
-int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> v) const
+//	an approach that works fine is to correlate the phasedifferences between subsequent carriers
+int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> iV) // copy of iV is intended
 {
-  float computedDiffs[SEARCH_RANGE + mDiffLength + 1];
+  mFftForward.fft(iV);
 
-  mFftForward.fft(v);
+  const int16_t idxStart = mDabPar.T_u - SEARCHRANGE / 2;
+  const int16_t idxStop  = mDabPar.T_u + SEARCHRANGE / 2;
 
-  const int16_t idxStart = mDabPar.T_u - SEARCH_RANGE / 2;
-  const int16_t idxStop  = mDabPar.T_u + SEARCH_RANGE / 2;
-
-  for (int16_t i = idxStart; i < idxStop + mDiffLength; i++)
+  for (int16_t i = idxStart; i < idxStop + DIFFLENGTH; i++)
   {
-    computedDiffs[i - idxStart] = abs(arg(v[(i + 0) % mDabPar.T_u] * conj(v[(i + 1) % mDabPar.T_u])));
+    mComputedDiffs[i - idxStart] = abs(arg(iV[(i + 0) % mDabPar.T_u] * conj(iV[(i + 1) % mDabPar.T_u])));
   }
 
   float mmin = 1000;
@@ -185,15 +178,15 @@ int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> v) const
     float sum = 0;
     float sum2 = 0;
 
-    for (int16_t j = 1; j < mDiffLength; j++)
+    for (int16_t j = 1; j < DIFFLENGTH; j++)
     {
       if (mPhaseDifferences[j - 1] < 0.1)
       {
-        sum += computedDiffs[i - idxStart + j];
+        sum += mComputedDiffs[i - idxStart + j];
       }
       if (mPhaseDifferences[j - 1] > M_PI - 0.1)
       {
-        sum2 += computedDiffs[i - idxStart + j];
+        sum2 += mComputedDiffs[i - idxStart + j];
       }
     }
 
@@ -218,7 +211,7 @@ int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> v) const
   return idxMin - mDabPar.T_u;
 }
 
-float PhaseReference::phase(const std::vector<cmplx> & iV, const int32_t iTs) const
+/*static*/ float PhaseReference::phase(const std::vector<cmplx> & iV, const int32_t iTs)
 {
   cmplx sum = cmplx(0, 0);
 

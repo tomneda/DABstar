@@ -51,22 +51,19 @@
 
 class RadioInterface;
 
-class correlationViewer : public QObject/*, Ui_scopeWidget*/
+class CorrelationViewer : public QObject/*, Ui_scopeWidget*/
 {
 Q_OBJECT
 public:
-  correlationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<float> *);
-  ~correlationViewer();
+  CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<float> *);
+  ~CorrelationViewer() override = default;
   void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
-  void showIndex(int32_t);
-//  void show();
-//  void hide();
-//  bool isHidden();
 
 private:
+  static QString _get_best_match_text(const QVector<int> & v);
+
   RadioInterface * myRadioInterface;
   QSettings * dabSettings;
-  //QFrame myFrame;
   QwtPlotCurve spectrumCurve;
   QwtPlotGrid grid;
   std::vector<int> indexVector;
@@ -76,10 +73,10 @@ private:
   QwtPlot * plotgrid;
   QLabel * mpIndexDisplay;
   QwtPlotPicker * lm_picker;
-  QColor displayColor;
+  //QColor displayColor;
   QColor gridColor;
   QColor curveColor;
-  int plotLength;
+
 private slots:
   void rightMouseClick(const QPointF &);
   //void handle_correlationLength(int);
