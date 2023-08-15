@@ -90,7 +90,7 @@ void mscHandler::stop_service(DescriptorType * d, int flag)
 void mscHandler::stop_service(int subchId, int flag)
 {
   locker.lock();
-  for (size_t i = 0; i < theBackends.size(); i++)
+  for (int32_t i = 0; i < (int32_t)theBackends.size(); i++)
   {
     Backend * b = theBackends.at(i);
     if ((b->subChId == subchId) && (b->borf == flag))

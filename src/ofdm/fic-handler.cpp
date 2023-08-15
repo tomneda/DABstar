@@ -228,7 +228,6 @@ void FicHandler::process_ficInput(int16_t ficno)
     *	was lost.
     */
 
-  //static int ccc = 0;
   for (i = ficno * 3; i < ficno * 3 + 3; i++)
   {
     uint8_t * p = &bitBuffer_out[(i % 3) * 256];

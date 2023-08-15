@@ -2103,14 +2103,17 @@ int length	= v [index + 1];
 	else
 	   index += 2;
 
-	return index + length;
-	uint8_t ensFlag = getBit (v, 8 * index + 1);
+	return index + length;  // TODO: early return or wrong (missing!) else braces?
+
+  uint8_t ensFlag = getBit (v, 8 * index + 1);
 	uint8_t sidFlag = getBit (v, 8 * index + 3);
   // TODO: do not dare yet make the clearer
         if (ensFlag == 1)
-           if (sidFlag == 0)
-              fprintf (stderr, "SId = %X\n", getBits (v, 8 * index + 32, 16));
-	//else // to whom was this else indented?
+        {
+          if (sidFlag == 0)
+            fprintf(stderr, "SId = %X\n", getBits(v, 8 * index + 32, 16));
+        }
+        else
         if (ensFlag == 0)
            if (sidFlag == 0)
               fprintf (stderr, "SId = %X\n", getBits (v, 8 * index + 8, 16));
