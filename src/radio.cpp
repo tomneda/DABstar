@@ -3903,7 +3903,7 @@ bool RadioInterface::isMember(const std::vector<serviceId> & a, serviceId b)
   return false;
 }
 
-std::vector<serviceId> RadioInterface::insert(std::vector<serviceId> & l, serviceId n, int order)
+std::vector<serviceId> RadioInterface::insert(const std::vector<serviceId> & l, serviceId n, int order)
 {
   std::vector<serviceId> k;
 

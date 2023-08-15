@@ -20,39 +20,43 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include	"journaline-datahandler.h"
-#include	"dabdatagroupdecoder.h"
+#include  "journaline-datahandler.h"
+#include  "dabdatagroupdecoder.h"
 
 
-static
-void my_callBack (
-    const DAB_DATAGROUP_DECODER_msc_datagroup_header_t *header,
-    const unsigned long len,
-    const unsigned char *buf,
-    void *arg) {
+static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header, const unsigned long len, const unsigned char * buf, void * arg)
+{
 }
 
-	journaline_dataHandler::journaline_dataHandler() {
-	theDecoder	= DAB_DATAGROUP_DECODER_createDec (my_callBack, this);
+journaline_dataHandler::journaline_dataHandler()
+{
+  theDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
 }
 
-	journaline_dataHandler::~journaline_dataHandler() {
-	DAB_DATAGROUP_DECODER_deleteDec (theDecoder);
+journaline_dataHandler::~journaline_dataHandler()
+{
+  DAB_DATAGROUP_DECODER_deleteDec(theDecoder);
 }
 
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
-void	journaline_dataHandler::add_mscDatagroup (std::vector<uint8_t> msc) {
-int16_t	len	= msc. size ();
-uint8_t	*data	= (uint8_t *)(msc. data());
-uint8_t buffer [len / 8];
-int16_t	i;
-int32_t	res;
-	for (i = 0; i < len / 8; i ++)
-	   buffer [i] = getBits (data, 8 * i, 8);
+void journaline_dataHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
+{
+  int16_t len = msc.size();
+  uint8_t * data = (uint8_t *)(msc.data());
+  uint8_t buffer[len / 8];
+  int16_t i;
+  int32_t res;
+  for (i = 0; i < len / 8; i++)
+  {
+    buffer[i] = getBits(data, 8 * i, 8);
+  }
 
-	res = DAB_DATAGROUP_DECODER_putData (theDecoder, len / 8, buffer);
-	if (res < 0)
-	   return;
+  res = DAB_DATAGROUP_DECODER_putData(theDecoder, len / 8, buffer);
+
+  if (res < 0)
+  {
+    return;
+  }
 }
 
 

@@ -34,7 +34,7 @@ Protection::Protection(int16_t iBitRate) :
 {
 }
 
-bool Protection::deconvolve(int16_t * a, int32_t b, uint8_t * c)
+bool Protection::deconvolve(const int16_t * a, int32_t b, uint8_t * c)
 {
   (void)a;
   (void)b;

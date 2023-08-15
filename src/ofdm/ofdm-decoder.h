@@ -49,7 +49,7 @@ public:
     float PhaseCorr;
   };
 
-  void processBlock_0(std::vector<cmplx>);
+  void processBlock_0(std::vector<cmplx>);  // copy of vector is intended
   void decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
 
 private:

@@ -32,9 +32,11 @@
 class Protection : public ViterbiSpiral
 {
 public:
-  Protection(int16_t);
+  explicit Protection(int16_t);
   virtual ~Protection() = default;
-  virtual bool deconvolve(int16_t *, int32_t, uint8_t *);
+
+  virtual bool deconvolve(const int16_t *, int32_t, uint8_t *);
+  
 protected:
   int16_t bitRate;
   int32_t outSize;

@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -21,25 +20,28 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__VITERBI_HANDLER__
-#define	__VITERBI_HANDLER__
+#ifndef  VITERBI_HANDLER_H
+#define  VITERBI_HANDLER_H
 
-#include	<cstdint>
+#include  <cstdint>
 
-class	viterbiHandler {
-
+class viterbiHandler
+{
 public:
-		viterbiHandler	(int, bool);
-		~viterbiHandler();
-	void	deconvolve	(int16_t *, uint8_t *);
+  viterbiHandler(int, bool);
+  ~viterbiHandler();
+
+  void deconvolve(const int16_t *, uint8_t *);
+
 private:
-	int     costTable [16];
-	void	computeCostTable (int16_t,  int16_t, int16_t, int16_t);
-	uint8_t	bitFor		(int, int, int);
-	int	blockLength;
-	int	*stateSequence;
-	int	**transCosts;
-	int	**history;
+  int costTable[16];
+  int blockLength;
+  int * stateSequence;
+  int ** transCosts;
+  int ** history;
+
+  uint8_t bitFor(int, int, int);
+  void computeCostTable(int16_t, int16_t, int16_t, int16_t);
 };
 
 #endif

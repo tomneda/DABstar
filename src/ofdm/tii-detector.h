@@ -35,7 +35,7 @@ public:
   ~TII_Detector();
   void reset();
   void setMode(bool);
-  void addBuffer(std::vector<cmplx>);
+  void addBuffer(std::vector<cmplx>);  // copy of vector is intended
   uint16_t processNULL();
 
 private:

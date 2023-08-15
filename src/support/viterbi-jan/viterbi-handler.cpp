@@ -125,7 +125,7 @@ void	viterbiHandler::computeCostTable (int16_t sym_0,
 
 //      block is the sequence of soft bits
 //      its length = 4 * blockLength + 4 * 6
-void	viterbiHandler::deconvolve	(int16_t *sym, uint8_t *bitBuffer) {
+void	viterbiHandler::deconvolve	(const int16_t *sym, uint8_t *bitBuffer) {
 int	prev_0, prev_1;
 int	costs_0, costs_1;
 int	i;

@@ -70,7 +70,7 @@ cmplx SampleReader::getSample(int32_t phaseOffset)
   return oneSampleBuffer[0];
 }
 
-void SampleReader::getSamples(std::vector<cmplx> & v, int index, int32_t n, int32_t phaseOffset)
+void SampleReader::getSamples(std::vector<cmplx> & oV, int index, int32_t n, int32_t phaseOffset)
 {
   std::vector<cmplx> buffer(n);
 
@@ -91,7 +91,7 @@ void SampleReader::getSamples(std::vector<cmplx> & v, int index, int32_t n, int3
   {
     for (int32_t i = 0; i < n; i++)
     {
-      _dump_sample_to_file(v[i]);
+      _dump_sample_to_file(oV[i]);
     }
   }
 
@@ -105,11 +105,11 @@ void SampleReader::getSamples(std::vector<cmplx> & v, int index, int32_t n, int3
     currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
     if (localCounter < bufferSize)
     {
-      localBuffer[localCounter] = v[i];
+      localBuffer[localCounter] = oV[i];
       ++localCounter;
     }
-    v[index + i] = buffer[i] * oscillatorTable[currentPhase];
-    sLevel = 0.00001f * jan_abs(v[i]) + (1.0f - 0.00001f) * sLevel;
+    oV[index + i] = buffer[i] * oscillatorTable[currentPhase];
+    sLevel = 0.00001f * jan_abs(oV[i]) + (1.0f - 0.00001f) * sLevel;
   }
 
   sampleCount += n;

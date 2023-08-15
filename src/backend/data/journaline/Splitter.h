@@ -64,9 +64,8 @@
 ///
 //////////////////////////////////////////////////////////////////////////////
 
-
-#ifndef _SPLITTER_H_
-#define _SPLITTER_H_
+#ifndef SPLITTER_H_
+#define SPLITTER_H_
 
 #ifdef _MSC_VER
 #pragma warning(push,3)
@@ -84,14 +83,12 @@
 #endif
 
 
-
 /// interface for string splitting routines
 class StringSplitter
 {
 public:
-    virtual bool Split(std::vector<std::string> & dest,
-                       const std::string & src) const = 0;
-    virtual ~StringSplitter() {}
+  virtual bool Split(std::vector<std::string> & dest, const std::string & src) const = 0;
+  virtual ~StringSplitter() = default;
 };
 
 
@@ -99,14 +96,14 @@ public:
 class Splitter : public StringSplitter
 {
 public:
-    Splitter();
-    virtual ~Splitter();
+  Splitter();
+  ~Splitter() override = default;
 
-    virtual bool SetLineBreakCharacter(char lbc);
-    virtual bool Split(std::vector<std::string> & dest,
-                       const std::string & src) const;
+  virtual bool SetLineBreakCharacter(char lbc);
+  bool Split(std::vector<std::string> & dest, const std::string & src) const override;
+
 private:
-    char _LineBreak;
+  char _LineBreak;
 };
 
 

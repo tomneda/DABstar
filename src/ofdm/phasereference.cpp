@@ -71,7 +71,7 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const proce
   *	looking for.
   */
 
-int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // copy of iV is indented
+int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // copy of iV is intended
 {
   mFftForward.fft(iV); // in-place FFT
 
@@ -156,7 +156,7 @@ int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // c
 }
 
 //	an approach that works fine is to correlate the phasedifferences between subsequent carriers
-int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> iV) // copy of iV is inteded
+int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> iV) // copy of iV is intended
 {
   mFftForward.fft(iV);
 

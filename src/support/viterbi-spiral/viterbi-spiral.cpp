@@ -231,7 +231,7 @@ static inline uint8_t getbit(uint8_t v, int32_t o)
 //	Note that our DAB environment maps the softbits to -127 .. 127
 //	we have to map that onto 0 .. 255
 
-void ViterbiSpiral::deconvolve(int16_t * input, uint8_t * output)
+void ViterbiSpiral::deconvolve(const int16_t * input, uint8_t * output)
 {
   uint32_t i;
 

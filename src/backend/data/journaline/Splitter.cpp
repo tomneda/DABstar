@@ -51,7 +51,7 @@
 /// different string splitting routines
 ///
 /// @file       Splitter.cpp
-/// @author     Michael Reichenbächer <rbr@iis.fraunhofer.de>
+/// @author     Michael Reichenbï¿½cher <rbr@iis.fraunhofer.de>
 ///
 /// $Id: Splitter.cpp,v 1.2 2008/12/26 17:18:08 jcable Exp $
 ///
@@ -69,13 +69,10 @@
 
 Splitter::Splitter()
 {
-    SetLineBreakCharacter('\n');
+  SetLineBreakCharacter('\n');
 }
 
 
-Splitter::~Splitter()
-{
-}
 
 
 /// @brief set line break character for Split
@@ -85,9 +82,12 @@ Splitter::~Splitter()
 /// @return     always returns true
 bool Splitter::SetLineBreakCharacter(char lbc)
 {
-    if (lbc==0) return false;
-    _LineBreak = lbc;
-    return true;
+  if (lbc == 0)
+  {
+    return false;
+  }
+  _LineBreak = lbc;
+  return true;
 }
 
 
@@ -102,40 +102,39 @@ bool Splitter::SetLineBreakCharacter(char lbc)
 /// @param dest  vector of lines
 /// @param src   source string
 /// @return      always returns true
-bool Splitter::Split(std::vector<std::string> & dest,
-                     const std::string & src) const
+bool Splitter::Split(std::vector<std::string> & dest, const std::string & src) const
 {
-    std::string::size_type left, right;
-    dest.clear();
+  std::string::size_type left, right;
+  dest.clear();
 
-    if (src.size()==0)
-    {
-        dest.push_back("");
-        return true;
-    }
-
-    for (left=0,right=0;;)
-    {
-        // search first non-delimiter
-        left = src.find_first_not_of(_LineBreak, right);
-        if (left==std::string::npos)
-        {
-            // rest of the string are delimiters
-            //dest.push_back("");
-            break;
-        }
-        // search first delimiter after series of non-delimiters
-        // => right>left (or right=npos!)
-        right = src.find_first_of(_LineBreak, left);
-        if (right==std::string::npos)
-        {
-            // rest of the string are non-delimiters
-            dest.push_back(src.substr(left));
-            break;
-        }
-        // substring src[left,right[ are non-delimiters
-        dest.push_back(src.substr(left, right - left));
-    }
-
+  if (src.size() == 0)
+  {
+    dest.push_back("");
     return true;
+  }
+
+  for (left = 0, right = 0;;)
+  {
+    // search first non-delimiter
+    left = src.find_first_not_of(_LineBreak, right);
+    if (left == std::string::npos)
+    {
+      // rest of the string are delimiters
+      //dest.push_back("");
+      break;
+    }
+    // search first delimiter after series of non-delimiters
+    // => right>left (or right=npos!)
+    right = src.find_first_of(_LineBreak, left);
+    if (right == std::string::npos)
+    {
+      // rest of the string are non-delimiters
+      dest.push_back(src.substr(left));
+      break;
+    }
+    // substring src[left,right[ are non-delimiters
+    dest.push_back(src.substr(left, right - left));
+  }
+
+  return true;
 }

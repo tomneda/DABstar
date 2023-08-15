@@ -139,7 +139,7 @@ FicHandler::~FicHandler()
   *	The function is called with a blkno. This should be 1, 2 or 3
   *	for each time 2304 bits are in, we call process_ficInput
   */
-void FicHandler::process_ficBlock(std::vector<int16_t> & data, int32_t blkno)
+void FicHandler::process_ficBlock(const std::vector<int16_t> & data, int32_t blkno)
 {
   int32_t i;
 

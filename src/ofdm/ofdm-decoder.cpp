@@ -53,7 +53,7 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
 
 /**
  */
-void OfdmDecoder::processBlock_0(std::vector<cmplx> buffer)
+void OfdmDecoder::processBlock_0(std::vector<cmplx> buffer) // copy is intended as used as fft buffer
 {
   mFftHandler.fft(buffer);
   /**

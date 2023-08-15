@@ -1,4 +1,3 @@
-
 /*
  * ## Copyright
  *
@@ -36,66 +35,65 @@
  * 	eti generator
  */
 
-#ifndef	__ETI_GENERATOR_H
-#define	__ETI_GENERATOR_H
-#include	<cstdio>
-#include	<stdint.h>
-#include	<cstdio>
-#include	<vector>
-#include	<atomic>
-#include	"dab-constants.h"
-#include	"ringbuffer.h"
-#include	"fic-handler.h"
-#include	"dab-params.h"
+#ifndef  ETI_GENERATOR_H
+#define  ETI_GENERATOR_H
+
+#include  <cstdio>
+#include  <stdint.h>
+#include  <cstdio>
+#include  <vector>
+#include  <atomic>
+#include  "dab-constants.h"
+#include  "ringbuffer.h"
+#include  "fic-handler.h"
+#include  "dab-params.h"
 #include  "protection.h"
 
-class	RadioInterface;
+class RadioInterface;
 
-class	parameter;
+class parameter;
 
-//
 //	to build a simple cache for the protection handlers
-typedef	struct {
-	bool    uepFlag;
-        int     bitRate;
-        int     protLevel;
-	uint8_t	*dispersionVector;
-        Protection *theDeconvolver;
+typedef struct
+{
+  bool uepFlag;
+  int bitRate;
+  int protLevel;
+  uint8_t * dispersionVector;
+  Protection * theDeconvolver;
 } protDesc;
 
-class etiGenerator {
+class etiGenerator
+{
 public:
-                etiGenerator		(uint8_t  dabMode,
-                                 FicHandler     *my_ficHandler);
-		~etiGenerator		();
-	void	newFrame		();
-	void	processBlock		(std::vector<int16_t> &fbits,
-	                                                        int blkno);
-	void	reset			();
-	bool	start_etiGenerator	(const QString &);
-	void	stop_etiGenerator	();
-private:
-	FicHandler	*my_ficHandler;
-	FILE		*etiFile;
-	DabParams	params;
-	bool		running;
-	int16_t		index_Out;
-	int		Minor;
-	int16_t		CIFCount_hi;
-	int16_t		CIFCount_lo;
-	std::atomic <int16_t>	amount;
-	int16_t		BitsperBlock;
-	int16_t		numberofblocksperCIF;
-	uint8_t		fibBits			[4 * 768];
-	
-	int32_t		init_eti		(uint8_t *,
-	                                         int16_t, int16_t, int16_t);
-	int32_t		process_CIF		(int16_t *,
-	                                         uint8_t *, int32_t);
-	void		process_subCh		(int, parameter *,
-                            Protection *prot, uint8_t *);
+  etiGenerator(uint8_t dabMode, FicHandler * my_ficHandler);
+  ~etiGenerator();
 
-	void		postProcess		(uint8_t *, int32_t);
+  void newFrame();
+  void processBlock(const std::vector<int16_t> & fbits, int blkno);
+  void reset();
+  bool start_etiGenerator(const QString &);
+  void stop_etiGenerator();
+
+private:
+  FicHandler * my_ficHandler;
+  FILE * etiFile;
+  DabParams params;
+  bool running;
+  int16_t index_Out;
+  int Minor;
+  int16_t CIFCount_hi;
+  int16_t CIFCount_lo;
+  std::atomic<int16_t> amount;
+  int16_t BitsperBlock;
+  int16_t numberofblocksperCIF;
+  uint8_t fibBits[4 * 768];
+
+  int32_t init_eti(uint8_t *, int16_t, int16_t, int16_t);
+  int32_t process_CIF(const int16_t *, uint8_t *, int32_t);
+  void process_subCh(int, parameter *, Protection * prot, uint8_t *);
+
+  void postProcess(const uint8_t *, int32_t);
 };
 
 #endif

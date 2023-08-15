@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2015
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,23 +19,27 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef	JOURNALINE_DATAHANDLER
-#define	JOURNALINE_DATAHANDLER
-#include	"dab-constants.h"
-#include	"virtual-datahandler.h"
-#include	"dabdatagroupdecoder.h"
-#include	<QByteArray>
+#ifndef  JOURNALINE_DATAHANDLER_H
+#define  JOURNALINE_DATAHANDLER_H
+
+#include  "dab-constants.h"
+#include  "virtual-datahandler.h"
+#include  "dabdatagroupdecoder.h"
+#include  <QByteArray>
 
 
-class	journaline_dataHandler:public virtual_dataHandler {
+class journaline_dataHandler : public virtual_dataHandler
+{
 public:
-	journaline_dataHandler();
-	~journaline_dataHandler();
-void	add_mscDatagroup	(std::vector<uint8_t>);
-//void	add_mscDatagroup	(QByteArray &);
+  journaline_dataHandler();
+  ~journaline_dataHandler();
+
+  void add_mscDatagroup(const std::vector<uint8_t> &);
+  //void	add_mscDatagroup	(QByteArray &);
+
 private:
-	DAB_DATAGROUP_DECODER_t theDecoder;
-	DAB_DATAGROUP_DECODER_data	myCallBack;
+  DAB_DATAGROUP_DECODER_t theDecoder;
+  DAB_DATAGROUP_DECODER_data myCallBack;
 };
 
 #endif

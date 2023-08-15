@@ -242,12 +242,11 @@ private:
   SNDFILE * rawDumper;
   SNDFILE * audioDumper;
   FILE * scanDumpFile;
-  void set_Colors();
   void set_channelButton(int);
   QStandardItemModel model;
   std::vector<serviceId> serviceList;
   bool isMember(const std::vector<serviceId> &, serviceId);
-  std::vector<serviceId> insert(std::vector<serviceId> &, serviceId, int);
+  std::vector<serviceId> insert(const std::vector<serviceId> &, serviceId, int);
 
   void show_pause_slide();
   QTimer displayTimer;

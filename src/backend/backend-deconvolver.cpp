@@ -41,7 +41,7 @@ BackendDeconvolver::~BackendDeconvolver()
   delete protectionHandler;
 }
 
-void BackendDeconvolver::deconvolve(int16_t * rawBits_in, int32_t length, uint8_t * outData)
+void BackendDeconvolver::deconvolve(const int16_t * rawBits_in, int32_t length, uint8_t * outData)
 {
   protectionHandler->deconvolve(rawBits_in, length, outData);
 }

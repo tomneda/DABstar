@@ -1726,7 +1726,7 @@ std::vector<serviceId> FibDecoder::getServices(int order)
   return services;
 }
 
-std::vector<serviceId> FibDecoder::insert(std::vector<serviceId> & l, serviceId n, int order)
+std::vector<serviceId> FibDecoder::insert(const std::vector<serviceId> & l, serviceId n, int order)
 {
   std::vector<serviceId> k;
   if (l.size() == 0)
