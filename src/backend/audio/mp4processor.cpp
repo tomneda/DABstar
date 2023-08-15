@@ -312,7 +312,7 @@ bool mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
         }
         else // no PAD data, so no dynamic label
         {
-          emit show_emptyLabel("");
+          // emit show_emptyLabel("");
         }
         //
         //	then handle the audio

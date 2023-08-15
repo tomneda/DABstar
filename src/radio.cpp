@@ -3221,9 +3221,11 @@ void RadioInterface::startService(dabService & s)
   font.setBold(true);
   serviceLabel->setFont(font);
   serviceLabel->setText(serviceName);
-  Audiodata ad;
+  dynamicLabel->setText("");
 
+  Audiodata ad;
   my_dabProcessor->dataforAudioService(serviceName, &ad);
+
   if (ad.defined)
   {
     channel.currentService.valid = true;
