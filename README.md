@@ -13,6 +13,7 @@
   * [Table of Content](#table-of-content)
   * [Introducing](#introducing)
   * [Changes in DABstar version 1.0.2](#changes-in-dabstar-version-102)
+    * [How to apply TII info](#how-to-apply-tii-info)
   * [Changes in DABstar version 1.0.1](#changes-in-dabstar-version-101-)
     * [Graphical changes](#graphical-changes)
     * [Functional changes](#functional-changes)
