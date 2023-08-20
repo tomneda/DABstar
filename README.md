@@ -41,9 +41,21 @@ I will also not provide any precompiled setup packages, yet.
 
 ## Changes in DABstar version 1.0.2
 
-- Applied fixes from Qt-DAB up to [commit](https://github.com/JvanKatwijk/qt-dab/commit/775dc3d9411545ecd07480f625b499f292998818) from 2023-08-13.
+- Applied latest fixes from Qt-DAB up to [commit](https://github.com/JvanKatwijk/qt-dab/commit/775dc3d9411545ecd07480f625b499f292998818) from 2023-08-13.
 - Minor changes in GUI.
 - Further different class refinements.
+- Handling of the TII distance info improved
+
+### How to apply TII info
+
+That the name, distance and direction to the transmitter can be shown, do following:
+
+1) Provide your home coordinates with button **Coordinates** on the "Configuraton and Control" windows.
+2) Copy **libtii-lib.so** from project sub folder **/tii-library** to **/usr/local/lib/**    (you will need sudo rights).
+3) Press one time **Load Table** on the "Configuraton and Control" window.
+4) If 3) should fail you can unzip the content of **/tii-library/tiiFile.zip** to your home folder. Restart DABstar. 
+    Here you will maybe not have the newest in 3) downloaded version of the data base.
+
 
 ## Changes in DABstar version 1.0.1 
 
