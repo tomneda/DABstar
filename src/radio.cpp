@@ -4320,7 +4320,7 @@ void RadioInterface::loadTable()
     dabSettings->setValue("tiiFile", tableFile);
   }
   tiiHandler.loadTable(tableFile);
-  if (tiiHandler.valid())
+  if (tiiHandler.is_valid())
   {
     QMessageBox::information(this, tr("success"), tr("Loading and installing database complete\n"));
     channel.tiiFile = tiiHandler.fill_cache_from_tii_file(tableFile);

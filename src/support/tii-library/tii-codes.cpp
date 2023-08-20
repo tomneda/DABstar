@@ -26,6 +26,7 @@
 #include  "tii-codes.h"
 #include  <QMessageBox>
 #include  <stdio.h>
+#include  <string>
 
 enum
 {
@@ -50,45 +51,64 @@ enum
 
 TiiHandler::TiiHandler()
 {
-  Handle = dlopen("libtii-lib.so", RTLD_NOW | RTLD_GLOBAL);
-  fprintf(stderr, "%s\n", dlerror());
-  if (Handle == nullptr)
-  {
-    Handle = dlopen("/usr/local/lib/libtii-lib.so", RTLD_NOW | RTLD_GLOBAL);
-  }
-  if (Handle == nullptr)
-  {
-    Handle = dlopen("/usr/local/lib/tii-lib.so", RTLD_NOW | RTLD_GLOBAL);
-  }
-  fprintf(stderr, "%s\n", dlerror());
-  if (Handle == nullptr)
-  {
-    fprintf(stderr, "Library not loaded\n");
-  }
-
-  //	set the defaults
-  init_tii_L = nullptr;
-  close_tii_L = nullptr;
-  loadTable_L = nullptr;
-
-  loadFunctions();
-
-  if (init_tii_L != nullptr)
-  {
-    handler = init_tii_L();
-  }
-  else
-  {
-    handler = nullptr;
-  }
 }
 
 TiiHandler::~TiiHandler()
 {
   if (close_tii_L != nullptr)
   {
-    close_tii_L(handler);
+    close_tii_L(mTiiLibHandler);
   }
+}
+
+bool TiiHandler::load_library()
+{
+  init_tii_L = nullptr;
+  close_tii_L = nullptr;
+  loadTable_L = nullptr;
+
+  std::string libFile = "libtii-lib.so";
+  mHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
+
+  if (mHandle == nullptr)
+  {
+    libFile = std::string("/usr/local/lib/libtii-lib.so");
+    mHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
+  }
+
+  if (mHandle == nullptr)
+  {
+    libFile = std::string("/usr/local/lib/tii-lib.so");
+    mHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
+  }
+
+  if (mHandle != nullptr)
+  {
+    if (load_dyn_library_functions())
+    {
+      mTiiLibHandler = init_tii_L();
+
+      if (mTiiLibHandler != nullptr)
+      {
+        fprintf(stdout, "Opening '%s' and initialization was successful\n", libFile.c_str());
+        return true;
+      }
+      else
+      {
+        fprintf(stderr, "Opening '%s' and initialization failed with error %s\n", libFile.c_str(), dlerror());
+      }
+    }
+    else
+    {
+      mTiiLibHandler = nullptr;
+      fprintf(stderr, "Failed to open functions in library %s with error '%s'\n", libFile.c_str(), dlerror());
+    }
+  }
+  else
+  {
+    fprintf(stderr, "... but failed to load library %s with error '%s'\n", libFile.c_str(), dlerror());
+  }
+  return false;
 }
 
 bool TiiHandler::fill_cache_from_tii_file(const QString & s)
@@ -103,7 +123,7 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & s)
   FILE * f = fopen(s.toUtf8().data(), "r+b");
   if (f != nullptr)
   {
-    fprintf(stderr, "tiiFile is %s\n", s.toUtf8().data());
+    fprintf(stdout, "TiiFile is %s\n", s.toUtf8().data());
     res = true;
     readFile(f);
     fclose(f);
@@ -113,7 +133,7 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & s)
 
 QString TiiHandler::get_transmitter_name(const QString & channel, uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
-  //fprintf(stderr, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
+  //fprintf(stdout, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
 
   for (int i = 0; i < (int)(cache.size()); i++)
   {
@@ -379,58 +399,49 @@ char * TiiHandler::eread(char * buffer, int amount, FILE * f)
   return buffer;
 }
 
-bool TiiHandler::valid()
+bool TiiHandler::is_valid()
 {
-  return handler != nullptr;
+  return mTiiLibHandler != nullptr;
 }
 
-bool TiiHandler::loadFunctions()
+bool TiiHandler::load_dyn_library_functions()
 {
-  init_tii_L = (init_tii_P)GETPROCADDRESS(this->Handle, "init_tii_L");
+  init_tii_L = (init_tii_P)GETPROCADDRESS(mHandle, "init_tii_L");
+
   if (init_tii_L == nullptr)
   {
     fprintf(stderr, "init_tii_L not loaded\n");
+    return false;
   }
 
-  close_tii_L = (close_tii_P)GETPROCADDRESS(this->Handle, "close_tii_L");
-  loadTable_L = (loadTable_P)GETPROCADDRESS(this->Handle, "loadTableL");
+  close_tii_L = (close_tii_P)GETPROCADDRESS(mHandle, "close_tii_L");
+
+  if (close_tii_L == nullptr)
+  {
+    fprintf(stderr, "close_tii_L not loaded\n");
+    return false;
+  }
+
+  loadTable_L = (loadTable_P)GETPROCADDRESS(mHandle, "loadTableL");
+
+  if (loadTable_L == nullptr)
+  {
+    fprintf(stderr, "loadTable_L not loaded\n");
+    return false;
+  }
+
   return true;
 }
 
 void TiiHandler::loadTable(const QString & tf)
 {
+  if (!is_valid())
+  {
+    load_library();
+  }
+
   if (loadTable_L != nullptr)
   {
-    loadTable_L(handler, tf.toStdString());
+    loadTable_L(mTiiLibHandler, tf.toStdString());
   }
 }
-
-bool TiiHandler::write_cache(const QString & iFilename) const
-{
-  FILE * p = fopen(iFilename.toStdString().c_str(), "w");
-
-  if (p == nullptr)
-  {
-    return false;
-  }
-
-  for (const cacheElement & ed: cache)
-  {
-    fprintf(p,
-            "%s;%s;%s;%d;%d;%d;%s;%f;%f;%f\n",
-            ed.country.toStdString().c_str(),
-            ed.channel.toStdString().c_str(),
-            ed.ensemble.toStdString().c_str(),
-            ed.Eid,
-            ed.mainId,
-            ed.subId,
-            ed.transmitterName.toStdString().c_str(),
-            ed.latitude,
-            ed.longitude,
-            ed.power);
-  }
-  fclose(p);
-
-  return true;
-}
-

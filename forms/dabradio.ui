@@ -402,7 +402,7 @@ color: rgb(255, 255, 255);</string>
      <item>
       <widget class="QLabel" name="distanceLabel">
        <property name="text">
-        <string>No transmitter data found  (txdata.tii installed?)</string>
+        <string>Please read file /tii-library/README.txt that this works!</string>
        </property>
       </widget>
      </item>
