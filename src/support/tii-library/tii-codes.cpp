@@ -106,7 +106,7 @@ bool TiiHandler::load_library()
   }
   else
   {
-    fprintf(stderr, "... but failed to load library %s with error '%s'\n", libFile.c_str(), dlerror());
+    fprintf(stderr, "Failed to load library %s with error '%s'\n", libFile.c_str(), dlerror());
   }
   return false;
 }
