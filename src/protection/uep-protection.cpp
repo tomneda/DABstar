@@ -249,26 +249,3 @@ UepProtection::UepProtection(int16_t bitRate, int16_t protLevel) :
     viterbiCounter++;
   }
 }
-
-UepProtection::~UepProtection()
-{
-}
-
-bool UepProtection::deconvolve(const int16_t * v, int32_t size, uint8_t * outBuffer)
-{
-  int16_t inputCounter = 0;
-  //	clear the bits in the viterbiBlock,
-  //	only the non-punctured ones are set
-  memset(viterbiBlock.data(), 0, (outSize * 4 + 24) * sizeof(int16_t));
-  ///	The actual deconvolution is done by the viterbi decoder
-
-  for (int i = 0; i < outSize * 4 + 24; i++)
-  {
-    if (indexTable[i])
-    {
-      viterbiBlock[i] = v[inputCounter++];
-    }
-  }
-  ViterbiSpiral::deconvolve(viterbiBlock.data(), outBuffer);
-  return true;
-}

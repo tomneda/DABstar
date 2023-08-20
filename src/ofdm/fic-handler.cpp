@@ -156,7 +156,7 @@ void FicHandler::process_ficBlock(const std::vector<int16_t> & data, int32_t blk
       ofdm_input[index++] = data[i];
       if (index >= 2304)
       {
-        process_ficInput(ficno);
+        process_ficInput(ficno, &ficValid[ficno]);
         index = 0;
         ficno++;
       }
@@ -179,7 +179,7 @@ void FicHandler::process_ficBlock(const std::vector<int16_t> & data, int32_t blk
   *	In the next coding step, we will combine this function with the
   *	one above
   */
-void FicHandler::process_ficInput(int16_t ficno)
+void FicHandler::process_ficInput(int16_t ficno, bool * valid)
 {
   int16_t i;
   int16_t viterbiBlock[3072 + 24] = { 0 };
@@ -228,12 +228,13 @@ void FicHandler::process_ficInput(int16_t ficno)
     *	was lost.
     */
 
-  //static int ccc = 0;
+  *valid = true;
   for (i = ficno * 3; i < ficno * 3 + 3; i++)
   {
     uint8_t * p = &bitBuffer_out[(i % 3) * 256];
     if (!check_CRC_bits(p, 256))
     {
+      *valid = false;
       show_ficSuccess(false);
       continue;
     }
@@ -292,10 +293,14 @@ void FicHandler::stop_ficDump()
 }
 
 
-void FicHandler::get_fibBits(uint8_t * v)
+void FicHandler::get_fibBits(uint8_t * v, bool * b)
 {
   for (int i = 0; i < 4 * 768; i++)
   {
     v[i] = fibBits[i];
+  }
+  for (int i = 0; i < 4; i++)
+  {
+    b[i] = ficValid[i];
   }
 }

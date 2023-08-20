@@ -163,11 +163,15 @@ void etiGenerator::processBlock(const std::vector<int16_t> & ibits, int blkno)
   }
 
   if (blkno == 4)
-  {  // import fibBits
-    my_ficHandler->get_fibBits(fibBits);
+  {
+    // import fibBits
+    bool ficValid[4];
+    my_ficHandler->get_fibBits(fibBits, ficValid);
+
     for (int i = 0; i < 4; i++)
     {
-      fibValid[index_Out + i] = true;
+      fibValid[index_Out + i] = ficValid[i];
+
       for (int j = 0; j < 96; j++)
       {
         fibVector[(index_Out + i) & 017][j] = 0;
@@ -181,7 +185,7 @@ void etiGenerator::processBlock(const std::vector<int16_t> & ibits, int blkno)
     Minor = 0;
     my_ficHandler->get_CIFcount(&CIFCount_hi, &CIFCount_lo);
   }
-  //
+
   //	adding the MSC blocks. Blocks 5 .. 76 are "transformed"
   //	into the "soft" bits arrays
   int CIF_index = (blkno - 4) % numberofblocksperCIF;
@@ -422,38 +426,6 @@ int32_t etiGenerator::process_CIF(const int16_t * input, uint8_t * output, int32
     }
   }
   return offset;
-}
-
-/*static*/ void process_subCh(int nr, parameter * p, Protection * prot, uint8_t * desc)
-{
-  std::unique_ptr<uint8_t[]> outVector{ new uint8_t[24 * p->bitRate] };
-  if (!outVector)
-  {
-    std::cerr << "process_subCh - alloc fail";
-    return;
-  }
-  int j, k;
-
-  memset(outVector.get(), 0, sizeof(uint8_t) * 24 * p->bitRate);
-
-  prot->deconvolve(&p->input[p->start_cu * CUSize], p->size * CUSize, outVector.get());
-  //
-  for (j = 0; j < 24 * p->bitRate; j++)
-  {
-    outVector[j] ^= desc[j];
-  }
-  //
-  //	and the storage:
-  for (j = 0; j < 24 * p->bitRate / 8; j++)
-  {
-    int temp = 0;
-    for (k = 0; k < 8; k++)
-    {
-      temp = (temp << 1) | (outVector[j * 8 + k] & 01);
-    }
-    p->output[j] = temp;
-  }
-
 }
 
 void etiGenerator::process_subCh(int nr, parameter * p, Protection * prot, uint8_t * desc)

@@ -1,8 +1,7 @@
-#
 /*
  *    Copyright (C) 2014
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
- *    Lazy Chair Programming
+ *    Lazy Chair Computing
  *
  *    This file is part of the  Qt-DAB program
  *
@@ -20,34 +19,39 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__PRESET_HANDLER__
-#define	__PRESET_HANDLER__
-#include	<QString>
-#include	<QtXml>
-#include	<QFile>
-#include	<vector>
-#include        <QStringList>
-#include        <QObject>
-#include        <QString>
+#ifndef  PRESET_HANDLER_H
+#define  PRESET_HANDLER_H
 
-class   RadioInterface;
-class	QComboBox;
+#include  <QString>
+#include  <QtXml>
+#include  <QFile>
+#include  <vector>
+#include  <QStringList>
+#include  <QObject>
+#include  <QString>
 
-typedef struct presetData_ {
-	QString serviceName;
-	QString channel;
+class RadioInterface;
+class QComboBox;
+
+typedef struct presetData_
+{
+  QString serviceName;
+  QString channel;
 } presetData;
 
-class	presetHandler: public QObject {
+class PresetHandler : public QObject
+{
 Q_OBJECT
 public:
-		presetHandler	(RadioInterface *);
-		~presetHandler	();
-	void	loadPresets	(QString, QComboBox *);
-	void	savePresets	(QComboBox *);
+  explicit PresetHandler(RadioInterface *);
+  ~PresetHandler() = default;
+
+  void loadPresets(const QString & fileName, QComboBox * cb);
+  void savePresets(const QComboBox * cb);
+
 private:
-	RadioInterface	*radio;
-	QString	fileName;
+  RadioInterface * mpRadioIf;
+  QString mFileName;
 };
 
 #endif

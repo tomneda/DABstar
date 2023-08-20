@@ -32,7 +32,7 @@
 padHandler::padHandler(RadioInterface * mr)
 {
   myRadioInterface = mr;
-  connect(this, SIGNAL (showLabel(QString)), mr, SLOT (showLabel(QString)));
+  connect(this, SIGNAL (showLabel(const QString &)), mr, SLOT (showLabel(const QString &)));
   connect(this, SIGNAL (show_motHandling(bool)), mr, SLOT (show_motHandling(bool)));
   currentSlide = nullptr;
   //
@@ -307,8 +307,7 @@ void padHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
 //	fields, starting with CI = 2, continuing with CI = 3
 void padHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
 {
-  static int16_t segmentno = 0;
-  (void)segmentno;
+  //static int16_t segmentno = 0;
   static int16_t remainDataLength = 0;
   static bool isLastSegment = false;
   static bool moreXPad = false;
@@ -325,14 +324,14 @@ void padHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
 
     if (first)
     {
-      segmentno = 1;
+      //segmentno = 1;
       charSet = (prefix >> 4) & 017;
       dynamicLabelText.clear();
     }
-    else
-    {
-      segmentno = ((prefix >> 4) & 07) + 1;
-    }
+//    else
+//    {
+//      segmentno = ((prefix >> 4) & 07) + 1;
+//    }
 
     if (Cflag)
     {    // special dynamic label command

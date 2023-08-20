@@ -156,27 +156,3 @@ EepProtection::EepProtection(int16_t bitRate, int16_t protLevel) :
     viterbiCounter++;
   }
 }
-
-EepProtection::~EepProtection()
-{
-}
-
-bool EepProtection::deconvolve(const int16_t * v, int32_t size, uint8_t * outBuffer)
-{
-
-  int16_t inputCounter = 0;
-  (void)size;      // size was known already
-
-  memset(viterbiBlock.data(), 0, (outSize * 4 + 24) * sizeof(int16_t));
-  for (int i = 0; i < outSize * 4 + 24; i++)
-  {
-    if (indexTable[i])
-    {
-      viterbiBlock[i] = v[inputCounter++];
-    }
-  }
-
-  ViterbiSpiral::deconvolve(viterbiBlock.data(), outBuffer);
-  return true;
-}
-

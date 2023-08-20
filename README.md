@@ -4,24 +4,31 @@
 
 # DABstar
 
+---
+
 ![screenshot.png](res/screenshot.png)
 
 ## Table of Content
 <!-- TOC -->
-* [Table of Content](#table-of-content)
-* [Introducing](#introducing)
-* [Changes in DABstar version 1.0.1](#changes-in-dabstar-version-101-)
-  * [Graphical changes](#graphical-changes)
-  * [Functional changes](#functional-changes)
-  * [Code refactorings](#code-refactorings)
-  * [Not more working or removed things](#not-more-working-or-removed-things)
+  * [Table of Content](#table-of-content)
+  * [Introducing](#introducing)
+  * [Changes in DABstar version 1.0.2](#changes-in-dabstar-version-102)
+    * [How to apply TII info](#how-to-apply-tii-info)
+  * [Changes in DABstar version 1.0.1](#changes-in-dabstar-version-101-)
+    * [Graphical changes](#graphical-changes)
+    * [Functional changes](#functional-changes)
+    * [Code refactorings](#code-refactorings)
+    * [Not more working or removed things](#not-more-working-or-removed-things)
 <!-- TOC -->
 
 ## Introducing
 
-[DABstar](https://github.com/tomneda/DABstar) is forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab)
-from [commit](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249) from 2023-05-30.
+[DABstar](https://github.com/tomneda/DABstar) is forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) from
+[commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249)
+([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249))
+from 2023-05-30, fixes afterwards to Qt-DAB afterwards included.
 
+Current main branch version is [V1.0.2](#changes-in-dabstar-version-102).
 
 As there are many changes made from my side and there will be bigger changes in the future, 
 I decided to give it the new name **DABstar**.
@@ -32,6 +39,24 @@ For building there is one bigger difference to Qt-DAB: I maintain only one GUI v
 So use only the cmake related installation process.
 
 I will also not provide any precompiled setup packages, yet.
+
+## Changes in DABstar version 1.0.2
+
+- Applied latest fixes from Qt-DAB up to [commit](https://github.com/JvanKatwijk/qt-dab/commit/775dc3d9411545ecd07480f625b499f292998818) from 2023-08-13.
+- Minor changes in GUI.
+- Further different class refinements.
+- Handling of the TII distance info improved
+
+### How to apply TII info
+
+That the name, distance and direction to the transmitter can be shown, do following:
+
+1) Provide your home coordinates with button **Coordinates** on the "Configuraton and Control" windows.
+2) Copy **libtii-lib.so** from project sub folder **/tii-library** to **/usr/local/lib/**    (you will need sudo rights).
+3) Press one time **Load Table** on the "Configuraton and Control" window.
+4) If 3) should fail you can unzip the content of **/tii-library/tiiFile.zip** to your home folder. Restart DABstar. 
+    Here you will maybe not have the newest in 3) downloaded version of the data base.
+
 
 ## Changes in DABstar version 1.0.1 
 

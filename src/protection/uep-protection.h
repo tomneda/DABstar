@@ -30,9 +30,7 @@ class UepProtection : public Protection
 {
 public:
   UepProtection(int16_t, int16_t);
-  ~UepProtection() override;
-  
-  bool deconvolve(const int16_t *, int32_t, uint8_t *) override;
+  ~UepProtection() override = default;
 };
 
 #endif
