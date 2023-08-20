@@ -2989,7 +2989,7 @@ void RadioInterface::stopAnnouncement(const QString & name, int subChId)
 
   if (name == serviceLabel->text())
   {
-    serviceLabel->setStyleSheet("QLabel {color : black}");
+    serviceLabel->setStyleSheet("QLabel {color : blue}");
     fprintf(stderr, "end for announcement service %s\n", name.toUtf8().data());
   }
 }
@@ -3219,6 +3219,7 @@ void RadioInterface::startService(dabService & s)
   QFont font = serviceLabel->font();
   font.setPointSize(20);
   font.setBold(true);
+  serviceLabel->setStyleSheet("color: lightblue");
   serviceLabel->setFont(font);
   serviceLabel->setText(serviceName);
   dynamicLabel->setText("");

@@ -246,15 +246,9 @@ color: rgb(255, 255, 255);</string>
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,4,1">
        <item>
         <widget class="QLabel" name="stereoLabel">
-         <property name="maximumSize">
-          <size>
-           <width>61</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="text">
           <string>stereo</string>
          </property>
@@ -265,16 +259,13 @@ color: rgb(255, 255, 255);</string>
          <property name="text">
           <string>service</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="programTypeLabel">
-         <property name="maximumSize">
-          <size>
-           <width>91</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="text">
           <string>pty</string>
          </property>
