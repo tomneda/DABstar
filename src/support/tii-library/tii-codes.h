@@ -58,16 +58,17 @@ class TiiHandler
 public:
   TiiHandler();
   ~TiiHandler();
-  bool tiiFile(const QString &);
-  QString get_transmitterName(const QString &, uint16_t, uint8_t, uint8_t);
+
+  bool fill_cache_from_tii_file(const QString &);
+  QString get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
   void get_coordinates(float *, float *, float *, const QString &, const QString &);
-  [[nodiscard]] int distance_2(float, float, float, float) const;
-  [[nodiscard]] double distance(float, float, float, float) const;
-  int corner(float, float, float, float);
+  [[nodiscard]] float distance(float, float, float, float) const;
+  float corner(float, float, float, float);
   bool is_black(uint16_t, uint8_t, uint8_t);
   void set_black(uint16_t, uint8_t, uint8_t);
   void loadTable(const QString & tf);
   bool valid();
+  bool write_cache(const QString &iFilename) const;
 
 private:
   std::vector<black> blackList;
@@ -84,6 +85,7 @@ private:
   [[nodiscard]] uint16_t get_Eid(const QString & s) const;
   [[nodiscard]] uint8_t get_mainId(const QString & s) const;
   [[nodiscard]] uint8_t get_subId(const QString & s) const;
+  [[nodiscard]] double distance_2(float, float, float, float) const;
   int readColumns(std::vector<QString> & oV, const char *, int);
   void readFile(FILE *);
   char * eread(char *, int, FILE *);

@@ -107,17 +107,9 @@ struct theTime
   int second;
 };
 
-class channelDescriptor
+class ChannelDescriptor
 {
 public:
-  channelDescriptor()
-  {
-  }
-
-  ~channelDescriptor()
-  {
-  }
-
   QString channelName;
   bool realChannel;
   bool etiActive;
@@ -169,7 +161,8 @@ public:
   ~RadioInterface();
 
 protected:
-  bool eventFilter(QObject * obj, QEvent * event);
+  bool eventFilter(QObject * obj, QEvent * event) override;
+  
 private:
   FILE * dlTextFile;
   RingBuffer<cmplx> spectrumBuffer;
@@ -183,14 +176,14 @@ private:
   RingBuffer<int16_t> audioBuffer;
   SpectrumViewer my_spectrumViewer;
   //correlationViewer my_correlationViewer;
-  tiiViewer my_tiiViewer;
-  snrViewer my_snrViewer;
-  presetHandler my_presetHandler;
+  TiiViewer my_tiiViewer;
+  SnrViewer my_snrViewer;
+  PresetHandler my_presetHandler;
   bandHandler theBand;
   QFrame dataDisplay;
   QFrame configDisplay;
   dlCache the_dlCache;
-  TiiHandler tiiProcessor;
+  TiiHandler tiiHandler;
   FindFileNames filenameFinder;
   RingBuffer<int16_t> theTechData;
   httpHandler * mapHandler;
@@ -202,7 +195,7 @@ private:
   contentTable * my_contentTable;
   contentTable * my_scanTable;
   FILE * logFile;
-  channelDescriptor channel;
+  ChannelDescriptor channel;
   int maxDistance;
   void LOG(const QString &, const QString &);
   bool error_report;

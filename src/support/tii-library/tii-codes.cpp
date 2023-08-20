@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -26,6 +25,7 @@
 #include  "dab-constants.h"
 #include  "tii-codes.h"
 #include  <QMessageBox>
+#include  <stdio.h>
 
 enum
 {
@@ -65,11 +65,14 @@ TiiHandler::TiiHandler()
   {
     fprintf(stderr, "Library not loaded\n");
   }
+
   //	set the defaults
   init_tii_L = nullptr;
   close_tii_L = nullptr;
   loadTable_L = nullptr;
+
   loadFunctions();
+
   if (init_tii_L != nullptr)
   {
     handler = init_tii_L();
@@ -88,7 +91,7 @@ TiiHandler::~TiiHandler()
   }
 }
 
-bool TiiHandler::tiiFile(const QString & s)
+bool TiiHandler::fill_cache_from_tii_file(const QString & s)
 {
   bool res = false;
   if (s == "")
@@ -108,7 +111,7 @@ bool TiiHandler::tiiFile(const QString & s)
   return res;
 }
 
-QString TiiHandler::get_transmitterName(const QString & channel, uint16_t Eid, uint8_t mainId, uint8_t subId)
+QString TiiHandler::get_transmitter_name(const QString & channel, uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
   //fprintf(stderr, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
 
@@ -143,7 +146,7 @@ void TiiHandler::get_coordinates(float * latitude, float * longitude, float * po
 //	en
 //	https://www.movable-type.co.uk/scripts/latlong.html
 //	Haversine formula applied
-int TiiHandler::distance_2(float latitude1, float longitude1, float latitude2, float longitude2) const
+double TiiHandler::distance_2(float latitude1, float longitude1, float latitude2, float longitude2) const
 {
   double R = 6371;
   double Phi1 = latitude1 * M_PI / 180;
@@ -163,10 +166,10 @@ int TiiHandler::distance_2(float latitude1, float longitude1, float latitude2, f
   double d = sqrt(x * x + y * y);
 
   //return (int)(R * c + 0.5);
-  return (int)(R * d + 0.5);
+  return (R * d + 0.5);
 }
 
-double TiiHandler::distance(float latitude1, float longitude1, float latitude2, float longitude2) const
+float TiiHandler::distance(float latitude1, float longitude1, float latitude2, float longitude2) const
 {
   bool dy_sign = latitude1 > latitude2;
   double dx;
@@ -179,10 +182,10 @@ double TiiHandler::distance(float latitude1, float longitude1, float latitude2, 
   {
     dx = distance_2(latitude2, longitude1, latitude2, longitude2);
   }
-  return sqrt(dx * dx + dy * dy);
+  return (float)sqrt(dx * dx + dy * dy);
 }
 
-int TiiHandler::corner(float latitude1, float longitude1, float latitude2, float longitude2)
+float TiiHandler::corner(float latitude1, float longitude1, float latitude2, float longitude2)
 {
   bool dx_sign = longitude1 - longitude2 > 0;
   bool dy_sign = latitude1 - latitude2 > 0;
@@ -200,17 +203,17 @@ int TiiHandler::corner(float latitude1, float longitude1, float latitude2, float
 
   if (dx_sign && dy_sign)
   {    // first quadrant
-    return (int)((M_PI / 2 - azimuth) / M_PI * 180);
+    return ((M_PI / 2 - azimuth) / M_PI * 180);
   }
-  if (dx_sign && !dy_sign)
+  else if (dx_sign) // dy_sign == false
   {  // second quadrant
-    return (int)((M_PI / 2 + azimuth) / M_PI * 180);
+    return ((M_PI / 2 + azimuth) / M_PI * 180);
   }
-  if (!dx_sign && !dy_sign)
+  else if (!dy_sign)
   {  // third quadrant
-    return (int)((3 * M_PI / 2 - azimuth) / M_PI * 180);
+    return ((3 * M_PI / 2 - azimuth) / M_PI * 180);
   }
-  return (int)((3 * M_PI / 2 + azimuth) / M_PI * 180);
+  return ((3 * M_PI / 2 + azimuth) / M_PI * 180);
 }
 
 bool TiiHandler::is_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
@@ -400,5 +403,34 @@ void TiiHandler::loadTable(const QString & tf)
   {
     loadTable_L(handler, tf.toStdString());
   }
+}
+
+bool TiiHandler::write_cache(const QString & iFilename) const
+{
+  FILE * p = fopen(iFilename.toStdString().c_str(), "w");
+
+  if (p == nullptr)
+  {
+    return false;
+  }
+
+  for (const cacheElement & ed: cache)
+  {
+    fprintf(p,
+            "%s;%s;%s;%d;%d;%d;%s;%f;%f;%f\n",
+            ed.country.toStdString().c_str(),
+            ed.channel.toStdString().c_str(),
+            ed.ensemble.toStdString().c_str(),
+            ed.Eid,
+            ed.mainId,
+            ed.subId,
+            ed.transmitterName.toStdString().c_str(),
+            ed.latitude,
+            ed.longitude,
+            ed.power);
+  }
+  fclose(p);
+
+  return true;
 }
 

@@ -207,7 +207,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     theBand(freqExtension, Si),
     configDisplay(nullptr),
     the_dlCache(10),
-    tiiProcessor(),
+    tiiHandler(),
     filenameFinder(Si),
     theTechData(16 * 32768)
 {
@@ -515,7 +515,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   channel.tiiFile = false;
   if (tiiFileName != "")
   {
-    channel.tiiFile = tiiProcessor.tiiFile(tiiFileName);
+    channel.tiiFile = tiiHandler.fill_cache_from_tii_file(tiiFileName);
     if (!channel.tiiFile)
     {
       httpButton->hide();
@@ -791,7 +791,7 @@ bool RadioInterface::doStart()
 
 RadioInterface::~RadioInterface()
 {
-  fprintf(stderr, "radioInterface is deleted\n");
+  fprintf(stderr, "RadioInterface is deleted\n");
 }
 
 //
@@ -2241,24 +2241,24 @@ void RadioInterface::show_tii(int mainId, int subId)
     return;
   }
 
-  if (tiiProcessor.is_black(channel.Eid, mainId, subId))
+  if (tiiHandler.is_black(channel.Eid, mainId, subId))
   {
     return;
   }
 
-  QString theName = tiiProcessor.get_transmitterName(channel.realChannel ? channel.channelName : "any",
+  QString theName = tiiHandler.get_transmitter_name(channel.realChannel ? channel.channelName : "any",
     //	                                            channel. countryName,
                                                      channel.Eid, mainId, subId);
   if (theName == "")
   {
-    tiiProcessor.set_black(channel.Eid, mainId, subId);
+    tiiHandler.set_black(channel.Eid, mainId, subId);
     LOG("Not found ", QString::number(channel.Eid, 16) + " " + QString::number(mainId) + " " + QString::number(subId));
     return;
   }
 
   channel.transmitterName = theName;
   float latitude, longitude, power;
-  tiiProcessor.get_coordinates(&latitude, &longitude, &power, channel.realChannel ? channel.channelName : "any", theName);
+  tiiHandler.get_coordinates(&latitude, &longitude, &power, channel.realChannel ? channel.channelName : "any", theName);
   channel.targetPos = cmplx(latitude, longitude);
   LOG("transmitter ", channel.transmitterName);
   LOG("coordinates ", QString::number(latitude) + " " + QString::number(longitude));
@@ -2275,12 +2275,13 @@ void RadioInterface::show_tii(int mainId, int subId)
     return;
   }
 
-  int distance = tiiProcessor.distance(latitude, longitude, ownLatitude, ownLongitude);
-  int corner = tiiProcessor.corner(latitude, longitude, ownLatitude, ownLongitude);
-  LOG("distance ", QString::number(distance));
-  LOG("corner ", QString::number(corner));
-  labelText += +" " + QString::number(distance) + " km" + " " + QString::number(corner);
-  labelText += QString::fromLatin1(" \xb0 ");
+  const float distance = tiiHandler.distance(latitude, longitude, ownLatitude, ownLongitude);
+  const float corner = tiiHandler.corner(latitude, longitude, ownLatitude, ownLongitude);
+  const QString distanceStr = QString::number(distance, 'f', 1);
+  const QString cornerStr = QString::number(corner, 'f', 1);
+  LOG("distance ", distanceStr);
+  LOG("corner ", cornerStr);
+  labelText += +" " + distanceStr + " km" + " " + cornerStr + QString::fromLatin1("\xb0 ");
   fprintf(stderr, "%s\n", labelText.toUtf8().data());
   distanceLabel->setText(labelText);
 
@@ -2293,7 +2294,7 @@ void RadioInterface::show_tii(int mainId, int subId)
   uint8_t key = MAP_NORM_TRANS;
   if ((!transmitterTags_local) && (distance > maxDistance))
   {
-    maxDistance = distance;
+    maxDistance = (int)distance;
     key = MAP_MAX_TRANS;
   }
   //
@@ -2311,8 +2312,8 @@ void RadioInterface::show_tii(int mainId, int subId)
                       channel.channelName,
                       theTime.toString(Qt::TextDate),
                       channel.mainId * 100 + channel.subId,
-                      distance,
-                      corner,
+                      (int)distance,
+                      (int)corner,
                       power);
 }
 
@@ -4318,11 +4319,11 @@ void RadioInterface::loadTable()
     tableFile = QDir::homePath() + "/.txdata.tii";
     dabSettings->setValue("tiiFile", tableFile);
   }
-  tiiProcessor.loadTable(tableFile);
-  if (tiiProcessor.valid())
+  tiiHandler.loadTable(tableFile);
+  if (tiiHandler.valid())
   {
     QMessageBox::information(this, tr("success"), tr("Loading and installing database complete\n"));
-    channel.tiiFile = tiiProcessor.tiiFile(tableFile);
+    channel.tiiFile = tiiHandler.fill_cache_from_tii_file(tableFile);
   }
   else
   {

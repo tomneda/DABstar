@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2019
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,28 +19,26 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#ifndef  TII_VIEWER_H
+#define  TII_VIEWER_H
 
-//
-#ifndef		__TII_VIEWER__
-#define		__TII_VIEWER__
+#define  TII_DISPLAYSIZE    512
+#define  TII_SPECTRUMSIZE  1024
 
-#define		TII_DISPLAYSIZE		512
-#define		TII_SPECTRUMSIZE	1024
-
-#include	<QSettings>
+#include  <QSettings>
 #include        "dab-constants.h"
-#include	<QFrame>
-#include	<QObject>
-#include	<QByteArray>
+#include  <QFrame>
+#include  <QObject>
+#include  <QByteArray>
 
-#include	"ui_tii-widget.h"
-#include	"ringbuffer.h"
-#include	<qwt.h>
-#include	<qwt_plot.h>
-#include	<qwt_plot_marker.h>
-#include	<qwt_plot_grid.h>
-#include	<qwt_plot_curve.h>
-#include	<qwt_plot_marker.h>
+#include  "ui_tii-widget.h"
+#include  "ringbuffer.h"
+#include  <qwt.h>
+#include  <qwt_plot.h>
+#include  <qwt_plot_marker.h>
+#include  <qwt_plot_grid.h>
+#include  <qwt_plot_curve.h>
+#include  <qwt_plot_marker.h>
 #include        <qwt_color_map.h>
 #include        <qwt_plot_zoomer.h>
 #include        <qwt_plot_textlabel.h>
@@ -51,51 +48,54 @@
 #include        <qwt_scale_widget.h>
 #include        <QBrush>
 
-#include	"fft/fft-handler.h"
+#include  "fft/fft-handler.h"
 
-class	RadioInterface;
+class RadioInterface;
 
-class	tiiViewer: public QObject, Ui_tiiWidget {
+class TiiViewer : public QObject, Ui_tiiWidget
+{
 Q_OBJECT
 public:
-			tiiViewer		(RadioInterface *,
-	                                         QSettings *,
-	                                         RingBuffer<cmplx> *);
-			~tiiViewer		();
-	void		showSpectrum		(int32_t);
-	void		showTransmitters	(QByteArray);
-	void		setBitDepth		(int16_t);
-	void		show			();
-	void		hide			();
-	bool		isHidden		();
-	void		clear			();
-	void		show_nullPeriod		(const QVector<float> &, double);
+  TiiViewer(RadioInterface *, QSettings *, RingBuffer<cmplx> *);
+  ~TiiViewer();
+
+  void showSpectrum(int32_t);
+  void showTransmitters(QByteArray);
+  void setBitDepth(int16_t);
+  void show();
+  void hide();
+  bool isHidden();
+  void clear();
+  void show_nullPeriod(const QVector<float> &, double);
+
 private:
-	RadioInterface	*myRadioInterface;
-	QSettings	*dabSettings;
-	QFrame		myFrame;
-	QwtPlotCurve	spectrumCurve;
-	QwtPlotGrid	grid;
-	RingBuffer<cmplx>	*tiiBuffer;
-	QwtPlotPicker	*lm_picker;
-	//QColor		displayColor;
-	QColor		gridColor;
-	QColor		curveColor;
+  RadioInterface * myRadioInterface;
+  QSettings * dabSettings;
+  QFrame myFrame;
+  QwtPlotCurve spectrumCurve;
+  QwtPlotGrid grid;
+  RingBuffer<cmplx> * tiiBuffer;
+  QwtPlotPicker * lm_picker;
+  //QColor displayColor;
+  QColor gridColor;
+  QColor curveColor;
 
-	fftHandler	fft;
-	double		displayBuffer [TII_DISPLAYSIZE];
-	cmplx spectrumBuffer [TII_SPECTRUMSIZE];
-	float		Window [TII_SPECTRUMSIZE];
-	QwtPlotMarker	*Marker;
-	QwtPlot		*plotgrid;
-//	QBrush		*ourBrush;
-	int32_t		indexforMarker;
+  fftHandler fft;
+  double displayBuffer[TII_DISPLAYSIZE];
+  cmplx spectrumBuffer[TII_SPECTRUMSIZE];
+  float Window[TII_SPECTRUMSIZE];
+  QwtPlotMarker * Marker;
+  QwtPlot * plotgrid;
+  //QBrush *ourBrush;
+  int32_t indexforMarker;
 
-	void		ViewSpectrum		(double *, double *, double, int);
-	float		get_db 			(float);
-	int32_t		normalizer;
+  void ViewSpectrum(double *, double *, double, int);
+  float get_db(float);
+  int32_t normalizer;
+
 private slots:
-	void		rightMouseClick	(const QPointF &);
+  void rightMouseClick(const QPointF &);
 };
+
 #endif
 
