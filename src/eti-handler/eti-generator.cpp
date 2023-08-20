@@ -163,11 +163,15 @@ void etiGenerator::processBlock(const std::vector<int16_t> & ibits, int blkno)
   }
 
   if (blkno == 4)
-  {  // import fibBits
-    my_ficHandler->get_fibBits(fibBits);
+  {
+    // import fibBits
+    bool ficValid[4];
+    my_ficHandler->get_fibBits(fibBits, ficValid);
+
     for (int i = 0; i < 4; i++)
     {
-      fibValid[index_Out + i] = true;
+      fibValid[index_Out + i] = ficValid[i];
+
       for (int j = 0; j < 96; j++)
       {
         fibVector[(index_Out + i) & 017][j] = 0;
@@ -181,7 +185,7 @@ void etiGenerator::processBlock(const std::vector<int16_t> & ibits, int blkno)
     Minor = 0;
     my_ficHandler->get_CIFcount(&CIFCount_hi, &CIFCount_lo);
   }
-  //
+
   //	adding the MSC blocks. Blocks 5 .. 76 are "transformed"
   //	into the "soft" bits arrays
   int CIF_index = (blkno - 4) % numberofblocksperCIF;

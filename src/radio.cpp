@@ -3513,6 +3513,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   channel.channelName = theChannel;
   dabSettings->setValue("channel", theChannel);
   channel.frequency = tunedFrequency / 1000;
+  my_tiiViewer.clear();
   if (transmitterTags_local && (mapHandler != nullptr))
   {
     mapHandler->putData(MAP_RESET, cmplx(0, 0), "", "", "", 0, 0, 0, 0);

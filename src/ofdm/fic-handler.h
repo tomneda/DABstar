@@ -50,7 +50,7 @@ public:
   void restart();
   void start_ficDump(FILE *);
   void stop_ficDump();
-  void get_fibBits(uint8_t *);
+  void get_fibBits(uint8_t *, bool *);
 private:
   DabParams params;
   ViterbiSpiral myViterbi;
@@ -58,8 +58,7 @@ private:
   std::array<int16_t,2304> ofdm_input;
   std::array<bool, 3072 + 24> punctureTable;
   std::array<uint8_t, 4 * 768> fibBits;
-
-  void process_ficInput(int16_t);
+  std::array<bool, 4> ficValid;
   int16_t index;
   int16_t BitsperBlock;
   int16_t ficno;
@@ -74,6 +73,9 @@ private:
   int ficPointer;
   std::atomic<bool> running;
   //	uint8_t		shiftRegister	[9];
+
+  void process_ficInput(int16_t, bool *);
+
 signals:
   void show_ficSuccess(bool);
 };
