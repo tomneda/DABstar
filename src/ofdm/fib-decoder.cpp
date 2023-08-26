@@ -34,16 +34,12 @@
 #include  "data_manip_and_checks.h"
 //#include	"text-mapper.h"
 #include  "dab-tables.h"
-#include  "data_manip_and_checks.h"
 
 
-FibDecoder::FibDecoder(RadioInterface * mr)
+FibDecoder::FibDecoder(RadioInterface * mr) :
+  myRadioInterface(mr)
 {
-  myRadioInterface = mr;
-  memset(dateTime, 0, sizeof(dateTime));
-
-  //	connect (this, SIGNAL (addtoEnsemble (const QString &, int)),
-  //	         myRadioInterface, SLOT (addtoEnsemble (const QString &, int)));
+  //connect(this, SIGNAL (addtoEnsemble(const QString &, int)), myRadioInterface, SLOT (addtoEnsemble(const QString &, int)));
   connect(this, SIGNAL (nameofEnsemble(int, const QString &)), myRadioInterface, SLOT (nameofEnsemble(int, const QString &)));
   connect(this, SIGNAL (clockTime(int, int, int, int, int, int, int, int, int)), myRadioInterface, SLOT (clockTime(int, int, int, int, int, int, int, int, int)));
   connect(this, SIGNAL (changeinConfiguration()), myRadioInterface, SLOT (changeinConfiguration()));
@@ -54,8 +50,6 @@ FibDecoder::FibDecoder(RadioInterface * mr)
   currentConfig = new dabConfig();
   nextConfig = new dabConfig();
   ensemble = new ensembleDescriptor();
-  CIFcount = 0;
-  mjd = 0;
 }
 
 FibDecoder::~FibDecoder()
@@ -64,9 +58,6 @@ FibDecoder::~FibDecoder()
   delete currentConfig;
   delete ensemble;
 }
-
-//static
-//uint8_t bits [] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
 
 //	FIB's are segments of 256 bits. When here, we already
 //	passed the crc and we start unpacking into FIGs
@@ -102,11 +93,9 @@ void FibDecoder::process_FIB(const uint8_t * p, uint16_t fib)
 
     default: break;
     }
-    //
-    //	Thanks to Ronny Kunze, who discovered that I used
-    //	a p rather than a d
+    // Thanks to Ronny Kunze, who discovered that I used	a p rather than a d
     processedBytes += getBits_5(d, 3) + 1;
-    //	      processedBytes += getBits (p, 3, 5) + 1;
+    //processedBytes += getBits (p, 3, 5) + 1;
     d = p + processedBytes * 8;
   }
   fibLocker.unlock();
@@ -269,7 +258,6 @@ void FibDecoder::FIG0Extension0(const uint8_t * d)
   //	   fprintf (stderr, "serious problem\n");
 }
 
-//
 //	Subchannel organization 6.2.1
 //	FIG0 extension 1 creates a mapping between the
 //	sub channel identifications and the positions in the
@@ -288,7 +276,6 @@ void FibDecoder::FIG0Extension1(const uint8_t * d)
   }
 }
 
-//
 //	defining the channels
 int16_t FibDecoder::HandleFIG0Extension1(const uint8_t * d, int16_t offset, uint8_t CN_bit, uint8_t OE_bit, uint8_t PD_bit)
 {
@@ -329,8 +316,7 @@ int16_t FibDecoder::HandleFIG0Extension1(const uint8_t * d, int16_t offset, uint
       subChannel.Length = subChanSize;
       subChannel.bitRate = subChanSize / table_1[protLevel] * 8;
     }
-    else      // option should be 001
-    if (option == 001)
+    else if (option == 001)
     {    // B Level protection
       protLevel = getBits_2(d, bitOffset + 20);
       subChannel.protLevel = protLevel + (1 << 2);
@@ -347,7 +333,6 @@ int16_t FibDecoder::HandleFIG0Extension1(const uint8_t * d, int16_t offset, uint
   {
     return bitOffset / 8;
   }
-  //
   //	and here we fill in the structure
   localBase->subChannels[subChId].SubChId = subChId;
   localBase->subChannels[subChId].inUse = true;
@@ -377,8 +362,6 @@ void FibDecoder::FIG0Extension2(const uint8_t * d)
   }
 }
 
-//
-//
 int16_t FibDecoder::HandleFIG0Extension2(const uint8_t * d, int16_t offset, uint8_t CN_bit, uint8_t OE_bit, uint8_t PD_bit)
 {
   int16_t bitOffset = 8 * offset;
@@ -428,17 +411,16 @@ int16_t FibDecoder::HandleFIG0Extension2(const uint8_t * d, int16_t offset, uint
       bind_packetService(CN_bit == 0 ? currentConfig : nextConfig, TMid, SId, i, SCId, PS_flag, CA_flag);
     }
     else
-    { ;
+    {
+      // nothing to do
     }
     bitOffset += 16;
   }
   return bitOffset / 8;    // in Bytes
 }
 
-//	Service component in packet mode 6.3.2
-//      The Extension 3 of FIG type 0 (FIG 0/3) gives
-//      additional information about the service component
-//      description in packet mode.
+// Service component in packet mode 6.3.2.
+// The Extension 3 of FIG type 0 (FIG 0/3) gives additional information about the service component description in packet mode.
 void FibDecoder::FIG0Extension3(const uint8_t * d)
 {
   int16_t used = 2;            // offset in bytes
@@ -454,9 +436,7 @@ void FibDecoder::FIG0Extension3(const uint8_t * d)
   }
 }
 
-//
-//	Note that the SCId (Service Component Identifier) is
-//	a unique 12 bit number in the ensemble
+// Note that the SCId (Service Component Identifier) is	a unique 12 bit number in the ensemble
 int16_t FibDecoder::HandleFIG0Extension3(const uint8_t * d, int16_t used, uint8_t CN_bit, uint8_t OE_bit, uint8_t PD_bit)
 {
   int16_t SCId = getBits(d, used * 8, 12);
@@ -493,16 +473,14 @@ int16_t FibDecoder::HandleFIG0Extension3(const uint8_t * d, int16_t used, uint8_
   {
     return used;
   }
-  //
-  //	If the component exists, we first look whether is
-  //	was already handled
+
+  // If the component exists, we first look whether is was already handled
   if (localBase->serviceComps[serviceCompIndex].is_madePublic)
   {
     return used;
   }
-  //
-  //	if the Data Service Component Type == 0, we do not deal
-  //	with it
+
+  // If the Data Service Component Type == 0, we do not deal with it
   if (DSCTy == 0)
   {
     return used;
@@ -579,7 +557,6 @@ int16_t FibDecoder::HandleFIG0Extension5(const uint8_t * d, uint8_t CN_bit, uint
   return bitOffset / 8;
 }
 
-//
 // FIG0/7: Configuration linking information 6.4.2,
 //
 void FibDecoder::FIG0Extension7(const uint8_t * d)
@@ -670,7 +647,6 @@ int16_t FibDecoder::HandleFIG0Extension8(const uint8_t * d, int16_t used, uint8_
   return bitOffset / 8;
 }
 
-//
 //	User Application Information 6.3.6
 void FibDecoder::FIG0Extension13(const uint8_t * d)
 {
@@ -1048,7 +1024,6 @@ void FibDecoder::FIG1Extension1(const uint8_t * d)
   int32_t SId = getBits(d, 16, 16);
   int16_t offset = 32;
   int serviceIndex;
-  int16_t i;
   char label[17];
 
   //      from byte 1 we deduce:
@@ -1063,7 +1038,7 @@ void FibDecoder::FIG1Extension1(const uint8_t * d)
     return;
   }
 
-  for (i = 0; i < 16; i++)
+  for (int16_t i = 0; i < 16; i++)
   {
     label[i] = getBits_8(d, offset + 8 * i);
   }
@@ -1250,10 +1225,10 @@ void FibDecoder::bind_audioService(dabConfig * base, int8_t TMid, uint32_t SId, 
 
 
   QString dataName = ensemble->services[serviceIndex].serviceLabel;
-//  if (ensemble->services[serviceIndex].is_shown)
-//  {
-//    showFlag = false;
-//  }
+  //  if (ensemble->services[serviceIndex].is_shown)
+  //  {
+  //    showFlag = false;
+  //  }
 
   bool useFlag = base->serviceComps[firstFree].inUse;
   if (!useFlag)
@@ -1557,20 +1532,14 @@ void FibDecoder::connect_channel()
   currentConfig->reset();
   nextConfig->reset();
   ensemble->reset();
-  connect(this,
-          SIGNAL (addtoEnsemble(const QString &, int)),
-          myRadioInterface,
-          SLOT (addtoEnsemble(const QString &, int)));
+  connect(this, SIGNAL (addtoEnsemble(const QString &, int)), myRadioInterface, SLOT (addtoEnsemble(const QString &, int)));
   fibLocker.unlock();
 }
 
 void FibDecoder::disconnect_channel()
 {
   fibLocker.lock();
-  disconnect(this,
-             SIGNAL (addtoEnsemble(const QString &, int)),
-             myRadioInterface,
-             SLOT (addtoEnsemble(const QString &, int)));
+  disconnect(this, SIGNAL (addtoEnsemble(const QString &, int)), myRadioInterface, SLOT (addtoEnsemble(const QString &, int)));
   currentConfig->reset();
   nextConfig->reset();
   ensemble->reset();
@@ -1877,63 +1846,63 @@ int monthLength[]{
 //
 //	Time in 10 is given in UTC, for other time zones
 //	we add (or subtract) a number of Hours (half hours)
-void adjustTime(int32_t * dateTime)
+void adjustTime(int32_t * ioDateTime)
 {
   //	first adjust the half hour  in the amount of minutes
-  dateTime[4] += (dateTime[7] == 1) ? 30 : 0;
-  if (dateTime[4] >= 60)
+  ioDateTime[4] += (ioDateTime[7] == 1) ? 30 : 0;
+  if (ioDateTime[4] >= 60)
   {
-    dateTime[4] -= 60;
-    dateTime[3]++;
+    ioDateTime[4] -= 60;
+    ioDateTime[3]++;
   }
 
-  if (dateTime[4] < 0)
+  if (ioDateTime[4] < 0)
   {
-    dateTime[4] += 60;
-    dateTime[3]--;
+    ioDateTime[4] += 60;
+    ioDateTime[3]--;
   }
 
-  dateTime[3] += dateTime[6];
-  if ((0 <= dateTime[3]) && (dateTime[3] <= 23))
+  ioDateTime[3] += ioDateTime[6];
+  if ((0 <= ioDateTime[3]) && (ioDateTime[3] <= 23))
   {
     return;
   }
 
-  if (dateTime[3] > 23)
+  if (ioDateTime[3] > 23)
   {
-    dateTime[3] -= 24;
-    dateTime[2]++;
+    ioDateTime[3] -= 24;
+    ioDateTime[2]++;
   }
 
-  if (dateTime[3] < 0)
+  if (ioDateTime[3] < 0)
   {
-    dateTime[3] += 24;
-    dateTime[2]--;
+    ioDateTime[3] += 24;
+    ioDateTime[2]--;
   }
 
-  if (dateTime[2] > monthLength[dateTime[1] - 1])
+  if (ioDateTime[2] > monthLength[ioDateTime[1] - 1])
   {
-    dateTime[2] = 1;
-    dateTime[1]++;
-    if (dateTime[1] > 12)
+    ioDateTime[2] = 1;
+    ioDateTime[1]++;
+    if (ioDateTime[1] > 12)
     {
-      dateTime[1] = 1;
-      dateTime[0]++;
+      ioDateTime[1] = 1;
+      ioDateTime[0]++;
     }
   }
 
-  if (dateTime[2] < 0)
+  if (ioDateTime[2] < 0)
   {
-    if (dateTime[1] > 1)
+    if (ioDateTime[1] > 1)
     {
-      dateTime[2] = monthLength[dateTime[1] - 1 - 1];
-      dateTime[1]--;
+      ioDateTime[2] = monthLength[ioDateTime[1] - 1 - 1];
+      ioDateTime[1]--;
     }
     else
     {
-      dateTime[2] = monthLength[11];
-      dateTime[1] = 12;
-      dateTime[0]--;
+      ioDateTime[2] = monthLength[11];
+      ioDateTime[1] = 12;
+      ioDateTime[0]--;
     }
   }
 }
@@ -2026,16 +1995,8 @@ void FibDecoder::FIG0Extension10(const uint8_t * dd)
     int utc_hour = dateTime[3];
     int utc_minute = dateTime[4];
     int utc_seconds = dateTime[5];
-    adjustTime(dateTime);
-    emit  clockTime(dateTime[0],
-                    dateTime[1],
-                    dateTime[2],
-                    dateTime[3],
-                    dateTime[4],
-                    utc_day,
-                    utc_hour,
-                    utc_minute,
-                    utc_seconds);
+    adjustTime(dateTime.data());
+    emit  clockTime(dateTime[0], dateTime[1], dateTime[2], dateTime[3], dateTime[4], utc_day, utc_hour, utc_minute, utc_seconds);
   }
 }
 
@@ -2288,9 +2249,7 @@ QString FibDecoder::fmFreqOf(int index)
 {
   int sid = currentConfig->serviceComps[index].SId;
   int serviceIndex = findService(sid);
-  return ensemble->services[serviceIndex].fmFrequency != -1
-         ? QString::number(ensemble->services[serviceIndex].fmFrequency)
-         : "    ";
+  return ensemble->services[serviceIndex].fmFrequency != -1 ? QString::number(ensemble->services[serviceIndex].fmFrequency) : "    ";
 }
 
 QString FibDecoder::appTypeOf(int index)
@@ -2334,8 +2293,8 @@ QString FibDecoder::audioHeader()
 QString FibDecoder::audioData(int index)
 {
   return QString(serviceName(index)) + ";" + serviceIdOf(index) + ";" + subChannelOf(index) + ";" + startAddressOf(index) + ";" + lengthOf(
-    index) + ";" + protLevelOf(index) + ";" + codeRateOf(index) + ";" + bitRateOf(index) + ";" + dabType(index) + ";" + languageOf(
-    index) + ";" + programTypeOf(index) + ";" + fmFreqOf(index) + ";";
+    index) + ";" + protLevelOf(index) + ";" + codeRateOf(index) + ";" + bitRateOf(index) + ";" + dabType(index) + ";" + languageOf(index) + ";" + programTypeOf(
+    index) + ";" + fmFreqOf(index) + ";";
 }
 
 //
@@ -2346,9 +2305,8 @@ QString FibDecoder::packetHeader()
 
 QString FibDecoder::packetData(int index)
 {
-  return serviceName(index) + ";" + serviceIdOf(index) + ";" + subChannelOf(index) + ";" + startAddressOf(index) + ";" + lengthOf(
-    index) + ";" + protLevelOf(index) + ";" + codeRateOf(index) + ";" + appTypeOf(index) + ";" + FEC_scheme(index) + ";" + packetAddress(
-    index) + ";" + DSCTy(index) + ";";
+  return serviceName(index) + ";" + serviceIdOf(index) + ";" + subChannelOf(index) + ";" + startAddressOf(index) + ";" + lengthOf(index) + ";" + protLevelOf(
+    index) + ";" + codeRateOf(index) + ";" + appTypeOf(index) + ";" + FEC_scheme(index) + ";" + packetAddress(index) + ";" + DSCTy(index) + ";";
 }
 
 //
