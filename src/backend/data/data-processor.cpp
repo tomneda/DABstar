@@ -124,7 +124,7 @@ void DataProcessor::handlePacket(const uint8_t * data)
   uint16_t command = getBits_1(data, 16);
   int32_t usefulLength = getBits_7(data, 17);
   //	if (usefulLength > 0)
-  //	   fprintf (stderr, "CI = %d, address = %d, usefulLength = %d\n",
+  //	   fprintf (stdout, "CI = %d, address = %d, usefulLength = %d\n",
   //	                       continuityIndex, address, usefulLength);
 
   if (continuityIndex != expectedIndex)

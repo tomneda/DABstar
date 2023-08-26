@@ -106,7 +106,7 @@ int main(int argc, char ** argv)
   /*
    *      done:
   */
-  fprintf(stderr, "back in main program\n");
+  fprintf(stdout, "back in main program\n");
   fflush(stdout);
   fflush(stderr);
   qDebug("It is done\n");

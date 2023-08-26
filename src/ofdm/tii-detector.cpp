@@ -332,7 +332,7 @@ uint16_t TII_Detector::processNULL()
       }
     }
     finInd = invTable[pattern];
-    //	   fprintf (stderr, "MaxIndex %d, bitPatterm %x\n", maxIndex, pattern);
+    //	   fprintf (stdout, "MaxIndex %d, bitPatterm %x\n", maxIndex, pattern);
   }
 
   return maxIndex + finInd * 256;

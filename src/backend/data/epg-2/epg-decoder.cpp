@@ -61,7 +61,7 @@ int length	= v [1];
 int	index	= 0;
 
 #ifdef	__EPG_TRACE__
-	fprintf (stderr, "epg module is starting to process input for %x\n",SId);
+	fprintf (stdout, "epg module is starting to process input for %x\n",SId);
 #endif
 	this	-> SId		= SId;
 	this	-> subType	= subType;
@@ -85,14 +85,14 @@ int	index	= 0;
 	   index	= 2;
 
 #ifdef	__EPG_TRACE__
-	fprintf (stderr, "Length for %x is %d\n",
+	fprintf (stdout, "Length for %x is %d\n",
 	                               v [0], length);
 #endif
 	int endPoint	= index + length;
 	if (tag == EPG_TAG) {
 	   while (index < endPoint) {
 #ifdef	__EPG_TRACE__
-	      fprintf (stderr, "encountering node %x\n", v [index]);
+	      fprintf (stdout, "encountering node %x\n", v [index]);
 #endif
 	      switch (v [index]) {
 	         case 0x04:		// process tokenTable
@@ -127,7 +127,7 @@ int	index	= 0;
 	
 	if (tag == SERVICE_TAG)	{	// superfluous test
 #ifdef	__EPG_TRACE__
-	   fprintf (stderr, "encountering node %x\n", v [index]);
+	   fprintf (stdout, "encountering node %x\n", v [index]);
 #endif
 	   switch (v [index]) {
 	      case 0x06:	// default language

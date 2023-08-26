@@ -213,7 +213,7 @@ void padHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
 
       if (last < xpadLength - 1)
       {
-        //	         fprintf(stderr, "handle_variablePAD: last < xpadLength - 1\n");
+        //	         fprintf(stdout, "handle_variablePAD: last < xpadLength - 1\n");
         return;
       }
 
@@ -250,7 +250,7 @@ void padHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
       xpadLength += lengthTable[CI_table[i] >> 5];
     }
     xpadLength += CI_Index == 4 ? 4 : CI_Index + 1;
-    //	   fprintf (stderr, "xpadLength set to %d\n", xpadLength);
+    //	   fprintf (stdout, "xpadLength set to %d\n", xpadLength);
   }
 
   //	Handle the contents
@@ -296,7 +296,7 @@ void padHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
     base -= length;
     if (base < 0 && i < CI_Index - 1)
     {
-      //	      fprintf (stderr, "Hier gaat het fout, base = %d\n", base);
+      //	      fprintf (stdout, "Hier gaat het fout, base = %d\n", base);
       return;
     }
   }
@@ -408,7 +408,7 @@ void padHandler::new_MSC_element(const std::vector<uint8_t> & data)
 
   //	if (mscGroupElement) {
   ////	   if (msc_dataGroupBuffer. size() < dataGroupLength)
-  ////	      fprintf (stderr, "short ? %d %d\n",
+  ////	      fprintf (stdout, "short ? %d %d\n",
   ////	                              msc_dataGroupBuffer. size(),
   ////	                              dataGroupLength);
   //	   msc_dataGroupBuffer. clear();
@@ -423,7 +423,7 @@ void padHandler::new_MSC_element(const std::vector<uint8_t> & data)
     build_MSC_segment(data);
     mscGroupElement = false;
     show_motHandling(true);
-    //	   fprintf (stderr, "msc element is single\n");
+    //	   fprintf (stdout, "msc element is single\n");
     return;
   }
 
@@ -485,7 +485,7 @@ void padHandler::build_MSC_segment(const std::vector<uint8_t> & data)
       return;
     }
     //	   else
-    //	      fprintf (stderr, "crc success ");
+    //	      fprintf (stdout, "crc success ");
   }
 
   if ((groupType != 3) && (groupType != 4))
@@ -513,7 +513,7 @@ void padHandler::build_MSC_segment(const std::vector<uint8_t> & data)
     if ((data[index] & 0x10) != 0)
     { //transportid flag
       transportId = data[index + 1] << 8 | data[index + 2];
-      //	      fprintf (stderr, "transportId = %d\n", transportId);
+      //	      fprintf (stdout, "transportId = %d\n", transportId);
       index += 3;
     }
     //	   else {
@@ -534,7 +534,7 @@ void padHandler::build_MSC_segment(const std::vector<uint8_t> & data)
   case 3:
     if (currentSlide == nullptr)
     {
-      //	         fprintf (stderr, "creating %d\n", transportId);
+      //	         fprintf (stdout, "creating %d\n", transportId);
       currentSlide = new motObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
     }
     else
@@ -543,7 +543,7 @@ void padHandler::build_MSC_segment(const std::vector<uint8_t> & data)
       {
         break;
       }
-      //	         fprintf (stderr, "out goes %d, in comes %d\n",
+      //	         fprintf (stdout, "out goes %d, in comes %d\n",
       //	                          currentSlide -> get_transportId(),
       //	                                           transportId);
       delete currentSlide;
@@ -558,7 +558,7 @@ void padHandler::build_MSC_segment(const std::vector<uint8_t> & data)
     }
     if (currentSlide->get_transportId() == transportId)
     {
-      //	         fprintf (stderr, "add segment %d of  %d\n",
+      //	         fprintf (stdout, "add segment %d of  %d\n",
       //	                           segmentNumber, transportId);
       currentSlide->addBodySegment(&data[index + 2], segmentNumber, segmentSize, lastFlag);
     }

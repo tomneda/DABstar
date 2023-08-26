@@ -253,7 +253,7 @@ void FibDecoder::FIG0Extension0(uint8_t * d)
 
   if ((changeFlag == 0) && (prevChangeFlag == 3))
   {
-    fprintf(stderr, "handling change\n");
+    fprintf(stdout, "handling change\n");
     dabConfig * temp = currentConfig;
     currentConfig = nextConfig;
     nextConfig = temp;
@@ -595,7 +595,7 @@ void FibDecoder::FIG0Extension7(uint8_t * d)
   (void)CN_bit;
   (void)OE_bit;
   (void)PD_bit;
-  //	fprintf (stderr, "services : %d\n", serviceCount);
+  //	fprintf (stdout, "services : %d\n", serviceCount);
   if (CN_bit == 0)
   {  // only current configuration for now
     nrServices(serviceCount);
@@ -689,7 +689,7 @@ void FibDecoder::FIG0Extension13(uint8_t * d)
 int16_t FibDecoder::HandleFIG0Extension13(uint8_t * d, int16_t used, uint8_t CN_bit, uint8_t OE_bit, uint8_t pdBit)
 {
   int16_t bitOffset = used * 8;
-  //	fprintf (stderr, "FIG13: pdBit = %d, bitOffset = %d\n",
+  //	fprintf (stdout, "FIG13: pdBit = %d, bitOffset = %d\n",
   //	                     pdBit, bitOffset);
   uint32_t SId = getLBits(d, bitOffset, pdBit == 1 ? 32 : 16);
   uint16_t SCIds;
@@ -1024,7 +1024,7 @@ void FibDecoder::FIG1Extension0(uint8_t * d)
     {
       label[i] = getBits_8(d, offset + 8 * i);
     }
-    //         fprintf (stderr, "Ensemblename: %16s\n", label);
+    //         fprintf (stdout, "Ensemblename: %16s\n", label);
     const QString name = toQStringUsingCharset((const char *)label, (CharacterSet)charSet);
     if (!ensemble->namePresent)
     {
@@ -1501,7 +1501,7 @@ void FibDecoder::setCluster(dabConfig * localBase, int clusterId, int16_t servic
   }
   if (myCluster->flags != asuFlags)
   {
-    //	   fprintf (stderr, "for cluster %d, the flags change from %x to %x\n",
+    //	   fprintf (stdout, "for cluster %d, the flags change from %x to %x\n",
     //	                       clusterId, myCluster -> flags, asuFlags);
     myCluster->flags = asuFlags;
   }

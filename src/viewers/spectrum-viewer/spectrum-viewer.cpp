@@ -57,8 +57,8 @@ SpectrumViewer::SpectrumViewer(RadioInterface * mr, QSettings * dabSettings, Rin
   myFrame.resize(QSize(w, h));
   myFrame.move(QPoint(x, y));
 
-  QPoint pos = myFrame.mapToGlobal(QPoint(0, 0));
-  fprintf(stderr, "spectrumViewer gezet op %d %d, staat op %d %d\n", x, y, pos.x(), pos.y());
+  //QPoint pos = myFrame.mapToGlobal(QPoint(0, 0));
+  //fprintf(stdout, "spectrumViewer  %d %d, staat op %d %d\n", x, y, pos.x(), pos.y());
   myFrame.hide();
 
   for (i = 0; i < SP_SPECTRUMSIZE; i++)

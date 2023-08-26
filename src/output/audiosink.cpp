@@ -132,7 +132,7 @@ bool AudioSink::selectDevice(int16_t idx)
 
   outputParameters.hostApiSpecificStreamInfo = nullptr;
   //
-  fprintf(stderr, "Suggested size for outputbuffer = %d\n", bufSize);
+  fprintf(stdout, "Suggested size for outputbuffer = %d\n", bufSize);
   err = Pa_OpenStream(&ostream, nullptr, &outputParameters, CardRate, bufSize, 0, this->paCallback_o, this);
 
   if (err != paNoError)
@@ -140,7 +140,7 @@ bool AudioSink::selectDevice(int16_t idx)
     qDebug("Open ostream error\n");
     return false;
   }
-  fprintf(stderr, "stream opened\n");
+  fprintf(stdout, "stream opened\n");
   paCallbackReturn = paContinue;
   err = Pa_StartStream(ostream);
   if (err != paNoError)
@@ -148,7 +148,7 @@ bool AudioSink::selectDevice(int16_t idx)
     qDebug("Open startstream error\n");
     return false;
   }
-  fprintf(stderr, "stream started\n");
+  fprintf(stdout, "stream started\n");
   writerRunning = true;
   return true;
 }

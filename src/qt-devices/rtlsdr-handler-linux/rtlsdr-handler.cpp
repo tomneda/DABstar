@@ -200,14 +200,14 @@ char	manufac [256], product [256], serial [256];
 	}
 
 	gainsCount = rtlsdr_get_tuner_gains (theDevice, nullptr);
-	fprintf (stderr, "Supported gain values (%d): ", gainsCount);
+	fprintf (stdout, "Supported gain values (%d): ", gainsCount);
 	{  int gains [gainsCount];
 	   gainsCount	= rtlsdr_get_tuner_gains (theDevice, gains);
 	   for (i = gainsCount; i > 0; i--) {
-	      fprintf (stderr, "%.1f ", gains [i - 1] / 10.0);
+	      fprintf (stdout, "%.1f ", gains [i - 1] / 10.0);
 	      gainControl -> addItem (QString::number (gains [i - 1]));
 	   }
-	   fprintf (stderr, "\n");
+	   fprintf (stdout, "\n");
 	}
 
 	if (rtlsdr_set_tuner_bandwidth != nullptr)
@@ -231,7 +231,7 @@ char	manufac [256], product [256], serial [256];
 	rtlsdrSettings	-> endGroup();
 
 	rtlsdr_get_usb_strings (theDevice, manufac, product, serial);
-	fprintf (stderr, "%s %s %s\n",
+	fprintf (stdout, "%s %s %s\n",
 	            manufac, product, serial);
 
 //	all sliders/values are set to previous values, now do the settings
@@ -272,7 +272,7 @@ char	manufac [256], product [256], serial [256];
 }
 
 	rtlsdrHandler::~rtlsdrHandler() {
-	fprintf (stderr, "closing on freq %d\n",
+	fprintf (stdout, "closing on freq %d\n",
 	               (int32_t)(this -> rtlsdr_get_center_freq (theDevice)));
 	stopReader	();
 	rtlsdrSettings	-> beginGroup ("rtlsdrSettings");
@@ -577,7 +577,7 @@ bool	rtlsdrHandler::load_rtlFunctions() {
 	   fprintf (stderr, "biasControl will not work\n");
 //	nullpointer - if function is not available - is handled
 //
-	fprintf (stderr, "OK, functions seem to be loaded\n");
+	fprintf (stderr, "RTLSDR functions loaded\n");
 	return true;
 }
 

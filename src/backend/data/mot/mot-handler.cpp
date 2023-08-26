@@ -206,7 +206,7 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
     }
     break;
 
-  default: fprintf(stderr, "mot groupType %d\n", groupType);
+  default: fprintf(stdout, "mot groupType %d\n", groupType);
     return;
   }
 }

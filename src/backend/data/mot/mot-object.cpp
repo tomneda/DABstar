@@ -50,7 +50,7 @@ motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
   rawContentType |= ((segment[5] & 0x01) << 8) | segment[6];
   contentType = static_cast<MOTContentType>(rawContentType);
 
-  //	fprintf (stderr, "headerSize %d, bodySize %d. contentType %d, transportId %d, segmentSize %d, lastFlag %d\n",
+  //	fprintf (stdout, "headerSize %d, bodySize %d. contentType %d, transportId %d, segmentSize %d, lastFlag %d\n",
   //	                  headerSize, bodySize, b, transportId,
   //	                  segmentSize, lastFlag);
   //	we are actually only interested in the name, if any
@@ -114,7 +114,7 @@ motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
     }
   }
 
-  //	fprintf (stderr, "creating mot object %x\n", transportId);
+  //	fprintf (stdout, "creating mot object %x\n", transportId);
 }
 
 uint16_t motObject::get_transportId()
@@ -131,7 +131,7 @@ void motObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
 {
   int32_t i;
 
-  //	fprintf (stderr, "adding segment %d (size %d)\n", segmentNumber,
+  //	fprintf (stdout, "adding segment %d (size %d)\n", segmentNumber,
   //	                                                  segmentSize);
   if ((segmentNumber < 0) || (segmentNumber >= 8192))
   {
@@ -188,7 +188,7 @@ void motObject::handleComplete()
   {
     result.append(it.second);
   }
-  //	fprintf (stderr,
+  //	fprintf (stdout,
   //	"Handling complete %s, type %d\n", name. toLatin1 (). data (),
   //	                                                  (int)contentType);
   if (name == "")

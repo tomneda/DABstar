@@ -50,7 +50,7 @@ public:
 	aacInitialized	= false;
 	baudRate	= 48000;
 	myConverter	= new newConverter ();
-//	fprintf (stderr, "for 4096 samples in krijgen we %d samples uit\n",
+//	fprintf (stdout, "for 4096 samples in krijgen we %d samples uit\n",
 //	                   myConverter -> getOutputSize ());
 	tempBuffer	= new DSPCOMPLEX [480];
 }

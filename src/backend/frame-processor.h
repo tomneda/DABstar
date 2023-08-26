@@ -40,7 +40,7 @@ public:
 
   virtual void addtoFrame(const std::vector<uint8_t> &)
   {
-    fprintf(stderr, "in frameprocessor\n");
+    fprintf(stderr, "missing overridden method in frameprocessor\n");
   }
 };
 

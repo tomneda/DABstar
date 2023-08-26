@@ -176,7 +176,7 @@ void DabProcessor::run()
   }
   catch (int e)
   {
-    fprintf(stderr, "DabProcessor is stopping\n");
+    fprintf(stdout, "DabProcessor is stopping\n");
   }
 }
 

@@ -606,7 +606,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   inputDevice = nullptr;
   h = dabSettings->value("device", "no device").toString();
   k = configWidget.deviceSelector->findText(h);
-  //	fprintf (stderr, "%d %s\n", k, h. toUtf8(). data());
+  //	fprintf (stdout, "%d %s\n", k, h. toUtf8(). data());
   if (k != -1)
   {
     configWidget.deviceSelector->setCurrentIndex(k);
@@ -791,7 +791,7 @@ bool RadioInterface::doStart()
 
 RadioInterface::~RadioInterface()
 {
-  fprintf(stderr, "RadioInterface is deleted\n");
+  fprintf(stdout, "RadioInterface is deleted\n");
 }
 
 //
@@ -1035,7 +1035,7 @@ void RadioInterface::save_MOTtext(QByteArray & result, int contentType, QString 
   }
   else
   {
-    fprintf(stderr, "going to write file %s\n", textName.toUtf8().data());
+    fprintf(stdout, "going to write file %s\n", textName.toUtf8().data());
     (void)fwrite(result.data(), 1, result.length(), x);
     fclose(x);
   }
@@ -1102,7 +1102,7 @@ void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, const QSt
     }
     else
     {
-      fprintf(stderr, "going to write file %s\n", pict.toUtf8().data());
+      fprintf(stdout, "going to write file %s\n", pict.toUtf8().data());
       (void)fwrite(data.data(), 1, data.length(), x);
       fclose(x);
     }
@@ -1233,7 +1233,7 @@ void RadioInterface::changeinConfiguration()
     my_dabProcessor->stop_service(channel.backgroundServices.at(i).subChId, BACK_GROUND);
   }
 
-  fprintf(stderr, "change will be effected\n");
+  fprintf(stdout, "change will be effected\n");
   serviceOrder = dabSettings->value("serviceOrder", ALPHA_BASED).toInt();
 
 
@@ -1391,11 +1391,11 @@ void RadioInterface::TerminateProcess()
 
   //
 #ifdef  DATA_STREAMER
-                                                                                                                          fprintf (stderr, "going to close the dataStreamer\n");
+  fprintf (stdout, "going to close the dataStreamer\n");
 	delete		dataStreamer;
 #endif
 #ifdef  CLOCK_STREAMER
-                                                                                                                          fprintf (stderr, "going to close the clockstreamer\n");
+  fprintf (stdout, "going to close the clockstreamer\n");
 	delete	clockStreamer;
 #endif
   if (mapHandler != nullptr)
@@ -1475,7 +1475,7 @@ void RadioInterface::TerminateProcess()
   delete my_history;
   delete my_timeTable;
   //	close();
-  fprintf(stderr, ".. end the radio silences\n");
+  fprintf(stdout, ".. end the radio silences\n");
 }
 
 //
@@ -1530,7 +1530,7 @@ void RadioInterface::updateTimeDisplay()
     //	   my_dabProcessor	-> get_frameQuality (&totalFrames,
     //	                                             &goodFrames,
     //	                                             &badFrames);
-    //	   fprintf (stderr, "total %d, good %d bad %d ficRatio %f\n",
+    //	   fprintf (stdout, "total %d, good %d bad %d ficRatio %f\n",
     //	                     totalFrames, goodFrames, badFrames,
     //	                                            total_ficError * 100.0 / total_fics);
     total_ficError = 0;
@@ -2282,7 +2282,7 @@ void RadioInterface::show_tii(int mainId, int subId)
   LOG("distance ", distanceStr);
   LOG("corner ", cornerStr);
   labelText += +" " + distanceStr + " km" + " " + cornerStr + QString::fromLatin1("\xb0 ");
-  fprintf(stderr, "%s\n", labelText.toUtf8().data());
+  fprintf(stdout, "%s\n", labelText.toUtf8().data());
   distanceLabel->setText(labelText);
 
   //	see if we have a map
@@ -2976,7 +2976,7 @@ void RadioInterface::startAnnouncement(const QString & name, int subChId)
   if (name == serviceLabel->text())
   {
     serviceLabel->setStyleSheet("QLabel {color : red}");
-    fprintf(stderr, "announcement for %s (%d) starts\n", name.toUtf8().data(), subChId);
+    fprintf(stdout, "announcement for %s (%d) starts\n", name.toUtf8().data(), subChId);
   }
 }
 
@@ -2991,7 +2991,7 @@ void RadioInterface::stopAnnouncement(const QString & name, int subChId)
   if (name == serviceLabel->text())
   {
     serviceLabel->setStyleSheet("QLabel {color : blue}");
-    fprintf(stderr, "end for announcement service %s\n", name.toUtf8().data());
+    fprintf(stdout, "end for announcement service %s\n", name.toUtf8().data());
   }
 }
 
@@ -3290,7 +3290,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
     if (pd.defined)
     {
       my_dabProcessor->set_dataChannel(&pd, &dataBuffer, FORE_GROUND);
-      fprintf(stderr, "adding %s (%d) as subservice\n", pd.serviceName.toUtf8().data(), pd.subchId);
+      fprintf(stdout, "adding %s (%d) as subservice\n", pd.serviceName.toUtf8().data(), pd.subchId);
       break;
     }
   }
@@ -3322,7 +3322,7 @@ void RadioInterface::startPacketservice(const QString & s)
   {
   default: showLabel(QString("unimplemented Data"));
     break;
-  case 5: fprintf(stderr, "selected apptype %d\n", pd.appType);
+  case 5: fprintf(stdout, "selected apptype %d\n", pd.appType);
     showLabel(QString("Transp. Channel not implemented"));
     break;
   case 60: showLabel(QString("MOT partially implemented"));
@@ -3823,7 +3823,7 @@ void RadioInterface::No_Signal_Found()
     }
     stopChannel();
     cc = theBand.nextChannel(cc);
-    fprintf(stderr, "going to channel %d\n", cc);
+    fprintf(stdout, "going to channel %d\n", cc);
     if ((cc >= channelSelector->count()) && (scanMode == SINGLE_SCAN))
     {
       stopScanning(true);
@@ -4097,7 +4097,7 @@ void RadioInterface::epgTimer_timeOut()
       {
         LOG("hidden service started ", serv.name);
         configWidget.EPGLabel->show();
-        fprintf(stderr, "Starting hidden service %s\n", serv.name.toUtf8().data());
+        fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
         my_dabProcessor->set_dataChannel(&pd, &dataBuffer, BACK_GROUND);
         dabService s;
         s.channel = pd.channel;
@@ -4128,7 +4128,7 @@ void RadioInterface::epgTimer_timeOut()
       {
         LOG("hidden service started ", serv.name);
         configWidget.EPGLabel->show();
-        fprintf(stderr, "Starting hidden service %s\n", serv.name.toUtf8().data());
+        fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
         my_dabProcessor->set_dataChannel(&pd, &dataBuffer, BACK_GROUND);
         dabService s;
         s.channel = channel.channelName;

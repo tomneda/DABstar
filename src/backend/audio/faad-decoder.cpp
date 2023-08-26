@@ -123,7 +123,7 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
     baudRate = sampleRate;
   }
 
-  //      fprintf (stderr, "bytes consumed %d\n", (int)(hInfo. bytesconsumed));
+  //      fprintf (stdout, "bytes consumed %d\n", (int)(hInfo. bytesconsumed));
   //      fprintf (stderr, "samplerate = %d, samples = %d, channels = %d, error = %d, sbr = %d\n", sampleRate, samples,
   //               hInfo. channels,
   //               hInfo. error,

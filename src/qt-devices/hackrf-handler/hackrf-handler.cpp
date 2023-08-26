@@ -568,7 +568,7 @@ bool hackrfHandler::load_hackrfFunctions()
     return false;
   }
 
-  fprintf(stderr, "OK, functions seem to be loaded\n");
+  fprintf(stdout, "HackRf functions loaded\n");
   return true;
 }
 

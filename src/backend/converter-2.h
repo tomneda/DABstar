@@ -94,7 +94,7 @@ public:
 	bufferP			= 0;	
 	inPeriod		= 1.0 / rateIn;
 	outPeriod		= 1.0 / rateOut;
-	fprintf (stderr, "converter from %d to %d\n", rateIn, rateOut);
+	fprintf (stdout, "converter from %d to %d\n", rateIn, rateOut);
 //	the first width / 2 samples are only used in the interpolation
 //	furthermore, they are neglected. So, we start with:
 	floatTime		= width / 2 * inPeriod;

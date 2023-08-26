@@ -52,7 +52,7 @@ Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * 
   this->subChId = d->subchId;
   this->borf = flag;
 
-  //	fprintf (stderr, "starting a backend for %s (%X) %d\n",
+  //	fprintf (stdout, "starting a backend for %s (%X) %d\n",
   //	                  serviceName. toUtf8 (). data (),
   //	                                    serviceId, startAddr);
   interleaveData.resize(16);
