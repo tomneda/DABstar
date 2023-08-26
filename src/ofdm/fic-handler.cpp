@@ -187,6 +187,10 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
       viterbiBlock[i] = ofdm_input[inputCount];
       ++inputCount;
     }
+    else
+    {
+      viterbiBlock[i] = 0; // TODO: this was missing, is it not necessary to set this to zero?
+    }
   }
   /**
     *	Now we have the full word ready for deconvolution
