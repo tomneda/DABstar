@@ -109,7 +109,7 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
 
     // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
     // TODO: tomneda: is normalizing over one sample with ab1 ok? or better over the average of entire symbol?
-    oBits[carrierIdx]             = (int16_t)(-(real(r1) * 255.0f) / ab1);
+    oBits[0         + carrierIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
     oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
   }
 

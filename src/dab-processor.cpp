@@ -253,10 +253,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     }
     cCount += 2 * mDabPar.T_g; // 2 times because 2 values are added in cLevel
 
-    //if ((ofdmSymbCntIdx <= 3) || mEti_on)
-    {
-      mOfdmDecoder.decode(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffset, mBits);
-    }
+    mOfdmDecoder.decode(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffset, mBits);
 
     if (ofdmSymbCntIdx <= 3)
     {

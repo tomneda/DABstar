@@ -37,44 +37,45 @@
 #include  "fib-decoder.h"
 
 class RadioInterface;
+
 class DabParams;
 
 class FicHandler : public FibDecoder
 {
 Q_OBJECT
 public:
-  FicHandler(RadioInterface *, uint8_t);
-  ~FicHandler();
-  void process_ficBlock(const std::vector<int16_t> & data, int32_t blkno);
+  FicHandler(RadioInterface * const iMr, const uint8_t iDabMode);
+  ~FicHandler() override = default;
+
+  void process_ficBlock(const std::vector<int16_t> & iData, const int32_t iBlkNo);
   void stop();
   void restart();
   void start_ficDump(FILE *);
   void stop_ficDump();
   void get_fibBits(uint8_t *, bool *);
+
 private:
   DabParams params;
-  ViterbiSpiral myViterbi;
+  ViterbiSpiral myViterbi{ 768, true };
   std::array<uint8_t, 768> bitBuffer_out;
-  std::array<int16_t,2304> ofdm_input;
+  std::array<int16_t, 2304> ofdm_input;
   std::array<bool, 3072 + 24> punctureTable;
   std::array<uint8_t, 4 * 768> fibBits;
   std::array<bool, 4> ficValid;
-  int16_t index;
-  int16_t BitsperBlock;
-  int16_t ficno;
-  int16_t ficBlocks;
-  int16_t ficMissed;
-  int16_t ficRatio;
-  uint16_t convState;
-  uint8_t PRBS[768];
+  std::array<uint8_t, 768> PRBS;
+  std::array<uint8_t, 256> ficBuffer;
+  int16_t index = 0;
+  int16_t BitsperBlock = 0;
+  int16_t ficno = 0;
+  int16_t ficBlocks = 0;
+  int16_t ficMissed = 0;
+  int16_t ficRatio = 0;
+  uint16_t convState = 0;
   FILE * ficDumpPointer;
   QMutex ficLocker;
-  uint8_t ficBuffer[256];
-  int ficPointer;
   std::atomic<bool> running;
-  //	uint8_t		shiftRegister	[9];
 
-  void process_ficInput(int16_t, bool *);
+  void process_ficInput(const int16_t iFicNo, bool * oValid);
 
 signals:
   void show_ficSuccess(bool);
