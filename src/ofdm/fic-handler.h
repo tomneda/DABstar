@@ -67,10 +67,6 @@ private:
   int16_t index = 0;
   int16_t BitsperBlock = 0;
   int16_t ficno = 0;
-  int16_t ficBlocks = 0;
-  int16_t ficMissed = 0;
-  int16_t ficRatio = 0;
-  uint16_t convState = 0;
   FILE * ficDumpPointer = nullptr;
   QMutex ficLocker;
   std::atomic<bool> running;
