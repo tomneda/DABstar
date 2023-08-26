@@ -112,8 +112,6 @@ FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
   }
 
   connect(this, SIGNAL (show_ficSuccess(bool)), iMr, SLOT (show_ficSuccess(bool)));
-
-  ficDumpPointer = nullptr;
 }
 
 /**
@@ -172,7 +170,6 @@ void FicHandler::process_ficBlock(const std::vector<int16_t> & iData, const int3
   */
 void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
 {
-  int16_t i;
   std::array<int16_t, 3072 + 24> viterbiBlock = { 0 };
   int16_t inputCount = 0;
 
@@ -182,7 +179,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
   }
   //	memset (viterbiBlock, 0, (3072 + 24) * sizeof (int16_t));
 
-  for (i = 0; i < 3072 + 24; i++)
+  for (int16_t i = 0; i < 3072 + 24; i++)
   {
     if (punctureTable[i])
     {
@@ -202,12 +199,12 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     *	first step: energy dispersal according to the DAB standard
     *	We use a predefined vector PRBS
     */
-  for (i = 0; i < 768; i++)
+  for (int16_t i = 0; i < 768; i++)
   {
     bitBuffer_out[i] ^= PRBS[i];
   }
 
-  for (i = 0; i < 768; i++)
+  for (int16_t i = 0; i < 768; i++)
   {
     fibBits[iFicNo * 768 + i] = bitBuffer_out[i];
   }
@@ -221,13 +218,13 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     */
 
   *oValid = true;
-  for (i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
+  for (int16_t i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
   {
     std::byte * p = &bitBuffer_out[(i % 3) * 256];
     if (!check_CRC_bits(reinterpret_cast<const uint8_t *>(p), 256))
     {
       *oValid = false;
-      show_ficSuccess(false);
+      emit show_ficSuccess(false);
       continue;
     }
 
@@ -249,7 +246,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     }
     ficLocker.unlock();
 
-    show_ficSuccess(true);
+    emit show_ficSuccess(true);
     FibDecoder::process_FIB(reinterpret_cast<uint8_t *>(p), iFicNo);
   }
 }
