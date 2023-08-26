@@ -57,13 +57,13 @@ public:
 private:
   DabParams params;
   ViterbiSpiral myViterbi{ 768, true };
-  std::array<uint8_t, 768> bitBuffer_out;
+  std::array<std::byte, 768> bitBuffer_out;
+  std::array<std::byte, 4 * 768> fibBits;
+  std::array<std::byte, 768> PRBS;
+  std::array<std::byte, 256> ficBuffer;
   std::array<int16_t, 2304> ofdm_input;
-  std::array<bool, 3072 + 24> punctureTable;
-  std::array<uint8_t, 4 * 768> fibBits;
+  std::array<bool, 3072 + 24> punctureTable{ 0 };
   std::array<bool, 4> ficValid;
-  std::array<uint8_t, 768> PRBS;
-  std::array<uint8_t, 256> ficBuffer;
   int16_t index = 0;
   int16_t BitsperBlock = 0;
   int16_t ficno = 0;

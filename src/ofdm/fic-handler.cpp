@@ -46,13 +46,14 @@ FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
   FibDecoder(iMr),
   params(iDabMode)
 {
-  std::array<int16_t, 9> shiftRegister = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+  std::array<std::byte, 9> shiftRegister;
+  std::fill(shiftRegister.begin(), shiftRegister.end(), static_cast<std::byte>(1));
 
   BitsperBlock = 2 * params.get_K();
 
   for (int16_t i = 0; i < 768; i++)
   {
-    PRBS[i] = static_cast<uint8_t>(shiftRegister[8] ^ shiftRegister[4]);
+    PRBS[i] = shiftRegister[8] ^ shiftRegister[4];
 
     for (int16_t j = 8; j > 0; j--)
     {
@@ -66,9 +67,8 @@ FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
   //	(even through all instances, so we could create a static
   //	table), we make an punctureTable that contains the indices of
   //	the ofdmInput table
-  memset(punctureTable.data(), 0, (3072 + 24) * sizeof(uint8_t));
-
   int local = 0;
+
   for (int16_t i = 0; i < 21; i++)
   {
     for (int16_t k = 0; k < 32 * 4; k++)
@@ -194,7 +194,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     *	Now we have the full word ready for deconvolution
     *	deconvolution is according to DAB standard section 11.2
     */
-  myViterbi.deconvolve(viterbiBlock.data(), bitBuffer_out.data());
+  myViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<uint8_t *>(bitBuffer_out.data()));
   /**
     *	if everything worked as planned, we now have a
     *	768 bit vector containing three FIB's
@@ -223,8 +223,8 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
   *oValid = true;
   for (i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
   {
-    uint8_t * p = &bitBuffer_out[(i % 3) * 256];
-    if (!check_CRC_bits(p, 256))
+    std::byte * p = &bitBuffer_out[(i % 3) * 256];
+    if (!check_CRC_bits(reinterpret_cast<const uint8_t *>(p), 256))
     {
       *oValid = false;
       show_ficSuccess(false);
@@ -233,12 +233,12 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
 
     for (int j = 0; j < 32; j++)
     {
-      ficBuffer[j] = 0;
+      ficBuffer[j] = static_cast<std::byte>(0);
       for (int k = 0; k < 8; k++)
       {
         ficBuffer[j] <<= 1;
-        ficBuffer[j] &= 0xFE;
-        ficBuffer[j] |= p[8 * j + k] ? 1 : 0;
+        ficBuffer[j] &= static_cast<std::byte>(0xFE);
+        ficBuffer[j] |= p[8 * j + k];
       }
     }
 
@@ -250,7 +250,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     ficLocker.unlock();
 
     show_ficSuccess(true);
-    FibDecoder::process_FIB(p, iFicNo);
+    FibDecoder::process_FIB(reinterpret_cast<uint8_t *>(p), iFicNo);
   }
 }
 
@@ -289,8 +289,9 @@ void FicHandler::get_fibBits(uint8_t * v, bool * b)
 {
   for (int i = 0; i < 4 * 768; i++)
   {
-    v[i] = fibBits[i];
+    v[i] = static_cast<uint8_t>(fibBits[i]);
   }
+
   for (int i = 0; i < 4; i++)
   {
     b[i] = ficValid[i];
