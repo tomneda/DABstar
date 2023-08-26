@@ -22,6 +22,7 @@
 
 #include  "ip-datahandler.h"
 #include  "radio.h"
+#include  "data_manip_and_checks.h"
 
 ip_dataHandler::ip_dataHandler(RadioInterface * mr, RingBuffer<uint8_t> * dataBuffer)
 {

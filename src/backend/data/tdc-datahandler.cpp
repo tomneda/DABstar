@@ -21,6 +21,7 @@
 
 #include  "tdc-datahandler.h"
 #include  "radio.h"
+#include  "data_manip_and_checks.h"
 
 tdc_dataHandler::tdc_dataHandler(RadioInterface * mr, RingBuffer<uint8_t> * dataBuffer, int16_t appType)
 {

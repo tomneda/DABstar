@@ -31,8 +31,10 @@
 #include  "dab-config.h"
 #include  "fib-table.h"
 #include  <QStringList>
+#include  "data_manip_and_checks.h"
 //#include	"text-mapper.h"
 #include  "dab-tables.h"
+#include  "data_manip_and_checks.h"
 
 
 FibDecoder::FibDecoder(RadioInterface * mr)

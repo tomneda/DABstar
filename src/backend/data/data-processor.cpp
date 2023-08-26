@@ -26,6 +26,7 @@
 #include  "mot-handler.h"
 #include  "journaline-datahandler.h"
 #include  "tdc-datahandler.h"
+#include  "data_manip_and_checks.h"
 
 //	\class DataProcessor
 //	The main function of this class is to assemble the 

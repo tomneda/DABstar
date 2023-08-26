@@ -31,11 +31,11 @@
  */
 #include  "mp4processor.h"
 #include  "radio.h"
-//
 #include  <cstring>
 #include  "charsets.h"
 #include  "pad-handler.h"
 #include  "bitWriter.h"
+#include  "data_manip_and_checks.h"
 
 //
 /**

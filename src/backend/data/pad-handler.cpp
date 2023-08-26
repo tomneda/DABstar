@@ -24,6 +24,7 @@
 #include  "radio.h"
 #include  "charsets.h"
 #include  "mot-object.h"
+#include  "data_manip_and_checks.h"
 
 /**
   *	\class padHandler

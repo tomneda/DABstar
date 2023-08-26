@@ -197,6 +197,7 @@ set(${objectName}_HDRS
         src/dab-processor.h
         src/eti-handler/eti-generator.h
         src/dab-constants.h
+        src/data_manip_and_checks.h
         src/mot-content-types.h
         src/ofdm/sample-reader.h
         src/ofdm/phasereference.h
@@ -931,7 +932,7 @@ add_executable(${objectName}
         ${TRS}
         ${MOCS}
         resources.qrc
-        )
+)
 
 target_link_libraries(${objectName}
         PRIVATE
