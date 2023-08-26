@@ -170,7 +170,7 @@ void FicHandler::process_ficBlock(const std::vector<int16_t> & iData, const int3
   */
 void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
 {
-  std::array<int16_t, 3072 + 24> viterbiBlock = { 0 };
+  std::array<int16_t, 3072 + 24> viterbiBlock;
   int16_t inputCount = 0;
 
   if (!running.load())
@@ -220,7 +220,8 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
   *oValid = true;
   for (int16_t i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
   {
-    std::byte * p = &bitBuffer_out[(i % 3) * 256];
+    const std::byte * const p = &bitBuffer_out[(i % 3) * 256];
+    
     if (!check_CRC_bits(reinterpret_cast<const uint8_t *>(p), 256))
     {
       *oValid = false;
@@ -247,7 +248,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     ficLocker.unlock();
 
     emit show_ficSuccess(true);
-    FibDecoder::process_FIB(reinterpret_cast<uint8_t *>(p), iFicNo);
+    FibDecoder::process_FIB(reinterpret_cast<const uint8_t *>(p), iFicNo);
   }
 }
 
