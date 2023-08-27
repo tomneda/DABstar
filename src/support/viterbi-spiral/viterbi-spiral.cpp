@@ -301,24 +301,23 @@ void ViterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, struct v * vp, decisi
 void ViterbiSpiral::update_viterbi_blk_GENERIC(struct v * vp, COMPUTETYPE * syms, int16_t nbits)
 {
   decision_t * d = (decision_t *)vp->decisions;
-  int32_t s, i;
 
-  for (s = 0; s < nbits; s++)
+  for (int32_t s = 0; s < nbits; s++)
   {
     memset(&d[s], 0, sizeof(decision_t));
   }
 
-  for (s = 0; s < nbits; s++)
+  for (int32_t s = 0; s < nbits; s++)
   {
-    void * tmp;
-    for (i = 0; i < NUMSTATES / 2; i++)
+    for (int32_t i = 0; i < NUMSTATES / 2; i++)
     {
       BFLY(i, s, syms, vp, vp->decisions);
     }
 
     renormalize(vp->new_metrics->t, RENORMALIZE_THRESHOLD);
-    //     Swap pointers to old and new metrics
-    tmp = vp->old_metrics;
+
+    // Swap pointers to old and new metrics
+    void * tmp = vp->old_metrics;
     vp->old_metrics = vp->new_metrics;
     vp->new_metrics = (metric_t *)tmp;
   }
@@ -328,7 +327,7 @@ extern "C" {
 #if defined(SSE_AVAILABLE)
 void FULL_SPIRAL_sse (int, COMPUTETYPE * Y, COMPUTETYPE * X, COMPUTETYPE * syms, DECISIONTYPE * dec, COMPUTETYPE * Branchtab);
 #elif defined(NEON_AVAILABLE)
-void FULL_SPIRAL_neon (int, COMPUTETYPE * Y, COMPUTETYPE * X, COMPUTETYPE * syms, DECISIONTYPE * dec, COMPUTETYPE * Branchtab);
+void FULL_SPIRAL_neon(int, COMPUTETYPE * Y, COMPUTETYPE * X, COMPUTETYPE * syms, DECISIONTYPE * dec, COMPUTETYPE * Branchtab);
 #else
 void FULL_SPIRAL_no_sse(int, COMPUTETYPE * Y, COMPUTETYPE * X, COMPUTETYPE * syms, DECISIONTYPE * dec, COMPUTETYPE * Branchtab);
 #endif
@@ -346,9 +345,9 @@ void ViterbiSpiral::update_viterbi_blk_SPIRAL(struct v * vp, COMPUTETYPE * syms,
   }
 
 #if defined(SSE_AVAILABLE)
-  FULL_SPIRAL_sse (nbits / 2, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, Branchtab);
+  FULL_SPIRAL_sse(nbits / 2, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, Branchtab);
 #elif defined(NEON_AVAILABLE)
-  FULL_SPIRAL_neon (nbits, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, Branchtab);
+  FULL_SPIRAL_neon(nbits, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, Branchtab);
 #else
   FULL_SPIRAL_no_sse(nbits / 2, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, Branchtab);
 #endif

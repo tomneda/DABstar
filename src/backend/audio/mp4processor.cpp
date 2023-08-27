@@ -172,7 +172,7 @@ bool mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
   stream_parms streamParameters;
 
   /**
-    *	apply reed-solomon error repar
+    *	apply reed-solomon error repair
     *	OK, what we now have is a vector with RSDims * 120 uint8_t's
     *	the superframe, containing parity bytes for error repair
     *	take into account the interleaving that is applied.
@@ -195,7 +195,7 @@ bool mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     goodFrames++;
     if (goodFrames >= 100)
     {
-      show_rsCorrections(totalCorrections, crcErrors);
+      emit show_rsCorrections(totalCorrections, crcErrors);
       totalCorrections = 0;
       crcErrors = 0;
       goodFrames = 0;

@@ -49,9 +49,11 @@ Q_OBJECT
 public:
   IQDisplay(QwtPlot * plot);
   ~IQDisplay() override;
-  void display_iq(const std::vector<cmplx> & z, float scale, float ref);
+
+  void display_iq(const std::vector<cmplx> & z, float iScaleValue, float iScaleCircle);
+
 private:
-  static constexpr int32_t RADIUS{ 100 };
+  static constexpr int32_t RADIUS = 100;
 
   float mLastCircleSize{ 0 };
   QwtPlot * mPlotgrid{ nullptr };

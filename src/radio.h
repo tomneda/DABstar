@@ -346,7 +346,7 @@ public slots:
   void setSyncLost();
   void showCorrelation(int amount, int marker, const QVector<int> & v);
   void showSpectrum(int);
-  void showIQ(int);
+  void showIQ(int, float);
   void showQuality(const OfdmDecoder::SQualityData *);
 
   void show_rsCorrections(int, int);

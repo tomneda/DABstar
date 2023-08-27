@@ -2327,14 +2327,14 @@ void RadioInterface::showSpectrum(int32_t amount)
   my_spectrumViewer.showSpectrum(amount, inputDevice->getVFOFrequency());
 }
 
-void RadioInterface::showIQ(int amount)
+void RadioInterface::showIQ(int iAmount, float iAvg)
 {
   if (!running.load())
   {
     return;
   }
 
-  my_spectrumViewer.showIQ(amount);
+  my_spectrumViewer.showIQ(iAmount, iAvg);
 }
 
 void RadioInterface::showQuality(const OfdmDecoder::SQualityData * pQD)

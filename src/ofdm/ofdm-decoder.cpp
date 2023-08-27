@@ -104,20 +104,54 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
      */
     cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
     r1 *= phaseRotator; // fine correction of phase which can't be done in the time domain
-    mDataVector[carrierIdx] = r1;
     const float ab1 = abs(r1);
+
+    constexpr float ALPHA_GAIN_RISE = 0.000005f;
+    constexpr float ALPHA_GAIN_FALL = 0.001f;
+
+    if (ab1 * mGain > TOP_VAL)
+    {
+      //mGain /= ab2 / TOP_VAL; // clip gain to current overflown level
+      //ab2 = TOP_VAL;
+      mGain *= (1.0f - ALPHA_GAIN_FALL);
+    }
+    else
+    {
+      mGain *= (1.0f + ALPHA_GAIN_RISE); // only slowly rise gain here
+    }
+
+    float ab2 = ab1 * mGain;
+
+    const int16_t hardBitReal = (real(r1) < 0.0f ? 1 : -1);
+    const int16_t hardBitImag = (imag(r1) < 0.0f ? 1 : -1);
+
+    if (ab2 < BTN_VAL)
+    {
+      ab2 = BTN_VAL;
+    }
+
+    const float phase = std::arg(r1);
+    mDataVector[carrierIdx] = cmplx(ab2 / TOP_VAL * cosf(phase), ab2 / TOP_VAL * sinf(phase));
 
     // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
     // TODO: tomneda: is normalizing over one sample with ab1 ok? or better over the average of entire symbol?
+#ifdef USE_OLD_SOFTBIT_GENERATION
     oBits[0         + carrierIdx] = (int16_t)(-(real(r1) * 127.0f) / ab1);
     oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(r1) * 127.0f) / ab1);
+#else
+    const int16_t softBitQuantReal = (int16_t)(hardBitReal * ab2);
+    const int16_t softBitQuantImag = (int16_t)(hardBitImag * ab2);
+
+    oBits[0         + carrierIdx] = softBitQuantReal;
+    oBits[mDabPar.K + carrierIdx] = softBitQuantImag;
+#endif
   }
 
   //	From time to time we show the constellation of the current symbol
   if (++mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
   {
     mpIqBuffer->putDataIntoBuffer(mDataVector.data(), mDabPar.K);
-    emit showIQ(mDabPar.K);
+    emit showIQ(mDabPar.K, mGain / TOP_VAL);
     mShowCntIqScope = 0;
   }
 

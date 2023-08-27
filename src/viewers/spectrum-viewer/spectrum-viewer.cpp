@@ -216,10 +216,10 @@ bool SpectrumViewer::isHidden()
   return myFrame.isHidden();
 }
 
-void SpectrumViewer::showIQ(int amount)
+void SpectrumViewer::showIQ(int iAmount, float iAvg)
 {
-  std::vector<cmplx> values(amount); // amount typ 1536
-  std::vector<float> phase(amount);  // amount typ 1536
+  std::vector<cmplx> values(iAmount); // amount typ 1536
+  std::vector<float> phase(iAmount);  // amount typ 1536
 
   const int scopeWidth = scopeSlider->value();
   const bool logIqScope = cbLogIqScope->isChecked();
@@ -231,7 +231,7 @@ void SpectrumViewer::showIQ(int amount)
     return;
   }
 
-  float avg = 0;
+  //float avg = 0;
 
   for (auto i = 0; i < numRead; i++)
   {
@@ -246,11 +246,11 @@ void SpectrumViewer::showIQ(int amount)
       {
         const float rl = log10f(1.0f + r); // no scaling necessary here due to averaging
         values[i] = rl * std::exp(cmplx(0, phi)); // retain phase only log the vector length
-        avg += rl; // dividing due to similar looking lin <-> log
+        //avg += rl;
       }
       else
       {
-        avg += r;
+        //avg += r;
       }
     }
     else
@@ -259,9 +259,9 @@ void SpectrumViewer::showIQ(int amount)
       values[i] = 0.0f;
     }
   }
-  avg /= (float)numRead;
+  //avg /= (float)numRead;
 
-  myIQDisplay->display_iq(values, (float)scopeWidth, avg);
+  myIQDisplay->display_iq(values, (float)scopeWidth / 100.0f, (float)scopeWidth / 100.0f);
   mpPhaseVsCarrDisp->disp_phase_carr_plot(std::move(phase));
 }
 

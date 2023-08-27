@@ -66,6 +66,10 @@ private:
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mDataVector;
 
+  static constexpr float TOP_VAL = 127.0f;
+  static constexpr float BTN_VAL =  2.0f;
+  float mGain = TOP_VAL;
+
   // mQD has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SQualityData mQD{};
@@ -76,7 +80,7 @@ private:
   float compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
 
 signals:
-  void showIQ(int);
+  void showIQ(int, float);
   void showQuality(const SQualityData *);
 };
 

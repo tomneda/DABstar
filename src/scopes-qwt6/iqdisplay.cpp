@@ -64,18 +64,18 @@ template<typename T> inline void symmetric_limit(T & ioVal, const T iLimit)
   }
 }
 
-void IQDisplay::display_iq(const std::vector<cmplx> & z, float scale, float ref)
+void IQDisplay::display_iq(const std::vector<cmplx> & z, float iScaleValue, float iScaleCircle)
 {
   if (z.size() != mPoints.size())
   {
     mPoints.resize(z.size(), { 0, 0 });
   }
 
-  const float scaleNormed = scale / ref;
+  const float scaleNormed = iScaleValue * RADIUS;
 
   clean_screen_from_old_data_points();
   draw_cross();
-  repaint_circle(scale / 100.0f);
+  repaint_circle(iScaleCircle);
 
   for (uint32_t i = 0; i < z.size(); i++)
   {
