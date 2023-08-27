@@ -165,8 +165,17 @@ void TechData::show_rsErrors(int e)
 
 void TechData::show_rsCorrections(int c, int ec)
 {
-  rsCorrections->display(c);
-  ecCorrections->display(ec);
+  // highlight non-zero values with color
+  auto set_val_with_col = [](QLCDNumber *ipLCD, int iVal)
+  {
+    QPalette p = ipLCD->palette();
+    p.setColor(QPalette::WindowText, (iVal > 0 ? Qt::yellow : Qt::white));
+    ipLCD->setPalette(p);
+    ipLCD->display(iVal);
+  };
+
+  set_val_with_col(rsCorrections, c);
+  set_val_with_col(ecCorrections, ec);
 }
 
 void TechData::show_motHandling(bool b)
