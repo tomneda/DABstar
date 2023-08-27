@@ -69,7 +69,7 @@ TechData::~TechData()
 void TechData::cleanUp()
 {
   programName->setText(QString(""));
-  rsCorrections->display(0);
+  show_rsCorrections(0, 0); // call via this method to consider color change
   frameError_display->setValue(0);
   rsError_display->setValue(0);
   aacError_display->setValue(0);
