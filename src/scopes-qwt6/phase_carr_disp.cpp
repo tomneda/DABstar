@@ -33,7 +33,7 @@ PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
   mQwtPlot->replot();
 }
 
-void PhaseVsCarrDisp::disp_phase_carr_plot(const std::vector<float> && iPhaseVec)
+void PhaseVsCarrDisp::disp_phase_carr_plot(const std::vector<float> & iPhaseVec)
 {
   if (mDataSize != (int32_t)iPhaseVec.size())
   {

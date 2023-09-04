@@ -49,6 +49,7 @@ public:
     float PhaseCorr;
   };
 
+  void reset();
   void processBlock_0(std::vector<cmplx>);  // copy of vector is intended
   void decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
 
@@ -65,6 +66,7 @@ private:
   std::vector<cmplx> mPhaseReference;
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mDataVector;
+  std::vector<float> mAvgDataVector;
 
   static constexpr float TOP_VAL = 127.0f;
   static constexpr float BTN_VAL =  2.0f;

@@ -204,11 +204,6 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   ioSampleCount += mDabPar.T_u;
   mOfdmDecoder.processBlock_0(mOfdmBuffer);
 
-//  if (!mScanMode)
-//  {
-//    mMscHandler.processBlock_0(mOfdmBuffer.data());
-//  }
-
   // Here we look only at the block_0 when we need a coarse frequency synchronization.
   mCorrectionNeeded = !mFicHandler.syncReached();
 
@@ -402,6 +397,7 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
 {
   setSynced(false);
   mTiiDetector.reset();
+  mOfdmDecoder.reset();
 
   switch (mTimeSyncer.read_samples_until_end_of_level_drop(mDabPar.T_n, mDabPar.T_F))
   {

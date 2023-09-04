@@ -49,6 +49,14 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mPhaseReference.resize(mDabPar.T_u);
   mFftBuffer.resize(mDabPar.T_u);
   mDataVector.resize(mDabPar.K);
+  mAvgDataVector.resize(mDabPar.K);
+
+  reset();
+}
+
+void OfdmDecoder::reset()
+{
+  std::fill(mAvgDataVector.begin(), mAvgDataVector.end(), 1.0f);
 }
 
 /**
@@ -75,8 +83,6 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
 {
   memcpy(mFftBuffer.data(), &(buffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
-  const cmplx phaseRotator = std::exp(cmplx(0.0f, -iPhaseCorr));
-
   mFftHandler.fft(mFftBuffer);
 
   /**
@@ -102,56 +108,27 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
      *	The carrier of a block is the reference for the carrier
      *	on the same position in the next block
      */
-    cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-    r1 *= phaseRotator; // fine correction of phase which can't be done in the time domain
-    const float ab1 = abs(r1);
 
-    constexpr float ALPHA_GAIN_RISE = 0.000005f;
-    constexpr float ALPHA_GAIN_FALL = 0.001f;
+    cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx]));
+    fftBin *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
+    const float fftBinAbs = std::fabs(fftBin);
+    float & fftBinAvg = mAvgDataVector[carrierIdx];
 
-    if (ab1 * mGain > TOP_VAL)
-    {
-      //mGain /= ab2 / TOP_VAL; // clip gain to current overflown level
-      //ab2 = TOP_VAL;
-      mGain *= (1.0f - ALPHA_GAIN_FALL);
-    }
-    else
-    {
-      mGain *= (1.0f + ALPHA_GAIN_RISE); // only slowly rise gain here
-    }
+    constexpr float ALPHA_AVG = 0.005f;
+    fftBinAvg = ALPHA_AVG * fftBinAbs + (1.0f - ALPHA_AVG) * fftBinAvg;
 
-    float ab2 = ab1 * mGain;
+    const cmplx fftBinNormed = fftBin / fftBinAvg;
+    mDataVector[carrierIdx] = fftBinNormed;
 
-    const int16_t hardBitReal = (real(r1) < 0.0f ? 1 : -1);
-    const int16_t hardBitImag = (imag(r1) < 0.0f ? 1 : -1);
-
-    if (ab2 < BTN_VAL)
-    {
-      ab2 = BTN_VAL;
-    }
-
-    const float phase = std::arg(r1);
-    mDataVector[carrierIdx] = cmplx(ab2 / TOP_VAL * cosf(phase), ab2 / TOP_VAL * sinf(phase));
-
-    // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
-    // TODO: tomneda: is normalizing over one sample with ab1 ok? or better over the average of entire symbol?
-#ifdef USE_OLD_SOFTBIT_GENERATION
-    oBits[0         + carrierIdx] = (int16_t)(-(real(r1) * 127.0f) / ab1);
-    oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(r1) * 127.0f) / ab1);
-#else
-    const int16_t softBitQuantReal = (int16_t)(hardBitReal * ab2);
-    const int16_t softBitQuantImag = (int16_t)(hardBitImag * ab2);
-
-    oBits[0         + carrierIdx] = softBitQuantReal;
-    oBits[mDabPar.K + carrierIdx] = softBitQuantImag;
-#endif
+    oBits[0         + carrierIdx] = (int16_t)(-(real(fftBinNormed) * 64.0f));
+    oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(fftBinNormed) * 64.0f));
   }
 
   //	From time to time we show the constellation of the current symbol
   if (++mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
   {
     mpIqBuffer->putDataIntoBuffer(mDataVector.data(), mDabPar.K);
-    emit showIQ(mDabPar.K, mGain / TOP_VAL);
+    emit showIQ(mDabPar.K, 1.0f /*mGain / TOP_VAL*/);
     mShowCntIqScope = 0;
   }
 

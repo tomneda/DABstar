@@ -218,13 +218,16 @@ bool SpectrumViewer::isHidden()
 
 void SpectrumViewer::showIQ(int iAmount, float iAvg)
 {
-  std::vector<cmplx> values(iAmount); // amount typ 1536
-  std::vector<float> phase(iAmount);  // amount typ 1536
+  if (mValuesVec.size() != (unsigned)iAmount)
+  {
+    mValuesVec.resize(iAmount);
+    mPhaseVec.resize(iAmount);
+  }
 
   const int scopeWidth = scopeSlider->value();
   const bool logIqScope = cbLogIqScope->isChecked();
 
-  const int32_t numRead = iqBuffer->getDataFromBuffer(values.data(), (int32_t)values.size());
+  const int32_t numRead = iqBuffer->getDataFromBuffer(mValuesVec.data(), (int32_t)mValuesVec.size());
 
   if (myFrame.isHidden())
   {
@@ -235,17 +238,17 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
 
   for (auto i = 0; i < numRead; i++)
   {
-    const float r = fabs(values[i]);
+    const float r = std::fabs(mValuesVec[i]);
 
     if (!std::isnan(r) && !std::isinf(r))
     {
-      const float phi = std::arg(values[i]);
-      phase[i] = conv_rad_to_deg(phi);
+      const float phi = std::arg(mValuesVec[i]);
+      mPhaseVec[i] = conv_rad_to_deg(phi);
 
       if (logIqScope)
       {
-        const float rl = log10f(1.0f + r); // no scaling necessary here due to averaging
-        values[i] = rl * std::exp(cmplx(0, phi)); // retain phase only log the vector length
+        const float rl = log10f(1.0f + r) / log10f(1.0f + 1.0f); // no scaling necessary here due to averaging
+        mValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase only log the vector length
         //avg += rl;
       }
       else
@@ -255,14 +258,14 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
     }
     else
     {
-      phase[i] = 0.0f;
-      values[i] = 0.0f;
+      mPhaseVec[i] = 0.0f;
+      mValuesVec[i] = 0.0f;
     }
   }
   //avg /= (float)numRead;
-
-  myIQDisplay->display_iq(values, (float)scopeWidth / 100.0f, (float)scopeWidth / 100.0f);
-  mpPhaseVsCarrDisp->disp_phase_carr_plot(std::move(phase));
+  const float scale = (float)scopeWidth / 100.0f;
+  myIQDisplay->display_iq(mValuesVec, scale, scale);
+  mpPhaseVsCarrDisp->disp_phase_carr_plot(mPhaseVec);
 }
 
 void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr)

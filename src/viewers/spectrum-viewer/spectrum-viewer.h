@@ -33,6 +33,7 @@
 #include  <QObject>
 #include  "ui_scopewidget.h"
 #include  "ringbuffer.h"
+#include  "fft/fft-handler.h"
 #include  <qwt.h>
 #include  <qwt_plot.h>
 #include  <qwt_plot_marker.h>
@@ -52,7 +53,6 @@ constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
 constexpr int32_t SP_SPECTRUMOVRSMPFAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
 
-#include  "fft/fft-handler.h"
 
 class RadioInterface;
 class QSettings;
@@ -84,15 +84,14 @@ public:
 
 private:
   QFrame myFrame;
-  RadioInterface * myRadioInterface;
-  QSettings * dabSettings;
-  RingBuffer<cmplx> * spectrumBuffer;
-  RingBuffer<cmplx> * iqBuffer;
+  RadioInterface * myRadioInterface = nullptr;
+  QSettings * dabSettings = nullptr;
+  RingBuffer<cmplx> * spectrumBuffer = nullptr;
+  RingBuffer<cmplx> * iqBuffer = nullptr;
   RingBuffer<float> * mpCorrelationBuffer = nullptr;
-  QwtPlotPicker * lm_picker{};
-  //QColor mDisplayColor;
-  QColor mGridColor;
-  QColor mCurveColor;
+  QwtPlotPicker * lm_picker = nullptr;
+  std::vector<cmplx> mValuesVec;
+  std::vector<float> mPhaseVec; 
 
   fftHandler fft;
 
