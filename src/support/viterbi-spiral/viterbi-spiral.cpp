@@ -19,7 +19,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include  <cstdio>
-#include  <stdlib.h>
+#include  <cstdlib>
 #include  "mm_malloc.h"
 #include  "viterbi-spiral.h"
 #include  <cstring>
@@ -30,7 +30,6 @@
 #include	<windows.h>
 #endif
 
-//
 //	It took a while to discover that the polynomes we used
 //	in our own "straightforward" implementation was bitreversed!!
 //	The official one is on top.
@@ -42,8 +41,8 @@
 #define  PRECISIONSHIFT  0
 #define  RENORMALIZE_THRESHOLD  137
 
-//
-/* ADDSHIFT and SUBSHIFT make sure that the thing returned is a byte. */
+
+// ADDSHIFT and SUBSHIFT make sure that the thing returned is a byte.
 #if (K - 1 < 8)
 #define ADDSHIFT (8-(K-1))
 #define SUBSHIFT 0
@@ -122,30 +121,23 @@ static inline void renormalize(COMPUTETYPE * const X, const COMPUTETYPE threshol
   }
 }
 
-//
-//
 //	The main use of the viterbi decoder is in handling the FIC blocks
 //	There are (in mode 1) 3 ofdm blocks, giving 4 FIC blocks
 //	There all have a predefined length. In that case we use the
 //	"fast" (i.e. spiral) code, otherwise we use the generic code
-ViterbiSpiral::ViterbiSpiral(int16_t wordlength, bool spiral)
+ViterbiSpiral::ViterbiSpiral(const int16_t iWordlength, const bool iSpiralMode) :
+  mFrameBits(iWordlength),
+  mSpiral(iSpiralMode)
 {
   int polys[RATE] = POLYS;
-  int16_t i, state;
-#ifdef  __MINGW32__
-  uint32_t	size;
-#endif
-
-  frameBits = wordlength;
-  this->spiral = spiral;
   //partab_init();
 
-  // B I G N O T E	The spiral code uses (wordLength + (K - 1) * sizeof ...
+  // TODO: The spiral code uses (wordLength + (K - 1) * sizeof ...
   // However, the application then crashes, so something is not OK
   // By doubling the size, the problem disappears. It is not solved though
   // and not further investigation.
 #ifdef __MINGW32__
-  size = 2 * ((wordlength + (K - 1)) / 8 + 1 + 16) & ~0xF;
+  uint32_t size = 2 * ((wordlength + (K - 1)) / 8 + 1 + 16) & ~0xF;
   data	= (uint8_t *)_aligned_malloc (size, 16);
   size = 2 * (RATE * (wordlength + (K - 1)) * sizeof(COMPUTETYPE) + 16) & ~0xF;
   symbols	= (COMPUTETYPE *)_aligned_malloc (size, 16);
@@ -153,42 +145,42 @@ ViterbiSpiral::ViterbiSpiral(int16_t wordlength, bool spiral)
   size	= (size + 16) & ~0xF;
   vp. decisions = (decision_t  *)_aligned_malloc (size, 16);
 #else
-  if (posix_memalign((void **)&data, 16, (wordlength + (K - 1)) / 8 + 1))
+  if (posix_memalign((void **)&mpData, 16, (iWordlength + (K - 1)) / 8 + 1))
   {
     printf("Allocation of data array failed\n");
   }
-  if (posix_memalign((void **)&symbols, 16, RATE * (wordlength + (K - 1)) * sizeof(COMPUTETYPE)))
+  if (posix_memalign((void **)&mpSymbols, 16, RATE * (iWordlength + (K - 1)) * sizeof(COMPUTETYPE)))
   {
     printf("Allocation of symbols array failed\n");
   }
-  if (posix_memalign((void **)&(vp.decisions), 16, 2 * (wordlength + (K - 1)) * sizeof(decision_t)))
+  if (posix_memalign((void **)&(mVP.decisions), 16, 2 * (iWordlength + (K - 1)) * sizeof(decision_t)))
   {
     printf("Allocation of vp decisions failed\n");
   }
 #endif
 
-  for (state = 0; state < NUMSTATES / 2; state++)
+  for (int16_t state = 0; state < NUMSTATES / 2; state++)
   {
-    for (i = 0; i < RATE; i++)
+    for (int16_t i = 0; i < RATE; i++)
     {
-      Branchtab[i * NUMSTATES / 2 + state] = (polys[i] < 0) ^ parity((2 * state) & abs(polys[i])) ? 255 : 0;
+      mBranchtab[i * NUMSTATES / 2 + state] = (polys[i] < 0) ^ parity((2 * state) & abs(polys[i])) ? 255 : 0;
     }
   }
-  //
-  init_viterbi(&vp, 0);
+
+  init_viterbi(&mVP, 0);
 }
 
 
-ViterbiSpiral::~ViterbiSpiral(void)
+ViterbiSpiral::~ViterbiSpiral()
 {
 #ifdef  __MINGW32__
   _aligned_free (vp. decisions);
   _aligned_free (data);
   _aligned_free (symbols);
 #else
-  free(vp.decisions);
-  free(data);
-  free(symbols);
+  free(mVP.decisions);
+  free(mpData);
+  free(mpSymbols);
 #endif
 }
 
@@ -199,72 +191,49 @@ static inline uint8_t getbit(uint8_t v, int32_t o)
   return (v & maskTable[o]) ? 1 : 0;
 }
 
-//static
-//uint8_t getbit (uint8_t v, int32_t o) {
-//uint8_t	mask	= 1 << (7 - o);
-//	return  (v & mask) ? 1 : 0;
-//}
 
-// depends: POLYS, RATE, COMPUTETYPE
-// 	encode was only used for testing purposes
-//void encode (/*const*/ unsigned char *bytes, COMPUTETYPE *symbols, int nbits) {
-//int	i, k;
-//int	polys [RATE] = POLYS;
-//int	sr = 0;
-//
-//// FIXME: this is slowish
-//// -- remember about the padding!
-//	for (i = 0; i < nbits + (K - 1); i++) {
-//	   int b = bytes[i/8];
-//	   int j = i % 8;
-//	   int bit = (b >> (7-j)) & 1;
-//
-//	   sr = (sr << 1) | bit;
-//	   for (k = 0; k < RATE; k++)
-//	      *(symbols++) = parity(sr & polys[k]);
-//	}
-//}
 
-//	Note that our DAB environment maps the softbits to -127 .. 127
-//	we have to map that onto 0 .. 255
-
-void ViterbiSpiral::deconvolve(const int16_t * input, uint8_t * output)
+void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const output)
 {
   uint32_t i;
 
-  init_viterbi(&vp, 0);
-  for (i = 0; i < (uint16_t)(frameBits + (K - 1)) * RATE; i++)
+  init_viterbi(&mVP, 0);
+
+  for (i = 0; i < (uint16_t)(mFrameBits + (K - 1)) * RATE; i++)
   {
+    // Note that OFDM decoder maps the softbits to -127 .. 127 we have to map that onto 0 .. 255
     int16_t temp = input[i] + 127;
+
     if (temp < 0)
     {
       temp = 0;
     }
-    if (temp > 255)
+    else if (temp > 255)
     {
       temp = 255;
     }
-    symbols[i] = temp;
+
+    mpSymbols[i] = temp;
   }
-  if (!spiral)
+  if (!mSpiral)
   {
-    update_viterbi_blk_GENERIC(&vp, symbols, frameBits + (K - 1));
+    update_viterbi_blk_GENERIC(&mVP, mpSymbols, mFrameBits + (K - 1));
   }
   else
   {
-    update_viterbi_blk_SPIRAL(&vp, symbols, frameBits + (K - 1));
+    update_viterbi_blk_SPIRAL(&mVP, mpSymbols, mFrameBits + (K - 1));
   }
 
-  chainback_viterbi(&vp, data, frameBits, 0);
+  chainback_viterbi(&mVP, mpData, mFrameBits, 0);
 
-  for (i = 0; i < (uint16_t)frameBits; i++)
+  for (i = 0; i < (uint16_t)mFrameBits; i++)
   {
-    output[i] = getbit(data[i >> 3], i & 07);
+    output[i] = getbit(mpData[i >> 3], i & 07);
   }
 }
 
 /* C-language butterfly */
-void ViterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, struct v * vp, decision_t * d)
+void ViterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, SMetricData * vp, decision_t * d)
 {
   int32_t j, decision0, decision1;
   COMPUTETYPE metric, m0, m1, m2, m3;
@@ -272,7 +241,7 @@ void ViterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, struct v * vp, decisi
   metric = 0;
   for (j = 0; j < RATE; j++)
   {
-    metric += (Branchtab[i + j * NUMSTATES / 2] ^ syms[s * RATE + j]) >> METRICSHIFT;
+    metric += (mBranchtab[i + j * NUMSTATES / 2] ^ syms[s * RATE + j]) >> METRICSHIFT;
   }
   metric = metric >> PRECISIONSHIFT;
   const COMPUTETYPE max = ((RATE * ((256 - 1) >> METRICSHIFT)) >> PRECISIONSHIFT);
@@ -295,7 +264,7 @@ void ViterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, struct v * vp, decisi
  * Note that nbits is the number of decoded data bits, not the number
  * of symbols!
  */
-void ViterbiSpiral::update_viterbi_blk_GENERIC(struct v * vp, COMPUTETYPE * syms, int16_t nbits)
+void ViterbiSpiral::update_viterbi_blk_GENERIC(SMetricData * vp, COMPUTETYPE * syms, int16_t nbits)
 {
   decision_t * d = (decision_t *)vp->decisions;
 
@@ -331,7 +300,7 @@ void FULL_SPIRAL_no_sse(int, COMPUTETYPE * Y, COMPUTETYPE * X, COMPUTETYPE * sym
 
 }
 
-void ViterbiSpiral::update_viterbi_blk_SPIRAL(struct v * vp, COMPUTETYPE * syms, int16_t nbits)
+void ViterbiSpiral::update_viterbi_blk_SPIRAL(SMetricData * vp, COMPUTETYPE * syms, int16_t nbits)
 {
   decision_t * d = (decision_t *)vp->decisions;
   int32_t s;
@@ -342,47 +311,46 @@ void ViterbiSpiral::update_viterbi_blk_SPIRAL(struct v * vp, COMPUTETYPE * syms,
   }
 
 #if defined(SSE_AVAILABLE)
-  FULL_SPIRAL_sse(nbits / 2, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, Branchtab);
+  FULL_SPIRAL_sse(nbits / 2, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, mBranchtab);
 #elif defined(NEON_AVAILABLE)
-  FULL_SPIRAL_neon(nbits, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, Branchtab);
+  FULL_SPIRAL_neon(nbits, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, mBranchtab);
 #else
-  FULL_SPIRAL_no_sse(nbits / 2, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, Branchtab);
+  FULL_SPIRAL_no_sse(nbits / 2, vp->new_metrics->t, vp->old_metrics->t, syms, d->t, mBranchtab);
 #endif
 
 }
 
-//
-/* Viterbi chainback */
-void ViterbiSpiral::chainback_viterbi(struct v * vp, uint8_t * data, /* Decoded output data */
-                                      int16_t nbits, /* Number of data bits */
-                                      uint16_t endstate)
-{ /*Terminal encoder state */
-  decision_t * d = vp->decisions;
+// Viterbi chainback
+void ViterbiSpiral::chainback_viterbi(const SMetricData * const iVP, uint8_t * const oData, int16_t nbits, const uint16_t iEndstate)
+{
+  // Terminal encoder state
+  const decision_t * d = iVP->decisions;
 
   /* Make room beyond the end of the encoder register so we can
    * accumulate a full byte of decoded data
    */
-  endstate = (endstate % NUMSTATES) << ADDSHIFT;
+  uint16_t endstate = (iEndstate % NUMSTATES) << ADDSHIFT;
+
   /* The store into data[] only needs to be done every 8 bits.
    * But this avoids a conditional branch, and the writes will
    * combine in the cache anyway
    */
   d += (K - 1); /* Look past tail */
+
   while (nbits-- != 0)
   {
-    int k;
-    //	   int l	= (endstate >> ADDSHIFT) / 32;
-    //	   int m	= (endstate >> ADDSHIFT) % 32;
-    k = (d[nbits].w[(endstate >> ADDSHIFT) / 32] >> ((endstate >> ADDSHIFT) % 32)) & 1;
+    // int l	= (endstate >> ADDSHIFT) / 32;
+    // int m	= (endstate >> ADDSHIFT) % 32;
+    int k = (d[nbits].w[(endstate >> ADDSHIFT) / 32] >> ((endstate >> ADDSHIFT) % 32)) & 1;
     endstate = (endstate >> 1) | (k << (K - 2 + ADDSHIFT));
-    data[nbits >> 3] = endstate >> SUBSHIFT;
+    oData[nbits >> 3] = endstate >> SUBSHIFT;
   }
 }
 
 /* Initialize Viterbi decoder for start of new frame */
-void ViterbiSpiral::init_viterbi(struct v * p, int16_t starting_state)
+void ViterbiSpiral::init_viterbi(SMetricData * const iP, const int16_t iStarting_state)
 {
-  struct v * vp = p;
+  SMetricData * vp = iP;
   int32_t i;
 
   for (i = 0; i < NUMSTATES; i++)
@@ -393,6 +361,6 @@ void ViterbiSpiral::init_viterbi(struct v * p, int16_t starting_state)
   vp->old_metrics = &vp->metrics1;
   vp->new_metrics = &vp->metrics2;
   /* Bias known start state */
-  vp->old_metrics->t[starting_state & (NUMSTATES - 1)] = 0;
+  vp->old_metrics->t[iStarting_state & (NUMSTATES - 1)] = 0;
 }
 
