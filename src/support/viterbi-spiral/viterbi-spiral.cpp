@@ -125,6 +125,7 @@ static inline void renormalize(COMPUTETYPE * const X, const COMPUTETYPE threshol
 //	There are (in mode 1) 3 ofdm blocks, giving 4 FIC blocks
 //	There all have a predefined length. In that case we use the
 //	"fast" (i.e. spiral) code, otherwise we use the generic code
+
 ViterbiSpiral::ViterbiSpiral(const int16_t iWordlength, const bool iSpiralMode) :
   mFrameBits(iWordlength),
   mSpiral(iSpiralMode)
@@ -184,22 +185,17 @@ ViterbiSpiral::~ViterbiSpiral()
 #endif
 }
 
-
 static inline uint8_t getbit(uint8_t v, int32_t o)
 {
   static const int maskTable[] = { 128, 64, 32, 16, 8, 4, 2, 1 };
   return (v & maskTable[o]) ? 1 : 0;
 }
 
-
-
 void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const output)
 {
-  uint32_t i;
-
   init_viterbi(&mVP, 0);
 
-  for (i = 0; i < (uint16_t)(mFrameBits + (K - 1)) * RATE; i++)
+  for (uint32_t i = 0; i < (uint16_t)(mFrameBits + (K - 1)) * RATE; i++)
   {
     // Note that OFDM decoder maps the softbits to -127 .. 127 we have to map that onto 0 .. 255
     int16_t temp = input[i] + 127;
@@ -226,7 +222,7 @@ void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const outp
 
   chainback_viterbi(&mVP, mpData, mFrameBits, 0);
 
-  for (i = 0; i < (uint16_t)mFrameBits; i++)
+  for (uint32_t i = 0; i < (uint16_t)mFrameBits; i++)
   {
     output[i] = getbit(mpData[i >> 3], i & 07);
   }
@@ -235,27 +231,27 @@ void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const outp
 /* C-language butterfly */
 void ViterbiSpiral::BFLY(int i, int s, COMPUTETYPE * syms, SMetricData * vp, decision_t * d)
 {
-  int32_t j, decision0, decision1;
-  COMPUTETYPE metric, m0, m1, m2, m3;
+  COMPUTETYPE metric = 0;
 
-  metric = 0;
-  for (j = 0; j < RATE; j++)
+  for (int32_t j = 0; j < RATE; j++)
   {
     metric += (mBranchtab[i + j * NUMSTATES / 2] ^ syms[s * RATE + j]) >> METRICSHIFT;
   }
+
   metric = metric >> PRECISIONSHIFT;
+
   const COMPUTETYPE max = ((RATE * ((256 - 1) >> METRICSHIFT)) >> PRECISIONSHIFT);
 
-  m0 = vp->old_metrics->t[i] + metric;
-  m1 = vp->old_metrics->t[i + NUMSTATES / 2] + (max - metric);
-  m2 = vp->old_metrics->t[i] + (max - metric);
-  m3 = vp->old_metrics->t[i + NUMSTATES / 2] + metric;
+  const COMPUTETYPE m0 = vp->old_metrics->t[i +             0] + metric;
+  const COMPUTETYPE m1 = vp->old_metrics->t[i + NUMSTATES / 2] + (max - metric);
+  const COMPUTETYPE m2 = vp->old_metrics->t[i +             0] + (max - metric);
+  const COMPUTETYPE m3 = vp->old_metrics->t[i + NUMSTATES / 2] + metric;
 
-  decision0 = ((int32_t)(m0 - m1)) > 0;
-  decision1 = ((int32_t)(m2 - m3)) > 0;
+  const int32_t decision0 = (m0 > m1 ? 1 : 0);
+  const int32_t decision1 = (m2 > m3 ? 1 : 0);
 
-  vp->new_metrics->t[2 * i] = decision0 ? m1 : m0;
-  vp->new_metrics->t[2 * i + 1] = decision1 ? m3 : m2;
+  vp->new_metrics->t[2 * i + 0] = (decision0 != 0 ? m1 : m0);
+  vp->new_metrics->t[2 * i + 1] = (decision1 != 0 ? m3 : m2);
 
   d->w[i / (sizeof(uint32_t) * 8 / 2) + s * (sizeof(decision_t) / sizeof(uint32_t))] |= (decision0 | decision1 << 1) << ((2 * i) & (sizeof(uint32_t) * 8 - 1));
 }
