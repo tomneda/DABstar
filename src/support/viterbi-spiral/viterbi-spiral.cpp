@@ -184,10 +184,10 @@ ViterbiSpiral::~ViterbiSpiral()
 #endif
 }
 
-static int maskTable[] = { 128, 64, 32, 16, 8, 4, 2, 1 };
 
 static inline uint8_t getbit(uint8_t v, int32_t o)
 {
+  static const int maskTable[] = { 128, 64, 32, 16, 8, 4, 2, 1 };
   return (v & maskTable[o]) ? 1 : 0;
 }
 
@@ -339,9 +339,8 @@ void ViterbiSpiral::chainback_viterbi(const SMetricData * const iVP, uint8_t * c
 
   while (nbits-- != 0)
   {
-    // int l	= (endstate >> ADDSHIFT) / 32;
-    // int m	= (endstate >> ADDSHIFT) % 32;
-    int k = (d[nbits].w[(endstate >> ADDSHIFT) / 32] >> ((endstate >> ADDSHIFT) % 32)) & 1;
+    const uint16_t n = (endstate >> ADDSHIFT);
+    const uint16_t k = (d[nbits].w[n >> 5] >> (n & 0x1F)) & 1;
     endstate = (endstate >> 1) | (k << (K - 2 + ADDSHIFT));
     oData[nbits >> 3] = endstate >> SUBSHIFT;
   }
