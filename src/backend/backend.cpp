@@ -36,7 +36,7 @@ Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * 
   outV(d->bitRate * 24),
   driver(mr, d, audiobuffer, databuffer, frameBuffer, dump)
 #ifdef  __THREADED_BACKEND
-,freeSlots (NUMBER_SLOTS)
+  , freeSlots(NUMBER_SLOTS)
 #endif
 {
   int32_t i, j;
@@ -52,9 +52,7 @@ Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * 
   this->subChId = d->subchId;
   this->borf = flag;
 
-  //	fprintf (stdout, "starting a backend for %s (%X) %d\n",
-  //	                  serviceName. toUtf8 (). data (),
-  //	                                    serviceId, startAddr);
+  //fprintf(stdout, "starting a backend for %s (%X) %d\n", serviceName.toUtf8().data(), serviceId, startAddr);
   interleaveData.resize(16);
   for (i = 0; i < 16; i++)
   {
@@ -82,56 +80,62 @@ Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * 
   }
 #ifdef  __THREADED_BACKEND
   //	for local buffering the input, we have
-    nextIn				= 0;
-    nextOut				= 0;
-    for (i = 0; i < NUMBER_SLOTS; i ++)
-       theData [i]. resize (fragmentSize);
-    running. store (true);
-    start();
+  nextIn = 0;
+  nextOut = 0;
+  for (i = 0; i < NUMBER_SLOTS; i++)
+  {
+    theData[i].resize(fragmentSize);
+  }
+  running.store(true);
+  start();
 #endif
 }
 
 Backend::~Backend()
 {
 #ifdef  __THREADED_BACKEND
-  running. store (false);
-  while (this -> isRunning())
-     usleep (1000);
+  running.store(false);
+  while (this->isRunning())
+  {
+    usleep(1000);
+  }
 #endif
 }
 
-int32_t Backend::process(int16_t * v, int16_t cnt)
+int32_t Backend::process(const int16_t * iV, int16_t cnt)
 {
   (void)cnt;
 #ifdef  __THREADED_BACKEND
-  while (!freeSlots. tryAcquire (1, 200))
-     if (!running)
-        return 0;
-  memcpy (theData [nextIn]. data(), v, fragmentSize * sizeof (int16_t));
+  while (!freeSlots.tryAcquire(1, 200))
+  {
+    if (!running)
+    {
+      return 0;
+    }
+  }
+  memcpy(theData[nextIn].data(), iV, fragmentSize * sizeof(int16_t));
   nextIn = (nextIn + 1) % NUMBER_SLOTS;
-  usedSlots. release (1);
+  usedSlots.release(1);
 #else
-  processSegment(v);
+  processSegment(iV);
 #endif
   return 1;
 }
 
 const int16_t interleaveMap[] = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
 
-void Backend::processSegment(int16_t * Data)
+void Backend::processSegment(const int16_t * iData)
 {
-  int16_t i;
-
-  for (i = 0; i < fragmentSize; i++)
+  for (int16_t i = 0; i < fragmentSize; i++)
   {
     tempX[i] = interleaveData[(interleaverIndex + interleaveMap[i & 0x0F]) & 0x0F][i];
-    interleaveData[interleaverIndex][i] = Data[i];
+    interleaveData[interleaverIndex][i] = iData[i];
   }
 
   interleaverIndex = (interleaverIndex + 1) & 0x0F;
 #ifdef  __THREADED_BACKEND
   nextOut = (nextOut + 1) % NUMBER_SLOTS;
-  freeSlots. release (1);
+  freeSlots.release(1);
 #endif
 
   //	only continue when de-interleaver is filled
@@ -143,7 +147,7 @@ void Backend::processSegment(int16_t * Data)
 
   deconvolver.deconvolve(tempX.data(), fragmentSize, outV.data());
   //	and the energy dispersal
-  for (i = 0; i < bitRate * 24; i++)
+  for (int16_t i = 0; i < bitRate * 24; i++)
   {
     outV[i] ^= disperseVector[i];
   }
@@ -152,15 +156,23 @@ void Backend::processSegment(int16_t * Data)
 }
 
 #ifdef  __THREADED_BACKEND
-void	Backend::run() {
 
-  while (running. load()) {
-     while (!usedSlots. tryAcquire (1, 200))
-        if (!running)
-           return;
-     processSegment (theData [nextOut]. data());
+void Backend::run()
+{
+
+  while (running.load())
+  {
+    while (!usedSlots.tryAcquire(1, 200))
+    {
+      if (!running)
+      {
+        return;
+      }
+    }
+    processSegment(theData[nextOut].data());
   }
 }
+
 #endif
 
 //	It might take a msec for the task to stop
@@ -168,8 +180,10 @@ void Backend::stopRunning()
 {
 #ifdef  __THREADED_BACKEND
   running = false;
-  while (this -> isRunning())
-     usleep (1);
-//	myAudioSink	-> stop();
+  while (this->isRunning())
+  {
+    usleep(1);
+  }
+  //	myAudioSink	-> stop();
 #endif
 }

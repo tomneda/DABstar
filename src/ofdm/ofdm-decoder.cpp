@@ -108,9 +108,9 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
      *	The carrier of a block is the reference for the carrier
      *	on the same position in the next block
      */
-
+#ifndef OTHER_OFDM_DECODING_STYLE
     cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx]));
-    fftBin *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
+    //fftBin *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
     const float fftBinAbs = std::fabs(fftBin);
     float & fftBinAvg = mAvgDataVector[carrierIdx];
 
@@ -120,8 +120,22 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
     const cmplx fftBinNormed = fftBin / fftBinAvg;
     mDataVector[carrierIdx] = fftBinNormed;
 
-    oBits[0         + carrierIdx] = (int16_t)(-(real(fftBinNormed) * 64.0f));
-    oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(fftBinNormed) * 64.0f));
+    const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
+    const int16_t hardBitImag = (imag(fftBin) < 0.0f ? 1 : -1);
+
+    oBits[0         + carrierIdx] = (int16_t)(hardBitReal * 64.0f);  // TODO: weightning!
+    oBits[mDabPar.K + carrierIdx] = (int16_t)(hardBitImag * 64.0f);
+#else
+    cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
+    r1 *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
+    mDataVector[carrierIdx] = r1;
+    const float ab1 = abs(r1);
+
+    // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
+    // TODO: tomneda: is normalizing over one sample with ab1 ok? or better over the average of entire symbol?
+    oBits[0         + carrierIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
+    oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
+#endif
   }
 
   //	From time to time we show the constellation of the current symbol
@@ -138,7 +152,7 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
     mQD.StdDeviation = compute_mod_quality(mDataVector);
     mQD.TimeOffset = compute_time_offset(mFftBuffer, mPhaseReference);
     mQD.FreqOffset = compute_frequency_offset(mFftBuffer, mPhaseReference);
-    mQD.PhaseCorr = -iPhaseCorr * 180.0f / (float)M_PI;
+    mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     emit showQuality(&mQD);
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % mDabPar.L;

@@ -35,11 +35,8 @@
 //	in our own "straightforward" implementation was bitreversed!!
 //	The official one is on top.
 #define K 7
-#define POLYS { 0155, 0117, 0123, 0155}
-//#define	POLYS	{109, 79, 83, 109}
-// In the reversed form the polys look:
-//#define POLYS { 0133, 0171, 0145, 0133 }
-//#define POLYS { 91, 121, 101, 91 }
+#define POLYS { 0155, 0117, 0123, 0155 } // octal representation with leading zeroes!
+//#define POLYS { 0133, 0171, 0145, 0133 } // reversed form (defined in the standard)
 
 #define  METRICSHIFT  0
 #define  PRECISIONSHIFT  0
