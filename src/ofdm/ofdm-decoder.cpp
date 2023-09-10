@@ -85,6 +85,8 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
 
   mFftHandler.fft(mFftBuffer);
 
+  const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
+
   /**
    *	a little optimization: we do not interchange the
    *	positive/negative frequencies to their right positions.
@@ -110,12 +112,18 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
      */
 #ifndef OTHER_OFDM_DECODING_STYLE
     cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx]));
-    //fftBin *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
+    fftBin *= rotator; // fine correction of phase which can't be done in the time domain
     const float fftBinAbs = std::fabs(fftBin);
     float & fftBinAvg = mAvgDataVector[carrierIdx];
 
     constexpr float ALPHA_AVG = 0.005f;
-    fftBinAvg = ALPHA_AVG * fftBinAbs + (1.0f - ALPHA_AVG) * fftBinAvg;
+    constexpr float ALPHA_AVG_OVRALL = ALPHA_AVG / 1536.0f;
+
+    fftBinAvg += ALPHA_AVG * (fftBinAbs - fftBinAvg);
+    mAvgDataOvrAll +=  ALPHA_AVG_OVRALL * (fftBinAbs - mAvgDataOvrAll);
+
+    float weight = 40.0f * (fftBinAvg / mAvgDataOvrAll + 1.0f); // TODO: div by zero?
+    limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as virtebi shows prolems with only 1
 
     const cmplx fftBinNormed = fftBin / fftBinAvg;
     mDataVector[carrierIdx] = fftBinNormed;
@@ -123,8 +131,8 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
     const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
     const int16_t hardBitImag = (imag(fftBin) < 0.0f ? 1 : -1);
 
-    oBits[0         + carrierIdx] = (int16_t)(hardBitReal * 64.0f);  // TODO: weightning!
-    oBits[mDabPar.K + carrierIdx] = (int16_t)(hardBitImag * 64.0f);
+    oBits[0         + carrierIdx] = (int16_t)(hardBitReal * weight); 
+    oBits[mDabPar.K + carrierIdx] = (int16_t)(hardBitImag * weight);
 #else
     cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
     r1 *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain

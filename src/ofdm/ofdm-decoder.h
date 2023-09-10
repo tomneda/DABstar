@@ -67,6 +67,7 @@ private:
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mDataVector;
   std::vector<float> mAvgDataVector;
+  float mAvgDataOvrAll = 1.0f;
 
   static constexpr float TOP_VAL = 127.0f;
   static constexpr float BTN_VAL =  2.0f;
