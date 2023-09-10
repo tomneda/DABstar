@@ -61,6 +61,9 @@ public:
   bool isHidden();
 
 private:
+  static constexpr int32_t VIEWBUFFER_SIZE = 5;
+  static constexpr int32_t DELAYBUFFER_SIZE = 10;
+
   RadioInterface * myRadioInterface;
   QSettings * dabSettings;
   QFrame myFrame;
@@ -71,16 +74,19 @@ private:
   QwtPickerMachine * lpickerMachine;
   std::vector<double> X_axis;
   std::vector<double> Y_Buffer;
-  int16_t displaySize;
+  //int16_t displaySize;
   QwtPlot * plotgrid;
   //QColor displayColor;
   QColor gridColor;
   QColor curveColor;
-  int plotLength;
-  int plotHeight;
-  int delayCount;
-  int delayBufferP;
+  int32_t plotLength;
+  int32_t plotHeight;
+  int32_t delayCount = DELAYBUFFER_SIZE / 2;
+  int32_t delayBufferP;
+  int32_t displayPointer = 0;
   std::atomic<FILE *> snrDumpFile;
+  std::array<float, DELAYBUFFER_SIZE> delayBuffer;
+  std::array<float, VIEWBUFFER_SIZE> displayBuffer;
 
   float get_db(float);
   void addtoView(float);

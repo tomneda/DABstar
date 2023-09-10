@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>398</width>
-    <height>174</height>
+    <height>195</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,6 +63,12 @@
       <widget class="QSpinBox" name="snrCompressionSelector">
        <property name="minimum">
         <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>10</number>
+       </property>
+       <property name="value">
+        <number>5</number>
        </property>
       </widget>
      </item>

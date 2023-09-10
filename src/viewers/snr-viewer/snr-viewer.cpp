@@ -40,7 +40,7 @@ SnrViewer::SnrViewer(RadioInterface * mr, QSettings * s) :
   dabSettings->beginGroup("snrViewer");
   plotLength = dabSettings->value("snrLength", 312).toInt();
   plotHeight = dabSettings->value("snrHeight", 15).toInt();
-  delayCount = dabSettings->value("snrDelay", 5).toInt();
+  delayCount = dabSettings->value("snrDelay", delayCount).toInt();
   //	colorString	= dabSettings -> value ("displayColor", "black").
   //	                                                       toString ();
   //	displayColor	= QColor (colorString);
@@ -97,6 +97,7 @@ SnrViewer::SnrViewer(RadioInterface * mr, QSettings * s) :
     Y_Buffer[i] = 0;
   }
   delayBufferP = 0;
+  set_snrDelay(delayCount);
 }
 
 SnrViewer::~SnrViewer()
@@ -125,7 +126,6 @@ bool SnrViewer::isHidden()
 
 void SnrViewer::add_snr(float snr)
 {
-  static float delayBuffer[10];
   float sum = 0;
   delayBuffer[delayBufferP] = snr;
   delayBufferP = (delayBufferP + 1) % delayCount;
@@ -140,13 +140,8 @@ void SnrViewer::add_snr(float snr)
   }
 }
 
-#define  VIEWBUFFER_SIZE 5
-
 void SnrViewer::addtoView(float v)
 {
-  static float displayBuffer[VIEWBUFFER_SIZE];
-  static int displayPointer = 0;
-
   displayBuffer[displayPointer] = v;
   displayPointer = (displayPointer + 1) % VIEWBUFFER_SIZE;
   if (displayPointer == 0)
@@ -158,7 +153,7 @@ void SnrViewer::addtoView(float v)
     }
     if (snrDumpFile.load() != nullptr)
     {
-      fwrite(displayBuffer, sizeof(float), VIEWBUFFER_SIZE, snrDumpFile.load());
+      fwrite(displayBuffer.data(), sizeof(float), VIEWBUFFER_SIZE, snrDumpFile.load());
     }
   }
 }
@@ -276,13 +271,13 @@ void SnrViewer::startDumping()
 
 void SnrViewer::set_snrDelay(int d)
 {
-  if ((0 <= d) && (d <= 10))
+  if (0 < d && d <= DELAYBUFFER_SIZE)
   {
     delayCount = d;
   }
   else
   {
-    delayCount = 5;
+    delayCount = DELAYBUFFER_SIZE / 2;
   }
   delayBufferP = 0;
   dabSettings->beginGroup("snrViewer");
