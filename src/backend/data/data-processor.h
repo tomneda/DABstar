@@ -23,23 +23,22 @@
 #define  DATA_PROCESSOR_H
 
 #include  <vector>
-#include  "frame-processor.h"
 #include  <cstdio>
 #include  <cstring>
 #include  <QObject>
+
+#include  "frame-processor.h"
 #include  "ringbuffer.h"
 
 class RadioInterface;
-
 class virtual_dataHandler;
-
-class packetdata;
+class Packetdata;
 
 class DataProcessor : public QObject, public frameProcessor
 {
 Q_OBJECT
 public:
-  DataProcessor(RadioInterface * mr, packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
+  DataProcessor(RadioInterface * mr, Packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
   ~DataProcessor();
 
   void addtoFrame(const std::vector<uint8_t> &);

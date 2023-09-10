@@ -41,7 +41,7 @@ BackendDriver::BackendDriver(RadioInterface * mr, DescriptorType * d, RingBuffer
   }
   else if (d->type == PACKET_SERVICE)
   {
-    theProcessor = new DataProcessor(mr, (packetdata *)d, dataBuffer);
+    theProcessor = new DataProcessor(mr, (Packetdata *)d, dataBuffer);
   }
   else
   {

@@ -1627,7 +1627,7 @@ void FibDecoder::dataforAudioService(const QString & s, Audiodata * ad)
   fibLocker.unlock();
 }
 
-void FibDecoder::dataforPacketService(const QString & s, packetdata * pd, int16_t SCIds)
+void FibDecoder::dataforPacketService(const QString & s, Packetdata * pd, int16_t SCIds)
 {
   int serviceIndex;
 
@@ -2017,7 +2017,7 @@ void FibDecoder::set_epgData(uint32_t SId, int32_t theTime, const QString & theT
           return;
         }
       }
-      epgElement ep;
+      EpgElement ep;
       ep.theTime = theTime;
       ep.theText = theText;
       ep.theDescr = theDescr;
@@ -2027,9 +2027,9 @@ void FibDecoder::set_epgData(uint32_t SId, int32_t theTime, const QString & theT
   }
 }
 
-std::vector<epgElement> FibDecoder::get_timeTable(uint32_t SId)
+std::vector<EpgElement> FibDecoder::get_timeTable(uint32_t SId)
 {
-  std::vector<epgElement> res;
+  std::vector<EpgElement> res;
   int index = findService(SId);
   if (index == -1)
   {
@@ -2038,9 +2038,9 @@ std::vector<epgElement> FibDecoder::get_timeTable(uint32_t SId)
   return ensemble->services[index].epgData;
 }
 
-std::vector<epgElement> FibDecoder::get_timeTable(const QString & service)
+std::vector<EpgElement> FibDecoder::get_timeTable(const QString & service)
 {
-  std::vector<epgElement> res;
+  std::vector<EpgElement> res;
   int index = findService(service);
   if (index == -1)
   {
@@ -2052,7 +2052,7 @@ std::vector<epgElement> FibDecoder::get_timeTable(const QString & service)
 bool FibDecoder::has_timeTable(uint32_t SId)
 {
   int index = findService(SId);
-  std::vector<epgElement> t;
+  std::vector<EpgElement> t;
   if (index == -1)
   {
     return false;
@@ -2061,10 +2061,10 @@ bool FibDecoder::has_timeTable(uint32_t SId)
   return t.size() > 2;
 }
 
-std::vector<epgElement> FibDecoder::find_epgData(uint32_t SId)
+std::vector<EpgElement> FibDecoder::find_epgData(uint32_t SId)
 {
   int index = findService(SId);
-  std::vector<epgElement> res;
+  std::vector<EpgElement> res;
 
   if (index == -1)
   {
@@ -2326,7 +2326,7 @@ uint32_t FibDecoder::julianDate()
   return mjd;
 }
 
-void FibDecoder::get_channelInfo(channel_data * d, int n)
+void FibDecoder::get_channelInfo(ChannelData * d, int n)
 {
   d->in_use = currentConfig->subChannels[n].inUse;
   d->id = currentConfig->subChannels[n].SubChId;

@@ -345,7 +345,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   //
   mPhaseOffset = arg(freqCorr);
   constexpr float MAX_PHASE_ANGLE = 20.0f / 360.0f * 2.0f * M_PI;
-  limit(mPhaseOffset, -MAX_PHASE_ANGLE, MAX_PHASE_ANGLE);
+  limit_min_max(mPhaseOffset, -MAX_PHASE_ANGLE, MAX_PHASE_ANGLE);
 
   mFineOffset += (int32_t)(1.00 * mPhaseOffset / (2 * M_PI) * mDabPar.CarrDiff); // formerly 0.05
 
@@ -453,7 +453,7 @@ bool DabProcessor::is_audioService(const QString & s)
 
 bool DabProcessor::is_packetService(const QString & s)
 {
-  packetdata pd;
+  Packetdata pd;
   mFicHandler.dataforPacketService(s, &pd, 0);
   return pd.defined;
 }
@@ -463,7 +463,7 @@ void DabProcessor::dataforAudioService(const QString & s, Audiodata * d)
   mFicHandler.dataforAudioService(s, d);
 }
 
-void DabProcessor::dataforPacketService(const QString & s, packetdata * pd, int16_t compnr)
+void DabProcessor::dataforPacketService(const QString & s, Packetdata * pd, int16_t compnr)
 {
   mFicHandler.dataforPacketService(s, pd, compnr);
 }
@@ -498,7 +498,7 @@ bool DabProcessor::has_timeTable(uint32_t SId)
   return mFicHandler.has_timeTable(SId);
 }
 
-std::vector<epgElement> DabProcessor::find_epgData(uint32_t SId)
+std::vector<EpgElement> DabProcessor::find_epgData(uint32_t SId)
 {
   return mFicHandler.find_epgData(SId);
 }
@@ -552,7 +552,7 @@ bool DabProcessor::set_audioChannel(Audiodata * d, RingBuffer<int16_t> * b, FILE
   }
 }
 
-bool DabProcessor::set_dataChannel(packetdata * d, RingBuffer<uint8_t> * b, int flag)
+bool DabProcessor::set_dataChannel(Packetdata * d, RingBuffer<uint8_t> * b, int flag)
 {
   if (!mScanMode)
   {

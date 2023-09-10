@@ -48,7 +48,7 @@ public:
   void disconnect_channel();
   bool syncReached();
   void dataforAudioService(const QString &, Audiodata *);
-  void dataforPacketService(const QString &, packetdata *, int16_t);
+  void dataforPacketService(const QString &, Packetdata *, int16_t);
   int getSubChId(const QString &, uint32_t);
   std::vector<serviceId> getServices(int);
 
@@ -59,15 +59,15 @@ public:
   uint8_t get_countryId();
   int32_t get_ensembleId();
   QString get_ensembleName();
-  void get_channelInfo(channel_data *, int);
+  void get_channelInfo(ChannelData *, int);
   int32_t get_CIFcount();
   void get_CIFcount(int16_t *, int16_t *);
   uint32_t julianDate();
   void set_epgData(uint32_t, int32_t, const QString &, const QString &);
-  std::vector<epgElement> get_timeTable(uint32_t);
-  std::vector<epgElement> get_timeTable(const QString &);
+  std::vector<EpgElement> get_timeTable(uint32_t);
+  std::vector<EpgElement> get_timeTable(const QString &);
   bool has_timeTable(uint32_t SId);
-  std::vector<epgElement> find_epgData(uint32_t);
+  std::vector<EpgElement> find_epgData(uint32_t);
   QStringList basicPrint();
   int scanWidth();
 

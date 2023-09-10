@@ -72,7 +72,7 @@ public:
   bool is_audioService(const QString & s);
   bool is_packetService(const QString & s);
   void dataforAudioService(const QString &, Audiodata *);
-  void dataforPacketService(const QString &, packetdata *, int16_t);
+  void dataforPacketService(const QString &, Packetdata *, int16_t);
   int getSubChId(const QString &, uint32_t);
   uint8_t get_ecc();
   int32_t get_ensembleId();
@@ -80,7 +80,7 @@ public:
   uint16_t get_countryName();
   void set_epgData(int32_t, int32_t, const QString &, const QString &);
   bool has_timeTable(uint32_t);
-  std::vector<epgElement> find_epgData(uint32_t);
+  std::vector<EpgElement> find_epgData(uint32_t);
   uint32_t julianDate();
   QStringList basicPrint();
   int scanWidth();
@@ -92,7 +92,7 @@ public:
   void stop_service(DescriptorType *, int);
   void stop_service(int, int);
   bool set_audioChannel(Audiodata *, RingBuffer<int16_t> *, FILE *, int);
-  bool set_dataChannel(packetdata *, RingBuffer<uint8_t> *, int);
+  bool set_dataChannel(Packetdata *, RingBuffer<uint8_t> *, int);
   void set_tiiDetectorMode(bool);
 
 private:

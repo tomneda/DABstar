@@ -33,7 +33,7 @@
 //	MSCdatagroups and dispatch to the appropriate handler
 //
 //	fragmentsize == Length * CUSize
-DataProcessor::DataProcessor(RadioInterface * mr, packetdata * pd, RingBuffer<uint8_t> * dataBuffer)
+DataProcessor::DataProcessor(RadioInterface * mr, Packetdata * pd, RingBuffer<uint8_t> * dataBuffer)
 {
   this->myRadioInterface = mr;
   this->bitRate = pd->bitRate;

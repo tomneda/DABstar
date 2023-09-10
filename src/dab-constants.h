@@ -19,9 +19,6 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-//
-//	Common definitions and includes for
-//	the DAB decoder
 
 #ifndef  DAB_CONSTANTS_H
 #define  DAB_CONSTANTS_H
@@ -36,25 +33,15 @@
 #include  <cstring>
 #include  <unistd.h>
 
-#ifndef  __FREEBSD__
-//#include	<malloc.h>
-#endif
-
 #ifdef  __MINGW32__
-//#include	"iostream.h"
   #include	"windows.h"
 #else
-  #ifndef  __FREEBSD__
-//#include	"alloca.h"
-  #endif
-
   #include  "dlfcn.h"
-
-typedef void * HINSTANCE;
+  using HINSTANCE = void *;
 #endif
 
 #ifndef  M_PI
-# define M_PI           3.14159265358979323846  /* pi */
+  #define M_PI           3.14159265358979323846
 #endif
 
 #define  Hz(x)     (x)
@@ -73,12 +60,12 @@ typedef void * HINSTANCE;
 #define    MAP_MAX_TRANS  2
 #define    MAP_NORM_TRANS  4
 
-typedef struct
+struct EpgElement
 {
   int theTime;
   QString theText;
   QString theDescr;
-} epgElement;
+};
 
 class serviceId
 {
@@ -91,70 +78,13 @@ public:
   QString channel;        // just for presets
 };
 
-//	order by id order by name
-#define ID_BASED        1
+// order by id order by name
+#define  ID_BASED     1
 #define  SUBCH_BASED  2
 #define  ALPHA_BASED  3
 
-//
-//	40 up shows good results
+// 40 up shows good results
 #define    DIFF_LENGTH  60
-
-static inline bool isIndeterminate(float x)
-{
-  return x != x;
-}
-
-static inline bool isInfinite(float x)
-{
-  return x == std::numeric_limits<float>::infinity();
-}
-
-static inline float get_db(float x)
-{
-  return 20 * log10((x + 0.005) / (float)(256));
-}
-//
-
-template<typename T> inline void limit(T & ioVal, const T iLimitLeft, const T iLimitRight)
-{
-  if (ioVal < iLimitLeft)
-  {
-    ioVal = iLimitLeft;
-  }
-  else if (ioVal > iLimitRight)
-  {
-    ioVal = iLimitRight;
-  }
-}
-
-static inline float jan_abs(cmplx z)
-{
-  float re = real(z);
-  float im = imag(z);
-
-  if (re < 0)
-  {
-    re = -re;
-  }
-  if (im < 0)
-  {
-    im = -im;
-  }
-  if (re > im)
-  {
-    return re + 0.5 * im;
-  }
-  else
-  {
-    return im + 0.5 * re;
-  }
-}
-
-template<typename T> static inline T fixround(float v)
-{
-  return static_cast<T>(std::roundf(v));
-}
 
 #define    BAND_III  0100
 #define    L_BAND    0101
@@ -178,6 +108,7 @@ public:
   int16_t length;
   int16_t bitRate;
   QString channel;  // just for presets
+
 public:
   DescriptorType()
   {
@@ -185,12 +116,11 @@ public:
     serviceName = "";
   }
 
-  virtual    ~DescriptorType()
-  {}
+  virtual ~DescriptorType() = default;
 };
 
 //	for service handling we define
-class packetdata : public DescriptorType
+class Packetdata : public DescriptorType
 {
 public:
   int16_t DSCTy;
@@ -200,7 +130,7 @@ public:
   int16_t compnr;
   int16_t packetAddress;
 
-  packetdata()
+  Packetdata()
   {
     type = PACKET_SERVICE;
   }
@@ -222,7 +152,7 @@ public:
   }
 };
 
-typedef struct
+struct ChannelData
 {
   bool in_use;
   int16_t id;
@@ -232,8 +162,6 @@ typedef struct
   int16_t size;
   int16_t bitrate;
   int16_t ASCTy;
-} channel_data;
-
-
+};
 
 #endif

@@ -1300,7 +1300,7 @@ void RadioInterface::changeinConfiguration()
       }
       else
       {
-        packetdata pd;
+        Packetdata pd;
         my_dabProcessor->dataforPacketService(ss, &pd, 0);
         my_dabProcessor->set_dataChannel(&pd, &dataBuffer, BACK_GROUND);
         channel.backgroundServices.at(i).subChId = pd.subchId;
@@ -2889,7 +2889,7 @@ bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
     if (ev->buttons() & Qt::RightButton)
     {
       Audiodata ad;
-      packetdata pd;
+      Packetdata pd;
       QString serviceName = this->ensembleDisplay->indexAt(ev->pos()).data().toString();
       serviceName = serviceName.right(16);
       //	      if (serviceName. at (1) == ' ')
@@ -3160,7 +3160,7 @@ void RadioInterface::stopService(dabService & s)
       soundOut->stop();
       for (int i = 0; i < 5; i++)
       {
-        packetdata pd;
+        Packetdata pd;
         my_dabProcessor->dataforPacketService(s.serviceName, &pd, i);
         if (pd.defined)
         {
@@ -3255,7 +3255,7 @@ void RadioInterface::startService(dabService & s)
   }
   else if (my_dabProcessor->is_packetService(serviceName))
   {
-    packetdata pd;
+    Packetdata pd;
     my_dabProcessor->dataforPacketService(serviceName, &pd, 0);
     channel.currentService.valid = true;
     channel.currentService.is_audio = false;
@@ -3285,7 +3285,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
   (void)my_dabProcessor->set_audioChannel(ad, &audioBuffer, nullptr, FORE_GROUND);
   for (int i = 1; i < 10; i++)
   {
-    packetdata pd;
+    Packetdata pd;
     my_dabProcessor->dataforPacketService(ad->serviceName, &pd, i);
     if (pd.defined)
     {
@@ -3303,7 +3303,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
 
 void RadioInterface::startPacketservice(const QString & s)
 {
-  packetdata pd;
+  Packetdata pd;
 
   my_dabProcessor->dataforPacketService(s, &pd, 0);
   if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
@@ -4085,7 +4085,7 @@ void RadioInterface::epgTimer_timeOut()
         serv.name.contains("EPG_", Qt::CaseInsensitive) ||
         serv.name.startsWith("EPG ", Qt::CaseInsensitive))
     {
-      packetdata pd;
+      Packetdata pd;
       my_dabProcessor->dataforPacketService(serv.name, &pd, 0);
 
       if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
@@ -4184,7 +4184,7 @@ void RadioInterface::handle_timeTable()
   {
     epgWidth = 50;
   }
-  std::vector<epgElement> res = my_dabProcessor->find_epgData(channel.currentService.SId);
+  std::vector<EpgElement> res = my_dabProcessor->find_epgData(channel.currentService.SId);
   for (const auto & element: res)
   {
     my_timeTable->addElement(element.theTime, epgWidth, element.theText, element.theDescr);

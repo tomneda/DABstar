@@ -1,8 +1,8 @@
 //
-// Created by work on 6/29/23.
+// Created by Thomas Neder on 6/29/23.
 //
 
-// Keep this Qt free as also needed for Qt free libs
+// Keep this Qt-free as also needed for Qt-free libs
 
 #ifndef GLOB_DEFS_H
 #define GLOB_DEFS_H
@@ -12,7 +12,64 @@
 
 using cmplx = std::complex<float>;
 
-template<typename T> inline T conv_rad_to_deg(T iVal) { return iVal * (T)(180.0 / 3.14159265358979323846); }
-inline cmplx norm_to_length_one(const cmplx & iVal) { return iVal / std::fabs(iVal); }
+template<typename T> inline T conv_rad_to_deg(T iVal)
+{
+  return iVal * (T)(180.0 / 3.14159265358979323846);
+}
+
+template<typename T> inline void limit_min_max(T & ioVal, T iMin, T iMax)
+{
+  if (ioVal < iMin)
+  {
+    ioVal = iMin;
+  }
+  else if (ioVal > iMax)
+  {
+    ioVal = iMax;
+  }
+}
+
+template<typename T> static inline T fixround(float v)
+{
+  return static_cast<T>(std::roundf(v));
+}
+
+static inline bool is_indeterminate(float x)
+{
+  return x != x;
+}
+
+static inline bool is_infinite(float x)
+{
+  return x == std::numeric_limits<float>::infinity();
+}
+
+static inline float jan_abs(cmplx z)
+{
+  float re = real(z);
+  float im = imag(z);
+
+  if (re < 0)
+  {
+    re = -re;
+  }
+  if (im < 0)
+  {
+    im = -im;
+  }
+  if (re > im)
+  {
+    return re + 0.5f * im;
+  }
+  else
+  {
+    return im + 0.5f * re;
+  }
+}
+
+inline cmplx norm_to_length_one(const cmplx & iVal)
+{
+  return iVal / std::fabs(iVal);
+}
 
 #endif // GLOB_DEFS_H
