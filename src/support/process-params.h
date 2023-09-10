@@ -1,27 +1,27 @@
-#
-#ifndef	__PROCESS_PARAMS__
-#define __PROCESS_PARAMS__
+#ifndef PROCESS_PARAMS_H
+#define PROCESS_PARAMS_H
 
-#include	<stdint.h>
-#include	<complex>
-#include	"ringbuffer.h"
+#include  <stdint.h>
+#include  <complex>
+#include  "ringbuffer.h"
 
-class	processParams {
+class ProcessParams
+{
 public:
-	uint8_t	dabMode;
-	int16_t	threshold;
-	int16_t	diff_length;
-	int16_t	tii_delay;
-	int16_t	tii_depth;
-	int16_t	echo_depth;
-	int16_t	bitDepth;
-	RingBuffer<float>	* responseBuffer;
-	RingBuffer<cmplx> * spectrumBuffer;
-	RingBuffer<cmplx> * iqBuffer;
-	RingBuffer<cmplx> * tiiBuffer;
-	RingBuffer<cmplx> * nullBuffer;
-	RingBuffer<float>		* snrBuffer;
-	RingBuffer<uint8_t> *frameBuffer;
+  uint8_t dabMode = 0;
+  int16_t threshold = 0;
+  int16_t diff_length = 0;
+  int16_t tii_delay = 0;
+  int16_t tii_depth = 0;
+  int16_t echo_depth = 0;
+  int16_t bitDepth = 0;
+  RingBuffer<float> * responseBuffer = nullptr;
+  RingBuffer<cmplx> * spectrumBuffer = nullptr;
+  RingBuffer<cmplx> * iqBuffer = nullptr;
+  RingBuffer<cmplx> * tiiBuffer = nullptr;
+  //RingBuffer<cmplx> * nullBuffer = nullptr;
+  RingBuffer<float> * snrBuffer = nullptr;
+  RingBuffer<uint8_t> * frameBuffer = nullptr;
 };
 
 #endif

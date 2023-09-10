@@ -48,8 +48,7 @@ IQDisplay::~IQDisplay()
 
 inline void IQDisplay::set_point(int x, int y, int val)
 {
-  //mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
-  mPlotDataBackgroundBuffer.at((y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1) = val;
+  mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
 }
 
 template<typename T> inline void symmetric_limit(T & ioVal, const T iLimit)

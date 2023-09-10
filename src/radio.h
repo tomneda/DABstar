@@ -187,7 +187,7 @@ private:
   FindFileNames filenameFinder;
   RingBuffer<int16_t> theTechData;
   httpHandler * mapHandler;
-  processParams globals;
+  ProcessParams globals;
   QString version;
   QString theFont;
   int fontSize;

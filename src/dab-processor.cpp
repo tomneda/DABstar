@@ -32,22 +32,22 @@
   *	local are classes OfdmDecoder, FicHandler and mschandler.
   */
 
-DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inputDevice, processParams * const p)
-  : mpTiiBuffer(p->tiiBuffer),
-    mpSnrBuffer(p->snrBuffer),
-    mpRadioInterface(mr),
-    mSampleReader(mr, inputDevice, p->spectrumBuffer),
-    mFicHandler(mr, p->dabMode),
-    mMscHandler(mr, p->dabMode, p->frameBuffer),
-    mPhaseReference(mr, p),
-    mTiiDetector(p->dabMode, p->tii_depth),
-    mOfdmDecoder(mr, p->dabMode, p->iqBuffer),
-    mEtiGenerator(p->dabMode, &mFicHandler),
-    mTimeSyncer(&mSampleReader),
-    mcDabMode(p->dabMode),
-    mcThreshold(p->threshold),
-    mcTiiDelay(p->tii_delay),
-    mDabPar(DabParams(p->dabMode).get_dab_par())
+DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inputDevice, ProcessParams * const p) :
+  mpTiiBuffer(p->tiiBuffer),
+  mpSnrBuffer(p->snrBuffer),
+  mpRadioInterface(mr),
+  mSampleReader(mr, inputDevice, p->spectrumBuffer),
+  mFicHandler(mr, p->dabMode),
+  mMscHandler(mr, p->dabMode, p->frameBuffer),
+  mPhaseReference(mr, p),
+  mTiiDetector(p->dabMode, p->tii_depth),
+  mOfdmDecoder(mr, p->dabMode, p->iqBuffer),
+  mEtiGenerator(p->dabMode, &mFicHandler),
+  mTimeSyncer(&mSampleReader),
+  mcDabMode(p->dabMode),
+  mcThreshold(p->threshold),
+  mcTiiDelay(p->tii_delay),
+  mDabPar(DabParams(p->dabMode).get_dab_par())
 {
   connect(this, &DabProcessor::setSynced, mpRadioInterface, &RadioInterface::setSynced);
   connect(this, &DabProcessor::setSyncLost, mpRadioInterface, &RadioInterface::setSyncLost);
@@ -113,9 +113,9 @@ void DabProcessor::stop()
 void DabProcessor::run()
 {
   int32_t startIndex;
-//  int frameCount = 0;
+  //  int frameCount = 0;
   int sampleCount = 0;
-//  int totalSamples = 0;
+  //  int totalSamples = 0;
 
   mFineOffset = 0;
   mCoarseOffset = 0;
@@ -232,7 +232,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     * the phase difference between the samples in the cyclic prefix
     * and the	corresponding samples in the datapart.
     */
-  double cLevel = 0;
+  float cLevel = 0;
   int cCount = 0;
   cmplx freqCorr = cmplx(0, 0);
 
@@ -282,7 +282,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
   if (mpSnrBuffer != nullptr)
   {
-    auto snrV = (float)(20 * log10((cLevel / cCount + 0.005) / (sum + 0.005)));
+    float snrV = 20.0f * log10((cLevel / cCount + 0.005f) / (sum + 0.005f));
     mpSnrBuffer->putDataIntoBuffer(&snrV, 1); // TODO: maybe only consider non-TII null frames for SNR calculation?
   }
 
@@ -291,7 +291,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     constexpr float ALPHA_SNR = 0.1f;
     mSnrCounter = 0;
     mSnrdB = (1.0f - ALPHA_SNR) * mSnrdB + ALPHA_SNR * 20.0f * log10f((mSampleReader.get_sLevel() + 0.005f) / (sum + 0.005f)); // other way
-    show_snr((int)mSnrdB);
+    emit show_snr((int)mSnrdB);
   }
 
   /*

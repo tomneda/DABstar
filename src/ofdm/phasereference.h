@@ -39,7 +39,7 @@ class PhaseReference : public QObject, public PhaseTable
 {
 Q_OBJECT
 public:
-  PhaseReference(const RadioInterface * const ipRadio, const processParams * const ipParam);
+  PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam);
   ~PhaseReference() override = default;
 
   [[nodiscard]] int32_t find_index(std::vector<cmplx> iV, float iThreshold);  // copy of iV is intended

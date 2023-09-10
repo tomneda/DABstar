@@ -109,7 +109,7 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, int index, int32_t n, int
       ++localCounter;
     }
     oV[index + i] = buffer[i] * oscillatorTable[currentPhase];
-    sLevel = 0.00001f * jan_abs(oV[i]) + (1.0f - 0.00001f) * sLevel;
+    sLevel += 0.00001f * (jan_abs(oV[i]) - sLevel);
   }
 
   sampleCount += n;
