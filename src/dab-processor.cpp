@@ -266,73 +266,58 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     }
   }
 
-  /**
-    *	OK,  here we are at the end of the frame
-    *	Assume everything went well and skip T_null samples
-    */
+    /**
+      *	OK,  here we are at the end of the frame
+      *	Assume everything went well and skip T_null samples
+      */
   mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mCoarseOffset + mFineOffset);
   ioSampleCount += mDabPar.T_n;
-  float sum = 0;
 
-  for (int32_t i = 0; i < mDabPar.T_n; i++)
+  const bool isTiiNullSegment = (mcDabMode == 1 && (mFicHandler.get_CIFcount() & 0x7) >= 4);
+
+  if (!isTiiNullSegment) // eval SNR only in non-TII null segments
   {
-    sum += abs(mOfdmBuffer[i]);
-  }
-  sum /= (float)mDabPar.T_n;
+    float sum = 0;
 
-  if (mpSnrBuffer != nullptr)
-  {
-    float snrV = 20.0f * log10((cLevel / cCount + 0.005f) / (sum + 0.005f));
-    mpSnrBuffer->putDataIntoBuffer(&snrV, 1); // TODO: maybe only consider non-TII null frames for SNR calculation?
-  }
-
-  if (++mSnrCounter >= 5)
-  {
-    constexpr float ALPHA_SNR = 0.1f;
-    mSnrCounter = 0;
-    mSnrdB = (1.0f - ALPHA_SNR) * mSnrdB + ALPHA_SNR * 20.0f * log10f((mSampleReader.get_sLevel() + 0.005f) / (sum + 0.005f)); // other way
-    emit show_snr((int)mSnrdB);
-  }
-
-  /*
-   *	The TII data is encoded in the null period of the
-   *	odd frames
-   */
-
-  auto wasSecond = [](int32_t iCF, uint8_t iDabMode) -> bool
-  {
-    switch (iDabMode)
+    for (int32_t i = 0; i < mDabPar.T_n; i++)
     {
-    default:
-    case 1: return (iCF & 07) >= 4;
-    case 2:
-    case 3: return (iCF & 02) != 0;
-    case 4: return (iCF & 03) >= 2;
+      sum += abs(mOfdmBuffer[i]);
     }
-  };
+    sum /= (float)mDabPar.T_n;
 
-  if (mcDabMode == 1)
-  {
-    if (wasSecond(mFicHandler.get_CIFcount(), mcDabMode))
+    if (mpSnrBuffer != nullptr)
     {
-      mTiiDetector.addBuffer(mOfdmBuffer);
-      if (++mTiiCounter >= mcTiiDelay)
+      float snrV = 20.0f * log10((cLevel / cCount + 0.005f) / (sum + 0.005f));
+      mpSnrBuffer->putDataIntoBuffer(&snrV, 1);
+    }
+
+    if (++mSnrCounter >= 5)
+    {
+      constexpr float ALPHA_SNR = 0.1f;
+      mSnrCounter = 0;
+      mSnrdB = (1.0f - ALPHA_SNR) * mSnrdB + ALPHA_SNR * 20.0f * log10f((mSampleReader.get_sLevel() + 0.005f) / (sum + 0.005f)); // other way
+      emit show_snr((int)mSnrdB);
+    }
+  }
+  else
+  {
+    // The TII data is encoded in the null period of the	odd frames
+    mTiiDetector.addBuffer(mOfdmBuffer);
+    if (++mTiiCounter >= mcTiiDelay)
+    {
+      mpTiiBuffer->putDataIntoBuffer(mOfdmBuffer.data(), mDabPar.T_u);
+      emit show_tii_spectrum();
+      uint16_t res = mTiiDetector.processNULL();
+      if (res != 0)
       {
-        mpTiiBuffer->putDataIntoBuffer(mOfdmBuffer.data(), mDabPar.T_u);
-        show_tii_spectrum();
-        uint16_t res = mTiiDetector.processNULL();
-        if (res != 0)
-        {
-          uint8_t mainId = res >> 8;
-          uint8_t subId = res & 0xFF;
-          show_tii(mainId, subId);
-        }
-        mTiiCounter = 0;
-        mTiiDetector.reset();
+        uint8_t mainId = res >> 8;
+        uint8_t subId = res & 0xFF;
+        show_tii(mainId, subId);
       }
+      mTiiCounter = 0;
+      mTiiDetector.reset();
     }
   }
-
 
   /**
     *	The first sample to be found for the next frame should be T_g
