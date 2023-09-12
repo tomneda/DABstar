@@ -27,7 +27,7 @@ PhaseVsCarrDisp::PhaseVsCarrDisp(QwtPlot * ipPlot) :
 
   mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
-  mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
+  //mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
   mQwtPlotCurve.attach(mQwtPlot);
 
   mQwtPlot->replot();

@@ -50,6 +50,7 @@ public:
   };
 
   void reset();
+  void store_null_block(const std::vector<cmplx> &);
   void processBlock_0(std::vector<cmplx>);  // copy of vector is intended
   void decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
 
@@ -63,11 +64,19 @@ private:
   int32_t mShowCntStatistics = 0;
   int32_t mShowCntIqScope = 0;
   int32_t mNextShownOfdmSymbIdx = 1;
+  std::vector<cmplx> mRealPhaseReference;
   std::vector<cmplx> mPhaseReference;
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mDataVector;
+  std::vector<float> mAvgDataVectorOrg;
   std::vector<float> mAvgDataVector;
+  std::vector<float> mAvgNullBlockFreqBin;
+  std::vector<int16_t> mNomCarrToRealCarrMap;
+  float mAvgDataOvrAllOrg = 1.0f;
   float mAvgDataOvrAll = 1.0f;
+  bool pi_quarter_shift = false;
+  float mAvgPhaseShift = 0.0f;
+  cmplx mAvgDc {};
 
   static constexpr float TOP_VAL = 127.0f;
   static constexpr float BTN_VAL =  2.0f;

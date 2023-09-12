@@ -277,6 +277,8 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
   if (!isTiiNullSegment) // eval SNR only in non-TII null segments
   {
+    //mOfdmDecoder.store_null_block(mOfdmBuffer);
+
     float sum = 0;
 
     for (int32_t i = 0; i < mDabPar.T_n; i++)
@@ -299,8 +301,10 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
       emit show_snr((int)mSnrdB);
     }
   }
-  else
+  else // this is TII null segment
   {
+    mOfdmDecoder.store_null_block(mOfdmBuffer);
+
     // The TII data is encoded in the null period of the	odd frames
     mTiiDetector.addBuffer(mOfdmBuffer);
     if (++mTiiCounter >= mcTiiDelay)

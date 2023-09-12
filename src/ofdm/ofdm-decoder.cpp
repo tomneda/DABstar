@@ -46,17 +46,60 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   connect(this, &OfdmDecoder::showIQ, mpRadioInterface, &RadioInterface::showIQ);
   connect(this, &OfdmDecoder::showQuality, mpRadioInterface, &RadioInterface::showQuality);
 
+  mAvgNullBlockFreqBin.resize(mDabPar.T_u);
+  mRealPhaseReference.resize(mDabPar.T_u);
   mPhaseReference.resize(mDabPar.T_u);
   mFftBuffer.resize(mDabPar.T_u);
   mDataVector.resize(mDabPar.K);
+  mAvgDataVectorOrg.resize(mDabPar.K);
   mAvgDataVector.resize(mDabPar.K);
+  mNomCarrToRealCarrMap.resize(mDabPar.K);
+
+  for (int16_t nomCarrierIdx = 0; nomCarrierIdx < mDabPar.K; ++nomCarrierIdx)
+  {
+    int16_t realCarrRelIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrierIdx);
+
+    assert(realCarrRelIdx != 0);
+
+    if (realCarrRelIdx > 0)
+    {
+      realCarrRelIdx += mDabPar.K / 2 - 1;
+    }
+    else // < 0
+    {
+      realCarrRelIdx += mDabPar.K / 2;
+    }
+
+    assert(realCarrRelIdx >= 0);
+    assert(realCarrRelIdx < mDabPar.K);
+
+    //mNomCarrToRealCarrMap[realCarrRelIdx] = nomCarrierIdx;
+    mNomCarrToRealCarrMap[nomCarrierIdx] = realCarrRelIdx;
+  }
 
   reset();
 }
 
 void OfdmDecoder::reset()
 {
+  std::fill(mAvgDataVectorOrg.begin(), mAvgDataVectorOrg.end(), 1.0f);
   std::fill(mAvgDataVector.begin(), mAvgDataVector.end(), 1.0f);
+  std::fill(mAvgNullBlockFreqBin.begin(), mAvgNullBlockFreqBin.end(), 0.0f);
+  mAvgDataOvrAllOrg = 1.0f;
+  mAvgDataOvrAll = 1.0f;
+}
+
+void OfdmDecoder::store_null_block(const std::vector<cmplx> & iV)
+{
+  memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
+
+  mFftHandler.fft(mFftBuffer);
+
+  for (int32_t idx = 0; idx < mDabPar.T_u; ++idx)
+  {
+    mAvgNullBlockFreqBin[idx] += 0.1f * (std::abs(mFftBuffer[idx]) - mAvgNullBlockFreqBin[idx]);
+    //mAvgNullBlockFreqBin[idx] = std::abs(mFftBuffer[idx]);
+  }
 }
 
 /**
@@ -69,6 +112,7 @@ void OfdmDecoder::processBlock_0(std::vector<cmplx> buffer) // copy is intended 
    *	as coming from the FFT as phase reference.
    */
 
+  memcpy(mRealPhaseReference.data(), buffer.data(), mDabPar.T_u * sizeof(cmplx));
   memcpy(mPhaseReference.data(), buffer.data(), mDabPar.T_u * sizeof(cmplx));
 }
 
@@ -79,13 +123,20 @@ void OfdmDecoder::processBlock_0(std::vector<cmplx> buffer) // copy is intended 
  *	only to spare a test. The mapping code is the same
  */
 
-void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits)
+void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits)
 {
-  memcpy(mFftBuffer.data(), &(buffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
+  //pi_quarter_shift = !pi_quarter_shift;
+
+  memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
   mFftHandler.fft(mFftBuffer);
 
-  const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
+  //mAvgDc += 0.0001f * (mFftBuffer[0] - mAvgDc);
+  mAvgDc = mFftBuffer[0];
+
+  //const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
+  const cmplx rotator = cmplx_from_phase(-mAvgPhaseShift);
+  //const cmplx pi_quat_rotator = (pi_quarter_shift ? std::exp(cmplx(0.0f, -M_PI_4)) : std::exp(cmplx(0.0f, 0.0f)));
 
   /**
    *	a little optimization: we do not interchange the
@@ -95,13 +146,19 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
    *	Note that from here on, we are only interested in the
    *	"carriers", the useful carriers of the FFT output
    */
-  for (int16_t carrierIdx = 0; carrierIdx < mDabPar.K; carrierIdx++)
+  for (int16_t nomCarrierIdx = 0; nomCarrierIdx < mDabPar.K; ++nomCarrierIdx)
   {
-    int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(carrierIdx);
+    int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrierIdx);
+    int16_t realCarrRelIdx = fftIdx;
 
     if (fftIdx < 0)
     {
+      realCarrRelIdx += mDabPar.K / 2;
       fftIdx += mDabPar.T_u;
+    }
+    else // > 0 (there is no 0)
+    {
+      realCarrRelIdx += mDabPar.K / 2 - 1;
     }
 
     /**
@@ -111,28 +168,47 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
      *	on the same position in the next block
      */
 #ifndef OTHER_OFDM_DECODING_STYLE
+    cmplx fftBinOrg = mFftBuffer[fftIdx] * norm_to_length_one(conj(mRealPhaseReference[fftIdx]));;
     cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx]));
-    fftBin *= rotator; // fine correction of phase which can't be done in the time domain
-    const float fftBinAbs = std::fabs(fftBin);
-    float & fftBinAvg = mAvgDataVector[carrierIdx];
+    //fftBinOrg *= rotator; // fine correction of phase which can't be done in the time domain
+    //fftBin *= rotator; // fine correction of phase which can't be done in the time domain
+    const float fftBinAbsOrg = std::abs(fftBinOrg);
+    const float fftBinAbs = std::abs(fftBin);
+    float & fftBinAvgRefOrg = mAvgDataVectorOrg[nomCarrierIdx];
+    float & fftBinAvgRef = mAvgDataVector[nomCarrierIdx];
 
     constexpr float ALPHA_AVG = 0.005f;
-    constexpr float ALPHA_AVG_OVRALL = ALPHA_AVG / 1536.0f;
+    constexpr float ALPHA_AVG_OVRALL = ALPHA_AVG / 1536.0f; // TODO: remove fix value
 
-    fftBinAvg += ALPHA_AVG * (fftBinAbs - fftBinAvg);
-    mAvgDataOvrAll +=  ALPHA_AVG_OVRALL * (fftBinAbs - mAvgDataOvrAll);
+    fftBinAvgRefOrg += ALPHA_AVG * (fftBinAbsOrg - fftBinAvgRefOrg);
+    fftBinAvgRef += ALPHA_AVG * (fftBinAbs - fftBinAvgRef);
+    mAvgDataOvrAllOrg += ALPHA_AVG_OVRALL * (fftBinAbsOrg - mAvgDataOvrAllOrg);
+    mAvgDataOvrAll += ALPHA_AVG_OVRALL * (fftBinAbs - mAvgDataOvrAll);
 
-    float weight = 40.0f * (fftBinAvg / mAvgDataOvrAll + 1.0f); // TODO: div by zero?
-    limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as virtebi shows prolems with only 1
+    float weight = 40.0f * (fftBinAvgRef / mAvgDataOvrAll + 1.0f); // TODO: div by zero?
+    limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
 
-    const cmplx fftBinNormed = fftBin / fftBinAvg;
-    mDataVector[carrierIdx] = fftBinNormed;
+    const cmplx fftBinNormedOrg = fftBinOrg / fftBinAvgRefOrg;
+    const cmplx fftBinNormed = fftBin / fftBinAvgRef;
+
+    const float phaseDoubledOrg = 8.0f * std::arg(fftBinNormedOrg); // make pi/4 steps to pi/2 steps
+    const float absPhase = std::atan2(fabs(std::sin(phaseDoubledOrg)), fabs(std::cos(phaseDoubledOrg)));
+
+    mAvgPhaseShift += 0.000001f * (absPhase - mAvgPhaseShift);
+
+
+    //const int16_t realCarrierIdx = mNomCarrToRealCarrMap[nomCarrierIdx];
+    //mDataVector[realCarrRelIdx] = fftBinAvgRefOrg / mAvgDataOvrAllOrg * norm_to_length_one(fftBinNormedOrg);
+    //mDataVector[realCarrRelIdx] = fftBinAvgRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
+    //mDataVector[nomCarrierIdx] = fftBinAvgRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
+    //mDataVector[realCarrRelIdx] = 10.0f*(mAvgDc);
+    mDataVector[realCarrRelIdx] = abs_log10_with_offset(mAvgNullBlockFreqBin[fftIdx]);
 
     const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
     const int16_t hardBitImag = (imag(fftBin) < 0.0f ? 1 : -1);
 
-    oBits[0         + carrierIdx] = (int16_t)(hardBitReal * weight); 
-    oBits[mDabPar.K + carrierIdx] = (int16_t)(hardBitImag * weight);
+    oBits[0         + nomCarrierIdx] = (int16_t)(hardBitReal * weight);
+    oBits[mDabPar.K + nomCarrierIdx] = (int16_t)(hardBitImag * weight);
 #else
     cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
     r1 *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
@@ -141,10 +217,11 @@ void OfdmDecoder::decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSym
 
     // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
     // TODO: tomneda: is normalizing over one sample with ab1 ok? or better over the average of entire symbol?
-    oBits[0         + carrierIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
-    oBits[mDabPar.K + carrierIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
+    oBits[0         + nomCarrierIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
+    oBits[mDabPar.K + nomCarrierIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
 #endif
   }
+
 
   //	From time to time we show the constellation of the current symbol
   if (++mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)

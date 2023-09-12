@@ -238,21 +238,25 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
 
   for (auto i = 0; i < numRead; i++)
   {
-    const float r = std::fabs(mValuesVec[i]);
+    const float r = std::abs(mValuesVec[i]);
 
     if (!std::isnan(r) && !std::isinf(r))
     {
       const float phi = std::arg(mValuesVec[i]);
-      mPhaseVec[i] = conv_rad_to_deg(phi);
+      //mPhaseVec[i] = conv_rad_to_deg(phi);
 
       if (logIqScope)
       {
-        const float rl = log10f(1.0f + r) / log10f(1.0f + 1.0f); // no scaling necessary here due to averaging
-        mValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase only log the vector length
+        constexpr float logNorm = log10f(1.0f + 1.0f);
+        const float rl = log10f(1.0f + r) / logNorm;
+        mValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase, only log the vector length
+        mPhaseVec[i] = conv_rad_to_deg(phi);
+        //mPhaseVec[i] = rl * 100.0f;
         //avg += rl;
       }
       else
       {
+        mPhaseVec[i] = (r - 1.0f) * 180.0f;
         //avg += r;
       }
     }
