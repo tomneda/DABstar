@@ -70,8 +70,10 @@ cmplx SampleReader::getSample(int32_t phaseOffset)
   return oneSampleBuffer[0];
 }
 
-void SampleReader::getSamples(std::vector<cmplx> & oV, int index, int32_t n, int32_t phaseOffset)
+void SampleReader::getSamples(std::vector<cmplx> & oV, int32_t index, int32_t n, int32_t phaseOffset)
 {
+  assert((signed)oV.size() >= index + n);
+  
   std::vector<cmplx> buffer(n);
 
   corrector = phaseOffset;

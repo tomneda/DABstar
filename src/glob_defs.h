@@ -72,4 +72,19 @@ inline cmplx norm_to_length_one(const cmplx & iVal)
   return iVal / std::fabs(iVal);
 }
 
+inline cmplx cmplx_from_phase(const float iPhase)
+{
+  return std::exp(cmplx(0.0f, iPhase));
+}
+
+inline cmplx abs_log10_with_offset_and_phase(const cmplx & iVal)
+{
+  return std::log10(std::abs(iVal) + 1.0f) * std::exp(cmplx(0.0f, std::arg(iVal)));
+}
+
+template<typename T> inline float abs_log10_with_offset(const T iVal)
+{
+  return std::log10(std::abs(iVal) + 1);
+}
+
 #endif // GLOB_DEFS_H

@@ -165,7 +165,7 @@ int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> iV) // copy o
 
   for (int16_t i = idxStart; i < idxStop + DIFFLENGTH; i++)
   {
-    mComputedDiffs[i - idxStart] = std::fabs(arg(iV[(i + 0) % mDabPar.T_u] * conj(iV[(i + 1) % mDabPar.T_u])));
+    mComputedDiffs[i - idxStart] = std::abs(arg(iV[(i + 0) % mDabPar.T_u] * conj(iV[(i + 1) % mDabPar.T_u])));
   }
 
   float mmin = 1000;
