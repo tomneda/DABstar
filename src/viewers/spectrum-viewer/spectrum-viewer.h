@@ -57,7 +57,7 @@ constexpr int32_t SP_SPECTRUMOVRSMPFAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
 class RadioInterface;
 class QSettings;
 class IQDisplay;
-class PhaseVsCarrDisp;
+class CarrierDisp;
 class CorrelationViewer;
 class SpectrumScope;
 class WaterfallScope;
@@ -66,7 +66,7 @@ class SpectrumViewer : public QObject, Ui_scopeWidget
 {
 Q_OBJECT
 public:
-  SpectrumViewer(RadioInterface *, QSettings *, RingBuffer<cmplx> *, RingBuffer<cmplx> *, RingBuffer<float> *);
+  SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
   ~SpectrumViewer() override;
 
   void showSpectrum(int32_t, int32_t);
@@ -84,14 +84,15 @@ public:
 
 private:
   QFrame myFrame;
-  RadioInterface * myRadioInterface = nullptr;
-  QSettings * dabSettings = nullptr;
-  RingBuffer<cmplx> * spectrumBuffer = nullptr;
-  RingBuffer<cmplx> * iqBuffer = nullptr;
-  RingBuffer<float> * mpCorrelationBuffer = nullptr;
+  RadioInterface * const myRadioInterface;
+  QSettings * const dabSettings;
+  RingBuffer<cmplx> * const spectrumBuffer;
+  RingBuffer<cmplx> * const iqBuffer;
+  RingBuffer<float> * const carrBuffer;
+  RingBuffer<float> * const mpCorrelationBuffer;
   QwtPlotPicker * lm_picker = nullptr;
-  std::vector<cmplx> mValuesVec;
-  std::vector<float> mPhaseVec; 
+  std::vector<cmplx> mIqValuesVec;
+  std::vector<float> mCarrValuesVec;
 
   fftHandler fft;
 
@@ -114,7 +115,7 @@ private:
   int32_t lastVcoFreq = 0;
   bool mShowInLogScale = false;
 
-  PhaseVsCarrDisp * mpPhaseVsCarrDisp = nullptr;
+  CarrierDisp * mpPhaseVsCarrDisp = nullptr;
   IQDisplay * myIQDisplay = nullptr;
   SpectrumScope * mySpectrumScope = nullptr;
   WaterfallScope * myWaterfallScope = nullptr;

@@ -192,6 +192,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   : QWidget(parent),
     spectrumBuffer(2 * 32768),
     iqBuffer(2 * 1536),
+    carrBuffer(2 * 1536),
     tiiBuffer(32768),
     //nullBuffer(32768),
     snrBuffer(512),
@@ -199,7 +200,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     frameBuffer(2 * 32768),
     dataBuffer(32768),
     audioBuffer(8 * 32768),
-    my_spectrumViewer(this, Si, &spectrumBuffer, &iqBuffer, &responseBuffer),
+    my_spectrumViewer(this, Si, &spectrumBuffer, &iqBuffer, &carrBuffer, &responseBuffer),
     //my_correlationViewer(this, Si, &responseBuffer),
     my_tiiViewer(this, Si, &tiiBuffer),
     my_snrViewer(this, Si),
@@ -233,6 +234,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   //	for the dabProcessor
   globals.spectrumBuffer = &spectrumBuffer;
   globals.iqBuffer = &iqBuffer;
+  globals.carrBuffer = &carrBuffer;
   globals.responseBuffer = &responseBuffer;
   globals.tiiBuffer = &tiiBuffer;
   //globals.nullBuffer = &nullBuffer;

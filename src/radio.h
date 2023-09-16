@@ -167,6 +167,7 @@ private:
   FILE * dlTextFile;
   RingBuffer<cmplx> spectrumBuffer;
   RingBuffer<cmplx> iqBuffer;
+  RingBuffer<float> carrBuffer;
   RingBuffer<cmplx> tiiBuffer;
   //RingBuffer<cmplx> nullBuffer;
   RingBuffer<float> snrBuffer;

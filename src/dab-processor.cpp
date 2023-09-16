@@ -41,7 +41,7 @@ DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inpu
   mMscHandler(mr, p->dabMode, p->frameBuffer),
   mPhaseReference(mr, p),
   mTiiDetector(p->dabMode, p->tii_depth),
-  mOfdmDecoder(mr, p->dabMode, p->iqBuffer),
+  mOfdmDecoder(mr, p->dabMode, p->iqBuffer, p->carrBuffer),
   mEtiGenerator(p->dabMode, &mFicHandler),
   mTimeSyncer(&mSampleReader),
   mcDabMode(p->dabMode),
@@ -303,7 +303,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   }
   else // this is TII null segment
   {
-    //mOfdmDecoder.store_null_block(mOfdmBuffer);
+    mOfdmDecoder.store_null_block(mOfdmBuffer);
 
     // The TII data is encoded in the null period of the	odd frames
     mTiiDetector.addBuffer(mOfdmBuffer);

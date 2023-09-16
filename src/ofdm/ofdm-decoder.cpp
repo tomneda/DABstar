@@ -36,12 +36,13 @@
  *	will extract the Tu samples, do an FFT and extract the
  *	carriers and map them on (soft) bits
  */
-OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmplx> * ipIqBuffer) :
+OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer) :
   mpRadioInterface(ipMr),
   mDabPar(DabParams(iDabMode).get_dab_par()),
   mFreqInterleaver(iDabMode),
   mFftHandler(mDabPar.T_u, false),
-  mpIqBuffer(ipIqBuffer)
+  mpIqBuffer(ipIqBuffer),
+  mpCarrBuffer(ipCarrBuffer)
 {
   connect(this, &OfdmDecoder::showIQ, mpRadioInterface, &RadioInterface::showIQ);
   connect(this, &OfdmDecoder::showQuality, mpRadioInterface, &RadioInterface::showQuality);
@@ -50,7 +51,8 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mRealPhaseReference.resize(mDabPar.T_u);
   mPhaseReference.resize(mDabPar.T_u);
   mFftBuffer.resize(mDabPar.T_u);
-  mDataVector.resize(mDabPar.K);
+  mIqVector.resize(mDabPar.K);
+  mCarrVector.resize(mDabPar.K);
   mStdDevSqPhaseVector.resize(mDabPar.K);
   mMeanAbsPhaseVector.resize(mDabPar.K);
   mMeanLevelVector.resize(mDabPar.K);
@@ -201,12 +203,14 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
 
     //mDataVector[realCarrRelIdx] = fftBin / mAvgDataOvrAll;
     //mDataVector[realCarrRelIdx] = fftBin / meanLevelPerBinRef;
-    //mDataVector[realCarrRelIdx] = fftBinPhaseNormed / meanLevelPerBinRef;
+    mIqVector[realCarrRelIdx] = fftBinPhaseNormed / meanLevelPerBinRef;
     //mDataVector[realCarrRelIdx] = meanLevelPerBinRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
     //mDataVector[realCarrRelIdx] = meanLevelPerBinRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
     //mDataVector[realCarrRelIdx] = 10.0f*(mAvgDc);
-    //mDataVector[realCarrRelIdx] = abs_log10_with_offset(mAvgNullBlockFreqBin[fftIdx]);
-    mDataVector[realCarrRelIdx] =  2 * weight / 127.0f * norm_to_length_one(fftBin);
+    mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(fftBinPhaseNormed));
+    //mCarrVector[realCarrRelIdx] = abs_log10_with_offset(fftBinPhaseNormed / meanLevelPerBinRef);
+    //mCarrVector[realCarrRelIdx] = abs_log10_with_offset(mAvgNullBlockFreqBin[fftIdx]);
+    //mDataVector[realCarrRelIdx] =  2 * weight / 127.0f * norm_to_length_one(fftBin); // ***
     //mDataVector[nomCarrIdx] = 2 * weight / 127.0f * norm_to_length_one(fftBin);
 
     const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
@@ -232,7 +236,8 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
   //	From time to time we show the constellation of the current symbol
   if (++mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
   {
-    mpIqBuffer->putDataIntoBuffer(mDataVector.data(), mDabPar.K);
+    mpIqBuffer->putDataIntoBuffer(mIqVector.data(), mDabPar.K);
+    mpCarrBuffer->putDataIntoBuffer(mCarrVector.data(), mDabPar.K);
     emit showIQ(mDabPar.K, 1.0f /*mGain / TOP_VAL*/);
     mShowCntIqScope = 0;
   }
@@ -240,7 +245,7 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
   if (++mShowCntStatistics > 5 * mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
   {
     mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mQD.StdDeviation = _compute_mod_quality(mDataVector);
+    mQD.StdDeviation = _compute_mod_quality(mIqVector);
     mQD.TimeOffset = _compute_time_offset(mFftBuffer, mPhaseReference);
     mQD.FreqOffset = _compute_frequency_offset(mFftBuffer, mPhaseReference);
     mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);

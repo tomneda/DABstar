@@ -37,7 +37,7 @@ class OfdmDecoder : public QObject
 {
 Q_OBJECT
 public:
-  OfdmDecoder(RadioInterface *, uint8_t, RingBuffer<cmplx> * iqBuffer);
+  OfdmDecoder(RadioInterface *, uint8_t, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
   ~OfdmDecoder() override = default;
 
   struct SQualityData
@@ -60,6 +60,7 @@ private:
   FreqInterleaver mFreqInterleaver;
   fftHandler mFftHandler;
   RingBuffer<cmplx> * const mpIqBuffer;
+  RingBuffer<float> * const mpCarrBuffer;
 
   int32_t mShowCntStatistics = 0;
   int32_t mShowCntIqScope = 0;
@@ -67,7 +68,8 @@ private:
   std::vector<cmplx> mRealPhaseReference;
   std::vector<cmplx> mPhaseReference;
   std::vector<cmplx> mFftBuffer;
-  std::vector<cmplx> mDataVector;
+  std::vector<cmplx> mIqVector;
+  std::vector<float> mCarrVector;
   std::vector<float> mStdDevSqPhaseVector;
   std::vector<float> mMeanAbsPhaseVector;
   std::vector<float> mMeanLevelVector;

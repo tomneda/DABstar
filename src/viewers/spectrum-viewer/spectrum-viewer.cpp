@@ -32,25 +32,23 @@
 #include  "color-selector.h"
 
 
-SpectrumViewer::SpectrumViewer(RadioInterface * mr, QSettings * dabSettings, RingBuffer<cmplx> * sbuffer, RingBuffer<cmplx> * ibuffer, RingBuffer<float> * cbuffer)
-  : Ui_scopeWidget(),
-    myFrame(nullptr),
-    fft(SP_SPECTRUMSIZE, false)
+SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
+  Ui_scopeWidget(),
+  myFrame(nullptr),
+  myRadioInterface(ipRI),
+  dabSettings(ipDabSettings),
+  spectrumBuffer(ipSpecBuffer),
+  iqBuffer(ipIqBuffer),
+  carrBuffer(ipCarrBuffer),
+  mpCorrelationBuffer(ipCorrBuffer),
+  fft(SP_SPECTRUMSIZE, false)
 {
-  int16_t i;
-
-  this->myRadioInterface = mr;
-  this->dabSettings = dabSettings;
-  this->spectrumBuffer = sbuffer;
-  this->iqBuffer = ibuffer;
-  this->mpCorrelationBuffer = cbuffer;
-
-  dabSettings->beginGroup("spectrumViewer");
-  int x = dabSettings->value("position-x", 100).toInt();
-  int y = dabSettings->value("position-y", 100).toInt();
-  int w = dabSettings->value("width", 150).toInt();
-  int h = dabSettings->value("height", 120).toInt();
-  dabSettings->endGroup();
+  ipDabSettings->beginGroup("spectrumViewer");
+  int x = ipDabSettings->value("position-x", 100).toInt();
+  int y = ipDabSettings->value("position-y", 100).toInt();
+  int w = ipDabSettings->value("width", 150).toInt();
+  int h = ipDabSettings->value("height", 120).toInt();
+  ipDabSettings->endGroup();
 
   setupUi(&myFrame);
 
@@ -61,24 +59,20 @@ SpectrumViewer::SpectrumViewer(RadioInterface * mr, QSettings * dabSettings, Rin
   //fprintf(stdout, "spectrumViewer  %d %d, staat op %d %d\n", x, y, pos.x(), pos.y());
   myFrame.hide();
 
-  for (i = 0; i < SP_SPECTRUMSIZE; i++)
+  for (int16_t i = 0; i < SP_SPECTRUMSIZE; i++)
   {
-    Window[i] = static_cast<float>(0.42
-                                 - 0.50 * cos((2.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1))
-                                 + 0.08 * cos((4.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1)));
+    Window[i] = static_cast<float>(0.42 - 0.50 * cos((2.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1)) + 0.08 * cos((4.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1)));
   }
 
-  mySpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, dabSettings);
+  mySpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
   myWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
   myIQDisplay = new IQDisplay(iqDisplay);
-  mpPhaseVsCarrDisp = new PhaseVsCarrDisp(phaseCarrPlot);
-  mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, dabSettings, mpCorrelationBuffer);
+  mpPhaseVsCarrDisp = new CarrierDisp(phaseCarrPlot);
+  mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, ipDabSettings, mpCorrelationBuffer);
   //myNullScope = new nullScope(nullDisplay, 256, dabSettings);
   setBitDepth(12);
 
   mShowInLogScale = cbLogIqScope->isChecked();
-  PhaseVsCarrDisp::SCustPlot custPlot; custPlot.UseDots = mShowInLogScale;
-  mpPhaseVsCarrDisp->customize_plot(custPlot);
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -222,10 +216,10 @@ bool SpectrumViewer::isHidden()
 
 void SpectrumViewer::showIQ(int iAmount, float iAvg)
 {
-  if (mValuesVec.size() != (unsigned)iAmount)
+  if (mIqValuesVec.size() != (unsigned)iAmount)
   {
-    mValuesVec.resize(iAmount);
-    mPhaseVec.resize(iAmount);
+    mIqValuesVec.resize(iAmount);
+    mCarrValuesVec.resize(iAmount);
   }
 
   const int scopeWidth = scopeSlider->value();
@@ -234,54 +228,62 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
   if (mShowInLogScale != logIqScope)
   {
     mShowInLogScale = logIqScope;
-    PhaseVsCarrDisp::SCustPlot custPlot;
-    custPlot.UseDots = mShowInLogScale;
-    mpPhaseVsCarrDisp->customize_plot(custPlot);
+//    CarrierDisp::SCustPlot custPlot;
+//    mpPhaseVsCarrDisp->customize_plot(custPlot);
   }
 
-  const int32_t numRead = iqBuffer->getDataFromBuffer(mValuesVec.data(), (int32_t)mValuesVec.size());
+  const int32_t numRead = iqBuffer->getDataFromBuffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
+  /*const int32_t numRead2 =*/ carrBuffer->getDataFromBuffer(mCarrValuesVec.data(), (int32_t)mCarrValuesVec.size());
 
   if (myFrame.isHidden())
   {
     return;
   }
 
-  //float avg = 0;
-
-  for (auto i = 0; i < numRead; i++)
+  if (logIqScope)
   {
-    const float r = std::abs(mValuesVec[i]);
-
-    if (!std::isnan(r) && !std::isinf(r))
+    for (auto i = 0; i < numRead; i++)
     {
-      const float phi = std::arg(mValuesVec[i]);
-      //mPhaseVec[i] = conv_rad_to_deg(phi);
-
-      if (logIqScope)
-      {
-        constexpr float logNorm = log10f(1.0f + 1.0f);
-        const float rl = log10f(1.0f + r) / logNorm;
-        mValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase, only log the vector length
-        mPhaseVec[i] = conv_rad_to_deg(phi);
-        //mPhaseVec[i] = rl * 100.0f;
-        //avg += rl;
-      }
-      else
-      {
-        mPhaseVec[i] = (r - 1.0f) * 180.0f;
-        //avg += r;
-      }
-    }
-    else
-    {
-      mPhaseVec[i] = 0.0f;
-      mValuesVec[i] = 0.0f;
+      const float phi = std::arg(mIqValuesVec[i]);
+      constexpr float logNorm = std::log10(1.0f + 1.0f);
+      const float rl = log10f(1.0f + std::abs(mIqValuesVec[i])) / logNorm;
+      mIqValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase, only log the vector length
     }
   }
-  //avg /= (float)numRead;
+
   const float scale = (float)scopeWidth / 100.0f;
-  myIQDisplay->display_iq(mValuesVec, scale, scale);
-  mpPhaseVsCarrDisp->disp_phase_carr_plot(mPhaseVec);
+  myIQDisplay->display_iq(mIqValuesVec, scale, scale);
+
+
+  //  for (auto i = 0; i < numRead2; i++)
+  //  {
+  //    const float r = mCarrValuesVec[i];
+  //
+  //    if (!std::isnan(r) && !std::isinf(r))
+  //    {
+  //      if (logIqScope)
+  //      {
+  //        constexpr float logNorm = log10f(1.0f + 1.0f);
+  //        const float rl = log10f(1.0f + r) / logNorm;
+  //        mIqValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase, only log the vector length
+  //        mCarrVec[i] = conv_rad_to_deg(phi);
+  //        //mPhaseVec[i] = rl * 100.0f;
+  //        //avg += rl;
+  //      }
+  //      else
+  //      {
+  //        mCarrVec[i] = (r - 1.0f) * 180.0f;
+  //        //avg += r;
+  //      }
+  //    }
+  //    else
+  //    {
+  //      mCarrVec[i] = 0.0f;
+  //      mIqValuesVec[i] = 0.0f;
+  //    }
+  //  }
+
+  mpPhaseVsCarrDisp->disp_carrier_plot(mCarrValuesVec);
 }
 
 void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr)
