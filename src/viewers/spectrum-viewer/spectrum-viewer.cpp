@@ -75,6 +75,10 @@ SpectrumViewer::SpectrumViewer(RadioInterface * mr, QSettings * dabSettings, Rin
   mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, dabSettings, mpCorrelationBuffer);
   //myNullScope = new nullScope(nullDisplay, 256, dabSettings);
   setBitDepth(12);
+
+  mShowInLogScale = cbLogIqScope->isChecked();
+  PhaseVsCarrDisp::SCustPlot custPlot; custPlot.UseDots = mShowInLogScale;
+  mpPhaseVsCarrDisp->customize_plot(custPlot);
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -226,6 +230,14 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
 
   const int scopeWidth = scopeSlider->value();
   const bool logIqScope = cbLogIqScope->isChecked();
+
+  if (mShowInLogScale != logIqScope)
+  {
+    mShowInLogScale = logIqScope;
+    PhaseVsCarrDisp::SCustPlot custPlot;
+    custPlot.UseDots = mShowInLogScale;
+    mpPhaseVsCarrDisp->customize_plot(custPlot);
+  }
 
   const int32_t numRead = iqBuffer->getDataFromBuffer(mValuesVec.data(), (int32_t)mValuesVec.size());
 

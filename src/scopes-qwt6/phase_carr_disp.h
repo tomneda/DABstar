@@ -17,7 +17,13 @@ public:
   explicit PhaseVsCarrDisp(QwtPlot * plot);
   ~PhaseVsCarrDisp() = default;
 
+  struct SCustPlot
+  {
+    bool UseDots = false;
+  };
+
   void disp_phase_carr_plot(const std::vector<float> & iPhaseVec);
+  void customize_plot(const SCustPlot & iCustPlot);
 
 private:
   QwtPlot * const mQwtPlot = nullptr;

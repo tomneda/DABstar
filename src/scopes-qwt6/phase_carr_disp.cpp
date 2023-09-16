@@ -45,6 +45,11 @@ void PhaseVsCarrDisp::disp_phase_carr_plot(const std::vector<float> & iPhaseVec)
   mQwtPlot->replot();
 }
 
+void PhaseVsCarrDisp::customize_plot(const PhaseVsCarrDisp::SCustPlot & iCustPlot)
+{
+  mQwtPlotCurve.setStyle(iCustPlot.UseDots ? QwtPlotCurve::Dots :  QwtPlotCurve::Lines);
+}
+
 void PhaseVsCarrDisp::_setup_x_axis()
 {
   const int32_t displaySizeHalf = mDataSize / 2;
@@ -59,4 +64,3 @@ void PhaseVsCarrDisp::_setup_x_axis()
 
   mQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
 }
-

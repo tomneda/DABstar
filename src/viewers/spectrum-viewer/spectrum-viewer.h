@@ -112,6 +112,7 @@ private:
   [[nodiscard]] float get_db(float) const;
   int32_t normalizer = 0;
   int32_t lastVcoFreq = 0;
+  bool mShowInLogScale = false;
 
   PhaseVsCarrDisp * mpPhaseVsCarrDisp = nullptr;
   IQDisplay * myIQDisplay = nullptr;
