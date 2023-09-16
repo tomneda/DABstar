@@ -51,42 +51,43 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mPhaseReference.resize(mDabPar.T_u);
   mFftBuffer.resize(mDabPar.T_u);
   mDataVector.resize(mDabPar.K);
-  mAvgDataVectorOrg.resize(mDabPar.K);
-  mAvgDataVector.resize(mDabPar.K);
-  mNomCarrToRealCarrMap.resize(mDabPar.K);
+  mStdDevSqPhaseVector.resize(mDabPar.K);
+  mMeanAbsPhaseVector.resize(mDabPar.K);
+  mMeanLevelVector.resize(mDabPar.K);
+  //mNomCarrToRealCarrMap.resize(mDabPar.K);
 
-  for (int16_t nomCarrierIdx = 0; nomCarrierIdx < mDabPar.K; ++nomCarrierIdx)
-  {
-    int16_t realCarrRelIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrierIdx);
-
-    assert(realCarrRelIdx != 0);
-
-    if (realCarrRelIdx > 0)
-    {
-      realCarrRelIdx += mDabPar.K / 2 - 1;
-    }
-    else // < 0
-    {
-      realCarrRelIdx += mDabPar.K / 2;
-    }
-
-    assert(realCarrRelIdx >= 0);
-    assert(realCarrRelIdx < mDabPar.K);
-
-    //mNomCarrToRealCarrMap[realCarrRelIdx] = nomCarrierIdx;
-    mNomCarrToRealCarrMap[nomCarrierIdx] = realCarrRelIdx;
-  }
+//  for (int16_t nomCarrierIdx = 0; nomCarrierIdx < mDabPar.K; ++nomCarrierIdx)
+//  {
+//    int16_t realCarrRelIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrierIdx);
+//
+//    assert(realCarrRelIdx != 0);
+//
+//    if (realCarrRelIdx > 0)
+//    {
+//      realCarrRelIdx += mDabPar.K / 2 - 1;
+//    }
+//    else // < 0
+//    {
+//      realCarrRelIdx += mDabPar.K / 2;
+//    }
+//
+//    assert(realCarrRelIdx >= 0);
+//    assert(realCarrRelIdx < mDabPar.K);
+//
+//    //mNomCarrToRealCarrMap[realCarrRelIdx] = nomCarrierIdx;
+//    mNomCarrToRealCarrMap[nomCarrierIdx] = realCarrRelIdx;
+//  }
 
   reset();
 }
 
 void OfdmDecoder::reset()
 {
-  std::fill(mAvgDataVectorOrg.begin(), mAvgDataVectorOrg.end(), 1.0f);
-  std::fill(mAvgDataVector.begin(), mAvgDataVector.end(), 1.0f);
+  std::fill(mStdDevSqPhaseVector.begin(), mStdDevSqPhaseVector.end(), 0.0f);
+  std::fill(mMeanAbsPhaseVector.begin(), mMeanAbsPhaseVector.end(), 0.0f);
+  std::fill(mMeanLevelVector.begin(), mMeanLevelVector.end(), M_PI_4);
   std::fill(mAvgNullBlockFreqBin.begin(), mAvgNullBlockFreqBin.end(), 0.0f);
-  mAvgDataOvrAllOrg = 1.0f;
-  mAvgDataOvrAll = 1.0f;
+  mAvgAbsLevelOvrAll = 1.0f;
 }
 
 void OfdmDecoder::store_null_block(const std::vector<cmplx> & iV)
@@ -146,9 +147,9 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
    *	Note that from here on, we are only interested in the
    *	"carriers", the useful carriers of the FFT output
    */
-  for (int16_t nomCarrierIdx = 0; nomCarrierIdx < mDabPar.K; ++nomCarrierIdx)
+  for (int16_t nomCarrIdx = 0; nomCarrIdx < mDabPar.K; ++nomCarrIdx)
   {
-    int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrierIdx);
+    int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrIdx);
     int16_t realCarrRelIdx = fftIdx;
 
     if (fftIdx < 0)
@@ -168,57 +169,62 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
      *	on the same position in the next block
      */
 #ifndef OTHER_OFDM_DECODING_STYLE
-    cmplx fftBinOrg = mFftBuffer[fftIdx] * norm_to_length_one(conj(mRealPhaseReference[fftIdx]));;
-    cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx]));
-    //fftBinOrg *= rotator; // fine correction of phase which can't be done in the time domain
+    const cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx]));
     //fftBin *= rotator; // fine correction of phase which can't be done in the time domain
-    const float fftBinAbsOrg = std::abs(fftBinOrg);
     const float fftBinAbs = std::abs(fftBin);
-    float & fftBinAvgRefOrg = mAvgDataVectorOrg[nomCarrierIdx];
-    float & fftBinAvgRef = mAvgDataVector[nomCarrierIdx];
 
-    constexpr float ALPHA_AVG = 0.005f;
-    constexpr float ALPHA_AVG_OVRALL = ALPHA_AVG / 1536.0f; // TODO: remove fix value
+    float & meanLevelPerBinRef = mMeanLevelVector[nomCarrIdx];
 
-    fftBinAvgRefOrg += ALPHA_AVG * (fftBinAbsOrg - fftBinAvgRefOrg);
-    fftBinAvgRef += ALPHA_AVG * (fftBinAbs - fftBinAvgRef);
-    mAvgDataOvrAllOrg += ALPHA_AVG_OVRALL * (fftBinAbsOrg - mAvgDataOvrAllOrg);
-    mAvgDataOvrAll += ALPHA_AVG_OVRALL * (fftBinAbs - mAvgDataOvrAll);
+    mean_filter(meanLevelPerBinRef, fftBinAbs, 0.005f);
+    mean_filter(mAvgAbsLevelOvrAll, fftBinAbs, 0.005f / 1536.0f);
 
-    float weight = 40.0f * (fftBinAvgRef / mAvgDataOvrAll + 1.0f); // TODO: div by zero?
-    limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
+    float weight;
+    cmplx fftBinPhaseNormed = fftBin;
+    {
+      const float curAbsPhase = std::atan2(std::abs(imag(fftBin)), std::abs(real(fftBin))); // map to top right section
 
-    const cmplx fftBinNormedOrg = fftBinOrg / fftBinAvgRefOrg;
-    const cmplx fftBinNormed = fftBin / fftBinAvgRef;
+      float & meanAbsPhasePerBinRef = mMeanAbsPhaseVector[nomCarrIdx];
+      mean_filter(meanAbsPhasePerBinRef, curAbsPhase, 0.005f);
 
-    const float phaseDoubledOrg = 8.0f * std::arg(fftBinNormedOrg); // make pi/4 steps to pi/2 steps
-    const float absPhase = std::atan2(fabs(std::sin(phaseDoubledOrg)), fabs(std::cos(phaseDoubledOrg)));
+      const float curStdDevDiff = (curAbsPhase - meanAbsPhasePerBinRef);
+      const float curStdDevSq = curStdDevDiff * curStdDevDiff;
 
-    mAvgPhaseShift += 0.000001f * (absPhase - mAvgPhaseShift);
+      float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
+      mean_filter(stdDevSqRef, curStdDevSq, 0.005f);
 
+      const float avgStdDev = sqrt(stdDevSqRef);
 
-    //const int16_t realCarrierIdx = mNomCarrToRealCarrMap[nomCarrierIdx];
-    //mDataVector[realCarrRelIdx] = fftBinAvgRefOrg / mAvgDataOvrAllOrg * norm_to_length_one(fftBinNormedOrg);
-    //mDataVector[realCarrRelIdx] = fftBinAvgRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
-    //mDataVector[nomCarrierIdx] = fftBinAvgRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
+      weight = 127.0f * ((float)M_PI_4 - avgStdDev) / (float)M_PI_4;
+      limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
+      //fftBinPhaseNormed *= cmplx_from_phase(meanAbsPhasePerBinRef - (float)M_PI_4);
+    }
+
+    //mDataVector[realCarrRelIdx] = fftBin / mAvgDataOvrAll;
+    //mDataVector[realCarrRelIdx] = fftBin / meanLevelPerBinRef;
+    //mDataVector[realCarrRelIdx] = fftBinPhaseNormed / meanLevelPerBinRef;
+    //mDataVector[realCarrRelIdx] = meanLevelPerBinRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
+    //mDataVector[realCarrRelIdx] = meanLevelPerBinRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
     //mDataVector[realCarrRelIdx] = 10.0f*(mAvgDc);
-    mDataVector[realCarrRelIdx] = abs_log10_with_offset(mAvgNullBlockFreqBin[fftIdx]);
+    //mDataVector[realCarrRelIdx] = abs_log10_with_offset(mAvgNullBlockFreqBin[fftIdx]);
+    mDataVector[realCarrRelIdx] =  2 * weight / 127.0f * norm_to_length_one(fftBin);
+    //mDataVector[nomCarrIdx] = 2 * weight / 127.0f * norm_to_length_one(fftBin);
 
     const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
     const int16_t hardBitImag = (imag(fftBin) < 0.0f ? 1 : -1);
 
-    oBits[0         + nomCarrierIdx] = (int16_t)(hardBitReal * weight);
-    oBits[mDabPar.K + nomCarrierIdx] = (int16_t)(hardBitImag * weight);
+    oBits[0         + nomCarrIdx] = (int16_t)(hardBitReal * weight);
+    oBits[mDabPar.K + nomCarrIdx] = (int16_t)(hardBitImag * weight);
 #else
     cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-    r1 *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
-    mDataVector[carrierIdx] = r1;
+    //r1 *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
     const float ab1 = abs(r1);
+    mean_filter(mAvgAbsLevelOvrAll, ab1, 0.005f / 1536.0f);
+    mDataVector[nomCarrIdx] = r1 / mAvgAbsLevelOvrAll;
 
     // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
-    // TODO: tomneda: is normalizing over one sample with ab1 ok? or better over the average of entire symbol?
-    oBits[0         + nomCarrierIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
-    oBits[mDabPar.K + nomCarrierIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
+    // tomneda: is that kind of soft creation ok?
+    oBits[0         + nomCarrIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
+    oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
 #endif
   }
 
@@ -234,9 +240,9 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
   if (++mShowCntStatistics > 5 * mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
   {
     mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mQD.StdDeviation = compute_mod_quality(mDataVector);
-    mQD.TimeOffset = compute_time_offset(mFftBuffer, mPhaseReference);
-    mQD.FreqOffset = compute_frequency_offset(mFftBuffer, mPhaseReference);
+    mQD.StdDeviation = _compute_mod_quality(mDataVector);
+    mQD.TimeOffset = _compute_time_offset(mFftBuffer, mPhaseReference);
+    mQD.FreqOffset = _compute_frequency_offset(mFftBuffer, mPhaseReference);
     mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     emit showQuality(&mQD);
     mShowCntStatistics = 0;
@@ -247,7 +253,7 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
   memcpy(mPhaseReference.data(), mFftBuffer.data(), mDabPar.T_u * sizeof(cmplx));
 }
 
-float OfdmDecoder::compute_mod_quality(const std::vector<cmplx> & v) const
+float OfdmDecoder::_compute_mod_quality(const std::vector<cmplx> & v) const
 {
   /*
    * Since we do not equalize, we have a kind of "fake" reference point.
@@ -277,10 +283,8 @@ float OfdmDecoder::compute_mod_quality(const std::vector<cmplx> & v) const
  * and 5.40 from "OFDM Baseband Receiver Design for Wireless
  * Communications (Chiueh and Tsai)"
  */
-float OfdmDecoder::compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const
+float OfdmDecoder::_compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const
 {
-  cmplx leftTerm;
-  cmplx rightTerm;
   cmplx sum = cmplx(0, 0);
 
   for (int i = -mDabPar.K / 2; i < mDabPar.K / 2; i += 6)
@@ -291,11 +295,11 @@ float OfdmDecoder::compute_time_offset(const std::vector<cmplx> & r, const std::
     cmplx s = r[index_1] * conj(v[index_2]);
 
     s = cmplx(abs(real(s)), abs(imag(s)));
-    leftTerm = s * conj(cmplx(fabs(s) / sqrtf(2), fabs(s) / sqrtf(2)));
+    const cmplx leftTerm = s * conj(cmplx(fabs(s) / sqrtf(2), fabs(s) / sqrtf(2)));
 
     s = r[index_2] * conj(v[index_2]);
     s = cmplx(abs(real(s)), abs(imag(s)));
-    rightTerm = s * conj(cmplx(fabs(s) / sqrtf(2), fabs(s) / sqrtf(2)));
+    const cmplx rightTerm = s * conj(cmplx(fabs(s) / sqrtf(2), fabs(s) / sqrtf(2)));
 
     sum += conj(leftTerm) * rightTerm;
   }
@@ -303,7 +307,7 @@ float OfdmDecoder::compute_time_offset(const std::vector<cmplx> & r, const std::
   return arg(sum);
 }
 
-float OfdmDecoder::compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const
+float OfdmDecoder::_compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const
 {
   cmplx theta = cmplx(0, 0);
 
@@ -312,13 +316,14 @@ float OfdmDecoder::compute_frequency_offset(const std::vector<cmplx> & r, const 
     int index = i < 0 ? i + mDabPar.T_u : i;
     cmplx val = r[index] * conj(c[index]);
     val = cmplx(abs(real(val)), abs(imag(val)));
-    theta += val * cmplx(1, -1);
+    theta += val;
   }
+  theta *= cmplx(1, -1);
 
   return arg(theta) / (2.0f * (float)M_PI) * 2048000.0f / (float)mDabPar.T_u; // TODO: hard coded 2048000?
 }
 
-float OfdmDecoder::compute_clock_offset(const cmplx * r, const cmplx * v) const
+float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
 {
   float offsa = 0;
   int offsb = 0;

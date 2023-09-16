@@ -303,7 +303,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   }
   else // this is TII null segment
   {
-    mOfdmDecoder.store_null_block(mOfdmBuffer);
+    //mOfdmDecoder.store_null_block(mOfdmBuffer);
 
     // The TII data is encoded in the null period of the	odd frames
     mTiiDetector.addBuffer(mOfdmBuffer);

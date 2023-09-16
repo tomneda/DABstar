@@ -68,12 +68,12 @@ private:
   std::vector<cmplx> mPhaseReference;
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mDataVector;
-  std::vector<float> mAvgDataVectorOrg;
-  std::vector<float> mAvgDataVector;
+  std::vector<float> mStdDevSqPhaseVector;
+  std::vector<float> mMeanAbsPhaseVector;
+  std::vector<float> mMeanLevelVector;
   std::vector<float> mAvgNullBlockFreqBin;
-  std::vector<int16_t> mNomCarrToRealCarrMap;
-  float mAvgDataOvrAllOrg = 1.0f;
-  float mAvgDataOvrAll = 1.0f;
+  //std::vector<int16_t> mNomCarrToRealCarrMap;
+  float mAvgAbsLevelOvrAll = 1.0f;
   bool pi_quarter_shift = false;
   float mAvgPhaseShift = 0.0f;
   cmplx mAvgDc {};
@@ -86,10 +86,10 @@ private:
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SQualityData mQD{};
 
-  float compute_mod_quality(const std::vector<cmplx> & v) const;
-  float compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const;
-  float compute_clock_offset(const cmplx * r, const cmplx * v) const;
-  float compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
+  float _compute_mod_quality(const std::vector<cmplx> & v) const;
+  float _compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const;
+  float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
+  float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
 
 signals:
   void showIQ(int, float);
