@@ -11,14 +11,11 @@
 CarrierDisp::CarrierDisp(QwtPlot * ipPlot) :
   mQwtPlot(ipPlot)
 {
-  std::fill(mQwtPlotMarkerVec.begin(), mQwtPlotMarkerVec.end(), nullptr);
-
   mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
   mQwtPlotCurve.attach(mQwtPlot);
 
-  SCustPlot custPlot; // use structure defaults
-  customize_plot(custPlot);
+  select_plot_type(EPlotType::PHASE);
 
   mQwtPlot->replot();
 }
@@ -33,6 +30,11 @@ void CarrierDisp::disp_carrier_plot(const std::vector<float> & iPhaseVec)
 
   mQwtPlotCurve.setSamples(mX_axis_vec.data(), iPhaseVec.data(), mDataSize);
   mQwtPlot->replot();
+}
+
+void CarrierDisp::select_plot_type(const CarrierDisp::EPlotType iPlotType)
+{
+  customize_plot(_get_plot_type_data(iPlotType));
 }
 
 void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
@@ -81,7 +83,7 @@ void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
     }
   }
 
-  mQwtPlotCurve.setStyle(iCustPlot.UseDots ? QwtPlotCurve::Dots :  QwtPlotCurve::Lines);
+  mQwtPlotCurve.setStyle(iCustPlot.Style == SCustPlot::EStyle::DOTS ? QwtPlotCurve::Dots :  QwtPlotCurve::Lines);
 }
 
 void CarrierDisp::_setup_x_axis()
@@ -97,4 +99,58 @@ void CarrierDisp::_setup_x_axis()
   }
 
   mQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
+}
+
+CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const EPlotType iPlotType)
+{
+  SCustPlot cp;
+  cp.PlotType = iPlotType;
+
+  switch (iPlotType)
+  {
+  case EPlotType::PHASE:
+    cp.Style  = SCustPlot::EStyle::DOTS;
+    cp.Name = "Phase";
+    cp.StartValue = -180.0;
+    cp.StopValue = 180.0;
+    cp.Segments = 8; // each 45.0
+    cp.MarkerStartValue = -90.0;
+    cp.MarkerStopValue = 90.0;
+    cp.MarkerSegments = 3; // each 90.0
+    break;
+
+  case EPlotType::MODQUAL:
+    cp.Style  = SCustPlot::EStyle::LINES;
+    cp.Name = "ModQual";
+    cp.StartValue = 0.0;
+    cp.StopValue = 100.0;
+    cp.Segments = 5; // each 20.0
+    cp.MarkerStartValue = 10.0;
+    cp.MarkerStopValue = 90.0;
+    cp.MarkerSegments = 8; // each 10.0
+    break;
+
+  case EPlotType::NULLTII:
+    cp.Style  = SCustPlot::EStyle::LINES;
+    cp.Name = "NullTII";
+    cp.StartValue = -100.0;
+    cp.StopValue = 0.0;
+    cp.Segments = 5; // each 20.0
+    cp.MarkerStartValue = -90.0;
+    cp.MarkerStopValue = -10.0;
+    cp.MarkerSegments = 8; // each -10.0
+    break;
+  }
+
+  return cp;
+}
+
+QStringList CarrierDisp::get_plot_type_names()
+{
+  QStringList sl;
+  SCustPlot cp;
+  sl << _get_plot_type_data(EPlotType::PHASE).Name;
+  sl << _get_plot_type_data(EPlotType::MODQUAL).Name;
+  sl << _get_plot_type_data(EPlotType::NULLTII).Name;
+  return sl;
 }

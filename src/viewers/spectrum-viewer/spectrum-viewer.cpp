@@ -73,6 +73,8 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   setBitDepth(12);
 
   mShowInLogScale = cbLogIqScope->isChecked();
+
+  cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
 }
 
 SpectrumViewer::~SpectrumViewer()

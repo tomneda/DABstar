@@ -17,9 +17,20 @@ public:
   explicit CarrierDisp(QwtPlot * plot);
   ~CarrierDisp() = default;
 
+  enum class EPlotType
+  {
+    PHASE,
+    MODQUAL,
+    NULLTII
+  };
+
   struct SCustPlot
   {
-    bool UseDots = true; // or connection line
+    enum class EStyle { DOTS, LINES };
+
+    EPlotType PlotType = EPlotType::PHASE;
+    EStyle Style = EStyle::DOTS;
+    const char * Name = "(dummy)";
 
     double StartValue = -180.0;
     double StopValue = 180.0;
@@ -32,6 +43,8 @@ public:
 
   void disp_carrier_plot(const std::vector<float> & iPhaseVec);
   void customize_plot(const SCustPlot & iCustPlot);
+  void select_plot_type(const EPlotType iPlotType);
+  static QStringList get_plot_type_names() ;
 
 private:
   QwtPlot * const mQwtPlot = nullptr;
@@ -40,6 +53,7 @@ private:
   int32_t mDataSize = 0;
   std::vector<float> mX_axis_vec;
 
+  static SCustPlot _get_plot_type_data(const EPlotType iPlotType);
   void _setup_x_axis();
 };
 
