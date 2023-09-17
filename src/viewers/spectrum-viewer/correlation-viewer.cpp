@@ -133,7 +133,8 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
   {
     txt = "Best matches at (km/mi): ";
 
-    for (int i = 0; i < v.size(); i++)
+    const int vSize = (v.size() < 8 ? v.size() : 8); // limit size as display will broaden
+    for (int i = 0; i < vSize; i++)
     {
       txt += "<b>" + QString::number(v[i]) + "</b>"; // display in "bold"
 
