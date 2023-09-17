@@ -34,7 +34,7 @@ motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
   (void)segmentSize;
   (void)lastFlag;
   this->dirElement = dirElement;
-  connect(this, &motObject::handle_motObject, mr, &RadioInterface::slot_handle_motObject);
+  connect(this, &motObject::handle_motObject, mr, &RadioInterface::slot_handle_mot_object);
   this->transportId = transportId;
   this->numofSegments = -1;
   this->segmentSize = -1;

@@ -502,7 +502,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   total_ficError = 0;
   total_fics = 0;
 
-  connect(configWidget.streamoutSelector, SIGNAL (activated(int)), this, SLOT (slot_set_streamSelector(int)));
+  connect(configWidget.streamoutSelector, SIGNAL (activated(int)), this, SLOT (slot_set_stream_selector(int)));
   connect(theTechWindow, &TechData::handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
   my_presetHandler.loadPresets(presetFile, presetSelector);
@@ -883,7 +883,7 @@ static QString hextoString(int v)
 }
 
 //	a slot, called by the fib processor
-void RadioInterface::slot_nameofEnsemble(int id, const QString & v)
+void RadioInterface::slot_name_of_ensemble(int id, const QString & v)
 {
   QString s;
   if (!running.load())
@@ -960,7 +960,7 @@ QString RadioInterface::checkDir(const QString s)
   return dir;
 }
 
-void RadioInterface::slot_handle_motObject(QByteArray result, QString objectName, int contentType, bool dirElement)
+void RadioInterface::slot_handle_mot_object(QByteArray result, QString objectName, int contentType, bool dirElement)
 {
   QString realName;
 
@@ -1172,7 +1172,7 @@ void RadioInterface::slot_send_datagram(int length)
 
 //
 //	tdcData is triggered by the backend.
-void RadioInterface::slot_handle_tdcdata(int frametype, int length)
+void RadioInterface::slot_handle_tdc_data(int frametype, int length)
 {
 #ifdef DATA_STREAMER
   uint8_t localBuffer [length + 8];
@@ -1979,7 +1979,7 @@ QString RadioInterface::convertTime(int year, int month, int day, int hours, int
 
 //
 //	called from the MP4 decoder
-void RadioInterface::slot_show_frameErrors(int s)
+void RadioInterface::slot_show_frame_errors(int s)
 {
   if (!running.load())
   {
@@ -1993,7 +1993,7 @@ void RadioInterface::slot_show_frameErrors(int s)
 
 //
 //	called from the MP4 decoder
-void RadioInterface::slot_show_rsErrors(int s)
+void RadioInterface::slot_show_rs_errors(int s)
 {
   if (!running.load())
   {    // should not happen
@@ -2007,7 +2007,7 @@ void RadioInterface::slot_show_rsErrors(int s)
 
 //
 //	called from the aac decoder
-void RadioInterface::slot_show_aacErrors(int s)
+void RadioInterface::slot_show_aac_errors(int s)
 {
   if (!running.load())
   {
@@ -2022,7 +2022,7 @@ void RadioInterface::slot_show_aacErrors(int s)
 
 //
 //	called from the ficHandler
-void RadioInterface::show_ficSuccess(bool b)
+void RadioInterface::slot_show_fic_success(bool b)
 {
   if (!running.load())
   {
@@ -2057,7 +2057,7 @@ void RadioInterface::show_ficSuccess(bool b)
 
 //
 //	called from the PAD handler
-void RadioInterface::slot_show_motHandling(bool b)
+void RadioInterface::slot_show_mot_handling(bool b)
 {
   if (!running.load() || !b)
   {
@@ -2109,7 +2109,7 @@ void RadioInterface::slot_set_synced(bool b)
 //
 //	called from the PAD handler
 
-void RadioInterface::slot_showLabel(const QString & s)
+void RadioInterface::slot_show_label(const QString & s)
 {
 #ifdef  HAVE_PLUTO_RXTX
                                                                                                                           if (streamerOut != nullptr)
@@ -2141,7 +2141,7 @@ void RadioInterface::slot_showLabel(const QString & s)
           s.toUtf8().data());
 }
 
-void RadioInterface::slot_set_Stereo(bool b)
+void RadioInterface::slot_set_stereo(bool b)
 {
   if (!running.load())
   {
@@ -2395,7 +2395,7 @@ void RadioInterface::slot_show_correlation(int amount, int marker, const QVector
 
 ////////////////////////////////////////////////////////////////////////////
 
-void RadioInterface::slot_set_streamSelector(int k)
+void RadioInterface::slot_set_stream_selector(int k)
 {
   if (!running.load())
   {
@@ -3298,12 +3298,12 @@ void RadioInterface::startPacketservice(const QString & s)
 
   switch (pd.DSCTy)
   {
-  default: slot_showLabel(QString("unimplemented Data"));
+  default: slot_show_label(QString("unimplemented Data"));
     break;
   case 5: fprintf(stdout, "selected apptype %d\n", pd.appType);
-    slot_showLabel(QString("Transp. Channel not implemented"));
+    slot_show_label(QString("Transp. Channel not implemented"));
     break;
-  case 60: slot_showLabel(QString("MOT partially implemented"));
+  case 60: slot_show_label(QString("MOT partially implemented"));
     break;
   case 59:
   {
@@ -3315,11 +3315,11 @@ void RadioInterface::startPacketservice(const QString & s)
 	      text. append (n);
 	      showLabel (text);
 #else
-    slot_showLabel("Embedded IP not supported ");
+    slot_show_label("Embedded IP not supported ");
 #endif
   }
     break;
-  case 44: slot_showLabel(QString("Journaline"));
+  case 44: slot_show_label(QString("Journaline"));
     break;
   }
 }
@@ -3338,7 +3338,7 @@ void RadioInterface::cleanScreen()
   new_presetIndex(0);
   stereoSetting = false;
   theTechWindow->cleanUp();
-  slot_set_Stereo(false);
+  slot_set_stereo(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////

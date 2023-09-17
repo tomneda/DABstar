@@ -51,10 +51,10 @@ mp4Processor::mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   myRadioInterface = mr;
   this->frameBuffer = frameBuffer;
   this->dump = dump;
-  connect(this, &mp4Processor::show_frameErrors, mr, &RadioInterface::slot_show_frameErrors);
-  connect(this, &mp4Processor::show_rsErrors, mr, &RadioInterface::slot_show_rsErrors);
-  connect(this, &mp4Processor::show_aacErrors, mr, &RadioInterface::slot_show_aacErrors);
-  connect(this, &mp4Processor::isStereo, mr, &RadioInterface::slot_set_Stereo);
+  connect(this, &mp4Processor::show_frameErrors, mr, &RadioInterface::slot_show_frame_errors);
+  connect(this, &mp4Processor::show_rsErrors, mr, &RadioInterface::slot_show_rs_errors);
+  connect(this, &mp4Processor::show_aacErrors, mr, &RadioInterface::slot_show_aac_errors);
+  connect(this, &mp4Processor::isStereo, mr, &RadioInterface::slot_set_stereo);
   connect(this, &mp4Processor::newFrame, mr, &RadioInterface::slot_new_frame);
   connect(this, &mp4Processor::show_rsCorrections, mr, &RadioInterface::slot_show_rs_corrections);
 

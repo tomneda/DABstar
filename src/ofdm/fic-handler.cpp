@@ -112,7 +112,7 @@ FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
     local++;
   }
 
-  connect(this, SIGNAL (show_ficSuccess(bool)), iMr, SLOT (show_ficSuccess(bool)));
+  connect(this, &FicHandler::show_ficSuccess, iMr, &RadioInterface::slot_show_fic_success);
 }
 
 /**

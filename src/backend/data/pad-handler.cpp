@@ -33,8 +33,8 @@
 padHandler::padHandler(RadioInterface * mr)
 {
   myRadioInterface = mr;
-  connect(this, &padHandler::showLabel, mr, &RadioInterface::slot_showLabel);
-  connect(this, &padHandler::show_motHandling, mr, &RadioInterface::slot_show_motHandling);
+  connect(this, &padHandler::showLabel, mr, &RadioInterface::slot_show_label);
+  connect(this, &padHandler::show_motHandling, mr, &RadioInterface::slot_show_mot_handling);
   currentSlide = nullptr;
   //
   //	mscGroupElement indicates whether we are handling an

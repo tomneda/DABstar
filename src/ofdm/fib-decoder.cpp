@@ -40,7 +40,7 @@ FibDecoder::FibDecoder(RadioInterface * mr) :
   myRadioInterface(mr)
 {
   //connect(this, &FibDecoder::addtoEnsemble, myRadioInterface, &RadioInterface::slot_add_to_ensemble);
-  connect(this, &FibDecoder::nameofEnsemble, myRadioInterface, &RadioInterface::slot_nameofEnsemble);
+  connect(this, &FibDecoder::nameofEnsemble, myRadioInterface, &RadioInterface::slot_name_of_ensemble);
   connect(this, &FibDecoder::clockTime, myRadioInterface, &RadioInterface::slot_clock_time);
   connect(this, &FibDecoder::changeinConfiguration, myRadioInterface, &RadioInterface::slot_change_in_configuration);
   connect(this, &FibDecoder::startAnnouncement, myRadioInterface, &RadioInterface::slot_start_announcement);
