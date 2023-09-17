@@ -694,20 +694,24 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 
 QString RadioInterface::presetText()
 {
-  return QString(
-    "In version 4.35 the way elements were removed from the presets is changed. Just click with the right mouse button on the text of the item and the item will be removed from the presetList");
+  return QString("Click with the right mouse button on the text of the item and the item will be removed from the presetList");
 }
 
 QString RadioInterface::footText()
 {
   version = QString(PRJ_VERS);
-  QString versionText = QString(PRJ_NAME) + " V" + version + " (Qt V" QT_VERSION_STR ")\n";
-  versionText += "Built on " + QString(__TIMESTAMP__) + QString(", Commit ") + QString(GITHASH) + "\n";
-  versionText += "Copyright Jan van Katwijk, mailto:J.vanKatwijk@gmail.com\n";
-  versionText += "Rights of Qt, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged\n";
-  versionText += "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged\n";
-  versionText += "Copyright of DevSec Studio for the skin, made available under an MIT license, is gratefully acknowledged";
-  versionText += "Rights of other contributors gratefully acknowledged";
+  QString versionText = "<html><head/><body><p>";
+  versionText =  "<h3>" + QString(PRJ_NAME) + " V" + version + " (Qt " QT_VERSION_STR ")</h3>";
+  versionText += "<p><b>Built on " + QString(__TIMESTAMP__) + QString("<br/>Commit ") + QString(GITHASH) + ".</b></p>";
+  versionText += "<p>Forked and partly extensive changed and extended by Thomas Neder<br/>"
+                 "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>) from Qt-DAB<br/>"
+                 "(<a href=\"https://github.com/JvanKatwijk/qt-dab\">https://github.com/JvanKatwijk/qt-dab</a>) by Jan van Katwijk<br/>"
+                 "(<a href=\"mailto:J.vanKatwijk@gmail.com\">J.vanKatwijk@gmail.com</a>).</p>";
+  versionText += "<p>Rights of Qt, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged.<br/>"
+                 "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.<br/>"
+                 "Copyright of DevSec Studio for the skin, made available under MIT license, is gratefully acknowledged.<br/>"
+                 "Rights of other contributors gratefully acknowledged.</p>";
+  versionText += "</p></body></html>";
   return versionText;
 }
 
