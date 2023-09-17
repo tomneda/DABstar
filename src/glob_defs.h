@@ -94,8 +94,8 @@ template <typename T> inline void mean_filter(T & ioVal, T iVal, const T iAlpha)
 
 enum class ECarrierPlotType
 {
-  PHASE,
   MODQUAL,
+  PHASE,
   NULLTII
 };
 

@@ -15,7 +15,7 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot) :
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
   mQwtPlotCurve.attach(mQwtPlot);
 
-  select_plot_type(ECarrierPlotType::PHASE);
+  select_plot_type(ECarrierPlotType::MODQUAL);
 
   mQwtPlot->replot();
 }
@@ -149,8 +149,8 @@ QStringList CarrierDisp::get_plot_type_names()
 {
   QStringList sl;
   SCustPlot cp;
-  sl << _get_plot_type_data(ECarrierPlotType::PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::MODQUAL).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::NULLTII).Name;
   return sl;
 }

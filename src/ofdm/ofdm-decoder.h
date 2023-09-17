@@ -62,7 +62,7 @@ private:
   RingBuffer<cmplx> * const mpIqBuffer;
   RingBuffer<float> * const mpCarrBuffer;
 
-  ECarrierPlotType mPlotType = ECarrierPlotType::PHASE;
+  ECarrierPlotType mPlotType = ECarrierPlotType::MODQUAL;
   bool mShowNomCarrier = false;
 
   int32_t mShowCntStatistics = 0;
