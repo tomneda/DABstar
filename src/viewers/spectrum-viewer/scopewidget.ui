@@ -387,7 +387,7 @@
          <item row="10" column="1">
           <widget class="QCheckBox" name="cbNomChIdx">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order carriers in the carrier plot in nominal sequence, not phyically sequence, &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order carriers in the carrier plot in nominal sequence, not physically sequence. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Nom carrier</string>
