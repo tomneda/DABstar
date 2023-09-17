@@ -688,7 +688,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     dabSettings->setValue("hidden", 0);
   }
   configDisplay.show();
-  connect(configWidget.deviceSelector, SIGNAL (activated(const QString &)), this, SLOT (_slot_do_start(const QString &)));
+  connect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_do_start);
   qApp->installEventFilter(this);
 }
 
@@ -715,10 +715,7 @@ QString RadioInterface::footText()
   return versionText;
 }
 
-//
-//	doStart (QString) is called when - on startup - NO device
-//	was registered to be used, and the user presses the
-//	selectDevice comboBox
+// _slot_do_start(QString) is called when - on startup - NO device was registered to be used, and the user presses the selectDevice comboBox
 void RadioInterface::_slot_do_start(const QString & dev)
 {
   (void)dev;
@@ -2749,18 +2746,14 @@ void RadioInterface::connectGUI()
   connect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
   connect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
   connect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));
-
   connect(nextChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_channel_button()));
   connect(prevChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_channel_button()));
   connect(prevServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_service_button()));
   connect(nextServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_service_button()));
-
   connect(theTechWindow, SIGNAL (handle_audioDumping()), this, SLOT (_slot_handle_audio_dump_button()));
   connect(theTechWindow, SIGNAL (handle_frameDumping()), this, SLOT (_slot_handle_frame_dump_button()));
   connect(muteButton, SIGNAL (clicked()), this, SLOT (_slot_handle_mute_button()));
-
   connect(ensembleDisplay, SIGNAL (clicked(QModelIndex)), this, SLOT (_slot_select_service(QModelIndex)));
-
   connect(configWidget.switchDelaySetting, SIGNAL (valueChanged(int)), this, SLOT (_slot_handle_switch_delay_setting(int)));
   connect(configWidget.orderAlfabetical, SIGNAL (clicked()), this, SLOT (_slot_handle_order_alfabetical()));
   connect(configWidget.orderServiceIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_service_ids()));
@@ -2787,13 +2780,10 @@ void RadioInterface::disconnectGUI()
   disconnect(prevChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_channel_button()));
   disconnect(prevServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_service_button()));
   disconnect(nextServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_service_button()));
-
   disconnect(theTechWindow, SIGNAL (handle_audioDumping()), this, SLOT (_slot_handle_audio_dump_button()));
   disconnect(theTechWindow, SIGNAL (handle_frameDumping()), this, SLOT (_slot_handle_frame_dump_button()));
   disconnect(muteButton, SIGNAL (clicked()), this, SLOT (_slot_handle_mute_button()));
-
   disconnect(ensembleDisplay, SIGNAL (clicked(QModelIndex)), this, SLOT (_slot_select_service(QModelIndex)));
-
   disconnect(configWidget.switchDelaySetting, SIGNAL (valueChanged(int)), this, SLOT (_slot_handle_switch_delay_setting(int)));
   disconnect(configWidget.orderAlfabetical, SIGNAL (clicked()), this, SLOT (_slot_handle_order_alfabetical()));
   disconnect(configWidget.orderServiceIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_service_ids()));
@@ -2804,7 +2794,7 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.skipFile_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_file_button()));
 }
 
-void RadioInterface::slot_close_event(QCloseEvent * event)
+void RadioInterface::closeEvent(QCloseEvent * event)
 {
   int x = configWidget.closeDirect->isChecked() ? 1 : 0;
   dabSettings->setValue("closeDirect", x);
@@ -2815,7 +2805,7 @@ void RadioInterface::slot_close_event(QCloseEvent * event)
     return;
   }
 
-  QMessageBox::StandardButton resultButton = QMessageBox::question(this, "dabRadio", tr("Are you sure?\n"), QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
+  QMessageBox::StandardButton resultButton = QMessageBox::question(this, PRJ_NAME, tr("Are you sure?\n"), QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
   if (resultButton != QMessageBox::Yes)
   {
     event->ignore();

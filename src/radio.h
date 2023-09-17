@@ -351,7 +351,6 @@ public slots:
   void slot_show_rs_corrections(int, int);
   void slot_show_tii(int, int);
   void slot_show_tii_spectrum();
-  void slot_close_event(QCloseEvent * event);
   void slot_clock_time(int, int, int, int, int, int, int, int, int);
   void slot_start_announcement(const QString &, int);
   void slot_stop_announcement(const QString &, int);
@@ -364,6 +363,8 @@ public slots:
   void slot_handle_preset_selector(const QString &);
   void slot_handle_content_selector(const QString &);
   void slot_http_terminate();
+
+  void closeEvent(QCloseEvent * event) override;
 
 private slots:
   void _slot_handle_time_table();
