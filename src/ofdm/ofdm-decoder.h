@@ -93,6 +93,9 @@ private:
   float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
   float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
 
+public slots:
+  void select_carrier_plot_type(ECarrierPlotType iPlotType);
+
 signals:
   void showIQ(int, float);
   void showQuality(const SQualityData *);

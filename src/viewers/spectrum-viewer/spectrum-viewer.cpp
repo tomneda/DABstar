@@ -247,47 +247,19 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
 
   if (logIqScope)
   {
+    constexpr float logNorm = std::log10(1.0f + 1.0f);
+
     for (auto i = 0; i < numRead; i++)
     {
       const float phi = std::arg(mIqValuesVec[i]);
-      constexpr float logNorm = std::log10(1.0f + 1.0f);
       const float rl = log10f(1.0f + std::abs(mIqValuesVec[i])) / logNorm;
       mIqValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase, only log the vector length
     }
   }
 
   const float scale = (float)scopeWidth / 100.0f;
+
   myIQDisplay->display_iq(mIqValuesVec, scale, scale);
-
-
-  //  for (auto i = 0; i < numRead2; i++)
-  //  {
-  //    const float r = mCarrValuesVec[i];
-  //
-  //    if (!std::isnan(r) && !std::isinf(r))
-  //    {
-  //      if (logIqScope)
-  //      {
-  //        constexpr float logNorm = log10f(1.0f + 1.0f);
-  //        const float rl = log10f(1.0f + r) / logNorm;
-  //        mIqValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase, only log the vector length
-  //        mCarrVec[i] = conv_rad_to_deg(phi);
-  //        //mPhaseVec[i] = rl * 100.0f;
-  //        //avg += rl;
-  //      }
-  //      else
-  //      {
-  //        mCarrVec[i] = (r - 1.0f) * 180.0f;
-  //        //avg += r;
-  //      }
-  //    }
-  //    else
-  //    {
-  //      mCarrVec[i] = 0.0f;
-  //      mIqValuesVec[i] = 0.0f;
-  //    }
-  //  }
-
   mpCarrierDisp->disp_carrier_plot(mCarrValuesVec);
 }
 
@@ -343,7 +315,7 @@ void SpectrumViewer::showCorrelation(int32_t dots, int marker, const QVector<int
 
 void SpectrumViewer::handle_cbmCarrier(int iSel)
 {
-  CarrierDisp::EPlotType pt = static_cast<CarrierDisp::EPlotType>(iSel);
+  ECarrierPlotType pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
-  emit cbmCarrier_changed(iSel);
+  emit cbmCarrier_changed(pt);
 }

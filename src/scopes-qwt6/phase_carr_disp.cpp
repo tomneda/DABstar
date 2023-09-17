@@ -15,7 +15,7 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot) :
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
   mQwtPlotCurve.attach(mQwtPlot);
 
-  select_plot_type(EPlotType::PHASE);
+  select_plot_type(ECarrierPlotType::PHASE);
 
   mQwtPlot->replot();
 }
@@ -32,7 +32,7 @@ void CarrierDisp::disp_carrier_plot(const std::vector<float> & iPhaseVec)
   mQwtPlot->replot();
 }
 
-void CarrierDisp::select_plot_type(const CarrierDisp::EPlotType iPlotType)
+void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 {
   customize_plot(_get_plot_type_data(iPlotType));
 }
@@ -101,14 +101,14 @@ void CarrierDisp::_setup_x_axis()
   mQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
 }
 
-CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const EPlotType iPlotType)
+CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType iPlotType)
 {
   SCustPlot cp;
   cp.PlotType = iPlotType;
 
   switch (iPlotType)
   {
-  case EPlotType::PHASE:
+  case ECarrierPlotType::PHASE:
     cp.Style  = SCustPlot::EStyle::DOTS;
     cp.Name = "Phase";
     cp.StartValue = -180.0;
@@ -119,7 +119,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const EPlotType iPlotTyp
     cp.MarkerSegments = 3; // each 90.0
     break;
 
-  case EPlotType::MODQUAL:
+  case ECarrierPlotType::MODQUAL:
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "ModQual";
     cp.StartValue = 0.0;
@@ -130,7 +130,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const EPlotType iPlotTyp
     cp.MarkerSegments = 8; // each 10.0
     break;
 
-  case EPlotType::NULLTII:
+  case ECarrierPlotType::NULLTII:
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "NullTII";
     cp.StartValue = -100.0;
@@ -149,8 +149,8 @@ QStringList CarrierDisp::get_plot_type_names()
 {
   QStringList sl;
   SCustPlot cp;
-  sl << _get_plot_type_data(EPlotType::PHASE).Name;
-  sl << _get_plot_type_data(EPlotType::MODQUAL).Name;
-  sl << _get_plot_type_data(EPlotType::NULLTII).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::PHASE).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::MODQUAL).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::NULLTII).Name;
   return sl;
 }

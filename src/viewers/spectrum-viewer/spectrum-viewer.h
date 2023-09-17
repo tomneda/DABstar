@@ -125,7 +125,7 @@ private slots:
   void handle_cbmCarrier(int);
 
 signals:
-  void cbmCarrier_changed(int);
+  void cbmCarrier_changed(ECarrierPlotType);
   void cbNomCarrier_changed(bool);
 };
 

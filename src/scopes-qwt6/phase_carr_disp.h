@@ -17,18 +17,11 @@ public:
   explicit CarrierDisp(QwtPlot * plot);
   ~CarrierDisp() = default;
 
-  enum class EPlotType
-  {
-    PHASE,
-    MODQUAL,
-    NULLTII
-  };
-
   struct SCustPlot
   {
     enum class EStyle { DOTS, LINES };
 
-    EPlotType PlotType = EPlotType::PHASE;
+    ECarrierPlotType PlotType = ECarrierPlotType::PHASE;
     EStyle Style = EStyle::DOTS;
     const char * Name = "(dummy)";
 
@@ -43,7 +36,7 @@ public:
 
   void disp_carrier_plot(const std::vector<float> & iPhaseVec);
   void customize_plot(const SCustPlot & iCustPlot);
-  void select_plot_type(const EPlotType iPlotType);
+  void select_plot_type(const ECarrierPlotType iPlotType);
   static QStringList get_plot_type_names() ;
 
 private:
@@ -53,7 +46,7 @@ private:
   int32_t mDataSize = 0;
   std::vector<float> mX_axis_vec;
 
-  static SCustPlot _get_plot_type_data(const EPlotType iPlotType);
+  static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);
   void _setup_x_axis();
 };
 

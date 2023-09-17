@@ -346,3 +346,8 @@ float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
 
   return offsa / (2.0f * (float)M_PI * (float)mDabPar.T_s / (float)mDabPar.T_u * (float)offsb);
 }
+
+void OfdmDecoder::select_carrier_plot_type(ECarrierPlotType iPlotType)
+{
+
+}

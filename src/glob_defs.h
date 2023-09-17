@@ -92,7 +92,11 @@ template <typename T> inline void mean_filter(T & ioVal, T iVal, const T iAlpha)
   ioVal += iAlpha * (iVal - ioVal);
 }
 
-// the "while(false)" is due to warning about a unuseful ";" on end of macro :-(
-//#define mean_filter(ioVal_, iVal_, iAlpha_)  do { ioVal_ += iAlpha_ * (iVal_ - ioVal_); } while(false)
+enum class ECarrierPlotType
+{
+  PHASE,
+  MODQUAL,
+  NULLTII
+};
 
 #endif // GLOB_DEFS_H
