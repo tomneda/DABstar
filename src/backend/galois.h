@@ -26,7 +26,7 @@
 #include  <cstdint>
 #include  <vector>
 
-class galois
+class Galois
 {
 private:
   uint16_t mm;    /* Bits per symbol */
@@ -37,8 +37,8 @@ private:
   std::vector<uint16_t> index_of;  /* Antilog lookup table */
 
 public:
-  galois(uint16_t mm, uint16_t poly);
-  ~galois();
+  Galois(uint16_t mm, uint16_t poly);
+  ~Galois() = default;
 
   int modnn(int);
   uint16_t add_poly(uint16_t a, uint16_t b);

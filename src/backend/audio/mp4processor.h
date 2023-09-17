@@ -47,12 +47,12 @@
 
 class RadioInterface;
 
-class mp4Processor : public QObject, public frameProcessor
+class Mp4Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  mp4Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *);
-  ~mp4Processor();
+  Mp4Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *);
+  ~Mp4Processor();
   void addtoFrame(const std::vector<uint8_t> &);
   
 private:
@@ -82,8 +82,8 @@ private:
   std::vector<uint8_t> outVector;
   int16_t RSDims;
   int16_t au_start[10];
-  firecode_checker fc;
-  reedSolomon my_rsDecoder;
+  FirecodeChecker fc;
+  ReedSolomon my_rsDecoder;
   //	and for the aac decoder
 #ifdef  __WITH_FDK_AAC__
   fdkAAC		*aacDecoder;

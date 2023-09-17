@@ -29,13 +29,13 @@
 //	virtual class, just for providing a common base
 //	for the real decoder classes
 
-class frameProcessor
+class FrameProcessor
 {
 public:
-  frameProcessor()
+  FrameProcessor()
   {}
 
-  virtual ~frameProcessor()
+  virtual ~FrameProcessor()
   {}
 
   virtual void addtoFrame(const std::vector<uint8_t> &)

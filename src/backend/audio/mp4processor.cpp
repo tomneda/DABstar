@@ -43,7 +43,7 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-mp4Processor::mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int16_t> * b, RingBuffer<uint8_t> * frameBuffer, FILE * dump) :
+Mp4Processor::Mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int16_t> * b, RingBuffer<uint8_t> * frameBuffer, FILE * dump) :
   my_padhandler(mr),
   my_rsDecoder(8, 0435, 0, 1, 10)
 {
@@ -51,12 +51,12 @@ mp4Processor::mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   myRadioInterface = mr;
   this->frameBuffer = frameBuffer;
   this->dump = dump;
-  connect(this, &mp4Processor::show_frameErrors, mr, &RadioInterface::slot_show_frame_errors);
-  connect(this, &mp4Processor::show_rsErrors, mr, &RadioInterface::slot_show_rs_errors);
-  connect(this, &mp4Processor::show_aacErrors, mr, &RadioInterface::slot_show_aac_errors);
-  connect(this, &mp4Processor::isStereo, mr, &RadioInterface::slot_set_stereo);
-  connect(this, &mp4Processor::newFrame, mr, &RadioInterface::slot_new_frame);
-  connect(this, &mp4Processor::show_rsCorrections, mr, &RadioInterface::slot_show_rs_corrections);
+  connect(this, &Mp4Processor::show_frameErrors, mr, &RadioInterface::slot_show_frame_errors);
+  connect(this, &Mp4Processor::show_rsErrors, mr, &RadioInterface::slot_show_rs_errors);
+  connect(this, &Mp4Processor::show_aacErrors, mr, &RadioInterface::slot_show_aac_errors);
+  connect(this, &Mp4Processor::isStereo, mr, &RadioInterface::slot_set_stereo);
+  connect(this, &Mp4Processor::newFrame, mr, &RadioInterface::slot_new_frame);
+  connect(this, &Mp4Processor::show_rsCorrections, mr, &RadioInterface::slot_show_rs_corrections);
 
 #ifdef  __WITH_FDK_AAC__
   aacDecoder		= new fdkAAC (mr, b);
@@ -82,7 +82,7 @@ mp4Processor::mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   goodFrames = 0;
 }
 
-mp4Processor::~mp4Processor()
+Mp4Processor::~Mp4Processor()
 {
   delete aacDecoder;
 }
@@ -97,7 +97,7 @@ mp4Processor::~mp4Processor()
   *	per Byte, nbits is the number of Bits (i.e. containing bytes)
   *	the function adds nbits bits, packed in bytes, to the frame
   */
-void mp4Processor::addtoFrame(const std::vector<uint8_t> & V)
+void Mp4Processor::addtoFrame(const std::vector<uint8_t> & V)
 {
   int16_t i, j;
   uint8_t temp = 0;
@@ -162,7 +162,7 @@ void mp4Processor::addtoFrame(const std::vector<uint8_t> & V)
   *	First, we know the firecode checker gave green light
   *	We correct the errors using RS
   */
-bool mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
+bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
 {
   uint8_t num_aus;
   int16_t i, j, k;
@@ -348,7 +348,7 @@ bool mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
   return true;
 }
 
-int mp4Processor::build_aacFile(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer)
+int Mp4Processor::build_aacFile(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer)
 {
   BitWriter au_bw;
 

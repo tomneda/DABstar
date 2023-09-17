@@ -51,12 +51,12 @@ struct quantizer_spec
 
 class RadioInterface;
 
-class mp2Processor : public QObject, public frameProcessor
+class Mp2Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  mp2Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *);
-  ~mp2Processor();
+  Mp2Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *);
+  ~Mp2Processor();
   void addtoFrame(const std::vector<uint8_t> &);
 
 private:

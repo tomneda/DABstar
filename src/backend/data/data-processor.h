@@ -34,7 +34,7 @@ class RadioInterface;
 class virtual_dataHandler;
 class Packetdata;
 
-class DataProcessor : public QObject, public frameProcessor
+class DataProcessor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
