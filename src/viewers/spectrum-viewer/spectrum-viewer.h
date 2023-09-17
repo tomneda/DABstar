@@ -103,14 +103,8 @@ private:
   std::array<double, SP_DISPLAYSIZE> Y_values{ 0 };
   std::array<double, SP_DISPLAYSIZE> Y2_values{ 0 };
 
-  //QwtPlotMarker * Marker{};
   QwtPlot * plotgrid{};
   QwtPlotGrid * grid{};
-  QwtPlotCurve * spectrumCurve{};
-  //QBrush * ourBrush{};
-  //int32_t indexforMarker{};
-  //void ViewSpectrum(double *, double *, double, int);
-  [[nodiscard]] float get_db(float) const;
   int32_t normalizer = 0;
   int32_t lastVcoFreq = 0;
   bool mShowInLogScale = false;
@@ -121,8 +115,11 @@ private:
   WaterfallScope * myWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
 
+  [[nodiscard]] float get_db(float) const;
+
 private slots:
-  void slot_handle_cmb_carrier(int);
+  void _slot_handle_cmb_carrier(int);
+  void _slot_handle_cb_nom_carrier(int);
 
 signals:
   void signal_cmb_carrier_changed(ECarrierPlotType);

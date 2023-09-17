@@ -44,11 +44,10 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mpIqBuffer(ipIqBuffer),
   mpCarrBuffer(ipCarrBuffer)
 {
-  connect(this, &OfdmDecoder::showIQ, mpRadioInterface, &RadioInterface::slot_show_iq);
-  connect(this, &OfdmDecoder::showQuality, mpRadioInterface, &RadioInterface::slot_show_mod_quality_data);
+  connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &RadioInterface::slot_show_iq);
+  connect(this, &OfdmDecoder::signal_show_mod_quality, mpRadioInterface, &RadioInterface::slot_show_mod_quality_data);
 
   mAvgNullBlockFreqBin.resize(mDabPar.T_u);
-  mRealPhaseReference.resize(mDabPar.T_u);
   mPhaseReference.resize(mDabPar.T_u);
   mFftBuffer.resize(mDabPar.T_u);
   mIqVector.resize(mDabPar.K);
@@ -90,19 +89,42 @@ void OfdmDecoder::reset()
   std::fill(mMeanLevelVector.begin(), mMeanLevelVector.end(), M_PI_4);
   std::fill(mAvgNullBlockFreqBin.begin(), mAvgNullBlockFreqBin.end(), 0.0f);
   mAvgAbsLevelOvrAll = 1.0f;
+  mAvgAbsNullLevelMax = 0.0f;
+  mAvgAbsNullLevelMin = 0.0f;
+  mAvgAbsNullLevelGain = 0.0f;
 }
 
-void OfdmDecoder::store_null_block(const std::vector<cmplx> & iV)
+void OfdmDecoder::store_null_with_tii_block(const std::vector<cmplx> & iV) // with TII information
 {
+  if (mPlotType != ECarrierPlotType::NULLTII)
+  {
+    return;
+  }
+
   memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
   mFftHandler.fft(mFftBuffer);
 
+  constexpr float ALPHA = 0.1f;
+  float max = -1e100;
+  float min =  1e100;
+
   for (int32_t idx = 0; idx < mDabPar.T_u; ++idx)
   {
-    mAvgNullBlockFreqBin[idx] += 0.1f * (std::abs(mFftBuffer[idx]) - mAvgNullBlockFreqBin[idx]);
-    //mAvgNullBlockFreqBin[idx] = std::abs(mFftBuffer[idx]);
+    const float level = std::abs(mFftBuffer[idx]);
+
+    if (level < min) min = level;
+    if (level > max) max = level;
+
+    mean_filter(mAvgNullBlockFreqBin[idx], level, ALPHA);
   }
+
+  assert(max > min);
+
+  mean_filter(mAvgAbsNullLevelMin, min, ALPHA);
+  mean_filter(mAvgAbsNullLevelMax, max, ALPHA);
+
+  mAvgAbsNullLevelGain = 100.0f / (mAvgAbsNullLevelMax - mAvgAbsNullLevelMin); // in percent
 }
 
 /**
@@ -115,7 +137,6 @@ void OfdmDecoder::processBlock_0(std::vector<cmplx> buffer) // copy is intended 
    *	as coming from the FFT as phase reference.
    */
 
-  memcpy(mRealPhaseReference.data(), buffer.data(), mDabPar.T_u * sizeof(cmplx));
   memcpy(mPhaseReference.data(), buffer.data(), mDabPar.T_u * sizeof(cmplx));
 }
 
@@ -128,18 +149,11 @@ void OfdmDecoder::processBlock_0(std::vector<cmplx> buffer) // copy is intended 
 
 void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits)
 {
-  //pi_quarter_shift = !pi_quarter_shift;
-
   memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
   mFftHandler.fft(mFftBuffer);
 
-  //mAvgDc += 0.0001f * (mFftBuffer[0] - mAvgDc);
-  mAvgDc = mFftBuffer[0];
-
-  //const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
-  const cmplx rotator = cmplx_from_phase(-mAvgPhaseShift);
-  //const cmplx pi_quat_rotator = (pi_quarter_shift ? std::exp(cmplx(0.0f, -M_PI_4)) : std::exp(cmplx(0.0f, 0.0f)));
+  const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
 
   /**
    *	a little optimization: we do not interchange the
@@ -164,6 +178,8 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
       realCarrRelIdx += mDabPar.K / 2 - 1;
     }
 
+    const int16_t dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
+
     /**
      *	decoding is computing the phase difference between
      *	carriers with the same index in subsequent blocks.
@@ -171,47 +187,44 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
      *	on the same position in the next block
      */
 #ifndef OTHER_OFDM_DECODING_STYLE
-    const cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx]));
-    //fftBin *= rotator; // fine correction of phase which can't be done in the time domain
+    cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx]));
+    fftBin *= rotator; // fine correction of phase which can't be done in the time domain
+
+
+    // get mean of absolute phase for each bin
+    const float fftBinAbsPhase = std::atan2(std::abs(imag(fftBin)), std::abs(real(fftBin))); // map to top right section
+    float & meanAbsPhasePerBinRef = mMeanAbsPhaseVector[nomCarrIdx];
+    mean_filter(meanAbsPhasePerBinRef, fftBinAbsPhase, 0.005f);
+
+    // get standard deviation of absolute phase for each bin
+    const float curStdDevDiff = (fftBinAbsPhase - meanAbsPhasePerBinRef);
+    const float curStdDevSq = curStdDevDiff * curStdDevDiff;
+    float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
+    mean_filter(stdDevSqRef, curStdDevSq, 0.005f);
+    const float avgStdDev = sqrt(stdDevSqRef); // this value should be only between 0 (no noise) and M_PI_4 (heavy noise etc.)
+
+    // finally calculate (and limit) a soft bit weight from the standard deviation for each bin
+    float weight = 127.0f * ((float)M_PI_4 - avgStdDev) / (float)M_PI_4;
+    limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
+
+    // calculate the mean of the vector length of each bin to equalize the IQ diagram (simply looks nicer)
     const float fftBinAbs = std::abs(fftBin);
-
     float & meanLevelPerBinRef = mMeanLevelVector[nomCarrIdx];
-
     mean_filter(meanLevelPerBinRef, fftBinAbs, 0.005f);
-    mean_filter(mAvgAbsLevelOvrAll, fftBinAbs, 0.005f / 1536.0f);
+    mIqVector[nomCarrIdx] = fftBin / meanLevelPerBinRef;
 
-    float weight;
-    cmplx fftBinPhaseNormed = fftBin;
+    switch (mPlotType)
     {
-      const float curAbsPhase = std::atan2(std::abs(imag(fftBin)), std::abs(real(fftBin))); // map to top right section
-
-      float & meanAbsPhasePerBinRef = mMeanAbsPhaseVector[nomCarrIdx];
-      mean_filter(meanAbsPhasePerBinRef, curAbsPhase, 0.005f);
-
-      const float curStdDevDiff = (curAbsPhase - meanAbsPhasePerBinRef);
-      const float curStdDevSq = curStdDevDiff * curStdDevDiff;
-
-      float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
-      mean_filter(stdDevSqRef, curStdDevSq, 0.005f);
-
-      const float avgStdDev = sqrt(stdDevSqRef);
-
-      weight = 127.0f * ((float)M_PI_4 - avgStdDev) / (float)M_PI_4;
-      limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
-      //fftBinPhaseNormed *= cmplx_from_phase(meanAbsPhasePerBinRef - (float)M_PI_4);
+    case ECarrierPlotType::PHASE:
+      mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin));
+      break;
+    case ECarrierPlotType::MODQUAL:
+      mCarrVector[dataVecCarrIdx] = 100.0 / 127.0f * weight; // weight is shown from 0..100%
+      break;
+    case ECarrierPlotType::NULLTII:
+      mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelGain * mAvgNullBlockFreqBin[fftIdx] + mAvgAbsNullLevelMin; // TII is shown from 0..100%
+      break;
     }
-
-    //mDataVector[realCarrRelIdx] = fftBin / mAvgDataOvrAll;
-    //mDataVector[realCarrRelIdx] = fftBin / meanLevelPerBinRef;
-    mIqVector[realCarrRelIdx] = fftBinPhaseNormed / meanLevelPerBinRef;
-    //mDataVector[realCarrRelIdx] = meanLevelPerBinRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
-    //mDataVector[realCarrRelIdx] = meanLevelPerBinRef / mAvgDataOvrAll * norm_to_length_one(fftBinNormed);
-    //mDataVector[realCarrRelIdx] = 10.0f*(mAvgDc);
-    mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(fftBinPhaseNormed));
-    //mCarrVector[realCarrRelIdx] = abs_log10_with_offset(fftBinPhaseNormed / meanLevelPerBinRef);
-    //mCarrVector[realCarrRelIdx] = abs_log10_with_offset(mAvgNullBlockFreqBin[fftIdx]);
-    //mDataVector[realCarrRelIdx] =  2 * weight / 127.0f * norm_to_length_one(fftBin); // ***
-    //mDataVector[nomCarrIdx] = 2 * weight / 127.0f * norm_to_length_one(fftBin);
 
     const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
     const int16_t hardBitImag = (imag(fftBin) < 0.0f ? 1 : -1);
@@ -220,10 +233,11 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
     oBits[mDabPar.K + nomCarrIdx] = (int16_t)(hardBitImag * weight);
 #else
     cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-    //r1 *= std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
+    //r1 *= rotator; // fine correction of phase which can't be done in the time domain
     const float ab1 = abs(r1);
     mean_filter(mAvgAbsLevelOvrAll, ab1, 0.005f / 1536.0f);
-    mDataVector[nomCarrIdx] = r1 / mAvgAbsLevelOvrAll;
+    mIqVector[nomCarrIdx] = r1 / mAvgAbsLevelOvrAll;
+    mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(r1));
 
     // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
     // tomneda: is that kind of soft creation ok?
@@ -238,7 +252,7 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
   {
     mpIqBuffer->putDataIntoBuffer(mIqVector.data(), mDabPar.K);
     mpCarrBuffer->putDataIntoBuffer(mCarrVector.data(), mDabPar.K);
-    emit showIQ(mDabPar.K, 1.0f /*mGain / TOP_VAL*/);
+    emit signal_slot_show_iq(mDabPar.K, 1.0f /*mGain / TOP_VAL*/);
     mShowCntIqScope = 0;
   }
 
@@ -249,7 +263,7 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
     mQD.TimeOffset = _compute_time_offset(mFftBuffer, mPhaseReference);
     mQD.FreqOffset = _compute_frequency_offset(mFftBuffer, mPhaseReference);
     mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
-    emit showQuality(&mQD);
+    emit signal_show_mod_quality(&mQD);
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % mDabPar.L;
     if (mNextShownOfdmSymbIdx == 0) mNextShownOfdmSymbIdx = 1; // as iCurSymbolNo can never be zero here
@@ -347,7 +361,12 @@ float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
   return offsa / (2.0f * (float)M_PI * (float)mDabPar.T_s / (float)mDabPar.T_u * (float)offsb);
 }
 
-void OfdmDecoder::select_carrier_plot_type(ECarrierPlotType iPlotType)
+void OfdmDecoder::slot_select_carrier_plot_type(ECarrierPlotType iPlotType)
 {
+  mPlotType = iPlotType;
+}
 
+void OfdmDecoder::slot_show_nominal_carrier(bool iShowNominalCarrier)
+{
+  mShowNomCarrier = iShowNominalCarrier;
 }

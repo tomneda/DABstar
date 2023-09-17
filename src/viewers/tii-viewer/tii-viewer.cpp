@@ -107,7 +107,9 @@ TiiViewer::TiiViewer(RadioInterface * mr, QSettings * dabSettings, RingBuffer<cm
 
   for (i = 0; i < TII_SPECTRUMSIZE; i++)
   {
-    Window[i] = 0.42 - 0.5 * cos((2.0 * M_PI * i) / (TII_SPECTRUMSIZE - 1)) + 0.08 * cos((4.0 * M_PI * i) / (TII_SPECTRUMSIZE - 1));
+    Window[i] = 0.42
+              - 0.50 * cos((2.0 * M_PI * i) / (TII_SPECTRUMSIZE - 1))
+              + 0.08 * cos((4.0 * M_PI * i) / (TII_SPECTRUMSIZE - 1));
   }
   setBitDepth(12);
 }

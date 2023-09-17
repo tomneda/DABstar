@@ -32,7 +32,8 @@
 #include  "color-selector.h"
 
 
-SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
+SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
+                               RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
   Ui_scopeWidget(),
   myFrame(nullptr),
   myRadioInterface(ipRI),
@@ -54,14 +55,13 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
 
   myFrame.resize(QSize(w, h));
   myFrame.move(QPoint(x, y));
-
-  //QPoint pos = myFrame.mapToGlobal(QPoint(0, 0));
-  //fprintf(stdout, "spectrumViewer  %d %d, staat op %d %d\n", x, y, pos.x(), pos.y());
   myFrame.hide();
 
   for (int16_t i = 0; i < SP_SPECTRUMSIZE; i++)
   {
-    Window[i] = static_cast<float>(0.42 - 0.50 * cos((2.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1)) + 0.08 * cos((4.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1)));
+    Window[i] = static_cast<float>(0.42
+                                 - 0.50 * cos((2.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1))
+                                 + 0.08 * cos((4.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1)));
   }
 
   mySpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
@@ -69,15 +69,15 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   myIQDisplay = new IQDisplay(iqDisplay);
   mpCarrierDisp = new CarrierDisp(phaseCarrPlot);
   mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, ipDabSettings, mpCorrelationBuffer);
-  //myNullScope = new nullScope(nullDisplay, 256, dabSettings);
+
   setBitDepth(12);
 
   mShowInLogScale = cbLogIqScope->isChecked();
 
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
 
-  connect(cmbCarrier, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::slot_handle_cmb_carrier);
-  connect(cbNomChIdx, &QCheckBox::stateChanged, this, [this](int idx){ emit signal_cb_nom_carrier_changed(idx != 0); });
+  connect(cmbCarrier, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
+  connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -98,7 +98,6 @@ SpectrumViewer::~SpectrumViewer()
   delete myIQDisplay;
   delete mySpectrumScope;
   delete myWaterfallScope;
-  //delete myNullScope;
 }
 
 void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
@@ -131,7 +130,7 @@ void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
     }
   }
 
-  //
+
   //	and window it
   //	get the buffer data
   for (int i = 0; i < SP_SPECTRUMSIZE; i++)
@@ -147,8 +146,8 @@ void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
   }
 
   fft.fft(spectrum.data());
-  //spectrum = {std::array<std::complex<float>, 2048>}
-  //	and map the SP_SPECTRUMSIZE values onto SP_DISPLAYSIZE elements
+
+  // map the SP_SPECTRUMSIZE values onto SP_DISPLAYSIZE elements
   for (int i = 0; i < SP_DISPLAYSIZE / 2; i++)
   {
     double f = 0;
@@ -165,8 +164,8 @@ void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
     }
     Y_values[i] = f / SP_SPECTRUMOVRSMPFAC;
   }
-  //
-  //	average the image a little.
+
+  // average the image a little.
   for (int i = 0; i < SP_DISPLAYSIZE; i++)
   {
     if (std::isnan(Y_values[i]) || std::isinf(Y_values[i]))
@@ -233,8 +232,6 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
   if (mShowInLogScale != logIqScope)
   {
     mShowInLogScale = logIqScope;
-//    CarrierDisp::SCustPlot custPlot;
-//    mpPhaseVsCarrDisp->customize_plot(custPlot);
   }
 
   const int32_t numRead = iqBuffer->getDataFromBuffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
@@ -313,9 +310,14 @@ void SpectrumViewer::showCorrelation(int32_t dots, int marker, const QVector<int
   mpCorrelationViewer->showCorrelation(dots, marker, v);
 }
 
-void SpectrumViewer::slot_handle_cmb_carrier(int iSel)
+void SpectrumViewer::_slot_handle_cmb_carrier(int iSel)
 {
-  ECarrierPlotType pt = static_cast<ECarrierPlotType>(iSel);
+  auto pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
   emit signal_cmb_carrier_changed(pt);
+}
+
+void SpectrumViewer::_slot_handle_cb_nom_carrier(int iSel)
+{
+  emit signal_cb_nom_carrier_changed(iSel != 0);
 }

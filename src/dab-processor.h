@@ -133,6 +133,10 @@ private:
   bool _state_eval_sync_symbol(int32_t & oStartIndex, int & oSampleCount, float iThreshold);
   void _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
 
+public slots:
+  void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
+  void slot_show_nominal_carrier(bool iShowNominalCarrier);
+
 signals:
   void setSynced(bool);
   void No_Signal_Found();

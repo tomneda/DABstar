@@ -50,7 +50,7 @@ public:
   };
 
   void reset();
-  void store_null_block(const std::vector<cmplx> &);
+  void store_null_with_tii_block(const std::vector<cmplx> &);
   void processBlock_0(std::vector<cmplx>);  // copy of vector is intended
   void decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
 
@@ -62,10 +62,12 @@ private:
   RingBuffer<cmplx> * const mpIqBuffer;
   RingBuffer<float> * const mpCarrBuffer;
 
+  ECarrierPlotType mPlotType = ECarrierPlotType::PHASE;
+  bool mShowNomCarrier = false;
+
   int32_t mShowCntStatistics = 0;
   int32_t mShowCntIqScope = 0;
   int32_t mNextShownOfdmSymbIdx = 1;
-  std::vector<cmplx> mRealPhaseReference;
   std::vector<cmplx> mPhaseReference;
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mIqVector;
@@ -74,15 +76,10 @@ private:
   std::vector<float> mMeanAbsPhaseVector;
   std::vector<float> mMeanLevelVector;
   std::vector<float> mAvgNullBlockFreqBin;
-  //std::vector<int16_t> mNomCarrToRealCarrMap;
   float mAvgAbsLevelOvrAll = 1.0f;
-  bool pi_quarter_shift = false;
-  float mAvgPhaseShift = 0.0f;
-  cmplx mAvgDc {};
-
-  static constexpr float TOP_VAL = 127.0f;
-  static constexpr float BTN_VAL =  2.0f;
-  float mGain = TOP_VAL;
+  float mAvgAbsNullLevelMax = 0.0f;
+  float mAvgAbsNullLevelMin = 0.0f;
+  float mAvgAbsNullLevelGain = 0.0f;
 
   // mQD has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
@@ -94,11 +91,12 @@ private:
   float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
 
 public slots:
-  void select_carrier_plot_type(ECarrierPlotType iPlotType);
+  void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
+  void slot_show_nominal_carrier(bool iShowNominalCarrier);
 
 signals:
-  void showIQ(int, float);
-  void showQuality(const SQualityData *);
+  void signal_slot_show_iq(int, float);
+  void signal_show_mod_quality(const SQualityData *);
 };
 
 #endif

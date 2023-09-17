@@ -133,12 +133,12 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
   case ECarrierPlotType::NULLTII:
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "NullTII";
-    cp.StartValue = -100.0;
-    cp.StopValue = 0.0;
+    cp.StartValue = 0.0;
+    cp.StopValue = 100.0;
     cp.Segments = 5; // each 20.0
-    cp.MarkerStartValue = -90.0;
-    cp.MarkerStopValue = -10.0;
-    cp.MarkerSegments = 8; // each -10.0
+    cp.MarkerStartValue = 10.0;
+    cp.MarkerStopValue = 90.0;
+    cp.MarkerSegments = 8; // each 10.0
     break;
   }
 

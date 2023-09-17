@@ -760,7 +760,10 @@ bool RadioInterface::doStart()
   //	to the slot since that function does a lot more, things we
   //	do not want here
   connect(presetSelector, &presetComboBox::textActivated, this, &RadioInterface::slot_handle_preset_selector);
-  connect(channelSelector, SIGNAL (activated(const QString &)), this, SLOT (_slot_handle_channel_selector(const QString &)));
+  connect(channelSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+  connect(&my_spectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, my_dabProcessor, &DabProcessor::slot_show_nominal_carrier);
+  connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
+
   //
   //	Just to be sure we disconnect here.
   //	It would have been helpful to have a function
@@ -933,7 +936,7 @@ void RadioInterface::_slot_handle_content_button()
     serviceList.size()) + ";" + distanceLabel->text() + "\n";
 
   my_contentTable = new contentTable(this, dabSettings, channel.channelName, my_dabProcessor->scanWidth());
-  connect(my_contentTable, SIGNAL (goService(const QString &)), this, SLOT (slot_handle_content_selector(const QString &)));
+  connect(my_contentTable, &contentTable::goService, this, &RadioInterface::slot_handle_content_selector);
 
   my_contentTable->addLine(header);
   //	my_contentTable		-> addLine ("\n");
