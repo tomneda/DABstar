@@ -44,8 +44,8 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mpIqBuffer(ipIqBuffer),
   mpCarrBuffer(ipCarrBuffer)
 {
-  connect(this, &OfdmDecoder::showIQ, mpRadioInterface, &RadioInterface::showIQ);
-  connect(this, &OfdmDecoder::showQuality, mpRadioInterface, &RadioInterface::showQuality);
+  connect(this, &OfdmDecoder::showIQ, mpRadioInterface, &RadioInterface::slot_show_iq);
+  connect(this, &OfdmDecoder::showQuality, mpRadioInterface, &RadioInterface::slot_show_mod_quality_data);
 
   mAvgNullBlockFreqBin.resize(mDabPar.T_u);
   mRealPhaseReference.resize(mDabPar.T_u);

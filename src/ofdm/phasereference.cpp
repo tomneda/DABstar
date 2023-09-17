@@ -58,7 +58,7 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
     mPhaseDifferences[i - 1] = abs(arg(mRefTable[(mDabPar.T_u + i + 0) % mDabPar.T_u] * conj(mRefTable[(mDabPar.T_u + i + 1) % mDabPar.T_u])));
   }
 
-  connect(this, &PhaseReference::show_correlation, ipRadio, &RadioInterface::showCorrelation);
+  connect(this, &PhaseReference::show_correlation, ipRadio, &RadioInterface::slot_show_correlation);
 }
 
 /**

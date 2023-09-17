@@ -76,8 +76,8 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
 
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
 
-  connect(cmbCarrier, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::handle_cbmCarrier);
-  connect(cbNomChIdx, &QCheckBox::stateChanged, this, [this](int idx){ emit cbNomCarrier_changed(idx != 0); });
+  connect(cmbCarrier, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::slot_handle_cmb_carrier);
+  connect(cbNomChIdx, &QCheckBox::stateChanged, this, [this](int idx){ emit signal_cb_nom_carrier_changed(idx != 0); });
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -313,9 +313,9 @@ void SpectrumViewer::showCorrelation(int32_t dots, int marker, const QVector<int
   mpCorrelationViewer->showCorrelation(dots, marker, v);
 }
 
-void SpectrumViewer::handle_cbmCarrier(int iSel)
+void SpectrumViewer::slot_handle_cmb_carrier(int iSel)
 {
   ECarrierPlotType pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
-  emit cbmCarrier_changed(pt);
+  emit signal_cmb_carrier_changed(pt);
 }

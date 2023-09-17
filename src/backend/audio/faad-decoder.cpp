@@ -31,7 +31,7 @@ faadDecoder::faadDecoder(RadioInterface * mr, RingBuffer<int16_t> * buffer)
   aacConf = NeAACDecGetCurrentConfiguration(aacHandle);
   aacInitialized = false;
   baudRate = 48000;
-  connect(this, SIGNAL (newAudio(int, int)), mr, SLOT (newAudio(int, int)));
+  connect(this, &faadDecoder::newAudio, mr, &RadioInterface::slot_new_audio);
 }
 
 faadDecoder::~faadDecoder()

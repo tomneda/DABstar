@@ -122,11 +122,11 @@ private:
   CorrelationViewer * mpCorrelationViewer = nullptr;
 
 private slots:
-  void handle_cbmCarrier(int);
+  void slot_handle_cmb_carrier(int);
 
 signals:
-  void cbmCarrier_changed(ECarrierPlotType);
-  void cbNomCarrier_changed(bool);
+  void signal_cmb_carrier_changed(ECarrierPlotType);
+  void signal_cb_nom_carrier_changed(bool);
 };
 
 #endif

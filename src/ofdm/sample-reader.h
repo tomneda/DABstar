@@ -81,8 +81,8 @@ private:
   void _wait_for_sample_buffer_filled(int32_t n);
 
 signals:
-  void show_Spectrum(int);
-  void show_Corrector(int);
+  void signal_show_spectrum(int);
+  void signal_show_corrector(int);
 };
 
 #endif

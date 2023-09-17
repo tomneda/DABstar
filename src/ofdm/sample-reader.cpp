@@ -50,8 +50,8 @@ SampleReader::SampleReader(const RadioInterface * mr, deviceHandler * iTheRig, R
                                (float)sin(2.0 * M_PI * i / INPUT_RATE));
   }
 
-  connect(this, SIGNAL (show_Spectrum(int)), mr, SLOT (showSpectrum(int)));
-  connect(this, SIGNAL (show_Corrector(int)), mr, SLOT (set_CorrectorDisplay(int)));
+  connect(this, &SampleReader::signal_show_spectrum, mr, &RadioInterface::slot_show_spectrum);
+  connect(this, &SampleReader::signal_show_corrector, mr, &RadioInterface::slot_set_corrector_display);
 }
 
 void SampleReader::setRunning(bool b)
@@ -118,11 +118,11 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, int32_t index, int32_t n,
 
   if (sampleCount > INPUT_RATE / 4)
   {
-    show_Corrector(corrector);
+    signal_show_corrector(corrector);
     if (spectrumBuffer != nullptr)
     {
       spectrumBuffer->putDataIntoBuffer(localBuffer.data(), bufferSize);
-      emit show_Spectrum(bufferSize);
+      emit signal_show_spectrum(bufferSize);
     }
     localCounter = 0;
     sampleCount = 0;

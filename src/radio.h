@@ -320,118 +320,111 @@ private:
   void write_picture(const QPixmap & iPixMap) const;
 
 signals:
-  void set_newChannel(int);
-  void set_newPresetIndex(int);
+  void signal_set_new_channel(int);
+  void signal_set_new_preset_index(int);
 
 public slots:
-  void set_CorrectorDisplay(int);
-  void addtoEnsemble(const QString &, int);
-  void nameofEnsemble(int, const QString &);
-  void show_frameErrors(int);
-  void show_rsErrors(int);
-  void show_aacErrors(int);
+  void slot_set_corrector_display(int);
+  void slot_add_to_ensemble(const QString &, int);
+  void slot_nameofEnsemble(int, const QString &);
+  void slot_show_frameErrors(int);
+  void slot_show_rsErrors(int);
+  void slot_show_aacErrors(int);
   void show_ficSuccess(bool);
-  void show_snr(int);
-  void setSynced(bool);
-  void showLabel(const QString &);
-  void handle_motObject(QByteArray, QString, int, bool);
-  void sendDatagram(int);
-  void handle_tdcdata(int, int);
-  void changeinConfiguration();
-  void newAudio(int, int);
-  //
-  void setStereo(bool);
-  void set_streamSelector(int);
-  void No_Signal_Found();
-  void show_motHandling(bool);
-  void setSyncLost();
-  void showCorrelation(int amount, int marker, const QVector<int> & v);
-  void showSpectrum(int);
-  void showIQ(int, float);
-  void showQuality(const OfdmDecoder::SQualityData *);
+  void slot_show_snr(int);
+  void slot_set_synced(bool);
+  void slot_showLabel(const QString &);
+  void slot_handle_motObject(QByteArray, QString, int, bool);
+  void slot_send_datagram(int);
+  void slot_handle_tdcdata(int, int);
+  void slot_change_in_configuration();
+  void slot_new_audio(int, int);
+  void slot_set_Stereo(bool);
+  void slot_set_streamSelector(int);
+  void slot_no_signal_found();
+  void slot_show_motHandling(bool);
+  void slot_set_sync_lost();
+  void slot_show_correlation(int amount, int marker, const QVector<int> & v);
+  void slot_show_spectrum(int);
+  void slot_show_iq(int, float);
+  void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);
+  void slot_show_rs_corrections(int, int);
+  void slot_show_tii(int, int);
+  void slot_show_tii_spectrum();
+  void slot_close_event(QCloseEvent * event);
+  void slot_clock_time(int, int, int, int, int, int, int, int, int);
+  void slot_start_announcement(const QString &, int);
+  void slot_stop_announcement(const QString &, int);
+  void slot_new_frame(int);
+  void slot_show_clock_error(int);
+  void slot_set_epg_data(int, int, const QString &, const QString &);
+  void slot_epg_timer_timeout();
+  void slot_switch_visibility(QWidget *);
+  void slot_nr_services(int);
+  void slot_handle_preset_selector(const QString &);
+  void slot_handle_content_selector(const QString &);
+  void slot_http_terminate();
 
-  void show_rsCorrections(int, int);
-  void show_tii(int, int);
-  void show_tii_spectrum();
-  void closeEvent(QCloseEvent * event);
-  void clockTime(int, int, int, int, int, int, int, int, int);
-  void startAnnouncement(const QString &, int);
-  void stopAnnouncement(const QString &, int);
-  void newFrame(int);
-
-  void show_clockError(int);
-  void set_epgData(int, int, const QString &, const QString &);
-  void epgTimer_timeOut();
-  void switchVisibility(QWidget *);
-  void nrServices(int);
-
-  void handle_presetSelector(const QString &);
-  void handle_contentSelector(const QString &);
-
-  void http_terminate();
-
-  //	Somehow, these must be connected to the GUI
 private slots:
-  void handle_timeTable();
-  void handle_contentButton();
-  void handle_detailButton();
-  void handle_resetButton();
-  void handle_scanButton();
-  void handle_etiHandler();
+  void _slot_handle_time_table();
+  void _slot_handle_content_button();
+  void _slot_handle_detail_button();
+  void _slot_handle_reset_button();
+  void _slot_handle_scan_button();
+  void _slot_handle_eti_handler();
 
-  void handle_tiiButton();
-  void handle_snrButton();
-  //void handle_correlationButton();
-  void handle_spectrumButton();
-  void handle_devicewidgetButton();
+  void _slot_handle_tii_button();
+  void _slot_handle_snr_button();
+  void _slot_handle_spectrum_button();
+  void _slot_handle_device_widget_button();
 
-  void doStart(const QString &);
-  void newDevice(const QString &);
+  void _slot_do_start(const QString &);
+  void _slot_new_device(const QString &);
 
-  void handle_historyButton();
-  void handle_sourcedumpButton();
-  void handle_framedumpButton();
-  void handle_audiodumpButton();
+  void _slot_handle_history_button();
+  void _slot_handle_source_dump_button();
+  void _slot_handle_frame_dump_button();
+  void _slot_handle_audio_dump_button();
 
-  void handle_prevServiceButton();
-  void handle_nextServiceButton();
-  void handle_channelSelector(const QString &);
-  void handle_nextChannelButton();
-  void handle_prevChannelButton();
+  void _slot_handle_prev_service_button();
+  void _slot_handle_next_service_button();
+  void _slot_handle_channel_selector(const QString &);
+  void _slot_handle_next_channel_button();
+  void _slot_handle_prev_channel_button();
 
-  void handle_historySelect(const QString &);
-  void TerminateProcess();
-  void updateTimeDisplay();
-  void channel_timeOut();
+  void _slot_handle_history_select(const QString &);
+  void _slot_terminate_process();
+  void _slot_update_time_display();
+  void _slot_channel_timeout();
 
-  void selectService(QModelIndex);
-  void setPresetService();
-  void handle_muteButton();
-  void handle_dlTextButton();
+  void _slot_select_service(QModelIndex);
+  void _slot_set_preset_service();
+  void _slot_handle_mute_button();
+  void _slot_handle_dl_text_button();
 
-  void handle_configButton();
-  void handle_httpButton();
-  void handle_onTop(int);
-  void handle_autoBrowser(int);
-  void handle_transmitterTags(int);
+  void _slot_handle_config_button();
+  void _slot_handle_http_button();
+  void _slot_handle_on_top(int);
+  void _slot_handle_auto_browser(int);
+  void _slot_handle_transmitter_tags(int);
 
   //	config handlers
-  void handle_switchDelaySetting(int);
-  void handle_orderAlfabetical();
-  void handle_orderServiceIds();
-  void handle_ordersubChannelIds();
-  void handle_scanmodeSelector(int);
-  void handle_saveServiceSelector(int);
-  void handle_skipList_button();
-  void handle_skipFile_button();
-  void handle_tii_detectorMode(int);
-  void handle_LoggerButton(int);
-  void handle_set_coordinatesButton();
-  void handle_portSelector();
-  void handle_transmSelector(int);
-  void handle_eti_activeSelector(int);
-  void handle_saveSlides(int);
-  void loadTable();
+  void _slot_handle_switch_delay_setting(int);
+  void _slot_handle_order_alfabetical();
+  void _slot_handle_order_service_ids();
+  void _slot_handle_order_sub_channel_ids();
+  void _slot_handle_scan_mode_selector(int);
+  void _slot_handle_save_service_selector(int);
+  void _slot_handle_skip_list_button();
+  void _slot_handle_skip_file_button();
+  void _slot_handle_tii_detector_mode(int);
+  void _slot_handle_logger_button(int);
+  void _slot_handle_set_coordinates_button();
+  void _slot_handle_port_selector();
+  void _slot_handle_transm_selector(int);
+  void _slot_handle_eti_active_selector(int);
+  void _slot_handle_save_slides(int);
+  void _slot_load_table();
 };
 
 #endif

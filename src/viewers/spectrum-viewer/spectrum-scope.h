@@ -49,7 +49,7 @@ private:
   QwtPlotGrid * grid_2;
   int32_t indexforMarker;
 
-  void ViewSpectrum(double *, double *, double, int);
+  //void ViewSpectrum(double *, double *, double, int);
   float get_db(float);
 
 private slots:
