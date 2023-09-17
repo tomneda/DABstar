@@ -115,11 +115,18 @@ private:
   int32_t lastVcoFreq = 0;
   bool mShowInLogScale = false;
 
-  CarrierDisp * mpPhaseVsCarrDisp = nullptr;
+  CarrierDisp * mpCarrierDisp = nullptr;
   IQDisplay * myIQDisplay = nullptr;
   SpectrumScope * mySpectrumScope = nullptr;
   WaterfallScope * myWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
+
+private slots:
+  void handle_cbmCarrier(int);
+
+signals:
+  void cbmCarrier_changed(int);
+  void cbNomCarrier_changed(bool);
 };
 
 #endif

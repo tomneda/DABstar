@@ -3998,7 +3998,7 @@ void RadioInterface::new_presetIndex(int index)
     return;
   }
   presetSelector->blockSignals(true);
-  set_newPresetIndex(index);
+  emit set_newPresetIndex(index);
   while (presetSelector->currentIndex() != 0)
   {
     usleep(200);
@@ -4014,7 +4014,7 @@ void RadioInterface::new_channelIndex(int index)
   }
   disconnect(channelSelector, SIGNAL (activated(const QString &)), this, SLOT (handle_channelSelector(const QString &)));
   channelSelector->blockSignals(true);
-  set_newChannel(index);
+  emit set_newChannel(index);
   while (channelSelector->currentIndex() != index)
   {
     usleep(2000);

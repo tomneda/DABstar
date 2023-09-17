@@ -67,7 +67,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   mySpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
   myWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
   myIQDisplay = new IQDisplay(iqDisplay);
-  mpPhaseVsCarrDisp = new CarrierDisp(phaseCarrPlot);
+  mpCarrierDisp = new CarrierDisp(phaseCarrPlot);
   mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, ipDabSettings, mpCorrelationBuffer);
   //myNullScope = new nullScope(nullDisplay, 256, dabSettings);
   setBitDepth(12);
@@ -75,6 +75,9 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   mShowInLogScale = cbLogIqScope->isChecked();
 
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
+
+  connect(cmbCarrier, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::handle_cbmCarrier);
+  connect(cbNomChIdx, &QCheckBox::stateChanged, this, [this](int idx){ emit cbNomCarrier_changed(idx != 0); });
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -91,7 +94,7 @@ SpectrumViewer::~SpectrumViewer()
   myFrame.hide();
 
   delete mpCorrelationViewer;
-  delete mpPhaseVsCarrDisp;
+  delete mpCarrierDisp;
   delete myIQDisplay;
   delete mySpectrumScope;
   delete myWaterfallScope;
@@ -285,7 +288,7 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
   //    }
   //  }
 
-  mpPhaseVsCarrDisp->disp_carrier_plot(mCarrValuesVec);
+  mpCarrierDisp->disp_carrier_plot(mCarrValuesVec);
 }
 
 void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr)
@@ -336,4 +339,11 @@ void SpectrumViewer::showFrequency(float f)
 void SpectrumViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)
 {
   mpCorrelationViewer->showCorrelation(dots, marker, v);
+}
+
+void SpectrumViewer::handle_cbmCarrier(int iSel)
+{
+  CarrierDisp::EPlotType pt = static_cast<CarrierDisp::EPlotType>(iSel);
+  mpCarrierDisp->select_plot_type(pt);
+  emit cbmCarrier_changed(iSel);
 }
