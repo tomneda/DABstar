@@ -21,19 +21,16 @@ public:
   {
     enum class EStyle { DOTS, LINES };
 
-    ECarrierPlotType PlotType = ECarrierPlotType::PHASE;
-    EStyle Style = EStyle::DOTS;
-    const char * Name = "(dummy)";
+    ECarrierPlotType PlotType;
+    EStyle Style;
+    const char * Name;
+    const char * ToolTip;
 
-    double StartValue = -180.0;
-    double StopValue = 180.0;
-    int32_t Segments = 8;
+    double YBottomValue;
+    double YTopValue;
+    int32_t YValueElementNo;
 
-    double MarkerStartValue = -90.0;
-    double MarkerStepValue = 10.0;
-    int32_t MarkerLinesNo = 3;
-
-    QString ToolTip;
+    int32_t MarkerYValueStep = 1; // if not each Y value a marker should set (0 = no set no marker)
   };
 
   void disp_carrier_plot(const std::vector<float> & iPhaseVec);

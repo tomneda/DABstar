@@ -41,17 +41,18 @@ void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
 {
   mQwtPlot->setToolTip(iCustPlot.ToolTip);
 
+  assert(iCustPlot.YValueElementNo >= 2);
+  assert(iCustPlot.YTopValue > iCustPlot.YBottomValue);
+
+  const double diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
+
   // draw vertical ticks
   {
-    assert(iCustPlot.Segments > 0);
-    const double diffVal = (iCustPlot.StopValue - iCustPlot.StartValue) / iCustPlot.Segments;
-
     QList<double> tickList;
 
-    for (int32_t segment = 0; segment <= iCustPlot.Segments; ++segment)
+    for (int32_t elemIdx = 0; elemIdx < iCustPlot.YValueElementNo; ++elemIdx)
     {
-      const double tickVal = iCustPlot.StartValue + segment * diffVal;
-      tickList.push_back(tickVal);
+      tickList.push_back(iCustPlot.YBottomValue + elemIdx * diffVal);
     }
 
     mQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<double>(), QList<double>(), tickList));
@@ -67,21 +68,25 @@ void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
       p = nullptr;
     }
 
-    if (iCustPlot.MarkerLinesNo > 0)
+    if (iCustPlot.MarkerYValueStep > 0)
     {
-      mQwtPlotMarkerVec.resize(iCustPlot.MarkerLinesNo);
+      const int32_t noMarkers = (iCustPlot.YValueElementNo + iCustPlot.MarkerYValueStep - 1) / iCustPlot.MarkerYValueStep;
+      mQwtPlotMarkerVec.resize(noMarkers);
 
-      for (int32_t segment = 0; segment < iCustPlot.MarkerLinesNo; ++segment)
+      for (int32_t markerIdx = 0; markerIdx < noMarkers; ++markerIdx)
       {
-        mQwtPlotMarkerVec[segment] = new QwtPlotMarker();
-        QwtPlotMarker * const p = mQwtPlotMarkerVec[segment];
-        p->setLinePen(QPen(Qt::gray));
+        mQwtPlotMarkerVec[markerIdx] = new QwtPlotMarker();
+        QwtPlotMarker * const p = mQwtPlotMarkerVec[markerIdx];
         p->setLineStyle(QwtPlotMarker::HLine);
         if (iCustPlot.Style == SCustPlot::EStyle::LINES)
         {
           p->setLinePen(QColor(Qt::darkGray), 0.0, Qt::DashLine);
         }
-        p->setValue(0, iCustPlot.MarkerStartValue + iCustPlot.MarkerStepValue * segment);
+        else
+        {
+          p->setLinePen(QColor(Qt::gray), 0.0, Qt::SolidLine);
+        }
+        p->setValue(0, iCustPlot.YBottomValue + diffVal * markerIdx * iCustPlot.MarkerYValueStep);
         p->attach(mQwtPlot);
       }
     }
@@ -116,84 +121,70 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.ToolTip = "Shows the 4 phase segments in degree for each OFDM carrier.";
     cp.Style  = SCustPlot::EStyle::DOTS;
     cp.Name = "4-quadr. Phase";
-    cp.StartValue = -180.0;
-    cp.StopValue = 180.0;
-    cp.Segments = 8; // each 45.0
-    cp.MarkerStartValue = -90.0;
-    cp.MarkerStepValue = 90.0;
-    cp.MarkerLinesNo = 3;
+    cp.YBottomValue = -180.0;
+    cp.YTopValue = 180.0;
+    cp.YValueElementNo = 9;
+    cp.MarkerYValueStep = 2;
     break;
 
   case ECarrierPlotType::MODQUAL:
     cp.ToolTip = "Shows the modulation quality in % for each OFDM carrier. This is used for soft bit weighting for the viterbi decoder.";
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "Modul. Quality";
-    cp.StartValue = 0.0;
-    cp.StopValue = 100.0;
-    cp.Segments = 5; // each 20.0
-    cp.MarkerStartValue = 10.0;
-    cp.MarkerStepValue = 10.0;
-    cp.MarkerLinesNo = 9;
+    cp.YBottomValue = 0.0;
+    cp.YTopValue = 100.0;
+    cp.YValueElementNo = 6;
+    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::STDDEV:
     cp.ToolTip = "Shows the standard deviation of the absolute phase (mapped to first quadrant) in degrees of each OFDM carrier. This is similar to the modulation quality.";
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "Std-Deviation";
-    cp.StartValue = 0.0;
-    cp.StopValue = 45.0;
-    cp.Segments = 6; 
-    cp.MarkerStartValue = 7.5;
-    cp.MarkerStepValue = 7.5;
-    cp.MarkerLinesNo = 5;
+    cp.YBottomValue = 0.0;
+    cp.YTopValue = 45.0;
+    cp.YValueElementNo = 7;
+    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::RELLEVEL:
     cp.ToolTip = "Shows the relative level to the overall medium level in dB of each OFDM carrier.";
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "Relative Level";
-    cp.StartValue = -12.0;
-    cp.StopValue = 12.0;
-    cp.Segments = 8; // each 3.0
-    cp.MarkerStartValue = -9.0;
-    cp.MarkerStepValue =  3.0;
-    cp.MarkerLinesNo = 7;
+    cp.YBottomValue = -12.0;
+    cp.YTopValue = 12.0;
+    cp.YValueElementNo = 9;
+    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::MEANABSPHASE:
     cp.ToolTip = "Shows the mean of absolute phase in degree (mapped to first quadrant) of each OFDM carrier.";
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "Mean Abs. Phase";
-    cp.StartValue = 30.0;
-    cp.StopValue = 60.0;
-    cp.Segments = 4;
-    cp.MarkerStartValue = 35.0;
-    cp.MarkerStepValue =  5.0;
-    cp.MarkerLinesNo = 5;
+    cp.YBottomValue = 30.0;
+    cp.YTopValue = 60.0;
+    cp.YValueElementNo = 7;
+    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::MEANPHASE:
     cp.ToolTip = "Shows the mean phase in degree of each OFDM carrier.";
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "Mean Phase";
-    cp.StartValue = 30.0;
-    cp.StopValue = -30.0;
-    cp.Segments = 7;
-    cp.MarkerStartValue = -30.0;
-    cp.MarkerStepValue =  10.0;
-    cp.MarkerLinesNo = 7;
+    cp.YBottomValue = -30.0;
+    cp.YTopValue = 30.0;
+    cp.YValueElementNo = 7;
+    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::NULLTII:
     cp.ToolTip = "Shows the averaged null symbol with TII carriers.";
     cp.Style  = SCustPlot::EStyle::LINES;
     cp.Name = "Null Symbol TII";
-    cp.StartValue = 0.0;
-    cp.StopValue = 100.0;
-    cp.Segments = 5; // each 20.0
-    cp.MarkerStartValue = 10.0;
-    cp.MarkerStepValue = 10.0;
-    cp.MarkerLinesNo = 9; 
+    cp.YBottomValue = 0.0;
+    cp.YTopValue = 100.0;
+    cp.YValueElementNo = 6;
+    cp.MarkerYValueStep = 1;
     break;
   }
 
