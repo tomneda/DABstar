@@ -181,7 +181,6 @@ include_directories(
         src/scopes-qwt6
         src/viewers
         src/viewers/spectrum-viewer
-        src/viewers/tii-viewer
         src/viewers/snr-viewer
         src/qt-devices
         src/qt-devices/rawfiles-new
@@ -282,7 +281,6 @@ set(${objectName}_HDRS
         src/viewers/spectrum-viewer/spectrum-scope.h
         src/viewers/spectrum-viewer/waterfall-scope.h
         src/viewers/spectrum-viewer/correlation-viewer.h
-        src/viewers/tii-viewer/tii-viewer.h
         src/viewers/snr-viewer/snr-viewer.h
         src/qt-devices/device-handler.h
         src/qt-devices/device-exceptions.h
@@ -380,7 +378,6 @@ set(${objectName}_SRCS
         src/viewers/spectrum-viewer/spectrum-scope.cpp
         src/viewers/spectrum-viewer/waterfall-scope.cpp
         src/viewers/spectrum-viewer/correlation-viewer.cpp
-        src/viewers/tii-viewer/tii-viewer.cpp
         src/viewers/snr-viewer/snr-viewer.cpp
         src/qt-devices/device-handler.cpp
         src/qt-devices/xml-filewriter.cpp
@@ -432,7 +429,6 @@ set(${objectName}_MOCS
         src/viewers/spectrum-viewer/spectrum-scope.h
         src/viewers/spectrum-viewer/waterfall-scope.h
         src/viewers/spectrum-viewer/correlation-viewer.h
-        src/viewers/tii-viewer/tii-viewer.h
         src/viewers/snr-viewer/snr-viewer.h
         src/qt-devices/rawfiles-new/rawfiles.h
         src/qt-devices/rawfiles-new/raw-reader.h
@@ -448,7 +444,6 @@ set(${objectName}_UIS
         ./forms/technical_data.ui
         ./forms/config-helper.ui
         src/viewers/spectrum-viewer/scopewidget.ui
-        src/viewers/tii-viewer/tii-widget.ui
         src/viewers/snr-viewer/snr-widget.ui
         src/qt-devices/xml-filereader/xmlfiles.ui
         )

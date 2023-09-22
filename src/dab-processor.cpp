@@ -33,7 +33,6 @@
   */
 
 DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inputDevice, ProcessParams * const p) :
-  mpTiiBuffer(p->tiiBuffer),
   mpSnrBuffer(p->snrBuffer),
   mpRadioInterface(mr),
   mSampleReader(mr, inputDevice, p->spectrumBuffer),
@@ -53,7 +52,6 @@ DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inpu
   connect(this, &DabProcessor::setSyncLost, mpRadioInterface, &RadioInterface::slot_set_sync_lost);
   connect(this, &DabProcessor::show_Spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
   connect(this, &DabProcessor::show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
-  connect(this, &DabProcessor::show_tii_spectrum, mpRadioInterface, &RadioInterface::slot_show_tii_spectrum);
   connect(this, &DabProcessor::show_snr, mpRadioInterface, &RadioInterface::slot_show_snr);
   connect(this, &DabProcessor::show_clockErr, mpRadioInterface, &RadioInterface::slot_show_clock_error);
 
@@ -307,8 +305,6 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     mTiiDetector.addBuffer(mOfdmBuffer);
     if (++mTiiCounter >= mcTiiDelay)
     {
-      mpTiiBuffer->putDataIntoBuffer(mOfdmBuffer.data(), mDabPar.T_u);
-      emit show_tii_spectrum();
       uint16_t res = mTiiDetector.processNULL();
       if (res != 0)
       {

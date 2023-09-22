@@ -103,7 +103,7 @@ template <typename T> inline void mean_filter(T & ioVal, T iVal, const T iAlpha)
   ioVal += iAlpha * (iVal - ioVal);
 }
 
-enum class ECarrierPlotType
+enum class ECarrierPlotType  // TODO: Move to a not so global place
 {
   MODQUAL,
   STDDEV,

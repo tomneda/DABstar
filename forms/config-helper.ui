@@ -324,21 +324,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="3">
-      <widget class="QPushButton" name="show_tiiButton">
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show or hide the widget for showing the tii spectrum&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>TII</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="4">
       <widget class="QPushButton" name="dumpButton">
        <property name="sizePolicy">
@@ -569,11 +554,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>QPushButton</class>
-   <extends>QPushButton</extends>
-   <header>smallpushbutton.h</header>
-  </customwidget>
   <customwidget>
    <class>smallSpinBox</class>
    <extends>QSpinBox</extends>

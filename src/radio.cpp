@@ -195,16 +195,12 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     spectrumBuffer(2 * 32768),
     iqBuffer(2 * 1536),
     carrBuffer(2 * 1536),
-    tiiBuffer(32768),
-    //nullBuffer(32768),
     snrBuffer(512),
     responseBuffer(32768),
     frameBuffer(2 * 32768),
     dataBuffer(32768),
     audioBuffer(8 * 32768),
     my_spectrumViewer(this, Si, &spectrumBuffer, &iqBuffer, &carrBuffer, &responseBuffer),
-    //my_correlationViewer(this, Si, &responseBuffer),
-    my_tiiViewer(this, Si, &tiiBuffer),
     my_snrViewer(this, Si),
     my_presetHandler(this),
     theBand(freqExtension, Si),
@@ -238,8 +234,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   globals.iqBuffer = &iqBuffer;
   globals.carrBuffer = &carrBuffer;
   globals.responseBuffer = &responseBuffer;
-  globals.tiiBuffer = &tiiBuffer;
-  //globals.nullBuffer = &nullBuffer;
   globals.snrBuffer = &snrBuffer;
   globals.frameBuffer = &frameBuffer;
 
@@ -651,14 +645,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   {
     my_spectrumViewer.show();
   }
-  if (dabSettings->value("tiiVisible", 0).toInt() == 1)
-  {
-    my_tiiViewer.show();
-  }
-//  if (dabSettings->value("correlationVisible", 0).toInt() == 1)
-//  {
-//    my_correlationViewer.show();
-//  }
   if (dabSettings->value("snrVisible", 0).toInt() == 1)
   {
     my_snrViewer.show();
@@ -1468,8 +1454,6 @@ void RadioInterface::_slot_terminate_process()
 
   dabSettings->sync();
   my_spectrumViewer.hide();
-  //my_correlationViewer.hide();
-  my_tiiViewer.hide();
   my_snrViewer.hide();
   if (my_dabProcessor != nullptr)
   {
@@ -2171,15 +2155,9 @@ static QString tiiNumber(int n)
   return QString("0") + QString::number(n);
 }
 
-void RadioInterface::slot_show_tii_spectrum()
-{
-  my_tiiViewer.showSpectrum(1);
-}
 
 void RadioInterface::slot_show_tii(int mainId, int subId)
 {
-  QString a = "Est: ";
-  bool found = false;
   QString country = "";
   bool tiiChange = false;
 
@@ -2188,20 +2166,8 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
     return;
   }
 
-  for (int i = 0; i < (int)(channel.transmitters.size()); i += 2)
-  {
-    if ((channel.transmitters.at(i) == (mainId & 0x7F)) && (channel.transmitters.at(i + 1) == subId))
-    {
-      found = true;
-      break;
-    }
-  }
-
-  if (!found)
-  {
-    channel.transmitters.append(mainId & 0x7F);
-    channel.transmitters.append(subId);
-  }
+  ChannelDescriptor::STiiId id(mainId, subId);
+  channel.transmitters.insert(id.FullId);
 
   if (!running.load())
   {
@@ -2217,10 +2183,14 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
   channel.mainId = mainId;
   channel.subId = subId;
 
-  a = a + " " + tiiNumber(mainId) + " " + tiiNumber(subId);
+  QString a = "TII:";
+  for (const auto & tr : channel.transmitters)
+  {
+    ChannelDescriptor::STiiId id(tr);
+    a = a + " " + tiiNumber(id.MainId) + "-" + tiiNumber(id.SubId);
+  }
   transmitter_coordinates->setAlignment(Qt::AlignRight);
   transmitter_coordinates->setText(a);
-  my_tiiViewer.showTransmitters(channel.transmitters);
 
   //	if - for the first time now - we see an ecc value,
   //	we check whether or not a tii files is available
@@ -2663,24 +2633,6 @@ void RadioInterface::slot_new_frame(int amount)
   }
 }
 
-void RadioInterface::_slot_handle_tii_button()
-{
-  if (!running.load())
-  {
-    return;
-  }
-
-  if (my_tiiViewer.isHidden())
-  {
-    my_tiiViewer.show();
-  }
-  else
-  {
-    my_tiiViewer.hide();
-  }
-  dabSettings->setValue("tiiVisible", my_tiiViewer.isHidden() ? 0 : 1);
-}
-
 void RadioInterface::_slot_handle_spectrum_button()
 {
   if (!running.load())
@@ -2745,7 +2697,7 @@ void RadioInterface::connectGUI()
   connect(detailButton, SIGNAL (clicked()), this, SLOT (_slot_handle_detail_button()));
   connect(configWidget.resetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_reset_button()));
   connect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
-  connect(configWidget.show_tiiButton, SIGNAL (clicked()), this, SLOT (_slot_handle_tii_button()));
+  //connect(configWidget.show_tiiButton, SIGNAL (clicked()), this, SLOT (_slot_handle_tii_button()));
   connect(configWidget.show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
   connect(configWidget.snrButton, SIGNAL (clicked()), this, SLOT (_slot_handle_snr_button()));
   connect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
@@ -2775,7 +2727,7 @@ void RadioInterface::disconnectGUI()
   disconnect(detailButton, SIGNAL (clicked()), this, SLOT (_slot_handle_detail_button()));
   disconnect(configWidget.resetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_reset_button()));
   disconnect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
-  disconnect(configWidget.show_tiiButton, SIGNAL (clicked()), this, SLOT (_slot_handle_tii_button()));
+  //disconnect(configWidget.show_tiiButton, SIGNAL (clicked()), this, SLOT (_slot_handle_tii_button()));
   disconnect(configWidget.show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
   disconnect(configWidget.snrButton, SIGNAL (clicked()), this, SLOT (_slot_handle_snr_button()));
   disconnect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
@@ -3492,7 +3444,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   channel.channelName = theChannel;
   dabSettings->setValue("channel", theChannel);
   channel.frequency = tunedFrequency / 1000;
-  my_tiiViewer.clear();
+  //my_tiiViewer.clear();
   if (transmitterTags_local && (mapHandler != nullptr))
   {
     mapHandler->putData(MAP_RESET, cmplx(0, 0), "", "", "", 0, 0, 0, 0);
@@ -3575,7 +3527,7 @@ void RadioInterface::stopChannel()
   transmitter_coordinates->setText("");
   //
   hide_for_safety();  // hide some buttons
-  my_tiiViewer.clear();
+  //my_tiiViewer.clear();
   QCoreApplication::processEvents();
   //
   //	no processing left at this time

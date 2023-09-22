@@ -26,6 +26,7 @@
 #include  <QMainWindow>
 #include  <QStringList>
 #include  <QStandardItemModel>
+#include  <set>
 
 #ifdef  _SEND_DATAGRAM_
 #include	<QUdpSocket>
@@ -58,7 +59,6 @@
 #include  "epg-decoder.h"
 
 #include  "spectrum-viewer.h"
-#include  "tii-viewer.h"
 #include  "snr-viewer.h"
 #include  "findfilenames.h"
 #include  "http-handler.h"
@@ -131,8 +131,14 @@ public:
   cmplx localPos;
   cmplx targetPos;
   int snr;
-  QByteArray transmitters;
-
+  //QByteArray transmitters;
+  union STiiId
+  {
+    STiiId(int mainId, int subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
+    STiiId(int fullId) : FullId(fullId) {};
+    uint16_t FullId; struct { uint8_t MainId, SubId; };
+  };
+  std::set<uint16_t> transmitters;
   void cleanChannel()
   {
     realChannel = true;
@@ -147,7 +153,7 @@ public:
     Eid = 0;
     has_ecc = false;
     snr = 0;
-    transmitters.resize(0);
+    transmitters.clear();
     currentService.frameDumper = nullptr;
     nextService.frameDumper = nullptr;
   }
@@ -168,8 +174,6 @@ private:
   RingBuffer<cmplx> spectrumBuffer;
   RingBuffer<cmplx> iqBuffer;
   RingBuffer<float> carrBuffer;
-  RingBuffer<cmplx> tiiBuffer;
-  //RingBuffer<cmplx> nullBuffer;
   RingBuffer<float> snrBuffer;
   RingBuffer<float> responseBuffer;
   RingBuffer<uint8_t> frameBuffer;
@@ -177,7 +181,7 @@ private:
   RingBuffer<int16_t> audioBuffer;
   SpectrumViewer my_spectrumViewer;
   //correlationViewer my_correlationViewer;
-  TiiViewer my_tiiViewer;
+  //TiiViewer my_tiiViewer;
   SnrViewer my_snrViewer;
   PresetHandler my_presetHandler;
   bandHandler theBand;
@@ -350,7 +354,7 @@ public slots:
   void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);
   void slot_show_rs_corrections(int, int);
   void slot_show_tii(int, int);
-  void slot_show_tii_spectrum();
+  //void slot_show_tii_spectrum();
   void slot_clock_time(int, int, int, int, int, int, int, int, int);
   void slot_start_announcement(const QString &, int);
   void slot_stop_announcement(const QString &, int);
@@ -374,7 +378,7 @@ private slots:
   void _slot_handle_scan_button();
   void _slot_handle_eti_handler();
 
-  void _slot_handle_tii_button();
+  //void _slot_handle_tii_button();
   void _slot_handle_snr_button();
   void _slot_handle_spectrum_button();
   void _slot_handle_device_widget_button();

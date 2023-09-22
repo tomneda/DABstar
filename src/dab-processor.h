@@ -96,7 +96,6 @@ public:
   void set_tiiDetectorMode(bool);
 
 private:
-  RingBuffer<cmplx> * const mpTiiBuffer;
   RingBuffer<float> * const mpSnrBuffer;
   RadioInterface * const mpRadioInterface;
   SampleReader mSampleReader;
@@ -142,7 +141,6 @@ signals:
   void No_Signal_Found();
   void setSyncLost();
   void show_tii(int, int);
-  void show_tii_spectrum();
   void show_Spectrum(int);
   void show_snr(int);
   void show_clockErr(int);
