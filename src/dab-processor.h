@@ -96,7 +96,6 @@ public:
   void set_tiiDetectorMode(bool);
 
 private:
-  RingBuffer<float> * const mpSnrBuffer;
   RadioInterface * const mpRadioInterface;
   SampleReader mSampleReader;
   FicHandler mFicHandler;
@@ -116,8 +115,6 @@ private:
   float   mPhaseOffset = 0;
   int32_t mFineOffset = 0;
   int32_t mCoarseOffset = 0;
-  int32_t mSnrCounter = 0;
-  float mSnrdB = 0;
   int32_t mTimeSyncAttemptCount = 0;
   int32_t mClockOffsetTotalSamples = 0;
   int32_t mClockOffsetFrameCount = 0;
@@ -142,7 +139,6 @@ signals:
   void setSyncLost();
   void show_tii(int, int);
   void show_Spectrum(int);
-  void show_snr(int);
   void show_clockErr(int);
 };
 

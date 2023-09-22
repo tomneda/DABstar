@@ -195,13 +195,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     spectrumBuffer(2 * 32768),
     iqBuffer(2 * 1536),
     carrBuffer(2 * 1536),
-    snrBuffer(512),
     responseBuffer(32768),
     frameBuffer(2 * 32768),
     dataBuffer(32768),
     audioBuffer(8 * 32768),
     my_spectrumViewer(this, Si, &spectrumBuffer, &iqBuffer, &carrBuffer, &responseBuffer),
-    my_snrViewer(this, Si),
     my_presetHandler(this),
     theBand(freqExtension, Si),
     configDisplay(nullptr),
@@ -234,7 +232,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   globals.iqBuffer = &iqBuffer;
   globals.carrBuffer = &carrBuffer;
   globals.responseBuffer = &responseBuffer;
-  globals.snrBuffer = &snrBuffer;
+  //globals.snrBuffer = &snrBuffer;
   globals.frameBuffer = &frameBuffer;
 
   latency = dabSettings->value("latency", 5).toInt();
@@ -645,10 +643,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   {
     my_spectrumViewer.show();
   }
-  if (dabSettings->value("snrVisible", 0).toInt() == 1)
-  {
-    my_snrViewer.show();
-  }
+//  if (dabSettings->value("snrVisible", 0).toInt() == 1)
+//  {
+//    my_snrViewer.show();
+//  }
   if (dabSettings->value("techDataVisible", 0).toInt() == 1)
   {
     theTechWindow->show();
@@ -1454,7 +1452,7 @@ void RadioInterface::_slot_terminate_process()
 
   dabSettings->sync();
   my_spectrumViewer.hide();
-  my_snrViewer.hide();
+  //my_snrViewer.hide();
   if (my_dabProcessor != nullptr)
   {
     delete my_dabProcessor;
@@ -2057,39 +2055,39 @@ void RadioInterface::slot_show_mot_handling(bool b)
 }
 
 //	called from the dabProcessor
-void RadioInterface::slot_show_snr(int s)
-{
-  if (!running.load())
-  {
-    return;
-  }
-
-  channel.snr = s;
-  if (!my_spectrumViewer.isHidden())
-  {
-    my_spectrumViewer.show_snr(s);
-  }
-
-  if (my_snrViewer.isHidden())
-  {
-    snrBuffer.FlushRingBuffer();
-    return;
-  }
-
-  int amount = snrBuffer.GetRingBufferReadAvailable();
-  if (amount <= 0)
-  {
-    return;
-  }
-
-  float ss[amount];
-  snrBuffer.getDataFromBuffer(ss, amount);
-  for (int i = 0; i < amount; i++)
-  {
-    my_snrViewer.add_snr(ss[i]);
-  }
-  my_snrViewer.show_snr();
-}
+//void RadioInterface::slot_show_snr(int s)
+//{
+//  if (!running.load())
+//  {
+//    return;
+//  }
+//
+//  channel.snr = s;
+//  if (!my_spectrumViewer.isHidden())
+//  {
+//    my_spectrumViewer.show_snr(s);
+//  }
+//
+////  if (my_snrViewer.isHidden())
+////  {
+////    snrBuffer.FlushRingBuffer();
+////    return;
+////  }
+//
+//  int amount = snrBuffer.GetRingBufferReadAvailable();
+//  if (amount <= 0)
+//  {
+//    return;
+//  }
+//
+//  float ss[amount];
+//  snrBuffer.getDataFromBuffer(ss, amount);
+//  for (int i = 0; i < amount; i++)
+//  {
+//    my_snrViewer.add_snr(ss[i]);
+//  }
+//  my_snrViewer.show_snr();
+//}
 
 //	just switch a color, called from the dabprocessor
 void RadioInterface::slot_set_synced(bool b)
@@ -2651,23 +2649,23 @@ void RadioInterface::_slot_handle_spectrum_button()
   dabSettings->setValue("spectrumVisible", my_spectrumViewer.isHidden() ? 0 : 1);
 }
 
-void RadioInterface::_slot_handle_snr_button()
-{
-  if (!running.load())
-  {
-    return;
-  }
-
-  if (my_snrViewer.isHidden())
-  {
-    my_snrViewer.show();
-  }
-  else
-  {
-    my_snrViewer.hide();
-  }
-  dabSettings->setValue("snrVisible", my_snrViewer.isHidden() ? 0 : 1);
-}
+//void RadioInterface::_slot_handle_snr_button()
+//{
+//  if (!running.load())
+//  {
+//    return;
+//  }
+//
+//  if (my_snrViewer.isHidden())
+//  {
+//    my_snrViewer.show();
+//  }
+//  else
+//  {
+//    my_snrViewer.hide();
+//  }
+//  dabSettings->setValue("snrVisible", my_snrViewer.isHidden() ? 0 : 1);
+//}
 
 void RadioInterface::_slot_handle_history_button()
 {
@@ -2699,7 +2697,7 @@ void RadioInterface::connectGUI()
   connect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
   //connect(configWidget.show_tiiButton, SIGNAL (clicked()), this, SLOT (_slot_handle_tii_button()));
   connect(configWidget.show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
-  connect(configWidget.snrButton, SIGNAL (clicked()), this, SLOT (_slot_handle_snr_button()));
+  //connect(configWidget.snrButton, SIGNAL (clicked()), this, SLOT (_slot_handle_snr_button()));
   connect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
   connect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
   connect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));
@@ -2729,7 +2727,7 @@ void RadioInterface::disconnectGUI()
   disconnect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
   //disconnect(configWidget.show_tiiButton, SIGNAL (clicked()), this, SLOT (_slot_handle_tii_button()));
   disconnect(configWidget.show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
-  disconnect(configWidget.snrButton, SIGNAL (clicked()), this, SLOT (_slot_handle_snr_button()));
+  //disconnect(configWidget.snrButton, SIGNAL (clicked()), this, SLOT (_slot_handle_snr_button()));
   disconnect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
   disconnect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
   disconnect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));

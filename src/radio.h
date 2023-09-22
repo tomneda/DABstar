@@ -54,12 +54,11 @@
 #endif
 
 #include  "preset-handler.h"
-//#include	"scanner-table.h"
 #include  "epgdec.h"
 #include  "epg-decoder.h"
 
 #include  "spectrum-viewer.h"
-#include  "snr-viewer.h"
+//#include  "snr-viewer.h"
 #include  "findfilenames.h"
 #include  "http-handler.h"
 
@@ -174,15 +173,11 @@ private:
   RingBuffer<cmplx> spectrumBuffer;
   RingBuffer<cmplx> iqBuffer;
   RingBuffer<float> carrBuffer;
-  RingBuffer<float> snrBuffer;
   RingBuffer<float> responseBuffer;
   RingBuffer<uint8_t> frameBuffer;
   RingBuffer<uint8_t> dataBuffer;
   RingBuffer<int16_t> audioBuffer;
   SpectrumViewer my_spectrumViewer;
-  //correlationViewer my_correlationViewer;
-  //TiiViewer my_tiiViewer;
-  SnrViewer my_snrViewer;
   PresetHandler my_presetHandler;
   bandHandler theBand;
   QFrame dataDisplay;
@@ -335,7 +330,7 @@ public slots:
   void slot_show_rs_errors(int);
   void slot_show_aac_errors(int);
   void slot_show_fic_success(bool);
-  void slot_show_snr(int);
+  //void slot_show_snr(int);
   void slot_set_synced(bool);
   void slot_show_label(const QString &);
   void slot_handle_mot_object(QByteArray, QString, int, bool);
@@ -379,7 +374,7 @@ private slots:
   void _slot_handle_eti_handler();
 
   //void _slot_handle_tii_button();
-  void _slot_handle_snr_button();
+  //void _slot_handle_snr_button();
   void _slot_handle_spectrum_button();
   void _slot_handle_device_widget_button();
 

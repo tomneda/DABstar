@@ -33,7 +33,6 @@
   */
 
 DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inputDevice, ProcessParams * const p) :
-  mpSnrBuffer(p->snrBuffer),
   mpRadioInterface(mr),
   mSampleReader(mr, inputDevice, p->spectrumBuffer),
   mFicHandler(mr, p->dabMode),
@@ -52,7 +51,6 @@ DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inpu
   connect(this, &DabProcessor::setSyncLost, mpRadioInterface, &RadioInterface::slot_set_sync_lost);
   connect(this, &DabProcessor::show_Spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
   connect(this, &DabProcessor::show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
-  connect(this, &DabProcessor::show_snr, mpRadioInterface, &RadioInterface::slot_show_snr);
   connect(this, &DabProcessor::show_clockErr, mpRadioInterface, &RadioInterface::slot_show_clock_error);
 
   mOfdmBuffer.resize(2 * mDabPar.T_s);
@@ -283,19 +281,6 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     }
     sum /= (float)mDabPar.T_n;
 
-    if (mpSnrBuffer != nullptr)
-    {
-      float snrV = 20.0f * log10((cLevel / cCount + 0.005f) / (sum + 0.005f));
-      mpSnrBuffer->putDataIntoBuffer(&snrV, 1);
-    }
-
-    if (++mSnrCounter >= 5)
-    {
-      constexpr float ALPHA_SNR = 0.1f;
-      mSnrCounter = 0;
-      mSnrdB = (1.0f - ALPHA_SNR) * mSnrdB + ALPHA_SNR * 20.0f * log10f((mSampleReader.get_sLevel() + 0.005f) / (sum + 0.005f)); // other way
-      emit show_snr((int)mSnrdB);
-    }
   }
   else // this is TII null segment
   {
