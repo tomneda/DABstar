@@ -160,16 +160,28 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.MarkerLinesNo = 7;
     break;
 
-  case ECarrierPlotType::ABSMEANPHASE:
+  case ECarrierPlotType::MEANABSPHASE:
     cp.ToolTip = "Shows the mean of absolute phase in degree (mapped to first quadrant) of each OFDM carrier.";
     cp.Style  = SCustPlot::EStyle::LINES;
-    cp.Name = "Abs. Mean Phase";
+    cp.Name = "Mean Abs. Phase";
     cp.StartValue = 30.0;
     cp.StopValue = 60.0;
     cp.Segments = 4;
     cp.MarkerStartValue = 35.0;
     cp.MarkerStepValue =  5.0;
     cp.MarkerLinesNo = 5;
+    break;
+
+  case ECarrierPlotType::MEANPHASE:
+    cp.ToolTip = "Shows the mean phase in degree of each OFDM carrier.";
+    cp.Style  = SCustPlot::EStyle::LINES;
+    cp.Name = "Mean Phase";
+    cp.StartValue = 30.0;
+    cp.StopValue = -30.0;
+    cp.Segments = 7;
+    cp.MarkerStartValue = -30.0;
+    cp.MarkerStepValue =  10.0;
+    cp.MarkerLinesNo = 7;
     break;
 
   case ECarrierPlotType::NULLTII:
@@ -192,10 +204,12 @@ QStringList CarrierDisp::get_plot_type_names()
 {
   QStringList sl;
   SCustPlot cp;
+  // ATTENTION: use same sequence as in ECarrierPlotType
   sl << _get_plot_type_data(ECarrierPlotType::MODQUAL).Name;
   sl << _get_plot_type_data(ECarrierPlotType::STDDEV).Name;
   sl << _get_plot_type_data(ECarrierPlotType::RELLEVEL).Name;
-  sl << _get_plot_type_data(ECarrierPlotType::ABSMEANPHASE).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::MEANABSPHASE).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::MEANPHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::NULLTII).Name;
   return sl;

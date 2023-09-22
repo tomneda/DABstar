@@ -82,6 +82,17 @@ inline cmplx abs_log10_with_offset_and_phase(const cmplx & iVal)
   return std::log10(std::abs(iVal) + 1.0f) * std::exp(cmplx(0.0f, std::arg(iVal)));
 }
 
+inline float turn_phase_to_first_quadrant(float iPhase)
+{
+  // following line does not work if a cyclic turn should be detected
+  // return std::atan2(std::abs(sin(iPhase)), std::abs(cos(iPhase)));
+  if (iPhase < 0.0f)
+  {
+    iPhase += M_PI; // fmod will not work as intended with negative values
+  }
+  return std::fmod(iPhase, (float)M_PI_2);
+}
+
 template<typename T> inline float abs_log10_with_offset(const T iVal)
 {
   return std::log10(std::abs(iVal) + 1);
@@ -97,7 +108,8 @@ enum class ECarrierPlotType
   MODQUAL,
   STDDEV,
   RELLEVEL,
-  ABSMEANPHASE,
+  MEANABSPHASE,
+  MEANPHASE,
   PHASE,
   NULLTII
 };

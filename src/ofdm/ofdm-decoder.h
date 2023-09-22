@@ -74,6 +74,7 @@ private:
   std::vector<float> mCarrVector;
   std::vector<float> mStdDevSqPhaseVector;
   std::vector<float> mMeanAbsPhaseVector;
+  std::vector<float> mMeanPhaseVector;
   std::vector<float> mMeanLevelVector;
   std::vector<float> mAvgNullBlockFreqBin;
   float mAvgAbsLevelOvrAll = 1.0f;
