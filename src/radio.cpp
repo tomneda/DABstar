@@ -130,6 +130,8 @@ bool get_cpu_times (size_t &idle_time, size_t &total_time)
 }
 #else
 
+static const char sDEFAULT_SERVICE_LABEL_STYLE[] = "color: lightblue";
+
 std::vector<size_t> get_cpu_times()
 {
   std::ifstream proc_stat("/proc/stat");
@@ -2950,7 +2952,7 @@ void RadioInterface::slot_start_announcement(const QString & name, int subChId)
 
   if (name == serviceLabel->text())
   {
-    serviceLabel->setStyleSheet("QLabel {color : red}");
+    serviceLabel->setStyleSheet("color : yellow");
     fprintf(stdout, "announcement for %s (%d) starts\n", name.toUtf8().data(), subChId);
   }
 }
@@ -2965,7 +2967,7 @@ void RadioInterface::slot_stop_announcement(const QString & name, int subChId)
 
   if (name == serviceLabel->text())
   {
-    serviceLabel->setStyleSheet("QLabel {color : blue}");
+    serviceLabel->setStyleSheet(sDEFAULT_SERVICE_LABEL_STYLE);
     fprintf(stdout, "end for announcement service %s\n", name.toUtf8().data());
   }
 }
@@ -3195,7 +3197,7 @@ void RadioInterface::startService(dabService & s)
   QFont font = serviceLabel->font();
   font.setPointSize(20);
   font.setBold(true);
-  serviceLabel->setStyleSheet("color: lightblue");
+  serviceLabel->setStyleSheet(sDEFAULT_SERVICE_LABEL_STYLE);
   serviceLabel->setFont(font);
   serviceLabel->setText(serviceName);
   dynamicLabel->setText("");
