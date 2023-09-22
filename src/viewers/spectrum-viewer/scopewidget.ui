@@ -380,7 +380,7 @@
          <item row="10" column="0">
           <widget class="QComboBox" name="cmbCarrier">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the carrier plot.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the carrier plot.&lt;br/&gt;See tool tip of carrier plot for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -440,9 +440,6 @@
            <width>0</width>
            <height>150</height>
           </size>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show different types of signals for each of the single OFDM carriers. The carrier could be either in physical order (looks best) and nominal order (after frequency interleaver).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>

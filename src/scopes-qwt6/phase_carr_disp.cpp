@@ -39,6 +39,8 @@ void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 
 void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
 {
+  mQwtPlot->setToolTip(iCustPlot.ToolTip);
+
   // draw vertical ticks
   {
     assert(iCustPlot.Segments > 0);
@@ -65,19 +67,21 @@ void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
       p = nullptr;
     }
 
-    if (iCustPlot.MarkerSegments >= 2)
+    if (iCustPlot.MarkerLinesNo > 0)
     {
-      const double diffVal = (iCustPlot.MarkerStopValue - iCustPlot.MarkerStartValue) / (iCustPlot.MarkerSegments - 1);
+      mQwtPlotMarkerVec.resize(iCustPlot.MarkerLinesNo);
 
-      mQwtPlotMarkerVec.resize(iCustPlot.MarkerSegments);
-
-      for (int32_t segment = 0; segment < iCustPlot.MarkerSegments; ++segment)
+      for (int32_t segment = 0; segment < iCustPlot.MarkerLinesNo; ++segment)
       {
         mQwtPlotMarkerVec[segment] = new QwtPlotMarker();
         QwtPlotMarker * const p = mQwtPlotMarkerVec[segment];
         p->setLinePen(QPen(Qt::gray));
         p->setLineStyle(QwtPlotMarker::HLine);
-        p->setValue(0, iCustPlot.MarkerStartValue + diffVal * segment);
+        if (iCustPlot.Style == SCustPlot::EStyle::LINES)
+        {
+          p->setLinePen(QColor(Qt::darkGray), 0.0, Qt::DashLine);
+        }
+        p->setValue(0, iCustPlot.MarkerStartValue + iCustPlot.MarkerStepValue * segment);
         p->attach(mQwtPlot);
       }
     }
@@ -109,36 +113,75 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
   switch (iPlotType)
   {
   case ECarrierPlotType::PHASE:
+    cp.ToolTip = "Shows the 4 phase segments in degree for each OFDM carrier.";
     cp.Style  = SCustPlot::EStyle::DOTS;
-    cp.Name = "Phase";
+    cp.Name = "4-quadr. Phase";
     cp.StartValue = -180.0;
     cp.StopValue = 180.0;
     cp.Segments = 8; // each 45.0
     cp.MarkerStartValue = -90.0;
-    cp.MarkerStopValue = 90.0;
-    cp.MarkerSegments = 3; // each 90.0
+    cp.MarkerStepValue = 90.0;
+    cp.MarkerLinesNo = 3;
     break;
 
   case ECarrierPlotType::MODQUAL:
+    cp.ToolTip = "Shows the modulation quality in % for each OFDM carrier. This is used for soft bit weighting for the viterbi decoder.";
     cp.Style  = SCustPlot::EStyle::LINES;
-    cp.Name = "ModQual";
+    cp.Name = "Modul. Quality";
     cp.StartValue = 0.0;
     cp.StopValue = 100.0;
     cp.Segments = 5; // each 20.0
     cp.MarkerStartValue = 10.0;
-    cp.MarkerStopValue = 90.0;
-    cp.MarkerSegments = 8; // each 10.0
+    cp.MarkerStepValue = 10.0;
+    cp.MarkerLinesNo = 9;
+    break;
+
+  case ECarrierPlotType::STDDEV:
+    cp.ToolTip = "Shows the standard deviation of the absolute phase (mapped to first quadrant) in degrees of each OFDM carrier. This is similar to the modulation quality.";
+    cp.Style  = SCustPlot::EStyle::LINES;
+    cp.Name = "Std-Deviation";
+    cp.StartValue = 0.0;
+    cp.StopValue = 45.0;
+    cp.Segments = 6; 
+    cp.MarkerStartValue = 7.5;
+    cp.MarkerStepValue = 7.5;
+    cp.MarkerLinesNo = 5;
+    break;
+
+  case ECarrierPlotType::RELLEVEL:
+    cp.ToolTip = "Shows the relative level to the overall medium level in dB of each OFDM carrier.";
+    cp.Style  = SCustPlot::EStyle::LINES;
+    cp.Name = "Relative Level";
+    cp.StartValue = -12.0;
+    cp.StopValue = 12.0;
+    cp.Segments = 8; // each 3.0
+    cp.MarkerStartValue = -9.0;
+    cp.MarkerStepValue =  3.0;
+    cp.MarkerLinesNo = 7;
+    break;
+
+  case ECarrierPlotType::ABSMEANPHASE:
+    cp.ToolTip = "Shows the mean of absolute phase in degree (mapped to first quadrant) of each OFDM carrier.";
+    cp.Style  = SCustPlot::EStyle::LINES;
+    cp.Name = "Abs. Mean Phase";
+    cp.StartValue = 30.0;
+    cp.StopValue = 60.0;
+    cp.Segments = 4;
+    cp.MarkerStartValue = 35.0;
+    cp.MarkerStepValue =  5.0;
+    cp.MarkerLinesNo = 5;
     break;
 
   case ECarrierPlotType::NULLTII:
+    cp.ToolTip = "Shows the averaged null symbol with TII carriers.";
     cp.Style  = SCustPlot::EStyle::LINES;
-    cp.Name = "NullTII";
+    cp.Name = "Null Symbol TII";
     cp.StartValue = 0.0;
     cp.StopValue = 100.0;
     cp.Segments = 5; // each 20.0
     cp.MarkerStartValue = 10.0;
-    cp.MarkerStopValue = 90.0;
-    cp.MarkerSegments = 8; // each 10.0
+    cp.MarkerStepValue = 10.0;
+    cp.MarkerLinesNo = 9; 
     break;
   }
 
@@ -150,6 +193,9 @@ QStringList CarrierDisp::get_plot_type_names()
   QStringList sl;
   SCustPlot cp;
   sl << _get_plot_type_data(ECarrierPlotType::MODQUAL).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::STDDEV).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::RELLEVEL).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::ABSMEANPHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::NULLTII).Name;
   return sl;

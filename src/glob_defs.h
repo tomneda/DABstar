@@ -95,6 +95,9 @@ template <typename T> inline void mean_filter(T & ioVal, T iVal, const T iAlpha)
 enum class ECarrierPlotType
 {
   MODQUAL,
+  STDDEV,
+  RELLEVEL,
+  ABSMEANPHASE,
   PHASE,
   NULLTII
 };

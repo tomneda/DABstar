@@ -27,11 +27,13 @@ public:
 
     double StartValue = -180.0;
     double StopValue = 180.0;
-    int32_t Segments = 8; // each 45.0
+    int32_t Segments = 8;
 
     double MarkerStartValue = -90.0;
-    double MarkerStopValue = 90.0;
-    int32_t MarkerSegments = 3; // each 90.0
+    double MarkerStepValue = 10.0;
+    int32_t MarkerLinesNo = 3;
+
+    QString ToolTip;
   };
 
   void disp_carrier_plot(const std::vector<float> & iPhaseVec);
