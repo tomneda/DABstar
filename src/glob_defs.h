@@ -103,16 +103,4 @@ template <typename T> inline void mean_filter(T & ioVal, T iVal, const T iAlpha)
   ioVal += iAlpha * (iVal - ioVal);
 }
 
-enum class ECarrierPlotType  // TODO: Move to a not so global place
-{
-  MODQUAL,
-  STDDEV,
-  MEANABSPHASE,
-  //MEANPHASE,
-  FOURQUADPHASE,
-  RELPOWER,
-  SNR,
-  NULLTII
-};
-
 #endif // GLOB_DEFS_H

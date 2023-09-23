@@ -190,7 +190,6 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
     cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
     fftBin *= rotator; // fine correction of phase which can't be done in the time domain
 
-
     // get mean of absolute phase for each bin
     const float fftBinPhase = std::arg(fftBin);
     const float fftBinAbsPhase = turn_phase_to_first_quadrant(fftBinPhase);

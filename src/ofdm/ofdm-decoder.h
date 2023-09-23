@@ -24,6 +24,7 @@
 
 #include "dab-constants.h"
 #include "dab-params.h"
+#include "glob_enums.h"
 #include "fft/fft-handler.h"
 #include "freq-interleaver.h"
 #include "ringbuffer.h"

@@ -29,6 +29,7 @@
 #define    SPECTRUM_VIEWER_H
 
 #include  "dab-constants.h"
+#include  "glob_enums.h"
 #include  <QFrame>
 #include  <QObject>
 #include  "ui_scopewidget.h"

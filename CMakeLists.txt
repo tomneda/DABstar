@@ -190,6 +190,8 @@ include_directories(
 
 set(${objectName}_HDRS
         src/radio.h
+        src/glob_defs.h
+        src/glob_enums.h
         src/helpers/pauseslide/pause_slide.h
         src/dab-processor.h
         src/eti-handler/eti-generator.h

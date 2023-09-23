@@ -4,6 +4,7 @@
 #ifndef PHASE_CARR_DISP_H
 #define PHASE_CARR_DISP_H
 
+#include "glob_enums.h"
 #include <qcolor.h>
 #include <qwt.h>
 #include <qwt_plot.h>
