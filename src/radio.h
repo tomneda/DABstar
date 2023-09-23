@@ -330,7 +330,6 @@ public slots:
   void slot_show_rs_errors(int);
   void slot_show_aac_errors(int);
   void slot_show_fic_success(bool);
-  //void slot_show_snr(int);
   void slot_set_synced(bool);
   void slot_show_label(const QString &);
   void slot_handle_mot_object(QByteArray, QString, int, bool);
@@ -349,7 +348,6 @@ public slots:
   void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);
   void slot_show_rs_corrections(int, int);
   void slot_show_tii(int, int);
-  //void slot_show_tii_spectrum();
   void slot_clock_time(int, int, int, int, int, int, int, int, int);
   void slot_start_announcement(const QString &, int);
   void slot_stop_announcement(const QString &, int);
@@ -357,11 +355,10 @@ public slots:
   void slot_show_clock_error(int);
   void slot_set_epg_data(int, int, const QString &, const QString &);
   void slot_epg_timer_timeout();
-  void slot_switch_visibility(QWidget *);
   void slot_nr_services(int);
   void slot_handle_preset_selector(const QString &);
   void slot_handle_content_selector(const QString &);
-  void slot_http_terminate();
+  //void slot_http_terminate();
 
   void closeEvent(QCloseEvent * event) override;
 

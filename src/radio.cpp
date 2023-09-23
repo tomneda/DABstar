@@ -2048,47 +2048,12 @@ void RadioInterface::slot_show_mot_handling(bool b)
   theTechWindow->show_motHandling(b);
 }
 
-//	called from the dabProcessor
-//void RadioInterface::slot_show_snr(int s)
-//{
-//  if (!running.load())
-//  {
-//    return;
-//  }
-//
-//  channel.snr = s;
-//  if (!my_spectrumViewer.isHidden())
-//  {
-//    my_spectrumViewer.show_snr(s);
-//  }
-//
-////  if (my_snrViewer.isHidden())
-////  {
-////    snrBuffer.FlushRingBuffer();
-////    return;
-////  }
-//
-//  int amount = snrBuffer.GetRingBufferReadAvailable();
-//  if (amount <= 0)
-//  {
-//    return;
-//  }
-//
-//  float ss[amount];
-//  snrBuffer.getDataFromBuffer(ss, amount);
-//  for (int i = 0; i < amount; i++)
-//  {
-//    my_snrViewer.add_snr(ss[i]);
-//  }
-//  my_snrViewer.show_snr();
-//}
-
 //	just switch a color, called from the dabprocessor
 void RadioInterface::slot_set_synced(bool b)
 {
   (void)b;
 }
-//
+
 //	called from the PAD handler
 
 void RadioInterface::slot_show_label(const QString & s)
@@ -2377,24 +2342,13 @@ void RadioInterface::slot_set_stream_selector(int k)
 #endif
 }
 
-void RadioInterface::slot_switch_visibility(QWidget * w)
-{
-  if (w->isHidden())
-  {
-    w->show();
-  }
-  else
-  {
-    w->hide();
-  }
-}
-
 void RadioInterface::_slot_handle_detail_button()
 {
   if (!running.load())
   {
     return;
   }
+
   if (theTechWindow->isHidden())
   {
     theTechWindow->show();
@@ -2406,7 +2360,6 @@ void RadioInterface::_slot_handle_detail_button()
   dabSettings->setValue("techDataVisible", theTechWindow->isHidden() ? 0 : 1);
 }
 
-//
 //	Whenever the input device is a file, some functions,
 //	e.g. selecting a channel, setting an alarm, are not
 //	meaningful
@@ -2672,7 +2625,7 @@ void RadioInterface::connectGUI()
   connect(configWidget.resetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_reset_button()));
   connect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
   connect(show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
-  connect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
+  connect(devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
   connect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
   connect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));
   connect(nextChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_channel_button()));
@@ -2700,7 +2653,7 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.resetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_reset_button()));
   disconnect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
   disconnect(show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
-  disconnect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
+  disconnect(devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
   disconnect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
   disconnect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));
   disconnect(nextChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_channel_button()));
@@ -3660,7 +3613,7 @@ void RadioInterface::startScanning()
   //      To avoid reaction of the system on setting a different value:
   new_channelIndex(cc);
   dynamicLabel->setText("scan mode \"" + scanmodeText(scanMode) + "\" scanning channel " + channelSelector->currentText());
-  scanButton->setText("scanning");
+  scanButton->setText("SCANNING");
   switchDelay = dabSettings->value("switchDelay", 8).toInt();
   channelTimer.start(switchDelay * 1000);
 
@@ -3679,7 +3632,7 @@ void RadioInterface::stopScanning(bool dump)
   (void)dump;
   if (scanning.load())
   {
-    scanButton->setText("scan");
+    scanButton->setText("Scan");
     LOG("scanning stops ", "");
     my_dabProcessor->set_scanMode(false);
     dynamicLabel->setText("Scan ended");
@@ -4263,7 +4216,7 @@ void RadioInterface::_slot_handle_http_button()
     maxDistance = -1;
     if (mapHandler != nullptr)
     {
-      httpButton->setText("http-on");
+      httpButton->setText("HTTP on");
     }
   }
   else
@@ -4272,21 +4225,21 @@ void RadioInterface::_slot_handle_http_button()
     delete mapHandler;
     mapHandler = nullptr;
     locker.unlock();
-    httpButton->setText("http");
+    httpButton->setText("Open Map");
   }
 }
 
-void RadioInterface::slot_http_terminate()
-{
-  locker.lock();
-  if (mapHandler != nullptr)
-  {
-    delete mapHandler;
-    mapHandler = nullptr;
-  }
-  locker.unlock();
-  httpButton->setText("http");
-}
+//void RadioInterface::slot_http_terminate()
+//{
+//  locker.lock();
+//  if (mapHandler != nullptr)
+//  {
+//    delete mapHandler;
+//    mapHandler = nullptr;
+//  }
+//  locker.unlock();
+//  httpButton->setText("http");
+//}
 
 void RadioInterface::_slot_handle_auto_browser(int d)
 {
@@ -4427,7 +4380,7 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
   stop_etiHandler();    // just in case
   disconnect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_eti_handler()));
   connect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
-  scanButton->setText("scan");
+  scanButton->setText("Scan");
   if (inputDevice->isFileInput())
   {  // hide the button now
     scanButton->hide();
