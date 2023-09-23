@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>568</width>
-    <height>456</height>
+    <height>489</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -290,7 +290,19 @@ color: rgb(255, 255, 255);</string>
        </item>
        <item>
         <widget class="QLabel" name="pictureLabel">
-         <property name="baseSize">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>340</width>
+           <height>260</height>
+          </size>
+         </property>
+         <property name="maximumSize">
           <size>
            <width>340</width>
            <height>260</height>
@@ -330,6 +342,12 @@ color: rgb(255, 255, 255);</string>
      </item>
      <item>
       <widget class="QLabel" name="dynamicLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="font">
         <font>
          <pointsize>14</pointsize>
