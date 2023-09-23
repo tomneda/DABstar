@@ -56,11 +56,11 @@ DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inpu
   mcTiiDelay(p->tii_delay),
   mDabPar(DabParams(p->dabMode).get_dab_par())
 {
-  connect(this, &DabProcessor::setSynced, mpRadioInterface, &RadioInterface::slot_set_synced);
-  connect(this, &DabProcessor::setSyncLost, mpRadioInterface, &RadioInterface::slot_set_sync_lost);
-  connect(this, &DabProcessor::show_Spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
-  connect(this, &DabProcessor::show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
-  connect(this, &DabProcessor::show_clockErr, mpRadioInterface, &RadioInterface::slot_show_clock_error);
+  connect(this, &DabProcessor::signal_set_synced, mpRadioInterface, &RadioInterface::slot_set_synced);
+  connect(this, &DabProcessor::signal_set_sync_lost, mpRadioInterface, &RadioInterface::slot_set_sync_lost);
+  connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
+  connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
+  connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
 
   mOfdmBuffer.resize(2 * mDabPar.T_s);
   mBits.resize(2 * mDabPar.K);
@@ -203,7 +203,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     *	first datablock.
     *	We read the missing samples in the ofdm buffer
     */
-  setSynced(true);
+  emit signal_set_synced(true);
   mSampleReader.getSamples(mOfdmBuffer, ofdmBufferIndex, mDabPar.T_u - ofdmBufferIndex, mCoarseOffset + mFineOffset);
 
   ioSampleCount += mDabPar.T_u;
@@ -293,7 +293,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
       {
         uint8_t mainId = res >> 8;
         uint8_t subId = res & 0xFF;
-        show_tii(mainId, subId);
+        emit signal_show_tii(mainId, subId);
       }
       mTiiCounter = 0;
       mTiiDetector.reset();
@@ -330,7 +330,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
   if (++mClockOffsetFrameCount > 100)
   {
-    show_clockErr(mClockOffsetTotalSamples - mClockOffsetFrameCount * mDabPar.T_F); // samples per 100 frames
+    emit signal_show_clock_err(mClockOffsetTotalSamples - mClockOffsetFrameCount * mDabPar.T_F); // samples per 100 frames
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
   }
@@ -348,7 +348,7 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int & oSampleC
     // no sync, try again
     if (!mCorrectionNeeded)
     {
-      setSyncLost();
+      emit signal_set_sync_lost();
     }
     return false;
   }
@@ -361,7 +361,7 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int & oSampleC
 
 bool DabProcessor::_state_wait_for_time_sync_marker()
 {
-  setSynced(false);
+  emit signal_set_synced(false);
   mTiiDetector.reset();
   mOfdmDecoder.reset();
 
@@ -372,7 +372,7 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
   case TimeSyncer::EState::NO_DIP_FOUND:
     if (++mTimeSyncAttemptCount >= 8)
     {
-      emit No_Signal_Found();
+      emit signal_no_signal_found();
       mTimeSyncAttemptCount = 0;
     }
     break;

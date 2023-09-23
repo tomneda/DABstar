@@ -143,12 +143,12 @@ public slots:
   void slot_show_nominal_carrier(bool iShowNominalCarrier);
 
 signals:
-  void setSynced(bool);
-  void No_Signal_Found();
-  void setSyncLost();
-  void show_tii(int, int);
-  void show_Spectrum(int);
-  void show_clockErr(int);
+  void signal_set_synced(bool);
+  void signal_no_signal_found();
+  void signal_set_sync_lost();
+  void signal_show_tii(int, int);
+  void signal_show_spectrum(int);
+  void signal_show_clock_err(int);
 };
 
 #endif

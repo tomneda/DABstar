@@ -3571,7 +3571,7 @@ void RadioInterface::startScanning()
   presetTimer.stop();
   channelTimer.stop();
   epgTimer.stop();
-  connect(my_dabProcessor, SIGNAL (slot_no_signal_found()), this, SLOT (slot_no_signal_found()));
+  connect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   new_presetIndex(0);
   stopChannel();
   int cc = channelSelector->currentIndex();
@@ -3637,7 +3637,7 @@ void RadioInterface::startScanning()
 //	4. on handling a reset
 void RadioInterface::stopScanning(bool dump)
 {
-  disconnect(my_dabProcessor, &DabProcessor::No_Signal_Found, this, &RadioInterface::slot_no_signal_found);
+  disconnect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   (void)dump;
   if (scanning.load())
   {
@@ -3671,9 +3671,9 @@ void RadioInterface::slot_no_signal_found()
   int switchDelay;
   int scanMode = configWidget.scanmodeSelector->currentIndex();
 
-  disconnect(my_dabProcessor, SIGNAL (slot_no_signal_found()), this, SLOT (slot_no_signal_found()));
+  disconnect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   channelTimer.stop();
-  disconnect(&channelTimer, SIGNAL (timeout()), this, SLOT (_slot_channel_timeout()));
+  disconnect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
   if (running.load() && scanning.load())
   {
@@ -3698,8 +3698,8 @@ void RadioInterface::slot_no_signal_found()
       //	To avoid reaction of the system on setting a different value:
       new_channelIndex(cc);
 
-      connect(my_dabProcessor, SIGNAL (slot_no_signal_found()), this, SLOT (slot_no_signal_found()));
-      connect(&channelTimer, SIGNAL (timeout()), this, SLOT (_slot_channel_timeout()));
+      connect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
+      connect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
       dynamicLabel->setText("scan mode \"" + scanmodeText(scanMode) + "\" scanning channel " + channelSelector->currentText());
       switchDelay = dabSettings->value("switchDelay", 8).toInt();
