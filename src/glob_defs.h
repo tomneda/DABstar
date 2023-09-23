@@ -107,10 +107,11 @@ enum class ECarrierPlotType  // TODO: Move to a not so global place
 {
   MODQUAL,
   STDDEV,
-  RELLEVEL,
   MEANABSPHASE,
-  MEANPHASE,
-  PHASE,
+  //MEANPHASE,
+  FOURQUADPHASE,
+  RELPOWER,
+  SNR,
   NULLTII
 };
 

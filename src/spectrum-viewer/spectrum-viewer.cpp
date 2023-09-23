@@ -260,7 +260,7 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
   mpCarrierDisp->disp_carrier_plot(mCarrValuesVec);
 }
 
-void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr)
+void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)
 {
   if (myFrame.isHidden())
   {
@@ -272,6 +272,7 @@ void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTime
   timeOffsetDisplay->display(QString("%1").arg(iTimeOffset, 0, 'f', 2));
   frequencyOffsetDisplay->display(QString("%1").arg(iFreqOffset, 0, 'f', 2));
   phaseCorrection->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
+  snrDisplay->display(QString("%1").arg(iSNR, 0, 'f', 2));
 }
 
 void SpectrumViewer::show_snr(float snr)

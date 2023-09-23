@@ -198,7 +198,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   mSampleReader.getSamples(mOfdmBuffer, ofdmBufferIndex, mDabPar.T_u - ofdmBufferIndex, mCoarseOffset + mFineOffset);
 
   ioSampleCount += mDabPar.T_u;
-  mOfdmDecoder.processBlock_0(mOfdmBuffer);
+  mOfdmDecoder.process_reference_block_0(mOfdmBuffer);
 
   // Here we look only at the block_0 when we need a coarse frequency synchronization.
   mCorrectionNeeded = !mFicHandler.syncReached();
@@ -228,8 +228,6 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     * the phase difference between the samples in the cyclic prefix
     * and the	corresponding samples in the datapart.
     */
-  float cLevel = 0;
-  int cCount = 0;
   cmplx freqCorr = cmplx(0, 0);
 
   for (int16_t ofdmSymbCntIdx = 1; ofdmSymbCntIdx < mDabPar.L; ofdmSymbCntIdx++)
@@ -240,9 +238,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     for (int32_t i = mDabPar.T_u; i < mDabPar.T_s; i++)
     {
       freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - mDabPar.T_u]); // eval phase shift in cyclic prefix part
-      cLevel += abs(mOfdmBuffer[i]) + abs(mOfdmBuffer[i - mDabPar.T_u]);  // collect signal power for SNR calc (TODO: better squared as power?)
     }
-    cCount += 2 * mDabPar.T_g; // 2 times because 2 values are added in cLevel
 
     mOfdmDecoder.decode(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffset, mBits);
 
@@ -273,14 +269,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
   if (!isTiiNullSegment) // eval SNR only in non-TII null segments
   {
-    float sum = 0;
-
-    for (int32_t i = 0; i < mDabPar.T_n; i++)
-    {
-      sum += abs(mOfdmBuffer[i]);
-    }
-    sum /= (float)mDabPar.T_n;
-
+    mOfdmDecoder.store_null_without_tii_block(mOfdmBuffer);
   }
   else // this is TII null segment
   {

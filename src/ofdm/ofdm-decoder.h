@@ -47,11 +47,13 @@ public:
     float TimeOffset;
     float FreqOffset;
     float PhaseCorr;
+    float SNR;
   };
 
   void reset();
   void store_null_with_tii_block(const std::vector<cmplx> &);
-  void processBlock_0(std::vector<cmplx>);  // copy of vector is intended
+  void store_null_without_tii_block(const std::vector<cmplx> &);
+  void process_reference_block_0(std::vector<cmplx>);  // copy of vector is intended
   void decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
 
 private:
@@ -75,12 +77,13 @@ private:
   std::vector<float> mStdDevSqPhaseVector;
   std::vector<float> mMeanAbsPhaseVector;
   std::vector<float> mMeanPhaseVector;
-  std::vector<float> mMeanLevelVector;
-  std::vector<float> mAvgNullBlockFreqBin;
-  float mAvgAbsLevelOvrAll = 1.0f;
-  float mAvgAbsNullLevelMax = 0.0f;
-  float mAvgAbsNullLevelMin = 0.0f;
-  float mAvgAbsNullLevelGain = 0.0f;
+  std::vector<float> mMeanPowerVector;
+  std::vector<float> mMeanNullLevelWithTII;
+  std::vector<float> mMeanNullPowerWithoutTII;
+  float mMeanPowerOvrAll = 1.0f;
+  float mAvgAbsNullLevelWithTIIMax = 0.0f;
+  float mAvgAbsNullLevelWithTIIMin = 0.0f;
+  float mAvgAbsNullLevelWithTIIGain = 0.0f;
 
   // mQD has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
@@ -90,6 +93,7 @@ private:
   float _compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const;
   float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
   float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
+  float _compute_noise_Power() const;
 
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
