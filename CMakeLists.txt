@@ -274,7 +274,7 @@ set(${objectName}_HDRS
         src/support/buttons/smallqlistview.h
         src/support/buttons/smallspinbox.h
         src/scopes-qwt6/iqdisplay.h
-        src/scopes-qwt6/phase_carr_disp.h
+        src/scopes-qwt6/carrier-display.h
         src/scopes-qwt6/spectrogramdata.h
         src/scopes-qwt6/audio-display.h
         src/spectrum-viewer/spectrum-viewer.h
@@ -370,7 +370,7 @@ set(${objectName}_SRCS
         src/support/http-handler.cpp
         src/support/tii-library/tii-codes.cpp
         src/scopes-qwt6/iqdisplay.cpp
-        src/scopes-qwt6/phase_carr_disp.cpp
+        src/scopes-qwt6/carrier-display.cpp
         src/scopes-qwt6/audio-display.cpp
         src/scopes-qwt6/spectrogramdata.cpp
         src/spectrum-viewer/spectrum-viewer.cpp
@@ -440,7 +440,7 @@ set(${objectName}_UIS
         ./forms/dabradio.ui
         ./forms/technical_data.ui
         ./forms/config-helper.ui
-        src/spectrum-viewer/scopewidget.ui
+        ./forms/scopewidget.ui
         src/qt-devices/xml-filereader/xmlfiles.ui
         )
 

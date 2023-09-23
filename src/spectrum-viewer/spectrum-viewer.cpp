@@ -24,7 +24,7 @@
 #include  "spectrum-scope.h"
 #include  "waterfall-scope.h"
 #include  "correlation-viewer.h"
-#include  "phase_carr_disp.h"
+#include  "carrier-display.h"
 #include  <QSettings>
 #include  "iqdisplay.h"
 #include  <QColor>

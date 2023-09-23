@@ -3,7 +3,7 @@
 //
 
 #include "glob_defs.h"
-#include "phase_carr_disp.h"
+#include "carrier-display.h"
 #include <qwt_scale_div.h>
 #include <QPen>
 #include <QList>
