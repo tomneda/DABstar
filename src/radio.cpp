@@ -448,7 +448,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   {
     filePath = checkDir(filePath);
   }
-  //
+
 #ifndef  __MINGW32__
   epgPath = checkDir(QDir::tempPath());
 #else
@@ -488,7 +488,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   p.setColor(QPalette::Highlight, Qt::red);
   configWidget.ficError_display->setPalette(p);
   p.setColor(QPalette::Highlight, Qt::green);
-  //
+
   audioDumper = nullptr;
   rawDumper = nullptr;
   ficBlocks = 0;
@@ -616,12 +616,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   bool hidden = dabSettings->value("hidden", 0).toInt() != 0;
   if (hidden)
   {
-    configButton->setText("Show Controls");
     configDisplay.hide();
   }
   else
   {
-    configButton->setText("Hide Controls");
     configDisplay.show();
   }
 
@@ -643,10 +641,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   {
     my_spectrumViewer.show();
   }
-//  if (dabSettings->value("snrVisible", 0).toInt() == 1)
-//  {
-//    my_snrViewer.show();
-//  }
+
   if (dabSettings->value("techDataVisible", 0).toInt() == 1)
   {
     theTechWindow->show();
@@ -669,8 +664,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     }
   }
   if (hidden)
-  {  // make it visible
-    configButton->setText("Hide Controls");
+  {
     dabSettings->setValue("hidden", 0);
   }
   configDisplay.show();
@@ -2649,24 +2643,6 @@ void RadioInterface::_slot_handle_spectrum_button()
   dabSettings->setValue("spectrumVisible", my_spectrumViewer.isHidden() ? 0 : 1);
 }
 
-//void RadioInterface::_slot_handle_snr_button()
-//{
-//  if (!running.load())
-//  {
-//    return;
-//  }
-//
-//  if (my_snrViewer.isHidden())
-//  {
-//    my_snrViewer.show();
-//  }
-//  else
-//  {
-//    my_snrViewer.hide();
-//  }
-//  dabSettings->setValue("snrVisible", my_snrViewer.isHidden() ? 0 : 1);
-//}
-
 void RadioInterface::_slot_handle_history_button()
 {
   if (!running.load())
@@ -2695,9 +2671,7 @@ void RadioInterface::connectGUI()
   connect(detailButton, SIGNAL (clicked()), this, SLOT (_slot_handle_detail_button()));
   connect(configWidget.resetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_reset_button()));
   connect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
-  //connect(configWidget.show_tiiButton, SIGNAL (clicked()), this, SLOT (_slot_handle_tii_button()));
-  connect(configWidget.show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
-  //connect(configWidget.snrButton, SIGNAL (clicked()), this, SLOT (_slot_handle_snr_button()));
+  connect(show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
   connect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
   connect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
   connect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));
@@ -2725,9 +2699,7 @@ void RadioInterface::disconnectGUI()
   disconnect(detailButton, SIGNAL (clicked()), this, SLOT (_slot_handle_detail_button()));
   disconnect(configWidget.resetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_reset_button()));
   disconnect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
-  //disconnect(configWidget.show_tiiButton, SIGNAL (clicked()), this, SLOT (_slot_handle_tii_button()));
-  disconnect(configWidget.show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
-  //disconnect(configWidget.snrButton, SIGNAL (clicked()), this, SLOT (_slot_handle_snr_button()));
+  disconnect(show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
   disconnect(configWidget.devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
   disconnect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
   disconnect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));
@@ -4169,13 +4141,13 @@ void RadioInterface::_slot_handle_config_button()
 {
   if (!configDisplay.isHidden())
   {
-    configButton->setText("Show Controls");
+    //configButton->setText("Show Controls");
     configDisplay.hide();
     dabSettings->setValue("hidden", 1);
   }
   else
   {
-    configButton->setText("Hide Controls");
+    //configButton->setText("Hide Controls");
     configDisplay.show();
     dabSettings->setValue("hidden", 0);
   }

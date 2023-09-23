@@ -346,15 +346,15 @@ color: rgb(255, 255, 255);</string>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_9">
        <item>
-        <widget class="QPushButton" name="configButton">
+        <widget class="QPushButton" name="scanButton">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide or  show the configuration-control widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a scan. The scanMode can be selected in the configuration-control widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: darkgreen; color: white;</string>
+          <string notr="true">background-color: blue; color: white</string>
          </property>
          <property name="text">
-          <string>Controls</string>
+          <string>Scan</string>
          </property>
         </widget>
        </item>
@@ -372,15 +372,15 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="scanButton">
+        <widget class="QPushButton" name="configButton">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a scan. The scanMode can be selected in the configuration-control widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide or  show the configuration-control widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: blue; color: white</string>
+          <string notr="true">background-color: darkgreen; color: white;</string>
          </property>
          <property name="text">
-          <string>Scan</string>
+          <string>Controls</string>
          </property>
         </widget>
        </item>
@@ -394,6 +394,25 @@ color: rgb(255, 255, 255);</string>
          </property>
          <property name="text">
           <string>Details</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="show_spectrumButton">
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The spectrum and the constellation of the DAB signal is shown when pressing this button. &lt;br /&gt;&lt;br /&gt;Pressing it again will cause the spectrum and constellation to be invisible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(145, 65, 172); color: white;</string>
+         </property>
+         <property name="text">
+          <string>Spectrum</string>
          </property>
         </widget>
        </item>
