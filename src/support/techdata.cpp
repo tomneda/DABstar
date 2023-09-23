@@ -47,7 +47,7 @@ TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * aud
   formLayout->setLabelAlignment(Qt::AlignLeft);
   myFrame.hide();
   timeTable_button->hide();
-  the_audioDisplay = new audioDisplay(mr, audio, dabSettings);
+  the_audioDisplay = new AudioDisplay(mr, audio, dabSettings);
 
   connect(framedumpButton, SIGNAL (clicked()), this, SIGNAL (handle_frameDumping()));
   connect(audiodumpButton, SIGNAL (clicked()), this, SIGNAL (handle_audioDumping()));
@@ -293,7 +293,7 @@ void TechData::audioDataAvailable(int amount, int rate)
   audioData->getDataFromBuffer(buffer, amount);
   if (!myFrame.isHidden())
   {
-    the_audioDisplay->createSpectrum(buffer, amount, rate);
+    the_audioDisplay->create_spectrum(buffer, amount, rate);
   }
 }
 

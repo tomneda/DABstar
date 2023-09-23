@@ -32,7 +32,7 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot) :
   mQwtPlot->replot();
 }
 
-void CarrierDisp::disp_carrier_plot(const std::vector<float> & iPhaseVec)
+void CarrierDisp::display_carrier_plot(const std::vector<float> & iPhaseVec)
 {
   if (mDataSize != (int32_t)iPhaseVec.size())
   {

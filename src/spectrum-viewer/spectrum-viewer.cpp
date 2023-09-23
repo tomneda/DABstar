@@ -66,12 +66,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   myFrame.move(QPoint(x, y));
   myFrame.hide();
 
-  for (int16_t i = 0; i < SP_SPECTRUMSIZE; i++)
-  {
-    Window[i] = static_cast<float>(0.42
-                                 - 0.50 * cos((2.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1))
-                                 + 0.08 * cos((4.0 * M_PI * i) / (SP_SPECTRUMSIZE - 1)));
-  }
+  create_blackman_window(Window.data(), SP_SPECTRUMSIZE);
 
   mySpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
   myWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
@@ -266,7 +261,7 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
   const float scale = (float)scopeWidth / 100.0f;
 
   myIQDisplay->display_iq(mIqValuesVec, scale, scale);
-  mpCarrierDisp->disp_carrier_plot(mCarrValuesVec);
+  mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
 void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)

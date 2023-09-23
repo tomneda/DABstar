@@ -115,4 +115,28 @@ template <typename T> inline void mean_filter(T & ioVal, T iVal, const T iAlpha)
   ioVal += iAlpha * (iVal - ioVal);
 }
 
+
+template <typename T> inline void create_blackman_window(T * opVal, int32_t iWindowWidth)
+{
+#if 0 // The exact(er) version place zeros at the 3rd and 4th side-lobes but result in a discontinuity at the edges and a 6 dB/oct fall-off
+  constexpr double a0 = 7938.0/18608.0; // 0.426590714
+  constexpr double a1 = 9240.0/18608.0; // 0.496560619
+  constexpr double a2 = 1430.0/18608.0; // 0.076848667.
+
+  for (int32_t i = 0; i < iWindowWidth; i++)
+  {
+    opVal[i] = static_cast<T>(a0
+                            - a1 * cos((2.0 * M_PI * i) / (iWindowWidth - 1))
+                            + a2 * cos((4.0 * M_PI * i) / (iWindowWidth - 1)));
+  }
+#else // The truncated coefficients do not null the sidelobes as well, but have an improved 18 dB/oct fall-off
+  for (int32_t i = 0; i < iWindowWidth; i++)
+  {
+    opVal[i] = static_cast<T>(0.42
+                            - 0.50 * cos((2.0 * M_PI * i) / (iWindowWidth - 1))
+                            + 0.08 * cos((4.0 * M_PI * i) / (iWindowWidth - 1)));
+  }
+#endif
+}
+
 #endif // GLOB_DEFS_H

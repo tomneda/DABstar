@@ -76,7 +76,7 @@ class deviceHandler;
 class AudioBase;
 class historyHandler;
 class timeTableHandler;
-class audioDisplay;
+class AudioDisplay;
 
 #ifdef  HAVE_PLUTO_RXTX
 class	dabStreamer;
