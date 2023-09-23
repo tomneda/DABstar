@@ -309,7 +309,7 @@ color: rgb(255, 255, 255);</string>
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(165, 29, 45);</string>
+          <string notr="true">background-color: rgb(83, 17, 17);</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::Box</enum>
