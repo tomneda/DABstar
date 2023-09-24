@@ -368,6 +368,7 @@ public slots:
   void slot_handle_preset_selector(const QString &);
   void slot_handle_content_selector(const QString &);
   //void slot_http_terminate();
+  void slot_test_slider(int);
 
   void closeEvent(QCloseEvent * event) override;
 

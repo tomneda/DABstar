@@ -350,10 +350,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   float local_lon = dabSettings->value("longitude", 0).toFloat();
   channel.localPos = cmplx(local_lat, local_lon);
 
-  connect(configWidget.loadTableButton, SIGNAL (clicked()), this, SLOT (_slot_load_table()));
-  connect(configWidget.onTop, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_on_top(int)));
-  connect(configWidget.transmSelector, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_transm_selector(int)));
-  connect(configWidget.saveSlides, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_save_slides(int)));
+  connect(configWidget.loadTableButton, &QPushButton::clicked, this, &RadioInterface::_slot_load_table);
+  connect(configWidget.onTop, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_on_top);
+  connect(configWidget.transmSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transm_selector);
+  connect(configWidget.saveSlides, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_slides);
+  connect(configWidget.sliderTest, &QSlider::valueChanged, this, &RadioInterface::slot_test_slider);
 
   logFile = nullptr;
   int scanMode = dabSettings->value("scanMode", SINGLE_SCAN).toInt();
@@ -4397,5 +4398,10 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
   {  // hide the button now
     scanButton->hide();
   }
+}
+
+void RadioInterface::slot_test_slider(int iVal) // iVal 0..100
+{
+
 }
 
