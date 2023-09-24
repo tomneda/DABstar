@@ -76,6 +76,7 @@ private:
 
   ECarrierPlotType mPlotType = ECarrierPlotType::MODQUAL;
   bool mShowNomCarrier = false;
+  bool mUseOldSoftBitGen = false;
 
   int32_t mShowCntStatistics = 0;
   int32_t mShowCntIqScope = 0;
@@ -108,6 +109,7 @@ private:
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void slot_show_nominal_carrier(bool iShowNominalCarrier);
+  void slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen);
 
 signals:
   void signal_slot_show_iq(int, float);

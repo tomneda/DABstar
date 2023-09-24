@@ -752,6 +752,7 @@ bool RadioInterface::doStart()
   connect(channelSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, my_dabProcessor, &DabProcessor::slot_show_nominal_carrier);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
+  connect(configWidget.cbOldSoftBitGen, &QCheckBox::clicked, my_dabProcessor, &DabProcessor::slot_use_old_soft_bit_gen);
 
   //
   //	Just to be sure we disconnect here.

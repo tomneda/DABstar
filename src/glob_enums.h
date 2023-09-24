@@ -21,7 +21,6 @@ enum class ECarrierPlotType
   MODQUAL,
   STDDEV,
   MEANABSPHASE,
-  //MEANPHASE,
   FOURQUADPHASE,
   RELPOWER,
   SNR,

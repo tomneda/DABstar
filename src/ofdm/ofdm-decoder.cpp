@@ -193,7 +193,6 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
      *	The carrier of a block is the reference for the carrier
      *	on the same position in the next block
      */
-#ifndef OTHER_OFDM_DECODING_STYLE
     constexpr float ALPHA = 0.005f;
 
     cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
@@ -242,13 +241,6 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
     case ECarrierPlotType::MEANABSPHASE:
       mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(meanAbsPhasePerBinRef);
       break;
-//    case ECarrierPlotType::MEANPHASE:
-//    {
-//      float & meanPhasePerBinRef = mMeanPhaseVector[nomCarrIdx];
-//      mean_filter(meanPhasePerBinRef, fftBinPhase, 0.1f * ALPHA);
-//      mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(meanPhasePerBinRef);
-//      break;
-//    }
     case ECarrierPlotType::NULLTII:
       mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelWithTIIGain * (mMeanNullLevelWithTII[fftIdx] - mAvgAbsNullLevelWithTIIMin); // TII is shown from 0..100%
       break;
@@ -257,24 +249,22 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
       break;
     }
 
-    const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
-    const int16_t hardBitImag = (imag(fftBin) < 0.0f ? 1 : -1);
+    if (!mUseOldSoftBitGen)
+    {
+      const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
+      const int16_t hardBitImag = (imag(fftBin) < 0.0f ? 1 : -1);
 
-    oBits[0         + nomCarrIdx] = (int16_t)(hardBitReal * weight);
-    oBits[mDabPar.K + nomCarrIdx] = (int16_t)(hardBitImag * weight);
-#else
-    cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-    //r1 *= rotator; // fine correction of phase which can't be done in the time domain
-    const float ab1 = abs(r1);
-    mean_filter(mAvgAbsLevelOvrAll, ab1, 0.005f / 1536.0f);
-    mIqVector[nomCarrIdx] = r1 / mAvgAbsLevelOvrAll;
-    mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(r1));
-
-    // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
-    // tomneda: is that kind of soft creation ok?
-    oBits[0         + nomCarrIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
-    oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
-#endif
+      oBits[0 + nomCarrIdx] = (int16_t)(hardBitReal * weight);
+      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(hardBitImag * weight);
+    }
+    else // old style of soft bit generation
+    {
+      cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
+      const float ab1 = abs(r1);
+      // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
+      oBits[0         + nomCarrIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
+      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
+    }
   } // for (nomCarrIdx...
 
 
@@ -413,3 +403,7 @@ void OfdmDecoder::slot_show_nominal_carrier(bool iShowNominalCarrier)
   mShowNomCarrier = iShowNominalCarrier;
 }
 
+void OfdmDecoder::slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen)
+{
+  mUseOldSoftBitGen = iUseOldSoftBitGen;
+}

@@ -141,6 +141,7 @@ private:
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void slot_show_nominal_carrier(bool iShowNominalCarrier);
+  void slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen);
 
 signals:
   void signal_set_synced(bool);

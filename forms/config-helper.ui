@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>582</width>
-    <height>528</height>
+    <width>557</width>
+    <height>523</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,7 +86,7 @@
          <item>
           <widget class="QProgressBar" name="ficError_display">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;quality indicator for FIC processing. FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC processing. &lt;/p&gt;&lt;p&gt;FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="value">
             <number>24</number>
@@ -100,7 +100,7 @@
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>switch time (in seconds)</string>
+            <string>Switch time (in seconds)</string>
            </property>
           </widget>
          </item>
@@ -259,6 +259,36 @@
          </property>
          <property name="text">
           <string>ETI activated</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="saveSlides">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, slides (pictures) appearing during transmissions are being saved&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Save slides</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="transmSelector">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this is set, the transmitter descriptions visible on the map are also stored in a &amp;quot;.csv&amp;quot;  file,&lt;/p&gt;&lt;p&gt;On starting the httpHandler, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Save transmitters</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbOldSoftBitGen">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Change bitween new soft-bit calculation for the Viterbi decoder and the old style (box checked).&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Old style of soft-bit gen.</string>
          </property>
         </widget>
        </item>
@@ -451,39 +481,25 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QCheckBox" name="saveSlides">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, slides (pictures) appearing during transmissions are being saved&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Save slides</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="transmSelector">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this is set, the transmitter descriptions visible on the map are also stored in a &amp;quot;.csv&amp;quot;  file,&lt;/p&gt;&lt;p&gt;On starting the httpHandler, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Save transmitters</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="smallComboBox" name="streamoutSelector">
-       <property name="maximumSize">
-        <size>
-         <width>162</width>
-         <height>16777215</height>
-        </size>
-       </property>
-      </widget>
+      <widget class="smallComboBox" name="streamoutSelector"/>
      </item>
      <item>
       <widget class="smallComboBox" name="deviceSelector"/>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QSlider" name="sliderTest">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Slider for different tests. Normally no need to change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="maximum">
+      <number>100</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

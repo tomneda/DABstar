@@ -179,16 +179,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.MarkerYValueStep = 1;
     break;
 
-//  case ECarrierPlotType::MEANPHASE:
-//    cp.ToolTip = "Shows the mean phase in degree of each OFDM carrier.";
-//    cp.Style  = SCustPlot::EStyle::LINES;
-//    cp.Name = "Mean Phase";
-//    cp.YBottomValue = -30.0;
-//    cp.YTopValue = 30.0;
-//    cp.YValueElementNo = 7;
-//    cp.MarkerYValueStep = 1;
-//    break;
-
   case ECarrierPlotType::NULLTII:
     cp.ToolTip = "Shows the averaged null symbol with TII carriers.";
     cp.Style  = SCustPlot::EStyle::LINES;
@@ -222,7 +212,6 @@ QStringList CarrierDisp::get_plot_type_names()
   sl << _get_plot_type_data(ECarrierPlotType::MODQUAL).Name;
   sl << _get_plot_type_data(ECarrierPlotType::STDDEV).Name;
   sl << _get_plot_type_data(ECarrierPlotType::MEANABSPHASE).Name;
-  //sl << _get_plot_type_data(ECarrierPlotType::MEANPHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::FOURQUADPHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::RELPOWER).Name;
   sl << _get_plot_type_data(ECarrierPlotType::SNR).Name;

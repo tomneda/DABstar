@@ -585,3 +585,8 @@ void DabProcessor::slot_show_nominal_carrier(bool iShowNominalCarrier)
   mOfdmDecoder.slot_show_nominal_carrier(iShowNominalCarrier);
 }
 
+void DabProcessor::slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen)
+{
+  mOfdmDecoder.slot_use_old_soft_bit_gen(iUseOldSoftBitGen);
+}
+
