@@ -13,6 +13,7 @@
   * [Table of Content](#table-of-content)
   * [Introducing](#introducing)
   * [Changes in DABstar version 1.1.0](#changes-in-dabstar-version-110)
+    * [What is new?](#what-is-new-)
     * [Things that do not work yet or anymore](#things-that-do-not-work-yet-or-anymore-)
     * [Changes to the **Carrier Plot**](#changes-to-the-carrier-plot)
   * [Changes in DABstar version 1.0.2](#changes-in-dabstar-version-102)
