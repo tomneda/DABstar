@@ -778,7 +778,7 @@ bool RadioInterface::doStart()
     configWidget.tii_detectorMode->setChecked(true);
   }
   my_dabProcessor->set_tiiDetectorMode(dm);
-  connect(configWidget.tii_detectorMode, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_tii_detector_mode(int)));
+  connect(configWidget.tii_detectorMode, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_tii_detector_mode);
   //
   //	after the preset timer signals, the service will be started
   startChannel(channelSelector->currentText());
@@ -1346,9 +1346,9 @@ void RadioInterface::slot_new_audio(int amount, int rate)
     }
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
-      {
-        streamerOut->audioOut(vec, amount, rate);
-      }
+    {
+      streamerOut->audioOut(vec, amount, rate);
+    }
 #endif
     if (!theTechWindow->isHidden())
     {
@@ -2629,7 +2629,7 @@ void RadioInterface::_slot_handle_history_button()
 //
 //	When changing (or setting) a device, we do not want anybody
 //	to have the buttons on the GUI touched, so
-//	we just disconnet them and (re)connect them as soon as
+//	we just disconnect them and (re)connect them as soon as
 //	a device is operational
 void RadioInterface::connectGUI()
 {
@@ -4080,6 +4080,7 @@ void RadioInterface::_slot_handle_tii_detector_mode(int d)
   bool b = configWidget.tii_detectorMode->isChecked();
   (void)d;
   my_dabProcessor->set_tiiDetectorMode(b);
+  channel.transmitters.clear();
   dabSettings->setValue("tii_detector", b ? 1 : 0);
 }
 
@@ -4402,6 +4403,5 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
 
 void RadioInterface::slot_test_slider(int iVal) // iVal 0..100
 {
-
 }
 
