@@ -66,24 +66,24 @@ As there are many changes done in the UI and also in the background, I did a big
 
 The **Carrier Plot** are able to show different plots which are all related to the used 1536 OFDM carrier:
 
-![](/home/work/Programming/GIT/tomneda/DABstar/res/carrier_scope_combobox.png)
+![](res/carrier_scope_combobox.png)
 
 If the check-box **Nom carrier** (Nominal carrier) is checked then the carriers are sorted in the logical numbering after the frequency interleaver. But the following explained plots would not look nice if doing this. So better let this check-box unchecked.
 
 - **Modulation Quality:** The value 0...100% shows the quality how sure the carrier can be decoded. This value is used for the soft bit decision at the viterbi decoder. The higher the better.  
-    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/ModulQuality.png)
+    ![](res/CarrierPlots/ModulQuality.png)
 - **Standard Deviation:** This is the basis for the Modulation Quality: the standard deviation (in °) of the noise of the phase. The lower the better.
-    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/StdDeviation.png)
+    ![](res/CarrierPlots/StdDeviation.png)
 - **Mean Absolute Phase:** This is the average over many OFDM symbols of the absolute decoded phase. Best is a straight line at 45°. A bigger frequency offset would show a slope here.
-    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/MeanAbsPhase.png)
+    ![](res/CarrierPlots/MeanAbsPhase.png)
 - **4-quadrant Phase:** This shows the IQ Plot in another way: the current phase of the 4 possible quadrants. Best would be 4 (overlaid seen) "lines" at -135°, -45°, +45° and +135°.
-    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/4quadrPhase.png)
+    ![](res/CarrierPlots/4quadrPhase.png)
 - **Relative Power:** As the absolute power is difficult to measure, this shows the power (in dB) relative to the medium over all carriers. A most straight line would imply the better signal quality (less fading).
-    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/RelativePower.png)  
+    ![](res/CarrierPlots/RelativePower.png)  
 - **S/N-Ratio:** This is ratio between the signal power and the noise power in dB. A higher value is better.  
-    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/SNRatio.png)
+    ![](res/CarrierPlots/SNRatio.png)
 - **Null Symbol TII**: This is the replacement of the old TII Scope. It shows the TII (Transmitter Identification Information) carriers within certain Null Symbols. The content is shown decoded on the right corner in the main widget ("TII: ...").
-    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/NullSymbolTii.png)
+    ![](res/CarrierPlots/NullSymbolTii.png)
 
 ## Changes in DABstar version 1.0.2
 
