@@ -2149,11 +2149,13 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
   channel.mainId = mainId;
   channel.subId = subId;
 
-  QString a = "TII:";
+  QString a; // = "TII:";
+  uint16_t cnt = 0;
   for (const auto & tr : channel.transmitters)
   {
     ChannelDescriptor::STiiId id(tr);
     a = a + " " + tiiNumber(id.MainId) + "-" + tiiNumber(id.SubId);
+    if (++cnt >= 4) break; // forbid doing a too long GUI output, due to noise reception
   }
   transmitter_coordinates->setAlignment(Qt::AlignRight);
   transmitter_coordinates->setText(a);
