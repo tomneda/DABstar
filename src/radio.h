@@ -272,7 +272,7 @@ private:
   void cleanScreen();
   void hideButtons();
   void showButtons();
-  deviceHandler * setDevice(const QString &);
+  deviceHandler * create_device(const QString &);
   historyHandler * my_history;
   historyHandler * my_presets;
   timeTableHandler * my_timeTable;

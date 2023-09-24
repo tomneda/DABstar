@@ -616,7 +616,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   if (k != -1)
   {
     configWidget.deviceSelector->setCurrentIndex(k);
-    inputDevice = setDevice(configWidget.deviceSelector->currentText());
+    inputDevice = create_device(configWidget.deviceSelector->currentText());
     if (inputDevice != nullptr)
     {
       dabSettings->setValue("device", configWidget.deviceSelector->currentText());
@@ -709,7 +709,7 @@ QString RadioInterface::footText()
 void RadioInterface::_slot_do_start(const QString & dev)
 {
   (void)dev;
-  inputDevice = setDevice(dev);
+  inputDevice = create_device(dev);
   //	Some buttons should not be touched before we have a device
   if (inputDevice == nullptr)
   {
@@ -760,9 +760,9 @@ bool RadioInterface::doStart()
   //	It would have been helpful to have a function
   //	testing whether or not a connection exists, we need a kind
   //	of "reset"
-  disconnect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::doStart);
-  disconnect(configWidget.deviceSelector, SIGNAL (activated(const QString &)), this, SLOT (_slot_new_device(const QString &)));
-  connect(configWidget.deviceSelector, SIGNAL (activated(const QString &)), this, SLOT (_slot_new_device(const QString &)));
+  disconnect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_do_start);
+  disconnect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_new_device);
+  connect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_new_device);
   //
   if (channel.nextService.valid)
   {
@@ -1544,7 +1544,7 @@ void RadioInterface::_slot_update_time_display()
 
 //
 //	precondition: everything is quiet
-deviceHandler * RadioInterface::setDevice(const QString & s)
+deviceHandler * RadioInterface::create_device(const QString & s)
 {
   QString file;
   deviceHandler * inputDevice = nullptr;
@@ -1877,7 +1877,7 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
   }
 
   LOG("selecting ", deviceName);
-  inputDevice = setDevice(deviceName);
+  inputDevice = create_device(deviceName);
   if (inputDevice == nullptr)
   {
     inputDevice = new deviceHandler();
