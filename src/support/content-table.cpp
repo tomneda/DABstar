@@ -38,7 +38,7 @@
 //static const char *eep_Arates [] = {nullptr, "1/4",  "3/8", "1/2", "3/4"};
 //static const char *eep_Brates [] = {nullptr, "4/9",  "4/7", "4/6", "4/5"};
 
-contentTable::contentTable(RadioInterface * theRadio, QSettings * s, const QString & channel, int cols)
+ContentTable::ContentTable(RadioInterface * theRadio, QSettings * s, const QString & channel, int cols)
 {
   this->theRadio = theRadio;
   this->dabSettings = s;
@@ -61,14 +61,14 @@ contentTable::contentTable(RadioInterface * theRadio, QSettings * s, const QStri
   myWidget->setWidget(contentWidget);
   contentWidget->setHorizontalHeaderLabels(QStringList() << tr("current ensemble"));
 
-  connect(contentWidget, SIGNAL (cellClicked(int, int)), this, SLOT (selectService(int, int)));
-  connect(contentWidget, SIGNAL (cellDoubleClicked(int, int)), this, SLOT (dump(int, int)));
-  //connect(this, SIGNAL (goService(const QString &)), theRadio, SLOT (handle_contentSelector(const QString &)));
+  connect(contentWidget, &QTableWidget::cellClicked, this, &ContentTable::_slot_select_service);
+  connect(contentWidget, &QTableWidget::cellDoubleClicked, this, &ContentTable::_slot_dump);
+  //connect(this, &ContentTable::signal_go_service, theRadio, &RadioInterface::slot_handle_content_selector);
 
   addRow();  // for the ensemble name
 }
 
-contentTable::~contentTable()
+ContentTable::~ContentTable()
 {
   dabSettings->beginGroup("contentTable");
   dabSettings->setValue("position-x", myWidget->pos().x());
@@ -81,7 +81,7 @@ contentTable::~contentTable()
   delete myWidget;
 }
 
-void contentTable::clearTable()
+void ContentTable::clearTable()
 {
   int rows = contentWidget->rowCount();
   for (int i = rows; i > 0; i--)
@@ -91,22 +91,22 @@ void contentTable::clearTable()
   addRow();  // for the ensemble name
 }
 
-void contentTable::show()
+void ContentTable::show()
 {
   myWidget->show();
 }
 
-void contentTable::hide()
+void ContentTable::hide()
 {
   myWidget->hide();
 }
 
-bool contentTable::isVisible()
+bool ContentTable::isVisible()
 {
   return !myWidget->isHidden();
 }
 
-void contentTable::selectService(int row, int column)
+void ContentTable::_slot_select_service(int row, int column)
 {
   QTableWidgetItem * theItem = contentWidget->item(row, 0);
 
@@ -117,10 +117,10 @@ void contentTable::selectService(int row, int column)
   (void)column;
   QString theService = theItem->text();
   fprintf(stderr, "selecting %s\n", theService.toUtf8().data());
-  goService(theService);
+  emit signal_go_service(theService);
 }
 
-void contentTable::dump(int row, int column)
+void ContentTable::_slot_dump(int row, int column)
 {
   FindFileNames filenameFinder(dabSettings);
   FILE * dumpFile = filenameFinder.findContentDump_fileName(channel);
@@ -142,7 +142,7 @@ void contentTable::dump(int row, int column)
   fclose(dumpFile);
 }
 
-void contentTable::dump(FILE * dumpFilePointer)
+void ContentTable::dump(FILE * dumpFilePointer)
 {
   if (dumpFilePointer == nullptr)
   {
@@ -159,7 +159,7 @@ void contentTable::dump(FILE * dumpFilePointer)
   }
 }
 
-int16_t contentTable::addRow()
+int16_t ContentTable::addRow()
 {
   int16_t row = contentWidget->rowCount();
 
@@ -174,7 +174,7 @@ int16_t contentTable::addRow()
   return row;
 }
 
-void contentTable::addLine(const QString & s)
+void ContentTable::addLine(const QString & s)
 {
   int row = addRow();
   QStringList h = s.split(";");

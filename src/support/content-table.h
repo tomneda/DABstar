@@ -45,12 +45,12 @@ class RadioInterface;
 class QSettings;
 class Audiodata;
 
-class contentTable : public QObject
+class ContentTable : public QObject
 {
 Q_OBJECT
 public:
-  contentTable(RadioInterface *, QSettings *, const QString &, int);
-  ~contentTable();
+  ContentTable(RadioInterface *, QSettings *, const QString &, int);
+  ~ContentTable();
 
   void show();
   void hide();
@@ -71,11 +71,11 @@ private:
   int16_t addRow();
 
 private slots:
-  void selectService(int, int);
-  void dump(int, int);
+  void _slot_select_service(int, int);
+  void _slot_dump(int, int);
 
 signals:
-  void goService(const QString &);
+  void signal_go_service(const QString &);
 };
 
 #endif

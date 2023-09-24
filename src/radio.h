@@ -201,8 +201,8 @@ private:
   QString theFont;
   int fontSize;
   int fmFrequency;
-  contentTable * my_contentTable;
-  contentTable * my_scanTable;
+  ContentTable * my_contentTable;
+  ContentTable * my_scanTable;
   FILE * logFile;
   ChannelDescriptor channel;
   int maxDistance;

@@ -926,8 +926,8 @@ void RadioInterface::_slot_handle_content_button()
   QString header = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequencyKhz) + ";" + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";" + QString::number(
     serviceList.size()) + ";" + distanceLabel->text() + "\n";
 
-  my_contentTable = new contentTable(this, dabSettings, channel.channelName, my_dabProcessor->scanWidth());
-  connect(my_contentTable, &contentTable::goService, this, &RadioInterface::slot_handle_content_selector);
+  my_contentTable = new ContentTable(this, dabSettings, channel.channelName, my_dabProcessor->scanWidth());
+  connect(my_contentTable, &ContentTable::signal_go_service, this, &RadioInterface::slot_handle_content_selector);
 
   my_contentTable->addLine(header);
   //	my_contentTable		-> addLine ("\n");
@@ -3598,7 +3598,7 @@ void RadioInterface::startScanning()
   {
     if (my_scanTable == nullptr)
     {
-      my_scanTable = new contentTable(this, dabSettings, "scan", my_dabProcessor->scanWidth());
+      my_scanTable = new ContentTable(this, dabSettings, "scan", my_dabProcessor->scanWidth());
     }
     else
     {
