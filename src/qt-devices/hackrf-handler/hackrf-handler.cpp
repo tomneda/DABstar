@@ -210,8 +210,8 @@ void hackrfHandler::setVFOFrequency(int32_t newFrequency)
     return;
   }
 
-  //
   //	It seems that after changing the frequency, the preamp is switched off
+  //	(tomneda: do not see this, I guess the bug is already fixed, but leave the workaround)
   if (AmpEnableButton->checkState() == Qt::Checked)
   {
     EnableAmpli(1);
