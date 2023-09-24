@@ -3366,7 +3366,7 @@ void RadioInterface::write_warning_message(const QString & iMsg)
 //
 void RadioInterface::startChannel(const QString & theChannel)
 {
-  int tunedFrequency = theBand.Frequency(theChannel);
+  int tunedFrequency = theBand.get_frequency_hz(theChannel);
   LOG("channel starts ", theChannel);
   configWidget.frequencyDisplay->display(tunedFrequency / 1000000.0);
   my_spectrumViewer.showFrequency(tunedFrequency / 1000000.0);

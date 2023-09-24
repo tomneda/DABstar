@@ -188,7 +188,7 @@ private:
   RingBuffer<int16_t> audioBuffer;
   SpectrumViewer my_spectrumViewer;
   PresetHandler my_presetHandler;
-  bandHandler theBand;
+  BandHandler theBand;
   QFrame dataDisplay;
   QFrame configDisplay;
   dlCache the_dlCache;

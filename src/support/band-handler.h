@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2015 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -21,54 +29,53 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__BANDHANDLER__
-#define	__BANDHANDLER__
-#include	<cstdint>
-#include	<QComboBox>
-#include	<QObject>
-#include	<QString>
-#include	<QSettings>
-#include	<QTableWidget>
-#include	<QFile>
-#include	<QtXml>
-#include	<cstdio>
-//
-//	a simple convenience class
-//
+#ifndef  BANDHANDLER_H
+#define  BANDHANDLER_H
 
-typedef struct {
-	QString key;
-	int	fKHz;
-	bool	skip;
-} dabFrequencies;
+#include  <cstdint>
+#include  <QComboBox>
+#include  <QObject>
+#include  <QString>
+#include  <QSettings>
+#include  <QTableWidget>
+#include  <QFile>
+#include  <QtXml>
+#include  <cstdio>
 
-class bandHandler: public QObject {
+struct SDabFrequencies;
+
+class BandHandler : public QObject
+{
 Q_OBJECT
 public:
-		bandHandler	(const QString &, QSettings *);
-		~bandHandler	();
-	void    saveSettings	();
-	void	setupChannels	(QComboBox *s, uint8_t band);
-	void	setup_skipList	(const QString &);
-	int32_t Frequency	(QString Channel);
-	int	firstChannel	();
-	int	nextChannel	(int);
-	int	prevChannel	(int);
-	void	show		();
-	void	hide		();
-	bool	isHidden	();
+  BandHandler(const QString &, QSettings *);
+  ~BandHandler() override;
+
+  void saveSettings();
+  void setupChannels(QComboBox * s, uint8_t band);
+  void setup_skipList(const QString &);
+  int32_t get_frequency_hz(const QString & Channel);
+  int firstChannel();
+  int nextChannel(int);
+  int prevChannel(int);
+  void show();
+  void hide();
+  bool isHidden();
 
 public slots:
-	void	cellSelected	(int, int);
+  void slot_cell_selected(int, int);
+
 private:
-	QSettings		*dabSettings;
-	QString			fileName;
-	int			lastOf			(dabFrequencies *);
-	dabFrequencies		*selectedBand;
-	QTableWidget		theTable;
-	void			default_skipList	();
-	void			file_skipList		(const QString &);
-	void			updateEntry		(const QString &);
+  QSettings * dabSettings;
+  QString fileName;
+  SDabFrequencies * selectedBand;
+  QTableWidget theTable;
+
+  int lastOf(SDabFrequencies *);
+  void default_skipList();
+  void file_skipList(const QString &);
+  void updateEntry(const QString &);
 };
+
 #endif
 
