@@ -3358,6 +3358,8 @@ void RadioInterface::write_warning_message(const QString & iMsg)
   dynamicLabel->setText(iMsg);
 }
 
+static int32_t sFreqOffHz = 0;
+
 ///////////////////////////////////////////////////////////////////////////
 //
 //	Channel basics
@@ -3366,7 +3368,7 @@ void RadioInterface::write_warning_message(const QString & iMsg)
 //
 void RadioInterface::startChannel(const QString & theChannel)
 {
-  const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel);
+  const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel) + sFreqOffHz;
   LOG("channel starts ", theChannel);
   configWidget.frequencyDisplay->display(tunedFrequencyHz / 1'000'000.0);
   my_spectrumViewer.show_frequency_MHz(tunedFrequencyHz / 1'000'000.0);
@@ -3380,7 +3382,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   channel.channelName = theChannel;
   dabSettings->setValue("channel", theChannel);
   channel.frequencyKhz = tunedFrequencyHz / 1000;
-  //my_tiiViewer.clear();
+
   if (transmitterTags_local && (mapHandler != nullptr))
   {
     mapHandler->putData(MAP_RESET, cmplx(0, 0), "", "", "", 0, 0, 0, 0);
@@ -3389,9 +3391,13 @@ void RadioInterface::startChannel(const QString & theChannel)
   {
     mapHandler->putData(MAP_FRAME, cmplx(-1, -1), "", "", "", 0, 0, 0, 0);
   }
-  show_for_safety();
+
+  enable_ui_elements_for_safety(true);
+
   my_dabProcessor->start();
+
   int switchDelay = dabSettings->value("switchDelay", 8).toInt();
+
   if (!scanning.load())
   {
     epgTimer.start(switchDelay * 1000);
@@ -3461,11 +3467,10 @@ void RadioInterface::stopChannel()
   }
   transmitter_country->setText("");
   transmitter_coordinates->setText("");
-  //
-  hide_for_safety();  // hide some buttons
-  //my_tiiViewer.clear();
+
+  enable_ui_elements_for_safety(false);  // hide some buttons
   QCoreApplication::processEvents();
-  //
+
   //	no processing left at this time
   usleep(1000);    // may be handling pending signals?
   channel.currentService.valid = false;
@@ -3829,23 +3834,14 @@ std::vector<serviceId> RadioInterface::insert(const std::vector<serviceId> & l, 
   return k;
 }
 
-//
-//	In those case we are sure not to have an operating
-//	dabProcessor, we hide some buttons
-void RadioInterface::hide_for_safety()
-{
-  configWidget.dumpButton->hide();
-  prevServiceButton->hide();
-  nextServiceButton->hide();
-  configWidget.contentButton->hide();
-}
 
-void RadioInterface::show_for_safety()
+//	In those case we are sure not to have an operating dabProcessor, we hide some buttons
+void RadioInterface::enable_ui_elements_for_safety(const bool iEnable)
 {
-  configWidget.dumpButton->show();
-  prevServiceButton->show();
-  nextServiceButton->show();
-  configWidget.contentButton->show();
+  configWidget.dumpButton->setEnabled(iEnable);
+  prevServiceButton->setEnabled(iEnable);
+  nextServiceButton->setEnabled(iEnable);
+  configWidget.contentButton->setEnabled(iEnable);
 }
 
 void RadioInterface::_slot_handle_mute_button()
@@ -4401,7 +4397,17 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
   }
 }
 
-void RadioInterface::slot_test_slider(int iVal) // iVal 0..100
+void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
 {
+  sFreqOffHz = (iVal - 500) * 100;
+  //int32_t curFreqHz = channel.frequencyKhz * 1000;
+  //inputDevice->setVFOFrequency(curFreqHz + freqOffHz);
+
+  QString channelName = channel.channelName;
+  stopChannel();
+  startChannel(channelName);
+  QString s("Freq-Offs [Hz]: ");
+  s += QString::number(sFreqOffHz);
+  configWidget.sliderTest->setToolTip(s);
 }
 

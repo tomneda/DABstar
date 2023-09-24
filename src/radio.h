@@ -314,8 +314,7 @@ private:
   };
 
   void handle_serviceButton(direction);
-  void hide_for_safety();
-  void show_for_safety();
+  void enable_ui_elements_for_safety(bool iEnable);
   //
   //	short hands
   void new_presetIndex(int);
