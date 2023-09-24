@@ -12,6 +12,9 @@
 <!-- TOC -->
   * [Table of Content](#table-of-content)
   * [Introducing](#introducing)
+  * [Changes in DABstar version 1.1.0](#changes-in-dabstar-version-110)
+    * [Things that do not work yet or anymore](#things-that-do-not-work-yet-or-anymore-)
+    * [Changes to the **Carrier Plot**](#changes-to-the-carrier-plot)
   * [Changes in DABstar version 1.0.2](#changes-in-dabstar-version-102)
     * [How to apply TII info](#how-to-apply-tii-info)
   * [Changes in DABstar version 1.0.1](#changes-in-dabstar-version-101-)
@@ -28,7 +31,7 @@
 ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249))
 from 2023-05-30, fixes afterwards to Qt-DAB afterwards included.
 
-Current main branch version is [V1.0.2](#changes-in-dabstar-version-102).
+Current main branch version is [V1.1.0](#changes-in-dabstar-version-110).
 
 As there are many changes made from my side and there will be bigger changes in the future, 
 I decided to give it the new name **DABstar**.
@@ -39,6 +42,48 @@ For building there is one bigger difference to Qt-DAB: I maintain only one GUI v
 So use only the cmake related installation process.
 
 I will also not provide any precompiled setup packages, yet.
+
+## Changes in DABstar version 1.1.0
+ 
+As there are many changes done in the UI and also in the background, I did a bigger step in the version numbering.
+
+### What is new? 
+ 
+- Many code refinements regarding SonarLint and ClangTidy in different modules.
+- Refine coloring in the UI.
+- New soft-bit evaluation for the Virterbi decoder. It should theoretically (imo) be better than the old one but I could not clearly prove that.
+- Add further outputs to the **Carrier Plot** which are selectable (see more details below).
+- Many changes in the processing of the OFDM decoder were necessary to realize the two points before.
+- The buttons to open/close the widgets for **Controls**, **Spectrum**, **Details** are moved to the main widget.
+- Add a frame around the picture and make its size fix.
+ 
+### Things that do not work yet or anymore 
+- The **IQ Scope** is prepared for different kinds of outputs but not yet selectable.
+- The TII widget is removed at it is replaced by the **Carrier Plot**.
+- The SNR widget is removed without replacement. I see no really need for that and I want to get rid of too many widgets.
+
+### Changes to the **Carrier Plot**
+
+The **Carrier Plot** are able to show different plots which are all related to the used 1536 OFDM carrier:
+
+![](/home/work/Programming/GIT/tomneda/DABstar/res/carrier_scope_combobox.png)
+
+If the check-box **Nom carrier** (Nominal carrier) is checked then the carriers are sorted in the logical numbering after the frequency interleaver. But the following explained plots would not look nice if doing this. So better let this check-box unchecked.
+
+- **Modulation Quality:** The value 0...100% shows the quality how sure the carrier can be decoded. This value is used for the soft bit decision at the viterbi decoder. The higher the better.  
+    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/ModulQuality.png)
+- **Standard Deviation:** This is the basis for the Modulation Quality: the standard deviation (in °) of the noise of the phase. The lower the better.
+    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/StdDeviation.png)
+- **Mean Absolute Phase:** This is the average over many OFDM symbols of the absolute decoded phase. Best is a straight line at 45°. A bigger frequency offset would show a slope here.
+    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/MeanAbsPhase.png)
+- **4-quadrant Phase:** This shows the IQ Plot in another way: the current phase of the 4 possible quadrants. Best would be 4 (overlaid seen) "lines" at -135°, -45°, +45° and +135°.
+    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/4quadrPhase.png)
+- **Relative Power:** As the absolute power is difficult to measure, this shows the power (in dB) relative to the medium over all carriers. A most straight line would imply the better signal quality (less fading).
+    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/RelativePower.png)  
+- **S/N-Ratio:** This is ratio between the signal power and the noise power in dB. A higher value is better.  
+    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/SNRatio.png)
+- **Null Symbol TII**: This is the replacement of the old TII Scope. It shows the TII (Transmitter Identification Information) carriers within certain Null Symbols. The content is shown decoded on the right corner in the main widget ("TII: ...").
+    ![](/home/work/Programming/GIT/tomneda/DABstar/res/CarrierPlots/NullSymbolTii.png)
 
 ## Changes in DABstar version 1.0.2
 
