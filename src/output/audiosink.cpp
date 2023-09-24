@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2011, 2012, 2013
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -132,7 +141,7 @@ bool AudioSink::selectDevice(int16_t idx)
 
   outputParameters.hostApiSpecificStreamInfo = nullptr;
   //
-  fprintf(stderr, "Suggested size for outputbuffer = %d\n", bufSize);
+  fprintf(stdout, "Suggested size for outputbuffer = %d\n", bufSize);
   err = Pa_OpenStream(&ostream, nullptr, &outputParameters, CardRate, bufSize, 0, this->paCallback_o, this);
 
   if (err != paNoError)
@@ -140,7 +149,7 @@ bool AudioSink::selectDevice(int16_t idx)
     qDebug("Open ostream error\n");
     return false;
   }
-  fprintf(stderr, "stream opened\n");
+  fprintf(stdout, "stream opened\n");
   paCallbackReturn = paContinue;
   err = Pa_StartStream(ostream);
   if (err != paNoError)
@@ -148,7 +157,7 @@ bool AudioSink::selectDevice(int16_t idx)
     qDebug("Open startstream error\n");
     return false;
   }
-  fprintf(stderr, "stream started\n");
+  fprintf(stdout, "stream started\n");
   writerRunning = true;
   return true;
 }

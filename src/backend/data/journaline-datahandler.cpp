@@ -22,6 +22,7 @@
  */
 #include  "journaline-datahandler.h"
 #include  "dabdatagroupdecoder.h"
+#include  "data_manip_and_checks.h"
 
 
 static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header, const unsigned long len, const unsigned char * buf, void * arg)

@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -58,7 +67,7 @@ mscHandler::~mscHandler()
 
 void mscHandler::reset_Channel()
 {
-  fprintf(stderr, "channel reset: all services will be stopped\n");
+  fprintf(stdout, "channel reset: all services will be stopped\n");
   locker.lock();
   for (auto const & b: theBackends)
   {
@@ -78,7 +87,7 @@ void mscHandler::stop_service(DescriptorType * d, int flag)
     Backend * b = theBackends.at(i);
     if ((b->subChId == d->subchId) && (b->borf == flag))
     {
-      fprintf(stderr, "stopping (sub)service at subchannel %d\n", d->subchId);
+      fprintf(stdout, "stopping (sub)service at subchannel %d\n", d->subchId);
       b->stopRunning();
       delete b;
       theBackends.erase(theBackends.begin() + i);
@@ -95,7 +104,7 @@ void mscHandler::stop_service(int subchId, int flag)
     Backend * b = theBackends.at(i);
     if ((b->subChId == subchId) && (b->borf == flag))
     {
-      fprintf(stderr, "stopping subchannel %d\n", subchId);
+      fprintf(stdout, "stopping subchannel %d\n", subchId);
       b->stopRunning();
       delete b;
       theBackends.erase(theBackends.begin() + i);
@@ -106,11 +115,11 @@ void mscHandler::stop_service(int subchId, int flag)
 
 bool mscHandler::set_Channel(DescriptorType * d, RingBuffer<int16_t> * audioBuffer, RingBuffer<uint8_t> * dataBuffer, FILE * dump, int flag)
 {
-  fprintf(stderr, "going to open %s\n", d->serviceName.toLatin1().data());
+  fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
   //	locker. lock();
   //	for (int i = 0; i < theBackends. size (); i ++) {
   //	   if (d -> subchId == theBackends. at (i) -> subChId) {
-  //	      fprintf (stderr, "The service is already running\n");
+  //	      fprintf (stdout, "The service is already running\n");
   //	      theBackends. at (i) -> stopRunning ();
   //	      delete theBackends. at (i);
   //	      theBackends. erase (theBackends. begin () + i);
@@ -118,7 +127,7 @@ bool mscHandler::set_Channel(DescriptorType * d, RingBuffer<int16_t> * audioBuff
   //	}
   //	locker. unlock ();
   theBackends.push_back(new Backend(myRadioInterface, d, audioBuffer, dataBuffer, frameBuffer, dump, flag));
-  fprintf(stderr, "we have now %d backends running\n", (int)theBackends.size());
+  fprintf(stdout, "we have now %d backends running\n", (int)theBackends.size());
   return true;
 }
 

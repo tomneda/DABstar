@@ -39,7 +39,7 @@ public:
   void addtoFrame(const std::vector<uint8_t> & outData);
 
 private:
-  frameProcessor * theProcessor;
+  FrameProcessor * theProcessor;
 };
 
 #endif

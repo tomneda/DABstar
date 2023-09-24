@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -53,7 +62,7 @@ public:
   Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *, int);
   ~Backend();
 
-  int32_t process(int16_t *, int16_t);
+  int32_t process(const int16_t * iV, int16_t cnt);
   void stopRunning();
 
   // we need sometimes to access the key parameters for decoding
@@ -81,7 +90,7 @@ private:
   int16_t nextIn;
   int16_t nextOut;
 #endif
-  void processSegment(int16_t * Data);
+  void processSegment(const int16_t * iData);
   RadioInterface * radioInterface;
 
   int16_t fragmentSize;

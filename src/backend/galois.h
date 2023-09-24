@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2010, 2011, 2012
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -26,7 +35,7 @@
 #include  <cstdint>
 #include  <vector>
 
-class galois
+class Galois
 {
 private:
   uint16_t mm;    /* Bits per symbol */
@@ -37,8 +46,8 @@ private:
   std::vector<uint16_t> index_of;  /* Antilog lookup table */
 
 public:
-  galois(uint16_t mm, uint16_t poly);
-  ~galois();
+  Galois(uint16_t mm, uint16_t poly);
+  ~Galois() = default;
 
   int modnn(int);
   uint16_t add_poly(uint16_t a, uint16_t b);

@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2015 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -26,13 +35,14 @@
 #include  "mot-handler.h"
 #include  "journaline-datahandler.h"
 #include  "tdc-datahandler.h"
+#include  "data_manip_and_checks.h"
 
 //	\class DataProcessor
 //	The main function of this class is to assemble the 
 //	MSCdatagroups and dispatch to the appropriate handler
 //
 //	fragmentsize == Length * CUSize
-DataProcessor::DataProcessor(RadioInterface * mr, packetdata * pd, RingBuffer<uint8_t> * dataBuffer)
+DataProcessor::DataProcessor(RadioInterface * mr, Packetdata * pd, RingBuffer<uint8_t> * dataBuffer)
 {
   this->myRadioInterface = mr;
   this->bitRate = pd->bitRate;
@@ -124,7 +134,7 @@ void DataProcessor::handlePacket(const uint8_t * data)
   uint16_t command = getBits_1(data, 16);
   int32_t usefulLength = getBits_7(data, 17);
   //	if (usefulLength > 0)
-  //	   fprintf (stderr, "CI = %d, address = %d, usefulLength = %d\n",
+  //	   fprintf (stdout, "CI = %d, address = %d, usefulLength = %d\n",
   //	                       continuityIndex, address, usefulLength);
 
   if (continuityIndex != expectedIndex)

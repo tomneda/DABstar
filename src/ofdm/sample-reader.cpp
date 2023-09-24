@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2013 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -50,8 +59,8 @@ SampleReader::SampleReader(const RadioInterface * mr, deviceHandler * iTheRig, R
                                (float)sin(2.0 * M_PI * i / INPUT_RATE));
   }
 
-  connect(this, SIGNAL (show_Spectrum(int)), mr, SLOT (showSpectrum(int)));
-  connect(this, SIGNAL (show_Corrector(int)), mr, SLOT (set_CorrectorDisplay(int)));
+  connect(this, &SampleReader::signal_show_spectrum, mr, &RadioInterface::slot_show_spectrum);
+  connect(this, &SampleReader::signal_show_corrector, mr, &RadioInterface::slot_set_corrector_display);
 }
 
 void SampleReader::setRunning(bool b)
@@ -70,8 +79,10 @@ cmplx SampleReader::getSample(int32_t phaseOffset)
   return oneSampleBuffer[0];
 }
 
-void SampleReader::getSamples(std::vector<cmplx> & oV, int index, int32_t n, int32_t phaseOffset)
+void SampleReader::getSamples(std::vector<cmplx> & oV, int32_t index, int32_t n, int32_t phaseOffset)
 {
+  assert((signed)oV.size() >= index + n);
+  
   std::vector<cmplx> buffer(n);
 
   corrector = phaseOffset;
@@ -109,18 +120,18 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, int index, int32_t n, int
       ++localCounter;
     }
     oV[index + i] = buffer[i] * oscillatorTable[currentPhase];
-    sLevel = 0.00001f * jan_abs(oV[i]) + (1.0f - 0.00001f) * sLevel;
+    sLevel += 0.00001f * (jan_abs(oV[i]) - sLevel);
   }
 
   sampleCount += n;
 
   if (sampleCount > INPUT_RATE / 4)
   {
-    show_Corrector(corrector);
+    signal_show_corrector(corrector);
     if (spectrumBuffer != nullptr)
     {
       spectrumBuffer->putDataIntoBuffer(localBuffer.data(), bufferSize);
-      emit show_Spectrum(bufferSize);
+      emit signal_show_spectrum(bufferSize);
     }
     localCounter = 0;
     sampleCount = 0;

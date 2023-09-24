@@ -258,7 +258,7 @@ void etiGenerator::processBlock(const std::vector<int16_t> & ibits, int blkno)
 int32_t etiGenerator::init_eti(uint8_t * oEti, int16_t CIFCount_hi, int16_t CIFCount_lo, int16_t minor)
 {
   int fillPointer = 0;
-  channel_data data;
+  ChannelData data;
 
   CIFCount_lo += minor;
   if (CIFCount_lo >= 250)
@@ -381,7 +381,7 @@ int32_t etiGenerator::process_CIF(const int16_t * input, uint8_t * output, int32
 
   for (int i = 0; i < 64; i++)
   {
-    channel_data data;
+    ChannelData data;
     my_ficHandler->get_channelInfo(&data, i);
     if (data.in_use)
     {

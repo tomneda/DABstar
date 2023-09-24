@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2019
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -29,10 +38,12 @@
 #define    SPECTRUM_VIEWER_H
 
 #include  "dab-constants.h"
+#include  "glob_enums.h"
 #include  <QFrame>
 #include  <QObject>
 #include  "ui_scopewidget.h"
 #include  "ringbuffer.h"
+#include  "fft/fft-handler.h"
 #include  <qwt.h>
 #include  <qwt_plot.h>
 #include  <qwt_plot_marker.h>
@@ -52,12 +63,11 @@ constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
 constexpr int32_t SP_SPECTRUMOVRSMPFAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
 
-#include  "fft/fft-handler.h"
 
 class RadioInterface;
 class QSettings;
 class IQDisplay;
-class PhaseVsCarrDisp;
+class CarrierDisp;
 class CorrelationViewer;
 class SpectrumScope;
 class WaterfallScope;
@@ -66,14 +76,14 @@ class SpectrumViewer : public QObject, Ui_scopeWidget
 {
 Q_OBJECT
 public:
-  SpectrumViewer(RadioInterface *, QSettings *, RingBuffer<cmplx> *, RingBuffer<cmplx> *, RingBuffer<float> *);
+  SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
   ~SpectrumViewer() override;
 
   void showSpectrum(int32_t, int32_t);
   void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
   void showFrequency(float);
-  void showIQ(int32_t);
-  void showQuality(int32_t, float, float, float, float);
+  void showIQ(int32_t, float);
+  void showQuality(int32_t, float, float, float, float, float);
   void show_snr(float);
   void show_clockErr(int);
   void show_correction(int);
@@ -84,15 +94,15 @@ public:
 
 private:
   QFrame myFrame;
-  RadioInterface * myRadioInterface;
-  QSettings * dabSettings;
-  RingBuffer<cmplx> * spectrumBuffer;
-  RingBuffer<cmplx> * iqBuffer;
-  RingBuffer<float> * mpCorrelationBuffer = nullptr;
-  QwtPlotPicker * lm_picker{};
-  //QColor mDisplayColor;
-  QColor mGridColor;
-  QColor mCurveColor;
+  RadioInterface * const myRadioInterface;
+  QSettings * const dabSettings;
+  RingBuffer<cmplx> * const spectrumBuffer;
+  RingBuffer<cmplx> * const iqBuffer;
+  RingBuffer<float> * const carrBuffer;
+  RingBuffer<float> * const mpCorrelationBuffer;
+  QwtPlotPicker * lm_picker = nullptr;
+  std::vector<cmplx> mIqValuesVec;
+  std::vector<float> mCarrValuesVec;
 
   fftHandler fft;
 
@@ -103,22 +113,27 @@ private:
   std::array<double, SP_DISPLAYSIZE> Y_values{ 0 };
   std::array<double, SP_DISPLAYSIZE> Y2_values{ 0 };
 
-  //QwtPlotMarker * Marker{};
   QwtPlot * plotgrid{};
   QwtPlotGrid * grid{};
-  QwtPlotCurve * spectrumCurve{};
-  //QBrush * ourBrush{};
-  //int32_t indexforMarker{};
-  //void ViewSpectrum(double *, double *, double, int);
-  [[nodiscard]] float get_db(float) const;
   int32_t normalizer = 0;
   int32_t lastVcoFreq = 0;
+  bool mShowInLogScale = false;
 
-  PhaseVsCarrDisp * mpPhaseVsCarrDisp = nullptr;
+  CarrierDisp * mpCarrierDisp = nullptr;
   IQDisplay * myIQDisplay = nullptr;
   SpectrumScope * mySpectrumScope = nullptr;
   WaterfallScope * myWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
+
+  [[nodiscard]] float get_db(float) const;
+
+private slots:
+  void _slot_handle_cmb_carrier(int);
+  void _slot_handle_cb_nom_carrier(int);
+
+signals:
+  void signal_cmb_carrier_changed(ECarrierPlotType);
+  void signal_cb_nom_carrier_changed(bool);
 };
 
 #endif

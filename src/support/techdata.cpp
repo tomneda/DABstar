@@ -47,7 +47,7 @@ TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * aud
   formLayout->setLabelAlignment(Qt::AlignLeft);
   myFrame.hide();
   timeTable_button->hide();
-  the_audioDisplay = new audioDisplay(mr, audio, dabSettings);
+  the_audioDisplay = new AudioDisplay(mr, audio, dabSettings);
 
   connect(framedumpButton, SIGNAL (clicked()), this, SIGNAL (handle_frameDumping()));
   connect(audiodumpButton, SIGNAL (clicked()), this, SIGNAL (handle_audioDumping()));
@@ -69,7 +69,7 @@ TechData::~TechData()
 void TechData::cleanUp()
 {
   programName->setText(QString(""));
-  rsCorrections->display(0);
+  show_rsCorrections(0, 0); // call via this method to consider color change
   frameError_display->setValue(0);
   rsError_display->setValue(0);
   aacError_display->setValue(0);
@@ -165,8 +165,17 @@ void TechData::show_rsErrors(int e)
 
 void TechData::show_rsCorrections(int c, int ec)
 {
-  rsCorrections->display(c);
-  ecCorrections->display(ec);
+  // highlight non-zero values with color
+  auto set_val_with_col = [](QLCDNumber *ipLCD, int iVal)
+  {
+    QPalette p = ipLCD->palette();
+    p.setColor(QPalette::WindowText, (iVal > 0 ? Qt::yellow : Qt::white));
+    ipLCD->setPalette(p);
+    ipLCD->display(iVal);
+  };
+
+  set_val_with_col(rsCorrections, c);
+  set_val_with_col(ecCorrections, ec);
 }
 
 void TechData::show_motHandling(bool b)
@@ -284,7 +293,7 @@ void TechData::audioDataAvailable(int amount, int rate)
   audioData->getDataFromBuffer(buffer, amount);
   if (!myFrame.isHidden())
   {
-    the_audioDisplay->createSpectrum(buffer, amount, rate);
+    the_audioDisplay->create_spectrum(buffer, amount, rate);
   }
 }
 

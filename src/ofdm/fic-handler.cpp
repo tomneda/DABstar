@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2016
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -23,6 +32,7 @@
 #include  "fic-handler.h"
 #include  "radio.h"
 #include  "protTables.h"
+#include  "data_manip_and_checks.h"
 
 //	The 3072 bits of the serial motherword shall be split into
 //	24 blocks of 128 bits each.
@@ -42,40 +52,36 @@
   *	The data is sent through to the fib processor
   */
 
-FicHandler::FicHandler(RadioInterface * mr, uint8_t dabMode) :
-  FibDecoder(mr),
-  params(dabMode),
-  myViterbi(768, true)
+FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
+  FibDecoder(iMr),
+  params(iDabMode)
 {
-  int16_t i, j, k;
-  int local = 0;
-  int16_t shiftRegister[9] = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+  std::array<std::byte, 9> shiftRegister;
+  std::fill(shiftRegister.begin(), shiftRegister.end(), static_cast<std::byte>(1));
 
-  index = 0;
   BitsperBlock = 2 * params.get_K();
-  ficno = 0;
-  ficBlocks = 0;
-  ficMissed = 0;
-  ficRatio = 0;
-  for (i = 0; i < 768; i++)
+
+  for (int16_t i = 0; i < 768; i++)
   {
     PRBS[i] = shiftRegister[8] ^ shiftRegister[4];
-    for (j = 8; j > 0; j--)
+
+    for (int16_t j = 8; j > 0; j--)
     {
       shiftRegister[j] = shiftRegister[j - 1];
     }
 
     shiftRegister[0] = PRBS[i];
   }
-  //
+
   //	Since the depuncturing is the same throughout all calls
   //	(even through all instances, so we could create a static
   //	table), we make an punctureTable that contains the indices of
   //	the ofdmInput table
-  memset(punctureTable.data(), 0, (3072 + 24) * sizeof(uint8_t));
-  for (i = 0; i < 21; i++)
+  int local = 0;
+
+  for (int16_t i = 0; i < 21; i++)
   {
-    for (k = 0; k < 32 * 4; k++)
+    for (int16_t k = 0; k < 32 * 4; k++)
     {
       if (get_PCodes(16 - 1)[k % 32] != 0)
       {
@@ -90,9 +96,9 @@ FicHandler::FicHandler(RadioInterface * mr, uint8_t dabMode) :
     *	each 128 bit block contains 4 subblocks of 32 bits
     *	on which the given puncturing is applied
     */
-  for (i = 0; i < 3; i++)
+  for (int16_t i = 0; i < 3; i++)
   {
-    for (k = 0; k < 32 * 4; k++)
+    for (int16_t k = 0; k < 32 * 4; k++)
     {
       if (get_PCodes(15 - 1)[k % 32] != 0)
       {
@@ -106,7 +112,7 @@ FicHandler::FicHandler(RadioInterface * mr, uint8_t dabMode) :
     *	we have a final block of 24 bits  with puncturing according to PI_X
     *	This block constitues the 6 * 4 bits of the register itself.
     */
-  for (k = 0; k < 24; k++)
+  for (int16_t k = 0; k < 24; k++)
   {
     if (get_PCodes(8 - 1)[k] != 0)
     {
@@ -115,14 +121,7 @@ FicHandler::FicHandler(RadioInterface * mr, uint8_t dabMode) :
     local++;
   }
 
-  connect(this, SIGNAL (show_ficSuccess(bool)), mr, SLOT (show_ficSuccess(bool)));
-
-  ficPointer = 0;
-  ficDumpPointer = nullptr;
-}
-
-FicHandler::~FicHandler()
-{
+  connect(this, &FicHandler::show_ficSuccess, iMr, &RadioInterface::slot_show_fic_success);
 }
 
 /**
@@ -139,21 +138,21 @@ FicHandler::~FicHandler()
   *	The function is called with a blkno. This should be 1, 2 or 3
   *	for each time 2304 bits are in, we call process_ficInput
   */
-void FicHandler::process_ficBlock(const std::vector<int16_t> & data, int32_t blkno)
+void FicHandler::process_ficBlock(const std::vector<int16_t> & iData, const int32_t iBlkNo)
 {
-  int32_t i;
-
-  if (blkno == 1)
+  if (iBlkNo == 1)
   {
     index = 0;
     ficno = 0;
   }
   //
-  if ((1 <= blkno) && (blkno <= 3))
+  if ((1 <= iBlkNo) && (iBlkNo <= 3))
   {
-    for (i = 0; i < BitsperBlock; i++)
+    for (int32_t i = 0; i < BitsperBlock; i++)
     {
-      ofdm_input[index++] = data[i];
+      ofdm_input[index] = iData[i];
+      ++index;
+
       if (index >= 2304)
       {
         process_ficInput(ficno, &ficValid[ficno]);
@@ -179,10 +178,9 @@ void FicHandler::process_ficBlock(const std::vector<int16_t> & data, int32_t blk
   *	In the next coding step, we will combine this function with the
   *	one above
   */
-void FicHandler::process_ficInput(int16_t ficno, bool * valid)
+void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
 {
-  int16_t i;
-  int16_t viterbiBlock[3072 + 24] = { 0 };
+  std::array<int16_t, 3072 + 24> viterbiBlock;
   int16_t inputCount = 0;
 
   if (!running.load())
@@ -191,18 +189,23 @@ void FicHandler::process_ficInput(int16_t ficno, bool * valid)
   }
   //	memset (viterbiBlock, 0, (3072 + 24) * sizeof (int16_t));
 
-  for (i = 0; i < 3072 + 24; i++)
+  for (int16_t i = 0; i < 3072 + 24; i++)
   {
     if (punctureTable[i])
     {
-      viterbiBlock[i] = ofdm_input[inputCount++];
+      viterbiBlock[i] = ofdm_input[inputCount];
+      ++inputCount;
+    }
+    else
+    {
+      viterbiBlock[i] = 0; // TODO: this was missing, is it not necessary to set this to zero?
     }
   }
   /**
     *	Now we have the full word ready for deconvolution
     *	deconvolution is according to DAB standard section 11.2
     */
-  myViterbi.deconvolve(viterbiBlock, bitBuffer_out.data());
+  myViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<uint8_t *>(bitBuffer_out.data()));
   /**
     *	if everything worked as planned, we now have a
     *	768 bit vector containing three FIB's
@@ -210,14 +213,14 @@ void FicHandler::process_ficInput(int16_t ficno, bool * valid)
     *	first step: energy dispersal according to the DAB standard
     *	We use a predefined vector PRBS
     */
-  for (i = 0; i < 768; i++)
+  for (int16_t i = 0; i < 768; i++)
   {
     bitBuffer_out[i] ^= PRBS[i];
   }
 
-  for (i = 0; i < 768; i++)
+  for (int16_t i = 0; i < 768; i++)
   {
-    fibBits[ficno * 768 + i] = bitBuffer_out[i];
+    fibBits[iFicNo * 768 + i] = bitBuffer_out[i];
   }
   /**
     *	each of the fib blocks is protected by a crc
@@ -228,37 +231,38 @@ void FicHandler::process_ficInput(int16_t ficno, bool * valid)
     *	was lost.
     */
 
-  *valid = true;
-  for (i = ficno * 3; i < ficno * 3 + 3; i++)
+  *oValid = true;
+  for (int16_t i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
   {
-    uint8_t * p = &bitBuffer_out[(i % 3) * 256];
-    if (!check_CRC_bits(p, 256))
+    const std::byte * const p = &bitBuffer_out[(i % 3) * 256];
+    
+    if (!check_CRC_bits(reinterpret_cast<const uint8_t *>(p), 256))
     {
-      *valid = false;
-      show_ficSuccess(false);
+      *oValid = false;
+      emit show_ficSuccess(false);
       continue;
     }
 
     for (int j = 0; j < 32; j++)
     {
-      ficBuffer[j] = 0;
+      ficBuffer[j] = static_cast<std::byte>(0);
       for (int k = 0; k < 8; k++)
       {
         ficBuffer[j] <<= 1;
-        ficBuffer[j] &= 0xFE;
-        ficBuffer[j] |= p[8 * j + k] ? 1 : 0;
+        ficBuffer[j] &= static_cast<std::byte>(0xFE);
+        ficBuffer[j] |= p[8 * j + k];
       }
     }
 
     ficLocker.lock();
     if (ficDumpPointer != nullptr)
     {
-      fwrite(ficBuffer, 1, 32, ficDumpPointer);
+      fwrite(ficBuffer.data(), 1, 32, ficDumpPointer);
     }
     ficLocker.unlock();
 
-    show_ficSuccess(true);
-    FibDecoder::process_FIB(p, ficno);
+    emit show_ficSuccess(true);
+    FibDecoder::process_FIB(reinterpret_cast<const uint8_t *>(p), iFicNo);
   }
 }
 
@@ -297,8 +301,9 @@ void FicHandler::get_fibBits(uint8_t * v, bool * b)
 {
   for (int i = 0; i < 4 * 768; i++)
   {
-    v[i] = fibBits[i];
+    v[i] = static_cast<uint8_t>(fibBits[i]);
   }
+
   for (int i = 0; i < 4; i++)
   {
     b[i] = ficValid[i];

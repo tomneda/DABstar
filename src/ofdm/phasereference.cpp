@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -32,7 +41,7 @@
   *	The class inherits from the phaseTable.
   */
 
-PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const processParams * const ipParam)
+PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam)
   : PhaseTable(ipParam->dabMode),
     mDabPar(DabParams(ipParam->dabMode).get_dab_par()),
     mFramesPerSecond(2048000 / mDabPar.T_F),
@@ -58,7 +67,7 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const proce
     mPhaseDifferences[i - 1] = abs(arg(mRefTable[(mDabPar.T_u + i + 0) % mDabPar.T_u] * conj(mRefTable[(mDabPar.T_u + i + 1) % mDabPar.T_u])));
   }
 
-  connect(this, &PhaseReference::show_correlation, ipRadio, &RadioInterface::showCorrelation);
+  connect(this, &PhaseReference::show_correlation, ipRadio, &RadioInterface::slot_show_correlation);
 }
 
 /**
@@ -106,7 +115,7 @@ int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // c
   assert(idxStart >= 0);
   assert(idxStop <= (signed)mCorrPeakValues.size());
 
-  for (int16_t i = idxStart; i < idxStop; i++)  // TODO: underflow with other DabModes != 1!
+  for (int16_t i = idxStart; i < idxStop; ++i)  // TODO: underflow with other DabModes != 1!
   {
     if (mCorrPeakValues[i] / sum > iThreshold)
     {
@@ -155,7 +164,7 @@ int32_t PhaseReference::find_index(std::vector<cmplx> iV, float iThreshold) // c
   return maxIndex;
 }
 
-//	an approach that works fine is to correlate the phasedifferences between subsequent carriers
+//	an approach that works fine is to correlate the phase differences between subsequent carriers
 int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> iV) // copy of iV is intended
 {
   mFftForward.fft(iV);
@@ -165,7 +174,7 @@ int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> iV) // copy o
 
   for (int16_t i = idxStart; i < idxStop + DIFFLENGTH; i++)
   {
-    mComputedDiffs[i - idxStart] = abs(arg(iV[(i + 0) % mDabPar.T_u] * conj(iV[(i + 1) % mDabPar.T_u])));
+    mComputedDiffs[i - idxStart] = std::abs(arg(iV[(i + 0) % mDabPar.T_u] * conj(iV[(i + 1) % mDabPar.T_u])));
   }
 
   float mmin = 1000;
@@ -184,7 +193,7 @@ int16_t PhaseReference::estimate_carrier_offset(std::vector<cmplx> iV) // copy o
       {
         sum += mComputedDiffs[i - idxStart + j];
       }
-      if (mPhaseDifferences[j - 1] > M_PI - 0.1)
+      else if (mPhaseDifferences[j - 1] > M_PI - 0.1)
       {
         sum2 += mComputedDiffs[i - idxStart + j];
       }

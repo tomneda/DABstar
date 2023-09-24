@@ -142,10 +142,7 @@ void TII_Detector::setMode(bool b)
 
 void TII_Detector::reset()
 {
-  for (int i = 0; i < T_u; i++)
-  {
-    theBuffer[i] = cmplx(0, 0);
-  }
+  std::fill(theBuffer.begin(), theBuffer.end(), cmplx(0, 0));
 }
 
 //	To eliminate (reduce?) noise in the input signal, we might
@@ -332,7 +329,7 @@ uint16_t TII_Detector::processNULL()
       }
     }
     finInd = invTable[pattern];
-    //	   fprintf (stderr, "MaxIndex %d, bitPatterm %x\n", maxIndex, pattern);
+    //	   fprintf (stdout, "MaxIndex %d, bitPatterm %x\n", maxIndex, pattern);
   }
 
   return maxIndex + finInd * 256;

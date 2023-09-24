@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2015
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -23,23 +32,22 @@
 #define  DATA_PROCESSOR_H
 
 #include  <vector>
-#include  "frame-processor.h"
 #include  <cstdio>
 #include  <cstring>
 #include  <QObject>
+
+#include  "frame-processor.h"
 #include  "ringbuffer.h"
 
 class RadioInterface;
-
 class virtual_dataHandler;
+class Packetdata;
 
-class packetdata;
-
-class DataProcessor : public QObject, public frameProcessor
+class DataProcessor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  DataProcessor(RadioInterface * mr, packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
+  DataProcessor(RadioInterface * mr, Packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
   ~DataProcessor();
 
   void addtoFrame(const std::vector<uint8_t> &);

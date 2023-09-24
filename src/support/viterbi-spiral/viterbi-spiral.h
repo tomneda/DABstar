@@ -31,7 +31,7 @@ typedef union
 /* State info for instance of Viterbi decoder
  */
 
-struct v
+struct SMetricData
 {
   /* path metric buffer 1 */
   __attribute__ ((aligned (16))) metric_t metrics1;
@@ -45,29 +45,26 @@ struct v
 class ViterbiSpiral
 {
 public:
-  explicit ViterbiSpiral(int16_t, bool spiral = false);
+  explicit ViterbiSpiral(const int16_t iWordlength, const bool iSpiralMode = false);
   ~ViterbiSpiral();
 
-  void deconvolve(const int16_t *, uint8_t *);
+  void deconvolve(const int16_t * const input, uint8_t * const output);
 
 private:
-  bool spiral;
-  struct v vp;
-  COMPUTETYPE Branchtab[NUMSTATES / 2 * RATE] __attribute__ ((aligned (16)));
-  //	int	parityb		(uint8_t);
+  const int16_t mFrameBits;
+  const bool mSpiral;
+  SMetricData mVP{};
+  COMPUTETYPE mBranchtab[NUMSTATES / 2 * RATE] __attribute__ ((aligned (16)));
+  uint8_t * mpData = nullptr;
+  COMPUTETYPE * mpSymbols = nullptr;
+
+  static void init_viterbi(SMetricData *, int16_t);
+  static void chainback_viterbi(const SMetricData * const iVP, uint8_t * const oData, int16_t nbits, const uint16_t iEndstate);
+
   int parity(int);
-  void partab_init(void);
-  //	uint8_t	Partab	[256];
-  void init_viterbi(struct v *, int16_t);
-  void update_viterbi_blk_GENERIC(struct v *, COMPUTETYPE *, int16_t);
-  void update_viterbi_blk_SPIRAL(struct v *, COMPUTETYPE *, int16_t);
-  void chainback_viterbi(struct v *, uint8_t *, int16_t, uint16_t);
-  struct v * viterbi_alloc(int32_t);
-  void BFLY(int32_t, int, COMPUTETYPE *, struct v *, decision_t *);
-  //	uint8_t *bits;
-  uint8_t * data;
-  COMPUTETYPE * symbols;
-  int16_t frameBits;
+  void update_viterbi_blk_GENERIC(SMetricData *, COMPUTETYPE *, int16_t);
+  void update_viterbi_blk_SPIRAL(SMetricData *, COMPUTETYPE *, int16_t);
+  void BFLY(int32_t, int, COMPUTETYPE *, SMetricData *, decision_t *);
 };
 
 #endif

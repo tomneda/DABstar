@@ -41,7 +41,7 @@ int16_t	i;
 	   this	-> dirSize	= dirSize;
 	   this	-> numObjects	= objects;
 	   this	-> dir_segmentSize	= segmentSize;
-//	   fprintf (stderr, "transportId %d, dirSize %d, numObjects %d, segmentSize %d\n",
+//	   fprintf (stdout, "transportId %d, dirSize %d, numObjects %d, segmentSize %d\n",
 //	                             transportId, dirSize, objects, segmentSize);
 	   dir_segments. resize (dirSize);
 	   motComponents. resize (objects);
@@ -96,7 +96,7 @@ void	motDirectory::directorySegment (uint16_t transportId,
 	                                bool	lastSegment) {
 int16_t	i;
 
-//	fprintf (stderr, "adding dir segment %d\n", segmentNumber);
+//	fprintf (stdout, "adding dir segment %d\n", segmentNumber);
 	if (this -> transportId != transportId)
 	   return;
 	if (this -> marked [segmentNumber])
@@ -128,14 +128,14 @@ uint16_t extensionLength	= (dir_segments [currentBase] << 8) |
 	                                         dir_segments [currentBase + 1];
 
 	currentBase += 2 + extensionLength;
-//	fprintf (stderr, "directory with transportId %d\n", transportId); 
+//	fprintf (stdout, "directory with transportId %d\n", transportId);
 	for (int i = 0; i < numObjects; i ++) {
 	   uint16_t transportId	= (dir_segments [currentBase] << 8) |
 	                                    dir_segments [currentBase + 1];
 	   if (transportId == 0)	// just a dummy
 	      break;
 
-//	   fprintf (stderr, "motObject with transportId %d and \n", transportId);
+//	   fprintf (stdout, "motObject with transportId %d and \n", transportId);
 	   uint8_t *segment	= &dir_segments [currentBase + 2];
 	   motObject *handle	= new motObject (myRadioInterface,
 	                                         true,

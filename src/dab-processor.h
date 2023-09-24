@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2015 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -46,13 +55,13 @@
 
 class RadioInterface;
 class DabParams;
-class processParams;
+class ProcessParams;
 
 class DabProcessor : public QThread
 {
 Q_OBJECT
 public:
-  DabProcessor(RadioInterface * mr, deviceHandler * inputDevice, processParams * p);
+  DabProcessor(RadioInterface * mr, deviceHandler * inputDevice, ProcessParams * p);
   ~DabProcessor() override;
 
   void start();
@@ -72,7 +81,7 @@ public:
   bool is_audioService(const QString & s);
   bool is_packetService(const QString & s);
   void dataforAudioService(const QString &, Audiodata *);
-  void dataforPacketService(const QString &, packetdata *, int16_t);
+  void dataforPacketService(const QString &, Packetdata *, int16_t);
   int getSubChId(const QString &, uint32_t);
   uint8_t get_ecc();
   int32_t get_ensembleId();
@@ -80,7 +89,7 @@ public:
   uint16_t get_countryName();
   void set_epgData(int32_t, int32_t, const QString &, const QString &);
   bool has_timeTable(uint32_t);
-  std::vector<epgElement> find_epgData(uint32_t);
+  std::vector<EpgElement> find_epgData(uint32_t);
   uint32_t julianDate();
   QStringList basicPrint();
   int scanWidth();
@@ -92,12 +101,10 @@ public:
   void stop_service(DescriptorType *, int);
   void stop_service(int, int);
   bool set_audioChannel(Audiodata *, RingBuffer<int16_t> *, FILE *, int);
-  bool set_dataChannel(packetdata *, RingBuffer<uint8_t> *, int);
+  bool set_dataChannel(Packetdata *, RingBuffer<uint8_t> *, int);
   void set_tiiDetectorMode(bool);
 
 private:
-  RingBuffer<cmplx> * const mpTiiBuffer;
-  RingBuffer<float> * const mpSnrBuffer;
   RadioInterface * const mpRadioInterface;
   SampleReader mSampleReader;
   FicHandler mFicHandler;
@@ -117,8 +124,6 @@ private:
   float   mPhaseOffset = 0;
   int32_t mFineOffset = 0;
   int32_t mCoarseOffset = 0;
-  int32_t mSnrCounter = 0;
-  float mSnrdB = 0;
   int32_t mTimeSyncAttemptCount = 0;
   int32_t mClockOffsetTotalSamples = 0;
   int32_t mClockOffsetFrameCount = 0;
@@ -133,15 +138,17 @@ private:
   bool _state_eval_sync_symbol(int32_t & oStartIndex, int & oSampleCount, float iThreshold);
   void _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
 
+public slots:
+  void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
+  void slot_show_nominal_carrier(bool iShowNominalCarrier);
+
 signals:
-  void setSynced(bool);
-  void No_Signal_Found();
-  void setSyncLost();
-  void show_tii(int, int);
-  void show_tii_spectrum();
-  void show_Spectrum(int);
-  void show_snr(int);
-  void show_clockErr(int);
+  void signal_set_synced(bool);
+  void signal_no_signal_found();
+  void signal_set_sync_lost();
+  void signal_show_tii(int, int);
+  void signal_show_spectrum(int);
+  void signal_show_clock_err(int);
 };
 
 #endif

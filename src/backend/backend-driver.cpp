@@ -32,20 +32,20 @@ BackendDriver::BackendDriver(RadioInterface * mr, DescriptorType * d, RingBuffer
   {
     if (((Audiodata *)d)->ASCTy != 077)
     {
-      theProcessor = new mp2Processor(mr, d->bitRate, audioBuffer);
+      theProcessor = new Mp2Processor(mr, d->bitRate, audioBuffer);
     }
     else if (((Audiodata *)d)->ASCTy == 077)
     {
-      theProcessor = new mp4Processor(mr, d->bitRate, audioBuffer, frameBuffer, dump);
+      theProcessor = new Mp4Processor(mr, d->bitRate, audioBuffer, frameBuffer, dump);
     }
   }
   else if (d->type == PACKET_SERVICE)
   {
-    theProcessor = new DataProcessor(mr, (packetdata *)d, dataBuffer);
+    theProcessor = new DataProcessor(mr, (Packetdata *)d, dataBuffer);
   }
   else
   {
-    theProcessor = new frameProcessor();
+    theProcessor = new FrameProcessor();
   }  // should not happen
 }
 

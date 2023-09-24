@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2013 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -49,7 +58,7 @@ public:
   void setRunning(bool b);
   float get_sLevel() const;
   cmplx getSample(int32_t);
-  void getSamples(std::vector<cmplx> & oV, int index, int32_t n, int32_t phase);
+  void getSamples(std::vector<cmplx> & oV, int32_t index, int32_t n, int32_t phase);
   void startDumping(SNDFILE *);
   void stopDumping();
 
@@ -81,8 +90,8 @@ private:
   void _wait_for_sample_buffer_filled(int32_t n);
 
 signals:
-  void show_Spectrum(int);
-  void show_Corrector(int);
+  void signal_show_spectrum(int);
+  void signal_show_corrector(int);
 };
 
 #endif

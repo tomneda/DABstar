@@ -1,3 +1,12 @@
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /******************************************************************************
 ** kjmp2 -- a minimal MPEG-1 Audio Layer II decoder library                  **
 *******************************************************************************
@@ -51,12 +60,12 @@ struct quantizer_spec
 
 class RadioInterface;
 
-class mp2Processor : public QObject, public frameProcessor
+class Mp2Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  mp2Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *);
-  ~mp2Processor();
+  Mp2Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *);
+  ~Mp2Processor();
   void addtoFrame(const std::vector<uint8_t> &);
 
 private:

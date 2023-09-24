@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -32,30 +41,26 @@
   *	local are classes OfdmDecoder, FicHandler and mschandler.
   */
 
-DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inputDevice, processParams * const p)
-  : mpTiiBuffer(p->tiiBuffer),
-    mpSnrBuffer(p->snrBuffer),
-    mpRadioInterface(mr),
-    mSampleReader(mr, inputDevice, p->spectrumBuffer),
-    mFicHandler(mr, p->dabMode),
-    mMscHandler(mr, p->dabMode, p->frameBuffer),
-    mPhaseReference(mr, p),
-    mTiiDetector(p->dabMode, p->tii_depth),
-    mOfdmDecoder(mr, p->dabMode, p->iqBuffer),
-    mEtiGenerator(p->dabMode, &mFicHandler),
-    mTimeSyncer(&mSampleReader),
-    mcDabMode(p->dabMode),
-    mcThreshold(p->threshold),
-    mcTiiDelay(p->tii_delay),
-    mDabPar(DabParams(p->dabMode).get_dab_par())
+DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inputDevice, ProcessParams * const p) :
+  mpRadioInterface(mr),
+  mSampleReader(mr, inputDevice, p->spectrumBuffer),
+  mFicHandler(mr, p->dabMode),
+  mMscHandler(mr, p->dabMode, p->frameBuffer),
+  mPhaseReference(mr, p),
+  mTiiDetector(p->dabMode, p->tii_depth),
+  mOfdmDecoder(mr, p->dabMode, p->iqBuffer, p->carrBuffer),
+  mEtiGenerator(p->dabMode, &mFicHandler),
+  mTimeSyncer(&mSampleReader),
+  mcDabMode(p->dabMode),
+  mcThreshold(p->threshold),
+  mcTiiDelay(p->tii_delay),
+  mDabPar(DabParams(p->dabMode).get_dab_par())
 {
-  connect(this, &DabProcessor::setSynced, mpRadioInterface, &RadioInterface::setSynced);
-  connect(this, &DabProcessor::setSyncLost, mpRadioInterface, &RadioInterface::setSyncLost);
-  connect(this, &DabProcessor::show_Spectrum, mpRadioInterface, &RadioInterface::showSpectrum);
-  connect(this, &DabProcessor::show_tii, mpRadioInterface, &RadioInterface::show_tii);
-  connect(this, &DabProcessor::show_tii_spectrum, mpRadioInterface, &RadioInterface::show_tii_spectrum);
-  connect(this, &DabProcessor::show_snr, mpRadioInterface, &RadioInterface::show_snr);
-  connect(this, &DabProcessor::show_clockErr, mpRadioInterface, &RadioInterface::show_clockError);
+  connect(this, &DabProcessor::signal_set_synced, mpRadioInterface, &RadioInterface::slot_set_synced);
+  connect(this, &DabProcessor::signal_set_sync_lost, mpRadioInterface, &RadioInterface::slot_set_sync_lost);
+  connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
+  connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
+  connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
 
   mOfdmBuffer.resize(2 * mDabPar.T_s);
   mBits.resize(2 * mDabPar.K);
@@ -113,9 +118,9 @@ void DabProcessor::stop()
 void DabProcessor::run()
 {
   int32_t startIndex;
-//  int frameCount = 0;
+  //  int frameCount = 0;
   int sampleCount = 0;
-//  int totalSamples = 0;
+  //  int totalSamples = 0;
 
   mFineOffset = 0;
   mCoarseOffset = 0;
@@ -176,7 +181,7 @@ void DabProcessor::run()
   }
   catch (int e)
   {
-    fprintf(stderr, "DabProcessor is stopping\n");
+    fprintf(stdout, "DabProcessor is stopping\n");
   }
 }
 
@@ -198,16 +203,11 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     *	first datablock.
     *	We read the missing samples in the ofdm buffer
     */
-  setSynced(true);
+  emit signal_set_synced(true);
   mSampleReader.getSamples(mOfdmBuffer, ofdmBufferIndex, mDabPar.T_u - ofdmBufferIndex, mCoarseOffset + mFineOffset);
 
   ioSampleCount += mDabPar.T_u;
-  mOfdmDecoder.processBlock_0(mOfdmBuffer);
-
-//  if (!mScanMode)
-//  {
-//    mMscHandler.processBlock_0(mOfdmBuffer.data());
-//  }
+  mOfdmDecoder.process_reference_block_0(mOfdmBuffer);
 
   // Here we look only at the block_0 when we need a coarse frequency synchronization.
   mCorrectionNeeded = !mFicHandler.syncReached();
@@ -237,8 +237,6 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     * the phase difference between the samples in the cyclic prefix
     * and the	corresponding samples in the datapart.
     */
-  double cLevel = 0;
-  int cCount = 0;
   cmplx freqCorr = cmplx(0, 0);
 
   for (int16_t ofdmSymbCntIdx = 1; ofdmSymbCntIdx < mDabPar.L; ofdmSymbCntIdx++)
@@ -249,14 +247,9 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     for (int32_t i = mDabPar.T_u; i < mDabPar.T_s; i++)
     {
       freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - mDabPar.T_u]); // eval phase shift in cyclic prefix part
-      cLevel += abs(mOfdmBuffer[i]) + abs(mOfdmBuffer[i - mDabPar.T_u]);  // collect signal power for SNR calc (TODO: better squared as power?)
     }
-    cCount += 2 * mDabPar.T_g; // 2 times because 2 values are added in cLevel
 
-    //if ((ofdmSymbCntIdx <= 3) || mEti_on)
-    {
-      mOfdmDecoder.decode(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffset, mBits);
-    }
+    mOfdmDecoder.decode(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffset, mBits);
 
     if (ofdmSymbCntIdx <= 3)
     {
@@ -274,73 +267,38 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     }
   }
 
-  /**
-    *	OK,  here we are at the end of the frame
-    *	Assume everything went well and skip T_null samples
-    */
+    /**
+      *	OK,  here we are at the end of the frame
+      *	Assume everything went well and skip T_null samples
+      */
   mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mCoarseOffset + mFineOffset);
   ioSampleCount += mDabPar.T_n;
-  float sum = 0;
 
-  for (int32_t i = 0; i < mDabPar.T_n; i++)
+  const bool isTiiNullSegment = (mcDabMode == 1 && (mFicHandler.get_CIFcount() & 0x7) >= 4);
+
+  if (!isTiiNullSegment) // eval SNR only in non-TII null segments
   {
-    sum += abs(mOfdmBuffer[i]);
+    mOfdmDecoder.store_null_without_tii_block(mOfdmBuffer);
   }
-  sum /= (float)mDabPar.T_n;
-
-  if (mpSnrBuffer != nullptr)
+  else // this is TII null segment
   {
-    auto snrV = (float)(20 * log10((cLevel / cCount + 0.005) / (sum + 0.005)));
-    mpSnrBuffer->putDataIntoBuffer(&snrV, 1); // TODO: maybe only consider non-TII null frames for SNR calculation?
-  }
+    mOfdmDecoder.store_null_with_tii_block(mOfdmBuffer);
 
-  if (++mSnrCounter >= 5)
-  {
-    constexpr float ALPHA_SNR = 0.1f;
-    mSnrCounter = 0;
-    mSnrdB = (1.0f - ALPHA_SNR) * mSnrdB + ALPHA_SNR * 20.0f * log10f((mSampleReader.get_sLevel() + 0.005f) / (sum + 0.005f)); // other way
-    show_snr((int)mSnrdB);
-  }
-
-  /*
-   *	The TII data is encoded in the null period of the
-   *	odd frames
-   */
-
-  auto wasSecond = [](int32_t iCF, uint8_t iDabMode) -> bool
-  {
-    switch (iDabMode)
+    // The TII data is encoded in the null period of the	odd frames
+    mTiiDetector.addBuffer(mOfdmBuffer);
+    if (++mTiiCounter >= mcTiiDelay)
     {
-    default:
-    case 1: return (iCF & 07) >= 4;
-    case 2:
-    case 3: return (iCF & 02) != 0;
-    case 4: return (iCF & 03) >= 2;
-    }
-  };
-
-  if (mcDabMode == 1)
-  {
-    if (wasSecond(mFicHandler.get_CIFcount(), mcDabMode))
-    {
-      mTiiDetector.addBuffer(mOfdmBuffer);
-      if (++mTiiCounter >= mcTiiDelay)
+      uint16_t res = mTiiDetector.processNULL();
+      if (res != 0)
       {
-        mpTiiBuffer->putDataIntoBuffer(mOfdmBuffer.data(), mDabPar.T_u);
-        show_tii_spectrum();
-        uint16_t res = mTiiDetector.processNULL();
-        if (res != 0)
-        {
-          uint8_t mainId = res >> 8;
-          uint8_t subId = res & 0xFF;
-          show_tii(mainId, subId);
-        }
-        mTiiCounter = 0;
-        mTiiDetector.reset();
+        uint8_t mainId = res >> 8;
+        uint8_t subId = res & 0xFF;
+        emit signal_show_tii(mainId, subId);
       }
+      mTiiCounter = 0;
+      mTiiDetector.reset();
     }
   }
-
 
   /**
     *	The first sample to be found for the next frame should be T_g
@@ -353,7 +311,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   //
   mPhaseOffset = arg(freqCorr);
   constexpr float MAX_PHASE_ANGLE = 20.0f / 360.0f * 2.0f * M_PI;
-  limit(mPhaseOffset, -MAX_PHASE_ANGLE, MAX_PHASE_ANGLE);
+  limit_min_max(mPhaseOffset, -MAX_PHASE_ANGLE, MAX_PHASE_ANGLE);
 
   mFineOffset += (int32_t)(1.00 * mPhaseOffset / (2 * M_PI) * mDabPar.CarrDiff); // formerly 0.05
 
@@ -372,7 +330,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
   if (++mClockOffsetFrameCount > 100)
   {
-    show_clockErr(mClockOffsetTotalSamples - mClockOffsetFrameCount * mDabPar.T_F); // samples per 100 frames
+    emit signal_show_clock_err(mClockOffsetTotalSamples - mClockOffsetFrameCount * mDabPar.T_F); // samples per 100 frames
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
   }
@@ -390,7 +348,7 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int & oSampleC
     // no sync, try again
     if (!mCorrectionNeeded)
     {
-      setSyncLost();
+      emit signal_set_sync_lost();
     }
     return false;
   }
@@ -403,8 +361,9 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int & oSampleC
 
 bool DabProcessor::_state_wait_for_time_sync_marker()
 {
-  setSynced(false);
+  emit signal_set_synced(false);
   mTiiDetector.reset();
+  mOfdmDecoder.reset();
 
   switch (mTimeSyncer.read_samples_until_end_of_level_drop(mDabPar.T_n, mDabPar.T_F))
   {
@@ -413,7 +372,7 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
   case TimeSyncer::EState::NO_DIP_FOUND:
     if (++mTimeSyncAttemptCount >= 8)
     {
-      emit No_Signal_Found();
+      emit signal_no_signal_found();
       mTimeSyncAttemptCount = 0;
     }
     break;
@@ -460,7 +419,7 @@ bool DabProcessor::is_audioService(const QString & s)
 
 bool DabProcessor::is_packetService(const QString & s)
 {
-  packetdata pd;
+  Packetdata pd;
   mFicHandler.dataforPacketService(s, &pd, 0);
   return pd.defined;
 }
@@ -470,7 +429,7 @@ void DabProcessor::dataforAudioService(const QString & s, Audiodata * d)
   mFicHandler.dataforAudioService(s, d);
 }
 
-void DabProcessor::dataforPacketService(const QString & s, packetdata * pd, int16_t compnr)
+void DabProcessor::dataforPacketService(const QString & s, Packetdata * pd, int16_t compnr)
 {
   mFicHandler.dataforPacketService(s, pd, compnr);
 }
@@ -505,7 +464,7 @@ bool DabProcessor::has_timeTable(uint32_t SId)
   return mFicHandler.has_timeTable(SId);
 }
 
-std::vector<epgElement> DabProcessor::find_epgData(uint32_t SId)
+std::vector<EpgElement> DabProcessor::find_epgData(uint32_t SId)
 {
   return mFicHandler.find_epgData(SId);
 }
@@ -559,7 +518,7 @@ bool DabProcessor::set_audioChannel(Audiodata * d, RingBuffer<int16_t> * b, FILE
   }
 }
 
-bool DabProcessor::set_dataChannel(packetdata * d, RingBuffer<uint8_t> * b, int flag)
+bool DabProcessor::set_dataChannel(Packetdata * d, RingBuffer<uint8_t> * b, int flag)
 {
   if (!mScanMode)
   {
@@ -614,5 +573,15 @@ bool DabProcessor::start_etiGenerator(const QString & s)
 [[maybe_unused]] void DabProcessor::reset_etiGenerator()
 {
   mEtiGenerator.reset();
+}
+
+void DabProcessor::slot_select_carrier_plot_type(ECarrierPlotType iPlotType)
+{
+  mOfdmDecoder.slot_select_carrier_plot_type(iPlotType);
+}
+
+void DabProcessor::slot_show_nominal_carrier(bool iShowNominalCarrier)
+{
+  mOfdmDecoder.slot_show_nominal_carrier(iShowNominalCarrier);
 }
 

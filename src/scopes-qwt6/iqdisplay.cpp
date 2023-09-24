@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -48,8 +57,7 @@ IQDisplay::~IQDisplay()
 
 inline void IQDisplay::set_point(int x, int y, int val)
 {
-  //mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
-  mPlotDataBackgroundBuffer.at((y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1) = val;
+  mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
 }
 
 template<typename T> inline void symmetric_limit(T & ioVal, const T iLimit)
@@ -64,18 +72,18 @@ template<typename T> inline void symmetric_limit(T & ioVal, const T iLimit)
   }
 }
 
-void IQDisplay::display_iq(const std::vector<cmplx> & z, float scale, float ref)
+void IQDisplay::display_iq(const std::vector<cmplx> & z, float iScaleValue, float iScaleCircle)
 {
   if (z.size() != mPoints.size())
   {
     mPoints.resize(z.size(), { 0, 0 });
   }
 
-  const float scaleNormed = scale / ref;
+  const float scaleNormed = iScaleValue * RADIUS;
 
   clean_screen_from_old_data_points();
   draw_cross();
-  repaint_circle(scale / 100.0f);
+  repaint_circle(iScaleCircle);
 
   for (uint32_t i = 0; i < z.size(); i++)
   {

@@ -52,7 +52,7 @@ private:
   QSettings * dabSettings;
   RingBuffer<int16_t> * audioData;
   QFrame myFrame;
-  audioDisplay * the_audioDisplay;
+  AudioDisplay * the_audioDisplay;
 
   void set_buttonColors(QPushButton *, const QString & buttonName);
 

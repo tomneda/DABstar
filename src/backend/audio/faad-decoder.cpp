@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2013 .. 2019
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -31,7 +40,7 @@ faadDecoder::faadDecoder(RadioInterface * mr, RingBuffer<int16_t> * buffer)
   aacConf = NeAACDecGetCurrentConfiguration(aacHandle);
   aacInitialized = false;
   baudRate = 48000;
-  connect(this, SIGNAL (newAudio(int, int)), mr, SLOT (newAudio(int, int)));
+  connect(this, &faadDecoder::newAudio, mr, &RadioInterface::slot_new_audio);
 }
 
 faadDecoder::~faadDecoder()
@@ -123,7 +132,7 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
     baudRate = sampleRate;
   }
 
-  //      fprintf (stderr, "bytes consumed %d\n", (int)(hInfo. bytesconsumed));
+  //      fprintf (stdout, "bytes consumed %d\n", (int)(hInfo. bytesconsumed));
   //      fprintf (stderr, "samplerate = %d, samples = %d, channels = %d, error = %d, sbr = %d\n", sampleRate, samples,
   //               hInfo. channels,
   //               hInfo. error,

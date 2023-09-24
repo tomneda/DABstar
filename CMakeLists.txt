@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
-project(DABstar VERSION 1.0.2)
+project(DABstar VERSION 1.1.0)
 ##############################
 
 set(objectName "dabstar")
@@ -179,10 +179,7 @@ include_directories(
         src/support/viterbi-spiral
         src/output
         src/scopes-qwt6
-        src/viewers
-        src/viewers/spectrum-viewer
-        src/viewers/tii-viewer
-        src/viewers/snr-viewer
+        src/spectrum-viewer
         src/qt-devices
         src/qt-devices/rawfiles-new
         src/qt-devices/wavfiles-new
@@ -193,10 +190,13 @@ include_directories(
 
 set(${objectName}_HDRS
         src/radio.h
+        src/glob_defs.h
+        src/glob_enums.h
         src/helpers/pauseslide/pause_slide.h
         src/dab-processor.h
         src/eti-handler/eti-generator.h
         src/dab-constants.h
+        src/data_manip_and_checks.h
         src/mot-content-types.h
         src/ofdm/sample-reader.h
         src/ofdm/phasereference.h
@@ -274,15 +274,13 @@ set(${objectName}_HDRS
         src/support/buttons/smallqlistview.h
         src/support/buttons/smallspinbox.h
         src/scopes-qwt6/iqdisplay.h
-        src/scopes-qwt6/phase_carr_disp.h
+        src/scopes-qwt6/carrier-display.h
         src/scopes-qwt6/spectrogramdata.h
         src/scopes-qwt6/audio-display.h
-        src/viewers/spectrum-viewer/spectrum-viewer.h
-        src/viewers/spectrum-viewer/spectrum-scope.h
-        src/viewers/spectrum-viewer/waterfall-scope.h
-        src/viewers/spectrum-viewer/correlation-viewer.h
-        src/viewers/tii-viewer/tii-viewer.h
-        src/viewers/snr-viewer/snr-viewer.h
+        src/spectrum-viewer/spectrum-viewer.h
+        src/spectrum-viewer/spectrum-scope.h
+        src/spectrum-viewer/waterfall-scope.h
+        src/spectrum-viewer/correlation-viewer.h
         src/qt-devices/device-handler.h
         src/qt-devices/device-exceptions.h
         src/qt-devices/xml-filewriter.h
@@ -372,15 +370,13 @@ set(${objectName}_SRCS
         src/support/http-handler.cpp
         src/support/tii-library/tii-codes.cpp
         src/scopes-qwt6/iqdisplay.cpp
-        src/scopes-qwt6/phase_carr_disp.cpp
+        src/scopes-qwt6/carrier-display.cpp
         src/scopes-qwt6/audio-display.cpp
         src/scopes-qwt6/spectrogramdata.cpp
-        src/viewers/spectrum-viewer/spectrum-viewer.cpp
-        src/viewers/spectrum-viewer/spectrum-scope.cpp
-        src/viewers/spectrum-viewer/waterfall-scope.cpp
-        src/viewers/spectrum-viewer/correlation-viewer.cpp
-        src/viewers/tii-viewer/tii-viewer.cpp
-        src/viewers/snr-viewer/snr-viewer.cpp
+        src/spectrum-viewer/spectrum-viewer.cpp
+        src/spectrum-viewer/spectrum-scope.cpp
+        src/spectrum-viewer/waterfall-scope.cpp
+        src/spectrum-viewer/correlation-viewer.cpp
         src/qt-devices/device-handler.cpp
         src/qt-devices/xml-filewriter.cpp
         src/qt-devices/rawfiles-new/rawfiles.cpp
@@ -427,12 +423,10 @@ set(${objectName}_MOCS
         src/support/http-handler.h
         src/scopes-qwt6/iqdisplay.h
         src/scopes-qwt6/audio-display.h
-        src/viewers/spectrum-viewer/spectrum-viewer.h
-        src/viewers/spectrum-viewer/spectrum-scope.h
-        src/viewers/spectrum-viewer/waterfall-scope.h
-        src/viewers/spectrum-viewer/correlation-viewer.h
-        src/viewers/tii-viewer/tii-viewer.h
-        src/viewers/snr-viewer/snr-viewer.h
+        src/spectrum-viewer/spectrum-viewer.h
+        src/spectrum-viewer/spectrum-scope.h
+        src/spectrum-viewer/waterfall-scope.h
+        src/spectrum-viewer/correlation-viewer.h
         src/qt-devices/rawfiles-new/rawfiles.h
         src/qt-devices/rawfiles-new/raw-reader.h
         src/qt-devices/wavfiles-new/wavfiles.h
@@ -446,9 +440,7 @@ set(${objectName}_UIS
         ./forms/dabradio.ui
         ./forms/technical_data.ui
         ./forms/config-helper.ui
-        src/viewers/spectrum-viewer/scopewidget.ui
-        src/viewers/tii-viewer/tii-widget.ui
-        src/viewers/snr-viewer/snr-widget.ui
+        ./forms/scopewidget.ui
         src/qt-devices/xml-filereader/xmlfiles.ui
         )
 
@@ -931,7 +923,7 @@ add_executable(${objectName}
         ${TRS}
         ${MOCS}
         resources.qrc
-        )
+)
 
 target_link_libraries(${objectName}
         PRIVATE

@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C)  2014 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -133,7 +142,8 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
   {
     txt = "Best matches at (km/mi): ";
 
-    for (int i = 0; i < v.size(); i++)
+    const int vSize = (v.size() < 8 ? v.size() : 8); // limit size as display will broaden
+    for (int i = 0; i < vSize; i++)
     {
       txt += "<b>" + QString::number(v[i]) + "</b>"; // display in "bold"
 

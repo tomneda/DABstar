@@ -21,6 +21,7 @@
 
 #include  "tdc-datahandler.h"
 #include  "radio.h"
+#include  "data_manip_and_checks.h"
 
 tdc_dataHandler::tdc_dataHandler(RadioInterface * mr, RingBuffer<uint8_t> * dataBuffer, int16_t appType)
 {
@@ -137,10 +138,10 @@ int32_t tdc_dataHandler::handleFrame_type_0(uint8_t * data, int32_t offset, int3
   }
   if (!check_crc_bytes(buffer, length - 2))
   {
-    fprintf(stderr, "crc ook hier fout\n");
+    fprintf(stdout, "crc check failed\n");
   }
 #if 0
-  fprintf (stderr, "nrServices %d, SID-A %d SID-B %d SID-C %d\n",
+  fprintf (stdout, "nrServices %d, SID-A %d SID-B %d SID-C %d\n",
                     buffer [0], buffer [1], buffer [2], buffer [3]);
 #endif
   dataBuffer->putDataIntoBuffer(buffer, length);
@@ -155,11 +156,11 @@ int32_t tdc_dataHandler::handleFrame_type_1(uint8_t * data, int32_t offset, int3
   int lOffset;
   int llengths = length - 4;
 #if 0
-  fprintf (stderr, " frametype 1  (length %d) met %d %d %d\n", length,
+  fprintf (stdout, " frametype 1  (length %d) met %d %d %d\n", length,
                                getBits (data, offset,      8),
                                getBits (data, offset + 8,  8),
                                getBits (data, offset + 16, 8));
-  fprintf (stderr, "encryption %d\n", getBits (data, offset + 24, 8));
+  fprintf (stdout, "encryption %d\n", getBits (data, offset + 24, 8));
 #endif
   for (i = 0; i < length; i++)
   {
@@ -175,10 +176,10 @@ int32_t tdc_dataHandler::handleFrame_type_1(uint8_t * data, int32_t offset, int3
       int flength = getBits(data, lOffset + 8, 16);
       //	      int crc		= getBits (data, lOffset + 3 * 8, 8);
 #if 0
-      fprintf (stderr, "segment %d, length %d\n",
+      fprintf (stdout, "segment %d, length %d\n",
                                  compInd, flength);
       for (i = 5; i < flength; i ++)
-         fprintf (stderr, "%c", buffer [i]);
+         fprintf (stdout, "%c", buffer [i]);
       fprintf (stderr, "\n");
 #endif
       lOffset += (flength + 5) * 8;

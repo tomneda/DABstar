@@ -1,3 +1,12 @@
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /* Initialize a RS codec
  *
  * Copyright 2002 Phil Karn, KA9Q
@@ -27,7 +36,7 @@
  * nroots	= RS code generator polynomial degree (number of roots)
  */
 
-reedSolomon::reedSolomon(uint16_t symsize, uint16_t gfpoly, uint16_t fcr, uint16_t prim, uint16_t nroots) :
+ReedSolomon::ReedSolomon(uint16_t symsize, uint16_t gfpoly, uint16_t fcr, uint16_t prim, uint16_t nroots) :
   myGalois(symsize, gfpoly)
 {
   int i, j, root, iprim;
@@ -71,13 +80,8 @@ reedSolomon::reedSolomon(uint16_t symsize, uint16_t gfpoly, uint16_t fcr, uint16
   }
 }
 
-reedSolomon::~reedSolomon()
-{
-}
-
-//
 //	Basic encoder, returns - in bb - the parity bytes
-void reedSolomon::encode_rs(const uint8_t * data, uint8_t * bb)
+void ReedSolomon::encode_rs(const uint8_t * data, uint8_t * bb)
 {
   int i, j;
   uint8_t feedback;
@@ -107,7 +111,7 @@ void reedSolomon::encode_rs(const uint8_t * data, uint8_t * bb)
   }
 }
 
-void reedSolomon::enc(const uint8_t * r, uint8_t * d, int16_t cutlen)
+void ReedSolomon::enc(const uint8_t * r, uint8_t * d, int16_t cutlen)
 {
   uint8_t rf[codeLength];
   uint8_t bb[nroots];
@@ -132,7 +136,7 @@ void reedSolomon::enc(const uint8_t * r, uint8_t * d, int16_t cutlen)
 }
 
 
-int16_t reedSolomon::dec(const uint8_t * r, uint8_t * d, int16_t cutlen)
+int16_t ReedSolomon::dec(const uint8_t * r, uint8_t * d, int16_t cutlen)
 {
   uint8_t rf[codeLength];
   int16_t i;
@@ -152,7 +156,7 @@ int16_t reedSolomon::dec(const uint8_t * r, uint8_t * d, int16_t cutlen)
   return ret;
 }
 
-int16_t reedSolomon::decode_rs(uint8_t * data)
+int16_t ReedSolomon::decode_rs(uint8_t * data)
 {
   uint8_t syndromes[nroots];
   uint8_t Lambda[nroots + 1];
@@ -242,7 +246,7 @@ int16_t reedSolomon::decode_rs(uint8_t * data)
 
 //
 //	Apply Horner on the input for root "root"
-uint8_t reedSolomon::getSyndrome(uint8_t * data, uint8_t root)
+uint8_t ReedSolomon::getSyndrome(uint8_t * data, uint8_t root)
 {
   uint8_t syn = data[0];
   int16_t j;
@@ -265,7 +269,7 @@ uint8_t reedSolomon::getSyndrome(uint8_t * data, uint8_t root)
 
 //
 //	use Horner to compute the syndromes
-bool reedSolomon::computeSyndromes(uint8_t * data, uint8_t * syndromes)
+bool ReedSolomon::computeSyndromes(uint8_t * data, uint8_t * syndromes)
 {
   int16_t i;
   uint16_t syn_error = 0;
@@ -285,7 +289,7 @@ bool reedSolomon::computeSyndromes(uint8_t * data, uint8_t * syndromes)
 //	compute Lambda with Berlekamp-Massey
 //	syndromes in poly-form in, Lambda in power form out
 //	
-uint16_t reedSolomon::computeLambda(uint8_t * syndromes, uint8_t * Lambda)
+uint16_t ReedSolomon::computeLambda(uint8_t * syndromes, uint8_t * Lambda)
 {
   uint16_t K = 1, L = 0;
   uint8_t Corrector[nroots];
@@ -359,7 +363,7 @@ uint16_t reedSolomon::computeLambda(uint8_t * syndromes, uint8_t * Lambda)
 //	Compute the roots of lambda by evaluating the
 //	lambda polynome for all (inverted) powers of the symbols
 //	of the data (Chien search)
-int16_t reedSolomon::computeErrors(uint8_t * Lambda, uint16_t deg_lambda, uint8_t * rootTable, uint8_t * locTable)
+int16_t ReedSolomon::computeErrors(uint8_t * Lambda, uint16_t deg_lambda, uint8_t * rootTable, uint8_t * locTable)
 {
   int16_t i, j, k;
   int16_t rootCount = 0;
@@ -403,7 +407,7 @@ int16_t reedSolomon::computeErrors(uint8_t * Lambda, uint16_t deg_lambda, uint8_
  *
  *	Note that syndromes are in poly form, while lambda in power form
  */
-uint16_t reedSolomon::computeOmega(uint8_t * syndromes, uint8_t * lambda, uint16_t deg_lambda, uint8_t * omega)
+uint16_t ReedSolomon::computeOmega(uint8_t * syndromes, uint8_t * lambda, uint16_t deg_lambda, uint8_t * omega)
 {
   int16_t i, j;
   int16_t deg_omega = 0;

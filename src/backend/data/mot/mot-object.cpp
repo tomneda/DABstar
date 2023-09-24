@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2015 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -34,7 +43,7 @@ motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
   (void)segmentSize;
   (void)lastFlag;
   this->dirElement = dirElement;
-  connect(this, SIGNAL (handle_motObject(QByteArray, QString, int, bool)), mr, SLOT   (handle_motObject(QByteArray, QString, int, bool)));
+  connect(this, &motObject::handle_motObject, mr, &RadioInterface::slot_handle_mot_object);
   this->transportId = transportId;
   this->numofSegments = -1;
   this->segmentSize = -1;
@@ -50,7 +59,7 @@ motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
   rawContentType |= ((segment[5] & 0x01) << 8) | segment[6];
   contentType = static_cast<MOTContentType>(rawContentType);
 
-  //	fprintf (stderr, "headerSize %d, bodySize %d. contentType %d, transportId %d, segmentSize %d, lastFlag %d\n",
+  //	fprintf (stdout, "headerSize %d, bodySize %d. contentType %d, transportId %d, segmentSize %d, lastFlag %d\n",
   //	                  headerSize, bodySize, b, transportId,
   //	                  segmentSize, lastFlag);
   //	we are actually only interested in the name, if any
@@ -114,7 +123,7 @@ motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
     }
   }
 
-  //	fprintf (stderr, "creating mot object %x\n", transportId);
+  //	fprintf (stdout, "creating mot object %x\n", transportId);
 }
 
 uint16_t motObject::get_transportId()
@@ -131,7 +140,7 @@ void motObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
 {
   int32_t i;
 
-  //	fprintf (stderr, "adding segment %d (size %d)\n", segmentNumber,
+  //	fprintf (stdout, "adding segment %d (size %d)\n", segmentNumber,
   //	                                                  segmentSize);
   if ((segmentNumber < 0) || (segmentNumber >= 8192))
   {
@@ -188,7 +197,7 @@ void motObject::handleComplete()
   {
     result.append(it.second);
   }
-  //	fprintf (stderr,
+  //	fprintf (stdout,
   //	"Handling complete %s, type %d\n", name. toLatin1 (). data (),
   //	                                                  (int)contentType);
   if (name == "")

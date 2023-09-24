@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2013 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -37,44 +46,41 @@
 #include  "fib-decoder.h"
 
 class RadioInterface;
+
 class DabParams;
 
 class FicHandler : public FibDecoder
 {
 Q_OBJECT
 public:
-  FicHandler(RadioInterface *, uint8_t);
-  ~FicHandler();
-  void process_ficBlock(const std::vector<int16_t> & data, int32_t blkno);
+  FicHandler(RadioInterface * const iMr, const uint8_t iDabMode);
+  ~FicHandler() override = default;
+
+  void process_ficBlock(const std::vector<int16_t> & iData, const int32_t iBlkNo);
   void stop();
   void restart();
   void start_ficDump(FILE *);
   void stop_ficDump();
   void get_fibBits(uint8_t *, bool *);
+
 private:
   DabParams params;
-  ViterbiSpiral myViterbi;
-  std::array<uint8_t, 768> bitBuffer_out;
-  std::array<int16_t,2304> ofdm_input;
-  std::array<bool, 3072 + 24> punctureTable;
-  std::array<uint8_t, 4 * 768> fibBits;
-  std::array<bool, 4> ficValid;
-  int16_t index;
-  int16_t BitsperBlock;
-  int16_t ficno;
-  int16_t ficBlocks;
-  int16_t ficMissed;
-  int16_t ficRatio;
-  uint16_t convState;
-  uint8_t PRBS[768];
-  FILE * ficDumpPointer;
+  ViterbiSpiral myViterbi{ 768, true };
+  std::array<std::byte, 768> bitBuffer_out;
+  std::array<std::byte, 4 * 768> fibBits;
+  std::array<std::byte, 768> PRBS;
+  std::array<std::byte, 256> ficBuffer;
+  std::array<int16_t, 2304> ofdm_input;
+  std::array<bool, 3072 + 24> punctureTable{ false };
+  std::array<bool, 4> ficValid{ false };
+  int16_t index = 0;
+  int16_t BitsperBlock = 0;
+  int16_t ficno = 0;
+  FILE * ficDumpPointer = nullptr;
   QMutex ficLocker;
-  uint8_t ficBuffer[256];
-  int ficPointer;
   std::atomic<bool> running;
-  //	uint8_t		shiftRegister	[9];
 
-  void process_ficInput(int16_t, bool *);
+  void process_ficInput(int16_t iFicNo, bool * oValid);
 
 signals:
   void show_ficSuccess(bool);

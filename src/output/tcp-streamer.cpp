@@ -46,7 +46,7 @@ void	tcpStreamer::acceptConnection (void) {
 
 	streamerAddress = streamer. nextPendingConnection();
 	QHostAddress s = streamerAddress -> peerAddress();
-	fprintf (stderr, "Accepted a client %s\n", s.toString(). toLatin1(). data());
+	fprintf (stdout, "Accepted a client %s\n", s.toString(). toLatin1(). data());
 	connected	= true;
 }
 

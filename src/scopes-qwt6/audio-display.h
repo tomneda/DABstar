@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2014 .. 2019
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -21,64 +29,65 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-//
-#ifndef		__AUDIO_DISPLAY_H
-#define		__AUDIO_DISPLAY_H
+#ifndef    AUDIO_DISPLAY_H
+#define    AUDIO_DISPLAY_H
 
-#include	<QSettings>
-#include        "dab-constants.h"
-#include	<QFrame>
-#include	<QObject>
+#include  "dab-constants.h"
+#include  <QSettings>
+#include  <QFrame>
+#include  <QObject>
+#include  <qwt.h>
+#include  <qwt_plot.h>
+#include  <qwt_plot_marker.h>
+#include  <qwt_plot_grid.h>
+#include  <qwt_plot_curve.h>
+#include  <qwt_plot_marker.h>
+#include  <qwt_color_map.h>
+#include  <qwt_plot_zoomer.h>
+#include  <qwt_plot_textlabel.h>
+#include  <qwt_plot_panner.h>
+#include  <qwt_plot_layout.h>
+#include  <qwt_picker_machine.h>
+#include  <qwt_scale_widget.h>
+#include  <QBrush>
+#include  "fft/fft-handler.h"
 
-#include	<qwt.h>
-#include	<qwt_plot.h>
-#include	<qwt_plot_marker.h>
-#include	<qwt_plot_grid.h>
-#include	<qwt_plot_curve.h>
-#include	<qwt_plot_marker.h>
-#include        <qwt_color_map.h>
-#include        <qwt_plot_zoomer.h>
-#include        <qwt_plot_textlabel.h>
-#include        <qwt_plot_panner.h>
-#include        <qwt_plot_layout.h>
-#include        <qwt_picker_machine.h>
-#include        <qwt_scale_widget.h>
-#include        <QBrush>
-#include	"fft/fft-handler.h"
+class RadioInterface;
 
-class	RadioInterface;
-
-class	audioDisplay: public QObject {
+class AudioDisplay : public QObject
+{
 Q_OBJECT
 public:
-			audioDisplay		(RadioInterface *,
-	                                         QwtPlot	*, 	
-	                                         QSettings *);
-			~audioDisplay		();
-	void		createSpectrum		(int16_t *, int, int);
+  AudioDisplay(RadioInterface *, QwtPlot *, QSettings *);
+  ~AudioDisplay() override;
+
+  void create_spectrum(int16_t *, int, int);
+
 private:
-	RadioInterface	*myRadioInterface;
-	QSettings	*dabSettings;
-	QwtPlot		*plotGrid;
-	QwtPlotCurve	spectrumCurve;
-	QBrush		*ourBrush;
-	QwtPlotGrid	grid;
-	int16_t		displaySize;
-	int16_t		spectrumSize;
-	double		displayBuffer [512];
-	cmplx	*spectrumBuffer;
-	float		Window [4 * 512];
-	fftHandler	fft;
-	QwtPlotPicker   *lm_picker;
-	//QColor		displayColor;
-	QColor		gridColor;
-	QColor		curveColor;
-	bool		brush;
-	void		ViewSpectrum		(double *, double *, double, int);
-	float		get_db 			(float);
-	int32_t		normalizer;
+  static constexpr int32_t spectrumSize = 2048;
+  static constexpr int32_t normalizer = 16 * 2048;
+
+  RadioInterface * myRadioInterface;
+  QSettings * dabSettings;
+  QwtPlot * plotGrid;
+  QwtPlotCurve spectrumCurve{""};
+  QwtPlotGrid grid;
+  int32_t displaySize = 512;
+
+  std::array<double, 512> displayBuffer;
+  std::array<float, 4 * 512> Window;
+  cmplx * spectrumBuffer;
+  fftHandler fft{ 2048, false };
+  QwtPlotPicker * lm_picker;
+  QColor gridColor;
+  QColor curveColor;
+  bool brush;
+
+  void _view_spectrum(double *, double *, double, int);
+  float _get_db(float);
+
 private slots:
-        void            rightMouseClick (const QPointF &);
+  void _slot_rightMouseClick(const QPointF &);
 };
 
 #endif
