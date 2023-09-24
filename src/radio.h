@@ -122,7 +122,7 @@ public:
   bool realChannel;
   bool etiActive;
   int serviceCount;
-  int frequency;
+  int frequencyKhz;
   QString ensembleName;
   uint8_t mainId;
   uint8_t subId;
@@ -151,7 +151,7 @@ public:
   {
     realChannel = true;
     serviceCount = -1;
-    frequency = -1;
+    frequencyKhz = -1;
     ensembleName = "";
     nrTransmitters = 0;
     countryName = "";

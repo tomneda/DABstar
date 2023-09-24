@@ -305,7 +305,7 @@ void SpectrumViewer::show_clockErr(int e)
   }
 }
 
-void SpectrumViewer::showFrequency(float f)
+void SpectrumViewer::show_frequency_MHz(float f)
 {
   frequencyDisplay->display(f);
 }

@@ -54,7 +54,7 @@ public:
   void saveSettings();
   void setupChannels(QComboBox * s, uint8_t band);
   void setup_skipList(const QString &);
-  int32_t get_frequency_hz(const QString & Channel);
+  int32_t get_frequency_Hz(const QString & Channel);
   int firstChannel();
   int nextChannel(int);
   int prevChannel(int);

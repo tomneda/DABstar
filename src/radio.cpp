@@ -923,7 +923,7 @@ void RadioInterface::_slot_handle_content_button()
     theTime = convertTime(localTime.year, localTime.month, localTime.day, localTime.hour, localTime.minute);
   }
 
-  QString header = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequency) + ";" + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";" + QString::number(
+  QString header = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequencyKhz) + ";" + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";" + QString::number(
     serviceList.size()) + ";" + distanceLabel->text() + "\n";
 
   my_contentTable = new contentTable(this, dabSettings, channel.channelName, my_dabProcessor->scanWidth());
@@ -3366,20 +3366,20 @@ void RadioInterface::write_warning_message(const QString & iMsg)
 //
 void RadioInterface::startChannel(const QString & theChannel)
 {
-  int tunedFrequency = theBand.get_frequency_hz(theChannel);
+  const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel);
   LOG("channel starts ", theChannel);
-  configWidget.frequencyDisplay->display(tunedFrequency / 1000000.0);
-  my_spectrumViewer.showFrequency(tunedFrequency / 1000000.0);
+  configWidget.frequencyDisplay->display(tunedFrequencyHz / 1'000'000.0);
+  my_spectrumViewer.show_frequency_MHz(tunedFrequencyHz / 1'000'000.0);
   dabSettings->setValue("channel", theChannel);
   inputDevice->resetBuffer();
   serviceList.clear();
   model.clear();
   ensembleDisplay->setModel(&model);
-  inputDevice->restartReader(tunedFrequency);
+  inputDevice->restartReader(tunedFrequencyHz);
   channel.cleanChannel();
   channel.channelName = theChannel;
   dabSettings->setValue("channel", theChannel);
-  channel.frequency = tunedFrequency / 1000;
+  channel.frequencyKhz = tunedFrequencyHz / 1000;
   //my_tiiViewer.clear();
   if (transmitterTags_local && (mapHandler != nullptr))
   {
@@ -3736,7 +3736,7 @@ void RadioInterface::showServices()
   QString utcTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
   if (scanMode == SINGLE_SCAN)
   {
-    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequency) + ";" + hextoString(
+    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequencyKhz) + ";" + hextoString(
       channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
     QStringList s = my_dabProcessor->basicPrint();
     my_scanTable->addLine(headLine);
@@ -3750,7 +3750,7 @@ void RadioInterface::showServices()
   }
   else if (scanMode == SCAN_CONTINUOUSLY)
   {
-    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequency) + ";" + hextoString(
+    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequencyKhz) + ";" + hextoString(
       channel.Eid) + ";" + utcTime + ";" + transmitter_coordinates->text() + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
 
     //	   my_scanTable -> addLine ("\n");

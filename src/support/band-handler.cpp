@@ -362,7 +362,7 @@ void BandHandler::updateEntry(const QString & channel)
 }
 
 //	find the frequency for a given channel in a given band
-int32_t BandHandler::get_frequency_hz(const QString & Channel)
+int32_t BandHandler::get_frequency_Hz(const QString & Channel)
 {
   int32_t tunedFrequency = 0;
   int i;
