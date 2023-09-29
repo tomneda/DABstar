@@ -120,19 +120,21 @@ private:
   bool mShowInLogScale = false;
 
   CarrierDisp * mpCarrierDisp = nullptr;
-  IQDisplay * myIQDisplay = nullptr;
-  SpectrumScope * mySpectrumScope = nullptr;
-  WaterfallScope * myWaterfallScope = nullptr;
+  IQDisplay * mpIQDisplay = nullptr;
+  SpectrumScope * mpSpectrumScope = nullptr;
+  WaterfallScope * mpWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
 
   [[nodiscard]] float get_db(float) const;
 
 private slots:
   void _slot_handle_cmb_carrier(int);
+  void _slot_handle_cmb_iqscope(int);
   void _slot_handle_cb_nom_carrier(int);
 
 signals:
   void signal_cmb_carrier_changed(ECarrierPlotType);
+  void signal_cmb_iqscope_changed(EIqPlotType);
   void signal_cb_nom_carrier_changed(bool);
 };
 

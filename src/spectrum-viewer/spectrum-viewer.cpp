@@ -68,9 +68,9 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
 
   create_blackman_window(Window.data(), SP_SPECTRUMSIZE);
 
-  mySpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
-  myWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
-  myIQDisplay = new IQDisplay(iqDisplay);
+  mpSpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
+  mpWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
+  mpIQDisplay = new IQDisplay(iqDisplay);
   mpCarrierDisp = new CarrierDisp(phaseCarrPlot);
   mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, ipDabSettings, mpCorrelationBuffer);
 
@@ -79,8 +79,10 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   mShowInLogScale = cbLogIqScope->isChecked();
 
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
+  cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
 
   connect(cmbCarrier, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
+  connect(cmbIqScope, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
   connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
 }
 
@@ -99,9 +101,9 @@ SpectrumViewer::~SpectrumViewer()
 
   delete mpCorrelationViewer;
   delete mpCarrierDisp;
-  delete myIQDisplay;
-  delete mySpectrumScope;
-  delete myWaterfallScope;
+  delete mpIQDisplay;
+  delete mpSpectrumScope;
+  delete mpWaterfallScope;
 }
 
 void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
@@ -182,8 +184,8 @@ void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
 
   memcpy(Y_values.data(), displayBuffer.data(), SP_DISPLAYSIZE * sizeof(double));
   memcpy(Y2_values.data(), displayBuffer.data(), SP_DISPLAYSIZE * sizeof(double));
-  mySpectrumScope->showSpectrum(X_axis.data(), Y_values.data(), scopeAmplification->value(), vfoFrequency / 1000);
-  myWaterfallScope->display(X_axis.data(), Y2_values.data(), dabWaterfallAmplitude->value(), vfoFrequency / 1000);
+  mpSpectrumScope->showSpectrum(X_axis.data(), Y_values.data(), scopeAmplification->value(), vfoFrequency / 1000);
+  mpWaterfallScope->display(X_axis.data(), Y2_values.data(), dabWaterfallAmplitude->value(), vfoFrequency / 1000);
 }
 
 float SpectrumViewer::get_db(float x) const
@@ -204,7 +206,7 @@ void SpectrumViewer::setBitDepth(int16_t d)
     normalizer <<= 1;
   }
 
-  mySpectrumScope->setBitDepth(normalizer);
+  mpSpectrumScope->setBitDepth(normalizer);
 }
 
 void SpectrumViewer::show()
@@ -260,7 +262,7 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
 
   const float scale = (float)scopeWidth / 100.0f;
 
-  myIQDisplay->display_iq(mIqValuesVec, scale, scale);
+  mpIQDisplay->display_iq(mIqValuesVec, scale, scale);
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
@@ -320,6 +322,13 @@ void SpectrumViewer::_slot_handle_cmb_carrier(int iSel)
   auto pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
   emit signal_cmb_carrier_changed(pt);
+}
+
+void SpectrumViewer::_slot_handle_cmb_iqscope(int iSel)
+{
+  auto pt = static_cast<EIqPlotType>(iSel);
+  mpIQDisplay->select_plot_type(pt);
+  emit signal_cmb_iqscope_changed(pt);
 }
 
 void SpectrumViewer::_slot_handle_cb_nom_carrier(int iSel)

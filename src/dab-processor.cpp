@@ -580,6 +580,11 @@ void DabProcessor::slot_select_carrier_plot_type(ECarrierPlotType iPlotType)
   mOfdmDecoder.slot_select_carrier_plot_type(iPlotType);
 }
 
+void DabProcessor::slot_select_iq_plot_type(EIqPlotType iPlotType)
+{
+  mOfdmDecoder.slot_select_iq_plot_type(iPlotType);
+}
+
 void DabProcessor::slot_show_nominal_carrier(bool iShowNominalCarrier)
 {
   mOfdmDecoder.slot_show_nominal_carrier(iShowNominalCarrier);

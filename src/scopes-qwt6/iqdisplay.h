@@ -31,6 +31,7 @@
 #ifndef  IQDISPLAY_H
 #define  IQDISPLAY_H
 
+#include  "glob_enums.h"
 #include  "dab-constants.h"
 #include  <vector>
 #include  <qwt.h>
@@ -59,7 +60,17 @@ public:
   IQDisplay(QwtPlot * plot);
   ~IQDisplay() override;
 
+  struct SCustPlot
+  {
+    EIqPlotType PlotType;
+    const char * Name;
+    const char * ToolTip;
+  };
+
   void display_iq(const std::vector<cmplx> & z, float iScaleValue, float iScaleCircle);
+  void customize_plot(const SCustPlot & iCustPlot);
+  void select_plot_type(const EIqPlotType iPlotType);
+  static QStringList get_plot_type_names();
 
 private:
   static constexpr int32_t RADIUS = 100;
@@ -77,6 +88,8 @@ private:
   void draw_cross();
   void draw_circle(float ref, int val);
   void repaint_circle(float size);
+
+  static SCustPlot _get_plot_type_data(const EIqPlotType iPlotType);
 };
 
 #endif

@@ -29,6 +29,11 @@ template<typename T> inline T conv_rad_to_deg(T iVal)
   return iVal * (T)(180.0 / 3.14159265358979323846);
 }
 
+template<typename T> inline T conv_deg_to_rad(T iVal)
+{
+  return iVal * (T)(3.14159265358979323846 / 180.0);
+}
+
 template<typename T> inline void limit_min_max(T & ioVal, T iMin, T iMax)
 {
   if (ioVal < iMin)
@@ -38,6 +43,18 @@ template<typename T> inline void limit_min_max(T & ioVal, T iMin, T iMax)
   else if (ioVal > iMax)
   {
     ioVal = iMax;
+  }
+}
+
+template<typename T> inline void limit_symmetrically(T & ioVal, const T iLimit)
+{
+  if (ioVal > iLimit)
+  {
+    ioVal = iLimit;
+  }
+  else if (ioVal < -iLimit)
+  {
+    ioVal = -iLimit;
   }
 }
 
@@ -114,7 +131,6 @@ template <typename T> inline void mean_filter(T & ioVal, T iVal, const T iAlpha)
 {
   ioVal += iAlpha * (iVal - ioVal);
 }
-
 
 template <typename T> inline void create_blackman_window(T * opVal, int32_t iWindowWidth)
 {

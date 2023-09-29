@@ -140,6 +140,7 @@ private:
 
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
+  void slot_select_iq_plot_type(EIqPlotType iPlotType);
   void slot_show_nominal_carrier(bool iShowNominalCarrier);
   void slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen);
 

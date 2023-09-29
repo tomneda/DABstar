@@ -69,6 +69,12 @@
 #define    MAP_MAX_TRANS  2
 #define    MAP_NORM_TRANS  4
 
+constexpr float F_2_M_PI = (float)(2 * M_PI);
+constexpr float F_M_PI   = (float)M_PI;
+constexpr float F_M_PI_4 = (float)M_PI_4;
+constexpr float F_M_PI_2 = (float)M_PI_2;
+constexpr float F_PI_PER_DEG = (float)(M_PI / 180.0);
+
 struct EpgElement
 {
   int theTime;

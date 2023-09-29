@@ -50,7 +50,7 @@ public:
   void display_carrier_plot(const std::vector<float> & iPhaseVec);
   void customize_plot(const SCustPlot & iCustPlot);
   void select_plot_type(const ECarrierPlotType iPlotType);
-  static QStringList get_plot_type_names() ;
+  static QStringList get_plot_type_names();
 
 private:
   QwtPlot * const mQwtPlot = nullptr;

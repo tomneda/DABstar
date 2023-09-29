@@ -16,15 +16,27 @@
 #ifndef GLOB_ENUMS_H
 #define GLOB_ENUMS_H
 
+enum class EIqPlotType
+{
+  PHASE_CORR_CARR_NORMED,
+  PHASE_CORR_MEAN_NORMED,
+  RAW_MEAN_NORMED,
+
+  DEFAULT = PHASE_CORR_CARR_NORMED  // use the first element for startup constellation
+};
+
 enum class ECarrierPlotType
 {
-  MODQUAL,
-  STDDEV,
-  MEANABSPHASE,
-  FOURQUADPHASE,
-  RELPOWER,
+  MOD_QUAL,
+  STD_DEV,
+  PHASE_ERROR,
+  //MEAN_ABS_PHASE,
+  FOUR_QUAD_PHASE,
+  REL_POWER,
   SNR,
-  NULLTII
+  NULL_TII,
+
+  DEFAULT = MOD_QUAL  // use the first element for startup constellation
 };
 
 #endif // GLOB_ENUMS_H

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>975</width>
-    <height>646</height>
+    <height>679</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -373,14 +373,14 @@
          <item row="9" column="0">
           <widget class="QComboBox" name="cmbIqScope">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the IQ scope.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the IQ scope.&lt;/p&gt;&lt;p&gt;See tool tip of IQ scope for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
          <item row="10" column="0">
           <widget class="QComboBox" name="cmbCarrier">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the carrier plot.&lt;br/&gt;See tool tip of carrier plot for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the carrier plot.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;See tool tip of carrier plot for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>

@@ -46,6 +46,9 @@ IQDisplay::IQDisplay(QwtPlot * plot)
   plot->enableAxis(QwtPlot::xBottom, false);
   plot->enableAxis(QwtPlot::yLeft, false);
   setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
+
+  select_plot_type(EIqPlotType::DEFAULT);
+
   mPlotgrid->replot();
 }
 
@@ -58,18 +61,6 @@ IQDisplay::~IQDisplay()
 inline void IQDisplay::set_point(int x, int y, int val)
 {
   mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
-}
-
-template<typename T> inline void symmetric_limit(T & ioVal, const T iLimit)
-{
-  if (ioVal > iLimit)
-  {
-    ioVal = iLimit;
-  }
-  else if (ioVal < -iLimit)
-  {
-    ioVal = -iLimit;
-  }
 }
 
 void IQDisplay::display_iq(const std::vector<cmplx> & z, float iScaleValue, float iScaleCircle)
@@ -90,8 +81,8 @@ void IQDisplay::display_iq(const std::vector<cmplx> & z, float iScaleValue, floa
     auto x = (int32_t)(scaleNormed * real(z[i]));
     auto y = (int32_t)(scaleNormed * imag(z[i]));
 
-    symmetric_limit(x, RADIUS - 1);
-    symmetric_limit(y, RADIUS - 1);
+    limit_symmetrically(x, RADIUS - 1);
+    limit_symmetrically(y, RADIUS - 1);
 
     mPoints[i] = std::complex<int32_t>(x, y);
     set_point(x, y, 100);
@@ -134,8 +125,8 @@ void IQDisplay::draw_circle(float scale, int val)
     auto h = (int32_t)(RADIUS * scale * cosf(phase));
     auto v = (int32_t)(RADIUS * scale * sinf(phase));
 
-    symmetric_limit(h, RADIUS - 1);
-    symmetric_limit(v, RADIUS - 1);
+    limit_symmetrically(h, RADIUS - 1);
+    limit_symmetrically(v, RADIUS - 1);
 
     // as h and v covers only the top right segment, fill also other segments
     set_point(-h, -v, val);
@@ -153,4 +144,51 @@ void IQDisplay::repaint_circle(float size)
     mLastCircleSize = size;
   }
   draw_circle(size, 20);
+}
+
+void IQDisplay::select_plot_type(const EIqPlotType iPlotType)
+{
+  customize_plot(_get_plot_type_data(iPlotType));
+}
+
+void IQDisplay::customize_plot(const SCustPlot & iCustPlot)
+{
+  mPlotgrid->setToolTip(iCustPlot.ToolTip);
+}
+
+IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
+{
+  SCustPlot cp;
+  cp.PlotType = iPlotType;
+
+  switch (iPlotType)
+  {
+  case EIqPlotType::RAW_MEAN_NORMED:
+    cp.ToolTip = "Shows the real (no phase corrected) PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels.";
+    cp.Name = "Real Mean";
+    break;
+
+  case EIqPlotType::PHASE_CORR_MEAN_NORMED:
+    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels.";
+    cp.Name = "Phase Corr. Mean";
+    break;
+
+  case EIqPlotType::PHASE_CORR_CARR_NORMED:
+    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier levels.";
+    cp.Name = "Phase Corr. Carr.";
+    break;
+  }
+  return cp;
+}
+
+QStringList IQDisplay::get_plot_type_names()
+{
+  QStringList sl;
+
+  // ATTENTION: use same sequence as in EIqPlotType
+  sl << _get_plot_type_data(EIqPlotType::PHASE_CORR_CARR_NORMED).Name;
+  sl << _get_plot_type_data(EIqPlotType::PHASE_CORR_MEAN_NORMED).Name;
+  sl << _get_plot_type_data(EIqPlotType::RAW_MEAN_NORMED).Name;
+
+  return sl;
 }
