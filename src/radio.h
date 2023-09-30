@@ -331,7 +331,8 @@ signals:
   void signal_set_new_preset_index(int);
 
 public slots:
-  void slot_set_corrector_display(int);
+  void slot_show_freq_corr_rf_Hz(int iFreqCorrRF);
+  void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
   void slot_add_to_ensemble(const QString &, int);
   void slot_name_of_ensemble(int, const QString &);
   void slot_show_frame_errors(int);

@@ -81,12 +81,13 @@ public:
 
   void showSpectrum(int32_t, int32_t);
   void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
-  void show_frequency_MHz(float);
+  void show_nominal_frequency_MHz(float);
+  void show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
+  void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
   void showIQ(int32_t, float);
   void showQuality(int32_t, float, float, float, float, float);
   void show_snr(float);
   void show_clockErr(int);
-  void show_correction(int);
   void setBitDepth(int16_t);
   void show();
   void hide();

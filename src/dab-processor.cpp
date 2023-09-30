@@ -61,6 +61,8 @@ DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inpu
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
   connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
   connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
+  connect(this, &DabProcessor::signal_freq_corr_rf_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_rf_Hz);
+  connect(this, &DabProcessor::signal_freq_corr_bb_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_bb_Hz);
 
   mOfdmBuffer.resize(2 * mDabPar.T_s);
   mBits.resize(2 * mDabPar.K);
@@ -267,10 +269,10 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     }
   }
 
-    /**
-      *	OK,  here we are at the end of the frame
-      *	Assume everything went well and skip T_null samples
-      */
+  /**
+    *	OK,  here we are at the end of the frame
+    *	Assume everything went well and skip T_null samples
+    */
   mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mCoarseOffset + mFineOffset);
   ioSampleCount += mDabPar.T_n;
 
@@ -309,9 +311,8 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   //     we integrate the newly found frequency error with the
   //     existing frequency error.
   //
-  mPhaseOffset = arg(freqCorr);
-  constexpr float MAX_PHASE_ANGLE = 20.0f / 360.0f * 2.0f * M_PI;
-  limit_min_max(mPhaseOffset, -MAX_PHASE_ANGLE, MAX_PHASE_ANGLE);
+  mPhaseOffset = std::arg(freqCorr);
+  limit_symmetrically(mPhaseOffset, 20.0f * F_PI_PER_DEG);
 
   mFineOffset += (int32_t)(1.00 * mPhaseOffset / (2 * M_PI) * mDabPar.CarrDiff); // formerly 0.05
 
@@ -324,6 +325,18 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   {
     mCoarseOffset -= mDabPar.CarrDiff;
     mFineOffset += mDabPar.CarrDiff;
+  }
+
+  if (mCoarseOffset != mCoarseOffsetCache)
+  {
+    emit signal_freq_corr_rf_Hz(mCoarseOffset);
+    mCoarseOffsetCache = mCoarseOffset;
+  }
+
+  if (mFineOffset != mFineOffsetCache)
+  {
+    emit signal_freq_corr_bb_Hz(mFineOffset);
+    mFineOffsetCache = mFineOffset;
   }
 
   mClockOffsetTotalSamples += ioSampleCount;
@@ -594,4 +607,3 @@ void DabProcessor::slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen)
 {
   mOfdmDecoder.slot_use_old_soft_bit_gen(iUseOldSoftBitGen);
 }
-

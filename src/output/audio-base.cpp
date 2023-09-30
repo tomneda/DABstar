@@ -46,10 +46,6 @@ AudioBase::AudioBase() :
   dumpFile = nullptr;
 }
 
-AudioBase::~AudioBase()
-{
-}
-
 void AudioBase::restart()
 {
 }

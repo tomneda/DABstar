@@ -124,6 +124,8 @@ private:
   float   mPhaseOffset = 0;
   int32_t mFineOffset = 0;
   int32_t mCoarseOffset = 0;
+  int32_t mFineOffsetCache = 0;
+  int32_t mCoarseOffsetCache = 0;
   int32_t mTimeSyncAttemptCount = 0;
   int32_t mClockOffsetTotalSamples = 0;
   int32_t mClockOffsetFrameCount = 0;
@@ -151,6 +153,8 @@ signals:
   void signal_show_tii(int, int);
   void signal_show_spectrum(int);
   void signal_show_clock_err(int);
+  void signal_freq_corr_rf_Hz(int iFreqCorrRF);
+  void signal_freq_corr_bb_Hz(int iFreqCorrBB);
 };
 
 #endif

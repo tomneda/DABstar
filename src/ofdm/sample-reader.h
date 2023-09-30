@@ -58,7 +58,7 @@ public:
   void setRunning(bool b);
   float get_sLevel() const;
   cmplx getSample(int32_t);
-  void getSamples(std::vector<cmplx> & oV, int32_t index, int32_t n, int32_t phase);
+  void getSamples(std::vector<cmplx> & oV, int32_t iStartIdx, int32_t iNoSamples, int32_t iFreqOffsetBBHz);
   void startDumping(SNDFILE *);
   void stopDumping();
 
@@ -79,8 +79,7 @@ private:
   int32_t bufferContent = 0;
   float sLevel = 0.0f;
   int32_t sampleCount = 0;
-  int32_t corrector = 0;
-  bool dumping;
+  bool dumping; 
   int16_t dumpIndex = 0;
   int16_t dumpScale;
   std::array<int16_t, DUMPSIZE> dumpBuffer{};
@@ -91,7 +90,7 @@ private:
 
 signals:
   void signal_show_spectrum(int);
-  void signal_show_corrector(int);
+  //void signal_show_corrector(int);
 };
 
 #endif

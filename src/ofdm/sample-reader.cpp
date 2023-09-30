@@ -60,7 +60,7 @@ SampleReader::SampleReader(const RadioInterface * mr, deviceHandler * iTheRig, R
   }
 
   connect(this, &SampleReader::signal_show_spectrum, mr, &RadioInterface::slot_show_spectrum);
-  connect(this, &SampleReader::signal_show_corrector, mr, &RadioInterface::slot_set_corrector_display);
+  //connect(this, &SampleReader::signal_show_corrector, mr, &RadioInterface::slot_set_corrector_display);
 }
 
 void SampleReader::setRunning(bool b)
@@ -79,28 +79,27 @@ cmplx SampleReader::getSample(int32_t phaseOffset)
   return oneSampleBuffer[0];
 }
 
-void SampleReader::getSamples(std::vector<cmplx> & oV, int32_t index, int32_t n, int32_t phaseOffset)
+void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz)
 {
-  assert((signed)oV.size() >= index + n);
+  assert((signed)oV.size() >= iStartIdx + iNoSamples);
   
-  std::vector<cmplx> buffer(n);
+  std::vector<cmplx> buffer(iNoSamples);
 
-  corrector = phaseOffset;
   if (!running.load()) throw 21;
 
-  if (n > bufferContent)
+  if (iNoSamples > bufferContent)
   {
-    _wait_for_sample_buffer_filled(n);
+    _wait_for_sample_buffer_filled(iNoSamples);
   }
 
   if (!running.load()) throw 20;
 
-  n = theRig->getSamples(buffer.data(), n);
-  bufferContent -= n;
+  iNoSamples = theRig->getSamples(buffer.data(), iNoSamples);
+  bufferContent -= iNoSamples;
 
   if (dumpfilePointer.load() != nullptr)
   {
-    for (int32_t i = 0; i < n; i++)
+    for (int32_t i = 0; i < iNoSamples; i++)
     {
       _dump_sample_to_file(oV[i]);
     }
@@ -108,9 +107,9 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, int32_t index, int32_t n,
 
   //	OK, we have samples!!
   //	first: adjust frequency. We need Hz accuracy
-  for (int32_t i = 0; i < n; i++)
+  for (int32_t i = 0; i < iNoSamples; i++)
   {
-    currentPhase -= phaseOffset;
+    currentPhase -= iFreqOffsetBBHz;
     //
     //	Note that "phase" itself might be negative
     currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
@@ -119,15 +118,15 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, int32_t index, int32_t n,
       localBuffer[localCounter] = oV[i];
       ++localCounter;
     }
-    oV[index + i] = buffer[i] * oscillatorTable[currentPhase];
+    oV[iStartIdx + i] = buffer[i] * oscillatorTable[currentPhase];
     mean_filter(sLevel, jan_abs(oV[i]), 0.00001f);
   }
 
-  sampleCount += n;
+  sampleCount += iNoSamples;
 
   if (sampleCount > INPUT_RATE / 4)
   {
-    signal_show_corrector(corrector);
+    //emit signal_show_corrector(iFreqOffsetBBHz);
     if (spectrumBuffer != nullptr)
     {
       spectrumBuffer->putDataIntoBuffer(localBuffer.data(), bufferSize);

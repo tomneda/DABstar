@@ -277,7 +277,7 @@ void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTime
   quality_display->display(QString("%1").arg(iStdDev, 0, 'f', 2));
   timeOffsetDisplay->display(QString("%1").arg(iTimeOffset, 0, 'f', 2));
   frequencyOffsetDisplay->display(QString("%1").arg(iFreqOffset, 0, 'f', 2));
-  phaseCorrection->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
+  dispPhaseCorr->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
   snrDisplay->display(QString("%1").arg(iSNR, 0, 'f', 2));
 }
 
@@ -290,13 +290,31 @@ void SpectrumViewer::show_snr(float snr)
   snrDisplay->display(snr);
 }
 
-void SpectrumViewer::show_correction(int c)
+void SpectrumViewer::show_nominal_frequency_MHz(float f)
 {
   if (myFrame.isHidden())
   {
     return;
   }
-  correctorDisplay->display(c);
+  dispNomFrequency->display(f);
+}
+
+void SpectrumViewer::show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
+{
+  if (myFrame.isHidden())
+  {
+    return;
+  }
+  dispFreqCorrRF->display(iFreqCorrRF);
+}
+
+void SpectrumViewer::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
+{
+  if (myFrame.isHidden())
+  {
+    return;
+  }
+  dispFreqCorrBB->display(iFreqCorrBB);
 }
 
 void SpectrumViewer::show_clockErr(int e)
@@ -305,11 +323,6 @@ void SpectrumViewer::show_clockErr(int e)
   {
     clockError->display(e);
   }
-}
-
-void SpectrumViewer::show_frequency_MHz(float f)
-{
-  frequencyDisplay->display(f);
 }
 
 void SpectrumViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)

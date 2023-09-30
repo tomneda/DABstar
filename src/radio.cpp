@@ -795,13 +795,15 @@ RadioInterface::~RadioInterface()
 //
 ///////////////////////////////////////////////////////////////////////////////
 //
-//	a slot called by the ofdmprocessor
-void RadioInterface::slot_set_corrector_display(int v)
+//	a slot called by the DAB-processor
+void RadioInterface::slot_show_freq_corr_rf_Hz(int iFreqCorrRF)
 {
-  if (!my_spectrumViewer.isHidden())
-  {
-    my_spectrumViewer.show_correction(v);
-  }
+  my_spectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
+}
+
+void RadioInterface::slot_show_freq_corr_bb_Hz(int iFreqCorrBB)
+{
+  my_spectrumViewer.show_freq_corr_bb_Hz(iFreqCorrBB);
 }
 
 //
@@ -3369,10 +3371,11 @@ static int32_t sFreqOffHz = 0;
 //
 void RadioInterface::startChannel(const QString & theChannel)
 {
-  const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel) + sFreqOffHz;
+  const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel);
+  sFreqOffHz = tunedFrequencyHz;
   LOG("channel starts ", theChannel);
   configWidget.frequencyDisplay->display(tunedFrequencyHz / 1'000'000.0);
-  my_spectrumViewer.show_frequency_MHz(tunedFrequencyHz / 1'000'000.0);
+  my_spectrumViewer.show_nominal_frequency_MHz(tunedFrequencyHz / 1'000'000.0);
   dabSettings->setValue("channel", theChannel);
   inputDevice->resetBuffer();
   serviceList.clear();
@@ -4400,15 +4403,17 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
 
 void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
 {
-  sFreqOffHz = (iVal - 500) * 100;
+  //sFreqOffHz = (iVal - 500) - 3070;
+  const int32_t freqOffHz = (iVal - 500);
+  inputDevice->setVFOFrequency(sFreqOffHz + freqOffHz);
   //int32_t curFreqHz = channel.frequencyKhz * 1000;
   //inputDevice->setVFOFrequency(curFreqHz + freqOffHz);
 
-  QString channelName = channel.channelName;
-  stopChannel();
-  startChannel(channelName);
+  //QString channelName = channel.channelName;
+  //stopChannel();
+  //startChannel(channelName);
   QString s("Freq-Offs [Hz]: ");
-  s += QString::number(sFreqOffHz);
+  s += QString::number(freqOffHz);
   configWidget.sliderTest->setToolTip(s);
 }
 

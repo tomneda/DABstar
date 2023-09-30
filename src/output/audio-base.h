@@ -47,7 +47,7 @@ class AudioBase : public QObject
 Q_OBJECT
 public:
   AudioBase();
-  virtual ~AudioBase();
+  ~AudioBase() override = default;
   virtual void stop();
   virtual void restart();
 

@@ -174,7 +174,7 @@ IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
     break;
 
   case EIqPlotType::PHASE_CORR_CARR_NORMED:
-    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier levels.";
+    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier level.";
     cp.Name = "Phase Corr. Carr.";
     break;
   }
