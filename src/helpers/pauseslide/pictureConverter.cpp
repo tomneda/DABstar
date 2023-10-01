@@ -1,6 +1,17 @@
 #include  <cstdio>
 #include  <stdint.h>
 
+/*
+ * If DABstar shows errors like: "libpng warning: iCCP: known incorrect sRGB profile"
+ * try to remove the sRGB profile in the PNG picture with ImageMagick with command:
+ * convert <InImage.png> <OutImage.png>
+ * or
+ * mogrify <Image.png>  (mogrify *.png)
+ *
+ * see https://community.magento.com/t5/Magento-2-x-Technical-Issues/libpng-warning-iCCP-known-incorrect-sRGB-profile/td-p/127379
+ */
+
+
 int main(int argc, char ** argv)
 {
   if (argc < 2)
