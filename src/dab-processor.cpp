@@ -127,8 +127,8 @@ void DabProcessor::run()
 //  mCorrectionNeeded = true;
 //  mUseBBFreqCorrOnly = false;
   mFrameCntUntilFreqSet = 0;
-  mFreqTrack = EFreqTrack::FIRST_RF_THEN_BB;
-  //mFreqTrack = EFreqTrack::BB_ONLY;
+  //mFreqTrack = EFreqTrack::FIRST_RF_THEN_BB;
+  mFreqTrack = EFreqTrack::BB_ONLY;
 
   mSampleReader.setRunning(true);  // useful after a restart
   float syncThreshold;
@@ -161,8 +161,6 @@ void DabProcessor::run()
         mFreqOffsSyncSymb = 0.0f;
         mFreqOffsBBHz = 0;
         mFreqOffsRFHz = 0;
-        mFreqOffsBBHzCache = -1;
-        mFreqOffsRFHzCache = -1;
         sampleCount = 0;
         syncThreshold = mcThreshold;
         mClockOffsetFrameCount = mClockOffsetTotalSamples = 0;
@@ -186,8 +184,7 @@ void DabProcessor::run()
       case EState::PROCESS_REST_OF_FRAME:
       {
         const bool ok = _state_process_rest_of_frame(startIndex, sampleCount);
-        //state = (ok ? EState::EVAL_SYNC_SYMBOL : EState::WAIT_FOR_TIME_SYNC_MARKER);
-        state = (ok ? EState::EVAL_SYNC_SYMBOL : EState::EVAL_SYNC_SYMBOL);
+        state = (ok ? EState::EVAL_SYNC_SYMBOL : EState::WAIT_FOR_TIME_SYNC_MARKER);
         syncThreshold = 3 * mcThreshold; // threshold is less sensitive while startup
         break;
       }
@@ -243,7 +240,7 @@ bool DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     if (_do_freq_settins())
     {
       fprintf(stdout, "Resync 1\n");
-      ok = false;
+      //ok = false;
     }
   }
 
@@ -254,12 +251,12 @@ bool DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   // The first sample to be found for the next frame should be T_g samples ahead. Before going for the next frame, we we just check the fineCorrector
   // We integrate the newly found frequency error with the existing frequency error.
   limit_symmetrically(mPhaseOffsetCyckPrefRad, 20.0f * F_RAD_PER_DEG);
-  mFreqOffsCylcPrefHz += 0.30f * mPhaseOffsetCyckPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
+  mFreqOffsCylcPrefHz += 1.00f * mPhaseOffsetCyckPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
 
   if (_do_freq_settins())
   {
     fprintf(stdout, "Resync 2\n");
-    ok = false;
+    //ok = false;
   }
 
   mClockOffsetTotalSamples += ioSampleCount;
@@ -275,25 +272,24 @@ bool DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
 void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
 {
-/**
-  *	OK,  here we are at the end of the frame
-  *	Assume everything went well and skip T_null samples
-  */
+  // We are at the end of the frame and we read the next T_n null samples
   mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mFreqOffsBBHz);
   ioSampleCount += mDabPar.T_n;
 
+  // is this null symbol with TII?
   const bool isTiiNullSegment = (mcDabMode == 1 && (mFicHandler.get_CIFcount() & 0x7) >= 4);
 
   if (!isTiiNullSegment) // eval SNR only in non-TII null segments
   {
-    mOfdmDecoder.store_null_symbol_without_tii(mOfdmBuffer);
+    mOfdmDecoder.store_null_symbol_without_tii(mOfdmBuffer); // for SNR evaluation
   }
   else // this is TII null segment
   {
-    mOfdmDecoder.store_null_symbol_with_tii(mOfdmBuffer);
+    mOfdmDecoder.store_null_symbol_with_tii(mOfdmBuffer); // for displaying TII
 
     // The TII data is encoded in the null period of the	odd frames
     mTiiDetector.addBuffer(mOfdmBuffer);
+
     if (++mTiiCounter >= mcTiiDelay)
     {
       uint16_t res = mTiiDetector.processNULL();
@@ -372,7 +368,8 @@ bool DabProcessor::_do_freq_settins()
     break;
   case FIRST_RF_THEN_BB:
   {
-    const int32_t freqOffRf = (int32_t)std::round(freqOffSum / 100.0f) * 100;
+    const int32_t freqStep = (mCorrectionNeeded ? COARSE_FREQ_STEP : 2 * COARSE_FREQ_STEP);
+    const int32_t freqOffRf = (int32_t)std::round(freqOffSum / (float)freqStep) * freqStep;
     const int32_t freqOffBb = (int32_t)std::round(freqOffSum - (float)freqOffRf);
     rfFreqChanged = _set_rf_freq_Hz(freqOffRf);
     _set_bb_freq_Hz(freqOffBb);
@@ -384,21 +381,19 @@ bool DabProcessor::_do_freq_settins()
 
 void DabProcessor::_set_bb_freq_Hz(int32_t iFreqHz)
 {
-  mFreqOffsBBHz = iFreqHz;
-  if (mFreqOffsBBHz != mFreqOffsBBHzCache)
+  if (mFreqOffsBBHz != iFreqHz)
   {
+    mFreqOffsBBHz = iFreqHz;
     mpRadioInterface->show_freq_corr_bb_Hz(mFreqOffsBBHz);  // this call only changes the display content
-    mFreqOffsBBHzCache = mFreqOffsBBHz;
   }
 }
 
 bool DabProcessor::_set_rf_freq_Hz(int32_t iFreqHz)
 {
-  mFreqOffsRFHz = iFreqHz;
-  if (mFreqOffsRFHz != mFreqOffsRFHzCache)
+  if (mFreqOffsRFHz != iFreqHz)
   {
+    mFreqOffsRFHz = iFreqHz;
     mpRadioInterface->set_and_show_freq_corr_rf_Hz(mFreqOffsRFHz);  // this call changes the RF frequency and display! (hopefully fast enough )
-    mFreqOffsRFHzCache = mFreqOffsRFHz;
     return true; // RF freq has changed
   }
   return false;

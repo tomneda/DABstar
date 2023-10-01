@@ -805,7 +805,7 @@ void RadioInterface::set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
     inputDevice->setVFOFrequency(channel.nominalFreqHz + iFreqCorrRF);
   }
 
-  sFreqOffHz = channel.nominalFreqHz + iFreqCorrRF;
+  //sFreqOffHz = inputDevice->getVFOFrequency();
 
   my_spectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
 }
@@ -2432,7 +2432,7 @@ void RadioInterface::_slot_handle_reset_button()
 //
 /////////////////////////////////////////////////////////////////////////
 
-void setButtonFont(QPushButton * b, QString text, int size)
+void setButtonFont(QPushButton * b, const QString& text, int size)
 {
   QFont font = b->font();
   font.setPointSize(size);
@@ -3207,12 +3207,12 @@ void RadioInterface::startPacketservice(const QString & s)
   case 59:
   {
 #ifdef  _SEND_DATAGRAM_
-                                                                                                                            QString text = QString ("Embedded IP: UDP data to ");
-	      text. append (ipAddress);
-	      text. append (" ");
-	      QString n = QString::number (port);
-	      text. append (n);
-	      showLabel (text);
+    QString text = QString("Embedded IP: UDP data to ");
+    text.append(ipAddress);
+    text.append(" ");
+    QString n = QString::number(port);
+    text.append(n);
+    showLabel(text);
 #else
     slot_show_label("Embedded IP not supported ");
 #endif
@@ -3378,7 +3378,7 @@ void RadioInterface::write_warning_message(const QString & iMsg)
 //
 void RadioInterface::startChannel(const QString & theChannel)
 {
-  const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel);
+  const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel) + sFreqOffHz;
   LOG("channel starts ", theChannel);
   configWidget.frequencyDisplay->display(tunedFrequencyHz / 1'000'000.0);
   my_spectrumViewer.show_nominal_frequency_MHz(tunedFrequencyHz / 1'000'000.0);
@@ -4133,11 +4133,12 @@ void RadioInterface::slot_nr_services(int n)
 
 void RadioInterface::LOG(const QString & a1, const QString & a2)
 {
-  QString theTime;
   if (logFile == nullptr)
   {
     return;
   }
+
+  QString theTime;
   if (configWidget.utcSelector->isChecked())
   {
     theTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
@@ -4409,17 +4410,13 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
 
 void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
 {
-  //sFreqOffHz = (iVal - 500) - 3070;
-  const int32_t freqOffHz = (iVal - 500);
-  inputDevice->setVFOFrequency(sFreqOffHz + freqOffHz);
-  //int32_t curFreqHz = channel.frequencyKhz * 1000;
-  //inputDevice->setVFOFrequency(curFreqHz + freqOffHz);
+  sFreqOffHz = 2 * (iVal - 500);
+//  uint32_t newFreqOffHz = (iVal - 500);
+//  inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
+//  sFreqOffHz = inputDevice->getVFOFrequency();
 
-  //QString channelName = channel.channelName;
-  //stopChannel();
-  //startChannel(channelName);
   QString s("Freq-Offs [Hz]: ");
-  s += QString::number(freqOffHz);
+  s += QString::number(sFreqOffHz);
   configWidget.sliderTest->setToolTip(s);
 }
 

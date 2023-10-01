@@ -375,8 +375,6 @@ private slots:
   void _slot_handle_scan_button();
   void _slot_handle_eti_handler();
 
-  //void _slot_handle_tii_button();
-  //void _slot_handle_snr_button();
   void _slot_handle_spectrum_button();
   void _slot_handle_device_widget_button();
 

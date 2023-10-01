@@ -105,6 +105,8 @@ public:
   void set_tiiDetectorMode(bool);
 
 private:
+  static constexpr int32_t COARSE_FREQ_STEP = 100;
+
   RadioInterface * const mpRadioInterface;
   SampleReader mSampleReader;
   FicHandler mFicHandler;
@@ -121,14 +123,12 @@ private:
   bool mScanMode = false;
   int16_t mTiiCounter = 0;
   bool mEti_on = false;
-  static constexpr int32_t COARSE_FREQ_STEP = 100;
+  bool mCorrectionNeeded = true;
   float mPhaseOffsetCyckPrefRad = 0.0f;
   float mFreqOffsCylcPrefHz = 0.0f;
   float mFreqOffsSyncSymb = 0.0f;
   int32_t mFreqOffsBBHz = 0;
-  int32_t mFreqOffsBBHzCache = 0;
   int32_t mFreqOffsRFHz = 0;
-  int32_t mFreqOffsRFHzCache = 0;
   int32_t mTimeSyncAttemptCount = 0;
   int32_t mClockOffsetTotalSamples = 0;
   int32_t mClockOffsetFrameCount = 0;
@@ -137,7 +137,6 @@ private:
   enum EFreqTrack { BB_ONLY, RF_ONLY, FIRST_RF_THEN_BB };
   EFreqTrack mFreqTrack = EFreqTrack::BB_ONLY;
 
-  bool mCorrectionNeeded{ true };
   std::vector<cmplx> mOfdmBuffer;
   std::vector<int16_t> mBits;
 
