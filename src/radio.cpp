@@ -170,6 +170,8 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 #define  SCAN_TO_DATA    1
 #define  SCAN_CONTINUOUSLY  2
 
+static int32_t sFreqOffHz = 0; // for test
+
 const char * scanTextTable[3] = {
   "single scan", "scan to data", "scan continuously" };
 
@@ -796,12 +798,19 @@ RadioInterface::~RadioInterface()
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	a slot called by the DAB-processor
-void RadioInterface::slot_show_freq_corr_rf_Hz(int iFreqCorrRF)
+void RadioInterface::set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
 {
+  if (inputDevice != nullptr && channel.nominalFreqHz > 0)
+  {
+    inputDevice->setVFOFrequency(channel.nominalFreqHz + iFreqCorrRF);
+  }
+
+  sFreqOffHz = channel.nominalFreqHz + iFreqCorrRF;
+
   my_spectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
 }
 
-void RadioInterface::slot_show_freq_corr_bb_Hz(int iFreqCorrBB)
+void RadioInterface::show_freq_corr_bb_Hz(int iFreqCorrBB)
 {
   my_spectrumViewer.show_freq_corr_bb_Hz(iFreqCorrBB);
 }
@@ -926,7 +935,7 @@ void RadioInterface::_slot_handle_content_button()
     theTime = convertTime(localTime.year, localTime.month, localTime.day, localTime.hour, localTime.minute);
   }
 
-  QString header = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequencyKhz) + ";" + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";" + QString::number(
+  QString header = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";" + QString::number(
     serviceList.size()) + ";" + distanceLabel->text() + "\n";
 
   my_contentTable = new ContentTable(this, dabSettings, channel.channelName, my_dabProcessor->scanWidth());
@@ -3361,8 +3370,6 @@ void RadioInterface::write_warning_message(const QString & iMsg)
   dynamicLabel->setText(iMsg);
 }
 
-static int32_t sFreqOffHz = 0;
-
 ///////////////////////////////////////////////////////////////////////////
 //
 //	Channel basics
@@ -3372,7 +3379,6 @@ static int32_t sFreqOffHz = 0;
 void RadioInterface::startChannel(const QString & theChannel)
 {
   const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel);
-  sFreqOffHz = tunedFrequencyHz;
   LOG("channel starts ", theChannel);
   configWidget.frequencyDisplay->display(tunedFrequencyHz / 1'000'000.0);
   my_spectrumViewer.show_nominal_frequency_MHz(tunedFrequencyHz / 1'000'000.0);
@@ -3385,7 +3391,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   channel.cleanChannel();
   channel.channelName = theChannel;
   dabSettings->setValue("channel", theChannel);
-  channel.frequencyKhz = tunedFrequencyHz / 1000;
+  channel.nominalFreqHz = tunedFrequencyHz;
 
   if (transmitterTags_local && (mapHandler != nullptr))
   {
@@ -3745,7 +3751,7 @@ void RadioInterface::showServices()
   QString utcTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
   if (scanMode == SINGLE_SCAN)
   {
-    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequencyKhz) + ";" + hextoString(
+    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(
       channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
     QStringList s = my_dabProcessor->basicPrint();
     my_scanTable->addLine(headLine);
@@ -3759,7 +3765,7 @@ void RadioInterface::showServices()
   }
   else if (scanMode == SCAN_CONTINUOUSLY)
   {
-    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.frequencyKhz) + ";" + hextoString(
+    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(
       channel.Eid) + ";" + utcTime + ";" + transmitter_coordinates->text() + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
 
     //	   my_scanTable -> addLine ("\n");

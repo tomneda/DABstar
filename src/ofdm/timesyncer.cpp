@@ -38,7 +38,7 @@ TimeSyncer::TimeSyncer(SampleReader * mr)
 {
 }
 
-TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(int T_null, int T_F)
+TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(const int32_t iT_null, const int32_t iT_F)
 {
   float cLevel = 0;
   int counter = 0;
@@ -51,9 +51,9 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(int T_null, 
   for (i = 0; i < C_LEVEL_SIZE; i++)
   {
     const cmplx sample = mpSampleReader->getSample(0);
-    envBuffer[mSyncBufferIndex] = jan_abs(sample);
+    envBuffer[mSyncBufferIndex] = fast_abs(sample);
     cLevel += envBuffer[mSyncBufferIndex];
-    mSyncBufferIndex++;
+    ++mSyncBufferIndex;
   }
 
   //SyncOnNull:
@@ -61,11 +61,11 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(int T_null, 
   while (cLevel / C_LEVEL_SIZE > 0.55 * mpSampleReader->get_sLevel())
   {
     const cmplx sample = mpSampleReader->getSample(0);
-    envBuffer[mSyncBufferIndex] = jan_abs(sample);
+    envBuffer[mSyncBufferIndex] = fast_abs(sample);
     cLevel += envBuffer[mSyncBufferIndex] - envBuffer[(mSyncBufferIndex - C_LEVEL_SIZE) & syncBufferMask];
     mSyncBufferIndex = (mSyncBufferIndex + 1) & syncBufferMask;
-    counter++;
-    if (counter > T_F)
+    ++counter;
+    if (counter > iT_F)
     { // hopeless
       return EState::NO_DIP_FOUND;
     }
@@ -79,12 +79,12 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(int T_null, 
   while (cLevel / C_LEVEL_SIZE < 0.75 * mpSampleReader->get_sLevel())
   {
     cmplx sample = mpSampleReader->getSample(0);
-    envBuffer[mSyncBufferIndex] = jan_abs(sample);
+    envBuffer[mSyncBufferIndex] = fast_abs(sample);
     //      update the levels
     cLevel += envBuffer[mSyncBufferIndex] - envBuffer[(mSyncBufferIndex - C_LEVEL_SIZE) & syncBufferMask];
     mSyncBufferIndex = (mSyncBufferIndex + 1) & syncBufferMask;
-    counter++;
-    if (counter > T_null + 50)
+    ++counter;
+    if (counter > iT_null + 50)
     { // hopeless
       return EState::NO_END_OF_DIP_FOUND;
     }

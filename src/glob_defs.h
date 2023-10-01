@@ -73,8 +73,12 @@ static inline bool is_infinite(float x)
   return x == std::numeric_limits<float>::infinity();
 }
 
-static inline float jan_abs(cmplx z)
+static inline float fast_abs(cmplx z)
 {
+#if 0
+  return std::abs(z);
+#else
+  // this is the former jan_abs() from Jan van Katwijk, should be faster than std::abs()... but is it really? (depends on the device)
   float re = real(z);
   float im = imag(z);
 
@@ -94,6 +98,7 @@ static inline float jan_abs(cmplx z)
   {
     return im + 0.5f * re;
   }
+#endif
 }
 
 inline cmplx norm_to_length_one(const cmplx & iVal)

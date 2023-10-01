@@ -51,11 +51,11 @@ public:
   PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam);
   ~PhaseReference() override = default;
 
-  [[nodiscard]] int32_t find_index(std::vector<cmplx> iV, float iThreshold);  // copy of iV is intended
-  [[nodiscard]] int16_t estimate_carrier_offset(std::vector<cmplx> iV);       // copy of iV is intended
+  [[nodiscard]] int32_t correlate_with_phase_ref_and_find_max_peak(std::vector<cmplx> iV, float iThreshold);  // copy of iV is intended
+  [[nodiscard]] int16_t estimate_carrier_offset_from_sync_symbol_0(std::vector<cmplx> iV);       // copy of iV is intended
   [[nodiscard]] static float phase(const std::vector<cmplx> & iV, int32_t iTs) ;
 
-  static constexpr int16_t IDX_NOT_FOUND = 100;
+  static constexpr int16_t IDX_NOT_FOUND = 10000;
 
 private:
   static constexpr int16_t DIFFLENGTH = 128;

@@ -87,7 +87,7 @@ void OfdmDecoder::reset()
   mAvgAbsNullLevelWithTIIGain = 0.0f;
 }
 
-void OfdmDecoder::store_null_with_tii_block(const std::vector<cmplx> & iV) // with TII information
+void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iV) // with TII information
 {
   if (mCarrierPlotType != ECarrierPlotType::NULL_TII)
   {
@@ -121,7 +121,7 @@ void OfdmDecoder::store_null_with_tii_block(const std::vector<cmplx> & iV) // wi
   mAvgAbsNullLevelWithTIIGain = 100.0f / (mAvgAbsNullLevelWithTIIMax - mAvgAbsNullLevelWithTIIMin);
 }
 
-void OfdmDecoder::store_null_without_tii_block(const std::vector<cmplx> & iV) // with TII information
+void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iV) // with TII information
 {
   memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
@@ -138,7 +138,7 @@ void OfdmDecoder::store_null_without_tii_block(const std::vector<cmplx> & iV) //
 
 /**
  */
-void OfdmDecoder::process_reference_block_0(std::vector<cmplx> buffer) // copy is intended as used as fft buffer
+void OfdmDecoder::store_reference_symbol_0(std::vector<cmplx> buffer) // copy is intended as used as fft buffer
 {
   mFftHandler.fft(buffer);
   /**
@@ -156,7 +156,7 @@ void OfdmDecoder::process_reference_block_0(std::vector<cmplx> buffer) // copy i
  *	only to spare a test. The mapping code is the same
  */
 
-void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits)
+void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits)
 {
   memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
@@ -213,7 +213,7 @@ void OfdmDecoder::decode(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx
 
     // integrate phase error to perform the phase correction in the next OFDM symbol
     integAbsPhasePerBinRef += ALPHA * (fftBinAbsPhase - F_M_PI_4);
-    limit_symmetrically(integAbsPhasePerBinRef, F_PI_PER_DEG * 20.0f);
+    limit_symmetrically(integAbsPhasePerBinRef, F_RAD_PER_DEG * 20.0f);
 
     // get standard deviation of absolute phase for each bin
     //const float curStdDevDiff = (fftBinAbsPhase - meanAbsPhasePerBinRef);

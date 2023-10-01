@@ -61,10 +61,10 @@ public:
   };
 
   void reset();
-  void store_null_with_tii_block(const std::vector<cmplx> &);
-  void store_null_without_tii_block(const std::vector<cmplx> &);
-  void process_reference_block_0(std::vector<cmplx>);  // copy of vector is intended
-  void decode(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
+  void store_null_symbol_with_tii(const std::vector<cmplx> &);
+  void store_null_symbol_without_tii(const std::vector<cmplx> &);
+  void store_reference_symbol_0(std::vector<cmplx>);  // copy of vector is intended
+  void decode_symbol(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
 
 private:
   RadioInterface * const mpRadioInterface;

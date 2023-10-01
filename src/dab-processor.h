@@ -118,17 +118,24 @@ private:
   const float mcThreshold;
   const int16_t mcTiiDelay;
   const DabParams::SDabPar mDabPar;
-  bool mScanMode{ false };
+  bool mScanMode = false;
   int16_t mTiiCounter = 0;
   bool mEti_on = false;
-  float   mPhaseOffset = 0;
-  int32_t mFineOffset = 0;
-  int32_t mCoarseOffset = 0;
-  int32_t mFineOffsetCache = 0;
-  int32_t mCoarseOffsetCache = 0;
+  static constexpr int32_t COARSE_FREQ_STEP = 100;
+  float mPhaseOffsetCyckPrefRad = 0.0f;
+  float mFreqOffsCylcPrefHz = 0.0f;
+  float mFreqOffsSyncSymb = 0.0f;
+  int32_t mFreqOffsBBHz = 0;
+  int32_t mFreqOffsBBHzCache = 0;
+  int32_t mFreqOffsRFHz = 0;
+  int32_t mFreqOffsRFHzCache = 0;
   int32_t mTimeSyncAttemptCount = 0;
   int32_t mClockOffsetTotalSamples = 0;
   int32_t mClockOffsetFrameCount = 0;
+  int32_t mFrameCntUntilFreqSet = 0;
+  //bool mUseBBFreqCorrOnly = false; // false: use RF correction first
+  enum EFreqTrack { BB_ONLY, RF_ONLY, FIRST_RF_THEN_BB };
+  EFreqTrack mFreqTrack = EFreqTrack::BB_ONLY;
 
   bool mCorrectionNeeded{ true };
   std::vector<cmplx> mOfdmBuffer;
@@ -137,8 +144,13 @@ private:
   void run() override; // the new QThread
 
   bool _state_wait_for_time_sync_marker();
-  bool _state_eval_sync_symbol(int32_t & oStartIndex, int & oSampleCount, float iThreshold);
-  void _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
+  bool _state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSampleCount, float iThreshold);
+  bool _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
+  float _process_ofdm_symbols_1_to_L(int32_t & ioSampleCount);
+  void _process_null_symbol(int32_t & ioSampleCount);
+  bool _do_freq_settins();
+  bool _set_rf_freq_Hz(int32_t iFreqHz);
+  void _set_bb_freq_Hz(int32_t iFreqHz);
 
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
@@ -153,8 +165,6 @@ signals:
   void signal_show_tii(int, int);
   void signal_show_spectrum(int);
   void signal_show_clock_err(int);
-  void signal_freq_corr_rf_Hz(int iFreqCorrRF);
-  void signal_freq_corr_bb_Hz(int iFreqCorrBB);
 };
 
 #endif

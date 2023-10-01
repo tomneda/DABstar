@@ -46,7 +46,7 @@ public:
   TimeSyncer(SampleReader * mr);
   ~TimeSyncer() = default;
 
-  EState read_samples_until_end_of_level_drop(int, int);
+  EState read_samples_until_end_of_level_drop(const int32_t iT_null, const int32_t iT_F);
 
 private:
   SampleReader * const mpSampleReader;

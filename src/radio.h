@@ -122,7 +122,7 @@ public:
   bool realChannel;
   bool etiActive;
   int serviceCount;
-  int frequencyKhz;
+  int32_t nominalFreqHz;
   QString ensembleName;
   uint8_t mainId;
   uint8_t subId;
@@ -151,7 +151,7 @@ public:
   {
     realChannel = true;
     serviceCount = -1;
-    frequencyKhz = -1;
+    nominalFreqHz = -1;
     ensembleName = "";
     nrTransmitters = 0;
     countryName = "";
@@ -172,11 +172,11 @@ class RadioInterface : public QWidget, private Ui_dabradio
 Q_OBJECT
 public:
   RadioInterface(QSettings *, const QString &, const QString &, bool, int32_t dataPort, int32_t clockPort, int, QWidget * parent);
-  ~RadioInterface();
+  ~RadioInterface() override;
 
-protected:
-  bool eventFilter(QObject * obj, QEvent * event) override;
-  
+  void set_and_show_freq_corr_rf_Hz(int iFreqCorrRF);
+  void show_freq_corr_bb_Hz(int iFreqCorrBB);
+
 private:
   FILE * dlTextFile;
   RingBuffer<cmplx> spectrumBuffer;
@@ -232,7 +232,6 @@ private:
   epgDecoder epgProcessor;
   QString epgPath;
   QTimer epgTimer;
-  uint32_t extract_epg(QString, std::vector<serviceId> & serviceList, uint32_t);
   bool saveSlides;
   QString picturesPath;
   QString filePath;
@@ -247,10 +246,8 @@ private:
   void set_channelButton(int);
   QStandardItemModel model;
   std::vector<serviceId> serviceList;
-  bool isMember(const std::vector<serviceId> &, serviceId);
   std::vector<serviceId> insert(const std::vector<serviceId> &, serviceId, int);
 
-  void show_pause_slide();
   QTimer displayTimer;
   QTimer channelTimer;
   QTimer presetTimer;
@@ -260,12 +257,21 @@ private:
   int16_t ficSuccess;
   int total_ficError;
   int total_fics;
-  void connectGUI();
-  void disconnectGUI();
-
-  int serviceCount;
   struct theTime localTime;
   struct theTime UTC;
+  int serviceCount;
+  historyHandler * my_history;
+  historyHandler * my_presets;
+  timeTableHandler * my_timeTable;
+  FILE * ficDumpPointer;
+  bool transmitterTags_local;
+
+  bool eventFilter(QObject * obj, QEvent * event) override;
+  uint32_t extract_epg(QString, std::vector<serviceId> & serviceList, uint32_t);
+  bool isMember(const std::vector<serviceId> &, serviceId);
+  void show_pause_slide();
+  void connectGUI();
+  void disconnectGUI();
   QString convertTime(int, int, int, int, int);
   QString footText();
   QString presetText();
@@ -273,21 +279,17 @@ private:
   void hideButtons();
   void showButtons();
   deviceHandler * create_device(const QString &);
-  historyHandler * my_history;
-  historyHandler * my_presets;
-  timeTableHandler * my_timeTable;
 
   void start_etiHandler();
   void stop_etiHandler();
   QString checkDir(const QString);
-  //
+
   void startAudioservice(Audiodata *);
   void startPacketservice(const QString &);
   void startScanning();
   void stopScanning(bool);
   void startAudiodumping();
   void stopAudiodumping();
-  FILE * ficDumpPointer;
 
   void startSourcedumping();
   void stopSourcedumping();
@@ -308,20 +310,15 @@ private:
   void save_MOTtext(QByteArray &, int, QString);
   void show_MOTlabel(QByteArray & data, int contentType, const QString & pictureName, int dirs);
 
-  enum direction
-  {
-    FORWARD, BACKWARDS
-  };
-
+  enum direction { FORWARD, BACKWARDS };
   void handle_serviceButton(direction);
   void enable_ui_elements_for_safety(bool iEnable);
-  //
+
   //	short hands
   void new_presetIndex(int);
   void new_channelIndex(int);
 
   std::mutex locker;
-  bool transmitterTags_local;
   void colorServiceName(const QString & s, QColor color, int fS, bool);
   void write_warning_message(const QString & iMsg);
   void write_picture(const QPixmap & iPixMap) const;
@@ -331,8 +328,6 @@ signals:
   void signal_set_new_preset_index(int);
 
 public slots:
-  void slot_show_freq_corr_rf_Hz(int iFreqCorrRF);
-  void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
   void slot_add_to_ensemble(const QString &, int);
   void slot_name_of_ensemble(int, const QString &);
   void slot_show_frame_errors(int);

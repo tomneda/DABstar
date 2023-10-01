@@ -122,14 +122,24 @@
          <property name="verticalSpacing">
           <number>2</number>
          </property>
-         <item row="0" column="0">
+         <item row="0" column="0" colspan="2">
+          <widget class="Line" name="line_2">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(119, 118, 123);</string>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
           <widget class="QLabel" name="label_7">
            <property name="text">
             <string>Nom. Frequency</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="1" column="1">
           <widget class="QLCDNumber" name="dispNomFrequency">
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -145,14 +155,14 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>RF Freq. Corr.</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="3" column="1">
           <widget class="QLCDNumber" name="dispFreqCorrRF">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency correction, The software computed an estimate of the
@@ -174,14 +184,14 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label_8">
            <property name="text">
             <string>BB Freq. Corr.</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="4" column="1">
           <widget class="QLCDNumber" name="dispFreqCorrBB">
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -198,13 +208,46 @@
           </widget>
          </item>
          <item row="5" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Phase Corr.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLCDNumber" name="dispPhaseCorr">
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="smallDecimalPoint">
+            <bool>true</bool>
+           </property>
+           <property name="digitCount">
+            <number>7</number>
+           </property>
+           <property name="segmentStyle">
+            <enum>QLCDNumber::Flat</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0" colspan="2">
+          <widget class="Line" name="line">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(119, 118, 123);</string>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
           <widget class="QLabel" name="label_10">
            <property name="text">
             <string>OFDM Sym No</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="7" column="1">
           <widget class="QLCDNumber" name="ofdmSymbNo">
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -220,14 +263,14 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
+         <item row="10" column="0">
           <widget class="QLabel" name="label_5">
            <property name="text">
             <string>SNR</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="10" column="1">
           <widget class="QLCDNumber" name="snrDisplay">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SNR, i.e. Signal Noise ratio, compoted from the difference in
@@ -248,14 +291,14 @@
            </property>
           </widget>
          </item>
-         <item row="9" column="0">
+         <item row="11" column="0">
           <widget class="QLabel" name="label">
            <property name="text">
             <string>Freq Offset</string>
            </property>
           </widget>
          </item>
-         <item row="9" column="1">
+         <item row="11" column="1">
           <widget class="QLCDNumber" name="frequencyOffsetDisplay">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequeny offset, the computed frequency error, after applying
@@ -276,14 +319,14 @@
            </property>
           </widget>
          </item>
-         <item row="10" column="0">
+         <item row="12" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>Time Offset</string>
            </property>
           </widget>
          </item>
-         <item row="10" column="1">
+         <item row="12" column="1">
           <widget class="QLCDNumber" name="timeOffsetDisplay">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sample clock offset. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
@@ -303,14 +346,14 @@
            </property>
           </widget>
          </item>
-         <item row="11" column="0">
+         <item row="13" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
             <string>Clock Offset</string>
            </property>
           </widget>
          </item>
-         <item row="11" column="1">
+         <item row="13" column="1">
           <widget class="QLCDNumber" name="clockError">
            <property name="toolTip">
             <string>clock offset. The value indicates the number of samples too many or too few for 10 DAB frames (which is
@@ -331,14 +374,14 @@
            </property>
           </widget>
          </item>
-         <item row="12" column="0">
+         <item row="15" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Std. Deviation</string>
            </property>
           </widget>
          </item>
-         <item row="12" column="1">
+         <item row="15" column="1">
           <widget class="QLCDNumber" name="quality_display">
            <property name="toolTip">
             <string>Quality indicator: the &quot;quality&quot; of the decoded signal is measured as Modulation Error Rate, using
@@ -360,14 +403,14 @@
            </property>
           </widget>
          </item>
-         <item row="13" column="0">
+         <item row="17" column="0">
           <widget class="QComboBox" name="cmbIqScope">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the IQ scope.&lt;/p&gt;&lt;p&gt;See tool tip of IQ scope for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
-         <item row="13" column="1">
+         <item row="17" column="1">
           <widget class="QCheckBox" name="cbLogIqScope">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show vector length in IQ scope in logarithmic scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -380,14 +423,14 @@
            </property>
           </widget>
          </item>
-         <item row="14" column="0">
+         <item row="18" column="0">
           <widget class="QComboBox" name="cmbCarrier">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the carrier plot.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;See tool tip of carrier plot for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
-         <item row="14" column="1">
+         <item row="18" column="1">
           <widget class="QCheckBox" name="cbNomChIdx">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order carriers in the carrier plot in nominal sequence, not physically sequence. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -397,36 +440,13 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="0" colspan="2">
-          <widget class="Line" name="line">
+         <item row="16" column="0" colspan="2">
+          <widget class="Line" name="line_3">
            <property name="styleSheet">
             <string notr="true">background-color: rgb(119, 118, 123);</string>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>Phase Corr.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QLCDNumber" name="dispPhaseCorr">
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="smallDecimalPoint">
-            <bool>true</bool>
-           </property>
-           <property name="digitCount">
-            <number>7</number>
-           </property>
-           <property name="segmentStyle">
-            <enum>QLCDNumber::Flat</enum>
            </property>
           </widget>
          </item>
