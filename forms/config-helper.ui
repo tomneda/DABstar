@@ -435,7 +435,7 @@
        <item>
         <widget class="QCheckBox" name="cbOldSoftBitGen">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Change bitween new soft-bit calculation for the Viterbi decoder and the old style (box checked).&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Change bitween new soft-bit calculation for the Viterbi decoder and the old style (box checked).&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;p&gt;As the checked state should never be better (I assume), the setting is only experimental und is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Old style of soft-bit gen.</string>
@@ -444,6 +444,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="cbDcAvoidance">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Try to avoid a DC compoment on used OFDM-bins around the 0Hz-OFDM-bin.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Many SDR devices have an analog IQ receiving concept. This tends to have a DC component at 0Hz baseband. &lt;/p&gt;&lt;p&gt;Therefore, the DAB standard do not use the OFDM-bin at 0Hz to avoid decoding problems. But as the frequency correction is usually done only in the baseband, the DC could be seen also in the neighbor OFDM-bins where the demodulation of the data could be bad.&lt;/p&gt;&lt;p&gt;This feature tries to use the RF synthesizer on the SDR device to shift the DC component to the unsused 0Hz-OFDM-bin again. The remaining frequency correction is still done in the baseband.&lt;/p&gt;&lt;p&gt;Not all devices allows fine RF frequency tuning (and not on all relevant frequencies), so this is not always working fully well, but should also not cause any harm.&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;p&gt;While switching audio could drop for a short time.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Use DC avoidance algorithm</string>
          </property>
