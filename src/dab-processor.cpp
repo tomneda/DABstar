@@ -117,21 +117,18 @@ void DabProcessor::stop()
    */
 void DabProcessor::run()
 {
+  float syncThreshold;
   int32_t startIndex;
-  //  int frameCount = 0;
-  int sampleCount = 0;
-  //  int totalSamples = 0;
+  int32_t sampleCount = 0;
+  mRfFreqShiftUsed = false;
 
-//  mFreqOffsBBHz = 0;
-//  mFreqOffsRFHz = 0;
-//  mCorrectionNeeded = true;
-//  mUseBBFreqCorrOnly = false;
-  mFrameCntUntilFreqSet = 0;
-  //mFreqTrack = EFreqTrack::FIRST_RF_THEN_BB;
-  mFreqTrack = EFreqTrack::BB_ONLY;
+  // set RF and BB offset to zero (with cache reset)
+  mFreqOffsRFHz = -1;
+  _set_rf_freq_Hz(0);
+  mFreqOffsBBHz = -1;
+  _set_bb_freq_Hz(0);
 
   mSampleReader.setRunning(true);  // useful after a restart
-  float syncThreshold;
 
   enum class EState
   {
@@ -156,11 +153,8 @@ void DabProcessor::run()
       {
         startIndex = 0;
         mCorrectionNeeded = true;
-        //mUseBBFreqCorrOnly = false;
         mFreqOffsCylcPrefHz = 0.0f;
         mFreqOffsSyncSymb = 0.0f;
-        mFreqOffsBBHz = 0;
-        mFreqOffsRFHz = 0;
         sampleCount = 0;
         syncThreshold = mcThreshold;
         mClockOffsetFrameCount = mClockOffsetTotalSamples = 0;
@@ -183,8 +177,8 @@ void DabProcessor::run()
 
       case EState::PROCESS_REST_OF_FRAME:
       {
-        const bool ok = _state_process_rest_of_frame(startIndex, sampleCount);
-        state = (ok ? EState::EVAL_SYNC_SYMBOL : EState::WAIT_FOR_TIME_SYNC_MARKER);
+        _state_process_rest_of_frame(startIndex, sampleCount);
+        state = EState::EVAL_SYNC_SYMBOL;
         syncThreshold = 3 * mcThreshold; // threshold is less sensitive while startup
         break;
       }
@@ -197,10 +191,8 @@ void DabProcessor::run()
   }
 }
 
-bool DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32_t & ioSampleCount)
+void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32_t & ioSampleCount)
 {
-  bool ok = true;
-
   /*
    * The current OFDM symbol 0 in mOfdmBuffer is special in that it is used for fine time synchronization,
    * for coarse frequency synchronization and its content is used as a reference for decoding the first datablock.
@@ -209,13 +201,7 @@ bool DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   mOfdmDecoder.store_reference_symbol_0(mOfdmBuffer);
 
   // Here we look only at the symbol 0 when we need a coarse frequency synchronization.
-  const bool correctionNeeded = !mFicHandler.syncReached();
-
-  if (correctionNeeded != mCorrectionNeeded)
-  {
-    fprintf(stderr, "correctionNeeded changed %d -> %d\n", mCorrectionNeeded, correctionNeeded);
-    mCorrectionNeeded = correctionNeeded;
-  }
+  mCorrectionNeeded = !mFicHandler.syncReached();
 
   if (mCorrectionNeeded)
   {
@@ -229,35 +215,36 @@ bool DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
       {
         mFreqOffsSyncSymb = 0.0f;
       }
-      fprintf(stderr, "estimate_carrier_offset(): %f\n", mFreqOffsSyncSymb);
+      //fprintf(stderr, "estimate_carrier_offset(): %f\n", mFreqOffsSyncSymb);
     }
     else
     {
-      fprintf(stderr, "estimate_carrier_offset() failed\n");
+      //fprintf(stderr, "estimate_carrier_offset() failed\n");
       //mFreqOffsSyncSymb = 0.0f;
     }
-
-    if (_do_freq_settins())
+    _set_bb_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+  }
+  else
+  {
+    if (!mRfFreqShiftUsed)
     {
-      fprintf(stdout, "Resync 1\n");
-      //ok = false;
+      mRfFreqShiftUsed = true;
+      _set_rf_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz); // takeover BB shift to RF
+      _set_bb_freq_Hz(0); // no, no BB shift should be necessary
+      mFreqOffsSyncSymb = mFreqOffsCylcPrefHz = 0; // allow collect new remaining freq. shift
     }
   }
 
-  mPhaseOffsetCyckPrefRad = _process_ofdm_symbols_1_to_L(ioSampleCount);
+  mPhaseOffsetCyclPrefRad = _process_ofdm_symbols_1_to_L(ioSampleCount);
 
   _process_null_symbol(ioSampleCount);
 
   // The first sample to be found for the next frame should be T_g samples ahead. Before going for the next frame, we we just check the fineCorrector
   // We integrate the newly found frequency error with the existing frequency error.
-  limit_symmetrically(mPhaseOffsetCyckPrefRad, 20.0f * F_RAD_PER_DEG);
-  mFreqOffsCylcPrefHz += 1.00f * mPhaseOffsetCyckPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
+  limit_symmetrically(mPhaseOffsetCyclPrefRad, 20.0f * F_RAD_PER_DEG);
+  mFreqOffsCylcPrefHz += 1.00f * mPhaseOffsetCyclPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
 
-  if (_do_freq_settins())
-  {
-    fprintf(stdout, "Resync 2\n");
-    //ok = false;
-  }
+  _set_bb_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
 
   mClockOffsetTotalSamples += ioSampleCount;
 
@@ -267,7 +254,6 @@ bool DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
   }
-  return ok;
 }
 
 void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
@@ -330,7 +316,7 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
       freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - mDabPar.T_u]); // eval phase shift in cyclic prefix part
     }
 
-    mOfdmDecoder.decode_symbol(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffsetCyckPrefRad, mBits);
+    mOfdmDecoder.decode_symbol(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffsetCyclPrefRad, mBits);
 
     if (ofdmSymbCntIdx <= 3)
     {
@@ -351,34 +337,6 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
   return arg(freqCorr);
 }
 
-bool DabProcessor::_do_freq_settins()
-{
-  bool rfFreqChanged = false;
-  const float freqOffSum = mFreqOffsSyncSymb  + mFreqOffsCylcPrefHz;
-
-  switch (mFreqTrack)
-  {
-  case BB_ONLY:
-    _set_bb_freq_Hz((int32_t)std::round(freqOffSum));
-    rfFreqChanged = _set_rf_freq_Hz(0);
-    break;
-  case RF_ONLY:
-    _set_bb_freq_Hz(0);
-    rfFreqChanged = _set_rf_freq_Hz((int32_t)std::round(freqOffSum));
-    break;
-  case FIRST_RF_THEN_BB:
-  {
-    const int32_t freqStep = (mCorrectionNeeded ? COARSE_FREQ_STEP : 2 * COARSE_FREQ_STEP);
-    const int32_t freqOffRf = (int32_t)std::round(freqOffSum / (float)freqStep) * freqStep;
-    const int32_t freqOffBb = (int32_t)std::round(freqOffSum - (float)freqOffRf);
-    rfFreqChanged = _set_rf_freq_Hz(freqOffRf);
-    _set_bb_freq_Hz(freqOffBb);
-    break;
-  }
-  }
-  return rfFreqChanged;
-}
-
 void DabProcessor::_set_bb_freq_Hz(int32_t iFreqHz)
 {
   if (mFreqOffsBBHz != iFreqHz)
@@ -388,15 +346,13 @@ void DabProcessor::_set_bb_freq_Hz(int32_t iFreqHz)
   }
 }
 
-bool DabProcessor::_set_rf_freq_Hz(int32_t iFreqHz)
+void DabProcessor::_set_rf_freq_Hz(int32_t iFreqHz)
 {
   if (mFreqOffsRFHz != iFreqHz)
   {
     mFreqOffsRFHz = iFreqHz;
-    mpRadioInterface->set_and_show_freq_corr_rf_Hz(mFreqOffsRFHz);  // this call changes the RF frequency and display! (hopefully fast enough )
-    return true; // RF freq has changed
+    mpRadioInterface->set_and_show_freq_corr_rf_Hz(mFreqOffsRFHz);  // this call changes the RF frequency and display! (hopefully fast enough)
   }
-  return false;
 }
 
 bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSampleCount, float iThreshold)

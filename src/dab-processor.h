@@ -105,8 +105,6 @@ public:
   void set_tiiDetectorMode(bool);
 
 private:
-  static constexpr int32_t COARSE_FREQ_STEP = 100;
-
   RadioInterface * const mpRadioInterface;
   SampleReader mSampleReader;
   FicHandler mFicHandler;
@@ -124,7 +122,7 @@ private:
   int16_t mTiiCounter = 0;
   bool mEti_on = false;
   bool mCorrectionNeeded = true;
-  float mPhaseOffsetCyckPrefRad = 0.0f;
+  float mPhaseOffsetCyclPrefRad = 0.0f;
   float mFreqOffsCylcPrefHz = 0.0f;
   float mFreqOffsSyncSymb = 0.0f;
   int32_t mFreqOffsBBHz = 0;
@@ -132,10 +130,7 @@ private:
   int32_t mTimeSyncAttemptCount = 0;
   int32_t mClockOffsetTotalSamples = 0;
   int32_t mClockOffsetFrameCount = 0;
-  int32_t mFrameCntUntilFreqSet = 0;
-  //bool mUseBBFreqCorrOnly = false; // false: use RF correction first
-  enum EFreqTrack { BB_ONLY, RF_ONLY, FIRST_RF_THEN_BB };
-  EFreqTrack mFreqTrack = EFreqTrack::BB_ONLY;
+  bool mRfFreqShiftUsed = false;
 
   std::vector<cmplx> mOfdmBuffer;
   std::vector<int16_t> mBits;
@@ -144,11 +139,10 @@ private:
 
   bool _state_wait_for_time_sync_marker();
   bool _state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSampleCount, float iThreshold);
-  bool _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
+  void _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
   float _process_ofdm_symbols_1_to_L(int32_t & ioSampleCount);
   void _process_null_symbol(int32_t & ioSampleCount);
-  bool _do_freq_settins();
-  bool _set_rf_freq_Hz(int32_t iFreqHz);
+  void _set_rf_freq_Hz(int32_t iFreqHz);
   void _set_bb_freq_Hz(int32_t iFreqHz);
 
 public slots:

@@ -132,7 +132,7 @@ template<typename T> inline float abs_log10_with_offset(const T iVal)
   return std::log10(std::abs(iVal) + 1);
 }
 
-template <typename T> inline void mean_filter(T & ioVal, T iVal, const T iAlpha)
+template <typename T> inline void mean_filter(T & ioVal, const T iVal, const T iAlpha)
 {
   ioVal += iAlpha * (iVal - ioVal);
 }
