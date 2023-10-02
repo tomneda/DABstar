@@ -417,7 +417,8 @@ private slots:
   void _slot_handle_save_service_selector(int);
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();
-  void _slot_handle_tii_detector_mode(int);
+  void _slot_handle_tii_detector_mode(bool);
+  void _slot_handle_dc_avoidance_algorithm(bool);
   void _slot_handle_logger_button(int);
   void _slot_handle_set_coordinates_button();
   void _slot_handle_port_selector();

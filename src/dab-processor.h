@@ -103,6 +103,7 @@ public:
   bool set_audioChannel(Audiodata *, RingBuffer<int16_t> *, FILE *, int);
   bool set_dataChannel(Packetdata *, RingBuffer<uint8_t> *, int);
   void set_tiiDetectorMode(bool);
+  void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
 
 private:
   RadioInterface * const mpRadioInterface;
@@ -151,7 +152,6 @@ public slots:
   void slot_select_iq_plot_type(EIqPlotType iPlotType);
   void slot_show_nominal_carrier(bool iShowNominalCarrier);
   void slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen);
-  void slot_use_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
 
 signals:
   void signal_set_synced(bool);

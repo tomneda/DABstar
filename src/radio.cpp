@@ -757,7 +757,6 @@ bool RadioInterface::doStart()
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, my_dabProcessor, &DabProcessor::slot_select_iq_plot_type);
   connect(configWidget.cbOldSoftBitGen, &QCheckBox::clicked, my_dabProcessor, &DabProcessor::slot_use_old_soft_bit_gen);
-  connect(configWidget.cbDcAvoidance, &QCheckBox::clicked, my_dabProcessor, &DabProcessor::slot_use_dc_avoidance_algorithm);
 
   //
   //	Just to be sure we disconnect here.
@@ -776,14 +775,20 @@ bool RadioInterface::doStart()
     presetTimer.start(switchDelay * 1000);
   }
 
-  bool dm = dabSettings->value("tii_detector", 0).toInt() == 1;
-  if (dm)
   {
-    configWidget.tii_detectorMode->setChecked(true);
+    const bool b = (dabSettings->value("tii_detector", 0).toInt() == 1);
+    configWidget.tii_detectorMode->setChecked(b);
+    my_dabProcessor->set_tiiDetectorMode(b);
+    connect(configWidget.tii_detectorMode, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_tii_detector_mode);
   }
-  my_dabProcessor->set_tiiDetectorMode(dm);
-  connect(configWidget.tii_detectorMode, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_tii_detector_mode);
-  //
+
+  {
+    const bool b = (dabSettings->value("dcAvoidance", 0).toInt() == 1);
+    configWidget.cbDcAvoidance->setChecked(b);
+    my_dabProcessor->set_dc_avoidance_algorithm(b);
+    connect(configWidget.cbDcAvoidance, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_avoidance_algorithm);
+  }
+
   //	after the preset timer signals, the service will be started
   startChannel(channelSelector->currentText());
   running.store(true);
@@ -4081,13 +4086,19 @@ void RadioInterface::_slot_handle_skip_file_button()
   theBand.setup_skipList(fileName);
 }
 
-void RadioInterface::_slot_handle_tii_detector_mode(int d)
+void RadioInterface::_slot_handle_tii_detector_mode(bool iIsChecked)
 {
-  bool b = configWidget.tii_detectorMode->isChecked();
-  (void)d;
-  my_dabProcessor->set_tiiDetectorMode(b);
+  assert(my_dabProcessor != nullptr);
+  my_dabProcessor->set_tiiDetectorMode(iIsChecked);
   channel.transmitters.clear();
-  dabSettings->setValue("tii_detector", b ? 1 : 0);
+  dabSettings->setValue("tii_detector", (iIsChecked) ? 1 : 0);
+}
+
+void RadioInterface::_slot_handle_dc_avoidance_algorithm(bool iIsChecked)
+{
+  assert(my_dabProcessor != nullptr);
+  dabSettings->setValue("dcAvoidance", (iIsChecked ? 1 : 0)); // write settings before action as file operation can influence sample activities
+  my_dabProcessor->set_dc_avoidance_algorithm(iIsChecked);
 }
 
 void RadioInterface::_slot_handle_dl_text_button()
@@ -4413,7 +4424,7 @@ void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
   //sFreqOffHz = 2 * (iVal - 500);
   uint32_t newFreqOffHz = (iVal - 500);
   inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
-//  sFreqOffHz = inputDevice->getVFOFrequency();
+  //  sFreqOffHz = inputDevice->getVFOFrequency();
 
   QString s("Freq-Offs [Hz]: ");
   s += QString::number(sFreqOffHz);

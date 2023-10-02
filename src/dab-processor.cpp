@@ -625,7 +625,7 @@ void DabProcessor::slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen)
   mOfdmDecoder.slot_use_old_soft_bit_gen(iUseOldSoftBitGen);
 }
 
-void DabProcessor::slot_use_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
+void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
 {
   if (!iUseDcAvoidanceAlgorithm)
   {
