@@ -174,9 +174,6 @@ public:
   RadioInterface(QSettings *, const QString &, const QString &, bool, int32_t dataPort, int32_t clockPort, int, QWidget * parent);
   ~RadioInterface() override;
 
-  void set_and_show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
-  void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
-
 private:
   FILE * dlTextFile;
   RingBuffer<cmplx> spectrumBuffer;
@@ -363,6 +360,8 @@ public slots:
   void slot_handle_preset_selector(const QString &);
   void slot_handle_content_selector(const QString &);
   //void slot_http_terminate();
+  void slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF);
+  void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
   void slot_test_slider(int);
 
   void closeEvent(QCloseEvent * event) override;

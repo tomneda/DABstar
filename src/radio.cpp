@@ -804,7 +804,7 @@ RadioInterface::~RadioInterface()
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	a slot called by the DAB-processor
-void RadioInterface::set_and_show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
+void RadioInterface::slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
 {
   if (inputDevice != nullptr && channel.nominalFreqHz > 0)
   {
@@ -815,7 +815,7 @@ void RadioInterface::set_and_show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
   my_spectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
 }
 
-void RadioInterface::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
+void RadioInterface::slot_show_freq_corr_bb_Hz(int iFreqCorrBB)
 {
   my_spectrumViewer.show_freq_corr_bb_Hz(iFreqCorrBB);
 }

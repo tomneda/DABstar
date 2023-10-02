@@ -61,6 +61,8 @@ DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inpu
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
   connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
   connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
+  connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &RadioInterface::slot_set_and_show_freq_corr_rf_Hz);
+  connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_bb_Hz);
 
   mOfdmBuffer.resize(2 * mDabPar.T_s);
   mBits.resize(2 * mDabPar.K);
@@ -122,12 +124,6 @@ void DabProcessor::run()  // run QThread
   int32_t sampleCount = 0;
   mRfFreqShiftUsed = false;
 
-  // set RF and BB offset to zero (swap for cache reset)
-  _set_rf_freq_Hz(1);
-  _set_rf_freq_Hz(0);
-  _set_bb_freq_Hz(1);
-  _set_bb_freq_Hz(0);
-
   mSampleReader.setRunning(true);  // useful after a restart
 
   enum class EState
@@ -151,6 +147,12 @@ void DabProcessor::run()  // run QThread
       {
       case EState::WAIT_FOR_TIME_SYNC_MARKER:
       {
+        // set RF and BB offset to zero (swap for cache reset)
+        _set_rf_freq_Hz(1.0f);
+        _set_rf_freq_Hz(0.0f);
+        _set_bb_freq_Hz(1.0f);
+        _set_bb_freq_Hz(0.0f);
+
         startIndex = 0;
         mCorrectionNeeded = true;
         mFreqOffsCylcPrefHz = 0.0f;
@@ -187,7 +189,9 @@ void DabProcessor::run()  // run QThread
   }
   catch (int e)
   {
-    fprintf(stderr, "Caught exception in DabProcessor: %d\n", e);
+    (void)e;
+    //fprintf(stderr, "Caught exception in DabProcessor: %d\n", e);
+    fprintf(stdout, "DabProcessor has stopped\n");  // TODO: find a nicer way stopping the DAB processor
   }
 }
 
@@ -209,19 +213,14 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
-      mFreqOffsSyncSymb += 0.4f * (float)correction * (float)mDabPar.CarrDiff;  // 0.4
+      mFreqOffsSyncSymb += 0.4f * (float)correction * (float)mDabPar.CarrDiff;
 
       if (std::abs(mFreqOffsSyncSymb) > kHz(35))
       {
         mFreqOffsSyncSymb = 0.0f;
       }
-      //fprintf(stderr, "estimate_carrier_offset(): %f\n", mFreqOffsSyncSymb);
     }
-    else
-    {
-      //fprintf(stderr, "estimate_carrier_offset() failed\n");
-      //mFreqOffsSyncSymb = 0.0f;
-    }
+
     _set_bb_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
   }
   else
@@ -230,7 +229,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     {
       mRfFreqShiftUsed = true;
       _set_rf_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz); // takeover BB shift to RF
-      _set_bb_freq_Hz(0); // no, no BB shift should be necessary
+      _set_bb_freq_Hz(0.0f); // no, no BB shift should be necessary
       mFreqOffsSyncSymb = mFreqOffsCylcPrefHz = 0; // allow collect new remaining freq. shift
     }
   }
@@ -337,21 +336,23 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
   return arg(freqCorr);
 }
 
-void DabProcessor::_set_bb_freq_Hz(int32_t iFreqHz)
+void DabProcessor::_set_bb_freq_Hz(float iFreqHz)
 {
-  if (mFreqOffsBBHz != iFreqHz)
+  const int32_t iFreqHzInt = (int32_t)std::round(iFreqHz);
+  if (mFreqOffsBBHz != iFreqHzInt)
   {
-    mFreqOffsBBHz = iFreqHz;
-    mpRadioInterface->show_freq_corr_bb_Hz(mFreqOffsBBHz);  // this call only changes the display content
+    mFreqOffsBBHz = iFreqHzInt;
+    emit signal_show_freq_corr_bb_Hz(mFreqOffsBBHz);
   }
 }
 
-void DabProcessor::_set_rf_freq_Hz(int32_t iFreqHz)
+void DabProcessor::_set_rf_freq_Hz(float iFreqHz)
 {
-  if (mFreqOffsRFHz != iFreqHz)
+  const int32_t iFreqHzInt = (int32_t)std::round(iFreqHz);
+  if (mFreqOffsRFHz != iFreqHzInt)
   {
-    mFreqOffsRFHz = iFreqHz;
-    mpRadioInterface->set_and_show_freq_corr_rf_Hz(mFreqOffsRFHz);  // this call changes the RF frequency and display! (hopefully fast enough)
+    mFreqOffsRFHz = iFreqHzInt;
+    emit signal_set_and_show_freq_corr_rf_Hz(mFreqOffsRFHz);   // this call changes the RF frequency and display! (hopefully fast enough)
   }
 }
 
@@ -629,9 +630,9 @@ void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
 {
   if (!iUseDcAvoidanceAlgorithm)
   {
-    mFreqOffsSyncSymb += mFreqOffsRFHz;  // take RF offset to BB
+    mFreqOffsSyncSymb += (float)mFreqOffsRFHz;  // take RF offset to BB
     _set_bb_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
-    _set_rf_freq_Hz(0); // reset RF shift
+    _set_rf_freq_Hz(0.0f); // reset RF shift
   }
 
   mRfFreqShiftUsed = false;
