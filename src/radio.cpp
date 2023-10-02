@@ -757,6 +757,7 @@ bool RadioInterface::doStart()
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, my_dabProcessor, &DabProcessor::slot_select_iq_plot_type);
   connect(configWidget.cbOldSoftBitGen, &QCheckBox::clicked, my_dabProcessor, &DabProcessor::slot_use_old_soft_bit_gen);
+  connect(configWidget.cbDcAvoidance, &QCheckBox::clicked, my_dabProcessor, &DabProcessor::slot_use_dc_avoidance_algorithm);
 
   //
   //	Just to be sure we disconnect here.
@@ -798,19 +799,18 @@ RadioInterface::~RadioInterface()
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	a slot called by the DAB-processor
-void RadioInterface::set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
+void RadioInterface::set_and_show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
 {
   if (inputDevice != nullptr && channel.nominalFreqHz > 0)
   {
     inputDevice->setVFOFrequency(channel.nominalFreqHz + iFreqCorrRF);
+    sFreqOffHz = channel.nominalFreqHz;
   }
-
-  //sFreqOffHz = inputDevice->getVFOFrequency();
 
   my_spectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
 }
 
-void RadioInterface::show_freq_corr_bb_Hz(int iFreqCorrBB)
+void RadioInterface::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
 {
   my_spectrumViewer.show_freq_corr_bb_Hz(iFreqCorrBB);
 }
@@ -3378,7 +3378,7 @@ void RadioInterface::write_warning_message(const QString & iMsg)
 //
 void RadioInterface::startChannel(const QString & theChannel)
 {
-  const int tunedFrequencyHz = theBand.get_frequency_Hz(theChannel) + sFreqOffHz;
+  const int32_t tunedFrequencyHz = theBand.get_frequency_Hz(theChannel);
   LOG("channel starts ", theChannel);
   configWidget.frequencyDisplay->display(tunedFrequencyHz / 1'000'000.0);
   my_spectrumViewer.show_nominal_frequency_MHz(tunedFrequencyHz / 1'000'000.0);
@@ -4410,9 +4410,9 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
 
 void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
 {
-  sFreqOffHz = 2 * (iVal - 500);
-//  uint32_t newFreqOffHz = (iVal - 500);
-//  inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
+  //sFreqOffHz = 2 * (iVal - 500);
+  uint32_t newFreqOffHz = (iVal - 500);
+  inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
 //  sFreqOffHz = inputDevice->getVFOFrequency();
 
   QString s("Freq-Offs [Hz]: ");

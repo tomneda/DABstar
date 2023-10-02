@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>configWidget</class>
  <widget class="QWidget" name="configWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>447</height>
+   </rect>
+  </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
@@ -10,9 +18,6 @@
   </property>
   <property name="windowTitle">
    <string>Configuration and Control</string>
-  </property>
-  <property name="toolTip">
-   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Configuration and Control widget.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
@@ -434,6 +439,13 @@
          </property>
          <property name="text">
           <string>Old style of soft-bit gen.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbDcAvoidance">
+         <property name="text">
+          <string>Use DC avoidance algorithm</string>
          </property>
         </widget>
        </item>

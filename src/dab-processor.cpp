@@ -115,17 +115,17 @@ void DabProcessor::stop()
    *	and sending them to the OfdmDecoder who will transfer the results
    *	Finally, estimating the small freqency error
    */
-void DabProcessor::run()
+void DabProcessor::run()  // run QThread
 {
   float syncThreshold;
   int32_t startIndex;
   int32_t sampleCount = 0;
   mRfFreqShiftUsed = false;
 
-  // set RF and BB offset to zero (with cache reset)
-  mFreqOffsRFHz = -1;
+  // set RF and BB offset to zero (swap for cache reset)
+  _set_rf_freq_Hz(1);
   _set_rf_freq_Hz(0);
-  mFreqOffsBBHz = -1;
+  _set_bb_freq_Hz(1);
   _set_bb_freq_Hz(0);
 
   mSampleReader.setRunning(true);  // useful after a restart
@@ -183,11 +183,11 @@ void DabProcessor::run()
         break;
       }
       } // switch
-    } // while (!QUIT)
+    } // while (true)
   }
   catch (int e)
   {
-    fprintf(stdout, "DabProcessor is stopping\n");
+    fprintf(stderr, "Caught exception in DabProcessor: %d\n", e);
   }
 }
 
@@ -226,7 +226,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   }
   else
   {
-    if (!mRfFreqShiftUsed)
+    if (!mRfFreqShiftUsed && mAllowRfFreqShift)
     {
       mRfFreqShiftUsed = true;
       _set_rf_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz); // takeover BB shift to RF
@@ -623,4 +623,17 @@ void DabProcessor::slot_show_nominal_carrier(bool iShowNominalCarrier)
 void DabProcessor::slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen)
 {
   mOfdmDecoder.slot_use_old_soft_bit_gen(iUseOldSoftBitGen);
+}
+
+void DabProcessor::slot_use_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
+{
+  if (!iUseDcAvoidanceAlgorithm)
+  {
+    mFreqOffsSyncSymb += mFreqOffsRFHz;  // take RF offset to BB
+    _set_bb_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+    _set_rf_freq_Hz(0); // reset RF shift
+  }
+
+  mRfFreqShiftUsed = false;
+  mAllowRfFreqShift = iUseDcAvoidanceAlgorithm;
 }

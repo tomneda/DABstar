@@ -131,6 +131,7 @@ private:
   int32_t mClockOffsetTotalSamples = 0;
   int32_t mClockOffsetFrameCount = 0;
   bool mRfFreqShiftUsed = false;
+  bool mAllowRfFreqShift = false;
 
   std::vector<cmplx> mOfdmBuffer;
   std::vector<int16_t> mBits;
@@ -150,6 +151,7 @@ public slots:
   void slot_select_iq_plot_type(EIqPlotType iPlotType);
   void slot_show_nominal_carrier(bool iShowNominalCarrier);
   void slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen);
+  void slot_use_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
 
 signals:
   void signal_set_synced(bool);

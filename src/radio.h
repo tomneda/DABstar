@@ -174,8 +174,8 @@ public:
   RadioInterface(QSettings *, const QString &, const QString &, bool, int32_t dataPort, int32_t clockPort, int, QWidget * parent);
   ~RadioInterface() override;
 
-  void set_and_show_freq_corr_rf_Hz(int iFreqCorrRF);
-  void show_freq_corr_bb_Hz(int iFreqCorrBB);
+  void set_and_show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
+  void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
 
 private:
   FILE * dlTextFile;
