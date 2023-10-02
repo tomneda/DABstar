@@ -577,7 +577,7 @@ bool	rtlsdrHandler::load_rtlFunctions() {
 	   fprintf (stderr, "biasControl will not work\n");
 //	nullpointer - if function is not available - is handled
 //
-	fprintf (stderr, "RTLSDR functions loaded\n");
+	fprintf (stdout, "RTLSDR functions loaded\n");
 	return true;
 }
 

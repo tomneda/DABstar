@@ -537,7 +537,7 @@ uint32_t                ndev;
 	   errorCode	= 2;
 	   return;
         }
-	fprintf (stderr, "functions loaded\n");
+	fprintf (stdout, "SDRPLAY functions loaded\n");
 
 //	try to open the API
 	err	= sdrplay_api_Open ();
