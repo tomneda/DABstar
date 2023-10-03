@@ -435,7 +435,7 @@
        <item>
         <widget class="QCheckBox" name="cbOldSoftBitGen">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Change bitween new soft-bit calculation for the Viterbi decoder and the old style (box checked).&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;p&gt;As the checked state should never be better (I assume), the setting is only experimental und is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Change bitween new soft-bit calculation for the Viterbi decoder and the old style (box checked).&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;p&gt;As this is still experimental this check box state is not persistently stored.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Old style of soft-bit gen.</string>
@@ -489,14 +489,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>smallSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">smallspinbox.h</header>
-  </customwidget>
-  <customwidget>
    <class>smallComboBox</class>
    <extends>QComboBox</extends>
    <header>smallcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>smallSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">smallspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
