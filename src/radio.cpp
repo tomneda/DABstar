@@ -2211,9 +2211,8 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
     return;
   }
 
-  QString theName = tiiHandler.get_transmitter_name(channel.realChannel ? channel.channelName : "any",
-    //	                                            channel. countryName,
-                                                     channel.Eid, mainId, subId);
+  const QString theName = tiiHandler.get_transmitter_name((channel.realChannel ? channel.channelName : "any"), channel.Eid, mainId, subId);
+
   if (theName == "")
   {
     tiiHandler.set_black(channel.Eid, mainId, subId);
@@ -2262,14 +2261,14 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
     maxDistance = (int)distance;
     key = MAP_MAX_TRANS;
   }
-  //
+
   //	to be certain, we check
   if (channel.targetPos == cmplx(0, 0) || (distance == 0) || (corner == 0))
   {
     return;
   }
 
-  QDateTime theTime = configWidget.utcSelector->isChecked() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime();
+  const QDateTime theTime = (configWidget.utcSelector->isChecked() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
 
   mapHandler->putData(key,
                       channel.targetPos,

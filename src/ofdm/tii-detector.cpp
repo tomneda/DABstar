@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -24,7 +33,7 @@
 #include  <cstring>
 #include  "fft/fft-complex.h"
 
-static uint8_t table[] = {
+static const uint8_t table[] = {
   0017,    // 0 0 0 0 1 1 1 1		0
   0027,    // 0 0 0 1 0 1 1 1		1
   0033,    // 0 0 0 1 1 0 1 1		2
@@ -100,99 +109,87 @@ static uint8_t table[] = {
   0342,    // 1 1 1 0 0 0 1 0		66
   0344,    // 1 1 1 0 0 1 0 0		67
   0350,    // 1 1 1 0 1 0 0 0		68
-  0360    // 1 1 1 1 0 0 0 0		69
+  0360     // 1 1 1 1 0 0 0 0		69
 };
 
 
-TII_Detector::TII_Detector(uint8_t dabMode, int16_t depth) :
-  params(dabMode)
+TiiDetector::TiiDetector(uint8_t dabMode, int16_t depth) :
+  mDepth(depth),
+  mParams(dabMode),
+  mT_u(mParams.get_T_u()),
+  mK(mParams.get_K())
 {
-  int16_t i;
+  mBuffer.resize(mT_u);
+  mWindow.resize(mT_u);
 
-  this->depth = depth;
-  this->T_u = params.get_T_u();
-  carriers = params.get_K();
-  theBuffer.resize(T_u);
-  window.resize(T_u);
-  for (i = 0; i < T_u; i++)
+  for (int32_t i = 0; i < mT_u; i++)
   {
-    window[i] = 0.54 - 0.46 * cos(2 * M_PI * (float)i / T_u);
+    mWindow[i] = 0.54 - 0.46 * cos(2 * M_PI * (float)i / mT_u);
   }
 
-  for (i = 0; i < 256; i++)
+  for (int32_t i = 0; i < 256; i++)
   {
-    invTable[i] = -1;
+    mInvTable[i] = -1;
   }
-  for (i = 0; i < 70; ++i)
+
+  for (int32_t i = 0; i < 70; ++i)
   {
-    invTable[table[i]] = i;
+    mInvTable[table[i]] = i;
   }
-  detectMode_new = false;
 }
 
-TII_Detector::~TII_Detector()
+void TiiDetector::setMode(bool b)
 {
+  mDetectMode_new = b;
 }
 
-void TII_Detector::setMode(bool b)
+void TiiDetector::reset()
 {
-  detectMode_new = b;
+  std::fill(mBuffer.begin(), mBuffer.end(), cmplx(0, 0));
 }
 
-
-void TII_Detector::reset()
+//	To eliminate (reduce?) noise in the input signal, we might add a few spectra before computing
+void TiiDetector::addBuffer(std::vector<cmplx> v)  // copy of vector is intended
 {
-  std::fill(theBuffer.begin(), theBuffer.end(), cmplx(0, 0));
-}
-
-//	To eliminate (reduce?) noise in the input signal, we might
-//	add a few spectra before computing (up to the user)
-void TII_Detector::addBuffer(std::vector<cmplx> v)  // copy of vector is intended
-{
-  int i;
-
-  for (i = 0; i < T_u; i++)
+  for (int32_t i = 0; i < mT_u; i++)
   {
-    v[i] = v[i] * window[i];
+    v[i] = v[i] * mWindow[i];
   }
-  Fft_transform(v.data(), T_u, false);
 
-  for (i = 0; i < T_u; i++)
+  Fft_transform(v.data(), mT_u, false);
+
+  for (int32_t i = 0; i < mT_u; i++)
   {
-    theBuffer[i] += v[i];
+    mBuffer[i] += v[i];
   }
 }
 
 //
 //	Note that the input is fft output, not yet reordered
-void TII_Detector::collapse(cmplx * inVec, float * outVec)
+void TiiDetector::collapse(cmplx * inVec, float * outVec)
 {
-  int i;
-  for (i = 0; i < carriers / 8; i++)
+  for (int32_t i = 0; i < mK / 8; i++)
   {
-    int carr = -carriers / 2 + 2 * i;
-    outVec[i] = abs(real(inVec[(T_u + carr) % T_u] * conj(inVec[(T_u + carr + 1) % T_u])));
-    carr = -carriers / 2 + 1 * carriers / 4 + 2 * i;
-    outVec[i] += abs(real(inVec[(T_u + carr) % T_u] * conj(inVec[(T_u + carr + 1) % T_u])));
-    carr = -carriers / 2 + 2 * carriers / 4 + 2 * i + 1;
-    outVec[i] += abs(real(inVec[(T_u + carr) % T_u] * conj(inVec[(T_u + carr + 1) % T_u])));
+    const int32_t carr1 = mT_u + (-mK / 2 + 2 * i);
+    const int32_t carr2 = mT_u + (-mK / 2 + 1 * mK / 4 + 2 * i);
+    const int32_t carr3 = mT_u + (-mK / 2 + 2 * mK / 4 + 2 * i + 1);
+    const int32_t carr4 = mT_u + (-mK / 2 + 3 * mK / 4 + 2 * i + 1);
 
-    carr = -carriers / 2 + 3 * carriers / 4 + 2 * i + 1;
-    outVec[i] += abs(real(inVec[(T_u + carr) % T_u] * conj(inVec[(T_u + carr + 1) % T_u])));
+    outVec[i] =  abs(real(inVec[carr1 % mT_u] * conj(inVec[(carr1 + 1) % mT_u])));
+    outVec[i] += abs(real(inVec[carr2 % mT_u] * conj(inVec[(carr2 + 1) % mT_u])));
+    outVec[i] += abs(real(inVec[carr3 % mT_u] * conj(inVec[(carr3 + 1) % mT_u])));
+    outVec[i] += abs(real(inVec[carr4 % mT_u] * conj(inVec[(carr4 + 1) % mT_u])));
   }
 }
 
-static uint8_t bits[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+static const uint8_t bits[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 
-//
-//	We determine first the offset of the "best fit", the offset
-//	indicates the subId
+// We determine first the offset of the "best fit", the offset indicates the subId
 #define  NUM_GROUPS  8
 #define  GROUPSIZE  24
 
-uint16_t TII_Detector::processNULL()
+uint16_t TiiDetector::processNULL()
 {
-  int i, j;
   float hulpTable[NUM_GROUPS * GROUPSIZE]; // collapses values
   float C_table[GROUPSIZE];  // contains the values
   int D_table[GROUPSIZE];  // count of indices in C_table with data
@@ -204,45 +201,38 @@ uint16_t TII_Detector::processNULL()
   //	Each "value" is the sum of 4 pairs of subsequent carriers,
   //	taken from the 4 quadrants -768 .. 385, 384 .. -1, 1 .. 384, 385 .. 768
 
-  collapse(theBuffer.data(), hulpTable);
+  collapse(mBuffer.data(), hulpTable);
   //
   //	since the "energy levels" in the different GROUPSIZE'd values
   //	may differ, we compute an average for each of the
   //	NUM_GROUPS GROUPSIZE - value groups.
 
   memset(avgTable, 0, NUM_GROUPS * sizeof(float));
-  for (i = 0; i < NUM_GROUPS; i++)
+
+  for (int32_t i = 0; i < NUM_GROUPS; i++)
   {
     avgTable[i] = 0;
-    for (j = 0; j < GROUPSIZE; j++)
+    for (int32_t j = 0; j < GROUPSIZE; j++)
     {
       avgTable[i] += hulpTable[i * GROUPSIZE + j];
     }
 
     avgTable[i] /= GROUPSIZE;
   }
-  //
-  //	Determining the offset is then easy, look at the corresponding
-  //	elements in the NUM_GROUPS sections and mark the highest ones.
-  //	The summation of the high values are stored in the C_table,
-  //	the number of times the limit is reached in the group
-  //	is recorded in the D_table
-  //
-  //	So, basically we look into GROUPSIZE colums of NUMGROUPS
-  //	values and look for the maximum
-  //	Threshold 4 * avgTable is 6 dB, we consider that a minimum
-  //	measurement shows that that is a reasonable value,
-  //	alternatively, we could take the "minValue" as reference
-  //	and "raise" the threshold. However, that might be
-  //	too  much for 8-bit incoming values
+
+  // Determining the offset is then easy, look at the corresponding elements in the NUM_GROUPS sections and mark the highest ones. The
+  // summation of the high values are stored in the C_table, the number of times the limit is reached in the group is recorded in the
+  // D_table So, basically we look into GROUPSIZE colums of NUMGROUPS values and look for the maximum Threshold 4 * avgTable is 6 dB, we
+  // consider that a minimum measurement shows that that is a reasonable value, alternatively, we could take the "minValue" as reference and
+  // "raise" the threshold. However, that might be too  much for 8-bit incoming values
+
   memset(D_table, 0, GROUPSIZE * sizeof(int));
   memset(C_table, 0, GROUPSIZE * sizeof(float));
-  //
-  //	We gebruiken C en D table alleen maar om de begin offset
-  //	te kunnen vinden
-  for (i = 0; i < GROUPSIZE; i++)
+
+  //	We use the C and D table at the beginning and can be viewed
+  for (int32_t i = 0; i < GROUPSIZE; i++)
   {
-    for (j = 0; j < NUM_GROUPS; j++)
+    for (int32_t j = 0; j < NUM_GROUPS; j++)
     {
       if (hulpTable[j * GROUPSIZE + i] > 4 * avgTable[j])
       {
@@ -253,12 +243,11 @@ uint16_t TII_Detector::processNULL()
   }
 
 
-  //	we extract from this result the highest values that
-  //	meet the constraint of 4 values being sufficiently high
+  // We extract from this result the highest values that meet the constraint of 4 values being sufficiently high.
   float maxTable = 0;
   int maxIndex = -1;
 
-  for (j = 0; j < GROUPSIZE; j++)
+  for (int32_t j = 0; j < GROUPSIZE; j++)
   {
     if ((D_table[j] >= 4) && (C_table[j] > maxTable))
     {
@@ -273,32 +262,33 @@ uint16_t TII_Detector::processNULL()
     return 0;
   }
 
-  //	The - almost - final step is then to figure out which
-  //	group contributed most, obviously only where maxIndex  > 0
-  //	we start with collecting the values of the correct
-  //	elements of the NUM_GROUPS groups
-
+  // The - almost - final step is then to figure out which group contributed most, obviously only where maxIndex > 0 we start with
+  // collecting the values of the correct elements of the NUM_GROUPS groups
   float x[NUM_GROUPS];
-  for (i = 0; i < NUM_GROUPS; i++)
+
+  for (int32_t i = 0; i < NUM_GROUPS; i++)
   {
     x[i] = hulpTable[maxIndex + GROUPSIZE * i];
   }
 
   //	find the best match
   int finInd = -1;
-  if (detectMode_new)
+  if (mDetectMode_new)
   {
     float mm = 0;
+
     for (uint32_t k = 0; k < sizeof(table); k++)
     {
       float val = 0;
-      for (int l = 0; l < NUM_GROUPS; l++)
+
+      for (int32_t l = 0; l < NUM_GROUPS; l++)
       {
         if ((table[k] & bits[l]) != 0)
         {
           val += x[l];
         }
       }
+
       if (val > mm)
       {
         mm = val;
@@ -307,14 +297,16 @@ uint16_t TII_Detector::processNULL()
     }
   }
   else
-  {    // detectMode_new is false
-    ////	we extract the four max values as bits
+  {
+    // detectMode_new is false, we extract the four max values as bits
     uint16_t pattern = 0;
-    for (i = 0; i < 4; i++)
+
+    for (int32_t i = 0; i < 4; i++)
     {
       float mmax = 0;
       int ind = -1;
-      for (int k = 0; k < NUM_GROUPS; k++)
+
+      for (int32_t k = 0; k < NUM_GROUPS; k++)
       {
         if (x[k] > mmax)
         {
@@ -322,14 +314,15 @@ uint16_t TII_Detector::processNULL()
           ind = k;
         }
       }
+
       if (ind != -1)
       {
         x[ind] = 0;
         pattern |= bits[ind];
       }
     }
-    finInd = invTable[pattern];
-    //	   fprintf (stdout, "MaxIndex %d, bitPatterm %x\n", maxIndex, pattern);
+    finInd = mInvTable[pattern];
+    //fprintf (stdout, "MaxIndex %d, bitPatterm %x\n", maxIndex, pattern);
   }
 
   return maxIndex + finInd * 256;

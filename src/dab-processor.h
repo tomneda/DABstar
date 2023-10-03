@@ -111,7 +111,7 @@ private:
   FicHandler mFicHandler;
   mscHandler mMscHandler;
   PhaseReference mPhaseReference;
-  TII_Detector mTiiDetector;
+  TiiDetector mTiiDetector;
   OfdmDecoder mOfdmDecoder;
   etiGenerator mEtiGenerator;
   TimeSyncer mTimeSyncer;

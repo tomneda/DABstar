@@ -468,6 +468,9 @@
    </item>
    <item>
     <widget class="QSlider" name="sliderTest">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Slider for different tests. Normally no need to change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>

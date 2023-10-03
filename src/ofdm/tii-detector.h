@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -28,26 +37,27 @@
 #include  "dab-params.h"
 #include  <vector>
 
-class TII_Detector
+class TiiDetector
 {
 public:
-  TII_Detector(uint8_t dabMode, int16_t);
-  ~TII_Detector();
+  TiiDetector(uint8_t dabMode, int16_t);
+  ~TiiDetector() = default;
   void reset();
   void setMode(bool);
   void addBuffer(std::vector<cmplx>);  // copy of vector is intended
   uint16_t processNULL();
 
 private:
+  const int16_t mDepth;
+  const DabParams mParams;
+  const int16_t mT_u;
+  const int16_t mK;
+  bool mDetectMode_new = false;
+  std::array<uint8_t, 256> mInvTable;
+  std::vector<cmplx> mBuffer;
+  std::vector<float> mWindow;
+
   void collapse(cmplx *, float *);
-  bool detectMode_new;
-  int16_t depth;
-  uint8_t invTable[256];
-  DabParams params;
-  int16_t T_u;
-  int16_t carriers;
-  std::vector<cmplx> theBuffer;
-  std::vector<float> window;
 };
 
 #endif
