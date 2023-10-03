@@ -87,14 +87,12 @@ private:
   std::vector<cmplx> mIqVector;
   std::vector<float> mCarrVector;
   std::vector<float> mStdDevSqPhaseVector;
-  //std::vector<float> mMeanAbsPhaseVector;
   std::vector<float> mIntegAbsPhaseVector;
   std::vector<float> mMeanPhaseVector;
   std::vector<float> mMeanPowerVector;
   std::vector<float> mMeanNullLevelWithTII;
   std::vector<float> mMeanNullPowerWithoutTII;
   float mMeanPowerOvrAll = 1.0f;
-  float mAvgAbsNullLevelWithTIIMax = 0.0f;
   float mAvgAbsNullLevelWithTIIMin = 0.0f;
   float mAvgAbsNullLevelWithTIIGain = 0.0f;
 
@@ -102,11 +100,11 @@ private:
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SQualityData mQD{};
 
-  float _compute_mod_quality(const std::vector<cmplx> & v) const;
-  float _compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const;
-  float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
-  float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
-  float _compute_noise_Power() const;
+  [[nodiscard]] float _compute_mod_quality(const std::vector<cmplx> & v) const;
+  [[nodiscard]] float _compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const;
+  [[nodiscard]] float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
+  [[nodiscard]] float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
+  [[nodiscard]] float _compute_noise_Power() const;
 
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);

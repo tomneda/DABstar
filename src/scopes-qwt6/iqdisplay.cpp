@@ -63,18 +63,18 @@ inline void IQDisplay::set_point(int x, int y, int val)
   mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
 }
 
-void IQDisplay::display_iq(const std::vector<cmplx> & z, float iScaleValue, float iScaleCircle)
+void IQDisplay::display_iq(const std::vector<cmplx> & z, float iScale)
 {
   if (z.size() != mPoints.size())
   {
     mPoints.resize(z.size(), { 0, 0 });
   }
 
-  const float scaleNormed = iScaleValue * RADIUS;
+  const float scaleNormed = iScale * RADIUS;
 
   clean_screen_from_old_data_points();
   draw_cross();
-  repaint_circle(iScaleCircle);
+  repaint_circle(iScale);
 
   for (uint32_t i = 0; i < z.size(); i++)
   {

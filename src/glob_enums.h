@@ -30,7 +30,6 @@ enum class ECarrierPlotType
   MOD_QUAL,
   STD_DEV,
   PHASE_ERROR,
-  //MEAN_ABS_PHASE,
   FOUR_QUAD_PHASE,
   REL_POWER,
   SNR,

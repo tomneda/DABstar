@@ -63,7 +63,6 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mIqVector.resize(mDabPar.K);
   mCarrVector.resize(mDabPar.K);
   mStdDevSqPhaseVector.resize(mDabPar.K);
-  //mMeanAbsPhaseVector.resize(mDabPar.K);
   mIntegAbsPhaseVector.resize(mDabPar.K);
   mMeanPhaseVector.resize(mDabPar.K);
   mMeanPowerVector.resize(mDabPar.K);
@@ -74,7 +73,6 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
 void OfdmDecoder::reset()
 {
   std::fill(mStdDevSqPhaseVector.begin(), mStdDevSqPhaseVector.end(), 0.0f);
-  //std::fill(mMeanAbsPhaseVector.begin(), mMeanAbsPhaseVector.end(), (float)M_PI_4);
   std::fill(mIntegAbsPhaseVector.begin(), mIntegAbsPhaseVector.end(), 0.0f);
   std::fill(mMeanPhaseVector.begin(), mMeanPhaseVector.end(), 0.0f);
   std::fill(mMeanPowerVector.begin(), mMeanPowerVector.end(), 0.0f);
@@ -82,7 +80,6 @@ void OfdmDecoder::reset()
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
 
   mMeanPowerOvrAll = 1.0f;
-  mAvgAbsNullLevelWithTIIMax = 0.0f;
   mAvgAbsNullLevelWithTIIMin = 0.0f;
   mAvgAbsNullLevelWithTIIGain = 0.0f;
 }
@@ -99,26 +96,33 @@ void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iV) // w
   mFftHandler.fft(mFftBuffer);
 
   constexpr float ALPHA = 0.20f;
-  float max = -1e100;
-  float min =  1e100;
+  float max = -1e38f;
+  float min =  1e38f;
 
-  for (int32_t idx = 0; idx < mDabPar.T_u; ++idx)
+  for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
   {
-    const float level = std::abs(mFftBuffer[idx]);
+    int32_t fftIdx = idx;
 
-    float & meanNullLevelWithTIIRef = mMeanNullLevelWithTII[idx];
+    if (fftIdx < 0)
+    {
+      fftIdx += mDabPar.T_u; // negative spectrum part
+    }
+    else
+    {
+      ++fftIdx; // jump over bin at DC (0 Hz)
+    }
+
+    const float level = std::abs(mFftBuffer[fftIdx]);
+    float & meanNullLevelWithTIIRef = mMeanNullLevelWithTII[fftIdx];
     mean_filter(meanNullLevelWithTIIRef, level, ALPHA);
 
-    if (level < min) min = meanNullLevelWithTIIRef;
-    if (level > max) max = meanNullLevelWithTIIRef;
+    if (meanNullLevelWithTIIRef < min) min = meanNullLevelWithTIIRef;
+    if (meanNullLevelWithTIIRef > max) max = meanNullLevelWithTIIRef;
   }
 
-  mean_filter(mAvgAbsNullLevelWithTIIMin, min, ALPHA);
-  mean_filter(mAvgAbsNullLevelWithTIIMax, max, ALPHA);
-
-  assert(mAvgAbsNullLevelWithTIIMax > mAvgAbsNullLevelWithTIIMin);
-
-  mAvgAbsNullLevelWithTIIGain = 100.0f / (mAvgAbsNullLevelWithTIIMax - mAvgAbsNullLevelWithTIIMin);
+  assert(max  > min);
+  mAvgAbsNullLevelWithTIIMin = min;
+  mAvgAbsNullLevelWithTIIGain = 100.0f / (max - min);
 }
 
 void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iV) // with TII information
@@ -164,16 +168,14 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
   //const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
 
-  /**
-   *	a little optimization: we do not interchange the
-   *	positive/negative frequencies to their right positions.
-   *	The de-interleaving understands this
-   *
-   *	Note that from here on, we are only interested in the
-   *	"carriers", the useful carriers of the FFT output
-   */
+  ++mShowCntIqScope;
+  ++mShowCntStatistics;
+  const bool showScopeData = (mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
+  const bool showStatisticData = (mShowCntStatistics > 5 * mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
+
   for (int16_t nomCarrIdx = 0; nomCarrIdx < mDabPar.K; ++nomCarrIdx)
   {
+    // We do not interchange the positive/negative frequencies to their right positions, the de-interleaving understands this.
     int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrIdx);
     int16_t realCarrRelIdx = fftIdx;
 
@@ -189,46 +191,41 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
     const int16_t dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
 
-    /**
-     *	decoding is computing the phase difference between
-     *	carriers with the same index in subsequent blocks.
-     *	The carrier of a block is the reference for the carrier
-     *	on the same position in the next block
-     */
     constexpr float ALPHA = 0.005f;
 
+    /*
+     * Decoding is computing the phase difference between carriers with the same index in subsequent blocks.
+     * The carrier of a block is the reference for the carrier on the same position in the next block.
+     */
     cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
 
     float & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
 
     const cmplx fftBinRaw = fftBin;
-    //fftBin *= rotator; // fine correction of phase which can't be done in the time domain
+    //fftBin *= rotator; // Fine correction of phase which can't be done in the time domain (not more necessary as it is done below other way).
     fftBin *= cmplx_from_phase(-integAbsPhasePerBinRef);
 
-    // get mean of absolute phase for each bin
-    //float & meanAbsPhasePerBinRef = mMeanAbsPhaseVector[nomCarrIdx];
+    // Get mean of absolute phase for each bin.
     const float fftBinPhase = std::arg(fftBin);
     const float fftBinAbsPhase = turn_phase_to_first_quadrant(fftBinPhase);
-    //mean_filter(meanAbsPhasePerBinRef, fftBinAbsPhase, ALPHA);
 
-    // integrate phase error to perform the phase correction in the next OFDM symbol
+    // Integrate phase error to perform the phase correction in the next OFDM symbol.
     integAbsPhasePerBinRef += ALPHA * (fftBinAbsPhase - F_M_PI_4);
     limit_symmetrically(integAbsPhasePerBinRef, F_RAD_PER_DEG * 20.0f);
 
-    // get standard deviation of absolute phase for each bin
-    //const float curStdDevDiff = (fftBinAbsPhase - meanAbsPhasePerBinRef);
+    // Get standard deviation of absolute phase for each bin. The integrator above assures that F_M_PI_4 is the phase mean value.
     const float curStdDevDiff = (fftBinAbsPhase -  F_M_PI_4);
     const float curStdDevSq = curStdDevDiff * curStdDevDiff;
     float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
-    //const float avgStdDev = std::sqrt(mUseOldSoftBitGen ? stdDevSqRef : curStdDevSq); // this value should be only between 0 (no noise) and M_PI_4 (heavy noise etc.)
-    const float avgStdDev = std::sqrt(stdDevSqRef); // this value should be only between 0 (no noise) and M_PI_4 (heavy noise etc.)
+    const float avgStdDev = std::sqrt(stdDevSqRef); // This value should be only between 0 (no noise) and M_PI_4 (heavy noise etc.).
 
-    // finally calculate (and limit) a soft bit weight from the standard deviation for each bin
+    // Finally calculate (and limit) a soft bit weight from the standard deviation for each bin.
     float weight = 127.0f * ((float)M_PI_4 - avgStdDev) / F_M_PI_4;
     limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
 
-    // calculate the mean of the vector length of each bin to equalize the IQ diagram (simply looks nicer)
+    // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
+    // Simplification: The IQ plot would need only the level, not power, so the root of the power is used (below)..
     const float fftBinAbsLevel = std::abs(fftBin);
     const float fftBinPower = fftBinAbsLevel * fftBinAbsLevel;
 
@@ -236,54 +233,31 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     mean_filter(meanPowerPerBinRef, fftBinPower, ALPHA);
     mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / mDabPar.K);
 
-    switch (mIqPlotType)
+    if (showScopeData)
     {
-    case EIqPlotType::RAW_MEAN_NORMED:
-      mIqVector[nomCarrIdx] = fftBinRaw / sqrt(mMeanPowerOvrAll);
-      break;
-    case EIqPlotType::PHASE_CORR_MEAN_NORMED:
-      mIqVector[nomCarrIdx] = fftBin / sqrt(mMeanPowerOvrAll);
-      break;
-    case EIqPlotType::PHASE_CORR_CARR_NORMED:
-      mIqVector[nomCarrIdx] = fftBin / sqrt(meanPowerPerBinRef);
-      break;
-    }
+      switch (mIqPlotType)
+      {
+      case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / sqrt(mMeanPowerOvrAll); break;
+      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(mMeanPowerOvrAll); break;
+      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(meanPowerPerBinRef); break;
+      }
 
-    switch (mCarrierPlotType)
-    {
-    case ECarrierPlotType::FOUR_QUAD_PHASE:
-      mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin));
-      break;
-    case ECarrierPlotType::MOD_QUAL:
-      mCarrVector[dataVecCarrIdx] = 100.0f / 127.0f * weight; // weight is shown from 0..100%
-      break;
-    case ECarrierPlotType::STD_DEV:
-      mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(avgStdDev);
-      break;
-    case ECarrierPlotType::REL_POWER:
-      mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll);
-      break;
-//    case ECarrierPlotType::MEAN_ABS_PHASE:
-//      mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(meanAbsPhasePerBinRef);
-//      break;
-    case ECarrierPlotType::PHASE_ERROR:
-      mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(integAbsPhasePerBinRef);
-      break;
-    case ECarrierPlotType::NULL_TII:
-      mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelWithTIIGain * (mMeanNullLevelWithTII[fftIdx] - mAvgAbsNullLevelWithTIIMin); // TII is shown from 0..100%
-      break;
-    case ECarrierPlotType::SNR:
-      mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]);
-      break;
+      switch (mCarrierPlotType)
+      {
+      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
+      case ECarrierPlotType::MOD_QUAL:        mCarrVector[dataVecCarrIdx] = 100.0f / 127.0f * weight;  break;
+      case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(avgStdDev); break;
+      case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
+      case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(integAbsPhasePerBinRef); break;
+      case ECarrierPlotType::NULL_TII:        mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelWithTIIGain * (mMeanNullLevelWithTII[fftIdx] - mAvgAbsNullLevelWithTIIMin); break;
+      case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
+      }
     }
 
     if (!mUseOldSoftBitGen)
     {
-      const int16_t hardBitReal = (real(fftBin) < 0.0f ? 1 : -1);
-      const int16_t hardBitImag = (imag(fftBin) < 0.0f ? 1 : -1);
-
-      oBits[0         + nomCarrIdx] = (int16_t)(hardBitReal * weight);
-      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(hardBitImag * weight);
+      oBits[0         + nomCarrIdx] = (int16_t)(real(fftBin) < 0.0f ? weight : -weight);
+      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(fftBin) < 0.0f ? weight : -weight);
     }
     else // old style of soft bit generation
     {
@@ -297,7 +271,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
 
   //	From time to time we show the constellation of the current symbol
-  if (++mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
+  if (showScopeData)
   {
     mpIqBuffer->putDataIntoBuffer(mIqVector.data(), mDabPar.K);
     mpCarrBuffer->putDataIntoBuffer(mCarrVector.data(), mDabPar.K);
@@ -305,7 +279,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     mShowCntIqScope = 0;
   }
 
-  if (++mShowCntStatistics > 5 * mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx)
+  if (showStatisticData)
   {
     mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mQD.StdDeviation = _compute_mod_quality(mIqVector);

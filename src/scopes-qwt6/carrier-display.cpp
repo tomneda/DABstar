@@ -163,21 +163,11 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.ToolTip = "Shows the relative signal power to the overall medium signal power in dB of each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Relative Power";
-    cp.YBottomValue = -18.0;
-    cp.YTopValue = 18.0;
+    cp.YBottomValue = -24.0;
+    cp.YTopValue = 12.0;
     cp.YValueElementNo = 7;
     cp.MarkerYValueStep = 1;
     break;
-
-//  case ECarrierPlotType::MEAN_ABS_PHASE:
-//    cp.ToolTip = "Shows the mean of absolute phase in degree (mapped to first quadrant) of each OFDM carrier.";
-//    cp.Style  = SCustPlot::EStyle::LINES;
-//    cp.Name = "Mean Abs. Phase";
-//    cp.YBottomValue = 30.0;
-//    cp.YTopValue = 60.0;
-//    cp.YValueElementNo = 7;
-//    cp.MarkerYValueStep = 1;
-//    break;
 
   case ECarrierPlotType::PHASE_ERROR:
     cp.ToolTip = "Shows the corrected phase error in degree of each OFDM carrier.";
@@ -221,7 +211,6 @@ QStringList CarrierDisp::get_plot_type_names()
   sl << _get_plot_type_data(ECarrierPlotType::MOD_QUAL).Name;
   sl << _get_plot_type_data(ECarrierPlotType::STD_DEV).Name;
   sl << _get_plot_type_data(ECarrierPlotType::PHASE_ERROR).Name;
-  //sl << _get_plot_type_data(ECarrierPlotType::MEAN_ABS_PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::FOUR_QUAD_PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::REL_POWER).Name;
   sl << _get_plot_type_data(ECarrierPlotType::SNR).Name;

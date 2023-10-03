@@ -67,7 +67,7 @@ public:
     const char * ToolTip;
   };
 
-  void display_iq(const std::vector<cmplx> & z, float iScaleValue, float iScaleCircle);
+  void display_iq(const std::vector<cmplx> & z, float iScale);
   void customize_plot(const SCustPlot & iCustPlot);
   void select_plot_type(const EIqPlotType iPlotType);
   static QStringList get_plot_type_names();

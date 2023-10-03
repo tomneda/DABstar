@@ -260,9 +260,7 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
     }
   }
 
-  const float scale = (float)scopeWidth / 100.0f;
-
-  mpIQDisplay->display_iq(mIqValuesVec, scale, scale);
+  mpIQDisplay->display_iq(mIqValuesVec, (float)scopeWidth / 100.0f);
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
