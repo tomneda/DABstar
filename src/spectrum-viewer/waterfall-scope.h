@@ -63,11 +63,11 @@ private:
   SpectrogramData * WaterfallData;
   int16_t rasterSize;
   double * plotData;
-  QwtPlotMarker * Marker;
-  int16_t indexforMarker;
-  int16_t old_marker;
+  //QwtPlotMarker * Marker;
+  //int16_t indexforMarker;
+  //int16_t old_marker;
   QwtLinearColorMap * colorMap;
-  QwtScaleWidget * rightAxis;
+  //QwtScaleWidget * rightAxis;
 };
 
 #endif

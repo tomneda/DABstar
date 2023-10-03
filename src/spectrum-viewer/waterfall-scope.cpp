@@ -36,29 +36,26 @@
 WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize) :
   QwtPlotSpectrogram()
 {
-  int i, j;
-
   this->plotgrid = scope;
   this->displaySize = displaySize;
   this->rasterSize = rasterSize;
   colorMap = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
-  QwtLinearColorMap * c2 = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
-  this->rasterSize = rasterSize;
+  //QwtLinearColorMap * c2 = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
   colorMap->addColorStop(0.1, Qt::cyan);
   colorMap->addColorStop(0.4, Qt::green);
   colorMap->addColorStop(0.7, Qt::yellow);
-  c2->addColorStop(0.1, Qt::cyan);
-  c2->addColorStop(0.4, Qt::green);
-  c2->addColorStop(0.7, Qt::yellow);
+//  c2->addColorStop(0.1, Qt::cyan);
+//  c2->addColorStop(0.4, Qt::green);
+//  c2->addColorStop(0.7, Qt::yellow);
   this->setColorMap(colorMap);
-  rightAxis = plotgrid->axisWidget(QwtPlot::yRight);
+  //rightAxis = plotgrid->axisWidget(QwtPlot::yRight);
   // A color bar on the right axis
-  rightAxis->setColorBarEnabled(true);
+  //rightAxis->setColorBarEnabled(false);
   plotData = new double[2 * displaySize * rasterSize];
 
-  for (i = 0; i < rasterSize; i++)
+  for (int32_t i = 0; i < rasterSize; i++)
   {
-    for (j = 0; j < displaySize; j++)
+    for (int32_t j = 0; j < displaySize; j++)
     {
       plotData[i * displaySize + j] = (double)i / rasterSize;
     }
@@ -67,20 +64,20 @@ WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize)
   WaterfallData = new SpectrogramData(plotData, 10000, 1000, rasterSize, displaySize, 50.0);
   this->setData(WaterfallData);
   this->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
-  rightAxis->setColorMap(this->data()->interval(Qt::YAxis), c2);
-  plotgrid->setAxisScale(QwtPlot::yRight, 0, 50.0);
-  plotgrid->enableAxis(QwtPlot::yRight);
+  //rightAxis->setColorMap(this->data()->interval(Qt::YAxis), c2);
+  //plotgrid->setAxisScale(QwtPlot::yRight, 0, 50.0);
+  //plotgrid->enableAxis(QwtPlot::yRight);
   plotgrid->setAxisScale(QwtPlot::xBottom, 10000, 11000);
 
   plotgrid->enableAxis(QwtPlot::xBottom);
   plotgrid->enableAxis(QwtPlot::yLeft);
   plotgrid->setAxisScale(QwtPlot::yLeft, 0, rasterSize);
 
-  Marker = new QwtPlotMarker();
-  Marker->setLineStyle(QwtPlotMarker::VLine);
-  Marker->setLinePen(QPen(Qt::black, 2.0));
-  Marker->attach(plotgrid);
-  indexforMarker = 0;
+//  Marker = new QwtPlotMarker();
+//  Marker->setLineStyle(QwtPlotMarker::VLine);
+//  Marker->setLinePen(QPen(Qt::black, 2.0));
+//  Marker->attach(plotgrid);
+//  indexforMarker = 0;
   plotgrid->replot();
 }
 
@@ -100,7 +97,7 @@ void WaterfallScope::display(const double * X_axis, double * Y1_value, double am
   int orig = (int)(X_axis[0]);
   int width = (int)(X_axis[displaySize - 1] - orig);
 
-  indexforMarker = marker;
+  //indexforMarker = marker;
   /*
    *      shift one row, faster with memmove than writing out
    *      the loops. Note that source and destination overlap
