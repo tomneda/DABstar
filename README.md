@@ -12,10 +12,14 @@
 <!-- TOC -->
   * [Table of Content](#table-of-content)
   * [Introducing](#introducing)
+  * [Changes in DABstar version 1.2.0](#changes-in-dabstar-version-120)
+    * [What is new?](#what-is-new)
+    * [Known things that do not work yet](#known-things-that-do-not-work-yet)
+    * [What is the DC Avoidance Algorithm?](#what-is-the-dc-avoidance-algorithm-)
   * [Changes in DABstar version 1.1.0](#changes-in-dabstar-version-110)
     * [What is new?](#what-is-new-)
     * [Things that do not work yet or anymore](#things-that-do-not-work-yet-or-anymore-)
-    * [Changes to the **Carrier Plot**](#changes-to-the-carrier-plot)
+    * [Changes to the Carrier Plot](#changes-to-the-carrier-plot)
   * [Changes in DABstar version 1.0.2](#changes-in-dabstar-version-102)
     * [How to apply TII info](#how-to-apply-tii-info)
   * [Changes in DABstar version 1.0.1](#changes-in-dabstar-version-101-)
@@ -32,17 +36,53 @@
 ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249))
 from 2023-05-30, fixes afterwards to Qt-DAB afterwards included.
 
-Current main branch version is [V1.1.0](#changes-in-dabstar-version-110).
+Current main branch version is [V1.2.0](#changes-in-dabstar-version-120).
 
 As there are many changes made from my side and there will be bigger changes in the future, 
 I decided to give it the new name **DABstar**.
 
-I will try to maintain always a working state on `main` branch and do my further developement on a side branch. 
+I will try to maintain always a working state on `main` branch. 
+Up to version V1.1.0 I only did a Git "squash merge" to the main branch that only one commit was seen.
+As I usually do more fine developement steps it would be better to see each commit step made while developing. 
+So, I prefer, with the V1.2.0, to do a "fast-forward" of the main branch to my development branch.
+To find out the correspoding release commit, please use the tags page on Github: [https://github.com/tomneda/DABstar/tags](https://github.com/tomneda/DABstar/tags)
 
 For building there is one bigger difference to Qt-DAB: I maintain only one GUI version and I provide no *.pro file for qmake anymore, only a CMakeLists.txt file.
 So use only the cmake related installation process.
 
 I will also not provide any precompiled setup packages, yet.
+
+## Changes in DABstar version 1.2.0
+### What is new?
+
+- Many code and UI refactorings made and some minor fixes.
+- Introduce a **DC Avoidance Algorithm** (default off). With that the RF frequency offset and baseband frequency offset are shown independently.
+- Introduce a phase error correction per OFDM carrier. This can be seen in the Carrier Plot with **Corr. Phase Error**. The former **Mean Absolute Phase** plot got obsolete as this would only show a straight line after that correction.
+  This phase correcton should be in most cases very minor, so no big effect (a better decoding) should be expected.
+- The IQ plot can now show different views where one view shows the still not phase corrected versions. 
+- Fixes in Carrier **Null Symbol TII** plot (wrong scaling calculation).
+
+### Known things that do not work yet
+
+- The settings of the current view of the IQ plot and Carrier plot cannot stored persistently.
+
+### What is the DC Avoidance Algorithm? 
+
+This new feature tries to avoid the DC component on used OFDM-bins around the 0Hz-OFDM-bin.
+
+Many SDR devices have an analog IQ receiving concept. This concept tends to have a DC component at 0Hz baseband.
+
+Therefore, the DAB standard do not use the OFDM-bin at 0Hz to avoid decoding problems. But as the frequency correction 
+is usually done only in the baseband, the DC could be seen also in the neighbor OFDM-bins where the demodulation of the data could be badly influenced.
+
+This feature tries to use the RF synthesizer on the SDR device to shift the DC component to the unsused 0Hz-OFDM-bin. The remaining frequency correction is still done in the baseband.
+
+Not all devices allows fine RF frequency tuning (and not on all relevant frequencies), so this is not always working fully well, but should also not cause any harm.
+
+This feature should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.
+
+Use the checkbox **Use DC avoidance algorithm** on the **Configuration and Control** page to control this feature. 
+The audio could drop for a short time after switching.
 
 ## Changes in DABstar version 1.1.0
  
@@ -63,7 +103,7 @@ As there are many changes done in the UI and also in the background, I did a big
 - The TII widget is removed at it is replaced by the **Carrier Plot**.
 - The SNR widget is removed without replacement. I see no really need for that and I want to get rid of too many widgets.
 
-### Changes to the **Carrier Plot**
+### Changes to the Carrier Plot
 
 The **Carrier Plot** are able to show different plots which are all related to the used 1536 OFDM carrier:
 
