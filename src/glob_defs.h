@@ -160,4 +160,14 @@ template <typename T> inline void create_blackman_window(T * opVal, int32_t iWin
 #endif
 }
 
+template <typename T> inline T fft_shift(const T iIdx, const  int32_t iFftSize)
+{
+  return (iIdx < 0 ? iIdx + iFftSize : iIdx);
+}
+
+template <typename T> inline T fft_shift_skip_dc(const T iIdx, const int32_t iFftSize)
+{
+  return (iIdx < 0 ? iIdx + iFftSize : iIdx + 1);
+}
+
 #endif // GLOB_DEFS_H

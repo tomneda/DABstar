@@ -38,13 +38,6 @@
 #include "radio.h"
 #include <vector>
 
-/**
- *	\brief OfdmDecoder
- *	The class OfdmDecoder is
- *	taking the data from the ofdmProcessor class in, and
- *	will extract the Tu samples, do an FFT and extract the
- *	carriers and map them on (soft) bits
- */
 OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer) :
   mpRadioInterface(ipMr),
   mDabPar(DabParams(iDabMode).get_dab_par()),
@@ -101,17 +94,8 @@ void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iV) // w
 
   for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
   {
-    int32_t fftIdx = idx;
-
-    if (fftIdx < 0)
-    {
-      fftIdx += mDabPar.T_u; // negative spectrum part
-    }
-    else
-    {
-      ++fftIdx; // jump over bin at DC (0 Hz)
-    }
-
+    // Consider FFT shift and skipping DC (0 Hz) bin.
+    const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
     const float level = std::abs(mFftBuffer[fftIdx]);
     float & meanNullLevelWithTIIRef = mMeanNullLevelWithTII[fftIdx];
     mean_filter(meanNullLevelWithTIIRef, level, ALPHA);
@@ -133,32 +117,22 @@ void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iV) /
 
   constexpr float ALPHA = 0.1f;
 
-  for (int32_t idx = 0; idx < mDabPar.T_u; ++idx)
+  for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
   {
-    const float level = std::abs(mFftBuffer[idx]);
-    mean_filter(mMeanNullPowerWithoutTII[idx], level * level, ALPHA);
+    // Consider FFT shift and skipping DC (0 Hz) bin.
+    const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
+    const float level = std::abs(mFftBuffer[fftIdx]);
+    mean_filter(mMeanNullPowerWithoutTII[fftIdx], level * level, ALPHA);
   }
 }
 
-/**
- */
 void OfdmDecoder::store_reference_symbol_0(std::vector<cmplx> buffer) // copy is intended as used as fft buffer
 {
   mFftHandler.fft(buffer);
-  /**
-   *	we are now in the frequency domain, and we keep the carriers
-   *	as coming from the FFT as phase reference.
-   */
 
+  // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
   memcpy(mPhaseReference.data(), buffer.data(), mDabPar.T_u * sizeof(cmplx));
 }
-
-/**
- *	for the other blocks of data, the first step is to go from
- *	time to frequency domain, to get the carriers.
- *	we distinguish between FIC blocks and other blocks,
- *	only to spare a test. The mapping code is the same
- */
 
 void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits)
 {
@@ -282,7 +256,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
   if (showStatisticData)
   {
     mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mQD.StdDeviation = _compute_mod_quality(mIqVector);
+    mQD.StdDeviation = _compute_mod_quality(mIqVector); // TODO tomneda: using mIqVector is critical here, as it is maybe not always in valid condition
     mQD.TimeOffset = _compute_time_offset(mFftBuffer, mPhaseReference);
     mQD.FreqOffset = _compute_frequency_offset(mFftBuffer, mPhaseReference);
     mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
@@ -354,16 +328,16 @@ float OfdmDecoder::_compute_frequency_offset(const std::vector<cmplx> & r, const
 {
   cmplx theta = cmplx(0, 0);
 
-  for (int i = -mDabPar.K / 2; i < mDabPar.K / 2; i += 6)
+  for (int idx = -mDabPar.K / 2; idx < mDabPar.K / 2; idx += 6)
   {
-    int index = i < 0 ? i + mDabPar.T_u : i;
+    const int32_t index = fft_shift_skip_dc(idx, mDabPar.T_u); // this was with DC before in QT-DAB
     cmplx val = r[index] * conj(c[index]);
-    val = cmplx(abs(real(val)), abs(imag(val)));
+    val = cmplx(abs(real(val)), abs(imag(val))); // TODO tomneda: is this correct?
     theta += val;
   }
   theta *= cmplx(1, -1);
 
-  return arg(theta) / (2.0f * (float)M_PI) * 2048000.0f / (float)mDabPar.T_u; // TODO: hard coded 2048000?
+  return std::arg(theta) / F_2_M_PI * (float)mDabPar.CarrDiff;
 }
 
 float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
@@ -373,7 +347,7 @@ float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
 
   for (int i = -mDabPar.K / 2; i < mDabPar.K / 2; i += 6)
   {
-    int index = i < 0 ? (i + mDabPar.T_u) : i;
+    int index = i < 0 ? (i + mDabPar.T_u) : i; // TODO tomneda: i+1 to skip DC?
     int index_2 = i + mDabPar.K / 2;
     cmplx a1 = cmplx(abs(real(r[index])), abs(imag(r[index])));
     cmplx a2 = cmplx(abs(real(v[index])), abs(imag(v[index])));
@@ -388,11 +362,13 @@ float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
 float OfdmDecoder::_compute_noise_Power() const
 {
   float sumNoise = 0.0f;
-  for (const auto & v : mMeanNullPowerWithoutTII)
+  for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
   {
-    sumNoise += v; // the component already squared
+    // Consider FFT shift and skipping DC (0 Hz) bin.
+    const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
+    sumNoise += mMeanNullPowerWithoutTII[fftIdx]; // the component already squared
   }
-  return sumNoise / (float)mMeanNullPowerWithoutTII.size();
+  return sumNoise / (float)mDabPar.K;
 }
 
 void OfdmDecoder::slot_select_carrier_plot_type(ECarrierPlotType iPlotType)
