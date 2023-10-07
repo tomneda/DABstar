@@ -1136,8 +1136,6 @@ void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, const QSt
 
 void RadioInterface::write_picture(const QPixmap & iPixMap) const
 {
-  //constexpr int w = 400;
-  //constexpr int h = 2 * w / 3.5;
   constexpr int w = 320;
   constexpr int h = 240;
 
@@ -1152,8 +1150,7 @@ void RadioInterface::write_picture(const QPixmap & iPixMap) const
     qDebug("MOT w: %d, h: %d", iPixMap.width(), iPixMap.height());
     pictureLabel->setPixmap(iPixMap);
   }
-  //pictureLabel->setFixedWidth(w+20);
-  //pictureLabel->setFixedHeight(h+20);
+
   pictureLabel->setAlignment(Qt::AlignCenter);
   pictureLabel->show();
 }
@@ -4304,7 +4301,7 @@ void RadioInterface::_slot_handle_on_top(int d)
 void RadioInterface::show_pause_slide()
 {
   QPixmap p;
-  if (p.load(":res/DABLogoCrop.png", "png"))
+  if (p.load(":res/DABLogoInvSmall.png", "png"))
   {
     write_picture(p);
   }
