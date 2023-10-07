@@ -25,32 +25,26 @@ class SpectrumScope : public QObject
 {
 Q_OBJECT
 public:
-  SpectrumScope(QwtPlot *, int, QSettings *);
+  SpectrumScope(QwtPlot *, int32_t, QSettings *);
   ~SpectrumScope();
 
-  void showSpectrum(const double *, double *, int, int);
-  void setBitDepth(int);
+  void showSpectrum(const double *, const double *, int32_t);
+  void setBitDepth(int32_t);
 
 private:
-  QwtPlotCurve spectrumCurve;
-  QSettings * dabSettings;
-  QwtPlotPicker * lm_picker;
-  //QColor mDisplayColor;
+  QwtPlotCurve mSpectrumCurve;
+  QSettings * const mpDabSettings;
+  const int32_t mDisplaySize;
+  QwtPlotPicker * mpLmPicker;
   QColor mGridColor;
   QColor mCurveColor;
+  int32_t mNormalizer = 2048;
 
-  int normalizer;
-  double X_axis[256];
-  double Y_value[256];
-  int16_t displaySize;
-  QwtPlotMarker * Marker;
-  QwtPlot * plotgrid;
-  QwtPlotGrid * grid;
-  QwtPlotGrid * grid_2;
-  int32_t indexforMarker;
+  QwtPlot * mpPlotgrid;
+  QwtPlotGrid * mpGrid;
+  std::vector<double> mYValVec;
 
-  //void ViewSpectrum(double *, double *, double, int);
-  float get_db(float);
+  template<typename T> inline T get_db(T x) { return 20 * std::log10((x + 1) / (T)(mNormalizer)); }
 
 private slots:
   void rightMouseClick(const QPointF &);

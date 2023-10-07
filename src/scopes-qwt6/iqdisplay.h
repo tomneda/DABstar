@@ -75,8 +75,8 @@ public:
 private:
   static constexpr int32_t RADIUS = 100;
 
-  float mLastCircleSize{ 0 };
-  QwtPlot * mPlotgrid{ nullptr };
+  float mLastCircleSize = 0;
+  QwtPlot * mPlotgrid = nullptr;
   SpectrogramData * mIQData = nullptr;
 
   std::vector<std::complex<int32_t>> mPoints;

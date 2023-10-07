@@ -147,11 +147,8 @@ void DabProcessor::run()  // run QThread
       {
       case EState::WAIT_FOR_TIME_SYNC_MARKER:
       {
-        // set RF and BB offset to zero (swap for cache reset)
-        _set_rf_freq_Hz(1.0f);
-        _set_rf_freq_Hz(0.0f);
-        _set_bb_freq_Hz(1.0f);
-        _set_bb_freq_Hz(0.0f);
+        _set_rf_freq_offs_Hz(0.0f);
+        _set_bb_freq_offs_Hz(0.0f);
 
         startIndex = 0;
         mCorrectionNeeded = true;
@@ -221,15 +218,15 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
       }
     }
 
-    _set_bb_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+    _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
   }
   else
   {
     if (!mRfFreqShiftUsed && mAllowRfFreqShift)
     {
       mRfFreqShiftUsed = true;
-      _set_rf_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz); // takeover BB shift to RF
-      _set_bb_freq_Hz(0.0f); // no, no BB shift should be necessary
+      _set_rf_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz); // takeover BB shift to RF
+      _set_bb_freq_offs_Hz(0.0f); // no, no BB shift should be necessary
       mFreqOffsSyncSymb = mFreqOffsCylcPrefHz = 0; // allow collect new remaining freq. shift
     }
   }
@@ -243,7 +240,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   limit_symmetrically(mPhaseOffsetCyclPrefRad, 20.0f * F_RAD_PER_DEG);
   mFreqOffsCylcPrefHz += 1.00f * mPhaseOffsetCyclPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
 
-  _set_bb_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+  _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
 
   mClockOffsetTotalSamples += ioSampleCount;
 
@@ -336,7 +333,7 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
   return arg(freqCorr);
 }
 
-void DabProcessor::_set_bb_freq_Hz(float iFreqHz)
+void DabProcessor::_set_bb_freq_offs_Hz(float iFreqHz)
 {
   const int32_t iFreqHzInt = (int32_t)std::round(iFreqHz);
   if (mFreqOffsBBHz != iFreqHzInt)
@@ -346,7 +343,7 @@ void DabProcessor::_set_bb_freq_Hz(float iFreqHz)
   }
 }
 
-void DabProcessor::_set_rf_freq_Hz(float iFreqHz)
+void DabProcessor::_set_rf_freq_offs_Hz(float iFreqHz)
 {
   const int32_t iFreqHzInt = (int32_t)std::round(iFreqHz);
   if (mFreqOffsRFHz != iFreqHzInt)
@@ -631,8 +628,8 @@ void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
   if (!iUseDcAvoidanceAlgorithm)
   {
     mFreqOffsSyncSymb += (float)mFreqOffsRFHz;  // take RF offset to BB
-    _set_bb_freq_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
-    _set_rf_freq_Hz(0.0f); // reset RF shift
+    _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+    _set_rf_freq_offs_Hz(0.0f); // reset RF shift
   }
 
   mRfFreqShiftUsed = false;

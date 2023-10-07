@@ -144,8 +144,8 @@ private:
   void _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
   float _process_ofdm_symbols_1_to_L(int32_t & ioSampleCount);
   void _process_null_symbol(int32_t & ioSampleCount);
-  void _set_rf_freq_Hz(float iFreqHz);
-  void _set_bb_freq_Hz(float iFreqHz);
+  void _set_rf_freq_offs_Hz(float iFreqHz);
+  void _set_bb_freq_offs_Hz(float iFreqHz);
 
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);

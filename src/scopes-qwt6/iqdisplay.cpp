@@ -48,6 +48,7 @@ IQDisplay::IQDisplay(QwtPlot * plot)
   setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
 
   select_plot_type(EIqPlotType::DEFAULT);
+  attach(mPlotgrid);
 
   mPlotgrid->replot();
 }
@@ -88,12 +89,9 @@ void IQDisplay::display_iq(const std::vector<cmplx> & z, float iScale)
     set_point(x, y, 100);
   }
 
-  memcpy(mPlotDataDrawBuffer.data(), mPlotDataBackgroundBuffer.data(), 2 * 2 * RADIUS * RADIUS * sizeof(double));
+  constexpr int32_t elemSize = sizeof(decltype(mPlotDataBackgroundBuffer.back()));
+  memcpy(mPlotDataDrawBuffer.data(), mPlotDataBackgroundBuffer.data(), 2 * 2 * RADIUS * RADIUS * elemSize);
 
-  detach();
-  setData(mIQData);
-  setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
-  attach(mPlotgrid);
   mPlotgrid->replot();
 }
 

@@ -47,27 +47,27 @@
 #include <QBrush>
 #include "spectrogramdata.h"
 #include <QTimer>
-#include <stdint.h>
+#include <cstdint>
 
 class WaterfallScope : public QObject, public QwtPlotSpectrogram
 {
 Q_OBJECT
 public:
   WaterfallScope(QwtPlot *, int, int);
-  ~WaterfallScope();
-  void display(const double *, double *, double, int32_t);
+  ~WaterfallScope() override;
+
+  void showWaterfall(const double *, const double *, double);
+
 private:
-  QwtPlot * plotgrid;
-  int displaySize;
-  int bitDepth;
-  SpectrogramData * WaterfallData;
-  int16_t rasterSize;
-  double * plotData;
-  //QwtPlotMarker * Marker;
-  //int16_t indexforMarker;
-  //int16_t old_marker;
-  QwtLinearColorMap * colorMap;
-  //QwtScaleWidget * rightAxis;
+  QwtPlot * const mpPlotgrid;
+  const int32_t mDisplaySize;
+  const int32_t mRasterSize;
+  int32_t mOrig = 0;
+  int32_t mWidth = 0;
+  int32_t mAmp = 0;
+  SpectrogramData * mpWaterfallData;
+  QwtLinearColorMap * mpColorMap;
+  std::vector<double> mPlotDataVec;
 };
 
 #endif

@@ -140,19 +140,17 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
 
   if (v.size() > 0)
   {
-    txt = "Best matches at (km/mi): ";
-
-    const int vSize = (v.size() < 8 ? v.size() : 8); // limit size as display will broaden
-    for (int i = 0; i < vSize; i++)
+    txt = "Best matches at (km): ";
+    constexpr int32_t MAX_NO_ELEM = 7;
+    const int32_t vSize = (v.size() < MAX_NO_ELEM ? v.size() : MAX_NO_ELEM); // limit size as display will broaden
+    for (int32_t i = 0; i < vSize; i++)
     {
       txt += "<b>" + QString::number(v[i]) + "</b>"; // display in "bold"
 
       if (i > 0)
       {
-        // TODO: avoid fixed values
-        const double distKm = (double)(v[i] - v[0]) / 2048000.0 * 299792.458;
-        const double distMi = distKm * 0.6213711;
-        txt += " (" + QString::number(distKm, 'f', 1) + "/" + QString::number(distMi, 'f', 1) + ")";
+        const double distKm = (double)(v[i] - v[0]) / (double)INPUT_RATE * (double)LIGHT_SPEED_MPS / 1000.0;
+        txt += " (" + QString::number(distKm, 'f', 1) + ")";
       }
 
       if (i + 1 < v.size()) txt += ", ";

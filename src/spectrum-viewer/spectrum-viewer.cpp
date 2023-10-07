@@ -45,19 +45,19 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
                                RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
   Ui_scopeWidget(),
   myFrame(nullptr),
-  myRadioInterface(ipRI),
-  dabSettings(ipDabSettings),
-  spectrumBuffer(ipSpecBuffer),
-  iqBuffer(ipIqBuffer),
-  carrBuffer(ipCarrBuffer),
+  mpRadioInterface(ipRI),
+  mpDabSettings(ipDabSettings),
+  mpSpectrumBuffer(ipSpecBuffer),
+  mpIqBuffer(ipIqBuffer),
+  mpCarrBuffer(ipCarrBuffer),
   mpCorrelationBuffer(ipCorrBuffer),
   fft(SP_SPECTRUMSIZE, false)
 {
   ipDabSettings->beginGroup("spectrumViewer");
-  int x = ipDabSettings->value("position-x", 100).toInt();
-  int y = ipDabSettings->value("position-y", 100).toInt();
-  int w = ipDabSettings->value("width", 150).toInt();
-  int h = ipDabSettings->value("height", 120).toInt();
+  int32_t x = ipDabSettings->value("position-x", 100).toInt();
+  int32_t y = ipDabSettings->value("position-y", 100).toInt();
+  int32_t w = ipDabSettings->value("width", 150).toInt();
+  int32_t h = ipDabSettings->value("height", 120).toInt();
   ipDabSettings->endGroup();
 
   setupUi(&myFrame);
@@ -66,7 +66,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   myFrame.move(QPoint(x, y));
   myFrame.hide();
 
-  create_blackman_window(Window.data(), SP_SPECTRUMSIZE);
+  create_blackman_window(mWindowVec.data(), SP_SPECTRUMSIZE);
 
   mpSpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
   mpWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
@@ -81,21 +81,21 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
   cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
 
-  connect(cmbCarrier, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
-  connect(cmbIqScope, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
+  connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
+  connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
   connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
 }
 
 SpectrumViewer::~SpectrumViewer()
 {
-  dabSettings->beginGroup("spectrumViewer");
-  dabSettings->setValue("position-x", myFrame.pos().x());
-  dabSettings->setValue("position-y", myFrame.pos().y());
+  mpDabSettings->beginGroup("spectrumViewer");
+  mpDabSettings->setValue("position-x", myFrame.pos().x());
+  mpDabSettings->setValue("position-y", myFrame.pos().y());
 
   QSize size = myFrame.size();
-  dabSettings->setValue("width", size.width());
-  dabSettings->setValue("height", size.height());
-  dabSettings->endGroup();
+  mpDabSettings->setValue("width", size.width());
+  mpDabSettings->setValue("height", size.height());
+  mpDabSettings->endGroup();
 
   myFrame.hide();
 
@@ -110,87 +110,78 @@ void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
 {
   (void)amount;
 
-  constexpr double temp = (double)INPUT_RATE / 2 / SP_DISPLAYSIZE;
   int16_t averageCount = 5;
 
-  if (spectrumBuffer->GetRingBufferReadAvailable() < SP_SPECTRUMSIZE)
+  if (mpSpectrumBuffer->GetRingBufferReadAvailable() < SP_SPECTRUMSIZE)
   {
     return;
   }
 
-  spectrumBuffer->getDataFromBuffer(spectrum.data(), SP_SPECTRUMSIZE);
-  spectrumBuffer->FlushRingBuffer();
+  mpSpectrumBuffer->getDataFromBuffer(mSpectrumVec.data(), SP_SPECTRUMSIZE);
+  mpSpectrumBuffer->FlushRingBuffer();
 
   if (myFrame.isHidden())
   {
-    spectrumBuffer->FlushRingBuffer();
+    mpSpectrumBuffer->FlushRingBuffer();
     return;
   }
 
-  if (vfoFrequency != lastVcoFreq) // same a bit time
+  if (vfoFrequency != mLastVcoFreq) // same a bit time
   {
-    lastVcoFreq = vfoFrequency;
-    for (int i = 0; i < SP_DISPLAYSIZE; i++)
+    mLastVcoFreq = vfoFrequency;
+    constexpr double temp = (double)INPUT_RATE / 2 / SP_DISPLAYSIZE;
+    for (int32_t i = 0; i < SP_DISPLAYSIZE; i++)
     {
-      X_axis[i] = ((double)vfoFrequency - (double)(int)(INPUT_RATE / 2) + (double)((i) * (double)2 * temp)) / 1000.0;
+      mXAxisVec[i] = ((double)vfoFrequency - (double)(int32_t)(INPUT_RATE / 2) + (double)((i) * (double)2 * temp)) / 1000.0;
     }
   }
-
 
   //	and window it
   //	get the buffer data
-  for (int i = 0; i < SP_SPECTRUMSIZE; i++)
+  for (int32_t i = 0; i < SP_SPECTRUMSIZE; i++)
   {
-    if (std::isnan(abs(spectrum[i])) || std::isinf(abs(spectrum[i])))
+    if (std::isnan(abs(mSpectrumVec[i])) || std::isinf(abs(mSpectrumVec[i])))
     {
-      spectrum[i] = cmplx(0, 0);
+      mSpectrumVec[i] = cmplx(0, 0);
     }
     else
     {
-      spectrum[i] = spectrum[i] * Window[i];
+      mSpectrumVec[i] = mSpectrumVec[i] * mWindowVec[i];
     }
   }
 
-  fft.fft(spectrum.data());
+  fft.fft(mSpectrumVec.data());
 
   // map the SP_SPECTRUMSIZE values onto SP_DISPLAYSIZE elements
-  for (int i = 0; i < SP_DISPLAYSIZE / 2; i++)
+  for (int32_t i = 0; i < SP_DISPLAYSIZE / 2; i++)
   {
     double f = 0;
-    for (int j = 0; j < SP_SPECTRUMSIZE / SP_DISPLAYSIZE; j++)
+    for (int32_t j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
     {
-      f += abs(spectrum[SP_SPECTRUMSIZE / SP_DISPLAYSIZE * i + j]);
+      f += abs(mSpectrumVec[SP_SPEC_OVR_SMP_FAC * i + j]);
     }
 
-    Y_values[SP_DISPLAYSIZE / 2 + i] = f / (double)SP_SPECTRUMOVRSMPFAC; // (int) ->avoid clang-tidy issue
+    mYValVec[SP_DISPLAYSIZE / 2 + i] = f / (double)SP_SPEC_OVR_SMP_FAC;
     f = 0;
-    for (int j = 0; j < SP_SPECTRUMSIZE / SP_DISPLAYSIZE; j++)
+    for (int32_t j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
     {
-      f += abs(spectrum[SP_SPECTRUMSIZE / 2 + SP_SPECTRUMSIZE / SP_DISPLAYSIZE * i + j]);
+      f += abs(mSpectrumVec[SP_SPECTRUMSIZE / 2 + SP_SPEC_OVR_SMP_FAC * i + j]);
     }
-    Y_values[i] = f / SP_SPECTRUMOVRSMPFAC;
+    mYValVec[i] = f / SP_SPEC_OVR_SMP_FAC;
   }
 
   // average the image a little.
-  for (int i = 0; i < SP_DISPLAYSIZE; i++)
+  for (int32_t i = 0; i < SP_DISPLAYSIZE; i++)
   {
-    if (std::isnan(Y_values[i]) || std::isinf(Y_values[i]))
+    if (std::isnan(mYValVec[i]) || std::isinf(mYValVec[i]))
     {
       continue;
     }
-
-    displayBuffer[i] = (double)(averageCount - 1) / averageCount * displayBuffer[i] + 1.0 / averageCount * Y_values[i];
+    mean_filter(mDisplayBuffer[i], mYValVec[i], 1.0 / averageCount);
   }
 
-  memcpy(Y_values.data(), displayBuffer.data(), SP_DISPLAYSIZE * sizeof(double));
-  memcpy(Y2_values.data(), displayBuffer.data(), SP_DISPLAYSIZE * sizeof(double));
-  mpSpectrumScope->showSpectrum(X_axis.data(), Y_values.data(), scopeAmplification->value(), vfoFrequency / 1000);
-  mpWaterfallScope->display(X_axis.data(), Y2_values.data(), dabWaterfallAmplitude->value(), vfoFrequency / 1000);
-}
-
-float SpectrumViewer::get_db(float x) const
-{
-  return 20 * log10((x + 1) / (float)(normalizer));
+  mpWaterfallScope->showWaterfall(mXAxisVec.data(), mDisplayBuffer.data(), dabWaterfallAmplitude->value());
+  mpSpectrumScope->showSpectrum(mXAxisVec.data(), mDisplayBuffer.data(), scopeAmplification->value());
 }
 
 void SpectrumViewer::setBitDepth(int16_t d)
@@ -200,13 +191,13 @@ void SpectrumViewer::setBitDepth(int16_t d)
     d = 24;
   }
 
-  normalizer = 1;
+  mNormalizer = 1;
   while (--d > 0)
   {
-    normalizer <<= 1;
+    mNormalizer <<= 1;
   }
 
-  mpSpectrumScope->setBitDepth(normalizer);
+  mpSpectrumScope->setBitDepth(mNormalizer);
 }
 
 void SpectrumViewer::show()
@@ -224,7 +215,7 @@ bool SpectrumViewer::isHidden()
   return myFrame.isHidden();
 }
 
-void SpectrumViewer::showIQ(int iAmount, float iAvg)
+void SpectrumViewer::showIQ(int32_t iAmount, float iAvg)
 {
   if (mIqValuesVec.size() != (unsigned)iAmount)
   {
@@ -232,7 +223,7 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
     mCarrValuesVec.resize(iAmount);
   }
 
-  const int scopeWidth = scopeSlider->value();
+  const int32_t scopeWidth = scopeSlider->value();
   const bool logIqScope = cbLogIqScope->isChecked();
 
   if (mShowInLogScale != logIqScope)
@@ -240,8 +231,8 @@ void SpectrumViewer::showIQ(int iAmount, float iAvg)
     mShowInLogScale = logIqScope;
   }
 
-  const int32_t numRead = iqBuffer->getDataFromBuffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
-  /*const int32_t numRead2 =*/ carrBuffer->getDataFromBuffer(mCarrValuesVec.data(), (int32_t)mCarrValuesVec.size());
+  const int32_t numRead = mpIqBuffer->getDataFromBuffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
+  /*const int32_t numRead2 =*/ mpCarrBuffer->getDataFromBuffer(mCarrValuesVec.data(), (int32_t)mCarrValuesVec.size());
 
   if (myFrame.isHidden())
   {
@@ -315,7 +306,7 @@ void SpectrumViewer::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
   dispFreqCorrBB->display(iFreqCorrBB);
 }
 
-void SpectrumViewer::show_clockErr(int e)
+void SpectrumViewer::show_clockErr(int32_t e)
 {
   if (!myFrame.isHidden())
   {
@@ -323,26 +314,26 @@ void SpectrumViewer::show_clockErr(int e)
   }
 }
 
-void SpectrumViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)
+void SpectrumViewer::showCorrelation(int32_t dots, int32_t marker, const QVector<int32_t> & v)
 {
   mpCorrelationViewer->showCorrelation(dots, marker, v);
 }
 
-void SpectrumViewer::_slot_handle_cmb_carrier(int iSel)
+void SpectrumViewer::_slot_handle_cmb_carrier(int32_t iSel)
 {
   auto pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
   emit signal_cmb_carrier_changed(pt);
 }
 
-void SpectrumViewer::_slot_handle_cmb_iqscope(int iSel)
+void SpectrumViewer::_slot_handle_cmb_iqscope(int32_t iSel)
 {
   auto pt = static_cast<EIqPlotType>(iSel);
   mpIQDisplay->select_plot_type(pt);
   emit signal_cmb_iqscope_changed(pt);
 }
 
-void SpectrumViewer::_slot_handle_cb_nom_carrier(int iSel)
+void SpectrumViewer::_slot_handle_cb_nom_carrier(int32_t iSel)
 {
   emit signal_cb_nom_carrier_changed(iSel != 0);
 }

@@ -61,7 +61,7 @@
 
 constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
-constexpr int32_t SP_SPECTRUMOVRSMPFAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
+constexpr int32_t SP_SPEC_OVR_SMP_FAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
 
 
 class RadioInterface;
@@ -95,29 +95,25 @@ public:
 
 private:
   QFrame myFrame;
-  RadioInterface * const myRadioInterface;
-  QSettings * const dabSettings;
-  RingBuffer<cmplx> * const spectrumBuffer;
-  RingBuffer<cmplx> * const iqBuffer;
-  RingBuffer<float> * const carrBuffer;
+  RadioInterface * const mpRadioInterface;
+  QSettings * const mpDabSettings;
+  RingBuffer<cmplx> * const mpSpectrumBuffer;
+  RingBuffer<cmplx> * const mpIqBuffer;
+  RingBuffer<float> * const mpCarrBuffer;
   RingBuffer<float> * const mpCorrelationBuffer;
-  QwtPlotPicker * lm_picker = nullptr;
   std::vector<cmplx> mIqValuesVec;
   std::vector<float> mCarrValuesVec;
 
   fftHandler fft;
 
-  std::array<cmplx, SP_SPECTRUMSIZE> spectrum{ 0 };
-  std::array<double, SP_SPECTRUMSIZE> displayBuffer{ 0 };
-  std::array<float, SP_SPECTRUMSIZE> Window{ 0 };
-  std::array<double, SP_DISPLAYSIZE> X_axis{ 0 };
-  std::array<double, SP_DISPLAYSIZE> Y_values{ 0 };
-  std::array<double, SP_DISPLAYSIZE> Y2_values{ 0 };
+  std::array<cmplx, SP_SPECTRUMSIZE> mSpectrumVec{ 0 };
+  std::array<float, SP_SPECTRUMSIZE> mWindowVec{ 0 };
+  std::array<double, SP_DISPLAYSIZE> mXAxisVec{ 0 };
+  std::array<double, SP_DISPLAYSIZE> mYValVec{ 0 };
+  std::array<double, SP_DISPLAYSIZE> mDisplayBuffer{ 0 };
 
-  QwtPlot * plotgrid{};
-  QwtPlotGrid * grid{};
-  int32_t normalizer = 0;
-  int32_t lastVcoFreq = 0;
+  int32_t mNormalizer = 2048;
+  int32_t mLastVcoFreq = 0;
   bool mShowInLogScale = false;
 
   CarrierDisp * mpCarrierDisp = nullptr;
@@ -125,8 +121,6 @@ private:
   SpectrumScope * mpSpectrumScope = nullptr;
   WaterfallScope * mpWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
-
-  [[nodiscard]] float get_db(float) const;
 
 private slots:
   void _slot_handle_cmb_carrier(int);

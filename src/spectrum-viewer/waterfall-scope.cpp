@@ -30,96 +30,66 @@
  */
 
 #include  "waterfall-scope.h"
-#include  <qwt_text.h>
-#include  <qpen.h>
 
 WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize) :
-  QwtPlotSpectrogram()
+  QwtPlotSpectrogram(),
+  mpPlotgrid(scope),
+  mDisplaySize(displaySize),
+  mRasterSize(rasterSize)
 {
-  this->plotgrid = scope;
-  this->displaySize = displaySize;
-  this->rasterSize = rasterSize;
-  colorMap = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
-  //QwtLinearColorMap * c2 = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
-  colorMap->addColorStop(0.1, Qt::cyan);
-  colorMap->addColorStop(0.4, Qt::green);
-  colorMap->addColorStop(0.7, Qt::yellow);
-//  c2->addColorStop(0.1, Qt::cyan);
-//  c2->addColorStop(0.4, Qt::green);
-//  c2->addColorStop(0.7, Qt::yellow);
-  this->setColorMap(colorMap);
-  //rightAxis = plotgrid->axisWidget(QwtPlot::yRight);
-  // A color bar on the right axis
-  //rightAxis->setColorBarEnabled(false);
-  plotData = new double[2 * displaySize * rasterSize];
+  mPlotDataVec.resize(displaySize * rasterSize);
+  std::fill(mPlotDataVec.begin(), mPlotDataVec.end(), 0.0);
 
-  for (int32_t i = 0; i < rasterSize; i++)
-  {
-    for (int32_t j = 0; j < displaySize; j++)
-    {
-      plotData[i * displaySize + j] = (double)i / rasterSize;
-    }
-  }
+  mpColorMap = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
+  mpColorMap->addColorStop(0.1, Qt::cyan);
+  mpColorMap->addColorStop(0.4, Qt::green);
+  mpColorMap->addColorStop(0.7, Qt::yellow);
+  setColorMap(mpColorMap);
 
-  WaterfallData = new SpectrogramData(plotData, 10000, 1000, rasterSize, displaySize, 50.0);
-  this->setData(WaterfallData);
-  this->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
-  //rightAxis->setColorMap(this->data()->interval(Qt::YAxis), c2);
-  //plotgrid->setAxisScale(QwtPlot::yRight, 0, 50.0);
-  //plotgrid->enableAxis(QwtPlot::yRight);
-  plotgrid->setAxisScale(QwtPlot::xBottom, 10000, 11000);
+  setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
 
-  plotgrid->enableAxis(QwtPlot::xBottom);
-  plotgrid->enableAxis(QwtPlot::yLeft);
-  plotgrid->setAxisScale(QwtPlot::yLeft, 0, rasterSize);
+  mpPlotgrid->enableAxis(QwtPlot::yLeft, true);
+  mpPlotgrid->setAxisScale(QwtPlot::yLeft, -rasterSize, 0);
+  mpPlotgrid->enableAxis(QwtPlot::xBottom, false);
+  mpPlotgrid->enableAxis(QwtPlot::xTop, true);
+  mpPlotgrid->axisScaleDraw(QwtPlot::xTop)->enableComponent(QwtAbstractScaleDraw::Labels, false); // disable labels (labels from spectrum used)
 
-//  Marker = new QwtPlotMarker();
-//  Marker->setLineStyle(QwtPlotMarker::VLine);
-//  Marker->setLinePen(QPen(Qt::black, 2.0));
-//  Marker->attach(plotgrid);
-//  indexforMarker = 0;
-  plotgrid->replot();
+  mpPlotgrid->replot();
 }
 
 WaterfallScope::~WaterfallScope()
 {
-  plotgrid->enableAxis(QwtPlot::yRight, false);
-  plotgrid->enableAxis(QwtPlot::xBottom, false);
-  plotgrid->enableAxis(QwtPlot::yLeft, false);
-  this->detach();
-  delete[]  plotData;
-  //	delete	colorMap;
-  //	delete	WaterfallData;
+  detach();
 }
 
-void WaterfallScope::display(const double * X_axis, double * Y1_value, double amp, int32_t marker)
+void WaterfallScope::showWaterfall(const double * X_axis, const double * Y1_value, double amp)
 {
-  int orig = (int)(X_axis[0]);
-  int width = (int)(X_axis[displaySize - 1] - orig);
+  const int32_t orig = (int32_t)(X_axis[0]);
+  const int32_t width = (int32_t)(X_axis[mDisplaySize - 1] - orig);
 
-  //indexforMarker = marker;
-  /*
-   *      shift one row, faster with memmove than writing out
-   *      the loops. Note that source and destination overlap
-   *      and we therefore use memmove rather than memcpy
-   */
-  memmove(&plotData[0], &plotData[displaySize], (rasterSize - 1) * displaySize * sizeof(double));
-  /*
-   *      ... and insert the new line
-   */
-  memcpy(&plotData[(rasterSize - 1) * displaySize], &Y1_value[0], displaySize * sizeof(double));
+  //invalidateCache();
+  if (mOrig != orig || mWidth != width || mAmp != amp)
+  {
+    if (mOrig != orig) // clean screen only on frequency change
+    {
+      std::fill(mPlotDataVec.begin(), mPlotDataVec.end(), 0.0);
+    }
+    mpWaterfallData = new SpectrogramData(mPlotDataVec.data(), orig, width, -mRasterSize, mDisplaySize, amp / 2);
+    detach();
+    setData(mpWaterfallData);
+    attach(mpPlotgrid);
+    mOrig = orig;
+    mWidth = width;
+    mAmp = amp;
+  }
 
-  invalidateCache();
-  WaterfallData = new SpectrogramData(plotData, orig, width, rasterSize, displaySize, amp / 2);
+  constexpr int32_t elemSize = sizeof(decltype(mPlotDataVec.back()));
+  memmove(&mPlotDataVec[mDisplaySize], &mPlotDataVec[0], (mRasterSize - 1) * mDisplaySize * elemSize); // move rows one row further
+  memcpy (&mPlotDataVec[0], &Y1_value[0], mDisplaySize * elemSize);  // insert the new line
 
-  this->detach();
-  this->setData(WaterfallData);
-  this->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
+  mpPlotgrid->setAxisScale(QwtPlot::xBottom, X_axis[0], X_axis[mDisplaySize - 1]); // for plot
+  mpPlotgrid->setAxisScale(QwtPlot::xTop,    X_axis[0], X_axis[mDisplaySize - 1]); // for ticks
 
-  plotgrid->setAxisScale(QwtPlot::xBottom, orig, orig + width);
-  plotgrid->enableAxis(QwtPlot::xBottom);
-  //Marker->setXValue(marker);
-  this->attach(plotgrid);
-  plotgrid->replot();
+  mpPlotgrid->replot();
 }
 

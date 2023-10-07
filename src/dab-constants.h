@@ -63,6 +63,7 @@
 
 #define    INPUT_RATE  2048000
 #define    BANDWIDTH  1536000
+#define    LIGHT_SPEED_MPS  299792458
 
 #define    MAP_RESET  0
 #define    MAP_FRAME  1

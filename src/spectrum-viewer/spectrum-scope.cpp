@@ -4,93 +4,80 @@
 #include  <QPen>
 #include  "color-selector.h"
 
-SpectrumScope::SpectrumScope(QwtPlot * dabScope, int displaySize, QSettings * dabSettings) :
-  spectrumCurve("")
+SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings * dabSettings) :
+  mSpectrumCurve(""),
+  mpDabSettings(dabSettings),
+  mDisplaySize(displaySize)
 {
+  mYValVec.resize(mDisplaySize);
+  std::fill(mYValVec.begin(), mYValVec.end(), 0.0);
+
   QString colorString = "black";
   bool brush;
 
-  this->dabSettings = dabSettings;
-  this->displaySize = displaySize;
   dabSettings->beginGroup("spectrumViewer");
-//  colorString = dabSettings->value("displayColor", "black").toString();
-//  displayColor = QColor(colorString);
   colorString = dabSettings->value("gridColor", "white").toString();
   mGridColor = QColor(colorString);
   colorString = dabSettings->value("curveColor", "white").toString();
   mCurveColor = QColor(colorString);
   brush = dabSettings->value("brush", 0).toInt() == 1;
   dabSettings->endGroup();
-  plotgrid = dabScope;
-  //plotgrid->setCanvasBackground(displayColor);
-  grid = new QwtPlotGrid;
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid	-> setMajPen (QPen(gridColor, 0, Qt::DotLine));
-#else
-  grid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
-#endif
-  grid->enableXMin(true);
-  grid->enableYMin(true);
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid	-> setMinPen (QPen(gridColor, 0, Qt::DotLine));
-#else
-  grid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
-#endif
-  grid->attach(plotgrid);
+  mpPlotgrid = dabScope;
 
-  lm_picker = new QwtPlotPicker(dabScope->canvas());
+  mpGrid = new QwtPlotGrid;
+  mpGrid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
+  mpGrid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
+  mpGrid->enableXMin(true);
+  mpGrid->enableYMin(true);
+  mpGrid->attach(mpPlotgrid);
+
+  mpLmPicker = new QwtPlotPicker(dabScope->canvas());
   QwtPickerMachine * lpickerMachine = new QwtPickerClickPointMachine();
 
-  lm_picker->setStateMachine(lpickerMachine);
-  lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
-  connect(lm_picker, SIGNAL (selected(const QPointF&)), this, SLOT (rightMouseClick(const QPointF &)));
+  mpLmPicker->setStateMachine(lpickerMachine);
+  mpLmPicker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
-  spectrumCurve.setPen(QPen(mCurveColor, 2.0));
-  spectrumCurve.setOrientation(Qt::Horizontal);
-  spectrumCurve.setBaseline(get_db(0));
+  connect(mpLmPicker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &SpectrumScope::rightMouseClick);
+
+  mSpectrumCurve.setPen(QPen(mCurveColor, 2.0));
+  mSpectrumCurve.setOrientation(Qt::Horizontal);
+  mSpectrumCurve.setBaseline(get_db(0));
 
   if (brush)
   {
     QBrush ourBrush(mCurveColor);
     ourBrush.setStyle(Qt::Dense3Pattern);
-    spectrumCurve.setBrush(ourBrush);
+    mSpectrumCurve.setBrush(ourBrush);
   }
-  spectrumCurve.attach(plotgrid);
+  mSpectrumCurve.attach(mpPlotgrid);
 
-  Marker = new QwtPlotMarker();
-  Marker->setLineStyle(QwtPlotMarker::VLine);
-  Marker->setLinePen(QPen(Qt::red));
-  Marker->attach(plotgrid);
-  plotgrid->enableAxis(QwtPlot::yLeft);
+  mpPlotgrid->enableAxis(QwtPlot::yLeft);
 
-  normalizer = 2048;
 }
 
 SpectrumScope::~SpectrumScope()
 {
-  delete Marker;
-  delete grid;
+  delete mpGrid;
 }
 
-void SpectrumScope::showSpectrum(const double * X_axis, double * Y_value, int amplification, int frequency)
+void SpectrumScope::showSpectrum(const double * X_axis, const double * Y_value, int32_t amplification)
 {
-  const float factor = (float)amplification / 100.0f; // amplification is between [1..100], so factor ]0..100]
-  const float levelBottomdB = get_db(0); // eg. about -42 (dB)
-  const float levelTopdB = (1.0f - factor) * levelBottomdB;
+  const double factor = (float)amplification / 100.0f; // amplification is between [1..100], so factor ]0..100]
+  const double levelBottomdB = get_db(0.0); // eg. about -42 (dB)
+  const double levelTopdB = (1.0 - factor) * levelBottomdB;
 
-  plotgrid->setAxisScale(QwtPlot::xBottom, (double)X_axis[0], X_axis[displaySize - 1]);
-  plotgrid->enableAxis(QwtPlot::xBottom);
-  plotgrid->setAxisScale(QwtPlot::yLeft, levelBottomdB, levelTopdB);
+  mpPlotgrid->setAxisScale(QwtPlot::xBottom, (double)X_axis[0], X_axis[mDisplaySize - 1]);
+  mpPlotgrid->enableAxis(QwtPlot::xBottom);
+  mpPlotgrid->setAxisScale(QwtPlot::yLeft, levelBottomdB, levelTopdB);
 
-  for (uint16_t i = 0; i < displaySize; i++)
+  for (uint16_t i = 0; i < mDisplaySize; i++)
   {
-    Y_value[i] = get_db(factor * Y_value[i]);
+    mYValVec[i] = get_db(factor * Y_value[i]);
   }
 
-  spectrumCurve.setBaseline(levelBottomdB);
-  spectrumCurve.setSamples(X_axis, Y_value, displaySize);
-  Marker->setXValue(0);
-  plotgrid->replot();
+  mSpectrumCurve.setBaseline(levelBottomdB);
+  mSpectrumCurve.setSamples(X_axis, mYValVec.data(), mDisplaySize);
+  mpPlotgrid->replot();
 }
 
 void SpectrumScope::rightMouseClick(const QPointF & point)
@@ -100,38 +87,20 @@ void SpectrumScope::rightMouseClick(const QPointF & point)
   if (!ColorSelector::show_dialog(mGridColor, ColorSelector::GRIDCOLOR)) return;
   if (!ColorSelector::show_dialog(mCurveColor, ColorSelector::CURVECOLOR)) return;
 
-  dabSettings->beginGroup("spectrumViewer");
-  //dabSettings->setValue("displayColor", mDisplayColor.name());
-  dabSettings->setValue("gridColor", mGridColor.name());
-  dabSettings->setValue("curveColor", mCurveColor.name());
-  dabSettings->endGroup();
+  mpDabSettings->beginGroup("spectrumViewer");
+  mpDabSettings->setValue("gridColor", mGridColor.name());
+  mpDabSettings->setValue("curveColor", mCurveColor.name());
+  mpDabSettings->endGroup();
 
-  //this->displayColor = QColor(displayColor);
-  //this->gridColor = QColor(gridColor);
-  //this->curveColor = QColor(curveColor);
-  spectrumCurve.setPen(QPen(mCurveColor, 2.0));
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid->setMajPen(QPen(this->gridColor, 0, Qt::DotLine));
-#else
-  grid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
-#endif
-  grid->enableXMin(true);
-  grid->enableYMin(true);
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid->setMinPen(QPen(this->gridColor, 0, Qt::DotLine));
-#else
-  grid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
-#endif
-  //plotgrid->setCanvasBackground(this->displayColor);
+  mSpectrumCurve.setPen(QPen(mCurveColor, 2.0));
+  mpGrid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
+  mpGrid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
+  mpGrid->enableXMin(true);
+  mpGrid->enableYMin(true);
 }
 
-float SpectrumScope::get_db(float x)
+void SpectrumScope::setBitDepth(int32_t n)
 {
-  return 20 * log10((x + 1) / (float)(normalizer));
-}
-
-void SpectrumScope::setBitDepth(int n)
-{
-  normalizer = n;
+  mNormalizer = n;
 }
 
