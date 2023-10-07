@@ -109,7 +109,6 @@
 #include  "time-table.h"
 
 #include  "device-exceptions.h"
-#include  "pause_slide.h"
 
 #ifdef  __MINGW32__
 #include <windows.h>
@@ -4305,8 +4304,10 @@ void RadioInterface::_slot_handle_on_top(int d)
 void RadioInterface::show_pause_slide()
 {
   QPixmap p;
-  p.loadFromData(QByteArray::fromRawData(reinterpret_cast<const char *>(PAUSESLIDE), PAUSESLIDE_SIZE), "png");  // ignore obsolete last zero in data
-  write_picture(p);
+  if (p.load(":res/DABLogoCrop.png", "png"))
+  {
+    write_picture(p);
+  }
 }
 
 void RadioInterface::_slot_handle_port_selector()
