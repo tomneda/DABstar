@@ -159,7 +159,9 @@ That the name, distance and direction to the transmitter can be shown, do follow
 - New desktop logos for program symbol. The main window symbol is brighter in the task bar to distinguish it from the other sub windows more easily.
 - Simplify clock and runtime display.
 - New DAB logo on pause slide:  
-    <img  width="80" height="50" src="src/helpers/pauseslide/dablogo.png"/>
+    <img  width="80" height="50" src="res/DABLogoCrop.png"/> 
+    meanwhile superseded by 
+    <img  width="80" height="50" src="res/DABLogoInvSmall.png"/>
 
 ### Functional changes
 
