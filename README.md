@@ -160,8 +160,6 @@ That the name, distance and direction to the transmitter can be shown, do follow
 - Simplify clock and runtime display.
 - New DAB logo on pause slide:  
     <img  width="80" height="50" src="res/DABLogoCrop.png"/> 
-    meanwhile superseded by 
-    <img  width="80" height="50" src="res/DABLogoInvSmall.png"/>
 
 ### Functional changes
 
