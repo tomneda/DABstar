@@ -28,8 +28,8 @@ public:
   SpectrumScope(QwtPlot *, int32_t, QSettings *);
   ~SpectrumScope();
 
-  void showSpectrum(const double *, const double *, int32_t);
-  void setBitDepth(int32_t);
+  void show_spectrum(const double *, const double *, int32_t);
+  void set_bit_depth(int32_t);
 
 private:
   QwtPlotCurve mSpectrumCurve;

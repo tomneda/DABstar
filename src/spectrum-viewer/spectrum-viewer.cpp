@@ -74,7 +74,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   mpCarrierDisp = new CarrierDisp(phaseCarrPlot);
   mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, ipDabSettings, mpCorrelationBuffer);
 
-  setBitDepth(12);
+  set_bit_depth(12);
 
   mShowInLogScale = cbLogIqScope->isChecked();
 
@@ -106,7 +106,7 @@ SpectrumViewer::~SpectrumViewer()
   delete mpWaterfallScope;
 }
 
-void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
+void SpectrumViewer::show_spectrum(int32_t amount, int32_t vfoFrequency)
 {
   (void)amount;
 
@@ -180,11 +180,11 @@ void SpectrumViewer::showSpectrum(int32_t amount, int32_t vfoFrequency)
     mean_filter(mDisplayBuffer[i], mYValVec[i], 1.0 / averageCount);
   }
 
-  mpWaterfallScope->showWaterfall(mXAxisVec.data(), mDisplayBuffer.data(), dabWaterfallAmplitude->value());
-  mpSpectrumScope->showSpectrum(mXAxisVec.data(), mDisplayBuffer.data(), scopeAmplification->value());
+  mpWaterfallScope->show_waterfall(mXAxisVec.data(), mDisplayBuffer.data(), dabWaterfallAmplitude->value());
+  mpSpectrumScope->show_spectrum(mXAxisVec.data(), mDisplayBuffer.data(), scopeAmplification->value());
 }
 
-void SpectrumViewer::setBitDepth(int16_t d)
+void SpectrumViewer::set_bit_depth(int16_t d)
 {
   if (d < 0 || d > 32)
   {
@@ -197,7 +197,8 @@ void SpectrumViewer::setBitDepth(int16_t d)
     mNormalizer <<= 1;
   }
 
-  mpSpectrumScope->setBitDepth(mNormalizer);
+  mpSpectrumScope->set_bit_depth(mNormalizer);
+  mpWaterfallScope->set_bit_depth(mNormalizer);
 }
 
 void SpectrumViewer::show()
@@ -210,12 +211,12 @@ void SpectrumViewer::hide()
   myFrame.hide();
 }
 
-bool SpectrumViewer::isHidden()
+bool SpectrumViewer::is_hidden()
 {
   return myFrame.isHidden();
 }
 
-void SpectrumViewer::showIQ(int32_t iAmount, float iAvg)
+void SpectrumViewer::show_iq(int32_t iAmount, float iAvg)
 {
   if (mIqValuesVec.size() != (unsigned)iAmount)
   {
@@ -255,7 +256,7 @@ void SpectrumViewer::showIQ(int32_t iAmount, float iAvg)
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
-void SpectrumViewer::showQuality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)
+void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)
 {
   if (myFrame.isHidden())
   {
@@ -306,7 +307,7 @@ void SpectrumViewer::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
   dispFreqCorrBB->display(iFreqCorrBB);
 }
 
-void SpectrumViewer::show_clockErr(int32_t e)
+void SpectrumViewer::show_clock_error(int32_t e)
 {
   if (!myFrame.isHidden())
   {
@@ -314,7 +315,7 @@ void SpectrumViewer::show_clockErr(int32_t e)
   }
 }
 
-void SpectrumViewer::showCorrelation(int32_t dots, int32_t marker, const QVector<int32_t> & v)
+void SpectrumViewer::show_correlation(int32_t dots, int32_t marker, const QVector<int32_t> & v)
 {
   mpCorrelationViewer->showCorrelation(dots, marker, v);
 }

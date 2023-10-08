@@ -32,6 +32,7 @@
 #ifndef  WATERFALLSCOPE_H
 #define  WATERFALLSCOPE_H
 
+#include <cmath>
 #include <QObject>
 #include <qwt.h>
 #include <qwt_plot.h>
@@ -56,7 +57,8 @@ public:
   WaterfallScope(QwtPlot *, int, int);
   ~WaterfallScope() override;
 
-  void showWaterfall(const double *, const double *, double);
+  void show_waterfall(const double *, const double *, double);
+  void set_bit_depth(int32_t);
 
 private:
   QwtPlot * const mpPlotgrid;
@@ -65,9 +67,12 @@ private:
   int32_t mOrig = 0;
   int32_t mWidth = 0;
   int32_t mAmp = 0;
+  int32_t mNormalizer = 2048;
   SpectrogramData * mpWaterfallData;
   QwtLinearColorMap * mpColorMap;
   std::vector<double> mPlotDataVec;
+
+  template<typename T> inline T get_db(T x) { return 20 * std::log10((x + 1) / (T)(mNormalizer)); }
 };
 
 #endif

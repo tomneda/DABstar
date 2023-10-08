@@ -62,7 +62,7 @@ WaterfallScope::~WaterfallScope()
   detach();
 }
 
-void WaterfallScope::showWaterfall(const double * X_axis, const double * Y1_value, double amp)
+void WaterfallScope::show_waterfall(const double * X_axis, const double * Y1_value, double amp)
 {
   const int32_t orig = (int32_t)(X_axis[0]);
   const int32_t width = (int32_t)(X_axis[mDisplaySize - 1] - orig);
@@ -85,7 +85,11 @@ void WaterfallScope::showWaterfall(const double * X_axis, const double * Y1_valu
 
   constexpr int32_t elemSize = sizeof(decltype(mPlotDataVec.back()));
   memmove(&mPlotDataVec[mDisplaySize], &mPlotDataVec[0], (mRasterSize - 1) * mDisplaySize * elemSize); // move rows one row further
-  memcpy (&mPlotDataVec[0], &Y1_value[0], mDisplaySize * elemSize);  // insert the new line
+
+  for (int i = 0; i < mDisplaySize; ++i)
+  {
+    mPlotDataVec[i] = 20.0 * std::log10(Y1_value[i] + 1.0);
+  }
 
   mpPlotgrid->setAxisScale(QwtPlot::xBottom, X_axis[0], X_axis[mDisplaySize - 1]); // for plot
   mpPlotgrid->setAxisScale(QwtPlot::xTop,    X_axis[0], X_axis[mDisplaySize - 1]); // for ticks
@@ -93,3 +97,7 @@ void WaterfallScope::showWaterfall(const double * X_axis, const double * Y1_valu
   mpPlotgrid->replot();
 }
 
+void WaterfallScope::set_bit_depth(int32_t n)
+{
+  mNormalizer = n;
+}

@@ -60,7 +60,7 @@ SpectrumScope::~SpectrumScope()
   delete mpGrid;
 }
 
-void SpectrumScope::showSpectrum(const double * X_axis, const double * Y_value, int32_t amplification)
+void SpectrumScope::show_spectrum(const double * X_axis, const double * Y_value, int32_t amplification)
 {
   const double factor = (double)amplification / 100.0; // amplification is between [1..100], so factor ]0..100]
   const double levelBottomdB = get_db(0.0); // eg. about -42 (dB)
@@ -99,7 +99,7 @@ void SpectrumScope::rightMouseClick(const QPointF & point)
   mpGrid->enableYMin(true);
 }
 
-void SpectrumScope::setBitDepth(int32_t n)
+void SpectrumScope::set_bit_depth(int32_t n)
 {
   mNormalizer = n;
 }

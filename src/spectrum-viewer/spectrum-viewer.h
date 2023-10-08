@@ -79,19 +79,19 @@ public:
   SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
   ~SpectrumViewer() override;
 
-  void showSpectrum(int32_t, int32_t);
-  void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
+  void show_spectrum(int32_t, int32_t);
+  void show_correlation(int32_t dots, int marker, const QVector<int> & v);
   void show_nominal_frequency_MHz(float);
   void show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
   void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
-  void showIQ(int32_t, float);
-  void showQuality(int32_t, float, float, float, float, float);
+  void show_iq(int32_t, float);
+  void show_quality(int32_t, float, float, float, float, float);
   void show_snr(float);
-  void show_clockErr(int);
-  void setBitDepth(int16_t);
+  void show_clock_error(int);
+  void set_bit_depth(int16_t);
   void show();
   void hide();
-  bool isHidden();
+  bool is_hidden();
 
 private:
   QFrame myFrame;

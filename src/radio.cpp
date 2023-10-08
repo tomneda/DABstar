@@ -1856,7 +1856,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
 
   //
   //	It took some code, but it seems we have a device
-  my_spectrumViewer.setBitDepth(inputDevice->bitDepth());
+  my_spectrumViewer.set_bit_depth(inputDevice->bitDepth());
 
   dabSettings->setValue("device", s);
   //	do we want to see the widget for device control?
@@ -2284,7 +2284,7 @@ void RadioInterface::slot_show_spectrum(int32_t amount)
     return;
   }
 
-  my_spectrumViewer.showSpectrum(amount, inputDevice->getVFOFrequency());
+  my_spectrumViewer.show_spectrum(amount, inputDevice->getVFOFrequency());
 }
 
 void RadioInterface::slot_show_iq(int iAmount, float iAvg)
@@ -2294,7 +2294,7 @@ void RadioInterface::slot_show_iq(int iAmount, float iAvg)
     return;
   }
 
-  my_spectrumViewer.showIQ(iAmount, iAvg);
+  my_spectrumViewer.show_iq(iAmount, iAvg);
 }
 
 void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData * pQD)
@@ -2304,9 +2304,9 @@ void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData 
     return;
   }
 
-  if (!my_spectrumViewer.isHidden())
+  if (!my_spectrumViewer.is_hidden())
   {
-    my_spectrumViewer.showQuality(pQD->CurOfdmSymbolNo, pQD->StdDeviation, pQD->TimeOffset, pQD->FreqOffset, pQD->PhaseCorr, pQD->SNR);
+    my_spectrumViewer.show_quality(pQD->CurOfdmSymbolNo, pQD->StdDeviation, pQD->TimeOffset, pQD->FreqOffset, pQD->PhaseCorr, pQD->SNR);
   }
 }
 
@@ -2332,9 +2332,9 @@ void RadioInterface::slot_show_clock_error(int e)
   {
     return;
   }
-  if (!my_spectrumViewer.isHidden())
+  if (!my_spectrumViewer.is_hidden())
   {
-    my_spectrumViewer.show_clockErr(e);
+    my_spectrumViewer.show_clock_error(e);
   }
 }
 
@@ -2347,7 +2347,7 @@ void RadioInterface::slot_show_correlation(int amount, int marker, const QVector
     return;
   }
 
-  my_spectrumViewer.showCorrelation(amount, marker, v);
+  my_spectrumViewer.show_correlation(amount, marker, v);
   channel.nrTransmitters = v.size();
 }
 
@@ -2610,7 +2610,7 @@ void RadioInterface::_slot_handle_spectrum_button()
     return;
   }
 
-  if (my_spectrumViewer.isHidden())
+  if (my_spectrumViewer.is_hidden())
   {
     my_spectrumViewer.show();
   }
@@ -2618,7 +2618,7 @@ void RadioInterface::_slot_handle_spectrum_button()
   {
     my_spectrumViewer.hide();
   }
-  dabSettings->setValue("spectrumVisible", my_spectrumViewer.isHidden() ? 0 : 1);
+  dabSettings->setValue("spectrumVisible", my_spectrumViewer.is_hidden() ? 0 : 1);
 }
 
 void RadioInterface::_slot_handle_history_button()
