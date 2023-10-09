@@ -165,19 +165,7 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 
 #endif
 
-#define  SINGLE_SCAN    0
-#define  SCAN_TO_DATA    1
-#define  SCAN_CONTINUOUSLY  2
-
 static int32_t sFreqOffHz = 0; // for test
-
-const char * scanTextTable[3] = {
-  "single scan", "scan to data", "scan continuously" };
-
-static inline QString scanmodeText(int e)
-{
-  return QString(scanTextTable[e]);
-}
 
 static uint8_t convert(QString s)
 {
@@ -358,8 +346,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   connect(configWidget.sliderTest, &QSlider::valueChanged, this, &RadioInterface::slot_test_slider);
 
   logFile = nullptr;
-  int scanMode = dabSettings->value("scanMode", SINGLE_SCAN).toInt();
-  configWidget.scanmodeSelector->setCurrentIndex(scanMode);
 
   x = dabSettings->value("closeDirect", 0).toInt();
   if (x != 0)
@@ -913,13 +899,7 @@ void RadioInterface::slot_name_of_ensemble(int id, const QString & v)
 
   channel.ensembleName = v;
   channel.Eid = id;
-  if (configWidget.scanmodeSelector->currentIndex() == SCAN_TO_DATA)
-  {
-    stopScanning(false);
-  }
 }
-//
-///////////////////////////////////////////////////////////////////////////
 
 void RadioInterface::_slot_handle_content_button()
 {
@@ -2669,7 +2649,6 @@ void RadioInterface::connectGUI()
   connect(configWidget.orderAlfabetical, SIGNAL (clicked()), this, SLOT (_slot_handle_order_alfabetical()));
   connect(configWidget.orderServiceIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_service_ids()));
   connect(configWidget.ordersubChannelIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_sub_channel_ids()));
-  connect(configWidget.scanmodeSelector, SIGNAL (currentIndexChanged(int)), this, SLOT (_slot_handle_scan_mode_selector(int)));
   connect(configWidget.saveServiceSelector, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_save_service_selector(int)));
   connect(configWidget.skipList_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_list_button()));
   connect(configWidget.skipFile_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_file_button()));
@@ -2697,7 +2676,6 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.orderAlfabetical, SIGNAL (clicked()), this, SLOT (_slot_handle_order_alfabetical()));
   disconnect(configWidget.orderServiceIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_service_ids()));
   disconnect(configWidget.ordersubChannelIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_sub_channel_ids()));
-  disconnect(configWidget.scanmodeSelector, SIGNAL (currentIndexChanged(int)), this, SLOT (_slot_handle_scan_mode_selector(int)));
   disconnect(configWidget.saveServiceSelector, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_save_service_selector(int)));
   disconnect(configWidget.skipList_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_list_button()));
   disconnect(configWidget.skipFile_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_file_button()));
@@ -3590,61 +3568,34 @@ void RadioInterface::_slot_handle_scan_button()
 void RadioInterface::startScanning()
 {
   int switchDelay;
-  int scanMode = configWidget.scanmodeSelector->currentIndex();
   presetTimer.stop();
   channelTimer.stop();
   epgTimer.stop();
   connect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   new_presetIndex(0);
   stopChannel();
-  int cc = channelSelector->currentIndex();
-  if (scanMode == SCAN_TO_DATA)
-  {
-    cc++;
-    if (cc >= channelSelector->count())
-    {
-      cc = 0;
-    }
-  }
-  else
-  {
-    cc = theBand.firstChannel();
-  }
+  const int cc = theBand.firstChannel();
 
   LOG("scanning starts with ", QString::number(cc));
   scanning.store(true);
-  if ((scanMode == SINGLE_SCAN) || (scanMode == SCAN_CONTINUOUSLY))
-  {
-    if (my_scanTable == nullptr)
-    {
-      my_scanTable = new ContentTable(this, dabSettings, "scan", my_dabProcessor->scanWidth());
-    }
-    else
-    {
-      my_scanTable->clearTable();
-    }
-    QString topLine = QString("ensemble") + ";" + "channelName" + ";" + "frequency (KHz)" + ";" + "Eid" + ";" + "time" + ";" + "tii" + ";" + "SNR" + ";" + "nr services" + ";";
-    my_scanTable->addLine(topLine);
-    my_scanTable->addLine("\n");
-  }
 
-  if (scanMode == SINGLE_SCAN)
+  if (my_scanTable == nullptr)
   {
-    scanDumpFile = filenameFinder.findScanDump_fileName();
-  }
-  else if (scanMode == SCAN_CONTINUOUSLY)
-  {
-    scanDumpFile = filenameFinder.findSummary_fileName();
+    my_scanTable = new ContentTable(this, dabSettings, "scan", my_dabProcessor->scanWidth());
   }
   else
   {
-    scanDumpFile = nullptr;
+    my_scanTable->clearTable();
   }
+  QString topLine = QString("ensemble") + ";" + "channelName" + ";" + "frequency (KHz)" + ";" + "Eid" + ";" + "time" + ";" + "tii" + ";" + "SNR" + ";" + "nr services" + ";";
+  my_scanTable->addLine(topLine);
+  my_scanTable->addLine("\n");
 
+  scanDumpFile = filenameFinder.findScanDump_fileName();
   my_dabProcessor->set_scanMode(true);
-  //      To avoid reaction of the system on setting a different value:
+  //  To avoid reaction of the system on setting a different value:
   new_channelIndex(cc);
-  dynamicLabel->setText("scan mode \"" + scanmodeText(scanMode) + "\" scanning channel " + channelSelector->currentText());
+  dynamicLabel->setText("Scanning channel " + channelSelector->currentText());
   scanButton->setText("SCANNING");
   switchDelay = dabSettings->value("switchDelay", 8).toInt();
   channelTimer.start(switchDelay * 1000);
@@ -3692,7 +3643,6 @@ void RadioInterface::stopScanning(bool dump)
 void RadioInterface::slot_no_signal_found()
 {
   int switchDelay;
-  int scanMode = configWidget.scanmodeSelector->currentIndex();
 
   disconnect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   channelTimer.stop();
@@ -3701,14 +3651,14 @@ void RadioInterface::slot_no_signal_found()
   if (running.load() && scanning.load())
   {
     int cc = channelSelector->currentIndex();
-    if ((scanMode != SCAN_TO_DATA) && (serviceList.size() > 0))
+    if (serviceList.size() > 0)
     {
       showServices();
     }
     stopChannel();
     cc = theBand.nextChannel(cc);
     fprintf(stdout, "going to channel %d\n", cc);
-    if ((cc >= channelSelector->count()) && (scanMode == SINGLE_SCAN))
+    if (cc >= channelSelector->count())
     {
       stopScanning(true);
     }
@@ -3724,7 +3674,7 @@ void RadioInterface::slot_no_signal_found()
       connect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
       connect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
-      dynamicLabel->setText("scan mode \"" + scanmodeText(scanMode) + "\" scanning channel " + channelSelector->currentText());
+      dynamicLabel->setText("Scanning channel " + channelSelector->currentText());
       switchDelay = dabSettings->value("switchDelay", 8).toInt();
       channelTimer.start(switchDelay * 1000);
       startChannel(channelSelector->currentText());
@@ -3743,7 +3693,7 @@ void RadioInterface::slot_no_signal_found()
 
 void RadioInterface::showServices()
 {
-  int scanMode = configWidget.scanmodeSelector->currentIndex();
+  //int scanMode = configWidget.scanmodeSelector->currentIndex();
   QString SNR = "SNR " + QString::number(channel.snr);
 
   if (my_dabProcessor == nullptr)
@@ -3753,29 +3703,17 @@ void RadioInterface::showServices()
   }
 
   QString utcTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
-  if (scanMode == SINGLE_SCAN)
+  QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(
+    channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
+  QStringList s = my_dabProcessor->basicPrint();
+  my_scanTable->addLine(headLine);
+  my_scanTable->addLine("\n;\n");
+  for (int i = 0; i < s.size(); i++)
   {
-    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(
-      channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
-    QStringList s = my_dabProcessor->basicPrint();
-    my_scanTable->addLine(headLine);
-    my_scanTable->addLine("\n;\n");
-    for (int i = 0; i < s.size(); i++)
-    {
-      my_scanTable->addLine(s.at(i));
-    }
-    my_scanTable->addLine("\n;\n;\n");
-    my_scanTable->show();
+    my_scanTable->addLine(s.at(i));
   }
-  else if (scanMode == SCAN_CONTINUOUSLY)
-  {
-    QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(
-      channel.Eid) + ";" + utcTime + ";" + transmitter_coordinates->text() + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
-
-    //	   my_scanTable -> addLine ("\n");
-    my_scanTable->addLine(headLine);
-    my_scanTable->show();
-  }
+  my_scanTable->addLine("\n;\n;\n");
+  my_scanTable->show();
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -3903,11 +3841,6 @@ void RadioInterface::new_channelIndex(int index)
 void RadioInterface::_slot_handle_switch_delay_setting(int newV)
 {
   dabSettings->setValue("switchDelay", newV);
-}
-
-void RadioInterface::_slot_handle_scan_mode_selector(int d)
-{
-  dabSettings->setValue("scanMode", d);
 }
 
 void RadioInterface::_slot_handle_save_service_selector(int d)

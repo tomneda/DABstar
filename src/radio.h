@@ -413,7 +413,6 @@ private slots:
   void _slot_handle_order_alfabetical();
   void _slot_handle_order_service_ids();
   void _slot_handle_order_sub_channel_ids();
-  void _slot_handle_scan_mode_selector(int);
   void _slot_handle_save_service_selector(int);
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();
