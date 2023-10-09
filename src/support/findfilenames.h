@@ -52,7 +52,6 @@ public:
   FILE * findFrameDump_fileName(const QString & service, bool);
   SNDFILE * findAudioDump_fileName(const QString & service, bool);
   SNDFILE * findRawDump_fileName(const QString & deviceName, const QString & channelName);
-  FILE * findScanDump_fileName();
   FILE * findSummary_fileName();
   const QString findskipFile_fileName();
   QString finddlText_fileName(bool);

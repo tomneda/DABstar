@@ -3591,7 +3591,6 @@ void RadioInterface::startScanning()
   my_scanTable->addLine(topLine);
   my_scanTable->addLine("\n");
 
-  scanDumpFile = filenameFinder.findScanDump_fileName();
   my_dabProcessor->set_scanMode(true);
   //  To avoid reaction of the system on setting a different value:
   new_channelIndex(cc);
@@ -3621,15 +3620,6 @@ void RadioInterface::stopScanning(bool dump)
     dynamicLabel->setText("Scan ended");
     channelTimer.stop();
     scanning.store(false);
-    if (scanDumpFile != nullptr)
-    {
-      if (my_scanTable != nullptr)
-      {
-        my_scanTable->dump(scanDumpFile);
-      }
-      fclose(scanDumpFile);
-      scanDumpFile = nullptr;
-    }
   }
 }
 

@@ -279,49 +279,6 @@ SNDFILE * FindFileNames::findRawDump_fileName(const QString & deviceName, const 
   return theFile;
 }
 
-FILE * FindFileNames::findScanDump_fileName()
-{
-  QMessageBox::StandardButton resultButton = QMessageBox::question(nullptr,
-                                                                   PRJ_NAME,
-                                                                   "save the scan?\n",
-                                                                   QMessageBox::No | QMessageBox::Yes,
-                                                                   QMessageBox::Yes);
-  if (resultButton != QMessageBox::Yes)
-  {
-    return nullptr;
-  }
-
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  QString theTime = QDateTime::currentDateTime().toString();
-  for (int i = 0; i < theTime.length(); i++)
-  {
-    if (!isValid(theTime.at(i)))
-    {
-      theTime.replace(i, 1, '-');
-    }
-  }
-  QString suggestedFileName = saveDir + PRJ_NAME "-scan" + "-" + theTime + ".csv";
-
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  "Save file ...",
-                                                  suggestedFileName,
-                                                  "csv (*.csv)",
-                                                  Q_NULLPTR,
-                                                  QFileDialog::DontUseNativeDialog);
-  if (fileName == nullptr)
-  { // canceled?
-    return nullptr;
-  }
-  fileName = QDir::toNativeSeparators(fileName);
-  return fopen(fileName.toUtf8().data(), "w");
-}
-
 FILE * FindFileNames::findSummary_fileName()
 {
   QMessageBox::StandardButton resultButton = QMessageBox::question(nullptr,

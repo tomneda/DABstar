@@ -239,7 +239,6 @@ private:
 #endif
   SNDFILE * rawDumper;
   SNDFILE * audioDumper;
-  FILE * scanDumpFile;
   void set_channelButton(int);
   QStandardItemModel model;
   std::vector<serviceId> serviceList;
