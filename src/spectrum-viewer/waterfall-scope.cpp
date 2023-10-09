@@ -40,11 +40,7 @@ WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize)
   mPlotDataVec.resize(displaySize * rasterSize);
   std::fill(mPlotDataVec.begin(), mPlotDataVec.end(), 0.0);
 
-  mpColorMap = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
-  mpColorMap->addColorStop(0.1, Qt::cyan);
-  mpColorMap->addColorStop(0.4, Qt::green);
-  mpColorMap->addColorStop(0.7, Qt::yellow);
-  setColorMap(mpColorMap);
+  _gen_color_map();
 
   setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
 
@@ -96,4 +92,34 @@ void WaterfallScope::show_waterfall(const double * X_axis, const double * Y1_val
 void WaterfallScope::set_bit_depth(int32_t n)
 {
   mNormalizer = n;
+}
+
+void WaterfallScope::_gen_color_map()
+{
+  constexpr int32_t COL_STEPS = 16;
+
+  const int32_t R_start = 0x40;
+  const int32_t G_start = 0x00;
+  const int32_t B_start = 0x00;
+
+  const int32_t R_stop = 0xA0;
+  const int32_t G_stop = 0x80;
+  const int32_t B_stop = 0xFF;
+
+  const double R_step = (double)(R_stop - R_start) / COL_STEPS;
+  const double G_step = (double)(G_stop - G_start) / COL_STEPS;
+  const double B_step = (double)(B_stop - B_start) / COL_STEPS;
+
+  mpColorMap = new QwtLinearColorMap(Qt::black, R_stop << 16 | G_stop << 8 | B_stop);
+
+  for (int colIdx = 1; colIdx < COL_STEPS; ++colIdx)
+  {
+    const int32_t R_val = (int32_t)(R_step * colIdx) + R_start;
+    const int32_t G_val = (int32_t)(G_step * colIdx) + G_start;
+    const int32_t B_val = (int32_t)(B_step * colIdx) + B_start;
+    const int32_t col_val = R_val << 16 | G_val << 8 | B_val;
+    mpColorMap->addColorStop((double)colIdx / COL_STEPS, col_val);
+  }
+  
+  setColorMap(mpColorMap);
 }

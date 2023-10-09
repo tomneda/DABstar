@@ -73,6 +73,8 @@ private:
   std::vector<double> mPlotDataVec;
 
   template<typename T> inline T get_db(T x) { return 20 * std::log10((x + 1) / (T)(mNormalizer)); }
+
+  void _gen_color_map();
 };
 
 #endif
