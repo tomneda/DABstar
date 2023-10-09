@@ -43,10 +43,10 @@ AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * 
 
   spectrumBuffer = new cmplx[spectrumSize];
 
-  dabSettings->beginGroup("audioDisplay");
-  QString colorString = dabSettings->value("gridColor", "black").toString();
+  dabSettings->beginGroup(SETTING_GROUP_NAME);
+  QString colorString = dabSettings->value("gridColor", "#5e5c64").toString();
   this->gridColor = QColor(colorString);
-  colorString = dabSettings->value("curveColor", "white").toString();
+  colorString = dabSettings->value("curveColor", "#f9f06b").toString();
   this->curveColor = QColor(colorString);
   brush = dabSettings->value("brush", 1).toInt() == 1;
   displaySize = dabSettings->value("displaySize", displaySize).toInt();
@@ -188,7 +188,7 @@ void AudioDisplay::_slot_rightMouseClick(const QPointF & point)
     return;
   }
 
-  dabSettings->beginGroup("audioDisplay");
+  dabSettings->beginGroup(SETTING_GROUP_NAME);
   dabSettings->setValue("gridColor", gridColor.name());
   dabSettings->setValue("curveColor", curveColor.name());
   dabSettings->endGroup();

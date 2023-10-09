@@ -64,6 +64,7 @@ public:
   void create_spectrum(int16_t *, int, int);
 
 private:
+  static constexpr char SETTING_GROUP_NAME[] = "audioDisplay";
   static constexpr int32_t spectrumSize = 2048;
   static constexpr int32_t normalizer = 16 * 2048;
 
