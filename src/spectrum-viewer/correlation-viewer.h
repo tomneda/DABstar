@@ -35,13 +35,9 @@
 #ifndef    CORRELATION_VIEWER_H
 #define    CORRELATION_VIEWER_H
 
-#include  "dab-constants.h"
 #include  <QFrame>
 #include  <QSettings>
-#include  "ringbuffer.h"
 #include  <QObject>
-//#include  "ui_correlation-widget.h"
-#include  "ui_scopewidget.h"
 #include  <qwt.h>
 #include  <qwt_plot.h>
 #include  <qwt_plot_marker.h>
@@ -56,6 +52,9 @@
 #include  <qwt_scale_widget.h>
 #include  <QBrush>
 #include  <QVector>
+#include  "ringbuffer.h"
+#include  "dab-constants.h"
+#include  "ui_scopewidget.h"
 
 
 class RadioInterface;
@@ -69,6 +68,7 @@ public:
   void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
 
 private:
+  static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";
   static QString _get_best_match_text(const QVector<int> & v);
 
   RadioInterface * myRadioInterface;
@@ -76,7 +76,7 @@ private:
   QwtPlotCurve spectrumCurve;
   QwtPlotGrid grid;
   std::vector<int> indexVector;
-  float get_db(float);
+  static float get_db(float);
   RingBuffer<float> * responseBuffer;
   int16_t displaySize;
   QwtPlot * plotgrid;
@@ -88,7 +88,6 @@ private:
 
 private slots:
   void rightMouseClick(const QPointF &);
-  //void handle_correlationLength(int);
 };
 
 #endif

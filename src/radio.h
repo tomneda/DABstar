@@ -175,6 +175,8 @@ public:
   ~RadioInterface() override;
 
 private:
+  static constexpr int32_t SWITCH_DELAY = 3; // switch time in second until service is called after channel selection
+
   FILE * dlTextFile;
   RingBuffer<cmplx> spectrumBuffer;
   RingBuffer<cmplx> iqBuffer;

@@ -301,6 +301,16 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
+        <widget class="QCheckBox" name="closeDirect">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you are bored with the explicit request to stop, touch this one, and stopping is direct&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Close without asking</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="saveServiceSelector">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The &amp;quot;save service on exit&amp;quot;  selector instructs the software -when set - to save the channel:service combination (audio services only) and on program restart automatically switch to the  channel and start the service.&lt;/p&gt;&lt;p&gt;Note that is the service cannot be found, a warning will be shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -317,16 +327,6 @@
          </property>
          <property name="text">
           <string>New TII detector</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="closeDirect">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you are bored with the explicit request to stop, touch this one, and stopping is direct&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Close without asking</string>
          </property>
         </widget>
        </item>

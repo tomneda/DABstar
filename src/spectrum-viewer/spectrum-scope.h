@@ -32,6 +32,8 @@ public:
   void set_bit_depth(int32_t);
 
 private:
+  static constexpr char SETTING_GROUP_NAME[] = "spectrumScope";
+
   QwtPlotCurve mSpectrumCurve;
   QSettings * const mpDabSettings;
   const int32_t mDisplaySize;

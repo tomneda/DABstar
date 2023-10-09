@@ -44,15 +44,12 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   this->dabSettings = s;
   this->responseBuffer = b;
 
-  dabSettings->beginGroup("correlationViewer");
-  //colorString = dabSettings->value("displayColor", "black").toString();
-  //displayColor = QColor(colorString);
-  colorString = dabSettings->value("gridColor", "white").toString();
+  dabSettings->beginGroup(SETTING_GROUP_NAME);
+  colorString = dabSettings->value("gridColor", "#5e5c64").toString();
   gridColor = QColor(colorString);
-  colorString = dabSettings->value("curveColor", "white").toString();
+  colorString = dabSettings->value("curveColor", "#ffbe6f").toString();
   curveColor = QColor(colorString);
   const bool brush = dabSettings->value("brush", 0).toInt() == 1;
-  //int lengthSetting = dabSettings->value("plotLength", 3).toInt();
 
   dabSettings->endGroup();
 
@@ -162,7 +159,7 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
 
 float CorrelationViewer::get_db(float x)
 {
-  return 20 * log10((x + 1) / (float)(4 * 512));
+  return 20.0f * std::log10((x + 1) / (float)(4 * 512));
 }
 
 void CorrelationViewer::rightMouseClick(const QPointF & point)
@@ -172,28 +169,14 @@ void CorrelationViewer::rightMouseClick(const QPointF & point)
   if (!ColorSelector::show_dialog(gridColor, ColorSelector::GRIDCOLOR)) return;
   if (!ColorSelector::show_dialog(curveColor, ColorSelector::CURVECOLOR)) return;
 
-  dabSettings->beginGroup("correlationViewer");
-  //dabSettings->setValue("displayColor", displayColor.name());
+  dabSettings->beginGroup(SETTING_GROUP_NAME);
   dabSettings->setValue("gridColor", gridColor.name());
   dabSettings->setValue("curveColor", curveColor.name());
   dabSettings->endGroup();
-
-  //this->displayColor = QColor(displayColor);
-  //this->gridColor = QColor(gridColor);
-  //this->curveColor = QColor(curveColor);
   spectrumCurve.setPen(QPen(this->curveColor, 2.0));
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid. setMajPen (QPen(this -> gridColor, 0, Qt::DotLine));
-#else
   grid.setMajorPen(QPen(this->gridColor, 0, Qt::DotLine));
-#endif
   grid.enableXMin(true);
   grid.enableYMin(true);
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-  grid. setMinPen (QPen(this -> gridColor, 0, Qt::DotLine));
-#else
   grid.setMinorPen(QPen(this->gridColor, 0, Qt::DotLine));
-#endif
-  //plotgrid->setCanvasBackground(this->displayColor);
 }
 

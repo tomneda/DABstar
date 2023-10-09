@@ -304,7 +304,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   configWidget.EPGLabel->hide();
   configWidget.EPGLabel->setStyleSheet("QLabel {background-color : yellow; color : black}");
 
-  x = dabSettings->value("switchDelay", 8).toInt();
+  x = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   configWidget.switchDelaySetting->setValue(x);
 
   bool b = dabSettings->value("utcSelector", 0).toInt() == 1;
@@ -756,7 +756,7 @@ bool RadioInterface::doStart()
   //
   if (channel.nextService.valid)
   {
-    int switchDelay = dabSettings->value("switchDelay", 8).toInt();
+    int switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
     presetTimer.setSingleShot(true);
     presetTimer.setInterval(switchDelay * 1000);
     presetTimer.start(switchDelay * 1000);
@@ -2968,7 +2968,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
   channel.nextService.SId = 0;
   channel.nextService.SCIds = 0;
   presetTimer.setSingleShot(true);
-  switchDelay = dabSettings->value("switchDelay", 8).toInt();
+  switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   presetTimer.setInterval(switchDelay * 1000);
   presetTimer.start(switchDelay * 1000);
   startChannel(channelSelector->currentText());
@@ -3388,7 +3388,7 @@ void RadioInterface::startChannel(const QString & theChannel)
 
   my_dabProcessor->start();
 
-  int switchDelay = dabSettings->value("switchDelay", 8).toInt();
+  int switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
 
   if (!scanning.load())
   {
@@ -3596,7 +3596,7 @@ void RadioInterface::startScanning()
   new_channelIndex(cc);
   dynamicLabel->setText("Scanning channel " + channelSelector->currentText());
   scanButton->setText("SCANNING");
-  switchDelay = dabSettings->value("switchDelay", 8).toInt();
+  switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   channelTimer.start(switchDelay * 1000);
 
   startChannel(channelSelector->currentText());
@@ -3665,7 +3665,7 @@ void RadioInterface::slot_no_signal_found()
       connect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
       dynamicLabel->setText("Scanning channel " + channelSelector->currentText());
-      switchDelay = dabSettings->value("switchDelay", 8).toInt();
+      switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
       channelTimer.start(switchDelay * 1000);
       startChannel(channelSelector->currentText());
     }

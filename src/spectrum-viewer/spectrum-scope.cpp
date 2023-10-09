@@ -15,10 +15,10 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings 
   QString colorString = "black";
   bool brush;
 
-  dabSettings->beginGroup("spectrumViewer");
-  colorString = dabSettings->value("gridColor", "white").toString();
+  dabSettings->beginGroup(SETTING_GROUP_NAME);
+  colorString = dabSettings->value("gridColor", "#5e5c64").toString();
   mGridColor = QColor(colorString);
-  colorString = dabSettings->value("curveColor", "white").toString();
+  colorString = dabSettings->value("curveColor", "#dc8add").toString();
   mCurveColor = QColor(colorString);
   brush = dabSettings->value("brush", 0).toInt() == 1;
   dabSettings->endGroup();
@@ -87,7 +87,7 @@ void SpectrumScope::rightMouseClick(const QPointF & point)
   if (!ColorSelector::show_dialog(mGridColor, ColorSelector::GRIDCOLOR)) return;
   if (!ColorSelector::show_dialog(mCurveColor, ColorSelector::CURVECOLOR)) return;
 
-  mpDabSettings->beginGroup("spectrumViewer");
+  mpDabSettings->beginGroup(SETTING_GROUP_NAME);
   mpDabSettings->setValue("gridColor", mGridColor.name());
   mpDabSettings->setValue("curveColor", mCurveColor.name());
   mpDabSettings->endGroup();
