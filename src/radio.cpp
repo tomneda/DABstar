@@ -430,7 +430,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   soundOut = new AudioSink(latency);
   ((AudioSink *)soundOut)->setupChannels(configWidget.streamoutSelector);
   configWidget.streamoutSelector->show();
-  bool err;
+  bool err = false;
   h = dabSettings->value("soundchannel", "default").toString();
 
   k = configWidget.streamoutSelector->findText(h);
@@ -530,6 +530,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   }
 
   connect(configWidget.eti_activeSelector, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_eti_active_selector(int)));
+  connect(this, &RadioInterface::signal_dab_processor_started, &my_spectrumViewer, &SpectrumViewer::slot_update_settings);
 
   channel.etiActive = false;
   show_pause_slide();
@@ -678,6 +679,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   {
     dabSettings->setValue("hidden", 0);
   }
+
   configDisplay.show();
   connect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_do_start);
   qApp->installEventFilter(this);
@@ -787,6 +789,8 @@ bool RadioInterface::doStart()
     my_dabProcessor->set_dc_avoidance_algorithm(b);
     connect(configWidget.cbDcAvoidance, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_avoidance_algorithm);
   }
+
+  emit signal_dab_processor_started();
 
   //	after the preset timer signals, the service will be started
   startChannel(channelSelector->currentText());

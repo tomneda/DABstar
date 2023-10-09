@@ -94,7 +94,9 @@ public:
   bool is_hidden();
 
 private:
-  QFrame myFrame;
+  static constexpr char SETTING_GROUP_NAME[] = "spectrumViewer";
+
+  QFrame myFrame{ nullptr };
   RadioInterface * const mpRadioInterface;
   QSettings * const mpDabSettings;
   RingBuffer<cmplx> * const mpSpectrumBuffer;
@@ -104,7 +106,7 @@ private:
   std::vector<cmplx> mIqValuesVec;
   std::vector<float> mCarrValuesVec;
 
-  fftHandler fft;
+  fftHandler fft{ SP_SPECTRUMSIZE, false };
 
   std::array<cmplx, SP_SPECTRUMSIZE> mSpectrumVec{ 0 };
   std::array<float, SP_SPECTRUMSIZE> mWindowVec{ 0 };
@@ -121,6 +123,11 @@ private:
   SpectrumScope * mpSpectrumScope = nullptr;
   WaterfallScope * mpWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
+
+  void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);
+
+public slots:
+  void slot_update_settings();
 
 private slots:
   void _slot_handle_cmb_carrier(int);

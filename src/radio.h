@@ -323,6 +323,7 @@ private:
 signals:
   void signal_set_new_channel(int);
   void signal_set_new_preset_index(int);
+  void signal_dab_processor_started();
 
 public slots:
   void slot_add_to_ensemble(const QString &, int);

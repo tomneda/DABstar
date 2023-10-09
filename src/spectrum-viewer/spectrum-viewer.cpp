@@ -44,16 +44,14 @@
 SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
                                RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
   Ui_scopeWidget(),
-  myFrame(nullptr),
   mpRadioInterface(ipRI),
   mpDabSettings(ipDabSettings),
   mpSpectrumBuffer(ipSpecBuffer),
   mpIqBuffer(ipIqBuffer),
   mpCarrBuffer(ipCarrBuffer),
-  mpCorrelationBuffer(ipCorrBuffer),
-  fft(SP_SPECTRUMSIZE, false)
+  mpCorrelationBuffer(ipCorrBuffer)
 {
-  ipDabSettings->beginGroup("spectrumViewer");
+  ipDabSettings->beginGroup(SETTING_GROUP_NAME);
   int32_t x = ipDabSettings->value("position-x", 100).toInt();
   int32_t y = ipDabSettings->value("position-y", 100).toInt();
   int32_t w = ipDabSettings->value("width", 150).toInt();
@@ -81,6 +79,9 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
   cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
 
+  _load_save_combobox_settings(cmbIqScope, "iqPlot", false);
+  _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
+
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
   connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
@@ -88,7 +89,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
 
 SpectrumViewer::~SpectrumViewer()
 {
-  mpDabSettings->beginGroup("spectrumViewer");
+  mpDabSettings->beginGroup(SETTING_GROUP_NAME);
   mpDabSettings->setValue("position-x", myFrame.pos().x());
   mpDabSettings->setValue("position-y", myFrame.pos().y());
 
@@ -110,7 +111,7 @@ void SpectrumViewer::show_spectrum(int32_t amount, int32_t vfoFrequency)
 {
   (void)amount;
 
-  int16_t averageCount = 5;
+  constexpr int32_t averageCount = 5;
 
   if (mpSpectrumBuffer->GetRingBufferReadAvailable() < SP_SPECTRUMSIZE)
   {
@@ -325,6 +326,7 @@ void SpectrumViewer::_slot_handle_cmb_carrier(int32_t iSel)
   auto pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
   emit signal_cmb_carrier_changed(pt);
+  _load_save_combobox_settings(cmbCarrier, "carrierPlot", true);
 }
 
 void SpectrumViewer::_slot_handle_cmb_iqscope(int32_t iSel)
@@ -332,9 +334,36 @@ void SpectrumViewer::_slot_handle_cmb_iqscope(int32_t iSel)
   auto pt = static_cast<EIqPlotType>(iSel);
   mpIQDisplay->select_plot_type(pt);
   emit signal_cmb_iqscope_changed(pt);
+  _load_save_combobox_settings(cmbIqScope, "iqPlot", true);
 }
 
 void SpectrumViewer::_slot_handle_cb_nom_carrier(int32_t iSel)
 {
   emit signal_cb_nom_carrier_changed(iSel != 0);
+}
+
+void SpectrumViewer::_load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave)
+{
+  mpDabSettings->beginGroup(SETTING_GROUP_NAME);
+  if (iSave)
+  {
+    mpDabSettings->setValue(iName, ipCmb->currentText());
+  }
+  else
+  {
+    const QString h = mpDabSettings->value(iName, "default").toString();
+    const int32_t k = ipCmb->findText(h);
+    if (k != -1)
+    {
+      ipCmb->setCurrentIndex(k);
+    }
+  }
+  mpDabSettings->endGroup();
+}
+
+void SpectrumViewer::slot_update_settings()
+{
+  // This is called when the DabProcessor has been started. Trigger resending UI state to DabProcessor.
+  emit _slot_handle_cmb_carrier(cmbCarrier->currentIndex());
+  emit _slot_handle_cmb_iqscope(cmbIqScope->currentIndex());
 }
