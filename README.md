@@ -1,7 +1,3 @@
-![DABLogo.png](res/DABLogo.png)
-
----
-
 # DABstar
 
 ---
@@ -12,6 +8,7 @@
 <!-- TOC -->
   * [Table of Content](#table-of-content)
   * [Introducing](#introducing)
+  * [Changes in DABstar version 1.3.0](#changes-in-dabstar-version-130)
   * [Changes in DABstar version 1.2.0](#changes-in-dabstar-version-120)
     * [What is new?](#what-is-new)
     * [Known things that do not work yet](#known-things-that-do-not-work-yet)
@@ -36,7 +33,7 @@
 ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249))
 from 2023-05-30, fixes afterwards to Qt-DAB afterwards included.
 
-Current main branch version is [V1.2.0](#changes-in-dabstar-version-120).
+Current main branch version is [V1.3.0](#changes-in-dabstar-version-130).
 
 As there are many changes made from my side and there will be bigger changes in the future, 
 I decided to give it the new name **DABstar**.
@@ -52,7 +49,19 @@ So use only the cmake related installation process.
 
 I will also not provide any precompiled setup packages, yet.
 
+## Changes in DABstar version 1.3.0
+
+- Further many refactorings and some fixes made.
+- Many adaption regarding waterfall display (there is still room for improvement in the coloring).
+- Some UI adaptions.
+- Internal resources packed, so the executable footprint got smaller.
+- The combo boxes in the **Scope Plot** are stored persistently.
+- Remove **Scan Mode** selector and no asking for storing scan data to facilitate the scanning process.
+- Change the default coloring after first installation of the different spectrum plots.
+- New pause slide.
+
 ## Changes in DABstar version 1.2.0
+
 ### What is new?
 
 - Many code and UI refactorings made and some minor fixes.

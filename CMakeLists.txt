@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
-project(DABstar VERSION 1.2.1)
+project(DABstar VERSION 1.3.0)
 ##############################
 
 set(objectName "dabstar")
