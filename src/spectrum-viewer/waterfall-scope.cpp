@@ -70,10 +70,6 @@ void WaterfallScope::show_waterfall(const double * X_axis, const double * Y1_val
   //invalidateCache();
   if (mOrig != orig || mWidth != width || mAmp != amp)
   {
-    if (mOrig != orig) // clean screen only on frequency change
-    {
-      std::fill(mPlotDataVec.begin(), mPlotDataVec.end(), 0.0);
-    }
     mpWaterfallData = new SpectrogramData(mPlotDataVec.data(), orig, width, -mRasterSize, mDisplaySize, amp / 2);
     detach();
     setData(mpWaterfallData);
