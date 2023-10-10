@@ -3,5 +3,6 @@
     <file>res/DABLogoInvSmall.png</file>
     <file>res/DABplusLogoWB.png</file>
     <file>res/DABplusLogoWBsoft.png</file>
+    <file>res/globstyle.qss</file>
   </qresource>
 </RCC>

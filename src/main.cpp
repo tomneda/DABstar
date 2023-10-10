@@ -38,12 +38,6 @@
 #include <QTranslator>
 #include <unistd.h>
 
-static const QString styleSheet =
-//#include "./stylesheets/Adaptic.qss"
-//#include "./stylesheets/Combinear.qss"
-#include "./stylesheets/CombinearCompact.qss"
-//#include "./stylesheets/Fibers.qss"
-;
 
 //void setTranslator(QTranslator *, QString Language);
 
@@ -100,7 +94,19 @@ int main(int argc, char ** argv)
 #endif
 
   QApplication a(argc, argv);
-  a.setStyleSheet(styleSheet);
+
+  // read stylesheet from resource file
+  if (QFile file(":res/globstyle.qss");
+      file.open(QFile::ReadOnly | QFile::Text))
+  {
+    a.setStyleSheet(file.readAll());
+    file.close();
+  }
+  else
+  {
+    qFatal("Could not open stylesheet resource");
+  }
+
   // setting the language
 //  QString locale = QLocale::system().name();
 //  qDebug() << "main:" << "Detected system language" << locale;
