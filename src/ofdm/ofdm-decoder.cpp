@@ -192,10 +192,10 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     const float curStdDevSq = curStdDevDiff * curStdDevDiff;
     float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
-    const float avgStdDev = std::sqrt(stdDevSqRef); // This value should be only between 0 (no noise) and M_PI_4 (heavy noise etc.).
 
     // Finally calculate (and limit) a soft bit weight from the standard deviation for each bin.
-    float weight = 127.0f * ((float)M_PI_4 - avgStdDev) / F_M_PI_4;
+    float weight = 127.0f * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4;
+    //float weight = 127.0f * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4;  // alternative soft-bit generation
     limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
 
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
@@ -218,13 +218,13 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
       switch (mCarrierPlotType)
       {
-      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
       case ECarrierPlotType::MOD_QUAL:        mCarrVector[dataVecCarrIdx] = 100.0f / 127.0f * weight;  break;
-      case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(avgStdDev); break;
-      case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
+      case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
       case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(integAbsPhasePerBinRef); break;
-      case ECarrierPlotType::NULL_TII:        mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelWithTIIGain * (mMeanNullLevelWithTII[fftIdx] - mAvgAbsNullLevelWithTIIMin); break;
+      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
+      case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
       case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
+      case ECarrierPlotType::NULL_TII:        mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelWithTIIGain * (mMeanNullLevelWithTII[fftIdx] - mAvgAbsNullLevelWithTIIMin); break;
       }
     }
 

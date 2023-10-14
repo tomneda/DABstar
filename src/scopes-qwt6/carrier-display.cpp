@@ -150,7 +150,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     break;
 
   case ECarrierPlotType::STD_DEV:
-    cp.ToolTip = "Shows the standard deviation of the absolute phase (mapped to first quadrant) in degrees of each OFDM carrier. This is similar to the modulation quality.";
+    cp.ToolTip = "Shows the standard deviation of the absolute phase (mapped to first quadrant) in degrees of each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Std-Deviation";
     cp.YBottomValue = 0.0;
