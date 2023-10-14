@@ -202,49 +202,45 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     mean_filter(meanPowerPerBinRef, fftBinPower, ALPHA);
     mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / mDabPar.K);
 
-    float weight = 0;
+    // Calculate (and limit) a soft-bit weight
+    float weight = 0.0f;
+    float qtDabWeight = 0.0f;
 
+    /*
+     * Tomneda: the soft-bit generation doing in Qt-DAB is not well understood by me, but in some receiving conditions it
+     * produces somehow better results than the for me more logical approach above (via the phase deviation).
+     * Here the weight value is only calculated to show something on the carrier plot.
+     * As the soft-bit is generated for the real part and imag part separately, only the real part weight is shown here.
+     * The real decoding is repeated below again.
+     * The viterbi decoder will limit the soft-bit values to +/-127, but the "255" were so in Qt-DAB. The limitation below is only
+     * for the carrier plot.
+     */
     switch (mSoftBitType)
     {
-    case ESoftBitType::FAST:
-      weight = 127.0f * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4;
-      break;
-    case ESoftBitType::AVER:
-      weight = 127.0f * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4;
-      break;
-    case ESoftBitType::QTDAB:
+    case ESoftBitType::FAST:      weight = 127.0f * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4; break;
+    case ESoftBitType::AVER:      weight = 127.0f * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4; break;
+    case ESoftBitType::FIX_LOW:   weight = 2; break;
+    case ESoftBitType::FIX_MED:   weight = 63; break;
+    case ESoftBitType::FIX_HIGH:  weight = 127; break;
+    case ESoftBitType::QTDAB:     qtDabWeight = 255.0f; break;
+    case ESoftBitType::QTDAB_MOD: qtDabWeight = 127.0f; break;
+    }
+
+    if (qtDabWeight != 0.0f)
     {
-      /*
-       * Tomneda: the soft-bit generation doing in Qt-DAB is not well understood by me, but in some receiving conditions it
-       * produces somehow better results than the for me more logical approach above (via the phase deviation).
-       * Here the weight value is only calculated to show something on the carrier plot.
-       * As the soft-bit is generated for the real part and imag part separately, only the real part weight is shown here.
-       * The real decoding is repeated below again.
-       * The viterbi decoder will limit the soft-bit values to +/-127, but the "255" were so in Qt-DAB. The limitation below is only
-       * for the carrier plot.
-       */
+      // Original Qt-DAB decoding (with qtDabWeight == 255.0).
       const cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
       const float ab1 = abs(r1);
-      weight = std::abs(real(r1) * 255.0f / ab1);
-      break;
+      oBits[0         + nomCarrIdx] = (int16_t)(-(real(r1) * qtDabWeight) / ab1);
+      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(r1) * qtDabWeight) / ab1);
+      weight = std::abs(real(r1) * qtDabWeight / ab1);
+      limit_min_max(weight, 0.0f, 127.0f);
     }
-    }
-
-    // Finally calculate (and limit) a soft bit weight from the standard deviation for each bin.
-    limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
-
-    if (mSoftBitType != ESoftBitType::QTDAB)
+    else
     {
+      limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
       oBits[0         + nomCarrIdx] = (int16_t)(real(fftBin) < 0.0f ? weight : -weight);
       oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(fftBin) < 0.0f ? weight : -weight);
-    }
-    else // Qt-DAB style of soft bit generation
-    {
-      cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-      const float ab1 = abs(r1);
-      // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
-      oBits[0         + nomCarrIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
-      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
     }
 
     if (showScopeData)

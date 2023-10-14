@@ -43,6 +43,10 @@ enum class ESoftBitType
   FAST,
   AVER,
   QTDAB,
+  QTDAB_MOD,
+  FIX_LOW,
+  FIX_MED,
+  FIX_HIGH,
 
   DEFAULT = FAST  // use the first element for startup constellation
 };

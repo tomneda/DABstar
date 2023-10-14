@@ -4365,6 +4365,10 @@ QStringList RadioInterface::get_soft_bit_gen_names()
   sl << "Fast Soft-Bit Gen.";   // ESoftBitType::FAST
   sl << "Avr. Soft-Bit Gen.";   // ESoftBitType::AVER
   sl << "Qt-DAB Soft-Bit Gen."; // ESoftBitType::QTDAB
+  sl << "Qt-DAB Soft-Bit Gen. (mod)"; // ESoftBitType::QTDAB_MOD
+  sl << "Soft-Bit Gen. Fix Low"; // ESoftBitType::FIX_LOW
+  sl << "Soft-Bit Gen. Fix Med"; // ESoftBitType::FIX_LOW
+  sl << "Soft-Bit Gen. Fix High"; // ESoftBitType::FIX_HIGH
 
   return sl;
 }
