@@ -40,7 +40,7 @@ WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize)
   mPlotDataVec.resize(displaySize * rasterSize);
   std::fill(mPlotDataVec.begin(), mPlotDataVec.end(), 0.0);
 
-  _gen_color_map();
+  _gen_color_map(0);
 
   setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
 
@@ -58,21 +58,20 @@ WaterfallScope::~WaterfallScope()
   detach();
 }
 
-void WaterfallScope::show_waterfall(const double * X_axis, const double * Y1_value, double amp)
+void WaterfallScope::show_waterfall(const double * ipX_axis, const double * ipY1_value, double iAmp)
 {
-  const int32_t orig = (int32_t)(X_axis[0]);
-  const int32_t width = (int32_t)(X_axis[mDisplaySize - 1] - orig);
+  const int32_t orig = (int32_t)(ipX_axis[0]);
 
-  //invalidateCache();
-  if (mOrig != orig || mWidth != width || mAmp != amp)
+  if (const int32_t width = (int32_t)(ipX_axis[mDisplaySize - 1] - orig);
+      mOrig != orig || mWidth != width || mAmp != iAmp)
   {
-    mpWaterfallData = new SpectrogramData(mPlotDataVec.data(), orig, width, -mRasterSize, mDisplaySize, amp / 2);
+    mpWaterfallData = new SpectrogramData(mPlotDataVec.data(), orig, width, -mRasterSize, mDisplaySize, iAmp / 2);
     detach();
     setData(mpWaterfallData);
     attach(mpPlotgrid);
     mOrig = orig;
     mWidth = width;
-    mAmp = amp;
+    mAmp = iAmp;
   }
 
   constexpr int32_t elemSize = sizeof(decltype(mPlotDataVec.back()));
@@ -80,11 +79,11 @@ void WaterfallScope::show_waterfall(const double * X_axis, const double * Y1_val
 
   for (int i = 0; i < mDisplaySize; ++i)
   {
-    mPlotDataVec[i] = 20.0 * std::log10(Y1_value[i] + 1.0);
+    mPlotDataVec[i] = 20.0 * std::log10(ipY1_value[i] + 1.0);
   }
 
-  mpPlotgrid->setAxisScale(QwtPlot::xBottom, X_axis[0], X_axis[mDisplaySize - 1]); // for plot
-  mpPlotgrid->setAxisScale(QwtPlot::xTop,    X_axis[0], X_axis[mDisplaySize - 1]); // for ticks
+  mpPlotgrid->setAxisScale(QwtPlot::xBottom, ipX_axis[0], ipX_axis[mDisplaySize - 1]); // for plot
+  mpPlotgrid->setAxisScale(QwtPlot::xTop, ipX_axis[0], ipX_axis[mDisplaySize - 1]); // for ticks
 
   mpPlotgrid->replot();
 }
@@ -94,32 +93,50 @@ void WaterfallScope::set_bit_depth(int32_t n)
   mNormalizer = n;
 }
 
-void WaterfallScope::_gen_color_map()
+void WaterfallScope::_gen_color_map(const int32_t iStyleNr)
 {
-  constexpr int32_t COL_STEPS = 16;
-
-  const int32_t R_start = 0x40;
-  const int32_t G_start = 0x00;
-  const int32_t B_start = 0x00;
-
-  const int32_t R_stop = 0xA0;
-  const int32_t G_stop = 0x80;
-  const int32_t B_stop = 0xFF;
-
-  const double R_step = (double)(R_stop - R_start) / COL_STEPS;
-  const double G_step = (double)(G_stop - G_start) / COL_STEPS;
-  const double B_step = (double)(B_stop - B_start) / COL_STEPS;
-
-  mpColorMap = new QwtLinearColorMap(Qt::black, R_stop << 16 | G_stop << 8 | B_stop);
-
-  for (int colIdx = 1; colIdx < COL_STEPS; ++colIdx)
+  switch (iStyleNr)
   {
-    const int32_t R_val = (int32_t)(R_step * colIdx) + R_start;
-    const int32_t G_val = (int32_t)(G_step * colIdx) + G_start;
-    const int32_t B_val = (int32_t)(B_step * colIdx) + B_start;
-    const int32_t col_val = R_val << 16 | G_val << 8 | B_val;
-    mpColorMap->addColorStop((double)colIdx / COL_STEPS, col_val);
+  case 0:
+  {
+    mpColorMap = new QwtLinearColorMap(Qt::black, Qt::white);
+    mpColorMap->addColorStop(0.2, Qt::darkBlue);
+    mpColorMap->addColorStop(0.4, Qt::blue);
+    mpColorMap->addColorStop(0.6, Qt::yellow);
+    mpColorMap->addColorStop(0.8, Qt::red);
+    break;
   }
-  
+
+  case 1:
+  {
+    constexpr int32_t COL_STEPS = 16;
+
+    const int32_t R_start = 0x40;
+    const int32_t G_start = 0x00;
+    const int32_t B_start = 0x00;
+
+    const int32_t R_stop = 0xA0;
+    const int32_t G_stop = 0x80;
+    const int32_t B_stop = 0xFF;
+
+    const double R_step = (double)(R_stop - R_start) / COL_STEPS;
+    const double G_step = (double)(G_stop - G_start) / COL_STEPS;
+    const double B_step = (double)(B_stop - B_start) / COL_STEPS;
+
+    mpColorMap = new QwtLinearColorMap(Qt::black, R_stop << 16 | G_stop << 8 | B_stop);
+
+    for (int colIdx = 1; colIdx < COL_STEPS; ++colIdx)
+    {
+      const int32_t R_val = (int32_t)(R_step * colIdx) + R_start;
+      const int32_t G_val = (int32_t)(G_step * colIdx) + G_start;
+      const int32_t B_val = (int32_t)(B_step * colIdx) + B_start;
+      const int32_t col_val = R_val << 16 | G_val << 8 | B_val;
+      mpColorMap->addColorStop((double)colIdx / COL_STEPS, col_val);
+    }
+    break;
+  }
+  default: qFatal("Invalid waterfall color style number %d", iStyleNr);
+  }
+
   setColorMap(mpColorMap);
 }

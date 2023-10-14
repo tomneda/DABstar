@@ -66,7 +66,7 @@ private:
   const int32_t mRasterSize;
   int32_t mOrig = 0;
   int32_t mWidth = 0;
-  int32_t mAmp = 0;
+  double mAmp = 0;
   int32_t mNormalizer = 2048;
   SpectrogramData * mpWaterfallData;
   QwtLinearColorMap * mpColorMap;
@@ -74,7 +74,7 @@ private:
 
   template<typename T> inline T get_db(T x) { return 20 * std::log10((x + 1) / (T)(mNormalizer)); }
 
-  void _gen_color_map();
+  void _gen_color_map(const int32_t iStyleNr);
 };
 
 #endif
