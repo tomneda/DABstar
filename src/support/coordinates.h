@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013, 2014, 2015, 2016, 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,33 +28,34 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__COORDINATES_H
-#define	__COORDINATES_H
-#include	<QDialog>
-#include	<QLabel>
-#include	<QLineEdit>
-#include	<QPushButton>
+#ifndef  COORDINATES_H
+#define  COORDINATES_H
 
-class	QSettings;
+#include  <QDialog>
+#include  <QLabel>
+#include  <QLineEdit>
+#include  <QPushButton>
 
-class	coordinates: public QDialog {
+class QSettings;
+
+class Coordinates : public QDialog
+{
 Q_OBJECT
-	public:
-		coordinates	(QSettings *);
-		~coordinates	();
-	private:
-	QSettings	*dabSettings;
-	QLabel		*latitudeText;
-        QLineEdit	*latitude;
-        QLabel		*longitudeText;
-        QLineEdit	*longitude;
-	QPushButton	*acceptButton;
-	bool		latitudeValue;
-	bool		longitudeValue;
+public:
+  Coordinates(QSettings *);
+  ~Coordinates() override;
+
+private:
+  QLabel * mpLabelUrlHint;
+  QSettings * mpDabSettings;
+  QLabel * mpLabelLatitude;
+  QLineEdit * mpEditBoxLatitude;
+  QLabel * mpLabelLongitude;
+  QLineEdit * mpEditBoxLongitude;
+  QPushButton * mpBtnAccept;
+
 private slots:
-	void		set_latitude 	();
-	void		set_longitude	();
-	void		handle_acceptButton () ;
+  void slot_accept_button();
 };
 
 #endif

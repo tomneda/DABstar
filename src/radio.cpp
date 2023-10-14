@@ -502,6 +502,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 
   //	display the version
   copyrightLabel->setToolTip(footText());
+  copyrightLabel->setOpenExternalLinks(true);
   presetSelector->setToolTip(presetText());
 
   connect(configWidget.portSelector, SIGNAL (clicked()), this, SLOT (_slot_handle_port_selector()));
@@ -4111,7 +4112,7 @@ void RadioInterface::_slot_handle_logger_button(int s)
 
 void RadioInterface::_slot_handle_set_coordinates_button()
 {
-  coordinates theCoordinator(dabSettings);
+  Coordinates theCoordinator(dabSettings);
   (void)theCoordinator.QDialog::exec();
   float local_lat = dabSettings->value("latitude", 0).toFloat();
   float local_lon = dabSettings->value("longitude", 0).toFloat();
@@ -4146,6 +4147,7 @@ void RadioInterface::_slot_handle_http_button()
 {
   if (real(channel.localPos) == 0)
   {
+    QMessageBox::information(this, "Data missing", "Provide your coordinates first on the configuration window!");
     return;
   }
 

@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013, 2014, 2015, 2016, 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,68 +28,115 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include	"coordinates.h"
-#include	<QDoubleValidator>
-#include	<QFormLayout>
-#include	<QVBoxLayout>
-#include	<QSettings>
 
-	coordinates::coordinates	(QSettings *dabSettings) {
-	this	-> dabSettings = dabSettings;
-	latitudeText	= new QLabel (this);
-	latitudeText	-> setText ("latitude (decimal)");
-	QDoubleValidator *la = new QDoubleValidator (-90.0, 9.0, 5);
-	latitude	= new QLineEdit (this);	
-	latitude	-> setValidator (la);
-	longitudeText	= new QLabel (this);
-	longitudeText	-> setText ("longitude (decimal)");
-	QDoubleValidator *lo = new QDoubleValidator (-180.0, 180.0, 5);
-	longitude	= new QLineEdit (this);
-	longitude	-> setValidator (lo);
-	QFormLayout	*layout = new QFormLayout;
-	layout		-> addWidget (latitudeText);
-	layout		-> addWidget (latitude);
-	layout		-> addWidget (longitudeText);
-	layout		-> addWidget (longitude);
-	setWindowTitle ("select coordinates");
-	acceptButton	= new QPushButton ("accept");
-	QVBoxLayout	*total = new QVBoxLayout;
-	total		-> addItem (layout);
-	total		-> addWidget (acceptButton);
-	setLayout (total);
-	connect (latitude, SIGNAL (returnPressed ()),
-	         this, SLOT (set_latitude ()));
-	connect (longitude, SIGNAL (returnPressed ()),
-	         this, SLOT (set_longitude ()));
-	connect (acceptButton, SIGNAL (clicked ()),
-	         this, SLOT (handle_acceptButton ()));
-	show ();
-	latitudeValue	= false;	
-	longitudeValue	= false;
+#include  "coordinates.h"
+#include  <QDoubleValidator>
+#include  <QFormLayout>
+#include  <QVBoxLayout>
+#include  <QSettings>
+
+
+class MyDoubleValidator : public QDoubleValidator
+{
+  using QDoubleValidator::QDoubleValidator; // takeover the base class constructors
+
+  QValidator::State validate(QString & input, int &) const override
+  {
+    // number of decimal digits are ignored
+
+
+    if (QRegExp regExpAllowed("^-?\\d*(\\.\\d*)?$"); // made by ChatGPT
+        !regExpAllowed.exactMatch(input))
+    {
+      return Invalid;
+    }
+
+    // We expect a '.' also in languages where ',' is a decimal point. So let toDouble() perform only in en_US localization.
+    QLocale englishLocale(QLocale::English, QLocale::UnitedStates);
+
+    // Set the application's locale to the English (United States) locale.
+    QLocale previousLocale = QLocale::system();
+    QLocale::setDefault(englishLocale);
+
+    // Convert the QString to a double using the current (English, United States) locale.
+    const double val = input.toDouble();
+
+    // Reset the locale to its previous value.
+    QLocale::setDefault(previousLocale);
+
+    if (val < bottom() || val > top())
+    {
+      return Invalid;
+    }
+
+    return Acceptable;
+  }
+};
+
+Coordinates::Coordinates(QSettings * ipDabSettings) :
+  mpDabSettings(ipDabSettings)
+{
+  mpLabelUrlHint = new QLabel(this);
+
+  const QString url1 = "https://www.google.com/maps";
+  const QString url2 = "https://www.openstreetmap.org";
+  const QString url3 = "https://mapy.cz";
+  const QString style = "style='color: lightblue;'";
+
+  const QString htmlLink = "Get coordinates on e.g.:<br>"
+                           "<a " + style + " href='" + url1 + "'>" + url1 + "</a><br>"
+                           "<a " + style + " href='" + url2 + "'>" + url2 + "</a><br>"
+                           "<a " + style + " href='" + url3 + "'>" + url3 + "</a><br>";
+
+  mpLabelUrlHint->setText(htmlLink);
+  mpLabelUrlHint->setOpenExternalLinks(true);
+
+  mpLabelLatitude = new QLabel(this);
+  mpLabelLatitude->setText("Latitude (decimal)");
+
+  mpEditBoxLatitude = new QLineEdit(this);
+  mpEditBoxLatitude->setValidator(new MyDoubleValidator(-90.0, 90.0, 5, mpEditBoxLatitude));
+
+  mpLabelLongitude = new QLabel(this);
+  mpLabelLongitude->setText("Longitude (decimal)");
+
+  mpEditBoxLongitude = new QLineEdit(this);
+  mpEditBoxLongitude->setValidator(new MyDoubleValidator(-180.0, 180.0, 5, mpEditBoxLongitude));
+
+  auto * layout = new QFormLayout;
+  layout->addWidget(mpLabelUrlHint);
+  layout->addWidget(mpLabelLatitude);
+  layout->addWidget(mpEditBoxLatitude);
+  layout->addWidget(mpLabelLongitude);
+  layout->addWidget(mpEditBoxLongitude);
+
+  setWindowTitle("Select Coordinates");
+
+  mpBtnAccept = new QPushButton("Accept", this);
+
+  auto * total = new QVBoxLayout(this);
+  total->addItem(layout);
+  total->addWidget(mpBtnAccept);
+  setLayout(total);
+
+  mpEditBoxLatitude->setText(mpDabSettings->value("latitude", "").toString());
+  mpEditBoxLongitude->setText(mpDabSettings->value("longitude", "").toString());
+
+  connect(mpBtnAccept, &QPushButton::clicked, this, &Coordinates::slot_accept_button);
+
+  show();
 }
 
-	coordinates::~coordinates	() {
-	hide ();
-	delete	acceptButton;
-	delete	latitudeText;
-	delete	longitudeText;	
-	delete	latitude;
-	delete	longitude;	
+Coordinates::~Coordinates()
+{
+  hide();
 }
 
-void	coordinates::set_latitude () {
-	latitudeValue	= true;
-}
+void Coordinates::slot_accept_button()
+{
+  mpDabSettings->setValue("latitude", mpEditBoxLatitude->text());
+  mpDabSettings->setValue("longitude", mpEditBoxLongitude->text());
 
-void	coordinates::set_longitude () {
-	longitudeValue = true;
-}
-
-void	coordinates::handle_acceptButton () {
-	if (!latitude || !longitude)
-	   return;
-	dabSettings	-> setValue ("latitude", latitude -> text ());
-	dabSettings	-> setValue ("longitude", longitude -> text ());
-	QDialog::done (0);
+  QDialog::done(0);
 }
 
