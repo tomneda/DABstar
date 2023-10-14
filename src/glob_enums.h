@@ -38,4 +38,13 @@ enum class ECarrierPlotType
   DEFAULT = MOD_QUAL  // use the first element for startup constellation
 };
 
+enum class ESoftBitType
+{
+  FAST,
+  AVER,
+  QTDAB,
+
+  DEFAULT = FAST  // use the first element for startup constellation
+};
+
 #endif // GLOB_ENUMS_H

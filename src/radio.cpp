@@ -339,6 +339,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   float local_lon = dabSettings->value("longitude", 0).toFloat();
   channel.localPos = cmplx(local_lat, local_lon);
 
+  configWidget.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
+
   connect(configWidget.loadTableButton, &QPushButton::clicked, this, &RadioInterface::_slot_load_table);
   connect(configWidget.onTop, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_on_top);
   connect(configWidget.transmSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transm_selector);
@@ -743,7 +745,7 @@ bool RadioInterface::doStart()
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, my_dabProcessor, &DabProcessor::slot_show_nominal_carrier);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, my_dabProcessor, &DabProcessor::slot_select_iq_plot_type);
-  connect(configWidget.cbOldSoftBitGen, &QCheckBox::clicked, my_dabProcessor, &DabProcessor::slot_use_old_soft_bit_gen);
+  connect(configWidget.cmbSoftBitGen, qOverload<int32_t>(&QComboBox::currentIndexChanged), my_dabProcessor, [this](int idx){ my_dabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);});
 
   //
   //	Just to be sure we disconnect here.
@@ -4355,3 +4357,14 @@ void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
   configWidget.sliderTest->setToolTip(s);
 }
 
+QStringList RadioInterface::get_soft_bit_gen_names()
+{
+  QStringList sl;
+
+  // ATTENTION: use same sequence as in ESoftBitType
+  sl << "Fast Soft-Bit Gen.";   // ESoftBitType::FAST
+  sl << "Avr. Soft-Bit Gen.";   // ESoftBitType::AVER
+  sl << "Qt-DAB Soft-Bit Gen."; // ESoftBitType::QTDAB
+
+  return sl;
+}

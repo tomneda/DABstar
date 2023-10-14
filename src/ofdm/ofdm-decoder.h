@@ -66,6 +66,11 @@ public:
   void store_reference_symbol_0(std::vector<cmplx>);  // copy of vector is intended
   void decode_symbol(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
 
+  void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
+  void set_select_iq_plot_type(EIqPlotType iPlotType);
+  void set_soft_bit_gen_type(ESoftBitType iSoftBitType);
+  void set_show_nominal_carrier(bool iShowNominalCarrier);
+
 private:
   RadioInterface * const mpRadioInterface;
   const DabParams::SDabPar mDabPar;
@@ -76,8 +81,9 @@ private:
 
   ECarrierPlotType mCarrierPlotType = ECarrierPlotType::DEFAULT;
   EIqPlotType mIqPlotType = EIqPlotType::DEFAULT;
+  ESoftBitType mSoftBitType = ESoftBitType::DEFAULT;
+
   bool mShowNomCarrier = false;
-  bool mUseOldSoftBitGen = false;
 
   int32_t mShowCntStatistics = 0;
   int32_t mShowCntIqScope = 0;
@@ -105,12 +111,6 @@ private:
   [[nodiscard]] float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
   [[nodiscard]] float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
   [[nodiscard]] float _compute_noise_Power() const;
-
-public slots:
-  void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
-  void slot_select_iq_plot_type(EIqPlotType iPlotType);
-  void slot_show_nominal_carrier(bool iShowNominalCarrier);
-  void slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen);
 
 signals:
   void signal_slot_show_iq(int, float);

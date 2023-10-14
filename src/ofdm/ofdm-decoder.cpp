@@ -193,11 +193,6 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
 
-    // Finally calculate (and limit) a soft bit weight from the standard deviation for each bin.
-    float weight = 127.0f * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4;
-    //float weight = 127.0f * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4;  // alternative soft-bit generation
-    limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
-
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
     // Simplification: The IQ plot would need only the level, not power, so the root of the power is used (below)..
     const float fftBinAbsLevel = std::abs(fftBin);
@@ -206,6 +201,51 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     float & meanPowerPerBinRef = mMeanPowerVector[nomCarrIdx];
     mean_filter(meanPowerPerBinRef, fftBinPower, ALPHA);
     mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / mDabPar.K);
+
+    float weight = 0;
+
+    switch (mSoftBitType)
+    {
+    case ESoftBitType::FAST:
+      weight = 127.0f * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4;
+      break;
+    case ESoftBitType::AVER:
+      weight = 127.0f * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4;
+      break;
+    case ESoftBitType::QTDAB:
+    {
+      /*
+       * Tomneda: the soft-bit generation doing in Qt-DAB is not well understood by me, but in some receiving conditions it
+       * produces somehow better results than the for me more logical approach above (via the phase deviation).
+       * Here the weight value is only calculated to show something on the carrier plot.
+       * As the soft-bit is generated for the real part and imag part separately, only the real part weight is shown here.
+       * The real decoding is repeated below again.
+       * The viterbi decoder will limit the soft-bit values to +/-127, but the "255" were so in Qt-DAB. The limitation below is only
+       * for the carrier plot.
+       */
+      const cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
+      const float ab1 = abs(r1);
+      weight = std::abs(real(r1) * 255.0f / ab1);
+      break;
+    }
+    }
+
+    // Finally calculate (and limit) a soft bit weight from the standard deviation for each bin.
+    limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
+
+    if (mSoftBitType != ESoftBitType::QTDAB)
+    {
+      oBits[0         + nomCarrIdx] = (int16_t)(real(fftBin) < 0.0f ? weight : -weight);
+      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(fftBin) < 0.0f ? weight : -weight);
+    }
+    else // Qt-DAB style of soft bit generation
+    {
+      cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
+      const float ab1 = abs(r1);
+      // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
+      oBits[0         + nomCarrIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
+      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
+    }
 
     if (showScopeData)
     {
@@ -226,20 +266,6 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
       case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
       case ECarrierPlotType::NULL_TII:        mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelWithTIIGain * (mMeanNullLevelWithTII[fftIdx] - mAvgAbsNullLevelWithTIIMin); break;
       }
-    }
-
-    if (!mUseOldSoftBitGen)
-    {
-      oBits[0         + nomCarrIdx] = (int16_t)(real(fftBin) < 0.0f ? weight : -weight);
-      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(fftBin) < 0.0f ? weight : -weight);
-    }
-    else // old style of soft bit generation
-    {
-      cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-      const float ab1 = abs(r1);
-      // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
-      oBits[0         + nomCarrIdx] = (int16_t)(-(real(r1) * 255.0f) / ab1);
-      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(r1) * 255.0f) / ab1);
     }
   } // for (nomCarrIdx...
 
@@ -371,22 +397,22 @@ float OfdmDecoder::_compute_noise_Power() const
   return sumNoise / (float)mDabPar.K;
 }
 
-void OfdmDecoder::slot_select_carrier_plot_type(ECarrierPlotType iPlotType)
+void OfdmDecoder::set_select_carrier_plot_type(ECarrierPlotType iPlotType)
 {
   mCarrierPlotType = iPlotType;
 }
 
-void OfdmDecoder::slot_select_iq_plot_type(EIqPlotType iPlotType)
+void OfdmDecoder::set_select_iq_plot_type(EIqPlotType iPlotType)
 {
   mIqPlotType = iPlotType;
 }
 
-void OfdmDecoder::slot_show_nominal_carrier(bool iShowNominalCarrier)
+void OfdmDecoder::set_soft_bit_gen_type(ESoftBitType iSoftBitType)
 {
-  mShowNomCarrier = iShowNominalCarrier;
+  mSoftBitType = iSoftBitType;
 }
 
-void OfdmDecoder::slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen)
+void OfdmDecoder::set_show_nominal_carrier(bool iShowNominalCarrier)
 {
-  mUseOldSoftBitGen = iUseOldSoftBitGen;
+  mShowNomCarrier = iShowNominalCarrier;
 }

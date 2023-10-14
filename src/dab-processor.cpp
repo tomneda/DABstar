@@ -605,22 +605,22 @@ bool DabProcessor::start_etiGenerator(const QString & s)
 
 void DabProcessor::slot_select_carrier_plot_type(ECarrierPlotType iPlotType)
 {
-  mOfdmDecoder.slot_select_carrier_plot_type(iPlotType);
+  mOfdmDecoder.set_select_carrier_plot_type(iPlotType);
 }
 
 void DabProcessor::slot_select_iq_plot_type(EIqPlotType iPlotType)
 {
-  mOfdmDecoder.slot_select_iq_plot_type(iPlotType);
+  mOfdmDecoder.set_select_iq_plot_type(iPlotType);
+}
+
+void DabProcessor::slot_soft_bit_gen_type(ESoftBitType iSoftBitType)
+{
+  mOfdmDecoder.set_soft_bit_gen_type(iSoftBitType);
 }
 
 void DabProcessor::slot_show_nominal_carrier(bool iShowNominalCarrier)
 {
-  mOfdmDecoder.slot_show_nominal_carrier(iShowNominalCarrier);
-}
-
-void DabProcessor::slot_use_old_soft_bit_gen(bool iUseOldSoftBitGen)
-{
-  mOfdmDecoder.slot_use_old_soft_bit_gen(iUseOldSoftBitGen);
+  mOfdmDecoder.set_show_nominal_carrier(iShowNominalCarrier);
 }
 
 void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)

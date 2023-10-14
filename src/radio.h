@@ -264,6 +264,7 @@ private:
   FILE * ficDumpPointer;
   bool transmitterTags_local;
 
+  static QStringList get_soft_bit_gen_names();
   bool eventFilter(QObject * obj, QEvent * event) override;
   uint32_t extract_epg(QString, std::vector<serviceId> & serviceList, uint32_t);
   bool isMember(const std::vector<serviceId> &, serviceId);
