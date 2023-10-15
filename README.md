@@ -7,7 +7,8 @@
 ## Table of Content
 <!-- TOC -->
   * [Table of Content](#table-of-content)
-  * [Introducing](#introducing)
+  * [Introduction](#introduction)
+  * [Changes in DABstar version 1.4.0](#changes-in-dabstar-version-140)
   * [Changes in DABstar version 1.3.0](#changes-in-dabstar-version-130)
   * [Changes in DABstar version 1.2.0](#changes-in-dabstar-version-120)
     * [What is new?](#what-is-new)
@@ -26,14 +27,14 @@
     * [Not more working or removed things](#not-more-working-or-removed-things)
 <!-- TOC -->
 
-## Introducing
+## Introduction
 
 [DABstar](https://github.com/tomneda/DABstar) is forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) from
 [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249)
 ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249))
 from 2023-05-30, fixes afterwards to Qt-DAB afterwards included.
 
-Current main branch version is [V1.3.0](#changes-in-dabstar-version-130).
+Current main branch version is [V1.4.0](#changes-in-dabstar-version-140).
 
 As there are many changes made from my side and there will be bigger changes in the future, 
 I decided to give it the new name **DABstar**.
@@ -48,6 +49,14 @@ For building there is one bigger difference to Qt-DAB: I maintain only one GUI v
 So use only the cmake related installation process.
 
 I will also not provide any precompiled setup packages, yet.
+
+## Changes in DABstar version 1.4.0
+
+- Move style sheet to local resource file.
+- Improve (imo) the waterfall color scheme.
+- Selector for soft-bit calculation algorithm on **Configuration and Control** widget.
+- Add further soft-bit generation schemes (for experimenting while bad receiving conditions).
+- Refine hugely (in the background) **Select Coordinates** widget and place clickable URLs on that for some maps websites to grab the coordinates there (still by hand). 
 
 ## Changes in DABstar version 1.3.0
 
