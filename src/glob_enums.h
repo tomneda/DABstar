@@ -40,15 +40,15 @@ enum class ECarrierPlotType
 
 enum class ESoftBitType
 {
-  FAST,
   AVER,
+  FAST,
   QTDAB,
   QTDAB_MOD,
-  FIX_LOW,
-  FIX_MED,
   FIX_HIGH,
+  FIX_MED,
+  FIX_LOW,
 
-  DEFAULT = FAST  // use the first element for startup constellation
+  DEFAULT = AVER  // use the first element for startup constellation
 };
 
 #endif // GLOB_ENUMS_H
