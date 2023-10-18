@@ -9,11 +9,12 @@ find_path(QWT_INCLUDE_DIRS
   NAMES qwt_global.h
   HINTS
   ${CMAKE_INSTALL_PREFIX}/include/qwt
+  ${CMAKE_INSTALL_PREFIX}/include/qwt-qt5
   PATHS
   /usr/local/include/qwt-qt4
   /usr/local/include/qwt
   /usr/include/qwt6
-  /usr/include/qwt-qt4
+  /usr/include/qwt-qt5
   /usr/include/qwt-qt4
   /usr/include/qwt
   /usr/include/qwt5
@@ -22,8 +23,13 @@ find_path(QWT_INCLUDE_DIRS
   /opt/local/include/qwt
   /sw/include/qwt
   /usr/local/lib/qwt.framework/Headers
+  /usr/local/opt/qwt-qt5/lib/qwt.framework/Headers
   /usr/local/qwt-6.2.0/include
 )
+
+if(APPLE)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES "" ".dylib" ".so" ".a")
+endif(APPLE)
 
 find_library (QWT_LIBRARIES
   NAMES qwt6 qwt6-qt5 qwt-qt5 qwt6-qt4 qwt qwt-qt4
@@ -36,6 +42,7 @@ find_library (QWT_LIBRARIES
   /opt/local/lib
   /sw/lib
   /usr/local/lib/qwt.framework
+  /usr/local/opt/qwt-qt5/lib/qwt.framework
   /usr/local/qwt-6.2.0/lib
 )
 
