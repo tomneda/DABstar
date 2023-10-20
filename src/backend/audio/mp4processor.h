@@ -95,7 +95,7 @@ private:
   ReedSolomon my_rsDecoder;
   //	and for the aac decoder
 #ifdef  __WITH_FDK_AAC__
-  fdkAAC		*aacDecoder;
+  FdkAAC		*aacDecoder;
 #else
   faadDecoder * aacDecoder;
 #endif

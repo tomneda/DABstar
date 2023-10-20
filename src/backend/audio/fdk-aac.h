@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -22,50 +30,49 @@
  *
  *	Use the fdk-aac library.
  */
-#ifdef	__WITH_FDK_AAC__
-#ifndef	__FDK_AAC__
-#define	__FDK_AAC__
+#ifdef  __WITH_FDK_AAC__
 
-#include	<QObject>
-#include	<stdint.h>
-#include	<aacdecoder_lib.h>
-#include	"ringbuffer.h"
+#ifndef  FDK_AAC_H
+#define  FDK_AAC_H
+
+#include  <QObject>
+#include  <stdint.h>
+#include  <aacdecoder_lib.h>
+#include  "ringbuffer.h"
 
 
-typedef struct {
-        int     rfa;
-        int     dacRate;
-        int     sbrFlag;
-        int     psFlag;
-        int     aacChannelMode;
-        int     mpegSurround;
-        int     CoreChConfig;
-        int     CoreSrIndex;
-        int     ExtensionSrIndex;
+typedef struct
+{
+  int rfa;
+  int dacRate;
+  int sbrFlag;
+  int psFlag;
+  int aacChannelMode;
+  int mpegSurround;
+  int CoreChConfig;
+  int CoreSrIndex;
+  int ExtensionSrIndex;
 } stream_parms;
 
-class	RadioInterface;
-//
-/**
-  *	fdkAAC is an interface to the fdk-aac library,
-  *	using the LOAS protocol
-  */
-class	fdkAAC : public QObject {
-Q_OBJECT
-public:
-		fdkAAC (RadioInterface *mr,
-                        RingBuffer<int16_t> *buffer);
-		~fdkAAC	();
+class RadioInterface;
 
-int16_t		MP42PCM (stream_parms *sp,
-                         uint8_t   packet [],
-                         int16_t   packetLength);
+// fdkAAC is an interface to the fdk-aac library, using the LOAS protocol
+class FdkAAC : public QObject
+{
+  Q_OBJECT
+public:
+  FdkAAC(RadioInterface * mr, RingBuffer<int16_t> * buffer);
+  ~FdkAAC();
+
+  int16_t MP42PCM(stream_parms * sp, uint8_t packet[], int16_t packetLength);
+
 private:
-	RingBuffer<int16_t>	*audioBuffer;
-	bool			working;
-	HANDLE_AACDECODER	handle;
+  RingBuffer<int16_t> * audioBuffer;
+  bool working;
+  HANDLE_AACDECODER handle;
+
 signals:
-	void			newAudio	(int, int);
+  void newAudio(int, int);
 };
 
 #endif

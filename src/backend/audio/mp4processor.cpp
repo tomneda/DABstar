@@ -59,7 +59,7 @@ Mp4Processor::Mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   connect(this, &Mp4Processor::show_rsCorrections, mr, &RadioInterface::slot_show_rs_corrections);
 
 #ifdef  __WITH_FDK_AAC__
-  aacDecoder		= new fdkAAC (mr, b);
+  aacDecoder = new FdkAAC(mr, b);
 #else
   aacDecoder = new faadDecoder(mr, b);
 #endif
