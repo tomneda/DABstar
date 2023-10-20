@@ -472,7 +472,7 @@ if (FDK_AAC)
     if (NOT LIBFDK_AAC_FOUND)
         message(FATAL_ERROR, "please install libfdk-aac")
     endif ()
-    include_directories(./specials/fdk-aac)
+    include_directories(src/specials/fdk-aac)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/backend/audio/fdk-aac.h
@@ -638,8 +638,8 @@ if (AIRSPY)
             )
 
     include_directories(
-            ./qt-devices/airspy-handler
-            ./qt-devices/airspy-handler/libairspy
+            src/qt-devices/airspy-handler
+            src/qt-devices/airspy-handler/libairspy
     )
 
     set($(objectName)_HDRS
@@ -789,7 +789,7 @@ if (RTLSDR_WIN)
             )
 
     include_directories(
-            ./qt-devices/rtlsdr-handler-win/
+            src/qt-devices/rtlsdr-handler-win/
     )
 
     set(${objectName}_HDRS
