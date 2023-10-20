@@ -37,7 +37,7 @@ ip_dataHandler::ip_dataHandler(RadioInterface * mr, RingBuffer<uint8_t> * dataBu
 {
   this->dataBuffer = dataBuffer;
   this->handledPackets = 0;
-  connect(this, SIGNAL (writeDatagram(int)), mr, SLOT (sendDatagram(int)));
+  connect(this, &ip_dataHandler::writeDatagram, mr,  &RadioInterface::slot_send_datagram);
 }
 
 void ip_dataHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)

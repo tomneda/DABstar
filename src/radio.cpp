@@ -384,8 +384,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   {
     configWidget.transmitterTags->setChecked(true);
   }
-  connect(configWidget.autoBrowser, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_auto_browser(int)));
-  connect(configWidget.transmitterTags, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_transmitter_tags(int)));
+  connect(configWidget.autoBrowser, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_auto_browser);
+  connect(configWidget.transmitterTags, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transmitter_tags);
 
   transmitterTags_local = configWidget.transmitterTags->isChecked();
   theTechWindow->hide();  // until shown otherwise
@@ -459,7 +459,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   connect(&epgProcessor, &epgDecoder::signal_set_epg_data, this, &RadioInterface::slot_set_epg_data);
   //	timer for autostart epg service
   epgTimer.setSingleShot(true);
-  connect(&epgTimer, SIGNAL (timeout()), this, SLOT (slot_epg_timer_timeout()));
+  connect(&epgTimer, &QTimer::timeout, this,  &RadioInterface::slot_epg_timer_timeout);
 
   QString historyFile = QDir::toNativeSeparators(QDir::homePath() + "/.config/" APP_NAME "/stationlist.xml");
   historyFile = dabSettings->value("history", historyFile).toString();
@@ -469,11 +469,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   my_timeTable->hide();
 
   connect(my_history, &historyHandler::handle_historySelect, this, &RadioInterface::_slot_handle_history_select);
-  connect(this, SIGNAL (signal_set_new_channel(int)), channelSelector, SLOT (setCurrentIndex(int)));
-  connect(this, SIGNAL (signal_set_new_preset_index(int)), presetSelector, SLOT (setCurrentIndex(int)));
-  connect(configWidget.dlTextButton, SIGNAL (clicked()), this, SLOT (_slot_handle_dl_text_button()));
-  connect(configWidget.loggerButton, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_logger_button(int)));
-  connect(httpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_http_button()));
+  connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &smallComboBox::setCurrentIndex);
+  connect(this, &RadioInterface::signal_set_new_preset_index, presetSelector, &presetComboBox::setCurrentIndex);
+  connect(configWidget.dlTextButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_dl_text_button);
+  connect(configWidget.loggerButton, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_logger_button);
+  connect(httpButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
 
   //	restore some settings from previous incarnations
   QString t = dabSettings->value("dabBand", "VHF Band III").toString();
@@ -495,7 +495,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   total_ficError = 0;
   total_fics = 0;
 
-  connect(configWidget.streamoutSelector, SIGNAL (activated(int)), this, SLOT (slot_set_stream_selector(int)));
+  connect(configWidget.streamoutSelector, qOverload<int>(&smallComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
   connect(theTechWindow, &TechData::handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
   my_presetHandler.loadPresets(presetFile, presetSelector);
@@ -505,8 +505,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   copyrightLabel->setOpenExternalLinks(true);
   presetSelector->setToolTip(presetText());
 
-  connect(configWidget.portSelector, SIGNAL (clicked()), this, SLOT (_slot_handle_port_selector()));
-  connect(configWidget.set_coordinatesButton, SIGNAL (clicked()), this, SLOT (_slot_handle_set_coordinates_button()));
+  connect(configWidget.portSelector, &QPushButton::clicked, this, &RadioInterface::_slot_handle_port_selector);
+  connect(configWidget.set_coordinatesButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_set_coordinates_button);
   QString tiiFileName = dabSettings->value("tiiFile", "").toString();
   channel.tiiFile = false;
   if (tiiFileName != "")
@@ -518,7 +518,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     }
   }
 
-  connect(configWidget.eti_activeSelector, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_eti_active_selector(int)));
+  connect(configWidget.eti_activeSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_eti_active_selector);
   connect(this, &RadioInterface::signal_dab_processor_started, &my_spectrumViewer, &SpectrumViewer::slot_update_settings);
 
   channel.etiActive = false;
@@ -528,18 +528,18 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   //	The displaytimer is there to show the number of
   //	seconds running and handle - if available - the tii data
   displayTimer.setInterval(1000);
-  connect(&displayTimer, SIGNAL (timeout()), this, SLOT (_slot_update_time_display()));
+  connect(&displayTimer, &QTimer::timeout, this, &RadioInterface::_slot_update_time_display);
   displayTimer.start(1000);
   numberofSeconds = 0;
 
   //	timer for scanning
   channelTimer.setSingleShot(true);
   channelTimer.setInterval(10000);
-  connect(&channelTimer, SIGNAL (timeout()), this, SLOT (_slot_channel_timeout()));
+  connect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
   //
   //	presetTimer
   presetTimer.setSingleShot(true);
-  connect(&presetTimer, SIGNAL (timeout()), this, SLOT (_slot_set_preset_service()));
+  connect(&presetTimer, &QTimer::timeout, this, &RadioInterface::_slot_set_preset_service);
 
   QPalette lcdPalette;
 #ifndef __MAC__
@@ -624,7 +624,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     configDisplay.show();
   }
 
-  connect(configButton, SIGNAL (clicked()), this, SLOT (_slot_handle_config_button()));
+  connect(configButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_config_button);
 
   if (inputDevice != nullptr)
   {
@@ -746,7 +746,7 @@ bool RadioInterface::doStart()
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, my_dabProcessor, &DabProcessor::slot_show_nominal_carrier);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, my_dabProcessor, &DabProcessor::slot_select_iq_plot_type);
-  connect(configWidget.cmbSoftBitGen, qOverload<int32_t>(&QComboBox::currentIndexChanged), my_dabProcessor, [this](int idx){ my_dabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);});
+  connect(configWidget.cmbSoftBitGen, qOverload<int>(&QComboBox::currentIndexChanged), my_dabProcessor, [this](int idx){ my_dabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);});
 
   //
   //	Just to be sure we disconnect here.
@@ -1712,7 +1712,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
    //	RTL_TCP might be working.
 	if (s == "rtl_tcp") {
 	   try {
-	      inputDevice = new rtl_tcp_client (dabSettings);
+	      inputDevice = new RtlTcpClient (dabSettings);
 	      showButtons();
 	   }
 	   catch (...) {
@@ -2632,56 +2632,56 @@ void RadioInterface::_slot_handle_history_button()
 //	a device is operational
 void RadioInterface::connectGUI()
 {
-  connect(configWidget.contentButton, SIGNAL (clicked()), this, SLOT (_slot_handle_content_button()));
-  connect(detailButton, SIGNAL (clicked()), this, SLOT (_slot_handle_detail_button()));
-  connect(configWidget.resetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_reset_button()));
-  connect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
-  connect(show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
-  connect(devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
-  connect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
-  connect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));
-  connect(nextChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_channel_button()));
-  connect(prevChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_channel_button()));
-  connect(prevServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_service_button()));
-  connect(nextServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_service_button()));
-  connect(theTechWindow, SIGNAL (handle_audioDumping()), this, SLOT (_slot_handle_audio_dump_button()));
-  connect(theTechWindow, SIGNAL (handle_frameDumping()), this, SLOT (_slot_handle_frame_dump_button()));
-  connect(muteButton, SIGNAL (clicked()), this, SLOT (_slot_handle_mute_button()));
-  connect(ensembleDisplay, SIGNAL (clicked(QModelIndex)), this, SLOT (_slot_select_service(QModelIndex)));
-  connect(configWidget.switchDelaySetting, SIGNAL (valueChanged(int)), this, SLOT (_slot_handle_switch_delay_setting(int)));
-  connect(configWidget.orderAlfabetical, SIGNAL (clicked()), this, SLOT (_slot_handle_order_alfabetical()));
-  connect(configWidget.orderServiceIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_service_ids()));
-  connect(configWidget.ordersubChannelIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_sub_channel_ids()));
-  connect(configWidget.saveServiceSelector, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_save_service_selector(int)));
-  connect(configWidget.skipList_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_list_button()));
-  connect(configWidget.skipFile_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_file_button()));
+  connect(configWidget.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
+  connect(detailButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_detail_button);
+  connect(configWidget.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
+  connect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
+  connect(show_spectrumButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
+  connect(devicewidgetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
+  connect(historyButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_history_button);
+  connect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
+  connect(nextChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_channel_button);
+  connect(prevChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_channel_button);
+  connect(prevServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
+  connect(nextServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  connect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
+  connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
+  connect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
+  connect(ensembleDisplay, &smallQListView::clicked, this, &RadioInterface::_slot_select_service);
+  connect(configWidget.switchDelaySetting, qOverload<int>(&smallSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
+  connect(configWidget.orderAlfabetical, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_alfabetical);
+  connect(configWidget.orderServiceIds, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_service_ids);
+  connect(configWidget.ordersubChannelIds, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_sub_channel_ids);
+  connect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
+  connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
+  connect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
 }
 
 void RadioInterface::disconnectGUI()
 {
-  disconnect(configWidget.contentButton, SIGNAL (clicked()), this, SLOT (_slot_handle_content_button()));
-  disconnect(detailButton, SIGNAL (clicked()), this, SLOT (_slot_handle_detail_button()));
-  disconnect(configWidget.resetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_reset_button()));
-  disconnect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
-  disconnect(show_spectrumButton, SIGNAL (clicked()), this, SLOT (_slot_handle_spectrum_button()));
-  disconnect(devicewidgetButton, SIGNAL (clicked()), this, SLOT (_slot_handle_device_widget_button()));
-  disconnect(historyButton, SIGNAL (clicked()), this, SLOT (_slot_handle_history_button()));
-  disconnect(configWidget.dumpButton, SIGNAL (clicked()), this, SLOT (_slot_handle_source_dump_button()));
-  disconnect(nextChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_channel_button()));
-  disconnect(prevChannelButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_channel_button()));
-  disconnect(prevServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_service_button()));
-  disconnect(nextServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_service_button()));
-  disconnect(theTechWindow, SIGNAL (handle_audioDumping()), this, SLOT (_slot_handle_audio_dump_button()));
-  disconnect(theTechWindow, SIGNAL (handle_frameDumping()), this, SLOT (_slot_handle_frame_dump_button()));
-  disconnect(muteButton, SIGNAL (clicked()), this, SLOT (_slot_handle_mute_button()));
-  disconnect(ensembleDisplay, SIGNAL (clicked(QModelIndex)), this, SLOT (_slot_select_service(QModelIndex)));
-  disconnect(configWidget.switchDelaySetting, SIGNAL (valueChanged(int)), this, SLOT (_slot_handle_switch_delay_setting(int)));
-  disconnect(configWidget.orderAlfabetical, SIGNAL (clicked()), this, SLOT (_slot_handle_order_alfabetical()));
-  disconnect(configWidget.orderServiceIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_service_ids()));
-  disconnect(configWidget.ordersubChannelIds, SIGNAL (clicked()), this, SLOT (_slot_handle_order_sub_channel_ids()));
-  disconnect(configWidget.saveServiceSelector, SIGNAL (stateChanged(int)), this, SLOT (_slot_handle_save_service_selector(int)));
-  disconnect(configWidget.skipList_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_list_button()));
-  disconnect(configWidget.skipFile_button, SIGNAL (clicked()), this, SLOT (_slot_handle_skip_file_button()));
+  disconnect(configWidget.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
+  disconnect(detailButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_detail_button);
+  disconnect(configWidget.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
+  disconnect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
+  disconnect(show_spectrumButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
+  disconnect(devicewidgetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
+  disconnect(historyButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_history_button);
+  disconnect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
+  disconnect(nextChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_channel_button);
+  disconnect(prevChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_channel_button);
+  disconnect(prevServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
+  disconnect(nextServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  disconnect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
+  disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
+  disconnect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
+  disconnect(ensembleDisplay, &smallQListView::clicked, this, &RadioInterface::_slot_select_service);
+  disconnect(configWidget.switchDelaySetting, qOverload<int>(&smallSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
+  disconnect(configWidget.orderAlfabetical, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_alfabetical);
+  disconnect(configWidget.orderServiceIds, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_service_ids);
+  disconnect(configWidget.ordersubChannelIds, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_sub_channel_ids);
+  disconnect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
+  disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
+  disconnect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
 }
 
 void RadioInterface::closeEvent(QCloseEvent * event)
@@ -3232,16 +3232,16 @@ void RadioInterface::cleanScreen()
 
 void RadioInterface::_slot_handle_prev_service_button()
 {
-  disconnect(prevServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_service_button()));
+  disconnect(prevServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   handle_serviceButton(BACKWARDS);
-  connect(prevServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_prev_service_button()));
+  connect(prevServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
 }
 
 void RadioInterface::_slot_handle_next_service_button()
 {
-  disconnect(nextServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_service_button()));
+  disconnect(nextServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   handle_serviceButton(FORWARD);
-  connect(nextServiceButton, SIGNAL (clicked()), this, SLOT (_slot_handle_next_service_button()));
+  connect(nextServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
 }
 
 //	Previous and next services. trivial implementation
@@ -3816,7 +3816,7 @@ void RadioInterface::new_channelIndex(int index)
   {
     return;
   }
-  disconnect(channelSelector, SIGNAL (activated(const QString &)), this, SLOT (_slot_handle_channel_selector(const QString &)));
+  disconnect(channelSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
   channelSelector->blockSignals(true);
   emit signal_set_new_channel(index);
   while (channelSelector->currentIndex() != index)
@@ -3824,7 +3824,7 @@ void RadioInterface::new_channelIndex(int index)
     usleep(2000);
   }
   channelSelector->blockSignals(false);
-  connect(channelSelector, SIGNAL (activated(const QString &)), this, SLOT (_slot_handle_channel_selector(const QString &)));
+  connect(channelSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
 }
 
 
@@ -4326,8 +4326,8 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
   if (setting)
   {
     stopScanning(false);
-    disconnect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
-    connect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_eti_handler()));
+    disconnect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
+    connect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_eti_handler);
     scanButton->setText("ETI");
     if (inputDevice->isFileInput())
     {  // restore the button' visibility
@@ -4338,8 +4338,8 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
   //	otherwise, disconnect the eti handling and reconnect scan
   //	be careful, an ETI session may be going on
   stop_etiHandler();    // just in case
-  disconnect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_eti_handler()));
-  connect(scanButton, SIGNAL (clicked()), this, SLOT (_slot_handle_scan_button()));
+  disconnect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_eti_handler);
+  connect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
   scanButton->setText("Scan");
   if (inputDevice->isFileInput())
   {  // hide the button now

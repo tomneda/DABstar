@@ -28,7 +28,7 @@ tdc_dataHandler::tdc_dataHandler(RadioInterface * mr, RingBuffer<uint8_t> * data
   myRadioInterface = mr;
   this->dataBuffer = dataBuffer;
   //	for the moment we assume appType 4
-  connect(this, SIGNAL (bytesOut(int, int)), myRadioInterface, SLOT (handle_tdcdata(int, int)));
+  connect(this, &tdc_dataHandler::bytesOut, myRadioInterface,  &RadioInterface::slot_handle_tdc_data);
 }
 
 #define  swap(a)  (((a) << 8) | ((a) >> 8))
