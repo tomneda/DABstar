@@ -1,6 +1,3 @@
-# DABstar [![Build Status](https://github.com/tomneda/DABstar/actions/workflows/ci.yml/badge.svg)](https://github.com/tomneda/DABstar/actions/workflows/ci.yml)
-
-
 # DABstar
 
 ---
