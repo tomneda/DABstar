@@ -37,7 +37,7 @@
 #include	<QTimer>
 #include	"audio-base.h"
 
-class	tcpStreamer: public audioBase {
+class	tcpStreamer: public AudioBase {
 Q_OBJECT
 public:
 		tcpStreamer	(int32_t);

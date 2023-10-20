@@ -1,5 +1,12 @@
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
 
-#
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -25,28 +32,30 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef	__QT_AUDIODEVICE__
-#define	__QT_AUDIODEVICE__
+#ifndef  QT_AUDIODEVICE_H
+#define  QT_AUDIODEVICE_H
 
-#include	<QIODevice>
-#include	<QObject>
-#include	"dab-constants.h"
-#include	"ringbuffer.h"
+#include  <QIODevice>
+#include  <QObject>
+#include  "dab-constants.h"
+#include  "ringbuffer.h"
 
-class Qt_AudioDevice : public QIODevice {
+class QtAudioDevice : public QIODevice
+{
 Q_OBJECT
 public:
-		Qt_AudioDevice	(RingBuffer<float> *, QObject *);
-		~Qt_AudioDevice	(void);
+  QtAudioDevice(RingBuffer<float> *, QObject *);
+  ~QtAudioDevice() override = default;
 
-	void	start		(void);
-	void	stop		(void);
+  void start();
+  void stop();
 
-	qint64	readData	(char *data, qint64 maxlen);
-	qint64	writeData	(const char *data, qint64 len);
+  qint64 readData(char * data, qint64 maxlen) override;
+  qint64 writeData(const char * data, qint64 len) override;
 
 private:
-	RingBuffer<float> *Buffer;
+  RingBuffer<float> * const Buffer;
 };
+
 #endif
 

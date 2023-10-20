@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,47 +28,50 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include	"Qt-audiodevice.h"
-//
+
+#include  "Qt-audiodevice.h"
+
 //	Create a "device"
-Qt_AudioDevice::Qt_AudioDevice (RingBuffer<float>* Buffer,
-	                        QObject* parent) : QIODevice(parent) {
-	this -> Buffer = Buffer;
+QtAudioDevice::QtAudioDevice(RingBuffer<float> * ipBuffer, QObject * parent) :
+  QIODevice(parent),
+  Buffer(ipBuffer)
+{
 }
 
-Qt_AudioDevice::~Qt_AudioDevice (void) {
+void QtAudioDevice::start()
+{
+  open(QIODevice::ReadOnly);
 }
 
-void	Qt_AudioDevice::start (void) {
-	open(QIODevice::ReadOnly);
+void QtAudioDevice::stop()
+{
+  Buffer->FlushRingBuffer();
+  close();
 }
 
-void	Qt_AudioDevice::stop (void) {
-	Buffer -> FlushRingBuffer();
-	close();
-}
-//
 //	we always return "len" bytes
-qint64	Qt_AudioDevice::readData (char* buffer, qint64 maxSize) {
-qint64	amount = 0;
+qint64 QtAudioDevice::readData(char * buffer, qint64 maxSize)
+{
+  //	"maxSize" is the requested size in bytes
+  //	"amount" is in floats
 
-//	"maxSize" is the requested size in bytes
-//	"amount" is in floats
-	amount = Buffer -> getDataFromBuffer (buffer, maxSize / sizeof (float));
+  if (const qint64 amount = Buffer->getDataFromBuffer(buffer, (int32_t)(maxSize / sizeof(float)));
+     (signed)sizeof(float) * amount < maxSize)
+  {
+    for (int32_t i = (int32_t)amount * sizeof(float); i < maxSize; i++)
+    {
+      buffer[i] = 0;
+    }
+  }
 
-	if (sizeof (float) * amount < maxSize) {
-	   int16_t i;
-	   for (i = amount * sizeof (float); i < maxSize; i ++) 
-	      buffer [i] = 0;
-	}
-
-	return maxSize;
+  return maxSize;
 }
-//
-//	usused here
-qint64	Qt_AudioDevice::writeData (const char* data, qint64 len) {
-	Q_UNUSED (data);
-	Q_UNUSED (len);
-	return 0;
+
+//	unused here
+qint64 QtAudioDevice::writeData(const char * data, qint64 len)
+{
+  Q_UNUSED(data)
+  Q_UNUSED(len)
+  return 0;
 }
 

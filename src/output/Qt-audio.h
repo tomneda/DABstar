@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -24,34 +32,40 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef __QT_AUDIO__
-#define	__QT_AUDIO__
-#include	<cstdio>
-#include	<QAudioOutput>
-#include	 <QTimer>
-#include	"dab-constants.h"
-#include	"ringbuffer.h"
-#include	"audio-base.h"
-#include	"Qt-audiodevice.h"
+#ifndef QT_AUDIO_H
+#define QT_AUDIO_H
 
-class	Qt_Audio: public AudioBase {
+#include  <cstdio>
+#include  <QAudioOutput>
+#include   <QTimer>
+#include  "dab-constants.h"
+#include  "ringbuffer.h"
+#include  "audio-base.h"
+#include  "Qt-audiodevice.h"
+
+class QtAudio : public AudioBase
+{
 Q_OBJECT
 public:
-			Qt_Audio	(void);
-			~Qt_Audio	(void);
-	void		stop		(void);
-	void		restart		(void);
-	void		audioOutput	(float *, int32_t);
+  QtAudio();
+  ~QtAudio() override;
+
+  void stop() override;
+  void restart() override;
+  void audioOutput(float *, int32_t) override;
+
 private:
-	void		setParams	(int32_t);
-	QAudioFormat	AudioFormat;
-	QAudioOutput	*theAudioOutput;
-	Qt_AudioDevice	*theAudioDevice;
-	RingBuffer<float> *Buffer;
-	QAudio::State	currentState;
-	int32_t		outputRate;
+  QAudioFormat mAudioFormat;
+  QAudioOutput * mpAudioOutput;
+  QtAudioDevice * mpAudioDevice;
+  RingBuffer<float> * mpBuffer;
+  QAudio::State mCurrentState;
+  int32_t mOutputRate;
+
+  void setParams(int32_t);
 
 private slots:
-	void handleStateChanged (QAudio::State newState);
+  void handleStateChanged(QAudio::State newState);
 };
+
 #endif

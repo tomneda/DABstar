@@ -54,14 +54,13 @@
 #include  "techdata.h"
 
 #ifdef  TCP_STREAMER
-#include	"tcp-streamer.h"
+  #include "tcp-streamer.h"
 #elif  QT_AUDIO
-#include	"Qt-audio.h"
+  #include "Qt-audio.h"
 #else
-
-#include  "audiosink.h"
-
+  #include "audiosink.h"
 #endif
+
 #ifdef  HAVE_RTLSDR
 
 #include  "rtlsdr-handler.h"
@@ -206,7 +205,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     filenameFinder(Si),
     theTechData(16 * 32768)
 {
-  int16_t latency;
   int16_t k;
   QString h;
   uint8_t dabBand;
@@ -233,7 +231,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   //globals.snrBuffer = &snrBuffer;
   globals.frameBuffer = &frameBuffer;
 
-  latency = dabSettings->value("latency", 5).toInt();
+  const int16_t latency = dabSettings->value("latency", 5).toInt();
 
   QString dabMode = dabSettings->value("dabMode", "Mode 1").toString();
   globals.dabMode = convert(dabMode);
@@ -410,9 +408,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 #ifdef TCP_STREAMER
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
+  (void)latency;
 #elif QT_AUDIO
-  soundOut = new Qt_Audio();
+  soundOut = new QtAudio();
   theTechWindow->hide();
+  (void)latency;
 #else
   //	just sound out
   soundOut = new AudioSink(latency);
@@ -1511,11 +1511,13 @@ void RadioInterface::_slot_update_time_display()
   }
   if (soundOut->hasMissed())
   {
+#if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
     int xxx = ((AudioSink *)soundOut)->missed();
     if (!theTechWindow->isHidden())
     {
       theTechWindow->showMissed(xxx);
     }
+#endif
   }
   if (error_report && (numberofSeconds % 10) == 0)
   {
@@ -2346,7 +2348,7 @@ void RadioInterface::slot_set_stream_selector(int k)
   {
     return;
   }
-#if  not defined (TCP_STREAMER) && not defined (QT_AUDIO)
+#if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
   ((AudioSink *)(soundOut))->selectDevice(k);
   dabSettings->setValue("soundchannel", configWidget.streamoutSelector->currentText());
 #else

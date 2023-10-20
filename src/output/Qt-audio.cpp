@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -25,82 +33,96 @@
  *
  */
 
-#include	<cstdio>
-#include	"Qt-audiodevice.h"
-#include	"Qt-audio.h"
+#include  <cstdio>
+#include  "Qt-audiodevice.h"
+#include  "Qt-audio.h"
 
-	Qt_Audio::Qt_Audio (void) {
-	Buffer		= new RingBuffer<float> (8 * 32768);
-	outputRate	= 48000;	// default
-	theAudioDevice	= new Qt_AudioDevice (Buffer, this);
-	theAudioOutput	= nullptr;
-	setParams (outputRate);
+QtAudio::QtAudio()
+{
+  mpBuffer = new RingBuffer<float>(8 * 32768);
+  mOutputRate = 48000;  // default
+  mpAudioDevice = new QtAudioDevice(mpBuffer, this);
+  mpAudioOutput = nullptr;
+  setParams(mOutputRate);
 }
 
-	Qt_Audio::~Qt_Audio(void) {
-	if (theAudioOutput != nullptr)
-	   delete	theAudioOutput;
-	delete	theAudioDevice;
-	delete	Buffer;
+QtAudio::~QtAudio()
+{
+  delete mpAudioOutput; // theAudioOutput==nullptr is allowed
+  delete mpAudioDevice;
+  delete mpBuffer;
 }
+
 //
 //	Note that audioBase functions have - if needed - the rate
 //	converted.  This functions overrides the one in audioBase
-void	Qt_Audio::audioOutput (float *fragment, int32_t size) {
-	if (theAudioDevice != nullptr) {
-	   Buffer -> putDataIntoBuffer (fragment, 2 * size);
-	}
+void QtAudio::audioOutput(float * fragment, int32_t size)
+{
+  if (mpAudioDevice != nullptr)
+  {
+    mpBuffer->putDataIntoBuffer(fragment, 2 * size);
+  }
 }
 
-void	Qt_Audio::setParams (int outputRate) {
-	if (theAudioOutput != nullptr) {
-	   delete theAudioOutput;
-	   theAudioOutput = nullptr;
-	}
+void QtAudio::setParams(int outputRate)
+{
+  if (mpAudioOutput != nullptr)
+  {
+    disconnect(mpAudioOutput, &QAudioOutput::stateChanged, this, &QtAudio::handleStateChanged);
+    delete mpAudioOutput;
+    mpAudioOutput = nullptr;
+  }
 
-	AudioFormat. setSampleRate	(outputRate);
-	AudioFormat. setChannelCount	(2);
-	AudioFormat. setSampleSize	(sizeof (float) * 8);
-	AudioFormat. setCodec		("audio/pcm");
-	AudioFormat. setByteOrder	(QAudioFormat::LittleEndian);
-	AudioFormat. setSampleType	(QAudioFormat::Float);
+  mAudioFormat.setSampleRate(outputRate);
+  mAudioFormat.setChannelCount(2);
+  mAudioFormat.setSampleSize(sizeof(float) * 8);
+  mAudioFormat.setCodec("audio/pcm");
+  mAudioFormat.setByteOrder(QAudioFormat::LittleEndian);
+  mAudioFormat.setSampleType(QAudioFormat::Float);
 
-	QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-	if (!info. isFormatSupported(AudioFormat)) {
-	   fprintf (stderr, "Audio: Sorry, format cannot be handled");
-	   return;
-	}
+  if (QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+      !info.isFormatSupported(mAudioFormat))
+  {
+    fprintf(stderr, "Audio: Sorry, format cannot be handled");
+    return;
+  }
 
-	theAudioOutput = new QAudioOutput(AudioFormat, this);
-	connect (theAudioOutput, SIGNAL (stateChanged (QAudio::State)),
-	         this, SLOT (handleStateChanged (QAudio::State)));
+  mpAudioOutput = new QAudioOutput(mAudioFormat, this);
+  connect(mpAudioOutput, &QAudioOutput::stateChanged, this, &QtAudio::handleStateChanged);
 
-	restart();
-	currentState = theAudioOutput -> state();
+  restart();
+  mCurrentState = mpAudioOutput->state();
 }
 
-void	Qt_Audio::stop (void) {
-	if (theAudioDevice == nullptr)
-	   return;
-	theAudioDevice	-> stop();
-	theAudioOutput	-> stop();
+void QtAudio::stop(void)
+{
+  if (mpAudioDevice == nullptr)
+  {
+    return;
+  }
+  mpAudioDevice->stop();
+  mpAudioOutput->stop();
 }
 
-void	Qt_Audio::restart	(void) {
-	if (theAudioDevice == nullptr)
-	   return;
-	theAudioDevice	-> start();
-	theAudioOutput	-> start (theAudioDevice);
+void QtAudio::restart(void)
+{
+  if (mpAudioDevice == nullptr)
+  {
+    return;
+  }
+  mpAudioDevice->start();
+  mpAudioOutput->start(mpAudioDevice);
 }
 
-void	Qt_Audio::handleStateChanged (QAudio::State newState) {
-	currentState = newState;
-	switch (currentState) {
-	   case QAudio::IdleState:
-	      theAudioOutput -> stop();
-	      break;
+void QtAudio::handleStateChanged(QAudio::State newState)
+{
+  mCurrentState = newState;
 
-	   default:
-	      break;
-	}
+  switch (mCurrentState)
+  {
+  case QAudio::IdleState: mpAudioOutput->stop();
+    break;
+
+  default: ;
+  }
 }
