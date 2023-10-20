@@ -218,9 +218,9 @@ Mp2Processor::Mp2Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   myRadioInterface = mr;
   this->buffer = buffer;
   this->bitRate = bitRate;
-  connect(this, SIGNAL (show_frameErrors(int)), mr, SLOT (show_frameErrors(int)));
-  connect(this, SIGNAL (newAudio(int, int)), mr, SLOT (newAudio(int, int)));
-  connect(this, SIGNAL (isStereo(bool)), mr, SLOT (setStereo(bool)));
+  connect(this, &Mp2Processor::show_frameErrors, mr,  &RadioInterface::slot_show_frame_errors);
+  connect(this, &Mp2Processor::newAudio, mr, &RadioInterface::slot_new_audio);
+  connect(this, &Mp2Processor::isStereo, mr,  &RadioInterface::slot_set_stereo);
 
   Voffs = 0;
   baudRate = 48000;  // default for DAB
