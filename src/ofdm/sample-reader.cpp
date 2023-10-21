@@ -60,7 +60,6 @@ SampleReader::SampleReader(const RadioInterface * mr, deviceHandler * iTheRig, R
   }
 
   connect(this, &SampleReader::signal_show_spectrum, mr, &RadioInterface::slot_show_spectrum);
-  //connect(this, &SampleReader::signal_show_corrector, mr, &RadioInterface::slot_set_corrector_display);
 }
 
 void SampleReader::setRunning(bool b)
@@ -75,11 +74,11 @@ float SampleReader::get_sLevel() const
 
 cmplx SampleReader::getSample(int32_t phaseOffset)
 {
-  getSamples(oneSampleBuffer, 0, 1, phaseOffset);
+  getSamples(oneSampleBuffer, 0, 1, phaseOffset, true); // show spectrum while scanning
   return oneSampleBuffer[0];
 }
 
-void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz)
+void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec)
 {
   assert((signed)oV.size() >= iStartIdx + iNoSamples);
   
@@ -124,9 +123,8 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
 
   sampleCount += iNoSamples;
 
-  if (sampleCount > INPUT_RATE / 4)
+  if (sampleCount > INPUT_RATE / 4 && iShowSpec)
   {
-    //emit signal_show_corrector(iFreqOffsetBBHz);
     if (spectrumBuffer != nullptr)
     {
       spectrumBuffer->putDataIntoBuffer(localBuffer.data(), bufferSize);

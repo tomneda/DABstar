@@ -255,7 +255,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
 {
   // We are at the end of the frame and we read the next T_n null samples
-  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mFreqOffsBBHz);
+  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mFreqOffsBBHz, false);
   ioSampleCount += mDabPar.T_n;
 
   // is this null symbol with TII?
@@ -304,7 +304,7 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
 
   for (int16_t ofdmSymbCntIdx = 1; ofdmSymbCntIdx < mDabPar.L; ofdmSymbCntIdx++)
   {
-    mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_s, mFreqOffsBBHz);
+    mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_s, mFreqOffsBBHz, true);
     ioSampleCount += mDabPar.T_s;
 
     for (int32_t i = mDabPar.T_u; i < mDabPar.T_s; i++)
@@ -356,7 +356,7 @@ void DabProcessor::_set_rf_freq_offs_Hz(float iFreqHz)
 bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSampleCount, float iThreshold)
 {
   // get first OFDM symbol after time sync marker
-  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_u, mFreqOffsBBHz);
+  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_u, mFreqOffsBBHz, false);
 
   oStartIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
 
@@ -377,7 +377,7 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSam
 
     // move/read OFDM symbol 0 which contains the synchronization data
     memmove(mOfdmBuffer.data(), &(mOfdmBuffer[oStartIndex]), nextOfdmBufferIdx * sizeof(cmplx)); // memmove can move overlapping segments correctly
-    mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, mDabPar.T_u - nextOfdmBufferIdx, mFreqOffsBBHz); // get reference symbol
+    mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, mDabPar.T_u - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
 
     oSampleCount = oStartIndex + mDabPar.T_u;
 
