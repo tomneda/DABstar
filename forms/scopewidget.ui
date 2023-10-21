@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1015</width>
-    <height>683</height>
+    <height>687</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,11 @@
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
+     <property name="horizontalSpacing">
+      <number>6</number>
+     </property>
      <property name="verticalSpacing">
-      <number>4</number>
+      <number>0</number>
      </property>
      <item row="0" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -42,6 +45,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QSlider" name="scopeAmplification">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(60,60,60);</string>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -93,15 +99,18 @@
        <property name="frameShadow">
         <enum>QFrame::Sunken</enum>
        </property>
-       <property name="indent">
-        <number>-1</number>
-       </property>
       </widget>
      </item>
      <item row="1" column="1" rowspan="3">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="topMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QSlider" name="dabWaterfallAmplitude">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(60,60,60);</string>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -128,8 +137,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The waterfall of the spectrum of the incoming signal&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgba(18, 18, 18, 255);
-</string>
+          <string notr="true">background-color: rgba(18, 18, 18, 255);</string>
          </property>
         </widget>
        </item>
@@ -139,6 +147,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <property name="sizeConstraint">
         <enum>QLayout::SetFixedSize</enum>
+       </property>
+       <property name="topMargin">
+        <number>4</number>
        </property>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -587,6 +598,9 @@
      </item>
      <item row="4" column="0" colspan="2">
       <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <property name="topMargin">
+        <number>4</number>
+       </property>
        <item>
         <widget class="QwtPlot" name="phaseCarrPlot">
          <property name="minimumSize">
