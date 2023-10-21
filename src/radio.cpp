@@ -4381,7 +4381,7 @@ QStringList RadioInterface::get_soft_bit_gen_names()
 
 QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor) const
 {
-  const float fac = 0.5f;
+  const float fac = 0.6f;
   const int32_t r1 = iBgBaseColor.red();
   const int32_t g1 = iBgBaseColor.green();
   const int32_t b1 = iBgBaseColor.blue();
@@ -4406,7 +4406,7 @@ QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColo
   }
   //fprintf(stdout, "*** Style sheet: %s\n", ts.str().c_str());
 
-  return QString(ts.str().c_str());
+  return { ts.str().c_str() };
 }
 
 void RadioInterface::setup_ui_colors()
@@ -4425,6 +4425,6 @@ void RadioInterface::setup_ui_colors()
   prevChannelButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
   nextChannelButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
 
-  historyButton->setStyleSheet(get_style_sheet({ 246, 211, 45 }, Qt::black));
+  historyButton->setStyleSheet(get_style_sheet({ 255, 200, 45 }, Qt::black));
 }
 
