@@ -109,6 +109,16 @@ void WaterfallScope::_gen_color_map(const int32_t iStyleNr)
 
   case 1:
   {
+    mpColorMap = new QwtLinearColorMap(Qt::black, Qt::white);
+    mpColorMap->addColorStop(0.2, 0x2020A0);
+    mpColorMap->addColorStop(0.4, 0xFF2020);
+    mpColorMap->addColorStop(0.6, 0xFF40FF);
+    mpColorMap->addColorStop(0.8, 0xFFFF40);
+    break;
+  }
+
+  case 2:
+  {
     constexpr int32_t COL_STEPS = 16;
 
     const int32_t R_start = 0x40;
