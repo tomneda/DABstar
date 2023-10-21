@@ -4381,24 +4381,30 @@ QStringList RadioInterface::get_soft_bit_gen_names()
 
 QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor) const
 {
-  const int32_t offs = 40;
+  const float fac = 0.5f;
   const int32_t r1 = iBgBaseColor.red();
   const int32_t g1 = iBgBaseColor.green();
   const int32_t b1 = iBgBaseColor.blue();
-  const int32_t r2 = r1 - offs;
-  const int32_t g2 = g1 - offs;
-  const int32_t b2 = b1 - offs;
+  const int32_t r2 = (int32_t)((float)r1 * fac);
+  const int32_t g2 = (int32_t)((float)g1 * fac);
+  const int32_t b2 = (int32_t)((float)b1 * fac);
   assert(r2 >= 0);
   assert(g2 >= 0);
   assert(b2 >= 0);
   QColor BgBaseColor2(r2, g2, b2);
 
-  std::stringstream ts;
+  std::stringstream ts; // QTextStream did not work well here?!
 
-  ts << "background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
-     << ", stop:1 " << BgBaseColor2.name().toStdString() << "); " << "color: " << iTextColor.name().toStdString() << ";";
-
-  fprintf(stdout, "*** Style sheet: %s\n", ts.str().c_str());
+  if (false)
+  {
+    ts << "background-color: " << iBgBaseColor.name().toStdString() <<  "; color: " << iTextColor.name().toStdString() << ";";
+  }
+  else
+  {
+    ts << "background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
+       << ", stop:1 " << BgBaseColor2.name().toStdString() << "); " << "color: " << iTextColor.name().toStdString() << ";";
+  }
+  //fprintf(stdout, "*** Style sheet: %s\n", ts.str().c_str());
 
   return QString(ts.str().c_str());
 }
@@ -4412,7 +4418,7 @@ void RadioInterface::setup_ui_colors()
   devicewidgetButton->setStyleSheet(get_style_sheet({ 87, 230, 236 }, Qt::black));
   configButton->setStyleSheet(get_style_sheet({ 80, 155, 80 }, Qt::white));
   detailButton->setStyleSheet(get_style_sheet({ 255, 255, 100 }, Qt::black));
-  show_spectrumButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
+  show_spectrumButton->setStyleSheet(get_style_sheet({ 165, 85, 192 }, Qt::white));
 
   prevServiceButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
   nextServiceButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
