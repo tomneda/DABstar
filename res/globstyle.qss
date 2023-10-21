@@ -1,4 +1,4 @@
-QWidget { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(58, 58, 58, 255),stop:1 rgba(18, 18, 18, 255)); color: #fff; selection-background-color: #b78620;	selection-color: #000; }
+QWidget { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(48, 48, 78, 255),stop:1 rgba(8, 8, 13, 255)); color: #fff; selection-background-color: #b78620;	selection-color: #000; }
 QLabel { background-color: transparent; color: #fff; }
 QMenuBar { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(57, 57, 57, 255),stop:1 rgba(50, 50, 50, 255)); border: 1px solid #000; color: #fff; }
 QMenuBar::item { background-color: transparent; }
