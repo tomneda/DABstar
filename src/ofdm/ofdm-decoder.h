@@ -96,11 +96,11 @@ private:
   std::vector<float> mIntegAbsPhaseVector;
   std::vector<float> mMeanPhaseVector;
   std::vector<float> mMeanPowerVector;
-  std::vector<float> mMeanNullLevelWithTII;
+  std::vector<float> mMeanNullLevel;
   std::vector<float> mMeanNullPowerWithoutTII;
   float mMeanPowerOvrAll = 1.0f;
-  float mAvgAbsNullLevelWithTIIMin = 0.0f;
-  float mAvgAbsNullLevelWithTIIGain = 0.0f;
+  float mAvgAbsNullLevelMin = 0.0f;
+  float mAvgAbsNullLevelGain = 0.0f;
 
   // mQD has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
@@ -111,6 +111,8 @@ private:
   [[nodiscard]] float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
   [[nodiscard]] float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
   [[nodiscard]] float _compute_noise_Power() const;
+  void _eval_null_symbol_statistics();
+  void _reset_null_symbol_statistics();
 
 signals:
   void signal_slot_show_iq(int, float);

@@ -129,22 +129,13 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
 
   switch (iPlotType)
   {
-  case ECarrierPlotType::FOUR_QUAD_PHASE:
-    cp.ToolTip = "Shows the 4 phase segments in degree for each OFDM carrier.";
-    cp.Style = SCustPlot::EStyle::DOTS;
-    cp.Name = "4-quadr. Phase";
-    cp.YBottomValue = -180.0;
-    cp.YTopValue = 180.0;
-    cp.YValueElementNo = 9;
-    cp.MarkerYValueStep = 2;
-    break;
-
   case ECarrierPlotType::MOD_QUAL:
-    cp.ToolTip = "Shows the modulation quality in % for each OFDM carrier. This is used for soft bit weighting for the viterbi decoder.";
+    cp.ToolTip = "Shows the modulation quality in percentage for each OFDM carrier.<p>"
+                 "This is used for soft bit weighting for the viterbi decoder.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Modul. Quality";
-    cp.YBottomValue = 0.0;
     cp.YTopValue = 100.0;
+    cp.YBottomValue = 0.0;
     cp.YValueElementNo = 6;
     cp.MarkerYValueStep = 1;
     break;
@@ -153,18 +144,8 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.ToolTip = "Shows the standard deviation of the absolute phase (mapped to first quadrant) in degrees of each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Std-Deviation";
-    cp.YBottomValue = 0.0;
     cp.YTopValue = 45.0;
-    cp.YValueElementNo = 7;
-    cp.MarkerYValueStep = 1;
-    break;
-
-  case ECarrierPlotType::REL_POWER:
-    cp.ToolTip = "Shows the relative signal power to the overall medium signal power in dB of each OFDM carrier.";
-    cp.Style = SCustPlot::EStyle::LINES;
-    cp.Name = "Relative Power";
-    cp.YBottomValue = -24.0;
-    cp.YTopValue = 12.0;
+    cp.YBottomValue = 0.0;
     cp.YValueElementNo = 7;
     cp.MarkerYValueStep = 1;
     break;
@@ -173,19 +154,29 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.ToolTip = "Shows the corrected phase error in degree of each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Corr. Phase Error";
-    cp.YBottomValue = -20.0;
     cp.YTopValue = 20.0;
+    cp.YBottomValue = -20.0;
     cp.YValueElementNo = 5;
     cp.MarkerYValueStep = 1;
     break;
 
-  case ECarrierPlotType::NULL_TII:
-    cp.ToolTip = "Shows the averaged null symbol with TII carriers.";
+  case ECarrierPlotType::FOUR_QUAD_PHASE:
+    cp.ToolTip = "Shows the 4 phase segments in degree for each OFDM carrier.";
+    cp.Style = SCustPlot::EStyle::DOTS;
+    cp.Name = "4-quadr. Phase";
+    cp.YTopValue = 180.0;
+    cp.YBottomValue = -180.0;
+    cp.YValueElementNo = 9;
+    cp.MarkerYValueStep = 2;
+    break;
+
+  case ECarrierPlotType::REL_POWER:
+    cp.ToolTip = "Shows the relative signal power to the overall medium signal power in dB of each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::LINES;
-    cp.Name = "Null Symbol TII";
-    cp.YBottomValue = 0.0;
-    cp.YTopValue = 100.0;
-    cp.YValueElementNo = 6;
+    cp.Name = "Relative Power";
+    cp.YTopValue = 12.0;
+    cp.YBottomValue = -24.0;
+    cp.YValueElementNo = 7;
     cp.MarkerYValueStep = 1;
     break;
 
@@ -193,9 +184,40 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.ToolTip = "Shows the Signal-Noise-Ratio (SNR) in dB of each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "S/N-Ratio";
-    cp.YBottomValue = 0.0;
     cp.YTopValue = 60.0;
+    cp.YBottomValue = 0.0;
     cp.YValueElementNo = 7;
+    cp.MarkerYValueStep = 1;
+    break;
+
+  case ECarrierPlotType::NULL_TII:
+    cp.ToolTip = "Shows the averaged null symbol level with TII carriers in percentage of the maximum peak.";
+    cp.Style = SCustPlot::EStyle::LINES;
+    cp.Name = "Null Sym. TII";
+    cp.YTopValue = 100.0;
+    cp.YBottomValue = 0.0;
+    cp.YValueElementNo = 6;
+    cp.MarkerYValueStep = 1;
+    break;
+
+  case ECarrierPlotType::NULL_NO_TII:
+    cp.ToolTip = "Shows the averaged null symbol level without TII carriers in percentage of the maximum peak.";
+    cp.Style = SCustPlot::EStyle::LINES;
+    cp.Name = "Null Sym. no TII";
+    cp.YTopValue = 100.0;
+    cp.YBottomValue = 0.0;
+    cp.YValueElementNo = 6;
+    cp.MarkerYValueStep = 1;
+    break;
+
+  case ECarrierPlotType::NULL_OVR_POW:
+    cp.ToolTip = "Shows the averaged null symbol (without TII) power relation to the averaged overall carrier power in dB.<p>"
+                 "This reveals disturbing (non-DAB) signals which can degrade decoding quality.";
+    cp.Style = SCustPlot::EStyle::LINES;
+    cp.Name = "Null Sym. ovr. Pow.";
+    cp.YTopValue = 6.0;
+    cp.YBottomValue = -36.0;
+    cp.YValueElementNo = 8;
     cp.MarkerYValueStep = 1;
     break;
   }
@@ -215,6 +237,8 @@ QStringList CarrierDisp::get_plot_type_names()
   sl << _get_plot_type_data(ECarrierPlotType::REL_POWER).Name;
   sl << _get_plot_type_data(ECarrierPlotType::SNR).Name;
   sl << _get_plot_type_data(ECarrierPlotType::NULL_TII).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::NULL_NO_TII).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::NULL_OVR_POW).Name;
 
   return sl;
 }

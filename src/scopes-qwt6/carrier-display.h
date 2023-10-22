@@ -40,8 +40,8 @@ public:
     const char * Name;
     const char * ToolTip;
 
-    double YBottomValue;
     double YTopValue;
+    double YBottomValue;
     int32_t YValueElementNo;
 
     int32_t MarkerYValueStep = 1; // if not each Y value a marker should set (0 = no set no marker)

@@ -49,7 +49,7 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &RadioInterface::slot_show_iq);
   connect(this, &OfdmDecoder::signal_show_mod_quality, mpRadioInterface, &RadioInterface::slot_show_mod_quality_data);
 
-  mMeanNullLevelWithTII.resize(mDabPar.T_u);
+  mMeanNullLevel.resize(mDabPar.T_u);
   mMeanNullPowerWithoutTII.resize(mDabPar.T_u);
   mPhaseReference.resize(mDabPar.T_u);
   mFftBuffer.resize(mDabPar.T_u);
@@ -69,12 +69,11 @@ void OfdmDecoder::reset()
   std::fill(mIntegAbsPhaseVector.begin(), mIntegAbsPhaseVector.end(), 0.0f);
   std::fill(mMeanPhaseVector.begin(), mMeanPhaseVector.end(), 0.0f);
   std::fill(mMeanPowerVector.begin(), mMeanPowerVector.end(), 0.0f);
-  std::fill(mMeanNullLevelWithTII.begin(), mMeanNullLevelWithTII.end(), 0.0f);
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
 
   mMeanPowerOvrAll = 1.0f;
-  mAvgAbsNullLevelWithTIIMin = 0.0f;
-  mAvgAbsNullLevelWithTIIGain = 0.0f;
+
+  _reset_null_symbol_statistics();
 }
 
 void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iV) // with TII information
@@ -88,25 +87,8 @@ void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iV) // w
 
   mFftHandler.fft(mFftBuffer);
 
-  constexpr float ALPHA = 0.20f;
-  float max = -1e38f;
-  float min =  1e38f;
+  _eval_null_symbol_statistics();
 
-  for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
-  {
-    // Consider FFT shift and skipping DC (0 Hz) bin.
-    const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
-    const float level = std::abs(mFftBuffer[fftIdx]);
-    float & meanNullLevelWithTIIRef = mMeanNullLevelWithTII[fftIdx];
-    mean_filter(meanNullLevelWithTIIRef, level, ALPHA);
-
-    if (meanNullLevelWithTIIRef < min) min = meanNullLevelWithTIIRef;
-    if (meanNullLevelWithTIIRef > max) max = meanNullLevelWithTIIRef;
-  }
-
-  assert(max  > min);
-  mAvgAbsNullLevelWithTIIMin = min;
-  mAvgAbsNullLevelWithTIIGain = 100.0f / (max - min);
 }
 
 void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iV) // with TII information
@@ -114,6 +96,11 @@ void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iV) /
   memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
   mFftHandler.fft(mFftBuffer);
+
+  if (mCarrierPlotType == ECarrierPlotType::NULL_NO_TII)
+  {
+    _eval_null_symbol_statistics();
+  }
 
   constexpr float ALPHA = 0.1f;
 
@@ -260,7 +247,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
       case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
       case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
       case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
-      case ECarrierPlotType::NULL_TII:        mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelWithTIIGain * (mMeanNullLevelWithTII[fftIdx] - mAvgAbsNullLevelWithTIIMin); break;
+      case ECarrierPlotType::NULL_TII:
+      case ECarrierPlotType::NULL_NO_TII:     mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelGain * (mMeanNullLevel[fftIdx] - mAvgAbsNullLevelMin); break;
+      case ECarrierPlotType::NULL_OVR_POW:    mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mMeanNullPowerWithoutTII[fftIdx] / mMeanPowerOvrAll); break;
       }
     }
   } // for (nomCarrIdx...
@@ -393,8 +382,42 @@ float OfdmDecoder::_compute_noise_Power() const
   return sumNoise / (float)mDabPar.K;
 }
 
+void OfdmDecoder::_eval_null_symbol_statistics()
+{
+  constexpr float ALPHA = 0.20f;
+  float max = -1e38f;
+  float min =  1e38f;
+
+  for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
+  {
+    // Consider FFT shift and skipping DC (0 Hz) bin.
+    const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
+    const float level = abs(mFftBuffer[fftIdx]);
+    float & meanNullLevelRef = mMeanNullLevel[fftIdx];
+    mean_filter(meanNullLevelRef, level, ALPHA);
+
+    if (meanNullLevelRef < min) min = meanNullLevelRef;
+    if (meanNullLevelRef > max) max = meanNullLevelRef;
+  }
+
+  assert(max > min);
+  mAvgAbsNullLevelMin = min;
+  mAvgAbsNullLevelGain = 100.0f / (max - min);
+}
+
+void OfdmDecoder::_reset_null_symbol_statistics()
+{
+  std::fill(mMeanNullLevel.begin(), mMeanNullLevel.end(), 0.0f);
+  mAvgAbsNullLevelMin = 0.0f;
+  mAvgAbsNullLevelGain = 0.0f;
+}
+
 void OfdmDecoder::set_select_carrier_plot_type(ECarrierPlotType iPlotType)
 {
+  if (iPlotType == ECarrierPlotType::NULL_TII || iPlotType == ECarrierPlotType::NULL_NO_TII)
+  {
+    _reset_null_symbol_statistics();
+  }
   mCarrierPlotType = iPlotType;
 }
 

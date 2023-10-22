@@ -34,6 +34,8 @@ enum class ECarrierPlotType
   REL_POWER,
   SNR,
   NULL_TII,
+  NULL_NO_TII,
+  NULL_OVR_POW,
 
   DEFAULT = MOD_QUAL  // use the first element for startup constellation
 };
