@@ -3,11 +3,12 @@
 ---
 
 ![screenshot.png](res/screenshot.png)
+Pictures from Version 1.4.0
 
 ## Table of Content
 <!-- TOC -->
-  * [Table of Content](#table-of-content)
   * [Introduction](#introduction)
+  * [Changes in DABstar version 1.5.0](#changes-in-dabstar-version-150)
   * [Changes in DABstar version 1.4.0](#changes-in-dabstar-version-140)
   * [Changes in DABstar version 1.3.0](#changes-in-dabstar-version-130)
   * [Changes in DABstar version 1.2.0](#changes-in-dabstar-version-120)
@@ -29,26 +30,41 @@
 
 ## Introduction
 
-[DABstar](https://github.com/tomneda/DABstar) is forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) from
-[commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249)
-([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249))
-from 2023-05-30, fixes afterwards to Qt-DAB afterwards included.
+**Current main branch version is [V1.5.0](#changes-in-dabstar-version-150).**
 
-Current main branch version is [V1.4.0](#changes-in-dabstar-version-140).
+[DABstar](https://github.com/tomneda/DABstar) is originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) 
+from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes afterwards to Qt-DAB are included.
 
-As there are many changes made from my side and there will be bigger changes in the future, 
+As there are meanwhile huge changes made from my side and there will be bigger changes in the future, 
 I decided to give it the new name **DABstar**.
 
-I will try to maintain always a working state on `main` branch. 
-Up to version V1.1.0 I only did a Git "squash merge" to the main branch that only one commit was seen.
-As I usually do more fine developement steps it would be better to see each commit step made while developing. 
-So, I prefer, with the V1.2.0, to do a "fast-forward" of the main branch to my development branch.
-To find out the correspoding release commit, please use the tags page on Github: [https://github.com/tomneda/DABstar/tags](https://github.com/tomneda/DABstar/tags)
+I will try to maintain always a working state on `main` branch.
+Only when I change the MAJOR (1st digit) and/or MINOR (2nd digit) part of the version number (see [https://semver.org/](https://semver.org/) for nomenclature)
+I will describe the changes here.
+If I only raise the PATCH version number (3rd digit) when I provide (urgent) intermediate patches.
+
+For at least each new version change in the MAJOR and/or MINOR part I will provide a version tag for easy referencing.
+Please use the tags page on Github: [https://github.com/tomneda/DABstar/tags](https://github.com/tomneda/DABstar/tags)
 
 For building there is one bigger difference to Qt-DAB: I maintain only one GUI version and I provide no *.pro file for qmake anymore, only a CMakeLists.txt file.
-So use only the cmake related installation process.
+So, use only the cmake related installation process.
 
-I will also not provide any precompiled setup packages, yet.
+I saw that Qt-DAB 6.x uses also code parts and ideas from here. I am very appreciated about this :smiley:. 
+This is of course very acknowledged that my work can give something back.
+
+Still, I do not provide any precompiled setup packages, yet.
+
+## Changes in DABstar version 1.5.0
+                                   
+- Still many refactorings made.
+- Fix some issues (introduced by myself in the past).
+- Some adaptions in the GUI regarding size of elements and colors. 
+- Change the default soft-bit calculation strategy (was patch to V1.4.1).
+- Avoid flickering in the spectrum scope due to the Null symbol.
+- Add two new outputs for the carrier scope:
+  - **Null Sym. no TII**: Shows the averaged Null symbol level without TII carriers in percentage of the maximum peak.
+  - **Null Sym. ovr. Pow.**: Shows the averaged Null symbol (without TII) power relation to the averaged overall carrier power in dB. 
+    This reveals disturbing (non-DAB) signals which can degrade decoding quality.
 
 ## Changes in DABstar version 1.4.0
 
