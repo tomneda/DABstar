@@ -1640,7 +1640,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new hackrfHandler(dabSettings, version);
+      inputDevice = new HackRfHandler(dabSettings, version);
       showButtons();
     }
     catch (const std::exception & e)

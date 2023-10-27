@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -33,24 +42,24 @@
 #include  "xml-filewriter.h"
 #include  "device-exceptions.h"
 
-#define  DEFAULT_GAIN  30
+#define CHECK_ERR_RETURN(x_)       if (!check_err(x_, __FUNCTION__, __LINE__)) return
+#define CHECK_ERR_RETURN_FALSE(x_) if (!check_err(x_, __FUNCTION__, __LINE__)) return false
 
-hackrfHandler::hackrfHandler(QSettings * s, QString & recorderVersion) :
-  _I_Buffer(4 * 1024 * 1024),
-  myFrame(nullptr)
+constexpr int32_t DEFAULT_GAIN = 30;
+
+HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVersion) :
+  mpHackrfSettings(iSetting),
+  mRecorderVersion(iRecorderVersion)
 {
-  int res;
-  hackrfSettings = s;
-  this->recorderVersion = recorderVersion;
-  hackrfSettings->beginGroup("hackrfSettings");
-  int x = hackrfSettings->value("position-x", 100).toInt();
-  int y = hackrfSettings->value("position-y", 100).toInt();
-  hackrfSettings->endGroup();
-  setupUi(&myFrame);
-  myFrame.move(QPoint(x, y));
+  mpHackrfSettings->beginGroup("hackrfSettings");
+  int x = mpHackrfSettings->value("position-x", 100).toInt();
+  int y = mpHackrfSettings->value("position-y", 100).toInt();
+  mpHackrfSettings->endGroup();
 
+  setupUi(&myFrame);
+
+  myFrame.move(QPoint(x, y));
   myFrame.show();
-  this->inputRate = kHz(2048);
 
 #ifdef  __MINGW32__
   const char *libraryString = "libhackrf.dll";
@@ -59,510 +68,401 @@ hackrfHandler::hackrfHandler(QSettings * s, QString & recorderVersion) :
 #elif __APPLE__
   const char *libraryString = "libhackrf.dylib";
 #endif
-  phandle = new QLibrary(libraryString);
-  phandle->load();
 
-  if (!phandle->isLoaded())
+  mpHandle = new QLibrary(libraryString);
+  mpHandle->load();
+
+  if (!mpHandle->isLoaded())
   {
     throw (hackrf_exception("failed to open " + std::string(libraryString)));
   }
 
-  if (!load_hackrfFunctions())
+  if (!load_hackrf_functions())
   {
-    delete phandle;
+    delete mpHandle;
     throw (hackrf_exception("could not find one or more library functions"));
   }
-  //
+
   //	From here we have a library available
 
-  vfoFrequency = kHz(220000);
-  //
+  mVfoFrequency = kHz(220000);
+
   //	See if there are settings from previous incarnations
-  hackrfSettings->beginGroup("hackrfSettings");
-  lnaGainSlider->setValue(hackrfSettings->value("hack_lnaGain", DEFAULT_GAIN).toInt());
-  vgaGainSlider->setValue(hackrfSettings->value("hack_vgaGain", DEFAULT_GAIN).toInt());
-  //	contributed by Fabio
-  bool isChecked = hackrfSettings->value("hack_AntEnable", false).toBool();
+  mpHackrfSettings->beginGroup("hackrfSettings");
+  lnaGainSlider->setValue(mpHackrfSettings->value("hack_lnaGain", DEFAULT_GAIN).toInt());
+  vgaGainSlider->setValue(mpHackrfSettings->value("hack_vgaGain", DEFAULT_GAIN).toInt());
+  bool isChecked = mpHackrfSettings->value("hack_AntEnable", false).toBool();
   AntEnableButton->setCheckState(isChecked ? Qt::Checked : Qt::Unchecked);
-  isChecked = hackrfSettings->value("hack_AmpEnable", false).toBool();
+  isChecked = mpHackrfSettings->value("hack_AmpEnable", false).toBool();
   AmpEnableButton->setCheckState(isChecked ? Qt::Checked : Qt::Unchecked);
-  ppm_correction->setValue(hackrfSettings->value("hack_ppmCorrection", 0).toInt());
-  save_gainSettings = hackrfSettings->value("save_gainSettings", 1).toInt() != 0;
-  hackrfSettings->endGroup();
+  ppm_correction->setValue(mpHackrfSettings->value("hack_ppmCorrection", 0).toInt());
+  save_gain_settings = mpHackrfSettings->value("save_gainSettings", 1).toInt() != 0;
+  mpHackrfSettings->endGroup();
 
-  //
-  res = this->hackrf_init();
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-
-  }
-
-  res = this->hackrf_open(&theDevice);
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-  }
-
-  res = this->hackrf_set_sample_rate(theDevice, 2048000.0);
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-  }
-
-  res = this->hackrf_set_baseband_filter_bandwidth(theDevice, 1750000);
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-  }
-
-  res = this->hackrf_set_freq(theDevice, 220000000);
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-  }
-
-  res = this->hackrf_set_antenna_enable(theDevice, 1);
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-  }
-
-  res = this->hackrf_set_amp_enable(theDevice, 1);
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-  }
+  check_err_throw(mHackrf.init());
+  check_err_throw(mHackrf.open(&theDevice));
+  check_err_throw(mHackrf.set_sample_rate(theDevice, 2048000.0));
+  check_err_throw(mHackrf.set_baseband_filter_bandwidth(theDevice, 1750000));
+  check_err_throw(mHackrf.set_freq(theDevice, 220000000));
+  check_err_throw(mHackrf.set_antenna_enable(theDevice, 1));
+  check_err_throw(mHackrf.set_amp_enable(theDevice, 1));
 
   uint16_t regValue;
-  res = this->hackrf_si5351c_read(theDevice, 162, &regValue);
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-  }
+  check_err_throw(mHackrf.si5351c_read(theDevice, 162, &regValue));
+  check_err_throw(mHackrf.si5351c_write(theDevice, 162, regValue));
 
-  res = this->hackrf_si5351c_write(theDevice, 162, regValue);
-  if (res != HACKRF_SUCCESS)
-  {
-    throw (hackrf_exception(this->hackrf_error_name(hackrf_error(res))));
-  }
-
-  setLNAGain(lnaGainSlider->value());
-  setVGAGain(vgaGainSlider->value());
-  EnableAntenna(1);    // value is a dummy really
-  EnableAmpli(1);    // value is a dummy, really
-  set_ppmCorrection(ppm_correction->value());
+  slot_set_lna_gain(lnaGainSlider->value());
+  slot_set_vga_gain(vgaGainSlider->value());
+  slot_enable_antenna(1);    // value is a dummy really
+  slot_enable_amp(1);    // value is a dummy, really
+  slot_set_ppm_correction(ppm_correction->value());
 
   //	and be prepared for future changes in the settings
-  connect(lnaGainSlider, SIGNAL (valueChanged(int)), this, SLOT (setLNAGain(int)));
-  connect(vgaGainSlider, SIGNAL (valueChanged(int)), this, SLOT (setVGAGain(int)));
-  connect(AntEnableButton, SIGNAL (stateChanged(int)), this, SLOT (EnableAntenna(int)));
-  connect(AmpEnableButton, SIGNAL (stateChanged(int)), this, SLOT (EnableAmpli(int)));
-  connect(ppm_correction, SIGNAL (valueChanged(int)), this, SLOT (set_ppmCorrection(int)));
-  connect(dumpButton, SIGNAL (clicked()), this, SLOT (set_xmlDump()));
-  hackrf_device_list_t * deviceList = this->hackrf_device_list();
-  if (deviceList != nullptr)
+  connect(lnaGainSlider, &QSlider::valueChanged, this, &HackRfHandler::slot_set_lna_gain);
+  connect(vgaGainSlider, &QSlider::valueChanged, this, &HackRfHandler::slot_set_vga_gain);
+  connect(AntEnableButton, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_antenna);
+  connect(AmpEnableButton, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_amp);
+  connect(ppm_correction, qOverload<int>(&QSpinBox::valueChanged), this, &HackRfHandler::slot_set_ppm_correction);
+  connect(dumpButton, &QPushButton::clicked, this, &HackRfHandler::slot_xml_dump);
+
+  if (hackrf_device_list_t const * deviceList = mHackrf.device_list();
+      deviceList != nullptr)
   {  // well, it should be
-    char * serial = deviceList->serial_numbers[0];
+    char const * const serial = deviceList->serial_numbers[0];
     serial_number_display->setText(serial);
     enum hackrf_usb_board_id board_id = deviceList->usb_board_ids[0];
-    usb_board_id_display->setText(this->hackrf_usb_board_id_name(board_id));
+    usb_board_id_display->setText(mHackrf.usb_board_id_name(board_id));
   }
 
-  connect(this, SIGNAL (new_antEnable(bool)), AntEnableButton, SLOT (setChecked(bool)));
-  connect(this, SIGNAL (new_ampEnable(bool)), AmpEnableButton, SLOT (setChecked(bool)));
-  connect(this, SIGNAL (new_vgaValue(int)), vgaGainSlider, SLOT (setValue(int)));
-  connect(this, SIGNAL (new_vgaValue(int)), vgagainDisplay, SLOT (display(int)));
-  connect(this, SIGNAL (new_lnaValue(int)), lnaGainSlider, SLOT (setValue(int)));
-  connect(this, SIGNAL (new_lnaValue(int)), lnagainDisplay, SLOT (display(int)));
-  xmlDumper = nullptr;
-  dumping.store(false);
-  running.store(false);
+  connect(this, &HackRfHandler::signal_new_ant_enable, AntEnableButton, &QCheckBox::setChecked);
+  connect(this, &HackRfHandler::signal_new_amp_enable, AmpEnableButton, &QCheckBox::setChecked);
+  connect(this, &HackRfHandler::signal_new_vga_value, vgaGainSlider, &QSlider::setValue);
+  connect(this, &HackRfHandler::signal_new_vga_value, vgagainDisplay, qOverload<int>(&QLCDNumber::display));
+  connect(this, &HackRfHandler::signal_new_lna_value, lnaGainSlider, &QSlider::setValue);
+  connect(this, &HackRfHandler::signal_new_lna_value, lnagainDisplay, qOverload<int>(&QLCDNumber::display));
+
+  mpXmlDumper = nullptr;
+  mDumping.store(false);
+  mRunning.store(false);
 }
 
-hackrfHandler::~hackrfHandler()
+HackRfHandler::~HackRfHandler()
 {
   stopReader();
   myFrame.hide();
-  hackrfSettings->beginGroup("hackrfSettings");
-  hackrfSettings->setValue("position-x", myFrame.pos().x());
-  hackrfSettings->setValue("position-y", myFrame.pos().y());
+  mpHackrfSettings->beginGroup("hackrfSettings");
+  mpHackrfSettings->setValue("position-x", myFrame.pos().x());
+  mpHackrfSettings->setValue("position-y", myFrame.pos().y());
 
-  hackrfSettings->setValue("hack_lnaGain", lnaGainSlider->value());
-  hackrfSettings->setValue("hack_vgaGain", vgaGainSlider->value());
-  hackrfSettings->setValue("hack_AntEnable", AntEnableButton->checkState() == Qt::Checked);
-  hackrfSettings->setValue("hack_AmpEnable", AmpEnableButton->checkState() == Qt::Checked);
-  hackrfSettings->setValue("hack_ppmCorrection", ppm_correction->value());
-  hackrfSettings->endGroup();
-  this->hackrf_close(theDevice);
-  this->hackrf_exit();
+  mpHackrfSettings->setValue("hack_lnaGain", lnaGainSlider->value());
+  mpHackrfSettings->setValue("hack_vgaGain", vgaGainSlider->value());
+  mpHackrfSettings->setValue("hack_AntEnable", AntEnableButton->checkState() == Qt::Checked);
+  mpHackrfSettings->setValue("hack_AmpEnable", AmpEnableButton->checkState() == Qt::Checked);
+  mpHackrfSettings->setValue("hack_ppmCorrection", ppm_correction->value());
+  mpHackrfSettings->endGroup();
+
+  mHackrf.close(theDevice);
+  mHackrf.exit();
 }
-//
 
-void hackrfHandler::setVFOFrequency(int32_t newFrequency)
+void HackRfHandler::setVFOFrequency(int32_t newFrequency)
 {
-  int res;
-  res = this->hackrf_set_freq(theDevice, newFrequency);
-  if (res != HACKRF_SUCCESS)
-  {
-    fprintf(stderr, "Problem with hackrf_set_freq: \n");
-    fprintf(stderr, "%s \n", this->hackrf_error_name(hackrf_error(res)));
-    return;
-  }
+  CHECK_ERR_RETURN(mHackrf.set_freq(theDevice, newFrequency));
 
   //	It seems that after changing the frequency, the preamp is switched off
   //	(tomneda: do not see this, I guess the bug is already fixed, but leave the workaround)
   if (AmpEnableButton->checkState() == Qt::Checked)
   {
-    EnableAmpli(1);
+    slot_enable_amp(1);
   }
-  vfoFrequency = newFrequency;
+
+  mVfoFrequency = newFrequency;
 }
 
-int32_t hackrfHandler::getVFOFrequency()
+int32_t HackRfHandler::getVFOFrequency()
 {
-  return vfoFrequency;
+  return mVfoFrequency;
 }
 
-void hackrfHandler::setLNAGain(int newGain)
+void HackRfHandler::slot_set_lna_gain(int newGain)
 {
-  int res;
   if ((newGain <= 40) && (newGain >= 0))
   {
-    res = this->hackrf_set_lna_gain(theDevice, newGain);
-    if (res != HACKRF_SUCCESS)
-    {
-      fprintf(stderr, "Problem with hackrf_lna_gain :\n");
-      fprintf(stderr, "%s \n", this->hackrf_error_name(hackrf_error(res)));
-      return;
-    }
+    CHECK_ERR_RETURN(mHackrf.set_lna_gain(theDevice, newGain));
     lnagainDisplay->display(newGain);
   }
 }
 
-void hackrfHandler::setVGAGain(int newGain)
+void HackRfHandler::slot_set_vga_gain(int newGain)
 {
-  int res;
   if ((newGain <= 62) && (newGain >= 0))
   {
-    res = this->hackrf_set_vga_gain(theDevice, newGain);
-    if (res != HACKRF_SUCCESS)
-    {
-      fprintf(stderr, "Problem with hackrf_vga_gain :\n");
-      fprintf(stderr, "%s \n", this->hackrf_error_name(hackrf_error(res)));
-      return;
-    }
+    CHECK_ERR_RETURN(mHackrf.set_vga_gain(theDevice, newGain));
     vgagainDisplay->display(newGain);
   }
 }
 
-void hackrfHandler::EnableAntenna(int d)
+void HackRfHandler::slot_enable_antenna(int d)
 {
-  int res;
-  bool b;
-
   (void)d;
-  b = AntEnableButton->checkState() == Qt::Checked;
-  res = this->hackrf_set_antenna_enable(theDevice, b);
-  //	fprintf(stderr,"Passed %d\n",(int)b);
-  if (res != HACKRF_SUCCESS)
-  {
-    fprintf(stderr, "Problem with hackrf_set_antenna_enable :\n");
-    fprintf(stderr, "%s \n", this->hackrf_error_name(hackrf_error(res)));
-    return;
-  }
-  //	AntEnableButton -> setChecked (b);
+  const bool b = AntEnableButton->checkState() == Qt::Checked;
+  CHECK_ERR_RETURN(mHackrf.set_antenna_enable(theDevice, b));
 }
 
-void hackrfHandler::EnableAmpli(int a)
+void HackRfHandler::slot_enable_amp(int a)
 {
-  int res;
-  bool b;
-
   (void)a;
-  b = AmpEnableButton->checkState() == Qt::Checked;
-  res = this->hackrf_set_amp_enable(theDevice, b);
-  if (res != HACKRF_SUCCESS)
-  {
-    fprintf(stderr, "Problem with hackrf_set_amp_enable :\n");
-    fprintf(stderr, "%s \n", this->hackrf_error_name(hackrf_error(res)));
-    return;
-  }
-  //	AmpEnableButton->setChecked (b);
+  const bool b = AmpEnableButton->checkState() == Qt::Checked;
+  CHECK_ERR_RETURN(mHackrf.set_amp_enable(theDevice, b));
 }
 
-//      correction is in Hz
+// correction is in Hz
 // This function has to be modified to implement ppm correction
 // writing in the si5351 register does not seem to work yet
 // To be completed
 
-void hackrfHandler::set_ppmCorrection(int32_t ppm)
+void HackRfHandler::slot_set_ppm_correction(int32_t ppm)
 {
-  int res;
   uint16_t value;
-
-  res = this->hackrf_si5351c_write(theDevice, 162, static_cast<uint16_t>(ppm));
-  res = this->hackrf_si5351c_read(theDevice, 162, &value);
-  (void)res;
-  qDebug() << "Read si5351c register 162 : " << value << "\n";
+  CHECK_ERR_RETURN(mHackrf.si5351c_write(theDevice, 162, static_cast<uint16_t>(ppm)));
+  CHECK_ERR_RETURN(mHackrf.si5351c_read(theDevice, 162, &value));
 }
 
-//
-//	we use a static large buffer, rather than trying to allocate
-//	a buffer on the stack
-static std::complex<int8_t> buffer[32 * 32768];
+//	we use a static large buffer, rather than trying to allocate a buffer on the stack
+static std::array<std::complex<int8_t>, 32 * 32768> buffer;
 
 static int callback(hackrf_transfer * transfer)
 {
-  hackrfHandler * ctx = static_cast <hackrfHandler *>(transfer->rx_ctx);
-  int i;
-  uint8_t * p = transfer->buffer;
-  RingBuffer<std::complex<int8_t>> * q = &(ctx->_I_Buffer);
+  auto * ctx = static_cast<HackRfHandler *>(transfer->rx_ctx);
+  const uint8_t * const p = transfer->buffer;
+  HackRfHandler::TRingBuffer * q = &(ctx->mRingBuffer);
   int bufferIndex = 0;
 
-  for (i = 0; i < transfer->valid_length / 2; i += 1)
+  for (int i = 0; i < transfer->valid_length / 2; i += 1)
   {
-    int8_t re = ((int8_t *)p)[2 * i];
-    int8_t im = ((int8_t *)p)[2 * i + 1];
-    buffer[bufferIndex++] = std::complex<int8_t>(re, im);
+    const int8_t re = ((const int8_t *)p)[2 * i + 0];
+    const int8_t im = ((const int8_t *)p)[2 * i + 1];
+    buffer[bufferIndex] = std::complex<int8_t>(re, im);
+    ++bufferIndex;
   }
-  q->putDataIntoBuffer(buffer, bufferIndex);
+  q->putDataIntoBuffer(buffer.data(), bufferIndex);
   return 0;
 }
 
-bool hackrfHandler::restartReader(int32_t freq)
+bool HackRfHandler::restartReader(int32_t freq)
 {
-  int res;
-
-  if (running.load())
+  if (mRunning.load())
   {
     return true;
   }
 
-  vfoFrequency = freq;
-  if (save_gainSettings)
+  mVfoFrequency = freq;
+
+  if (save_gain_settings)
   {
-    update_gainSettings(freq / MHz (1));
+    update_gain_settings(freq / MHz (1));
   }
 
-  this->hackrf_set_lna_gain(theDevice, lnaGainSlider->value());
-  this->hackrf_set_vga_gain(theDevice, vgaGainSlider->value());
-  this->hackrf_set_amp_enable(theDevice, AmpEnableButton->isChecked() ? 1 : 0);
-  this->hackrf_set_antenna_enable(theDevice, AntEnableButton->isChecked() ? 1 : 0);
+  CHECK_ERR_RETURN_FALSE(mHackrf.set_lna_gain(theDevice, lnaGainSlider->value()));
+  CHECK_ERR_RETURN_FALSE(mHackrf.set_vga_gain(theDevice, vgaGainSlider->value()));
+  CHECK_ERR_RETURN_FALSE(mHackrf.set_amp_enable(theDevice, AmpEnableButton->isChecked() ? 1 : 0));
+  CHECK_ERR_RETURN_FALSE(mHackrf.set_antenna_enable(theDevice, AntEnableButton->isChecked() ? 1 : 0));
 
-  res = this->hackrf_set_freq(theDevice, freq);
-  if (res != HACKRF_SUCCESS)
-  {
-    fprintf(stderr, "Problem with hackrf_set_freq: \n");
-    fprintf(stderr, "%s \n", this->hackrf_error_name(hackrf_error(res)));
-    return false;
-  }
-  res = this->hackrf_start_rx(theDevice, callback, this);
-  if (res != HACKRF_SUCCESS)
-  {
-    fprintf(stderr, "Problem with hackrf_start_rx :\n");
-    fprintf(stderr, "%s \n", this->hackrf_error_name(hackrf_error(res)));
-    return false;
-  }
-  running.store(this->hackrf_is_streaming(theDevice));
-  return running.load();
+  CHECK_ERR_RETURN_FALSE(mHackrf.set_freq(theDevice, freq));
+  CHECK_ERR_RETURN_FALSE(mHackrf.start_rx(theDevice, callback, this));
+  mRunning.store(mHackrf.is_streaming(theDevice));
+  return mRunning.load();
 }
 
-void hackrfHandler::stopReader()
+void HackRfHandler::stopReader()
 {
-  int res;
-
-  if (!running.load())
+  if (!mRunning.load())
   {
     return;
   }
 
-  res = this->hackrf_stop_rx(theDevice);
-  if (res != HACKRF_SUCCESS)
+  CHECK_ERR_RETURN(mHackrf.stop_rx(theDevice));
+
+  if (save_gain_settings)
   {
-    fprintf(stderr, "Problem with hackrf_stop_rx :\n");
-    fprintf(stderr, "%s \n", this->hackrf_error_name(hackrf_error(res)));
-    return;
+    record_gain_settings(mVfoFrequency / MHz (1));
   }
-  if (save_gainSettings)
-  {
-    record_gainSettings(vfoFrequency / MHz (1));
-  }
-  running.store(false);
+
+  mRunning.store(false);
 }
 
-//
 //	The brave old getSamples. For the hackrf, we get
 //	size still in I/Q pairs
-int32_t hackrfHandler::getSamples(cmplx * V, int32_t size)
+int32_t HackRfHandler::getSamples(cmplx * V, int32_t size)
 {
   std::complex<int8_t> temp[size];
-  int amount = _I_Buffer.getDataFromBuffer(temp, size);
+  int amount = mRingBuffer.getDataFromBuffer(temp, size);
+
   for (int i = 0; i < amount; i++)
   {
-    V[i] = cmplx(real(temp[i]) / 127.0, imag(temp[i]) / 127.0);
+    V[i] = cmplx(real(temp[i]) / 127.0f, imag(temp[i]) / 127.0f);
   }
-  if (dumping.load())
+
+  if (mDumping.load())
   {
-    xmlWriter->add(temp, amount);
+    mpXmlWriter->add(temp, amount);
   }
+
   return amount;
-
 }
 
-int32_t hackrfHandler::Samples()
+int32_t HackRfHandler::Samples()
 {
-  return _I_Buffer.GetRingBufferReadAvailable();
+  return mRingBuffer.GetRingBufferReadAvailable();
 }
 
-void hackrfHandler::resetBuffer()
+void HackRfHandler::resetBuffer()
 {
-  _I_Buffer.FlushRingBuffer();
+  mRingBuffer.FlushRingBuffer();
 }
 
-int16_t hackrfHandler::bitDepth()
+int16_t HackRfHandler::bitDepth()
 {
   return 8;
 }
 
-QString hackrfHandler::deviceName()
+QString HackRfHandler::deviceName()
 {
   return "hackRF";
 }
 
-bool hackrfHandler::load_hackrfFunctions()
+bool HackRfHandler::load_hackrf_functions()
 {
-  //
-  //	link the required procedures
-  this->hackrf_init = (pfn_hackrf_init)phandle->resolve("hackrf_init");
-  if (this->hackrf_init == nullptr)
+  // link the required procedures
+  mHackrf.init = (pfn_hackrf_init)mpHandle->resolve("hackrf_init");
+  if (mHackrf.init == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_init\n");
     return false;
   }
 
-  this->hackrf_open = (pfn_hackrf_open)phandle->resolve("hackrf_open");
-  if (this->hackrf_open == nullptr)
+  mHackrf.open = (pfn_hackrf_open)mpHandle->resolve("hackrf_open");
+  if (mHackrf.open == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_open\n");
     return false;
   }
 
-  this->hackrf_close = (pfn_hackrf_close)phandle->resolve("hackrf_close");
-  if (this->hackrf_close == nullptr)
+  mHackrf.close = (pfn_hackrf_close)mpHandle->resolve("hackrf_close");
+  if (mHackrf.close == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_close\n");
     return false;
   }
 
-  this->hackrf_exit = (pfn_hackrf_exit)phandle->resolve("hackrf_exit");
-  if (this->hackrf_exit == nullptr)
+  mHackrf.exit = (pfn_hackrf_exit)mpHandle->resolve("hackrf_exit");
+  if (mHackrf.exit == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_exit\n");
     return false;
   }
 
-  this->hackrf_start_rx = (pfn_hackrf_start_rx)phandle->resolve("hackrf_start_rx");
-  if (this->hackrf_start_rx == nullptr)
+  mHackrf.start_rx = (pfn_hackrf_start_rx)mpHandle->resolve("hackrf_start_rx");
+  if (mHackrf.start_rx == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_start_rx\n");
     return false;
   }
 
-  this->hackrf_stop_rx = (pfn_hackrf_stop_rx)phandle->resolve("hackrf_stop_rx");
-  if (this->hackrf_stop_rx == nullptr)
+  mHackrf.stop_rx = (pfn_hackrf_stop_rx)mpHandle->resolve("hackrf_stop_rx");
+  if (mHackrf.stop_rx == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_stop_rx\n");
     return false;
   }
 
-  this->hackrf_device_list = (pfn_hackrf_device_list)phandle->resolve("hackrf_device_list");
-  if (this->hackrf_device_list == nullptr)
+  mHackrf.device_list = (pfn_hackrf_device_list)mpHandle->resolve("hackrf_device_list");
+  if (mHackrf.device_list == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_device_list\n");
     return false;
   }
 
-  this->hackrf_set_baseband_filter_bandwidth = (pfn_hackrf_set_baseband_filter_bandwidth)phandle->resolve(
+  mHackrf.set_baseband_filter_bandwidth = (pfn_hackrf_set_baseband_filter_bandwidth)mpHandle->resolve(
     "hackrf_set_baseband_filter_bandwidth");
-  if (this->hackrf_set_baseband_filter_bandwidth == nullptr)
+  if (mHackrf.set_baseband_filter_bandwidth == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_set_baseband_filter_bandwidth\n");
     return false;
   }
 
-  this->hackrf_set_lna_gain = (pfn_hackrf_set_lna_gain)phandle->resolve("hackrf_set_lna_gain");
-  if (this->hackrf_set_lna_gain == nullptr)
+  mHackrf.set_lna_gain = (pfn_hackrf_set_lna_gain)mpHandle->resolve("hackrf_set_lna_gain");
+  if (mHackrf.set_lna_gain == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_set_lna_gain\n");
     return false;
   }
 
-  this->hackrf_set_vga_gain = (pfn_hackrf_set_vga_gain)phandle->resolve("hackrf_set_vga_gain");
-  if (this->hackrf_set_vga_gain == nullptr)
+  mHackrf.set_vga_gain = (pfn_hackrf_set_vga_gain)mpHandle->resolve("hackrf_set_vga_gain");
+  if (mHackrf.set_vga_gain == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_set_vga_gain\n");
     return false;
   }
 
-  this->hackrf_set_freq = (pfn_hackrf_set_freq)phandle->resolve("hackrf_set_freq");
-  if (this->hackrf_set_freq == nullptr)
+  mHackrf.set_freq = (pfn_hackrf_set_freq)mpHandle->resolve("hackrf_set_freq");
+  if (mHackrf.set_freq == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_set_freq\n");
     return false;
   }
 
-  this->hackrf_set_sample_rate = (pfn_hackrf_set_sample_rate)phandle->resolve("hackrf_set_sample_rate");
-  if (this->hackrf_set_sample_rate == nullptr)
+  mHackrf.set_sample_rate = (pfn_hackrf_set_sample_rate)mpHandle->resolve("hackrf_set_sample_rate");
+  if (mHackrf.set_sample_rate == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_set_sample_rate\n");
     return false;
   }
 
-  this->hackrf_is_streaming = (pfn_hackrf_is_streaming)phandle->resolve("hackrf_is_streaming");
-  if (this->hackrf_is_streaming == nullptr)
+  mHackrf.is_streaming = (pfn_hackrf_is_streaming)mpHandle->resolve("hackrf_is_streaming");
+  if (mHackrf.is_streaming == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_is_streaming\n");
     return false;
   }
 
-  this->hackrf_error_name = (pfn_hackrf_error_name)phandle->resolve("hackrf_error_name");
-  if (this->hackrf_error_name == nullptr)
+  mHackrf.error_name = (pfn_hackrf_error_name)mpHandle->resolve("hackrf_error_name");
+  if (mHackrf.error_name == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_error_name\n");
     return false;
   }
 
-  this->hackrf_usb_board_id_name = (pfn_hackrf_usb_board_id_name)phandle->resolve("hackrf_usb_board_id_name");
-  if (this->hackrf_usb_board_id_name == nullptr)
+  mHackrf.usb_board_id_name = (pfn_hackrf_usb_board_id_name)mpHandle->resolve("hackrf_usb_board_id_name");
+  if (mHackrf.usb_board_id_name == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_usb_board_id_name\n");
     return false;
   }
   // Aggiunta Fabio
-  this->hackrf_set_antenna_enable = (pfn_hackrf_set_antenna_enable)phandle->resolve("hackrf_set_antenna_enable");
-  if (this->hackrf_set_antenna_enable == nullptr)
+  mHackrf.set_antenna_enable = (pfn_hackrf_set_antenna_enable)mpHandle->resolve("hackrf_set_antenna_enable");
+  if (mHackrf.set_antenna_enable == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_set_antenna_enable\n");
     return false;
   }
 
-  this->hackrf_set_amp_enable = (pfn_hackrf_set_amp_enable)phandle->resolve("hackrf_set_amp_enable");
-  if (this->hackrf_set_amp_enable == nullptr)
+  mHackrf.set_amp_enable = (pfn_hackrf_set_amp_enable)mpHandle->resolve("hackrf_set_amp_enable");
+  if (mHackrf.set_amp_enable == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_set_amp_enable\n");
     return false;
   }
 
-  this->hackrf_si5351c_read = (pfn_hackrf_si5351c_read)phandle->resolve("hackrf_si5351c_read");
-  if (this->hackrf_si5351c_read == nullptr)
+  mHackrf.si5351c_read = (pfn_hackrf_si5351c_read)mpHandle->resolve("hackrf_si5351c_read");
+  if (mHackrf.si5351c_read == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_si5351c_read\n");
     return false;
   }
 
-  this->hackrf_si5351c_write = (pfn_hackrf_si5351c_write)phandle->resolve("hackrf_si5351c_write");
-  if (this->hackrf_si5351c_write == nullptr)
+  mHackrf.si5351c_write = (pfn_hackrf_si5351c_write)mpHandle->resolve("hackrf_si5351c_write");
+  if (mHackrf.si5351c_write == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_si5351c_write\n");
     return false;
@@ -573,18 +473,18 @@ bool hackrfHandler::load_hackrfFunctions()
 }
 
 
-void hackrfHandler::set_xmlDump()
+void HackRfHandler::slot_xml_dump()
 {
-  if (xmlDumper == nullptr)
+  if (mpXmlDumper == nullptr)
   {
-    if (setup_xmlDump())
+    if (setup_xml_dump())
     {
       dumpButton->setText("writing");
     }
   }
   else
   {
-    close_xmlDump();
+    close_xml_dump();
     dumpButton->setText("Dump");
   }
 }
@@ -594,18 +494,18 @@ static inline bool isValid(QChar c)
   return c.isLetterOrNumber() || (c == '-');
 }
 
-bool hackrfHandler::setup_xmlDump()
+bool HackRfHandler::setup_xml_dump()
 {
-  QTime theTime;
-  QDate theDate;
-  QString saveDir = hackrfSettings->value("saveDir_xmlDump", QDir::homePath()).toString();
+  QString saveDir = mpHackrfSettings->value("saveDir_xmlDump", QDir::homePath()).toString();
+
   if ((saveDir != "") && (!saveDir.endsWith("/")))
   {
     saveDir += "/";
   }
 
-  QString channel = hackrfSettings->value("channel", "xx").toString();
-  QString timeString = theDate.currentDate().toString() + "-" + theTime.currentTime().toString();
+  QString channel = mpHackrfSettings->value("channel", "xx").toString();
+  QString timeString = QDate::currentDate().toString() + "-" + QTime::currentTime().toString();
+
   for (int i = 0; i < timeString.length(); i++)
   {
     if (!isValid(timeString.at(i)))
@@ -613,56 +513,57 @@ bool hackrfHandler::setup_xmlDump()
       timeString.replace(i, 1, '-');
     }
   }
+
   QString suggestedFileName = saveDir + "hackrf" + "-" + channel + "-" + timeString;
   QString fileName = QFileDialog::getSaveFileName(nullptr, tr("Save file ..."), suggestedFileName + ".uff", tr("Xml (*.uff)"));
   fileName = QDir::toNativeSeparators(fileName);
-  xmlDumper = fopen(fileName.toUtf8().data(), "w");
-  if (xmlDumper == nullptr)
+  mpXmlDumper = fopen(fileName.toUtf8().data(), "w");
+  if (mpXmlDumper == nullptr)
   {
     return false;
   }
 
-  xmlWriter = new xml_fileWriter(xmlDumper, 8, "int8", 2048000, getVFOFrequency(), "Hackrf", "--", recorderVersion);
-  dumping.store(true);
+  mpXmlWriter = new xml_fileWriter(mpXmlDumper, 8, "int8", 2048000, getVFOFrequency(), "Hackrf", "--", mRecorderVersion);
+  mDumping.store(true);
 
   QString dumper = QDir::fromNativeSeparators(fileName);
   int x = dumper.lastIndexOf("/");
   saveDir = dumper.remove(x, dumper.count() - x);
-  hackrfSettings->setValue("saveDir_xmlDump", saveDir);
+  mpHackrfSettings->setValue("saveDir_xmlDump", saveDir);
 
   return true;
 }
 
-void hackrfHandler::close_xmlDump()
+void HackRfHandler::close_xml_dump()
 {
-  if (xmlDumper == nullptr)
+  if (mpXmlDumper == nullptr)
   {  // this can happen !!
     return;
   }
-  dumping.store(false);
+  mDumping.store(false);
   usleep(1000);
-  xmlWriter->computeHeader();
-  delete xmlWriter;
-  fclose(xmlDumper);
-  xmlDumper = nullptr;
+  mpXmlWriter->computeHeader();
+  delete mpXmlWriter;
+  fclose(mpXmlDumper);
+  mpXmlDumper = nullptr;
 }
 
-void hackrfHandler::show()
+void HackRfHandler::show()
 {
   myFrame.show();
 }
 
-void hackrfHandler::hide()
+void HackRfHandler::hide()
 {
   myFrame.hide();
 }
 
-bool hackrfHandler::isHidden()
+bool HackRfHandler::isHidden()
 {
   return myFrame.isHidden();
 }
 
-void hackrfHandler::record_gainSettings(int freq)
+void HackRfHandler::record_gain_settings(int freq)
 {
   int vgaValue;
   int lnaValue;
@@ -675,21 +576,22 @@ void hackrfHandler::record_gainSettings(int freq)
   theValue = QString::number(vgaValue) + ":";
   theValue += QString::number(lnaValue) + ":";
   theValue += QString::number(ampEnable);
-  hackrfSettings->beginGroup("hackrfSettings");
-  hackrfSettings->setValue(QString::number(freq), theValue);
-  hackrfSettings->endGroup();
+
+  mpHackrfSettings->beginGroup("hackrfSettings");
+  mpHackrfSettings->setValue(QString::number(freq), theValue);
+  mpHackrfSettings->endGroup();
 }
 
-void hackrfHandler::update_gainSettings(int freq)
+void HackRfHandler::update_gain_settings(int freq)
 {
   int vgaValue;
   int lnaValue;
   int ampEnable;
   QString theValue = "";
 
-  hackrfSettings->beginGroup("hackrfSettings");
-  theValue = hackrfSettings->value(QString::number(freq), "").toString();
-  hackrfSettings->endGroup();
+  mpHackrfSettings->beginGroup("hackrfSettings");
+  theValue = mpHackrfSettings->value(QString::number(freq), "").toString();
+  mpHackrfSettings->endGroup();
 
   if (theValue == QString(""))
   {
@@ -707,7 +609,7 @@ void hackrfHandler::update_gainSettings(int freq)
   ampEnable = result.at(2).toInt();
 
   vgaGainSlider->blockSignals(true);
-  new_vgaValue(vgaValue);
+  signal_new_vga_value(vgaValue);
   while (vgaGainSlider->value() != vgaValue)
   {
     usleep(1000);
@@ -716,7 +618,7 @@ void hackrfHandler::update_gainSettings(int freq)
   vgaGainSlider->blockSignals(false);
 
   lnaGainSlider->blockSignals(true);
-  new_lnaValue(lnaValue);
+  signal_new_lna_value(lnaValue);
   while (lnaGainSlider->value() != lnaValue)
   {
     usleep(1000);
@@ -725,7 +627,7 @@ void hackrfHandler::update_gainSettings(int freq)
   lnaGainSlider->blockSignals(false);
 
   AmpEnableButton->blockSignals(true);
-  new_ampEnable(ampEnable == 1);
+  signal_new_amp_enable(ampEnable == 1);
   while (AmpEnableButton->isChecked() != (ampEnable == 1))
   {
     usleep(1000);
@@ -733,3 +635,20 @@ void hackrfHandler::update_gainSettings(int freq)
   AmpEnableButton->blockSignals(false);
 }
 
+void HackRfHandler::check_err_throw(int32_t iResult) const
+{
+  if (iResult != HACKRF_SUCCESS)
+  {
+    throw (hackrf_exception(mHackrf.error_name((hackrf_error)iResult)));
+  }
+}
+
+bool HackRfHandler::check_err(int32_t iResult, const char * const iFncName, uint32_t iLine) const
+{
+  if (iResult != HACKRF_SUCCESS)
+  {
+    qCritical("HackRfHandler raised an error: '%s' in function %s:%u", mHackrf.error_name((hackrf_error)iResult), iFncName, iLine);
+    return false;
+  }
+  return true;
+}
