@@ -2317,7 +2317,7 @@ void RadioInterface::slot_show_rs_corrections(int c, int ec)
 
 //
 //	called from the DAB processor
-void RadioInterface::slot_show_clock_error(int e)
+void RadioInterface::slot_show_clock_error(float e)
 {
   if (!running.load())
   {

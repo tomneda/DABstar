@@ -44,7 +44,7 @@
 PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam)
   : PhaseTable(ipParam->dabMode),
     mDabPar(DabParams(ipParam->dabMode).get_dab_par()),
-    mFramesPerSecond(2048000 / mDabPar.T_F),
+    mFramesPerSecond(INPUT_RATE / mDabPar.T_F),
     mFftForward(mDabPar.T_u, false),
     mFftBackwards(mDabPar.T_u, true),
     mpResponse(ipParam->responseBuffer),

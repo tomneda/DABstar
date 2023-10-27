@@ -244,9 +244,10 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
   mClockOffsetTotalSamples += ioSampleCount;
 
-  if (++mClockOffsetFrameCount > 100)
+  if (++mClockOffsetFrameCount > 10)
   {
-    emit signal_show_clock_err(mClockOffsetTotalSamples - mClockOffsetFrameCount * mDabPar.T_F); // samples per 100 frames
+    const float clockErrPPM = INPUT_RATE * ((float)mClockOffsetTotalSamples / ((float)mClockOffsetFrameCount * (float)mDabPar.T_F) - 1.0f);
+    emit signal_show_clock_err(clockErrPPM);
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
   }

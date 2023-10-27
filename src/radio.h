@@ -359,7 +359,7 @@ public slots:
   void slot_start_announcement(const QString &, int);
   void slot_stop_announcement(const QString &, int);
   void slot_new_frame(int);
-  void slot_show_clock_error(int);
+  void slot_show_clock_error(float e);
   void slot_set_epg_data(int, int, const QString &, const QString &);
   void slot_epg_timer_timeout();
   void slot_nr_services(int);

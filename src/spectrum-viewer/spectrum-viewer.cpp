@@ -308,11 +308,11 @@ void SpectrumViewer::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
   dispFreqCorrBB->display(iFreqCorrBB);
 }
 
-void SpectrumViewer::show_clock_error(int32_t e)
+void SpectrumViewer::show_clock_error(float iClockErr)
 {
   if (!myFrame.isHidden())
   {
-    clockError->display(e);
+    clockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
   }
 }
 

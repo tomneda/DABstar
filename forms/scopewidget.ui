@@ -342,7 +342,7 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0" colspan="2">
+         <item row="6" column="0" colspan="2">
           <widget class="Line" name="line">
            <property name="styleSheet">
             <string notr="true">background-color: rgb(119, 118, 123);</string>
@@ -352,14 +352,14 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
+         <item row="7" column="0">
           <widget class="QLabel" name="label_10">
            <property name="text">
             <string>OFDM Sym. No.</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="7" column="1">
           <widget class="QLCDNumber" name="ofdmSymbNo">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Current OFDM symbol where the elements below are calculated.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(except Clock Offset)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -378,14 +378,14 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="8" column="0">
           <widget class="QLabel" name="label_5">
            <property name="text">
             <string>SNR [dB]</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="8" column="1">
           <widget class="QLCDNumber" name="snrDisplay">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Averaged Signal Noise Ratio in the OFDM symbol.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -404,14 +404,14 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
+         <item row="9" column="0">
           <widget class="QLabel" name="label">
            <property name="text">
             <string>Freq Offset</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="9" column="1">
           <widget class="QLCDNumber" name="frequencyOffsetDisplay">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Frequeny Offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The frequency error after applying the estimated frequency correction. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -430,14 +430,14 @@
            </property>
           </widget>
          </item>
-         <item row="9" column="0">
+         <item row="10" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>Time Offset</string>
            </property>
           </widget>
          </item>
-         <item row="9" column="1">
+         <item row="10" column="1">
           <widget class="QLCDNumber" name="timeOffsetDisplay">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Sample Clock Offset. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -456,40 +456,14 @@
            </property>
           </widget>
          </item>
-         <item row="10" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Clock Offset</string>
-           </property>
-          </widget>
-         </item>
-         <item row="10" column="1">
-          <widget class="QLCDNumber" name="clockError">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Clock Offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The number of samples too many or too few for 100 DAB frames. &lt;/p&gt;&lt;p&gt;This will take a while until the value updates.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="smallDecimalPoint">
-            <bool>true</bool>
-           </property>
-           <property name="digitCount">
-            <number>7</number>
-           </property>
-           <property name="segmentStyle">
-            <enum>QLCDNumber::Flat</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="11" column="0">
+         <item row="12" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Std. Deviation</string>
            </property>
           </widget>
          </item>
-         <item row="11" column="1">
+         <item row="12" column="1">
           <widget class="QLCDNumber" name="quality_display">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged Standard Deviation of the phase offset of the full OFDM symbol. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;A high value indicates a high noise and so a worse signal quality.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -508,7 +482,7 @@
            </property>
           </widget>
          </item>
-         <item row="12" column="0" colspan="2">
+         <item row="13" column="0" colspan="2">
           <widget class="Line" name="line_3">
            <property name="styleSheet">
             <string notr="true">background-color: rgb(119, 118, 123);</string>
@@ -518,7 +492,7 @@
            </property>
           </widget>
          </item>
-         <item row="14" column="0">
+         <item row="15" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
             <widget class="QComboBox" name="cmbIqScope">
@@ -545,7 +519,7 @@
            </item>
           </layout>
          </item>
-         <item row="14" column="1">
+         <item row="15" column="1">
           <widget class="QCheckBox" name="cbLogIqScope">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show vector length in IQ scope in logarithmic scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -555,7 +529,7 @@
            </property>
           </widget>
          </item>
-         <item row="16" column="0">
+         <item row="17" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_7">
            <item>
             <widget class="QComboBox" name="cmbCarrier">
@@ -582,13 +556,39 @@
            </item>
           </layout>
          </item>
-         <item row="16" column="1">
+         <item row="17" column="1">
           <widget class="QCheckBox" name="cbNomChIdx">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order carriers in the carrier plot in nominal sequence, not physically sequence. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Nom. Carrier</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Clock Offset [Hz]</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLCDNumber" name="clockError">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Clock Offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The offset in Hz from the nominal sample rate of 2'048'000 Hz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="smallDecimalPoint">
+            <bool>true</bool>
+           </property>
+           <property name="digitCount">
+            <number>7</number>
+           </property>
+           <property name="segmentStyle">
+            <enum>QLCDNumber::Flat</enum>
            </property>
           </widget>
          </item>

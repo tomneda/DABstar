@@ -87,7 +87,7 @@ public:
   void show_iq(int32_t, float);
   void show_quality(int32_t, float, float, float, float, float);
   void show_snr(float);
-  void show_clock_error(int);
+  void show_clock_error(float e);
   void set_bit_depth(int16_t);
   void show();
   void hide();

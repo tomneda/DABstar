@@ -159,7 +159,7 @@ signals:
   void signal_set_sync_lost();
   void signal_show_tii(int, int);
   void signal_show_spectrum(int);
-  void signal_show_clock_err(int);
+  void signal_show_clock_err(float);
   void signal_set_and_show_freq_corr_rf_Hz(int);
   void signal_show_freq_corr_bb_Hz(int);
 };
