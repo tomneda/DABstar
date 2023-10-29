@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>424</width>
-    <height>285</height>
+    <width>203</width>
+    <height>317</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,6 +16,67 @@
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="usb_board_id_display">
+       <property name="text">
+        <string>Device</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Serial Number:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblSerialNum">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>sn</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Board Revision:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblBoardRev">
+       <property name="text">
+        <string>br</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QCheckBox" name="AntEnableButton">
        <property name="text">
@@ -51,35 +112,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="usb_board_id_display">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="serialNumber">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Serial Number</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="serial_number_display">
-       <property name="font">
-        <font>
-         <pointsize>11</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string/>
+      <widget class="Line" name="line_5">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
@@ -99,6 +134,12 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QLCDNumber" name="vgagainDisplay">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="digitCount">
+        <number>2</number>
+       </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::Flat</enum>
        </property>
@@ -123,7 +164,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>vga</string>
+        <string>VGA</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -136,8 +177,11 @@
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="QLCDNumber" name="lnagainDisplay">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
        <property name="digitCount">
-        <number>3</number>
+        <number>2</number>
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::Flat</enum>
@@ -155,6 +199,21 @@
        <property name="maximum">
         <number>40</number>
        </property>
+       <property name="singleStep">
+        <number>8</number>
+       </property>
+       <property name="pageStep">
+        <number>8</number>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+       <property name="sliderPosition">
+        <number>0</number>
+       </property>
+       <property name="tracking">
+        <bool>true</bool>
+       </property>
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
@@ -163,7 +222,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>lna</string>
+        <string>LNA</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

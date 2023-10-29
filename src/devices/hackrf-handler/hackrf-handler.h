@@ -43,7 +43,7 @@
 #include  "ringbuffer.h"
 #include  "device-handler.h"
 #include  "ui_hackrf-widget.h"
-#include  "libhackrf/hackrf.h"
+#include  <libhackrf/hackrf.h>
 #include  <QLibrary>
 
 using hackrf_sample_block_cb_fn = int (*)(hackrf_transfer * transfer);
@@ -75,6 +75,9 @@ using pfn_hackrf_set_antenna_enable = int (*)(hackrf_device *, const uint8_t);
 using pfn_hackrf_set_amp_enable = int (*)(hackrf_device *, const uint8_t);
 using pfn_hackrf_si5351c_read = int (*)(hackrf_device *, const uint16_t, uint16_t *);
 using pfn_hackrf_si5351c_write = int (*)(hackrf_device *, const uint16_t, const uint16_t);
+using pfn_hackrf_board_rev_read = int (*)(hackrf_device* device, uint8_t* value);
+using pfn_hackrf_board_rev_name = const char* (*)(enum hackrf_board_rev board_rev);
+
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -124,9 +127,13 @@ private:
     pfn_hackrf_set_amp_enable set_amp_enable;
     pfn_hackrf_si5351c_read si5351c_read;
     pfn_hackrf_si5351c_write si5351c_write;
+    pfn_hackrf_board_rev_read board_rev_read;
+    pfn_hackrf_board_rev_name board_rev_name;
+
   };
 
   hackrf_device * theDevice;
+  hackrf_board_rev mRevNo = BOARD_REV_UNDETECTED;
   QFrame myFrame{ nullptr };
   SHackRf mHackrf;
   QSettings * mpHackrfSettings;

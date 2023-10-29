@@ -45,7 +45,8 @@
 #define CHECK_ERR_RETURN(x_)       if (!check_err(x_, __FUNCTION__, __LINE__)) return
 #define CHECK_ERR_RETURN_FALSE(x_) if (!check_err(x_, __FUNCTION__, __LINE__)) return false
 
-constexpr int32_t DEFAULT_GAIN = 30;
+constexpr int32_t DEFAULT_LNA_GAIN = 16;
+constexpr int32_t DEFAULT_VGA_GAIN = 30;
 
 HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVersion) :
   mpHackrfSettings(iSetting),
@@ -89,8 +90,8 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
 
   //	See if there are settings from previous incarnations
   mpHackrfSettings->beginGroup("hackrfSettings");
-  lnaGainSlider->setValue(mpHackrfSettings->value("hack_lnaGain", DEFAULT_GAIN).toInt());
-  vgaGainSlider->setValue(mpHackrfSettings->value("hack_vgaGain", DEFAULT_GAIN).toInt());
+  lnaGainSlider->setValue(mpHackrfSettings->value("hack_lnaGain", DEFAULT_LNA_GAIN).toInt());
+  vgaGainSlider->setValue(mpHackrfSettings->value("hack_vgaGain", DEFAULT_VGA_GAIN).toInt());
   bool isChecked = mpHackrfSettings->value("hack_AntEnable", false).toBool();
   AntEnableButton->setCheckState(isChecked ? Qt::Checked : Qt::Unchecked);
   isChecked = mpHackrfSettings->value("hack_AmpEnable", false).toBool();
@@ -107,15 +108,30 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   check_err_throw(mHackrf.set_antenna_enable(theDevice, 1));
   check_err_throw(mHackrf.set_amp_enable(theDevice, 1));
 
-  uint16_t regValue;
-  check_err_throw(mHackrf.si5351c_read(theDevice, 162, &regValue));
-  check_err_throw(mHackrf.si5351c_write(theDevice, 162, regValue));
+  uint8_t revNo = 0;
+  check_err_throw(mHackrf.board_rev_read(theDevice, &revNo));
+  mRevNo = (hackrf_board_rev)revNo;
+  lblBoardRev->setText(mHackrf.board_rev_name(mRevNo));
+
+  //check_err_throw(mHackrf.si5351c_read(theDevice, 162, &mRegA2));
+  //check_err_throw(mHackrf.si5351c_write(theDevice, 162, mRegA2));
 
   slot_set_lna_gain(lnaGainSlider->value());
   slot_set_vga_gain(vgaGainSlider->value());
   slot_enable_antenna(1);    // value is a dummy really
   slot_enable_amp(1);    // value is a dummy, really
   slot_set_ppm_correction(ppm_correction->value());
+
+  if (hackrf_device_list_t const * deviceList = mHackrf.device_list();
+      deviceList != nullptr)
+  {  // well, it should be
+    char const * pSerial = deviceList->serial_numbers[0];
+    while (*pSerial == '0') ++pSerial; // remove leading '0'
+    lblSerialNum->setText(pSerial);
+    enum hackrf_usb_board_id board_id = deviceList->usb_board_ids[0];
+    usb_board_id_display->setText(mHackrf.usb_board_id_name(board_id));
+  }
+
 
   //	and be prepared for future changes in the settings
   connect(lnaGainSlider, &QSlider::valueChanged, this, &HackRfHandler::slot_set_lna_gain);
@@ -124,15 +140,6 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   connect(AmpEnableButton, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_amp);
   connect(ppm_correction, qOverload<int>(&QSpinBox::valueChanged), this, &HackRfHandler::slot_set_ppm_correction);
   connect(dumpButton, &QPushButton::clicked, this, &HackRfHandler::slot_xml_dump);
-
-  if (hackrf_device_list_t const * deviceList = mHackrf.device_list();
-      deviceList != nullptr)
-  {  // well, it should be
-    char const * const serial = deviceList->serial_numbers[0];
-    serial_number_display->setText(serial);
-    enum hackrf_usb_board_id board_id = deviceList->usb_board_ids[0];
-    usb_board_id_display->setText(mHackrf.usb_board_id_name(board_id));
-  }
 
   connect(this, &HackRfHandler::signal_new_ant_enable, AntEnableButton, &QCheckBox::setChecked);
   connect(this, &HackRfHandler::signal_new_amp_enable, AmpEnableButton, &QCheckBox::setChecked);
@@ -186,7 +193,7 @@ int32_t HackRfHandler::getVFOFrequency()
 
 void HackRfHandler::slot_set_lna_gain(int newGain)
 {
-  if ((newGain <= 40) && (newGain >= 0))
+  if (newGain >= 0 && newGain <= 40)
   {
     CHECK_ERR_RETURN(mHackrf.set_lna_gain(theDevice, newGain));
     lnagainDisplay->display(newGain);
@@ -223,9 +230,9 @@ void HackRfHandler::slot_enable_amp(int a)
 
 void HackRfHandler::slot_set_ppm_correction(int32_t ppm)
 {
-  uint16_t value;
-  CHECK_ERR_RETURN(mHackrf.si5351c_write(theDevice, 162, static_cast<uint16_t>(ppm)));
-  CHECK_ERR_RETURN(mHackrf.si5351c_read(theDevice, 162, &value));
+//  uint16_t value;
+//  CHECK_ERR_RETURN(mHackrf.si5351c_write(theDevice, 162, static_cast<uint16_t>(ppm)));
+//  CHECK_ERR_RETURN(mHackrf.si5351c_read(theDevice, 162, &value));
 }
 
 //	we use a static large buffer, rather than trying to allocate a buffer on the stack
@@ -300,7 +307,7 @@ int32_t HackRfHandler::getSamples(cmplx * V, int32_t size)
 
   for (int i = 0; i < amount; i++)
   {
-    V[i] = cmplx(real(temp[i]) / 127.0f, imag(temp[i]) / 127.0f);
+    V[i] = cmplx((float)temp[i].real() / 127.0f, (float)temp[i].imag() / 127.0f);
   }
 
   if (mDumping.load())
@@ -465,6 +472,20 @@ bool HackRfHandler::load_hackrf_functions()
   if (mHackrf.si5351c_write == nullptr)
   {
     fprintf(stderr, "Could not find hackrf_si5351c_write\n");
+    return false;
+  }
+
+  mHackrf.board_rev_read = (pfn_hackrf_board_rev_read)mpHandle->resolve("hackrf_board_rev_read");
+  if (mHackrf.board_rev_read == nullptr)
+  {
+    fprintf(stderr, "Could not find hackrf_board_rev_read\n");
+    return false;
+  }
+
+  mHackrf.board_rev_name = (pfn_hackrf_board_rev_name)mpHandle->resolve("hackrf_board_rev_name");
+  if (mHackrf.board_rev_name == nullptr)
+  {
+    fprintf(stderr, "Could not find hackrf_board_rev_name\n");
     return false;
   }
 
