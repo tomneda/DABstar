@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>203</width>
-    <height>317</height>
+    <width>210</width>
+    <height>314</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,9 +78,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="AntEnableButton">
+      <widget class="QCheckBox" name="btnBiasTEnable">
        <property name="text">
-        <string>Ant Enable</string>
+        <string>Bias T Enable</string>
        </property>
        <property name="checked">
         <bool>false</bool>
@@ -88,7 +88,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="AmpEnableButton">
+      <widget class="QCheckBox" name="btnAmpEnable">
        <property name="text">
         <string>Amp Enable</string>
        </property>
@@ -146,7 +146,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSlider" name="vgaGainSlider">
+      <widget class="QSlider" name="sliderVgaGain">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -189,7 +189,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSlider" name="lnaGainSlider">
+      <widget class="QSlider" name="sliderLnaGain">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
          <horstretch>0</horstretch>

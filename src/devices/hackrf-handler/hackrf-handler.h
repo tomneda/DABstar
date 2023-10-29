@@ -163,7 +163,7 @@ signals:
 private slots:
   void slot_set_lna_gain(int);
   void slot_set_vga_gain(int);
-  void slot_enable_antenna(int);
+  void slot_enable_bias_t(int);
   void slot_enable_amp(int);
   void slot_set_ppm_correction(int);
   void slot_xml_dump();

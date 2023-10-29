@@ -671,13 +671,11 @@ if (HACKRF)
 
     include_directories(
             src/devices/hackrf-handler
-            src/devices/hackrf-handler/libhackrf
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/devices/hackrf-handler/hackrf-handler.h
-            src/devices/hackrf-handler/libhackrf/hackrf.h
             )
 
     set(${objectName}_SRCS
