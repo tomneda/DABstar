@@ -272,22 +272,22 @@ void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iStdDev, float iTim
   snrDisplay->display(QString("%1").arg(iSNR, 0, 'f', 2));
 }
 
-void SpectrumViewer::show_snr(float snr)
+void SpectrumViewer::show_snr(float iSnr)
 {
   if (myFrame.isHidden())
   {
     return;
   }
-  snrDisplay->display(snr);
+  snrDisplay->display(QString("%1").arg(iSnr, 0, 'f', 2));
 }
 
-void SpectrumViewer::show_nominal_frequency_MHz(float f)
+void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
 {
   if (myFrame.isHidden())
   {
     return;
   }
-  dispNomFrequency->display(f);
+  dispNomFrequency->display(QString("%1").arg(iFreqMHz, 0, 'f', 3));
 }
 
 void SpectrumViewer::show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
