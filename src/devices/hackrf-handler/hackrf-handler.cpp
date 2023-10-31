@@ -38,9 +38,9 @@
 #include  <QLabel>
 #include  <QDebug>
 #include  <QFileDialog>
-#include  "hackrf-handler.h"
-#include  "xml-filewriter.h"
-#include  "device-exceptions.h"
+#include "hackrf-handler.h"
+#include "xml-filewriter.h"
+#include "device-exceptions.h"
 
 #define CHECK_ERR_RETURN(x_)       if (!check_err(x_, __FUNCTION__, __LINE__)) return
 #define CHECK_ERR_RETURN_FALSE(x_) if (!check_err(x_, __FUNCTION__, __LINE__)) return false
@@ -86,7 +86,7 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
 
   //	From here we have a library available
 
-  mVfoFrequency = kHz(220000);
+  mVfoFreqHz = kHz(220000);
 
   //	See if there are settings from previous incarnations
   mpHackrfSettings->beginGroup("hackrfSettings");
@@ -100,9 +100,11 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   save_gain_settings = mpHackrfSettings->value("save_gainSettings", 1).toInt() != 0;
   mpHackrfSettings->endGroup();
 
+  mRefFreqErrFac = 1.0f + (float)ppm_correction->value() / 1.0e6f;
+
   check_err_throw(mHackrf.init());
   check_err_throw(mHackrf.open(&theDevice));
-  check_err_throw(mHackrf.set_sample_rate(theDevice, 2048000.0));
+  check_err_throw(mHackrf.set_sample_rate(theDevice, OVERSAMPLING * (2048000.0 * mRefFreqErrFac)));
   check_err_throw(mHackrf.set_baseband_filter_bandwidth(theDevice, 1750000)); // the filter must be set after the sample rate to be not overwritten
   check_err_throw(mHackrf.set_freq(theDevice, 220000000));
 
@@ -117,11 +119,10 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   slot_set_vga_gain(sliderVgaGain->value());
   slot_enable_bias_t(1); // value is a dummy
   slot_enable_amp(1);    // value is a dummy
-  slot_set_ppm_correction(ppm_correction->value());
 
   if (hackrf_device_list_t const * deviceList = mHackrf.device_list();
       deviceList != nullptr)
-  {  // well, it should be
+  {
     char const * pSerial = deviceList->serial_numbers[0];
     while (*pSerial == '0') ++pSerial; // remove leading '0'
     lblSerialNum->setText(pSerial);
@@ -169,7 +170,7 @@ HackRfHandler::~HackRfHandler()
 
 void HackRfHandler::setVFOFrequency(int32_t newFrequency)
 {
-  CHECK_ERR_RETURN(mHackrf.set_freq(theDevice, newFrequency));
+  CHECK_ERR_RETURN(mHackrf.set_freq(theDevice, newFrequency * mRefFreqErrFac));
 
   //	It seems that after changing the frequency, the preamp is switched off
   //	(tomneda: do not see this, I guess the bug is already fixed, but leave the workaround)
@@ -178,12 +179,12 @@ void HackRfHandler::setVFOFrequency(int32_t newFrequency)
     slot_enable_amp(1);
   }
 
-  mVfoFrequency = newFrequency;
+  mVfoFreqHz = newFrequency;
 }
 
 int32_t HackRfHandler::getVFOFrequency()
 {
-  return mVfoFrequency;
+  return mVfoFreqHz;
 }
 
 void HackRfHandler::slot_set_lna_gain(int newGain)
@@ -216,16 +217,15 @@ void HackRfHandler::slot_enable_amp(int a)
   CHECK_ERR_RETURN(mHackrf.set_amp_enable(theDevice, btnAmpEnable->isChecked() ? 1 : 0));
 }
 
-// correction is in Hz
-// This function has to be modified to implement ppm correction
-// writing in the si5351 register does not seem to work yet
-// To be completed
-
 void HackRfHandler::slot_set_ppm_correction(int32_t ppm)
 {
-//  uint16_t value;
-//  CHECK_ERR_RETURN(mHackrf.si5351c_write(theDevice, 162, static_cast<uint16_t>(ppm)));
-//  CHECK_ERR_RETURN(mHackrf.si5351c_read(theDevice, 162, &value));
+  // writing in the si5351 (Ref clock generator) register does not seem to work, so do it other way...
+  mRefFreqErrFac = 1.0f + (float)ppm / 1.0e6f;
+
+  CHECK_ERR_RETURN(mHackrf.set_sample_rate(theDevice, OVERSAMPLING * (2048000.0 * mRefFreqErrFac)));
+  CHECK_ERR_RETURN(mHackrf.set_baseband_filter_bandwidth(theDevice, 1750000)); // the filter must be set after the sample rate to be not overwritten
+  stopReader();
+  restartReader(getVFOFrequency());
 }
 
 //	we use a static large buffer, rather than trying to allocate a buffer on the stack
@@ -234,33 +234,42 @@ static std::array<std::complex<int8_t>, 32 * 32768> buffer;
 static int callback(hackrf_transfer * transfer)
 {
   auto * ctx = static_cast<HackRfHandler *>(transfer->rx_ctx);
-  const uint8_t * const p = transfer->buffer;
+  const int8_t * const p = reinterpret_cast<const int8_t * const>(transfer->buffer);
   HackRfHandler::TRingBuffer * q = &(ctx->mRingBuffer);
   int bufferIndex = 0;
 
-  for (int i = 0; i < transfer->valid_length / 2; i += 1)
+  for (int i = 0; i < transfer->valid_length / 2; ++i)
   {
-    const int8_t re = ((const int8_t *)p)[2 * i + 0];
-    const int8_t im = ((const int8_t *)p)[2 * i + 1];
-    buffer[bufferIndex] = std::complex<int8_t>(re, im);
+    const cmplx x = cmplx(p[2 * i + 0], p[2 * i + 1]);
+    cmplx y;
+#ifdef HAVE_HBF
+    if (!ctx->mHbf.decimate(x, y))
+    {
+      continue;
+    }
+#else
+    y = x;
+#endif
+    assert(bufferIndex < (signed)buffer.size());
+    buffer[bufferIndex] = std::complex<int8_t>((int8_t)(y.real()), (int8_t)(y.imag()));
     ++bufferIndex;
   }
   q->putDataIntoBuffer(buffer.data(), bufferIndex);
   return 0;
 }
 
-bool HackRfHandler::restartReader(int32_t freq)
+bool HackRfHandler::restartReader(int32_t iFreqHz)
 {
   if (mRunning.load())
   {
     return true;
   }
 
-  mVfoFrequency = freq;
+  mVfoFreqHz = iFreqHz;
 
   if (save_gain_settings)
   {
-    update_gain_settings(freq / MHz(1));
+    update_gain_settings(iFreqHz / MHz(1));
   }
 
   CHECK_ERR_RETURN_FALSE(mHackrf.set_lna_gain(theDevice, sliderLnaGain->value()));
@@ -268,7 +277,7 @@ bool HackRfHandler::restartReader(int32_t freq)
   CHECK_ERR_RETURN_FALSE(mHackrf.set_amp_enable(theDevice, btnAmpEnable->isChecked() ? 1 : 0));
   CHECK_ERR_RETURN_FALSE(mHackrf.set_antenna_enable(theDevice, btnBiasTEnable->isChecked() ? 1 : 0));
 
-  CHECK_ERR_RETURN_FALSE(mHackrf.set_freq(theDevice, freq));
+  CHECK_ERR_RETURN_FALSE(mHackrf.set_freq(theDevice, iFreqHz * mRefFreqErrFac));
   CHECK_ERR_RETURN_FALSE(mHackrf.start_rx(theDevice, callback, this));
   mRunning.store(mHackrf.is_streaming(theDevice));
   return mRunning.load();
@@ -285,7 +294,7 @@ void HackRfHandler::stopReader()
 
   if (save_gain_settings)
   {
-    record_gain_settings(mVfoFrequency / MHz (1));
+    record_gain_settings(mVfoFreqHz / MHz (1));
   }
 
   mRunning.store(false);

@@ -45,6 +45,9 @@
 #include  "ui_hackrf-widget.h"
 #include  <libhackrf/hackrf.h>
 #include  <QLibrary>
+#ifdef HAVE_HBF
+  #include  "halfbandfilter.h"
+#endif
 
 using hackrf_sample_block_cb_fn = int (*)(hackrf_transfer * transfer);
 
@@ -104,6 +107,12 @@ public:
 
   using TRingBuffer = RingBuffer<std::complex<int8_t> >;
   TRingBuffer mRingBuffer{ 4 * 1024 * 1024 }; // The buffer should be visible by the callback function
+#ifdef HAVE_HBF
+  static constexpr int32_t OVERSAMPLING = 4; // The value should be visible by the callback function
+  HalfBandFilter mHbf{ 2 };
+#else
+  static constexpr int32_t OVERSAMPLING = 1; // The value should be visible by the callback function
+#endif
 
 private:
   struct SHackRf
@@ -132,19 +141,20 @@ private:
 
   };
 
-  hackrf_device * theDevice;
+  hackrf_device * theDevice = nullptr;
   hackrf_board_rev mRevNo = BOARD_REV_UNDETECTED;
-  QFrame myFrame{ nullptr };
-  SHackRf mHackrf;
-  QSettings * mpHackrfSettings;
-  QString mRecorderVersion;
-  int32_t mVfoFrequency;
-  std::atomic<bool> mRunning;
-  QLibrary * mpHandle;
-  FILE * mpXmlDumper;
-  xml_fileWriter * mpXmlWriter;
-  std::atomic<bool> mDumping;
-  bool save_gain_settings;
+  QFrame myFrame;
+  SHackRf mHackrf{};
+  QSettings * const mpHackrfSettings;
+  const QString mRecorderVersion;
+  int32_t mVfoFreqHz = 0;
+  std::atomic<bool> mRunning{};
+  QLibrary * mpHandle = nullptr;
+  FILE * mpXmlDumper = nullptr;
+  xml_fileWriter * mpXmlWriter = nullptr;
+  std::atomic<bool> mDumping{};
+  bool save_gain_settings = false;
+  float mRefFreqErrFac = 1.0f;  // for workaround to set the ppm offset
 
   bool load_hackrf_functions();
   bool setup_xml_dump();

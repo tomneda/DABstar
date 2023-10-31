@@ -76,6 +76,8 @@ set(USE_PORTAUDIO ON)
 set(QT_AUDIO OFF)
 set(TCP_STREAMER OFF)
 
+option(USE_HBF "Use oversampling with half band filter (needs liquid)" OFF)  # this needs liquid
+
 # select one or more devices (set to ON)
 # attention option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this
 option(AIRSPY OFF)
@@ -98,6 +100,21 @@ option(FDK_AAC OFF)
 #add_definitions (-D__THREADED_BACKEND)	# uncomment for use for an RPI
 #
 ########################################################################
+if (USE_HBF)
+    set($(objectName)_HDRS
+            ${${objectName}_HDRS}
+            src/support/halfbandfilter.h
+    )
+
+    set(${objectName}_SRCS
+            ${${objectName}_SRCS}
+            src/support/halfbandfilter.cpp
+    )
+
+    list(APPEND extraLibs liquid)
+
+    add_definitions(-DHAVE_HBF)
+endif (USE_HBF)
 
 find_package(PkgConfig)
 find_package(LSBId)

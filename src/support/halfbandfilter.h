@@ -1,15 +1,46 @@
-//
-// Created by work on 31/10/23.
-//
+/*
+ * Copyright (c) 2023 by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2 of the License, or any later version.
+ *
+ * DABstar is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
+ * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
-#ifndef DABSTAR_HALFBANDFILTER_H
-#define DABSTAR_HALFBANDFILTER_H
 
+#ifndef HALFBANDFILTER_H
+#define HALFBANDFILTER_H
+
+#include "glob_defs.h"
+#include <cstdlib>
+#include <vector>
+#include <array>
+
+struct resamp2_crcf_s;
 
 class HalfBandFilter
 {
+public:
+  explicit HalfBandFilter(uint32_t iDecimationPow = 1);
+  ~HalfBandFilter();
 
+  bool decimate(const cmplx & iX, cmplx & oY, uint32_t iLevel = 0);
+
+private:
+  struct SLevel
+  {
+    resamp2_crcf_s * qResamp2;
+    std::array<cmplx, 2> InBuffer;
+    uint32_t InBufferIdx = 0;
+  };
+  std::vector<SLevel> mLevelVec;
 };
 
-
-#endif //DABSTAR_HALFBANDFILTER_H
+#endif // HALFBANDFILTER_H
