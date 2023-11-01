@@ -101,9 +101,42 @@ static inline float fast_abs(cmplx z)
 #endif
 }
 
+static inline float fast_abs_with_clip_det(cmplx z, bool & oClipped, float iClipLimit)
+{
+  // this is the former jan_abs() from Jan van Katwijk, should be faster than std::abs()... but is it really? (depends on the device)
+  float re = real(z);
+  float im = imag(z);
+
+  if (re < 0)
+  {
+    re = -re;
+  }
+  if (im < 0)
+  {
+    im = -im;
+  }
+  if (re > im)
+  {
+    if (re > iClipLimit)
+    {
+      oClipped = true; // only overwrite this!
+    }
+    return re + 0.5f * im;
+  }
+  else
+  {
+    if (im > iClipLimit)
+    {
+      oClipped = true; // only overwrite this!
+    }
+    return im + 0.5f * re;
+  }
+}
+
 inline cmplx norm_to_length_one(const cmplx & iVal)
 {
-  return iVal / std::fabs(iVal);
+  const float length = std::fabs(iVal);
+  return (length == 0.0f ? 0.0f : iVal / length);
 }
 
 inline cmplx cmplx_from_phase(const float iPhase)
@@ -132,12 +165,12 @@ inline float turn_phase_to_first_quadrant(float iPhase)
   return std::fmod(iPhase, (float)M_PI_2);
 }
 
-template <typename T> inline void mean_filter(T & ioVal, const T iVal, const T iAlpha)
+template<typename T> inline void mean_filter(T & ioVal, const T iVal, const T iAlpha)
 {
   ioVal += iAlpha * (iVal - ioVal);
 }
 
-template <typename T> inline void create_blackman_window(T * opVal, int32_t iWindowWidth)
+template<typename T> inline void create_blackman_window(T * opVal, int32_t iWindowWidth)
 {
 #if 0 // The exact(er) version place zeros at the 3rd and 4th side-lobes but result in a discontinuity at the edges and a 6 dB/oct fall-off
   constexpr double a0 = 7938.0/18608.0; // 0.426590714
@@ -160,12 +193,12 @@ template <typename T> inline void create_blackman_window(T * opVal, int32_t iWin
 #endif
 }
 
-template <typename T> inline T fft_shift(const T iIdx, const  int32_t iFftSize)
+template<typename T> inline T fft_shift(const T iIdx, const int32_t iFftSize)
 {
   return (iIdx < 0 ? iIdx + iFftSize : iIdx);
 }
 
-template <typename T> inline T fft_shift_skip_dc(const T iIdx, const int32_t iFftSize)
+template<typename T> inline T fft_shift_skip_dc(const T iIdx, const int32_t iFftSize)
 {
   return (iIdx < 0 ? iIdx + iFftSize : iIdx + 1);
 }

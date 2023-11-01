@@ -92,6 +92,7 @@ public:
   void show();
   void hide();
   bool is_hidden();
+  void show_overdriven_flag(bool);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "spectrumViewer";

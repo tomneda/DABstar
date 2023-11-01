@@ -63,6 +63,7 @@ DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inpu
   connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
   connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &RadioInterface::slot_set_and_show_freq_corr_rf_Hz);
   connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_bb_Hz);
+  connect(this, &DabProcessor::signal_overdriven, mpRadioInterface, &RadioInterface::slot_show_overdriven_flag);
 
   mOfdmBuffer.resize(2 * mDabPar.T_s);
   mBits.resize(2 * mDabPar.K);
@@ -244,12 +245,24 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
   mClockOffsetTotalSamples += ioSampleCount;
 
-  if (++mClockOffsetFrameCount > 10)
+  if (++mClockOffsetFrameCount > 10) // about each second
   {
     const float clockErrPPM = INPUT_RATE * ((float)mClockOffsetTotalSamples / ((float)mClockOffsetFrameCount * (float)mDabPar.T_F) - 1.0f);
     emit signal_show_clock_err(clockErrPPM);
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
+    if (mSampleReader.check_clipped_and_clear() && !mInputOverdrivenShown) // call to wasClipped clears the overdriven flag!
+    {
+      emit signal_overdriven(true);
+      qCritical("Input overdriven!");
+      mInputOverdrivenShown = true;
+    }
+    else if (mInputOverdrivenShown)
+    {
+      emit signal_overdriven(false);
+      qInfo("Input not overdriven!");
+      mInputOverdrivenShown = false;
+    }
   }
 }
 
@@ -635,4 +648,9 @@ void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
 
   mRfFreqShiftUsed = false;
   mAllowRfFreqShift = iUseDcAvoidanceAlgorithm;
+}
+
+void DabProcessor::add_bb_freq(int32_t iFreqOffHz)
+{
+  mFreqOffsBBAddedHz = iFreqOffHz;
 }

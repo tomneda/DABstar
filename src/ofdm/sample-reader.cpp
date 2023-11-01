@@ -112,13 +112,20 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
     //
     //	Note that "phase" itself might be negative
     currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
+    assert(currentPhase >= 0);  // happens with currentPhase < -INPUT_RATE
+
     if (localCounter < bufferSize)
     {
       localBuffer[localCounter] = oV[i];
       ++localCounter;
     }
+
+    // The clipping detection should be done before mixing, as I and Q should be evaluated as separated ADC inputs.
+    // The mixing has no effect on the absolute level detection.
+    const float abs_lev = fast_abs_with_clip_det(buffer[i], clippingOccurred, 0.95f);
+    mean_filter(sLevel, abs_lev, 0.00001f);
+
     oV[iStartIdx + i] = buffer[i] * oscillatorTable[currentPhase];
-    mean_filter(sLevel, fast_abs(oV[i]), 0.00001f);
   }
 
   sampleCount += iNoSamples;

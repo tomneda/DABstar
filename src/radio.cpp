@@ -2301,7 +2301,16 @@ void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData 
   }
 }
 
-//
+void RadioInterface::slot_show_overdriven_flag(bool iOverdriven)
+{
+  if (!running.load())
+  {
+    return;
+  }
+
+  my_spectrumViewer.show_overdriven_flag(iOverdriven);
+}
+
 //	called from the MP4 decoder
 void RadioInterface::slot_show_rs_corrections(int c, int ec)
 {
@@ -4354,12 +4363,16 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
 void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
 {
   //sFreqOffHz = 2 * (iVal - 500);
-  uint32_t newFreqOffHz = (iVal - 500);
-  inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
+  const int32_t newFreqOffHz = (iVal - 500);
+  if (my_dabProcessor)
+  {
+    my_dabProcessor->add_bb_freq(newFreqOffHz);
+  }
+  //inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
   //  sFreqOffHz = inputDevice->getVFOFrequency();
 
   QString s("Freq-Offs [Hz]: ");
-  s += QString::number(sFreqOffHz);
+  s += QString::number(newFreqOffHz);
   configWidget.sliderTest->setToolTip(s);
 }
 

@@ -72,6 +72,7 @@ public:
   void stop_etiGenerator();
   void reset_etiGenerator();
   void set_scanMode(bool);
+  void add_bb_freq(int32_t iFreqOffHz);
 
   //	inheriting from our delegates
   //	for the FicHandler:
@@ -126,6 +127,7 @@ private:
   float mPhaseOffsetCyclPrefRad = 0.0f;
   float mFreqOffsCylcPrefHz = 0.0f;
   float mFreqOffsSyncSymb = 0.0f;
+  int32_t mFreqOffsBBAddedHz = 0;
   int32_t mFreqOffsBBHz = 0;
   int32_t mFreqOffsRFHz = 0;
   int32_t mTimeSyncAttemptCount = 0;
@@ -133,6 +135,7 @@ private:
   int32_t mClockOffsetFrameCount = 0;
   bool mRfFreqShiftUsed = false;
   bool mAllowRfFreqShift = false;
+  bool mInputOverdrivenShown = false;
 
   std::vector<cmplx> mOfdmBuffer;
   std::vector<int16_t> mBits;
@@ -162,6 +165,7 @@ signals:
   void signal_show_clock_err(float);
   void signal_set_and_show_freq_corr_rf_Hz(int);
   void signal_show_freq_corr_bb_Hz(int);
+  void signal_overdriven(bool);
 };
 
 #endif

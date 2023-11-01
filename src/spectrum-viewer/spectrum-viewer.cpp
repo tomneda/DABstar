@@ -82,6 +82,8 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   _load_save_combobox_settings(cmbIqScope, "iqPlot", false);
   _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
 
+  show_overdriven_flag(false);
+
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
   connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
@@ -366,4 +368,18 @@ void SpectrumViewer::slot_update_settings()
   // This is called when the DabProcessor has been started. Trigger resending UI state to DabProcessor.
   emit _slot_handle_cmb_carrier(cmbCarrier->currentIndex());
   emit _slot_handle_cmb_iqscope(cmbIqScope->currentIndex());
+}
+
+void SpectrumViewer::show_overdriven_flag(bool iOverdriven)
+{
+  if (iOverdriven)
+  {
+    lblOverdriven->setText("<b>Input Signal Overdriven</b>");
+    lblOverdriven->setStyleSheet("background-color: red; color: white;");
+  }
+  else
+  {
+    lblOverdriven->setText("Input Signal NOT Overdriven");
+    lblOverdriven->setStyleSheet("background-color: #444444; color: black;");
+  }
 }

@@ -62,6 +62,8 @@ public:
   void startDumping(SNDFILE *);
   void stopDumping();
 
+  bool check_clipped_and_clear() { bool z = clippingOccurred; clippingOccurred = false; return z; }
+
 private:
   static constexpr uint16_t DUMPSIZE = 4096;
 
@@ -84,6 +86,7 @@ private:
   int16_t dumpScale;
   std::array<int16_t, DUMPSIZE> dumpBuffer{};
   std::atomic<SNDFILE *> dumpfilePointer;
+  bool clippingOccurred = false;
 
   void _dump_sample_to_file(const cmplx & v);
   void _wait_for_sample_buffer_filled(int32_t n);
