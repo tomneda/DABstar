@@ -158,13 +158,12 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
      * Decoding is computing the phase difference between carriers with the same index in subsequent blocks.
      * The carrier of a block is the reference for the carrier on the same position in the next block.
      */
-    cmplx fftBin = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
+    const cmplx fftBinRaw = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
 
     float & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
 
-    const cmplx fftBinRaw = fftBin;
     //fftBin *= rotator; // Fine correction of phase which can't be done in the time domain (not more necessary as it is done below other way).
-    fftBin *= cmplx_from_phase(-integAbsPhasePerBinRef);
+    const cmplx fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
 
     // Get mean of absolute phase for each bin.
     const float fftBinPhase = std::arg(fftBin);
@@ -234,9 +233,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     {
       switch (mIqPlotType)
       {
-      case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / sqrt(mMeanPowerOvrAll); break;
-      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(mMeanPowerOvrAll); break;
       case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(meanPowerPerBinRef); break;
+      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(mMeanPowerOvrAll); break;
+      case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / sqrt(mMeanPowerOvrAll); break;
       }
 
       switch (mCarrierPlotType)

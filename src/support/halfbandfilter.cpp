@@ -24,7 +24,7 @@ HalfBandFilter::HalfBandFilter(uint32_t iDecimationPow)
   for (auto & level : mLevelVec)
   {
     level.qResamp2 = resamp2_crcf_create(7, 0.0f, 60.0f);
-    resamp2_crcf_print(level.qResamp2);
+    //resamp2_crcf_print(level.qResamp2);
     level.InBufferIdx = 0;
   }
 }
