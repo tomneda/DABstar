@@ -163,6 +163,7 @@ private:
   void update_gain_settings(int);
   void check_err_throw(int32_t iResult) const;
   bool check_err(int32_t iResult, const char * iFncName, uint32_t iLine) const;
+  template<typename T> bool load_method(T *& oMethodPtr, const char * iName, uint32_t iLine) const;
 
 signals:
   void signal_new_ant_enable(bool);

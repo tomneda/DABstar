@@ -31,19 +31,21 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  <QThread>
-#include  <QSettings>
-#include  <QTime>
-#include  <QDate>
-#include  <QLabel>
-#include  <QDebug>
-#include  <QFileDialog>
+#include <QThread>
+#include <QSettings>
+#include <QTime>
+#include <QDate>
+#include <QLabel>
+#include <QDebug>
+#include <QFileDialog>
 #include "hackrf-handler.h"
 #include "xml-filewriter.h"
 #include "device-exceptions.h"
+#include <string.h>
 
-#define CHECK_ERR_RETURN(x_)       if (!check_err(x_, __FUNCTION__, __LINE__)) return
-#define CHECK_ERR_RETURN_FALSE(x_) if (!check_err(x_, __FUNCTION__, __LINE__)) return false
+#define CHECK_ERR_RETURN(x_)              if (!check_err(x_, __FUNCTION__, __LINE__)) return
+#define CHECK_ERR_RETURN_FALSE(x_)        if (!check_err(x_, __FUNCTION__, __LINE__)) return false
+#define LOAD_METHOD_RETURN_FALSE(m_, n_)  if (!load_method(m_, n_, __LINE__)) return false;
 
 constexpr int32_t DEFAULT_LNA_GAIN = 16;
 constexpr int32_t DEFAULT_VGA_GAIN = 30;
@@ -342,154 +344,27 @@ QString HackRfHandler::deviceName()
 
 bool HackRfHandler::load_hackrf_functions()
 {
-  // link the required procedures
-  mHackrf.init = (pfn_hackrf_init)mpHandle->resolve("hackrf_init");
-  if (mHackrf.init == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_init\n");
-    return false;
-  }
-
-  mHackrf.open = (pfn_hackrf_open)mpHandle->resolve("hackrf_open");
-  if (mHackrf.open == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_open\n");
-    return false;
-  }
-
-  mHackrf.close = (pfn_hackrf_close)mpHandle->resolve("hackrf_close");
-  if (mHackrf.close == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_close\n");
-    return false;
-  }
-
-  mHackrf.exit = (pfn_hackrf_exit)mpHandle->resolve("hackrf_exit");
-  if (mHackrf.exit == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_exit\n");
-    return false;
-  }
-
-  mHackrf.start_rx = (pfn_hackrf_start_rx)mpHandle->resolve("hackrf_start_rx");
-  if (mHackrf.start_rx == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_start_rx\n");
-    return false;
-  }
-
-  mHackrf.stop_rx = (pfn_hackrf_stop_rx)mpHandle->resolve("hackrf_stop_rx");
-  if (mHackrf.stop_rx == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_stop_rx\n");
-    return false;
-  }
-
-  mHackrf.device_list = (pfn_hackrf_device_list)mpHandle->resolve("hackrf_device_list");
-  if (mHackrf.device_list == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_device_list\n");
-    return false;
-  }
-
-  mHackrf.set_baseband_filter_bandwidth = (pfn_hackrf_set_baseband_filter_bandwidth)mpHandle->resolve(
-    "hackrf_set_baseband_filter_bandwidth");
-  if (mHackrf.set_baseband_filter_bandwidth == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_set_baseband_filter_bandwidth\n");
-    return false;
-  }
-
-  mHackrf.set_lna_gain = (pfn_hackrf_set_lna_gain)mpHandle->resolve("hackrf_set_lna_gain");
-  if (mHackrf.set_lna_gain == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_set_lna_gain\n");
-    return false;
-  }
-
-  mHackrf.set_vga_gain = (pfn_hackrf_set_vga_gain)mpHandle->resolve("hackrf_set_vga_gain");
-  if (mHackrf.set_vga_gain == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_set_vga_gain\n");
-    return false;
-  }
-
-  mHackrf.set_freq = (pfn_hackrf_set_freq)mpHandle->resolve("hackrf_set_freq");
-  if (mHackrf.set_freq == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_set_freq\n");
-    return false;
-  }
-
-  mHackrf.set_sample_rate = (pfn_hackrf_set_sample_rate)mpHandle->resolve("hackrf_set_sample_rate");
-  if (mHackrf.set_sample_rate == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_set_sample_rate\n");
-    return false;
-  }
-
-  mHackrf.is_streaming = (pfn_hackrf_is_streaming)mpHandle->resolve("hackrf_is_streaming");
-  if (mHackrf.is_streaming == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_is_streaming\n");
-    return false;
-  }
-
-  mHackrf.error_name = (pfn_hackrf_error_name)mpHandle->resolve("hackrf_error_name");
-  if (mHackrf.error_name == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_error_name\n");
-    return false;
-  }
-
-  mHackrf.usb_board_id_name = (pfn_hackrf_usb_board_id_name)mpHandle->resolve("hackrf_usb_board_id_name");
-  if (mHackrf.usb_board_id_name == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_usb_board_id_name\n");
-    return false;
-  }
-  // Aggiunta Fabio
-  mHackrf.set_antenna_enable = (pfn_hackrf_set_antenna_enable)mpHandle->resolve("hackrf_set_antenna_enable");
-  if (mHackrf.set_antenna_enable == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_set_antenna_enable\n");
-    return false;
-  }
-
-  mHackrf.set_amp_enable = (pfn_hackrf_set_amp_enable)mpHandle->resolve("hackrf_set_amp_enable");
-  if (mHackrf.set_amp_enable == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_set_amp_enable\n");
-    return false;
-  }
-
-  mHackrf.si5351c_read = (pfn_hackrf_si5351c_read)mpHandle->resolve("hackrf_si5351c_read");
-  if (mHackrf.si5351c_read == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_si5351c_read\n");
-    return false;
-  }
-
-  mHackrf.si5351c_write = (pfn_hackrf_si5351c_write)mpHandle->resolve("hackrf_si5351c_write");
-  if (mHackrf.si5351c_write == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_si5351c_write\n");
-    return false;
-  }
-
-  mHackrf.board_rev_read = (pfn_hackrf_board_rev_read)mpHandle->resolve("hackrf_board_rev_read");
-  if (mHackrf.board_rev_read == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_board_rev_read\n");
-    return false;
-  }
-
-  mHackrf.board_rev_name = (pfn_hackrf_board_rev_name)mpHandle->resolve("hackrf_board_rev_name");
-  if (mHackrf.board_rev_name == nullptr)
-  {
-    fprintf(stderr, "Could not find hackrf_board_rev_name\n");
-    return false;
-  }
+  LOAD_METHOD_RETURN_FALSE(mHackrf.init, "hackrf_init");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.open, "hackrf_open");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.close, "hackrf_close");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.exit, "hackrf_exit");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.start_rx, "hackrf_start_rx");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.stop_rx, "hackrf_stop_rx");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.device_list, "hackrf_device_list");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.set_baseband_filter_bandwidth, "hackrf_set_baseband_filter_bandwidth");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.set_lna_gain, "hackrf_set_lna_gain");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.set_vga_gain, "hackrf_set_vga_gain");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.set_freq, "hackrf_set_freq");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.set_sample_rate, "hackrf_set_sample_rate");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.is_streaming, "hackrf_is_streaming");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.error_name, "hackrf_error_name");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.usb_board_id_name, "hackrf_usb_board_id_name");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.set_antenna_enable, "hackrf_set_antenna_enable");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.set_amp_enable, "hackrf_set_amp_enable");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.si5351c_read, "hackrf_si5351c_read");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.si5351c_write, "hackrf_si5351c_write");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.board_rev_read, "hackrf_board_rev_read");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.board_rev_name, "hackrf_board_rev_name");
 
   fprintf(stdout, "HackRf functions loaded\n");
   return true;
@@ -671,6 +546,18 @@ bool HackRfHandler::check_err(int32_t iResult, const char * const iFncName, uint
   if (iResult != HACKRF_SUCCESS)
   {
     qCritical("HackRfHandler raised an error: '%s' in function %s:%u", mHackrf.error_name((hackrf_error)iResult), iFncName, iLine);
+    return false;
+  }
+  return true;
+}
+
+template<typename T> bool HackRfHandler::load_method(T *& oMethodPtr, const char * iName, uint32_t iLine) const
+{
+  oMethodPtr = reinterpret_cast<T*>(mpHandle->resolve(iName));
+
+  if (oMethodPtr == nullptr)
+  {
+    qCritical("Could not find '%s' at %s:%u\n", iName, (strrchr("/" __FILE__, '/') + 1), iLine);
     return false;
   }
   return true;
