@@ -57,12 +57,12 @@ public:
 
   void setRunning(bool b);
   float get_sLevel() const;
+  void get_peak_level_and_clear(float & oPeakReal, float & oPeakImag);
   cmplx getSample(int32_t);
   void getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec);
   void startDumping(SNDFILE *);
   void stopDumping();
-
-  bool check_clipped_and_clear() { bool z = clippingOccurred; clippingOccurred = false; return z; }
+  bool check_clipped_and_clear();
 
 private:
   static constexpr uint16_t DUMPSIZE = 4096;
@@ -87,6 +87,8 @@ private:
   std::array<int16_t, DUMPSIZE> dumpBuffer{};
   std::atomic<SNDFILE *> dumpfilePointer;
   bool clippingOccurred = false;
+  float peakReal = -1.0e6;
+  float peakImag = -1.0e6;
 
   void _dump_sample_to_file(const cmplx & v);
   void _wait_for_sample_buffer_filled(int32_t n);

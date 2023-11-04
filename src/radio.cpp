@@ -565,7 +565,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   configWidget.deviceSelector->addItem("file input(.raw)");
   configWidget.deviceSelector->addItem("file input(.iq)");
   configWidget.deviceSelector->addItem("file input(.sdr)");
-  configWidget.deviceSelector->addItem("xml files");
+  configWidget.deviceSelector->addItem("file input(.xml)");
 #ifdef  HAVE_SDRPLAY_V3
   configWidget.deviceSelector->addItem("sdrplay");
 #endif
@@ -1767,7 +1767,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
 	}
 	else
 #endif
-  if (s == "xml files")
+  if (s == "file input(.xml)")
   {
     file = QFileDialog::getOpenFileName(this, tr("Open file ..."), QDir::homePath(), tr("xml data (*.*)"));
     if (file == QString(""))
@@ -2301,13 +2301,13 @@ void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData 
   }
 }
 
-void RadioInterface::slot_show_overdriven_flag(bool iOverdriven)
+void RadioInterface::slot_show_overdriven_flag(bool iOverdriven, float iLevel)
 {
   if (!running.load())
   {
     return;
   }
-
+  my_spectrumViewer.show_digital_level(20.0f * std::log10(iLevel));
   my_spectrumViewer.show_overdriven_flag(iOverdriven);
 }
 

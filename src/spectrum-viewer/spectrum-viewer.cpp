@@ -83,6 +83,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
 
   show_overdriven_flag(false);
+  show_digital_level(-100.0f);
 
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
@@ -374,12 +375,17 @@ void SpectrumViewer::show_overdriven_flag(bool iOverdriven)
 {
   if (iOverdriven)
   {
-    lblOverdriven->setText("<b>Input Signal Overdriven</b>");
+    lblOverdriven->setText("<b>Overdriven</b>");
     lblOverdriven->setStyleSheet("background-color: red; color: white;");
   }
   else
   {
-    lblOverdriven->setText("Input Signal NOT Overdriven");
+    lblOverdriven->setText("Overdriven");
     lblOverdriven->setStyleSheet("background-color: #444444; color: black;");
   }
+}
+
+void SpectrumViewer::show_digital_level(float iDigLevel)
+{
+  thermoDigLevel->setValue(iDigLevel);
 }

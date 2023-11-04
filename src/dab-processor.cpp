@@ -251,18 +251,13 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     emit signal_show_clock_err(clockErrPPM);
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
-    if (mSampleReader.check_clipped_and_clear() && !mInputOverdrivenShown) // call to wasClipped clears the overdriven flag!
-    {
-      emit signal_overdriven(true);
-      qCritical("Input overdriven!");
-      mInputOverdrivenShown = true;
-    }
-    else if (mInputOverdrivenShown)
-    {
-      emit signal_overdriven(false);
-      qInfo("Input not overdriven!");
-      mInputOverdrivenShown = false;
-    }
+
+    float peakReal;
+    float peakImag;
+    mSampleReader.get_peak_level_and_clear(peakReal, peakImag);
+    const float peakLevel = std::max(peakReal, peakImag);
+
+    emit signal_overdriven(peakLevel > 0.95f, peakLevel);
   }
 }
 

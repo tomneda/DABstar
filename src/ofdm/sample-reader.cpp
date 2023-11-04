@@ -100,7 +100,7 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
   {
     for (int32_t i = 0; i < iNoSamples; i++)
     {
-      _dump_sample_to_file(oV[i]);
+      _dump_sample_to_file(*buffer.data());
     }
   }
 
@@ -122,10 +122,14 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
 
     // The clipping detection should be done before mixing, as I and Q should be evaluated as separated ADC inputs.
     // The mixing has no effect on the absolute level detection.
-    const float abs_lev = fast_abs_with_clip_det(buffer[i], clippingOccurred, 0.95f);
-    mean_filter(sLevel, abs_lev, 0.00001f);
+    const cmplx v = buffer[i];
+    const float var = std::abs(real(v));
+    const float vai = std::abs(imag(v));
+    if (var > peakReal) peakReal = var;
+    if (vai > peakImag) peakImag = vai;
 
-    oV[iStartIdx + i] = buffer[i] * oscillatorTable[currentPhase];
+    oV[iStartIdx + i] = v * oscillatorTable[currentPhase];
+    mean_filter(sLevel, fast_abs(v), 0.00001f);
   }
 
   sampleCount += iNoSamples;
@@ -155,8 +159,8 @@ void SampleReader::_wait_for_sample_buffer_filled(int32_t n)
 
 void SampleReader::_dump_sample_to_file(const cmplx & v)
 {
-  dumpBuffer[2 * dumpIndex + 0] = fixround<int16_t>(real(v) * dumpScale);
-  dumpBuffer[2 * dumpIndex + 1] = fixround<int16_t>(imag(v) * dumpScale);
+  dumpBuffer[2 * dumpIndex + 0] = fixround<int16_t>(real(v) * (float)dumpScale);
+  dumpBuffer[2 * dumpIndex + 1] = fixround<int16_t>(imag(v) * (float)dumpScale);
 
   if (++dumpIndex >= DUMPSIZE / 2)
   {
@@ -173,5 +177,19 @@ void SampleReader::startDumping(SNDFILE * f)
 void SampleReader::stopDumping()
 {
   dumpfilePointer.store(nullptr);
+}
+
+bool SampleReader::check_clipped_and_clear()
+{
+  bool z = clippingOccurred;
+  clippingOccurred = false;
+  return z;
+}
+
+void SampleReader::get_peak_level_and_clear(float & oPeakReal, float & oPeakImag)
+{
+  oPeakReal = peakReal;
+  oPeakImag = peakImag;
+  peakReal = peakImag = -1.0e6;
 }
 
