@@ -45,7 +45,7 @@
 
 #define CHECK_ERR_RETURN(x_)              if (!check_err(x_, __FUNCTION__, __LINE__)) return
 #define CHECK_ERR_RETURN_FALSE(x_)        if (!check_err(x_, __FUNCTION__, __LINE__)) return false
-#define LOAD_METHOD_RETURN_FALSE(m_, n_)  if (!load_method(m_, n_, __LINE__)) return false;
+#define LOAD_METHOD_RETURN_FALSE(m_, n_)  if (!load_method(m_, n_, __LINE__)) return false
 
 constexpr int32_t DEFAULT_LNA_GAIN = 16;
 constexpr int32_t DEFAULT_VGA_GAIN = 30;
@@ -67,7 +67,7 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
 #ifdef  __MINGW32__
   const char *libraryString = "libhackrf.dll";
 #elif __linux__
-  const char * libraryString = "libhackrf.so.0";
+  const char * libraryString = "libhackrf.so";
 #elif __APPLE__
   const char *libraryString = "libhackrf.dylib";
 #endif
@@ -110,13 +110,6 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   check_err_throw(mHackrf.set_baseband_filter_bandwidth(theDevice, 1750000)); // the filter must be set after the sample rate to be not overwritten
   check_err_throw(mHackrf.set_freq(theDevice, 220000000));
 
-  {
-    uint8_t revNo = 0;
-    check_err_throw(mHackrf.board_rev_read(theDevice, &revNo));
-    mRevNo = (hackrf_board_rev)revNo;
-    lblBoardRev->setText(mHackrf.board_rev_name(mRevNo));
-  }
-
   slot_set_lna_gain(sliderLnaGain->value());
   slot_set_vga_gain(sliderVgaGain->value());
   slot_enable_bias_t(1); // value is a dummy
@@ -125,11 +118,23 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   if (hackrf_device_list_t const * deviceList = mHackrf.device_list();
       deviceList != nullptr)
   {
+    std::stringstream swInfo;
+    swInfo << "Ver:" << mHackrf.library_version() << ", " << "Rel: " << mHackrf.library_release();
+    lblSwInfo->setText(swInfo.str().c_str());
+
     char const * pSerial = deviceList->serial_numbers[0];
     while (*pSerial == '0') ++pSerial; // remove leading '0'
-    lblSerialNum->setText(pSerial);
+
+    uint8_t revNo = 0;
+    check_err_throw(mHackrf.board_rev_read(theDevice, &revNo));
+    mRevNo = (hackrf_board_rev)revNo;
+
+    std::stringstream devInfo;
+    devInfo << "SN: " << pSerial << ", Rev: " << mHackrf.board_rev_name(mRevNo);
+    lblDeviceInfo->setText(devInfo.str().c_str());
+
     enum hackrf_usb_board_id board_id = deviceList->usb_board_ids[0];
-    usb_board_id_display->setText(mHackrf.usb_board_id_name(board_id));
+    lblDeviceName->setText(mHackrf.usb_board_id_name(board_id));
   }
 
   //	and be prepared for future changes in the settings
@@ -365,6 +370,9 @@ bool HackRfHandler::load_hackrf_functions()
   LOAD_METHOD_RETURN_FALSE(mHackrf.si5351c_write, "hackrf_si5351c_write");
   LOAD_METHOD_RETURN_FALSE(mHackrf.board_rev_read, "hackrf_board_rev_read");
   LOAD_METHOD_RETURN_FALSE(mHackrf.board_rev_name, "hackrf_board_rev_name");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.version_string_read, "hackrf_version_string_read");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.library_release, "hackrf_library_release");
+  LOAD_METHOD_RETURN_FALSE(mHackrf.library_version, "hackrf_library_version");
 
   fprintf(stdout, "HackRf functions loaded\n");
   return true;

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>210</width>
-    <height>323</height>
+    <height>318</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,9 +17,9 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLabel" name="usb_board_id_display">
+      <widget class="QLabel" name="lblDeviceName">
        <property name="text">
-        <string>Device</string>
+        <string>DeviceName</string>
        </property>
       </widget>
      </item>
@@ -33,19 +33,14 @@
      <item>
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Serial Number:</string>
+        <string>SW Info:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lblSerialNum">
-       <property name="font">
-        <font>
-         <pointsize>11</pointsize>
-        </font>
-       </property>
+      <widget class="QLabel" name="lblSwInfo">
        <property name="text">
-        <string>sn</string>
+        <string>SwInfo</string>
        </property>
       </widget>
      </item>
@@ -59,14 +54,14 @@
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Board Revision:</string>
+        <string>Device Info:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lblBoardRev">
+      <widget class="QLabel" name="lblDeviceInfo">
        <property name="text">
-        <string>br</string>
+        <string>DeviceInfo</string>
        </property>
       </widget>
      </item>

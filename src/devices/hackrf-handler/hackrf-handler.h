@@ -80,6 +80,10 @@ using pfn_hackrf_si5351c_read = int (*)(hackrf_device *, const uint16_t, uint16_
 using pfn_hackrf_si5351c_write = int (*)(hackrf_device *, const uint16_t, const uint16_t);
 using pfn_hackrf_board_rev_read = int (*)(hackrf_device* device, uint8_t* value);
 using pfn_hackrf_board_rev_name = const char* (*)(enum hackrf_board_rev board_rev);
+using pfn_version_string_read = int (*)(hackrf_device *, const char *, uint8_t);
+using pfn_hackrf_library_version = const char* (*)();
+using pfn_hackrf_library_release = const char* (*)();
+
 
 
 
@@ -138,7 +142,9 @@ private:
     pfn_hackrf_si5351c_write si5351c_write;
     pfn_hackrf_board_rev_read board_rev_read;
     pfn_hackrf_board_rev_name board_rev_name;
-
+    pfn_version_string_read version_string_read;
+    pfn_hackrf_library_version library_version;
+    pfn_hackrf_library_release library_release;
   };
 
   hackrf_device * theDevice = nullptr;
