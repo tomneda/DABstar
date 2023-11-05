@@ -63,7 +63,7 @@ DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inpu
   connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
   connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &RadioInterface::slot_set_and_show_freq_corr_rf_Hz);
   connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_bb_Hz);
-  connect(this, &DabProcessor::signal_overdriven, mpRadioInterface, &RadioInterface::slot_show_overdriven_flag);
+  connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &RadioInterface::slot_show_peak_level);
 
   mOfdmBuffer.resize(2 * mDabPar.T_s);
   mBits.resize(2 * mDabPar.K);
@@ -252,12 +252,8 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
 
-    float peakReal;
-    float peakImag;
-    mSampleReader.get_peak_level_and_clear(peakReal, peakImag);
-    const float peakLevel = std::max(peakReal, peakImag);
-
-    emit signal_overdriven(peakLevel > 0.95f, peakLevel);
+    const float peakLevel = mSampleReader.get_linear_peak_level_and_clear();
+    emit signal_linear_peak_level(peakLevel);
   }
 }
 

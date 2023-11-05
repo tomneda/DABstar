@@ -2301,14 +2301,14 @@ void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData 
   }
 }
 
-void RadioInterface::slot_show_overdriven_flag(bool iOverdriven, float iLevel)
+void RadioInterface::slot_show_peak_level(float iPeakLevel)
 {
   if (!running.load())
   {
     return;
   }
-  my_spectrumViewer.show_digital_level(20.0f * std::log10(iLevel));
-  my_spectrumViewer.show_overdriven_flag(iOverdriven);
+
+  my_spectrumViewer.show_digital_peak_level(iPeakLevel);
 }
 
 //	called from the MP4 decoder

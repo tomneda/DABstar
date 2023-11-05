@@ -165,7 +165,7 @@ signals:
   void signal_show_clock_err(float);
   void signal_set_and_show_freq_corr_rf_Hz(int);
   void signal_show_freq_corr_bb_Hz(int);
-  void signal_overdriven(bool, float);
+  void signal_linear_peak_level(float);
 };
 
 #endif

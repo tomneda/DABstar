@@ -353,7 +353,7 @@ public slots:
   void slot_show_spectrum(int);
   void slot_show_iq(int, float);
   void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);
-  void slot_show_overdriven_flag(bool iOverdriven, float iLevel);
+  void slot_show_peak_level(float iPeakLevel);
   void slot_show_rs_corrections(int, int);
   void slot_show_tii(int, int);
   void slot_clock_time(int, int, int, int, int, int, int, int, int);

@@ -120,16 +120,13 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
       ++localCounter;
     }
 
-    // The clipping detection should be done before mixing, as I and Q should be evaluated as separated ADC inputs.
-    // The mixing has no effect on the absolute level detection.
+    // The mixing has no effect on the absolute level detection, so do it beforehand.
     const cmplx v = buffer[i];
-    const float var = std::abs(real(v));
-    const float vai = std::abs(imag(v));
-    if (var > peakReal) peakReal = var;
-    if (vai > peakImag) peakImag = vai;
+    const float v_abs = std::abs(v);
+    if (v_abs > peakLevel) peakLevel = v_abs;
 
     oV[iStartIdx + i] = v * oscillatorTable[currentPhase];
-    mean_filter(sLevel, fast_abs(v), 0.00001f);
+    mean_filter(sLevel, v_abs, 0.00001f);
   }
 
   sampleCount += iNoSamples;
@@ -186,10 +183,10 @@ bool SampleReader::check_clipped_and_clear()
   return z;
 }
 
-void SampleReader::get_peak_level_and_clear(float & oPeakReal, float & oPeakImag)
+float SampleReader::get_linear_peak_level_and_clear()
 {
-  oPeakReal = peakReal;
-  oPeakImag = peakImag;
-  peakReal = peakImag = -1.0e6;
+  const float peakLevelTemp  = peakLevel;
+  peakLevel = -1.0e6;
+  return peakLevelTemp;
 }
 

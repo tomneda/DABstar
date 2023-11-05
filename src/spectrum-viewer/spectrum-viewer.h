@@ -92,8 +92,7 @@ public:
   void show();
   void hide();
   bool is_hidden();
-  void show_overdriven_flag(bool);
-  void show_digital_level(float);
+  void show_digital_peak_level(float);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "spectrumViewer";
@@ -107,6 +106,8 @@ private:
   RingBuffer<float> * const mpCorrelationBuffer;
   std::vector<cmplx> mIqValuesVec;
   std::vector<float> mCarrValuesVec;
+  bool mOverdrivenShown = true;
+  uint32_t mPeakLevelConfigured = 0;
 
   fftHandler fft{ SP_SPECTRUMSIZE, false };
 
@@ -127,6 +128,7 @@ private:
   CorrelationViewer * mpCorrelationViewer = nullptr;
 
   void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);
+  void _show_overdriven_flag(bool);
 
 public slots:
   void slot_update_settings();

@@ -82,8 +82,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   _load_save_combobox_settings(cmbIqScope, "iqPlot", false);
   _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
 
-  show_overdriven_flag(false);
-  show_digital_level(-100.0f);
+  //show_digital_peak_level(0.0f);
 
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
@@ -371,21 +370,40 @@ void SpectrumViewer::slot_update_settings()
   emit _slot_handle_cmb_iqscope(cmbIqScope->currentIndex());
 }
 
-void SpectrumViewer::show_overdriven_flag(bool iOverdriven)
+void SpectrumViewer::_show_overdriven_flag(bool iOverdriven)
 {
-  if (iOverdriven)
+  if (mOverdrivenShown != iOverdriven)
   {
-    lblOverdriven->setText("<b>Overdriven</b>");
-    lblOverdriven->setStyleSheet("background-color: red; color: white;");
-  }
-  else
-  {
-    lblOverdriven->setText("Overdriven");
-    lblOverdriven->setStyleSheet("background-color: #444444; color: black;");
+    if (iOverdriven)
+    {
+      lblOverdriven->setText("<b>Overdriven</b>");
+      lblOverdriven->setStyleSheet("background-color: red; color: white;");
+    }
+    else
+    {
+      lblOverdriven->setText("Overdriven");
+      lblOverdriven->setStyleSheet("background-color: #444444; color: black;");
+    }
+    mOverdrivenShown = iOverdriven;
   }
 }
 
-void SpectrumViewer::show_digital_level(float iDigLevel)
+void SpectrumViewer::show_digital_peak_level(float iDigLevel)
 {
-  thermoDigLevel->setValue(iDigLevel);
+  assert(iDigLevel >= 0.0f); // exact 0.0 is considered below.
+
+  /* Very strange thing: the configuration of the ThermoWidget colors has to be done in the calling thread.
+   * As this routine is also called one time in the instance creation thread, the counter must at least count two times.
+   */
+  if (mPeakLevelConfigured < 2)
+  {
+    thermoDigLevel->setFillBrush(QBrush(QColor(Qt::darkCyan)));
+    thermoDigLevel->setAlarmBrush(QBrush(QColor(Qt::red)));
+    ++mPeakLevelConfigured;
+  }
+
+  const float valuedB = 20.0f * std::log10(iDigLevel + 0.00001f);
+
+  _show_overdriven_flag(valuedB > 0.0f);
+  thermoDigLevel->setValue(valuedB);
 }
