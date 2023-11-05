@@ -389,6 +389,8 @@ void SpectrumViewer::show_digital_peak_level(float iDigLevel)
   {
     thermoDigLevel->setFillBrush(QBrush(QColor(Qt::darkCyan)));
     thermoDigLevel->setAlarmBrush(QBrush(QColor(Qt::red)));
+    _show_overdriven_flag(true);
+    _show_overdriven_flag(false);
     ++mPeakLevelConfigured;
   }
 

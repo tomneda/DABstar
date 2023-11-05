@@ -605,6 +605,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="5,1">
          <item>
           <widget class="QwtThermo" name="thermoDigLevel">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Peal Level&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the maximum vector length of the input signal within 10 frames (about 1 second). Check the input level with the device widget not to exceed the 0dB mark.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="lowerBound">
             <double>-24.000000000000000</double>
            </property>
@@ -641,6 +644,9 @@
              <width>16777215</width>
              <height>40</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Overdriven Detector&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If the input level exceeds the 0dB mark of the Peak Level Meter on the left. This additionally lights up in red.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::Panel</enum>
