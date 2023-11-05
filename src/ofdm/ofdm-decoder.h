@@ -101,6 +101,7 @@ private:
   float mMeanPowerOvrAll = 1.0f;
   float mAvgAbsNullLevelMin = 0.0f;
   float mAvgAbsNullLevelGain = 0.0f;
+  cmplx mDcAvg{ 0.0f, 0.0f };
 
   // mQD has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter

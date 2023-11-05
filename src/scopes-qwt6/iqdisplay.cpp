@@ -161,9 +161,9 @@ IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
 
   switch (iPlotType)
   {
-  case EIqPlotType::RAW_MEAN_NORMED:
-    cp.ToolTip = "Shows the real (no phase corrected) PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels.";
-    cp.Name = "Real Mean";
+  case EIqPlotType::PHASE_CORR_CARR_NORMED:
+    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier level.";
+    cp.Name = "Phase Corr. Carr.";
     break;
 
   case EIqPlotType::PHASE_CORR_MEAN_NORMED:
@@ -171,9 +171,14 @@ IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
     cp.Name = "Phase Corr. Mean";
     break;
 
-  case EIqPlotType::PHASE_CORR_CARR_NORMED:
-    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier level.";
-    cp.Name = "Phase Corr. Carr.";
+  case EIqPlotType::RAW_MEAN_NORMED:
+    cp.ToolTip = "Shows the real (no phase corrected) PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels.";
+    cp.Name = "Real Mean";
+    break;
+
+  case EIqPlotType::DC_OFFSET:
+    cp.ToolTip = "Shows the DC offset (Bin 0 of OFDM-FFT) of the input signal. See the effect of 'DC removal filter'. The value is 100 times magnified.";
+    cp.Name = "DC Offset";
     break;
   }
   return cp;
@@ -187,6 +192,7 @@ QStringList IQDisplay::get_plot_type_names()
   sl << _get_plot_type_data(EIqPlotType::PHASE_CORR_CARR_NORMED).Name;
   sl << _get_plot_type_data(EIqPlotType::PHASE_CORR_MEAN_NORMED).Name;
   sl << _get_plot_type_data(EIqPlotType::RAW_MEAN_NORMED).Name;
+  sl << _get_plot_type_data(EIqPlotType::DC_OFFSET).Name;
 
   return sl;
 }

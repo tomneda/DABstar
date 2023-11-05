@@ -127,6 +127,11 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
   mFftHandler.fft(mFftBuffer);
 
+  if (mIqPlotType == EIqPlotType::DC_OFFSET)
+  {
+    mean_filter(mDcAvg, mFftBuffer[0], 0.001f);
+  }
+
   //const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
 
   ++mShowCntIqScope;
@@ -236,6 +241,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
       case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(meanPowerPerBinRef); break;
       case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(mMeanPowerOvrAll); break;
       case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / sqrt(mMeanPowerOvrAll); break;
+      case EIqPlotType::DC_OFFSET:              mIqVector[nomCarrIdx] = mDcAvg * 100.0f / (float)mDabPar.T_u; break;
       }
 
       switch (mCarrierPlotType)
