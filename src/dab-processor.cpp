@@ -641,7 +641,13 @@ void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
   mAllowRfFreqShift = iUseDcAvoidanceAlgorithm;
 }
 
+void DabProcessor::set_dc_removal(bool iRemoveDC)
+{
+  mSampleReader.set_dc_removal(iRemoveDC);
+}
+
 void DabProcessor::add_bb_freq(int32_t iFreqOffHz)
 {
   mFreqOffsBBAddedHz = iFreqOffHz;
 }
+

@@ -63,6 +63,7 @@ public:
   void startDumping(SNDFILE *);
   void stopDumping();
   bool check_clipped_and_clear();
+  void set_dc_removal(bool iRemoveDC);
 
 private:
   static constexpr uint16_t DUMPSIZE = 4096;
@@ -88,6 +89,9 @@ private:
   std::atomic<SNDFILE *> dumpfilePointer;
   bool clippingOccurred = false;
   float peakLevel = -1.0e6;
+  float dcReal = 0.0f;
+  float dcImag = 0.0f;
+  bool dcRemovalActive = false;
 
   void _dump_sample_to_file(const cmplx & v);
   void _wait_for_sample_buffer_filled(int32_t n);

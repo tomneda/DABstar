@@ -781,6 +781,13 @@ bool RadioInterface::doStart()
     connect(configWidget.cbDcAvoidance, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_avoidance_algorithm);
   }
 
+  {
+    const bool b = (dabSettings->value("dcRemoval", 0).toInt() == 1);
+    configWidget.cbDcRemovalFilter->setChecked(b);
+    my_dabProcessor->set_dc_removal(b);
+    connect(configWidget.cbDcRemovalFilter, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_removal);
+  }
+
   emit signal_dab_processor_started();
 
   //	after the preset timer signals, the service will be started
@@ -4037,6 +4044,13 @@ void RadioInterface::_slot_handle_dc_avoidance_algorithm(bool iIsChecked)
   assert(my_dabProcessor != nullptr);
   dabSettings->setValue("dcAvoidance", (iIsChecked ? 1 : 0)); // write settings before action as file operation can influence sample activities
   my_dabProcessor->set_dc_avoidance_algorithm(iIsChecked);
+}
+
+void RadioInterface::_slot_handle_dc_removal(bool iIsChecked)
+{
+  assert(my_dabProcessor != nullptr);
+  dabSettings->setValue("dcRemoval", (iIsChecked ? 1 : 0)); // write settings before action as file operation can influence sample activities
+  my_dabProcessor->set_dc_removal(iIsChecked);
 }
 
 void RadioInterface::_slot_handle_dl_text_button()

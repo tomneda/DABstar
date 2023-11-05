@@ -121,12 +121,23 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
     }
 
     // The mixing has no effect on the absolute level detection, so do it beforehand.
-    const cmplx v = buffer[i];
+    cmplx v = buffer[i];
+
+    if (dcRemovalActive)
+    {
+      const float v_r = real(v);
+      const float v_i = imag(v);
+      constexpr float ALPHA = 1.0f / INPUT_RATE / 1.00f /*s*/;
+      mean_filter(dcReal, v_r, ALPHA);
+      mean_filter(dcImag, v_i, ALPHA);
+      v = cmplx(v_r - dcReal, v_i - dcImag);
+    }
+
     const float v_abs = std::abs(v);
     if (v_abs > peakLevel) peakLevel = v_abs;
+    mean_filter(sLevel, v_abs, 0.00001f);
 
     oV[iStartIdx + i] = v * oscillatorTable[currentPhase];
-    mean_filter(sLevel, v_abs, 0.00001f);
   }
 
   sampleCount += iNoSamples;
@@ -188,5 +199,10 @@ float SampleReader::get_linear_peak_level_and_clear()
   const float peakLevelTemp  = peakLevel;
   peakLevel = -1.0e6;
   return peakLevelTemp;
+}
+
+void SampleReader::set_dc_removal(bool iRemoveDC)
+{
+  dcRemovalActive = iRemoveDC;
 }
 

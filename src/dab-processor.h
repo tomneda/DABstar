@@ -105,6 +105,7 @@ public:
   bool set_dataChannel(Packetdata *, RingBuffer<uint8_t> *, int);
   void set_tiiDetectorMode(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
+  void set_dc_removal(bool iRemoveDC);
 
 private:
   RadioInterface * const mpRadioInterface;
