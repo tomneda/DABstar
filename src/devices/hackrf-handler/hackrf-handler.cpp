@@ -119,7 +119,7 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
       deviceList != nullptr)
   {
     std::stringstream swInfo;
-    swInfo << "Ver:" << mHackrf.library_version() << ", " << "Rel: " << mHackrf.library_release();
+    swInfo << "Ver: " << mHackrf.library_version() << ", " << "Rel: " << mHackrf.library_release();
     lblSwInfo->setText(swInfo.str().c_str());
 
     char const * pSerial = deviceList->serial_numbers[0];

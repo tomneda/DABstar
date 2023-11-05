@@ -170,12 +170,6 @@ template<typename T> inline void mean_filter(T & ioVal, const T iVal, const T iA
   ioVal += iAlpha * (iVal - ioVal);
 }
 
-inline void mean_filter(cmplx & ioVal, const cmplx & iVal, const float iAlpha)
-{
-  ioVal.real(real(ioVal) + iAlpha * (real(iVal) - real(ioVal)));
-  ioVal.imag(imag(ioVal) + iAlpha * (imag(iVal) - imag(ioVal)));
-}
-
 template<typename T> inline void create_blackman_window(T * opVal, int32_t iWindowWidth)
 {
 #if 0 // The exact(er) version place zeros at the 3rd and 4th side-lobes but result in a discontinuity at the edges and a 6 dB/oct fall-off

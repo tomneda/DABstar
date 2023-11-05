@@ -317,6 +317,7 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
       freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - mDabPar.T_u]); // eval phase shift in cyclic prefix part
     }
 
+    mOfdmDecoder.set_dc_offset(mSampleReader.get_dc_offset());
     mOfdmDecoder.decode_symbol(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffsetCyclPrefRad, mBits);
 
     if (ofdmSymbCntIdx <= 3)

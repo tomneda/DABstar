@@ -71,6 +71,8 @@ public:
   void set_soft_bit_gen_type(ESoftBitType iSoftBitType);
   void set_show_nominal_carrier(bool iShowNominalCarrier);
 
+  inline void set_dc_offset(cmplx iDcOffset) { mDcAdc = iDcOffset; };
+
 private:
   RadioInterface * const mpRadioInterface;
   const DabParams::SDabPar mDabPar;
@@ -101,7 +103,7 @@ private:
   float mMeanPowerOvrAll = 1.0f;
   float mAvgAbsNullLevelMin = 0.0f;
   float mAvgAbsNullLevelGain = 0.0f;
-  cmplx mDcAvg{ 0.0f, 0.0f };
+  cmplx mDcAdc{ 0.0f, 0.0f };
 
   // mQD has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
@@ -114,6 +116,8 @@ private:
   [[nodiscard]] float _compute_noise_Power() const;
   void _eval_null_symbol_statistics();
   void _reset_null_symbol_statistics();
+
+  static cmplx _interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar);
 
 signals:
   void signal_slot_show_iq(int, float);

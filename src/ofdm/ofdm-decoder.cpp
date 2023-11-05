@@ -127,11 +127,6 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
   mFftHandler.fft(mFftBuffer);
 
-  if (mIqPlotType == EIqPlotType::DC_OFFSET)
-  {
-    mean_filter(mDcAvg, mFftBuffer[0], 0.001f);
-  }
-
   //const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
 
   ++mShowCntIqScope;
@@ -241,7 +236,10 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
       case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(meanPowerPerBinRef); break;
       case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(mMeanPowerOvrAll); break;
       case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / sqrt(mMeanPowerOvrAll); break;
-      case EIqPlotType::DC_OFFSET:              mIqVector[nomCarrIdx] = mDcAvg * 100.0f / (float)mDabPar.T_u; break;
+      case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =   10.0f / (float)mDabPar.T_u * _interpolate_2d_plane(mPhaseReference[0], mFftBuffer[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
+      case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] =  100.0f / (float)mDabPar.T_u * _interpolate_2d_plane(mPhaseReference[0], mFftBuffer[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
+      case EIqPlotType::DC_OFFSET_ADC_10:       mIqVector[nomCarrIdx] =  10.0f * mDcAdc; break;
+      case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;
       }
 
       switch (mCarrierPlotType)
@@ -439,4 +437,16 @@ void OfdmDecoder::set_soft_bit_gen_type(ESoftBitType iSoftBitType)
 void OfdmDecoder::set_show_nominal_carrier(bool iShowNominalCarrier)
 {
   mShowNomCarrier = iShowNominalCarrier;
+}
+
+cmplx OfdmDecoder::_interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar)
+{
+  assert(iPar >= 0.0f && iPar <= 1.0f);
+  const float a_r = real(iStart);
+  const float a_i = imag(iStart);
+  const float b_r = real(iEnd);
+  const float b_i = imag(iEnd);
+  const float c_r = (b_r - a_r) * iPar + a_r;
+  const float c_i = (b_i - a_i) * iPar + a_i;
+  return { c_r, c_i };
 }

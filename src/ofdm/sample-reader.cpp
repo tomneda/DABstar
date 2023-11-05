@@ -203,6 +203,7 @@ float SampleReader::get_linear_peak_level_and_clear()
 
 void SampleReader::set_dc_removal(bool iRemoveDC)
 {
+  dcReal = dcImag = 0.0f;
   dcRemovalActive = iRemoveDC;
 }
 

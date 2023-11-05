@@ -65,6 +65,8 @@ public:
   bool check_clipped_and_clear();
   void set_dc_removal(bool iRemoveDC);
 
+  inline cmplx get_dc_offset() const { return { dcReal, dcImag }; }
+
 private:
   static constexpr uint16_t DUMPSIZE = 4096;
 
