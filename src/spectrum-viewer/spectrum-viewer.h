@@ -72,7 +72,7 @@ class CorrelationViewer;
 class SpectrumScope;
 class WaterfallScope;
 
-class SpectrumViewer : public QObject, Ui_scopeWidget
+class SpectrumViewer : public QObject, private Ui_scopeWidget
 {
 Q_OBJECT
 public:
@@ -86,7 +86,6 @@ public:
   void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
   void show_iq(int32_t, float);
   void show_quality(int32_t, float, float, float, float, float);
-  void show_snr(float);
   void show_clock_error(float e);
   void set_bit_depth(int16_t);
   void show();

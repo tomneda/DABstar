@@ -38,7 +38,6 @@
 #include  "iqdisplay.h"
 #include  <QColor>
 #include  <QPen>
-#include  "color-selector.h"
 
 
 SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
@@ -135,7 +134,7 @@ void SpectrumViewer::show_spectrum(int32_t amount, int32_t vfoFrequency)
     constexpr double temp = (double)INPUT_RATE / 2 / SP_DISPLAYSIZE;
     for (int32_t i = 0; i < SP_DISPLAYSIZE; i++)
     {
-      mXAxisVec[i] = ((double)vfoFrequency - (double)(int32_t)(INPUT_RATE / 2) + (double)((i) * (double)2 * temp)) / 1000.0;
+      mXAxisVec[i] = ((double)vfoFrequency - (double)(INPUT_RATE / 2) + (i * 2.0 * temp)) / 1000.0;
     }
   }
 
@@ -272,15 +271,6 @@ void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iStdDev, float iTim
   frequencyOffsetDisplay->display(QString("%1").arg(iFreqOffset, 0, 'f', 2));
   dispPhaseCorr->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
   snrDisplay->display(QString("%1").arg(iSNR, 0, 'f', 2));
-}
-
-void SpectrumViewer::show_snr(float iSnr)
-{
-  if (myFrame.isHidden())
-  {
-    return;
-  }
-  snrDisplay->display(QString("%1").arg(iSnr, 0, 'f', 2));
 }
 
 void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
