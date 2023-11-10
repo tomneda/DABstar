@@ -53,7 +53,7 @@ public:
   struct SQualityData
   {
     int32_t CurOfdmSymbolNo;
-    float StdDeviation;
+    float ModQuality;
     float TimeOffset;
     float FreqOffset;
     float PhaseCorr;
@@ -100,9 +100,10 @@ private:
   std::vector<float> mMeanPowerVector;
   std::vector<float> mMeanNullLevel;
   std::vector<float> mMeanNullPowerWithoutTII;
+  float mMeanStdDevSqPhase = 0.0f;
   float mMeanPowerOvrAll = 1.0f;
-  float mAvgAbsNullLevelMin = 0.0f;
-  float mAvgAbsNullLevelGain = 0.0f;
+  float mAbsNullLevelMin = 0.0f;
+  float mAbsNullLevelGain = 0.0f;
   cmplx mDcAdc{ 0.0f, 0.0f };
 
   // mQD has always be visible due to address access in another thread.

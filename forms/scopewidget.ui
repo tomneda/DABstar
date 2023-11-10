@@ -246,7 +246,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLCDNumber" name="dispNomFrequency">
+          <widget class="QLCDNumber" name="lcdNomFrequency">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The nominal absolute receiving frequency,&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -272,7 +272,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLCDNumber" name="dispFreqCorrRF">
+          <widget class="QLCDNumber" name="lcdFreqCorrRF">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Frequency correction which is done (tried) with the RF synthesizer in the SDR device.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select &amp;quot;Use DC avoidance algorithm&amp;quot; to see an effect here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -298,7 +298,7 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QLCDNumber" name="dispFreqCorrBB">
+          <widget class="QLCDNumber" name="lcdFreqCorrBB">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Frequency correction which is done in the baseband.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -324,7 +324,7 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QLCDNumber" name="dispPhaseCorr">
+          <widget class="QLCDNumber" name="lcdPhaseCorr">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The remaining phase error in degree after doing the frequency correction.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This error is removed in the OFDM decoder for each OFDM-bin individually.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -360,7 +360,7 @@
           </widget>
          </item>
          <item row="7" column="1">
-          <widget class="QLCDNumber" name="ofdmSymbNo">
+          <widget class="QLCDNumber" name="lcdOfdmSymbNo">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Current OFDM symbol where the elements below are calculated.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(except Clock Offset)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -386,7 +386,7 @@
           </widget>
          </item>
          <item row="8" column="1">
-          <widget class="QLCDNumber" name="snrDisplay">
+          <widget class="QLCDNumber" name="lcdSnr">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Averaged Signal Noise Ratio in the OFDM symbol.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -412,7 +412,7 @@
           </widget>
          </item>
          <item row="9" column="1">
-          <widget class="QLCDNumber" name="frequencyOffsetDisplay">
+          <widget class="QLCDNumber" name="lcdFreqOffset">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Frequeny Offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The frequency error after applying the estimated frequency correction. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -438,7 +438,7 @@
           </widget>
          </item>
          <item row="10" column="1">
-          <widget class="QLCDNumber" name="timeOffsetDisplay">
+          <widget class="QLCDNumber" name="lcdTimeOffset">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Sample Clock Offset. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -459,14 +459,14 @@
          <item row="12" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>Std. Deviation</string>
+            <string>Mod. Quality [%]</string>
            </property>
           </widget>
          </item>
          <item row="12" column="1">
-          <widget class="QLCDNumber" name="quality_display">
+          <widget class="QLCDNumber" name="lcdModQuality">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged Standard Deviation of the phase offset of the full OFDM symbol. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;A high value indicates a high noise and so a worse signal quality.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged modulation quality in percent. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the most little standard deviation of the phase noise.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -574,7 +574,7 @@
           </widget>
          </item>
          <item row="5" column="1">
-          <widget class="QLCDNumber" name="clockError">
+          <widget class="QLCDNumber" name="lcdClockError">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Clock Offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The offset in Hz from the nominal sample rate of 2'048'000 Hz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -606,7 +606,7 @@
          <item>
           <widget class="QwtThermo" name="thermoDigLevel">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Peal Level&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the maximum vector length of the input signal within 10 frames (about 1 second). Check the input level with the device widget not to exceed the 0dB mark.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Peal Level&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the maximum vector length of the input signal within 10 frames (about 1 second). &lt;/p&gt;&lt;p&gt;In digital systems it is generell recommended to keep the scale (slightly) below 0dB but as we here have a pure phase modulation the signal detection could still get better even if (some) input samples got overdriven to raise the EVM of the low gain samples.&lt;/p&gt;&lt;p&gt;Better is to maximize the Modulation Quality with the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound">
             <double>-24.000000000000000</double>

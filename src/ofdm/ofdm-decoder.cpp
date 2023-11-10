@@ -71,6 +71,7 @@ void OfdmDecoder::reset()
   std::fill(mMeanPowerVector.begin(), mMeanPowerVector.end(), 0.0f);
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
 
+  mMeanStdDevSqPhase = 0.0f;
   mMeanPowerOvrAll = 1.0f;
 
   _reset_null_symbol_statistics();
@@ -178,6 +179,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     const float curStdDevSq = curStdDevDiff * curStdDevDiff;
     float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
+    mean_filter(mMeanStdDevSqPhase, curStdDevSq, ALPHA / mDabPar.K);
 
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
     // Simplification: The IQ plot would need only the level, not power, so the root of the power is used (below)..
@@ -203,8 +205,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
      */
     switch (mSoftBitType)
     {
-    case ESoftBitType::FAST:      weight = 127.0f * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4; break;
     case ESoftBitType::AVER:      weight = 127.0f * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4; break;
+    case ESoftBitType::FAST:      weight = 127.0f * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4; break;
     case ESoftBitType::FIX_LOW:   weight = 2; break;
     case ESoftBitType::FIX_MED:   weight = 63; break;
     case ESoftBitType::FIX_HIGH:  weight = 127; break;
@@ -251,7 +253,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
       case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
       case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
       case ECarrierPlotType::NULL_TII:
-      case ECarrierPlotType::NULL_NO_TII:     mCarrVector[dataVecCarrIdx] = mAvgAbsNullLevelGain * (mMeanNullLevel[fftIdx] - mAvgAbsNullLevelMin); break;
+      case ECarrierPlotType::NULL_NO_TII:     mCarrVector[dataVecCarrIdx] = mAbsNullLevelGain * (mMeanNullLevel[fftIdx] - mAbsNullLevelMin); break;
       case ECarrierPlotType::NULL_OVR_POW:    mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mMeanNullPowerWithoutTII[fftIdx] / mMeanPowerOvrAll); break;
       }
     }
@@ -269,12 +271,13 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
   if (showStatisticData)
   {
+    const float noisePow = _compute_noise_Power();
     mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mQD.StdDeviation = _compute_mod_quality(mIqVector); // TODO tomneda: using mIqVector is critical here, as it is maybe not always in valid condition
+    mQD.ModQuality = 100.0f * (F_M_PI_4 - std::sqrt(mMeanStdDevSqPhase)) / F_M_PI_4 - noisePow;
     mQD.TimeOffset = _compute_time_offset(mFftBuffer, mPhaseReference);
     mQD.FreqOffset = _compute_frequency_offset(mFftBuffer, mPhaseReference);
     mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
-    mQD.SNR = 10.0f * std::log10(mMeanPowerOvrAll / _compute_noise_Power());
+    mQD.SNR = 10.0f * std::log10(mMeanPowerOvrAll / noisePow);
     emit signal_show_mod_quality(&mQD);
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % mDabPar.L;
@@ -404,15 +407,15 @@ void OfdmDecoder::_eval_null_symbol_statistics()
   }
 
   assert(max > min);
-  mAvgAbsNullLevelMin = min;
-  mAvgAbsNullLevelGain = 100.0f / (max - min);
+  mAbsNullLevelMin = min;
+  mAbsNullLevelGain = 100.0f / (max - min);
 }
 
 void OfdmDecoder::_reset_null_symbol_statistics()
 {
   std::fill(mMeanNullLevel.begin(), mMeanNullLevel.end(), 0.0f);
-  mAvgAbsNullLevelMin = 0.0f;
-  mAvgAbsNullLevelGain = 0.0f;
+  mAbsNullLevelMin = 0.0f;
+  mAbsNullLevelGain = 0.0f;
 }
 
 void OfdmDecoder::set_select_carrier_plot_type(ECarrierPlotType iPlotType)

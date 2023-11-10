@@ -427,7 +427,7 @@
        <item>
         <widget class="QCheckBox" name="cbDcRemovalFilter">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;DC removal filter&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal. &lt;/p&gt;&lt;p&gt;Together with the &lt;span style=&quot; font-style:italic;&quot;&gt;DC Avoidance Algrithm&lt;/span&gt; this should be of an advantage. But with not all situations and device this will work well.&lt;/p&gt;&lt;p&gt;You would see the DC on the &amp;quot;needle&amp;quot; in the spectrum view (upper right corner).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;DC removal filter&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal. &lt;/p&gt;&lt;p&gt;Together with the &lt;span style=&quot; font-style:italic;&quot;&gt;DC Avoidance Algrithm&lt;/span&gt; this should be of an advantage. But with not all situations and devices this will work well.&lt;/p&gt;&lt;p&gt;You would see the DC on the &amp;quot;needle&amp;quot; in the spectrum view (upper right corner).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>DC removal filter</string>

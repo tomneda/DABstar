@@ -258,19 +258,19 @@ void SpectrumViewer::show_iq(int32_t iAmount, float iAvg)
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
-void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iStdDev, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)
+void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iModQual, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)
 {
   if (myFrame.isHidden())
   {
     return;
   }
 
-  ofdmSymbNo->display(iOfdmSymbNo);
-  quality_display->display(QString("%1").arg(iStdDev, 0, 'f', 2));
-  timeOffsetDisplay->display(QString("%1").arg(iTimeOffset, 0, 'f', 2));
-  frequencyOffsetDisplay->display(QString("%1").arg(iFreqOffset, 0, 'f', 2));
-  dispPhaseCorr->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
-  snrDisplay->display(QString("%1").arg(iSNR, 0, 'f', 2));
+  lcdOfdmSymbNo->display(iOfdmSymbNo);
+  lcdModQuality->display(QString("%1").arg(iModQual, 0, 'f', 2));
+  lcdTimeOffset->display(QString("%1").arg(iTimeOffset, 0, 'f', 2));
+  lcdFreqOffset->display(QString("%1").arg(iFreqOffset, 0, 'f', 2));
+  lcdPhaseCorr->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
+  lcdSnr->display(QString("%1").arg(iSNR, 0, 'f', 2));
 }
 
 void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
@@ -279,7 +279,7 @@ void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
   {
     return;
   }
-  dispNomFrequency->display(QString("%1").arg(iFreqMHz, 0, 'f', 3));
+  lcdNomFrequency->display(QString("%1").arg(iFreqMHz, 0, 'f', 3));
 }
 
 void SpectrumViewer::show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
@@ -288,7 +288,7 @@ void SpectrumViewer::show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
   {
     return;
   }
-  dispFreqCorrRF->display(iFreqCorrRF);
+  lcdFreqCorrRF->display(iFreqCorrRF);
 }
 
 void SpectrumViewer::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
@@ -297,14 +297,14 @@ void SpectrumViewer::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
   {
     return;
   }
-  dispFreqCorrBB->display(iFreqCorrBB);
+  lcdFreqCorrBB->display(iFreqCorrBB);
 }
 
 void SpectrumViewer::show_clock_error(float iClockErr)
 {
   if (!myFrame.isHidden())
   {
-    clockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
+    lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
   }
 }
 

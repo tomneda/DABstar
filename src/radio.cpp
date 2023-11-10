@@ -2304,7 +2304,7 @@ void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData 
 
   if (!my_spectrumViewer.is_hidden())
   {
-    my_spectrumViewer.show_quality(pQD->CurOfdmSymbolNo, pQD->StdDeviation, pQD->TimeOffset, pQD->FreqOffset, pQD->PhaseCorr, pQD->SNR);
+    my_spectrumViewer.show_quality(pQD->CurOfdmSymbolNo, pQD->ModQuality, pQD->TimeOffset, pQD->FreqOffset, pQD->PhaseCorr, pQD->SNR);
   }
 }
 
