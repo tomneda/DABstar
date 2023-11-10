@@ -81,8 +81,6 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   _load_save_combobox_settings(cmbIqScope, "iqPlot", false);
   _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
 
-  //show_digital_peak_level(0.0f);
-
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
   connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
@@ -271,6 +269,15 @@ void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iModQual, float iTi
   lcdFreqOffset->display(QString("%1").arg(iFreqOffset, 0, 'f', 2));
   lcdPhaseCorr->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
   lcdSnr->display(QString("%1").arg(iSNR, 0, 'f', 2));
+
+  // Very strange thing: the configuration of the ThermoWidget colors has to be done in the calling thread.
+  if (!mThermoModQualConfigured)
+  {
+    thermoModQual->setFillBrush(QBrush(QColor(229, 165, 10)));
+    mThermoPeakLevelConfigured = true;
+  }
+
+  thermoModQual->setValue(iModQual);
 }
 
 void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
@@ -360,24 +367,6 @@ void SpectrumViewer::slot_update_settings()
   emit _slot_handle_cmb_iqscope(cmbIqScope->currentIndex());
 }
 
-void SpectrumViewer::_show_overdriven_flag(bool iOverdriven)
-{
-  if (mOverdrivenShown != iOverdriven)
-  {
-    if (iOverdriven)
-    {
-      lblOverdriven->setText("<b>Overdriven</b>");
-      lblOverdriven->setStyleSheet("background-color: red; color: white;");
-    }
-    else
-    {
-      lblOverdriven->setText("Overdriven");
-      lblOverdriven->setStyleSheet("background-color: #444444; color: black;");
-    }
-    mOverdrivenShown = iOverdriven;
-  }
-}
-
 void SpectrumViewer::show_digital_peak_level(float iDigLevel)
 {
   assert(iDigLevel >= 0.0f); // exact 0.0 is considered below.
@@ -385,17 +374,14 @@ void SpectrumViewer::show_digital_peak_level(float iDigLevel)
   /* Very strange thing: the configuration of the ThermoWidget colors has to be done in the calling thread.
    * As this routine is also called one time in the instance creation thread, the counter must at least count two times.
    */
-  if (mPeakLevelConfigured < 2)
+  if (mThermoPeakLevelConfigured < 2)
   {
     thermoDigLevel->setFillBrush(QBrush(QColor(Qt::darkCyan)));
     thermoDigLevel->setAlarmBrush(QBrush(QColor(Qt::red)));
-    _show_overdriven_flag(true);
-    _show_overdriven_flag(false);
-    ++mPeakLevelConfigured;
+    ++mThermoPeakLevelConfigured;
   }
 
   const float valuedB = 20.0f * std::log10(iDigLevel + 0.00001f);
 
-  _show_overdriven_flag(valuedB > 0.0f);
   thermoDigLevel->setValue(valuedB);
 }

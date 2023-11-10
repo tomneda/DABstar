@@ -602,11 +602,68 @@
         <number>4</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="5,1">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>6</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QwtThermo" name="thermoModQual">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged modulation quality in percent. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the most little standard deviation of the phase noise.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="lowerBound">
+            <double>40.000000000000000</double>
+           </property>
+           <property name="scaleMaxMajor">
+            <number>6</number>
+           </property>
+           <property name="scaleMaxMinor">
+            <number>5</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="scalePosition">
+            <enum>QwtThermo::LeadingScale</enum>
+           </property>
+           <property name="originMode">
+            <enum>QwtThermo::OriginMinimum</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>6</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item>
           <widget class="QwtThermo" name="thermoDigLevel">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Peal Level&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the maximum vector length of the input signal within 10 frames (about 1 second). &lt;/p&gt;&lt;p&gt;In digital systems it is generell recommended to keep the scale (slightly) below 0dB but as we here have a pure phase modulation the signal detection could still get better even if (some) input samples got overdriven to raise the EVM of the low gain samples.&lt;/p&gt;&lt;p&gt;Better is to maximize the Modulation Quality with the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Peal Level in dBFS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the maximum vector length of the input signal within 10 frames (about 1 second). &lt;/p&gt;&lt;p&gt;In digital systems it is generell recommended to keep the scale (slightly) below 0dB but as we here have a pure phase modulation the signal detection could still get better even if (some) input samples got overdriven to raise the EVM of the low gain samples.&lt;/p&gt;&lt;p&gt;Better is to maximize the Modulation Quality with the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound">
             <double>-24.000000000000000</double>
@@ -637,32 +694,10 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QLabel" name="lblOverdriven">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>40</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Overdriven Detector&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If the input level exceeds the 0dB mark of the Peak Level Meter on the left. This additionally lights up in red.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::Panel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Sunken</enum>
-           </property>
-           <property name="text">
-            <string>Overdriven</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
         </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_8" stretch=""/>
        </item>
       </layout>
      </item>
