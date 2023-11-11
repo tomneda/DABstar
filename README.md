@@ -69,7 +69,7 @@ Still, I do not provide any precompiled setup packages, yet.
     - GUI changes, shows more device details.
     - Provide 4-times oversampling as HackRf suggested using at least 8 MHz sample rate.
       This needs to include the **liquid-dsp** library due to the needed half-band filters (see [https://github.com/jgaeddert/liquid-dsp](https://github.com/jgaeddert/liquid-dsp)).
-      To activate this option use `-DUSE_HBF` for CMake build. I intend to get rid of this dependence in future.
+      To activate this option use `-DUSE_HBF=ON` for CMake build. I intend to get rid of this dependence in future.
 
 ## Changes in DABstar version 1.5.0
                                    
