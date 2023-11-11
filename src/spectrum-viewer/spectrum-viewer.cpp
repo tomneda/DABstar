@@ -29,15 +29,15 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include  <QSettings>
+#include  <QColor>
+#include  <QPen>
 #include  "spectrum-viewer.h"
 #include  "spectrum-scope.h"
 #include  "waterfall-scope.h"
 #include  "correlation-viewer.h"
 #include  "carrier-display.h"
-#include  <QSettings>
 #include  "iqdisplay.h"
-#include  <QColor>
-#include  <QPen>
 
 
 SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,

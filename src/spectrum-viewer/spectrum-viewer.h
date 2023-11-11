@@ -37,13 +37,10 @@
 #ifndef    SPECTRUM_VIEWER_H
 #define    SPECTRUM_VIEWER_H
 
-#include  "dab-constants.h"
-#include  "glob_enums.h"
 #include  <QFrame>
 #include  <QObject>
-#include  "ui_scopewidget.h"
-#include  "ringbuffer.h"
-#include  "fft/fft-handler.h"
+#include  <QBrush>
+#include  <QTimer>
 #include  <qwt.h>
 #include  <qwt_plot.h>
 #include  <qwt_plot_marker.h>
@@ -56,8 +53,11 @@
 #include  <qwt_plot_layout.h>
 #include  <qwt_picker_machine.h>
 #include  <qwt_scale_widget.h>
-#include  <QBrush>
-#include  <QTimer>
+#include  "dab-constants.h"
+#include  "glob_enums.h"
+#include  "ui_scopewidget.h"
+#include  "ringbuffer.h"
+#include  "fft/fft-handler.h"
 
 constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
