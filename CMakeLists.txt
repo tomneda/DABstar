@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
-project(DABstar VERSION 1.5.0)
+project(DABstar VERSION 1.6.0)
 ##############################
 
 set(objectName "dabstar")
@@ -76,7 +76,7 @@ set(USE_PORTAUDIO ON)
 set(QT_AUDIO OFF)
 set(TCP_STREAMER OFF)
 
-option(USE_HBF "Use oversampling with half band filter (needs liquid)" OFF)  # this needs liquid
+option(USE_HBF "Use oversampling with half band filter (needs liquid-dsp)" OFF)  # this needs liquid
 
 # select one or more devices (set to ON)
 # attention option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this

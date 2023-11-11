@@ -8,6 +8,7 @@ Pictures from Version 1.4.0
 ## Table of Content
 <!-- TOC -->
   * [Introduction](#introduction)
+  * [Changes in DABstar version 1.6.0](#changes-in-dabstar-version-160)
   * [Changes in DABstar version 1.5.0](#changes-in-dabstar-version-150)
   * [Changes in DABstar version 1.4.0](#changes-in-dabstar-version-140)
   * [Changes in DABstar version 1.3.0](#changes-in-dabstar-version-130)
@@ -30,7 +31,7 @@ Pictures from Version 1.4.0
 
 ## Introduction
 
-**Current main branch version is [V1.5.0](#changes-in-dabstar-version-150).**
+**Current main branch version is [V1.6.0](#changes-in-dabstar-version-160).**
 
 [DABstar](https://github.com/tomneda/DABstar) is originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) 
 from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes afterwards to Qt-DAB are included.
@@ -53,6 +54,22 @@ I saw that Qt-DAB 6.x uses also code parts and ideas from here. I am very apprec
 This is of course very acknowledged that my work can give something back.
 
 Still, I do not provide any precompiled setup packages, yet.
+
+## Changes in DABstar version 1.6.0
+
+- Still many refactorings in code and GUI and file organizations made.
+- Clock Offset is now shown in Hz relative to the sample frequency of 2.048 MHz.
+- Provide a DC removable filter, selectable via _Configuration and Control_ widget.
+- The IQ Scope allows analysis of DC component and DC removal algorithm.
+- Instead of the average _Std. Deviation_ of the phase a more intuitive _Modulation Quality_ in percent is shown now.
+- Provide a meter which shows graphically the _Modulation Quality_. This helps for leveling the device gain.
+- Provide a input signal peak meter to see ADC overdriven situations.
+- Many changes in the HackRf device handler:
+    - Make the _ppm_ selections somehow work via a workaround.
+    - GUI changes, shows more device details.
+    - Provide 4-times oversampling as HackRf suggested using at least 8 MHz sample rate.
+      This needs to include the **liquid-dsp** library to due the needed half-band filters (see [https://github.com/jgaeddert/liquid-dsp](https://github.com/jgaeddert/liquid-dsp)).
+      To activate this option use `-DUSE_HBF` while CMake build. I intend to get rid of this dependence in future.
 
 ## Changes in DABstar version 1.5.0
                                    
