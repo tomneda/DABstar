@@ -225,6 +225,7 @@ include_directories(
         src/devices/wavfiles-new
         src/devices/xml-filereader
         src/eti-handler
+        src/service-list
         /usr/include/
 )
 
@@ -331,6 +332,7 @@ set(${objectName}_HDRS
         src/devices/xml-filereader/xml-filereader.h
         src/devices/xml-filereader/xml-reader.h
         src/devices/xml-filereader/xml-descriptor.h
+        src/service-list/ServiceListHandler.h
         )
 
 set(${objectName}_SRCS
@@ -424,6 +426,7 @@ set(${objectName}_SRCS
         src/devices/xml-filereader/xml-filereader.cpp
         src/devices/xml-filereader/xml-reader.cpp
         src/devices/xml-filereader/xml-descriptor.cpp
+        src/service-list/ServiceListHandler.cpp
         )
 
 set(${objectName}_MOCS
@@ -471,6 +474,7 @@ set(${objectName}_MOCS
         src/devices/wavfiles-new/wav-reader.h
         src/devices/xml-filereader/xml-filereader.h
         src/devices/xml-filereader/xml-reader.h
+        src/service-list/ServiceListHandler.h
         )
 
 set(${objectName}_UIS

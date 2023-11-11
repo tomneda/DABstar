@@ -76,7 +76,7 @@ class deviceHandler;
 class AudioBase;
 class historyHandler;
 class timeTableHandler;
-class AudioDisplay;
+class ServiceListHandler;
 
 #ifdef  HAVE_PLUTO_RXTX
 class	dabStreamer;
@@ -261,6 +261,7 @@ private:
   historyHandler * my_history;
   historyHandler * my_presets;
   timeTableHandler * my_timeTable;
+  ServiceListHandler * mpServiceListHandler = nullptr;
   FILE * ficDumpPointer;
   bool transmitterTags_local;
 

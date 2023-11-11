@@ -28,6 +28,10 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#include  <fstream>
+#include  <numeric>
+#include  <unistd.h>
+#include  <vector>
 #include  <QCoreApplication>
 #include  <QSettings>
 #include  <QMessageBox>
@@ -37,12 +41,8 @@
 #include  <QStringListModel>
 #include  <QMouseEvent>
 #include  <QDir>
-#include  <fstream>
 #include  "dab-constants.h"
 #include  "mot-content-types.h"
-#include  <numeric>
-#include  <unistd.h>
-#include  <vector>
 #include  "radio.h"
 #include  "rawfiles.h"
 #include  "wavfiles.h"
@@ -52,6 +52,7 @@
 #include  "coordinates.h"
 #include  "mapport.h"
 #include  "techdata.h"
+#include  "ServiceListHandler.h"
 
 #ifdef  TCP_STREAMER
   #include "tcp-streamer.h"
@@ -470,6 +471,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   my_timeTable = new timeTableHandler(this);
   my_timeTable->hide();
 
+  mpServiceListHandler = new ServiceListHandler(this);
+
   connect(my_history, &historyHandler::handle_historySelect, this, &RadioInterface::_slot_handle_history_select);
   connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &smallComboBox::setCurrentIndex);
   connect(this, &RadioInterface::signal_set_new_preset_index, presetSelector, &presetComboBox::setCurrentIndex);
@@ -798,6 +801,7 @@ bool RadioInterface::doStart()
 
 RadioInterface::~RadioInterface()
 {
+  delete mpServiceListHandler;
   fprintf(stdout, "RadioInterface is deleted\n");
 }
 
@@ -1478,6 +1482,7 @@ void RadioInterface::_slot_terminate_process()
   delete soundOut;
   delete my_history;
   delete my_timeTable;
+
   //	close();
   fprintf(stdout, ".. end the radio silences\n");
 }
