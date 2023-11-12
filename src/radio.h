@@ -32,15 +32,12 @@
 #define RADIO_H
 
 #include  "dab-constants.h"
+#include  <set>
+#include  <memory>
+#include  <mutex>
 #include  <QMainWindow>
 #include  <QStringList>
 #include  <QStandardItemModel>
-#include  <set>
-
-#ifdef  _SEND_DATAGRAM_
-#include	<QUdpSocket>
-#endif
-
 #include  <QVector>
 #include  <QComboBox>
 #include  <QByteArray>
@@ -55,8 +52,6 @@
 #include  "dl-cache.h"
 #include  "tii-codes.h"
 #include  "content-table.h"
-#include  <memory>
-#include  <mutex>
 
 #ifdef  DATA_STREAMER
 #include	"tcp-server.h"
@@ -234,11 +229,6 @@ private:
   bool saveSlides;
   QString picturesPath;
   QString filePath;
-#ifdef  _SEND_DATAGRAM_
-  QUdpSocket		dataOut_socket;
-  QString			ipAddress;
-  int32_t			port;
-#endif
   SNDFILE * rawDumper;
   SNDFILE * audioDumper;
   void set_channelButton(int);

@@ -227,11 +227,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   theFont = dabSettings->value("theFont", "Times").toString();
   fontSize = dabSettings->value("fontSize", 12).toInt();
 
-#ifdef  _SEND_DATAGRAM_
-                                                                                                                          ipAddress		= dabSettings -> value ("ipAddress", "127.0.0.1"). toString();
-	port			= dabSettings -> value ("port", 8888). toInt();
-#endif
-  //
   //	set on top or not? checked at start up
   if (dabSettings->value("onTop", 0).toInt() == 1)
   {
@@ -1131,14 +1126,6 @@ void RadioInterface::slot_send_datagram(int length)
   }
 
   dataBuffer.getDataFromBuffer(localBuffer, length);
-#ifdef  _SEND_DATAGRAM_
-                                                                                                                          if (running. load()) {
-	   dataOut_socket. writeDatagram ((const char *)localBuffer, length,
-	                                   QHostAddress (ipAddress),
-	                                   port);
-	}
-
-#endif
 }
 
 //
@@ -3169,16 +3156,7 @@ void RadioInterface::startPacketservice(const QString & s)
     break;
   case 59:
   {
-#ifdef  _SEND_DATAGRAM_
-    QString text = QString("Embedded IP: UDP data to ");
-    text.append(ipAddress);
-    text.append(" ");
-    QString n = QString::number(port);
-    text.append(n);
-    showLabel(text);
-#else
     slot_show_label("Embedded IP not supported ");
-#endif
   }
     break;
   case 44: slot_show_label(QString("Journaline"));
