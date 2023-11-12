@@ -723,7 +723,7 @@ bool RadioInterface::doStart()
   //
   if (channel.nextService.valid)
   {
-    int switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
+    const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
     presetTimer.setSingleShot(true);
     presetTimer.setInterval(switchDelay * 1000);
     presetTimer.start(switchDelay * 1000);
@@ -2902,7 +2902,6 @@ void RadioInterface::localSelect(const QString & s)
 
 void RadioInterface::localSelect(const QString & theChannel, const QString & service)
 {
-  int switchDelay;
   QString serviceName = service;
 
   if (my_dabProcessor == nullptr)
@@ -2956,7 +2955,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
   channel.nextService.SId = 0;
   channel.nextService.SCIds = 0;
   presetTimer.setSingleShot(true);
-  switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
+  const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   presetTimer.setInterval(switchDelay * 1000);
   presetTimer.start(switchDelay * 1000);
   startChannel(channelSelector->currentText());
@@ -3342,7 +3341,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   const int32_t tunedFrequencyHz = theBand.get_frequency_Hz(theChannel);
   LOG("channel starts ", theChannel);
   configWidget.frequencyDisplay->display(tunedFrequencyHz / 1'000'000.0);
-  my_spectrumViewer.show_nominal_frequency_MHz(tunedFrequencyHz / 1'000'000.0);
+  my_spectrumViewer.show_nominal_frequency_MHz((float)tunedFrequencyHz / 1'000'000.0f);
   dabSettings->setValue("channel", theChannel);
   inputDevice->resetBuffer();
   serviceList.clear();
@@ -3351,7 +3350,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   inputDevice->restartReader(tunedFrequencyHz);
   channel.cleanChannel();
   channel.channelName = theChannel;
-  dabSettings->setValue("channel", theChannel);
+  //dabSettings->setValue("channel", theChannel);
   channel.nominalFreqHz = tunedFrequencyHz;
 
   if (transmitterTags_local && (mapHandler != nullptr))
@@ -3367,10 +3366,9 @@ void RadioInterface::startChannel(const QString & theChannel)
 
   my_dabProcessor->start();
 
-  int switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
-
   if (!scanning.load())
   {
+    const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
     epgTimer.start(switchDelay * 1000);
   }
 }
@@ -3546,7 +3544,6 @@ void RadioInterface::_slot_handle_scan_button()
 
 void RadioInterface::startScanning()
 {
-  int switchDelay;
   presetTimer.stop();
   channelTimer.stop();
   epgTimer.stop();
@@ -3575,7 +3572,7 @@ void RadioInterface::startScanning()
   new_channelIndex(cc);
   dynamicLabel->setText("Scanning channel " + channelSelector->currentText());
   scanButton->setText("SCANNING");
-  switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
+  const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   channelTimer.start(switchDelay * 1000);
 
   startChannel(channelSelector->currentText());
@@ -3611,8 +3608,6 @@ void RadioInterface::stopScanning(bool dump)
 
 void RadioInterface::slot_no_signal_found()
 {
-  int switchDelay;
-
   disconnect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   channelTimer.stop();
   disconnect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
@@ -3620,7 +3615,7 @@ void RadioInterface::slot_no_signal_found()
   if (running.load() && scanning.load())
   {
     int cc = channelSelector->currentIndex();
-    if (serviceList.size() > 0)
+    if (!serviceList.empty())
     {
       showServices();
     }
@@ -3644,7 +3639,7 @@ void RadioInterface::slot_no_signal_found()
       connect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
       dynamicLabel->setText("Scanning channel " + channelSelector->currentText());
-      switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
+      const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
       channelTimer.start(switchDelay * 1000);
       startChannel(channelSelector->currentText());
     }
@@ -3677,9 +3672,9 @@ void RadioInterface::showServices()
   QStringList s = my_dabProcessor->basicPrint();
   my_scanTable->addLine(headLine);
   my_scanTable->addLine("\n;\n");
-  for (int i = 0; i < s.size(); i++)
+  for (const auto & i : s)
   {
-    my_scanTable->addLine(s.at(i));
+    my_scanTable->addLine(i);
   }
   my_scanTable->addLine("\n;\n;\n");
   my_scanTable->show();
@@ -4335,7 +4330,7 @@ QStringList RadioInterface::get_soft_bit_gen_names()
   return sl;
 }
 
-QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor) const
+QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor)
 {
   const float fac = 0.6f;
   const int32_t r1 = iBgBaseColor.red();

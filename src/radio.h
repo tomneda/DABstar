@@ -314,7 +314,7 @@ private:
   void write_warning_message(const QString & iMsg);
   void write_picture(const QPixmap & iPixMap) const;
 
-  QString get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor) const;
+  static QString get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor) ;
   void setup_ui_colors();
 
 signals:
