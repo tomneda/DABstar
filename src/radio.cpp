@@ -2348,6 +2348,7 @@ void RadioInterface::_slot_handle_detail_button()
 //	meaningful
 void RadioInterface::showButtons()
 {
+#if 1
   configWidget.dumpButton->show();
   configWidget.frequencyDisplay->show();
   scanButton->show();
@@ -2355,10 +2356,20 @@ void RadioInterface::showButtons()
   nextChannelButton->show();
   prevChannelButton->show();
   presetSelector->show();
+#else
+  configWidget.dumpButton->setEnabled(true);
+  configWidget.frequencyDisplay->setEnabled(true);
+  scanButton->setEnabled(true);
+  channelSelector->setEnabled(true);
+  nextChannelButton->setEnabled(true);
+  prevChannelButton->setEnabled(true);
+  presetSelector->setEnabled(true);
+#endif
 }
 
 void RadioInterface::hideButtons()
 {
+#if 1
   configWidget.dumpButton->hide();
   configWidget.frequencyDisplay->hide();
   scanButton->hide();
@@ -2366,6 +2377,15 @@ void RadioInterface::hideButtons()
   nextChannelButton->hide();
   prevChannelButton->hide();
   presetSelector->hide();
+#else
+  configWidget.dumpButton->setEnabled(false);
+  configWidget.frequencyDisplay->setEnabled(false);
+  scanButton->setEnabled(false);
+  channelSelector->setEnabled(false);
+  nextChannelButton->setEnabled(false);
+  prevChannelButton->setEnabled(false);
+  presetSelector->setEnabled(false);
+#endif
 }
 
 void RadioInterface::slot_set_sync_lost()
