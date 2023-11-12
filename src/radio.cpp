@@ -159,34 +159,13 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
     return false;
   }
   idle_time = cpu_times[3];
-  total_time = std::accumulate(cpu_times.begin(), cpu_times.end(), 0);
+  total_time = std::accumulate(cpu_times.begin(), cpu_times.end(), (size_t)0);
   return true;
 }
 
 #endif
 
-static int32_t sFreqOffHz = 0; // for test
-
-static uint8_t convert(QString s)
-{
-  if (s == "Mode 1")
-  {
-    return 1;
-  }
-  if (s == "Mode 2")
-  {
-    return 2;
-  }
-  if (s == "Mode 3")
-  {
-    return 3;
-  }
-  if (s == "Mode 4")
-  {
-    return 4;
-  }
-  return 1;
-}
+//static int32_t sFreqOffHz = 0; // for test
 
 RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
   : QWidget(parent),
@@ -234,8 +213,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 
   const int16_t latency = dabSettings->value("latency", 5).toInt();
 
-  QString dabMode = dabSettings->value("dabMode", "Mode 1").toString();
-  globals.dabMode = convert(dabMode);
+  globals.dabMode = dabSettings->value("dabMode", 1).toInt();
   globals.threshold = dabSettings->value("threshold", 3).toInt();
   globals.diff_length = dabSettings->value("diff_length", DIFF_LENGTH).toInt();
   globals.tii_delay = dabSettings->value("tii_delay", 5).toInt();
@@ -362,20 +340,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     configWidget.epg2xmlSelector->setChecked(true);
   }
 
-  x = dabSettings->value("serviceOrder", ALPHA_BASED).toInt();
-  if (x == ALPHA_BASED)
-  {
-    configWidget.orderAlfabetical->setChecked(true);
-  }
-  else if (x == ID_BASED)
-  {
-    configWidget.orderServiceIds->setChecked(true);
-  }
-  else
-  {
-    configWidget.ordersubChannelIds->setChecked(true);
-  }
-
   if (dabSettings->value("autoBrowser", 1).toInt() == 1)
   {
     configWidget.autoBrowser->setChecked(true);
@@ -471,7 +435,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   my_timeTable = new timeTableHandler(this);
   my_timeTable->hide();
 
-  mpServiceListHandler = new ServiceListHandler(this);
+  mpServiceListHandler = new ServiceListHandler(this, serviceTreeView);
 
   connect(my_history, &historyHandler::handle_historySelect, this, &RadioInterface::_slot_handle_history_select);
   connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &smallComboBox::setCurrentIndex);
@@ -814,7 +778,7 @@ void RadioInterface::slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
   if (inputDevice != nullptr && channel.nominalFreqHz > 0)
   {
     inputDevice->setVFOFrequency(channel.nominalFreqHz + iFreqCorrRF);
-    sFreqOffHz = channel.nominalFreqHz;
+    //sFreqOffHz = channel.nominalFreqHz;
   }
 
   my_spectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
@@ -837,7 +801,6 @@ void RadioInterface::_slot_channel_timeout()
 //	a slot, called by the fic/fib handlers
 void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t SId)
 {
-  int serviceOrder;
   if (!running.load())
   {
     return;
@@ -847,19 +810,19 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
   {
     return;
   }
-  (void)SId;
+
   serviceId ed;
   ed.name = serviceName;
   ed.SId = SId;
-  if (isMember(serviceList, ed))
+
+  if (std::any_of(serviceList.cbegin(), serviceList.cend(), [& ed](const serviceId & sid) { return sid.name == ed.name; } ))
   {
-    return;
+    return; // service already in service list
   }
 
   ed.subChId = my_dabProcessor->getSubChId(serviceName, SId);
-  serviceOrder = dabSettings->value("serviceOrder", ALPHA_BASED).toInt();
 
-  serviceList = insert(serviceList, ed, serviceOrder);
+  serviceList = insert(serviceList, ed, ALPHA_BASED);
   my_history->addElement(channel.channelName, serviceName);
   model.clear();
   for (auto serv: serviceList)
@@ -1221,7 +1184,6 @@ void RadioInterface::slot_handle_tdc_data(int frametype, int length)
   */
 void RadioInterface::slot_change_in_configuration()
 {
-  int serviceOrder;
   if (!running.load() || my_dabProcessor == nullptr)
   {
     return;
@@ -1244,12 +1206,11 @@ void RadioInterface::slot_change_in_configuration()
   }
 
   fprintf(stdout, "change will be effected\n");
-  serviceOrder = dabSettings->value("serviceOrder", ALPHA_BASED).toInt();
 
 
   //	we rebuild the services list from the fib and
   //	then we (try to) restart the service
-  serviceList = my_dabProcessor->getServices(serviceOrder);
+  serviceList = my_dabProcessor->getServices(ALPHA_BASED);
   model.clear();
   for (auto serv: serviceList)
   {
@@ -1487,10 +1448,6 @@ void RadioInterface::_slot_terminate_process()
   fprintf(stdout, ".. end the radio silences\n");
 }
 
-//
-static size_t previous_idle_time = 0;
-static size_t previous_total_time = 0;
-
 void RadioInterface::_slot_update_time_display()
 {
   if (!running.load())
@@ -1508,15 +1465,17 @@ void RadioInterface::_slot_update_time_display()
   if ((numberofSeconds % 2) == 0)
   {
     size_t idle_time, total_time;
-    get_cpu_times(idle_time, total_time);
-    const float idle_time_delta = idle_time - previous_idle_time;
-    const float total_time_delta = total_time - previous_total_time;
-    const float utilization = 100.0 * (1.0 - idle_time_delta / total_time_delta);
-    configWidget.cpuMonitor->display(utilization);
-    previous_idle_time = idle_time;
-    previous_total_time = total_time;
+    if (get_cpu_times(idle_time, total_time))
+    {
+      const float idle_time_delta = static_cast<float>(idle_time - previous_idle_time);
+      const float total_time_delta = static_cast<float>(total_time - previous_total_time);
+      const float utilization = 100.0f * (1.0f - idle_time_delta / total_time_delta);
+      configWidget.cpuMonitor->display(QString("%1").arg(utilization, 0, 'f', 2));
+      previous_idle_time = idle_time;
+      previous_total_time = total_time;
+    }
   }
-  //
+  
   //	The timer runs autonomously, so it might happen
   //	that it rings when there is no processor running
   if (my_dabProcessor == nullptr)
@@ -2672,11 +2631,8 @@ void RadioInterface::connectGUI()
   connect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
-  connect(ensembleDisplay, &smallQListView::clicked, this, &RadioInterface::_slot_select_service);
+  connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   connect(configWidget.switchDelaySetting, qOverload<int>(&smallSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
-  connect(configWidget.orderAlfabetical, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_alfabetical);
-  connect(configWidget.orderServiceIds, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_service_ids);
-  connect(configWidget.ordersubChannelIds, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_sub_channel_ids);
   connect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   connect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
@@ -2699,11 +2655,8 @@ void RadioInterface::disconnectGUI()
   disconnect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
-  disconnect(ensembleDisplay, &smallQListView::clicked, this, &RadioInterface::_slot_select_service);
+  disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   disconnect(configWidget.switchDelaySetting, qOverload<int>(&smallSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
-  disconnect(configWidget.orderAlfabetical, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_alfabetical);
-  disconnect(configWidget.orderServiceIds, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_service_ids);
-  disconnect(configWidget.ordersubChannelIds, &QPushButton::clicked, this, &RadioInterface::_slot_handle_order_sub_channel_ids);
   disconnect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   disconnect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
@@ -3736,18 +3689,6 @@ void RadioInterface::showServices()
 
 /////////////////////////////////////////////////////////////////////
 //
-bool RadioInterface::isMember(const std::vector<serviceId> & a, serviceId b)
-{
-  for (auto serv: a)
-  {
-    if (serv.name == b.name)
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
 std::vector<serviceId> RadioInterface::insert(const std::vector<serviceId> & l, serviceId n, int order)
 {
   std::vector<serviceId> k;
@@ -3865,21 +3806,6 @@ void RadioInterface::_slot_handle_save_service_selector(int d)
 {
   (void)d;
   dabSettings->setValue("has-presetName", configWidget.saveServiceSelector->isChecked() ? 1 : 0);
-}
-
-void RadioInterface::_slot_handle_order_alfabetical()
-{
-  dabSettings->setValue("serviceOrder", ALPHA_BASED);
-}
-
-void RadioInterface::_slot_handle_order_service_ids()
-{
-  dabSettings->setValue("serviceOrder", ID_BASED);
-}
-
-void RadioInterface::_slot_handle_order_sub_channel_ids()
-{
-  dabSettings->setValue("serviceOrder", SUBCH_BASED);
 }
 
 //-------------------------------------------------------------------------

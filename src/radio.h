@@ -264,11 +264,12 @@ private:
   ServiceListHandler * mpServiceListHandler = nullptr;
   FILE * ficDumpPointer;
   bool transmitterTags_local;
+  size_t previous_idle_time = 0;
+  size_t previous_total_time = 0;
 
   static QStringList get_soft_bit_gen_names();
   bool eventFilter(QObject * obj, QEvent * event) override;
   uint32_t extract_epg(QString, std::vector<serviceId> & serviceList, uint32_t);
-  bool isMember(const std::vector<serviceId> &, serviceId);
   void show_pause_slide();
   void connectGUI();
   void disconnectGUI();
@@ -417,9 +418,6 @@ private slots:
 
   //	config handlers
   void _slot_handle_switch_delay_setting(int);
-  void _slot_handle_order_alfabetical();
-  void _slot_handle_order_service_ids();
-  void _slot_handle_order_sub_channel_ids();
   void _slot_handle_save_service_selector(int);
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();

@@ -18,7 +18,20 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_5">
    <item>
-    <widget class="QListView" name="serviceListView"/>
+    <widget class="QTreeView" name="serviceTreeView">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>200</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -32,7 +45,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="smallQListView" name="ensembleDisplay">
+         <widget class="QListView" name="ensembleDisplay">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
             <horstretch>2</horstretch>
@@ -483,11 +496,6 @@
    <class>presetComboBox</class>
    <extends>QComboBox</extends>
    <header>presetcombobox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>smallQListView</class>
-   <extends>QListView</extends>
-   <header>smallqlistview.h</header>
   </customwidget>
   <customwidget>
    <class>newPushButton</class>

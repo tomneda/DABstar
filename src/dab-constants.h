@@ -96,9 +96,12 @@ public:
 };
 
 // order by id order by name
-#define  ID_BASED     1
-#define  SUBCH_BASED  2
-#define  ALPHA_BASED  3
+enum EServiceListOder
+{
+  ID_BASED    = 1,
+  SUBCH_BASED = 2,
+  ALPHA_BASED = 3
+};
 
 // 40 up shows good results
 #define    DIFF_LENGTH  60
