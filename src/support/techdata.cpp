@@ -68,7 +68,13 @@ TechData::~TechData()
 
 void TechData::cleanUp()
 {
-  programName->setText(QString(""));
+  const QString es("-");
+  programName->setText(es);
+  uepField->setText(es);
+  codeRate->setText(es);
+  ASCTy->setText(es);
+  language->setText(es);
+  lblSbrUsed->setText(es);
   show_rsCorrections(0, 0); // call via this method to consider color change
   frameError_display->setValue(0);
   rsError_display->setValue(0);
@@ -77,14 +83,9 @@ void TechData::cleanUp()
   startAddressDisplay->display(0);
   lengthDisplay->display(0);
   subChIdDisplay->display(0);
-  uepField->setText(QString(""));
-  codeRate->setText(QString(""));
-  ASCTy->setText(QString(""));
-  language->setText(QString(""));
   motAvailable->setStyleSheet("QLabel {background-color : red}");
   timeTable_button->hide();
   audioRate->display(0);
-  lblSbrUsed->setText("");
 }
 
 void TechData::show_serviceData(Audiodata * ad)
@@ -316,10 +317,13 @@ void TechData::audiodumpButton_text(const QString & text, int size)
   audiodumpButton->update();
 }
 
-void TechData::show_sample_rate_and_sbr(int iSR, bool iSbrUsed)
+void TechData::show_sample_rate_and_audio_flags(int iSR, int iAudioFlags)
 {
   audioRate->display(iSR);
-  lblSbrUsed->setText(iSbrUsed ? "YES" : "NO");
+  QString afs;
+  afs += ((iAudioFlags & RadioInterface::AFL_SBR_USED) != 0 ? "YES / " : "NO / ");
+  afs += ((iAudioFlags & RadioInterface::AFL_PS_USED) != 0 ? "YES" : "NO");
+  lblSbrUsed->setText(afs);
 }
 
 void TechData::showMissed(int missed)

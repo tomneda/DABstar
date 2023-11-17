@@ -275,9 +275,6 @@
      </item>
      <item row="3" column="1">
       <widget class="QLabel" name="ASCTy">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
        <property name="text">
         <string>-</string>
        </property>
@@ -288,9 +285,6 @@
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Language (defined by provider)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
        <property name="text">
         <string>-</string>
        </property>
@@ -298,17 +292,8 @@
      </item>
      <item row="1" column="1">
       <widget class="QLabel" name="uepField">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>20</height>
-        </size>
-       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows Protection Level and Type (A or B)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
        </property>
        <property name="text">
         <string>-</string>
@@ -332,12 +317,15 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label_13">
        <property name="text">
-        <string>SBR used:</string>
+        <string>SBR / PS:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QLabel" name="lblSbrUsed">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows whether audio uses &lt;span style=&quot; font-weight:600;&quot;&gt;S&lt;/span&gt;pectral &lt;span style=&quot; font-weight:600;&quot;&gt;B&lt;/span&gt;and&lt;span style=&quot; font-weight:600;&quot;&gt; R&lt;/span&gt;eplication and &lt;span style=&quot; font-weight:600;&quot;&gt;P&lt;/span&gt;arametric &lt;span style=&quot; font-weight:600;&quot;&gt;S&lt;/span&gt;tereo&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>-</string>
        </property>

@@ -72,7 +72,7 @@ private:
   HANDLE_AACDECODER handle;
 
 signals:
-  void newAudio(int, int);
+  void signal_new_audio(int, int, int);
 };
 
 #endif

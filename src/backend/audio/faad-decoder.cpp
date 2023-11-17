@@ -148,7 +148,7 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
     audioBuffer->putDataIntoBuffer(outBuffer, samples);
     if (audioBuffer->GetRingBufferReadAvailable() > (int)sampleRate / 8)
     {
-      emit signal_new_audio(sampleRate / 10, sampleRate, hInfo.sbr);
+      emit signal_new_audio(sampleRate / 10, sampleRate, (hInfo.ps ? RadioInterface::AFL_PS_USED : 0) | (hInfo.sbr ? RadioInterface::AFL_SBR_USED : 0));
     }
   }
   else if (channels == 1)
@@ -163,7 +163,7 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
     audioBuffer->putDataIntoBuffer(buffer, samples);
     if (audioBuffer->GetRingBufferReadAvailable() > (int)sampleRate / 8)
     {
-      emit signal_new_audio(samples, sampleRate, hInfo.sbr);
+      emit signal_new_audio(samples, sampleRate, (hInfo.ps ? RadioInterface::AFL_PS_USED : 0) | (hInfo.sbr ? RadioInterface::AFL_SBR_USED : 0));
     }
   }
   else

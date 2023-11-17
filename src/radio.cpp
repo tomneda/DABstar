@@ -1280,7 +1280,7 @@ void RadioInterface::slot_change_in_configuration()
 //	In order to not overload with an enormous amount of
 //	signals, we trigger this function at most 10 times a second
 //
-void RadioInterface::slot_new_audio(int amount, int rate, int sbrFlag)
+void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
 {
   if (!running.load())
   {
@@ -1294,16 +1294,16 @@ void RadioInterface::slot_new_audio(int amount, int rate, int sbrFlag)
     if (teller > 10)
     {
       teller = 0;
-      theTechWindow->show_sample_rate_and_sbr(rate, sbrFlag != 0);
+      theTechWindow->show_sample_rate_and_audio_flags(iSR, iAudioFlags);
     }
   }
-  int16_t vec[amount];
-  while (audioBuffer.GetRingBufferReadAvailable() > amount)
+  int16_t vec[iAmount];
+  while (audioBuffer.GetRingBufferReadAvailable() > iAmount)
   {
-    audioBuffer.getDataFromBuffer(vec, amount);
+    audioBuffer.getDataFromBuffer(vec, iAmount);
     if (!mutingActive)
     {
-      soundOut->audioOut(vec, amount, rate);
+      soundOut->audioOut(vec, iAmount, iSR);
     }
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -1313,8 +1313,8 @@ void RadioInterface::slot_new_audio(int amount, int rate, int sbrFlag)
 #endif
     if (!theTechWindow->isHidden())
     {
-      theTechData.putDataIntoBuffer(vec, amount);
-      theTechWindow->audioDataAvailable(amount, rate);
+      theTechData.putDataIntoBuffer(vec, iAmount);
+      theTechWindow->audioDataAvailable(iAmount, iSR);
     }
   }
 }

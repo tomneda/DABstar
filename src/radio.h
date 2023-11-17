@@ -169,6 +169,13 @@ public:
   RadioInterface(QSettings *, const QString &, const QString &, bool, int32_t dataPort, int32_t clockPort, int, QWidget * parent);
   ~RadioInterface() override;
 
+  enum EAudioFlags : uint32_t
+  {
+    AFL_NONE     = 0x0,
+    AFL_SBR_USED = 0x1,
+    AFL_PS_USED  = 0x2
+  };
+
 private:
   static constexpr int32_t SWITCH_DELAY = 3; // switch time in second until service is called after channel selection
 

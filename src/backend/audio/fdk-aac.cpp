@@ -50,7 +50,7 @@ FdkAAC::FdkAAC(RadioInterface * mr, RingBuffer<int16_t> * buffer)
   {
     return;
   }
-  connect(this, &FdkAAC::newAudio, mr, &RadioInterface::slot_new_audio);
+  connect(this, &FdkAAC::signal_new_audio, mr, &RadioInterface::slot_new_audio);
   working = true;
 }
 
@@ -118,7 +118,7 @@ int16_t FdkAAC::MP42PCM(stream_parms * sp, uint8_t packet[], int16_t packetLengt
     audioBuffer->putDataIntoBuffer(bufp, info->frameSize * 2);
     if (audioBuffer->GetRingBufferReadAvailable() > (int)info->sampleRate / 8)
     {
-      newAudio(info->frameSize, info->sampleRate);
+      emit signal_new_audio(info->frameSize, info->sampleRate,  (sp->psFlag ? RadioInterface::AFL_PS_USED : 0) | (sp->sbrFlag ? RadioInterface::AFL_SBR_USED : 0));
     }
   }
   else if (info->numChannels == 1)
@@ -133,7 +133,7 @@ int16_t FdkAAC::MP42PCM(stream_parms * sp, uint8_t packet[], int16_t packetLengt
     audioBuffer->putDataIntoBuffer(buffer, info->frameSize * 2);
     if (audioBuffer->GetRingBufferReadAvailable() > (int)info->sampleRate / 8)
     {
-      newAudio(info->frameSize, info->sampleRate);
+      emit signal_new_audio(info->frameSize, info->sampleRate, (sp->psFlag ? RadioInterface::AFL_PS_USED : 0) | (sp->sbrFlag ? RadioInterface::AFL_SBR_USED : 0));
     }
   }
   else
