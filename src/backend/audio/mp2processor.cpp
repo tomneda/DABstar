@@ -218,9 +218,9 @@ Mp2Processor::Mp2Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   myRadioInterface = mr;
   this->buffer = buffer;
   this->bitRate = bitRate;
-  connect(this, &Mp2Processor::show_frameErrors, mr,  &RadioInterface::slot_show_frame_errors);
-  connect(this, &Mp2Processor::newAudio, mr, &RadioInterface::slot_new_audio);
-  connect(this, &Mp2Processor::isStereo, mr,  &RadioInterface::slot_set_stereo);
+  connect(this, &Mp2Processor::signal_show_frameErrors, mr, &RadioInterface::slot_show_frame_errors);
+  connect(this, &Mp2Processor::signal_new_audio, mr, &RadioInterface::slot_new_audio);
+  connect(this, &Mp2Processor::signal_is_stereo, mr, &RadioInterface::slot_set_stereo);
 
   Voffs = 0;
   baudRate = 48000;  // default for DAB
@@ -380,7 +380,7 @@ int32_t Mp2Processor::mp2decodeFrame(uint8_t * frame, int16_t * pcm)
   numberofFrames++;
   if (numberofFrames >= 25)
   {
-    show_frameErrors(errorFrames);
+    signal_show_frameErrors(errorFrames);
     numberofFrames = 0;
     errorFrames = 0;
   }
@@ -433,7 +433,7 @@ int32_t Mp2Processor::mp2decodeFrame(uint8_t * frame, int16_t * pcm)
     get_bits(2);
     bound = (mode == MONO) ? 0 : 32;
   }
-  emit isStereo((mode == JOINT_STEREO) || (mode == STEREO));
+  emit signal_is_stereo((mode == JOINT_STEREO) || (mode == STEREO));
 
   // discard the last 4 bits of the header and the CRC value, if present
   get_bits(4);
@@ -635,7 +635,7 @@ void Mp2Processor::addtoFrame(const std::vector<uint8_t> & v)
           buffer->putDataIntoBuffer(sample_buf, 2 * (int32_t)KJMP2_SAMPLES_PER_FRAME);
           if (buffer->GetRingBufferReadAvailable() > baudRate / 8)
           {
-            newAudio(2 * (int32_t)KJMP2_SAMPLES_PER_FRAME, baudRate);
+            emit signal_new_audio(2 * (int32_t)KJMP2_SAMPLES_PER_FRAME, baudRate, 0);
           }
         }
 

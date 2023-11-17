@@ -75,7 +75,7 @@ public slots:
   void show_uep(int, int);
   void show_codeRate(int, int);
   void show_fm(int);
-  void showRate(int);
+  void show_sample_rate_and_sbr(int iSR, bool iSbrUsed);
 
   void hideMissed();
   void showMissed(int);

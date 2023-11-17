@@ -1280,7 +1280,7 @@ void RadioInterface::slot_change_in_configuration()
 //	In order to not overload with an enormous amount of
 //	signals, we trigger this function at most 10 times a second
 //
-void RadioInterface::slot_new_audio(int amount, int rate)
+void RadioInterface::slot_new_audio(int amount, int rate, int sbrFlag)
 {
   if (!running.load())
   {
@@ -1294,7 +1294,7 @@ void RadioInterface::slot_new_audio(int amount, int rate)
     if (teller > 10)
     {
       teller = 0;
-      theTechWindow->showRate(rate);
+      theTechWindow->show_sample_rate_and_sbr(rate, sbrFlag != 0);
     }
   }
   int16_t vec[amount];

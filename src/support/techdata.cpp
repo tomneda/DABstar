@@ -84,6 +84,7 @@ void TechData::cleanUp()
   motAvailable->setStyleSheet("QLabel {background-color : red}");
   timeTable_button->hide();
   audioRate->display(0);
+  lblSbrUsed->setText("");
 }
 
 void TechData::show_serviceData(Audiodata * ad)
@@ -315,9 +316,10 @@ void TechData::audiodumpButton_text(const QString & text, int size)
   audiodumpButton->update();
 }
 
-void TechData::showRate(int rate)
+void TechData::show_sample_rate_and_sbr(int iSR, bool iSbrUsed)
 {
-  audioRate->display(rate);
+  audioRate->display(iSR);
+  lblSbrUsed->setText(iSbrUsed ? "YES" : "NO");
 }
 
 void TechData::showMissed(int missed)

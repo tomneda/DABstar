@@ -40,7 +40,7 @@ faadDecoder::faadDecoder(RadioInterface * mr, RingBuffer<int16_t> * buffer)
   aacConf = NeAACDecGetCurrentConfiguration(aacHandle);
   aacInitialized = false;
   baudRate = 48000;
-  connect(this, &faadDecoder::newAudio, mr, &RadioInterface::slot_new_audio);
+  connect(this, &faadDecoder::signal_new_audio, mr, &RadioInterface::slot_new_audio);
 }
 
 faadDecoder::~faadDecoder()
@@ -132,12 +132,10 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
     baudRate = sampleRate;
   }
 
-  //      fprintf (stdout, "bytes consumed %d\n", (int)(hInfo. bytesconsumed));
-  //      fprintf (stderr, "samplerate = %d, samples = %d, channels = %d, error = %d, sbr = %d\n", sampleRate, samples,
-  //               hInfo. channels,
-  //               hInfo. error,
-  //               hInfo. sbr);
-  //      fprintf (stderr, "header = %d\n", hInfo. header_type);
+  //fprintf (stdout, "bytes consumed %d\n", (int)(hInfo. bytesconsumed));
+  //fprintf (stdout, "samplerate = %lu, samples = %d, channels = %d, error = %d, sbr = %d\n", sampleRate, samples, hInfo. channels, hInfo.error, hInfo.sbr);
+  //fprintf (stdout, "header = %d\n", hInfo. header_type);
+
   channels = hInfo.channels;
   if (hInfo.error != 0)
   {
@@ -150,7 +148,7 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
     audioBuffer->putDataIntoBuffer(outBuffer, samples);
     if (audioBuffer->GetRingBufferReadAvailable() > (int)sampleRate / 8)
     {
-      newAudio(sampleRate / 10, sampleRate);
+      emit signal_new_audio(sampleRate / 10, sampleRate, hInfo.sbr);
     }
   }
   else if (channels == 1)
@@ -165,7 +163,7 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
     audioBuffer->putDataIntoBuffer(buffer, samples);
     if (audioBuffer->GetRingBufferReadAvailable() > (int)sampleRate / 8)
     {
-      newAudio(samples, sampleRate);
+      emit signal_new_audio(samples, sampleRate, hInfo.sbr);
     }
   }
   else

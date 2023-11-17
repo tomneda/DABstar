@@ -71,8 +71,8 @@ private:
   int32_t baudRate;
   RingBuffer<int16_t> * audioBuffer;
 
-  signals:
-  void newAudio(int, int);
+signals:
+  void signal_new_audio(int, int, int);
 };
 
 #endif
