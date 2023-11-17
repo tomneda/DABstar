@@ -4348,12 +4348,12 @@ QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColo
 
   if (false)
   {
-    ts << "background-color: " << iBgBaseColor.name().toStdString() <<  "; color: " << iTextColor.name().toStdString() << ";";
+    ts << "QPushButton { background-color: " << iBgBaseColor.name().toStdString() <<  "; color: " << iTextColor.name().toStdString() << "; }";
   }
   else
   {
-    ts << "background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
-       << ", stop:1 " << BgBaseColor2.name().toStdString() << "); " << "color: " << iTextColor.name().toStdString() << ";";
+    ts << "QPushButton { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
+       << ", stop:1 " << BgBaseColor2.name().toStdString() << "); " << "color: " << iTextColor.name().toStdString() << "; }";
   }
   //fprintf(stdout, "*** Style sheet: %s\n", ts.str().c_str());
 

@@ -261,7 +261,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Push this button to reset, i.e. restart synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="styleSheet">
-            <string notr="true">background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(158, 58, 58, 255),stop:1 rgba(118, 18, 18, 255)); color: #ffffff;
+            <string notr="true">QPushButton { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(158, 58, 58, 255),stop:1 rgba(118, 18, 18, 255)); color: #ffffff; }
 </string>
            </property>
            <property name="text">

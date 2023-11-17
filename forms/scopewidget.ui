@@ -91,7 +91,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If more than one transmitter is detected, the relative distance is shown between the transmitter that is used, and the other transmitter. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(165, 29, 45);</string>
+        <string notr="true">QLabel { background-color: rgb(165, 29, 45); }</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Panel</enum>
@@ -362,7 +362,7 @@
          <item row="7" column="1">
           <widget class="QLCDNumber" name="lcdOfdmSymbNo">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Current OFDM symbol where the elements below are calculated.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(except Clock Offset)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Current OFDM symbol where the elements below are calculated.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -697,7 +697,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_8" stretch=""/>
+        <layout class="QHBoxLayout" name="horizontalLayout_8"/>
        </item>
       </layout>
      </item>
