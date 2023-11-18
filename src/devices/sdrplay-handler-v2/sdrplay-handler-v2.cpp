@@ -65,7 +65,7 @@ mir_sdr_ErrT	err;
 float	ver;
 mir_sdr_DeviceT devDesc [4];
 //mir_sdr_GainValuesT gainDesc;
-sdrplaySelect	*sdrplaySelector;
+//sdrplaySelect	*sdrplaySelector;
 
 	sdrplaySettings			= s;
 	this	-> recorderVersion	= recorderVersion;
@@ -78,7 +78,7 @@ sdrplaySelect	*sdrplaySelector;
 	myFrame. show ();
 	antennaSelector		-> hide();
 	tunerSelector		-> hide();
-	this	-> inputRate	= Khz (2048);
+	this	-> inputRate	= kHz (2048);
 
 	bool success	= fetchLibrary ();
 	if (!success) 
@@ -95,7 +95,7 @@ sdrplaySelect	*sdrplaySelector;
 	}
 
 	api_version	-> display (ver);
-	vfoFrequency	= Khz (220000);		// default
+	vfoFrequency	= kHz (220000);		// default
 
 //	See if there are settings from previous incarnations
 //	and config stuff
@@ -274,7 +274,7 @@ sdrplaySelect	*sdrplaySelector;
 }
 
 int32_t	sdrplayHandler::defaultFrequency() {
-	return Mhz (220);
+	return MHz (220);
 }
 
 int32_t	sdrplayHandler::getVFOFrequency() {
@@ -283,7 +283,7 @@ int32_t	sdrplayHandler::getVFOFrequency() {
 
 void	sdrplayHandler::set_ifgainReduction	(int newGain) {
 mir_sdr_ErrT	err;
-int	GRdB		= GRdBSelector	-> value();
+//int	GRdB		= GRdBSelector	-> value();
 int	lnaState	= lnaGainSetting -> value();
 
 	if (!running. load ())
@@ -297,7 +297,7 @@ int	lnaState	= lnaGainSetting -> value();
 }
 
 void	sdrplayHandler::set_lnagainReduction (int lnaState) {
-mir_sdr_ErrT err;
+//mir_sdr_ErrT err;
 
 
 	if (!running. load ())
@@ -390,7 +390,7 @@ int	agc		= agcControl	-> isChecked () ? 1 : 0;
 	}
 	err	= my_mir_sdr_StreamInit (&GRdB,
 	                                 double (inputRate) / MHz (1),
-	                                 double (vfoFrequency) / Mhz (1),
+	                                 double (vfoFrequency) / MHz (1),
 	                                 mir_sdr_BW_1_536,
 	                                 mir_sdr_IF_Zero,
 	                                 lnaState,

@@ -65,7 +65,7 @@ void	tcpServer::run (int port) {
  *	6. Receive Data.
  *	7. Close Connection. 
  */
-	int client_sock , c , read_size;
+	int client_sock , c /*, read_size*/;
 	struct sockaddr_in server , client;
 
 //	Create socket

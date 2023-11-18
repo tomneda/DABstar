@@ -222,6 +222,7 @@ int	ret;
         plutoSettings -> endGroup ();
         setupUi (&myFrame);
         myFrame. move (QPoint (x, y));
+        myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
         myFrame. show ();
 
 #ifdef	__MINGW32__

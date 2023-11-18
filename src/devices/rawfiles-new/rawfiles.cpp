@@ -43,6 +43,7 @@
 	   _I_Buffer (INPUT_FRAMEBUFFERSIZE) {
 	fileName	= f;
 	setupUi	(&myFrame);
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 	myFrame. show	();
 	filePointer	= fopen (f. toUtf8(). data(), "rb");
 	if (filePointer == nullptr) {

@@ -32,6 +32,7 @@
 	                             myFrame (nullptr) {
 	this	-> soapySettings	= soapySettings;
         setupUi (&myFrame);
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 	myFrame. show ();
 	deviceLineEdit		= new QLineEdit (nullptr);
 	deviceLineEdit		-> show();

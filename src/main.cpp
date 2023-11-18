@@ -39,8 +39,6 @@
 #include <unistd.h>
 
 
-//void setTranslator(QTranslator *, QString Language);
-
 int main(int argc, char ** argv)
 {
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
@@ -58,9 +56,6 @@ int main(int argc, char ** argv)
   bool error_report = false;
   int fmFrequency = 110000;
 
-  //QTranslator theTranslator;
-  //QCoreApplication::setOrganizationName("Lazy Chair Computing");
-  //QCoreApplication::setOrganizationDomain("Lazy Chair Computing");
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
 
@@ -107,48 +102,19 @@ int main(int argc, char ** argv)
     qFatal("Could not open stylesheet resource");
   }
 
-  // setting the language
-//  QString locale = QLocale::system().name();
-//  qDebug() << "main:" << "Detected system language" << locale;
-//  setTranslator(&theTranslator, locale);
   QApplication::setWindowIcon(QIcon(":res/DABplusLogoWBsoft.png")); // used for all dialog windows except main window (is overwritten)
+
 
   MyRadioInterface = new RadioInterface(dabSettings, presetsFileName, freqExtension, error_report, dataPort, clockPort, fmFrequency, nullptr);
   MyRadioInterface->show();
 
   qRegisterMetaType<QVector<int>>("QVector<int>");
   a.exec();
-  /*
-   *      done:
-  */
-  fprintf(stdout, "back in main program\n");
+
   fflush(stdout);
   fflush(stderr);
   qDebug("It is done\n");
   delete MyRadioInterface;
   delete dabSettings;
-  return 1;
+  return 0;
 }
-
-//void setTranslator(QTranslator * theTranslator, QString Language)
-//{
-//  // German is special (as always)
-//  if ((Language == "de_AT") || (Language == "de_CH"))
-//  {
-//    Language = "de_DE";
-//  }
-//  //
-//  // what about Dutch?
-//  bool translatorLoaded = theTranslator->load(QString(":/i18n/") + Language);
-//  qDebug() << "main:" << "Set language" << Language;
-//  QCoreApplication::installTranslator(theTranslator);
-//
-//  if (!translatorLoaded)
-//  {
-//    qDebug() << "main:" << "Error while loading language specifics" << Language << "use English \"en_GB\" instead";
-//    Language = "en_GB";
-//  }
-//
-//  QLocale curLocale(QLocale((const QString &)Language));
-//  QLocale::setDefault(curLocale);
-//}

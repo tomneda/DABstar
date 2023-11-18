@@ -565,14 +565,14 @@ void	plutoHandler::stopReader() {
 void	plutoHandler::run	() {
 char	*p_end, *p_dat;
 int	p_inc;
-int	nbytes_rx;
+//int	nbytes_rx;
 cmplx localBuf [DAB_RATE / DIVIDER];
 std::complex<int16_t> dumpBuf [DAB_RATE / DIVIDER];
 
 	state -> setText ("running");
 	running. store (true);
 	while (running. load ()) {
-	   nbytes_rx	= iio_buffer_refill	(rxbuf);
+	   /*nbytes_rx	=*/ iio_buffer_refill	(rxbuf);
 	   p_inc	= iio_buffer_step	(rxbuf);
 	   p_end	= (char *) iio_buffer_end  (rxbuf);
 
@@ -582,8 +582,7 @@ std::complex<int16_t> dumpBuf [DAB_RATE / DIVIDER];
 	      const int16_t q_p = ((int16_t *)p_dat) [1];
 	      std::complex<int16_t>dumpS = std::complex<int16_t> (i_p, q_p);
 	      dumpBuf [convIndex] = dumpS;
-	      cmplxsample = cmplx (i_p / 2048.0,
-	                                                       q_p / 2048.0);
+	      cmplx sample = cmplx (i_p / 2048.0, q_p / 2048.0);
 	      convBuffer [convIndex ++] = sample;
 	      if (convIndex > CONV_SIZE) {
 	         if (dumping. load ())
@@ -810,7 +809,7 @@ bool	plutoHandler::loadFunctions	() {
 	            (pfn_iio_context_get_name)
 	                    pHandle -> resolve ("iio_context_get_name");
 	if (iio_context_get_name == nullptr) {
-	   fprintf (stderr, "could not load %s\n", iio_context_get_name);
+	   fprintf (stderr, "could not load %s\n", "iio_context_get_name");
 	   return false;
 	}
 

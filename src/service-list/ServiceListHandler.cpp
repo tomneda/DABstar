@@ -14,11 +14,35 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <QTreeView>
 #include "radio.h"
 #include "ServiceListHandler.h"
 
-ServiceListHandler::ServiceListHandler(RadioInterface * ipRI) :
-  mpRadio(ipRI)
+ServiceListHandler::ServiceListHandler(RadioInterface * ipRI, QTreeView * const ipSL) :
+  mpRadio(ipRI),
+  mpTreeView(ipSL)
 {
+  QStringList headerLabels;
+  headerLabels << "Fav" << "Service" << "Ch";
+  mModel.setHorizontalHeaderLabels(headerLabels);
+
+  QList<QStandardItem*> rowData;
+  rowData << new QStandardItem("Line 1") << new QStandardItem("30") << new QStandardItem("77");
+  mModel.appendRow(rowData);
+  rowData.clear();
+  rowData << new QStandardItem("Line 2") << new QStandardItem("40") << new QStandardItem("88");
+  mModel.appendRow(rowData);
+//  mModel.insertRow(0, rowData);
+//  mModel.setItem(0, 0, new QStandardItem("A"));
+//  mModel.setItem(0, 1, new QStandardItem("B"));
+//  mModel.setItem(0, 2, new QStandardItem("C"));
+  mpTreeView->setModel(&mModel);
+  //mpTreeView->setModel(pStringListModel);
+
+  //mpTreeView->setRootIndex(mModel.index(0, 0)); // Setze den Index auf den Anfang des Models
+
+  //mpTreeView->show();
+  mpTreeView->hide();
+
 
 }

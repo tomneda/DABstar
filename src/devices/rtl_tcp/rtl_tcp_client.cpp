@@ -49,8 +49,7 @@ RtlTcpClient::RtlTcpClient(QSettings * s) :
   remoteSettings = s;
 
   setupUi(&myFrame);
-  myFrame.show();
-  myFrame.hide();
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
   //	setting the defaults and constants

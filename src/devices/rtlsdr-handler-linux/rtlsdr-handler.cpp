@@ -136,7 +136,8 @@ char	manufac [256], product [256], serial [256];
         setupUi (&myFrame);
         myFrame. move (QPoint (x, y));
 
-	myFrame. show();
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  myFrame. show();
 	filtering			= false;
 
 	rtlsdrSettings	-> beginGroup ("rtlsdrSettings");

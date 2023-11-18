@@ -53,6 +53,7 @@ uint32_t samplerateCount;
 	airspySettings	-> endGroup ();
 	setupUi (&myFrame);
 	myFrame. move (QPoint (x, y));
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 	myFrame. show		();
 //
 //	Since we have different tabs, with different sliders for
@@ -236,7 +237,6 @@ uint32_t samplerateCount;
 	   delete theFilter;
 	my_airspy_exit();
 	releaseLibrary ();
-err:;
 }
 
 void	airspyHandler::setVFOFrequency (int32_t nf) {
@@ -254,7 +254,7 @@ int32_t	airspyHandler::getVFOFrequency() {
 }
 
 int32_t	airspyHandler::defaultFrequency() {
-	return Khz (220000);
+	return kHz (220000);
 }
 
 void	airspyHandler::set_filter	(int c) {
@@ -265,7 +265,7 @@ void	airspyHandler::set_filter	(int c) {
 
 bool	airspyHandler::restartReader	(int32_t freq) {
 int	result;
-int32_t	bufSize	= EXTIO_NS * EXTIO_BASE_TYPE_SIZE * 2;
+//int32_t	bufSize	= EXTIO_NS * EXTIO_BASE_TYPE_SIZE * 2;
 
 	if (running. load())
 	   return true;
@@ -785,7 +785,7 @@ void	airspyHandler::restore_gainSliders	(int freq, int tab) {
 int	lna	= 0;
 int	mixer	= 0;
 int	bias	= 0;
-int	newTab	= 0;
+//int	newTab	= 0;
 QString key	= QString::number (freq) + "-" + QString::number (tab);
 
 	airspySettings -> beginGroup ("airspySettings");
@@ -793,11 +793,17 @@ QString key	= QString::number (freq) + "-" + QString::number (tab);
 	       airspySettings -> value (key, ""). toString ();
 	airspySettings -> endGroup ();
 	if (gainValues == "") // we create default values
-	   if ((tab == 0) || (tab == 1)) 
-	      gainValues = "10:0:0:0";
-	   else
-	      gainValues = "10:10:10:0:0:0";	
-	QStringList list = gainValues. split (":");
+  {
+    if ((tab == 0) || (tab == 1))
+    {
+      gainValues = "10:0:0:0";
+    }
+    else
+    {
+      gainValues = "10:10:10:0:0:0";
+    }
+  }
+  QStringList list = gainValues. split (":");
 	switch (tab) {
 	   case 0:
 	      disconnect (sensitivitySlider, SIGNAL (valueChanged (int)),

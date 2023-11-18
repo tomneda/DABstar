@@ -45,6 +45,7 @@ TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * aud
   myFrame.resize(QSize(wi, he));
 
   formLayout->setLabelAlignment(Qt::AlignLeft);
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.hide();
   timeTable_button->hide();
   the_audioDisplay = new AudioDisplay(mr, audio, dabSettings);

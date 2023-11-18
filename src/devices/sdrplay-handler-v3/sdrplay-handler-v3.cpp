@@ -86,6 +86,7 @@ std::string errorMessage (int errorCode) {
         sdrplaySettings -> endGroup ();
         setupUi (&myFrame);
         myFrame. move (QPoint (x, y));
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 	myFrame. show	();
 
 	antennaSelector		-> hide	();

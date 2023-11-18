@@ -18,18 +18,23 @@
 #define SERVICELISTHANDLER_H
 
 #include <QObject>
+#include <QStandardItemModel>
 
 class RadioInterface;
+class QTreeView;
 
 class ServiceListHandler : public QObject
 {
   Q_OBJECT
 public:
-  explicit ServiceListHandler(RadioInterface * ipRI);
+  explicit ServiceListHandler(RadioInterface * ipRI, QTreeView * const ipSL);
   ~ServiceListHandler() override = default;
 
 private:
   RadioInterface * const mpRadio;
+  QTreeView * const mpTreeView;
+  QStandardItemModel mModel{};
+
 
 public slots:
 

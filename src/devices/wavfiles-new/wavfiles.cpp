@@ -37,6 +37,7 @@ SF_INFO *sf_info;
 
 	fileName	= f;
 	setupUi (&myFrame);
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 	myFrame. show	();
 
 	sf_info		= (SF_INFO *)alloca (sizeof (SF_INFO));

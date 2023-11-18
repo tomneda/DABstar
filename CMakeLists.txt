@@ -739,7 +739,6 @@ if (LIMESDR)
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
             src/devices/lime-handler/lime-handler.h
-            src/devices/lime-handler/lime-widget.h
             )
 
     include_directories(

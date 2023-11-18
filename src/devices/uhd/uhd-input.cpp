@@ -99,7 +99,8 @@ void	uhd_streamer::run (void) {
 	this	-> uhdSettings	= s;
 	this	-> myFrame	= new QFrame (NULL);
 	setupUi (this	-> myFrame);
-	this	-> myFrame	-> show ();
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  this	-> myFrame	-> show ();
 	this	-> inputRate	= Khz (2048);
 	this	-> ringbufferSize	= 1024;	// blocks of 1024 complexes
 	this	-> theBuffer	= NULL;	// also indicates good init or not

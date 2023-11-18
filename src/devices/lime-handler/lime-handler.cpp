@@ -40,6 +40,7 @@ lms_info_str_t limedevices [10];
 	this	-> limeSettings		= s;
 	this	-> recorderVersion	= recorderVersion;
 	setupUi (&myFrame);
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 	myFrame. show	();
 
 	filtering	= false;
@@ -200,7 +201,7 @@ void	limeHandler::setVFOFrequency	(int32_t f) {
 
 int32_t	limeHandler::getVFOFrequency() {
 float_type freq;
-	int res = LMS_GetLOFrequency (theDevice, LMS_CH_RX, 0, &freq);
+	/*int res = */LMS_GetLOFrequency (theDevice, LMS_CH_RX, 0, &freq);
 	return (int)freq;
 }
 
@@ -313,7 +314,7 @@ int	res;
 lms_stream_status_t streamStatus;
 int	underruns	= 0;
 int	overruns	= 0;
-int	dropped		= 0;
+//int	dropped		= 0;
 int	amountRead	= 0;
 
 	running. store (true);

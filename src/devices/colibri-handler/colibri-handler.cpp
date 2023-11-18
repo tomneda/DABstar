@@ -35,7 +35,8 @@
 	                                  myFrame (nullptr) {
 	colibriSettings		= s;
 	setupUi (&myFrame);
-	QString libName = "libcolibrinano_lib.so";
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  QString libName = "libcolibrinano_lib.so";
 	if (!m_loader. load (libName. toLatin1 () .data ())) {
            QMessageBox::critical (nullptr, "colibri",
 	                          tr("Failed to load colibrinano_lib.so"));

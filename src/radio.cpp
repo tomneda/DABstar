@@ -256,6 +256,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   he = dabSettings->value("configWidget-h", 150).toInt();
   configDisplay.resize(QSize(wi, he));
   configDisplay.move(QPoint(x, y));
+  configDisplay.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   theTechWindow = new TechData(this, dabSettings, &theTechData);
   //
