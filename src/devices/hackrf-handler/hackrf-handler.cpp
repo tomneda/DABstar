@@ -51,6 +51,7 @@ constexpr int32_t DEFAULT_LNA_GAIN = 16;
 constexpr int32_t DEFAULT_VGA_GAIN = 30;
 
 HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVersion) :
+  Ui_hackrfWidget(),
   mpHackrfSettings(iSetting),
   mRecorderVersion(iRecorderVersion)
 {

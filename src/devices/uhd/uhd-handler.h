@@ -65,6 +65,10 @@ public:
   int32_t Samples() override;
   void resetBuffer() override;
   int16_t bitDepth() override;
+  void show() override;
+  void hide() override;
+  bool isHidden() override;
+  QString deviceName() override;
 
 private:
   QSettings * uhdSettings;

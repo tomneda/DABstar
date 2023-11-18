@@ -225,6 +225,26 @@ int16_t UhdHandler::bitDepth()
   return 12;
 }
 
+void UhdHandler::show()
+{
+  myFrame.show();
+}
+
+void UhdHandler::hide()
+{
+  myFrame.hide();
+}
+
+bool UhdHandler::isHidden()
+{
+  return myFrame.isHidden();
+}
+
+QString UhdHandler::deviceName()
+{
+  return "UHD";
+}
+
 int16_t UhdHandler::_maxGain() const
 {
   uhd::gain_range_t range = m_usrp->get_rx_gain_range();

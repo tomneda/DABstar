@@ -88,26 +88,26 @@ using pfn_hackrf_library_release = const char* (*)();
 
 
 ///////////////////////////////////////////////////////////////////////////
-class HackRfHandler : public QObject, public deviceHandler, public Ui_hackrfWidget
+class HackRfHandler final : public QObject, public deviceHandler, public Ui_hackrfWidget
 {
 Q_OBJECT
 public:
   HackRfHandler(QSettings * iSetting, const QString & iRecorderVersion);
-  ~HackRfHandler() final;
+  ~HackRfHandler() override;
 
-  void setVFOFrequency(int32_t) final;
-  int32_t getVFOFrequency() final;
+  void setVFOFrequency(int32_t) override;
+  int32_t getVFOFrequency() override;
 
-  bool restartReader(int32_t) final;
-  void stopReader() final;
-  int32_t getSamples(cmplx *, int32_t) final;
-  int32_t Samples() final;
-  void resetBuffer() final;
-  int16_t bitDepth() final;
-  void show() final;
-  void hide() final;
-  bool isHidden() final;
-  QString deviceName() final;
+  bool restartReader(int32_t) override;
+  void stopReader() override;
+  int32_t getSamples(cmplx *, int32_t) override;
+  int32_t Samples() override;
+  void resetBuffer() override;
+  int16_t bitDepth() override;
+  void show() override;
+  void hide() override;
+  bool isHidden() override;
+  QString deviceName() override;
 
   using TRingBuffer = RingBuffer<std::complex<int8_t> >;
   TRingBuffer mRingBuffer{ 4 * 1024 * 1024 }; // The buffer should be visible by the callback function
