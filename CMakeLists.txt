@@ -26,11 +26,6 @@ add_definitions(-DAPP_NAME="${objectName}")
 add_definitions(-DPRJ_NAME="${PROJECT_NAME}")
 add_definitions(-DPRJ_VERS="${PROJECT_VERSION}")
 
-#	modify if you want
-#	Note that since there are always problems with the rtlsdr interface
-#	under Windows we split the rtlsdr interface into two versions
-#	one for Linux and one for Window
-
 if (MINGW)
     add_definitions(-municode)
     #else (MINGW)
@@ -83,12 +78,15 @@ option(USE_HBF "Use oversampling with half band filter (needs liquid-dsp)" OFF) 
 option(AIRSPY OFF)
 option(SDRPLAY_V2 OFF)
 option(SDRPLAY OFF)
-option(RTLSDR_LINUX ON)
-option(RTLSDR_WIN OFF)
 option(HACKRF OFF)
 option(LIMESDR OFF)
 option(RTL_TCP OFF)
 option(PLUTO OFF)
+option(UHD OFF)
+# Note that since there are problems with the rtlsdr interface under Windows we split the rtlsdr interface
+# into two versions one for Linux and one for Window
+option(RTLSDR_LINUX OFF)
+option(RTLSDR_WIN OFF)
 
 option(DATA_STREAMER OFF)
 option(VITERBI_SSE OFF)
@@ -827,7 +825,40 @@ if (RTLSDR_WIN)
     add_definitions(-DHAVE_RTLSDR)
 endif ()
 
-#
+if (UHD)
+    find_package(UHD REQUIRED)
+    if (NOT UHD_FOUND)
+        message(FATAL_ERROR "please install UHD library")
+    endif ()
+    list(APPEND extraLibs ${UHD_LIBRARIES})
+
+    set(${objectName}_UIS
+            ${${objectName}_UIS}
+            src/devices/uhd/uhd-widget.ui
+    )
+
+    set(${objectName}_MOCS
+            ${${objectName}_MOCS}
+            src/devices/uhd/uhd-handler.h
+    )
+
+    include_directories(
+            src/devices/uhd/
+    )
+
+    set(${objectName}_HDRS
+            ${${objectName}_HDRS}
+            src/devices/uhd/uhd-handler.h
+    )
+
+    set(${objectName}_SRCS
+            ${${objectName}_SRCS}
+            src/devices/uhd/uhd-handler.cpp
+    )
+
+    add_definitions(-DHAVE_UHD)
+endif ()
+
 if (TCP_STREAMER)
     add_definitions(-DTCP_STREAMER)
     find_package(Qt5Network REQUIRED)

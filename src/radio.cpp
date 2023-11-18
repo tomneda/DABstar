@@ -104,6 +104,9 @@
 #ifdef  HAVE_ELAD
 #include	"elad-handler.h"
 #endif
+#ifdef  HAVE_UHD
+#include  "uhd-handler.h"
+#endif
 
 #include  "history-handler.h"
 #include  "time-table.h"
@@ -564,6 +567,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 #endif
 #ifdef  HAVE_ELAD
   configWidget. deviceSelector	-> addItem ("elad-s1");
+#endif
+#ifdef  HAVE_UHD
+  configWidget. deviceSelector	-> addItem ("uhd");
 #endif
   inputDevice = nullptr;
   h = dabSettings->value("device", "no device").toString();
@@ -1697,6 +1703,22 @@ deviceHandler * RadioInterface::create_device(const QString & s)
 	   }
 	}
 	else
+#endif
+#ifdef  HAVE_UHD
+  if (s == "uhd")
+  {
+    try
+    {
+      inputDevice = new UhdHandler(dabSettings);
+      showButtons();
+    }
+    catch (...)
+    {
+      QMessageBox::warning(this, tr("Warning"), tr("no UHD device found\n"));
+      return nullptr;
+    }
+  }
+  else
 #endif
 #ifdef  HAVE_SOAPY
     if (s == "soapy") {

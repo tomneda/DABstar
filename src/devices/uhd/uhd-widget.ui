@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>256</width>
-    <height>133</height>
+    <width>221</width>
+    <height>130</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -96,7 +96,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>KHz</string>
+     <string>kHz</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -122,7 +122,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>gain reductiom</string>
+     <string>Gain reduction</string>
     </property>
    </widget>
    <widget class="QLabel" name="statusLabel">

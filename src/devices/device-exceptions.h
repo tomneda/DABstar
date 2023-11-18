@@ -97,3 +97,16 @@ public:
 	}
 };
 
+class	uhd_exception : public std::exception {
+private:
+  char text [MAX_MESSAGE_SIZE];
+public:
+  uhd_exception (const std::string &s) {
+    sprintf (text, "%s ", s. c_str ());
+  }
+
+  const char *what  () const noexcept override {
+    return text;
+  }
+};
+
