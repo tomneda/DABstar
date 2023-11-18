@@ -79,22 +79,11 @@ void uhd_streamer::run()
     const auto num_rx_samps = (int32_t)m_theStick->m_rx_stream->recv(data1, size1, md, 1.0);
     m_theStick->theBuffer->AdvanceRingBufferWriteIndex(num_rx_samps);
 
-    if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT)
+    if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE)
     {
-      std::cout << boost::format("Timeout while streaming") << std::endl;
+      std::cerr << boost::format("Receiver error: %s") % md.strerror() << std::endl;
       continue;
     }
-
-    if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_OVERFLOW)
-    {
-      std::cerr << boost::format("Got an overflow indication") << std::endl;
-      continue;
-    }
-
-    //	   if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
-    //	      std::cerr << boost::format("Receiver error: %s") % md.strerror() << std::endl;
-    //	      continue;
-    //	   }
   }
 }
 
