@@ -34,10 +34,9 @@
 #include "uhd-handler.h"
 #include "device-exceptions.h"
 
-uhd_streamer::uhd_streamer(UhdHandler * d)
+uhd_streamer::uhd_streamer(UhdHandler * d) :
+  m_theStick(d)
 {
-  m_theStick = d;
-  m_stop_signal_called = false;
   uhd::stream_args_t stream_args("fc32", "sc16");
   m_theStick->m_rx_stream = m_theStick->m_usrp->get_rx_stream(stream_args);
   uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
@@ -77,7 +76,7 @@ void uhd_streamer::run()
     }
 
     uhd::rx_metadata_t md;
-    size_t num_rx_samps = m_theStick->m_rx_stream->recv(data1, size1, md, 1.0);
+    const auto num_rx_samps = (int32_t)m_theStick->m_rx_stream->recv(data1, size1, md, 1.0);
     m_theStick->theBuffer->AdvanceRingBufferWriteIndex(num_rx_samps);
 
     if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT)
@@ -100,6 +99,7 @@ void uhd_streamer::run()
 }
 
 UhdHandler::UhdHandler(QSettings * s) :
+  Ui_uhdWidget(),
   uhdSettings(s)
 {
   setupUi(&myFrame);
@@ -113,7 +113,6 @@ UhdHandler::UhdHandler(QSettings * s) :
   try
   {
     m_usrp = uhd::usrp::multi_usrp::make(args);
-    //	Lock mboard clocks
 
     std::string ref("internal");
     m_usrp->set_clock_source(ref);
@@ -173,12 +172,14 @@ void UhdHandler::setVFOFrequency(int32_t freq)
 int32_t UhdHandler::getVFOFrequency()
 {
   auto freq = (int32_t)std::round(m_usrp->get_rx_freq());
-  std::cout << boost::format("Actual RX Freq: %f MHz...") % (freq / 1e6) << std::endl << std::endl;
+  //std::cout << boost::format("Actual RX Freq: %f MHz...") % (freq / 1e6) << std::endl << std::endl;
   return freq;
 }
 
 bool UhdHandler::restartReader(int32_t freq)
 {
+  setVFOFrequency(freq);
+
   if (m_workerHandle != nullptr)
   {
     return true;
@@ -221,7 +222,7 @@ void UhdHandler::resetBuffer()
 
 int16_t UhdHandler::bitDepth()
 {
-  return 16;
+  return 12;
 }
 
 int16_t UhdHandler::_maxGain() const
@@ -234,8 +235,8 @@ void UhdHandler::_slot_set_external_gain(int gain) const
 {
   std::cout << boost::format("Setting RX Gain: %f dB...") % gain << std::endl;
   m_usrp->set_rx_gain(gain);
-  double gain_f = m_usrp->get_rx_gain();
-  std::cout << boost::format("Actual RX Gain: %f dB...") % gain_f << std::endl << std::endl;
+  //double gain_f = m_usrp->get_rx_gain();
+  //std::cout << boost::format("Actual RX Gain: %f dB...") % gain_f << std::endl << std::endl;
 }
 
 void UhdHandler::_slot_set_f_correction(int f) const

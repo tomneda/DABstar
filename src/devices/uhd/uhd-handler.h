@@ -45,16 +45,14 @@ public:
 private:
   UhdHandler * m_theStick;
   void run() override;
-  volatile bool m_stop_signal_called;
+  std::atomic<bool> m_stop_signal_called = false;
 };
 
 
 class UhdHandler final : public QObject, public deviceHandler, public Ui_uhdWidget
 {
   Q_OBJECT
-
   friend class uhd_streamer;
-
 public:
   explicit UhdHandler(QSettings * dabSettings);
   ~UhdHandler() override;
@@ -78,7 +76,7 @@ private:
   int32_t inputRate = 2048000;
   int32_t ringbufferSize = 1024;
 
-  int16_t _maxGain() const;
+  [[nodiscard]] int16_t _maxGain() const;
 
 private slots:
   void _slot_set_external_gain(int) const;
