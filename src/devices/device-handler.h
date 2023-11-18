@@ -59,7 +59,7 @@ public:
   virtual void moveTo(QPoint);
   //
 protected:
-  int32_t lastFrequency;
+  int32_t lastFrequency = 100000;
   int32_t vfoOffset;
   int theGain;
   int32_t coarseOffset;

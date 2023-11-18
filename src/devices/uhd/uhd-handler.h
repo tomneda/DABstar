@@ -49,7 +49,7 @@ private:
 };
 
 
-class UhdHandler : public QObject, public deviceHandler, public Ui_uhdWidget
+class UhdHandler final : public QObject, public deviceHandler, public Ui_uhdWidget
 {
   Q_OBJECT
 
@@ -58,35 +58,32 @@ class UhdHandler : public QObject, public deviceHandler, public Ui_uhdWidget
 public:
   explicit UhdHandler(QSettings * dabSettings);
   ~UhdHandler() override;
+
   void setVFOFrequency(int32_t freq) override;
   int32_t getVFOFrequency() override;
-
-//  bool legalFrequency(int32_t) { return true; }
-//  int32_t defaultFrequency() { return 100000000; }
-
   bool restartReader(int32_t freq) override;
   void stopReader() override;
   int32_t getSamples(cmplx *, int32_t size) override;
   int32_t Samples() override;
-  //uint8_t myIdentity();
   void resetBuffer() override;
-  virtual int16_t maxGain();
   int16_t bitDepth() override;
 
 private:
   QSettings * uhdSettings;
-  QFrame * myFrame;
+  QFrame myFrame{nullptr};
   uhd::usrp::multi_usrp::sptr m_usrp;
   uhd::rx_streamer::sptr m_rx_stream;
-  RingBuffer<cmplx> * theBuffer;
-  uhd_streamer * m_workerHandle;
-  int32_t inputRate;
-  int32_t ringbufferSize;
-  
+  RingBuffer<cmplx> * theBuffer = nullptr;
+  uhd_streamer * m_workerHandle = nullptr;
+  int32_t inputRate = 2048000;
+  int32_t ringbufferSize = 1024;
+
+  int16_t _maxGain() const;
+
 private slots:
-  void setExternalGain(int);
-  void set_fCorrection(int);
-  void set_KhzOffset(int);
+  void _slot_set_external_gain(int) const;
+  void _slot_set_f_correction(int) const;
+  void _slot_set_khz_offset(int);
 };
 
 #endif

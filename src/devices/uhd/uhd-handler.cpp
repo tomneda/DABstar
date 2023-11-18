@@ -38,10 +38,8 @@ uhd_streamer::uhd_streamer(UhdHandler * d)
 {
   m_theStick = d;
   m_stop_signal_called = false;
-  //create a receive streamer
   uhd::stream_args_t stream_args("fc32", "sc16");
   m_theStick->m_rx_stream = m_theStick->m_usrp->get_rx_stream(stream_args);
-  //setup streaming
   uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
   stream_cmd.num_samps = 0;
   stream_cmd.stream_now = true;
@@ -65,8 +63,10 @@ void uhd_streamer::run()
   while (!m_stop_signal_called)
   {
     //	get write position, ignore data2 and size2
-    int32_t size1, size2;
-    void * data1, * data2;
+    int32_t size1;
+    int32_t size2;
+    void * data1;
+    void * data2;
     m_theStick->theBuffer->GetRingBufferWriteRegions(10000, &data1, &size1, &data2, &size2);
 
     if (size1 == 0)
@@ -99,19 +99,14 @@ void uhd_streamer::run()
   }
 }
 
-UhdHandler::UhdHandler(QSettings * s)
+UhdHandler::UhdHandler(QSettings * s) :
+  uhdSettings(s)
 {
-  this->uhdSettings = s;
-  this->myFrame = new QFrame(NULL);
-  setupUi(this->myFrame);
-  myFrame->setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  this->myFrame->show();
-  this->inputRate = kHz(2048);
-  this->ringbufferSize = 1024;  // blocks of 1024 complexes
-  this->theBuffer = NULL;  // also indicates good init or not
-  lastFrequency = 100000;
-  m_workerHandle = 0;
-  //	create a usrp device.
+  setupUi(&myFrame);
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  myFrame.show();
+
+  // create a usrp device.
   std::string args;
   std::cout << std::endl;
   std::cout << boost::format("Creating the usrp device with: %s...") % args << std::endl;
@@ -126,7 +121,7 @@ UhdHandler::UhdHandler(QSettings * s)
     std::cout << boost::format("Using Device: %s") % m_usrp->get_pp_string() << std::endl;
     //	set sample rate
     m_usrp->set_rx_rate(inputRate);
-    inputRate = m_usrp->get_rx_rate();
+    inputRate = (int32_t)std::round(m_usrp->get_rx_rate());
     std::cout << boost::format("Actual RX Rate: %f Msps...") % (inputRate / 1e6) << std::endl << std::endl;
 
     //	allocate the rx buffer
@@ -138,22 +133,25 @@ UhdHandler::UhdHandler(QSettings * s)
     throw (uhd_exception("No luck with UHD"));
   }
   //	some housekeeping for the local frame
-  externalGain->setMaximum(maxGain());
+  externalGain->setMaximum(_maxGain());
   uhdSettings->beginGroup("uhdSettings");
   externalGain->setValue(uhdSettings->value("externalGain", 40).toInt());
   f_correction->setValue(uhdSettings->value("f_correction", 0).toInt());
   KhzOffset->setValue(uhdSettings->value("KhzOffset", 0).toInt());
   uhdSettings->endGroup();
 
-  setExternalGain(externalGain->value());
-  set_KhzOffset(KhzOffset->value());
-  connect(externalGain, SIGNAL (valueChanged(int)), this, SLOT (setExternalGain(int)));
-  connect(KhzOffset, SIGNAL (valueChanged(int)), this, SLOT (set_KhzOffset(int)));
+  _slot_set_external_gain(externalGain->value());
+  _slot_set_khz_offset(KhzOffset->value());
+  _slot_set_f_correction(f_correction->value());
+
+  connect(externalGain, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_external_gain);
+  connect(KhzOffset, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_khz_offset);
+  connect(f_correction, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_f_correction);
 }
 
-UhdHandler::~UhdHandler(void)
+UhdHandler::~UhdHandler()
 {
-  if (theBuffer != NULL)
+  if (theBuffer != nullptr)
   {
     stopReader();
     uhdSettings->beginGroup("uhdSettings");
@@ -163,7 +161,6 @@ UhdHandler::~UhdHandler(void)
     uhdSettings->endGroup();
     delete theBuffer;
   }
-  delete myFrame;
 }
 
 void UhdHandler::setVFOFrequency(int32_t freq)
@@ -173,16 +170,16 @@ void UhdHandler::setVFOFrequency(int32_t freq)
   m_usrp->set_rx_freq(tune_request);
 }
 
-int32_t UhdHandler::getVFOFrequency(void)
+int32_t UhdHandler::getVFOFrequency()
 {
-  int32_t freq = m_usrp->get_rx_freq();
+  auto freq = (int32_t)std::round(m_usrp->get_rx_freq());
   std::cout << boost::format("Actual RX Freq: %f MHz...") % (freq / 1e6) << std::endl << std::endl;
   return freq;
 }
 
 bool UhdHandler::restartReader(int32_t freq)
 {
-  if (m_workerHandle != 0)
+  if (m_workerHandle != nullptr)
   {
     return true;
   }
@@ -192,9 +189,9 @@ bool UhdHandler::restartReader(int32_t freq)
   return true;
 }
 
-void UhdHandler::stopReader(void)
+void UhdHandler::stopReader()
 {
-  if (m_workerHandle == 0)
+  if (m_workerHandle == nullptr)
   {
     return;
   }
@@ -202,45 +199,38 @@ void UhdHandler::stopReader(void)
   m_workerHandle->stop();
 
   delete m_workerHandle;
-  m_workerHandle = 0;
+  m_workerHandle = nullptr;
 }
-
-
-//	not used:
-//uint8_t UhdHandler::myIdentity(void)
-//{
-//  return DAB_STICK;
-//}
 
 int32_t UhdHandler::getSamples(cmplx * v, int32_t size)
 {
-  size = std::min((uint32_t)size, (uint32_t)(theBuffer->GetRingBufferReadAvailable()));
+  size = std::min(size, theBuffer->GetRingBufferReadAvailable());
   theBuffer->getDataFromBuffer(v, size);
   return size;
 }
 
-int32_t UhdHandler::Samples(void)
+int32_t UhdHandler::Samples()
 {
   return theBuffer->GetRingBufferReadAvailable();
 }
 
-void UhdHandler::resetBuffer(void)
+void UhdHandler::resetBuffer()
 {
   theBuffer->FlushRingBuffer();
 }
 
-void UhdHandler::set_fCorrection(int32_t f)
+int16_t UhdHandler::bitDepth()
 {
-  (void)f;
+  return 16;
 }
 
-int16_t UhdHandler::maxGain(void)
+int16_t UhdHandler::_maxGain() const
 {
   uhd::gain_range_t range = m_usrp->get_rx_gain_range();
-  return range.stop();
+  return (int16_t)std::round(range.stop());
 }
 
-void UhdHandler::setExternalGain(int32_t gain)
+void UhdHandler::_slot_set_external_gain(int gain) const
 {
   std::cout << boost::format("Setting RX Gain: %f dB...") % gain << std::endl;
   m_usrp->set_rx_gain(gain);
@@ -248,12 +238,13 @@ void UhdHandler::setExternalGain(int32_t gain)
   std::cout << boost::format("Actual RX Gain: %f dB...") % gain_f << std::endl << std::endl;
 }
 
-void UhdHandler::set_KhzOffset(int32_t o)
+void UhdHandler::_slot_set_f_correction(int f) const
+{
+  (void)f;
+}
+
+void UhdHandler::_slot_set_khz_offset(int o)
 {
   vfoOffset = o;
 }
 
-int16_t UhdHandler::bitDepth(void)
-{
-  return 16;
-}
