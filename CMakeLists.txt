@@ -71,23 +71,24 @@ set(USE_PORTAUDIO ON)
 set(QT_AUDIO OFF)
 set(TCP_STREAMER OFF)
 
-option(USE_HBF "Use oversampling with half band filter (needs liquid-dsp)" OFF)  # this needs liquid
-
 # select one or more devices (set to ON)
-# attention option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this
-option(AIRSPY OFF)
-option(SDRPLAY_V2 OFF)
+# attention: option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this
+# As I (tomneda) possess not all of these devices I place an "untested" behind. They may run, or not run.
+option(AIRSPY OFF)       # untested
+option(SDRPLAY_V2 OFF)   # untested
 option(SDRPLAY OFF)
 option(HACKRF OFF)
-option(LIMESDR OFF)
-option(RTL_TCP OFF)
-option(PLUTO OFF)
-option(UHD OFF)
+option(LIMESDR OFF)      # untested
+option(RTL_TCP OFF)      # untested
+option(PLUTO OFF)        # untested
+option(UHD OFF)          # untested (have the device but not working yet)
 # Note that since there are problems with the rtlsdr interface under Windows we split the rtlsdr interface
 # into two versions one for Linux and one for Window
 option(RTLSDR_LINUX OFF)
-option(RTLSDR_WIN OFF)
+option(RTLSDR_WIN OFF)   # untested (windows in general)
 
+# additional options
+option(USE_HBF "Use oversampling with half band filter (needs liquid-dsp)" OFF)  # this needs liquid
 option(DATA_STREAMER OFF)
 option(VITERBI_SSE OFF)
 option(VITERBI_NEON OFF)
