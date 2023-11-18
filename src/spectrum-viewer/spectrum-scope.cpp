@@ -62,7 +62,7 @@ SpectrumScope::~SpectrumScope()
 
 void SpectrumScope::show_spectrum(const double * X_axis, const double * Y_value, int32_t amplification)
 {
-  const double factor = (double)amplification / 100.0; // amplification is between [1..100], so factor ]0..100]
+  const double factor = (double)amplification / 100.0; // amplification is between [1..100], so factor <= 1
   const double levelBottomdB = get_db(0.0); // eg. about -42 (dB)
   const double levelTopdB = (1.0 - factor) * levelBottomdB;
 

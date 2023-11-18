@@ -109,20 +109,14 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
   for (int32_t i = 0; i < iNoSamples; i++)
   {
     currentPhase -= iFreqOffsetBBHz;
-    //
+
     //	Note that "phase" itself might be negative
     currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
-    assert(currentPhase >= 0);  // happens with currentPhase < -INPUT_RATE
+    assert(currentPhase >= 0);  // could happen with currentPhase < -INPUT_RATE
 
-    if (localCounter < bufferSize)
-    {
-      localBuffer[localCounter] = oV[i];
-      ++localCounter;
-    }
-
-    // The mixing has no effect on the absolute level detection, so do it beforehand.
     cmplx v = buffer[i];
 
+    // Perform DC removal if wanted
     if (dcRemovalActive)
     {
       const float v_r = real(v);
@@ -133,9 +127,16 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
       v = cmplx(v_r - dcReal, v_i - dcImag);
     }
 
+    // The mixing has no effect on the absolute level detection, so do it beforehand
     const float v_abs = std::abs(v);
     if (v_abs > peakLevel) peakLevel = v_abs;
     mean_filter(sLevel, v_abs, 0.00001f);
+
+    if (localCounter < bufferSize)
+    {
+      localBuffer[localCounter] = v;
+      ++localCounter;
+    }
 
     oV[iStartIdx + i] = v * oscillatorTable[currentPhase];
   }
