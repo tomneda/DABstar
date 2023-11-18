@@ -6,36 +6,50 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>136</width>
-    <height>166</height>
+    <width>258</width>
+    <height>244</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>258</width>
+    <height>244</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>366</width>
+    <height>271</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QFrame" name="frame">
+  <widget class="QWidget" name="formLayoutWidget">
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>0</y>
-     <width>127</width>
-     <height>155</height>
+     <y>10</y>
+     <width>109</width>
+     <height>146</height>
     </rect>
    </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
-   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>UHD device</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Gain</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
      <widget class="QSpinBox" name="externalGain">
       <property name="maximum">
        <number>103</number>
@@ -45,14 +59,14 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="label_5">
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_4">
       <property name="text">
-       <string>Gain</string>
+       <string>ppm</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
+    <item row="2" column="1">
      <widget class="QSpinBox" name="f_correction">
       <property name="minimum">
        <number>-100</number>
@@ -62,40 +76,29 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>ppm</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QSpinBox" name="KhzOffset">
-      <property name="maximum">
-       <number>1000000</number>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
+    <item row="3" column="0">
      <widget class="QLabel" name="label_3">
       <property name="text">
        <string>kHz</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>UHD device</string>
+    <item row="3" column="1">
+     <widget class="QSpinBox" name="KhzOffset">
+      <property name="maximum">
+       <number>1000000</number>
       </property>
      </widget>
     </item>
-    <item row="4" column="0" colspan="2">
-     <widget class="QLabel" name="statusLabel">
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_2">
       <property name="text">
-       <string/>
+       <string>Ant</string>
       </property>
      </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="cmbAnt"/>
     </item>
    </layout>
   </widget>

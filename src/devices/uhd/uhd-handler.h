@@ -71,6 +71,7 @@ public:
   QString deviceName() override;
 
 private:
+  static constexpr char SETTING_GROUP_NAME[] = "uhdSettings";
   QSettings * uhdSettings;
   QFrame myFrame{nullptr};
   uhd::usrp::multi_usrp::sptr m_usrp;
@@ -81,11 +82,13 @@ private:
   int32_t ringbufferSize = 1024;
 
   [[nodiscard]] int16_t _maxGain() const;
+  void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);
 
 private slots:
   void _slot_set_external_gain(int) const;
   void _slot_set_f_correction(int) const;
   void _slot_set_khz_offset(int);
+  void _slot_handle_ant_selector(const QString &);
 };
 
 #endif

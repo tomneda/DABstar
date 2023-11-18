@@ -106,16 +106,29 @@ UhdHandler::UhdHandler(QSettings * s) :
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
+  std::vector<std::string> antList;
+
   // create a usrp device.
   std::string args;
   std::cout << std::endl;
-  std::cout << boost::format("Creating the usrp device with: %s...") % args << std::endl;
+  std::cout << boost::format("Creating the USRP device with: %s...") % args << std::endl;
   try
   {
     m_usrp = uhd::usrp::multi_usrp::make(args);
 
     std::string ref("internal");
     m_usrp->set_clock_source(ref);
+
+    // fill antenna connectors combobox
+    antList = m_usrp->get_rx_antennas();
+    if (antList.empty())
+    {
+      antList.emplace_back("(empty)");
+    }
+    for (const auto & al : antList)
+    {
+      cmbAnt->addItem(al.c_str());
+    }
 
     std::cout << boost::format("Using Device: %s") % m_usrp->get_pp_string() << std::endl;
     //	set sample rate
@@ -128,24 +141,28 @@ UhdHandler::UhdHandler(QSettings * s) :
   }
   catch (...)
   {
-    fprintf(stderr, "No luck with uhd\n");
+    qWarning("No luck with UHD\n");
     throw (uhd_exception("No luck with UHD"));
   }
   //	some housekeeping for the local frame
   externalGain->setMaximum(_maxGain());
-  uhdSettings->beginGroup("uhdSettings");
+  uhdSettings->beginGroup(SETTING_GROUP_NAME);
   externalGain->setValue(uhdSettings->value("externalGain", 40).toInt());
   f_correction->setValue(uhdSettings->value("f_correction", 0).toInt());
   KhzOffset->setValue(uhdSettings->value("KhzOffset", 0).toInt());
   uhdSettings->endGroup();
 
+  _load_save_combobox_settings(cmbAnt, "antSelector", false);
+
   _slot_set_external_gain(externalGain->value());
   _slot_set_khz_offset(KhzOffset->value());
   _slot_set_f_correction(f_correction->value());
+  _slot_handle_ant_selector(cmbAnt->currentText());
 
   connect(externalGain, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_external_gain);
   connect(KhzOffset, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_khz_offset);
   connect(f_correction, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_f_correction);
+  connect(cmbAnt, &QComboBox::textActivated, this, &UhdHandler::_slot_handle_ant_selector);
 }
 
 UhdHandler::~UhdHandler()
@@ -269,3 +286,34 @@ void UhdHandler::_slot_set_khz_offset(int o)
   vfoOffset = o;
 }
 
+void UhdHandler::_slot_handle_ant_selector(const QString & iAnt)
+{
+  try
+  {
+    m_usrp->set_rx_antenna(iAnt.toStdString());
+    _load_save_combobox_settings(cmbAnt, "antSelector", true);
+  }
+  catch (...)
+  {
+    qWarning("Unknown Antenna name: %s", iAnt.toStdString().c_str());
+  }
+}
+
+void UhdHandler::_load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave)
+{
+  uhdSettings->beginGroup(SETTING_GROUP_NAME);
+  if (iSave)
+  {
+    uhdSettings->setValue(iName, ipCmb->currentText());
+  }
+  else
+  {
+    const QString h = uhdSettings->value(iName, "default").toString();
+    const int32_t k = ipCmb->findText(h);
+    if (k != -1)
+    {
+      ipCmb->setCurrentIndex(k);
+    }
+  }
+  uhdSettings->endGroup();
+}
