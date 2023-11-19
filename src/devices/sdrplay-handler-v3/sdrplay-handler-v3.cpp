@@ -156,7 +156,7 @@ std::string errorMessage (int errorCode) {
 	if (failFlag. load ()) {
 	   while (isRunning ())
 	      usleep (1000);
-	   throw sdrplay_3_exception (errorMessage (errorCode));
+	   throw std_exception_string (errorMessage (errorCode));
 	}
 
 	fprintf (stderr, "setup sdrplay v3 seems successfull\n");

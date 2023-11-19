@@ -142,7 +142,7 @@ UhdHandler::UhdHandler(QSettings * s) :
   catch (...)
   {
     qWarning("No luck with UHD\n");
-    throw (uhd_exception("No luck with UHD"));
+    throw (std_exception_string("No luck with UHD"));
   }
   //	some housekeeping for the local frame
   externalGain->setMaximum(_maxGain());

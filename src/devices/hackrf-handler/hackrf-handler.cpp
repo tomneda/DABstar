@@ -79,13 +79,13 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
 
   if (!mpHandle->isLoaded())
   {
-    throw (hackrf_exception("failed to open " + std::string(libraryString)));
+    throw (std_exception_string("failed to open " + std::string(libraryString)));
   }
 
   if (!load_hackrf_functions())
   {
     delete mpHandle;
-    throw (hackrf_exception("could not find one or more library functions"));
+    throw (std_exception_string("could not find one or more library functions"));
   }
 
   //	From here we have a library available
@@ -547,7 +547,7 @@ void HackRfHandler::check_err_throw(int32_t iResult) const
 {
   if (iResult != HACKRF_SUCCESS)
   {
-    throw (hackrf_exception(mHackrf.error_name((hackrf_error)iResult)));
+    throw (std_exception_string(mHackrf.error_name((hackrf_error)iResult)));
   }
 }
 
