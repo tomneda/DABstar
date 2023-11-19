@@ -57,15 +57,6 @@ public:
   virtual bool isHidden() = 0;
   virtual QString deviceName() = 0;
   virtual bool isFileInput() = 0;
-  //virtual QPoint get_coords() = 0;
-  //virtual void moveTo(QPoint) = 0;
-
-//protected:
-//  int32_t lastFrequency = 100000;
-//  int32_t vfoOffset;
-//  int theGain;
-//  int32_t coarseOffset;
 };
 
 #endif
-

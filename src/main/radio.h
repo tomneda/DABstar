@@ -1,4 +1,14 @@
 /*
+ * Copyright (c) 2023
+ * Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  * This file is adapted by Thomas Neder (https://github.com/tomneda)
  *
  * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
@@ -212,28 +222,27 @@ private:
   TechData * theTechWindow;
   Ui_configWidget configWidget;
   QSettings * dabSettings;
-  int16_t tii_delay;
   int32_t dataPort;
   bool stereoSetting;
   std::atomic<bool> running;
   std::atomic<bool> scanning;
-  IDeviceHandler * inputDevice;
+  IDeviceHandler * mpInputDevice;
 #ifdef  HAVE_PLUTO_RXTX
-  dabStreamer		*streamerOut;
+  dabStreamer * streamerOut;
 #endif
   DabProcessor * my_dabProcessor;
   AudioBase * soundOut;
 #ifdef  DATA_STREAMER
-  tcpServer		*dataStreamer;
+  tcpServer * dataStreamer;
 #endif
 #ifdef  CLOCK_STREAMER
-  tcpServer		*clockStreamer;
+  tcpServer * clockStreamer;
 #endif
   CEPGDecoder epgHandler;
   epgDecoder epgProcessor;
   QString epgPath;
   QTimer epgTimer;
-  bool saveSlides;
+  //bool saveSlides;
   QString picturesPath;
   QString filePath;
   SNDFILE * rawDumper;
@@ -254,9 +263,7 @@ private:
   int total_fics;
   struct theTime localTime;
   struct theTime UTC;
-  int serviceCount;
   historyHandler * my_history;
-  historyHandler * my_presets;
   timeTableHandler * my_timeTable;
   ServiceListHandler * mpServiceListHandler = nullptr;
   FILE * ficDumpPointer;
@@ -276,7 +283,9 @@ private:
   void cleanScreen();
   void hideButtons();
   void showButtons();
-  IDeviceHandler * create_device(const QString &);
+
+  QStringList get_device_name_list();
+  IDeviceHandler * create_device(const QString & s);
 
   void start_etiHandler();
   void stop_etiHandler();

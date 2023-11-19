@@ -1,6 +1,5 @@
 linux-bin
-cmake-build-debug
-cmake-build-release
+/cmake-build-*/
 Makefile
 Output
 CMakeLists.txt.user

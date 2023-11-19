@@ -76,7 +76,7 @@ set(TCP_STREAMER OFF)
 # As I (tomneda) possess not all of these devices I place an "untested" behind. They may run, or not run.
 option(AIRSPY OFF)       # untested
 option(SDRPLAY_V2 OFF)   # untested
-option(SDRPLAY OFF)
+option(SDRPLAY_V3 OFF)
 option(HACKRF OFF)
 option(LIMESDR OFF)      # untested
 option(RTL_TCP OFF)      # untested
@@ -200,8 +200,9 @@ include_directories(
         ${QT5Widgets_INCLUDES}
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
-        src/support
         src
+        src/main
+        src/support
         src/ofdm
         src/protection
         src/backend
@@ -230,14 +231,14 @@ include_directories(
 )
 
 set(${objectName}_HDRS
-        src/radio.h
-        src/glob_defs.h
-        src/glob_enums.h
-        src/dab-processor.h
+        src/main/radio.h
+        src/main/glob_defs.h
+        src/main/glob_enums.h
+        src/main/dab-processor.h
+        src/main/dab-constants.h
+        src/main/mot-content-types.h
         src/eti-handler/eti-generator.h
-        src/dab-constants.h
         src/data_manip_and_checks.h
-        src/mot-content-types.h
         src/ofdm/sample-reader.h
         src/ofdm/phasereference.h
         src/ofdm/ofdm-decoder.h
@@ -338,10 +339,11 @@ set(${objectName}_HDRS
 
 set(${objectName}_SRCS
         ${${objectName}_SRCS}
-        src/main.cpp
-        src/radio.cpp
+        src/main/main.cpp
+        src/main/radio.cpp
+        src/main/radio_create_device.cpp
+        src/main/dab-processor.cpp
         src/support/techdata.cpp
-        src/dab-processor.cpp
         src/eti-handler/eti-generator.cpp
         src/ofdm/sample-reader.cpp
         src/ofdm/ofdm-decoder.cpp
@@ -430,9 +432,9 @@ set(${objectName}_SRCS
         )
 
 set(${objectName}_MOCS
-        src/radio.h
+        src/main/radio.h
+        src/main/dab-processor.h
         src/support/techdata.h
-        src/dab-processor.h
         src/output/audio-base.h
         src/ofdm/sample-reader.h
         src/ofdm/ofdm-decoder.h
@@ -598,7 +600,7 @@ if (SDRPLAY_V2)
     add_definitions(-DHAVE_SDRPLAY_V2)
 endif (SDRPLAY_V2)
 
-if (SDRPLAY)
+if (SDRPLAY_V3)
     set(${objectName}_UIS
             ${${objectName}_UIS}
             src/devices/sdrplay-handler-v3/sdrplay-widget-v3.ui
@@ -638,7 +640,7 @@ if (SDRPLAY)
             )
 
     add_definitions(-DHAVE_SDRPLAY_V3)
-endif (SDRPLAY)
+endif (SDRPLAY_V3)
 
 if (AIRSPY)
     #           find_package(LibAIRSPY)
