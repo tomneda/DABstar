@@ -306,3 +306,8 @@ void UhdHandler::_load_save_combobox_settings(QComboBox * ipCmb, const QString &
   }
   uhdSettings->endGroup();
 }
+
+bool UhdHandler::isFileInput()
+{
+  return false;
+}

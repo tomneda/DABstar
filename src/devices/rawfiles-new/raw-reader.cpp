@@ -35,9 +35,9 @@ struct timeval  tv;
         return ((int64_t)tv. tv_sec * 1000000 + (int64_t)tv. tv_usec);
 }
 
-	rawReader::rawReader	(rawFiles *mr,
-	                         FILE	*filePointer,
-	                         RingBuffer<cmplx> *_I_Buffer) {
+	rawReader::rawReader	(RawFileHandler *mr,
+                         FILE	*filePointer,
+                         RingBuffer<cmplx> *_I_Buffer) {
 	this	-> parent	= mr;
 	this	-> filePointer	= filePointer;
 	this	-> _I_Buffer	= _I_Buffer;

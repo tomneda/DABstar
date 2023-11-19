@@ -223,6 +223,7 @@ include_directories(
         src/devices/rawfiles-new
         src/devices/wavfiles-new
         src/devices/xml-filereader
+        src/devices/dummy-handler
         src/eti-handler
         src/service-list
         /usr/include/
@@ -331,6 +332,7 @@ set(${objectName}_HDRS
         src/devices/xml-filereader/xml-filereader.h
         src/devices/xml-filereader/xml-reader.h
         src/devices/xml-filereader/xml-descriptor.h
+        src/devices/dummy-handler/dummy-handler.h
         src/service-list/ServiceListHandler.h
         )
 
@@ -416,7 +418,6 @@ set(${objectName}_SRCS
         src/spectrum-viewer/spectrum-scope.cpp
         src/spectrum-viewer/waterfall-scope.cpp
         src/spectrum-viewer/correlation-viewer.cpp
-        src/devices/device-handler.cpp
         src/devices/xml-filewriter.cpp
         src/devices/rawfiles-new/rawfiles.cpp
         src/devices/rawfiles-new/raw-reader.cpp

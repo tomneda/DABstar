@@ -3,18 +3,18 @@
 
 #include	"Rsp-device.h"
 
-class	sdrplayHandler_v3;
+class	SdrPlayHandler_v3;
 
 class	RspDuo_handler: public Rsp_device {
 public:
-		RspDuo_handler (sdrplayHandler_v3 *parent,
-	                       sdrplay_api_DeviceT *chosenDevice,
-	                       int	sampleRate,
-	                       int	freq,
-	                       bool	agcMode,
-	                       int	lnaState,
-	                       int 	GRdB,
-	                       bool	biasT);
+		RspDuo_handler (SdrPlayHandler_v3 *parent,
+                    sdrplay_api_DeviceT *chosenDevice,
+                    int	sampleRate,
+                    int	freq,
+                    bool	agcMode,
+                    int	lnaState,
+                    int 	GRdB,
+                    bool	biasT);
 		~RspDuo_handler	();
 
 	int	lnaStates	(int frequency);

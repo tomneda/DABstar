@@ -2,14 +2,14 @@
 #include	"RspDx-handler.h"
 #include	"sdrplay-handler-v3.h"
 
-	RspDx_handler::RspDx_handler (sdrplayHandler_v3 *parent,
-	                              sdrplay_api_DeviceT *chosenDevice,
-	                              int	sampleRate,
-	                              int	freq,
-	                              bool	agcMode,
-	                              int	lnaState,
-	                              int 	GRdB,
-	                              bool	biasT) :
+	RspDx_handler::RspDx_handler (SdrPlayHandler_v3 *parent,
+                                sdrplay_api_DeviceT *chosenDevice,
+                                int	sampleRate,
+                                int	freq,
+                                bool	agcMode,
+                                int	lnaState,
+                                int 	GRdB,
+                                bool	biasT) :
 	                              Rsp_device (parent,
 	                                          chosenDevice, 
 	                                         sampleRate,

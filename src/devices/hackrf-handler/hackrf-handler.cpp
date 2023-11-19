@@ -561,6 +561,11 @@ bool HackRfHandler::check_err(int32_t iResult, const char * const iFncName, uint
   return true;
 }
 
+bool HackRfHandler::isFileInput()
+{
+  return false;
+}
+
 template<typename T> bool HackRfHandler::load_method(T *& oMethodPtr, const char * iName, uint32_t iLine) const
 {
   oMethodPtr = reinterpret_cast<T*>(mpHandle->resolve(iName));

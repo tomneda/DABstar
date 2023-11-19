@@ -34,9 +34,9 @@ struct timeval  tv;
         return ((int64_t)tv. tv_sec * 1000000 + (int64_t)tv. tv_usec);
 }
 
-	wavReader::wavReader	(wavFiles	*mr,
-	                         SNDFILE	*filePointer,
-	                         RingBuffer<cmplx> *theBuffer) {
+	WavReader::WavReader	(WavFileHandler	*mr,
+                         SNDFILE	*filePointer,
+                         RingBuffer<cmplx> *theBuffer) {
 	this	-> parent	= mr;
 	this	-> filePointer	= filePointer;
 	this	-> theBuffer	= theBuffer;
@@ -49,11 +49,11 @@ struct timeval  tv;
 	start();
 }
 
-	wavReader::~wavReader() {
+	WavReader::~WavReader() {
 	stopReader();
 }
 
-void	wavReader::stopReader() {
+void	WavReader::stopReader() {
 	if (running. load()) {
 	   running. store (false);
 	   while (isRunning())
@@ -61,7 +61,7 @@ void	wavReader::stopReader() {
 	}
 }
 
-void	wavReader::run	() {
+void	WavReader::run	() {
 int32_t	bufferSize	= 32768;
 int64_t	nextStop;
 int	teller		= 0;

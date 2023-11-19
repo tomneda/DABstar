@@ -88,7 +88,7 @@ using pfn_hackrf_library_release = const char* (*)();
 
 
 ///////////////////////////////////////////////////////////////////////////
-class HackRfHandler final : public QObject, public deviceHandler, public Ui_hackrfWidget
+class HackRfHandler final : public QObject, public IDeviceHandler, public Ui_hackrfWidget
 {
 Q_OBJECT
 public:
@@ -108,6 +108,8 @@ public:
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
+  bool isFileInput() override;
+
 
   using TRingBuffer = RingBuffer<std::complex<int8_t> >;
   TRingBuffer mRingBuffer{ 4 * 1024 * 1024 }; // The buffer should be visible by the callback function

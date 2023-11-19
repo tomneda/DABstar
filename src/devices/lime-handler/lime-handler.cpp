@@ -32,8 +32,8 @@ static
 int16_t localBuffer [4 * FIFO_SIZE];
 lms_info_str_t limedevices [10];
 
-	limeHandler::limeHandler (QSettings *s,
-	                          QString &recorderVersion):
+	LimeHandler::LimeHandler (QSettings *s,
+                            QString &recorderVersion):
 	                             myFrame (nullptr),
 	                             _I_Buffer (4* 1024 * 1024),
 	                             theFilter (5, 1560000 / 2, 2048000) {
@@ -181,7 +181,7 @@ lms_info_str_t limedevices [10];
 	running. store (false);
 }
 
-	limeHandler::~limeHandler() {
+	LimeHandler::~LimeHandler() {
 	stopReader ();
 	running. store (false);
 	while (isRunning())
@@ -195,33 +195,33 @@ lms_info_str_t limedevices [10];
 	LMS_Close (theDevice);
 }
 
-void	limeHandler::setVFOFrequency	(int32_t f) {
+void	LimeHandler::setVFOFrequency	(int32_t f) {
 	LMS_SetLOFrequency (theDevice, LMS_CH_RX, 0, f);
 }
 
-int32_t	limeHandler::getVFOFrequency() {
+int32_t	LimeHandler::getVFOFrequency() {
 float_type freq;
 	/*int res = */LMS_GetLOFrequency (theDevice, LMS_CH_RX, 0, &freq);
 	return (int)freq;
 }
 
-void	limeHandler::setGain		(int g) {
+void	LimeHandler::setGain		(int g) {
 float_type gg;
 	LMS_SetGaindB (theDevice, LMS_CH_RX, 0, g);
 	LMS_GetNormalizedGain (theDevice, LMS_CH_RX, 0, &gg);
 	actualGain	-> display (gg);
 }
 
-void	limeHandler::setAntenna		(int ind) {
+void	LimeHandler::setAntenna		(int ind) {
 	(void)LMS_SetAntenna (theDevice, LMS_CH_RX, 0, ind);
 }
 
-void	limeHandler::set_filter		(int c) {
+void	LimeHandler::set_filter		(int c) {
 	filtering	= filterSelector -> isChecked ();
 	fprintf (stderr, "filter set %s\n", filtering ? "on" : "off");
 }
 
-bool	limeHandler::restartReader	(int32_t freq) {
+bool	LimeHandler::restartReader	(int32_t freq) {
 int	res;
 
 	if (isRunning())
@@ -250,7 +250,7 @@ int	res;
 	return true;
 }
 	
-void	limeHandler::stopReader() {
+void	LimeHandler::stopReader() {
 	close_xmlDump ();
 	if (!isRunning())
 	   return;
@@ -264,7 +264,7 @@ void	limeHandler::stopReader() {
 	(void)LMS_DestroyStream	(theDevice, &stream);
 }
 
-int	limeHandler::getSamples	(cmplx *V, int32_t size) {
+int	LimeHandler::getSamples	(cmplx *V, int32_t size) {
 std::complex<int16_t> temp [size];
 
         int amount      = _I_Buffer. getDataFromBuffer (temp, size);
@@ -287,29 +287,29 @@ std::complex<int16_t> temp [size];
         return amount;
 }
 
-int	limeHandler::Samples() {
+int	LimeHandler::Samples() {
 	return _I_Buffer. GetRingBufferReadAvailable();
 }
 
-void	limeHandler::resetBuffer() {
+void	LimeHandler::resetBuffer() {
 	_I_Buffer. FlushRingBuffer();
 }
 
-int16_t	limeHandler::bitDepth() {
+int16_t	LimeHandler::bitDepth() {
 	return 12;
 }
 
-QString	limeHandler::deviceName	() {
+QString	LimeHandler::deviceName	() {
 	return "limeSDR";
 }
 
-void	limeHandler::showErrors		(int underrun, int overrun) {
+void	LimeHandler::showErrors		(int underrun, int overrun) {
 	underrunDisplay	-> display (underrun);
 	overrunDisplay	-> display (overrun);
 }
 
 
-void	limeHandler::run() {
+void	LimeHandler::run() {
 int	res;
 lms_stream_status_t streamStatus;
 int	underruns	= 0;
@@ -337,7 +337,7 @@ int	amountRead	= 0;
 	}
 }
 
-bool	limeHandler::load_limeFunctions() {
+bool	LimeHandler::load_limeFunctions() {
 
 	this	-> LMS_GetDeviceList = (pfn_LMS_GetDeviceList)
 	                    GETPROCADDRESS (Handle, "LMS_GetDeviceList");
@@ -505,7 +505,7 @@ bool	limeHandler::load_limeFunctions() {
 	return true;
 }
 
-void	limeHandler::set_xmlDump () {
+void	LimeHandler::set_xmlDump () {
 	if (xmlDumper == nullptr) {
 	  if (setup_xmlDump ())
 	      dumpButton	-> setText ("writing");
@@ -521,7 +521,7 @@ bool	isValid (QChar c) {
 	return c. isLetterOrNumber () || (c == '-');
 }
 
-bool	limeHandler::setup_xmlDump () {
+bool	LimeHandler::setup_xmlDump () {
 QTime	theTime;
 QDate	theDate;
 QString saveDir = limeSettings -> value ("saveDir_xmlDump",
@@ -565,7 +565,7 @@ QString saveDir = limeSettings -> value ("saveDir_xmlDump",
 	return true;
 }
 
-void	limeHandler::close_xmlDump () {
+void	LimeHandler::close_xmlDump () {
 	if (xmlDumper == nullptr)	// this can happen !!
 	   return;
 	dumping. store (false);
@@ -576,19 +576,19 @@ void	limeHandler::close_xmlDump () {
 	xmlDumper	= nullptr;
 }
 
-void	limeHandler::show	() {
+void	LimeHandler::show	() {
 	myFrame. show ();
 }
 
-void	limeHandler::hide	() {
+void	LimeHandler::hide	() {
 	myFrame. hide ();
 }
 
-bool	limeHandler::isHidden	() {
+bool	LimeHandler::isHidden	() {
 	return myFrame. isHidden ();
 }
 
-void	limeHandler::record_gainSettings	(int key) {
+void	LimeHandler::record_gainSettings	(int key) {
 int gainValue	= gainSelector -> value ();
 QString theValue	= QString::number (gainValue);
 
@@ -597,7 +597,7 @@ QString theValue	= QString::number (gainValue);
         limeSettings	-> endGroup ();
 }
 
-void	limeHandler::update_gainSettings	(int key) {
+void	LimeHandler::update_gainSettings	(int key) {
 int	gainValue;
 
 	limeSettings	-> beginGroup ("limeSettings");
@@ -613,5 +613,10 @@ int	gainValue;
 	   usleep (1000);
 	actualGain	-> display (gainValue);
 	gainSelector	-> blockSignals (false);
+}
+
+bool LimeHandler::isFileInput()
+{
+  return false;
 }
 

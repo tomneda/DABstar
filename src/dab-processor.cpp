@@ -41,7 +41,7 @@
   *	local are classes OfdmDecoder, FicHandler and mschandler.
   */
 
-DabProcessor::DabProcessor(RadioInterface * const mr, deviceHandler * const inputDevice, ProcessParams * const p) :
+DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p) :
   mpRadioInterface(mr),
   mSampleReader(mr, inputDevice, p->spectrumBuffer),
   mFicHandler(mr, p->dabMode),

@@ -123,12 +123,12 @@ struct stream_cfg {
         const char *rfport;
 };
 
-class	plutoHandler: public QThread, public deviceHandler,
-	                                     public Ui_plutoWidget {
+class	PlutoHandler: public QThread, public IDeviceHandler,
+                     public Ui_plutoWidget {
 Q_OBJECT
 public:
-			plutoHandler		(QSettings *, QString &);
-            		~plutoHandler		();
+			PlutoHandler		(QSettings *, QString &);
+            		~PlutoHandler		();
 	void		setVFOFrequency		(int32_t);
 	int32_t		getVFOFrequency		();
 	bool		restartReader		(int32_t);

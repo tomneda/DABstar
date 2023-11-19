@@ -48,26 +48,30 @@
 #include  "ringbuffer.h"
 #include  "ui_rtl_tcp-widget.h"
 
-class RtlTcpClient : public QObject, public deviceHandler, Ui_rtl_tcp_widget
+class RtlTcpClient final : public QObject, public IDeviceHandler, Ui_rtl_tcp_widget
 {
 Q_OBJECT
 public:
-  RtlTcpClient(QSettings *);
-  ~RtlTcpClient();
+  explicit RtlTcpClient(QSettings *);
+  ~RtlTcpClient() override;
+
+  void setVFOFrequency(int32_t) override;
+  int32_t getVFOFrequency() override;
+  bool restartReader(int32_t) override;
+  void stopReader() override;
+  int32_t getSamples(cmplx * V, int32_t size) override;
+  int32_t Samples() override;
+  void show() override;
+  void hide() override;
+  bool isHidden() override;
+  int16_t bitDepth() override;
+  QString deviceName() override;
+  bool isFileInput() override;
+  void resetBuffer() override;
 
   int32_t getRate();
   int32_t defaultFrequency();
-  void setVFOFrequency(int32_t);
-  int32_t getVFOFrequency();
-  bool restartReader(int32_t);
-  void stopReader();
-  int32_t getSamples(cmplx * V, int32_t size);
-  int32_t Samples();
-  void show();
-  void hide();
-  bool isHidden();
-  int16_t bitDepth();
-
+  
 private slots:
   void sendGain(int);
   void set_Offset(int);
@@ -94,6 +98,7 @@ private:
   QHostAddress serverAddress;
   QTcpSocket toServer;
   qint64 basePort;
+  int32_t vfoOffset = 0;
   bool dumping;
   FILE * dumpfilePointer;
 };

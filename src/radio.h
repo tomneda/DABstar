@@ -67,7 +67,7 @@
 #include  "http-handler.h"
 
 class QSettings;
-class deviceHandler;
+class IDeviceHandler;
 class AudioBase;
 class historyHandler;
 class timeTableHandler;
@@ -217,7 +217,7 @@ private:
   bool stereoSetting;
   std::atomic<bool> running;
   std::atomic<bool> scanning;
-  deviceHandler * inputDevice;
+  IDeviceHandler * inputDevice;
 #ifdef  HAVE_PLUTO_RXTX
   dabStreamer		*streamerOut;
 #endif
@@ -276,7 +276,7 @@ private:
   void cleanScreen();
   void hideButtons();
   void showButtons();
-  deviceHandler * create_device(const QString &);
+  IDeviceHandler * create_device(const QString &);
 
   void start_etiHandler();
   void stop_etiHandler();

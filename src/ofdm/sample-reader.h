@@ -52,7 +52,7 @@ class SampleReader : public QObject
 {
 Q_OBJECT
 public:
-  SampleReader(const RadioInterface * mr, deviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr);
+  SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr);
   ~SampleReader() override = default;
 
   void setRunning(bool b);
@@ -71,7 +71,7 @@ private:
   static constexpr uint16_t DUMPSIZE = 4096;
 
   RadioInterface * myRadioInterface;
-  deviceHandler * theRig;
+  IDeviceHandler * theRig;
   RingBuffer<cmplx> * spectrumBuffer;
   std::vector<cmplx> localBuffer;
   std::array<cmplx, INPUT_RATE> oscillatorTable{};

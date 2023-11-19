@@ -35,8 +35,8 @@ const	int	EXTIO_NS	=  8192;
 static
 const	int	EXTIO_BASE_TYPE_SIZE = sizeof (float);
 
-	airspyHandler::airspyHandler (QSettings *s,
-	                              QString recorderVersion):
+	AirspyHandler::AirspyHandler (QSettings *s,
+                                QString recorderVersion):
 	                                 myFrame (nullptr),	
                                          _I_Buffer (4 * 1024 * 1024) {
 int	result, i;
@@ -209,7 +209,7 @@ uint32_t samplerateCount;
 	xmlDumper	= nullptr;
 }
 
-	airspyHandler::~airspyHandler () {
+	AirspyHandler::~AirspyHandler () {
 	stopReader ();
 	myFrame. hide ();
 	filtering	= false;
@@ -239,7 +239,7 @@ uint32_t samplerateCount;
 	releaseLibrary ();
 }
 
-void	airspyHandler::setVFOFrequency (int32_t nf) {
+void	AirspyHandler::setVFOFrequency (int32_t nf) {
 int result = my_airspy_set_freq (device, nf);
 
 	vfoFrequency	= nf;
@@ -249,21 +249,21 @@ int result = my_airspy_set_freq (device, nf);
 	}
 }
 
-int32_t	airspyHandler::getVFOFrequency() {
+int32_t	AirspyHandler::getVFOFrequency() {
 	return vfoFrequency;
 }
 
-int32_t	airspyHandler::defaultFrequency() {
+int32_t	AirspyHandler::defaultFrequency() {
 	return kHz (220000);
 }
 
-void	airspyHandler::set_filter	(int c) {
+void	AirspyHandler::set_filter	(int c) {
 	(void)c;
 	filtering	= filterSelector -> isChecked ();
 //	fprintf (stderr, "filter set %s\n", filtering ? "on" : "off");
 }
 
-bool	airspyHandler::restartReader	(int32_t freq) {
+bool	AirspyHandler::restartReader	(int32_t freq) {
 int	result;
 //int32_t	bufSize	= EXTIO_NS * EXTIO_BASE_TYPE_SIZE * 2;
 
@@ -314,7 +314,7 @@ int	result;
 	return true;
 }
 
-void	airspyHandler::stopReader() {
+void	AirspyHandler::stopReader() {
 int	result;
 
 	if (!running. load())
@@ -338,12 +338,12 @@ int	result;
 }
 //
 //	Directly copied from the airspy extio dll from Andrea Montefusco
-int airspyHandler::callback (airspy_transfer* transfer) {
-airspyHandler *p;
+int AirspyHandler::callback (airspy_transfer* transfer) {
+AirspyHandler *p;
 
 	if (!transfer)
 	   return 0;		// should not happen
-	p = static_cast<airspyHandler *> (transfer -> ctx);
+	p = static_cast<AirspyHandler *> (transfer-> ctx);
 
 // we read  AIRSPY_SAMPLE_INT16_IQ:
 	int32_t bytes_to_write = transfer -> sample_count * sizeof (int16_t) * 2; 
@@ -356,7 +356,7 @@ airspyHandler *p;
 //	2*2 = 4 bytes for sample, as per AirSpy USB data stream format
 //	we do the rate conversion here, read in groups of 2 * xxx samples
 //	and transform them into groups of 2 * 512 samples
-int 	airspyHandler::data_available (void *buf, int buf_size) {	
+int 	AirspyHandler::data_available (void *buf, int buf_size) {
 int16_t	*sbuf	= (int16_t *)buf;
 int nSamples	= buf_size / (sizeof (int16_t) * 2);
 cmplx temp [2048];
@@ -420,7 +420,7 @@ int32_t  i, j;
 	return 0;
 }
 //
-const char *airspyHandler::getSerial() {
+const char *AirspyHandler::getSerial() {
 airspy_read_partid_serialno_t read_partid_serialno;
 int result = my_airspy_board_partid_serialno_read (device,
 	                                          &read_partid_serialno);
@@ -437,7 +437,7 @@ int result = my_airspy_board_partid_serialno_read (device,
 }
 //
 //	not used here
-int	airspyHandler::open() {
+int	AirspyHandler::open() {
 //int result = my_airspy_open (&device);
 //
 //	if (result != AIRSPY_SUCCESS) {
@@ -452,24 +452,24 @@ int	airspyHandler::open() {
 
 //
 //	These functions are added for the SDR-J interface
-void	airspyHandler::resetBuffer	() {
+void	AirspyHandler::resetBuffer	() {
 	_I_Buffer. FlushRingBuffer	();
 }
 
-int16_t	airspyHandler::bitDepth		() {
+int16_t	AirspyHandler::bitDepth		() {
 	return 13;
 }
 
-int32_t	airspyHandler::getSamples (cmplx *v, int32_t size) {
+int32_t	AirspyHandler::getSamples (cmplx *v, int32_t size) {
 
 	return _I_Buffer. getDataFromBuffer (v, size);
 }
 
-int32_t	airspyHandler::Samples		() {
+int32_t	AirspyHandler::Samples		() {
 	return _I_Buffer. GetRingBufferReadAvailable();
 }
 //
-const char* airspyHandler::board_id_name() {
+const char* AirspyHandler::board_id_name() {
 uint8_t bid;
 
 	if (my_airspy_board_id_read (device, &bid) == AIRSPY_SUCCESS)
@@ -478,7 +478,7 @@ uint8_t bid;
 	   return "UNKNOWN";
 }
 //
-void    airspyHandler::releaseLibrary  () {
+void    AirspyHandler::releaseLibrary  () {
 #ifdef __MINGW32__
         FreeLibrary (Handle);
 #else
@@ -486,7 +486,7 @@ void    airspyHandler::releaseLibrary  () {
 #endif
 }
 
-bool	airspyHandler::load_airspyFunctions() {
+bool	AirspyHandler::load_airspyFunctions() {
 //
 //	link the required procedures
 	my_airspy_init	= (pfn_airspy_init)
@@ -657,15 +657,15 @@ bool	airspyHandler::load_airspyFunctions() {
 }
 
 
-int	airspyHandler::getBufferSpace	() {
+int	AirspyHandler::getBufferSpace	() {
 	return _I_Buffer. GetRingBufferWriteAvailable ();
 }
 
-QString	airspyHandler::deviceName	() {
+QString	AirspyHandler::deviceName	() {
 	return "AIRspy";
 }
 
-void	airspyHandler::set_xmlDump () {
+void	AirspyHandler::set_xmlDump () {
 	if (xmlDumper == nullptr) {
 	  if (setup_xmlDump ())
 	      dumpButton	-> setText ("writing");
@@ -681,7 +681,7 @@ bool	isValid (QChar c) {
 	return c. isLetterOrNumber () || (c == '-');
 }
 
-bool	airspyHandler::setup_xmlDump () {
+bool	AirspyHandler::setup_xmlDump () {
 QTime	theTime;
 QDate	theDate;
 QString saveDir = airspySettings -> value ("saveDir_xmlDump",
@@ -724,7 +724,7 @@ QString saveDir = airspySettings -> value ("saveDir_xmlDump",
 	return true;
 }
 
-void	airspyHandler::close_xmlDump () {
+void	AirspyHandler::close_xmlDump () {
 	if (xmlDumper == nullptr)	// this can happen !!
 	   return;
 	dumping. store (false);
@@ -735,21 +735,21 @@ void	airspyHandler::close_xmlDump () {
 	xmlDumper	= nullptr;
 }
 
-void	airspyHandler::show	() {
+void	AirspyHandler::show	() {
 	myFrame. show ();
 }
 
-void	airspyHandler::hide	() {
+void	AirspyHandler::hide	() {
 	myFrame. hide	();
 }
 
-bool	airspyHandler::isHidden	() {
+bool	AirspyHandler::isHidden	() {
 	return myFrame. isHidden ();
 }
 //
 //	gain settings are maintained on a per-channel and per tab base,
 //	Values are recorded on both switching tabs and changing channels
-void	airspyHandler::record_gainSettings	(int freq, int tab) {
+void	AirspyHandler::record_gainSettings	(int freq, int tab) {
 QString	res;
 QString key;
 
@@ -781,7 +781,7 @@ QString key;
 //	When starting a channel, the gain sliders from the previous
 //	time that channel was the current channel, are restored
 //	Note that the device settings are NOT yet updated
-void	airspyHandler::restore_gainSliders	(int freq, int tab) {
+void	AirspyHandler::restore_gainSliders	(int freq, int tab) {
 int	lna	= 0;
 int	mixer	= 0;
 int	bias	= 0;
@@ -868,7 +868,7 @@ QString key	= QString::number (freq) + "-" + QString::number (tab);
 	         this, SLOT (set_rf_bias (int)));
 }
 
-void	airspyHandler::restore_gainSettings	(int tab) {
+void	AirspyHandler::restore_gainSettings	(int tab) {
 	switch (tab) {
 	   case 0:	//sensitivity
 	      set_sensitivity (sensitivitySlider -> value ());
@@ -891,7 +891,7 @@ void	airspyHandler::restore_gainSettings	(int tab) {
 	   set_rf_bias (1);
 }
 
-void	airspyHandler::switch_tab (int t) {
+void	AirspyHandler::switch_tab (int t) {
 	record_gainSettings (getVFOFrequency () / MHz (1),
 	                           tabWidget -> currentIndex ());
 	tabWidget       -> blockSignals (true);
@@ -915,7 +915,7 @@ uint8_t airspy_sensitivity_vga_gains[GAIN_COUNT] = { 13, 12, 11, 10, 9, 8, 7, 6,
 uint8_t airspy_sensitivity_mixer_gains[GAIN_COUNT] = { 12, 12, 12, 12, 11, 10, 10, 9, 9, 8, 7, 4, 4, 4, 3, 2, 2, 1, 0, 0, 0, 0 };
 uint8_t airspy_sensitivity_lna_gains[GAIN_COUNT] = { 14, 14, 14, 14, 14, 14, 14, 14, 14, 13, 12, 12, 9, 9, 8, 7, 6, 5, 3, 2, 1, 0 };
 
-void	airspyHandler::set_linearity (int value) {
+void	AirspyHandler::set_linearity (int value) {
 int	result = my_airspy_set_linearity_gain (device, value);
 int	temp;
 	if (result != AIRSPY_SUCCESS) {
@@ -932,7 +932,7 @@ int	temp;
 	linearity_vgaDisplay	-> display (temp);
 }
 
-void	airspyHandler::set_sensitivity (int value) {
+void	AirspyHandler::set_sensitivity (int value) {
 int	result = my_airspy_set_sensitivity_gain (device, value);
 int	temp;
 	if (result != AIRSPY_SUCCESS) {
@@ -951,7 +951,7 @@ int	temp;
 
 //	Original functions from the airspy extio dll
 /* Parameter value shall be between 0 and 15 */
-void	airspyHandler::set_lna_gain (int value) {
+void	AirspyHandler::set_lna_gain (int value) {
 int result = my_airspy_set_lna_gain (device, lnaGain = value);
 
 	if (result != AIRSPY_SUCCESS) {
@@ -963,7 +963,7 @@ int result = my_airspy_set_lna_gain (device, lnaGain = value);
 }
 
 /* Parameter value shall be between 0 and 15 */
-void	airspyHandler::set_mixer_gain (int value) {
+void	AirspyHandler::set_mixer_gain (int value) {
 int result = my_airspy_set_mixer_gain (device, mixerGain = value);
 
 	if (result != AIRSPY_SUCCESS) {
@@ -975,7 +975,7 @@ int result = my_airspy_set_mixer_gain (device, mixerGain = value);
 }
 
 /* Parameter value shall be between 0 and 15 */
-void	airspyHandler::set_vga_gain (int value) {
+void	AirspyHandler::set_vga_gain (int value) {
 int result = my_airspy_set_vga_gain (device, vgaGain = value);
 
 	if (result != AIRSPY_SUCCESS) {
@@ -991,7 +991,7 @@ int result = my_airspy_set_vga_gain (device, vgaGain = value);
 	0=Disable LNA Automatic Gain Control
 	1=Enable LNA Automatic Gain Control
 */
-void	airspyHandler::set_lna_agc	(int dummy) {
+void	AirspyHandler::set_lna_agc	(int dummy) {
 	(void)dummy;
 	lna_agc	= lnaButton	-> isChecked ();
 	int result = my_airspy_set_lna_agc (device, lna_agc ? 1 : 0);
@@ -1006,7 +1006,7 @@ void	airspyHandler::set_lna_agc	(int dummy) {
 	0=Disable MIXER Automatic Gain Control
 	1=Enable MIXER Automatic Gain Control
 */
-void	airspyHandler::set_mixer_agc	(int dummy) {
+void	AirspyHandler::set_mixer_agc	(int dummy) {
 	(void)dummy;
 	mixer_agc	= mixerButton -> isChecked ();
 
@@ -1020,7 +1020,7 @@ int result = my_airspy_set_mixer_agc (device, mixer_agc ? 1 : 0);
 
 
 /* Parameter value shall be 0=Disable BiasT or 1=Enable BiasT */
-void	airspyHandler::set_rf_bias (int dummy) {
+void	AirspyHandler::set_rf_bias (int dummy) {
 	(void)dummy;
 	rf_bias	= biasButton -> isChecked ();
 int result = my_airspy_set_rf_bias (device, rf_bias ? 1 : 0);
@@ -1029,5 +1029,10 @@ int result = my_airspy_set_rf_bias (device, rf_bias ? 1 : 0);
 	   printf("airspy_set_rf_bias() failed: %s (%d)\n",
 	           my_airspy_error_name ((airspy_error)result), result);
 	}
+}
+
+bool AirspyHandler::isFileInput()
+{
+  return false;
 }
 

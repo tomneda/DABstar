@@ -53,6 +53,7 @@
 #include  "mapport.h"
 #include  "techdata.h"
 #include  "ServiceListHandler.h"
+#include  "dummy-handler.h"
 
 #ifdef  TCP_STREAMER
   #include "tcp-streamer.h"
@@ -1513,10 +1514,10 @@ void RadioInterface::_slot_update_time_display()
 
 //
 //	precondition: everything is quiet
-deviceHandler * RadioInterface::create_device(const QString & s)
+IDeviceHandler * RadioInterface::create_device(const QString & s)
 {
   QString file;
-  deviceHandler * inputDevice = nullptr;
+  IDeviceHandler * inputDevice = nullptr;
   //	OK, everything quiet, now let us see what to do
 
   channel.realChannel = true;    // until proven otherwise
@@ -1527,7 +1528,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
 	   return nullptr;
 #endif
 	   try {
-	      inputDevice	= new sdrplayHandler (dabSettings, version);
+	      inputDevice	= new SdrPlayHandler_v2 (dabSettings, version);
 	      showButtons();
 	   }
 	   catch (const std::exception &e) {
@@ -1546,7 +1547,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new sdrplayHandler_v3(dabSettings, version);
+      inputDevice = new SdrPlayHandler_v3(dabSettings, version);
       showButtons();
     }
     catch (const std::exception & e)
@@ -1567,7 +1568,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new rtlsdrHandler(dabSettings, version);
+      inputDevice = new RtlSdrHandler(dabSettings, version);
       showButtons();
     }
     catch (const std::exception & ex)
@@ -1586,7 +1587,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
 #ifdef  HAVE_AIRSPY
   if (s == "airspy") {
 	   try {
-	      inputDevice	= new airspyHandler (dabSettings, version);
+	      inputDevice	= new AirspyHandler (dabSettings, version);
 	      showButtons();
 	   }
 	   catch (const std::exception &e) {
@@ -1624,7 +1625,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
 #ifdef  HAVE_LIME
      if (s == "limeSDR") {
 	   try {
-	      inputDevice = new limeHandler (dabSettings, version);
+	      inputDevice = new LimeHandler (dabSettings, version);
 	      showButtons();
 	   }
 	   catch (const std::exception &e) {
@@ -1789,7 +1790,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
     file = QDir::toNativeSeparators(file);
     try
     {
-      inputDevice = new rawFiles(file);
+      inputDevice = new RawFileHandler(file);
       hideButtons();
       channel.realChannel = false;
     }
@@ -1810,7 +1811,7 @@ deviceHandler * RadioInterface::create_device(const QString & s)
     file = QDir::toNativeSeparators(file);
     try
     {
-      inputDevice = new wavFiles(file);
+      inputDevice = new WavFileHandler(file);
       channel.realChannel = false;
       hideButtons();
     }
@@ -1865,7 +1866,7 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
   inputDevice = create_device(deviceName);
   if (inputDevice == nullptr)
   {
-    inputDevice = new deviceHandler();
+    inputDevice = new DummyHandler();
     return;    // nothing will happen
   }
 

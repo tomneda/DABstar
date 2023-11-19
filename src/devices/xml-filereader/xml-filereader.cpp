@@ -173,3 +173,21 @@ bool	xml_fileReader::isFileInput	() {
 	return true;
 }
 
+void xml_fileReader::setVFOFrequency(int32_t)
+{
+}
+
+void xml_fileReader::resetBuffer()
+{
+}
+
+int16_t xml_fileReader::bitDepth()
+{
+  return 10; // TODO: taken from former default interface, is it correct?
+}
+
+QString xml_fileReader::deviceName()
+{
+  return "XmlFile";
+}
+

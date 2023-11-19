@@ -7,7 +7,7 @@
 #include	<cstdio>
 #include	<sdrplay_api.h>
 
-class	sdrplayHandler_v3;
+class	SdrPlayHandler_v3;
 
 class Rsp_device : public QObject {
 Q_OBJECT
@@ -20,20 +20,20 @@ protected:
 	int	GRdB;
 	sdrplay_api_RxChannelParamsT	*chParams;
 	sdrplay_api_DeviceParamsT	*deviceParams;
-	sdrplayHandler_v3	*parent;
+	SdrPlayHandler_v3	*parent;
 	int	lna_upperBound;
 	QString	deviceModel;
 	bool	antennaSelect;
 	int	nrBits;
 	bool	biasT;
 public:
-		Rsp_device 	(sdrplayHandler_v3 *parent,
-	                         sdrplay_api_DeviceT *chosenDevice,
-	                         int sampleRate,
-	                         int startFrequency,
-	                         bool agcMode,
-	                         int lnaState,
-	                         int GRdB, bool biasT);
+		Rsp_device 	(SdrPlayHandler_v3 *parent,
+                 sdrplay_api_DeviceT *chosenDevice,
+                 int sampleRate,
+                 int startFrequency,
+                 bool agcMode,
+                 int lnaState,
+                 int GRdB, bool biasT);
 	virtual	~Rsp_device	();
 virtual int	lnaStates	(int frequency);
 

@@ -5,13 +5,13 @@
 #include	<sdrplay_api.h>
 #include	"sdrplay-handler-v3.h"
 
-	Rsp_device::Rsp_device 	(sdrplayHandler_v3 *parent,
-	                         sdrplay_api_DeviceT *chosenDevice,
-	                         int sampleRate,
-	                         int startFreq,
-	                         bool agcMode,
-	                         int lnaState,
-	                         int GRdB, bool biasT) {
+	Rsp_device::Rsp_device 	(SdrPlayHandler_v3 *parent,
+                           sdrplay_api_DeviceT *chosenDevice,
+                           int sampleRate,
+                           int startFreq,
+                           bool agcMode,
+                           int lnaState,
+                           int GRdB, bool biasT) {
 sdrplay_api_ErrT        err;
 	this	-> parent	= parent;
 	this	-> chosenDevice	=  chosenDevice;

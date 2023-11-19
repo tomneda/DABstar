@@ -61,7 +61,7 @@ class DabProcessor : public QThread
 {
 Q_OBJECT
 public:
-  DabProcessor(RadioInterface * mr, deviceHandler * inputDevice, ProcessParams * p);
+  DabProcessor(RadioInterface * mr, IDeviceHandler * inputDevice, ProcessParams * p);
   ~DabProcessor() override;
 
   void start();

@@ -10,14 +10,14 @@ int     RSP1A_Table [4] [11] = {
 	{9, 0, 6, 12, 20, 26, 32, 38, 43, 62, -1}
 };
 
-	Rsp1A_handler::Rsp1A_handler (sdrplayHandler_v3 *parent,
-	                              sdrplay_api_DeviceT *chosenDevice,
-	                              int	sampleRate,
-	                              int	freq,
-	                              bool	agcMode,
-	                              int	lnaState,
-	                              int 	GRdB,
-	                              bool	biasT) :
+	Rsp1A_handler::Rsp1A_handler (SdrPlayHandler_v3 *parent,
+                                sdrplay_api_DeviceT *chosenDevice,
+                                int	sampleRate,
+                                int	freq,
+                                bool	agcMode,
+                                int	lnaState,
+                                int 	GRdB,
+                                bool	biasT) :
 	                              Rsp_device (parent,
 	                                          chosenDevice, 
 	                                          sampleRate,

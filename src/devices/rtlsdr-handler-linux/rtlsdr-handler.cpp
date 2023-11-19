@@ -72,7 +72,7 @@ float mapTable [] = {
 
 static
 void	RTLSDRCallBack (uint8_t *buf, uint32_t len, void *ctx) {
-rtlsdrHandler	*theStick	= (rtlsdrHandler *)ctx;
+RtlSdrHandler	*theStick	= (RtlSdrHandler *)ctx;
 
 	if ((theStick == nullptr) || (len != READLEN_DEFAULT)) {
 	   fprintf (stderr, "%d \n", len);
@@ -92,10 +92,10 @@ rtlsdrHandler	*theStick	= (rtlsdrHandler *)ctx;
 //	from the lib.
 class	dll_driver : public QThread {
 private:
-	rtlsdrHandler	*theStick;
+	RtlSdrHandler	*theStick;
 public:
 
-	dll_driver (rtlsdrHandler *d) {
+	dll_driver (RtlSdrHandler *d) {
 	theStick	= d;
 	start();
 }
@@ -114,8 +114,8 @@ void	run () {
 };
 //
 //	Our wrapper is a simple classs
-	rtlsdrHandler::rtlsdrHandler (QSettings *s,
-	                              QString &recorderVersion):
+	RtlSdrHandler::RtlSdrHandler (QSettings *s,
+                                QString &recorderVersion):
 	                                 _I_Buffer (8 * 1024 * 1024),
 	                                 myFrame (nullptr),
 	                                 theFilter (5, 1560000 / 2, 2048000) {
@@ -272,7 +272,7 @@ char	manufac [256], product [256], serial [256];
 	xml_dumping. store (false);
 }
 
-	rtlsdrHandler::~rtlsdrHandler() {
+	RtlSdrHandler::~RtlSdrHandler() {
 	fprintf (stdout, "closing on freq %d\n",
 	               (int32_t)(this -> rtlsdr_get_center_freq (theDevice)));
 	stopReader	();
@@ -295,19 +295,19 @@ char	manufac [256], product [256], serial [256];
 	delete phandle;
 }
 
-void	rtlsdrHandler::setVFOFrequency	(int32_t f) {
+void	RtlSdrHandler::setVFOFrequency	(int32_t f) {
 	(void)(this -> rtlsdr_set_center_freq (theDevice, f));
 }
 
-int32_t	rtlsdrHandler::getVFOFrequency() {
+int32_t	RtlSdrHandler::getVFOFrequency() {
 	return (int32_t)(this -> rtlsdr_get_center_freq (theDevice));
 }
 //
-void	rtlsdrHandler::set_filter	(int c) {
+void	RtlSdrHandler::set_filter	(int c) {
 	filtering       = filterSelector -> isChecked ();
 }
 
-bool	rtlsdrHandler::restartReader	(int32_t freq) {
+bool	RtlSdrHandler::restartReader	(int32_t freq) {
 	_I_Buffer. FlushRingBuffer();
 
 	(void)(this -> rtlsdr_set_center_freq (theDevice, freq));
@@ -324,7 +324,7 @@ bool	rtlsdrHandler::restartReader	(int32_t freq) {
 	return true;
 }
 
-void	rtlsdrHandler::stopReader () {
+void	RtlSdrHandler::stopReader () {
 	if (workerHandle == nullptr)
 	   return;
 	isActive. store (false);
@@ -343,28 +343,28 @@ void	rtlsdrHandler::stopReader () {
 }
 //
 //	when selecting  the gain from a table, use the table value
-void	rtlsdrHandler::set_ExternalGain	(const QString &gain) {
+void	RtlSdrHandler::set_ExternalGain	(const QString &gain) {
 	rtlsdr_set_tuner_gain (theDevice, gain. toInt());
 }
 //
-void	rtlsdrHandler::set_autogain	(int dummy) {
+void	RtlSdrHandler::set_autogain	(int dummy) {
 	(void)dummy;
 	rtlsdr_set_agc_mode (theDevice, agcControl -> isChecked () ? 1 : 0);
 	rtlsdr_set_tuner_gain (theDevice, 
 	                       gainControl -> currentText (). toInt ());
 }
 //
-void	rtlsdrHandler::set_biasControl	(int dummy) {
+void	RtlSdrHandler::set_biasControl	(int dummy) {
 	(void)dummy;
 	if (rtlsdr_set_bias_tee != nullptr)
 	   rtlsdr_set_bias_tee (theDevice, biasControl -> isChecked () ? 1 : 0);
 }
 //	correction is in Hz
-void	rtlsdrHandler::set_ppmCorrection	(int32_t ppm) {
+void	RtlSdrHandler::set_ppmCorrection	(int32_t ppm) {
 	this -> rtlsdr_set_freq_correction (theDevice, ppm);
 }
 
-int32_t	rtlsdrHandler::getSamples (cmplx *V, int32_t size) {
+int32_t	RtlSdrHandler::getSamples (cmplx *V, int32_t size) {
 std::complex<uint8_t> temp [size];
 int	amount;
 static uint8_t dumpBuffer [4096];
@@ -405,14 +405,14 @@ static int iqTeller	= 0;
 	return amount;
 }
 
-int32_t	rtlsdrHandler::Samples () {
+int32_t	RtlSdrHandler::Samples () {
 	if (!isActive. load ())
 	   return 0;
 	return _I_Buffer. GetRingBufferReadAvailable ();
 }
 //
 
-bool	rtlsdrHandler::load_rtlFunctions() {
+bool	RtlSdrHandler::load_rtlFunctions() {
 //
 //	link the required procedures
 	rtlsdr_open	= (pfnrtlsdr_open) phandle -> resolve ("rtlsdr_open");
@@ -582,35 +582,35 @@ bool	rtlsdrHandler::load_rtlFunctions() {
 	return true;
 }
 
-void	rtlsdrHandler::resetBuffer() {
+void	RtlSdrHandler::resetBuffer() {
 	_I_Buffer. FlushRingBuffer();
 }
 
-int16_t	rtlsdrHandler::maxGain() {
+int16_t	RtlSdrHandler::maxGain() {
 	return gainsCount;
 }
 
-int16_t	rtlsdrHandler::bitDepth() {
+int16_t	RtlSdrHandler::bitDepth() {
 	return 8;
 }
 
-QString	rtlsdrHandler::deviceName	() {
+QString	RtlSdrHandler::deviceName	() {
 	return deviceModel;
 }
 
-void	rtlsdrHandler::show		() {
+void	RtlSdrHandler::show		() {
 	myFrame. show ();
 }
 
-void	rtlsdrHandler::hide		() {
+void	RtlSdrHandler::hide		() {
 	myFrame. hide ();
 }
 
-bool	rtlsdrHandler::isHidden		() {
+bool	RtlSdrHandler::isHidden		() {
 	return myFrame. isHidden ();
 }
 
-void	rtlsdrHandler::set_iqDump	() {
+void	RtlSdrHandler::set_iqDump	() {
 	if (iqDumper == nullptr) {
 	   if (setup_iqDump ()) {
 	      iq_dumpButton	-> setText ("writing raw file");
@@ -624,7 +624,7 @@ void	rtlsdrHandler::set_iqDump	() {
 	}
 }
 
-bool	rtlsdrHandler::setup_iqDump () {
+bool	RtlSdrHandler::setup_iqDump () {
 	QString fileName = QFileDialog::getSaveFileName (nullptr,
 	                                         tr ("Save file ..."),
 	                                         QDir::homePath(),
@@ -638,7 +638,7 @@ bool	rtlsdrHandler::setup_iqDump () {
 	return true;
 }
 
-void	rtlsdrHandler::close_iqDump () {
+void	RtlSdrHandler::close_iqDump () {
 	if (iqDumper == nullptr)	// this can happen !!
 	   return;
 	iq_dumping. store (false);
@@ -646,7 +646,7 @@ void	rtlsdrHandler::close_iqDump () {
 	iqDumper	= nullptr;
 }
 	   
-void	rtlsdrHandler::set_xmlDump () {
+void	RtlSdrHandler::set_xmlDump () {
 	if (!xml_dumping. load ()) {
 	  if (setup_xmlDump ())
 	      xml_dumpButton	-> setText ("writing xml file");
@@ -664,7 +664,7 @@ bool	isValid (QChar c) {
 	return c. isLetterOrNumber () || (c == '-');
 }
 
-bool	rtlsdrHandler::setup_xmlDump () {
+bool	RtlSdrHandler::setup_xmlDump () {
 QTime	theTime;
 QDate	theDate;
 QString saveDir = rtlsdrSettings -> value ("saveDir_xmlDump",
@@ -713,7 +713,7 @@ QString saveDir = rtlsdrSettings -> value ("saveDir_xmlDump",
 	return true;
 }
 
-void	rtlsdrHandler::close_xmlDump () {
+void	RtlSdrHandler::close_xmlDump () {
 	if (!xml_dumping. load ())
 	   return;
 	if (xmlDumper == nullptr)	// cannot happen
@@ -730,7 +730,7 @@ void	rtlsdrHandler::close_xmlDump () {
 //
 //      the frequency (the MHz component) is used as key
 //
-void    rtlsdrHandler::record_gainSettings (int freq) {
+void    RtlSdrHandler::record_gainSettings (int freq) {
 QString	gain	= gainControl	-> currentText ();
 int	agc	= agcControl	-> isChecked () ? 1 : 0;
 QString theValue        = gain + ":" + QString::number (agc);
@@ -740,7 +740,7 @@ QString theValue        = gain + ":" + QString::number (agc);
 	rtlsdrSettings         -> endGroup ();
 }
 
-void	rtlsdrHandler::update_gainSettings (int freq) {
+void	RtlSdrHandler::update_gainSettings (int freq) {
 int	agc;
 QString	theValue	= "";
 
@@ -773,5 +773,10 @@ QString	theValue	= "";
 	   usleep (1000);
 	set_autogain (agcControl -> isChecked ());
 	agcControl	-> blockSignals (false);
+}
+
+bool RtlSdrHandler::isFileInput()
+{
+  return false;
 }
 

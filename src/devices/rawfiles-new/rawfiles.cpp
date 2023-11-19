@@ -38,7 +38,7 @@
 #define	INPUT_FRAMEBUFFERSIZE	8 * 32768
 //
 //
-	rawFiles::rawFiles (QString f):
+	RawFileHandler::RawFileHandler (QString f):
 	   myFrame (nullptr),
 	   _I_Buffer (INPUT_FRAMEBUFFERSIZE) {
 	fileName	= f;
@@ -63,7 +63,7 @@
 	running. store (false);
 }
 
-	rawFiles::~rawFiles() {
+	RawFileHandler::~RawFileHandler() {
 	if (running. load()) {
 	   readerTask	-> stopReader();
 	   while (readerTask -> isRunning())
@@ -74,7 +74,7 @@
 	   fclose (filePointer);
 }
 
-bool	rawFiles::restartReader	(int32_t freq) {
+bool	RawFileHandler::restartReader	(int32_t freq) {
 	(void)freq;
 	if (running. load())
 	   return true;
@@ -83,7 +83,7 @@ bool	rawFiles::restartReader	(int32_t freq) {
 	return true;
 }
 
-void	rawFiles::stopReader() {
+void	RawFileHandler::stopReader() {
 	if (running. load()) {
 	   readerTask	-> stopReader();
 	   while (readerTask -> isRunning())
@@ -94,7 +94,7 @@ void	rawFiles::stopReader() {
 }
 
 //	size is in I/Q pairs, file contains 8 bits values
-int32_t	rawFiles::getSamples	(cmplx *V, int32_t size) {
+int32_t	RawFileHandler::getSamples	(cmplx *V, int32_t size) {
 int32_t	amount;
 
 	if (filePointer == nullptr)
@@ -107,28 +107,51 @@ int32_t	amount;
 	return amount;
 }
 
-int32_t	rawFiles::Samples() {
+int32_t	RawFileHandler::Samples() {
 	return _I_Buffer. GetRingBufferReadAvailable ();
 }
 
-void	rawFiles::setProgress (int progress, float timelength) {
+void	RawFileHandler::setProgress (int progress, float timelength) {
 	fileProgress      -> setValue (progress);
 	currentTime       -> display (timelength);
 }
 
-void	rawFiles::show		() {
+void	RawFileHandler::show		() {
 	myFrame. show ();
 }
 
-void	rawFiles::hide		() {
+void	RawFileHandler::hide		() {
 	myFrame. hide ();
 }
 
-bool	rawFiles::isHidden	() {
+bool	RawFileHandler::isHidden	() {
 	return myFrame. isHidden ();
 }
 
-bool	rawFiles::isFileInput	() {
+bool	RawFileHandler::isFileInput	() {
 	return true;
+}
+
+void RawFileHandler::setVFOFrequency(int32_t)
+{
+}
+
+int RawFileHandler::getVFOFrequency()
+{
+  return 0;
+}
+
+void RawFileHandler::resetBuffer()
+{
+}
+
+int16_t RawFileHandler::bitDepth()
+{
+  return 10; // TODO: taken from former default interface, is it correct?
+}
+
+QString RawFileHandler::deviceName()
+{
+  return "RawFile";
 }
 

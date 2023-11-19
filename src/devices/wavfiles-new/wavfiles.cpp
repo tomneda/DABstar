@@ -30,7 +30,7 @@
 
 #define	__BUFFERSIZE__	8 * 32768
 
-	wavFiles::wavFiles (QString f):
+	WavFileHandler::WavFileHandler (QString f):
 	   myFrame (nullptr),
 	   _I_Buffer (__BUFFERSIZE__) {
 SF_INFO *sf_info;
@@ -64,7 +64,7 @@ SF_INFO *sf_info;
 //
 //	Note that running == true <==> readerTask has value assigned
 
-	wavFiles::~wavFiles() {
+	WavFileHandler::~WavFileHandler() {
 	if (running. load()) {
 	   readerTask	-> stopReader();
 	   while (readerTask -> isRunning())
@@ -75,16 +75,16 @@ SF_INFO *sf_info;
 	   sf_close (filePointer);
 }
 
-bool	wavFiles::restartReader		(int32_t freq) {
+bool	WavFileHandler::restartReader		(int32_t freq) {
 	(void)freq;
 	if (running. load())
            return true;
-        readerTask      = new wavReader (this, filePointer, &_I_Buffer);
+        readerTask      = new WavReader (this, filePointer, &_I_Buffer);
         running. store (true);
         return true;
 }
 
-void	wavFiles::stopReader() {
+void	WavFileHandler::stopReader() {
        if (running. load()) {
            readerTask   -> stopReader();
            while (readerTask -> isRunning())
@@ -95,7 +95,7 @@ void	wavFiles::stopReader() {
 }
 
 //	size is in I/Q pairs
-int32_t	wavFiles::getSamples	(cmplx *V, int32_t size) {
+int32_t	WavFileHandler::getSamples	(cmplx *V, int32_t size) {
 int32_t	amount;
 	
 	if (filePointer == nullptr)
@@ -109,28 +109,50 @@ int32_t	amount;
 	return amount;
 }
 
-int32_t	wavFiles::Samples() {
+int32_t	WavFileHandler::Samples() {
 	return _I_Buffer. GetRingBufferReadAvailable();
 }
 
-void    wavFiles::setProgress (int progress, float timelength) {
+void    WavFileHandler::setProgress (int progress, float timelength) {
         fileProgress      -> setValue (progress);
         currentTime       -> display (timelength);
 }
 
-void	wavFiles::show		() {
+void	WavFileHandler::show		() {
 	myFrame. show ();
 }
 
-void	wavFiles::hide		() {
+void	WavFileHandler::hide		() {
 	myFrame. hide	();
 }
 
-bool	wavFiles::isHidden	() {
+bool	WavFileHandler::isHidden	() {
 	return myFrame. isHidden ();
 }
 
-bool	wavFiles::isFileInput	() {
+bool	WavFileHandler::isFileInput	() {
 	return true;
 }
 
+void WavFileHandler::setVFOFrequency(int32_t)
+{
+}
+
+int WavFileHandler::getVFOFrequency()
+{
+  return 0;
+}
+
+void WavFileHandler::resetBuffer()
+{
+}
+
+int16_t WavFileHandler::bitDepth()
+{
+  return 10; // TODO: taken from former default interface, is it correct?
+}
+
+QString WavFileHandler::deviceName()
+{
+  return "WavFile";
+}

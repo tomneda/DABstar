@@ -28,15 +28,15 @@
 #include	"dab-constants.h"
 #include	"ringbuffer.h"
 #include	<atomic>
-class	wavFiles;
+class	WavFileHandler;
 
-class	wavReader:public QThread {
+class	WavReader: public QThread {
 Q_OBJECT
 public:
-			wavReader	(wavFiles *,
-	                                 SNDFILE *,
-	                                 RingBuffer<cmplx> *);
-			~wavReader();
+			WavReader	(WavFileHandler *,
+                  SNDFILE *,
+                  RingBuffer<cmplx> *);
+			~WavReader();
 	void		startReader();
 	void		stopReader();
 private:
@@ -45,7 +45,7 @@ virtual void		run		();
 	RingBuffer<cmplx>	*theBuffer;
 	uint64_t	period;
 	std::atomic<bool>	running;
-	wavFiles	*parent;
+	WavFileHandler	*parent;
 	int64_t		fileLength;
 signals:
 	void		setProgress	(int, float);

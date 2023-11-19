@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013 .. 2019
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,50 +28,55 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__XML_FILEREADER__
-#define	__XML_FILEREADER__
+#ifndef  XML_FILEREADER_H
+#define  XML_FILEREADER_H
 
-#include	<QObject>
-#include	<QString>
-#include	<QFrame>
-#include	<atomic>
-#include	"dab-constants.h"
-#include	"device-handler.h"
-#include	"ringbuffer.h"
-#include	"ui_xmlfiles.h"
+#include  <QObject>
+#include  <QString>
+#include  <QFrame>
+#include  <atomic>
+#include  "dab-constants.h"
+#include  "device-handler.h"
+#include  "ringbuffer.h"
+#include  "ui_xmlfiles.h"
 
-class	QSettings;
-class	xmlDescriptor;
-class	xml_Reader;
-/*
- */
-class	xml_fileReader: public QObject, public deviceHandler, public Ui_xmlfile_widget {
+class QSettings;
+class xmlDescriptor;
+class xml_Reader;
+
+class xml_fileReader final : public QObject, public IDeviceHandler, public Ui_xmlfile_widget
+{
 Q_OBJECT
 public:
-				xml_fileReader	(QString);
-                		~xml_fileReader	();
-	int32_t			getSamples	(cmplx *,
-	                                                         int32_t);
-	int32_t			Samples		();
-	bool			restartReader	(int32_t);
-	void			stopReader	(void);
-	int			getVFOFrequency	();
-	void			hide		();
-	void			show		();
-	bool			isHidden	();
-	bool			isFileInput	();
+  explicit xml_fileReader(QString);
+  ~xml_fileReader() override;
+
+  int32_t getSamples(cmplx *, int32_t) override;
+  int32_t Samples() override;
+  bool restartReader(int32_t) override;
+  void stopReader() override;
+  void setVFOFrequency(int32_t) override;
+  int getVFOFrequency() override;
+  void hide() override;
+  void show() override;
+  bool isHidden() override;
+  bool isFileInput() override;
+  void resetBuffer() override;
+  int16_t bitDepth() override;
+  QString deviceName() override;
+
 private:
-	QFrame			myFrame;
-	std::atomic<bool>	running;
-	QString			fileName;
-	RingBuffer<cmplx>	_I_Buffer;
-	FILE			*theFile;
-	uint32_t		filePointer;
-	xmlDescriptor		*theDescriptor;
-	xml_Reader		*theReader;
+  QFrame myFrame;
+  std::atomic<bool> running;
+  QString fileName;
+  RingBuffer<cmplx> _I_Buffer;
+  FILE * theFile;
+  uint32_t filePointer;
+  xmlDescriptor * theDescriptor;
+  xml_Reader * theReader;
 public slots:
-	void			setProgress	(int, int);
-	void			handle_continuousButton ();
+  void setProgress(int, int);
+  void handle_continuousButton();
 };
 
 #endif

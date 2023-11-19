@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -26,43 +35,36 @@
 #ifndef  DEVICE_HANDLER_H
 #define  DEVICE_HANDLER_H
 
-#include  <cstdint>
-#include  "dab-constants.h"
-#include  <QObject>
-#include  <QThread>
-#include  <QFrame>
-#include  <QPoint>
+#include <cstdint>
+#include <QString>
+#include "glob_defs.h"
 
-class deviceHandler
+class IDeviceHandler
 {
 public:
-  deviceHandler();
-  virtual      ~deviceHandler();
-  virtual bool restartReader(int32_t freq);
-  virtual void stopReader();
-  virtual void setVFOFrequency(int32_t);
+  virtual ~IDeviceHandler() = default;
 
-  virtual int32_t getVFOFrequency() { return 0; }
+  virtual bool restartReader(int32_t freq) = 0;
+  virtual void stopReader() = 0;
+  virtual void setVFOFrequency(int32_t) = 0;
+  virtual int32_t getVFOFrequency() = 0;
+  virtual int32_t getSamples(cmplx *, int32_t) = 0;
+  virtual int32_t Samples() = 0;
+  virtual void resetBuffer() = 0;
+  virtual int16_t bitDepth() = 0;
+  virtual void hide() = 0;
+  virtual void show() = 0;
+  virtual bool isHidden() = 0;
+  virtual QString deviceName() = 0;
+  virtual bool isFileInput() = 0;
+  //virtual QPoint get_coords() = 0;
+  //virtual void moveTo(QPoint) = 0;
 
-  virtual int32_t getSamples(cmplx *, int32_t);
-  virtual int32_t Samples();
-  virtual void resetBuffer();
-
-  virtual int16_t bitDepth() { return 10; }
-
-  virtual void hide();
-  virtual void show();
-  virtual bool isHidden();
-  virtual QString deviceName();
-  virtual bool isFileInput();
-  virtual QPoint get_coords();
-  virtual void moveTo(QPoint);
-  //
-protected:
-  int32_t lastFrequency = 100000;
-  int32_t vfoOffset;
-  int theGain;
-  int32_t coarseOffset;
+//protected:
+//  int32_t lastFrequency = 100000;
+//  int32_t vfoOffset;
+//  int theGain;
+//  int32_t coarseOffset;
 };
 
 #endif

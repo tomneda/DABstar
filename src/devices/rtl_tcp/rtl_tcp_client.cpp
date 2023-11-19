@@ -363,3 +363,17 @@ bool RtlTcpClient::isHidden()
   return myFrame.isHidden();
 }
 
+bool RtlTcpClient::isFileInput()
+{
+  return false;
+}
+
+void RtlTcpClient::resetBuffer()
+{
+}
+
+QString RtlTcpClient::deviceName()
+{
+  return "RtlTcp";
+}
+

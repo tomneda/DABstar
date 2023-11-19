@@ -49,7 +49,7 @@ private:
 };
 
 
-class UhdHandler final : public QObject, public deviceHandler, public Ui_uhdWidget
+class UhdHandler final : public QObject, public IDeviceHandler, public Ui_uhdWidget
 {
   Q_OBJECT
   friend class uhd_streamer;
@@ -69,6 +69,7 @@ public:
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
+  bool isFileInput() override;
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "uhdSettings";
@@ -80,6 +81,7 @@ private:
   uhd_streamer * m_workerHandle = nullptr;
   int32_t inputRate = 2048000;
   int32_t ringbufferSize = 1024;
+  int32_t vfoOffset = 0;
 
   [[nodiscard]] int16_t _maxGain() const;
   void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);

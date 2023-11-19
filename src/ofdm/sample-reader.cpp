@@ -43,7 +43,7 @@ static inline int16_t value_for_bit_pos(int16_t b)
   return res;
 }
 
-SampleReader::SampleReader(const RadioInterface * mr, deviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer) :
+SampleReader::SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer) :
   theRig(iTheRig),
   spectrumBuffer(iSpectrumBuffer),
   oneSampleBuffer(1)

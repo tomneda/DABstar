@@ -27,13 +27,13 @@
 #include	"dab-constants.h"
 #include	"ringbuffer.h"
 #include	<atomic>
-class	rawFiles;
+class	RawFileHandler;
 
 class	rawReader:public QThread {
 Q_OBJECT
 public:
-			rawReader	(rawFiles *,
-	                                 FILE *, RingBuffer<cmplx> *);
+			rawReader	(RawFileHandler *,
+                  FILE *, RingBuffer<cmplx> *);
 			~rawReader();
 	void		startReader();
 	void		stopReader();
@@ -44,7 +44,7 @@ virtual void		run();
 	uint64_t	period;
 	std::atomic<bool>	running;
 	uint8_t		*bi;
-	rawFiles	*parent;
+	RawFileHandler	*parent;
 	int64_t		fileLength;
 signals:
 	void		setProgress	(int, float);
