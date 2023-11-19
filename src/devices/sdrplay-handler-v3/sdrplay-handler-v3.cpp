@@ -91,8 +91,8 @@ std::string errorMessage (int errorCode) {
 
 	antennaSelector		-> hide	();
 	tunerSelector		-> hide	();
-	nrBits			= 12;	// default
-	denominator		= 2048;	// default
+//	nrBits			= 12;	// default
+//	denominator		= 2048;	// default
 
 	xmlDumper		= nullptr;
 	dumping. store	(false);
@@ -251,10 +251,10 @@ QString	SdrPlayHandler_v3::deviceName	() {
 //	Communication with that thread is synchronous!
 //
 
-void    SdrPlayHandler_v3::set_nrBits (int b) {
-        nrBits  = b;
-        denominator = nrBits == 12 ? 2048 : 4096;
-}
+//void    SdrPlayHandler_v3::set_nrBits (int b) {
+//        nrBits  = b;
+//        denominator = nrBits == 12 ? 2048 : 4096;
+//}
 
 void	SdrPlayHandler_v3::set_lnabounds(int low, int high) {
 	lnaGainSetting	-> setRange (low, high);
@@ -520,8 +520,8 @@ uint32_t                ndev;
 	connect (this, SIGNAL (set_apiVersion_signal (float)),
 	         this, SLOT (set_apiVersion (float)));
 
-	denominator		= 2048;		// default
-	nrBits			= 12;		// default
+//	denominator		= 2048;		// default
+//	nrBits			= 12;		// default
 
 	Handle			= fetchLibrary ();
 	if (Handle == nullptr) {

@@ -110,7 +110,6 @@ public:
   int inputRate;
   std::atomic<bool> failFlag;
   std::atomic<bool> successFlag;
-  int denominator;
   std::atomic<bool> threadRuns;
   void run();
   bool messageHandler(generalCommand *);
@@ -121,7 +120,8 @@ public:
   int16_t hwVersion;
   QSettings * sdrplaySettings;
   bool agcMode;
-  int16_t nrBits;
+  const int16_t nrBits = 14;
+  const int denominator = 8192;
   int lna_upperBound;
   float apiVersion;
   QString serial;
@@ -157,7 +157,7 @@ private slots:
   void set_biasT(int);
 public slots:
   void set_lnabounds(int, int);
-  void set_nrBits(int);
+  //void set_nrBits(int);
   void set_deviceName(const QString &);
   void set_serial(const QString &);
   void set_apiVersion(float);
