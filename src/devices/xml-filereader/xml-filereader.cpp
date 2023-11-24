@@ -127,16 +127,16 @@ int32_t	xml_fileReader::getSamples	(cmplx *V,
 	if (theFile == nullptr)		// should not happen
 	   return 0;
 
-	while ((int32_t)(_I_Buffer. GetRingBufferReadAvailable()) < size)
+	while ((int32_t)(_I_Buffer. get_ring_buffer_read_available()) < size)
 	   usleep (1000);
 
-	return _I_Buffer. getDataFromBuffer (V, size);
+	return _I_Buffer. get_data_from_ring_buffer (V, size);
 }
 
 int32_t	xml_fileReader::Samples	() {
 	if (theFile == nullptr)
 	   return 0;
-	return _I_Buffer. GetRingBufferReadAvailable();
+	return _I_Buffer. get_ring_buffer_read_available();
 }
 
 void	xml_fileReader::setProgress (int samplesRead, int samplesToRead) {

@@ -93,7 +93,7 @@ void CorrelationViewer::showCorrelation(int32_t dots, int marker, const QVector<
   float data[dots];
   float mmax = 0;
 
-  responseBuffer->getDataFromBuffer(data, dots);
+  responseBuffer->get_data_from_ring_buffer(data, dots);
 
   constexpr int32_t plotLength = 700;
   double X_axis[plotLength];

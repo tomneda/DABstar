@@ -214,13 +214,13 @@ void RtlTcpClient::stopReader()
 int32_t RtlTcpClient::getSamples(cmplx * V, int32_t size)
 {
   int32_t amount = 0;
-  amount = _I_Buffer->getDataFromBuffer(V, size);
+  amount = _I_Buffer->get_data_from_ring_buffer(V, size);
   return amount;
 }
 
 int32_t RtlTcpClient::Samples()
 {
-  return _I_Buffer->GetRingBufferReadAvailable();
+  return _I_Buffer->get_ring_buffer_read_available();
 }
 
 //
@@ -269,7 +269,7 @@ void RtlTcpClient::readData()
     {
       localBuffer[i] = cmplx(mapTable[buffer[2 * i]], mapTable[buffer[2 * i + 1]]);
     }
-    _I_Buffer->putDataIntoBuffer(localBuffer, 4096);
+    _I_Buffer->put_data_into_ring_buffer(localBuffer, 4096);
   }
 }
 

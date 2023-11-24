@@ -288,7 +288,7 @@ int	result;
 	   printf ("my_airspy_set_freq() failed: %s (%d)\n",
 	            my_airspy_error_name((airspy_error)result), result);
 	}
-	_I_Buffer. FlushRingBuffer();
+	_I_Buffer. flush_ring_buffer();
 	result = my_airspy_set_sample_type (device, AIRSPY_SAMPLE_INT16_IQ);
 //	result = my_airspy_set_sample_type (device, AIRSPY_SAMPLE_FLOAT32_IQ);
 	if (result != AIRSPY_SUCCESS) {
@@ -387,7 +387,7 @@ int32_t  i, j;
 	                        convBuffer [inpBase] * (1 - inpRatio);
 	         }
 
-	         _I_Buffer. putDataIntoBuffer (temp, 2048);
+	         _I_Buffer. put_data_into_ring_buffer (temp, 2048);
 //
 //	shift the sample at the end to the beginning, it is needed
 //	as the starting sample for the next time
@@ -409,7 +409,7 @@ int32_t  i, j;
                       convBuffer [inpBase] * (1 - inpRatio);
 	      }
 
-	      _I_Buffer. putDataIntoBuffer (temp, 2048);
+	      _I_Buffer. put_data_into_ring_buffer (temp, 2048);
 //
 //	shift the sample at the end to the beginning, it is needed
 //	as the starting sample for the next time
@@ -453,7 +453,7 @@ int	AirspyHandler::open() {
 //
 //	These functions are added for the SDR-J interface
 void	AirspyHandler::resetBuffer	() {
-	_I_Buffer. FlushRingBuffer	();
+	_I_Buffer. flush_ring_buffer	();
 }
 
 int16_t	AirspyHandler::bitDepth		() {
@@ -462,11 +462,11 @@ int16_t	AirspyHandler::bitDepth		() {
 
 int32_t	AirspyHandler::getSamples (cmplx *v, int32_t size) {
 
-	return _I_Buffer. getDataFromBuffer (v, size);
+	return _I_Buffer. get_data_from_ring_buffer (v, size);
 }
 
 int32_t	AirspyHandler::Samples		() {
-	return _I_Buffer. GetRingBufferReadAvailable();
+	return _I_Buffer. get_ring_buffer_read_available();
 }
 //
 const char* AirspyHandler::board_id_name() {
@@ -658,7 +658,7 @@ bool	AirspyHandler::load_airspyFunctions() {
 
 
 int	AirspyHandler::getBufferSpace	() {
-	return _I_Buffer. GetRingBufferWriteAvailable ();
+	return _I_Buffer. get_ring_buffer_write_available ();
 }
 
 QString	AirspyHandler::deviceName	() {

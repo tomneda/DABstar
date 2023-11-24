@@ -76,7 +76,7 @@ cmplx bi [bufferSize];
 	nextStop	= getMyTime();
 	try {
 	   while (running. load()) {
-	      while (theBuffer -> WriteSpace() < bufferSize) {
+	      while (theBuffer -> get_ring_buffer_write_available() < bufferSize) {
 	         if (!running. load())
 	            throw (33);
 	         usleep (100);
@@ -97,7 +97,7 @@ cmplx bi [bufferSize];
 	         for (int i = n; i < bufferSize; i ++)
 	            bi [i] = std::complex <float> (0, 0);
 	      }
-	      theBuffer -> putDataIntoBuffer (bi, bufferSize);
+	      theBuffer -> put_data_into_ring_buffer (bi, bufferSize);
 	      if (nextStop - getMyTime() > 0)
 	         usleep (nextStop - getMyTime());
 	   }

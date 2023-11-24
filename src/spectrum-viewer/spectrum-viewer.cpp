@@ -113,17 +113,17 @@ void SpectrumViewer::show_spectrum(int32_t amount, int32_t vfoFrequency)
 
   constexpr int32_t averageCount = 5;
 
-  if (mpSpectrumBuffer->GetRingBufferReadAvailable() < SP_SPECTRUMSIZE)
+  if (mpSpectrumBuffer->get_ring_buffer_read_available() < SP_SPECTRUMSIZE)
   {
     return;
   }
 
-  mpSpectrumBuffer->getDataFromBuffer(mSpectrumVec.data(), SP_SPECTRUMSIZE);
-  mpSpectrumBuffer->FlushRingBuffer();
+  mpSpectrumBuffer->get_data_from_ring_buffer(mSpectrumVec.data(), SP_SPECTRUMSIZE);
+  mpSpectrumBuffer->flush_ring_buffer();
 
   if (myFrame.isHidden())
   {
-    mpSpectrumBuffer->FlushRingBuffer();
+    mpSpectrumBuffer->flush_ring_buffer();
     return;
   }
 
@@ -141,14 +141,7 @@ void SpectrumViewer::show_spectrum(int32_t amount, int32_t vfoFrequency)
   //	get the buffer data
   for (int32_t i = 0; i < SP_SPECTRUMSIZE; i++)
   {
-    if (std::isnan(abs(mSpectrumVec[i])) || std::isinf(abs(mSpectrumVec[i])))
-    {
-      mSpectrumVec[i] = cmplx(0, 0);
-    }
-    else
-    {
-      mSpectrumVec[i] = mSpectrumVec[i] * mWindowVec[i];
-    }
+    mSpectrumVec[i] = mSpectrumVec[i] * mWindowVec[i];
   }
 
   fft.fft(mSpectrumVec.data());
@@ -174,11 +167,7 @@ void SpectrumViewer::show_spectrum(int32_t amount, int32_t vfoFrequency)
   // average the image a little.
   for (int32_t i = 0; i < SP_DISPLAYSIZE; i++)
   {
-    if (std::isnan(mYValVec[i]) || std::isinf(mYValVec[i]))
-    {
-      continue;
-    }
-    mean_filter(mDisplayBuffer[i], mYValVec[i], 1.0 / averageCount);
+    mean_filter(mDisplayBuffer[i], mYValVec[i] /*/ (float)SP_SPECTRUMSIZE*/, 1.0 / averageCount);
   }
 
   mpWaterfallScope->show_waterfall(mXAxisVec.data(), mDisplayBuffer.data(), dabWaterfallAmplitude->value());
@@ -233,8 +222,8 @@ void SpectrumViewer::show_iq(int32_t iAmount, float iAvg)
     mShowInLogScale = logIqScope;
   }
 
-  const int32_t numRead = mpIqBuffer->getDataFromBuffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
-  /*const int32_t numRead2 =*/ mpCarrBuffer->getDataFromBuffer(mCarrValuesVec.data(), (int32_t)mCarrValuesVec.size());
+  const int32_t numRead = mpIqBuffer->get_data_from_ring_buffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
+  /*const int32_t numRead2 =*/ mpCarrBuffer->get_data_from_ring_buffer(mCarrValuesVec.data(), (int32_t)mCarrValuesVec.size());
 
   if (myFrame.isHidden())
   {

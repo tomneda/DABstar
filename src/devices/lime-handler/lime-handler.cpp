@@ -267,7 +267,7 @@ void	LimeHandler::stopReader() {
 int	LimeHandler::getSamples	(cmplx *V, int32_t size) {
 std::complex<int16_t> temp [size];
 
-        int amount      = _I_Buffer. getDataFromBuffer (temp, size);
+        int amount      = _I_Buffer. get_data_from_ring_buffer (temp, size);
 	if (filtering) {
 	   if (filterDepth -> value () != currentDepth) {
 	      currentDepth = filterDepth -> value ();
@@ -288,11 +288,11 @@ std::complex<int16_t> temp [size];
 }
 
 int	LimeHandler::Samples() {
-	return _I_Buffer. GetRingBufferReadAvailable();
+	return _I_Buffer. get_ring_buffer_read_available();
 }
 
 void	LimeHandler::resetBuffer() {
-	_I_Buffer. FlushRingBuffer();
+	_I_Buffer. flush_ring_buffer();
 }
 
 int16_t	LimeHandler::bitDepth() {
@@ -322,7 +322,7 @@ int	amountRead	= 0;
 	   res = LMS_RecvStream (&stream, localBuffer,
 	                                     FIFO_SIZE,  &meta, 1000);
 	   if (res > 0) {
-	      _I_Buffer. putDataIntoBuffer (localBuffer, res);
+	      _I_Buffer. put_data_into_ring_buffer (localBuffer, res);
 	      amountRead	+= res;
 	      res	= LMS_GetStreamStatus (&stream, &streamStatus);
 	      underruns	+= streamStatus. underrun;

@@ -100,15 +100,15 @@ int32_t	amount;
 	if (filePointer == nullptr)
 	   return 0;
 
-	while ((int32_t)(_I_Buffer. GetRingBufferReadAvailable ()) < size)
+	while ((int32_t)(_I_Buffer. get_ring_buffer_read_available ()) < size)
 	   usleep (500);
 
-	amount = _I_Buffer. getDataFromBuffer (V,  size);
+	amount = _I_Buffer. get_data_from_ring_buffer (V, size);
 	return amount;
 }
 
 int32_t	RawFileHandler::Samples() {
-	return _I_Buffer. GetRingBufferReadAvailable ();
+	return _I_Buffer. get_ring_buffer_read_available ();
 }
 
 void	RawFileHandler::setProgress (int progress, float timelength) {

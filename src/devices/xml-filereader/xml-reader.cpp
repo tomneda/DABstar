@@ -221,7 +221,7 @@ int xml_Reader::readSamples(FILE * theFile, void(xml_Reader::*r)(FILE * theFile,
   }
   convBuffer[0] = convBuffer[convBufferSize];
   convIndex = 1;
-  sampleBuffer->putDataIntoBuffer(temp, 2048);
+  sampleBuffer->put_data_into_ring_buffer(temp, 2048);
   return 2048;
 }
 

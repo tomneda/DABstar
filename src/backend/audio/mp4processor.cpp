@@ -289,7 +289,7 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
       int segmentSize = build_aacFile(aac_frame_length, &streamParameters, &(outVector.data()[au_start[i]]), fileBuffer);
       if (dump == nullptr)
       {
-        frameBuffer->putDataIntoBuffer(fileBuffer.data(), segmentSize);
+        frameBuffer->put_data_into_ring_buffer(fileBuffer.data(), segmentSize);
         newFrame(segmentSize);
       }
       else

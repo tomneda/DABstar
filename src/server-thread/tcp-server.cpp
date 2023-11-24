@@ -50,7 +50,7 @@
 
 void	tcpServer::sendData (uint8_t *data, int32_t amount) {
 	if (connected)
-	   buffer -> putDataIntoBuffer (data, amount);
+	   buffer -> put_data_into_ring_buffer (data, amount);
 }
 #define	BUF_SIZE	1024
 
@@ -112,9 +112,9 @@ void	tcpServer::run (int port) {
 	      int status;
 	      while (running. load()) {
 	         while (running. load() &&
-	                 (buffer -> GetRingBufferReadAvailable() < BUF_SIZE)) 
+	                 (buffer -> get_ring_buffer_read_available() < BUF_SIZE))
 	            usleep (1000);
-	         amount = buffer -> getDataFromBuffer (localBuffer, BUF_SIZE);
+	         amount = buffer -> get_data_from_ring_buffer (localBuffer, BUF_SIZE);
 	         status = send (client_sock, localBuffer, amount ,0);
 	         if (status == -1) {
 	            throw (22);

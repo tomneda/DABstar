@@ -171,7 +171,7 @@ void AudioSink::restart()
     return;
   }
 
-  _O_Buffer.FlushRingBuffer();
+  _O_Buffer.flush_ring_buffer();
   totalSamples = 1;
   paCallbackReturn = paContinue;
   err = Pa_StartStream(ostream);
@@ -195,7 +195,7 @@ void AudioSink::stop()
     Pa_Sleep(1);
   }
   writerRunning = false;
-  _O_Buffer.FlushRingBuffer();
+  _O_Buffer.flush_ring_buffer();
 }
 
 //
@@ -230,7 +230,7 @@ int AudioSink::paCallback_o(const void * inputBuffer, void * outputBuffer, unsig
   if (ud->paCallbackReturn == paContinue)
   {
     outB = &((reinterpret_cast < AudioSink *> (userData))->_O_Buffer);
-    actualSize = outB->getDataFromBuffer(outp, 2 * framesPerBuffer);
+    actualSize = outB->get_data_from_ring_buffer(outp, 2 * framesPerBuffer);
     ud->theMissed += 2 * framesPerBuffer - actualSize;
     ud->totalSamples += 2 * framesPerBuffer;
     for (i = actualSize; i < 2 * framesPerBuffer; i++)
@@ -261,11 +261,11 @@ int32_t AudioSink::missed()
 
 void AudioSink::audioOutput(float * b, int32_t amount)
 {
-  if (_O_Buffer.GetRingBufferWriteAvailable() < 2 * amount)
+  if (_O_Buffer.get_ring_buffer_write_available() < 2 * amount)
   {
-    fprintf(stderr, "%d\n", 2 * amount - _O_Buffer.GetRingBufferReadAvailable());
+    fprintf(stderr, "%d\n", 2 * amount - _O_Buffer.get_ring_buffer_read_available());
   }
-  _O_Buffer.putDataIntoBuffer(b, 2 * amount);
+  _O_Buffer.put_data_into_ring_buffer(b, 2 * amount);
 }
 
 QString AudioSink::outputChannelwithRate(int16_t ch, int32_t rate)

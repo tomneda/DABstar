@@ -157,7 +157,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
 
     if (mDisplayCounter > mFramesPerSecond / 2)
     {
-      mpResponse->putDataIntoBuffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
+      mpResponse->put_data_into_ring_buffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
       emit show_correlation((int32_t)mCorrPeakValues.size(), mDabPar.T_g, indices);
       mDisplayCounter = 0;
     }

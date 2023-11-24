@@ -293,7 +293,7 @@ void TechData::audioDataAvailable(int amount, int rate)
 {
   int16_t buffer[amount];
 
-  audioData->getDataFromBuffer(buffer, amount);
+  audioData->get_data_from_ring_buffer(buffer, amount);
   if (!myFrame.isHidden())
   {
     the_audioDisplay->create_spectrum(buffer, amount, rate);

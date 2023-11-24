@@ -263,7 +263,7 @@ static int callback(hackrf_transfer * transfer)
     buffer[bufferIndex] = std::complex<int8_t>((int8_t)(y.real()), (int8_t)(y.imag()));
     ++bufferIndex;
   }
-  q->putDataIntoBuffer(buffer.data(), bufferIndex);
+  q->put_data_into_ring_buffer(buffer.data(), bufferIndex);
   return 0;
 }
 
@@ -314,7 +314,7 @@ void HackRfHandler::stopReader()
 int32_t HackRfHandler::getSamples(cmplx * V, int32_t size)
 {
   std::complex<int8_t> temp[size];
-  int amount = mRingBuffer.getDataFromBuffer(temp, size);
+  int amount = mRingBuffer.get_data_from_ring_buffer(temp, size);
 
   for (int i = 0; i < amount; i++)
   {
@@ -331,12 +331,12 @@ int32_t HackRfHandler::getSamples(cmplx * V, int32_t size)
 
 int32_t HackRfHandler::Samples()
 {
-  return mRingBuffer.GetRingBufferReadAvailable();
+  return mRingBuffer.get_ring_buffer_read_available();
 }
 
 void HackRfHandler::resetBuffer()
 {
-  mRingBuffer.FlushRingBuffer();
+  mRingBuffer.flush_ring_buffer();
 }
 
 int16_t HackRfHandler::bitDepth()

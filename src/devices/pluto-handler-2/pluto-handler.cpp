@@ -593,7 +593,7 @@ std::complex<int16_t> dumpBuf [DAB_RATE / DIVIDER];
 	            localBuf [j]	= convBuffer [inpBase + 1] * inpRatio +
                               convBuffer [inpBase] * (1 - inpRatio);
                  }
-	         _I_Buffer. putDataIntoBuffer (localBuf,
+	         _I_Buffer. put_data_into_ring_buffer (localBuf,
 	                                        DAB_RATE / DIVIDER);
 	         convBuffer [0] = convBuffer [CONV_SIZE];
 	         convIndex = 1;
@@ -605,11 +605,11 @@ std::complex<int16_t> dumpBuf [DAB_RATE / DIVIDER];
 int32_t	PlutoHandler::getSamples (cmplx *V, int32_t size) {
 	if (!isRunning ())
 	   return 0;
-	return _I_Buffer. getDataFromBuffer (V, size);
+	return _I_Buffer. get_data_from_ring_buffer (V, size);
 }
 
 int32_t	PlutoHandler::Samples () {
-	return _I_Buffer. GetRingBufferReadAvailable();
+	return _I_Buffer. get_ring_buffer_read_available();
 }
 //
 //	we know that the coefficients are loaded
@@ -628,7 +628,7 @@ int ret;
 }
 
 void	PlutoHandler::resetBuffer() {
-	_I_Buffer. FlushRingBuffer();
+	_I_Buffer. flush_ring_buffer();
 }
 
 int16_t	PlutoHandler::bitDepth () {

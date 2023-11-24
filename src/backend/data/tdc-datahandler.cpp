@@ -144,7 +144,7 @@ int32_t tdc_dataHandler::handleFrame_type_0(uint8_t * data, int32_t offset, int3
   fprintf (stdout, "nrServices %d, SID-A %d SID-B %d SID-C %d\n",
                     buffer [0], buffer [1], buffer [2], buffer [3]);
 #endif
-  dataBuffer->putDataIntoBuffer(buffer, length);
+  dataBuffer->put_data_into_ring_buffer(buffer, length);
   bytesOut(0, length);
   return offset + length * 8;
 }
@@ -166,7 +166,7 @@ int32_t tdc_dataHandler::handleFrame_type_1(uint8_t * data, int32_t offset, int3
   {
     buffer[i] = getBits(data, offset + i * 8, 8);
   }
-  dataBuffer->putDataIntoBuffer(buffer, length);
+  dataBuffer->put_data_into_ring_buffer(buffer, length);
   if (getBits(data, offset + 24, 8) == 0)
   {  // no encryption
     lOffset = offset + 4 * 8;

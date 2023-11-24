@@ -99,7 +99,7 @@ cmplx localBuffer [BUFFERSIZE / 2];
 	nextStop        = getMyTime();
 	try {
 	   while (running. load()) {
-	      while (_I_Buffer -> WriteSpace() < BUFFERSIZE + 10) {
+	      while (_I_Buffer -> get_ring_buffer_write_available() < BUFFERSIZE + 10) {
 	         if (!running. load())
 	            throw (32);
 	         usleep (100);
@@ -125,7 +125,7 @@ cmplx localBuffer [BUFFERSIZE / 2];
 	         localBuffer [i] = cmplx (
 	                                       4 * mapTable [bi [2 * i]],
 	                                       4 * mapTable [bi [2 * i + 1]]);
-              _I_Buffer -> putDataIntoBuffer (localBuffer, BUFFERSIZE / 2);
+              _I_Buffer -> put_data_into_ring_buffer (localBuffer, BUFFERSIZE / 2);
               if (nextStop - getMyTime() > 0)
                  usleep (nextStop - getMyTime());
            }

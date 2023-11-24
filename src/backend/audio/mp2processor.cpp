@@ -632,8 +632,8 @@ void Mp2Processor::addtoFrame(const std::vector<uint8_t> & v)
         int16_t sample_buf[KJMP2_SAMPLES_PER_FRAME * 2];
         if (mp2decodeFrame(MP2frame, sample_buf))
         {
-          buffer->putDataIntoBuffer(sample_buf, 2 * (int32_t)KJMP2_SAMPLES_PER_FRAME);
-          if (buffer->GetRingBufferReadAvailable() > baudRate / 8)
+          buffer->put_data_into_ring_buffer(sample_buf, 2 * (int32_t)KJMP2_SAMPLES_PER_FRAME);
+          if (buffer->get_ring_buffer_read_available() > baudRate / 8)
           {
             emit signal_new_audio(2 * (int32_t)KJMP2_SAMPLES_PER_FRAME, baudRate, 0);
           }

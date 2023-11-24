@@ -101,16 +101,16 @@ int32_t	amount;
 	if (filePointer == nullptr)
 	   return 0;
 
-	while (_I_Buffer. GetRingBufferReadAvailable() < size)
+	while (_I_Buffer. get_ring_buffer_read_available() < size)
 	      usleep (100);
 
-	amount = _I_Buffer. getDataFromBuffer (V, size);
+	amount = _I_Buffer. get_data_from_ring_buffer (V, size);
 	
 	return amount;
 }
 
 int32_t	WavFileHandler::Samples() {
-	return _I_Buffer. GetRingBufferReadAvailable();
+	return _I_Buffer. get_ring_buffer_read_available();
 }
 
 void    WavFileHandler::setProgress (int progress, float timelength) {

@@ -1040,13 +1040,13 @@ void RadioInterface::slot_send_datagram(int length)
 {
   uint8_t localBuffer[length];
 
-  if (dataBuffer.GetRingBufferReadAvailable() < length)
+  if (dataBuffer.get_ring_buffer_read_available() < length)
   {
     fprintf(stderr, "Something went wrong\n");
     return;
   }
 
-  dataBuffer.getDataFromBuffer(localBuffer, length);
+  dataBuffer.get_data_from_ring_buffer(localBuffer, length);
 }
 
 //
@@ -1061,13 +1061,13 @@ void RadioInterface::slot_handle_tdc_data(int frametype, int length)
   {
     return;
   }
-  if (dataBuffer.GetRingBufferReadAvailable() < length)
+  if (dataBuffer.get_ring_buffer_read_available() < length)
   {
     fprintf(stderr, "Something went wrong\n");
     return;
   }
 #ifdef  DATA_STREAMER
-                                                                                                                          dataBuffer. getDataFromBuffer (&localBuffer [8], length);
+                                                                                                                          dataBuffer. get_data_from_ring_buffer (&localBuffer [8], length);
 	localBuffer [0] = 0xFF;
 	localBuffer [1] = 0x00;
 	localBuffer [2] = 0xFF;
@@ -1219,9 +1219,9 @@ void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
     }
   }
   int16_t vec[iAmount];
-  while (audioBuffer.GetRingBufferReadAvailable() > iAmount)
+  while (audioBuffer.get_ring_buffer_read_available() > iAmount)
   {
-    audioBuffer.getDataFromBuffer(vec, iAmount);
+    audioBuffer.get_data_from_ring_buffer(vec, iAmount);
     if (!mutingActive)
     {
       soundOut->audioOut(vec, iAmount, iSR);
@@ -1234,7 +1234,7 @@ void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
 #endif
     if (!theTechWindow->isHidden())
     {
-      theTechData.putDataIntoBuffer(vec, iAmount);
+      theTechData.put_data_into_ring_buffer(vec, iAmount);
       theTechWindow->audioDataAvailable(iAmount, iSR);
     }
   }
@@ -2170,13 +2170,13 @@ void RadioInterface::slot_new_frame(int amount)
 
   if (channel.currentService.frameDumper == nullptr)
   {
-    frameBuffer.FlushRingBuffer();
+    frameBuffer.flush_ring_buffer();
   }
   else
   {
-    while (frameBuffer.GetRingBufferReadAvailable() >= amount)
+    while (frameBuffer.get_ring_buffer_read_available() >= amount)
     {
-      frameBuffer.getDataFromBuffer(buffer, amount);
+      frameBuffer.get_data_from_ring_buffer(buffer, amount);
       if (channel.currentService.frameDumper != nullptr)
       {
         fwrite(buffer, amount, 1, channel.currentService.frameDumper);

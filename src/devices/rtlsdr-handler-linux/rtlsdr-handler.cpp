@@ -80,10 +80,10 @@ RtlSdrHandler	*theStick	= (RtlSdrHandler *)ctx;
 	}
 
 	if (theStick -> isActive. load ()) {
-	   if (theStick -> _I_Buffer. GetRingBufferWriteAvailable () < (signed)len / 2)
+	   if (theStick -> _I_Buffer. get_ring_buffer_write_available () < (signed)len / 2)
 	      fprintf (stderr, "xx? ");
 	   (void)theStick -> _I_Buffer.
-	             putDataIntoBuffer ((std::complex<uint8_t> *)buf, len / 2);
+	             put_data_into_ring_buffer ((std::complex<uint8_t> *)buf, len / 2);
 	}
 }
 //
@@ -308,7 +308,7 @@ void	RtlSdrHandler::set_filter	(int c) {
 }
 
 bool	RtlSdrHandler::restartReader	(int32_t freq) {
-	_I_Buffer. FlushRingBuffer();
+	_I_Buffer. flush_ring_buffer();
 
 	(void)(this -> rtlsdr_set_center_freq (theDevice, freq));
 	if (save_gainSettings)
@@ -333,7 +333,7 @@ void	RtlSdrHandler::stopReader () {
 	if (workerHandle != nullptr) {
 	   while (!workerHandle -> isFinished())
 	      usleep (100);
-	   _I_Buffer. FlushRingBuffer();
+	   _I_Buffer. flush_ring_buffer();
 	   delete  workerHandle;
 	   workerHandle    = nullptr;
 	}
@@ -373,7 +373,7 @@ static int iqTeller	= 0;
 	if (!isActive. load ())
 	   return 0;
 
-	amount = _I_Buffer. getDataFromBuffer (temp, size);
+	amount = _I_Buffer. get_data_from_ring_buffer (temp, size);
 	if (filtering) {
 	   if (filterDepth -> value () != currentDepth) {
 	      currentDepth = filterDepth -> value ();
@@ -408,7 +408,7 @@ static int iqTeller	= 0;
 int32_t	RtlSdrHandler::Samples () {
 	if (!isActive. load ())
 	   return 0;
-	return _I_Buffer. GetRingBufferReadAvailable ();
+	return _I_Buffer. get_ring_buffer_read_available ();
 }
 //
 
@@ -583,7 +583,7 @@ bool	RtlSdrHandler::load_rtlFunctions() {
 }
 
 void	RtlSdrHandler::resetBuffer() {
-	_I_Buffer. FlushRingBuffer();
+	_I_Buffer. flush_ring_buffer();
 }
 
 int16_t	RtlSdrHandler::maxGain() {

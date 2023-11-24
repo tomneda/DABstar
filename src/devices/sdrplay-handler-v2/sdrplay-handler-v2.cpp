@@ -339,11 +339,11 @@ std::complex<int16_t> localBuf [numSamples];
 	for (i = 0; i <  (int)numSamples; i ++)
 //	   localBuf [i] = std::complex<int16_t> (xq [i], xi [i]);
 	   localBuf [i] = std::complex<int16_t> (xi [i], xq [i]);
-	int n = p -> _I_Buffer. GetRingBufferWriteAvailable ();
+	int n = p -> _I_Buffer. get_ring_buffer_write_available ();
 	if (n >= (int)numSamples) 
-	   p -> _I_Buffer. putDataIntoBuffer (localBuf, numSamples);
+	   p -> _I_Buffer. put_data_into_ring_buffer (localBuf, numSamples);
 	else {
-	   p -> _I_Buffer. skipDataInBuffer (2048000 / 2);
+	   p -> _I_Buffer. skip_data_in_ring_buffer (2048000 / 2);
 	}
 	(void)	firstSampleNum;
 	(void)	grChanged;
@@ -474,7 +474,7 @@ mir_sdr_ErrT err;
 	if (err != mir_sdr_Success)
 	   fprintf (stderr, "error = %s\n",
 	                errorCodes (err). toLatin1(). data());
-	_I_Buffer. FlushRingBuffer();
+	_I_Buffer. flush_ring_buffer();
 	running. store (false);
 }
 
@@ -484,7 +484,7 @@ mir_sdr_ErrT err;
 int32_t	SdrPlayHandler_v2::getSamples (cmplx *V, int32_t size) {
 std::complex<int16_t> temp [size];
 int i;
-	int amount	= _I_Buffer. getDataFromBuffer (temp, size);
+	int amount	= _I_Buffer. get_data_from_ring_buffer (temp, size);
 	for (i = 0; i < amount; i ++) 
 	   V [i] = cmplx (real (temp [i]) / (float) denominator,
 	                                imag (temp [i]) / (float) denominator);
@@ -494,11 +494,11 @@ int i;
 }
 
 int32_t	SdrPlayHandler_v2::Samples () {
-	return _I_Buffer. GetRingBufferReadAvailable();
+	return _I_Buffer. get_ring_buffer_read_available();
 }
 
 void	SdrPlayHandler_v2::resetBuffer () {
-	_I_Buffer. FlushRingBuffer();
+	_I_Buffer. flush_ring_buffer();
 }
 
 int16_t	SdrPlayHandler_v2::bitDepth () {

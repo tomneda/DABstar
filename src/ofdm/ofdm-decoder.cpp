@@ -263,8 +263,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
   //	From time to time we show the constellation of the current symbol
   if (showScopeData)
   {
-    mpIqBuffer->putDataIntoBuffer(mIqVector.data(), mDabPar.K);
-    mpCarrBuffer->putDataIntoBuffer(mCarrVector.data(), mDabPar.K);
+    mpIqBuffer->put_data_into_ring_buffer(mIqVector.data(), mDabPar.K);
+    mpCarrBuffer->put_data_into_ring_buffer(mCarrVector.data(), mDabPar.K);
     emit signal_slot_show_iq(mDabPar.K, 1.0f /*mGain / TOP_VAL*/);
     mShowCntIqScope = 0;
   }

@@ -66,7 +66,7 @@ void uhd_streamer::run()
     int32_t size2;
     void * data1;
     void * data2;
-    m_theStick->theBuffer->GetRingBufferWriteRegions(10000, &data1, &size1, &data2, &size2);
+    m_theStick->theBuffer->get_ring_buffer_write_regions(10000, &data1, &size1, &data2, &size2);
 
     if (size1 == 0)
     {
@@ -77,7 +77,7 @@ void uhd_streamer::run()
 
     uhd::rx_metadata_t md;
     const auto num_rx_samps = (int32_t)m_theStick->m_rx_stream->recv(data1, size1, md, 1.0);
-    m_theStick->theBuffer->AdvanceRingBufferWriteIndex(num_rx_samps);
+    m_theStick->theBuffer->advance_ring_buffer_write_index(num_rx_samps);
 
     if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT)
     {
@@ -202,7 +202,7 @@ bool UhdHandler::restartReader(int32_t freq)
     return true;
   }
 
-  theBuffer->FlushRingBuffer();
+  theBuffer->flush_ring_buffer();
   m_workerHandle = new uhd_streamer(this);
   return true;
 }
@@ -222,19 +222,19 @@ void UhdHandler::stopReader()
 
 int32_t UhdHandler::getSamples(cmplx * v, int32_t size)
 {
-  size = std::min(size, theBuffer->GetRingBufferReadAvailable());
-  theBuffer->getDataFromBuffer(v, size);
+  size = std::min(size, theBuffer->get_ring_buffer_read_available());
+  theBuffer->get_data_from_ring_buffer(v, size);
   return size;
 }
 
 int32_t UhdHandler::Samples()
 {
-  return theBuffer->GetRingBufferReadAvailable();
+  return theBuffer->get_ring_buffer_read_available();
 }
 
 void UhdHandler::resetBuffer()
 {
-  theBuffer->FlushRingBuffer();
+  theBuffer->flush_ring_buffer();
 }
 
 int16_t UhdHandler::bitDepth()

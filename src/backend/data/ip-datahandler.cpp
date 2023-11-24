@@ -142,7 +142,7 @@ void ip_dataHandler::process_ipVector(const std::vector<uint8_t> & v)
 void ip_dataHandler::process_udpVector(const uint8_t * data, int16_t length)
 {
   char * message = (char *)(&(data[8]));
-  dataBuffer->putDataIntoBuffer((uint8_t *)message, length - 8);
+  dataBuffer->put_data_into_ring_buffer((uint8_t *)message, length - 8);
   writeDatagram(length - 8);
 }
 
