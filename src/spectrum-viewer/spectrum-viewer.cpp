@@ -109,10 +109,8 @@ SpectrumViewer::~SpectrumViewer()
   delete mpWaterfallScope;
 }
 
-void SpectrumViewer::show_spectrum(int32_t amount, int32_t vfoFrequency)
+void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
 {
-  (void)amount;
-
   constexpr int32_t averageCount = 5;
 
   if (mpSpectrumBuffer->get_ring_buffer_read_available() < SP_SPECTRUMSIZE)

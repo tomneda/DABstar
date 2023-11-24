@@ -79,7 +79,7 @@ public:
   SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
   ~SpectrumViewer() override;
 
-  void show_spectrum(int32_t, int32_t);
+  void show_spectrum(int32_t);
   void show_correlation(int32_t dots, int marker, const QVector<int> & v);
   void show_nominal_frequency_MHz(float);
   void show_freq_corr_rf_Hz(int32_t iFreqCorrRF);

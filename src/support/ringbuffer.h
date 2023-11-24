@@ -148,8 +148,7 @@ public:
   explicit RingBuffer(const uint32_t elementCount)
   {
     bufferSize = _round_up_to_next_power_of_2(elementCount);
-    buffer.resize(2 * bufferSize * sizeof(TElem));
-    //buffer = new char[2 * bufferSize * sizeof(TElem)];
+    buffer.resize(bufferSize * sizeof(TElem));
     smallMask = bufferSize - 1;
     bigMask = (bufferSize << 1) - 1;
   }
@@ -191,92 +190,6 @@ public:
     return readIndex = (readIndex + elementCount) & bigMask;
   }
 
-  /***************************************************************************
-  ** Get address of region(s) to which we can write data.
-  ** If the region is contiguous, size2 will be zero.
-  ** If non-contiguous, size2 will be the size of second region.
-  ** Returns room available to be written or elementCount, whichever is smaller.
-  */
-  int32_t get_ring_buffer_write_regions(uint32_t elementCount, void ** dataPtr1, int32_t * sizePtr1, void ** dataPtr2, int32_t * sizePtr2)
-  {
-    uint32_t index;
-    uint32_t available = get_ring_buffer_write_available();
-
-    if (elementCount > available)
-    {
-      elementCount = available;
-    }
-
-    /* Check to see if write is not contiguous. */
-    index = writeIndex & smallMask;
-    if (index + elementCount > bufferSize)
-    {
-      /* Write data in two blocks that wrap the buffer. */
-      int32_t firstHalf = bufferSize - index;
-      *dataPtr1 = &buffer[index * sizeof(TElem)];
-      *sizePtr1 = firstHalf;
-      *dataPtr2 = &buffer[0];
-      *sizePtr2 = elementCount - firstHalf;
-    }
-    else
-    {    // fits
-      *dataPtr1 = &buffer[index * sizeof(TElem)];
-      *sizePtr1 = elementCount;
-      *dataPtr2 = nullptr;
-      *sizePtr2 = 0;
-    }
-
-    if (available > 0)
-    {
-      PaUtil_FullMemoryBarrier(); /* (write-after-read) => full barrier */
-    }
-    
-    return elementCount;
-  }
-
-  /***************************************************************************
-  ** Get address of region(s) from which we can read data.
-  ** If the region is contiguous, size2 will be zero.
-  ** If non-contiguous, size2 will be the size of second region.
-  ** Returns room available to be read or elementCount, whichever is smaller.
-  */
-  int32_t get_ring_buffer_read_regions(uint32_t elementCount, void ** dataPtr1, int32_t * sizePtr1, void ** dataPtr2, int32_t * sizePtr2)
-  {
-    uint32_t index;
-    uint32_t available = get_ring_buffer_read_available(); /* doesn't use memory barrier */
-
-    if (elementCount > available)
-    {
-      elementCount = available;
-    }
-
-    /* Check to see if read is not contiguous. */
-    index = readIndex & smallMask;
-    if ((index + elementCount) > bufferSize)
-    {
-      /* Write data in two blocks that wrap the buffer. */
-      int32_t firstHalf = bufferSize - index;
-      *dataPtr1 = &buffer[index * sizeof(TElem)];
-      *sizePtr1 = firstHalf;
-      *dataPtr2 = &buffer[0];
-      *sizePtr2 = elementCount - firstHalf;
-    }
-    else
-    {
-      *dataPtr1 = &buffer[index * sizeof(TElem)];
-      *sizePtr1 = elementCount;
-      *dataPtr2 = nullptr;
-      *sizePtr2 = 0;
-    }
-
-    if (available)
-    {
-      PaUtil_ReadMemoryBarrier(); /* (read-after-read) => read barrier */
-    }
-
-    return elementCount;
-  }
-
   int32_t put_data_into_ring_buffer(const void * data, int32_t elementCount)
   {
     int32_t size1;
@@ -284,12 +197,12 @@ public:
     void * data1;
     void * data2;
 
-    const int32_t numWritten = get_ring_buffer_write_regions(elementCount, &data1, &size1, &data2, &size2);
+    const int32_t numWritten = _get_ring_buffer_write_regions(elementCount, &data1, &size1, &data2, &size2);
 
     if (size2 > 0)
     {
       memcpy(data1, data, size1 * sizeof(TElem));
-      data = ((char *)data) + size1 * sizeof(TElem);
+      data = (const char *)data + size1 * sizeof(TElem);
       memcpy(data2, data, size2 * sizeof(TElem));
     }
     else
@@ -303,11 +216,13 @@ public:
 
   int32_t get_data_from_ring_buffer(void * data, int32_t elementCount)
   {
-    int32_t size1, size2, numRead;
+    int32_t size1;
+    int32_t size2;
     void * data1;
     void * data2;
 
-    numRead = get_ring_buffer_read_regions(elementCount, &data1, &size1, &data2, &size2);
+    const int32_t numRead = _get_ring_buffer_read_regions(elementCount, &data1, &size1, &data2, &size2);
+
     if (size2 > 0)
     {
       memcpy(data, data1, size1 * sizeof(TElem));
@@ -335,16 +250,108 @@ public:
     return n_values;
   }
 
+  int32_t get_writable_ring_buffer_segment(uint32_t iElemCnt, void ** const opData, int32_t * opSize)
+  {
+    int32_t dummySize;
+    void * dummyData;
+    return _get_ring_buffer_write_regions(iElemCnt, opData, opSize, &dummyData, &dummySize);
+  }
+
 private:
   uint32_t bufferSize;
   std::atomic<uint32_t> writeIndex{ 0 };
   std::atomic<uint32_t> readIndex{ 0 };
   uint32_t bigMask;
   uint32_t smallMask;
-  //char * buffer;
   std::vector<char> buffer;
 
-  uint32_t _round_up_to_next_power_of_2(uint32_t iVal)
+  /***************************************************************************
+  ** Get address of region(s) to which we can write data.
+  ** If the region is contiguous, size2 will be zero.
+  ** If non-contiguous, size2 will be the size of second region.
+  ** Returns room available to be written or elementCount, whichever is smaller.
+  */
+  int32_t _get_ring_buffer_write_regions(uint32_t elementCount, void ** const dataPtr1, int32_t * sizePtr1, void ** dataPtr2, int32_t * sizePtr2)
+  {
+    const uint32_t available = get_ring_buffer_write_available();
+
+    if (elementCount > available)
+    {
+      elementCount = available;
+    }
+
+    /* Check to see if write is not contiguous. */
+
+    if (const uint32_t index = writeIndex & smallMask;
+        index + elementCount > bufferSize)
+    {
+      /* Write data in two blocks that wrap the buffer. */
+      int32_t firstHalf = bufferSize - index;
+      *dataPtr1 = &buffer[index * sizeof(TElem)];
+      *sizePtr1 = firstHalf;
+      *dataPtr2 = &buffer[0];
+      *sizePtr2 = (int32_t)elementCount - firstHalf;
+    }
+    else
+    {    // fits
+      *dataPtr1 = &buffer[index * sizeof(TElem)];
+      *sizePtr1 = (int32_t)elementCount;
+      *dataPtr2 = nullptr;
+      *sizePtr2 = 0;
+    }
+
+    if (available > 0)
+    {
+      PaUtil_FullMemoryBarrier(); /* (write-after-read) => full barrier */
+    }
+
+    return (int32_t)elementCount;
+  }
+
+  /***************************************************************************
+   ** Get address of region(s) from which we can read data.
+   ** If the region is contiguous, size2 will be zero.
+   ** If non-contiguous, size2 will be the size of second region.
+   ** Returns room available to be read or elementCount, whichever is smaller.
+   */
+  int32_t _get_ring_buffer_read_regions(uint32_t elementCount, void ** dataPtr1, int32_t * sizePtr1, void ** dataPtr2, int32_t * sizePtr2)
+  {
+    const uint32_t available = get_ring_buffer_read_available(); /* doesn't use memory barrier */
+
+    if (elementCount > available)
+    {
+      elementCount = available;
+    }
+
+    /* Check to see if read is not contiguous. */
+
+    if (const uint32_t index = readIndex & smallMask;
+        index + elementCount > bufferSize)
+    {
+      /* Write data in two blocks that wrap the buffer. */
+      int32_t firstHalf = bufferSize - index;
+      *dataPtr1 = &buffer[index * sizeof(TElem)];
+      *sizePtr1 = firstHalf;
+      *dataPtr2 = &buffer[0];
+      *sizePtr2 = (int32_t)elementCount - firstHalf;
+    }
+    else
+    {
+      *dataPtr1 = &buffer[index * sizeof(TElem)];
+      *sizePtr1 = (int32_t)elementCount;
+      *dataPtr2 = nullptr;
+      *sizePtr2 = 0;
+    }
+
+    if (available > 0)
+    {
+      PaUtil_ReadMemoryBarrier(); /* (read-after-read) => read barrier */
+    }
+
+    return (int32_t)elementCount;
+  }
+
+  [[nodiscard]] uint32_t _round_up_to_next_power_of_2(uint32_t iVal) const
   {
     // iVal with exact power of 2 keeps the size
     if (iVal == 0)

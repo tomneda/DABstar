@@ -62,13 +62,11 @@ void uhd_streamer::run()
   while (!m_stop_signal_called)
   {
     //	get write position, ignore data2 and size2
-    int32_t size1;
-    int32_t size2;
-    void * data1;
-    void * data2;
-    m_theStick->theBuffer->get_ring_buffer_write_regions(10000, &data1, &size1, &data2, &size2);
+    int32_t size;
+    void * data;
+    m_theStick->theBuffer->get_writable_ring_buffer_segment(10000, &data, &size);
 
-    if (size1 == 0)
+    if (size == 0)
     {
       // no room in ring buffer, wait for main thread to process the data
       usleep(100); // wait 100 us
@@ -76,7 +74,8 @@ void uhd_streamer::run()
     }
 
     uhd::rx_metadata_t md;
-    const auto num_rx_samps = (int32_t)m_theStick->m_rx_stream->recv(data1, size1, md, 1.0);
+    const auto num_rx_samps = (int32_t)m_theStick->m_rx_stream->recv(data, size, md, 1.0);
+
     m_theStick->theBuffer->advance_ring_buffer_write_index(num_rx_samps);
 
     if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT)

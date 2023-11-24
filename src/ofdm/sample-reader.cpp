@@ -48,7 +48,6 @@ SampleReader::SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, 
   spectrumBuffer(iSpectrumBuffer),
   oneSampleBuffer(1)
 {
-  localBuffer.resize(bufferSize);
   dumpfilePointer.store(nullptr);
   dumpScale = value_for_bit_pos(theRig->bitDepth());
   running.store(true);
@@ -132,10 +131,10 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
     if (v_abs > peakLevel) peakLevel = v_abs;
     mean_filter(sLevel, v_abs, 0.00001f);
 
-    if (localCounter < bufferSize)
+    if (specBuffIdx < SPEC_BUFF_SIZE)
     {
-      localBuffer[localCounter] = v;
-      ++localCounter;
+      specBuff[specBuffIdx] = v;
+      ++specBuffIdx;
     }
 
     oV[iStartIdx + i] = v * oscillatorTable[currentPhase];
@@ -143,14 +142,14 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
 
   sampleCount += iNoSamples;
 
-  if (sampleCount > INPUT_RATE / 4 && iShowSpec)
+  if (sampleCount > INPUT_RATE / 4 && iShowSpec && specBuffIdx >= SPEC_BUFF_SIZE)
   {
     if (spectrumBuffer != nullptr)
     {
-      spectrumBuffer->putDataIntoBuffer(localBuffer.data(), bufferSize);
-      emit signal_show_spectrum(bufferSize);
+      spectrumBuffer->put_data_into_ring_buffer(specBuff.data(), SPEC_BUFF_SIZE);
+      emit signal_show_spectrum(SPEC_BUFF_SIZE);
     }
-    localCounter = 0;
+    specBuffIdx = 0;
     sampleCount = 0;
   }
 }
@@ -171,7 +170,7 @@ void SampleReader::_dump_sample_to_file(const cmplx & v)
   dumpBuffer[2 * dumpIndex + 0] = fixround<int16_t>(real(v) * (float)dumpScale);
   dumpBuffer[2 * dumpIndex + 1] = fixround<int16_t>(imag(v) * (float)dumpScale);
 
-  if (++dumpIndex >= DUMPSIZE / 2)
+  if (++dumpIndex >= DUMP_SIZE / 2)
   {
     sf_writef_short(dumpfilePointer.load(), dumpBuffer.data(), dumpIndex);
     dumpIndex = 0;

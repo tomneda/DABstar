@@ -30,10 +30,7 @@
  */
 #ifndef  SAMPLE_READER_H
 #define  SAMPLE_READER_H
-/*
- *	Reading the samples from the input device. Since it has its own
- *	"state", we embed it into its own class
- */
+
 #include  "dab-constants.h"
 #include  <QObject>
 #include  <sndfile.h>
@@ -42,10 +39,9 @@
 #include  <vector>
 #include  "device-handler.h"
 #include  "ringbuffer.h"
-//
-//      Note:
-//      It was found that enlarging the buffersize to e.g. 8192
-//      cannot be handled properly by the underlying system.
+#include <random>
+
+// Note: It was found that enlarging the buffersize to e.g. 8192 cannot be handled properly by the underlying system.
 class RadioInterface;
 
 class SampleReader : public QObject
@@ -56,7 +52,7 @@ public:
   ~SampleReader() override = default;
 
   void setRunning(bool b);
-  float get_sLevel() const;
+  [[nodiscard]] float get_sLevel() const;
   float get_linear_peak_level_and_clear();
   cmplx getSample(int32_t);
   void getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec);
@@ -65,20 +61,20 @@ public:
   bool check_clipped_and_clear();
   void set_dc_removal(bool iRemoveDC);
 
-  inline cmplx get_dc_offset() const { return { dcReal, dcImag }; }
+  [[nodiscard]] inline cmplx get_dc_offset() const { return { dcReal, dcImag }; }
 
 private:
-  static constexpr uint16_t DUMPSIZE = 4096;
+  static constexpr uint16_t DUMP_SIZE = 4096;
+  static constexpr int32_t SPEC_BUFF_SIZE = 2048;
 
   RadioInterface * myRadioInterface;
   IDeviceHandler * theRig;
   RingBuffer<cmplx> * spectrumBuffer;
-  std::vector<cmplx> localBuffer;
+  std::array<cmplx, SPEC_BUFF_SIZE> specBuff;
   std::array<cmplx, INPUT_RATE> oscillatorTable{};
   std::vector<cmplx> oneSampleBuffer;
 
-  int32_t localCounter = 0;
-  const int32_t bufferSize  = 32768;
+  int32_t specBuffIdx = 0;
   int32_t currentPhase = 0;
   std::atomic<bool> running;
   int32_t bufferContent = 0;
@@ -87,7 +83,7 @@ private:
   bool dumping; 
   int16_t dumpIndex = 0;
   int16_t dumpScale;
-  std::array<int16_t, DUMPSIZE> dumpBuffer{};
+  std::array<int16_t, DUMP_SIZE> dumpBuffer{};
   std::atomic<SNDFILE *> dumpfilePointer;
   bool clippingOccurred = false;
   float peakLevel = -1.0e6;

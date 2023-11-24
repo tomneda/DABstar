@@ -126,7 +126,7 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 
 RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
   : QWidget(parent),
-    spectrumBuffer(2 * 32768),
+    spectrumBuffer(2048),
     iqBuffer(2 * 1536),
     carrBuffer(2 * 1536),
     responseBuffer(32768),
@@ -1837,7 +1837,7 @@ void RadioInterface::slot_show_spectrum(int32_t amount)
     return;
   }
 
-  my_spectrumViewer.show_spectrum(amount, mpInputDevice->getVFOFrequency());
+  my_spectrumViewer.show_spectrum(mpInputDevice->getVFOFrequency());
 }
 
 void RadioInterface::slot_show_iq(int iAmount, float iAvg)
