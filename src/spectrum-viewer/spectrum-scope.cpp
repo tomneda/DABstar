@@ -37,11 +37,11 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings 
   mpLmPicker->setStateMachine(lpickerMachine);
   mpLmPicker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
-  connect(mpLmPicker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &SpectrumScope::rightMouseClick);
+  connect(mpLmPicker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &SpectrumScope::slot_right_mouse_click);
 
   mSpectrumCurve.setPen(QPen(mCurveColor, 2.0));
   mSpectrumCurve.setOrientation(Qt::Horizontal);
-  mSpectrumCurve.setBaseline(get_db(0));
+  //mSpectrumCurve.setBaseline(get_db(0));
 
   if (brush)
   {
@@ -60,27 +60,41 @@ SpectrumScope::~SpectrumScope()
   delete mpGrid;
 }
 
-void SpectrumScope::show_spectrum(const double * X_axis, const double * Y_value, int32_t amplification)
+void SpectrumScope::show_spectrum(const double * X_axis, const double * Y_value)
 {
-  const double factor = (double)amplification / 100.0; // amplification is between [1..100], so factor <= 1
-  const double levelBottomdB = get_db(0.0); // eg. about -42 (dB)
-  const double levelTopdB = (1.0 - factor) * levelBottomdB;
-
   mpPlotgrid->setAxisScale(QwtPlot::xBottom, (double)X_axis[0], X_axis[mDisplaySize - 1]);
   mpPlotgrid->enableAxis(QwtPlot::xBottom);
-  mpPlotgrid->setAxisScale(QwtPlot::yLeft, levelBottomdB, levelTopdB);
+
+  static double valdBMinMean = -90.0;
+  static double valdBMaxMean = -35.0;
+
+  double valdBMin =  1000.0;
+  double valdBMax = -1000.0;
 
   for (uint16_t i = 0; i < mDisplaySize; i++)
   {
-    mYValVec[i] = get_db(factor * Y_value[i]);
+    const double val = 20.0 * std::log10(Y_value[i] + 1.0e-6f);
+    if (val > valdBMax) valdBMax = val;
+    if (val < valdBMin) valdBMin = val;
+    mYValVec[i] = val;
   }
 
-  mSpectrumCurve.setBaseline(levelBottomdB);
+  mean_filter(valdBMaxMean, valdBMax, 0.1);
+  mean_filter(valdBMinMean, valdBMin, 0.1);
+
+  // avoid scaling jumps if <= -100 occurs in the display
+  if (valdBMinMean < -99.0)
+  {
+    valdBMinMean = -99.0;
+  }
+
+  mpPlotgrid->setAxisScale(QwtPlot::yLeft, valdBMinMean, valdBMaxMean + mTopOffs);
+  //mSpectrumCurve.setBaseline(valdBMinMean);
   mSpectrumCurve.setSamples(X_axis, mYValVec.data(), mDisplaySize);
   mpPlotgrid->replot();
 }
 
-void SpectrumScope::rightMouseClick(const QPointF & point)
+void SpectrumScope::slot_right_mouse_click(const QPointF & point)
 {
   (void)point;
 
@@ -99,8 +113,14 @@ void SpectrumScope::rightMouseClick(const QPointF & point)
   mpGrid->enableYMin(true);
 }
 
-void SpectrumScope::set_bit_depth(int32_t n)
+void SpectrumScope::set_bit_depth(int32_t d)
 {
-  mNormalizer = n;
+  mBitDepth = d;
+  mNormalizer = get_range_from_bit_depth(d);
+}
+
+void SpectrumScope::slot_scaling_changed(int iScale)
+{
+  mTopOffs = 0.6 * (50 - iScale) + 5.0;
 }
 

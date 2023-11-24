@@ -29,7 +29,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "waterfall-scope.h"
+#include "waterfall-scope.h"
+#include "glob_defs.h"
 
 WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize) :
   QwtPlotSpectrogram(),
@@ -88,9 +89,9 @@ void WaterfallScope::show_waterfall(const double * ipX_axis, const double * ipY1
   mpPlotgrid->replot();
 }
 
-void WaterfallScope::set_bit_depth(int32_t n)
+void WaterfallScope::set_bit_depth(int32_t d)
 {
-  mNormalizer = n;
+  mNormalizer = get_range_from_bit_depth(d);
 }
 
 void WaterfallScope::_gen_color_map(const int32_t iStyleNr)

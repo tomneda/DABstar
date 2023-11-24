@@ -64,7 +64,8 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.hide();
 
-  create_blackman_window(mWindowVec.data(), SP_SPECTRUMSIZE);
+  //create_blackman_window(mWindowVec.data(), SP_SPECTRUMSIZE);
+  create_flattop_window(mWindowVec.data(), SP_SPECTRUMSIZE);
 
   mpSpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
   mpWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
@@ -82,6 +83,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   _load_save_combobox_settings(cmbIqScope, "iqPlot", false);
   _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
 
+  connect(scopeAmplification, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
   connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
@@ -156,39 +158,31 @@ void SpectrumViewer::show_spectrum(int32_t amount, int32_t vfoFrequency)
     }
 
     mYValVec[SP_DISPLAYSIZE / 2 + i] = f / (double)SP_SPEC_OVR_SMP_FAC;
+
     f = 0;
     for (int32_t j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
     {
       f += abs(mSpectrumVec[SP_SPECTRUMSIZE / 2 + SP_SPEC_OVR_SMP_FAC * i + j]);
     }
+
     mYValVec[i] = f / SP_SPEC_OVR_SMP_FAC;
   }
 
   // average the image a little.
   for (int32_t i = 0; i < SP_DISPLAYSIZE; i++)
   {
-    mean_filter(mDisplayBuffer[i], mYValVec[i] /*/ (float)SP_SPECTRUMSIZE*/, 1.0 / averageCount);
+    mean_filter(mDisplayBuffer[i], mYValVec[i] / (float)SP_DISPLAYSIZE, 1.0 / averageCount);
   }
 
   mpWaterfallScope->show_waterfall(mXAxisVec.data(), mDisplayBuffer.data(), dabWaterfallAmplitude->value());
-  mpSpectrumScope->show_spectrum(mXAxisVec.data(), mDisplayBuffer.data(), scopeAmplification->value());
+  mpSpectrumScope->show_spectrum(mXAxisVec.data(), mDisplayBuffer.data());
 }
 
 void SpectrumViewer::set_bit_depth(int16_t d)
 {
-  if (d < 0 || d > 32)
-  {
-    d = 24;
-  }
-
-  mNormalizer = 1;
-  while (--d > 0)
-  {
-    mNormalizer <<= 1;
-  }
-
-  mpSpectrumScope->set_bit_depth(mNormalizer);
-  mpWaterfallScope->set_bit_depth(mNormalizer);
+  mNormalizer = get_range_from_bit_depth(d);
+  mpSpectrumScope->set_bit_depth(d);
+  mpWaterfallScope->set_bit_depth(d);
 }
 
 void SpectrumViewer::show()

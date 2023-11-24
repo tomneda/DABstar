@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <complex>
+#include <cassert>
 
 using cmplx = std::complex<float>;
 
@@ -141,7 +142,8 @@ inline cmplx norm_to_length_one(const cmplx & iVal)
 
 inline cmplx cmplx_from_phase(const float iPhase)
 {
-  return std::exp(cmplx(0.0f, iPhase));
+  return {std::cos(iPhase), std::sin(iPhase)};
+  //return std::exp(cmplx(0.0f, iPhase));
 }
 
 inline cmplx abs_log10_with_offset_and_phase(const cmplx & iVal)
@@ -187,10 +189,37 @@ template<typename T> inline void create_blackman_window(T * opVal, int32_t iWind
   for (int32_t i = 0; i < iWindowWidth; i++)
   {
     opVal[i] = static_cast<T>(0.42
-                            - 0.50 * cos((2.0 * M_PI * i) / (iWindowWidth - 1))
-                            + 0.08 * cos((4.0 * M_PI * i) / (iWindowWidth - 1)));
+                            - 0.50 * std::cos((2.0 * M_PI * i) / (iWindowWidth - 1))
+                            + 0.08 * std::cos((4.0 * M_PI * i) / (iWindowWidth - 1)));
   }
 #endif
+}
+
+template<typename T> inline void create_flattop_window(T * opVal, int32_t iWindowWidth)
+{
+  //constexpr double a[5] = { 1.000, -1.930, 1.290, -0.388, 0.028 }; // max signal DC gain = 1.0 (sum / iWindowsWidth)
+  constexpr double a[5] = { 0.21557895, -0.41663158, 0.277263158, -0.083578947, 0.006947368 }; // max. pulse gain is 1.0
+
+  for (int32_t i = 0; i < iWindowWidth; i++)
+  {
+    double w = 0.0;
+    for (int32_t j = 0; j < 5; ++j)
+    {
+      w += a[j] * std::cos(j * i * 2.0 * M_PI / (iWindowWidth - 1));
+    }
+    opVal[i] = static_cast<T>(w);
+  }
+}
+
+inline int32_t get_range_from_bit_depth(int32_t iBitDepth)
+{
+  assert(iBitDepth >= 1 && iBitDepth <= 31);
+  int32_t range = 1;
+  while (--iBitDepth > 0)
+  {
+    range <<= 1;
+  }
+  return range;
 }
 
 template<typename T> inline T fft_shift(const T iIdx, const int32_t iFftSize)

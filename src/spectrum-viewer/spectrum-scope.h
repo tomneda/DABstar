@@ -28,7 +28,7 @@ public:
   SpectrumScope(QwtPlot *, int32_t, QSettings *);
   ~SpectrumScope();
 
-  void show_spectrum(const double *, const double *, int32_t);
+  void show_spectrum(const double *, const double *);
   void set_bit_depth(int32_t);
 
 private:
@@ -40,16 +40,19 @@ private:
   QwtPlotPicker * mpLmPicker;
   QColor mGridColor;
   QColor mCurveColor;
+  int32_t mBitDepth = 12;
   int32_t mNormalizer = 2048;
+  double mTopOffs = 5.0;
 
   QwtPlot * mpPlotgrid;
   QwtPlotGrid * mpGrid;
   std::vector<double> mYValVec;
-
-  template<typename T> inline T get_db(T x) { return 20 * std::log10((x + 1) / (T)(mNormalizer)); }
+  
+public slots:
+  void slot_scaling_changed(int);
 
 private slots:
-  void rightMouseClick(const QPointF &);
+  void slot_right_mouse_click(const QPointF &);
 };
 
 #endif
