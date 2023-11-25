@@ -30,7 +30,10 @@
  */
 
 #include "waterfall-scope.h"
-#include "glob_defs.h"
+#include <qwt.h>
+#include <qwt_plot.h>
+#include <qwt_color_map.h>
+#include <qwt_scale_widget.h>
 
 WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize) :
   QwtPlotSpectrogram(),
@@ -59,39 +62,34 @@ WaterfallScope::~WaterfallScope()
   detach();
 }
 
-void WaterfallScope::show_waterfall(const double * ipX_axis, const double * ipY1_value, double iAmp)
+void WaterfallScope::show_waterfall(const double * ipX_axis, const double * ipY1_value, const SpecViewLimits<double> & iSpecViewLimits)
 {
   const int32_t orig = (int32_t)(ipX_axis[0]);
 
   if (const int32_t width = (int32_t)(ipX_axis[mDisplaySize - 1] - orig);
-      mOrig != orig || mWidth != width || mAmp != iAmp)
+      mOrig != orig || mWidth != width)
   {
-    mpWaterfallData = new SpectrogramData(mPlotDataVec.data(), orig, width, -mRasterSize, mDisplaySize, iAmp / 2);
+    mpWaterfallData = new SpectrogramData(mPlotDataVec.data(), orig, width, -mRasterSize, mDisplaySize);
     detach();
-    setData(mpWaterfallData);
+    setData(mpWaterfallData);                                                                                
     attach(mpPlotgrid);
     mOrig = orig;
     mWidth = width;
-    mAmp = iAmp;
   }
+
+  // weight with slider (scale) between global and local minimum and maximum level values
+  const double yMax = (iSpecViewLimits.GlobMax + 5.0) * (1.0 - mScale) + iSpecViewLimits.LocMax * mScale;
+  const double yMin = iSpecViewLimits.GlobMin * (1.0 - mScale) + iSpecViewLimits.LocMin * mScale;
+  mpWaterfallData->set_min_max_z_value(yMin, yMax);
 
   constexpr int32_t elemSize = sizeof(decltype(mPlotDataVec.back()));
   memmove(&mPlotDataVec[mDisplaySize], &mPlotDataVec[0], (mRasterSize - 1) * mDisplaySize * elemSize); // move rows one row further
-
-  for (int i = 0; i < mDisplaySize; ++i)
-  {
-    mPlotDataVec[i] = 20.0 * std::log10(ipY1_value[i] + 1.0);
-  }
+  memcpy(&mPlotDataVec[0], ipY1_value, mDisplaySize * elemSize);
 
   mpPlotgrid->setAxisScale(QwtPlot::xBottom, ipX_axis[0], ipX_axis[mDisplaySize - 1]); // for plot
   mpPlotgrid->setAxisScale(QwtPlot::xTop, ipX_axis[0], ipX_axis[mDisplaySize - 1]); // for ticks
 
   mpPlotgrid->replot();
-}
-
-void WaterfallScope::set_bit_depth(int32_t d)
-{
-  mNormalizer = get_range_from_bit_depth(d);
 }
 
 void WaterfallScope::_gen_color_map(const int32_t iStyleNr)
@@ -150,4 +148,9 @@ void WaterfallScope::_gen_color_map(const int32_t iStyleNr)
   }
 
   setColorMap(mpColorMap);
+}
+
+void WaterfallScope::slot_scaling_changed(int iScale)
+{
+  mScale = (double)iScale / 100.0;
 }

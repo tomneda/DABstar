@@ -77,6 +77,16 @@ constexpr float F_M_PI_2 = (float)M_PI_2;
 constexpr float F_RAD_PER_DEG = (float)(M_PI / 180.0);
 constexpr float F_DEG_PER_RAD = (float)(180.0 / M_PI);
 
+template<typename T>
+struct SpecViewLimits
+{
+  // the sequence is in typical level order
+  T GlobMax = -30;
+  T LocMax  = -29;
+  T LocMin  = -50;
+  T GlobMin = -90;
+};
+
 struct EpgElement
 {
   int theTime;

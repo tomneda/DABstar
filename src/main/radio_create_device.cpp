@@ -465,9 +465,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
     return nullptr;
   }
 
-  //
-  //	It took some code, but it seems we have a device
-  my_spectrumViewer.set_bit_depth(inputDevice->bitDepth());
+  //my_spectrumViewer.set_bit_depth(inputDevice->bitDepth());
 
   dabSettings->setValue("device", s);
   //	do we want to see the widget for device control?

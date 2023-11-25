@@ -41,7 +41,8 @@ IQDisplay::IQDisplay(QwtPlot * plot)
   setColorMap(colorMap);
   mPlotDataBackgroundBuffer.resize(2 * RADIUS * 2 * RADIUS, 0.0);
   mPlotDataDrawBuffer.resize(2 * RADIUS * 2 * RADIUS, 0.0);
-  mIQData = new SpectrogramData(mPlotDataDrawBuffer.data(), 0, 2 * RADIUS, 2 * RADIUS, 2 * RADIUS, 50.0);
+  mIQData = new SpectrogramData(mPlotDataDrawBuffer.data(), 0, 2 * RADIUS, 2 * RADIUS, 2 * RADIUS);
+  mIQData->set_min_max_z_value(0.0, 50.0);
   setData(mIQData);
   plot->enableAxis(QwtPlot::xBottom, false);
   plot->enableAxis(QwtPlot::yLeft, false);

@@ -39,7 +39,6 @@
 #include  "carrier-display.h"
 #include  "iqdisplay.h"
 
-
 SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
                                RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
   Ui_scopeWidget(),
@@ -72,17 +71,17 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   mpIQDisplay = new IQDisplay(iqDisplay);
   mpCarrierDisp = new CarrierDisp(phaseCarrPlot);
   mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, ipDabSettings, mpCorrelationBuffer);
-
-  set_bit_depth(12);
-
   mShowInLogScale = cbLogIqScope->isChecked();
 
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
   cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
 
+  set_spectrum_averaging_rate(EAvrRate::DEFAULT);
+  
   _load_save_combobox_settings(cmbIqScope, "iqPlot", false);
   _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
 
+  connect(dabWaterfallAmplitude, &QSlider::valueChanged, mpWaterfallScope, &WaterfallScope::slot_scaling_changed);
   connect(scopeAmplification, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
@@ -166,21 +165,46 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
     mYValVec[i] = f / SP_SPEC_OVR_SMP_FAC;
   }
 
+  double valdBGlobMin =  1000.0;
+  double valdBGlobMax = -1000.0;
+  double valdBLocMin =  1000.0;
+  double valdBLocMax = -1000.0;
+
+  constexpr int32_t signalBeginIdx = (int32_t)(SP_DISPLAYSIZE * (1.0 - (1536000.0  / INPUT_RATE)) / 2.0);
+  constexpr int32_t signalEndIdx   = SP_DISPLAYSIZE - signalBeginIdx - 1;
+
   // average the image a little.
   for (int32_t i = 0; i < SP_DISPLAYSIZE; i++)
   {
-    mean_filter(mDisplayBuffer[i], mYValVec[i] / (float)SP_DISPLAYSIZE, 1.0 / averageCount);
+    const double val = 20.0 * std::log10(mYValVec[i] / (double)SP_DISPLAYSIZE + 1.0e-6);
+    double & valdBMean = mDisplayBuffer[i];
+    mean_filter(valdBMean, val, 1.0 / averageCount);
+
+    if (valdBMean > valdBGlobMax) valdBGlobMax = valdBMean;
+    if (valdBMean < valdBGlobMin) valdBGlobMin = valdBMean;
+    if (i >= signalBeginIdx && i <= signalEndIdx)
+    {
+      if (valdBMean > valdBLocMax) valdBLocMax = valdBMean;
+      if (valdBMean < valdBLocMin) valdBLocMin = valdBMean;
+    }
   }
 
-  mpWaterfallScope->show_waterfall(mXAxisVec.data(), mDisplayBuffer.data(), dabWaterfallAmplitude->value());
-  mpSpectrumScope->show_spectrum(mXAxisVec.data(), mDisplayBuffer.data());
-}
+  mean_filter(mSpecViewLimits.GlobMax, valdBGlobMax, mAvrAlpha);
+  mean_filter(mSpecViewLimits.GlobMin, valdBGlobMin, mAvrAlpha);
+  mean_filter(mSpecViewLimits.LocMin, valdBLocMin, mAvrAlpha);
+  mean_filter(mSpecViewLimits.LocMax, valdBLocMax, mAvrAlpha);
 
-void SpectrumViewer::set_bit_depth(int16_t d)
-{
-  mNormalizer = get_range_from_bit_depth(d);
-  mpSpectrumScope->set_bit_depth(d);
-  mpWaterfallScope->set_bit_depth(d);
+  // avoid scaling jumps if <= -100 occurs in the display (seldom, correct other values accordingly)
+  if (mSpecViewLimits.GlobMin < -99.0)
+  {
+    const double corrOff =  -99.0 - mSpecViewLimits.GlobMin; // is positive value
+    mSpecViewLimits.GlobMax += corrOff;
+    mSpecViewLimits.LocMin += corrOff;
+    mSpecViewLimits.LocMax += corrOff;
+  }
+
+  mpWaterfallScope->show_waterfall(mXAxisVec.data(), mDisplayBuffer.data(), mSpecViewLimits);
+  mpSpectrumScope->show_spectrum(mXAxisVec.data(), mDisplayBuffer.data(), mSpecViewLimits);
 }
 
 void SpectrumViewer::show()
@@ -366,4 +390,14 @@ void SpectrumViewer::show_digital_peak_level(float iDigLevel)
   const float valuedB = 20.0f * std::log10(iDigLevel + 0.00001f);
 
   thermoDigLevel->setValue(valuedB);
+}
+
+void SpectrumViewer::set_spectrum_averaging_rate(SpectrumViewer::EAvrRate iAvrRate)
+{
+  switch (iAvrRate)
+  {
+  case EAvrRate::SLOW:   mAvrAlpha = 0.01; break;
+  case EAvrRate::MEDIUM: mAvrAlpha = 0.10; break;
+  case EAvrRate::FAST:   mAvrAlpha = 1.00; break;
+  }
 }

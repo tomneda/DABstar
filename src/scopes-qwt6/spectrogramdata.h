@@ -46,10 +46,13 @@ public:
   const int32_t mHeight;        // raster height
   const int32_t mDataWidth;     // width of matrix
   const int32_t mDataHeight;    // for now == raster height
-  const double mMax;
+  double mzMin = 0.0;
+  double mzMax = 1.0;
 
-  SpectrogramData(const double * ipData, int32_t iLeft, int32_t iWidth, int32_t iHeight, int32_t iDatawidth, double iMax);
+  SpectrogramData(const double * ipData, int32_t iLeft, int32_t iWidth, int32_t iHeight, int32_t iDatawidth);
   ~SpectrogramData() override = default;
+
+  void set_min_max_z_value(const double izMin, const double izMax);
 
   void initRaster(const QRectF & x, const QSize & raster) override;
 

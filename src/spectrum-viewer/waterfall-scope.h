@@ -32,23 +32,13 @@
 #ifndef  WATERFALLSCOPE_H
 #define  WATERFALLSCOPE_H
 
-#include <cmath>
 #include <QObject>
-#include <qwt.h>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_marker.h>
-#include <qwt_plot_grid.h>
-#include <qwt_color_map.h>
 #include <qwt_plot_spectrogram.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_plot_panner.h>
-#include <qwt_plot_layout.h>
-#include <qwt_scale_widget.h>
-#include <QBrush>
-#include "spectrogramdata.h"
-#include <QTimer>
 #include <cstdint>
+#include "spectrogramdata.h"
+#include "dab-constants.h"
+
+class QwtLinearColorMap;
 
 class WaterfallScope : public QObject, public QwtPlotSpectrogram
 {
@@ -57,8 +47,7 @@ public:
   WaterfallScope(QwtPlot *, int, int);
   ~WaterfallScope() override;
 
-  void show_waterfall(const double *, const double *, double);
-  void set_bit_depth(int32_t);
+  void show_waterfall(const double *, const double *, const SpecViewLimits<double> & iSpecViewLimits);
 
 private:
   QwtPlot * const mpPlotgrid;
@@ -66,15 +55,14 @@ private:
   const int32_t mRasterSize;
   int32_t mOrig = 0;
   int32_t mWidth = 0;
-  double mAmp = 0;
-  int32_t mNormalizer = 2048;
   SpectrogramData * mpWaterfallData;
   QwtLinearColorMap * mpColorMap;
   std::vector<double> mPlotDataVec;
-
-  template<typename T> inline T get_db(T x) { return 20 * std::log10((x + 1) / (T)(mNormalizer)); }
+  double mScale = 0.0;
 
   void _gen_color_map(const int32_t iStyleNr);
+public slots:
+  void slot_scaling_changed(int);
 };
 
 #endif

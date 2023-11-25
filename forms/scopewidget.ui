@@ -49,13 +49,13 @@
           <string notr="true">background-color: rgb(60,60,60);</string>
          </property>
          <property name="minimum">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <number>100</number>
          </property>
          <property name="value">
-          <number>50</number>
+          <number>0</number>
          </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -71,9 +71,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spectrumview. &lt;/p&gt;&lt;p&gt;The spectrum of the incoming
-                      signal is shown here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                    </string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The spectrum of the incoming signal.&lt;/p&gt;&lt;p&gt;Use the slider on the left to zoom into the signal.&lt;/p&gt;&lt;p&gt;The scaling is done automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -112,13 +110,13 @@
           <string notr="true">background-color: rgb(60,60,60);</string>
          </property>
          <property name="minimum">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <number>100</number>
          </property>
          <property name="value">
-          <number>50</number>
+          <number>0</number>
          </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -132,9 +130,6 @@
            <width>0</width>
            <height>100</height>
           </size>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The waterfall of the spectrum of the incoming signal&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgba(18, 18, 18, 255);</string>

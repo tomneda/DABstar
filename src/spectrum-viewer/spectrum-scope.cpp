@@ -2,6 +2,12 @@
 #include  <QSettings>
 #include  <QColor>
 #include  <QPen>
+#include  <qwt.h>
+#include  <qwt_plot.h>
+#include  <qwt_plot_grid.h>
+#include  <qwt_color_map.h>
+#include  <qwt_plot_zoomer.h>
+#include  <qwt_picker_machine.h>
 #include  "color-selector.h"
 
 SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings * dabSettings) :
@@ -11,16 +17,12 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings 
 {
   mYValVec.resize(mDisplaySize);
   std::fill(mYValVec.begin(), mYValVec.end(), 0.0);
-
-  QString colorString = "black";
-  bool brush;
-
   dabSettings->beginGroup(SETTING_GROUP_NAME);
-  colorString = dabSettings->value("gridColor", "#5e5c64").toString();
+  QString colorString = dabSettings->value("gridColor", "#5e5c64").toString();
   mGridColor = QColor(colorString);
   colorString = dabSettings->value("curveColor", "#dc8add").toString();
   mCurveColor = QColor(colorString);
-  brush = dabSettings->value("brush", 0).toInt() == 1;
+  const bool brush = dabSettings->value("brush", 0).toInt() == 1;
   dabSettings->endGroup();
   mpPlotgrid = dabScope;
 
@@ -41,7 +43,6 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings 
 
   mSpectrumCurve.setPen(QPen(mCurveColor, 2.0));
   mSpectrumCurve.setOrientation(Qt::Horizontal);
-  //mSpectrumCurve.setBaseline(get_db(0));
 
   if (brush)
   {
@@ -49,10 +50,9 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings 
     ourBrush.setStyle(Qt::Dense3Pattern);
     mSpectrumCurve.setBrush(ourBrush);
   }
+
   mSpectrumCurve.attach(mpPlotgrid);
-
   mpPlotgrid->enableAxis(QwtPlot::yLeft);
-
 }
 
 SpectrumScope::~SpectrumScope()
@@ -60,37 +60,17 @@ SpectrumScope::~SpectrumScope()
   delete mpGrid;
 }
 
-void SpectrumScope::show_spectrum(const double * X_axis, const double * Y_value)
+void SpectrumScope::show_spectrum(const double * X_axis, const double * Y_value, const SpecViewLimits<double> & iSpecViewLimits)
 {
   mpPlotgrid->setAxisScale(QwtPlot::xBottom, (double)X_axis[0], X_axis[mDisplaySize - 1]);
   mpPlotgrid->enableAxis(QwtPlot::xBottom);
 
-  static double valdBMinMean = -90.0;
-  static double valdBMaxMean = -35.0;
+  // weight with slider (scale) between global and local minimum and maximum level values
+  const double yMax = (iSpecViewLimits.GlobMax + 5.0) * (1.0 - mScale) + iSpecViewLimits.LocMax * mScale;
+  const double yMin = iSpecViewLimits.GlobMin * (1.0 - mScale) + iSpecViewLimits.LocMin * mScale;
 
-  double valdBMin =  1000.0;
-  double valdBMax = -1000.0;
-
-  for (uint16_t i = 0; i < mDisplaySize; i++)
-  {
-    const double val = 20.0 * std::log10(Y_value[i] + 1.0e-6f);
-    if (val > valdBMax) valdBMax = val;
-    if (val < valdBMin) valdBMin = val;
-    mYValVec[i] = val;
-  }
-
-  mean_filter(valdBMaxMean, valdBMax, 0.1);
-  mean_filter(valdBMinMean, valdBMin, 0.1);
-
-  // avoid scaling jumps if <= -100 occurs in the display
-  if (valdBMinMean < -99.0)
-  {
-    valdBMinMean = -99.0;
-  }
-
-  mpPlotgrid->setAxisScale(QwtPlot::yLeft, valdBMinMean, valdBMaxMean + mTopOffs);
-  //mSpectrumCurve.setBaseline(valdBMinMean);
-  mSpectrumCurve.setSamples(X_axis, mYValVec.data(), mDisplaySize);
+  mpPlotgrid->setAxisScale(QwtPlot::yLeft, yMin, yMax);
+  mSpectrumCurve.setSamples(X_axis, Y_value, mDisplaySize);
   mpPlotgrid->replot();
 }
 
@@ -113,14 +93,8 @@ void SpectrumScope::slot_right_mouse_click(const QPointF & point)
   mpGrid->enableYMin(true);
 }
 
-void SpectrumScope::set_bit_depth(int32_t d)
-{
-  mBitDepth = d;
-  mNormalizer = get_range_from_bit_depth(d);
-}
-
 void SpectrumScope::slot_scaling_changed(int iScale)
 {
-  mTopOffs = 0.6 * (50 - iScale) + 5.0;
+  mScale = (double)iScale / 100.0;
 }
 

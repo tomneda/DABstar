@@ -10,15 +10,14 @@
 #include "spectrogramdata.h"
 
 
-SpectrogramData::SpectrogramData(const double * ipData, int32_t iLeft, int32_t iWidth, int32_t iHeight, int32_t iDatawidth, double iMax) :
+SpectrogramData::SpectrogramData(const double * ipData, int32_t iLeft, int32_t iWidth, int32_t iHeight, int32_t iDatawidth) :
   QwtRasterData(),
   mpData(ipData),
   mLeft(iLeft),
   mWidth(iWidth),
   mHeight(iHeight),
   mDataWidth(std::abs(iDatawidth)),
-  mDataHeight(std::abs(iHeight)),
-  mMax(iMax)
+  mDataHeight(std::abs(iHeight))
 {
   assert(mWidth != 0);
   assert(mHeight != 0);
@@ -42,7 +41,7 @@ QwtInterval SpectrogramData::interval(Qt::Axis x) const
     return QwtInterval(0, mHeight);
   }
 
-  return QwtInterval(0, mMax);
+  return QwtInterval(mzMin, mzMax);
 }
 
 double SpectrogramData::value(double x, double y) const
@@ -64,4 +63,10 @@ double SpectrogramData::value(double x, double y) const
   }
 
   return mpData[(int)y * mDataWidth + (int)x];
+}
+
+void SpectrogramData::set_min_max_z_value(const double izMin, const double izMax)
+{
+  mzMin = izMin;
+  mzMax = izMax;
 }

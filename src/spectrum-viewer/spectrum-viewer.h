@@ -87,11 +87,14 @@ public:
   void show_iq(int32_t, float);
   void show_quality(int32_t, float, float, float, float, float);
   void show_clock_error(float e);
-  void set_bit_depth(int16_t);
+  //void set_bit_depth(int16_t);
   void show();
   void hide();
   bool is_hidden();
   void show_digital_peak_level(float);
+
+  enum class EAvrRate { SLOW, MEDIUM, FAST, DEFAULT = MEDIUM };
+  void set_spectrum_averaging_rate(EAvrRate iAvrRate);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "spectrumViewer";
@@ -107,6 +110,8 @@ private:
   std::vector<float> mCarrValuesVec;
   uint32_t mThermoPeakLevelConfigured = 0;
   bool mThermoModQualConfigured = false;
+  SpecViewLimits<double> mSpecViewLimits;
+  double mAvrAlpha = 0.1;
 
   fftHandler fft{ SP_SPECTRUMSIZE, false };
 
@@ -116,7 +121,6 @@ private:
   std::array<double, SP_DISPLAYSIZE> mYValVec{ 0 };
   std::array<double, SP_DISPLAYSIZE> mDisplayBuffer{ 0 };
 
-  int32_t mNormalizer = 2048;
   int32_t mLastVcoFreq = -1; // do not use 0 as input files can have 0Hz center frequencies and this cache would be "valid"
   bool mShowInLogScale = false;
 

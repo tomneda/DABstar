@@ -3,33 +3,22 @@
 
 #include  "dab-constants.h"
 #include  <QObject>
-#include  <qwt.h>
-#include  <qwt_plot.h>
-#include  <qwt_plot_marker.h>
-#include  <qwt_plot_grid.h>
+#include  <QColor>
 #include  <qwt_plot_curve.h>
-#include  <qwt_color_map.h>
-#include  <qwt_plot_zoomer.h>
-#include  <qwt_plot_textlabel.h>
-#include  <qwt_plot_panner.h>
-#include  <qwt_plot_layout.h>
-#include  <qwt_picker_machine.h>
-#include  <qwt_scale_widget.h>
-#include  <QBrush>
-#include  <QTimer>
 
-class RadioInterface;
 class QSettings;
+class QwtPlot;
+class QwtPlotPicker;
+class QwtPlotGrid;
 
 class SpectrumScope : public QObject
 {
 Q_OBJECT
 public:
   SpectrumScope(QwtPlot *, int32_t, QSettings *);
-  ~SpectrumScope();
+  ~SpectrumScope() override;
 
-  void show_spectrum(const double *, const double *);
-  void set_bit_depth(int32_t);
+  void show_spectrum(const double *, const double *, const SpecViewLimits<double> & iSpecViewLimits);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "spectrumScope";
@@ -40,12 +29,10 @@ private:
   QwtPlotPicker * mpLmPicker;
   QColor mGridColor;
   QColor mCurveColor;
-  int32_t mBitDepth = 12;
-  int32_t mNormalizer = 2048;
-  double mTopOffs = 5.0;
+  double mScale = 0.0;
 
-  QwtPlot * mpPlotgrid;
-  QwtPlotGrid * mpGrid;
+  QwtPlot * mpPlotgrid = nullptr;
+  QwtPlotGrid * mpGrid = nullptr;
   std::vector<double> mYValVec;
   
 public slots:
