@@ -82,7 +82,7 @@ struct SpecViewLimits
 {
   // the sequence is in typical level order
   T GlobMax = -30;
-  T LocMax  = -29;
+  T LocMax  = -31;
   T LocMin  = -50;
   T GlobMin = -90;
 };
