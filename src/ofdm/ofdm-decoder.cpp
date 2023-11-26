@@ -59,6 +59,8 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mIntegAbsPhaseVector.resize(mDabPar.K);
   mMeanPhaseVector.resize(mDabPar.K);
   mMeanPowerVector.resize(mDabPar.K);
+  mMeanLevelVector.resize(mDabPar.K);
+  mMeanSigmaSqVector.resize(mDabPar.K);
 
   reset();
 }
@@ -69,10 +71,14 @@ void OfdmDecoder::reset()
   std::fill(mIntegAbsPhaseVector.begin(), mIntegAbsPhaseVector.end(), 0.0f);
   std::fill(mMeanPhaseVector.begin(), mMeanPhaseVector.end(), 0.0f);
   std::fill(mMeanPowerVector.begin(), mMeanPowerVector.end(), 0.0f);
+  std::fill(mMeanLevelVector.begin(), mMeanLevelVector.end(), 0.0f);
+  std::fill(mMeanSigmaSqVector.begin(), mMeanSigmaSqVector.end(), 0.0f);
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
 
   mMeanStdDevSqPhase = 0.0f;
   mMeanPowerOvrAll = 1.0f;
+  mLlrScaling = 1.0f;
+  mLlrMax = 0.0;
 
   _reset_null_symbol_statistics();
 }
@@ -160,18 +166,19 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
      * The carrier of a block is the reference for the carrier on the same position in the next block.
      */
     const cmplx fftBinRaw = mFftBuffer[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
+    //const cmplx fftBinRaw = mFftBuffer[fftIdx] * /*norm_to_length_one*/(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
 
     float & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
 
     //fftBin *= rotator; // Fine correction of phase which can't be done in the time domain (not more necessary as it is done below other way).
     const cmplx fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
 
-    // Get mean of absolute phase for each bin.
+    // Get phase and absolute phase for each bin.
     const float fftBinPhase = std::arg(fftBin);
     const float fftBinAbsPhase = turn_phase_to_first_quadrant(fftBinPhase);
 
     // Integrate phase error to perform the phase correction in the next OFDM symbol.
-    integAbsPhasePerBinRef += ALPHA * (fftBinAbsPhase - F_M_PI_4);
+    integAbsPhasePerBinRef += 0.01f * ALPHA * (fftBinAbsPhase - F_M_PI_4); // TODO: correction still necessary?
     limit_symmetrically(integAbsPhasePerBinRef, F_RAD_PER_DEG * 20.0f);
 
     // Get standard deviation of absolute phase for each bin. The integrator above assures that F_M_PI_4 is the phase mean value.
@@ -179,19 +186,31 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     const float curStdDevSq = curStdDevDiff * curStdDevDiff;
     float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
-    mean_filter(mMeanStdDevSqPhase, curStdDevSq, ALPHA / mDabPar.K);
+    mean_filter(mMeanStdDevSqPhase, curStdDevSq, ALPHA / (float)mDabPar.K);
 
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
     // Simplification: The IQ plot would need only the level, not power, so the root of the power is used (below)..
     const float fftBinAbsLevel = std::abs(fftBin);
     const float fftBinPower = fftBinAbsLevel * fftBinAbsLevel;
 
+    float & meanLevelPerBinRef = mMeanLevelVector[nomCarrIdx];
     float & meanPowerPerBinRef = mMeanPowerVector[nomCarrIdx];
+    mean_filter(meanLevelPerBinRef, fftBinAbsLevel, ALPHA);
     mean_filter(meanPowerPerBinRef, fftBinPower, ALPHA);
-    mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / mDabPar.K);
+    mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (float)mDabPar.K);
+
+    const float meanLevelAtAxisPerBin = meanLevelPerBinRef * M_SQRT1_2f;
+    const float realLevelDistPerBin = (std::abs(real(fftBin)) - meanLevelAtAxisPerBin); // x-distance to reference point
+    const float imagLevelDistPerBin = (std::abs(imag(fftBin)) - meanLevelAtAxisPerBin); // y-distance to reference point
+    const float sigmaSqPerBin = realLevelDistPerBin * realLevelDistPerBin + imagLevelDistPerBin * imagLevelDistPerBin; // squared distance to reference point
+
+    float & meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
+    mean_filter(meanSigmaSqPerBinRef, sigmaSqPerBin, ALPHA);
 
     // Calculate (and limit) a soft-bit weight
     float weight = 0.0f;
+    float llrBitReal = 0.0f;
+    float llrBitImag = 0.0f;
     float qtDabWeight = 0.0f;
 
     /*
@@ -205,28 +224,52 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
      */
     switch (mSoftBitType)
     {
-    case ESoftBitType::AVER:      weight = 127.0f * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4; break;
-    case ESoftBitType::FAST:      weight = 127.0f * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4; break;
-    case ESoftBitType::FIX_LOW:   weight = 2; break;
-    case ESoftBitType::FIX_MED:   weight = 63; break;
-    case ESoftBitType::FIX_HIGH:  weight = 127; break;
-    case ESoftBitType::QTDAB:     qtDabWeight = 255.0f; break;
-    case ESoftBitType::QTDAB_MOD: qtDabWeight = 127.0f; break;
+    case ESoftBitType::LLR:
+      llrBitReal = -mLlrScaling * 2 * meanLevelAtAxisPerBin / meanSigmaSqPerBinRef * real(fftBin);
+      llrBitImag = -mLlrScaling * 2 * meanLevelAtAxisPerBin / meanSigmaSqPerBinRef * imag(fftBin);
+      break;
+    case ESoftBitType::AVER:        weight = F_VITERBI_SOFT_BIT_VALUE_MAX * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4; break;
+    case ESoftBitType::FAST:        weight = F_VITERBI_SOFT_BIT_VALUE_MAX * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4; break;
+    case ESoftBitType::FIX_LOW:     weight = 2.0f; break;
+    case ESoftBitType::FIX_MED:     weight = F_VITERBI_SOFT_BIT_VALUE_MAX / 2; break;
+    case ESoftBitType::FIX_HIGH:    weight = F_VITERBI_SOFT_BIT_VALUE_MAX; break;
+    case ESoftBitType::QTDAB:       qtDabWeight = 255.0f; break; // F_VITERBI_SOFT_BIT_VALUE_MAX is (intentionally?) overflown here
+    case ESoftBitType::EUCL_DIST:
+    case ESoftBitType::MAX_DIST_IQ: qtDabWeight = F_VITERBI_SOFT_BIT_VALUE_MAX; break;
     }
 
-    if (qtDabWeight != 0.0f)
+    if (mSoftBitType == ESoftBitType::LLR)
     {
-      // Original Qt-DAB decoding (with qtDabWeight == 255.0).
-      const cmplx r1 = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-      const float ab1 = abs(r1);
-      oBits[0         + nomCarrIdx] = (int16_t)(-(real(r1) * qtDabWeight) / ab1);
-      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(r1) * qtDabWeight) / ab1);
-      weight = std::abs(real(r1) * qtDabWeight / ab1);
-      limit_min_max(weight, 0.0f, 127.0f);
+      if (nomCarrIdx == 0) mLlrMax = 0; // reset max collector with first carrier
+      const float maxAbs = std::max(std::abs(llrBitReal), std::abs(llrBitImag));
+      if (maxAbs > mLlrMax) mLlrMax = maxAbs;
+
+      if (nomCarrIdx + 1 >= mDabPar.K) // last carrier
+      {
+        mLlrScaling += 0.00001f * (F_VITERBI_SOFT_BIT_VALUE_MAX - mLlrMax);
+        if (mLlrScaling < 1.0f) mLlrScaling = 1.0f; // limit value to ensure at least FIC
+        //qDebug("LLR scaling: %f, (max: %f)", mLlrScaling, mLlrMax);
+      }
+
+      limit_symmetrically(llrBitReal, F_VITERBI_SOFT_BIT_VALUE_MAX);
+      limit_symmetrically(llrBitImag, F_VITERBI_SOFT_BIT_VALUE_MAX);
+      oBits[0         + nomCarrIdx] = (int16_t)(llrBitReal);
+      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(llrBitImag);
+      weight = std::min(std::abs(llrBitReal), std::abs(llrBitImag));
+    }
+    else if (qtDabWeight != 0.0f)
+    {
+      // Original Qt-DAB decoding is with qtDabWeight == 255.0 and performs imo better than with 127.0 (F_VITERBI_SOFT_BIT_VALUE_MAX)
+      const cmplx v = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
+      const float vLen = (mSoftBitType == ESoftBitType::MAX_DIST_IQ ? std::max(std::abs(real(v)), std::abs(imag(v))) : abs(v));
+      oBits[0         + nomCarrIdx] = (int16_t)(-(real(v) * qtDabWeight) / vLen);
+      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(v) * qtDabWeight) / vLen);
+      weight = std::abs(std::min(real(v), imag(v)) * qtDabWeight / vLen); // for the carrier scope: have to decide for real or imag part, take the min of both
+      limit_min_max(weight, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
     }
     else
     {
-      limit_min_max(weight, 2.0f, 127.0f);  // at least 2 as viterbi shows problems with only 1
+      limit_min_max(weight, 2.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);  // at least 2 as viterbi shows problems with only 1
       oBits[0         + nomCarrIdx] = (int16_t)(real(fftBin) < 0.0f ? weight : -weight);
       oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(fftBin) < 0.0f ? weight : -weight);
     }
@@ -246,7 +289,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
       switch (mCarrierPlotType)
       {
-      case ECarrierPlotType::MOD_QUAL:        mCarrVector[dataVecCarrIdx] = 100.0f / 127.0f * weight;  break;
+      case ECarrierPlotType::SB_WEIGHT:       mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * weight;  break;
+      case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 20.0f * std::log10(std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef); break;
+      case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
       case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(integAbsPhasePerBinRef); break;
       case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;

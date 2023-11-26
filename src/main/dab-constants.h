@@ -76,6 +76,8 @@ constexpr float F_M_PI_4 = (float)M_PI_4;
 constexpr float F_M_PI_2 = (float)M_PI_2;
 constexpr float F_RAD_PER_DEG = (float)(M_PI / 180.0);
 constexpr float F_DEG_PER_RAD = (float)(180.0 / M_PI);
+constexpr int16_t VITERBI_SOFT_BIT_VALUE_MAX = 127;
+constexpr float F_VITERBI_SOFT_BIT_VALUE_MAX = (float)VITERBI_SOFT_BIT_VALUE_MAX;
 
 template<typename T>
 struct SpecViewLimits

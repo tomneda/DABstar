@@ -31,7 +31,9 @@ enum class EIqPlotType
 
 enum class ECarrierPlotType
 {
-  MOD_QUAL,
+  SB_WEIGHT, // soft bit weight
+  EVM_DB,
+  EVM_PER,
   STD_DEV,
   PHASE_ERROR,
   FOUR_QUAD_PHASE,
@@ -41,20 +43,22 @@ enum class ECarrierPlotType
   NULL_NO_TII,
   NULL_OVR_POW,
 
-  DEFAULT = MOD_QUAL  // use the first element for startup constellation
+  DEFAULT = SB_WEIGHT  // use the first element for startup constellation
 };
 
 enum class ESoftBitType
 {
+  LLR,         // log likelihood ratio
   AVER,
   FAST,
   QTDAB,
-  QTDAB_MOD,
+  EUCL_DIST,   // like QTDAB, norm to length of vector (Euclidean distance)
+  MAX_DIST_IQ, // norm to maximum of I/Q axis distance
   FIX_HIGH,
   FIX_MED,
   FIX_LOW,
 
-  DEFAULT = AVER  // use the first element for startup constellation
+  DEFAULT = LLR  // use the first element for startup constellation
 };
 
 #endif // GLOB_ENUMS_H

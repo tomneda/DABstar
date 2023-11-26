@@ -129,11 +129,30 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
 
   switch (iPlotType)
   {
-  case ECarrierPlotType::MOD_QUAL:
-    cp.ToolTip = "Shows the modulation quality in percentage for each OFDM carrier.<p>"
-                 "This is used for soft bit weighting for the viterbi decoder.";
+  case ECarrierPlotType::SB_WEIGHT:
+    cp.ToolTip = "Shows the soft-bit weight in percentage for each OFDM carrier.<p>This is used viterbi decoder data input.";
     cp.Style = SCustPlot::EStyle::LINES;
-    cp.Name = "Modul. Quality";
+    cp.Name = "Soft-Bit Weight";
+    cp.YTopValue = 100.0;
+    cp.YBottomValue = 0.0;
+    cp.YValueElementNo = 6;
+    cp.MarkerYValueStep = 1;
+    break;
+
+  case ECarrierPlotType::EVM_DB:
+    cp.ToolTip = "Shows the EVM (Error Vector Magnitude) in dB of each OFDM carrier.";
+    cp.Style = SCustPlot::EStyle::LINES;
+    cp.Name = "EVM (dB)";
+    cp.YTopValue = 0.0;
+    cp.YBottomValue = -36.0;
+    cp.YValueElementNo = 7;
+    cp.MarkerYValueStep = 1;
+    break;
+
+  case ECarrierPlotType::EVM_PER:
+    cp.ToolTip = "Shows the EVM (Error Vector Magnitude) in percentage of each OFDM carrier.";
+    cp.Style = SCustPlot::EStyle::LINES;
+    cp.Name = "EVM (%)";
     cp.YTopValue = 100.0;
     cp.YBottomValue = 0.0;
     cp.YValueElementNo = 6;
@@ -143,7 +162,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
   case ECarrierPlotType::STD_DEV:
     cp.ToolTip = "Shows the standard deviation of the absolute phase (mapped to first quadrant) in degrees of each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::LINES;
-    cp.Name = "Std-Deviation";
+    cp.Name = "Phase Std-Dev.";
     cp.YTopValue = 45.0;
     cp.YBottomValue = 0.0;
     cp.YValueElementNo = 7;
@@ -230,7 +249,9 @@ QStringList CarrierDisp::get_plot_type_names()
   QStringList sl;
 
   // ATTENTION: use same sequence as in ECarrierPlotType
-  sl << _get_plot_type_data(ECarrierPlotType::MOD_QUAL).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::SB_WEIGHT).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::EVM_DB).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::EVM_PER).Name;
   sl << _get_plot_type_data(ECarrierPlotType::STD_DEV).Name;
   sl << _get_plot_type_data(ECarrierPlotType::PHASE_ERROR).Name;
   sl << _get_plot_type_data(ECarrierPlotType::FOUR_QUAD_PHASE).Name;

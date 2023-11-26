@@ -97,6 +97,8 @@ private:
   std::vector<float> mStdDevSqPhaseVector;
   std::vector<float> mIntegAbsPhaseVector;
   std::vector<float> mMeanPhaseVector;
+  std::vector<float> mMeanLevelVector;
+  std::vector<float> mMeanSigmaSqVector;
   std::vector<float> mMeanPowerVector;
   std::vector<float> mMeanNullLevel;
   std::vector<float> mMeanNullPowerWithoutTII;
@@ -104,6 +106,8 @@ private:
   float mMeanPowerOvrAll = 1.0f;
   float mAbsNullLevelMin = 0.0f;
   float mAbsNullLevelGain = 0.0f;
+  float mLlrMax = 1.0f;
+  float mLlrScaling = 1.0f;
   cmplx mDcAdc{ 0.0f, 0.0f };
 
   // mQD has always be visible due to address access in another thread.
