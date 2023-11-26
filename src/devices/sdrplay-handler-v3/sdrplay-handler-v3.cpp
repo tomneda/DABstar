@@ -217,7 +217,7 @@ int32_t	SdrPlayHandler_v3::getSamples (cmplx *V, int32_t size) {
 std::complex<int16_t> temp [size];
 int	i;
 
-	int amount      = _I_Buffer. getDataFromBuffer (temp, size);
+	int amount      = _I_Buffer.get_data_from_ring_buffer(temp, size);
         for (i = 0; i < amount; i ++)
            V [i] = cmplx (real (temp [i]) / (float) denominator,
                                         imag (temp [i]) / (float) denominator);
@@ -227,11 +227,11 @@ int	i;
 }
 
 int32_t	SdrPlayHandler_v3::Samples	() {
-	return _I_Buffer. GetRingBufferReadAvailable();
+	return _I_Buffer. get_ring_buffer_read_available();
 }
 
 void	SdrPlayHandler_v3::resetBuffer	() {
-	_I_Buffer. FlushRingBuffer();
+	_I_Buffer. flush_ring_buffer();
 }
 
 int16_t	SdrPlayHandler_v3::bitDepth	() {
@@ -455,7 +455,7 @@ std::complex<int16_t> localBuf [numSamples];
 	   std::complex<int16_t> symb = std::complex<int16_t> (xi [i], xq [i]);
 	   localBuf [i] = symb;
 	}
-	p -> _I_Buffer. putDataIntoBuffer (localBuf, numSamples);
+	p -> _I_Buffer. put_data_into_ring_buffer(localBuf, numSamples);
 }
 
 static
