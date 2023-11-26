@@ -42,7 +42,7 @@ WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize)
   mRasterSize(rasterSize)
 {
   mPlotDataVec.resize(displaySize * rasterSize);
-  std::fill(mPlotDataVec.begin(), mPlotDataVec.end(), 0.0);
+  std::fill(mPlotDataVec.begin(), mPlotDataVec.end(), -100.0);
 
   _gen_color_map(0);
 

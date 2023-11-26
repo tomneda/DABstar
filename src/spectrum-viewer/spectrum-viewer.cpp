@@ -387,7 +387,7 @@ void SpectrumViewer::show_digital_peak_level(float iDigLevel)
     ++mThermoPeakLevelConfigured;
   }
 
-  const float valuedB = 20.0f * std::log10(iDigLevel + 0.00001f);
+  const float valuedB = 20.0f * std::log10(iDigLevel + 1.0e-6f);
 
   thermoDigLevel->setValue(valuedB);
 }

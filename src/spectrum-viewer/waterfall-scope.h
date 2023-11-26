@@ -55,8 +55,8 @@ private:
   const int32_t mRasterSize;
   int32_t mOrig = 0;
   int32_t mWidth = 0;
-  SpectrogramData * mpWaterfallData;
-  QwtLinearColorMap * mpColorMap;
+  SpectrogramData * mpWaterfallData = nullptr;
+  QwtLinearColorMap * mpColorMap = nullptr;
   std::vector<double> mPlotDataVec;
   double mScale = 0.0;
 

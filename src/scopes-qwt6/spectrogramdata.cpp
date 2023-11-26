@@ -33,36 +33,28 @@ QwtInterval SpectrogramData::interval(Qt::Axis x) const
 {
   if (x == Qt::XAxis)
   {
-    return QwtInterval(mLeft, mLeft + mWidth);
+    return {mLeft, mLeft + mWidth};
   }
 
   if (x == Qt::YAxis)
   {
-    return QwtInterval(0, mHeight);
+    return {0, mHeight};
   }
 
-  return QwtInterval(mzMin, mzMax);
+  return {mzMin, mzMax};
 }
 
-double SpectrogramData::value(double x, double y) const
+double SpectrogramData::value(const double iX, const double iY) const
 {
-  //fprintf (stdout, "x = %f, y = %f\n", x, y);
-  x = x - mLeft;
-  x = x / mWidth * (mDataWidth - 1);
-  y = y / mHeight * (mDataHeight - 1);
+  const int32_t idxX = (int32_t)((iX - mLeft) / mWidth * (mDataWidth - 1));
+  const int32_t idxY = (int32_t)(iY / mHeight * (mDataHeight - 1));
 
-//  assert(x >= 0);
-//  assert(x < mDataWidth);
-//  assert(y >= 0);
-//  assert(y < mDataHeight);
+  assert(idxX >= 0);
+  assert(idxX < mDataWidth);
+  assert(idxY >= 0);
+  assert(idxY < mDataHeight);
 
-  if (x < 0 || x >= mDataWidth ||
-      y < 0 || y >= mDataHeight)
-  {
-    return 0.0;
-  }
-
-  return mpData[(int)y * mDataWidth + (int)x];
+  return mpData[idxY * mDataWidth + idxX];
 }
 
 void SpectrogramData::set_min_max_z_value(const double izMin, const double izMax)

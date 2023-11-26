@@ -41,9 +41,9 @@ class SpectrogramData : public QwtRasterData
 {
 public:
   const double * const mpData;  // pointer to actual data
-  const int32_t mLeft;          // index of left most element in raster
-  const int32_t mWidth;         // raster width
-  const int32_t mHeight;        // raster height
+  const double mLeft;           // index of left most element in raster
+  const double mWidth;          // raster width
+  const double mHeight;         // raster height
   const int32_t mDataWidth;     // width of matrix
   const int32_t mDataHeight;    // for now == raster height
   double mzMin = 0.0;
@@ -57,7 +57,7 @@ public:
   void initRaster(const QRectF & x, const QSize & raster) override;
 
   [[nodiscard]] QwtInterval interval(Qt::Axis x) const override;
-  [[nodiscard]] double value(double x, double y) const override;
+  [[nodiscard]] double value(double iX, double iY) const override;
 };
 
 #endif
