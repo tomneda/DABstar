@@ -198,19 +198,11 @@ void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const outp
   for (uint32_t i = 0; i < (uint16_t)(mFrameBits + (K - 1)) * RATE; i++)
   {
     // Note that OFDM decoder maps the softbits to -127 .. 127 we have to map that onto 0 .. 255
-    int16_t temp = input[i] + 127;
-
-    if (temp < 0)
-    {
-      temp = 0;
-    }
-    else if (temp > 255)
-    {
-      temp = 255;
-    }
-
+    int16_t temp = input[i] + VITERBI_SOFT_BIT_VALUE_MAX;
+    limit_min_max<int16_t>(temp, 0, VITERBI_SOFT_BIT_VALUE_MAX * 2 + 1);
     mpSymbols[i] = temp;
   }
+
   if (!mSpiral)
   {
     update_viterbi_blk_GENERIC(&mVP, mpSymbols, mFrameBits + (K - 1));

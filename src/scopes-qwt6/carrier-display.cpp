@@ -130,7 +130,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
   switch (iPlotType)
   {
   case ECarrierPlotType::SB_WEIGHT:
-    cp.ToolTip = "Shows the soft-bit weight in percentage for each OFDM carrier.<p>This is used viterbi decoder data input.";
+    cp.ToolTip = "Shows the soft-bit weight in percentage for each OFDM carrier.<p>This is used for the viterbi decoder data input.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Soft-Bit Weight";
     cp.YTopValue = 100.0;

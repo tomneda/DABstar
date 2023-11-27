@@ -78,7 +78,6 @@ void OfdmDecoder::reset()
   mMeanStdDevSqPhase = 0.0f;
   mMeanPowerOvrAll = 1.0f;
   mLlrScaling = 1.0f;
-  mLlrMax = 0.0;
 
   _reset_null_symbol_statistics();
 }
@@ -140,6 +139,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
   ++mShowCntStatistics;
   const bool showScopeData = (mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
   const bool showStatisticData = (mShowCntStatistics > 5 * mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
+  float llrMax = 0;
 
   for (int16_t nomCarrIdx = 0; nomCarrIdx < mDabPar.K; ++nomCarrIdx)
   {
@@ -225,8 +225,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     switch (mSoftBitType)
     {
     case ESoftBitType::LLR:
-      llrBitReal = -mLlrScaling * 2 * meanLevelAtAxisPerBin / meanSigmaSqPerBinRef * real(fftBin);
-      llrBitImag = -mLlrScaling * 2 * meanLevelAtAxisPerBin / meanSigmaSqPerBinRef * imag(fftBin);
+      llrBitReal = -mLlrScaling * 2 * meanLevelPerBinRef / meanSigmaSqPerBinRef * real(fftBin);
+      llrBitImag = -mLlrScaling * 2 * meanLevelPerBinRef / meanSigmaSqPerBinRef * imag(fftBin);
       break;
     case ESoftBitType::AVER:        weight = F_VITERBI_SOFT_BIT_VALUE_MAX * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4; break;
     case ESoftBitType::FAST:        weight = F_VITERBI_SOFT_BIT_VALUE_MAX * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4; break;
@@ -240,17 +240,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
     if (mSoftBitType == ESoftBitType::LLR)
     {
-      if (nomCarrIdx == 0) mLlrMax = 0; // reset max collector with first carrier
       const float maxAbs = std::max(std::abs(llrBitReal), std::abs(llrBitImag));
-      if (maxAbs > mLlrMax) mLlrMax = maxAbs;
-
-      if (nomCarrIdx + 1 >= mDabPar.K) // last carrier
-      {
-        mLlrScaling += 0.00001f * (F_VITERBI_SOFT_BIT_VALUE_MAX - mLlrMax);
-        if (mLlrScaling < 1.0f) mLlrScaling = 1.0f; // limit value to ensure at least FIC
-        //qDebug("LLR scaling: %f, (max: %f)", mLlrScaling, mLlrMax);
-      }
-
+      if (maxAbs > llrMax) llrMax = maxAbs;
       limit_symmetrically(llrBitReal, F_VITERBI_SOFT_BIT_VALUE_MAX);
       limit_symmetrically(llrBitImag, F_VITERBI_SOFT_BIT_VALUE_MAX);
       oBits[0         + nomCarrIdx] = (int16_t)(llrBitReal);
@@ -289,7 +280,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
       switch (mCarrierPlotType)
       {
-      case ECarrierPlotType::SB_WEIGHT:       mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * weight;  break;
+      case ECarrierPlotType::SB_WEIGHT:       mCarrVector[dataVecCarrIdx] = (int)(100.0f / VITERBI_SOFT_BIT_VALUE_MAX * weight);  break;
       case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 20.0f * std::log10(std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef); break;
       case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
@@ -304,6 +295,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     }
   } // for (nomCarrIdx...
 
+  mLlrScaling += 0.0001f * (F_VITERBI_SOFT_BIT_VALUE_MAX - llrMax);
+  limit_min_max(mLlrScaling, 1.0f, 100.0f); // limit value to ensure minimum decoding ability (TODO: is top value 100 useful?)
+  //qDebug("LLR scaling: %2.2f, (max: %3.0f, diff: %4.0f)", mLlrScaling, llrMax, F_VITERBI_SOFT_BIT_VALUE_MAX - llrMax);
 
   //	From time to time we show the constellation of the current symbol
   if (showScopeData)
