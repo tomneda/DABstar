@@ -49,14 +49,12 @@ enum class ECarrierPlotType
 enum class ESoftBitType
 {
   LLR,         // log likelihood ratio
-  AVER,
-  FAST,
-  QTDAB,
-  EUCL_DIST,   // like QTDAB, norm to length of vector (Euclidean distance)
+  AVER,        // average std. dev. of phase
+  FAST,        // std. dev. of phase (no averaging)
+  EUCL_DIST,   // norm to length of vector (Euclidean distance)
+  EUCL_DIST_2, // (former) Qt-DAB, use euclidean distance with extra (saturated) gain
   MAX_DIST_IQ, // norm to maximum of I/Q axis distance
-  FIX_HIGH,
-  FIX_MED,
-  FIX_LOW,
+  HARD,        // no soft bits, do hard decision
 
   DEFAULT = LLR  // use the first element for startup constellation
 };

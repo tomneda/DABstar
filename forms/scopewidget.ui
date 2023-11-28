@@ -45,8 +45,11 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QSlider" name="scopeAmplification">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom between full spectrum range and usefull part of stectrum.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(60,60,60);</string>
+          <string notr="true">QSlider {background-color: rgb(60,60,60);}</string>
          </property>
          <property name="minimum">
           <number>0</number>
@@ -106,8 +109,11 @@
        </property>
        <item>
         <widget class="QSlider" name="dabWaterfallAmplitude">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom between full spectrum range and usefull part of stectrum.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(60,60,60);</string>
+          <string notr="true">QSlider {background-color: rgb(60,60,60);}</string>
          </property>
          <property name="minimum">
           <number>0</number>
@@ -461,7 +467,7 @@
          <item row="12" column="1">
           <widget class="QLCDNumber" name="lcdModQuality">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged modulation quality in percent. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the standard deviation of the phase noise.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged modulation quality in percent. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the &amp;quot;Log Likelihood Ratio&amp;quot;, independent of the used Soft-Bit detection.&lt;/p&gt;&lt;p&gt;The graph on the right shows this value also.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -617,10 +623,10 @@
          <item>
           <widget class="QwtThermo" name="thermoModQual">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged modulation quality in percent. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the standard deviation of the phase noise.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged modulation quality in percent. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the &amp;quot;Log Likelihood Ratio&amp;quot;, independent of the used Soft-Bit detection.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound">
-            <double>40.000000000000000</double>
+            <double>0.000000000000000</double>
            </property>
            <property name="scaleMaxMajor">
             <number>6</number>

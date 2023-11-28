@@ -52,7 +52,6 @@
 #include  "coordinates.h"
 #include  "mapport.h"
 #include  "techdata.h"
-#include  "ServiceListHandler.h"
 #include  "dummy-handler.h"
 
 #ifdef  TCP_STREAMER
@@ -214,6 +213,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   configDisplay.resize(QSize(wi, he));
   configDisplay.move(QPoint(x, y));
   configDisplay.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+
+  configWidget.sliderTest->hide(); // only used for test
 
   theTechWindow = new TechData(this, dabSettings, &theTechData);
   //
@@ -387,8 +388,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   my_history = new historyHandler(this, historyFile);
   my_timeTable = new timeTableHandler(this);
   my_timeTable->hide();
-
-  mpServiceListHandler = new ServiceListHandler(this, serviceTreeView);
 
   connect(my_history, &historyHandler::handle_historySelect, this, &RadioInterface::_slot_handle_history_select);
   connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &smallComboBox::setCurrentIndex);
@@ -681,7 +680,7 @@ bool RadioInterface::doStart()
 
 RadioInterface::~RadioInterface()
 {
-  delete mpServiceListHandler;
+  //delete mpServiceListHandler;
   fprintf(stdout, "RadioInterface is deleted\n");
 }
 
@@ -3923,15 +3922,13 @@ QStringList RadioInterface::get_soft_bit_gen_names()
   QStringList sl;
 
   // ATTENTION: use same sequence as in ESoftBitType
-  sl << "Log Likelihood Ratio";       // ESoftBitType::LLR
-  sl << "Avr. Soft-Bit Gen.";         // ESoftBitType::AVER
-  sl << "Fast Soft-Bit Gen.";         // ESoftBitType::FAST
-  sl << "Qt-DAB Soft-Bit Gen.";       // ESoftBitType::QTDAB
-  sl << "Euclidean distance";         // ESoftBitType::EUCL_DIST
-  sl << "Max. IQ distance";           // ESoftBitType::MAX_DIST_IQ
-  sl << "Soft-Bit Gen. Fix High";     // ESoftBitType::FIX_HIGH
-  sl << "Soft-Bit Gen. Fix Med";      // ESoftBitType::FIX_LOW
-  sl << "Soft-Bit Gen. Fix Low";      // ESoftBitType::FIX_LOW
+  sl << "Log Likelihood Ratio";        // ESoftBitType::LLR
+  sl << "Avr. Soft-Bit Gen.";          // ESoftBitType::AVER
+  sl << "Fast Soft-Bit Gen.";          // ESoftBitType::FAST
+  sl << "Euclidean distance";          // ESoftBitType::EUCL_DIST
+  sl << "Eucl. dist. (ext. gain)";     // ESoftBitType::EUCL_DIST_2
+  sl << "Max. IQ distance";            // ESoftBitType::MAX_DIST_IQ
+  sl << "Hard decision";               // ESoftBitType::HARD
 
   return sl;
 }

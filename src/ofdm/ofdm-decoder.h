@@ -102,7 +102,7 @@ private:
   std::vector<float> mMeanPowerVector;
   std::vector<float> mMeanNullLevel;
   std::vector<float> mMeanNullPowerWithoutTII;
-  float mMeanStdDevSqPhase = 0.0f;
+  float mMeanModQual = 0.0f;
   float mMeanPowerOvrAll = 1.0f;
   float mAbsNullLevelMin = 0.0f;
   float mAbsNullLevelGain = 0.0f;

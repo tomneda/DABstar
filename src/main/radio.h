@@ -265,7 +265,6 @@ private:
   struct theTime UTC;
   historyHandler * my_history;
   timeTableHandler * my_timeTable;
-  ServiceListHandler * mpServiceListHandler = nullptr;
   FILE * ficDumpPointer;
   bool transmitterTags_local;
   size_t previous_idle_time = 0;
