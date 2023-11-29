@@ -67,7 +67,8 @@ Many bigger changes made, including:
 - Minor fix in SDRPlay (V3) device (change bit width). But still seems to be minor leveling issue there.
 - Refactor the ring buffer to use less memory.
 - Refine the scaling of the spectrum and waterfall scope. The scaling itself is done automatically now. The slider on the left is some kind of zoom between the full level range and the relevant part of the signal.
-- I try to reduce the many task bar icons for each widget to only one. This works (almost) fine fine on XFCE but I don't know how it behaves on e.g. Gnome. Please let me know if you suffer from this new behavior: [Link](https://github.com/tomneda/DABstar/issues).
+  Using flat-top window for more precise level readings.
+- I try to reduce the many task bar icons for each widget to only one. This works (almost) fine on XFCE but I don't know how it behaves on e.g. Gnome. Please let me know if you suffer from this new behavior: [Link](https://github.com/tomneda/DABstar/issues).
 - The most important improvement for me at last: A colleague told me about this paper: [https://ipnpr.jpl.nasa.gov/progress_report/42-184/184D.pdf](https://ipnpr.jpl.nasa.gov/progress_report/42-184/184D.pdf) 
   where in chapter V is something told about **LLR (Log Likelihood Ratio)** using for the viterbi soft-bit generation. I did an implementation of this and the result was really amazing with a weak receiving channel. 
   This new detection perform obviously better than all of the former implemented soft-bit generators.

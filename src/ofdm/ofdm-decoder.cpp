@@ -285,7 +285,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     }
   } // for (nomCarrIdx...
 
-  if (mSoftBitType == ESoftBitType::LLR)
+  // perform scaling for LLR softbits to use the full range soft-bit range on viterbi input
   {
     mLlrScaling += 0.0001f * (F_VITERBI_SOFT_BIT_VALUE_MAX - llrMax);
     limit_min_max(mLlrScaling, 1.0f, 100.0f); // limit value to ensure minimum decoding ability (TODO: is top value 100 useful?)
