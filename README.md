@@ -8,6 +8,7 @@
 ## Table of Content
 <!-- TOC -->
   * [Introduction](#introduction)
+  * [Changes in DABstar version 1.7.0](#changes-in-dabstar-version-170)
   * [Changes in DABstar version 1.6.0](#changes-in-dabstar-version-160)
   * [Changes in DABstar version 1.5.0](#changes-in-dabstar-version-150)
   * [Changes in DABstar version 1.4.0](#changes-in-dabstar-version-140)
@@ -31,7 +32,7 @@
 
 ## Introduction
 
-**Current main branch version is [V1.6.0](#changes-in-dabstar-version-160).**
+**Current main branch version is [V1.7.0](#changes-in-dabstar-version-170).**
 
 [DABstar](https://github.com/tomneda/DABstar) is originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) 
 from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes afterwards to Qt-DAB are included.
@@ -50,11 +51,28 @@ Please use the tags page on Github: [https://github.com/tomneda/DABstar/tags](ht
 For building there is one bigger difference to Qt-DAB: I maintain only one GUI version and I provide no *.pro file for qmake anymore, only a CMakeLists.txt file.
 So, use only the cmake related installation process.
 
-I saw that Qt-DAB 6.x uses also code parts and ideas from here. I am very appreciated about this :smiley:. 
+I saw that with starting of Qt-DAB 6.x, it uses also code parts and ideas from here. I am very appreciated about this :smiley:. 
 This is of course very acknowledged that my work can give something back.
 
 Still, I do not provide any precompiled setup packages, yet.
 
+## Changes in DABstar version 1.7.0
+
+Many bigger changes made, including:
+
+- Removing the sorting options for the service list from the **Configuration and Control** widget. The service list is always sorted alphabetically now.
+- In the **Technical Details** widget the **SBR (Spectral Band Replication)** and **PS (Parameter Stereo)** status is shown. This works only with HE-AAC (MP4) decoding.
+- Refactor the device handler interface, make interface pure virtual to not forget implementing any importing interface of new devices in future.
+- I found a not yet used **UHD/USRP** framework code in the Qt-DAB files. As I have an USRP B200 I expand this code and support USRP devices now (runs in the graphic above). The _ppm_ and _kHz_ field is not working yet.
+- Minor fix in SDRPlay (V3) device (change bit width). But still seems to be minor leveling issue there.
+- Refactor the ring buffer to use less memory.
+- Refine the scaling of the spectrum and waterfall scope. The scaling itself is done automatically now. The slider on the left is some kind of zoom between the full level range and the relevant part of the signal.
+- I try to reduce the many task bar icons for each widget to only one. This works (almost) fine fine on XFCE but I don't know how it behaves on e.g. Gnome. Please let me know if you suffer from this new behavior: [Link](https://github.com/tomneda/DABstar/issues).
+- The most important improvement for me at last: A colleague told me about this paper: [https://ipnpr.jpl.nasa.gov/progress_report/42-184/184D.pdf](https://ipnpr.jpl.nasa.gov/progress_report/42-184/184D.pdf) 
+  where in chapter V is something told about **LLR (Log Likelihood Ratio)** using for the viterbi soft-bit generation. I did an implementation of this and the result was really amazing with a weak receiving channel. 
+  This new detection perform obviously better than all of the former implemented soft-bit generators.
+  So I make it to the default soft-bit generator. In the **Configuration and Control** widget you can still try out the other soft-bit generators. If you have another experience with that please let me know.
+ 
 ## Changes in DABstar version 1.6.0
 
 - Still many refactorings in code and GUI and file organizations made.
