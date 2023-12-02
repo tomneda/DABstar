@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>774</width>
-    <height>491</height>
+    <width>568</width>
+    <height>489</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -95,7 +95,7 @@
          </layout>
         </item>
         <item>
-         <widget class="smallComboBox" name="channelSelector">
+         <widget class="QComboBox" name="channelSelector">
           <property name="toolTip">
            <string>Channel selector.</string>
           </property>
@@ -471,11 +471,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>smallComboBox</class>
-   <extends>QComboBox</extends>
-   <header>smallcombobox.h</header>
-  </customwidget>
   <customwidget>
    <class>presetComboBox</class>
    <extends>QComboBox</extends>

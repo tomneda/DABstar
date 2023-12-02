@@ -390,7 +390,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   my_timeTable->hide();
 
   connect(my_history, &historyHandler::handle_historySelect, this, &RadioInterface::_slot_handle_history_select);
-  connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &smallComboBox::setCurrentIndex);
+  connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &QComboBox::setCurrentIndex);
   connect(this, &RadioInterface::signal_set_new_preset_index, presetSelector, &presetComboBox::setCurrentIndex);
   connect(configWidget.dlTextButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_dl_text_button);
   connect(configWidget.loggerButton, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_logger_button);
@@ -416,7 +416,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   total_ficError = 0;
   total_fics = 0;
 
-  connect(configWidget.streamoutSelector, qOverload<int>(&smallComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
+  connect(configWidget.streamoutSelector, qOverload<int>(&QComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
   connect(theTechWindow, &TechData::handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
   my_presetHandler.loadPresets(presetFile, presetSelector);
@@ -554,7 +554,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   }
 
   configDisplay.show();
-  connect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_do_start);
+  connect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
   qApp->installEventFilter(this);
 }
 
@@ -626,7 +626,7 @@ bool RadioInterface::doStart()
   //	to the slot since that function does a lot more, things we
   //	do not want here
   connect(presetSelector, &presetComboBox::textActivated, this, &RadioInterface::slot_handle_preset_selector);
-  connect(channelSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+  connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, my_dabProcessor, &DabProcessor::slot_show_nominal_carrier);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, my_dabProcessor, &DabProcessor::slot_select_iq_plot_type);
@@ -637,9 +637,9 @@ bool RadioInterface::doStart()
   //	It would have been helpful to have a function
   //	testing whether or not a connection exists, we need a kind
   //	of "reset"
-  disconnect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_do_start);
-  disconnect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_new_device);
-  connect(configWidget.deviceSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_new_device);
+  disconnect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
+  disconnect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
+  connect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
   //
   if (channel.nextService.valid)
   {
@@ -2242,7 +2242,7 @@ void RadioInterface::connectGUI()
   connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
-  connect(configWidget.switchDelaySetting, qOverload<int>(&smallSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
+  connect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   connect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   connect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
@@ -2266,7 +2266,7 @@ void RadioInterface::disconnectGUI()
   disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
-  disconnect(configWidget.switchDelaySetting, qOverload<int>(&smallSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
+  disconnect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   disconnect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   disconnect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
@@ -3378,7 +3378,7 @@ void RadioInterface::new_channelIndex(int index)
   {
     return;
   }
-  disconnect(channelSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+  disconnect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
   channelSelector->blockSignals(true);
   emit signal_set_new_channel(index);
   while (channelSelector->currentIndex() != index)
@@ -3386,7 +3386,7 @@ void RadioInterface::new_channelIndex(int index)
     usleep(2000);
   }
   channelSelector->blockSignals(false);
-  connect(channelSelector, &smallComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+  connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
 }
 
 

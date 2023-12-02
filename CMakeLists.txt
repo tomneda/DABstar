@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.16)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
 project(DABstar VERSION 1.7.0)
@@ -309,10 +309,8 @@ set(${objectName}_HDRS
         src/support/http-handler.h
         src/support/converted_map.h
         src/support/tii-library/tii-codes.h
-        src/support/buttons/smallcombobox.h
         src/support/buttons/newpushbutton.h
         src/support/buttons/normalpushbutton.h
-        src/support/buttons/smallspinbox.h
         src/scopes-qwt6/iqdisplay.h
         src/scopes-qwt6/carrier-display.h
         src/scopes-qwt6/spectrogramdata.h
@@ -393,10 +391,8 @@ set(${objectName}_SRCS
         src/support/dab-tables.cpp
         src/support/preset-handler.cpp
         src/support/presetcombobox.cpp
-        src/support/buttons/smallcombobox.cpp
         src/support/buttons/newpushbutton.cpp
         src/support/buttons/normalpushbutton.cpp
-        src/support/buttons/smallspinbox.cpp
         src/support/history-handler.cpp
         src/support/viterbi-jan/viterbi-handler.cpp
         src/support/viterbi-spiral/viterbi-spiral.cpp
@@ -449,10 +445,8 @@ set(${objectName}_MOCS
         src/support/band-handler.h
         src/support/preset-handler.h
         src/support/presetcombobox.h
-        src/support/buttons/smallcombobox.h
         src/support/buttons/newpushbutton.h
         src/support/buttons/normalpushbutton.h
-        src/support/buttons/smallspinbox.h
         src/support/history-handler.h
         src/support/time-table.h
         src/support/content-table.h

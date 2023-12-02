@@ -137,7 +137,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="smallSpinBox" name="switchDelaySetting">
+          <widget class="QSpinBox" name="switchDelaySetting">
            <property name="toolTip">
             <string>Set here the delay, when searching for data in a channel, in seconds</string>
            </property>
@@ -283,10 +283,10 @@
         </layout>
        </item>
        <item>
-        <widget class="smallComboBox" name="streamoutSelector"/>
+        <widget class="QComboBox" name="streamoutSelector"/>
        </item>
        <item>
-        <widget class="smallComboBox" name="deviceSelector"/>
+        <widget class="QComboBox" name="deviceSelector"/>
        </item>
       </layout>
      </item>
@@ -457,21 +457,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>smallComboBox</class>
-   <extends>QComboBox</extends>
-   <header>smallcombobox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>smallSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">smallspinbox.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>
