@@ -554,7 +554,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   }
 
   configDisplay.show();
-  connect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
+    connect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
+#else
+    connect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
+#endif
   qApp->installEventFilter(this);
 }
 
@@ -625,8 +629,13 @@ bool RadioInterface::doStart()
   //	we avoided till now connecting the channel selector
   //	to the slot since that function does a lot more, things we
   //	do not want here
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   connect(presetSelector, &presetComboBox::textActivated, this, &RadioInterface::slot_handle_preset_selector);
   connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+#else
+  connect(presetSelector, qOverload<const QString &>(&presetComboBox::activated), this, &RadioInterface::slot_handle_preset_selector);
+  connect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
+#endif
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, my_dabProcessor, &DabProcessor::slot_show_nominal_carrier);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, my_dabProcessor, &DabProcessor::slot_select_iq_plot_type);
@@ -637,9 +646,15 @@ bool RadioInterface::doStart()
   //	It would have been helpful to have a function
   //	testing whether or not a connection exists, we need a kind
   //	of "reset"
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   disconnect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
   disconnect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
   connect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
+#else
+  disconnect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
+  disconnect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
+  connect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
+#endif
   //
   if (channel.nextService.valid)
   {
@@ -3378,7 +3393,11 @@ void RadioInterface::new_channelIndex(int index)
   {
     return;
   }
-  disconnect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
+    disconnect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+#else
+    disconnect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
+#endif
   channelSelector->blockSignals(true);
   emit signal_set_new_channel(index);
   while (channelSelector->currentIndex() != index)
@@ -3386,7 +3405,11 @@ void RadioInterface::new_channelIndex(int index)
     usleep(2000);
   }
   channelSelector->blockSignals(false);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+#else
+  connect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
+#endif
 }
 
 

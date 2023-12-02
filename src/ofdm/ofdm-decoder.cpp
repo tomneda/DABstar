@@ -199,7 +199,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (float)mDabPar.K);
 
     // Collect data for "Log Likelihood Ratio"
-    const float meanLevelAtAxisPerBin = meanLevelPerBinRef * M_SQRT1_2f;
+    const float meanLevelAtAxisPerBin = meanLevelPerBinRef * F_SQRT1_2;
     const float realLevelDistPerBin = (std::abs(real(fftBin)) - meanLevelAtAxisPerBin); // x-distance to reference point
     const float imagLevelDistPerBin = (std::abs(imag(fftBin)) - meanLevelAtAxisPerBin); // y-distance to reference point
     const float sigmaSqPerBin = realLevelDistPerBin * realLevelDistPerBin + imagLevelDistPerBin * imagLevelDistPerBin; // squared distance to reference point

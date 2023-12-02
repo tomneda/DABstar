@@ -74,6 +74,7 @@ constexpr float F_2_M_PI = (float)(2 * M_PI);
 constexpr float F_M_PI   = (float)M_PI;
 constexpr float F_M_PI_4 = (float)M_PI_4;
 constexpr float F_M_PI_2 = (float)M_PI_2;
+constexpr float F_SQRT1_2 = (float)(1.0 / std::sqrt(2));
 constexpr float F_RAD_PER_DEG = (float)(M_PI / 180.0);
 constexpr float F_DEG_PER_RAD = (float)(180.0 / M_PI);
 constexpr int16_t VITERBI_SOFT_BIT_VALUE_MAX = 127;
