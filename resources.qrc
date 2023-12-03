@@ -1,8 +1,7 @@
 <RCC>
   <qresource prefix="/">
     <file>res/DABLogoInvSmall.png</file>
-    <file>res/DABplusLogoWB.png</file>
-    <file>res/DABplusLogoWBsoft.png</file>
+    <file>res/dabstar128x128.png</file>
     <file>res/globstyle.qss</file>
   </qresource>
 </RCC>

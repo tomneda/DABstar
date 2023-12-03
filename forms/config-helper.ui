@@ -276,7 +276,7 @@
          <item>
           <widget class="QComboBox" name="cmbSoftBitGen">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft-bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are different ideas how to calculate the soft-bit values for the Virterbi decoder. As in some week receiving condition, this could make a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As this is experimental yet, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft-bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are different ideas how to calculate the soft-bit values for the Virterbi decoder. As in some weak receiving condition, this could make a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As this is experimental yet, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>

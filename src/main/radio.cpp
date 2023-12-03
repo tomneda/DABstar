@@ -194,7 +194,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
 
   setup_ui_colors();
 
-  setWindowIcon(QIcon(":res/DABplusLogoWB.png"));
+  //setWindowIcon(QIcon(":res/DABplusLogoWB.png"));
 
   //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
   setWindowTitle(PRJ_NAME);
@@ -422,7 +422,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   my_presetHandler.loadPresets(presetFile, presetSelector);
 
   //	display the version
-  copyrightLabel->setToolTip(footText());
+  copyrightLabel->setToolTip(get_copyright_text());
   copyrightLabel->setOpenExternalLinks(true);
   presetSelector->setToolTip(presetText());
 
@@ -567,7 +567,7 @@ QString RadioInterface::presetText()
   return QString("Click with the right mouse button on the text of the item and the item will be removed from the presetList");
 }
 
-QString RadioInterface::footText()
+QString RadioInterface::get_copyright_text()
 {
   version = QString(PRJ_VERS);
   QString versionText = "<html><head/><body><p>";
@@ -577,7 +577,7 @@ QString RadioInterface::footText()
                  "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>) from Qt-DAB<br/>"
                  "(<a href=\"https://github.com/JvanKatwijk/qt-dab\">https://github.com/JvanKatwijk/qt-dab</a>) by Jan van Katwijk<br/>"
                  "(<a href=\"mailto:J.vanKatwijk@gmail.com\">J.vanKatwijk@gmail.com</a>).</p>";
-  versionText += "<p>Rights of Qt, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged.<br/>"
+  versionText += "<p>Rights of Qt, FFTW, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged.<br/>"
                  "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.<br/>"
                  "Copyright of DevSec Studio for the skin, made available under MIT license, is gratefully acknowledged.<br/>"
                  "Rights of other contributors gratefully acknowledged.</p>";

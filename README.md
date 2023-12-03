@@ -8,6 +8,7 @@
 ## Table of Content
 <!-- TOC -->
   * [Introduction](#introduction)
+  * [Changes in DABstar version 1.7.1](#changes-in-dabstar-version-171)
   * [Changes in DABstar version 1.7.0](#changes-in-dabstar-version-170)
   * [Changes in DABstar version 1.6.0](#changes-in-dabstar-version-160)
   * [Changes in DABstar version 1.5.0](#changes-in-dabstar-version-150)
@@ -28,11 +29,16 @@
     * [Functional changes](#functional-changes)
     * [Code refactorings](#code-refactorings)
     * [Not more working or removed things](#not-more-working-or-removed-things)
+  * [Installing on Linux](#installing-on-linux)
+      * [USRP UHD](#usrp-uhd)
+  * [QWT installation / building](#qwt-installation--building)
+    * [Original description](#original-description)
+    * [QWT short build description](#qwt-short-build-description)
 <!-- TOC -->
 
 ## Introduction
 
-**Current main branch version is [V1.7.0](#changes-in-dabstar-version-170).**
+**Current main branch version is [V1.7.1](#changes-in-dabstar-version-170).**
 
 [DABstar](https://github.com/tomneda/DABstar) is originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) 
 from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes afterwards to Qt-DAB are included.
@@ -54,7 +60,11 @@ So, use only the cmake related installation process.
 I saw that with starting of Qt-DAB 6.x, it uses also code parts and ideas from here. I am very appreciated about this :smiley:. 
 This is of course very acknowledged that my work can give something back.
 
-Still, I do not provide any precompiled setup packages, yet.
+Meanwhile I provide AppImages but still no Windows build. See [Link](https://github.com/tomneda/DABstar/releases).
+
+## Changes in DABstar version 1.7.1
+
+Beside minor things I setup an AppImage builder and was able to build an AppImage based on Ubuntu 20.04. So, using an older version will possibly not work.
 
 ## Changes in DABstar version 1.7.0
 
@@ -258,3 +268,67 @@ That the name, distance and direction to the transmitter can be shown, do follow
 - Remove the schedule feature (I had no use for that sophisticated feature and hinders doing the refactoring).
 - The color selector for the graph background is removed as the stylesheet would overwrite this.
 
+## Installing on Linux
+
+This is what I needed to install DABstar on a fresh Ubuntu 20.04                     
+```
+sudo apt-get update
+sudo apt-get install git
+sudo apt-get install cmake
+sudo apt-get install qt5-qmake
+sudo apt-get install build-essential
+sudo apt-get install g++
+sudo apt-get install qt5-default
+sudo apt-get install libsndfile1-dev
+sudo apt-get install libfftw3-dev
+sudo apt-get install portaudio19-dev
+sudo apt-get install zlib1g-dev
+sudo apt-get install libsamplerate0-dev
+sudo apt-get install libfaad-dev
+sudo apt-get install libusb-1.0-0-dev
+sudo apt-get install libqwt-qt5-dev
+```
+
+or same in fewer lines:
+
+```
+sudo apt-get update
+sudo apt-get install git cmake qt5-qmake build-essential g++ qt5-default libsndfile1-dev libfftw3-dev portaudio19-dev zlib1g-dev libsamplerate0-dev libfaad-dev libusb-1.0-0-dev
+sudo apt-get install libqwt-qt5-dev
+```
+If you have troubles with the last QWT package `libqwt-qt5-dev` try to build QWT for yourself. See [Link](#qwt-installation--building).
+
+#### USRP UHD
+
+Best worked for me was building UHD from the repository of Ettus Research.
+
+```
+sudo add-apt-repository ppa:ettusresearch/uhd
+sudo apt-get update
+sudo apt-get install libuhd-dev uhd-host
+```
+
+<!-- 
+Seems not more necessary relating to Qt-DAB
+- sudo apt-get install *pkg-config
+- sudo apt-get install *mesa-common-dev
+- sudo apt-get install *libgl1-mesa-dev *libqt5opengl5-dev
+- sudo apt-get install *qtbase5-dev *libqt5svg5-dev
+--> 
+
+
+## QWT installation / building
+
+### Original description
+
+https://qwt.sourceforge.io/qwtinstall.html 
+
+### QWT short build description
+
+1. Download QWT 6.2.0: https://sourceforge.net/projects/qwt/files/qwt/6.2.0/qwt-6.2.0.zip/download
+2. Unzip downloaded file and go into unzipped folder
+3. comment out line "`QWT_CONFIG += QwtSvg`" with a "#" in file `qwtconfig.pri` if you have problems finding a SVG QT header file
+4. `qmake qwt.pro`
+5. `make` (you may provide the argument `-jn` for `n` number of used threads)
+6. `sudo make install`
+                                                

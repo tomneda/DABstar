@@ -277,7 +277,7 @@ private:
   void connectGUI();
   void disconnectGUI();
   QString convertTime(int, int, int, int, int);
-  QString footText();
+  QString get_copyright_text();
   QString presetText();
   void cleanScreen();
   void hideButtons();

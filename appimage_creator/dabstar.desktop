@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=DABstar
+Exec=dabstar
+Icon=dabstar128x128
+Type=Application
+Categories=AudioVideo;
+Comment=Maybe a rising star among the DAB/DAB+ receivers
+X-AppImage-Version=1.7.1
