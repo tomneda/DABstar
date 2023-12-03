@@ -25,6 +25,11 @@ add_definitions(-DAPP_NAME="${objectName}")
 add_definitions(-DPRJ_NAME="${PROJECT_NAME}")
 add_definitions(-DPRJ_VERS="${PROJECT_VERSION}")
 
+configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop.in"
+               "${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop" @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh.in"
+               "${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh" @ONLY)
+
 if (MINGW)
     add_definitions(-municode)
     #else (MINGW)
@@ -81,7 +86,7 @@ option(HACKRF OFF)
 option(LIMESDR OFF)      # untested
 option(RTL_TCP OFF)      # untested
 option(PLUTO OFF)        # untested
-option(UHD OFF)          # untested (have the device but not working yet)
+option(UHD OFF)
 # Note that since there are problems with the rtlsdr interface under Windows we split the rtlsdr interface
 # into two versions one for Linux and one for Window
 option(RTLSDR_LINUX OFF)

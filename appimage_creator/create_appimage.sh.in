@@ -25,3 +25,16 @@ chmod a+x linuxdeployqt*.AppImage
 
 ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/* -appimage -no-translations
 
+# if all worked fine add the version number to the generated filename
+if [ $? -eq 0 ]; then
+  echo "linuxdeployqt runs successfully"
+  APP_NAME="@PROJECT_NAME@"
+  APP_VERS="@PROJECT_VERSION@"
+  APP_ARCH="x86_64"
+  FN_SRC="${APP_NAME}-${APP_ARCH}.AppImage"
+  FN_DST="${APP_NAME}-${APP_VERS}-${APP_ARCH}.AppImage"
+  mv "$FN_SRC" "$FN_DST"
+  echo "Renamed file $FN_SRC to $FN_DST"
+else
+  echo "linuxdeployqt failed with $?"
+fi
