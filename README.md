@@ -30,15 +30,15 @@
     * [Code refactorings](#code-refactorings)
     * [Not more working or removed things](#not-more-working-or-removed-things)
   * [Installing on Linux](#installing-on-linux)
-      * [USRP UHD](#usrp-uhd)
-  * [QWT installation / building](#qwt-installation--building)
-    * [Original description](#original-description)
-    * [QWT short build description](#qwt-short-build-description)
+    * [USRP UHD](#usrp-uhd)
+    * [QWT installation / building](#qwt-installation--building)
+      * [Original description](#original-description)
+      * [QWT short build description](#qwt-short-build-description)
 <!-- TOC -->
 
 ## Introduction
 
-**Current main branch version is [V1.7.1](#changes-in-dabstar-version-170).**
+**Current main branch version is [V1.7.1](#changes-in-dabstar-version-171).**
 
 [DABstar](https://github.com/tomneda/DABstar) is originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) 
 from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes afterwards to Qt-DAB are included.
@@ -298,7 +298,7 @@ sudo apt-get install libqwt-qt5-dev
 ```
 If you have troubles with the last QWT package `libqwt-qt5-dev` try to build QWT for yourself. See [Link](#qwt-installation--building).
 
-#### USRP UHD
+### USRP UHD
 
 Best worked for me was building UHD from the repository of Ettus Research.
 
@@ -317,13 +317,13 @@ Seems not more necessary relating to Qt-DAB
 --> 
 
 
-## QWT installation / building
+### QWT installation / building
 
-### Original description
+#### Original description
 
 https://qwt.sourceforge.io/qwtinstall.html 
 
-### QWT short build description
+#### QWT short build description
 
 1. Download QWT 6.2.0: https://sourceforge.net/projects/qwt/files/qwt/6.2.0/qwt-6.2.0.zip/download
 2. Unzip downloaded file and go into unzipped folder
