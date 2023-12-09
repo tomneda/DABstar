@@ -59,7 +59,7 @@ public:
   void dataforAudioService(const QString &, Audiodata *);
   void dataforPacketService(const QString &, Packetdata *, int16_t);
   int getSubChId(const QString &, uint32_t);
-  std::vector<serviceId> getServices(int);
+  std::vector<serviceId> getServices();
 
   QString findService(uint32_t, int);
   void getParameters(const QString &, uint32_t *, int *);
@@ -84,7 +84,7 @@ protected:
   void process_FIB(const uint8_t *, uint16_t);
 
 private:
-  std::vector<serviceId> insert(const std::vector<serviceId> & l, serviceId n, int order);
+  std::vector<serviceId> insert_sorted(const std::vector<serviceId> & l, serviceId n);
   RadioInterface * myRadioInterface = nullptr;
   dabConfig * currentConfig = nullptr;
   dabConfig * nextConfig = nullptr;

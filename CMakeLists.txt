@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
-project(DABstar VERSION 1.7.1)
+project(DABstar VERSION 1.8.0)
 ##############################
 
 set(objectName "dabstar")
 
 # special release version flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
 # common flags
@@ -127,10 +127,7 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Xml REQUIRED)
-include_directories(
-        ${Qt5Network_INCLUDE_DIRS}
-        ${Qt5Xml_INCLUDE_DIRS}
-)
+find_package(Qt5Sql REQUIRED)
 
 find_package(Qwt)
 if (NOT QWT_FOUND)
@@ -336,6 +333,8 @@ set(${objectName}_HDRS
         src/devices/xml-filereader/xml-reader.h
         src/devices/xml-filereader/xml-descriptor.h
         src/devices/dummy-handler/dummy-handler.h
+        src/service-list/service-list-handler.h
+        src/service-list/service-db.h
         )
 
 set(${objectName}_SRCS
@@ -426,6 +425,8 @@ set(${objectName}_SRCS
         src/devices/xml-filereader/xml-filereader.cpp
         src/devices/xml-filereader/xml-reader.cpp
         src/devices/xml-filereader/xml-descriptor.cpp
+        src/service-list/service-list-handler.cpp
+        src/service-list/service-db.cpp
         )
 
 set(${objectName}_MOCS
@@ -470,6 +471,7 @@ set(${objectName}_MOCS
         src/devices/wavfiles-new/wav-reader.h
         src/devices/xml-filereader/xml-filereader.h
         src/devices/xml-filereader/xml-reader.h
+        src/service-list/service-list-handler.h
         )
 
 set(${objectName}_UIS
@@ -997,6 +999,7 @@ target_link_libraries(${objectName}
         Qt5::Widgets
         Qt5::Network
         Qt5::Xml
+        Qt5::Sql
         ${RTLTCP_lib}
         ${extraLibs}
         ${FAAD_LIBRARIES}

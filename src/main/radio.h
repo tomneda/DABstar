@@ -91,11 +91,6 @@ class TechData;
 
 #include  "ui_config-helper.h"
 
-/*
- *	The main gui object. It inherits from
- *	QWidget and the generated form
- */
-
 class dabService
 {
 public:
@@ -148,7 +143,7 @@ public:
   union STiiId
   {
     STiiId(int mainId, int subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
-    STiiId(int fullId) : FullId(fullId) {};
+    explicit STiiId(int fullId) : FullId(fullId) {};
     uint16_t FullId; struct { uint8_t MainId, SubId; };
   };
   std::set<uint16_t> transmitters;
@@ -250,12 +245,12 @@ private:
   void set_channelButton(int);
   QStandardItemModel model;
   std::vector<serviceId> serviceList;
-  std::vector<serviceId> insert(const std::vector<serviceId> &, serviceId, int);
+  std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, serviceId);
 
   QTimer displayTimer;
   QTimer channelTimer;
   QTimer presetTimer;
-  bool mutingActive = false;
+  bool mutingActive = true;
   int32_t numberofSeconds;
   int16_t ficBlocks;
   int16_t ficSuccess;
@@ -269,6 +264,7 @@ private:
   bool transmitterTags_local;
   size_t previous_idle_time = 0;
   size_t previous_total_time = 0;
+  std::unique_ptr<ServiceListHandler> mpServiceListHandler;
 
   static QStringList get_soft_bit_gen_names();
   bool eventFilter(QObject * obj, QEvent * event) override;

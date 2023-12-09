@@ -434,9 +434,9 @@ void DabProcessor::getParameters(const QString & s, uint32_t * p_SId, int * p_SC
   mFicHandler.getParameters(s, p_SId, p_SCIds);
 }
 
-std::vector<serviceId> DabProcessor::getServices(int n)
+std::vector<serviceId> DabProcessor::getServices()
 {
-  return mFicHandler.getServices(n);
+  return mFicHandler.getServices();
 }
 
 int DabProcessor::getSubChId(const QString & s, uint32_t SId)

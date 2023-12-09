@@ -53,6 +53,7 @@
 #include  "mapport.h"
 #include  "techdata.h"
 #include  "dummy-handler.h"
+#include  "service-list-handler.h"
 
 #ifdef  TCP_STREAMER
   #include "tcp-streamer.h"
@@ -532,6 +533,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     theTechWindow->show();
   }
 
+  mpServiceListHandler = std::make_unique<ServiceListHandler>(this, tblServiceList);
+
   //	if a device was selected, we just start, otherwise
   //	we wait until one is selected
 
@@ -560,6 +563,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     connect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
 #endif
   qApp->installEventFilter(this);
+}
+
+RadioInterface::~RadioInterface()
+{
+  fprintf(stdout, "RadioInterface is deleted\n");
 }
 
 QString RadioInterface::presetText()
@@ -693,12 +701,6 @@ bool RadioInterface::doStart()
   return true;
 }
 
-RadioInterface::~RadioInterface()
-{
-  //delete mpServiceListHandler;
-  fprintf(stdout, "RadioInterface is deleted\n");
-}
-
 //
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -752,12 +754,15 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
 
   ed.subChId = my_dabProcessor->getSubChId(serviceName, SId);
 
-  serviceList = insert(serviceList, ed, ALPHA_BASED);
+  serviceList = insert_sorted(serviceList, ed);
+  //serviceList.push_back(ed);
+  
   my_history->addElement(channel.channelName, serviceName);
   model.clear();
-  for (auto serv: serviceList)
+  for (const auto & serv: serviceList)
   {
     model.appendRow(new QStandardItem(serv.name));
+    mpServiceListHandler->DB().add_entry(channel.channelName, serv.name);
   }
 #ifdef  __MINGW32__
                                                                                                                           for (int i = model. rowCount (); i < 12; i ++)
@@ -774,6 +779,8 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
     presetTimer.stop();
     _slot_set_preset_service();
   }
+
+  mpServiceListHandler->update();
 }
 
 //
@@ -1122,9 +1129,9 @@ void RadioInterface::slot_change_in_configuration()
   //	we stop all secondary services as well, but we maintain theer
   //	description, file descriptors remain of course
   //
-  for (uint16_t i = 0; i < channel.backgroundServices.size(); i++)
+  for (auto & backgroundService : channel.backgroundServices)
   {
-    my_dabProcessor->stop_service(channel.backgroundServices.at(i).subChId, BACK_GROUND);
+    my_dabProcessor->stop_service(backgroundService.subChId, BACK_GROUND);
   }
 
   fprintf(stdout, "change will be effected\n");
@@ -1132,9 +1139,9 @@ void RadioInterface::slot_change_in_configuration()
 
   //	we rebuild the services list from the fib and
   //	then we (try to) restart the service
-  serviceList = my_dabProcessor->getServices(ALPHA_BASED);
+  serviceList = my_dabProcessor->getServices();
   model.clear();
-  for (auto serv: serviceList)
+  for (const auto & serv: serviceList)
   {
     model.appendRow(new QStandardItem(serv.name));
   }
@@ -3300,60 +3307,37 @@ void RadioInterface::showServices()
 
 /////////////////////////////////////////////////////////////////////
 //
-std::vector<serviceId> RadioInterface::insert(const std::vector<serviceId> & l, serviceId n, int order)
+std::vector<serviceId> RadioInterface::insert_sorted(const std::vector<serviceId> & iList, serviceId iEntry)
 {
-  std::vector<serviceId> k;
+  std::vector<serviceId> oList;
 
-  if (l.size() == 0)
+  if (iList.empty())
   {
-    k.push_back(n);
-    return k;
+    oList.push_back(iEntry);
+    return oList;
   }
-  uint32_t baseN = 0;
-  uint16_t baseSubCh = 0;
   QString baseS = "";
 
   bool inserted = false;
-  for (auto serv: l)
+  for (const auto & serv: iList)
   {
     if (!inserted)
     {
-      if (order == ID_BASED)
+      if ((baseS < iEntry.name) && (iEntry.name < serv.name))
       {
-        if ((baseN <= n.SId) && (n.SId <= serv.SId))
-        {
-          k.push_back(n);
-          inserted = true;
-        }
-      }
-      else if (order == SUBCH_BASED)
-      {
-        if ((baseSubCh <= n.subChId) && (n.subChId <= serv.subChId))
-        {
-          k.push_back(n);
-          inserted = true;
-        }
-      }
-      else
-      {
-        if ((baseS < n.name) && (n.name < serv.name))
-        {
-          k.push_back(n);
-          inserted = true;
-        }
+        oList.push_back(iEntry);
+        inserted = true;
       }
     }
     baseS = serv.name;
-    baseN = serv.SId;
-    baseSubCh = serv.subChId;
-    k.push_back(serv);
+    oList.push_back(serv);
   }
 
   if (!inserted)
   {
-    k.push_back(n);
+    oList.push_back(iEntry);
   }
-  return k;
+  return oList;
 }
 
 

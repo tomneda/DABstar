@@ -468,6 +468,16 @@
      </item>
     </layout>
    </item>
+   <item>
+    <widget class="QTableView" name="tblServiceList">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>

@@ -78,7 +78,7 @@ public:
   //	for the FicHandler:
   QString findService(uint32_t, int);
   void getParameters(const QString &, uint32_t *, int *);
-  std::vector<serviceId> getServices(int);
+  std::vector<serviceId> getServices();
   bool is_audioService(const QString & s);
   bool is_packetService(const QString & s);
   void dataforAudioService(const QString &, Audiodata *);

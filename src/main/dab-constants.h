@@ -108,14 +108,6 @@ public:
   QString channel;        // just for presets
 };
 
-// order by id order by name
-enum EServiceListOder
-{
-  ID_BASED    = 1,
-  SUBCH_BASED = 2,
-  ALPHA_BASED = 3
-};
-
 // 40 up shows good results
 #define    DIFF_LENGTH  60
 

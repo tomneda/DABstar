@@ -1686,7 +1686,7 @@ void FibDecoder::dataforPacketService(const QString & s, Packetdata * pd, int16_
   fibLocker.unlock();
 }
 
-std::vector<serviceId> FibDecoder::getServices(int order)
+std::vector<serviceId> FibDecoder::getServices()
 {
   std::vector<serviceId> services;
 
@@ -1698,13 +1698,13 @@ std::vector<serviceId> FibDecoder::getServices(int order)
       ed.name = ensemble->services[i].serviceLabel;
       ed.SId = ensemble->services[i].SId;
 
-      services = insert(services, ed, order);
+      services = insert_sorted(services, ed);
     }
   }
   return services;
 }
 
-std::vector<serviceId> FibDecoder::insert(const std::vector<serviceId> & l, serviceId n, int order)
+std::vector<serviceId> FibDecoder::insert_sorted(const std::vector<serviceId> & l, serviceId n)
 {
   std::vector<serviceId> k;
   if (l.size() == 0)
@@ -1712,20 +1712,16 @@ std::vector<serviceId> FibDecoder::insert(const std::vector<serviceId> & l, serv
     k.push_back(n);
     return k;
   }
-  int baseN = 0;
   QString baseS = "";
   bool inserted = false;
   for (const auto & serv: l)
   {
-    if (!inserted && (order == ID_BASED
-                      ? ((baseN < (int)n.SId) && ((int)n.SId <= (int)(&serv)->SId))
-                      : ((baseS < n.name) && (n.name < (&serv)->name))))
+    if (!inserted && baseS < n.name && n.name < serv.name)
     {
       k.push_back(n);
       inserted = true;
     }
     baseS = serv.name;
-    baseN = serv.SId;
     k.push_back(serv);
   }
   if (!inserted)
