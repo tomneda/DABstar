@@ -1,9 +1,6 @@
 /*
  * Copyright (c) 2023 by Thomas Neder (https://github.com/tomneda)
  *
- * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
- * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
- *
  * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2 of the License, or any later version.
  *
@@ -14,11 +11,12 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef SERVICELISTHANDLER_H
-#define SERVICELISTHANDLER_H
+#ifndef DABSTAR_SERVICELISTHANDLER_H
+#define DABSTAR_SERVICELISTHANDLER_H
 
 #include <QObject>
 #include <QStandardItemModel>
+#include <QItemSelection>
 #include "service-db.h"
 
 class RadioInterface;
@@ -39,14 +37,17 @@ private:
   QTableView * const mpTableView;
   QStandardItemModel mModel{};
   ServiceDB mServiceDB;
+  QString mLastChannel;
 
 public slots:
 
 private slots:
+  void _slot_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
 
 signals:
-
+  void signal_channel_changed(const QString & oChannel, const QString & oService);
+  void signal_service_changed(const QString & oService);
 };
 
 
-#endif // SERVICELISTHANDLER_H
+#endif // DABSTAR_SERVICELISTHANDLER_H

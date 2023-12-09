@@ -208,7 +208,7 @@ private:
   int fontSize;
   int fmFrequency;
   ContentTable * my_contentTable;
-  ContentTable * my_scanTable;
+  //ContentTable * my_scanTable;
   FILE * logFile;
   ChannelDescriptor channel;
   int maxDistance;
@@ -407,6 +407,8 @@ private slots:
   void _slot_channel_timeout();
 
   void _slot_select_service(QModelIndex);
+  void _slot_channel_changed(const QString & iChannel, const QString & iService);
+  void _slot_service_changed(const QString & iService);
   void _slot_set_preset_service();
   void _slot_handle_mute_button();
   void _slot_handle_dl_text_button();

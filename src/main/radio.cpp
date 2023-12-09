@@ -157,7 +157,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   stereoSetting = false;
   maxDistance = -1;
   my_contentTable = nullptr;
-  my_scanTable = nullptr;
+  //my_scanTable = nullptr;
   mapHandler = nullptr;
   //	"globals" is introduced to reduce the number of parameters
   //	for the dabProcessor
@@ -758,11 +758,12 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
   //serviceList.push_back(ed);
   
   my_history->addElement(channel.channelName, serviceName);
+  mpServiceListHandler->DB().add_entry(channel.channelName, ed.name);
+
   model.clear();
   for (const auto & serv: serviceList)
   {
     model.appendRow(new QStandardItem(serv.name));
-    mpServiceListHandler->DB().add_entry(channel.channelName, serv.name);
   }
 #ifdef  __MINGW32__
                                                                                                                           for (int i = model. rowCount (); i < 12; i ++)
@@ -1334,12 +1335,12 @@ void RadioInterface::_slot_terminate_process()
   dabSettings->setValue("utcSelector", configWidget.utcSelector->isChecked() ? 1 : 0);
   dabSettings->setValue("epg2xml", configWidget.epg2xmlSelector->isChecked() ? 1 : 0);
 
-  if (my_scanTable != nullptr)
-  {
-    my_scanTable->clearTable();
-    my_scanTable->hide();
-    delete my_scanTable;
-  }
+//  if (my_scanTable != nullptr)
+//  {
+//    my_scanTable->clearTable();
+//    my_scanTable->hide();
+//    delete my_scanTable;
+//  }
 
   my_presetHandler.savePresets(presetSelector);
   theBand.saveSettings();
@@ -2264,6 +2265,8 @@ void RadioInterface::connectGUI()
   connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
+  connect(mpServiceListHandler.get(), &ServiceListHandler::signal_channel_changed, this, &RadioInterface::_slot_channel_changed);
+  connect(mpServiceListHandler.get(), &ServiceListHandler::signal_service_changed, this, &RadioInterface::_slot_service_changed);
   connect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   connect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
@@ -2288,6 +2291,8 @@ void RadioInterface::disconnectGUI()
   disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
+  disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_channel_changed, this, &RadioInterface::_slot_channel_changed);
+  disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_service_changed, this, &RadioInterface::_slot_service_changed);
   disconnect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   disconnect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
@@ -2480,7 +2485,16 @@ void RadioInterface::_slot_select_service(QModelIndex ind)
   localSelect(channel.channelName, currentProgram);
 }
 
-//
+void RadioInterface::_slot_channel_changed(const QString & iChannel, const QString & iService)
+{
+  localSelect(iChannel, iService);
+}
+
+void RadioInterface::_slot_service_changed(const QString & iService)
+{
+  localSelect(channel.channelName, iService);
+}
+
 //	selecting from the preset list
 void RadioInterface::slot_handle_preset_selector(const QString & s)
 {
@@ -3180,17 +3194,22 @@ void RadioInterface::startScanning()
   LOG("scanning starts with ", QString::number(cc));
   scanning.store(true);
 
-  if (my_scanTable == nullptr)
-  {
-    my_scanTable = new ContentTable(this, dabSettings, "scan", my_dabProcessor->scanWidth());
-  }
-  else
-  {
-    my_scanTable->clearTable();
-  }
+//  if (my_scanTable == nullptr)
+//  {
+//    my_scanTable = new ContentTable(this, dabSettings, "scan", my_dabProcessor->scanWidth());
+//  }
+//  else
+//  {
+//    my_scanTable->clearTable();
+//  }
+
+  mpServiceListHandler->DB().delete_table();
+  mpServiceListHandler->DB().create_table();
+  mpServiceListHandler->update();
+
   QString topLine = QString("ensemble") + ";" + "channelName" + ";" + "frequency (KHz)" + ";" + "Eid" + ";" + "time" + ";" + "tii" + ";" + "SNR" + ";" + "nr services" + ";";
-  my_scanTable->addLine(topLine);
-  my_scanTable->addLine("\n");
+//  my_scanTable->addLine(topLine);
+//  my_scanTable->addLine("\n");
 
   my_dabProcessor->set_scanMode(true);
   //  To avoid reaction of the system on setting a different value:
@@ -3295,14 +3314,14 @@ void RadioInterface::showServices()
   QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(
     channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
   QStringList s = my_dabProcessor->basicPrint();
-  my_scanTable->addLine(headLine);
-  my_scanTable->addLine("\n;\n");
-  for (const auto & i : s)
-  {
-    my_scanTable->addLine(i);
-  }
-  my_scanTable->addLine("\n;\n;\n");
-  my_scanTable->show();
+//  my_scanTable->addLine(headLine);
+//  my_scanTable->addLine("\n;\n");
+//  for (const auto & i : s)
+//  {
+//    my_scanTable->addLine(i);
+//  }
+//  my_scanTable->addLine("\n;\n;\n");
+//  my_scanTable->show();
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -3988,5 +4007,4 @@ void RadioInterface::setup_ui_colors()
 
   historyButton->setStyleSheet(get_style_sheet({ 255, 200, 45 }, Qt::black));
 }
-
 

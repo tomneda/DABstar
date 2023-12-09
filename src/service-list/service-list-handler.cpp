@@ -1,9 +1,6 @@
 /*
  * Copyright (c) 2023 by Thomas Neder (https://github.com/tomneda)
  *
- * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
- * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
- *
  * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2 of the License, or any later version.
  *
@@ -23,21 +20,52 @@ ServiceListHandler::ServiceListHandler(RadioInterface * ipRI, QTableView * const
   mpTableView(ipSL),
   mServiceDB("/home/work/servicelist_v01.db")
 {
-  mServiceDB.delete_table();
+  //mServiceDB.delete_table();
   mServiceDB.create_table();
-  //mServiceDB.add_entry("5D","Antenne");
-  //mServiceDB.add_entry("5C","AberHallo");
 
-  //mServiceDB.bind_to_table_view(mpTableView);
-  mpTableView->setModel(mServiceDB.create_model());
-  //ipQTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-  mpTableView->resizeColumnsToContents();
-  mpTableView->show();
+  //connect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
 }
 
 void ServiceListHandler::update()
 {
+  // hope this makes no problem if first time no model is attached to QTableView
+  disconnect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
+
   mpTableView->setModel(mServiceDB.create_model());
   mpTableView->resizeColumnsToContents();
+  mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so but not the below)
+  //mpTableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  //mpTableView->verticalHeader()->setDefaultSectionSize(mpTableView->verticalHeader()->minimumSectionSize());
+  mpTableView->setSelectionMode(QAbstractItemView::SingleSelection); // Allow only one row to be selected at a time
+  mpTableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // Select entire rows, not individual items
+  mpTableView->verticalHeader()->hide();
   mpTableView->show();
+
+  connect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
+}
+
+void ServiceListHandler::_slot_selection_changed(const QItemSelection & selected, const QItemSelection & deselected)
+{
+  // Fetch the first index of the selected items
+  QModelIndexList indexes = selected.indexes();
+
+  if(!indexes.empty())
+  {
+    int row = indexes.first().row();
+    QVector<QVariant> rowData;
+
+    const QString curService = mpTableView->model()->index(row, 0).data().toString();
+    const QString curChannel = mpTableView->model()->index(row, 1).data().toString();
+
+    if (curChannel != mLastChannel)
+    {
+      emit signal_channel_changed(curChannel, curService);
+    }
+    else
+    {
+      emit signal_service_changed(curService);
+    }
+
+    mLastChannel = curChannel;
+  }
 }
