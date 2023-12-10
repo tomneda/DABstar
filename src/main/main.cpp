@@ -38,17 +38,13 @@
 #include <QTranslator>
 #include <unistd.h>
 
-
 int main(int argc, char ** argv)
 {
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
   const QString initFileName = QDir::toNativeSeparators(configPath +  "settings.ini");
-  const QString presetsFileName = QDir::toNativeSeparators(configPath + "presets.xml");
-
-  RadioInterface * MyRadioInterface;
+  const QString dbFileName = QDir::toNativeSeparators(configPath + "service_list_v01.db");
 
   // Default values
-  QSettings * dabSettings;// ini file
   int32_t dataPort = 8888;
   int32_t clockPort = 8889;
   int opt;
@@ -59,7 +55,7 @@ int main(int argc, char ** argv)
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
 
-  while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:s:")) != -1)
+  while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:")) != -1)
   {
     switch (opt)
     {
@@ -73,18 +69,13 @@ int main(int argc, char ** argv)
       break;
     case 'F': fmFrequency = atoi(optarg);
       break;
-    case 's': break;
-    default: break;
+    default: ;
     }
   }
 
-  dabSettings = new QSettings(initFileName, QSettings::IniFormat);
+  auto dabSettings(std::make_unique<QSettings>(initFileName, QSettings::IniFormat));
 
-  /*
-   *      Before we connect control to the gui, we have to
-   *      instantiate
-   */
-#if QT_VERSION >= 0x050600
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 
@@ -104,17 +95,13 @@ int main(int argc, char ** argv)
 
   QApplication::setWindowIcon(QIcon(":res/dabstar128x128.png")); // used for all dialog windows except main window (is overwritten)
 
+  auto radioInterface(std::make_unique<RadioInterface>(dabSettings.get(), dbFileName, freqExtension, error_report, dataPort, clockPort, fmFrequency, nullptr));
+  radioInterface->show();
 
-  MyRadioInterface = new RadioInterface(dabSettings, presetsFileName, freqExtension, error_report, dataPort, clockPort, fmFrequency, nullptr);
-  MyRadioInterface->show();
-
-  qRegisterMetaType<QVector<int>>("QVector<int>");
-  a.exec();
+  QApplication::exec();
 
   fflush(stdout);
   fflush(stderr);
   qDebug("It is done\n");
-  delete MyRadioInterface;
-  delete dabSettings;
   return 0;
 }

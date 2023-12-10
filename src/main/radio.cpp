@@ -124,7 +124,7 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 
 //static int32_t sFreqOffHz = 0; // for test
 
-RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
+RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
   : QWidget(parent),
     spectrumBuffer(2048),
     iqBuffer(2 * 1536),
@@ -420,7 +420,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
   connect(configWidget.streamoutSelector, qOverload<int>(&QComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
   connect(theTechWindow, &TechData::handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
-  my_presetHandler.loadPresets(presetFile, presetSelector);
+  my_presetHandler.loadPresets("~/presets.xml", presetSelector);
 
   //	display the version
   copyrightLabel->setToolTip(get_copyright_text());
@@ -533,7 +533,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & presetFile, const
     theTechWindow->show();
   }
 
-  mpServiceListHandler = std::make_unique<ServiceListHandler>(this, tblServiceList);
+  mpServiceListHandler = std::make_unique<ServiceListHandler>(dbFileName, tblServiceList);
 
   //	if a device was selected, we just start, otherwise
   //	we wait until one is selected

@@ -26,14 +26,13 @@ class ServiceListHandler : public QObject
 {
   Q_OBJECT
 public:
-  explicit ServiceListHandler(RadioInterface * ipRI, QTableView * const ipSL);
+  explicit ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL);
   ~ServiceListHandler() override = default;
 
   ServiceDB & DB() { return mServiceDB; }
   void update();
 
 private:
-  RadioInterface * const mpRadio;
   QTableView * const mpTableView;
   QStandardItemModel mModel{};
   ServiceDB mServiceDB;

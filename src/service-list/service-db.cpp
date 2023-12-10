@@ -23,6 +23,8 @@
 ServiceDB::ServiceDB(const QString & iDbFileName) :
   mDbFileName(iDbFileName)
 {
+  mDB = QSqlDatabase::addDatabase("QSQLITE");
+
   if (!_open_db())
   {
     qCritical("Error: Unable to establish a database connection: %s. Try deleting database and repeat...", _error_str());
@@ -38,14 +40,6 @@ ServiceDB::ServiceDB(const QString & iDbFileName) :
 ServiceDB::~ServiceDB()
 {
   mDB.close();
-}
-
-void ServiceDB::_delete_db_file()
-{
-  if (std::filesystem::exists(mDbFileName.toStdString()))
-  {
-    std::filesystem::remove(mDbFileName.toStdString());
-  }
 }
 
 void ServiceDB::create_table()
@@ -95,7 +89,7 @@ QSqlQueryModel * ServiceDB::create_model()
 
   QSqlQuery query;
   //query.prepare("SELECT * FROM TabServList ORDER BY Name ASC");
-  query.prepare("SELECT Name, Channel AS Ch, Id FROM TabServList ORDER BY Name ASC");
+  query.prepare("SELECT Name, Channel AS Ch, Id FROM TabServList ORDER BY UPPER(Name) ASC");
 
   if (query.exec())
   {
@@ -116,9 +110,14 @@ const char * ServiceDB::_error_str() const
 
 bool ServiceDB::_open_db()
 {
-  mDB = QSqlDatabase::addDatabase("QSQLITE");
   mDB.setDatabaseName(mDbFileName);
-
   return mDB.open();
 }
 
+void ServiceDB::_delete_db_file()
+{
+  if (std::filesystem::exists(mDbFileName.toStdString()))
+  {
+    std::filesystem::remove(mDbFileName.toStdString());
+  }
+}

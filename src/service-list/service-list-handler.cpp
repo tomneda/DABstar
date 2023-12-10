@@ -15,10 +15,9 @@
 #include "radio.h"
 #include "service-list-handler.h"
 
-ServiceListHandler::ServiceListHandler(RadioInterface * ipRI, QTableView * const ipSL) :
-  mpRadio(ipRI),
+ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL) :
   mpTableView(ipSL),
-  mServiceDB("/home/work/servicelist_v01.db")
+  mServiceDB(iDbFileName)
 {
   //mServiceDB.delete_table();
   mServiceDB.create_table();
@@ -38,7 +37,7 @@ void ServiceListHandler::update()
   //mpTableView->verticalHeader()->setDefaultSectionSize(mpTableView->verticalHeader()->minimumSectionSize());
   mpTableView->setSelectionMode(QAbstractItemView::SingleSelection); // Allow only one row to be selected at a time
   mpTableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // Select entire rows, not individual items
-  mpTableView->verticalHeader()->hide();
+  //mpTableView->verticalHeader()->hide(); // hide first column
   mpTableView->show();
 
   connect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
@@ -46,13 +45,11 @@ void ServiceListHandler::update()
 
 void ServiceListHandler::_slot_selection_changed(const QItemSelection & selected, const QItemSelection & deselected)
 {
-  // Fetch the first index of the selected items
-  QModelIndexList indexes = selected.indexes();
+  const QModelIndexList indexes = selected.indexes();
 
   if(!indexes.empty())
   {
-    int row = indexes.first().row();
-    QVector<QVariant> rowData;
+    const int row = indexes.first().row();
 
     const QString curService = mpTableView->model()->index(row, 0).data().toString();
     const QString curChannel = mpTableView->model()->index(row, 1).data().toString();
