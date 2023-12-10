@@ -19,16 +19,31 @@
 
 class QTableView;
 
+class MySqlQueryModel : public QSqlQueryModel
+{
+  using QSqlQueryModel::QSqlQueryModel;
+public:
+  [[nodiscard]] QVariant data(const QModelIndex & index, int role /*= Qt::DisplayRole*/) const override;
+};
+
 class ServiceDB
 {
 public:
   explicit ServiceDB(const QString & iDbFileName);
   ~ServiceDB();
+
+  enum EColNum
+  {
+    CN_Service = 0,
+    CN_Channel = 1,
+    CN_Id      = 2
+  };
+
   void create_table();
   void delete_table();
   void add_entry(const QString & iChannel, const QString & iServiceName);
 
-  QSqlQueryModel * create_model();
+  MySqlQueryModel * create_model();
 
 private:
   QSqlDatabase mDB;

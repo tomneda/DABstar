@@ -21,8 +21,6 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
 {
   //mServiceDB.delete_table();
   mServiceDB.create_table();
-
-  //connect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
 }
 
 void ServiceListHandler::update()
@@ -51,8 +49,8 @@ void ServiceListHandler::_slot_selection_changed(const QItemSelection & selected
   {
     const int row = indexes.first().row();
 
-    const QString curService = mpTableView->model()->index(row, 0).data().toString();
-    const QString curChannel = mpTableView->model()->index(row, 1).data().toString();
+    const QString curService = mpTableView->model()->index(row, ServiceDB::CN_Service).data().toString();
+    const QString curChannel = mpTableView->model()->index(row, ServiceDB::CN_Channel).data().toString();
 
     if (curChannel != mLastChannel)
     {

@@ -83,13 +83,13 @@ void ServiceDB::add_entry(const QString & iChannel, const QString & iServiceName
   }
 }
 
-QSqlQueryModel * ServiceDB::create_model()
+MySqlQueryModel * ServiceDB::create_model()
 {
-  QSqlQueryModel * model = new QSqlQueryModel;
+  MySqlQueryModel * model = new MySqlQueryModel;
 
   QSqlQuery query;
   //query.prepare("SELECT * FROM TabServList ORDER BY Name ASC");
-  query.prepare("SELECT Name, Channel AS Ch, Id FROM TabServList ORDER BY UPPER(Name) ASC");
+  query.prepare("SELECT Name AS Service, Channel AS Ch, Id FROM TabServList ORDER BY UPPER(Name) ASC");
 
   if (query.exec())
   {
@@ -120,4 +120,20 @@ void ServiceDB::_delete_db_file()
   {
     std::filesystem::remove(mDbFileName.toStdString());
   }
+}
+
+QVariant MySqlQueryModel::data(const QModelIndex & index, int role) const
+{
+  // certain columns should be right aligned
+  if (role == Qt::TextAlignmentRole)
+  {
+    switch (index.column())
+    {
+    case ServiceDB::CN_Channel:
+    case ServiceDB::CN_Id:
+      return Qt::AlignRight + Qt::AlignVCenter;
+    }
+  }
+
+  return QSqlQueryModel::data(index, role);
 }
