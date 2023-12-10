@@ -114,16 +114,6 @@
        </layout>
       </widget>
      </item>
-     <item>
-      <widget class="newPushButton" name="historyButton">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The (name:channel) of each service found is stored in the history list. Selecting a service from this list is possible (but only makes sense if the (name:channel) is in reach of the decoder).&lt;/p&gt;&lt;p&gt;Clearing the list is by touching the right hand mouse click&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Station List</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
@@ -473,13 +463,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>newPushButton</class>
-   <extends>QPushButton</extends>
-   <header location="global">newpushbutton.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

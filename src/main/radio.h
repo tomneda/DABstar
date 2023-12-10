@@ -78,7 +78,6 @@
 class QSettings;
 class IDeviceHandler;
 class AudioBase;
-class historyHandler;
 class timeTableHandler;
 class ServiceListHandler;
 
@@ -256,7 +255,6 @@ private:
   int total_fics;
   struct theTime localTime;
   struct theTime UTC;
-  historyHandler * my_history;
   timeTableHandler * my_timeTable;
   FILE * ficDumpPointer;
   bool transmitterTags_local;
@@ -383,7 +381,6 @@ private slots:
   void _slot_do_start(const QString &);
   void _slot_new_device(const QString &);
 
-  void _slot_handle_history_button();
   void _slot_handle_source_dump_button();
   void _slot_handle_frame_dump_button();
   void _slot_handle_audio_dump_button();
@@ -394,7 +391,6 @@ private slots:
   void _slot_handle_next_channel_button();
   void _slot_handle_prev_channel_button();
 
-  void _slot_handle_history_select(const QString &);
   void _slot_terminate_process();
   void _slot_update_time_display();
   void _slot_channel_timeout();

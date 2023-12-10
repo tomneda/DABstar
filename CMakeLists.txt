@@ -297,7 +297,6 @@ set(${objectName}_HDRS
         src/support/dab-tables.h
         src/support/viterbi-jan/viterbi-handler.h
         src/support/viterbi-spiral/viterbi-spiral.h
-        src/support/history-handler.h
         src/support/color-selector.h
         src/support/time-table.h
         src/support/findfilenames.h
@@ -393,7 +392,6 @@ set(${objectName}_SRCS
         src/support/dab-tables.cpp
         src/support/buttons/newpushbutton.cpp
         src/support/buttons/normalpushbutton.cpp
-        src/support/history-handler.cpp
         src/support/viterbi-jan/viterbi-handler.cpp
         src/support/viterbi-spiral/viterbi-spiral.cpp
         src/support/color-selector.cpp
@@ -447,7 +445,6 @@ set(${objectName}_MOCS
         src/support/band-handler.h
         src/support/buttons/newpushbutton.h
         src/support/buttons/normalpushbutton.h
-        src/support/history-handler.h
         src/support/time-table.h
         src/support/content-table.h
         src/support/coordinates.h

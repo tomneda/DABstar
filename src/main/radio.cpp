@@ -63,7 +63,6 @@
   #include "audiosink.h"
 #endif
 
-#include  "history-handler.h"
 #include  "time-table.h"
 #include  "device-exceptions.h"
 
@@ -385,11 +384,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   QString historyFile = QDir::toNativeSeparators(QDir::homePath() + "/.config/" APP_NAME "/stationlist.xml");
   historyFile = dabSettings->value("history", historyFile).toString();
   historyFile = QDir::toNativeSeparators(historyFile);
-  my_history = new historyHandler(this, historyFile);
   my_timeTable = new timeTableHandler(this);
   my_timeTable->hide();
 
-  connect(my_history, &historyHandler::handle_historySelect, this, &RadioInterface::_slot_handle_history_select);
   connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &QComboBox::setCurrentIndex);
   connect(configWidget.dlTextButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_dl_text_button);
   connect(configWidget.loggerButton, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_logger_button);
@@ -746,7 +743,6 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
   serviceList = insert_sorted(serviceList, ed);
   //serviceList.push_back(ed);
   
-  my_history->addElement(channel.channelName, serviceName);
   mpServiceListHandler->DB().add_entry(channel.channelName, ed.name);
 
   model.clear();
@@ -1352,7 +1348,7 @@ void RadioInterface::_slot_terminate_process()
     delete mpInputDevice;
   }
   delete soundOut;
-  delete my_history;
+  //delete my_history;
   delete my_timeTable;
 
   //	close();
@@ -2202,24 +2198,6 @@ void RadioInterface::_slot_handle_spectrum_button()
   dabSettings->setValue("spectrumVisible", my_spectrumViewer.is_hidden() ? 0 : 1);
 }
 
-void RadioInterface::_slot_handle_history_button()
-{
-  if (!running.load())
-  {
-    return;
-  }
-
-  if (my_history->isHidden())
-  {
-    my_history->show();
-  }
-  else
-  {
-    my_history->hide();
-  }
-}
-
-//
 //	When changing (or setting) a device, we do not want anybody
 //	to have the buttons on the GUI touched, so
 //	we just disconnect them and (re)connect them as soon as
@@ -2232,7 +2210,6 @@ void RadioInterface::connectGUI()
   connect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
   connect(show_spectrumButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
   connect(devicewidgetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
-  connect(historyButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_history_button);
   connect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   connect(nextChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_channel_button);
   connect(prevChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_channel_button);
@@ -2258,7 +2235,6 @@ void RadioInterface::disconnectGUI()
   disconnect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
   disconnect(show_spectrumButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
   disconnect(devicewidgetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
-  disconnect(historyButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_history_button);
   disconnect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   disconnect(nextChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_channel_button);
   disconnect(prevChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_channel_button);
@@ -2327,14 +2303,6 @@ bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
         channel.currentService.valid = false;
         _slot_select_service(ensembleDisplay->currentIndex());
       }
-    }
-  }
-  else if ((obj == this->my_history->viewport()) && (event->type() == QEvent::MouseButtonPress))
-  {
-    QMouseEvent * ev = static_cast<QMouseEvent *>(event);
-    if (ev->buttons() & Qt::RightButton)
-    {
-      my_history->clearHistory();
     }
   }
   else if ((obj == this->ensembleDisplay->viewport()) && (event->type() == QEvent::MouseButtonPress))
@@ -2460,14 +2428,6 @@ void RadioInterface::_slot_service_changed(const QString & iService)
   localSelect(channel.channelName, iService);
 }
 
-//	selecting from the history list, which is essential
-//	the same as handling form the preset list
-void RadioInterface::_slot_handle_history_select(const QString & s)
-{
-  localSelect(s);
-}
-
-//
 //	selecting from a content description
 void RadioInterface::slot_handle_content_selector(const QString & s)
 {
@@ -3940,7 +3900,5 @@ void RadioInterface::setup_ui_colors()
   nextServiceButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
   prevChannelButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
   nextChannelButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
-
-  historyButton->setStyleSheet(get_style_sheet({ 255, 200, 45 }, Qt::black));
 }
 
