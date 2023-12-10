@@ -118,6 +118,12 @@ public:
 #define    FORE_GROUND  0000
 #define    BACK_GROUND  0100
 
+struct presetData
+{
+  QString serviceName;
+  QString channel;
+};
+
 class DescriptorType
 {
 public:

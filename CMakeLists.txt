@@ -297,8 +297,6 @@ set(${objectName}_HDRS
         src/support/dab-tables.h
         src/support/viterbi-jan/viterbi-handler.h
         src/support/viterbi-spiral/viterbi-spiral.h
-        src/support/preset-handler.h
-        src/support/presetcombobox.h
         src/support/history-handler.h
         src/support/color-selector.h
         src/support/time-table.h
@@ -393,8 +391,6 @@ set(${objectName}_SRCS
         src/support/dab-params.cpp
         src/support/band-handler.cpp
         src/support/dab-tables.cpp
-        src/support/preset-handler.cpp
-        src/support/presetcombobox.cpp
         src/support/buttons/newpushbutton.cpp
         src/support/buttons/normalpushbutton.cpp
         src/support/history-handler.cpp
@@ -449,8 +445,6 @@ set(${objectName}_MOCS
         src/backend/data/epg-2/epg-decoder.h
         src/backend/data/data-processor.h
         src/support/band-handler.h
-        src/support/preset-handler.h
-        src/support/presetcombobox.h
         src/support/buttons/newpushbutton.h
         src/support/buttons/normalpushbutton.h
         src/support/history-handler.h

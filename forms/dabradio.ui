@@ -48,26 +48,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="presetComboBox" name="presetSelector">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Presets are shortcuts to services - possibly in ensembles in different channels - that are obtained by clicking with the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;right &lt;/span&gt;mouse button on the name of the service &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;in the list of services when selected&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Removing a name from the presets is by selecting the service in this combobox and touching the right hand mouse button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <item>
-             <property name="text">
-              <string>Presets</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
+         <layout class="QHBoxLayout" name="horizontalLayout_4"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -493,11 +474,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>presetComboBox</class>
-   <extends>QComboBox</extends>
-   <header>presetcombobox.h</header>
-  </customwidget>
   <customwidget>
    <class>newPushButton</class>
    <extends>QPushButton</extends>

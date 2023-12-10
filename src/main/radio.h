@@ -67,7 +67,6 @@
 #include	"tcp-server.h"
 #endif
 
-#include  "preset-handler.h"
 #include  "epgdec.h"
 #include  "epg-decoder.h"
 
@@ -193,7 +192,6 @@ private:
   RingBuffer<uint8_t> dataBuffer;
   RingBuffer<int16_t> audioBuffer;
   SpectrumViewer my_spectrumViewer;
-  PresetHandler my_presetHandler;
   BandHandler theBand;
   QFrame dataDisplay;
   QFrame configDisplay;
@@ -274,7 +272,6 @@ private:
   void disconnectGUI();
   QString convertTime(int, int, int, int, int);
   QString get_copyright_text();
-  QString presetText();
   void cleanScreen();
   void hideButtons();
   void showButtons();
@@ -316,8 +313,6 @@ private:
   void handle_serviceButton(direction);
   void enable_ui_elements_for_safety(bool iEnable);
 
-  //	short hands
-  void new_presetIndex(int);
   void new_channelIndex(int);
 
   std::mutex locker;
@@ -330,7 +325,6 @@ private:
 
 signals:
   void signal_set_new_channel(int);
-  void signal_set_new_preset_index(int);
   void signal_dab_processor_started();
 
 public slots:
@@ -367,7 +361,6 @@ public slots:
   void slot_set_epg_data(int, int, const QString &, const QString &);
   void slot_epg_timer_timeout();
   void slot_nr_services(int);
-  void slot_handle_preset_selector(const QString &);
   void slot_handle_content_selector(const QString &);
   //void slot_http_terminate();
   void slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF);

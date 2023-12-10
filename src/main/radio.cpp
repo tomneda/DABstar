@@ -134,7 +134,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     dataBuffer(32768),
     audioBuffer(8 * 32768),
     my_spectrumViewer(this, Si, &spectrumBuffer, &iqBuffer, &carrBuffer, &responseBuffer),
-    my_presetHandler(this),
     theBand(freqExtension, Si),
     configDisplay(nullptr),
     the_dlCache(10),
@@ -392,7 +391,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   connect(my_history, &historyHandler::handle_historySelect, this, &RadioInterface::_slot_handle_history_select);
   connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &QComboBox::setCurrentIndex);
-  connect(this, &RadioInterface::signal_set_new_preset_index, presetSelector, &presetComboBox::setCurrentIndex);
   connect(configWidget.dlTextButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_dl_text_button);
   connect(configWidget.loggerButton, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_logger_button);
   connect(httpButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
@@ -420,12 +418,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   connect(configWidget.streamoutSelector, qOverload<int>(&QComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
   connect(theTechWindow, &TechData::handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
-  my_presetHandler.loadPresets("~/presets.xml", presetSelector);
-
   //	display the version
   copyrightLabel->setToolTip(get_copyright_text());
   copyrightLabel->setOpenExternalLinks(true);
-  presetSelector->setToolTip(presetText());
+  //presetSelector->setToolTip(presetText());
 
   connect(configWidget.portSelector, &QPushButton::clicked, this, &RadioInterface::_slot_handle_port_selector);
   connect(configWidget.set_coordinatesButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_set_coordinates_button);
@@ -570,11 +566,6 @@ RadioInterface::~RadioInterface()
   fprintf(stdout, "RadioInterface is deleted\n");
 }
 
-QString RadioInterface::presetText()
-{
-  return QString("Click with the right mouse button on the text of the item and the item will be removed from the presetList");
-}
-
 QString RadioInterface::get_copyright_text()
 {
   version = QString(PRJ_VERS);
@@ -638,10 +629,8 @@ bool RadioInterface::doStart()
   //	to the slot since that function does a lot more, things we
   //	do not want here
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-  connect(presetSelector, &presetComboBox::textActivated, this, &RadioInterface::slot_handle_preset_selector);
   connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
 #else
-  connect(presetSelector, qOverload<const QString &>(&presetComboBox::activated), this, &RadioInterface::slot_handle_preset_selector);
   connect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
 #endif
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, my_dabProcessor, &DabProcessor::slot_show_nominal_carrier);
@@ -1335,14 +1324,6 @@ void RadioInterface::_slot_terminate_process()
   dabSettings->setValue("utcSelector", configWidget.utcSelector->isChecked() ? 1 : 0);
   dabSettings->setValue("epg2xml", configWidget.epg2xmlSelector->isChecked() ? 1 : 0);
 
-//  if (my_scanTable != nullptr)
-//  {
-//    my_scanTable->clearTable();
-//    my_scanTable->hide();
-//    delete my_scanTable;
-//  }
-
-  my_presetHandler.savePresets(presetSelector);
   theBand.saveSettings();
   stopFramedumping();
   stopSourcedumping();
@@ -1981,7 +1962,6 @@ void RadioInterface::showButtons()
   channelSelector->show();
   nextChannelButton->show();
   prevChannelButton->show();
-  presetSelector->show();
 #else
   configWidget.dumpButton->setEnabled(true);
   configWidget.frequencyDisplay->setEnabled(true);
@@ -1989,7 +1969,6 @@ void RadioInterface::showButtons()
   channelSelector->setEnabled(true);
   nextChannelButton->setEnabled(true);
   prevChannelButton->setEnabled(true);
-  presetSelector->setEnabled(true);
 #endif
 }
 
@@ -2002,7 +1981,6 @@ void RadioInterface::hideButtons()
   channelSelector->hide();
   nextChannelButton->hide();
   prevChannelButton->hide();
-  presetSelector->hide();
 #else
   configWidget.dumpButton->setEnabled(false);
   configWidget.frequencyDisplay->setEnabled(false);
@@ -2010,7 +1988,6 @@ void RadioInterface::hideButtons()
   channelSelector->setEnabled(false);
   nextChannelButton->setEnabled(false);
   prevChannelButton->setEnabled(false);
-  presetSelector->setEnabled(false);
 #endif
 }
 
@@ -2374,18 +2351,6 @@ bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
       my_dabProcessor->dataforAudioService(serviceName, &ad);
       if (ad.defined && (channel.currentService.serviceName == serviceName))
       {
-        presetData pd;
-        pd.serviceName = serviceName;
-        pd.channel = channelSelector->currentText();
-        QString itemText = pd.channel + ":" + pd.serviceName;
-        for (int i = 0; i < presetSelector->count(); i++)
-        {
-          if (presetSelector->itemText(i) == itemText)
-          {
-            return true;
-          }
-        }
-        presetSelector->addItem(itemText);
         return true;
       }
 
@@ -2495,17 +2460,6 @@ void RadioInterface::_slot_service_changed(const QString & iService)
   localSelect(channel.channelName, iService);
 }
 
-//	selecting from the preset list
-void RadioInterface::slot_handle_preset_selector(const QString & s)
-{
-  if ((s == "Presets") || (presetSelector->currentIndex() == 0))
-  {
-    return;
-  }
-  localSelect(s);
-}
-
-//
 //	selecting from the history list, which is essential
 //	the same as handling form the preset list
 void RadioInterface::_slot_handle_history_select(const QString & s)
@@ -2833,7 +2787,6 @@ void RadioInterface::cleanScreen()
   stereoLabel->setText("");
   programTypeLabel->setText("");
 
-  new_presetIndex(0);
   stereoSetting = false;
   theTechWindow->cleanUp();
   slot_set_stereo(false);
@@ -3114,7 +3067,6 @@ void RadioInterface::_slot_handle_channel_selector(const QString & channel)
 
   LOG("select channel ", channel.toUtf8().data());
   presetTimer.stop();
-  presetSelector->setCurrentIndex(0);
   stopScanning(false);
   stopChannel();
   startChannel(channel);
@@ -3187,7 +3139,6 @@ void RadioInterface::startScanning()
   channelTimer.stop();
   epgTimer.stop();
   connect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
-  new_presetIndex(0);
   stopChannel();
   const int cc = theBand.firstChannel();
 
@@ -3373,21 +3324,6 @@ void RadioInterface::_slot_handle_mute_button()
 {
   mutingActive = !mutingActive;
   setButtonFont(muteButton, (mutingActive ? "Muting" : "Mute"), 10);
-}
-
-void RadioInterface::new_presetIndex(int index)
-{
-  if (presetSelector->currentIndex() == index)
-  {
-    return;
-  }
-  presetSelector->blockSignals(true);
-  emit signal_set_new_preset_index(index);
-  while (presetSelector->currentIndex() != 0)
-  {
-    usleep(200);
-  }
-  presetSelector->blockSignals(false);
 }
 
 void RadioInterface::new_channelIndex(int index)
