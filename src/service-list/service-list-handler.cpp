@@ -21,6 +21,8 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
 {
   //mServiceDB.delete_table();
   mServiceDB.create_table();
+
+  connect(mpTableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &ServiceListHandler::_slot_header_clicked);
 }
 
 void ServiceListHandler::update()
@@ -49,8 +51,8 @@ void ServiceListHandler::_slot_selection_changed(const QItemSelection & selected
   {
     const int row = indexes.first().row();
 
-    const QString curService = mpTableView->model()->index(row, ServiceDB::CN_Service).data().toString();
-    const QString curChannel = mpTableView->model()->index(row, ServiceDB::CN_Channel).data().toString();
+    const QString curService = mpTableView->model()->index(row, ServiceDB::CI_Service).data().toString();
+    const QString curChannel = mpTableView->model()->index(row, ServiceDB::CI_Channel).data().toString();
 
     if (curChannel != mLastChannel)
     {
@@ -63,4 +65,11 @@ void ServiceListHandler::_slot_selection_changed(const QItemSelection & selected
 
     mLastChannel = curChannel;
   }
+}
+
+void ServiceListHandler::_slot_header_clicked(int iIndex)
+{
+  qDebug() << "Header" << iIndex << "was clicked!";
+  mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex));
+  update();
 }

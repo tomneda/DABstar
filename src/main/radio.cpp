@@ -2500,8 +2500,8 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
     QMessageBox::warning(this, tr("Warning"), tr("Incorrect preset\n"));
     return;
   }
-  //
-  //	prepare the service, start the new channel and wait
+
+  // Prepare the service, start the new channel and wait
   channel.nextService.valid = true;
   channel.nextService.channel = theChannel;
   channel.nextService.serviceName = serviceName;

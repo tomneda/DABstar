@@ -89,7 +89,16 @@ MySqlQueryModel * ServiceDB::create_model()
 
   QSqlQuery query;
   //query.prepare("SELECT * FROM TabServList ORDER BY Name ASC");
-  query.prepare("SELECT Name AS Service, Channel AS Ch, Id FROM TabServList ORDER BY UPPER(Name) ASC");
+  QString sortName;
+
+  switch (mSortColIdx)
+  {
+  case CI_Service: sortName = "UPPER(Name)"; break;
+  case CI_Channel: sortName = "Channel"; break;
+  case CI_Id:      sortName = "Id"; break;
+  }
+
+  query.prepare("SELECT Name AS Service, Channel AS Ch, Id FROM TabServList ORDER BY " + sortName + " ASC");
 
   if (query.exec())
   {
@@ -122,6 +131,11 @@ void ServiceDB::_delete_db_file()
   }
 }
 
+void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx)
+{
+  mSortColIdx = iColIdx;
+}
+
 QVariant MySqlQueryModel::data(const QModelIndex & index, int role) const
 {
   // certain columns should be right aligned
@@ -129,8 +143,8 @@ QVariant MySqlQueryModel::data(const QModelIndex & index, int role) const
   {
     switch (index.column())
     {
-    case ServiceDB::CN_Channel:
-    case ServiceDB::CN_Id:
+    case ServiceDB::CI_Channel:
+    case ServiceDB::CI_Id:
       return Qt::AlignRight + Qt::AlignVCenter;
     }
   }

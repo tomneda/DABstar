@@ -42,6 +42,7 @@ public slots:
 
 private slots:
   void _slot_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
+  void _slot_header_clicked(int iIndex);
 
 signals:
   void signal_channel_changed(const QString & oChannel, const QString & oService);

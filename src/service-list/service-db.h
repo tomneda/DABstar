@@ -32,22 +32,24 @@ public:
   explicit ServiceDB(const QString & iDbFileName);
   ~ServiceDB();
 
-  enum EColNum
+  enum EColIdx
   {
-    CN_Service = 0,
-    CN_Channel = 1,
-    CN_Id      = 2
+    CI_Service = 0,
+    CI_Channel = 1,
+    CI_Id      = 2
   };
 
   void create_table();
   void delete_table();
   void add_entry(const QString & iChannel, const QString & iServiceName);
+  void sort_column(const EColIdx iColIdx);
 
   MySqlQueryModel * create_model();
 
 private:
   QSqlDatabase mDB;
   QString mDbFileName;
+  EColIdx mSortColIdx = CI_Service;
 
   [[nodiscard]] const char * _error_str() const;
   void _delete_db_file();
