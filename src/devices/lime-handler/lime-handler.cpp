@@ -33,7 +33,7 @@ int16_t localBuffer [4 * FIFO_SIZE];
 lms_info_str_t limedevices [10];
 
 	LimeHandler::LimeHandler (QSettings *s,
-                            QString &recorderVersion):
+                            const QString & recorderVersion):
 	                             myFrame (nullptr),
 	                             _I_Buffer (4* 1024 * 1024),
 	                             theFilter (5, 1560000 / 2, 2048000) {

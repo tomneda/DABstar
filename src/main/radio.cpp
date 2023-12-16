@@ -417,10 +417,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   connect(configWidget.streamoutSelector, qOverload<int>(&QComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
   connect(theTechWindow, &TechData::handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
-  //	display the version
+  copyrightLabel->setText(QString("<html><body><img src='qrc:/res/icons/copyright24.png'/> V" + mVersionStr + "</body></html>"));
   copyrightLabel->setToolTip(get_copyright_text());
   copyrightLabel->setOpenExternalLinks(true);
-  //presetSelector->setToolTip(presetText());
 
   connect(configWidget.portSelector, &QPushButton::clicked, this, &RadioInterface::_slot_handle_port_selector);
   connect(configWidget.set_coordinatesButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_set_coordinates_button);
@@ -565,11 +564,10 @@ RadioInterface::~RadioInterface()
   fprintf(stdout, "RadioInterface is deleted\n");
 }
 
-QString RadioInterface::get_copyright_text()
+QString RadioInterface::get_copyright_text() const
 {
-  version = QString(PRJ_VERS);
   QString versionText = "<html><head/><body><p>";
-  versionText =  "<h3>" + QString(PRJ_NAME) + " V" + version + " (Qt " QT_VERSION_STR ")</h3>";
+  versionText = "<h3>" + QString(PRJ_NAME) + " V" + mVersionStr + " (Qt " QT_VERSION_STR ")</h3>";
   versionText += "<p><b>Built on " + QString(__TIMESTAMP__) + QString("<br/>Commit ") + QString(GITHASH) + ".</b></p>";
   versionText += "<p>Forked and partly extensive changed and extended by Thomas Neder<br/>"
                  "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>) from Qt-DAB<br/>"

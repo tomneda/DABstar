@@ -87,7 +87,7 @@ class RtlSdrHandler final : public QObject, public IDeviceHandler, public Ui_dab
 {
 Q_OBJECT
 public:
-  RtlSdrHandler(QSettings *, QString &);
+  RtlSdrHandler(QSettings * s, const QString & recorderVersion);
   ~RtlSdrHandler() override;
 
   void setVFOFrequency(int32_t) override;

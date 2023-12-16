@@ -115,7 +115,7 @@ void	run () {
 //
 //	Our wrapper is a simple classs
 	RtlSdrHandler::RtlSdrHandler (QSettings *s,
-                                QString &recorderVersion):
+                                const QString & recorderVersion):
 	                                 _I_Buffer (8 * 1024 * 1024),
 	                                 myFrame (nullptr),
 	                                 theFilter (5, 1560000 / 2, 2048000) {

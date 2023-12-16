@@ -58,7 +58,7 @@ int	get_lnaGRdB (int hwVersion, int lnaState) {
 //
 //	here we start
 	SdrPlayHandler_v2::SdrPlayHandler_v2  (QSettings *s,
-                                         QString &recorderVersion):
+                                         const QString & recorderVersion):
 	                                           _I_Buffer (4 * 1024 * 1024),
 	                                           myFrame (nullptr) {
 mir_sdr_ErrT	err;

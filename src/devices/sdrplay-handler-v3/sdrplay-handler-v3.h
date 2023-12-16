@@ -60,7 +60,7 @@ class SdrPlayHandler_v3 final : public QThread, public IDeviceHandler, public Ui
 {
 Q_OBJECT
 public:
-  SdrPlayHandler_v3(QSettings *, QString &);
+  SdrPlayHandler_v3(QSettings *, const QString &);
   ~SdrPlayHandler_v3() override;
 
   void setVFOFrequency(int32_t) override;

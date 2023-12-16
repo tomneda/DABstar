@@ -85,7 +85,7 @@ class LimeHandler final : public QThread, public IDeviceHandler, public limeWidg
 {
 Q_OBJECT
 public:
-  LimeHandler(QSettings *, QString &);
+  LimeHandler(QSettings * s, const QString & recorderVersion);
   ~LimeHandler() override;
   void setVFOFrequency(int32_t) override;
   int32_t getVFOFrequency() override;

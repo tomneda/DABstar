@@ -4,6 +4,7 @@
     <file>res/dabstar128x128.png</file>
     <file>res/icons/muted24.png</file>
     <file>res/icons/unmuted24.png</file>
+    <file>res/icons/copyright24.png</file>
     <file>res/globstyle.qss</file>
   </qresource>
 </RCC>

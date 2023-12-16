@@ -74,7 +74,7 @@ std::string errorMessage (int errorCode) {
 }
 
 	SdrPlayHandler_v3::SdrPlayHandler_v3  (QSettings *s,
-                                         QString &recorderVersion):
+                                         const QString &recorderVersion):
 	                                          _I_Buffer (4 * 1024 * 1024),
 	                                          myFrame (nullptr) {
 	sdrplaySettings			= s;

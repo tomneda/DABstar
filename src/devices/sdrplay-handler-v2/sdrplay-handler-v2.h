@@ -92,7 +92,7 @@ class SdrPlayHandler_v2 final : public QObject, public IDeviceHandler, public Ui
 {
 Q_OBJECT
 public:
-  SdrPlayHandler_v2(QSettings *, QString &);
+  SdrPlayHandler_v2(QSettings * s, const QString & recorderVersion);
   ~SdrPlayHandler_v2() override;
 
   void setVFOFrequency(int32_t) override;

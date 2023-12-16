@@ -200,7 +200,7 @@ private:
   RingBuffer<int16_t> theTechData;
   httpHandler * mapHandler;
   ProcessParams globals;
-  QString version;
+  const QString mVersionStr{ PRJ_VERS };
   QString theFont;
   int fontSize;
   int fmFrequency;
@@ -269,7 +269,8 @@ private:
   void connectGUI();
   void disconnectGUI();
   QString convertTime(int, int, int, int, int);
-  QString get_copyright_text();
+  QString get_version_text() const;
+  QString get_copyright_text() const;
   void cleanScreen();
   void hideButtons();
   void showButtons();

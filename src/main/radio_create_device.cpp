@@ -139,7 +139,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
 #endif
     try
     {
-      inputDevice = new SdrPlayHandler_v2(dabSettings, version);
+      inputDevice = new SdrPlayHandler_v2(dabSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -160,7 +160,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new SdrPlayHandler_v3(dabSettings, version);
+      inputDevice = new SdrPlayHandler_v3(dabSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -181,7 +181,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new RtlSdrHandler(dabSettings, version);
+      inputDevice = new RtlSdrHandler(dabSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & ex)
@@ -202,7 +202,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new AirspyHandler(dabSettings, version);
+      inputDevice = new AirspyHandler(dabSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -223,7 +223,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new HackRfHandler(dabSettings, version);
+      inputDevice = new HackRfHandler(dabSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -244,7 +244,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new LimeHandler(dabSettings, version);
+      inputDevice = new LimeHandler(dabSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
