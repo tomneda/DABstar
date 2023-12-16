@@ -193,6 +193,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   setup_ui_colors();
 
+  QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection); // only the queued call will consider the button size?!
+
   //setWindowIcon(QIcon(":res/DABplusLogoWB.png"));
 
   //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
@@ -3283,7 +3285,9 @@ void RadioInterface::enable_ui_elements_for_safety(const bool iEnable)
 void RadioInterface::_slot_handle_mute_button()
 {
   mutingActive = !mutingActive;
-  setButtonFont(muteButton, (mutingActive ? "Muting" : "Mute"), 10);
+  muteButton->setIcon(QIcon(mutingActive ? ":res/icons/muted24.png" : ":res/icons/unmuted24.png"));
+  muteButton->setIconSize(QSize(24, 24));
+  muteButton->setFixedSize(QSize(32, 32));
 }
 
 void RadioInterface::new_channelIndex(int index)
