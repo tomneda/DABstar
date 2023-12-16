@@ -247,7 +247,7 @@ private:
   QTimer displayTimer;
   QTimer channelTimer;
   QTimer presetTimer;
-  bool mutingActive = true;
+  bool mutingActive = false;
   int32_t numberofSeconds;
   int16_t ficBlocks;
   int16_t ficSuccess;

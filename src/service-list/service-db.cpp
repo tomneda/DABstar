@@ -89,16 +89,32 @@ MySqlQueryModel * ServiceDB::create_model()
 
   QSqlQuery query;
   //query.prepare("SELECT * FROM TabServList ORDER BY Name ASC");
+
+  const QString sortDir = (mSortDesc ? " DESC" : " ASC");
+  const QString sortSym = (mSortDesc ? "↑" : "↓");
+
   QString sortName;
+  QString colNameService = "Name as Service";
+  QString colNameChannel = "Channel AS Ch";
+  QString colNameId      = "Id AS Id";
 
   switch (mSortColIdx)
   {
-  case CI_Service: sortName = "UPPER(Name)"; break;
-  case CI_Channel: sortName = "Channel"; break;
-  case CI_Id:      sortName = "Id"; break;
+  case CI_Service:
+    sortName = "UPPER(Name)" + sortDir;
+    colNameService += sortSym;
+    break;
+  case CI_Channel:
+    sortName = "Channel" + sortDir + ", UPPER(Name)" + sortDir;
+    colNameChannel += sortSym;
+    break;
+  case CI_Id:
+    sortName = "Id" + sortDir;
+    colNameId      += sortSym;
+    break;
   }
 
-  query.prepare("SELECT Name AS Service, Channel AS Ch, Id FROM TabServList ORDER BY " + sortName + " ASC");
+  query.prepare("SELECT " + colNameService + "," + colNameChannel + "," + colNameId + " FROM TabServList ORDER BY " + sortName);
 
   if (query.exec())
   {
@@ -133,6 +149,7 @@ void ServiceDB::_delete_db_file()
 
 void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx)
 {
+  mSortDesc = (mSortColIdx == iColIdx && !mSortDesc); // change sorting direction with choosing the same column again or reset to asc sorting
   mSortColIdx = iColIdx;
 }
 

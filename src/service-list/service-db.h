@@ -50,6 +50,7 @@ private:
   QSqlDatabase mDB;
   QString mDbFileName;
   EColIdx mSortColIdx = CI_Service;
+  bool mSortDesc = false;
 
   [[nodiscard]] const char * _error_str() const;
   void _delete_db_file();
