@@ -34,9 +34,10 @@ public:
 
   enum EColIdx
   {
-    CI_Service = 0,
-    CI_Channel = 1,
-    CI_Id      = 2
+    CI_Fav     = 0,
+    CI_Service = 1,
+    CI_Channel = 2,
+    CI_Id      = 3
   };
 
   void create_table();

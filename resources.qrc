@@ -5,6 +5,8 @@
     <file>res/icons/muted24.png</file>
     <file>res/icons/unmuted24.png</file>
     <file>res/icons/copyright24.png</file>
+    <file>res/icons/starempty16.png</file>
+    <file>res/icons/starfilled16.png</file>
     <file>res/globstyle.qss</file>
   </qresource>
 </RCC>

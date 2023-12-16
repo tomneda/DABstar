@@ -17,10 +17,24 @@
 #include <QObject>
 #include <QStandardItemModel>
 #include <QItemSelection>
+#include <QStyledItemDelegate>
 #include "service-db.h"
 
 class RadioInterface;
 class QTableView;
+
+class FavoriteDelegate : public QStyledItemDelegate
+{
+public:
+  explicit FavoriteDelegate(QObject * parent = nullptr);
+  ~FavoriteDelegate() override = default;
+
+  void paint(QPainter * iPainter, const QStyleOptionViewItem & iOption, const QModelIndex & iModelIdx) const override;
+
+private:
+  QPixmap mStarEmptyPixmap{":res/icons/starempty16.png"}; // draw a star icon for favorites
+  QPixmap mStarFilledPixmap{":res/icons/starfilled16.png"}; // draw a star icon for favorites
+};
 
 class ServiceListHandler : public QObject
 {
@@ -37,6 +51,7 @@ private:
   QStandardItemModel mModel{};
   ServiceDB mServiceDB;
   QString mLastChannel;
+  FavoriteDelegate mFavoriteDelegate{};
 
 public slots:
 

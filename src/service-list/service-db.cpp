@@ -20,6 +20,11 @@
 #include <QtSql/QSqlError>
 #include <QVariant>
 
+static const QString sTableName = "TabServList";
+static const QString sTeService = "Service";
+static const QString sTeChannel = "Channel";
+static const QString sTeIsFav   = "IsFav";
+
 ServiceDB::ServiceDB(const QString & iDbFileName) :
   mDbFileName(iDbFileName)
 {
@@ -44,17 +49,19 @@ ServiceDB::~ServiceDB()
 
 void ServiceDB::create_table()
 {
-  const QString queryStr = "CREATE TABLE IF NOT EXISTS TabServList ("
+  const QString queryStr = "CREATE TABLE IF NOT EXISTS "+ sTableName + " ("
                            "Id      INTEGER PRIMARY KEY,"
-                           "Channel TEXT NOT NULL,"
-                           "Name    TEXT NOT NULL,"
-                           "UNIQUE(Channel, Name) ON CONFLICT IGNORE"
+                           + sTeChannel + " TEXT NOT NULL,"
+                           + sTeService + " TEXT NOT NULL,"
+                           + sTeIsFav   + " INTEGER DEFAULT 0,"
+                           "UNIQUE("+ sTeChannel + "," + sTeService + ") ON CONFLICT IGNORE"
                            ");";
 
   QSqlQuery query;
 
   if (!query.exec(queryStr))
   {
+    _delete_db_file();
     qFatal("Error: Failed to create table: %s", _error_str());
   }
 
@@ -63,8 +70,9 @@ void ServiceDB::create_table()
 void ServiceDB::delete_table()
 {
   QSqlQuery query;
-  if (!query.exec("DROP TABLE IF EXISTS TabServList;"))
+  if (!query.exec("DROP TABLE IF EXISTS " + sTableName + ";"))
   {
+    _delete_db_file();
     qFatal("Error: Failed to delete table: %s", _error_str());
   }
 }
@@ -73,12 +81,13 @@ void ServiceDB::delete_table()
 void ServiceDB::add_entry(const QString & iChannel, const QString & iServiceName)
 {
   QSqlQuery query;
-  query.prepare("INSERT OR IGNORE INTO TabServList (Channel, Name) VALUES (:channel, :name)");
+  query.prepare("INSERT OR IGNORE INTO " + sTableName + " (" + sTeChannel + "," + sTeService + ") VALUES (:channel, :service)");
   query.bindValue(":channel", iChannel);
-  query.bindValue(":name", iServiceName);
+  query.bindValue(":service", iServiceName);
 
   if (!query.exec())
   {
+    _delete_db_file();
     qFatal("Error: Unable insert entry: %s", _error_str());
   }
 }
@@ -87,25 +96,27 @@ MySqlQueryModel * ServiceDB::create_model()
 {
   MySqlQueryModel * model = new MySqlQueryModel;
 
-  QSqlQuery query;
-  //query.prepare("SELECT * FROM TabServList ORDER BY Name ASC");
-
   const QString sortDir = (mSortDesc ? " DESC" : " ASC");
   const QString sortSym = (mSortDesc ? "↑" : "↓");
 
   QString sortName;
-  QString colNameService = "Name as Service";
-  QString colNameChannel = "Channel AS Ch";
+  QString colNameIsFav   = sTeIsFav   + " AS Fav";
+  QString colNameService = sTeService + " AS Service";
+  QString colNameChannel = sTeChannel + " AS Ch";
   QString colNameId      = "Id AS Id";
 
   switch (mSortColIdx)
   {
+  case CI_Fav:
+    sortName = sTeIsFav + " DESC, UPPER(" + sTeService + ")" + sortDir;
+    colNameIsFav += sortSym;
+    break;
   case CI_Service:
-    sortName = "UPPER(Name)" + sortDir;
+    sortName = "UPPER(" + sTeService + ")" + sortDir;
     colNameService += sortSym;
     break;
   case CI_Channel:
-    sortName = "Channel" + sortDir + ", UPPER(Name)" + sortDir;
+    sortName = sTeChannel + sortDir + ", UPPER(" + sTeService + ")" + sortDir;
     colNameChannel += sortSym;
     break;
   case CI_Id:
@@ -114,7 +125,8 @@ MySqlQueryModel * ServiceDB::create_model()
     break;
   }
 
-  query.prepare("SELECT " + colNameService + "," + colNameChannel + "," + colNameId + " FROM TabServList ORDER BY " + sortName);
+  QSqlQuery query;
+  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + "," + colNameId + " FROM " + sTableName + " ORDER BY " + sortName);
 
   if (query.exec())
   {
@@ -122,6 +134,7 @@ MySqlQueryModel * ServiceDB::create_model()
   }
   else
   {
+    _delete_db_file();
     qFatal("Error: Invalid SELECT query: %s", _error_str());
   }
 
@@ -141,6 +154,13 @@ bool ServiceDB::_open_db()
 
 void ServiceDB::_delete_db_file()
 {
+  qCritical("Failure in database -> delete database -> try to restart and scan services again!");
+  
+  if (_open_db())
+  {
+    mDB.close();
+  }
+
   if (std::filesystem::exists(mDbFileName.toStdString()))
   {
     std::filesystem::remove(mDbFileName.toStdString());

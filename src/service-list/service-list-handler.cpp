@@ -12,8 +12,25 @@
  */
 
 #include <QTableView>
+#include <QPainter>
 #include "radio.h"
 #include "service-list-handler.h"
+
+FavoriteDelegate::FavoriteDelegate(QObject * parent /*= nullptr*/) :
+  QStyledItemDelegate(parent)
+{}
+
+void FavoriteDelegate::paint(QPainter * iPainter, const QStyleOptionViewItem & iOption, const QModelIndex & iModelIdx) const
+{
+  assert(iModelIdx.column() == ServiceDB::CI_Fav);
+  const QPixmap & curPM = (iModelIdx.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
+  QRect targetRect = iOption.rect;
+  //targetRect.adjust(2, 2, -2, -2);
+  iPainter->drawPixmap(targetRect, curPM, curPM.rect());
+
+  //QStyledItemDelegate::paint(iPainter, iOption, iModelIdx);
+}
+
 
 ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL) :
   mpTableView(ipSL),
@@ -31,10 +48,9 @@ void ServiceListHandler::update()
   disconnect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
 
   mpTableView->setModel(mServiceDB.create_model());
+  mpTableView->setItemDelegateForColumn(ServiceDB::CI_Fav, &mFavoriteDelegate);  // Adjust the column index
   mpTableView->resizeColumnsToContents();
-  mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so but not the below)
-  //mpTableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-  //mpTableView->verticalHeader()->setDefaultSectionSize(mpTableView->verticalHeader()->minimumSectionSize());
+  mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
   mpTableView->setSelectionMode(QAbstractItemView::SingleSelection); // Allow only one row to be selected at a time
   mpTableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // Select entire rows, not individual items
   //mpTableView->verticalHeader()->hide(); // hide first column
@@ -69,7 +85,6 @@ void ServiceListHandler::_slot_selection_changed(const QItemSelection & selected
 
 void ServiceListHandler::_slot_header_clicked(int iIndex)
 {
-  qDebug() << "Header" << iIndex << "was clicked!";
   mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex));
   update();
 }
