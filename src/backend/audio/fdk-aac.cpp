@@ -115,8 +115,8 @@ int16_t FdkAAC::MP42PCM(stream_parms * sp, uint8_t packet[], int16_t packetLengt
 
   if (info->numChannels == 2)
   {
-    audioBuffer->putDataIntoBuffer(bufp, info->frameSize * 2);
-    if (audioBuffer->GetRingBufferReadAvailable() > (int)info->sampleRate / 8)
+    audioBuffer->put_data_into_ring_buffer(bufp, info->frameSize * 2);
+    if (audioBuffer->get_ring_buffer_read_available() > (int)info->sampleRate / 8)
     {
       emit signal_new_audio(info->frameSize, info->sampleRate,  (sp->psFlag ? RadioInterface::AFL_PS_USED : 0) | (sp->sbrFlag ? RadioInterface::AFL_SBR_USED : 0));
     }
@@ -130,8 +130,8 @@ int16_t FdkAAC::MP42PCM(stream_parms * sp, uint8_t packet[], int16_t packetLengt
       buffer[2 * i + 0] = ((int16_t *)bufp)[i];
       buffer[2 * i + 1] = bufp[2 * i];
     }
-    audioBuffer->putDataIntoBuffer(buffer, info->frameSize * 2);
-    if (audioBuffer->GetRingBufferReadAvailable() > (int)info->sampleRate / 8)
+    audioBuffer->put_data_into_ring_buffer(buffer, info->frameSize * 2);
+    if (audioBuffer->get_ring_buffer_read_available() > (int)info->sampleRate / 8)
     {
       emit signal_new_audio(info->frameSize, info->sampleRate, (sp->psFlag ? RadioInterface::AFL_PS_USED : 0) | (sp->sbrFlag ? RadioInterface::AFL_SBR_USED : 0));
     }
