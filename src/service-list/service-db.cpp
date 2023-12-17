@@ -78,18 +78,42 @@ void ServiceDB::delete_table()
 }
 
 
-void ServiceDB::add_entry(const QString & iChannel, const QString & iServiceName)
+bool ServiceDB::add_entry(const QString & iChannel, const QString & iService)
 {
-  QSqlQuery query;
-  query.prepare("INSERT OR IGNORE INTO " + sTableName + " (" + sTeChannel + "," + sTeService + ") VALUES (:channel, :service)");
-  query.bindValue(":channel", iChannel);
-  query.bindValue(":service", iServiceName);
+#if 0
+  // first check if entry already exists, this avoid new table update afterward
+  QSqlQuery querySearch;
+  querySearch.prepare("SELECT * FROM " + sTableName + " WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
+  querySearch.bindValue(":channel", iChannel);
+  querySearch.bindValue(":service", iService);
 
-  if (!query.exec())
+  if (querySearch.exec())
+  {
+    if (querySearch.next())
+    {
+      return false; // no table update needed
+    }
+  }
+  else
+  {
+    _delete_db_file();
+    qFatal("Error: Search query: %s", _error_str());
+  }
+#endif
+
+  // add new entry
+  QSqlQuery queryAdd;
+  queryAdd.prepare("INSERT OR IGNORE INTO " + sTableName + " (" + sTeChannel + "," + sTeService + ") VALUES (:channel, :service)");
+  queryAdd.bindValue(":channel", iChannel);
+  queryAdd.bindValue(":service", iService);
+
+  if (!queryAdd.exec())
   {
     _delete_db_file();
     qFatal("Error: Unable insert entry: %s", _error_str());
   }
+
+  return true;
 }
 
 MySqlQueryModel * ServiceDB::create_model()

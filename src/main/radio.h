@@ -89,21 +89,20 @@ class TechData;
 
 #include  "ui_config-helper.h"
 
-class dabService
+struct DabService
 {
-public:
   QString channel;
   QString serviceName;
   uint32_t SId;
-  int SCIds;
-  int subChId;
+  int32_t SCIds;
+  int32_t subChId;
   bool valid;
   bool is_audio;
   FILE * fd;
   FILE * frameDumper;
 };
 
-struct theTime
+struct TheTime
 {
   int year;
   int month;
@@ -113,9 +112,8 @@ struct theTime
   int second;
 };
 
-class ChannelDescriptor
+struct ChannelDescriptor
 {
-public:
   QString channelName;
   bool realChannel;
   bool etiActive;
@@ -124,9 +122,9 @@ public:
   QString ensembleName;
   uint8_t mainId;
   uint8_t subId;
-  std::vector<dabService> backgroundServices;
-  dabService currentService;
-  dabService nextService;
+  std::vector<DabService> backgroundServices;
+  DabService currentService;
+  DabService nextService;
   uint32_t Eid;
   bool has_ecc;
   uint8_t ecc_byte;
@@ -137,15 +135,22 @@ public:
   cmplx localPos;
   cmplx targetPos;
   int snr;
-  //QByteArray transmitters;
+  std::set<uint16_t> transmitters;
+
   union STiiId
   {
     STiiId(int mainId, int subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
     explicit STiiId(int fullId) : FullId(fullId) {};
-    uint16_t FullId; struct { uint8_t MainId, SubId; };
+
+    uint16_t FullId;
+    struct
+    {
+      uint8_t MainId;
+      uint8_t SubId;
+    };
   };
-  std::set<uint16_t> transmitters;
-  void cleanChannel()
+
+  void clean_channel()
   {
     realChannel = true;
     serviceCount = -1;
@@ -247,14 +252,14 @@ private:
   QTimer displayTimer;
   QTimer channelTimer;
   QTimer presetTimer;
-  bool mutingActive = false;
+  bool mutingActive = true;
   int32_t numberofSeconds;
   int16_t ficBlocks;
   int16_t ficSuccess;
   int total_ficError;
   int total_fics;
-  struct theTime localTime;
-  struct theTime UTC;
+  struct TheTime localTime;
+  struct TheTime UTC;
   timeTableHandler * my_timeTable;
   FILE * ficDumpPointer;
   bool transmitterTags_local;
@@ -295,8 +300,8 @@ private:
   void stopFramedumping();
   void startChannel(const QString &);
   void stopChannel();
-  void stopService(dabService &);
-  void startService(dabService &);
+  void stopService(DabService &);
+  void startService(DabService &);
   void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
   void localSelect(const QString & s);
   void localSelect(const QString &, const QString &);
@@ -397,8 +402,7 @@ private slots:
   void _slot_channel_timeout();
 
   void _slot_select_service(QModelIndex);
-  void _slot_channel_changed(const QString & iChannel, const QString & iService);
-  void _slot_service_changed(const QString & iService);
+  void _slot_service_changed(const QString & iChannel, const QString & iService);
   void _slot_set_preset_service();
   void _slot_handle_mute_button();
   void _slot_handle_dl_text_button();

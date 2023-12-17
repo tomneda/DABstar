@@ -42,49 +42,122 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   connect(mpTableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &ServiceListHandler::_slot_header_clicked);
 }
 
-void ServiceListHandler::update()
+void ServiceListHandler::_update_from_db()
 {
-  // hope this makes no problem if first time no model is attached to QTableView
-  disconnect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
+  if (mpTableView->selectionModel())  // the first time no model is attached to QTableView
+  {
+    disconnect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
+  }
 
   mpTableView->setModel(mServiceDB.create_model());
   mpTableView->setItemDelegateForColumn(ServiceDB::CI_Fav, &mFavoriteDelegate);  // Adjust the column index
   mpTableView->resizeColumnsToContents();
   mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
-  mpTableView->setSelectionMode(QAbstractItemView::SingleSelection); // Allow only one row to be selected at a time
-  mpTableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // Select entire rows, not individual items
-  //mpTableView->verticalHeader()->hide(); // hide first column
-  mpTableView->show();
+//  mpTableView->setSelectionMode(QAbstractItemView::SingleSelection); // Allow only one row to be selected at a time
+//  mpTableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // Select entire rows, not individual items
+  mpTableView->verticalHeader()->hide(); // hide first column
+//  _show_selection(mpTableView->model()->mod);
+  //mpTableView->show();
 
   connect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
 }
 
-void ServiceListHandler::_slot_selection_changed(const QItemSelection & selected, const QItemSelection & deselected)
+void ServiceListHandler::add_entry_to_db(const QString & iChannel, const QString & iService)
 {
-  const QModelIndexList indexes = selected.indexes();
-
-  if(!indexes.empty())
+  if (mServiceDB.add_entry(iChannel, iService))
   {
-    const int row = indexes.first().row();
+    _update_from_db();
+    set_selector_to_service(mChannelLast, mServiceLast);
+  }
+}
 
-    const QString curService = mpTableView->model()->index(row, ServiceDB::CI_Service).data().toString();
-    const QString curChannel = mpTableView->model()->index(row, ServiceDB::CI_Channel).data().toString();
+void ServiceListHandler::delete_table()
+{
+  mServiceDB.delete_table();
+}
 
-    if (curChannel != mLastChannel)
-    {
-      emit signal_channel_changed(curChannel, curService);
-    }
-    else
-    {
-      emit signal_service_changed(curService);
-    }
+void ServiceListHandler::create_new_table()
+{
+  mServiceDB.create_table();
+  _update_from_db();
+}
 
-    mLastChannel = curChannel;
+void ServiceListHandler::_slot_selection_changed(const QItemSelection & iSelected, const QItemSelection & /*iDeselected*/)
+{
+  const QModelIndexList indexes = iSelected.indexes();
+
+  if (indexes.size() == 1)
+  {
+    const int rowIdx = indexes.first().row();
+
+    QAbstractItemModel *pModel = mpTableView->model();
+    mServiceLast = pModel->index(rowIdx, ServiceDB::CI_Service).data().toString();
+    mChannelLast = pModel->index(rowIdx, ServiceDB::CI_Channel).data().toString();
+
+    emit signal_selection_changed(mChannelLast, mServiceLast);
   }
 }
 
 void ServiceListHandler::_slot_header_clicked(int iIndex)
 {
   mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex));
-  update();
+  _update_from_db();
+  set_selector_to_service(mChannelLast, mServiceLast);
+}
+
+void ServiceListHandler::set_selector_to_service(const QString & iChannel, const QString & iService)
+{
+  qDebug() << "ServiceListHandler: Channel: " << iChannel << ", Service: " << iService;
+
+  if (iChannel.isEmpty() || iService.isEmpty())
+  {
+    return;
+  }
+
+  QAbstractItemModel * pModel = mpTableView->model();
+
+  if (pModel == nullptr)
+  {
+    _update_from_db();
+    pModel = mpTableView->model();
+    assert(pModel != nullptr);
+  }
+
+  QModelIndex foundModIdx;
+
+  for (int rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
+  {
+    QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
+    QModelIndex modIdxService = pModel->index(rowIdx, ServiceDB::CI_Service);
+
+    if (pModel->data(modIdxService).toString() == iService &&
+        pModel->data(modIdxChannel).toString() == iChannel)
+    {
+      foundModIdx = modIdxChannel;
+      break;
+    }
+  }
+
+  if (foundModIdx.isValid())
+  {
+    _show_selection(foundModIdx);
+  }
+}
+
+void ServiceListHandler::_show_selection(const QModelIndex & iModelIdx) const
+{
+  QAbstractItemModel * pModel = mpTableView->model();
+  QItemSelectionModel * const pSm = mpTableView->selectionModel();
+
+  if (pModel == nullptr || pSm == nullptr)
+  {
+    return;
+  }
+
+  pSm->blockSignals(true); // avoid a recursive call to _slot_selection_changed()
+  QItemSelection rowSelection(pModel->index(iModelIdx.row(), ServiceDB::CI_Service), pModel->index(iModelIdx.row(), ServiceDB::CI_Channel));
+  pSm->select(rowSelection, QItemSelectionModel::ClearAndSelect);
+  mpTableView->scrollTo(iModelIdx, QAbstractItemView::EnsureVisible);
+  mpTableView->update();
+  pSm->blockSignals(false);
 }

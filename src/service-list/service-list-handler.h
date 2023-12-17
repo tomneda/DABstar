@@ -43,25 +43,29 @@ public:
   explicit ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL);
   ~ServiceListHandler() override = default;
 
-  ServiceDB & DB() { return mServiceDB; }
-  void update();
+  void delete_table();
+  void create_new_table();
+  void add_entry_to_db(const QString & iChannel, const QString & iService);
+  void set_selector_to_service(const QString & iChannel, const QString & iService);
 
 private:
   QTableView * const mpTableView;
-  QStandardItemModel mModel{};
   ServiceDB mServiceDB;
-  QString mLastChannel;
   FavoriteDelegate mFavoriteDelegate{};
+  QString mChannelLast;
+  QString mServiceLast;
+
+  void _update_from_db();
+  void _show_selection(const QModelIndex & iModelIdx) const;
 
 public slots:
 
 private slots:
-  void _slot_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
+  void _slot_selection_changed(const QItemSelection &iSelected, const QItemSelection &iDeselected);
   void _slot_header_clicked(int iIndex);
 
 signals:
-  void signal_channel_changed(const QString & oChannel, const QString & oService);
-  void signal_service_changed(const QString & oService);
+  void signal_selection_changed(const QString & oChannel, const QString & oService);
 };
 
 

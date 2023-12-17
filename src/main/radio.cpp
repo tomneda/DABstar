@@ -361,7 +361,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #else
   picturesPath	= checkDir (QDir::homePath ());
 #endif
-  picturesPath += PRJ_NAME "-files/";
+  picturesPath += PRJ_NAME "/PIC/";
   picturesPath = dabSettings->value("picturesPath", picturesPath).toString();
   picturesPath = checkDir(picturesPath);
   filePath = dabSettings->value("filePath", picturesPath).toString();
@@ -375,7 +375,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #else
   epgPath		= checkDir (QDir::homePath ());
 #endif
-  epgPath += PRJ_NAME "-files/";
+  epgPath += PRJ_NAME "/EPG/";
   epgPath = dabSettings->value("epgPath", epgPath).toString();
   epgPath = checkDir(epgPath);
   connect(&epgProcessor, &epgDecoder::signal_set_epg_data, this, &RadioInterface::slot_set_epg_data);
@@ -612,7 +612,7 @@ bool RadioInterface::doStart()
     channelSelector->setCurrentIndex(0);
   }
   my_dabProcessor = new DabProcessor(this, mpInputDevice, &globals);
-  channel.cleanChannel();
+  channel.clean_channel();
 
   //	Some hidden buttons can be made visible now
   connectGUI();
@@ -743,7 +743,7 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
   serviceList = insert_sorted(serviceList, ed);
   //serviceList.push_back(ed);
   
-  mpServiceListHandler->DB().add_entry(channel.channelName, ed.name);
+  mpServiceListHandler->add_entry_to_db(channel.channelName, ed.name);
 
   model.clear();
   for (const auto & serv: serviceList)
@@ -765,8 +765,6 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
     presetTimer.stop();
     _slot_set_preset_service();
   }
-
-  mpServiceListHandler->update();
 }
 
 //
@@ -934,7 +932,7 @@ void RadioInterface::save_MOTtext(QByteArray & result, int contentType, QString 
   }
   else
   {
-    fprintf(stdout, "going to write file %s\n", textName.toUtf8().data());
+    fprintf(stdout, "going to write text file %s\n", textName.toUtf8().data());
     (void)fwrite(result.data(), 1, result.length(), x);
     fclose(x);
   }
@@ -1001,7 +999,7 @@ void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, const QSt
     }
     else
     {
-      fprintf(stdout, "going to write file %s\n", pict.toUtf8().data());
+      fprintf(stdout, "going to write picture file %s\n", pict.toUtf8().data());
       (void)fwrite(data.data(), 1, data.length(), x);
       fclose(x);
     }
@@ -1103,7 +1101,7 @@ void RadioInterface::slot_change_in_configuration()
   {
     return;
   }
-  dabService s;
+  DabService s;
   if (channel.currentService.valid)
   {
     s = channel.currentService;
@@ -2002,7 +2000,7 @@ void RadioInterface::_slot_handle_reset_button()
   stopChannel();
   startChannel(channelName);
 }
-//
+
 ////////////////////////////////////////////////////////////////////////
 //
 //	dump handling
@@ -2219,12 +2217,11 @@ void RadioInterface::connectGUI()
   connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
-  connect(mpServiceListHandler.get(), &ServiceListHandler::signal_channel_changed, this, &RadioInterface::_slot_channel_changed);
-  connect(mpServiceListHandler.get(), &ServiceListHandler::signal_service_changed, this, &RadioInterface::_slot_service_changed);
   connect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   connect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   connect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
+  connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
 }
 
 void RadioInterface::disconnectGUI()
@@ -2244,12 +2241,11 @@ void RadioInterface::disconnectGUI()
   disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
-  disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_channel_changed, this, &RadioInterface::_slot_channel_changed);
-  disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_service_changed, this, &RadioInterface::_slot_service_changed);
   disconnect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   disconnect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   disconnect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
+  disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
 }
 
 void RadioInterface::closeEvent(QCloseEvent * event)
@@ -2346,7 +2342,7 @@ bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
 
         (void)my_dabProcessor->set_audioChannel(&ad, &audioBuffer, f, BACK_GROUND);
 
-        dabService s;
+        DabService s;
         s.channel = ad.channel;
         s.serviceName = ad.serviceName;
         s.SId = ad.SId;
@@ -2418,14 +2414,9 @@ void RadioInterface::_slot_select_service(QModelIndex ind)
   localSelect(channel.channelName, currentProgram);
 }
 
-void RadioInterface::_slot_channel_changed(const QString & iChannel, const QString & iService)
+void RadioInterface::_slot_service_changed(const QString & iChannel, const QString & iService)
 {
   localSelect(iChannel, iService);
-}
-
-void RadioInterface::_slot_service_changed(const QString & iService)
-{
-  localSelect(channel.channelName, iService);
 }
 
 //	selecting from a content description
@@ -2455,8 +2446,6 @@ void RadioInterface::localSelect(const QString & s)
 
 void RadioInterface::localSelect(const QString & theChannel, const QString & service)
 {
-  QString serviceName = service;
-
   if (my_dabProcessor == nullptr)
   {  // should not happen
     return;
@@ -2464,30 +2453,30 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
 
   stopService(channel.currentService);
 
+  QString serviceName = service;
+
   for (int i = service.size(); i < 16; i++)
   {
     serviceName.push_back(' ');
   }
 
+  // Is it only a service change within the same channel?
   if (theChannel == channel.channelName)
   {
     channel.currentService.valid = false;
-    dabService s;
+    DabService s;
     my_dabProcessor->getParameters(serviceName, &s.SId, &s.SCIds);
     if (s.SId == 0)
     {
       write_warning_message("insufficient data for this program (1)");
       return;
     }
-    s.serviceName = service;
+    s.serviceName = service; // TODO: service or serviceName?
     startService(s);
     return;
   }
-  //
-  //	The hard part is stopping the current service,
-  //	quitting the current channel,
-  //      selecting a new channel,
-  //      waiting a while
+
+  // The hard part is stopping the current service, quitting the current channel, selecting a new channel, waiting a while
   stopChannel();
   //      and start the new channel first
   int k = channelSelector->findText(theChannel);
@@ -2518,7 +2507,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
 //
 ///////////////////////////////////////////////////////////////////////////
 
-void RadioInterface::stopService(dabService & s)
+void RadioInterface::stopService(DabService & s)
 {
   presetTimer.stop();
   channelTimer.stop();
@@ -2600,7 +2589,7 @@ void RadioInterface::stopService(dabService & s)
 
 //
 //
-void RadioInterface::startService(dabService & s)
+void RadioInterface::startService(DabService & s)
 {
   QString serviceName = s.serviceName;
 
@@ -2613,8 +2602,10 @@ void RadioInterface::startService(dabService & s)
   //	mark the selected service in the service list
   int rowCount = model.rowCount();
   (void)rowCount;
+
   colorServiceName(serviceName, Qt::red, 16, true);
-  //
+  mpServiceListHandler->set_selector_to_service(channel.channelName, serviceName);
+
   //	and display the servicename on the serviceLabel
   QFont font = serviceLabel->font();
   font.setPointSize(20);
@@ -2807,7 +2798,7 @@ void RadioInterface::handle_serviceButton(direction d)
         {
           i = (i - 1 + serviceList.size()) % serviceList.size();
         }
-        dabService s;
+        DabService s;
         my_dabProcessor->getParameters(serviceList.at(i).name, &s.SId, &s.SCIds);
         if (s.SId == 0)
         {
@@ -2862,7 +2853,7 @@ void RadioInterface::_slot_set_preset_service()
     presetName.push_back(' ');
   }
 
-  dabService s;
+  DabService s;
   s.serviceName = presetName;
   my_dabProcessor->getParameters(presetName, &s.SId, &s.SCIds);
   if (s.SId == 0)
@@ -2900,7 +2891,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   model.clear();
   ensembleDisplay->setModel(&model);
   mpInputDevice->restartReader(tunedFrequencyHz);
-  channel.cleanChannel();
+  channel.clean_channel();
   channel.channelName = theChannel;
   //dabSettings->setValue("channel", theChannel);
   channel.nominalFreqHz = tunedFrequencyHz;
@@ -2945,7 +2936,7 @@ void RadioInterface::stopChannel()
 
   for (uint16_t i = 0; i < channel.backgroundServices.size(); i++)
   {
-    dabService s = channel.backgroundServices.at(i);
+    DabService s = channel.backgroundServices.at(i);
     my_dabProcessor->stop_service(s.subChId, BACK_GROUND);
     if (s.fd != nullptr)
     {
@@ -2980,7 +2971,7 @@ void RadioInterface::stopChannel()
   show_pause_slide();
   presetTimer.stop();
   channelTimer.stop();
-  channel.cleanChannel();
+  channel.clean_channel();
   channel.targetPos = cmplx(0, 0);
   if (transmitterTags_local && (mapHandler != nullptr))
   {
@@ -3114,9 +3105,8 @@ void RadioInterface::startScanning()
 //    my_scanTable->clearTable();
 //  }
 
-  mpServiceListHandler->DB().delete_table();
-  mpServiceListHandler->DB().create_table();
-  mpServiceListHandler->update();
+  mpServiceListHandler->delete_table();
+  mpServiceListHandler->create_new_table();
 
   QString topLine = QString("ensemble") + ";" + "channelName" + ";" + "frequency (KHz)" + ";" + "Eid" + ";" + "time" + ";" + "tii" + ";" + "SNR" + ";" + "nr services" + ";";
 //  my_scanTable->addLine(topLine);
@@ -3322,7 +3312,7 @@ void RadioInterface::_slot_handle_switch_delay_setting(int newV)
   dabSettings->setValue("switchDelay", newV);
 }
 
-void RadioInterface::_slot_handle_save_service_selector(int d)
+void RadioInterface::_slot_handle_save_service_selector(int d) // TODO: is that choice useful? Always active?
 {
   (void)d;
   dabSettings->setValue("has-presetName", configWidget.saveServiceSelector->isChecked() ? 1 : 0);
@@ -3371,7 +3361,7 @@ void RadioInterface::slot_epg_timer_timeout()
         configWidget.EPGLabel->show();
         fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
         my_dabProcessor->set_dataChannel(&pd, &dataBuffer, BACK_GROUND);
-        dabService s;
+        DabService s;
         s.channel = pd.channel;
         s.serviceName = pd.serviceName;
         s.SId = pd.SId;

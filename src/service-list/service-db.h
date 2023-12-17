@@ -42,7 +42,7 @@ public:
 
   void create_table();
   void delete_table();
-  void add_entry(const QString & iChannel, const QString & iServiceName);
+  bool add_entry(const QString & iChannel, const QString & iService);
   void sort_column(const EColIdx iColIdx);
 
   MySqlQueryModel * create_model();

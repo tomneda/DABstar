@@ -395,7 +395,7 @@
        <item>
         <widget class="QCheckBox" name="saveSlides">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, slides (pictures) appearing during transmissions are being saved to&lt;span style=&quot; font-weight:600;&quot;&gt; /tmp/DABstar-files/&lt;/span&gt; (under Linux)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, slides (pictures) appearing during transmissions are being saved to&lt;span style=&quot; font-weight:600;&quot;&gt; /tmp/DABstar/PIC/&lt;/span&gt; (under Linux)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Save slides</string>
