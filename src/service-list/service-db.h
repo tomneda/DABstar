@@ -44,6 +44,7 @@ public:
   void delete_table();
   bool add_entry(const QString & iChannel, const QString & iService);
   void sort_column(const EColIdx iColIdx);
+  void set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite);
 
   MySqlQueryModel * create_model();
 

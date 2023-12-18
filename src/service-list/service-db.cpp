@@ -80,7 +80,7 @@ void ServiceDB::delete_table()
 
 bool ServiceDB::add_entry(const QString & iChannel, const QString & iService)
 {
-#if 0
+#if 1
   // first check if entry already exists, this avoid new table update afterward
   QSqlQuery querySearch;
   querySearch.prepare("SELECT * FROM " + sTableName + " WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
@@ -197,6 +197,20 @@ void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx)
   mSortColIdx = iColIdx;
 }
 
+void ServiceDB::set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite)
+{
+  QSqlQuery queryAdd;
+  queryAdd.prepare("UPDATE " + sTableName + " SET " + sTeIsFav + " = :isFav WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
+  queryAdd.bindValue(":channel", iChannel);
+  queryAdd.bindValue(":service", iService);
+  queryAdd.bindValue(":isFav",   (iIsFavorite ? 1 : 0));
+
+  if (!queryAdd.exec())
+  {
+    qCritical("Error: updating favorite: %s", _error_str());
+  }
+}
+
 QVariant MySqlQueryModel::data(const QModelIndex & index, int role) const
 {
   // certain columns should be right aligned
@@ -207,6 +221,8 @@ QVariant MySqlQueryModel::data(const QModelIndex & index, int role) const
     case ServiceDB::CI_Channel:
     case ServiceDB::CI_Id:
       return Qt::AlignRight + Qt::AlignVCenter;
+//    case ServiceDB::CI_Fav:
+//      return Qt::AlignHCenter + Qt::AlignVCenter;
     }
   }
 

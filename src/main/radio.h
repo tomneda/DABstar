@@ -266,6 +266,7 @@ private:
   size_t previous_idle_time = 0;
   size_t previous_total_time = 0;
   std::unique_ptr<ServiceListHandler> mpServiceListHandler;
+  bool mCurFavoriteState = false;
 
   static QStringList get_soft_bit_gen_names();
   bool eventFilter(QObject * obj, QEvent * event) override;
@@ -326,6 +327,7 @@ private:
 
   static QString get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor) ;
   void setup_ui_colors();
+  void set_favorite_button_style();
 
 signals:
   void signal_set_new_channel(int);
@@ -403,6 +405,8 @@ private slots:
 
   void _slot_select_service(QModelIndex);
   void _slot_service_changed(const QString & iChannel, const QString & iService);
+  void _slot_favorite_changed(const bool iIsFav);
+  void _slot_handle_favorite_button(bool iClicked);
   void _slot_set_preset_service();
   void _slot_handle_mute_button();
   void _slot_handle_dl_text_button();

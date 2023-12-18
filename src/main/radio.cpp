@@ -142,7 +142,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 {
   int16_t k;
   QString h;
-  uint8_t dabBand;
 
   dabSettings = Si;
   this->error_report = error_report;
@@ -194,6 +193,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   setup_ui_colors();
 
   QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection); // only the queued call will consider the button size?!
+  QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false)); // only the queued call will consider the button size?!
 
   //setWindowIcon(QIcon(":res/DABplusLogoWB.png"));
 
@@ -396,7 +396,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	restore some settings from previous incarnations
   QString t = dabSettings->value("dabBand", "VHF Band III").toString();
-  dabBand = t == "VHF Band III" ? BAND_III : L_BAND;
+  const uint8_t dabBand = (t == "VHF Band III" ? BAND_III : L_BAND);
 
   theBand.setupChannels(channelSelector, dabBand);
   QString skipfileName = dabSettings->value("skipFile", "").toString();
@@ -2222,6 +2222,8 @@ void RadioInterface::connectGUI()
   connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   connect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
+  connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_changed, this, &RadioInterface::_slot_favorite_changed);
+  connect(btnFav, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
 }
 
 void RadioInterface::disconnectGUI()
@@ -2246,6 +2248,8 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   disconnect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
+  disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_changed, this, &RadioInterface::_slot_favorite_changed);
+  disconnect(btnFav, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
 }
 
 void RadioInterface::closeEvent(QCloseEvent * event)
@@ -2419,6 +2423,12 @@ void RadioInterface::_slot_service_changed(const QString & iChannel, const QStri
   localSelect(iChannel, iService);
 }
 
+void RadioInterface::_slot_favorite_changed(const bool iIsFav)
+{
+  mCurFavoriteState = iIsFav;
+  set_favorite_button_style();
+}
+
 //	selecting from a content description
 void RadioInterface::slot_handle_content_selector(const QString & s)
 {
@@ -2435,7 +2445,7 @@ void RadioInterface::localSelect(const QString & s)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   QStringList list = s.split(":", Qt::SkipEmptyParts);
 #else
-  QStringList list = s.split (":", QString::SkipEmptyParts);
+  QStringList list = s.split(":", QString::SkipEmptyParts);
 #endif
   if (list.length() != 2)
   {
@@ -3892,5 +3902,19 @@ void RadioInterface::setup_ui_colors()
   nextServiceButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
   prevChannelButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
   nextChannelButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
+  btnFav->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
 }
 
+void RadioInterface::_slot_handle_favorite_button(bool iClicked)
+{
+  mCurFavoriteState = !mCurFavoriteState;
+  set_favorite_button_style();
+  mpServiceListHandler->set_favorite(mCurFavoriteState);
+}
+
+void RadioInterface::set_favorite_button_style()
+{
+  btnFav->setIcon(QIcon(mCurFavoriteState ? ":res/icons/starfilled16.png" : ":res/icons/starempty16.png"));
+  btnFav->setIconSize(QSize(16, 16));
+  btnFav->setFixedSize(QSize(32, 32));
+}
