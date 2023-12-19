@@ -19,27 +19,19 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
 #include <QVariant>
+#include <QtDebug>
+#include <QCoreApplication>
+#include <utility>
 
-static const QString sTableName = "TabServList";
-static const QString sTeService = "Service";
-static const QString sTeChannel = "Channel";
-static const QString sTeIsFav   = "IsFav";
+static const QString sTabServList = "TabServList";
+static const QString sTabFavList  = "TabFavList";
+static const QString sTeService   = "Service";
+static const QString sTeChannel   = "Channel";
+static const QString sTeIsFav     = "IsFav";
 
-ServiceDB::ServiceDB(const QString & iDbFileName) :
-  mDbFileName(iDbFileName)
+ServiceDB::ServiceDB(QString iDbFileName) :
+  mDbFileName(std::move(iDbFileName)) // clang-tidy wants it so...
 {
-  mDB = QSqlDatabase::addDatabase("QSQLITE");
-
-  if (!_open_db())
-  {
-    qCritical("Error: Unable to establish a database connection: %s. Try deleting database and repeat...", _error_str());
-    _delete_db_file(); // emergency delete, hoping next start will work with new database
-
-    if (!_open_db())
-    {
-      qFatal("Error: Unable to establish a database connection: %s", _error_str());
-    }
-  }
 }
 
 ServiceDB::~ServiceDB()
@@ -47,70 +39,78 @@ ServiceDB::~ServiceDB()
   mDB.close();
 }
 
+void ServiceDB::open_db()
+{
+  mDB = QSqlDatabase::addDatabase("QSQLITE");
+
+  if (!_open_db())
+  {
+    qCritical() << "Error: Unable to establish a database connection: %s. Try deleting database and repeat..." << _error_str();
+    _delete_db_file(); // emergency delete, hoping next start will work with new database
+
+    if (!_open_db())
+    {
+      qCritical() << "Error: Unable to establish a database connection: " << _error_str();
+      QCoreApplication::exit(1);
+    }
+  }
+  // the code will exit if table could not be opened (qFatal does this)
+}
+
 void ServiceDB::create_table()
 {
-  const QString queryStr = "CREATE TABLE IF NOT EXISTS "+ sTableName + " ("
-                           "Id      INTEGER PRIMARY KEY,"
-                           + sTeChannel + " TEXT NOT NULL,"
-                           + sTeService + " TEXT NOT NULL,"
-                           + sTeIsFav   + " INTEGER DEFAULT 0,"
-                           "UNIQUE("+ sTeChannel + "," + sTeService + ") ON CONFLICT IGNORE"
-                           ");";
+  const QString queryStr1 = "CREATE TABLE IF NOT EXISTS " + sTabServList + " ("
+                            "Id      INTEGER PRIMARY KEY,"
+                            + sTeChannel + " TEXT NOT NULL,"
+                            + sTeService + " TEXT NOT NULL,"
+                            + sTeIsFav + " INTEGER DEFAULT 0,"
+                            "UNIQUE(" + sTeChannel + "," + sTeService + ") ON CONFLICT IGNORE"
+                            ");";
 
-  QSqlQuery query;
+  const QString queryStr2 = "CREATE TABLE IF NOT EXISTS " + sTabFavList + " ("
+                            "Id      INTEGER PRIMARY KEY,"
+                            + sTeChannel + " TEXT NOT NULL,"
+                            + sTeService + " TEXT NOT NULL,"
+                            "UNIQUE(" + sTeChannel + "," + sTeService + ") ON CONFLICT IGNORE"
+                            ");";
 
-  if (!query.exec(queryStr))
-  {
-    _delete_db_file();
-    qFatal("Error: Failed to create table: %s", _error_str());
-  }
-
+  _exec_simple_query(queryStr1);
+  _exec_simple_query(queryStr2);
 }
 
-void ServiceDB::delete_table()
+void ServiceDB::delete_table(const bool iDeleteFavorites)
 {
-  QSqlQuery query;
-  if (!query.exec("DROP TABLE IF EXISTS " + sTableName + ";"))
+  _exec_simple_query("DROP TABLE IF EXISTS " + sTabServList + ";");
+
+  if (iDeleteFavorites)
   {
-    _delete_db_file();
-    qFatal("Error: Failed to delete table: %s", _error_str());
+    _exec_simple_query("DROP TABLE IF EXISTS " + sTabFavList + ";");
   }
 }
+
 
 
 bool ServiceDB::add_entry(const QString & iChannel, const QString & iService)
 {
 #if 1
-  // first check if entry already exists, this avoid new table update afterward
-  QSqlQuery querySearch;
-  querySearch.prepare("SELECT * FROM " + sTableName + " WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
-  querySearch.bindValue(":channel", iChannel);
-  querySearch.bindValue(":service", iService);
-
-  if (querySearch.exec())
+  if (_check_if_entry_exists(sTabServList, iChannel, iService))
   {
-    if (querySearch.next())
-    {
-      return false; // no table update needed
-    }
-  }
-  else
-  {
-    _delete_db_file();
-    qFatal("Error: Search query: %s", _error_str());
+    return false; // entry found, no table update needed
   }
 #endif
 
   // add new entry
   QSqlQuery queryAdd;
-  queryAdd.prepare("INSERT OR IGNORE INTO " + sTableName + " (" + sTeChannel + "," + sTeService + ") VALUES (:channel, :service)");
+  queryAdd.prepare("INSERT OR IGNORE INTO " + sTabServList + " (" + sTeChannel + "," + sTeService + ") VALUES (:channel, :service)");
   queryAdd.bindValue(":channel", iChannel);
   queryAdd.bindValue(":service", iService);
 
   if (!queryAdd.exec())
   {
+    const QString dbErr = _error_str(); // next command could destroy this information
     _delete_db_file();
-    qFatal("Error: Unable insert entry: %s", _error_str());
+    qCritical() << "Error: Unable insert entry: " << dbErr;
+    QCoreApplication::exit(1);
   }
 
   return true;
@@ -124,7 +124,7 @@ MySqlQueryModel * ServiceDB::create_model()
   const QString sortSym = (mSortDesc ? "↑" : "↓");
 
   QString sortName;
-  QString colNameIsFav   = sTeIsFav   + " AS Fav";
+  QString colNameIsFav   = sTeIsFav + " AS Fav";
   QString colNameService = sTeService + " AS Service";
   QString colNameChannel = sTeChannel + " AS Ch";
   QString colNameId      = "Id AS Id";
@@ -150,7 +150,7 @@ MySqlQueryModel * ServiceDB::create_model()
   }
 
   QSqlQuery query;
-  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + "," + colNameId + " FROM " + sTableName + " ORDER BY " + sortName);
+  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + "," + colNameId + " FROM " + sTabServList + " ORDER BY " + sortName);
 
   if (query.exec())
   {
@@ -158,16 +158,13 @@ MySqlQueryModel * ServiceDB::create_model()
   }
   else
   {
+    const QString dbErr = _error_str(); // next command could destroy this information
     _delete_db_file();
-    qFatal("Error: Invalid SELECT query: %s", _error_str());
+    qCritical() << "Error: Invalid SELECT query: " << dbErr;
+    QCoreApplication::exit(1);
   }
 
   return model;
-}
-
-const char * ServiceDB::_error_str() const
-{
-  return mDB.lastError().text().toStdString().c_str();
 }
 
 bool ServiceDB::_open_db()
@@ -197,17 +194,103 @@ void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx)
   mSortColIdx = iColIdx;
 }
 
-void ServiceDB::set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite)
+void ServiceDB::set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite, const bool iStoreInFavTable /*= true*/)
 {
-  QSqlQuery queryAdd;
-  queryAdd.prepare("UPDATE " + sTableName + " SET " + sTeIsFav + " = :isFav WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
-  queryAdd.bindValue(":channel", iChannel);
-  queryAdd.bindValue(":service", iService);
-  queryAdd.bindValue(":isFav",   (iIsFavorite ? 1 : 0));
+  QSqlQuery updateQuery;
+  updateQuery.prepare("UPDATE " + sTabServList + " SET " + sTeIsFav + " = :isFav WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
+  updateQuery.bindValue(":channel", iChannel);
+  updateQuery.bindValue(":service", iService);
+  updateQuery.bindValue(":isFav", (iIsFavorite ? 1 : 0));
 
-  if (!queryAdd.exec())
+  if (!updateQuery.exec())
   {
-    qCritical("Error: updating favorite: %s", _error_str());
+    qCritical() << "Error: Updating favorite: " << _error_str();
+  }
+
+  if (iStoreInFavTable)
+  {
+    QSqlQuery addQuery;
+    if (iIsFavorite)
+    {
+      addQuery.prepare("INSERT OR IGNORE INTO " + sTabFavList + " (" + sTeChannel + "," + sTeService + ") VALUES (:channel, :service)");
+    }
+    else
+    {
+      addQuery.prepare("DELETE FROM " + sTabFavList + " WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
+    }
+    addQuery.bindValue(":channel", iChannel);
+    addQuery.bindValue(":service", iService);
+
+    if (!addQuery.exec())
+    {
+      qCritical() << "Error: Unable insert favorite table entry: " << _error_str();
+    }
+  }
+}
+
+QString ServiceDB::_error_str() const
+{
+  return mDB.lastError().text(); // make a copy of the string as the DB object could be invalid when using it
+}
+
+void ServiceDB::_exec_simple_query(const QString & iQuery)
+{
+  QSqlQuery query;
+
+  if (!query.exec(iQuery))
+  {
+    const QString dbErr = _error_str(); // next command could destroy this information
+    _delete_db_file();
+    qCritical() << "Error: Failed to execute '" << iQuery << "': " << dbErr;
+    QCoreApplication::exit(1);
+  }
+}
+
+bool ServiceDB::_check_if_entry_exists(const QString & iTableName, const QString & iChannel, const QString & iService)
+{
+  // first check if entry already exists, this avoid new table update afterward
+  QSqlQuery querySearch;
+  querySearch.prepare("SELECT * FROM " + iTableName + " WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
+  querySearch.bindValue(":channel", iChannel);
+  querySearch.bindValue(":service", iService);
+
+  if (querySearch.exec())
+  {
+    if (querySearch.next())
+    {
+      return true; // entry found
+    }
+  }
+  else
+  {
+    const QString dbErr = _error_str(); // next command could destroy this information
+    _delete_db_file();
+    qCritical() << "Error: Search query with table '" << iTableName << "': " << dbErr;
+    QCoreApplication::exit(1);
+  }
+  return false; // no entry found
+}
+
+void ServiceDB::retrieve_favorites_from_backup_table()
+{
+  QSqlQuery favQuery;
+
+  if (favQuery.exec("SELECT * FROM " + sTabFavList))
+  {
+    while (favQuery.next())
+    {
+      // found entries are wanted favorites
+      const QString channel = favQuery.value(sTeChannel).toString();
+      const QString service = favQuery.value(sTeService).toString();
+      set_favorite(channel, service, true, false);
+    }
+  }
+  else
+  {
+    const QString dbErr = _error_str(); // next command could destroy this information
+    _delete_db_file();
+    qCritical() << "Error: Retrieve query with table '" << sTabFavList << "': " << dbErr;
+    QCoreApplication::exit(1);
   }
 }
 
@@ -221,8 +304,6 @@ QVariant MySqlQueryModel::data(const QModelIndex & index, int role) const
     case ServiceDB::CI_Channel:
     case ServiceDB::CI_Id:
       return Qt::AlignRight + Qt::AlignVCenter;
-//    case ServiceDB::CI_Fav:
-//      return Qt::AlignHCenter + Qt::AlignVCenter;
     }
   }
 

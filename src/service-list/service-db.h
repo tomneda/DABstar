@@ -29,7 +29,7 @@ public:
 class ServiceDB
 {
 public:
-  explicit ServiceDB(const QString & iDbFileName);
+  explicit ServiceDB(const QString iDbFileName); // copy is intended
   ~ServiceDB();
 
   enum EColIdx
@@ -40,12 +40,13 @@ public:
     CI_Id      = 3
   };
 
+  void open_db();
   void create_table();
-  void delete_table();
+  void delete_table(const bool iDeleteFavorites);
   bool add_entry(const QString & iChannel, const QString & iService);
   void sort_column(const EColIdx iColIdx);
-  void set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite);
-
+  void set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite, const bool iStoreInFavTable = true);
+  void retrieve_favorites_from_backup_table();
   MySqlQueryModel * create_model();
 
 private:
@@ -54,9 +55,11 @@ private:
   EColIdx mSortColIdx = CI_Service;
   bool mSortDesc = false;
 
-  [[nodiscard]] const char * _error_str() const;
+  [[nodiscard]] QString _error_str() const;
   void _delete_db_file();
   bool _open_db();
+  void _exec_simple_query(const QString & iQuery);
+  bool _check_if_entry_exists(const QString & iTableName, const QString & iChannel, const QString & iService);
 };
 
 #endif

@@ -3115,7 +3115,7 @@ void RadioInterface::startScanning()
 //    my_scanTable->clearTable();
 //  }
 
-  mpServiceListHandler->delete_table();
+  mpServiceListHandler->delete_table(false);
   mpServiceListHandler->create_new_table();
 
   QString topLine = QString("ensemble") + ";" + "channelName" + ";" + "frequency (KHz)" + ";" + "Eid" + ";" + "time" + ";" + "tii" + ";" + "SNR" + ";" + "nr services" + ";";
@@ -3151,6 +3151,7 @@ void RadioInterface::stopScanning(bool dump)
     dynamicLabel->setText("Scan ended");
     channelTimer.stop();
     scanning.store(false);
+    mpServiceListHandler->restore_favorites(); // try to restore former favorites from an backup table
   }
 }
 

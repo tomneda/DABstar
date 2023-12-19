@@ -23,17 +23,20 @@
 class RadioInterface;
 class QTableView;
 
-class FavoriteDelegate : public QStyledItemDelegate
+class MyItemDelegate : public QStyledItemDelegate
 {
 public:
-  explicit FavoriteDelegate(QObject * parent = nullptr);
-  ~FavoriteDelegate() override = default;
+  explicit MyItemDelegate(QObject * parent = nullptr);
+  ~MyItemDelegate() override = default;
 
   void paint(QPainter * iPainter, const QStyleOptionViewItem & iOption, const QModelIndex & iModelIdx) const override;
 
+  inline void set_current_channel(const QString & iChannel) { mCurChannel = iChannel; }
+
 private:
-  QPixmap mStarEmptyPixmap{":res/icons/starempty16.png"}; // draw a star icon for favorites
-  QPixmap mStarFilledPixmap{":res/icons/starfilled16.png"}; // draw a star icon for favorites
+  const QPixmap mStarEmptyPixmap{":res/icons/starempty16.png"}; // draw a star icon for favorites
+  const QPixmap mStarFilledPixmap{":res/icons/starfilled16.png"}; // draw a star icon for favorites
+  QString mCurChannel;
 };
 
 class ServiceListHandler : public QObject
@@ -43,16 +46,17 @@ public:
   explicit ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL);
   ~ServiceListHandler() override = default;
 
-  void delete_table();
+  void delete_table(const bool iDeleteFavorites);
   void create_new_table();
   void add_entry_to_db(const QString & iChannel, const QString & iService);
-  void set_favorite(const bool iIsFavorite);
   void set_selector_to_service(const QString & iChannel, const QString & iService);
+  void set_favorite(const bool iIsFavorite);
+  void restore_favorites();
 
 private:
   QTableView * const mpTableView;
   ServiceDB mServiceDB;
-  FavoriteDelegate mFavoriteDelegate;
+  MyItemDelegate mMyItemDelegate;
   QString mChannelLast;
   QString mServiceLast;
 

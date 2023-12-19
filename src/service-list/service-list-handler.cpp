@@ -16,26 +16,37 @@
 #include "radio.h"
 #include "service-list-handler.h"
 
-FavoriteDelegate::FavoriteDelegate(QObject * parent /*= nullptr*/) :
+MyItemDelegate::MyItemDelegate(QObject * parent /*= nullptr*/) :
   QStyledItemDelegate(parent)
 {}
 
-void FavoriteDelegate::paint(QPainter * iPainter, const QStyleOptionViewItem & iOption, const QModelIndex & iModelIdx) const
+void MyItemDelegate::paint(QPainter * iPainter, const QStyleOptionViewItem & iOption, const QModelIndex & iModelIdx) const
 {
-  assert(iModelIdx.column() == ServiceDB::CI_Fav);
+  const QAbstractItemModel * pModel = iModelIdx.model();
+  const QModelIndex modIdxChannel = pModel->index(iModelIdx.row(), ServiceDB::CI_Channel);
 
-//  if (iModelIdx.row() % 2 == 0)
-//  {
-//    iPainter->fillRect(iOption.rect, QColor(200, 220, 255)); // Adjust the color as needed
-//  }
+  if (pModel->data(modIdxChannel).toString() == mCurChannel)
+  {
+    iPainter->fillRect(iOption.rect, QColor(40, 0, 90));
+  }
+  else
+  {
+    iPainter->fillRect(iOption.rect, QColor(60, 0, 60));
+  }
 
-  const QPixmap & curPM = (iModelIdx.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
+  if (iModelIdx.column() == ServiceDB::CI_Fav)
+  {
+    const QPixmap & curPM = (iModelIdx.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
 
-  // Calculate the position to center the pixmap within the item rectangle
-  const int x = iOption.rect.x() + (iOption.rect.width()  - 16) / 2; // 16 = width of icon
-  const int y = iOption.rect.y() + (iOption.rect.height() - 16) / 2; // 16 = height of icon
+    // Calculate the position to center the pixmap within the item rectangle
+    const int x = iOption.rect.x() + (iOption.rect.width() - 16) / 2; // 16 = width of icon
+    const int y = iOption.rect.y() + (iOption.rect.height() - 16) / 2; // 16 = height of icon
 
-  iPainter->drawPixmap(x, y, curPM);
+    iPainter->drawPixmap(x, y, curPM);
+    return;
+  }
+
+  QStyledItemDelegate::paint(iPainter, iOption, iModelIdx);
 }
 
 
@@ -43,9 +54,10 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   mpTableView(ipSL),
   mServiceDB(iDbFileName)
 {
+  mServiceDB.open_db(); // program will exit if table could not be opened
   //mServiceDB.delete_table();
   mServiceDB.create_table();
-
+  _update_from_db();
   connect(mpTableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &ServiceListHandler::_slot_header_clicked);
 }
 
@@ -57,10 +69,11 @@ void ServiceListHandler::_update_from_db()
   }
 
   mpTableView->setModel(mServiceDB.create_model());
-  mpTableView->setItemDelegateForColumn(ServiceDB::CI_Fav, &mFavoriteDelegate);  // Adjust the column index
+  //mpTableView->setItemDelegateForColumn(ServiceDB::CI_Fav, &mFavoriteDelegate);  // Adjust the column index
+  mpTableView->setItemDelegate(&mMyItemDelegate);  // Adjust the column index
   mpTableView->resizeColumnsToContents();
   mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
-  mpTableView->verticalHeader()->hide(); // hide first column
+  //mpTableView->verticalHeader()->hide(); // hide first column
 
   connect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
 }
@@ -74,9 +87,9 @@ void ServiceListHandler::add_entry_to_db(const QString & iChannel, const QString
   }
 }
 
-void ServiceListHandler::delete_table()
+void ServiceListHandler::delete_table(const bool iDeleteFavorites)
 {
-  mServiceDB.delete_table();
+  mServiceDB.delete_table(iDeleteFavorites);
 }
 
 void ServiceListHandler::create_new_table()
@@ -99,6 +112,7 @@ void ServiceListHandler::set_selector_to_service(const QString & iChannel, const
 
   mChannelLast = iChannel;
   mServiceLast = iService;
+  mMyItemDelegate.set_current_channel(mChannelLast);
 
   _set_selector_to_service();
 }
@@ -156,6 +170,7 @@ void ServiceListHandler::_slot_selection_changed(const QItemSelection & iSelecte
     mServiceLast = pModel->index(rowIdx, ServiceDB::CI_Service).data().toString();
     mChannelLast = pModel->index(rowIdx, ServiceDB::CI_Channel).data().toString();
     const bool isFav = pModel->index(rowIdx, ServiceDB::CI_Fav).data().toBool();
+    mMyItemDelegate.set_current_channel(mChannelLast);
 
     emit signal_selection_changed(mChannelLast, mServiceLast);  // triggers an service change in radio.h
     emit signal_favorite_changed(isFav); // this emit speeds up the FavButton setting, the other one is more important
@@ -190,6 +205,13 @@ void ServiceListHandler::_show_selection(const QModelIndex & iModelIdx) const
 void ServiceListHandler::set_favorite(const bool iIsFavorite)
 {
   mServiceDB.set_favorite(mChannelLast, mServiceLast, iIsFavorite);
+  _update_from_db();
+  _set_selector_to_service();
+}
+
+void ServiceListHandler::restore_favorites()
+{
+  mServiceDB.retrieve_favorites_from_backup_table();
   _update_from_db();
   _set_selector_to_service();
 }
