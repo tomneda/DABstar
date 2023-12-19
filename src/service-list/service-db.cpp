@@ -18,6 +18,7 @@
 #include <QtSql/QSql>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
+#include <QtSql/QSqlQueryModel>
 #include <QVariant>
 #include <QtDebug>
 #include <QCoreApplication>
@@ -28,6 +29,29 @@ static const QString sTabFavList  = "TabFavList";
 static const QString sTeService   = "Service";
 static const QString sTeChannel   = "Channel";
 static const QString sTeIsFav     = "IsFav";
+
+#if 0
+class CustomSqlQueryModel : public QSqlQueryModel
+{
+  using QSqlQueryModel::QSqlQueryModel;
+public:
+  [[nodiscard]] QVariant data(const QModelIndex & index, int role) const override
+  {
+    // certain columns should be right aligned
+    if (role == Qt::TextAlignmentRole)
+    {
+      switch (index.column())
+      {
+      case ServiceDB::CI_Channel:
+      case ServiceDB::CI_Id:
+        return Qt::AlignRight + Qt::AlignVCenter;
+      }
+    }
+
+    return QSqlQueryModel::data(index, role);
+  }
+};
+#endif
 
 ServiceDB::ServiceDB(QString iDbFileName) :
   mDbFileName(std::move(iDbFileName)) // clang-tidy wants it so...
@@ -92,12 +116,10 @@ void ServiceDB::delete_table(const bool iDeleteFavorites)
 
 bool ServiceDB::add_entry(const QString & iChannel, const QString & iService)
 {
-#if 1
   if (_check_if_entry_exists(sTabServList, iChannel, iService))
   {
     return false; // entry found, no table update needed
   }
-#endif
 
   // add new entry
   QSqlQuery queryAdd;
@@ -116,9 +138,10 @@ bool ServiceDB::add_entry(const QString & iChannel, const QString & iService)
   return true;
 }
 
-MySqlQueryModel * ServiceDB::create_model()
+QAbstractItemModel * ServiceDB::create_model()
 {
-  MySqlQueryModel * model = new MySqlQueryModel;
+  //CustomSqlQueryModel * model = new CustomSqlQueryModel;
+  auto * const model = new QSqlQueryModel;
 
   const QString sortDir = (mSortDesc ? " DESC" : " ASC");
   const QString sortSym = (mSortDesc ? "↑" : "↓");
@@ -127,7 +150,7 @@ MySqlQueryModel * ServiceDB::create_model()
   QString colNameIsFav   = sTeIsFav + " AS Fav";
   QString colNameService = sTeService + " AS Service";
   QString colNameChannel = sTeChannel + " AS Ch";
-  QString colNameId      = "Id AS Id";
+  //QString colNameId      = "Id AS Id";
 
   switch (mSortColIdx)
   {
@@ -143,14 +166,14 @@ MySqlQueryModel * ServiceDB::create_model()
     sortName = sTeChannel + sortDir + ", UPPER(" + sTeService + ")" + sortDir;
     colNameChannel += sortSym;
     break;
-  case CI_Id:
-    sortName = "Id" + sortDir;
-    colNameId      += sortSym;
-    break;
+//  case CI_Id:
+//    sortName = "Id" + sortDir;
+//    colNameId      += sortSym;
+//    break;
   }
 
   QSqlQuery query;
-  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + "," + colNameId + " FROM " + sTabServList + " ORDER BY " + sortName);
+  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + /*"," + colNameId*/ + " FROM " + sTabServList + " ORDER BY " + sortName);
 
   if (query.exec())
   {
@@ -167,34 +190,41 @@ MySqlQueryModel * ServiceDB::create_model()
   return model;
 }
 
-bool ServiceDB::_open_db()
-{
-  mDB.setDatabaseName(mDbFileName);
-  return mDB.open();
-}
-
-void ServiceDB::_delete_db_file()
-{
-  qCritical("Failure in database -> delete database -> try to restart and scan services again!");
-  
-  if (_open_db())
-  {
-    mDB.close();
-  }
-
-  if (std::filesystem::exists(mDbFileName.toStdString()))
-  {
-    std::filesystem::remove(mDbFileName.toStdString());
-  }
-}
-
 void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx)
 {
   mSortDesc = (mSortColIdx == iColIdx && !mSortDesc); // change sorting direction with choosing the same column again or reset to asc sorting
   mSortColIdx = iColIdx;
 }
 
-void ServiceDB::set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite, const bool iStoreInFavTable /*= true*/)
+void ServiceDB::set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite)
+{
+  _set_favorite(iChannel, iService, iIsFavorite, true);
+}
+
+void ServiceDB::retrieve_favorites_from_backup_table()
+{
+  QSqlQuery favQuery;
+
+  if (favQuery.exec("SELECT * FROM " + sTabFavList))
+  {
+    while (favQuery.next())
+    {
+      // found entries are wanted favorites
+      const QString channel = favQuery.value(sTeChannel).toString();
+      const QString service = favQuery.value(sTeService).toString();
+      _set_favorite(channel, service, true, false);
+    }
+  }
+  else
+  {
+    const QString dbErr = _error_str(); // next command could destroy this information
+    _delete_db_file();
+    qCritical() << "Error: Retrieve query with table '" << sTabFavList << "': " << dbErr;
+    QCoreApplication::exit(1);
+  }
+}
+
+void ServiceDB::_set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite, const bool iStoreInFavTable /*= true*/) const
 {
   QSqlQuery updateQuery;
   updateQuery.prepare("UPDATE " + sTabServList + " SET " + sTeIsFav + " = :isFav WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
@@ -225,6 +255,27 @@ void ServiceDB::set_favorite(const QString & iChannel, const QString & iService,
     {
       qCritical() << "Error: Unable insert favorite table entry: " << _error_str();
     }
+  }
+}
+
+bool ServiceDB::_open_db()
+{
+  mDB.setDatabaseName(mDbFileName);
+  return mDB.open();
+}
+
+void ServiceDB::_delete_db_file()
+{
+  qCritical("Failure in database -> delete database -> try to restart and scan services again!");
+
+  if (_open_db())
+  {
+    mDB.close();
+  }
+
+  if (std::filesystem::exists(mDbFileName.toStdString()))
+  {
+    std::filesystem::remove(mDbFileName.toStdString());
   }
 }
 
@@ -269,43 +320,4 @@ bool ServiceDB::_check_if_entry_exists(const QString & iTableName, const QString
     QCoreApplication::exit(1);
   }
   return false; // no entry found
-}
-
-void ServiceDB::retrieve_favorites_from_backup_table()
-{
-  QSqlQuery favQuery;
-
-  if (favQuery.exec("SELECT * FROM " + sTabFavList))
-  {
-    while (favQuery.next())
-    {
-      // found entries are wanted favorites
-      const QString channel = favQuery.value(sTeChannel).toString();
-      const QString service = favQuery.value(sTeService).toString();
-      set_favorite(channel, service, true, false);
-    }
-  }
-  else
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Retrieve query with table '" << sTabFavList << "': " << dbErr;
-    QCoreApplication::exit(1);
-  }
-}
-
-QVariant MySqlQueryModel::data(const QModelIndex & index, int role) const
-{
-  // certain columns should be right aligned
-  if (role == Qt::TextAlignmentRole)
-  {
-    switch (index.column())
-    {
-    case ServiceDB::CI_Channel:
-    case ServiceDB::CI_Id:
-      return Qt::AlignRight + Qt::AlignVCenter;
-    }
-  }
-
-  return QSqlQueryModel::data(index, role);
 }

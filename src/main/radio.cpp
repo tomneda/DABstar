@@ -743,7 +743,7 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
   serviceList = insert_sorted(serviceList, ed);
   //serviceList.push_back(ed);
   
-  mpServiceListHandler->add_entry_to_db(channel.channelName, ed.name);
+  mpServiceListHandler->add_entry(channel.channelName, ed.name);
 
   model.clear();
   for (const auto & serv: serviceList)
@@ -2222,7 +2222,7 @@ void RadioInterface::connectGUI()
   connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   connect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
-  connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_changed, this, &RadioInterface::_slot_favorite_changed);
+  connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   connect(btnFav, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
 }
 
@@ -2248,7 +2248,7 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   disconnect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
-  disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_changed, this, &RadioInterface::_slot_favorite_changed);
+  disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   disconnect(btnFav, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
 }
 
@@ -2614,7 +2614,7 @@ void RadioInterface::startService(DabService & s)
   (void)rowCount;
 
   colorServiceName(serviceName, Qt::red, 16, true);
-  mpServiceListHandler->set_selector_to_service(channel.channelName, serviceName);
+  mpServiceListHandler->set_selector(channel.channelName, serviceName);
 
   //	and display the servicename on the serviceLabel
   QFont font = serviceLabel->font();

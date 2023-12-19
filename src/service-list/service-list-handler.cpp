@@ -16,37 +16,48 @@
 #include "radio.h"
 #include "service-list-handler.h"
 
-MyItemDelegate::MyItemDelegate(QObject * parent /*= nullptr*/) :
-  QStyledItemDelegate(parent)
-{}
-
-void MyItemDelegate::paint(QPainter * iPainter, const QStyleOptionViewItem & iOption, const QModelIndex & iModelIdx) const
+void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-  const QAbstractItemModel * pModel = iModelIdx.model();
-  const QModelIndex modIdxChannel = pModel->index(iModelIdx.row(), ServiceDB::CI_Channel);
+  const QAbstractItemModel * pModel = index.model();
+  const QModelIndex modIdxChannel = pModel->index(index.row(), ServiceDB::CI_Channel);
+  const QModelIndex modIdxService = pModel->index(index.row(), ServiceDB::CI_Service);
+  const bool isLiveChannel = (pModel->data(modIdxChannel).toString() == mCurChannel);
+  const bool isLiveService = (pModel->data(modIdxService).toString() == mCurService);
 
-  if (pModel->data(modIdxChannel).toString() == mCurChannel)
-  {
-    iPainter->fillRect(iOption.rect, QColor(40, 0, 90));
-  }
-  else
-  {
-    iPainter->fillRect(iOption.rect, QColor(60, 0, 60));
-  }
+  // see: https://colorpicker.me
+  painter->fillRect(option.rect, (isLiveChannel ? (isLiveService ? 0x864e1a : 0x28005a) : 0x3c003c)); // background color
 
-  if (iModelIdx.column() == ServiceDB::CI_Fav)
+  if (index.column() == ServiceDB::CI_Fav)
   {
-    const QPixmap & curPM = (iModelIdx.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
+    const QPixmap & curPM = (index.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
 
     // Calculate the position to center the pixmap within the item rectangle
-    const int x = iOption.rect.x() + (iOption.rect.width() - 16) / 2; // 16 = width of icon
-    const int y = iOption.rect.y() + (iOption.rect.height() - 16) / 2; // 16 = height of icon
+    const int x = option.rect.x() + (option.rect.width()  - 16) / 2; // 16 = width of icon
+    const int y = option.rect.y() + (option.rect.height() - 16) / 2; // 16 = height of icon
 
-    iPainter->drawPixmap(x, y, curPM);
+    painter->drawPixmap(x, y, curPM);
     return;
   }
 
-  QStyledItemDelegate::paint(iPainter, iOption, iModelIdx);
+  QStyledItemDelegate::paint(painter, option, index);
+}
+
+bool CustomItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
+{
+  if (event->type() == QEvent::MouseButtonPress)
+  {
+    const QString channel = model->data(model->index(index.row(), ServiceDB::CI_Channel)).toString();
+    const QString service = model->data(model->index(index.row(), ServiceDB::CI_Service)).toString();
+    const bool    isFav   = model->data(model->index(index.row(), ServiceDB::CI_Fav)).toBool();
+
+    emit signal_selection_changed(channel, service, isFav);
+
+    //qDebug() << "Mouse click on cell: " << channel << ", " << service << ", " << isFav << " at " << index.row() << ", " << index.column();
+
+    return true; // Indicate that the event is handled
+  }
+
+  return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
 
@@ -54,36 +65,26 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   mpTableView(ipSL),
   mServiceDB(iDbFileName)
 {
+  mpTableView->setItemDelegate(&mCustomItemDelegate);
+  mpTableView->setSelectionMode(QAbstractItemView::NoSelection);
+  mpTableView->verticalHeader()->hide(); // hide first column
+  mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
+
   mServiceDB.open_db(); // program will exit if table could not be opened
   //mServiceDB.delete_table();
   mServiceDB.create_table();
-  _update_from_db();
+  _fill_table_view_from_db();
+
   connect(mpTableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &ServiceListHandler::_slot_header_clicked);
+  connect(&mCustomItemDelegate, &CustomItemDelegate::signal_selection_changed, this, &ServiceListHandler::_slot_selection_changed);
 }
 
-void ServiceListHandler::_update_from_db()
+void ServiceListHandler::add_entry(const QString & iChannel, const QString & iService)
 {
-  if (mpTableView->selectionModel())  // the first time no model is attached to QTableView
+  if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
   {
-    disconnect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
-  }
-
-  mpTableView->setModel(mServiceDB.create_model());
-  //mpTableView->setItemDelegateForColumn(ServiceDB::CI_Fav, &mFavoriteDelegate);  // Adjust the column index
-  mpTableView->setItemDelegate(&mMyItemDelegate);  // Adjust the column index
-  mpTableView->resizeColumnsToContents();
-  mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
-  //mpTableView->verticalHeader()->hide(); // hide first column
-
-  connect(mpTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceListHandler::_slot_selection_changed);
-}
-
-void ServiceListHandler::add_entry_to_db(const QString & iChannel, const QString & iService)
-{
-  if (mServiceDB.add_entry(iChannel, iService))
-  {
-    _update_from_db();
-    _set_selector_to_service();
+    _fill_table_view_from_db();
+    _jump_to_list_entry_and_emit_fav_status();
   }
 }
 
@@ -95,10 +96,10 @@ void ServiceListHandler::delete_table(const bool iDeleteFavorites)
 void ServiceListHandler::create_new_table()
 {
   mServiceDB.create_table();
-  _update_from_db();
+  _fill_table_view_from_db();
 }
 
-void ServiceListHandler::set_selector_to_service(const QString & iChannel, const QString & iService)
+void ServiceListHandler::set_selector(const QString & iChannel, const QString & iService)
 {
   if (iChannel.isEmpty() || iService.isEmpty())
   {
@@ -112,30 +113,42 @@ void ServiceListHandler::set_selector_to_service(const QString & iChannel, const
 
   mChannelLast = iChannel;
   mServiceLast = iService;
-  mMyItemDelegate.set_current_channel(mChannelLast);
+  mCustomItemDelegate.set_current_service(mChannelLast, mServiceLast);
 
-  _set_selector_to_service();
+  _jump_to_list_entry_and_emit_fav_status();
 }
 
-void ServiceListHandler::_set_selector_to_service()
+void ServiceListHandler::set_favorite(const bool iIsFavorite)
+{
+  mServiceDB.set_favorite(mChannelLast, mServiceLast, iIsFavorite);
+  _fill_table_view_from_db();
+  _jump_to_list_entry_and_emit_fav_status();
+}
+
+void ServiceListHandler::restore_favorites()
+{
+  mServiceDB.retrieve_favorites_from_backup_table();
+  _fill_table_view_from_db();
+  _jump_to_list_entry_and_emit_fav_status();
+}
+
+void ServiceListHandler::_fill_table_view_from_db()
+{
+  mpTableView->setModel(mServiceDB.create_model());
+  mpTableView->resizeColumnsToContents();
+}
+
+void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status()
 {
   if (mChannelLast.isEmpty() || mServiceLast.isEmpty())
   {
     return;
   }
 
-  qDebug() << "ServiceListHandler: Channel: " << mChannelLast << ", Service: " << mServiceLast;
+  //qDebug() << "ServiceListHandler: Channel: " << mChannelLast << ", Service: " << mServiceLast;
 
-  QAbstractItemModel * pModel = mpTableView->model();
-
-  if (pModel == nullptr)
-  {
-    _update_from_db();
-    pModel = mpTableView->model();
-    assert(pModel != nullptr);
-  }
-
-  QModelIndex foundModIdx;
+  const QAbstractItemModel * const pModel = mpTableView->model();
+  assert(pModel != nullptr);
 
   for (int rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
   {
@@ -145,74 +158,32 @@ void ServiceListHandler::_set_selector_to_service()
     if (pModel->data(modIdxService).toString() == mServiceLast &&
         pModel->data(modIdxChannel).toString() == mChannelLast)
     {
-      foundModIdx = modIdxChannel;
+      mpTableView->scrollTo(modIdxChannel, QAbstractItemView::EnsureVisible);
+      mpTableView->update();
+
       const bool isFav = pModel->data(pModel->index(rowIdx, ServiceDB::CI_Fav)).toBool();
-      emit signal_favorite_changed(isFav);
+      emit signal_favorite_status(isFav);
       break;
     }
   }
-
-  if (foundModIdx.isValid())
-  {
-    _show_selection(foundModIdx);
-  }
 }
 
-void ServiceListHandler::_slot_selection_changed(const QItemSelection & iSelected, const QItemSelection & /*iDeselected*/)
+void ServiceListHandler::_slot_selection_changed(const QString & iChannel, const QString & iService, const bool iIsFav)
 {
-  const QModelIndexList indexes = iSelected.indexes();
-
-  if (indexes.size() == 1)
-  {
-    const int rowIdx = indexes.first().row();
-
-    QAbstractItemModel *pModel = mpTableView->model();
-    mServiceLast = pModel->index(rowIdx, ServiceDB::CI_Service).data().toString();
-    mChannelLast = pModel->index(rowIdx, ServiceDB::CI_Channel).data().toString();
-    const bool isFav = pModel->index(rowIdx, ServiceDB::CI_Fav).data().toBool();
-    mMyItemDelegate.set_current_channel(mChannelLast);
-
-    emit signal_selection_changed(mChannelLast, mServiceLast);  // triggers an service change in radio.h
-    emit signal_favorite_changed(isFav); // this emit speeds up the FavButton setting, the other one is more important
-  }
+  mChannelLast = iChannel;
+  mServiceLast = iService;
+  mCustomItemDelegate.set_current_service(mChannelLast, mServiceLast);
+  mpTableView->update();
+  
+  emit signal_selection_changed(mChannelLast, mServiceLast);  // triggers an service change in radio.h
+  emit signal_favorite_status(iIsFav); // this emit speeds up the FavButton setting, the other one is more important
 }
 
 void ServiceListHandler::_slot_header_clicked(int iIndex)
 {
   mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex));
-  _update_from_db();
-  _set_selector_to_service();
+  _fill_table_view_from_db();
+  _jump_to_list_entry_and_emit_fav_status();
 }
 
-void ServiceListHandler::_show_selection(const QModelIndex & iModelIdx) const
-{
-  QAbstractItemModel * pModel = mpTableView->model();
-  QItemSelectionModel * const pSm = mpTableView->selectionModel();
-
-  if (pModel == nullptr || pSm == nullptr)
-  {
-    return;
-  }
-
-  pSm->blockSignals(true); // avoid a recursive call to _slot_selection_changed()
-  QItemSelection rowSelection(pModel->index(iModelIdx.row(), ServiceDB::CI_Service), pModel->index(iModelIdx.row(), ServiceDB::CI_Channel));
-  pSm->select(rowSelection, QItemSelectionModel::ClearAndSelect);
-  mpTableView->scrollTo(iModelIdx, QAbstractItemView::EnsureVisible);
-  mpTableView->update();
-  pSm->blockSignals(false);
-}
-
-void ServiceListHandler::set_favorite(const bool iIsFavorite)
-{
-  mServiceDB.set_favorite(mChannelLast, mServiceLast, iIsFavorite);
-  _update_from_db();
-  _set_selector_to_service();
-}
-
-void ServiceListHandler::restore_favorites()
-{
-  mServiceDB.retrieve_favorites_from_backup_table();
-  _update_from_db();
-  _set_selector_to_service();
-}
 

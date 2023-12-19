@@ -23,20 +23,25 @@
 class RadioInterface;
 class QTableView;
 
-class MyItemDelegate : public QStyledItemDelegate
+class CustomItemDelegate : public QStyledItemDelegate
 {
+  using QStyledItemDelegate::QStyledItemDelegate;
+  Q_OBJECT
 public:
-  explicit MyItemDelegate(QObject * parent = nullptr);
-  ~MyItemDelegate() override = default;
+  inline void set_current_service(const QString & iChannel, const QString & iService) { mCurChannel = iChannel; mCurService = iService; }
 
-  void paint(QPainter * iPainter, const QStyleOptionViewItem & iOption, const QModelIndex & iModelIdx) const override;
-
-  inline void set_current_channel(const QString & iChannel) { mCurChannel = iChannel; }
+protected:
+  void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+  bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 private:
   const QPixmap mStarEmptyPixmap{":res/icons/starempty16.png"}; // draw a star icon for favorites
   const QPixmap mStarFilledPixmap{":res/icons/starfilled16.png"}; // draw a star icon for favorites
   QString mCurChannel;
+  QString mCurService;
+
+signals:
+  void signal_selection_changed(const QString & oChannel, const QString & oService, const bool oIsFav);
 };
 
 class ServiceListHandler : public QObject
@@ -48,31 +53,28 @@ public:
 
   void delete_table(const bool iDeleteFavorites);
   void create_new_table();
-  void add_entry_to_db(const QString & iChannel, const QString & iService);
-  void set_selector_to_service(const QString & iChannel, const QString & iService);
+  void add_entry(const QString & iChannel, const QString & iService);
+  void set_selector(const QString & iChannel, const QString & iService);
   void set_favorite(const bool iIsFavorite);
   void restore_favorites();
 
 private:
   QTableView * const mpTableView;
   ServiceDB mServiceDB;
-  MyItemDelegate mMyItemDelegate;
+  CustomItemDelegate mCustomItemDelegate;
   QString mChannelLast;
   QString mServiceLast;
 
-  void _update_from_db();
-  void _show_selection(const QModelIndex & iModelIdx) const;
-  void _set_selector_to_service();
-
-public slots:
+  void _fill_table_view_from_db();
+  void _jump_to_list_entry_and_emit_fav_status();
 
 private slots:
-  void _slot_selection_changed(const QItemSelection &iSelected, const QItemSelection &iDeselected);
+  void _slot_selection_changed(const QString & iChannel, const QString & iService, const bool iIsFav);
   void _slot_header_clicked(int iIndex);
 
 signals:
   void signal_selection_changed(const QString & oChannel, const QString & oService);
-  void signal_favorite_changed(const bool oIsFav);
+  void signal_favorite_status(const bool oIsFav);
 };
 
 
