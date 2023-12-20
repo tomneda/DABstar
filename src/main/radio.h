@@ -268,7 +268,7 @@ private:
   bool mCurFavoriteState = false;
 
   static QStringList get_soft_bit_gen_names();
-  bool eventFilter(QObject * obj, QEvent * event) override;
+  //bool eventFilter(QObject * obj, QEvent * event) override;
   uint32_t extract_epg(QString, std::vector<serviceId> & serviceList, uint32_t);
   void show_pause_slide();
   void connectGUI();

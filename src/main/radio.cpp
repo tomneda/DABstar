@@ -313,7 +313,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   theTechWindow->hide();  // until shown otherwise
   serviceList.clear();
   model.clear();
-  ensembleDisplay->setModel(&model);
+  //ensembleDisplay->setModel(&model);
   /*
  */
 #ifdef  DATA_STREAMER
@@ -761,7 +761,7 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
     model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);
   }
 
-  ensembleDisplay->setModel(&model);
+  //ensembleDisplay->setModel(&model);
   if (channel.serviceCount == model.rowCount() && !scanning)
   {
     presetTimer.stop();
@@ -1136,7 +1136,7 @@ void RadioInterface::slot_change_in_configuration()
   {
     model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);
   }
-  ensembleDisplay->setModel(&model);
+  //ensembleDisplay->setModel(&model);
   //
   if (channel.etiActive)
   {
@@ -2208,7 +2208,7 @@ void RadioInterface::connectGUI()
   connect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
-  connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
+  //connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   connect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   connect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
@@ -2232,7 +2232,7 @@ void RadioInterface::disconnectGUI()
   disconnect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
-  disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
+  //disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   disconnect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   disconnect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
@@ -2265,6 +2265,7 @@ void RadioInterface::closeEvent(QCloseEvent * event)
   }
 }
 
+#if 0
 bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
 {
   if (!running.load())
@@ -2280,7 +2281,7 @@ bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
 
   if (event->type() == QEvent::KeyPress)
   {
-    QKeyEvent * ke = static_cast <QKeyEvent *> (event);
+    QKeyEvent * ke = static_cast<QKeyEvent *>(event);
     if (ke->key() == Qt::Key_Return)
     {
       presetTimer.stop();
@@ -2352,6 +2353,7 @@ bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
 
   return QWidget::eventFilter(obj, event);
 }
+#endif
 
 void RadioInterface::colorServiceName(const QString & serviceName, QColor color, int fS, bool italic)
 {
@@ -2889,7 +2891,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   mpInputDevice->resetBuffer();
   serviceList.clear();
   model.clear();
-  ensembleDisplay->setModel(&model);
+  //ensembleDisplay->setModel(&model);
   mpInputDevice->restartReader(tunedFrequencyHz);
   channel.clean_channel();
   channel.channelName = theChannel;
@@ -2997,7 +2999,7 @@ void RadioInterface::stopChannel()
 
   serviceList.clear();
   model.clear();
-  ensembleDisplay->setModel(&model);
+  //ensembleDisplay->setModel(&model);
   cleanScreen();
   configWidget.EPGLabel->hide();
   distanceLabel->setText("");

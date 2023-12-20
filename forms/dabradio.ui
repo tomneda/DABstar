@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>963</width>
+    <width>719</width>
     <height>489</height>
    </rect>
   </property>
@@ -16,42 +16,7 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_5">
-   <item>
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <widget class="QWidget" name="leftPane" native="true">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>3</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QListView" name="ensembleDisplay">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-            <horstretch>2</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <family>DejaVu Sans</family>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selecting a service is by clicking with the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;left &lt;/span&gt;mouse button on the name of the service.&lt;/p&gt;&lt;p&gt;Clicking with the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;right mouse button on the name of the selected service &lt;/span&gt;in this list will add the service to the presets.&lt;/p&gt;&lt;p&gt;Clicking with the right mouse button on the name of any other of the listed (audio)services will start a background process, with which the AAC frames are stored onto a file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
-   </item>
+  <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="2,1">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
