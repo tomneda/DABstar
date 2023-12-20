@@ -2749,16 +2749,18 @@ void RadioInterface::cleanScreen()
 
 void RadioInterface::_slot_handle_prev_service_button()
 {
-  disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
-  handle_serviceButton(BACKWARDS);
-  connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
+  mpServiceListHandler->jump_entries(-1);
+//  disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
+//  handle_serviceButton(BACKWARDS);
+//  connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
 }
 
 void RadioInterface::_slot_handle_next_service_button()
 {
-  disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
-  handle_serviceButton(FORWARD);
-  connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  mpServiceListHandler->jump_entries(+1);
+//  disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+//  handle_serviceButton(FORWARD);
+//  connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
 }
 
 //	Previous and next services. trivial implementation

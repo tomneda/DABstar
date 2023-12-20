@@ -41,7 +41,7 @@ private:
   QString mCurService;
 
 signals:
-  void signal_selection_changed(const QString & oChannel, const QString & oService, const bool oIsFav);
+  void signal_selection_changed_with_fav(const QString & oChannel, const QString & oService, const bool oIsFav);
 };
 
 class ServiceListHandler : public QObject
@@ -57,6 +57,7 @@ public:
   void set_selector(const QString & iChannel, const QString & iService);
   void set_favorite(const bool iIsFavorite);
   void restore_favorites();
+  void jump_entries(int32_t iSteps); // typ -1/+1, with wrap around
 
 private:
   QTableView * const mpTableView;
@@ -66,10 +67,10 @@ private:
   QString mServiceLast;
 
   void _fill_table_view_from_db();
-  void _jump_to_list_entry_and_emit_fav_status();
+  void _jump_to_list_entry_and_emit_fav_status(const int32_t iSkipOffset = 0);
 
 private slots:
-  void _slot_selection_changed(const QString & iChannel, const QString & iService, const bool iIsFav);
+  void _slot_selection_changed_with_fav(const QString & iChannel, const QString & iService, const bool iIsFav);
   void _slot_header_clicked(int iIndex);
 
 signals:

@@ -50,7 +50,7 @@ bool CustomItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model,
     const QString service = model->data(model->index(index.row(), ServiceDB::CI_Service)).toString();
     const bool    isFav   = model->data(model->index(index.row(), ServiceDB::CI_Fav)).toBool();
 
-    emit signal_selection_changed(channel, service, isFav);
+    emit signal_selection_changed_with_fav(channel, service, isFav);
 
     //qDebug() << "Mouse click on cell: " << channel << ", " << service << ", " << isFav << " at " << index.row() << ", " << index.column();
 
@@ -77,7 +77,7 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   _fill_table_view_from_db();
 
   connect(mpTableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &ServiceListHandler::_slot_header_clicked);
-  connect(&mCustomItemDelegate, &CustomItemDelegate::signal_selection_changed, this, &ServiceListHandler::_slot_selection_changed);
+  connect(&mCustomItemDelegate, &CustomItemDelegate::signal_selection_changed_with_fav, this, &ServiceListHandler::_slot_selection_changed_with_fav);
 }
 
 void ServiceListHandler::add_entry(const QString & iChannel, const QString & iService)
@@ -139,7 +139,12 @@ void ServiceListHandler::_fill_table_view_from_db()
   mpTableView->resizeColumnsToContents();
 }
 
-void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status()
+void ServiceListHandler::jump_entries(int32_t iSteps)
+{
+  _jump_to_list_entry_and_emit_fav_status(iSteps);
+}
+
+void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t iSkipOffset /*= 0*/)
 {
   if (mChannelLast.isEmpty() || mServiceLast.isEmpty())
   {
@@ -151,7 +156,9 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status()
   const QAbstractItemModel * const pModel = mpTableView->model();
   assert(pModel != nullptr);
 
-  for (int rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
+  int32_t rowIdxFound = -1;
+
+  for (int32_t rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
   {
     QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
     QModelIndex modIdxService = pModel->index(rowIdx, ServiceDB::CI_Service);
@@ -159,17 +166,36 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status()
     if (pModel->data(modIdxService).toString() == mServiceLast &&
         pModel->data(modIdxChannel).toString() == mChannelLast)
     {
-      mpTableView->scrollTo(modIdxChannel, QAbstractItemView::EnsureVisible);
-      mpTableView->update();
-
-      const bool isFav = pModel->data(pModel->index(rowIdx, ServiceDB::CI_Fav)).toBool();
-      emit signal_favorite_status(isFav);
+      rowIdxFound = rowIdx;
       break;
     }
   }
+
+  if (rowIdxFound >= 0)
+  {
+    const int32_t maxRows = pModel->rowCount();
+    rowIdxFound += iSkipOffset;
+    while (rowIdxFound < 0) rowIdxFound += maxRows;
+    while (rowIdxFound >= maxRows) rowIdxFound -= maxRows;
+
+    if (iSkipOffset != 0) // only trigger new status to the radio frontend if the was changed by a skip
+    {
+      mChannelLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Channel)).toString();
+      mServiceLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Service)).toString();
+      mCustomItemDelegate.set_current_service(mChannelLast, mServiceLast);
+
+      emit signal_selection_changed(mChannelLast, mServiceLast);
+    }
+
+    const bool isFav = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Fav)).toBool();
+    mpTableView->scrollTo(pModel->index(rowIdxFound, ServiceDB::CI_Fav), QAbstractItemView::EnsureVisible);
+    mpTableView->update();
+
+    emit signal_favorite_status(isFav);
+  }
 }
 
-void ServiceListHandler::_slot_selection_changed(const QString & iChannel, const QString & iService, const bool iIsFav)
+void ServiceListHandler::_slot_selection_changed_with_fav(const QString & iChannel, const QString & iService, const bool iIsFav)
 {
   mChannelLast = iChannel;
   mServiceLast = iService;
@@ -186,5 +212,3 @@ void ServiceListHandler::_slot_header_clicked(int iIndex)
   _fill_table_view_from_db();
   _jump_to_list_entry_and_emit_fav_status();
 }
-
-
