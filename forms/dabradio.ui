@@ -64,7 +64,7 @@
          </property>
          <property name="icon">
           <iconset resource="../resources.qrc">
-           <normaloff>:/res/icons/up24.png</normaloff>:/res/icons/up24.png</iconset>
+           <normaloff>:/res/icons/upwht24.png</normaloff>:/res/icons/upwht24.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -81,7 +81,7 @@
          </property>
          <property name="icon">
           <iconset resource="../resources.qrc">
-           <normaloff>:/res/icons/down24.png</normaloff>:/res/icons/down24.png</iconset>
+           <normaloff>:/res/icons/downwht24.png</normaloff>:/res/icons/downwht24.png</iconset>
          </property>
          <property name="iconSize">
           <size>

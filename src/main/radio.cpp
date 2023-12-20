@@ -3849,8 +3849,8 @@ void RadioInterface::setup_ui_colors()
   detailButton->setStyleSheet(get_style_sheet({ 255, 255, 100 }, Qt::black));
   show_spectrumButton->setStyleSheet(get_style_sheet({ 165, 85, 192 }, Qt::white));
 
-  btnPrevService->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
-  btnNextService->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
+  btnPrevService->setStyleSheet(get_style_sheet({ 200, 97, 40 }, Qt::white));
+  btnNextService->setStyleSheet(get_style_sheet({ 200, 97, 40 }, Qt::white));
   btnToggleFavorite->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
 }
 
@@ -3870,6 +3870,8 @@ void RadioInterface::set_favorite_button_style()
 
 void RadioInterface::_slot_set_static_button_style()
 {
+  btnPrevService->setIconSize(QSize(24, 24));
   btnPrevService->setFixedSize(QSize(32, 32));
+  btnNextService->setIconSize(QSize(24, 24));
   btnNextService->setFixedSize(QSize(32, 32));
 }
