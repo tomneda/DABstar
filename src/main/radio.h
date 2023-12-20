@@ -244,7 +244,7 @@ private:
   QString filePath;
   SNDFILE * rawDumper;
   SNDFILE * audioDumper;
-  QStandardItemModel model;
+  //QStandardItemModel model;
   std::vector<serviceId> serviceList;
   std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, const serviceId &);
 
@@ -269,7 +269,7 @@ private:
 
   static QStringList get_soft_bit_gen_names();
   //bool eventFilter(QObject * obj, QEvent * event) override;
-  uint32_t extract_epg(QString, std::vector<serviceId> & serviceList, uint32_t);
+  uint32_t extract_epg(const QString&, const std::vector<serviceId> & iServiceList, uint32_t);
   void show_pause_slide();
   void connectGUI();
   void disconnectGUI();
@@ -302,7 +302,7 @@ private:
   void stopChannel();
   void stopService(DabService &);
   void startService(DabService &);
-  void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
+  //void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
   void localSelect(const QString & s);
   void localSelect(const QString &, const QString &);
   void showServices();
@@ -320,7 +320,7 @@ private:
   void new_channelIndex(int);
 
   std::mutex locker;
-  void colorServiceName(const QString & s, QColor color, int fS, bool);
+  //void colorServiceName(const QString & s, QColor color, int fS, bool);
   void write_warning_message(const QString & iMsg);
   void write_picture(const QPixmap & iPixMap) const;
 

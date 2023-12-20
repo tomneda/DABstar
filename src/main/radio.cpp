@@ -312,7 +312,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   transmitterTags_local = configWidget.transmitterTags->isChecked();
   theTechWindow->hide();  // until shown otherwise
   serviceList.clear();
-  model.clear();
+  //model.clear();
   //ensembleDisplay->setModel(&model);
   /*
  */
@@ -747,26 +747,26 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
   
   mpServiceListHandler->add_entry(channel.channelName, ed.name);
 
-  model.clear();
-  for (const auto & serv: serviceList)
-  {
-    model.appendRow(new QStandardItem(serv.name));
-  }
+//  model.clear();
+//  for (const auto & serv: serviceList)
+//  {
+//    model.appendRow(new QStandardItem(serv.name));
+//  }
 #ifdef  __MINGW32__
                                                                                                                           for (int i = model. rowCount (); i < 12; i ++)
 	   model. appendRow (new QStandardItem ("      "));
 #endif
-  for (int i = 0; i < model.rowCount(); i++)
-  {
-    model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);
-  }
+//  for (int i = 0; i < model.rowCount(); i++)
+//  {
+//    model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);
+//  }
 
   //ensembleDisplay->setModel(&model);
-  if (channel.serviceCount == model.rowCount() && !scanning)
-  {
-    presetTimer.stop();
-    _slot_set_preset_service();
-  }
+//  if (channel.serviceCount == model.rowCount() && !scanning)
+//  {
+//    presetTimer.stop();
+//    _slot_set_preset_service();
+//  }
 }
 
 //
@@ -1126,16 +1126,16 @@ void RadioInterface::slot_change_in_configuration()
   //	we rebuild the services list from the fib and
   //	then we (try to) restart the service
   serviceList = my_dabProcessor->getServices();
-  model.clear();
-  for (const auto & serv: serviceList)
-  {
-    model.appendRow(new QStandardItem(serv.name));
-  }
-  int row = model.rowCount();
-  for (int i = 0; i < row; i++)
-  {
-    model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);
-  }
+//  model.clear();
+//  for (const auto & serv: serviceList)
+//  {
+//    model.appendRow(new QStandardItem(serv.name));
+//  }
+//  int row = model.rowCount();
+//  for (int i = 0; i < row; i++)
+//  {
+//    model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);
+//  }
   //ensembleDisplay->setModel(&model);
   //
   if (channel.etiActive)
@@ -1192,14 +1192,14 @@ void RadioInterface::slot_change_in_configuration()
         channel.backgroundServices.at(i).subChId = pd.subchId;
       }
 
-      for (int j = 0; j < model.rowCount(); j++)
-      {
-        QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
-        if (itemText == ss)
-        {
-          colorService(model.index(j, 0), Qt::blue, fontSize + 2, true);
-        }
-      }
+//      for (int j = 0; j < model.rowCount(); j++)
+//      {
+//        QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
+//        if (itemText == ss)
+//        {
+//          colorService(model.index(j, 0), Qt::blue, fontSize + 2, true);
+//        }
+//      }
     }
   }
 }
@@ -2355,18 +2355,18 @@ bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
 }
 #endif
 
-void RadioInterface::colorServiceName(const QString & serviceName, QColor color, int fS, bool italic)
-{
-  for (int j = 0; j < model.rowCount(); j++)
-  {
-    QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
-    if (itemText == serviceName)
-    {
-      colorService(model.index(j, 0), color, fS, italic);
-      return;
-    }
-  }
-}
+//void RadioInterface::colorServiceName(const QString & serviceName, QColor color, int fS, bool italic)
+//{
+//  for (int j = 0; j < model.rowCount(); j++)
+//  {
+//    QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
+//    if (itemText == serviceName)
+//    {
+//      colorService(model.index(j, 0), color, fS, italic);
+//      return;
+//    }
+//  }
+//}
 
 void RadioInterface::slot_start_announcement(const QString & name, int subChId)
 {
@@ -2565,32 +2565,30 @@ void RadioInterface::stopService(DabService & s)
     //	made back again in the service list. An exception is when another
     //	instance of the service runs as background process, then the
     //	name should be made green, italic
-    for (int i = 0; i < model.rowCount(); i++)
-    {
-      QString itemText = model.index(i, 0).data(Qt::DisplayRole).toString();
-      if (itemText != s.serviceName)
-      {
-        continue;
-      }
-      for (uint16_t j = 0; j < channel.backgroundServices.size(); j++)
-      {
-        if (channel.backgroundServices.at(j).serviceName == s.serviceName)
-        {
-          colorService(model.index(i, 0), Qt::blue, fontSize + 2, true);
-          cleanScreen();
-          return;
-        }
-      }  // ok, service is not background as well
-      colorService(model.index(i, 0), Qt::black, fontSize);
-      break;
-    }
+//    for (int i = 0; i < model.rowCount(); i++)
+//    {
+//      QString itemText = model.index(i, 0).data(Qt::DisplayRole).toString();
+//      if (itemText != s.serviceName)
+//      {
+//        continue;
+//      }
+//      for (uint16_t j = 0; j < channel.backgroundServices.size(); j++)
+//      {
+//        if (channel.backgroundServices.at(j).serviceName == s.serviceName)
+//        {
+//          colorService(model.index(i, 0), Qt::blue, fontSize + 2, true);
+//          cleanScreen();
+//          return;
+//        }
+//      }  // ok, service is not background as well
+//      colorService(model.index(i, 0), Qt::black, fontSize);
+//      break;
+//    }
   }
   show_pause_slide();
   cleanScreen();
 }
 
-//
-//
 void RadioInterface::startService(DabService & s)
 {
   QString serviceName = s.serviceName;
@@ -2602,10 +2600,10 @@ void RadioInterface::startService(DabService & s)
   LOG("service has SNR ", QString::number(channel.snr));
   //
   //	mark the selected service in the service list
-  int rowCount = model.rowCount();
-  (void)rowCount;
+  //int rowCount = model.rowCount();
+  //(void)rowCount;
 
-  colorServiceName(serviceName, Qt::red, 16, true);
+  //colorServiceName(serviceName, Qt::red, 16, true);
   mpServiceListHandler->set_selector(channel.channelName, serviceName);
 
   //	and display the servicename on the serviceLabel
@@ -2661,15 +2659,14 @@ void RadioInterface::startService(DabService & s)
   }
 }
 
-void RadioInterface::colorService(QModelIndex ind, QColor c, int pt, bool italic)
-{
-  QMap<int, QVariant> vMap = model.itemData(ind);
-  vMap.insert(Qt::ForegroundRole, QVariant(QBrush(c)));
-  model.setItemData(ind, vMap);
-  model.setData(ind, QFont(theFont, pt, -1, italic), Qt::FontRole);
-}
+//void RadioInterface::colorService(QModelIndex ind, QColor c, int pt, bool italic)
+//{
+//  QMap<int, QVariant> vMap = model.itemData(ind);
+//  vMap.insert(Qt::ForegroundRole, QVariant(QBrush(c)));
+//  model.setItemData(ind, vMap);
+//  model.setData(ind, QFont(theFont, pt, -1, italic), Qt::FontRole);
+//}
 
-//
 void RadioInterface::startAudioservice(Audiodata * ad)
 {
   channel.currentService.valid = true;
@@ -2791,7 +2788,7 @@ void RadioInterface::handle_serviceButton(direction d)
     {
       if (serviceList.at(i).name == oldService)
       {
-        colorService(model.index(i, 0), Qt::black, fontSize);
+        //colorService(model.index(i, 0), Qt::black, fontSize);
         if (d == FORWARD)
         {
           i = (i + 1) % serviceList.size();
@@ -2890,7 +2887,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   dabSettings->setValue("channel", theChannel);
   mpInputDevice->resetBuffer();
   serviceList.clear();
-  model.clear();
+  //model.clear();
   //ensembleDisplay->setModel(&model);
   mpInputDevice->restartReader(tunedFrequencyHz);
   channel.clean_channel();
@@ -2998,7 +2995,7 @@ void RadioInterface::stopChannel()
   transmitter_coordinates->setText(" ");
 
   serviceList.clear();
-  model.clear();
+  //model.clear();
   //ensembleDisplay->setModel(&model);
   cleanScreen();
   configWidget.EPGLabel->hide();
@@ -3333,15 +3330,15 @@ void RadioInterface::slot_epg_timer_timeout()
         s.fd = nullptr;
         channel.backgroundServices.push_back(s);
 
-        for (int j = 0; j < model.rowCount(); j++)
-        {
-          QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
-          if (itemText == pd.serviceName)
-          {
-            colorService(model.index(j, 0), Qt::blue, fontSize + 2, true);
-            break;
-          }
-        }
+//        for (int j = 0; j < model.rowCount(); j++)
+//        {
+//          QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
+//          if (itemText == pd.serviceName)
+//          {
+//            colorService(model.index(j, 0), Qt::blue, fontSize + 2, true);
+//            break;
+//          }
+//        }
       }
     }
 #ifdef  __DABDATA__
@@ -3373,12 +3370,12 @@ void RadioInterface::slot_epg_timer_timeout()
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 
-uint32_t RadioInterface::extract_epg(QString name, std::vector<serviceId> & serviceList, uint32_t ensembleId)
+uint32_t RadioInterface::extract_epg(const QString& iName, const std::vector<serviceId> & iServiceList, uint32_t ensembleId)
 {
   (void)ensembleId;
-  for (const auto & serv: serviceList)
+  for (const auto & serv: iServiceList)
   {
-    if (name.contains(QString::number(serv.SId, 16), Qt::CaseInsensitive))
+    if (iName.contains(QString::number(serv.SId, 16), Qt::CaseInsensitive))
     {
       return serv.SId;
     }
