@@ -244,7 +244,6 @@ private:
   QString filePath;
   SNDFILE * rawDumper;
   SNDFILE * audioDumper;
-  void set_channelButton(int);
   QStandardItemModel model;
   std::vector<serviceId> serviceList;
   std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, const serviceId &);
@@ -396,8 +395,6 @@ private slots:
   void _slot_handle_prev_service_button();
   void _slot_handle_next_service_button();
   void _slot_handle_channel_selector(const QString &);
-  void _slot_handle_next_channel_button();
-  void _slot_handle_prev_channel_button();
 
   void _slot_terminate_process();
   void _slot_update_time_display();

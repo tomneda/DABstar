@@ -1956,15 +1956,11 @@ void RadioInterface::showButtons()
   configWidget.frequencyDisplay->show();
   scanButton->show();
   channelSelector->show();
-  nextChannelButton->show();
-  prevChannelButton->show();
 #else
   configWidget.dumpButton->setEnabled(true);
   configWidget.frequencyDisplay->setEnabled(true);
   scanButton->setEnabled(true);
   channelSelector->setEnabled(true);
-  nextChannelButton->setEnabled(true);
-  prevChannelButton->setEnabled(true);
 #endif
 }
 
@@ -1975,15 +1971,11 @@ void RadioInterface::hideButtons()
   configWidget.frequencyDisplay->hide();
   scanButton->hide();
   channelSelector->hide();
-  nextChannelButton->hide();
-  prevChannelButton->hide();
 #else
   configWidget.dumpButton->setEnabled(false);
   configWidget.frequencyDisplay->setEnabled(false);
   scanButton->setEnabled(false);
   channelSelector->setEnabled(false);
-  nextChannelButton->setEnabled(false);
-  prevChannelButton->setEnabled(false);
 #endif
 }
 
@@ -2211,8 +2203,6 @@ void RadioInterface::connectGUI()
   connect(show_spectrumButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
   connect(devicewidgetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
   connect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
-  connect(nextChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_channel_button);
-  connect(prevChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_channel_button);
   connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   connect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
@@ -2237,8 +2227,6 @@ void RadioInterface::disconnectGUI()
   disconnect(show_spectrumButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
   disconnect(devicewidgetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
   disconnect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
-  disconnect(nextChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_channel_button);
-  disconnect(prevChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_channel_button);
   disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   disconnect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
@@ -3033,46 +3021,6 @@ void RadioInterface::_slot_handle_channel_selector(const QString & channel)
   stopScanning(false);
   stopChannel();
   startChannel(channel);
-}
-
-void RadioInterface::_slot_handle_next_channel_button()
-{
-  int nrChannels = channelSelector->count();
-  int newChannel = channelSelector->currentIndex() + 1;
-  set_channelButton(newChannel % nrChannels);
-}
-
-void RadioInterface::_slot_handle_prev_channel_button()
-{
-  int nrChannels = channelSelector->count();
-  if (channelSelector->currentIndex() == 0)
-  {
-    set_channelButton(nrChannels - 1);
-  }
-  else
-  {
-    set_channelButton(channelSelector->currentIndex() - 1);
-  }
-}
-
-void RadioInterface::set_channelButton(int currentChannel)
-{
-  if (!running.load())
-  {
-    return;
-  }
-
-  presetTimer.stop();
-  if (my_dabProcessor == nullptr)
-  {
-    fprintf(stderr, "Expert error 23\n");
-    abort();
-  }
-
-  stopScanning(false);
-  stopChannel();
-  new_channelIndex(currentChannel);
-  startChannel(channelSelector->currentText());
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -3902,8 +3850,6 @@ void RadioInterface::setup_ui_colors()
 
   btnPrevService->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
   btnNextService->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
-  prevChannelButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
-  nextChannelButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
   btnToggleFavorite->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
 }
 

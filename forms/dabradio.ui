@@ -47,36 +47,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4"/>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2"/>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_8">
-          <item>
-           <widget class="QPushButton" name="prevChannelButton">
-            <property name="toolTip">
-             <string>Select the previous channel.</string>
-            </property>
-            <property name="text">
-             <string>-</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="nextChannelButton">
-            <property name="toolTip">
-             <string>Select the next channel of the list maintained in the channel selector.</string>
-            </property>
-            <property name="text">
-             <string>+</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
        </layout>
       </widget>
      </item>
