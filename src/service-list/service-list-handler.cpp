@@ -25,7 +25,7 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
   const bool isLiveService = (pModel->data(modIdxService).toString() == mCurService);
 
   // see: https://colorpicker.me
-  painter->fillRect(option.rect, (isLiveChannel ? (isLiveService ? 0x864e1a : 0x28005a) : 0x3c003c)); // background color
+  painter->fillRect(option.rect, (isLiveChannel ? (isLiveService ? 0x864e1a : 0x483421) : 0x423e3a)); // background color
 
   if (index.column() == ServiceDB::CI_Fav)
   {
