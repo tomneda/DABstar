@@ -247,7 +247,7 @@ private:
   void set_channelButton(int);
   QStandardItemModel model;
   std::vector<serviceId> serviceList;
-  std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, serviceId);
+  std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, const serviceId &);
 
   QTimer displayTimer;
   QTimer channelTimer;
@@ -407,6 +407,7 @@ private slots:
   void _slot_service_changed(const QString & iChannel, const QString & iService);
   void _slot_favorite_changed(const bool iIsFav);
   void _slot_handle_favorite_button(bool iClicked);
+  void _slot_set_static_button_style();
   void _slot_set_preset_service();
   void _slot_handle_mute_button();
   void _slot_handle_dl_text_button();

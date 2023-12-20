@@ -69,6 +69,7 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   mpTableView->setSelectionMode(QAbstractItemView::NoSelection);
   mpTableView->verticalHeader()->hide(); // hide first column
   mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
+  //mpTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
   mServiceDB.open_db(); // program will exit if table could not be opened
   //mServiceDB.delete_table();

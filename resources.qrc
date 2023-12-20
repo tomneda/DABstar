@@ -4,9 +4,13 @@
     <file>res/dabstar128x128.png</file>
     <file>res/icons/muted24.png</file>
     <file>res/icons/unmuted24.png</file>
+    <file>res/icons/up24.png</file>
+    <file>res/icons/down24.png</file>
     <file>res/icons/copyright24.png</file>
     <file>res/icons/starempty16.png</file>
     <file>res/icons/starfilled16.png</file>
+    <file>res/icons/starempty24.png</file>
+    <file>res/icons/starfilled24.png</file>
     <file>res/globstyle.qss</file>
   </qresource>
 </RCC>

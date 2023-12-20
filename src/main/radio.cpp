@@ -192,8 +192,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   setup_ui_colors();
 
-  QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection); // only the queued call will consider the button size?!
-  QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false)); // only the queued call will consider the button size?!
+  // only the queued call will consider the button size?!
+  QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection);
+  QMetaObject::invokeMethod(this, &RadioInterface::_slot_set_static_button_style, Qt::QueuedConnection);
+  QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false)); // only this works with arguments
 
   //setWindowIcon(QIcon(":res/DABplusLogoWB.png"));
 
@@ -2211,8 +2213,8 @@ void RadioInterface::connectGUI()
   connect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   connect(nextChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_channel_button);
   connect(prevChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_channel_button);
-  connect(prevServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
-  connect(nextServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
+  connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   connect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
@@ -2223,7 +2225,7 @@ void RadioInterface::connectGUI()
   connect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
-  connect(btnFav, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
+  connect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
 }
 
 void RadioInterface::disconnectGUI()
@@ -2237,8 +2239,8 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   disconnect(nextChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_channel_button);
   disconnect(prevChannelButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_channel_button);
-  disconnect(prevServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
-  disconnect(nextServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
+  disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   disconnect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
@@ -2249,7 +2251,7 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
-  disconnect(btnFav, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
+  disconnect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
 }
 
 void RadioInterface::closeEvent(QCloseEvent * event)
@@ -2760,16 +2762,16 @@ void RadioInterface::cleanScreen()
 
 void RadioInterface::_slot_handle_prev_service_button()
 {
-  disconnect(prevServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
+  disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   handle_serviceButton(BACKWARDS);
-  connect(prevServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
+  connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
 }
 
 void RadioInterface::_slot_handle_next_service_button()
 {
-  disconnect(nextServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   handle_serviceButton(FORWARD);
-  connect(nextServiceButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
 }
 
 //	Previous and next services. trivial implementation
@@ -3238,7 +3240,7 @@ void RadioInterface::showServices()
 
 /////////////////////////////////////////////////////////////////////
 //
-std::vector<serviceId> RadioInterface::insert_sorted(const std::vector<serviceId> & iList, serviceId iEntry)
+std::vector<serviceId> RadioInterface::insert_sorted(const std::vector<serviceId> & iList, const serviceId & iEntry)
 {
   std::vector<serviceId> oList;
 
@@ -3254,13 +3256,13 @@ std::vector<serviceId> RadioInterface::insert_sorted(const std::vector<serviceId
   {
     if (!inserted)
     {
-      if ((baseS < iEntry.name) && (iEntry.name < serv.name))
+      if ((baseS < iEntry.name.toUpper()) && (iEntry.name.toUpper() < serv.name.toUpper()))
       {
         oList.push_back(iEntry);
         inserted = true;
       }
     }
-    baseS = serv.name;
+    baseS = serv.name.toUpper();
     oList.push_back(serv);
   }
 
@@ -3276,8 +3278,8 @@ std::vector<serviceId> RadioInterface::insert_sorted(const std::vector<serviceId
 void RadioInterface::enable_ui_elements_for_safety(const bool iEnable)
 {
   configWidget.dumpButton->setEnabled(iEnable);
-  prevServiceButton->setEnabled(iEnable);
-  nextServiceButton->setEnabled(iEnable);
+  btnPrevService->setEnabled(iEnable);
+  btnNextService->setEnabled(iEnable);
   configWidget.contentButton->setEnabled(iEnable);
 }
 
@@ -3424,11 +3426,10 @@ void RadioInterface::slot_epg_timer_timeout()
 uint32_t RadioInterface::extract_epg(QString name, std::vector<serviceId> & serviceList, uint32_t ensembleId)
 {
   (void)ensembleId;
-  for (auto serv: serviceList)
+  for (const auto & serv: serviceList)
   {
     if (name.contains(QString::number(serv.SId, 16), Qt::CaseInsensitive))
     {
-
       return serv.SId;
     }
   }
@@ -3899,11 +3900,11 @@ void RadioInterface::setup_ui_colors()
   detailButton->setStyleSheet(get_style_sheet({ 255, 255, 100 }, Qt::black));
   show_spectrumButton->setStyleSheet(get_style_sheet({ 165, 85, 192 }, Qt::white));
 
-  prevServiceButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
-  nextServiceButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
-  prevChannelButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
-  nextChannelButton->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
-  btnFav->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
+  btnPrevService->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
+  btnNextService->setStyleSheet(get_style_sheet({ 145, 65, 172 }, Qt::white));
+  prevChannelButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
+  nextChannelButton->setStyleSheet(get_style_sheet({ 40, 113, 216 }, Qt::white));
+  btnToggleFavorite->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
 }
 
 void RadioInterface::_slot_handle_favorite_button(bool iClicked)
@@ -3915,7 +3916,13 @@ void RadioInterface::_slot_handle_favorite_button(bool iClicked)
 
 void RadioInterface::set_favorite_button_style()
 {
-  btnFav->setIcon(QIcon(mCurFavoriteState ? ":res/icons/starfilled16.png" : ":res/icons/starempty16.png"));
-  btnFav->setIconSize(QSize(16, 16));
-  btnFav->setFixedSize(QSize(32, 32));
+  btnToggleFavorite->setIcon(QIcon(mCurFavoriteState ? ":res/icons/starfilled24.png" : ":res/icons/starempty24.png"));
+  btnToggleFavorite->setIconSize(QSize(24, 24));
+  btnToggleFavorite->setFixedSize(QSize(32, 32));
+}
+
+void RadioInterface::_slot_set_static_button_style()
+{
+  btnPrevService->setFixedSize(QSize(32, 32));
+  btnNextService->setFixedSize(QSize(32, 32));
 }
