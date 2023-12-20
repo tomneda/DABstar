@@ -2515,10 +2515,10 @@ void RadioInterface::stopService(DabService & s)
   channelTimer.stop();
 
   // reset muting if active
-  if (mutingActive)
-  {
-    _slot_handle_mute_button();
-  }
+//  if (mutingActive)
+//  {
+//    _slot_handle_mute_button();
+//  }
 
   if (my_dabProcessor == nullptr)
   {
