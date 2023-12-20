@@ -473,8 +473,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   configWidget.cpuMonitor->setPalette(lcdPalette);
   configWidget.cpuMonitor->setAutoFillBackground(true);
 
-  localTimeDisplay->setStyleSheet("QLabel {background-color : gray; color: white}");
-  runtimeDisplay->setStyleSheet("QLabel {background-color : gray; color: white}");
+  lblLocalTime->setStyleSheet("QLabel {background-color : gray; color: white}");
 
   configWidget.deviceSelector->addItems(get_device_name_list());
 
@@ -1364,11 +1363,6 @@ void RadioInterface::_slot_update_time_display()
 
   numberofSeconds++;
 
-  int16_t numberHours = numberofSeconds / 3600;
-  int16_t numberMinutes = (numberofSeconds / 60) % 60;
-  QString text = QString("Runtime: ") + QString::number(numberHours).rightJustified(2, '0') + ":" + QString::number(numberMinutes).rightJustified(2, '0');
-  runtimeDisplay->setText(text);
-
   if ((numberofSeconds % 2) == 0)
   {
     size_t idle_time, total_time;
@@ -1523,7 +1517,7 @@ void RadioInterface::slot_clock_time(int year, int month, int day, int hours, in
   {
     result = convertTime(year, month, day, hours, minutes);
   }
-  localTimeDisplay->setText(result);
+  lblLocalTime->setText(result);
 }
 
 QString RadioInterface::convertTime(int year, int month, int day, int hours, int minutes)
