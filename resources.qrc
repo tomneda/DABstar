@@ -11,6 +11,12 @@
     <file>res/icons/starfilled16.png</file>
     <file>res/icons/starempty24.png</file>
     <file>res/icons/starfilled24.png</file>
+    <file>res/icons/details24.png</file>
+    <file>res/icons/maps24.png</file>
+    <file>res/icons/scan24.png</file>
+    <file>res/icons/setting24.png</file>
+    <file>res/icons/meas24.png</file>
+    <file>res/icons/tower24.png</file>
     <file>res/globstyle.qss</file>
   </qresource>
 </RCC>

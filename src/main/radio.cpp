@@ -3860,4 +3860,16 @@ void RadioInterface::_slot_set_static_button_style()
   btnPrevService->setFixedSize(QSize(32, 32));
   btnNextService->setIconSize(QSize(24, 24));
   btnNextService->setFixedSize(QSize(32, 32));
+  scanButton->setIconSize(QSize(24, 24));
+  scanButton->setFixedSize(QSize(32, 32));
+  detailButton->setIconSize(QSize(24, 24));
+  detailButton->setFixedSize(QSize(32, 32));
+  httpButton->setIconSize(QSize(24, 24));
+  httpButton->setFixedSize(QSize(32, 32));
+  devicewidgetButton->setIconSize(QSize(24, 24));
+  devicewidgetButton->setFixedSize(QSize(32, 32));
+  show_spectrumButton->setIconSize(QSize(24, 24));
+  show_spectrumButton->setFixedSize(QSize(32, 32));
+  configButton->setIconSize(QSize(24, 24));
+  configButton->setFixedSize(QSize(32, 32));
 }
