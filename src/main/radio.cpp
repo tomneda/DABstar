@@ -1626,8 +1626,7 @@ void RadioInterface::slot_show_label(const QString & s)
 #endif
   if (running.load())
   {
-    dynamicLabel->setWordWrap(true);
-    dynamicLabel->setText(s);
+    lblDynText->setText(s);
   }
   //	if we dtText is ON, some work is still to be done
   if ((dlTextFile == nullptr) || (the_dlCache.addifNew(s)))
@@ -2456,7 +2455,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
     my_dabProcessor->getParameters(serviceName, &s.SId, &s.SCIds);
     if (s.SId == 0)
     {
-      write_warning_message("insufficient data for this program (1)");
+      write_warning_message("Insufficient data for this program (1)");
       return;
     }
     s.serviceName = service; // TODO: service or serviceName?
@@ -2599,7 +2598,7 @@ void RadioInterface::startService(DabService & s)
   serviceLabel->setStyleSheet(sDEFAULT_SERVICE_LABEL_STYLE);
   serviceLabel->setFont(font);
   serviceLabel->setText(serviceName);
-  dynamicLabel->setText("");
+  lblDynText->setText("");
 
   Audiodata ad;
   my_dabProcessor->dataforAudioService(serviceName, &ad);
@@ -2640,7 +2639,7 @@ void RadioInterface::startService(DabService & s)
   }
   else
   {
-    write_warning_message("insufficient data for this program (2)");
+    write_warning_message("Insufficient data for this program (2)");
     dabSettings->setValue("presetname", "");
   }
 }
@@ -2683,7 +2682,7 @@ void RadioInterface::startPacketservice(const QString & s)
   my_dabProcessor->dataforPacketService(s, &pd, 0);
   if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
   {
-    write_warning_message("insufficient data for this program (3)");
+    write_warning_message("Insufficient data for this program (3)");
     return;
   }
 
@@ -2695,20 +2694,21 @@ void RadioInterface::startPacketservice(const QString & s)
 
   switch (pd.DSCTy)
   {
-  default: slot_show_label(QString("unimplemented Data"));
+  case 5:
+    fprintf(stdout, "selected apptype %d\n", pd.appType);
+    write_warning_message("Transport channel not implemented");
     break;
-  case 5: fprintf(stdout, "selected apptype %d\n", pd.appType);
-    slot_show_label(QString("Transp. Channel not implemented"));
-    break;
-  case 60: slot_show_label(QString("MOT partially implemented"));
+  case 60:
+    write_warning_message("MOT partially implemented");
     break;
   case 59:
-  {
-    slot_show_label("Embedded IP not supported ");
-  }
+    write_warning_message("Embedded IP not supported");
     break;
-  case 44: slot_show_label(QString("Journaline"));
+  case 44:
+    write_warning_message("Journaline");
     break;
+  default:
+    write_warning_message("Unimplemented protocol");
   }
 }
 
@@ -2717,8 +2717,8 @@ void RadioInterface::startPacketservice(const QString & s)
 void RadioInterface::cleanScreen()
 {
   serviceLabel->setText("");
-  dynamicLabel->setStyleSheet("color: white");
-  dynamicLabel->setText("");
+  lblDynText->setStyleSheet("color: white");
+  lblDynText->setText("");
   theTechWindow->cleanUp();
   stereoLabel->setText("");
   programTypeLabel->setText("");
@@ -2830,7 +2830,7 @@ void RadioInterface::_slot_set_preset_service()
 
   if (channel.Eid == 0)
   {
-    write_warning_message("ensemble not yet recognized");
+    write_warning_message("Ensemble not yet recognized");
     return;
   }
 
@@ -2845,7 +2845,7 @@ void RadioInterface::_slot_set_preset_service()
   my_dabProcessor->getParameters(presetName, &s.SId, &s.SCIds);
   if (s.SId == 0)
   {
-    write_warning_message("insufficient data for this program (5)");
+    write_warning_message("Insufficient data for this program (5)");
     return;
   }
 
@@ -2855,9 +2855,8 @@ void RadioInterface::_slot_set_preset_service()
 
 void RadioInterface::write_warning_message(const QString & iMsg)
 {
-  //QMessageBox::warning(this, "Warning", iMsg);
-  dynamicLabel->setStyleSheet("color: red");
-  dynamicLabel->setText(iMsg);
+  lblDynText->setStyleSheet("color: #ff9100");
+  lblDynText->setText(iMsg);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -3062,7 +3061,7 @@ void RadioInterface::startScanning()
   my_dabProcessor->set_scanMode(true);
   //  To avoid reaction of the system on setting a different value:
   new_channelIndex(cc);
-  dynamicLabel->setText("Scanning channel " + channelSelector->currentText());
+  lblDynText->setText("Scanning channel " + channelSelector->currentText());
   scanButton->setText("SCANNING");
   const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   channelTimer.start(switchDelay * 1000);
@@ -3085,7 +3084,7 @@ void RadioInterface::stopScanning(bool dump)
     scanButton->setText("Scan");
     LOG("scanning stops ", "");
     my_dabProcessor->set_scanMode(false);
-    dynamicLabel->setText("Scan ended");
+    lblDynText->setText("Scan ended");
     channelTimer.stop();
     scanning.store(false);
     mpServiceListHandler->restore_favorites(); // try to restore former favorites from an backup table
@@ -3131,7 +3130,7 @@ void RadioInterface::slot_no_signal_found()
       connect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
       connect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
-      dynamicLabel->setText("Scanning channel " + channelSelector->currentText());
+      lblDynText->setText("Scanning channel " + channelSelector->currentText());
       const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
       channelTimer.start(switchDelay * 1000);
       startChannel(channelSelector->currentText());
