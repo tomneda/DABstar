@@ -16,7 +16,7 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,2">
+  <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,0,2">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
@@ -169,6 +169,16 @@
       </layout>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(119, 118, 123);</string>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -424,7 +434,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="distanceLabel">
+      <widget class="QLabel" name="lblStationLocation">
        <property name="text">
         <string>Please read file /tii-library/README.txt that this works!</string>
        </property>

@@ -330,6 +330,7 @@ void TiiHandler::readFile(FILE * f)
     ed.mainId = get_mainId(columnVector[TII]);
     ed.subId = get_subId(columnVector[TII]);
     ed.channel = columnVector[CHANNEL].trimmed();
+    if (ed.channel.length() < 3) ed.channel = "0" + ed.channel;  // patch as channel input data are now with leading zeros also
     ed.ensemble = columnVector[LABEL].trimmed();
     ed.transmitterName = columnVector[LOCATION];
     ed.latitude = convert(columnVector[LATITUDE]);

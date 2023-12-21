@@ -824,8 +824,9 @@ void RadioInterface::_slot_handle_content_button()
     theTime = convertTime(localTime.year, localTime.month, localTime.day, localTime.hour, localTime.minute);
   }
 
-  QString header = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";" + QString::number(
-    serviceList.size()) + ";" + distanceLabel->text() + "\n";
+  QString header = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";"
+                 + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
+                 + QString::number(serviceList.size()) + ";" + lblStationLocation->text() + "\n";
 
   my_contentTable = new ContentTable(this, dabSettings, channel.channelName, my_dabProcessor->scanWidth());
   connect(my_contentTable, &ContentTable::signal_go_service, this, &RadioInterface::slot_handle_content_selector);
@@ -863,20 +864,11 @@ void RadioInterface::slot_handle_mot_object(QByteArray result, QString objectNam
   switch (getContentBaseType((MOTContentType)contentType))
   {
   case MOTBaseTypeGeneralData: break;
-
-  case MOTBaseTypeText: save_MOTtext(result, contentType, objectName);
-    break;
-
-  case MOTBaseTypeImage: show_MOTlabel(result, contentType, objectName, dirElement);
-    break;
-
+  case MOTBaseTypeText: save_MOTtext(result, contentType, objectName); break;
+  case MOTBaseTypeImage: show_MOTlabel(result, contentType, objectName, dirElement); break;
   case MOTBaseTypeAudio: break;
-
   case MOTBaseTypeVideo: break;
-
-  case MOTBaseTypeTransport: save_MOTObject(result, objectName);
-    break;
-
+  case MOTBaseTypeTransport: save_MOTObject(result, objectName); break;
   case MOTBaseTypeSystem: break;
 
   case MOTBaseTypeApplication:  // epg data
@@ -904,7 +896,7 @@ void RadioInterface::slot_handle_mot_object(QByteArray result, QString objectNam
       uint32_t currentSId = extract_epg(objectName, serviceList, ensembleId);
       uint32_t julianDate = my_dabProcessor->julianDate();
       int subType = getContentSubType((MOTContentType)contentType);
-      epgProcessor.process_epg(epgData.data(), epgData.size(), currentSId, subType, julianDate);
+      epgProcessor.process_epg(epgData.data(), (int32_t)epgData.size(), currentSId, subType, julianDate);
       if (configWidget.epg2xmlSelector->isChecked())
       {
         epgHandler.decode(epgData, QDir::toNativeSeparators(objectName));
@@ -1789,7 +1781,7 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
   LOG("corner ", cornerStr);
   labelText += +" " + distanceStr + " km" + " " + cornerStr + QString::fromLatin1("\xb0 ");
   fprintf(stdout, "%s\n", labelText.toUtf8().data());
-  distanceLabel->setText(labelText);
+  lblStationLocation->setText(labelText);
 
   //	see if we have a map
   if (mapHandler == nullptr)
@@ -2995,7 +2987,7 @@ void RadioInterface::stopChannel()
   //ensembleDisplay->setModel(&model);
   cleanScreen();
   configWidget.EPGLabel->hide();
-  distanceLabel->setText("");
+  lblStationLocation->setText("");
 }
 
 //
@@ -3158,19 +3150,20 @@ void RadioInterface::slot_no_signal_found()
 
 void RadioInterface::showServices()
 {
-  //int scanMode = configWidget.scanmodeSelector->currentIndex();
-  QString SNR = "SNR " + QString::number(channel.snr);
-
-  if (my_dabProcessor == nullptr)
-  {  // cannot happen
-    fprintf(stderr, "Expert error 26\n");
-    return;
-  }
-
-  QString utcTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
-  QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";" + hextoString(
-    channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";" + QString::number(serviceList.size()) + ";" + distanceLabel->text();
-  QStringList s = my_dabProcessor->basicPrint();
+//  int scanMode = configWidget.scanmodeSelector->currentIndex();
+//  QString SNR = "SNR " + QString::number(channel.snr);
+//
+//  if (my_dabProcessor == nullptr)
+//  {  // cannot happen
+//    fprintf(stderr, "Expert error 26\n");
+//    return;
+//  }
+//
+//  QString utcTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
+//  QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";"
+//                   + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";"
+//                   + QString::number(serviceList.size()) + ";" + lblStationLocation->text();
+//  QStringList s = my_dabProcessor->basicPrint();
 //  my_scanTable->addLine(headLine);
 //  my_scanTable->addLine("\n;\n");
 //  for (const auto & i : s)
