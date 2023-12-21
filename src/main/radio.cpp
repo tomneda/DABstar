@@ -494,16 +494,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     }
   }
 
-  bool hidden = dabSettings->value("hidden", 0).toInt() != 0;
-  if (hidden)
-  {
-    configDisplay.hide();
-  }
-  else
-  {
-    configDisplay.show();
-  }
-
   connect(configButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_config_button);
 
   if (mpInputDevice != nullptr)
@@ -545,10 +535,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
       delete mpInputDevice;
       mpInputDevice = nullptr;
     }
-  }
-  if (hidden)
-  {
-    dabSettings->setValue("hidden", 0);
   }
 
   configDisplay.show();
@@ -1315,7 +1301,6 @@ void RadioInterface::_slot_terminate_process()
   stopFramedumping();
   stopSourcedumping();
   stopAudiodumping();
-  //	theTable. hide		();
   theBand.hide();
   configDisplay.hide();
   LOG("terminating ", "");
@@ -3468,15 +3453,11 @@ void RadioInterface::_slot_handle_config_button()
 {
   if (!configDisplay.isHidden())
   {
-    //configButton->setText("Show Controls");
     configDisplay.hide();
-    dabSettings->setValue("hidden", 1);
   }
   else
   {
-    //configButton->setText("Hide Controls");
     configDisplay.show();
-    dabSettings->setValue("hidden", 0);
   }
 }
 
