@@ -312,7 +312,7 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QPushButton" name="muteButton">
+          <widget class="QPushButton" name="btnMuteAudio">
            <property name="minimumSize">
             <size>
              <width>32</width>
@@ -338,7 +338,7 @@
           </widget>
          </item>
          <item>
-          <widget class="CirclePushButton" name="scanButton">
+          <widget class="CirclePushButton" name="btnScanning">
            <property name="minimumSize">
             <size>
              <width>32</width>
@@ -367,7 +367,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="httpButton">
+          <widget class="QPushButton" name="btnHttpServer">
            <property name="minimumSize">
             <size>
              <width>32</width>
@@ -396,7 +396,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="detailButton">
+          <widget class="QPushButton" name="btnServiceDetails">
            <property name="minimumSize">
             <size>
              <width>32</width>
@@ -425,7 +425,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="show_spectrumButton">
+          <widget class="QPushButton" name="btnSpectrumScope">
            <property name="minimumSize">
             <size>
              <width>32</width>
@@ -459,7 +459,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="devicewidgetButton">
+          <widget class="QPushButton" name="btnDeviceWidget">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>

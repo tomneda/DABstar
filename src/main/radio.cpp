@@ -394,7 +394,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &QComboBox::setCurrentIndex);
   connect(configWidget.dlTextButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_dl_text_button);
   connect(configWidget.loggerButton, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_logger_button);
-  connect(httpButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
+  connect(btnHttpServer, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
 
   //	restore some settings from previous incarnations
   QString t = dabSettings->value("dabBand", "VHF Band III").toString();
@@ -432,7 +432,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     channel.tiiFile = tiiHandler.fill_cache_from_tii_file(tiiFileName);
     if (!channel.tiiFile)
     {
-      httpButton->hide();
+      btnHttpServer->hide();
     }
   }
 
@@ -1926,12 +1926,12 @@ void RadioInterface::showButtons()
 #if 1
   configWidget.dumpButton->show();
   configWidget.frequencyDisplay->show();
-  scanButton->show();
+  btnScanning->show();
   channelSelector->show();
 #else
   configWidget.dumpButton->setEnabled(true);
   configWidget.frequencyDisplay->setEnabled(true);
-  scanButton->setEnabled(true);
+  btnScanning->setEnabled(true);
   channelSelector->setEnabled(true);
 #endif
 }
@@ -1941,12 +1941,12 @@ void RadioInterface::hideButtons()
 #if 1
   configWidget.dumpButton->hide();
   configWidget.frequencyDisplay->hide();
-  scanButton->hide();
+  btnScanning->hide();
   channelSelector->hide();
 #else
   configWidget.dumpButton->setEnabled(false);
   configWidget.frequencyDisplay->setEnabled(false);
-  scanButton->setEnabled(false);
+  btnScanning->setEnabled(false);
   channelSelector->setEnabled(false);
 #endif
 }
@@ -2169,17 +2169,17 @@ void RadioInterface::_slot_handle_spectrum_button()
 void RadioInterface::connectGUI()
 {
   connect(configWidget.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
-  connect(detailButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_detail_button);
+  connect(btnServiceDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_detail_button);
   connect(configWidget.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
-  connect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
-  connect(show_spectrumButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
-  connect(devicewidgetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
+  connect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
+  connect(btnSpectrumScope, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
+  connect(btnDeviceWidget, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
   connect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   connect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
-  connect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
+  connect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   connect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   connect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
@@ -2193,17 +2193,17 @@ void RadioInterface::connectGUI()
 void RadioInterface::disconnectGUI()
 {
   disconnect(configWidget.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
-  disconnect(detailButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_detail_button);
+  disconnect(btnServiceDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_detail_button);
   disconnect(configWidget.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
-  disconnect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
-  disconnect(show_spectrumButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
-  disconnect(devicewidgetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
+  disconnect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
+  disconnect(btnSpectrumScope, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
+  disconnect(btnDeviceWidget, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
   disconnect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   disconnect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
-  disconnect(muteButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
+  disconnect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   disconnect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   disconnect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
@@ -3050,7 +3050,7 @@ void RadioInterface::startScanning()
   //  To avoid reaction of the system on setting a different value:
   new_channelIndex(cc);
   lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
-  scanButton->start_animation();
+  btnScanning->start_animation();
   const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   channelTimer.start(switchDelay * 1000);
 
@@ -3069,7 +3069,7 @@ void RadioInterface::stopScanning(bool dump)
   (void)dump;
   if (scanning.load())
   {
-    scanButton->stop_animation();
+    btnScanning->stop_animation();
     LOG("scanning stops ", "");
     my_dabProcessor->set_scanMode(false);
     lblDynLabel->setText("Scan ended");
@@ -3209,9 +3209,9 @@ void RadioInterface::enable_ui_elements_for_safety(const bool iEnable)
 void RadioInterface::_slot_handle_mute_button()
 {
   mutingActive = !mutingActive;
-  muteButton->setIcon(QIcon(mutingActive ? ":res/icons/muted24.png" : ":res/icons/unmuted24.png"));
-  muteButton->setIconSize(QSize(24, 24));
-  muteButton->setFixedSize(QSize(32, 32));
+  btnMuteAudio->setIcon(QIcon(mutingActive ? ":res/icons/muted24.png" : ":res/icons/unmuted24.png"));
+  btnMuteAudio->setIconSize(QSize(24, 24));
+  btnMuteAudio->setFixedSize(QSize(32, 32));
 }
 
 void RadioInterface::new_channelIndex(int index)
@@ -3573,7 +3573,7 @@ void RadioInterface::_slot_handle_http_button()
     maxDistance = -1;
     if (mapHandler != nullptr)
     {
-      httpButton->setText("HTTP on");
+      btnHttpServer->setText("HTTP on");
     }
   }
   else
@@ -3582,7 +3582,7 @@ void RadioInterface::_slot_handle_http_button()
     delete mapHandler;
     mapHandler = nullptr;
     locker.unlock();
-    httpButton->setText("Open Map");
+    btnHttpServer->setText("Open Map");
   }
 }
 
@@ -3595,7 +3595,7 @@ void RadioInterface::_slot_handle_http_button()
 //    mapHandler = nullptr;
 //  }
 //  locker.unlock();
-//  httpButton->setText("http");
+//  btnHttpServer->setText("http");
 //}
 
 void RadioInterface::_slot_handle_auto_browser(int d)
@@ -3658,7 +3658,7 @@ void RadioInterface::_slot_handle_save_slides(int x)
 //////////////////////////////////////////////////////////////////////////
 //	Experimental: handling eti
 //	writing an eti file and scanning seems incompatible to me, so
-//	that is why I use the button, originally named "scanButton"
+//	that is why I use the button, originally named "btnScanning"
 //	for eti when eti is prepared.
 //	Preparing eti is with a checkbox on the configuration widget
 //
@@ -3690,7 +3690,7 @@ void RadioInterface::stop_etiHandler()
 
   my_dabProcessor->stop_etiGenerator();
   channel.etiActive = false;
-  scanButton->setText("ETI");
+  btnScanning->setText("ETI");
 }
 
 void RadioInterface::start_etiHandler()
@@ -3709,7 +3709,7 @@ void RadioInterface::start_etiHandler()
   channel.etiActive = my_dabProcessor->start_etiGenerator(etiFile);
   if (channel.etiActive)
   {
-    scanButton->setText("eti runs");
+    btnScanning->setText("eti runs");
   }
 }
 
@@ -3725,24 +3725,24 @@ void RadioInterface::_slot_handle_eti_active_selector(int k)
   if (setting)
   {
     stopScanning(false);
-    disconnect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
-    connect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_eti_handler);
-    scanButton->setText("ETI");
+    disconnect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
+    connect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_eti_handler);
+    btnScanning->setText("ETI");
     if (mpInputDevice->isFileInput())
     {  // restore the button' visibility
-      scanButton->show();
+      btnScanning->show();
     }
     return;
   }
   //	otherwise, disconnect the eti handling and reconnect scan
   //	be careful, an ETI session may be going on
   stop_etiHandler();    // just in case
-  disconnect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_eti_handler);
-  connect(scanButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
-  scanButton->setText("Scan");
+  disconnect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_eti_handler);
+  connect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
+  btnScanning->setText("Scan");
   if (mpInputDevice->isFileInput())
   {  // hide the button now
-    scanButton->hide();
+    btnScanning->hide();
   }
 }
 
@@ -3810,14 +3810,14 @@ QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColo
 
 void RadioInterface::setup_ui_colors()
 {
-  muteButton->setStyleSheet(get_style_sheet({ 255, 60, 60 }, Qt::white));
+  btnMuteAudio->setStyleSheet(get_style_sheet({ 255, 60, 60 }, Qt::white));
 
-  scanButton->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
-  httpButton->setStyleSheet(get_style_sheet({ 230, 97, 40 }, Qt::white));
-  devicewidgetButton->setStyleSheet(get_style_sheet({ 87, 230, 236 }, Qt::black));
+  btnScanning->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
+  btnHttpServer->setStyleSheet(get_style_sheet({ 230, 97, 40 }, Qt::white));
+  btnDeviceWidget->setStyleSheet(get_style_sheet({ 87, 230, 236 }, Qt::black));
   configButton->setStyleSheet(get_style_sheet({ 80, 155, 80 }, Qt::white));
-  detailButton->setStyleSheet(get_style_sheet({ 255, 255, 100 }, Qt::black));
-  show_spectrumButton->setStyleSheet(get_style_sheet({ 165, 85, 192 }, Qt::white));
+  btnServiceDetails->setStyleSheet(get_style_sheet({ 255, 255, 100 }, Qt::black));
+  btnSpectrumScope->setStyleSheet(get_style_sheet({ 165, 85, 192 }, Qt::white));
 
   btnPrevService->setStyleSheet(get_style_sheet({ 200, 97, 40 }, Qt::white));
   btnNextService->setStyleSheet(get_style_sheet({ 200, 97, 40 }, Qt::white));
@@ -3844,17 +3844,17 @@ void RadioInterface::_slot_set_static_button_style()
   btnPrevService->setFixedSize(QSize(32, 32));
   btnNextService->setIconSize(QSize(24, 24));
   btnNextService->setFixedSize(QSize(32, 32));
-  detailButton->setIconSize(QSize(24, 24));
-  detailButton->setFixedSize(QSize(32, 32));
-  httpButton->setIconSize(QSize(24, 24));
-  httpButton->setFixedSize(QSize(32, 32));
-  devicewidgetButton->setIconSize(QSize(24, 24));
-  devicewidgetButton->setFixedSize(QSize(32, 32));
-  show_spectrumButton->setIconSize(QSize(24, 24));
-  show_spectrumButton->setFixedSize(QSize(32, 32));
+  btnServiceDetails->setIconSize(QSize(24, 24));
+  btnServiceDetails->setFixedSize(QSize(32, 32));
+  btnHttpServer->setIconSize(QSize(24, 24));
+  btnHttpServer->setFixedSize(QSize(32, 32));
+  btnDeviceWidget->setIconSize(QSize(24, 24));
+  btnDeviceWidget->setFixedSize(QSize(32, 32));
+  btnSpectrumScope->setIconSize(QSize(24, 24));
+  btnSpectrumScope->setFixedSize(QSize(32, 32));
   configButton->setIconSize(QSize(24, 24));
   configButton->setFixedSize(QSize(32, 32));
-  scanButton->setIconSize(QSize(24, 24));
-  scanButton->setFixedSize(QSize(32, 32));
-  scanButton->init(":res/icons/scan24.png", 3, 1);
+  btnScanning->setIconSize(QSize(24, 24));
+  btnScanning->setFixedSize(QSize(32, 32));
+  btnScanning->init(":res/icons/scan24.png", 3, 1);
 }
