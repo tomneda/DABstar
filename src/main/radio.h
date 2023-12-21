@@ -170,7 +170,7 @@ struct ChannelDescriptor
   }
 };
 
-class RadioInterface : public QWidget, private Ui_dabradio
+class RadioInterface : public QWidget, private Ui_DabRadio
 {
 Q_OBJECT
 public:

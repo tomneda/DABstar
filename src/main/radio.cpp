@@ -189,7 +189,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-
+  setFixedSize(700, 500);
   setup_ui_colors();
 
   // only the queued call will consider the button size?!
@@ -473,7 +473,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   configWidget.cpuMonitor->setPalette(lcdPalette);
   configWidget.cpuMonitor->setAutoFillBackground(true);
 
-  lblLocalTime->setStyleSheet("QLabel {background-color : gray; color: white}");
+  lblLocalTime->setStyleSheet("QLabel { background-color: #6d7caa; color: #d8e1ae; }");
 
   configWidget.deviceSelector->addItems(get_device_name_list());
 
@@ -1620,13 +1620,15 @@ void RadioInterface::slot_set_synced(bool b)
 
 void RadioInterface::slot_show_label(const QString & s)
 {
-#ifdef  HAVE_PLUTO_RXTX
-                                                                                                                          if (streamerOut != nullptr)
-	   streamerOut -> addRds (std::string (s. toUtf8 (). data ()));
+#ifdef HAVE_PLUTO_RXTX
+  if (streamerOut != nullptr)
+  {
+    streamerOut->addRds(std::string(s.toUtf8().data()));
+  }
 #endif
   if (running.load())
   {
-    lblDynText->setText(s);
+    lblDynLabel->setText(s);
   }
   //	if we dtText is ON, some work is still to be done
   if ((dlTextFile == nullptr) || (the_dlCache.addifNew(s)))
@@ -2598,7 +2600,7 @@ void RadioInterface::startService(DabService & s)
   serviceLabel->setStyleSheet(sDEFAULT_SERVICE_LABEL_STYLE);
   serviceLabel->setFont(font);
   serviceLabel->setText(serviceName);
-  lblDynText->setText("");
+  lblDynLabel->setText("");
 
   Audiodata ad;
   my_dabProcessor->dataforAudioService(serviceName, &ad);
@@ -2717,8 +2719,8 @@ void RadioInterface::startPacketservice(const QString & s)
 void RadioInterface::cleanScreen()
 {
   serviceLabel->setText("");
-  lblDynText->setStyleSheet("color: white");
-  lblDynText->setText("");
+  lblDynLabel->setStyleSheet("color: white");
+  lblDynLabel->setText("");
   theTechWindow->cleanUp();
   stereoLabel->setText("");
   programTypeLabel->setText("");
@@ -2855,8 +2857,8 @@ void RadioInterface::_slot_set_preset_service()
 
 void RadioInterface::write_warning_message(const QString & iMsg)
 {
-  lblDynText->setStyleSheet("color: #ff9100");
-  lblDynText->setText(iMsg);
+  lblDynLabel->setStyleSheet("color: #ff9100");
+  lblDynLabel->setText(iMsg);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -3061,7 +3063,7 @@ void RadioInterface::startScanning()
   my_dabProcessor->set_scanMode(true);
   //  To avoid reaction of the system on setting a different value:
   new_channelIndex(cc);
-  lblDynText->setText("Scanning channel " + channelSelector->currentText());
+  lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
   scanButton->setText("SCANNING");
   const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   channelTimer.start(switchDelay * 1000);
@@ -3084,7 +3086,7 @@ void RadioInterface::stopScanning(bool dump)
     scanButton->setText("Scan");
     LOG("scanning stops ", "");
     my_dabProcessor->set_scanMode(false);
-    lblDynText->setText("Scan ended");
+    lblDynLabel->setText("Scan ended");
     channelTimer.stop();
     scanning.store(false);
     mpServiceListHandler->restore_favorites(); // try to restore former favorites from an backup table
@@ -3130,7 +3132,7 @@ void RadioInterface::slot_no_signal_found()
       connect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
       connect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
-      lblDynText->setText("Scanning channel " + channelSelector->currentText());
+      lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
       const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
       channelTimer.start(switchDelay * 1000);
       startChannel(channelSelector->currentText());
