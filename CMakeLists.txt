@@ -311,6 +311,7 @@ set(${objectName}_HDRS
         src/support/buttons/newpushbutton.h
         src/support/buttons/normalpushbutton.h
         src/support/buttons/circlepushbutton.h
+        src/support/custom_frame.h
         src/scopes-qwt6/iqdisplay.h
         src/scopes-qwt6/carrier-display.h
         src/scopes-qwt6/spectrogramdata.h
@@ -453,6 +454,7 @@ set(${objectName}_MOCS
         src/support/coordinates.h
         src/support/mapport.h
         src/support/http-handler.h
+        src/support/custom_frame.h
         src/scopes-qwt6/iqdisplay.h
         src/scopes-qwt6/audio-display.h
         src/spectrum-viewer/spectrum-viewer.h

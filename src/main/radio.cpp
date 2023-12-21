@@ -417,7 +417,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   total_fics = 0;
 
   connect(configWidget.streamoutSelector, qOverload<int>(&QComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
-  connect(theTechWindow, &TechData::handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
+  connect(theTechWindow, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
   copyrightLabel->setText(QString("<html><body><img src='qrc:/res/icons/copyright24.png'/> V" + mVersionStr + "</body></html>"));
   copyrightLabel->setToolTip(get_copyright_text());
@@ -438,6 +438,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   connect(configWidget.eti_activeSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_eti_active_selector);
   connect(this, &RadioInterface::signal_dab_processor_started, &my_spectrumViewer, &SpectrumViewer::slot_update_settings);
+  connect(&my_spectrumViewer, &SpectrumViewer::signal_window_closed, this, &RadioInterface::_slot_handle_spectrum_button);
+  connect(theTechWindow, &TechData::signal_window_closed, this, &RadioInterface::_slot_handle_tech_detail_button);
 
   channel.etiActive = false;
   show_pause_slide();
@@ -1900,7 +1902,7 @@ void RadioInterface::slot_set_stream_selector(int k)
 #endif
 }
 
-void RadioInterface::_slot_handle_detail_button()
+void RadioInterface::_slot_handle_tech_detail_button()
 {
   if (!running.load())
   {
@@ -2169,7 +2171,7 @@ void RadioInterface::_slot_handle_spectrum_button()
 void RadioInterface::connectGUI()
 {
   connect(configWidget.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
-  connect(btnServiceDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_detail_button);
+  connect(btnTechDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tech_detail_button);
   connect(configWidget.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
   connect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
   connect(btnSpectrumScope, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
@@ -2177,8 +2179,8 @@ void RadioInterface::connectGUI()
   connect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
-  connect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
-  connect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
+  connect(theTechWindow, &TechData::signal_handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
+  connect(theTechWindow, &TechData::signal_handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   connect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
@@ -2193,7 +2195,7 @@ void RadioInterface::connectGUI()
 void RadioInterface::disconnectGUI()
 {
   disconnect(configWidget.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
-  disconnect(btnServiceDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_detail_button);
+  disconnect(btnTechDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tech_detail_button);
   disconnect(configWidget.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
   disconnect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
   disconnect(btnSpectrumScope, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
@@ -2201,8 +2203,8 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
-  disconnect(theTechWindow, &TechData::handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
-  disconnect(theTechWindow, &TechData::handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
+  disconnect(theTechWindow, &TechData::signal_handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
+  disconnect(theTechWindow, &TechData::signal_handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   disconnect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
@@ -3816,7 +3818,7 @@ void RadioInterface::setup_ui_colors()
   btnHttpServer->setStyleSheet(get_style_sheet({ 230, 97, 40 }, Qt::white));
   btnDeviceWidget->setStyleSheet(get_style_sheet({ 87, 230, 236 }, Qt::black));
   configButton->setStyleSheet(get_style_sheet({ 80, 155, 80 }, Qt::white));
-  btnServiceDetails->setStyleSheet(get_style_sheet({ 255, 255, 100 }, Qt::black));
+  btnTechDetails->setStyleSheet(get_style_sheet({ 255, 255, 100 }, Qt::black));
   btnSpectrumScope->setStyleSheet(get_style_sheet({ 165, 85, 192 }, Qt::white));
 
   btnPrevService->setStyleSheet(get_style_sheet({ 200, 97, 40 }, Qt::white));
@@ -3844,8 +3846,8 @@ void RadioInterface::_slot_set_static_button_style()
   btnPrevService->setFixedSize(QSize(32, 32));
   btnNextService->setIconSize(QSize(24, 24));
   btnNextService->setFixedSize(QSize(32, 32));
-  btnServiceDetails->setIconSize(QSize(24, 24));
-  btnServiceDetails->setFixedSize(QSize(32, 32));
+  btnTechDetails->setIconSize(QSize(24, 24));
+  btnTechDetails->setFixedSize(QSize(32, 32));
   btnHttpServer->setIconSize(QSize(24, 24));
   btnHttpServer->setFixedSize(QSize(32, 32));
   btnDeviceWidget->setIconSize(QSize(24, 24));

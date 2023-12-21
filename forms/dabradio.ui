@@ -396,7 +396,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnServiceDetails">
+          <widget class="QPushButton" name="btnTechDetails">
            <property name="minimumSize">
             <size>
              <width>32</width>

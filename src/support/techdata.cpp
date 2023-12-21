@@ -35,6 +35,7 @@ TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * aud
   this->audioData = audioData;
 
   setupUi(&myFrame);
+
   dabSettings->beginGroup("techDataSettings");
   int x = dabSettings->value("position-x", 100).toInt();
   int y = dabSettings->value("position-y", 100).toInt();
@@ -50,9 +51,10 @@ TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * aud
   timeTable_button->hide();
   the_audioDisplay = new AudioDisplay(mr, audio, dabSettings);
 
-  connect(framedumpButton, SIGNAL (clicked()), this, SIGNAL (handle_frameDumping()));
-  connect(audiodumpButton, SIGNAL (clicked()), this, SIGNAL (handle_audioDumping()));
-  connect(timeTable_button, SIGNAL (clicked()), this, SIGNAL (handle_timeTable()));
+  connect(&myFrame, &CustomFrame::signal_frame_closed, this, &TechData::signal_window_closed);
+  connect(framedumpButton, &QPushButton::clicked, this, &TechData::signal_handle_frameDumping);
+  connect(audiodumpButton, &QPushButton::clicked, this, &TechData::signal_handle_audioDumping);
+  connect(timeTable_button, &QPushButton::clicked, this, &TechData::signal_handle_timeTable);
 }
 
 TechData::~TechData()

@@ -58,6 +58,7 @@
 #include  "ui_scopewidget.h"
 #include  "ringbuffer.h"
 #include  "fft/fft-handler.h"
+#include  "custom_frame.h"
 
 constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
@@ -99,7 +100,7 @@ public:
 private:
   static constexpr char SETTING_GROUP_NAME[] = "spectrumViewer";
 
-  QFrame myFrame{ nullptr };
+  CustomFrame myFrame{ nullptr };
   RadioInterface * const mpRadioInterface;
   QSettings * const mpDabSettings;
   RingBuffer<cmplx> * const mpSpectrumBuffer;
@@ -144,6 +145,7 @@ signals:
   void signal_cmb_carrier_changed(ECarrierPlotType);
   void signal_cmb_iqscope_changed(EIqPlotType);
   void signal_cb_nom_carrier_changed(bool);
+  void signal_window_closed();
 };
 
 #endif

@@ -58,6 +58,8 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
 
   setupUi(&myFrame);
 
+  connect(&myFrame, &CustomFrame::signal_frame_closed, this, &SpectrumViewer::signal_window_closed);
+
   myFrame.resize(QSize(w, h));
   myFrame.move(QPoint(x, y));
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon

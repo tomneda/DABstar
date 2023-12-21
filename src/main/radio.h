@@ -377,7 +377,7 @@ public slots:
 private slots:
   void _slot_handle_time_table();
   void _slot_handle_content_button();
-  void _slot_handle_detail_button();
+  void _slot_handle_tech_detail_button();
   void _slot_handle_reset_button();
   void _slot_handle_scan_button();
   void _slot_handle_eti_handler();

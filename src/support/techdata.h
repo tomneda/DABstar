@@ -30,6 +30,7 @@
 #include  "dab-constants.h"
 #include  "audio-display.h"
 #include  "ringbuffer.h"
+#include  "custom_frame.h"
 
 class RadioInterface;
 class QSettings;
@@ -39,7 +40,7 @@ class TechData : public QObject, public Ui_technical_data
 Q_OBJECT
 public:
   TechData(RadioInterface *, QSettings *, RingBuffer<int16_t> * audioData);
-  ~TechData();
+  ~TechData() override;
 
   void show_serviceData(Audiodata *);
   void cleanUp();
@@ -51,10 +52,8 @@ private:
   RadioInterface * myRadioInterface;
   QSettings * dabSettings;
   RingBuffer<int16_t> * audioData;
-  QFrame myFrame;
+  CustomFrame myFrame;
   AudioDisplay * the_audioDisplay;
-
-  void set_buttonColors(QPushButton *, const QString & buttonName);
 
 public slots:
   void show_frameErrors(int);
@@ -84,12 +83,11 @@ public slots:
   void framedumpButton_text(const QString & s, int);
   void audiodumpButton_text(const QString & s, int);
 
-private slots:
-
 signals:
-  void handle_timeTable();
-  void handle_audioDumping();
-  void handle_frameDumping();
+  void signal_handle_timeTable();
+  void signal_handle_audioDumping();
+  void signal_handle_frameDumping();
+  void signal_window_closed();
 };
 
 
