@@ -94,7 +94,7 @@ bool get_cpu_times (size_t &idle_time, size_t &total_time)
 }
 #else
 
-static const char sDEFAULT_SERVICE_LABEL_STYLE[] = "color: lightblue";
+static const char sDEFAULT_SERVICE_LABEL_STYLE[] = "QLabel { color: lightblue; }";
 
 std::vector<size_t> get_cpu_times()
 {
@@ -2601,6 +2601,7 @@ void RadioInterface::startService(DabService & s)
   serviceLabel->setFont(font);
   serviceLabel->setText(serviceName);
   lblDynLabel->setText("");
+  //lblDynLabel->setOpenExternalLinks(true); // TODO: make this work (Bayern1 sent link)
 
   Audiodata ad;
   my_dabProcessor->dataforAudioService(serviceName, &ad);
@@ -3064,7 +3065,7 @@ void RadioInterface::startScanning()
   //  To avoid reaction of the system on setting a different value:
   new_channelIndex(cc);
   lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
-  scanButton->setText("SCANNING");
+  scanButton->start_animation();
   const int32_t switchDelay = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   channelTimer.start(switchDelay * 1000);
 
@@ -3083,7 +3084,7 @@ void RadioInterface::stopScanning(bool dump)
   (void)dump;
   if (scanning.load())
   {
-    scanButton->setText("Scan");
+    scanButton->stop_animation();
     LOG("scanning stops ", "");
     my_dabProcessor->set_scanMode(false);
     lblDynLabel->setText("Scan ended");
@@ -3862,8 +3863,6 @@ void RadioInterface::_slot_set_static_button_style()
   btnPrevService->setFixedSize(QSize(32, 32));
   btnNextService->setIconSize(QSize(24, 24));
   btnNextService->setFixedSize(QSize(32, 32));
-  scanButton->setIconSize(QSize(24, 24));
-  scanButton->setFixedSize(QSize(32, 32));
   detailButton->setIconSize(QSize(24, 24));
   detailButton->setFixedSize(QSize(32, 32));
   httpButton->setIconSize(QSize(24, 24));
@@ -3874,4 +3873,7 @@ void RadioInterface::_slot_set_static_button_style()
   show_spectrumButton->setFixedSize(QSize(32, 32));
   configButton->setIconSize(QSize(24, 24));
   configButton->setFixedSize(QSize(32, 32));
+  scanButton->setIconSize(QSize(24, 24));
+  scanButton->setFixedSize(QSize(32, 32));
+  scanButton->init(":res/icons/scan24.png", 3, 1);
 }

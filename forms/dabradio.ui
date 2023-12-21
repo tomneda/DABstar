@@ -338,7 +338,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="scanButton">
+          <widget class="CirclePushButton" name="scanButton">
            <property name="minimumSize">
             <size>
              <width>32</width>
@@ -593,6 +593,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CirclePushButton</class>
+   <extends>QPushButton</extends>
+   <header>circlepushbutton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resources.qrc"/>
  </resources>
