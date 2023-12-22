@@ -209,6 +209,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   this->move(QPoint(x, y));
 
   configWidget.setupUi(&configDisplay);
+  configDisplay.setFixedSize(455, 350);
+
   x = dabSettings->value("configWidget-x", 200).toInt();
   y = dabSettings->value("configWidget-y", 200).toInt();
   wi = dabSettings->value("configWidget-w", 200).toInt();
@@ -237,8 +239,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     configWidget.saveSlides->setChecked(true);
   }
 
-  configWidget.EPGLabel->hide();
-  configWidget.EPGLabel->setStyleSheet("QLabel {background-color : yellow; color : black}");
+  _show_epg_label(false);
 
   x = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
   configWidget.switchDelaySetting->setValue(x);
@@ -470,8 +471,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #endif
   lcdPalette.setColor(QPalette::Base, Qt::black);
 #endif
-  configWidget.frequencyDisplay->setPalette(lcdPalette);
-  configWidget.frequencyDisplay->setAutoFillBackground(true);
   configWidget.cpuMonitor->setPalette(lcdPalette);
   configWidget.cpuMonitor->setAutoFillBackground(true);
 
@@ -568,6 +567,11 @@ QString RadioInterface::get_copyright_text() const
                  "Rights of other contributors gratefully acknowledged.</p>";
   versionText += "</p></body></html>";
   return versionText;
+}
+
+void RadioInterface::_show_epg_label(const bool iShowLabel)
+{
+  EPGLabel->setStyleSheet("QLabel {background-color: " + QString(iShowLabel ? "#f97903" : "#303030") + "; color: black}");
 }
 
 // _slot_do_start(QString) is called when - on startup - NO device was registered to be used, and the user presses the selectDevice comboBox
@@ -1927,7 +1931,6 @@ void RadioInterface::showButtons()
 {
 #if 1
   configWidget.dumpButton->show();
-  configWidget.frequencyDisplay->show();
   btnScanning->show();
   channelSelector->show();
 #else
@@ -1942,7 +1945,6 @@ void RadioInterface::hideButtons()
 {
 #if 1
   configWidget.dumpButton->hide();
-  configWidget.frequencyDisplay->hide();
   btnScanning->hide();
   channelSelector->hide();
 #else
@@ -2859,7 +2861,6 @@ void RadioInterface::startChannel(const QString & theChannel)
 {
   const int32_t tunedFrequencyHz = theBand.get_frequency_Hz(theChannel);
   LOG("channel starts ", theChannel);
-  configWidget.frequencyDisplay->display(tunedFrequencyHz / 1'000'000.0);
   my_spectrumViewer.show_nominal_frequency_MHz((float)tunedFrequencyHz / 1'000'000.0f);
   dabSettings->setValue("channel", theChannel);
   mpInputDevice->resetBuffer();
@@ -2923,8 +2924,9 @@ void RadioInterface::stopChannel()
 
   stopSourcedumping();
   soundOut->stop();
-  //
-  configWidget.EPGLabel->hide();
+
+  _show_epg_label(false);
+
   if (my_contentTable != nullptr)
   {
     my_contentTable->hide();
@@ -2975,7 +2977,7 @@ void RadioInterface::stopChannel()
   //model.clear();
   //ensembleDisplay->setModel(&model);
   cleanScreen();
-  configWidget.EPGLabel->hide();
+  _show_epg_label(false);
   lblStationLocation->setText("");
 }
 
@@ -3296,7 +3298,7 @@ void RadioInterface::slot_epg_timer_timeout()
       if (pd.DSCTy == 60)
       {
         LOG("hidden service started ", serv.name);
-        configWidget.EPGLabel->show();
+        _show_epg_label(true);
         fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
         my_dabProcessor->set_dataChannel(&pd, &dataBuffer, BACK_GROUND);
         DabService s;
@@ -3327,7 +3329,7 @@ void RadioInterface::slot_epg_timer_timeout()
       if ((pd.defined) && (pd.DSCTy == 59))
       {
         LOG("hidden service started ", serv.name);
-        configWidget.EPGLabel->show();
+        _show_epg_label(true);
         fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
         my_dabProcessor->set_dataChannel(&pd, &dataBuffer, BACK_GROUND);
         dabService s;
@@ -3796,15 +3798,8 @@ QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColo
 
   std::stringstream ts; // QTextStream did not work well here?!
 
-  if (false)
-  {
-    ts << "QPushButton { background-color: " << iBgBaseColor.name().toStdString() <<  "; color: " << iTextColor.name().toStdString() << "; }";
-  }
-  else
-  {
-    ts << "QPushButton { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
-       << ", stop:1 " << BgBaseColor2.name().toStdString() << "); " << "color: " << iTextColor.name().toStdString() << "; }";
-  }
+  ts << "QPushButton { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
+     << ", stop:1 " << BgBaseColor2.name().toStdString() << "); " << "color: " << iTextColor.name().toStdString() << "; }";
   //fprintf(stdout, "*** Style sheet: %s\n", ts.str().c_str());
 
   return { ts.str().c_str() };

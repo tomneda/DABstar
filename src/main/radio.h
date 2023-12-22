@@ -327,6 +327,7 @@ private:
   static QString get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor) ;
   void setup_ui_colors();
   void set_favorite_button_style();
+  void _show_epg_label(const bool iShowLabel);
 
 signals:
   void signal_set_new_channel(int);
