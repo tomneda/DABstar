@@ -433,7 +433,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     channel.tiiFile = tiiHandler.fill_cache_from_tii_file(tiiFileName);
     if (!channel.tiiFile)
     {
-      btnHttpServer->hide();
+      btnHttpServer->setToolTip("File '" + tiiFileName + "' could not be loaded. So this feature is switched off.");
+      btnHttpServer->setEnabled(false);
     }
   }
 
@@ -3577,7 +3578,7 @@ void RadioInterface::_slot_handle_http_button()
     maxDistance = -1;
     if (mapHandler != nullptr)
     {
-      btnHttpServer->setText("HTTP on");
+      _set_http_server_button(true);
     }
   }
   else
@@ -3586,7 +3587,7 @@ void RadioInterface::_slot_handle_http_button()
     delete mapHandler;
     mapHandler = nullptr;
     locker.unlock();
-    btnHttpServer->setText("Open Map");
+    _set_http_server_button(false);
   }
 }
 
@@ -3782,7 +3783,7 @@ QStringList RadioInterface::get_soft_bit_gen_names()
   return sl;
 }
 
-QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColor & iTextColor)
+QString RadioInterface::get_bg_style_sheet(const QColor & iBgBaseColor)
 {
   const float fac = 0.6f;
   const int32_t r1 = iBgBaseColor.red();
@@ -3799,7 +3800,7 @@ QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColo
   std::stringstream ts; // QTextStream did not work well here?!
 
   ts << "QPushButton { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
-     << ", stop:1 " << BgBaseColor2.name().toStdString() << "); " << "color: " << iTextColor.name().toStdString() << "; }";
+     << ", stop:1 " << BgBaseColor2.name().toStdString() << "); }";
   //fprintf(stdout, "*** Style sheet: %s\n", ts.str().c_str());
 
   return { ts.str().c_str() };
@@ -3807,18 +3808,24 @@ QString RadioInterface::get_style_sheet(const QColor & iBgBaseColor, const QColo
 
 void RadioInterface::setup_ui_colors()
 {
-  btnMuteAudio->setStyleSheet(get_style_sheet({ 255, 60, 60 }, Qt::white));
+  btnMuteAudio->setStyleSheet(get_bg_style_sheet({ 255, 60, 60 }));
 
-  btnScanning->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
-  btnHttpServer->setStyleSheet(get_style_sheet({ 230, 97, 40 }, Qt::white));
-  btnDeviceWidget->setStyleSheet(get_style_sheet({ 87, 230, 236 }, Qt::black));
-  configButton->setStyleSheet(get_style_sheet({ 80, 155, 80 }, Qt::white));
-  btnTechDetails->setStyleSheet(get_style_sheet({ 255, 255, 100 }, Qt::black));
-  btnSpectrumScope->setStyleSheet(get_style_sheet({ 165, 85, 192 }, Qt::white));
+  btnScanning->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
+  btnDeviceWidget->setStyleSheet(get_bg_style_sheet({ 87, 230, 236 }));
+  configButton->setStyleSheet(get_bg_style_sheet({ 80, 155, 80 }));
+  btnTechDetails->setStyleSheet(get_bg_style_sheet({ 255, 255, 100 }));
+  btnSpectrumScope->setStyleSheet(get_bg_style_sheet({ 197, 69, 240 }));
+  btnPrevService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
+  btnNextService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
+  btnToggleFavorite->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
 
-  btnPrevService->setStyleSheet(get_style_sheet({ 200, 97, 40 }, Qt::white));
-  btnNextService->setStyleSheet(get_style_sheet({ 200, 97, 40 }, Qt::white));
-  btnToggleFavorite->setStyleSheet(get_style_sheet({ 100, 100, 255 }, Qt::white));
+  _set_http_server_button(false);
+}
+
+void RadioInterface::_set_http_server_button(const bool iActive)
+{
+  btnHttpServer->setStyleSheet(get_bg_style_sheet((iActive ? 0xf97903 : 0x45bb24)));
+  btnHttpServer->setFixedSize(QSize(32, 32));
 }
 
 void RadioInterface::_slot_handle_favorite_button(bool iClicked)
