@@ -201,7 +201,7 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t i
     }
 
     const bool isFav = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Fav)).toBool();
-    mpTableView->scrollTo(pModel->index(rowIdxFound, ServiceDB::CI_Fav), QAbstractItemView::EnsureVisible);
+    mpTableView->scrollTo(pModel->index(rowIdxFound, ServiceDB::CI_Fav), QAbstractItemView::PositionAtCenter);
     mpTableView->update();
 
     emit signal_favorite_status(isFav);

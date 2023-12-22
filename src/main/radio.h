@@ -396,6 +396,7 @@ private slots:
 
   void _slot_handle_prev_service_button();
   void _slot_handle_next_service_button();
+  void _slot_handle_target_service_button();
   void _slot_handle_channel_selector(const QString &);
 
   void _slot_terminate_process();

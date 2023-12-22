@@ -2182,6 +2182,7 @@ void RadioInterface::connectGUI()
   connect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  connect(btnTargetService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_target_service_button);
   connect(theTechWindow, &TechData::signal_handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   connect(theTechWindow, &TechData::signal_handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
@@ -2206,6 +2207,7 @@ void RadioInterface::disconnectGUI()
   disconnect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+  disconnect(btnTargetService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_target_service_button);
   disconnect(theTechWindow, &TechData::signal_handle_audioDumping, this, &RadioInterface::_slot_handle_audio_dump_button);
   disconnect(theTechWindow, &TechData::signal_handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
@@ -2740,6 +2742,11 @@ void RadioInterface::_slot_handle_next_service_button()
 //  disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
 //  handle_serviceButton(FORWARD);
 //  connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
+}
+
+void RadioInterface::_slot_handle_target_service_button()
+{
+  mpServiceListHandler->jump_entries(0);
 }
 
 //	Previous and next services. trivial implementation
@@ -3817,6 +3824,7 @@ void RadioInterface::setup_ui_colors()
   btnSpectrumScope->setStyleSheet(get_bg_style_sheet({ 197, 69, 240 }));
   btnPrevService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
   btnNextService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
+  btnTargetService->setStyleSheet(get_bg_style_sheet({ 33, 106, 105 }));
   btnToggleFavorite->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
 
   _set_http_server_button(false);
@@ -3848,6 +3856,8 @@ void RadioInterface::_slot_set_static_button_style()
   btnPrevService->setFixedSize(QSize(32, 32));
   btnNextService->setIconSize(QSize(24, 24));
   btnNextService->setFixedSize(QSize(32, 32));
+  btnTargetService->setIconSize(QSize(24, 24));
+  btnTargetService->setFixedSize(QSize(32, 32));
   btnTechDetails->setIconSize(QSize(24, 24));
   btnTechDetails->setFixedSize(QSize(32, 32));
   btnHttpServer->setIconSize(QSize(24, 24));

@@ -17,6 +17,7 @@
     <file>res/icons/setting24.png</file>
     <file>res/icons/meas24.png</file>
     <file>res/icons/tower24.png</file>
+    <file>res/icons/targetwht24.png</file>
     <file>res/globstyle.qss</file>
   </qresource>
 </RCC>
