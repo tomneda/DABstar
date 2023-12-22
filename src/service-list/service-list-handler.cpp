@@ -13,6 +13,7 @@
 
 #include <QTableView>
 #include <QPainter>
+#include <QSettings>
 #include "radio.h"
 #include "service-list-handler.h"
 
@@ -61,8 +62,9 @@ bool CustomItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model,
 }
 
 
-ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL) :
+ServiceListHandler::ServiceListHandler(QSettings * const iopSettings, const QString & iDbFileName, QTableView * const ipSL) :
   mpTableView(ipSL),
+  mpSettings(iopSettings),
   mServiceDB(iDbFileName)
 {
   mpTableView->setItemDelegate(&mCustomItemDelegate);
@@ -73,6 +75,17 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   mServiceDB.open_db(); // program will exit if table could not be opened
   //mServiceDB.delete_table();
   mServiceDB.create_table();
+
+  if (auto sortColIdx = static_cast<ServiceDB::EColIdx>(mpSettings->value("serviceListSortCol", ServiceDB::CI_Channel).toUInt());
+      sortColIdx < ServiceDB::CI_MAX)
+  {
+    mServiceDB.sort_column(sortColIdx, true); // first switch to ascending sorting
+    if (mpSettings->value("serviceListSortDesc", false).toBool())
+    {
+      mServiceDB.sort_column(sortColIdx, false); // second call will change sorting direction
+    }
+  }
+
   _fill_table_view_from_db();
 
   connect(mpTableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &ServiceListHandler::_slot_header_clicked);
@@ -208,7 +221,11 @@ void ServiceListHandler::_slot_selection_changed_with_fav(const QString & iChann
 
 void ServiceListHandler::_slot_header_clicked(int iIndex)
 {
-  mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex));
+  mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex), false);
+
+  mpSettings->setValue("serviceListSortCol", iIndex);
+  mpSettings->setValue("serviceListSortDesc", (mServiceDB.is_sort_desc() ? 1 : 0));
+
   _fill_table_view_from_db();
   _jump_to_list_entry_and_emit_fav_status();
 }

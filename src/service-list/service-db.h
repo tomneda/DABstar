@@ -27,18 +27,20 @@ public:
 
   enum EColIdx
   {
-    CI_Fav     = 0,
-    CI_Service = 1,
-    CI_Channel = 2
-    //CI_Id      = 3
+    CI_Fav,     // = 0
+    CI_Service, // = 1
+    CI_Channel, // = 2
+    //CI_Id,      // = 3
+    CI_MAX 
   };
 
   void open_db();
   void create_table();
   void delete_table(const bool iDeleteFavorites);
   bool add_entry(const QString & iChannel, const QString & iService);
-  void sort_column(const EColIdx iColIdx);
-  void set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite);
+  void sort_column(const EColIdx iColIdx, const bool iForceSortAsc);
+  bool is_sort_desc() const;
+  void set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite) const;
   void retrieve_favorites_from_backup_table();
   QAbstractItemModel * create_model();
 

@@ -15,13 +15,12 @@
 #define DABSTAR_SERVICELISTHANDLER_H
 
 #include <QObject>
-#include <QStandardItemModel>
-#include <QItemSelection>
 #include <QStyledItemDelegate>
 #include "service-db.h"
 
 class RadioInterface;
 class QTableView;
+class QSettings;
 
 class CustomItemDelegate : public QStyledItemDelegate
 {
@@ -48,7 +47,7 @@ class ServiceListHandler : public QObject
 {
   Q_OBJECT
 public:
-  explicit ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL);
+  ServiceListHandler(QSettings * const iopSettings, const QString & iDbFileName, QTableView * const ipSL);
   ~ServiceListHandler() override = default;
 
   void delete_table(const bool iDeleteFavorites);
@@ -61,6 +60,7 @@ public:
 
 private:
   QTableView * const mpTableView;
+  QSettings * const mpSettings;
   ServiceDB mServiceDB;
   CustomItemDelegate mCustomItemDelegate;
   QString mChannelLast;

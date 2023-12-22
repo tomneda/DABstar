@@ -520,7 +520,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     theTechWindow->show();
   }
 
-  mpServiceListHandler = std::make_unique<ServiceListHandler>(dbFileName, tblServiceList);
+  mpServiceListHandler = std::make_unique<ServiceListHandler>(dabSettings, dbFileName, tblServiceList);
 
   //	if a device was selected, we just start, otherwise
   //	we wait until one is selected

@@ -170,6 +170,7 @@ QAbstractItemModel * ServiceDB::create_model()
 //    sortName = "Id" + sortDir;
 //    colNameId      += sortSym;
 //    break;
+  default: /*should never happen*/ ;
   }
 
   QSqlQuery query;
@@ -190,13 +191,25 @@ QAbstractItemModel * ServiceDB::create_model()
   return model;
 }
 
-void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx)
+void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx, const bool iForceSortAsc)
 {
-  mSortDesc = (mSortColIdx == iColIdx && !mSortDesc); // change sorting direction with choosing the same column again or reset to asc sorting
+  if (iForceSortAsc)
+  {
+    mSortDesc = false; // force to ascending sorting
+  }
+  else
+  {
+    mSortDesc = (mSortColIdx == iColIdx && !mSortDesc); // change sorting direction with choosing the same column again or reset to asc sorting
+  }
   mSortColIdx = iColIdx;
 }
 
-void ServiceDB::set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite)
+bool ServiceDB::is_sort_desc() const
+{
+  return mSortDesc;
+}
+
+void ServiceDB::set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite) const
 {
   _set_favorite(iChannel, iService, iIsFavorite, true);
 }
