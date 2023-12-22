@@ -621,7 +621,7 @@
         <string notr="true">QProgressBar::chunk { background: #e6e600; } QProgressBar { border: none; }</string>
        </property>
        <property name="value">
-        <number>24</number>
+        <number>0</number>
        </property>
        <property name="textVisible">
         <bool>false</bool>

@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
-project(DABstar VERSION 1.8.0)
+project(DABstar VERSION 2.0.0)
 ##############################
 
 set(objectName "dabstar")
 
 # special release version flags
-#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
 # common flags
@@ -25,10 +25,15 @@ add_definitions(-DAPP_NAME="${objectName}")
 add_definitions(-DPRJ_NAME="${PROJECT_NAME}")
 add_definitions(-DPRJ_VERS="${PROJECT_VERSION}")
 
-configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop.in"
-               "${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop" @ONLY)
-configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh.in"
-               "${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh" @ONLY)
+# this is necessary as the repository could be only accessed as read-only while appimage generation
+option(CONV_IN_FILES "Convert .in-files" ON)
+
+if (CONV_IN_FILES)
+    configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop.in"
+                   "${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop" @ONLY)
+    configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh.in"
+                   "${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh" @ONLY)
+endif ()
 
 if (MINGW)
     add_definitions(-municode)
