@@ -189,7 +189,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-  setFixedSize(700, 500);
+  setFixedSize(707, 500); // with 707, full segments of the FIC progress bar are shown
   setup_ui_colors();
 
   // only the queued call will consider the button size?!
@@ -404,9 +404,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   QString skipfileName = dabSettings->value("skipFile", "").toString();
   theBand.setup_skipList(skipfileName);
 
-  QPalette p = configWidget.ficError_display->palette();
+  QPalette p = ficError_display->palette();
   p.setColor(QPalette::Highlight, Qt::red);
-  configWidget.ficError_display->setPalette(p);
+  ficError_display->setPalette(p);
   p.setColor(QPalette::Highlight, Qt::green);
 
   audioDumper = nullptr;
@@ -1567,7 +1567,7 @@ void RadioInterface::slot_show_fic_success(bool b)
 
   if (++ficBlocks >= 100)
   {
-    QPalette p = configWidget.ficError_display->palette();
+    QPalette p = ficError_display->palette();
     if (ficSuccess < 85)
     {
       p.setColor(QPalette::Highlight, Qt::red);
@@ -1577,8 +1577,8 @@ void RadioInterface::slot_show_fic_success(bool b)
       p.setColor(QPalette::Highlight, Qt::green);
     }
 
-    configWidget.ficError_display->setPalette(p);
-    configWidget.ficError_display->setValue(ficSuccess);
+    ficError_display->setPalette(p);
+    ficError_display->setValue(ficSuccess);
     total_ficError += 100 - ficSuccess;
     total_fics += 100;
     ficSuccess = 0;
@@ -2965,7 +2965,7 @@ void RadioInterface::stopChannel()
   channel.nextService.valid = false;
 
   //	all stopped, now look at the GUI elements
-  configWidget.ficError_display->setValue(0);
+  ficError_display->setValue(0);
   //	the visual elements related to service and channel
   slot_set_synced(false);
   ensembleId->setText("");

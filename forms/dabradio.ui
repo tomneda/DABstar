@@ -573,12 +573,33 @@
       </widget>
      </item>
      <item>
-      <widget class="Line" name="line_2">
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(119, 118, 123);</string>
+      <widget class="QProgressBar" name="ficError_display">
+       <property name="maximumSize">
+        <size>
+         <width>448</width>
+         <height>10</height>
+        </size>
        </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC processing. &lt;/p&gt;&lt;p&gt;FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QProgressBar::chunk { background: #e6e600; } QProgressBar { border: none; }</string>
+       </property>
+       <property name="value">
+        <number>24</number>
+       </property>
+       <property name="textVisible">
+        <bool>false</bool>
+       </property>
+       <property name="invertedAppearance">
+        <bool>false</bool>
+       </property>
+       <property name="format">
+        <string notr="true">%p%</string>
        </property>
       </widget>
      </item>
