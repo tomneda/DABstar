@@ -1,6 +1,7 @@
 #!/bin/bash
 
-SRC=$PWD/..
+CUD=$PWD
+SRC=$CUD/..
 DST=~/DABstarAppImage/build
 CMFLAG=-DCONV_IN_FILES=OFF #switch off .in-files conversion as repo access could only be read-only
 echo "Source folder is $SRC"
@@ -13,7 +14,7 @@ cmake $SRC $CMFLAG -DAIRSPY=ON -DSDRPLAY_V2=ON -DSDRPLAY_V3=ON -DHACKRF=ON -DLIM
 
 if [ $? -eq 0 ]; then
     echo "cmake runs successfully, now we begin to build the application"
-    cmake --build . -- -j4
+    $CUD/build_only.sh
 else
     echo "cmake failed with $?"
 fi

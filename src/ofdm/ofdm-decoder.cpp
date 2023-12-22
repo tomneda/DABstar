@@ -211,7 +211,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     if (maxAbs > llrMax) llrMax = maxAbs; // for best soft bit scaling
     limit_symmetrically(llrBitReal, F_VITERBI_SOFT_BIT_VALUE_MAX);
     limit_symmetrically(llrBitImag, F_VITERBI_SOFT_BIT_VALUE_MAX);
-    const float weightRrl = std::min(std::abs(llrBitReal), std::abs(llrBitImag));
+    const float weightRrl = (std::abs(llrBitReal) + std::abs(llrBitImag)) / 2.0f;
     mean_filter(mMeanModQual, weightRrl, ALPHA / (float)mDabPar.K);
 
     // Calculate (and limit) a soft-bit weight

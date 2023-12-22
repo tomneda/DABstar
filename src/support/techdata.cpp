@@ -39,16 +39,17 @@ TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * aud
   dabSettings->beginGroup("techDataSettings");
   int x = dabSettings->value("position-x", 100).toInt();
   int y = dabSettings->value("position-y", 100).toInt();
-  int wi = dabSettings->value("width", 100).toInt();
-  int he = dabSettings->value("height", 100).toInt();
+//  int wi = dabSettings->value("width", 100).toInt();
+//  int he = dabSettings->value("height", 100).toInt();
   dabSettings->endGroup();
   myFrame.move(QPoint(x, y));
-  myFrame.resize(QSize(wi, he));
+//  myFrame.resize(QSize(wi, he));
+  myFrame.setFixedSize(310, 670);
 
   formLayout->setLabelAlignment(Qt::AlignLeft);
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.hide();
-  timeTable_button->hide();
+  timeTable_button->setEnabled(false);
   the_audioDisplay = new AudioDisplay(mr, audio, dabSettings);
 
   connect(&myFrame, &CustomFrame::signal_frame_closed, this, &TechData::signal_window_closed);
@@ -87,7 +88,7 @@ void TechData::cleanUp()
   lengthDisplay->display(0);
   subChIdDisplay->display(0);
   motAvailable->setStyleSheet("QLabel {background-color : red}");
-  timeTable_button->hide();
+  timeTable_button->setEnabled(false);
   audioRate->display(0);
 }
 
@@ -193,11 +194,11 @@ void TechData::show_timetableButton(bool b)
 {
   if (b)
   {
-    timeTable_button->show();
+    timeTable_button->setEnabled(true);
   }
   else
   {
-    timeTable_button->hide();
+    timeTable_button->setEnabled(false);
   }
 }
 

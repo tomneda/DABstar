@@ -105,4 +105,6 @@ QScrollBar::up-arrow:vertical { width: 6px; height: 6px; }
 QScrollBar::down-arrow:vertical { width: 6px; height: 6px; }
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
 QProgressBar { border: 1px solid #666666; text-align: center; color: #000; font-weight: bold; }
+/*
 QProgressBar::chunk { background-color: #b78620; width: 30px; margin: 0.5px; }
+*/

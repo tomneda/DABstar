@@ -189,7 +189,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-  setFixedSize(707, 500); // with 707, full segments of the FIC progress bar are shown
+  setFixedSize(710, 470); // with 707, full segments of the FIC progress bar are shown
   setup_ui_colors();
 
   // only the queued call will consider the button size?!
@@ -2068,7 +2068,7 @@ void RadioInterface::stopAudiodumping()
   soundOut->stopDumping();
   sf_close(audioDumper);
   audioDumper = nullptr;
-  theTechWindow->audiodumpButton_text("audio dump", 10);
+  theTechWindow->audiodumpButton_text("Dump WAV", 10);
 }
 
 void RadioInterface::startAudiodumping()
@@ -2080,7 +2080,7 @@ void RadioInterface::startAudiodumping()
   }
 
   LOG("audiodump starts ", serviceLabel->text());
-  theTechWindow->audiodumpButton_text("writing", 12);
+  theTechWindow->audiodumpButton_text("Recording", 12);
   soundOut->startDumping(audioDumper);
 }
 
@@ -2109,7 +2109,7 @@ void RadioInterface::stopFramedumping()
   }
 
   fclose(channel.currentService.frameDumper);
-  theTechWindow->framedumpButton_text("frame dump", 10);
+  theTechWindow->framedumpButton_text("Dump AAC", 10);
   channel.currentService.frameDumper = nullptr;
 }
 
@@ -2120,7 +2120,7 @@ void RadioInterface::startFramedumping()
   {
     return;
   }
-  theTechWindow->framedumpButton_text("recording", 12);
+  theTechWindow->framedumpButton_text("Recording", 12);
 }
 
 //	called from the mp4 handler, using a signal
@@ -2585,7 +2585,7 @@ void RadioInterface::startService(DabService & s)
 
   //	and display the servicename on the serviceLabel
   QFont font = serviceLabel->font();
-  font.setPointSize(20);
+  font.setPointSize(16);
   font.setBold(true);
   serviceLabel->setStyleSheet(sDEFAULT_SERVICE_LABEL_STYLE);
   serviceLabel->setFont(font);

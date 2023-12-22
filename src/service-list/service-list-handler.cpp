@@ -69,7 +69,6 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   mpTableView->setSelectionMode(QAbstractItemView::NoSelection);
   mpTableView->verticalHeader()->hide(); // hide first column
   mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
-  //mpTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
   mServiceDB.open_db(); // program will exit if table could not be opened
   //mServiceDB.delete_table();
@@ -137,6 +136,7 @@ void ServiceListHandler::_fill_table_view_from_db()
 {
   mpTableView->setModel(mServiceDB.create_model());
   mpTableView->resizeColumnsToContents();
+  mpTableView->setFixedWidth(mpTableView->sizeHint().width()); // strange, only this works more reliable
 }
 
 void ServiceListHandler::jump_entries(int32_t iSteps)
@@ -178,7 +178,7 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t i
     while (rowIdxFound < 0) rowIdxFound += maxRows;
     while (rowIdxFound >= maxRows) rowIdxFound -= maxRows;
 
-    if (iSkipOffset != 0) // only trigger new status to the radio frontend if the was changed by a skip
+    if (iSkipOffset != 0) // only trigger new status to the radio frontend if it was changed by a skip
     {
       mChannelLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Channel)).toString();
       mServiceLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Service)).toString();

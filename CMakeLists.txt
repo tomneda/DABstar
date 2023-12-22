@@ -6,8 +6,13 @@ project(DABstar VERSION 2.0.0)
 
 set(objectName "dabstar")
 
+option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
+
 # special release version flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+if (USE_LTO)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+endif ()
+
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
 # common flags
