@@ -103,6 +103,11 @@ void ServiceListHandler::add_entry(const QString & iChannel, const QString & iSe
 
 void ServiceListHandler::delete_table(const bool iDeleteFavorites)
 {
+  // avoid coloring list while scan
+  mChannelLast.clear();
+  mServiceLast.clear();
+  mCustomItemDelegate.set_current_service(mChannelLast, mServiceLast);
+
   mServiceDB.delete_table(iDeleteFavorites);
 }
 
