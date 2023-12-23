@@ -218,7 +218,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Targets service in list if it is out of sight.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Targets service to the center in service list if possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
           <iconset resource="../resources.qrc">
@@ -264,7 +264,7 @@
    <item>
     <widget class="Line" name="line">
      <property name="styleSheet">
-      <string notr="true">background-color: rgb(119, 118, 123);</string>
+      <string notr="true">background-color: transparent;</string>
      </property>
      <property name="orientation">
       <enum>Qt::Vertical</enum>
