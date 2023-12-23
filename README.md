@@ -7,7 +7,6 @@
 
 ## Table of Content
 <!-- TOC -->
-  * [Table of Content](#table-of-content)
   * [Introduction](#introduction)
   * [What is new in 2.0.0](#what-is-new-in-200)
     * [Buttons are icons now](#buttons-are-icons-now)
@@ -164,6 +163,44 @@ sudo apt-get install git cmake qt5-qmake build-essential g++ qt5-default libsndf
 sudo apt-get install libqwt-qt5-dev
 ```
 If you have troubles with the last QWT package `libqwt-qt5-dev` try to build QWT for yourself. See [Link](#qwt-installation--building).
+
+Then for building DABstar do:
+```
+git clone https://github.com/tomneda/DABstar.git
+cd DABstar
+mkdir build
+cd build
+cmake .. -DAIRSPY=ON -DSDRPLAY_V2=ON -DSDRPLAY_V3=ON -DHACKRF=ON -DLIMESDR=ON -DRTL_TCP=ON -DPLUTO=ON -DUHD=ON -DRTLSDR_LINUX=ON -DUSE_HBF=OFF -DDATA_STREAMER=OFF -DVITERBI_SSE=ON -DVITERBI_NEON=OFF -DFDK_AAC=OFF
+make  
+```
+Reduce resp. adapt the `cmake` command line for the devices/features you need.
+
+E.G.: If you have an RTL-SDR stick and work on a desktop PC (I have only tested this on an Intel-PC), this should be the minimum recommendation:
+```
+cmake .. -DRTLSDR_LINUX=ON -DVITERBI_SSE=ON
+```
+
+To speed up compilation you can provide `-j<n>` as argument with `<n>` number of threads after the `make` command. E.G. `make -j4`.
+Do not choose a too high number (or at my side only providing a `-j`) the system can hang due to running out memory and needed swapping!
+
+Finally, in the build folder you can find the program file which you can start with 
+```
+./dabstar
+```
+
+**Attention:** you can try to install the software with 
+
+```
+sudo make install
+sudo ldconfig
+```
+
+but I had problems running this. Maybe because I used a newer QT version than provided by Ubuntu. 
+If you have also problems with the installed version you can undo the installation with 
+```
+sudo make uninstall
+```
+
 
 ### USRP UHD
 
