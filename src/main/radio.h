@@ -251,14 +251,15 @@ private:
   QTimer displayTimer;
   QTimer channelTimer;
   QTimer presetTimer;
+  QTimer mClockResetTimer;
   bool mutingActive = true;
   int32_t numberofSeconds;
   int16_t ficBlocks;
   int16_t ficSuccess;
   int total_ficError;
   int total_fics;
-  struct TheTime localTime;
-  struct TheTime UTC;
+  TheTime mLocalTime;
+  TheTime mUTC;
   timeTableHandler * my_timeTable;
   FILE * ficDumpPointer;
   bool transmitterTags_local;
@@ -266,6 +267,7 @@ private:
   size_t previous_total_time = 0;
   std::unique_ptr<ServiceListHandler> mpServiceListHandler;
   bool mCurFavoriteState = false;
+  bool mClockActiveStyle = true;
 
   static QStringList get_soft_bit_gen_names();
   //bool eventFilter(QObject * obj, QEvent * event) override;
@@ -273,7 +275,7 @@ private:
   void show_pause_slide();
   void connectGUI();
   void disconnectGUI();
-  QString convertTime(int, int, int, int, int);
+  static QString convertTime(int, int, int, int, int, int = -1);
   QString get_version_text() const;
   QString get_copyright_text() const;
   void cleanScreen();
@@ -285,7 +287,7 @@ private:
 
   void start_etiHandler();
   void stop_etiHandler();
-  QString checkDir(const QString);
+  static QString checkDir(const QString &);
 
   void startAudioservice(Audiodata *);
   void startPacketservice(const QString &);
@@ -329,6 +331,7 @@ private:
   void set_favorite_button_style();
   void _show_epg_label(const bool iShowLabel);
   void _set_http_server_button(const bool iActive);
+  void _set_clock_text(const QString & iText = QString());
 
 signals:
   void signal_set_new_channel(int);

@@ -472,7 +472,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #endif
   lcdPalette.setColor(QPalette::Base, Qt::black);
 #endif
-  lblLocalTime->setStyleSheet(get_bg_style_sheet({ 255, 60, 60 }, "QLabel"));
+  _set_clock_text();
+  mClockResetTimer.setSingleShot(true);
+  connect(&mClockResetTimer, &QTimer::timeout, [this](){ _set_clock_text(); });
 
   configWidget.cpuMonitor->setPalette(lcdPalette);
   configWidget.cpuMonitor->setAutoFillBackground(true);
@@ -545,6 +547,31 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     connect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
 #endif
   qApp->installEventFilter(this);
+}
+
+void RadioInterface::_set_clock_text(const QString & iText /*= QString()*/)
+{
+  if (!iText.isEmpty())
+  {
+    mClockResetTimer.start(1300); // if in 1300ms no new clock text is sent, this method is called with an empty iText
+
+    if (!mClockActiveStyle)
+    {
+      lblLocalTime->setStyleSheet(get_bg_style_sheet({ 255, 60, 60 }, "QLabel") + " QLabel { color: white; }");
+      mClockActiveStyle = true;
+    }
+    lblLocalTime->setText(iText);
+  }
+  else
+  {
+    if (mClockActiveStyle)
+    {
+      lblLocalTime->setStyleSheet(get_bg_style_sheet({ 57, 0, 0 }, "QLabel") + " QLabel { color: #333333; }");
+      mClockActiveStyle = false;
+    }
+    //lblLocalTime->setText("YYYY-MM-DD hh:mm:ss");
+    lblLocalTime->setText("0000-00-00 00:00:00");
+  }
 }
 
 RadioInterface::~RadioInterface()
@@ -809,11 +836,11 @@ void RadioInterface::_slot_handle_content_button()
   QString SNR = "SNR " + QString::number(channel.snr);
   if (configWidget.utcSelector->isChecked())
   {
-    theTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
+    theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
   else
   {
-    theTime = convertTime(localTime.year, localTime.month, localTime.day, localTime.hour, localTime.minute);
+    theTime = convertTime(mLocalTime.year, mLocalTime.month, mLocalTime.day, mLocalTime.hour, mLocalTime.minute);
   }
 
   QString header = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";"
@@ -832,7 +859,7 @@ void RadioInterface::_slot_handle_content_button()
   my_contentTable->show();
 }
 
-QString RadioInterface::checkDir(const QString s)
+QString RadioInterface::checkDir(const QString & s)
 {
   QString dir = s;
 
@@ -1462,54 +1489,64 @@ void RadioInterface::_slot_handle_device_widget_button()
 ///////////////////////////////////////////////////////////////////////////
 
 //	called from the fibDecoder
-void RadioInterface::slot_clock_time(int year, int month, int day, int hours, int minutes, int d2, int h2, int m2, int seconds)
+void RadioInterface::slot_clock_time(int year, int month, int day, int hours, int minutes, int utc_day, int utc_hour, int utc_min, int utc_sec)
 {
-  this->localTime.year = year;
-  this->localTime.month = month;
-  this->localTime.day = day;
-  this->localTime.hour = hours;
-  this->localTime.minute = minutes;
-  this->localTime.second = seconds;
+  mLocalTime.year = year;
+  mLocalTime.month = month;
+  mLocalTime.day = day;
+  mLocalTime.hour = hours;
+  mLocalTime.minute = minutes;
+  mLocalTime.second = utc_sec;
 
-#ifdef  CLOCK_STREAMER
-                                                                                                                          uint8_t	localBuffer [10];
-	localBuffer [0] = 0xFF;
-	localBuffer [1] = 0x00;
-	localBuffer [2] = 0xFF;
-	localBuffer [3] = 0x00;
-	localBuffer [4] = (year & 0xFF00) >> 8;
-	localBuffer [5] = year & 0xFF;
-	localBuffer [6] = month;
-	localBuffer [7] = day;
-	localBuffer [8] = minutes;
-	localBuffer [9] = seconds;
-	if (running. load())
-	   clockStreamer -> sendData (localBuffer, 10);
+#ifdef CLOCK_STREAMER
+  uint8_t localBuffer[10];
+  localBuffer[0] = 0xFF;
+  localBuffer[1] = 0x00;
+  localBuffer[2] = 0xFF;
+  localBuffer[3] = 0x00;
+  localBuffer[4] = (year & 0xFF00) >> 8;
+  localBuffer[5] = year & 0xFF;
+  localBuffer[6] = month;
+  localBuffer[7] = day;
+  localBuffer[8] = minutes;
+  localBuffer[9] = seconds;
+  if (running.load())
+  {
+    clockStreamer->sendData(localBuffer, 10);
+  }
 #endif
-  this->UTC.year = year;
-  this->UTC.month = month;
-  this->UTC.day = d2;
-  this->UTC.hour = h2;
-  this->UTC.minute = m2;
+  mUTC.year = year;
+  mUTC.month = month;
+  mUTC.day = utc_day;
+  mUTC.hour = utc_hour;
+  mUTC.minute = utc_min;
+
   QString result;
+
   if (configWidget.utcSelector->isChecked())
   {
-    result = convertTime(year, month, day, h2, m2);
+    result = convertTime(year, month, day, utc_hour, utc_min, utc_sec);
   }
   else
   {
-    result = convertTime(year, month, day, hours, minutes);
+    result = convertTime(year, month, day, hours, minutes, utc_sec);
   }
-  lblLocalTime->setText(result);
+  _set_clock_text(result);
 }
 
-QString RadioInterface::convertTime(int year, int month, int day, int hours, int minutes)
+QString RadioInterface::convertTime(int year, int month, int day, int hours, int minutes, int seconds /*= -1*/)
 {
-  return QString::number(year).rightJustified(4, '0') + "-" +
-         QString::number(month).rightJustified(2, '0') + "-" +
-         QString::number(day).rightJustified(2, '0') + "  " +
-         QString::number(hours).rightJustified(2, '0') + ":" +
-         QString::number(minutes).rightJustified(2, '0');
+  QString t = QString::number(year).rightJustified(4, '0') + "-" +
+              QString::number(month).rightJustified(2, '0') + "-" +
+              QString::number(day).rightJustified(2, '0') + "  " +
+              QString::number(hours).rightJustified(2, '0') + ":" +
+              QString::number(minutes).rightJustified(2, '0');
+
+  if (seconds >= 0)
+  {
+    t += ":" + QString::number(seconds).rightJustified(2, '0');
+  }
+  return t;
 }
 
 //
@@ -1633,12 +1670,12 @@ void RadioInterface::slot_show_label(const QString & s)
           "%s.%s %4d-%02d-%02d %02d:%02d:%02d  %s\n",
           currentChannel.toUtf8().data(),
           channel.currentService.serviceName.toUtf8().data(),
-          localTime.year,
-          localTime.month,
-          localTime.day,
-          localTime.hour,
-          localTime.minute,
-          localTime.second,
+          mLocalTime.year,
+          mLocalTime.month,
+          mLocalTime.day,
+          mLocalTime.hour,
+          mLocalTime.minute,
+          mLocalTime.second,
           s.toUtf8().data());
 }
 
@@ -3099,6 +3136,7 @@ void RadioInterface::stopScanning(bool dump)
 
 void RadioInterface::slot_no_signal_found()
 {
+
   disconnect(my_dabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   channelTimer.stop();
   disconnect(&channelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
@@ -3487,7 +3525,7 @@ void RadioInterface::LOG(const QString & a1, const QString & a2)
   QString theTime;
   if (configWidget.utcSelector->isChecked())
   {
-    theTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
+    theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
   else
   {
