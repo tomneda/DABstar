@@ -590,7 +590,6 @@ QString RadioInterface::get_copyright_text() const
                  "(<a href=\"mailto:J.vanKatwijk@gmail.com\">J.vanKatwijk@gmail.com</a>).</p>";
   versionText += "<p>Rights of Qt, FFTW, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged.<br/>"
                  "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.<br/>"
-                 "Copyright of DevSec Studio for the skin, made available under MIT license, is gratefully acknowledged.<br/>"
                  "Rights of other contributors gratefully acknowledged.</p>";
   versionText += "</p></body></html>";
   return versionText;
