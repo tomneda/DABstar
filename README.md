@@ -7,12 +7,17 @@
 
 ## Table of Content
 <!-- TOC -->
-* [DABstar](#dabstar)
   * [Table of Content](#table-of-content)
   * [Introduction](#introduction)
   * [What is new in 2.0.0](#what-is-new-in-200)
-  * [Some help for scanning](#some-help-for-scanning)
-    * [How to apply TII info](#how-to-apply-tii-info)
+    * [Buttons are icons now](#buttons-are-icons-now)
+    * [Service List](#service-list)
+      * [Favorites](#favorites)
+      * [Sorting](#sorting)
+      * [Channel Buttons](#channel-buttons)
+      * [Target Button](#target-button-)
+    * [Some help for scanning](#some-help-for-scanning)
+  * [How to apply TII info](#how-to-apply-tii-info)
   * [Installing on Linux](#installing-on-linux)
     * [USRP UHD](#usrp-uhd)
     * [QWT installation / building](#qwt-installation--building)
@@ -28,10 +33,10 @@
 Beside many small things under the hood I did major changes in the Look & Feel and mainly in the service selection.
 So I decide to make a major step to version 2 in the version numbering.
 
-[DABstar](https://github.com/tomneda/DABstar) is originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) 
+[DABstar](https://github.com/tomneda/DABstar) was originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) 
 from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes afterwards to Qt-DAB are included.
 
-As there are huge changes made from my side and there will be bigger changes in the future, 
+As there are huge changes and additions (but also reductions) made from my side and there will be bigger changes in the future, 
 I decided to give it the new name **DABstar**.
 
 I saw that with starting of Qt-DAB 6.x, it uses also new code parts and ideas from here. I am very appreciated about this :smiley:.
@@ -119,7 +124,7 @@ Also, the clock on the top of the service list can be used as indicator. Its tim
 can be received. 
 
 
-### How to apply TII info
+## How to apply TII info
 
 That the location, distance and direction to the transmitter can be shown, do following:
 
