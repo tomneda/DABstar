@@ -324,7 +324,7 @@ private:
   void write_warning_message(const QString & iMsg);
   void write_picture(const QPixmap & iPixMap) const;
 
-  static QString get_bg_style_sheet(const QColor & iBgBaseColor);
+  static QString get_bg_style_sheet(const QColor & iBgBaseColor, const char * const ipWidgetType = nullptr);
   void setup_ui_colors();
   void set_favorite_button_style();
   void _show_epg_label(const bool iShowLabel);

@@ -472,11 +472,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #endif
   lcdPalette.setColor(QPalette::Base, Qt::black);
 #endif
+  lblLocalTime->setStyleSheet(get_bg_style_sheet({ 255, 60, 60 }, "QLabel"));
+
   configWidget.cpuMonitor->setPalette(lcdPalette);
   configWidget.cpuMonitor->setAutoFillBackground(true);
-
-  lblLocalTime->setStyleSheet("QLabel { background-color: #6d7caa; color: #d8e1ae; }");
-
   configWidget.deviceSelector->addItems(get_device_name_list());
 
 #ifdef  HAVE_PLUTO_RXTX
@@ -3790,7 +3789,7 @@ QStringList RadioInterface::get_soft_bit_gen_names()
   return sl;
 }
 
-QString RadioInterface::get_bg_style_sheet(const QColor & iBgBaseColor)
+QString RadioInterface::get_bg_style_sheet(const QColor & iBgBaseColor, const char * const iWidgetType /*= nullptr*/)
 {
   const float fac = 0.6f;
   const int32_t r1 = iBgBaseColor.red();
@@ -3805,8 +3804,8 @@ QString RadioInterface::get_bg_style_sheet(const QColor & iBgBaseColor)
   QColor BgBaseColor2(r2, g2, b2);
 
   std::stringstream ts; // QTextStream did not work well here?!
-
-  ts << "QPushButton { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
+  const char * const widgetType = (iWidgetType == nullptr ? "QPushButton" : iWidgetType);
+  ts << widgetType << " { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
      << ", stop:1 " << BgBaseColor2.name().toStdString() << "); }";
   //fprintf(stdout, "*** Style sheet: %s\n", ts.str().c_str());
 
