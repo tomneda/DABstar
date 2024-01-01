@@ -3,6 +3,7 @@
 ---
 
 ![screenshot.png](res/screenshot.png)
+
 (Picture is from version 2.0.0)
 
 ## Table of Content
@@ -62,6 +63,7 @@ it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f
 - Add status information to the main Widget, see below the MOT picture:  
 
 ![](res/mainwidget.png)
+
 (move over the status elements like **SBR** or **PS** to get tool tips information)
 
 ## What is new in 2.0.0
