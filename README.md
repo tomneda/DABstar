@@ -60,7 +60,13 @@ it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f
 ## What is new in 2.1.0
 
 - Some minor fixes and refinings made.
-- Add status information to the main Widget, see below the MOT picture:  
+- Add status information to the main Widget, see below the MOT picture: 
+  - Show the ACC decoder input bit rate.
+  - Show whether Stereo mode is active.
+  - Show whether EPG (Electronic Program Guide) data are available
+  - Show whether SBR (Spectrum Band Replication) mode is active
+  - Show whether PS (Parameter Stereo) mode is active
+  - Show whether an announcement is currently made. 
 
 ![](res/mainwidget.png)
 
