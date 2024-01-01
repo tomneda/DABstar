@@ -64,7 +64,7 @@ it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f
 
 ![](res/mainwidget.png)
 
-(move over the status elements like **SBR** or **PS** to get tool tips information)
+(move over the status elements like **SBR** or **PS** to get tooltip information)
 
 ## What is new in 2.0.0
 
