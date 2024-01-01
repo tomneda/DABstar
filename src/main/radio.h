@@ -187,6 +187,28 @@ public:
 private:
   static constexpr int32_t SWITCH_DELAY = 3; // switch time in second until service is called after channel selection
 
+  template<typename T>
+  struct StatusInfoElem
+  {
+    T value{};
+    QColor colorOn;
+    QColor colorOff;
+    QLabel * pLbl = nullptr;
+  };
+
+  struct StatusInfo
+  {
+    StatusInfoElem<bool>    Stereo;
+    StatusInfoElem<bool>    EPG;
+    StatusInfoElem<bool>    SBR;
+    StatusInfoElem<bool>    PS;
+    StatusInfoElem<bool>    Announce;
+    StatusInfoElem<int32_t> BitRate;
+  };
+
+  int32_t mAudioFrameCnt = 0;
+  int32_t mMotObjectCnt = 0;
+  StatusInfo mStatusInfo{};
   FILE * dlTextFile;
   RingBuffer<cmplx> spectrumBuffer;
   RingBuffer<cmplx> iqBuffer;
@@ -220,7 +242,6 @@ private:
   Ui_configWidget configWidget;
   QSettings * dabSettings;
   int32_t dataPort;
-  bool stereoSetting;
   std::atomic<bool> running;
   std::atomic<bool> scanning;
   IDeviceHandler * mpInputDevice;
@@ -276,7 +297,6 @@ private:
   void connectGUI();
   void disconnectGUI();
   static QString convertTime(int, int, int, int, int, int = -1);
-  QString get_version_text() const;
   QString get_copyright_text() const;
   void cleanScreen();
   void hideButtons();
@@ -332,6 +352,10 @@ private:
   void _show_epg_label(const bool iShowLabel);
   void _set_http_server_button(const bool iActive);
   void _set_clock_text(const QString & iText = QString());
+  void _create_status_info();
+  template<typename T> void _add_status_label_elem(StatusInfoElem<T> & ioElem, const uint32_t iColor, const QString & iName, const QString & iToolTip);
+  template<typename T> void _set_status_info_status(StatusInfoElem<T> & iElem, const T iValue);
+  void _reset_status_info();
 
 signals:
   void signal_set_new_channel(int);

@@ -292,44 +292,22 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QLabel" name="EPGLabel">
-         <property name="maximumSize">
-          <size>
-           <width>32</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::WinPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
-         </property>
-         <property name="text">
-          <string>EPG</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,4,1">
        <item>
-        <widget class="QLabel" name="stereoLabel">
-         <property name="text">
-          <string>stereo</string>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <widget class="QLabel" name="serviceLabel">
@@ -644,6 +622,9 @@
       </layout>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="layoutStatus"/>
+     </item>
+     <item>
       <widget class="QLabel" name="lblDynLabel">
        <property name="minimumSize">
         <size>
@@ -666,7 +647,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string>---</string>
        </property>
        <property name="textFormat">
         <enum>Qt::PlainText</enum>

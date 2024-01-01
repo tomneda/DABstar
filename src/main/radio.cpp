@@ -41,6 +41,7 @@
 #include  <QStringListModel>
 #include  <QMouseEvent>
 #include  <QDir>
+#include  <QSpacerItem>
 #include  "dab-constants.h"
 #include  "mot-content-types.h"
 #include  "radio.h"
@@ -151,7 +152,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   running.store(false);
   scanning.store(false);
   my_dabProcessor = nullptr;
-  stereoSetting = false;
   maxDistance = -1;
   my_contentTable = nullptr;
   //my_scanTable = nullptr;
@@ -189,8 +189,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-  setFixedSize(710, 470); // with 707, full segments of the FIC progress bar are shown
+  setFixedSize(710, 470+20);
   setup_ui_colors();
+  _create_status_info();
 
   // only the queued call will consider the button size?!
   QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection);
@@ -597,7 +598,7 @@ QString RadioInterface::get_copyright_text() const
 
 void RadioInterface::_show_epg_label(const bool iShowLabel)
 {
-  EPGLabel->setStyleSheet("QLabel {background-color: " + QString(iShowLabel ? "#f97903" : "#303030") + "; color: black}");
+  _set_status_info_status(mStatusInfo.EPG, iShowLabel);
 }
 
 // _slot_do_start(QString) is called when - on startup - NO device was registered to be used, and the user presses the selectDevice comboBox
@@ -958,9 +959,8 @@ void RadioInterface::save_MOTObject(QByteArray & result, QString name)
 
   if (name == "")
   {
-    static int counter = 0;
-    name = "motObject_" + QString::number(counter);
-    counter++;
+    name = "motObject_" + QString::number(mMotObjectCnt);
+    ++mMotObjectCnt;
   }
   save_MOTtext(result, 5, name);
 }
@@ -1224,14 +1224,20 @@ void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
     return;
   }
 
-  static int teller = 0;
-  if (!theTechWindow->isHidden())
+  mAudioFrameCnt++;
+
+  if (mAudioFrameCnt > 10)
   {
-    teller++;
-    if (teller > 10)
+    mAudioFrameCnt = 0;
+
+    const bool sbrUsed = ((iAudioFlags & RadioInterface::AFL_SBR_USED) != 0);
+    const bool psUsed  = ((iAudioFlags & RadioInterface::AFL_PS_USED) != 0);
+    _set_status_info_status(mStatusInfo.SBR, sbrUsed);
+    _set_status_info_status(mStatusInfo.PS, psUsed);
+
+    if (!theTechWindow->isHidden())
     {
-      teller = 0;
-      theTechWindow->show_sample_rate_and_audio_flags(iSR, iAudioFlags);
+      theTechWindow->show_sample_rate_and_audio_flags(iSR, sbrUsed, psUsed);
     }
   }
   int16_t vec[iAmount];
@@ -1680,17 +1686,7 @@ void RadioInterface::slot_show_label(const QString & s)
 
 void RadioInterface::slot_set_stereo(bool b)
 {
-  if (!running.load())
-  {
-    return;
-  }
-  if (stereoSetting == b)
-  {
-    return;
-  }
-  stereoLabel->setStyleSheet(b ? "color:#FF4444" : "color:#AAAAAA");
-  stereoLabel->setText(b ? "<b>STEREO</b>" : "<b>MONO</b>");
-  stereoSetting = b;
+  _set_status_info_status(mStatusInfo.Stereo, b);
 }
 
 static QString tiiNumber(int n)
@@ -2391,14 +2387,14 @@ void RadioInterface::slot_start_announcement(const QString & name, int subChId)
 
   if (name == serviceLabel->text())
   {
-    serviceLabel->setStyleSheet("color : yellow");
-    fprintf(stdout, "announcement for %s (%d) starts\n", name.toUtf8().data(), subChId);
+    _set_status_info_status(mStatusInfo.Announce, true);
+    //serviceLabel->setStyleSheet("color : yellow");
+    fprintf(stdout, "Announcement for %s (%d) starts\n", name.toUtf8().data(), subChId);
   }
 }
 
 void RadioInterface::slot_stop_announcement(const QString & name, int subChId)
 {
-  (void)subChId;
   if (!running.load())
   {
     return;
@@ -2406,8 +2402,8 @@ void RadioInterface::slot_stop_announcement(const QString & name, int subChId)
 
   if (name == serviceLabel->text())
   {
-    serviceLabel->setStyleSheet(sDEFAULT_SERVICE_LABEL_STYLE);
-    fprintf(stdout, "end for announcement service %s\n", name.toUtf8().data());
+    _set_status_info_status(mStatusInfo.Announce, false);
+    fprintf(stdout, "Announcement for %s (%d) stops\n", name.toUtf8().data(), subChId);
   }
 }
 
@@ -2528,12 +2524,6 @@ void RadioInterface::stopService(DabService & s)
   presetTimer.stop();
   channelTimer.stop();
 
-  // reset muting if active
-//  if (mutingActive)
-//  {
-//    _slot_handle_mute_button();
-//  }
-
   if (my_dabProcessor == nullptr)
   {
     fprintf(stderr, "Expert error 22\n");
@@ -2624,7 +2614,7 @@ void RadioInterface::startService(DabService & s)
   QFont font = serviceLabel->font();
   font.setPointSize(16);
   font.setBold(true);
-  serviceLabel->setStyleSheet(sDEFAULT_SERVICE_LABEL_STYLE);
+  serviceLabel->setStyleSheet("QLabel { color: lightblue; }");
   serviceLabel->setFont(font);
   serviceLabel->setText(serviceName);
   lblDynLabel->setText("");
@@ -2703,6 +2693,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
   programTypeLabel->setText(getProgramType(ad->programType));
   //	show service related data
   theTechWindow->show_serviceData(ad);
+  _set_status_info_status(mStatusInfo.BitRate, (int32_t)(ad->bitRate));
 }
 
 void RadioInterface::startPacketservice(const QString & s)
@@ -2750,12 +2741,9 @@ void RadioInterface::cleanScreen()
   lblDynLabel->setStyleSheet("color: white");
   lblDynLabel->setText("");
   theTechWindow->cleanUp();
-  stereoLabel->setText("");
   programTypeLabel->setText("");
-
-  stereoSetting = false;
   theTechWindow->cleanUp();
-  slot_set_stereo(false);
+  _reset_status_info();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -3908,3 +3896,69 @@ void RadioInterface::_slot_set_static_button_style()
   btnScanning->setFixedSize(QSize(32, 32));
   btnScanning->init(":res/icons/scan24.png", 3, 1);
 }
+
+void RadioInterface::_create_status_info()
+{
+  layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
+
+  _add_status_label_elem(mStatusInfo.BitRate,  0x40c6db, "0 kBit/s", "Input bitrate for AAC audio decoder");
+  _add_status_label_elem(mStatusInfo.Stereo,   0xf2c629, "Stereo", "Stereo");
+  _add_status_label_elem(mStatusInfo.EPG,      0xf2c629, "EPG", "Electronic Program Guide");
+  _add_status_label_elem(mStatusInfo.SBR,      0xf2c629, "SBR", "Spectral Band Replication");
+  _add_status_label_elem(mStatusInfo.PS,       0xf2c629, "PS", "Parametric Stereo");
+  _add_status_label_elem(mStatusInfo.Announce, 0xf2c629, "Announce", "Announcement");
+
+  layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
+
+  _reset_status_info();
+}
+
+template<typename T>
+void RadioInterface::_add_status_label_elem(StatusInfoElem<T> & ioElem, const uint32_t iColor, const QString & iName, const QString & iToolTip)
+{
+  ioElem.colorOn = iColor;
+  ioElem.colorOff = 0x444444;
+  ioElem.value = !T(); // invalidate cache
+
+  ioElem.pLbl = new QLabel(this);
+
+  ioElem.pLbl->setObjectName("lbl" + iName);
+  ioElem.pLbl->setText(iName);
+  ioElem.pLbl->setToolTip(iToolTip);
+
+  QFont font = ioElem.pLbl->font();
+  font.setBold(true);
+  font.setWeight(75);
+  ioElem.pLbl->setFont(font);
+
+  layoutStatus->addWidget(ioElem.pLbl);
+}
+
+template<typename T>
+void RadioInterface::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue)
+{
+  if (iElem.value != iValue)
+  {
+    iElem.value = iValue;
+    iElem.pLbl->setStyleSheet(iElem.value ? "QLabel { color: " + iElem.colorOn.name() + " }"
+                                          : "QLabel { color: " + iElem.colorOff.name() + " }");
+
+    if (!std::is_same<T, bool>::value)
+    {
+      iElem.pLbl->setText(QString::number(iValue) + " kBit/s"); // not clean to place the unit here but it is the only one yet
+    }
+  }
+}
+
+void RadioInterface::_reset_status_info()
+{
+  _set_status_info_status(mStatusInfo.BitRate, 0);
+  _set_status_info_status(mStatusInfo.Stereo, false);
+  _set_status_info_status(mStatusInfo.EPG, false);
+  _set_status_info_status(mStatusInfo.SBR, false);
+  _set_status_info_status(mStatusInfo.PS, false);
+  _set_status_info_status(mStatusInfo.Announce, false);
+}
+
+
+

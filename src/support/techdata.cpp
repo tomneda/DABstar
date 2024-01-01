@@ -321,12 +321,12 @@ void TechData::audiodumpButton_text(const QString & text, int size)
   audiodumpButton->update();
 }
 
-void TechData::show_sample_rate_and_audio_flags(int iSR, int iAudioFlags)
+void TechData::show_sample_rate_and_audio_flags(int32_t iSampleRate, bool iSbrUsed, bool iPsUsed)
 {
-  audioRate->display(iSR);
+  audioRate->display(iSampleRate);
   QString afs;
-  afs += ((iAudioFlags & RadioInterface::AFL_SBR_USED) != 0 ? "YES / " : "NO / ");
-  afs += ((iAudioFlags & RadioInterface::AFL_PS_USED) != 0 ? "YES" : "NO");
+  afs += (iSbrUsed ? "YES / " : "NO / ");
+  afs += (iPsUsed ? "YES" : "NO");
   lblSbrUsed->setText(afs);
 }
 
