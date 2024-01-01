@@ -3901,11 +3901,11 @@ void RadioInterface::_create_status_info()
 {
   layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-  _add_status_label_elem(mStatusInfo.BitRate,  0x40c6db, "0 kBit/s", "Input bitrate for AAC audio decoder");
-  _add_status_label_elem(mStatusInfo.Stereo,   0xf2c629, "Stereo", "Stereo");
-  _add_status_label_elem(mStatusInfo.EPG,      0xf2c629, "EPG", "Electronic Program Guide");
-  _add_status_label_elem(mStatusInfo.SBR,      0xf2c629, "SBR", "Spectral Band Replication");
-  _add_status_label_elem(mStatusInfo.PS,       0xf2c629, "PS", "Parametric Stereo");
+  _add_status_label_elem(mStatusInfo.BitRate,  0x40c6db, "0 kBit/s", "Input bitrate of AAC audio decoder");
+  _add_status_label_elem(mStatusInfo.Stereo,   0xf2c629, "Stereo",   "Stereo");
+  _add_status_label_elem(mStatusInfo.EPG,      0xf2c629, "EPG",      "Electronic Program Guide");
+  _add_status_label_elem(mStatusInfo.SBR,      0xf2c629, "SBR",      "Spectral Band Replication");
+  _add_status_label_elem(mStatusInfo.PS,       0xf2c629, "PS",       "Parametric Stereo");
   _add_status_label_elem(mStatusInfo.Announce, 0xf2c629, "Announce", "Announcement");
 
   layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
