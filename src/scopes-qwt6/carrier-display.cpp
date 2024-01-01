@@ -235,8 +235,8 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Null Sym. ovr. Pow.";
     cp.YTopValue = 6.0;
-    cp.YBottomValue = -36.0;
-    cp.YValueElementNo = 8;
+    cp.YBottomValue = -42.0;
+    cp.YValueElementNo = 9;
     cp.MarkerYValueStep = 1;
     break;
   }
