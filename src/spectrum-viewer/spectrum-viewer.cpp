@@ -290,37 +290,22 @@ void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iModQual, float iTi
 
 void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
 {
-  if (myFrame.isHidden())
-  {
-    return;
-  }
   lcdNomFrequency->display(QString("%1").arg(iFreqMHz, 0, 'f', 3));
 }
 
 void SpectrumViewer::show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
 {
-  if (myFrame.isHidden())
-  {
-    return;
-  }
   lcdFreqCorrRF->display(iFreqCorrRF);
 }
 
 void SpectrumViewer::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
 {
-  if (myFrame.isHidden())
-  {
-    return;
-  }
   lcdFreqCorrBB->display(iFreqCorrBB);
 }
 
 void SpectrumViewer::show_clock_error(float iClockErr)
 {
-  if (!myFrame.isHidden())
-  {
-    lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
-  }
+  lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
 }
 
 void SpectrumViewer::show_correlation(int32_t dots, int32_t marker, const QVector<int32_t> & v)
