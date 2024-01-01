@@ -30,15 +30,15 @@
 #ifndef  FIB_CONFIG_H
 #define  FIB_CONFIG_H
 
-class service
+class Service
 {
 public:
-  service()
+  Service()
   {
     reset();
   }
 
-  ~service()
+  ~Service()
   {
     reset();
   }
@@ -69,15 +69,15 @@ public:
   std::vector<EpgElement> epgData;
 };
 
-class ensembleDescriptor
+class EnsembleDescriptor
 {
 public:
-  ensembleDescriptor()
+  EnsembleDescriptor()
   {
     reset();
   }
 
-  ~ensembleDescriptor()
+  ~EnsembleDescriptor()
   {}
 
   void reset()
@@ -99,18 +99,18 @@ public:
   uint8_t ecc_byte;
   uint8_t countryId;
   bool isSynced;
-  service services[64];
+  Service services[64];
 };
 
-class subChannelDescriptor
+class SubChannelDescriptor
 {
 public:
-  subChannelDescriptor()
+  SubChannelDescriptor()
   {
     reset();
   }
 
-  ~subChannelDescriptor()
+  ~SubChannelDescriptor()
   {}
 
   void reset()
@@ -136,15 +136,15 @@ public:
 //      The service component describes the actual service
 //      It really should be a union, the component data for
 //      audio and data are quite different
-class serviceComponentDescriptor
+class ServiceComponentDescriptor
 {
 public:
-  serviceComponentDescriptor()
+  ServiceComponentDescriptor()
   {
     reset();
   }
 
-  ~serviceComponentDescriptor()
+  ~ServiceComponentDescriptor()
   {}
 
   void reset()
@@ -205,15 +205,15 @@ public:
   }
 };
 
-class dabConfig
+class DabConfig
 {
 public:
-  dabConfig()
+  DabConfig()
   {
     reset();
   }
 
-  ~dabConfig()
+  ~DabConfig()
   {
   }
 
@@ -227,8 +227,8 @@ public:
     }
   }
 
-  subChannelDescriptor subChannels[64];
-  serviceComponentDescriptor serviceComps[64];
+  SubChannelDescriptor subChannels[64];
+  ServiceComponentDescriptor serviceComps[64];
   Cluster clusterTable[128];
 };
 

@@ -45,12 +45,12 @@
 
 class RadioInterface;
 
-class motObject : public QObject
+class MotObject : public QObject
 {
 Q_OBJECT
 public:
-  motObject(RadioInterface * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag);
-  ~motObject() override = default;
+  MotObject(RadioInterface * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag);
+  ~MotObject() override = default;
 
   void addBodySegment(const uint8_t * bodySegment, int16_t segmentNumber, int32_t segmentSize, bool lastFlag);
   uint16_t get_transportId();

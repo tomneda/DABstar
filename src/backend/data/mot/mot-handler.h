@@ -36,8 +36,8 @@
 #include  <vector>
 
 class RadioInterface;
-class motObject;
-class motDirectory;
+class MotObject;
+class MotDirectory;
 
 class motHandler : public virtual_dataHandler
 {
@@ -49,10 +49,10 @@ public:
 private:
   RadioInterface * myRadioInterface;
   int orderNumber;
-  motDirectory * theDirectory;
+  MotDirectory * theDirectory;
 
-  void setHandle(motObject *, uint16_t);
-  motObject * getHandle(uint16_t);
+  void setHandle(MotObject *, uint16_t);
+  MotObject * getHandle(uint16_t);
 };
 
 #endif

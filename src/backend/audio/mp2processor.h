@@ -71,7 +71,7 @@ public:
 private:
   RadioInterface * myRadioInterface;
   int16_t bitRate;
-  padHandler my_padhandler;
+  PadHandler my_padhandler;
   int32_t mp2sampleRate(uint8_t *);
   int32_t mp2decodeFrame(uint8_t *, int16_t *);
   RingBuffer<int16_t> * buffer;

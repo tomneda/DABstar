@@ -41,7 +41,7 @@ struct motTable_
 {
   uint16_t transportId;
   int32_t orderNumber;
-  motObject * motSlide;
+  MotObject * motSlide;
 } motTable[55];
 
 motHandler::motHandler(RadioInterface * mr)
@@ -155,12 +155,12 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
   case 3:
     if (segmentNumber == 0)
     {
-      motObject * h = getHandle(transportId);
+      MotObject * h = getHandle(transportId);
       if (h != nullptr)
       {
         break;
       }
-      h = new motObject(myRadioInterface, false,  // not within a directory
+      h = new MotObject(myRadioInterface, false,  // not within a directory
                         transportId, &motVector[2], segmentSize, lastFlag);
       setHandle(h, transportId);
     }
@@ -168,10 +168,10 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
 
   case 4:
   {
-    motObject * h = getHandle(transportId);
+    MotObject * h = getHandle(transportId);
     if (h == nullptr)
     {
-      h = new motObject(myRadioInterface, false,  // not within a directory
+      h = new MotObject(myRadioInterface, false,  // not within a directory
                         transportId, &motVector[2], segmentSize, lastFlag);
       setHandle(h, transportId);
     }
@@ -204,7 +204,7 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
       //	                          (segment [7] <<  8) | segment [8];
       //	         int32_t segSize
       //	                        = ((segment [9] & 0x1F) << 8) | segment [10];
-      theDirectory = new motDirectory(myRadioInterface, transportId, segmentSize, dirSize, numObjects, segment);
+      theDirectory = new MotDirectory(myRadioInterface, transportId, segmentSize, dirSize, numObjects, segment);
     }
     else
     {
@@ -221,7 +221,7 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
   }
 }
 
-motObject * motHandler::getHandle(uint16_t transportId)
+MotObject * motHandler::getHandle(uint16_t transportId)
 {
   int i;
 
@@ -239,7 +239,7 @@ motObject * motHandler::getHandle(uint16_t transportId)
   return nullptr;
 }
 
-void motHandler::setHandle(motObject * h, uint16_t transportId)
+void motHandler::setHandle(MotObject * h, uint16_t transportId)
 {
   int i;
   int oldest = orderNumber;

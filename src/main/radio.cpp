@@ -779,7 +779,7 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
 //  }
 
   //ensembleDisplay->setModel(&model);
-//  if (channel.serviceCount == model.rowCount() && !scanning)
+//  if (channel.serviceCount == model.rowCount() && !scanning)  // channel.serviceCount is only set in minor channels (here around Munich only 1 from 9)
 //  {
 //    presetTimer.stop();
 //    _slot_set_preset_service();
@@ -3511,7 +3511,7 @@ void RadioInterface::_slot_handle_config_button()
 
 void RadioInterface::slot_nr_services(int n)
 {
-  channel.serviceCount = n;
+  channel.serviceCount = n; // only a minor channel transmit this information, so do not rely on this
 }
 
 void RadioInterface::LOG(const QString & a1, const QString & a2)

@@ -41,8 +41,8 @@
 #include  "dab-config.h"
 
 class RadioInterface;
-class ensembleDescriptor;
-class dabConfig;
+class EnsembleDescriptor;
+class DabConfig;
 class Cluster;
 
 class FibDecoder : public QObject
@@ -86,9 +86,9 @@ protected:
 private:
   std::vector<serviceId> insert_sorted(const std::vector<serviceId> & l, serviceId n);
   RadioInterface * myRadioInterface = nullptr;
-  dabConfig * currentConfig = nullptr;
-  dabConfig * nextConfig = nullptr;
-  ensembleDescriptor * ensemble = nullptr;
+  DabConfig * currentConfig = nullptr;
+  DabConfig * nextConfig = nullptr;
+  EnsembleDescriptor * ensemble = nullptr;
   std::array<int32_t, 8> dateTime{};
   QMutex fibLocker;
   int32_t CIFcount = 0;
@@ -132,16 +132,16 @@ private:
   int findService(uint32_t);
   void cleanupServiceList();
   void createService(QString name, uint32_t SId, int SCIds);
-  int findServiceComponent(dabConfig *, int16_t);
-  int findComponent(dabConfig * db, uint32_t SId, int16_t subChId);
-  int findServiceComponent(dabConfig *, uint32_t, uint8_t);
-  void bind_audioService(dabConfig *, int8_t, uint32_t, int16_t, int16_t, int16_t, int16_t);
-  void bind_packetService(dabConfig *, int8_t, uint32_t, int16_t, int16_t, int16_t, int16_t);
+  int findServiceComponent(DabConfig *, int16_t);
+  int findComponent(DabConfig * db, uint32_t SId, int16_t subChId);
+  int findServiceComponent(DabConfig *, uint32_t, uint8_t);
+  void bind_audioService(DabConfig *, int8_t, uint32_t, int16_t, int16_t, int16_t, int16_t);
+  void bind_packetService(DabConfig *, int8_t, uint32_t, int16_t, int16_t, int16_t, int16_t);
 
   QString announcements(uint16_t);
 
-  void setCluster(dabConfig *, int, int16_t, uint16_t);
-  Cluster * getCluster(dabConfig *, int16_t);
+  void setCluster(DabConfig *, int, int16_t, uint16_t);
+  Cluster * getCluster(DabConfig *, int16_t);
 
   QString serviceName(int index);
   QString serviceIdOf(int index);
@@ -166,13 +166,13 @@ private:
   QString packetData(int index);
 
 signals:
-  void addtoEnsemble(const QString &, int);
-  void nameofEnsemble(int, const QString &);
-  void clockTime(int, int, int, int, int, int, int, int, int);
-  void changeinConfiguration();
-  void startAnnouncement(const QString &, int);
-  void stopAnnouncement(const QString &, int);
-  void nrServices(int);
+  void signal_add_to_ensemble(const QString &, int);
+  void signal_name_of_ensemble(int, const QString &);
+  void signal_clock_time(int, int, int, int, int, int, int, int, int);
+  void signal_change_in_configuration();
+  void signal_start_announcement(const QString &, int);
+  void signal_stop_announcement(const QString &, int);
+  void signal_nr_services(int);
 };
 
 #endif

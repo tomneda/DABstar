@@ -31,17 +31,17 @@
 #include	<vector>
 class	RadioInterface;
 
-class	motDirectory {
+class	MotDirectory {
 public:
-			motDirectory	(RadioInterface *,
-	                                 uint16_t,
-	                                 int16_t,
-	                                 int32_t,
-	                                 int16_t,
-	                                 uint8_t *);
-			~motDirectory();
-	motObject	*getHandle	(uint16_t);
-	void		setHandle	(motObject *, uint16_t);
+			MotDirectory	(RadioInterface *,
+                     uint16_t,
+                     int16_t,
+                     int32_t,
+                     int16_t,
+                     uint8_t *);
+			~MotDirectory();
+	MotObject	*getHandle	(uint16_t);
+	void		setHandle	(MotObject *, uint16_t);
 	void		directorySegment (uint16_t transportId,
                                         uint8_t *segment,
                                         int16_t segmentNumber,
@@ -62,7 +62,7 @@ private:
 	typedef struct {
 	   bool		inUse;
 	   uint16_t	transportId;
-	   motObject	*motSlide;
+	   MotObject	*motSlide;
 	} motComponentType;
 	std::vector<motComponentType>	motComponents;
 };

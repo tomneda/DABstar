@@ -49,16 +49,16 @@ FibDecoder::FibDecoder(RadioInterface * mr) :
   myRadioInterface(mr)
 {
   //connect(this, &FibDecoder::addtoEnsemble, myRadioInterface, &RadioInterface::slot_add_to_ensemble);
-  connect(this, &FibDecoder::nameofEnsemble, myRadioInterface, &RadioInterface::slot_name_of_ensemble);
-  connect(this, &FibDecoder::clockTime, myRadioInterface, &RadioInterface::slot_clock_time);
-  connect(this, &FibDecoder::changeinConfiguration, myRadioInterface, &RadioInterface::slot_change_in_configuration);
-  connect(this, &FibDecoder::startAnnouncement, myRadioInterface, &RadioInterface::slot_start_announcement);
-  connect(this, &FibDecoder::stopAnnouncement, myRadioInterface, &RadioInterface::slot_stop_announcement);
-  connect(this, &FibDecoder::nrServices, myRadioInterface, &RadioInterface::slot_nr_services);
+  connect(this, &FibDecoder::signal_name_of_ensemble, myRadioInterface, &RadioInterface::slot_name_of_ensemble);
+  connect(this, &FibDecoder::signal_clock_time, myRadioInterface, &RadioInterface::slot_clock_time);
+  connect(this, &FibDecoder::signal_change_in_configuration, myRadioInterface, &RadioInterface::slot_change_in_configuration);
+  connect(this, &FibDecoder::signal_start_announcement, myRadioInterface, &RadioInterface::slot_start_announcement);
+  connect(this, &FibDecoder::signal_stop_announcement, myRadioInterface, &RadioInterface::slot_stop_announcement);
+  connect(this, &FibDecoder::signal_nr_services, myRadioInterface, &RadioInterface::slot_nr_services);
 
-  currentConfig = new dabConfig();
-  nextConfig = new dabConfig();
-  ensemble = new ensembleDescriptor();
+  currentConfig = new DabConfig();
+  nextConfig = new DabConfig();
+  ensemble = new EnsembleDescriptor();
 }
 
 FibDecoder::~FibDecoder()
@@ -254,12 +254,12 @@ void FibDecoder::FIG0Extension0(const uint8_t * d)
   if ((changeFlag == 0) && (prevChangeFlag == 3))
   {
     fprintf(stdout, "handling change\n");
-    dabConfig * temp = currentConfig;
+    DabConfig * temp = currentConfig;
     currentConfig = nextConfig;
     nextConfig = temp;
     nextConfig->reset();
     cleanupServiceList();
-    emit changeinConfiguration();
+    emit signal_change_in_configuration();
   }
 
   prevChangeFlag = changeFlag;
@@ -294,8 +294,8 @@ int16_t FibDecoder::HandleFIG0Extension1(const uint8_t * d, int16_t offset, uint
   int16_t startAdr = getBits(d, bitOffset + 6, 10);
   int16_t tabelIndex;
   int16_t option, protLevel, subChanSize;
-  subChannelDescriptor subChannel;
-  dabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  SubChannelDescriptor subChannel;
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
   static int table_1[] = { 12, 8, 6, 4 };
   static int table_2[] = { 27, 21, 18, 15 };
 
@@ -458,7 +458,7 @@ int16_t FibDecoder::HandleFIG0Extension3(const uint8_t * d, int16_t used, uint8_
 
   int serviceCompIndex;
   int serviceIndex;
-  dabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
   (void)PD_bit;
@@ -505,7 +505,7 @@ int16_t FibDecoder::HandleFIG0Extension3(const uint8_t * d, int16_t used, uint8_
 
   if (!ensemble->services[serviceIndex].is_shown)
   {
-    addtoEnsemble(serviceName, ensemble->services[serviceIndex].SId);
+    emit signal_add_to_ensemble(serviceName, ensemble->services[serviceIndex].SId);
   }
   ensemble->services[serviceIndex].is_shown = true;
   localBase->serviceComps[serviceCompIndex].is_madePublic = true;
@@ -536,7 +536,7 @@ int16_t FibDecoder::HandleFIG0Extension5(const uint8_t * d, uint8_t CN_bit, uint
   int16_t bitOffset = offset * 8;
   uint8_t lsFlag = getBits_1(d, bitOffset);
   int16_t language;
-  dabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
   (void)PD_bit;
@@ -586,7 +586,7 @@ void FibDecoder::FIG0Extension7(const uint8_t * d)
   //	fprintf (stdout, "services : %d\n", serviceCount);
   if (CN_bit == 0)
   {  // only current configuration for now
-    nrServices(serviceCount);
+    emit signal_nr_services(serviceCount);
   }
   (void)counter;
 }
@@ -614,7 +614,7 @@ int16_t FibDecoder::HandleFIG0Extension8(const uint8_t * d, int16_t used, uint8_
   uint8_t lsFlag;
   uint16_t SCIds;
   uint8_t extensionFlag;
-  dabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
   bitOffset += PD_bit == 1 ? 32 : 16;
@@ -683,7 +683,7 @@ int16_t FibDecoder::HandleFIG0Extension13(const uint8_t * d, int16_t used, uint8
   int16_t NoApplications;
   int16_t i;
   int16_t appType;
-  dabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
   bitOffset += pdBit == 1 ? 32 : 16;
@@ -725,7 +725,7 @@ void FibDecoder::FIG0Extension14(const uint8_t * d)
   uint8_t OE_bit = getBits_1(d, 8 + 1);
   uint8_t PD_bit = getBits_1(d, 8 + 2);
   int16_t used = 2;      // in Bytes
-  dabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
   (void)PD_bit;
@@ -789,7 +789,7 @@ void FibDecoder::FIG0Extension18(const uint8_t * d)
   uint8_t PD_bit = getBits_1(d, 8 + 2);
   int16_t used = 2;      // in Bytes
   int16_t bitOffset = used * 8;
-  dabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
   (void)PD_bit;
@@ -832,7 +832,7 @@ void FibDecoder::FIG0Extension19(const uint8_t * d)
   uint8_t PD_bit = getBits_1(d, 8 + 2);
   int16_t used = 2;      // in Bytes
   int16_t bitOffset = used * 8;
-  dabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
   (void)PD_bit;
@@ -877,7 +877,7 @@ void FibDecoder::FIG0Extension19(const uint8_t * d)
         for (uint16_t i = 0; i < myCluster->services.size(); i++)
         {
           const QString name = ensemble->services[myCluster->services[i]].serviceLabel;
-          emit startAnnouncement(name, subChId);
+          emit signal_start_announcement(name, subChId);
         }
       }
     }
@@ -889,7 +889,7 @@ void FibDecoder::FIG0Extension19(const uint8_t * d)
         for (uint16_t i = 0; i < myCluster->services.size(); i++)
         {
           const QString name = ensemble->services[myCluster->services[i]].serviceLabel;
-          emit stopAnnouncement(name, subChId);
+          emit signal_stop_announcement(name, subChId);
         }
       }
     }
@@ -1018,7 +1018,7 @@ void FibDecoder::FIG1Extension0(const uint8_t * d)
       ensemble->ensembleName = name;
       ensemble->ensembleId = EId;
       ensemble->namePresent = true;
-      nameofEnsemble(EId, name);
+      emit signal_name_of_ensemble(EId, name);
     }
     ensemble->isSynced = true;
   }
@@ -1110,7 +1110,7 @@ void FibDecoder::FIG1Extension4(const uint8_t * d)
       if (currentConfig->serviceComps[compIndex].TMid == 0)
       {
         createService(dataName, SId, SCIds);
-        addtoEnsemble(dataName, SId);
+        emit signal_add_to_ensemble(dataName, SId);
       }
     }
   }
@@ -1197,7 +1197,7 @@ void FibDecoder::FIG1Extension6(const uint8_t * d)
 //	bind_audioService is the main processor for - what the name suggests -
 //	connecting the description of audioservices to a SID
 //	by creating a service Component
-void FibDecoder::bind_audioService(dabConfig * base, int8_t TMid, uint32_t SId, int16_t compnr, int16_t subChId, int16_t ps_flag, int16_t ASCTy)
+void FibDecoder::bind_audioService(DabConfig * base, int8_t TMid, uint32_t SId, int16_t compnr, int16_t subChId, int16_t ps_flag, int16_t ASCTy)
 {
   int16_t i;
   int16_t firstFree = -1;
@@ -1252,7 +1252,7 @@ void FibDecoder::bind_audioService(dabConfig * base, int8_t TMid, uint32_t SId, 
     base->serviceComps[firstFree].inUse = true;
     ensemble->services[serviceIndex].SCIds = 0;
 
-    addtoEnsemble(dataName, SId);
+    emit signal_add_to_ensemble(dataName, SId);
   }
   ensemble->services[serviceIndex].is_shown = true;
 }
@@ -1262,7 +1262,7 @@ void FibDecoder::bind_audioService(dabConfig * base, int8_t TMid, uint32_t SId, 
 //	So, here we create a service component. Note however,
 //	that FIG0/3 provides additional data, after that we
 //	decide whether it should be visible or not
-void FibDecoder::bind_packetService(dabConfig * base, int8_t TMid, uint32_t SId, int16_t compnr, int16_t SCId, int16_t ps_flag, int16_t CAflag)
+void FibDecoder::bind_packetService(DabConfig * base, int8_t TMid, uint32_t SId, int16_t compnr, int16_t SCId, int16_t ps_flag, int16_t CAflag)
 {
   int serviceIndex;
   int16_t i;
@@ -1315,12 +1315,6 @@ void FibDecoder::bind_packetService(dabConfig * base, int8_t TMid, uint32_t SId,
   }
 }
 
-static inline bool match(QString s1, QString s2)
-{
-  return s1 == s2;
-}
-
-//
 int FibDecoder::findService(const QString & s)
 {
   int i;
@@ -1330,7 +1324,7 @@ int FibDecoder::findService(const QString & s)
     {
       continue;
     }
-    if (match(s, ensemble->services[i].serviceLabel))
+    if (s == ensemble->services[i].serviceLabel)
     {
       return i;
     }
@@ -1356,7 +1350,7 @@ int FibDecoder::findService(uint32_t SId)
 }
 
 //	find data component using the SCId
-int FibDecoder::findServiceComponent(dabConfig * db, int16_t SCId)
+int FibDecoder::findServiceComponent(DabConfig * db, int16_t SCId)
 {
   for (int i = 0; i < 64; i++)
   {
@@ -1370,7 +1364,7 @@ int FibDecoder::findServiceComponent(dabConfig * db, int16_t SCId)
 
 //
 //	find serviceComponent using the SId and the SCIds
-int FibDecoder::findServiceComponent(dabConfig * db, uint32_t SId, uint8_t SCIds)
+int FibDecoder::findServiceComponent(DabConfig * db, uint32_t SId, uint8_t SCIds)
 {
 
   int serviceIndex = findService(SId);
@@ -1394,7 +1388,7 @@ int FibDecoder::findServiceComponent(dabConfig * db, uint32_t SId, uint8_t SCIds
 }
 
 //	find serviceComponent using the SId and the subchannelId
-int FibDecoder::findComponent(dabConfig * db, uint32_t SId, int16_t subChId)
+int FibDecoder::findComponent(DabConfig * db, uint32_t SId, int16_t subChId)
 {
   for (int i = 0; i < 64; i++)
   {
@@ -1473,7 +1467,7 @@ QString FibDecoder::announcements(uint16_t a)
   }
 }
 
-void FibDecoder::setCluster(dabConfig * localBase, int clusterId, int16_t serviceIndex, uint16_t asuFlags)
+void FibDecoder::setCluster(DabConfig * localBase, int clusterId, int16_t serviceIndex, uint16_t asuFlags)
 {
 
   if (!syncReached())
@@ -1502,7 +1496,7 @@ void FibDecoder::setCluster(dabConfig * localBase, int clusterId, int16_t servic
   myCluster->services.push_back(serviceIndex);
 }
 
-Cluster * FibDecoder::getCluster(dabConfig * localBase, int16_t clusterId)
+Cluster * FibDecoder::getCluster(DabConfig * localBase, int16_t clusterId)
 {
   for (int i = 0; i < 64; i++)
   {
@@ -1541,14 +1535,14 @@ void FibDecoder::connect_channel()
   currentConfig->reset();
   nextConfig->reset();
   ensemble->reset();
-  connect(this, &FibDecoder::addtoEnsemble, myRadioInterface, &RadioInterface::slot_add_to_ensemble);
+  connect(this, &FibDecoder::signal_add_to_ensemble, myRadioInterface, &RadioInterface::slot_add_to_ensemble);
   fibLocker.unlock();
 }
 
 void FibDecoder::disconnect_channel()
 {
   fibLocker.lock();
-  disconnect(this, &FibDecoder::addtoEnsemble, myRadioInterface, &RadioInterface::slot_add_to_ensemble);
+  disconnect(this, &FibDecoder::signal_add_to_ensemble, myRadioInterface, &RadioInterface::slot_add_to_ensemble);
   currentConfig->reset();
   nextConfig->reset();
   ensemble->reset();
@@ -2001,7 +1995,7 @@ void FibDecoder::FIG0Extension10(const uint8_t * dd)
     int utc_minute = dateTime[4];
     int utc_seconds = dateTime[5];
     adjustTime(dateTime.data());
-    emit  clockTime(dateTime[0], dateTime[1], dateTime[2], dateTime[3], dateTime[4], utc_day, utc_hour, utc_minute, utc_seconds);
+    emit  signal_clock_time(dateTime[0], dateTime[1], dateTime[2], dateTime[3], dateTime[4], utc_day, utc_hour, utc_minute, utc_seconds);
   }
 }
 
@@ -2012,7 +2006,7 @@ void FibDecoder::set_epgData(uint32_t SId, int32_t theTime, const QString & theT
     if (ensemble->services[i].inUse && ensemble->services[i].SId == SId)
     {
 
-      service * S = &(ensemble->services[i]);
+      Service * S = &(ensemble->services[i]);
       for (uint16_t j = 0; j < S->epgData.size(); j++)
       {
         if (S->epgData.at(j).theTime == theTime)
@@ -2076,7 +2070,7 @@ std::vector<EpgElement> FibDecoder::find_epgData(uint32_t SId)
     return res;
   }
 
-  service * s = &(ensemble->services[index]);
+  Service * s = &(ensemble->services[index]);
 
   res = s->epgData;
   return res;

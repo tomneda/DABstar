@@ -66,7 +66,7 @@ public:
   
 private:
   RadioInterface * myRadioInterface;
-  padHandler my_padhandler;
+  PadHandler my_padhandler;
   bool processSuperframe(uint8_t [], int16_t);
   int build_aacFile(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer);
 

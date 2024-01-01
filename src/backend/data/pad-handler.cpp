@@ -39,11 +39,11 @@
   *	\class padHandler
   *	Handles the pad segments passed on from mp2- and mp4Processor
   */
-padHandler::padHandler(RadioInterface * mr)
+PadHandler::PadHandler(RadioInterface * mr)
 {
   myRadioInterface = mr;
-  connect(this, &padHandler::showLabel, mr, &RadioInterface::slot_show_label);
-  connect(this, &padHandler::show_motHandling, mr, &RadioInterface::slot_show_mot_handling);
+  connect(this, &PadHandler::showLabel, mr, &RadioInterface::slot_show_label);
+  connect(this, &PadHandler::show_motHandling, mr, &RadioInterface::slot_show_mot_handling);
   currentSlide = nullptr;
   //
   //	mscGroupElement indicates whether we are handling an
@@ -62,7 +62,7 @@ padHandler::padHandler(RadioInterface * mr)
   segmentNumber = -1;
 }
 
-padHandler::~padHandler()
+PadHandler::~PadHandler()
 {
   if (currentSlide != nullptr)
   {
@@ -73,7 +73,7 @@ padHandler::~padHandler()
 //	Data is stored reverse, we pass the vector and the index of the
 //	last element of the XPad data.
 //	 L0 is the "top" byte of the L field, L1 the next to top one.
-void padHandler::processPAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t L0)
+void PadHandler::processPAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t L0)
 {
   uint8_t fpadType = (L1 >> 6) & 03;
 
@@ -111,7 +111,7 @@ void padHandler::processPAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t 
 //	of these 2 values, but it is not clear to me how.
 //	For me, the end of a segment is when we collected the amount
 //	of values specified for the segment.
-void padHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
+void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
 {
   int16_t i;
 
@@ -205,7 +205,7 @@ static int16_t lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
 //	Since the data is reversed, we pass on the vector address
 //	and the offset of the last element in the vector,
 //	i.e. we start (downwards)  beginning at b [last];
-void padHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_flag)
+void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_flag)
 {
   int16_t CI_Index = 0;
   uint8_t CI_table[4];
@@ -315,7 +315,7 @@ void padHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
 //
 //	A dynamic label is created from a sequence of (dynamic) xpad
 //	fields, starting with CI = 2, continuing with CI = 3
-void padHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
+void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
 {
   //static int16_t segmentno = 0;
   static int16_t remainDataLength = 0;
@@ -413,7 +413,7 @@ void padHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
 //
 //	Called at the start of the msc datagroupfield,
 //	the msc_length was given by the preceding appType "1"
-void padHandler::new_MSC_element(const std::vector<uint8_t> & data)
+void PadHandler::new_MSC_element(const std::vector<uint8_t> & data)
 {
 
   //	if (mscGroupElement) {
@@ -444,7 +444,7 @@ void padHandler::new_MSC_element(const std::vector<uint8_t> & data)
 }
 
 //
-void padHandler::add_MSC_element(const std::vector<uint8_t> & data)
+void PadHandler::add_MSC_element(const std::vector<uint8_t> & data)
 {
   int32_t currentLength = msc_dataGroupBuffer.size();
   //
@@ -465,7 +465,7 @@ void padHandler::add_MSC_element(const std::vector<uint8_t> & data)
   }
 }
 
-void padHandler::build_MSC_segment(const std::vector<uint8_t> & data)
+void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
 {
   //	we have a MOT segment, let us look what is in it
   //	according to DAB 300 401 (page 37) the header (MSC data group)
@@ -545,7 +545,7 @@ void padHandler::build_MSC_segment(const std::vector<uint8_t> & data)
     if (currentSlide == nullptr)
     {
       //	         fprintf (stdout, "creating %d\n", transportId);
-      currentSlide = new motObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
+      currentSlide = new MotObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
     }
     else
     {
@@ -557,7 +557,7 @@ void padHandler::build_MSC_segment(const std::vector<uint8_t> & data)
       //	                          currentSlide -> get_transportId(),
       //	                                           transportId);
       delete currentSlide;
-      currentSlide = new motObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
+      currentSlide = new MotObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
     }
     break;
 

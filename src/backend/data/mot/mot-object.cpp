@@ -35,7 +35,7 @@
 #include  "mot-object.h"
 #include  "radio.h"
 
-motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag)
+MotObject::MotObject(RadioInterface * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag)
 {
   int32_t pointer = 7;
   uint16_t rawContentType = 0;
@@ -43,7 +43,7 @@ motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
   (void)segmentSize;
   (void)lastFlag;
   this->dirElement = dirElement;
-  connect(this, &motObject::handle_motObject, mr, &RadioInterface::slot_handle_mot_object);
+  connect(this, &MotObject::handle_motObject, mr, &RadioInterface::slot_handle_mot_object);
   this->transportId = transportId;
   this->numofSegments = -1;
   this->segmentSize = -1;
@@ -126,7 +126,7 @@ motObject::motObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
   //	fprintf (stdout, "creating mot object %x\n", transportId);
 }
 
-uint16_t motObject::get_transportId()
+uint16_t MotObject::get_transportId()
 {
   return transportId;
 }
@@ -136,7 +136,7 @@ uint16_t motObject::get_transportId()
 //	established that the current slide has the right transportId
 //
 //	Note that segments do not need to come in in the right order
-void motObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumber, int32_t segmentSize, bool lastFlag)
+void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumber, int32_t segmentSize, bool lastFlag)
 {
   int32_t i;
 
@@ -190,7 +190,7 @@ void motObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
 }
 
 
-void motObject::handleComplete()
+void MotObject::handleComplete()
 {
   QByteArray result;
   for (const auto & it: motMap)
@@ -207,7 +207,7 @@ void motObject::handleComplete()
   handle_motObject(result, name, (int)contentType, dirElement);
 }
 
-int motObject::get_headerSize()
+int MotObject::get_headerSize()
 {
   return headerSize;
 }

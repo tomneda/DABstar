@@ -38,14 +38,14 @@
 #include  <vector>
 
 class RadioInterface;
-class motObject;
+class MotObject;
 
-class padHandler : public QObject
+class PadHandler : public QObject
 {
 Q_OBJECT
 public:
-  explicit padHandler(RadioInterface *);
-  ~padHandler() override;
+  explicit PadHandler(RadioInterface *);
+  ~PadHandler() override;
 
   void processPAD(uint8_t *, int16_t, uint8_t, uint8_t);
 
@@ -61,7 +61,7 @@ private:
 
   QString dynamicLabelText;
   int16_t charSet;
-  motObject * currentSlide;
+  MotObject * currentSlide;
   uint8_t last_appType;
   bool mscGroupElement;
   int xpadLength;
