@@ -3,11 +3,12 @@
 ---
 
 ![screenshot.png](res/screenshot.png)
-
+(Picture is from version 2.0.0)
 
 ## Table of Content
 <!-- TOC -->
   * [Introduction](#introduction)
+  * [What is new in 2.1.0](#what-is-new-in-210)
   * [What is new in 2.0.0](#what-is-new-in-200)
     * [Buttons are icons now](#buttons-are-icons-now)
     * [Service List](#service-list)
@@ -27,7 +28,7 @@
 
 ## Introduction
 
-**Version 2.0.0 is out!**
+**Version 2.1.0 is out!**
 
 Beside many small things under the hood I did major changes in the Look & Feel and mainly in the service selection.
 So I decide to make a major step to version 2 in the version numbering.
@@ -54,6 +55,14 @@ Meanwhile, I provide AppImages but still no Windows build. See [Link](https://gi
 
 As this README got meanwhile quite long, I cut off the description regarding versions until 1.7.1, but you can still read
 it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f5297a5f44cd7aab0c016370e010ed3e/README.md)
+
+## What is new in 2.1.0
+
+- Some minor fixes and refinings made.
+- Add status information to the main Widget, see below the MOT picture:  
+
+![](res/mainwidget.png)
+(move over the status elements like **SBR** or **PS** to get tool tips information)
 
 ## What is new in 2.0.0
 

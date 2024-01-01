@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
-project(DABstar VERSION 2.0.0)
+project(DABstar VERSION 2.1.0)
 ##############################
 
 set(objectName "dabstar")
@@ -23,7 +23,7 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "/usr/local/bin" CACHE PATH "default install path" FORCE)
 endif ()
 
-#set (CMAKE_INSTALL_PREFIX /usr/local/bin)
+#set (CMAKE_INSTALL_PREFIX /usr/local/bin)./cre
 message(STATUS "${PROJECT_NAME} V${PROJECT_VERSION}")
 
 add_definitions(-DAPP_NAME="${objectName}")
