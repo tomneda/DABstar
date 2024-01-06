@@ -79,9 +79,9 @@ QRadioButton::indicator:unchecked { background-color: transparent; border: 1px s
 QRadioButton::indicator:unchecked:hover { border: 1px solid #b78620;  border-radius: 6px; }
 QRadioButton::disabled { color: #656565; border-radius: 6px; }
 QRadioButton::indicator:disabled { background-color: #656565; color: #656565; border: 1px solid #656565; }
-QSlider::handle { background-color: #b78620; }
-/*
 QSlider::handle { background-color: #b78620; width: 14px; margin-top: -6px; margin-bottom: -6px; border-radius: 6px; }
+/*
+QSlider::handle { background-color: #b78620; }
 QSlider::groove { background-color: transparent; height: 3px; }
 QSlider::sub-page { background-color: #661133; }
 QSlider::add-page { background-color: #661133; }
