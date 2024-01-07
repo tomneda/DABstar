@@ -3,10 +3,10 @@
 
 # Find single-precision (float) version of FFTW3
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_FFTW3F "fftw3f >= 3.0")
+include(FindPkgConfig)
+pkg_check_modules(PC_FFTW3F "fftw3f >= 3.0")
 
-FIND_PATH(
+find_path(
     FFTW3F_INCLUDE_DIRS
     NAMES fftw3.h
     HINTS $ENV{FFTW3_DIR}/include
@@ -15,7 +15,7 @@ FIND_PATH(
           /usr/include
 )
 
-FIND_LIBRARY(
+find_library(
     FFTW3F_LIBRARIES
     NAMES fftw3f libfftw3f
     HINTS $ENV{FFTW3_DIR}/lib
@@ -25,7 +25,7 @@ FIND_LIBRARY(
           /usr/lib64
 )
 
-FIND_LIBRARY(
+find_library(
     FFTW3F_THREADS_LIBRARIES
     NAMES fftw3f_threads libfftw3f_threads
     HINTS $ENV{FFTW3_DIR}/lib
@@ -36,6 +36,6 @@ FIND_LIBRARY(
 )
 
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(FFTW3f DEFAULT_MSG FFTW3F_LIBRARIES FFTW3F_INCLUDE_DIRS)
-MARK_AS_ADVANCED(FFTW3F_LIBRARIES FFTW3F_INCLUDE_DIRS FFTW3F_THREADS_LIBRARIES)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(FFTW3f DEFAULT_MSG FFTW3F_LIBRARIES FFTW3F_INCLUDE_DIRS)
+mark_as_advanced(FFTW3F_LIBRARIES FFTW3F_INCLUDE_DIRS FFTW3F_THREADS_LIBRARIES)
