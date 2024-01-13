@@ -53,7 +53,7 @@
 #include  "coordinates.h"
 #include  "mapport.h"
 #include  "techdata.h"
-#include  "dummy-handler.h"
+//#include  "dummy-handler.h"
 #include  "service-list-handler.h"
 
 #ifdef  TCP_STREAMER
@@ -1454,7 +1454,7 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
   mpInputDevice = create_device(deviceName);
   if (mpInputDevice == nullptr)
   {
-    mpInputDevice = new DummyHandler();
+    //mpInputDevice = new DummyHandler();
     return;    // nothing will happen
   }
 

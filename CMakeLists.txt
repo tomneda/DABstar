@@ -232,11 +232,12 @@ include_directories(
         src/output
         src/scopes-qwt6
         src/spectrum-viewer
+        src/file-devices/filereader
+        src/file-devices/raw-files
+        src/file-devices/wav-files
+        src/file-devices/xml-filereader
+        src/file-devices/xml-filewriter
         src/devices
-        src/devices/rawfiles-new
-        src/devices/wavfiles-new
-        src/devices/xml-filereader
-        src/devices/dummy-handler
         src/eti-handler
         src/service-list
         /usr/include/
@@ -331,17 +332,15 @@ set(${objectName}_HDRS
         src/spectrum-viewer/waterfall-scope.h
         src/spectrum-viewer/correlation-viewer.h
         src/devices/device-handler.h
-        src/devices/device-exceptions.h
-        src/devices/xml-filewriter.h
-        src/devices/rawfiles-new/rawfiles.h
-        src/devices/rawfiles-new/raw-reader.h
-        src/devices/wavfiles-new/wavfiles.h
-        src/devices/wavfiles-new/wav-reader.h
-        src/devices/xml-filereader/element-reader.h
-        src/devices/xml-filereader/xml-filereader.h
-        src/devices/xml-filereader/xml-reader.h
-        src/devices/xml-filereader/xml-descriptor.h
-        src/devices/dummy-handler/dummy-handler.h
+        src/file-devices/xml-filewriter/xml-filewriter.h
+        src/file-devices/raw-files/rawfiles.h
+        src/file-devices/raw-files/raw-reader.h
+        src/file-devices/wav-files/wavfiles.h
+        src/file-devices/wav-files/wav-reader.h
+        src/file-devices/xml-filereader/element-reader.h
+        src/file-devices/xml-filereader/xml-filereader.h
+        src/file-devices/xml-filereader/xml-reader.h
+        src/file-devices/xml-filereader/xml-descriptor.h
         src/service-list/service-list-handler.h
         src/service-list/service-db.h
         )
@@ -424,14 +423,14 @@ set(${objectName}_SRCS
         src/spectrum-viewer/spectrum-scope.cpp
         src/spectrum-viewer/waterfall-scope.cpp
         src/spectrum-viewer/correlation-viewer.cpp
-        src/devices/xml-filewriter.cpp
-        src/devices/rawfiles-new/rawfiles.cpp
-        src/devices/rawfiles-new/raw-reader.cpp
-        src/devices/wavfiles-new/wavfiles.cpp
-        src/devices/wavfiles-new/wav-reader.cpp
-        src/devices/xml-filereader/xml-filereader.cpp
-        src/devices/xml-filereader/xml-reader.cpp
-        src/devices/xml-filereader/xml-descriptor.cpp
+        src/file-devices/xml-filewriter/xml-filewriter.cpp
+        src/file-devices/raw-files/rawfiles.cpp
+        src/file-devices/raw-files/raw-reader.cpp
+        src/file-devices/wav-files/wavfiles.cpp
+        src/file-devices/wav-files/wav-reader.cpp
+        src/file-devices/xml-filereader/xml-filereader.cpp
+        src/file-devices/xml-filereader/xml-reader.cpp
+        src/file-devices/xml-filereader/xml-descriptor.cpp
         src/service-list/service-list-handler.cpp
         src/service-list/service-db.cpp
         )
@@ -471,12 +470,12 @@ set(${objectName}_MOCS
         src/spectrum-viewer/spectrum-scope.h
         src/spectrum-viewer/waterfall-scope.h
         src/spectrum-viewer/correlation-viewer.h
-        src/devices/rawfiles-new/rawfiles.h
-        src/devices/rawfiles-new/raw-reader.h
-        src/devices/wavfiles-new/wavfiles.h
-        src/devices/wavfiles-new/wav-reader.h
-        src/devices/xml-filereader/xml-filereader.h
-        src/devices/xml-filereader/xml-reader.h
+        src/file-devices/raw-files/rawfiles.h
+        src/file-devices/raw-files/raw-reader.h
+        src/file-devices/wav-files/wavfiles.h
+        src/file-devices/wav-files/wav-reader.h
+        src/file-devices/xml-filereader/xml-filereader.h
+        src/file-devices/xml-filereader/xml-reader.h
         src/service-list/service-list-handler.h
         )
 
@@ -486,7 +485,7 @@ set(${objectName}_UIS
         ./forms/technical_data.ui
         ./forms/config-helper.ui
         ./forms/scopewidget.ui
-        src/devices/xml-filereader/xmlfiles.ui
+        src/file-devices/xml-filereader/xmlfiles.ui
         )
 
 #########################################################################
@@ -566,303 +565,22 @@ else (VITERBI_SSE)
             )
 endif (VITERBI_NEON)
 
-##########################################################################
-#	The devices
-#
-if (SDRPLAY_V2)
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/sdrplay-handler-v2/sdrplay-widget-v2.ui
-            )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/sdrplay-handler-v2/sdrplay-handler-v2.h
-            src/devices/sdrplay-handler-v2/sdrplayselect.h
-            )
-
+if (DATA_STREAMER)
     include_directories(
-            src/devices/sdrplay-handler-v2
+            src/server-thread
     )
 
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            src/devices/sdrplay-handler-v2/sdrplay-handler-v2.h
-            src/devices/sdrplay-handler-v2/sdrplayselect.h
-            src/devices/sdrplay-handler-v2/mirsdrapi-rsp.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/sdrplay-handler-v2/sdrplay-handler-v2.cpp
-            src/devices/sdrplay-handler-v2/sdrplayselect.cpp
-            )
-
-    add_definitions(-DHAVE_SDRPLAY_V2)
-endif (SDRPLAY_V2)
-
-if (SDRPLAY_V3)
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/sdrplay-handler-v3/sdrplay-widget-v3.ui
-            )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/sdrplay-handler-v3/sdrplay-handler-v3.h
-            src/devices/sdrplay-handler-v3/Rsp-device.h
-            )
-
-    include_directories(
-            src/devices/sdrplay-handler-v3
-            src/devices/sdrplay-handler-v3/include
-    )
-
-    set($(objectName)_HDRS
-            ${${objectName}_HDRS}
-            src/devices/sdrplay-handler-v3/sdrplay-handler-v3.h
-            src/devices/sdrplay-handler-v3/sdrplay-commands.h
-            src/devices/sdrplay-handler-v3/include/sdrplay_api.h
-            src/devices/sdrplay-handler-v3/Rsp-device.h
-            src/devices/sdrplay-handler-v3/Rsp1A-handler.h
-            src/devices/sdrplay-handler-v3/RspII-handler.h
-            src/devices/sdrplay-handler-v3/RspDuo-handler.h
-            src/devices/sdrplay-handler-v3/RspDx-handler.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/sdrplay-handler-v3/sdrplay-handler-v3.cpp
-            src/devices/sdrplay-handler-v3/Rsp-device.cpp
-            src/devices/sdrplay-handler-v3/Rsp1A-handler.cpp
-            src/devices/sdrplay-handler-v3/RspII-handler.cpp
-            src/devices/sdrplay-handler-v3/RspDuo-handler.cpp
-            src/devices/sdrplay-handler-v3/RspDx-handler.cpp
-            )
-
-    add_definitions(-DHAVE_SDRPLAY_V3)
-endif (SDRPLAY_V3)
-
-if (AIRSPY)
-    #           find_package(LibAIRSPY)
-    #           if (NOT LIBAIRSPY_FOUND)
-    #               message(FATAL_ERROR "please install airspy library")
-    #           endif ()
-    #	   ## include_directories (${AIRSPYLIB_INCLUDE_DIR})
-
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/airspy-handler/airspy-widget.ui
-            )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/airspy-handler/airspy-handler.h
-            src/devices/airspy-handler/airspyselect.h
-            )
-
-    include_directories(
-            src/devices/airspy-handler
-            src/devices/airspy-handler/libairspy
-    )
-
-    set($(objectName)_HDRS
-            ${${objectName}_HDRS}
-            src/devices/airspy-handler/airspy-handler.h
-            src/devices/airspy-handler/airspyselect.h
-            src/devices/airspy-handler/libairspy/airspy.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/airspy-handler/airspy-handler.cpp
-            src/devices/airspy-handler/airspyselect.cpp
-            )
-
-    add_definitions(-DHAVE_AIRSPY)
-endif (AIRSPY)
-
-if (HACKRF)
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/hackrf-handler/hackrf-widget.ui
-            )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/hackrf-handler/hackrf-handler.h
-            )
-
-    include_directories(
-            src/devices/hackrf-handler
-    )
-
-    set($(objectName)_HDRS
-            ${${objectName}_HDRS}
-            src/devices/hackrf-handler/hackrf-handler.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/hackrf-handler/hackrf-handler.cpp
-            )
-
-    add_definitions(-DHAVE_HACKRF)
-endif (HACKRF)
-#
-if (PLUTO)
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/pluto-handler-2/pluto-widget.ui
-            )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/pluto-handler-2/pluto-handler.h
-            )
-
-    include_directories(
-            src/devices/pluto-handler-2
-    )
-
-    set($(objectName)_HDRS
-            ${${objectName}_HDRS}
-            src/devices/pluto-handler-2/pluto-handler.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/pluto-handler-2/pluto-handler.cpp
-            )
-
-    add_definitions(-DHAVE_PLUTO)
-endif (PLUTO)
-#
-if (LIMESDR)
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/lime-handler/lime-handler.h
-            )
-
-    include_directories(
-            src/devices/lime-handler
-    )
-
-    set($(objectName)_HDRS
-            ${${objectName}_HDRS}
-            src/devices/lime-handler/lime-handler.h
-            src/devices/lime-handler/lime-widget.h
-            src/devices/lime-handler/LimeSuite.h
-            src/devices/lime-handler/LMS7002M_parameters.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/lime-handler/lime-handler.cpp
-            )
-
-    add_definitions(-DHAVE_LIME)
-endif (LIMESDR)
-
-if (RTLSDR_LINUX)
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/rtlsdr-handler-linux/rtlsdr-widget.ui
-            )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/rtlsdr-handler-linux/rtl-dongleselect.h
-            src/devices/rtlsdr-handler-linux/rtlsdr-handler.h
-            )
-
-    include_directories(
-            src/devices/rtlsdr-handler-linux/
-    )
-
-    set(${objectName}_HDRS
-            ${${objectName}_HDRS}
-            src/devices/rtlsdr-handler-linux/rtlsdr-handler.h
-            src/devices/rtlsdr-handler-linux/rtl-dongleselect.h
-            src/devices/rtlsdr-handler-linux/rtl-sdr.h
-            src/devices/rtlsdr-handler-linux/rtl-sdr_export.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/rtlsdr-handler-linux/rtlsdr-handler.cpp
-            src/devices/rtlsdr-handler-linux/rtl-dongleselect.cpp
-            )
-
-    add_definitions(-DHAVE_RTLSDR)
-endif ()
-
-if (RTLSDR_WIN)
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/rtlsdr-handler-win/rtlsdr-widget.ui
-            )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/rtlsdr-handler-win/rtl-dongleselect.h
-            src/devices/rtlsdr-handler-win/rtlsdr-handler.h
-            )
-
-    include_directories(
-            src/devices/rtlsdr-handler-win/
-    )
-
-    set(${objectName}_HDRS
-            ${${objectName}_HDRS}
-            src/devices/rtlsdr-handler-win/rtlsdr-handler.h
-            src/devices/rtlsdr-handler-win/rtl-dongleselect.h
-            src/devices/rtlsdr-handler-win/rtl-sdr.h
-            src/devices/rtlsdr-handler-win/rtl-sdr_export.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/rtlsdr-handler-win/rtlsdr-handler.cpp
-            src/devices/rtlsdr-handler-win/rtl-dongleselect.cpp
-            )
-
-    add_definitions(-DHAVE_RTLSDR)
-endif ()
-
-if (UHD)
-    find_package(UHD REQUIRED)
-    if (NOT UHD_FOUND)
-        message(FATAL_ERROR "please install UHD library")
-    endif ()
-    list(APPEND extraLibs ${UHD_LIBRARIES})
-
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/uhd/uhd-widget.ui
-    )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/uhd/uhd-handler.h
-    )
-
-    include_directories(
-            src/devices/uhd/
-    )
-
-    set(${objectName}_HDRS
-            ${${objectName}_HDRS}
-            src/devices/uhd/uhd-handler.h
+            src/server-thread/tcp-server.h
     )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            src/devices/uhd/uhd-handler.cpp
+            src/server-thread/tcp-server.cpp
     )
-
-    add_definitions(-DHAVE_UHD)
-endif ()
+    add_definitions(-DDATA_STREAMER)
+endif (DATA_STREAMER)
 
 if (TCP_STREAMER)
     add_definitions(-DTCP_STREAMER)
@@ -870,16 +588,16 @@ if (TCP_STREAMER)
     set(${objectName}_MOCS
             ${${objectName}_MOCS}
             src/output/tcp-streamer.h
-            )
+    )
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/output/tcp-streamer.h
-            )
+    )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/output/tcp-streamer.cpp
-            )
+    )
 endif (TCP_STREAMER)
 
 if (QT_AUDIO)
@@ -893,66 +611,18 @@ if (QT_AUDIO)
             ${${objectName}_MOCS}
             src/output/Qt-audio.h
             src/output/Qt-audiodevice.h
-            )
+    )
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/output/Qt-audio.h
             src/output/Qt-audiodevice.h
-            )
+    )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/output/Qt-audio.cpp
             src/output/Qt-audiodevice.cpp
-            )
+    )
 endif (QT_AUDIO)
-
-if (RTL_TCP)
-    find_package(Qt5Network REQUIRED)
-    set(${objectName}_UIS
-            ${${objectName}_UIS}
-            src/devices/rtl_tcp/rtl_tcp-widget.ui
-            )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/devices/rtl_tcp/rtl_tcp_client.h
-            )
-
-    include_directories(
-            src/devices/rtl_tcp
-            ${Qt5Network_INCLUDE_DIRS}
-    )
-
-    set($(objectName)_HDRS
-            ${${objectName}_HDRS}
-            src/devices/rtl_tcp/rtl_tcp_client.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/devices/rtl_tcp/rtl_tcp_client.cpp
-            )
-
-    set(RTLTCP_lib Qt5::Network)
-    add_definitions(-DHAVE_RTL_TCP)
-endif (RTL_TCP)
-
-if (DATA_STREAMER)
-    include_directories(
-            src/server-thread
-    )
-
-    set($(objectName)_HDRS
-            ${${objectName}_HDRS}
-            src/server-thread/tcp-server.h
-            )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/server-thread/tcp-server.cpp
-            )
-    add_definitions(-DDATA_STREAMER)
-endif (DATA_STREAMER)
 
 if (USE_PORTAUDIO)
     find_package(Portaudio)
@@ -977,7 +647,8 @@ if (USE_PORTAUDIO)
 endif (USE_PORTAUDIO)
 
 QT5_WRAP_UI(UIS ${${objectName}_UIS}
-        src/devices/filereader-widget.ui)
+        src/file-devices/filereader/filereader-widget.ui
+)
 
 include_directories(
         ${SDRPLAY_INCLUDES}
@@ -1032,5 +703,6 @@ add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
 
-add_subdirectory(src/fft)
-target_link_libraries(${objectName} PRIVATE fft)
+add_subdirectory(src)
+target_link_libraries(${objectName} PRIVATE ${objectName}_fft)
+#target_link_libraries(${objectName} PRIVATE ${objectName}_devices)

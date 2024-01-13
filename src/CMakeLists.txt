@@ -1,2 +1,2 @@
 add_subdirectory(fft)
-add_subdirectory(devices)
+#add_subdirectory(devices)
