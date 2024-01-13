@@ -1,6 +1,9 @@
 message(STATUS "Begin: It's me the Devices! ----------------------")
 
-set(devicesLibName devices)
+set(devicesLibName ${objectName}_devices)
+
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 
 if (SDRPLAY_V2)
     set(${devicesLibName}_UIS
@@ -328,20 +331,62 @@ if (RTL_TCP)
     add_definitions(-DHAVE_RTL_TCP)
 endif (RTL_TCP)
 
+
 include_directories(
-        .
-        rawfiles-new
-        wavfiles-new
-        xml-filereader
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${QT5Widgets_INCLUDES}
+        ${QT_QTCORE_INCLUDE_DIR}
+        ${QT_QTGUI_INCLUDE_DIR}
+        ${QT5Widgets_INCLUDES}
+        ${QT_QTCORE_INCLUDE_DIR}
         dummy-handler
+        xml-filereader
+        raw-files
 )
 
-QT5_WRAP_UI(UIS ${${objectName}_UIS} filereader-widget.ui)
+
+set($(devicesLibName)_HDRS
+        ${${devicesLibName}_HDRS}
+        device-selector.h
+        xml-filereader/element-reader.h
+        xml-filereader/xml-filereader.h
+        xml-filereader/xml-reader.h
+        xml-filereader/xml-descriptor.h
+        raw-files/rawfiles.h
+        raw-files/raw-reader.h
+)
+
+set(${devicesLibName}_SRCS
+        ${${devicesLibName}_SRCS}
+        device-selector.cpp
+        xml-filereader/xml-filereader.cpp
+        xml-filereader/xml-reader.cpp
+        xml-filereader/xml-descriptor.cpp
+        raw-files/rawfiles.cpp
+        raw-files/raw-reader.cpp
+)
+
+set(${devicesLibName}_MOCS
+        ${${devicesLibName}_MOCS}
+        device-selector.h
+        raw-files/rawfiles.h
+        raw-files/raw-reader.h
+)
+
+set(${devicesLibName}_UIS
+        ${${devicesLibName}_UIS}
+        xml-filereader/xmlfiles.ui
+)
 
 
-message(STATUS "devicesLibName: ${devicesLibName}")
-message(STATUS "${devicesLibName}_SRCS: ${${devicesLibName}_SRCS}")
-message(STATUS "${devicesLibName}_HDRS: ${${devicesLibName}_HDRS}")
+#message(STATUS "devicesLibName: ${devicesLibName}")
+#message(STATUS "${devicesLibName}_SRCS: ${${devicesLibName}_SRCS}")
+#message(STATUS "${devicesLibName}_HDRS: ${${devicesLibName}_HDRS}")
+
+QT5_WRAP_UI(UIS
+        ${${devicesLibName}_UIS}
+)
 
 add_library(${devicesLibName} STATIC ${${devicesLibName}_SRCS})
 #target_include_directories(${PROJECT_NAME} PUBLIC
@@ -351,6 +396,13 @@ add_library(${devicesLibName} STATIC ${${devicesLibName}_SRCS})
 
 #list(APPEND extraLibs ${FFTW3F_LIBRARIES})
 
-#target_link_libraries(fft ${FFTW3F_LIBRARIES})
+QT5_WRAP_CPP(MOCS
+        ${${devicesLibName}_MOCS}
+)
+
+target_link_libraries(${devicesLibName}
+        Qt5::Widgets
+        Qt5::Xml
+)
 
 message(STATUS "End:   It's me the Devices ${devicesLibName} ----------------------")

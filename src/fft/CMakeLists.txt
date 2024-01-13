@@ -12,7 +12,7 @@ add_library(${objectName}_fft STATIC
         )
 
 
-list(APPEND extraLibs ${FFTW3F_LIBRARIES})
+#list(APPEND extraLibs ${FFTW3F_LIBRARIES})
 
 target_link_libraries(${objectName}_fft ${FFTW3F_LIBRARIES})
 

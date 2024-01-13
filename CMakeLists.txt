@@ -208,7 +208,8 @@ endif ()
 #	Here we really start
 
 include_directories(
-        ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
         ${QT5Widgets_INCLUDES}
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
@@ -233,9 +234,9 @@ include_directories(
         src/scopes-qwt6
         src/spectrum-viewer
         src/file-devices/filereader
-        src/file-devices/raw-files
+        #src/file-devices/raw-files
         src/file-devices/wav-files
-        src/file-devices/xml-filereader
+        #src/file-devices/xml-filereader
         src/file-devices/xml-filewriter
         src/devices
         src/eti-handler
@@ -333,14 +334,14 @@ set(${objectName}_HDRS
         src/spectrum-viewer/correlation-viewer.h
         src/devices/device-handler.h
         src/file-devices/xml-filewriter/xml-filewriter.h
-        src/file-devices/raw-files/rawfiles.h
-        src/file-devices/raw-files/raw-reader.h
+        #src/file-devices/raw-files/rawfiles.h
+        #src/file-devices/raw-files/raw-reader.h
         src/file-devices/wav-files/wavfiles.h
         src/file-devices/wav-files/wav-reader.h
-        src/file-devices/xml-filereader/element-reader.h
-        src/file-devices/xml-filereader/xml-filereader.h
-        src/file-devices/xml-filereader/xml-reader.h
-        src/file-devices/xml-filereader/xml-descriptor.h
+        #src/file-devices/xml-filereader/element-reader.h
+        #src/file-devices/xml-filereader/xml-filereader.h
+        #src/file-devices/xml-filereader/xml-reader.h
+        #src/file-devices/xml-filereader/xml-descriptor.h
         src/service-list/service-list-handler.h
         src/service-list/service-db.h
         )
@@ -349,7 +350,6 @@ set(${objectName}_SRCS
         ${${objectName}_SRCS}
         src/main/main.cpp
         src/main/radio.cpp
-        src/main/radio_create_device.cpp
         src/main/dab-processor.cpp
         src/support/techdata.cpp
         src/eti-handler/eti-generator.cpp
@@ -424,13 +424,13 @@ set(${objectName}_SRCS
         src/spectrum-viewer/waterfall-scope.cpp
         src/spectrum-viewer/correlation-viewer.cpp
         src/file-devices/xml-filewriter/xml-filewriter.cpp
-        src/file-devices/raw-files/rawfiles.cpp
-        src/file-devices/raw-files/raw-reader.cpp
+        #src/file-devices/raw-files/rawfiles.cpp
+        #src/file-devices/raw-files/raw-reader.cpp
         src/file-devices/wav-files/wavfiles.cpp
         src/file-devices/wav-files/wav-reader.cpp
-        src/file-devices/xml-filereader/xml-filereader.cpp
-        src/file-devices/xml-filereader/xml-reader.cpp
-        src/file-devices/xml-filereader/xml-descriptor.cpp
+        #src/file-devices/xml-filereader/xml-filereader.cpp
+        #src/file-devices/xml-filereader/xml-reader.cpp
+        #src/file-devices/xml-filereader/xml-descriptor.cpp
         src/service-list/service-list-handler.cpp
         src/service-list/service-db.cpp
         )
@@ -470,12 +470,12 @@ set(${objectName}_MOCS
         src/spectrum-viewer/spectrum-scope.h
         src/spectrum-viewer/waterfall-scope.h
         src/spectrum-viewer/correlation-viewer.h
-        src/file-devices/raw-files/rawfiles.h
-        src/file-devices/raw-files/raw-reader.h
+        #src/file-devices/raw-files/rawfiles.h
+        #src/file-devices/raw-files/raw-reader.h
         src/file-devices/wav-files/wavfiles.h
         src/file-devices/wav-files/wav-reader.h
-        src/file-devices/xml-filereader/xml-filereader.h
-        src/file-devices/xml-filereader/xml-reader.h
+        #src/file-devices/xml-filereader/xml-filereader.h
+        #src/file-devices/xml-filereader/xml-reader.h
         src/service-list/service-list-handler.h
         )
 
@@ -485,7 +485,7 @@ set(${objectName}_UIS
         ./forms/technical_data.ui
         ./forms/config-helper.ui
         ./forms/scopewidget.ui
-        src/file-devices/xml-filereader/xmlfiles.ui
+        #src/file-devices/xml-filereader/xmlfiles.ui
         )
 
 #########################################################################
@@ -646,12 +646,13 @@ if (USE_PORTAUDIO)
             )
 endif (USE_PORTAUDIO)
 
-QT5_WRAP_UI(UIS ${${objectName}_UIS}
+QT5_WRAP_UI(UIS
+        ${${objectName}_UIS}
         src/file-devices/filereader/filereader-widget.ui
 )
 
 include_directories(
-        ${SDRPLAY_INCLUDES}
+        #${SDRPLAY_INCLUDES}
         ${QT5Widgets_INCLUDES}
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
@@ -703,6 +704,8 @@ add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
 
-add_subdirectory(src)
+add_subdirectory(src/fft)
+add_subdirectory(src/devices)
+
 target_link_libraries(${objectName} PRIVATE ${objectName}_fft)
-#target_link_libraries(${objectName} PRIVATE ${objectName}_devices)
+target_link_libraries(${objectName} PRIVATE ${objectName}_devices)

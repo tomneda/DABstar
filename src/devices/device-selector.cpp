@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023
+ * Copyright (c) 2024
  * Thomas Neder (https://github.com/tomneda)
  *
  * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
@@ -7,6 +7,10 @@
  *
  * The original copyright information is acknowledged.
  */
+
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QSettings>
 
 #ifdef  HAVE_RTLSDR
   #include  "rtlsdr-handler.h"
@@ -50,10 +54,11 @@
   #include  "uhd-handler.h"
 #endif
 
-#include  "xml-filereader.h"
-#include  "wavfiles.h"
-#include  "rawfiles.h"
-#include  "radio.h"
+#include "device-selector.h"
+#include "xml-filereader.h"
+#include "wavfiles.h"
+#include "rawfiles.h"
+//#include "radio.h"
 
 static const char DN_FILE_INP_RAW[] = "File input(.raw)";
 static const char DN_FILE_INP_IQ[]  = "File input(.iq)";
@@ -74,7 +79,13 @@ static const char DN_ELAD[]         = "Elad-S1";
 static const char DN_UHD[]          = "UHD/USRP";
 
 
-QStringList RadioInterface::get_device_name_list()
+DeviceSelector::DeviceSelector(QSettings * ipSettings) :
+  mpSettings(ipSettings)
+{
+
+}
+
+QStringList DeviceSelector::get_device_name_list()
 {
   QStringList sl;
   sl << "select input";
@@ -124,12 +135,12 @@ QStringList RadioInterface::get_device_name_list()
   return sl;
 }
 
-IDeviceHandler * RadioInterface::create_device(const QString & s)
+IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDevice)
 {
   QString file;
   IDeviceHandler * inputDevice = nullptr;
 
-  channel.realChannel = true;    // until proven otherwise
+  oRealDevice = true;    // until proven otherwise
 #ifdef  HAVE_SDRPLAY_V2
   if (s == DN_SDRPLAY_V2)
   {
@@ -139,7 +150,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
 #endif
     try
     {
-      inputDevice = new SdrPlayHandler_v2(dabSettings, mVersionStr);
+      inputDevice = new SdrPlayHandler_v2(mpSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -160,7 +171,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new SdrPlayHandler_v3(dabSettings, mVersionStr);
+      inputDevice = new SdrPlayHandler_v3(mpSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -181,7 +192,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new RtlSdrHandler(dabSettings, mVersionStr);
+      inputDevice = new RtlSdrHandler(mpSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & ex)
@@ -202,7 +213,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new AirspyHandler(dabSettings, mVersionStr);
+      inputDevice = new AirspyHandler(mpSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -223,7 +234,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new HackRfHandler(dabSettings, mVersionStr);
+      inputDevice = new HackRfHandler(mpSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -244,7 +255,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new LimeHandler(dabSettings, mVersionStr);
+      inputDevice = new LimeHandler(mpSettings, mVersionStr);
       showButtons();
     }
     catch (const exception & e)
@@ -265,7 +276,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new plutoHandler(dabSettings, version);
+      inputDevice = new plutoHandler(mpSettings, version);
       showButtons();
     }
     catch (const std::exception & e)
@@ -286,7 +297,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new plutoHandler(dabSettings, version, fmFrequency);
+      inputDevice = new plutoHandler(mpSettings, version, fmFrequency);
       showButtons();
       streamerOut = new dabStreamer(48000, 192000, (plutoHandler *)inputDevice);
       ((plutoHandler *)inputDevice)->startTransmitter(fmFrequency);
@@ -310,7 +321,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new RtlTcpClient(dabSettings);
+      inputDevice = new RtlTcpClient(mpSettings);
       showButtons();
     }
     catch (...)
@@ -326,7 +337,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new eladHandler(dabSettings);
+      inputDevice = new eladHandler(mpSettings);
       showButtons();
     }
     catch (...)
@@ -342,7 +353,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new UhdHandler(dabSettings);
+      inputDevice = new UhdHandler(mpSettings);
       showButtons();
     }
     catch (...)
@@ -358,7 +369,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new soapyHandler(dabSettings);
+      inputDevice = new soapyHandler(mpSettings);
       showButtons();
     }
     catch (...)
@@ -376,7 +387,7 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
   {
     try
     {
-      inputDevice = new extioHandler(dabSettings);
+      inputDevice = new extioHandler(mpSettings);
       showButtons();
     }
     catch (...)
@@ -398,8 +409,8 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
     try
     {
       inputDevice = new xml_fileReader(file);
-      channel.realChannel = false;
-      hideButtons();
+      oRealDevice = false;
+      //hideButtons();
     }
     catch (...)
     {
@@ -429,8 +440,8 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
     try
     {
       inputDevice = new RawFileHandler(file);
-      hideButtons();
-      channel.realChannel = false;
+      //hideButtons();
+      oRealDevice = false;
     }
     catch (...)
     {
@@ -450,8 +461,8 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
     try
     {
       inputDevice = new WavFileHandler(file);
-      channel.realChannel = false;
-      hideButtons();
+      oRealDevice = false;
+      //hideButtons();
     }
     catch (...)
     {
@@ -467,9 +478,9 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
 
   //my_spectrumViewer.set_bit_depth(inputDevice->bitDepth());
 
-  dabSettings->setValue("device", s);
+  mpSettings->setValue("device", s);
   //	do we want to see the widget for device control?
-  if (dabSettings->value("deviceVisible", 0).toInt())
+  if (mpSettings->value("deviceVisible", 0).toInt())
   {
     inputDevice->show();
   }
@@ -480,3 +491,4 @@ IDeviceHandler * RadioInterface::create_device(const QString & s)
 
   return inputDevice;
 }
+

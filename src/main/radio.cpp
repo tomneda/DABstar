@@ -45,9 +45,9 @@
 #include  "dab-constants.h"
 #include  "mot-content-types.h"
 #include  "radio.h"
-#include  "rawfiles.h"
+//#include  "rawfiles.h"
 #include  "wavfiles.h"
-#include  "xml-filereader.h"
+//#include  "xml-filereader.h"
 #include  "dab-tables.h"
 #include  "ITU_Region_1.h"
 #include  "coordinates.h"
@@ -139,7 +139,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     the_dlCache(10),
     tiiHandler(),
     filenameFinder(Si),
-    theTechData(16 * 32768)
+    theTechData(16 * 32768),
+    mDeviceSelector(Si)
 {
   int16_t k;
   QString h;
@@ -479,7 +480,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   configWidget.cpuMonitor->setPalette(lcdPalette);
   configWidget.cpuMonitor->setAutoFillBackground(true);
-  configWidget.deviceSelector->addItems(get_device_name_list());
+  configWidget.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
 #ifdef  HAVE_PLUTO_RXTX
 	streamerOut	= nullptr;
@@ -491,7 +492,13 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   if (k != -1)
   {
     configWidget.deviceSelector->setCurrentIndex(k);
-    mpInputDevice = create_device(configWidget.deviceSelector->currentText());
+    mpInputDevice = mDeviceSelector.create_device(configWidget.deviceSelector->currentText(), channel.realChannel);
+
+    if (channel.realChannel == false)
+    {
+      hideButtons();
+    }
+
     if (mpInputDevice != nullptr)
     {
       dabSettings->setValue("device", configWidget.deviceSelector->currentText());
@@ -604,7 +611,12 @@ void RadioInterface::_show_epg_label(const bool iShowLabel)
 // _slot_do_start(QString) is called when - on startup - NO device was registered to be used, and the user presses the selectDevice comboBox
 void RadioInterface::_slot_do_start(const QString & dev)
 {
-  mpInputDevice = create_device(dev);
+  mpInputDevice = mDeviceSelector.create_device(dev, channel.realChannel);
+
+  if (channel.realChannel == false)
+  {
+    hideButtons();
+  }
 
   if (mpInputDevice == nullptr)
   {
@@ -1451,7 +1463,13 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
   }
 
   LOG("selecting ", deviceName);
-  mpInputDevice = create_device(deviceName);
+  mpInputDevice = mDeviceSelector.create_device(deviceName, channel.realChannel);
+
+  if (channel.realChannel == false)
+  {
+    hideButtons();
+  }
+
   if (mpInputDevice == nullptr)
   {
     //mpInputDevice = new DummyHandler();

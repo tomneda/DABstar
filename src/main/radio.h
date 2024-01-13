@@ -74,9 +74,10 @@
 //#include  "snr-viewer.h"
 #include  "findfilenames.h"
 #include  "http-handler.h"
+#include  "device-selector.h"
 
 class QSettings;
-class IDeviceHandler;
+//class IDeviceHandler;
 class AudioBase;
 class timeTableHandler;
 class ServiceListHandler;
@@ -244,7 +245,8 @@ private:
   int32_t dataPort;
   std::atomic<bool> running;
   std::atomic<bool> scanning;
-  IDeviceHandler * mpInputDevice;
+  IDeviceHandler * mpInputDevice = nullptr;
+  DeviceSelector mDeviceSelector;
 #ifdef  HAVE_PLUTO_RXTX
   dabStreamer * streamerOut;
 #endif
@@ -302,8 +304,8 @@ private:
   void hideButtons();
   void showButtons();
 
-  QStringList get_device_name_list();
-  IDeviceHandler * create_device(const QString & s);
+  //QStringList get_device_name_list();
+  //IDeviceHandler * create_device(const QString & s);
 
   void start_etiHandler();
   void stop_etiHandler();
