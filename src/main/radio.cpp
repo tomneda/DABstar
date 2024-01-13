@@ -135,11 +135,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     audioBuffer(8 * 32768),
     my_spectrumViewer(this, Si, &spectrumBuffer, &iqBuffer, &carrBuffer, &responseBuffer),
     theBand(freqExtension, Si),
-    configDisplay(nullptr),
     the_dlCache(10),
     tiiHandler(),
     filenameFinder(Si),
     theTechData(16 * 32768),
+    mConfig(Si),
     mDeviceSelector(Si)
 {
   int16_t k;
@@ -210,18 +210,18 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   this->resize(QSize(wi, he));
   this->move(QPoint(x, y));
 
-  configWidget.setupUi(&configDisplay);
-  configDisplay.setFixedSize(455, 350);
-
-  x = dabSettings->value("configWidget-x", 200).toInt();
-  y = dabSettings->value("configWidget-y", 200).toInt();
-  wi = dabSettings->value("configWidget-w", 200).toInt();
-  he = dabSettings->value("configWidget-h", 150).toInt();
-  configDisplay.resize(QSize(wi, he));
-  configDisplay.move(QPoint(x, y));
-  configDisplay.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-
-  configWidget.sliderTest->hide(); // only used for test
+//  configWidget.setupUi(&configDisplay);
+//  configDisplay.setFixedSize(455, 350);
+//
+//  x = dabSettings->value("configWidget-x", 200).toInt();
+//  y = dabSettings->value("configWidget-y", 200).toInt();
+//  wi = dabSettings->value("configWidget-w", 200).toInt();
+//  he = dabSettings->value("configWidget-h", 150).toInt();
+//  configDisplay.resize(QSize(wi, he));
+//  configDisplay.move(QPoint(x, y));
+//  configDisplay.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+//
+//  configWidget.sliderTest->hide(); // only used for test
 
   theTechWindow = new TechData(this, dabSettings, &theTechData);
   //
@@ -383,7 +383,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   epgPath += PRJ_NAME "/EPG/";
   epgPath = dabSettings->value("epgPath", epgPath).toString();
   epgPath = checkDir(epgPath);
-  connect(&epgProcessor, &epgDecoder::signal_set_epg_data, this, &RadioInterface::slot_set_epg_data);
+  connect(&epgProcessor, &EpgDecoder::signal_set_epg_data, this, &RadioInterface::slot_set_epg_data);
   //	timer for autostart epg service
   epgTimer.setSingleShot(true);
   connect(&epgTimer, &QTimer::timeout, this,  &RadioInterface::slot_epg_timer_timeout);

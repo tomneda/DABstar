@@ -55,7 +55,7 @@
 #include  <qwt_scale_widget.h>
 #include  "dab-constants.h"
 #include  "glob_enums.h"
-#include  "ui_scopewidget.h"
+#include  "ui_spectrum_viewer.h"
 #include  "ringbuffer.h"
 #include  "fft/fft-handler.h"
 #include  "custom_frame.h"

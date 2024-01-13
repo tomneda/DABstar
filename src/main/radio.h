@@ -1,14 +1,4 @@
 /*
- * Copyright (c) 2023
- * Thomas Neder (https://github.com/tomneda)
- *
- * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
- * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
- *
- * The original copyright information is preserved below and is acknowledged.
- */
-
-/*
  * This file is adapted by Thomas Neder (https://github.com/tomneda)
  *
  * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
@@ -54,7 +44,7 @@
 #include  <QLabel>
 #include  <QTimer>
 #include  <sndfile.h>
-#include  "ui_dabradio.h"
+#include  "ui_radio.h"
 #include  "dab-processor.h"
 #include  "ringbuffer.h"
 #include  "band-handler.h"
@@ -67,17 +57,15 @@
 #include	"tcp-server.h"
 #endif
 
-#include  "epgdec.h"
-#include  "epg-decoder.h"
-
-#include  "spectrum-viewer.h"
-//#include  "snr-viewer.h"
-#include  "findfilenames.h"
-#include  "http-handler.h"
-#include  "device-selector.h"
+#include "epgdec.h"
+#include "epg-decoder.h"
+#include "spectrum-viewer.h"
+#include "findfilenames.h"
+#include "http-handler.h"
+#include "device-selector.h"
+#include "configuration.h"
 
 class QSettings;
-//class IDeviceHandler;
 class AudioBase;
 class timeTableHandler;
 class ServiceListHandler;
@@ -88,7 +76,7 @@ class	dabStreamer;
 
 class TechData;
 
-#include  "ui_config-helper.h"
+//#include  "ui_config-helper.h"
 
 struct DabService
 {
@@ -221,7 +209,7 @@ private:
   SpectrumViewer my_spectrumViewer;
   BandHandler theBand;
   QFrame dataDisplay;
-  QFrame configDisplay;
+  //QFrame configDisplay;
   dlCache the_dlCache;
   TiiHandler tiiHandler;
   FindFileNames filenameFinder;
@@ -240,7 +228,7 @@ private:
   void LOG(const QString &, const QString &);
   bool error_report;
   TechData * theTechWindow;
-  Ui_configWidget configWidget;
+  Configuration mConfig;
   QSettings * dabSettings;
   int32_t dataPort;
   std::atomic<bool> running;
@@ -259,7 +247,7 @@ private:
   tcpServer * clockStreamer;
 #endif
   CEPGDecoder epgHandler;
-  epgDecoder epgProcessor;
+  EpgDecoder epgProcessor;
   QString epgPath;
   QTimer epgTimer;
   //bool saveSlides;

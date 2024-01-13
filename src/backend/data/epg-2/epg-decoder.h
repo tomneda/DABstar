@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2013 .. 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -20,11 +29,13 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef	EPG_DECODER2_H
+#define	EPG_DECODER2_H
 
 #include  <QObject>
 #include  <cstdio>
-#include  <stdint.h>
-#include  <stdlib.h>
+#include  <cstdint>
+#include  <cstdlib>
 #include  <QString>
 
 class progDesc
@@ -55,16 +66,15 @@ public:
     shortDescription = "";
     longDescription = "";
   }
-
 };
 
-class epgDecoder : public QObject
+class EpgDecoder : public QObject
 {
 Q_OBJECT
-public:
 
-  epgDecoder();
-  ~epgDecoder();
+public:
+  EpgDecoder();
+  ~EpgDecoder() override = default;
 
   int process_epg(uint8_t * v, int e_length, uint32_t SId, int subType, uint32_t theDay);
 
@@ -136,4 +146,6 @@ private:
 signals:
   void signal_set_epg_data(int, int, const QString &, const QString &);
 };
+
+#endif
 

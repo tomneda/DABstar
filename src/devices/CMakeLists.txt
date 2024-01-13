@@ -1,12 +1,9 @@
-message(STATUS "Begin: It's me the Devices! ----------------------")
 
 set(devicesLibName ${objectName}_devices)
 
-# Enable automoc and autouic
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
-
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
@@ -383,42 +380,9 @@ set(${devicesLibName}_SRCS
         filereaders/wav-files/wav-reader.cpp
 )
 
-#set(${devicesLibName}_MOCS
-#        ${${devicesLibName}_MOCS}
-#        device-selector.h
-#        filereaders/raw-files/rawfiles.h
-#        filereaders/raw-files/raw-reader.h
-#)
-
-#set(${devicesLibName}_UIS
-#        ${${devicesLibName}_UIS}
-#        filereaders/xml-filereader/xmlfiles.ui
-#)
-
-
-#message(STATUS "devicesLibName: ${devicesLibName}")
-#message(STATUS "${devicesLibName}_SRCS: ${${devicesLibName}_SRCS}")
-#message(STATUS "${devicesLibName}_HDRS: ${${devicesLibName}_HDRS}")
-
-#qt5_warp_ui(UIS
-#        ${${devicesLibName}_UIS}
-#)
-
 add_library(${devicesLibName} STATIC ${${devicesLibName}_SRCS})
-#target_include_directories(${PROJECT_NAME} PUBLIC
-#        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-#        $<INSTALL_INTERFACE:include>
-#)
-
-#list(APPEND extraLibs ${FFTW3F_LIBRARIES})
-
-#qt5_warp_moc(MOCS
-#        ${${devicesLibName}_MOCS}
-#)
 
 target_link_libraries(${devicesLibName}
         Qt5::Widgets
         Qt5::Xml
 )
-
-message(STATUS "End:   It's me the Devices ${devicesLibName} ----------------------")

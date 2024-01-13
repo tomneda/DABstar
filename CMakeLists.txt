@@ -8,6 +8,10 @@ set(objectName "dabstar")
 
 option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+
 # special release version flags
 if (USE_LTO)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
@@ -215,7 +219,6 @@ include_directories(
         ${QT_QTGUI_INCLUDE_DIR}
         src
         src/main
-        src/support
         src/ofdm
         src/protection
         src/backend
@@ -233,14 +236,11 @@ include_directories(
         src/output
         src/scopes-qwt6
         src/spectrum-viewer
-        #src/file-devices/filereader
-        #src/file-devices/raw-files
-        #src/file-devices/wav-files
-        #src/file-devices/xml-filereader
         src/file-devices/xml-filewriter
         src/devices
         src/eti-handler
         src/service-list
+        src/configuration
         /usr/include/
 )
 
@@ -334,16 +334,9 @@ set(${objectName}_HDRS
         src/spectrum-viewer/correlation-viewer.h
         src/devices/device-handler.h
         src/file-devices/xml-filewriter/xml-filewriter.h
-        #src/file-devices/raw-files/rawfiles.h
-        #src/file-devices/raw-files/raw-reader.h
-        #src/file-devices/wav-files/wavfiles.h
-        #src/file-devices/wav-files/wav-reader.h
-        #src/file-devices/xml-filereader/element-reader.h
-        #src/file-devices/xml-filereader/xml-filereader.h
-        #src/file-devices/xml-filereader/xml-reader.h
-        #src/file-devices/xml-filereader/xml-descriptor.h
         src/service-list/service-list-handler.h
         src/service-list/service-db.h
+        src/configuration/configuration.h
         )
 
 set(${objectName}_SRCS
@@ -424,69 +417,56 @@ set(${objectName}_SRCS
         src/spectrum-viewer/waterfall-scope.cpp
         src/spectrum-viewer/correlation-viewer.cpp
         src/file-devices/xml-filewriter/xml-filewriter.cpp
-        #src/file-devices/raw-files/rawfiles.cpp
-        #src/file-devices/raw-files/raw-reader.cpp
-        #src/file-devices/wav-files/wavfiles.cpp
-        #src/file-devices/wav-files/wav-reader.cpp
-        #src/file-devices/xml-filereader/xml-filereader.cpp
-        #src/file-devices/xml-filereader/xml-reader.cpp
-        #src/file-devices/xml-filereader/xml-descriptor.cpp
         src/service-list/service-list-handler.cpp
         src/service-list/service-db.cpp
+        src/configuration/configuration.cpp
         )
 
-set(${objectName}_MOCS
-        src/main/radio.h
-        src/main/dab-processor.h
-        src/support/techdata.h
-        src/output/audio-base.h
-        src/ofdm/sample-reader.h
-        src/ofdm/ofdm-decoder.h
-        src/ofdm/phasereference.h
-        src/ofdm/fib-decoder.h
-        src/ofdm/fic-handler.h
-        src/backend/audio/mp2processor.h
-        src/backend/audio/mp4processor.h
-        src/backend/data/virtual-datahandler.h
-        src/backend/data/pad-handler.h
-        src/backend/data/mot/mot-object.h
-        src/backend/data/ip-datahandler.h
-        src/backend/data/tdc-datahandler.h
-        src/backend/data/epg-2/epg-decoder.h
-        src/backend/data/data-processor.h
-        src/support/band-handler.h
-        src/support/buttons/newpushbutton.h
-        src/support/buttons/normalpushbutton.h
-        src/support/buttons/circlepushbutton.h
-        src/support/time-table.h
-        src/support/content-table.h
-        src/support/coordinates.h
-        src/support/mapport.h
-        src/support/http-handler.h
-        src/support/custom_frame.h
-        src/scopes-qwt6/iqdisplay.h
-        src/scopes-qwt6/audio-display.h
-        src/spectrum-viewer/spectrum-viewer.h
-        src/spectrum-viewer/spectrum-scope.h
-        src/spectrum-viewer/waterfall-scope.h
-        src/spectrum-viewer/correlation-viewer.h
-        #src/file-devices/raw-files/rawfiles.h
-        #src/file-devices/raw-files/raw-reader.h
-        #src/file-devices/wav-files/wavfiles.h
-        #src/file-devices/wav-files/wav-reader.h
-        #src/file-devices/xml-filereader/xml-filereader.h
-        #src/file-devices/xml-filereader/xml-reader.h
-        src/service-list/service-list-handler.h
-        )
-
-set(${objectName}_UIS
-        ${${objectName}_UIS}
-        ./forms/dabradio.ui
-        ./forms/technical_data.ui
-        ./forms/config-helper.ui
-        ./forms/scopewidget.ui
-        #src/file-devices/xml-filereader/xmlfiles.ui
-        )
+#set(${objectName}_MOCS
+#        src/main/radio.h
+#        src/main/dab-processor.h
+#        src/support/techdata.h
+#        src/output/audio-base.h
+#        src/ofdm/sample-reader.h
+#        src/ofdm/ofdm-decoder.h
+#        src/ofdm/phasereference.h
+#        src/ofdm/fib-decoder.h
+#        src/ofdm/fic-handler.h
+#        src/backend/audio/mp2processor.h
+#        src/backend/audio/mp4processor.h
+#        src/backend/data/virtual-datahandler.h
+#        src/backend/data/pad-handler.h
+#        src/backend/data/mot/mot-object.h
+#        src/backend/data/ip-datahandler.h
+#        src/backend/data/tdc-datahandler.h
+#        src/backend/data/epg-2/epg-decoder.h
+#        src/backend/data/data-processor.h
+#        src/support/band-handler.h
+#        src/support/buttons/newpushbutton.h
+#        src/support/buttons/normalpushbutton.h
+#        src/support/buttons/circlepushbutton.h
+#        src/support/time-table.h
+#        src/support/content-table.h
+#        src/support/coordinates.h
+#        src/support/mapport.h
+#        src/support/http-handler.h
+#        src/support/custom_frame.h
+#        src/scopes-qwt6/iqdisplay.h
+#        src/scopes-qwt6/audio-display.h
+#        src/spectrum-viewer/spectrum-viewer.h
+#        src/spectrum-viewer/spectrum-scope.h
+#        src/spectrum-viewer/waterfall-scope.h
+#        src/spectrum-viewer/correlation-viewer.h
+#        src/service-list/service-list-handler.h
+#        )
+#
+#set(${objectName}_UIS
+#        ${${objectName}_UIS}
+#        ./forms/dabradio.ui
+#        ./forms/technical_data.ui
+#        ./forms/config-helper.ui
+#        ./forms/scopewidget.ui
+#        )
 
 #########################################################################
 
@@ -646,10 +626,10 @@ if (USE_PORTAUDIO)
             )
 endif (USE_PORTAUDIO)
 
-QT5_WRAP_UI(UIS
-        ${${objectName}_UIS}
-        #src/file-devices/filereader/filereader-widget.ui
-)
+#QT5_WRAP_UI(UIS
+#        ${${objectName}_UIS}
+#        #src/file-devices/filereader/filereader-widget.ui
+#)
 
 include_directories(
         #${SDRPLAY_INCLUDES}
@@ -661,7 +641,7 @@ include_directories(
         ${SNDFILES_INCLUDE_DIRS}
 )
 
-QT5_WRAP_CPP(MOCS ${${objectName}_MOCS})
+#QT5_WRAP_CPP(MOCS ${${objectName}_MOCS})
 
 add_executable(${objectName}
         ${${objectName}_SRCS}

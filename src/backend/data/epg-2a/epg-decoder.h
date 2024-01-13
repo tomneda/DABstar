@@ -20,8 +20,8 @@
  *    along with Qt-TAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__EPG_DECODER__
-#define	__EPG_DECODER__
+#ifndef	EPG_DECODER_H
+#define	EPG_DECODER_H
 
 #include	<QObject>
 #include	<cstdio>

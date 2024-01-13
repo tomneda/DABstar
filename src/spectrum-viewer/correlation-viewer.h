@@ -54,7 +54,7 @@
 #include  <QVector>
 #include  "ringbuffer.h"
 #include  "dab-constants.h"
-#include  "ui_scopewidget.h"
+#include  "ui_spectrum_viewer.h"
 
 
 class RadioInterface;
