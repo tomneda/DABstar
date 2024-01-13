@@ -233,9 +233,9 @@ include_directories(
         src/output
         src/scopes-qwt6
         src/spectrum-viewer
-        src/file-devices/filereader
+        #src/file-devices/filereader
         #src/file-devices/raw-files
-        src/file-devices/wav-files
+        #src/file-devices/wav-files
         #src/file-devices/xml-filereader
         src/file-devices/xml-filewriter
         src/devices
@@ -336,8 +336,8 @@ set(${objectName}_HDRS
         src/file-devices/xml-filewriter/xml-filewriter.h
         #src/file-devices/raw-files/rawfiles.h
         #src/file-devices/raw-files/raw-reader.h
-        src/file-devices/wav-files/wavfiles.h
-        src/file-devices/wav-files/wav-reader.h
+        #src/file-devices/wav-files/wavfiles.h
+        #src/file-devices/wav-files/wav-reader.h
         #src/file-devices/xml-filereader/element-reader.h
         #src/file-devices/xml-filereader/xml-filereader.h
         #src/file-devices/xml-filereader/xml-reader.h
@@ -426,8 +426,8 @@ set(${objectName}_SRCS
         src/file-devices/xml-filewriter/xml-filewriter.cpp
         #src/file-devices/raw-files/rawfiles.cpp
         #src/file-devices/raw-files/raw-reader.cpp
-        src/file-devices/wav-files/wavfiles.cpp
-        src/file-devices/wav-files/wav-reader.cpp
+        #src/file-devices/wav-files/wavfiles.cpp
+        #src/file-devices/wav-files/wav-reader.cpp
         #src/file-devices/xml-filereader/xml-filereader.cpp
         #src/file-devices/xml-filereader/xml-reader.cpp
         #src/file-devices/xml-filereader/xml-descriptor.cpp
@@ -472,8 +472,8 @@ set(${objectName}_MOCS
         src/spectrum-viewer/correlation-viewer.h
         #src/file-devices/raw-files/rawfiles.h
         #src/file-devices/raw-files/raw-reader.h
-        src/file-devices/wav-files/wavfiles.h
-        src/file-devices/wav-files/wav-reader.h
+        #src/file-devices/wav-files/wavfiles.h
+        #src/file-devices/wav-files/wav-reader.h
         #src/file-devices/xml-filereader/xml-filereader.h
         #src/file-devices/xml-filereader/xml-reader.h
         src/service-list/service-list-handler.h
@@ -648,7 +648,7 @@ endif (USE_PORTAUDIO)
 
 QT5_WRAP_UI(UIS
         ${${objectName}_UIS}
-        src/file-devices/filereader/filereader-widget.ui
+        #src/file-devices/filereader/filereader-widget.ui
 )
 
 include_directories(

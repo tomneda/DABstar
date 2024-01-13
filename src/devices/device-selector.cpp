@@ -8,10 +8,6 @@
  * The original copyright information is acknowledged.
  */
 
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QSettings>
-
 #ifdef  HAVE_RTLSDR
   #include  "rtlsdr-handler.h"
 #endif
@@ -58,7 +54,11 @@
 #include "xml-filereader.h"
 #include "wavfiles.h"
 #include "rawfiles.h"
-//#include "radio.h"
+#include "dummy-handler.h"
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QSettings>
+
 
 static const char DN_FILE_INP_RAW[] = "File input(.raw)";
 static const char DN_FILE_INP_IQ[]  = "File input(.iq)";
@@ -410,7 +410,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     {
       inputDevice = new xml_fileReader(file);
       oRealDevice = false;
-      //hideButtons();
     }
     catch (...)
     {
@@ -440,7 +439,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new RawFileHandler(file);
-      //hideButtons();
       oRealDevice = false;
     }
     catch (...)
@@ -462,7 +460,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     {
       inputDevice = new WavFileHandler(file);
       oRealDevice = false;
-      //hideButtons();
     }
     catch (...)
     {
@@ -472,14 +469,12 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
   }
   else
   {
-    fprintf(stderr, "unknown device, failing\n");
-    return nullptr;
+    fprintf(stderr, "Create dummy device\n");
+    inputDevice = new DummyHandler;
   }
 
-  //my_spectrumViewer.set_bit_depth(inputDevice->bitDepth());
+  mpSettings->setValue("device", s); // remember for next restart
 
-  mpSettings->setValue("device", s);
-  //	do we want to see the widget for device control?
   if (mpSettings->value("deviceVisible", 0).toInt())
   {
     inputDevice->show();
