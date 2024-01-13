@@ -38,7 +38,6 @@
 
 class virtual_dataHandler : public QObject
 {
-Q_OBJECT
 public:
   virtual_dataHandler() = default;
   virtual ~virtual_dataHandler() = default;

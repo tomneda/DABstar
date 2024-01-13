@@ -408,6 +408,7 @@ set(${objectName}_SRCS
         src/support/mapport.cpp
         src/support/http-handler.cpp
         src/support/tii-library/tii-codes.cpp
+        src/support/custom_frame.cpp
         src/scopes-qwt6/iqdisplay.cpp
         src/scopes-qwt6/carrier-display.cpp
         src/scopes-qwt6/audio-display.cpp

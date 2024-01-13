@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 by Thomas Neder (https://github.com/tomneda)
+ * Copyright (c) 2024 by Thomas Neder (https://github.com/tomneda)
  *
  * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2 of the License, or any later version.
@@ -11,23 +11,11 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DABSTAR_CUSTOM_FRAME_H
-#define DABSTAR_CUSTOM_FRAME_H
+#include "custom_frame.h"
 
-#include <QObject>
-#include <QCloseEvent>
-#include <QFrame>
-
-class CustomFrame : public QFrame
+// this only method has to be defined in the cpp body as the automatic moc'ing has problems with that
+void CustomFrame::closeEvent(QCloseEvent * event)
 {
-  using QFrame::QFrame;
-  Q_OBJECT
-
-protected:
-  void closeEvent(QCloseEvent * event) override;
-
-signals:
-  void signal_frame_closed();
-};
-
-#endif //DABSTAR_CUSTOM_FRAME_H
+  emit signal_frame_closed();
+  QFrame::closeEvent(event);
+}
