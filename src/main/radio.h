@@ -173,8 +173,9 @@ public:
     AFL_PS_USED  = 0x2
   };
 
-private:
   static constexpr int32_t SWITCH_DELAY = 3; // switch time in second until service is called after channel selection
+
+private:
 
   template<typename T>
   struct StatusInfoElem
@@ -390,6 +391,17 @@ public slots:
   void slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF);
   void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
   void slot_test_slider(int);
+  void slot_load_table();
+  void slot_handle_on_top(int);
+  void slot_handle_transm_selector(int);
+  void slot_handle_save_slides(int);
+  void slot_handle_auto_browser(int);
+  void slot_handle_transmitter_tags(int);
+  void slot_handle_dl_text_button();
+  void slot_handle_logger_button(int);
+  void slot_handle_port_selector();
+  void slot_handle_set_coordinates_button();
+  void slot_handle_eti_active_selector(int);
 
   void closeEvent(QCloseEvent * event) override;
 
@@ -427,13 +439,9 @@ private slots:
   void _slot_set_static_button_style();
   void _slot_set_preset_service();
   void _slot_handle_mute_button();
-  void _slot_handle_dl_text_button();
 
   void _slot_handle_config_button();
   void _slot_handle_http_button();
-  void _slot_handle_on_top(int);
-  void _slot_handle_auto_browser(int);
-  void _slot_handle_transmitter_tags(int);
 
   //	config handlers
   void _slot_handle_switch_delay_setting(int);
@@ -443,13 +451,6 @@ private slots:
   void _slot_handle_tii_detector_mode(bool);
   void _slot_handle_dc_avoidance_algorithm(bool);
   void _slot_handle_dc_removal(bool);
-  void _slot_handle_logger_button(int);
-  void _slot_handle_set_coordinates_button();
-  void _slot_handle_port_selector();
-  void _slot_handle_transm_selector(int);
-  void _slot_handle_eti_active_selector(int);
-  void _slot_handle_save_slides(int);
-  void _slot_load_table();
 };
 
 #endif

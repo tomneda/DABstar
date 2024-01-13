@@ -12,10 +12,14 @@
  */
 
 #include "configuration.h"
+#include "ui_configuration.h"
+#include "radio.h"
+#include <QSettings>
 
-Configuration::Configuration(QSettings * ipSettings) :
+Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
   Ui_configWidget(),
-  mpSettings(ipSettings)
+  mpSettings(ipS),
+  mpRadioInterface(ipRI)
 {
   setupUi(this);
   setFixedSize(455, 350);
@@ -24,9 +28,72 @@ Configuration::Configuration(QSettings * ipSettings) :
   const int y = mpSettings->value("configWidget-y", 200).toInt();
   const int wi = mpSettings->value("configWidget-w", 200).toInt();
   const int he = mpSettings->value("configWidget-h", 150).toInt();
-  mpSettings.resize(QSize(wi, he));
-  mpSettings.move(QPoint(x, y));
-  mpSettings.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+
+  resize(QSize(wi, he));
+  move(QPoint(x, y));
+  setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   sliderTest->hide(); // only used for test
+
+  if (mpSettings->value("onTop", 0).toInt() == 1)
+  {
+    onTop->setChecked(true);
+  }
+
+  if (mpSettings->value("saveLocations", 0).toInt() == 1)
+  {
+    transmSelector->setChecked(true);
+  }
+
+  if (mpSettings->value("saveSlides", 0).toInt() == 1)
+  {
+    saveSlides->setChecked(true);
+  }
+
+  switchDelaySetting->setValue(mpSettings->value("switchDelay", RadioInterface::SWITCH_DELAY).toInt());
+  utcSelector->setChecked(mpSettings->value("utcSelector", 0).toInt() == 1);
+  saveServiceSelector->setChecked(mpSettings->value("has-presetName", 0).toInt() != 0);
+  closeDirect->setChecked(mpSettings->value("closeDirect", 0).toInt() != 0);
+  epg2xmlSelector->setChecked(mpSettings->value("epg2xml", 0).toInt() != 0);
+  autoBrowser->setChecked(mpSettings->value("autoBrowser", 1).toInt() == 1);
+  transmitterTags->setChecked(mpSettings->value("transmitterTags", 1).toInt() == 1);
+
+  QPalette lcdPalette;
+#ifndef __MAC__
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
+  lcdPalette.setColor(QPalette::Window, Qt::white);
+#else
+  lcdPalette. setColor (QPalette::Background, Qt::white);
+#endif
+  lcdPalette.setColor(QPalette::Base, Qt::black);
+#endif
+
+  cpuMonitor->setPalette(lcdPalette);
+  cpuMonitor->setAutoFillBackground(true);
+
+  connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_load_table);
+  connect(onTop, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_on_top);
+  connect(transmSelector, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_transm_selector);
+  connect(saveSlides, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_save_slides);
+  connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &RadioInterface::slot_test_slider);
+  connect(autoBrowser, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_auto_browser);
+  connect(transmitterTags, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_transmitter_tags);
+  connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &RadioInterface::slot_handle_dl_text_button);
+  connect(loggerButton, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
+  connect(streamoutSelector, qOverload<int>(&QComboBox::activated), mpRadioInterface, &RadioInterface::slot_set_stream_selector);
+  connect(portSelector, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_port_selector);
+  connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_set_coordinates_button);
+  connect(eti_activeSelector, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
+
+}
+
+void Configuration::save_position_and_config()
+{
+  mpSettings->setValue("configWidget-x", pos().x());
+  mpSettings->setValue("configWidget-y", pos().y());
+  mpSettings->setValue("configWidget-w", size().width());
+  mpSettings->setValue("configWidget-h", size().height());
+
+  mpSettings->setValue("utcSelector", utcSelector->isChecked() ? 1 : 0);
+  mpSettings->setValue("epg2xml", epg2xmlSelector->isChecked() ? 1 : 0);
 }

@@ -18,18 +18,23 @@
 #include <QWidget>
 
 class QSettings;
+class RadioInterface;
 
-class Configuration : public QWidget, private Ui_configWidget
+// allow direct access to components -> makes a live simpler but more dangerous!
+class Configuration : public QWidget, public Ui_configWidget
 {
   Q_OBJECT
 
 public:
-  explicit Configuration(QSettings * ipSettings);
+  Configuration(RadioInterface * ipRI, QSettings * ipS);
   ~Configuration() override = default;
+
+  void save_position_and_config();
 
 private:
   QSettings * const mpSettings;
+  RadioInterface * const mpRadioInterface;
 };
 
 
-#endif //DABSTAR_CONFIGURATION_H
+#endif 

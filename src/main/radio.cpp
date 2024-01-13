@@ -139,7 +139,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     tiiHandler(),
     filenameFinder(Si),
     theTechData(16 * 32768),
-    mConfig(Si),
+    mConfig(this, Si),
     mDeviceSelector(Si)
 {
   int16_t k;
@@ -210,50 +210,34 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   this->resize(QSize(wi, he));
   this->move(QPoint(x, y));
 
-//  configWidget.setupUi(&configDisplay);
-//  configDisplay.setFixedSize(455, 350);
+//  mConfig.setupUi(&mConfig);
+//  mConfig.setFixedSize(455, 350);
 //
-//  x = dabSettings->value("configWidget-x", 200).toInt();
-//  y = dabSettings->value("configWidget-y", 200).toInt();
-//  wi = dabSettings->value("configWidget-w", 200).toInt();
-//  he = dabSettings->value("configWidget-h", 150).toInt();
-//  configDisplay.resize(QSize(wi, he));
-//  configDisplay.move(QPoint(x, y));
-//  configDisplay.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+//  x = dabSettings->value("mConfig-x", 200).toInt();
+//  y = dabSettings->value("mConfig-y", 200).toInt();
+//  wi = dabSettings->value("mConfig-w", 200).toInt();
+//  he = dabSettings->value("mConfig-h", 150).toInt();
+//  mConfig.resize(QSize(wi, he));
+//  mConfig.move(QPoint(x, y));
+//  mConfig.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 //
-//  configWidget.sliderTest->hide(); // only used for test
+//  mConfig.sliderTest->hide(); // only used for test
 
   theTechWindow = new TechData(this, dabSettings, &theTechData);
-  //
-  //	Now we can set the checkbox as saved in the settings
-  if (dabSettings->value("onTop", 0).toInt() == 1)
-  {
-    configWidget.onTop->setChecked(true);
-  }
-
-  if (dabSettings->value("saveLocations", 0).toInt() == 1)
-  {
-    configWidget.transmSelector->setChecked(true);
-  }
-
-  if (dabSettings->value("saveSlides", 0).toInt() == 1)
-  {
-    configWidget.saveSlides->setChecked(true);
-  }
 
   _show_epg_label(false);
 
-  x = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
-  configWidget.switchDelaySetting->setValue(x);
-
-  bool b = dabSettings->value("utcSelector", 0).toInt() == 1;
-  configWidget.utcSelector->setChecked(b);
+//  x = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
+//  mConfig.switchDelaySetting->setValue(x);
+//
+//  bool b = dabSettings->value("utcSelector", 0).toInt() == 1;
+//  mConfig.utcSelector->setChecked(b);
   channel.currentService.valid = false;
   channel.nextService.valid = false;
   channel.serviceCount = -1;
   if (dabSettings->value("has-presetName", 0).toInt() != 0)
   {
-    configWidget.saveServiceSelector->setChecked(true);
+    //mConfig.saveServiceSelector->setChecked(true);
     QString presetName = dabSettings->value("presetname", "").toString();
     if (presetName != "")
     {
@@ -278,41 +262,41 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   float local_lon = dabSettings->value("longitude", 0).toFloat();
   channel.localPos = cmplx(local_lat, local_lon);
 
-  configWidget.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
-
-  connect(configWidget.loadTableButton, &QPushButton::clicked, this, &RadioInterface::_slot_load_table);
-  connect(configWidget.onTop, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_on_top);
-  connect(configWidget.transmSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transm_selector);
-  connect(configWidget.saveSlides, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_slides);
-  connect(configWidget.sliderTest, &QSlider::valueChanged, this, &RadioInterface::slot_test_slider);
+  mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
+//
+//  connect(mConfig.loadTableButton, &QPushButton::clicked, this, &RadioInterface::_slot_load_table);
+//  connect(mConfig.onTop, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_on_top);
+//  connect(mConfig.transmSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transm_selector);
+//  connect(mConfig.saveSlides, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_slides);
+//  connect(mConfig.sliderTest, &QSlider::valueChanged, this, &RadioInterface::slot_test_slider);
 
   logFile = nullptr;
 
-  x = dabSettings->value("closeDirect", 0).toInt();
-  if (x != 0)
-  {
-    configWidget.closeDirect->setChecked(true);
-  }
+//  x = dabSettings->value("closeDirect", 0).toInt();
+//  if (x != 0)
+//  {
+//    mConfig.closeDirect->setChecked(true);
+//  }
+//
+//  x = dabSettings->value("epg2xml", 0).toInt();
+//  if (x != 0)
+//  {
+//    mConfig.epg2xmlSelector->setChecked(true);
+//  }
+//
+//  if (dabSettings->value("autoBrowser", 1).toInt() == 1)
+//  {
+//    mConfig.autoBrowser->setChecked(true);
+//  }
+//
+//  if (dabSettings->value("transmitterTags", 1).toInt() == 1)
+//  {
+//    mConfig.transmitterTags->setChecked(true);
+//  }
+//  connect(mConfig.autoBrowser, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_auto_browser);
+//  connect(mConfig.transmitterTags, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transmitter_tags);
 
-  x = dabSettings->value("epg2xml", 0).toInt();
-  if (x != 0)
-  {
-    configWidget.epg2xmlSelector->setChecked(true);
-  }
-
-  if (dabSettings->value("autoBrowser", 1).toInt() == 1)
-  {
-    configWidget.autoBrowser->setChecked(true);
-  }
-
-  if (dabSettings->value("transmitterTags", 1).toInt() == 1)
-  {
-    configWidget.transmitterTags->setChecked(true);
-  }
-  connect(configWidget.autoBrowser, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_auto_browser);
-  connect(configWidget.transmitterTags, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transmitter_tags);
-
-  transmitterTags_local = configWidget.transmitterTags->isChecked();
+  transmitterTags_local = (dabSettings->value("transmitterTags", 1).toInt() == 1);
   theTechWindow->hide();  // until shown otherwise
   serviceList.clear();
   //model.clear();
@@ -331,7 +315,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #endif
 
   //	Where do we leave the audio out?
-  configWidget.streamoutSelector->hide();
+  mConfig.streamoutSelector->hide();
 #ifdef TCP_STREAMER
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
@@ -343,15 +327,15 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #else
   //	just sound out
   soundOut = new AudioSink(latency);
-  ((AudioSink *)soundOut)->setupChannels(configWidget.streamoutSelector);
-  configWidget.streamoutSelector->show();
+  ((AudioSink *)soundOut)->setupChannels(mConfig.streamoutSelector);
+  mConfig.streamoutSelector->show();
   bool err = false;
   h = dabSettings->value("soundchannel", "default").toString();
 
-  k = configWidget.streamoutSelector->findText(h);
+  k = mConfig.streamoutSelector->findText(h);
   if (k != -1)
   {
-    configWidget.streamoutSelector->setCurrentIndex(k);
+    mConfig.streamoutSelector->setCurrentIndex(k);
     err = !((AudioSink *)soundOut)->selectDevice(k);
   }
 
@@ -395,8 +379,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   my_timeTable->hide();
 
   connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &QComboBox::setCurrentIndex);
-  connect(configWidget.dlTextButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_dl_text_button);
-  connect(configWidget.loggerButton, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_logger_button);
+//  connect(mConfig.dlTextButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_dl_text_button);
+//  connect(mConfig.loggerButton, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_logger_button);
   connect(btnHttpServer, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
 
   //	restore some settings from previous incarnations
@@ -419,15 +403,15 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   total_ficError = 0;
   total_fics = 0;
 
-  connect(configWidget.streamoutSelector, qOverload<int>(&QComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
+  //connect(mConfig.streamoutSelector, qOverload<int>(&QComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
   connect(theTechWindow, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
   copyrightLabel->setText(QString("<html><body><img src='qrc:/res/icons/copyright24.png'/> V" + mVersionStr + "</body></html>"));
   copyrightLabel->setToolTip(get_copyright_text());
   copyrightLabel->setOpenExternalLinks(true);
 
-  connect(configWidget.portSelector, &QPushButton::clicked, this, &RadioInterface::_slot_handle_port_selector);
-  connect(configWidget.set_coordinatesButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_set_coordinates_button);
+//  connect(mConfig.portSelector, &QPushButton::clicked, this, &RadioInterface::_slot_handle_port_selector);
+//  connect(mConfig.set_coordinatesButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_set_coordinates_button);
   QString tiiFileName = dabSettings->value("tiiFile", "").toString();
   channel.tiiFile = false;
   if (tiiFileName != "")
@@ -440,7 +424,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     }
   }
 
-  connect(configWidget.eti_activeSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_eti_active_selector);
+  //connect(mConfig.eti_activeSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_eti_active_selector);
   connect(this, &RadioInterface::signal_dab_processor_started, &my_spectrumViewer, &SpectrumViewer::slot_update_settings);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_window_closed, this, &RadioInterface::_slot_handle_spectrum_button);
   connect(theTechWindow, &TechData::signal_window_closed, this, &RadioInterface::_slot_handle_tech_detail_button);
@@ -465,22 +449,22 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   presetTimer.setSingleShot(true);
   connect(&presetTimer, &QTimer::timeout, this, &RadioInterface::_slot_set_preset_service);
 
-  QPalette lcdPalette;
-#ifndef __MAC__
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-  lcdPalette.setColor(QPalette::Window, Qt::white);
-#else
-  lcdPalette. setColor (QPalette::Background, Qt::white);
-#endif
-  lcdPalette.setColor(QPalette::Base, Qt::black);
-#endif
+//  QPalette lcdPalette;
+//#ifndef __MAC__
+//#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
+//  lcdPalette.setColor(QPalette::Window, Qt::white);
+//#else
+//  lcdPalette. setColor (QPalette::Background, Qt::white);
+//#endif
+//  lcdPalette.setColor(QPalette::Base, Qt::black);
+//#endif
   _set_clock_text();
   mClockResetTimer.setSingleShot(true);
   connect(&mClockResetTimer, &QTimer::timeout, [this](){ _set_clock_text(); });
-
-  configWidget.cpuMonitor->setPalette(lcdPalette);
-  configWidget.cpuMonitor->setAutoFillBackground(true);
-  configWidget.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
+//
+//  mConfig.cpuMonitor->setPalette(lcdPalette);
+//  mConfig.cpuMonitor->setAutoFillBackground(true);
+  mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
 #ifdef  HAVE_PLUTO_RXTX
 	streamerOut	= nullptr;
@@ -488,11 +472,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mpInputDevice = nullptr;
 
   h = dabSettings->value("device", "no device").toString();
-  k = configWidget.deviceSelector->findText(h);
+  k = mConfig.deviceSelector->findText(h);
   if (k != -1)
   {
-    configWidget.deviceSelector->setCurrentIndex(k);
-    mpInputDevice = mDeviceSelector.create_device(configWidget.deviceSelector->currentText(), channel.realChannel);
+    mConfig.deviceSelector->setCurrentIndex(k);
+    mpInputDevice = mDeviceSelector.create_device(mConfig.deviceSelector->currentText(), channel.realChannel);
 
     if (channel.realChannel == false)
     {
@@ -501,7 +485,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
     if (mpInputDevice != nullptr)
     {
-      dabSettings->setValue("device", configWidget.deviceSelector->currentText());
+      dabSettings->setValue("device", mConfig.deviceSelector->currentText());
     }
   }
 
@@ -548,11 +532,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     }
   }
 
-  configDisplay.show();
+  mConfig.show();
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-    connect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
+    connect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
 #else
-    connect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
+    connect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
 #endif
   qApp->installEventFilter(this);
 }
@@ -665,7 +649,7 @@ bool RadioInterface::doStart()
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, my_dabProcessor, &DabProcessor::slot_show_nominal_carrier);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, my_dabProcessor, &DabProcessor::slot_select_carrier_plot_type);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, my_dabProcessor, &DabProcessor::slot_select_iq_plot_type);
-  connect(configWidget.cmbSoftBitGen, qOverload<int>(&QComboBox::currentIndexChanged), my_dabProcessor, [this](int idx){ my_dabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);});
+  connect(mConfig.cmbSoftBitGen, qOverload<int>(&QComboBox::currentIndexChanged), my_dabProcessor, [this](int idx){ my_dabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);});
 
   //
   //	Just to be sure we disconnect here.
@@ -673,13 +657,13 @@ bool RadioInterface::doStart()
   //	testing whether or not a connection exists, we need a kind
   //	of "reset"
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-  disconnect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
-  disconnect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
-  connect(configWidget.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
+  disconnect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
+  disconnect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
+  connect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
 #else
-  disconnect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
-  disconnect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
-  connect(configWidget.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
+  disconnect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
+  disconnect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
+  connect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
 #endif
   //
   if (channel.nextService.valid)
@@ -692,23 +676,23 @@ bool RadioInterface::doStart()
 
   {
     const bool b = (dabSettings->value("tii_detector", 0).toInt() == 1);
-    configWidget.tii_detectorMode->setChecked(b);
+    mConfig.tii_detectorMode->setChecked(b);
     my_dabProcessor->set_tiiDetectorMode(b);
-    connect(configWidget.tii_detectorMode, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_tii_detector_mode);
+    connect(mConfig.tii_detectorMode, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_tii_detector_mode);
   }
 
   {
     const bool b = (dabSettings->value("dcAvoidance", 0).toInt() == 1);
-    configWidget.cbDcAvoidance->setChecked(b);
+    mConfig.cbDcAvoidance->setChecked(b);
     my_dabProcessor->set_dc_avoidance_algorithm(b);
-    connect(configWidget.cbDcAvoidance, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_avoidance_algorithm);
+    connect(mConfig.cbDcAvoidance, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_avoidance_algorithm);
   }
 
   {
     const bool b = (dabSettings->value("dcRemoval", 0).toInt() == 1);
-    configWidget.cbDcRemovalFilter->setChecked(b);
+    mConfig.cbDcRemovalFilter->setChecked(b);
     my_dabProcessor->set_dc_removal(b);
-    connect(configWidget.cbDcRemovalFilter, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_removal);
+    connect(mConfig.cbDcRemovalFilter, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_removal);
   }
 
   emit signal_dab_processor_started();
@@ -846,7 +830,7 @@ void RadioInterface::_slot_handle_content_button()
   }
   QString theTime;
   QString SNR = "SNR " + QString::number(channel.snr);
-  if (configWidget.utcSelector->isChecked())
+  if (mConfig.utcSelector->isChecked())
   {
     theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
@@ -928,7 +912,7 @@ void RadioInterface::slot_handle_mot_object(QByteArray result, QString objectNam
       uint32_t julianDate = my_dabProcessor->julianDate();
       int subType = getContentSubType((MOTContentType)contentType);
       epgProcessor.process_epg(epgData.data(), (int32_t)epgData.size(), currentSId, subType, julianDate);
-      if (configWidget.epg2xmlSelector->isChecked())
+      if (mConfig.epg2xmlSelector->isChecked())
       {
         epgHandler.decode(epgData, QDir::toNativeSeparators(objectName));
       }
@@ -1004,7 +988,7 @@ void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, const QSt
   default: return;
   }
 
-  if (configWidget.saveSlides->isChecked() && (picturesPath != ""))
+  if (mConfig.saveSlides->isChecked() && (picturesPath != ""))
   {
     QString pict = picturesPath + pictureName;
     QString temp = pict;
@@ -1296,11 +1280,13 @@ void RadioInterface::_slot_terminate_process()
   QSize size = this->size();
   dabSettings->setValue("mainwidget-w", size.width());
   dabSettings->setValue("mainwidget-h", size.height());
-  dabSettings->setValue("configWidget-x", configDisplay.pos().x());
-  dabSettings->setValue("configWidget-y", configDisplay.pos().y());
-  size = configDisplay.size();
-  dabSettings->setValue("configWidget-w", size.width());
-  dabSettings->setValue("configWidget-h", size.height());
+
+  mConfig.save_position_and_config();
+//  dabSettings->setValue("mConfig-x", mConfig.pos().x());
+//  dabSettings->setValue("mConfig-y", mConfig.pos().y());
+//  size = mConfig.size();
+//  dabSettings->setValue("mConfig-w", size.width());
+//  dabSettings->setValue("mConfig-h", size.height());
 
   //
 #ifdef  DATA_STREAMER
@@ -1343,16 +1329,16 @@ void RadioInterface::_slot_terminate_process()
     delete my_contentTable;
   }
   //	just save a few checkbox settings that are not
-  //	bound by signa;/slots, but just read if needed
-  dabSettings->setValue("utcSelector", configWidget.utcSelector->isChecked() ? 1 : 0);
-  dabSettings->setValue("epg2xml", configWidget.epg2xmlSelector->isChecked() ? 1 : 0);
+  //	bound by signal/slots, but just read if needed
+  //  dabSettings->setValue("utcSelector", mConfig.utcSelector->isChecked() ? 1 : 0);
+  //  dabSettings->setValue("epg2xml", mConfig.epg2xmlSelector->isChecked() ? 1 : 0);
 
   theBand.saveSettings();
   stopFramedumping();
   stopSourcedumping();
   stopAudiodumping();
   theBand.hide();
-  configDisplay.hide();
+  mConfig.hide();
   LOG("terminating ", "");
   usleep(1000);    // pending signals
   if (logFile != nullptr)
@@ -1398,7 +1384,7 @@ void RadioInterface::_slot_update_time_display()
       const float idle_time_delta = static_cast<float>(idle_time - previous_idle_time);
       const float total_time_delta = static_cast<float>(total_time - previous_total_time);
       const float utilization = 100.0f * (1.0f - idle_time_delta / total_time_delta);
-      configWidget.cpuMonitor->display(QString("%1").arg(utilization, 0, 'f', 2));
+      mConfig.cpuMonitor->display(QString("%1").arg(utilization, 0, 'f', 2));
       previous_idle_time = idle_time;
       previous_total_time = total_time;
     }
@@ -1435,7 +1421,7 @@ void RadioInterface::_slot_update_time_display()
     total_fics = 0;
 #ifndef TCP_STREAMER
 #ifndef  QT_AUDIO
-    if (configWidget.streamoutSelector->isVisible())
+    if (mConfig.streamoutSelector->isVisible())
     {
       int xxx = ((AudioSink *)soundOut)->missed();
       fprintf(stderr, "missed %d\n", xxx);
@@ -1546,7 +1532,7 @@ void RadioInterface::slot_clock_time(int year, int month, int day, int hours, in
 
   QString result;
 
-  if (configWidget.utcSelector->isChecked())
+  if (mConfig.utcSelector->isChecked())
   {
     result = convertTime(year, month, day, utc_hour, utc_min, utc_sec);
   }
@@ -1844,7 +1830,7 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
     return;
   }
 
-  const QDateTime theTime = (configWidget.utcSelector->isChecked() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
+  const QDateTime theTime = (mConfig.utcSelector->isChecked() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
 
   mapHandler->putData(key,
                       channel.targetPos,
@@ -1950,7 +1936,7 @@ void RadioInterface::slot_set_stream_selector(int k)
   }
 #if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
   ((AudioSink *)(soundOut))->selectDevice(k);
-  dabSettings->setValue("soundchannel", configWidget.streamoutSelector->currentText());
+  dabSettings->setValue("soundchannel", mConfig.streamoutSelector->currentText());
 #else
   (void)k;
 #endif
@@ -1980,12 +1966,12 @@ void RadioInterface::_slot_handle_tech_detail_button()
 void RadioInterface::showButtons()
 {
 #if 1
-  configWidget.dumpButton->show();
+  mConfig.dumpButton->show();
   btnScanning->show();
   channelSelector->show();
 #else
-  configWidget.dumpButton->setEnabled(true);
-  configWidget.frequencyDisplay->setEnabled(true);
+  mConfig.dumpButton->setEnabled(true);
+  mConfig.frequencyDisplay->setEnabled(true);
   btnScanning->setEnabled(true);
   channelSelector->setEnabled(true);
 #endif
@@ -1994,12 +1980,12 @@ void RadioInterface::showButtons()
 void RadioInterface::hideButtons()
 {
 #if 1
-  configWidget.dumpButton->hide();
+  mConfig.dumpButton->hide();
   btnScanning->hide();
   channelSelector->hide();
 #else
-  configWidget.dumpButton->setEnabled(false);
-  configWidget.frequencyDisplay->setEnabled(false);
+  mConfig.dumpButton->setEnabled(false);
+  mConfig.frequencyDisplay->setEnabled(false);
   btnScanning->setEnabled(false);
   channelSelector->setEnabled(false);
 #endif
@@ -2047,7 +2033,7 @@ void RadioInterface::stopSourcedumping()
   my_dabProcessor->stopDumping();
   sf_close(rawDumper);
   rawDumper = nullptr;
-  setButtonFont(configWidget.dumpButton, "Raw dump", 10);
+  setButtonFont(mConfig.dumpButton, "Raw dump", 10);
 }
 
 //
@@ -2068,7 +2054,7 @@ void RadioInterface::startSourcedumping()
   }
 
   LOG("source dump starts ", channelName);
-  setButtonFont(configWidget.dumpButton, "writing", 12);
+  setButtonFont(mConfig.dumpButton, "writing", 12);
   my_dabProcessor->startDumping(rawDumper);
 }
 
@@ -2222,13 +2208,13 @@ void RadioInterface::_slot_handle_spectrum_button()
 //	a device is operational
 void RadioInterface::connectGUI()
 {
-  connect(configWidget.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
+  connect(mConfig.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
   connect(btnTechDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tech_detail_button);
-  connect(configWidget.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
+  connect(mConfig.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
   connect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
   connect(btnSpectrumScope, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
   connect(btnDeviceWidget, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
-  connect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
+  connect(mConfig.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   connect(btnTargetService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_target_service_button);
@@ -2236,10 +2222,10 @@ void RadioInterface::connectGUI()
   connect(theTechWindow, &TechData::signal_handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
-  connect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
-  connect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
-  connect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
-  connect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
+  connect(mConfig.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
+  connect(mConfig.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
+  connect(mConfig.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
+  connect(mConfig.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   connect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
@@ -2247,13 +2233,13 @@ void RadioInterface::connectGUI()
 
 void RadioInterface::disconnectGUI()
 {
-  disconnect(configWidget.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
+  disconnect(mConfig.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
   disconnect(btnTechDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tech_detail_button);
-  disconnect(configWidget.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
+  disconnect(mConfig.resetButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_reset_button);
   disconnect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
   disconnect(btnSpectrumScope, &QPushButton::clicked, this, &RadioInterface::_slot_handle_spectrum_button);
   disconnect(btnDeviceWidget, &QPushButton::clicked, this, &RadioInterface::_slot_handle_device_widget_button);
-  disconnect(configWidget.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
+  disconnect(mConfig.dumpButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_source_dump_button);
   disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
   disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
   disconnect(btnTargetService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_target_service_button);
@@ -2261,10 +2247,10 @@ void RadioInterface::disconnectGUI()
   disconnect(theTechWindow, &TechData::signal_handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
-  disconnect(configWidget.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
-  disconnect(configWidget.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
-  disconnect(configWidget.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
-  disconnect(configWidget.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
+  disconnect(mConfig.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
+  disconnect(mConfig.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
+  disconnect(mConfig.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
+  disconnect(mConfig.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   disconnect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
@@ -2272,7 +2258,7 @@ void RadioInterface::disconnectGUI()
 
 void RadioInterface::closeEvent(QCloseEvent * event)
 {
-  int x = configWidget.closeDirect->isChecked() ? 1 : 0;
+  int x = mConfig.closeDirect->isChecked() ? 1 : 0;
   dabSettings->setValue("closeDirect", x);
   if (x != 0)
   {
@@ -3191,7 +3177,7 @@ void RadioInterface::slot_no_signal_found()
 
 void RadioInterface::showServices()
 {
-//  int scanMode = configWidget.scanmodeSelector->currentIndex();
+//  int scanMode = mConfig.scanmodeSelector->currentIndex();
 //  QString SNR = "SNR " + QString::number(channel.snr);
 //
 //  if (my_dabProcessor == nullptr)
@@ -3254,10 +3240,10 @@ std::vector<serviceId> RadioInterface::insert_sorted(const std::vector<serviceId
 //	In those case we are sure not to have an operating dabProcessor, we hide some buttons
 void RadioInterface::enable_ui_elements_for_safety(const bool iEnable)
 {
-  configWidget.dumpButton->setEnabled(iEnable);
+  mConfig.dumpButton->setEnabled(iEnable);
   btnPrevService->setEnabled(iEnable);
   btnNextService->setEnabled(iEnable);
-  configWidget.contentButton->setEnabled(iEnable);
+  mConfig.contentButton->setEnabled(iEnable);
 }
 
 void RadioInterface::_slot_handle_mute_button()
@@ -3305,7 +3291,7 @@ void RadioInterface::_slot_handle_switch_delay_setting(int newV)
 void RadioInterface::_slot_handle_save_service_selector(int d) // TODO: is that choice useful? Always active?
 {
   (void)d;
-  dabSettings->setValue("has-presetName", configWidget.saveServiceSelector->isChecked() ? 1 : 0);
+  dabSettings->setValue("has-presetName", mConfig.saveServiceSelector->isChecked() ? 1 : 0);
 }
 
 //-------------------------------------------------------------------------
@@ -3483,13 +3469,13 @@ void RadioInterface::_slot_handle_dc_removal(bool iIsChecked)
   my_dabProcessor->set_dc_removal(iIsChecked);
 }
 
-void RadioInterface::_slot_handle_dl_text_button()
+void RadioInterface::slot_handle_dl_text_button()
 {
   if (dlTextFile != nullptr)
   {
     fclose(dlTextFile);
     dlTextFile = nullptr;
-    configWidget.dlTextButton->setText("dlText");
+    mConfig.dlTextButton->setText("dlText");
     return;
   }
 
@@ -3499,19 +3485,19 @@ void RadioInterface::_slot_handle_dl_text_button()
   {
     return;
   }
-  configWidget.dlTextButton->setText("writing");
+  mConfig.dlTextButton->setText("writing");
 }
 
 
 void RadioInterface::_slot_handle_config_button()
 {
-  if (!configDisplay.isHidden())
+  if (!mConfig.isHidden())
   {
-    configDisplay.hide();
+    mConfig.hide();
   }
   else
   {
-    configDisplay.show();
+    mConfig.show();
   }
 }
 
@@ -3528,7 +3514,7 @@ void RadioInterface::LOG(const QString & a1, const QString & a2)
   }
 
   QString theTime;
-  if (configWidget.utcSelector->isChecked())
+  if (mConfig.utcSelector->isChecked())
   {
     theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
@@ -3540,10 +3526,10 @@ void RadioInterface::LOG(const QString & a1, const QString & a2)
   fprintf(logFile, "at %s: %s %s\n", theTime.toUtf8().data(), a1.toUtf8().data(), a2.toUtf8().data());
 }
 
-void RadioInterface::_slot_handle_logger_button(int s)
+void RadioInterface::slot_handle_logger_button(int s)
 {
   (void)s;
-  if (configWidget.loggerButton->isChecked())
+  if (mConfig.loggerButton->isChecked())
   {
     if (logFile != nullptr)
     {
@@ -3563,7 +3549,7 @@ void RadioInterface::_slot_handle_logger_button(int s)
   }
 }
 
-void RadioInterface::_slot_handle_set_coordinates_button()
+void RadioInterface::slot_handle_set_coordinates_button()
 {
   Coordinates theCoordinator(dabSettings);
   (void)theCoordinator.QDialog::exec();
@@ -3572,7 +3558,7 @@ void RadioInterface::_slot_handle_set_coordinates_button()
   channel.localPos = cmplx(local_lat, local_lon);
 }
 
-void RadioInterface::_slot_load_table()
+void RadioInterface::slot_load_table()
 {
   QString tableFile = dabSettings->value("tiiFile", "").toString();
 
@@ -3652,17 +3638,17 @@ void RadioInterface::_slot_handle_http_button()
 //  btnHttpServer->setText("http");
 //}
 
-void RadioInterface::_slot_handle_auto_browser(int d)
+void RadioInterface::slot_handle_auto_browser(int d)
 {
   (void)d;
-  dabSettings->setValue("autoBrowser", configWidget.autoBrowser->isChecked() ? 1 : 0);
+  dabSettings->setValue("autoBrowser", mConfig.autoBrowser->isChecked() ? 1 : 0);
 }
 
-void RadioInterface::_slot_handle_transmitter_tags(int d)
+void RadioInterface::slot_handle_transmitter_tags(int d)
 {
   (void)d;
   maxDistance = -1;
-  transmitterTags_local = configWidget.transmitterTags->isChecked();
+  //transmitterTags_local = mConfig.transmitterTags->isChecked();
   dabSettings->setValue("transmitterTags", transmitterTags_local ? 1 : 0);
   channel.targetPos = cmplx(0, 0);
   if ((transmitterTags_local) && (mapHandler != nullptr))
@@ -3671,11 +3657,11 @@ void RadioInterface::_slot_handle_transmitter_tags(int d)
   }
 }
 
-void RadioInterface::_slot_handle_on_top(int d)
+void RadioInterface::slot_handle_on_top(int d)
 {
   bool onTop = false;
   (void)d;
-  if (configWidget.onTop->isChecked())
+  if (mConfig.onTop->isChecked())
   {
     onTop = true;
   }
@@ -3691,22 +3677,22 @@ void RadioInterface::show_pause_slide()
   }
 }
 
-void RadioInterface::_slot_handle_port_selector()
+void RadioInterface::slot_handle_port_selector()
 {
   mapPortHandler theHandler(dabSettings);
   (void)theHandler.QDialog::exec();
 }
 
-void RadioInterface::_slot_handle_transm_selector(int x)
+void RadioInterface::slot_handle_transm_selector(int x)
 {
   (void)x;
-  dabSettings->setValue("saveLocations", configWidget.transmSelector->isChecked() ? 1 : 0);
+  dabSettings->setValue("saveLocations", mConfig.transmSelector->isChecked() ? 1 : 0);
 }
 
-void RadioInterface::_slot_handle_save_slides(int x)
+void RadioInterface::slot_handle_save_slides(int x)
 {
   (void)x;
-  dabSettings->setValue("saveSlides", configWidget.saveSlides->isChecked() ? 1 : 0);
+  dabSettings->setValue("saveSlides", mConfig.saveSlides->isChecked() ? 1 : 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3767,10 +3753,10 @@ void RadioInterface::start_etiHandler()
   }
 }
 
-void RadioInterface::_slot_handle_eti_active_selector(int k)
+void RadioInterface::slot_handle_eti_active_selector(int k)
 {
   (void)k;
-  bool setting = configWidget.eti_activeSelector->isChecked();
+  bool setting = mConfig.eti_activeSelector->isChecked();
   if (mpInputDevice == nullptr)
   {
     return;
@@ -3813,7 +3799,7 @@ void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
 
   QString s("Freq-Offs [Hz]: ");
   s += QString::number(newFreqOffHz);
-  configWidget.sliderTest->setToolTip(s);
+  mConfig.sliderTest->setToolTip(s);
 }
 
 QStringList RadioInterface::get_soft_bit_gen_names()
