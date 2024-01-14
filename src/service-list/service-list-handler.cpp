@@ -69,7 +69,7 @@ ServiceListHandler::ServiceListHandler(QSettings * const iopSettings, const QStr
 {
   mpTableView->setItemDelegate(&mCustomItemDelegate);
   mpTableView->setSelectionMode(QAbstractItemView::NoSelection);
-  mpTableView->verticalHeader()->hide(); // hide first column
+  //mpTableView->verticalHeader()->hide(); // hide first column
   mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
 
   mServiceDB.open_db(); // program will exit if table could not be opened
@@ -136,6 +136,13 @@ void ServiceListHandler::set_selector(const QString & iChannel, const QString & 
   _jump_to_list_entry_and_emit_fav_status();
 }
 
+// this allows selecting the whole channel group when the channel selector was used
+void ServiceListHandler::set_selector_channel_only(const QString & iChannel)
+{
+  set_selector(iChannel, "?");
+  mpTableView->update();
+}
+
 void ServiceListHandler::set_favorite_state(const bool iIsFavorite)
 {
   mServiceDB.set_favorite(mChannelLast, mServiceLast, iIsFavorite);
@@ -159,10 +166,10 @@ void ServiceListHandler::_fill_table_view_from_db()
 
 void ServiceListHandler::jump_entries(int32_t iSteps)
 {
-  _jump_to_list_entry_and_emit_fav_status(iSteps);
+  _jump_to_list_entry_and_emit_fav_status(iSteps, true);
 }
 
-void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t iSkipOffset /*= 0*/)
+void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t iSkipOffset /*= 0*/, const bool iCenterContent /*= false*/)
 {
   if (mChannelLast.isEmpty() || mServiceLast.isEmpty())
   {
@@ -206,7 +213,8 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t i
     }
 
     const bool isFav = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Fav)).toBool();
-    mpTableView->scrollTo(pModel->index(rowIdxFound, ServiceDB::CI_Fav), QAbstractItemView::PositionAtCenter);
+    mpTableView->scrollTo(pModel->index(rowIdxFound, ServiceDB::CI_Fav),
+                          (iCenterContent ? QAbstractItemView::PositionAtCenter : QAbstractItemView::EnsureVisible));
     mpTableView->update();
 
     emit signal_favorite_status(isFav);

@@ -173,7 +173,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-  setFixedSize(710, 470+20);
+  setFixedSize(710+20, 470+20);
   setup_ui_colors();
   _create_status_info();
 
@@ -2362,7 +2362,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
   int k = channelSelector->findText(theChannel);
   if (k != -1)
   {
-    new_channelIndex(k);
+    _update_channel_selector(k);
   }
   else
   {
@@ -2772,6 +2772,8 @@ void RadioInterface::startChannel(const QString & theChannel)
   //dabSettings->setValue("channel", theChannel);
   mChannel.nominalFreqHz = tunedFrequencyHz;
 
+  mpServiceListHandler->set_selector_channel_only(mChannel.channelName);
+
   if (mTransmitterTagsLocal && (mpHttpHandler != nullptr))
   {
     mpHttpHandler->putData(MAP_RESET, cmplx(0, 0), "", "", "", 0, 0, 0, 0);
@@ -2951,7 +2953,7 @@ void RadioInterface::startScanning()
 
   mpDabProcessor->set_scanMode(true);
   //  To avoid reaction of the system on setting a different value:
-  new_channelIndex(cc);
+  _update_channel_selector(cc);
   lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
   btnScanning->start_animation();
   const int32_t switchDelay = mpSettings->value("switchDelay", SWITCH_DELAY).toInt();
@@ -2999,10 +3001,10 @@ void RadioInterface::slot_no_signal_found()
   if (mIsRunning.load() && mIsScanning.load())
   {
     int cc = channelSelector->currentIndex();
-    if (!mServiceList.empty())
-    {
-      showServices();
-    }
+//    if (!mServiceList.empty())
+//    {
+//      showServices();
+//    }
     stopChannel();
     cc = mBandHandler.nextChannel(cc);
     fprintf(stdout, "going to channel %d\n", cc);
@@ -3017,7 +3019,7 @@ void RadioInterface::slot_no_signal_found()
         cc = mBandHandler.firstChannel();
       }
       //	To avoid reaction of the system on setting a different value:
-      new_channelIndex(cc);
+      _update_channel_selector(cc);
 
       connect(mpDabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
       connect(&mChannelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
@@ -3039,8 +3041,8 @@ void RadioInterface::slot_no_signal_found()
 // showServices
 ////////////////////////////////////////////////////////////////////////////
 
-void RadioInterface::showServices()
-{
+//void RadioInterface::showServices()
+//{
 //  int scanMode = mConfig.scanmodeSelector->currentIndex();
 //  QString SNR = "SNR " + QString::number(channel.snr);
 //
@@ -3063,7 +3065,7 @@ void RadioInterface::showServices()
 //  }
 //  my_scanTable->addLine("\n;\n;\n");
 //  my_scanTable->show();
-}
+//}
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -3118,7 +3120,7 @@ void RadioInterface::_slot_handle_mute_button()
   btnMuteAudio->setFixedSize(QSize(32, 32));
 }
 
-void RadioInterface::new_channelIndex(int index)
+void RadioInterface::_update_channel_selector(int index)
 {
   if (channelSelector->currentIndex() == index)
   {

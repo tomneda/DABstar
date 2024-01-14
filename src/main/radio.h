@@ -310,7 +310,7 @@ private:
   //void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
   void localSelect(const QString & s);
   void localSelect(const QString &, const QString &);
-  void showServices();
+  //void showServices();
 
   bool doStart();
   void save_MOTObject(QByteArray &, QString);
@@ -322,8 +322,6 @@ private:
   //void handle_serviceButton(direction);
   void enable_ui_elements_for_safety(bool iEnable);
 
-  void new_channelIndex(int);
-
   //void colorServiceName(const QString & s, QColor color, int fS, bool);
   void write_warning_message(const QString & iMsg);
   void write_picture(const QPixmap & iPixMap) const;
@@ -331,6 +329,7 @@ private:
   static QString get_bg_style_sheet(const QColor & iBgBaseColor, const char * const ipWidgetType = nullptr);
   void setup_ui_colors();
   void set_favorite_button_style();
+  void _update_channel_selector(int);
   void _show_epg_label(const bool iShowLabel);
   void _set_http_server_button(const bool iActive);
   void _set_clock_text(const QString & iText = QString());
