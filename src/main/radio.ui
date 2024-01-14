@@ -101,7 +101,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toogle to set current service as favorite on or off.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../resources.qrc">
            <normaloff>:/res/icons/starempty24.png</normaloff>:/res/icons/starempty24.png</iconset>
          </property>
          <property name="iconSize">
@@ -143,7 +143,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Step one list entry up.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../resources.qrc">
            <normaloff>:/res/icons/upwht24.png</normaloff>:/res/icons/upwht24.png</iconset>
          </property>
          <property name="iconSize">
@@ -172,7 +172,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Step one list entry down.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../resources.qrc">
            <normaloff>:/res/icons/downwht24.png</normaloff>:/res/icons/downwht24.png</iconset>
          </property>
          <property name="iconSize">
@@ -214,7 +214,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Targets current running service to the center in service list if possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../resources.qrc">
            <normaloff>:/res/icons/targetwht24.png</normaloff>:/res/icons/targetwht24.png</iconset>
          </property>
          <property name="iconSize">
@@ -416,7 +416,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mute or unmute the audio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../resources.qrc">
              <normaloff>:/res/icons/unmuted24.png</normaloff>:/res/icons/unmuted24.png</iconset>
            </property>
            <property name="iconSize">
@@ -445,7 +445,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a scan.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../resources.qrc">
              <normaloff>:/res/icons/scan24.png</normaloff>:/res/icons/scan24.png</iconset>
            </property>
            <property name="iconSize">
@@ -474,7 +474,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a webserver for showing a map on which the locations of the transmitters found are shown. &lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Green: Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;Orange: Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../resources.qrc">
              <normaloff>:/res/icons/maps24.png</normaloff>:/res/icons/maps24.png</iconset>
            </property>
            <property name="iconSize">
@@ -503,7 +503,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide a widget showing details of the currently selected service.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../resources.qrc">
              <normaloff>:/res/icons/details24.png</normaloff>:/res/icons/details24.png</iconset>
            </property>
            <property name="iconSize">
@@ -537,7 +537,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the spectrum, the constellation and many more of the DAB signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../resources.qrc">
              <normaloff>:/res/icons/meas24.png</normaloff>:/res/icons/meas24.png</iconset>
            </property>
            <property name="iconSize">
@@ -577,7 +577,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the control widget of the SDR device.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../resources.qrc">
              <normaloff>:/res/icons/tower24.png</normaloff>:/res/icons/tower24.png</iconset>
            </property>
            <property name="iconSize">
@@ -606,7 +606,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide or show the configuration-control widget.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../resources.qrc">
              <normaloff>:/res/icons/setting24.png</normaloff>:/res/icons/setting24.png</iconset>
            </property>
            <property name="iconSize">
@@ -716,7 +716,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
