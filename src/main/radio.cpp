@@ -246,8 +246,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   transmitterTags_local = (dabSettings->value("transmitterTags", 1).toInt() == 1);
   theTechWindow->hide();  // until shown otherwise
   serviceList.clear();
-  //model.clear();
-  //ensembleDisplay->setModel(&model);
 #ifdef DATA_STREAMER
   dataStreamer = new tcpServer(dataPort);
 #endif
@@ -511,15 +509,13 @@ void RadioInterface::_show_epg_label(const bool iShowLabel)
   _set_status_info_status(mStatusInfo.EPG, iShowLabel);
 }
 
-// _slot_do_start(QString) is called when - on startup - NO device was registered to be used, and the user presses the selectDevice comboBox
+// _slot_do_start(QString) is called when - on startup - NO device was registered to be used,
+// and the user presses the selectDevice comboBox
 void RadioInterface::_slot_do_start(const QString & dev)
 {
   mpInputDevice = mDeviceSelector.create_device(dev, channel.realChannel);
 
-  if (channel.realChannel == false)
-  {
-    show_hide_buttons(false);
-  }
+  show_hide_buttons(channel.realChannel);
 
   if (mpInputDevice == nullptr)
   {
@@ -1075,7 +1071,7 @@ void RadioInterface::slot_change_in_configuration()
       startService(s);
       return;
     }
-    //
+
     //	The service is gone, it may be the subservice of another one
     s.SCIds = 0;
     s.serviceName = my_dabProcessor->findService(s.SId, s.SCIds);
@@ -1084,7 +1080,7 @@ void RadioInterface::slot_change_in_configuration()
       startService(s);
     }
   }
-  //
+
   //	we also have to restart all background services,
   for (uint16_t i = 0; i < channel.backgroundServices.size(); i++)
   {
@@ -1351,10 +1347,7 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
   LOG("selecting ", deviceName);
   mpInputDevice = mDeviceSelector.create_device(deviceName, channel.realChannel);
 
-  if (channel.realChannel == false)
-  {
-    show_hide_buttons(false);
-  }
+  show_hide_buttons(channel.realChannel);
 
   if (mpInputDevice == nullptr)
   {
