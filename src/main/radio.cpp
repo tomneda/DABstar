@@ -477,11 +477,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   {
     mConfig.deviceSelector->setCurrentIndex(k);
     mpInputDevice = mDeviceSelector.create_device(mConfig.deviceSelector->currentText(), channel.realChannel);
-
-    if (channel.realChannel == false)
-    {
-      hideButtons();
-    }
+    show_hide_buttons(channel.realChannel);
 
     if (mpInputDevice != nullptr)
     {
@@ -599,7 +595,7 @@ void RadioInterface::_slot_do_start(const QString & dev)
 
   if (channel.realChannel == false)
   {
-    hideButtons();
+    show_hide_buttons(false);
   }
 
   if (mpInputDevice == nullptr)
@@ -1273,7 +1269,7 @@ void RadioInterface::_slot_terminate_process()
     stopScanning(false);
   }
   running.store(false);
-  hideButtons();
+  show_hide_buttons(false);
 
   dabSettings->setValue("mainWidget-x", this->pos().x());
   dabSettings->setValue("mainWidget-y", this->pos().y());
@@ -1453,7 +1449,7 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
 
   if (channel.realChannel == false)
   {
-    hideButtons();
+    show_hide_buttons(false);
   }
 
   if (mpInputDevice == nullptr)
@@ -1960,34 +1956,28 @@ void RadioInterface::_slot_handle_tech_detail_button()
   dabSettings->setValue("techDataVisible", theTechWindow->isHidden() ? 0 : 1);
 }
 
-//	Whenever the input device is a file, some functions,
-//	e.g. selecting a channel, setting an alarm, are not
-//	meaningful
-void RadioInterface::showButtons()
+// Whenever the input device is a file, some functions, e.g. selecting a channel,
+// setting an alarm, are not meaningful
+void RadioInterface::show_hide_buttons(const bool iShow)
 {
 #if 1
-  mConfig.dumpButton->show();
-  btnScanning->show();
-  channelSelector->show();
+  if (iShow)
+  {
+    mConfig.dumpButton->show();
+    btnScanning->show();
+    channelSelector->show();
+  }
+  else
+  {
+    mConfig.dumpButton->hide();
+    btnScanning->hide();
+    channelSelector->hide();
+  }
 #else
-  mConfig.dumpButton->setEnabled(true);
-  mConfig.frequencyDisplay->setEnabled(true);
-  btnScanning->setEnabled(true);
-  channelSelector->setEnabled(true);
-#endif
-}
-
-void RadioInterface::hideButtons()
-{
-#if 1
-  mConfig.dumpButton->hide();
-  btnScanning->hide();
-  channelSelector->hide();
-#else
-  mConfig.dumpButton->setEnabled(false);
-  mConfig.frequencyDisplay->setEnabled(false);
-  btnScanning->setEnabled(false);
-  channelSelector->setEnabled(false);
+  mConfig.dumpButton->setEnabled(iShow);
+  mConfig.frequencyDisplay->setEnabled(iShow);
+  btnScanning->setEnabled(iShow);
+  channelSelector->setEnabled(iShow);
 #endif
 }
 

@@ -290,8 +290,7 @@ private:
   static QString convertTime(int, int, int, int, int, int = -1);
   QString get_copyright_text() const;
   void cleanScreen();
-  void hideButtons();
-  void showButtons();
+  void show_hide_buttons(const bool iShow);
 
   //QStringList get_device_name_list();
   //IDeviceHandler * create_device(const QString & s);
