@@ -20,7 +20,7 @@ endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
 # common flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -Werror=return-type")
 
 set(CMAKE_AUTORCC ON)
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

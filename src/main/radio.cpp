@@ -444,7 +444,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     }
     else
     {
-      delete mpInputDevice;
       mpInputDevice = nullptr;
     }
   }
@@ -542,7 +541,7 @@ bool RadioInterface::doStart()
   {
     channelSelector->setCurrentIndex(0);
   }
-  my_dabProcessor = new DabProcessor(this, mpInputDevice, &globals);
+  my_dabProcessor = new DabProcessor(this, mpInputDevice.get(), &globals);
   channel.clean_channel();
 
   //	Some hidden buttons can be made visible now
@@ -1256,9 +1255,9 @@ void RadioInterface::_slot_terminate_process()
   my_spectrumViewer.hide();
 
   delete my_dabProcessor;
-  delete mpInputDevice;
   delete soundOut;
   delete my_timeTable;
+  mpInputDevice = nullptr;
 
   fprintf(stdout, ".. end the radio silences\n");
 }
@@ -1339,7 +1338,6 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
   disconnectGUI();
   if (mpInputDevice != nullptr)
   {
-    delete mpInputDevice;
     fprintf(stderr, "device is deleted\n");
     mpInputDevice = nullptr;
   }

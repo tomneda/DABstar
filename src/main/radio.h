@@ -234,7 +234,7 @@ private:
   int32_t dataPort;
   std::atomic<bool> running;
   std::atomic<bool> scanning;
-  IDeviceHandler * mpInputDevice = nullptr;
+  std::unique_ptr<IDeviceHandler> mpInputDevice;
   DeviceSelector mDeviceSelector;
 #ifdef  HAVE_PLUTO_RXTX
   dabStreamer * streamerOut;

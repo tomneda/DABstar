@@ -8,6 +8,7 @@
  * The original copyright information is acknowledged.
  */
 
+#include <memory>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
@@ -23,12 +24,14 @@ public:
   explicit DeviceSelector(QSettings * ipSettings);
   ~DeviceSelector() override = default;
 
-  QStringList get_device_name_list();
-  IDeviceHandler * create_device(const QString & s, bool & oRealDevice);
+  QStringList get_device_name_list() const;
+  std::unique_ptr<IDeviceHandler> create_device(const QString & s, bool & oRealDevice);
 
 private:
   QSettings * const mpSettings;
   const QString mVersionStr{ PRJ_VERS };
+
+  std::unique_ptr<IDeviceHandler> _create_device(const QString & iDeviceName, bool & oRealDevice);
 };
 
 

@@ -9,13 +9,19 @@
  */
 
 #ifdef  HAVE_RTLSDR
+
   #include  "rtlsdr-handler.h"
+
 #endif
 #ifdef  HAVE_SDRPLAY_V2
+
   #include  "sdrplay-handler-v2.h"
+
 #endif
 #ifdef  HAVE_SDRPLAY_V3
+
   #include  "sdrplay-handler-v3.h"
+
 #endif
 #ifdef  __MINGW32__
 #ifdef	HAVE_EXTIO
@@ -23,16 +29,24 @@
 #endif
 #endif
 #ifdef  HAVE_RTL_TCP
+
   #include  "rtl_tcp_client.h"
+
 #endif
 #ifdef  HAVE_AIRSPY
+
   #include "airspy-handler.h"
+
 #endif
 #ifdef  HAVE_HACKRF
+
   #include "hackrf-handler.h"
+
 #endif
 #ifdef  HAVE_LIME
+
   #include  "lime-handler.h"
+
 #endif
 #ifdef  HAVE_PLUTO_2
   #include  "pluto-handler-2.h"
@@ -47,7 +61,9 @@
   #include	"elad-handler.h"
 #endif
 #ifdef  HAVE_UHD
+
   #include  "uhd-handler.h"
+
 #endif
 
 #include "device-selector.h"
@@ -61,31 +77,30 @@
 
 
 static const char DN_FILE_INP_RAW[] = "File input(.raw)";
-static const char DN_FILE_INP_IQ[]  = "File input(.iq)";
+static const char DN_FILE_INP_IQ[] = "File input(.iq)";
 static const char DN_FILE_INP_SDR[] = "File input(.sdr)";
 static const char DN_FILE_INP_XML[] = "File input(.xml)";
-static const char DN_SDRPLAY_V3[]   = "SDR-Play V3";
-static const char DN_SDRPLAY_V2[]   = "SDR-Play V2";
-static const char DN_RTLTCP[]       = "RTL-TCP";
-static const char DN_RTLSDR[]       = "RTL-SDR";
-static const char DN_AIRSPY[]       = "Airspy";
-static const char DN_HACKRF[]       = "HackRf";
-static const char DN_LIMESDR[]      = "LimeSDR";
-static const char DN_PLUTO_RXTX[]   = "Pluto-RxTx";
-static const char DN_PLUTO[]        = "Pluto";
-static const char DN_SOAPY[]        = "Soapy";
-static const char DN_EXTIO[]        = "ExtIO";
-static const char DN_ELAD[]         = "Elad-S1";
-static const char DN_UHD[]          = "UHD/USRP";
+static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
+static const char DN_SDRPLAY_V2[] = "SDR-Play V2";
+static const char DN_RTLTCP[] = "RTL-TCP";
+static const char DN_RTLSDR[] = "RTL-SDR";
+static const char DN_AIRSPY[] = "Airspy";
+static const char DN_HACKRF[] = "HackRf";
+static const char DN_LIMESDR[] = "LimeSDR";
+static const char DN_PLUTO_RXTX[] = "Pluto-RxTx";
+static const char DN_PLUTO[] = "Pluto";
+static const char DN_SOAPY[] = "Soapy";
+static const char DN_EXTIO[] = "ExtIO";
+static const char DN_ELAD[] = "Elad-S1";
+static const char DN_UHD[] = "UHD/USRP";
 
 
 DeviceSelector::DeviceSelector(QSettings * ipSettings) :
   mpSettings(ipSettings)
 {
-
 }
 
-QStringList DeviceSelector::get_device_name_list()
+QStringList DeviceSelector::get_device_name_list() const
 {
   QStringList sl;
   sl << "select input";
@@ -135,257 +150,140 @@ QStringList DeviceSelector::get_device_name_list()
   return sl;
 }
 
-IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDevice)
+std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iDeviceName, bool & oRealDevice)
+{
+  std::unique_ptr<IDeviceHandler> inputDevice;
+
+  try
+  {
+    inputDevice = _create_device(iDeviceName, oRealDevice);
+  }
+  catch (const std::exception & e)
+  {
+    QMessageBox::warning(this, "Warning", e.what());
+    inputDevice = nullptr;
+  }
+  catch (...)
+  {
+    QMessageBox::warning(this, "Warning", "Unknown exception happens in device handling");
+    inputDevice = nullptr;
+  }
+
+  if (inputDevice == nullptr)
+  {
+    fprintf(stderr, "Create dummy device\n");
+    inputDevice = std::make_unique<DummyHandler>(); // should never trow
+  }
+
+  return inputDevice;
+}
+
+std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & iDeviceName, bool & oRealDevice)
 {
   QString file;
-  IDeviceHandler * inputDevice = nullptr;
+  std::unique_ptr<IDeviceHandler> inputDevice;
 
-  oRealDevice = true;    // until proven otherwise
+  oRealDevice = true; // until proven otherwise
+
 #ifdef  HAVE_SDRPLAY_V2
-  if (s == DN_SDRPLAY_V2)
+  if (iDeviceName == DN_SDRPLAY_V2)
   {
 #ifdef  __MINGW32__
     QMessageBox::warning (this, tr ("Warning"), tr ("If SDRuno is installed with drivers 3.10,\nV2.13 drivers will not work anymore, choose \"sdrplay\" instead\n"));
     return nullptr;
 #endif
-    try
-    {
-      inputDevice = new SdrPlayHandler_v2(mpSettings, mVersionStr);
-    }
-    catch (const std::exception & e)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr(e.what()));
-      return nullptr;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("sdrplay-v2 fails"));
-      return nullptr;
-    }
+    inputDevice = std::make_unique<SdrPlayHandler_v2>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_SDRPLAY_V3
-  if (s == DN_SDRPLAY_V3)
+  if (iDeviceName == DN_SDRPLAY_V3)
   {
-    try
-    {
-      inputDevice = new SdrPlayHandler_v3(mpSettings, mVersionStr);
-    }
-    catch (const std::exception & e)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr(e.what()));
-      return nullptr;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("sdrplay v3 fails"));
-      return nullptr;
-    }
+    inputDevice = std::make_unique<SdrPlayHandler_v3>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_RTLSDR
-  if (s == DN_RTLSDR)
+  if (iDeviceName == DN_RTLSDR)
   {
-    try
-    {
-      inputDevice = new RtlSdrHandler(mpSettings, mVersionStr);
-    }
-    catch (const std::exception & ex)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr(ex.what()));
-      return nullptr;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("rtlsdr device fails"));
-      return nullptr;
-    }
+    inputDevice = std::make_unique<RtlSdrHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_AIRSPY
-  if (s == DN_AIRSPY)
+  if (iDeviceName == DN_AIRSPY)
   {
-    try
-    {
-      inputDevice = new AirspyHandler(mpSettings, mVersionStr);
-    }
-    catch (const std::exception & e)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr(e.what()));
-      return nullptr;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("airspy device fails"));
-      return nullptr;
-    }
+    inputDevice = std::make_unique<AirspyHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_HACKRF
-  if (s == DN_HACKRF)
+  if (iDeviceName == DN_HACKRF)
   {
-    try
-    {
-      inputDevice = new HackRfHandler(mpSettings, mVersionStr);
-    }
-    catch (const std::exception & e)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr(e.what()));
-      return nullptr;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("hackrf device fails"));
-      return nullptr;
-    }
+    inputDevice = std::make_unique<HackRfHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_LIME
-  if (s == DN_LIMESDR)
+  if (iDeviceName == DN_LIMESDR)
   {
-    try
-    {
-      inputDevice = new LimeHandler(mpSettings, mVersionStr);
-    }
-    catch (const std::exception & e)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr(e.what()));
-      return nullptr;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("lime device fails"));
-      return nullptr;
-    }
+    inputDevice = std::make_unique<LimeHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_PLUTO_2
-  if (s == DN_PLUTO)
-  {
-    try
+    if (s == DN_PLUTO)
     {
-      inputDevice = new plutoHandler(mpSettings, version);
+      inputDevice = std::make_unique<plutoHandler>(mpSettings, version);
     }
-    catch (const std::exception & e)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr(e.what()));
-      return nullptr;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("pluto device fails"));
-      return nullptr;
-    }
-  }
-  else
+    else
 #endif
 #ifdef  HAVE_PLUTO_RXTX
-  if (s == DN_PLUTO_RXTX)
-  {
-    try
+    if (s == DN_PLUTO_RXTX)
     {
-      inputDevice = new plutoHandler(mpSettings, version, fmFrequency);
+      inputDevice = std::make_unique<plutoHandler>(mpSettings, version, fmFrequency);
       streamerOut = new dabStreamer(48000, 192000, (plutoHandler *)inputDevice);
       ((plutoHandler *)inputDevice)->startTransmitter(fmFrequency);
     }
-    catch (const std::exception & e)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr(e.what()));
-      return nullptr;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("pluto device fails"));
-      return nullptr;
-    }
-  }
-  else
+    else
 #endif
 #ifdef HAVE_RTL_TCP
-    //	RTL_TCP might be working.
-  if (s == DN_RTLTCP)
+  if (iDeviceName == DN_RTLTCP)
   {
-    try
-    {
-      inputDevice = new RtlTcpClient(mpSettings);
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("rtl_tcp: no luck\n"));
-      return nullptr;
-    }
+    inputDevice = std::make_unique<RtlTcpClient>(mpSettings);
   }
   else
 #endif
 #ifdef  HAVE_ELAD
-  if (s == DN_ELAD)
-  {
-    try
+    if (s == DN_ELAD)
     {
-      inputDevice = new eladHandler(mpSettings);
+      inputDevice = std::make_unique<eladHandler>(mpSettings);
     }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("no elad device found\n"));
-      return nullptr;
-    }
-  }
-  else
+    else
 #endif
 #ifdef  HAVE_UHD
-  if (s == DN_UHD)
+  if (iDeviceName == DN_UHD)
   {
-    try
-    {
-      inputDevice = new UhdHandler(mpSettings);
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("no UHD device found\n"));
-      return nullptr;
-    }
+    inputDevice = std::make_unique<UhdHandler>(mpSettings);
   }
   else
 #endif
 #ifdef  HAVE_SOAPY
-  if (s == DN_SOAPY)
-  {
-    try
+    if (s == DN_SOAPY)
     {
-      inputDevice = new soapyHandler(mpSettings);
+      inputDevice = std::make_unique<soapyHandler>(mpSettings);
     }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("no soapy device found\n"));
-      return nullptr;
-    }
-  }
-  else
+    else
 #endif
 #ifdef  HAVE_EXTIO
-  // extio is - in its current settings - for Windows, it is a
-  // wrap around the dll
-  if (s == DN_EXTIO)
-  {
-    try
+    // extio is - in its current settings - for Windows, it is a wrap around the dll
+    if (s == DN_EXTIO)
     {
-      inputDevice = new extioHandler(mpSettings);
+      inputDevice = std::make_unique<extioHandler>(mpSettings);
     }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("extio: no luck\n"));
-      return nullptr;
-    }
-  }
-  else
+    else
 #endif
-  if (s == DN_FILE_INP_XML)
+  if (iDeviceName == DN_FILE_INP_XML)
   {
     file = QFileDialog::getOpenFileName(this, tr("Open file ..."), QDir::homePath(), tr("xml data (*.*)"));
     if (file == QString(""))
@@ -393,21 +291,13 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
       return nullptr;
     }
     file = QDir::toNativeSeparators(file);
-    try
-    {
-      inputDevice = new xml_fileReader(file);
-      oRealDevice = false;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("file not found"));
-      return nullptr;
-    }
+    oRealDevice = false;
+    inputDevice = std::make_unique<xml_fileReader>(file);
   }
-  else if ((s == DN_FILE_INP_IQ) || (s == DN_FILE_INP_RAW))
+  else if ((iDeviceName == DN_FILE_INP_IQ) || (iDeviceName == DN_FILE_INP_RAW))
   {
     const char * p;
-    if (s == DN_FILE_INP_IQ)
+    if (iDeviceName == DN_FILE_INP_IQ)
     {
       p = "iq data (*iq)";
     }
@@ -423,18 +313,10 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     }
 
     file = QDir::toNativeSeparators(file);
-    try
-    {
-      inputDevice = new RawFileHandler(file);
-      oRealDevice = false;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("file not found"));
-      return nullptr;
-    }
+    oRealDevice = false;
+    inputDevice = std::make_unique<RawFileHandler>(file);
   }
-  else if (s == DN_FILE_INP_SDR)
+  else if (iDeviceName == DN_FILE_INP_SDR)
   {
     file = QFileDialog::getOpenFileName(this, tr("Open file ..."), QDir::homePath(), tr("raw data (*.sdr)"));
     if (file == QString(""))
@@ -443,24 +325,15 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     }
 
     file = QDir::toNativeSeparators(file);
-    try
-    {
-      inputDevice = new WavFileHandler(file);
-      oRealDevice = false;
-    }
-    catch (...)
-    {
-      QMessageBox::warning(this, tr("Warning"), tr("file not found"));
-      return nullptr;
-    }
+    oRealDevice = false;
+    inputDevice = std::make_unique<WavFileHandler>(file);
   }
   else
   {
-    fprintf(stderr, "Create dummy device\n");
-    inputDevice = new DummyHandler;
+    return nullptr;
   }
 
-  mpSettings->setValue("device", s); // remember for next restart
+  mpSettings->setValue("device", iDeviceName); // remember for next restart
 
   if (mpSettings->value("deviceVisible", 0).toInt())
   {
