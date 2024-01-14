@@ -972,18 +972,19 @@ void RadioInterface::slot_handle_tdc_data(int frametype, int length)
     fprintf(stderr, "Something went wrong\n");
     return;
   }
-#ifdef  DATA_STREAMER
-                                                                                                                          dataBuffer. get_data_from_ring_buffer (&localBuffer [8], length);
-	localBuffer [0] = 0xFF;
-	localBuffer [1] = 0x00;
-	localBuffer [2] = 0xFF;
-	localBuffer [3] = 0x00;
-	localBuffer [4] = (length & 0xFF) >> 8;
-	localBuffer [5] = length & 0xFF;
-	localBuffer [6] = 0x00;
-	localBuffer [7] = frametype == 0 ? 0 : 0xFF;
-	if (running. load())
-	   dataStreamer -> sendData (localBuffer, length + 8);
+#ifdef DATA_STREAMER
+  localBuffer[0] = 0xFF;
+  localBuffer[1] = 0x00;
+  localBuffer[2] = 0xFF;
+  localBuffer[3] = 0x00;
+  localBuffer[4] = (length & 0xFF) >> 8;
+  localBuffer[5] = length & 0xFF;
+  localBuffer[6] = 0x00;
+  localBuffer[7] = frametype == 0 ? 0 : 0xFF;
+  if (mIsRunning.load())
+  {
+    dataStreamer->sendData(localBuffer, length + 8);
+  }
 #endif
 }
 
