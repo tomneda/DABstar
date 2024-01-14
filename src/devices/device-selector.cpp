@@ -151,9 +151,8 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new SdrPlayHandler_v2(mpSettings, mVersionStr);
-      showButtons();
     }
-    catch (const exception & e)
+    catch (const std::exception & e)
     {
       QMessageBox::warning(this, tr("Warning"), tr(e.what()));
       return nullptr;
@@ -172,9 +171,8 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new SdrPlayHandler_v3(mpSettings, mVersionStr);
-      showButtons();
     }
-    catch (const exception & e)
+    catch (const std::exception & e)
     {
       QMessageBox::warning(this, tr("Warning"), tr(e.what()));
       return nullptr;
@@ -193,9 +191,8 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new RtlSdrHandler(mpSettings, mVersionStr);
-      showButtons();
     }
-    catch (const exception & ex)
+    catch (const std::exception & ex)
     {
       QMessageBox::warning(this, tr("Warning"), tr(ex.what()));
       return nullptr;
@@ -214,9 +211,8 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new AirspyHandler(mpSettings, mVersionStr);
-      showButtons();
     }
-    catch (const exception & e)
+    catch (const std::exception & e)
     {
       QMessageBox::warning(this, tr("Warning"), tr(e.what()));
       return nullptr;
@@ -235,9 +231,8 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new HackRfHandler(mpSettings, mVersionStr);
-      showButtons();
     }
-    catch (const exception & e)
+    catch (const std::exception & e)
     {
       QMessageBox::warning(this, tr("Warning"), tr(e.what()));
       return nullptr;
@@ -256,9 +251,8 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new LimeHandler(mpSettings, mVersionStr);
-      showButtons();
     }
-    catch (const exception & e)
+    catch (const std::exception & e)
     {
       QMessageBox::warning(this, tr("Warning"), tr(e.what()));
       return nullptr;
@@ -277,7 +271,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new plutoHandler(mpSettings, version);
-      showButtons();
     }
     catch (const std::exception & e)
     {
@@ -298,7 +291,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new plutoHandler(mpSettings, version, fmFrequency);
-      showButtons();
       streamerOut = new dabStreamer(48000, 192000, (plutoHandler *)inputDevice);
       ((plutoHandler *)inputDevice)->startTransmitter(fmFrequency);
     }
@@ -322,7 +314,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new RtlTcpClient(mpSettings);
-      showButtons();
     }
     catch (...)
     {
@@ -338,7 +329,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new eladHandler(mpSettings);
-      showButtons();
     }
     catch (...)
     {
@@ -354,7 +344,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new UhdHandler(mpSettings);
-      showButtons();
     }
     catch (...)
     {
@@ -370,7 +359,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new soapyHandler(mpSettings);
-      showButtons();
     }
     catch (...)
     {
@@ -388,7 +376,6 @@ IDeviceHandler * DeviceSelector::create_device(const QString & s, bool & oRealDe
     try
     {
       inputDevice = new extioHandler(mpSettings);
-      showButtons();
     }
     catch (...)
     {

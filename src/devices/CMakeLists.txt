@@ -385,4 +385,5 @@ add_library(${devicesLibName} STATIC ${${devicesLibName}_SRCS})
 target_link_libraries(${devicesLibName}
         Qt5::Widgets
         Qt5::Xml
+        ${extraLibs}
 )

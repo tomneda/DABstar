@@ -28,6 +28,7 @@ public:
 
 private:
   QSettings * const mpSettings;
+  const QString mVersionStr{ PRJ_VERS };
 };
 
 
