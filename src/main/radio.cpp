@@ -157,25 +157,18 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   my_contentTable = nullptr;
   //my_scanTable = nullptr;
   mapHandler = nullptr;
-  //	"globals" is introduced to reduce the number of parameters
-  //	for the dabProcessor
+
+  // "globals" is introduced to reduce the number of parameters for the dabProcessor
   globals.spectrumBuffer = &spectrumBuffer;
   globals.iqBuffer = &iqBuffer;
   globals.carrBuffer = &carrBuffer;
   globals.responseBuffer = &responseBuffer;
-  //globals.snrBuffer = &snrBuffer;
   globals.frameBuffer = &frameBuffer;
-
-  const int16_t latency = dabSettings->value("latency", 5).toInt();
-
   globals.dabMode = dabSettings->value("dabMode", 1).toInt();
   globals.threshold = dabSettings->value("threshold", 3).toInt();
   globals.diff_length = dabSettings->value("diff_length", DIFF_LENGTH).toInt();
   globals.tii_delay = dabSettings->value("tii_delay", 5).toInt();
-  if (globals.tii_delay < 2)
-  {
-    globals.tii_delay = 2;
-  }
+  if (globals.tii_delay < 2) { globals.tii_delay = 2; }
   globals.tii_depth = dabSettings->value("tii_depth", 4).toInt();
   globals.echo_depth = dabSettings->value("echo_depth", 1).toInt();
 
@@ -199,10 +192,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   QMetaObject::invokeMethod(this, &RadioInterface::_slot_set_static_button_style, Qt::QueuedConnection);
   QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false)); // only this works with arguments
 
-  //setWindowIcon(QIcon(":res/DABplusLogoWB.png"));
-
   //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
   setWindowTitle(PRJ_NAME);
+
   int x = dabSettings->value("mainWidget-x", 100).toInt();
   int y = dabSettings->value("mainWidget-y", 100).toInt();
   int wi = dabSettings->value("main-widget-w", 300).toInt();
@@ -210,35 +202,18 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   this->resize(QSize(wi, he));
   this->move(QPoint(x, y));
 
-//  mConfig.setupUi(&mConfig);
-//  mConfig.setFixedSize(455, 350);
-//
-//  x = dabSettings->value("mConfig-x", 200).toInt();
-//  y = dabSettings->value("mConfig-y", 200).toInt();
-//  wi = dabSettings->value("mConfig-w", 200).toInt();
-//  he = dabSettings->value("mConfig-h", 150).toInt();
-//  mConfig.resize(QSize(wi, he));
-//  mConfig.move(QPoint(x, y));
-//  mConfig.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-//
-//  mConfig.sliderTest->hide(); // only used for test
-
   theTechWindow = new TechData(this, dabSettings, &theTechData);
 
   _show_epg_label(false);
 
-//  x = dabSettings->value("switchDelay", SWITCH_DELAY).toInt();
-//  mConfig.switchDelaySetting->setValue(x);
-//
-//  bool b = dabSettings->value("utcSelector", 0).toInt() == 1;
-//  mConfig.utcSelector->setChecked(b);
   channel.currentService.valid = false;
   channel.nextService.valid = false;
   channel.serviceCount = -1;
+
   if (dabSettings->value("has-presetName", 0).toInt() != 0)
   {
-    //mConfig.saveServiceSelector->setChecked(true);
     QString presetName = dabSettings->value("presetname", "").toString();
+
     if (presetName != "")
     {
       QStringList ss = presetName.split(":");
@@ -252,80 +227,45 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
         channel.nextService.channel = "";
         channel.nextService.serviceName = presetName;
       }
+
       channel.nextService.SId = 0;
       channel.nextService.SCIds = 0;
       channel.nextService.valid = true;
     }
   }
+
   channel.targetPos = cmplx(0, 0);
   float local_lat = dabSettings->value("latitude", 0).toFloat();
   float local_lon = dabSettings->value("longitude", 0).toFloat();
   channel.localPos = cmplx(local_lat, local_lon);
 
   mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
-//
-//  connect(mConfig.loadTableButton, &QPushButton::clicked, this, &RadioInterface::_slot_load_table);
-//  connect(mConfig.onTop, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_on_top);
-//  connect(mConfig.transmSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transm_selector);
-//  connect(mConfig.saveSlides, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_slides);
-//  connect(mConfig.sliderTest, &QSlider::valueChanged, this, &RadioInterface::slot_test_slider);
 
   logFile = nullptr;
-
-//  x = dabSettings->value("closeDirect", 0).toInt();
-//  if (x != 0)
-//  {
-//    mConfig.closeDirect->setChecked(true);
-//  }
-//
-//  x = dabSettings->value("epg2xml", 0).toInt();
-//  if (x != 0)
-//  {
-//    mConfig.epg2xmlSelector->setChecked(true);
-//  }
-//
-//  if (dabSettings->value("autoBrowser", 1).toInt() == 1)
-//  {
-//    mConfig.autoBrowser->setChecked(true);
-//  }
-//
-//  if (dabSettings->value("transmitterTags", 1).toInt() == 1)
-//  {
-//    mConfig.transmitterTags->setChecked(true);
-//  }
-//  connect(mConfig.autoBrowser, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_auto_browser);
-//  connect(mConfig.transmitterTags, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_transmitter_tags);
 
   transmitterTags_local = (dabSettings->value("transmitterTags", 1).toInt() == 1);
   theTechWindow->hide();  // until shown otherwise
   serviceList.clear();
   //model.clear();
   //ensembleDisplay->setModel(&model);
-  /*
- */
-#ifdef  DATA_STREAMER
-  dataStreamer		= new tcpServer (dataPort);
-#else
-  (void)dataPort;
+#ifdef DATA_STREAMER
+  dataStreamer = new tcpServer(dataPort);
 #endif
-#ifdef  CLOCK_STREAMER
-  clockStreamer		= new tcpServer (clockPort);
-#else
-  (void)clockPort;
+#ifdef CLOCK_STREAMER
+  clockStreamer = new tcpServer(clockPort);
 #endif
 
-  //	Where do we leave the audio out?
+  // Where do we leave the audio out?
   mConfig.streamoutSelector->hide();
 #ifdef TCP_STREAMER
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
-  (void)latency;
 #elif QT_AUDIO
   soundOut = new QtAudio();
   theTechWindow->hide();
-  (void)latency;
 #else
   //	just sound out
+  const int16_t latency = dabSettings->value("latency", 5).toInt();
   soundOut = new AudioSink(latency);
   ((AudioSink *)soundOut)->setupChannels(mConfig.streamoutSelector);
   mConfig.streamoutSelector->show();
@@ -379,8 +319,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   my_timeTable->hide();
 
   connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &QComboBox::setCurrentIndex);
-//  connect(mConfig.dlTextButton, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_dl_text_button);
-//  connect(mConfig.loggerButton, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_logger_button);
   connect(btnHttpServer, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
 
   //	restore some settings from previous incarnations
@@ -403,15 +341,12 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   total_ficError = 0;
   total_fics = 0;
 
-  //connect(mConfig.streamoutSelector, qOverload<int>(&QComboBox::activated), this, &RadioInterface::slot_set_stream_selector);
   connect(theTechWindow, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
   copyrightLabel->setText(QString("<html><body><img src='qrc:/res/icons/copyright24.png'/> V" + mVersionStr + "</body></html>"));
   copyrightLabel->setToolTip(get_copyright_text());
   copyrightLabel->setOpenExternalLinks(true);
 
-//  connect(mConfig.portSelector, &QPushButton::clicked, this, &RadioInterface::_slot_handle_port_selector);
-//  connect(mConfig.set_coordinatesButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_set_coordinates_button);
   QString tiiFileName = dabSettings->value("tiiFile", "").toString();
   channel.tiiFile = false;
   if (tiiFileName != "")
@@ -424,7 +359,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     }
   }
 
-  //connect(mConfig.eti_activeSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_eti_active_selector);
   connect(this, &RadioInterface::signal_dab_processor_started, &my_spectrumViewer, &SpectrumViewer::slot_update_settings);
   connect(&my_spectrumViewer, &SpectrumViewer::signal_window_closed, this, &RadioInterface::_slot_handle_spectrum_button);
   connect(theTechWindow, &TechData::signal_window_closed, this, &RadioInterface::_slot_handle_tech_detail_button);
@@ -449,21 +383,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   presetTimer.setSingleShot(true);
   connect(&presetTimer, &QTimer::timeout, this, &RadioInterface::_slot_set_preset_service);
 
-//  QPalette lcdPalette;
-//#ifndef __MAC__
-//#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-//  lcdPalette.setColor(QPalette::Window, Qt::white);
-//#else
-//  lcdPalette. setColor (QPalette::Background, Qt::white);
-//#endif
-//  lcdPalette.setColor(QPalette::Base, Qt::black);
-//#endif
   _set_clock_text();
   mClockResetTimer.setSingleShot(true);
   connect(&mClockResetTimer, &QTimer::timeout, [this](){ _set_clock_text(); });
-//
-//  mConfig.cpuMonitor->setPalette(lcdPalette);
-//  mConfig.cpuMonitor->setAutoFillBackground(true);
+
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
 #ifdef  HAVE_PLUTO_RXTX
@@ -537,6 +460,11 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   qApp->installEventFilter(this);
 }
 
+RadioInterface::~RadioInterface()
+{
+  fprintf(stdout, "RadioInterface is deleted\n");
+}
+
 void RadioInterface::_set_clock_text(const QString & iText /*= QString()*/)
 {
   if (!iText.isEmpty())
@@ -560,11 +488,6 @@ void RadioInterface::_set_clock_text(const QString & iText /*= QString()*/)
     //lblLocalTime->setText("YYYY-MM-DD hh:mm:ss");
     lblLocalTime->setText("0000-00-00 00:00:00");
   }
-}
-
-RadioInterface::~RadioInterface()
-{
-  fprintf(stdout, "RadioInterface is deleted\n");
 }
 
 QString RadioInterface::get_copyright_text() const
@@ -647,7 +570,6 @@ bool RadioInterface::doStart()
   connect(&my_spectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, my_dabProcessor, &DabProcessor::slot_select_iq_plot_type);
   connect(mConfig.cmbSoftBitGen, qOverload<int>(&QComboBox::currentIndexChanged), my_dabProcessor, [this](int idx){ my_dabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);});
 
-  //
   //	Just to be sure we disconnect here.
   //	It would have been helpful to have a function
   //	testing whether or not a connection exists, we need a kind
@@ -1278,13 +1200,7 @@ void RadioInterface::_slot_terminate_process()
   dabSettings->setValue("mainwidget-h", size.height());
 
   mConfig.save_position_and_config();
-//  dabSettings->setValue("mConfig-x", mConfig.pos().x());
-//  dabSettings->setValue("mConfig-y", mConfig.pos().y());
-//  size = mConfig.size();
-//  dabSettings->setValue("mConfig-w", size.width());
-//  dabSettings->setValue("mConfig-h", size.height());
 
-  //
 #ifdef  DATA_STREAMER
   fprintf (stdout, "going to close the dataStreamer\n");
 	delete		dataStreamer;
@@ -1324,10 +1240,6 @@ void RadioInterface::_slot_terminate_process()
     my_contentTable->hide();
     delete my_contentTable;
   }
-  //	just save a few checkbox settings that are not
-  //	bound by signal/slots, but just read if needed
-  //  dabSettings->setValue("utcSelector", mConfig.utcSelector->isChecked() ? 1 : 0);
-  //  dabSettings->setValue("epg2xml", mConfig.epg2xmlSelector->isChecked() ? 1 : 0);
 
   theBand.saveSettings();
   stopFramedumping();
@@ -1342,24 +1254,16 @@ void RadioInterface::_slot_terminate_process()
     fclose(logFile);
   }
   logFile = nullptr;
-  //	everything should be halted by now
 
+  // everything should be halted by now
   dabSettings->sync();
   my_spectrumViewer.hide();
-  //my_snrViewer.hide();
-  if (my_dabProcessor != nullptr)
-  {
-    delete my_dabProcessor;
-  }
-  if (mpInputDevice != nullptr)
-  {
-    delete mpInputDevice;
-  }
+
+  delete my_dabProcessor;
+  delete mpInputDevice;
   delete soundOut;
-  //delete my_history;
   delete my_timeTable;
 
-  //	close();
   fprintf(stdout, ".. end the radio silences\n");
 }
 
@@ -2767,55 +2671,55 @@ void RadioInterface::_slot_handle_target_service_button()
 }
 
 //	Previous and next services. trivial implementation
-void RadioInterface::handle_serviceButton(direction d)
-{
-  if (!running.load())
-  {
-    return;
-  }
-
-  presetTimer.stop();
-  stopScanning(false);
-  channel.nextService.valid = false;
-  if (!channel.currentService.valid)
-  {
-    return;
-  }
-
-  QString oldService = channel.currentService.serviceName;
-
-  stopService(channel.currentService);
-  channel.currentService.valid = false;
-
-  if ((serviceList.size() != 0) && (oldService != ""))
-  {
-    for (int i = 0; i < (int)(serviceList.size()); i++)
-    {
-      if (serviceList.at(i).name == oldService)
-      {
-        //colorService(model.index(i, 0), Qt::black, fontSize);
-        if (d == FORWARD)
-        {
-          i = (i + 1) % serviceList.size();
-        }
-        else
-        {
-          i = (i - 1 + serviceList.size()) % serviceList.size();
-        }
-        DabService s;
-        my_dabProcessor->getParameters(serviceList.at(i).name, &s.SId, &s.SCIds);
-        if (s.SId == 0)
-        {
-          write_warning_message("insufficient data for this program (4)");
-          break;
-        }
-        s.serviceName = serviceList.at(i).name;
-        startService(s);
-        break;
-      }
-    }
-  }
-}
+//void RadioInterface::handle_serviceButton(direction d)
+//{
+//  if (!running.load())
+//  {
+//    return;
+//  }
+//
+//  presetTimer.stop();
+//  stopScanning(false);
+//  channel.nextService.valid = false;
+//  if (!channel.currentService.valid)
+//  {
+//    return;
+//  }
+//
+//  QString oldService = channel.currentService.serviceName;
+//
+//  stopService(channel.currentService);
+//  channel.currentService.valid = false;
+//
+//  if ((serviceList.size() != 0) && (oldService != ""))
+//  {
+//    for (int i = 0; i < (int)(serviceList.size()); i++)
+//    {
+//      if (serviceList.at(i).name == oldService)
+//      {
+//        //colorService(model.index(i, 0), Qt::black, fontSize);
+//        if (d == FORWARD)
+//        {
+//          i = (i + 1) % serviceList.size();
+//        }
+//        else
+//        {
+//          i = (i - 1 + serviceList.size()) % serviceList.size();
+//        }
+//        DabService s;
+//        my_dabProcessor->getParameters(serviceList.at(i).name, &s.SId, &s.SCIds);
+//        if (s.SId == 0)
+//        {
+//          write_warning_message("insufficient data for this program (4)");
+//          break;
+//        }
+//        s.serviceName = serviceList.at(i).name;
+//        startService(s);
+//        break;
+//      }
+//    }
+//  }
+//}
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -3287,7 +3191,7 @@ void RadioInterface::_slot_handle_save_service_selector(int d) // TODO: is that 
 //-------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //
-//	if configured, the interpreation of the EPG data starts automatically,
+//	if configured, the interpretation of the EPG data starts automatically,
 //	the servicenames of an SPI/EPG service may differ from one country
 //	to another
 void RadioInterface::slot_epg_timer_timeout()

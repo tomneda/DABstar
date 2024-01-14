@@ -326,7 +326,7 @@ private:
   void show_MOTlabel(QByteArray & data, int contentType, const QString & pictureName, int dirs);
 
   enum direction { FORWARD, BACKWARDS };
-  void handle_serviceButton(direction);
+  //void handle_serviceButton(direction);
   void enable_ui_elements_for_safety(bool iEnable);
 
   void new_channelIndex(int);

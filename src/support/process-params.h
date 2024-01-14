@@ -19,7 +19,6 @@ public:
   RingBuffer<cmplx> * spectrumBuffer = nullptr;
   RingBuffer<cmplx> * iqBuffer = nullptr;
   RingBuffer<float> * carrBuffer = nullptr;
-  RingBuffer<float> * snrBuffer = nullptr;
   RingBuffer<uint8_t> * frameBuffer = nullptr;
 };
 
