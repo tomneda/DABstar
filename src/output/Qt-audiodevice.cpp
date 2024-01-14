@@ -45,7 +45,7 @@ void QtAudioDevice::start()
 
 void QtAudioDevice::stop()
 {
-  Buffer->FlushRingBuffer();
+  Buffer->flush_ring_buffer();
   close();
 }
 
@@ -55,7 +55,7 @@ qint64 QtAudioDevice::readData(char * buffer, qint64 maxSize)
   //	"maxSize" is the requested size in bytes
   //	"amount" is in floats
 
-  if (const qint64 amount = Buffer->getDataFromBuffer(buffer, (int32_t)(maxSize / sizeof(float)));
+  if (const qint64 amount = Buffer->get_data_from_ring_buffer(buffer, (int32_t)(maxSize / sizeof(float)));
      (signed)sizeof(float) * amount < maxSize)
   {
     for (int32_t i = (int32_t)amount * sizeof(float); i < maxSize; i++)

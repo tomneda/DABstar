@@ -60,7 +60,7 @@ void QtAudio::audioOutput(float * fragment, int32_t size)
 {
   if (mpAudioDevice != nullptr)
   {
-    mpBuffer->putDataIntoBuffer(fragment, 2 * size);
+    mpBuffer->put_data_into_ring_buffer(fragment, 2 * size);
   }
 }
 

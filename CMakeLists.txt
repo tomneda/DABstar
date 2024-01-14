@@ -423,52 +423,6 @@ set(${objectName}_SRCS
         src/configuration/configuration.cpp
         )
 
-#set(${objectName}_MOCS
-#        src/main/radio.h
-#        src/main/dab-processor.h
-#        src/support/techdata.h
-#        src/output/audio-base.h
-#        src/ofdm/sample-reader.h
-#        src/ofdm/ofdm-decoder.h
-#        src/ofdm/phasereference.h
-#        src/ofdm/fib-decoder.h
-#        src/ofdm/fic-handler.h
-#        src/backend/audio/mp2processor.h
-#        src/backend/audio/mp4processor.h
-#        src/backend/data/virtual-datahandler.h
-#        src/backend/data/pad-handler.h
-#        src/backend/data/mot/mot-object.h
-#        src/backend/data/ip-datahandler.h
-#        src/backend/data/tdc-datahandler.h
-#        src/backend/data/epg-2/epg-decoder.h
-#        src/backend/data/data-processor.h
-#        src/support/band-handler.h
-#        src/support/buttons/newpushbutton.h
-#        src/support/buttons/normalpushbutton.h
-#        src/support/buttons/circlepushbutton.h
-#        src/support/time-table.h
-#        src/support/content-table.h
-#        src/support/coordinates.h
-#        src/support/mapport.h
-#        src/support/http-handler.h
-#        src/support/custom_frame.h
-#        src/scopes-qwt6/iqdisplay.h
-#        src/scopes-qwt6/audio-display.h
-#        src/spectrum-viewer/spectrum-viewer.h
-#        src/spectrum-viewer/spectrum-scope.h
-#        src/spectrum-viewer/waterfall-scope.h
-#        src/spectrum-viewer/correlation-viewer.h
-#        src/service-list/service-list-handler.h
-#        )
-#
-#set(${objectName}_UIS
-#        ${${objectName}_UIS}
-#        ./forms/dabradio.ui
-#        ./forms/technical_data.ui
-#        ./forms/config-helper.ui
-#        ./forms/scopewidget.ui
-#        )
-
 #########################################################################
 
 if (FDK_AAC)
@@ -485,10 +439,6 @@ if (FDK_AAC)
             ${${objectName}_SRCS}
             src/backend/audio/fdk-aac.cpp
             )
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/backend/audio/fdk-aac.h
-            )
     list(APPEND extraLibs ${FDK_AAC_LIBRARIES})
     add_definitions(-D__WITH_FDK_AAC__)
 elseif (NOT FDK_AAC)
@@ -504,15 +454,9 @@ elseif (NOT FDK_AAC)
             ${${objectName}_SRCS}
             src/backend/audio/faad-decoder.cpp
             )
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/backend/audio/faad-decoder.h
-            )
     add_definitions(-D__WITH_FAAD__)
 endif (FDK_AAC)
 
-#	the viterbi decoder
-#
 if (VITERBI_NEON)
     set(VITERBI_SSE false)
     set(${objectName}_HDRS
@@ -566,10 +510,6 @@ endif (DATA_STREAMER)
 if (TCP_STREAMER)
     add_definitions(-DTCP_STREAMER)
     find_package(Qt5Network REQUIRED)
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/output/tcp-streamer.h
-    )
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/output/tcp-streamer.h
@@ -587,12 +527,7 @@ if (QT_AUDIO)
     include_directories(
             ${Qt5Multimedia_INCLUDE_DIRS}
     )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/output/Qt-audio.h
-            src/output/Qt-audiodevice.h
-    )
+    list(APPEND extraLibs Qt5::Multimedia)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/output/Qt-audio.h
@@ -615,22 +550,11 @@ if (USE_PORTAUDIO)
             ${${objectName}_HDRS}
             src/output/audiosink.h
             )
-
-    set(${objectName}_MOCS
-            ${${objectName}_MOCS}
-            src/output/audiosink.h
-            )
-
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/output/audiosink.cpp
             )
 endif (USE_PORTAUDIO)
-
-#QT5_WRAP_UI(UIS
-#        ${${objectName}_UIS}
-#        #src/file-devices/filereader/filereader-widget.ui
-#)
 
 include_directories(
         #${SDRPLAY_INCLUDES}
@@ -641,8 +565,6 @@ include_directories(
         ${FAAD_INCLUDE_DIRS}
         ${SNDFILES_INCLUDE_DIRS}
 )
-
-#QT5_WRAP_CPP(MOCS ${${objectName}_MOCS})
 
 add_executable(${objectName}
         ${${objectName}_SRCS}
@@ -665,16 +587,21 @@ target_link_libraries(${objectName}
         ${CMAKE_DL_LIBS}
         )
 
-if (QT_AUDIO)
-    target_link_libraries(${objectName} PRIVATE Qt5::Multimedia)
-endif (QT_AUDIO)
+########################################################################
+# Add subsequent libraries
+########################################################################
 
-INSTALL(TARGETS ${objectName} DESTINATION ${CMAKE_INSTALL_PREFIX})
-#	INSTALL (TARGETS ${objectName} DESTINATION ./linux-bin)
+add_subdirectory(src/fft)
+add_subdirectory(src/devices)
+
+target_link_libraries(${objectName} PRIVATE ${objectName}_fft)
+target_link_libraries(${objectName} PRIVATE ${objectName}_devices)
 
 ########################################################################
-# Create uninstall target
+# Create install / uninstall target
 ########################################################################
+
+install(TARGETS ${objectName} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
@@ -683,10 +610,3 @@ configure_file(
 
 add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-
-
-add_subdirectory(src/fft)
-add_subdirectory(src/devices)
-
-target_link_libraries(${objectName} PRIVATE ${objectName}_fft)
-target_link_libraries(${objectName} PRIVATE ${objectName}_devices)
