@@ -169,11 +169,11 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iD
     inputDevice = nullptr;
   }
 
-  if (inputDevice == nullptr)
-  {
-    fprintf(stderr, "Create dummy device\n");
-    inputDevice = std::make_unique<DummyHandler>(); // should never trow
-  }
+//  if (inputDevice == nullptr)
+//  {
+//    fprintf(stderr, "Create dummy device\n");
+//    inputDevice = std::make_unique<DummyHandler>(); // should never trow
+//  }
 
   return inputDevice;
 }
@@ -285,17 +285,18 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 #endif
   if (iDeviceName == DN_FILE_INP_XML)
   {
+    oRealDevice = false;
     file = QFileDialog::getOpenFileName(this, tr("Open file ..."), QDir::homePath(), tr("xml data (*.*)"));
     if (file == QString(""))
     {
       return nullptr;
     }
     file = QDir::toNativeSeparators(file);
-    oRealDevice = false;
     inputDevice = std::make_unique<xml_fileReader>(file);
   }
   else if ((iDeviceName == DN_FILE_INP_IQ) || (iDeviceName == DN_FILE_INP_RAW))
   {
+    oRealDevice = false;
     const char * p;
     if (iDeviceName == DN_FILE_INP_IQ)
     {
@@ -313,11 +314,11 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
     }
 
     file = QDir::toNativeSeparators(file);
-    oRealDevice = false;
     inputDevice = std::make_unique<RawFileHandler>(file);
   }
   else if (iDeviceName == DN_FILE_INP_SDR)
   {
+    oRealDevice = false;
     file = QFileDialog::getOpenFileName(this, tr("Open file ..."), QDir::homePath(), tr("raw data (*.sdr)"));
     if (file == QString(""))
     {
@@ -325,7 +326,6 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
     }
 
     file = QDir::toNativeSeparators(file);
-    oRealDevice = false;
     inputDevice = std::make_unique<WavFileHandler>(file);
   }
   else

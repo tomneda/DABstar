@@ -126,19 +126,9 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 
 RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
   : QWidget(parent),
-    spectrumBuffer(2048),
-    iqBuffer(2 * 1536),
-    carrBuffer(2 * 1536),
-    responseBuffer(32768),
-    frameBuffer(2 * 32768),
-    dataBuffer(32768),
-    audioBuffer(8 * 32768),
     my_spectrumViewer(this, Si, &spectrumBuffer, &iqBuffer, &carrBuffer, &responseBuffer),
     theBand(freqExtension, Si),
-    the_dlCache(10),
-    tiiHandler(),
     filenameFinder(Si),
-    theTechData(16 * 32768),
     mConfig(this, Si),
     mDeviceSelector(Si)
 {
@@ -159,18 +149,18 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mapHandler = nullptr;
 
   // "globals" is introduced to reduce the number of parameters for the dabProcessor
-  globals.spectrumBuffer = &spectrumBuffer;
-  globals.iqBuffer = &iqBuffer;
-  globals.carrBuffer = &carrBuffer;
-  globals.responseBuffer = &responseBuffer;
-  globals.frameBuffer = &frameBuffer;
-  globals.dabMode = dabSettings->value("dabMode", 1).toInt();
-  globals.threshold = dabSettings->value("threshold", 3).toInt();
-  globals.diff_length = dabSettings->value("diff_length", DIFF_LENGTH).toInt();
-  globals.tii_delay = dabSettings->value("tii_delay", 5).toInt();
-  if (globals.tii_delay < 2) { globals.tii_delay = 2; }
-  globals.tii_depth = dabSettings->value("tii_depth", 4).toInt();
-  globals.echo_depth = dabSettings->value("echo_depth", 1).toInt();
+  mProcessParams.spectrumBuffer = &spectrumBuffer;
+  mProcessParams.iqBuffer = &iqBuffer;
+  mProcessParams.carrBuffer = &carrBuffer;
+  mProcessParams.responseBuffer = &responseBuffer;
+  mProcessParams.frameBuffer = &frameBuffer;
+  mProcessParams.dabMode = dabSettings->value("dabMode", 1).toInt();
+  mProcessParams.threshold = dabSettings->value("threshold", 3).toInt();
+  mProcessParams.diff_length = dabSettings->value("diff_length", DIFF_LENGTH).toInt();
+  mProcessParams.tii_delay = dabSettings->value("tii_delay", 5).toInt();
+  if (mProcessParams.tii_delay < 2) { mProcessParams.tii_delay = 2; }
+  mProcessParams.tii_depth = dabSettings->value("tii_depth", 4).toInt();
+  mProcessParams.echo_depth = dabSettings->value("echo_depth", 1).toInt();
 
   theFont = dabSettings->value("theFont", "Times").toString();
   fontSize = dabSettings->value("fontSize", 12).toInt();
@@ -529,19 +519,9 @@ void RadioInterface::_slot_do_start(const QString & dev)
 //	when doStart is called, a device is available and selected
 bool RadioInterface::doStart()
 {
-  if (channel.nextService.channel != "")
-  {
-    int k = channelSelector->findText(channel.nextService.channel);
-    if (k != -1)
-    {
-      channelSelector->setCurrentIndex(k);
-    }
-  }
-  else
-  {
-    channelSelector->setCurrentIndex(0);
-  }
-  my_dabProcessor = new DabProcessor(this, mpInputDevice.get(), &globals);
+  _update_channel_selector();
+
+  my_dabProcessor = new DabProcessor(this, mpInputDevice.get(), &mProcessParams);
   channel.clean_channel();
 
   //	Some hidden buttons can be made visible now
@@ -614,6 +594,22 @@ bool RadioInterface::doStart()
   startChannel(channelSelector->currentText());
   running.store(true);
   return true;
+}
+
+void RadioInterface::_update_channel_selector()
+{
+  if (channel.nextService.channel != "")
+  {
+    int k = channelSelector->findText(channel.nextService.channel);
+    if (k != -1)
+    {
+      channelSelector->setCurrentIndex(k);
+    }
+  }
+  else
+  {
+    channelSelector->setCurrentIndex(0);
+  }
 }
 
 //
@@ -1326,9 +1322,7 @@ void RadioInterface::_slot_update_time_display()
   }
 }
 
-//
-//	newDevice is called from the GUI when selecting a device
-//	with the selector
+// _slot_new_device is called from the GUI when selecting a device with the selector
 void RadioInterface::_slot_new_device(const QString & deviceName)
 {
   //	Part I : stopping all activities
@@ -2999,7 +2993,7 @@ void RadioInterface::stopScanning(bool dump)
     lblDynLabel->setText("Scan ended");
     channelTimer.stop();
     scanning.store(false);
-    mpServiceListHandler->restore_favorites(); // try to restore former favorites from an backup table
+    mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table
   }
 }
 
@@ -3753,7 +3747,7 @@ void RadioInterface::_slot_handle_favorite_button(bool iClicked)
 {
   mCurFavoriteState = !mCurFavoriteState;
   set_favorite_button_style();
-  mpServiceListHandler->set_favorite(mCurFavoriteState);
+  mpServiceListHandler->set_favorite_state(mCurFavoriteState);
 }
 
 void RadioInterface::set_favorite_button_style()

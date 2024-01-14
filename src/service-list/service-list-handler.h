@@ -54,7 +54,7 @@ public:
   void create_new_table();
   void add_entry(const QString & iChannel, const QString & iService);
   void set_selector(const QString & iChannel, const QString & iService);
-  void set_favorite(const bool iIsFavorite);
+  void set_favorite_state(const bool iIsFavorite);
   void restore_favorites();
   void jump_entries(int32_t iSteps); // typ -1/+1, with wrap around
 

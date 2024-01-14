@@ -200,23 +200,23 @@ private:
   int32_t mMotObjectCnt = 0;
   StatusInfo mStatusInfo{};
   FILE * dlTextFile;
-  RingBuffer<cmplx> spectrumBuffer;
-  RingBuffer<cmplx> iqBuffer;
-  RingBuffer<float> carrBuffer;
-  RingBuffer<float> responseBuffer;
-  RingBuffer<uint8_t> frameBuffer;
-  RingBuffer<uint8_t> dataBuffer;
-  RingBuffer<int16_t> audioBuffer;
+  RingBuffer<cmplx> spectrumBuffer{2048};
+  RingBuffer<cmplx> iqBuffer{2 * 1536};
+  RingBuffer<float> carrBuffer{2 * 1536};
+  RingBuffer<float> responseBuffer{32768};
+  RingBuffer<uint8_t> frameBuffer{2 * 32768};
+  RingBuffer<uint8_t> dataBuffer{32768};
+  RingBuffer<int16_t> audioBuffer{8 * 32768};
   SpectrumViewer my_spectrumViewer;
   BandHandler theBand;
   QFrame dataDisplay;
   //QFrame configDisplay;
-  dlCache the_dlCache;
-  TiiHandler tiiHandler;
+  dlCache the_dlCache{10};
+  TiiHandler tiiHandler{};
   FindFileNames filenameFinder;
-  RingBuffer<int16_t> theTechData;
+  RingBuffer<int16_t> theTechData{16 * 32768};
   httpHandler * mapHandler;
-  ProcessParams globals;
+  ProcessParams mProcessParams;
   const QString mVersionStr{ PRJ_VERS };
   QString theFont;
   int fontSize;
@@ -239,8 +239,8 @@ private:
 #ifdef  HAVE_PLUTO_RXTX
   dabStreamer * streamerOut;
 #endif
-  DabProcessor * my_dabProcessor;
-  AudioBase * soundOut;
+  DabProcessor * my_dabProcessor = nullptr;
+  AudioBase * soundOut = nullptr;
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer;
 #endif
@@ -346,6 +346,7 @@ private:
   template<typename T> void _add_status_label_elem(StatusInfoElem<T> & ioElem, const uint32_t iColor, const QString & iName, const QString & iToolTip);
   template<typename T> void _set_status_info_status(StatusInfoElem<T> & iElem, const T iValue);
   void _reset_status_info();
+  void _update_channel_selector();
 
 signals:
   void signal_set_new_channel(int);

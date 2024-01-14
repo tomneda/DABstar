@@ -136,7 +136,7 @@ void ServiceListHandler::set_selector(const QString & iChannel, const QString & 
   _jump_to_list_entry_and_emit_fav_status();
 }
 
-void ServiceListHandler::set_favorite(const bool iIsFavorite)
+void ServiceListHandler::set_favorite_state(const bool iIsFavorite)
 {
   mServiceDB.set_favorite(mChannelLast, mServiceLast, iIsFavorite);
   _fill_table_view_from_db();
