@@ -176,7 +176,6 @@ public:
   static constexpr int32_t SWITCH_DELAY = 3; // switch time in second until service is called after channel selection
 
 private:
-
   template<typename T>
   struct StatusInfoElem
   {
@@ -199,90 +198,87 @@ private:
   int32_t mAudioFrameCnt = 0;
   int32_t mMotObjectCnt = 0;
   StatusInfo mStatusInfo{};
-  FILE * dlTextFile;
-  RingBuffer<cmplx> spectrumBuffer{2048};
-  RingBuffer<cmplx> iqBuffer{2 * 1536};
-  RingBuffer<float> carrBuffer{2 * 1536};
-  RingBuffer<float> responseBuffer{32768};
-  RingBuffer<uint8_t> frameBuffer{2 * 32768};
-  RingBuffer<uint8_t> dataBuffer{32768};
-  RingBuffer<int16_t> audioBuffer{8 * 32768};
-  SpectrumViewer my_spectrumViewer;
-  BandHandler theBand;
-  QFrame dataDisplay;
-  //QFrame configDisplay;
-  dlCache the_dlCache{10};
-  TiiHandler tiiHandler{};
-  FindFileNames filenameFinder;
-  RingBuffer<int16_t> theTechData{16 * 32768};
-  httpHandler * mapHandler;
+  FILE * mDlTextFile = nullptr;
+  RingBuffer<cmplx> mSpectrumBuffer{2048};
+  RingBuffer<cmplx> mIqBuffer{2 * 1536};
+  RingBuffer<float> mCarrBuffer{2 * 1536};
+  RingBuffer<float> mResponseBuffer{32768};
+  RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
+  RingBuffer<uint8_t> mDataBuffer{32768};
+  RingBuffer<int16_t> mAudioBuffer{8 * 32768};
+  SpectrumViewer mSpectrumViewer;
+  BandHandler mBandHandler;
+  dlCache mDlCache{10};
+  TiiHandler mTiiHandler{};
+  FindFileNames mFilenameFinder;
+  RingBuffer<int16_t> mTechDataBuffer{16 * 32768};
+  httpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;
-  const QString mVersionStr{ PRJ_VERS };
-  QString theFont;
-  int fontSize;
-  int fmFrequency;
-  ContentTable * my_contentTable;
+  const QString mVersionStr{PRJ_VERS};
+  //QString theFont;
+  //int fontSize;
+  int32_t mFmFrequency = 0;
+  ContentTable * mpContentTable = nullptr;
   //ContentTable * my_scanTable;
-  FILE * logFile;
-  ChannelDescriptor channel;
-  int maxDistance;
-  void LOG(const QString &, const QString &);
-  bool error_report;
-  TechData * theTechWindow;
+  FILE * mpLogFile = nullptr;
+  ChannelDescriptor mChannel;
+  int32_t mMaxDistance = 0;
+  bool mDoReportError = false;
+  TechData * mpTechDataWidget = nullptr;
   Configuration mConfig;
-  QSettings * dabSettings;
-  int32_t dataPort;
-  std::atomic<bool> running;
-  std::atomic<bool> scanning;
+  QSettings * mpSettings = nullptr;
+  std::atomic<bool> mIsRunning;
+  std::atomic<bool> mIsScanning;
   std::unique_ptr<IDeviceHandler> mpInputDevice;
   DeviceSelector mDeviceSelector;
 #ifdef  HAVE_PLUTO_RXTX
-  dabStreamer * streamerOut;
+  dabStreamer * streamerOut = nullptr;
 #endif
-  DabProcessor * my_dabProcessor = nullptr;
-  AudioBase * soundOut = nullptr;
+  DabProcessor * mpDabProcessor = nullptr;
+  AudioBase * mpSoundOut = nullptr;
 #ifdef  DATA_STREAMER
-  tcpServer * dataStreamer;
+  tcpServer * dataStreamer = nullptr;
 #endif
 #ifdef  CLOCK_STREAMER
-  tcpServer * clockStreamer;
+  tcpServer * clockStreamer = nullptr;
 #endif
-  CEPGDecoder epgHandler;
-  EpgDecoder epgProcessor;
-  QString epgPath;
-  QTimer epgTimer;
-  //bool saveSlides;
-  QString picturesPath;
-  QString filePath;
-  SNDFILE * rawDumper;
-  SNDFILE * audioDumper;
+  CEPGDecoder mEpgHandler;
+  EpgDecoder mEpgProcessor;
+  QString mEpgPath;
+  QTimer mEpgTimer;
+  QString mPicturesPath;
+  QString mFilePath;
+  SNDFILE * mpRawDumper = nullptr;
+  SNDFILE * mpAudioDumper = nullptr;
   //QStandardItemModel model;
-  std::vector<serviceId> serviceList;
-  std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, const serviceId &);
+  std::vector<serviceId> mServiceList;
 
-  QTimer displayTimer;
-  QTimer channelTimer;
-  QTimer presetTimer;
+  QTimer mDisplayTimer;
+  QTimer mChannelTimer;
+  QTimer mPresetTimer;
   QTimer mClockResetTimer;
-  bool mutingActive = true;
-  int32_t numberofSeconds;
-  int16_t ficBlocks;
-  int16_t ficSuccess;
-  int total_ficError;
-  int total_fics;
+  bool mMutingActive = true;
+  int32_t mNumberofSeconds = 0;
+  int16_t mFicBlocks = 0;
+  int16_t mFicSuccess = 0;
+  int32_t mTotalFicError = 0;
+  int32_t mTotalFics = 0;
   TheTime mLocalTime;
   TheTime mUTC;
-  timeTableHandler * my_timeTable;
-  FILE * ficDumpPointer;
-  bool transmitterTags_local;
-  size_t previous_idle_time = 0;
-  size_t previous_total_time = 0;
+  timeTableHandler * mpTimeTable = nullptr;
+  FILE * mpFicDumpPointer = nullptr;
+  bool mTransmitterTagsLocal = false;
+  size_t mPreviousIdleTime = 0;
+  size_t mPreviousTotalTime = 0;
   std::unique_ptr<ServiceListHandler> mpServiceListHandler;
   bool mCurFavoriteState = false;
   bool mClockActiveStyle = true;
+  std::mutex mMutex;
 
   static QStringList get_soft_bit_gen_names();
+  std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, const serviceId &);
   //bool eventFilter(QObject * obj, QEvent * event) override;
+  void LOG(const QString &, const QString &);
   uint32_t extract_epg(const QString&, const std::vector<serviceId> & iServiceList, uint32_t);
   void show_pause_slide();
   void connectGUI();
@@ -291,9 +287,6 @@ private:
   QString get_copyright_text() const;
   void cleanScreen();
   void show_hide_buttons(const bool iShow);
-
-  //QStringList get_device_name_list();
-  //IDeviceHandler * create_device(const QString & s);
 
   void start_etiHandler();
   void stop_etiHandler();
@@ -325,13 +318,12 @@ private:
   void save_MOTtext(QByteArray &, int, QString);
   void show_MOTlabel(QByteArray & data, int contentType, const QString & pictureName, int dirs);
 
-  enum direction { FORWARD, BACKWARDS };
+  //enum direction { FORWARD, BACKWARDS };
   //void handle_serviceButton(direction);
   void enable_ui_elements_for_safety(bool iEnable);
 
   void new_channelIndex(int);
 
-  std::mutex locker;
   //void colorServiceName(const QString & s, QColor color, int fS, bool);
   void write_warning_message(const QString & iMsg);
   void write_picture(const QPixmap & iPixMap) const;
