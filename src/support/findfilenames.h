@@ -49,8 +49,8 @@ public:
   FindFileNames(QSettings *);
   ~FindFileNames();
   FILE * findContentDump_fileName(const QString & channel);
-  FILE * findFrameDump_fileName(const QString & service, bool);
-  SNDFILE * findAudioDump_fileName(const QString & service, bool);
+  FILE * findFrameDump_fileName(const QString & service);
+  SNDFILE * findAudioDump_fileName(const QString & service);
   SNDFILE * findRawDump_fileName(const QString & deviceName, const QString & channelName);
   FILE * findSummary_fileName();
   const QString findskipFile_fileName();
@@ -59,6 +59,11 @@ public:
   FILE * find_ficDump_file(const QString &);
   QString findMaps_fileName();
   QString find_eti_fileName(const QString &, const QString &);
+
+private:
+  QString _open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt);
+  void _remove_invalid_characters(QString & ioStr) const;
+  QString _get_date_string() const;
 };
 
 #endif

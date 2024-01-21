@@ -1965,7 +1965,7 @@ void RadioInterface::stopAudiodumping()
 
 void RadioInterface::startAudiodumping()
 {
-  mpAudioDumper = mFilenameFinder.findAudioDump_fileName(mChannel.currentService.serviceName, true);
+  mpAudioDumper = mFilenameFinder.findAudioDump_fileName(mChannel.currentService.serviceName);
   if (mpAudioDumper == nullptr)
   {
     return;
@@ -2007,7 +2007,7 @@ void RadioInterface::stopFramedumping()
 
 void RadioInterface::startFramedumping()
 {
-  mChannel.currentService.frameDumper = mFilenameFinder.findFrameDump_fileName(mChannel.currentService.serviceName, true);
+  mChannel.currentService.frameDumper = mFilenameFinder.findFrameDump_fileName(mChannel.currentService.serviceName);
   if (mChannel.currentService.frameDumper == nullptr)
   {
     return;

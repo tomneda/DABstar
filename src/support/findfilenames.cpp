@@ -97,129 +97,95 @@ FILE * FindFileNames::findContentDump_fileName(const QString & channel)
   return fileP;
 }
 
-//
-FILE * FindFileNames::findFrameDump_fileName(const QString & service, bool flag)
+FILE * FindFileNames::findFrameDump_fileName(const QString & service)
 {
-  QString saveDir = dabSettings->value("saveDir_frameDump", QDir::homePath()).toString();
-  QString theTime = QDateTime::currentDateTime().toString();
+  const QString fileName = _open_file_dialog(service, "saveDir_frameDump", "AAC data", ".aac");
 
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
+  if (fileName.isEmpty())
   {
-    saveDir = saveDir + '/';
-  }
-
-  QString tailS = service + "-" + theTime;
-  for (int i = 0; i < tailS.length(); i++)
-  {
-    if (!isValid(tailS.at(i)))
-    {
-      tailS.replace(i, 1, '-');
-    }
-  }
-
-  QString suggestedFileName = saveDir + tailS + ".aac";
-  QString fileName;
-  if (flag)
-  {
-    fileName = QFileDialog::getSaveFileName(nullptr,
-                                            "Save file ...",
-                                            suggestedFileName,
-                                            "aac data (*.aac)",
-                                            Q_NULLPTR,
-                                            QFileDialog::DontUseNativeDialog);
-  }
-  else
-  {
-    fileName = suggestedFileName;
-  }
-
-  if (fileName == QString(""))
-  {       // apparently cancelled
     return nullptr;
   }
 
-  if (!fileName.endsWith(".aac", Qt::CaseInsensitive))
-  {
-    fileName.append(".aac");
-  }
-  fileName = QDir::toNativeSeparators(fileName);
   FILE * theFile = fopen(fileName.toUtf8().data(), "w+b");
+
   if (theFile == nullptr)
   {
-    QString s = QString("cannot open ") + fileName;
-    QMessageBox::warning(nullptr, "Warning", s.toUtf8().data());
-    return nullptr;
+    qDebug() << "Cannot open ACC file " << fileName.toUtf8().data();
   }
 
-  QString dumper = QDir::fromNativeSeparators(fileName);
-  int x = dumper.lastIndexOf("/");
-  saveDir = dumper.remove(x, dumper.count() - x);
-  dabSettings->setValue("saveDir_frameDump", saveDir);
   return theFile;
 }
 
-SNDFILE * FindFileNames::findAudioDump_fileName(const QString & service, bool flag)
+SNDFILE * FindFileNames::findAudioDump_fileName(const QString & service)
 {
-  SF_INFO * sf_info = (SF_INFO *)alloca (sizeof(SF_INFO));
-  QString theTime = QDateTime::currentDateTime().toString();
-  QString saveDir = dabSettings->value("saveDir_audioDump", QDir::homePath()).toString();
+  const QString fileName = _open_file_dialog(service, "saveDir_audioDump", "PCM wave file", ".wav");
 
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  QString tailS = service + "-" + theTime;
-  for (int i = 0; i < tailS.length(); i++)
-  {
-    if (!isValid(tailS.at(i)))
-    {
-      tailS.replace(i, 1, '-');
-    }
-  }
-
-  QString suggestedFileName = saveDir + tailS + ".wav";
-  QString fileName;
-  if (flag)
-  {
-    fileName = QFileDialog::getSaveFileName(nullptr,
-                                            "Save file ...",
-                                            suggestedFileName,
-                                            "PCM wave file (*.wav)",
-                                            Q_NULLPTR,
-                                            QFileDialog::DontUseNativeDialog);
-  }
-  else
-  {
-    fileName = suggestedFileName;
-  }
-  if (fileName == QString(""))
+  if (fileName.isEmpty())
   {
     return nullptr;
   }
 
-  if (!fileName.endsWith(".wav", Qt::CaseInsensitive))
-  {
-    fileName.append(".wav");
-  }
-  fileName = QDir::toNativeSeparators(fileName);
-  sf_info->samplerate = 48000;
-  sf_info->channels = 2;
-  sf_info->format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+  SF_INFO sf_info;
+  sf_info.samplerate = 48000;
+  sf_info.channels = 2;
+  sf_info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
-  SNDFILE * theFile = sf_open(fileName.toUtf8().data(), SFM_WRITE, sf_info);
+  SNDFILE * theFile = sf_open(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
+
   if (theFile == nullptr)
   {
-    qDebug() << "Cannot open " << fileName.toUtf8().data();
-    return nullptr;
+    qDebug() << "Cannot open WAV file " << fileName.toUtf8().data();
   }
 
-  QString dumper = QDir::fromNativeSeparators(fileName);
-  int x = dumper.lastIndexOf("/");
-  saveDir = dumper.remove(x, dumper.count() - x);
-  dabSettings->setValue("saveDir_audioDump", saveDir);
-
   return theFile;
+}
+
+QString FindFileNames::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName,
+                                         const QString & iFileDesc, const QString & iFileExt)
+{
+  const QDir saveDir = dabSettings->value(iSettingName, QDir::homePath()).toString();
+
+  QString fileName = iFileNamePrefix.trimmed() + "-" + _get_date_string();
+  _remove_invalid_characters(fileName);
+  fileName = saveDir.filePath(fileName + iFileExt);
+
+  fileName = QFileDialog::getSaveFileName(nullptr,
+                                          "Save file ...",
+                                          fileName,
+                                          iFileDesc + " (*" + iFileExt + ")",
+                                          Q_NULLPTR,
+                                          QFileDialog::DontUseNativeDialog);
+
+  if (fileName.isEmpty())
+  {
+    return {};
+  }
+
+  if (!fileName.endsWith(iFileExt, Qt::CaseInsensitive))
+  {
+    fileName.append(iFileExt);
+  }
+
+  fileName = QDir::toNativeSeparators(fileName); // is that necessary?
+  dabSettings->setValue(iSettingName, QFileInfo(fileName).path());
+
+  return fileName;
+}
+
+QString FindFileNames::_get_date_string() const
+{
+  return QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss");
+}
+
+void FindFileNames::_remove_invalid_characters(QString & ioStr) const
+{
+  for (int i = 0; i < ioStr.length(); i++)
+  {
+    if (!isValid(ioStr.at(i)))
+    {
+      ioStr.replace(i, 1, '-');
+    }
+  }
 }
 
 SNDFILE * FindFileNames::findRawDump_fileName(const QString & deviceName, const QString & channelName)
