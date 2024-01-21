@@ -14,6 +14,7 @@
 #include <QWidget>
 
 #include "device-handler.h"
+#include "openfiledialog.h"
 
 class QSettings;
 
@@ -30,6 +31,7 @@ public:
 private:
   QSettings * const mpSettings;
   const QString mVersionStr{ PRJ_VERS };
+  OpenFileDialog mOpenFileDialog;
 
   std::unique_ptr<IDeviceHandler> _create_device(const QString & iDeviceName, bool & oRealDevice);
 };

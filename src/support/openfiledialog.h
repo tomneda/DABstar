@@ -51,6 +51,9 @@ public:
   QString get_maps_file_name();
   QString get_eti_file_name(const QString &, const QString &);
 
+  enum class EType { XML, SDR, IQ, RAW };
+  QString open_file_name(const EType iType);
+
 private:
   QSettings * const mpSettings;
 

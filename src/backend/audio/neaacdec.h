@@ -93,10 +93,10 @@ extern "C" {
 #define DRM_ER_LC 27 /* special object type for DRM */
 
 /* header types */
-#define RAW        0
-#define ADIF       1
-#define ADTS       2
-#define LATM       3
+//#define RAW        0
+//#define ADIF       1
+//#define ADTS       2
+//#define LATM       3
 
 /* SBR signalling */
 #define NO_SBR           0

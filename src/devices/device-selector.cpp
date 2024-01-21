@@ -96,7 +96,8 @@ static const char DN_UHD[] = "UHD/USRP";
 
 
 DeviceSelector::DeviceSelector(QSettings * ipSettings) :
-  mpSettings(ipSettings)
+  mpSettings(ipSettings),
+  mOpenFileDialog(ipSettings)
 {
 }
 
@@ -180,7 +181,6 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iD
 
 std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & iDeviceName, bool & oRealDevice)
 {
-  QString file;
   std::unique_ptr<IDeviceHandler> inputDevice;
 
   oRealDevice = true; // until proven otherwise
@@ -232,20 +232,20 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   else
 #endif
 #ifdef  HAVE_PLUTO_2
-    if (s == DN_PLUTO)
-    {
-      inputDevice = std::make_unique<plutoHandler>(mpSettings, version);
-    }
-    else
+  if (s == DN_PLUTO)
+  {
+    inputDevice = std::make_unique<plutoHandler>(mpSettings, version);
+  }
+  else
 #endif
 #ifdef  HAVE_PLUTO_RXTX
-    if (s == DN_PLUTO_RXTX)
-    {
-      inputDevice = std::make_unique<plutoHandler>(mpSettings, version, fmFrequency);
-      streamerOut = new dabStreamer(48000, 192000, (plutoHandler *)inputDevice);
-      ((plutoHandler *)inputDevice)->startTransmitter(fmFrequency);
-    }
-    else
+  if (s == DN_PLUTO_RXTX)
+  {
+    inputDevice = std::make_unique<plutoHandler>(mpSettings, version, fmFrequency);
+    streamerOut = new dabStreamer(48000, 192000, (plutoHandler *)inputDevice);
+    ((plutoHandler *)inputDevice)->startTransmitter(fmFrequency);
+  }
+  else
 #endif
 #ifdef HAVE_RTL_TCP
   if (iDeviceName == DN_RTLTCP)
@@ -255,11 +255,11 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   else
 #endif
 #ifdef  HAVE_ELAD
-    if (s == DN_ELAD)
-    {
-      inputDevice = std::make_unique<eladHandler>(mpSettings);
-    }
-    else
+  if (s == DN_ELAD)
+  {
+    inputDevice = std::make_unique<eladHandler>(mpSettings);
+  }
+  else
 #endif
 #ifdef  HAVE_UHD
   if (iDeviceName == DN_UHD)
@@ -269,63 +269,65 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   else
 #endif
 #ifdef  HAVE_SOAPY
-    if (s == DN_SOAPY)
-    {
-      inputDevice = std::make_unique<soapyHandler>(mpSettings);
-    }
-    else
+  if (s == DN_SOAPY)
+  {
+    inputDevice = std::make_unique<soapyHandler>(mpSettings);
+  }
+  else
 #endif
 #ifdef  HAVE_EXTIO
-    // extio is - in its current settings - for Windows, it is a wrap around the dll
-    if (s == DN_EXTIO)
-    {
-      inputDevice = std::make_unique<extioHandler>(mpSettings);
-    }
-    else
+  // extio is - in its current settings - for Windows, it is a wrap around the dll
+  if (s == DN_EXTIO)
+  {
+    inputDevice = std::make_unique<extioHandler>(mpSettings);
+  }
+  else
 #endif
   if (iDeviceName == DN_FILE_INP_XML)
   {
     oRealDevice = false;
-    file = QFileDialog::getOpenFileName(this, tr("Open file ..."), QDir::homePath(), tr("xml data (*.*)"));
-    if (file == QString(""))
+    const QString file = mOpenFileDialog.open_file_name(OpenFileDialog::EType::XML);
+
+    if (file.isEmpty())
     {
       return nullptr;
     }
-    file = QDir::toNativeSeparators(file);
+
     inputDevice = std::make_unique<xml_fileReader>(file);
   }
-  else if ((iDeviceName == DN_FILE_INP_IQ) || (iDeviceName == DN_FILE_INP_RAW))
+  else if (iDeviceName == DN_FILE_INP_IQ)
   {
     oRealDevice = false;
-    const char * p;
-    if (iDeviceName == DN_FILE_INP_IQ)
-    {
-      p = "iq data (*iq)";
-    }
-    else
-    {
-      p = "raw data (*raw)";
-    }
+    const QString file = mOpenFileDialog.open_file_name(OpenFileDialog::EType::IQ);
 
-    file = QFileDialog::getOpenFileName(this, tr("Open file ..."), QDir::homePath(), tr(p));
-    if (file == QString(""))
+    if (file.isEmpty())
     {
       return nullptr;
     }
 
-    file = QDir::toNativeSeparators(file);
+    inputDevice = std::make_unique<RawFileHandler>(file);
+  }
+  else if (iDeviceName == DN_FILE_INP_RAW)
+  {
+    oRealDevice = false;
+    const QString file = mOpenFileDialog.open_file_name(OpenFileDialog::EType::RAW);
+    if (file.isEmpty())
+    {
+      return nullptr;
+    }
+
     inputDevice = std::make_unique<RawFileHandler>(file);
   }
   else if (iDeviceName == DN_FILE_INP_SDR)
   {
     oRealDevice = false;
-    file = QFileDialog::getOpenFileName(this, tr("Open file ..."), QDir::homePath(), tr("raw data (*.sdr)"));
-    if (file == QString(""))
+    const QString file = mOpenFileDialog.open_file_name(OpenFileDialog::EType::SDR);
+
+    if (file.isEmpty())
     {
       return nullptr;
     }
 
-    file = QDir::toNativeSeparators(file);
     inputDevice = std::make_unique<WavFileHandler>(file);
   }
   else

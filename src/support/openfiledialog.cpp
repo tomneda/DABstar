@@ -82,7 +82,7 @@ FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName)
 
 SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceName)
 {
-  const QString fileName = _open_file_dialog(iServiceName, "saveDir_audioDump", "PCM wave file", ".wav");
+  const QString fileName = _open_file_dialog(iServiceName, "saveDir_audioDump", "PCM-WAV", ".wav");
 
   if (fileName.isEmpty())
   {
@@ -107,7 +107,7 @@ SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceNa
 
 SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName)
 {
-  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), "saveDir_rawDump", "Raw Data", ".sdr");
+  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), "saveDir_rawDump", "RAW-WAV", ".sdr");
 
   if (fileName.isEmpty())
   {
@@ -161,29 +161,60 @@ QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const Q
   return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), "contentDir", "ETI", ".eti");
 }
 
-QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt)
+QString OpenFileDialog::open_file_name(const EType iType)
 {
-  const QDir saveDir = mpSettings->value(iSettingName, QDir::homePath()).toString();
-
-  QString fileName = iFileNamePrefix.trimmed() + "-" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss");
-  _remove_invalid_characters(fileName);
-  fileName = saveDir.filePath(fileName + iFileExt);
-
-  fileName = QFileDialog::getSaveFileName(nullptr,
-                                          "Save file ...",
-                                          fileName,
-                                          iFileDesc + " (*" + iFileExt + ")",
-                                          nullptr,
-                                          QFileDialog::DontUseNativeDialog);
-
-  if (fileName.isEmpty())
+  switch (iType)
   {
-    return {};
+  case EType::XML: return _open_file_dialog("", "saveDir_xmlDump", "XML",     ".xml");
+  case EType::SDR: return _open_file_dialog("", "saveDir_sdrDump", "SDR-WAV", ".sdr");
+  case EType::IQ:  return _open_file_dialog("", "saveDir_iqDump",  "IQ-RAW",  ".iq");
+  case EType::RAW: return _open_file_dialog("", "saveDir_rawDump", "RAW",     ".raw");
   }
+  return {};
+}
 
-  if (!fileName.endsWith(iFileExt, Qt::CaseInsensitive))
+QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc,
+                                          const QString & iFileExt)
+{
+  const QDir storedDir = mpSettings->value(iSettingName, QDir::homePath()).toString();
+  QString fileName;
+
+  if (!iFileNamePrefix.isEmpty()) // if file name prefix is given then a file save dialog is assumed
   {
-    fileName.append(iFileExt);
+    fileName = iFileNamePrefix.trimmed() + "-" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss");
+    _remove_invalid_characters(fileName);
+    fileName = storedDir.filePath(fileName + iFileExt);
+
+    fileName = QFileDialog::getSaveFileName(nullptr,
+                                            "Save file ...",
+                                            fileName,
+                                            iFileDesc + " (*" + iFileExt + ")",
+                                            nullptr,
+                                            QFileDialog::DontUseNativeDialog);
+
+    if (fileName.isEmpty())
+    {
+      return {};
+    }
+
+    if (!fileName.endsWith(iFileExt, Qt::CaseInsensitive))
+    {
+      fileName.append(iFileExt);
+    }
+  }
+  else
+  {
+    fileName = QFileDialog::getOpenFileName(nullptr,
+                                            "Open file ...",
+                                            storedDir.path(),
+                                            iFileDesc + " (*" + iFileExt + ")",
+                                            nullptr,
+                                            QFileDialog::DontUseNativeDialog);
+
+    if (fileName.isEmpty())
+    {
+      return {};
+    }
   }
 
   mpSettings->setValue(iSettingName, QFileInfo(fileName).path());
