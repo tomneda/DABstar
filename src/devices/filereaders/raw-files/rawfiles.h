@@ -44,7 +44,7 @@ class QLabel;
 class QSettings;
 class rawReader;
 
-class RawFileHandler final : public QObject, public IDeviceHandler, public filereaderWidget
+class RawFileHandler final : public QObject, public IDeviceHandler, public FileReaderWidget
 {
 Q_OBJECT
 public:
@@ -65,8 +65,6 @@ public:
   void resetBuffer() override;
   int16_t bitDepth() override;
   QString deviceName() override;
-
-  //uint8_t myIdentity();
 
 private:
   QFrame myFrame;

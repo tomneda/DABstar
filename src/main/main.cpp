@@ -42,7 +42,7 @@ int main(int argc, char ** argv)
 {
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
   const QString initFileName = QDir::toNativeSeparators(configPath +  "settings.ini");
-  const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist01.db");
+  const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist02.db");
 
   // Default values
   int32_t dataPort = 8888;

@@ -73,6 +73,12 @@ ServiceListHandler::ServiceListHandler(QSettings * const iopSettings, const QStr
   mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
 
   mServiceDB.open_db(); // program will exit if table could not be opened
+
+  mServiceDB.set_data_mode(ServiceDB::EDataMode::Temporary);
+  //mServiceDB.delete_table();
+  mServiceDB.create_table();
+
+  mServiceDB.set_data_mode(ServiceDB::EDataMode::Permanent);
   //mServiceDB.delete_table();
   mServiceDB.create_table();
 
@@ -241,4 +247,10 @@ void ServiceListHandler::_slot_header_clicked(int iIndex)
 
   _fill_table_view_from_db();
   _jump_to_list_entry_and_emit_fav_status();
+}
+
+void ServiceListHandler::set_data_mode(EDataMode iDataMode)
+{
+  mServiceDB.set_data_mode(iDataMode);
+  _fill_table_view_from_db();
 }

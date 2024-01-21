@@ -25,6 +25,12 @@ public:
   explicit ServiceDB(const QString iDbFileName); // copy is intended
   ~ServiceDB();
 
+  enum class EDataMode
+  {
+    Permanent,
+    Temporary
+  };
+
   enum EColIdx
   {
     CI_Fav,     // = 0
@@ -34,6 +40,7 @@ public:
     CI_MAX 
   };
 
+  void set_data_mode(EDataMode iDataMode);
   void open_db();
   void create_table();
   void delete_table(const bool iDeleteFavorites);
@@ -49,6 +56,7 @@ private:
   QString mDbFileName;
   EColIdx mSortColIdx = CI_Service;
   bool mSortDesc = false;
+  EDataMode mDataMode = EDataMode::Permanent;
 
   [[nodiscard]] QString _error_str() const;
   void _delete_db_file();
@@ -56,6 +64,7 @@ private:
   void _exec_simple_query(const QString & iQuery);
   bool _check_if_entry_exists(const QString & iTableName, const QString & iChannel, const QString & iService);
   void _set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite, const bool iStoreInFavTable) const;
+  const QString & _cur_tab_name() const;
 };
 
 #endif

@@ -124,29 +124,22 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 
 //static int32_t sFreqOffHz = 0; // for test
 
-RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
-  : QWidget(parent),
-    mSpectrumViewer(this, Si, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer),
-    mBandHandler(freqExtension, Si),
-    mFilenameFinder(Si),
-    mConfig(this, Si),
-    mDeviceSelector(Si)
+RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent) :
+  QWidget(parent),
+  mSpectrumViewer(this, Si, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer),
+  mBandHandler(freqExtension, Si),
+  mFilenameFinder(Si),
+  mFmFrequency(fmFrequency),
+  mDoReportError(error_report),
+  mConfig(this, Si),
+  mpSettings(Si),
+  mDeviceSelector(Si)
 {
   int16_t k;
   QString h;
 
-  mpSettings = Si;
-  mDoReportError = error_report;
-  mFmFrequency = fmFrequency;
-  mDlTextFile = nullptr;
-  mpFicDumpPointer = nullptr;
   mIsRunning.store(false);
   mIsScanning.store(false);
-  mpDabProcessor = nullptr;
-  mMaxDistance = -1;
-  mpContentTable = nullptr;
-  //my_scanTable = nullptr;
-  mpHttpHandler = nullptr;
 
   // "mProcessParams" is introduced to reduce the number of parameters for the dabProcessor
   mProcessParams.spectrumBuffer = &mSpectrumBuffer;
@@ -162,9 +155,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mProcessParams.tii_depth = mpSettings->value("tii_depth", 4).toInt();
   mProcessParams.echo_depth = mpSettings->value("echo_depth", 1).toInt();
 
-  //theFont = dabSettings->value("theFont", "Times").toString();
-  //fontSize = mpSettings->value("fontSize", 12).toInt();
-
   //	set on top or not? checked at start up
   if (mpSettings->value("onTop", 0).toInt() == 1)
   {
@@ -176,6 +166,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   setFixedSize(710+20, 470+20);
   setup_ui_colors();
   _create_status_info();
+
+  mpServiceListHandler = std::make_unique<ServiceListHandler>(mpSettings, dbFileName, tblServiceList);
 
   // only the queued call will consider the button size?!
   QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection);
@@ -373,10 +365,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     mConfig.deviceSelector->setCurrentIndex(k);
 
     mpInputDevice = mDeviceSelector.create_device(mConfig.deviceSelector->currentText(), mChannel.realChannel);
-    show_hide_buttons(mChannel.realChannel);
 
     if (mpInputDevice != nullptr)
     {
+      _set_device_to_file_mode(!mChannel.realChannel);
       mpSettings->setValue("device", mConfig.deviceSelector->currentText());
     }
   }
@@ -404,8 +396,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   {
     mpTechDataWidget->show();
   }
-
-  mpServiceListHandler = std::make_unique<ServiceListHandler>(mpSettings, dbFileName, tblServiceList);
 
   // if a device was selected, we just start, otherwise we wait until one is selected
   if (mpInputDevice != nullptr)
@@ -489,13 +479,13 @@ void RadioInterface::_slot_do_start(const QString & dev)
 {
   mpInputDevice = mDeviceSelector.create_device(dev, mChannel.realChannel);
 
-  show_hide_buttons(mChannel.realChannel);
-
   if (mpInputDevice == nullptr)
   {
     disconnectGUI();
     return;
   }
+
+  _set_device_to_file_mode(!mChannel.realChannel);
 
   doStart();
 }
@@ -1168,7 +1158,7 @@ void RadioInterface::_slot_terminate_process()
     stopScanning(false);
   }
   mIsRunning.store(false);
-  show_hide_buttons(false);
+  _show_hide_buttons(false);
 
   mpSettings->setValue("mainWidget-x", this->pos().x());
   mpSettings->setValue("mainWidget-y", this->pos().y());
@@ -1325,13 +1315,12 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
   LOG("selecting ", deviceName);
   mpInputDevice = mDeviceSelector.create_device(deviceName, mChannel.realChannel);
 
-  show_hide_buttons(mChannel.realChannel);
-
   if (mpInputDevice == nullptr)
   {
-    //mpInputDevice = new DummyHandler();
     return;    // nothing will happen
   }
+
+  _set_device_to_file_mode(!mChannel.realChannel);
 
   if (mpSettings->value("deviceVisible", 1).toInt() != 0)
   {
@@ -1833,7 +1822,7 @@ void RadioInterface::_slot_handle_tech_detail_button()
 
 // Whenever the input device is a file, some functions, e.g. selecting a channel,
 // setting an alarm, are not meaningful
-void RadioInterface::show_hide_buttons(const bool iShow)
+void RadioInterface::_show_hide_buttons(const bool iShow)
 {
 #if 1
   if (iShow)
@@ -1841,18 +1830,21 @@ void RadioInterface::show_hide_buttons(const bool iShow)
     mConfig.dumpButton->show();
     btnScanning->show();
     channelSelector->show();
+    btnToggleFavorite->show();
   }
   else
   {
     mConfig.dumpButton->hide();
     btnScanning->hide();
     channelSelector->hide();
+    btnToggleFavorite->hide();
   }
 #else
   mConfig.dumpButton->setEnabled(iShow);
   mConfig.frequencyDisplay->setEnabled(iShow);
   btnScanning->setEnabled(iShow);
   channelSelector->setEnabled(iShow);
+  btnToggleFavorite->setEnabled(iShow);
 #endif
 }
 
@@ -2589,7 +2581,7 @@ void RadioInterface::startPacketservice(const QString & s)
     write_warning_message("Transport channel not implemented");
     break;
   case 60:
-    write_warning_message("MOT partially implemented");
+    write_warning_message("MOT not supported");
     break;
   case 59:
     write_warning_message("Embedded IP not supported");
@@ -2945,6 +2937,7 @@ void RadioInterface::startScanning()
 //    my_scanTable->clearTable();
 //  }
 
+  mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::Permanent);
   mpServiceListHandler->delete_table(false);
   mpServiceListHandler->create_new_table();
 
@@ -3831,5 +3824,21 @@ void RadioInterface::_reset_status_info()
   _set_status_info_status(mStatusInfo.Announce, false);
 }
 
+void RadioInterface::_set_device_to_file_mode(const bool iDataFromFile)
+{
+  assert(mpServiceListHandler != nullptr);
 
+  if (iDataFromFile)
+  {
+    _show_hide_buttons(false);
+    mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::Temporary);
+    mpServiceListHandler->delete_table(false);
+    mpServiceListHandler->create_new_table();
+  }
+  else
+  {
+    _show_hide_buttons(true);
+    mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::Permanent);
+  }
+}
 

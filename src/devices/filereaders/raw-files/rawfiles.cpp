@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -24,112 +32,134 @@
  *	For the (former) files with 8 bit raw data from the
  *	dabsticks 
  */
-#include	"rawfiles.h"
-#include	<cstdio>
-#include	<unistd.h>
-#include	<cstdlib>
-#include	<fcntl.h>
-//
-#include	<sys/time.h>
-#include	<ctime>
+#include  "rawfiles.h"
+#include  <cstdio>
+#include  <unistd.h>
+#include  <cstdlib>
+#include  <fcntl.h>
+#include  <sys/time.h>
+#include  <ctime>
+#include  "raw-reader.h"
 
-#include	"raw-reader.h"
+#define  INPUT_FRAMEBUFFERSIZE  8 * 32768
 
-#define	INPUT_FRAMEBUFFERSIZE	8 * 32768
-//
-//
-	RawFileHandler::RawFileHandler (QString f):
-	   myFrame (nullptr),
-	   _I_Buffer (INPUT_FRAMEBUFFERSIZE) {
-	fileName	= f;
-	setupUi	(&myFrame);
+RawFileHandler::RawFileHandler(QString f) :
+  myFrame(nullptr),
+  _I_Buffer(INPUT_FRAMEBUFFERSIZE)
+{
+  fileName = f;
+  setupUi(&myFrame);
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-	myFrame. show	();
-	filePointer	= fopen (f. toUtf8(). data(), "rb");
-	if (filePointer == nullptr) {
-	   fprintf (stderr, "file %s cannot open\n",
-	                                   f. toUtf8(). data());
-	   perror ("file ?");
-	   throw (31);
-	}
-	nameofFile	-> setText (f);
-	fseek (filePointer, 0, SEEK_END);
-	int64_t fileLength      = ftell (filePointer);
-        totalTime       -> display ((float)fileLength / (2048000 * 2));
-	fseek (filePointer, 0, SEEK_SET);
-	fileProgress    -> setValue (0);
-        currentTime     -> display (0);
+  myFrame.show();
+  filePointer = fopen(f.toUtf8().data(), "rb");
+  if (filePointer == nullptr)
+  {
+    fprintf(stderr, "file %s cannot open\n", f.toUtf8().data());
+    perror("file ?");
+    throw (31);
+  }
+  nameofFile->setText(f);
+  fseek(filePointer, 0, SEEK_END);
+  int64_t fileLength = ftell(filePointer);
+  totalTime->display(QString("%1").arg((float)fileLength / (2048000 * 2), 0, 'f', 1));
+  fseek(filePointer, 0, SEEK_SET);
+  fileProgress->setValue(0);
+  currentTime->display(0);
 
-	running. store (false);
+  running.store(false);
 }
 
-	RawFileHandler::~RawFileHandler() {
-	if (running. load()) {
-	   readerTask	-> stopReader();
-	   while (readerTask -> isRunning())
-	      usleep (100);
-	   delete readerTask;
-	}
-	if (filePointer != nullptr)
-	   fclose (filePointer);
+RawFileHandler::~RawFileHandler()
+{
+  if (running.load())
+  {
+    readerTask->stopReader();
+    while (readerTask->isRunning())
+    {
+      usleep(100);
+    }
+    delete readerTask;
+  }
+  if (filePointer != nullptr)
+  {
+    fclose(filePointer);
+  }
 }
 
-bool	RawFileHandler::restartReader	(int32_t freq) {
-	(void)freq;
-	if (running. load())
-	   return true;
-	readerTask	= new rawReader (this, filePointer, &_I_Buffer);
-	running. store (true);
-	return true;
+bool RawFileHandler::restartReader(int32_t freq)
+{
+  (void)freq;
+  if (running.load())
+  {
+    return true;
+  }
+  readerTask = new rawReader(this, filePointer, &_I_Buffer);
+  running.store(true);
+  return true;
 }
 
-void	RawFileHandler::stopReader() {
-	if (running. load()) {
-	   readerTask	-> stopReader();
-	   while (readerTask -> isRunning())
-	      usleep (100);
-	   delete readerTask;
-	}
-	running. store (false);
+void RawFileHandler::stopReader()
+{
+  if (running.load())
+  {
+    readerTask->stopReader();
+    while (readerTask->isRunning())
+    {
+      usleep(100);
+    }
+    delete readerTask;
+  }
+  running.store(false);
 }
 
 //	size is in I/Q pairs, file contains 8 bits values
-int32_t	RawFileHandler::getSamples	(cmplx *V, int32_t size) {
-int32_t	amount;
+int32_t RawFileHandler::getSamples(cmplx * V, int32_t size)
+{
+  int32_t amount;
 
-	if (filePointer == nullptr)
-	   return 0;
+  if (filePointer == nullptr)
+  {
+    return 0;
+  }
 
-	while ((int32_t)(_I_Buffer. get_ring_buffer_read_available ()) < size)
-	   usleep (500);
+  while ((int32_t)(_I_Buffer.get_ring_buffer_read_available()) < size)
+  {
+    usleep(500);
+  }
 
-	amount = _I_Buffer. get_data_from_ring_buffer (V, size);
-	return amount;
+  amount = _I_Buffer.get_data_from_ring_buffer(V, size);
+  return amount;
 }
 
-int32_t	RawFileHandler::Samples() {
-	return _I_Buffer. get_ring_buffer_read_available ();
+int32_t RawFileHandler::Samples()
+{
+  return _I_Buffer.get_ring_buffer_read_available();
 }
 
-void	RawFileHandler::setProgress (int progress, float timelength) {
-	fileProgress      -> setValue (progress);
-	currentTime       -> display (timelength);
+void RawFileHandler::setProgress(int progress, float timelength)
+{
+  fileProgress->setValue(progress);
+  currentTime->display(QString("%1").arg(timelength, 0, 'f', 1));
 }
 
-void	RawFileHandler::show		() {
-	myFrame. show ();
+void RawFileHandler::show()
+{
+  myFrame.show();
 }
 
-void	RawFileHandler::hide		() {
-	myFrame. hide ();
+void RawFileHandler::hide()
+{
+  myFrame.hide();
 }
 
-bool	RawFileHandler::isHidden	() {
-	return myFrame. isHidden ();
+bool RawFileHandler::isHidden()
+{
+  return myFrame.isHidden();
 }
 
-bool	RawFileHandler::isFileInput	() {
-	return true;
+bool RawFileHandler::isFileInput()
+{
+  return true;
 }
 
 void RawFileHandler::setVFOFrequency(int32_t)

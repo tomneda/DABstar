@@ -50,6 +50,9 @@ public:
   ServiceListHandler(QSettings * const iopSettings, const QString & iDbFileName, QTableView * const ipSL);
   ~ServiceListHandler() override = default;
 
+  using EDataMode = ServiceDB::EDataMode;
+
+  void set_data_mode(EDataMode iDataMode);
   void delete_table(const bool iDeleteFavorites);
   void create_new_table();
   void add_entry(const QString & iChannel, const QString & iService);

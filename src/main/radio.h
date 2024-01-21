@@ -222,7 +222,7 @@ private:
   //ContentTable * my_scanTable;
   FILE * mpLogFile = nullptr;
   ChannelDescriptor mChannel;
-  int32_t mMaxDistance = 0;
+  int32_t mMaxDistance = -1;
   bool mDoReportError = false;
   TechData * mpTechDataWidget = nullptr;
   Configuration mConfig;
@@ -286,7 +286,7 @@ private:
   static QString convertTime(int, int, int, int, int, int = -1);
   QString get_copyright_text() const;
   void cleanScreen();
-  void show_hide_buttons(const bool iShow);
+  void _show_hide_buttons(const bool iShow);
 
   void start_etiHandler();
   void stop_etiHandler();
@@ -338,6 +338,7 @@ private:
   template<typename T> void _set_status_info_status(StatusInfoElem<T> & iElem, const T iValue);
   void _reset_status_info();
   void _update_channel_selector();
+  void _set_device_to_file_mode(const bool iDataFromFile);
 
 signals:
   void signal_set_new_channel(int);

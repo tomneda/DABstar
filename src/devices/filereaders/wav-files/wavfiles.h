@@ -43,7 +43,7 @@
 #include  "filereader-widget.h"
 #include  "wav-reader.h"
 
-class WavFileHandler final : public QObject, public IDeviceHandler, public filereaderWidget
+class WavFileHandler final : public QObject, public IDeviceHandler, public FileReaderWidget
 {
 Q_OBJECT
 public:

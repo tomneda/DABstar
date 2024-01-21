@@ -24,7 +24,8 @@
 #include <QCoreApplication>
 #include <utility>
 
-static const QString sTabServList = "TabServList";
+static const QString sTabPermServList = "TabPermServList";
+static const QString sTabTempServList = "TabTempServList";
 static const QString sTabFavList  = "TabFavList";
 static const QString sTeService   = "Service";
 static const QString sTeChannel   = "Channel";
@@ -83,7 +84,7 @@ void ServiceDB::open_db()
 
 void ServiceDB::create_table()
 {
-  const QString queryStr1 = "CREATE TABLE IF NOT EXISTS " + sTabServList + " ("
+  const QString queryStr1 = "CREATE TABLE IF NOT EXISTS " + _cur_tab_name() + " ("
                             "Id      INTEGER PRIMARY KEY,"
                             + sTeChannel + " TEXT NOT NULL,"
                             + sTeService + " TEXT NOT NULL,"
@@ -104,7 +105,7 @@ void ServiceDB::create_table()
 
 void ServiceDB::delete_table(const bool iDeleteFavorites)
 {
-  _exec_simple_query("DROP TABLE IF EXISTS " + sTabServList + ";");
+  _exec_simple_query("DROP TABLE IF EXISTS " + _cur_tab_name() + ";");
 
   if (iDeleteFavorites)
   {
@@ -116,14 +117,14 @@ void ServiceDB::delete_table(const bool iDeleteFavorites)
 
 bool ServiceDB::add_entry(const QString & iChannel, const QString & iService)
 {
-  if (_check_if_entry_exists(sTabServList, iChannel, iService))
+  if (_check_if_entry_exists(_cur_tab_name(), iChannel, iService))
   {
     return false; // entry found, no table update needed
   }
 
   // add new entry
   QSqlQuery queryAdd;
-  queryAdd.prepare("INSERT OR IGNORE INTO " + sTabServList + " (" + sTeChannel + "," + sTeService + ") VALUES (:channel, :service)");
+  queryAdd.prepare("INSERT OR IGNORE INTO " + _cur_tab_name() + " (" + sTeChannel + "," + sTeService + ") VALUES (:channel, :service)");
   queryAdd.bindValue(":channel", iChannel);
   queryAdd.bindValue(":service", iService);
 
@@ -174,7 +175,7 @@ QAbstractItemModel * ServiceDB::create_model()
   }
 
   QSqlQuery query;
-  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + /*"," + colNameId*/ + " FROM " + sTabServList + " ORDER BY " + sortName);
+  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + /*"," + colNameId*/ + " FROM " + _cur_tab_name() + " ORDER BY " + sortName);
 
   if (query.exec())
   {
@@ -211,11 +212,21 @@ bool ServiceDB::is_sort_desc() const
 
 void ServiceDB::set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite) const
 {
+  if (mDataMode != EDataMode::Permanent)
+  {
+    return;
+  }
+
   _set_favorite(iChannel, iService, iIsFavorite, true);
 }
 
 void ServiceDB::retrieve_favorites_from_backup_table()
 {
+  if (mDataMode != EDataMode::Permanent)
+  {
+    return;
+  }
+
   QSqlQuery favQuery;
 
   if (favQuery.exec("SELECT * FROM " + sTabFavList))
@@ -240,7 +251,7 @@ void ServiceDB::retrieve_favorites_from_backup_table()
 void ServiceDB::_set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite, const bool iStoreInFavTable /*= true*/) const
 {
   QSqlQuery updateQuery;
-  updateQuery.prepare("UPDATE " + sTabServList + " SET " + sTeIsFav + " = :isFav WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
+  updateQuery.prepare("UPDATE " + _cur_tab_name() + " SET " + sTeIsFav + " = :isFav WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
   updateQuery.bindValue(":channel", iChannel);
   updateQuery.bindValue(":service", iService);
   updateQuery.bindValue(":isFav", (iIsFavorite ? 1 : 0));
@@ -333,4 +344,14 @@ bool ServiceDB::_check_if_entry_exists(const QString & iTableName, const QString
     QCoreApplication::exit(1);
   }
   return false; // no entry found
+}
+
+const QString & ServiceDB::_cur_tab_name() const
+{
+  return (mDataMode == EDataMode::Permanent ? sTabPermServList : sTabTempServList);
+}
+
+void ServiceDB::set_data_mode(ServiceDB::EDataMode iDataMode)
+{
+  mDataMode = iDataMode;
 }
