@@ -311,7 +311,7 @@ set(${objectName}_HDRS
         src/support/viterbi-spiral/viterbi-spiral.h
         src/support/color-selector.h
         src/support/time-table.h
-        src/support/findfilenames.h
+        src/support/openfiledialog.h
         src/support/content-table.h
         src/support/dl-cache.h
         src/support/ITU_Region_1.h
@@ -401,7 +401,7 @@ set(${objectName}_SRCS
         src/support/viterbi-spiral/viterbi-spiral.cpp
         src/support/color-selector.cpp
         src/support/time-table.cpp
-        src/support/findfilenames.cpp
+        src/support/openfiledialog.cpp
         src/support/content-table.cpp
         src/support/ITU_Region_1.cpp
         src/support/coordinates.cpp

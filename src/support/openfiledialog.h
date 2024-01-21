@@ -42,12 +42,12 @@
 #include  <cstdio>
 #include  <sndfile.h>
 
-class FindFileNames
+class OpenFileDialog
 {
   QSettings * dabSettings;
 public:
-  explicit FindFileNames(QSettings *);
-  ~FindFileNames() = default;
+  explicit OpenFileDialog(QSettings *);
+  ~OpenFileDialog() = default;
 
   FILE * open_content_dump_file_ptr(const QString & iChannelName);
   FILE * open_frame_dump_file_ptr(const QString & iServiceName);

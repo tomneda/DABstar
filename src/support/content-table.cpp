@@ -32,7 +32,7 @@
 #include  <QSettings>
 #include  "content-table.h"
 #include  "radio.h"
-#include  "findfilenames.h"
+#include  "openfiledialog.h"
 
 //static const char *uep_rates  [] = {nullptr, "7/20", "2/5", "1/2", "3/5", "3/4"};
 //static const char *eep_Arates [] = {nullptr, "1/4",  "3/8", "1/2", "3/4"};
@@ -122,7 +122,7 @@ void ContentTable::_slot_select_service(int row, int column)
 
 void ContentTable::_slot_dump(int row, int column)
 {
-  FindFileNames filenameFinder(dabSettings);
+  OpenFileDialog filenameFinder(dabSettings);
   FILE * dumpFile = filenameFinder.open_content_dump_file_ptr(channel);
 
   if (dumpFile == nullptr)

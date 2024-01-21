@@ -29,17 +29,17 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "findfilenames.h"
+#include  "openfiledialog.h"
 #include  "dab-constants.h"
 #include  <QDebug>
 #include  <QFileDialog>
 
-FindFileNames::FindFileNames(QSettings * ipSetting)
+OpenFileDialog::OpenFileDialog(QSettings * ipSetting)
 {
   dabSettings = ipSetting;
 }
 
-FILE * FindFileNames::open_content_dump_file_ptr(const QString & iChannelName)
+FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
 {
   const QString fileName = _open_file_dialog(PRJ_NAME "-" + iChannelName, "contentDir", "CSV", ".csv");
 
@@ -58,7 +58,7 @@ FILE * FindFileNames::open_content_dump_file_ptr(const QString & iChannelName)
   return fileP;
 }
 
-FILE * FindFileNames::open_frame_dump_file_ptr(const QString & iServiceName)
+FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName)
 {
   const QString fileName = _open_file_dialog(iServiceName, "saveDir_frameDump", "AAC data", ".aac");
 
@@ -77,7 +77,7 @@ FILE * FindFileNames::open_frame_dump_file_ptr(const QString & iServiceName)
   return theFile;
 }
 
-SNDFILE * FindFileNames::open_audio_dump_sndfile_ptr(const QString & iServiceName)
+SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceName)
 {
   const QString fileName = _open_file_dialog(iServiceName, "saveDir_audioDump", "PCM wave file", ".wav");
 
@@ -102,7 +102,7 @@ SNDFILE * FindFileNames::open_audio_dump_sndfile_ptr(const QString & iServiceNam
 }
 
 
-SNDFILE * FindFileNames::open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName)
+SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName)
 {
   const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), "saveDir_rawDump", "Raw Data", ".sdr");
 
@@ -126,17 +126,17 @@ SNDFILE * FindFileNames::open_raw_dump_sndfile_ptr(const QString & iDeviceName, 
   return theFile;
 }
 
-QString FindFileNames::get_skip_file_file_name()
+QString OpenFileDialog::get_skip_file_file_name()
 {
   return _open_file_dialog(PRJ_NAME "-skipFile", "contentDir", "XML", ".xml");
 }
 
-QString FindFileNames::get_dl_text_file_name()
+QString OpenFileDialog::get_dl_text_file_name()
 {
   return _open_file_dialog(PRJ_NAME "-dlText", "contentDir", "Text", ".txt");
 }
 
-FILE * FindFileNames::open_log_file_ptr()
+FILE * OpenFileDialog::open_log_file_ptr()
 {
   QString fileName = _open_file_dialog(PRJ_NAME "-LOG", "contentDir", "Text", ".txt");
 
@@ -148,18 +148,18 @@ FILE * FindFileNames::open_log_file_ptr()
   return fopen(fileName.toUtf8().data(), "w");
 }
 
-QString FindFileNames::get_maps_file_name()
+QString OpenFileDialog::get_maps_file_name()
 {
   return _open_file_dialog(PRJ_NAME "-Transmitters", "contentDir", "Text", ".txt");
 }
 
-QString FindFileNames::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName)
+QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName)
 {
   return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), "contentDir", "ETI", ".eti");
 }
 
-QString FindFileNames::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName,
-                                         const QString & iFileDesc, const QString & iFileExt)
+QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName,
+                                          const QString & iFileDesc, const QString & iFileExt)
 {
   const QDir saveDir = dabSettings->value(iSettingName, QDir::homePath()).toString();
 
@@ -171,7 +171,7 @@ QString FindFileNames::_open_file_dialog(const QString & iFileNamePrefix, const 
                                           "Save file ...",
                                           fileName,
                                           iFileDesc + " (*" + iFileExt + ")",
-                                          Q_NULLPTR,
+                                          nullptr,
                                           QFileDialog::DontUseNativeDialog);
 
   if (fileName.isEmpty())
@@ -189,7 +189,7 @@ QString FindFileNames::_open_file_dialog(const QString & iFileNamePrefix, const 
   return QDir::toNativeSeparators(fileName);
 }
 
-void FindFileNames::_remove_invalid_characters(QString & ioStr) const
+void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const
 {
   auto isValid = [](QChar c)
   {

@@ -60,7 +60,7 @@
 #include "epgdec.h"
 #include "epg-decoder.h"
 #include "spectrum-viewer.h"
-#include "findfilenames.h"
+#include "openfiledialog.h"
 #include "http-handler.h"
 #include "device-selector.h"
 #include "configuration.h"
@@ -210,7 +210,7 @@ private:
   BandHandler mBandHandler;
   dlCache mDlCache{10};
   TiiHandler mTiiHandler{};
-  FindFileNames mFilenameFinder;
+  OpenFileDialog mOpenFileDialog;
   RingBuffer<int16_t> mTechDataBuffer{16 * 32768};
   httpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;
