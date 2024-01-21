@@ -30,13 +30,16 @@
  */
 
 #include  "openfiledialog.h"
+
 #include  "dab-constants.h"
 #include  <QDebug>
 #include  <QFileDialog>
+#include  <QDateTime>
+#include  <QDir>
 
-OpenFileDialog::OpenFileDialog(QSettings * ipSetting)
+OpenFileDialog::OpenFileDialog(QSettings * ipSetting) :
+  mpSettings(ipSetting)
 {
-  dabSettings = ipSetting;
 }
 
 FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
@@ -158,10 +161,9 @@ QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const Q
   return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), "contentDir", "ETI", ".eti");
 }
 
-QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName,
-                                          const QString & iFileDesc, const QString & iFileExt)
+QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt)
 {
-  const QDir saveDir = dabSettings->value(iSettingName, QDir::homePath()).toString();
+  const QDir saveDir = mpSettings->value(iSettingName, QDir::homePath()).toString();
 
   QString fileName = iFileNamePrefix.trimmed() + "-" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss");
   _remove_invalid_characters(fileName);
@@ -184,7 +186,7 @@ QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const
     fileName.append(iFileExt);
   }
 
-  dabSettings->setValue(iSettingName, QFileInfo(fileName).path());
+  mpSettings->setValue(iSettingName, QFileInfo(fileName).path());
 
   return QDir::toNativeSeparators(fileName);
 }

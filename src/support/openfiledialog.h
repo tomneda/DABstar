@@ -28,23 +28,15 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  FIND_FILENAMES_H
-#define  FIND_FILENAMES_H
+#ifndef  DABSTAR_OPEN_FILE_DIALOG_H
+#define  DABSTAR_OPEN_FILE_DIALOG_H
 
-//	just a convenience class to pack a number of functions
-//	dealing with getting a filename
 #include  <QSettings>
 #include  <QString>
-#include  <QDateTime>
-#include  <QDir>
-#include  <QFileDialog>
-#include  <QMessageBox>
-#include  <cstdio>
 #include  <sndfile.h>
 
 class OpenFileDialog
 {
-  QSettings * dabSettings;
 public:
   explicit OpenFileDialog(QSettings *);
   ~OpenFileDialog() = default;
@@ -60,6 +52,8 @@ public:
   QString get_eti_file_name(const QString &, const QString &);
 
 private:
+  QSettings * const mpSettings;
+
   QString _open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt);
   void _remove_invalid_characters(QString & ioStr) const;
 };
