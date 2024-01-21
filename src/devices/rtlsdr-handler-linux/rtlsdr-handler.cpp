@@ -613,13 +613,13 @@ bool	RtlSdrHandler::isHidden		() {
 void	RtlSdrHandler::set_iqDump	() {
 	if (iqDumper == nullptr) {
 	   if (setup_iqDump ()) {
-	      iq_dumpButton	-> setText ("writing raw file");
+	      iq_dumpButton	-> setText ("Writing raw file");
 	      xml_dumpButton	-> hide ();
 	   }
 	}
 	else {
 	   close_iqDump ();
-	   iq_dumpButton	-> setText ("Dump to raw");
+	   iq_dumpButton	-> setText ("Dump to raw file");
 	   xml_dumpButton	-> show ();
 	}
 }
@@ -628,7 +628,9 @@ bool	RtlSdrHandler::setup_iqDump () {
 	QString fileName = QFileDialog::getSaveFileName (nullptr,
 	                                         tr ("Save file ..."),
 	                                         QDir::homePath(),
-	                                         tr ("raw (*.raw)"));
+	                                         tr ("raw (*.raw)"),
+                                           nullptr,
+                                           QFileDialog::DontUseNativeDialog);
 	fileName        = QDir::toNativeSeparators (fileName);
 	iqDumper	= fopen (fileName. toUtf8 (). data (), "w");
 	if (iqDumper == nullptr)
@@ -648,13 +650,14 @@ void	RtlSdrHandler::close_iqDump () {
 	   
 void	RtlSdrHandler::set_xmlDump () {
 	if (!xml_dumping. load ()) {
-	  if (setup_xmlDump ())
-	      xml_dumpButton	-> setText ("writing xml file");
-	  iq_dumpButton	-> hide	();
-	}
+	  if (setup_xmlDump ()) {
+      xml_dumpButton->setText("Writing xml file");
+      iq_dumpButton->hide();
+    }
+  }
 	else {
 	   close_xmlDump ();
-	   xml_dumpButton	-> setText ("Dump to xml");
+	   xml_dumpButton	-> setText ("Dump to xml file");
 	   iq_dumpButton	-> show	();
 	}
 }
@@ -689,7 +692,9 @@ QString saveDir = rtlsdrSettings -> value ("saveDir_xmlDump",
 	           QFileDialog::getSaveFileName (nullptr,
 	                                         tr ("Save file ..."),
 	                                         suggestedFileName + ".uff",
-	                                         tr ("Xml (*.uff)"));
+	                                         tr ("Xml (*.uff)"),
+                                           nullptr,
+                                           QFileDialog::DontUseNativeDialog);
 	fileName        = QDir::toNativeSeparators (fileName);
 	xmlDumper	= fopen (fileName. toUtf8(). data(), "w");
 	if (xmlDumper == nullptr)
