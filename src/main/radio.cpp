@@ -1904,7 +1904,7 @@ void RadioInterface::startSourcedumping()
     return;
   }
 
-  mpRawDumper = mFilenameFinder.findRawDump_fileName(deviceName, channelName);
+  mpRawDumper = mFilenameFinder.open_raw_dump_sndfile_ptr(deviceName, channelName);
   if (mpRawDumper == nullptr)
   {
     return;
@@ -1965,7 +1965,7 @@ void RadioInterface::stopAudiodumping()
 
 void RadioInterface::startAudiodumping()
 {
-  mpAudioDumper = mFilenameFinder.findAudioDump_fileName(mChannel.currentService.serviceName);
+  mpAudioDumper = mFilenameFinder.open_audio_dump_sndfile_ptr(mChannel.currentService.serviceName);
   if (mpAudioDumper == nullptr)
   {
     return;
@@ -2007,7 +2007,7 @@ void RadioInterface::stopFramedumping()
 
 void RadioInterface::startFramedumping()
 {
-  mChannel.currentService.frameDumper = mFilenameFinder.findFrameDump_fileName(mChannel.currentService.serviceName);
+  mChannel.currentService.frameDumper = mFilenameFinder.open_frame_dump_file_ptr(mChannel.currentService.serviceName);
   if (mChannel.currentService.frameDumper == nullptr)
   {
     return;
@@ -3302,7 +3302,7 @@ void RadioInterface::_slot_handle_skip_list_button()
 
 void RadioInterface::_slot_handle_skip_file_button()
 {
-  const QString fileName = mFilenameFinder.findskipFile_fileName();
+  const QString fileName = mFilenameFinder.get_skip_file_file_name();
   mBandHandler.saveSettings();
   mBandHandler.setup_skipList(fileName);
 }
@@ -3339,7 +3339,7 @@ void RadioInterface::slot_handle_dl_text_button()
     return;
   }
 
-  QString fileName = mFilenameFinder.finddlText_fileName(true);
+  QString fileName = mFilenameFinder.get_dl_text_file_name();
   mDlTextFile = fopen(fileName.toUtf8().data(), "w+");
   if (mDlTextFile == nullptr)
   {
@@ -3396,7 +3396,7 @@ void RadioInterface::slot_handle_logger_button(int s)
       fprintf(stderr, "should not happen (logfile)\n");
       return;
     }
-    mpLogFile = mFilenameFinder.findLogFileName();
+    mpLogFile = mFilenameFinder.open_log_file_ptr();
     if (mpLogFile != nullptr)
     {
       LOG("Log started with ", mpInputDevice->deviceName());
@@ -3458,7 +3458,7 @@ void RadioInterface::_slot_handle_http_button()
     QString mapFile;
     if (mpSettings->value("saveLocations", 0).toInt() == 1)
     {
-      mapFile = mFilenameFinder.findMaps_fileName();
+      mapFile = mFilenameFinder.get_maps_file_name();
     }
     else
     {
@@ -3600,7 +3600,7 @@ void RadioInterface::start_etiHandler()
     return;
   }
 
-  QString etiFile = mFilenameFinder.find_eti_fileName(mChannel.ensembleName, mChannel.channelName);
+  QString etiFile = mFilenameFinder.get_eti_file_name(mChannel.ensembleName, mChannel.channelName);
   if (etiFile == QString(""))
   {
     return;

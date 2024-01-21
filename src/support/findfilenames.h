@@ -46,24 +46,22 @@ class FindFileNames
 {
   QSettings * dabSettings;
 public:
-  FindFileNames(QSettings *);
-  ~FindFileNames();
-  FILE * findContentDump_fileName(const QString & channel);
-  FILE * findFrameDump_fileName(const QString & service);
-  SNDFILE * findAudioDump_fileName(const QString & service);
-  SNDFILE * findRawDump_fileName(const QString & deviceName, const QString & channelName);
-  FILE * findSummary_fileName();
-  const QString findskipFile_fileName();
-  QString finddlText_fileName(bool);
-  FILE * findLogFileName();
-  FILE * find_ficDump_file(const QString &);
-  QString findMaps_fileName();
-  QString find_eti_fileName(const QString &, const QString &);
+  explicit FindFileNames(QSettings *);
+  ~FindFileNames() = default;
+
+  FILE * open_content_dump_file_ptr(const QString & iChannelName);
+  FILE * open_frame_dump_file_ptr(const QString & iServiceName);
+  FILE * open_log_file_ptr();
+  SNDFILE * open_audio_dump_sndfile_ptr(const QString & iServiceName);
+  SNDFILE * open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName);
+  QString get_skip_file_file_name();
+  QString get_dl_text_file_name();
+  QString get_maps_file_name();
+  QString get_eti_file_name(const QString &, const QString &);
 
 private:
   QString _open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt);
   void _remove_invalid_characters(QString & ioStr) const;
-  QString _get_date_string() const;
 };
 
 #endif

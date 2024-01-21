@@ -123,7 +123,7 @@ void ContentTable::_slot_select_service(int row, int column)
 void ContentTable::_slot_dump(int row, int column)
 {
   FindFileNames filenameFinder(dabSettings);
-  FILE * dumpFile = filenameFinder.findContentDump_fileName(channel);
+  FILE * dumpFile = filenameFinder.open_content_dump_file_ptr(channel);
 
   if (dumpFile == nullptr)
   {

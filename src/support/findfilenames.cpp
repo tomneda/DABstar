@@ -34,72 +34,33 @@
 #include  <QDebug>
 #include  <QFileDialog>
 
-static inline bool isValid(QChar c)
+FindFileNames::FindFileNames(QSettings * ipSetting)
 {
-  return c.isLetter() || c.isDigit() || (c == '-');
+  dabSettings = ipSetting;
 }
 
-FindFileNames::FindFileNames(QSettings * s)
+FILE * FindFileNames::open_content_dump_file_ptr(const QString & iChannelName)
 {
-  dabSettings = s;
-}
+  const QString fileName = _open_file_dialog(PRJ_NAME "-" + iChannelName, "contentDir", "CSV", ".csv");
 
-FindFileNames::~FindFileNames()
-{}
-
-
-FILE * FindFileNames::findContentDump_fileName(const QString & channel)
-{
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-  QString theTime = QDateTime::currentDateTime().toString();
-  QString suggestedFileName;
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  for (int i = 0; i < theTime.length(); i++)
-  {
-    if (!isValid(theTime.at(i)))
-    {
-      theTime.replace(i, 1, '-');
-    }
-  }
-  suggestedFileName = saveDir + PRJ_NAME "-" + channel + "-" + theTime + ".csv";
-  suggestedFileName = QDir::toNativeSeparators(suggestedFileName);
-
-
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  "Save file ...",
-                                                  suggestedFileName,
-                                                  "csv (*.csv)",
-                                                  Q_NULLPTR,
-                                                  QFileDialog::DontUseNativeDialog);
-  if (fileName == "")
+  if (fileName.isEmpty())
   {
     return nullptr;
   }
 
-  fileName = QDir::toNativeSeparators(fileName);
   FILE * fileP = fopen(fileName.toUtf8().data(), "w");
 
   if (fileP == nullptr)
   {
-    fprintf(stderr, "Could not open file %s\n", fileName.toUtf8().data());
-    return nullptr;
+    qDebug() << "Could not open file " << fileName;
   }
 
-  QString dumper = QDir::fromNativeSeparators(fileName);
-  int x = dumper.lastIndexOf("/");
-  saveDir = dumper.remove(x, dumper.count() - x);
-  dabSettings->setValue("contentDir", saveDir);
   return fileP;
 }
 
-FILE * FindFileNames::findFrameDump_fileName(const QString & service)
+FILE * FindFileNames::open_frame_dump_file_ptr(const QString & iServiceName)
 {
-  const QString fileName = _open_file_dialog(service, "saveDir_frameDump", "AAC data", ".aac");
+  const QString fileName = _open_file_dialog(iServiceName, "saveDir_frameDump", "AAC data", ".aac");
 
   if (fileName.isEmpty())
   {
@@ -110,15 +71,15 @@ FILE * FindFileNames::findFrameDump_fileName(const QString & service)
 
   if (theFile == nullptr)
   {
-    qDebug() << "Cannot open ACC file " << fileName.toUtf8().data();
+    qDebug() << "Cannot open ACC file " << fileName;
   }
 
   return theFile;
 }
 
-SNDFILE * FindFileNames::findAudioDump_fileName(const QString & service)
+SNDFILE * FindFileNames::open_audio_dump_sndfile_ptr(const QString & iServiceName)
 {
-  const QString fileName = _open_file_dialog(service, "saveDir_audioDump", "PCM wave file", ".wav");
+  const QString fileName = _open_file_dialog(iServiceName, "saveDir_audioDump", "PCM wave file", ".wav");
 
   if (fileName.isEmpty())
   {
@@ -134,10 +95,67 @@ SNDFILE * FindFileNames::findAudioDump_fileName(const QString & service)
 
   if (theFile == nullptr)
   {
-    qDebug() << "Cannot open WAV file " << fileName.toUtf8().data();
+    qDebug() << "Cannot open WAV file " << fileName;
   }
 
   return theFile;
+}
+
+
+SNDFILE * FindFileNames::open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName)
+{
+  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), "saveDir_rawDump", "Raw Data", ".sdr");
+
+  if (fileName.isEmpty())
+  {
+    return nullptr;
+  }
+
+  SF_INFO sf_info;
+  sf_info.samplerate = INPUT_RATE;
+  sf_info.channels = 2;
+  sf_info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+
+  SNDFILE * theFile = sf_open(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
+
+  if (theFile == nullptr)
+  {
+    qDebug() << "Cannot open SDR file " << fileName;
+  }
+
+  return theFile;
+}
+
+QString FindFileNames::get_skip_file_file_name()
+{
+  return _open_file_dialog(PRJ_NAME "-skipFile", "contentDir", "XML", ".xml");
+}
+
+QString FindFileNames::get_dl_text_file_name()
+{
+  return _open_file_dialog(PRJ_NAME "-dlText", "contentDir", "Text", ".txt");
+}
+
+FILE * FindFileNames::open_log_file_ptr()
+{
+  QString fileName = _open_file_dialog(PRJ_NAME "-LOG", "contentDir", "Text", ".txt");
+
+  if (fileName.isEmpty())
+  {
+    return nullptr;
+  }
+
+  return fopen(fileName.toUtf8().data(), "w");
+}
+
+QString FindFileNames::get_maps_file_name()
+{
+  return _open_file_dialog(PRJ_NAME "-Transmitters", "contentDir", "Text", ".txt");
+}
+
+QString FindFileNames::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName)
+{
+  return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), "contentDir", "ETI", ".eti");
 }
 
 QString FindFileNames::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName,
@@ -145,7 +163,7 @@ QString FindFileNames::_open_file_dialog(const QString & iFileNamePrefix, const 
 {
   const QDir saveDir = dabSettings->value(iSettingName, QDir::homePath()).toString();
 
-  QString fileName = iFileNamePrefix.trimmed() + "-" + _get_date_string();
+  QString fileName = iFileNamePrefix.trimmed() + "-" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss");
   _remove_invalid_characters(fileName);
   fileName = saveDir.filePath(fileName + iFileExt);
 
@@ -166,19 +184,18 @@ QString FindFileNames::_open_file_dialog(const QString & iFileNamePrefix, const 
     fileName.append(iFileExt);
   }
 
-  fileName = QDir::toNativeSeparators(fileName); // is that necessary?
   dabSettings->setValue(iSettingName, QFileInfo(fileName).path());
 
-  return fileName;
-}
-
-QString FindFileNames::_get_date_string() const
-{
-  return QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss");
+  return QDir::toNativeSeparators(fileName);
 }
 
 void FindFileNames::_remove_invalid_characters(QString & ioStr) const
 {
+  auto isValid = [](QChar c)
+  {
+    return c.isLetter() || c.isDigit() || (c == '-');
+  };
+
   for (int i = 0; i < ioStr.length(); i++)
   {
     if (!isValid(ioStr.at(i)))
@@ -186,296 +203,4 @@ void FindFileNames::_remove_invalid_characters(QString & ioStr) const
       ioStr.replace(i, 1, '-');
     }
   }
-}
-
-SNDFILE * FindFileNames::findRawDump_fileName(const QString & deviceName, const QString & channelName)
-{
-  SF_INFO * sf_info = (SF_INFO *)alloca (sizeof(SF_INFO));
-  QString theTime = QDateTime::currentDateTime().toString();
-  QString saveDir = dabSettings->value("saveDir_rawDump", QDir::homePath()).toString();
-  SNDFILE * theFile;
-  for (int i = 0; i < theTime.length(); i++)
-  {
-    if (!isValid(theTime.at(i)))
-    {
-      theTime.replace(i, 1, '-');
-    }
-  }
-
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-  QString suggestedFileName = saveDir + deviceName + "-" + channelName + "-" + theTime + ".sdr";
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  "Save File",
-                                                  suggestedFileName,
-                                                  "raw data (*.sdr)",
-                                                  Q_NULLPTR,
-                                                  QFileDialog::DontUseNativeDialog);
-
-  if (fileName == QString(""))
-  {       // apparently cancelled
-    return nullptr;
-  }
-
-  if (!fileName.endsWith(".sdr", Qt::CaseInsensitive))
-  {
-    fileName.append(".sdr");
-  }
-
-  fileName = QDir::toNativeSeparators(fileName);
-  sf_info->samplerate = INPUT_RATE;
-  sf_info->channels = 2;
-  sf_info->format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
-  theFile = sf_open(fileName.toUtf8().data(), SFM_WRITE, sf_info);
-  fprintf(stderr, "the file %s is open?\n", fileName.toUtf8().data());
-  if (theFile == nullptr)
-  {
-    fprintf(stderr, "foute boel\n");
-    qDebug() << "cannot open " << fileName.toUtf8().data();
-    return nullptr;
-  }
-
-  QString dumper = QDir::fromNativeSeparators(fileName);
-  int x = dumper.lastIndexOf("/");
-  saveDir = dumper.remove(x, dumper.count() - x);
-  dabSettings->setValue("saveDir_rawDump", saveDir);
-  return theFile;
-}
-
-FILE * FindFileNames::findSummary_fileName()
-{
-  QMessageBox::StandardButton resultButton = QMessageBox::question(nullptr,
-                                                                   PRJ_NAME,
-                                                                   "save summary?\n",
-                                                                   QMessageBox::No | QMessageBox::Yes,
-                                                                   QMessageBox::Yes);
-  if (resultButton != QMessageBox::Yes)
-  {
-    return nullptr;
-  }
-
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  QString theTime = QDateTime::currentDateTime().toString();
-  for (int i = 0; i < theTime.length(); i++)
-  {
-    if (!isValid(theTime.at(i)))
-    {
-      theTime.replace(i, 1, '-');
-    }
-  }
-  QString suggestedFileName = saveDir + PRJ_NAME "-summary" + "-" + theTime + ".csv";
-
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  "Save file ...",
-                                                  suggestedFileName,
-                                                  "csv (*.csv)",
-                                                  Q_NULLPTR,
-                                                  QFileDialog::DontUseNativeDialog);
-  if (fileName == nullptr)
-  {  // canceled ?
-    return nullptr;
-  }
-  fileName = QDir::toNativeSeparators(fileName);
-  return fopen(fileName.toUtf8().data(), "w");
-}
-
-const QString FindFileNames::findskipFile_fileName()
-{
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  QString suggestedFileName = saveDir + PRJ_NAME "-skipFile" + ".xml";
-
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  "Save File",
-                                                  suggestedFileName,
-                                                  "Xml (*.xml)",
-                                                  Q_NULLPTR,
-                                                  QFileDialog::DontUseNativeDialog | QFileDialog::DontConfirmOverwrite);
-  if (fileName == nullptr)
-  {  // canceled?
-    return nullptr;
-  }
-  fileName = QDir::toNativeSeparators(fileName);
-  return fileName;
-}
-
-QString FindFileNames::finddlText_fileName(bool flag)
-{
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-  QString theTime = QDateTime::currentDateTime().toString();
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  for (int i = 0; i < theTime.length(); i++)
-  {
-    if (!isValid(theTime.at(i)))
-    {
-      theTime.replace(i, 1, '-');
-    }
-  }
-
-  QString suggestedFileName = saveDir + PRJ_NAME "-dlText" + "-" + theTime + ".txt";
-  QString fileName;
-
-  if (flag)
-  {
-    fileName = QFileDialog::getSaveFileName(nullptr,
-                                            "Save File",
-                                            suggestedFileName.toUtf8().data(),
-                                            "Text (*.txt)",
-                                            Q_NULLPTR,
-                                            QFileDialog::DontUseNativeDialog);
-  }
-  else
-  {
-    fileName = suggestedFileName;
-  }
-  if (fileName == nullptr)
-  {  // canceled
-    return nullptr;
-  }
-  fileName = QDir::toNativeSeparators(fileName);
-  return fileName;
-}
-
-FILE * FindFileNames::findLogFileName()
-{
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-  QString theTime = QDateTime::currentDateTime().toString();
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  for (int i = 0; i < theTime.length(); i++)
-  {
-    if (!isValid(theTime.at(i)))
-    {
-      theTime.replace(i, 1, '-');
-    }
-  }
-
-  QString suggestedFileName = saveDir + PRJ_NAME "-LOG" + "-" + theTime + ".txt";
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  "Save File",
-                                                  suggestedFileName.toUtf8().data(),
-                                                  "Text (*.txt)",
-                                                  Q_NULLPTR,
-                                                  QFileDialog::DontUseNativeDialog);
-  if (fileName == "")
-  {
-    return nullptr;
-  }
-  return fopen(fileName.toUtf8().data(), "w");
-}
-
-FILE * FindFileNames::find_ficDump_file(const QString & channel)
-{
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-  QString theTime = QDateTime::currentDateTime().toString();
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  for (int i = 0; i < theTime.length(); i++)
-  {
-    if (!isValid(theTime.at(i)))
-    {
-      theTime.replace(i, 1, '-');
-    }
-  }
-
-  QString fileName = saveDir + channel + "-" + theTime + ".fic";
-  return fopen(fileName.toUtf8().data(), "w+b");
-}
-
-QString FindFileNames::findMaps_fileName()
-{
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-  QString theTime = QDateTime::currentDateTime().toString();
-  QString suggestedFileName;
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  for (int i = 0; i < theTime.length(); i++)
-  {
-    if (!isValid(theTime.at(i)))
-    {
-      theTime.replace(i, 1, '-');
-    }
-  }
-  suggestedFileName = saveDir + PRJ_NAME "-Transmitters" + "-" + theTime + ".csv";
-  suggestedFileName = QDir::toNativeSeparators(suggestedFileName);
-
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  "Save file ...",
-                                                  suggestedFileName,
-                                                  "txt (*.txt)",
-                                                  Q_NULLPTR,
-                                                  QFileDialog::DontUseNativeDialog);
-  if (fileName == "")
-  {
-    return "";
-  }
-
-  return QDir::toNativeSeparators(fileName);
-}
-
-QString FindFileNames::find_eti_fileName(const QString & ensemble, const QString & channelName)
-{
-  QString saveDir = dabSettings->value("contentDir", QDir::homePath()).toString();
-  QString theTime = QDateTime::currentDateTime().toString();
-  QString suggestedFileName;
-
-  if ((saveDir != "") && (!saveDir.endsWith('/')))
-  {
-    saveDir = saveDir + '/';
-  }
-
-  suggestedFileName = channelName + "-" + ensemble.trimmed() + "-" + theTime;
-  for (int i = 0; i < suggestedFileName.length(); i++)
-  {
-    if (!isValid(suggestedFileName.at(i)))
-    {
-      suggestedFileName.replace(i, 1, '-');
-    }
-  }
-  suggestedFileName = saveDir + suggestedFileName + ".eti";
-  suggestedFileName = QDir::toNativeSeparators(suggestedFileName);
-
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  "Save file ...",
-                                                  suggestedFileName,
-                                                  "eti (*.eti)",
-                                                  Q_NULLPTR,
-                                                  QFileDialog::DontUseNativeDialog);
-  if (fileName == "")
-  {
-    return "";
-  }
-
-  return QDir::toNativeSeparators(fileName);
 }
