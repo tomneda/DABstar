@@ -31,9 +31,10 @@
 #ifndef  DABSTAR_OPEN_FILE_DIALOG_H
 #define  DABSTAR_OPEN_FILE_DIALOG_H
 
-#include  <QSettings>
-#include  <QString>
-#include  <sndfile.h>
+#include "dab-constants.h"
+#include <QSettings>
+#include <QString>
+#include <sndfile.h>
 #include <QDir>
 
 class OpenFileDialog
@@ -56,9 +57,6 @@ public:
   QString open_sample_data_file_dialog_for_reading(EType & oType) const;
 
 private:
-  const QString msSampleStorageDir{"saveDirSampleDump"};
-  const QString msAudioStorageDir{"saveDirAudioDump"};
-  const QString msContentStorageDir{"saveDirContent"};
   QSettings * const mpSettings;
 
   QString _open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt);

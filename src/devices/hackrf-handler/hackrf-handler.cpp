@@ -404,7 +404,7 @@ static inline bool isValid(QChar c)
 
 bool HackRfHandler::setup_xml_dump()
 {
-  QString saveDir = mpHackrfSettings->value("saveDir_xmlDump", QDir::homePath()).toString();
+  QString saveDir = mpHackrfSettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
 
   if ((saveDir != "") && (!saveDir.endsWith("/")))
   {
@@ -437,7 +437,7 @@ bool HackRfHandler::setup_xml_dump()
   QString dumper = QDir::fromNativeSeparators(fileName);
   int x = dumper.lastIndexOf("/");
   saveDir = dumper.remove(x, dumper.count() - x);
-  mpHackrfSettings->setValue("saveDir_xmlDump", saveDir);
+  mpHackrfSettings->setValue(sSettingSampleStorageDir, saveDir);
 
   return true;
 }

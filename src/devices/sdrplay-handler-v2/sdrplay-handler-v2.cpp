@@ -938,7 +938,7 @@ bool	isValid (QChar c) {
 bool	SdrPlayHandler_v2::setup_xmlDump () {
 QTime	theTime;
 QDate	theDate;
-QString	saveDir	= sdrplaySettings -> value ("saveDir_xmlDump",
+QString	saveDir	= sdrplaySettings -> value (sSettingSampleStorageDir,
 	                                   QDir::homePath ()). toString ();
 	if ((saveDir != "") && (!saveDir. endsWith ("/")))
 	   saveDir += "/";
@@ -976,7 +976,7 @@ QString	saveDir	= sdrplaySettings -> value ("saveDir_xmlDump",
 	QString dumper	= QDir::fromNativeSeparators (fileName);
 	int x		= dumper. lastIndexOf ("/");
         saveDir		= dumper. remove (x, dumper. count () - x);
-	sdrplaySettings	-> setValue ("saveDir_xmlDump", saveDir);
+	sdrplaySettings	-> setValue (sSettingSampleStorageDir, saveDir);
 	return true;
 }
 

@@ -464,7 +464,7 @@ bool	isValid (QChar c) {
 bool	rtlsdrHandler::setup_xmlDump () {
 QTime	theTime;
 QDate	theDate;
-QString saveDir = rtlsdrSettings -> value ("saveDir_xmlDump",
+QString saveDir = rtlsdrSettings -> value (sSettingSampleStorageDir,
 	                                   QDir::homePath ()). toString ();
 
 	if (xml_dumping. load ())
@@ -505,7 +505,7 @@ QString saveDir = rtlsdrSettings -> value ("saveDir_xmlDump",
 	QString	dumper	= QDir::fromNativeSeparators (fileName);
 	int x		= dumper. lastIndexOf ("/");
 	saveDir		= dumper. remove (x, dumper. count () - x);
-	rtlsdrSettings	-> setValue ("saveDir_xmlDump", saveDir);
+	rtlsdrSettings	-> setValue (sSettingSampleStorageDir, saveDir);
 
 	return true;
 }

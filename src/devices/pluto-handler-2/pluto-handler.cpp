@@ -675,7 +675,7 @@ bool	isValid (QChar c) {
 bool	PlutoHandler::setup_xmlDump () {
 QTime	theTime;
 QDate	theDate;
-QString saveDir = plutoSettings -> value ("saveDir_xmlDump",
+QString saveDir = plutoSettings -> value (sSettingSampleStorageDir,
                                            QDir::homePath ()). toString ();
         if ((saveDir != "") && (!saveDir. endsWith ("/")))
            saveDir += "/";
@@ -711,7 +711,7 @@ QString saveDir = plutoSettings -> value ("saveDir_xmlDump",
 	QString dumper	= QDir::fromNativeSeparators (fileName);
 	int x		= dumper. lastIndexOf ("/");
         saveDir		= dumper. remove (x, dumper. count () - x);
-        plutoSettings	-> setValue ("saveDir_xmlDump", saveDir);
+        plutoSettings	-> setValue (sSettingSampleStorageDir, saveDir);
 	return true;
 }
 

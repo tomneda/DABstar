@@ -524,7 +524,7 @@ bool	isValid (QChar c) {
 bool	LimeHandler::setup_xmlDump () {
 QTime	theTime;
 QDate	theDate;
-QString saveDir = limeSettings -> value ("saveDir_xmlDump",
+QString saveDir = limeSettings -> value (sSettingSampleStorageDir,
                                            QDir::homePath ()). toString ();
         if ((saveDir != "") && (!saveDir. endsWith ("/")))
            saveDir += "/";
@@ -561,7 +561,7 @@ QString saveDir = limeSettings -> value ("saveDir_xmlDump",
 	QString dumper	= QDir::fromNativeSeparators (fileName);
 	int x		= dumper. lastIndexOf ("/");
 	saveDir		= dumper. remove (x, dumper. count () - x);
-	limeSettings -> setValue ("saveDir_xmlDump", saveDir);
+	limeSettings -> setValue (sSettingSampleStorageDir, saveDir);
 	return true;
 }
 

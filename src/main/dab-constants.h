@@ -80,6 +80,10 @@ constexpr float F_DEG_PER_RAD = (float)(180.0 / M_PI);
 constexpr int16_t VITERBI_SOFT_BIT_VALUE_MAX = 127;
 constexpr float F_VITERBI_SOFT_BIT_VALUE_MAX = (float)VITERBI_SOFT_BIT_VALUE_MAX;
 
+constexpr char sSettingSampleStorageDir[]  = "saveDirSampleDump";
+constexpr char sSettingAudioStorageDir[]   = "saveDirAudioDump";
+constexpr char sSettingContentStorageDir[] = "saveDirContent";
+
 template<typename T>
 struct SpecViewLimits
 {

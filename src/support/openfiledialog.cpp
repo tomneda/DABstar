@@ -44,7 +44,7 @@ OpenFileDialog::OpenFileDialog(QSettings * ipSetting) :
 
 FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
 {
-  const QString fileName = _open_file_dialog(PRJ_NAME "-" + iChannelName, msContentStorageDir, "CSV", ".csv");
+  const QString fileName = _open_file_dialog(PRJ_NAME "-" + iChannelName, sSettingContentStorageDir, "CSV", ".csv");
 
   if (fileName.isEmpty())
   {
@@ -63,7 +63,7 @@ FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
 
 FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName)
 {
-  const QString fileName = _open_file_dialog(iServiceName, msAudioStorageDir, "AAC data", ".aac");
+  const QString fileName = _open_file_dialog(iServiceName, sSettingAudioStorageDir, "AAC data", ".aac");
 
   if (fileName.isEmpty())
   {
@@ -82,7 +82,7 @@ FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName)
 
 SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceName)
 {
-  const QString fileName = _open_file_dialog(iServiceName, msAudioStorageDir, "PCM-WAV", ".wav");
+  const QString fileName = _open_file_dialog(iServiceName, sSettingAudioStorageDir, "PCM-WAV", ".wav");
 
   if (fileName.isEmpty())
   {
@@ -107,7 +107,7 @@ SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceNa
 
 SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName)
 {
-  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), msSampleStorageDir, "RAW-WAV", ".sdr");
+  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), sSettingSampleStorageDir, "RAW-WAV", ".sdr");
 
   if (fileName.isEmpty())
   {
@@ -131,17 +131,17 @@ SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName,
 
 QString OpenFileDialog::get_skip_file_file_name()
 {
-  return _open_file_dialog(PRJ_NAME "-skipFile", msContentStorageDir, "XML", ".xml");
+  return _open_file_dialog(PRJ_NAME "-skipFile", sSettingContentStorageDir, "XML", ".xml");
 }
 
 QString OpenFileDialog::get_dl_text_file_name()
 {
-  return _open_file_dialog(PRJ_NAME "-dlText", msContentStorageDir, "Text", ".txt");
+  return _open_file_dialog(PRJ_NAME "-dlText", sSettingContentStorageDir, "Text", ".txt");
 }
 
 FILE * OpenFileDialog::open_log_file_ptr()
 {
-  QString fileName = _open_file_dialog(PRJ_NAME "-LOG", msContentStorageDir, "Text", ".txt");
+  QString fileName = _open_file_dialog(PRJ_NAME "-LOG", sSettingContentStorageDir, "Text", ".txt");
 
   if (fileName.isEmpty())
   {
@@ -153,12 +153,12 @@ FILE * OpenFileDialog::open_log_file_ptr()
 
 QString OpenFileDialog::get_maps_file_name()
 {
-  return _open_file_dialog(PRJ_NAME "-Transmitters", msContentStorageDir, "Text", ".txt");
+  return _open_file_dialog(PRJ_NAME "-Transmitters", sSettingContentStorageDir, "Text", ".txt");
 }
 
 QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName)
 {
-  return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), msContentStorageDir, "ETI", ".eti");
+  return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), sSettingContentStorageDir, "ETI", ".eti");
 }
 
 QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt)
@@ -199,7 +199,7 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) 
   const QString FILETYPE_RAW    = "RAW (*.raw)";
   const QString FILETYPE_IQ     = "IQ-RAW (*.iq)";
 
-  const QDir storedDir = mpSettings->value(msSampleStorageDir, QDir::homePath()).toString();
+  const QDir storedDir = mpSettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
 
   QString fileName;
   QString selectedFilter;
@@ -221,7 +221,7 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) 
     else if (selectedFilter == FILETYPE_RAW)    oType = EType::RAW;
     else if (selectedFilter == FILETYPE_IQ)     oType = EType::IQ;
 
-    mpSettings->setValue(msSampleStorageDir, QFileInfo(fileName).path());
+    mpSettings->setValue(sSettingSampleStorageDir, QFileInfo(fileName).path());
   }
 
   return fileName;
