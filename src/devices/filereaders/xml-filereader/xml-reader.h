@@ -42,14 +42,14 @@
 #include  <atomic>
 
 class XmlFileReader;
-class xmlDescriptor;
+class XmlDescriptor;
 
-class xml_Reader : public QThread
+class XmlReader : public QThread
 {
 Q_OBJECT
 public:
-  xml_Reader(XmlFileReader * mr, FILE * f, xmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b);
-  ~xml_Reader();
+  XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b);
+  ~XmlReader() override;
   void stopReader();
   bool handle_continuousButton();
 
@@ -62,7 +62,7 @@ private:
 
   std::atomic<bool> continuous;
   FILE * file;
-  xmlDescriptor * fd;
+  XmlDescriptor * fd;
   uint32_t filePointer;
   RingBuffer<cmplx> * sampleBuffer;
   XmlFileReader * parent;
@@ -71,7 +71,7 @@ private:
   std::atomic<bool> running;
   void run();
   int compute_nrSamples(FILE * f, int blockNumber);
-  int readSamples(FILE * f, void(xml_Reader::*)(FILE *, cmplx *, int));
+  int readSamples(FILE * f, void(XmlReader::*)(FILE *, cmplx *, int));
   void readElements_IQ(FILE * f, cmplx *, int amount);
   void readElements_QI(FILE * f, cmplx *, int amount);
   void readElements_I(FILE * f, cmplx *, int amount);
@@ -85,7 +85,7 @@ private:
   float mapTable_float[2048];
 
 signals:
-  void setProgress(int, int);
+  void signal_set_progress(int, int);
 };
 
 #endif

@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2019
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -22,55 +21,54 @@
  *
  */
 
-#ifndef	__XML_DESCRIPTOR__
-#define	__XML_DESCRIPTOR__
+#ifndef  XML_DESCRIPTOR_H
+#define  XML_DESCRIPTOR_H
 
 #include <QtXml>
+#include <QString>
+#include <cstdint>
+#include <cstdio>
 
-#include	<QString>
-#include	<stdint.h>
-#include	<cstdio>
-
-class Blocks	{
+class Blocks
+{
 public:
-			Blocks		() {}
-			~Blocks		() {}
-	int		blockNumber;
-	int		nrElements;
-	QString		typeofUnit;
-	int		frequency;
-	QString		modType;
+  Blocks() = default;
+  ~Blocks() = default;
+
+  int blockNumber = 0;
+  int nrElements = 0;
+  QString typeofUnit;
+  int frequency = 0;
+  QString modType;
 };
 
-class xmlDescriptor {
+class XmlDescriptor
+{
 public:
-	QString		deviceName;
-	QString		deviceModel;
-	QString		recorderName;
-	QString		recorderVersion;
-	QString		recordingTime;
-	int		sampleRate;
-	int		nrChannels;
-	int		bitsperChannel;
-	QString		container;
-	QString		byteOrder;
-	QString		iqOrder;
-	int		nrBlocks;
-	std::vector<Blocks> blockList;
-			xmlDescriptor	(FILE *, bool *);
-			~xmlDescriptor	();
-	void		printDescriptor	();
-	void		setSamplerate	(int sr);
-	void		setChannels 	(int	nrChannels,
-	             	                 int	bitsperChannel,
-	                                 QString	ct,
-	             	                 QString	byteOrder);
-	void		addChannelOrder (int channelOrder,
-	                                 QString Value);
-	void		add_dataBlock (int currBlock,  int Count,
-                                       int  blockNumber, QString Unit);
-	void		add_freqtoBlock	(int blockno, int freq);
-	void		add_modtoBlock (int blockno, QString modType);
+  QString deviceName;
+  QString deviceModel;
+  QString recorderName;
+  QString recorderVersion;
+  QString recordingTime;
+  int sampleRate;
+  int nrChannels;
+  int bitsperChannel;
+  QString container;
+  QString byteOrder;
+  QString iqOrder;
+  int nrBlocks;
+  std::vector<Blocks> blockList;
+
+  XmlDescriptor(FILE *, bool *);
+  ~XmlDescriptor() = default;
+
+  void printDescriptor();
+  void setSamplerate(int sr);
+  void setChannels(int nrChannels, int bitsperChannel, QString ct, QString byteOrder);
+  void addChannelOrder(int channelOrder, QString Value);
+  void add_dataBlock(int currBlock, int Count, int blockNumber, QString Unit);
+  void add_freqtoBlock(int blockno, int freq);
+  void add_modtoBlock(int blockno, QString modType);
 };
 
 #endif

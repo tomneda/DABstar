@@ -41,14 +41,14 @@
 #include  "ui_xmlfiles.h"
 
 class QSettings;
-class xmlDescriptor;
-class xml_Reader;
+class XmlDescriptor;
+class XmlReader;
 
 class XmlFileReader final : public QObject, public IDeviceHandler, public Ui_xmlfile_widget
 {
 Q_OBJECT
 public:
-  explicit XmlFileReader(QString);
+  explicit XmlFileReader(const QString &);
   ~XmlFileReader() override;
 
   int32_t getSamples(cmplx *, int32_t) override;
@@ -72,11 +72,12 @@ private:
   RingBuffer<cmplx> _I_Buffer;
   FILE * theFile;
   uint32_t filePointer;
-  xmlDescriptor * theDescriptor;
-  xml_Reader * theReader;
+  XmlDescriptor * theDescriptor;
+  XmlReader * theReader;
+  
 public slots:
-  void setProgress(int, int);
-  void handle_continuousButton();
+  void slot_set_progress(int, int);
+  void slot_handle_cb_loop_file(const bool iChecked);
 };
 
 #endif

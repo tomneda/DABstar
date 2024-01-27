@@ -57,7 +57,7 @@
 #include <QMessageBox>
 #include <QSettings>
 
-static const char DN_FILE_INP[] = "File input (*.uff *.sdr *.raw *.iq)";
+static const char DN_FILE_INP[] = "File input";
 static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
 static const char DN_SDRPLAY_V2[] = "SDR-Play V2";
 static const char DN_RTLTCP[] = "RTL-TCP";

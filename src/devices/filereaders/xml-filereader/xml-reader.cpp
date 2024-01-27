@@ -63,7 +63,7 @@ static inline uint64_t currentTime()
   return (uint64_t)(tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec);
 }
 
-xml_Reader::xml_Reader(XmlFileReader * mr, FILE * f, xmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b)
+XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b)
 {
   this->parent = mr;
   this->file = f;
@@ -74,7 +74,7 @@ xml_Reader::xml_Reader(XmlFileReader * mr, FILE * f, xmlDescriptor * fd, uint32_
   //	convBufferSize is a little confusing since the actual
   //	buffer is one larger
   convBufferSize = fd->sampleRate / 1000;
-  continuous.store(false);
+  continuous.store(true);
 
   for (int i = 0; i < 2048; i++)
   {
@@ -87,13 +87,13 @@ xml_Reader::xml_Reader(XmlFileReader * mr, FILE * f, xmlDescriptor * fd, uint32_
   convBuffer.resize(convBufferSize + 1);
   nrElements = fd->blockList[0].nrElements;
 
-  connect(this, SIGNAL (setProgress(int, int)), parent, SLOT (setProgress(int, int)));
+  connect(this, &XmlReader::signal_set_progress, parent, &XmlFileReader::slot_set_progress);
 
   fprintf(stderr, "reader task wordt gestart\n");
   start();
 }
 
-xml_Reader::~xml_Reader()
+XmlReader::~XmlReader()
 {
   running.store(false);
   while (this->isRunning())
@@ -102,7 +102,7 @@ xml_Reader::~xml_Reader()
   }
 }
 
-void xml_Reader::stopReader()
+void XmlReader::stopReader()
 {
   if (!running.load())
   {
@@ -117,7 +117,7 @@ void xml_Reader::stopReader()
 
 static int cycleCount = 0;
 
-void xml_Reader::run()
+void XmlReader::run()
 {
   int samplesRead = 0;
   uint64_t nextStop;
@@ -138,36 +138,35 @@ void xml_Reader::run()
 
         if (fd->iqOrder == "IQ")
         {
-          samplesRead += readSamples(file, &xml_Reader::readElements_IQ);
+          samplesRead += readSamples(file, &XmlReader::readElements_IQ);
         }
         else if (fd->iqOrder == "QI")
         {
-          samplesRead += readSamples(file, &xml_Reader::readElements_QI);
+          samplesRead += readSamples(file, &XmlReader::readElements_QI);
         }
         else if (fd->iqOrder == "I_Only")
         {
-          samplesRead += readSamples(file, &xml_Reader::readElements_I);
+          samplesRead += readSamples(file, &XmlReader::readElements_I);
         }
         else
         {
-          samplesRead += readSamples(file, &xml_Reader::readElements_Q);
+          samplesRead += readSamples(file, &XmlReader::readElements_Q);
         }
 
         if (++cycleCount >= 200)
         {
-          setProgress(samplesRead, samplesToRead);
+          emit signal_set_progress(samplesRead, samplesToRead);
           cycleCount = 0;
         }
-        //
-        //	the readSamples function returns 1 msec of data,
-        //	we assume taking this data does not take time
+
+        // the readSamples function returns 1 msec of data, we assume taking this data does not take time
         nextStop = nextStop + (uint64_t)1000;
         if (nextStop > currentTime())
         {
           usleep(nextStop - currentTime());
         }
       }
-      setProgress(0, samplesToRead);
+      emit signal_set_progress(0, samplesToRead);
       filePointer = startPoint;
       fseek(file, filePointer, SEEK_SET);
       samplesRead = 0;
@@ -176,13 +175,13 @@ void xml_Reader::run()
   }
 }
 
-bool xml_Reader::handle_continuousButton()
+bool XmlReader::handle_continuousButton()
 {
   continuous.store(!continuous.load());
   return continuous.load();
 }
 
-int xml_Reader::compute_nrSamples(FILE * f, int blockNumber)
+int XmlReader::compute_nrSamples(FILE * f, int blockNumber)
 {
   int nrElements = fd->blockList.at(blockNumber).nrElements;
   int samplesToRead = 0;
@@ -208,7 +207,7 @@ int xml_Reader::compute_nrSamples(FILE * f, int blockNumber)
   return samplesToRead;
 }
 
-int xml_Reader::readSamples(FILE * theFile, void(xml_Reader::*r)(FILE * theFile, cmplx *, int))
+int XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, cmplx *, int))
 {
   cmplx temp[2048];
 
@@ -225,7 +224,7 @@ int xml_Reader::readSamples(FILE * theFile, void(xml_Reader::*r)(FILE * theFile,
   return 2048;
 }
 
-static float mapTable[] = {
+static const float mapTable[] = {
   -128 / 128.0, -127 / 128.0, -126 / 128.0, -125 / 128.0, -124 / 128.0, -123 / 128.0, -122 / 128.0, -121 / 128.0, -120 / 128.0,
   -119 / 128.0, -118 / 128.0, -117 / 128.0, -116 / 128.0, -115 / 128.0, -114 / 128.0, -113 / 128.0, -112 / 128.0, -111 / 128.0,
   -110 / 128.0, -109 / 128.0, -108 / 128.0, -107 / 128.0, -106 / 128.0, -105 / 128.0, -104 / 128.0, -103 / 128.0, -102 / 128.0,
@@ -252,9 +251,8 @@ static float mapTable[] = {
   110 / 128.0, 111 / 128.0, 112 / 128.0, 113 / 128.0, 114 / 128.0, 115 / 128.0, 116 / 128.0, 117 / 128.0, 118 / 128.0, 119 / 128.0,
   120 / 128.0, 121 / 128.0, 122 / 128.0, 123 / 128.0, 124 / 128.0, 125 / 128.0, 126 / 128.0, 127 / 128.0 };
 
-//
 //	the readers
-void xml_Reader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
+void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 {
 
   int nrBits = fd->bitsperChannel;
@@ -266,7 +264,7 @@ void xml_Reader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx(((int8_t)lbuf[2 * i]) / 127.0, ((int8_t)lbuf[2 * i + 1]) / 127.0);
+      buffer[i] = cmplx(((int8_t)lbuf[2 * i]) / 127.0f, ((int8_t)lbuf[2 * i + 1]) / 127.0f);
     }
     return;
   }
@@ -401,7 +399,7 @@ void xml_Reader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
   }
 }
 
-void xml_Reader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
+void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 {
 
   int nrBits = fd->bitsperChannel;
@@ -548,7 +546,7 @@ void xml_Reader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
   }
 }
 
-void xml_Reader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
+void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 {
 
   int nrBits = fd->bitsperChannel;
@@ -679,7 +677,7 @@ void xml_Reader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
   }
 }
 
-void xml_Reader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
+void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 {
 
   int nrBits = fd->bitsperChannel;
