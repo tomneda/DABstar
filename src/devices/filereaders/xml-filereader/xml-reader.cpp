@@ -63,7 +63,7 @@ static inline uint64_t currentTime()
   return (uint64_t)(tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec);
 }
 
-xml_Reader::xml_Reader(xml_fileReader * mr, FILE * f, xmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b)
+xml_Reader::xml_Reader(XmlFileReader * mr, FILE * f, xmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b)
 {
   this->parent = mr;
   this->file = f;

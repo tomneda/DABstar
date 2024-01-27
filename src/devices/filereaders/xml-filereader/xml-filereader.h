@@ -44,12 +44,12 @@ class QSettings;
 class xmlDescriptor;
 class xml_Reader;
 
-class xml_fileReader final : public QObject, public IDeviceHandler, public Ui_xmlfile_widget
+class XmlFileReader final : public QObject, public IDeviceHandler, public Ui_xmlfile_widget
 {
 Q_OBJECT
 public:
-  explicit xml_fileReader(QString);
-  ~xml_fileReader() override;
+  explicit XmlFileReader(QString);
+  ~XmlFileReader() override;
 
   int32_t getSamples(cmplx *, int32_t) override;
   int32_t Samples() override;

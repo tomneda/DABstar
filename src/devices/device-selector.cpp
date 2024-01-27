@@ -9,19 +9,13 @@
  */
 
 #ifdef  HAVE_RTLSDR
-
   #include  "rtlsdr-handler.h"
-
 #endif
 #ifdef  HAVE_SDRPLAY_V2
-
   #include  "sdrplay-handler-v2.h"
-
 #endif
 #ifdef  HAVE_SDRPLAY_V3
-
   #include  "sdrplay-handler-v3.h"
-
 #endif
 #ifdef  __MINGW32__
 #ifdef	HAVE_EXTIO
@@ -29,24 +23,16 @@
 #endif
 #endif
 #ifdef  HAVE_RTL_TCP
-
   #include  "rtl_tcp_client.h"
-
 #endif
 #ifdef  HAVE_AIRSPY
-
   #include "airspy-handler.h"
-
 #endif
 #ifdef  HAVE_HACKRF
-
   #include "hackrf-handler.h"
-
 #endif
 #ifdef  HAVE_LIME
-
   #include  "lime-handler.h"
-
 #endif
 #ifdef  HAVE_PLUTO_2
   #include  "pluto-handler-2.h"
@@ -61,11 +47,8 @@
   #include	"elad-handler.h"
 #endif
 #ifdef  HAVE_UHD
-
   #include  "uhd-handler.h"
-
 #endif
-
 #include "device-selector.h"
 #include "xml-filereader.h"
 #include "wavfiles.h"
@@ -74,11 +57,7 @@
 #include <QMessageBox>
 #include <QSettings>
 
-
-static const char DN_FILE_INP_RAW[] = "File input(.raw)";
-static const char DN_FILE_INP_IQ[] = "File input(.iq)";
-static const char DN_FILE_INP_SDR[] = "File input(.sdr)";
-static const char DN_FILE_INP_XML[] = "File input(.xml)";
+static const char DN_FILE_INP[] = "File input (*.uff *.sdr *.raw *.iq)";
 static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
 static const char DN_SDRPLAY_V2[] = "SDR-Play V2";
 static const char DN_RTLTCP[] = "RTL-TCP";
@@ -104,10 +83,10 @@ QStringList DeviceSelector::get_device_name_list() const
 {
   QStringList sl;
   sl << "select input";
-  sl << DN_FILE_INP_RAW;
-  sl << DN_FILE_INP_IQ;
-  sl << DN_FILE_INP_SDR;
-  sl << DN_FILE_INP_XML;
+  sl << DN_FILE_INP;
+  // sl << DN_FILE_INP_IQ;
+  // sl << DN_FILE_INP_SDR;
+  // sl << DN_FILE_INP_XML;
 #ifdef  HAVE_SDRPLAY_V3
   sl << DN_SDRPLAY_V3;
 #endif
@@ -276,52 +255,25 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   }
   else
 #endif
-  if (iDeviceName == DN_FILE_INP_XML)
+  if (iDeviceName == DN_FILE_INP)
   {
     oRealDevice = false;
-    const QString file = mOpenFileDialog.open_file_name(OpenFileDialog::EType::XML);
+    OpenFileDialog::EType type = OpenFileDialog::EType::UNDEF;
+    const QString file = mOpenFileDialog.open_sample_data_file_dialog_for_reading(type);
 
-    if (file.isEmpty())
+    if (file.isEmpty()) // dialog closed with cancel?
     {
       return nullptr;
     }
 
-    inputDevice = std::make_unique<xml_fileReader>(file);
-  }
-  else if (iDeviceName == DN_FILE_INP_IQ)
-  {
-    oRealDevice = false;
-    const QString file = mOpenFileDialog.open_file_name(OpenFileDialog::EType::IQ);
-
-    if (file.isEmpty())
+    switch (type)
     {
-      return nullptr;
+    case OpenFileDialog::EType::XML: inputDevice = std::make_unique<XmlFileReader>(file); break;
+    case OpenFileDialog::EType::SDR: inputDevice = std::make_unique<WavFileHandler>(file); break;
+    case OpenFileDialog::EType::RAW:
+    case OpenFileDialog::EType::IQ:  inputDevice = std::make_unique<RawFileHandler>(file);break;
+    default: return nullptr;
     }
-
-    inputDevice = std::make_unique<RawFileHandler>(file);
-  }
-  else if (iDeviceName == DN_FILE_INP_RAW)
-  {
-    oRealDevice = false;
-    const QString file = mOpenFileDialog.open_file_name(OpenFileDialog::EType::RAW);
-    if (file.isEmpty())
-    {
-      return nullptr;
-    }
-
-    inputDevice = std::make_unique<RawFileHandler>(file);
-  }
-  else if (iDeviceName == DN_FILE_INP_SDR)
-  {
-    oRealDevice = false;
-    const QString file = mOpenFileDialog.open_file_name(OpenFileDialog::EType::SDR);
-
-    if (file.isEmpty())
-    {
-      return nullptr;
-    }
-
-    inputDevice = std::make_unique<WavFileHandler>(file);
   }
   else
   {

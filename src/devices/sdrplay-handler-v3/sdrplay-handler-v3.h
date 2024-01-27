@@ -47,7 +47,7 @@
 
 class Rsp_device;
 class generalCommand;
-class xml_fileWriter;
+class XmlFileWriter;
 
 #ifdef __MINGW32__
 #include "dlfcn.h"
@@ -133,7 +133,7 @@ public:
   HINSTANCE Handle;
   bool biasT;
   FILE * xmlDumper;
-  xml_fileWriter * xmlWriter;
+  XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> dumping;

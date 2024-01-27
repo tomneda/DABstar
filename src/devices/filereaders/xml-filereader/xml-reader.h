@@ -41,14 +41,14 @@
 #include  <vector>
 #include  <atomic>
 
-class xml_fileReader;
+class XmlFileReader;
 class xmlDescriptor;
 
 class xml_Reader : public QThread
 {
 Q_OBJECT
 public:
-  xml_Reader(xml_fileReader * mr, FILE * f, xmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b);
+  xml_Reader(XmlFileReader * mr, FILE * f, xmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b);
   ~xml_Reader();
   void stopReader();
   bool handle_continuousButton();
@@ -65,7 +65,7 @@ private:
   xmlDescriptor * fd;
   uint32_t filePointer;
   RingBuffer<cmplx> * sampleBuffer;
-  xml_fileReader * parent;
+  XmlFileReader * parent;
   int nrElements;
   int samplesToRead;
   std::atomic<bool> running;

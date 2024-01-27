@@ -29,14 +29,14 @@ struct kort_woord {
 	uint8_t byte_2;
 };
 
-	xml_fileWriter::xml_fileWriter (FILE *f,
-	                                int	nrBits,
-	                                QString	container,
-	                                int	sampleRate,
-	                                int	frequency,	
-	                                QString	deviceName,
-	                                QString	deviceModel,
-	                                QString	recorderVersion) {
+	XmlFileWriter::XmlFileWriter (FILE *f,
+                                int	nrBits,
+                                QString	container,
+                                int	sampleRate,
+                                int	frequency,
+                                QString	deviceName,
+                                QString	deviceModel,
+                                QString	recorderVersion) {
 uint8_t t	= 0;
 	xmlFile		= f;
 	this	-> nrBits	= nrBits;
@@ -59,10 +59,10 @@ uint8_t t	= 0;
 	nrElements	= 0;
 }
 
-	xml_fileWriter::~xml_fileWriter	() {
+	XmlFileWriter::~XmlFileWriter	() {
 }
 
-void	xml_fileWriter::computeHeader	() {
+void	XmlFileWriter::computeHeader	() {
 QString s;
 QString	topLine = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 	if (xmlFile == nullptr)
@@ -78,7 +78,7 @@ QString	topLine = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 #define	BLOCK_SIZE	8192
 static int16_t buffer_int16 [BLOCK_SIZE];
 static int bufferP_int16	= 0;
-void	xml_fileWriter::add	(std::complex<int16_t> * data, int count) {
+void	XmlFileWriter::add	(std::complex<int16_t> * data, int count) {
 	nrElements	+= 2 * count;
 	for (int i = 0; i < count; i ++) {
 	   buffer_int16 [bufferP_int16 ++] = real (data [i]);
@@ -92,7 +92,7 @@ void	xml_fileWriter::add	(std::complex<int16_t> * data, int count) {
 
 static uint8_t buffer_uint8 [BLOCK_SIZE];
 static int bufferP_uint8	= 0;
-void	xml_fileWriter::add	(std::complex<uint8_t> * data, int count) {
+void	XmlFileWriter::add	(std::complex<uint8_t> * data, int count) {
 	nrElements	+= 2 * count;
 	for (int i = 0; i < count; i ++) {
 	   buffer_uint8 [bufferP_uint8 ++] = real (data [i]);
@@ -106,7 +106,7 @@ void	xml_fileWriter::add	(std::complex<uint8_t> * data, int count) {
 
 static int8_t buffer_int8 [BLOCK_SIZE];
 static int bufferP_int8	= 0;
-void	xml_fileWriter::add	(std::complex<int8_t> * data, int count) {
+void	XmlFileWriter::add	(std::complex<int8_t> * data, int count) {
 	nrElements	+= 2 * count;
 	for (int i = 0; i < count; i ++) {
 	   buffer_int8 [bufferP_int8 ++] = real (data [i]);
@@ -118,7 +118,7 @@ void	xml_fileWriter::add	(std::complex<int8_t> * data, int count) {
 	}
 }
 
-QString	xml_fileWriter::create_xmltree () {
+QString	XmlFileWriter::create_xmltree () {
 QDomDocument theTree;
 QDomElement root	= theTree. createElement ("SDR");
 
@@ -179,4 +179,3 @@ QDomElement root	= theTree. createElement ("SDR");
 
 	return theTree. toString ();
 }
-

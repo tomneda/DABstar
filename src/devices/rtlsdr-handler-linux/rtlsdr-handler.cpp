@@ -700,14 +700,14 @@ QString saveDir = rtlsdrSettings -> value ("saveDir_xmlDump",
 	if (xmlDumper == nullptr)
 	   return false;
 	
-	xmlWriter	= new xml_fileWriter (xmlDumper,
-	                                      8,
-	                                      "uint8",
-	                                      2048000,
-	                                      getVFOFrequency (),
-	                                      "rtlsdr",
-	                                      deviceModel,
-	                                      recorderVersion);
+	xmlWriter	= new XmlFileWriter (xmlDumper,
+                                  8,
+                                  "uint8",
+                                  2048000,
+                                  getVFOFrequency (),
+                                  "rtlsdr",
+                                  deviceModel,
+                                  recorderVersion);
 	xml_dumping. store (true);
 
 	QString	dumper	= QDir::fromNativeSeparators (fileName);

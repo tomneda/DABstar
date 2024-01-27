@@ -50,7 +50,7 @@
 #define GETPROCADDRESS  dlsym
 #endif
 
-class xml_fileWriter;
+class XmlFileWriter;
 
 //	DLL and ".so" function prototypes
 typedef int  (* pfn_LMS_GetDeviceList)(lms_info_str_t * dev_list);
@@ -119,7 +119,7 @@ private:
   void run();
 
   FILE * xmlDumper;
-  xml_fileWriter * xmlWriter;
+  XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> dumping;

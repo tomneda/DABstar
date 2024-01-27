@@ -395,14 +395,14 @@ QString saveDir = sdrplaySettings -> value ("saveDir_xmlDump",
 	if (xmlDumper == nullptr)
 	   return false;
 
-	xmlWriter	= new xml_fileWriter (xmlDumper,
-	                                      nrBits,
-	                                      "int16",
-	                                      2048000,
-	                                      vfoFrequency,
-	                                      "SDRplay",
-	                                      "????",
-	                                      recorderVersion);
+	xmlWriter	= new XmlFileWriter (xmlDumper,
+                                  nrBits,
+                                  "int16",
+                                  2048000,
+                                  vfoFrequency,
+                                  "SDRplay",
+                                  "????",
+                                  recorderVersion);
 	dumping. store (true);
 
 	QString dumper	= QDir::fromNativeSeparators (fileName);

@@ -57,7 +57,7 @@ using hackrf_sample_block_cb_fn = int (*)(hackrf_transfer * transfer);
 #define GETPROCADDRESS  dlsym
 #endif
 
-class xml_fileWriter;
+class XmlFileWriter;
 
 using pfn_hackrf_init = int (*)();
 using pfn_hackrf_open = int (*)(hackrf_device ** device);
@@ -159,7 +159,7 @@ private:
   std::atomic<bool> mRunning{};
   QLibrary * mpHandle = nullptr;
   FILE * mpXmlDumper = nullptr;
-  xml_fileWriter * mpXmlWriter = nullptr;
+  XmlFileWriter * mpXmlWriter = nullptr;
   std::atomic<bool> mDumping{};
   bool save_gain_settings = false;
   float mRefFreqErrFac = 1.0f;  // for workaround to set the ppm offset

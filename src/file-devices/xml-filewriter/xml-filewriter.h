@@ -45,18 +45,18 @@ public:
 	QString		modType;
 };
 
-class xml_fileWriter {
+class XmlFileWriter {
 public:
-		xml_fileWriter	(FILE *,
-	                         int,
-	                         QString,
-	                         int,
-	                         int,
-	                         QString,
-	                         QString,
-	                         QString);
+		XmlFileWriter	(FILE *,
+                    int,
+                    QString,
+                    int,
+                    int,
+                    QString,
+                    QString,
+                    QString);
 	                         
-			~xml_fileWriter		();
+			~XmlFileWriter		();
 	void		add			(std::complex<int16_t> *, int);
 	void		add			(std::complex<uint8_t> *, int);
 	void		add			(std::complex<int8_t> *, int);

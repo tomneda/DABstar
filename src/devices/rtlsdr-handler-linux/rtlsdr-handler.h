@@ -50,7 +50,7 @@
 #include    <QLibrary>
 
 class dll_driver;
-class xml_fileWriter;
+class XmlFileWriter;
 
 //	create typedefs for the library functions
 typedef struct rtlsdr_dev rtlsdr_dev_t;
@@ -124,7 +124,7 @@ private:
   QString deviceModel;
   QString recorderVersion;
   FILE * xmlDumper;
-  xml_fileWriter * xmlWriter;
+  XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> xml_dumping;

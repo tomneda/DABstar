@@ -431,7 +431,7 @@ bool HackRfHandler::setup_xml_dump()
     return false;
   }
 
-  mpXmlWriter = new xml_fileWriter(mpXmlDumper, 8, "int8", 2048000, getVFOFrequency(), "Hackrf", "--", mRecorderVersion);
+  mpXmlWriter = new XmlFileWriter(mpXmlDumper, 8, "int8", 2048000, getVFOFrequency(), "Hackrf", "--", mRecorderVersion);
   mDumping.store(true);
 
   QString dumper = QDir::fromNativeSeparators(fileName);

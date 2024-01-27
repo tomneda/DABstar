@@ -45,7 +45,7 @@
 //#define GETPROCADDRESS  dlsym
 //#endif
 
-class	xml_fileWriter;
+class	XmlFileWriter;
 
 #ifndef	PLUTO_RATE
 #define	PLUTO_RATE	2112000
@@ -151,7 +151,7 @@ private:
 	QSettings		*plutoSettings;
 	QString			recorderVersion;
 	FILE			*xmlDumper;
-	xml_fileWriter		*xmlWriter;
+	XmlFileWriter		*xmlWriter;
 	bool			setup_xmlDump	();
 	void			close_xmlDump	();
 	std::atomic<bool>	dumping;

@@ -707,14 +707,14 @@ QString saveDir = airspySettings -> value ("saveDir_xmlDump",
 	if (xmlDumper == nullptr)
 	   return false;
 	
-	xmlWriter	= new xml_fileWriter (xmlDumper,
-	                                      12,
-	                                      "int16",
-	                                      selectedRate,
-	                                      getVFOFrequency (),
-	                                      "AIRspy",
-	                                      "I",
-	                                      recorderVersion);
+	xmlWriter	= new XmlFileWriter (xmlDumper,
+                                  12,
+                                  "int16",
+                                  selectedRate,
+                                  getVFOFrequency (),
+                                  "AIRspy",
+                                  "I",
+                                  recorderVersion);
 	dumping. store (true);
 
 	QString dumper	= QDir::fromNativeSeparators (fileName);

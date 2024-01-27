@@ -42,7 +42,7 @@
 #include	"libairspy/airspy.h"
 #endif
 
-class xml_fileWriter;
+class XmlFileWriter;
 
 
 extern "C" {
@@ -103,7 +103,7 @@ private:
   RingBuffer<cmplx> _I_Buffer;
   QString recorderVersion;
   FILE * xmlDumper;
-  xml_fileWriter * xmlWriter;
+  XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> dumping;

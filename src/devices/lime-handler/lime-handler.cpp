@@ -548,14 +548,14 @@ QString saveDir = limeSettings -> value ("saveDir_xmlDump",
 	if (xmlDumper == nullptr)
 	   return false;
 	
-	xmlWriter	= new xml_fileWriter (xmlDumper,
-	                                      bitDepth	(),
-	                                      "int16",
-	                                      2048000,
-	                                      getVFOFrequency (),
-	                                      "lime",
-	                                      "1",
-	                                      recorderVersion);
+	xmlWriter	= new XmlFileWriter (xmlDumper,
+                                  bitDepth	(),
+                                  "int16",
+                                  2048000,
+                                  getVFOFrequency (),
+                                  "lime",
+                                  "1",
+                                  recorderVersion);
 	dumping. store (true);
 
 	QString dumper	= QDir::fromNativeSeparators (fileName);

@@ -53,7 +53,7 @@ typedef void (* mir_sdr_GainChangeCallback_t)(uint32_t gRdB, uint32_t lnaGRdB, v
 #define  GETPROCADDRESS  dlsym
 #endif
 
-class xml_fileWriter;
+class XmlFileWriter;
 
 // Dll and ".so" function prototypes
 typedef mir_sdr_ErrT (* pfn_mir_sdr_StreamInit)(int * gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int LNAEnable, int * gRdBsystem, int useGrAltMode, int * samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void * cbContext);
@@ -172,7 +172,7 @@ private:
 
   int lnaMax;
   FILE * xmlDumper;
-  xml_fileWriter * xmlWriter;
+  XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> dumping;

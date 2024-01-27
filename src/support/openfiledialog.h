@@ -34,6 +34,7 @@
 #include  <QSettings>
 #include  <QString>
 #include  <sndfile.h>
+#include <QDir>
 
 class OpenFileDialog
 {
@@ -51,10 +52,12 @@ public:
   QString get_maps_file_name();
   QString get_eti_file_name(const QString &, const QString &);
 
-  enum class EType { XML, SDR, IQ, RAW };
-  QString open_file_name(const EType iType);
+  enum class EType { UNDEF, XML, SDR, IQ, RAW };
+  QString open_sample_data_file_dialog_for_reading(EType & oType) const;
 
 private:
+  const QString msSampleStorageDir{"saveDirSampleDump"};
+  const QString msAudioStorageDir{"saveDirAudioDump"};
   QSettings * const mpSettings;
 
   QString _open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt);

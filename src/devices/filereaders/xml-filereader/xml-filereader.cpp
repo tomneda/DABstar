@@ -34,7 +34,7 @@
 #define	INPUT_FRAMEBUFFERSIZE	8 * 32768
 //
 //
-	xml_fileReader::xml_fileReader (QString f):
+	XmlFileReader::XmlFileReader (QString f):
 	   myFrame (nullptr),
 	   _I_Buffer (INPUT_FRAMEBUFFERSIZE) {
 	fileName	= f;
@@ -83,7 +83,7 @@
 	running. store (false);
 }
 
-	xml_fileReader::~xml_fileReader	() {
+	XmlFileReader::~XmlFileReader	() {
 	if (running. load()) {
 	   theReader	-> stopReader();
 	   while (theReader -> isRunning())
@@ -96,7 +96,7 @@
 	delete	theDescriptor;
 }
 
-bool	xml_fileReader::restartReader (int32_t freq) {
+bool	XmlFileReader::restartReader (int32_t freq) {
 	(void)freq;
 	if (running. load())
 	   return true;
@@ -109,7 +109,7 @@ bool	xml_fileReader::restartReader (int32_t freq) {
 	return true;
 }
 
-void	xml_fileReader::stopReader () {
+void	XmlFileReader::stopReader () {
 	if (running. load()) {
 	   theReader	-> stopReader();
 	   while (theReader -> isRunning())
@@ -121,8 +121,8 @@ void	xml_fileReader::stopReader () {
 }
 
 //	size is in "samples"
-int32_t	xml_fileReader::getSamples	(cmplx *V,
-	                                 int32_t size) {
+int32_t	XmlFileReader::getSamples	(cmplx *V,
+                                     int32_t size) {
 
 	if (theFile == nullptr)		// should not happen
 	   return 0;
@@ -133,23 +133,23 @@ int32_t	xml_fileReader::getSamples	(cmplx *V,
 	return _I_Buffer. get_data_from_ring_buffer (V, size);
 }
 
-int32_t	xml_fileReader::Samples	() {
+int32_t	XmlFileReader::Samples	() {
 	if (theFile == nullptr)
 	   return 0;
 	return _I_Buffer. get_ring_buffer_read_available();
 }
 
-void	xml_fileReader::setProgress (int samplesRead, int samplesToRead) {
+void	XmlFileReader::setProgress (int samplesRead, int samplesToRead) {
 	fileProgress	-> setValue ((float)samplesRead / samplesToRead * 100);
 	currentTime	-> display (samplesRead / 2048000.0);
 	totalTime	-> display (samplesToRead / 2048000.0);
 }
 
-int	xml_fileReader::getVFOFrequency	() {
+int	XmlFileReader::getVFOFrequency	() {
 	return theDescriptor -> blockList [0]. frequency;
 }
 
-void	xml_fileReader::handle_continuousButton () {
+void	XmlFileReader::handle_continuousButton () {
 	if (theReader == nullptr)
 	   return;
 	bool cont = theReader -> handle_continuousButton ();
@@ -157,36 +157,36 @@ void	xml_fileReader::handle_continuousButton () {
 	                                    "continuous off");
 }
 
-void	xml_fileReader::show	() {
+void	XmlFileReader::show	() {
 	myFrame. show ();
 }
 
-void	xml_fileReader::hide	() {
+void	XmlFileReader::hide	() {
 	myFrame. hide ();
 }
 
-bool	xml_fileReader::isHidden	() {
+bool	XmlFileReader::isHidden	() {
 	return myFrame. isHidden ();
 }
 
-bool	xml_fileReader::isFileInput	() {
+bool	XmlFileReader::isFileInput	() {
 	return true;
 }
 
-void xml_fileReader::setVFOFrequency(int32_t)
+void XmlFileReader::setVFOFrequency(int32_t)
 {
 }
 
-void xml_fileReader::resetBuffer()
+void XmlFileReader::resetBuffer()
 {
 }
 
-int16_t xml_fileReader::bitDepth()
+int16_t XmlFileReader::bitDepth()
 {
   return 10; // TODO: taken from former default interface, is it correct?
 }
 
-QString xml_fileReader::deviceName()
+QString XmlFileReader::deviceName()
 {
   return "XmlFile";
 }
