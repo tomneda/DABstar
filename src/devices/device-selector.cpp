@@ -70,7 +70,6 @@
 #include "xml-filereader.h"
 #include "wavfiles.h"
 #include "rawfiles.h"
-#include "dummy-handler.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
@@ -169,12 +168,6 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iD
     QMessageBox::warning(this, "Warning", "Unknown exception happens in device handling");
     inputDevice = nullptr;
   }
-
-//  if (inputDevice == nullptr)
-//  {
-//    fprintf(stderr, "Create dummy device\n");
-//    inputDevice = std::make_unique<DummyHandler>(); // should never trow
-//  }
 
   return inputDevice;
 }
