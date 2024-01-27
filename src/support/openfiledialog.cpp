@@ -44,7 +44,7 @@ OpenFileDialog::OpenFileDialog(QSettings * ipSetting) :
 
 FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
 {
-  const QString fileName = _open_file_dialog(PRJ_NAME "-" + iChannelName, "contentDir", "CSV", ".csv");
+  const QString fileName = _open_file_dialog(PRJ_NAME "-" + iChannelName, msContentStorageDir, "CSV", ".csv");
 
   if (fileName.isEmpty())
   {
@@ -131,17 +131,17 @@ SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName,
 
 QString OpenFileDialog::get_skip_file_file_name()
 {
-  return _open_file_dialog(PRJ_NAME "-skipFile", "contentDir", "XML", ".xml");
+  return _open_file_dialog(PRJ_NAME "-skipFile", msContentStorageDir, "XML", ".xml");
 }
 
 QString OpenFileDialog::get_dl_text_file_name()
 {
-  return _open_file_dialog(PRJ_NAME "-dlText", "contentDir", "Text", ".txt");
+  return _open_file_dialog(PRJ_NAME "-dlText", msContentStorageDir, "Text", ".txt");
 }
 
 FILE * OpenFileDialog::open_log_file_ptr()
 {
-  QString fileName = _open_file_dialog(PRJ_NAME "-LOG", "contentDir", "Text", ".txt");
+  QString fileName = _open_file_dialog(PRJ_NAME "-LOG", msContentStorageDir, "Text", ".txt");
 
   if (fileName.isEmpty())
   {
@@ -153,12 +153,12 @@ FILE * OpenFileDialog::open_log_file_ptr()
 
 QString OpenFileDialog::get_maps_file_name()
 {
-  return _open_file_dialog(PRJ_NAME "-Transmitters", "contentDir", "Text", ".txt");
+  return _open_file_dialog(PRJ_NAME "-Transmitters", msContentStorageDir, "Text", ".txt");
 }
 
 QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName)
 {
-  return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), "contentDir", "ETI", ".eti");
+  return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), msContentStorageDir, "ETI", ".eti");
 }
 
 QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt)

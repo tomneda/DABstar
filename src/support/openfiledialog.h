@@ -58,6 +58,7 @@ public:
 private:
   const QString msSampleStorageDir{"saveDirSampleDump"};
   const QString msAudioStorageDir{"saveDirAudioDump"};
+  const QString msContentStorageDir{"saveDirContent"};
   QSettings * const mpSettings;
 
   QString _open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt);
