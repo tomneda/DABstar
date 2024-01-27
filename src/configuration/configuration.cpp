@@ -35,28 +35,17 @@ Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
 
   sliderTest->hide(); // only used for test
 
-  if (mpSettings->value("onTop", 0).toInt() == 1)
-  {
-    onTop->setChecked(true);
-  }
-
-  if (mpSettings->value("saveLocations", 0).toInt() == 1)
-  {
-    transmSelector->setChecked(true);
-  }
-
-  if (mpSettings->value("saveSlides", 0).toInt() == 1)
-  {
-    saveSlides->setChecked(true);
-  }
-
+  onTop->setChecked(mpSettings->value("onTop", 0).toInt() != 0);
+  transmSelector->setChecked(mpSettings->value("saveLocations", 0).toInt() != 0);
+  saveSlides->setChecked(mpSettings->value("saveSlides", 0).toInt() != 0);
   switchDelaySetting->setValue(mpSettings->value("switchDelay", RadioInterface::SWITCH_DELAY).toInt());
-  utcSelector->setChecked(mpSettings->value("utcSelector", 0).toInt() == 1);
+  utcSelector->setChecked(mpSettings->value("utcSelector", 0).toInt() != 0);
   saveServiceSelector->setChecked(mpSettings->value("has-presetName", 0).toInt() != 0);
   closeDirect->setChecked(mpSettings->value("closeDirect", 0).toInt() != 0);
   epg2xmlSelector->setChecked(mpSettings->value("epg2xml", 0).toInt() != 0);
-  autoBrowser->setChecked(mpSettings->value("autoBrowser", 1).toInt() == 1);
-  transmitterTags->setChecked(mpSettings->value("transmitterTags", 1).toInt() == 1);
+  autoBrowser->setChecked(mpSettings->value("autoBrowser", 1).toInt() != 0);
+  transmitterTags->setChecked(mpSettings->value("transmitterTags", 1).toInt() != 0);
+  cbNativeFileDialog->setChecked(mpSettings->value("useNativeFileDialogs", 0).toInt() != 0);
 
   QPalette lcdPalette;
 #ifndef __MAC__
@@ -84,7 +73,7 @@ Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
   connect(portSelector, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_port_selector);
   connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_set_coordinates_button);
   connect(eti_activeSelector, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
-
+  connect(cbNativeFileDialog, &QCheckBox::stateChanged, this, &Configuration::_slot_use_native_file_dialogs);
 }
 
 void Configuration::save_position_and_config()
@@ -96,4 +85,9 @@ void Configuration::save_position_and_config()
 
   mpSettings->setValue("utcSelector", utcSelector->isChecked() ? 1 : 0);
   mpSettings->setValue("epg2xml", epg2xmlSelector->isChecked() ? 1 : 0);
+}
+
+void Configuration::_slot_use_native_file_dialogs(bool)
+{
+  mpSettings->setValue("useNativeFileDialogs", cbNativeFileDialog->isChecked() ? 1 : 0);
 }

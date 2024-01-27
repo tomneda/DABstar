@@ -163,6 +163,8 @@ QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const Q
 
 QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt)
 {
+  const bool useNativeFileDialog = (mpSettings->value("useNativeFileDialogs", 0).toInt() != 0);
+
   const QDir storedDir = mpSettings->value(iSettingName, QDir::homePath()).toString();
   QString fileName;
 
@@ -175,7 +177,7 @@ QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const
                                           fileName,
                                           iFileDesc + " (*" + iFileExt + ")",
                                           nullptr,
-                                          QFileDialog::DontUseNativeDialog);
+                                          useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
   if (fileName.isEmpty())
   {
@@ -194,6 +196,8 @@ QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const
 
 QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) const
 {
+  const bool useNativeFileDialog = (mpSettings->value("useNativeFileDialogs", 0).toInt() != 0);
+
   const QString FILETYPE_UFFXML = "UFF-XML (*.uff)";
   const QString FILETYPE_SDRWAV = "SDR-WAV (*.sdr)";
   const QString FILETYPE_RAW    = "RAW (*.raw)";
@@ -209,7 +213,7 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) 
                                           storedDir.path(),
                                           FILETYPE_UFFXML + ";;" + FILETYPE_SDRWAV + ";;" + FILETYPE_RAW + ";;" + FILETYPE_IQ,
                                           &selectedFilter,
-                                          QFileDialog::DontUseNativeDialog);
+                                          useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
 
   oType = EType::UNDEF;

@@ -34,6 +34,9 @@ public:
 private:
   QSettings * const mpSettings;
   RadioInterface * const mpRadioInterface;
+
+private slots:
+  void _slot_use_native_file_dialogs(bool);
 };
 
 

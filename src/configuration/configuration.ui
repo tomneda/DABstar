@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>configWidget</class>
  <widget class="QWidget" name="configWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>436</width>
+    <height>443</height>
+   </rect>
+  </property>
   <property name="maximumSize">
    <size>
     <width>436</width>
@@ -253,6 +261,13 @@
          </property>
          <property name="text">
           <string>Activate logger</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbNativeFileDialog">
+         <property name="text">
+          <string>Use native file dialogs</string>
          </property>
         </widget>
        </item>
