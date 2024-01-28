@@ -17,7 +17,6 @@
 #include "ui_configuration.h"
 #include <QWidget>
 
-class QSettings;
 class SettingHelper;
 class RadioInterface;
 
@@ -27,13 +26,12 @@ class Configuration : public QWidget, public Ui_configWidget
   Q_OBJECT
 
 public:
-  Configuration(RadioInterface * ipRI, QSettings * ipS);
+  Configuration(RadioInterface * ipRI);
   ~Configuration() override = default;
 
   void save_position_and_config();
 
 private:
-  QSettings * const mpSettings;
   SettingHelper * const mpSH;
   RadioInterface * const mpRadioInterface;
 

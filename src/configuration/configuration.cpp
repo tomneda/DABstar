@@ -17,9 +17,8 @@
 #include "radio.h"
 #include <QSettings>
 
-Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
+Configuration::Configuration(RadioInterface * ipRI) :
   Ui_configWidget(),
-  mpSettings(ipS),
   mpSH(&SettingHelper::get_instance()),
   mpRadioInterface(ipRI)
 {

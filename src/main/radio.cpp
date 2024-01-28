@@ -131,7 +131,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mOpenFileDialog(Si),
   mFmFrequency(fmFrequency),
   mDoReportError(error_report),
-  mConfig(this, Si),
+  mConfig(this),
   mpSettings(Si),
   mDeviceSelector(Si)
 {
