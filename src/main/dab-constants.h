@@ -115,6 +115,9 @@ public:
 // 40 up shows good results
 #define    DIFF_LENGTH  60
 
+static constexpr int32_t SWITCH_DELAY = 3; // switch time in second until service is called after channel selection
+
+
 #define    BAND_III  0100
 #define    L_BAND    0101
 #define    A_BAND    0102

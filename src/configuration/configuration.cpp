@@ -32,17 +32,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
 
   sliderTest->hide(); // only used for test
 
-  onTop->setChecked(mpSH->read(SettingHelper::onTop).toBool());
-  transmSelector->setChecked(mpSH->read(SettingHelper::saveLocations).toBool());
-  saveSlides->setChecked(mpSH->read(SettingHelper::saveSlides).toBool());
-  switchDelaySetting->setValue(mpSH->read(SettingHelper::switchDelay).toInt());
-  utcSelector->setChecked(mpSH->read(SettingHelper::utcSelector).toBool());
-  saveServiceSelector->setChecked(mpSH->read(SettingHelper::saveServiceSelector).toBool());
-  closeDirect->setChecked(mpSH->read(SettingHelper::closeDirect).toBool());
-  epg2xmlSelector->setChecked(mpSH->read(SettingHelper::epg2xml).toBool());
-  autoBrowser->setChecked(mpSH->read(SettingHelper::autoBrowser).toBool());
-  transmitterTags->setChecked(mpSH->read(SettingHelper::transmitterTags).toBool());
-  cbNativeFileDialog->setChecked(mpSH->read(SettingHelper::useNativeFileDialogs).toBool());
+  _sync_ui_elements(false);
 
   QPalette lcdPalette;
 #ifndef __MAC__
@@ -76,12 +66,27 @@ Configuration::Configuration(RadioInterface * ipRI) :
 void Configuration::save_position_and_config()
 {
   mpSH->write_widget_geometry(SettingHelper::configWidget, this);
-
-  mpSH->write(SettingHelper::utcSelector, utcSelector->isChecked());
-  mpSH->write(SettingHelper::epg2xml, epg2xmlSelector->isChecked());
+  _sync_ui_elements(true);
 }
 
 void Configuration::_slot_use_native_file_dialogs(bool iChecked)
 {
   mpSH->write(SettingHelper::EElem::useNativeFileDialogs, iChecked);
+}
+
+void Configuration::_sync_ui_elements(const bool iWriteSettings)
+{
+  mpSH->sync_ui_state(SettingHelper::switchDelay, switchDelaySetting, iWriteSettings);
+
+  mpSH->sync_ui_state(SettingHelper::closeDirect, closeDirect, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::saveServiceSelector, saveServiceSelector, iWriteSettings);
+
+  mpSH->sync_ui_state(SettingHelper::onTop, onTop, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::saveLocations, transmSelector, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::saveSlides, saveSlides, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::utcSelector, utcSelector, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::epg2xml, epg2xmlSelector, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::autoBrowser, autoBrowser, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::transmitterTags, transmitterTags, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::useNativeFileDialogs, cbNativeFileDialog, iWriteSettings);
 }

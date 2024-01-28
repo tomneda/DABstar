@@ -28,33 +28,31 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include  <fstream>
-#include  <numeric>
-#include  <unistd.h>
-#include  <vector>
-#include  <QCoreApplication>
-#include  <QSettings>
-#include  <QMessageBox>
-#include  <QFileDialog>
-#include  <QDateTime>
-#include  <QStringList>
-#include  <QStringListModel>
-#include  <QMouseEvent>
-#include  <QDir>
-#include  <QSpacerItem>
-#include  "dab-constants.h"
-#include  "mot-content-types.h"
-#include  "radio.h"
-//#include  "rawfiles.h"
-//#include  "wavfiles.h"
-//#include  "xml-filereader.h"
-#include  "dab-tables.h"
-#include  "ITU_Region_1.h"
-#include  "coordinates.h"
-#include  "mapport.h"
-#include  "techdata.h"
-//#include  "dummy-handler.h"
-#include  "service-list-handler.h"
+
+#include "dab-constants.h"
+#include "mot-content-types.h"
+#include "radio.h"
+#include "dab-tables.h"
+#include "ITU_Region_1.h"
+#include "coordinates.h"
+#include "mapport.h"
+#include "techdata.h"
+#include "service-list-handler.h"
+#include "setting-helper.h"
+#include <fstream>
+#include <numeric>
+#include <unistd.h>
+#include <vector>
+#include <QCoreApplication>
+#include <QSettings>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QDateTime>
+#include <QStringList>
+#include <QStringListModel>
+#include <QMouseEvent>
+#include <QDir>
+#include <QSpacerItem>
 
 #ifdef  TCP_STREAMER
   #include "tcp-streamer.h"
@@ -132,6 +130,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mFmFrequency(fmFrequency),
   mDoReportError(error_report),
   mConfig(this),
+  mpSH(&SettingHelper::get_instance()),
   mpSettings(Si),
   mDeviceSelector(Si)
 {
@@ -147,16 +146,17 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mProcessParams.carrBuffer = &mCarrBuffer;
   mProcessParams.responseBuffer = &mResponseBuffer;
   mProcessParams.frameBuffer = &mFrameBuffer;
-  mProcessParams.dabMode = mpSettings->value("dabMode", 1).toInt();
-  mProcessParams.threshold = mpSettings->value("threshold", 3).toInt();
-  mProcessParams.diff_length = mpSettings->value("diff_length", DIFF_LENGTH).toInt();
-  mProcessParams.tii_delay = mpSettings->value("tii_delay", 5).toInt();
+
+  mProcessParams.dabMode = mpSH->read(SettingHelper::dabMode).toInt();
+  mProcessParams.threshold = mpSH->read(SettingHelper::threshold).toInt();
+  mProcessParams.diff_length = mpSH->read(SettingHelper::diffLength).toInt();
+  mProcessParams.tii_delay = mpSH->read(SettingHelper::tiiDelay).toInt();
   if (mProcessParams.tii_delay < 2) { mProcessParams.tii_delay = 2; }
-  mProcessParams.tii_depth = mpSettings->value("tii_depth", 4).toInt();
-  mProcessParams.echo_depth = mpSettings->value("echo_depth", 1).toInt();
+  mProcessParams.tii_depth = mpSH->read(SettingHelper::tiiDepth).toInt();
+  mProcessParams.echo_depth = mpSH->read(SettingHelper::echoDepth).toInt();
 
   //	set on top or not? checked at start up
-  if (mpSettings->value("onTop", 0).toInt() == 1)
+  if (mpSH->read(SettingHelper::onTop).toBool())
   {
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
   }
@@ -177,12 +177,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
   setWindowTitle(PRJ_NAME);
 
-  int x = mpSettings->value("mainWidget-x", 100).toInt();
-  int y = mpSettings->value("mainWidget-y", 100).toInt();
-  int wi = mpSettings->value("main-widget-w", 300).toInt();
-  int he = mpSettings->value("main-widget-h", 200).toInt();
-  this->resize(QSize(wi, he));
-  this->move(QPoint(x, y));
+  mpSH->read_widget_geometry(SettingHelper::mainWidget, this);
 
   mpTechDataWidget = new TechData(this, mpSettings, &mTechDataBuffer);
 
@@ -192,13 +187,14 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mChannel.nextService.valid = false;
   mChannel.serviceCount = -1;
 
-  if (mpSettings->value("has-presetName", 0).toInt() != 0)
+  if (mpSH->read(SettingHelper::hasPresetName).toBool())
   {
-    QString presetName = mpSettings->value("presetname", "").toString();
+    QString presetName = mpSH->read(SettingHelper::presetName).toString();
 
-    if (presetName != "")
+    if (!presetName.isEmpty())
     {
       QStringList ss = presetName.split(":");
+
       if (ss.size() == 2)
       {
         mChannel.nextService.channel = ss.at(0);
@@ -217,13 +213,13 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   }
 
   mChannel.targetPos = cmplx(0, 0);
-  float local_lat = mpSettings->value("latitude", 0).toFloat();
-  float local_lon = mpSettings->value("longitude", 0).toFloat();
+  float local_lat = mpSH->read(SettingHelper::latitude).toFloat();
+  float local_lon = mpSH->read(SettingHelper::longitude).toFloat();
   mChannel.localPos = cmplx(local_lat, local_lon);
 
   mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
 
-  mTransmitterTagsLocal = (mpSettings->value("transmitterTags", 1).toInt() == 1);
+  mTransmitterTagsLocal = mpSH->read(SettingHelper::transmitterTags).toBool();
   mpTechDataWidget->hide();  // until shown otherwise
   mServiceList.clear();
 #ifdef DATA_STREAMER
@@ -243,12 +239,12 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   theTechWindow->hide();
 #else
   //	just sound out
-  const int16_t latency = mpSettings->value("latency", 5).toInt();
+  const int16_t latency = mpSH->read(SettingHelper::latency).toInt();
   mpSoundOut = new AudioSink(latency);
   ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
   mConfig.streamoutSelector->show();
   bool err = false;
-  h = mpSettings->value("soundchannel", "default").toString();
+  h = mpSH->read(SettingHelper::soundchannel).toString();
 
   k = mConfig.streamoutSelector->findText(h);
   if (k != -1)
@@ -263,36 +259,21 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   }
 #endif
 
-#ifndef  __MINGW32__
-  mPicturesPath = checkDir(QDir::tempPath());
-#else
-  picturesPath	= checkDir (QDir::homePath ());
-#endif
-  mPicturesPath += PRJ_NAME "/PIC/";
-  mPicturesPath = mpSettings->value("picturesPath", mPicturesPath).toString();
-  mPicturesPath = checkDir(mPicturesPath);
-  mFilePath = mpSettings->value("filePath", mPicturesPath).toString();
-  if (!mFilePath.isEmpty())
-  {
-    mFilePath = checkDir(mFilePath);
-  }
+  mPicturesPath = mpSH->read(SettingHelper::picturesPath).toString();
+  mPicturesPath = check_and_create_dir(mPicturesPath);
 
-#ifndef  __MINGW32__
-  mEpgPath = checkDir(QDir::tempPath());
-#else
-  epgPath		= checkDir (QDir::homePath ());
-#endif
-  mEpgPath += PRJ_NAME "/EPG/";
-  mEpgPath = mpSettings->value("epgPath", mEpgPath).toString();
-  mEpgPath = checkDir(mEpgPath);
+  mFilePath = mpSH->read(SettingHelper::filePath).toString();
+  mFilePath = check_and_create_dir(mFilePath);
+
+  mEpgPath = mpSH->read(SettingHelper::epgPath).toString();
+  mEpgPath = check_and_create_dir(mEpgPath);
+
   connect(&mEpgProcessor, &EpgDecoder::signal_set_epg_data, this, &RadioInterface::slot_set_epg_data);
+
   //	timer for autostart epg service
   mEpgTimer.setSingleShot(true);
   connect(&mEpgTimer, &QTimer::timeout, this, &RadioInterface::slot_epg_timer_timeout);
 
-  QString historyFile = QDir::toNativeSeparators(QDir::homePath() + "/.config/" APP_NAME "/stationlist.xml");
-  historyFile = mpSettings->value("history", historyFile).toString();
-  historyFile = QDir::toNativeSeparators(historyFile);
   mpTimeTable = new timeTableHandler(this);
   mpTimeTable->hide();
 
@@ -502,7 +483,7 @@ bool RadioInterface::doStart()
   //	Some hidden buttons can be made visible now
   connectGUI();
 
-  if (mpSettings->value("showDeviceWidget", 0).toInt() != 0)
+  if (mpSH->read(SettingHelper::showDeviceWidget).toBool())
   {
     mpInputDevice->show();
   }
@@ -536,28 +517,28 @@ bool RadioInterface::doStart()
   //
   if (mChannel.nextService.valid)
   {
-    const int32_t switchDelay = mpSettings->value("switchDelay", SWITCH_DELAY).toInt();
+    const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
     mPresetTimer.setSingleShot(true);
     mPresetTimer.setInterval(switchDelay * 1000);
     mPresetTimer.start(switchDelay * 1000);
   }
 
   {
-    const bool b = (mpSettings->value("tii_detector", 0).toInt() == 1);
+    const bool b = mpSH->read(SettingHelper::tiiDetector).toBool();
     mConfig.tii_detectorMode->setChecked(b);
     mpDabProcessor->set_tiiDetectorMode(b);
     connect(mConfig.tii_detectorMode, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_tii_detector_mode);
   }
 
   {
-    const bool b = (mpSettings->value("dcAvoidance", 0).toInt() == 1);
+    const bool b = mpSH->read(SettingHelper::dcAvoidance).toBool();
     mConfig.cbDcAvoidance->setChecked(b);
     mpDabProcessor->set_dc_avoidance_algorithm(b);
     connect(mConfig.cbDcAvoidance, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_avoidance_algorithm);
   }
 
   {
-    const bool b = (mpSettings->value("dcRemoval", 0).toInt() == 1);
+    const bool b = mpSH->read(SettingHelper::dcRemoval).toBool();
     mConfig.cbDcRemovalFilter->setChecked(b);
     mpDabProcessor->set_dc_removal(b);
     connect(mConfig.cbDcRemovalFilter, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_removal);
@@ -727,7 +708,7 @@ void RadioInterface::_slot_handle_content_button()
                    + hextoString(mChannel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
                    + QString::number(mServiceList.size()) + ";" + lblStationLocation->text() + "\n";
 
-  mpContentTable = new ContentTable(this, mpSettings, mChannel.channelName, mpDabProcessor->scanWidth());
+  mpContentTable = new ContentTable(this, mpSH->get_settings(), mChannel.channelName, mpDabProcessor->scanWidth());
   connect(mpContentTable, &ContentTable::signal_go_service, this, &RadioInterface::slot_handle_content_selector);
 
   mpContentTable->addLine(header);
@@ -739,8 +720,13 @@ void RadioInterface::_slot_handle_content_button()
   mpContentTable->show();
 }
 
-QString RadioInterface::checkDir(const QString & s)
+QString RadioInterface::check_and_create_dir(const QString & s)
 {
+  if (s.isEmpty())
+  {
+    return s;
+  }
+
   QString dir = s;
 
   if (!dir.endsWith(QChar('/')))
@@ -1160,11 +1146,7 @@ void RadioInterface::_slot_terminate_process()
   mIsRunning.store(false);
   _show_hide_buttons(false);
 
-  mpSettings->setValue("mainWidget-x", this->pos().x());
-  mpSettings->setValue("mainWidget-y", this->pos().y());
-  QSize size = this->size();
-  mpSettings->setValue("mainwidget-w", size.width());
-  mpSettings->setValue("mainwidget-h", size.height());
+  mpSH->write_widget_geometry(SettingHelper::mainWidget, this);
 
   mConfig.save_position_and_config();
 
@@ -1223,7 +1205,7 @@ void RadioInterface::_slot_terminate_process()
   mpLogFile = nullptr;
 
   // everything should be halted by now
-  mpSettings->sync();
+  mpSH->sync();
   mSpectrumViewer.hide();
 
   delete mpDabProcessor;
@@ -1322,7 +1304,7 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
 
   _set_device_to_file_mode(!mChannel.realChannel);
 
-  if (mpSettings->value("deviceVisible", 1).toInt() != 0)
+  if (mpSH->read(SettingHelper::deviceVisible).toBool())
   {
     mpInputDevice->show();
   }
@@ -1349,7 +1331,7 @@ void RadioInterface::_slot_handle_device_widget_button()
     mpInputDevice->hide();
   }
 
-  mpSettings->setValue("deviceVisible", mpInputDevice->isHidden() ? 0 : 1);
+  mpSH->write(SettingHelper::deviceVisible, !mpInputDevice->isHidden());
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1796,7 +1778,7 @@ void RadioInterface::slot_set_stream_selector(int k)
   }
 #if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
   ((AudioSink *)(mpSoundOut))->selectDevice(k);
-  mpSettings->setValue("soundchannel", mConfig.streamoutSelector->currentText());
+  mpSH->write(SettingHelper::soundchannel, mConfig.streamoutSelector->currentText());
 #else
   (void)k;
 #endif
@@ -1817,7 +1799,7 @@ void RadioInterface::_slot_handle_tech_detail_button()
   {
     mpTechDataWidget->hide();
   }
-  mpSettings->setValue("techDataVisible", mpTechDataWidget->isHidden() ? 0 : 1);
+  mpSH->write(SettingHelper::techDataVisible, !mpTechDataWidget->isHidden());
 }
 
 // Whenever the input device is a file, some functions, e.g. selecting a channel,
@@ -2056,7 +2038,7 @@ void RadioInterface::_slot_handle_spectrum_button()
   {
     mSpectrumViewer.hide();
   }
-  mpSettings->setValue("spectrumVisible", mSpectrumViewer.is_hidden() ? 0 : 1);
+  mpSH->write(SettingHelper::spectrumVisible, !mSpectrumViewer.is_hidden());
 }
 
 //	When changing (or setting) a device, we do not want anybody
@@ -2115,9 +2097,9 @@ void RadioInterface::disconnectGUI()
 
 void RadioInterface::closeEvent(QCloseEvent * event)
 {
-  int x = mConfig.closeDirect->isChecked() ? 1 : 0;
-  mpSettings->setValue("closeDirect", x);
-  if (x != 0)
+  const bool x = mConfig.closeDirect->isChecked();
+  mpSH->write(SettingHelper::closeDirect, x);
+  if (x)
   {
     _slot_terminate_process();
     event->accept();
@@ -2370,7 +2352,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
   mChannel.nextService.SId = 0;
   mChannel.nextService.SCIds = 0;
   mPresetTimer.setSingleShot(true);
-  const int32_t switchDelay = mpSettings->value("switchDelay", SWITCH_DELAY).toInt();
+  const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
   mPresetTimer.setInterval(switchDelay * 1000);
   mPresetTimer.start(switchDelay * 1000);
   startChannel(channelSelector->currentText());
@@ -2495,18 +2477,20 @@ void RadioInterface::startService(DabService & s)
     }
 
     startAudioservice(&ad);
-    if (mpSettings->value("has-presetName", 0).toInt() == 1)
+    if (mpSH->read(SettingHelper::hasPresetName).toBool())
     {
-      QString s = mChannel.channelName + ":" + serviceName;
-      mpSettings->setValue("presetname", s);
+      const QString csn = mChannel.channelName + ":" + serviceName;
+      mpSH->write(SettingHelper::presetName, csn);
     }
     else
     {
-      mpSettings->setValue("presetname", "");
+      mpSH->write(SettingHelper::presetName, "");
     }
-#ifdef  HAVE_PLUTO_RXTX
-                                                                                                                            if (streamerOut != nullptr)
-	      streamerOut -> addRds (std::string (serviceName. toUtf8 (). data ()));
+#ifdef HAVE_PLUTO_RXTX
+    if (streamerOut != nullptr)
+    {
+      streamerOut->addRds(std::string(serviceName.toUtf8().data()));
+    }
 #endif
   }
   else if (mpDabProcessor->is_packetService(serviceName))
@@ -2521,7 +2505,7 @@ void RadioInterface::startService(DabService & s)
   else
   {
     write_warning_message("Insufficient data for this program (2)");
-    mpSettings->setValue("presetname", "");
+    mpSH->write(SettingHelper::presetName, "");
   }
 }
 
@@ -2754,7 +2738,7 @@ void RadioInterface::startChannel(const QString & theChannel)
   const int32_t tunedFrequencyHz = mBandHandler.get_frequency_Hz(theChannel);
   LOG("channel starts ", theChannel);
   mSpectrumViewer.show_nominal_frequency_MHz((float)tunedFrequencyHz / 1'000'000.0f);
-  mpSettings->setValue("channel", theChannel);
+  mpSH->write(SettingHelper::channel, theChannel);
   mpInputDevice->resetBuffer();
   mServiceList.clear();
   //model.clear();
@@ -2782,7 +2766,7 @@ void RadioInterface::startChannel(const QString & theChannel)
 
   if (!mIsScanning.load())
   {
-    const int32_t switchDelay = mpSettings->value("switchDelay", SWITCH_DELAY).toInt();
+    const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
     mEpgTimer.start(switchDelay * 1000);
   }
 }
@@ -2950,7 +2934,7 @@ void RadioInterface::startScanning()
   _update_channel_selector(cc);
   lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
   btnScanning->start_animation();
-  const int32_t switchDelay = mpSettings->value("switchDelay", SWITCH_DELAY).toInt();
+  const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
   mChannelTimer.start(switchDelay * 1000);
 
   startChannel(channelSelector->currentText());
@@ -3019,7 +3003,7 @@ void RadioInterface::slot_no_signal_found()
       connect(&mChannelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
       lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
-      const int32_t switchDelay = mpSettings->value("switchDelay", SWITCH_DELAY).toInt();
+      const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
       mChannelTimer.start(switchDelay * 1000);
       startChannel(channelSelector->currentText());
     }
@@ -3145,13 +3129,13 @@ void RadioInterface::_update_channel_selector(int index)
 
 void RadioInterface::_slot_handle_switch_delay_setting(int newV)
 {
-  mpSettings->setValue("switchDelay", newV);
+  mpSH->write(SettingHelper::switchDelay, newV);
 }
 
 void RadioInterface::_slot_handle_save_service_selector(int d) // TODO: is that choice useful? Always active?
 {
   (void)d;
-  mpSettings->setValue("has-presetName", mConfig.saveServiceSelector->isChecked() ? 1 : 0);
+  mpSH->write(SettingHelper::hasPresetName, mConfig.saveServiceSelector->isChecked());
 }
 
 //-------------------------------------------------------------------------
@@ -3164,15 +3148,17 @@ void RadioInterface::slot_epg_timer_timeout()
 {
   mEpgTimer.stop();
 
-  if (mpSettings->value("epgFlag", 0).toInt() != 1)
+  if (!mpSH->read(SettingHelper::epgFlag).toBool())
   {
     return;
   }
+
   if (mIsScanning.load())
   {
     return;
   }
-  for (auto serv: mServiceList)
+
+  for (const auto & serv: mServiceList)
   {
     if (serv.name.contains("-EPG ", Qt::CaseInsensitive) ||
         serv.name.contains(" EPG   ", Qt::CaseInsensitive) ||
@@ -3276,7 +3262,7 @@ void RadioInterface::_slot_handle_time_table()
   }
 
   mpTimeTable->clear();
-  epgWidth = mpSettings->value("epgWidth", 70).toInt();
+  epgWidth = mpSH->read(SettingHelper::epgWidth).toInt();
   if (epgWidth < 50)
   {
     epgWidth = 50;
@@ -3312,20 +3298,20 @@ void RadioInterface::_slot_handle_tii_detector_mode(bool iIsChecked)
   assert(mpDabProcessor != nullptr);
   mpDabProcessor->set_tiiDetectorMode(iIsChecked);
   mChannel.transmitters.clear();
-  mpSettings->setValue("tii_detector", (iIsChecked) ? 1 : 0);
+  mpSH->write(SettingHelper::tiiDetector, iIsChecked);
 }
 
 void RadioInterface::_slot_handle_dc_avoidance_algorithm(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
-  mpSettings->setValue("dcAvoidance", (iIsChecked ? 1 : 0)); // write settings before action as file operation can influence sample activities
+  mpSH->write(SettingHelper::dcAvoidance, iIsChecked); // write settings before action as file operation can influence sample activities
   mpDabProcessor->set_dc_avoidance_algorithm(iIsChecked);
 }
 
 void RadioInterface::_slot_handle_dc_removal(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
-  mpSettings->setValue("dcRemoval", (iIsChecked ? 1 : 0)); // write settings before action as file operation can influence sample activities
+  mpSH->write(SettingHelper::dcRemoval, iIsChecked); // write settings before action as file operation can influence sample activities
   mpDabProcessor->set_dc_removal(iIsChecked);
 }
 
@@ -3413,21 +3399,23 @@ void RadioInterface::slot_handle_set_coordinates_button()
 {
   Coordinates theCoordinator(mpSettings);
   (void)theCoordinator.QDialog::exec();
-  float local_lat = mpSettings->value("latitude", 0).toFloat();
-  float local_lon = mpSettings->value("longitude", 0).toFloat();
+  float local_lat = mpSH->read(SettingHelper::latitude).toFloat();
+  float local_lon = mpSH->read(SettingHelper::longitude).toFloat();
   mChannel.localPos = cmplx(local_lat, local_lon);
 }
 
 void RadioInterface::slot_load_table()
 {
-  QString tableFile = mpSettings->value("tiiFile", "").toString();
+  QString tableFile = mpSH->read(SettingHelper::tiiFile).toString();
 
-  if (tableFile == "")
+  if (tableFile.isEmpty())
   {
     tableFile = QDir::homePath() + "/.txdata.tii";
-    mpSettings->setValue("tiiFile", tableFile);
+    mpSH->write(SettingHelper::tiiFile, tableFile);
   }
+
   mTiiHandler.loadTable(tableFile);
+
   if (mTiiHandler.is_valid())
   {
     QMessageBox::information(this, tr("success"), tr("Loading and installing database complete\n"));
@@ -3452,11 +3440,11 @@ void RadioInterface::_slot_handle_http_button()
 
   if (mpHttpHandler == nullptr)
   {
-    QString browserAddress = mpSettings->value("browserAddress", "http://localhost").toString();
-    QString mapPort = mpSettings->value("mapPort", 8080).toString();
+    QString browserAddress = mpSH->read(SettingHelper::browserAddress).toString();
+    QString mapPort = mpSH->read(SettingHelper::mapPort).toString();
 
     QString mapFile;
-    if (mpSettings->value("saveLocations", 0).toInt() == 1)
+    if (mpSH->read(SettingHelper::saveLocations).toBool())
     {
       mapFile = mOpenFileDialog.get_maps_file_name();
     }
@@ -3469,7 +3457,7 @@ void RadioInterface::_slot_handle_http_button()
                                     browserAddress,
                                     mChannel.localPos,
                                     mapFile,
-                                   mpSettings->value("autoBrowser", 1).toInt() == 1);
+                                    mpSH->read(SettingHelper::autoBrowser).toBool());
     mMaxDistance = -1;
     if (mpHttpHandler != nullptr)
     {
@@ -3501,7 +3489,7 @@ void RadioInterface::_slot_handle_http_button()
 void RadioInterface::slot_handle_auto_browser(int d)
 {
   (void)d;
-  mpSettings->setValue("autoBrowser", mConfig.autoBrowser->isChecked() ? 1 : 0);
+  mpSH->write(SettingHelper::autoBrowser, mConfig.autoBrowser->isChecked());
 }
 
 void RadioInterface::slot_handle_transmitter_tags(int d)
@@ -3509,7 +3497,7 @@ void RadioInterface::slot_handle_transmitter_tags(int d)
   (void)d;
   mMaxDistance = -1;
   //transmitterTags_local = mConfig.transmitterTags->isChecked();
-  mpSettings->setValue("transmitterTags", mTransmitterTagsLocal ? 1 : 0);
+  mpSH->write(SettingHelper::transmitterTags, mTransmitterTagsLocal);
   mChannel.targetPos = cmplx(0, 0);
   if ((mTransmitterTagsLocal) && (mpHttpHandler != nullptr))
   {
@@ -3519,13 +3507,8 @@ void RadioInterface::slot_handle_transmitter_tags(int d)
 
 void RadioInterface::slot_handle_on_top(int d)
 {
-  bool onTop = false;
   (void)d;
-  if (mConfig.onTop->isChecked())
-  {
-    onTop = true;
-  }
-  mpSettings->setValue("onTop", onTop ? 1 : 0);
+  mpSH->write(SettingHelper::onTop, mConfig.onTop->isChecked());
 }
 
 void RadioInterface::show_pause_slide()
@@ -3546,13 +3529,13 @@ void RadioInterface::slot_handle_port_selector()
 void RadioInterface::slot_handle_transm_selector(int x)
 {
   (void)x;
-  mpSettings->setValue("saveLocations", mConfig.transmSelector->isChecked() ? 1 : 0);
+  mpSH->write(SettingHelper::saveLocations, mConfig.transmSelector->isChecked());
 }
 
 void RadioInterface::slot_handle_save_slides(int x)
 {
   (void)x;
-  mpSettings->setValue("saveSlides", mConfig.saveSlides->isChecked() ? 1 : 0);
+  mpSH->write(SettingHelper::saveSlides, mConfig.saveSlides->isChecked());
 }
 
 //////////////////////////////////////////////////////////////////////////

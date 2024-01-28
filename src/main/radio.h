@@ -66,6 +66,7 @@
 #include "configuration.h"
 
 class QSettings;
+class SettingHelper;
 class AudioBase;
 class timeTableHandler;
 class ServiceListHandler;
@@ -173,8 +174,6 @@ public:
     AFL_PS_USED  = 0x2
   };
 
-  static constexpr int32_t SWITCH_DELAY = 3; // switch time in second until service is called after channel selection
-
 private:
   template<typename T>
   struct StatusInfoElem
@@ -226,6 +225,7 @@ private:
   bool mDoReportError = false;
   TechData * mpTechDataWidget = nullptr;
   Configuration mConfig;
+  SettingHelper * const mpSH;
   QSettings * mpSettings = nullptr;
   std::atomic<bool> mIsRunning;
   std::atomic<bool> mIsScanning;
@@ -290,7 +290,7 @@ private:
 
   void start_etiHandler();
   void stop_etiHandler();
-  static QString checkDir(const QString &);
+  static QString check_and_create_dir(const QString &);
 
   void startAudioservice(Audiodata *);
   void startPacketservice(const QString &);

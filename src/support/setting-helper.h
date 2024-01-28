@@ -21,6 +21,8 @@
 #include <QVariant>
 
 class QSettings;
+class QAbstractButton;
+class QSpinBox;
 
 class SettingHelper
 {
@@ -36,11 +38,39 @@ public:
 
   enum EElem
   {
+    // main widget
+    dabMode,
+    threshold,
+    diffLength,
+    tiiDelay,
+    tiiDepth,
+    echoDepth,
+    latency,
+    soundchannel,
+    picturesPath,
+    filePath,
+    epgPath,
+    dabBand,
+    skipFile,
+    tiiFile,
+    device,
+    deviceVisible,
+    spectrumVisible,
+    techDataVisible,
+    showDeviceWidget,
+    hasPresetName,
+    presetName,
+    channel,
+    epgWidth,
+    browserAddress,
+    mapPort,
+    epgFlag,
+
+    // needed in config widget
     autoBrowser,
     closeDirect,
     dcAvoidance,
     dcRemoval,
-    deviceVisible,
     epg2xml,
     hidden,
     latitude,
@@ -53,17 +83,16 @@ public:
     saveSlides,
     serviceListSortCol,
     serviceListSortDesc,
-    spectrumVisible,
     switchDelay,
-    techDataVisible,
-    tii_detector,
+    tiiDetector,
     transmitterTags,
     useNativeFileDialogs,
     utcSelector,
     saveServiceSelector,
 
     // special enums for windows position and size storage
-    configWidget
+    configWidget,
+    mainWidget
   };
 
   QVariant read(const EElem iElem) const;
@@ -72,17 +101,22 @@ public:
   void read_widget_geometry(const EElem iElem, QWidget * const iopWidget) const;
   void write_widget_geometry(const EElem iElem, const QWidget * const ipWidget);
 
-  QSettings * get_settings() const { return mpSettings; } // for a direct access to the QSettings ...
+  void sync_ui_state(const EElem iElem, QAbstractButton * const ioCheckBox, const bool iWriteSetting);
+  void sync_ui_state(const EElem iElem, QSpinBox * const ioCheckBox, const bool iWriteSetting);
+
+  void sync() const;
+  QSettings * get_settings() const { return mpSettings; } // for a direct access to the QSettings (should be removed at last)
 
 private:
   explicit SettingHelper(QSettings * ipSettings);
-  ~SettingHelper() = default;
+  ~SettingHelper();
 
   QSettings * const mpSettings;
 
   struct SMapElem
   {
-    QString KeyStr;
+    QString  Group;
+    QString  KeyStr;
     QVariant KeyVal;
   };
   

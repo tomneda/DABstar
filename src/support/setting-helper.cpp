@@ -15,9 +15,12 @@
  */
 
 #include "setting-helper.h"
+#include "dab-constants.h"
 #include <QSettings>
 #include <QDir>
 #include <QWidget>
+#include <QAbstractButton>
+#include <QSpinBox>
 
 SettingHelper::SettingHelper(QSettings * ipSettings) :
   mpSettings(ipSettings)
@@ -27,43 +30,80 @@ SettingHelper::SettingHelper(QSettings * ipSettings) :
   _fill_map_from_settings();
 }
 
+SettingHelper::~SettingHelper()
+{
+  sync();
+}
+
 void SettingHelper::_fill_map_with_defaults()
 {
-  mMap.insert(autoBrowser, { "autoBrowser", false });
-  mMap.insert(closeDirect, { "closeDirect", false });
-  mMap.insert(dcAvoidance, { "dcAvoidance", false });
-  mMap.insert(dcRemoval, { "dcRemoval", false });
-  mMap.insert(deviceVisible, { "deviceVisible", false });
-  mMap.insert(epg2xml, { "epg2xml", false });
-  mMap.insert(hidden, { "hidden", true });
-  mMap.insert(latitude, { "latitude", 0 });
-  mMap.insert(longitude, { "longitude", 0 });
-  mMap.insert(onTop, { "onTop", false });
-  mMap.insert(saveDirAudioDump, { "saveDirAudioDump", QDir::homePath() });
-  mMap.insert(saveDirSampleDump, { "saveDirSampleDump", QDir::homePath() });
-  mMap.insert(saveDirContent, { "saveDirContent", QDir::homePath() });
-  mMap.insert(saveLocations, { "saveLocations", false });
-  mMap.insert(saveSlides, { "saveSlides", false });
-  mMap.insert(serviceListSortCol, { "serviceListSortCol", false });
-  mMap.insert(serviceListSortDesc, { "serviceListSortDesc", false });
-  mMap.insert(spectrumVisible, { "spectrumVisible", false });
-  mMap.insert(switchDelay, { "switchDelay", 3 });
-  mMap.insert(techDataVisible, { "techDataVisible", false });
-  mMap.insert(tii_detector, { "tii_detector", false });
-  mMap.insert(transmitterTags, { "transmitterTags", false });
-  mMap.insert(useNativeFileDialogs, { "useNativeFileDialogs", false });
-  mMap.insert(utcSelector, { "utcSelector", false });
-  mMap.insert(saveServiceSelector, { "saveServiceSelector", false });
+  QDir tempPath = QDir::tempPath();
+  tempPath.setPath(tempPath.filePath(PRJ_NAME));
+  QString tempPicPath = tempPath.filePath("PIC").append('/');
+  QString tempEpgPath = tempPath.filePath("EPG").append('/');
+
+  mMap.insert(dabMode, { "", "dabMode", 1 });
+  mMap.insert(threshold, { "", "threshold", 3 });
+  mMap.insert(diffLength, { "", "diff_length", DIFF_LENGTH });
+  mMap.insert(tiiDelay, { "", "tii_delay", 5 });
+  mMap.insert(tiiDepth, { "", "tii_depth", 4 });
+  mMap.insert(echoDepth, { "", "echo_depth", 1  });
+  mMap.insert(latency, { "", "latency", 5 });
+  mMap.insert(soundchannel, { "", "soundchannel", "default" });
+  mMap.insert(picturesPath, { "", "picturesPath", tempPicPath });
+  mMap.insert(filePath, { "", "filePath", tempPicPath });
+  mMap.insert(epgPath, { "", "epgPath", tempEpgPath });
+  mMap.insert(dabBand, { "", "dabBand", "VHF Band III" });
+  mMap.insert(skipFile, { "", "skipFile", "" });
+  mMap.insert(tiiFile, { "", "tiiFile", "" });
+  mMap.insert(device, { "", "device", "no device" });
+  mMap.insert(deviceVisible, { "", "deviceVisible", true });
+  mMap.insert(spectrumVisible, { "", "spectrumVisible", false });
+  mMap.insert(techDataVisible, { "", "techDataVisible", false });
+  mMap.insert(showDeviceWidget, { "", "showDeviceWidget", false });
+  mMap.insert(hasPresetName, { "", "has-presetName", false });
+  mMap.insert(presetName, { "", "presetname", "" });
+  mMap.insert(channel, { "", "channel", "" });
+  mMap.insert(epgWidth, { "", "epgWidth", 70 });
+  mMap.insert(browserAddress, { "", "browserAddress", "http://localhost" });
+  mMap.insert(mapPort, { "", "mapPort", 8080 });
+  mMap.insert(epgFlag, { "", "epgFlag", false });
+
+  mMap.insert(autoBrowser, { "", "autoBrowser", false });
+  mMap.insert(closeDirect, { "", "closeDirect", false });
+  mMap.insert(dcAvoidance, { "", "dcAvoidance", false });
+  mMap.insert(dcRemoval, { "", "dcRemoval", false });
+  mMap.insert(epg2xml, { "", "epg2xml", false });
+  mMap.insert(hidden, { "", "hidden", true });
+  mMap.insert(latitude, { "", "latitude", 0 });
+  mMap.insert(longitude, { "", "longitude", 0 });
+  mMap.insert(onTop, { "", "onTop", false });
+  mMap.insert(saveDirAudioDump, { "", "saveDirAudioDump", QDir::homePath() });
+  mMap.insert(saveDirSampleDump, { "", "saveDirSampleDump", QDir::homePath() });
+  mMap.insert(saveDirContent, { "", "saveDirContent", QDir::homePath() });
+  mMap.insert(saveLocations, { "", "saveLocations", false });
+  mMap.insert(saveSlides, { "", "saveSlides", false });
+  mMap.insert(serviceListSortCol, { "", "serviceListSortCol", false });
+  mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
+  mMap.insert(switchDelay, { "", "switchDelay", SWITCH_DELAY });
+  mMap.insert(tiiDetector, { "", "tii_detector", false });
+  mMap.insert(transmitterTags, { "", "transmitterTags", false });
+  mMap.insert(useNativeFileDialogs, { "", "useNativeFileDialogs", false });
+  mMap.insert(utcSelector, { "", "utcSelector", false });
+  mMap.insert(saveServiceSelector, { "", "saveServiceSelector", false });
 
   // special enums for windows position and size storage
-  mMap.insert(configWidget, { "configWidget", QVariant() });
+  mMap.insert(configWidget, { "", "configWidget", QVariant() });
+  mMap.insert(mainWidget, { "", "mainWidget", QVariant() });
 }
 
 void SettingHelper::_fill_map_from_settings()
 {
   for (auto & it : mMap)
   {
+    mpSettings->beginGroup(it.Group);
     it.KeyVal = mpSettings->value(it.KeyStr, it.KeyVal);
+    mpSettings->endGroup();
   }
 }
 
@@ -84,7 +124,9 @@ void SettingHelper::write(const EElem iElem, const QVariant & iVal)
   if (me.KeyVal != iVal)
   {
     me.KeyVal = iVal;
+    mpSettings->beginGroup(me.Group);
     mpSettings->setValue(me.KeyStr, me.KeyVal);
+    mpSettings->endGroup();
   }
 }
 
@@ -107,5 +149,34 @@ void SettingHelper::read_widget_geometry(const SettingHelper::EElem iElem, QWidg
 void SettingHelper::write_widget_geometry(const EElem iElem, const QWidget * const ipWidget)
 {
   write(iElem, ipWidget->saveGeometry());
+}
+
+void SettingHelper::sync() const
+{
+  mpSettings->sync();
+}
+
+void SettingHelper::sync_ui_state(const EElem iElem, QAbstractButton * const ioCheckBox, const bool iWriteSetting)
+{
+  if (iWriteSetting)
+  {
+    write(iElem, ioCheckBox->isChecked());
+  }
+  else
+  {
+    ioCheckBox->setChecked(read(iElem).toBool());
+  }
+}
+
+void SettingHelper::sync_ui_state(const EElem iElem, QSpinBox * const ioSpinBox, const bool iWriteSetting)
+{
+  if (iWriteSetting)
+  {
+    write(iElem, ioSpinBox->value());
+  }
+  else
+  {
+    ioSpinBox->setValue(read(iElem).toInt());
+  }
 }
 
