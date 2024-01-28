@@ -324,6 +324,7 @@ set(${objectName}_HDRS
         src/support/buttons/normalpushbutton.h
         src/support/buttons/circlepushbutton.h
         src/support/custom_frame.h
+        src/support/setting-helper.h
         src/scopes-qwt6/iqdisplay.h
         src/scopes-qwt6/carrier-display.h
         src/scopes-qwt6/spectrogramdata.h
@@ -409,6 +410,7 @@ set(${objectName}_SRCS
         src/support/http-handler.cpp
         src/support/tii-library/tii-codes.cpp
         src/support/custom_frame.cpp
+        src/support/setting-helper.cpp
         src/scopes-qwt6/iqdisplay.cpp
         src/scopes-qwt6/carrier-display.cpp
         src/scopes-qwt6/audio-display.cpp
