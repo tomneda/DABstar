@@ -12,6 +12,7 @@
  */
 
 #include "configuration.h"
+#include "setting-helper.h"
 #include "ui_configuration.h"
 #include "radio.h"
 #include <QSettings>
@@ -19,8 +20,10 @@
 Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
   Ui_configWidget(),
   mpSettings(ipS),
+  mpSH(&SettingHelper::get_instance()),
   mpRadioInterface(ipRI)
 {
+
   setupUi(this);
   setFixedSize(455, 350);
 
@@ -35,17 +38,17 @@ Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
 
   sliderTest->hide(); // only used for test
 
-  onTop->setChecked(mpSettings->value("onTop", 0).toInt() != 0);
-  transmSelector->setChecked(mpSettings->value("saveLocations", 0).toInt() != 0);
-  saveSlides->setChecked(mpSettings->value("saveSlides", 0).toInt() != 0);
-  switchDelaySetting->setValue(mpSettings->value("switchDelay", RadioInterface::SWITCH_DELAY).toInt());
-  utcSelector->setChecked(mpSettings->value("utcSelector", 0).toInt() != 0);
-  saveServiceSelector->setChecked(mpSettings->value("has-presetName", 0).toInt() != 0);
-  closeDirect->setChecked(mpSettings->value("closeDirect", 0).toInt() != 0);
-  epg2xmlSelector->setChecked(mpSettings->value("epg2xml", 0).toInt() != 0);
-  autoBrowser->setChecked(mpSettings->value("autoBrowser", 1).toInt() != 0);
-  transmitterTags->setChecked(mpSettings->value("transmitterTags", 1).toInt() != 0);
-  cbNativeFileDialog->setChecked(mpSettings->value("useNativeFileDialogs", 0).toInt() != 0);
+  onTop->setChecked(mpSH->read(SettingHelper::onTop).toBool());
+  transmSelector->setChecked(mpSH->read(SettingHelper::saveLocations).toBool());
+  saveSlides->setChecked(mpSH->read(SettingHelper::saveSlides).toBool());
+  switchDelaySetting->setValue(mpSH->read(SettingHelper::switchDelay).toInt());
+  utcSelector->setChecked(mpSH->read(SettingHelper::utcSelector).toInt());
+  saveServiceSelector->setChecked(mpSH->read(SettingHelper::saveServiceSelector).toBool());
+  closeDirect->setChecked(mpSH->read(SettingHelper::closeDirect).toBool());
+  epg2xmlSelector->setChecked(mpSH->read(SettingHelper::epg2xml).toBool());
+  autoBrowser->setChecked(mpSH->read(SettingHelper::autoBrowser).toBool());
+  transmitterTags->setChecked(mpSH->read(SettingHelper::transmitterTags).toBool());
+  cbNativeFileDialog->setChecked(mpSH->read(SettingHelper::useNativeFileDialogs).toBool());
 
   QPalette lcdPalette;
 #ifndef __MAC__
@@ -87,7 +90,7 @@ void Configuration::save_position_and_config()
   mpSettings->setValue("epg2xml", epg2xmlSelector->isChecked() ? 1 : 0);
 }
 
-void Configuration::_slot_use_native_file_dialogs(bool)
+void Configuration::_slot_use_native_file_dialogs(bool iChecked)
 {
-  mpSettings->setValue("useNativeFileDialogs", cbNativeFileDialog->isChecked() ? 1 : 0);
+  mpSH->write(SettingHelper::EElem::useNativeFileDialogs, iChecked);
 }

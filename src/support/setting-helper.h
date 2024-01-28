@@ -17,16 +17,15 @@
 #ifndef DABSTAR_SETTING_HELPER_H
 #define DABSTAR_SETTING_HELPER_H
 
-#include <QObject>
+#include <QMap>
+#include <QVariant>
 
 class QSettings;
 
-class SettingHelper : public QObject
+class SettingHelper
 {
-  Q_OBJECT
-
 public:
-  static SettingHelper& get_instance(QSettings * ipSettings = nullptr)
+  static SettingHelper & get_instance(QSettings * ipSettings = nullptr)
   {
     static SettingHelper instance(ipSettings);
     return instance;
@@ -35,19 +34,56 @@ public:
   SettingHelper(SettingHelper &other) = delete;
   void operator=(const SettingHelper &) = delete;
 
-  struct Settings
+  enum EElem
   {
-    bool UseNativeFileDialog = false;
+    autoBrowser,
+    closeDirect,
+    dcAvoidance,
+    dcRemoval,
+    deviceVisible,
+    epg2xml,
+    hidden,
+    latitude,
+    longitude,
+    onTop,
+    saveDirAudioDump,
+    saveDirSampleDump,
+    saveDirContent,
+    saveLocations,
+    saveSlides,
+    serviceListSortCol,
+    serviceListSortDesc,
+    spectrumVisible,
+    switchDelay,
+    techDataVisible,
+    tii_detector,
+    transmitterTags,
+    useNativeFileDialogs,
+    utcSelector,
+    saveServiceSelector
   };
+
+  QVariant read(const EElem iElem) const;
+  void write(const EElem iElem, const QVariant & iVal);
+
+  QSettings * get_settings() const { return mpSettings; } // for a direct access to the QSettings ...
 
 private:
   explicit SettingHelper(QSettings * ipSettings);
-  ~SettingHelper() override = default;
+  ~SettingHelper() = default;
 
   QSettings * const mpSettings;
+
+  struct SMapElem
+  {
+    QString KeyStr;
+    QVariant KeyVal;
+  };
   
-  Settings mOldSettings;
-  Settings mNewSettings;
+  QMap<EElem, SMapElem> mMap;
+
+  void _fill_map_from_settings();
+  void _fill_map_with_defaults();
 };
 
-#endif //DABSTAR_SETTING_HELPER_H
+#endif // DABSTAR_SETTING_HELPER_H

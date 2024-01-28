@@ -18,6 +18,7 @@
 #include <QWidget>
 
 class QSettings;
+class SettingHelper;
 class RadioInterface;
 
 // allow direct access to components -> makes a live simpler but more dangerous!
@@ -33,6 +34,7 @@ public:
 
 private:
   QSettings * const mpSettings;
+  SettingHelper * const mpSH;
   RadioInterface * const mpRadioInterface;
 
 private slots:

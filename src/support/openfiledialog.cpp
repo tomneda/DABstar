@@ -29,13 +29,13 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "openfiledialog.h"
-
-#include  "dab-constants.h"
-#include  <QDebug>
-#include  <QFileDialog>
-#include  <QDateTime>
-#include  <QDir>
+#include "openfiledialog.h"
+#include "setting-helper.h"
+#include "dab-constants.h"
+#include <QDebug>
+#include <QFileDialog>
+#include <QDateTime>
+#include <QDir>
 
 OpenFileDialog::OpenFileDialog(QSettings * ipSetting) :
   mpSettings(ipSetting)
@@ -163,7 +163,7 @@ QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const Q
 
 QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt)
 {
-  const bool useNativeFileDialog = (mpSettings->value("useNativeFileDialogs", 0).toInt() != 0);
+  const bool useNativeFileDialog = SettingHelper::get_instance().read(SettingHelper::useNativeFileDialogs).toBool();
 
   const QDir storedDir = mpSettings->value(iSettingName, QDir::homePath()).toString();
   QString fileName;
@@ -196,7 +196,7 @@ QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const
 
 QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) const
 {
-  const bool useNativeFileDialog = (mpSettings->value("useNativeFileDialogs", 0).toInt() != 0);
+  const bool useNativeFileDialog = SettingHelper::get_instance().read(SettingHelper::useNativeFileDialogs).toBool();
 
   const QString FILETYPE_UFFXML = "UFF-XML (*.uff)";
   const QString FILETYPE_SDRWAV = "SDR-WAV (*.sdr)";
