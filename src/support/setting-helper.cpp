@@ -17,6 +17,7 @@
 #include "setting-helper.h"
 #include <QSettings>
 #include <QDir>
+#include <QWidget>
 
 SettingHelper::SettingHelper(QSettings * ipSettings) :
   mpSettings(ipSettings)
@@ -53,6 +54,9 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(useNativeFileDialogs, { "useNativeFileDialogs", false });
   mMap.insert(utcSelector, { "utcSelector", false });
   mMap.insert(saveServiceSelector, { "saveServiceSelector", false });
+
+  // special enums for windows position and size storage
+  mMap.insert(configWidget, { "configWidget", QVariant() });
 }
 
 void SettingHelper::_fill_map_from_settings()
@@ -83,3 +87,25 @@ void SettingHelper::write(const EElem iElem, const QVariant & iVal)
     mpSettings->setValue(me.KeyStr, me.KeyVal);
   }
 }
+
+void SettingHelper::read_widget_geometry(const SettingHelper::EElem iElem, QWidget * const iopWidget) const
+{
+  QVariant var = read(iElem);
+
+  if(!var.canConvert<QByteArray>())
+  {
+    qDebug("Cannot retrieve widget geometry from settings.");
+    return;
+  }
+  
+  if (!iopWidget->restoreGeometry(var.toByteArray()))
+  {
+    qDebug("restoreGeometry() returns false");
+  }
+}
+
+void SettingHelper::write_widget_geometry(const EElem iElem, const QWidget * const ipWidget)
+{
+  write(iElem, ipWidget->saveGeometry());
+}
+

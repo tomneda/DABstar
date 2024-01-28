@@ -60,11 +60,17 @@ public:
     transmitterTags,
     useNativeFileDialogs,
     utcSelector,
-    saveServiceSelector
+    saveServiceSelector,
+
+    // special enums for windows position and size storage
+    configWidget
   };
 
   QVariant read(const EElem iElem) const;
   void write(const EElem iElem, const QVariant & iVal);
+
+  void read_widget_geometry(const EElem iElem, QWidget * const iopWidget) const;
+  void write_widget_geometry(const EElem iElem, const QWidget * const ipWidget);
 
   QSettings * get_settings() const { return mpSettings; } // for a direct access to the QSettings ...
 

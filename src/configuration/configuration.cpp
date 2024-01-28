@@ -27,13 +27,8 @@ Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
   setupUi(this);
   setFixedSize(455, 350);
 
-  const int x = mpSettings->value("configWidget-x", 200).toInt();
-  const int y = mpSettings->value("configWidget-y", 200).toInt();
-  const int wi = mpSettings->value("configWidget-w", 200).toInt();
-  const int he = mpSettings->value("configWidget-h", 150).toInt();
+  mpSH->read_widget_geometry(SettingHelper::configWidget, this);
 
-  resize(QSize(wi, he));
-  move(QPoint(x, y));
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   sliderTest->hide(); // only used for test
@@ -42,7 +37,7 @@ Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
   transmSelector->setChecked(mpSH->read(SettingHelper::saveLocations).toBool());
   saveSlides->setChecked(mpSH->read(SettingHelper::saveSlides).toBool());
   switchDelaySetting->setValue(mpSH->read(SettingHelper::switchDelay).toInt());
-  utcSelector->setChecked(mpSH->read(SettingHelper::utcSelector).toInt());
+  utcSelector->setChecked(mpSH->read(SettingHelper::utcSelector).toBool());
   saveServiceSelector->setChecked(mpSH->read(SettingHelper::saveServiceSelector).toBool());
   closeDirect->setChecked(mpSH->read(SettingHelper::closeDirect).toBool());
   epg2xmlSelector->setChecked(mpSH->read(SettingHelper::epg2xml).toBool());
@@ -81,13 +76,10 @@ Configuration::Configuration(RadioInterface * ipRI, QSettings * ipS) :
 
 void Configuration::save_position_and_config()
 {
-  mpSettings->setValue("configWidget-x", pos().x());
-  mpSettings->setValue("configWidget-y", pos().y());
-  mpSettings->setValue("configWidget-w", size().width());
-  mpSettings->setValue("configWidget-h", size().height());
+  mpSH->write_widget_geometry(SettingHelper::configWidget, this);
 
-  mpSettings->setValue("utcSelector", utcSelector->isChecked() ? 1 : 0);
-  mpSettings->setValue("epg2xml", epg2xmlSelector->isChecked() ? 1 : 0);
+  mpSH->write(SettingHelper::utcSelector, utcSelector->isChecked());
+  mpSH->write(SettingHelper::epg2xml, epg2xmlSelector->isChecked());
 }
 
 void Configuration::_slot_use_native_file_dialogs(bool iChecked)
