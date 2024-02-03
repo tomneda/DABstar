@@ -187,29 +187,27 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mChannel.nextService.valid = false;
   mChannel.serviceCount = -1;
 
-  if (mpSH->read(SettingHelper::hasPresetName).toBool())
+  // load last used service
+  QString presetName = mpSH->read(SettingHelper::presetName).toString();
+
+  if (!presetName.isEmpty())
   {
-    QString presetName = mpSH->read(SettingHelper::presetName).toString();
+    QStringList ss = presetName.split(":");
 
-    if (!presetName.isEmpty())
+    if (ss.size() == 2)
     {
-      QStringList ss = presetName.split(":");
-
-      if (ss.size() == 2)
-      {
-        mChannel.nextService.channel = ss.at(0);
-        mChannel.nextService.serviceName = ss.at(1);
-      }
-      else
-      {
-        mChannel.nextService.channel = "";
-        mChannel.nextService.serviceName = presetName;
-      }
-
-      mChannel.nextService.SId = 0;
-      mChannel.nextService.SCIds = 0;
-      mChannel.nextService.valid = true;
+      mChannel.nextService.channel = ss.at(0);
+      mChannel.nextService.serviceName = ss.at(1);
     }
+    else
+    {
+      mChannel.nextService.channel = "";
+      mChannel.nextService.serviceName = presetName;
+    }
+
+    mChannel.nextService.SId = 0;
+    mChannel.nextService.SCIds = 0;
+    mChannel.nextService.valid = true;
   }
 
   mChannel.targetPos = cmplx(0, 0);
@@ -2062,7 +2060,6 @@ void RadioInterface::connectGUI()
   connect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   connect(mConfig.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
-  connect(mConfig.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   connect(mConfig.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   connect(mConfig.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
@@ -2087,7 +2084,6 @@ void RadioInterface::disconnectGUI()
   disconnect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   disconnect(mConfig.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
-  disconnect(mConfig.saveServiceSelector, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_save_service_selector);
   disconnect(mConfig.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   disconnect(mConfig.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
@@ -2477,15 +2473,9 @@ void RadioInterface::startService(DabService & s)
     }
 
     startAudioservice(&ad);
-    if (mpSH->read(SettingHelper::hasPresetName).toBool())
-    {
-      const QString csn = mChannel.channelName + ":" + serviceName;
-      mpSH->write(SettingHelper::presetName, csn);
-    }
-    else
-    {
-      mpSH->write(SettingHelper::presetName, "");
-    }
+    const QString csn = mChannel.channelName + ":" + serviceName;
+    mpSH->write(SettingHelper::presetName, csn);
+
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
     {
@@ -3130,12 +3120,6 @@ void RadioInterface::_update_channel_selector(int index)
 void RadioInterface::_slot_handle_switch_delay_setting(int newV)
 {
   mpSH->write(SettingHelper::switchDelay, newV);
-}
-
-void RadioInterface::_slot_handle_save_service_selector(int d) // TODO: is that choice useful? Always active?
-{
-  (void)d;
-  mpSH->write(SettingHelper::hasPresetName, mConfig.saveServiceSelector->isChecked());
 }
 
 //-------------------------------------------------------------------------

@@ -437,7 +437,6 @@ private slots:
 
   //	config handlers
   void _slot_handle_switch_delay_setting(int);
-  void _slot_handle_save_service_selector(int);
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();
   void _slot_handle_tii_detector_mode(bool);

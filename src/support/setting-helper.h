@@ -58,7 +58,6 @@ public:
     spectrumVisible,
     techDataVisible,
     showDeviceWidget,
-    hasPresetName,
     presetName,
     channel,
     epgWidth,

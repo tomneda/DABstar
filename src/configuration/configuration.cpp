@@ -77,10 +77,7 @@ void Configuration::_slot_use_native_file_dialogs(bool iChecked)
 void Configuration::_sync_ui_elements(const bool iWriteSettings)
 {
   mpSH->sync_ui_state(SettingHelper::switchDelay, switchDelaySetting, iWriteSettings);
-
   mpSH->sync_ui_state(SettingHelper::closeDirect, closeDirect, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::saveServiceSelector, saveServiceSelector, iWriteSettings);
-
   mpSH->sync_ui_state(SettingHelper::onTop, onTop, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::saveLocations, transmSelector, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::saveSlides, saveSlides, iWriteSettings);

@@ -61,7 +61,6 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(spectrumVisible, { "", "spectrumVisible", false });
   mMap.insert(techDataVisible, { "", "techDataVisible", false });
   mMap.insert(showDeviceWidget, { "", "showDeviceWidget", false });
-  mMap.insert(hasPresetName, { "", "has-presetName", false });
   mMap.insert(presetName, { "", "presetname", "" });
   mMap.insert(channel, { "", "channel", "" });
   mMap.insert(epgWidth, { "", "epgWidth", 70 });
