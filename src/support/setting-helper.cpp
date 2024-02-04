@@ -108,17 +108,18 @@ void SettingHelper::_fill_map_from_settings()
 
 QVariant SettingHelper::read(const EElem iElem) const
 {
-  auto it = mMap.find(iElem);
-  Q_ASSERT(it != mMap.end());
-  return it.value().KeyVal;
+  return _get_map_elem(iElem).KeyVal;
 }
 
 void SettingHelper::write(const EElem iElem, const QVariant & iVal)
 {
-  auto it = mMap.find(iElem);
-  Q_ASSERT(it != mMap.end());
-  SMapElem & me = it.value();
+  SMapElem & me = _get_map_elem(iElem);
 
+  if (me.pWidget != nullptr)
+  {
+    qFatal("Elem %d is registered as UI item, use sync_ui_state() instead", iElem);
+  }
+  
   // save changed value to setting file
   if (me.KeyVal != iVal)
   {
@@ -135,13 +136,13 @@ void SettingHelper::read_widget_geometry(const SettingHelper::EElem iElem, QWidg
 
   if(!var.canConvert<QByteArray>())
   {
-    qDebug("Cannot retrieve widget geometry from settings.");
+    qFatal("Cannot retrieve widget geometry from settings.");
     return;
   }
   
   if (!iopWidget->restoreGeometry(var.toByteArray()))
   {
-    qDebug("restoreGeometry() returns false");
+    qFatal("restoreGeometry() returns false");
   }
 }
 
@@ -150,17 +151,15 @@ void SettingHelper::write_widget_geometry(const EElem iElem, const QWidget * con
   write(iElem, ipWidget->saveGeometry());
 }
 
-void SettingHelper::sync() const
+void SettingHelper::sync()
 {
+  sync_all_ui_states(true);
   mpSettings->sync();
 }
 
 void SettingHelper::sync_ui_state(const EElem iElem, const bool iWriteSetting)
 {
-  auto it = mMap.find(iElem);
-  Q_ASSERT(it != mMap.end());
-  SMapElem & me = it.value();
-  Q_ASSERT(me.pWidget != nullptr);
+  const SettingHelper::SMapElem & me = _get_map_elem(iElem);
 
   if (auto * const pAB = dynamic_cast<QAbstractButton *>(me.pWidget);
       pAB != nullptr)
@@ -193,6 +192,32 @@ void SettingHelper::sync_ui_state(const EElem iElem, const bool iWriteSetting)
 
   qFatal("Pointer to pWidget not valid for iElem %d", iElem);
 }
+
+void SettingHelper::sync_all_ui_states(const bool iWriteSetting) noexcept
+{
+  for (auto it = mMap.begin(); it != mMap.end(); ++it)
+  {
+    if (it.value().pWidget != nullptr) // update only registered UI elements
+    {
+      sync_ui_state(it.key(), iWriteSetting);
+    }
+  }
+}
+
+const SettingHelper::SMapElem & SettingHelper::_get_map_elem(SettingHelper::EElem iElem) const
+{
+  auto it = mMap.find(iElem);
+  Q_ASSERT(it != mMap.end());
+  return it.value();
+}
+
+SettingHelper::SMapElem & SettingHelper::_get_map_elem(SettingHelper::EElem iElem)
+{
+  auto it = mMap.find(iElem);
+  Q_ASSERT(it != mMap.end());
+  return it.value();
+}
+
 
 
 

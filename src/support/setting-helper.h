@@ -42,59 +42,59 @@ public:
   enum EElem
   {
     // main widget
-    dabMode,
-    threshold,
-    diffLength,
-    tiiDelay,
-    tiiDepth,
-    echoDepth,
-    latency,
-    soundchannel,
-    picturesPath,
-    filePath,
-    epgPath,
-    dabBand,
-    skipFile,
-    tiiFile,
-    device,
-    deviceVisible,
-    spectrumVisible,
-    techDataVisible,
-    showDeviceWidget,
-    presetName,
-    channel,
-    epgWidth,
-    browserAddress,
-    mapPort,
-    epgFlag,
+    dabMode, // 0
+    threshold, // 1
+    diffLength, // 2
+    tiiDelay, // 3
+    tiiDepth, // 4
+    echoDepth, // 5
+    latency, // 6
+    soundchannel, // 7
+    picturesPath, // 8
+    filePath, // 9
+    epgPath, // 10
+    dabBand, // 11
+    skipFile, // 12
+    tiiFile, // 13
+    device, // 14
+    deviceVisible, // 15
+    spectrumVisible, // 16
+    techDataVisible, // 17
+    showDeviceWidget, // 18
+    presetName, // 19
+    channel, // 20
+    epgWidth, // 21
+    browserAddress, // 22
+    mapPort, // 23
+    epgFlag, // 24
 
     // needed in config widget
-    autoBrowser,
-    closeDirect,
-    dcAvoidance,
-    dcRemoval,
-    epg2xml,
-    hidden,
-    latitude,
-    longitude,
-    onTop,
-    saveDirAudioDump,
-    saveDirSampleDump,
-    saveDirContent,
-    saveLocations,
-    saveSlides,
-    serviceListSortCol,
-    serviceListSortDesc,
-    switchDelay,
-    tiiDetector,
-    transmitterTags,
-    useNativeFileDialogs,
-    utcSelector,
-    saveServiceSelector,
+    autoBrowser, // 25
+    closeDirect, // 26
+    dcAvoidance, // 27
+    dcRemoval, // 28
+    epg2xml, // 29
+    hidden, // 30
+    latitude, // 31
+    longitude, // 32
+    onTop, // 33
+    saveDirAudioDump, // 34
+    saveDirSampleDump, // 35
+    saveDirContent, // 36
+    saveLocations, // 37
+    saveSlides, // 38
+    serviceListSortCol, // 39
+    serviceListSortDesc, // 40
+    switchDelay, // 41
+    tiiDetector, // 42
+    transmitterTags, // 43
+    useNativeFileDialogs, // 44
+    utcSelector, // 45
+    saveServiceSelector, // 46
 
     // special enums for windows position and size storage
-    configWidget,
-    mainWidget
+    configWidget, // 47
+    mainWidget // 48
   };
 
   QVariant read(const EElem iElem) const;
@@ -103,11 +103,12 @@ public:
   void read_widget_geometry(const EElem iElem, QWidget * const iopWidget) const;
   void write_widget_geometry(const EElem iElem, const QWidget * const ipWidget);
 
-  template<EElem iElem> void register_ui_element(QAbstractButton * const ipPushButton);
-  template<EElem iElem> void register_ui_element(QSpinBox * const ipSpinBox);
+  template<EElem iElem> void register_and_connect_ui_element(QAbstractButton * const ipPushButton);
+  template<EElem iElem> void register_and_connect_ui_element(QSpinBox * const ipSpinBox);
   void sync_ui_state(const EElem iElem, const bool iWriteSetting);
+  void sync_all_ui_states(const bool iWriteSetting) noexcept;
 
-  void sync() const;
+  void sync();
   QSettings * get_settings() const { return mpSettings; } // for a direct access to the QSettings (should be removed at last)
 
 private:
@@ -126,56 +127,42 @@ private:
   
   QMap<EElem, SMapElem> mMap;
 
+  template<typename T>  void _write_setting(SMapElem & me, const T iValue);
   void _fill_map_from_settings();
   void _fill_map_with_defaults();
+  const SMapElem & _get_map_elem(SettingHelper::EElem iElem) const;
+  SMapElem & _get_map_elem(SettingHelper::EElem iElem);
 };
 
-template<SettingHelper::EElem iElem> void SettingHelper::register_ui_element(QAbstractButton * const ipPushButton)
+template<typename T> void SettingHelper::_write_setting(SMapElem & me, const T iValue)
 {
-  auto it = mMap.find(iElem);
-  Q_ASSERT(it != mMap.end());
-  SMapElem & me = it.value();
-  me.pWidget = ipPushButton;
-
-  if (auto const * const pAB = dynamic_cast<QAbstractButton *>(me.pWidget);
-      pAB != nullptr)
+  if (me.KeyVal != iValue)
   {
-    connect(pAB, &QAbstractButton::clicked, [this, &me](bool iClicked)
-    {
-      // save changed value to setting file
-      if (me.KeyVal != iClicked)
-      {
-        me.KeyVal = iClicked;
-        mpSettings->beginGroup(me.Group);
-        mpSettings->setValue(me.KeyStr, me.KeyVal);
-        mpSettings->endGroup();
-      }
-    });
+    me.KeyVal = iValue;
+    mpSettings->beginGroup(me.Group);
+    mpSettings->setValue(me.KeyStr, me.KeyVal);
+    mpSettings->endGroup();
   }
 }
 
-template<SettingHelper::EElem iElem> void SettingHelper::register_ui_element(QSpinBox * const ipSpinBox)
+template<SettingHelper::EElem iElem> void SettingHelper::register_and_connect_ui_element(QAbstractButton * const ipPushButton)
 {
-  auto it = mMap.find(iElem);
-  Q_ASSERT(it != mMap.end());
-  SMapElem & me = it.value();
+  SettingHelper::SMapElem & me = _get_map_elem(iElem);
+  me.pWidget = ipPushButton;
+
+  const auto * const pAB = dynamic_cast<QAbstractButton *>(me.pWidget);
+  Q_ASSERT(pAB != nullptr);
+  connect(pAB, &QAbstractButton::clicked, [this, &me](bool iClicked){ _write_setting(me, iClicked); });
+}
+
+template<SettingHelper::EElem iElem> void SettingHelper::register_and_connect_ui_element(QSpinBox * const ipSpinBox)
+{
+  SettingHelper::SMapElem & me = _get_map_elem(iElem);
   me.pWidget = ipSpinBox;
 
-  if (auto const * const pSB = dynamic_cast<QSpinBox *>(me.pWidget);
-      pSB != nullptr)
-  {
-    connect(pSB, qOverload<int>(&QSpinBox::valueChanged), [this, &me](int ival)
-    {
-      // save changed value to setting file
-      if (me.KeyVal != ival)
-      {
-        me.KeyVal = ival;
-        mpSettings->beginGroup(me.Group);
-        mpSettings->setValue(me.KeyStr, me.KeyVal);
-        mpSettings->endGroup();
-      }
-    });
-  }
+  const auto * const pSB = dynamic_cast<QSpinBox *>(me.pWidget);
+  Q_ASSERT(pSB != nullptr);
+  connect(pSB, qOverload<int>(&QSpinBox::valueChanged), [this, &me](int iValue){ _write_setting(me, iValue); });
 }
 
 #endif // DABSTAR_SETTING_HELPER_H

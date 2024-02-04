@@ -226,7 +226,6 @@ private:
   TechData * mpTechDataWidget = nullptr;
   Configuration mConfig;
   SettingHelper * const mpSH;
-  QSettings * mpSettings = nullptr;
   std::atomic<bool> mIsRunning;
   std::atomic<bool> mIsScanning;
   std::unique_ptr<IDeviceHandler> mpInputDevice;
@@ -384,10 +383,6 @@ public slots:
   void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
   void slot_test_slider(int);
   void slot_load_table();
-  void slot_handle_on_top(int);
-  void slot_handle_transm_selector(int);
-  void slot_handle_save_slides(int);
-  void slot_handle_auto_browser(int);
   void slot_handle_transmitter_tags(int);
   void slot_handle_dl_text_button();
   void slot_handle_logger_button(int);
@@ -439,7 +434,6 @@ private slots:
   void _slot_handle_http_button();
 
   //	config handlers
-  void _slot_handle_switch_delay_setting(int);
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();
 };

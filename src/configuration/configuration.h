@@ -36,9 +36,6 @@ private:
   RadioInterface * const mpRadioInterface;
 
   void _sync_ui_elements(const bool iWriteSettings);
-
-private slots:
-  void _slot_use_native_file_dialogs(bool);
 };
 
 

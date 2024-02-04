@@ -131,7 +131,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mDoReportError(error_report),
   mConfig(this),
   mpSH(&SettingHelper::get_instance()),
-  mpSettings(Si),
   mDeviceSelector(Si)
 {
   int16_t k;
@@ -167,7 +166,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   setup_ui_colors();
   _create_status_info();
 
-  mpServiceListHandler = std::make_unique<ServiceListHandler>(mpSettings, dbFileName, tblServiceList);
+  mpServiceListHandler = std::make_unique<ServiceListHandler>(mpSH->get_settings(), dbFileName, tblServiceList);
 
   // only the queued call will consider the button size?!
   QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection);
@@ -179,7 +178,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   mpSH->read_widget_geometry(SettingHelper::mainWidget, this);
 
-  mpTechDataWidget = new TechData(this, mpSettings, &mTechDataBuffer);
+  mpTechDataWidget = new TechData(this, mpSH->get_settings(), &mTechDataBuffer);
 
   _show_epg_label(false);
 
@@ -279,12 +278,12 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   connect(btnHttpServer, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
 
   //	restore some settings from previous incarnations
-  QString t = mpSettings->value("dabBand", "VHF Band III").toString();
+  QString t = mpSH->read(SettingHelper::dabBand).toString();
   const uint8_t dabBand = (t == "VHF Band III" ? BAND_III : L_BAND);
 
   mBandHandler.setupChannels(channelSelector, dabBand);
-  QString skipfileName = mpSettings->value("skipFile", "").toString();
-  mBandHandler.setup_skipList(skipfileName);
+  QString skipFileName = mpSH->read(SettingHelper::skipFile).toString();
+  mBandHandler.setup_skipList(skipFileName);
 
   QPalette p = ficError_display->palette();
   p.setColor(QPalette::Highlight, Qt::red);
@@ -297,7 +296,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   copyrightLabel->setToolTip(get_copyright_text());
   copyrightLabel->setOpenExternalLinks(true);
 
-  QString tiiFileName = mpSettings->value("tiiFile", "").toString();
+  QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
   mChannel.tiiFile = false;
   if (!tiiFileName.isEmpty())
   {
@@ -337,7 +336,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
-  h = mpSettings->value("device", "no device").toString();
+  h = mpSH->read(SettingHelper::device).toString();
   k = mConfig.deviceSelector->findText(h);
   if (k != -1)
   {
@@ -348,7 +347,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     if (mpInputDevice != nullptr)
     {
       _set_device_to_file_mode(!mChannel.realChannel);
-      mpSettings->setValue("device", mConfig.deviceSelector->currentText());
+      mpSH->write(SettingHelper::device, mConfig.deviceSelector->currentText());
     }
   }
 
@@ -356,7 +355,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   if (mpInputDevice != nullptr)
   {
-    if (mpSettings->value("deviceVisible", 1).toInt() != 0)
+    if (mpSH->read(SettingHelper::deviceVisible).toBool())
     {
       mpInputDevice->show();
     }
@@ -366,12 +365,12 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     }
   }
 
-  if (mpSettings->value("spectrumVisible", 0).toInt() == 1)
+  if (mpSH->read(SettingHelper::spectrumVisible).toBool())
   {
     mSpectrumViewer.show();
   }
 
-  if (mpSettings->value("techDataVisible", 0).toInt() == 1)
+  if (mpSH->read(SettingHelper::techDataVisible).toBool())
   {
     mpTechDataWidget->show();
   }
@@ -2056,7 +2055,6 @@ void RadioInterface::connectGUI()
   connect(mpTechDataWidget, &TechData::signal_handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   connect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
-  connect(mConfig.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   connect(mConfig.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   connect(mConfig.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
@@ -2080,7 +2078,6 @@ void RadioInterface::disconnectGUI()
   disconnect(mpTechDataWidget, &TechData::signal_handle_frameDumping, this, &RadioInterface::_slot_handle_frame_dump_button);
   disconnect(btnMuteAudio, &QPushButton::clicked, this, &RadioInterface::_slot_handle_mute_button);
   //disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
-  disconnect(mConfig.switchDelaySetting, qOverload<int>(&QSpinBox::valueChanged), this, &RadioInterface::_slot_handle_switch_delay_setting);
   disconnect(mConfig.skipList_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_list_button);
   disconnect(mConfig.skipFile_button, &QPushButton::clicked, this, &RadioInterface::_slot_handle_skip_file_button);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
@@ -3114,11 +3111,6 @@ void RadioInterface::_update_channel_selector(int index)
 /////////////////////////////////////////////////////////////////////////
 //	External configuration items				//////
 
-void RadioInterface::_slot_handle_switch_delay_setting(int newV)
-{
-  mpSH->write(SettingHelper::switchDelay, newV);
-}
-
 //-------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //
@@ -3367,6 +3359,10 @@ void RadioInterface::slot_handle_logger_button(int /*s*/)
     {
       LOG("Log started with ", mpInputDevice->deviceName());
     }
+    else
+    {
+      mConfig.loggerButton->setChecked(false); // "cancel" was chosen in file dialog
+    }
   }
   else if (mpLogFile != nullptr)
   {
@@ -3377,7 +3373,7 @@ void RadioInterface::slot_handle_logger_button(int /*s*/)
 
 void RadioInterface::slot_handle_set_coordinates_button()
 {
-  Coordinates theCoordinator(mpSettings);
+  Coordinates theCoordinator(mpSH->get_settings());
   (void)theCoordinator.QDialog::exec();
   float local_lat = mpSH->read(SettingHelper::latitude).toFloat();
   float local_lon = mpSH->read(SettingHelper::longitude).toFloat();
@@ -3466,29 +3462,17 @@ void RadioInterface::_slot_handle_http_button()
 //  btnHttpServer->setText("http");
 //}
 
-void RadioInterface::slot_handle_auto_browser(int d)
+void RadioInterface::slot_handle_transmitter_tags(int /*d*/)
 {
-  (void)d;
-  mpSH->write(SettingHelper::autoBrowser, mConfig.autoBrowser->isChecked());
-}
-
-void RadioInterface::slot_handle_transmitter_tags(int d)
-{
-  (void)d;
   mMaxDistance = -1;
-  //transmitterTags_local = mConfig.transmitterTags->isChecked();
-  mpSH->write(SettingHelper::transmitterTags, mTransmitterTagsLocal);
+  mTransmitterTagsLocal = mConfig.transmitterTags->isChecked();
+  mTransmitterTagsLocal = mpSH->read(SettingHelper::transmitterTags).toBool();
   mChannel.targetPos = cmplx(0, 0);
-  if ((mTransmitterTagsLocal) && (mpHttpHandler != nullptr))
+
+  if (mTransmitterTagsLocal && mpHttpHandler != nullptr)
   {
     mpHttpHandler->putData(MAP_RESET, mChannel.targetPos, "", "", "", 0, 0, 0, 0);
   }
-}
-
-void RadioInterface::slot_handle_on_top(int d)
-{
-  (void)d;
-  mpSH->write(SettingHelper::onTop, mConfig.onTop->isChecked());
 }
 
 void RadioInterface::show_pause_slide()
@@ -3502,20 +3486,8 @@ void RadioInterface::show_pause_slide()
 
 void RadioInterface::slot_handle_port_selector()
 {
-  mapPortHandler theHandler(mpSettings);
+  mapPortHandler theHandler(mpSH->get_settings());
   (void)theHandler.QDialog::exec();
-}
-
-void RadioInterface::slot_handle_transm_selector(int x)
-{
-  (void)x;
-  mpSH->write(SettingHelper::saveLocations, mConfig.transmSelector->isChecked());
-}
-
-void RadioInterface::slot_handle_save_slides(int x)
-{
-  (void)x;
-  mpSH->write(SettingHelper::saveSlides, mConfig.saveSlides->isChecked());
 }
 
 //////////////////////////////////////////////////////////////////////////
