@@ -347,23 +347,10 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
     if (mpInputDevice != nullptr)
     {
       _set_device_to_file_mode(!mChannel.realChannel);
-      mpSH->write(SettingHelper::device, mConfig.deviceSelector->currentText());
     }
   }
 
   connect(configButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_config_button);
-
-  if (mpInputDevice != nullptr)
-  {
-    if (mpSH->read(SettingHelper::deviceVisible).toBool())
-    {
-      mpInputDevice->show();
-    }
-    else
-    {
-      mpInputDevice->hide();
-    }
-  }
 
   if (mpSH->read(SettingHelper::spectrumVisible).toBool())
   {
@@ -1262,7 +1249,7 @@ void RadioInterface::_slot_update_time_display()
   }
 }
 
-// _slot_new_device is called from the GUI when selecting a device with the selector
+// _slot_new_device is called from the UI when selecting a device with the selector
 void RadioInterface::_slot_new_device(const QString & deviceName)
 {
   //	Part I : stopping all activities
@@ -1286,14 +1273,6 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
 
   _set_device_to_file_mode(!mChannel.realChannel);
 
-  if (mpSH->read(SettingHelper::deviceVisible).toBool())
-  {
-    mpInputDevice->show();
-  }
-  else
-  {
-    mpInputDevice->hide();
-  }
   doStart();    // will set running
 }
 

@@ -52,8 +52,8 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   ipDabSettings->beginGroup(SETTING_GROUP_NAME);
   int32_t x = ipDabSettings->value("position-x", 100).toInt();
   int32_t y = ipDabSettings->value("position-y", 100).toInt();
-  int32_t w = ipDabSettings->value("width", 150).toInt();
-  int32_t h = ipDabSettings->value("height", 120).toInt();
+  int32_t w = ipDabSettings->value("width", 1100).toInt();
+  int32_t h = ipDabSettings->value("height", 600).toInt();
   ipDabSettings->endGroup();
 
   setupUi(&myFrame);

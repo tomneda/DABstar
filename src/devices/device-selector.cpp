@@ -53,6 +53,7 @@
 #include "xml-filereader.h"
 #include "wavfiles.h"
 #include "rawfiles.h"
+#include "setting-helper.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
@@ -280,9 +281,10 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
     return nullptr;
   }
 
-  mpSettings->setValue("device", iDeviceName); // remember for next restart
+  SettingHelper & sh = SettingHelper::get_instance();
+  sh.write(SettingHelper::device, iDeviceName); // remember for next restart
 
-  if (mpSettings->value("deviceVisible", 0).toInt())
+  if (sh.read(SettingHelper::deviceVisible).toBool())
   {
     inputDevice->show();
   }

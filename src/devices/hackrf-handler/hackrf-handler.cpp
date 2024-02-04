@@ -96,10 +96,8 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   mpHackrfSettings->beginGroup("hackrfSettings");
   sliderLnaGain->setValue(mpHackrfSettings->value("hack_lnaGain", DEFAULT_LNA_GAIN).toInt());
   sliderVgaGain->setValue(mpHackrfSettings->value("hack_vgaGain", DEFAULT_VGA_GAIN).toInt());
-  bool isChecked = mpHackrfSettings->value("hack_AntEnable", false).toBool();
-  btnBiasTEnable->setCheckState(isChecked ? Qt::Checked : Qt::Unchecked);
-  isChecked = mpHackrfSettings->value("hack_AmpEnable", false).toBool();
-  btnAmpEnable->setCheckState(isChecked ? Qt::Checked : Qt::Unchecked);
+  btnBiasTEnable->setCheckState((Qt::CheckState)mpHackrfSettings->value("hack_BiasTEnable", Qt::Unchecked).toInt());
+  btnAmpEnable->setCheckState((Qt::CheckState)mpHackrfSettings->value("hack_AmpEnable", Qt::Checked).toInt());
   ppm_correction->setValue(mpHackrfSettings->value("hack_ppmCorrection", 0).toInt());
   save_gain_settings = mpHackrfSettings->value("save_gainSettings", 1).toInt() != 0;
   mpHackrfSettings->endGroup();
@@ -168,7 +166,7 @@ HackRfHandler::~HackRfHandler()
   mpHackrfSettings->setValue("position-y", myFrame.pos().y());
   mpHackrfSettings->setValue("hack_lnaGain", sliderLnaGain->value());
   mpHackrfSettings->setValue("hack_vgaGain", sliderVgaGain->value());
-  mpHackrfSettings->setValue("hack_AntEnable", btnBiasTEnable->checkState() == Qt::Checked);
+  mpHackrfSettings->setValue("hack_BiasTEnable", btnBiasTEnable->checkState() == Qt::Checked);
   mpHackrfSettings->setValue("hack_AmpEnable", btnAmpEnable->checkState() == Qt::Checked);
   mpHackrfSettings->setValue("hack_ppmCorrection", ppm_correction->value());
   mpHackrfSettings->endGroup();
