@@ -2087,9 +2087,7 @@ void RadioInterface::disconnectGUI()
 
 void RadioInterface::closeEvent(QCloseEvent * event)
 {
-  const bool x = mConfig.closeDirect->isChecked();
-  mpSH->write(SettingHelper::closeDirect, x);
-  if (x)
+  if (mpSH->read(SettingHelper::closeDirect).toBool())
   {
     _slot_terminate_process();
     event->accept();
