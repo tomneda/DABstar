@@ -525,21 +525,18 @@ bool RadioInterface::doStart()
     const bool b = mpSH->read(SettingHelper::tiiDetector).toBool();
     mConfig.tii_detectorMode->setChecked(b);
     mpDabProcessor->set_tiiDetectorMode(b);
-    connect(mConfig.tii_detectorMode, &QCheckBox::stateChanged, this, &RadioInterface::_slot_handle_tii_detector_mode);
   }
 
   {
     const bool b = mpSH->read(SettingHelper::dcAvoidance).toBool();
     mConfig.cbDcAvoidance->setChecked(b);
     mpDabProcessor->set_dc_avoidance_algorithm(b);
-    connect(mConfig.cbDcAvoidance, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_avoidance_algorithm);
   }
 
   {
     const bool b = mpSH->read(SettingHelper::dcRemoval).toBool();
     mConfig.cbDcRemovalFilter->setChecked(b);
     mpDabProcessor->set_dc_removal(b);
-    connect(mConfig.cbDcRemovalFilter, &QCheckBox::clicked, this, &RadioInterface::_slot_handle_dc_removal);
   }
 
   emit signal_dab_processor_started();
@@ -3277,25 +3274,25 @@ void RadioInterface::_slot_handle_skip_file_button()
   mBandHandler.setup_skipList(fileName);
 }
 
-void RadioInterface::_slot_handle_tii_detector_mode(bool iIsChecked)
+void RadioInterface::slot_handle_tii_detector_mode(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
   mpDabProcessor->set_tiiDetectorMode(iIsChecked);
   mChannel.transmitters.clear();
-  mpSH->write(SettingHelper::tiiDetector, iIsChecked);
+  //mpSH->write(SettingHelper::tiiDetector, iIsChecked);
 }
 
-void RadioInterface::_slot_handle_dc_avoidance_algorithm(bool iIsChecked)
+void RadioInterface::slot_handle_dc_avoidance_algorithm(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
-  mpSH->write(SettingHelper::dcAvoidance, iIsChecked); // write settings before action as file operation can influence sample activities
+  //mpSH->write(SettingHelper::dcAvoidance, iIsChecked); // write settings before action as file operation can influence sample activities
   mpDabProcessor->set_dc_avoidance_algorithm(iIsChecked);
 }
 
-void RadioInterface::_slot_handle_dc_removal(bool iIsChecked)
+void RadioInterface::slot_handle_dc_removal(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
-  mpSH->write(SettingHelper::dcRemoval, iIsChecked); // write settings before action as file operation can influence sample activities
+  //mpSH->write(SettingHelper::dcRemoval, iIsChecked); // write settings before action as file operation can influence sample activities
   mpDabProcessor->set_dc_removal(iIsChecked);
 }
 
@@ -3356,9 +3353,8 @@ void RadioInterface::LOG(const QString & a1, const QString & a2)
   fprintf(mpLogFile, "at %s: %s %s\n", theTime.toUtf8().data(), a1.toUtf8().data(), a2.toUtf8().data());
 }
 
-void RadioInterface::slot_handle_logger_button(int s)
+void RadioInterface::slot_handle_logger_button(int /*s*/)
 {
-  (void)s;
   if (mConfig.loggerButton->isChecked())
   {
     if (mpLogFile != nullptr)
@@ -3580,9 +3576,8 @@ void RadioInterface::start_etiHandler()
   }
 }
 
-void RadioInterface::slot_handle_eti_active_selector(int k)
+void RadioInterface::slot_handle_eti_active_selector(int /*k*/)
 {
-  (void)k;
   bool setting = mConfig.eti_activeSelector->isChecked();
   if (mpInputDevice == nullptr)
   {

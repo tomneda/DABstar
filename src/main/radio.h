@@ -394,6 +394,9 @@ public slots:
   void slot_handle_port_selector();
   void slot_handle_set_coordinates_button();
   void slot_handle_eti_active_selector(int);
+  void slot_handle_tii_detector_mode(bool);
+  void slot_handle_dc_avoidance_algorithm(bool);
+  void slot_handle_dc_removal(bool);
 
   void closeEvent(QCloseEvent * event) override;
 
@@ -439,9 +442,6 @@ private slots:
   void _slot_handle_switch_delay_setting(int);
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();
-  void _slot_handle_tii_detector_mode(bool);
-  void _slot_handle_dc_avoidance_algorithm(bool);
-  void _slot_handle_dc_removal(bool);
 };
 
 #endif

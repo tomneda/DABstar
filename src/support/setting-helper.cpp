@@ -155,27 +155,44 @@ void SettingHelper::sync() const
   mpSettings->sync();
 }
 
-void SettingHelper::sync_ui_state(const EElem iElem, QAbstractButton * const ioCheckBox, const bool iWriteSetting)
+void SettingHelper::sync_ui_state(const EElem iElem, const bool iWriteSetting)
 {
-  if (iWriteSetting)
+  auto it = mMap.find(iElem);
+  Q_ASSERT(it != mMap.end());
+  SMapElem & me = it.value();
+  Q_ASSERT(me.pWidget != nullptr);
+
+  if (auto * const pAB = dynamic_cast<QAbstractButton *>(me.pWidget);
+      pAB != nullptr)
   {
-    write(iElem, ioCheckBox->isChecked());
+    if (iWriteSetting)
+    {
+      write(iElem, pAB->isChecked());
+    }
+    else
+    {
+      pAB->setChecked(read(iElem).toBool());
+    }
+    return;
   }
-  else
+
+
+  if (auto * const pSB = dynamic_cast<QSpinBox *>(me.pWidget);
+      pSB != nullptr)
   {
-    ioCheckBox->setChecked(read(iElem).toBool());
+    if (iWriteSetting)
+    {
+      write(iElem, pSB->value());
+    }
+    else
+    {
+      pSB->setValue(read(iElem).toInt());
+    }
+    return;
   }
+
+  qFatal("Pointer to pWidget not valid for iElem %d", iElem);
 }
 
-void SettingHelper::sync_ui_state(const EElem iElem, QSpinBox * const ioSpinBox, const bool iWriteSetting)
-{
-  if (iWriteSetting)
-  {
-    write(iElem, ioSpinBox->value());
-  }
-  else
-  {
-    ioSpinBox->setValue(read(iElem).toInt());
-  }
-}
+
 

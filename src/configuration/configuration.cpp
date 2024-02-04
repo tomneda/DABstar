@@ -32,6 +32,22 @@ Configuration::Configuration(RadioInterface * ipRI) :
 
   sliderTest->hide(); // only used for test
 
+  mpSH->register_ui_element<SettingHelper::switchDelay>(switchDelaySetting);
+  mpSH->register_ui_element<SettingHelper::closeDirect>(closeDirect);
+  mpSH->register_ui_element<SettingHelper::tiiDetector>(tii_detectorMode);
+  mpSH->register_ui_element<SettingHelper::useNativeFileDialogs>(cbNativeFileDialog);
+  mpSH->register_ui_element<SettingHelper::utcSelector>(utcSelector);
+  mpSH->register_ui_element<SettingHelper::epg2xml>(epg2xmlSelector);
+  mpSH->register_ui_element<SettingHelper::onTop>(onTop);
+  mpSH->register_ui_element<SettingHelper::autoBrowser>(autoBrowser);
+  mpSH->register_ui_element<SettingHelper::transmitterTags>(transmitterTags);
+  mpSH->register_ui_element<SettingHelper::saveSlides>(saveSlides);
+  mpSH->register_ui_element<SettingHelper::saveLocations>(transmSelector);
+  mpSH->register_ui_element<SettingHelper::dcAvoidance>(cbDcAvoidance);
+  mpSH->register_ui_element<SettingHelper::dcRemoval>(cbDcRemovalFilter);
+  // loggerButton is not stored in settings
+  // eti_activeSelector is not stored in settings
+
   _sync_ui_elements(false);
 
   QPalette lcdPalette;
@@ -48,6 +64,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
   cpuMonitor->setAutoFillBackground(true);
 
   connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_load_table);
+  connect(tii_detectorMode, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_detector_mode);
   connect(onTop, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_on_top);
   connect(transmSelector, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_transm_selector);
   connect(saveSlides, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_save_slides);
@@ -61,6 +78,8 @@ Configuration::Configuration(RadioInterface * ipRI) :
   connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_set_coordinates_button);
   connect(eti_activeSelector, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
   connect(cbNativeFileDialog, &QCheckBox::stateChanged, this, &Configuration::_slot_use_native_file_dialogs);
+  connect(cbDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_avoidance_algorithm);
+  connect(cbDcRemovalFilter, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_removal);
 }
 
 void Configuration::save_position_and_config()
@@ -76,14 +95,19 @@ void Configuration::_slot_use_native_file_dialogs(bool iChecked)
 
 void Configuration::_sync_ui_elements(const bool iWriteSettings)
 {
-  mpSH->sync_ui_state(SettingHelper::switchDelay, switchDelaySetting, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::closeDirect, closeDirect, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::onTop, onTop, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::saveLocations, transmSelector, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::saveSlides, saveSlides, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::utcSelector, utcSelector, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::epg2xml, epg2xmlSelector, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::autoBrowser, autoBrowser, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::transmitterTags, transmitterTags, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::useNativeFileDialogs, cbNativeFileDialog, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::switchDelay, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::closeDirect, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::tiiDetector, iWriteSettings);
+  // loggerButton is not stored in settings
+  mpSH->sync_ui_state(SettingHelper::useNativeFileDialogs, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::utcSelector, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::epg2xml, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::onTop, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::autoBrowser, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::transmitterTags, iWriteSettings);
+  // eti_activeSelector is not stored in settings
+  mpSH->sync_ui_state(SettingHelper::saveSlides, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::saveLocations, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::dcAvoidance,  iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::dcRemoval, iWriteSettings);
 }

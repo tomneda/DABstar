@@ -17,15 +17,18 @@
 #ifndef DABSTAR_SETTING_HELPER_H
 #define DABSTAR_SETTING_HELPER_H
 
+#include <QObject>
 #include <QMap>
 #include <QVariant>
+#include <QAbstractButton>
+#include <QSpinBox>
+#include <QSettings>
 
-class QSettings;
-class QAbstractButton;
-class QSpinBox;
+class QWidget;
 
-class SettingHelper
+class SettingHelper : public QObject
 {
+  Q_OBJECT
 public:
   static SettingHelper & get_instance(QSettings * ipSettings = nullptr)
   {
@@ -100,15 +103,16 @@ public:
   void read_widget_geometry(const EElem iElem, QWidget * const iopWidget) const;
   void write_widget_geometry(const EElem iElem, const QWidget * const ipWidget);
 
-  void sync_ui_state(const EElem iElem, QAbstractButton * const ioCheckBox, const bool iWriteSetting);
-  void sync_ui_state(const EElem iElem, QSpinBox * const ioCheckBox, const bool iWriteSetting);
+  template<EElem iElem> void register_ui_element(QAbstractButton * const ipPushButton);
+  template<EElem iElem> void register_ui_element(QSpinBox * const ipSpinBox);
+  void sync_ui_state(const EElem iElem, const bool iWriteSetting);
 
   void sync() const;
   QSettings * get_settings() const { return mpSettings; } // for a direct access to the QSettings (should be removed at last)
 
 private:
   explicit SettingHelper(QSettings * ipSettings);
-  ~SettingHelper();
+  ~SettingHelper() override;
 
   QSettings * const mpSettings;
 
@@ -117,6 +121,7 @@ private:
     QString  Group;
     QString  KeyStr;
     QVariant KeyVal;
+    QWidget * pWidget = nullptr;
   };
   
   QMap<EElem, SMapElem> mMap;
@@ -124,5 +129,53 @@ private:
   void _fill_map_from_settings();
   void _fill_map_with_defaults();
 };
+
+template<SettingHelper::EElem iElem> void SettingHelper::register_ui_element(QAbstractButton * const ipPushButton)
+{
+  auto it = mMap.find(iElem);
+  Q_ASSERT(it != mMap.end());
+  SMapElem & me = it.value();
+  me.pWidget = ipPushButton;
+
+  if (auto const * const pAB = dynamic_cast<QAbstractButton *>(me.pWidget);
+      pAB != nullptr)
+  {
+    connect(pAB, &QAbstractButton::clicked, [this, &me](bool iClicked)
+    {
+      // save changed value to setting file
+      if (me.KeyVal != iClicked)
+      {
+        me.KeyVal = iClicked;
+        mpSettings->beginGroup(me.Group);
+        mpSettings->setValue(me.KeyStr, me.KeyVal);
+        mpSettings->endGroup();
+      }
+    });
+  }
+}
+
+template<SettingHelper::EElem iElem> void SettingHelper::register_ui_element(QSpinBox * const ipSpinBox)
+{
+  auto it = mMap.find(iElem);
+  Q_ASSERT(it != mMap.end());
+  SMapElem & me = it.value();
+  me.pWidget = ipSpinBox;
+
+  if (auto const * const pSB = dynamic_cast<QSpinBox *>(me.pWidget);
+      pSB != nullptr)
+  {
+    connect(pSB, qOverload<int>(&QSpinBox::valueChanged), [this, &me](int ival)
+    {
+      // save changed value to setting file
+      if (me.KeyVal != ival)
+      {
+        me.KeyVal = ival;
+        mpSettings->beginGroup(me.Group);
+        mpSettings->setValue(me.KeyStr, me.KeyVal);
+        mpSettings->endGroup();
+      }
+    });
+  }
+}
 
 #endif // DABSTAR_SETTING_HELPER_H
