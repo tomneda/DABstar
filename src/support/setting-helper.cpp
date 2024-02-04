@@ -16,11 +16,8 @@
 
 #include "setting-helper.h"
 #include "dab-constants.h"
-#include <QSettings>
 #include <QDir>
 #include <QWidget>
-#include <QAbstractButton>
-#include <QSpinBox>
 
 SettingHelper::SettingHelper(QSettings * ipSettings) :
   mpSettings(ipSettings)
@@ -128,7 +125,8 @@ void SettingHelper::read_widget_geometry(const SettingHelper::EElem iElem, QWidg
 
   if(!var.canConvert<QByteArray>())
   {
-    qFatal("Cannot retrieve widget geometry from settings.");
+    qWarning("Cannot retrieve widget geometry from settings.");
+    return;
   }
   
   if (!iopWidget->restoreGeometry(var.toByteArray()))
@@ -152,16 +150,16 @@ void SettingHelper::sync_ui_state(const EElem iElem, const bool iWriteSetting)
 {
   SettingHelper::SMapElem & me = _get_map_elem(iElem);
 
-  if (auto * const pAB = dynamic_cast<QAbstractButton *>(me.pWidget);
+  if (auto * const pAB = dynamic_cast<QCheckBox *>(me.pWidget);
       pAB != nullptr)
   {
     if (iWriteSetting)
     {
-      _write_setting(me, pAB->isChecked());
+      _write_setting(me, pAB->checkState());
     }
     else
     {
-      pAB->setChecked(read(iElem).toBool());
+      pAB->setCheckState(static_cast<Qt::CheckState>(read(iElem).toInt()));
     }
     return;
   }

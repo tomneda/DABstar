@@ -20,7 +20,7 @@
 #include <QObject>
 #include <QMap>
 #include <QVariant>
-#include <QAbstractButton>
+#include <QCheckBox>
 #include <QSpinBox>
 #include <QSettings>
 
@@ -102,7 +102,7 @@ public:
   void read_widget_geometry(const EElem iElem, QWidget * const iopWidget) const;
   void write_widget_geometry(const EElem iElem, const QWidget * const ipWidget);
 
-  template<EElem iElem> void register_and_connect_ui_element(QAbstractButton * const ipPushButton);
+  template<EElem iElem> void register_and_connect_ui_element(QCheckBox * const ipPushButton);
   template<EElem iElem> void register_and_connect_ui_element(QSpinBox * const ipSpinBox);
   void sync_ui_state(const EElem iElem, const bool iWriteSetting);
   void sync_all_ui_states(const bool iWriteSetting) noexcept;
@@ -146,14 +146,14 @@ void SettingHelper::_write_setting(SMapElem & me, const T iValue)
 }
 
 template<SettingHelper::EElem iElem>
-void SettingHelper::register_and_connect_ui_element(QAbstractButton * const ipPushButton)
+void SettingHelper::register_and_connect_ui_element(QCheckBox * const ipPushButton)
 {
   SettingHelper::SMapElem & me = _get_map_elem(iElem);
   me.pWidget = ipPushButton;
 
-  const auto * const pAB = dynamic_cast<QAbstractButton *>(me.pWidget);
+  const auto * const pAB = dynamic_cast<QCheckBox *>(me.pWidget);
   Q_ASSERT(pAB != nullptr);
-  connect(pAB, &QAbstractButton::clicked, [this, &me](bool iClicked){ _write_setting(me, iClicked); });
+  connect(pAB, &QCheckBox::stateChanged, [this, &me](int iState){ _write_setting(me, iState); });
 }
 
 template<SettingHelper::EElem iElem>
