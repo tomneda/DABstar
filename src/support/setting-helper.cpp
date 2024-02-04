@@ -49,7 +49,7 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(tiiDepth, { "", "tii_depth", 4 });
   mMap.insert(echoDepth, { "", "echo_depth", 1  });
   mMap.insert(latency, { "", "latency", 5 });
-  mMap.insert(soundchannel, { "", "soundchannel", "default" });
+  mMap.insert(soundChannel, { "", "soundchannel", "default" });
   mMap.insert(picturesPath, { "", "picturesPath", tempPicPath });
   mMap.insert(filePath, { "", "filePath", tempPicPath });
   mMap.insert(epgPath, { "", "epgPath", tempEpgPath });
@@ -68,28 +68,27 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(mapPort, { "", "mapPort", 8080 });
   mMap.insert(epgFlag, { "", "epgFlag", false });
 
-  mMap.insert(autoBrowser, { "", "autoBrowser", false });
-  mMap.insert(closeDirect, { "", "closeDirect", false });
-  mMap.insert(dcAvoidance, { "", "dcAvoidance", false });
-  mMap.insert(dcRemoval, { "", "dcRemoval", false });
-  mMap.insert(epg2xml, { "", "epg2xml", false });
+  mMap.insert(cbManualBrowserStart, { "", "autoBrowser", false });
+  mMap.insert(cbCloseDirect, { "", "closeDirect", false });
+  mMap.insert(cbUseDcAvoidance, { "", "dcAvoidance", false });
+  mMap.insert(cbUseDcRemoval, { "", "dcRemoval", false });
+  mMap.insert(cbGenXmlFromEpg, { "", "epg2xml", false });
   mMap.insert(hidden, { "", "hidden", true });
   mMap.insert(latitude, { "", "latitude", 0 });
   mMap.insert(longitude, { "", "longitude", 0 });
-  mMap.insert(onTop, { "", "onTop", false });
+  mMap.insert(cbAlwaysOnTop, { "", "onTop", false });
   mMap.insert(saveDirAudioDump, { "", "saveDirAudioDump", QDir::homePath() });
   mMap.insert(saveDirSampleDump, { "", "saveDirSampleDump", QDir::homePath() });
   mMap.insert(saveDirContent, { "", "saveDirContent", QDir::homePath() });
-  mMap.insert(saveLocations, { "", "saveLocations", false });
-  mMap.insert(saveSlides, { "", "saveSlides", false });
+  mMap.insert(cbSaveTransToCsv, { "", "saveLocations", false });
+  mMap.insert(cbSaveSlides, { "", "saveSlides", false });
   mMap.insert(serviceListSortCol, { "", "serviceListSortCol", false });
   mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
   mMap.insert(switchDelay, { "", "switchDelay", SWITCH_DELAY });
-  mMap.insert(tiiDetector, { "", "tii_detector", false });
-  mMap.insert(transmitterTags, { "", "transmitterTags", false });
-  mMap.insert(useNativeFileDialogs, { "", "useNativeFileDialogs", false });
-  mMap.insert(utcSelector, { "", "utcSelector", false });
-  mMap.insert(saveServiceSelector, { "", "saveServiceSelector", false });
+  mMap.insert(cbUseNewTiiDetector, { "", "tii_detector", false });
+  mMap.insert(cbShowOnlyCurrTrans, { "", "transmitterTags", false });
+  mMap.insert(cbUseNativeFileDialog, { "", "useNativeFileDialogs", false });
+  mMap.insert(cbUseUtcTime, { "", "utcSelector", false });
 
   // special enums for windows position and size storage
   mMap.insert(configWidget, { "", "configWidget", QVariant() });
@@ -117,17 +116,10 @@ void SettingHelper::write(const EElem iElem, const QVariant & iVal)
 
   if (me.pWidget != nullptr)
   {
-    qFatal("Elem %d is registered as UI item, use sync_ui_state() instead", iElem);
+    qFatal("Elem %d (setting name '%s') is registered as UI item, use sync_ui_state() instead", iElem, me.KeyStr.toUtf8().data());
   }
-  
-  // save changed value to setting file
-  if (me.KeyVal != iVal)
-  {
-    me.KeyVal = iVal;
-    mpSettings->beginGroup(me.Group);
-    mpSettings->setValue(me.KeyStr, me.KeyVal);
-    mpSettings->endGroup();
-  }
+
+  _write_setting(me, iVal);
 }
 
 void SettingHelper::read_widget_geometry(const SettingHelper::EElem iElem, QWidget * const iopWidget) const
@@ -137,12 +129,11 @@ void SettingHelper::read_widget_geometry(const SettingHelper::EElem iElem, QWidg
   if(!var.canConvert<QByteArray>())
   {
     qFatal("Cannot retrieve widget geometry from settings.");
-    return;
   }
   
   if (!iopWidget->restoreGeometry(var.toByteArray()))
   {
-    qFatal("restoreGeometry() returns false");
+    qWarning("restoreGeometry() returns false");
   }
 }
 
@@ -159,14 +150,14 @@ void SettingHelper::sync()
 
 void SettingHelper::sync_ui_state(const EElem iElem, const bool iWriteSetting)
 {
-  const SettingHelper::SMapElem & me = _get_map_elem(iElem);
+  SettingHelper::SMapElem & me = _get_map_elem(iElem);
 
   if (auto * const pAB = dynamic_cast<QAbstractButton *>(me.pWidget);
       pAB != nullptr)
   {
     if (iWriteSetting)
     {
-      write(iElem, pAB->isChecked());
+      _write_setting(me, pAB->isChecked());
     }
     else
     {
@@ -175,13 +166,12 @@ void SettingHelper::sync_ui_state(const EElem iElem, const bool iWriteSetting)
     return;
   }
 
-
   if (auto * const pSB = dynamic_cast<QSpinBox *>(me.pWidget);
       pSB != nullptr)
   {
     if (iWriteSetting)
     {
-      write(iElem, pSB->value());
+      _write_setting(me, pSB->value());
     }
     else
     {

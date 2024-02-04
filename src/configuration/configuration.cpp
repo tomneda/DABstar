@@ -32,20 +32,20 @@ Configuration::Configuration(RadioInterface * ipRI) :
   sliderTest->hide(); // only used for test
 
   mpSH->register_and_connect_ui_element<SettingHelper::switchDelay>(switchDelaySetting);
-  mpSH->register_and_connect_ui_element<SettingHelper::closeDirect>(closeDirect);
-  mpSH->register_and_connect_ui_element<SettingHelper::tiiDetector>(tii_detectorMode);
-  mpSH->register_and_connect_ui_element<SettingHelper::useNativeFileDialogs>(cbNativeFileDialog);
-  mpSH->register_and_connect_ui_element<SettingHelper::utcSelector>(utcSelector);
-  mpSH->register_and_connect_ui_element<SettingHelper::epg2xml>(epg2xmlSelector);
-  mpSH->register_and_connect_ui_element<SettingHelper::onTop>(onTop);
-  mpSH->register_and_connect_ui_element<SettingHelper::autoBrowser>(autoBrowser);
-  mpSH->register_and_connect_ui_element<SettingHelper::transmitterTags>(transmitterTags);
-  mpSH->register_and_connect_ui_element<SettingHelper::saveSlides>(saveSlides);
-  mpSH->register_and_connect_ui_element<SettingHelper::saveLocations>(transmSelector);
-  mpSH->register_and_connect_ui_element<SettingHelper::dcAvoidance>(cbDcAvoidance);
-  mpSH->register_and_connect_ui_element<SettingHelper::dcRemoval>(cbDcRemovalFilter);
-  // loggerButton is not stored in settings
-  // eti_activeSelector is not stored in settings
+  mpSH->register_and_connect_ui_element<SettingHelper::cbCloseDirect>(cbCloseDirect);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbUseNewTiiDetector>(cbUseNewTiiDetector);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbUseNativeFileDialog>(cbUseNativeFileDialog);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbUseUtcTime>(cbUseUtcTime);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbGenXmlFromEpg>(cbGenXmlFromEpg);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbAlwaysOnTop>(cbAlwaysOnTop);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbManualBrowserStart>(cbManualBrowserStart);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbShowOnlyCurrTrans>(cbShowOnlyCurrTrans);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbSaveSlides>(cbSaveSlides);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbSaveTransToCsv>(cbSaveTransToCsv);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbUseDcAvoidance>(cbUseDcAvoidance);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbUseDcRemoval>(cbUseDcRemoval);
+  // cbActivateLogger is not stored in settings
+  // cbActivateEti is not stored in settings
 
   _sync_ui_elements(false);
 
@@ -63,17 +63,17 @@ Configuration::Configuration(RadioInterface * ipRI) :
   cpuMonitor->setAutoFillBackground(true);
 
   connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_load_table);
-  connect(tii_detectorMode, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_detector_mode);
+  connect(cbUseNewTiiDetector, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_detector_mode);
   connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &RadioInterface::slot_test_slider);
-  connect(transmitterTags, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_transmitter_tags);
+  connect(cbShowOnlyCurrTrans, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_transmitter_tags);
   connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &RadioInterface::slot_handle_dl_text_button);
-  connect(loggerButton, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
+  connect(cbActivateLogger, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
   connect(streamoutSelector, qOverload<int>(&QComboBox::activated), mpRadioInterface, &RadioInterface::slot_set_stream_selector);
   connect(portSelector, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_port_selector);
   connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_set_coordinates_button);
-  connect(eti_activeSelector, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
-  connect(cbDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_avoidance_algorithm);
-  connect(cbDcRemovalFilter, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_removal);
+  connect(cbActivateEti, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
+  connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_avoidance_algorithm);
+  connect(cbUseDcRemoval, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_removal);
 }
 
 void Configuration::save_position_and_config()
@@ -85,18 +85,18 @@ void Configuration::save_position_and_config()
 void Configuration::_sync_ui_elements(const bool iWriteSettings)
 {
   mpSH->sync_ui_state(SettingHelper::switchDelay, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::closeDirect, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::tiiDetector, iWriteSettings);
-  // loggerButton is not stored in settings
-  mpSH->sync_ui_state(SettingHelper::useNativeFileDialogs, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::utcSelector, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::epg2xml, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::onTop, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::autoBrowser, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::transmitterTags, iWriteSettings);
-  // eti_activeSelector is not stored in settings
-  mpSH->sync_ui_state(SettingHelper::saveSlides, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::saveLocations, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::dcAvoidance,  iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::dcRemoval, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbCloseDirect, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbUseNewTiiDetector, iWriteSettings);
+  // cbActivateLogger is not stored in settings
+  mpSH->sync_ui_state(SettingHelper::cbUseNativeFileDialog, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbUseUtcTime, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbGenXmlFromEpg, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbAlwaysOnTop, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbManualBrowserStart, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbShowOnlyCurrTrans, iWriteSettings);
+  // cbActivateEti is not stored in settings
+  mpSH->sync_ui_state(SettingHelper::cbSaveSlides, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbSaveTransToCsv, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbUseDcAvoidance, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbUseDcRemoval, iWriteSettings);
 }

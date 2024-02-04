@@ -155,7 +155,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mProcessParams.echo_depth = mpSH->read(SettingHelper::echoDepth).toInt();
 
   //	set on top or not? checked at start up
-  if (mpSH->read(SettingHelper::onTop).toBool())
+  if (mpSH->read(SettingHelper::cbAlwaysOnTop).toBool())
   {
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
   }
@@ -216,7 +216,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
 
-  mTransmitterTagsLocal = mpSH->read(SettingHelper::transmitterTags).toBool();
+  mShowOnlyCurrTrans = mpSH->read(SettingHelper::cbShowOnlyCurrTrans).toBool();
   mpTechDataWidget->hide();  // until shown otherwise
   mServiceList.clear();
 #ifdef DATA_STREAMER
@@ -241,7 +241,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
   mConfig.streamoutSelector->show();
   bool err = false;
-  h = mpSH->read(SettingHelper::soundchannel).toString();
+  h = mpSH->read(SettingHelper::soundChannel).toString();
 
   k = mConfig.streamoutSelector->findText(h);
   if (k != -1)
@@ -520,23 +520,9 @@ bool RadioInterface::doStart()
     mPresetTimer.start(switchDelay * 1000);
   }
 
-  {
-    const bool b = mpSH->read(SettingHelper::tiiDetector).toBool();
-    mConfig.tii_detectorMode->setChecked(b);
-    mpDabProcessor->set_tiiDetectorMode(b);
-  }
-
-  {
-    const bool b = mpSH->read(SettingHelper::dcAvoidance).toBool();
-    mConfig.cbDcAvoidance->setChecked(b);
-    mpDabProcessor->set_dc_avoidance_algorithm(b);
-  }
-
-  {
-    const bool b = mpSH->read(SettingHelper::dcRemoval).toBool();
-    mConfig.cbDcRemovalFilter->setChecked(b);
-    mpDabProcessor->set_dc_removal(b);
-  }
+  mpDabProcessor->set_tiiDetectorMode(mpSH->read(SettingHelper::cbUseNewTiiDetector).toBool());
+  mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
+  mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
 
   emit signal_dab_processor_started();
 
@@ -689,7 +675,8 @@ void RadioInterface::_slot_handle_content_button()
   }
   QString theTime;
   QString SNR = "SNR " + QString::number(mChannel.snr);
-  if (mConfig.utcSelector->isChecked())
+
+  if (mpSH->read(SettingHelper::cbUseUtcTime).toBool())
   {
     theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
@@ -776,7 +763,8 @@ void RadioInterface::slot_handle_mot_object(QByteArray result, QString objectNam
       uint32_t julianDate = mpDabProcessor->julianDate();
       int subType = getContentSubType((MOTContentType)contentType);
       mEpgProcessor.process_epg(epgData.data(), (int32_t)epgData.size(), currentSId, subType, julianDate);
-      if (mConfig.epg2xmlSelector->isChecked())
+
+      if (mpSH->read(SettingHelper::cbGenXmlFromEpg).toBool())
       {
         mEpgHandler.decode(epgData, QDir::toNativeSeparators(objectName));
       }
@@ -852,7 +840,7 @@ void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, const QSt
   default: return;
   }
 
-  if (mConfig.saveSlides->isChecked() && (mPicturesPath != ""))
+  if (mpSH->read(SettingHelper::cbSaveSlides).toBool() && (mPicturesPath != ""))
   {
     QString pict = mPicturesPath + pictureName;
     QString temp = pict;
@@ -1368,7 +1356,7 @@ void RadioInterface::slot_clock_time(int year, int month, int day, int hours, in
 
   QString result;
 
-  if (mConfig.utcSelector->isChecked())
+  if (mpSH->read(SettingHelper::cbUseUtcTime).toBool())
   {
     result = convertTime(year, month, day, utc_hour, utc_min, utc_sec);
   }
@@ -1654,7 +1642,7 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
   }
 
   uint8_t key = MAP_NORM_TRANS;
-  if ((!mTransmitterTagsLocal) && (distance > mMaxDistance))
+  if ((!mShowOnlyCurrTrans) && (distance > mMaxDistance))
   {
     mMaxDistance = (int)distance;
     key = MAP_MAX_TRANS;
@@ -1666,14 +1654,14 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
     return;
   }
 
-  const QDateTime theTime = (mConfig.utcSelector->isChecked() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
+  const QDateTime theTime = (mpSH->read(SettingHelper::cbUseUtcTime).toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
 
   mpHttpHandler->putData(key,
                          mChannel.targetPos,
                          mChannel.transmitterName,
                          mChannel.channelName,
                          theTime.toString(Qt::TextDate),
-                        mChannel.mainId * 100 + mChannel.subId,
+                         mChannel.mainId * 100 + mChannel.subId,
                          (int)distance,
                          (int)corner,
                          power);
@@ -1772,7 +1760,7 @@ void RadioInterface::slot_set_stream_selector(int k)
   }
 #if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
   ((AudioSink *)(mpSoundOut))->selectDevice(k);
-  mpSH->write(SettingHelper::soundchannel, mConfig.streamoutSelector->currentText());
+  mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
 #else
   (void)k;
 #endif
@@ -2087,7 +2075,7 @@ void RadioInterface::disconnectGUI()
 
 void RadioInterface::closeEvent(QCloseEvent * event)
 {
-  if (mpSH->read(SettingHelper::closeDirect).toBool())
+  if (mpSH->read(SettingHelper::cbCloseDirect).toBool())
   {
     _slot_terminate_process();
     event->accept();
@@ -2733,7 +2721,7 @@ void RadioInterface::startChannel(const QString & theChannel)
 
   mpServiceListHandler->set_selector_channel_only(mChannel.channelName);
 
-  if (mTransmitterTagsLocal && (mpHttpHandler != nullptr))
+  if (mShowOnlyCurrTrans && (mpHttpHandler != nullptr))
   {
     mpHttpHandler->putData(MAP_RESET, cmplx(0, 0), "", "", "", 0, 0, 0, 0);
   }
@@ -2811,7 +2799,7 @@ void RadioInterface::stopChannel()
   mChannelTimer.stop();
   mChannel.clean_channel();
   mChannel.targetPos = cmplx(0, 0);
-  if (mTransmitterTagsLocal && (mpHttpHandler != nullptr))
+  if (mShowOnlyCurrTrans && (mpHttpHandler != nullptr))
   {
     mpHttpHandler->putData(MAP_RESET, mChannel.targetPos, "", "", "", 0, 0, 0, 0);
   }
@@ -3269,20 +3257,17 @@ void RadioInterface::slot_handle_tii_detector_mode(bool iIsChecked)
   assert(mpDabProcessor != nullptr);
   mpDabProcessor->set_tiiDetectorMode(iIsChecked);
   mChannel.transmitters.clear();
-  //mpSH->write(SettingHelper::tiiDetector, iIsChecked);
 }
 
 void RadioInterface::slot_handle_dc_avoidance_algorithm(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
-  //mpSH->write(SettingHelper::dcAvoidance, iIsChecked); // write settings before action as file operation can influence sample activities
   mpDabProcessor->set_dc_avoidance_algorithm(iIsChecked);
 }
 
 void RadioInterface::slot_handle_dc_removal(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
-  //mpSH->write(SettingHelper::dcRemoval, iIsChecked); // write settings before action as file operation can influence sample activities
   mpDabProcessor->set_dc_removal(iIsChecked);
 }
 
@@ -3331,7 +3316,7 @@ void RadioInterface::LOG(const QString & a1, const QString & a2)
   }
 
   QString theTime;
-  if (mConfig.utcSelector->isChecked())
+  if (mpSH->read(SettingHelper::cbUseUtcTime).toBool())
   {
     theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
@@ -3343,9 +3328,9 @@ void RadioInterface::LOG(const QString & a1, const QString & a2)
   fprintf(mpLogFile, "at %s: %s %s\n", theTime.toUtf8().data(), a1.toUtf8().data(), a2.toUtf8().data());
 }
 
-void RadioInterface::slot_handle_logger_button(int /*s*/)
+void RadioInterface::slot_handle_logger_button(int)
 {
-  if (mConfig.loggerButton->isChecked())
+  if (mConfig.cbActivateLogger->isChecked())
   {
     if (mpLogFile != nullptr)
     {
@@ -3359,7 +3344,7 @@ void RadioInterface::slot_handle_logger_button(int /*s*/)
     }
     else
     {
-      mConfig.loggerButton->setChecked(false); // "cancel" was chosen in file dialog
+      mConfig.cbActivateLogger->setCheckState(Qt::Unchecked); // "cancel" was chosen in file dialog
     }
   }
   else if (mpLogFile != nullptr)
@@ -3418,7 +3403,7 @@ void RadioInterface::_slot_handle_http_button()
     QString mapPort = mpSH->read(SettingHelper::mapPort).toString();
 
     QString mapFile;
-    if (mpSH->read(SettingHelper::saveLocations).toBool())
+    if (mpSH->read(SettingHelper::cbSaveTransToCsv).toBool())
     {
       mapFile = mOpenFileDialog.get_maps_file_name();
     }
@@ -3431,7 +3416,7 @@ void RadioInterface::_slot_handle_http_button()
                                     browserAddress,
                                     mChannel.localPos,
                                     mapFile,
-                                    mpSH->read(SettingHelper::autoBrowser).toBool());
+                                    mpSH->read(SettingHelper::cbManualBrowserStart).toBool());
     mMaxDistance = -1;
     if (mpHttpHandler != nullptr)
     {
@@ -3463,11 +3448,10 @@ void RadioInterface::_slot_handle_http_button()
 void RadioInterface::slot_handle_transmitter_tags(int /*d*/)
 {
   mMaxDistance = -1;
-  mTransmitterTagsLocal = mConfig.transmitterTags->isChecked();
-  mTransmitterTagsLocal = mpSH->read(SettingHelper::transmitterTags).toBool();
+  mShowOnlyCurrTrans = mpSH->read(SettingHelper::cbShowOnlyCurrTrans).toBool();
   mChannel.targetPos = cmplx(0, 0);
 
-  if (mTransmitterTagsLocal && mpHttpHandler != nullptr)
+  if (mShowOnlyCurrTrans && mpHttpHandler != nullptr)
   {
     mpHttpHandler->putData(MAP_RESET, mChannel.targetPos, "", "", "", 0, 0, 0, 0);
   }
@@ -3548,22 +3532,24 @@ void RadioInterface::start_etiHandler()
 
 void RadioInterface::slot_handle_eti_active_selector(int /*k*/)
 {
-  bool setting = mConfig.eti_activeSelector->isChecked();
+  // TODO: this needs to be refactored due to the usage of the scan button for ETI activation
   if (mpInputDevice == nullptr)
   {
     return;
   }
 
-  if (setting)
+  if (mConfig.cbActivateEti->isChecked())
   {
     stopScanning(false);
     disconnect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_scan_button);
     connect(btnScanning, &QPushButton::clicked, this, &RadioInterface::_slot_handle_eti_handler);
     btnScanning->setText("ETI");
-    if (mpInputDevice->isFileInput())
-    {  // restore the button' visibility
+
+    if (mpInputDevice->isFileInput()) // restore the button's visibility
+    {
       btnScanning->show();
     }
+
     return;
   }
   //	otherwise, disconnect the eti handling and reconnect scan

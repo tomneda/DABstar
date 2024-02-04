@@ -266,7 +266,7 @@ private:
   TheTime mUTC;
   timeTableHandler * mpTimeTable = nullptr;
   FILE * mpFicDumpPointer = nullptr;
-  bool mTransmitterTagsLocal = false;
+  bool mShowOnlyCurrTrans = false;
   size_t mPreviousIdleTime = 0;
   size_t mPreviousTotalTime = 0;
   std::unique_ptr<ServiceListHandler> mpServiceListHandler;

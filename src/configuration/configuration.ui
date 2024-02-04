@@ -225,7 +225,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QCheckBox" name="closeDirect">
+        <widget class="QCheckBox" name="cbCloseDirect">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you are bored with the explicit request to stop, touch this one, and stopping is direct&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -235,17 +235,17 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="tii_detectorMode">
+        <widget class="QCheckBox" name="cbUseNewTiiDetector">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;a second implementation of the tii decoder can be selected here. The decoder &amp;quot;sees&amp;quot; more tii data, but also more erroneous data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>New TII detector</string>
+          <string>Use new TII detector</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="loggerButton">
+        <widget class="QCheckBox" name="cbActivateLogger">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sometime one wants to see what was done, the logger just dumps some data into a file, showing the selections made.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -255,34 +255,34 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbNativeFileDialog">
+        <widget class="QCheckBox" name="cbUseNativeFileDialog">
          <property name="text">
           <string>Use native file dialogs</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="utcSelector">
+        <widget class="QCheckBox" name="cbUseUtcTime">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you want to see UTC in the logs select this one.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>UTC selector</string>
+          <string>Use UTC time</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="epg2xmlSelector">
+        <widget class="QCheckBox" name="cbGenXmlFromEpg">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The EPG detector has two components, one collecting data to present as &amp;quot;time table&amp;quot; for today,&lt;/p&gt;&lt;p&gt;the other one - using a library written by Julian Cable from the BBC - to generate textual xml.&lt;/p&gt;&lt;p&gt;If selected, the xml will be generated. Note however that we encountered at least one example&lt;/p&gt;&lt;p&gt;where the library generating the textual xml causes a crash.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The EPG detector has two components, one collecting data to present as &amp;quot;time table&amp;quot; for today, the other one - using a library written by Julian Cable from the BBC - to generate textual xml.&lt;/p&gt;&lt;p&gt;If selected, the xml will be generated. Note however that we encountered at least one example where the library generating the textual xml causes a crash.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>EPG to XML</string>
+          <string>Generate XML from EPG</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="onTop">
+        <widget class="QCheckBox" name="cbAlwaysOnTop">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set in the configuration whether or not the main widget should ALWAYS be op top. Note that setting will be applied the next time the program will start.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -292,7 +292,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="autoBrowser">
+        <widget class="QCheckBox" name="cbManualBrowserStart">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set in the configuration that on starting the http service a browser will have to be started manually. Default is browser starts automatically. Effective immediately&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -302,7 +302,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="transmitterTags">
+        <widget class="QCheckBox" name="cbShowOnlyCurrTrans">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set in the configuration that - rather than showing all transmitters on a map - only the transmitters that are seen for the currrent channel are made visible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -312,7 +312,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="eti_activeSelector">
+        <widget class="QCheckBox" name="cbActivateEti">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -320,12 +320,12 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate ETI files. Since generating an ETI file from an ensemble seems incompatible with scanning, the scan button is replaced by an &amp;quot;ETI&amp;quot; button when ETI is activated.&lt;/p&gt;&lt;p&gt;Note that building up an ETI file requires quite some resources.&lt;/p&gt;&lt;p&gt;If ETI is activated, the scanButton is replaced by the etiButton. Touching that button shows a fileselection menu, after selecting a file the content of the ensemble is sent in ETi format to the file. The eti session stops when (a) the eti button is touched again, (b) switching to another channel or (c) disabling eti by unchecking the checkbox.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>ETI activated</string>
+          <string>Activate ETI</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="saveSlides">
+        <widget class="QCheckBox" name="cbSaveSlides">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, slides (pictures) appearing during transmissions are being saved to&lt;span style=&quot; font-weight:600;&quot;&gt; /tmp/DABstar/PIC/&lt;/span&gt; (under Linux)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -335,32 +335,32 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="transmSelector">
+        <widget class="QCheckBox" name="cbSaveTransToCsv">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this is set, the transmitter descriptions visible on the map are also stored in a &amp;quot;.csv&amp;quot;  file,&lt;/p&gt;&lt;p&gt;On starting the httpHandler, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this is set, the transmitter descriptions visible on the map are also stored in a &amp;quot;.csv&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the httpHandler, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Save transmitters</string>
+          <string>Save transmitters to CSV</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbDcAvoidance">
+        <widget class="QCheckBox" name="cbUseDcAvoidance">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Try to avoid a DC compoment on used OFDM-bins around the 0Hz-OFDM-bin.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Many SDR devices have an analog IQ receiving concept. This tends to have a DC component at 0Hz baseband. &lt;/p&gt;&lt;p&gt;Therefore, the DAB standard do not use the OFDM-bin at 0Hz to avoid decoding problems. But as the frequency correction is usually done only in the baseband, the DC could be seen also in the neighbor OFDM-bins where the demodulation of the data could be bad.&lt;/p&gt;&lt;p&gt;This feature tries to use the RF synthesizer on the SDR device to shift the DC component to the unsused 0Hz-OFDM-bin again. The remaining frequency correction is still done in the baseband.&lt;/p&gt;&lt;p&gt;Not all devices allows fine RF frequency tuning (and not on all relevant frequencies), so this is not always working fully well, but should also not cause any harm.&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;p&gt;While switching audio could drop for a short time.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>DC avoidance algorithm</string>
+          <string>Use DC avoidance algorithm</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbDcRemovalFilter">
+        <widget class="QCheckBox" name="cbUseDcRemoval">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;DC removal filter&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal. &lt;/p&gt;&lt;p&gt;Together with the &lt;span style=&quot; font-style:italic;&quot;&gt;DC Avoidance Algrithm&lt;/span&gt; this should be of an advantage. But with not all situations and devices this will work well.&lt;/p&gt;&lt;p&gt;You would see the DC on the &amp;quot;needle&amp;quot; in the spectrum view (upper right corner).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>DC removal filter</string>
+          <string>Use DC removal filter</string>
          </property>
         </widget>
        </item>

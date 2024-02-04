@@ -49,7 +49,7 @@ public:
     tiiDepth, // 4
     echoDepth, // 5
     latency, // 6
-    soundchannel, // 7
+    soundChannel, // 7
     picturesPath, // 8
     filePath, // 9
     epgPath, // 10
@@ -69,32 +69,31 @@ public:
     epgFlag, // 24
 
     // needed in config widget
-    autoBrowser, // 25
-    closeDirect, // 26
-    dcAvoidance, // 27
-    dcRemoval, // 28
-    epg2xml, // 29
+    cbManualBrowserStart, // 25
+    cbCloseDirect, // 26
+    cbUseDcAvoidance, // 27
+    cbUseDcRemoval, // 28
+    cbGenXmlFromEpg, // 29
     hidden, // 30
     latitude, // 31
     longitude, // 32
-    onTop, // 33
+    cbAlwaysOnTop, // 33
     saveDirAudioDump, // 34
     saveDirSampleDump, // 35
     saveDirContent, // 36
-    saveLocations, // 37
-    saveSlides, // 38
+    cbSaveTransToCsv, // 37
+    cbSaveSlides, // 38
     serviceListSortCol, // 39
     serviceListSortDesc, // 40
     switchDelay, // 41
-    tiiDetector, // 42
-    transmitterTags, // 43
-    useNativeFileDialogs, // 44
-    utcSelector, // 45
-    saveServiceSelector, // 46
+    cbUseNewTiiDetector, // 42
+    cbShowOnlyCurrTrans, // 43
+    cbUseNativeFileDialog, // 44
+    cbUseUtcTime, // 45
 
     // special enums for windows position and size storage
-    configWidget, // 47
-    mainWidget // 48
+    configWidget, // 46
+    mainWidget // 47
   };
 
   QVariant read(const EElem iElem) const;
@@ -127,14 +126,15 @@ private:
   
   QMap<EElem, SMapElem> mMap;
 
-  template<typename T>  void _write_setting(SMapElem & me, const T iValue);
+  template<typename T> void _write_setting(SMapElem & me, const T iValue);
   void _fill_map_from_settings();
   void _fill_map_with_defaults();
   const SMapElem & _get_map_elem(SettingHelper::EElem iElem) const;
   SMapElem & _get_map_elem(SettingHelper::EElem iElem);
 };
 
-template<typename T> void SettingHelper::_write_setting(SMapElem & me, const T iValue)
+template<typename T>
+void SettingHelper::_write_setting(SMapElem & me, const T iValue)
 {
   if (me.KeyVal != iValue)
   {
@@ -145,7 +145,8 @@ template<typename T> void SettingHelper::_write_setting(SMapElem & me, const T i
   }
 }
 
-template<SettingHelper::EElem iElem> void SettingHelper::register_and_connect_ui_element(QAbstractButton * const ipPushButton)
+template<SettingHelper::EElem iElem>
+void SettingHelper::register_and_connect_ui_element(QAbstractButton * const ipPushButton)
 {
   SettingHelper::SMapElem & me = _get_map_elem(iElem);
   me.pWidget = ipPushButton;
@@ -155,7 +156,8 @@ template<SettingHelper::EElem iElem> void SettingHelper::register_and_connect_ui
   connect(pAB, &QAbstractButton::clicked, [this, &me](bool iClicked){ _write_setting(me, iClicked); });
 }
 
-template<SettingHelper::EElem iElem> void SettingHelper::register_and_connect_ui_element(QSpinBox * const ipSpinBox)
+template<SettingHelper::EElem iElem>
+void SettingHelper::register_and_connect_ui_element(QSpinBox * const ipSpinBox)
 {
   SettingHelper::SMapElem & me = _get_map_elem(iElem);
   me.pWidget = ipSpinBox;
