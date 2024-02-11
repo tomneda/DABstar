@@ -33,13 +33,14 @@
  *	dabsticks 
  */
 #include  "rawfiles.h"
+#include  "raw-reader.h"
+#include  "openfiledialog.h"
 #include  <cstdio>
 #include  <unistd.h>
 #include  <cstdlib>
 #include  <fcntl.h>
 #include  <sys/time.h>
 #include  <ctime>
-#include  "raw-reader.h"
 
 #define  INPUT_FRAMEBUFFERSIZE  8 * 32768
 
@@ -51,12 +52,11 @@ RawFileHandler::RawFileHandler(QString f) :
   setupUi(&myFrame);
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
-  filePointer = fopen(f.toUtf8().data(), "rb");
+  filePointer = OpenFileDialog::open_file(f, "rb");
   if (filePointer == nullptr)
   {
-    fprintf(stderr, "file %s cannot open\n", f.toUtf8().data());
-    perror("file ?");
-    throw (31);
+    const QString val = QString("Cannot open file '%1'").arg(f);
+    throw std::runtime_error(val.toUtf8().data());
   }
   nameofFile->setText(f);
   fseek(filePointer, 0, SEEK_END);

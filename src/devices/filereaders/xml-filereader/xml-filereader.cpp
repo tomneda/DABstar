@@ -30,6 +30,7 @@
  */
 
 #include  "xml-filereader.h"
+#include  "openfiledialog.h"
 #include  <cstdio>
 #include  <unistd.h>
 #include  <cstdlib>
@@ -52,13 +53,12 @@ XmlFileReader::XmlFileReader(const QString & f) :
 
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
-  theFile = fopen(f.toUtf8().data(), "rb");
+  theFile = OpenFileDialog::open_file(f, "rb");
 
   if (theFile == nullptr)
   {
-    fprintf(stderr, "file %s cannot open\n", f.toUtf8().data());
-    perror("file ?");
-    throw (31);
+    const QString val = QString("Cannot open file '%1' (consider avoiding 'umlauts')").arg(f);
+    throw std::runtime_error(val.toUtf8().data());
   }
 
   bool ok = false;
@@ -66,8 +66,8 @@ XmlFileReader::XmlFileReader(const QString & f) :
   theDescriptor = new XmlDescriptor(theFile, &ok);
   if (!ok)
   {
-    fprintf(stderr, "%s probably not an xml file\n", f.toUtf8().data());
-    throw (32);
+    const QString val = QString("'%1' is probably not a xml file").arg(f);
+    throw std::runtime_error(val.toUtf8().data());
   }
 
   fileProgress->setValue(0);

@@ -42,6 +42,29 @@ OpenFileDialog::OpenFileDialog(QSettings * ipSetting) :
 {
 }
 
+FILE * OpenFileDialog::open_file(const QString & iFileName, const QString & iFileMode)
+{
+  FILE * pF = fopen(iFileName.toUtf8().data(), iFileMode.toUtf8().data());
+#ifdef _WIN32
+  if (pF == nullptr)
+  {
+    // "umlauts" in Windows need that
+    pF = _wfopen(reinterpret_cast<const wchar_t *>(iFileName.utf16()), reinterpret_cast<const wchar_t *>(iFileMode.utf16()));
+  }
+#endif
+  return pF;
+}
+
+SNDFILE * OpenFileDialog::open_snd_file(const QString & iFileName, int iMode, SF_INFO * ipSfInfo)
+{
+  SNDFILE * pSf = sf_open(iFileName.toUtf8().data(), iMode, ipSfInfo);
+  if (pSf == nullptr)
+  {
+    pSf = sf_open(iFileName.toLatin1().data(), iMode, ipSfInfo); // "umlauts" in Windows need that
+  }
+  return pSf;
+}
+
 FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
 {
   const QString fileName = _open_file_dialog(PRJ_NAME "-" + iChannelName, sSettingContentStorageDir, "CSV", ".csv");
@@ -51,7 +74,7 @@ FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
     return nullptr;
   }
 
-  FILE * fileP = fopen(fileName.toUtf8().data(), "w");
+  FILE * fileP = open_file(fileName, "w");
 
   if (fileP == nullptr)
   {
@@ -70,7 +93,7 @@ FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName)
     return nullptr;
   }
 
-  FILE * theFile = fopen(fileName.toUtf8().data(), "w+b");
+  FILE * theFile = open_file(fileName, "w+b");
 
   if (theFile == nullptr)
   {
@@ -94,7 +117,7 @@ SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceNa
   sf_info.channels = 2;
   sf_info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
-  SNDFILE * theFile = sf_open(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
+  SNDFILE * theFile = open_snd_file(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
 
   if (theFile == nullptr)
   {
@@ -119,7 +142,7 @@ SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName,
   sf_info.channels = 2;
   sf_info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
-  SNDFILE * theFile = sf_open(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
+  SNDFILE * theFile = open_snd_file(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
 
   if (theFile == nullptr)
   {
@@ -148,7 +171,7 @@ FILE * OpenFileDialog::open_log_file_ptr()
     return nullptr;
   }
 
-  return fopen(fileName.toUtf8().data(), "w");
+  return open_file(fileName, "w");
 }
 
 QString OpenFileDialog::get_maps_file_name()
@@ -246,3 +269,4 @@ void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const
     }
   }
 }
+

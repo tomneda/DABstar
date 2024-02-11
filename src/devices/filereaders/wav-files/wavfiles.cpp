@@ -28,6 +28,8 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#include  "wavfiles.h"
+#include  "openfiledialog.h"
 #include  <cstdio>
 #include  <unistd.h>
 #include  <cstdlib>
@@ -35,7 +37,6 @@
 #include  <sys/time.h>
 #include  <ctime>
 #include  <QString>
-#include  "wavfiles.h"
 
 #define  __BUFFERSIZE__  8 * 32768
 
@@ -52,17 +53,17 @@ WavFileHandler::WavFileHandler(QString f) :
 
   sf_info = (SF_INFO *)alloca (sizeof(SF_INFO));
   sf_info->format = 0;
-  filePointer = sf_open(f.toUtf8().data(), SFM_READ, sf_info);
+  filePointer = OpenFileDialog::open_snd_file(f.toUtf8().data(), SFM_READ, sf_info);
   if (filePointer == nullptr)
   {
-    fprintf(stderr, "file %s no legitimate sound file\n", f.toUtf8().data());
-    throw (24);
+    const QString val = QString("File '%1' is no valid sound file").arg(val);
+    throw std::runtime_error(val.toUtf8().data());
   }
   if ((sf_info->samplerate != 2048000) || (sf_info->channels != 2))
   {
-    fprintf(stderr, "This is not a recorded dab file, sorry\n");
+    const QString val = QString("Sample rate or channel number does not fit");
+    throw std::runtime_error(val.toUtf8().data());
     sf_close(filePointer);
-    throw (25);
   }
   nameofFile->setText(f);
   fileProgress->setValue(0);

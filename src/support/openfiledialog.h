@@ -43,6 +43,9 @@ public:
   explicit OpenFileDialog(QSettings *);
   ~OpenFileDialog() = default;
 
+  static FILE * open_file(const QString & iFileName, const QString & iFileMode); // independent from Windows / Linux
+  static SNDFILE * open_snd_file(const QString & iFileName, int iMode, SF_INFO * ipSfInfo); // independent from Windows / Linux
+
   FILE * open_content_dump_file_ptr(const QString & iChannelName);
   FILE * open_frame_dump_file_ptr(const QString & iServiceName);
   FILE * open_log_file_ptr();
