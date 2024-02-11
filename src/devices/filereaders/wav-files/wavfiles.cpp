@@ -61,9 +61,9 @@ WavFileHandler::WavFileHandler(QString f) :
   }
   if ((sf_info->samplerate != 2048000) || (sf_info->channels != 2))
   {
+    sf_close(filePointer);
     const QString val = QString("Sample rate or channel number does not fit");
     throw std::runtime_error(val.toUtf8().data());
-    sf_close(filePointer);
   }
   nameofFile->setText(f);
   fileProgress->setValue(0);
