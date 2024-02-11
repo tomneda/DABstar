@@ -44,7 +44,7 @@ struct timeval  tv;
 	fprintf (stderr, "fileLength = %d\n", (int)fileLength);
         sf_seek (filePointer, 0, SEEK_SET);
 	period          = (32768 * 1000) / (2048);  // full IQś read
-        fprintf (stderr, "Period = %llu\n", period);
+        fprintf (stderr, "Period = %lu\n", period);
 	running. store (false);
 	start();
 }

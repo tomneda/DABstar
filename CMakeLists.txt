@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 #cmake_policy(SET CMP0048 NEW) # use version number in command project()
 ##############################
-project(DABstar VERSION 2.1.0)
+project(DABstar VERSION 2.2.0)
 ##############################
 
 set(objectName "dabstar")
@@ -13,18 +13,16 @@ if (WIN32)
   message(STATUS "CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
 endif ()
 
-#option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
-#set_target_properties(${objectName} PROPERTIES INTERPROCEDURAL_OPTIMIZATION FALSE)
-
+option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 # special release version flags
-#if (USE_LTO)
-#    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
-#endif ()
+if (USE_LTO)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
