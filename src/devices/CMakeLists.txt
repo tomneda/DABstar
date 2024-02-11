@@ -383,7 +383,10 @@ set(${devicesLibName}_SRCS
 add_library(${devicesLibName} STATIC ${${devicesLibName}_SRCS})
 
 target_link_libraries(${devicesLibName}
+        PRIVATE
         Qt5::Widgets
         Qt5::Xml
         ${extraLibs}
 )
+
+target_include_directories(${devicesLibName} INTERFACE .)

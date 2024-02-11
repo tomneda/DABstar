@@ -13,16 +13,18 @@ if (WIN32)
   message(STATUS "CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
 endif ()
 
-option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
+#option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
+#set_target_properties(${objectName} PROPERTIES INTERPROCEDURAL_OPTIMIZATION FALSE)
+
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 # special release version flags
-if (USE_LTO)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
-endif ()
+#if (USE_LTO)
+#    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+#endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
@@ -211,8 +213,12 @@ include_directories(${LIBSAMPLERATE_INCLUDE_DIRS})
 
 #if (WIN32)
 #    find_package(dlfcn-win32 REQUIRED)
-#    list(APPEND extraLibs -lws2_32 dlfcn-win32::dl)
+#    list(APPEND extraLibs dlfcn-win32::dl)
 #endif ()
+
+if (WIN32)
+    list(APPEND extraLibs -lws2_32)
+endif ()
 
 #######################################################################
 #
@@ -244,7 +250,6 @@ include_directories(
         src/scopes-qwt6
         src/spectrum-viewer
         src/file-devices/xml-filewriter
-        src/devices
         src/eti-handler
         src/service-list
         src/configuration
@@ -340,7 +345,6 @@ set(${objectName}_HDRS
         src/spectrum-viewer/spectrum-scope.h
         src/spectrum-viewer/waterfall-scope.h
         src/spectrum-viewer/correlation-viewer.h
-        src/devices/device-handler.h
         src/file-devices/xml-filewriter/xml-filewriter.h
         src/service-list/service-list-handler.h
         src/service-list/service-db.h

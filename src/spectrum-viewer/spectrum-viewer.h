@@ -57,7 +57,7 @@
 #include  "glob_enums.h"
 #include  "ui_spectrum_viewer.h"
 #include  "ringbuffer.h"
-#include  "fft/fft-handler.h"
+#include  "fft-handler.h"
 #include  "custom_frame.h"
 
 constexpr int32_t SP_DISPLAYSIZE = 512;

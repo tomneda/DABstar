@@ -7,9 +7,8 @@ add_library(${objectName}_fft STATIC
         ./kiss_fftr.h
         ./kiss_fft.c
         ./kiss_fftr.c
-        )
+)
 
+target_link_libraries(${objectName}_fft PRIVATE ${FFTW3F_LIBRARIES})
 
-#list(APPEND extraLibs ${FFTW3F_LIBRARIES})
-
-target_link_libraries(${objectName}_fft ${FFTW3F_LIBRARIES})
+target_include_directories(${objectName}_fft INTERFACE .)
