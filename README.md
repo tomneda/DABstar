@@ -4,11 +4,10 @@
 
 ![screenshot.png](res/screenshot.png)
 
-(Picture is from version 2.0.0)
-
 ## Table of Content
 <!-- TOC -->
   * [Introduction](#introduction)
+  * [What is new in 2.2.0](#what-is-new-in-220)
   * [What is new in 2.1.0](#what-is-new-in-210)
   * [What is new in 2.0.0](#what-is-new-in-200)
     * [Buttons are icons now](#buttons-are-icons-now)
@@ -29,7 +28,7 @@
 
 ## Introduction
 
-**Version 2.1.0 is out!**
+**Version 2.2.0 is out!**
 
 Beside many small things under the hood I did major changes in the Look & Feel and mainly in the service selection.
 So I decide to make a major step to version 2 in the version numbering.
@@ -56,6 +55,21 @@ Meanwhile, I provide AppImages but still no Windows build. See [Link](https://gi
 
 As this README got meanwhile quite long, I cut off the description regarding versions until 1.7.1, but you can still read
 it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f5297a5f44cd7aab0c016370e010ed3e/README.md)
+
+## What is new in 2.2.0
+
+- A bigger fix replaying files regarding my new service list. 
+  There is still the small issue that the channel name does not (necessarily) fit to the file content.
+- There is only one file-reading dialog now. The file type selection happens in the file dialog field. 
+  It is selectable whether the QT or native file dialog should be shown.   
+- Improve error checking for file handling.
+- Refine the setting management. 
+  This causes that the setting file (in `~/.config/dabstar/`) got a new filename. 
+  So, the settings has to be put-in new.  
+  Same happens to the service-list database file, so possibly already made favorites got lost.
+  Sorry for that circumstance.
+- Small UI refinements.
+- Many small refinements under the hood.
 
 ## What is new in 2.1.0
 
