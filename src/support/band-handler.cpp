@@ -112,7 +112,6 @@ static SDabFrequencies alternatives[100];
 BandHandler::BandHandler(const QString & a_band, QSettings * s) :
   theTable(nullptr)
 {
-  FILE * f;
   selectedBand = nullptr;
   dabSettings = s;
   fileName = "";
@@ -124,6 +123,7 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s) :
   theTable.verticalHeader()->hide();
   theTable.setShowGrid(true);
 #ifndef  __MINGW32__
+  FILE * f;
   if (a_band == QString(""))
   {
     return;

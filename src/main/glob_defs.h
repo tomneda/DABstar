@@ -22,17 +22,29 @@
 #include <cstdint>
 #include <complex>
 #include <cassert>
+#include <cmath>
+
+#ifndef M_PI
+  #define M_PI 3.14159265358979323846
+#endif
+#ifndef M_PI_2
+  #define M_PI_2 (M_PI / 2.0)
+#endif
+#ifndef M_PI_4
+  #define M_PI_4 (M_PI / 4.0)
+#endif
+
 
 using cmplx = std::complex<float>;
 
 template<typename T> inline T conv_rad_to_deg(T iVal)
 {
-  return iVal * (T)(180.0 / 3.14159265358979323846);
+  return iVal * (T)(180.0 / M_PI);
 }
 
 template<typename T> inline T conv_deg_to_rad(T iVal)
 {
-  return iVal * (T)(3.14159265358979323846 / 180.0);
+  return iVal * (T)(M_PI / 180.0);
 }
 
 template<typename T> inline void limit_min_max(T & ioVal, T iMin, T iMax)

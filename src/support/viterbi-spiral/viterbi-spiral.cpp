@@ -138,13 +138,13 @@ ViterbiSpiral::ViterbiSpiral(const int16_t iWordlength, const bool iSpiralMode) 
   // By doubling the size, the problem disappears. It is not solved though
   // and not further investigation.
 #ifdef __MINGW32__
-  uint32_t size = 2 * ((wordlength + (K - 1)) / 8 + 1 + 16) & ~0xF;
-  data	= (uint8_t *)_aligned_malloc (size, 16);
-  size = 2 * (RATE * (wordlength + (K - 1)) * sizeof(COMPUTETYPE) + 16) & ~0xF;
-  symbols	= (COMPUTETYPE *)_aligned_malloc (size, 16);
-  size	= 2 * (wordlength + (K - 1)) * sizeof (decision_t);
-  size	= (size + 16) & ~0xF;
-  vp. decisions = (decision_t  *)_aligned_malloc (size, 16);
+  uint32_t size = 2 * ((iWordlength + (K - 1)) / 8 + 1 + 16) & ~0xF;
+  mpData = (uint8_t *)_aligned_malloc(size, 16);
+  size = 2 * (RATE * (iWordlength + (K - 1)) * sizeof(COMPUTETYPE) + 16) & ~0xF;
+  mpSymbols = (COMPUTETYPE *)_aligned_malloc(size, 16);
+  size = 2 * (iWordlength + (K - 1)) * sizeof(decision_t);
+  size = (size + 16) & ~0xF;
+  mVP.decisions = (decision_t *)_aligned_malloc(size, 16);
 #else
   if (posix_memalign((void **)&mpData, 16, (iWordlength + (K - 1)) / 8 + 1))
   {
@@ -175,9 +175,9 @@ ViterbiSpiral::ViterbiSpiral(const int16_t iWordlength, const bool iSpiralMode) 
 ViterbiSpiral::~ViterbiSpiral()
 {
 #ifdef  __MINGW32__
-  _aligned_free (vp. decisions);
-  _aligned_free (data);
-  _aligned_free (symbols);
+  _aligned_free(mVP.decisions);
+  _aligned_free(mpData);
+  _aligned_free(mpSymbols);
 #else
   free(mVP.decisions);
   free(mpData);

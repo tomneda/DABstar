@@ -18,14 +18,17 @@
  *    along with Qt-DAB if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#include  "dab-constants.h"
+#include  "tii-codes.h"
+#ifndef _WIN32 // we cannot read the TII lib in windows
+  #include  "dlfcn.h"
+#endif
+#include  <QMessageBox>
 #include  <cstdio>
 #include  <QDir>
 #include  <QString>
-#include  <math.h>
-#include  "dab-constants.h"
-#include  "tii-codes.h"
-#include  <QMessageBox>
-#include  <stdio.h>
+#include  <cmath>
+#include  <cstdio>
 #include  <string>
 
 enum
@@ -49,46 +52,46 @@ enum
 #define GETPROCADDRESS  dlsym
 #endif
 
-TiiHandler::TiiHandler()
-{
-}
-
 TiiHandler::~TiiHandler()
 {
-  if (close_tii_L != nullptr)
+  if (mpFn_close_tii != nullptr)
   {
-    close_tii_L(mTiiLibHandler);
+    mpFn_close_tii(mpTiiLibHandler);
   }
 }
 
 bool TiiHandler::load_library()
 {
-  init_tii_L = nullptr;
-  close_tii_L = nullptr;
-  loadTable_L = nullptr;
+  mpFn_init_tii = nullptr;
+  mpFn_close_tii = nullptr;
+  mpFn_loadTable = nullptr;
 
+#ifdef _WIN32 // we cannot read the TII lib in windows
+  mpHandle = nullptr;
+  mpTiiLibHandler = nullptr;
+#else
   std::string libFile = "libtii-lib.so";
-  mHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
+  mpHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
 
-  if (mHandle == nullptr)
+  if (mpHandle == nullptr)
   {
     libFile = std::string("/usr/local/lib/libtii-lib.so");
-    mHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
+    mpHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
   }
 
-  if (mHandle == nullptr)
+  if (mpHandle == nullptr)
   {
     libFile = std::string("/usr/local/lib/tii-lib.so");
-    mHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
+    mpHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
   }
 
-  if (mHandle != nullptr)
+  if (mpHandle != nullptr)
   {
-    if (load_dyn_library_functions())
+    if (_load_dyn_library_functions())
     {
-      mTiiLibHandler = init_tii_L();
+      mpTiiLibHandler = mpFn_init_tii();
 
-      if (mTiiLibHandler != nullptr)
+      if (mpTiiLibHandler != nullptr)
       {
         fprintf(stdout, "Opening '%s' and initialization was successful\n", libFile.c_str());
         return true;
@@ -100,46 +103,61 @@ bool TiiHandler::load_library()
     }
     else
     {
-      mTiiLibHandler = nullptr;
+      mpTiiLibHandler = nullptr;
       fprintf(stderr, "Failed to open functions in library %s with error '%s'\n", libFile.c_str(), dlerror());
     }
+    dlclose(mpHandle);
   }
   else
   {
     fprintf(stderr, "Failed to load library %s with error '%s'\n", libFile.c_str(), dlerror());
   }
+#endif
   return false;
 }
 
-bool TiiHandler::fill_cache_from_tii_file(const QString & s)
+void TiiHandler::loadTable(const QString & iTiiFileName)
 {
-  bool res = false;
-  if (s == "")
+  if (!is_valid())
+  {
+    load_library();
+  }
+
+  if (mpFn_loadTable != nullptr)
+  {
+    mpFn_loadTable(mpTiiLibHandler, iTiiFileName.toStdString());
+  }
+}
+
+bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
+{
+  bool dataLoaded = false;
+  if (iTiiFileName.isEmpty())
   {
     return false;
   }
-  blackList.resize(0);
-  cache.resize(0);
-  FILE * f = fopen(s.toUtf8().data(), "r+b");
+  mBlackListVec.resize(0);
+  mContentCacheVec.resize(0);
+  FILE * f = fopen(iTiiFileName.toUtf8().data(), "r+b");
   if (f != nullptr)
   {
-    fprintf(stdout, "TiiFile is %s\n", s.toUtf8().data());
-    res = true;
-    readFile(f);
+    fprintf(stdout, "TiiFile is %s\n", iTiiFileName.toUtf8().data());
+    dataLoaded = true;
+    _read_file(f);
     fclose(f);
   }
-  return res;
+  return dataLoaded;
 }
 
 QString TiiHandler::get_transmitter_name(const QString & channel, uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
   //fprintf(stdout, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
 
-  for (int i = 0; i < (int)(cache.size()); i++)
+  for (const auto & i : mContentCacheVec)
   {
-    if ((channel == "any" || channel == cache[i].channel) && cache[i].Eid == Eid && cache[i].mainId == mainId && cache[i].subId == subId)
+    if ((channel == "any" || channel == i.channel) && i.Eid == Eid && i.mainId == mainId && i.subId == subId)
     {
-      return cache[i].transmitterName;
+      return i.transmitterName;
     }
   }
   return "";
@@ -147,13 +165,13 @@ QString TiiHandler::get_transmitter_name(const QString & channel, uint16_t Eid, 
 
 void TiiHandler::get_coordinates(float * latitude, float * longitude, float * power, const QString & channel, const QString & transmitter)
 {
-  for (int i = 0; i < (int)(cache.size()); i++)
+  for (const auto & i : mContentCacheVec)
   {
-    if (((channel == "any") || (channel == cache[i].channel)) && (cache[i].transmitterName == transmitter))
+    if (((channel == "any") || (channel == i.channel)) && (i.transmitterName == transmitter))
     {
-      *latitude = cache[i].latitude;
-      *longitude = cache[i].longitude;
-      *power = cache[i].power;
+      *latitude = i.latitude;
+      *longitude = i.longitude;
+      *power = i.power;
       return;
     }
   }
@@ -161,12 +179,10 @@ void TiiHandler::get_coordinates(float * latitude, float * longitude, float * po
   *longitude = 0;
 }
 
-//
-//	Great circle distance (https://towardsdatascience.com/calculating-the-distance-between-two-locations-using-geocodes-1136d810e517)
-//	en
+//	Great circle distance https://towardsdatascience.com/calculating-the-distance-between-two-locations-using-geocodes-1136d810e517 and
 //	https://www.movable-type.co.uk/scripts/latlong.html
 //	Haversine formula applied
-double TiiHandler::distance_2(float latitude1, float longitude1, float latitude2, float longitude2) const
+double TiiHandler::_distance_2(float latitude1, float longitude1, float latitude2, float longitude2) const
 {
   double R = 6371;
   double Phi1 = latitude1 * M_PI / 180;
@@ -193,24 +209,24 @@ float TiiHandler::distance(float latitude1, float longitude1, float latitude2, f
 {
   bool dy_sign = latitude1 > latitude2;
   double dx;
-  double dy = distance_2(latitude1, longitude2, latitude2, longitude2);
+  double dy = _distance_2(latitude1, longitude2, latitude2, longitude2);
   if (dy_sign)
   {    // lat1 is "higher" than lat2
-    dx = distance_2(latitude1, longitude1, latitude1, longitude2);
+    dx = _distance_2(latitude1, longitude1, latitude1, longitude2);
   }
   else
   {
-    dx = distance_2(latitude2, longitude1, latitude2, longitude2);
+    dx = _distance_2(latitude2, longitude1, latitude2, longitude2);
   }
   return (float)sqrt(dx * dx + dy * dy);
 }
 
-float TiiHandler::corner(float latitude1, float longitude1, float latitude2, float longitude2)
+float TiiHandler::corner(float latitude1, float longitude1, float latitude2, float longitude2) const
 {
   bool dx_sign = longitude1 - longitude2 > 0;
   bool dy_sign = latitude1 - latitude2 > 0;
-  double dx;
-  double dy = distance(latitude1, longitude2, latitude2, longitude2);
+  float dx;
+  float dy = distance(latitude1, longitude2, latitude2, longitude2);
   if (dy_sign)
   {    // lat1 is "higher" than lat2
     dx = distance(latitude1, longitude1, latitude1, longitude2);
@@ -219,28 +235,28 @@ float TiiHandler::corner(float latitude1, float longitude1, float latitude2, flo
   {
     dx = distance(latitude2, longitude1, latitude2, longitude2);
   }
-  float azimuth = std::atan2(dy, dx);
+  const float azimuth = std::atan2(dy, dx);
 
   if (dx_sign && dy_sign)
   {    // first quadrant
-    return ((M_PI / 2 - azimuth) / M_PI * 180);
+    return ((F_M_PI_2 - azimuth) / F_M_PI * 180);
   }
   else if (dx_sign) // dy_sign == false
   {  // second quadrant
-    return ((M_PI / 2 + azimuth) / M_PI * 180);
+    return ((F_M_PI_2 + azimuth) / F_M_PI * 180);
   }
   else if (!dy_sign)
   {  // third quadrant
-    return ((3 * M_PI / 2 - azimuth) / M_PI * 180);
+    return ((3 * F_M_PI_2 - azimuth) / F_M_PI * 180);
   }
-  return ((3 * M_PI / 2 + azimuth) / M_PI * 180);
+  return ((3 * F_M_PI_2 + azimuth) / F_M_PI * 180);
 }
 
 bool TiiHandler::is_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
-  for (uint32_t i = 0; i < blackList.size(); i++)
+  for (auto & i : mBlackListVec)
   {
-    if ((blackList[i].Eid == Eid) && (blackList[i].mainId == mainId) && (blackList[i].subId == subId))
+    if ((i.Eid == Eid) && (i.mainId == mainId) && (i.subId == subId))
     {
       return true;
     }
@@ -250,14 +266,14 @@ bool TiiHandler::is_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
 
 void TiiHandler::set_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
-  black element;
+  BlackListElem element;
   element.Eid = Eid;
   element.mainId = mainId;
   element.subId = subId;
-  blackList.push_back(element);
+  mBlackListVec.push_back(element);
 }
 
-float TiiHandler::convert(const QString & s) const
+float TiiHandler::_convert(const QString & s) const
 {
   bool flag;
   float v;
@@ -269,7 +285,7 @@ float TiiHandler::convert(const QString & s) const
   return v;
 }
 
-uint16_t TiiHandler::get_Eid(const QString & s) const
+uint16_t TiiHandler::_get_E_id(const QString & s) const
 {
   bool flag;
   uint16_t res;
@@ -281,7 +297,7 @@ uint16_t TiiHandler::get_Eid(const QString & s) const
   return res;
 }
 
-uint8_t TiiHandler::get_mainId(const QString & s) const
+uint8_t TiiHandler::_get_main_id(const QString & s) const
 {
   bool flag;
   uint16_t res;
@@ -293,7 +309,7 @@ uint8_t TiiHandler::get_mainId(const QString & s) const
   return res / 100;
 }
 
-uint8_t TiiHandler::get_subId(const QString & s) const
+uint8_t TiiHandler::_get_sub_id(const QString & s) const
 {
   bool flag;
   uint16_t res;
@@ -305,53 +321,52 @@ uint8_t TiiHandler::get_subId(const QString & s) const
   return res % 100;
 }
 
-void TiiHandler::readFile(FILE * f)
+void TiiHandler::_read_file(FILE * f)
 {
   uint32_t count = 0;
   std::array<char, 1024> buffer;
   std::vector<QString> columnVector;
 
-  this->shift = fgetc(f);
-  while (eread(buffer.data(), 1024, f) != nullptr)
+  this->mShift = fgetc(f);
+  while (_eread(buffer.data(), 1024, f) != nullptr)
   {
-    cacheElement ed;
+    CacheElem ed;
     if (feof(f))
     {
       break;
     }
     columnVector.resize(0);
-    int columns = readColumns(columnVector, buffer.data(), NR_COLUMNS);
+    int columns = _read_columns(columnVector, buffer.data(), NR_COLUMNS);
     if (columns < NR_COLUMNS)
     {
       continue;
     }
     ed.country = columnVector[COUNTRY].trimmed();
-    ed.Eid = get_Eid(columnVector[EID]);
-    ed.mainId = get_mainId(columnVector[TII]);
-    ed.subId = get_subId(columnVector[TII]);
+    ed.Eid = _get_E_id(columnVector[EID]);
+    ed.mainId = _get_main_id(columnVector[TII]);
+    ed.subId = _get_sub_id(columnVector[TII]);
     ed.channel = columnVector[CHANNEL].trimmed();
     if (ed.channel.length() < 3) ed.channel = "0" + ed.channel;  // patch as channel input data are now with leading zeros also
     ed.ensemble = columnVector[LABEL].trimmed();
     ed.transmitterName = columnVector[LOCATION];
-    ed.latitude = convert(columnVector[LATITUDE]);
-    ed.longitude = convert(columnVector[LONGITUDE]);
-    ed.power = convert(columnVector[POWER]);
-    if (count >= cache.size())
+    ed.latitude = _convert(columnVector[LATITUDE]);
+    ed.longitude = _convert(columnVector[LONGITUDE]);
+    ed.power = _convert(columnVector[POWER]);
+    if (count >= mContentCacheVec.size())
     {
-      cache.resize(cache.size() + 500);
+      mContentCacheVec.resize(mContentCacheVec.size() + 500);
     }
-    cache.at(count) = ed;
+    mContentCacheVec.at(count) = ed;
     count++;
   }
-  cache.resize(count);
+  mContentCacheVec.resize(count);
 }
 
-int TiiHandler::readColumns(std::vector<QString> & oV, const char * b, int N)
+int TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, int N) const
 {
   int charp = 0;
   std::array<char, 256> tb;
   int elementCount = 0;
-  QString element;
   oV.resize(0);
   while ((*b != 0) && (*b != '\n'))
   {
@@ -376,7 +391,7 @@ int TiiHandler::readColumns(std::vector<QString> & oV, const char * b, int N)
   return elementCount;
 }
 
-char * TiiHandler::eread(char * buffer, int amount, FILE * f)
+char * TiiHandler::_eread(char * buffer, int amount, FILE * f) const
 {
   char * bufferP;
   if (fgets(buffer, amount, f) == nullptr)
@@ -386,9 +401,9 @@ char * TiiHandler::eread(char * buffer, int amount, FILE * f)
   bufferP = buffer;
   while (*bufferP != 0)
   {
-    if (shift != 0xAA)
+    if (mShift != 0xAA)
     {
-      *bufferP -= shift;
+      *bufferP -= mShift;
     }
     else
     {
@@ -400,32 +415,32 @@ char * TiiHandler::eread(char * buffer, int amount, FILE * f)
   return buffer;
 }
 
-bool TiiHandler::is_valid()
+bool TiiHandler::is_valid() const
 {
-  return mTiiLibHandler != nullptr;
+  return mpTiiLibHandler != nullptr;
 }
 
-bool TiiHandler::load_dyn_library_functions()
+bool TiiHandler::_load_dyn_library_functions()
 {
-  init_tii_L = (init_tii_P)GETPROCADDRESS(mHandle, "init_tii_L");
+  mpFn_init_tii = (TpFn_init_tii)GETPROCADDRESS(mpHandle, "init_tii_L");
 
-  if (init_tii_L == nullptr)
+  if (mpFn_init_tii == nullptr)
   {
     fprintf(stderr, "init_tii_L not loaded\n");
     return false;
   }
 
-  close_tii_L = (close_tii_P)GETPROCADDRESS(mHandle, "close_tii_L");
+  mpFn_close_tii = (TpFn_close_tii)GETPROCADDRESS(mpHandle, "close_tii_L");
 
-  if (close_tii_L == nullptr)
+  if (mpFn_close_tii == nullptr)
   {
     fprintf(stderr, "close_tii_L not loaded\n");
     return false;
   }
 
-  loadTable_L = (loadTable_P)GETPROCADDRESS(mHandle, "loadTableL");
+  mpFn_loadTable = (TpFn_loadTable)GETPROCADDRESS(mpHandle, "loadTableL");
 
-  if (loadTable_L == nullptr)
+  if (mpFn_loadTable == nullptr)
   {
     fprintf(stderr, "loadTable_L not loaded\n");
     return false;
@@ -434,15 +449,3 @@ bool TiiHandler::load_dyn_library_functions()
   return true;
 }
 
-void TiiHandler::loadTable(const QString & tf)
-{
-  if (!is_valid())
-  {
-    load_library();
-  }
-
-  if (loadTable_L != nullptr)
-  {
-    loadTable_L(mTiiLibHandler, tf.toStdString());
-  }
-}

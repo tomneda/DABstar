@@ -6,6 +6,13 @@ project(DABstar VERSION 2.1.0)
 
 set(objectName "dabstar")
 
+if (WIN32)
+  #set(CMAKE_TOOLCHAIN_FILE $ENV{PKG_ROOT}/../../scripts/buildsystems/vcpkg.cmake)
+  #set(CMAKE_TOOLCHAIN_FILE c:/vcpkg/scripts/buildsystems/vcpkg.cmake)
+  # does not work here: provide -DCMAKE_TOOLCHAIN_FILE=c:\vcpkg\scripts\buildsystems\vcpkg.cmake on cmake command line instead
+  message(STATUS "CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
+endif ()
+
 option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -193,19 +200,19 @@ else ()
 endif ()
 include_directories(${LIBSAMPLERATE_INCLUDE_DIRS})
 
-if (NOT APPLE)
-    find_library(PTHREADS pthread)
-    if (NOT (PTHREADS))
-        message(FATAL_ERROR "please install libpthread")
-    else (NOT (PTHREADS))
-        set(extraLibs ${extraLibs} ${PTHREADS})
-    endif (NOT (PTHREADS))
-endif (NOT APPLE)
+#if (NOT APPLE)
+#    find_library(PTHREADS pthread)
+#    if (NOT (PTHREADS))
+#        message(FATAL_ERROR "please install libpthread")
+#    else (NOT (PTHREADS))
+#        set(extraLibs ${extraLibs} ${PTHREADS})
+#    endif (NOT (PTHREADS))
+#endif (NOT APPLE)
 
-if (WIN32)
-    find_package(dlfcn-win32 REQUIRED)
-    list(APPEND extraLibs -lws2_32 dlfcn-win32::dl)
-endif ()
+#if (WIN32)
+#    find_package(dlfcn-win32 REQUIRED)
+#    list(APPEND extraLibs -lws2_32 dlfcn-win32::dl)
+#endif ()
 
 #######################################################################
 #

@@ -598,10 +598,12 @@ void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t S
 //  {
 //    model.appendRow(new QStandardItem(serv.name));
 //  }
-#ifdef  __MINGW32__
-                                                                                                                          for (int i = model. rowCount (); i < 12; i ++)
-	   model. appendRow (new QStandardItem ("      "));
-#endif
+// #ifdef  __MINGW32__
+//   for (int i = model.rowCount(); i < 12; i++)
+//   {
+//     model.appendRow(new QStandardItem("      "));
+//   }
+// #endif
 //  for (int i = 0; i < model.rowCount(); i++)
 //  {
 //    model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);

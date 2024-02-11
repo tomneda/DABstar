@@ -328,7 +328,7 @@ struct addrinfo hints;
   listen (ListenSocket, 5);
   while (running. load ()) {
      ClientSocket = accept (ListenSocket, nullptr, nullptr);
-     if (ClientSocket == -1)  {
+     if (ClientSocket == INVALID_SOCKET)  {
         usleep (2000000);
         continue;
      }
@@ -380,14 +380,14 @@ L1:	      if ((xx = recv (ClientSocket, buffer, 4096, 0)) < 0) {
 //	Select the content to send, we have just two so far:
 //	 "/" -> Our google map application.
 //	 "/data.json" -> Our ajax request to update transmitters. */
-        bool jsonUpdate	= false;
+        //bool jsonUpdate	= false;
         if (strstr (url, "/data.json")) {
            content	= coordinatesToJson (transmitterList);
            transmitterList.clear();
 
            if (content != "") {
               ctype	= "application/json;charset=utf-8";
-              jsonUpdate	= true;
+              //jsonUpdate	= true;
 //	            fprintf (stderr, "%s will be sent\n", content. c_str ());
            }
         }

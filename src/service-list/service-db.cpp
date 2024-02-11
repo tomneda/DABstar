@@ -13,7 +13,7 @@
 
 #include "service-db.h"
 
-#include <filesystem>
+#include <QFile>
 #include <QTableView>
 #include <QtSql/QSql>
 #include <QtSql/QSqlQuery>
@@ -297,9 +297,9 @@ void ServiceDB::_delete_db_file()
     mDB.close();
   }
 
-  if (std::filesystem::exists(mDbFileName.toStdString()))
+  if (QFile::exists(mDbFileName))
   {
-    std::filesystem::remove(mDbFileName.toStdString());
+    QFile::remove(mDbFileName);
   }
 }
 

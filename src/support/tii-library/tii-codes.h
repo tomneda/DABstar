@@ -21,13 +21,12 @@
 #ifndef  TII_HANDLER_H
 #define  TII_HANDLER_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <QString>
 #include <QSettings>
-#include "dlfcn.h"
 #include "dab-constants.h"
 
-struct cacheElement
+struct CacheElem
 {
   QString country;
   QString channel;
@@ -41,7 +40,7 @@ struct cacheElement
   float power;
 };
 
-struct black
+struct BlackListElem
 {
   uint16_t Eid;
   uint8_t mainId;
@@ -49,49 +48,47 @@ struct black
 };
 
 // DLL and ".so" function prototypes
-using init_tii_P  = void *(*)();
-using close_tii_P = void  (*)(void *);
-using loadTable_P = void  (*)(void *, const std::string &);
+using TpFn_init_tii  = void *(*)();
+using TpFn_close_tii = void  (*)(void *);
+using TpFn_loadTable = void  (*)(void *, const std::string &);
 
 class TiiHandler
 {
 public:
-  TiiHandler();
+  TiiHandler() = default;
   ~TiiHandler();
 
   bool fill_cache_from_tii_file(const QString &);
   QString get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
   void get_coordinates(float *, float *, float *, const QString &, const QString &);
   [[nodiscard]] float distance(float, float, float, float) const;
-  float corner(float, float, float, float);
+  float corner(float, float, float, float) const;
   bool is_black(uint16_t, uint8_t, uint8_t);
   void set_black(uint16_t, uint8_t, uint8_t);
-  void loadTable(const QString & tf);
-  bool is_valid();
+  bool is_valid() const;
+  void loadTable(const QString & iTiiFileName);
 
 private:
-  std::vector<black> blackList;
-  std::vector<cacheElement> cache;
-  QString tiifileName;
-  void * mTiiLibHandler = nullptr;
-  uint8_t shift;
-  HINSTANCE mHandle = nullptr;
-  init_tii_P init_tii_L = nullptr;
-  close_tii_P close_tii_L = nullptr;
-  loadTable_P loadTable_L = nullptr;
+  std::vector<BlackListElem> mBlackListVec;
+  std::vector<CacheElem> mContentCacheVec;
+  uint8_t mShift = 0;
+  QString mTiiFileName;
+  void * mpTiiLibHandler = nullptr;
+  HINSTANCE mpHandle = nullptr;
+  TpFn_init_tii mpFn_init_tii = nullptr;
+  TpFn_close_tii mpFn_close_tii = nullptr;
+  TpFn_loadTable mpFn_loadTable = nullptr;
 
   bool load_library();
-  [[nodiscard]] float convert(const QString & s) const;
-  [[nodiscard]] uint16_t get_Eid(const QString & s) const;
-  [[nodiscard]] uint8_t get_mainId(const QString & s) const;
-  [[nodiscard]] uint8_t get_subId(const QString & s) const;
-  [[nodiscard]] double distance_2(float, float, float, float) const;
-  int readColumns(std::vector<QString> & oV, const char *, int);
-  void readFile(FILE *);
-  char * eread(char *, int, FILE *);
-  bool load_dyn_library_functions();
+  float _convert(const QString & s) const;
+  uint16_t _get_E_id(const QString & s) const;
+  uint8_t _get_main_id(const QString & s) const;
+  uint8_t _get_sub_id(const QString & s) const;
+  double _distance_2(float, float, float, float) const;
+  int _read_columns(std::vector<QString> & oV, const char * b, int N) const;
+  void _read_file(FILE *);
+  char * _eread(char *, int, FILE *) const;
+  bool _load_dyn_library_functions();
 };
 
 #endif
-
-
