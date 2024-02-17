@@ -178,12 +178,12 @@ IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
     break;
 
   case EIqPlotType::DC_OFFSET_FFT_10:
-    cp.ToolTip = "Shows the DC offset of the input signal after OFDM-FFT at FFT-bin 0. See the effect of 'DC removal filter'. The trace is the distance to last last OFDM-symbol. The value is 10 times magnified.";
+    cp.ToolTip = "Shows the DC offset of the input signal after OFDM-FFT at FFT-bin 0. See the effect of 'DC removal filter'. The trace is the distance to the last OFDM-symbol. The value is 10 times magnified.";
     cp.Name = "DC Off. (FFT) 10x";
     break;
 
   case EIqPlotType::DC_OFFSET_FFT_100:
-    cp.ToolTip = "Shows the DC offset of the input signal after OFDM-FFT at FFT-bin 0. See the effect of 'DC removal filter'. The trace is the distance to last last OFDM-symbol. The value is 100 times magnified.";
+    cp.ToolTip = "Shows the DC offset of the input signal after OFDM-FFT at FFT-bin 0. See the effect of 'DC removal filter'. The trace is the distance to the last OFDM-symbol. The value is 100 times magnified.";
     cp.Name = "DC Off. (FFT) 100x";
     break;
 
