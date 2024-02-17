@@ -36,7 +36,7 @@
 #include  <QSemaphore>
 #include  <vector>
 
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
 #include	<QThread>
 #include	<atomic>
 #endif
@@ -50,7 +50,7 @@
 
 class RadioInterface;
 
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
 class	Backend:public QThread
 {
 #else
@@ -81,7 +81,7 @@ private:
   BackendDeconvolver deconvolver;
   std::vector<uint8_t> outV;
   BackendDriver driver;
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
   void run();
   atomic<bool> running;
   QSemaphore freeSlots;

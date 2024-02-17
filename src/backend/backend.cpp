@@ -44,7 +44,7 @@ Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * 
   deconvolver(d),
   outV(d->bitRate * 24),
   driver(mr, d, audiobuffer, databuffer, frameBuffer, dump)
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
   , freeSlots(NUMBER_SLOTS)
 #endif
 {
@@ -87,7 +87,7 @@ Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * 
     shiftRegister[0] = b;
     disperseVector[i] = b;
   }
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
   //	for local buffering the input, we have
   nextIn = 0;
   nextOut = 0;
@@ -102,7 +102,7 @@ Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * 
 
 Backend::~Backend()
 {
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
   running.store(false);
   while (this->isRunning())
   {
@@ -114,7 +114,7 @@ Backend::~Backend()
 int32_t Backend::process(const int16_t * iV, int16_t cnt)
 {
   (void)cnt;
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
   while (!freeSlots.tryAcquire(1, 200))
   {
     if (!running)
@@ -142,7 +142,7 @@ void Backend::processSegment(const int16_t * iData)
   }
 
   interleaverIndex = (interleaverIndex + 1) & 0x0F;
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
   nextOut = (nextOut + 1) % NUMBER_SLOTS;
   freeSlots.release(1);
 #endif
@@ -164,7 +164,7 @@ void Backend::processSegment(const int16_t * iData)
   driver.addtoFrame(outV);
 }
 
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
 
 void Backend::run()
 {
@@ -187,7 +187,7 @@ void Backend::run()
 //	It might take a msec for the task to stop
 void Backend::stopRunning()
 {
-#ifdef  __THREADED_BACKEND
+#ifdef  __THREADED_BACKEND__
   running = false;
   while (this->isRunning())
   {
