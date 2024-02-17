@@ -38,7 +38,7 @@ public:
     ECarrierPlotType PlotType;
     EStyle Style;
     const char * Name;
-    const char * ToolTip;
+    QString ToolTip;
 
     double YTopValue;
     double YBottomValue;

@@ -241,6 +241,8 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     break;
   }
 
+  cp.ToolTip += "<p>The carrier at index 0 is not really existing. The value is interpolated between the two neighbor carriers.";
+
   return cp;
 }
 
