@@ -1,16 +1,20 @@
 cmake_minimum_required(VERSION 3.16)
-#cmake_policy(SET CMP0048 NEW) # use version number in command project()
+
 ##############################
 project(DABstar VERSION 2.2.0)
 ##############################
 
 set(objectName "dabstar")
 
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/modules/CMakeFunctions.cmake)
+
 if (WIN32)
   #set(CMAKE_TOOLCHAIN_FILE $ENV{PKG_ROOT}/../../scripts/buildsystems/vcpkg.cmake)
-  #set(CMAKE_TOOLCHAIN_FILE c:/vcpkg/scripts/buildsystems/vcpkg.cmake)
-  # does not work here: provide -DCMAKE_TOOLCHAIN_FILE=c:\vcpkg\scripts\buildsystems\vcpkg.cmake on cmake command line instead
-  message(STATUS "CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
+  # set(CMAKE_TOOLCHAIN_FILE c:/vcpkg/scripts/buildsystems/vcpkg.cmake)
+  # does not work here: provide
+  # -DCMAKE_TOOLCHAIN_FILE=c:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows
+  # on cmake command line instead
+  print(CMAKE_TOOLCHAIN_FILE)
 endif ()
 
 option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
@@ -34,14 +38,14 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "/usr/local/bin" CACHE PATH "default install path" FORCE)
 endif ()
 
-#set (CMAKE_INSTALL_PREFIX /usr/local/bin)./cre
-message(STATUS "${PROJECT_NAME} V${PROJECT_VERSION}")
+print(PROJECT_NAME)
+print(PROJECT_VERSION)
 
 add_definitions(-DAPP_NAME="${objectName}")
 add_definitions(-DPRJ_NAME="${PROJECT_NAME}")
 add_definitions(-DPRJ_VERS="${PROJECT_VERSION}")
 
-# this is necessary as the repository could be only accessed as read-only while appimage generation
+# choosing this optionally is necessary as the repository could be only accessed as read-only while appimage generation
 option(CONV_IN_FILES "Convert .in-files" ON)
 
 if (CONV_IN_FILES)
@@ -53,23 +57,14 @@ endif ()
 
 if (MINGW)
     add_definitions(-municode)
-    #else (MINGW)
-    #	add_definitions (-DSSE_AVAILABLE)
 endif ()
 
-IF (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.git")
-    execute_process(
-            COMMAND git rev-parse --short HEAD
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            OUTPUT_VARIABLE GIT_COMMIT_HASH
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-endif ()
-
+# handle GIT hash
+get_git_commit_hash() # returns GIT_COMMIT_HASH
+print(GIT_COMMIT_HASH)
 if (GIT_COMMIT_HASH)
     add_definitions("-DGITHASH=\"${GIT_COMMIT_HASH}\"")
 else ()
-    #message(FATAL_ERROR "Was not able to retrieve GIT hash")
     add_definitions("-DGITHASH=\"(unknown)\"")
 endif ()
 
@@ -82,9 +77,11 @@ if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "Build type not specified: defaulting to release.")
 endif (NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
+print(CMAKE_BUILD_TYPE)
 
 ### make sure our local CMake Modules path comes first
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
+print(CMAKE_MODULE_PATH)
 
 ######################################################################
 ######################################################################
@@ -116,13 +113,12 @@ option(DATA_STREAMER OFF)
 option(VITERBI_SSE OFF)
 option(VITERBI_NEON OFF)
 option(FDK_AAC OFF)
+option(USE_FFTW3 ON) # use FFTW3 instead of KISS-FFT
 ######################################################################
 ######################################################################
 
 #add_definitions(-D__THREADED_BACKEND__) # uncomment for use for an RPI
 #add_definitions (-D__EPG_TRACE__)
-add_definitions(-D__FFTW3__)
-#add_definitions(-D__KISS_FFT__)
 
 ########################################################################
 if (USE_HBF)
@@ -141,8 +137,10 @@ if (USE_HBF)
     add_definitions(-DHAVE_HBF)
 endif (USE_HBF)
 
-find_package(PkgConfig)
-find_package(LSBId)
+print(VCPKG_ROOT)
+
+find_package(PkgConfig) # imports pkg_check_modules() macros
+find_package(LSBId REQUIRED)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
@@ -157,18 +155,11 @@ endif ()
 include_directories(${QWT_INCLUDE_DIRS})
 list(APPEND extraLibs ${QWT_LIBRARIES})
 
-find_package(FFTW3f)
-if (NOT FFTW3F_FOUND)
-    message(FATAL_ERROR "please install FFTW3")
-endif ()
-include_directories(${FFTW3F_INCLUDE_DIRS})
-list(APPEND extraLibs ${FFTW3F_LIBRARIES})
-
 pkg_check_modules(ZLIB zlib)
 if (ZLIB_FOUND)
     list(APPEND extraLibs ${ZLIB_LDFLAGS})
 else ()
-    find_package(zlib)
+    find_package(ZLIB)
     if (NOT ZLIB_FOUND)
         message(FATAL_ERROR "please install libz")
     endif ()
@@ -200,14 +191,14 @@ else ()
 endif ()
 include_directories(${LIBSAMPLERATE_INCLUDE_DIRS})
 
-if (NOT APPLE)
+if (NOT APPLE AND NOT WIN32)
     find_library(PTHREADS pthread)
     if (NOT (PTHREADS))
         message(FATAL_ERROR "please install libpthread")
     else (NOT (PTHREADS))
         set(extraLibs ${extraLibs} ${PTHREADS})
     endif (NOT (PTHREADS))
-endif (NOT APPLE)
+endif ()
 
 #if (WIN32)
 #    find_package(dlfcn-win32 REQUIRED)
