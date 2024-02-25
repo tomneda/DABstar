@@ -1176,7 +1176,7 @@ void RadioInterface::_slot_terminate_process()
   mpLogFile = nullptr;
 
   // everything should be halted by now
-  mpSH->sync();
+  mpSH->sync_and_unregister_ui_elements();
   mSpectrumViewer.hide();
 
   delete mpDabProcessor;

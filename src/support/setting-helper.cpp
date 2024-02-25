@@ -27,11 +27,6 @@ SettingHelper::SettingHelper(QSettings * ipSettings) :
   _fill_map_from_settings();
 }
 
-SettingHelper::~SettingHelper()
-{
-  sync();
-}
-
 void SettingHelper::_fill_map_with_defaults()
 {
   QDir tempPath = QDir::tempPath();
@@ -140,9 +135,10 @@ void SettingHelper::write_widget_geometry(const EElem iElem, const QWidget * con
   write(iElem, ipWidget->saveGeometry());
 }
 
-void SettingHelper::sync()
+void SettingHelper::sync_and_unregister_ui_elements()
 {
   sync_all_ui_states(true);
+  mMap.clear(); // avoid calling elements again because this method is called shortly before the UI elements are destroyed
   mpSettings->sync();
 }
 

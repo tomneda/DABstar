@@ -83,13 +83,13 @@ struct DabService
 {
   QString channel;
   QString serviceName;
-  uint32_t SId;
-  int32_t SCIds;
-  int32_t subChId;
-  bool valid;
-  bool is_audio;
-  FILE * fd;
-  FILE * frameDumper;
+  uint32_t SId = 0;
+  int32_t SCIds = 0;
+  int32_t subChId = 0;
+  bool valid = false;
+  bool is_audio = false;
+  FILE * fd = nullptr;
+  FILE * frameDumper = nullptr;
 };
 
 struct TheTime

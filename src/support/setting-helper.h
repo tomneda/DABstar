@@ -107,12 +107,12 @@ public:
   void sync_ui_state(const EElem iElem, const bool iWriteSetting);
   void sync_all_ui_states(const bool iWriteSetting) noexcept;
 
-  void sync();
+  void sync_and_unregister_ui_elements();
   QSettings * get_settings() const { return mpSettings; } // for a direct access to the QSettings (should be removed at last)
 
 private:
   explicit SettingHelper(QSettings * ipSettings);
-  ~SettingHelper() override;
+  ~SettingHelper() override = default; // do not cleanup things here, this is one of the last live instances in the system
 
   QSettings * const mpSettings;
 
