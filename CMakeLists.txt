@@ -114,7 +114,7 @@ option(VITERBI_SSE OFF)
 option(VITERBI_NEON OFF)
 option(FDK_AAC OFF)
 
-set(USE_FFT FFTW3 CACHE STRING "Choose FFT out of these free: FFTW3 KISS NAYUKI")
+set(USE_FFT KISS CACHE STRING "Choose FFT out of these free: FFTW3 KISS NAYUKI")
 set_property(CACHE USE_FFT PROPERTY STRINGS "FFTW3;KISS;NAYUKI")
 
 ######################################################################
