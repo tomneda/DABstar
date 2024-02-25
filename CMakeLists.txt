@@ -6,7 +6,7 @@ project(DABstar VERSION 2.2.0)
 
 set(objectName "dabstar")
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/modules/CMakeFunctions.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/Modules/CMakeFunctions.cmake)
 
 if (WIN32)
   #set(CMAKE_TOOLCHAIN_FILE $ENV{PKG_ROOT}/../../scripts/buildsystems/vcpkg.cmake)
@@ -32,7 +32,7 @@ endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
 # common flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -Werror=return-type -ffast-math")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -Werror=return-type")
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "/usr/local/bin" CACHE PATH "default install path" FORCE)
@@ -114,7 +114,7 @@ option(VITERBI_SSE OFF)
 option(VITERBI_NEON OFF)
 option(FDK_AAC OFF)
 
-set(USE_FFT KISS CACHE STRING "Choose FFT out of these free: FFTW3 KISS NAYUKI")
+set(USE_FFT FFTW3 CACHE STRING "Choose FFT out of these free: FFTW3 KISS NAYUKI")
 set_property(CACHE USE_FFT PROPERTY STRINGS "FFTW3;KISS;NAYUKI")
 
 ######################################################################
