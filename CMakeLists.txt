@@ -17,7 +17,7 @@ if (WIN32)
   print(CMAKE_TOOLCHAIN_FILE)
 endif ()
 
-option(USE_LTO "Set -flto flag" ON)  # switch off to save compile/link time while developement
+option(USE_LTO "Set -flto flag" OFF)  # switch off to save compile/link time while development
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -113,7 +113,10 @@ option(DATA_STREAMER OFF)
 option(VITERBI_SSE OFF)
 option(VITERBI_NEON OFF)
 option(FDK_AAC OFF)
-option(USE_FFTW3 ON) # use FFTW3 instead of KISS-FFT
+
+set(USE_FFT FFTW3 CACHE STRING "Choose FFT out of these free: FFTW3 KISS NAYUKI")
+set_property(CACHE USE_FFT PROPERTY STRINGS "FFTW3;KISS;NAYUKI")
+
 ######################################################################
 ######################################################################
 
@@ -136,8 +139,6 @@ if (USE_HBF)
 
     add_definitions(-DHAVE_HBF)
 endif (USE_HBF)
-
-print(VCPKG_ROOT)
 
 find_package(PkgConfig) # imports pkg_check_modules() macros
 find_package(LSBId REQUIRED)
