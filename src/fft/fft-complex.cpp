@@ -37,7 +37,7 @@
 //#define _USE_MATH_DEFINES
 
 #include  <cmath>
-#include  <string.h>
+#include  <cstring>
 
 // Private function prototypes
 static size_t reverse_bits(size_t val, int width);
@@ -82,7 +82,7 @@ bool Fft_transformRadix2(cmplx vec[], size_t n, bool inverse)
   }
 
   cmplx * exptable = (cmplx *)malloc((n / 2) * sizeof(cmplx));
-  if (exptable == NULL)
+  if (exptable == nullptr)
   {
     return false;
   }
@@ -154,7 +154,7 @@ bool Fft_transformBluestein(cmplx vec[], size_t n, bool inverse)
   cmplx * avec = (cmplx *)calloc(m, sizeof(cmplx));
   cmplx * bvec = (cmplx *)calloc(m, sizeof(cmplx));
   cmplx * cvec = (cmplx *)malloc(m * sizeof(cmplx));
-  if (exptable == NULL || avec == NULL || bvec == NULL || cvec == NULL)
+  if (exptable == nullptr || avec == nullptr || bvec == nullptr || cvec == nullptr)
   {
     goto cleanup;
   }
@@ -213,7 +213,7 @@ bool Fft_convolve(const cmplx xvec[], const cmplx yvec[], cmplx outvec[], size_t
   }
   cmplx * xv = (cmplx *)memdup(xvec, n * sizeof(cmplx));
   cmplx * yv = (cmplx *)memdup(yvec, n * sizeof(cmplx));
-  if (xv == NULL || yv == NULL)
+  if (xv == nullptr || yv == nullptr)
   {
     goto cleanup;
   }
@@ -260,7 +260,7 @@ static size_t reverse_bits(size_t val, int width)
 static void * memdup(const void * src, size_t n)
 {
   void * dest = malloc(n);
-  if (n > 0 && dest != NULL)
+  if (n > 0 && dest != nullptr)
   {
     memcpy(dest, src, n);
   }

@@ -33,10 +33,14 @@
 
 #include "glob_defs.h"
 #include <vector>
-#include "kiss_fft.h"
 
 #ifdef  __FFTW3__
   #include  <fftw3.h>
+#elif __KISS_FFT__
+  #include "kiss_fft.h"
+#elif __NAYUKI__
+#else
+  #error "FFT declaration missing!"
 #endif
 
 class fftHandler
