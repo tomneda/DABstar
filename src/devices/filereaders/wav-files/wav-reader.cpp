@@ -21,6 +21,7 @@
  */
 
 #include	<sys/time.h>
+#include  <cinttypes>
 #include	"wav-reader.h"
 #include	"wavfiles.h"
 #include	"device-exceptions.h"
@@ -44,7 +45,7 @@ struct timeval  tv;
 	fprintf (stderr, "fileLength = %d\n", (int)fileLength);
         sf_seek (filePointer, 0, SEEK_SET);
 	period          = (32768 * 1000) / (2048);  // full IQś read
-        fprintf (stderr, "Period = %lu\n", period);
+        fprintf (stderr, "Period = %" PRIu64 "\n", period);
 	running. store (false);
 	start();
 }
