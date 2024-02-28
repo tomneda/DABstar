@@ -41,7 +41,7 @@
 
 int main(int argc, char ** argv)
 {
-  qRegisterMetaType<QVector<int>>("QVector<int>");  // windows versions needs that...
+  qRegisterMetaType<QVector<int>>("QVector<int>");  // windows needs that...
 
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
   const QString initFileName = QDir::toNativeSeparators(configPath +  "settings02.ini");
