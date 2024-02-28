@@ -41,6 +41,8 @@
 
 int main(int argc, char ** argv)
 {
+  qRegisterMetaType<QVector<int>>("QVector<int>");  // windows versions needs that...
+
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
   const QString initFileName = QDir::toNativeSeparators(configPath +  "settings02.ini");
   const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist02.db");
