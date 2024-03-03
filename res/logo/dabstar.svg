@@ -32,35 +32,6 @@
        y2="12.038834"
        gradientUnits="userSpaceOnUse"
        gradientTransform="scale(1,1.0959951)" />
-    <meshgradient
-       id="meshgradient221"
-       gradientUnits="userSpaceOnUse"
-       x="54.045727"
-       y="5.7543602"
-       gradientTransform="translate(-0.8520467,-0.28027475)">
-      <meshrow
-         id="meshrow221">
-        <meshpatch
-           id="meshpatch221">
-          <stop
-             path="c 2.2312,-2.2312  5.84869,-2.2312  8.07989,0"
-             style="stop-color:#ffffff;stop-opacity:1"
-             id="stop221" />
-          <stop
-             path="c 2.2312,2.2312  2.2312,5.84869  0,8.07989"
-             style="stop-color:#ffff00;stop-opacity:1"
-             id="stop222" />
-          <stop
-             path="c -2.2312,2.2312  -5.84869,2.2312  -8.07989,0"
-             style="stop-color:#ffffff;stop-opacity:1"
-             id="stop223" />
-          <stop
-             path="c -2.2312,-2.2312  -2.2312,-5.84869  0,-8.07989"
-             style="stop-color:#ffff00;stop-opacity:1"
-             id="stop224" />
-        </meshpatch>
-      </meshrow>
-    </meshgradient>
     <filter
        style="color-interpolation-filters:sRGB"
        id="filter1"
@@ -88,7 +59,7 @@
        style="display:inline;fill:#6b442e;stroke-width:0.238445"
        d="M -0.03498078,57.171656 67.75572,50.181033 v 17.55128 H -0.03498078 Z" />
     <circle
-       style="mix-blend-mode:normal;fill:#ffff00;fill-opacity:1;stroke:url(#meshgradient221);stroke-width:0.219;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;filter:url(#filter1)"
+       style="mix-blend-mode:normal;fill:#ffff00;fill-opacity:1;stroke-width:0.219;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;filter:url(#filter1)"
        id="path213"
        r="5.7133446"
        cy="9.5140305"
