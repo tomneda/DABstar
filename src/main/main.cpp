@@ -97,7 +97,7 @@ int main(int argc, char ** argv)
     qFatal("Could not open stylesheet resource");
   }
 
-  QApplication::setWindowIcon(QIcon(":res/dabstar128x128.png")); // used for all dialog windows except main window (is overwritten)
+  QApplication::setWindowIcon(QIcon(":res/logo/dabstar.svg")); // used for all dialog windows except main window (is overwritten)
 
   auto radioInterface(std::make_unique<RadioInterface>(dabSettings.get(), dbFileName, freqExtension, error_report, dataPort, clockPort, fmFrequency, nullptr));
   radioInterface->show();

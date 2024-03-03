@@ -386,6 +386,7 @@ target_link_libraries(${devicesLibName}
         PRIVATE
         Qt5::Widgets
         Qt5::Xml
+        Qt5::Network
         ${extraLibs}
 )
 
