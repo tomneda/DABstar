@@ -50,6 +50,35 @@
        y2="-4.724133"
        gradientUnits="userSpaceOnUse"
        gradientTransform="scale(1,1.0959951)" />
+    <meshgradient
+       id="meshgradient221"
+       gradientUnits="userSpaceOnUse"
+       x="54.045727"
+       y="5.7543602"
+       gradientTransform="translate(8.8630583,-8.937299)">
+      <meshrow
+         id="meshrow221">
+        <meshpatch
+           id="meshpatch221">
+          <stop
+             path="c 2.2312,-2.2312  5.84869,-2.2312  8.07989,0"
+             style="stop-color:#ffffff;stop-opacity:1"
+             id="stop221" />
+          <stop
+             path="c 2.2312,2.2312  2.2312,5.84869  0,8.07989"
+             style="stop-color:#ffff00;stop-opacity:1"
+             id="stop222" />
+          <stop
+             path="c -2.2312,2.2312  -5.84869,2.2312  -8.07989,0"
+             style="stop-color:#ffffff;stop-opacity:1"
+             id="stop223" />
+          <stop
+             path="c -2.2312,-2.2312  -2.2312,-5.84869  0,-8.07989"
+             style="stop-color:#ffff00;stop-opacity:1"
+             id="stop224" />
+        </meshpatch>
+      </meshrow>
+    </meshgradient>
     <filter
        style="color-interpolation-filters:sRGB"
        id="filter1"
@@ -90,7 +119,7 @@
        style="display:inline;fill:url(#linearGradient2);fill-opacity:1;stroke-width:0.263878"
        d="M -0.03498078,54.798686 67.75572,46.237278 V 67.732313 H -0.03498078 Z" />
     <circle
-       style="mix-blend-mode:normal;fill:#ffff00;fill-opacity:1;stroke-width:0.219;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;filter:url(#filter1)"
+       style="mix-blend-mode:normal;fill:#ffff00;fill-opacity:1;stroke:url(#meshgradient221);stroke-width:0.219;stroke-dasharray:none;stroke-opacity:1;paint-order:normal;filter:url(#filter1)"
        id="path213"
        r="5.7133446"
        cy="0.85700619"
@@ -98,7 +127,7 @@
        transform="matrix(1.4686457,0,0,1.3277849,-34.405194,2.027626)" />
     <g
        id="g4"
-       transform="translate(0.19237832,1.2504591)"
+       transform="matrix(0.73712254,0,0,1.0012953,6.3580736,1.1994933)"
        style="fill:#555555;fill-opacity:1;stroke:#000000;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1">
       <rect
          style="fill:#555555;fill-opacity:1;stroke:#000000;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
