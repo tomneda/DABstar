@@ -31,14 +31,15 @@
 #ifndef  SAMPLE_READER_H
 #define  SAMPLE_READER_H
 
-#include  "dab-constants.h"
-#include  <QObject>
-#include  <sndfile.h>
-#include  <cstdint>
-#include  <atomic>
-#include  <vector>
-#include  "device-handler.h"
-#include  "ringbuffer.h"
+#include "dab-constants.h"
+#include <QObject>
+#include <sndfile.h>
+#include <cstdint>
+#include <atomic>
+#include <vector>
+#include <array>
+#include "device-handler.h"
+#include "ringbuffer.h"
 #include <random>
 
 // Note: It was found that enlarging the buffersize to e.g. 8192 cannot be handled properly by the underlying system.

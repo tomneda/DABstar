@@ -242,7 +242,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     {
       // Original Qt-DAB decoding is with qtDabWeight == 255.0 and performs imo better than with 127.0 (F_VITERBI_SOFT_BIT_VALUE_MAX)
       const cmplx v = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-      const float vLen = (mSoftBitType == ESoftBitType::MAX_DIST_IQ ? std::max(std::abs(real(v)), std::abs(imag(v))) : abs(v));
+      const float vLen = (mSoftBitType == ESoftBitType::MAX_DIST_IQ ? std::max(std::abs(real(v)), std::abs(imag(v))) : std::abs(v));
       oBits[0         + nomCarrIdx] = (int16_t)(-(real(v) * qtDabWeight) / vLen);
       oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(v) * qtDabWeight) / vLen);
       weight = std::abs(std::min(real(v), imag(v)) * qtDabWeight / vLen); // for the carrier scope: have to decide for real or imag part, take the min of both
@@ -333,7 +333,7 @@ float OfdmDecoder::_compute_mod_quality(const std::vector<cmplx> & v) const
 
   for (int i = 0; i < mDabPar.K; i++)
   {
-    float x1 = arg(cmplx(abs(real(v[i])), abs(imag(v[i]))) * rotator); // map to top right section and shift phase to zero (nominal)
+    float x1 = arg(cmplx(std::abs(real(v[i])), std::abs(imag(v[i]))) * rotator); // map to top right section and shift phase to zero (nominal)
     squareVal += x1 * x1;
   }
 
@@ -360,12 +360,12 @@ float OfdmDecoder::_compute_time_offset(const std::vector<cmplx> & r, const std:
 
     cmplx s = r[index_1] * conj(v[index_2]);
 
-    s = cmplx(abs(real(s)), abs(imag(s)));
-    const cmplx leftTerm = s * conj(cmplx(fabs(s) / sqrtf(2), fabs(s) / sqrtf(2)));
+    s = cmplx(std::abs(real(s)), std::abs(imag(s)));
+    const cmplx leftTerm = s * conj(cmplx(std::abs(s) / sqrtf(2), std::abs(s) / sqrtf(2)));
 
     s = r[index_2] * conj(v[index_2]);
-    s = cmplx(abs(real(s)), abs(imag(s)));
-    const cmplx rightTerm = s * conj(cmplx(fabs(s) / sqrtf(2), fabs(s) / sqrtf(2)));
+    s = cmplx(std::abs(real(s)), std::abs(imag(s)));
+    const cmplx rightTerm = s * conj(cmplx(std::abs(s) / sqrtf(2), std::abs(s) / sqrtf(2)));
 
     sum += conj(leftTerm) * rightTerm;
   }
@@ -381,7 +381,7 @@ float OfdmDecoder::_compute_frequency_offset(const std::vector<cmplx> & r, const
   {
     const int32_t index = fft_shift_skip_dc(idx, mDabPar.T_u); // this was with DC before in QT-DAB
     cmplx val = r[index] * conj(c[index]);
-    val = cmplx(abs(real(val)), abs(imag(val))); // TODO tomneda: is this correct?
+    val = cmplx(std::abs(real(val)), std::abs(imag(val))); // TODO tomneda: is this correct?
     theta += val;
   }
   theta *= cmplx(1, -1);
@@ -398,9 +398,9 @@ float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
   {
     int index = i < 0 ? (i + mDabPar.T_u) : i; // TODO tomneda: i+1 to skip DC?
     int index_2 = i + mDabPar.K / 2;
-    cmplx a1 = cmplx(abs(real(r[index])), abs(imag(r[index])));
-    cmplx a2 = cmplx(abs(real(v[index])), abs(imag(v[index])));
-    float s = abs(arg(a1 * conj(a2)));
+    cmplx a1 = cmplx(std::abs(real(r[index])), std::abs(imag(r[index])));
+    cmplx a2 = cmplx(std::abs(real(v[index])), std::abs(imag(v[index])));
+    float s = std::abs(arg(a1 * conj(a2)));
     offsa += (float)index * s;
     offsb += index_2 * index_2;
   }
@@ -430,7 +430,7 @@ void OfdmDecoder::_eval_null_symbol_statistics()
   {
     // Consider FFT shift and skipping DC (0 Hz) bin.
     const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
-    const float level = abs(mFftBuffer[fftIdx]);
+    const float level = std::abs(mFftBuffer[fftIdx]);
     float & meanNullLevelRef = mMeanNullLevel[fftIdx];
     mean_filter(meanNullLevelRef, level, ALPHA);
 

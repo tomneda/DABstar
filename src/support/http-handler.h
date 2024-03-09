@@ -74,11 +74,11 @@ private:
   cmplx homeAddress;
   std::vector<httpData> transmitterVector;
 
-#ifdef  __MINGW32__
-  std::wstring	browserAddress;
-#else
+// #if defined(__MINGW32__) || defined(_WIN32)
+//   std::wstring	browserAddress;
+// #else
   std::string browserAddress;
-#endif
+//#endif
   std::atomic<bool> running;
   std::thread threadHandle;
   std::string theMap(cmplx address);

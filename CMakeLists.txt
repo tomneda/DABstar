@@ -32,7 +32,12 @@ endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
 # common flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -Werror=return-type -ffast-math")
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DALLOW_SMP_DANGERS /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING /std:c++17")
+else ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -Werror=return-type -ffast-math")
+endif ()
+
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "/usr/local/bin" CACHE PATH "default install path" FORCE)
@@ -87,8 +92,14 @@ print(CMAKE_MODULE_PATH)
 ######################################################################
 # select only one of these audio outputs
 # set() overwrites the CMake cache entries
-set(USE_PORTAUDIO ON)
-set(QT_AUDIO OFF)
+if (WIN32)
+    set(USE_PORTAUDIO OFF)
+    set(QT_AUDIO ON)
+else ()
+    set(USE_PORTAUDIO ON)
+    set(QT_AUDIO OFF)
+endif ()
+
 set(TCP_STREAMER OFF)
 
 # select one or more devices (set to ON)
@@ -135,7 +146,7 @@ if (USE_HBF)
             src/support/halfbandfilter.cpp
     )
 
-    list(APPEND extraLibs liquid)
+    list(APPEND extraLibs liquid::liquid)
 
     add_definitions(-DHAVE_HBF)
 endif (USE_HBF)

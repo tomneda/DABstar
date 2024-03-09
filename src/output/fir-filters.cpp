@@ -28,7 +28,7 @@
 	LowPassFIR::LowPassFIR (int16_t firsize,
 	                        int32_t Fc, int32_t fs){
 float	sum	= 0.0;
-float	temp [firsize];
+auto * const temp = make_vla<float>(firsize);
 
 	this -> frequency	= (float)Fc / fs;
 	this -> filterSize	= firsize;

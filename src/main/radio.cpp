@@ -41,7 +41,6 @@
 #include "setting-helper.h"
 #include <fstream>
 #include <numeric>
-#include <unistd.h>
 #include <vector>
 #include <QCoreApplication>
 #include <QSettings>
@@ -54,6 +53,12 @@
 #include <QDir>
 #include <QSpacerItem>
 
+#if defined(__MINGW32__) || defined(_WIN32)
+  #include <windows.h>
+#else
+  #include <unistd.h>
+#endif
+
 #ifdef  TCP_STREAMER
   #include "tcp-streamer.h"
 #elif  QT_AUDIO
@@ -65,8 +70,7 @@
 #include  "time-table.h"
 #include  "device-exceptions.h"
 
-#ifdef  __MINGW32__
-#include <windows.h>
+#if defined(__MINGW32__) || defined(_WIN32)
 
 __int64 FileTimeToInt64 (FILETIME & ft)
 {
@@ -232,8 +236,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
 #elif QT_AUDIO
-  soundOut = new QtAudio();
-  theTechWindow->hide();
+  // soundOut = new QtAudio();
+  // theTechWindow->hide();
 #else
   //	just sound out
   const int16_t latency = mpSH->read(SettingHelper::latency).toInt();
@@ -891,7 +895,7 @@ void RadioInterface::write_picture(const QPixmap & iPixMap) const
 //	sendDatagram is triggered by the ip handler,
 void RadioInterface::slot_send_datagram(int length)
 {
-  uint8_t localBuffer[length];
+  auto * const localBuffer = make_vla<uint8_t>(length);
 
   if (mDataBuffer.get_ring_buffer_read_available() < length)
   {
@@ -1078,7 +1082,7 @@ void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
       mpTechDataWidget->show_sample_rate_and_audio_flags(iSR, sbrUsed, psUsed);
     }
   }
-  int16_t vec[iAmount];
+  auto * const vec = make_vla<int16_t>(iAmount);
   while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
   {
     mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
@@ -1963,7 +1967,7 @@ void RadioInterface::startFramedumping()
 //	called from the mp4 handler, using a signal
 void RadioInterface::slot_new_frame(int amount)
 {
-  uint8_t buffer[amount];
+  auto * const buffer = make_vla<uint8_t>(amount);
   if (!mIsRunning.load())
   {
     return;

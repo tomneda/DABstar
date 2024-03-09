@@ -294,7 +294,7 @@ void TechData::show_fm(int freq)
 
 void TechData::audioDataAvailable(int amount, int rate)
 {
-  int16_t buffer[amount];
+  auto * const buffer = make_vla<int16_t>(amount);
 
   audioData->get_data_from_ring_buffer(buffer, amount);
   if (!myFrame.isHidden())

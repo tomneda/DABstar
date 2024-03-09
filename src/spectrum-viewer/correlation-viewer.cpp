@@ -90,7 +90,7 @@ static int lcount = 0;
 void CorrelationViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)
 {
   uint16_t i;
-  float data[dots];
+  auto * const data = make_vla<float>(dots);
   float mmax = 0;
 
   responseBuffer->get_data_from_ring_buffer(data, dots);

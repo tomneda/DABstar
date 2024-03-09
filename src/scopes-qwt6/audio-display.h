@@ -33,6 +33,7 @@
 #define    AUDIO_DISPLAY_H
 
 #include  "dab-constants.h"
+#include  <array>
 #include  <QSettings>
 #include  <QFrame>
 #include  <QObject>

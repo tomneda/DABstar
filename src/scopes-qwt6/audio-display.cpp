@@ -87,9 +87,9 @@ AudioDisplay::~AudioDisplay()
 
 void AudioDisplay::create_spectrum(int16_t * data, int amount, int sampleRate)
 {
-  double X_axis[displaySize];
-  double Y_values[displaySize];
-  int16_t averageCount = 3;
+  auto * const X_axis = make_vla<double>(displaySize);
+  auto * const Y_values = make_vla<double>(displaySize);
+  constexpr int16_t averageCount = 3;
 
   if (amount > spectrumSize)
   {

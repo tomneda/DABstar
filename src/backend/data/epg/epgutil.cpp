@@ -37,7 +37,6 @@
 #else
 #include <sys/stat.h>
 #endif
-using namespace std;
 
 void
 mkdirs (const string & path)

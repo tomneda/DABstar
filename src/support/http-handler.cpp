@@ -30,29 +30,25 @@
  */
 
 #include  <cstdio>
-#include  <stdlib.h>
-#include  <unistd.h>
+#include  <cstdlib>
+#include  <cstring>
 #include  <sys/types.h>
 
-#ifndef  __MINGW32__
-
-#include  <sys/socket.h>
-#include  <fcntl.h>
-#include  <netinet/in.h>
-#include  <netdb.h>
-#include  <arpa/inet.h>
-
+#if !defined(__MINGW32__) && !defined(_WIN32)
+  #include  <unistd.h>
+  #include  <sys/socket.h>
+  #include  <fcntl.h>
+  #include  <netinet/in.h>
+  #include  <netdb.h>
+  #include  <arpa/inet.h>
 #else
-#include        <winsock2.h>
-#include        <windows.h>
-#include        <ws2tcpip.h>
+  #include  <winsock2.h>
+  #include  <windows.h>
+  #include  <ws2tcpip.h>
 #endif
-//#include	<err.h>
-#include  <cstring>
 
 #include  "http-handler.h"
 #include  "radio.h"
-
 #include  "converted_map.h"
 
 httpHandler::httpHandler(RadioInterface * parent, const QString & mapPort, const QString & browserAddress, cmplx homeAddress, const QString & saveName, bool autoBrowser_off)
@@ -62,11 +58,11 @@ httpHandler::httpHandler(RadioInterface * parent, const QString & mapPort, const
   QString temp = browserAddress + ":" + mapPort;
   this->homeAddress = homeAddress;
   this->autoBrowser_off = autoBrowser_off;
-#ifdef  __MINGW32__
-  this	-> browserAddress	= temp. toStdWString ();
-#else
+// #if defined(__MINGW32__) || defined(_WIN32)
+//   this->browserAddress = temp.toStdWString();
+// #else
   this->browserAddress = temp.toStdString();
-#endif
+//#endif
   this->running.store(false);
 
   connect(this, SIGNAL (terminating()), parent, SLOT (http_terminate()));
@@ -101,9 +97,8 @@ void httpHandler::start()
   {
     return;
   }
-#ifdef  __MINGW32__
-  ShellExecute (nullptr, L"open", browserAddress. c_str (),
-                                     nullptr, nullptr, SW_SHOWNORMAL);
+#if defined(__MINGW32__) || defined(_WIN32)
+  ShellExecute(nullptr, "open", browserAddress.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 #else
   std::string x = "xdg-open " + browserAddress;
   const int result = system(x.c_str());
@@ -120,8 +115,7 @@ void httpHandler::stop()
   }
 }
 
-#ifndef  __MINGW32__
-
+#if !defined(__MINGW32__) && !defined(_WIN32)
 void httpHandler::run()
 {
   char buffer[4096];
@@ -260,175 +254,193 @@ void httpHandler::run()
 }
 
 #else
+
 //
 //	windows version
 //
-void	httpHandler::run	() {
-char	buffer [4096];
-bool	keepalive;
-char	*url;
-std::string	content;
-std::string	ctype;
-WSADATA	wsa;
-int	iResult;
-SOCKET	ListenSocket	= INVALID_SOCKET;
-SOCKET	ClientSocket	= INVALID_SOCKET;
+void httpHandler::run()
+{
+  char buffer[4096];
+  bool keepalive;
+  char * url;
+  std::string content;
+  std::string ctype;
+  WSADATA wsa;
+  int iResult;
+  SOCKET ListenSocket = INVALID_SOCKET;
+  SOCKET ClientSocket = INVALID_SOCKET;
 
-struct addrinfo *result = nullptr;
-struct addrinfo hints;
+  struct addrinfo * result = nullptr;
+  struct addrinfo hints;
 
-  if (WSAStartup (MAKEWORD (2, 2), &wsa) != 0) {
-     terminating ();
-     return;
+  if (WSAStartup(MAKEWORD (2, 2), &wsa) != 0)
+  {
+    terminating();
+    return;
   }
 
   ZeroMemory (&hints, sizeof(hints));
-  hints.ai_family		= AF_INET;
-  hints.ai_socktype	= SOCK_STREAM;
-  hints.ai_protocol	= IPPROTO_TCP;
-  hints.ai_flags		= AI_PASSIVE;
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_protocol = IPPROTO_TCP;
+  hints.ai_flags = AI_PASSIVE;
 
-//	Resolve the server address and port
+  //	Resolve the server address and port
 
-  iResult = getaddrinfo (nullptr, mapPort. toLatin1 (). data (),
-                                                 &hints, &result);
-  if (iResult != 0 ) {
-         WSACleanup();
-     terminating ();
-     return;
+  iResult = getaddrinfo(nullptr, mapPort.toLatin1().data(), &hints, &result);
+  if (iResult != 0)
+  {
+    WSACleanup();
+    terminating();
+    return;
   }
 
-// Create a SOCKET for connecting to server
-  ListenSocket = socket (result -> ai_family,
-                         result -> ai_socktype, result -> ai_protocol);
-  if (ListenSocket == INVALID_SOCKET) {
-     freeaddrinfo(result);
-     WSACleanup ();
-     terminating ();
-     return;
+  // Create a SOCKET for connecting to server
+  ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+  if (ListenSocket == INVALID_SOCKET)
+  {
+    freeaddrinfo(result);
+    WSACleanup();
+    terminating();
+    return;
   }
   unsigned long mode = 1;
-  ioctlsocket (ListenSocket, FIONBIO, &mode);
+  ioctlsocket(ListenSocket, FIONBIO, &mode);
 
-// Setup the TCP listening socket
-  iResult = bind (ListenSocket, result -> ai_addr,
-                                  (int)result->ai_addrlen);
-  if (iResult == SOCKET_ERROR) {
-     freeaddrinfo (result);
-     closesocket (ListenSocket);
-     WSACleanup ();
-     terminating ();
-     return;
+  // Setup the TCP listening socket
+  iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+  if (iResult == SOCKET_ERROR)
+  {
+    freeaddrinfo(result);
+    closesocket(ListenSocket);
+    WSACleanup();
+    terminating();
+    return;
   }
 
-  freeaddrinfo (result);
+  freeaddrinfo(result);
 
-  running. store (true);
+  running.store(true);
 
-  listen (ListenSocket, 5);
-  while (running. load ()) {
-     ClientSocket = accept (ListenSocket, nullptr, nullptr);
-     if (ClientSocket == INVALID_SOCKET)  {
-        usleep (2000000);
-        continue;
-     }
+  listen(ListenSocket, 5);
+  while (running.load())
+  {
+    ClientSocket = accept(ListenSocket, nullptr, nullptr);
+    if (ClientSocket == INVALID_SOCKET)
+    {
+      usleep(2000000);
+      continue;
+    }
 
-     while (running. load ()) {
-        int xx;
-L1:	      if ((xx = recv (ClientSocket, buffer, 4096, 0)) < 0) {
-// shutdown the connection since we're done
-           iResult = shutdown (ClientSocket, SD_SEND);
-           if (iResult == SOCKET_ERROR) {
-              closesocket (ClientSocket);
-              closesocket (ListenSocket);
-              WSACleanup ();
-              running.store (false);
-              terminating ();
-              return;
-           }
-           break;
+    while (running.load())
+    {
+      int xx;
+L1:
+      if ((xx = recv(ClientSocket, buffer, 4096, 0)) < 0)
+      {
+        // shutdown the connection since we're done
+        iResult = shutdown(ClientSocket, SD_SEND);
+        if (iResult == SOCKET_ERROR)
+        {
+          closesocket(ClientSocket);
+          closesocket(ListenSocket);
+          WSACleanup();
+          running.store(false);
+          terminating();
+          return;
         }
-        if (xx == 0) {
-           if (!running. load ()) {
-              closesocket (ClientSocket);
-              closesocket(ListenSocket);
-              WSACleanup ();
-              terminating ();
-              return;
-           }
-           Sleep (1);
-           goto L1;
+        break;
+      }
+      if (xx == 0)
+      {
+        if (!running.load())
+        {
+          closesocket(ClientSocket);
+          closesocket(ListenSocket);
+          WSACleanup();
+          terminating();
+          return;
         }
+        Sleep(1);
+        goto L1;
+      }
 
-        int httpver = (strstr (buffer, "HTTP/1.1") != nullptr) ? 11 : 10;
-        if (httpver == 11)
-//	HTTP 1.1 defaults to keep-alive, unless close is specified.
-           keepalive = strstr (buffer, "Connection: close") == nullptr;
-        else // httpver == 10
-           keepalive = strstr (buffer, "Connection: keep-alive") != nullptr;
+      int httpver = (strstr(buffer, "HTTP/1.1") != nullptr) ? 11 : 10;
+      if (httpver == 11)
+      {
+        //	HTTP 1.1 defaults to keep-alive, unless close is specified.
+        keepalive = strstr(buffer, "Connection: close") == nullptr;
+      }
+      else
+      { // httpver == 10
+        keepalive = strstr(buffer, "Connection: keep-alive") != nullptr;
+      }
 
-  /* Identify the URL. */
-        char *p = strchr (buffer, ' ');
-        if (p == nullptr)
-           break;
-        url = ++p; // Now this should point to the requested URL.
-        p = strchr (p, ' ');
-        if (p == nullptr)
-           break;
-        *p = '\0';
+      /* Identify the URL. */
+      char * p = strchr(buffer, ' ');
+      if (p == nullptr)
+      {
+        break;
+      }
+      url = ++p; // Now this should point to the requested URL.
+      p = strchr(p, ' ');
+      if (p == nullptr)
+      {
+        break;
+      }
+      *p = '\0';
 
-//	Select the content to send, we have just two so far:
-//	 "/" -> Our google map application.
-//	 "/data.json" -> Our ajax request to update transmitters. */
-        //bool jsonUpdate	= false;
-        if (strstr (url, "/data.json")) {
-           content	= coordinatesToJson (transmitterList);
-           transmitterList.clear();
+      //	Select the content to send, we have just two so far:
+      //	 "/" -> Our google map application.
+      //	 "/data.json" -> Our ajax request to update transmitters. */
+      //bool jsonUpdate	= false;
+      if (strstr(url, "/data.json"))
+      {
+        content = coordinatesToJson(transmitterList);
+        transmitterList.clear();
 
-           if (content != "") {
-              ctype	= "application/json;charset=utf-8";
-              //jsonUpdate	= true;
-//	            fprintf (stderr, "%s will be sent\n", content. c_str ());
-           }
+        if (content != "")
+        {
+          ctype = "application/json;charset=utf-8";
+          //jsonUpdate	= true;
+          //	            fprintf (stderr, "%s will be sent\n", content. c_str ());
         }
-        else {
-           content	= theMap (homeAddress);
-           ctype		= "text/html;charset=utf-8";
-        }
-//	Create the header
-        char hdr [2048];
-        sprintf (hdr,
-                 "HTTP/1.1 200 OK\r\n"
-                 "Server: SDRunoPlugin_1090\r\n"
-                 "Content-Type: %s\r\n"
-                 "Connection: %s\r\n"
-                 "Content-Length: %d\r\n"
-//	               "Access-Control-Allow-Origin: *\r\n"
-                 "\r\n",
-                 ctype. c_str (),
-                 keepalive ? "keep-alive" : "close",
-                 (int)(strlen (content. c_str ())));
-        int hdrlen = strlen (hdr);
-//	      if (jsonUpdate) {
-//	         parent -> show_text (std::string ("Json update requested\n"));
-//	         parent -> show_text (content);
-//	      }
-//	and send the reply
-        if ((send (ClientSocket, hdr, hdrlen, 0) == SOCKET_ERROR) ||
-            (send (ClientSocket, content. c_str (),
-                            content. size (), 0) == SOCKET_ERROR))  {
-           fprintf (stderr, "WRITE PROBLEM\n");
-           break;
-        }
-     }
+      }
+      else
+      {
+        content = theMap(homeAddress);
+        ctype = "text/html;charset=utf-8";
+      }
+      //	Create the header
+      char hdr[2048];
+      sprintf(hdr, "HTTP/1.1 200 OK\r\n"
+                   "Server: SDRunoPlugin_1090\r\n"
+                   "Content-Type: %s\r\n"
+                   "Connection: %s\r\n"
+                   "Content-Length: %d\r\n"
+                   //	               "Access-Control-Allow-Origin: *\r\n"
+                   "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (int)(strlen(content.c_str())));
+      int hdrlen = strlen(hdr);
+      //	      if (jsonUpdate) {
+      //	         parent -> show_text (std::string ("Json update requested\n"));
+      //	         parent -> show_text (content);
+      //	      }
+      //	and send the reply
+      if ((send(ClientSocket, hdr, hdrlen, 0) == SOCKET_ERROR) || (send(ClientSocket, content.c_str(), content.size(), 0) == SOCKET_ERROR))
+      {
+        fprintf(stderr, "WRITE PROBLEM\n");
+        break;
+      }
+    }
   }
-// cleanup
+  // cleanup
   closesocket(ClientSocket);
   closesocket(ListenSocket);
   WSACleanup();
-  running. store (false);
-  emit	terminating ();
+  running.store(false);
+  emit  terminating();
 }
+
 #endif
 
 std::string httpHandler::theMap(cmplx homeAddress)

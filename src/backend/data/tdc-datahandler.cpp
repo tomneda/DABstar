@@ -41,7 +41,7 @@ uint16_t usCalculCRC(uint8_t * buf, int lg)
   crc = 0xFFFF;
   for (count = 0; count < lg; count++)
   {
-    crc = (uint16_t)(swap (crc) ^ (uint16_t)buf[count]);
+    crc = (uint16_t)(swap(crc) ^ (uint16_t)buf[count]);
     crc ^= ((uint8_t)crc) >> 4;
     crc = (uint16_t)(crc ^ (swap((uint8_t)(crc)) << 4) ^ ((uint8_t)(crc) << 5));
   }
@@ -130,7 +130,7 @@ int32_t tdc_dataHandler::handleFrame_type_0(uint8_t * data, int32_t offset, int3
 {
   int16_t i;
   //int16_t noS	= getBits (data, offset, 8);
-  uint8_t buffer[length];
+  auto * const buffer = make_vla<uint8_t>(length);
 
   for (i = 0; i < length; i++)
   {
@@ -152,7 +152,7 @@ int32_t tdc_dataHandler::handleFrame_type_0(uint8_t * data, int32_t offset, int3
 int32_t tdc_dataHandler::handleFrame_type_1(uint8_t * data, int32_t offset, int32_t length)
 {
   int16_t i;
-  uint8_t buffer[length];
+  auto * const buffer = make_vla<uint8_t>(length);
   int lOffset;
   int llengths = length - 4;
 #if 0

@@ -20,6 +20,7 @@
  */
 #include  "dab-constants.h"
 #include  "tii-codes.h"
+#include  <array>
 #ifndef _WIN32 // we cannot read the TII lib in windows
   #include  "dlfcn.h"
 #endif
@@ -46,10 +47,10 @@ enum
   NR_COLUMNS = 14
 };
 
-#ifdef __MINGW32__
-#define GETPROCADDRESS  GetProcAddress
+#if defined(__MINGW32__) || defined(_WIN32)
+  #define GETPROCADDRESS  GetProcAddress
 #else
-#define GETPROCADDRESS  dlsym
+  #define GETPROCADDRESS  dlsym
 #endif
 
 TiiHandler::~TiiHandler()

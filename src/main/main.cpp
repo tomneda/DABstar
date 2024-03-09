@@ -37,7 +37,7 @@
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
-#include <unistd.h>
+//#include <unistd.h>
 
 int main(int argc, char ** argv)
 {
@@ -58,6 +58,7 @@ int main(int argc, char ** argv)
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
 
+#ifndef _WIN32
   while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:")) != -1)
   {
     switch (opt)
@@ -75,6 +76,7 @@ int main(int argc, char ** argv)
     default: ;
     }
   }
+#endif
 
   auto dabSettings(std::make_unique<QSettings>(initFileName, QSettings::IniFormat));
   SettingHelper::get_instance(dabSettings.get()); // create instance of setting helper

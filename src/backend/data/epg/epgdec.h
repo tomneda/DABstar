@@ -32,7 +32,6 @@
 #include	<cstdint>
 #include	<vector>
 #include	<qdom.h>
-using namespace std;
 
 #define	_BYTE uint8_t
 class tag_length_value {
@@ -55,7 +54,7 @@ class CEPGDecoder {
 public:
 		CEPGDecoder() {
 	        }
-	void	decode			(const vector<_BYTE>&,
+	void	decode			(const std::vector<_BYTE>&,
 	                                 const QString &);
 	QDomDocument	doc;
 };

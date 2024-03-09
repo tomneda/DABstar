@@ -18,8 +18,6 @@
 #  define COLIBRI_NANO_API
 #endif
 
-using namespace std;
-
 /**
  * \mainpage ColibriNANO receiver library.
  *

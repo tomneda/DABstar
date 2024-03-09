@@ -24,6 +24,10 @@
 #include <cassert>
 #include <cmath>
 
+#ifdef _WIN32
+  #include <Windows.h>
+#endif
+
 #ifndef M_PI
   #define M_PI 3.14159265358979323846
 #endif
@@ -36,6 +40,47 @@
 
 
 using cmplx = std::complex<float>;
+
+
+#ifdef _WIN32
+inline int gettimeofday(struct timeval* tp, struct timezone* tzp)
+{
+  // FILETIME structure is a 64-bit value representing the number of
+  // 100-nanosecond intervals since January 1, 1601.
+  // It's epoch differs from the Unix time_t, which is
+  // the number of 1-second intervals since January 1, 1970.
+  FILETIME ft;
+  GetSystemTimeAsFileTime(&ft);
+
+  // Convert FILETIME structure to a number of microseconds and adjust epoch
+  unsigned long long ms = ft.dwHighDateTime;
+  ms <<= 32;
+  ms |= ft.dwLowDateTime;
+  // Adjust to Unix epoch
+  ms -= 116444736000000000LL;
+  // Convert to microseconds
+  ms /= 10;
+
+  tp->tv_sec = ms / 1000000UL;  // get seconds from microseconds
+  tp->tv_usec = ms % 1000000UL; // get remaining microseconds
+  // 0 indicates success
+  return 0;
+}
+
+inline void usleep(__int64 usec)
+{
+  // Convert microseconds to milliseconds
+  // Note that due to granularity of Sleep function,
+  // the delay may not be as precise as with usleep
+  const DWORD msec = (usec + 500) / 1000;
+  Sleep(msec > 0 ? msec : 1);
+}
+#endif
+
+template<typename T> inline T * make_vla(uint32_t iSize)
+{
+  return static_cast<T * const>(alloca(iSize * sizeof(T)));
+}
 
 template<typename T> inline T conv_rad_to_deg(T iVal)
 {
@@ -148,7 +193,7 @@ static inline float fast_abs_with_clip_det(cmplx z, bool & oClipped, float iClip
 
 inline cmplx norm_to_length_one(const cmplx & iVal)
 {
-  const float length = std::fabs(iVal);
+  const float length = std::abs(iVal);
   return (length == 0.0f ? 0.0f : iVal / length);
 }
 
@@ -174,7 +219,7 @@ inline float turn_phase_to_first_quadrant(float iPhase)
   // return std::atan2(std::abs(sin(iPhase)), std::abs(cos(iPhase)));
   if (iPhase < 0.0f)
   {
-    iPhase += M_PI; // fmod will not work as intended with negative values
+    iPhase += (float)M_PI; // fmod will not work as intended with negative values
   }
   return std::fmod(iPhase, (float)M_PI_2);
 }

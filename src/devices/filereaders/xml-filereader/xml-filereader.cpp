@@ -32,11 +32,15 @@
 #include  "xml-filereader.h"
 #include  "openfiledialog.h"
 #include  <cstdio>
-#include  <unistd.h>
 #include  <cstdlib>
 #include  <fcntl.h>
-#include  <sys/time.h>
 #include  <ctime>
+
+#ifdef _WIN32
+#else
+  #include  <unistd.h>
+  #include  <sys/time.h>
+#endif
 
 #include  "xml-descriptor.h"
 #include  "xml-reader.h"

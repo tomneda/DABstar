@@ -250,7 +250,7 @@ void SpectrumViewer::show_iq(int32_t iAmount, float iAvg)
 
   if (logIqScope)
   {
-    constexpr float logNorm = std::log10(1.0f + 1.0f);
+    constexpr float logNorm = 0.30102999566398119521373889472449f; // Value of std::log10(1.0f + 1.0f);
 
     for (auto i = 0; i < numRead; i++)
     {

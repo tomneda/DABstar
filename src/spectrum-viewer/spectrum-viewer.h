@@ -37,6 +37,7 @@
 #ifndef    SPECTRUM_VIEWER_H
 #define    SPECTRUM_VIEWER_H
 
+#include  <array>
 #include  <QFrame>
 #include  <QObject>
 #include  <QBrush>

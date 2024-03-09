@@ -36,11 +36,15 @@
 #include  "raw-reader.h"
 #include  "openfiledialog.h"
 #include  <cstdio>
-#include  <unistd.h>
 #include  <cstdlib>
 #include  <fcntl.h>
-#include  <sys/time.h>
 #include  <ctime>
+
+#ifdef _WIN32
+#else
+  #include  <unistd.h>
+  #include  <sys/time.h>
+#endif
 
 #define  INPUT_FRAMEBUFFERSIZE  8 * 32768
 

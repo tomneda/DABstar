@@ -159,8 +159,7 @@ void SampleReader::_wait_for_sample_buffer_filled(int32_t n)
   bufferContent = theRig->Samples();
   while ((bufferContent < n) && running.load())
   {
-    constexpr timespec ts{ 0, 10'000L };
-    while (nanosleep(&ts, nullptr)); // while is very likely obsolete
+    usleep(10);
     bufferContent = theRig->Samples();
   }
 }

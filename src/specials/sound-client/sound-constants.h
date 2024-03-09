@@ -35,7 +35,6 @@
 #include	<limits>
 #include	"stdlib.h"
 
-using namespace std;
 #include	<malloc.h>
 
 #ifdef __MINGW32__
