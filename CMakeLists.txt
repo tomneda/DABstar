@@ -1,21 +1,19 @@
 cmake_minimum_required(VERSION 3.16)
 
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/Modules/CMakeFunctions.cmake)
+
+# First, we need to include vcpkg's auto-loader script, it sets up CMAKE_TOOLCHAIN_FILE
+# IMPORTANT: this must be done for the call to project() ?!
+try_find_vcpkg_toolset_path()
+print(CMAKE_TOOLCHAIN_FILE)
+
 ##############################
 project(DABstar VERSION 2.2.1)
 ##############################
 
 set(objectName "dabstar")
-
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/Modules/CMakeFunctions.cmake)
-
-if (WIN32)
-  #set(CMAKE_TOOLCHAIN_FILE $ENV{PKG_ROOT}/../../scripts/buildsystems/vcpkg.cmake)
-  # set(CMAKE_TOOLCHAIN_FILE c:/vcpkg/scripts/buildsystems/vcpkg.cmake)
-  # does not work here: provide
-  # -DCMAKE_TOOLCHAIN_FILE=c:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows
-  # on cmake command line instead
-  print(CMAKE_TOOLCHAIN_FILE)
-endif ()
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(USE_LTO "Set -flto flag" OFF)  # switch off to save compile/link time while development
 
@@ -33,9 +31,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") #
 
 # common flags
 if (WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DALLOW_SMP_DANGERS /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING /std:c++17")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DALLOW_SMP_DANGERS /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
 else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -Werror=return-type -ffast-math")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math")
 endif ()
 
 
@@ -55,9 +53,9 @@ option(CONV_IN_FILES "Convert .in-files" ON)
 
 if (CONV_IN_FILES)
     configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop.in"
-                   "${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop" @ONLY)
+            "${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop" @ONLY)
     configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh.in"
-                   "${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh" @ONLY)
+            "${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh" @ONLY)
 endif ()
 
 if (MINGW)
@@ -153,26 +151,18 @@ endif (USE_HBF)
 
 find_package(PkgConfig) # imports pkg_check_modules() macros
 find_package(LSBId REQUIRED)
-
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Xml REQUIRED)
 find_package(Qt5Sql REQUIRED)
 
-find_package(Qwt)
-if (NOT QWT_FOUND)
-    message(FATAL_ERROR "please install qwt library")
-endif ()
-include_directories(${QWT_INCLUDE_DIRS})
-list(APPEND extraLibs ${QWT_LIBRARIES})
-
 # this should be in FFT sub project but it is important that the compiler switches are already set here
 if(USE_FFT STREQUAL FFTW3)
     message("FFTW3 is used for FFT")
     find_package(FFTW3f)
     if (NOT FFTW3F_FOUND)
-        message(FATAL_ERROR "please install FFTW3")
+        message(FATAL_ERROR "Please install FFTW3")
     endif ()
     include_directories(${FFTW3F_INCLUDE_DIRS})
     list(APPEND extraLibs ${FFTW3F_LIBRARIES})
@@ -184,49 +174,18 @@ elseif(USE_FFT STREQUAL NAYUKI)
     message("NAYUKI is used for FFT")
     add_definitions(-D__NAYUKI__)
 else()
-   #message(FATAL_ERROR "Invalid FFT option in USE_FFT: ${USE_FFT}")
+    #message(FATAL_ERROR "Invalid FFT option in USE_FFT: ${USE_FFT}")
 endif()
 
-pkg_check_modules(ZLIB zlib)
-if (ZLIB_FOUND)
-    list(APPEND extraLibs ${ZLIB_LDFLAGS})
-else ()
-    find_package(ZLIB)
-    if (NOT ZLIB_FOUND)
-        message(FATAL_ERROR "please install libz")
-    endif ()
-    list(APPEND extraLibs ${ZLIB_LIBRARY})
-endif ()
-include_directories(${ZLIB_INCLUDE_DIRS})
-
-pkg_check_modules(LIBSNDFILE sndfile)
-if (LIBSNDFILE_FOUND)
-    list(APPEND extraLibs ${LIBSNDFILE_LDFLAGS})
-else ()
-    find_package(LibSndFile)
-    if (NOT LIBSNDFILE_FOUND)
-        message(FATAL_ERROR "please install libsndfile")
-    endif ()
-    list(APPEND extraLibs ${LIBSNDFILE_LIBRARY})
-endif ()
-include_directories(${LIBSNDFILE_INCLUDE_DIRS})
-
-pkg_check_modules(LIBSAMPLERATE samplerate)
-if (LIBSAMPLERATE_FOUND)
-    list(APPEND extraLibs ${LIBSAMPLERATE_LDFLAGS})
-else ()
-    find_package(LibSampleRate)
-    if (NOT LIBSAMPLERATE_FOUND)
-        message(FATAL_ERROR "please install libsamplerate")
-    endif ()
-    list(APPEND extraLibs ${LIBSAMPLERATE_LIBRARY})
-endif ()
-include_directories(${LIBSAMPLERATE_INCLUDE_DIRS})
+search_for_library(QWT)
+search_for_library(ZLIB)
+search_for_library(SNDFILE)
+search_for_library(SAMPLERATE)
 
 if (NOT APPLE AND NOT WIN32)
     find_library(PTHREADS pthread)
     if (NOT (PTHREADS))
-        message(FATAL_ERROR "please install libpthread")
+        message(FATAL_ERROR "Please install libpthread")
     else (NOT (PTHREADS))
         set(extraLibs ${extraLibs} ${PTHREADS})
     endif (NOT (PTHREADS))
@@ -238,19 +197,24 @@ endif ()
 #endif ()
 
 if (WIN32)
-    list(APPEND extraLibs -lws2_32)
+    find_library(WS2_32_LIBRARY NAMES ws2_32)
+    print(WS2_32_LIBRARY)
+    list(APPEND extraLibs ${WS2_32_LIBRARY})
 endif ()
 
-#######################################################################
-#
-#	Here we really start
+print(CMAKE_SOURCE_DIR)
+print(CMAKE_CURRENT_BINARY_DIR)
+print(QT5Widgets_INCLUDES)
+print(QT_QTCORE_INCLUDE_DIR)
+print(QT_QTCORE_INCLUDE_DIR)
+print(QT_QTGUI_INCLUDE_DIR)
 
 include_directories(
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${QT5Widgets_INCLUDES}
-        ${QT_QTCORE_INCLUDE_DIR}
-        ${QT_QTGUI_INCLUDE_DIR}
+        #${CMAKE_SOURCE_DIR}
+        #${CMAKE_CURRENT_BINARY_DIR}
+        #${QT5Widgets_INCLUDES}
+        #${QT_QTCORE_INCLUDE_DIR}
+        #${QT_QTGUI_INCLUDE_DIR}
         src
         src/main
         src/ofdm
@@ -274,10 +238,11 @@ include_directories(
         src/eti-handler
         src/service-list
         src/configuration
-        /usr/include/
+        #/usr/include/
 )
 
 set(${objectName}_HDRS
+        ${${objectName}_HDRS}
         src/main/radio.h
         src/main/glob_defs.h
         src/main/glob_enums.h
@@ -370,7 +335,7 @@ set(${objectName}_HDRS
         src/service-list/service-list-handler.h
         src/service-list/service-db.h
         src/configuration/configuration.h
-        )
+)
 
 set(${objectName}_SRCS
         ${${objectName}_SRCS}
@@ -455,39 +420,39 @@ set(${objectName}_SRCS
         src/service-list/service-list-handler.cpp
         src/service-list/service-db.cpp
         src/configuration/configuration.cpp
-        )
+)
 
 #########################################################################
 
 if (FDK_AAC)
     find_package(Fdk-AAC)
     if (NOT LIBFDK_AAC_FOUND)
-        message(FATAL_ERROR, "please install libfdk-aac")
+        message(FATAL_ERROR, "Please install libfdk-aac")
     endif ()
     include_directories(src/specials/fdk-aac)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/backend/audio/fdk-aac.h
-            )
+    )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/backend/audio/fdk-aac.cpp
-            )
+    )
     list(APPEND extraLibs ${FDK_AAC_LIBRARIES})
     add_definitions(-D__WITH_FDK_AAC__)
 elseif (NOT FDK_AAC)
     find_package(Faad)
     if (NOT FAAD_FOUND)
-        message(FATAL_ERROR "please install libfaad")
+        message(FATAL_ERROR "Please install libfaad")
     endif ()
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/backend/audio/faad-decoder.h
-            )
+    )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/backend/audio/faad-decoder.cpp
-            )
+    )
     add_definitions(-D__WITH_FAAD__)
 endif (FDK_AAC)
 
@@ -496,32 +461,32 @@ if (VITERBI_NEON)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/spiral-neon.h
-            )
+    )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/support/viterbi-spiral/spiral-neon.c
-            )
+    )
 
     add_definitions(-DNEON_AVAILABLE)
 elseif (VITERBI_SSE)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/spiral-sse.h
-            )
+    )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/support/viterbi-spiral/spiral-sse.c
-            )
+    )
     add_definitions(-DSSE_AVAILABLE)
 else (VITERBI_SSE)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/spiral-no-sse.h
-            )
+    )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/support/viterbi-spiral/spiral-no-sse.c
-            )
+    )
 endif (VITERBI_NEON)
 
 if (DATA_STREAMER)
@@ -577,17 +542,17 @@ endif (QT_AUDIO)
 if (USE_PORTAUDIO)
     find_package(Portaudio)
     if (NOT PORTAUDIO_FOUND)
-        message(FATAL_ERROR "please install portaudio V19")
+        message(FATAL_ERROR "Please install portaudio V19")
     endif ()
     list(APPEND extraLibs ${PORTAUDIO_LIBRARIES})
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/output/audiosink.h
-            )
+    )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
             src/output/audiosink.cpp
-            )
+    )
 endif (USE_PORTAUDIO)
 
 include_directories(
@@ -619,7 +584,7 @@ target_link_libraries(${objectName}
         ${extraLibs}
         ${FAAD_LIBRARIES}
         ${CMAKE_DL_LIBS}
-        )
+)
 
 ########################################################################
 # Add subsequent libraries
