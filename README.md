@@ -3,10 +3,12 @@
 ---
 
 ![screenshot.png](res/screenshot.png)
+(Picture from V2.2.0)
 
 ## Table of Content
 <!-- TOC -->
   * [Introduction](#introduction)
+  * [Version 2.3.0 and above](#version-230-and-above)
   * [What is new in 2.2.0](#what-is-new-in-220)
   * [What is new in 2.1.0](#what-is-new-in-210)
   * [What is new in 2.0.0](#what-is-new-in-200)
@@ -28,7 +30,9 @@
 
 ## Introduction
 
-**Version 2.2.0 is out!**
+**Latest versions see**
+[Release Page](https://github.com/tomneda/DABstar/releases/).
+
 
 Beside many small things under the hood I did major changes in the Look & Feel and mainly in the service selection.
 So I decide to make a major step to version 2 in the version numbering.
@@ -55,6 +59,12 @@ Meanwhile, I provide AppImages but still no Windows build. See [Link](https://gi
 
 As this README got meanwhile quite long, I cut off the description regarding versions until 1.7.1, but you can still read
 it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f5297a5f44cd7aab0c016370e010ed3e/README.md)
+
+## Version 2.3.0 and above
+
+Please look to the
+[Release Page](https://github.com/tomneda/DABstar/releases/)
+for a more detailed description of the changes.
 
 ## What is new in 2.2.0
 
