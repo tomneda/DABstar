@@ -53,9 +53,9 @@ option(CONV_IN_FILES "Convert .in-files" ON)
 
 if (CONV_IN_FILES)
     configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop.in"
-            "${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop" @ONLY)
+                   "${PROJECT_SOURCE_DIR}/appimage_creator/dabstar.desktop" @ONLY)
     configure_file("${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh.in"
-            "${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh" @ONLY)
+                   "${PROJECT_SOURCE_DIR}/appimage_creator/create_appimage.sh" @ONLY)
 endif ()
 
 if (MINGW)
@@ -144,10 +144,10 @@ if (USE_HBF)
             src/support/halfbandfilter.cpp
     )
 
-    list(APPEND extraLibs liquid::liquid)
+    list(APPEND extraLibs liquid)
 
     add_definitions(-DHAVE_HBF)
-endif (USE_HBF)
+endif ()
 
 find_package(PkgConfig) # imports pkg_check_modules() macros
 find_package(LSBId REQUIRED)
@@ -177,10 +177,10 @@ else()
     #message(FATAL_ERROR "Invalid FFT option in USE_FFT: ${USE_FFT}")
 endif()
 
-search_for_library(QWT)
-search_for_library(ZLIB)
-search_for_library(SNDFILE)
-search_for_library(SAMPLERATE)
+search_for_library(QWT Qwt)
+search_for_library(ZLIB zlib)
+search_for_library(LIBSNDFILE sndfile)
+search_for_library(LIBSAMPLERATE samplerate)
 
 if (NOT APPLE AND NOT WIN32)
     find_library(PTHREADS pthread)
