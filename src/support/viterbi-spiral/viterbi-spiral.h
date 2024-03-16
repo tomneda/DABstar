@@ -15,18 +15,18 @@
 #define COMPUTETYPE uint32_t
 
 //decision_t is a BIT vector
-union alignas(16) decision_t
+typedef union
 {
   DECISIONTYPE t[NUMSTATES / DECISIONTYPE_BITSIZE];
   uint32_t w[NUMSTATES / 32];
   uint16_t s[NUMSTATES / 16];
   uint8_t c[NUMSTATES / 8];
-};
+} decision_t __attribute__ ((aligned (16)));
 
-union alignas(16) metric_t
+typedef union
 {
   COMPUTETYPE t[NUMSTATES];
-};
+} metric_t __attribute__ ((aligned (16)));
 
 /* State info for instance of Viterbi decoder
  */
@@ -34,9 +34,9 @@ union alignas(16) metric_t
 struct SMetricData
 {
   /* path metric buffer 1 */
-  alignas(16) metric_t metrics1;
+  __attribute__ ((aligned (16))) metric_t metrics1;
   /* path metric buffer 2 */
-  alignas(16) metric_t metrics2;
+  __attribute__ ((aligned (16))) metric_t metrics2;
   /* Pointers to path metrics, swapped on every bit */
   metric_t * old_metrics, * new_metrics;
   decision_t * decisions;   /* decisions */
@@ -54,7 +54,7 @@ private:
   const int16_t mFrameBits;
   const bool mSpiral;
   SMetricData mVP{};
-  alignas(16) COMPUTETYPE mBranchtab[NUMSTATES / 2 * RATE];
+  COMPUTETYPE mBranchtab[NUMSTATES / 2 * RATE] __attribute__ ((aligned (16)));
   uint8_t * mpData = nullptr;
   COMPUTETYPE * mpSymbols = nullptr;
 
