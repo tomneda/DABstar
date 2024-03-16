@@ -54,7 +54,7 @@ FreqInterleaver::FreqInterleaver(const uint8_t iDabMode) :
 
 void FreqInterleaver::createMapper(const int16_t iV1, const int16_t iLwb, const int16_t iUpb)
 {
-  auto * const tmp = make_vla<int16_t>(mDabPar.T_u);
+  auto * const tmp = make_vla(int16_t, mDabPar.T_u);
   int16_t index = 0;
   int16_t i;
 

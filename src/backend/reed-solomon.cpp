@@ -27,7 +27,7 @@
  *	Copyright 2015 Jan van Katwijk
  *	May be used under the terms of the GNU General Public License (GPL)
  */
-//#define  min(a, b)  ((a) < (b) ? (a) : (b))
+#define  min(a, b)  ((a) < (b) ? (a) : (b))
 
 /* Initialize a Reed-Solomon codec
  * symsize	= symbol size, bits (1-8)
@@ -114,8 +114,8 @@ void ReedSolomon::encode_rs(const uint8_t * data, uint8_t * bb)
 
 void ReedSolomon::enc(const uint8_t * r, uint8_t * d, int16_t cutlen)
 {
-  auto * const rf = make_vla<uint8_t>(codeLength);
-  auto * const bb = make_vla<uint8_t>(nroots);
+  auto * const rf = make_vla(uint8_t, codeLength);
+  auto * const bb = make_vla(uint8_t, nroots);
   int16_t i;
 
   memset(rf, 0, cutlen * sizeof(rf[0]));
@@ -139,7 +139,7 @@ void ReedSolomon::enc(const uint8_t * r, uint8_t * d, int16_t cutlen)
 
 int16_t ReedSolomon::dec(const uint8_t * r, uint8_t * d, int16_t cutlen)
 {
-  auto * const rf = make_vla<uint8_t>(codeLength);
+  auto * const rf = make_vla(uint8_t, codeLength);
   int16_t i;
   int16_t ret;
 
@@ -159,11 +159,11 @@ int16_t ReedSolomon::dec(const uint8_t * r, uint8_t * d, int16_t cutlen)
 
 int16_t ReedSolomon::decode_rs(uint8_t * data)
 {
-  auto * const syndromes = make_vla<uint8_t>(nroots);
-  auto * const Lambda = make_vla<uint8_t>(nroots + 1);
-  auto * const rootTable = make_vla<uint8_t>(nroots);
-  auto * const locTable = make_vla<uint8_t>(nroots);
-  auto * const omega = make_vla<uint8_t>(nroots + 1);
+  auto * const syndromes = make_vla(uint8_t, nroots);
+  auto * const Lambda = make_vla(uint8_t, nroots + 1);
+  auto * const rootTable = make_vla(uint8_t, nroots);
+  auto * const locTable = make_vla(uint8_t, nroots);
+  auto * const omega = make_vla(uint8_t, nroots + 1);
 
   uint16_t lambda_degree, omega_degree;
   int16_t rootCount;
@@ -294,7 +294,7 @@ bool ReedSolomon::computeSyndromes(uint8_t * data, uint8_t * syndromes)
 uint16_t ReedSolomon::computeLambda(uint8_t * syndromes, uint8_t * Lambda)
 {
   uint16_t K = 1, L = 0;
-  auto * const Corrector = make_vla<uint8_t>(nroots);
+  auto * const Corrector = make_vla(uint8_t, nroots);
   int16_t i;
   int16_t deg_lambda = 0;
 
@@ -311,7 +311,7 @@ uint16_t ReedSolomon::computeLambda(uint8_t * syndromes, uint8_t * Lambda)
   //
   while (K < nroots)
   {
-    auto * const oldLambda = make_vla<uint8_t>(nroots);
+    auto * const oldLambda = make_vla(uint8_t, nroots);
     memcpy(oldLambda, Lambda, nroots * sizeof(Lambda[0]));
     //
     //	Compute new lambda
@@ -370,7 +370,7 @@ int16_t ReedSolomon::computeErrors(uint8_t * Lambda, uint16_t deg_lambda, uint8_
   int16_t i, j, k;
   int16_t rootCount = 0;
   //
-  auto * const workRegister = make_vla<uint8_t>(nroots + 1);
+  auto * const workRegister = make_vla(uint8_t, nroots + 1);
   memcpy(workRegister, Lambda, (nroots + 1) * sizeof(uint8_t));
   //
   //	reg is lambda in power notation

@@ -2546,7 +2546,7 @@ int EpgDecoder::process_token(uint8_t * v, int index)
     index += 2;
   }
 
-  auto * const text = make_vla<char>(length + 1);
+  auto * const text = make_vla(char, length + 1);
   for (int i = 0; i < length; i++)
   {
     text[i] = v[index + i];

@@ -84,7 +84,7 @@ void WavReader::run()
   int32_t bufferSize = 32768;
   int64_t nextStop;
   int teller = 0;
-  auto * const bi  = make_vla<cmplx>(bufferSize);
+  auto * const bi  = make_vla(cmplx, bufferSize);
 
   connect(this, SIGNAL (setProgress(int, float)), parent, SLOT (setProgress(int, float)));
   sf_seek(filePointer, 0, SEEK_SET);

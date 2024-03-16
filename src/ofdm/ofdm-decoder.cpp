@@ -259,9 +259,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     {
       switch (mIqPlotType)
       {
-      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(meanPowerPerBinRef); break;
-      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / sqrt(mMeanPowerOvrAll); break;
-      case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / sqrt(mMeanPowerOvrAll); break;
+      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(meanPowerPerBinRef); break;
+      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(mMeanPowerOvrAll); break;
+      case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / std::sqrt(mMeanPowerOvrAll); break;
       case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =  10.0f / (float)mDabPar.T_u * _interpolate_2d_plane(mPhaseReference[0], mFftBuffer[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
       case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (float)mDabPar.T_u * _interpolate_2d_plane(mPhaseReference[0], mFftBuffer[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
       case EIqPlotType::DC_OFFSET_ADC_10:       mIqVector[nomCarrIdx] =  10.0f * mDcAdc; break;
@@ -337,7 +337,7 @@ float OfdmDecoder::_compute_mod_quality(const std::vector<cmplx> & v) const
     squareVal += x1 * x1;
   }
 
-  return sqrtf(squareVal / (float)mDabPar.K) / (float)M_PI * 180.0f; // in degree
+  return std::sqrt(squareVal / (float)mDabPar.K) / (float)M_PI * 180.0f; // in degree
 }
 
 /*
@@ -361,11 +361,11 @@ float OfdmDecoder::_compute_time_offset(const std::vector<cmplx> & r, const std:
     cmplx s = r[index_1] * conj(v[index_2]);
 
     s = cmplx(std::abs(real(s)), std::abs(imag(s)));
-    const cmplx leftTerm = s * conj(cmplx(std::abs(s) / sqrtf(2), std::abs(s) / sqrtf(2)));
+    const cmplx leftTerm = s * conj(cmplx(std::abs(s) / std::sqrt(2), std::abs(s) / std::sqrt(2)));
 
     s = r[index_2] * conj(v[index_2]);
     s = cmplx(std::abs(real(s)), std::abs(imag(s)));
-    const cmplx rightTerm = s * conj(cmplx(std::abs(s) / sqrtf(2), std::abs(s) / sqrtf(2)));
+    const cmplx rightTerm = s * conj(cmplx(std::abs(s) / std::sqrt(2), std::abs(s) / std::sqrt(2)));
 
     sum += conj(leftTerm) * rightTerm;
   }

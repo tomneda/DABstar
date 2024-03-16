@@ -44,7 +44,7 @@ void journaline_dataHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
 {
   int16_t len = msc.size();
   uint8_t * data = (uint8_t *)(msc.data());
-  auto * const buffer = make_vla<uint8_t>(len / 8);
+  auto * const buffer = make_vla(uint8_t, len / 8);
   int16_t i;
   int32_t res;
   for (i = 0; i < len / 8; i++)

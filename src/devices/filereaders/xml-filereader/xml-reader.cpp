@@ -31,8 +31,10 @@
 #include  "xml-reader.h"
 #include  "xml-descriptor.h"
 #include  "xml-filereader.h"
-//#include  <sys/time.h>
 #include  <cstdio>
+#ifndef _WIN32
+  #include  <sys/time.h>
+#endif
 
 // this is a wrapper to avoid "ignoring return value of ... declared with attribute ‘warn_unused_result’"
 static size_t fread_chk(void * iPtr, size_t iSize, size_t iN, FILE * iStream)
@@ -260,7 +262,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int8")
   {
-    auto * const lbuf = make_vla<uint8_t>(2 * amount);
+    auto * const lbuf = make_vla(uint8_t, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
@@ -271,7 +273,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "uint8")
   {
-    auto * const lbuf = make_vla<uint8_t>(2 * amount);
+    auto * const lbuf = make_vla(uint8_t, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
@@ -282,7 +284,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int16")
   {
-    auto * const lbuf = make_vla<uint8_t>(4 * amount);
+    auto * const lbuf = make_vla(uint8_t, 4 * amount);
     fread_chk(lbuf, 2, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -307,7 +309,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int24")
   {
-    auto * const lbuf = make_vla<uint8_t>(6 * amount);
+    auto * const lbuf = make_vla(uint8_t, 6 * amount);
     fread_chk(lbuf, 3, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -348,7 +350,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int32")
   {
-    auto * const lbuf = make_vla<uint8_t>(8 * amount);
+    auto * const lbuf = make_vla(uint8_t, 8 * amount);
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -373,7 +375,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "float32")
   {
-    auto * const lbuf = make_vla<uint8_t>(8 * amount);
+    auto * const lbuf = make_vla(uint8_t, 8 * amount);
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -407,7 +409,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int8")
   {
-    auto * const lbuf = make_vla<uint8_t>(2 * amount);
+    auto * const lbuf = make_vla(uint8_t, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
@@ -418,7 +420,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "uint8")
   {
-    auto * const lbuf = make_vla<uint8_t>(2 * amount);
+    auto * const lbuf = make_vla(uint8_t, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
@@ -429,7 +431,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int16")
   {
-    auto * const lbuf = make_vla<uint8_t>(4 * amount);
+    auto * const lbuf = make_vla(uint8_t, 4 * amount);
     fread_chk(lbuf, 2, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -454,7 +456,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int24")
   {
-    auto * const lbuf = make_vla<uint8_t>(6 * amount);
+    auto * const lbuf = make_vla(uint8_t, 6 * amount);
     fread_chk(lbuf, 3, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -495,7 +497,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int32")
   {
-    auto * const lbuf = make_vla<uint8_t>(8 * amount);
+    auto * const lbuf = make_vla(uint8_t, 8 * amount);
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -520,7 +522,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "float32")
   {
-    auto * const lbuf = make_vla<uint8_t>(8 * amount);
+    auto * const lbuf = make_vla(uint8_t, 8 * amount);
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -554,7 +556,7 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int8")
   {
-    auto * const lbuf = make_vla<uint8_t>(amount);
+    auto * const lbuf = make_vla(uint8_t, amount);
     fread_chk(lbuf, 1, amount, theFile);
     for (int i = 0; i < amount; i++)
     {
@@ -565,7 +567,7 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "uint8")
   {
-    auto * const lbuf = make_vla<uint8_t>(amount);
+    auto * const lbuf = make_vla(uint8_t, amount);
     fread_chk(lbuf, 1, amount, theFile);
     for (int i = 0; i < amount; i++)
     {
@@ -576,7 +578,7 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int16")
   {
-    auto * const lbuf = make_vla<uint8_t>(2 * amount);
+    auto * const lbuf = make_vla(uint8_t, 2 * amount);
     fread_chk(lbuf, 2, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -599,7 +601,7 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int24")
   {
-    auto * const lbuf = make_vla<uint8_t>(3 * amount);
+    auto * const lbuf = make_vla(uint8_t, 3 * amount);
     fread_chk(lbuf, 3, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -630,7 +632,7 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int32")
   {
-    auto * const lbuf = make_vla<uint8_t>(4 * amount);
+    auto * const lbuf = make_vla(uint8_t, 4 * amount);
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -653,7 +655,7 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "float32")
   {
-    auto * const lbuf = make_vla<uint8_t>(4 * amount);
+    auto * const lbuf = make_vla(uint8_t, 4 * amount);
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -685,7 +687,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int8")
   {
-    auto * const lbuf = make_vla<uint8_t>(amount);
+    auto * const lbuf = make_vla(uint8_t, amount);
     fread_chk(lbuf, 1, amount, theFile);
     for (int i = 0; i < amount; i++)
     {
@@ -696,7 +698,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "uint8")
   {
-    auto * const lbuf = make_vla<uint8_t>(amount);
+    auto * const lbuf = make_vla(uint8_t, amount);
     fread_chk(lbuf, 1, amount, theFile);
     for (int i = 0; i < amount; i++)
     {
@@ -707,7 +709,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int16")
   {
-    auto * const lbuf = make_vla<uint8_t>(2 * amount);
+    auto * const lbuf = make_vla(uint8_t, 2 * amount);
     fread_chk(lbuf, 2, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -730,7 +732,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int24")
   {
-    auto * const lbuf = make_vla<uint8_t>(3 * amount);
+    auto * const lbuf = make_vla(uint8_t, 3 * amount);
     fread_chk(lbuf, 3, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -761,7 +763,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int32")
   {
-    auto * const lbuf = make_vla<uint8_t>(4 * amount);
+    auto * const lbuf = make_vla(uint8_t, 4 * amount);
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -784,7 +786,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "float32")
   {
-    auto * const lbuf = make_vla<uint8_t>(4 * amount);
+    auto * const lbuf = make_vla(uint8_t, 4 * amount);
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {

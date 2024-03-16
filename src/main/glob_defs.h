@@ -77,10 +77,8 @@ inline void usleep(__int64 usec)
 }
 #endif
 
-template<typename T> inline T * make_vla(uint32_t iSize)
-{
-  return static_cast<T * const>(alloca(iSize * sizeof(T)));
-}
+// do not make this as a template as it freed the allocated stack buffer at once after call
+#define make_vla(T, iSize) static_cast<T * const>(alloca(iSize * sizeof(T))) // vla = variable length array on stack
 
 template<typename T> inline T conv_rad_to_deg(T iVal)
 {

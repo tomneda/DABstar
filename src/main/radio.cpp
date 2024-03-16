@@ -895,7 +895,7 @@ void RadioInterface::write_picture(const QPixmap & iPixMap) const
 //	sendDatagram is triggered by the ip handler,
 void RadioInterface::slot_send_datagram(int length)
 {
-  auto * const localBuffer = make_vla<uint8_t>(length);
+  auto * const localBuffer = make_vla(uint8_t, length);
 
   if (mDataBuffer.get_ring_buffer_read_available() < length)
   {
@@ -1082,7 +1082,7 @@ void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
       mpTechDataWidget->show_sample_rate_and_audio_flags(iSR, sbrUsed, psUsed);
     }
   }
-  auto * const vec = make_vla<int16_t>(iAmount);
+  auto * const vec = make_vla(int16_t, iAmount);
   while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
   {
     mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
@@ -1967,7 +1967,7 @@ void RadioInterface::startFramedumping()
 //	called from the mp4 handler, using a signal
 void RadioInterface::slot_new_frame(int amount)
 {
-  auto * const buffer = make_vla<uint8_t>(amount);
+  auto * const buffer = make_vla(uint8_t, amount);
   if (!mIsRunning.load())
   {
     return;

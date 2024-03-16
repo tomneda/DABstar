@@ -42,7 +42,7 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(const int32_
 {
   float cLevel = 0;
   int counter = 0;
-  auto * const envBuffer = make_vla<float>(mcSyncBufferSize);
+  auto * const envBuffer = make_vla(float, mcSyncBufferSize);
   const int syncBufferMask = mcSyncBufferSize - 1;
   int i;
 

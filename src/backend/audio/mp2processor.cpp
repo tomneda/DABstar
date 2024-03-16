@@ -600,7 +600,7 @@ void Mp2Processor::addtoFrame(const std::vector<uint8_t> & v)
   int16_t i, j;
   int16_t lf = baudRate == 48000 ? MP2framesize : 2 * MP2framesize;
   int16_t amount = MP2framesize;
-  auto * const help = make_vla<uint8_t>(24 * bitRate / 8);
+  auto * const help = make_vla(uint8_t, 24 * bitRate / 8);
   int16_t vLength = 24 * bitRate / 8;
 
   //fprintf (stderr, "baudrate = %d, inputsize = %d\n",
