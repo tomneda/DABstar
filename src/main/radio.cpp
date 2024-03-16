@@ -3445,7 +3445,7 @@ void RadioInterface::slot_handle_transmitter_tags(int /*d*/)
 void RadioInterface::show_pause_slide()
 {
   QPixmap p;
-  if (p.load(":res/logo/dabstar.png", "png"))
+  if (p.load(":res/logo/dabstar320x240.png", "png"))
   {
     write_picture(p);
   }
