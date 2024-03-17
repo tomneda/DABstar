@@ -9,10 +9,10 @@ RspDx_handler::RspDx_handler(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * c
   this->nrBits = 14;
   this->antennaSelect = true;
   this->lna_upperBound = lnaStates(freq);
-  set_lnabounds_signal(0, lna_upperBound);
-  set_deviceName_signal(deviceModel);
-  set_antennaSelect_signal(2);
-  set_nrBits_signal(nrBits);
+  emit signal_set_lnabounds(0, lna_upperBound);
+  emit signal_set_deviceName(deviceModel);
+  emit signal_set_antennaSelect(2);
+  emit signal_set_nrBits(nrBits);
   if (lnaState > lna_upperBound)
   {
     this->lnaState = lna_upperBound - 1;
@@ -81,8 +81,8 @@ bool RspDx_handler::restart(int freq)
   }
 
   this->freq = freq;
-  set_lnabounds_signal(0, lnaStates(freq));
-  show_lnaGain(get_lnaGain(lnaState, freq));
+  emit signal_set_lnabounds(0, lnaStates(freq));
+  emit signal_show_lnaGain(get_lnaGain(lnaState, freq));
 
   return true;
 }
@@ -154,7 +154,7 @@ bool RspDx_handler::set_lna(int lnaState)
   }
 
   this->lnaState = lnaState;
-  show_lnaGain(get_lnaGain(lnaState, freq));
+  emit signal_show_lnaGain(get_lnaGain(lnaState, freq));
   return true;
 }
 

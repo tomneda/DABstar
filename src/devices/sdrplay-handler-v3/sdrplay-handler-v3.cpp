@@ -611,6 +611,7 @@ void SdrPlayHandler_v3::run()
   {
     int s = sizeof(devs) / sizeof(sdrplay_api_DeviceT);
     err = sdrplay_api_GetDevices(devs, &ndev, s);
+
     if (err != sdrplay_api_Success)
     {
       fprintf(stderr, "sdrplay_api_GetDevices failed %s\n", sdrplay_api_GetErrorString(err));
@@ -655,7 +656,7 @@ void SdrPlayHandler_v3::run()
     case SDRPLAY_RSP1A_:  theRsp = new Rsp1A_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
     case SDRPLAY_RSP2_:   theRsp = new RspII_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
     case SDRPLAY_RSPduo_: theRsp = new RspDuo_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
-    default: theRsp = new Rsp_device(this, chosenDevice, 2112000, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
+    default:              theRsp = new Rsp_device(this, chosenDevice, 2112000, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
     }
   }
   catch (int e)
