@@ -30,7 +30,7 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings 
   mpGrid->setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
   mpGrid->setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
   mpGrid->enableXMin(true);
-  mpGrid->enableYMin(true);
+  mpGrid->enableYMin(false);
   mpGrid->attach(mpPlotgrid);
 
   mpLmPicker = new QwtPlotPicker(dabScope->canvas());

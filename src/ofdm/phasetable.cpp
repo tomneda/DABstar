@@ -170,7 +170,7 @@ float PhaseTable::get_Phi(int32_t k) const
       const int32_t k_prime = mpCurrentTable[j].kmin;
       const int32_t i = mpCurrentTable[j].i;
       const int32_t n = mpCurrentTable[j].n;
-      return (float)M_PI_2 * (float)(h_table(i, k - k_prime) + n);
+      return F_M_PI_2 * (float)(h_table(i, k - k_prime) + n);
     }
   }
   return 0;

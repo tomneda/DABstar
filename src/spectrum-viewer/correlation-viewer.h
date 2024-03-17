@@ -57,24 +57,23 @@ public:
 private:
   static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";
   static QString _get_best_match_text(const QVector<int> & v);
-  static float get_db(float);
 
   QSettings * const mpSettings = nullptr;
-  QwtPlotCurve mQwtPlotCurve;
-  QwtPlotGrid mQwtGrid;
-  std::vector<int> mIndexVector;
   RingBuffer<float> * const mpResponseBuffer;
   QwtPlot * const mpPlotGrid;
   QLabel * const mpIndexDisplay;
-  QwtPlotPicker * lm_picker = nullptr;
   QwtPlotMarker * mpThresholdMarker = nullptr;
+  QwtPlotCurve mQwtPlotCurve;
+  QwtPlotGrid mQwtGrid;
+  std::vector<int> mIndexVector;
+  QwtPlotPicker * lm_picker = nullptr;
   QColor mGridColor;
   QColor mCurveColor;
-  int32_t mBestMatchCount = 0;
-
+  float mMinValFlt = -15;
+  float mMaxValFlt = 10;
 
 private slots:
-  void rightMouseClick(const QPointF &);
+  void _slot_right_mouse_click(const QPointF &);
 };
 
 #endif

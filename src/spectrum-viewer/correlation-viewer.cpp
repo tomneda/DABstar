@@ -60,7 +60,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
 
   mQwtGrid.setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
   mQwtGrid.enableXMin(true);
-  mQwtGrid.enableYMin(true);
+  mQwtGrid.enableYMin(false);
   mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
   mQwtGrid.attach(mpPlotGrid);
 
@@ -70,7 +70,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   lm_picker->setStateMachine(lpickerMachine);
   lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
-  connect(lm_picker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &CorrelationViewer::rightMouseClick);
+  connect(lm_picker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &CorrelationViewer::_slot_right_mouse_click);
 
   mQwtPlotCurve.setPen(QPen(mCurveColor, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
@@ -88,7 +88,8 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
 
   mpThresholdMarker = new QwtPlotMarker();
   mpThresholdMarker->setLineStyle(QwtPlotMarker::HLine);
-  mpThresholdMarker->setLinePen(QPen(Qt::magenta, 0, Qt::DotLine));
+  mpThresholdMarker->setLinePen(QPen(Qt::darkYellow, 0, Qt::DashLine));
+  mpThresholdMarker->setYValue(0); // threshold line is normed to 0dB
   mpThresholdMarker->attach(mpPlotGrid);
 }
 
@@ -96,52 +97,56 @@ void CorrelationViewer::showCorrelation(int32_t dots, int marker, float threshol
 {
   uint16_t i;
   auto * const data = make_vla(float, dots);
-  float mmax = 0;
+  // using log10_times_10() (not times 20) as the correlation is some kind of energy signal
+  const float threshold_dB = log10_times_10(threshold);
+  constexpr float sScalerFltAlpha = 0.1f;
+  const float scalerFltAlpha = sScalerFltAlpha / (float)dots;
 
   mpResponseBuffer->get_data_from_ring_buffer(data, dots);
 
-  constexpr int32_t plotLength = 700;
-  double X_axis[plotLength];
-  double Y_values[plotLength];
+  constexpr int32_t sPlotLength = 700;
+  std::array<float, sPlotLength> X_axis;
+  std::array<float, sPlotLength> Y_values;
 
-  for (i = 0; i < plotLength; i++)
+  for (i = 0; i < sPlotLength; i++)
   {
-    X_axis[i] = marker - plotLength / 2 + i;
+    X_axis[i] = (float)(marker - sPlotLength / 2 + i);
   }
 
-  for (i = 0; i < plotLength; i++)
+  float maxYVal = -1000.0f;
+
+  for (i = 0; i < sPlotLength; i++)
   {
-    Y_values[i] = get_db(data[marker - plotLength / 2 + i]);
-    if (Y_values[i] > mmax)
+    Y_values[i] = log10_times_10(data[marker - sPlotLength / 2 + i]) - threshold_dB; // norm to threshold value
+
+    if (Y_values[i] > maxYVal)
     {
-      mmax = Y_values[i];
+      maxYVal = Y_values[i];
+    }
+
+    if (Y_values[i] < 0)
+    {
+      mean_filter(mMinValFlt, Y_values[i], scalerFltAlpha);
     }
   }
 
-  mpThresholdMarker->setYValue(get_db(threshold));
+  mean_filter(mMaxValFlt, maxYVal, sScalerFltAlpha);
 
-  //if (++mBestMatchCount >= 2)
-  {
-    mBestMatchCount = 0;
+  mpPlotGrid->setAxisScale(QwtPlot::xBottom, (double)marker - sPlotLength / 2, (double)marker + sPlotLength / 2 - 1);
+  mpPlotGrid->enableAxis(QwtPlot::xBottom);
+  mpPlotGrid->setAxisScale(QwtPlot::yLeft, mMinValFlt - 8, mMaxValFlt + 3);
+  mpPlotGrid->enableAxis(QwtPlot::yLeft);
+  mQwtPlotCurve.setSamples(X_axis.data(), Y_values.data(), sPlotLength);
+  mpPlotGrid->replot();
 
-    mpPlotGrid->setAxisScale(QwtPlot::xBottom, (double)marker - plotLength / 2, (double)marker + plotLength / 2 - 1);
-    mpPlotGrid->enableAxis(QwtPlot::xBottom);
-    mpPlotGrid->setAxisScale(QwtPlot::yLeft, get_db(0), mmax);
-    mpPlotGrid->enableAxis(QwtPlot::yLeft);
-
-    mQwtPlotCurve.setBaseline(get_db(0));
-    mQwtPlotCurve.setSamples(X_axis, Y_values, plotLength);
-    mpPlotGrid->replot();
-
-    mpIndexDisplay->setText(_get_best_match_text(v));
-  }
+  mpIndexDisplay->setText(_get_best_match_text(v));
 }
 
 QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
 {
   QString txt;
 
-  if (v.size() > 0)
+  if (!v.empty())
   {
     txt = "Best matches at (km): ";
     constexpr int32_t MAX_NO_ELEM = 7;
@@ -166,12 +171,7 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
   return txt;
 }
 
-float CorrelationViewer::get_db(float x)
-{
-  return 20.0f * std::log10((x + 1) / (float)(4 * 512));
-}
-
-void CorrelationViewer::rightMouseClick(const QPointF & point)
+void CorrelationViewer::_slot_right_mouse_click(const QPointF & point)
 {
   (void)point;
 

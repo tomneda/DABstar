@@ -62,7 +62,7 @@ private:
   static constexpr int16_t SEARCHRANGE = (2 * 35);
 
   std::array<float, SEARCHRANGE + DIFFLENGTH + 1> mComputedDiffs{};
-  std::array<float, DIFFLENGTH> mPhaseDifferences;
+  std::array<float, DIFFLENGTH> mPhaseDifferences{};
 
   const DabParams::SDabPar mDabPar;
   const int32_t mFramesPerSecond;

@@ -51,17 +51,16 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
     mRefTable(mDabPar.T_u, { 0, 0 }),
     mCorrPeakValues(mDabPar.T_u / 2)
 {
-  for (int32_t i = 1; i <= mDabPar.K / 2; i++)
+  // mRefTable is in the frequency domain
+  for (int32_t i = 1; i <= mDabPar.K / 2; i++) // skip DC
   {
-    const float Phi_k_pos = get_Phi(i);
-    mRefTable[i] = cmplx(cos(Phi_k_pos), sin(Phi_k_pos));
-    const float Phi_k_neg = get_Phi(-i);
-    mRefTable[mDabPar.T_u - i] = cmplx(cos(Phi_k_neg), sin(Phi_k_neg));
+    mRefTable[0           + i] = cmplx_from_phase(get_Phi(i));
+    mRefTable[mDabPar.T_u - i] = cmplx_from_phase(get_Phi(-i));
   }
 
   // Prepare a table for the coarse frequency synchronization.
   // We collect data of SEARCHRANGE/2 bins at the end of the FFT buffer and wrap to the begin and check SEARCHRANGE/2 elements further.
-  // This is equal to check +/- SEARCHRANGE/2 bins (== kHz in DabMode 1) around the DC
+  // This is equal to check +/- SEARCHRANGE/2 bins (== (35) kHz in DabMode 1) around the DC
   for (int32_t i = 1; i <= DIFFLENGTH; i++)
   {
     mPhaseDifferences[i - 1] = abs(arg(mRefTable[(mDabPar.T_u + i + 0) % mDabPar.T_u] * conj(mRefTable[(mDabPar.T_u + i + 1) % mDabPar.T_u])));

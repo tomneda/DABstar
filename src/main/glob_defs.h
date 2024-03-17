@@ -201,6 +201,16 @@ inline cmplx cmplx_from_phase(const float iPhase)
   //return std::exp(cmplx(0.0f, iPhase));
 }
 
+inline float log10_times_10(const float iVal)
+{
+  return 10.0f * std::log10(iVal + 1.0e-20f);
+}
+
+inline float log10_times_20(const float iVal)
+{
+  return 20.0f * std::log10(iVal + 1.0e-20f);
+}
+
 inline cmplx abs_log10_with_offset_and_phase(const cmplx & iVal)
 {
   return std::log10(std::abs(iVal) + 1.0f) * std::exp(cmplx(0.0f, std::arg(iVal)));
