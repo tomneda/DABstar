@@ -6,23 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>238</width>
-    <height>277</height>
+    <width>210</width>
+    <height>255</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>SDRplay control-v3</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5"/>
-   </item>
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -48,6 +39,19 @@
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::Flat</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Serial Number</string>
        </property>
       </widget>
      </item>
@@ -81,14 +85,10 @@
      </item>
      <item row="2" column="1">
       <widget class="QSpinBox" name="ppmControl">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the offset (in ppm) of the observed oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the offset (in ppm) of the observed
+                  oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                </string>
        </property>
        <property name="minimum">
         <number>-200</number>
@@ -115,12 +115,6 @@
      </item>
      <item row="3" column="1">
       <widget class="QSpinBox" name="GRdBSelector">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
        <property name="minimum">
         <number>20</number>
        </property>
@@ -129,7 +123,7 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
@@ -144,7 +138,7 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="4" column="1">
       <widget class="QSpinBox" name="lnaGainSetting">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -153,37 +147,13 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setting the lna state, determining the gain reduction applied in the lna.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setting the lna state, determining the gain reduction applied in the
+                  lna.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                </string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
-      <widget class="QLCDNumber" name="lnaGRdBDisplay">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The display shows the gain reduction in the lna of the device.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="digitCount">
-        <number>3</number>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Serial Number</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="lblOverload">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -210,7 +180,9 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the ADC overload condition. Increase the attenuation to avoid this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the ADC overload condition. Increase the attenuation to avoid
+                  this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                </string>
        </property>
        <property name="text">
         <string>Overload</string>
@@ -220,10 +192,23 @@
        </property>
       </widget>
      </item>
+     <item row="5" column="1">
+      <widget class="QLCDNumber" name="lnaGRdBDisplay">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The display shows the gain reduction in the lna of the device.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
+       <property name="digitCount">
+        <number>3</number>
+       </property>
+       <property name="segmentStyle">
+        <enum>QLCDNumber::Flat</enum>
+       </property>
+      </widget>
+     </item>
     </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -241,6 +226,26 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="agcControl">
+       <property name="font">
+        <font>
+         <family>DejaVu Sans Mono</family>
+         <weight>75</weight>
+         <italic>true</italic>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on automatic gain control - based on the setting of
+                  the lnastate and the ifgain.&lt;/p&gt;&lt;p&gt;If switched on, the lnastate switch and the ifgain slider are switched off&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                </string>
+       </property>
+       <property name="text">
+        <string>AGC</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_5">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -253,24 +258,6 @@
        </property>
       </spacer>
      </item>
-     <item>
-      <widget class="QCheckBox" name="agcControl">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans Mono</family>
-         <weight>75</weight>
-         <italic>true</italic>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on automatic gain control - based on the setting of the lnastate and the ifgain.&lt;/p&gt;&lt;p&gt;If switched on, the lnastate switch and the ifgain slider are switched off&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>AGC</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
@@ -278,7 +265,7 @@
      <item>
       <widget class="QPushButton" name="dumpButton">
        <property name="text">
-        <string>Dump </string>
+        <string>Dump</string>
        </property>
       </widget>
      </item>
@@ -312,7 +299,8 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select an antenna (RSP-II)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select an antenna (RSP-II)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                </string>
        </property>
        <item>
         <property name="text">

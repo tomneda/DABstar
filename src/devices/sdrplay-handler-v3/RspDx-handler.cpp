@@ -4,28 +4,28 @@
 RspDx_handler::RspDx_handler(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenDevice, int sampleRate, int freq, bool agcMode, int lnaState, int GRdB, bool biasT)
   : Rsp_device(parent, chosenDevice, sampleRate, freq, agcMode, lnaState, GRdB, biasT)
 {
+  mDeviceModel = "RSP-Dx";
+  mNrBits = 14;
+  mAntennaSelect = true;
+  mLna_upperBound = RspDx_handler::lnaStates(freq);
 
-  this->deviceModel = "RSP-Dx";
-  this->nrBits = 14;
-  this->antennaSelect = true;
-  this->lna_upperBound = lnaStates(freq);
-  emit signal_set_lnabounds(0, lna_upperBound);
-  emit signal_set_deviceName(deviceModel);
+  emit signal_set_lnabounds(0, mLna_upperBound);
+  emit signal_set_deviceName(mDeviceModel);
   emit signal_set_antennaSelect(2);
-  emit signal_set_nrBits(nrBits);
-  if (lnaState > lna_upperBound)
+  emit signal_set_nrBits(mNrBits);
+
+  if (lnaState > mLna_upperBound)
   {
-    this->lnaState = lna_upperBound - 1;
+    this->mLnaState = mLna_upperBound - 1;
   }
-  set_lna(this->lnaState);
+
+  RspDx_handler::set_lna(this->mLnaState);
+
   if (biasT)
   {
-    set_biasT(true);
+    RspDx_handler::set_biasT(true);
   }
 }
-
-RspDx_handler::~RspDx_handler()
-{}
 
 static const int RSPdx_Table[6][29] = {{ 19, 0, 3, 6,  9,  12, 15, 18, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 0,  0,  0,  0,  0,  0,  0,  0,  0 },
                                        { 27, 0, 3, 6,  9,  12, 15, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 0 },
@@ -72,17 +72,17 @@ bool RspDx_handler::restart(int freq)
   sdrplay_api_ErrT err;
 
   fprintf(stderr, "restartRequest\n");
-  chParams->tunerParams.rfFreq.rfHz = (float)freq;
-  err = parent->sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_Tuner_Frf, sdrplay_api_Update_Ext1_None);
+  mpChParams->tunerParams.rfFreq.rfHz = (float)freq;
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Tuner_Frf, sdrplay_api_Update_Ext1_None);
   if (err != sdrplay_api_Success)
   {
-    fprintf(stderr, "restart: error %s\n", parent->sdrplay_api_GetErrorString(err));
+    fprintf(stderr, "restart: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
     return false;
   }
 
-  this->freq = freq;
+  this->mFreq = freq;
   emit signal_set_lnabounds(0, lnaStates(freq));
-  emit signal_show_lnaGain(get_lnaGain(lnaState, freq));
+  emit signal_show_lnaGain(get_lnaGain(mLnaState, freq));
 
   return true;
 }
@@ -93,22 +93,22 @@ bool RspDx_handler::set_agc(int setPoint, bool on)
 
   if (on)
   {
-    chParams->ctrlParams.agc.setPoint_dBfs = -setPoint;
-    chParams->ctrlParams.agc.enable = sdrplay_api_AGC_100HZ;
+    mpChParams->ctrlParams.agc.setPoint_dBfs = -setPoint;
+    mpChParams->ctrlParams.agc.enable = sdrplay_api_AGC_100HZ;
   }
   else
   {
-    chParams->ctrlParams.agc.enable = sdrplay_api_AGC_DISABLE;
+    mpChParams->ctrlParams.agc.enable = sdrplay_api_AGC_DISABLE;
   }
 
-  err = parent->sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_Ctrl_Agc, sdrplay_api_Update_Ext1_None);
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Ctrl_Agc, sdrplay_api_Update_Ext1_None);
   if (err != sdrplay_api_Success)
   {
-    fprintf(stderr, "agc: error %s\n", parent->sdrplay_api_GetErrorString(err));
+    fprintf(stderr, "agc: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
     return false;
   }
 
-  this->agcMode = on;
+  this->mAgcMode = on;
   return true;
 }
 
@@ -116,14 +116,14 @@ bool RspDx_handler::set_GRdB(int GRdBValue)
 {
   sdrplay_api_ErrT err;
 
-  chParams->tunerParams.gain.gRdB = GRdBValue;
-  err = parent->sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_Tuner_Gr, sdrplay_api_Update_Ext1_None);
+  mpChParams->tunerParams.gain.gRdB = GRdBValue;
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Tuner_Gr, sdrplay_api_Update_Ext1_None);
   if (err != sdrplay_api_Success)
   {
-    fprintf(stderr, "grdb: error %s\n", parent->sdrplay_api_GetErrorString(err));
+    fprintf(stderr, "grdb: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
     return false;
   }
-  this->GRdB = GRdBValue;
+  this->mGRdB = GRdBValue;
   return true;
 }
 
@@ -131,11 +131,11 @@ bool RspDx_handler::set_ppm(int ppmValue)
 {
   sdrplay_api_ErrT err;
 
-  deviceParams->devParams->ppm = ppmValue;
-  err = parent->sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_Dev_Ppm, sdrplay_api_Update_Ext1_None);
+  mpDeviceParams->devParams->ppm = ppmValue;
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Dev_Ppm, sdrplay_api_Update_Ext1_None);
   if (err != sdrplay_api_Success)
   {
-    fprintf(stderr, "lna: error %s\n", parent->sdrplay_api_GetErrorString(err));
+    fprintf(stderr, "lna: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
     return false;
   }
   return true;
@@ -145,16 +145,16 @@ bool RspDx_handler::set_lna(int lnaState)
 {
   sdrplay_api_ErrT err;
 
-  chParams->tunerParams.gain.LNAstate = lnaState;
-  err = parent->sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_Tuner_Gr, sdrplay_api_Update_Ext1_None);
+  mpChParams->tunerParams.gain.LNAstate = lnaState;
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Tuner_Gr, sdrplay_api_Update_Ext1_None);
   if (err != sdrplay_api_Success)
   {
-    fprintf(stderr, "grdb: error %s\n", parent->sdrplay_api_GetErrorString(err));
+    fprintf(stderr, "grdb: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
     return false;
   }
 
-  this->lnaState = lnaState;
-  emit signal_show_lnaGain(get_lnaGain(lnaState, freq));
+  this->mLnaState = lnaState;
+  emit signal_show_lnaGain(get_lnaGain(lnaState, mFreq));
   return true;
 }
 
@@ -162,14 +162,14 @@ bool RspDx_handler::set_antenna(int antenna)
 {
   sdrplay_api_ErrT err;
 
-  deviceParams->devParams->rspDxParams.antennaSel = antenna == 'A' ? sdrplay_api_RspDx_ANTENNA_A : antenna == 'B'
+  mpDeviceParams->devParams->rspDxParams.antennaSel = antenna == 'A' ? sdrplay_api_RspDx_ANTENNA_A : antenna == 'B'
                                                                                                    ? sdrplay_api_RspDx_ANTENNA_B
                                                                                                    : sdrplay_api_RspDx_ANTENNA_C;
 
-  err = parent->sdrplay_api_Update(chosenDevice->dev,
-                                   chosenDevice->tuner,
-                                   sdrplay_api_Update_None,
-                                   sdrplay_api_Update_RspDx_AntennaControl);
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev,
+                                     mpChosenDevice->tuner,
+                                     sdrplay_api_Update_None,
+                                     sdrplay_api_Update_RspDx_AntennaControl);
   if (err != sdrplay_api_Success)
   {
     return false;
@@ -182,8 +182,8 @@ bool RspDx_handler::set_amPort(int amPort)
 {
   sdrplay_api_ErrT err;
 
-  deviceParams->devParams->rspDxParams.hdrEnable = amPort;
-  err = parent->sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_HdrEnable);
+  mpDeviceParams->devParams->rspDxParams.hdrEnable = amPort;
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_HdrEnable);
   if (err != sdrplay_api_Success)
   {
     return false;
@@ -198,14 +198,14 @@ bool RspDx_handler::set_biasT(bool biasT_value)
   sdrplay_api_RspDxParamsT * rspDxParams;
   sdrplay_api_ErrT err;
 
-  xxx = deviceParams->devParams;
+  xxx = mpDeviceParams->devParams;
   rspDxParams = &(xxx->rspDxParams);
   rspDxParams->biasTEnable = biasT_value;
-  err = parent->sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_BiasTControl);
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_BiasTControl);
 
   if (err != sdrplay_api_Success)
   {
-    fprintf(stderr, "setBiasY: error %s\n", parent->sdrplay_api_GetErrorString(err));
+    fprintf(stderr, "setBiasY: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
     return false;
   }
 

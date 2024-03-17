@@ -1,34 +1,31 @@
-#ifndef	__RSPDUO_HANDLER_H
-#define	__RSPDUO_HANDLER_H
+#ifndef  RSPDUO_HANDLER_H
+#define  RSPDUO_HANDLER_H
 
-#include	"Rsp-device.h"
+#include  "Rsp-device.h"
 
-class	SdrPlayHandler_v3;
+class SdrPlayHandler_v3;
 
-class	RspDuo_handler: public Rsp_device {
+class RspDuo_handler : public Rsp_device
+{
 public:
-		RspDuo_handler (SdrPlayHandler_v3 *parent,
-                    sdrplay_api_DeviceT *chosenDevice,
-                    int	sampleRate,
-                    int	freq,
-                    bool	agcMode,
-                    int	lnaState,
-                    int 	GRdB,
-                    bool	biasT);
-		~RspDuo_handler	();
+  RspDuo_handler(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenDevice, int sampleRate,
+                 int freq, bool agcMode, int lnaState, int GRdB, bool biasT);
+  ~RspDuo_handler() override = default;
 
-	int	lnaStates	(int frequency);
-	bool	restart		(int freq);
-	bool	set_agc		(int setPoint, bool on);
-	bool	set_GRdB	(int GRdBValue);
-	bool	set_ppm		(int ppm);
-	bool	set_lna		(int lnaState);
-	bool	set_antenna 	(int antenna);
-	bool	set_biasT	(bool biasT);
+  int lnaStates(int frequency) override;
+  bool restart(int freq) override;
+  bool set_agc(int setPoint, bool on) override;
+  bool set_GRdB(int GRdBValue) override;
+  bool set_ppm(int ppm) override;
+  bool set_lna(int lnaState) override;
+  bool set_antenna(int antenna) override;
+  bool set_biasT(bool biasT) override;
+
 private:
-	int16_t	bankFor_rspDuo 	(int freq);
-	int	get_lnaGain	(int, int);
+  int16_t bankFor_rspDuo(int freq);
+  int get_lnaGain(int, int);
 };
+
 #endif
 
 

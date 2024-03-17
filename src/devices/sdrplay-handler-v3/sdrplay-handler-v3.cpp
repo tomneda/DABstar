@@ -82,10 +82,15 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVers
   int x = sdrplaySettings->value("position-x", 100).toInt();
   int y = sdrplaySettings->value("position-y", 100).toInt();
   sdrplaySettings->endGroup();
+
   setupUi(&myFrame);
+
+  myFrame.setFixedSize(myFrame.geometry().size());
   myFrame.move(QPoint(x, y));
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
+
+  slot_overload_detected(false);
 
   antennaSelector->hide();
   //	nrBits			= 12;	// default
@@ -160,6 +165,8 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVers
 
 SdrPlayHandler_v3::~SdrPlayHandler_v3()
 {
+  delete theRsp;
+  
   threadRuns.store(false);
   while (isRunning())
   {
@@ -541,7 +548,7 @@ void SdrPlayHandler_v3::run()
 {
   sdrplay_api_ErrT err;
   sdrplay_api_DeviceT devs[6];
-  uint32_t ndev;
+  uint32_t ndev = 0;
 
   threadRuns.store(false);
   receiverRuns.store(false);
@@ -551,9 +558,6 @@ void SdrPlayHandler_v3::run()
   connect(this, &SdrPlayHandler_v3::set_serial_signal, this, &SdrPlayHandler_v3::set_serial);
   connect(this, &SdrPlayHandler_v3::set_apiVersion_signal, this, &SdrPlayHandler_v3::set_apiVersion);
   connect(this, &SdrPlayHandler_v3::signal_overload_detected, this, &SdrPlayHandler_v3::slot_overload_detected);
-
-  //	denominator		= 2048;		// default
-  //	nrBits			= 12;		// default
 
   Handle = fetchLibrary();
   if (Handle == nullptr)
@@ -1024,14 +1028,12 @@ void SdrPlayHandler_v3::slot_overload_detected(bool iOvlDetected)
 {
   if (iOvlDetected)
   {
-     lblOverload->setText("Overload");
      lblOverload->setStyleSheet("QLabel {background-color : red; color: white}");
      //fprintf(stderr, PRJ_NAME "sdrplay_api_Overload_Detected\n");
   }
   else
   {
-    lblOverload->setText("Ok");
-    lblOverload->setStyleSheet("QLabel {background-color : green; color: white}");
+    lblOverload->setStyleSheet("QLabel {background-color : #444444; color: #333333}");
     //fprintf(stderr, PRJ_NAME "sdrplay_api_Overload Corrected\n");
   }
 }

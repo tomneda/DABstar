@@ -107,7 +107,7 @@ public:
   sdrplay_api_Update_t sdrplay_api_Update;
 
   sdrplay_api_DeviceT * chosenDevice;
-  Rsp_device * theRsp;
+  Rsp_device * theRsp = nullptr;
 
   int inputRate;
   std::atomic<bool> failFlag;
