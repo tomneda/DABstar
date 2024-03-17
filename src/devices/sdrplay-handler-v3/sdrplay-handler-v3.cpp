@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -27,6 +35,7 @@
 #include  "sdrplay-handler-v3.h"
 #include  "sdrplay-commands.h"
 #include  "xml-filewriter.h"
+#include  "setting-helper.h"
 
 //	The Rsp's
 #include  "Rsp-device.h"
@@ -47,17 +56,17 @@ std::string errorMessage(int errorCode)
 {
   switch (errorCode)
   {
-  case 1: return std::string("Could not fetch library");
-  case 2: return std::string("error in fetching functions from library");
-  case 3: return std::string("sdrplay_api_Open failed");
-  case 4: return std::string("could not open sdrplay_api_ApiVersion");
-  case 5: return std::string("API versions do not match");
-  case 6: return std::string("sdrplay_api_GetDevices failed");
-  case 7: return std::string("no valid SDRplay device found");
-  case 8: return std::string("sdrplay_api_SelectDevice failed");
-  case 9: return std::string("sdrplay_api_GetDeviceParams failed");
-  case 10: return std::string("sdrplay_api+GetDeviceParams returns null");
-  default: return std::string("unidentified error with sdrplay device");
+  case  1: return {"Could not fetch library"};
+  case  2: return {"error in fetching functions from library"};
+  case  3: return {"sdrplay_api_Open failed"};
+  case  4: return {"could not open sdrplay_api_ApiVersion"};
+  case  5: return {"API versions do not match"};
+  case  6: return {"sdrplay_api_GetDevices failed"};
+  case  7: return {"no valid SDRplay device found"};
+  case  8: return {"sdrplay_api_SelectDevice failed"};
+  case  9: return {"sdrplay_api_GetDeviceParams failed"};
+  case 10: return {"sdrplay_api+GetDeviceParams returns null"};
+  default: return {"unidentified error with sdrplay device"};
   }
   return "";
 }
@@ -79,7 +88,6 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVers
   myFrame.show();
 
   antennaSelector->hide();
-  tunerSelector->hide();
   //	nrBits			= 12;	// default
   //	denominator		= 2048;	// default
 
@@ -105,8 +113,8 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVers
   if (agcMode)
   {
     agcControl->setChecked(true);
-    GRdBSelector->hide();
-    gainsliderLabel->hide();
+    GRdBSelector->setEnabled(false);
+    gainsliderLabel->setEnabled(false);
   }
 
   biasT = sdrplaySettings->value("biasT_selector", 0).toInt() != 0;
@@ -130,7 +138,6 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVers
 
   vfoFrequency = MHz (220);
   theGain = -1;
-  debugControl->hide();
   failFlag.store(false);
   successFlag.store(false);
   errorCode = 0;
@@ -314,16 +321,13 @@ void SdrPlayHandler_v3::set_agcControl(int dummy)
   agcRequest r(agcMode, 30);
   (void)dummy;
   messageHandler(&r);
-  if (agcMode)
-  {
-    GRdBSelector->hide();
-    gainsliderLabel->hide();
-  }
-  else
+
+  GRdBSelector->setEnabled(!agcMode);
+  gainsliderLabel->setEnabled(!agcMode);
+
+  if (!agcMode)
   {
     GRdBRequest r2(GRdBSelector->value());
-    GRdBSelector->show();
-    gainsliderLabel->show();
     messageHandler(&r2);
   }
 }
@@ -386,18 +390,6 @@ void SdrPlayHandler_v3::set_antennaSelect(int n)
   }
 }
 
-void SdrPlayHandler_v3::show_tunerSelector(bool b)
-{
-  if (b)
-  {
-    tunerSelector->show();
-  }
-  else
-  {
-    tunerSelector->hide();
-  }
-}
-
 static inline bool isValid(QChar c)
 {
   return c.isLetterOrNumber() || (c == '-');
@@ -423,8 +415,10 @@ bool SdrPlayHandler_v3::setup_xmlDump()
     }
   }
 
+  const bool useNativeFileDialog = SettingHelper::get_instance().read(SettingHelper::cbUseNativeFileDialog).toBool();
   QString suggestedFileName = saveDir + deviceModel + "-" + channel + "-" + timeString;
-  QString fileName = QFileDialog::getSaveFileName(nullptr, tr("Save file ..."), suggestedFileName + ".uff", tr("Xml (*.uff)"));
+  QString fileName = QFileDialog::getSaveFileName(nullptr, tr("Save file ..."), suggestedFileName + ".uff", tr("Xml (*.uff)"), nullptr,
+                                                  (useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog));
   fileName = QDir::toNativeSeparators(fileName);
   xmlDumper = fopen(fileName.toUtf8().data(), "w");
   if (xmlDumper == nullptr)
@@ -529,14 +523,18 @@ static void EventCallback(sdrplay_api_EventT eventId, sdrplay_api_TunerSelectT t
 void SdrPlayHandler_v3::update_PowerOverload(sdrplay_api_EventParamsT * params)
 {
   sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_Ctrl_OverloadMsgAck, sdrplay_api_Update_Ext1_None);
-  if (params->powerOverloadParams.powerOverloadChangeType == sdrplay_api_Overload_Detected)
-  {
-    fprintf(stderr, PRJ_NAME "sdrplay_api_Overload_Detected\n");
-  }
-  else
-  {
-    fprintf(stderr, PRJ_NAME "sdrplay_api_Overload Corrected\n");
-  }
+  emit signal_overload_detected(params->powerOverloadParams.powerOverloadChangeType == sdrplay_api_Overload_Detected);
+  // {
+  //   // lblOverload->setText("Overload");
+  //   // lblOverload->setStyleSheet("QLabel {background-color : red; color: white}");
+  //   // fprintf(stderr, PRJ_NAME "sdrplay_api_Overload_Detected\n");
+  // }
+  // else
+  // {
+  //   // lblOverload->setText("Ok");
+  //   // lblOverload->setStyleSheet("QLabel {background-color : green; color: white}");
+  //   // fprintf(stderr, PRJ_NAME "sdrplay_api_Overload Corrected\n");
+  // }
 }
 
 void SdrPlayHandler_v3::run()
@@ -552,6 +550,7 @@ void SdrPlayHandler_v3::run()
 
   connect(this, &SdrPlayHandler_v3::set_serial_signal, this, &SdrPlayHandler_v3::set_serial);
   connect(this, &SdrPlayHandler_v3::set_apiVersion_signal, this, &SdrPlayHandler_v3::set_apiVersion);
+  connect(this, &SdrPlayHandler_v3::signal_overload_detected, this, &SdrPlayHandler_v3::slot_overload_detected);
 
   //	denominator		= 2048;		// default
   //	nrBits			= 12;		// default
@@ -652,9 +651,9 @@ void SdrPlayHandler_v3::run()
   {
     switch (hwVersion)
     {
-    case SDRPLAY_RSPdx_: theRsp = new RspDx_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
-    case SDRPLAY_RSP1A_: theRsp = new Rsp1A_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
-    case SDRPLAY_RSP2_: theRsp = new RspII_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
+    case SDRPLAY_RSPdx_:  theRsp = new RspDx_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
+    case SDRPLAY_RSP1A_:  theRsp = new Rsp1A_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
+    case SDRPLAY_RSP2_:   theRsp = new RspII_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
     case SDRPLAY_RSPduo_: theRsp = new RspDuo_handler(this, chosenDevice, inputRate, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
     default: theRsp = new Rsp_device(this, chosenDevice, 2112000, kHz (14070), agcMode, lnaState, GRdBValue, biasT); break;
     }
@@ -1018,5 +1017,21 @@ void SdrPlayHandler_v3::setVFOFrequency(int32_t iFreq)
 bool SdrPlayHandler_v3::isFileInput()
 {
   return false;
+}
+
+void SdrPlayHandler_v3::slot_overload_detected(bool iOvlDetected)
+{
+  if (iOvlDetected)
+  {
+     lblOverload->setText("Overload");
+     lblOverload->setStyleSheet("QLabel {background-color : red; color: white}");
+     //fprintf(stderr, PRJ_NAME "sdrplay_api_Overload_Detected\n");
+  }
+  else
+  {
+    lblOverload->setText("Ok");
+    lblOverload->setStyleSheet("QLabel {background-color : green; color: white}");
+    //fprintf(stderr, PRJ_NAME "sdrplay_api_Overload Corrected\n");
+  }
 }
 

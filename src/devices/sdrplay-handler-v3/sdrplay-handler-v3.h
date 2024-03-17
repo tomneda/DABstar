@@ -46,7 +46,9 @@
 #include  <sdrplay_api.h>
 
 class Rsp_device;
+
 class generalCommand;
+
 class XmlFileWriter;
 
 #ifdef __MINGW32__
@@ -111,7 +113,7 @@ public:
   std::atomic<bool> failFlag;
   std::atomic<bool> successFlag;
   std::atomic<bool> threadRuns;
-  void run();
+  void run() override;
   bool messageHandler(generalCommand *);
 
   QString recorderVersion;
@@ -144,10 +146,6 @@ public:
   bool loadFunctions();
   int errorCode;
 
-signals:
-  void new_GRdBValue(int);
-  void new_lnaValue(int);
-  void new_agcSetting(bool);
 private slots:
   void set_ifgainReduction(int);
   void set_lnagainReduction(int);
@@ -155,6 +153,7 @@ private slots:
   void set_ppmControl(int);
   void set_selectAntenna(const QString &);
   void set_biasT(int);
+  void slot_overload_detected(bool);
 public slots:
   void set_lnabounds(int, int);
   //void set_nrBits(int);
@@ -162,15 +161,18 @@ public slots:
   void set_serial(const QString &);
   void set_apiVersion(float);
   void set_antennaSelect(int);
-  void show_tunerSelector(bool);
   void set_xmlDump();
   void show_lnaGain(int);
 signals:
+  void new_GRdBValue(int);
+  void new_lnaValue(int);
+  void new_agcSetting(bool);
   void set_lnabounds_signal(int, int);
   void set_deviceName_signal(const QString &);
   void set_serial_signal(const QString &);
   void set_apiVersion_signal(float);
   void set_antennaSelect_signal(bool);
+  void signal_overload_detected(bool);
 };
 
 #endif
