@@ -342,6 +342,7 @@ private:
 signals:
   void signal_set_new_channel(int);
   void signal_dab_processor_started();
+  void signal_test_slider_changed(int);
 
 public slots:
   void slot_add_to_ensemble(const QString &, int);
@@ -362,7 +363,7 @@ public slots:
   void slot_no_signal_found();
   void slot_show_mot_handling(bool);
   void slot_set_sync_lost();
-  void slot_show_correlation(int amount, int marker, const QVector<int> & v);
+  void slot_show_correlation(int amount, int marker, float, const QVector<int> & v);
   void slot_show_spectrum(int);
   void slot_show_iq(int, float);
   void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);

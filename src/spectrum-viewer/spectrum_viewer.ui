@@ -33,9 +33,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display. Time synchronization is done by correlation.
-           The correlation result is depicted here. The selected &amp;quot;peak&amp;quot; is the one at (or near) sample 504.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-          </string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display. &lt;/p&gt;&lt;p&gt;Time synchronization is done by correlation. The first found peak over the threshold line is the one at (or near) sample 504. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>

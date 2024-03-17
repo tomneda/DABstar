@@ -371,16 +371,19 @@
    <item>
     <widget class="QSlider" name="sliderTest">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Slider for different tests. Normally no need to change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="maximum">
-      <number>1000</number>
+      <number>10</number>
+     </property>
+     <property name="pageStep">
+      <number>1</number>
      </property>
      <property name="value">
-      <number>500</number>
+      <number>0</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

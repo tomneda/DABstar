@@ -76,7 +76,7 @@ private:
   std::vector<float> mCorrPeakValues;
 
 signals:
-  void show_correlation(int, int, const QVector<int> &);
+  void signal_show_correlation(int, int, float, const QVector<int> &);
 };
 
 #endif

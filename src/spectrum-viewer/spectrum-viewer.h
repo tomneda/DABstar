@@ -82,7 +82,7 @@ public:
   ~SpectrumViewer() override;
 
   void show_spectrum(int32_t);
-  void show_correlation(int32_t dots, int marker, const QVector<int> & v);
+  void show_correlation(int32_t dots, int marker, float threshold, const QVector<int> & v);
   void show_nominal_frequency_MHz(float);
   void show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
   void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);

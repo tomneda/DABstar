@@ -308,9 +308,9 @@ void SpectrumViewer::show_clock_error(float iClockErr)
   lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
 }
 
-void SpectrumViewer::show_correlation(int32_t dots, int32_t marker, const QVector<int32_t> & v)
+void SpectrumViewer::show_correlation(int32_t dots, int32_t marker, float threshold, const QVector<int32_t> & v)
 {
-  mpCorrelationViewer->showCorrelation(dots, marker, v);
+  mpCorrelationViewer->showCorrelation(dots, marker, threshold, v);
 }
 
 void SpectrumViewer::_slot_handle_cmb_carrier(int32_t iSel)

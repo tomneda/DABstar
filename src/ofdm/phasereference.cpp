@@ -67,7 +67,7 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
     mPhaseDifferences[i - 1] = abs(arg(mRefTable[(mDabPar.T_u + i + 0) % mDabPar.T_u] * conj(mRefTable[(mDabPar.T_u + i + 1) % mDabPar.T_u])));
   }
 
-  connect(this, &PhaseReference::show_correlation, ipRadio, &RadioInterface::slot_show_correlation);
+  connect(this, &PhaseReference::signal_show_correlation, ipRadio, &RadioInterface::slot_show_correlation);
 }
 
 /**
@@ -107,7 +107,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
 
   sum /= (float)(mDabPar.T_u) / 2.0f;
   QVector<int> indices;
-  int32_t maxIndex = -1;
+  //int32_t maxIndex = -1;
   float maxL = -1000;
   constexpr int16_t GAP_SEARCH_WIDTH = 10;
   constexpr int16_t EXTENDED_SEARCH_REGION = 250;
@@ -137,7 +137,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
         if (mCorrPeakValues[i] > maxL)
         {
           maxL = mCorrPeakValues[i];
-          maxIndex = i;
+          //maxIndex = i;
         }
         i += GAP_SEARCH_WIDTH;
       }
@@ -158,13 +158,19 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
     if (mDisplayCounter > mFramesPerSecond / 2)
     {
       mpResponse->put_data_into_ring_buffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
-      emit show_correlation((int32_t)mCorrPeakValues.size(), mDabPar.T_g, indices);
+      emit signal_show_correlation((int32_t)mCorrPeakValues.size(), mDabPar.T_g, sum * iThreshold, indices);
       mDisplayCounter = 0;
     }
   }
 
-  assert(maxIndex >= 0);
-  return maxIndex;
+  /* Tomneda: original Qt-DAB returns maximum found peak "maxIndex", but
+   * I receive a channel here with up to 5 different transmitters where the nearest (earliest) does not have the maximum power.
+   * The maximum peak is either the second or forth transmitter. So the maximum peak search had also decided for a quite delayed signal.
+   * This leads to a OFDM symbol interference which was clearly been seen in the IQ scope or Modulation quality.
+   * So, the theory and also the experiment says that the first found peak (above the threshold) should be used as timing marker.
+   */
+  assert(indices.size() > 0);
+  return indices[0];
 }
 
 //	an approach that works fine is to correlate the phase differences between subsequent carriers

@@ -33,67 +33,72 @@
 #include  <QSettings>
 #include  <QColor>
 #include  <QPen>
+#include  <QLabel>
+#include  <qwt.h>
+#include  <qwt_plot.h>
+#include  <qwt_plot_marker.h>
+#include  <qwt_plot_zoomer.h>
+#include  <qwt_picker_machine.h>
 #include  "color-selector.h"
+#include  "glob_defs.h"
+#include  "dab-constants.h"
 
 CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<float> * b)
-  : /*myFrame(nullptr),*/
-    spectrumCurve("")
+  : mpSettings(s)
+  , mpResponseBuffer(b)
+  , mpPlotGrid(pPlot)
+  , mpIndexDisplay(pLabel)
 {
-  QString colorString = "black";
-  //this->myRadioInterface = mr;
-  this->dabSettings = s;
-  this->responseBuffer = b;
+  QString colorString;
+  mpSettings->beginGroup(SETTING_GROUP_NAME);
+  colorString = mpSettings->value("gridColor", "#5e5c64").toString();
+  mGridColor = QColor(colorString);
+  colorString = mpSettings->value("curveColor", "#ffbe6f").toString();
+  mCurveColor = QColor(colorString);
+  const bool brush = (mpSettings->value("brush", 0).toInt() == 1);
+  mpSettings->endGroup();
 
-  dabSettings->beginGroup(SETTING_GROUP_NAME);
-  colorString = dabSettings->value("gridColor", "#5e5c64").toString();
-  gridColor = QColor(colorString);
-  colorString = dabSettings->value("curveColor", "#ffbe6f").toString();
-  curveColor = QColor(colorString);
-  const bool brush = dabSettings->value("brush", 0).toInt() == 1;
+  mQwtGrid.setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
+  mQwtGrid.enableXMin(true);
+  mQwtGrid.enableYMin(true);
+  mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
+  mQwtGrid.attach(mpPlotGrid);
 
-  dabSettings->endGroup();
-
-  plotgrid = pPlot;
-  mpIndexDisplay = pLabel;
-  //plotgrid->setCanvasBackground(displayColor);
-
-  grid.setMajorPen(QPen(gridColor, 0, Qt::DotLine));
-  grid.enableXMin(true);
-  grid.enableYMin(true);
-  grid.setMinorPen(QPen(gridColor, 0, Qt::DotLine));
-  grid.attach(plotgrid);
-
-  lm_picker = new QwtPlotPicker(plotgrid->canvas());
+  lm_picker = new QwtPlotPicker(mpPlotGrid->canvas());
   QwtPickerMachine * lpickerMachine = new QwtPickerClickPointMachine();
 
   lm_picker->setStateMachine(lpickerMachine);
   lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
-  connect(lm_picker, SIGNAL (selected(const QPointF&)), this, SLOT (rightMouseClick(const QPointF &)));
 
-  spectrumCurve.setPen(QPen(curveColor, 2.0));
-  spectrumCurve.setOrientation(Qt::Horizontal);
-  spectrumCurve.setBaseline(0);
+  connect(lm_picker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &CorrelationViewer::rightMouseClick);
+
+  mQwtPlotCurve.setPen(QPen(mCurveColor, 2.0));
+  mQwtPlotCurve.setOrientation(Qt::Horizontal);
+  mQwtPlotCurve.setBaseline(0);
 
   if (brush)
   {
-    QBrush ourBrush(curveColor);
+    QBrush ourBrush(mCurveColor);
     ourBrush.setStyle(Qt::Dense3Pattern);
-    spectrumCurve.setBrush(ourBrush);
+    mQwtPlotCurve.setBrush(ourBrush);
   }
 
-  spectrumCurve.attach(plotgrid);
-  plotgrid->enableAxis(QwtPlot::yLeft);
+  mQwtPlotCurve.attach(mpPlotGrid);
+  mpPlotGrid->enableAxis(QwtPlot::yLeft);
+
+  mpThresholdMarker = new QwtPlotMarker();
+  mpThresholdMarker->setLineStyle(QwtPlotMarker::HLine);
+  mpThresholdMarker->setLinePen(QPen(Qt::magenta, 0, Qt::DotLine));
+  mpThresholdMarker->attach(mpPlotGrid);
 }
 
-static int lcount = 0;
-
-void CorrelationViewer::showCorrelation(int32_t dots, int marker, const QVector<int> & v)
+void CorrelationViewer::showCorrelation(int32_t dots, int marker, float threshold, const QVector<int> & v)
 {
   uint16_t i;
   auto * const data = make_vla(float, dots);
   float mmax = 0;
 
-  responseBuffer->get_data_from_ring_buffer(data, dots);
+  mpResponseBuffer->get_data_from_ring_buffer(data, dots);
 
   constexpr int32_t plotLength = 700;
   double X_axis[plotLength];
@@ -113,22 +118,23 @@ void CorrelationViewer::showCorrelation(int32_t dots, int marker, const QVector<
     }
   }
 
-  if (++lcount < 2)
+  mpThresholdMarker->setYValue(get_db(threshold));
+
+  //if (++mBestMatchCount >= 2)
   {
-    return;
+    mBestMatchCount = 0;
+
+    mpPlotGrid->setAxisScale(QwtPlot::xBottom, (double)marker - plotLength / 2, (double)marker + plotLength / 2 - 1);
+    mpPlotGrid->enableAxis(QwtPlot::xBottom);
+    mpPlotGrid->setAxisScale(QwtPlot::yLeft, get_db(0), mmax);
+    mpPlotGrid->enableAxis(QwtPlot::yLeft);
+
+    mQwtPlotCurve.setBaseline(get_db(0));
+    mQwtPlotCurve.setSamples(X_axis, Y_values, plotLength);
+    mpPlotGrid->replot();
+
+    mpIndexDisplay->setText(_get_best_match_text(v));
   }
-
-  lcount = 0;
-  plotgrid->setAxisScale(QwtPlot::xBottom, (double)marker - plotLength / 2, (double)marker + plotLength / 2 - 1);
-  plotgrid->enableAxis(QwtPlot::xBottom);
-  plotgrid->setAxisScale(QwtPlot::yLeft, get_db(0), mmax);
-  plotgrid->enableAxis(QwtPlot::yLeft);
-
-  spectrumCurve.setBaseline(get_db(0));
-  spectrumCurve.setSamples(X_axis, Y_values, plotLength);
-  plotgrid->replot();
-
-  mpIndexDisplay->setText(_get_best_match_text(v));
 }
 
 QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
@@ -150,7 +156,10 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
         txt += " (" + QString::number(distKm, 'f', 1) + ")";
       }
 
-      if (i + 1 < v.size()) txt += ", ";
+      if (i + 1 < v.size())
+      {
+        txt += ", ";
+      }
     }
   }
 
@@ -166,17 +175,23 @@ void CorrelationViewer::rightMouseClick(const QPointF & point)
 {
   (void)point;
 
-  if (!ColorSelector::show_dialog(gridColor, ColorSelector::GRIDCOLOR)) return;
-  if (!ColorSelector::show_dialog(curveColor, ColorSelector::CURVECOLOR)) return;
+  if (!ColorSelector::show_dialog(mGridColor, ColorSelector::GRIDCOLOR))
+  {
+    return;
+  }
+  if (!ColorSelector::show_dialog(mCurveColor, ColorSelector::CURVECOLOR))
+  {
+    return;
+  }
 
-  dabSettings->beginGroup(SETTING_GROUP_NAME);
-  dabSettings->setValue("gridColor", gridColor.name());
-  dabSettings->setValue("curveColor", curveColor.name());
-  dabSettings->endGroup();
-  spectrumCurve.setPen(QPen(this->curveColor, 2.0));
-  grid.setMajorPen(QPen(this->gridColor, 0, Qt::DotLine));
-  grid.enableXMin(true);
-  grid.enableYMin(true);
-  grid.setMinorPen(QPen(this->gridColor, 0, Qt::DotLine));
+  mpSettings->beginGroup(SETTING_GROUP_NAME);
+  mpSettings->setValue("gridColor", mGridColor.name());
+  mpSettings->setValue("curveColor", mCurveColor.name());
+  mpSettings->endGroup();
+  mQwtPlotCurve.setPen(QPen(this->mCurveColor, 2.0));
+  mQwtGrid.setMajorPen(QPen(this->mGridColor, 0, Qt::DotLine));
+  mQwtGrid.enableXMin(true);
+  mQwtGrid.enableYMin(true);
+  mQwtGrid.setMinorPen(QPen(this->mGridColor, 0, Qt::DotLine));
 }
 

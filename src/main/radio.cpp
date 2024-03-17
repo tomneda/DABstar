@@ -1724,14 +1724,14 @@ void RadioInterface::slot_show_clock_error(float e)
 
 //
 //	called from the phasesynchronizer
-void RadioInterface::slot_show_correlation(int amount, int marker, const QVector<int> & v)
+void RadioInterface::slot_show_correlation(int amount, int marker, float threshold, const QVector<int> & v)
 {
   if (!mIsRunning.load())
   {
     return;
   }
 
-  mSpectrumViewer.show_correlation(amount, marker, v);
+  mSpectrumViewer.show_correlation(amount, marker, threshold, v);
   mChannel.nrTransmitters = v.size();
 }
 
@@ -3551,18 +3551,19 @@ void RadioInterface::slot_handle_eti_active_selector(int /*k*/)
 
 void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
 {
-  //sFreqOffHz = 2 * (iVal - 500);
-  const int32_t newFreqOffHz = (iVal - 500);
-  if (mpDabProcessor)
-  {
-    mpDabProcessor->add_bb_freq(newFreqOffHz);
-  }
-  //inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
-  //  sFreqOffHz = inputDevice->getVFOFrequency();
-
-  QString s("Freq-Offs [Hz]: ");
-  s += QString::number(newFreqOffHz);
-  mConfig.sliderTest->setToolTip(s);
+  emit signal_test_slider_changed(iVal);
+  // //sFreqOffHz = 2 * (iVal - 500);
+  // const int32_t newFreqOffHz = (iVal - 500);
+  // if (mpDabProcessor)
+  // {
+  //   mpDabProcessor->add_bb_freq(newFreqOffHz);
+  // }
+  // //inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
+  // //  sFreqOffHz = inputDevice->getVFOFrequency();
+  //
+  // QString s("Freq-Offs [Hz]: ");
+  // s += QString::number(newFreqOffHz);
+  // mConfig.sliderTest->setToolTip(s);
 }
 
 QStringList RadioInterface::get_soft_bit_gen_names()

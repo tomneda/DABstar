@@ -29,62 +29,49 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-//
-//	Simple viewer for correlation
-//
-#ifndef    CORRELATION_VIEWER_H
-#define    CORRELATION_VIEWER_H
+#ifndef CORRELATION_VIEWER_H
+#define CORRELATION_VIEWER_H
 
-#include  <QFrame>
-#include  <QSettings>
-#include  <QObject>
-#include  <qwt.h>
-#include  <qwt_plot.h>
-#include  <qwt_plot_marker.h>
-#include  <qwt_plot_grid.h>
-#include  <qwt_plot_curve.h>
-#include  <qwt_color_map.h>
-#include  <qwt_plot_zoomer.h>
-#include  <qwt_plot_textlabel.h>
-#include  <qwt_plot_panner.h>
-#include  <qwt_plot_layout.h>
-#include  <qwt_picker_machine.h>
-#include  <qwt_scale_widget.h>
-#include  <QBrush>
-#include  <QVector>
-#include  "ringbuffer.h"
-#include  "dab-constants.h"
-#include  "ui_spectrum_viewer.h"
-
+#include <QObject>
+#include <QColor>
+#include <QVector>
+#include <qwt_plot_grid.h>
+#include <qwt_plot_curve.h>
+#include "ringbuffer.h"
 
 class RadioInterface;
+class QSettings;
+class QLabel;
+class QwtPlotPicker;
+class QwtPlotMarker;
 
-class CorrelationViewer : public QObject/*, Ui_scopeWidget*/
+class CorrelationViewer : public QObject
 {
 Q_OBJECT
 public:
   CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<float> *);
   ~CorrelationViewer() override = default;
-  void showCorrelation(int32_t dots, int marker, const QVector<int> & v);
+
+  void showCorrelation(int32_t dots, int marker, float threshold, const QVector<int> & v);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";
   static QString _get_best_match_text(const QVector<int> & v);
-
-  RadioInterface * myRadioInterface;
-  QSettings * dabSettings;
-  QwtPlotCurve spectrumCurve;
-  QwtPlotGrid grid;
-  std::vector<int> indexVector;
   static float get_db(float);
-  RingBuffer<float> * responseBuffer;
-  int16_t displaySize;
-  QwtPlot * plotgrid;
-  QLabel * mpIndexDisplay;
-  QwtPlotPicker * lm_picker;
-  //QColor displayColor;
-  QColor gridColor;
-  QColor curveColor;
+
+  QSettings * const mpSettings = nullptr;
+  QwtPlotCurve mQwtPlotCurve;
+  QwtPlotGrid mQwtGrid;
+  std::vector<int> mIndexVector;
+  RingBuffer<float> * const mpResponseBuffer;
+  QwtPlot * const mpPlotGrid;
+  QLabel * const mpIndexDisplay;
+  QwtPlotPicker * lm_picker = nullptr;
+  QwtPlotMarker * mpThresholdMarker = nullptr;
+  QColor mGridColor;
+  QColor mCurveColor;
+  int32_t mBestMatchCount = 0;
+
 
 private slots:
   void rightMouseClick(const QPointF &);
