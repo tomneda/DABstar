@@ -24,6 +24,7 @@
 #include <qwt_plot_marker.h>
 #include <qwt_plot_curve.h>
 #include <vector>
+#include "qwt_defs.h"
 
 class CarrierDisp
 {
@@ -47,7 +48,7 @@ public:
     int32_t MarkerYValueStep = 1; // if not each Y value a marker should set (0 = no set no marker)
   };
 
-  void display_carrier_plot(const std::vector<float> & iPhaseVec);
+  void display_carrier_plot(const std::vector<TQwtData> & iPhaseVec);
   void customize_plot(const SCustPlot & iCustPlot);
   void select_plot_type(const ECarrierPlotType iPlotType);
   static QStringList get_plot_type_names();
@@ -56,7 +57,7 @@ private:
   QwtPlot * const mQwtPlot = nullptr;
   QwtPlotCurve mQwtPlotCurve;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
-  std::vector<float> mX_axis_vec;
+  std::vector<TQwtData> mX_axis_vec;
   int32_t mDataSize = 0;
 
   static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);

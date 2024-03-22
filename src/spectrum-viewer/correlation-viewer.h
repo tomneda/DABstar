@@ -38,6 +38,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_curve.h>
 #include "ringbuffer.h"
+#include "qwt_defs.h"
 
 class RadioInterface;
 class QSettings;
@@ -69,8 +70,8 @@ private:
   QwtPlotPicker * lm_picker = nullptr;
   QColor mGridColor;
   QColor mCurveColor;
-  float mMinValFlt = -15;
-  float mMaxValFlt = 10;
+  TQwtData mMinValFlt = -15;
+  TQwtData mMaxValFlt = 10;
 
 private slots:
   void _slot_right_mouse_click(const QPointF &);
