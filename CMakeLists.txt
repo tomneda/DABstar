@@ -327,7 +327,6 @@ set(${objectName}_HDRS
         src/scopes-qwt6/carrier-display.h
         src/scopes-qwt6/spectrogramdata.h
         src/scopes-qwt6/audio-display.h
-        src/scopes-qwt6/qwt_defs.h
         src/spectrum-viewer/spectrum-viewer.h
         src/spectrum-viewer/spectrum-scope.h
         src/spectrum-viewer/waterfall-scope.h

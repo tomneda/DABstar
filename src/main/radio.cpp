@@ -424,7 +424,7 @@ void RadioInterface::_set_clock_text(const QString & iText /*= QString()*/)
 QString RadioInterface::get_copyright_text() const
 {
   QString versionText = "<html><head/><body><p>";
-  versionText = "<h3>" + QString(PRJ_NAME) + " V" + mVersionStr + " (Qt " QT_VERSION_STR " / Qwt " QWT_VERSION_STR ")</h3>";
+  versionText = "<h3>" + QString(PRJ_NAME) + " V" + mVersionStr + " (Qt " QT_VERSION_STR ")</h3>";
   versionText += "<p><b>Built on " + QString(__TIMESTAMP__) + QString("<br/>Commit ") + QString(GITHASH) + ".</b></p>";
   versionText += "<p>Forked and partly extensive changed and extended by Thomas Neder<br/>"
                  "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>) from Qt-DAB<br/>"
