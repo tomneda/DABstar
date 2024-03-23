@@ -51,7 +51,6 @@
 #include  <qwt_plot_zoomer.h>
 #include  <qwt_plot_textlabel.h>
 #include  <qwt_plot_panner.h>
-#include  <qwt_plot_layout.h>
 #include  <qwt_picker_machine.h>
 #include  <qwt_scale_widget.h>
 #include  "dab-constants.h"
@@ -79,7 +78,7 @@ class SpectrumViewer : public QObject, private Ui_scopeWidget
 {
 Q_OBJECT
 public:
-  SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
+  SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<TQwtData> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
   ~SpectrumViewer() override;
 
   void show_spectrum(int32_t);
@@ -107,7 +106,7 @@ private:
   QSettings * const mpDabSettings;
   RingBuffer<cmplx> * const mpSpectrumBuffer;
   RingBuffer<cmplx> * const mpIqBuffer;
-  RingBuffer<float> * const mpCarrBuffer;
+  RingBuffer<TQwtData> * const mpCarrBuffer;
   RingBuffer<float> * const mpCorrelationBuffer;
   std::vector<cmplx> mIqValuesVec;
   std::vector<TQwtData> mCarrValuesVec;

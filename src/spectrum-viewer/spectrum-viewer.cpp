@@ -40,7 +40,7 @@
 #include  "iqdisplay.h"
 
 SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
-                               RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
+                               RingBuffer<cmplx> * ipIqBuffer, RingBuffer<TQwtData> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
   Ui_scopeWidget(),
   mpRadioInterface(ipRI),
   mpDabSettings(ipDabSettings),
@@ -250,13 +250,13 @@ void SpectrumViewer::show_iq(int32_t iAmount, float iAvg)
 
   if (logIqScope)
   {
-    constexpr float logNorm = 0.30102999566398119521373889472449f; // Value of std::log10(1.0f + 1.0f);
+    constexpr float logNorm = 0.30102999f; // Value of std::log10(1.0f + 1.0f);
 
     for (auto i = 0; i < numRead; i++)
     {
       const float phi = std::arg(mIqValuesVec[i]);
       const float rl = log10f(1.0f + std::abs(mIqValuesVec[i])) / logNorm;
-      mIqValuesVec[i] = rl * std::exp(cmplx(0, phi)); // retain phase, only log the vector length
+      mIqValuesVec[i] = rl * cmplx_from_phase(phi); // retain phase, only log the vector length
     }
   }
 

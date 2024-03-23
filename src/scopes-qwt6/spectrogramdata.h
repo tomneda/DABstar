@@ -56,7 +56,7 @@ public:
 
   void initRaster(const QRectF & x, const QSize & raster) override;
 
-  [[nodiscard]] QwtInterval interval(Qt::Axis x) const override;
+  [[nodiscard]] QwtInterval interval(Qt::Axis x) const /*override*/;
   [[nodiscard]] double value(double iX, double iY) const override;
 };
 

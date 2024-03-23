@@ -37,6 +37,7 @@
 #include "fft-handler.h"
 #include "freq-interleaver.h"
 #include "ringbuffer.h"
+#include "qwt_defs.h"
 #include <QObject>
 #include <cstdint>
 #include <vector>
@@ -47,7 +48,7 @@ class OfdmDecoder : public QObject
 {
 Q_OBJECT
 public:
-  OfdmDecoder(RadioInterface *, uint8_t, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
+  OfdmDecoder(RadioInterface *, uint8_t, RingBuffer<cmplx> * iqBuffer, RingBuffer<TQwtData> * ipCarrBuffer);
   ~OfdmDecoder() override = default;
 
   struct SQualityData
@@ -79,7 +80,7 @@ private:
   FreqInterleaver mFreqInterleaver;
   fftHandler mFftHandler;
   RingBuffer<cmplx> * const mpIqBuffer;
-  RingBuffer<float> * const mpCarrBuffer;
+  RingBuffer<TQwtData> * const mpCarrBuffer;
 
   ECarrierPlotType mCarrierPlotType = ECarrierPlotType::DEFAULT;
   EIqPlotType mIqPlotType = EIqPlotType::DEFAULT;
@@ -93,7 +94,7 @@ private:
   std::vector<cmplx> mPhaseReference;
   std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mIqVector;
-  std::vector<float> mCarrVector;
+  std::vector<TQwtData> mCarrVector;
   std::vector<float> mStdDevSqPhaseVector;
   std::vector<float> mIntegAbsPhaseVector;
   std::vector<float> mMeanPhaseVector;

@@ -48,7 +48,7 @@ public:
     int32_t MarkerYValueStep = 1; // if not each Y value a marker should set (0 = no set no marker)
   };
 
-  void display_carrier_plot(const std::vector<TQwtData> & iPhaseVec);
+  void display_carrier_plot(const std::vector<TQwtData> & iYValVec);
   void customize_plot(const SCustPlot & iCustPlot);
   void select_plot_type(const ECarrierPlotType iPlotType);
   static QStringList get_plot_type_names();

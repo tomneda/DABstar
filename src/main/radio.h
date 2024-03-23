@@ -200,7 +200,7 @@ private:
   FILE * mDlTextFile = nullptr;
   RingBuffer<cmplx> mSpectrumBuffer{2048};
   RingBuffer<cmplx> mIqBuffer{2 * 1536};
-  RingBuffer<float> mCarrBuffer{2 * 1536};
+  RingBuffer<TQwtData> mCarrBuffer{2 * 1536};
   RingBuffer<float> mResponseBuffer{32768};
   RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
   RingBuffer<uint8_t> mDataBuffer{32768};
