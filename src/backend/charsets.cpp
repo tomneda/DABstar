@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2015
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -64,34 +63,27 @@ static const unsigned short ebuLatinToUcs2[] = {
 /* 0xf8 - 0xff */   0xfe,  0x14b,  0x155,  0x107,  0x15b,  0x17a,  0x165,  0x127
 };
 
-QString toQStringUsingCharset (const char* buffer,
-	                       CharacterSet charset, int size) {
-QString s;
-uint16_t length = 0;
-uint16_t i;
+QString toQStringUsingCharset(const QByteArray & iByteArray, const CharacterSet iCharset)
+{
+  return toQStringUsingCharset(iByteArray.data(), iCharset, iByteArray.size());
+}
 
-          if (size == -1)
-            length = strlen (buffer);
-          else
-            length = size;
+QString toQStringUsingCharset(const char * buffer, CharacterSet charset, int size)
+{
+  const uint16_t length = (size == -1 ? strlen(buffer) : size);
 
-	switch (charset) {
-	   case UnicodeUcs2:
-	      s = QString::fromUtf16 ((const ushort*) buffer, length);
-	      break;
-
-	   case UnicodeUtf8:
-	      s = QString::fromUtf8 (buffer, length);
-	      break;
-
-	   case EbuLatin:
-	   default:
-	      s = QString ();
-	      for (i = 0; i < length; i++) {
-	         s. append (QChar (ebuLatinToUcs2 [((uint8_t*) buffer)[i]]));
-	      }
-	}
-
-	return s;
+  switch (charset)
+  {
+  case UnicodeUcs2: return QString::fromUtf16((const ushort *)buffer, length);
+  case UnicodeUtf8: return QString::fromUtf8(buffer, length);
+  case EbuLatin:
+  default:
+    QString s;
+    for (uint16_t i = 0; i < length; ++i)
+    {
+      s.append(QChar(ebuLatinToUcs2[((uint8_t *)buffer)[i]]));
+    }
+    return s;
+  }
 }
 

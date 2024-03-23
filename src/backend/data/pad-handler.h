@@ -58,9 +58,12 @@ private:
   void add_MSC_element(const std::vector<uint8_t> &);
   void build_MSC_segment(const std::vector<uint8_t> &);
   bool pad_crc(const uint8_t *, int16_t);
+  void reset_charset_change();
+  void check_charset_change();
 
-  QString dynamicLabelText;
+  QByteArray dynamicLabelTextUnConverted;
   int16_t charSet;
+  int16_t lastConvCharSet = -1;
   MotObject * currentSlide;
   uint8_t last_appType;
   bool mscGroupElement;

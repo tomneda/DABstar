@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2013
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -22,10 +21,11 @@
  *	This charset handling was kindly added by Przemyslaw Wegrzyn	
  *	all rights acknowledged
  */
-#ifndef __CHARSETS_H
-#define __CHARSETS_H
+#ifndef CHARSETS_H
+#define CHARSETS_H
 
 #include <QString>
+#include <QByteArray>
 
 /*
  * Codes assigned to character sets, as defined
@@ -44,6 +44,7 @@ typedef enum {
  * @param charset   character set used in buffer
  * @return converted QString
  */
+QString toQStringUsingCharset(const QByteArray & iByteArray, CharacterSet iCharset);
 QString toQStringUsingCharset(const char* buffer, CharacterSet charset, int size = -1);
 
 #endif // CHARSETS_H

@@ -125,7 +125,8 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
 
     if (firstSegment)
     {
-      dynamicLabelText.clear();
+      dynamicLabelTextUnConverted.clear();
+      reset_charset_change();
     }
     switch (AcTy)
     {
@@ -138,11 +139,13 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
       if (firstSegment && !lastSegment)
       {
         segmentNumber = b[last - 2] >> 4;
-        if (dynamicLabelText.size() > 0)
+        if (!dynamicLabelTextUnConverted.isEmpty())
         {
-          showLabel(dynamicLabelText);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
+          showLabel(dynamicLabelTextConverted);
         }
-        dynamicLabelText.clear();
+        dynamicLabelTextUnConverted.clear();
+        reset_charset_change();
       }
       still_to_go = b[last - 1] & 0x0F;
       shortpadData.resize(0);
@@ -159,7 +162,8 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
       if ((still_to_go <= 0) && (shortpadData.size() > 1))
       {
         shortpadData.push_back(0);
-        dynamicLabelText.append(toQStringUsingCharset((char *)(shortpadData.data()), (CharacterSet)charSet, shortpadData.size()));
+        dynamicLabelTextUnConverted.append((const char *)shortpadData.data(), (int)shortpadData.size());
+        check_charset_change();
         shortpadData.resize(0);
       }
       break;
@@ -179,19 +183,22 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
     if ((still_to_go <= 0) && (shortpadData.size() > 0))
     {
       shortpadData.push_back(0);
-      //
+
       //	just to avoid doubling by unsollicited shortpads
-      dynamicLabelText.append(toQStringUsingCharset((char *)(shortpadData.data()), (CharacterSet)charSet));
+      dynamicLabelTextUnConverted.append((const char *)shortpadData.data());
+      check_charset_change();
       shortpadData.resize(0);
       //	if we are at the end of the last segment (and the text is not empty)
       //	then show it.
       if (!firstSegment && lastSegment)
       {
-        if (dynamicLabelText.size() > 0)
+        if (!dynamicLabelTextUnConverted.isEmpty())
         {
-          showLabel(dynamicLabelText);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
+          showLabel(dynamicLabelTextConverted);
         }
-        dynamicLabelText.clear();
+        dynamicLabelTextUnConverted.clear();
+        reset_charset_change();
       }
     }
   }
@@ -336,17 +343,19 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
     {
       //segmentno = 1;
       charSet = (prefix >> 4) & 017;
-      dynamicLabelText.clear();
+      dynamicLabelTextUnConverted.clear();
+      reset_charset_change();
     }
-//    else
-//    {
-//      segmentno = ((prefix >> 4) & 07) + 1;
-//    }
+    // else
+    // {
+    //   segmentno = ((prefix >> 4) & 07) + 1;
+    // }
 
-    if (Cflag)
-    {    // special dynamic label command
+    if (Cflag) // special dynamic label command
+    {
       // the only specified command is to clear the display
-      dynamicLabelText.clear();
+      dynamicLabelTextUnConverted.clear();
+      reset_charset_change();
     }
     else
     {    // Dynamic text length
@@ -362,18 +371,16 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
         moreXPad = false;
       }
 
-      //	convert dynamic label
-      QString segmentText = toQStringUsingCharset((const char *)&data[2], (CharacterSet)charSet, dataLength);
-
-      dynamicLabelText.append(segmentText);
+      dynamicLabelTextUnConverted.append((const char *)&data[2], dataLength);
+      check_charset_change();
 
       //	if at the end, show the label
       if (last)
       {
         if (!moreXPad)
         {
-          showLabel(dynamicLabelText);
-
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
+          showLabel(dynamicLabelTextConverted);
         }
         else
         {
@@ -401,11 +408,13 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
       moreXPad = false;
     }
 
-    QString segmentText = toQStringUsingCharset((const char *)data, (CharacterSet)charSet, dataLength);
-    dynamicLabelText.append(segmentText);
+    dynamicLabelTextUnConverted.append((const char *)data, dataLength);
+    check_charset_change();
+
     if (!moreXPad && isLastSegment)
     {
-      showLabel(dynamicLabelText);
+      const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
+      showLabel(dynamicLabelTextConverted);
     }
   }
 }
@@ -578,3 +587,33 @@ void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
     break;
   }
 }
+
+void PadHandler::reset_charset_change()
+{
+  lastConvCharSet = -1;
+}
+
+void PadHandler::check_charset_change()
+{
+  /*
+   *  Tomneda: This check is only done to ensure that the charSet had not changed within collecting data in dynamicLabelTextUnConverted
+   *  before the final conversion tu UTF8, UTF16, EbuLatin is done. The final conversions is done at last because it could happen that a
+   *  multi-byte char is transmitted in two different segments and so the beforehand conversion would fail.
+   *  I had this with Ensemble "Oberbayern Süd" (7A) with Service "ALPENWELLE" where "ö" was not shown correctly
+   *  (with two inversed "??" instead) while a segmented UTF8 transmission.
+   */
+
+  if (lastConvCharSet < 0) // first call after reset? only store current value
+  {
+    lastConvCharSet = charSet;
+  }
+  else
+  {
+    if (lastConvCharSet != charSet) // has value change? show this with an error
+    {
+      qCritical("charSet changed from %d to %d", lastConvCharSet, charSet);
+    }
+  }
+}
+
+
