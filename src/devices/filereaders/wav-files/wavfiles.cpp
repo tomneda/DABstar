@@ -38,30 +38,32 @@
 
 #ifdef _WIN32
 #else
+
   #include  <unistd.h>
   #include  <sys/time.h>
+
 #endif
 
 
 #define  __BUFFERSIZE__  8 * 32768
 
-WavFileHandler::WavFileHandler(QString f) :
-  myFrame(nullptr),
-  _I_Buffer(__BUFFERSIZE__)
+WavFileHandler::WavFileHandler(const QString & iFilename)
+  : myFrame(nullptr)
+  , _I_Buffer(__BUFFERSIZE__)
 {
   SF_INFO * sf_info;
 
-  fileName = f;
+  fileName = iFilename;
   setupUi(&myFrame);
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
   sf_info = (SF_INFO *)alloca (sizeof(SF_INFO));
   sf_info->format = 0;
-  filePointer = OpenFileDialog::open_snd_file(f.toUtf8().data(), SFM_READ, sf_info);
+  filePointer = OpenFileDialog::open_snd_file(iFilename.toUtf8().data(), SFM_READ, sf_info);
   if (filePointer == nullptr)
   {
-    const QString val = QString("File '%1' is no valid sound file").arg(val);
+    const QString val = QString("File '%1' is no valid sound file").arg(iFilename);
     throw std::runtime_error(val.toUtf8().data());
   }
   if ((sf_info->samplerate != 2048000) || (sf_info->channels != 2))
@@ -70,7 +72,7 @@ WavFileHandler::WavFileHandler(QString f) :
     const QString val = QString("Sample rate or channel number does not fit");
     throw std::runtime_error(val.toUtf8().data());
   }
-  nameofFile->setText(f);
+  nameofFile->setText(iFilename);
   fileProgress->setValue(0);
   currentTime->display(0);
   int64_t fileLength = sf_seek(filePointer, 0, SEEK_END);

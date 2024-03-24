@@ -49,7 +49,7 @@ class RawFileHandler final : public QObject, public IDeviceHandler, public FileR
 Q_OBJECT
 public:
 
-  explicit RawFileHandler(QString);
+  explicit RawFileHandler(const QString & iFilename);
   ~RawFileHandler() override;
 
   int32_t getSamples(cmplx *, int32_t) override;
@@ -70,9 +70,10 @@ private:
   QFrame myFrame;
   QString fileName;
   RingBuffer<cmplx> _I_Buffer;
-  FILE * filePointer;
-  rawReader * readerTask;
-  std::atomic<bool> running;
+  FILE * filePointer = nullptr;
+  rawReader * readerTask = nullptr;
+  std::atomic<bool> running = false;
+  
 public slots:
   void setProgress(int, float);
 };

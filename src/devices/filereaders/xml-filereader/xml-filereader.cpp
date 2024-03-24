@@ -38,8 +38,10 @@
 
 #ifdef _WIN32
 #else
+
   #include  <unistd.h>
   #include  <sys/time.h>
+
 #endif
 
 #include  "xml-descriptor.h"
@@ -47,30 +49,30 @@
 
 constexpr uint32_t INPUT_FRAMEBUFFERSIZE = 8 * 32768;
 
-XmlFileReader::XmlFileReader(const QString & f) :   
-  myFrame(nullptr),
-  _I_Buffer(INPUT_FRAMEBUFFERSIZE)
+XmlFileReader::XmlFileReader(const QString & iFilename)
+  : Ui_xmlfile_widget(), myFrame(nullptr)
+  , _I_Buffer(INPUT_FRAMEBUFFERSIZE)
 {
-  fileName = f;
+  fileName = iFilename;
 
   setupUi(&myFrame);
 
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
-  theFile = OpenFileDialog::open_file(f, "rb");
+  theFile = OpenFileDialog::open_file(iFilename, "rb");
 
   if (theFile == nullptr)
   {
-    const QString val = QString("Cannot open file '%1' (consider avoiding 'umlauts')").arg(f);
+    const QString val = QString("Cannot open file '%1' (consider avoiding 'umlauts')").arg(iFilename);
     throw std::runtime_error(val.toUtf8().data());
   }
 
   bool ok = false;
-  filenameLabel->setText(f);
+  filenameLabel->setText(iFilename);
   theDescriptor = new XmlDescriptor(theFile, &ok);
   if (!ok)
   {
-    const QString val = QString("'%1' is probably not a xml file").arg(f);
+    const QString val = QString("'%1' is probably not a xml file").arg(iFilename);
     throw std::runtime_error(val.toUtf8().data());
   }
 

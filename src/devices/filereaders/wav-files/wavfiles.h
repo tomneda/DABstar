@@ -47,7 +47,7 @@ class WavFileHandler final : public QObject, public IDeviceHandler, public FileR
 {
 Q_OBJECT
 public:
-  explicit WavFileHandler(QString);
+  explicit WavFileHandler(const QString & iFilename);
   ~WavFileHandler() override;
 
   int32_t getSamples(cmplx *, int32_t) override;
@@ -64,15 +64,15 @@ public:
   int16_t bitDepth() override;
   QString deviceName() override;
 
-
 private:
   QFrame myFrame;
   QString fileName;
   RingBuffer<cmplx> _I_Buffer;
-  int32_t bufferSize;
-  SNDFILE * filePointer;
-  WavReader * readerTask;
-  std::atomic<bool> running;
+  int32_t bufferSize = 0;
+  SNDFILE * filePointer = nullptr;
+  WavReader * readerTask = nullptr;
+  std::atomic<bool> running = false;
+
 public slots:
   void setProgress(int, float);
 };

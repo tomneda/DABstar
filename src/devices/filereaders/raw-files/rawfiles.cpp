@@ -48,21 +48,21 @@
 
 #define  INPUT_FRAMEBUFFERSIZE  8 * 32768
 
-RawFileHandler::RawFileHandler(QString f) :
-  myFrame(nullptr),
-  _I_Buffer(INPUT_FRAMEBUFFERSIZE)
+RawFileHandler::RawFileHandler(const QString & iFilename)
+  : myFrame(nullptr)
+  , _I_Buffer(INPUT_FRAMEBUFFERSIZE)
 {
-  fileName = f;
+  fileName = iFilename;
   setupUi(&myFrame);
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
-  filePointer = OpenFileDialog::open_file(f, "rb");
+  filePointer = OpenFileDialog::open_file(iFilename, "rb");
   if (filePointer == nullptr)
   {
-    const QString val = QString("Cannot open file '%1'").arg(f);
+    const QString val = QString("Cannot open file '%1'").arg(iFilename);
     throw std::runtime_error(val.toUtf8().data());
   }
-  nameofFile->setText(f);
+  nameofFile->setText(iFilename);
   fseek(filePointer, 0, SEEK_END);
   int64_t fileLength = ftell(filePointer);
   totalTime->display(QString("%1").arg((float)fileLength / (2048000 * 2), 0, 'f', 1));

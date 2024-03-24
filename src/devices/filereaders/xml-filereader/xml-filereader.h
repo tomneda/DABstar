@@ -67,13 +67,13 @@ public:
 
 private:
   QFrame myFrame;
-  std::atomic<bool> running;
+  std::atomic<bool> running = false;
   QString fileName;
   RingBuffer<cmplx> _I_Buffer;
-  FILE * theFile;
-  uint32_t filePointer;
-  XmlDescriptor * theDescriptor;
-  XmlReader * theReader;
+  FILE * theFile = nullptr;
+  uint32_t filePointer = 0;
+  XmlDescriptor * theDescriptor = nullptr;
+  XmlReader * theReader = nullptr;
   
 public slots:
   void slot_set_progress(int, int);
