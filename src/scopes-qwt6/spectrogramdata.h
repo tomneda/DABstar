@@ -37,6 +37,10 @@
 
 #include  <qwt_raster_data.h>
 
+#if !defined(QWT_VERSION)
+  error "QWT_VERSION not defined"
+#endif
+
 class SpectrogramData : public QwtRasterData
 {
 public:
@@ -46,8 +50,10 @@ public:
   const double mHeight;         // raster height
   const int32_t mDataWidth;     // width of matrix
   const int32_t mDataHeight;    // for now == raster height
+#if ((QWT_VERSION >> 8) >= 0x0602)
   double mzMin = 0.0;
   double mzMax = 1.0;
+#endif
 
   SpectrogramData(const double * ipData, int32_t iLeft, int32_t iWidth, int32_t iHeight, int32_t iDatawidth);
   ~SpectrogramData() override = default;
@@ -56,8 +62,12 @@ public:
 
   void initRaster(const QRectF & x, const QSize & raster) override;
 
-  [[nodiscard]] QwtInterval interval(Qt::Axis x) const /*override*/;
-  [[nodiscard]] double value(double iX, double iY) const override;
+  double value(double iX, double iY) const override;
+
+  // unfortunately the older Qwt interface provides no override-able virtual interface interval() -> do it another way
+#if ((QWT_VERSION >> 8) >= 0x0602)
+  QwtInterval interval(Qt::Axis x) const override;
+#endif
 };
 
 #endif

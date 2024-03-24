@@ -19,6 +19,10 @@ SpectrogramData::SpectrogramData(const double * ipData, int32_t iLeft, int32_t i
   mDataWidth(std::abs(iDatawidth)),
   mDataHeight(std::abs(iHeight))
 {
+#if ((QWT_VERSION >> 8) < 0x0602)
+  setInterval(Qt::XAxis, QwtInterval(iLeft, iLeft + iWidth));
+  setInterval(Qt::YAxis, QwtInterval(0, iHeight));
+#endif
   assert(mWidth != 0);
   assert(mHeight != 0);
 }
@@ -29,6 +33,7 @@ void SpectrogramData::initRaster(const QRectF & x, const QSize & raster)
   (void)raster;
 }
 
+#if ((QWT_VERSION >> 8) >= 0x0602)
 QwtInterval SpectrogramData::interval(Qt::Axis x) const
 {
   if (x == Qt::XAxis)
@@ -43,6 +48,7 @@ QwtInterval SpectrogramData::interval(Qt::Axis x) const
 
   return {mzMin, mzMax};
 }
+#endif
 
 double SpectrogramData::value(const double iX, const double iY) const
 {
@@ -59,6 +65,10 @@ double SpectrogramData::value(const double iX, const double iY) const
 
 void SpectrogramData::set_min_max_z_value(const double izMin, const double izMax)
 {
+#if ((QWT_VERSION >> 8) < 0x0602)
+  setInterval(Qt::ZAxis, QwtInterval(izMin, izMax));
+#else
   mzMin = izMin;
   mzMax = izMax;
+#endif
 }

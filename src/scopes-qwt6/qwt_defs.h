@@ -22,7 +22,7 @@
 #include <qwt.h>
 
 #ifdef QWT_VERSION
-  #if QWT_VERSION < 0x060200
+  #if (QWT_VERSION >> 8) < 0x0602
     using TQwtData = double; // the older QWT version provides no (assuming faster) sample stream with float but only double typed
   #else
     using TQwtData = float;
