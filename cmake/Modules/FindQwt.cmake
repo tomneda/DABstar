@@ -43,8 +43,10 @@ find_library(QWT_LIBRARIES
 )
 
 # extract version number out from file qwt_global.h
-file(STRINGS "${QWT_INCLUDE_DIRS}/qwt_global.h" QWT_STRING_VERSION REGEX "QWT_VERSION_STR")
-string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+" QWT_VERSION ${QWT_STRING_VERSION})
+if (QWT_INCLUDE_DIRS)
+  file(STRINGS "${QWT_INCLUDE_DIRS}/qwt_global.h" QWT_STRING_VERSION REGEX "QWT_VERSION_STR")
+  string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+" QWT_VERSION ${QWT_STRING_VERSION})
+endif ()
 
 # do some outputs to the console
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeFunctions.cmake)

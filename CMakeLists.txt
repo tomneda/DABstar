@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
+# set CMAKE_BUILD_TYPE to "Release" if not defined (like call from command line)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Set build type to Release if not specified" FORCE)
+endif()
+
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Modules/CMakeFunctions.cmake)
 
 # First, we need to include vcpkg's auto-loader script, it sets up CMAKE_TOOLCHAIN_FILE
@@ -43,10 +48,16 @@ endif ()
 
 print(PROJECT_NAME)
 print(PROJECT_VERSION)
+print(CMAKE_BUILD_TYPE)
 
 add_definitions(-DAPP_NAME="${objectName}")
 add_definitions(-DPRJ_NAME="${PROJECT_NAME}")
 add_definitions(-DPRJ_VERS="${PROJECT_VERSION}")
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    # regarding using QWT < 6.2.0 (6.1.4) to avoid many deprecated massages (only suppressed on release versions)
+    add_definitions(-DQT_NO_DEPRECATED_WARNINGS)
+endif()
 
 # choosing this optionally is necessary as the repository could be only accessed as read-only while appimage generation
 option(CONV_IN_FILES "Convert .in-files" ON)
@@ -204,17 +215,8 @@ endif ()
 
 print(CMAKE_SOURCE_DIR)
 print(CMAKE_CURRENT_BINARY_DIR)
-print(QT5Widgets_INCLUDES)
-print(QT_QTCORE_INCLUDE_DIR)
-print(QT_QTCORE_INCLUDE_DIR)
-print(QT_QTGUI_INCLUDE_DIR)
 
 include_directories(
-        #${CMAKE_SOURCE_DIR}
-        #${CMAKE_CURRENT_BINARY_DIR}
-        #${QT5Widgets_INCLUDES}
-        #${QT_QTCORE_INCLUDE_DIR}
-        #${QT_QTGUI_INCLUDE_DIR}
         src
         src/main
         src/ofdm

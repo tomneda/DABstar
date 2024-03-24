@@ -50,7 +50,7 @@ macro(search_for_library preFixName moduleName)
   list(APPEND extraLibs ${${preFixName}_LIBRARIES})
   #list(APPEND extraLibs ${${preFixName}_LIBRARY})
   include_directories(${${preFixName}_INCLUDE_DIRS})
-  print_all_vars(${preFixName})
+  #print_all_vars(${preFixName})
 endmacro()
 
 

@@ -177,15 +177,13 @@ That the location, distance and direction to the transmitter can be shown, do fo
 
 ## Installing on Linux
 
-This is what I needed to install DABstar on a fresh Ubuntu 20.04                     
+This is what I needed to install DABstar on a fresh Ubuntu 20.04 / 22.04:
 ```
 sudo apt-get update
 sudo apt-get install git
 sudo apt-get install cmake
-sudo apt-get install qt5-qmake
 sudo apt-get install build-essential
 sudo apt-get install g++
-sudo apt-get install qt5-default
 sudo apt-get install libsndfile1-dev
 sudo apt-get install libfftw3-dev
 sudo apt-get install portaudio19-dev
@@ -200,9 +198,20 @@ or same in fewer lines:
 
 ```
 sudo apt-get update
-sudo apt-get install git cmake qt5-qmake build-essential g++ qt5-default libsndfile1-dev libfftw3-dev portaudio19-dev zlib1g-dev libsamplerate0-dev libfaad-dev libusb-1.0-0-dev
+sudo apt-get install git cmake build-essential g++ libsndfile1-dev libfftw3-dev portaudio19-dev zlib1g-dev libsamplerate0-dev libfaad-dev libusb-1.0-0-dev
+```
+
+For Qt5 try one of following (Ubuntu 22.04 needs the second one): 
+```
+sudo apt-get install qt5-default
+sudo apt-get install qtbase5-dev
+```
+
+For QWT try this (whis will likely install Qwt 6.1.4):
+```
 sudo apt-get install libqwt-qt5-dev
 ```
+
 If you have troubles with the last QWT package `libqwt-qt5-dev` try to build QWT for yourself. See [Link](#qwt-installation--building).
 
 Then for building DABstar do:
@@ -229,15 +238,12 @@ Finally, in the build folder you can find the program file which you can start w
 ./dabstar
 ```
 
-**Attention:** you can try to install the software with 
-
+You could try to install the software within your system with 
 ```
 sudo make install
 sudo ldconfig
 ```
-
-but I had problems running this. Maybe because I used a newer QT version than provided by Ubuntu. 
-If you have also problems with the installed version you can undo the installation with 
+To uninstall DABstar again, do this:
 ```
 sudo make uninstall
 ```
@@ -279,7 +285,7 @@ https://qwt.sourceforge.io/qwtinstall.html
                                                 
 ## Licences
 
-Rights of Qt-DAB, Qt, FFTW, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged.
+Rights of Qt-DAB, Qt, Qwt, FFTW, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged.
 
 Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.
 
@@ -292,4 +298,3 @@ As I use some icons, I get them from [FlatIcon](https://www.flaticon.com/). The 
 - <a href="https://www.flaticon.com/free-icons/spectrum" title="spectrum icons">Spectrum icons created by JunGSa - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/spectrum" title="spectrum icons">Spectrum icons created by Eucalyp - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/target" title="target icons">Target icons created by Pixel perfect - Flaticon</a>
-
