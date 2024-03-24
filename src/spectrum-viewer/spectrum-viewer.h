@@ -60,6 +60,7 @@
 #include  "ringbuffer.h"
 #include  "fft-handler.h"
 #include  "custom_frame.h"
+#include  "qwt_defs.h"
 
 constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
@@ -109,7 +110,7 @@ private:
   RingBuffer<float> * const mpCarrBuffer;
   RingBuffer<float> * const mpCorrelationBuffer;
   std::vector<cmplx> mIqValuesVec;
-  std::vector<float> mCarrValuesVec;
+  std::vector<TQwtData> mCarrValuesVec;
   uint32_t mThermoPeakLevelConfigured = 0;
   bool mThermoModQualConfigured = false;
   SpecViewLimits<double> mSpecViewLimits;
