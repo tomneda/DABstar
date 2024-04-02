@@ -62,7 +62,7 @@ public:
   bool check_clipped_and_clear();
   void set_dc_removal(bool iRemoveDC);
 
-  [[nodiscard]] inline cmplx get_dc_offset() const { return { dcReal, dcImag }; }
+  [[nodiscard]] inline cmplx get_dc_offset() const { return { meanI, meanQ }; }
 
 private:
   static constexpr uint16_t DUMP_SIZE = 4096;
@@ -88,8 +88,11 @@ private:
   std::atomic<SNDFILE *> dumpfilePointer;
   bool clippingOccurred = false;
   float peakLevel = -1.0e6;
-  float dcReal = 0.0f;
-  float dcImag = 0.0f;
+  float meanI = 0.0f;
+  float meanQ = 0.0f;
+  float meanII = 1.0f;
+  float meanQQ = 1.0f;
+  float meanIQ = 0.0f;
   bool dcRemovalActive = false;
 
   void _dump_sample_to_file(const cmplx & v);

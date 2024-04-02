@@ -118,12 +118,24 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
     // Perform DC removal if wanted
     if (dcRemovalActive)
     {
-      const float v_r = real(v);
-      const float v_i = imag(v);
+      const float v_i = real(v);
+      const float v_q = imag(v);
       constexpr float ALPHA = 1.0f / INPUT_RATE / 1.00f /*s*/;
-      mean_filter(dcReal, v_r, ALPHA);
-      mean_filter(dcImag, v_i, ALPHA);
-      v = cmplx(v_r - dcReal, v_i - dcImag);
+      mean_filter(meanI, v_i, ALPHA);
+      mean_filter(meanQ, v_q, ALPHA);
+#if 0
+      const float x_i = v_i - meanI;
+      const float x_q = v_q - meanQ;
+      mean_filter(meanII, x_i * x_i, ALPHA);
+      mean_filter(meanIQ, x_i * x_q, ALPHA);
+      const float phi = meanIQ / meanII;
+      const float x_q_corr = x_q - phi * x_i;
+      mean_filter(meanQQ, x_q_corr * x_q_corr, ALPHA);
+      const float gainQ = std::sqrt(meanII / meanQQ);
+      v = cmplx(x_i, x_q_corr * gainQ);
+#else
+      v = cmplx(v_i - meanI, v_q - meanQ);
+#endif
     }
 
     // The mixing has no effect on the absolute level detection, so do it beforehand
@@ -202,7 +214,7 @@ float SampleReader::get_linear_peak_level_and_clear()
 
 void SampleReader::set_dc_removal(bool iRemoveDC)
 {
-  dcReal = dcImag = 0.0f;
+  meanI = meanQ = 0.0f;
   dcRemovalActive = iRemoveDC;
 }
 
