@@ -207,7 +207,7 @@ sudo apt-get install qt5-default
 sudo apt-get install qtbase5-dev
 ```
 
-For QWT try this (whis will likely install Qwt 6.1.4):
+For QWT try this (this will likely install Qwt 6.1.4):
 ```
 sudo apt-get install libqwt-qt5-dev
 ```
