@@ -97,10 +97,7 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
 
   if (dumpfilePointer.load() != nullptr)
   {
-    for (int32_t i = 0; i < iNoSamples; i++)
-    {
-      _dump_sample_to_file(*buffer.data());
-    }
+    _dump_samples_to_file(iNoSamples, buffer.data());
   }
 
   //	OK, we have samples!!
@@ -176,16 +173,21 @@ void SampleReader::_wait_for_sample_buffer_filled(int32_t n)
   }
 }
 
-void SampleReader::_dump_sample_to_file(const cmplx & v)
+void SampleReader::_dump_samples_to_file(const int32_t iNoSamples, const cmplx * const ipV)
 {
-  dumpBuffer[2 * dumpIndex + 0] = fixround<int16_t>(real(v) * (float)dumpScale);
-  dumpBuffer[2 * dumpIndex + 1] = fixround<int16_t>(imag(v) * (float)dumpScale);
+	const float scaleFactor = (INT16_MAX >> 2) / sLevel; // scale to 14 bit mean dynamic range
 
-  if (++dumpIndex >= DUMP_SIZE / 2)
-  {
-    sf_writef_short(dumpfilePointer.load(), dumpBuffer.data(), dumpIndex);
-    dumpIndex = 0;
-  }
+	for (int32_t i = 0; i < iNoSamples; i++)
+	{
+		dumpBuffer[2 * dumpIndex + 0] = (int16_t)(real(ipV[i]) * scaleFactor);
+		dumpBuffer[2 * dumpIndex + 1] = (int16_t)(imag(ipV[i]) * scaleFactor);
+
+		if (++dumpIndex >= DUMP_SIZE / 2)
+		{
+			sf_writef_short(dumpfilePointer.load(), dumpBuffer.data(), dumpIndex);
+			dumpIndex = 0;
+		}
+	}
 }
 
 void SampleReader::startDumping(SNDFILE * f)
