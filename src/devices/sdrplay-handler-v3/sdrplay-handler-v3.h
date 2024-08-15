@@ -128,7 +128,7 @@ public:
   float apiVersion;
   QString serial;
   bool has_antennaSelect;
-  QString deviceModel;
+  const QString deviceModel = "SDRplay";
   int GRdBValue;
   int lnaState;
   int ppmValue;

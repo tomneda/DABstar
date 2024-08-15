@@ -30,7 +30,7 @@
  */
 #include  "sample-reader.h"
 #include  "radio.h"
-#include  <time.h>
+#include  <ctime>
 
 static inline int16_t value_for_bit_pos(int16_t b)
 {
