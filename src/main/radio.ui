@@ -22,9 +22,19 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLabel" name="copyrightLabel">
+        <widget class="QLabel" name="lblCopyrightIcon">
          <property name="text">
-          <string>©</string>
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="../../resources.qrc">:/res/icons/copyright24.png</pixmap>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblVersion">
+         <property name="text">
+          <string>Vx.x.x</string>
          </property>
         </widget>
        </item>

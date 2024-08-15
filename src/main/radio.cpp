@@ -294,9 +294,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   connect(mpTechDataWidget, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
-  copyrightLabel->setText(QString("<html><body><img src='qrc:/res/icons/copyright24.png'/> V" + mVersionStr + "</body></html>"));
-  copyrightLabel->setToolTip(get_copyright_text());
-  copyrightLabel->setOpenExternalLinks(true);
+  lblVersion->setText(QString("V" + mVersionStr));
+	lblCopyrightIcon->setToolTip(get_copyright_text());
+	lblCopyrightIcon->setOpenExternalLinks(true);
 
   QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
   mChannel.tiiFile = false;
