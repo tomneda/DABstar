@@ -2,7 +2,7 @@
 
 ---
 
-![screenshot.png](res/screenshot.png)
+![screenshot.png](res/for_readme/screenshot.png)
 (Picture from V2.2.0)
 
 ## Table of Content
@@ -90,9 +90,9 @@ for a more detailed description of the changes.
   - Show whether EPG (Electronic Program Guide) data are available
   - Show whether SBR (Spectrum Band Replication) mode is active
   - Show whether PS (Parameter Stereo) mode is active
-  - Show whether an announcement is currently made. 
+  - Show whether an announcement is currently made.
 
-![](res/mainwidget.png)
+![](res/for_readme/mainwidget.png)
 
 (move over the status elements like **SBR** or **PS** to get tooltip information)
 

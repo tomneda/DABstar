@@ -3443,7 +3443,8 @@ void RadioInterface::slot_handle_transmitter_tags(int /*d*/)
 void RadioInterface::show_pause_slide()
 {
   QPixmap p;
-  if (p.load(":res/logo/dabstar320x240.png", "png"))
+	const char * const picFile = ((rand() & 1) != 0 ? ":res/logo/DABLogoInvSmall.png" : ":res/logo/DABstar320x240.png");
+	if (p.load(picFile, "png"))
   {
     write_picture(p);
   }

@@ -1,8 +1,8 @@
 <RCC>
   <qresource prefix="/">
-    <file>res/logo/dabstar.png</file>
-    <file>res/logo/dabstar320x240.png</file>
-    <file>res/DABLogoInvSmall.png</file>
+    <file>res/logo/DABstar256x256.png</file>
+    <file>res/logo/DABstar320x240.png</file>
+    <file>res/logo/DABLogoInvSmall.png</file>
     <file>res/icons/muted24.png</file>
     <file>res/icons/unmuted24.png</file>
     <file>res/icons/upwht24.png</file>
