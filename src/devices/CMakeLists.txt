@@ -5,9 +5,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Xml REQUIRED)
+find_package(Qt6Core REQUIRED)
+find_package(Qt6Widgets REQUIRED)
+find_package(Qt6Xml REQUIRED)
 
 if (SDRPLAY_V2)
     set(${devicesLibName}_UIS
@@ -305,7 +305,7 @@ if (UHD)
 endif ()
 
 if (RTL_TCP)
-    find_package(Qt5Network REQUIRED)
+    find_package(Qt6Network REQUIRED)
     set(${devicesLibName}_UIS
             ${${devicesLibName}_UIS}
             rtl_tcp/rtl_tcp-widget.ui
@@ -318,7 +318,7 @@ if (RTL_TCP)
 
     include_directories(
             rtl_tcp
-            ${Qt5Network_INCLUDE_DIRS}
+            ${Qt6Network_INCLUDE_DIRS}
     )
 
     set($(devicesLibName)_HDRS
@@ -331,7 +331,7 @@ if (RTL_TCP)
             rtl_tcp/rtl_tcp_client.cpp
     )
 
-    set(RTLTCP_lib Qt5::Network)
+    set(RTLTCP_lib Qt6::Network)
     add_definitions(-DHAVE_RTL_TCP)
 endif (RTL_TCP)
 
@@ -384,9 +384,9 @@ add_library(${devicesLibName} STATIC ${${devicesLibName}_SRCS})
 
 target_link_libraries(${devicesLibName}
         PRIVATE
-        Qt5::Widgets
-        Qt5::Xml
-        Qt5::Network
+        Qt6::Widgets
+        Qt6::Xml
+        Qt6::Network
         ${extraLibs}
 )
 

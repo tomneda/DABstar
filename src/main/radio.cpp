@@ -3695,7 +3695,7 @@ void RadioInterface::_add_status_label_elem(StatusInfoElem<T> & ioElem, const ui
 
   QFont font = ioElem.pLbl->font();
   font.setBold(true);
-  font.setWeight(75);
+  // font.setWeight(QFont::Thin);
   ioElem.pLbl->setFont(font);
 
   layoutStatus->addWidget(ioElem.pLbl);
