@@ -81,9 +81,9 @@ int main(int argc, char ** argv)
   auto dabSettings(std::make_unique<QSettings>(initFileName, QSettings::IniFormat));
   SettingHelper::get_instance(dabSettings.get()); // create instance of setting helper
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-  QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+// #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+//   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+// #endif
 
   QApplication a(argc, argv);
 

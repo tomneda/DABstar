@@ -234,7 +234,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
 #elif QT_AUDIO
-  // soundOut = new QtAudio();
+  mpSoundOut = new QtAudio();
   // theTechWindow->hide();
 #else
   //	just sound out

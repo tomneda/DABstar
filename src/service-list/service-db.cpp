@@ -179,7 +179,7 @@ QAbstractItemModel * ServiceDB::create_model()
 
   if (query.exec())
   {
-    model->setQuery(query);
+    model->setQuery(std::move(query));
   }
   else
   {
