@@ -74,7 +74,7 @@ QString toQStringUsingCharset(const char * buffer, CharacterSet charset, int siz
 
   switch (charset)
   {
-  case UnicodeUcs2: return QString::fromUtf16((const ushort *)buffer, length);
+  case UnicodeUcs2: return QString::fromUtf16(reinterpret_cast<const char16_t*>(buffer), length);
   case UnicodeUtf8: return QString::fromUtf8(buffer, length);
   case EbuLatin:
   default:
