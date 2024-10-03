@@ -207,6 +207,7 @@ private:
   RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
   RingBuffer<uint8_t> mDataBuffer{32768};
   RingBuffer<int16_t> mAudioBuffer{8 * 32768};
+  std::vector<float> mAudioOutBuffer;
   SpectrumViewer mSpectrumViewer;
   BandHandler mBandHandler;
   dlCache mDlCache{10};
@@ -238,7 +239,7 @@ private:
   DabProcessor * mpDabProcessor = nullptr;
   //AudioBase * mpSoundOut = nullptr;
   converter_48000 mAudioSampRateConv{};
-  audioPlayer		*mpSoundOut = nullptr;
+  audioPlayer	* mpSoundOut = nullptr;
 
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;

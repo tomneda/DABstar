@@ -81,8 +81,8 @@ void AudioBase::audioOut(int16_t * V, int32_t amount, int32_t rate)
 //	amount gives number of pairs
 void AudioBase::audioOut_16000(int16_t * V, int32_t amount)
 {
-  cmplx * outputBuffer = make_vla(cmplx, converter_16.getOutputsize());
-  float * buffer = make_vla(float, 2 * converter_16.getOutputsize());
+  cmplx * outputBuffer = make_vla(cmplx, converter_16.getMaxOutputsize());
+  float * buffer = make_vla(float, 2 * converter_16.getMaxOutputsize());
   int16_t i, j;
   int32_t result;
 
@@ -105,8 +105,8 @@ void AudioBase::audioOut_16000(int16_t * V, int32_t amount)
 //	amount gives number of pairs
 void AudioBase::audioOut_24000(int16_t * V, int32_t amount)
 {
-  cmplx * outputBuffer = make_vla(cmplx, converter_24.getOutputsize());
-  float * buffer = make_vla(float, 2 * converter_24.getOutputsize());
+  cmplx * outputBuffer = make_vla(cmplx, converter_24.getMaxOutputsize());
+  float * buffer = make_vla(float, 2 * converter_24.getMaxOutputsize());
   int16_t i, j;
   int32_t result;
 
@@ -129,8 +129,8 @@ void AudioBase::audioOut_24000(int16_t * V, int32_t amount)
 //	amount is number of pairs
 void AudioBase::audioOut_32000(int16_t * V, int32_t amount)
 {
-  cmplx * outputBuffer = make_vla(cmplx, converter_32.getOutputsize());
-  float * buffer = make_vla(float, 2 * converter_32.getOutputsize());
+  cmplx * outputBuffer = make_vla(cmplx, converter_32.getMaxOutputsize());
+  float * buffer = make_vla(float, 2 * converter_32.getMaxOutputsize());
   int32_t i, j;
   int32_t result;
 

@@ -1,4 +1,13 @@
 /*
+* This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2011 .. 2023
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -25,19 +34,10 @@
 #include	<cstdio>
 
 converter_48000::converter_48000()
-  : mapper_16(16000, 48000, 2 * 1600)
-  , mapper_24(24000, 48000, 2 * 2400)
-  , mapper_32(32000, 48000, 2 * 3200)
 {
-  this->peakLevelCurSampleCnt = 0;
-  repetitionCounter = 8;
-  this->peakLevelSampleMax = 48000 / repetitionCounter;
-  this->absPeakLeft = 0.0f;
-  this->absPeakRight = 0.0f;
 }
 
-
-int converter_48000::convert(std::complex<int16_t> * V, int32_t amount, int32_t rate, std::vector<float> & outB)
+int converter_48000::convert(const cmplx16 * V, int32_t amount, int32_t rate, std::vector<float> & outB)
 {
   switch (rate)
   {
@@ -45,7 +45,7 @@ int converter_48000::convert(std::complex<int16_t> * V, int32_t amount, int32_t 
   case 24000: return convert_24000(V, amount, outB);
   case 32000: return convert_32000(V, amount, outB);
   case 48000: return convert_48000(V, amount, outB);
-  default: qFatal("unsupported rate %d", rate);
+  default: qWarning("unsupported rate %d", rate);
   }
 }
 
@@ -63,11 +63,11 @@ void converter_48000::stop_audioDump()
 
 //	scale up from 16 -> 48
 //	amount gives number of pairs
-int converter_48000::convert_16000(std::complex<int16_t> * V, int amount, std::vector<float> & out)
+int converter_48000::convert_16000(const cmplx16 * V, int amount, std::vector<float> & out)
 {
-  auto * const buffer = make_vla(cmplx, mapper_16.getOutputsize());
+  auto * const buffer = make_vla(cmplx, mapper_16.getMaxOutputsize());
   int teller = 0;
-  out.resize(0);
+  out.resize(mapper_16.getMaxOutputsize());
 
   for (int i = 0; i < amount; i++)
   {
@@ -84,62 +84,71 @@ int converter_48000::convert_16000(std::complex<int16_t> * V, int amount, std::v
       }
     }
   }
+
+  assert(teller <= (int)out.size());
+  out.resize(teller); // this does not move the memory allocation
   return teller;
 }
 
 //	scale up from 24000 -> 48000
 //	amount gives number of pairs
-int converter_48000::convert_24000(std::complex<int16_t> * V, int amount, std::vector<float> & out)
+int converter_48000::convert_24000(const cmplx16 * V, int amount, std::vector<float> & out)
 {
-  auto * const buffer = make_vla(cmplx, mapper_24.getOutputsize());
-
+  auto * const buffer = make_vla(cmplx, mapper_24.getMaxOutputsize());
   int teller = 0;
 
-  out.resize(2 * mapper_24.getOutputsize());
+  out.resize(2 * mapper_24.getMaxOutputsize());
+
   for (int i = 0; i < amount; i++)
   {
-    int result;
-    if (mapper_24.convert(cmplx(real(V[i]) / 32767.0f, imag(V[i]) / 32767.0f), buffer, &result))
+    int amountResult;
+    if (mapper_24.convert(cmplx(real(V[i]) / 32767.0f, imag(V[i]) / 32767.0f), buffer, &amountResult))
     {
-      dump(buffer, result);
+      dump(buffer, amountResult);
 
-      for (int j = 0; j < result; j++)
+      for (int j = 0; j < amountResult; j++)
       {
         out[teller++] = real(buffer[j]);
         out[teller++] = imag(buffer[j]);
       }
     }
   }
+
+  assert(teller <= (int)out.size());
+  out.resize(teller); // this does not move the memory allocation
   return teller;
 }
 
 //	scale up from 32000 -> 48000
 //	amount is number of pairs
-int converter_48000::convert_32000(std::complex<int16_t> * V, int amount, std::vector<float> & out)
+int converter_48000::convert_32000(const cmplx16 * V, int amount, std::vector<float> & out)
 {
-  auto * const buffer = make_vla(cmplx, mapper_32.getOutputsize());
+  auto * const buffer = make_vla(cmplx, mapper_32.getMaxOutputsize());
   int teller = 0;
 
-  out.resize(2 * mapper_32.getOutputsize());
+  out.resize(2 * mapper_32.getMaxOutputsize());
 
   for (int i = 0; i < amount; i++)
   {
-    int result;
-    if (mapper_32.convert(cmplx(real(V[i]) / 32767.0f, imag(V[i]) / 32767.0f), buffer, &result))
+    int amountResult;
+    if (mapper_32.convert(cmplx(real(V[i]) / 32767.0f, imag(V[i]) / 32767.0f), buffer, &amountResult))
     {
-      dump(buffer, result);
+      dump(buffer, amountResult);
 
-      for (int j = 0; j < result; j++)
+      for (int j = 0; j < amountResult; j++)
       {
         out[teller++] = real(buffer[j]);
         out[teller++] = imag(buffer[j]);
       }
     }
   }
+
+  assert(teller <= (int)out.size());
+  out.resize(teller); // this does not move the memory allocation
   return teller;
 }
 
-int converter_48000::convert_48000(std::complex<int16_t> * V, int amount, std::vector<float> & out)
+int converter_48000::convert_48000(const cmplx16 * V, int amount, std::vector<float> & out)
 {
   auto * const buffer = make_vla(cmplx, amount);
   out.resize(2 * amount);
@@ -150,8 +159,8 @@ int converter_48000::convert_48000(std::complex<int16_t> * V, int amount, std::v
     out[2 * i + 0] = std::real(buffer[i]);
     out[2 * i + 1] = std::imag(buffer[i]);
   }
-  // dump(V, amount);
-  // eval(buffer, amount);
+
+  dump(V, amount);
   return 2 * amount;
 }
 
@@ -166,16 +175,17 @@ void converter_48000::dump(const cmplx * buffer, int nrSamples)
 
   for (int i = 0; i < nrSamples; i++)
   {
-    lBuf[2 * i + 0] = real(buffer[i]) * 32768;
-    lBuf[2 * i + 1] = imag(buffer[i]) * 32768;
+    lBuf[2 * i + 0] = (int16_t)(real(buffer[i]) * 32767.0f);
+    lBuf[2 * i + 1] = (int16_t)(imag(buffer[i]) * 32767.0f);
   }
+
   locker.lock();
   mWavWriter.write(lBuf, nrSamples);
   locker.unlock();
 }
 
 
-void converter_48000::dump(const std::complex<int16_t> * buffer, int nrSamples)
+void converter_48000::dump(const cmplx16 * buffer, int nrSamples)
 {
   if (!mWavWriter.isActive())
   {
@@ -186,7 +196,7 @@ void converter_48000::dump(const std::complex<int16_t> * buffer, int nrSamples)
 
   for (int i = 0; i < nrSamples; i++)
   {
-    lBuf[2 * i] = real(buffer[i]);
+    lBuf[2 * i + 0] = real(buffer[i]);
     lBuf[2 * i + 1] = imag(buffer[i]);
   }
 
@@ -194,34 +204,3 @@ void converter_48000::dump(const std::complex<int16_t> * buffer, int nrSamples)
   mWavWriter.write(lBuf, nrSamples);
   locker.unlock();
 }
-
-// void converter_48000::eval(cmplx * buffer, int amount)
-// {
-//   for (int i = 0; i < amount; i++)
-//   {
-//     evaluatePeakLevel(buffer[i]);
-//   }
-// }
-//
-// void converter_48000::evaluatePeakLevel(const cmplx s)
-// {
-//   const float absLeft = std::abs(real(s));
-//   const float absRight = std::abs(imag(s));
-//
-//   if (absLeft > absPeakLeft)
-//     absPeakLeft = absLeft;
-//   if (absRight > absPeakRight)
-//     absPeakRight = absRight;
-//
-//   peakLevelCurSampleCnt++;
-//   if (peakLevelCurSampleCnt >= peakLevelSampleMax)
-//   {
-//     peakLevelCurSampleCnt = 0;
-//
-//     float leftDb = (absPeakLeft > 0.0f ? 20.0f * std::log10(absPeakLeft) : -40.0f);
-//     float rightDb = (absPeakRight > 0.0f ? 20.0f * std::log10(absPeakRight) : -40.0f);
-//     emit showPeakLevel(leftDb, rightDb);
-//     absPeakLeft = 0.0f;
-//     absPeakRight = 0.0f;
-//   }
-// }

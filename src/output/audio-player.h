@@ -30,7 +30,7 @@ class audioPlayer : public QObject
 
 public:
   audioPlayer();
-  ~audioPlayer();
+  virtual ~audioPlayer();
   virtual void audioOutput(float *, int);
   virtual void stop();
   virtual void restart();

@@ -40,7 +40,7 @@
 
 
 using cmplx = std::complex<float>;
-
+using cmplx16 = std::complex<int16_t>;
 
 #ifdef _WIN32
 inline int gettimeofday(struct timeval* tp, struct timezone* tzp)

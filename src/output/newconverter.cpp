@@ -64,7 +64,7 @@ bool newConverter::convert(cmplx v, cmplx * out, int32_t * amount)
   int32_t framesOut;
   int res;
 
-  inBuffer[2 * inp] = real(v);
+  inBuffer[2 * inp + 0] = real(v);
   inBuffer[2 * inp + 1] = imag(v);
   inp++;
   if (inp < inputLimit)
@@ -90,8 +90,8 @@ bool newConverter::convert(cmplx v, cmplx * out, int32_t * amount)
   return true;
 }
 
-int32_t newConverter::getOutputsize()
+int32_t newConverter::getMaxOutputsize()
 {
-  return outputLimit;
+  return outputLimit + 10; // give a bit more reserve for it for output buffer size
 }
 

@@ -304,7 +304,7 @@ set(${objectName}_HDRS
         src/backend/data/mot/mot-dir.h
         src/backend/data/data-processor.h
         src/output/fir-filters.h
-        src/output/audio-base.h
+        # src/output/audio-base.h
         src/output/audio-player.h
         src/output/newconverter.h
         src/support/ringbuffer.h
@@ -395,7 +395,7 @@ set(${objectName}_SRCS
         src/backend/data/mot/mot-object.cpp
         src/backend/data/mot/mot-dir.cpp
         src/backend/data/data-processor.cpp
-        src/output/audio-base.cpp
+        # src/output/audio-base.cpp
         src/output/audio-player.cpp
         src/output/newconverter.cpp
         src/output/fir-filters.cpp

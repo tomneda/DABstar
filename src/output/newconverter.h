@@ -57,7 +57,7 @@ public:
   ~newConverter();
 
   bool convert(cmplx v, cmplx * out, int32_t * amount);
-  int32_t getOutputsize();
+  int32_t getMaxOutputsize();
 };
 
 #endif

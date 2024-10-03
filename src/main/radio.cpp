@@ -1100,16 +1100,19 @@ void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
     }
   }
 
-  auto * const vec = make_vla(std::complex<int16_t>, iAmount); // TODO: is iAmount for one single sample or a stereo sample?
+  auto * const vec = make_vla(int16_t, iAmount); // TODO: is iAmount for one single sample or a stereo sample?
 
   while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
   {
+    assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
+    // vec contains a stereo pair [0][1]...[n-1][n]
     mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
+
     if (!mMutingActive)
     {
-      std::vector<float> tmpBuffer;
-      int size = mAudioSampRateConv.convert(vec, iAmount, iSR, tmpBuffer);
-      mpSoundOut->audioOutput(tmpBuffer.data(), size);
+      // let vec be interpreted as a complex vector (bit ugly but if it works...)
+      const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iSR, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
+      mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
     }
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -2109,109 +2112,6 @@ void RadioInterface::closeEvent(QCloseEvent * event)
   }
 }
 
-#if 0
-bool RadioInterface::eventFilter(QObject * obj, QEvent * event)
-{
-  if (!running.load())
-  {
-    return QWidget::eventFilter(obj, event);
-  }
-
-  if (my_dabProcessor == nullptr)
-  {
-    fprintf(stderr, "expert error 5\n");
-    return true;
-  }
-
-  if (event->type() == QEvent::KeyPress)
-  {
-    QKeyEvent * ke = static_cast<QKeyEvent *>(event);
-    if (ke->key() == Qt::Key_Return)
-    {
-      presetTimer.stop();
-      channel.nextService.valid = false;
-      QString serviceName = ensembleDisplay->currentIndex().data(Qt::DisplayRole).toString();
-      if (channel.currentService.serviceName != serviceName)
-      {
-        fprintf(stderr, "currentservice = %s (%d)\n", channel.currentService.serviceName.toUtf8().data(), channel.currentService.valid);
-        stopService(channel.currentService);
-        channel.currentService.valid = false;
-        _slot_select_service(ensembleDisplay->currentIndex());
-      }
-    }
-  }
-  else if ((obj == this->ensembleDisplay->viewport()) && (event->type() == QEvent::MouseButtonPress))
-  {
-    QMouseEvent * ev = static_cast<QMouseEvent *>(event);
-    if (ev->buttons() & Qt::RightButton)
-    {
-      Audiodata ad;
-      Packetdata pd;
-      QString serviceName = this->ensembleDisplay->indexAt(ev->pos()).data().toString();
-      serviceName = serviceName.right(16);
-      //	      if (serviceName. at (1) == ' ')
-      //	         return true;
-      my_dabProcessor->dataforAudioService(serviceName, &ad);
-      if (ad.defined && (channel.currentService.serviceName == serviceName))
-      {
-        return true;
-      }
-
-      if ((ad.defined) && (ad.ASCTy == 077))
-      {
-        for (uint16_t i = 0; i < channel.backgroundServices.size(); i++)
-        {
-          if (channel.backgroundServices.at(i).serviceName == serviceName)
-          {
-            my_dabProcessor->stop_service(ad.subchId, BACK_GROUND);
-            if (channel.backgroundServices.at(i).fd != nullptr)
-            {
-              fclose(channel.backgroundServices.at(i).fd);
-            }
-            channel.backgroundServices.erase(channel.backgroundServices.begin() + i);
-            colorServiceName(serviceName, Qt::black, fontSize, false);
-            return true;
-          }
-        }
-        FILE * f = filenameFinder.findFrameDump_fileName(serviceName, true);
-        if (f == nullptr)
-        {
-          return true;
-        }
-
-        (void)my_dabProcessor->set_audioChannel(&ad, &audioBuffer, f, BACK_GROUND);
-
-        DabService s;
-        s.channel = ad.channel;
-        s.serviceName = ad.serviceName;
-        s.SId = ad.SId;
-        s.SCIds = ad.SCIds;
-        s.subChId = ad.subchId;
-        s.fd = f;
-        channel.backgroundServices.push_back(s);
-        colorServiceName(s.serviceName, Qt::blue, fontSize + 2, true);
-        return true;
-      }
-    }
-  }
-
-  return QWidget::eventFilter(obj, event);
-}
-#endif
-
-//void RadioInterface::colorServiceName(const QString & serviceName, QColor color, int fS, bool italic)
-//{
-//  for (int j = 0; j < model.rowCount(); j++)
-//  {
-//    QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
-//    if (itemText == serviceName)
-//    {
-//      colorService(model.index(j, 0), color, fS, italic);
-//      return;
-//    }
-//  }
-//}
-
 void RadioInterface::slot_start_announcement(const QString & name, int subChId)
 {
   if (!mIsRunning.load())
@@ -2241,12 +2141,6 @@ void RadioInterface::slot_stop_announcement(const QString & name, int subChId)
   }
 }
 
-////////////////////////////////////////////////////////////////////////
-//
-//	selection, either direct, from presets,  from history or schedule
-////////////////////////////////////////////////////////////////////////
-
-//
 //	Regular selection, straight for the service list
 void RadioInterface::_slot_select_service(QModelIndex ind)
 {
