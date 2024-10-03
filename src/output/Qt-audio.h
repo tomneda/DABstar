@@ -35,47 +35,59 @@
 #ifndef QT_AUDIO_H
 #define QT_AUDIO_H
 
+
 #include	<stdio.h>
-#include	<QAudioOutput>
+//#include	<QAudioOutput>
 #include	<QStringList>
 #include	"dab-constants.h"
 #include	"audio-player.h"
 #include	<QIODevice>
 #include	<QScopedPointer>
 #include	<QComboBox>
+#include <QtMultimedia/QAudioFormat>
+#include <QtMultimedia/QAudioOutput>
+#include <QtMultimedia/QAudioDevice>
+#include <QtMultimedia/QAudioSink>
 #include	<vector>
 #include	<atomic>
 #include	"ringbuffer.h"
 
-class		QSettings;
+class QSettings;
 
-class	Qt_Audio: public audioPlayer {
+class Qt_Audio : public audioPlayer
+{
   Q_OBJECT
-  public:
-  Qt_Audio	(QSettings *);
-  ~Qt_Audio	();
-  void		stop		();
-  void		restart		();
-  void		suspend		();
-  void		resume		();
-  void		audioOutput	(float *, int32_t);
-  QStringList	streams		();
-  bool		selectDevice	(int16_t);
+
+public:
+  Qt_Audio();
+  ~Qt_Audio() override = default;
+
+  void stop() override;
+  void restart() override;
+  void suspend() override;
+  void resume() override;
+  void audioOutput(float *, int32_t) override;
+  bool selectDevice(int16_t) override;
+
+  QStringList streams();
+
 private:
   RingBuffer<char> tempBuffer;
-  QSettings	*audioSettings;
-  void		initialize_deviceList ();
-  void		initializeAudio(const QAudioDeviceInfo &deviceInfo);
-  QAudioFormat	audioFormat;
-  QScopedPointer<QAudioOutput> m_audioOutput;
-  int32_t		outputRate;
-  std::vector<QAudioDeviceInfo> theList;
-  std::atomic<bool>	isInitialized;
-  std::atomic<bool>	working;
-  QIODevice	*theWorker;
-  int		newDeviceIndex;
-  public slots:
-    void		setVolume	(int);
+  //QSettings * audioSettings;
+  void initialize_deviceList();
+  void initializeAudio(const QAudioDevice & deviceInfo);
+  QAudioFormat audioFormat;
+  //QScopedPointer<QAudioOutput> m_audioOutput;
+  QScopedPointer<QAudioSink> m_audioOutput;
+  int32_t outputRate;
+  std::vector<QAudioDevice> theList;
+  std::atomic<bool> isInitialized;
+  std::atomic<bool> working;
+  QIODevice * theWorker;
+  int newDeviceIndex;
+
+public slots:
+  void setVolume(int);
 };
 
 #endif

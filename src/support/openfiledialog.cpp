@@ -152,6 +152,11 @@ SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName,
   return theFile;
 }
 
+QString OpenFileDialog::get_audio_dump_file_name(const QString & iServiceName)
+{
+  return _open_file_dialog(iServiceName, sSettingAudioStorageDir, "PCM-WAV", ".wav");
+}
+
 QString OpenFileDialog::get_skip_file_file_name()
 {
   return _open_file_dialog(PRJ_NAME "-skipFile", sSettingContentStorageDir, "XML", ".xml");

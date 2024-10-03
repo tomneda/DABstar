@@ -39,6 +39,7 @@
 #include "techdata.h"
 #include "service-list-handler.h"
 #include "setting-helper.h"
+#include "Qt-audio.h"
 #include <fstream>
 #include <numeric>
 #include <vector>
@@ -124,16 +125,16 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 
 //static int32_t sFreqOffHz = 0; // for test
 
-RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent) :
-  QWidget(parent),
-  mSpectrumViewer(this, Si, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer),
-  mBandHandler(freqExtension, Si),
-  mOpenFileDialog(Si),
-  mFmFrequency(fmFrequency),
-  mDoReportError(error_report),
-  mConfig(this),
-  mpSH(&SettingHelper::get_instance()),
-  mDeviceSelector(Si)
+RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
+  : QWidget(parent)
+  , mSpectrumViewer(this, Si, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer)
+  , mBandHandler(freqExtension, Si)
+  , mOpenFileDialog(Si)
+  , mFmFrequency(fmFrequency)
+  , mDoReportError(error_report)
+  , mConfig(this)
+  , mpSH(&SettingHelper::get_instance())
+  , mDeviceSelector(Si)
 {
   int16_t k;
   QString h;
@@ -233,29 +234,47 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #ifdef TCP_STREAMER
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
-#elif QT_AUDIO
-  mpSoundOut = new QtAudio();
-  // theTechWindow->hide();
 #else
-  //	just sound out
-  const int16_t latency = mpSH->read(SettingHelper::latency).toInt();
-  mpSoundOut = new AudioSink(latency);
-  ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
-  mConfig.streamoutSelector->show();
-  bool err = false;
-  h = mpSH->read(SettingHelper::soundChannel).toString();
-
-  k = mConfig.streamoutSelector->findText(h);
-  if (k != -1)
+  try
   {
-    mConfig.streamoutSelector->setCurrentIndex(k);
-    err = !((AudioSink *)mpSoundOut)->selectDevice(k);
+    mpSoundOut = new Qt_Audio(/*dabSettings_p*/);
+    // streams = ((Qt_Audio*)soundOut_p)->streams();
+    // temp = dabSettings_p->value(QT_AUDIO_STREAM_NAME, "default").toString();
+    // volumeSlider->show();
+    // int volume = dabSettings_p->value(QT_AUDIO_VOLUME, 50).toInt();
+    // volumeSlider->setValue(volume);
+    // ((Qt_Audio*)soundOut_p)->setVolume(volume);
+    // connect(volumeSlider, &QSlider::valueChanged, this, &RadioInterface::setVolume);
+  }
+  catch (...)
+  {
+    fprintf(stderr, "QT_AUDIO does not find streams\n");
+    mpSoundOut = nullptr;
   }
 
-  if ((k == -1) || err)
-  {
-    ((AudioSink *)mpSoundOut)->selectDefaultDevice();
-  }
+// #elif QT_AUDIO
+//   mpSoundOut = new QtAudio();
+//   // theTechWindow->hide();
+// #else
+//   //	just sound out
+//   const int16_t latency = mpSH->read(SettingHelper::latency).toInt();
+//   mpSoundOut = new AudioSink(latency);
+//   ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
+//   mConfig.streamoutSelector->show();
+//   bool err = false;
+//   h = mpSH->read(SettingHelper::soundChannel).toString();
+//
+//   k = mConfig.streamoutSelector->findText(h);
+//   if (k != -1)
+//   {
+//     mConfig.streamoutSelector->setCurrentIndex(k);
+//     err = !((AudioSink *)mpSoundOut)->selectDevice(k);
+//   }
+//
+//   if ((k == -1) || err)
+//   {
+//     ((AudioSink *)mpSoundOut)->selectDefaultDevice();
+//   }
 #endif
 
   mPicturesPath = mpSH->read(SettingHelper::picturesPath).toString();
@@ -1080,13 +1099,17 @@ void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
       mpTechDataWidget->show_sample_rate_and_audio_flags(iSR, sbrUsed, psUsed);
     }
   }
-  auto * const vec = make_vla(int16_t, iAmount);
+
+  auto * const vec = make_vla(std::complex<int16_t>, iAmount); // TODO: is iAmount for one single sample or a stereo sample?
+
   while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
   {
     mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
     if (!mMutingActive)
     {
-      mpSoundOut->audioOut(vec, iAmount, iSR);
+      std::vector<float> tmpBuffer;
+      int size = mAudioSampRateConv.convert(vec, iAmount, iSR, tmpBuffer);
+      mpSoundOut->audioOutput(tmpBuffer.data(), size);
     }
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -1886,7 +1909,7 @@ void RadioInterface::_slot_handle_audio_dump_button()
     return;
   }
 
-  if (mpAudioDumper != nullptr)
+  if (mAudioDumping)
   {
     stopAudiodumping();
   }
@@ -1898,29 +1921,38 @@ void RadioInterface::_slot_handle_audio_dump_button()
 
 void RadioInterface::stopAudiodumping()
 {
-  if (mpAudioDumper == nullptr)
+  if (!mAudioDumping)
   {
     return;
   }
 
   LOG("audiodump stops", "");
-  mpSoundOut->stopDumping();
-  sf_close(mpAudioDumper);
-  mpAudioDumper = nullptr;
+  // mpSoundOut->stopDumping();
+  mAudioSampRateConv.stop_audioDump();
+  //sf_close(mpAudioDumper);
+  //mpAudioDumper = nullptr;
+  mAudioDumping = false;
   mpTechDataWidget->audiodumpButton_text("Dump WAV", 10);
 }
 
 void RadioInterface::startAudiodumping()
 {
-  mpAudioDumper = mOpenFileDialog.open_audio_dump_sndfile_ptr(mChannel.currentService.serviceName);
-  if (mpAudioDumper == nullptr)
+  // mpAudioDumper = mOpenFileDialog.open_audio_dump_sndfile_ptr(mChannel.currentService.serviceName);
+  // if (mpAudioDumper == nullptr)
+  // {
+  //   return;
+  // }
+
+  QString audioWavDumper = mOpenFileDialog.get_audio_dump_file_name(mChannel.currentService.serviceName);
+  if (audioWavDumper.isEmpty())
   {
     return;
   }
-
   LOG("audiodump starts ", serviceLabel->text());
   mpTechDataWidget->audiodumpButton_text("Recording", 12);
-  mpSoundOut->startDumping(mpAudioDumper);
+  //mpSoundOut->startDumping(mpAudioDumper);
+  mAudioSampRateConv.start_audioDump(audioWavDumper);
+  mAudioDumping = true;
 }
 
 void RadioInterface::_slot_handle_frame_dump_button()
@@ -2339,7 +2371,7 @@ void RadioInterface::stopService(DabService & s)
     mChannel.currentService.frameDumper = nullptr;
   }
 
-  if (mpAudioDumper != nullptr)
+  if (mAudioDumping)
   {
     stopAudiodumping();
   }

@@ -64,10 +64,12 @@
 #include "http-handler.h"
 #include "device-selector.h"
 #include "configuration.h"
+#include "converter_48000.h"
 
 class QSettings;
 class SettingHelper;
-class AudioBase;
+//class AudioBase;
+class audioPlayer;
 class timeTableHandler;
 class ServiceListHandler;
 
@@ -234,7 +236,10 @@ private:
   dabStreamer * streamerOut = nullptr;
 #endif
   DabProcessor * mpDabProcessor = nullptr;
-  AudioBase * mpSoundOut = nullptr;
+  //AudioBase * mpSoundOut = nullptr;
+  converter_48000 mAudioSampRateConv{};
+  audioPlayer		*mpSoundOut = nullptr;
+
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
 #endif
@@ -248,7 +253,8 @@ private:
   QString mPicturesPath;
   QString mFilePath;
   SNDFILE * mpRawDumper = nullptr;
-  SNDFILE * mpAudioDumper = nullptr;
+  bool mAudioDumping = false;
+  //SNDFILE * mpAudioDumper = nullptr;
   //QStandardItemModel model;
   std::vector<serviceId> mServiceList;
 

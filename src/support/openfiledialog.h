@@ -51,6 +51,7 @@ public:
   FILE * open_log_file_ptr();
   SNDFILE * open_audio_dump_sndfile_ptr(const QString & iServiceName);
   SNDFILE * open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName);
+  QString get_audio_dump_file_name(const QString & iServiceName);
   QString get_skip_file_file_name();
   QString get_dl_text_file_name();
   QString get_maps_file_name();

@@ -305,6 +305,7 @@ set(${objectName}_HDRS
         src/backend/data/data-processor.h
         src/output/fir-filters.h
         src/output/audio-base.h
+        src/output/audio-player.h
         src/output/newconverter.h
         src/support/ringbuffer.h
         src/support/Xtan2.h
@@ -329,6 +330,8 @@ set(${objectName}_HDRS
         src/support/buttons/circlepushbutton.h
         src/support/custom_frame.h
         src/support/setting-helper.h
+        src/support/converter_48000.h
+        src/support/wav_writer.h
         src/scopes-qwt6/iqdisplay.h
         src/scopes-qwt6/carrier-display.h
         src/scopes-qwt6/spectrogramdata.h
@@ -393,6 +396,7 @@ set(${objectName}_SRCS
         src/backend/data/mot/mot-dir.cpp
         src/backend/data/data-processor.cpp
         src/output/audio-base.cpp
+        src/output/audio-player.cpp
         src/output/newconverter.cpp
         src/output/fir-filters.cpp
         src/support/Xtan2.cpp
@@ -415,6 +419,8 @@ set(${objectName}_SRCS
         src/support/tii-library/tii-codes.cpp
         src/support/custom_frame.cpp
         src/support/setting-helper.cpp
+        src/support/converter_48000.cpp
+        src/support/wav_writer.cpp
         src/scopes-qwt6/iqdisplay.cpp
         src/scopes-qwt6/carrier-display.cpp
         src/scopes-qwt6/audio-display.cpp
@@ -587,6 +593,7 @@ target_link_libraries(${objectName}
         Qt6::Network
         Qt6::Xml
         Qt6::Sql
+        Qt6::Multimedia
         ${RTLTCP_lib}
         ${extraLibs}
         ${FAAD_LIBRARIES}
