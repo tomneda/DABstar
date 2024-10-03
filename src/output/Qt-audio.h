@@ -54,40 +54,35 @@
 
 class QSettings;
 
-class Qt_Audio : public audioPlayer
+class Qt_Audio //: public audioPlayer
 {
-  Q_OBJECT
-
 public:
   Qt_Audio();
-  ~Qt_Audio() override = default;
+  ~Qt_Audio()  = default;
 
-  void stop() override;
-  void restart() override;
-  void suspend() override;
-  void resume() override;
-  void audioOutput(float *, int32_t) override;
-  bool selectDevice(int16_t) override;
+  void stop();
+  void restart();
+  void suspend();
+  void resume();
+  void audioOutput(float *, int32_t);
+  bool selectDevice(int);
+  void setVolume(int);
 
   QStringList streams();
 
 private:
-  RingBuffer<char> tempBuffer;
-  //QSettings * audioSettings;
-  void initialize_deviceList();
-  void initializeAudio(const QAudioDevice & deviceInfo);
-  QAudioFormat audioFormat;
-  //QScopedPointer<QAudioOutput> m_audioOutput;
-  QScopedPointer<QAudioSink> m_audioOutput;
-  int32_t outputRate;
-  std::vector<QAudioDevice> theList;
-  std::atomic<bool> isInitialized;
-  std::atomic<bool> working;
-  QIODevice * theWorker;
-  int newDeviceIndex;
+  int32_t mSampleRate;
+  RingBuffer<char> mAudioBuffer;
+  QAudioFormat mAudioFormat;
+  QScopedPointer<QAudioSink> mpAudioSink;
+  std::vector<QAudioDevice> mAudioDeviceList;
+  std::atomic<bool> mIsInitialized;
+  std::atomic<bool> mIsRunning;
+  QIODevice * mpIoDevice = nullptr;
+  int mCurDeviceIndex = -1;
 
-public slots:
-  void setVolume(int);
+  void _initialize_deviceList();
+  void _initializeAudio(const QAudioDevice & iAudioDevice);
 };
 
 #endif

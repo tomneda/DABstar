@@ -40,37 +40,37 @@
 //#include	"settingNames.h"
 
 Qt_Audio::Qt_Audio()
-  : tempBuffer(8 * 32768)
+  : mAudioBuffer(8 * 32768)
 {
   //audioSettings = settings;
-  outputRate = 48000;	// default
-  working.store(false);
-  isInitialized.store(false);
-  newDeviceIndex = -1;
-  initialize_deviceList();
-  initializeAudio(QMediaDevices::defaultAudioOutput());
+  mSampleRate = 48000;	// default
+  mIsRunning.store(false);
+  mIsInitialized.store(false);
+  mCurDeviceIndex = -1;
+  _initialize_deviceList();
+  _initializeAudio(QMediaDevices::defaultAudioOutput());
 }
 
-void Qt_Audio::initialize_deviceList()
+void Qt_Audio::_initialize_deviceList()
 {
   const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
-  theList.push_back(defaultDeviceInfo);
+  mAudioDeviceList.push_back(defaultDeviceInfo);
   for (auto & deviceInfo : QMediaDevices::audioOutputs())
   {
     if (deviceInfo != defaultDeviceInfo)
     {
-      theList.push_back(deviceInfo);
+      mAudioDeviceList.push_back(deviceInfo);
     }
   }
 
-  qDebug() << "Found " << theList.size() << " output devices:";
+  qDebug() << "Found " << mAudioDeviceList.size() << " output devices:";
 
-  for (auto & listEl : theList)
+  for (auto & listEl : mAudioDeviceList)
   {
     qDebug() << "  " << listEl.description();
   }
 
-  if ((defaultDeviceInfo.description().isEmpty()) && (theList.size() < 2))
+  if ((defaultDeviceInfo.description().isEmpty()) && (mAudioDeviceList.size() < 2))
   {
     throw 22;
   }
@@ -79,7 +79,7 @@ void Qt_Audio::initialize_deviceList()
 QStringList Qt_Audio::streams()
 {
   QStringList nameList;
-  for (auto & listEl : theList)
+  for (auto & listEl : mAudioDeviceList)
   {
     nameList << listEl.description();
   }
@@ -91,47 +91,36 @@ QStringList Qt_Audio::streams()
 //	converted.  This functions overrides the one in AudioBase
 void Qt_Audio::audioOutput(float * fragment, int32_t size)
 {
-  if (!working.load())
+  if (!mIsRunning.load())
     return;
-  int aa = tempBuffer.get_ring_buffer_write_available();
+  int aa = mAudioBuffer.get_ring_buffer_write_available();
   aa = std::min((int)(size * sizeof(float)), aa);
   aa &= ~03;
-  tempBuffer.put_data_into_ring_buffer(fragment, aa);
+  mAudioBuffer.put_data_into_ring_buffer(fragment, aa);
   // int periodSize = m_audioOutput->periodSize();
   constexpr int32_t periodSize = 4096;
   char buffer[periodSize];
-  while ((m_audioOutput->bytesFree() >= periodSize) &&
-         (tempBuffer.get_ring_buffer_read_available() >= periodSize))
+  while ((mpAudioSink->bytesFree() >= periodSize) &&
+         (mAudioBuffer.get_ring_buffer_read_available() >= periodSize))
   {
-    tempBuffer.get_data_from_ring_buffer(buffer, periodSize);
-    theWorker->write(buffer, periodSize);
+    mAudioBuffer.get_data_from_ring_buffer(buffer, periodSize);
+    mpIoDevice->write(buffer, periodSize);
   }
 }
 
-void Qt_Audio::initializeAudio(const QAudioDevice & deviceInfo)
+void Qt_Audio::_initializeAudio(const QAudioDevice & iAudioDevice)
 {
-  audioFormat.setSampleRate(outputRate);
-  audioFormat.setChannelCount(2);
-  //audioFormat.setSampleSize(sizeof(float) * 8);
-  //audioFormat.setCodec("audio/pcm");
-  //audioFormat.setByteOrder(QAudioFormat::LittleEndian);
-  audioFormat.setSampleFormat(QAudioFormat::SampleFormat::Float);
+  mAudioFormat.setSampleRate(mSampleRate);
+  mAudioFormat.setChannelCount(2);
+  mAudioFormat.setSampleFormat(QAudioFormat::SampleFormat::Float);
 
-  //QAudioDevice defaultDevice = QMediaDevices::defaultAudioOutput();
-
-  // QAudioFormat supportedFormat = deviceInfo.nearestFormat(desiredFormat);
-  //
-  // if (!deviceInfo.isFormatSupported(audioFormat))
-  // {
-  //   audioFormat = deviceInfo.nearestFormat(audioFormat);
-  // }
-  isInitialized.store(false);
-  if (deviceInfo.isFormatSupported(audioFormat))
+  mIsInitialized.store(false);
+  if (iAudioDevice.isFormatSupported(mAudioFormat))
   {
-    m_audioOutput.reset(new QAudioSink(audioFormat));
-    if (m_audioOutput->error() == QAudio::NoError)
+    mpAudioSink.reset(new QAudioSink(iAudioDevice, mAudioFormat));
+    if (mpAudioSink->error() == QAudio::NoError)
     {
-      isInitialized.store(true);
+      mIsInitialized.store(true);
       qDebug() << "Audio initialization went OK";
     }
     else
@@ -143,26 +132,26 @@ void Qt_Audio::initializeAudio(const QAudioDevice & deviceInfo)
 
 void Qt_Audio::stop()
 {
-  m_audioOutput->stop();
-  working.store(false);
-  isInitialized.store(false);
+  mpAudioSink->stop();
+  mIsRunning.store(false);
+  mIsInitialized.store(false);
 }
 
 void Qt_Audio::restart()
 {
 //	fprintf (stderr, "Going to restart with %d\n", newDeviceIndex);
-  if (newDeviceIndex < 0)
+  if (mCurDeviceIndex < 0)
     return;
-  initializeAudio(theList.at(newDeviceIndex));
-  if (!isInitialized.load())
+  _initializeAudio(mAudioDeviceList.at(mCurDeviceIndex));
+  if (!mIsInitialized.load())
   {
-    fprintf(stderr, "Init failed for device %d\n", newDeviceIndex);
+    fprintf(stderr, "Init failed for device %d\n", mCurDeviceIndex);
     return;
   }
-  theWorker = m_audioOutput->start();
-  if (m_audioOutput->error() == QAudio::NoError)
+  mpIoDevice = mpAudioSink->start();
+  if (mpAudioSink->error() == QAudio::NoError)
   {
-    working.store(true);
+    mIsRunning.store(true);
 //	   fprintf (stderr, "Device reports: no error\n");
   }
   else
@@ -171,30 +160,30 @@ void Qt_Audio::restart()
   //m_audioOutput->setVolume((float)vol / 100);
 }
 
-bool Qt_Audio::selectDevice(int16_t index)
+bool Qt_Audio::selectDevice(const int index)
 {
-  newDeviceIndex = index;
+  mCurDeviceIndex = index;
   stop();
   restart();
-  return working.load();
+  return mIsRunning.load();
 }
 
 void Qt_Audio::suspend()
 {
-  if (!working.load())
+  if (!mIsRunning.load())
     return;
-  m_audioOutput->suspend();
+  mpAudioSink->suspend();
 }
 
 void Qt_Audio::resume()
 {
-  if (!working.load())
+  if (!mIsRunning.load())
     return;
-  m_audioOutput->resume();
+  mpAudioSink->resume();
 }
 
 void Qt_Audio::setVolume(int v)
 {
   //audioSettings->setValue(QT_AUDIO_VOLUME, v);
-  m_audioOutput->setVolume((float)v / 100);
+  mpAudioSink->setVolume((float)v / 100);
 }

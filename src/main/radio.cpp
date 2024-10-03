@@ -136,7 +136,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   , mpSH(&SettingHelper::get_instance())
   , mDeviceSelector(Si)
 {
-  int16_t k;
+  int32_t k;
   QString h;
 
   mIsRunning.store(false);
@@ -190,9 +190,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mChannel.serviceCount = -1;
 
   // load last used service
-  QString presetName = mpSH->read(SettingHelper::presetName).toString();
 
-  if (!presetName.isEmpty())
+  if (QString presetName = mpSH->read(SettingHelper::presetName).toString();
+      !presetName.isEmpty())
   {
     QStringList ss = presetName.split(":");
 
@@ -213,8 +213,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   }
 
   mChannel.targetPos = cmplx(0, 0);
-  float local_lat = mpSH->read(SettingHelper::latitude).toFloat();
-  float local_lon = mpSH->read(SettingHelper::longitude).toFloat();
+  const float local_lat = mpSH->read(SettingHelper::latitude).toFloat();
+  const float local_lon = mpSH->read(SettingHelper::longitude).toFloat();
   mChannel.localPos = cmplx(local_lat, local_lon);
 
   mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
@@ -230,26 +230,31 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #endif
 
   // Where do we leave the audio out?
-  mConfig.streamoutSelector->hide();
+  //mConfig.streamoutSelector->hide();
 #ifdef TCP_STREAMER
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
 #else
-  try
+  mpSoundOut.reset(new Qt_Audio());
+  const QStringList list = mpSoundOut->streams();
+  mConfig.streamoutSelector->addItems(list);
+  mConfig.streamoutSelector->show();
+
+  //   ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
+  //   mConfig.streamoutSelector->show();
+  //   bool err = false;
+  h = mpSH->read(SettingHelper::soundChannel).toString();
+  k = mConfig.streamoutSelector->findText(h);
+  bool run = false;
+  if (k != -1)
   {
-    mpSoundOut = new Qt_Audio(/*dabSettings_p*/);
-    // streams = ((Qt_Audio*)soundOut_p)->streams();
-    // temp = dabSettings_p->value(QT_AUDIO_STREAM_NAME, "default").toString();
-    // volumeSlider->show();
-    // int volume = dabSettings_p->value(QT_AUDIO_VOLUME, 50).toInt();
-    // volumeSlider->setValue(volume);
-    // ((Qt_Audio*)soundOut_p)->setVolume(volume);
-    // connect(volumeSlider, &QSlider::valueChanged, this, &RadioInterface::setVolume);
+    mConfig.streamoutSelector->setCurrentIndex(k);
+    run = mpSoundOut->selectDevice(k);
   }
-  catch (...)
+
+  if (k == -1 || !run)
   {
-    fprintf(stderr, "QT_AUDIO does not find streams\n");
-    mpSoundOut = nullptr;
+    mpSoundOut->selectDevice(0); // selects default device
   }
 
 // #elif QT_AUDIO
@@ -314,8 +319,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   connect(mpTechDataWidget, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
   lblVersion->setText(QString("V" + mVersionStr));
-	lblCopyrightIcon->setToolTip(get_copyright_text());
-	lblCopyrightIcon->setOpenExternalLinks(true);
+  lblCopyrightIcon->setToolTip(get_copyright_text());
+  lblCopyrightIcon->setOpenExternalLinks(true);
 
   QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
   mChannel.tiiFile = false;
@@ -1151,11 +1156,11 @@ void RadioInterface::_slot_terminate_process()
 
 #ifdef  DATA_STREAMER
   fprintf (stdout, "going to close the dataStreamer\n");
-	delete		dataStreamer;
+  delete		dataStreamer;
 #endif
 #ifdef  CLOCK_STREAMER
   fprintf (stdout, "going to close the clockstreamer\n");
-	delete	clockStreamer;
+  delete	clockStreamer;
 #endif
   if (mpHttpHandler != nullptr)
   {
@@ -1208,7 +1213,7 @@ void RadioInterface::_slot_terminate_process()
   mSpectrumViewer.hide();
 
   delete mpDabProcessor;
-  delete mpSoundOut;
+  // delete mpSoundOut;
   delete mpTimeTable;
   mpInputDevice = nullptr;
 
@@ -1244,16 +1249,16 @@ void RadioInterface::_slot_update_time_display()
   {
     return;
   }
+#if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
   if (mpSoundOut->hasMissed())
   {
-#if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
     int xxx = ((AudioSink *)mpSoundOut)->missed();
     if (!mpTechDataWidget->isHidden())
     {
       mpTechDataWidget->showMissed(xxx);
     }
-#endif
   }
+#endif
   if (mDoReportError && (mNumberofSeconds % 10) == 0)
   {
     //	   int	totalFrames;
@@ -1767,6 +1772,8 @@ void RadioInterface::slot_set_stream_selector(int k)
   {
     return;
   }
+  mpSoundOut->selectDevice(k);
+  mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
 #if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
   ((AudioSink *)(mpSoundOut))->selectDevice(k);
   mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
@@ -3369,8 +3376,8 @@ void RadioInterface::slot_handle_transmitter_tags(int /*d*/)
 void RadioInterface::show_pause_slide()
 {
   QPixmap p;
-	const char * const picFile = ((rand() & 1) != 0 ? ":res/logo/dabinvlogo.png" : ":res/logo/dabstar320x240.png");
-	if (p.load(picFile, "png"))
+  const char * const picFile = ((rand() & 1) != 0 ? ":res/logo/dabinvlogo.png" : ":res/logo/dabstar320x240.png");
+  if (p.load(picFile, "png"))
   {
     write_picture(p);
   }

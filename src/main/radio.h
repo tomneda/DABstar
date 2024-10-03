@@ -68,8 +68,7 @@
 
 class QSettings;
 class SettingHelper;
-//class AudioBase;
-class audioPlayer;
+class Qt_Audio;
 class timeTableHandler;
 class ServiceListHandler;
 
@@ -239,7 +238,8 @@ private:
   DabProcessor * mpDabProcessor = nullptr;
   //AudioBase * mpSoundOut = nullptr;
   converter_48000 mAudioSampRateConv{};
-  audioPlayer	* mpSoundOut = nullptr;
+  //audioPlayer	* mpSoundOut = nullptr;
+  QScopedPointer<Qt_Audio> mpSoundOut;
 
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
