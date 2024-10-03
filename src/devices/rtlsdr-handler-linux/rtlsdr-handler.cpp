@@ -712,7 +712,7 @@ QString saveDir = rtlsdrSettings -> value (sSettingSampleStorageDir,
 
 	QString	dumper	= QDir::fromNativeSeparators (fileName);
 	int x		= dumper. lastIndexOf ("/");
-	saveDir		= dumper. remove (x, dumper. count () - x);
+	saveDir		= dumper. remove (x, dumper. size () - x);
 	rtlsdrSettings	-> setValue (sSettingSampleStorageDir, saveDir);
 
 	return true;

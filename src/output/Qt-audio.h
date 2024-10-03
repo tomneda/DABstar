@@ -35,37 +35,47 @@
 #ifndef QT_AUDIO_H
 #define QT_AUDIO_H
 
-#include  <cstdio>
-#include  <QAudioOutput>
-#include   <QTimer>
-#include  "dab-constants.h"
-#include  "ringbuffer.h"
-#include  "audio-base.h"
-#include  "Qt-audiodevice.h"
+#include	<stdio.h>
+#include	<QAudioOutput>
+#include	<QStringList>
+#include	"dab-constants.h"
+#include	"audio-player.h"
+#include	<QIODevice>
+#include	<QScopedPointer>
+#include	<QComboBox>
+#include	<vector>
+#include	<atomic>
+#include	"ringbuffer.h"
 
-class QtAudio : public AudioBase
-{
-Q_OBJECT
-public:
-  QtAudio();
-  ~QtAudio() override;
+class		QSettings;
 
-  void stop() override;
-  void restart() override;
-  void audioOutput(float *, int32_t) override;
-
+class	Qt_Audio: public audioPlayer {
+  Q_OBJECT
+  public:
+  Qt_Audio	(QSettings *);
+  ~Qt_Audio	();
+  void		stop		();
+  void		restart		();
+  void		suspend		();
+  void		resume		();
+  void		audioOutput	(float *, int32_t);
+  QStringList	streams		();
+  bool		selectDevice	(int16_t);
 private:
-  QAudioFormat mAudioFormat;
-  QAudioOutput * mpAudioOutput;
-  QtAudioDevice * mpAudioDevice;
-  RingBuffer<float> * mpBuffer;
-  QAudio::State mCurrentState;
-  int32_t mOutputRate;
-
-  void setParams(int32_t);
-
-private slots:
-  void handleStateChanged(QAudio::State newState);
+  RingBuffer<char> tempBuffer;
+  QSettings	*audioSettings;
+  void		initialize_deviceList ();
+  void		initializeAudio(const QAudioDeviceInfo &deviceInfo);
+  QAudioFormat	audioFormat;
+  QScopedPointer<QAudioOutput> m_audioOutput;
+  int32_t		outputRate;
+  std::vector<QAudioDeviceInfo> theList;
+  std::atomic<bool>	isInitialized;
+  std::atomic<bool>	working;
+  QIODevice	*theWorker;
+  int		newDeviceIndex;
+  public slots:
+    void		setVolume	(int);
 };
 
 #endif

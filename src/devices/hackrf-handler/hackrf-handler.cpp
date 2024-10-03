@@ -434,7 +434,7 @@ bool HackRfHandler::setup_xml_dump()
 
   QString dumper = QDir::fromNativeSeparators(fileName);
   int x = dumper.lastIndexOf("/");
-  saveDir = dumper.remove(x, dumper.count() - x);
+  saveDir = dumper.remove(x, dumper.size() - x);
   mpHackrfSettings->setValue(sSettingSampleStorageDir, saveDir);
 
   return true;
