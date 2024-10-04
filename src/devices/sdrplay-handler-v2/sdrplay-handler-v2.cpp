@@ -194,7 +194,7 @@ mir_sdr_DeviceT devDesc [4];
 	      err = my_mir_sdr_RSPII_AntennaControl (mir_sdr_RSPII_ANTENNA_A);
 	      if (err != mir_sdr_Success) 
 	         fprintf (stderr, "error %d in setting antenna\n", err);
-	      connect (antennaSelector, SIGNAL (activated (const QString &)),
+	      connect (antennaSelector, SIGNAL (textActivated (const QString &)),
 	            this, SLOT (set_antennaSelect (const QString &)));
 	      lnaMax		= 8;
 	      break;
@@ -207,7 +207,7 @@ mir_sdr_DeviceT devDesc [4];
 	      err	= my_mir_sdr_rspDuo_TunerSel (mir_sdr_rspDuo_Tuner_1);
 	      if (err != mir_sdr_Success) 
 	         fprintf (stderr, "error %d in setting of rspDuo\n", err);
-	      connect (tunerSelector, SIGNAL (activated (const QString &)),
+	      connect (tunerSelector, SIGNAL (textActivated (const QString &)),
 	               this, SLOT (set_tunerSelect (const QString &)));
 	      lnaMax		= 9;
 	      break;

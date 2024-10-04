@@ -86,7 +86,7 @@ QString	handlerName	= "driver=";
 	if (antennas. size() > 1) {
 	   for (int i = 0; i < antennas. size(); i ++)
 	      comboBox_1	-> addItem (antennas [i]. c_str());
-	   connect (comboBox_1, SIGNAL (activated (const QString &)),
+	   connect (comboBox_1, SIGNAL (textActivated (const QString &)),
 	            this, SLOT (handleAntenna (const QString &)));
 	   comboBox_1	-> show();
 	}

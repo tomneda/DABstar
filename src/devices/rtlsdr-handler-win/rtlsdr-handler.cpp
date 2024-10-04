@@ -218,7 +218,7 @@ char	manufac [256], product [256], serial [256];
 	set_ppmCorrection	(ppm_correction -> value());
 
 //	and attach the buttons/sliders to the actions
-	connect (gainControl, SIGNAL (activated (const QString &)),
+	connect (gainControl, SIGNAL (textActivated (const QString &)),
 	         this, SLOT (set_ExternalGain (const QString &)));
 	connect (agcControl, SIGNAL (stateChanged (int)),
 	         this, SLOT (set_autogain (int)));
