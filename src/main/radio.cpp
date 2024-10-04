@@ -49,7 +49,6 @@
 #include <QFileDialog>
 #include <QDateTime>
 #include <QStringList>
-#include <QStringListModel>
 #include <QMouseEvent>
 #include <QDir>
 #include <QSpacerItem>
@@ -235,8 +234,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
 #else
-  mpSoundOut.reset(new Qt_Audio());
-  const QStringList list = mpSoundOut->streams();
+  mpSoundOut.reset(new QtAudio());
+  const QStringList list = mpSoundOut->get_audio_devices_list();
   mConfig.streamoutSelector->addItems(list);
   mConfig.streamoutSelector->show();
 

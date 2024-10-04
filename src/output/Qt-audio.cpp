@@ -39,7 +39,7 @@
 #include <QDebug>
 //#include	"settingNames.h"
 
-Qt_Audio::Qt_Audio()
+QtAudio::QtAudio()
   : mAudioBuffer(8 * 32768)
 {
   //audioSettings = settings;
@@ -51,16 +51,15 @@ Qt_Audio::Qt_Audio()
   _initializeAudio(QMediaDevices::defaultAudioOutput());
 }
 
-void Qt_Audio::_initialize_deviceList()
+void QtAudio::_initialize_deviceList()
 {
   const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
+  mAudioDeviceList.clear();
   mAudioDeviceList.push_back(defaultDeviceInfo);
+
   for (auto & deviceInfo : QMediaDevices::audioOutputs())
   {
-    if (deviceInfo != defaultDeviceInfo)
-    {
-      mAudioDeviceList.push_back(deviceInfo);
-    }
+    mAudioDeviceList.push_back(deviceInfo);  // the default should appear again in the list
   }
 
   qDebug() << "Found " << mAudioDeviceList.size() << " output devices:";
@@ -69,19 +68,24 @@ void Qt_Audio::_initialize_deviceList()
   {
     qDebug() << "  " << listEl.description();
   }
-
-  if ((defaultDeviceInfo.description().isEmpty()) && (mAudioDeviceList.size() < 2))
-  {
-    throw 22;
-  }
 }
 
-QStringList Qt_Audio::streams()
+QStringList QtAudio::get_audio_devices_list()
 {
   QStringList nameList;
+  bool defaultLabelAdded = false;
   for (auto & listEl : mAudioDeviceList)
   {
-    nameList << listEl.description();
+    if (!defaultLabelAdded)
+    {
+      defaultLabelAdded = true;
+      nameList << "System Audio Device";
+    }
+    else
+    {
+      //nameList << QString("Fixed [" + listEl.description() + "]");
+      nameList << listEl.description();
+    }
   }
   return nameList;
 }
@@ -89,17 +93,22 @@ QStringList Qt_Audio::streams()
 //
 //	Note that AudioBase functions have - if needed - the rate
 //	converted.  This functions overrides the one in AudioBase
-void Qt_Audio::audioOutput(float * fragment, int32_t size)
+void QtAudio::audioOutput(float * fragment, int32_t size)
 {
   if (!mIsRunning.load())
+  {
     return;
+  }
+
   int aa = mAudioBuffer.get_ring_buffer_write_available();
   aa = std::min((int)(size * sizeof(float)), aa);
   aa &= ~03;
   mAudioBuffer.put_data_into_ring_buffer(fragment, aa);
-  // int periodSize = m_audioOutput->periodSize();
+
   constexpr int32_t periodSize = 4096;
   char buffer[periodSize];
+  // auto * const buffer = make_vla(char, periodSize);
+
   while ((mpAudioSink->bytesFree() >= periodSize) &&
          (mAudioBuffer.get_ring_buffer_read_available() >= periodSize))
   {
@@ -108,7 +117,7 @@ void Qt_Audio::audioOutput(float * fragment, int32_t size)
   }
 }
 
-void Qt_Audio::_initializeAudio(const QAudioDevice & iAudioDevice)
+void QtAudio::_initializeAudio(const QAudioDevice & iAudioDevice)
 {
   mAudioFormat.setSampleRate(mSampleRate);
   mAudioFormat.setChannelCount(2);
@@ -130,59 +139,79 @@ void Qt_Audio::_initializeAudio(const QAudioDevice & iAudioDevice)
   }
 }
 
-void Qt_Audio::stop()
+void QtAudio::stop()
 {
   mpAudioSink->stop();
   mIsRunning.store(false);
   mIsInitialized.store(false);
 }
 
-void Qt_Audio::restart()
+void QtAudio::restart()
 {
-//	fprintf (stderr, "Going to restart with %d\n", newDeviceIndex);
   if (mCurDeviceIndex < 0)
+  {
     return;
+  }
+
   _initializeAudio(mAudioDeviceList.at(mCurDeviceIndex));
+
   if (!mIsInitialized.load())
   {
     fprintf(stderr, "Init failed for device %d\n", mCurDeviceIndex);
     return;
   }
+
   mpIoDevice = mpAudioSink->start();
+
   if (mpAudioSink->error() == QAudio::NoError)
   {
     mIsRunning.store(true);
-//	   fprintf (stderr, "Device reports: no error\n");
   }
   else
-    fprintf(stderr, "restart gaat niet door\n");
+  {
+    qCritical() << "Audio initialization failed";
+  }
 
   //m_audioOutput->setVolume((float)vol / 100);
 }
 
-bool Qt_Audio::selectDevice(const int index)
+bool QtAudio::selectDevice(const int index)
 {
   mCurDeviceIndex = index;
   stop();
+
+  // try to reload the current default system audio output, but seems not work reliable
+  if (index == 0)
+  {
+    mAudioDeviceList[0] = QMediaDevices::defaultAudioOutput();
+    qDebug() << "Default audio device: " << mAudioDeviceList[0].description();
+  }
+
   restart();
   return mIsRunning.load();
 }
 
-void Qt_Audio::suspend()
+void QtAudio::suspend()
 {
   if (!mIsRunning.load())
+  {
     return;
+  }
+
   mpAudioSink->suspend();
 }
 
-void Qt_Audio::resume()
+void QtAudio::resume()
 {
   if (!mIsRunning.load())
+  {
     return;
+  }
+
   mpAudioSink->resume();
 }
 
-void Qt_Audio::setVolume(int v)
+void QtAudio::setVolume(int v)
 {
   //audioSettings->setValue(QT_AUDIO_VOLUME, v);
   mpAudioSink->setVolume((float)v / 100);

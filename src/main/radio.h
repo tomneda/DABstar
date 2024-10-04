@@ -32,18 +32,6 @@
 #define RADIO_H
 
 #include  "dab-constants.h"
-#include  <set>
-#include  <memory>
-#include  <mutex>
-#include  <QMainWindow>
-#include  <QStringList>
-#include  <QStandardItemModel>
-#include  <QVector>
-#include  <QComboBox>
-#include  <QByteArray>
-#include  <QLabel>
-#include  <QTimer>
-#include  <sndfile.h>
 #include  "ui_radio.h"
 #include  "dab-processor.h"
 #include  "ringbuffer.h"
@@ -65,10 +53,22 @@
 #include "device-selector.h"
 #include "configuration.h"
 #include "converter_48000.h"
+#include  <set>
+#include  <memory>
+#include  <mutex>
+#include  <QMainWindow>
+#include  <QStringList>
+#include  <QStandardItemModel>
+#include  <QVector>
+#include  <QComboBox>
+#include  <QByteArray>
+#include  <QLabel>
+#include  <QTimer>
+#include  <sndfile.h>
 
 class QSettings;
 class SettingHelper;
-class Qt_Audio;
+class QtAudio;
 class timeTableHandler;
 class ServiceListHandler;
 
@@ -77,8 +77,6 @@ class	dabStreamer;
 #endif
 
 class TechData;
-
-//#include  "ui_config-helper.h"
 
 struct DabService
 {
@@ -216,11 +214,8 @@ private:
   httpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;
   const QString mVersionStr{PRJ_VERS};
-  //QString theFont;
-  //int fontSize;
   int32_t mFmFrequency = 0;
   ContentTable * mpContentTable = nullptr;
-  //ContentTable * my_scanTable;
   FILE * mpLogFile = nullptr;
   ChannelDescriptor mChannel;
   int32_t mMaxDistance = -1;
@@ -238,8 +233,7 @@ private:
   DabProcessor * mpDabProcessor = nullptr;
   //AudioBase * mpSoundOut = nullptr;
   converter_48000 mAudioSampRateConv{};
-  //audioPlayer	* mpSoundOut = nullptr;
-  QScopedPointer<Qt_Audio> mpSoundOut;
+  QScopedPointer<QtAudio> mpSoundOut;
 
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
@@ -255,8 +249,6 @@ private:
   QString mFilePath;
   SNDFILE * mpRawDumper = nullptr;
   bool mAudioDumping = false;
-  //SNDFILE * mpAudioDumper = nullptr;
-  //QStandardItemModel model;
   std::vector<serviceId> mServiceList;
 
   QTimer mDisplayTimer;
@@ -283,7 +275,6 @@ private:
 
   static QStringList get_soft_bit_gen_names();
   std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, const serviceId &);
-  //bool eventFilter(QObject * obj, QEvent * event) override;
   void LOG(const QString &, const QString &);
   uint32_t extract_epg(const QString&, const std::vector<serviceId> & iServiceList, uint32_t);
   void show_pause_slide();

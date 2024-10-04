@@ -54,11 +54,11 @@
 
 class QSettings;
 
-class Qt_Audio //: public audioPlayer
+class QtAudio
 {
 public:
-  Qt_Audio();
-  ~Qt_Audio()  = default;
+  QtAudio();
+  ~QtAudio()  = default;
 
   void stop();
   void restart();
@@ -68,7 +68,7 @@ public:
   bool selectDevice(int);
   void setVolume(int);
 
-  QStringList streams();
+  QStringList get_audio_devices_list();
 
 private:
   int32_t mSampleRate;
