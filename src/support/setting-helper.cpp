@@ -31,8 +31,9 @@ void SettingHelper::_fill_map_with_defaults()
 {
   QDir tempPath = QDir::tempPath();
   tempPath.setPath(tempPath.filePath(PRJ_NAME));
-  QString tempPicPath = tempPath.filePath("PIC").append('/');
-  QString tempEpgPath = tempPath.filePath("EPG").append('/');
+  const QString tempPicPath = tempPath.filePath("PIC").append('/');
+  const QString tempMotPath = tempPath.filePath("MOT").append('/');
+  const QString tempEpgPath = tempPath.filePath("EPG").append('/');
 
   mMap.insert(dabMode, { "", "dabMode", 1 });
   mMap.insert(threshold, { "", "threshold", 3 });
@@ -43,7 +44,7 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(latency, { "", "latency", 5 });
   mMap.insert(soundChannel, { "", "soundChannelQt", "default" });
   mMap.insert(picturesPath, { "", "picturesPath", tempPicPath });
-  mMap.insert(filePath, { "", "filePath", tempPicPath });
+  mMap.insert(filePath, { "", "filePath", tempMotPath });
   mMap.insert(epgPath, { "", "epgPath", tempEpgPath });
   mMap.insert(dabBand, { "", "dabBand", "VHF Band III" });
   mMap.insert(skipFile, { "", "skipFile", "" });
