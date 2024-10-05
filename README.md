@@ -46,10 +46,9 @@ I decided to give it the new name **DABstar**.
 I saw that with starting of Qt-DAB 6.x, it uses also new code parts and ideas from here. I am very appreciated about this :smiley:.
 This is of course very acknowledged that my work can give something back.
 
-I will try to maintain always a working state on `main` branch.
-Only when I change the MAJOR (1st digit) and/or MINOR (2nd digit) part of the version number (see [https://semver.org/](https://semver.org/) for nomenclature)
-I will describe the changes here.
-If I only raise the PATCH version number (3rd digit) when I provide (urgent) intermediate patches.
+I will try to maintain always a working state on `main` branch, so use this for building the software for yourself. 
+**Please do not try any other branch besides `main` branch. 
+They are indented for development, backups and tests and will not always work in their current state.**
 
 For at least each new version change in the MAJOR and/or MINOR part I will provide a version tag for easy referencing.
 Please use the tags page on Github: [https://github.com/tomneda/DABstar/tags](https://github.com/tomneda/DABstar/tags).
@@ -199,6 +198,11 @@ or same in fewer lines:
 ```
 sudo apt-get update
 sudo apt-get install git cmake build-essential g++ libsndfile1-dev libfftw3-dev portaudio19-dev zlib1g-dev libsamplerate0-dev libfaad-dev libusb-1.0-0-dev
+```
+
+If you decide using FDK-ACC (use `-DFDK_AAC=ON` on `cmake` command) instead of faad you can omit installing `libfaad-dev` and install instead this:
+```
+sudo apt-get install libfdk-aac-dev
 ```
 
 For Qt5 try one of following (Ubuntu 22.04 needs the second one): 
