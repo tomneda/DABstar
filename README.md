@@ -197,8 +197,8 @@ But also the repository version in Ubuntu 24.04 has still flaws with PS (Paramet
 So I recommend to build it for your own. I used the latest main version which is v2.0.3.
 ```
 git clone https://github.com/mstorsjo/fdk-aac.git
-git checkout v2.0.3
 cd fdk-aac
+git checkout v2.0.3
 mkdir build
 cd build
 cmake ..
