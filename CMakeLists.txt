@@ -13,7 +13,7 @@ try_find_vcpkg_toolset_path()
 print(CMAKE_TOOLCHAIN_FILE)
 
 ##############################
-project(DABstar VERSION 2.6.0)
+project(DABstar VERSION 2.7.0)
 ##############################
 
 set(objectName "dabstar")
@@ -132,7 +132,7 @@ option(USE_HBF "Use oversampling with half band filter (needs liquid-dsp)" OFF) 
 option(DATA_STREAMER OFF)
 option(VITERBI_SSE OFF)
 option(VITERBI_NEON OFF)
-option(FDK_AAC OFF)
+option(FDK_AAC ON)
 
 set(USE_FFT FFTW3 CACHE STRING "Choose FFT out of these free: FFTW3 KISS NAYUKI")
 set_property(CACHE USE_FFT PROPERTY STRINGS "FFTW3;KISS;NAYUKI")
@@ -444,6 +444,7 @@ if (FDK_AAC)
     list(APPEND extraLibs ${FDK_AAC_LIBRARIES})
     add_definitions(-D__WITH_FDK_AAC__)
 elseif (NOT FDK_AAC)
+    message(FATAL_ERROR "libfaad made issues, use better FDK_ACC (>= 2.0.3), or comment out this message")
     find_package(Faad)
     if (NOT FAAD_FOUND)
         message(FATAL_ERROR "Please install libfaad")

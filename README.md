@@ -188,21 +188,22 @@ sudo apt-get install libfftw3-dev
 sudo apt-get install portaudio19-dev
 sudo apt-get install zlib1g-dev
 sudo apt-get install libsamplerate0-dev
-sudo apt-get install libfaad-dev
 sudo apt-get install libusb-1.0-0-dev
 sudo apt-get install libqwt-qt5-dev
 ```
 
-or same in fewer lines:
-
+As libfaad had made issues with low rate services I switched over to FDK-AAC. 
+But also the repository version in Ubuntu 24.04 has still flaws with PS (Parametric Stereo) services.
+So I recommend to build it for your own. I used the latest main version which is v2.0.3.
 ```
-sudo apt-get update
-sudo apt-get install git cmake build-essential g++ libsndfile1-dev libfftw3-dev portaudio19-dev zlib1g-dev libsamplerate0-dev libfaad-dev libusb-1.0-0-dev
-```
-
-If you decide using FDK-ACC (use `-DFDK_AAC=ON` on `cmake` command) instead of faad you can omit installing `libfaad-dev` and install instead this:
-```
-sudo apt-get install libfdk-aac-dev
+git clone https://github.com/mstorsjo/fdk-aac.git
+git checkout v2.0.3
+cd fdk-aac
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
 ```
 
 For Qt5 try one of following (Ubuntu 22.04 needs the second one): 
@@ -224,7 +225,7 @@ git clone https://github.com/tomneda/DABstar.git
 cd DABstar
 mkdir build
 cd build
-cmake .. -DAIRSPY=ON -DSDRPLAY_V2=ON -DSDRPLAY_V3=ON -DHACKRF=ON -DLIMESDR=ON -DRTL_TCP=ON -DPLUTO=ON -DUHD=ON -DRTLSDR_LINUX=ON -DUSE_HBF=OFF -DDATA_STREAMER=OFF -DVITERBI_SSE=ON -DVITERBI_NEON=OFF -DFDK_AAC=OFF
+cmake .. -DAIRSPY=ON -DSDRPLAY_V2=ON -DSDRPLAY_V3=ON -DHACKRF=ON -DLIMESDR=ON -DRTL_TCP=ON -DPLUTO=ON -DUHD=ON -DRTLSDR_LINUX=ON -DUSE_HBF=OFF -DDATA_STREAMER=OFF -DVITERBI_SSE=ON -DVITERBI_NEON=OFF -DFDK_AAC=ON
 make  
 ```
 Reduce resp. adapt the `cmake` command line for the devices/features you need.
@@ -289,7 +290,7 @@ https://qwt.sourceforge.io/qwtinstall.html
                                                 
 ## Licences
 
-Rights of Qt-DAB, Qt, Qwt, FFTW, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged.
+Rights of Qt-DAB, Qt, Qwt, FFTW, portaudio, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
 
 Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.
 
