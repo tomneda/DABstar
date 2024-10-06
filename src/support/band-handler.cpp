@@ -123,18 +123,15 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s) :
   theTable.verticalHeader()->hide();
   theTable.setShowGrid(true);
 #if !defined(__MINGW32__) && !defined(_WIN32)
-  FILE * f;
   if (a_band == QString(""))
   {
     return;
   }
-  if (a_band != QString(""))
+
+  FILE * f = fopen(a_band.toUtf8().data(), "r");
+  if (f == nullptr)
   {
-    f = fopen(a_band.toUtf8().data(), "r");
-    if (f == nullptr)
-    {
-      return;
-    }
+    return;
   }
 
   //	OK we have a file with - hopefully - some input
