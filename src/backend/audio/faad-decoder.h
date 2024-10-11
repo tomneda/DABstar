@@ -57,10 +57,10 @@ public:
   faadDecoder(RadioInterface * mr, RingBuffer<int16_t> * buffer);
   ~faadDecoder();
 
-  int16_t MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t bufferLength);
+  int16_t convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * ipBuffer, int16_t iBufferLength);
 
 private:
-  bool initialize(stream_parms *);
+  bool initialize(const stream_parms *);
 
   bool processorOK;
   bool aacInitialized;
@@ -72,7 +72,7 @@ private:
   RingBuffer<int16_t> * audioBuffer;
 
 signals:
-  void signal_new_audio(int, int, int);
+  void signal_new_audio(int, unsigned int, unsigned int);
 };
 
 #endif

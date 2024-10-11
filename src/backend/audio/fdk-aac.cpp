@@ -62,12 +62,12 @@ FdkAAC::~FdkAAC()
   }
 }
 
-int16_t FdkAAC::MP42PCM(stream_parms * sp, uint8_t packet[], int16_t packetLength)
+int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * const ipBuffer, const int16_t iPacketLength)
 {
+  static_assert(sizeof(int16_t) == sizeof(INT_PCM));
   uint32_t packet_size;
   uint32_t valid;
   AAC_DECODER_ERROR err;
-  uint8_t * ptr = packet;
   INT_PCM decode_buf[8 * sizeof(INT_PCM) * 2048];
   INT_PCM * bufp = &decode_buf[0];
   int output_size = 8 * 2048;
@@ -77,20 +77,19 @@ int16_t FdkAAC::MP42PCM(stream_parms * sp, uint8_t packet[], int16_t packetLengt
     return -1;
   }
 
-  if ((packet[0] != 0x56) || ((packet[1] >> 5) != 7))
+  if ((ipBuffer[0] != 0x56) || ((ipBuffer[1] >> 5) != 7))
   {
     return -1;
   }
 
-
-  packet_size = ((packet[1] & 0x1F) << 8) | (packet[2] + 3);
-  if ((signed)packet_size != packetLength)
+  packet_size = ((ipBuffer[1] & 0x1F) << 8) | (ipBuffer[2] + 3);
+  if ((signed)packet_size != iPacketLength)
   {
     return -1;
   }
 
   valid = packet_size;
-  err = aacDecoder_Fill(handle, &ptr, &packet_size, &valid);
+  err = aacDecoder_Fill(handle, const_cast<uint8_t **>(&ipBuffer), &packet_size, &valid);
   if (err != AAC_DEC_OK)
   {
     return -1;
@@ -118,22 +117,21 @@ int16_t FdkAAC::MP42PCM(stream_parms * sp, uint8_t packet[], int16_t packetLengt
     audioBuffer->put_data_into_ring_buffer(bufp, info->frameSize * 2);
     if (audioBuffer->get_ring_buffer_read_available() > (int)info->sampleRate / 8)
     {
-      emit signal_new_audio(info->frameSize, info->sampleRate,  (sp->psFlag ? RadioInterface::AFL_PS_USED : 0) | (sp->sbrFlag ? RadioInterface::AFL_SBR_USED : 0));
+      emit signal_new_audio(info->frameSize, info->sampleRate,  (iSP->psFlag ? RadioInterface::AFL_PS_USED : 0) | (iSP->sbrFlag ? RadioInterface::AFL_SBR_USED : 0));
     }
   }
   else if (info->numChannels == 1)
   {
-    int16_t * buffer = (int16_t *)alloca (2 * info->frameSize);
-    int16_t i;
-    for (i = 0; i < info->frameSize; i++)
+    auto * const buffer = make_vla(int16_t, 2 * info->frameSize);
+
+    for (int32_t i = 0; i < info->frameSize; i++)
     {
-      buffer[2 * i + 0] = ((int16_t *)bufp)[i];
-      buffer[2 * i + 1] = bufp[2 * i];
+      buffer[2 * i + 0] = buffer[2 * i + 1] = bufp[i];
     }
     audioBuffer->put_data_into_ring_buffer(buffer, info->frameSize * 2);
-    if (audioBuffer->get_ring_buffer_read_available() > (int)info->sampleRate / 8)
+    if (audioBuffer->get_ring_buffer_read_available() > info->sampleRate / 8)
     {
-      emit signal_new_audio(info->frameSize, info->sampleRate, (sp->psFlag ? RadioInterface::AFL_PS_USED : 0) | (sp->sbrFlag ? RadioInterface::AFL_SBR_USED : 0));
+      emit signal_new_audio(info->frameSize, info->sampleRate, (iSP->psFlag ? RadioInterface::AFL_PS_USED : 0) | (iSP->sbrFlag ? RadioInterface::AFL_SBR_USED : 0));
     }
   }
   else

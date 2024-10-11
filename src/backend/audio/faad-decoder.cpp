@@ -63,7 +63,7 @@ int get_aac_channel_configuration(int16_t m_mpeg_surround_config, uint8_t aacCha
   }
 }
 
-bool faadDecoder::initialize(stream_parms * sp)
+bool faadDecoder::initialize(const stream_parms * iSP)
 {
   long unsigned int sample_rate;
   uint8_t channels;
@@ -84,11 +84,11 @@ bool faadDecoder::initialize(stream_parms * sp)
    * support AudioObjectType 29 (PS)
    */
 
-  int core_sr_index = sp->dacRate ? (sp->sbrFlag ? 6 : 3) : (sp->sbrFlag ? 8 : 5);   // 24/48/16/32 kHz
-  int core_ch_config = get_aac_channel_configuration(sp->mpegSurround, sp->aacChannelMode);
+  int core_sr_index = iSP->dacRate ? (iSP->sbrFlag ? 6 : 3) : (iSP->sbrFlag ? 8 : 5);   // 24/48/16/32 kHz
+  int core_ch_config = get_aac_channel_configuration(iSP->mpegSurround, iSP->aacChannelMode);
   if (core_ch_config == -1)
   {
-    printf("Unrecognized mpeg surround config (ignored): %d\n", sp->mpegSurround);
+    printf("Unrecognized mpeg surround config (ignored): %d\n", iSP->mpegSurround);
     return false;
   }
 
@@ -106,7 +106,7 @@ bool faadDecoder::initialize(stream_parms * sp)
   return true;
 }
 
-int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t bufferLength)
+int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const uint8_t * const ipBuffer, const int16_t iBufferLength)
 {
   int16_t samples;
   long unsigned int sampleRate;
@@ -116,14 +116,14 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
 
   if (!aacInitialized)
   {
-    if (!initialize(sp))
+    if (!initialize(iSP))
     {
       return 0;
     }
     aacInitialized = true;
   }
 
-  outBuffer = (int16_t *)NeAACDecDecode(aacHandle, &hInfo, buffer, bufferLength);
+  outBuffer = (int16_t *)NeAACDecDecode(aacHandle, &hInfo, const_cast<uint8_t*>(ipBuffer), iBufferLength);
   sampleRate = hInfo.samplerate;
 
   samples = hInfo.samples;
@@ -153,14 +153,12 @@ int16_t faadDecoder::MP42PCM(stream_parms * sp, uint8_t buffer[], int16_t buffer
   }
   else if (channels == 1)
   {
-    int16_t * buffer = (int16_t *)alloca (2 * samples);
-    int16_t i;
-    for (i = 0; i < samples; i++)
+    auto * const buffer = make_vla(int16_t, 2 * samples);
+    for (int16_t i = 0; i < samples; i++)
     {
-      buffer[2 * i] = ((int16_t *)outBuffer)[i];
-      buffer[2 * i + 1] = buffer[2 * i];
+      buffer[2 * i + 0] = buffer[2 * i + 1] = outBuffer[i];
     }
-    audioBuffer->put_data_into_ring_buffer(buffer, samples);
+    audioBuffer->put_data_into_ring_buffer(ipBuffer, samples);
     if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 8)
     {
       emit signal_new_audio(samples, sampleRate, (hInfo.ps ? RadioInterface::AFL_PS_USED : 0) | (hInfo.sbr ? RadioInterface::AFL_SBR_USED : 0));
