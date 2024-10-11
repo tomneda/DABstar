@@ -312,16 +312,14 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
         //
         //	then handle the audio
 #ifdef  __WITH_FDK_AAC__
-        tmp = aacDecoder -> MP42PCM (&streamParameters,
-                                     fileBuffer. data (),
-                                     segmentSize);
+        tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, fileBuffer.data(), segmentSize);
 #else
         uint8_t theAudioUnit[2 * 960 + 10];  // sure, large enough
 
         memcpy(theAudioUnit, &outVector[au_start[i]], aac_frame_length);
         memset(&theAudioUnit[aac_frame_length], 0, 10);
 
-        tmp = aacDecoder->MP42PCM(&streamParameters, theAudioUnit, aac_frame_length);
+        tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aac_frame_length);
 #endif
         emit isStereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
 

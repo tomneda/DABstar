@@ -421,6 +421,11 @@ void RadioInterface::_set_clock_text(const QString & iText /*= QString()*/)
 
 QString RadioInterface::get_copyright_text() const
 {
+#ifdef __WITH_FDK_AAC__
+  QString usedDecoder = "FDK-AAC";
+#else
+  QString usedDecoder = "libfaad";
+#endif
   QString versionText = "<html><head/><body><p>";
   versionText = "<h3>" + QString(PRJ_NAME) + " V" + mVersionStr + " (Qt " QT_VERSION_STR " / Qwt " QWT_VERSION_STR ")</h3>";
   versionText += "<p><b>Built on " + QString(__TIMESTAMP__) + QString("<br/>Commit ") + QString(GITHASH) + ".</b></p>";
@@ -428,7 +433,7 @@ QString RadioInterface::get_copyright_text() const
                  "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>) from Qt-DAB<br/>"
                  "(<a href=\"https://github.com/JvanKatwijk/qt-dab\">https://github.com/JvanKatwijk/qt-dab</a>) by Jan van Katwijk<br/>"
                  "(<a href=\"mailto:J.vanKatwijk@gmail.com\">J.vanKatwijk@gmail.com</a>).</p>";
-  versionText += "<p>Rights of Qt, Qwt, FFTW, Kiss, liquid-DSP, portaudio, libfaad, libsamplerate and libsndfile gratefully acknowledged.<br/>"
+  versionText += "<p>Rights of Qt, Qwt, FFTW, Kiss, liquid-DSP, portaudio, " + usedDecoder + ", libsamplerate and libsndfile gratefully acknowledged.<br/>"
                  "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.<br/>"
                  "Rights of other contributors gratefully acknowledged.</p>";
   versionText += "</p></body></html>";
@@ -1057,7 +1062,7 @@ void RadioInterface::slot_change_in_configuration()
 //	In order to not overload with an enormous amount of
 //	signals, we trigger this function at most 10 times a second
 //
-void RadioInterface::slot_new_audio(int iAmount, int iSR, int iAudioFlags)
+void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iSR, const uint32_t iAudioFlags)
 {
   if (!mIsRunning.load())
   {

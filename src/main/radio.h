@@ -357,7 +357,7 @@ public slots:
   void slot_send_datagram(int);
   void slot_handle_tdc_data(int, int);
   void slot_change_in_configuration();
-  void slot_new_audio(int, int, int);
+  void slot_new_audio(int32_t, uint32_t, uint32_t);
   void slot_set_stereo(bool);
   void slot_set_stream_selector(int);
   void slot_no_signal_found();

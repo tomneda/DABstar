@@ -104,7 +104,7 @@ private:
   
 signals:
   void signal_show_frameErrors(int);
-  void signal_new_audio(int, int, int);
+  void signal_new_audio(int, unsigned int, unsigned int);
   void signal_is_stereo(bool);
 };
 
