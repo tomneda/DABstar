@@ -234,7 +234,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
 #else
-  mpSoundOut.reset(new QtAudio());
+  mpSoundOut.reset(new Qt_Audio());
   const QStringList list = mpSoundOut->get_audio_devices_list();
   mConfig.streamoutSelector->addItems(list);
   mConfig.streamoutSelector->show();
@@ -257,7 +257,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   }
 
 // #elif QT_AUDIO
-//   mpSoundOut = new QtAudio();
+//   mpSoundOut = new Qt_Audio();
 //   // theTechWindow->hide();
 // #else
 //   //	just sound out

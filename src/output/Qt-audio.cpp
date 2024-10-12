@@ -39,7 +39,7 @@
 #include <QDebug>
 //#include	"settingNames.h"
 
-QtAudio::QtAudio()
+Qt_Audio::Qt_Audio()
   : mAudioBuffer(8 * 32768)
 {
   //audioSettings = settings;
@@ -51,7 +51,7 @@ QtAudio::QtAudio()
   _initializeAudio(QMediaDevices::defaultAudioOutput());
 }
 
-void QtAudio::_initialize_deviceList()
+void Qt_Audio::_initialize_deviceList()
 {
   const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
   mAudioDeviceList.clear();
@@ -70,7 +70,7 @@ void QtAudio::_initialize_deviceList()
   }
 }
 
-QStringList QtAudio::get_audio_devices_list()
+QStringList Qt_Audio::get_audio_devices_list()
 {
   QStringList nameList;
   bool defaultLabelAdded = false;
@@ -93,7 +93,7 @@ QStringList QtAudio::get_audio_devices_list()
 //
 //	Note that AudioBase functions have - if needed - the rate
 //	converted.  This functions overrides the one in AudioBase
-void QtAudio::audioOutput(float * fragment, int32_t size)
+void Qt_Audio::audioOutput(float * fragment, int32_t size)
 {
   if (!mIsRunning.load())
   {
@@ -117,7 +117,7 @@ void QtAudio::audioOutput(float * fragment, int32_t size)
   }
 }
 
-void QtAudio::_initializeAudio(const QAudioDevice & iAudioDevice)
+void Qt_Audio::_initializeAudio(const QAudioDevice & iAudioDevice)
 {
   mAudioFormat.setSampleRate(mSampleRate);
   mAudioFormat.setChannelCount(2);
@@ -139,14 +139,14 @@ void QtAudio::_initializeAudio(const QAudioDevice & iAudioDevice)
   }
 }
 
-void QtAudio::stop()
+void Qt_Audio::stop()
 {
   mpAudioSink->stop();
   mIsRunning.store(false);
   mIsInitialized.store(false);
 }
 
-void QtAudio::restart()
+void Qt_Audio::restart()
 {
   if (mCurDeviceIndex < 0)
   {
@@ -175,7 +175,7 @@ void QtAudio::restart()
   //m_audioOutput->setVolume((float)vol / 100);
 }
 
-bool QtAudio::selectDevice(const int index)
+bool Qt_Audio::selectDevice(const int index)
 {
   mCurDeviceIndex = index;
   stop();
@@ -191,7 +191,7 @@ bool QtAudio::selectDevice(const int index)
   return mIsRunning.load();
 }
 
-void QtAudio::suspend()
+void Qt_Audio::suspend()
 {
   if (!mIsRunning.load())
   {
@@ -201,7 +201,7 @@ void QtAudio::suspend()
   mpAudioSink->suspend();
 }
 
-void QtAudio::resume()
+void Qt_Audio::resume()
 {
   if (!mIsRunning.load())
   {
@@ -211,7 +211,7 @@ void QtAudio::resume()
   mpAudioSink->resume();
 }
 
-void QtAudio::setVolume(int v)
+void Qt_Audio::setVolume(int v)
 {
   //audioSettings->setValue(QT_AUDIO_VOLUME, v);
   mpAudioSink->setVolume((float)v / 100);

@@ -54,11 +54,11 @@
 
 class QSettings;
 
-class QtAudio
+class Qt_Audio
 {
 public:
-  QtAudio();
-  ~QtAudio()  = default;
+  Qt_Audio();
+  ~Qt_Audio()  = default;
 
   void stop();
   void restart();
