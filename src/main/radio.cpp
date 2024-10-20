@@ -40,6 +40,7 @@
 #include "service-list-handler.h"
 #include "setting-helper.h"
 #include "Qt-audio.h"
+#include "audiooutputqt.h"
 #include <fstream>
 #include <numeric>
 #include <vector>
@@ -67,6 +68,7 @@
   #include "audiosink.h"
 #endif
 
+#include "audiooutputqt.h"
 #include  "time-table.h"
 #include  "device-exceptions.h"
 
@@ -234,9 +236,21 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   soundOut = new tcpStreamer(20040);
   theTechWindow->hide();
 #else
-  mpSoundOut.reset(new Qt_Audio());
-  const QStringList list = mpSoundOut->get_audio_devices_list();
-  mConfig.streamoutSelector->addItems(list);
+  //mpSoundOut.reset(new Qt_Audio);
+  mpAudioOutput.reset(new AudioOutputQt);
+  connect(this, &RadioInterface::signal_start_audio, mpAudioOutput.get(), &AudioOutput::start, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_switch_audio, mpAudioOutput.get(), &AudioOutput::restart, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_stop_audio, mpAudioOutput.get(), &AudioOutput::stop, Qt::QueuedConnection);
+  //const QStringList list = mpSoundOut->get_audio_devices_list();
+  const QList<QAudioDevice> list = mpAudioOutput->getAudioDevices();
+
+  for (const QAudioDevice &device : list)
+  {
+    mConfig.streamoutSelector->addItem(device.description());
+  }
+
+
+  //mConfig.streamoutSelector->addItems(list);
   mConfig.streamoutSelector->show();
 
   //   ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
@@ -248,12 +262,12 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   if (k != -1)
   {
     mConfig.streamoutSelector->setCurrentIndex(k);
-    run = mpSoundOut->selectDevice(k);
+    //run = mpSoundOut->selectDevice(k);
   }
 
   if (k == -1 || !run)
   {
-    mpSoundOut->selectDevice(0); // selects default device
+    //mpSoundOut->selectDevice(0); // selects default device
   }
 
 // #elif QT_AUDIO
@@ -1109,7 +1123,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iSR, c
     }
   }
 
-  auto * const vec = make_vla(int16_t, iAmount); // TODO: is iAmount for one single sample or a stereo sample?
+  auto * const vec = make_vla(int16_t, iAmount);
 
   while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
   {
@@ -1120,8 +1134,42 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iSR, c
     if (!mMutingActive)
     {
       // let vec be interpreted as a complex vector (bit ugly but if it works...)
-      const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iSR, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
-      mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
+      // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iSR, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
+      // mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
+
+      Q_ASSERT(m_outFifoPtr != nullptr);
+
+      //int64_t bytesToWrite = m_outputBufferSamples * sizeof(int16_t);
+      int64_t bytesToWrite = iAmount * sizeof(int16_t);
+
+      // wait for space in ouput buffer
+      m_outFifoPtr->mutex.lock();
+      uint64_t count = m_outFifoPtr->count;
+      while (int64_t(AUDIO_FIFO_SIZE - count) < bytesToWrite)
+      {
+        m_outFifoPtr->countChanged.wait(&m_outFifoPtr->mutex);
+        count = m_outFifoPtr->count;
+      }
+      m_outFifoPtr->mutex.unlock();
+
+      int64_t bytesToEnd = AUDIO_FIFO_SIZE - m_outFifoPtr->head;
+      if (bytesToEnd < bytesToWrite)
+      {
+        // memcpy(m_outFifoPtr->buffer + m_outFifoPtr->head, m_outBufferPtr, bytesToEnd);
+        // memcpy(m_outFifoPtr->buffer, reinterpret_cast<uint8_t *>(m_outBufferPtr) + bytesToEnd, bytesToWrite - bytesToEnd);
+        memcpy(m_outFifoPtr->buffer + m_outFifoPtr->head, vec, bytesToEnd);
+        memcpy(m_outFifoPtr->buffer, reinterpret_cast<uint8_t *>(vec) + bytesToEnd, bytesToWrite - bytesToEnd);
+        m_outFifoPtr->head = bytesToWrite - bytesToEnd;
+      }
+      else
+      {
+        memcpy(m_outFifoPtr->buffer + m_outFifoPtr->head, vec, bytesToWrite);
+        m_outFifoPtr->head += bytesToWrite;
+      }
+
+      m_outFifoPtr->mutex.lock();
+      m_outFifoPtr->count += bytesToWrite;
+      m_outFifoPtr->mutex.unlock();
     }
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -1174,7 +1222,8 @@ void RadioInterface::_slot_terminate_process()
   mChannelTimer.stop();
   mPresetTimer.stop();
   mEpgTimer.stop();
-  mpSoundOut->stop();
+  //mpSoundOut->stop();
+  emit signal_stop_audio();
   if (mDlTextFile != nullptr)
   {
     fclose(mDlTextFile);
@@ -1776,7 +1825,7 @@ void RadioInterface::slot_set_stream_selector(int k)
   {
     return;
   }
-  mpSoundOut->selectDevice(k);
+  //mpSoundOut->selectDevice(k);
   mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
 #if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
   ((AudioSink *)(mpSoundOut))->selectDevice(k);
@@ -2290,7 +2339,8 @@ void RadioInterface::stopService(DabService & s)
     mpDabProcessor->stop_service(s.subChId, FORE_GROUND);
     if (s.is_audio)
     {
-      mpSoundOut->stop();
+      emit signal_stop_audio();
+      //mpSoundOut->stop();
       for (int i = 0; i < 5; i++)
       {
         Packetdata pd;
@@ -2424,7 +2474,8 @@ void RadioInterface::startAudioservice(Audiodata * ad)
     }
   }
   //	activate sound
-  mpSoundOut->restart();
+  _set_output(48000, 2);
+  //mpSoundOut->restart();
   programTypeLabel->setText(getProgramType(ad->programType));
   //	show service related data
   mpTechDataWidget->show_serviceData(ad);
@@ -2691,7 +2742,8 @@ void RadioInterface::stopChannel()
   mChannel.backgroundServices.clear();
 
   stopSourcedumping();
-  mpSoundOut->stop();
+  emit signal_stop_audio();
+  //mpSoundOut->stop();
 
   _show_epg_label(false);
 
@@ -3682,3 +3734,23 @@ void RadioInterface::_set_device_to_file_mode(const bool iDataFromFile)
   }
 }
 
+void RadioInterface::_set_output(int sampleRate, int numChannels)
+{
+  // toggle index 0->1 or 1->0
+  m_outFifoIdx = (m_outFifoIdx + 1) & 0x1;
+  m_outFifoPtr = &mAudioFifo[m_outFifoIdx];
+
+  m_outFifoPtr->sampleRate = sampleRate;
+  m_outFifoPtr->numChannels = numChannels;
+  m_outFifoPtr->reset();
+
+  if (m_playbackState == EPlaybackState::Running)
+  {
+    emit signal_switch_audio(m_outFifoPtr);
+  }
+  else
+  {
+    m_playbackState = EPlaybackState::Running;
+    emit signal_start_audio(m_outFifoPtr);
+  }
+}

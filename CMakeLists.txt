@@ -256,7 +256,7 @@ set(${objectName}_HDRS
         src/main/dab-constants.h
         src/main/mot-content-types.h
         src/eti-handler/eti-generator.h
-        src/data_manip_and_checks.h
+        src/main/data_manip_and_checks.h
         src/ofdm/sample-reader.h
         src/ofdm/phasereference.h
         src/ofdm/ofdm-decoder.h
@@ -307,6 +307,9 @@ set(${objectName}_HDRS
         # src/output/audio-base.h
         src/output/audio-player.h
         src/output/newconverter.h
+        src/output/audiooutput.h
+        src/output/audiofifo.h
+        src/output/audiooutputqt.h
         src/support/ringbuffer.h
         src/support/Xtan2.h
         src/support/dab-params.h
@@ -399,6 +402,8 @@ set(${objectName}_SRCS
         src/output/audio-player.cpp
         src/output/newconverter.cpp
         src/output/fir-filters.cpp
+        src/output/audiofifo.cpp
+        src/output/audiooutputqt.cpp
         src/support/Xtan2.cpp
         src/support/dab-params.cpp
         src/support/band-handler.cpp
@@ -580,6 +585,7 @@ include_directories(
 
 add_executable(${objectName}
         ${${objectName}_SRCS}
+        ${${objectName}_HDRS}
         ${UIS}
         ${RSCS}
         ${TRS}

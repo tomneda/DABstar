@@ -53,24 +53,27 @@
 #include "device-selector.h"
 #include "configuration.h"
 #include "converter_48000.h"
-#include  <set>
-#include  <memory>
-#include  <mutex>
-#include  <QMainWindow>
-#include  <QStringList>
-#include  <QStandardItemModel>
-#include  <QVector>
-#include  <QComboBox>
-#include  <QByteArray>
-#include  <QLabel>
-#include  <QTimer>
-#include  <sndfile.h>
+#include "audiofifo.h"
+#include <set>
+#include <memory>
+#include <mutex>
+#include <QMainWindow>
+#include <QStringList>
+#include <QStandardItemModel>
+#include <QVector>
+#include <QComboBox>
+#include <QByteArray>
+#include <QLabel>
+#include <QTimer>
+#include <sndfile.h>
 
 class QSettings;
 class SettingHelper;
 class Qt_Audio;
 class timeTableHandler;
 class ServiceListHandler;
+class AudioOutput;
+
 
 #ifdef  HAVE_PLUTO_RXTX
 class	dabStreamer;
@@ -204,7 +207,7 @@ private:
   RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
   RingBuffer<uint8_t> mDataBuffer{32768};
   RingBuffer<int16_t> mAudioBuffer{8 * 32768};
-  std::vector<float> mAudioOutBuffer;
+  //std::vector<float> mAudioOutBuffer;
   SpectrumViewer mSpectrumViewer;
   BandHandler mBandHandler;
   dlCache mDlCache{10};
@@ -233,7 +236,15 @@ private:
   DabProcessor * mpDabProcessor = nullptr;
   //AudioBase * mpSoundOut = nullptr;
   converter_48000 mAudioSampRateConv{};
-  QScopedPointer<Qt_Audio> mpSoundOut;
+  // QScopedPointer<Qt_Audio> mpSoundOut;
+  QScopedPointer<AudioOutput> mpAudioOutput;
+  std::array<audioFifo_t, 2> mAudioFifo;
+  int32_t m_outFifoIdx = 0;
+  audioFifo_t * m_outFifoPtr = nullptr;
+  enum class EPlaybackState { Stopped = 0, WaitForInit, Running };
+  EPlaybackState m_playbackState = EPlaybackState::Stopped;
+
+
 
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
@@ -336,11 +347,17 @@ private:
   void _reset_status_info();
   void _update_channel_selector();
   void _set_device_to_file_mode(const bool iDataFromFile);
+  void _set_output(int sampleRate, int numChannels);
 
 signals:
   void signal_set_new_channel(int);
   void signal_dab_processor_started();
   void signal_test_slider_changed(int);
+
+  void signal_start_audio(audioFifo_t *buffer);
+  void signal_switch_audio(audioFifo_t *buffer);
+  void signal_stop_audio();
+
 
 public slots:
   void slot_add_to_ensemble(const QString &, int);
