@@ -1,5 +1,5 @@
 /*
- * This file original taken from AbracaDABra and is adapted by Thomas Neder
+* This file original taken from AbracaDABra and is adapted by Thomas Neder
  * (https://github.com/tomneda)
  * The original copyright information is preserved below and is acknowledged.
  */
@@ -30,52 +30,53 @@
  * SOFTWARE.
  */
 
-#ifndef AUDIOOUTPUT_H
-#define AUDIOOUTPUT_H
+#include "audiooutput.h"
+#include <QAudioSink>
 
-#include <QObject>
-#include <QMediaDevices>
-#include <QAudioDevice>
-
-#include "audiofifo.h"
-
-constexpr float AUDIOOUTPUT_FADE_TIME_MS =   60.0f;
-constexpr float AUDIOOUTPUT_FADE_MIN_DB  =  -80.0f;
-constexpr float AUDIOOUTPUT_FADE_MIN_LIN = 0.0001f;
-
-enum class EPlaybackState { Muted = 0, Playing = 1 };
-
-
-class AudioOutput : public QObject
+AudioOutput::AudioOutput(QObject * parent)
 {
-  Q_OBJECT
+  mpDevices = new QMediaDevices(this);
+  connect(mpDevices, &QMediaDevices::audioOutputsChanged, this, &AudioOutput::_slot_update_audio_devices);
+}
 
-public:
-  explicit AudioOutput(QObject * parent = nullptr);
-  ~AudioOutput() override = default;
+QList<QAudioDevice> AudioOutput::get_audio_device_list() const
+{
+  QList<QAudioDevice> list;
+  const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
+  list.append(defaultDeviceInfo);
 
-  QList<QAudioDevice> get_audio_device_list() const;
+  for (auto & deviceInfo : QMediaDevices::audioOutputs())
+  {
+    if (deviceInfo != defaultDeviceInfo)
+    {
+      list.append(deviceInfo);
+    }
+  }
+  return list;
+}
 
-  public slots:
-    virtual void slot_start(SAudioFifo * iBuffer) = 0;
-    virtual void slot_restart(SAudioFifo * iBuffer) = 0;
-    virtual void slot_stop() = 0;
-    virtual void slot_mute(bool on) = 0;
-    virtual void slot_setVolume(int value) = 0;
-    virtual void slot_set_audio_device(const QByteArray & deviceId) = 0;
+void AudioOutput::_slot_update_audio_devices()
+{
+  QList<QAudioDevice> list = get_audio_device_list();
 
-  signals:
-    void signal_audio_output_error();
-    void signal_audio_output_restart();
-    void signal_audio_devices_list(QList<QAudioDevice> deviceList);
-    void signal_audio_device_changed(const QByteArray & id);
+  emit signal_audio_devices_list(list);
 
-protected:
-  QMediaDevices * mpDevices = nullptr;
-  QAudioDevice mCurrentAudioDevice;
+  bool currentDeviceFound = false;
+  for (auto & dev : list)
+  {
+    if (dev.id() == mCurrentAudioDevice.id())
+    {
+      currentDeviceFound = true;
+      break;
+    }
+  }
 
-private slots:
-  void _slot_update_audio_devices();
-};
+  if (!currentDeviceFound)
+  {
+    // current device no longer exists => default is used
+    mCurrentAudioDevice = QMediaDevices::defaultAudioOutput();
+  }
+  emit signal_audio_device_changed(mCurrentAudioDevice.id());
+}
 
-#endif // AUDIOOUTPUT_H
+

@@ -1,4 +1,10 @@
 /*
+ * This file original taken from AbracaDABra and is adapted by Thomas Neder
+ * (https://github.com/tomneda)
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  * This file is part of the AbracaDABra project
  *
  * MIT License
@@ -35,7 +41,7 @@
 #define AUDIO_FIFO_SIZE       (48 * AUDIO_FIFO_MS * 2 * sizeof(int16_t))  // FS - 48kHz, stereo, int16_t samples
 
 
-struct AudioFifo
+struct SAudioFifo
 {
     uint32_t sampleRate;
     uint8_t numChannels;
@@ -48,8 +54,6 @@ struct AudioFifo
     void reset();
 };
 
-typedef struct AudioFifo audioFifo_t;
-
-//extern audioFifo_t audioBuffer[2];
+//using SAudioFifo = struct AudioFifo;
 
 #endif // AUDIOFIFO_H

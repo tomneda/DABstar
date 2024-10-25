@@ -238,19 +238,14 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #else
   //mpSoundOut.reset(new Qt_Audio);
   mpAudioOutput.reset(new AudioOutputQt);
-  connect(this, &RadioInterface::signal_start_audio, mpAudioOutput.get(), &AudioOutput::start, Qt::QueuedConnection);
-  connect(this, &RadioInterface::signal_switch_audio, mpAudioOutput.get(), &AudioOutput::restart, Qt::QueuedConnection);
-  connect(this, &RadioInterface::signal_stop_audio, mpAudioOutput.get(), &AudioOutput::stop, Qt::QueuedConnection);
-  //const QStringList list = mpSoundOut->get_audio_devices_list();
-  const QList<QAudioDevice> list = mpAudioOutput->getAudioDevices();
+  connect(mpAudioOutput.get(), &AudioOutput::signal_audio_devices_list, this, &RadioInterface::_slot_load_audio_device_list);
+  connect(this, &RadioInterface::signal_start_audio, mpAudioOutput.get(), &AudioOutput::slot_start, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_switch_audio, mpAudioOutput.get(), &AudioOutput::slot_restart, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_stop_audio, mpAudioOutput.get(), &AudioOutput::slot_stop, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_set_audio_device, mpAudioOutput.get(), &AudioOutput::slot_set_audio_device, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_audio_mute, mpAudioOutput.get(), &AudioOutput::slot_mute, Qt::QueuedConnection);
 
-  for (const QAudioDevice &device : list)
-  {
-    mConfig.streamoutSelector->addItem(device.description());
-  }
-
-
-  //mConfig.streamoutSelector->addItems(list);
+  _slot_load_audio_device_list(mpAudioOutput->get_audio_device_list());
   mConfig.streamoutSelector->show();
 
   //   ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
@@ -263,6 +258,8 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   {
     mConfig.streamoutSelector->setCurrentIndex(k);
     //run = mpSoundOut->selectDevice(k);
+    //emit signal_set_audio_device(settings->value("audioDevice", "").toByteArray());
+    emit signal_set_audio_device(mConfig.streamoutSelector->itemData(k).toByteArray());
   }
 
   if (k == -1 || !run)
@@ -918,12 +915,12 @@ void RadioInterface::write_picture(const QPixmap & iPixMap) const
   // typical the MOT size is 320 : 240 , so only scale for other sizes
   if (iPixMap.width() != w || iPixMap.height() != h)
   {
-    qDebug("MOT w: %d, h: %d (scale)", iPixMap.width(), iPixMap.height());
+    qDebug("MOT w: %d, h: %d (scaled)", iPixMap.width(), iPixMap.height());
     pictureLabel->setPixmap(iPixMap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
   }
   else
   {
-    qDebug("MOT w: %d, h: %d", iPixMap.width(), iPixMap.height());
+    // qDebug("MOT w: %d, h: %d", iPixMap.width(), iPixMap.height());
     pictureLabel->setPixmap(iPixMap);
   }
 
@@ -1131,7 +1128,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iSR, c
     // vec contains a stereo pair [0][1]...[n-1][n]
     mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
 
-    if (!mMutingActive)
+    //if (!mMutingActive)
     {
       // let vec be interpreted as a complex vector (bit ugly but if it works...)
       // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iSR, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
@@ -1825,8 +1822,9 @@ void RadioInterface::slot_set_stream_selector(int k)
   {
     return;
   }
-  //mpSoundOut->selectDevice(k);
+
   mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
+  emit signal_set_audio_device(mConfig.streamoutSelector->itemData(k).toByteArray());
 #if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
   ((AudioSink *)(mpSoundOut))->selectDevice(k);
   mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
@@ -3038,6 +3036,7 @@ void RadioInterface::_slot_handle_mute_button()
   btnMuteAudio->setIcon(QIcon(mMutingActive ? ":res/icons/muted24.png" : ":res/icons/unmuted24.png"));
   btnMuteAudio->setIconSize(QSize(24, 24));
   btnMuteAudio->setFixedSize(QSize(32, 32));
+  signal_audio_mute(mMutingActive);
 }
 
 void RadioInterface::_update_channel_selector(int index)
@@ -3505,7 +3504,6 @@ void RadioInterface::start_etiHandler()
 
 void RadioInterface::slot_handle_eti_active_selector(int /*k*/)
 {
-  // TODO: this needs to be refactored due to the usage of the scan button for ETI activation
   if (mpInputDevice == nullptr)
   {
     return;
@@ -3753,4 +3751,27 @@ void RadioInterface::_set_output(int sampleRate, int numChannels)
     m_playbackState = EPlaybackState::Running;
     emit signal_start_audio(m_outFifoPtr);
   }
+}
+
+void RadioInterface::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList)
+{
+  // m_audioOutputMenu->clear();
+  // if (nullptr != m_audioDevicesGroup)
+  // {
+  //   delete m_audioDevicesGroup;
+  // }
+  // m_audioDevicesGroup = new QActionGroup(m_audioOutputMenu);
+  mConfig.streamoutSelector->clear();
+  for (const QAudioDevice &device : iDeviceList)
+  {
+    mConfig.streamoutSelector->addItem(device.description(), QVariant::fromValue(device.id()));
+  }
+
+  // for (const QAudioDevice & device : list)
+  // {
+  //   QAction * action = new QAction(device.description(), m_audioDevicesGroup);
+  //   action->setData(QVariant::fromValue(device));
+  //   action->setCheckable(true);
+  // }
+  //m_audioOutputMenu->addActions(m_audioDevicesGroup->actions());
 }

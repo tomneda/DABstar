@@ -307,8 +307,8 @@ set(${objectName}_HDRS
         # src/output/audio-base.h
         src/output/audio-player.h
         src/output/newconverter.h
-        src/output/audiooutput.h
         src/output/audiofifo.h
+        src/output/audiooutput.h
         src/output/audiooutputqt.h
         src/support/ringbuffer.h
         src/support/Xtan2.h
@@ -403,6 +403,7 @@ set(${objectName}_SRCS
         src/output/newconverter.cpp
         src/output/fir-filters.cpp
         src/output/audiofifo.cpp
+        src/output/audiooutput.cpp
         src/output/audiooutputqt.cpp
         src/support/Xtan2.cpp
         src/support/dab-params.cpp

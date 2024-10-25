@@ -65,6 +65,7 @@
 #include <QByteArray>
 #include <QLabel>
 #include <QTimer>
+#include <QAudioDevice>
 #include <sndfile.h>
 
 class QSettings;
@@ -238,9 +239,9 @@ private:
   converter_48000 mAudioSampRateConv{};
   // QScopedPointer<Qt_Audio> mpSoundOut;
   QScopedPointer<AudioOutput> mpAudioOutput;
-  std::array<audioFifo_t, 2> mAudioFifo;
+  std::array<SAudioFifo, 2> mAudioFifo;
   int32_t m_outFifoIdx = 0;
-  audioFifo_t * m_outFifoPtr = nullptr;
+  SAudioFifo * m_outFifoPtr = nullptr;
   enum class EPlaybackState { Stopped = 0, WaitForInit, Running };
   EPlaybackState m_playbackState = EPlaybackState::Stopped;
 
@@ -353,10 +354,12 @@ signals:
   void signal_set_new_channel(int);
   void signal_dab_processor_started();
   void signal_test_slider_changed(int);
+  void signal_audio_mute(bool iMuted);
 
-  void signal_start_audio(audioFifo_t *buffer);
-  void signal_switch_audio(audioFifo_t *buffer);
+  void signal_start_audio(SAudioFifo *buffer);
+  void signal_switch_audio(SAudioFifo *buffer);
   void signal_stop_audio();
+  void signal_set_audio_device(const QByteArray & deviceId);
 
 
 public slots:
@@ -452,6 +455,7 @@ private slots:
   //	config handlers
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();
+  void _slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList);
 };
 
 #endif

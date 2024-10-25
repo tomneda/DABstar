@@ -295,7 +295,7 @@ https://qwt.sourceforge.io/qwtinstall.html
                                                 
 ## Licences
 
-Rights of Qt-DAB, Qt, Qwt, FFTW, portaudio, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
+Rights of Qt-DAB, AbracaDABra, Qt, Qwt, FFTW, portaudio, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
 
 Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.
 

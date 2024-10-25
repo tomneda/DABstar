@@ -26,7 +26,7 @@
 
 #include "audiofifo.h"
 
-void AudioFifo::reset()
+void SAudioFifo::reset()
 {
     mutex.lock();
     count = 0;

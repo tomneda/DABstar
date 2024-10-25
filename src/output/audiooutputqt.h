@@ -1,4 +1,10 @@
 /*
+ * This file original taken from AbracaDABra and is adapted by Thomas Neder
+ * (https://github.com/tomneda)
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  * This file is part of the AbracaDABra project
  *
  * MIT License
@@ -27,76 +33,71 @@
 #ifndef AUDIOOUTPUTQT_H
 #define AUDIOOUTPUTQT_H
 
-#include <QIODevice>
-#include <QObject>
-#include <QWaitCondition>
-#include <QMutex>
-#include <QTimer>
-#include <QAudioSink>
-#include <QMediaDevices>
-
 #include "audiooutput.h"
 #include "audiofifo.h"
+#include <QObject>
+#include <QIODevice>
 
 class AudioIODevice;
+class QAudioSink;
 
-class AudioOutputQt : public AudioOutput
+class AudioOutputQt final : public AudioOutput
 {
   Q_OBJECT
 
 public:
-  AudioOutputQt(QObject * parent = nullptr);
-  ~AudioOutputQt();
-
-  void start(audioFifo_t * buffer) override;
-  void restart(audioFifo_t * buffer) override;
-  void stop() override;
-  void mute(bool on) override;
-  void setVolume(int value) override;
-  void setAudioDevice(const QByteArray & deviceId) override;
+  explicit AudioOutputQt(QObject * parent = nullptr);
+  ~AudioOutputQt() override;
 
 private:
-  // Qt audio
-  AudioIODevice * m_ioDevice;
-  QAudioSink * m_audioSink;
-  float m_linearVolume;
-  audioFifo_t * m_currentFifoPtr = nullptr;
-  audioFifo_t * m_restartFifoPtr = nullptr;
+  AudioIODevice * mpIoDevice = nullptr;
+  QAudioSink * mpAudioSink = nullptr;
+  SAudioFifo * mpCurrentFifo = nullptr;
+  SAudioFifo * mpRestartFifo = nullptr;
+  float mLinearVolume = 1.0f;
 
-  void handleStateChanged(QAudio::State newState);
-  int64_t bytesAvailable();
-  void doStop();
-  void doRestart(audioFifo_t * buffer);
+  void _do_stop();
+  void _do_restart(SAudioFifo * buffer);
+
+public slots:
+  void slot_start(SAudioFifo * iBuffer) override;
+  void slot_restart(SAudioFifo * iBuffer) override;
+  void slot_stop() override;
+  void slot_mute(bool iMuteActive) override;
+  void slot_setVolume(int iLogVolVal) override;
+  void slot_set_audio_device(const QByteArray & iDeviceId) override;
+
+private slots:
+  void _slot_state_changed(QAudio::State iNewState);
 };
 
 
-class AudioIODevice : public QIODevice
+class AudioIODevice final : public QIODevice
 {
 public:
-  AudioIODevice(QObject * parent = nullptr);
+  explicit AudioIODevice(QObject * iParent = nullptr);
 
   void start();
   void stop();
-  void setBuffer(audioFifo_t * buffer);
+  void set_buffer(SAudioFifo * iBuffer);
+  void set_mute_state(bool iMuteActive);
+  bool is_muted() const { return mPlaybackState == EPlaybackState::Muted; }
 
   qint64 readData(char * data, qint64 maxlen) override;
   qint64 writeData(const char * data, qint64 len) override;
   qint64 bytesAvailable() const override;
 
-  void mute(bool on);
-  bool isMuted() const { return AudioOutputPlaybackState::Muted == m_playbackState; }
-
 private:
-  audioFifo_t * m_inFifoPtr = nullptr;
-  AudioOutputPlaybackState m_playbackState;
-  uint8_t m_bytesPerFrame;
-  uint32_t m_sampleRate_kHz;
-  uint8_t m_numChannels;
-  float m_muteFactor;
-  bool m_doStop = false;
+  SAudioFifo * mpInFifo = nullptr;
+  EPlaybackState mPlaybackState = EPlaybackState::Muted;
+  uint8_t mBytesPerFrame = 0;
+  uint32_t mSampleRateKHz = 0;
+  uint8_t mNumChannels = 0;
+  float mMuteFactor = 0;
+  bool mDoStop = false;
 
-  std::atomic<bool> m_muteFlag = false;
-  std::atomic<bool> m_stopFlag = false;
+  std::atomic<bool> mMuteFlag = false;
+  std::atomic<bool> mStopFlag = false;
 };
 
 #endif // AUDIOOUTPUTQT_H
