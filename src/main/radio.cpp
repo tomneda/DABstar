@@ -1133,40 +1133,40 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iSR, c
       // let vec be interpreted as a complex vector (bit ugly but if it works...)
       // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iSR, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
       // mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
-
-      Q_ASSERT(m_outFifoPtr != nullptr);
+      // TODO: WAV output should work again
+      Q_ASSERT(mpCurAudioFifo != nullptr);
 
       //int64_t bytesToWrite = m_outputBufferSamples * sizeof(int16_t);
-      int64_t bytesToWrite = iAmount * sizeof(int16_t);
+      const int64_t bytesToWrite = iAmount * sizeof(int16_t);
 
-      // wait for space in ouput buffer
-      m_outFifoPtr->mutex.lock();
-      uint64_t count = m_outFifoPtr->count;
-      while (int64_t(AUDIO_FIFO_SIZE - count) < bytesToWrite)
+      // wait for space in output buffer
+      mpCurAudioFifo->mutex.lock();
+      uint64_t count = mpCurAudioFifo->count;
+      while ((int64_t)(AUDIO_FIFO_SIZE - count) < bytesToWrite)
       {
-        m_outFifoPtr->countChanged.wait(&m_outFifoPtr->mutex);
-        count = m_outFifoPtr->count;
+        mpCurAudioFifo->countChanged.wait(&mpCurAudioFifo->mutex);
+        count = mpCurAudioFifo->count;
       }
-      m_outFifoPtr->mutex.unlock();
+      mpCurAudioFifo->mutex.unlock();
 
-      int64_t bytesToEnd = AUDIO_FIFO_SIZE - m_outFifoPtr->head;
+      int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpCurAudioFifo->head;
       if (bytesToEnd < bytesToWrite)
       {
         // memcpy(m_outFifoPtr->buffer + m_outFifoPtr->head, m_outBufferPtr, bytesToEnd);
         // memcpy(m_outFifoPtr->buffer, reinterpret_cast<uint8_t *>(m_outBufferPtr) + bytesToEnd, bytesToWrite - bytesToEnd);
-        memcpy(m_outFifoPtr->buffer + m_outFifoPtr->head, vec, bytesToEnd);
-        memcpy(m_outFifoPtr->buffer, reinterpret_cast<uint8_t *>(vec) + bytesToEnd, bytesToWrite - bytesToEnd);
-        m_outFifoPtr->head = bytesToWrite - bytesToEnd;
+        memcpy(mpCurAudioFifo->buffer + mpCurAudioFifo->head, vec, bytesToEnd);
+        memcpy(mpCurAudioFifo->buffer, reinterpret_cast<uint8_t *>(vec) + bytesToEnd, bytesToWrite - bytesToEnd);
+        mpCurAudioFifo->head = bytesToWrite - bytesToEnd;
       }
       else
       {
-        memcpy(m_outFifoPtr->buffer + m_outFifoPtr->head, vec, bytesToWrite);
-        m_outFifoPtr->head += bytesToWrite;
+        memcpy(mpCurAudioFifo->buffer + mpCurAudioFifo->head, vec, bytesToWrite);
+        mpCurAudioFifo->head += bytesToWrite;
       }
 
-      m_outFifoPtr->mutex.lock();
-      m_outFifoPtr->count += bytesToWrite;
-      m_outFifoPtr->mutex.unlock();
+      mpCurAudioFifo->mutex.lock();
+      mpCurAudioFifo->count += bytesToWrite;
+      mpCurAudioFifo->mutex.unlock();
     }
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -3732,46 +3732,31 @@ void RadioInterface::_set_device_to_file_mode(const bool iDataFromFile)
   }
 }
 
-void RadioInterface::_set_output(int sampleRate, int numChannels)
+void RadioInterface::_set_output(const uint32_t iSampleRate, const uint8_t iNumChannels)
 {
-  // toggle index 0->1 or 1->0
-  m_outFifoIdx = (m_outFifoIdx + 1) & 0x1;
-  m_outFifoPtr = &mAudioFifo[m_outFifoIdx];
+  mAudioFifoIdx = (mAudioFifoIdx + 1) & 0x1;
+  mpCurAudioFifo = &mAudioFifoArr[mAudioFifoIdx];
 
-  m_outFifoPtr->sampleRate = sampleRate;
-  m_outFifoPtr->numChannels = numChannels;
-  m_outFifoPtr->reset();
+  mpCurAudioFifo->sampleRate = iSampleRate;
+  mpCurAudioFifo->numChannels = iNumChannels;
+  mpCurAudioFifo->reset();
 
-  if (m_playbackState == EPlaybackState::Running)
+  if (mPlaybackState == EPlaybackState::Running)
   {
-    emit signal_switch_audio(m_outFifoPtr);
+    emit signal_switch_audio(mpCurAudioFifo);
   }
   else
   {
-    m_playbackState = EPlaybackState::Running;
-    emit signal_start_audio(m_outFifoPtr);
+    mPlaybackState = EPlaybackState::Running;
+    emit signal_start_audio(mpCurAudioFifo);
   }
 }
 
-void RadioInterface::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList)
+void RadioInterface::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const
 {
-  // m_audioOutputMenu->clear();
-  // if (nullptr != m_audioDevicesGroup)
-  // {
-  //   delete m_audioDevicesGroup;
-  // }
-  // m_audioDevicesGroup = new QActionGroup(m_audioOutputMenu);
   mConfig.streamoutSelector->clear();
   for (const QAudioDevice &device : iDeviceList)
   {
     mConfig.streamoutSelector->addItem(device.description(), QVariant::fromValue(device.id()));
   }
-
-  // for (const QAudioDevice & device : list)
-  // {
-  //   QAction * action = new QAction(device.description(), m_audioDevicesGroup);
-  //   action->setData(QVariant::fromValue(device));
-  //   action->setCheckable(true);
-  // }
-  //m_audioOutputMenu->addActions(m_audioDevicesGroup->actions());
 }

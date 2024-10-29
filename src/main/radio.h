@@ -239,13 +239,11 @@ private:
   converter_48000 mAudioSampRateConv{};
   // QScopedPointer<Qt_Audio> mpSoundOut;
   QScopedPointer<AudioOutput> mpAudioOutput;
-  std::array<SAudioFifo, 2> mAudioFifo;
-  int32_t m_outFifoIdx = 0;
-  SAudioFifo * m_outFifoPtr = nullptr;
+  std::array<SAudioFifo, 2> mAudioFifoArr;
+  int32_t mAudioFifoIdx = 0;
+  SAudioFifo * mpCurAudioFifo = nullptr;
   enum class EPlaybackState { Stopped = 0, WaitForInit, Running };
-  EPlaybackState m_playbackState = EPlaybackState::Stopped;
-
-
+  EPlaybackState mPlaybackState = EPlaybackState::Stopped;
 
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
@@ -348,7 +346,7 @@ private:
   void _reset_status_info();
   void _update_channel_selector();
   void _set_device_to_file_mode(const bool iDataFromFile);
-  void _set_output(int sampleRate, int numChannels);
+  void _set_output(uint32_t iSampleRate, uint8_t iNumChannels);
 
 signals:
   void signal_set_new_channel(int);
@@ -421,26 +419,20 @@ private slots:
   void _slot_handle_reset_button();
   void _slot_handle_scan_button();
   void _slot_handle_eti_handler();
-
   void _slot_handle_spectrum_button();
   void _slot_handle_device_widget_button();
-
   void _slot_do_start(const QString &);
   void _slot_new_device(const QString &);
-
   void _slot_handle_source_dump_button();
   void _slot_handle_frame_dump_button();
   void _slot_handle_audio_dump_button();
-
   void _slot_handle_prev_service_button();
   void _slot_handle_next_service_button();
   void _slot_handle_target_service_button();
   void _slot_handle_channel_selector(const QString &);
-
   void _slot_terminate_process();
   void _slot_update_time_display();
   void _slot_channel_timeout();
-
   void _slot_select_service(QModelIndex);
   void _slot_service_changed(const QString & iChannel, const QString & iService);
   void _slot_favorite_changed(const bool iIsFav);
@@ -448,14 +440,11 @@ private slots:
   void _slot_set_static_button_style();
   void _slot_set_preset_service();
   void _slot_handle_mute_button();
-
   void _slot_handle_config_button();
   void _slot_handle_http_button();
-
-  //	config handlers
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();
-  void _slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList);
+  void _slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
 };
 
 #endif
