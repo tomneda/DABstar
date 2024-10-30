@@ -274,6 +274,27 @@ void AudioIODevice::stop()
   mStopFlag = true;     // set stop bit
 }
 
+void AudioIODevice::_extract_audio_data_from_fifo(char * opData, const int64_t iBytesToRead)
+{
+  if (const int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpInFifo->tail;
+      bytesToEnd < iBytesToRead)
+  {
+    memcpy(opData, mpInFifo->buffer + mpInFifo->tail, bytesToEnd);
+    memcpy(opData + bytesToEnd, mpInFifo->buffer, (iBytesToRead - bytesToEnd));
+    mpInFifo->tail = iBytesToRead - bytesToEnd;
+  }
+  else
+  {
+    memcpy(opData, mpInFifo->buffer + mpInFifo->tail, iBytesToRead);
+    mpInFifo->tail += iBytesToRead;
+  }
+
+  mpInFifo->mutex.lock();
+  mpInFifo->count -= iBytesToRead;
+  mpInFifo->countChanged.wakeAll();
+  mpInFifo->mutex.unlock();
+}
+
 qint64 AudioIODevice::readData(char * data, qint64 len)
 {
   if (mDoStop || (0 == len))
@@ -302,7 +323,8 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
     {
       // enough samples => reading data from input fifo
       if (muteRequest)
-      {   // staying muted -> setting output buffer to 0
+      {
+        // staying muted -> setting output buffer to 0
         memset(data, 0, bytesToRead);
 
         // shifting buffer pointers
@@ -317,23 +339,7 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
       }
 
       // at this point we have enough sample to unmute and there is no request => preparing data
-      const int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpInFifo->tail;
-      if (bytesToEnd < bytesToRead)
-      {
-        memcpy(data, mpInFifo->buffer + mpInFifo->tail, bytesToEnd);
-        memcpy(data + bytesToEnd, mpInFifo->buffer, (bytesToRead - bytesToEnd));
-        mpInFifo->tail = bytesToRead - bytesToEnd;
-      }
-      else
-      {
-        memcpy(data, mpInFifo->buffer + mpInFifo->tail, bytesToRead);
-        mpInFifo->tail += bytesToRead;
-      }
-
-      mpInFifo->mutex.lock();
-      mpInFifo->count -= bytesToRead;
-      mpInFifo->countChanged.wakeAll();
-      mpInFifo->mutex.unlock();
+      _extract_audio_data_from_fifo(data, bytesToRead);
 
       // unmute request
       muteRequest = false;
@@ -366,26 +372,9 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
         return bytesToRead;
       }
 
-      // copy all available samples to output buffer
-      int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpInFifo->tail;
-      if (bytesToEnd < count)
-      {
-        memcpy(data, mpInFifo->buffer + mpInFifo->tail, bytesToEnd);
-        memcpy(data + bytesToEnd, mpInFifo->buffer, (count - bytesToEnd));
-        mpInFifo->tail = count - bytesToEnd;
-      }
-      else
-      {
-        memcpy(data, mpInFifo->buffer + mpInFifo->tail, count);
-        mpInFifo->tail += count;
-      }
       // set rest of the samples to be 0
       memset(data + count, 0, bytesToRead - count);
-
-      mpInFifo->mutex.lock();
-      mpInFifo->count -= count;
-      mpInFifo->countChanged.wakeAll();
-      mpInFifo->mutex.unlock();
+      _extract_audio_data_from_fifo(data, count);
 
       numSamples = count / mBytesPerFrame;
 
@@ -393,24 +382,9 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
       muteRequest = true;  // mute
     }
     else
-    {   // enough sample available -> reading samples
-      int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpInFifo->tail;
-      if (bytesToEnd < bytesToRead)
-      {
-        memcpy(data, mpInFifo->buffer + mpInFifo->tail, bytesToEnd);
-        memcpy(data + bytesToEnd, mpInFifo->buffer, (bytesToRead - bytesToEnd));
-        mpInFifo->tail = bytesToRead - bytesToEnd;
-      }
-      else
-      {
-        memcpy(data, mpInFifo->buffer + mpInFifo->tail, bytesToRead);
-        mpInFifo->tail += bytesToRead;
-      }
-
-      mpInFifo->mutex.lock();
-      mpInFifo->count -= bytesToRead;
-      mpInFifo->countChanged.wakeAll();
-      mpInFifo->mutex.unlock();
+    {
+      // enough sample available -> reading samples
+      _extract_audio_data_from_fifo(data, bytesToRead);
 
       if (!muteRequest)
       {
@@ -442,6 +416,7 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
 
     float gain = AUDIOOUTPUT_FADE_MIN_LIN;
     int16_t * dataPtr = (int16_t*)data;
+
     for (int_fast32_t n = 0; n < numSamples; ++n)
     {
       for (uint_fast8_t c = 0; c < mNumChannels; ++c)
@@ -456,8 +431,10 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
     return bytesToRead;
   }
   else
-  {   // mute can be requested when there is not enough samples or from HMI
+  {
+    // mute can be requested when there is not enough samples or from HMI
     qCInfo(sLCAudioOutput, "Muting... [available %u samples]", static_cast<unsigned int>(numSamples));
+
     if (numSamples < AUDIOOUTPUT_FADE_TIME_MS * mSampleRateKHz)
     {
       float gain = 1.0;

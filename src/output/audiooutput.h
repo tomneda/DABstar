@@ -56,19 +56,19 @@ public:
 
   QList<QAudioDevice> get_audio_device_list() const;
 
-  public slots:
-    virtual void slot_start(SAudioFifo * iBuffer) = 0;
-    virtual void slot_restart(SAudioFifo * iBuffer) = 0;
-    virtual void slot_stop() = 0;
-    virtual void slot_mute(bool on) = 0;
-    virtual void slot_setVolume(int value) = 0;
-    virtual void slot_set_audio_device(const QByteArray & deviceId) = 0;
+public slots:
+  virtual void slot_start(SAudioFifo * iBuffer) = 0;
+  virtual void slot_restart(SAudioFifo * iBuffer) = 0;
+  virtual void slot_stop() = 0;
+  virtual void slot_mute(bool on) = 0;
+  virtual void slot_setVolume(int value) = 0;
+  virtual void slot_set_audio_device(const QByteArray & deviceId) = 0;
 
-  signals:
-    void signal_audio_output_error();
-    void signal_audio_output_restart();
-    void signal_audio_devices_list(QList<QAudioDevice> deviceList);
-    void signal_audio_device_changed(const QByteArray & id);
+signals:
+  void signal_audio_output_error();
+  void signal_audio_output_restart();
+  void signal_audio_devices_list(QList<QAudioDevice> deviceList);
+  void signal_audio_device_changed(const QByteArray & id);
 
 protected:
   QMediaDevices * mpDevices = nullptr;

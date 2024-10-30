@@ -98,6 +98,8 @@ private:
 
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
+
+  void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead);
 };
 
 #endif // AUDIOOUTPUTQT_H
