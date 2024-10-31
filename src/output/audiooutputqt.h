@@ -99,7 +99,10 @@ private:
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
 
-  void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead);
+  void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead) const;
+  void _fade(int64_t iNumSamples, float coe, float gain, int16_t * dataPtr) const;
+  void _fade_in_audio_samples(char * opData, int64_t iNumSamples) const;
+  void _fade_out_audio_samples(char * opData, int64_t iBytesToRead, int64_t iNumSamples) const;
 };
 
 #endif // AUDIOOUTPUTQT_H

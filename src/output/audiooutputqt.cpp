@@ -274,7 +274,7 @@ void AudioIODevice::stop()
   mStopFlag = true;     // set stop bit
 }
 
-void AudioIODevice::_extract_audio_data_from_fifo(char * opData, const int64_t iBytesToRead)
+void AudioIODevice::_extract_audio_data_from_fifo(char * opData, const int64_t iBytesToRead) const
 {
   if (const int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpInFifo->tail;
       bytesToEnd < iBytesToRead)
@@ -293,6 +293,87 @@ void AudioIODevice::_extract_audio_data_from_fifo(char * opData, const int64_t i
   mpInFifo->count -= iBytesToRead;
   mpInFifo->countChanged.wakeAll();
   mpInFifo->mutex.unlock();
+}
+
+void AudioIODevice::_fade(const int64_t iNumSamples, const float coe, float gain, int16_t * dataPtr) const
+{
+  for (int_fast32_t n = 0; n < iNumSamples; ++n)
+  {
+    gain *= coe;
+    // printf("%.3f ", gain);
+    for (uint_fast8_t c = 0; c < mNumChannels; ++c)
+    {
+      *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
+      dataPtr++;
+    }
+  }
+  // printf("\n");
+}
+
+void AudioIODevice::_fade_in_audio_samples(char * opData, int64_t iNumSamples) const
+{
+  qCInfo(sLCAudioOutput) << "Unmuting audio";
+  const int64_t numFadedSamples = (int64_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz);
+  const float coe = 2.0f - (iNumSamples < numFadedSamples ? powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * (float)iNumSamples)) : mMuteFactor);
+
+  if (iNumSamples >= numFadedSamples )
+  {
+    iNumSamples = numFadedSamples;
+  }
+
+  qCInfo(sLCAudioOutput) << "iNumSamples" << iNumSamples;
+  
+  float gain = AUDIOOUTPUT_FADE_MIN_LIN;
+  int16_t * dataPtr = (int16_t*)opData;
+
+  _fade(iNumSamples, coe, gain, dataPtr);
+}
+
+void AudioIODevice::_fade_out_audio_samples(char * opData, const int64_t iBytesToRead, const int64_t iNumSamples) const
+{
+  qCInfo(sLCAudioOutput, "Muting... [available %u samples]", static_cast<unsigned int>(iNumSamples));
+
+  const int64_t numFadedSamples = (int64_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz);
+
+  if (iNumSamples < numFadedSamples)
+  {
+    float gain = 1.0;
+    const float coe = powf(10, AUDIOOUTPUT_FADE_MIN_DB / (20.0 * iNumSamples));
+
+    int16_t * dataPtr = (int16_t*)opData;
+
+    _fade(iNumSamples, coe, gain, dataPtr);
+
+    // for (int_fast32_t n = 0; n < iNumSamples; ++n)
+    // {
+    //   gain = gain * coe;  // before by purpose
+    //   for (uint_fast8_t c = 0; c < mNumChannels; ++c)
+    //   {
+    //     *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
+    //     dataPtr++;
+    //   }
+    // }
+  }
+  else
+  {
+    float gain = 1.0;
+    float coe = mMuteFactor;
+
+    int16_t * dataPtr = (int16_t*)opData;
+
+    _fade(numFadedSamples, coe, gain, dataPtr);
+
+    // for (uint_fast32_t n = 0; n < AUDIOOUTPUT_FADE_TIME_MS * mSampleRateKHz; ++n)
+    // {
+    //   gain = gain * coe;  // before by purpose
+    //   for (uint_fast8_t c = 0; c < mNumChannels; ++c)
+    //   {
+    //     *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
+    //     dataPtr++;
+    //   }
+    // }
+    memset(dataPtr + numFadedSamples * mNumChannels, 0, iBytesToRead - numFadedSamples * mBytesPerFrame);
+  }
 }
 
 qint64 AudioIODevice::readData(char * data, qint64 len)
@@ -401,73 +482,13 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
   if (false == muteRequest)
   {
     // unmute can be requested only when there is enough samples
-    qCInfo(sLCAudioOutput) << "Unmuting audio";
-    float coe = 2.0f - mMuteFactor;
-
-    const int64_t numFadedSamples = (int64_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz);
-    if (numSamples < numFadedSamples )
-    {
-      coe = 2.0f - powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * (float)numSamples));
-    }
-    else
-    {
-      numSamples = numFadedSamples;
-    }
-
-    float gain = AUDIOOUTPUT_FADE_MIN_LIN;
-    int16_t * dataPtr = (int16_t*)data;
-
-    for (int_fast32_t n = 0; n < numSamples; ++n)
-    {
-      for (uint_fast8_t c = 0; c < mNumChannels; ++c)
-      {
-        *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
-        dataPtr++;
-      }
-      gain = gain * coe;  // after by purpose
-    }
+    _fade_in_audio_samples(data, numSamples);
     mPlaybackState = EPlaybackState::Playing; // playing
-
-    return bytesToRead;
   }
   else
   {
     // mute can be requested when there is not enough samples or from HMI
-    qCInfo(sLCAudioOutput, "Muting... [available %u samples]", static_cast<unsigned int>(numSamples));
-
-    if (numSamples < AUDIOOUTPUT_FADE_TIME_MS * mSampleRateKHz)
-    {
-      float gain = 1.0;
-      const float coe = powf(10, AUDIOOUTPUT_FADE_MIN_DB / (20.0 * numSamples));
-
-      int16_t * dataPtr = (int16_t*)data;
-      for (int_fast32_t n = 0; n < numSamples; ++n)
-      {
-        gain = gain * coe;  // before by purpose
-        for (uint_fast8_t c = 0; c < mNumChannels; ++c)
-        {
-          *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
-          dataPtr++;
-        }
-      }
-    }
-    else
-    {
-      float gain = 1.0;
-      float coe = mMuteFactor;
-
-      int16_t * dataPtr = (int16_t*)data;
-      for (uint_fast32_t n = 0; n < AUDIOOUTPUT_FADE_TIME_MS * mSampleRateKHz; ++n)
-      {
-        gain = gain * coe;  // before by purpose
-        for (uint_fast8_t c = 0; c < mNumChannels; ++c)
-        {
-          *dataPtr = int16_t(qRound(gain * *dataPtr));
-          dataPtr++;
-        }
-      }
-      memset(dataPtr, 0, bytesToRead - AUDIOOUTPUT_FADE_TIME_MS * mSampleRateKHz * mBytesPerFrame);
-    }
+    _fade_out_audio_samples(data, bytesToRead, numSamples);
     mPlaybackState = EPlaybackState::Muted; // muted
   }
 
