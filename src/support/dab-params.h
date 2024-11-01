@@ -49,7 +49,7 @@ public:
     int16_t T_s;      //    2552 block length
     int16_t T_u;      //    2048 useful part, FFT length
     int16_t T_g;      //     504 guard length (T_s - T_u)
-    int16_t CarrDiff; //    1000
+    int16_t CarrDiff; //    1000 freq. dist. between each OFDM Bin in Hz
     int16_t CIFs;     //       4
   };
 

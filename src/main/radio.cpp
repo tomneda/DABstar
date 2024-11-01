@@ -580,13 +580,13 @@ void RadioInterface::_update_channel_selector()
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	a slot called by the DAB-processor
-void RadioInterface::slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
+void RadioInterface::slot_show_freq_corr_rf_Hz(int iFreqCorrRF)
 {
-  if (mpInputDevice != nullptr && mChannel.nominalFreqHz > 0)
-  {
-    mpInputDevice->setVFOFrequency(mChannel.nominalFreqHz + iFreqCorrRF);
-    //sFreqOffHz = channel.nominalFreqHz;
-  }
+  // if (mpInputDevice != nullptr && mChannel.nominalFreqHz > 0)
+  // {
+  //   mpInputDevice->setVFOFrequency(mChannel.nominalFreqHz + iFreqCorrRF);
+  //   //sFreqOffHz = channel.nominalFreqHz;
+  // }
 
   mSpectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
 }
@@ -1320,8 +1320,6 @@ void RadioInterface::_slot_update_time_display()
     //	   fprintf (stdout, "total %d, good %d bad %d ficRatio %f\n",
     //	                     totalFrames, goodFrames, badFrames,
     //	                                            total_ficError * 100.0 / total_fics);
-    mTotalFicError = 0;
-    mTotalFics = 0;
 #ifndef TCP_STREAMER
 #ifndef  QT_AUDIO
     if (mConfig.streamoutSelector->isVisible())
@@ -1517,8 +1515,6 @@ void RadioInterface::slot_show_fic_success(bool b)
 
     ficError_display->setPalette(p);
     ficError_display->setValue(mFicSuccess);
-    mTotalFicError += 100 - mFicSuccess;
-    mTotalFics += 100;
     mFicSuccess = 0;
     mFicBlocks = 0;
   }
@@ -1881,6 +1877,7 @@ void RadioInterface::_show_hide_buttons(const bool iShow)
 
 void RadioInterface::slot_set_sync_lost()
 {
+  // TODO: show something in the UI?
 }
 
 void RadioInterface::_slot_handle_reset_button()
@@ -2472,7 +2469,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
     }
   }
   //	activate sound
-  _set_output(48000, 2);
+  _set_output(48000, 2); // TODO: get data audio stream
   //mpSoundOut->restart();
   programTypeLabel->setText(getProgramType(ad->programType));
   //	show service related data

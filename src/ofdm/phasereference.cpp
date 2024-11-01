@@ -41,15 +41,17 @@
   *	The class inherits from the phaseTable.
   */
 
+#define CORRELATION_LENGTH  48
+
 PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam)
-  : PhaseTable(ipParam->dabMode),
-    mDabPar(DabParams(ipParam->dabMode).get_dab_par()),
-    mFramesPerSecond(INPUT_RATE / mDabPar.T_F),
-    mFftForward(mDabPar.T_u, false),
-    mFftBackwards(mDabPar.T_u, true),
-    mpResponse(ipParam->responseBuffer),
-    mRefTable(mDabPar.T_u, { 0, 0 }),
-    mCorrPeakValues(mDabPar.T_u / 2)
+  : PhaseTable(ipParam->dabMode)
+  , mDabPar(DabParams(ipParam->dabMode).get_dab_par())
+  , mFramesPerSecond(INPUT_RATE / mDabPar.T_F)
+  , mFftForward(mDabPar.T_u, false)
+  , mFftBackwards(mDabPar.T_u, true)
+  , mpResponse(ipParam->responseBuffer)
+  , mRefTable(mDabPar.T_u, {0, 0})
+  , mCorrPeakValues(mDabPar.T_u / 2)
 {
   // mRefTable is in the frequency domain
   for (int32_t i = 1; i <= mDabPar.K / 2; i++) // skip DC
@@ -61,10 +63,12 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   // Prepare a table for the coarse frequency synchronization.
   // We collect data of SEARCHRANGE/2 bins at the end of the FFT buffer and wrap to the begin and check SEARCHRANGE/2 elements further.
   // This is equal to check +/- SEARCHRANGE/2 bins (== (35) kHz in DabMode 1) around the DC
-  for (int32_t i = 1; i <= DIFFLENGTH; i++)
+  mRefArg.resize(CORRELATION_LENGTH);
+  for (int i = 0; i < CORRELATION_LENGTH; i++)
   {
-    mPhaseDifferences[i - 1] = abs(arg(mRefTable[(mDabPar.T_u + i + 0) % mDabPar.T_u] * conj(mRefTable[(mDabPar.T_u + i + 1) % mDabPar.T_u])));
+    mRefArg[i] = arg(mRefTable[(mDabPar.T_u + i) % mDabPar.T_u] * conj(mRefTable[(mDabPar.T_u + i + 1) % mDabPar.T_u]));
   }
+  mCorrelationVector.resize(SEARCHRANGE + CORRELATION_LENGTH);
 
   connect(this, &PhaseReference::signal_show_correlation, ipRadio, &RadioInterface::slot_show_correlation);
 }
@@ -111,7 +115,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
   constexpr int16_t GAP_SEARCH_WIDTH = 10;
   constexpr int16_t EXTENDED_SEARCH_REGION = 250;
   const int16_t idxStart = mDabPar.T_g - EXTENDED_SEARCH_REGION;
-  const int16_t idxStop  = mDabPar.T_g + EXTENDED_SEARCH_REGION;
+  const int16_t idxStop = mDabPar.T_g + EXTENDED_SEARCH_REGION;
   assert(idxStart >= 0);
   assert(idxStop <= (signed)mCorrPeakValues.size());
 
@@ -177,61 +181,36 @@ int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(std::vector<c
 {
   mFftForward.fft(iV);
 
-  const int16_t idxStart = mDabPar.T_u - SEARCHRANGE / 2;
-  const int16_t idxStop  = mDabPar.T_u + SEARCHRANGE / 2;
-
-  // We collect data of SEARCHRANGE/2 bins at the end of the FFT buffer and wrap to the begin and check SEARCHRANGE/2 elements further.
-  // This is equal to check +/- SEARCHRANGE/2 bins (== kHz in DabMode 1) around the DC
-  for (int16_t i = idxStart; i < idxStop + DIFFLENGTH; i++)
+  //  The phase differences are computed once
+  for (int16_t i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
   {
-    mComputedDiffs[i - idxStart] = std::abs(arg(iV[(i + 0) % mDabPar.T_u] * conj(iV[(i + 1) % mDabPar.T_u])));
+    const int16_t baseIndex = mDabPar.T_u - SEARCHRANGE / 2 + i;
+    mCorrelationVector[i] = arg(iV[baseIndex % mDabPar.T_u] * conj(iV[(baseIndex + 1) % mDabPar.T_u]));
   }
 
-  float mmin =  1000.0;
-  float mmax = -1000.0;
-  int16_t idxMin = IDX_NOT_FOUND;
-  int16_t idxMax = IDX_NOT_FOUND;
+  int16_t index = IDX_NOT_FOUND;
+  float MMax = 0;
 
-  for (int16_t i = idxStart; i < idxStop; i++)
+  for (int16_t i = 0; i < SEARCHRANGE; i++)
   {
-    float sumMinValues = 0;
-    float sumMaxValues = 0;
-
-    // do a minimalistic correlation using only the 0deg and 180deg values from mPhaseDifferences
-    for (int16_t j = 1; j < DIFFLENGTH; j++)
+    float sum = 0;
+    for (int16_t j = 0; j < CORRELATION_LENGTH; ++j)
     {
-      if (mPhaseDifferences[j - 1] < 0.1f)
+      sum += abs(mRefArg[j] * mCorrelationVector[i + j]);
+      if (sum > MMax)
       {
-        sumMinValues += mComputedDiffs[i - idxStart + j];
-      }
-      else if (mPhaseDifferences[j - 1] > F_M_PI - 0.1f)
-      {
-        sumMaxValues += mComputedDiffs[i - idxStart + j];
+        MMax = sum;
+        index = i;
       }
     }
-
-    if (sumMinValues < mmin)
-    {
-      mmin = sumMinValues;
-      idxMin = i;
-    }
-
-    if (sumMaxValues > mmax)
-    {
-      mmax = sumMaxValues;
-      idxMax = i;
-    }
   }
 
-  if (idxMin != idxMax)
-  {
-    return IDX_NOT_FOUND;
-  }
-
-  return idxMin - mDabPar.T_u;  // return the offset around mDabPar.T_u
+  //  Now map the index back to the right carrier
+  return index - SEARCHRANGE / 2;
 }
 
-/*static*/ float PhaseReference::phase(const std::vector<cmplx> & iV, const int32_t iTs)
+/*static*/
+float PhaseReference::phase(const std::vector<cmplx> & iV, const int32_t iTs)
 {
   cmplx sum = cmplx(0, 0);
 

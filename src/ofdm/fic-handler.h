@@ -62,6 +62,7 @@ public:
   void start_ficDump(FILE *);
   void stop_ficDump();
   void get_fibBits(uint8_t *, bool *);
+  int  getFicDecodeRatioPercent();
 
 private:
   DabParams params;
@@ -79,8 +80,11 @@ private:
   FILE * ficDumpPointer = nullptr;
   QMutex ficLocker;
   std::atomic<bool> running;
-
   void process_ficInput(int16_t iFicNo, bool * oValid);
+
+  // Saturating up/down-counter in range [0, 10] corresponding
+  // to the number of FICs with correct CRC
+  int32_t fic_decode_success_ratio = 0;
 
 signals:
   void show_ficSuccess(bool);

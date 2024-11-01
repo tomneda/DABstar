@@ -269,8 +269,6 @@ private:
   int32_t mNumberofSeconds = 0;
   int16_t mFicBlocks = 0;
   int16_t mFicSuccess = 0;
-  int32_t mTotalFicError = 0;
-  int32_t mTotalFics = 0;
   TheTime mLocalTime;
   TheTime mUTC;
   timeTableHandler * mpTimeTable = nullptr;
@@ -396,7 +394,7 @@ public slots:
   void slot_nr_services(int);
   void slot_handle_content_selector(const QString &);
   //void slot_http_terminate();
-  void slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF);
+  void slot_show_freq_corr_rf_Hz(int iFreqCorrRF);
   void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
   void slot_test_slider(int);
   void slot_load_table();

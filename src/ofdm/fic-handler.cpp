@@ -38,7 +38,7 @@
 //	24 blocks of 128 bits each.
 //	The first 21 blocks shall be subjected to
 //	puncturing (per 32 bits) according to PI_16
-//	The next three blocks shall be subjected to 
+//	The next three blocks shall be subjected to
 //	puncturing (per 32 bits) according to PI_15
 //	The last 24 bits shall be subjected to puncturing
 //	according to the table 8
@@ -134,7 +134,7 @@ FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
   *	the 3 FIC blocks, each with 768 bits.
   *	for Mode IV we will get 3 * 2 * 768 = 4608, i.e. two resulting blocks
   *	Note that Mode III is NOT supported
-  *	
+  *
   *	The function is called with a blkno. This should be 1, 2 or 3
   *	for each time 2304 bits are in, we call process_ficInput
   */
@@ -235,11 +235,15 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
   for (int16_t i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
   {
     const std::byte * const p = &bitBuffer_out[(i % 3) * 256];
-    
+
     if (!check_CRC_bits(reinterpret_cast<const uint8_t *>(p), 256))
     {
       *oValid = false;
       emit show_ficSuccess(false);
+      if (fic_decode_success_ratio > 0)
+      {
+        fic_decode_success_ratio--;
+      }
       continue;
     }
 
@@ -263,6 +267,11 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
 
     emit show_ficSuccess(true);
     FibDecoder::process_FIB(reinterpret_cast<const uint8_t *>(p), iFicNo);
+
+    if (fic_decode_success_ratio < 10)
+    {
+      fic_decode_success_ratio++;
+    }
   }
 }
 
@@ -309,3 +318,9 @@ void FicHandler::get_fibBits(uint8_t * v, bool * b)
     b[i] = ficValid[i];
   }
 }
+
+int FicHandler::getFicDecodeRatioPercent()
+{
+    return fic_decode_success_ratio * 10;
+}
+
