@@ -72,6 +72,7 @@ public:
   void stop_etiGenerator();
   void reset_etiGenerator();
   void set_scanMode(bool);
+  void add_bb_freq(int32_t iFreqOffHz);
 
   //	inheriting from our delegates
   //	for the FicHandler:
@@ -123,15 +124,19 @@ private:
   bool mScanMode = false;
   int16_t mTiiCounter = 0;
   bool mEti_on = false;
-  int32_t mFineOffset = 0;
-  int32_t mCoarseOffset = 0;
-  int32_t mFineOffsetCache = 0;
-  int32_t mCoarseOffsetCache = 0;
   bool mCorrectionNeeded = true;
   float mPhaseOffsetCyclPrefRad = 0.0f;
+  float mFreqOffsCylcPrefHz = 0.0f;
+  float mFreqOffsSyncSymb = 0.0f;
+  int32_t mFreqOffsBBAddedHz = 0;
+  int32_t mFreqOffsBBHz = 0;
+  int32_t mFreqOffsRFHz = 0;
   int32_t mTimeSyncAttemptCount = 0;
   int32_t mClockOffsetTotalSamples = 0;
   int32_t mClockOffsetFrameCount = 0;
+  bool mRfFreqShiftUsed = false;
+  bool mAllowRfFreqShift = false;
+  bool mInputOverdrivenShown = false;
 
   std::vector<cmplx> mOfdmBuffer;
   std::vector<int16_t> mBits;
@@ -143,6 +148,8 @@ private:
   void _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
   float _process_ofdm_symbols_1_to_L(int32_t & ioSampleCount);
   void _process_null_symbol(int32_t & ioSampleCount);
+  void _set_rf_freq_offs_Hz(float iFreqHz);
+  void _set_bb_freq_offs_Hz(float iFreqHz);
 
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
@@ -157,7 +164,7 @@ signals:
   void signal_show_tii(int, int);
   void signal_show_spectrum(int);
   void signal_show_clock_err(float);
-  void signal_show_freq_corr_rf_Hz(int);
+  void signal_set_and_show_freq_corr_rf_Hz(int);
   void signal_show_freq_corr_bb_Hz(int);
   void signal_linear_peak_level(float);
 };

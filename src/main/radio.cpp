@@ -580,13 +580,13 @@ void RadioInterface::_update_channel_selector()
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	a slot called by the DAB-processor
-void RadioInterface::slot_show_freq_corr_rf_Hz(int iFreqCorrRF)
+void RadioInterface::slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
 {
-  // if (mpInputDevice != nullptr && mChannel.nominalFreqHz > 0)
-  // {
-  //   mpInputDevice->setVFOFrequency(mChannel.nominalFreqHz + iFreqCorrRF);
-  //   //sFreqOffHz = channel.nominalFreqHz;
-  // }
+  if (mpInputDevice != nullptr && mChannel.nominalFreqHz > 0)
+  {
+    mpInputDevice->setVFOFrequency(mChannel.nominalFreqHz + iFreqCorrRF);
+    //sFreqOffHz = channel.nominalFreqHz;
+  }
 
   mSpectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
 }
@@ -1500,6 +1500,8 @@ void RadioInterface::slot_show_fic_success(bool b)
   {
     mFicSuccess++;
   }
+
+
 
   if (++mFicBlocks >= 100)
   {

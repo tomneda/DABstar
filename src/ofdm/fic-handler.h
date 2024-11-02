@@ -63,6 +63,7 @@ public:
   void stop_ficDump();
   void get_fibBits(uint8_t *, bool *);
   int  getFicDecodeRatioPercent();
+  void resetFicDecodeSuccessRatio() { fic_decode_success_ratio = 0; };
 
 private:
   DabParams params;

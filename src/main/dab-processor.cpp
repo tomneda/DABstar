@@ -61,7 +61,7 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
   connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
   connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
-  connect(this, &DabProcessor::signal_show_freq_corr_rf_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_rf_Hz);
+  connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &RadioInterface::slot_set_and_show_freq_corr_rf_Hz);
   connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_bb_Hz);
   connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &RadioInterface::slot_show_peak_level);
 
@@ -120,12 +120,11 @@ void DabProcessor::stop()
    */
 void DabProcessor::run()  // run QThread
 {
+  // this method is called with each new set frequency
   float syncThreshold;
   int32_t startIndex;
   int32_t sampleCount = 0;
-  mCorrectionNeeded = true;
-  mFineOffset = 0.0f;
-  mCoarseOffset = 0.0f;
+  mRfFreqShiftUsed = false;
 
   mSampleReader.setRunning(true);  // useful after a restart
 
@@ -133,6 +132,14 @@ void DabProcessor::run()  // run QThread
   {
     WAIT_FOR_TIME_SYNC_MARKER, EVAL_SYNC_SYMBOL, PROCESS_REST_OF_FRAME
   };
+
+  _set_rf_freq_offs_Hz(0.0f);
+  _set_bb_freq_offs_Hz(0.0f);
+
+  mCorrectionNeeded = true;
+  mFicHandler.resetFicDecodeSuccessRatio(); // mCorrectionNeeded will be true next call to getFicDecodeRatioPercent()
+  mFreqOffsCylcPrefHz = 0.0f;
+  mFreqOffsSyncSymb = 0.0f;
 
   EState state = EState::WAIT_FOR_TIME_SYNC_MARKER;
 
@@ -195,21 +202,36 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
    * The current OFDM symbol 0 in mOfdmBuffer is special in that it is used for fine time synchronization,
    * for coarse frequency synchronization and its content is used as a reference for decoding the first datablock.
    */
+
   mOfdmDecoder.store_reference_symbol_0(mOfdmBuffer);
 
   // Here we look only at the symbol 0 when we need a coarse frequency synchronization.
   mCorrectionNeeded = mFicHandler.getFicDecodeRatioPercent() < 50;
+
   if (mCorrectionNeeded)
   {
     const int32_t correction = mPhaseReference.estimate_carrier_offset_from_sync_symbol_0(mOfdmBuffer);
+
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
-      mCoarseOffset += correction * mDabPar.CarrDiff;
+      mFreqOffsSyncSymb += 1.0f * (float)correction * (float)mDabPar.CarrDiff;
 
-      if (std::abs(mCoarseOffset) > kHz(35))
+      if (std::abs(mFreqOffsSyncSymb) > kHz(35))
       {
-        mCoarseOffset = 0;
+        mFreqOffsSyncSymb = 0.0f;
       }
+    }
+
+    _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+  }
+  else
+  {
+    if (!mRfFreqShiftUsed && mAllowRfFreqShift)
+    {
+      mRfFreqShiftUsed = true;
+      _set_rf_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz); // takeover BB shift to RF
+      _set_bb_freq_offs_Hz(0.0f); // no, no BB shift should be necessary
+      mFreqOffsSyncSymb = mFreqOffsCylcPrefHz = 0; // allow collect new remaining freq. shift
     }
   }
 
@@ -220,30 +242,9 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   // The first sample to be found for the next frame should be T_g samples ahead. Before going for the next frame, we just check the fineCorrector
   // We integrate the newly found frequency error with the existing frequency error.
   limit_symmetrically(mPhaseOffsetCyclPrefRad, 20.0f * F_RAD_PER_DEG);
-  mFineOffset += (int32_t)(1.0 * mPhaseOffsetCyclPrefRad / F_2_M_PI * mDabPar.CarrDiff); // formerly 0.05
+  mFreqOffsCylcPrefHz += 1.00f * mPhaseOffsetCyclPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
 
-  if (mFineOffset > mDabPar.CarrDiff / 2)
-  {
-    mCoarseOffset += mDabPar.CarrDiff;
-    mFineOffset -= mDabPar.CarrDiff;
-  }
-  else if (mFineOffset < -mDabPar.CarrDiff / 2)
-  {
-    mCoarseOffset -= mDabPar.CarrDiff;
-    mFineOffset += mDabPar.CarrDiff;
-  }
-
-  if (mCoarseOffset != mCoarseOffsetCache)
-  {
-    emit signal_show_freq_corr_rf_Hz(mCoarseOffset);
-    mCoarseOffsetCache = mCoarseOffset;
-  }
-
-  if (mFineOffset != mFineOffsetCache)
-  {
-    emit signal_show_freq_corr_bb_Hz(mFineOffset);
-    mFineOffsetCache = mFineOffset;
-  }
+  _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
 
   mClockOffsetTotalSamples += ioSampleCount;
 
@@ -262,7 +263,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
 {
   // We are at the end of the frame and we read the next T_n null samples
-  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mCoarseOffset + mFineOffset, false);
+  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mFreqOffsBBHz, false);
   ioSampleCount += mDabPar.T_n;
 
   // is this null symbol with TII?
@@ -311,7 +312,7 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
 
   for (int16_t ofdmSymbCntIdx = 1; ofdmSymbCntIdx < mDabPar.L; ofdmSymbCntIdx++)
   {
-    mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_s, mCoarseOffset + mFineOffset, true);
+    mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_s, mFreqOffsBBHz, true);
     ioSampleCount += mDabPar.T_s;
 
     for (int32_t i = mDabPar.T_u; i < mDabPar.T_s; i++)
@@ -341,10 +342,30 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
   return arg(freqCorr);
 }
 
+void DabProcessor::_set_bb_freq_offs_Hz(float iFreqHz)
+{
+  const int32_t iFreqHzInt = (int32_t)std::round(iFreqHz);
+  if (mFreqOffsBBHz != iFreqHzInt)
+  {
+    mFreqOffsBBHz = iFreqHzInt;
+    emit signal_show_freq_corr_bb_Hz(mFreqOffsBBHz);
+  }
+}
+
+void DabProcessor::_set_rf_freq_offs_Hz(float iFreqHz)
+{
+  const int32_t iFreqHzInt = (int32_t)std::round(iFreqHz);
+  if (mFreqOffsRFHz != iFreqHzInt)
+  {
+    mFreqOffsRFHz = iFreqHzInt;
+    emit signal_set_and_show_freq_corr_rf_Hz(mFreqOffsRFHz);   // this call changes the RF frequency and display! (hopefully fast enough)
+  }
+}
+
 bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSampleCount, float iThreshold)
 {
   // get first OFDM symbol after time sync marker
-  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_u, mCoarseOffset + mFineOffset, false);
+  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_u, mFreqOffsBBHz, false);
 
   oStartIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
 
@@ -365,7 +386,7 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSam
 
     // move/read OFDM symbol 0 which contains the synchronization data
     memmove(mOfdmBuffer.data(), &(mOfdmBuffer[oStartIndex]), nextOfdmBufferIdx * sizeof(cmplx)); // memmove can move overlapping segments correctly
-    mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, mDabPar.T_u - nextOfdmBufferIdx, mCoarseOffset + mFineOffset, false); // get reference symbol
+    mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, mDabPar.T_u - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
 
     oSampleCount = oStartIndex + mDabPar.T_u;
 
@@ -613,10 +634,24 @@ void DabProcessor::slot_show_nominal_carrier(bool iShowNominalCarrier)
 
 void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
 {
+  if (!iUseDcAvoidanceAlgorithm)
+  {
+    mFreqOffsSyncSymb += (float)mFreqOffsRFHz;  // take RF offset to BB
+    _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+    _set_rf_freq_offs_Hz(0.0f); // reset RF shift, sets mFreqOffsRFHz = 0
+  }
+
+  mRfFreqShiftUsed = false;
+  mAllowRfFreqShift = iUseDcAvoidanceAlgorithm;
 }
 
 void DabProcessor::set_dc_removal(bool iRemoveDC)
 {
   mSampleReader.set_dc_removal(iRemoveDC);
+}
+
+void DabProcessor::add_bb_freq(int32_t iFreqOffHz)
+{
+  mFreqOffsBBAddedHz = iFreqOffHz;
 }
 

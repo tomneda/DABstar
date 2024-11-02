@@ -115,7 +115,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
   constexpr int16_t GAP_SEARCH_WIDTH = 10;
   constexpr int16_t EXTENDED_SEARCH_REGION = 250;
   const int16_t idxStart = mDabPar.T_g - EXTENDED_SEARCH_REGION;
-  const int16_t idxStop = mDabPar.T_g + EXTENDED_SEARCH_REGION;
+  const int16_t idxStop  = mDabPar.T_g + EXTENDED_SEARCH_REGION;
   assert(idxStart >= 0);
   assert(idxStop <= (signed)mCorrPeakValues.size());
 
