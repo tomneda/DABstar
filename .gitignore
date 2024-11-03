@@ -7,3 +7,4 @@ CMakeLists.txt.user
 build*/
 /exportToHTML/
 /.vs
+/todo.txt
