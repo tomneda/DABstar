@@ -50,7 +50,7 @@ public:
   explicit PhaseTable(int16_t);
   ~PhaseTable() = default;;
 
-  [[nodiscard]] float get_Phi(int32_t k) const;
+  [[nodiscard]] float get_phi(int32_t k) const;
 
 private:
   const struct SPhasetableElement * mpCurrentTable;

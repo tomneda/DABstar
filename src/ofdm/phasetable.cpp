@@ -130,8 +130,8 @@ static const std::array<PhaseTable::SPhasetableElement, 25> modeIV_table
   { -1000, -1000, 0, 0 }
 }};
 
-PhaseTable::PhaseTable(int16_t modus) :
-  mMode(modus)
+PhaseTable::PhaseTable(const int16_t iMode)
+  : mMode(iMode)
 {
   switch (mMode)
   {
@@ -143,13 +143,14 @@ PhaseTable::PhaseTable(int16_t modus) :
   }
 }
 
-static const int8_t h0[] = { 0, 2, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2, 1, 1, 0, 2, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2, 1, 1 };
-static const int8_t h1[] = { 0, 3, 2, 3, 0, 1, 3, 0, 2, 1, 2, 3, 2, 3, 3, 0, 0, 3, 2, 3, 0, 1, 3, 0, 2, 1, 2, 3, 2, 3, 3, 0 };
-static const int8_t h2[] = { 0, 0, 0, 2, 0, 2, 1, 3, 2, 2, 0, 2, 2, 0, 1, 3, 0, 0, 0, 2, 0, 2, 1, 3, 2, 2, 0, 2, 2, 0, 1, 3 };
-static const int8_t h3[] = { 0, 1, 2, 1, 0, 3, 3, 2, 2, 3, 2, 1, 2, 1, 3, 2, 0, 1, 2, 1, 0, 3, 3, 2, 2, 3, 2, 1, 2, 1, 3, 2 };
+static const int8_t h0[32] = { 0, 2, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2, 1, 1, 0, 2, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2, 1, 1 };
+static const int8_t h1[32] = { 0, 3, 2, 3, 0, 1, 3, 0, 2, 1, 2, 3, 2, 3, 3, 0, 0, 3, 2, 3, 0, 1, 3, 0, 2, 1, 2, 3, 2, 3, 3, 0 };
+static const int8_t h2[32] = { 0, 0, 0, 2, 0, 2, 1, 3, 2, 2, 0, 2, 2, 0, 1, 3, 0, 0, 0, 2, 0, 2, 1, 3, 2, 2, 0, 2, 2, 0, 1, 3 };
+static const int8_t h3[32] = { 0, 1, 2, 1, 0, 3, 3, 2, 2, 3, 2, 1, 2, 1, 3, 2, 0, 1, 2, 1, 0, 3, 3, 2, 2, 3, 2, 1, 2, 1, 3, 2 };
 
-int32_t PhaseTable::h_table(int32_t i, int32_t j) const
+int32_t PhaseTable::h_table(const int32_t i, const int32_t j) const
 {
+  assert(j < 32);
   switch (i)
   {
   case 0:  return h0[j];
@@ -161,7 +162,7 @@ int32_t PhaseTable::h_table(int32_t i, int32_t j) const
   return 0;
 }
 
-float PhaseTable::get_Phi(int32_t k) const
+float PhaseTable::get_phi(const int32_t k) const
 {
   for (int32_t j = 0; mpCurrentTable[j].kmin != -1000; j++)
   {
