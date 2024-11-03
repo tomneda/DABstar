@@ -144,7 +144,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "EVM (dB)";
     cp.YTopValue = 0.0;
-    cp.YBottomValue = -36.0;
+    cp.YBottomValue = -18.0;
     cp.YValueElementNo = 7;
     cp.MarkerYValueStep = 1;
     break;
