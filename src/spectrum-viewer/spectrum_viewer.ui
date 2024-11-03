@@ -662,7 +662,7 @@
          <item>
           <widget class="QwtThermo" name="thermoDigLevel">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Peal Level in dBFS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the maximum vector length of the input signal within 10 frames (about 1 second). &lt;/p&gt;&lt;p&gt;In digital systems it is generell recommended to keep the scale (slightly) below 0dB but as we here have a pure phase modulation the signal detection could still get better even if (some) input samples got overdriven to raise the EVM of the low gain samples.&lt;/p&gt;&lt;p&gt;Better is to maximize the Modulation Quality with the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Peak Level in dBFS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the maximum vector length of the input signal within 10 frames (about 1 second). &lt;/p&gt;&lt;p&gt;In digital systems it is generell recommended to keep the scale (slightly) below 0dB but as we here have a pure phase modulation the signal detection could still get better even if (some) input samples got overdriven to raise the EVM of the low gain samples.&lt;/p&gt;&lt;p&gt;Better is to maximize the Modulation Quality with the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound">
             <double>-24.000000000000000</double>
