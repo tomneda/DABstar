@@ -15,7 +15,7 @@
  *    This file is part of the Qt-DAB
  *
  *    Many of the ideas as implemented in Qt-DAB are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
@@ -42,12 +42,13 @@
 #include  <QString>
 #include  <cstdio>
 #include  <atomic>
+#include  <QComboBox>
 #include  "dab-constants.h"
 #include  "fir-filters.h"
 #include  "device-handler.h"
 #include  "ringbuffer.h"
 #include  "ui_rtlsdr-widget.h"
-#include    <QLibrary>
+#include  <QLibrary>
 
 class dll_driver;
 class XmlFileWriter;
@@ -77,7 +78,10 @@ typedef int (* pfnrtlsdr_cancel_async)(rtlsdr_dev_t *);
 typedef int (* pfnrtlsdr_set_direct_sampling)(rtlsdr_dev_t *, int);
 typedef uint32_t (* pfnrtlsdr_get_device_count)();
 typedef int (* pfnrtlsdr_set_freq_correction)(rtlsdr_dev_t *, int);
+typedef int (* pfnrtlsdr_set_freq_correction_ppb)(rtlsdr_dev_t *, int);
 typedef char * (* pfnrtlsdr_get_device_name)(int);
+typedef int (* pfnrtlsdr_get_tuner_i2c_register)(rtlsdr_dev_t *dev, unsigned char* data, int *len, int *strength);
+typedef int (* pfnrtlsdr_get_tuner_type)(rtlsdr_dev_t *dev);
 }
 
 //	This class is a simple wrapper around the
@@ -89,7 +93,6 @@ Q_OBJECT
 public:
   RtlSdrHandler(QSettings * s, const QString & recorderVersion);
   ~RtlSdrHandler() override;
-
   void setVFOFrequency(int32_t) override;
   int32_t getVFOFrequency() override;
   bool restartReader(int32_t) override;
@@ -103,8 +106,8 @@ public:
   void hide() override;
   bool isHidden() override;
   bool isFileInput() override;
-
   int16_t maxGain();
+  bool detect_overload(uint8_t *buf, int len);
 
   //	These need to be visible for the separate usb handling thread
   RingBuffer<std::complex<uint8_t>> _I_Buffer;
@@ -132,20 +135,21 @@ private:
   bool setup_iqDump();
   void close_iqDump();
   std::atomic<bool> iq_dumping;
-  void record_gainSettings(int);
-  void update_gainSettings(int);
-  bool save_gainSettings;
-
+  float mapTable[256];
   bool filtering;
   LowPassFIR theFilter;
   int currentDepth;
+  int agcControl;
+  void set_autogain(int);
+  void enable_gainControl(int);
+  int old_overload = 2;
+  int old_gain = 0;
 
   //	here we need to load functions from the dll
   bool load_rtlFunctions();
   pfnrtlsdr_open rtlsdr_open;
   pfnrtlsdr_close rtlsdr_close;
   pfnrtlsdr_get_usb_strings rtlsdr_get_usb_strings;
-
   pfnrtlsdr_set_center_freq rtlsdr_set_center_freq;
   pfnrtlsdr_set_tuner_bandwidth rtlsdr_set_tuner_bandwidth;
   pfnrtlsdr_get_center_freq rtlsdr_get_center_freq;
@@ -162,20 +166,26 @@ private:
   pfnrtlsdr_set_direct_sampling rtlsdr_set_direct_sampling;
   pfnrtlsdr_get_device_count rtlsdr_get_device_count;
   pfnrtlsdr_set_freq_correction rtlsdr_set_freq_correction;
+  pfnrtlsdr_set_freq_correction_ppb rtlsdr_set_freq_correction_ppb;
   pfnrtlsdr_get_device_name rtlsdr_get_device_name;
+  pfnrtlsdr_get_tuner_i2c_register rtlsdr_get_tuner_i2c_register;
+  pfnrtlsdr_get_tuner_type rtlsdr_get_tuner_type;
 
-signals:
-  void new_gainIndex(int);
-  void new_agcSetting(bool);
-  
 private slots:
-  void set_ExternalGain(const QString &);
-  void set_autogain(int);
-  void set_ppmCorrection(int);
+  void set_ExternalGain(int);
+  void set_ppmCorrection(double);
+  void set_bandwidth(int);
   void set_xmlDump();
   void set_iqDump();
   void set_filter(int);
   void set_biasControl(int);
+  void handle_hw_agc();
+  void handle_sw_agc();
+  void handle_manual();
+  void slot_timer(int);
+
+signals:
+  void signal_timer(int);
 };
 
 #endif

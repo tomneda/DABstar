@@ -122,11 +122,7 @@ option(LIMESDR    "Use LimeSdr"    OFF)   # untested
 option(RTL_TCP    "Use RtlTcp"     OFF)   # untested
 option(PLUTO      "Use Pluto"      OFF)   # untested
 option(UHD        "Use UHD"        OFF)
-
-# Note that since there are problems with the rtlsdr interface under Windows we split the rtlsdr interface
-# into two versions one for Linux and one for Window
-option(RTLSDR_LINUX "Use RtlSdr for Linux"   OFF)
-option(RTLSDR_WIN   "Use RtlSdr for Windows" OFF)   # untested (windows in general)
+option(RTLSDR     "Use Rtlsdr"      ON)
 
 # additional options
 option(USE_HBF       "Use oversampling with half band filter" OFF)  # this needs LiquidDsp
@@ -576,7 +572,7 @@ endif (USE_PORTAUDIO)
 
 include_directories(
         #${SDRPLAY_INCLUDES}
-        ${QT5Widgets_INCLUDES}
+        ${QT6Widgets_INCLUDES}
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
         ${PORTAUDIO_INCLUDE_DIRS}

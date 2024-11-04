@@ -56,8 +56,8 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   // mRefTable is in the frequency domain
   for (int32_t i = 1; i <= mDabPar.K / 2; i++) // skip DC
   {
-    mRefTable[0           + i] = cmplx_from_phase(get_Phi(i));
-    mRefTable[mDabPar.T_u - i] = cmplx_from_phase(get_Phi(-i));
+    mRefTable[0           + i] = cmplx_from_phase(get_phi(i));
+    mRefTable[mDabPar.T_u - i] = cmplx_from_phase(get_phi(-i));
   }
 
   // Prepare a table for the coarse frequency synchronization.
