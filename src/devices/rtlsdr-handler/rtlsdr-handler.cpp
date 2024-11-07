@@ -247,9 +247,9 @@ RtlSdrHandler::RtlSdrHandler(QSettings *s,
     //qDebug() << "gain =" << temp << ", index =" << k;
 	gainControl->setCurrentIndex(k != -1 ? k : gainsCount / 2);
 
-    agcControl = rtlsdrSettings->value("autogain", 0).toInt();
+    agcControl = rtlsdrSettings->value("autogain", 2).toInt();
 	biasControl->setChecked(rtlsdrSettings->value("biasControl", 0).toInt());
-	bandwidth->setValue(rtlsdrSettings->value("bandwidth", 0).toInt());
+	bandwidth->setValue(rtlsdrSettings->value("bandwidth", 1750).toInt());
 	ppm_correction->setValue(rtlsdrSettings->value("ppm_correction", 0.0).toDouble());
 	rtlsdrSettings->endGroup();
 
