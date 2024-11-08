@@ -244,6 +244,7 @@ private:
   SAudioFifo * mpCurAudioFifo = nullptr;
   enum class EPlaybackState { Stopped = 0, WaitForInit, Running };
   EPlaybackState mPlaybackState = EPlaybackState::Stopped;
+  float mAudioBufferFillFiltered = 0.0f;
 
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
@@ -356,7 +357,7 @@ signals:
   void signal_switch_audio(SAudioFifo *buffer);
   void signal_stop_audio();
   void signal_set_audio_device(const QByteArray & deviceId);
-
+  void signal_audio_buffer_filled_state(int);
 
 public slots:
   void slot_add_to_ensemble(const QString &, int);

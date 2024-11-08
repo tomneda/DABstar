@@ -53,7 +53,7 @@ struct SAudioFifo
     // QMutex mutex;
     void reset();
     void print() const;
-    int32_t get_fill_grade_in_percent() const { return (int32_t)(100 * count / AUDIO_FIFO_SIZE); }
+    float get_fill_state_in_percent() const { return 100.0f * (float)count / AUDIO_FIFO_SIZE; }
 };
 
 //using SAudioFifo = struct AudioFifo;

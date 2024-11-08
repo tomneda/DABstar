@@ -39,6 +39,6 @@ void SAudioFifo::reset()
 void SAudioFifo::print() const
 {
   int64_t locCount = count;
-  qDebug("AudioFifo: Count: %6" PRId64 ", in %%: %3d, head: %6" PRId64 ", tail: %6" PRId64 ", diff: %6" PRId64,
-    locCount, get_fill_grade_in_percent(), head, tail, (head - tail) % sizeof(buffer));
+  qDebug("AudioFifo: Count: %6" PRId64 ", in %%: %3.0f, head: %6" PRId64 ", tail: %6" PRId64 ", diff: %6" PRId64,
+    locCount, get_fill_state_in_percent(), head, tail, (head - tail) % sizeof(buffer));
 };

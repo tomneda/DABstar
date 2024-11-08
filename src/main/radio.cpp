@@ -166,7 +166,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-  setFixedSize(710+20, 470+20);
+  setFixedSize(710+20, 470+20+40);
   setup_ui_colors();
   _create_status_info();
 
@@ -244,6 +244,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   connect(this, &RadioInterface::signal_stop_audio, mpAudioOutput.get(), &AudioOutput::slot_stop, Qt::QueuedConnection);
   connect(this, &RadioInterface::signal_set_audio_device, mpAudioOutput.get(), &AudioOutput::slot_set_audio_device, Qt::QueuedConnection);
   connect(this, &RadioInterface::signal_audio_mute, mpAudioOutput.get(), &AudioOutput::slot_mute, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_audio_buffer_filled_state, progBarAudioBuffer, &QProgressBar::setValue);
 
   _slot_load_audio_device_list(mpAudioOutput->get_audio_device_list());
   mConfig.streamoutSelector->show();
@@ -321,9 +322,9 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   QString skipFileName = mpSH->read(SettingHelper::skipFile).toString();
   mBandHandler.setup_skipList(skipFileName);
 
-  QPalette p = ficError_display->palette();
+  QPalette p = progBarFicError->palette();
   p.setColor(QPalette::Highlight, Qt::red);
-  ficError_display->setPalette(p);
+  progBarFicError->setPalette(p);
   p.setColor(QPalette::Highlight, Qt::green);
 
   connect(mpTechDataWidget, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
@@ -915,7 +916,7 @@ void RadioInterface::write_picture(const QPixmap & iPixMap) const
   // typical the MOT size is 320 : 240 , so only scale for other sizes
   if (iPixMap.width() != w || iPixMap.height() != h)
   {
-    qDebug("MOT w: %d, h: %d (scaled)", iPixMap.width(), iPixMap.height());
+    //qDebug("MOT w: %d, h: %d (scaled)", iPixMap.width(), iPixMap.height());
     pictureLabel->setPixmap(iPixMap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
   }
   else
@@ -1156,6 +1157,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
       //mpCurAudioFifo->mutex.unlock();
 
       int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpCurAudioFifo->head;
+      assert(bytesToEnd >= 0);
       if (bytesToEnd < bytesToWrite)
       {
         // memcpy(m_outFifoPtr->buffer + m_outFifoPtr->head, m_outBufferPtr, bytesToEnd);
@@ -1172,7 +1174,12 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
 
       // mpCurAudioFifo->mutex.lock();
       mpCurAudioFifo->count += bytesToWrite;
-      mpCurAudioFifo->print();
+      //const int32_t fill_state = mpCurAudioFifo->get_fill_state_in_percent();
+      //mAudioBufferFillFiltered += 0.01f * (fill_state - mAudioBufferFillFiltered);
+      mean_filter(mAudioBufferFillFiltered, mpCurAudioFifo->get_fill_state_in_percent(), 0.05f);
+      //mpCurAudioFifo->print();
+      //qDebug("Fill state: %d / %d", fill_state, mAudioBufferFillFiltered);
+      emit signal_audio_buffer_filled_state((int32_t)mAudioBufferFillFiltered);
       // mpCurAudioFifo->mutex.unlock();
     }
 #ifdef HAVE_PLUTO_RXTX
@@ -1512,7 +1519,7 @@ void RadioInterface::slot_show_fic_success(bool b)
 
   if (++mFicBlocks >= 100)
   {
-    QPalette p = ficError_display->palette();
+    QPalette p = progBarFicError->palette();
     if (mFicSuccess < 85)
     {
       p.setColor(QPalette::Highlight, Qt::red);
@@ -1522,8 +1529,8 @@ void RadioInterface::slot_show_fic_success(bool b)
       p.setColor(QPalette::Highlight, Qt::green);
     }
 
-    ficError_display->setPalette(p);
-    ficError_display->setValue(mFicSuccess);
+    progBarFicError->setPalette(p);
+    progBarFicError->setValue(mFicSuccess);
     mFicSuccess = 0;
     mFicBlocks = 0;
   }
@@ -2791,7 +2798,7 @@ void RadioInterface::stopChannel()
   mChannel.nextService.valid = false;
 
   //	all stopped, now look at the GUI elements
-  ficError_display->setValue(0);
+  progBarFicError->setValue(0);
   //	the visual elements related to service and channel
   slot_set_synced(false);
   ensembleId->setText("");

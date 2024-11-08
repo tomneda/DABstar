@@ -400,7 +400,8 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
   {
     // muted
     // condition to unmute is enough samples
-    if (count > 500 * mSampleRateKHz * mBytesPerFrame)    // 800ms of signal
+    //if (count > 500 * mSampleRateKHz * mBytesPerFrame)    // 800ms of signal
+    if (count > (int64_t)(AUDIO_FIFO_SIZE / 2))
     {
       // enough samples => reading data from input fifo
       if (muteRequest)
