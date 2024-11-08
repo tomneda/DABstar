@@ -289,10 +289,10 @@ void AudioIODevice::_extract_audio_data_from_fifo(char * opData, const int64_t i
     mpInFifo->tail += iBytesToRead;
   }
 
-  mpInFifo->mutex.lock();
+  // mpInFifo->mutex.lock();
   mpInFifo->count -= iBytesToRead;
-  mpInFifo->countChanged.wakeAll();
-  mpInFifo->mutex.unlock();
+  // mpInFifo->countChanged.wakeAll();
+  // mpInFifo->mutex.unlock();
 }
 
 void AudioIODevice::_fade(const int64_t iNumSamples, const float coe, float gain, int16_t * dataPtr) const
@@ -384,9 +384,9 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
   }
 
   // read samples from input buffer
-  mpInFifo->mutex.lock();
+  // mpInFifo->mutex.lock();
   const int64_t count = mpInFifo->count;
-  mpInFifo->mutex.unlock();
+  // mpInFifo->mutex.unlock();
 
   bool muteRequest = mMuteFlag || mStopFlag;
   mDoStop = mStopFlag;
@@ -410,10 +410,10 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
 
         // shifting buffer pointers
         mpInFifo->tail = (mpInFifo->tail + bytesToRead) % AUDIO_FIFO_SIZE;
-        mpInFifo->mutex.lock();
+        // mpInFifo->mutex.lock();
         mpInFifo->count -= bytesToRead;
-        mpInFifo->countChanged.wakeAll();
-        mpInFifo->mutex.unlock();
+        // mpInFifo->countChanged.wakeAll();
+        // mpInFifo->mutex.unlock();
 
         // done
         return bytesToRead;
@@ -501,15 +501,6 @@ qint64 AudioIODevice::writeData(const char * data, qint64 len)
   Q_UNUSED(len);
 
   return 0;
-}
-
-qint64 AudioIODevice::bytesAvailable() const
-{
-  mpInFifo->mutex.lock();
-  int64_t count = mpInFifo->count;
-  mpInFifo->mutex.unlock();
-
-  return count;
 }
 
 void AudioIODevice::set_mute_state(bool iMuteActive)

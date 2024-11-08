@@ -1145,14 +1145,15 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
       const int64_t bytesToWrite = iAmount * sizeof(int16_t);
 
       // wait for space in output buffer
-      mpCurAudioFifo->mutex.lock();
+      //mpCurAudioFifo->mutex.lock();
       uint64_t count = mpCurAudioFifo->count;
       while ((int64_t)(AUDIO_FIFO_SIZE - count) < bytesToWrite)
       {
-        mpCurAudioFifo->countChanged.wait(&mpCurAudioFifo->mutex);
+        mpCurAudioFifo->reset();
+        //mpCurAudioFifo->countChanged.wait(&mpCurAudioFifo->mutex);
         count = mpCurAudioFifo->count;
       }
-      mpCurAudioFifo->mutex.unlock();
+      //mpCurAudioFifo->mutex.unlock();
 
       int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpCurAudioFifo->head;
       if (bytesToEnd < bytesToWrite)
@@ -1169,9 +1170,10 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
         mpCurAudioFifo->head += bytesToWrite;
       }
 
-      mpCurAudioFifo->mutex.lock();
+      // mpCurAudioFifo->mutex.lock();
       mpCurAudioFifo->count += bytesToWrite;
-      mpCurAudioFifo->mutex.unlock();
+      mpCurAudioFifo->print();
+      // mpCurAudioFifo->mutex.unlock();
     }
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)

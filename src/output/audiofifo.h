@@ -49,9 +49,11 @@ struct SAudioFifo
     int64_t head;
     int64_t tail;
     uint8_t buffer[AUDIO_FIFO_SIZE];
-    QWaitCondition countChanged;
-    QMutex mutex;
+    // QWaitCondition countChanged;
+    // QMutex mutex;
     void reset();
+    void print() const;
+    int32_t get_fill_grade_in_percent() const { return (int32_t)(100 * count / AUDIO_FIFO_SIZE); }
 };
 
 //using SAudioFifo = struct AudioFifo;
