@@ -1096,11 +1096,16 @@ void RadioInterface::slot_change_in_configuration()
 //	In order to not overload with an enormous amount of
 //	signals, we trigger this function at most 10 times a second
 //
-void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iSR, const uint32_t iAudioFlags)
+void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudioSampleRate, const uint32_t iAudioFlags)
 {
   if (!mIsRunning.load())
   {
     return;
+  }
+
+  if (mpCurAudioFifo == nullptr)
+  {
+    _set_output(iAudioSampleRate, 2);
   }
 
   mAudioFrameCnt++;
@@ -1116,7 +1121,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iSR, c
 
     if (!mpTechDataWidget->isHidden())
     {
-      mpTechDataWidget->show_sample_rate_and_audio_flags(iSR, sbrUsed, psUsed);
+      mpTechDataWidget->show_sample_rate_and_audio_flags((int32_t)iAudioSampleRate, sbrUsed, psUsed);
     }
   }
 
@@ -1177,7 +1182,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iSR, c
     if (!mpTechDataWidget->isHidden())
     {
       mTechDataBuffer.put_data_into_ring_buffer(vec, iAmount);
-      mpTechDataWidget->audioDataAvailable(iAmount, iSR);
+      mpTechDataWidget->audioDataAvailable(iAmount, iAudioSampleRate);
     }
   }
 }
@@ -2471,7 +2476,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
     }
   }
   //	activate sound
-  _set_output(48000, 2); // TODO: get data audio stream
+  mpCurAudioFifo = nullptr; // trigger possible new sample rate setting
   //mpSoundOut->restart();
   programTypeLabel->setText(getProgramType(ad->programType));
   //	show service related data
