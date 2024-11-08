@@ -166,9 +166,16 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-  setFixedSize(710+20, 470+20+40);
+  setFixedSize(710+20, 470+20+50);
   setup_ui_colors();
   _create_status_info();
+
+  thermoPeakLevelLeft->setValue(-40.0);
+  thermoPeakLevelRight->setValue(-40.0);
+  thermoPeakLevelLeft->setFillBrush(QColor(0x6F70EF));
+  thermoPeakLevelRight->setFillBrush(QColor(0x6F70EF));
+  thermoPeakLevelLeft->setBorderWidth(0);
+  thermoPeakLevelRight->setBorderWidth(0);
 
   mpServiceListHandler = std::make_unique<ServiceListHandler>(mpSH->get_settings(), dbFileName, tblServiceList);
 
@@ -237,7 +244,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   theTechWindow->hide();
 #else
   //mpSoundOut.reset(new Qt_Audio);
-  mpAudioOutput.reset(new AudioOutputQt);
+  mpAudioOutput.reset(new AudioOutputQt(this));
   connect(mpAudioOutput.get(), &AudioOutput::signal_audio_devices_list, this, &RadioInterface::_slot_load_audio_device_list);
   connect(this, &RadioInterface::signal_start_audio, mpAudioOutput.get(), &AudioOutput::slot_start, Qt::QueuedConnection);
   connect(this, &RadioInterface::signal_switch_audio, mpAudioOutput.get(), &AudioOutput::slot_restart, Qt::QueuedConnection);
@@ -1131,7 +1138,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
   while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
   {
     assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
-    // vec contains a stereo pair [0][1]...[n-1][n]
+    // vec contains a stereo pair [0][1]...[n-2][n-1]
     mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
 
     //if (!mMutingActive)
@@ -1188,6 +1195,12 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
       streamerOut->audioOut(vec, amount, rate);
     }
 #endif
+
+    // for (int32_t idx = 0; idx < iAmount; idx+=2)
+    // {
+    //   _eval_peak_audio_level(cmplx((float)vec[idx + 0] / INT16_MAX, (float)vec[idx + 1] / INT16_MAX));
+    // }
+
     if (!mpTechDataWidget->isHidden())
     {
       mTechDataBuffer.put_data_into_ring_buffer(vec, iAmount);
@@ -1776,7 +1789,7 @@ void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData 
   }
 }
 
-void RadioInterface::slot_show_peak_level(float iPeakLevel)
+void RadioInterface::slot_show_digital_peak_level(float iPeakLevel)
 {
   if (!mIsRunning.load())
   {
@@ -3773,3 +3786,19 @@ void RadioInterface::_slot_load_audio_device_list(const QList<QAudioDevice> & iD
     mConfig.streamoutSelector->addItem(device.description(), QVariant::fromValue(device.id()));
   }
 }
+
+void RadioInterface::slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight)
+{
+  auto peak_avr = [](float iPeak, float & ioPeakAvr) -> void
+  {
+    ioPeakAvr = (iPeak >= ioPeakAvr ? iPeak : ioPeakAvr - 0.5f /*decay*/);
+    //ioPeakAvr = iPeak;
+  };
+
+  peak_avr(iPeakLeft, mPeakLeftDamped);
+  peak_avr(iPeakRight, mPeakRightDamped);
+
+  thermoPeakLevelLeft->setValue(mPeakLeftDamped);
+  thermoPeakLevelRight->setValue(mPeakRightDamped);
+}
+

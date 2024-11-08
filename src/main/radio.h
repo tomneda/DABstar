@@ -163,6 +163,7 @@ struct ChannelDescriptor
   }
 };
 
+
 class RadioInterface : public QWidget, private Ui_DabRadio
 {
 Q_OBJECT
@@ -245,6 +246,8 @@ private:
   enum class EPlaybackState { Stopped = 0, WaitForInit, Running };
   EPlaybackState mPlaybackState = EPlaybackState::Stopped;
   float mAudioBufferFillFiltered = 0.0f;
+  float mPeakLeftDamped = -100.0f;
+  float mPeakRightDamped = -100.0f;
 
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
@@ -346,6 +349,8 @@ private:
   void _update_channel_selector();
   void _set_device_to_file_mode(const bool iDataFromFile);
   void _set_output(uint32_t iSampleRate, uint8_t iNumChannels);
+  void _eval_peak_audio_level(const cmplx s);
+
 
 signals:
   void signal_set_new_channel(int);
@@ -382,7 +387,7 @@ public slots:
   void slot_show_spectrum(int);
   void slot_show_iq(int, float);
   void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);
-  void slot_show_peak_level(float iPeakLevel);
+  void slot_show_digital_peak_level(float iPeakLevel);
   void slot_show_rs_corrections(int, int);
   void slot_show_tii(int, int);
   void slot_clock_time(int, int, int, int, int, int, int, int, int);
@@ -408,6 +413,7 @@ public slots:
   void slot_handle_tii_detector_mode(bool);
   void slot_handle_dc_avoidance_algorithm(bool);
   void slot_handle_dc_removal(bool);
+  void slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight);
 
   void closeEvent(QCloseEvent * event) override;
 

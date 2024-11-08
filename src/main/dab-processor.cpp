@@ -63,7 +63,7 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
   connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &RadioInterface::slot_set_and_show_freq_corr_rf_Hz);
   connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_bb_Hz);
-  connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &RadioInterface::slot_show_peak_level);
+  connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &RadioInterface::slot_show_digital_peak_level);
 
   mOfdmBuffer.resize(2 * mDabPar.T_s);
   mBits.resize(2 * mDabPar.K);

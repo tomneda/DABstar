@@ -35,18 +35,50 @@
 
 #include "audiooutput.h"
 #include "audiofifo.h"
+#include "glob_defs.h"
 #include <QObject>
 #include <QIODevice>
 
 class AudioIODevice;
 class QAudioSink;
+class RadioInterface;
+
+template <typename T>
+class DelayLine
+{
+public:
+  explicit DelayLine(const T & iDefault)
+    : mDefault(iDefault)
+  {
+    set_delay_steps(0); // reserve memory for at least one sample
+  }
+
+  void set_delay_steps(const uint32_t iSteps)
+  {
+    mDataPtrIdx = 0;
+    mDelayBuffer.resize(iSteps + 1, mDefault);
+  }
+
+  const T & get_set_value(const T & iVal)
+  {
+    mDelayBuffer[mDataPtrIdx] = iVal;
+    mDataPtrIdx = (mDataPtrIdx + 1) % mDelayBuffer.size();
+    return mDelayBuffer[mDataPtrIdx];
+  }
+
+private:
+  uint32_t mDataPtrIdx = 0;
+  std::vector<T> mDelayBuffer;
+  T mDefault;
+};
+
 
 class AudioOutputQt final : public AudioOutput
 {
   Q_OBJECT
 
 public:
-  explicit AudioOutputQt(QObject * parent = nullptr);
+  explicit AudioOutputQt(RadioInterface * ipRI, QObject * parent = nullptr);
   ~AudioOutputQt() override;
 
 private:
@@ -74,8 +106,9 @@ private slots:
 
 class AudioIODevice final : public QIODevice
 {
+  Q_OBJECT
 public:
-  explicit AudioIODevice(QObject * iParent = nullptr);
+  explicit AudioIODevice(RadioInterface * ipRI, QObject * iParent = nullptr);
 
   void start();
   void stop();
@@ -83,7 +116,7 @@ public:
   void set_mute_state(bool iMuteActive);
   bool is_muted() const { return mPlaybackState == EPlaybackState::Muted; }
 
-  qint64 readData(char * data, qint64 maxlen) override;
+  qint64 readData(char * opData, qint64 maxlen) override;
   qint64 writeData(const char * data, qint64 len) override;
 
 private:
@@ -98,10 +131,21 @@ private:
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
 
+  // peak level meter
+  DelayLine<cmplx> delayLine{cmplx(-40.0f, -40.0f)};
+  uint32_t mPeakLevelCurSampleCnt = 0;
+  uint32_t mPeakLevelSampleMax = 0;
+  float mAbsPeakLeft = 0.0f;
+  float mAbsPeakRight = 0.0f;
+
   void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead) const;
   void _fade(int64_t iNumSamples, float coe, float gain, int16_t * dataPtr) const;
   void _fade_in_audio_samples(char * opData, int64_t iNumSamples) const;
   void _fade_out_audio_samples(char * opData, int64_t iBytesToRead, int64_t iNumSamples) const;
+  void _eval_peak_audio_level(const int16_t * ipData, uint32_t iNumSamples);
+
+signals:
+  void signal_show_audio_peak_level(float, float) const;
 };
 
 #endif // AUDIOOUTPUTQT_H

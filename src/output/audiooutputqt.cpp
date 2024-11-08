@@ -37,12 +37,14 @@
 #include <QAudioSink>
 #include <QAudioDevice>
 
+#include "radio.h"
+
 Q_LOGGING_CATEGORY(sLCAudioOutput, "AudioOutput", QtInfoMsg)
 
-AudioOutputQt::AudioOutputQt(QObject * parent)
+AudioOutputQt::AudioOutputQt(RadioInterface * const ipRI, QObject * parent)
   : AudioOutput(parent)
 {
-  mpIoDevice = new AudioIODevice();
+  mpIoDevice = new AudioIODevice(ipRI);
 }
 
 AudioOutputQt::~AudioOutputQt()
@@ -238,9 +240,10 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
 }
 
 
-AudioIODevice::AudioIODevice(QObject * const iParent)
+AudioIODevice::AudioIODevice(RadioInterface * const ipRI, QObject * const iParent)
   : QIODevice(iParent)
 {
+  connect(this, &AudioIODevice::signal_show_audio_peak_level, ipRI, &RadioInterface::slot_show_audio_peak_level);
 }
 
 void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
@@ -248,6 +251,7 @@ void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
   mpInFifo = iBuffer;
 
   mSampleRateKHz = iBuffer->sampleRate / 1000;
+  mPeakLevelSampleMax = iBuffer->sampleRate / 40; // 40 "peaks" per second
   mNumChannels = iBuffer->numChannels;
   mBytesPerFrame = mNumChannels * sizeof(int16_t);
 
@@ -343,16 +347,6 @@ void AudioIODevice::_fade_out_audio_samples(char * opData, const int64_t iBytesT
     int16_t * dataPtr = (int16_t*)opData;
 
     _fade(iNumSamples, coe, gain, dataPtr);
-
-    // for (int_fast32_t n = 0; n < iNumSamples; ++n)
-    // {
-    //   gain = gain * coe;  // before by purpose
-    //   for (uint_fast8_t c = 0; c < mNumChannels; ++c)
-    //   {
-    //     *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
-    //     dataPtr++;
-    //   }
-    // }
   }
   else
   {
@@ -363,22 +357,13 @@ void AudioIODevice::_fade_out_audio_samples(char * opData, const int64_t iBytesT
 
     _fade(numFadedSamples, coe, gain, dataPtr);
 
-    // for (uint_fast32_t n = 0; n < AUDIOOUTPUT_FADE_TIME_MS * mSampleRateKHz; ++n)
-    // {
-    //   gain = gain * coe;  // before by purpose
-    //   for (uint_fast8_t c = 0; c < mNumChannels; ++c)
-    //   {
-    //     *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
-    //     dataPtr++;
-    //   }
-    // }
     memset(dataPtr + numFadedSamples * mNumChannels, 0, iBytesToRead - numFadedSamples * mBytesPerFrame);
   }
 }
 
-qint64 AudioIODevice::readData(char * data, qint64 len)
+qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
 {
-  if (mDoStop || (0 == len))
+  if (mDoStop || (0 == iSizeOfReadData))
   {
     return 0;
   }
@@ -391,8 +376,8 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
   bool muteRequest = mMuteFlag || mStopFlag;
   mDoStop = mStopFlag;
 
-  const int64_t bytesToRead = len;
-  int64_t numSamples = len / mBytesPerFrame;
+  const int64_t bytesToRead = iSizeOfReadData;
+  int64_t numSamples = iSizeOfReadData / mBytesPerFrame;
 
   //qDebug() << Q_FUNC_INFO << len << count;
 
@@ -407,7 +392,7 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
       if (muteRequest)
       {
         // staying muted -> setting output buffer to 0
-        memset(data, 0, bytesToRead);
+        memset(opData, 0, bytesToRead);
 
         // shifting buffer pointers
         mpInFifo->tail = (mpInFifo->tail + bytesToRead) % AUDIO_FIFO_SIZE;
@@ -417,11 +402,12 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
         // mpInFifo->mutex.unlock();
 
         // done
+        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
         return bytesToRead;
       }
 
       // at this point we have enough sample to unmute and there is no request => preparing data
-      _extract_audio_data_from_fifo(data, bytesToRead);
+      _extract_audio_data_from_fifo(opData, bytesToRead);
 
       // unmute request
       muteRequest = false;
@@ -430,9 +416,10 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
     {   // not enough samples ==> inserting silence
       qCDebug(sLCAudioOutput, "Muted: Inserting silence [%u ms]", static_cast<unsigned int>(bytesToRead / (mBytesPerFrame * mSampleRateKHz)));
 
-      memset(data, 0, bytesToRead);
+      memset(opData, 0, bytesToRead);
 
       // done
+      _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
       return bytesToRead;
     }
   }
@@ -449,14 +436,15 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
       {
         // nothing to play
         qCInfo(sLCAudioOutput, "Hard mute [no samples available]");
-        memset(data, 0, bytesToRead);
+        memset(opData, 0, bytesToRead);
         mPlaybackState = EPlaybackState::Muted;
+        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
         return bytesToRead;
       }
 
       // set rest of the samples to be 0
-      memset(data + count, 0, bytesToRead - count);
-      _extract_audio_data_from_fifo(data, count);
+      memset(opData + count, 0, bytesToRead - count);
+      _extract_audio_data_from_fifo(opData, count);
 
       numSamples = count / mBytesPerFrame;
 
@@ -465,12 +453,13 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
     }
     else
     {
-      // enough sample available -> reading samples
-      _extract_audio_data_from_fifo(data, bytesToRead);
+      // enough sample available -> reading samples -> this is the normal running operation
+      _extract_audio_data_from_fifo(opData, bytesToRead);
 
       if (!muteRequest)
       {
         // done
+        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
         return bytesToRead;
       }
     }
@@ -483,16 +472,17 @@ qint64 AudioIODevice::readData(char * data, qint64 len)
   if (false == muteRequest)
   {
     // unmute can be requested only when there is enough samples
-    _fade_in_audio_samples(data, numSamples);
+    _fade_in_audio_samples(opData, numSamples);
     mPlaybackState = EPlaybackState::Playing; // playing
   }
   else
   {
     // mute can be requested when there is not enough samples or from HMI
-    _fade_out_audio_samples(data, bytesToRead, numSamples);
+    _fade_out_audio_samples(opData, bytesToRead, numSamples);
     mPlaybackState = EPlaybackState::Muted; // muted
   }
 
+  _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
   return bytesToRead;
 }
 
@@ -508,3 +498,68 @@ void AudioIODevice::set_mute_state(bool iMuteActive)
 {
   mMuteFlag = iMuteActive;
 }
+
+void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const uint32_t iNumSamples)
+{
+  for (uint32_t idx = 0; idx < iNumSamples; idx++)
+  {
+    const float absLeft  = (float)std::abs(ipData[idx + 0]) / INT16_MAX;
+    const float absRight = (float)std::abs(ipData[idx + 1]) / INT16_MAX;
+
+    if (absLeft > mAbsPeakLeft)
+    {
+      mAbsPeakLeft = absLeft;
+    }
+    if (absRight > mAbsPeakRight)
+    {
+      mAbsPeakRight = absRight;
+    }
+
+    mPeakLevelCurSampleCnt++;
+    if (mPeakLevelCurSampleCnt > mPeakLevelSampleMax)
+    {
+      mPeakLevelCurSampleCnt = 0;
+
+      const float left_dB  = (mAbsPeakLeft  > 0.0f ? 20.0f * std::log10(mAbsPeakLeft)  : -40.0f);
+      const float right_dB = (mAbsPeakRight > 0.0f ? 20.0f * std::log10(mAbsPeakRight) : -40.0f);
+
+      emit signal_show_audio_peak_level(left_dB, right_dB);
+
+      //	correct audio sample buffer delay for peak display
+      // const cmplx delayed_dB = delayLine.get_set_value(cmplx(left_dB, right_dB));
+      // emit signal_show_audio_peak_level(real(delayed_dB), imag(delayed_dB));
+
+      mAbsPeakLeft = 0.0f;
+      mAbsPeakRight = 0.0f;
+    }
+  }
+}
+
+// void AudioIODevice::insertTestTone(DSPCOMPLEX & ioS)
+// {
+//   float toneFreqHz = 1000.0f;
+//   float level = 0.9f;
+//
+//   if (!testTone.Enabled)
+//   {
+//     return;
+//   }
+//
+//   ioS *= (1.0f - level);
+//   if (testTone.NoSamplRemain > 0)
+//   {
+//     testTone.NoSamplRemain--;
+//     testTone.CurPhase += testTone.PhaseIncr;
+//     testTone.CurPhase = PI_Constrain(testTone.CurPhase);
+//     const float smpl = sin(testTone.CurPhase);
+//     ioS += level * DSPCOMPLEX(smpl, smpl);
+//   }
+//   else if (++testTone.TimePeriodCounter > workingRate * testTone.TimePeriod)
+//   {
+//     testTone.TimePeriodCounter = 0;
+//     testTone.NoSamplRemain = workingRate * testTone.SignalDuration;
+//     testTone.CurPhase = 0.0f;
+//     testTone.PhaseIncr = 2 * M_PI / workingRate * toneFreqHz;
+//   }
+// }
+

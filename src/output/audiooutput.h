@@ -45,6 +45,7 @@ constexpr float AUDIOOUTPUT_FADE_MIN_LIN = 0.0001f;
 
 enum class EPlaybackState { Muted = 0, Playing = 1 };
 
+class RadioInterface;
 
 class AudioOutput : public QObject
 {
