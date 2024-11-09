@@ -165,6 +165,11 @@ public:
     return bufferSize - get_ring_buffer_read_available();
   }
 
+  [[nodiscard]] float get_fill_state_in_percent() const
+  {
+    return 100.0f * (float)get_ring_buffer_read_available() / (float)bufferSize;
+  }
+
   void flush_ring_buffer()
   {
     writeIndex = 0;

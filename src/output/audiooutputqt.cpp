@@ -1,5 +1,5 @@
 /*
- * This file original taken from AbracaDABra and is adapted by Thomas Neder
+ * This file original taken from AbracaDABra and is massively adapted by Thomas Neder
  * (https://github.com/tomneda)
  * The original copyright information is preserved below and is acknowledged.
  */
@@ -63,8 +63,8 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
   QAudioFormat format;
   format.setSampleRate((int)iBuffer->sampleRate);
   format.setSampleFormat(QAudioFormat::Int16);
-  format.setChannelCount(iBuffer->numChannels);
-  format.setChannelConfig(iBuffer->numChannels > 1 ? QAudioFormat::ChannelConfigStereo : QAudioFormat::ChannelConfigMono);
+  format.setChannelCount(2);
+  format.setChannelConfig(QAudioFormat::ChannelConfigStereo);
 
   if (!mCurrentAudioDevice.isFormatSupported(format))
   {
@@ -251,15 +251,16 @@ void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
   mpInFifo = iBuffer;
 
   mSampleRateKHz = iBuffer->sampleRate / 1000;
-  mPeakLevelSampleMax = iBuffer->sampleRate / 40; // 40 "peaks" per second
-  mNumChannels = iBuffer->numChannels;
-  mBytesPerFrame = mNumChannels * sizeof(int16_t);
+  mPeakLevelSampleCntBothChannels = iBuffer->sampleRate / (20 * 2 /*channels*/); // 20 "peaks" per second
+  // mNumChannels = iBuffer->numChannels;
+  // mBytesPerFrame = mNumChannels * sizeof(int16_t);
+  // mBytesPerFrame = 2 /*channels*/ * sizeof(int16_t);
 
   // mute ramp is exponential
   // value are precalculated to save MIPS in runtime
   // unmute ramp is then calculated as 2.0 - m_muteFactor in runtime
   // m_muteFactor is calculated for change from 0dB to AUDIOOUTPUT_FADE_MIN_DB in AUDIOOUTPUT_FADE_TIME_MS
-  mMuteFactor = powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz));
+  // mMuteFactor = powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz));
 }
 
 void AudioIODevice::start()
@@ -278,150 +279,133 @@ void AudioIODevice::stop()
   mStopFlag = true;     // set stop bit
 }
 
-void AudioIODevice::_extract_audio_data_from_fifo(char * opData, const int64_t iBytesToRead) const
-{
-  if (const int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpInFifo->tail;
-      bytesToEnd < iBytesToRead)
-  {
-    memcpy(opData, mpInFifo->buffer + mpInFifo->tail, bytesToEnd);
-    memcpy(opData + bytesToEnd, mpInFifo->buffer, (iBytesToRead - bytesToEnd));
-    mpInFifo->tail = iBytesToRead - bytesToEnd;
-  }
-  else
-  {
-    memcpy(opData, mpInFifo->buffer + mpInFifo->tail, iBytesToRead);
-    mpInFifo->tail += iBytesToRead;
-  }
+// void AudioIODevice::_extract_audio_data_from_fifo(char * opData, const int64_t iBytesToRead) const
+// {
+//   if (const int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpInFifo->tail;
+//       bytesToEnd < iBytesToRead)
+//   {
+//     memcpy(opData, mpInFifo->buffer + mpInFifo->tail, bytesToEnd);
+//     memcpy(opData + bytesToEnd, mpInFifo->buffer, (iBytesToRead - bytesToEnd));
+//     mpInFifo->tail = iBytesToRead - bytesToEnd;
+//   }
+//   else
+//   {
+//     memcpy(opData, mpInFifo->buffer + mpInFifo->tail, iBytesToRead);
+//     mpInFifo->tail += iBytesToRead;
+//   }
+//
+//   // mpInFifo->mutex.lock();
+//   mpInFifo->count -= iBytesToRead;
+//   // mpInFifo->countChanged.wakeAll();
+//   // mpInFifo->mutex.unlock();
+// }
 
-  // mpInFifo->mutex.lock();
-  mpInFifo->count -= iBytesToRead;
-  // mpInFifo->countChanged.wakeAll();
-  // mpInFifo->mutex.unlock();
-}
-
-void AudioIODevice::_fade(const int64_t iNumSamples, const float coe, float gain, int16_t * dataPtr) const
+void AudioIODevice::_fade(const int32_t iNumStereoSamples, const float coe, float gain, int16_t * dataPtr) const
 {
-  for (int_fast32_t n = 0; n < iNumSamples; ++n)
+  for (int_fast32_t n = 0; n < iNumStereoSamples; ++n)
   {
-    gain *= coe;
-    // printf("%.3f ", gain);
-    for (uint_fast8_t c = 0; c < mNumChannels; ++c)
+    gain *= coe; // we do not distinguish between fade-in and fade-out here for simplicity
+    //printf("%.3f ", gain);
+    for (uint_fast8_t c = 0; c < 2 /*channels*/; ++c) // apply to both channels the same
     {
       *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
       dataPtr++;
     }
   }
-  // printf("\n");
+  //printf("\n");
 }
 
-void AudioIODevice::_fade_in_audio_samples(char * opData, int64_t iNumSamples) const
+void AudioIODevice::_fade_in_audio_samples(int16_t * const opData, const int32_t iNumStereoSamples) const
 {
   qCInfo(sLCAudioOutput) << "Unmuting audio";
-  const int64_t numFadedSamples = (int64_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz);
-  const float coe = 2.0f - (iNumSamples < numFadedSamples ? powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * (float)iNumSamples)) : mMuteFactor);
+  const int32_t numFadedStereoSamples = std::min<int32_t>(iNumStereoSamples, (int32_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz));
+  const float coe = 2.0f - powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * (float)numFadedStereoSamples));
+  qCInfo(sLCAudioOutput) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
 
-  if (iNumSamples >= numFadedSamples )
-  {
-    iNumSamples = numFadedSamples;
-  }
-
-  qCInfo(sLCAudioOutput) << "iNumSamples" << iNumSamples;
-  
-  float gain = AUDIOOUTPUT_FADE_MIN_LIN;
-  int16_t * dataPtr = (int16_t*)opData;
-
-  _fade(iNumSamples, coe, gain, dataPtr);
+  _fade(numFadedStereoSamples, coe, AUDIOOUTPUT_FADE_MIN_LIN, opData);
 }
 
-void AudioIODevice::_fade_out_audio_samples(char * opData, const int64_t iBytesToRead, const int64_t iNumSamples) const
+void AudioIODevice::_fade_out_audio_samples(int16_t * const opData, const int32_t iNumStereoSamples) const
 {
-  qCInfo(sLCAudioOutput, "Muting... [available %u samples]", static_cast<unsigned int>(iNumSamples));
+  qCInfo(sLCAudioOutput, "Muting... [available %u samples]", static_cast<unsigned int>(iNumStereoSamples));
+  const int32_t numFadedStereoSamples = std::min<int32_t>(iNumStereoSamples, (int32_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz));
+  const float coe = powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * (float)numFadedStereoSamples));
+  qCInfo(sLCAudioOutput) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
 
-  const int64_t numFadedSamples = (int64_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz);
+  _fade(numFadedStereoSamples, coe, 1.0f, opData);
 
-  if (iNumSamples < numFadedSamples)
+  // are there remaining samples to overwrite to zero?
+  if (iNumStereoSamples > numFadedStereoSamples)
   {
-    float gain = 1.0;
-    const float coe = powf(10, AUDIOOUTPUT_FADE_MIN_DB / (20.0 * iNumSamples));
-
-    int16_t * dataPtr = (int16_t*)opData;
-
-    _fade(iNumSamples, coe, gain, dataPtr);
-  }
-  else
-  {
-    float gain = 1.0;
-    float coe = mMuteFactor;
-
-    int16_t * dataPtr = (int16_t*)opData;
-
-    _fade(numFadedSamples, coe, gain, dataPtr);
-
-    memset(dataPtr + numFadedSamples * mNumChannels, 0, iBytesToRead - numFadedSamples * mBytesPerFrame);
+    memset(opData + numFadedStereoSamples * 2 /*channels*/, 0, (iNumStereoSamples - numFadedStereoSamples) * (2 /*channels*/ * sizeof(int16_t)));
   }
 }
 
-qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
+qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWantedBytesBothChannels) // this is called periodically by QtAudio subsystem
 {
-  if (mDoStop || (0 == iSizeOfReadData))
+  // qDebug() << Q_FUNC_INFO << iMaxWantedSizeOfReadDataBytes;
+  if (mDoStop || iMaxWantedBytesBothChannels == 0)
   {
     return 0;
   }
 
-  // read samples from input buffer
-  // mpInFifo->mutex.lock();
-  const int64_t count = mpInFifo->count;
-  // mpInFifo->mutex.unlock();
+  RingBuffer<int16_t> * const rb = mpInFifo->pRingbuffer;
+  int16_t * const opDataSamplesBothChannels = reinterpret_cast<int16_t *>(opDataBytes); // left channel [2n + 0]: right channel [2n + 1]
+
+  assert(iMaxWantedBytesBothChannels <= INT32_MAX); // would be strange but better check it, we go on using only int32_t length further
+  const int32_t maxWantedBytesBothChannels = static_cast<int32_t>(iMaxWantedBytesBothChannels);
+  assert((maxWantedBytesBothChannels & 0x3) == 0); // stereo with 2 byte sized samples (divisible by 4)
+  const int32_t maxWantedSamplesBothChannels = maxWantedBytesBothChannels >> 1; // sizeof(int16_t)
+  const int32_t maxWantedSamplesStereoPair = maxWantedBytesBothChannels >> 2;
+  int32_t maxWantedSamplesStereoPairForFading = maxWantedSamplesStereoPair;
+
+  const int32_t availableSamplesBothChannels = rb->get_ring_buffer_read_available();
+  assert((availableSamplesBothChannels & 0x1) == 0); // as both stereo samples are given, it must be even!
 
   bool muteRequest = mMuteFlag || mStopFlag;
   mDoStop = mStopFlag;
-
-  const int64_t bytesToRead = iSizeOfReadData;
-  const int64_t numCombinedSamples = iSizeOfReadData * mNumChannels / mBytesPerFrame;
-  int64_t numStereoSamples = iSizeOfReadData / mBytesPerFrame;
-
-  //qDebug() << Q_FUNC_INFO << len << count;
 
   if (mPlaybackState == EPlaybackState::Muted)
   {
     // muted
     // condition to unmute is enough samples
-    //if (count > 500 * mSampleRateKHz * mBytesPerFrame)    // 800ms of signal
-    if (count > (int64_t)(AUDIO_FIFO_SIZE / 2))
+    //if (numSamplesAvailBothChannels > 500 * mSampleRateKHz * 2 /*channels*/)    // 500ms of signal
+    if (availableSamplesBothChannels > AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS >> 1) // wait for half buffer is filled
     {
+      assert(maxWantedSamplesBothChannels <= availableSamplesBothChannels); // numSamplesWantedBothChannels is usually 16384 bytes so this should be fulfilled!? (if happened there is no memory issue)
+
       // enough samples => reading data from input fifo
       if (muteRequest)
       {
         // staying muted -> setting output buffer to 0
-        memset(opData, 0, bytesToRead);
+        rb->advance_ring_buffer_read_index(maxWantedSamplesBothChannels);
+        memset(opDataSamplesBothChannels, 0, maxWantedBytesBothChannels);
 
         // shifting buffer pointers
-        mpInFifo->tail = (mpInFifo->tail + bytesToRead) % AUDIO_FIFO_SIZE;
-        // mpInFifo->mutex.lock();
-        mpInFifo->count -= bytesToRead;
-        // mpInFifo->countChanged.wakeAll();
-        // mpInFifo->mutex.unlock();
+        // mpInFifo->tail = (mpInFifo->tail + bytesToRead) % AUDIO_FIFO_SIZE;
+        // mpInFifo->count -= bytesToRead;
 
         // done
-        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
-        return bytesToRead;
+        _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
+        return iMaxWantedBytesBothChannels;
       }
 
       // at this point we have enough sample to unmute and there is no request => preparing data
-      _extract_audio_data_from_fifo(opData, bytesToRead);
+      //_extract_audio_data_from_fifo(opData, bytesToRead);
+      rb->get_data_from_ring_buffer(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
 
       // unmute request
       muteRequest = false;
     }
     else
     {   // not enough samples ==> inserting silence
-      qCDebug(sLCAudioOutput, "Muted: Inserting silence [%u ms]", static_cast<unsigned int>(bytesToRead / (mBytesPerFrame * mSampleRateKHz)));
+      qCDebug(sLCAudioOutput, "Muted: Inserting silence [%u ms]", static_cast<unsigned int>(maxWantedSamplesBothChannels / (2 /*channels*/ * mSampleRateKHz)));
 
-      memset(opData, 0, bytesToRead);
+      memset(opDataSamplesBothChannels, 0, maxWantedBytesBothChannels);
 
       // done
-      _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
-      return bytesToRead;
+      _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
+      return iMaxWantedBytesBothChannels;
     }
   }
   else
@@ -429,25 +413,26 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
     // (AudioOutputPlaybackState::Muted != m_playbackState)
     // cannot be anything else than Muted or Playing ==> playing
     // condition to mute is not enough samples || muteFlag
-    if (count < bytesToRead)
+    if (availableSamplesBothChannels < maxWantedSamplesBothChannels)
     {
       // not enough samples -> reading what we have and filling rest with zeros
       // minimum mute time is 1ms (m_sampleRate_kHz samples) , if less then hard mute
-      if (mSampleRateKHz * mBytesPerFrame > count)
+      if (availableSamplesBothChannels < (int32_t)(mSampleRateKHz * (2 /*channels*/ * sizeof(int16_t))))
       {
         // nothing to play
         qCInfo(sLCAudioOutput, "Hard mute [no samples available]");
-        memset(opData, 0, bytesToRead);
+        memset(opDataSamplesBothChannels, 0, maxWantedBytesBothChannels);
+        _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
         mPlaybackState = EPlaybackState::Muted;
-        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
-        return bytesToRead;
+        return iMaxWantedBytesBothChannels;
       }
 
-      // set rest of the samples to be 0
-      memset(opData + count, 0, bytesToRead - count);
-      _extract_audio_data_from_fifo(opData, count);
+      //_extract_audio_data_from_fifo(opData, numSamplesAvailBothChannels);
+      rb->get_data_from_ring_buffer(opDataSamplesBothChannels, availableSamplesBothChannels); // take what we have ...
+      memset(opDataSamplesBothChannels + availableSamplesBothChannels, 0, maxWantedBytesBothChannels - (availableSamplesBothChannels * (2 /*channels*/ * sizeof(int16_t)))); // ... and set rest of the samples to be 0
 
-      numStereoSamples = count / mBytesPerFrame;
+      // maxWantedSamplesStereoPair = numSamplesAvailBothChannels ; /// mBytesPerFrame;
+      maxWantedSamplesStereoPairForFading = availableSamplesBothChannels / 2 /*channels*/;
 
       // request to apply mute ramp
       muteRequest = true;  // mute
@@ -455,13 +440,14 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
     else
     {
       // enough sample available -> reading samples -> this is the normal running operation
-      _extract_audio_data_from_fifo(opData, bytesToRead);
+      rb->get_data_from_ring_buffer(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
+      //_extract_audio_data_from_fifo(opData, bytesToRead);
 
       if (!muteRequest)
       {
         // done
-        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
-        return bytesToRead;
+        _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
+        return iMaxWantedBytesBothChannels;
       }
     }
   }
@@ -470,21 +456,21 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
   // it is indicated by playbackState variable
 
   // unmute
-  if (false == muteRequest)
+  if (!muteRequest)
   {
     // unmute can be requested only when there is enough samples
-    _fade_in_audio_samples(opData, numStereoSamples);
+    _fade_in_audio_samples(opDataSamplesBothChannels, maxWantedSamplesStereoPairForFading);
     mPlaybackState = EPlaybackState::Playing; // playing
   }
   else
   {
     // mute can be requested when there is not enough samples or from HMI
-    _fade_out_audio_samples(opData, bytesToRead, numStereoSamples);
+    _fade_out_audio_samples(opDataSamplesBothChannels, maxWantedSamplesStereoPairForFading);
     mPlaybackState = EPlaybackState::Muted; // muted
   }
 
-  _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
-  return bytesToRead;
+  _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
+  return iMaxWantedBytesBothChannels;
 }
 
 qint64 AudioIODevice::writeData(const char * data, qint64 len)
@@ -517,7 +503,7 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const u
     }
 
     mPeakLevelCurSampleCnt++;
-    if (mPeakLevelCurSampleCnt > mPeakLevelSampleMax)
+    if (mPeakLevelCurSampleCnt > mPeakLevelSampleCntBothChannels)
     {
       mPeakLevelCurSampleCnt = 0;
 

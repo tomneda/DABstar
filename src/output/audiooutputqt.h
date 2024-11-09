@@ -122,10 +122,10 @@ public:
 private:
   SAudioFifo * mpInFifo = nullptr;
   EPlaybackState mPlaybackState = EPlaybackState::Muted;
-  uint8_t mBytesPerFrame = 0;
+  //uint8_t mBytesPerFrame = 0;
   uint32_t mSampleRateKHz = 0;
-  uint8_t mNumChannels = 0;
-  float mMuteFactor = 0;
+  //uint8_t mNumChannels = 0;
+  //float mMuteFactor = 0;
   bool mDoStop = false;
 
   std::atomic<bool> mMuteFlag = false;
@@ -134,14 +134,14 @@ private:
   // peak level meter
   // DelayLine<cmplx> delayLine{cmplx(-40.0f, -40.0f)};
   uint32_t mPeakLevelCurSampleCnt = 0;
-  uint32_t mPeakLevelSampleMax = 0;
+  uint32_t mPeakLevelSampleCntBothChannels = 0;
   int16_t mAbsPeakLeft = 0;
   int16_t mAbsPeakRight = 0;
 
-  void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead) const;
-  void _fade(int64_t iNumSamples, float coe, float gain, int16_t * dataPtr) const;
-  void _fade_in_audio_samples(char * opData, int64_t iNumSamples) const;
-  void _fade_out_audio_samples(char * opData, int64_t iBytesToRead, int64_t iNumSamples) const;
+  // void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead) const;
+  void _fade(int32_t iNumStereoSamples, float coe, float gain, int16_t * dataPtr) const;
+  void _fade_in_audio_samples(int16_t * opData, int32_t iNumStereoSamples) const;
+  void _fade_out_audio_samples(int16_t * opData, int32_t iNumStereoSamples) const;
   void _eval_peak_audio_level(const int16_t * ipData, uint32_t iNumSamples);
 
 signals:

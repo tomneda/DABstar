@@ -1121,7 +1121,8 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
 
   if (mpCurAudioFifo == nullptr)
   {
-    _set_output(iAudioSampleRate, 2);
+    mAudioBufferFillFiltered = 0.0f;
+    _set_output(iAudioSampleRate);
   }
 
   mAudioFrameCnt++;
@@ -1141,57 +1142,42 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     }
   }
 
-  auto * const vec = make_vla(int16_t, iAmount);
+  //auto * const vec = make_vla(int16_t, iAmount);
 
-  while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
+  //while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
   {
     assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
     // vec contains a stereo pair [0][1]...[n-2][n-1]
-    mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
+    //mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
 
     //if (!mMutingActive)
     {
       // let vec be interpreted as a complex vector (bit ugly but if it works...)
-      // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iSR, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
+      // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iAudioSampleRate, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
       // mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
       // TODO: WAV output should work again
       Q_ASSERT(mpCurAudioFifo != nullptr);
 
       //int64_t bytesToWrite = m_outputBufferSamples * sizeof(int16_t);
-      const int64_t bytesToWrite = iAmount * sizeof(int16_t);
+      //const int64_t bytesToWrite = iAmount * sizeof(int16_t);
 
       // wait for space in output buffer
       //mpCurAudioFifo->mutex.lock();
-      uint64_t count = mpCurAudioFifo->count;
-      while ((int64_t)(AUDIO_FIFO_SIZE - count) < bytesToWrite)
+      //uint64_t count = mpCurAudioFifo->count;
+      const int32_t remainingBufferItems = mpCurAudioFifo->pRingbuffer->get_ring_buffer_write_available();
+      //while ((int64_t)(AUDIO_FIFO_SIZE - count) < bytesToWrite)
+      if (iAmount * 2 > remainingBufferItems)
       {
-        mpCurAudioFifo->reset();
+        mpCurAudioFifo->pRingbuffer->flush_ring_buffer();
+        //mpCurAudioFifo->reset();
         //mpCurAudioFifo->countChanged.wait(&mpCurAudioFifo->mutex);
-        count = mpCurAudioFifo->count;
+        //count = mpCurAudioFifo->count;
       }
       //mpCurAudioFifo->mutex.unlock();
 
-      int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpCurAudioFifo->head;
-      assert(bytesToEnd >= 0);
-      if (bytesToEnd < bytesToWrite)
-      {
-        // memcpy(m_outFifoPtr->buffer + m_outFifoPtr->head, m_outBufferPtr, bytesToEnd);
-        // memcpy(m_outFifoPtr->buffer, reinterpret_cast<uint8_t *>(m_outBufferPtr) + bytesToEnd, bytesToWrite - bytesToEnd);
-        memcpy(mpCurAudioFifo->buffer + mpCurAudioFifo->head, vec, bytesToEnd);
-        memcpy(mpCurAudioFifo->buffer, reinterpret_cast<uint8_t *>(vec) + bytesToEnd, bytesToWrite - bytesToEnd);
-        mpCurAudioFifo->head = bytesToWrite - bytesToEnd;
-      }
-      else
-      {
-        memcpy(mpCurAudioFifo->buffer + mpCurAudioFifo->head, vec, bytesToWrite);
-        mpCurAudioFifo->head += bytesToWrite;
-      }
 
-      // mpCurAudioFifo->mutex.lock();
-      mpCurAudioFifo->count += bytesToWrite;
-      mean_filter(mAudioBufferFillFiltered, mpCurAudioFifo->get_fill_state_in_percent(), 0.05f);
-      // mpCurAudioFifo->print();
-      // mpCurAudioFifo->mutex.unlock();
+      // mAudioBufferFillFiltered = mAudioBuffer.get_fill_state_in_percent();
+      mean_filter(mAudioBufferFillFiltered, mAudioBuffer.get_fill_state_in_percent(), 0.05f);
 
       // ugly, but palette of progressbar can only be set in the same thread of the value setting, save time with the flag
       if (!mProgBarAudioBufferFullColorSet)
@@ -1210,16 +1196,11 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     }
 #endif
 
-    // for (int32_t idx = 0; idx < iAmount; idx+=2)
+    // if (!mpTechDataWidget->isHidden())
     // {
-    //   _eval_peak_audio_level(cmplx((float)vec[idx + 0] / INT16_MAX, (float)vec[idx + 1] / INT16_MAX));
+    //   mTechDataBuffer.put_data_into_ring_buffer(vec, iAmount);
+    //   mpTechDataWidget->audioDataAvailable(iAmount, iAudioSampleRate);
     // }
-
-    if (!mpTechDataWidget->isHidden())
-    {
-      mTechDataBuffer.put_data_into_ring_buffer(vec, iAmount);
-      mpTechDataWidget->audioDataAvailable(iAmount, iAudioSampleRate);
-    }
   }
 }
 //
@@ -3770,13 +3751,14 @@ void RadioInterface::_set_device_to_file_mode(const bool iDataFromFile)
   }
 }
 
-void RadioInterface::_set_output(const uint32_t iSampleRate, const uint8_t iNumChannels)
+void RadioInterface::_set_output(const uint32_t iSampleRate)
 {
   mAudioFifoIdx = (mAudioFifoIdx + 1) & 0x1;
   mpCurAudioFifo = &mAudioFifoArr[mAudioFifoIdx];
 
   mpCurAudioFifo->sampleRate = iSampleRate;
-  mpCurAudioFifo->numChannels = iNumChannels;
+  // mpCurAudioFifo->numChannels = iNumChannels;
+  mpCurAudioFifo->pRingbuffer = &mAudioBuffer;
   mpCurAudioFifo->reset();
 
   if (mPlaybackState == EPlaybackState::Running)

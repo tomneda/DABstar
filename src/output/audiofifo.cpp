@@ -30,15 +30,16 @@
 void SAudioFifo::reset()
 {
     // mutex.lock();
-    count = 0;
-    head = 0;
-    tail = 0;
+    pRingbuffer->flush_ring_buffer();
+    // count = 0;
+    // head = 0;
+    // tail = 0;
     // mutex.unlock();
 }
 
-void SAudioFifo::print() const
-{
-  int64_t locCount = count;
-  qDebug("AudioFifo: Count: %6" PRId64 ", in %%: %3.0f, head: %6" PRId64 ", tail: %6" PRId64 ", diff: %6" PRId64,
-    locCount, get_fill_state_in_percent(), head, tail, (head - tail) % sizeof(buffer));
-};
+// void SAudioFifo::print() const
+// {
+//   int64_t locCount = count;
+//   qDebug("AudioFifo: Count: %6" PRId64 ", in %%: %3.0f, head: %6" PRId64 ", tail: %6" PRId64 ", diff: %6" PRId64,
+//     locCount, get_fill_state_in_percent(), head, tail, (head - tail) % sizeof(buffer));
+// };

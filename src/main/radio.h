@@ -208,8 +208,8 @@ private:
   RingBuffer<float> mResponseBuffer{32768};
   RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
   RingBuffer<uint8_t> mDataBuffer{32768};
-  RingBuffer<int16_t> mAudioBuffer{8 * 32768};
-  //std::vector<float> mAudioOutBuffer;
+  RingBuffer<int16_t> mAudioBuffer{AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS};
+  std::vector<float> mAudioOutBuffer;
   SpectrumViewer mSpectrumViewer;
   BandHandler mBandHandler;
   dlCache mDlCache{10};
@@ -350,9 +350,7 @@ private:
   void _reset_status_info();
   void _update_channel_selector();
   void _set_device_to_file_mode(const bool iDataFromFile);
-  void _set_output(uint32_t iSampleRate, uint8_t iNumChannels);
-  void _eval_peak_audio_level(const cmplx s);
-
+  void _set_output(uint32_t iSampleRate);
 
 signals:
   void signal_set_new_channel(int);
