@@ -239,7 +239,8 @@ private:
   //AudioBase * mpSoundOut = nullptr;
   converter_48000 mAudioSampRateConv{};
   // QScopedPointer<Qt_Audio> mpSoundOut;
-  QScopedPointer<AudioOutput> mpAudioOutput;
+  AudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
+  QThread * mAudioOutputThread = nullptr;
   std::array<SAudioFifo, 2> mAudioFifoArr;
   int32_t mAudioFifoIdx = 0;
   SAudioFifo * mpCurAudioFifo = nullptr;
