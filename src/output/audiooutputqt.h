@@ -135,8 +135,8 @@ private:
   // DelayLine<cmplx> delayLine{cmplx(-40.0f, -40.0f)};
   uint32_t mPeakLevelCurSampleCnt = 0;
   uint32_t mPeakLevelSampleMax = 0;
-  float mAbsPeakLeft = 0.0f;
-  float mAbsPeakRight = 0.0f;
+  int16_t mAbsPeakLeft = 0;
+  int16_t mAbsPeakRight = 0;
 
   void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead) const;
   void _fade(int64_t iNumSamples, float coe, float gain, int16_t * dataPtr) const;

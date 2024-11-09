@@ -504,8 +504,8 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const u
 {
   for (uint32_t idx = 0; idx < iNumSamples; idx+=2)
   {
-    const float absLeft  = (float)std::abs(ipData[idx + 0]) / INT16_MAX;
-    const float absRight = (float)std::abs(ipData[idx + 1]) / INT16_MAX;
+    const int16_t absLeft  = (int16_t)std::abs(ipData[idx + 0]);
+    const int16_t absRight = (int16_t)std::abs(ipData[idx + 1]);
 
     if (absLeft > mAbsPeakLeft)
     {
@@ -521,8 +521,9 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const u
     {
       mPeakLevelCurSampleCnt = 0;
 
-      const float left_dB  = (mAbsPeakLeft  > 0.0f ? 20.0f * std::log10(mAbsPeakLeft)  : -40.0f);
-      const float right_dB = (mAbsPeakRight > 0.0f ? 20.0f * std::log10(mAbsPeakRight) : -40.0f);
+      constexpr float cOffs_dB = 20 * std::log10((float)INT16_MAX); // in the assumption that subtraction is faster than dividing (but not sure with float)
+      const float left_dB  = (mAbsPeakLeft  > 0 ? 20.0f * std::log10((float)mAbsPeakLeft)  - cOffs_dB : -40.0f);
+      const float right_dB = (mAbsPeakRight > 0 ? 20.0f * std::log10((float)mAbsPeakRight) - cOffs_dB : -40.0f);
 
       emit signal_show_audio_peak_level(left_dB, right_dB);
 
