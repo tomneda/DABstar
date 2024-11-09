@@ -132,7 +132,7 @@ private:
   std::atomic<bool> mStopFlag = false;
 
   // peak level meter
-  DelayLine<cmplx> delayLine{cmplx(-40.0f, -40.0f)};
+  // DelayLine<cmplx> delayLine{cmplx(-40.0f, -40.0f)};
   uint32_t mPeakLevelCurSampleCnt = 0;
   uint32_t mPeakLevelSampleMax = 0;
   float mAbsPeakLeft = 0.0f;

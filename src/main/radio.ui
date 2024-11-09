@@ -682,6 +682,9 @@
            <pointsize>6</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Left audio channel peak level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="lowerBound">
           <double>-22.000000000000000</double>
          </property>
@@ -714,6 +717,9 @@
           <font>
            <pointsize>6</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Right audio channel peak level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="lowerBound">
           <double>-22.000000000000000</double>

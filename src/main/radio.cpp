@@ -3788,14 +3788,13 @@ void RadioInterface::_slot_load_audio_device_list(const QList<QAudioDevice> & iD
 
 void RadioInterface::slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight)
 {
-  auto peak_avr = [](float iPeak, float & ioPeakAvr) -> void
+  auto decay = [](float iPeak, float & ioPeakAvr) -> void
   {
     ioPeakAvr = (iPeak >= ioPeakAvr ? iPeak : ioPeakAvr - 0.5f /*decay*/);
-    //ioPeakAvr = iPeak;
   };
 
-  peak_avr(iPeakLeft, mPeakLeftDamped);
-  peak_avr(iPeakRight, mPeakRightDamped);
+  decay(iPeakLeft, mPeakLeftDamped);
+  decay(iPeakRight, mPeakRightDamped);
 
   thermoPeakLevelLeft->setValue(mPeakLeftDamped);
   thermoPeakLevelRight->setValue(mPeakRightDamped);

@@ -377,7 +377,8 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
   mDoStop = mStopFlag;
 
   const int64_t bytesToRead = iSizeOfReadData;
-  int64_t numSamples = iSizeOfReadData / mBytesPerFrame;
+  const int64_t numCombinedSamples = iSizeOfReadData * mNumChannels / mBytesPerFrame;
+  int64_t numStereoSamples = iSizeOfReadData / mBytesPerFrame;
 
   //qDebug() << Q_FUNC_INFO << len << count;
 
@@ -402,7 +403,7 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
         // mpInFifo->mutex.unlock();
 
         // done
-        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
+        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
         return bytesToRead;
       }
 
@@ -419,7 +420,7 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
       memset(opData, 0, bytesToRead);
 
       // done
-      _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
+      _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
       return bytesToRead;
     }
   }
@@ -438,7 +439,7 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
         qCInfo(sLCAudioOutput, "Hard mute [no samples available]");
         memset(opData, 0, bytesToRead);
         mPlaybackState = EPlaybackState::Muted;
-        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
+        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
         return bytesToRead;
       }
 
@@ -446,7 +447,7 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
       memset(opData + count, 0, bytesToRead - count);
       _extract_audio_data_from_fifo(opData, count);
 
-      numSamples = count / mBytesPerFrame;
+      numStereoSamples = count / mBytesPerFrame;
 
       // request to apply mute ramp
       muteRequest = true;  // mute
@@ -459,7 +460,7 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
       if (!muteRequest)
       {
         // done
-        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
+        _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
         return bytesToRead;
       }
     }
@@ -472,17 +473,17 @@ qint64 AudioIODevice::readData(char * opData, qint64 iSizeOfReadData)
   if (false == muteRequest)
   {
     // unmute can be requested only when there is enough samples
-    _fade_in_audio_samples(opData, numSamples);
+    _fade_in_audio_samples(opData, numStereoSamples);
     mPlaybackState = EPlaybackState::Playing; // playing
   }
   else
   {
     // mute can be requested when there is not enough samples or from HMI
-    _fade_out_audio_samples(opData, bytesToRead, numSamples);
+    _fade_out_audio_samples(opData, bytesToRead, numStereoSamples);
     mPlaybackState = EPlaybackState::Muted; // muted
   }
 
-  _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), bytesToRead / mBytesPerFrame);
+  _eval_peak_audio_level(reinterpret_cast<int16_t *>(opData), numCombinedSamples);
   return bytesToRead;
 }
 
@@ -501,7 +502,7 @@ void AudioIODevice::set_mute_state(bool iMuteActive)
 
 void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const uint32_t iNumSamples)
 {
-  for (uint32_t idx = 0; idx < iNumSamples; idx++)
+  for (uint32_t idx = 0; idx < iNumSamples; idx+=2)
   {
     const float absLeft  = (float)std::abs(ipData[idx + 0]) / INT16_MAX;
     const float absRight = (float)std::abs(ipData[idx + 1]) / INT16_MAX;
