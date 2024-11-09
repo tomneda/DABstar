@@ -284,6 +284,7 @@ private:
   bool mCurFavoriteState = false;
   bool mClockActiveStyle = true;
   std::mutex mMutex;
+  bool mProgBarAudioBufferFullColorSet = false;
 
   static QStringList get_soft_bit_gen_names();
   std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, const serviceId &);

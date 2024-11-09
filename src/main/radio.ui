@@ -775,15 +775,6 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC processing. &lt;/p&gt;&lt;p&gt;FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
-         </property>
-         <property name="value">
-          <number>0</number>
-         </property>
         </widget>
        </item>
       </layout>
@@ -816,6 +807,7 @@
  </customwidgets>
  <resources>
   <include location="../../resources.qrc"/>
+  <include location="../../../../../../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

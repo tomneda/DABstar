@@ -329,11 +329,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   QString skipFileName = mpSH->read(SettingHelper::skipFile).toString();
   mBandHandler.setup_skipList(skipFileName);
 
-  QPalette p = progBarFicError->palette();
-  p.setColor(QPalette::Highlight, Qt::red);
-  progBarFicError->setPalette(p);
-  p.setColor(QPalette::Highlight, Qt::green);
-
   connect(mpTechDataWidget, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
 
   lblVersion->setText(QString("V" + mVersionStr));
@@ -1181,13 +1176,19 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
 
       // mpCurAudioFifo->mutex.lock();
       mpCurAudioFifo->count += bytesToWrite;
-      //const int32_t fill_state = mpCurAudioFifo->get_fill_state_in_percent();
-      //mAudioBufferFillFiltered += 0.01f * (fill_state - mAudioBufferFillFiltered);
       mean_filter(mAudioBufferFillFiltered, mpCurAudioFifo->get_fill_state_in_percent(), 0.05f);
-      //mpCurAudioFifo->print();
-      //qDebug("Fill state: %d / %d", fill_state, mAudioBufferFillFiltered);
-      emit signal_audio_buffer_filled_state((int32_t)mAudioBufferFillFiltered);
+      // mpCurAudioFifo->print();
       // mpCurAudioFifo->mutex.unlock();
+
+      // ugly, but palette of progressbar can only be set in the same thread of the value setting, save time with the flag
+      if (!mProgBarAudioBufferFullColorSet)
+      {
+        mProgBarAudioBufferFullColorSet = true;
+        QPalette p = progBarAudioBuffer->palette();
+        p.setColor(QPalette::Highlight, 0xEF8B2A);
+        progBarAudioBuffer->setPalette(p);
+      }
+      emit signal_audio_buffer_filled_state((int32_t)mAudioBufferFillFiltered);
     }
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -1528,8 +1529,6 @@ void RadioInterface::slot_show_fic_success(bool b)
     mFicSuccess++;
   }
 
-
-
   if (++mFicBlocks >= 100)
   {
     QPalette p = progBarFicError->palette();
@@ -1539,7 +1538,7 @@ void RadioInterface::slot_show_fic_success(bool b)
     }
     else
     {
-      p.setColor(QPalette::Highlight, Qt::green);
+      p.setColor(QPalette::Highlight, 0xE6E600);
     }
 
     progBarFicError->setPalette(p);
