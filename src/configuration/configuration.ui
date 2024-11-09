@@ -62,7 +62,7 @@
             </size>
            </property>
            <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
+            <enum>QFrame::Shape::NoFrame</enum>
            </property>
            <property name="smallDecimalPoint">
             <bool>true</bool>
@@ -71,7 +71,7 @@
             <number>7</number>
            </property>
            <property name="segmentStyle">
-            <enum>QLCDNumber::Flat</enum>
+            <enum>QLCDNumber::SegmentStyle::Flat</enum>
            </property>
           </widget>
          </item>
@@ -208,7 +208,7 @@
          <item>
           <widget class="QComboBox" name="cmbSoftBitGen">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft-bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are different ideas how to calculate the soft-bit values for the Virterbi decoder. As in some weak receiving condition, this could make a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As this is experimental yet, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft-bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are different ideas how to calculate the soft-bit values for the Viterbi decoder. As in some weak receiving condition, this could make a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the &amp;quot;Log Likelihood Ratio&amp;quot; performs almost considerably best, it is always the startup-default.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -386,7 +386,7 @@
       <number>0</number>
      </property>
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
