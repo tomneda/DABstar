@@ -42,8 +42,8 @@
 PadHandler::PadHandler(RadioInterface * mr)
 {
   myRadioInterface = mr;
-  connect(this, &PadHandler::showLabel, mr, &RadioInterface::slot_show_label);
-  connect(this, &PadHandler::show_motHandling, mr, &RadioInterface::slot_show_mot_handling);
+  connect(this, &PadHandler::signal_show_label, mr, &RadioInterface::slot_show_label);
+  connect(this, &PadHandler::signal_show_mot_handling, mr, &RadioInterface::slot_show_mot_handling);
   currentSlide = nullptr;
   //
   //	mscGroupElement indicates whether we are handling an
@@ -142,7 +142,7 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
         if (!dynamicLabelTextUnConverted.isEmpty())
         {
           const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
-          showLabel(dynamicLabelTextConverted);
+          emit signal_show_label(dynamicLabelTextConverted);
         }
         dynamicLabelTextUnConverted.clear();
         reset_charset_change();
@@ -195,7 +195,7 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
         if (!dynamicLabelTextUnConverted.isEmpty())
         {
           const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
-          showLabel(dynamicLabelTextConverted);
+          emit signal_show_label(dynamicLabelTextConverted);
         }
         dynamicLabelTextUnConverted.clear();
         reset_charset_change();
@@ -380,7 +380,7 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
         if (!moreXPad)
         {
           const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
-          showLabel(dynamicLabelTextConverted);
+          emit signal_show_label(dynamicLabelTextConverted);
         }
         else
         {
@@ -414,7 +414,7 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
     if (!moreXPad && isLastSegment)
     {
       const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
-      showLabel(dynamicLabelTextConverted);
+      emit signal_show_label(dynamicLabelTextConverted);
     }
   }
 }
@@ -441,7 +441,7 @@ void PadHandler::new_MSC_element(const std::vector<uint8_t> & data)
     msc_dataGroupBuffer.clear();
     build_MSC_segment(data);
     mscGroupElement = false;
-    show_motHandling(true);
+    emit signal_show_mot_handling(true);
     //	   fprintf (stdout, "msc element is single\n");
     return;
   }
@@ -449,7 +449,7 @@ void PadHandler::new_MSC_element(const std::vector<uint8_t> & data)
   mscGroupElement = true;
   msc_dataGroupBuffer.clear();
   msc_dataGroupBuffer = data;
-  show_motHandling(true);
+  emit signal_show_mot_handling(true);
 }
 
 //
@@ -463,14 +463,14 @@ void PadHandler::add_MSC_element(const std::vector<uint8_t> & data)
   {
     return;
   }
-
-  msc_dataGroupBuffer.insert(std::end(msc_dataGroupBuffer), std::begin(data), std::end(data));
+  //msc_dataGroupBuffer.reserve(msc_dataGroupBuffer.size() + data.size());
+  msc_dataGroupBuffer.insert(msc_dataGroupBuffer.cend(), data.cbegin(), data.cend());
   if (msc_dataGroupBuffer.size() >= (uint32_t)dataGroupLength)
   {
     build_MSC_segment(msc_dataGroupBuffer);
     msc_dataGroupBuffer.clear();
     //	   mscGroupElement	= false;
-    show_motHandling(false);
+    emit signal_show_mot_handling(false);
   }
 }
 

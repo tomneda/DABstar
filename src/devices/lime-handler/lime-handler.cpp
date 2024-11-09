@@ -560,7 +560,7 @@ QString saveDir = limeSettings -> value (sSettingSampleStorageDir,
 
 	QString dumper	= QDir::fromNativeSeparators (fileName);
 	int x		= dumper. lastIndexOf ("/");
-	saveDir		= dumper. remove (x, dumper. count () - x);
+	saveDir		= dumper. remove (x, dumper. size () - x);
 	limeSettings -> setValue (sSettingSampleStorageDir, saveDir);
 	return true;
 }
