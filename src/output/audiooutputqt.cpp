@@ -279,40 +279,19 @@ void AudioIODevice::stop()
   mStopFlag = true;     // set stop bit
 }
 
-// void AudioIODevice::_extract_audio_data_from_fifo(char * opData, const int64_t iBytesToRead) const
-// {
-//   if (const int64_t bytesToEnd = AUDIO_FIFO_SIZE - mpInFifo->tail;
-//       bytesToEnd < iBytesToRead)
-//   {
-//     memcpy(opData, mpInFifo->buffer + mpInFifo->tail, bytesToEnd);
-//     memcpy(opData + bytesToEnd, mpInFifo->buffer, (iBytesToRead - bytesToEnd));
-//     mpInFifo->tail = iBytesToRead - bytesToEnd;
-//   }
-//   else
-//   {
-//     memcpy(opData, mpInFifo->buffer + mpInFifo->tail, iBytesToRead);
-//     mpInFifo->tail += iBytesToRead;
-//   }
-//
-//   // mpInFifo->mutex.lock();
-//   mpInFifo->count -= iBytesToRead;
-//   // mpInFifo->countChanged.wakeAll();
-//   // mpInFifo->mutex.unlock();
-// }
-
 void AudioIODevice::_fade(const int32_t iNumStereoSamples, const float coe, float gain, int16_t * dataPtr) const
 {
   for (int_fast32_t n = 0; n < iNumStereoSamples; ++n)
   {
     gain *= coe; // we do not distinguish between fade-in and fade-out here for simplicity
-    //printf("%.3f ", gain);
+    // printf("%.1f ", 20 * std::log10(gain));
     for (uint_fast8_t c = 0; c < 2 /*channels*/; ++c) // apply to both channels the same
     {
       *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
       dataPtr++;
     }
   }
-  //printf("\n");
+  // printf("\n");
 }
 
 void AudioIODevice::_fade_in_audio_samples(int16_t * const opData, const int32_t iNumStereoSamples) const

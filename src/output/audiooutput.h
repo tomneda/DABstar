@@ -39,9 +39,9 @@
 
 #include "audiofifo.h"
 
-constexpr float AUDIOOUTPUT_FADE_TIME_MS =   60.0f;
-constexpr float AUDIOOUTPUT_FADE_MIN_DB  =  -80.0f;
-constexpr float AUDIOOUTPUT_FADE_MIN_LIN = 0.0001f;
+constexpr float AUDIOOUTPUT_FADE_TIME_MS =  60.0f;
+constexpr float AUDIOOUTPUT_FADE_MIN_DB  = -40.0f;
+constexpr float AUDIOOUTPUT_FADE_MIN_LIN =  std::pow(10.0f, AUDIOOUTPUT_FADE_MIN_DB / 20.0f);
 
 enum class EPlaybackState { Muted = 0, Playing = 1 };
 
