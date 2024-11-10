@@ -2347,8 +2347,10 @@ void RadioInterface::stopService(DabService & s)
     stopAudiodumping();
   }
 
-  //	and clean up the technical widget
-  mpTechDataWidget->cleanUp();
+
+  mpTechDataWidget->cleanUp(); //	and clean up the technical widget
+  clean_up();
+
   //
   //	stop "secondary services" - if any - as well
   if (s.valid)
@@ -3795,3 +3797,11 @@ void RadioInterface::slot_show_audio_peak_level(const float iPeakLeft, const flo
   thermoPeakLevelRight->setValue(mPeakRightDamped);
 }
 
+void RadioInterface::clean_up()
+{
+  // TODO: resetting peak meters is not working well after service change
+  mPeakLeftDamped = mPeakRightDamped = -40.0f;
+  slot_show_audio_peak_level(-40.0f, -40.0);
+  progBarFicError->setValue(0);
+  progBarAudioBuffer->setValue(0);
+}

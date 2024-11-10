@@ -316,6 +316,7 @@ private:
   void stopFramedumping();
   void startChannel(const QString &);
   void stopChannel();
+  void clean_up();
   void stopService(DabService &);
   void startService(DabService &);
   //void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
