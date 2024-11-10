@@ -1086,7 +1086,7 @@ void RadioInterface::slot_change_in_configuration()
         Audiodata ad;
         FILE * f = mChannel.backgroundServices.at(i).fd;
         mpDabProcessor->dataforAudioService(ss, &ad);
-        mpDabProcessor->set_audioChannel(&ad, &mAudioBuffer, f, BACK_GROUND);
+        mpDabProcessor->set_audioChannel(&ad, &mAudioBuffer1, f, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = ad.subchId;
       }
       else
@@ -1120,12 +1120,6 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     return;
   }
 
-  if (mpCurAudioFifo == nullptr)
-  {
-    mAudioBufferFillFiltered = 0.0f;
-    _set_output(iAudioSampleRate);
-  }
-
   mAudioFrameCnt++;
 
   if (mAudioFrameCnt > 10)
@@ -1143,53 +1137,44 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     }
   }
 
-  //auto * const vec = make_vla(int16_t, iAmount);
-
-  //while (mAudioBuffer.get_ring_buffer_read_available() > iAmount)
+  if (mpCurAudioFifo == nullptr)
   {
-    assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
+    mAudioBufferFillFiltered = 0.0f; // set back the audio buffer progress bar
+    _setup_audio_output(iAudioSampleRate);
+  }
+  assert(mpCurAudioFifo != nullptr); // is mAudioBuffer2 really assigned?
+
+  assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
+  auto * const vec = make_vla(int16_t, iAmount);
+
+  while (mAudioBuffer1.get_ring_buffer_read_available() > iAmount)
+  {
+    mean_filter(mAudioBufferFillFiltered, mAudioBuffer2.get_fill_state_in_percent(), 0.05f);
+
     // vec contains a stereo pair [0][1]...[n-2][n-1]
-    //mAudioBuffer.get_data_from_ring_buffer(vec, iAmount);
+    mAudioBuffer1.get_data_from_ring_buffer(vec, iAmount);
 
-    //if (!mMutingActive)
+    // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iAudioSampleRate, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
+    // mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
+    // TODO: WAV output should work again
+    Q_ASSERT(mpCurAudioFifo != nullptr);
+
+    if (iAmount > mAudioBuffer2.get_ring_buffer_write_available())
     {
-      // let vec be interpreted as a complex vector (bit ugly but if it works...)
-      // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iAudioSampleRate, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
-      // mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
-      // TODO: WAV output should work again
-      Q_ASSERT(mpCurAudioFifo != nullptr);
-
-      //int64_t bytesToWrite = m_outputBufferSamples * sizeof(int16_t);
-      //const int64_t bytesToWrite = iAmount * sizeof(int16_t);
-
-      // wait for space in output buffer
-      //mpCurAudioFifo->mutex.lock();
-      //uint64_t count = mpCurAudioFifo->count;
-      const int32_t remainingBufferItems = mpCurAudioFifo->pRingbuffer->get_ring_buffer_write_available();
-      //while ((int64_t)(AUDIO_FIFO_SIZE - count) < bytesToWrite)
-      if (iAmount * 2 > remainingBufferItems)
-      {
-        mpCurAudioFifo->pRingbuffer->flush_ring_buffer();
-        //mpCurAudioFifo->reset();
-        //mpCurAudioFifo->countChanged.wait(&mpCurAudioFifo->mutex);
-        //count = mpCurAudioFifo->count;
-      }
-      //mpCurAudioFifo->mutex.unlock();
-
-
-      // mAudioBufferFillFiltered = mAudioBuffer.get_fill_state_in_percent();
-      mean_filter(mAudioBufferFillFiltered, mAudioBuffer.get_fill_state_in_percent(), 0.05f);
-
-      // ugly, but palette of progressbar can only be set in the same thread of the value setting, save time with the flag
-      if (!mProgBarAudioBufferFullColorSet)
-      {
-        mProgBarAudioBufferFullColorSet = true;
-        QPalette p = progBarAudioBuffer->palette();
-        p.setColor(QPalette::Highlight, 0xEF8B2A);
-        progBarAudioBuffer->setPalette(p);
-      }
-      emit signal_audio_buffer_filled_state((int32_t)mAudioBufferFillFiltered);
+      mAudioBuffer2.flush_ring_buffer();
     }
+
+    mAudioBuffer2.put_data_into_ring_buffer(vec, iAmount);
+
+    // ugly, but palette of progressbar can only be set in the same thread of the value setting, save time calling this only once
+    if (!mProgBarAudioBufferFullColorSet)
+    {
+      mProgBarAudioBufferFullColorSet = true;
+      QPalette p = progBarAudioBuffer->palette();
+      p.setColor(QPalette::Highlight, 0xEF8B2A);
+      progBarAudioBuffer->setPalette(p);
+    }
+
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
     {
@@ -1197,12 +1182,15 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     }
 #endif
 
-    // if (!mpTechDataWidget->isHidden())
-    // {
-    //   mTechDataBuffer.put_data_into_ring_buffer(vec, iAmount);
-    //   mpTechDataWidget->audioDataAvailable(iAmount, iAudioSampleRate);
-    // }
+    if (!mpTechDataWidget->isHidden() && !mMutingActive)
+    {
+      mTechDataBuffer.put_data_into_ring_buffer(vec, iAmount);
+      mpTechDataWidget->audioDataAvailable(iAmount, iAudioSampleRate);
+    }
   }
+  // int32_t fillstate = mAudioBuffer2.get_fill_state_in_percent();
+  // emit signal_audio_buffer_filled_state(fillstate);
+  emit signal_audio_buffer_filled_state((int32_t)mAudioBufferFillFiltered);
 }
 //
 
@@ -2481,7 +2469,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
 {
   mChannel.currentService.valid = true;
 
-  (void)mpDabProcessor->set_audioChannel(ad, &mAudioBuffer, nullptr, FORE_GROUND);
+  (void)mpDabProcessor->set_audioChannel(ad, &mAudioBuffer1, nullptr, FORE_GROUND);
   for (int i = 1; i < 10; i++)
   {
     Packetdata pd;
@@ -3754,15 +3742,15 @@ void RadioInterface::_set_device_to_file_mode(const bool iDataFromFile)
   }
 }
 
-void RadioInterface::_set_output(const uint32_t iSampleRate)
+void RadioInterface::_setup_audio_output(const uint32_t iSampleRate)
 {
-  mAudioFifoIdx = (mAudioFifoIdx + 1) & 0x1;
-  mpCurAudioFifo = &mAudioFifoArr[mAudioFifoIdx];
-
+  // mAudioFifoIdx = (mAudioFifoIdx + 1) & 0x1;
+  // mpCurAudioFifo = &mAudioFifoArr[mAudioFifoIdx];
+  mAudioBuffer1.flush_ring_buffer();
+  mAudioBuffer2.flush_ring_buffer();
+  mpCurAudioFifo = &mAudioFifo;
   mpCurAudioFifo->sampleRate = iSampleRate;
-  // mpCurAudioFifo->numChannels = iNumChannels;
-  mpCurAudioFifo->pRingbuffer = &mAudioBuffer;
-  mpCurAudioFifo->reset();
+  mpCurAudioFifo->pRingbuffer = &mAudioBuffer2;
 
   if (mPlaybackState == EPlaybackState::Running)
   {

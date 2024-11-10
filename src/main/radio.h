@@ -208,7 +208,8 @@ private:
   RingBuffer<float> mResponseBuffer{32768};
   RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
   RingBuffer<uint8_t> mDataBuffer{32768};
-  RingBuffer<int16_t> mAudioBuffer{AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS};
+  RingBuffer<int16_t> mAudioBuffer1{AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS};
+  RingBuffer<int16_t> mAudioBuffer2{AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS};
   std::vector<float> mAudioOutBuffer;
   SpectrumViewer mSpectrumViewer;
   BandHandler mBandHandler;
@@ -241,8 +242,9 @@ private:
   // QScopedPointer<Qt_Audio> mpSoundOut;
   AudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
   QThread * mAudioOutputThread = nullptr;
-  std::array<SAudioFifo, 2> mAudioFifoArr;
-  int32_t mAudioFifoIdx = 0;
+  SAudioFifo mAudioFifo;
+  //std::array<SAudioFifo, 2> mAudioFifoArr;
+  //int32_t mAudioFifoIdx = 0;
   SAudioFifo * mpCurAudioFifo = nullptr;
   enum class EPlaybackState { Stopped = 0, WaitForInit, Running };
   EPlaybackState mPlaybackState = EPlaybackState::Stopped;
@@ -351,7 +353,7 @@ private:
   void _reset_status_info();
   void _update_channel_selector();
   void _set_device_to_file_mode(const bool iDataFromFile);
-  void _set_output(uint32_t iSampleRate);
+  void _setup_audio_output(uint32_t iSampleRate);
 
 signals:
   void signal_set_new_channel(int);

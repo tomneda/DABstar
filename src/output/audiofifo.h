@@ -38,34 +38,13 @@
 
 #include "ringbuffer.h"
 
-// #define AUDIO_FIFO_CHUNK_MS                      (60)
-// #define AUDIO_FIFO_MS                            (32 * AUDIO_FIFO_CHUNK_MS)  // = 1920
-// #define AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS    (48 * AUDIO_FIFO_MS * 2)    // = 184320, FS - 48kHz, stereo, int16_t samples
-// #define AUDIO_FIFO_SIZE_BYTES_BOTH_CHANNELS      (AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS * sizeof(int16_t))  // = 368640, FS - 48kHz, stereo, int8_t bytes
-
-// the RingBuffer likes sizes of 2^n samples, so assume AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS = 2^17 = 131072, calculate the values back
-// #define AUDIO_FIFO_CHUNK_MS                      (60)
-// #define AUDIO_FIFO_MS                            (32 * AUDIO_FIFO_CHUNK_MS)  // = 1920
-#define AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS    (131072) 
-#define AUDIO_FIFO_SIZE_BYTES_BOTH_CHANNELS      (AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS * sizeof(int16_t))  // = 368640, FS - 48kHz, stereo, int8_t bytes
-
+#define AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS    (131072)
+#define AUDIO_FIFO_SIZE_BYTES_BOTH_CHANNELS      (AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS * sizeof(int16_t)) 
 
 struct SAudioFifo
 {
   RingBuffer<int16_t> *pRingbuffer;
   uint32_t sampleRate;
-  // uint8_t numChannels;
-  // std::atomic<int64_t> count;
-  // int64_t head;
-  // int64_t tail;
-  // uint8_t buffer[AUDIO_FIFO_SIZE];
-  // QWaitCondition countChanged;
-  // QMutex mutex;
-  void reset();
-  //void print() const;
-  //float get_fill_state_in_percent() const { return 100.0f * (float)count / AUDIO_FIFO_SIZE; }
 };
-
-//using SAudioFifo = struct AudioFifo;
 
 #endif // AUDIOFIFO_H
