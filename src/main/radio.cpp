@@ -41,6 +41,7 @@
 #include "setting-helper.h"
 #include "Qt-audio.h"
 #include "audiooutputqt.h"
+#include "angle_direction.h"
 #include <fstream>
 #include <numeric>
 #include <vector>
@@ -1710,10 +1711,10 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
   const float distance = mTiiHandler.distance(latitude, longitude, ownLatitude, ownLongitude);
   const float corner = mTiiHandler.corner(latitude, longitude, ownLatitude, ownLongitude);
   const QString distanceStr = QString::number(distance, 'f', 1);
-  const QString cornerStr = QString::number(corner, 'f', 1);
+  const QString cornerStr = QString::number(corner, 'f', 1) + QString::fromLatin1("\xb0 (") + QString::fromStdString(AngleDirection::get_compass_direction(corner)) + ")";
   LOG("distance ", distanceStr);
   LOG("corner ", cornerStr);
-  labelText += +" " + distanceStr + " km" + " " + cornerStr + QString::fromLatin1("\xb0 ");
+  labelText += +" " + distanceStr + " km" + " " + cornerStr;
   fprintf(stdout, "%s\n", labelText.toUtf8().data());
   lblStationLocation->setText(labelText);
 

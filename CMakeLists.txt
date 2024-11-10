@@ -331,6 +331,7 @@ set(${objectName}_HDRS
         src/support/setting-helper.h
         src/support/converter_48000.h
         src/support/wav_writer.h
+        src/support/angle_direction.h
         src/scopes-qwt6/iqdisplay.h
         src/scopes-qwt6/carrier-display.h
         src/scopes-qwt6/spectrogramdata.h
@@ -423,6 +424,7 @@ set(${objectName}_SRCS
         src/support/setting-helper.cpp
         src/support/converter_48000.cpp
         src/support/wav_writer.cpp
+        src/support/angle_direction.cpp
         src/scopes-qwt6/iqdisplay.cpp
         src/scopes-qwt6/carrier-display.cpp
         src/scopes-qwt6/audio-display.cpp
