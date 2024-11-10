@@ -429,7 +429,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
 
       //_extract_audio_data_from_fifo(opData, numSamplesAvailBothChannels);
       rb->get_data_from_ring_buffer(opDataSamplesBothChannels, availableSamplesBothChannels); // take what we have ...
-      memset(opDataSamplesBothChannels + availableSamplesBothChannels, 0, maxWantedBytesBothChannels - (availableSamplesBothChannels * (2 /*channels*/ * sizeof(int16_t)))); // ... and set rest of the samples to be 0
+      memset(opDataSamplesBothChannels + availableSamplesBothChannels, 0, maxWantedBytesBothChannels - (availableSamplesBothChannels * sizeof(int16_t))); // ... and set rest of the samples to be 0
 
       // maxWantedSamplesStereoPair = numSamplesAvailBothChannels ; /// mBytesPerFrame;
       maxWantedSamplesStereoPairForFading = availableSamplesBothChannels / 2 /*channels*/;
