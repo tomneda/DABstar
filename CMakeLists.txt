@@ -35,11 +35,12 @@ endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
 # common flags
-if (WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DALLOW_SMP_DANGERS /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
-else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math")
-endif ()
+#if (WIN32)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math -DALLOW_SMP_DANGERS -D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+#else ()
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math")
+#endif ()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math")
 
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -186,9 +187,17 @@ else()
 endif()
 
 # Qwt6.3.0 built with Qt6 has an unusual installation path for its Qt6Qwt6.pc file, so add it here
-set(ENV{PKG_CONFIG_PATH} "/usr/local/qwt-6.3.0/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+if (WIN32)
+    # set(ENV{PKG_CONFIG_PATH} "C:/Qwt-6.3.0/:$ENV{PKG_CONFIG_PATH}")
+    # set(Qt6Qwt6_DIR "C:/Qwt-6.3.0/")
+    find_package(Qwt REQUIRED) # environment variable QWT_ROOT has to be defined!
+    include_directories(${QWT_INCLUDE_DIRS})
+    list(APPEND extraLibs ${QWT_LIBRARIES})
+else ()
+    set(ENV{PKG_CONFIG_PATH} "/usr/local/qwt-6.3.0/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+    search_for_library(QWT Qt6Qwt6) # maybe try change this to Qwt instead of Qt6Qwt6
+endif ()
 
-search_for_library(QWT Qt6Qwt6) # maybe try change this to Qwt instead of Qt6Qwt6
 search_for_library(ZLIB zlib)
 search_for_library(LIBSNDFILE sndfile)
 search_for_library(LIBSAMPLERATE samplerate)
@@ -207,11 +216,11 @@ endif ()
 #    list(APPEND extraLibs dlfcn-win32::dl)
 #endif ()
 
-if (WIN32)
-    find_library(WS2_32_LIBRARY NAMES ws2_32)
-    print(WS2_32_LIBRARY)
-    list(APPEND extraLibs ${WS2_32_LIBRARY})
-endif ()
+#if (WIN32)
+#    find_library(WS2_32_LIBRARY NAMES ws2_32)
+#    print(WS2_32_LIBRARY)
+#    list(APPEND extraLibs ${WS2_32_LIBRARY})
+#endif ()
 
 print(CMAKE_SOURCE_DIR)
 print(CMAKE_CURRENT_BINARY_DIR)
