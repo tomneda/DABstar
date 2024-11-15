@@ -1120,9 +1120,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     return;
   }
 
-  mAudioFrameCnt++;
-
-  if (mAudioFrameCnt > 10)
+  if (mAudioFrameCnt++ > 10)
   {
     mAudioFrameCnt = 0;
 
@@ -1144,6 +1142,22 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
   }
   assert(mpCurAudioFifo != nullptr); // is mAudioBuffer2 really assigned?
 
+  if (mAudioDumpState != EAudioDumpState::Stopped)
+  {
+    if (mAudioDumpState == EAudioDumpState::WaitForInit)
+    {
+      if (mWavWriter.init(mAudioWavDumpFileName, iAudioSampleRate, 2))
+      {
+        mAudioDumpState = EAudioDumpState::Running;
+      }
+      else
+      {
+        mAudioDumpState = EAudioDumpState::Stopped;
+        qCritical("RadioInterface::slot_new_audio: Failed to initialize audio dump state");
+      }
+    }
+  }
+
   assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
   auto * const vec = make_vla(int16_t, iAmount);
 
@@ -1154,9 +1168,6 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     // vec contains a stereo pair [0][1]...[n-2][n-1]
     mAudioBufferFromDecoder.get_data_from_ring_buffer(vec, iAmount);
 
-    // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iAudioSampleRate, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
-    // mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
-    // TODO: WAV output should work again
     Q_ASSERT(mpCurAudioFifo != nullptr);
 
     // the audio output buffer got flooded, try to begin from new (set to 50% would also be ok, but needs interface in RingBuffer)
@@ -1166,6 +1177,11 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     }
 
     mAudioBufferToOutput.put_data_into_ring_buffer(vec, iAmount);
+
+    if (mAudioDumpState == EAudioDumpState::Running)
+    {
+      mWavWriter.write(vec, iAmount);
+    }
 
     // ugly, but palette of progressbar can only be set in the same thread of the value setting, save time calling this only once
     if (!mProgBarAudioBufferFullColorSet)
@@ -1259,7 +1275,7 @@ void RadioInterface::_slot_terminate_process()
   mBandHandler.saveSettings();
   stopFramedumping();
   stopSourcedumping();
-  stopAudiodumping();
+  stop_audio_dumping();
   mBandHandler.hide();
   mConfig.hide();
   LOG("terminating ", "");
@@ -1979,50 +1995,46 @@ void RadioInterface::_slot_handle_audio_dump_button()
     return;
   }
 
-  if (mAudioDumping)
+  switch (mAudioDumpState)
   {
-    stopAudiodumping();
-  }
-  else
-  {
-    startAudiodumping();
+  case EAudioDumpState::Stopped:
+    start_audio_dumping();
+    break;
+  case EAudioDumpState::WaitForInit:
+  case EAudioDumpState::Running:
+    stop_audio_dumping();
+    break;
   }
 }
 
-void RadioInterface::stopAudiodumping()
+void RadioInterface::stop_audio_dumping()
 {
-  if (!mAudioDumping)
+  if (mAudioDumpState == EAudioDumpState::Stopped)
   {
     return;
   }
 
-  LOG("audiodump stops", "");
-  // mpSoundOut->stopDumping();
-  mAudioSampRateConv.stop_audioDump();
-  //sf_close(mpAudioDumper);
-  //mpAudioDumper = nullptr;
-  mAudioDumping = false;
+  LOG("Audio dump stops", "");
+  mAudioDumpState = EAudioDumpState::Stopped;
+  mWavWriter.close();
   mpTechDataWidget->audiodumpButton_text("Dump WAV", 10);
 }
 
-void RadioInterface::startAudiodumping()
+void RadioInterface::start_audio_dumping()
 {
-  // mpAudioDumper = mOpenFileDialog.open_audio_dump_sndfile_ptr(mChannel.currentService.serviceName);
-  // if (mpAudioDumper == nullptr)
-  // {
-  //   return;
-  // }
-
-  QString audioWavDumper = mOpenFileDialog.get_audio_dump_file_name(mChannel.currentService.serviceName);
-  if (audioWavDumper.isEmpty())
+  if (mAudioDumpState != EAudioDumpState::Stopped)
   {
     return;
   }
-  LOG("audiodump starts ", serviceLabel->text());
+
+  mAudioWavDumpFileName = mOpenFileDialog.get_audio_dump_file_name(mChannel.currentService.serviceName);
+  if (mAudioWavDumpFileName.isEmpty())
+  {
+    return;
+  }
+  LOG("Audio dump starts ", serviceLabel->text());
   mpTechDataWidget->audiodumpButton_text("Recording", 12);
-  //mpSoundOut->startDumping(mpAudioDumper);
-  mAudioSampRateConv.start_audioDump(audioWavDumper);
-  mAudioDumping = true;
+  mAudioDumpState = EAudioDumpState::WaitForInit;
 }
 
 void RadioInterface::_slot_handle_frame_dump_button()
@@ -2332,9 +2344,9 @@ void RadioInterface::stopService(DabService & s)
     mChannel.currentService.frameDumper = nullptr;
   }
 
-  if (mAudioDumping)
+  if (mAudioDumpState != EAudioDumpState::Stopped)
   {
-    stopAudiodumping();
+    stop_audio_dumping();
   }
 
 

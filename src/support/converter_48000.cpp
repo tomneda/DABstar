@@ -49,18 +49,6 @@ int converter_48000::convert(const cmplx16 * V, int32_t amount, int32_t rate, st
   }
 }
 
-void converter_48000::start_audioDump(const QString & fileName)
-{
-  mWavWriter.init(fileName);
-}
-
-void converter_48000::stop_audioDump()
-{
-  locker.lock();
-  mWavWriter.close();
-  locker.unlock();
-}
-
 //	scale up from 16 -> 48
 //	amount gives number of pairs
 int converter_48000::convert_16000(const cmplx16 * V, int amount, std::vector<float> & out)
@@ -74,7 +62,6 @@ int converter_48000::convert_16000(const cmplx16 * V, int amount, std::vector<fl
     int result;
     if (mapper_16.convert(cmplx(real(V[i]) / 32767.0f, imag(V[i]) / 32767.0f), buffer, &result))
     {
-      dump(buffer, result);
       out.resize(out.size() + 2 * result);
 
       for (int j = 0; j < result; j++)
@@ -104,8 +91,6 @@ int converter_48000::convert_24000(const cmplx16 * V, int amount, std::vector<fl
     int amountResult;
     if (mapper_24.convert(cmplx(real(V[i]) / 32767.0f, imag(V[i]) / 32767.0f), buffer, &amountResult))
     {
-      dump(buffer, amountResult);
-
       for (int j = 0; j < amountResult; j++)
       {
         out[teller++] = real(buffer[j]);
@@ -133,8 +118,6 @@ int converter_48000::convert_32000(const cmplx16 * V, int amount, std::vector<fl
     int amountResult;
     if (mapper_32.convert(cmplx(real(V[i]) / 32767.0f, imag(V[i]) / 32767.0f), buffer, &amountResult))
     {
-      dump(buffer, amountResult);
-
       for (int j = 0; j < amountResult; j++)
       {
         out[teller++] = real(buffer[j]);
@@ -160,47 +143,5 @@ int converter_48000::convert_48000(const cmplx16 * V, int amount, std::vector<fl
     out[2 * i + 1] = std::imag(buffer[i]);
   }
 
-  dump(V, amount);
   return 2 * amount;
-}
-
-void converter_48000::dump(const cmplx * buffer, int nrSamples)
-{
-  if (!mWavWriter.isActive())
-  {
-    return;
-  }
-
-  int16_t lBuf[2 * nrSamples];
-
-  for (int i = 0; i < nrSamples; i++)
-  {
-    lBuf[2 * i + 0] = (int16_t)(real(buffer[i]) * 32767.0f);
-    lBuf[2 * i + 1] = (int16_t)(imag(buffer[i]) * 32767.0f);
-  }
-
-  locker.lock();
-  mWavWriter.write(lBuf, nrSamples);
-  locker.unlock();
-}
-
-
-void converter_48000::dump(const cmplx16 * buffer, int nrSamples)
-{
-  if (!mWavWriter.isActive())
-  {
-    return;
-  }
-
-  int16_t lBuf[2 * nrSamples];
-
-  for (int i = 0; i < nrSamples; i++)
-  {
-    lBuf[2 * i + 0] = real(buffer[i]);
-    lBuf[2 * i + 1] = imag(buffer[i]);
-  }
-
-  locker.lock();
-  mWavWriter.write(lBuf, nrSamples);
-  locker.unlock();
 }

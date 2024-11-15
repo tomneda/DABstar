@@ -1,4 +1,12 @@
-#
+/*
+* This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2014 .. 2023
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -21,26 +29,30 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__WAV_WRITER__
-#define	__WAV_WRITER__
+#ifndef	WAV_WRITER_H
+#define	WAV_WRITER_H
 
-#include	<QString>
-#include	<stdio.h>
-#include	<stdint.h>
+#include <mutex>
+#include <QMutex>
+#include <QString>
 
-class wavWriter {
+class WavWriter
+{
 public:
-		wavWriter	();
-		~wavWriter	();
-	bool	init		(const QString &);
-	void	write		(const int16_t *, int);
-	void	close		();
-	bool	isActive	();
+  WavWriter() = default;
+  ~WavWriter() = default;
+
+  bool init(const QString &, uint32_t iSampleRate, uint16_t iNumChannels);
+  void write(const int16_t *, int);
+  void close();
+
 private:
-	FILE	*filePointer;
-	int	nrElements;
-	bool	isValid;
-	int	locationCounter;
+  std::mutex mMutex;
+  FILE * mFilePointer = nullptr;
+  bool mIsValid = false;
+  uint16_t mNumChannels = 0;
+  uint32_t mNrElements = 0;
+  uint32_t mLocationCounter = 0;
 };
 
 #endif

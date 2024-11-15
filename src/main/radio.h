@@ -52,7 +52,7 @@
 #include "http-handler.h"
 #include "device-selector.h"
 #include "configuration.h"
-#include "converter_48000.h"
+#include "wav_writer.h"
 #include "audiofifo.h"
 #include <set>
 #include <memory>
@@ -237,9 +237,6 @@ private:
   dabStreamer * streamerOut = nullptr;
 #endif
   DabProcessor * mpDabProcessor = nullptr;
-  //AudioBase * mpSoundOut = nullptr;
-  converter_48000 mAudioSampRateConv{};
-  // QScopedPointer<Qt_Audio> mpSoundOut;
   AudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
   QThread * mAudioOutputThread = nullptr;
   SAudioFifo mAudioFifo;
@@ -265,7 +262,10 @@ private:
   QString mPicturesPath;
   QString mFilePath;
   SNDFILE * mpRawDumper = nullptr;
-  bool mAudioDumping = false;
+  WavWriter mWavWriter;
+  enum class EAudioDumpState { Stopped, WaitForInit, Running };
+  EAudioDumpState mAudioDumpState = EAudioDumpState::Stopped;
+  QString mAudioWavDumpFileName;
   std::vector<serviceId> mServiceList;
 
   QTimer mDisplayTimer;
@@ -309,8 +309,8 @@ private:
   void startPacketservice(const QString &);
   void startScanning();
   void stopScanning(bool);
-  void startAudiodumping();
-  void stopAudiodumping();
+  void start_audio_dumping();
+  void stop_audio_dumping();
 
   void startSourcedumping();
   void stopSourcedumping();

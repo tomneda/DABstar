@@ -338,7 +338,6 @@ set(${objectName}_HDRS
         src/support/buttons/circlepushbutton.h
         src/support/custom_frame.h
         src/support/setting-helper.h
-        src/support/converter_48000.h
         src/support/wav_writer.h
         src/support/angle_direction.h
         src/scopes/iqdisplay.h
@@ -431,7 +430,6 @@ set(${objectName}_SRCS
         src/support/tii-library/tii-codes.cpp
         src/support/custom_frame.cpp
         src/support/setting-helper.cpp
-        src/support/converter_48000.cpp
         src/support/wav_writer.cpp
         src/support/angle_direction.cpp
         src/scopes/iqdisplay.cpp

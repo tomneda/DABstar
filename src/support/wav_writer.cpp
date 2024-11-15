@@ -1,4 +1,12 @@
-#
+/*
+* This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2014 .. 2023
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -22,107 +30,106 @@
  */
 //
 //	simple writer to write a "riff/wav" file with
-//	48000 as samplerate,
-//	2 channels
+//	arbitrary samplerate,
+//	x channels
 //	16 bit ints
 //	PCM format
 //
 #include	"wav_writer.h"
-static
-const char	* riff	= "RIFF";
-static
-const char	* wave	= "WAVE";
-static
-const char	* fmt	= "fmt ";
-static
-const char	* data	= "data";
 
-	wavWriter::wavWriter	() {
-	isValid = false;
-	filePointer	= nullptr;
+bool WavWriter::init(const QString & fileName, const uint32_t iSampleRate, const uint16_t iNumChannels)
+{
+  static const char * const cRiffStr = "RIFF";
+  static const char * const cWaveStr = "WAVE";
+  static const char * const cFmtStr  = "fmt ";
+  static const char * const cDataStr = "data";
+
+  std::lock_guard lock(mMutex);
+  mIsValid = false;
+  mFilePointer = fopen(fileName.toUtf8().data(), "wb");
+  if (mFilePointer == nullptr)
+    return false;
+
+  mNumChannels = iNumChannels;
+  mLocationCounter = 0;
+
+  fwrite(cRiffStr, 1, 4, mFilePointer);
+  mLocationCounter += 4;
+
+  // the ultimate filesize is written at location 4
+  fseek(mFilePointer, 4, SEEK_CUR);
+  mLocationCounter += 4;
+  fwrite(cWaveStr, 1, 4, mFilePointer);
+  mLocationCounter += 4;
+
+  // The default header:
+  fwrite(cFmtStr, 1, 4, mFilePointer);
+  mLocationCounter += 4;
+  const uint32_t fmtSize = 16;
+  fwrite(&fmtSize, 1, 4, mFilePointer);
+  mLocationCounter += 4;
+  const uint16_t formatTag = 1; // == PCM integer
+  fwrite(&formatTag, 1, sizeof(uint16_t), mFilePointer);
+  mLocationCounter += 2;
+  const uint16_t nrChannels = mNumChannels;
+  fwrite(&nrChannels, 1, sizeof(uint16_t), mFilePointer);
+  mLocationCounter += 2;
+  const uint32_t samplingRate = iSampleRate;
+  fwrite(&samplingRate, 1, sizeof(uint32_t), mFilePointer);
+  mLocationCounter += 4;
+  const uint16_t bytesPerBlock = mNumChannels * 2 /*bytesPerSamp*/;
+  const uint32_t bytesPerSecond = bytesPerBlock * samplingRate;
+  fwrite(&bytesPerSecond, 1, sizeof(uint32_t), mFilePointer);
+  mLocationCounter += 4;
+  fwrite(&bytesPerBlock, 1, sizeof(uint16_t), mFilePointer);
+  mLocationCounter += 2;
+  const uint16_t bitsPerSample = 16;
+  fwrite(&bitsPerSample, 1, sizeof(uint16_t), mFilePointer);
+  mLocationCounter += 2;
+
+  // start of the "data" chunk
+  fwrite(cDataStr, 1, 4, mFilePointer);
+  mLocationCounter += 4;
+
+  assert(mLocationCounter == 44 - 4);  // minus datasize
+
+  mNrElements = 0;
+  mIsValid = true;
+  return true;
 }
 
-	wavWriter::~wavWriter	() {}
+void WavWriter::close()
+{
+  std::lock_guard lock(mMutex);
 
-bool	wavWriter::init		(const QString &fileName) {
-	isValid			= false;
-	filePointer		= fopen (fileName. toUtf8 (). data (), "wb");
-	if (filePointer == nullptr)
-	   return false;
+  if (!mIsValid)
+    return;
 
-	fwrite (riff, 1, 4, filePointer);
+  mIsValid = false;
+  const uint32_t nrBytes = mNrElements * mNumChannels * sizeof(int16_t);
 
-//	the ultimate filesize is written at location 4
-	fseek (filePointer, 4, SEEK_CUR);
+  // reset the fp to the location where the nr bytes in the data chunk should be written
+  fseek(mFilePointer, mLocationCounter, SEEK_SET);
+  fwrite(&nrBytes, 1, 4, mFilePointer);
 
-//	The default header:
-	locationCounter		= 8;
-	fwrite (wave, 1, 4, filePointer);
-	locationCounter		+= 4;
-	fwrite (fmt,  1, 4, filePointer);
-	locationCounter		+= 4;
-	uint32_t fmtSize	= 16;
-	fwrite (&fmtSize, 1, 4, filePointer);
-	locationCounter		+= 4;
-	uint16_t	formatTag	= 01;
-	fwrite (&formatTag, 1, sizeof (uint16_t), filePointer);
-	locationCounter		+= 2;
-	uint16_t	nrChannels	= 2;
-	fwrite (&nrChannels, 1, sizeof (uint16_t), filePointer);
-	locationCounter		+= 2;
-	uint32_t	samplingRate	= 48000;
-	fwrite (&samplingRate, 1, sizeof (uint32_t), filePointer);
-	locationCounter		+= 4;
-	uint32_t	bytesperSecond	= 4 * samplingRate;
-	fwrite (&bytesperSecond, 1, sizeof (uint32_t), filePointer);
-	locationCounter		+= 4;
-	uint16_t	bytesperBlock	= 4;
-	fwrite (&bytesperBlock, 1, sizeof (uint16_t), filePointer);
-	locationCounter		+= 2;
-	uint16_t bitsperSample		= 16;
-	fwrite (&bitsperSample, 1, sizeof (uint16_t), filePointer);
-	locationCounter		+= 2;
-//
-//	start of the "data" chunk
-	fwrite (data, 1, 4, filePointer);
-	locationCounter		+= 4;
+  // compute the overall file size
+  fseek(mFilePointer, 0, SEEK_END);
+  const uint32_t riffSize = (uint32_t)ftell(mFilePointer) - 8;
 
-	nrElements	= 0;
-	isValid		= true;
-	return true;
+  // and record the value at loc 4
+  fseek(mFilePointer, 4, SEEK_SET);
+  fwrite(&riffSize, 1, 4, mFilePointer);
+  fseek(mFilePointer, 0, SEEK_END);
+  fclose(mFilePointer);
 }
 
-void	wavWriter::close	() {
-	if (!isValid)
-	   return;
-	isValid		= false;
-	int nrBytes	= nrElements * 2 * sizeof (int16_t);
-//
-//	reset the fp to the location where the nr bytes in the
-//	data chunk shouold be written
-	fseek (filePointer, locationCounter, SEEK_SET);
-	fwrite (&nrBytes, 1, 4, filePointer);
-//
-//	compute the number if of to be recorded in the RIFF count
-	fseek (filePointer, 0, SEEK_END);
-	int riffSize	= ftell (filePointer) - 8;
-//
-//	and record the value at loc 4
-	fseek (filePointer, 4, SEEK_SET);
-	fwrite (&riffSize, 1, 4, filePointer);
-	fseek (filePointer, 0, SEEK_END);
-	fclose (filePointer);
+void WavWriter::write(const int16_t * iBuffer, const int32_t iSamples)
+{
+  std::lock_guard lock(mMutex);
+
+  if (!mIsValid)
+    return;
+
+  fwrite(iBuffer, sizeof(int16_t), iSamples, mFilePointer);
+  mNrElements += iSamples;
 }
-
-void	wavWriter::write (const int16_t *buf, int samples) {
-	if (!isValid)
-	   return;
-
-	fwrite (buf, 2 * sizeof (int16_t), samples, filePointer);
-	nrElements	+= samples;
-}
-
-bool	wavWriter::isActive	() {
-	return isValid;
-}
-

@@ -32,7 +32,7 @@
 #pragma once
 
 #include "glob_defs.h"
-#include "wav_writer.h"
+// #include "wav_writer.h"
 #include <mutex>
 #include <xml-filewriter.h>
 #include "newconverter.h"
@@ -45,21 +45,15 @@ public:
 
   int convert(const cmplx16 *, int32_t, int,std::vector<float> &);
 
-  void start_audioDump(const QString &);
-  void stop_audioDump();
-
 private:
   newConverter mapper_16{16000, 48000, 2 * 1600};
   newConverter mapper_24{24000, 48000, 2 * 2400};
   newConverter mapper_32{32000, 48000, 2 * 3200};
   std::mutex locker;
-  wavWriter mWavWriter;
+  // WavWriter mWavWriter;
 
   int convert_16000(const cmplx16 *, int, std::vector<float> &);
   int convert_24000(const cmplx16 *, int, std::vector<float> &);
   int convert_32000(const cmplx16 *, int, std::vector<float> &);
   int convert_48000(const cmplx16 *, int, std::vector<float> &);
-
-  void dump(const cmplx *, int);
-  void dump(const cmplx16 *, int);
 };
