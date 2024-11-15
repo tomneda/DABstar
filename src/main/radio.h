@@ -240,8 +240,6 @@ private:
   AudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
   QThread * mAudioOutputThread = nullptr;
   SAudioFifo mAudioFifo;
-  //std::array<SAudioFifo, 2> mAudioFifoArr;
-  //int32_t mAudioFifoIdx = 0;
   SAudioFifo * mpCurAudioFifo = nullptr;
   enum class EPlaybackState { Stopped = 0, WaitForInit, Running };
   EPlaybackState mPlaybackState = EPlaybackState::Stopped;

@@ -1152,7 +1152,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
       }
       else
       {
-        mAudioDumpState = EAudioDumpState::Stopped;
+        stop_audio_dumping();
         qCritical("RadioInterface::slot_new_audio: Failed to initialize audio dump state");
       }
     }
@@ -1205,8 +1205,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
       mpTechDataWidget->audioDataAvailable(iAmount, iAudioSampleRate);
     }
   }
-  // int32_t fillstate = mAudioBuffer2.get_fill_state_in_percent();
-  // emit signal_audio_buffer_filled_state(fillstate);
+
   emit signal_audio_buffer_filled_state((int32_t)mAudioBufferFillFiltered);
 }
 //
@@ -3757,8 +3756,6 @@ void RadioInterface::_set_device_to_file_mode(const bool iDataFromFile)
 
 void RadioInterface::_setup_audio_output(const uint32_t iSampleRate)
 {
-  // mAudioFifoIdx = (mAudioFifoIdx + 1) & 0x1;
-  // mpCurAudioFifo = &mAudioFifoArr[mAudioFifoIdx];
   mAudioBufferFromDecoder.flush_ring_buffer();
   mAudioBufferToOutput.flush_ring_buffer();
   mpCurAudioFifo = &mAudioFifo;
