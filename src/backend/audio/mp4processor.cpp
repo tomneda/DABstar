@@ -51,12 +51,12 @@ Mp4Processor::Mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   myRadioInterface = mr;
   this->frameBuffer = frameBuffer;
   this->dump = dump;
-  connect(this, &Mp4Processor::show_frameErrors, mr, &RadioInterface::slot_show_frame_errors);
-  connect(this, &Mp4Processor::show_rsErrors, mr, &RadioInterface::slot_show_rs_errors);
-  connect(this, &Mp4Processor::show_aacErrors, mr, &RadioInterface::slot_show_aac_errors);
-  connect(this, &Mp4Processor::isStereo, mr, &RadioInterface::slot_set_stereo);
-  connect(this, &Mp4Processor::newFrame, mr, &RadioInterface::slot_new_frame);
-  connect(this, &Mp4Processor::show_rsCorrections, mr, &RadioInterface::slot_show_rs_corrections);
+  connect(this, &Mp4Processor::signal_show_frame_errors, mr, &RadioInterface::slot_show_frame_errors);
+  connect(this, &Mp4Processor::signal_show_rs_errors, mr, &RadioInterface::slot_show_rs_errors);
+  connect(this, &Mp4Processor::signal_show_aac_errors, mr, &RadioInterface::slot_show_aac_errors);
+  connect(this, &Mp4Processor::signal_is_stereo, mr, &RadioInterface::slot_set_stereo);
+  connect(this, &Mp4Processor::signal_new_frame, mr, &RadioInterface::slot_new_frame);
+  connect(this, &Mp4Processor::signal_show_rs_corrections, mr, &RadioInterface::slot_show_rs_corrections);
 
 #ifdef  __WITH_FDK_AAC__
   aacDecoder = new FdkAAC(mr, b);
@@ -125,7 +125,7 @@ void Mp4Processor::addtoFrame(const std::vector<uint8_t> & V)
     if (++frameCount >= 25)
     {
       frameCount = 0;
-      show_frameErrors(frameErrors);
+      emit signal_show_frame_errors(frameErrors);
       frameErrors = 0;
     }
     /**
@@ -140,7 +140,7 @@ void Mp4Processor::addtoFrame(const std::vector<uint8_t> & V)
       blocksInBuffer = 0;
       if (++successFrames > 25)
       {
-        show_rsErrors(rsErrors);
+        emit signal_show_rs_errors(rsErrors);
         successFrames = 0;
         rsErrors = 0;
       }
@@ -195,7 +195,7 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     goodFrames++;
     if (goodFrames >= 100)
     {
-      emit show_rsCorrections(totalCorrections, crcErrors);
+      emit signal_show_rs_corrections(totalCorrections, crcErrors);
       totalCorrections = 0;
       crcErrors = 0;
       goodFrames = 0;
@@ -284,13 +284,13 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     if (check_crc_bytes(&outVector[au_start[i]], aac_frame_length))
     {
       //
-      //	firs prepare dumping
+      //	first prepare dumping
       std::vector<uint8_t> fileBuffer;
       int segmentSize = build_aacFile(aac_frame_length, &streamParameters, &(outVector.data()[au_start[i]]), fileBuffer);
       if (dump == nullptr)
       {
         frameBuffer->put_data_into_ring_buffer(fileBuffer.data(), segmentSize);
-        newFrame(segmentSize);
+        emit signal_new_frame(segmentSize);
       }
       else
       {
@@ -321,7 +321,7 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
 
         tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aac_frame_length);
 #endif
-        emit isStereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
+        emit signal_is_stereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
 
         if (tmp <= 0)
         {
@@ -329,7 +329,7 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
         }
         if (++aacFrames > 25)
         {
-          show_aacErrors(aacErrors);
+          emit signal_show_aac_errors(aacErrors);
           aacErrors = 0;
           aacFrames = 0;
         }

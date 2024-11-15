@@ -101,12 +101,12 @@ private:
 #endif
 
 signals:
-  void show_frameErrors(int);
-  void show_rsErrors(int);
-  void show_aacErrors(int);
-  void isStereo(bool);
-  void newFrame(int);
-  void show_rsCorrections(int, int);
+  void signal_show_frame_errors(int);
+  void signal_show_rs_errors(int);
+  void signal_show_aac_errors(int);
+  void signal_is_stereo(bool);
+  void signal_new_frame(int);
+  void signal_show_rs_corrections(int, int);
 };
 
 #endif
