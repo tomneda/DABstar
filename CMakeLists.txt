@@ -243,7 +243,7 @@ include_directories(
         src/support/viterbi-jan
         src/support/viterbi-spiral
         src/output
-        src/scopes-qwt6
+        src/scopes
         src/spectrum-viewer
         src/file-devices/xml-filewriter
         src/eti-handler
@@ -341,11 +341,11 @@ set(${objectName}_HDRS
         src/support/converter_48000.h
         src/support/wav_writer.h
         src/support/angle_direction.h
-        src/scopes-qwt6/iqdisplay.h
-        src/scopes-qwt6/carrier-display.h
-        src/scopes-qwt6/spectrogramdata.h
-        src/scopes-qwt6/audio-display.h
-        src/scopes-qwt6/qwt_defs.h
+        src/scopes/iqdisplay.h
+        src/scopes/carrier-display.h
+        src/scopes/spectrogramdata.h
+        src/scopes/audio-display.h
+        src/scopes/qwt_defs.h
         src/spectrum-viewer/spectrum-viewer.h
         src/spectrum-viewer/spectrum-scope.h
         src/spectrum-viewer/waterfall-scope.h
@@ -434,10 +434,10 @@ set(${objectName}_SRCS
         src/support/converter_48000.cpp
         src/support/wav_writer.cpp
         src/support/angle_direction.cpp
-        src/scopes-qwt6/iqdisplay.cpp
-        src/scopes-qwt6/carrier-display.cpp
-        src/scopes-qwt6/audio-display.cpp
-        src/scopes-qwt6/spectrogramdata.cpp
+        src/scopes/iqdisplay.cpp
+        src/scopes/carrier-display.cpp
+        src/scopes/audio-display.cpp
+        src/scopes/spectrogramdata.cpp
         src/spectrum-viewer/spectrum-viewer.cpp
         src/spectrum-viewer/spectrum-scope.cpp
         src/spectrum-viewer/waterfall-scope.cpp

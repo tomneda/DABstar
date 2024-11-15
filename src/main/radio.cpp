@@ -1086,7 +1086,7 @@ void RadioInterface::slot_change_in_configuration()
         Audiodata ad;
         FILE * f = mChannel.backgroundServices.at(i).fd;
         mpDabProcessor->dataforAudioService(ss, &ad);
-        mpDabProcessor->set_audioChannel(&ad, &mAudioBuffer1, f, BACK_GROUND);
+        mpDabProcessor->set_audioChannel(&ad, &mAudioBufferFromDecoder, f, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = ad.subchId;
       }
       else
@@ -1147,24 +1147,25 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
   assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
   auto * const vec = make_vla(int16_t, iAmount);
 
-  while (mAudioBuffer1.get_ring_buffer_read_available() > iAmount)
+  while (mAudioBufferFromDecoder.get_ring_buffer_read_available() > iAmount)
   {
-    mean_filter(mAudioBufferFillFiltered, mAudioBuffer2.get_fill_state_in_percent(), 0.05f);
+    mean_filter(mAudioBufferFillFiltered, mAudioBufferToOutput.get_fill_state_in_percent(), 0.05f);
 
     // vec contains a stereo pair [0][1]...[n-2][n-1]
-    mAudioBuffer1.get_data_from_ring_buffer(vec, iAmount);
+    mAudioBufferFromDecoder.get_data_from_ring_buffer(vec, iAmount);
 
     // const int size = mAudioSampRateConv.convert(reinterpret_cast<cmplx16 *>(vec), iAmount / 2, iAudioSampleRate, mAudioOutBuffer); // mAudioOutBuffer is reserved in mAudioSampRateConv
     // mpSoundOut->audioOutput(mAudioOutBuffer.data(), size);
     // TODO: WAV output should work again
     Q_ASSERT(mpCurAudioFifo != nullptr);
 
-    if (iAmount > mAudioBuffer2.get_ring_buffer_write_available())
+    // the audio output buffer got flooded, try to begin from new (set to 50% would also be ok, but needs interface in RingBuffer)
+    if (iAmount > mAudioBufferToOutput.get_ring_buffer_write_available())
     {
-      mAudioBuffer2.flush_ring_buffer();
+      mAudioBufferToOutput.flush_ring_buffer();
     }
 
-    mAudioBuffer2.put_data_into_ring_buffer(vec, iAmount);
+    mAudioBufferToOutput.put_data_into_ring_buffer(vec, iAmount);
 
     // ugly, but palette of progressbar can only be set in the same thread of the value setting, save time calling this only once
     if (!mProgBarAudioBufferFullColorSet)
@@ -2469,7 +2470,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
 {
   mChannel.currentService.valid = true;
 
-  (void)mpDabProcessor->set_audioChannel(ad, &mAudioBuffer1, nullptr, FORE_GROUND);
+  (void)mpDabProcessor->set_audioChannel(ad, &mAudioBufferFromDecoder, nullptr, FORE_GROUND);
   for (int i = 1; i < 10; i++)
   {
     Packetdata pd;
@@ -3746,11 +3747,11 @@ void RadioInterface::_setup_audio_output(const uint32_t iSampleRate)
 {
   // mAudioFifoIdx = (mAudioFifoIdx + 1) & 0x1;
   // mpCurAudioFifo = &mAudioFifoArr[mAudioFifoIdx];
-  mAudioBuffer1.flush_ring_buffer();
-  mAudioBuffer2.flush_ring_buffer();
+  mAudioBufferFromDecoder.flush_ring_buffer();
+  mAudioBufferToOutput.flush_ring_buffer();
   mpCurAudioFifo = &mAudioFifo;
   mpCurAudioFifo->sampleRate = iSampleRate;
-  mpCurAudioFifo->pRingbuffer = &mAudioBuffer2;
+  mpCurAudioFifo->pRingbuffer = &mAudioBufferToOutput;
 
   if (mPlaybackState == EPlaybackState::Running)
   {
