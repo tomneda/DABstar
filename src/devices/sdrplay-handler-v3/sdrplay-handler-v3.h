@@ -67,8 +67,6 @@ public:
 
   void setVFOFrequency(int32_t) override;
   int32_t getVFOFrequency() override;
-  //int32_t defaultFrequency();
-
   bool restartReader(int32_t) override;
   void stopReader() override;
   int32_t getSamples(cmplx *, int32_t) override;
@@ -80,16 +78,11 @@ public:
   bool isHidden() override;
   QString deviceName() override;
   bool isFileInput() override;
-
   void update_PowerOverload(sdrplay_api_EventParamsT * params);
   RingBuffer<std::complex<int16_t>> _I_Buffer;
   std::atomic<bool> receiverRuns;
-  int theGain;
-  sdrplay_api_CallbackFnsT cbFns;
 
-private:
-  QFrame myFrame;
-public:
+  sdrplay_api_CallbackFnsT cbFns;
   sdrplay_api_Open_t sdrplay_api_Open;
   sdrplay_api_Close_t sdrplay_api_Close;
   sdrplay_api_ApiVersion_t sdrplay_api_ApiVersion;
@@ -105,35 +98,30 @@ public:
   sdrplay_api_Init_t sdrplay_api_Init;
   sdrplay_api_Uninit_t sdrplay_api_Uninit;
   sdrplay_api_Update_t sdrplay_api_Update;
-
   sdrplay_api_DeviceT * chosenDevice;
   Rsp_device * theRsp = nullptr;
 
-  int inputRate;
   std::atomic<bool> failFlag;
   std::atomic<bool> successFlag;
   std::atomic<bool> threadRuns;
   void run() override;
   bool messageHandler(generalCommand *);
-
   QString recorderVersion;
-
   int32_t vfoFrequency;
   int16_t hwVersion;
   QSettings * sdrplaySettings;
   bool agcMode;
-  const int16_t nrBits = 14;
   const int denominator = 8192;
   int lna_upperBound;
   float apiVersion;
-  QString serial;
   bool has_antennaSelect;
-  const QString deviceModel = "SDRplay";
+  QString deviceModel = "SDRplay";
   int GRdBValue;
   int lnaState;
-  int ppmValue;
+  double ppmValue;
   HINSTANCE Handle;
   bool biasT;
+  bool notch;
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
@@ -146,33 +134,32 @@ public:
   bool loadFunctions();
   int errorCode;
 
+private:
+  QFrame myFrame;
+  const int16_t nrBits = 14;
+  void set_deviceName(const QString &);
+  void set_serial(const QString &);
+  void set_apiVersion(float);
+
 private slots:
   void set_ifgainReduction(int);
   void set_lnagainReduction(int);
   void set_agcControl(int);
-  void set_ppmControl(int);
+  void set_ppmControl(double);
   void set_selectAntenna(const QString &);
   void set_biasT(int);
+  void set_notch(int);
   void slot_overload_detected(bool);
+  void slot_tuner_gain(double, int);
 public slots:
   void set_lnabounds(int, int);
-  //void set_nrBits(int);
-  void set_deviceName(const QString &);
-  void set_serial(const QString &);
-  void set_apiVersion(float);
   void set_antennaSelect(int);
   void set_xmlDump();
   void show_lnaGain(int);
 signals:
-  void new_GRdBValue(int);
-  void new_lnaValue(int);
-  void new_agcSetting(bool);
-  void set_lnabounds_signal(int, int);
-  void set_deviceName_signal(const QString &);
-  void set_serial_signal(const QString &);
-  void set_apiVersion_signal(float);
   void set_antennaSelect_signal(bool);
   void signal_overload_detected(bool);
+  void signal_tuner_gain(double, int);
 };
 
 #endif

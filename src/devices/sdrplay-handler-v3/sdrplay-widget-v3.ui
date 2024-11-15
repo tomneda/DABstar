@@ -32,7 +32,9 @@
      <item row="0" column="1">
       <widget class="QLCDNumber" name="api_version">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Version of the SDRplay library detected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Version of the SDRplay library detected.
+         &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+        </string>
        </property>
        <property name="lineWidth">
         <number>0</number>
@@ -84,17 +86,17 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QSpinBox" name="ppmControl">
+      <widget class="QDoubleSpinBox" name="ppmControl">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the offset (in ppm) of the observed
-                  oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the 
+          offset (in ppm) of the observed oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+        </string>
        </property>
        <property name="minimum">
-        <number>-200</number>
+        <double>-150.0</double>
        </property>
        <property name="maximum">
-        <number>200</number>
+        <double>150.0</double>
        </property>
       </widget>
      </item>
@@ -134,7 +136,7 @@
         </font>
        </property>
        <property name="text">
-        <string>LNA</string>
+        <string>LNA stage</string>
        </property>
       </widget>
      </item>
@@ -147,9 +149,9 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setting the lna state, determining the gain reduction applied in the
-                  lna.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setting the LNA state, determining the gain reduction 
+         applied in the LNA.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+        </string>
        </property>
       </widget>
      </item>
@@ -181,8 +183,8 @@
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the ADC overload condition. Increase the attenuation to avoid
-                  this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                </string>
+         this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+        </string>
        </property>
        <property name="text">
         <string>Overload</string>
@@ -195,7 +197,8 @@
      <item row="5" column="1">
       <widget class="QLCDNumber" name="lnaGRdBDisplay">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The display shows the gain reduction in the lna of the device.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The display shows the gain reduction in the LNA of the device.
+         &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="lineWidth">
         <number>0</number>
@@ -205,6 +208,31 @@
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::Flat</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="font">
+        <font>
+         <family>DejaVu Sans Mono</family>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Tuner gain</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="tunerGain">
+       <property name="text">
+        <string>unknown</string>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Total tuner gain (LNA+Mixer+IF)
+        </string>
        </property>
       </widget>
      </item>
@@ -219,6 +247,10 @@
          <weight>75</weight>
          <bold>true</bold>
         </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;5V supply for antenna amplifiers
+        </string>
        </property>
        <property name="text">
         <string>biasT</string>
@@ -236,9 +268,9 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on automatic gain control - based on the setting of
-                  the lnastate and the ifgain.&lt;/p&gt;&lt;p&gt;If switched on, the lnastate switch and the ifgain slider are switched off&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on automatic IF gain control.
+         &lt;/p&gt;&lt;p&gt;If switched on, the IF gain slider is disabled&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+        </string>
        </property>
        <property name="text">
         <string>AGC</string>
@@ -246,17 +278,22 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QCheckBox" name="notch_selector">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on the notch filter.
+         &lt;/p&gt;&lt;p&gt;If switched on, it attenuates the AM and FM frequency ranges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+        </string>
        </property>
-      </spacer>
+       <property name="text">
+        <string>notch</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -300,7 +337,7 @@
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select an antenna (RSP-II)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                </string>
+        </string>
        </property>
        <item>
         <property name="text">

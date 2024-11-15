@@ -55,15 +55,14 @@ if (SDRPLAY_V3)
 
     include_directories(
             sdrplay-handler-v3
-            sdrplay-handler-v3/include
     )
 
     set($(devicesLibName)_HDRS
             ${${devicesLibName}_HDRS}
             sdrplay-handler-v3/sdrplay-handler-v3.h
             sdrplay-handler-v3/sdrplay-commands.h
-            sdrplay-handler-v3/include/sdrplay_api.h
             sdrplay-handler-v3/Rsp-device.h
+	          sdrplay-handler-v3/Rsp1-handler.h
             sdrplay-handler-v3/Rsp1A-handler.h
             sdrplay-handler-v3/RspII-handler.h
             sdrplay-handler-v3/RspDuo-handler.h
@@ -74,8 +73,9 @@ if (SDRPLAY_V3)
             ${${devicesLibName}_SRCS}
             sdrplay-handler-v3/sdrplay-handler-v3.cpp
             sdrplay-handler-v3/Rsp-device.cpp
+	          sdrplay-handler-v3/Rsp1-handler.cpp
             sdrplay-handler-v3/Rsp1A-handler.cpp
-            sdrplay-handler-v3/RspII-handler.cpp
+            sdrplay-handler-v3/Rsp2-handler.cpp
             sdrplay-handler-v3/RspDuo-handler.cpp
             sdrplay-handler-v3/RspDx-handler.cpp
     )

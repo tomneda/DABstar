@@ -58,11 +58,11 @@ httpHandler::httpHandler(RadioInterface * parent, const QString & mapPort, const
   QString temp = browserAddress + ":" + mapPort;
   this->homeAddress = homeAddress;
   this->autoBrowser_off = autoBrowser_off;
-// #if defined(__MINGW32__) || defined(_WIN32)
-//   this->browserAddress = temp.toStdWString();
-// #else
+#if defined(__MINGW32__) || defined(_WIN32)
+  this->browserAddress = temp.toStdWString();
+#else
   this->browserAddress = temp.toStdString();
-//#endif
+#endif
   this->running.store(false);
 
   connect(this, SIGNAL (terminating()), parent, SLOT (http_terminate()));
@@ -98,7 +98,7 @@ void httpHandler::start()
     return;
   }
 #if defined(__MINGW32__) || defined(_WIN32)
-  ShellExecute(nullptr, "open", browserAddress.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+  ShellExecute(nullptr, L"open", browserAddress.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 #else
   std::string x = "xdg-open " + browserAddress;
   const int result = system(x.c_str());

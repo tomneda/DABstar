@@ -4,23 +4,17 @@
 #include  <sdrplay_api.h>
 #include  "sdrplay-handler-v3.h"
 
-Rsp_device::Rsp_device(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenDevice, int sampleRate, int startFreq, bool agcMode, int lnaState, int GRdB, bool biasT)
+Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice, int startFreq, bool agcMode, int lnaState, int GRdB, double ppmValue)
 {
+  int mGRdB = GRdB;
   sdrplay_api_ErrT err;
   mpParent = parent;
   mpChosenDevice = chosenDevice;
-  mSampleRate = sampleRate;
   mFreq = startFreq;
-  mAgcMode = agcMode;
   mLnaState = lnaState;
-  mGRdB = GRdB;
-  mBiasT = biasT;
 
   connect(this, &Rsp_device::signal_set_lnabounds, parent, &SdrPlayHandler_v3::set_lnabounds);
-  connect(this, &Rsp_device::signal_set_deviceName, parent, &SdrPlayHandler_v3::set_deviceName);
   connect(this, &Rsp_device::signal_set_antennaSelect, parent, &SdrPlayHandler_v3::set_antennaSelect);
-  connect(this, &Rsp_device::signal_show_lnaGain, parent, &SdrPlayHandler_v3::show_lnaGain);
-  //connect(this, &Rsp_device::signal_set_nrBits, parent, &SdrPlayHandler_v3::set_nrBits); // it's to late to give data back to device caller
 
   err = parent->sdrplay_api_GetDeviceParams(chosenDevice->dev, &mpDeviceParams);
 
@@ -38,7 +32,8 @@ Rsp_device::Rsp_device(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenD
 
   mpChParams = mpDeviceParams->rxChannelA;
 
-  mpDeviceParams->devParams->fsFreq.fsHz = sampleRate;
+  mpDeviceParams->devParams->ppm = ppmValue;
+  mpDeviceParams->devParams->fsFreq.fsHz = 2048000;
   mpChParams->tunerParams.bwType = sdrplay_api_BW_1_536;
   mpChParams->tunerParams.ifType = sdrplay_api_IF_Zero;
 
@@ -52,22 +47,26 @@ Rsp_device::Rsp_device(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenD
   {
     mGRdB = 59;
   }
-  if (GRdB < 20)
+  else if (GRdB < 20)
   {
     mGRdB = 20;
   }
   mpChParams->tunerParams.gain.gRdB = mGRdB;
   mpChParams->tunerParams.gain.LNAstate = 3;
-  if (mAgcMode)
+
+  mpChParams->ctrlParams.agc.setPoint_dBfs = -20;
+  mpChParams->ctrlParams.agc.attack_ms = 500;
+  mpChParams->ctrlParams.agc.decay_ms = 500;
+  mpChParams->ctrlParams.agc.decay_delay_ms = 200;
+  mpChParams->ctrlParams.agc.decay_threshold_dB = 4;
+  if (agcMode)
   {
-    mpChParams->ctrlParams.agc.setPoint_dBfs = -30;
-    mpChParams->ctrlParams.agc.enable = sdrplay_api_AGC_100HZ;
+    mpChParams->ctrlParams.agc.enable = sdrplay_api_AGC_CTRL_EN;
   }
   else
   {
     mpChParams->ctrlParams.agc.enable = sdrplay_api_AGC_DISABLE;
   }
-
   err = parent->sdrplay_api_Init(chosenDevice->dev, &parent->cbFns, parent);
   if (err != sdrplay_api_Success)
   {
@@ -93,9 +92,25 @@ bool Rsp_device::restart(int freq)
 
 bool Rsp_device::set_agc(int setPoint, bool on)
 {
-  (void)setPoint;
-  (void)on;
-  return false;
+  sdrplay_api_ErrT err;
+
+  if (on)
+  {
+    mpChParams->ctrlParams.agc.setPoint_dBfs = setPoint;
+	mpChParams->ctrlParams.agc.enable = sdrplay_api_AGC_CTRL_EN;
+  }
+  else
+  {
+    mpChParams->ctrlParams.agc.enable = sdrplay_api_AGC_DISABLE;
+  }
+
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Ctrl_Agc, sdrplay_api_Update_Ext1_None);
+  if (err != sdrplay_api_Success)
+  {
+    fprintf(stderr, "agc: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
+    return false;
+  }
+  return true;
 }
 
 bool Rsp_device::set_lna(int lnaState)
@@ -106,14 +121,30 @@ bool Rsp_device::set_lna(int lnaState)
 
 bool Rsp_device::set_GRdB(int GRdBValue)
 {
-  (void)GRdBValue;
-  return false;
+  sdrplay_api_ErrT err;
+
+  mpChParams->tunerParams.gain.gRdB = GRdBValue;
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Tuner_Gr, sdrplay_api_Update_Ext1_None);
+  if (err != sdrplay_api_Success)
+  {
+    fprintf(stderr, "grdb: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
+    return false;
+  }
+  return true;
 }
 
-bool Rsp_device::set_ppm(int ppm)
+bool Rsp_device::set_ppm(double ppmValue)
 {
-  (void)ppm;
-  return false;
+  sdrplay_api_ErrT err;
+
+  mpDeviceParams->devParams->ppm = ppmValue;
+  err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Dev_Ppm, sdrplay_api_Update_Ext1_None);
+  if (err != sdrplay_api_Success)
+  {
+    fprintf(stderr, "ppm: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
+    return false;
+  }
+  return true;
 }
 
 bool Rsp_device::set_antenna(int antenna)
@@ -129,6 +160,12 @@ bool Rsp_device::set_amPort(int amPort)
 }
 
 bool Rsp_device::set_biasT(bool b)
+{
+  (void)b;
+  return false;
+}
+
+bool Rsp_device::set_notch(bool b)
 {
   (void)b;
   return false;

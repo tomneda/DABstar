@@ -35,7 +35,8 @@
 #define PPM_REQUEST             0105
 #define LNA_REQUEST             0106
 #define ANTENNASELECT_REQUEST   0107
-#define	BIAS_T_REQUEST		0110
+#define	BIAS_T_REQUEST			0110
+#define	NOTCH_REQUEST			0111
 
 #include	<QSemaphore>
 
@@ -107,8 +108,8 @@ public:
 
 class	ppmRequest: public generalCommand {
 public:
-	int	ppmValue;
-	ppmRequest (int ppmValue):
+	double	ppmValue;
+	ppmRequest (double ppmValue):
 	           generalCommand (PPM_REQUEST) {
 	   this	-> ppmValue	= ppmValue;
 	}
@@ -144,6 +145,16 @@ public:
 	}
 	~biasT_Request	() {}
 };
-	
+
+class	notch_Request: public generalCommand {
+public:
+	bool	checked;
+	notch_Request (bool notch_value):
+	            generalCommand (NOTCH_REQUEST) {
+	   this -> checked = notch_value;
+	}
+	~notch_Request	() {}
+};
+
 #endif
 
