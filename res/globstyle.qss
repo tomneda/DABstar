@@ -1,4 +1,5 @@
 QWidget { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(58, 58, 58, 255),stop:1 rgba(18, 18, 18, 255)); color: #fff; selection-background-color: #b78620;	selection-color: #000; }
+QWidget::disabled { color: #656565; }
 QLabel { background-color: transparent; color: #fff; }
 QMenuBar { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(57, 57, 57, 255),stop:1 rgba(50, 50, 50, 255)); border: 1px solid #000; color: #fff; }
 QMenuBar::item { background-color: transparent; }
@@ -43,6 +44,15 @@ QSpinBox::down-button, QDateTimeEdit::down-button { border-bottom-right-radius:2
 QSpinBox::down-button:hover, QDateTimeEdit::down-button:hover { background-color: #585858; }
 QSpinBox::down-button:pressed, QDateTimeEdit::down-button:pressed { background-color: #252525; width: 16px; border-width: 1px; }
 QSpinBox::down-arrow, QDateTimeEdit::down-arrow { width: 7px; height: 7px; }
+QDoubleSpinBox, QDateTimeEdit { background-color: #131313; color : #eee; border: 1px solid #343434; padding: 3px; padding-left: 5px; border-radius : 2px; }
+QDoubleSpinBox::up-button, QDateTimeEdit::up-button { border-top-right-radius:2px; background-color: #777777; width: 16px; border-width: 1px; }
+QDoubleSpinBox::up-button:hover, QDateTimeEdit::up-button:hover { background-color: #585858; }
+QDoubleSpinBox::up-button:pressed, QDateTimeEdit::up-button:pressed { background-color: #252525; width: 16px; border-width: 1px; }
+QDoubleSpinBox::up-arrow, QDateTimeEdit::up-arrow { width: 7px; height: 7px; }
+QDoubleSpinBox::down-button, QDateTimeEdit::down-button { border-bottom-right-radius:2px; background-color: #777777; width: 16px; border-width: 1px; }
+QDoubleSpinBox::down-button:hover, QDateTimeEdit::down-button:hover { background-color: #585858; }
+QDoubleSpinBox::down-button:pressed, QDateTimeEdit::down-button:pressed { background-color: #252525; width: 16px; border-width: 1px; }
+QDoubleSpinBox::down-arrow, QDateTimeEdit::down-arrow { width: 7px; height: 7px; }
 QGroupBox { border: 1px solid; border-color: #666666; border-radius: 5px; margin-top: 20px; }
 QGroupBox::title { background-color: transparent; color: #eee; subcontrol-origin: margin; padding: 5px; border-top-left-radius: 3px; border-top-right-radius: 3px; }
 QHeaderView::section { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(60, 60, 60, 255),stop:1 rgba(50, 50, 50, 255)); border: 1px solid #000; color: #fff; text-align: left; padding: 4px; }
