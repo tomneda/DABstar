@@ -1142,19 +1142,16 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
   }
   assert(mpCurAudioFifo != nullptr); // is mAudioBuffer2 really assigned?
 
-  if (mAudioDumpState != EAudioDumpState::Stopped)
+  if (mAudioDumpState == EAudioDumpState::WaitForInit)
   {
-    if (mAudioDumpState == EAudioDumpState::WaitForInit)
+    if (mWavWriter.init(mAudioWavDumpFileName, iAudioSampleRate, 2))
     {
-      if (mWavWriter.init(mAudioWavDumpFileName, iAudioSampleRate, 2))
-      {
-        mAudioDumpState = EAudioDumpState::Running;
-      }
-      else
-      {
-        stop_audio_dumping();
-        qCritical("RadioInterface::slot_new_audio: Failed to initialize audio dump state");
-      }
+      mAudioDumpState = EAudioDumpState::Running;
+    }
+    else
+    {
+      stop_audio_dumping();
+      qCritical("RadioInterface::slot_new_audio: Failed to initialize audio dump state");
     }
   }
 
