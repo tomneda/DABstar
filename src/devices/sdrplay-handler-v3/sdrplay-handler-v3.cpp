@@ -1,4 +1,3 @@
-
 /*
  * This file is adapted by Thomas Neder (https://github.com/tomneda)
  *
@@ -47,6 +46,8 @@
 #include  "RspDx-handler.h"
 
 #include  "device-exceptions.h"
+#include  <chrono>
+#include <thread>
 
 std::string errorMessage(int errorCode)
 {
@@ -548,6 +549,7 @@ void SdrPlayHandler_v3::run()
   sdrplay_api_ErrT err;
   sdrplay_api_DeviceT devs[6];
   uint32_t ndev = 0;
+  startupCnt = 8;  // reconnect retry time in seconds
 
   threadRuns.store(false);
   receiverRuns.store(false);
@@ -610,6 +612,7 @@ void SdrPlayHandler_v3::run()
   //
   //	lock API while device selection is performed
   sdrplay_api_LockDeviceApi();
+  do
   {
     int s = sizeof(devs) / sizeof(sdrplay_api_DeviceT);
     err = sdrplay_api_GetDevices(devs, &ndev, s);
@@ -620,14 +623,26 @@ void SdrPlayHandler_v3::run()
       errorCode = 6;
       goto unlockDevice_closeAPI;
     }
-  }
 
-  if (ndev == 0)
-  {
-    fprintf(stderr, "no valid device found\n");
-    errorCode = 7;
-    goto unlockDevice_closeAPI;
+    /*
+     * If this instance is restarted too fast then the call to sdrplay_api_GetDevices() gives no connected devices back.
+     * If waiting some seconds (3.. 4s) then it works again.
+     * Maybe there is a more suitable way doing this.
+     * Also, not known how it works with more than one physical SDRPlay device is connected.
+     */
+    if (ndev == 0)
+    {
+      if (--startupCnt <= 0) // no more waiting a further second?
+      {
+        errorCode = 7;
+        fprintf(stderr, "no valid device found, give up\n");
+        goto unlockDevice_closeAPI;
+      }
+      fprintf(stderr, "no valid device found, try again (%d tries left)\n", startupCnt);
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
   }
+  while (ndev == 0);
 
   fprintf(stderr, "%d devices detected\n", ndev);
   chosenDevice = &devs[0];

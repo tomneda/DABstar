@@ -123,6 +123,7 @@ public:
   bool notch;
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
+  int startupCnt = 0;
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> dumping;
