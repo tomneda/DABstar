@@ -110,6 +110,35 @@ SpectrumViewer::~SpectrumViewer()
   delete mpWaterfallScope;
 }
 
+bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<double>::SMaxMin & ioMaxMin) const
+{
+  constexpr double cMinShownLevel = -99.0;
+  constexpr double cMinLevelRange = 20.0;
+  bool limitChanged = false;
+
+  // first avoid drifting down lower than -99dB, as the display content will jump then, keep the top level for the first
+  if (ioMaxMin.Min < cMinShownLevel)
+  {
+    limitChanged = true;
+    ioMaxMin.Min = cMinShownLevel;
+  }
+
+  // now check if the minimum shown range is not < 20dB, set the line in the middle, if possible
+  if (ioMaxMin.Max - ioMaxMin.Min < cMinLevelRange)
+  {
+    limitChanged = true;
+    const double mean = (ioMaxMin.Max + ioMaxMin.Min) / 2;
+    ioMaxMin.Min = mean - cMinLevelRange / 2;
+    ioMaxMin.Max = mean + cMinLevelRange / 2;
+    if (ioMaxMin.Min < cMinShownLevel) // maybe we shifted now too low? -> correct this
+    {
+      ioMaxMin.Max += cMinShownLevel - ioMaxMin.Min; // maintain level range
+      ioMaxMin.Min = cMinShownLevel;
+    }
+  }
+  return limitChanged;
+}
+
 void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
 {
   constexpr int32_t averageCount = 5;
@@ -191,18 +220,16 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
     }
   }
 
-  mean_filter(mSpecViewLimits.GlobMax, valdBGlobMax, mAvrAlpha);
-  mean_filter(mSpecViewLimits.GlobMin, valdBGlobMin, mAvrAlpha);
-  mean_filter(mSpecViewLimits.LocMin, valdBLocMin, mAvrAlpha);
-  mean_filter(mSpecViewLimits.LocMax, valdBLocMax, mAvrAlpha);
+  mean_filter(mSpecViewLimits.Glob.Max, valdBGlobMax, mAvrAlpha);
+  mean_filter(mSpecViewLimits.Glob.Min, valdBGlobMin, mAvrAlpha);
+  mean_filter(mSpecViewLimits.Loc.Min, valdBLocMin, mAvrAlpha);
+  mean_filter(mSpecViewLimits.Loc.Max, valdBLocMax, mAvrAlpha);
 
   // avoid scaling jumps if <= -100 occurs in the display (seldom, correct other values accordingly)
-  if (mSpecViewLimits.GlobMin < -99.0)
+  if (_calc_spectrum_display_limits(mSpecViewLimits.Glob))
   {
-    const double corrOff =  -99.0 - mSpecViewLimits.GlobMin; // is positive value
-    mSpecViewLimits.GlobMax += corrOff;
-    mSpecViewLimits.LocMin += corrOff;
-    mSpecViewLimits.LocMax += corrOff;
+    // if the global values has change, crosscheck also the local values
+    _calc_spectrum_display_limits(mSpecViewLimits.Loc);
   }
 
   mpWaterfallScope->show_waterfall(mXAxisVec.data(), mDisplayBuffer.data(), mSpecViewLimits);

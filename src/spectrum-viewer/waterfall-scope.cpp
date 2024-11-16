@@ -78,8 +78,8 @@ void WaterfallScope::show_waterfall(const double * ipX_axis, const double * ipY1
   }
 
   // weight with slider (scale) between global and local minimum and maximum level values
-  const double yMax = (iSpecViewLimits.GlobMax + 5.0) * (1.0 - mScale) + iSpecViewLimits.LocMax * mScale;
-  const double yMin = iSpecViewLimits.GlobMin * (1.0 - mScale) + iSpecViewLimits.LocMin * mScale;
+  const double yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
+  const double yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
   mpWaterfallData->set_min_max_z_value(yMin, yMax);
 
   constexpr int32_t elemSize = sizeof(decltype(mPlotDataVec.back()));

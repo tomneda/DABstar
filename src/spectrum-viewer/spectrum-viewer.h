@@ -133,6 +133,7 @@ private:
   CorrelationViewer * mpCorrelationViewer = nullptr;
 
   void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);
+  bool _calc_spectrum_display_limits(SpecViewLimits<double>::SMaxMin & ioMaxMin) const;
 
 public slots:
   void slot_update_settings();

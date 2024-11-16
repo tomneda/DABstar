@@ -66,8 +66,8 @@ void SpectrumScope::show_spectrum(const double * X_axis, const double * Y_value,
   mpPlotgrid->enableAxis(QwtPlot::xBottom);
 
   // weight with slider (scale) between global and local minimum and maximum level values
-  const double yMax = (iSpecViewLimits.GlobMax + 5.0) * (1.0 - mScale) + iSpecViewLimits.LocMax * mScale;
-  const double yMin = iSpecViewLimits.GlobMin * (1.0 - mScale) + iSpecViewLimits.LocMin * mScale;
+  const double yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
+  const double yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
 
   mpPlotgrid->setAxisScale(QwtPlot::yLeft, yMin, yMax);
   mSpectrumCurve.setSamples(X_axis, Y_value, mDisplaySize);

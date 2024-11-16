@@ -87,11 +87,10 @@ constexpr char sSettingContentStorageDir[] = "saveDirContent";
 template<typename T>
 struct SpecViewLimits
 {
+  struct SMaxMin { T Max; T Min; };
   // the sequence is in typical level order
-  T GlobMax = -30;
-  T LocMax  = -31;
-  T LocMin  = -50;
-  T GlobMin = -90;
+  SMaxMin Glob {-30, -90};
+  SMaxMin Loc  {-31, -50};
 };
 
 struct EpgElement
