@@ -111,7 +111,6 @@ public:
   int16_t hwVersion;
   QSettings * sdrplaySettings;
   bool agcMode;
-  const int denominator = 8192;
   int lna_upperBound;
   float apiVersion;
   bool has_antennaSelect;
@@ -136,7 +135,10 @@ public:
 
 private:
   QFrame myFrame;
-  const int16_t nrBits = 14;
+
+  // tomneda: was at 14bit but it seems the whole 16bits are used in the callback function (for the RSPdx)
+  static constexpr int16_t nrBits = 16;
+
   void set_deviceName(const QString &);
   void set_serial(const QString &);
   void set_apiVersion(float);

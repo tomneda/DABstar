@@ -226,14 +226,17 @@ void SdrPlayHandler_v3::stopReader()
 //
 int32_t SdrPlayHandler_v3::getSamples(cmplx * V, int32_t size)
 {
-  std::complex<int16_t> temp[size];
-  int i;
+  static constexpr float denominator = (float)(1 << (nrBits-1));
 
-  int amount = _I_Buffer.get_data_from_ring_buffer(temp, size);
-  for (i = 0; i < amount; i++)
+  auto * const temp = make_vla(std::complex<int16_t>, size);
+
+  const int amount = _I_Buffer.get_data_from_ring_buffer(temp, size);
+
+  for (int i = 0; i < amount; i++)
   {
-    V[i] = cmplx(real(temp[i]) / (float)denominator, imag(temp[i]) / (float)denominator);
+    V[i] = cmplx((float)real(temp[i]) / denominator, (float)imag(temp[i]) / denominator);
   }
+
   if (dumping.load())
   {
     xmlWriter->add(temp, amount);
@@ -831,7 +834,7 @@ closeAPI:
   sdrplay_api_ReleaseDevice(chosenDevice);
   sdrplay_api_Close();
   releaseLibrary();
-  fprintf(stderr, "De taak is gestopt\n");
+  fprintf(stderr, "SDRPlay API closed\n");
 }
 
 /////////////////////////////////////////////////////////////////////////////
