@@ -171,7 +171,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   thermoPeakLevelLeft->setBorderWidth(0);
   thermoPeakLevelRight->setBorderWidth(0);
 
-  mpServiceListHandler = std::make_unique<ServiceListHandler>(mpSH->get_settings(), dbFileName, tblServiceList);
+  mpServiceListHandler.reset(new ServiceListHandler(mpSH->get_settings(), dbFileName, tblServiceList));
 
   // only the queued call will consider the button size?!
   QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection);
@@ -584,33 +584,33 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const in
   
   mpServiceListHandler->add_entry(mChannel.channelName, ed.name/* + ":" + QString::number(iSId, 16)*/);
 
-  const QStringList sl = mpServiceListHandler->get_list_of_services_in_channel(mChannel.channelName);
-  const int32_t noServiceEntries = mServiceList.size();
+  // const QStringList sl = mpServiceListHandler->get_list_of_services_in_channel(mChannel.channelName);
+  // const int32_t noServiceEntries = mServiceList.size();
 
-  qDebug() << noServiceEntries << sl.size();
+  // qDebug() << noServiceEntries << sl.size();
 
   // Check if in the database are more Service entries than currently added.
   // If yes, found them and delete them.
-  if (sl.size() > noServiceEntries)
-  {
-    for (const auto & le1 : sl)
-    {
-      bool found = false;
-      for (const auto & le2 : mServiceList)
-      {
-        if (le1 == le2.name)
-        {
-          found = true;
-          break;
-        }
-      }
-
-      if (!found)
-      {
-        qDebug() << "not found: " << le1;
-      }
-    }
-  }
+  // if (sl.size() > noServiceEntries)
+  // {
+  //   for (const auto & le1 : sl)
+  //   {
+  //     bool found = false;
+  //     for (const auto & le2 : mServiceList)
+  //     {
+  //       if (le1 == le2.name)
+  //       {
+  //         found = true;
+  //         break;
+  //       }
+  //     }
+  //
+  //     if (!found)
+  //     {
+  //       qDebug() << "not found: " << le1;
+  //     }
+  //   }
+  // }
 
 
   
@@ -1049,14 +1049,14 @@ void RadioInterface::slot_change_in_configuration()
         Audiodata ad;
         FILE * f = mChannel.backgroundServices.at(i).fd;
         mpDabProcessor->dataforAudioService(ss, &ad);
-        mpDabProcessor->set_audioChannel(&ad, &mAudioBufferFromDecoder, f, BACK_GROUND);
+        mpDabProcessor->set_audio_channel(&ad, &mAudioBufferFromDecoder, f, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = ad.subchId;
       }
       else
       {
         Packetdata pd;
         mpDabProcessor->dataforPacketService(ss, &pd, 0);
-        mpDabProcessor->set_dataChannel(&pd, &mDataBuffer, BACK_GROUND);
+        mpDabProcessor->set_data_channel(&pd, &mDataBuffer, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = pd.subchId;
       }
       // TODO: select the background service in service list?
@@ -2361,14 +2361,14 @@ void RadioInterface::startAudioservice(Audiodata * ad)
 {
   mChannel.currentService.valid = true;
 
-  (void)mpDabProcessor->set_audioChannel(ad, &mAudioBufferFromDecoder, nullptr, FORE_GROUND);
+  (void)mpDabProcessor->set_audio_channel(ad, &mAudioBufferFromDecoder, nullptr, FORE_GROUND);
   for (int i = 1; i < 10; i++)
   {
     Packetdata pd;
     mpDabProcessor->dataforPacketService(ad->serviceName, &pd, i);
     if (pd.defined)
     {
-      mpDabProcessor->set_dataChannel(&pd, &mDataBuffer, FORE_GROUND);
+      mpDabProcessor->set_data_channel(&pd, &mDataBuffer, FORE_GROUND);
       fprintf(stdout, "adding %s (%d) as subservice\n", pd.serviceName.toUtf8().data(), pd.subchId);
       break;
     }
@@ -2393,7 +2393,7 @@ void RadioInterface::startPacketservice(const QString & s)
     return;
   }
 
-  if (!mpDabProcessor->set_dataChannel(&pd, &mDataBuffer, FORE_GROUND))
+  if (!mpDabProcessor->set_data_channel(&pd, &mDataBuffer, FORE_GROUND))
   {
     QMessageBox::warning(this, tr("sdr"), tr("could not start this service\n"));
     return;
@@ -3006,7 +3006,7 @@ void RadioInterface::slot_epg_timer_timeout()
         LOG("hidden service started ", serv.name);
         _show_epg_label(true);
         fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
-        mpDabProcessor->set_dataChannel(&pd, &mDataBuffer, BACK_GROUND);
+        mpDabProcessor->set_data_channel(&pd, &mDataBuffer, BACK_GROUND);
         SDabService s;
         s.channel = pd.channel;
         s.serviceName = pd.serviceName;

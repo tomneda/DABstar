@@ -101,8 +101,8 @@ public:
   void reset_Services();
   void stop_service(DescriptorType *, int);
   void stop_service(int, int);
-  bool set_audioChannel(Audiodata *, RingBuffer<int16_t> *, FILE *, int);
-  bool set_dataChannel(Packetdata *, RingBuffer<uint8_t> *, int);
+  bool set_audio_channel(Audiodata *, RingBuffer<int16_t> *, FILE *, int);
+  bool set_data_channel(Packetdata *, RingBuffer<uint8_t> *, int);
   void set_tiiDetectorMode(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);
@@ -111,7 +111,7 @@ private:
   RadioInterface * const mpRadioInterface;
   SampleReader mSampleReader;
   FicHandler mFicHandler;
-  mscHandler mMscHandler;
+  MscHandler mMscHandler;
   PhaseReference mPhaseReference;
   TiiDetector mTiiDetector;
   OfdmDecoder mOfdmDecoder;

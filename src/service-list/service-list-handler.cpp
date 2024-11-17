@@ -102,13 +102,13 @@ void ServiceListHandler::add_entry(const QString & iChannel, const QString & iSe
 {
   if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
   {
-    qDebug() << "ServiceListHandler::add_entry " << iChannel << " " << iService << " added";
+    // qDebug() << "ServiceListHandler::add_entry " << iChannel << " " << iService << " added";
     _fill_table_view_from_db();
     _jump_to_list_entry_and_emit_fav_status();
   }
   else
   {
-    qDebug() << "ServiceListHandler::add_entry " << iChannel << " " << iService << " ignored";;
+    // qDebug() << "ServiceListHandler::add_entry " << iChannel << " " << iService << " ignored";;
   }
 }
 

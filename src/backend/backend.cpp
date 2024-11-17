@@ -40,25 +40,25 @@
 #define CUSize  (4 * 16)
 
 //	fragmentsize == Length * CUSize
-Backend::Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> * audiobuffer, RingBuffer<uint8_t> * databuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag) :
-  deconvolver(d),
-  outV(d->bitRate * 24),
-  driver(mr, d, audiobuffer, databuffer, frameBuffer, dump)
+Backend::Backend(RadioInterface * ipRI, DescriptorType * ipDescType, RingBuffer<int16_t> * ipoAudiobuffer, RingBuffer<uint8_t> * ipoDatabuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag)
+  : deconvolver(ipDescType)
+  , outV(ipDescType->bitRate * 24)
+  , driver(ipRI, ipDescType, ipoAudiobuffer, ipoDatabuffer, frameBuffer, dump)
 #ifdef  __THREADED_BACKEND__
   , freeSlots(NUMBER_SLOTS)
 #endif
 {
   int32_t i, j;
-  this->radioInterface = mr;
-  this->startAddr = d->startAddr;
-  this->Length = d->length;
-  this->fragmentSize = d->length * CUSize;
-  this->bitRate = d->bitRate;
-  this->serviceId = d->SId;
-  this->serviceName = d->serviceName;
-  this->shortForm = d->shortForm;
-  this->protLevel = d->protLevel;
-  this->subChId = d->subchId;
+  this->radioInterface = ipRI;
+  this->startAddr = ipDescType->startAddr;
+  this->Length = ipDescType->length;
+  this->fragmentSize = ipDescType->length * CUSize;
+  this->bitRate = ipDescType->bitRate;
+  this->serviceId = ipDescType->SId;
+  this->serviceName = ipDescType->serviceName;
+  this->shortForm = ipDescType->shortForm;
+  this->protLevel = ipDescType->protLevel;
+  this->subChId = ipDescType->subchId;
   this->borf = flag;
 
   //fprintf(stdout, "starting a backend for %s (%X) %d\n", serviceName.toUtf8().data(), serviceId, startAddr);
@@ -131,7 +131,7 @@ int32_t Backend::process(const int16_t * iV, int16_t cnt)
   return 1;
 }
 
-const int16_t interleaveMap[] = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
+const int16_t interleaveMap[] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
 void Backend::processSegment(const int16_t * iData)
 {
@@ -168,7 +168,6 @@ void Backend::processSegment(const int16_t * iData)
 
 void Backend::run()
 {
-
   while (running.load())
   {
     while (!usedSlots.tryAcquire(1, 200))

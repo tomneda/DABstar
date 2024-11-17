@@ -51,15 +51,16 @@
 class RadioInterface;
 
 #ifdef  __THREADED_BACKEND__
-class	Backend:public QThread
+class Backend : public QThread
 {
 #else
 
 class Backend
 {
 #endif
+
 public:
-  Backend(RadioInterface * mr, DescriptorType * d, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *, int);
+  Backend(RadioInterface * ipRI, DescriptorType * ipDescType, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *, int);
   ~Backend();
 
   int32_t process(const int16_t * iV, int16_t cnt);
@@ -83,7 +84,7 @@ private:
   BackendDriver driver;
 #ifdef  __THREADED_BACKEND__
   void run();
-  atomic<bool> running;
+  std::atomic<bool> running;
   QSemaphore freeSlots;
   QSemaphore usedSlots;
   std::vector<int16_t> theData[NUMBER_SLOTS];
@@ -102,4 +103,3 @@ private:
 };
 
 #endif
-

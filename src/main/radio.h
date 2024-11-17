@@ -278,7 +278,7 @@ private:
   bool mShowOnlyCurrTrans = false;
   size_t mPreviousIdleTime = 0;
   size_t mPreviousTotalTime = 0;
-  std::unique_ptr<ServiceListHandler> mpServiceListHandler;
+  QScopedPointer<ServiceListHandler> mpServiceListHandler;
   bool mCurFavoriteState = false;
   bool mClockActiveStyle = true;
   std::mutex mMutex;

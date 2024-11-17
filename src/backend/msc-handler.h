@@ -41,36 +41,33 @@
 class RadioInterface;
 class Backend;
 
-class mscHandler
+class MscHandler
 {
 public:
-  mscHandler(RadioInterface *, uint8_t, RingBuffer<uint8_t> *);
-  ~mscHandler();
-  void process_mscBlock(const std::vector<int16_t> & fbits, int16_t blkno);
-  bool set_Channel(DescriptorType *, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *, int);
-  //
-  //
-  void reset_Channel();
-  void stop_service(DescriptorType *, int);
-  void stop_service(int, int);
-private:
-  RadioInterface * myRadioInterface;
-  RingBuffer<uint8_t> * dataBuffer;
-  RingBuffer<uint8_t> * frameBuffer;
-  DabParams::SDabPar mDabPar;
+  MscHandler(RadioInterface *, uint8_t, RingBuffer<uint8_t> *);
+  ~MscHandler();
 
-  //FreqInterleaver myMapper;
-  QMutex locker;
-  bool audioService;
-  std::vector<Backend *> theBackends;
-  std::vector<int16_t> cifVector;
-  int16_t cifCount;
-  int16_t blkCount;
-  int16_t BitsperBlock;
-  int16_t numberofblocksperCIF;
-  int16_t blockCount;
+  void process_msc_block(const std::vector<int16_t> & iSoftBits, int16_t iBlockNr);
+  bool set_channel(DescriptorType *, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *, int);
+  void reset_channel();
+  void stop_service(const DescriptorType *, int);
+  void stop_service(int, int);
+
+private:
+  RadioInterface * const mpRadioInterface;
+  const DabParams::SDabPar mDabPar;
+  RingBuffer<uint8_t> * const mpFrameBuffer;
+
+  QMutex mMutex;
+  QVector<QSharedPointer<Backend>> mBackendList;
+  std::vector<int16_t> mCifVector;
+  int16_t mCifCount = 0;
+  int16_t mBlkCount = 0;
+  int16_t mBitsPerBlock= 0;
+  int16_t mNumberOfBlocksPerCif = 0;
+  int16_t mBlockCount = 0;
+
   void processMsc(int32_t n);
-  QMutex helper;
 };
 
 #endif

@@ -94,7 +94,7 @@ void DabProcessor::start()
   mFicHandler.restart();
   if (!mScanMode)
   {
-    mMscHandler.reset_Channel();
+    mMscHandler.reset_channel();
   }
   QThread::start();
 }
@@ -335,7 +335,7 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
 
     if (ofdmSymbCntIdx > 3 && !mScanMode)
     {
-      mMscHandler.process_mscBlock(mBits, ofdmSymbCntIdx);
+      mMscHandler.process_msc_block(mBits, ofdmSymbCntIdx);
     }
   }
 
@@ -522,7 +522,7 @@ int DabProcessor::scanWidth()
 {
   if (!mScanMode)
   {
-    mMscHandler.reset_Channel();
+    mMscHandler.reset_channel();
   }
 }
 
@@ -543,11 +543,11 @@ void DabProcessor::stop_service(int subChId, int flag)
   }
 }
 
-bool DabProcessor::set_audioChannel(Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag)
+bool DabProcessor::set_audio_channel(Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_Channel(d, b, (RingBuffer<uint8_t> *)nullptr, dump, flag);
+    return mMscHandler.set_channel(d, b, (RingBuffer<uint8_t> *)nullptr, dump, flag);
   }
   else
   {
@@ -555,11 +555,11 @@ bool DabProcessor::set_audioChannel(Audiodata * d, RingBuffer<int16_t> * b, FILE
   }
 }
 
-bool DabProcessor::set_dataChannel(Packetdata * d, RingBuffer<uint8_t> * b, int flag)
+bool DabProcessor::set_data_channel(Packetdata * d, RingBuffer<uint8_t> * b, int flag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_Channel(d, (RingBuffer<int16_t> *)nullptr, b, nullptr, flag);
+    return mMscHandler.set_channel(d, (RingBuffer<int16_t> *)nullptr, b, nullptr, flag);
   }
   else
   {

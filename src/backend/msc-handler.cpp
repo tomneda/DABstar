@@ -39,81 +39,88 @@
 //	a service is selected or not. 
 
 constexpr uint32_t CUSize = 4 * 16;
-static const int cifTable[] = { 18, 72, 0, 36 };
+static constexpr int16_t cifTable[] = { 18, 72, 0, 36 };
 
 //	Note CIF counts from 0 .. 3
 //
-mscHandler::mscHandler(RadioInterface * mr, uint8_t dabMode, RingBuffer<uint8_t> * frameBuffer) :
-  mDabPar(DabParams(dabMode).get_dab_par())
+MscHandler::MscHandler(RadioInterface * const iRI, const uint8_t iDabMode, RingBuffer<uint8_t> * const ipFrameBuffer)
+  : mpRadioInterface(iRI)
+  , mDabPar(DabParams(iDabMode).get_dab_par())
+  , mpFrameBuffer(ipFrameBuffer)
 {
-  myRadioInterface = mr;
-  this->frameBuffer = frameBuffer;
-  cifVector.resize(55296);
-  BitsperBlock = 2 * mDabPar.K;
-  numberofblocksperCIF = cifTable[(dabMode - 1) & 03];
+  mCifVector.resize(55296);
+  mBitsPerBlock = 2 * mDabPar.K;
+  assert(iDabMode >= 1 && iDabMode <= 4);
+  mNumberOfBlocksPerCif = cifTable[(iDabMode - 1) & 03];
 }
 
-mscHandler::~mscHandler()
+MscHandler::~MscHandler()
 {
-  locker.lock();
-  for (auto const & b: theBackends)
+  mMutex.lock();
+  for (auto & b: mBackendList)
   {
     b->stopRunning();
-    delete b;
+    b.reset();
   }
-  locker.unlock();
-  theBackends.resize(0);
+  mBackendList.resize(0);
+  mMutex.unlock();
 }
 
-void mscHandler::reset_Channel()
+void MscHandler::reset_channel()
 {
   fprintf(stdout, "channel reset: all services will be stopped\n");
-  locker.lock();
-  for (auto const & b: theBackends)
+  mMutex.lock();
+  for (auto & b: mBackendList)
   {
     b->stopRunning();
-    delete b;
+    b.reset();
   }
-  theBackends.resize(0);
-  locker.unlock();
+  mBackendList.resize(0);
+  mMutex.unlock();
 }
 
-void mscHandler::stop_service(DescriptorType * d, int flag)
+void MscHandler::stop_service(const DescriptorType * const iDescType, const int iFlag)
 {
   fprintf(stderr, "obsolete function stopService\n");
-  locker.lock();
-  for (size_t i = 0; i < theBackends.size(); i++)
+  mMutex.lock();
+
+  for (qsizetype i = 0; i < mBackendList.size(); i++)
   {
-    Backend * b = theBackends.at(i);
-    if ((b->subChId == d->subchId) && (b->borf == flag))
+    if (auto & b = mBackendList[i];
+        b->subChId == iDescType->subchId && b->borf == iFlag)
     {
-      fprintf(stdout, "stopping (sub)service at subchannel %d\n", d->subchId);
+      fprintf(stdout, "stopping (sub)service at subchannel %d\n", iDescType->subchId);
       b->stopRunning();
-      delete b;
-      theBackends.erase(theBackends.begin() + i);
+      b.reset();
+      mBackendList.removeAt(i);
+      --i; // we removed one element
     }
   }
-  locker.unlock();
+
+  mMutex.unlock();
 }
 
-void mscHandler::stop_service(int subchId, int flag)
+void MscHandler::stop_service(const int iSubChId, const int iFlag)
 {
-  locker.lock();
-  for (int32_t i = 0; i < (int32_t)theBackends.size(); i++)
+  mMutex.lock();
+
+  for (qsizetype i = 0; i < mBackendList.size(); i++)
   {
-    Backend * b = theBackends.at(i);
-    if ((b->subChId == subchId) && (b->borf == flag))
+    if (auto & b = mBackendList[i];
+        b->subChId == iSubChId && b->borf == iFlag)
     {
-      fprintf(stdout, "stopping subchannel %d\n", subchId);
+      fprintf(stdout, "stopping subchannel %d\n", iSubChId);
       b->stopRunning();
-      delete b;
-      theBackends.erase(theBackends.begin() + i);
+      b.reset();
+      mBackendList.removeAt(i);
+      --i; // we removed one element
     }
   }
-  locker.unlock();
+
+  mMutex.unlock();
 }
 
-bool mscHandler::set_Channel(DescriptorType * d, RingBuffer<int16_t> * audioBuffer, RingBuffer<uint8_t> * dataBuffer, FILE * dump, int flag)
+bool MscHandler::set_channel(DescriptorType * d, RingBuffer<int16_t> * ipoAudioBuffer, RingBuffer<uint8_t> * ipoDataBuffer, FILE * dump, int flag)
 {
   fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
   //	locker. lock();
@@ -126,8 +133,10 @@ bool mscHandler::set_Channel(DescriptorType * d, RingBuffer<int16_t> * audioBuff
   //	   }
   //	}
   //	locker. unlock ();
-  theBackends.push_back(new Backend(myRadioInterface, d, audioBuffer, dataBuffer, frameBuffer, dump, flag));
-  fprintf(stdout, "we have now %d backends running\n", (int)theBackends.size());
+  const QSharedPointer<Backend> backend(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, dump, flag));
+  mBackendList.append(backend);
+  //mBackendList.append(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, dump, flag));
+  fprintf(stdout, "we have now %d backends running\n", (int)mBackendList.size());
   return true;
 }
 
@@ -139,28 +148,28 @@ bool mscHandler::set_Channel(DescriptorType * d, RingBuffer<int16_t> * audioBuff
 //	gui thread, so some locking is added
 //
 
-void mscHandler::process_mscBlock(const std::vector<int16_t> & fbits, int16_t blkno)
+void MscHandler::process_msc_block(const std::vector<int16_t> & iSoftBits, const int16_t iBlockNr)
 {
-  const int16_t currentblk = (blkno - 4) % numberofblocksperCIF;
+  const int16_t curBlockIdx = (int16_t)((iBlockNr - 4) % mNumberOfBlocksPerCif);
   //	and the normal operation is:
-  memcpy(&cifVector[currentblk * BitsperBlock], fbits.data(), BitsperBlock * sizeof(int16_t));
+  memcpy(&mCifVector[curBlockIdx * mBitsPerBlock], iSoftBits.data(), mBitsPerBlock * sizeof(int16_t));
 
-  if (currentblk < numberofblocksperCIF - 1)
+  if (curBlockIdx < mNumberOfBlocksPerCif - 1)
   {
     return;
   }
 
   // OK, now we have a full CIF and it seems there is some work to be done.
   // We assume that the backend itself does the work in a separate thread.
-  locker.lock();
-  for (const auto & b: theBackends)
+  mMutex.lock();
+  for (const auto & b: mBackendList)
   {
     const int16_t startAddr = b->startAddr;
-    const int16_t Length = b->Length;
-    if (Length > 0)
-    {    // Length = 0? should not happen
-      b->process(&cifVector[startAddr * CUSize], Length * CUSize);
+    const int16_t length = b->Length;
+    if (length > 0) // Length = 0? should not happen
+    {
+      b->process(&mCifVector[startAddr * CUSize], length * CUSize);
     }
   }
-  locker.unlock();
+  mMutex.unlock();
 }
