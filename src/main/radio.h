@@ -297,7 +297,7 @@ private:
   void disconnect_gui();
   static QString convertTime(int, int, int, int, int, int = -1);
   QString get_copyright_text() const;
-  void cleanScreen();
+  void clean_screen();
   void _show_hide_buttons(const bool iShow);
 
   void start_etiHandler();
@@ -307,21 +307,21 @@ private:
   void startAudioservice(Audiodata *);
   void startPacketservice(const QString &);
   void startScanning();
-  void stopScanning(bool);
+  void stop_scanning();
   void start_audio_dumping();
   void stop_audio_dumping();
 
-  void startSourcedumping();
-  void stopSourcedumping();
-  void startFramedumping();
-  void stopFramedumping();
-  void startChannel(const QString &);
-  void stopChannel();
+  void start_source_dumping();
+  void stop_source_dumping();
+  void start_frame_dumping();
+  void stop_frame_dumping();
+  void start_channel(const QString &);
+  void stop_channel();
   void clean_up();
-  void stopService(SDabService &);
-  void startService(SDabService &);
+  void stop_service(SDabService &);
+  void start_service(SDabService &);
   //void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
-  void localSelect(const QString &, const QString &);
+  void local_select(const QString &, const QString &);
   //void showServices();
 
   bool do_start();
@@ -352,6 +352,7 @@ private:
   void _update_channel_selector();
   void _set_device_to_file_mode(const bool iDataFromFile);
   void _setup_audio_output(uint32_t iSampleRate);
+  void _trigger_preset_timer();
 
 signals:
   void signal_set_new_channel(int);

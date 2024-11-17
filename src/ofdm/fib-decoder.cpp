@@ -1726,12 +1726,11 @@ std::vector<SServiceId> FibDecoder::insert_sorted(const std::vector<SServiceId> 
 
 QString FibDecoder::findService(uint32_t SId, int SCIds)
 {
-  QString result;
-  for (int i = 0; i < 64; i++)
+  for (auto & service : ensemble->services)
   {
-    if (ensemble->services[i].inUse && (ensemble->services[i].SId == SId) && (ensemble->services[i].SCIds == SCIds))
+    if (service.inUse && (service.SId == SId) && (service.SCIds == SCIds))
     {
-      return ensemble->services[i].serviceLabel;
+      return service.serviceLabel;
     }
   }
   return "";
