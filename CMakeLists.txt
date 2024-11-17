@@ -100,17 +100,6 @@ print(CMAKE_MODULE_PATH)
 
 ######################################################################
 ######################################################################
-# select only one of these audio outputs
-# set() overwrites the CMake cache entries
-if (WIN32)
-    set(USE_PORTAUDIO OFF)
-    set(QT_AUDIO ON)
-else ()
-    set(USE_PORTAUDIO OFF)
-    set(QT_AUDIO ON)
-endif ()
-
-set(TCP_STREAMER OFF)
 
 # select one or more devices (set to ON)
 # attention: option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this
@@ -165,6 +154,7 @@ find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Network REQUIRED)
 find_package(Qt6Xml REQUIRED)
 find_package(Qt6Sql REQUIRED)
+find_package(Qt6Multimedia REQUIRED)
 
 # this should be in FFT sub project but it is important that the compiler switches are already set here
 if(USE_FFT STREQUAL FFTW3)
@@ -353,6 +343,8 @@ set(${objectName}_HDRS
         src/service-list/service-list-handler.h
         src/service-list/service-db.h
         src/configuration/configuration.h
+        src/output/Qt-audio.h
+        src/output/Qt-audiodevice.h
 )
 
 set(${objectName}_SRCS
@@ -444,6 +436,8 @@ set(${objectName}_SRCS
         src/service-list/service-list-handler.cpp
         src/service-list/service-db.cpp
         src/configuration/configuration.cpp
+        src/output/Qt-audio.cpp
+        src/output/Qt-audiodevice.cpp
 )
 
 #########################################################################
@@ -530,58 +524,10 @@ if (DATA_STREAMER)
     add_definitions(-DDATA_STREAMER)
 endif (DATA_STREAMER)
 
-if (TCP_STREAMER)
-    add_definitions(-DTCP_STREAMER)
-    find_package(Qt6Network REQUIRED)
-    set(${objectName}_HDRS
-            ${${objectName}_HDRS}
-            src/output/tcp-streamer.h
-    )
-
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/output/tcp-streamer.cpp
-    )
-endif (TCP_STREAMER)
-
-if (QT_AUDIO)
-    add_definitions(-DQT_AUDIO)
-    find_package(Qt6Multimedia REQUIRED)
-    include_directories(
-            ${Qt6Multimedia_INCLUDE_DIRS}
-    )
-    list(APPEND extraLibs Qt6::Multimedia)
-    set(${objectName}_HDRS
-            ${${objectName}_HDRS}
-            src/output/Qt-audio.h
-            src/output/Qt-audiodevice.h
-    )
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/output/Qt-audio.cpp
-            src/output/Qt-audiodevice.cpp
-    )
-endif (QT_AUDIO)
-
-if (USE_PORTAUDIO)
-    find_package(Portaudio)
-    if (NOT PORTAUDIO_FOUND)
-        message(FATAL_ERROR "Please install portaudio V19")
-    endif ()
-    list(APPEND extraLibs ${PORTAUDIO_LIBRARIES})
-    set(${objectName}_HDRS
-            ${${objectName}_HDRS}
-            src/output/audiosink.h
-    )
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/output/audiosink.cpp
-    )
-endif (USE_PORTAUDIO)
-
 include_directories(
         #${SDRPLAY_INCLUDES}
         ${QT6Widgets_INCLUDES}
+        ${Qt6Multimedia_INCLUDE_DIRS}
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
         ${PORTAUDIO_INCLUDE_DIRS}
@@ -605,6 +551,7 @@ target_link_libraries(${objectName}
         Qt6::Network
         Qt6::Xml
         Qt6::Sql
+        Qt6::Multimedia
         ${RTLTCP_lib}
         ${extraLibs}
         ${FAAD_LIBRARIES}

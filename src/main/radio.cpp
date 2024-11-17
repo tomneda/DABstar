@@ -54,6 +54,10 @@
 #include <QMouseEvent>
 #include <QDir>
 #include <QSpacerItem>
+#include "Qt-audio.h"
+#include "audiooutputqt.h"
+#include "time-table.h"
+#include "device-exceptions.h"
 
 #if defined(__MINGW32__) || defined(_WIN32)
   #include <windows.h>
@@ -61,17 +65,6 @@
   #include <unistd.h>
 #endif
 
-#ifdef  TCP_STREAMER
-  #include "tcp-streamer.h"
-#elif  QT_AUDIO
-  #include "Qt-audio.h"
-#else
-  #include "audiosink.h"
-#endif
-
-#include "audiooutputqt.h"
-#include  "time-table.h"
-#include  "device-exceptions.h"
 
 #if defined(__MINGW32__) || defined(_WIN32)
 
@@ -98,6 +91,7 @@ bool get_cpu_times (size_t &idle_time, size_t &total_time)
   total_time	= (size_t)(thisKernel + thisUser);
   return true;
 }
+
 #else
 
 std::vector<size_t> get_cpu_times()
@@ -125,7 +119,6 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 
 #endif
 
-//static int32_t sFreqOffHz = 0; // for test
 
 RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
   : QWidget(parent)
@@ -239,12 +232,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #endif
 
   // Where do we leave the audio out?
-  //mConfig.streamoutSelector->hide();
-#ifdef TCP_STREAMER
-  soundOut = new tcpStreamer(20040);
-  theTechWindow->hide();
-#else
-  //mpSoundOut.reset(new Qt_Audio);
   mpAudioOutput = new AudioOutputQt(this);
   connect(mpAudioOutput, &AudioOutput::signal_audio_devices_list, this, &RadioInterface::_slot_load_audio_device_list);
   connect(this, &RadioInterface::signal_start_audio, mpAudioOutput, &AudioOutput::slot_start, Qt::QueuedConnection);
@@ -263,49 +250,20 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   _slot_load_audio_device_list(mpAudioOutput->get_audio_device_list());
   mConfig.streamoutSelector->show();
 
-  //   ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
-  //   mConfig.streamoutSelector->show();
-  //   bool err = false;
   h = mpSH->read(SettingHelper::soundChannel).toString();
   k = mConfig.streamoutSelector->findText(h);
   bool run = false;
   if (k != -1)
   {
     mConfig.streamoutSelector->setCurrentIndex(k);
-    //run = mpSoundOut->selectDevice(k);
-    //emit signal_set_audio_device(settings->value("audioDevice", "").toByteArray());
     emit signal_set_audio_device(mConfig.streamoutSelector->itemData(k).toByteArray());
   }
 
   if (k == -1 || !run)
   {
+    // TODO: sound startup the first time failed
     //mpSoundOut->selectDevice(0); // selects default device
   }
-
-// #elif QT_AUDIO
-//   mpSoundOut = new Qt_Audio();
-//   // theTechWindow->hide();
-// #else
-//   //	just sound out
-//   const int16_t latency = mpSH->read(SettingHelper::latency).toInt();
-//   mpSoundOut = new AudioSink(latency);
-//   ((AudioSink *)mpSoundOut)->setupChannels(mConfig.streamoutSelector);
-//   mConfig.streamoutSelector->show();
-//   bool err = false;
-//   h = mpSH->read(SettingHelper::soundChannel).toString();
-//
-//   k = mConfig.streamoutSelector->findText(h);
-//   if (k != -1)
-//   {
-//     mConfig.streamoutSelector->setCurrentIndex(k);
-//     err = !((AudioSink *)mpSoundOut)->selectDevice(k);
-//   }
-//
-//   if ((k == -1) || err)
-//   {
-//     ((AudioSink *)mpSoundOut)->selectDefaultDevice();
-//   }
-#endif
 
   mPicturesPath = mpSH->read(SettingHelper::picturesPath).toString();
   mPicturesPath = check_and_create_dir(mPicturesPath);
@@ -530,6 +488,10 @@ bool RadioInterface::do_start()
     mpInputDevice->show();
   }
 
+  mpDabProcessor->set_tiiDetectorMode(mpSH->read(SettingHelper::cbUseNewTiiDetector).toBool());
+  mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
+  mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
+
   if (mChannel.nextService.valid)
   {
     const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
@@ -538,15 +500,12 @@ bool RadioInterface::do_start()
     mPresetTimer.start(switchDelay * 1000);
   }
 
-  mpDabProcessor->set_tiiDetectorMode(mpSH->read(SettingHelper::cbUseNewTiiDetector).toBool());
-  mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
-  mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
-
   emit signal_dab_processor_started();
 
   //	after the preset timer signals, the service will be started
   startChannel(channelSelector->currentText());
   mIsRunning.store(true);
+
   return true;
 }
 
@@ -575,7 +534,6 @@ void RadioInterface::slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
   if (mpInputDevice != nullptr && mChannel.nominalFreqHz > 0)
   {
     mpInputDevice->setVFOFrequency(mChannel.nominalFreqHz + iFreqCorrRF);
-    //sFreqOffHz = channel.nominalFreqHz;
   }
 
   mSpectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
@@ -1327,37 +1285,6 @@ void RadioInterface::_slot_update_time_display()
   {
     return;
   }
-#if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
-  if (mpSoundOut->hasMissed())
-  {
-    int xxx = ((AudioSink *)mpSoundOut)->missed();
-    if (!mpTechDataWidget->isHidden())
-    {
-      mpTechDataWidget->showMissed(xxx);
-    }
-  }
-#endif
-  if (mDoReportError && (mNumberOfSeconds % 10) == 0)
-  {
-    //	   int	totalFrames;
-    //	   int	goodFrames;
-    //	   int	badFrames;
-    //	   my_dabProcessor	-> get_frameQuality (&totalFrames,
-    //	                                             &goodFrames,
-    //	                                             &badFrames);
-    //	   fprintf (stdout, "total %d, good %d bad %d ficRatio %f\n",
-    //	                     totalFrames, goodFrames, badFrames,
-    //	                                            total_ficError * 100.0 / total_fics);
-#ifndef TCP_STREAMER
-#ifndef  QT_AUDIO
-    if (mConfig.streamoutSelector->isVisible())
-    {
-      int xxx = ((AudioSink *)mpSoundOut)->missed();
-      fprintf(stderr, "missed %d\n", xxx);
-    }
-#endif
-#endif
-  }
 }
 
 // _slot_new_device is called from the UI when selecting a device with the selector
@@ -1849,12 +1776,6 @@ void RadioInterface::slot_set_stream_selector(int k)
 
   mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
   emit signal_set_audio_device(mConfig.streamoutSelector->itemData(k).toByteArray());
-#if !defined(TCP_STREAMER) && !defined(QT_AUDIO)
-  ((AudioSink *)(mpSoundOut))->selectDevice(k);
-  mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
-#else
-  (void)k;
-#endif
 }
 
 void RadioInterface::_slot_handle_tech_detail_button()
@@ -3590,18 +3511,6 @@ void RadioInterface::slot_handle_eti_active_selector(int /*k*/)
 void RadioInterface::slot_test_slider(int iVal) // iVal 0..1000
 {
   emit signal_test_slider_changed(iVal);
-  // //sFreqOffHz = 2 * (iVal - 500);
-  // const int32_t newFreqOffHz = (iVal - 500);
-  // if (mpDabProcessor)
-  // {
-  //   mpDabProcessor->add_bb_freq(newFreqOffHz);
-  // }
-  // //inputDevice->setVFOFrequency(sFreqOffHz + newFreqOffHz);
-  // //  sFreqOffHz = inputDevice->getVFOFrequency();
-  //
-  // QString s("Freq-Offs [Hz]: ");
-  // s += QString::number(newFreqOffHz);
-  // mConfig.sliderTest->setToolTip(s);
 }
 
 QStringList RadioInterface::get_soft_bit_gen_names()
