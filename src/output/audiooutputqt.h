@@ -88,7 +88,7 @@ private:
   SAudioFifo * mpRestartFifo = nullptr;
   float mLinearVolume = 1.0f;
 
-  void _do_stop();
+  void _do_stop() const;
   void _do_restart(SAudioFifo * buffer);
 
 public slots:
@@ -124,8 +124,6 @@ private:
   EPlaybackState mPlaybackState = EPlaybackState::Muted;
   //uint8_t mBytesPerFrame = 0;
   uint32_t mSampleRateKHz = 0;
-  //uint8_t mNumChannels = 0;
-  //float mMuteFactor = 0;
   bool mDoStop = false;
 
   std::atomic<bool> mMuteFlag = false;

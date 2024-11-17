@@ -39,7 +39,8 @@
 
 #include "radio.h"
 
-Q_LOGGING_CATEGORY(sLCAudioOutput, "AudioOutput", QtInfoMsg)
+// Q_LOGGING_CATEGORY(sLCAudioOutput, "AudioOutput", QtInfoMsg)
+Q_LOGGING_CATEGORY(sLCAudioOutput, "AudioOutput", QtWarningMsg)
 
 AudioOutputQt::AudioOutputQt(RadioInterface * const ipRI, QObject * parent)
   : AudioOutput(parent)
@@ -78,12 +79,7 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
     mpAudioSink = nullptr;
   }
 
-  // create audio sink
   mpAudioSink = new QAudioSink(mCurrentAudioDevice, format, this);
-
-  // set buffer size to 2* AUDIO_FIFO_CHUNK_MS ms
-  // this is causing problem on Windows
-  //m_audioSink->setBufferSize(2 * AUDIO_FIFO_CHUNK_MS * sRate/1000 * numCh * sizeof(int16_t));
 
   connect(mpAudioSink, &QAudioSink::stateChanged, this, &AudioOutputQt::_slot_state_changed);
 
@@ -175,7 +171,7 @@ void AudioOutputQt::slot_stop()
   }
 }
 
-void AudioOutputQt::_do_stop()
+void AudioOutputQt::_do_stop() const
 {
   mpAudioSink->stop();
   mpIoDevice->close();
@@ -191,7 +187,7 @@ void AudioOutputQt::_do_restart(SAudioFifo * buffer)
 
 void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
 {
-  qDebug() << Q_FUNC_INFO << iNewState;
+  // qDebug() << Q_FUNC_INFO << iNewState;
   switch (iNewState)
   {
   case QAudio::ActiveState:
@@ -215,18 +211,18 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
     }
     else
     {
-      // if (m_audioSink->error() == QAudio::Error::NoError)
+      if (mpAudioSink->error() == QAudio::Error::NoError)
       {
-        qCWarning(sLCAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart, error code:" << mpAudioSink->error();
-        //qCWarning(audioOutput) << "Audio going to Idle state unexpectedly, trying to restart...";
+        //qCWarning(sLCAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart, error code:" << mpAudioSink->error();
+        qCWarning(sLCAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart...";
         _do_restart(mpCurrentFifo);
       }
-      // else
-      // {   // some error -> doing stop
-      //   qCWarning(audioOutput) << "Audio going to Idle state unexpectedly, error code:" << m_audioSink->error();
-      //   doStop();
-      //   emit signal_audio_output_error();
-      // }
+      else // some error -> doing stop
+      {
+        qCWarning(sLCAudioOutput) << "Audio going to Idle state unexpectedly, error code:" << mpAudioSink->error();
+        _do_stop();
+        emit signal_audio_output_error();
+      }
     }
     break;
   case QAudio::StoppedState:
@@ -252,15 +248,6 @@ void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
 
   mSampleRateKHz = iBuffer->sampleRate / 1000;
   mPeakLevelSampleCntBothChannels = iBuffer->sampleRate / (20 * 2 /*channels*/); // 20 "peaks" per second
-  // mNumChannels = iBuffer->numChannels;
-  // mBytesPerFrame = mNumChannels * sizeof(int16_t);
-  // mBytesPerFrame = 2 /*channels*/ * sizeof(int16_t);
-
-  // mute ramp is exponential
-  // value are precalculated to save MIPS in runtime
-  // unmute ramp is then calculated as 2.0 - m_muteFactor in runtime
-  // m_muteFactor is calculated for change from 0dB to AUDIOOUTPUT_FADE_MIN_DB in AUDIOOUTPUT_FADE_TIME_MS
-  // mMuteFactor = powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz));
 }
 
 void AudioIODevice::start()
