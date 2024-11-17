@@ -250,9 +250,6 @@ private:
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
 #endif
-#ifdef  CLOCK_STREAMER
-  tcpServer * clockStreamer = nullptr;
-#endif
   CEPGDecoder mEpgHandler;
   EpgDecoder mEpgProcessor;
   QString mEpgPath;

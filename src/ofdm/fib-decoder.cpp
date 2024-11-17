@@ -1983,9 +1983,6 @@ void FibDecoder::FIG0Extension10(const uint8_t * dd)
     dateTime[i] = theTime[i];
   }
 
-#ifdef  CLOCK_STREAMER
-  change = true;
-#endif
   if (change)
   {
     int utc_day = dateTime[2];

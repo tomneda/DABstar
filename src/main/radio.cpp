@@ -227,9 +227,6 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 #ifdef DATA_STREAMER
   dataStreamer = new tcpServer(dataPort);
 #endif
-#ifdef CLOCK_STREAMER
-  clockStreamer = new tcpServer(clockPort);
-#endif
 
   // Where do we leave the audio out?
   mpAudioOutput = new AudioOutputQt(this);
@@ -1197,10 +1194,6 @@ void RadioInterface::_slot_terminate_process()
   fprintf (stdout, "going to close the dataStreamer\n");
   delete		dataStreamer;
 #endif
-#ifdef  CLOCK_STREAMER
-  fprintf (stdout, "going to close the clockstreamer\n");
-  delete	clockStreamer;
-#endif
   if (mpHttpHandler != nullptr)
   {
     mpHttpHandler->stop();
@@ -1352,23 +1345,6 @@ void RadioInterface::slot_clock_time(int year, int month, int day, int hours, in
   mLocalTime.minute = minutes;
   mLocalTime.second = utc_sec;
 
-#ifdef CLOCK_STREAMER
-  uint8_t localBuffer[10];
-  localBuffer[0] = 0xFF;
-  localBuffer[1] = 0x00;
-  localBuffer[2] = 0xFF;
-  localBuffer[3] = 0x00;
-  localBuffer[4] = (year & 0xFF00) >> 8;
-  localBuffer[5] = year & 0xFF;
-  localBuffer[6] = month;
-  localBuffer[7] = day;
-  localBuffer[8] = minutes;
-  localBuffer[9] = seconds;
-  if (running.load())
-  {
-    clockStreamer->sendData(localBuffer, 10);
-  }
-#endif
   mUTC.year = year;
   mUTC.month = month;
   mUTC.day = utc_day;
