@@ -54,16 +54,16 @@ public:
   void saveSettings();
   void setupChannels(QComboBox * s, uint8_t band);
   void setup_skipList(const QString &);
-  int32_t get_frequency_Hz(const QString & Channel);
-  int firstChannel();
-  int nextChannel(int);
-  int prevChannel(int);
+  int32_t get_frequency_Hz(const QString & Channel) const;
+  int firstChannel() const;
+  int nextChannel(int) const;
+  // int prevChannel(int);
   void show();
   void hide();
-  bool isHidden();
+  bool isHidden() const;
 
 public slots:
-  void slot_cell_selected(int, int);
+  void slot_cell_selected(int, int) const;
 
 private:
   QSettings * dabSettings;
@@ -71,10 +71,10 @@ private:
   SDabFrequencies * selectedBand;
   QTableWidget theTable;
 
-  int lastOf(SDabFrequencies *);
-  void default_skipList();
-  void file_skipList(const QString &);
-  void updateEntry(const QString &);
+  // int lastOf(SDabFrequencies *) const;
+  void default_skipList() const;
+  void file_skipList(const QString &) const;
+  void updateEntry(const QString &) const;
 };
 
 #endif

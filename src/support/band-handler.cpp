@@ -44,44 +44,44 @@ struct SDabFrequencies
 
 static SDabFrequencies frequencies_1[] =
 {
-  {"05A",	174928, false},
-  {"05B",	176640, false},
-  {"05C",	178352, false},
-  {"05D",	180064, false},
-  {"06A",	181936, false},
-  {"06B",	183648, false},
-  {"06C",	185360, false},
-  {"06D",	187072, false},
-  {"07A",	188928, false},
-  {"07B",	190640, false},
-  {"07C",	192352, false},
-  {"07D",	194064, false},
-  {"08A",	195936, false},
-  {"08B",	197648, false},
-  {"08C",	199360, false},
-  {"08D",	201072, false},
-  {"09A",	202928, false},
-  {"09B",	204640, false},
-  {"09C",	206352, false},
-  {"09D",	208064, false},
-  {"10A",	209936, false},
+  {"05A", 174928, false},
+  {"05B", 176640, false},
+  {"05C", 178352, false},
+  {"05D", 180064, false},
+  {"06A", 181936, false},
+  {"06B", 183648, false},
+  {"06C", 185360, false},
+  {"06D", 187072, false},
+  {"07A", 188928, false},
+  {"07B", 190640, false},
+  {"07C", 192352, false},
+  {"07D", 194064, false},
+  {"08A", 195936, false},
+  {"08B", 197648, false},
+  {"08C", 199360, false},
+  {"08D", 201072, false},
+  {"09A", 202928, false},
+  {"09B", 204640, false},
+  {"09C", 206352, false},
+  {"09D", 208064, false},
+  {"10A", 209936, false},
   {"10B", 211648, false},
   {"10C", 213360, false},
   {"10D", 215072, false},
   {"11A", 216928, false},
-  {"11B",	218640, false},
-  {"11C",	220352, false},
-  {"11D",	222064, false},
-  {"12A",	223936, false},
-  {"12B",	225648, false},
-  {"12C",	227360, false},
-  {"12D",	229072, false},
-  {"13A",	230784, false},
-  {"13B",	232496, false},
-  {"13C",	234208, false},
-  {"13D",	235776, false},
-  {"13E",	237488, false},
-  {"13F",	239200, false},
+  {"11B", 218640, false},
+  {"11C", 220352, false},
+  {"11D", 222064, false},
+  {"12A", 223936, false},
+  {"12B", 225648, false},
+  {"12C", 227360, false},
+  {"12D", 229072, false},
+  {"13A", 230784, false},
+  {"13B", 232496, false},
+  {"13C", 234208, false},
+  {"13D", 235776, false},
+  {"13E", 237488, false},
+  {"13F", 239200, false},
   {nullptr, 0, false}
 };
 
@@ -109,8 +109,8 @@ static SDabFrequencies frequencies_2[] =
 
 static SDabFrequencies alternatives[100];
 
-BandHandler::BandHandler(const QString & a_band, QSettings * s) :
-  theTable(nullptr)
+BandHandler::BandHandler(const QString & a_band, QSettings * s)
+  : theTable(nullptr)
 {
   selectedBand = nullptr;
   dabSettings = s;
@@ -303,7 +303,7 @@ void BandHandler::setup_skipList(const QString & fileName)
 
 //
 //	default setting in the ini file!!
-void BandHandler::default_skipList()
+void BandHandler::default_skipList() const
 {
   dabSettings->beginGroup("skipTable");
   for (int i = 0; selectedBand[i].fKHz != 0; i++)
@@ -314,12 +314,11 @@ void BandHandler::default_skipList()
       selectedBand[i].skip = true;
       theTable.item(i, 1)->setText("-");
     }
-
   }
   dabSettings->endGroup();
 }
 
-void BandHandler::file_skipList(const QString & fileName)
+void BandHandler::file_skipList(const QString & fileName) const
 {
   QDomDocument xml_bestand;
 
@@ -345,7 +344,7 @@ void BandHandler::file_skipList(const QString & fileName)
   }
 }
 
-void BandHandler::updateEntry(const QString & channel)
+void BandHandler::updateEntry(const QString & channel) const
 {
   for (int i = 0; selectedBand[i].key != nullptr; i++)
   {
@@ -359,7 +358,7 @@ void BandHandler::updateEntry(const QString & channel)
 }
 
 //	find the frequency for a given channel in a given band
-int32_t BandHandler::get_frequency_Hz(const QString & Channel)
+int32_t BandHandler::get_frequency_Hz(const QString & Channel) const
 {
   int32_t tunedFrequency = 0;
   int i;
@@ -381,7 +380,7 @@ int32_t BandHandler::get_frequency_Hz(const QString & Channel)
   return tunedFrequency;
 }
 
-int BandHandler::firstChannel()
+int BandHandler::firstChannel() const
 {
   int index = 0;
   while (selectedBand[index].skip)
@@ -395,7 +394,7 @@ int BandHandler::firstChannel()
   return index;
 }
 
-int BandHandler::nextChannel(int index)
+int BandHandler::nextChannel(int index) const
 {
   int hulp = index;
   do
@@ -410,34 +409,32 @@ int BandHandler::nextChannel(int index)
   return hulp;
 }
 
-int BandHandler::lastOf(SDabFrequencies * b)
-{
-  int index;
-  for (index = 0; selectedBand[index].fKHz != 0; index++)
-  {
-  }
-  return index - 1;
-}
+// int BandHandler::lastOf(SDabFrequencies * b) const
+// {
+//   int index;
+//   for (index = 0; selectedBand[index].fKHz != 0; index++) {}
+//   return index - 1;
+// }
 
-int BandHandler::prevChannel(int index)
-{
-  int hulp = index;
-  do
-  {
-    if (hulp == 0)
-    {
-      hulp = lastOf(selectedBand);
-    }
-    else
-    {
-      hulp--;
-    }
-  }
-  while (selectedBand[hulp].skip && (hulp != index));
-  return hulp;
-}
+// int BandHandler::prevChannel(int index)
+// {
+//   int hulp = index;
+//   do
+//   {
+//     if (hulp == 0)
+//     {
+//       hulp = lastOf(selectedBand);
+//     }
+//     else
+//     {
+//       hulp--;
+//     }
+//   }
+//   while (selectedBand[hulp].skip && (hulp != index));
+//   return hulp;
+// }
 
-void BandHandler::slot_cell_selected(int row, int column)
+void BandHandler::slot_cell_selected(int row, int column) const
 {
   QString s1 = theTable.item(row, 0)->text();
   QString s2 = theTable.item(row, 1)->text();
@@ -466,8 +463,7 @@ void BandHandler::hide()
   theTable.hide();
 }
 
-bool BandHandler::isHidden()
+bool BandHandler::isHidden() const
 {
   return theTable.isHidden();
 }
-
