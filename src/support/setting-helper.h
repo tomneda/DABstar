@@ -48,7 +48,6 @@ public:
     tiiDelay, // 3
     tiiDepth, // 4
     echoDepth, // 5
-    latency, // 6
     soundChannel, // 7
     picturesPath, // 8
     filePath, // 9

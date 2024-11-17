@@ -41,7 +41,6 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(tiiDelay, { "", "tii_delay", 5 });
   mMap.insert(tiiDepth, { "", "tii_depth", 4 });
   mMap.insert(echoDepth, { "", "echo_depth", 1  });
-  mMap.insert(latency, { "", "latency", 5 });
   mMap.insert(soundChannel, { "", "soundChannelQt", "default" });
   mMap.insert(picturesPath, { "", "picturesPath", tempPicPath });
   mMap.insert(filePath, { "", "filePath", tempMotPath });
