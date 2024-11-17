@@ -161,11 +161,7 @@ UhdHandler::UhdHandler(QSettings * s) :
   connect(externalGain, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_external_gain);
   connect(KhzOffset, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_khz_offset);
   connect(f_correction, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_f_correction);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   connect(cmbAnt, &QComboBox::textActivated, this, &UhdHandler::_slot_handle_ant_selector);
-#else
-  connect(cmbAnt, qOverload<const QString &>(&QComboBox::activated), this, &UhdHandler::_slot_handle_ant_selector);
-#endif
 }
 
 UhdHandler::~UhdHandler()

@@ -51,11 +51,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
 
   QPalette lcdPalette;
 #ifndef __MAC__
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   lcdPalette.setColor(QPalette::Window, Qt::white);
-#else
-  lcdPalette. setColor (QPalette::Background, Qt::white);
-#endif
   lcdPalette.setColor(QPalette::Base, Qt::black);
 #endif
 

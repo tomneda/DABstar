@@ -136,11 +136,7 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVers
   connect(dumpButton, &QPushButton::clicked, this, &SdrPlayHandler_v3::set_xmlDump);
   connect(biasT_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler_v3::set_biasT);
   connect(notch_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler_v3::set_notch);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   connect(antennaSelector, &QComboBox::textActivated, this, &SdrPlayHandler_v3::set_selectAntenna);
-#else
-  connect(antennaSelector, qOverload<const QString &>(&QComboBox::activated), this, &SdrPlayHandler_v3::set_selectAntenna);
-#endif
 
   vfoFrequency = MHz (220);
   failFlag.store(false);

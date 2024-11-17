@@ -382,11 +382,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   mConfig.show(); // show configuration windows that the user selects a (valid) device
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   connect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
-#else
-  connect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
-#endif
 
   qApp->installEventFilter(this);
 }
@@ -476,21 +472,24 @@ bool RadioInterface::do_start()
 {
   _update_channel_selector();
 
+  // here the DAB processor is created (again)
   mpDabProcessor.reset(new DabProcessor(this, mpInputDevice.get(), &mProcessParams));
+
   mChannel.clean_channel();
 
   //	Some hidden buttons can be made visible now
   connect_gui();
   connect_dab_processor();
 
+  mpDabProcessor->set_tiiDetectorMode(mpSH->read(SettingHelper::cbUseNewTiiDetector).toBool());
+  mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
+  mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
+
+  // should the device widget be shown?
   if (mpSH->read(SettingHelper::showDeviceWidget).toBool())
   {
     mpInputDevice->show();
   }
-
-  mpDabProcessor->set_tiiDetectorMode(mpSH->read(SettingHelper::cbUseNewTiiDetector).toBool());
-  mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
-  mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
 
   if (mChannel.nextService.valid)
   {
@@ -2046,11 +2045,7 @@ void RadioInterface::connect_dab_processor()
   //	we avoided till now connecting the channel selector
   //	to the slot since that function does a lot more, things we
   //	do not want here
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
-#else
-  connect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
-#endif
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_show_nominal_carrier);
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_select_carrier_plot_type);
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, mpDabProcessor.get(), &DabProcessor::slot_select_iq_plot_type);
@@ -2060,15 +2055,9 @@ void RadioInterface::connect_dab_processor()
   //	It would have been helpful to have a function
   //	testing whether or not a connection exists, we need a kind
   //	of "reset"
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   disconnect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
   disconnect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
   connect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
-#else
-  disconnect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
-  disconnect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
-  connect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
-#endif
 }
   //	When changing (or setting) a device, we do not want anybody
 //	to have the buttons on the GUI touched, so
@@ -2201,15 +2190,13 @@ void RadioInterface::slot_handle_content_selector(const QString & s)
 
 void RadioInterface::localSelect(const QString & s)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   QStringList list = s.split(":", Qt::SkipEmptyParts);
-#else
-  QStringList list = s.split(":", QString::SkipEmptyParts);
-#endif
+
   if (list.length() != 2)
   {
     return;
   }
+
   localSelect(list.at(0), list.at(1));
 }
 
@@ -3018,23 +3005,17 @@ void RadioInterface::_update_channel_selector(int index)
   {
     return;
   }
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-    disconnect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
-#else
-    disconnect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
-#endif
+
+  disconnect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
   channelSelector->blockSignals(true);
-  emit signal_set_new_channel(index);
+emit signal_set_new_channel(index);
+
   while (channelSelector->currentIndex() != index)
   {
     usleep(2000);
   }
   channelSelector->blockSignals(false);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
-#else
-  connect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
-#endif
 }
 
 
@@ -3376,18 +3357,6 @@ void RadioInterface::_slot_handle_http_button()
     _set_http_server_button(false);
   }
 }
-
-//void RadioInterface::slot_http_terminate()
-//{
-//  locker.lock();
-//  if (mapHandler != nullptr)
-//  {
-//    delete mapHandler;
-//    mapHandler = nullptr;
-//  }
-//  locker.unlock();
-//  btnHttpServer->setText("http");
-//}
 
 void RadioInterface::slot_handle_transmitter_tags(int /*d*/)
 {
