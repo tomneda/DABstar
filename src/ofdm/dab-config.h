@@ -66,7 +66,7 @@ public:
   int programType;
   bool is_shown;
   int32_t fmFrequency;
-  std::vector<EpgElement> epgData;
+  std::vector<SEpgElement> epgData;
 };
 
 class EnsembleDescriptor

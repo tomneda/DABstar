@@ -93,22 +93,21 @@ struct SpecViewLimits
   SMaxMin Loc  {-31, -50};
 };
 
-struct EpgElement
+struct SEpgElement
 {
   int theTime;
   QString theText;
   QString theDescr;
 };
 
-class serviceId
+struct SServiceId
 {
-public:
   QString name;
   uint32_t SId;
-  uint16_t subChId;
-  bool isAudio;
-  int16_t programType;
-  QString channel;        // just for presets
+  //uint16_t subChId;
+  //bool isAudio;
+  //int16_t programType;
+  //QString channel;        // just for presets
 };
 
 // 40 up shows good results

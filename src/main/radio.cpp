@@ -411,7 +411,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   // if a device was selected, we just start, otherwise we wait until one is selected
   if (mpInputDevice != nullptr)
   {
-    if (doStart())
+    if (do_start())
     {
       qApp->installEventFilter(this);
       return;
@@ -504,59 +504,32 @@ void RadioInterface::_slot_do_start(const QString & dev)
 
   if (mpInputDevice == nullptr)
   {
-    disconnectGUI();
+    disconnect_gui();
     return;
   }
 
   _set_device_to_file_mode(!mChannel.realChannel);
 
-  doStart();
+  do_start();
 }
 
-//
 //	when doStart is called, a device is available and selected
-bool RadioInterface::doStart()
+bool RadioInterface::do_start()
 {
   _update_channel_selector();
 
-  mpDabProcessor = new DabProcessor(this, mpInputDevice.get(), &mProcessParams);
+  mpDabProcessor.reset(new DabProcessor(this, mpInputDevice.get(), &mProcessParams));
   mChannel.clean_channel();
 
   //	Some hidden buttons can be made visible now
-  connectGUI();
+  connect_gui();
+  connect_dab_processor();
 
   if (mpSH->read(SettingHelper::showDeviceWidget).toBool())
   {
     mpInputDevice->show();
   }
 
-  //	we avoided till now connecting the channel selector
-  //	to the slot since that function does a lot more, things we
-  //	do not want here
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-  connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
-#else
-  connect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
-#endif
-  connect(&mSpectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, mpDabProcessor, &DabProcessor::slot_show_nominal_carrier);
-  connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, mpDabProcessor, &DabProcessor::slot_select_carrier_plot_type);
-  connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, mpDabProcessor, &DabProcessor::slot_select_iq_plot_type);
-  connect(mConfig.cmbSoftBitGen, qOverload<int>(&QComboBox::currentIndexChanged), mpDabProcessor, [this](int idx){ mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);});
-
-  //	Just to be sure we disconnect here.
-  //	It would have been helpful to have a function
-  //	testing whether or not a connection exists, we need a kind
-  //	of "reset"
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-  disconnect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
-  disconnect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
-  connect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
-#else
-  disconnect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
-  disconnect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
-  connect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
-#endif
-  //
   if (mChannel.nextService.valid)
   {
     const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
@@ -623,34 +596,65 @@ void RadioInterface::_slot_channel_timeout()
 ///////////////////////////////////////////////////////////////////////////
 //
 //	a slot, called by the fic/fib handlers
-void RadioInterface::slot_add_to_ensemble(const QString & serviceName, int32_t SId)
+void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const int32_t iSId)
 {
   if (!mIsRunning.load())
   {
     return;
   }
 
-  if (mpDabProcessor->getSubChId(serviceName, SId) < 0)
+  const int32_t subChId = mpDabProcessor->getSubChId(iServiceName, iSId);
+
+  if (subChId < 0)
   {
     return;
   }
 
-  serviceId ed;
-  ed.name = serviceName;
-  ed.SId = SId;
+  SServiceId ed;
+  ed.name = iServiceName;
+  ed.SId = iSId;
+  // ed.subChId = subChId;
 
-  if (std::any_of(mServiceList.cbegin(), mServiceList.cend(), [& ed](const serviceId & sid) { return sid.name == ed.name; } ))
+  if (std::any_of(mServiceList.cbegin(), mServiceList.cend(), [& ed](const SServiceId & sid) { return sid.name == ed.name; } ))
   {
     return; // service already in service list
   }
 
-  ed.subChId = mpDabProcessor->getSubChId(serviceName, SId);
-
   mServiceList = insert_sorted(mServiceList, ed);
   //serviceList.push_back(ed);
   
-  mpServiceListHandler->add_entry(mChannel.channelName, ed.name);
+  mpServiceListHandler->add_entry(mChannel.channelName, ed.name/* + ":" + QString::number(iSId, 16)*/);
 
+  const QStringList sl = mpServiceListHandler->get_list_of_services_in_channel(mChannel.channelName);
+  const int32_t noServiceEntries = mServiceList.size();
+
+  qDebug() << noServiceEntries << sl.size();
+
+  // Check if in the database are more Service entries than currently added.
+  // If yes, found them and delete them.
+  if (sl.size() > noServiceEntries)
+  {
+    for (const auto & le1 : sl)
+    {
+      bool found = false;
+      for (const auto & le2 : mServiceList)
+      {
+        if (le1 == le2.name)
+        {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found)
+      {
+        qDebug() << "not found: " << le1;
+      }
+    }
+  }
+
+
+  
 //  model.clear();
 //  for (const auto & serv: serviceList)
 //  {
@@ -1008,7 +1012,7 @@ void RadioInterface::slot_change_in_configuration()
   {
     return;
   }
-  DabService s;
+  SDabService s;
   if (mChannel.currentService.valid)
   {
     s = mChannel.currentService;
@@ -1286,7 +1290,7 @@ void RadioInterface::_slot_terminate_process()
   mpSH->sync_and_unregister_ui_elements();
   mSpectrumViewer.hide();
 
-  delete mpDabProcessor;
+  mpDabProcessor.reset();
   // delete mpSoundOut;
   delete mpTimeTable;
   mpInputDevice = nullptr;
@@ -1301,9 +1305,9 @@ void RadioInterface::_slot_update_time_display()
     return;
   }
 
-  mNumberofSeconds++;
+  mNumberOfSeconds++;
 
-  if ((mNumberofSeconds % 2) == 0)
+  if ((mNumberOfSeconds % 2) == 0)
   {
     size_t idle_time, total_time;
     if (get_cpu_times(idle_time, total_time))
@@ -1333,7 +1337,7 @@ void RadioInterface::_slot_update_time_display()
     }
   }
 #endif
-  if (mDoReportError && (mNumberofSeconds % 10) == 0)
+  if (mDoReportError && (mNumberOfSeconds % 10) == 0)
   {
     //	   int	totalFrames;
     //	   int	goodFrames;
@@ -1363,7 +1367,7 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
   mIsRunning.store(false);
   stopScanning(false);
   stopChannel();
-  disconnectGUI();
+  disconnect_gui();
   if (mpInputDevice != nullptr)
   {
     fprintf(stderr, "device is deleted\n");
@@ -1380,7 +1384,7 @@ void RadioInterface::_slot_new_device(const QString & deviceName)
 
   _set_device_to_file_mode(!mChannel.realChannel);
 
-  doStart();    // will set running
+  do_start();    // will set running
 }
 
 void RadioInterface::_slot_handle_device_widget_button()
@@ -1621,7 +1625,7 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
     return;
   }
 
-  ChannelDescriptor::STiiId id(mainId, subId);
+  SChannelDescriptor::UTiiId id(mainId, subId);
   mChannel.transmitters.insert(id.FullId);
 
   if (!mIsRunning.load())
@@ -1642,7 +1646,7 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
   uint16_t cnt = 0;
   for (const auto & tr : mChannel.transmitters)
   {
-    ChannelDescriptor::STiiId id(tr);
+    SChannelDescriptor::UTiiId id(tr);
     a = a + " " + tiiNumber(id.MainId) + "-" + tiiNumber(id.SubId);
     if (++cnt >= 4) break; // forbid doing a too long GUI output, due to noise reception
   }
@@ -2116,11 +2120,40 @@ void RadioInterface::_slot_handle_spectrum_button()
   mpSH->write(SettingHelper::spectrumVisible, !mSpectrumViewer.is_hidden());
 }
 
-//	When changing (or setting) a device, we do not want anybody
+void RadioInterface::connect_dab_processor()
+{
+  //	we avoided till now connecting the channel selector
+  //	to the slot since that function does a lot more, things we
+  //	do not want here
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
+  connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+#else
+  connect(channelSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_handle_channel_selector);
+#endif
+  connect(&mSpectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_show_nominal_carrier);
+  connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_select_carrier_plot_type);
+  connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, mpDabProcessor.get(), &DabProcessor::slot_select_iq_plot_type);
+  connect(mConfig.cmbSoftBitGen, qOverload<int>(&QComboBox::currentIndexChanged), mpDabProcessor.get(), [this](int idx) { mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx); });
+
+  //	Just to be sure we disconnect here.
+  //	It would have been helpful to have a function
+  //	testing whether or not a connection exists, we need a kind
+  //	of "reset"
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
+  disconnect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_do_start);
+  disconnect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
+  connect(mConfig.deviceSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_new_device);
+#else
+  disconnect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_do_start);
+  disconnect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
+  connect(mConfig.deviceSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::_slot_new_device);
+#endif
+}
+  //	When changing (or setting) a device, we do not want anybody
 //	to have the buttons on the GUI touched, so
 //	we just disconnect them and (re)connect them as soon as
 //	a device is operational
-void RadioInterface::connectGUI()
+void RadioInterface::connect_gui()
 {
   connect(mConfig.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
   connect(btnTechDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tech_detail_button);
@@ -2143,7 +2176,7 @@ void RadioInterface::connectGUI()
   connect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
 }
 
-void RadioInterface::disconnectGUI()
+void RadioInterface::disconnect_gui()
 {
   disconnect(mConfig.contentButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_content_button);
   disconnect(btnTechDetails, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tech_detail_button);
@@ -2279,7 +2312,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
   if (theChannel == mChannel.channelName)
   {
     mChannel.currentService.valid = false;
-    DabService s;
+    SDabService s;
     mpDabProcessor->getParameters(serviceName, &s.SId, &s.SCIds);
     if (s.SId == 0)
     {
@@ -2322,7 +2355,7 @@ void RadioInterface::localSelect(const QString & theChannel, const QString & ser
 //
 ///////////////////////////////////////////////////////////////////////////
 
-void RadioInterface::stopService(DabService & s)
+void RadioInterface::stopService(SDabService & s)
 {
   mPresetTimer.stop();
   mChannelTimer.stop();
@@ -2399,7 +2432,7 @@ void RadioInterface::stopService(DabService & s)
   cleanScreen();
 }
 
-void RadioInterface::startService(DabService & s)
+void RadioInterface::startService(SDabService & s)
 {
   QString serviceName = s.serviceName;
 
@@ -2666,7 +2699,7 @@ void RadioInterface::_slot_set_preset_service()
     presetName.push_back(' ');
   }
 
-  DabService s;
+  SDabService s;
   s.serviceName = presetName;
   mpDabProcessor->getParameters(presetName, &s.SId, &s.SCIds);
   if (s.SId == 0)
@@ -2749,7 +2782,7 @@ void RadioInterface::stopChannel()
 
   for (uint16_t i = 0; i < mChannel.backgroundServices.size(); i++)
   {
-    DabService s = mChannel.backgroundServices.at(i);
+    SDabService s = mChannel.backgroundServices.at(i);
     mpDabProcessor->stop_service(s.subChId, BACK_GROUND);
     if (s.fd != nullptr)
     {
@@ -2864,7 +2897,7 @@ void RadioInterface::startScanning()
   mPresetTimer.stop();
   mChannelTimer.stop();
   mEpgTimer.stop();
-  connect(mpDabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
+  connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   stopChannel();
   const int cc = mBandHandler.firstChannel();
 
@@ -2907,7 +2940,7 @@ void RadioInterface::startScanning()
 //	4. on handling a reset
 void RadioInterface::stopScanning(bool dump)
 {
-  disconnect(mpDabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
+  disconnect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   (void)dump;
   if (mIsScanning.load())
   {
@@ -2931,7 +2964,7 @@ void RadioInterface::stopScanning(bool dump)
 void RadioInterface::slot_no_signal_found()
 {
 
-  disconnect(mpDabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
+  disconnect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   mChannelTimer.stop();
   disconnect(&mChannelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
@@ -2958,7 +2991,7 @@ void RadioInterface::slot_no_signal_found()
       //	To avoid reaction of the system on setting a different value:
       _update_channel_selector(cc);
 
-      connect(mpDabProcessor, &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
+      connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
       connect(&mChannelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
       lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
@@ -3006,9 +3039,9 @@ void RadioInterface::slot_no_signal_found()
 
 /////////////////////////////////////////////////////////////////////
 //
-std::vector<serviceId> RadioInterface::insert_sorted(const std::vector<serviceId> & iList, const serviceId & iEntry)
+std::vector<SServiceId> RadioInterface::insert_sorted(const std::vector<SServiceId> & iList, const SServiceId & iEntry)
 {
-  std::vector<serviceId> oList;
+  std::vector<SServiceId> oList;
 
   if (iList.empty())
   {
@@ -3132,7 +3165,7 @@ void RadioInterface::slot_epg_timer_timeout()
         _show_epg_label(true);
         fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
         mpDabProcessor->set_dataChannel(&pd, &mDataBuffer, BACK_GROUND);
-        DabService s;
+        SDabService s;
         s.channel = pd.channel;
         s.serviceName = pd.serviceName;
         s.SId = pd.SId;
@@ -3181,7 +3214,7 @@ void RadioInterface::slot_epg_timer_timeout()
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 
-uint32_t RadioInterface::extract_epg(const QString& iName, const std::vector<serviceId> & iServiceList, uint32_t ensembleId)
+uint32_t RadioInterface::extract_epg(const QString& iName, const std::vector<SServiceId> & iServiceList, uint32_t ensembleId)
 {
   (void)ensembleId;
   for (const auto & serv: iServiceList)
@@ -3216,7 +3249,7 @@ void RadioInterface::_slot_handle_time_table()
   {
     epgWidth = 50;
   }
-  std::vector<EpgElement> res = mpDabProcessor->find_epgData(mChannel.currentService.SId);
+  std::vector<SEpgElement> res = mpDabProcessor->find_epgData(mChannel.currentService.SId);
   for (const auto & element: res)
   {
     mpTimeTable->addElement(element.theTime, epgWidth, element.theText, element.theDescr);

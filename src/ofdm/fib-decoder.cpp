@@ -1334,8 +1334,7 @@ int FibDecoder::findService(const QString & s)
 
 int FibDecoder::findService(uint32_t SId)
 {
-  int i;
-  for (i = 0; i < 64; i++)
+  for (int i = 0; i < 64; i++)
   {
     if (!ensemble->services[i].inUse)
     {
@@ -1680,15 +1679,15 @@ void FibDecoder::dataforPacketService(const QString & s, Packetdata * pd, int16_
   fibLocker.unlock();
 }
 
-std::vector<serviceId> FibDecoder::getServices()
+std::vector<SServiceId> FibDecoder::getServices()
 {
-  std::vector<serviceId> services;
+  std::vector<SServiceId> services;
 
   for (int i = 0; i < 64; i++)
   {
     if (ensemble->services[i].inUse && ensemble->services[i].hasName)
     {
-      serviceId ed;
+      SServiceId ed;
       ed.name = ensemble->services[i].serviceLabel;
       ed.SId = ensemble->services[i].SId;
 
@@ -1698,9 +1697,9 @@ std::vector<serviceId> FibDecoder::getServices()
   return services;
 }
 
-std::vector<serviceId> FibDecoder::insert_sorted(const std::vector<serviceId> & l, serviceId n)
+std::vector<SServiceId> FibDecoder::insert_sorted(const std::vector<SServiceId> & l, SServiceId n)
 {
-  std::vector<serviceId> k;
+  std::vector<SServiceId> k;
   if (l.size() == 0)
   {
     k.push_back(n);
@@ -2016,7 +2015,7 @@ void FibDecoder::set_epgData(uint32_t SId, int32_t theTime, const QString & theT
           return;
         }
       }
-      EpgElement ep;
+      SEpgElement ep;
       ep.theTime = theTime;
       ep.theText = theText;
       ep.theDescr = theDescr;
@@ -2026,9 +2025,9 @@ void FibDecoder::set_epgData(uint32_t SId, int32_t theTime, const QString & theT
   }
 }
 
-std::vector<EpgElement> FibDecoder::get_timeTable(uint32_t SId)
+std::vector<SEpgElement> FibDecoder::get_timeTable(uint32_t SId)
 {
-  std::vector<EpgElement> res;
+  std::vector<SEpgElement> res;
   int index = findService(SId);
   if (index == -1)
   {
@@ -2037,9 +2036,9 @@ std::vector<EpgElement> FibDecoder::get_timeTable(uint32_t SId)
   return ensemble->services[index].epgData;
 }
 
-std::vector<EpgElement> FibDecoder::get_timeTable(const QString & service)
+std::vector<SEpgElement> FibDecoder::get_timeTable(const QString & service)
 {
-  std::vector<EpgElement> res;
+  std::vector<SEpgElement> res;
   int index = findService(service);
   if (index == -1)
   {
@@ -2051,7 +2050,7 @@ std::vector<EpgElement> FibDecoder::get_timeTable(const QString & service)
 bool FibDecoder::has_timeTable(uint32_t SId)
 {
   int index = findService(SId);
-  std::vector<EpgElement> t;
+  std::vector<SEpgElement> t;
   if (index == -1)
   {
     return false;
@@ -2060,10 +2059,10 @@ bool FibDecoder::has_timeTable(uint32_t SId)
   return t.size() > 2;
 }
 
-std::vector<EpgElement> FibDecoder::find_epgData(uint32_t SId)
+std::vector<SEpgElement> FibDecoder::find_epgData(uint32_t SId)
 {
   int index = findService(SId);
-  std::vector<EpgElement> res;
+  std::vector<SEpgElement> res;
 
   if (index == -1)
   {

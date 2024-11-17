@@ -437,7 +437,7 @@ void DabProcessor::getParameters(const QString & s, uint32_t * p_SId, int * p_SC
   mFicHandler.getParameters(s, p_SId, p_SCIds);
 }
 
-std::vector<serviceId> DabProcessor::getServices()
+std::vector<SServiceId> DabProcessor::getServices()
 {
   return mFicHandler.getServices();
 }
@@ -501,7 +501,7 @@ bool DabProcessor::has_timeTable(uint32_t SId)
   return mFicHandler.has_timeTable(SId);
 }
 
-std::vector<EpgElement> DabProcessor::find_epgData(uint32_t SId)
+std::vector<SEpgElement> DabProcessor::find_epgData(uint32_t SId)
 {
   return mFicHandler.find_epgData(SId);
 }

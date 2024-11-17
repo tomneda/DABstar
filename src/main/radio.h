@@ -82,7 +82,7 @@ class	dabStreamer;
 
 class TechData;
 
-struct DabService
+struct SDabService
 {
   QString channel;
   QString serviceName;
@@ -95,7 +95,7 @@ struct DabService
   FILE * frameDumper = nullptr;
 };
 
-struct TheTime
+struct STheTime
 {
   int year;
   int month;
@@ -105,7 +105,7 @@ struct TheTime
   int second;
 };
 
-struct ChannelDescriptor
+struct SChannelDescriptor
 {
   QString channelName;
   bool realChannel;
@@ -115,9 +115,9 @@ struct ChannelDescriptor
   QString ensembleName;
   uint8_t mainId;
   uint8_t subId;
-  std::vector<DabService> backgroundServices;
-  DabService currentService;
-  DabService nextService;
+  std::vector<SDabService> backgroundServices;
+  SDabService currentService;
+  SDabService nextService;
   uint32_t Eid;
   bool has_ecc;
   uint8_t ecc_byte;
@@ -130,10 +130,10 @@ struct ChannelDescriptor
   int snr;
   std::set<uint16_t> transmitters;
 
-  union STiiId
+  union UTiiId
   {
-    STiiId(int mainId, int subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
-    explicit STiiId(int fullId) : FullId(fullId) {};
+    UTiiId(int mainId, int subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
+    explicit UTiiId(int fullId) : FullId(fullId) {};
 
     uint16_t FullId;
     struct
@@ -223,7 +223,7 @@ private:
   int32_t mFmFrequency = 0;
   ContentTable * mpContentTable = nullptr;
   FILE * mpLogFile = nullptr;
-  ChannelDescriptor mChannel;
+  SChannelDescriptor mChannel;
   int32_t mMaxDistance = -1;
   bool mDoReportError = false;
   TechData * mpTechDataWidget = nullptr;
@@ -236,12 +236,12 @@ private:
 #ifdef  HAVE_PLUTO_RXTX
   dabStreamer * streamerOut = nullptr;
 #endif
-  DabProcessor * mpDabProcessor = nullptr;
+  QScopedPointer<DabProcessor> mpDabProcessor;
   AudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
   QThread * mAudioOutputThread = nullptr;
   SAudioFifo mAudioFifo;
   SAudioFifo * mpCurAudioFifo = nullptr;
-  enum class EPlaybackState { Stopped = 0, WaitForInit, Running };
+  enum class EPlaybackState { Stopped, WaitForInit, Running };
   EPlaybackState mPlaybackState = EPlaybackState::Stopped;
   float mAudioBufferFillFiltered = 0.0f;
   float mPeakLeftDamped = -100.0f;
@@ -264,18 +264,18 @@ private:
   enum class EAudioDumpState { Stopped, WaitForInit, Running };
   EAudioDumpState mAudioDumpState = EAudioDumpState::Stopped;
   QString mAudioWavDumpFileName;
-  std::vector<serviceId> mServiceList;
+  std::vector<SServiceId> mServiceList;
 
   QTimer mDisplayTimer;
   QTimer mChannelTimer;
   QTimer mPresetTimer;
   QTimer mClockResetTimer;
   bool mMutingActive = true;
-  int32_t mNumberofSeconds = 0;
+  int32_t mNumberOfSeconds = 0;
   int16_t mFicBlocks = 0;
   int16_t mFicSuccess = 0;
-  TheTime mLocalTime;
-  TheTime mUTC;
+  STheTime mLocalTime;
+  STheTime mUTC;
   timeTableHandler * mpTimeTable = nullptr;
   FILE * mpFicDumpPointer = nullptr;
   bool mShowOnlyCurrTrans = false;
@@ -288,12 +288,13 @@ private:
   bool mProgBarAudioBufferFullColorSet = false;
 
   static QStringList get_soft_bit_gen_names();
-  std::vector<serviceId> insert_sorted(const std::vector<serviceId> &, const serviceId &);
+  std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> &, const SServiceId &);
   void LOG(const QString &, const QString &);
-  uint32_t extract_epg(const QString&, const std::vector<serviceId> & iServiceList, uint32_t);
+  uint32_t extract_epg(const QString&, const std::vector<SServiceId> & iServiceList, uint32_t);
   void show_pause_slide();
-  void connectGUI();
-  void disconnectGUI();
+  void connect_dab_processor();
+  void connect_gui();
+  void disconnect_gui();
   static QString convertTime(int, int, int, int, int, int = -1);
   QString get_copyright_text() const;
   void cleanScreen();
@@ -317,14 +318,14 @@ private:
   void startChannel(const QString &);
   void stopChannel();
   void clean_up();
-  void stopService(DabService &);
-  void startService(DabService &);
+  void stopService(SDabService &);
+  void startService(SDabService &);
   //void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
   void localSelect(const QString & s);
   void localSelect(const QString &, const QString &);
   //void showServices();
 
-  bool doStart();
+  bool do_start();
   void save_MOTObject(QByteArray &, QString);
 
   void save_MOTtext(QByteArray &, int, QString);

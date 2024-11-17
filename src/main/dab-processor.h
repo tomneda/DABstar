@@ -78,7 +78,7 @@ public:
   //	for the FicHandler:
   QString findService(uint32_t, int);
   void getParameters(const QString &, uint32_t *, int *);
-  std::vector<serviceId> getServices();
+  std::vector<SServiceId> getServices();
   bool is_audioService(const QString & s);
   bool is_packetService(const QString & s);
   void dataforAudioService(const QString &, Audiodata *);
@@ -90,7 +90,7 @@ public:
   uint16_t get_countryName();
   void set_epgData(int32_t, int32_t, const QString &, const QString &);
   bool has_timeTable(uint32_t);
-  std::vector<EpgElement> find_epgData(uint32_t);
+  std::vector<SEpgElement> find_epgData(uint32_t);
   uint32_t julianDate();
   QStringList basicPrint();
   int scanWidth();

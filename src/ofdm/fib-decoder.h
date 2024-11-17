@@ -59,7 +59,7 @@ public:
   void dataforAudioService(const QString &, Audiodata *);
   void dataforPacketService(const QString &, Packetdata *, int16_t);
   int getSubChId(const QString &, uint32_t);
-  std::vector<serviceId> getServices();
+  std::vector<SServiceId> getServices();
 
   QString findService(uint32_t, int);
   void getParameters(const QString &, uint32_t *, int *);
@@ -73,10 +73,10 @@ public:
   void get_CIFcount(int16_t *, int16_t *);
   uint32_t julianDate();
   void set_epgData(uint32_t, int32_t, const QString &, const QString &);
-  std::vector<EpgElement> get_timeTable(uint32_t);
-  std::vector<EpgElement> get_timeTable(const QString &);
+  std::vector<SEpgElement> get_timeTable(uint32_t);
+  std::vector<SEpgElement> get_timeTable(const QString &);
   bool has_timeTable(uint32_t SId);
-  std::vector<EpgElement> find_epgData(uint32_t);
+  std::vector<SEpgElement> find_epgData(uint32_t);
   QStringList basicPrint();
   int scanWidth();
 
@@ -84,7 +84,7 @@ protected:
   void process_FIB(const uint8_t *, uint16_t);
 
 private:
-  std::vector<serviceId> insert_sorted(const std::vector<serviceId> & l, serviceId n);
+  std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & l, SServiceId n);
   RadioInterface * myRadioInterface = nullptr;
   DabConfig * currentConfig = nullptr;
   DabConfig * nextConfig = nullptr;
