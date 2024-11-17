@@ -34,8 +34,8 @@ protected:
   bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 private:
-  const QPixmap mStarEmptyPixmap{":res/icons/starempty16.png"}; // draw a star icon for favorites
-  const QPixmap mStarFilledPixmap{":res/icons/starfilled16.png"}; // draw a star icon for favorites
+  const QPixmap mStarEmptyPixmap{":res/icons/starempty16.png"};   // draw a empty star icon for favorites
+  const QPixmap mStarFilledPixmap{":res/icons/starfilled16.png"}; // draw a filled star icon for favorites
   QString mCurChannel;
   QString mCurService;
 
@@ -61,6 +61,7 @@ public:
   void set_favorite_state(const bool iIsFavorite);
   void restore_favorites();
   void jump_entries(int32_t iSteps); // typ -1/+1, with wrap around
+  QStringList get_list_of_services_in_channel(const QString & iChannel);
 
 private:
   QTableView * const mpTableView;

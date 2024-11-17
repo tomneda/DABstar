@@ -102,8 +102,13 @@ void ServiceListHandler::add_entry(const QString & iChannel, const QString & iSe
 {
   if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
   {
+    qDebug() << "ServiceListHandler::add_entry " << iChannel << " " << iService << " added";
     _fill_table_view_from_db();
     _jump_to_list_entry_and_emit_fav_status();
+  }
+  else
+  {
+    qDebug() << "ServiceListHandler::add_entry " << iChannel << " " << iService << " ignored";;
   }
 }
 
@@ -173,6 +178,34 @@ void ServiceListHandler::_fill_table_view_from_db()
 void ServiceListHandler::jump_entries(int32_t iSteps)
 {
   _jump_to_list_entry_and_emit_fav_status(iSteps, true);
+}
+
+QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & iChannel)
+{
+  QStringList sl;
+
+  if (iChannel.isEmpty())
+  {
+    return sl;
+  }
+
+  //qDebug() << "ServiceListHandler: Channel: " << mChannelLast;
+
+  const QAbstractItemModel * const pModel = mpTableView->model();
+  assert(pModel != nullptr);
+
+  for (int32_t rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
+  {
+    QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
+    QModelIndex modIdxService = pModel->index(rowIdx, ServiceDB::CI_Service);
+
+    if (pModel->data(modIdxChannel).toString() == mChannelLast)
+    {
+      sl << pModel->data(modIdxService).toString();
+    }
+  }
+
+  return sl;
 }
 
 void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t iSkipOffset /*= 0*/, const bool iCenterContent /*= false*/)
