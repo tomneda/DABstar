@@ -321,7 +321,6 @@ private:
   void stopService(SDabService &);
   void startService(SDabService &);
   //void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
-  void localSelect(const QString & s);
   void localSelect(const QString &, const QString &);
   //void showServices();
 

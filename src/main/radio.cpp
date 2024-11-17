@@ -672,7 +672,7 @@ void RadioInterface::slot_name_of_ensemble(int id, const QString & v)
 
 void RadioInterface::_slot_handle_content_button()
 {
-  QStringList s = mpDabProcessor->basicPrint();
+  const QStringList s = mpDabProcessor->basicPrint();
 
   if (mpContentTable != nullptr)
   {
@@ -702,9 +702,10 @@ void RadioInterface::_slot_handle_content_button()
 
   mpContentTable->addLine(header);
   //	my_contentTable		-> addLine ("\n");
-  for (int i = 0; i < s.size(); i++)
+
+  for (const auto & sl : s)
   {
-    mpContentTable->addLine(s.at(i));
+    mpContentTable->addLine(sl);
   }
   mpContentTable->show();
 }
@@ -2180,24 +2181,7 @@ void RadioInterface::_slot_favorite_changed(const bool iIsFav)
 //	selecting from a content description
 void RadioInterface::slot_handle_content_selector(const QString & s)
 {
-  localSelect(s);
-}
-
-//
-//	From a predefined schedule list, the service names most
-//	likely are less than 16 characters
-//
-
-void RadioInterface::localSelect(const QString & s)
-{
-  QStringList list = s.split(":", Qt::SkipEmptyParts);
-
-  if (list.length() != 2)
-  {
-    return;
-  }
-
-  localSelect(list.at(0), list.at(1));
+  localSelect(mChannel.channelName, s);
 }
 
 void RadioInterface::localSelect(const QString & theChannel, const QString & service)
