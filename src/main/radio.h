@@ -364,7 +364,7 @@ signals:
   void signal_audio_buffer_filled_state(int);
 
 public slots:
-  void slot_add_to_ensemble(const QString &, int);
+  void slot_add_to_ensemble(const QString &, uint32_t);
   void slot_name_of_ensemble(int, const QString &);
   void slot_show_frame_errors(int);
   void slot_show_rs_errors(int);

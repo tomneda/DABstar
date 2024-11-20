@@ -555,12 +555,14 @@ void RadioInterface::_slot_channel_timeout()
 ///////////////////////////////////////////////////////////////////////////
 //
 //	a slot, called by the fic/fib handlers
-void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const int32_t iSId)
+void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const uint32_t iSId)
 {
   if (!mIsRunning.load())
   {
     return;
   }
+
+  qDebug() << QDateTime::currentDateTime().time() << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
 
   const int32_t subChId = mpDabProcessor->getSubChId(iServiceName, iSId);
 
@@ -581,8 +583,11 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const in
 
   mServiceList = insert_sorted(mServiceList, ed);
   //serviceList.push_back(ed);
-  
-  mpServiceListHandler->add_entry(mChannel.channelName, ed.name/* + ":" + QString::number(iSId, 16)*/);
+
+  if (mpDabProcessor->is_audioService(iServiceName))
+  {
+    mpServiceListHandler->add_entry(mChannel.channelName, ed.name/* + ":" + QString::number(iSId, 16)*/);
+  }
 
   // const QStringList sl = mpServiceListHandler->get_list_of_services_in_channel(mChannel.channelName);
   // const int32_t noServiceEntries = mServiceList.size();

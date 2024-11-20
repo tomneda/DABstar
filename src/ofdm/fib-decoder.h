@@ -129,7 +129,7 @@ private:
   void FIG1Extension6(const uint8_t *);
 
   int findService(const QString &);
-  int findService(uint32_t);
+  int find_service_index_from_SId(uint32_t);
   void cleanupServiceList();
   void createService(QString name, uint32_t SId, int SCIds);
   int findServiceComponent(DabConfig *, int16_t);
@@ -166,7 +166,7 @@ private:
   QString packetData(int index);
 
 signals:
-  void signal_add_to_ensemble(const QString &, int);
+  void signal_add_to_ensemble(const QString &, uint32_t);
   void signal_name_of_ensemble(int, const QString &);
   void signal_clock_time(int, int, int, int, int, int, int, int, int);
   void signal_change_in_configuration();

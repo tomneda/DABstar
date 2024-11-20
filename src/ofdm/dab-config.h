@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2018, 2019, 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -38,10 +47,7 @@ public:
     reset();
   }
 
-  ~Service()
-  {
-    reset();
-  }
+  ~Service() = default;
 
   void reset()
   {
@@ -77,8 +83,7 @@ public:
     reset();
   }
 
-  ~EnsembleDescriptor()
-  {}
+  ~EnsembleDescriptor() = default;
 
   void reset()
   {
@@ -86,9 +91,9 @@ public:
     ecc_Present = false;
     countryId = 0;
     isSynced = false;
-    for (int i = 0; i < 64; i++)
+    for (auto & service : services)
     {
-      services[i].reset();
+      service.reset();
     }
   }
 
@@ -110,8 +115,7 @@ public:
     reset();
   }
 
-  ~SubChannelDescriptor()
-  {}
+  ~SubChannelDescriptor() = default;
 
   void reset()
   {
@@ -144,35 +148,34 @@ public:
     reset();
   }
 
-  ~ServiceComponentDescriptor()
-  {}
+  ~ServiceComponentDescriptor() = default;
 
   void reset()
   {
     inUse = false;
-    is_madePublic = false;
+    isMadePublic = false;
     SCIds = -1;
     componentNr = -1;
     SCId = -1;
-    subchannelId = -1;
+    subChannelId = -1;
   }
 
-  bool inUse;    // field in use
-  int8_t TMid;    // the transport mode
+  bool inUse;            // field in use
+  int8_t TMid;           // the transport mode
   uint32_t SId;
-  int16_t SCIds;    // component within service
-  int16_t subchannelId;  // used in both audio and packet
-  int16_t componentNr;    // component
-  int16_t ASCTy;          // used for audio
-  int16_t DSCTy;    // used in packet
-  int16_t PS_flag;  // use for both audio and packet
-  uint16_t SCId;           // Component Id (12 bit, unique)
-  uint8_t CAflag;         // used in packet (or not at all)
-  uint8_t DGflag;         // used for TDC
-  int16_t packetAddress;  // used in packet
-  int16_t appType;        // used in packet and Xpad
+  int16_t SCIds;         // component within service
+  int16_t subChannelId;  // used in both audio and packet
+  int16_t componentNr;   // component
+  int16_t ASCTy;         // used for audio
+  int16_t DSCTy;         // used in packet
+  int16_t PsFlag;        // use for both audio and packet
+  uint16_t SCId;         // Component Id (12 bit, unique)
+  uint8_t CaFlag;        // used in packet (or not at all)
+  uint8_t DgFlag;        // used for TDC
+  int16_t packetAddress; // used in packet
+  int16_t appType;       // used in packet and Xpad
   int16_t language;
-  bool is_madePublic;  // used to make service visible
+  bool isMadePublic;     // used to make service visible
 };
 
 //
@@ -213,17 +216,18 @@ public:
     reset();
   }
 
-  ~DabConfig()
-  {
-  }
+  ~DabConfig() = default;
 
   void reset()
   {
-    int i;
-    for (i = 0; i < 64; i++)
+    for (auto & subChannel : subChannels)
     {
-      subChannels[i].reset();
-      serviceComps[i].reset();
+      subChannel.reset();
+    }
+
+    for (auto & serviceComp : serviceComps)
+    {
+      serviceComp.reset();
     }
   }
 
