@@ -98,17 +98,50 @@ ServiceListHandler::ServiceListHandler(QSettings * const iopSettings, const QStr
   connect(&mCustomItemDelegate, &CustomItemDelegate::signal_selection_changed_with_fav, this, &ServiceListHandler::_slot_selection_changed_with_fav);
 }
 
-void ServiceListHandler::add_entry(const QString & iChannel, const QString & iService)
+// void ServiceListHandler::add_entry(const QString & iChannel, const QString & iService)
+// {
+//   if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
+//   {
+//     _fill_table_view_from_db();
+//     _jump_to_list_entry_and_emit_fav_status();
+//   }
+// }
+
+void ServiceListHandler::replace_services_at_channel(const QString & iChannel, const QStringList & iServiceList)
 {
-  if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
+  bool contentChanged = false;
+
+  // first delete entries from database which are not more in iServiceList
+  const QStringList curServiceList = get_list_of_services_in_channel(iChannel);
+
+  for (const auto & curService : curServiceList)
   {
-    // qDebug() << "ServiceListHandler::add_entry " << iChannel << " " << iService << " added";
+    bool found = false;
+    for (const auto & newService : iServiceList)
+    {
+      if (curService == newService)
+      {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+    {
+      contentChanged |= mServiceDB.delete_entry(iChannel, curService); // true if entry was deleted (must always be true here)
+    }
+  }
+
+  // now add new entries
+  for (const QString & service : iServiceList)
+  {
+    contentChanged |= mServiceDB.add_entry(iChannel, service); // true if new entry was added
+  }
+
+  if (contentChanged) // true if new entry was added
+  {
     _fill_table_view_from_db();
     _jump_to_list_entry_and_emit_fav_status();
-  }
-  else
-  {
-    // qDebug() << "ServiceListHandler::add_entry " << iChannel << " " << iService << " ignored";;
   }
 }
 

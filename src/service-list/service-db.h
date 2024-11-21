@@ -45,6 +45,7 @@ public:
   void create_table();
   void delete_table(const bool iDeleteFavorites);
   bool add_entry(const QString & iChannel, const QString & iService);
+  bool delete_entry(const QString & iChannel, const QString & iService);
   void sort_column(const EColIdx iColIdx, const bool iForceSortAsc);
   bool is_sort_desc() const;
   void set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite) const;

@@ -431,9 +431,9 @@ QString RadioInterface::get_copyright_text() const
   QString versionText = "<html><head/><body><p>";
   versionText = "<h3>" + QString(PRJ_NAME) + " V" + mVersionStr + " (Qt " QT_VERSION_STR " / Qwt " QWT_VERSION_STR ")</h3>";
   versionText += "<p><b>Built on " + QString(__TIMESTAMP__) + QString("<br/>Commit ") + QString(GITHASH) + ".</b></p>";
-  versionText += "<p>Forked and partly extensive changed and extended by Thomas Neder<br/>"
-                 "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>) from Qt-DAB<br/>"
-                 "(<a href=\"https://github.com/JvanKatwijk/qt-dab\">https://github.com/JvanKatwijk/qt-dab</a>) by Jan van Katwijk<br/>"
+  versionText += "<p>Forked from Qt-DAB, partly extensive changed, extended, some things also removed, by Thomas Neder "
+                 "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>).<br/>"
+                 "For Qt-DAB see <a href=\"https://github.com/JvanKatwijk/qt-dab\">https://github.com/JvanKatwijk/qt-dab</a> by Jan van Katwijk<br/>"
                  "(<a href=\"mailto:J.vanKatwijk@gmail.com\">J.vanKatwijk@gmail.com</a>).</p>";
   versionText += "<p>Rights of Qt, Qwt, FFTW, Kiss, liquid-DSP, portaudio, " + usedDecoder + ", libsamplerate and libsndfile gratefully acknowledged.<br/>"
                  "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.<br/>"
@@ -468,8 +468,8 @@ void RadioInterface::_trigger_preset_timer()
 {
   const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
   mPresetTimer.setSingleShot(true);
-  mPresetTimer.setInterval(switchDelay * 1000);
-  mPresetTimer.start(switchDelay * 1000);
+  mPresetTimer.setInterval(switchDelay * 10);
+  mPresetTimer.start(switchDelay * 10);
 }
 
 //	when doStart is called, a device is available and selected
@@ -496,10 +496,10 @@ bool RadioInterface::do_start()
     mpInputDevice->show();
   }
 
-  if (mChannel.nextService.valid)
-  {
-    _trigger_preset_timer();
-  }
+  // if (mChannel.nextService.valid)
+  // {
+  //   _trigger_preset_timer();
+  // }
 
   emit signal_dab_processor_started(); // triggers the DAB processor rereading (new) settings
 
@@ -557,6 +557,8 @@ void RadioInterface::_slot_channel_timeout()
 //	a slot, called by the fic/fib handlers
 void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const uint32_t iSId)
 {
+  _trigger_preset_timer();
+
   if (!mIsRunning.load())
   {
     return;
@@ -584,41 +586,7 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
   mServiceList = insert_sorted(mServiceList, ed);
   //serviceList.push_back(ed);
 
-  if (mpDabProcessor->is_audioService(iServiceName))
-  {
-    mpServiceListHandler->add_entry(mChannel.channelName, ed.name/* + ":" + QString::number(iSId, 16)*/);
-  }
 
-  // const QStringList sl = mpServiceListHandler->get_list_of_services_in_channel(mChannel.channelName);
-  // const int32_t noServiceEntries = mServiceList.size();
-
-  // qDebug() << noServiceEntries << sl.size();
-
-  // Check if in the database are more Service entries than currently added.
-  // If yes, found them and delete them.
-  // if (sl.size() > noServiceEntries)
-  // {
-  //   for (const auto & le1 : sl)
-  //   {
-  //     bool found = false;
-  //     for (const auto & le2 : mServiceList)
-  //     {
-  //       if (le1 == le2.name)
-  //       {
-  //         found = true;
-  //         break;
-  //       }
-  //     }
-  //
-  //     if (!found)
-  //     {
-  //       qDebug() << "not found: " << le1;
-  //     }
-  //   }
-  // }
-
-
-  
 //  model.clear();
 //  for (const auto & serv: serviceList)
 //  {
@@ -2223,7 +2191,7 @@ void RadioInterface::local_select(const QString & theChannel, const QString & se
   mChannel.nextService.SId = 0;
   mChannel.nextService.SCIds = 0;
 
-  _trigger_preset_timer();
+  // _trigger_preset_timer();
 
   start_channel(channelSelector->currentText());
 }
@@ -2548,6 +2516,25 @@ void RadioInterface::_slot_set_preset_service()
     write_warning_message("Ensemble not yet recognized");
     return;
   }
+
+
+  QStringList serviceList;
+
+  serviceList << QString((char)('a' + (rand() % 26))) + QString::number( rand() & 0xFFFF, 16);
+  for (const auto & sl : mServiceList)
+  {
+    const bool isAudio = mpDabProcessor->is_audioService(sl.name);
+    qDebug() << sl.name << QString::number(sl.SId, 16) << isAudio;
+
+    if (isAudio)
+    {
+      serviceList << sl.name;
+      // mpServiceListHandler->add_entry(mChannel.channelName, sl.name);
+    }
+  }
+
+  serviceList << QString((char)('A' + (rand() % 26))) + QString::number( rand() & 0xFFFF, 16);
+  mpServiceListHandler->replace_services_at_channel(mChannel.channelName, serviceList);
 
   QString presetName = mChannel.nextService.serviceName;
   presetName.resize(16, ' '); // fill up to 16 spaces

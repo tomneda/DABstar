@@ -139,6 +139,30 @@ bool ServiceDB::add_entry(const QString & iChannel, const QString & iService)
   return true;
 }
 
+bool ServiceDB::delete_entry(const QString & iChannel, const QString & iService)
+{
+  if (!_check_if_entry_exists(_cur_tab_name(), iChannel, iService))
+  {
+    return false; // entry not found, no table update needed
+  }
+
+  // add new entry
+  QSqlQuery queryDel;
+  queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeChannel + " = :channel AND " + sTeService + " = :service");
+  queryDel.bindValue(":channel", iChannel);
+  queryDel.bindValue(":service", iService);
+
+  if (!queryDel.exec())
+  {
+    const QString dbErr = _error_str(); // next command could destroy this information
+    _delete_db_file();
+    qCritical() << "Error: Unable delete entry: " << dbErr;
+    QCoreApplication::exit(1);
+  }
+
+  return true;
+}
+
 QAbstractItemModel * ServiceDB::create_model()
 {
   //CustomSqlQueryModel * model = new CustomSqlQueryModel;

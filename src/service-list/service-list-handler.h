@@ -55,7 +55,8 @@ public:
   void set_data_mode(EDataMode iDataMode);
   void delete_table(const bool iDeleteFavorites);
   void create_new_table();
-  void add_entry(const QString & iChannel, const QString & iService);
+  // void add_entry(const QString & iChannel, const QString & iService);
+  void replace_services_at_channel(const QString & iChannel, const QStringList & iServiceList);
   void set_selector(const QString & iChannel, const QString & iService);
   void set_selector_channel_only(const QString & iChannel);
   void set_favorite_state(const bool iIsFavorite);
