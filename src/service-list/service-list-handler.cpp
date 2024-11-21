@@ -16,6 +16,10 @@
 #include <QSettings>
 #include "radio.h"
 #include "service-list-handler.h"
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtInfoMsg)
+//Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtWarningMsg)
 
 void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
@@ -98,16 +102,7 @@ ServiceListHandler::ServiceListHandler(QSettings * const iopSettings, const QStr
   connect(&mCustomItemDelegate, &CustomItemDelegate::signal_selection_changed_with_fav, this, &ServiceListHandler::_slot_selection_changed_with_fav);
 }
 
-// void ServiceListHandler::add_entry(const QString & iChannel, const QString & iService)
-// {
-//   if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
-//   {
-//     _fill_table_view_from_db();
-//     _jump_to_list_entry_and_emit_fav_status();
-//   }
-// }
-
-void ServiceListHandler::replace_services_at_channel(const QString & iChannel, const QStringList & iServiceList)
+void ServiceListHandler::update_services_at_channel(const QString & iChannel, const QStringList & iServiceList)
 {
   bool contentChanged = false;
 
@@ -128,14 +123,22 @@ void ServiceListHandler::replace_services_at_channel(const QString & iChannel, c
 
     if (!found)
     {
-      contentChanged |= mServiceDB.delete_entry(iChannel, curService); // true if entry was deleted (must always be true here)
+      if (mServiceDB.delete_entry(iChannel, curService)) // true if entry was deleted (must always be true here)
+      {
+        qCInfo(sLogServiceListHandler) << "Deleted in database: service" << curService << "at channel" << iChannel;
+        contentChanged = true;
+      }
     }
   }
 
   // now add new entries
   for (const QString & service : iServiceList)
   {
-    contentChanged |= mServiceDB.add_entry(iChannel, service); // true if new entry was added
+    if (mServiceDB.add_entry(iChannel, service)) // true if new entry was added
+    {
+      qCInfo(sLogServiceListHandler) << "Added in database: service" << service << "at channel" << iChannel;
+      contentChanged = true;
+    }
   }
 
   if (contentChanged) // true if new entry was added
@@ -213,7 +216,7 @@ void ServiceListHandler::jump_entries(int32_t iSteps)
   _jump_to_list_entry_and_emit_fav_status(iSteps, true);
 }
 
-QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & iChannel)
+QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & iChannel) const
 {
   QStringList sl;
 
@@ -221,8 +224,6 @@ QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & 
   {
     return sl;
   }
-
-  //qDebug() << "ServiceListHandler: Channel: " << mChannelLast;
 
   const QAbstractItemModel * const pModel = mpTableView->model();
   assert(pModel != nullptr);
@@ -247,8 +248,6 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t i
   {
     return;
   }
-
-  //qDebug() << "ServiceListHandler: Channel: " << mChannelLast << ", Service: " << mServiceLast;
 
   const QAbstractItemModel * const pModel = mpTableView->model();
   assert(pModel != nullptr);

@@ -40,7 +40,7 @@
 #include "radio.h"
 
 // Q_LOGGING_CATEGORY(sLCAudioOutput, "AudioOutput", QtInfoMsg)
-Q_LOGGING_CATEGORY(sLCAudioOutput, "AudioOutput", QtWarningMsg)
+Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtWarningMsg)
 
 AudioOutputQt::AudioOutputQt(RadioInterface * const ipRI, QObject * parent)
   : AudioOutput(parent)
@@ -214,12 +214,12 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
       if (mpAudioSink->error() == QAudio::Error::NoError)
       {
         //qCWarning(sLCAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart, error code:" << mpAudioSink->error();
-        qCWarning(sLCAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart...";
+        qCWarning(sLogAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart...";
         _do_restart(mpCurrentFifo);
       }
       else // some error -> doing stop
       {
-        qCWarning(sLCAudioOutput) << "Audio going to Idle state unexpectedly, error code:" << mpAudioSink->error();
+        qCWarning(sLogAudioOutput) << "Audio going to Idle state unexpectedly, error code:" << mpAudioSink->error();
         _do_stop();
         emit signal_audio_output_error();
       }
@@ -283,20 +283,20 @@ void AudioIODevice::_fade(const int32_t iNumStereoSamples, const float coe, floa
 
 void AudioIODevice::_fade_in_audio_samples(int16_t * const opData, const int32_t iNumStereoSamples) const
 {
-  qCInfo(sLCAudioOutput) << "Unmuting audio";
+  qCInfo(sLogAudioOutput) << "Unmuting audio";
   const int32_t numFadedStereoSamples = std::min<int32_t>(iNumStereoSamples, (int32_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz));
   const float coe = 2.0f - powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * (float)numFadedStereoSamples));
-  qCInfo(sLCAudioOutput) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
+  qCInfo(sLogAudioOutput) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
 
   _fade(numFadedStereoSamples, coe, AUDIOOUTPUT_FADE_MIN_LIN, opData);
 }
 
 void AudioIODevice::_fade_out_audio_samples(int16_t * const opData, const int32_t iNumStereoSamples) const
 {
-  qCInfo(sLCAudioOutput, "Muting... [available %u samples]", static_cast<unsigned int>(iNumStereoSamples));
+  qCInfo(sLogAudioOutput, "Muting... [available %u samples]", static_cast<unsigned int>(iNumStereoSamples));
   const int32_t numFadedStereoSamples = std::min<int32_t>(iNumStereoSamples, (int32_t)(AUDIOOUTPUT_FADE_TIME_MS * (float)mSampleRateKHz));
   const float coe = powf(10.0f, AUDIOOUTPUT_FADE_MIN_DB / (20.0f * (float)numFadedStereoSamples));
-  qCInfo(sLCAudioOutput) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
+  qCInfo(sLogAudioOutput) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
 
   _fade(numFadedStereoSamples, coe, 1.0f, opData);
 
@@ -365,7 +365,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
     }
     else
     {   // not enough samples ==> inserting silence
-      qCDebug(sLCAudioOutput, "Muted: Inserting silence [%u ms]", static_cast<unsigned int>(maxWantedSamplesBothChannels / (2 /*channels*/ * mSampleRateKHz)));
+      qCDebug(sLogAudioOutput, "Muted: Inserting silence [%u ms]", static_cast<unsigned int>(maxWantedSamplesBothChannels / (2 /*channels*/ * mSampleRateKHz)));
 
       memset(opDataSamplesBothChannels, 0, maxWantedBytesBothChannels);
 
@@ -386,7 +386,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
       if (availableSamplesBothChannels < (int32_t)(mSampleRateKHz * (2 /*channels*/ * sizeof(int16_t))))
       {
         // nothing to play
-        qCInfo(sLCAudioOutput, "Hard mute [no samples available]");
+        qCInfo(sLogAudioOutput, "Hard mute [no samples available]");
         memset(opDataSamplesBothChannels, 0, maxWantedBytesBothChannels);
         _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
         mPlaybackState = EPlaybackState::Muted;

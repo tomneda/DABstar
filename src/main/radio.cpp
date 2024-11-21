@@ -2520,7 +2520,8 @@ void RadioInterface::_slot_set_preset_service()
 
   QStringList serviceList;
 
-  serviceList << QString((char)('a' + (rand() % 26))) + QString::number( rand() & 0xFFFF, 16);
+  if ((rand() & 1) == 0) serviceList << QString((char)('a' + (rand() % 26))) + QString::number( rand() & 0xFFFF, 16);
+
   for (const auto & sl : mServiceList)
   {
     const bool isAudio = mpDabProcessor->is_audioService(sl.name);
@@ -2533,8 +2534,9 @@ void RadioInterface::_slot_set_preset_service()
     }
   }
 
-  serviceList << QString((char)('A' + (rand() % 26))) + QString::number( rand() & 0xFFFF, 16);
-  mpServiceListHandler->replace_services_at_channel(mChannel.channelName, serviceList);
+  if ((rand() & 1) == 0) serviceList << QString((char)('A' + (rand() % 26))) + QString::number( rand() & 0xFFFF, 16);
+
+  mpServiceListHandler->update_services_at_channel(mChannel.channelName, serviceList);
 
   QString presetName = mChannel.nextService.serviceName;
   presetName.resize(16, ' '); // fill up to 16 spaces

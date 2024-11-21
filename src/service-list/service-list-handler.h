@@ -55,14 +55,13 @@ public:
   void set_data_mode(EDataMode iDataMode);
   void delete_table(const bool iDeleteFavorites);
   void create_new_table();
-  // void add_entry(const QString & iChannel, const QString & iService);
-  void replace_services_at_channel(const QString & iChannel, const QStringList & iServiceList);
+  void update_services_at_channel(const QString & iChannel, const QStringList & iServiceList);
   void set_selector(const QString & iChannel, const QString & iService);
   void set_selector_channel_only(const QString & iChannel);
   void set_favorite_state(const bool iIsFavorite);
   void restore_favorites();
   void jump_entries(int32_t iSteps); // typ -1/+1, with wrap around
-  QStringList get_list_of_services_in_channel(const QString & iChannel);
+  QStringList get_list_of_services_in_channel(const QString & iChannel) const;
 
 private:
   QTableView * const mpTableView;
