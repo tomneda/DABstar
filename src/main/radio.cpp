@@ -467,6 +467,33 @@ void RadioInterface::_slot_do_start(const QString & dev)
   do_start();
 }
 
+// _slot_new_device is called from the UI when selecting a device with the selector
+void RadioInterface::_slot_new_device(const QString & deviceName)
+{
+  //	Part I : stopping all activities
+  mIsRunning.store(false);
+  stop_scanning();
+  stop_channel();
+  disconnect_gui();
+  if (mpInputDevice != nullptr)
+  {
+    fprintf(stderr, "device is deleted\n");
+    mpInputDevice = nullptr;
+  }
+
+  LOG("selecting ", deviceName);
+  mpInputDevice = mDeviceSelector.create_device(deviceName, mChannel.realChannel);
+
+  if (mpInputDevice == nullptr)
+  {
+    return;    // nothing will happen
+  }
+
+  _set_device_to_file_mode(!mChannel.realChannel);
+
+  do_start();    // will set running
+}
+
 QString RadioInterface::_get_scan_message(const bool iEndMsg) const
 {
   QString s = "<span style='color:yellow;'>";
@@ -1255,33 +1282,6 @@ void RadioInterface::_slot_update_time_display()
   {
     return;
   }
-}
-
-// _slot_new_device is called from the UI when selecting a device with the selector
-void RadioInterface::_slot_new_device(const QString & deviceName)
-{
-  //	Part I : stopping all activities
-  mIsRunning.store(false);
-  stop_scanning();
-  stop_channel();
-  disconnect_gui();
-  if (mpInputDevice != nullptr)
-  {
-    fprintf(stderr, "device is deleted\n");
-    mpInputDevice = nullptr;
-  }
-
-  LOG("selecting ", deviceName);
-  mpInputDevice = mDeviceSelector.create_device(deviceName, mChannel.realChannel);
-
-  if (mpInputDevice == nullptr)
-  {
-    return;    // nothing will happen
-  }
-
-  _set_device_to_file_mode(!mChannel.realChannel);
-
-  do_start();    // will set running
 }
 
 void RadioInterface::_slot_handle_device_widget_button()
@@ -2514,14 +2514,14 @@ void RadioInterface::write_warning_message(const QString & iMsg)
 //
 void RadioInterface::start_channel(const QString & iChannel)
 {
-  const int32_t tunedFrequencyHz = mBandHandler.get_frequency_Hz(iChannel);
+  const int32_t tunedFrequencyHz = mChannel.realChannel ? mBandHandler.get_frequency_Hz(iChannel) : mpInputDevice->getVFOFrequency();
   LOG("channel starts ", iChannel);
   mSpectrumViewer.show_nominal_frequency_MHz((float)tunedFrequencyHz / 1'000'000.0f);
   mpInputDevice->resetBuffer();
   mServiceList.clear();
   mpInputDevice->restartReader(tunedFrequencyHz);
   mChannel.clean_channel();
-  mChannel.channelName = iChannel;
+  mChannel.channelName = mChannel.realChannel ? iChannel : "File";
   mChannel.nominalFreqHz = tunedFrequencyHz;
 
   mpServiceListHandler->set_selector_channel_only(mChannel.channelName);

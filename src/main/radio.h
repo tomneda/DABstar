@@ -108,26 +108,26 @@ struct STheTime
 struct SChannelDescriptor
 {
   QString channelName;
-  bool realChannel;
-  bool etiActive;
-  int serviceCount;
-  int32_t nominalFreqHz;
+  bool realChannel = false;
+  bool etiActive = false;
+  int serviceCount = 0;
+  int32_t nominalFreqHz = 0;
   QString ensembleName;
-  uint8_t mainId;
-  uint8_t subId;
+  uint8_t mainId = 0;
+  uint8_t subId = 0;
   std::vector<SDabService> backgroundServices;
-  SDabService currentService;
-  SDabService nextService;
-  uint32_t Eid;
-  bool has_ecc;
-  uint8_t ecc_byte;
-  bool tiiFile;
+  SDabService currentService{};
+  SDabService nextService{};
+  uint32_t Eid = 0;
+  bool has_ecc = false;
+  uint8_t ecc_byte = 0;
+  bool tiiFile = false;
   QString transmitterName;
   QString countryName;
-  int nrTransmitters;
-  cmplx localPos;
-  cmplx targetPos;
-  int snr;
+  int nrTransmitters = 0;
+  cmplx localPos{};
+  cmplx targetPos{};
+  int snr = 0;
   std::set<uint16_t> transmitters;
 
   union UTiiId
@@ -135,7 +135,7 @@ struct SChannelDescriptor
     UTiiId(int mainId, int subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
     explicit UTiiId(int fullId) : FullId(fullId) {};
 
-    uint16_t FullId;
+    uint16_t FullId = 0;
     struct
     {
       uint8_t MainId;
@@ -145,7 +145,6 @@ struct SChannelDescriptor
 
   void clean_channel()
   {
-    realChannel = true;
     serviceCount = -1;
     nominalFreqHz = -1;
     ensembleName = "";
@@ -227,7 +226,7 @@ private:
   const QString mVersionStr{PRJ_VERS};
   ContentTable * mpContentTable = nullptr;
   FILE * mpLogFile = nullptr;
-  SChannelDescriptor mChannel;
+  SChannelDescriptor mChannel{};
   int32_t mMaxDistance = -1;
   TechData * mpTechDataWidget = nullptr;
   Configuration mConfig;
