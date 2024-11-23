@@ -594,11 +594,12 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
 
   mServiceList = insert_sorted(mServiceList, ed);
 
-  if (mIsScanning)
+  if (mpDabProcessor->is_audioService(iServiceName))
   {
-    if (mpDabProcessor->is_audioService(iServiceName))
+    mpServiceListHandler->add_entry(mChannel.channelName, iServiceName);
+
+    if (mIsScanning)
     {
-      mpServiceListHandler->add_entry(mChannel.channelName, iServiceName);
       mScanResult.NrAudioServices++;
       if (mScanResult.LastChannel != mChannel.channelName)
       {
@@ -606,10 +607,10 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
         mScanResult.NrChannels++;
       }
     }
-    else
-    {
-      mScanResult.NrNonAudioServices++;
-    }
+  }
+  else if (mIsScanning)
+  {
+    mScanResult.NrNonAudioServices++;
   }
 }
 
@@ -2474,18 +2475,13 @@ void RadioInterface::_slot_preset_timeout()
     return;
   }
 
+  // crosscheck service list if a non more existing service is stored there
   QStringList serviceList;
   for (const auto & sl : mServiceList)
   {
-    const bool isAudio = mpDabProcessor->is_audioService(sl.name);
-
-    if (isAudio)
-    {
-      serviceList << sl.name;
-    }
+    serviceList << sl.name;
   }
-
-  mpServiceListHandler->update_services_at_channel(mChannel.channelName, serviceList);
+  mpServiceListHandler->delete_not_existing_services_at_channel(mChannel.channelName, serviceList);
 
   QString presetName = mChannel.nextService.serviceName;
   presetName.resize(16, ' '); // fill up to 16 spaces

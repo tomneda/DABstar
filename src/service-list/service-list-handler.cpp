@@ -111,11 +111,11 @@ void ServiceListHandler::add_entry(const QString & iChannel, const QString & iSe
   }
 }
 
-void ServiceListHandler::update_services_at_channel(const QString & iChannel, const QStringList & iServiceList)
+void ServiceListHandler::delete_not_existing_services_at_channel(const QString & iChannel, const QStringList & iServiceList)
 {
   bool contentChanged = false;
 
-  // first delete entries from database which are not more in iServiceList
+  // delete entries from database which are not more in iServiceList
   const QStringList curServiceList = get_list_of_services_in_channel(iChannel);
 
   for (const auto & curService : curServiceList)
@@ -137,16 +137,6 @@ void ServiceListHandler::update_services_at_channel(const QString & iChannel, co
         qCInfo(sLogServiceListHandler) << "Deleted in database: service" << curService << "at channel" << iChannel;
         contentChanged = true;
       }
-    }
-  }
-
-  // now add new entries
-  for (const QString & service : iServiceList)
-  {
-    if (mServiceDB.add_entry(iChannel, service)) // true if new entry was added
-    {
-      qCInfo(sLogServiceListHandler) << "Added in database: service" << service << "at channel" << iChannel;
-      contentChanged = true;
     }
   }
 
