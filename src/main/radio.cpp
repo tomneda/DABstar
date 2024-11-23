@@ -164,6 +164,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   setup_ui_colors();
   _create_status_info();
 
+  lblDynLabel->setTextFormat(Qt::RichText);
+
   thermoPeakLevelLeft->setValue(-40.0);
   thermoPeakLevelRight->setValue(-40.0);
   thermoPeakLevelLeft->setFillBrush(QColor(0x6F70EF));
@@ -329,6 +331,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   //	presetTimer
   mPresetTimer.setSingleShot(true);
+  mPresetTimer.setInterval(cPresetTimeoutMs);
   connect(&mPresetTimer, &QTimer::timeout, this, &RadioInterface::_slot_preset_timeout);
 
   _set_clock_text();
@@ -464,20 +467,13 @@ void RadioInterface::_slot_do_start(const QString & dev)
   do_start();
 }
 
-void RadioInterface::_trigger_preset_timer()
-{
-  // const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
-  mPresetTimer.setSingleShot(true);
-  mPresetTimer.setInterval(cPresetTimeoutMs);
-  mPresetTimer.start(cPresetTimeoutMs);
-}
-
 QString RadioInterface::_get_scan_message(const bool iEndMsg) const
 {
-  QString s = iEndMsg ? "Scan ended - Select a service on the left" : "Scanning channel " + cmbChannelSelector->currentText();
-  s += "\nFound " + QString::number(mScanResult.NrChannels) + " DAB channels";
-  s += "\nFound " + QString::number(mScanResult.NrAudioServices) + " audio services";
-  s += "\nFound " + QString::number(mScanResult.NrNonAudioServices) + " non-audio services";
+  QString s = "<span style='color:yellow;'>";
+  s += (iEndMsg ? "Scan ended - Select a service on the left" : "Scanning channel: " + cmbChannelSelector->currentText()) + "</span>";
+  s += "<br><span style='color:lightblue; font-size:small;'>Found DAB channels: " + QString::number(mScanResult.NrChannels) + "</span>";
+  s += "<br><span style='color:lightblue; font-size:small;'>Found audio services: " + QString::number(mScanResult.NrAudioServices) + "</span>";
+  s += "<br><span style='color:lightblue; font-size:small;'>Found non-audio services: " + QString::number(mScanResult.NrNonAudioServices) + "</span>";
   return s;
 }
 
@@ -507,7 +503,7 @@ bool RadioInterface::do_start()
 
   // if (mChannel.nextService.valid)
   // {
-  //   _trigger_preset_timer();
+  //   mPresetTimer.start(cPresetTimeoutMs);
   // }
 
   emit signal_dab_processor_started(); // triggers the DAB processor rereading (new) settings
@@ -574,7 +570,7 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
 
   if (!mIsScanning)
   {
-    _trigger_preset_timer();
+    mPresetTimer.start(cPresetTimeoutMs);
   }
 
   qCDebug(sLogRadioInterface()) << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
@@ -2119,17 +2115,23 @@ void RadioInterface::slot_stop_announcement(const QString & name, int subChId)
   }
 }
 
-// called from the service list handler when only a service has changed
+// called from content widget when only a service has changed
 void RadioInterface::_slot_select_service(QModelIndex ind)
 {
-  const QString currentProgram = ind.data(Qt::DisplayRole).toString();
-  local_select(mChannel.channelName, currentProgram);
+  if (!mIsScanning)
+  {
+    const QString currentProgram = ind.data(Qt::DisplayRole).toString();
+    local_select(mChannel.channelName, currentProgram);
+  }
 }
 
 // called from the service list handler when channel and service has changed
 void RadioInterface::_slot_service_changed(const QString & iChannel, const QString & iService)
 {
-  local_select(iChannel, iService);
+  if (!mIsScanning)
+  {
+    local_select(iChannel, iService);
+  }
 }
 
 // called from the service list handler when when the favorite state has changed
@@ -2145,7 +2147,7 @@ void RadioInterface::slot_handle_content_selector(const QString & s)
   local_select(mChannel.channelName, s);
 }
 
-void RadioInterface::local_select(const QString & theChannel, const QString & service)
+void RadioInterface::local_select(const QString & iChannel, const QString & iService)
 {
   if (mpDabProcessor == nullptr)  // should not happen
   {
@@ -2154,11 +2156,11 @@ void RadioInterface::local_select(const QString & theChannel, const QString & se
 
   stop_service(mChannel.currentService);
 
-  QString serviceName = service;
+  QString serviceName = iService;
   serviceName.resize(16, ' '); // fill up to 16 spaces
 
   // Is it only a service change within the same channel?
-  if (theChannel == mChannel.channelName)
+  if (iChannel == mChannel.channelName)
   {
     mChannel.currentService.valid = false;
     SDabService s;
@@ -2168,7 +2170,7 @@ void RadioInterface::local_select(const QString & theChannel, const QString & se
       write_warning_message("Insufficient data for this program (1)");
       return;
     }
-    s.serviceName = service; // TODO: service or serviceName?
+    s.serviceName = iService; // TODO: service or serviceName?
     start_service(s);
     return;
   }
@@ -2176,7 +2178,7 @@ void RadioInterface::local_select(const QString & theChannel, const QString & se
   // The hard part is stopping the current service, quitting the current channel, selecting a new channel, waiting a while
   stop_channel();
   //      and start the new channel first
-  int k = cmbChannelSelector->findText(theChannel);
+  int k = cmbChannelSelector->findText(iChannel);
   if (k != -1)
   {
     _update_channel_selector(k);
@@ -2189,12 +2191,12 @@ void RadioInterface::local_select(const QString & theChannel, const QString & se
 
   // Prepare the service, start the new channel and wait
   mChannel.nextService.valid = true;
-  mChannel.nextService.channel = theChannel;
+  mChannel.nextService.channel = iChannel;
   mChannel.nextService.serviceName = serviceName;
   mChannel.nextService.SId = 0;
   mChannel.nextService.SCIds = 0;
 
-  // _trigger_preset_timer();
+  // mPresetTimer.start(cPresetTimeoutMs);
 
   start_channel(cmbChannelSelector->currentText());
 }
@@ -2472,23 +2474,16 @@ void RadioInterface::_slot_preset_timeout()
     return;
   }
 
-
   QStringList serviceList;
-
-  if ((rand() & 1) == 0) serviceList << QString((char)('a' + (rand() % 26))) + QString::number(rand() & 0xFFFF, 16);
-
   for (const auto & sl : mServiceList)
   {
     const bool isAudio = mpDabProcessor->is_audioService(sl.name);
-    // qDebug() << sl.name << QString::number(sl.SId, 16) << isAudio;
 
     if (isAudio)
     {
       serviceList << sl.name;
     }
   }
-
-  if ((rand() & 1) == 0) serviceList << QString((char)('A' + (rand() % 26))) + QString::number(rand() & 0xFFFF, 16);
 
   mpServiceListHandler->update_services_at_channel(mChannel.channelName, serviceList);
 
@@ -2561,14 +2556,14 @@ void RadioInterface::start_channel(const QString & iChannel)
 //	is to be done.
 void RadioInterface::stop_channel()
 {
-  if (mpInputDevice == nullptr)
-  {    // should not happen
+  if (mpInputDevice == nullptr) // should not happen
+  {
     return;
   }
   stop_etiHandler();
   LOG("channel stops ", mChannel.channelName);
-  //
-  //	first, stop services in fore and background
+
+  // first, stop services in fore and background
   if (mChannel.currentService.valid)
   {
     stop_service(mChannel.currentService);
@@ -2586,9 +2581,6 @@ void RadioInterface::stop_channel()
 
   stop_source_dumping();
   emit signal_stop_audio();
-  //mpSoundOut->stop();
-
-  _show_epg_label(false);
 
   if (mpContentTable != nullptr)
   {
@@ -2596,6 +2588,7 @@ void RadioInterface::stop_channel()
     delete mpContentTable;
     mpContentTable = nullptr;
   }
+
   //	note framedumping - if any - was already stopped
   //	ficDumping - if on - is stopped here
   if (mpFicDumpPointer != nullptr)
@@ -2603,6 +2596,7 @@ void RadioInterface::stop_channel()
     mpDabProcessor->stop_ficDump();
     mpFicDumpPointer = nullptr;
   }
+
   mEpgTimer.stop();
   mpInputDevice->stopReader();
   mpDabProcessor->stop();
@@ -2610,6 +2604,7 @@ void RadioInterface::stop_channel()
   mpTechDataWidget->cleanUp();
 
   show_pause_slide();
+
   mPresetTimer.stop();
   mChannelTimer.stop();
   mChannel.clean_channel();
@@ -2741,6 +2736,7 @@ void RadioInterface::stop_scanning()
     lblDynLabel->setText(_get_scan_message(true));
     mChannelTimer.stop();
     enable_ui_elements_for_safety(true);
+    mChannel.channelName = ""; // trigger restart of channel after next service list click
     mIsScanning.store(false);
     mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table
   }

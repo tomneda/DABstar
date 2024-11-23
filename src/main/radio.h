@@ -360,7 +360,6 @@ private:
   void _update_channel_selector();
   void _set_device_to_file_mode(const bool iDataFromFile);
   void _setup_audio_output(uint32_t iSampleRate);
-  void _trigger_preset_timer();
   QString _get_scan_message(bool iEndMsg) const;
 
 signals:
