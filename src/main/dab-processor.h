@@ -71,7 +71,7 @@ public:
   bool start_etiGenerator(const QString &);
   void stop_etiGenerator();
   void reset_etiGenerator();
-  void set_scanMode(bool);
+  void set_scan_mode(bool);
   void add_bb_freq(int32_t iFreqOffHz);
 
   //	inheriting from our delegates

@@ -31,7 +31,6 @@ Configuration::Configuration(RadioInterface * ipRI) :
 
   sliderTest->hide(); // only used for test
 
-  mpSH->register_and_connect_ui_element<SettingHelper::switchDelay>(switchDelaySetting);
   mpSH->register_and_connect_ui_element<SettingHelper::cbCloseDirect>(cbCloseDirect);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUseNewTiiDetector>(cbUseNewTiiDetector);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUseNativeFileDialog>(cbUseNativeFileDialog);
@@ -80,7 +79,6 @@ void Configuration::save_position_and_config()
 
 void Configuration::_sync_ui_elements(const bool iWriteSettings)
 {
-  mpSH->sync_ui_state(SettingHelper::switchDelay, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbCloseDirect, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbUseNewTiiDetector, iWriteSettings);
   // cbActivateLogger is not stored in settings

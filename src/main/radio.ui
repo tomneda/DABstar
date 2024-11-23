@@ -249,7 +249,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QComboBox" name="channelSelector">
+        <widget class="QComboBox" name="cmbChannelSelector">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Direct channel selector.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>

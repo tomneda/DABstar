@@ -419,7 +419,7 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
   return false;
 }
 
-void DabProcessor::set_scanMode(bool b)
+void DabProcessor::set_scan_mode(bool b)
 {
   mScanMode = b;
 }

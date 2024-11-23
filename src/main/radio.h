@@ -168,7 +168,7 @@ class RadioInterface : public QWidget, private Ui_DabRadio
 {
 Q_OBJECT
 public:
-  RadioInterface(QSettings *, const QString &, const QString &, bool, int32_t dataPort, int32_t clockPort, int, QWidget * parent);
+  RadioInterface(QSettings *, const QString &, const QString &, int32_t iDataPort, QWidget * iParent);
   ~RadioInterface() override;
 
   enum EAudioFlags : uint32_t
@@ -198,6 +198,11 @@ private:
     StatusInfoElem<int32_t> BitRate;
   };
 
+  static constexpr int32_t cDisplayTimeoutMs = 1000;
+  static constexpr int32_t cChannelTimeoutMs = 3000;
+  static constexpr int32_t cEpgTimeoutMs = 3000;
+  static constexpr int32_t cPresetTimeoutMs = 200;
+
   int32_t mAudioFrameCnt = 0;
   int32_t mMotObjectCnt = 0;
   StatusInfo mStatusInfo{};
@@ -220,17 +225,15 @@ private:
   httpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;
   const QString mVersionStr{PRJ_VERS};
-  int32_t mFmFrequency = 0;
   ContentTable * mpContentTable = nullptr;
   FILE * mpLogFile = nullptr;
   SChannelDescriptor mChannel;
   int32_t mMaxDistance = -1;
-  bool mDoReportError = false;
   TechData * mpTechDataWidget = nullptr;
   Configuration mConfig;
   SettingHelper * const mpSH;
-  std::atomic<bool> mIsRunning;
-  std::atomic<bool> mIsScanning;
+  std::atomic<bool> mIsRunning{false};
+  std::atomic<bool> mIsScanning{false};
   std::unique_ptr<IDeviceHandler> mpInputDevice;
   DeviceSelector mDeviceSelector;
 #ifdef  HAVE_PLUTO_RXTX
@@ -239,7 +242,7 @@ private:
   QScopedPointer<DabProcessor> mpDabProcessor;
   AudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
   QThread * mAudioOutputThread = nullptr;
-  SAudioFifo mAudioFifo;
+  SAudioFifo mAudioFifo{};
   SAudioFifo * mpCurAudioFifo = nullptr;
   enum class EPlaybackState { Stopped, WaitForInit, Running };
   EPlaybackState mPlaybackState = EPlaybackState::Stopped;
@@ -271,8 +274,8 @@ private:
   int32_t mNumberOfSeconds = 0;
   int16_t mFicBlocks = 0;
   int16_t mFicSuccess = 0;
-  STheTime mLocalTime;
-  STheTime mUTC;
+  STheTime mLocalTime{};
+  STheTime mUTC{};
   timeTableHandler * mpTimeTable = nullptr;
   FILE * mpFicDumpPointer = nullptr;
   bool mShowOnlyCurrTrans = false;
@@ -303,7 +306,7 @@ private:
 
   void startAudioservice(Audiodata *);
   void startPacketservice(const QString &);
-  void startScanning();
+  void start_scanning();
   void stop_scanning();
   void start_audio_dumping();
   void stop_audio_dumping();
@@ -319,7 +322,7 @@ private:
   void start_service(SDabService &);
   //void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
   void local_select(const QString &, const QString &);
-  //void showServices();
+  // void showServices() const;
 
   bool do_start();
   void save_MOTObject(QByteArray &, QString);
@@ -441,7 +444,7 @@ private slots:
   void _slot_favorite_changed(const bool iIsFav);
   void _slot_handle_favorite_button(bool iClicked);
   void _slot_set_static_button_style();
-  void _slot_set_preset_service();
+  void _slot_preset_timeout();
   void _slot_handle_mute_button();
   void _slot_handle_config_button();
   void _slot_handle_http_button();

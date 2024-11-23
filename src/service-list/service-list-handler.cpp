@@ -18,8 +18,8 @@
 #include "service-list-handler.h"
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtInfoMsg)
-//Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtWarningMsg)
+//Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtInfoMsg)
+Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtWarningMsg)
 
 void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
@@ -100,6 +100,15 @@ ServiceListHandler::ServiceListHandler(QSettings * const iopSettings, const QStr
 
   connect(mpTableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &ServiceListHandler::_slot_header_clicked);
   connect(&mCustomItemDelegate, &CustomItemDelegate::signal_selection_changed_with_fav, this, &ServiceListHandler::_slot_selection_changed_with_fav);
+}
+
+void ServiceListHandler::add_entry(const QString & iChannel, const QString & iService)
+{
+  if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
+  {
+    _fill_table_view_from_db();
+    _jump_to_list_entry_and_emit_fav_status();
+  }
 }
 
 void ServiceListHandler::update_services_at_channel(const QString & iChannel, const QStringList & iServiceList)

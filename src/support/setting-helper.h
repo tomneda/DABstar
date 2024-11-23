@@ -84,7 +84,6 @@ public:
     cbSaveSlides, // 38
     serviceListSortCol, // 39
     serviceListSortDesc, // 40
-    switchDelay, // 41
     cbUseNewTiiDetector, // 42
     cbShowOnlyCurrTrans, // 43
     cbUseNativeFileDialog, // 44

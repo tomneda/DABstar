@@ -49,11 +49,8 @@ int main(int argc, char ** argv)
 
   // Default values
   int32_t dataPort = 8888;
-  int32_t clockPort = 8889;
   int opt;
-  QString freqExtension = "";
-  bool error_report = false;
-  int fmFrequency = 110000;
+  QString altFreqList = "";
 
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
@@ -65,13 +62,7 @@ int main(int argc, char ** argv)
     {
     case 'P': dataPort = atoi(optarg);
       break;
-    case 'C': clockPort = atoi(optarg);
-      break;
-    case 'A': freqExtension = optarg;
-      break;
-    case 'T': error_report = true;
-      break;
-    case 'F': fmFrequency = atoi(optarg);
+    case 'A': altFreqList = optarg;
       break;
     default: ;
     }
@@ -82,6 +73,8 @@ int main(int argc, char ** argv)
   SettingHelper::get_instance(dabSettings.get()); // create instance of setting helper
 
   QApplication a(argc, argv);
+
+  qSetMessagePattern("[%{time yyyy-MM-dd hh:mm:ss.zzz}] %{message}");
 
   // read stylesheet from resource file
   if (QFile file(":res/globstyle.qss");
@@ -97,7 +90,7 @@ int main(int argc, char ** argv)
 
   QApplication::setWindowIcon(QIcon(":res/logo/dabstar.png")); // used for all dialog windows except main window (is overwritten)
 
-  auto radioInterface(std::make_unique<RadioInterface>(dabSettings.get(), dbFileName, freqExtension, error_report, dataPort, clockPort, fmFrequency, nullptr));
+  auto radioInterface(std::make_unique<RadioInterface>(dabSettings.get(), dbFileName, altFreqList, dataPort, nullptr));
   radioInterface->show();
 
   QApplication::exec();

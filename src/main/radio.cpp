@@ -65,6 +65,7 @@
   #include <unistd.h>
 #endif
 
+Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtInfoMsg)
 
 #if defined(__MINGW32__) || defined(_WIN32)
 
@@ -120,16 +121,15 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 #endif
 
 
-RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const QString & freqExtension, bool error_report, int32_t dataPort, int32_t clockPort, int fmFrequency, QWidget * parent)
-  : QWidget(parent)
-  , mSpectrumViewer(this, Si, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer)
-  , mBandHandler(freqExtension, Si)
-  , mOpenFileDialog(Si)
-  , mFmFrequency(fmFrequency)
-  , mDoReportError(error_report)
+RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, int32_t iDataPort, QWidget * iParent)
+  : QWidget(iParent)
+  , Ui_DabRadio()
+  , mSpectrumViewer(this, ipSettings, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer)
+  , mBandHandler(iFileNameAltFreqList, ipSettings)
+  , mOpenFileDialog(ipSettings)
   , mConfig(this)
   , mpSH(&SettingHelper::get_instance())
-  , mDeviceSelector(Si)
+  , mDeviceSelector(ipSettings)
 {
   int32_t k;
   QString h;
@@ -160,7 +160,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-  setFixedSize(710+20, 470+20+50);
+  setFixedSize(730, 490+50);
   setup_ui_colors();
   _create_status_info();
 
@@ -171,7 +171,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   thermoPeakLevelLeft->setBorderWidth(0);
   thermoPeakLevelRight->setBorderWidth(0);
 
-  mpServiceListHandler.reset(new ServiceListHandler(mpSH->get_settings(), dbFileName, tblServiceList));
+  mpServiceListHandler.reset(new ServiceListHandler(mpSH->get_settings(), iFileNameDb, tblServiceList));
 
   // only the queued call will consider the button size?!
   QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection);
@@ -280,15 +280,15 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   mpTimeTable = new timeTableHandler(this);
   mpTimeTable->hide();
 
-  connect(this, &RadioInterface::signal_set_new_channel, channelSelector, &QComboBox::setCurrentIndex);
+  connect(this, &RadioInterface::signal_set_new_channel, cmbChannelSelector, &QComboBox::setCurrentIndex);
   connect(btnHttpServer, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
 
   //	restore some settings from previous incarnations
-  QString t = mpSH->read(SettingHelper::dabBand).toString();
+  const QString t = mpSH->read(SettingHelper::dabBand).toString();
   const uint8_t dabBand = (t == "VHF Band III" ? BAND_III : L_BAND);
 
-  mBandHandler.setupChannels(channelSelector, dabBand);
-  QString skipFileName = mpSH->read(SettingHelper::skipFile).toString();
+  mBandHandler.setupChannels(cmbChannelSelector, dabBand);
+  const QString skipFileName = mpSH->read(SettingHelper::skipFile).toString();
   mBandHandler.setup_skipList(skipFileName);
 
   connect(mpTechDataWidget, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
@@ -297,7 +297,7 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
   lblCopyrightIcon->setToolTip(get_copyright_text());
   lblCopyrightIcon->setOpenExternalLinks(true);
 
-  QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
+  const QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
   mChannel.tiiFile = false;
   if (!tiiFileName.isEmpty())
   {
@@ -318,18 +318,18 @@ RadioInterface::RadioInterface(QSettings * Si, const QString & dbFileName, const
 
   // start the timer(s)
   // The displaytimer is there to show the number of seconds running and handle - if available - the tii data
-  mDisplayTimer.setInterval(1000);
+  mDisplayTimer.setInterval(cDisplayTimeoutMs);
   connect(&mDisplayTimer, &QTimer::timeout, this, &RadioInterface::_slot_update_time_display);
-  mDisplayTimer.start(1000);
+  mDisplayTimer.start(cDisplayTimeoutMs);
 
   //	timer for scanning
   mChannelTimer.setSingleShot(true);
-  mChannelTimer.setInterval(10000);
+  mChannelTimer.setInterval(cChannelTimeoutMs);
   connect(&mChannelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
   //	presetTimer
   mPresetTimer.setSingleShot(true);
-  connect(&mPresetTimer, &QTimer::timeout, this, &RadioInterface::_slot_set_preset_service);
+  connect(&mPresetTimer, &QTimer::timeout, this, &RadioInterface::_slot_preset_timeout);
 
   _set_clock_text();
   mClockResetTimer.setSingleShot(true);
@@ -466,10 +466,10 @@ void RadioInterface::_slot_do_start(const QString & dev)
 
 void RadioInterface::_trigger_preset_timer()
 {
-  const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
+  // const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
   mPresetTimer.setSingleShot(true);
-  mPresetTimer.setInterval(switchDelay * 10);
-  mPresetTimer.start(switchDelay * 10);
+  mPresetTimer.setInterval(cPresetTimeoutMs);
+  mPresetTimer.start(cPresetTimeoutMs);
 }
 
 //	when doStart is called, a device is available and selected
@@ -504,7 +504,7 @@ bool RadioInterface::do_start()
   emit signal_dab_processor_started(); // triggers the DAB processor rereading (new) settings
 
   //	after the preset timer signals, the service will be started
-  start_channel(channelSelector->currentText());
+  start_channel(cmbChannelSelector->currentText());
   mIsRunning.store(true);
 
   return true;
@@ -514,15 +514,15 @@ void RadioInterface::_update_channel_selector()
 {
   if (mChannel.nextService.channel != "")
   {
-    int k = channelSelector->findText(mChannel.nextService.channel);
+    int k = cmbChannelSelector->findText(mChannel.nextService.channel);
     if (k != -1)
     {
-      channelSelector->setCurrentIndex(k);
+      cmbChannelSelector->setCurrentIndex(k);
     }
   }
   else
   {
-    channelSelector->setCurrentIndex(0);
+    cmbChannelSelector->setCurrentIndex(0);
   }
 }
 
@@ -549,22 +549,26 @@ void RadioInterface::slot_show_freq_corr_bb_Hz(int iFreqCorrBB)
 //	might be called when scanning only
 void RadioInterface::_slot_channel_timeout()
 {
+  qCDebug(sLogRadioInterface()) << Q_FUNC_INFO;
   slot_no_signal_found();
-}
+}                                                                   
 
 ///////////////////////////////////////////////////////////////////////////
 //
 //	a slot, called by the fic/fib handlers
 void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const uint32_t iSId)
 {
-  _trigger_preset_timer();
-
   if (!mIsRunning.load())
   {
     return;
   }
 
-  qDebug() << QDateTime::currentDateTime().time() << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
+  if (!mIsScanning)
+  {
+    _trigger_preset_timer();
+  }
+
+  qCDebug(sLogRadioInterface()) << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
 
   const int32_t subChId = mpDabProcessor->getSubChId(iServiceName, iSId);
 
@@ -584,37 +588,19 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
   }
 
   mServiceList = insert_sorted(mServiceList, ed);
-  //serviceList.push_back(ed);
 
-
-//  model.clear();
-//  for (const auto & serv: serviceList)
-//  {
-//    model.appendRow(new QStandardItem(serv.name));
-//  }
-// #ifdef  __MINGW32__
-//   for (int i = model.rowCount(); i < 12; i++)
-//   {
-//     model.appendRow(new QStandardItem("      "));
-//   }
-// #endif
-//  for (int i = 0; i < model.rowCount(); i++)
-//  {
-//    model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);
-//  }
-
-  //ensembleDisplay->setModel(&model);
-//  if (channel.serviceCount == model.rowCount() && !scanning)  // channel.serviceCount is only set in minor channels (here around Munich only 1 from 9)
-//  {
-//    presetTimer.stop();
-//    _slot_set_preset_service();
-//  }
+  if (mIsScanning)
+  {
+    if (mpDabProcessor->is_audioService(iServiceName))
+    {
+      mpServiceListHandler->add_entry(mChannel.channelName, iServiceName);
+    }
+  }
 }
 
-//
 //	The ensembleId is written as hexadecimal, however, the
 //	number display of Qt is only 7 segments ...
-static QString hextoString(int v)
+static QString hex_to_str(int v)
 {
   QString res;
   for (int i = 0; i < 4; i++)
@@ -639,7 +625,7 @@ void RadioInterface::slot_name_of_ensemble(int id, const QString & v)
   QFont font = ensembleId->font();
   font.setPointSize(14);
   ensembleId->setFont(font);
-  ensembleId->setText(v + QString("(") + hextoString(id) + QString(")"));
+  ensembleId->setText(v + QString("(") + hex_to_str(id) + QString(")"));
 
   mChannel.ensembleName = v;
   mChannel.Eid = id;
@@ -669,7 +655,7 @@ void RadioInterface::_slot_handle_content_button()
   }
 
   QString header = mChannel.ensembleName + ";" + mChannel.channelName + ";" + QString::number(mChannel.nominalFreqHz / 1000) + ";"
-                   + hextoString(mChannel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
+                   + hex_to_str(mChannel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
                    + QString::number(mServiceList.size()) + ";" + lblStationLocation->text() + "\n";
 
   mpContentTable = new ContentTable(this, mpSH->get_settings(), mChannel.channelName, mpDabProcessor->scanWidth());
@@ -1175,7 +1161,6 @@ void RadioInterface::_slot_terminate_process()
   mChannelTimer.stop();
   mPresetTimer.stop();
   mEpgTimer.stop();
-  //mpSoundOut->stop();
   emit signal_stop_audio();
   if (mDlTextFile != nullptr)
   {
@@ -1219,7 +1204,6 @@ void RadioInterface::_slot_terminate_process()
   mSpectrumViewer.hide();
 
   mpDabProcessor.reset();
-  // delete mpSoundOut;
   delete mpTimeTable;
   mpInputDevice = nullptr;
 
@@ -1610,7 +1594,7 @@ void RadioInterface::slot_show_tii(int mainId, int subId)
   }
 
   uint8_t key = MAP_NORM_TRANS;
-  if ((!mShowOnlyCurrTrans) && (distance > mMaxDistance))
+  if (!mShowOnlyCurrTrans && distance > (float)mMaxDistance)
   {
     mMaxDistance = (int)distance;
     key = MAP_MAX_TRANS;
@@ -1758,14 +1742,14 @@ void RadioInterface::_show_hide_buttons(const bool iShow)
   {
     mConfig.dumpButton->show();
     btnScanning->show();
-    channelSelector->show();
+    cmbChannelSelector->show();
     btnToggleFavorite->show();
   }
   else
   {
     mConfig.dumpButton->hide();
     btnScanning->hide();
-    channelSelector->hide();
+    cmbChannelSelector->hide();
     btnToggleFavorite->hide();
   }
 #else
@@ -1825,7 +1809,7 @@ void RadioInterface::stop_source_dumping()
 
 //
 void RadioInterface::start_source_dumping()
-{
+{                                                                         
   QString deviceName = mpInputDevice->deviceName();
   QString channelName = mChannel.channelName;
 
@@ -2002,7 +1986,7 @@ void RadioInterface::connect_dab_processor()
   //	we avoided till now connecting the channel selector
   //	to the slot since that function does a lot more, things we
   //	do not want here
-  connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+  connect(cmbChannelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_show_nominal_carrier);
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_select_carrier_plot_type);
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, mpDabProcessor.get(), &DabProcessor::slot_select_iq_plot_type);
@@ -2173,7 +2157,7 @@ void RadioInterface::local_select(const QString & theChannel, const QString & se
   // The hard part is stopping the current service, quitting the current channel, selecting a new channel, waiting a while
   stop_channel();
   //      and start the new channel first
-  int k = channelSelector->findText(theChannel);
+  int k = cmbChannelSelector->findText(theChannel);
   if (k != -1)
   {
     _update_channel_selector(k);
@@ -2193,7 +2177,7 @@ void RadioInterface::local_select(const QString & theChannel, const QString & se
 
   // _trigger_preset_timer();
 
-  start_channel(channelSelector->currentText());
+  start_channel(cmbChannelSelector->currentText());
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2431,56 +2415,6 @@ void RadioInterface::_slot_handle_target_service_button()
   mpServiceListHandler->jump_entries(0);
 }
 
-//	Previous and next services. trivial implementation
-//void RadioInterface::handle_serviceButton(direction d)
-//{
-//  if (!running.load())
-//  {
-//    return;
-//  }
-//
-//  presetTimer.stop();
-//  stopScanning(false);
-//  channel.nextService.valid = false;
-//  if (!channel.currentService.valid)
-//  {
-//    return;
-//  }
-//
-//  QString oldService = channel.currentService.serviceName;
-//
-//  stopService(channel.currentService);
-//  channel.currentService.valid = false;
-//
-//  if ((serviceList.size() != 0) && (oldService != ""))
-//  {
-//    for (int i = 0; i < (int)(serviceList.size()); i++)
-//    {
-//      if (serviceList.at(i).name == oldService)
-//      {
-//        //colorService(model.index(i, 0), Qt::black, fontSize);
-//        if (d == FORWARD)
-//        {
-//          i = (i + 1) % serviceList.size();
-//        }
-//        else
-//        {
-//          i = (i - 1 + serviceList.size()) % serviceList.size();
-//        }
-//        DabService s;
-//        my_dabProcessor->getParameters(serviceList.at(i).name, &s.SId, &s.SCIds);
-//        if (s.SId == 0)
-//        {
-//          write_warning_message("insufficient data for this program (4)");
-//          break;
-//        }
-//        s.serviceName = serviceList.at(i).name;
-//        startService(s);
-//        break;
-//      }
-//    }
-//  }
-//}
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -2491,8 +2425,10 @@ void RadioInterface::_slot_handle_target_service_button()
 //	actually start the service that we were waiting for
 //	Assumption is that the channel is set, and the servicename
 //	is to be found in "nextService"
-void RadioInterface::_slot_set_preset_service()
+void RadioInterface::_slot_preset_timeout()
 {
+  qCDebug(sLogRadioInterface) << Q_FUNC_INFO;
+
   if (!mIsRunning.load())
   {
     return;
@@ -2520,21 +2456,20 @@ void RadioInterface::_slot_set_preset_service()
 
   QStringList serviceList;
 
-  if ((rand() & 1) == 0) serviceList << QString((char)('a' + (rand() % 26))) + QString::number( rand() & 0xFFFF, 16);
+  if ((rand() & 1) == 0) serviceList << QString((char)('a' + (rand() % 26))) + QString::number(rand() & 0xFFFF, 16);
 
   for (const auto & sl : mServiceList)
   {
     const bool isAudio = mpDabProcessor->is_audioService(sl.name);
-    qDebug() << sl.name << QString::number(sl.SId, 16) << isAudio;
+    // qDebug() << sl.name << QString::number(sl.SId, 16) << isAudio;
 
     if (isAudio)
     {
       serviceList << sl.name;
-      // mpServiceListHandler->add_entry(mChannel.channelName, sl.name);
     }
   }
 
-  if ((rand() & 1) == 0) serviceList << QString((char)('A' + (rand() % 26))) + QString::number( rand() & 0xFFFF, 16);
+  if ((rand() & 1) == 0) serviceList << QString((char)('A' + (rand() % 26))) + QString::number(rand() & 0xFFFF, 16);
 
   mpServiceListHandler->update_services_at_channel(mChannel.channelName, serviceList);
 
@@ -2567,25 +2502,21 @@ void RadioInterface::write_warning_message(const QString & iMsg)
 ///////////////////////////////////////////////////////////////////////////
 //	Precondition: no channel should be active
 //
-void RadioInterface::start_channel(const QString & theChannel)
+void RadioInterface::start_channel(const QString & iChannel)
 {
-  const int32_t tunedFrequencyHz = mBandHandler.get_frequency_Hz(theChannel);
-  LOG("channel starts ", theChannel);
+  const int32_t tunedFrequencyHz = mBandHandler.get_frequency_Hz(iChannel);
+  LOG("channel starts ", iChannel);
   mSpectrumViewer.show_nominal_frequency_MHz((float)tunedFrequencyHz / 1'000'000.0f);
-  mpSH->write(SettingHelper::channel, theChannel);
   mpInputDevice->resetBuffer();
   mServiceList.clear();
-  //model.clear();
-  //ensembleDisplay->setModel(&model);
   mpInputDevice->restartReader(tunedFrequencyHz);
   mChannel.clean_channel();
-  mChannel.channelName = theChannel;
-  //dabSettings->setValue("channel", theChannel);
+  mChannel.channelName = iChannel;
   mChannel.nominalFreqHz = tunedFrequencyHz;
 
   mpServiceListHandler->set_selector_channel_only(mChannel.channelName);
 
-  if (mShowOnlyCurrTrans && (mpHttpHandler != nullptr))
+  if (mShowOnlyCurrTrans && mpHttpHandler != nullptr)
   {
     mpHttpHandler->putData(MAP_RESET, cmplx(0, 0), "", "", "", 0, 0, 0, 0);
   }
@@ -2594,14 +2525,15 @@ void RadioInterface::start_channel(const QString & theChannel)
     mpHttpHandler->putData(MAP_FRAME, cmplx(-1, -1), "", "", "", 0, 0, 0, 0);
   }
 
-  enable_ui_elements_for_safety(true);
+  enable_ui_elements_for_safety(!mIsScanning);
 
   mpDabProcessor->start();
 
-  if (!mIsScanning.load())
+  if (!mIsScanning)
   {
-    const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
-    mEpgTimer.start(switchDelay * 1000);
+    mpSH->write(SettingHelper::channel, iChannel);
+    // const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
+    mEpgTimer.start(cEpgTimeoutMs);
   }
 }
 
@@ -2623,13 +2555,12 @@ void RadioInterface::stop_channel()
     stop_service(mChannel.currentService);
   }
 
-  for (uint16_t i = 0; i < mChannel.backgroundServices.size(); i++)
+  for (const auto & bgs : mChannel.backgroundServices)
   {
-    SDabService s = mChannel.backgroundServices.at(i);
-    mpDabProcessor->stop_service(s.subChId, BACK_GROUND);
-    if (s.fd != nullptr)
+    mpDabProcessor->stop_service(bgs.subChId, BACK_GROUND);
+    if (bgs.fd != nullptr)
     {
-      fclose(s.fd);
+      fclose(bgs.fd);
     }
   }
   mChannel.backgroundServices.clear();
@@ -2664,7 +2595,7 @@ void RadioInterface::stop_channel()
   mChannelTimer.stop();
   mChannel.clean_channel();
   mChannel.targetPos = cmplx(0, 0);
-  if (mShowOnlyCurrTrans && (mpHttpHandler != nullptr))
+  if (mShowOnlyCurrTrans && mpHttpHandler != nullptr)
   {
     mpHttpHandler->putData(MAP_RESET, mChannel.targetPos, "", "", "", 0, 0, 0, 0);
   }
@@ -2687,8 +2618,6 @@ void RadioInterface::stop_channel()
   transmitter_coordinates->setText(" ");
 
   mServiceList.clear();
-  //model.clear();
-  //ensembleDisplay->setModel(&model);
   clean_screen();
   _show_epg_label(false);
   lblStationLocation->setText("");
@@ -2731,11 +2660,11 @@ void RadioInterface::_slot_handle_scan_button()
   }
   else
   {
-    startScanning();
+    start_scanning();
   }
 }
 
-void RadioInterface::startScanning()
+void RadioInterface::start_scanning()
 {
   mPresetTimer.stop();
   mChannelTimer.stop();
@@ -2747,32 +2676,31 @@ void RadioInterface::startScanning()
   LOG("scanning starts with ", QString::number(cc));
   mIsScanning.store(true);
 
-//  if (my_scanTable == nullptr)
-//  {
-//    my_scanTable = new ContentTable(this, dabSettings, "scan", my_dabProcessor->scanWidth());
-//  }
-//  else
-//  {
-//    my_scanTable->clearTable();
-//  }
+  // if (my_scanTable == nullptr)
+  // {
+  //   my_scanTable = new ContentTable(this, dabSettings, "scan", my_dabProcessor->scanWidth());
+  // }
+  // else
+  // {
+  //   my_scanTable->clearTable();
+  // }
 
   mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::Permanent);
   mpServiceListHandler->delete_table(false);
   mpServiceListHandler->create_new_table();
 
-  QString topLine = QString("ensemble") + ";" + "channelName" + ";" + "frequency (KHz)" + ";" + "Eid" + ";" + "time" + ";" + "tii" + ";" + "SNR" + ";" + "nr services" + ";";
-//  my_scanTable->addLine(topLine);
-//  my_scanTable->addLine("\n");
+  // QString topLine = QString("ensemble") + ";" + "channelName" + ";" + "frequency (KHz)" + ";" + "Eid" + ";" + "time" + ";" + "tii" + ";" + "SNR" + ";" + "nr services" + ";";
+  // my_scanTable->addLine(topLine);
+  // my_scanTable->addLine("\n");
 
-  mpDabProcessor->set_scanMode(true);
+  mpDabProcessor->set_scan_mode(true); // avoid MSC activities
   //  To avoid reaction of the system on setting a different value:
   _update_channel_selector(cc);
-  lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
+  lblDynLabel->setText("Scanning channel " + cmbChannelSelector->currentText());
   btnScanning->start_animation();
-  const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
-  mChannelTimer.start(switchDelay * 1000);
+  mChannelTimer.start(cChannelTimeoutMs);
 
-  start_channel(channelSelector->currentText());
+  start_channel(cmbChannelSelector->currentText());
 }
 
 //	stop_scanning is called
@@ -2788,8 +2716,8 @@ void RadioInterface::stop_scanning()
   {
     btnScanning->stop_animation();
     LOG("scanning stops ", "");
-    mpDabProcessor->set_scanMode(false);
-    lblDynLabel->setText("Scan ended");
+    mpDabProcessor->set_scan_mode(false);
+    lblDynLabel->setText("Scan ended\nSelect a service on the left");
     mChannelTimer.stop();
     mIsScanning.store(false);
     mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table
@@ -2805,41 +2733,36 @@ void RadioInterface::stop_scanning()
 
 void RadioInterface::slot_no_signal_found()
 {
-
   disconnect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   mChannelTimer.stop();
   disconnect(&mChannelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
   if (mIsRunning.load() && mIsScanning.load())
   {
-    int cc = channelSelector->currentIndex();
-//    if (!mServiceList.empty())
-//    {
-//      showServices();
-//    }
+    int cc = cmbChannelSelector->currentIndex();
+    // if (!mServiceList.empty())
+    // {
+    //   showServices();
+    // }
     stop_channel();
     cc = mBandHandler.nextChannel(cc);
     fprintf(stdout, "going to channel %d\n", cc);
-    if (cc >= channelSelector->count())
+
+    if (cc >= cmbChannelSelector->count())
     {
       stop_scanning();
     }
     else
-    {  // we just continue
-      if (cc >= channelSelector->count())
-      {
-        cc = mBandHandler.firstChannel();
-      }
+    {  
       //	To avoid reaction of the system on setting a different value:
       _update_channel_selector(cc);
 
       connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
       connect(&mChannelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
-      lblDynLabel->setText("Scanning channel " + channelSelector->currentText());
-      const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
-      mChannelTimer.start(switchDelay * 1000);
-      start_channel(channelSelector->currentText());
+      lblDynLabel->setText("Scanning channel " + cmbChannelSelector->currentText());
+      mChannelTimer.start(cChannelTimeoutMs);
+      start_channel(cmbChannelSelector->currentText());
     }
   }
   else if (mIsScanning.load())
@@ -2853,31 +2776,38 @@ void RadioInterface::slot_no_signal_found()
 // showServices
 ////////////////////////////////////////////////////////////////////////////
 
-//void RadioInterface::showServices()
-//{
-//  int scanMode = mConfig.scanmodeSelector->currentIndex();
-//  QString SNR = "SNR " + QString::number(channel.snr);
+// void RadioInterface::showServices() const
+// {
+//   // int scanMode = mConfig.scanmodeSelector->currentIndex();
+//   QString SNR = "SNR " + QString::number(mChannel.snr);
 //
-//  if (my_dabProcessor == nullptr)
-//  {  // cannot happen
-//    fprintf(stderr, "Expert error 26\n");
-//    return;
-//  }
+//   if (mpDabProcessor == nullptr)
+//   {  // cannot happen
+//     fprintf(stderr, "Expert error 26\n");
+//     return;
+//   }
 //
-//  QString utcTime = convertTime(UTC.year, UTC.month, UTC.day, UTC.hour, UTC.minute);
-//  QString headLine = channel.ensembleName + ";" + channel.channelName + ";" + QString::number(channel.nominalFreqHz / 1000) + ";"
-//                   + hextoString(channel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";"
-//                   + QString::number(serviceList.size()) + ";" + lblStationLocation->text();
-//  QStringList s = my_dabProcessor->basicPrint();
-//  my_scanTable->addLine(headLine);
-//  my_scanTable->addLine("\n;\n");
-//  for (const auto & i : s)
-//  {
-//    my_scanTable->addLine(i);
-//  }
-//  my_scanTable->addLine("\n;\n;\n");
-//  my_scanTable->show();
-//}
+//   QString utcTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
+//   QString headLine = mChannel.ensembleName + ";" + mChannel.channelName + ";" + QString::number(mChannel.nominalFreqHz / 1000) + ";"
+//                    + hex_to_str(mChannel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + utcTime + ";" + SNR + ";"
+//                    + QString::number(mServiceList.size()) + ";" + lblStationLocation->text();
+//   QStringList s = mpDabProcessor->basicPrint();
+//
+//   qInfo() << headLine;
+//   for (const auto & i : s)
+//   {
+//     qInfo() << i;
+//   }
+//
+//   // my_scanTable->addLine(headLine);
+//   // my_scanTable->addLine("\n;\n");
+//   // for (const auto & i : s)
+//   // {
+//   //   my_scanTable->addLine(i);
+//   // }
+//   // my_scanTable->addLine("\n;\n;\n");
+//   // my_scanTable->show();
+// }
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -2919,8 +2849,10 @@ std::vector<SServiceId> RadioInterface::insert_sorted(const std::vector<SService
 void RadioInterface::enable_ui_elements_for_safety(const bool iEnable)
 {
   mConfig.dumpButton->setEnabled(iEnable);
+  btnToggleFavorite->setEnabled(iEnable);
   btnPrevService->setEnabled(iEnable);
   btnNextService->setEnabled(iEnable);
+  cmbChannelSelector->setEnabled(iEnable);
   mConfig.contentButton->setEnabled(iEnable);
 }
 
@@ -2935,21 +2867,21 @@ void RadioInterface::_slot_handle_mute_button()
 
 void RadioInterface::_update_channel_selector(int index)
 {
-  if (channelSelector->currentIndex() == index)
+  if (cmbChannelSelector->currentIndex() == index)
   {
     return;
   }
 
-  disconnect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
-  channelSelector->blockSignals(true);
-emit signal_set_new_channel(index);
+  disconnect(cmbChannelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+  cmbChannelSelector->blockSignals(true);
+  emit signal_set_new_channel(index);
 
-  while (channelSelector->currentIndex() != index)
+  while (cmbChannelSelector->currentIndex() != index)
   {
     usleep(2000);
   }
-  channelSelector->blockSignals(false);
-  connect(channelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
+  cmbChannelSelector->blockSignals(false);
+  connect(cmbChannelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
 }
 
 
