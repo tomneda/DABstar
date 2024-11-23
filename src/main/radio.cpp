@@ -65,6 +65,7 @@
   #include <unistd.h>
 #endif
 
+// Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtInfoMsg)
 
 #if defined(__MINGW32__) || defined(_WIN32)
@@ -639,6 +640,11 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
   {
     mScanResult.NrNonAudioServices++;
   }
+
+  if (!mIsScanning) // trigger a second time as routine takes sometimes longer...
+  {
+    mPresetTimer.start(cPresetTimeoutMs);
+  }
 }
 
 //	The ensembleId is written as hexadecimal, however, the
@@ -659,6 +665,13 @@ static QString hex_to_str(int v)
 //	a slot, called by the fib processor
 void RadioInterface::slot_name_of_ensemble(int id, const QString & v)
 {
+  qCDebug(sLogRadioInterface) << Q_FUNC_INFO << id << v;
+
+  if (!mIsScanning && mPresetTimer.isActive())  // retrigger preset timer if already running
+  {
+    mPresetTimer.start(cPresetTimeoutMs);
+  }
+
   QString s;
   if (!mIsRunning.load())
   {

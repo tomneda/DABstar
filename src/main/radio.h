@@ -199,8 +199,8 @@ private:
 
   static constexpr int32_t cDisplayTimeoutMs = 1000;
   static constexpr int32_t cChannelTimeoutMs = 3000;
-  static constexpr int32_t cEpgTimeoutMs = 3000;
-  static constexpr int32_t cPresetTimeoutMs = 200;
+  static constexpr int32_t cEpgTimeoutMs     = 3000;
+  static constexpr int32_t cPresetTimeoutMs  =  500;
 
   int32_t mAudioFrameCnt = 0;
   int32_t mMotObjectCnt = 0;
