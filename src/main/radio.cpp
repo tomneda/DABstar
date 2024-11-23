@@ -472,6 +472,15 @@ void RadioInterface::_trigger_preset_timer()
   mPresetTimer.start(cPresetTimeoutMs);
 }
 
+QString RadioInterface::_get_scan_message(const bool iEndMsg) const
+{
+  QString s = iEndMsg ? "Scan ended - Select a service on the left" : "Scanning channel " + cmbChannelSelector->currentText();
+  s += "\nFound " + QString::number(mScanResult.NrChannels) + " DAB channels";
+  s += "\nFound " + QString::number(mScanResult.NrAudioServices) + " audio services";
+  s += "\nFound " + QString::number(mScanResult.NrNonAudioServices) + " non-audio services";
+  return s;
+}
+
 //	when doStart is called, a device is available and selected
 bool RadioInterface::do_start()
 {
@@ -594,6 +603,16 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
     if (mpDabProcessor->is_audioService(iServiceName))
     {
       mpServiceListHandler->add_entry(mChannel.channelName, iServiceName);
+      mScanResult.NrAudioServices++;
+      if (mScanResult.LastChannel != mChannel.channelName)
+      {
+        mScanResult.LastChannel = mChannel.channelName;
+        mScanResult.NrChannels++;
+      }
+    }
+    else
+    {
+      mScanResult.NrNonAudioServices++;
     }
   }
 }
@@ -2671,8 +2690,10 @@ void RadioInterface::start_scanning()
   mEpgTimer.stop();
   connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
   stop_channel();
-  const int cc = mBandHandler.firstChannel();
 
+  mScanResult = {};
+
+  const int cc = mBandHandler.firstChannel();
   LOG("scanning starts with ", QString::number(cc));
   mIsScanning.store(true);
 
@@ -2696,7 +2717,7 @@ void RadioInterface::start_scanning()
   mpDabProcessor->set_scan_mode(true); // avoid MSC activities
   //  To avoid reaction of the system on setting a different value:
   _update_channel_selector(cc);
-  lblDynLabel->setText("Scanning channel " + cmbChannelSelector->currentText());
+  lblDynLabel->setText(_get_scan_message(false));
   btnScanning->start_animation();
   mChannelTimer.start(cChannelTimeoutMs);
 
@@ -2717,8 +2738,9 @@ void RadioInterface::stop_scanning()
     btnScanning->stop_animation();
     LOG("scanning stops ", "");
     mpDabProcessor->set_scan_mode(false);
-    lblDynLabel->setText("Scan ended\nSelect a service on the left");
+    lblDynLabel->setText(_get_scan_message(true));
     mChannelTimer.stop();
+    enable_ui_elements_for_safety(true);
     mIsScanning.store(false);
     mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table
   }
@@ -2760,7 +2782,7 @@ void RadioInterface::slot_no_signal_found()
       connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &RadioInterface::slot_no_signal_found);
       connect(&mChannelTimer, &QTimer::timeout, this, &RadioInterface::_slot_channel_timeout);
 
-      lblDynLabel->setText("Scanning channel " + cmbChannelSelector->currentText());
+      lblDynLabel->setText(_get_scan_message(false));
       mChannelTimer.start(cChannelTimeoutMs);
       start_channel(cmbChannelSelector->currentText());
     }
@@ -2872,6 +2894,7 @@ void RadioInterface::_update_channel_selector(int index)
     return;
   }
 
+  // TODO: why is that so complicated?
   disconnect(cmbChannelSelector, &QComboBox::textActivated, this, &RadioInterface::_slot_handle_channel_selector);
   cmbChannelSelector->blockSignals(true);
   emit signal_set_new_channel(index);

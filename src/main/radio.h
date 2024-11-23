@@ -236,6 +236,14 @@ private:
   std::atomic<bool> mIsScanning{false};
   std::unique_ptr<IDeviceHandler> mpInputDevice;
   DeviceSelector mDeviceSelector;
+  struct SScanResult
+  {
+    uint32_t NrChannels = 0;
+    uint32_t NrAudioServices = 0;
+    uint32_t NrNonAudioServices = 0;
+    QString LastChannel;
+  };
+  SScanResult mScanResult{};
 #ifdef  HAVE_PLUTO_RXTX
   dabStreamer * streamerOut = nullptr;
 #endif
@@ -353,6 +361,7 @@ private:
   void _set_device_to_file_mode(const bool iDataFromFile);
   void _setup_audio_output(uint32_t iSampleRate);
   void _trigger_preset_timer();
+  QString _get_scan_message(bool iEndMsg) const;
 
 signals:
   void signal_set_new_channel(int);
