@@ -300,6 +300,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   lblVersion->setText(QString("V" + mVersionStr));
   lblCopyrightIcon->setToolTip(get_copyright_text());
+  lblCopyrightIcon->setTextInteractionFlags(Qt::TextBrowserInteraction);
   lblCopyrightIcon->setOpenExternalLinks(true);
 
   const QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
@@ -3619,6 +3620,11 @@ void RadioInterface::clean_up()
 QString RadioInterface::_convert_links_to_clickable(const QString & iText) const
 {
   // qDebug() << "iText: " << iText << iText.length();
+
+  if (!mConfig.cbUrlClickable->isChecked())
+  {
+    return iText;
+  }
 
   // Allow uppercase also in top-level-domain as some texts are overall in uppercase letters.
   // Allow also umlauts as part of the URL, maybe there are more special letters valid for an URL outside...

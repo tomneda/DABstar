@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>configWidget</class>
  <widget class="QWidget" name="configWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>593</width>
+    <height>328</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Configuration and Control</string>
   </property>
@@ -197,7 +205,7 @@
      <item>
       <widget class="Line" name="line_2">
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(51, 51, 51);</string>
+        <string notr="true">background-color: black;</string>
        </property>
        <property name="orientation">
         <enum>Qt::Orientation::Vertical</enum>
@@ -288,8 +296,7 @@
      <item>
       <widget class="Line" name="line">
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(51, 51, 51);
-</string>
+        <string notr="true">background-color: black;</string>
        </property>
        <property name="orientation">
         <enum>Qt::Orientation::Vertical</enum>
@@ -368,6 +375,16 @@
          </property>
          <property name="text">
           <string>Show non-audio in service list</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbUrlClickable">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;URLs are clickable in dynamic label text&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The dynamic label text is scanned for URLs and email addresses and the links are (tried to) converted into clickable links. So the web browser or email program should be opened automatically by clicking on them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>URLs clickable in dyn. label</string>
          </property>
         </widget>
        </item>

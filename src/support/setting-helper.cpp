@@ -81,6 +81,7 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(cbShowOnlyCurrTrans, { "", "transmitterTags", false });
   mMap.insert(cbUseNativeFileDialog, { "", "useNativeFileDialogs", false });
   mMap.insert(cbUseUtcTime, { "", "utcSelector", false });
+  mMap.insert(cbUrlClickable, { "", "urlClickable", 2 });  // 2 is clicked
 
   // special enums for windows position and size storage
   mMap.insert(configWidget, { "", "configWidget", QVariant() });
