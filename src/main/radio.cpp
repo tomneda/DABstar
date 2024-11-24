@@ -166,6 +166,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   _create_status_info();
 
   lblDynLabel->setTextFormat(Qt::RichText);
+  lblDynLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+  lblDynLabel->setOpenExternalLinks(true);
 
   thermoPeakLevelLeft->setValue(-40.0);
   thermoPeakLevelRight->setValue(-40.0);
@@ -1474,7 +1476,7 @@ void RadioInterface::slot_show_label(const QString & s)
 #endif
   if (mIsRunning.load())
   {
-    lblDynLabel->setText(s);
+    lblDynLabel->setText(_convert_links_to_clickable(s));
   }
   //	if we dtText is ON, some work is still to be done
   if ((mDlTextFile == nullptr) || (mDlCache.addifNew(s)))
@@ -3612,4 +3614,53 @@ void RadioInterface::clean_up()
   slot_show_audio_peak_level(-40.0f, -40.0);
   progBarFicError->setValue(0);
   progBarAudioBuffer->setValue(0);
+}
+
+QString RadioInterface::_convert_links_to_clickable(const QString & iText) const
+{
+  // qDebug() << "iText: " << iText << iText.length();
+
+  // Allow uppercase also in top-level-domain as some texts are overall in uppercase letters.
+  // Allow also umlauts as part of the URL, maybe there are more special letters valid for an URL outside...
+  static const QRegularExpression regex2(R"([\w\-äöüÄÖÜ]+\.[a-zA-Z]{2,})");
+  static const QRegularExpression regex1("\\s+"); // match any whitespace
+
+  QStringList wordList = iText.split(regex1, Qt::SkipEmptyParts);
+  QString result = iText;
+
+  for (const QString & word : wordList)
+  {
+    // qDebug() << "word: " << word << word.length();
+
+    if (const QRegularExpressionMatch match = regex2.match(word);
+        match.hasMatch())
+    {
+      QString linkStr;
+
+      if (word.indexOf("@", 1) > 0)
+      {
+        linkStr = "mailto:" + word;
+      }
+      else if (!word.startsWith("http"))
+      {
+        linkStr = "https://" + word; // could be only http: but almost should by quite seldom nowadays
+      }
+      else
+      {
+        linkStr = word;
+      }
+      const QString repl = QString("<a href=\"%1\" style=\"color: #7983FF;\">%2</a>").arg(linkStr, word);
+
+      // qDebug() << "repl: " << repl << repl.length();
+
+      // Replacing has a drawback: if repl is found more than once then the link could get corrupted.
+      // Possible solution: remove more than one same "word" finding and sort the rest with the length (top to down).
+      // This would be a very seldom case, so we ignore them.
+      // Assemble back each word to the entire string has also the disadvantage that several separators can got lost.
+      result.replace(word, repl);
+    }
+  }
+
+  // qDebug() << "result:" << result << result.length();
+  return result;
 }

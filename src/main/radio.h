@@ -360,6 +360,7 @@ private:
   void _set_device_to_file_mode(const bool iDataFromFile);
   void _setup_audio_output(uint32_t iSampleRate);
   QString _get_scan_message(bool iEndMsg) const;
+  QString _convert_links_to_clickable(const QString& iText) const;
 
 signals:
   void signal_set_new_channel(int);
