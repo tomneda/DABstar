@@ -66,7 +66,7 @@
 #endif
 
 // Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
-Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtInfoMsg)
+Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtWarningMsg)
 
 #if defined(__MINGW32__) || defined(_WIN32)
 
@@ -122,7 +122,7 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 #endif
 
 
-RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, int32_t iDataPort, QWidget * iParent)
+RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const int32_t iDataPort, QWidget * iParent)
   : QWidget(iParent)
   , Ui_DabRadio()
   , mSpectrumViewer(this, ipSettings, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer)
@@ -228,7 +228,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mpTechDataWidget->hide();  // until shown otherwise
   mServiceList.clear();
 #ifdef DATA_STREAMER
-  dataStreamer = new tcpServer(dataPort);
+  dataStreamer = new tcpServer(iDataPort);
 #endif
 
   // Where do we leave the audio out?
@@ -620,13 +620,17 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
     return; // service already in service list
   }
 
-  mServiceList = insert_sorted(mServiceList, ed);
+  const bool isAudioService = mpDabProcessor->is_audioService(iServiceName);
 
-  if (mpDabProcessor->is_audioService(iServiceName))
+  if (mConfig.cbShowNonAudioInServiceList->isChecked() || isAudioService)
   {
+    mServiceList = insert_sorted(mServiceList, ed);
     mpServiceListHandler->add_entry(mChannel.channelName, iServiceName);
+  }
 
-    if (mIsScanning)
+  if (mIsScanning)
+  {
+    if (isAudioService)
     {
       mScanResult.NrAudioServices++;
       if (mScanResult.LastChannel != mChannel.channelName)
@@ -635,10 +639,10 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
         mScanResult.NrChannels++;
       }
     }
-  }
-  else if (mIsScanning)
-  {
-    mScanResult.NrNonAudioServices++;
+    else
+    {
+      mScanResult.NrNonAudioServices++;
+    }
   }
 
   if (!mIsScanning) // trigger a second time as routine takes sometimes longer...
@@ -672,7 +676,6 @@ void RadioInterface::slot_name_of_ensemble(int id, const QString & v)
     mPresetTimer.start(cPresetTimeoutMs);
   }
 
-  QString s;
   if (!mIsRunning.load())
   {
     return;
@@ -943,6 +946,7 @@ void RadioInterface::slot_send_datagram(int length)
 //	tdcData is triggered by the backend.
 void RadioInterface::slot_handle_tdc_data(int frametype, int length)
 {
+  qCDebug(sLogRadioInterface) << Q_FUNC_INFO << frametype << length;
 #ifdef DATA_STREAMER
   uint8_t localBuffer [length + 8];
 #endif

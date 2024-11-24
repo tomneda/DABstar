@@ -18,7 +18,7 @@
 #include "service-list-handler.h"
 #include <QLoggingCategory>
 
-//Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtInfoMsg)
+// Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtWarningMsg)
 
 void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
@@ -106,6 +106,7 @@ void ServiceListHandler::add_entry(const QString & iChannel, const QString & iSe
 {
   if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
   {
+    qCDebug(sLogServiceListHandler) << "Added to database: service" << iService << "at channel" << iChannel;
     _fill_table_view_from_db();
     _jump_to_list_entry_and_emit_fav_status();
   }
@@ -134,7 +135,7 @@ void ServiceListHandler::delete_not_existing_services_at_channel(const QString &
     {
       if (mServiceDB.delete_entry(iChannel, curService)) // true if entry was deleted (must always be true here)
       {
-        qCInfo(sLogServiceListHandler) << "Deleted in database: service" << curService << "at channel" << iChannel;
+        qCDebug(sLogServiceListHandler) << "Deleted in database: service" << curService << "at channel" << iChannel;
         contentChanged = true;
       }
     }

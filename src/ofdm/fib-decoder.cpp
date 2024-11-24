@@ -989,35 +989,33 @@ void FibDecoder::process_FIG1(const uint8_t * d)
 //
 void FibDecoder::FIG1Extension0(const uint8_t * d)
 {
-  uint8_t charSet, extension;
-  uint8_t Rfu;
-  uint32_t EId = 0;
-  int16_t offset = 0;
-  char label[17];
 
-  //      from byte 1 we deduce:
-  charSet = getBits_4(d, 8);
-  Rfu = getBits_1(d, 8 + 4);
-  extension = getBits_3(d, 8 + 5);
-  label[16] = 0x00;
-  (void)Rfu;
-  (void)extension;
+  // from byte 1 we deduce:
+  const uint8_t charSet = getBits_4(d, 8);
+  [[maybe_unused]] const uint8_t Rfu = getBits_1(d, 8 + 4);
+  [[maybe_unused]] const uint8_t extension = getBits_3(d, 8 + 5);
 
-  EId = getBits(d, 16, 16);
-  offset = 32;
-  if ((charSet <= 16))
-  { // EBU Latin based repertoire
+  const uint32_t EId = getBits(d, 16, 16);
+
+  if (charSet <= 16) // EBU Latin based repertoire
+  {
+    char label[17];
     for (int i = 0; i < 16; i++)
     {
+      constexpr int32_t offset = 32;
       label[i] = getBits_8(d, offset + 8 * i);
     }
-    //         fprintf (stdout, "Ensemblename: %16s\n", label);
+    label[16] = 0x00;
+
+    // fprintf (stdout, "Ensemblename: %16s\n", label);
     const QString name = toQStringUsingCharset((const char *)label, (CharacterSet)charSet);
+
     if (!ensemble->namePresent)
     {
       ensemble->ensembleName = name;
       ensemble->ensembleId = EId;
       ensemble->namePresent = true;
+
       emit signal_name_of_ensemble(EId, name);
     }
     ensemble->isSynced = true;

@@ -76,6 +76,7 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(cbSaveSlides, { "", "saveSlides", false });
   mMap.insert(serviceListSortCol, { "", "serviceListSortCol", false });
   mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
+  mMap.insert(cbShowNonAudioInServiceList, { "", "serviceListShowNonAudio", false });
   mMap.insert(cbUseNewTiiDetector, { "", "tii_detector", false });
   mMap.insert(cbShowOnlyCurrTrans, { "", "transmitterTags", false });
   mMap.insert(cbUseNativeFileDialog, { "", "useNativeFileDialogs", false });

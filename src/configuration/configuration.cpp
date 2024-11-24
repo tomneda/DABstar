@@ -23,7 +23,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
   mpRadioInterface(ipRI)
 {
   setupUi(this);
-  setFixedSize(455, 350);
+  setFixedSize(650, 330);
 
   mpSH->read_widget_geometry(SettingHelper::configWidget, this);
 
@@ -43,6 +43,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
   mpSH->register_and_connect_ui_element<SettingHelper::cbSaveTransToCsv>(cbSaveTransToCsv);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUseDcAvoidance>(cbUseDcAvoidance);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUseDcRemoval>(cbUseDcRemoval);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbShowNonAudioInServiceList>(cbShowNonAudioInServiceList);
   // cbActivateLogger is not stored in settings
   // cbActivateEti is not stored in settings
 
@@ -93,4 +94,5 @@ void Configuration::_sync_ui_elements(const bool iWriteSettings)
   mpSH->sync_ui_state(SettingHelper::cbSaveTransToCsv, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbUseDcAvoidance, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbUseDcRemoval, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbShowNonAudioInServiceList, iWriteSettings);
 }
