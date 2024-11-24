@@ -3270,8 +3270,11 @@ void RadioInterface::slot_handle_transmitter_tags(int /*d*/)
 
 void RadioInterface::show_pause_slide()
 {
+  // showSecondSlide is true if the 10th of seconds is even
+  const bool showSecondSlide = (QDateTime::currentDateTime().time().second() / 10 & 0x1) == 0;
+  const char * const picFile = (showSecondSlide ? ":res/logo/dabinvlogo.png" : ":res/logo/dabstar320x240.png");
+
   QPixmap p;
-  const char * const picFile = ((rand() & 1) != 0 ? ":res/logo/dabinvlogo.png" : ":res/logo/dabstar320x240.png");
   if (p.load(picFile, "png"))
   {
     write_picture(p);
