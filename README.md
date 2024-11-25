@@ -1,9 +1,11 @@
 # DABstar
 
 ## V3.0.1 (current mainline)
-I made big changes on the mainline, including the upgrade from Qt5 to Qt6.
+I made big changes on the mainline, including the upgrade from Qt 5 to Qt 6.
 So, I decided to raise the major version to 3.
 
+- Upgrading from Qt 5.x.x to Qt 6.7.3. So, using also the new QWT 6.3.0 for that.
+- The course frequency correction got much better due the proposal from old-dab (https://github.com/tomneda/DABstar/issues/22).
 - Audio output is fixed done with QtAudio, not more portaudio, some parts taken from AbracaDABra (https://github.com/KejPi/AbracaDABra) and adapted it largely.  
   Stuttering while sound startup after service change is away (soft fade-in/fade-out).
 - Use new RTL-SDR driver access from old-dab (https://github.com/old-dab/rtlsdr).
