@@ -1,41 +1,20 @@
 # DABstar
 
-## V3.0.1 (current mainline)
+## V3.0.1
 I made big changes on the mainline, including the upgrade from Qt 5 to Qt 6.
 So, I decided to raise the major version to 3.
 
-- Upgrading from Qt 5.x.x to Qt 6.7.3. So, using also the new QWT 6.3.0 for that.
-- The course frequency correction got much better due the proposal from old-dab (https://github.com/tomneda/DABstar/issues/22).
-- Audio output is fixed done with QtAudio, not more portaudio, some parts taken from AbracaDABra (https://github.com/KejPi/AbracaDABra) and adapted it largely.  
-  Stuttering while sound startup after service change is away (soft fade-in/fade-out).
-- Use new RTL-SDR driver access from old-dab (https://github.com/old-dab/rtlsdr).
-- Use current SDRPlay driver access V3.15 with adaptions from old-dab (https://github.com/old-dab).
-- Issue "Service Label change" fixed (https://github.com/tomneda/DABstar/issues/23).
-- For the service list the non-audio services can be now suppressed not to be shown there (selectable).
-- While playing files, not anymore a wrong channel number is shown in service list. Instead "File" is shown there.
-- Provide stereo peak-level meter on main widget.
-- The audio buffer state is shown on main widget.
-- Email addresses and links are clickable on dynamic label text (selectable).
-- A compass direction (NW, NNE, NE, ENE, ...) is shown at the transmitter location line.
-- Fix in scaling of EVM(dB) in carrier scope.
-- Minor and major refactorings on different parts.
-
-Still known problems:
-- The audio buffer got a underflow after a while at service with certain bitrate like 104 kBit/s.
-- At first startup the audio output destination is maybe not the intended.
-- Minor other things (stored on my private TODO list)
-
-The creation of an AppImage is not working fluently yet. After I solved that I will provide an AppImage.
-
-Mainly due to Qt6 the installation procedure has changed. So this will be updated here soon.
-**So, the description below is still valid only for Versions <= 2.8.0.** 
-
----
-
----
-
 ![screenshot.png](res/for_readme/screenshot.png)
-(Picture from V2.2.0)
+(Picture from V3.0.1)
+
+I made an AppImage, see [Release Page](https://github.com/tomneda/DABstar/releases/). See details what is new there.
+
+The installation procedure has changed. So this will be updated here later.
+
+**So, the description below is still valid mainly for Versions <= 2.8.0.** 
+
+---
+
 
 ## Table of Content
 <!-- TOC -->
