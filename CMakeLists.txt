@@ -55,11 +55,6 @@ add_definitions(-DAPP_NAME="${objectName}")
 add_definitions(-DPRJ_NAME="${PROJECT_NAME}")
 add_definitions(-DPRJ_VERS="${PROJECT_VERSION}")
 
-#if(CMAKE_BUILD_TYPE STREQUAL "Release")
-#    # regarding using QWT < 6.2.0 (6.1.4) to avoid many deprecated massages (only suppressed on release versions)
-#    add_definitions(-DQT_NO_DEPRECATED_WARNINGS)
-#endif()
-
 # choosing this optionally is necessary as the repository could be only accessed as read-only while appimage generation
 option(CONV_IN_FILES "Convert .in-files" ON)
 
@@ -206,11 +201,11 @@ endif ()
 #    list(APPEND extraLibs dlfcn-win32::dl)
 #endif ()
 
-#if (WIN32)
-#    find_library(WS2_32_LIBRARY NAMES ws2_32)
-#    print(WS2_32_LIBRARY)
-#    list(APPEND extraLibs ${WS2_32_LIBRARY})
-#endif ()
+if (WIN32)
+    find_library(WS2_32_LIBRARY NAMES ws2_32)
+    print(WS2_32_LIBRARY)
+    list(APPEND extraLibs ${WS2_32_LIBRARY})
+endif ()
 
 print(CMAKE_SOURCE_DIR)
 print(CMAKE_CURRENT_BINARY_DIR)

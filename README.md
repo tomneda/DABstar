@@ -1,24 +1,17 @@
 # DABstar
 
-## V3.0.1
-I made big changes on the mainline, including the upgrade from Qt 5 to Qt 6.
-So, I decided to raise the major version to 3.
-
+---
 ![screenshot.png](res/for_readme/screenshot.png)
 (Picture from V3.0.1)
-
-I made an AppImage, see [Release Page](https://github.com/tomneda/DABstar/releases/). See details what is new there.
-
-The installation procedure has changed. So this will be updated here later.
-
-**So, the description below is still valid mainly for Versions <= 2.8.0.** 
-
 ---
-
 
 ## Table of Content
 <!-- TOC -->
+* [DABstar](#dabstar)
+  * [Table of Content](#table-of-content)
+  * [Releases](#releases)
   * [Introduction](#introduction)
+  * [V3.x.y](#v3xy)
   * [Version 2.3.0 and above](#version-230-and-above)
   * [What is new in 2.2.0](#what-is-new-in-220)
   * [What is new in 2.1.0](#what-is-new-in-210)
@@ -32,47 +25,50 @@ The installation procedure has changed. So this will be updated here later.
     * [Some help for scanning](#some-help-for-scanning)
   * [How to apply TII info](#how-to-apply-tii-info)
   * [Installing on Linux](#installing-on-linux)
-    * [USRP UHD](#usrp-uhd)
     * [QWT installation / building](#qwt-installation--building)
       * [Original description](#original-description)
       * [QWT short build description](#qwt-short-build-description)
+    * [Building DABstar:](#building-dabstar)
+    * [Installing USRP UHD](#installing-usrp-uhd)
   * [Licences](#licences)
 <!-- TOC -->
 
+## Releases
+Latest AppImage versions see
+[Linux Release Page](https://github.com/tomneda/DABstar/releases/).
+
+[old-dab](https://github.com/old-dab) provides also Windows versions, see
+[Windows Release Page](https://github.com/old-dab/DABstar/releases).
+The feature-set could be different between Linux and Windows, even with same version number.
+
 ## Introduction
+[DABstar](https://github.com/tomneda/DABstar) was originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab)
+from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes and adaptions afterwards to Qt-DAB are included.
 
-**Latest versions see**
-[Release Page](https://github.com/tomneda/DABstar/releases/).
-
-
-Beside many small things under the hood I did major changes in the Look & Feel and mainly in the service selection.
-So I decide to make a major step to version 2 in the version numbering.
-
-[DABstar](https://github.com/tomneda/DABstar) was originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab) 
-from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes afterwards to Qt-DAB are included.
-
-As there are huge changes and additions (but also reductions) made from my side and there will be bigger changes in the future, 
+As there are huge changes and additions (but also reductions) made and there will be bigger changes in the future,
 I decided to give it the new name **DABstar**.
 
 I saw that with starting of Qt-DAB 6.x, it uses also new code parts and ideas from here. I am very appreciated about this :smiley:.
 This is of course very acknowledged that my work can give something back.
 
-I will try to maintain always a working state on `main` branch, so use this for building the software for yourself. 
-**Please do not try any other branch besides `main` branch. 
-They are indented for development, backups and tests and will not always work in their current state.**
+I will try to maintain always a working state on `main` branch, so use this for building the software for yourself.
+**Please do not try any other branch besides `main` branch.**
+They are indented for development, backups and tests and will not always work in their current state.
 
-For at least each new version change in the MAJOR and/or MINOR part I will provide a version tag for easy referencing.
-Please use the tags page on Github: [https://github.com/tomneda/DABstar/tags](https://github.com/tomneda/DABstar/tags).
-
-
-Meanwhile, I provide AppImages but still no Windows build. See [Link](https://github.com/tomneda/DABstar/releases).
+Recommended is to checkout a [tag](https://github.com/tomneda/DABstar/tags) of a released version, these are better tested.
 
 As this README got meanwhile quite long, I cut off the description regarding versions until 1.7.1, but you can still read
 it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f5297a5f44cd7aab0c016370e010ed3e/README.md)
 
+
+## V3.x.y
+I and old-dab made big changes on the mainline, including the upgrade from Qt 5 to Qt 6.
+So, I decided to raise the major version to 3.
+
+
 ## Version 2.3.0 and above
 
-Please look to the
+Beginning with this version, please look to the
 [Release Page](https://github.com/tomneda/DABstar/releases/)
 for a more detailed description of the changes.
 
@@ -187,7 +183,7 @@ That the location, distance and direction to the transmitter can be shown, do fo
 
 ## Installing on Linux
 
-This is what I needed to install DABstar on a fresh Ubuntu 20.04 / 22.04:
+This is what I needed to install DABstar on a fresh Ubuntu 24.04:
 ```
 sudo apt-get update
 sudo apt-get install git
@@ -200,7 +196,12 @@ sudo apt-get install portaudio19-dev
 sudo apt-get install zlib1g-dev
 sudo apt-get install libsamplerate0-dev
 sudo apt-get install libusb-1.0-0-dev
-sudo apt-get install libqwt-qt5-dev
+sudo apt-get install qt6-base-dev
+```
+
+If you want to build with qmake:
+```
+sudo apt-get install qmake6
 ```
 
 As libfaad had made issues with low rate services I switched over to FDK-AAC. 
@@ -217,25 +218,31 @@ make
 sudo make install
 ```
 
-If you decide using FDK-ACC (use `-DFDK_AAC=ON` on `cmake` command) instead of faad you can omit installing `libfaad-dev` and install instead this:
+
+### QWT installation / building
+
+It is recommended to build Qwt 6.3.0 (Qwt 6.2.0 will also work) for yourself. The library delivered with Ubuntu is quite old.
+
+#### Original description
+
+https://qwt.sourceforge.io/qwtinstall.html
+
+#### QWT short build description
+
+1. Download QWT 6.3.0: [Link](https://sourceforge.net/projects/qwt/files/qwt/6.3.0/).
+2. Unzip downloaded file and go into unzipped folder.
+3. comment out line "`QWT_CONFIG += QwtSvg`" with a "#" in file `qwtconfig.pri` if you have problems finding a SVG QT header file.
+
 ```
-sudo apt-get install libfdk-aac-dev
+qmake6 qwt.pro
+make
+sudo make install`
+sudo ldconfig
 ```
 
-For Qt5 try one of following (Ubuntu 22.04 needs the second one): 
-```
-sudo apt-get install qt5-default
-sudo apt-get install qtbase5-dev
-```
 
-For QWT try this (this will likely install Qwt 6.1.4):
-```
-sudo apt-get install libqwt-qt5-dev
-```
 
-If you have troubles with the last QWT package `libqwt-qt5-dev` try to build QWT for yourself. See [Link](#qwt-installation--building).
-
-Then for building DABstar do:
+### Building DABstar:
 ```
 git clone https://github.com/tomneda/DABstar.git
 cd DABstar
@@ -270,7 +277,7 @@ sudo make uninstall
 ```
 
 
-### USRP UHD
+### Installing USRP UHD
 
 Best worked for me was building UHD from the repository of Ettus Research.
 
@@ -289,21 +296,6 @@ Seems not more necessary relating to Qt-DAB
 --> 
 
 
-### QWT installation / building
-
-#### Original description
-
-https://qwt.sourceforge.io/qwtinstall.html 
-
-#### QWT short build description
-
-1. Download QWT 6.2.0: https://sourceforge.net/projects/qwt/files/qwt/6.2.0/qwt-6.2.0.zip/download
-2. Unzip downloaded file and go into unzipped folder
-3. comment out line "`QWT_CONFIG += QwtSvg`" with a "#" in file `qwtconfig.pri` if you have problems finding a SVG QT header file
-4. `qmake qwt.pro`
-5. `make` (you may provide the argument `-jn` for `n` number of used threads)
-6. `sudo make install`
-                                                
 ## Licences
 
 Rights of Qt-DAB, AbracaDABra, Qt, Qwt, FFTW, portaudio, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
