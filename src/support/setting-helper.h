@@ -85,15 +85,18 @@ public:
     serviceListSortCol, // 39
     serviceListSortDesc, // 40
     cbShowNonAudioInServiceList, // 41
-    cbUseNewTiiDetector, // 42
-    cbShowOnlyCurrTrans, // 43
+    cbUse_strongest_peak, // 42
+    cbTiiCollisions, // 43
     cbUseNativeFileDialog, // 44
     cbUseUtcTime, // 45
-    cbUrlClickable, // 46
+    enableTii, // 46
+    tii_threshold, //47
+    tii_subid, //48
+    cbUrlClickable, // 49
 
     // special enums for windows position and size storage
-    configWidget, // 47
-    mainWidget // 48
+    configWidget, // 50
+    mainWidget // 51
   };
 
   QVariant read(const EElem iElem) const;

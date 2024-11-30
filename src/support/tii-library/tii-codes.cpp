@@ -35,6 +35,7 @@
 enum
 {
   SEPARATOR = ';',
+  ID = 0,
   COUNTRY = 1,
   CHANNEL = 2,
   LABEL = 3,
@@ -43,8 +44,13 @@ enum
   LOCATION = 6,
   LATITUDE = 7,
   LONGITUDE = 8,
+  ALTITUDE = 9,
+  HEIGHT = 10,
+  POLARIZATION = 11,
+  FREQUENCY = 12,
   POWER = 13,
-  NR_COLUMNS = 14
+  DIRECTION = 14,
+  NR_COLUMNS = 15
 };
 
 #if defined(__MINGW32__) || defined(_WIN32)
@@ -150,18 +156,23 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
   return dataLoaded;
 }
 
-QString TiiHandler::get_transmitter_name(const QString & channel, uint16_t Eid, uint8_t mainId, uint8_t subId)
+const CacheElem *TiiHandler::get_transmitter_name(const QString & channel,
+											uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
   //fprintf(stdout, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
 
   for (const auto & i : mContentCacheVec)
   {
-    if ((channel == "any" || channel == i.channel) && i.Eid == Eid && i.mainId == mainId && i.subId == subId)
+    if ((channel == "any" || channel == i.channel) &&
+    	i.Eid == Eid &&
+    	i.mainId == mainId &&
+    	i.subId == subId &&
+	    !(i.transmitterName.contains("tunnel", Qt::CaseInsensitive)))
     {
-      return i.transmitterName;
+      return &i;
     }
   }
-  return "";
+  return nullptr;
 }
 
 void TiiHandler::get_coordinates(float * latitude, float * longitude, float * power, const QString & channel, const QString & transmitter)
@@ -342,6 +353,7 @@ void TiiHandler::_read_file(FILE * f)
     {
       continue;
     }
+    ed.id = _convert(columnVector[ID]);
     ed.country = columnVector[COUNTRY].trimmed();
     ed.Eid = _get_E_id(columnVector[EID]);
     ed.mainId = _get_main_id(columnVector[TII]);
@@ -353,6 +365,11 @@ void TiiHandler::_read_file(FILE * f)
     ed.latitude = _convert(columnVector[LATITUDE]);
     ed.longitude = _convert(columnVector[LONGITUDE]);
     ed.power = _convert(columnVector[POWER]);
+    ed.altitude = _convert(columnVector[ALTITUDE]);
+    ed.height = _convert(columnVector[HEIGHT]);
+    ed.polarization = columnVector[POLARIZATION].trimmed();
+    ed.frequency = _convert(columnVector[FREQUENCY]);
+    ed.direction = columnVector[DIRECTION].trimmed();
     if (count >= mContentCacheVec.size())
     {
       mContentCacheVec.resize(mContentCacheVec.size() + 500);

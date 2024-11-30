@@ -32,18 +32,18 @@ Configuration::Configuration(RadioInterface * ipRI) :
   sliderTest->hide(); // only used for test
 
   mpSH->register_and_connect_ui_element<SettingHelper::cbCloseDirect>(cbCloseDirect);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbUseNewTiiDetector>(cbUseNewTiiDetector);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbUse_strongest_peak>(cbUse_strongest_peak);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUseNativeFileDialog>(cbUseNativeFileDialog);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUseUtcTime>(cbUseUtcTime);
   mpSH->register_and_connect_ui_element<SettingHelper::cbGenXmlFromEpg>(cbGenXmlFromEpg);
   mpSH->register_and_connect_ui_element<SettingHelper::cbAlwaysOnTop>(cbAlwaysOnTop);
   mpSH->register_and_connect_ui_element<SettingHelper::cbManualBrowserStart>(cbManualBrowserStart);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbShowOnlyCurrTrans>(cbShowOnlyCurrTrans);
   mpSH->register_and_connect_ui_element<SettingHelper::cbSaveSlides>(cbSaveSlides);
   mpSH->register_and_connect_ui_element<SettingHelper::cbSaveTransToCsv>(cbSaveTransToCsv);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUseDcAvoidance>(cbUseDcAvoidance);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUseDcRemoval>(cbUseDcRemoval);
   mpSH->register_and_connect_ui_element<SettingHelper::cbShowNonAudioInServiceList>(cbShowNonAudioInServiceList);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbTiiCollisions>(cbTiiCollisions);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUrlClickable>(cbUrlClickable);
   // cbActivateLogger is not stored in settings
   // cbActivateEti is not stored in settings
@@ -60,9 +60,8 @@ Configuration::Configuration(RadioInterface * ipRI) :
   cpuMonitor->setAutoFillBackground(true);
 
   connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_load_table);
-  connect(cbUseNewTiiDetector, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_detector_mode);
+  connect(cbUse_strongest_peak, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
   connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &RadioInterface::slot_test_slider);
-  connect(cbShowOnlyCurrTrans, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_transmitter_tags);
   connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &RadioInterface::slot_handle_dl_text_button);
   connect(cbActivateLogger, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
   connect(streamoutSelector, qOverload<int>(&QComboBox::activated), mpRadioInterface, &RadioInterface::slot_set_stream_selector);
@@ -71,6 +70,9 @@ Configuration::Configuration(RadioInterface * ipRI) :
   connect(cbActivateEti, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
   connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_avoidance_algorithm);
   connect(cbUseDcRemoval, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_removal);
+  connect(tii_threshold, &QSpinBox::valueChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_threshold);
+  connect(cbTiiCollisions, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_tii_collisions);
+  connect(tii_subid, &QSpinBox::valueChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_subid);
 }
 
 void Configuration::save_position_and_config()
@@ -82,19 +84,19 @@ void Configuration::save_position_and_config()
 void Configuration::_sync_ui_elements(const bool iWriteSettings)
 {
   mpSH->sync_ui_state(SettingHelper::cbCloseDirect, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbUseNewTiiDetector, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbUse_strongest_peak, iWriteSettings);
   // cbActivateLogger is not stored in settings
   mpSH->sync_ui_state(SettingHelper::cbUseNativeFileDialog, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbUseUtcTime, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbGenXmlFromEpg, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbAlwaysOnTop, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbManualBrowserStart, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbShowOnlyCurrTrans, iWriteSettings);
   // cbActivateEti is not stored in settings
   mpSH->sync_ui_state(SettingHelper::cbSaveSlides, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbSaveTransToCsv, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbUseDcAvoidance, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbUseDcRemoval, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbShowNonAudioInServiceList, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbTiiCollisions, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbUrlClickable, iWriteSettings);
 }

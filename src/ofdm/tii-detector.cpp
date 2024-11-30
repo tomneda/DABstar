@@ -7,8 +7,11 @@
  * The original copyright information is preserved below and is acknowledged.
  */
 
+
+
+
 /*
- *    Copyright (C) 2014 .. 2017
+ *    Copyright (C) 2014 .. 2023
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
@@ -26,304 +29,439 @@
  *
  *    You should have received a copy of the GNU General Public License
  *    along with Qt-DAB; if not, write to the Free Software
- *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-#include  "tii-detector.h"
-#include  <cstring>
-#include  "fft/fft-complex.h"
+#include "tii-detector.h"
 
+// TII pattern for transmission modes I, II and IV
 static const uint8_t table[] = {
-  0017,    // 0 0 0 0 1 1 1 1		0
-  0027,    // 0 0 0 1 0 1 1 1		1
-  0033,    // 0 0 0 1 1 0 1 1		2
-  0035,    // 0 0 0 1 1 1 0 1		3
-  0036,    // 0 0 0 1 1 1 1 0		4
-  0047,    // 0 0 1 0 0 1 1 1		5
-  0053,    // 0 0 1 0 1 0 1 1		6
-  0055,    // 0 0 1 0 1 1 0 1		7
-  0056,    // 0 0 1 0 1 1 1 0		8
-  0063,    // 0 0 1 1 0 0 1 1		9
-
-  0065,    // 0 0 1 1 0 1 0 1		10
-  0066,    // 0 0 1 1 0 1 1 0		11
-  0071,    // 0 0 1 1 1 0 0 1		12
-  0072,    // 0 0 1 1 1 0 1 0		13
-  0074,    // 0 0 1 1 1 1 0 0		14
-  0107,    // 0 1 0 0 0 1 1 1		15
-  0113,    // 0 1 0 0 1 0 1 1		16
-  0115,    // 0 1 0 0 1 1 0 1		17
-  0116,    // 0 1 0 0 1 1 1 0		18
-  0123,    // 0 1 0 1 0 0 1 1		19
-
-  0125,    // 0 1 0 1 0 1 0 1		20
-  0126,    // 0 1 0 1 0 1 1 0		21
-  0131,    // 0 1 0 1 1 0 0 1		22
-  0132,    // 0 1 0 1 1 0 1 0		23
-  0134,    // 0 1 0 1 1 1 0 0		24
-  0143,    // 0 1 1 0 0 0 1 1		25
-  0145,    // 0 1 1 0 0 1 0 1		26
-  0146,    // 0 1 1 0 0 1 1 0		27
-  0151,    // 0 1 1 0 1 0 0 1		28
-  0152,    // 0 1 1 0 1 0 1 0		29
-
-  0154,    // 0 1 1 0 1 1 0 0		30
-  0161,    // 0 1 1 1 0 0 0 1		31
-  0162,    // 0 1 1 1 0 0 1 0		32
-  0164,    // 0 1 1 1 0 1 0 0		33
-  0170,    // 0 1 1 1 1 0 0 0		34
-  0207,    // 1 0 0 0 0 1 1 1		35
-  0213,    // 1 0 0 0 1 0 1 1		36
-  0215,    // 1 0 0 0 1 1 0 1		37
-  0216,    // 1 0 0 0 1 1 1 0		38
-  0223,    // 1 0 0 1 0 0 1 1		39
-
-  0225,    // 1 0 0 1 0 1 0 1		40
-  0226,    // 1 0 0 1 0 1 1 0		41
-  0231,    // 1 0 0 1 1 0 0 1		42
-  0232,    // 1 0 0 1 1 0 1 0		43
-  0234,    // 1 0 0 1 1 1 0 0		44
-  0243,    // 1 0 1 0 0 0 1 1		45
-  0245,    // 1 0 1 0 0 1 0 1		46
-  0246,    // 1 0 1 0 0 1 1 0		47
-  0251,    // 1 0 1 0 1 0 0 1		48
-  0252,    // 1 0 1 0 1 0 1 0		49
-
-  0254,    // 1 0 1 0 1 1 0 0		50
-  0261,    // 1 0 1 1 0 0 0 1		51
-  0262,    // 1 0 1 1 0 0 1 0		52
-  0264,    // 1 0 1 1 0 1 0 0		53
-  0270,    // 1 0 1 1 1 0 0 0		54
-  0303,    // 1 1 0 0 0 0 1 1		55
-  0305,    // 1 1 0 0 0 1 0 1		56
-  0306,    // 1 1 0 0 0 1 1 0		57
-  0311,    // 1 1 0 0 1 0 0 1		58
-  0312,    // 1 1 0 0 1 0 1 0		59
-
-  0314,    // 1 1 0 0 1 1 0 0		60
-  0321,    // 1 1 0 1 0 0 0 1		61
-  0322,    // 1 1 0 1 0 0 1 0		62
-  0324,    // 1 1 0 1 0 1 0 0		63
-  0330,    // 1 1 0 1 1 0 0 0		64
-  0341,    // 1 1 1 0 0 0 0 1		65
-  0342,    // 1 1 1 0 0 0 1 0		66
-  0344,    // 1 1 1 0 0 1 0 0		67
-  0350,    // 1 1 1 0 1 0 0 0		68
-  0360     // 1 1 1 1 0 0 0 0		69
+	0x0f,	// 0 0 0 0 1 1 1 1		0
+	0x17,	// 0 0 0 1 0 1 1 1		1
+	0x1b,	// 0 0 0 1 1 0 1 1		2
+	0x1d,	// 0 0 0 1 1 1 0 1		3
+	0x1e,	// 0 0 0 1 1 1 1 0		4
+	0x27,	// 0 0 1 0 0 1 1 1		5
+	0x2b,	// 0 0 1 0 1 0 1 1		6
+	0x2d,	// 0 0 1 0 1 1 0 1		7
+	0x2e,	// 0 0 1 0 1 1 1 0		8
+	0x33,	// 0 0 1 1 0 0 1 1		9
+	0x35,	// 0 0 1 1 0 1 0 1		10
+	0x36,	// 0 0 1 1 0 1 1 0		11
+	0x39,	// 0 0 1 1 1 0 0 1		12
+	0x3a,	// 0 0 1 1 1 0 1 0		13
+	0x3c,	// 0 0 1 1 1 1 0 0		14
+	0x47,	// 0 1 0 0 0 1 1 1		15
+	0x4b,	// 0 1 0 0 1 0 1 1		16
+	0x4d,	// 0 1 0 0 1 1 0 1		17
+	0x4e,	// 0 1 0 0 1 1 1 0		18
+	0x53,	// 0 1 0 1 0 0 1 1		19
+	0x55,	// 0 1 0 1 0 1 0 1		20
+	0x56,	// 0 1 0 1 0 1 1 0		21
+	0x59,	// 0 1 0 1 1 0 0 1		22
+	0x5a,	// 0 1 0 1 1 0 1 0		23
+	0x5c,	// 0 1 0 1 1 1 0 0		24
+	0x63,	// 0 1 1 0 0 0 1 1		25
+	0x65,	// 0 1 1 0 0 1 0 1		26
+	0x66,	// 0 1 1 0 0 1 1 0		27
+	0x69,	// 0 1 1 0 1 0 0 1		28
+	0x6a,	// 0 1 1 0 1 0 1 0		29
+	0x6c,	// 0 1 1 0 1 1 0 0		30
+	0x71,	// 0 1 1 1 0 0 0 1		31
+	0x72,	// 0 1 1 1 0 0 1 0		32
+	0x74,	// 0 1 1 1 0 1 0 0		33
+	0x78,	// 0 1 1 1 1 0 0 0		34
+	0x87,	// 1 0 0 0 0 1 1 1		35
+	0x8b,	// 1 0 0 0 1 0 1 1		36
+	0x8d,	// 1 0 0 0 1 1 0 1		37
+	0x8e,	// 1 0 0 0 1 1 1 0		38
+	0x93,	// 1 0 0 1 0 0 1 1		39
+	0x95,	// 1 0 0 1 0 1 0 1		40
+	0x96,	// 1 0 0 1 0 1 1 0		41
+	0x99,	// 1 0 0 1 1 0 0 1		42
+	0x9a,	// 1 0 0 1 1 0 1 0		43
+	0x9c,	// 1 0 0 1 1 1 0 0		44
+	0xa3,	// 1 0 1 0 0 0 1 1		45
+	0xa5,	// 1 0 1 0 0 1 0 1		46
+	0xa6,	// 1 0 1 0 0 1 1 0		47
+	0xa9,	// 1 0 1 0 1 0 0 1		48
+	0xaa,	// 1 0 1 0 1 0 1 0		49
+	0xac,	// 1 0 1 0 1 1 0 0		50
+	0xb1,	// 1 0 1 1 0 0 0 1		51
+	0xb2,	// 1 0 1 1 0 0 1 0		52
+	0xb4,	// 1 0 1 1 0 1 0 0		53
+	0xb8,	// 1 0 1 1 1 0 0 0		54
+	0xc3,	// 1 1 0 0 0 0 1 1		55
+	0xc5,	// 1 1 0 0 0 1 0 1		56
+	0xc6,	// 1 1 0 0 0 1 1 0		57
+	0xc9,	// 1 1 0 0 1 0 0 1		58
+	0xca,	// 1 1 0 0 1 0 1 0		59
+	0xcc,	// 1 1 0 0 1 1 0 0		60
+	0xd1,	// 1 1 0 1 0 0 0 1		61
+	0xd2,	// 1 1 0 1 0 0 1 0		62
+	0xd4,	// 1 1 0 1 0 1 0 0		63
+	0xd8,	// 1 1 0 1 1 0 0 0		64
+	0xe1,	// 1 1 1 0 0 0 0 1		65
+	0xe2,	// 1 1 1 0 0 0 1 0		66
+	0xe4,	// 1 1 1 0 0 1 0 0		67
+	0xe8,	// 1 1 1 0 1 0 0 0		68
+	0xf0	// 1 1 1 1 0 0 0 0		69
 };
 
+static const int8_t Reftable[] = {
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,
+	 2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,
+	-1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1, -1,  1,  1,  1,
+	 0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,
+	 1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1
+};
 
-TiiDetector::TiiDetector(uint8_t dabMode, int16_t depth) :
-  mDepth(depth),
-  mParams(dabMode),
-  mT_u(mParams.get_T_u()),
-  mK(mParams.get_K())
+TiiDetector::TiiDetector(uint8_t dabMode) :
+	params(dabMode),
+	T_u(params.get_T_u()),
+  	T_g(params.get_T_g()),
+  	K(params.get_K()),
+	mFftHandler(T_u, false)
 {
-  mBuffer.resize(mT_u);
-  mWindow.resize(mT_u);
-
-  for (int32_t i = 0; i < mT_u; i++)
-  {
-    mWindow[i] = 0.54 - 0.46 * cos(2 * M_PI * (float)i / mT_u);
-  }
-
-  for (int32_t i = 0; i < 256; i++)
-  {
-    mInvTable[i] = -1;
-  }
-
-  for (int32_t i = 0; i < 70; ++i)
-  {
-    mInvTable[table[i]] = i;
-  }
+	nullSymbolBuffer.resize(T_u);
+	reset();
 }
 
-void TiiDetector::setMode(bool b)
+TiiDetector::~TiiDetector()
 {
-  mDetectMode_new = b;
+}
+
+void TiiDetector::set_collisions(bool b)
+{
+	collisions = b;
+}
+
+void TiiDetector::set_subid(uint8_t subid)
+{
+	selected_subid = subid;
+}
+
+void TiiDetector::resetBuffer()
+{
+	for (int i = 0; i < T_u; i++)
+		nullSymbolBuffer[i] = cmplx(0, 0);
 }
 
 void TiiDetector::reset()
 {
-  std::fill(mBuffer.begin(), mBuffer.end(), cmplx(0, 0));
+	resetBuffer();
+	for (int i = 0; i < K / 2; i++)
+		decodedBuffer[i] = cmplx(0, 0);
 }
 
-//	To eliminate (reduce?) noise in the input signal, we might add a few spectra before computing
-void TiiDetector::addBuffer(std::vector<cmplx> v)  // copy of vector is intended
+//	To reduce noise in the input signal, we might
+//	add a few spectra before computing (up to the user)
+void TiiDetector::addBuffer(const std::vector<cmplx> &v)
 {
-  for (int32_t i = 0; i < mT_u; i++)
+	cmplx buffer[T_u];
+	memcpy(buffer, &(v[T_g]), T_u * sizeof(cmplx));
+    mFftHandler.fft(buffer);
+	for (int i = 0; i < T_u; i++)
+	    nullSymbolBuffer[i] += buffer[i];
+}
+
+void TiiDetector::decode(std::vector<cmplx> &inVec, cmplx *outVec)
+{
+	int i = 0;
+
+	for (int32_t idx = -K / 2; idx < K / 2; idx+=2)
+	{
+		const int32_t fftIdx = fft_shift_skip_dc(idx, T_u);
+		outVec[i++] += inVec[fftIdx] * conj(inVec[fftIdx+1]);
+	}
+}
+
+//	we map the "K" carriers (complex values) onto
+//	a collapsed vector of "K / 8" length,
+//	considered to consist of 8 segments of 24 values
+//	Each "value" is the sum of 4 pairs of subsequent carriers,
+//	taken from the 4 quadrants -768 .. 385, 384 .. -1, 1 .. 384, 385 .. 768
+void TiiDetector::collapse(const cmplx *inVec, cmplx *etsiVec, cmplx *nonetsiVec)
+{
+  cmplx buffer[K / 2];
+  memcpy(buffer, inVec, K / 2 * sizeof(cmplx));
+
+  //a single carrier cannot be a TII carrier.
+  if(carrier_delete)
   {
-    v[i] = v[i] * mWindow[i];
+	for (int i = 0; i < 192; i++)
+	{
+	  float x[4];
+	  float max = 0;
+	  float sum = 0;
+	  int index = 0;
+	  for(int j = 0; j < 4; j++)
+	  {
+		x[j] = abs(buffer[i+j*192]);
+		sum += x[j];
+		if(x[j] > max)
+		{
+		  max = x[j];
+		  index = j;
+		}
+	  }
+	  float min = (sum - max) / 3;
+	  if(sum < max * 1.5 && max > 0.0)
+	  {
+		buffer[i+index*192] *= min / max;
+		//fprintf(stderr, "carrier index %d\n", i+index*192);
+	  }
+	}
   }
-
-  Fft_transform(v.data(), mT_u, false);
-
-  for (int32_t i = 0; i < mT_u; i++)
+  for (int i = 0; i < 192; i++)
   {
-    mBuffer[i] += v[i];
+	etsiVec[i] = cmplx(0, 0);
+	nonetsiVec[i] = cmplx(0, 0);
+	for(int j = 0; j < 4; j++)
+	{
+	  cmplx x = buffer[i+j*192];
+	  etsiVec[i] += x;
+	  nonetsiVec[i] += std::polar(abs(x), arg(x)-(float)Reftable[i+j*192]*F_M_PI_2);
+	}
   }
 }
 
-//
-//	Note that the input is fft output, not yet reordered
-void TiiDetector::collapse(cmplx * inVec, float * outVec)
-{
-  for (int32_t i = 0; i < mK / 8; i++)
-  {
-    const int32_t carr1 = mT_u + (-mK / 2 + 2 * i);
-    const int32_t carr2 = mT_u + (-mK / 2 + 1 * mK / 4 + 2 * i);
-    const int32_t carr3 = mT_u + (-mK / 2 + 2 * mK / 4 + 2 * i + 1);
-    const int32_t carr4 = mT_u + (-mK / 2 + 3 * mK / 4 + 2 * i + 1);
+//	We determine first the offset of the "best fit",
+//	the offset indicates the subId
+static uint8_t bits[] = {0x80, 0x40, 0x20, 0x10 , 0x08, 0x04, 0x02, 0x01};
 
-    outVec[i] =  abs(real(inVec[carr1 % mT_u] * conj(inVec[(carr1 + 1) % mT_u])));
-    outVec[i] += abs(real(inVec[carr2 % mT_u] * conj(inVec[(carr2 + 1) % mT_u])));
-    outVec[i] += abs(real(inVec[carr3 % mT_u] * conj(inVec[(carr3 + 1) % mT_u])));
-    outVec[i] += abs(real(inVec[carr4 % mT_u] * conj(inVec[(carr4 + 1) % mT_u])));
-  }
+// Sort the elemtnts accordibg to their strength
+static int fcmp(const void *a, const void *b)
+{
+	tiiResult *element1 = (tiiResult*)a;
+	tiiResult *element2 = (tiiResult*)b;
+	if(element1->strength > element2->strength)
+		return -1;
+	else if(element1->strength < element2->strength)
+		return 1;
+	else
+		return 0;
 }
 
-static const uint8_t bits[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
-
-// We determine first the offset of the "best fit", the offset indicates the subId
-#define  NUM_GROUPS  8
-#define  GROUPSIZE  24
-
-uint16_t TiiDetector::processNULL()
+std::vector<tiiResult> TiiDetector::processNULL(int16_t threshold_db)
 {
-  float hulpTable[NUM_GROUPS * GROUPSIZE]; // collapses values
-  float C_table[GROUPSIZE];  // contains the values
-  int D_table[GROUPSIZE];  // count of indices in C_table with data
-  float avgTable[NUM_GROUPS];
+	float etsi_floatTable[NUM_GROUPS * GROUPSIZE];		// collapsed ETSI float values
+	float nonetsi_floatTable[NUM_GROUPS * GROUPSIZE];	// collapsed non-ETSI float values
+	cmplx etsiTable[NUM_GROUPS * GROUPSIZE];			// collapsed ETSI complex values
+	cmplx nonetsiTable[NUM_GROUPS * GROUPSIZE];			// collapsed non-ETSI complex values
+	float max = 0;										// abs value of the strongest carrier
+	float noise = 1e9;									// noise level
+	std::vector<tiiResult> theResult;					// results
+	float threshold = pow(10, (float)threshold_db / 10); // threshold above noise
 
-  //	we map the "carriers" carriers (complex values) onto
-  //	a collapsed vector of "carriers / 8" length,
-  //	considered to consist of 8 segments of 24 values
-  //	Each "value" is the sum of 4 pairs of subsequent carriers,
-  //	taken from the 4 quadrants -768 .. 385, 384 .. -1, 1 .. 384, 385 .. 768
+	decode(nullSymbolBuffer, decodedBuffer);
+	collapse(decodedBuffer, etsiTable, nonetsiTable);
 
-  collapse(mBuffer.data(), hulpTable);
-  //
-  //	since the "energy levels" in the different GROUPSIZE'd values
-  //	may differ, we compute an average for each of the
-  //	NUM_GROUPS GROUPSIZE - value groups.
+	// fill the float tables, determine the abs value of the strongest carrier
+	for (int i = 0; i < NUM_GROUPS * GROUPSIZE; i++)
+	{
+		float x = abs(etsiTable[i]);
+		etsi_floatTable[i] = x;
+		if(x > max)
+			max = x;
+		x = abs(nonetsiTable[i]);
+		nonetsi_floatTable[i] = x;
+		if(x > max)
+			max = x;
+	}
 
-  memset(avgTable, 0, NUM_GROUPS * sizeof(float));
+	// determine the noise level of the lowest group
+	for (int subId = 0; subId < GROUPSIZE; subId++)
+	{
+		float avg = 0;
+		for (int i = 0; i < NUM_GROUPS; i++)
+			avg += etsi_floatTable[subId + i * GROUPSIZE];
+		avg /= NUM_GROUPS;
+		if (avg < noise)
+			noise = avg;
+	}
 
-  for (int32_t i = 0; i < NUM_GROUPS; i++)
-  {
-    avgTable[i] = 0;
-    for (int32_t j = 0; j < GROUPSIZE; j++)
-    {
-      avgTable[i] += hulpTable[i * GROUPSIZE + j];
-    }
+	for (int subId = 0; subId < GROUPSIZE; subId++)
+	{
+		tiiResult element;
+		cmplx sum = cmplx(0,0);
+		cmplx etsi_sum = cmplx(0,0);
+		cmplx nonetsi_sum = cmplx(0,0);
+		int count = 0;
+		int etsi_count = 0;
+		int nonetsi_count = 0;
+		int pattern = 0;
+		int etsi_pattern = 0;
+		int nonetsi_pattern = 0;
+		int mainId = 0;
+		bool norm = false;
+		cmplx *cmplx_ptr = NULL;
+		float *float_ptr = NULL;
 
-    avgTable[i] /= GROUPSIZE;
-  }
+		//	The number of times the limit is reached in the group is counted
+		for (int i = 0; i < NUM_GROUPS; i++)
+		{
+			if(etsi_floatTable[subId + i * GROUPSIZE] > noise * threshold)
+			{
+				etsi_count++;
+				etsi_pattern |= (0x80 >> i);
+				etsi_sum += etsiTable[subId + GROUPSIZE * i];
+			}
+			if(nonetsi_floatTable[subId + i * GROUPSIZE] > noise * threshold)
+			{
+				nonetsi_count++;
+				nonetsi_pattern |= (0x80 >> i);
+				nonetsi_sum += nonetsiTable[subId + GROUPSIZE * i];
+			}
+		}
+		if ((etsi_count >= 4) || (nonetsi_count >= 4))
+		{
+			if(abs(nonetsi_sum) > abs(etsi_sum))
+			{
+				norm = true;
+				sum = nonetsi_sum;
+				cmplx_ptr = nonetsiTable;
+				float_ptr = nonetsi_floatTable;
+				count = nonetsi_count;
+				pattern = nonetsi_pattern;
+			}
+			else
+			{
+				sum = etsi_sum;
+				cmplx_ptr = etsiTable;
+				float_ptr = etsi_floatTable;
+				count = etsi_count;
+				pattern = etsi_pattern;
+			}
+		}
+		// Find the Main Id that matches the pattern
+		if (count == 4)
+		{
+			for (; mainId < (int)sizeof(table); mainId++)
+				if(table[mainId] == pattern)
+					break;
+		}
+		// Find the best match. We extract the four max values as bits
+		else if (count > 4)
+		{
+			float mm = 0;
+			for (int k = 0; k < (int)sizeof(table); k++)
+			{
+				cmplx val = cmplx(0,0);
+				for (int i = 0; i < NUM_GROUPS; i++)
+				{
+					if (table[k] & bits[i])
+						val += cmplx_ptr[subId + GROUPSIZE * i];
+				}
+				if (abs(val) > mm)
+				{
+					mm = abs(val);
+					sum = val;
+					mainId = k;
+				}
+			}
+		}
+		// List the result
+		if (count >= 4)
+		{
+			element.mainId = mainId;
+			element.subId = subId;
+			element.strength = abs(sum)/max/4;
+			element.phase = arg(sum) * F_DEG_PER_RAD;
+			element.norm = norm;
+			theResult.push_back(element);
+		}
+		if((count > 4) && collisions)
+		{
+			sum = cmplx(0,0);
 
-  // Determining the offset is then easy, look at the corresponding elements in the NUM_GROUPS sections and mark the highest ones. The
-  // summation of the high values are stored in the C_table, the number of times the limit is reached in the group is recorded in the
-  // D_table So, basically we look into GROUPSIZE colums of NUMGROUPS values and look for the maximum Threshold 4 * avgTable is 6 dB, we
-  // consider that a minimum measurement shows that that is a reasonable value, alternatively, we could take the "minValue" as reference and
-  // "raise" the threshold. However, that might be too  much for 8-bit incoming values
+			// Calculate the level of the second main ID
+			for (int i = 0; i < NUM_GROUPS; i++)
+			{
+				if ((table[mainId] & bits[i])== 0)
+				{
+					int index = subId + GROUPSIZE * i;
+					if (float_ptr[index] > noise * threshold)
+						sum += cmplx_ptr[index];
+				}
+			}
+			if(subId == selected_subid) // List all possible main IDs
+			{
+				for (int k = 0; k < (int)sizeof(table); k++)
+				{
+					int pattern2 = table[k] & pattern;
+					int count2 = 0;
+					for (int i = 0; i < NUM_GROUPS; i++)
+						if (pattern2 & bits[i]) count2++;
+					if((count2 == 4) && (k != mainId))
+					{
+						element.mainId = k;
+						element.strength = abs(sum)/max/(count-4);
+						element.phase = arg(sum) * F_DEG_PER_RAD;
+						element.norm = norm;
+						theResult.push_back(element);
+					}
+				}
+			}
+			else // List only additional main ID 99
+			{
+				element.mainId = 99;
+				element.strength = abs(sum)/max/(count-4);
+				element.phase = arg(sum) * F_DEG_PER_RAD;
+				element.norm = norm;
+				theResult.push_back(element);
+			}
+		}
+	}
+	//fprintf(stderr, "max =%.0f, noise = %.1fdB\n", max, 10 * log10(noise/max));
+	if(max > 4000000)
+		for (int i = 0; i < K / 2; i++)
+			decodedBuffer[i] *= 0.9;
+	resetBuffer();
+	qsort(theResult.data(), theResult.size(), sizeof(tiiResult), &fcmp);
 
-  memset(D_table, 0, GROUPSIZE * sizeof(int));
-  memset(C_table, 0, GROUPSIZE * sizeof(float));
-
-  //	We use the C and D table at the beginning and can be viewed
-  for (int32_t i = 0; i < GROUPSIZE; i++)
-  {
-    for (int32_t j = 0; j < NUM_GROUPS; j++)
-    {
-      if (hulpTable[j * GROUPSIZE + i] > 4 * avgTable[j])
-      {
-        C_table[i] += hulpTable[j * GROUPSIZE + i];
-        D_table[i]++;
-      }
-    }
-  }
-
-
-  // We extract from this result the highest values that meet the constraint of 4 values being sufficiently high.
-  float maxTable = 0;
-  int maxIndex = -1;
-
-  for (int32_t j = 0; j < GROUPSIZE; j++)
-  {
-    if ((D_table[j] >= 4) && (C_table[j] > maxTable))
-    {
-      maxTable = C_table[j];
-      maxIndex = j;
-      break;
-    }
-  }
-  //
-  if (maxIndex < 0)
-  {
-    return 0;
-  }
-
-  // The - almost - final step is then to figure out which group contributed most, obviously only where maxIndex > 0 we start with
-  // collecting the values of the correct elements of the NUM_GROUPS groups
-  float x[NUM_GROUPS];
-
-  for (int32_t i = 0; i < NUM_GROUPS; i++)
-  {
-    x[i] = hulpTable[maxIndex + GROUPSIZE * i];
-  }
-
-  //	find the best match
-  int finInd = -1;
-  if (mDetectMode_new)
-  {
-    float mm = 0;
-
-    for (uint32_t k = 0; k < sizeof(table); k++)
-    {
-      float val = 0;
-
-      for (int32_t l = 0; l < NUM_GROUPS; l++)
-      {
-        if ((table[k] & bits[l]) != 0)
-        {
-          val += x[l];
-        }
-      }
-
-      if (val > mm)
-      {
-        mm = val;
-        finInd = k;
-      }
-    }
-  }
-  else
-  {
-    // detectMode_new is false, we extract the four max values as bits
-    uint16_t pattern = 0;
-
-    for (int32_t i = 0; i < 4; i++)
-    {
-      float mmax = 0;
-      int ind = -1;
-
-      for (int32_t k = 0; k < NUM_GROUPS; k++)
-      {
-        if (x[k] > mmax)
-        {
-          mmax = x[k];
-          ind = k;
-        }
-      }
-
-      if (ind != -1)
-      {
-        x[ind] = 0;
-        pattern |= bits[ind];
-      }
-    }
-    finInd = mInvTable[pattern];
-    //fprintf (stdout, "MaxIndex %d, bitPatterm %x\n", maxIndex, pattern);
-  }
-
-  return maxIndex + finInd * 256;
+	return theResult;
 }

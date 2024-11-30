@@ -77,10 +77,13 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(serviceListSortCol, { "", "serviceListSortCol", false });
   mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
   mMap.insert(cbShowNonAudioInServiceList, { "", "serviceListShowNonAudio", false });
-  mMap.insert(cbUseNewTiiDetector, { "", "tii_detector", false });
-  mMap.insert(cbShowOnlyCurrTrans, { "", "transmitterTags", false });
+  mMap.insert(cbUse_strongest_peak, { "", "use_strongest_peak", false });
+  mMap.insert(cbTiiCollisions, { "", "tii_collisions", false });
   mMap.insert(cbUseNativeFileDialog, { "", "useNativeFileDialogs", false });
   mMap.insert(cbUseUtcTime, { "", "utcSelector", false });
+  mMap.insert(enableTii, { "", "enableTii", false });
+  mMap.insert(tii_threshold, { "", "tii_threshold", 6 });
+  mMap.insert(tii_subid, { "", "tii_subid", 0 });
   mMap.insert(cbUrlClickable, { "", "urlClickable", 2 });  // 2 is clicked
 
   // special enums for windows position and size storage

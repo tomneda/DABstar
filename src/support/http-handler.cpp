@@ -49,7 +49,6 @@
 
 #include  "http-handler.h"
 #include  "radio.h"
-#include  "converted_map.h"
 
 httpHandler::httpHandler(RadioInterface * parent, const QString & mapPort, const QString & browserAddress, cmplx homeAddress, const QString & saveName, bool autoBrowser_off)
 {
@@ -72,7 +71,6 @@ httpHandler::httpHandler(RadioInterface * parent, const QString & mapPort, const
     fprintf(saveFile, "Home location; %f; %f\n\n", real(homeAddress), imag(homeAddress));
     fprintf(saveFile, "channel; latitude; longitude;transmitter;date and time; mainId; subId; distance; azimuth; power\n\n");
   }
-
   transmitterVector.resize(0);
   start();
 }
@@ -150,10 +148,9 @@ void httpHandler::run()
     terminating();
     return;
   }
-  //
+
   //	Now, we are listening to port XXXX, ready to accept a
   //	socket for anyone who needs us
-
   ::listen(ListenSocket, 5);
   while (running.load())
   {
@@ -173,7 +170,7 @@ void httpHandler::run()
         break;
       }
 
-      //	      fprintf (stderr, "Buffer - %s\n", buffer);
+      // fprintf (stderr, "Buffer - %s\n", buffer);
       int httpver = (strstr(buffer, "HTTP/1.1") != nullptr) ? 11 : 10;
       if (httpver == 11)
       {
@@ -227,20 +224,20 @@ void httpHandler::run()
                    "Content-Type: %s\r\n"
                    "Connection: %s\r\n"
                    "Content-Length: %d\r\n"
-                   //	               "Access-Control-Allow-Origin: *\r\n"
+                   // "Access-Control-Allow-Origin: *\r\n"
                    "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (int)(strlen(content.c_str())));
       int hdrlen = strlen(hdr);
       //	      fprintf (stderr, "reply header %s \n", hdr);
       if (jsonUpdate)
       {
-        //	         fprintf (stderr, "Json update requested\n");
-        //	         fprintf (stderr, "%s\n", content. c_str ());
+        // fprintf (stderr, "Json update requested\n");
+        // fprintf (stderr, "%s\n", content. c_str ());
       }
       //	and send the reply
       if (write(ClientSocket, hdr, hdrlen) != hdrlen || write(ClientSocket, content.c_str(), content.size()) != (signed)content.size())
       {
-        //	         fprintf (stderr, "WRITE PROBLEM\n");
-        //	         break;
+        // fprintf (stderr, "WRITE PROBLEM\n");
+        // break;
       }
     }
   }
@@ -269,7 +266,6 @@ void httpHandler::run()
   int iResult;
   SOCKET ListenSocket = INVALID_SOCKET;
   SOCKET ClientSocket = INVALID_SOCKET;
-
   struct addrinfo * result = nullptr;
   struct addrinfo hints;
 
@@ -286,7 +282,6 @@ void httpHandler::run()
   hints.ai_flags = AI_PASSIVE;
 
   //	Resolve the server address and port
-
   iResult = getaddrinfo(nullptr, mapPort.toLatin1().data(), &hints, &result);
   if (iResult != 0)
   {
@@ -393,17 +388,16 @@ L1:
       //	Select the content to send, we have just two so far:
       //	 "/" -> Our google map application.
       //	 "/data.json" -> Our ajax request to update transmitters. */
-      //bool jsonUpdate	= false;
+      //bool jsonUpdate = false;
       if (strstr(url, "/data.json"))
       {
         content = coordinatesToJson(transmitterList);
         transmitterList.clear();
-
         if (content != "")
         {
           ctype = "application/json;charset=utf-8";
-          //jsonUpdate	= true;
-          //	            fprintf (stderr, "%s will be sent\n", content. c_str ());
+          //jsonUpdate = true;
+          // fprintf (stderr, "%s will be sent\n", content. c_str ());
         }
       }
       else
@@ -418,7 +412,7 @@ L1:
                    "Content-Type: %s\r\n"
                    "Connection: %s\r\n"
                    "Content-Length: %d\r\n"
-                   //	               "Access-Control-Allow-Origin: *\r\n"
+                   // "Access-Control-Allow-Origin: *\r\n"
                    "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (int)(strlen(content.c_str())));
       int hdrlen = strlen(hdr);
       //	      if (jsonUpdate) {
@@ -445,69 +439,66 @@ L1:
 
 std::string httpHandler::theMap(cmplx homeAddress)
 {
-  std::string res;
-  int bodySize;
-  char * body;
-  std::string latitude = std::to_string(real(homeAddress));
-  std::string longitude = std::to_string(imag(homeAddress));
-  int index = 0;
-  int cc;
-  int teller = 0;
-  int params = 0;
+    std::string res;
+    int bodySize;
+    char * body;
+    std::string latitude = std::to_string(real(homeAddress));
+    std::string longitude = std::to_string(imag(homeAddress));
+    int cc;
+    int teller = 0;
+    int params = 0;
 
-  bodySize = sizeof(qt_map);
-  body = (char *)malloc(bodySize + 40);
-  while (qt_map[index] != 0)
-  {
-    cc = (char)(qt_map[index]);
-    if (cc == '$')
-    {
-      if (params == 0)
-      {
-        for (int i = 0; latitude.c_str()[i] != 0; i++)
-        {
-          if (latitude.c_str()[i] == ',')
-          {
-            body[teller++] = '.';
-          }
-          else
-          {
-            body[teller++] = latitude.c_str()[i];
-          }
-        }
-        params++;
-      }
-      else if (params == 1)
-      {
-        for (int i = 0; longitude.c_str()[i] != 0; i++)
-        {
-          if (longitude.c_str()[i] == ',')
-          {
-            body[teller++] = '.';
-          }
-          else
-          {
-            body[teller++] = longitude.c_str()[i];
-          }
-        }
-        params++;
-      }
-      else
-      {
-        body[teller++] = (char)cc;
-      }
-    }
-    else
-    {
-      body[teller++] = (char)cc;
-    }
-    index++;
-  }
-  body[teller++] = 0;
-  res = std::string(body);
-  //	fprintf (stderr, "The map :\n%s\n", res. c_str ());
-  free(body);
-  return res;
+	// read map file from resource file
+	QFile file(":res/qt-map.html");
+	if (file.open(QFile::ReadOnly))
+	{
+	   QByteArray record_data(1, 0);
+	   QDataStream in(&file);
+	   bodySize	= file.size();
+	   body	= (char *)malloc(bodySize + 40);
+	   while (!in.atEnd())
+	   {
+	      in.readRawData(record_data.data(), 1);
+	      cc = (*record_data.constData());
+	      if (cc == '$')
+	      {
+	         if (params == 0)
+	         {
+	            for (int i = 0; latitude.c_str()[i] != 0; i ++)
+	               if (latitude.c_str()[i] == ',')
+	                  body[teller ++] = '.';
+	               else
+	                  body[teller ++] = latitude.c_str()[i];
+	            params++;
+	         }
+	         else if (params == 1)
+	         {
+	            for (int i = 0; longitude.c_str()[i] != 0; i ++)
+	               if (longitude.c_str()[i] == ',')
+	                  body[teller ++] = '.';
+	               else
+	                  body[teller ++] = longitude.c_str()[i];
+	            params++;
+	         }
+	         else
+	            body[teller++] = (char)cc;
+	      }
+	      else
+	         body[teller++] = (char)cc;
+	   }
+	}
+	else
+	{
+	    fprintf(stderr, "cannot open file\n");
+	    return "";
+	}
+
+	body[teller ++] = 0;
+	res	= std::string(body);
+	// fprintf(stderr, "The map :\n%s\n", res. c_str ());
+	file.close();
+    free(body);
+    return res;
 }
 
 std::string dotNumber(float f)
@@ -536,98 +527,99 @@ std::string httpHandler::coordinatesToJson(const std::vector<httpData> & t)
   QString Jsontxt;
 
   if (t.size() == 0)
-  {
     return "";
-  }
   Jsontxt += "[\n";
   locker.lock();
-  //	the Target
-  snprintf(buf,
-           512,
-           "{\"type\":%d, \"lat\":%s, \"lon\":%s, \"name\":\"%s\", \"channel\":\"%s\", \"dateTime\":\"%s\", \"dist\":%d, \"azimuth\":%d, \"power\":%d}",
-           t[0].type,
-           dotNumber(real(t[0].coords)).c_str(),
-           dotNumber(imag(t[0].coords)).c_str(),
-           t[0].transmitterName.toUtf8().data(),
-           t[0].channelName.toUtf8().data(),
-           t[0].dateTime.toUtf8().data(),
-           t[0].distance,
-           t[0].azimuth,
-           (int)(t[0].power * 100));
-  Jsontxt += QString(buf);
-  //
-  //
-  for (unsigned long i = 1; i < t.size(); i++)
+  // the Target
+  for (unsigned long i = 0; i < t.size(); i++)
   {
+	if(i > 0)
+		Jsontxt += ",\n";
     snprintf(buf,
              512,
-             ",\n{\"type\":%d, \"lat\":%s, \"lon\":%s, \"name\":\"%s\", \"channel\":\"%s\", \"dateTime\":\"%s\",  \"dist\":%d, \"azimuth\":%d, \"power\":%d, }",
+             "{\"type\":%d, \"lat\":%s, \"lon\":%s, \"name\":\"%s\", \"channel\":\"%s\", \"mainId\":%d, \"subId\":%d, \"strength\":%d, \"dist\":%d, \"azimuth\":%d, \"power\":%d, \"altitude\":%d, \"height\":%d, \"dir\":\"%s\", \"pol\":\"%s\", \"nonetsi\":\"%s\"}",
              t[i].type,
              dotNumber(real(t[i].coords)).c_str(),
              dotNumber(imag(t[i].coords)).c_str(),
              t[i].transmitterName.toUtf8().data(),
              t[i].channelName.toUtf8().data(),
-             t[i].dateTime.toUtf8().data(),
+ 	         t[i].mainId,
+ 	         t[i].subId,
+ 	         (int)(t[i].strength * 10),
              t[i].distance,
              t[i].azimuth,
-             (int)(t[i].power * 100));
+             (int)(t[i].power * 100),
+             t[i].altitude,
+             t[i].height,
+             t[i].direction.toUtf8().data(),
+             t[i].polarization.toUtf8().data(),
+             t[i].non_etsi ? ", non-ETSI phases" : "");
     Jsontxt += QString(buf);
   }
   locker.unlock();
   Jsontxt += "\n]\n";
-  //	fprintf (stderr, "Json = %s\n", Jsontxt. toLatin1 (). data ());
+  //fprintf(stderr, "Json = %s\n", Jsontxt.toLatin1().data());
   return Jsontxt.toStdString();
 }
 
-void httpHandler::putData(uint8_t type, cmplx target, QString transmitterName, QString channelName, QString dateTime, int ttiId, int distance, int azimuth, float power)
+void httpHandler::putData(uint8_t type, CacheElem *tr, QString dateTime,
+						  float strength, int distance, int azimuth, bool non_etsi)
 {
+  cmplx target = cmplx(tr->latitude, tr->longitude);
   for (unsigned long i = 0; i < transmitterList.size(); i++)
   {
     if (transmitterList[i].coords == target)
-    {
       return;
-    }
   }
-
 
   httpData t;
   t.type = type;
+  t.ensemble = tr->ensemble;
+  t.Eid = tr->Eid;
   t.coords = target;
-  t.transmitterName = transmitterName;
-  t.channelName = channelName;
+  t.transmitterName = tr->transmitterName;
+  t.channelName = tr->channel;
   t.dateTime = dateTime;
-  t.ttiId = ttiId;
+  t.mainId = tr->mainId;
+  t.subId = tr->subId;
+  t.strength = strength,
   t.distance = distance;
   t.azimuth = azimuth;
-  t.power = power;
-
+  t.power = tr->power;
+  t.altitude = tr->altitude;
+  t.height = tr->height;
+  t.polarization = tr->polarization;
+  t.frequency = tr->frequency;
+  t.direction = tr->direction;
+  t.non_etsi = non_etsi;
   locker.lock();
   transmitterList.push_back(t);
   locker.unlock();
 
   for (uint32_t i = 0; i < transmitterVector.size(); i++)
   {
-    if ((transmitterVector.at(i).transmitterName == transmitterName) && (transmitterVector.at(i).channelName == channelName))
-    {
+    if ((transmitterVector.at(i).transmitterName == tr->transmitterName) &&
+    	(transmitterVector.at(i).channelName == tr->channel))
       return;
-    }
   }
 
   if ((saveFile != nullptr) && ((type != MAP_RESET) && (type != MAP_FRAME)))
   {
     fprintf(saveFile,
-            "%s; %f; %f; %s; %s; %d; %d; %d; %d; %f\n",
-            channelName.toUtf8().data(),
+            "%s; %f; %f; %s; %s; %d; %d; %f; %d; %d; %f; %d; %d\n",
+            tr->channel.toUtf8().data(),
             real(target),
             imag(target),
-            transmitterName.toUtf8().data(),
+            tr->transmitterName.toUtf8().data(),
             t.dateTime.toUtf8().data(),
-            ttiId / 100,
-            ttiId % 100,
+            tr->mainId,
+            tr->subId,
+            strength,
             distance,
             azimuth,
-            power);
+            tr->power,
+            tr->altitude,
+            tr->height);
     transmitterVector.push_back(t);
   }
 }
-

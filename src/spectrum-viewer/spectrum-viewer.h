@@ -60,6 +60,7 @@
 #include  "fft-handler.h"
 #include  "custom_frame.h"
 #include  "qwt_defs.h"
+#include  "tii-detector.h"
 
 constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
@@ -82,12 +83,13 @@ public:
   ~SpectrumViewer() override;
 
   void show_spectrum(int32_t);
-  void show_correlation(int32_t dots, int marker, float threshold, const QVector<int> & v);
+  void show_correlation(float threshold, const QVector<int> & v, const std::vector<tiiResult> & iTr);
   void show_nominal_frequency_MHz(float);
   void show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
   void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
   void show_iq(int32_t, float);
   void show_quality(int32_t, float, float, float, float, float);
+  void show_fic_ber(float ber);
   void show_clock_error(float e);
   //void set_bit_depth(int16_t);
   void show();

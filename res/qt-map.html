@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""></script>
+    <link rel="icon" href="data:,">
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      .transmitter-icon
+      {
+        padding:0px;
+        margin:0px;
+	    color:black;
+	    border:2px solid rgba(0,0,0,1);
+	    text-align:center;
+      }
+      #map { height: 100% }
+      #info
+      {
+        position:absolute;
+        width:20%;
+        height:100%;
+        bottom:0px;
+        right:0px;
+        top:0px;
+        background-color: white;
+        border-left:1px #666 solid;
+        font-family:Helvetica;
+      }
+      #info div
+      {
+        padding:0px;
+        padding-left:10px;
+        margin:0px;
+      }
+      #info div h1
+      {
+        margin-top:10px;
+        font-size:16px;
+      }
+      #info div p
+      {
+        font-size:14px;
+        color:#333;
+      }
+      .coloring
+      {
+        color: red
+      }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      Map = null;
+      var homeLatitude = $;
+      var homeLongitude = $;
+      var Transmitters = {};
+      var transmitterIndex = 0;
+
+      const MAP_RESET = 0;
+      const MAP_FRAME = 1;
+      const MAP_MAX_TRANS = 2;
+      const MAP_NORM_TRANS = 4;
+
+      function getIconForHome()
+      {
+        var he = document.createElement("P");
+        he.innerHTML = '*';
+        he = '<div style="font-size:1rem">&#x2B55</div>';
+        var icon = L.divIcon({html: he, className: 'home-icon'});
+        return icon;
+      }
+
+      function getIconForTransmitter(target)
+      {
+        var he;
+        var tii = target.mainId + ' ' + target.subId;
+        if (target.strength > -60)
+          //he = '<div style="background:rgba(255,0,1.0);color:yellow;">';
+          he = '<div style="background:rgba(255,0,0,1.0);">';
+        else if (target.strength > -120)
+          he = '<div style="background:rgba(255,0,0,0.75);">';
+        else if (target.strength > -200)
+          he = '<div style="background:rgba(255,0,0,0.5);">';
+        else
+          he = '<div style="background:rgba(255,0,0,0.25);">';
+        he += '<b>' + tii + '</b>' + '</div>';
+        var icon = L.divIcon({iconSize:[tii.length*6.5,18], html: he, className: 'transmitter-icon'});
+        return icon;
+      }
+
+      function handle_map_reset()
+      {
+        for (var i = 0; i < transmitterIndex; i ++)
+        {
+          Map.removeLayer(Transmitters[i].marker);
+          delete Transmitters[i];
+        }
+        Transmitters = {};
+        transmitterIndex = 0;
+        let xx = document.getElementById('selinfo');
+        xx.innerHTML = '';
+        let yy = document.getElementById('selCount');
+        yy.innerHTML = '';
+      }
+
+      function showTransmitterAtSideBar(target)
+      {
+        let xx = document.getElementById('selinfo');
+        xx.innerHTML += target.name + ' (' + (target.power/ 100.0).toFixed(2) + ' kW)' + '<br>' +
+                        'Altidude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
+                        'Latitude ' + target.lat + '&#xb0' + ', Longitude ' + target.lon + '&#xb0' + '<br>' +
+                        'Polarization ' + target.pol + ', Direction ' + target.dir + '<br>' +
+                        'TII ' + target.mainId + ' ' + target.subId + target.nonetsi +
+                        ', Level ' + target.strength / 10 + 'dB' + '<br>' +
+                        'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br><br>';
+
+        let yy = document.getElementById('selCount');
+        yy.innerHTML = '<span style=\"font-weight:bold;">' + 'Number of transmitters: ' + transmitterIndex + '<br>' +
+                       'Channel: ' + target.channel + '<br>' + '</span>';
+      }
+
+      function addTransmitter(target)
+      {
+        let icon = getIconForTransmitter(target);
+        var tooltip = target.name + ' ' + target.dist + 'km'
+        let marker = L.marker([target.lat, target.lon], {icon: icon, title: tooltip}).addTo(Map);
+        target.marker = marker;
+        target.marker.addEventListener('click', function() { selectTransmitterCallback(target);});
+        Transmitters[transmitterIndex] = target;
+        transmitterIndex++;
+        showTransmitterAtSideBar(target);
+      }
+
+      function selectTransmitterCallback(target)
+      {
+        let zz = document.getElementById('selected');
+        zz.innerHTML = '<p style=\"padding: 10px; border:2px solid black;\">' + 'Selected:  ' + '<br>' +
+                       target.name + ' (' + (target.power / 100.0).toFixed(2) + ' kW)' + '<br>' +
+                       'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
+                       'Latitude ' + target.lat + '&#xb0' + ', Longitude ' + target.lon + '&#xb0' + '<br>' +
+                       'TII ' + target.mainId + ' ' + target.subId + target.nonetsi +
+                       ', Level ' + target.strength / 10 + 'dB' + '<br>' +
+                       'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br></p>'
+	  }
+
+      function fetchData()
+      {
+        $.getJSON('/data.json', function(data)
+        {
+          handle_map_reset();
+          for (var t = 0; t < data.length; t ++)
+          {
+            let target = data[t];
+            if (target.type == MAP_RESET)
+            {
+              let zz = document.getElementById('selected');
+              zz.innerHTML = '';
+            }
+            else if (target.type == MAP_NORM_TRANS)
+            {
+              addTransmitter(target);
+            }
+          }
+        });
+      }
+
+      function initialize()
+      {
+        Map = L.map('map').setView([homeLatitude, homeLongitude], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 18,
+          id: 'mapbox/streets-v11',
+          accessToken: 'your.mapbox.access.token'
+        }).addTo(Map);
+
+        var icon = getIconForHome();
+        var homeMarker = L.marker([homeLatitude, homeLongitude], {icon: icon}).addTo(Map);
+
+        // Setup our timer to poll from the server.
+        window.setInterval(function()
+        {
+          fetchData();
+        }, 2000);
+      }
+
+    </script>
+  </head>
+
+  <body onload="initialize()">
+    <div id="map" style="width:80%; height:100%"></div>
+    <div id="info">
+      <div>
+        <h1>DABstar</h1>
+        <p id="selected"></p>
+        <p id="selCount"></p>
+        <p id="selinfo"></p>
+     </div>
+    </div>
+  </body>
+</html>

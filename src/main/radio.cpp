@@ -127,6 +127,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , Ui_DabRadio()
   , mSpectrumViewer(this, ipSettings, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
+  , my_dxDisplay(ipSettings)
   , mOpenFileDialog(ipSettings)
   , mConfig(this)
   , mpSH(&SettingHelper::get_instance())
@@ -226,7 +227,6 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
 
-  mShowOnlyCurrTrans = mpSH->read(SettingHelper::cbShowOnlyCurrTrans).toBool();
   mpTechDataWidget->hide();  // until shown otherwise
   mServiceList.clear();
 #ifdef DATA_STREAMER
@@ -522,9 +522,23 @@ bool RadioInterface::do_start()
   connect_gui();
   connect_dab_processor();
 
-  mpDabProcessor->set_tiiDetectorMode(mpSH->read(SettingHelper::cbUseNewTiiDetector).toBool());
+  my_dxDisplay.hide();
+
+  mpDabProcessor->set_sync_on_strongest_peak(mpSH->read(SettingHelper::cbUse_strongest_peak).toBool());
   mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
   mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
+  mpDabProcessor->set_tii_collisions(mpSH->read(SettingHelper::cbTiiCollisions).toBool());
+  mpDabProcessor->set_Tii(mpSH->read(SettingHelper::enableTii).toBool());
+  {
+    const int32_t threshold = mpSH->read(SettingHelper::tii_threshold).toInt();
+    mConfig.tii_threshold->setValue(threshold) ;
+    mpDabProcessor->set_tii_threshold(threshold);
+  }
+  {
+    const int32_t subid = mpSH->read(SettingHelper::tii_subid).toInt();
+    mConfig.tii_subid->setValue(subid) ;
+    mpDabProcessor->set_tii_subid(subid);
+  }
 
   // should the device widget be shown?
   if (mpSH->read(SettingHelper::showDeviceWidget).toBool())
@@ -1207,6 +1221,7 @@ void RadioInterface::_slot_terminate_process()
   }
   mIsRunning.store(false);
   _show_hide_buttons(false);
+  my_dxDisplay.hide();
 
   mpSH->write_widget_geometry(SettingHelper::mainWidget, this);
 
@@ -1323,6 +1338,36 @@ void RadioInterface::_slot_handle_device_widget_button()
   mpSH->write(SettingHelper::deviceVisible, !mpInputDevice->isHidden());
 }
 
+void RadioInterface::_slot_handle_tii_button()
+{
+  assert(mpDabProcessor != nullptr);
+  bool b = mpSH->read(SettingHelper::enableTii).toBool();
+  if (b)
+  {
+    my_dxDisplay.hide();
+    transmitterIds.resize(0);
+  }
+  else
+  {
+    my_dxDisplay.show();
+  }
+  mpDabProcessor->set_Tii(!b);
+  mpSH->write(SettingHelper::enableTii, !b);
+}
+
+void RadioInterface::slot_handle_tii_threshold(int trs)
+{
+  assert(mpDabProcessor != nullptr);
+  mpSH->write(SettingHelper::tii_threshold, trs);
+  mpDabProcessor->set_tii_threshold(trs);
+}
+
+void RadioInterface::slot_handle_tii_subid(int subid)
+{
+  assert(mpDabProcessor != nullptr);
+  mpSH->write(SettingHelper::tii_subid, subid);
+  mpDabProcessor->set_tii_subid(subid);
+}
 ///////////////////////////////////////////////////////////////////////////
 //	signals, received from ofdm_decoder for which that data is
 //	to be displayed
@@ -1448,8 +1493,15 @@ void RadioInterface::slot_show_fic_success(bool b)
   }
 }
 
-//
-//	called from the PAD handler
+void RadioInterface::slot_show_fic_ber(float ber)
+{
+  if (!mIsRunning.load())
+    return;
+  if (!mSpectrumViewer.is_hidden())
+    mSpectrumViewer.show_fic_ber(ber);
+}
+
+// called from the PAD handler
 void RadioInterface::slot_show_mot_handling(bool b)
 {
   if (!mIsRunning.load() || !b)
@@ -1514,145 +1566,111 @@ static QString tiiNumber(int n)
   return QString("0") + QString::number(n);
 }
 
-
-void RadioInterface::slot_show_tii(int mainId, int subId)
+void RadioInterface::slot_show_tii(const std::vector<tiiResult> & iTr)
 {
   QString country = "";
-  bool tiiChange = false;
-
-  if (mainId == 0xFF)
-  {
-    return;
-  }
-
-  SChannelDescriptor::UTiiId id(mainId, subId);
-  mChannel.transmitters.insert(id.FullId);
+  int count = iTr.size();
 
   if (!mIsRunning.load())
-  {
     return;
-  }
+  if (mpDabProcessor->get_ecc() == 0)
+    return;
 
-  if ((mainId != mChannel.mainId) || (subId != mChannel.subId))
-  {
-    LOG("tii numbers", tiiNumber(mainId) + " " + tiiNumber(subId));
-    tiiChange = true;
-  }
-
-  mChannel.mainId = mainId;
-  mChannel.subId = subId;
-
-  QString a; // = "TII:";
-  uint16_t cnt = 0;
-  for (const auto & tr : mChannel.transmitters)
-  {
-    SChannelDescriptor::UTiiId id(tr);
-    a = a + " " + tiiNumber(id.MainId) + "-" + tiiNumber(id.SubId);
-    if (++cnt >= 4) break; // forbid doing a too long GUI output, due to noise reception
-  }
-  transmitter_coordinates->setAlignment(Qt::AlignRight);
-  transmitter_coordinates->setText(a);
-
-  //	if - for the first time now - we see an ecc value,
-  //	we check whether or not a tii files is available
-  if (!mChannel.has_ecc && (mpDabProcessor->get_ecc() != 0))
+  if (!mChannel.has_ecc)
   {
     mChannel.ecc_byte = mpDabProcessor->get_ecc();
     country = find_ITU_code(mChannel.ecc_byte, (mChannel.Eid >> 12) & 0xF);
     mChannel.has_ecc = true;
     mChannel.transmitterName = "";
   }
-
-  if ((country != "") && (country != mChannel.countryName))
+  if (country != mChannel.countryName)
   {
     transmitter_country->setText(country);
     mChannel.countryName = country;
-    LOG("country", mChannel.countryName);
   }
 
-  if (!mChannel.tiiFile)
+  my_dxDisplay.cleanUp();
+  my_dxDisplay.show();
+  my_dxDisplay.setChannel(mChannel.channelName);
+
+  transmitterIds.resize(count);
+  for (int index = 0; index < count; index++)
+    transmitterIds[index] = iTr[index];
+
+  for (int index = 0; index < count; index++)
   {
-    return;
+    int mainId = iTr[index].mainId;
+    int subId = iTr[index].subId;
+    if (mainId == 0xFF)	// shouldn't be
+      continue;
+    if (index == 0)
+    {
+      QString a = "TII: " + tiiNumber(mainId) + "-" + tiiNumber(subId);
+      transmitter_coordinates->setAlignment(Qt::AlignRight);
+      transmitter_coordinates->setText(a);
+    }
+
+    CacheElem theTransmitter;
+    const CacheElem * tr = mTiiHandler.get_transmitter_name((mChannel.realChannel ? mChannel.channelName : "any"), mChannel.Eid, mainId, subId);
+
+    if (tr == nullptr)
+    {
+      //fprintf(stderr,"Eid = %x mainId = %d, subId = %d\n", channel.Eid, mainId, subId);
+      theTransmitter.mainId = mainId;
+      theTransmitter.subId = subId;
+      theTransmitter.country = country;
+      theTransmitter.channel = "";
+      theTransmitter.ensemble = "";
+      theTransmitter.Eid = mChannel.Eid;
+      theTransmitter.transmitterName = "";
+      theTransmitter.latitude = 0;
+      theTransmitter.longitude = 0;
+      theTransmitter.power = 0;
+      theTransmitter.altitude = 0;
+      theTransmitter.height = 0;
+    }
+    else
+      theTransmitter = *tr;
+
+    position thePosition;
+    thePosition.latitude = theTransmitter.latitude;
+    thePosition.longitude = theTransmitter.longitude;
+
+    float power = theTransmitter.power;
+    float altitude = theTransmitter.altitude;
+    float height = theTransmitter.height;
+    float ownLatitude = real(mChannel.localPos);
+    float ownLongitude = imag(mChannel.localPos);
+
+    // if positions are known, we can compute distance and corner
+    const float fdistance = mTiiHandler.distance(thePosition.latitude, thePosition.longitude, ownLatitude, ownLongitude);
+    const float fcorner = mTiiHandler.corner(thePosition.latitude, thePosition.longitude, ownLatitude, ownLongitude);
+    QString text2 = " ";
+    if (thePosition.latitude != 0 && thePosition.longitude != 0)
+    {
+      text2 += QString::number(fdistance, 'f', 1) + "km, "
+        + QString::number(fcorner, 'f', 1)
+        + QString::fromLatin1("\xb0, ")
+        + QString::number(power, 'f', 1) + "kW, "
+        + QString::number(altitude) + "+"
+        + QString::number(height) + "m";
+    }
+    float strength = 10 * log10(iTr[index].strength);
+    my_dxDisplay.addRow(mainId, subId, strength, iTr[index].phase, iTr[index].norm,
+                        text2, theTransmitter.transmitterName);
+    if (index == 0)
+    {
+      lblStationLocation->setText(theTransmitter.transmitterName + " " + text2);
+    }
+
+    // see if we have a map
+    if (mpHttpHandler && thePosition.latitude != 0 && thePosition.longitude != 0)
+    {
+      const QDateTime theTime = (mpSH->read(SettingHelper::cbUseUtcTime).toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
+      mpHttpHandler->putData(MAP_NORM_TRANS, &theTransmitter, theTime.toString(Qt::TextDate),
+                             strength, fdistance, fcorner, iTr[index].norm);
+    }
   }
-
-  if (!(tiiChange || (mChannel.transmitterName == "")))
-  {
-    return;
-  }
-
-  if (mTiiHandler.is_black(mChannel.Eid, mainId, subId))
-  {
-    return;
-  }
-
-  const QString theName = mTiiHandler.get_transmitter_name((mChannel.realChannel ? mChannel.channelName : "any"), mChannel.Eid, mainId, subId);
-
-  if (theName == "")
-  {
-    mTiiHandler.set_black(mChannel.Eid, mainId, subId);
-    LOG("Not found ", QString::number(mChannel.Eid, 16) + " " + QString::number(mainId) + " " + QString::number(subId));
-    return;
-  }
-
-  mChannel.transmitterName = theName;
-  float latitude, longitude, power;
-  mTiiHandler.get_coordinates(&latitude, &longitude, &power, mChannel.realChannel ? mChannel.channelName : "any", theName);
-  mChannel.targetPos = cmplx(latitude, longitude);
-  LOG("transmitter ", mChannel.transmitterName);
-  LOG("coordinates ", QString::number(latitude) + " " + QString::number(longitude));
-  LOG("current SNR ", QString::number(mChannel.snr));
-  QString labelText = mChannel.transmitterName;
-  //
-  //      if our own position is known, we show the distance
-  //
-  float ownLatitude = real(mChannel.localPos);
-  float ownLongitude = imag(mChannel.localPos);
-
-  if ((ownLatitude == 0) || (ownLongitude == 0))
-  {
-    return;
-  }
-
-  const float distance = mTiiHandler.distance(latitude, longitude, ownLatitude, ownLongitude);
-  const float corner = mTiiHandler.corner(latitude, longitude, ownLatitude, ownLongitude);
-  const QString distanceStr = QString::number(distance, 'f', 1);
-  const QString cornerStr = QString::number(corner, 'f', 1) + QString::fromLatin1("\xb0 (") + QString::fromStdString(AngleDirection::get_compass_direction(corner)) + ")";
-  LOG("distance ", distanceStr);
-  LOG("corner ", cornerStr);
-  labelText += +" " + distanceStr + " km" + " " + cornerStr;
-  fprintf(stdout, "%s\n", labelText.toUtf8().data());
-  lblStationLocation->setText(labelText);
-
-  //	see if we have a map
-  if (mpHttpHandler == nullptr)
-  {
-    return;
-  }
-
-  uint8_t key = MAP_NORM_TRANS;
-  if (!mShowOnlyCurrTrans && distance > (float)mMaxDistance)
-  {
-    mMaxDistance = (int)distance;
-    key = MAP_MAX_TRANS;
-  }
-
-  //	to be certain, we check
-  if (mChannel.targetPos == cmplx(0, 0) || (distance == 0) || (corner == 0))
-  {
-    return;
-  }
-
-  const QDateTime theTime = (mpSH->read(SettingHelper::cbUseUtcTime).toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
-
-  mpHttpHandler->putData(key,
-                         mChannel.targetPos,
-                         mChannel.transmitterName,
-                         mChannel.channelName,
-                         theTime.toString(Qt::TextDate),
-                         mChannel.mainId * 100 + mChannel.subId,
-                         (int)distance,
-                         (int)corner,
-                         power);
 }
 
 void RadioInterface::slot_show_spectrum(int32_t amount)
@@ -1727,14 +1745,14 @@ void RadioInterface::slot_show_clock_error(float e)
 
 //
 //	called from the phasesynchronizer
-void RadioInterface::slot_show_correlation(int amount, int marker, float threshold, const QVector<int> & v)
+void RadioInterface::slot_show_correlation(float threshold, const QVector<int> & v)
 {
   if (!mIsRunning.load())
   {
     return;
   }
 
-  mSpectrumViewer.show_correlation(amount, marker, threshold, v);
+  mSpectrumViewer.show_correlation(threshold, v, transmitterIds);
   mChannel.nrTransmitters = v.size();
 }
 
@@ -2546,14 +2564,14 @@ void RadioInterface::start_channel(const QString & iChannel)
 
   mpServiceListHandler->set_selector_channel_only(mChannel.channelName);
 
-  if (mShowOnlyCurrTrans && mpHttpHandler != nullptr)
+  CacheElem theTransmitter;
+  if (mpHttpHandler != nullptr)
   {
-    mpHttpHandler->putData(MAP_RESET, cmplx(0, 0), "", "", "", 0, 0, 0, 0);
+    theTransmitter.latitude = 0;
+    theTransmitter.longitude = 0;
+    mpHttpHandler->putData(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
   }
-  else if (mpHttpHandler != nullptr)
-  {
-    mpHttpHandler->putData(MAP_FRAME, cmplx(-1, -1), "", "", "", 0, 0, 0, 0);
-  }
+  transmitterIds.resize(0);
 
   enable_ui_elements_for_safety(!mIsScanning);
 
@@ -2598,6 +2616,8 @@ void RadioInterface::stop_channel()
   stop_source_dumping();
   emit signal_stop_audio();
 
+  _show_epg_label(false);
+
   if (mpContentTable != nullptr)
   {
     mpContentTable->hide();
@@ -2625,9 +2645,12 @@ void RadioInterface::stop_channel()
   mChannelTimer.stop();
   mChannel.clean_channel();
   mChannel.targetPos = cmplx(0, 0);
-  if (mShowOnlyCurrTrans && mpHttpHandler != nullptr)
+  if (mpHttpHandler != nullptr)
   {
-    mpHttpHandler->putData(MAP_RESET, mChannel.targetPos, "", "", "", 0, 0, 0, 0);
+  CacheElem theTransmitter;
+    theTransmitter.latitude = 0;
+    theTransmitter.longitude = 0;
+    mpHttpHandler->putData(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
   }
   transmitter_country->setText("");
   transmitter_coordinates->setText("");
@@ -3078,11 +3101,11 @@ void RadioInterface::_slot_handle_skip_file_button()
   mBandHandler.setup_skipList(fileName);
 }
 
-void RadioInterface::slot_handle_tii_detector_mode(bool iIsChecked)
+void RadioInterface::slot_use_strongest_peak(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
-  mpDabProcessor->set_tiiDetectorMode(iIsChecked);
-  mChannel.transmitters.clear();
+  mpDabProcessor->set_sync_on_strongest_peak(iIsChecked);
+  //mChannel.transmitters.clear();
 }
 
 void RadioInterface::slot_handle_dc_avoidance_algorithm(bool iIsChecked)
@@ -3095,6 +3118,12 @@ void RadioInterface::slot_handle_dc_removal(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
   mpDabProcessor->set_dc_removal(iIsChecked);
+}
+
+void RadioInterface::slot_handle_tii_collisions(bool iIsChecked)
+{
+  assert(mpDabProcessor != nullptr);
+  mpDabProcessor->set_tii_collisions(iIsChecked);
 }
 
 void RadioInterface::slot_handle_dl_text_button()
@@ -3115,7 +3144,6 @@ void RadioInterface::slot_handle_dl_text_button()
   }
   mConfig.dlTextButton->setText("writing");
 }
-
 
 void RadioInterface::_slot_handle_config_button()
 {
@@ -3259,17 +3287,17 @@ void RadioInterface::_slot_handle_http_button()
   }
 }
 
-void RadioInterface::slot_handle_transmitter_tags(int /*d*/)
-{
-  mMaxDistance = -1;
-  mShowOnlyCurrTrans = mpSH->read(SettingHelper::cbShowOnlyCurrTrans).toBool();
-  mChannel.targetPos = cmplx(0, 0);
-
-  if (mShowOnlyCurrTrans && mpHttpHandler != nullptr)
-  {
-    mpHttpHandler->putData(MAP_RESET, mChannel.targetPos, "", "", "", 0, 0, 0, 0);
-  }
-}
+//void RadioInterface::slot_http_terminate()
+//{
+//  locker.lock();
+//  if (mapHandler != nullptr)
+//  {
+//    delete mapHandler;
+//    mapHandler = nullptr;
+//  }
+//  locker.unlock();
+//  btnHttpServer->setText("http");
+//}
 
 void RadioInterface::show_pause_slide()
 {
@@ -3391,13 +3419,9 @@ QStringList RadioInterface::get_soft_bit_gen_names()
   QStringList sl;
 
   // ATTENTION: use same sequence as in ESoftBitType
-  sl << "Log Likelihood Ratio";        // ESoftBitType::LLR
-  sl << "Avr. Soft-Bit Gen.";          // ESoftBitType::AVER
-  sl << "Fast Soft-Bit Gen.";          // ESoftBitType::FAST
-  sl << "Euclidean distance";          // ESoftBitType::EUCL_DIST
-  sl << "Eucl. dist. (ext. gain)";     // ESoftBitType::EUCL_DIST_2
-  sl << "Max. IQ distance";            // ESoftBitType::MAX_DIST_IQ
-  sl << "Hard decision";               // ESoftBitType::HARD
+  sl << "Soft decision 1";
+  sl << "Soft decision 2";
+  sl << "Soft decision 3";
 
   return sl;
 }
@@ -3438,6 +3462,7 @@ void RadioInterface::setup_ui_colors()
   btnNextService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
   btnTargetService->setStyleSheet(get_bg_style_sheet({ 33, 106, 105 }));
   btnToggleFavorite->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
+  tiiButton->setStyleSheet(get_bg_style_sheet({ 255, 100, 0 }));
 
   _set_http_server_button(false);
 }
@@ -3445,7 +3470,7 @@ void RadioInterface::setup_ui_colors()
 void RadioInterface::_set_http_server_button(const bool iActive)
 {
   btnHttpServer->setStyleSheet(get_bg_style_sheet((iActive ? 0xf97903 : 0x45bb24)));
-  btnHttpServer->setFixedSize(QSize(32, 32));
+  btnHttpServer->setFixedSize(QSize(32, 30));
 }
 
 void RadioInterface::_slot_handle_favorite_button(bool iClicked)
@@ -3471,17 +3496,19 @@ void RadioInterface::_slot_set_static_button_style()
   btnTargetService->setIconSize(QSize(24, 24));
   btnTargetService->setFixedSize(QSize(32, 32));
   btnTechDetails->setIconSize(QSize(24, 24));
-  btnTechDetails->setFixedSize(QSize(32, 32));
+  btnTechDetails->setFixedSize(QSize(32, 30));
   btnHttpServer->setIconSize(QSize(24, 24));
-  btnHttpServer->setFixedSize(QSize(32, 32));
+  btnHttpServer->setFixedSize(QSize(32, 30));
   btnDeviceWidget->setIconSize(QSize(24, 24));
-  btnDeviceWidget->setFixedSize(QSize(32, 32));
+  btnDeviceWidget->setFixedSize(QSize(32, 30));
   btnSpectrumScope->setIconSize(QSize(24, 24));
-  btnSpectrumScope->setFixedSize(QSize(32, 32));
+  btnSpectrumScope->setFixedSize(QSize(32, 30));
   configButton->setIconSize(QSize(24, 24));
-  configButton->setFixedSize(QSize(32, 32));
+  configButton->setFixedSize(QSize(32, 30));
+  tiiButton->setIconSize(QSize(24, 24));
+  tiiButton->setFixedSize(QSize(32, 30));
   btnScanning->setIconSize(QSize(24, 24));
-  btnScanning->setFixedSize(QSize(32, 32));
+  btnScanning->setFixedSize(QSize(32, 30));
   btnScanning->init(":res/icons/scan24.png", 3, 1);
 }
 

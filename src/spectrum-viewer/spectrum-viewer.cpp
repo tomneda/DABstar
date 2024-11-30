@@ -298,12 +298,12 @@ void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iModQual, float iTi
     return;
   }
 
-  lcdOfdmSymbNo->display(iOfdmSymbNo);
-  lcdModQuality->display(QString("%1").arg(iModQual, 0, 'f', 2));
+  //lcdOfdmSymbNo->display(iOfdmSymbNo);
+  lcdModQuality->display(QString("%1").arg(iModQual, 0, 'f', 1));
   lcdTimeOffset->display(QString("%1").arg(iTimeOffset, 0, 'f', 2));
   lcdFreqOffset->display(QString("%1").arg(iFreqOffset, 0, 'f', 2));
   lcdPhaseCorr->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
-  lcdSnr->display(QString("%1").arg(iSNR, 0, 'f', 2));
+  lcdSnr->display(QString("%1").arg(iSNR, 0, 'f', 1));
 
   // Very strange thing: the configuration of the ThermoWidget colors has to be done in the calling thread.
   if (!mThermoModQualConfigured)
@@ -313,6 +313,12 @@ void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iModQual, float iTi
   }
 
   thermoModQual->setValue(iModQual);
+}
+
+void SpectrumViewer::show_fic_ber(float ber)
+{
+  if (!myFrame.isHidden())
+    lcdBER->display(QString("%1").arg(ber, 0, 'e', 1));
 }
 
 void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
@@ -335,9 +341,9 @@ void SpectrumViewer::show_clock_error(float iClockErr)
   lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
 }
 
-void SpectrumViewer::show_correlation(int32_t dots, int32_t marker, float threshold, const QVector<int32_t> & v)
+void SpectrumViewer::show_correlation(float threshold, const QVector<int32_t> & v, const std::vector<tiiResult> & iTr)
 {
-  mpCorrelationViewer->showCorrelation(dots, marker, threshold, v);
+  mpCorrelationViewer->showCorrelation(threshold, v, iTr);
 }
 
 void SpectrumViewer::_slot_handle_cmb_carrier(int32_t iSel)

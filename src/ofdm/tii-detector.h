@@ -29,36 +29,48 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef  TII_DETECTOR_H
-#define  TII_DETECTOR_H
+#pragma once
 
 #include "dab-constants.h"
-#include  <cstdint>
 #include  "dab-params.h"
-#include  <vector>
+#include "fft/fft-handler.h"
+
+#define	NUM_GROUPS	8
+#define	GROUPSIZE	24
+
+struct tiiResult
+{
+  uint8_t mainId;
+  uint8_t subId;
+  float strength;
+  float phase;
+  bool norm;
+};
 
 class TiiDetector
 {
 public:
-  TiiDetector(uint8_t dabMode, int16_t);
-  ~TiiDetector() = default;
+	TiiDetector(uint8_t dabMode);
+	~TiiDetector();
   void reset();
-  void setMode(bool);
-  void addBuffer(std::vector<cmplx>);  // copy of vector is intended
-  uint16_t processNULL();
+	void	set_collisions(bool);
+	void	set_subid(uint8_t);
+	void	addBuffer(const std::vector<cmplx> &);
+	std::vector<tiiResult> processNULL(int16_t);
 
 private:
-  const int16_t mDepth;
-  const DabParams mParams;
-  const int16_t mT_u;
-  const int16_t mK;
-  bool mDetectMode_new = false;
-  std::array<uint8_t, 256> mInvTable;
-  std::vector<cmplx> mBuffer;
-  std::vector<float> mWindow;
-
-  void collapse(cmplx *, float *);
+	const	DabParams params;
+	const	int16_t	T_u;
+	const	int16_t	T_g;
+	const	int16_t	K;
+	bool 	collisions = false;
+	uint8_t selected_subid = 0;
+	void	resetBuffer();
+	void	decode(std::vector<cmplx> &, cmplx *);
+	void	collapse(const cmplx *, cmplx *, cmplx *);
+	cmplx	decodedBuffer[768];
+	std::vector<cmplx> nullSymbolBuffer;
+    fftHandler mFftHandler;
+	bool 	carrier_delete = true;
 };
-
-#endif
 

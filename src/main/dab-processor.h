@@ -103,9 +103,13 @@ public:
   void stop_service(int, int);
   bool set_audio_channel(Audiodata *, RingBuffer<int16_t> *, FILE *, int);
   bool set_data_channel(Packetdata *, RingBuffer<uint8_t> *, int);
-  void set_tiiDetectorMode(bool);
+  void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);
+  void set_Tii(bool);
+  void set_tii_threshold(uint8_t);
+  void set_tii_subid(uint8_t);
+  void set_tii_collisions(bool);
 
 private:
   RadioInterface * const mpRadioInterface;
@@ -120,10 +124,12 @@ private:
   const uint8_t mcDabMode;
   const float mcThreshold;
   const int16_t mcTiiDelay;
+  uint8_t mTiiThreshold;
   const DabParams::SDabPar mDabPar;
   bool mScanMode = false;
   int16_t mTiiCounter = 0;
   bool mEti_on = false;
+  bool mEnableTii = false;
   bool mCorrectionNeeded = true;
   float mPhaseOffsetCyclPrefRad = 0.0f;
   float mFreqOffsCylcPrefHz = 0.0f;
@@ -144,8 +150,8 @@ private:
   void run() override; // the new QThread
 
   bool _state_wait_for_time_sync_marker();
-  bool _state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSampleCount, float iThreshold);
-  void _state_process_rest_of_frame(int32_t iStartIndex, int32_t & ioSampleCount);
+  bool _state_eval_sync_symbol(int32_t & oSampleCount, float iThreshold);
+  void _state_process_rest_of_frame(int32_t & ioSampleCount);
   float _process_ofdm_symbols_1_to_L(int32_t & ioSampleCount);
   void _process_null_symbol(int32_t & ioSampleCount);
   void _set_rf_freq_offs_Hz(float iFreqHz);
@@ -161,7 +167,7 @@ signals:
   void signal_set_synced(bool);
   void signal_no_signal_found();
   void signal_set_sync_lost();
-  void signal_show_tii(int, int);
+  void signal_show_tii(const std::vector<tiiResult> & iTr);
   void signal_show_spectrum(int);
   void signal_show_clock_err(float);
   void signal_set_and_show_freq_corr_rf_Hz(int);

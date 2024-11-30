@@ -28,6 +28,7 @@
 
 struct CacheElem
 {
+  int id;
   QString country;
   QString channel;
   QString ensemble;
@@ -38,6 +39,11 @@ struct CacheElem
   float latitude;
   float longitude;
   float power;
+  int altitude;
+  int height;
+  QString polarization;
+  float frequency;
+  QString direction;
 };
 
 struct BlackListElem
@@ -46,6 +52,10 @@ struct BlackListElem
   uint8_t mainId;
   uint8_t subId;
 };
+typedef struct {
+        float   latitude;
+        float   longitude;
+} position;
 
 // DLL and ".so" function prototypes
 using TpFn_init_tii  = void *(*)();
@@ -59,7 +69,7 @@ public:
   ~TiiHandler();
 
   bool fill_cache_from_tii_file(const QString &);
-  QString get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
+  const CacheElem *get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
   void get_coordinates(float *, float *, float *, const QString &, const QString &);
   [[nodiscard]] float distance(float, float, float, float) const;
   float corner(float, float, float, float) const;

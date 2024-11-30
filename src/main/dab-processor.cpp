@@ -41,20 +41,20 @@
   *	local are classes OfdmDecoder, FicHandler and mschandler.
   */
 
-DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p) :
-  mpRadioInterface(mr),
-  mSampleReader(mr, inputDevice, p->spectrumBuffer),
-  mFicHandler(mr, p->dabMode),
-  mMscHandler(mr, p->dabMode, p->frameBuffer),
-  mPhaseReference(mr, p),
-  mTiiDetector(p->dabMode, p->tii_depth),
-  mOfdmDecoder(mr, p->dabMode, p->iqBuffer, p->carrBuffer),
-  mEtiGenerator(p->dabMode, &mFicHandler),
-  mTimeSyncer(&mSampleReader),
-  mcDabMode(p->dabMode),
-  mcThreshold(p->threshold),
-  mcTiiDelay(p->tii_delay),
-  mDabPar(DabParams(p->dabMode).get_dab_par())
+DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
+  : mpRadioInterface(mr)
+  , mSampleReader(mr, inputDevice, p->spectrumBuffer)
+  , mFicHandler(mr, p->dabMode)
+  , mMscHandler(mr, p->dabMode, p->frameBuffer)
+  , mPhaseReference(mr, p)
+  , mTiiDetector(p->dabMode)
+  , mOfdmDecoder(mr, p->dabMode, p->iqBuffer, p->carrBuffer)
+  , mEtiGenerator(p->dabMode, &mFicHandler)
+  , mTimeSyncer(&mSampleReader)
+  , mcDabMode(p->dabMode)
+  , mcThreshold(p->threshold)
+  , mcTiiDelay(p->tii_delay)
+  , mDabPar(DabParams(p->dabMode).get_dab_par())
 {
   //connect(this, &DabProcessor::signal_set_synced, mpRadioInterface, &RadioInterface::slot_set_synced);
   connect(this, &DabProcessor::signal_set_sync_lost, mpRadioInterface, &RadioInterface::slot_set_sync_lost);
@@ -68,6 +68,7 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   mOfdmBuffer.resize(2 * mDabPar.T_s);
   mBits.resize(2 * mDabPar.K);
   mTiiDetector.reset();
+  mTiiCounter = 0;
 }
 
 DabProcessor::~DabProcessor()
@@ -84,10 +85,6 @@ DabProcessor::~DabProcessor()
   }
 }
 
-void DabProcessor::set_tiiDetectorMode(bool b)
-{
-  mTiiDetector.setMode(b);
-}
 
 void DabProcessor::start()
 {
@@ -122,7 +119,6 @@ void DabProcessor::run()  // run QThread
 {
   // this method is called with each new set frequency
   float syncThreshold;
-  int32_t startIndex;
   int32_t sampleCount = 0;
   mRfFreqShiftUsed = false;
 
@@ -157,7 +153,6 @@ void DabProcessor::run()  // run QThread
       {
       case EState::WAIT_FOR_TIME_SYNC_MARKER:
       {
-        startIndex = 0;
         sampleCount = 0;
         syncThreshold = mcThreshold;
         mClockOffsetFrameCount = mClockOffsetTotalSamples = 0;
@@ -173,14 +168,14 @@ void DabProcessor::run()  // run QThread
           * Note that we probably already had 30 to 40 samples of the T_g
           * part
           */
-        const bool ok = _state_eval_sync_symbol(startIndex, sampleCount, syncThreshold);
+        const bool ok = _state_eval_sync_symbol(sampleCount, syncThreshold);
         state = (ok ? EState::PROCESS_REST_OF_FRAME : EState::WAIT_FOR_TIME_SYNC_MARKER);
         break;
       }
 
       case EState::PROCESS_REST_OF_FRAME:
       {
-        _state_process_rest_of_frame(startIndex, sampleCount);
+        _state_process_rest_of_frame(sampleCount);
         state = EState::EVAL_SYNC_SYMBOL;
         syncThreshold = 3 * mcThreshold; // threshold is less sensitive while startup
         break;
@@ -196,7 +191,7 @@ void DabProcessor::run()  // run QThread
   }
 }
 
-void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32_t & ioSampleCount)
+void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
 {
   /*
    * The current OFDM symbol 0 in mOfdmBuffer is special in that it is used for fine time synchronization,
@@ -214,7 +209,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
 
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
-      mFreqOffsSyncSymb += 1.0f * (float)correction * (float)mDabPar.CarrDiff;
+      mFreqOffsSyncSymb += (float)correction * (float)mDabPar.CarrDiff;
 
       if (std::abs(mFreqOffsSyncSymb) > kHz(35))
       {
@@ -231,7 +226,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
       mRfFreqShiftUsed = true;
       _set_rf_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz); // takeover BB shift to RF
       _set_bb_freq_offs_Hz(0.0f); // no, no BB shift should be necessary
-      mFreqOffsSyncSymb = mFreqOffsCylcPrefHz = 0; // allow collect new remaining freq. shift
+      mFreqOffsSyncSymb = mFreqOffsCylcPrefHz = 0.0f; // allow collect new remaining freq. shift
     }
   }
 
@@ -242,7 +237,7 @@ void DabProcessor::_state_process_rest_of_frame(const int32_t iStartIndex, int32
   // The first sample to be found for the next frame should be T_g samples ahead. Before going for the next frame, we just check the fineCorrector
   // We integrate the newly found frequency error with the existing frequency error.
   limit_symmetrically(mPhaseOffsetCyclPrefRad, 20.0f * F_RAD_PER_DEG);
-  mFreqOffsCylcPrefHz += 1.00f * mPhaseOffsetCyclPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
+  mFreqOffsCylcPrefHz += mPhaseOffsetCyclPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
 
   _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
 
@@ -282,15 +277,16 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
 
     if (++mTiiCounter >= mcTiiDelay)
     {
-      uint16_t res = mTiiDetector.processNULL();
-      if (res != 0)
+      if (mEnableTii)
       {
-        uint8_t mainId = res >> 8;
-        uint8_t subId = res & 0xFF;
-        emit signal_show_tii(mainId, subId);
+        std::vector<tiiResult> transmitterIds = mTiiDetector.processNULL(mTiiThreshold);
+
+        if (transmitterIds.size() > 0)
+        {
+          emit signal_show_tii(transmitterIds);
+        }
       }
       mTiiCounter = 0;
-      mTiiDetector.reset();
     }
   }
 }
@@ -362,35 +358,37 @@ void DabProcessor::_set_rf_freq_offs_Hz(float iFreqHz)
   }
 }
 
-bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSampleCount, float iThreshold)
+bool DabProcessor::_state_eval_sync_symbol(int32_t & oSampleCount, float iThreshold)
 {
+  int32_t startIndex;
+
   // get first OFDM symbol after time sync marker
   mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_u, mFreqOffsBBHz, false);
 
-  oStartIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
+  startIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
 
-  if (oStartIndex < 0)
+  if (startIndex < 0)
   {
     // no sync, try again
     if (!mCorrectionNeeded)
     {
-      emit signal_set_sync_lost();
+      //emit signal_set_sync_lost();
     }
     return false;
   }
   else
   {
     // Once here, we are synchronized, we need to copy the data we used for synchronization for symbol 0
-    const int32_t nextOfdmBufferIdx = mDabPar.T_u - oStartIndex;
+    const int32_t nextOfdmBufferIdx = mDabPar.T_u - startIndex;
     assert(nextOfdmBufferIdx >= 0);
 
     // move/read OFDM symbol 0 which contains the synchronization data
-    memmove(mOfdmBuffer.data(), &(mOfdmBuffer[oStartIndex]), nextOfdmBufferIdx * sizeof(cmplx)); // memmove can move overlapping segments correctly
+    memmove(mOfdmBuffer.data(), &(mOfdmBuffer[startIndex]), nextOfdmBufferIdx * sizeof(cmplx)); // memmove can move overlapping segments correctly
     mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, mDabPar.T_u - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
 
-    oSampleCount = oStartIndex + mDabPar.T_u;
+    oSampleCount = startIndex + mDabPar.T_u;
 
-    emit signal_set_synced(true);
+    //emit signal_set_synced(true);
 
     return true;
   }
@@ -398,9 +396,10 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oStartIndex, int32_t & oSam
 
 bool DabProcessor::_state_wait_for_time_sync_marker()
 {
-  emit signal_set_synced(false);
+  //emit signal_set_synced(false);
   mTiiDetector.reset();
   mOfdmDecoder.reset();
+  mTiiCounter = 0;
 
   switch (mTimeSyncer.read_samples_until_end_of_level_drop(mDabPar.T_n, mDabPar.T_F))
   {
@@ -547,7 +546,7 @@ bool DabProcessor::set_audio_channel(Audiodata * d, RingBuffer<int16_t> * b, FIL
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(d, b, (RingBuffer<uint8_t> *)nullptr, dump, flag);
+    return mMscHandler.set_channel(d, b, (RingBuffer<uint8_t>*)nullptr, dump, flag);
   }
   else
   {
@@ -559,7 +558,7 @@ bool DabProcessor::set_data_channel(Packetdata * d, RingBuffer<uint8_t> * b, int
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(d, (RingBuffer<int16_t> *)nullptr, b, nullptr, flag);
+    return mMscHandler.set_channel(d, (RingBuffer<int16_t>*)nullptr, b, nullptr, flag);
   }
   else
   {
@@ -650,8 +649,29 @@ void DabProcessor::set_dc_removal(bool iRemoveDC)
   mSampleReader.set_dc_removal(iRemoveDC);
 }
 
-void DabProcessor::add_bb_freq(int32_t iFreqOffHz)
+void DabProcessor::set_sync_on_strongest_peak(bool sync)
 {
-  mFreqOffsBBAddedHz = iFreqOffHz;
+  mTiiDetector.reset();
+  mPhaseReference.set_sync_on_strongest_peak(sync);
 }
 
+void DabProcessor::set_Tii(bool b)
+{
+  mEnableTii = b;
+}
+
+void DabProcessor::set_tii_collisions(bool b)
+{
+  mTiiDetector.set_collisions(b);
+}
+
+void DabProcessor::set_tii_subid(uint8_t subid)
+{
+  mTiiDetector.set_subid(subid);
+}
+
+void DabProcessor::set_tii_threshold(uint8_t trs)
+{
+  fprintf(stderr, "tii_threshold = %d\n", trs);
+  mTiiThreshold = trs;
+}

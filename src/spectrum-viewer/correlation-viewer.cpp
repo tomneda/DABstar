@@ -31,15 +31,11 @@
 
 #include  "correlation-viewer.h"
 #include  <QSettings>
-#include  <QColor>
 #include  <QPen>
 #include  <QLabel>
-#include  <qwt.h>
-#include  <qwt_plot.h>
-#include  <qwt_plot_marker.h>
-#include  <qwt_plot_zoomer.h>
 #include  <qwt_picker_machine.h>
-#include  "color-selector.h"
+#include  <qwt_plot_panner.h>
+#include  <qwt_plot_magnifier.h>
 #include  "glob_defs.h"
 #include  "dab-constants.h"
 
@@ -64,9 +60,8 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
   mQwtGrid.attach(mpPlotGrid);
 
-  lm_picker = new QwtPlotPicker(mpPlotGrid->canvas());
+  QwtPlotPicker *lm_picker = new QwtPlotPicker(mpPlotGrid->canvas());
   QwtPickerMachine * lpickerMachine = new QwtPickerClickPointMachine();
-
   lm_picker->setStateMachine(lpickerMachine);
   lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
@@ -91,20 +86,28 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mpThresholdMarker->setLinePen(QPen(Qt::darkYellow, 0, Qt::DashLine));
   mpThresholdMarker->setYValue(0); // threshold line is normed to 0dB
   mpThresholdMarker->attach(mpPlotGrid);
+  (void )new QwtPlotPanner(mpPlotGrid->canvas());
+  QwtPlotMagnifier * magnifier = new QwtPlotMagnifier(mpPlotGrid->canvas());
+  magnifier->setMouseButton(Qt::NoButton);
+  magnifier->setAxisEnabled(QwtAxis::YLeft, false);
+  mpPlotGrid->setAxisScale(QwtPlot::xBottom, 0, 2047);
+  mpPlotGrid->enableAxis(QwtPlot::xBottom);
 }
 
-void CorrelationViewer::showCorrelation(int32_t dots, int marker, float threshold, const QVector<int> & v)
+void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v, const std::vector<tiiResult> & iTr)
 {
   uint16_t i;
+  const int32_t dots = 2048;
   auto * const data = make_vla(float, dots);
   // using log10_times_10() (not times 20) as the correlation is some kind of energy signal
-  const float threshold_dB = log10_times_10(threshold);
+  const float threshold_dB = 20 * log10(threshold);
   constexpr TQwtData sScalerFltAlpha = (TQwtData)0.1;
   const TQwtData scalerFltAlpha = sScalerFltAlpha / (TQwtData)dots;
+  int marker = 1024;
 
   mpResponseBuffer->get_data_from_ring_buffer(data, dots);
 
-  constexpr int32_t sPlotLength = 700;
+  constexpr int32_t sPlotLength = dots;
   std::array<TQwtData, sPlotLength> X_axis;
   std::array<TQwtData, sPlotLength> Y_values;
 
@@ -117,7 +120,7 @@ void CorrelationViewer::showCorrelation(int32_t dots, int marker, float threshol
 
   for (i = 0; i < sPlotLength; i++)
   {
-    Y_values[i] = log10_times_10(data[marker - sPlotLength / 2 + i]) - threshold_dB; // norm to threshold value
+    Y_values[i] = 20 * log10(data[marker - sPlotLength / 2 + i]) - threshold_dB; // norm to threshold value
 
     if (Y_values[i] > maxYVal)
     {
@@ -132,14 +135,42 @@ void CorrelationViewer::showCorrelation(int32_t dots, int marker, float threshol
 
   mean_filter(mMaxValFlt, maxYVal, sScalerFltAlpha);
 
-  mpPlotGrid->setAxisScale(QwtPlot::xBottom, (double)marker - sPlotLength / 2, (double)marker + sPlotLength / 2 - 1);
-  mpPlotGrid->enableAxis(QwtPlot::xBottom);
+  //mpPlotGrid->setAxisScale(QwtPlot::xBottom, (double)marker - sPlotLength / 2, (double)marker + sPlotLength / 2 - 1);
+  //mpPlotGrid->enableAxis(QwtPlot::xBottom);
   mpPlotGrid->setAxisScale(QwtPlot::yLeft, mMinValFlt - 8, mMaxValFlt + 3);
   mpPlotGrid->enableAxis(QwtPlot::yLeft);
   mQwtPlotCurve.setSamples(X_axis.data(), Y_values.data(), sPlotLength);
   mpPlotGrid->replot();
 
   mpIndexDisplay->setText(_get_best_match_text(v));
+
+  // delete old markers
+  for (auto & p : mQwtPlotMarkerVec)
+  {
+    p->detach();
+    delete p;
+    p = nullptr;
+  }
+
+  // ...a vertical line for each TII
+  const int32_t noMarkers = iTr.size();
+  mQwtPlotMarkerVec.resize(noMarkers);
+  for (int32_t i = 0; i < noMarkers; ++i)
+  {
+    mQwtPlotMarkerVec[i] = new QwtPlotMarker();
+    QwtPlotMarker * const p = mQwtPlotMarkerVec[i];
+    QString tii = QString::number(iTr[i].mainId) + "," + QString::number(iTr[i].subId);
+    p->setLabel(tii);
+    p->setLabelAlignment(Qt::AlignLeft | Qt::AlignTop);
+    p->setLabelOrientation( Qt::Vertical);
+    p->setLineStyle(QwtPlotMarker::VLine);
+    p->setLinePen(Qt::white, 0, Qt::DashDotLine);
+	float sample = (float)iTr[i].phase * 2048 / 360 + 400;
+	if(sample < 0) sample += 2048;
+	else if(sample > 2407) sample -= 2048;
+    p->setXValue(sample);
+    p->attach(mpPlotGrid);
+  }
 }
 
 QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
@@ -174,24 +205,6 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
 void CorrelationViewer::_slot_right_mouse_click(const QPointF & point)
 {
   (void)point;
-
-  if (!ColorSelector::show_dialog(mGridColor, ColorSelector::GRIDCOLOR))
-  {
-    return;
-  }
-  if (!ColorSelector::show_dialog(mCurveColor, ColorSelector::CURVECOLOR))
-  {
-    return;
-  }
-
-  mpSettings->beginGroup(SETTING_GROUP_NAME);
-  mpSettings->setValue("gridColor", mGridColor.name());
-  mpSettings->setValue("curveColor", mCurveColor.name());
-  mpSettings->endGroup();
-  mQwtPlotCurve.setPen(QPen(this->mCurveColor, 2.0));
-  mQwtGrid.setMajorPen(QPen(this->mGridColor, 0, Qt::DotLine));
-  mQwtGrid.enableXMin(true);
-  mQwtGrid.enableYMin(true);
-  mQwtGrid.setMinorPen(QPen(this->mGridColor, 0, Qt::DotLine));
+  mpPlotGrid->setAxisScale(QwtPlot::xBottom, 0, 2047);
 }
 

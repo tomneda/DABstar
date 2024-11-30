@@ -13,7 +13,7 @@ try_find_vcpkg_toolset_path()
 print(CMAKE_TOOLCHAIN_FILE)
 
 ##############################
-project(DABstar VERSION 3.0.1)
+project(DABstar VERSION 3.2.0)
 ##############################
 
 set(objectName "dabstar")
@@ -230,7 +230,6 @@ include_directories(
         src/support
         src/support/tii-library
         src/support/buttons
-        src/support/viterbi-jan
         src/support/viterbi-spiral
         src/output
         src/scopes
@@ -310,7 +309,7 @@ set(${objectName}_HDRS
         src/support/dab-params.h
         src/support/band-handler.h
         src/support/dab-tables.h
-        src/support/viterbi-jan/viterbi-handler.h
+        src/support/dxDisplay.h
         src/support/viterbi-spiral/viterbi-spiral.h
         src/support/color-selector.h
         src/support/time-table.h
@@ -321,7 +320,6 @@ set(${objectName}_HDRS
         src/support/coordinates.h
         src/support/mapport.h
         src/support/http-handler.h
-        src/support/converted_map.h
         src/support/tii-library/tii-codes.h
         src/support/buttons/newpushbutton.h
         src/support/buttons/normalpushbutton.h
@@ -409,7 +407,6 @@ set(${objectName}_SRCS
         src/support/buttons/newpushbutton.cpp
         src/support/buttons/normalpushbutton.cpp
         src/support/buttons/circlepushbutton.cpp
-        src/support/viterbi-jan/viterbi-handler.cpp
         src/support/viterbi-spiral/viterbi-spiral.cpp
         src/support/color-selector.cpp
         src/support/time-table.cpp
@@ -419,6 +416,7 @@ set(${objectName}_SRCS
         src/support/coordinates.cpp
         src/support/mapport.cpp
         src/support/http-handler.cpp
+        src/support/dxDisplay.cpp
         src/support/tii-library/tii-codes.cpp
         src/support/custom_frame.cpp
         src/support/setting-helper.cpp

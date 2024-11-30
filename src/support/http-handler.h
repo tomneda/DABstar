@@ -33,6 +33,7 @@
 #define  HTTP_HANDLER_H
 
 #include "dab-constants.h"
+#include "tii-codes.h"
 #include  <QObject>
 #include  <thread>
 #include  <atomic>
@@ -50,10 +51,20 @@ typedef struct
   QString transmitterName;
   QString channelName;
   QString dateTime;
-  int ttiId;
+  QString ensemble;
+  QString polarization;
+  QString direction;
+  uint16_t Eid;
+  uint8_t mainId;
+  uint8_t subId;
+  float	strength;
   int distance;
   int azimuth;
   float power;
+  float	frequency;
+  int altitude;
+  int height;
+  bool non_etsi;
 } httpData;
 
 class httpHandler : public QObject
@@ -65,7 +76,8 @@ public:
   void start();
   void stop();
   void run();
-  void putData(uint8_t type, cmplx target, QString transmittername, QString channelName, QString dateTime, int ttiId, int distance, int azimuth, float power);
+  void putData(uint8_t type, CacheElem *tr, QString dateTime,
+  			   float strength, int distance, int azimuth, bool non_etsi);
 private:
   FILE * saveFile;
   QString * saveName;
@@ -74,11 +86,11 @@ private:
   cmplx homeAddress;
   std::vector<httpData> transmitterVector;
 
-// #if defined(__MINGW32__) || defined(_WIN32)
-//   std::wstring	browserAddress;
-// #else
+#if defined(__MINGW32__) || defined(_WIN32)
+  std::wstring	browserAddress;
+#else
   std::string browserAddress;
-//#endif
+#endif
   std::atomic<bool> running;
   std::thread threadHandle;
   std::string theMap(cmplx address);

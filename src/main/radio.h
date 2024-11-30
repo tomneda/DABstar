@@ -54,6 +54,7 @@
 #include "configuration.h"
 #include "wav_writer.h"
 #include "audiofifo.h"
+#include "dxDisplay.h"
 #include <set>
 #include <memory>
 #include <mutex>
@@ -219,6 +220,7 @@ private:
   BandHandler mBandHandler;
   dlCache mDlCache{10};
   TiiHandler mTiiHandler{};
+  dxDisplay	my_dxDisplay;
   OpenFileDialog mOpenFileDialog;
   RingBuffer<int16_t> mTechDataBuffer{16 * 32768};
   httpHandler * mpHttpHandler = nullptr;
@@ -256,6 +258,7 @@ private:
   float mAudioBufferFillFiltered = 0.0f;
   float mPeakLeftDamped = -100.0f;
   float mPeakRightDamped = -100.0f;
+  bool mProgBarAudioBufferFullColorSet = false;
 
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
@@ -285,14 +288,13 @@ private:
   STheTime mUTC{};
   timeTableHandler * mpTimeTable = nullptr;
   FILE * mpFicDumpPointer = nullptr;
-  bool mShowOnlyCurrTrans = false;
   size_t mPreviousIdleTime = 0;
   size_t mPreviousTotalTime = 0;
   QScopedPointer<ServiceListHandler> mpServiceListHandler;
   bool mCurFavoriteState = false;
   bool mClockActiveStyle = true;
   std::mutex mMutex;
-  bool mProgBarAudioBufferFullColorSet = false;
+  std::vector<tiiResult> transmitterIds;
 
   static QStringList get_soft_bit_gen_names();
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> &, const SServiceId &);
@@ -381,6 +383,7 @@ public slots:
   void slot_show_rs_errors(int);
   void slot_show_aac_errors(int);
   void slot_show_fic_success(bool);
+  void slot_show_fic_ber(float);
   void slot_set_synced(bool);
   void slot_show_label(const QString &);
   void slot_handle_mot_object(QByteArray, QString, int, bool);
@@ -393,13 +396,13 @@ public slots:
   void slot_no_signal_found();
   void slot_show_mot_handling(bool);
   void slot_set_sync_lost();
-  void slot_show_correlation(int amount, int marker, float, const QVector<int> & v);
+  void slot_show_correlation(float, const QVector<int> & v);
   void slot_show_spectrum(int);
   void slot_show_iq(int, float);
   void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);
   void slot_show_digital_peak_level(float iPeakLevel);
   void slot_show_rs_corrections(int, int);
-  void slot_show_tii(int, int);
+  void slot_show_tii(const std::vector<tiiResult> & iTr);
   void slot_clock_time(int, int, int, int, int, int, int, int, int);
   void slot_start_announcement(const QString &, int);
   void slot_stop_announcement(const QString &, int);
@@ -413,16 +416,19 @@ public slots:
   void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
   void slot_test_slider(int);
   void slot_load_table();
-  void slot_handle_transmitter_tags(int);
+  //void slot_handle_transmitter_tags(int);
   void slot_handle_dl_text_button();
   void slot_handle_logger_button(int);
   void slot_handle_port_selector();
   void slot_handle_set_coordinates_button();
   void slot_handle_eti_active_selector(int);
-  void slot_handle_tii_detector_mode(bool);
+  void slot_use_strongest_peak(bool);
   void slot_handle_dc_avoidance_algorithm(bool);
   void slot_handle_dc_removal(bool);
   void slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight);
+  void slot_handle_tii_collisions(bool);
+  void slot_handle_tii_threshold(int);
+  void slot_handle_tii_subid(int);
 
   void closeEvent(QCloseEvent * event) override;
 
@@ -440,6 +446,7 @@ private slots:
   void _slot_handle_source_dump_button();
   void _slot_handle_frame_dump_button();
   void _slot_handle_audio_dump_button();
+  void _slot_handle_tii_button();
   void _slot_handle_prev_service_button();
   void _slot_handle_next_service_button();
   void _slot_handle_target_service_button();

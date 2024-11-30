@@ -53,6 +53,9 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   , mRefTable(mDabPar.T_u, {0, 0})
   , mCorrPeakValues(mDabPar.T_u / 2)
 {
+  mMeanCorrPeakValues.resize(mDabPar.T_u);
+  std::fill(mMeanCorrPeakValues.begin(), mMeanCorrPeakValues.end(), 0.0f);
+
   // mRefTable is in the frequency domain
   for (int32_t i = 1; i <= mDabPar.K / 2; i++) // skip DC
   {
@@ -101,16 +104,17 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
     */
   float sum = 0;
 
-  for (int32_t i = 0; i < mDabPar.T_u / 2; i++)
+  for (int32_t i = 0; i < mDabPar.T_u; i++)
   {
     const float absVal = fast_abs(iV[i]);
     mCorrPeakValues[i] = absVal;
+    mMeanCorrPeakValues[i] += absVal;
     sum += absVal;
   }
 
-  sum /= (float)(mDabPar.T_u) / 2.0f;
+  sum /= (float)(mDabPar.T_u);
   QVector<int> indices;
-  //int32_t maxIndex = -1;
+  int32_t maxIndex = -1;
   float maxL = -1000;
   constexpr int16_t GAP_SEARCH_WIDTH = 10;
   constexpr int16_t EXTENDED_SEARCH_REGION = 250;
@@ -140,7 +144,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
         if (mCorrPeakValues[i] > maxL)
         {
           maxL = mCorrPeakValues[i];
-          //maxIndex = i;
+          maxIndex = i;
         }
         i += GAP_SEARCH_WIDTH;
       }
@@ -160,8 +164,11 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
 
     if (mDisplayCounter > mFramesPerSecond / 2)
     {
-      mpResponse->put_data_into_ring_buffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
-      emit signal_show_correlation((int32_t)mCorrPeakValues.size(), mDabPar.T_g, sum * iThreshold, indices);
+      for (int32_t i = 0; i < mDabPar.T_u; i++)
+        mMeanCorrPeakValues[i] /= 6;
+      mpResponse->put_data_into_ring_buffer(mMeanCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
+      //mpResponse->put_data_into_ring_buffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
+      emit signal_show_correlation(sum * iThreshold, indices);
       mDisplayCounter = 0;
     }
   }
@@ -172,8 +179,16 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
    * This leads to a OFDM symbol interference which was clearly been seen in the IQ scope or Modulation quality.
    * So, the theory and also the experiment says that the first found peak (above the threshold) should be used as timing marker.
    */
-  assert(indices.size() > 0);
-  return indices[0];
+  if(sync_on_strongest_peak)
+  {
+    assert(maxIndex >= 0);
+    return maxIndex;
+  }
+  else
+  {
+    assert(indices.size() > 0);
+    return indices[0];
+  }
 }
 
 //	an approach that works fine is to correlate the phase differences between subsequent carriers
@@ -220,4 +235,9 @@ float PhaseReference::phase(const std::vector<cmplx> & iV, const int32_t iTs)
   }
 
   return arg(sum);
+}
+
+void PhaseReference::set_sync_on_strongest_peak(bool sync)
+{
+  sync_on_strongest_peak = sync;
 }

@@ -35,16 +35,24 @@
 #include <QObject>
 #include <QColor>
 #include <QVector>
+#include <qwt.h>
+#include <qwt_plot.h>
+#include <qwt_plot_marker.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_curve.h>
+#include <qwt_color_map.h>
+#include <qwt_plot_zoomer.h>
+#include <qwt_plot_textlabel.h>
+#include <qwt_plot_canvas.h>
+#include <qwt_plot_layout.h>
+#include <qwt_scale_widget.h>
 #include "ringbuffer.h"
 #include "qwt_defs.h"
+#include "tii-detector.h"
 
 class RadioInterface;
 class QSettings;
 class QLabel;
-class QwtPlotPicker;
-class QwtPlotMarker;
 
 class CorrelationViewer : public QObject
 {
@@ -53,7 +61,7 @@ public:
   CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<float> *);
   ~CorrelationViewer() override = default;
 
-  void showCorrelation(int32_t dots, int marker, float threshold, const QVector<int> & v);
+  void showCorrelation(float threshold, const QVector<int> & v, const std::vector<tiiResult> & iTr);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";
@@ -67,11 +75,11 @@ private:
   QwtPlotCurve mQwtPlotCurve;
   QwtPlotGrid mQwtGrid;
   std::vector<int> mIndexVector;
-  QwtPlotPicker * lm_picker = nullptr;
   QColor mGridColor;
   QColor mCurveColor;
   TQwtData mMinValFlt = -15;
   TQwtData mMaxValFlt = 10;
+  std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
 
 private slots:
   void _slot_right_mouse_click(const QPointF &);
