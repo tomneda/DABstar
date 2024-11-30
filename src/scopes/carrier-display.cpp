@@ -17,19 +17,30 @@
 #include "glob_defs.h"
 #include "carrier-display.h"
 #include <qwt_scale_div.h>
+#include <qwt_plot_zoomer.h>
+#include <qwt_picker_machine.h>
+#include <qwt_plot_panner.h>
+#include <qwt_plot_magnifier.h>
 #include <QPen>
-#include <QList>
 
 CarrierDisp::CarrierDisp(QwtPlot * ipPlot) :
   mQwtPlot(ipPlot)
 {
   mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
-  mQwtPlotCurve.setOrientation(Qt::Horizontal);
+  mQwtPlotCurve.setOrientation(Qt::Vertical);
   mQwtPlotCurve.attach(mQwtPlot);
 
-  select_plot_type(ECarrierPlotType::DEFAULT);
+  QwtPlotPicker *lm_picker = new QwtPlotPicker(ipPlot->canvas());
+  QwtPickerMachine *lpickerMachine = new QwtPickerClickPointMachine();
+  lm_picker->setStateMachine(lpickerMachine);
+  lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
+  connect(lm_picker, SIGNAL(selected(const QPointF&)), this, SLOT(rightMouseClick(const QPointF &)));
+  // panning with the left mouse button
+  (void)new QwtPlotPanner(ipPlot->canvas());
 
-  mQwtPlot->replot();
+  // zoom in/out with the wheel
+  (void)new QwtPlotMagnifier(ipPlot->canvas());
+  select_plot_type(ECarrierPlotType::DEFAULT);
 }
 
 void CarrierDisp::display_carrier_plot(const std::vector<TQwtData> & iYValVec)
@@ -46,6 +57,7 @@ void CarrierDisp::display_carrier_plot(const std::vector<TQwtData> & iYValVec)
 
 void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 {
+  pt = iPlotType;
   customize_plot(_get_plot_type_data(iPlotType));
 }
 
@@ -103,8 +115,9 @@ void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
       }
     }
   }
-
-  mQwtPlotCurve.setStyle(iCustPlot.Style == SCustPlot::EStyle::DOTS ? QwtPlotCurve::Dots :  QwtPlotCurve::Lines);
+  if(iCustPlot.Style == SCustPlot::EStyle::DOTS) mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
+  else if(iCustPlot.Style == SCustPlot::EStyle::LINES) mQwtPlotCurve.setStyle(QwtPlotCurve::Lines);
+  else mQwtPlotCurve.setStyle(QwtPlotCurve::Sticks);
 }
 
 void CarrierDisp::_setup_x_axis()
@@ -211,7 +224,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
 
   case ECarrierPlotType::NULL_TII:
     cp.ToolTip = "Shows the averaged null symbol level with TII carriers in percentage of the maximum peak.";
-    cp.Style = SCustPlot::EStyle::LINES;
+    cp.Style = SCustPlot::EStyle::STICKS;
     cp.Name = "Null Sym. TII";
     cp.YTopValue = 100.0;
     cp.YBottomValue = 0.0;
@@ -264,4 +277,11 @@ QStringList CarrierDisp::get_plot_type_names()
   sl << _get_plot_type_data(ECarrierPlotType::NULL_OVR_POW).Name;
 
   return sl;
+}
+
+void CarrierDisp::rightMouseClick(const QPointF &point)
+{
+  (void)point;
+  _setup_x_axis();
+  select_plot_type(pt);
 }

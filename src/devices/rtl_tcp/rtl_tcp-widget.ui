@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>221</width>
-    <height>264</height>
+    <width>220</width>
+    <height>260</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,46 +33,172 @@
     </layout>
    </item>
    <item>
-    <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Address</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="tcp_address">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string notr="true">127.0.0.1</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Port</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="tcp_port">
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="maximum">
+        <number>99999</number>
+       </property>
+       <property name="value">
+        <number>1234</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_1">
+       <property name="text">
+        <string>Corr.</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="tcp_ppm">
+       <property name="suffix">
+        <string> ppm</string>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the offset (in ppm) of the observed oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="minimum">
+        <double>-150.0</double>
+       </property>
+       <property name="maximum">
+        <double>150.0</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QCheckBox" name="tcp_biast">
+       <property name="text">
+        <string>biasT</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="QLabel" name="agcLabel">
+       <property name="text">
+        <string>AGC</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="hw_agc">
+       <property name="text">
+        <string>hw</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="sw_agc">
+       <property name="text">
+        <string>sw</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="manual">
+       <property name="text">
+        <string>off</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="QLabel" name="gainLabel">
+       <property name="text">
+        <string>Gain</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QSpinBox" name="tcp_gain">
+       <property name="suffix">
+        <string> dB</string>
+       </property>
        <property name="maximum">
         <number>999</number>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_2">
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <item>
+      <widget class="QLabel" name="bandwidthLabel">
        <property name="text">
-        <string> gain</string>
+        <string>Bandwidth</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QSpinBox" name="tcp_ppm">
+     <item>
+      <widget class="QSpinBox" name="tcp_bandwidth">
+       <property name="suffix">
+        <string> kHz</string>
+       </property>
        <property name="minimum">
-        <number>-100</number>
+        <number>1200</number>
        </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>ppm</string>
+       <property name="maximum">
+        <number>2000</number>
        </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QSpinBox" name="khzOffset">
-       <property name="minimum">
-        <number>-100</number>
+       <property name="singleStep">
+        <number>20</number>
        </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Offset</string>
+       <property name="value">
+        <number>1536</number>
        </property>
       </widget>
      </item>

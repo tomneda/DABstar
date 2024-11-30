@@ -40,11 +40,11 @@
 #include  <complex>
 #include  <limits>
 #include  <cstring>
+#include  <unistd.h>
 
 #if defined(__MINGW32__) || defined(_WIN32)
   #include	"windows.h"
 #else
-  #include  <unistd.h>
   #include  "dlfcn.h"
   using HINSTANCE = void *;
 #endif

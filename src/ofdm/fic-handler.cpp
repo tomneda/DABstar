@@ -122,6 +122,7 @@ FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
   }
 
   connect(this, &FicHandler::show_ficSuccess, iMr, &RadioInterface::slot_show_fic_success);
+  connect(this, &FicHandler::show_ficBER, iMr, &RadioInterface::slot_show_fic_ber);
 }
 
 /**
@@ -206,6 +207,18 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     *	deconvolution is according to DAB standard section 11.2
     */
   myViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<uint8_t *>(bitBuffer_out.data()));
+  myViterbi.calculate_BER(viterbiBlock.data(), punctureTable.data(),
+  						  reinterpret_cast<uint8_t *>(bitBuffer_out.data()), fic_bits, fic_errors);
+  fic_block++;
+  if(fic_block == 33)
+  {
+    emit show_ficBER((float)fic_errors/fic_bits);
+    //printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, fic_bits, fic_errors, (float)fic_errors/fic_bits);
+    fic_block = 0;
+    fic_errors /= 2;
+    fic_bits /= 2;
+  }
+
   /**
     *	if everything worked as planned, we now have a
     *	768 bit vector containing three FIB's

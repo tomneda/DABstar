@@ -73,13 +73,16 @@ private:
   std::array<std::byte, 768> PRBS;
   std::array<std::byte, 256> ficBuffer;
   std::array<int16_t, 2304> ofdm_input;
-  std::array<bool, 3072 + 24> punctureTable{ false };
+  std::array<uint8_t, 3072 + 24> punctureTable{};
   std::array<bool, 4> ficValid{ false };
   int16_t index = 0;
   int16_t BitsperBlock = 0;
   int16_t ficno = 0;
   FILE * ficDumpPointer = nullptr;
   QMutex ficLocker;
+  int fic_block = 0;
+  int fic_errors = 0;
+  int fic_bits = 0;
   std::atomic<bool> running;
   void process_ficInput(int16_t iFicNo, bool * oValid);
 
@@ -89,6 +92,7 @@ private:
 
 signals:
   void show_ficSuccess(bool);
+  void show_ficBER(float);
 };
 
 #endif

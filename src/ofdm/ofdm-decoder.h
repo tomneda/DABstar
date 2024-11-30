@@ -103,11 +103,10 @@ private:
   std::vector<float> mMeanPowerVector;
   std::vector<float> mMeanNullLevel;
   std::vector<float> mMeanNullPowerWithoutTII;
-  float mMeanModQual = 0.0f;
   float mMeanPowerOvrAll = 1.0f;
   float mAbsNullLevelMin = 0.0f;
   float mAbsNullLevelGain = 0.0f;
-  float mLlrScaling = 1.0f;
+  float sum = 0;
   cmplx mDcAdc{ 0.0f, 0.0f };
 
   // mQD has always be visible due to address access in another thread.

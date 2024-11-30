@@ -54,11 +54,11 @@ Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDev
   mpChParams->tunerParams.gain.gRdB = mGRdB;
   mpChParams->tunerParams.gain.LNAstate = 3;
 
-  mpChParams->ctrlParams.agc.setPoint_dBfs = -20;
+  mpChParams->ctrlParams.agc.setPoint_dBfs = -17;
   mpChParams->ctrlParams.agc.attack_ms = 500;
   mpChParams->ctrlParams.agc.decay_ms = 500;
   mpChParams->ctrlParams.agc.decay_delay_ms = 200;
-  mpChParams->ctrlParams.agc.decay_threshold_dB = 4;
+  mpChParams->ctrlParams.agc.decay_threshold_dB = 3;
   if (agcMode)
   {
     mpChParams->ctrlParams.agc.enable = sdrplay_api_AGC_CTRL_EN;

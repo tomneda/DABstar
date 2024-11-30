@@ -49,6 +49,8 @@ public:
   ~ViterbiSpiral();
 
   void deconvolve(const int16_t * const input, uint8_t * const output);
+  void calculate_BER(const int16_t * const input, uint8_t *punctureTable,
+  	                 uint8_t const *output, int &bits, int &errors);
 
 private:
   const int16_t mFrameBits;

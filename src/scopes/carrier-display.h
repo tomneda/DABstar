@@ -26,15 +26,16 @@
 #include <vector>
 #include "qwt_defs.h"
 
-class CarrierDisp
+class CarrierDisp : public QObject
 {
+Q_OBJECT
 public:
   explicit CarrierDisp(QwtPlot * plot);
   ~CarrierDisp() = default;
 
   struct SCustPlot
   {
-    enum class EStyle { DOTS, LINES };
+    enum class EStyle { DOTS, LINES, STICKS };
 
     ECarrierPlotType PlotType;
     EStyle Style;
@@ -49,7 +50,6 @@ public:
   };
 
   void display_carrier_plot(const std::vector<TQwtData> & iYValVec);
-  void customize_plot(const SCustPlot & iCustPlot);
   void select_plot_type(const ECarrierPlotType iPlotType);
   static QStringList get_plot_type_names();
 
@@ -59,9 +59,13 @@ private:
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
   std::vector<TQwtData> mX_axis_vec;
   int32_t mDataSize = 0;
+  ECarrierPlotType pt;
 
+  void customize_plot(const SCustPlot & iCustPlot);
   static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);
   void _setup_x_axis();
+private slots:
+  void rightMouseClick(const QPointF &);
 };
 
 #endif // PHASE_CARR_DISP_H

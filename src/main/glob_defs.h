@@ -24,9 +24,6 @@
 #include <cassert>
 #include <cmath>
 
-#ifdef _WIN32
-  #include <Windows.h>
-#endif
 
 #ifndef M_PI
   #define M_PI 3.14159265358979323846
@@ -41,41 +38,6 @@
 
 using cmplx = std::complex<float>;
 using cmplx16 = std::complex<int16_t>;
-
-#ifdef _WIN32
-inline int gettimeofday(struct timeval* tp, struct timezone* tzp)
-{
-  // FILETIME structure is a 64-bit value representing the number of
-  // 100-nanosecond intervals since January 1, 1601.
-  // It's epoch differs from the Unix time_t, which is
-  // the number of 1-second intervals since January 1, 1970.
-  FILETIME ft;
-  GetSystemTimeAsFileTime(&ft);
-
-  // Convert FILETIME structure to a number of microseconds and adjust epoch
-  unsigned long long ms = ft.dwHighDateTime;
-  ms <<= 32;
-  ms |= ft.dwLowDateTime;
-  // Adjust to Unix epoch
-  ms -= 116444736000000000LL;
-  // Convert to microseconds
-  ms /= 10;
-
-  tp->tv_sec = ms / 1000000UL;  // get seconds from microseconds
-  tp->tv_usec = ms % 1000000UL; // get remaining microseconds
-  // 0 indicates success
-  return 0;
-}
-
-inline void usleep(__int64 usec)
-{
-  // Convert microseconds to milliseconds
-  // Note that due to granularity of Sleep function,
-  // the delay may not be as precise as with usleep
-  const DWORD msec = (usec + 500) / 1000;
-  Sleep(msec > 0 ? msec : 1);
-}
-#endif
 
 // do not make this as a template as it freed the allocated stack buffer at once after call
 #define make_vla(T, iSize) static_cast<T * const>(alloca(iSize * sizeof(T))) // vla = variable length array on stack

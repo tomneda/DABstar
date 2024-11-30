@@ -54,7 +54,6 @@ Q_OBJECT
 public:
   explicit RtlTcpClient(QSettings *);
   ~RtlTcpClient() override;
-
   void setVFOFrequency(int32_t) override;
   int32_t getVFOFrequency() override;
   bool restartReader(int32_t) override;
@@ -68,39 +67,48 @@ public:
   QString deviceName() override;
   bool isFileInput() override;
   void resetBuffer() override;
-
   int32_t getRate();
   int32_t defaultFrequency();
-  
-private slots:
-  void sendGain(int);
-  void set_Offset(int);
-  void set_fCorrection(int);
-  void readData();
-  void setConnection();
-  void wantConnect();
-  void setDisconnect();
+
 private:
   QFrame myFrame;
   void sendVFO(int32_t);
   void sendRate(int32_t);
-  void setGainMode(int32_t gainMode);
   void sendCommand(uint8_t, int32_t);
   QLineEdit * hostLineEdit;
   bool isvalidRate(int32_t);
+  void setAgcMode(int);
   QSettings * remoteSettings;
-  int32_t theRate;
+  int32_t Bitrate;
   int32_t vfoFrequency;
   RingBuffer<cmplx> * _I_Buffer;
   bool connected;
-  int16_t theGain;
-  int16_t thePpm;
-  QHostAddress serverAddress;
+  int16_t Gain;
+  double Ppm;
+  int16_t AgcMode;
+  int16_t BiasT;
+  int16_t Bandwidth;
+  QString ipAddress;
   QTcpSocket toServer;
   qint64 basePort;
   int32_t vfoOffset = 0;
   bool dumping;
   FILE * dumpfilePointer;
+  float mapTable[256];
+
+private slots:
+  void sendGain(int);
+  void set_fCorrection(double);
+  void readData();
+  void wantConnect();
+  void setDisconnect();
+  void setBiasT(int);
+  void setBandwidth(int);
+  void setPort(int);
+  void setAddress();
+  void handle_hw_agc();
+  void handle_sw_agc();
+  void handle_manual();
 };
 
 #endif

@@ -75,9 +75,8 @@ void OfdmDecoder::reset()
   std::fill(mMeanSigmaSqVector.begin(), mMeanSigmaSqVector.end(), 0.0f);
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
 
-  mMeanModQual = 0.0f;
   mMeanPowerOvrAll = 1.0f;
-  mLlrScaling = 1.0f;
+  sum = 0.0f;
 
   _reset_null_symbol_statistics();
 }
@@ -129,6 +128,9 @@ void OfdmDecoder::store_reference_symbol_0(std::vector<cmplx> buffer) // copy is
 
 void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits)
 {
+  float new_sum = 0.0f;
+  float mStdDevSqOvrAll = 0.0f;
+
   memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
 
   mFftHandler.fft(mFftBuffer);
@@ -139,7 +141,6 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
   ++mShowCntStatistics;
   const bool showScopeData = (mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
   const bool showStatisticData = (mShowCntStatistics > 5 * mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
-  float llrMax = 0;
 
   for (int16_t nomCarrIdx = 0; nomCarrIdx < mDabPar.K; ++nomCarrIdx)
   {
@@ -186,6 +187,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     const float curStdDevSq = curStdDevDiff * curStdDevDiff;
     float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
+    mStdDevSqOvrAll += stdDevSqRef;
 
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
     // Simplification: The IQ plot would need only the level, not power, so the root of the power is used (below)..
@@ -205,55 +207,36 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     const float sigmaSqPerBin = realLevelDistPerBin * realLevelDistPerBin + imagLevelDistPerBin * imagLevelDistPerBin; // squared distance to reference point
     float & meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
     mean_filter(meanSigmaSqPerBinRef, sigmaSqPerBin, ALPHA);
-    float llrBitReal = -mLlrScaling * 2 * meanLevelPerBinRef / meanSigmaSqPerBinRef * real(fftBin);
-    float llrBitImag = -mLlrScaling * 2 * meanLevelPerBinRef / meanSigmaSqPerBinRef * imag(fftBin);
-    const float maxAbs = std::max(std::abs(llrBitReal), std::abs(llrBitImag));
-    if (maxAbs > llrMax) llrMax = maxAbs; // for best soft bit scaling
-    limit_symmetrically(llrBitReal, F_VITERBI_SOFT_BIT_VALUE_MAX);
-    limit_symmetrically(llrBitImag, F_VITERBI_SOFT_BIT_VALUE_MAX);
-    const float weightRrl = (std::abs(llrBitReal) + std::abs(llrBitImag)) / 2.0f;
-    mean_filter(mMeanModQual, weightRrl, ALPHA / (float)mDabPar.K);
 
     // Calculate (and limit) a soft-bit weight
     float weight = 0.0f;
-    float qtDabWeight = 0.0f;
+	cmplx r1;
 
     /*
      * The viterbi decoder will limit the soft-bit values to +/-127, but the "255" were so in Qt-DAB. The limitation below is only
      * for the carrier plot.
      */
-    switch (mSoftBitType)
-    {
-    case ESoftBitType::LLR:         weight = weightRrl; break;
-    case ESoftBitType::AVER:        weight = F_VITERBI_SOFT_BIT_VALUE_MAX * (F_M_PI_4 - std::sqrt(stdDevSqRef)) / F_M_PI_4; break;
-    case ESoftBitType::FAST:        weight = F_VITERBI_SOFT_BIT_VALUE_MAX * (F_M_PI_4 - std::abs(curStdDevDiff)) / F_M_PI_4; break;
-    case ESoftBitType::HARD:        weight = F_VITERBI_SOFT_BIT_VALUE_MAX; break;
-    case ESoftBitType::MAX_DIST_IQ:
-    case ESoftBitType::EUCL_DIST:   qtDabWeight = F_VITERBI_SOFT_BIT_VALUE_MAX; break;
-    case ESoftBitType::EUCL_DIST_2: qtDabWeight = 2 * F_VITERBI_SOFT_BIT_VALUE_MAX + 1; break; // F_VITERBI_SOFT_BIT_VALUE_MAX is (intentionally?) overflown here
-    }
 
-    if (mSoftBitType == ESoftBitType::LLR)
+    if (mSoftBitType == ESoftBitType::SOFTDEC3) //log likelihood ratio
     {
-      oBits[0         + nomCarrIdx] = (int16_t)(llrBitReal);
-      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(llrBitImag);
-    }
-    else if (qtDabWeight != 0.0f)
-    {
+      float sigma = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+      r1 = fftBin;
+      new_sum += sigma * abs(r1);
+      weight = -100 * sigma * mDabPar.K / sum;
       // Original Qt-DAB decoding is with qtDabWeight == 255.0 and performs imo better than with 127.0 (F_VITERBI_SOFT_BIT_VALUE_MAX)
-      const cmplx v = mFftBuffer[fftIdx] * conj(mPhaseReference[fftIdx]);
-      const float vLen = (mSoftBitType == ESoftBitType::MAX_DIST_IQ ? std::max(std::abs(real(v)), std::abs(imag(v))) : std::abs(v));
-      oBits[0         + nomCarrIdx] = (int16_t)(-(real(v) * qtDabWeight) / vLen);
-      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(-(imag(v) * qtDabWeight) / vLen);
-      weight = std::abs(std::min(real(v), imag(v)) * qtDabWeight / vLen); // for the carrier scope: have to decide for real or imag part, take the min of both
-      limit_min_max(weight, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
     }
     else
     {
-      limit_min_max(weight, 2.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);  // at least 2 as viterbi shows problems with only 1
-      oBits[0         + nomCarrIdx] = (int16_t)(real(fftBin) < 0.0f ? weight : -weight);
-      oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(fftBin) < 0.0f ? weight : -weight);
+      r1 = fftBin * abs(mPhaseReference[fftIdx]); // input power
+      if (mSoftBitType == ESoftBitType::SOFTDEC2) // input power/sigma * SNR
+        r1 = r1 / (meanSigmaSqPerBinRef * mMeanNullPowerWithoutTII[fftIdx] / meanPowerPerBinRef + 2);
+      new_sum += abs(r1);
+      weight = -140 * mDabPar.K / sum;
     }
+
+    // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
+    oBits[0         + nomCarrIdx] = (int16_t)(real(r1) * weight);
+    oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(r1) * weight);
 
     if (showScopeData)
     {
@@ -270,7 +253,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
       switch (mCarrierPlotType)
       {
-      case ECarrierPlotType::SB_WEIGHT:       mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * weight;  break;
+      case ECarrierPlotType::SB_WEIGHT:       weight = (std::abs(real(r1)) + std::abs(imag(r1))) / 2.0f * (-weight);
+                                              limit_min_max(weight, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
+                                              mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * weight;  break;
       case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef); break;
       case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
@@ -285,12 +270,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     }
   } // for (nomCarrIdx...
 
-  // perform scaling for LLR softbits to use the full range soft-bit range on viterbi input
-  {
-    mLlrScaling += 0.0001f * (F_VITERBI_SOFT_BIT_VALUE_MAX - llrMax);
-    limit_min_max(mLlrScaling, 1.0f, 100.0f); // limit value to ensure minimum decoding ability (TODO: is top value 100 useful?)
-    //qDebug("LLR scaling: %2.2f, (max: %3.0f, diff: %4.0f)", mLlrScaling, llrMax, F_VITERBI_SOFT_BIT_VALUE_MAX - llrMax);
-  }
+  sum = new_sum;
 
   //	From time to time we show the constellation of the current symbol
   if (showScopeData)
@@ -305,7 +285,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
   {
     const float noisePow = _compute_noise_Power();
     mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mQD.ModQuality = 100.0f / F_VITERBI_SOFT_BIT_VALUE_MAX * mMeanModQual;
+    mQD.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * mDabPar.K / mStdDevSqOvrAll);
     mQD.TimeOffset = _compute_time_offset(mFftBuffer, mPhaseReference);
     mQD.FreqOffset = _compute_frequency_offset(mFftBuffer, mPhaseReference);
     mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);

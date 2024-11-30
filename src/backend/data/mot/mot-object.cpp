@@ -98,7 +98,7 @@ MotObject::MotObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
         int16_t i;
         for (i = 0; i < length - 1; i++)
         {
-          name.append(QChar(segment[pointer + i + 1]));
+          name.append((QChar)segment[pointer + i + 1]);
         }
       }
         pointer += length;

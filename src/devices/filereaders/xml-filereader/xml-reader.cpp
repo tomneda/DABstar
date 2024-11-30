@@ -32,9 +32,7 @@
 #include  "xml-descriptor.h"
 #include  "xml-filereader.h"
 #include  <cstdio>
-#ifndef _WIN32
   #include  <sys/time.h>
-#endif
 
 // this is a wrapper to avoid "ignoring return value of ... declared with attribute ‘warn_unused_result’"
 static size_t fread_chk(void * iPtr, size_t iSize, size_t iN, FILE * iStream)

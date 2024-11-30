@@ -351,3 +351,27 @@ void ViterbiSpiral::init_viterbi(SMetricData * const iP, const int16_t iStarting
   vp->old_metrics->t[iStarting_state & (NUMSTATES - 1)] = 0;
 }
 
+void ViterbiSpiral::calculate_BER(const int16_t * const input, uint8_t *punctureTable, uint8_t const *output, int &bits, int &errors)
+{
+  uint8_t Buffer[mFrameBits*RATE];
+  int i;
+  int sr = 0;
+  int polys[RATE] = POLYS;
+
+  for(i=0; i<mFrameBits; i++)
+  {
+    sr = ((sr << 1) | output[i]) & 0xff;
+    for(int j=0; j<RATE; j++)
+      Buffer[RATE*i+j] = parity(sr & polys[j]);
+  }
+
+  for(i=0; i<mFrameBits*RATE; i++)
+  {
+    if (punctureTable[i])
+    {
+      bits++;
+      if ((input[i] > 0) != Buffer[i])
+        errors++;
+    }
+  }
+}
