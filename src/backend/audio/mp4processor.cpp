@@ -43,11 +43,10 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-Mp4Processor::Mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int16_t> * b, RingBuffer<uint8_t> * frameBuffer, FILE * dump) :
-  my_padhandler(mr),
-  my_rsDecoder(8, 0435, 0, 1, 10)
+Mp4Processor::Mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int16_t> * b, RingBuffer<uint8_t> * frameBuffer, FILE * dump)
+  : my_padhandler(mr)
+  , my_rsDecoder(8, 0435, 0, 1, 10)
 {
-
   myRadioInterface = mr;
   this->frameBuffer = frameBuffer;
   this->dump = dump;
@@ -80,6 +79,7 @@ Mp4Processor::Mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   rsErrors = 0;
   totalCorrections = 0;
   goodFrames = 0;
+  superframe_sync = 0;
 }
 
 Mp4Processor::~Mp4Processor()
@@ -133,25 +133,39 @@ void Mp4Processor::addtoFrame(const std::vector<uint8_t> & V)
       *	if the firecode is OK, we handle the frame
       *	and adjust the buffer here for the next round
       */
-    if (fc.check(&frameBytes[blockFillIndex * nbits / 8]) && (processSuperframe(frameBytes.data(), blockFillIndex * nbits / 8)))
+    if (superframe_sync == 0)
     {
-      //	since we processed a full cycle of 5 blocks, we just start a
-      //	new sequence, beginning with block blockFillIndex
-      blocksInBuffer = 0;
-      if (++successFrames > 25)
-      {
-        emit signal_show_rs_errors(rsErrors);
-        successFrames = 0;
-        rsErrors = 0;
-      }
+      if (fc.check(&frameBytes[blockFillIndex * nbits / 8]))
+        superframe_sync = 4;
+      else
+        blocksInBuffer = 4;
     }
-    else
+    // since we processed a full cycle of 5 blocks, we just start a
+    // new sequence, beginning with block blockFillIndex
+    if (superframe_sync)
     {
-      /**
-        *	we were wrong, virtual shift to left in block sizes
-        */
-      blocksInBuffer = 4;
-      frameErrors++;
+      blocksInBuffer = 0;
+      if (processSuperframe(frameBytes.data(), blockFillIndex * nbits / 8))
+      {
+        superframe_sync = 4;
+
+        if (++successFrames > 25)
+        {
+          emit signal_show_rs_errors(rsErrors);
+          successFrames = 0;
+          rsErrors = 0;
+        }
+      }
+      else
+      {
+        superframe_sync--;
+        if (superframe_sync == 0)
+        {
+          // we were wrong, virtual shift to left in block sizes
+          blocksInBuffer = 4;
+          frameErrors++;
+        }
+      }
     }
   }
 }
@@ -189,16 +203,22 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     {
       rsErrors++;
       //	      fprintf (stderr, "RS failure\n");
-      return false;
+      if (!fc.check(&frameBytes[base]) && j == 0)
+      {
+        return false;
+      }
     }
-    totalCorrections += ler;
-    goodFrames++;
-    if (goodFrames >= 100)
+    else
     {
-      emit signal_show_rs_corrections(totalCorrections, crcErrors);
-      totalCorrections = 0;
-      crcErrors = 0;
-      goodFrames = 0;
+      totalCorrections += ler;
+      goodFrames++;
+      if (goodFrames >= 100)
+      {
+        emit signal_show_rs_corrections(totalCorrections, crcErrors);
+        totalCorrections = 0;
+        goodFrames = 0;
+        crcErrors = 0;
+      }
     }
 
     for (k = 0; k < 110; k++)
@@ -231,13 +251,13 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     au_start[3] = outVector[6] * 16 + (outVector[7] >> 4);
     au_start[4] = 110 * (bitRate / 8);
     break;
-    //
+  //
   case 1: num_aus = 2;
     au_start[0] = 5;
     au_start[1] = outVector[3] * 16 + (outVector[4] >> 4);
     au_start[2] = 110 * (bitRate / 8);
     break;
-    //
+  //
   case 2: num_aus = 6;
     au_start[0] = 11;
     au_start[1] = outVector[3] * 16 + (outVector[4] >> 4);
@@ -247,7 +267,7 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     au_start[5] = outVector[9] * 16 + (outVector[10] >> 4);
     au_start[6] = 110 * (bitRate / 8);
     break;
-    //
+  //
   case 3: num_aus = 3;
     au_start[0] = 6;
     au_start[1] = outVector[3] * 16 + (outVector[4] >> 4);

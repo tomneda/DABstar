@@ -83,6 +83,7 @@ private:
   int16_t aacFrames;
   int16_t successFrames;
   int16_t charSet;
+  int superframe_sync;
   int goodFrames;
   int totalCorrections;
   int16_t bitRate;
