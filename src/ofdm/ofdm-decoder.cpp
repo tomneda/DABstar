@@ -76,7 +76,7 @@ void OfdmDecoder::reset()
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
 
   mMeanPowerOvrAll = 1.0f;
-  sum = 0.0f;
+  mSum = mDabPar.K; // TODO: was 0 but causes an "div by zero", how to init correctly? (and use clearer name)
 
   _reset_null_symbol_statistics();
 }
@@ -210,7 +210,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
     // Calculate (and limit) a soft-bit weight
     float weight = 0.0f;
-	cmplx r1;
+    cmplx r1;
 
     /*
      * The viterbi decoder will limit the soft-bit values to +/-127, but the "255" were so in Qt-DAB. The limitation below is only
@@ -222,7 +222,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
       float sigma = meanLevelPerBinRef / meanSigmaSqPerBinRef;
       r1 = fftBin;
       new_sum += sigma * abs(r1);
-      weight = -100 * sigma * mDabPar.K / sum;
+      weight = -100 * sigma * mDabPar.K / mSum;
       // Original Qt-DAB decoding is with qtDabWeight == 255.0 and performs imo better than with 127.0 (F_VITERBI_SOFT_BIT_VALUE_MAX)
     }
     else
@@ -231,7 +231,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
       if (mSoftBitType == ESoftBitType::SOFTDEC2) // input power/sigma * SNR
         r1 = r1 / (meanSigmaSqPerBinRef * mMeanNullPowerWithoutTII[fftIdx] / meanPowerPerBinRef + 2);
       new_sum += abs(r1);
-      weight = -140 * mDabPar.K / sum;
+      weight = -140 * mDabPar.K / mSum;
     }
 
     // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
@@ -270,7 +270,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     }
   } // for (nomCarrIdx...
 
-  sum = new_sum;
+  mSum = new_sum;
 
   //	From time to time we show the constellation of the current symbol
   if (showScopeData)
@@ -380,7 +380,7 @@ float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
     int index_2 = i + mDabPar.K / 2;
     cmplx a1 = cmplx(std::abs(real(r[index])), std::abs(imag(r[index])));
     cmplx a2 = cmplx(std::abs(real(v[index])), std::abs(imag(v[index])));
-    float s = std::abs(arg(a1 * conj(a2)));
+    float s = std::abs(std::arg(a1 * conj(a2)));
     offsa += (float)index * s;
     offsb += index_2 * index_2;
   }

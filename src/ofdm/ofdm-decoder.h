@@ -106,7 +106,7 @@ private:
   float mMeanPowerOvrAll = 1.0f;
   float mAbsNullLevelMin = 0.0f;
   float mAbsNullLevelGain = 0.0f;
-  float sum = 0;
+  float mSum = 1.0f; // TODO: was 0 but causes an "div by zero", how to init correctly? (and use clearer name)
   cmplx mDcAdc{ 0.0f, 0.0f };
 
   // mQD has always be visible due to address access in another thread.

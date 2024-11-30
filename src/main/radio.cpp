@@ -1310,7 +1310,7 @@ void RadioInterface::_slot_update_time_display()
       mPreviousTotalTime = total_time;
     }
   }
-  
+
   //	The timer runs autonomously, so it might happen
   //	that it rings when there is no processor running
   if (mpDabProcessor == nullptr)
@@ -1863,7 +1863,7 @@ void RadioInterface::stop_source_dumping()
 
 //
 void RadioInterface::start_source_dumping()
-{                                                                         
+{
   QString deviceName = mpInputDevice->deviceName();
   QString channelName = mChannel.channelName;
 
@@ -2079,6 +2079,7 @@ void RadioInterface::connect_gui()
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   connect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
+  connect(tiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
 }
 
 void RadioInterface::disconnect_gui()
@@ -2102,6 +2103,7 @@ void RadioInterface::disconnect_gui()
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   disconnect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
+  disconnect(tiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
 }
 
 void RadioInterface::closeEvent(QCloseEvent * event)
@@ -2810,7 +2812,7 @@ void RadioInterface::slot_no_signal_found()
       stop_scanning();
     }
     else
-    {  
+    {
       //	To avoid reaction of the system on setting a different value:
       _update_channel_selector(cc);
 

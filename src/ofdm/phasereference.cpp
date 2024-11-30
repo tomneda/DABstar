@@ -51,7 +51,7 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   , mFftBackwards(mDabPar.T_u, true)
   , mpResponse(ipParam->responseBuffer)
   , mRefTable(mDabPar.T_u, {0, 0})
-  , mCorrPeakValues(mDabPar.T_u / 2)
+  , mCorrPeakValues(mDabPar.T_u)
 {
   mMeanCorrPeakValues.resize(mDabPar.T_u);
   std::fill(mMeanCorrPeakValues.begin(), mMeanCorrPeakValues.end(), 0.0f);
