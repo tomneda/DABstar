@@ -254,17 +254,14 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   h = mpSH->read(SettingHelper::soundChannel).toString();
   k = mConfig.streamoutSelector->findText(h);
-  bool run = false;
   if (k != -1)
   {
     mConfig.streamoutSelector->setCurrentIndex(k);
     emit signal_set_audio_device(mConfig.streamoutSelector->itemData(k).toByteArray());
   }
-
-  if (k == -1 || !run)
+  else
   {
-    // TODO: sound startup the first time failed
-    //mpSoundOut->selectDevice(0); // selects default device
+    emit signal_set_audio_device(QByteArray());  // activates the default audio device
   }
 
   mPicturesPath = mpSH->read(SettingHelper::picturesPath).toString();
