@@ -31,11 +31,11 @@
 
 //class	RadioInterface;
 
-class	dxDisplay:public QFrame {
+class	DxDisplay:public QFrame {
 Q_OBJECT
 public:
-	dxDisplay	(QSettings *);
-	~dxDisplay	();
+	DxDisplay	(QSettings *);
+	~DxDisplay	();
 	void setChannel(const QString &);
 	void addRow (const unsigned char, const unsigned char, const float, const float, const bool, const QString &, const QString &);
 	void cleanUp();

@@ -127,7 +127,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , Ui_DabRadio()
   , mSpectrumViewer(this, ipSettings, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
-  , my_dxDisplay(ipSettings)
+  , mDxDisplay(ipSettings)
   , mOpenFileDialog(ipSettings)
   , mConfig(this)
   , mpSH(&SettingHelper::get_instance())
@@ -522,7 +522,7 @@ bool RadioInterface::do_start()
   connect_gui();
   connect_dab_processor();
 
-  my_dxDisplay.hide();
+  mDxDisplay.hide();
 
   mpDabProcessor->set_sync_on_strongest_peak(mpSH->read(SettingHelper::cbUse_strongest_peak).toBool());
   mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
@@ -1221,7 +1221,7 @@ void RadioInterface::_slot_terminate_process()
   }
   mIsRunning.store(false);
   _show_hide_buttons(false);
-  my_dxDisplay.hide();
+  mDxDisplay.hide();
 
   mpSH->write_widget_geometry(SettingHelper::mainWidget, this);
 
@@ -1344,12 +1344,12 @@ void RadioInterface::_slot_handle_tii_button()
   bool b = mpSH->read(SettingHelper::enableTii).toBool();
   if (b)
   {
-    my_dxDisplay.hide();
+    mDxDisplay.hide();
     transmitterIds.resize(0);
   }
   else
   {
-    my_dxDisplay.show();
+    mDxDisplay.show();
   }
   mpDabProcessor->set_Tii(!b);
   mpSH->write(SettingHelper::enableTii, !b);
@@ -1566,7 +1566,7 @@ static QString tiiNumber(int n)
   return QString("0") + QString::number(n);
 }
 
-void RadioInterface::slot_show_tii(const std::vector<tiiResult> & iTr)
+void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
 {
   QString country = "";
   int count = iTr.size();
@@ -1589,9 +1589,9 @@ void RadioInterface::slot_show_tii(const std::vector<tiiResult> & iTr)
     mChannel.countryName = country;
   }
 
-  my_dxDisplay.cleanUp();
-  my_dxDisplay.show();
-  my_dxDisplay.setChannel(mChannel.channelName);
+  mDxDisplay.cleanUp();
+  mDxDisplay.show();
+  mDxDisplay.setChannel(mChannel.channelName);
 
   transmitterIds.resize(count);
   for (int index = 0; index < count; index++)
@@ -1656,7 +1656,7 @@ void RadioInterface::slot_show_tii(const std::vector<tiiResult> & iTr)
         + QString::number(height) + "m";
     }
     float strength = 10 * log10(iTr[index].strength);
-    my_dxDisplay.addRow(mainId, subId, strength, iTr[index].phase, iTr[index].norm,
+    mDxDisplay.addRow(mainId, subId, strength, iTr[index].phase, iTr[index].norm,
                         text2, theTransmitter.transmitterName);
     if (index == 0)
     {
@@ -3267,7 +3267,7 @@ void RadioInterface::_slot_handle_http_button()
     {
       mapFile = "";
     }
-    mpHttpHandler = new httpHandler(this,
+    mpHttpHandler = new HttpHandler(this,
                                     mapPort,
                                     browserAddress,
                                     mChannel.localPos,

@@ -79,7 +79,7 @@ private:
   std::array<double, 512> displayBuffer;
   std::array<float, 4 * 512> Window;
   cmplx * spectrumBuffer;
-  fftHandler fft{ 2048, false };
+  FftHandler fft{ 2048, false };
   QwtPlotPicker * lm_picker;
   QColor gridColor;
   QColor curveColor;

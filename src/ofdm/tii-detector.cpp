@@ -276,8 +276,8 @@ static uint8_t bits[] = {0x80, 0x40, 0x20, 0x10 , 0x08, 0x04, 0x02, 0x01};
 // Sort the elemtnts accordibg to their strength
 static int fcmp(const void *a, const void *b)
 {
-	tiiResult *element1 = (tiiResult*)a;
-	tiiResult *element2 = (tiiResult*)b;
+	STiiResult *element1 = (STiiResult*)a;
+	STiiResult *element2 = (STiiResult*)b;
 	if(element1->strength > element2->strength)
 		return -1;
 	else if(element1->strength < element2->strength)
@@ -286,7 +286,7 @@ static int fcmp(const void *a, const void *b)
 		return 0;
 }
 
-std::vector<tiiResult> TiiDetector::processNULL(int16_t threshold_db)
+std::vector<STiiResult> TiiDetector::processNULL(int16_t threshold_db)
 {
 	float etsi_floatTable[NUM_GROUPS * GROUPSIZE];		// collapsed ETSI float values
 	float nonetsi_floatTable[NUM_GROUPS * GROUPSIZE];	// collapsed non-ETSI float values
@@ -294,7 +294,7 @@ std::vector<tiiResult> TiiDetector::processNULL(int16_t threshold_db)
 	cmplx nonetsiTable[NUM_GROUPS * GROUPSIZE];			// collapsed non-ETSI complex values
 	float max = 0;										// abs value of the strongest carrier
 	float noise = 1e9;									// noise level
-	std::vector<tiiResult> theResult;					// results
+	std::vector<STiiResult> theResult;					// results
 	float threshold = pow(10, (float)threshold_db / 10); // threshold above noise
 
 	decode(nullSymbolBuffer, decodedBuffer);
@@ -326,7 +326,7 @@ std::vector<tiiResult> TiiDetector::processNULL(int16_t threshold_db)
 
 	for (int subId = 0; subId < GROUPSIZE; subId++)
 	{
-		tiiResult element;
+		STiiResult element;
 		cmplx sum = cmplx(0,0);
 		cmplx etsi_sum = cmplx(0,0);
 		cmplx nonetsi_sum = cmplx(0,0);
@@ -461,7 +461,7 @@ std::vector<tiiResult> TiiDetector::processNULL(int16_t threshold_db)
 		for (int i = 0; i < K / 2; i++)
 			decodedBuffer[i] *= 0.9;
 	resetBuffer();
-	qsort(theResult.data(), theResult.size(), sizeof(tiiResult), &fcmp);
+	qsort(theResult.data(), theResult.size(), sizeof(STiiResult), &fcmp);
 
 	return theResult;
 }

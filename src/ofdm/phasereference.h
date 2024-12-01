@@ -68,10 +68,10 @@ private:
   const DabParams::SDabPar mDabPar;
   const int32_t mFramesPerSecond;
   int32_t mDisplayCounter = 0;
-  bool sync_on_strongest_peak = false;
+  bool mSyncOnStrongestPeak = false;
 
-  fftHandler mFftForward;
-  fftHandler mFftBackwards;
+  FftHandler mFftForward;
+  FftHandler mFftBackwards;
 
   RingBuffer<float> * const mpResponse;
   std::vector<cmplx> mRefTable;

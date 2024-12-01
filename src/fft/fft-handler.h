@@ -43,11 +43,11 @@
   #error "FFT declaration missing!"
 #endif
 
-class fftHandler
+class FftHandler
 {
 public:
-  fftHandler(int size, bool);
-  ~fftHandler();
+  FftHandler(int size, bool);
+  ~FftHandler();
 
   void fft(std::vector<cmplx> & ioV) const;
   void fft(cmplx * const ioV) const;

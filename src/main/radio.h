@@ -220,10 +220,10 @@ private:
   BandHandler mBandHandler;
   dlCache mDlCache{10};
   TiiHandler mTiiHandler{};
-  dxDisplay	my_dxDisplay;
+  DxDisplay	mDxDisplay;
   OpenFileDialog mOpenFileDialog;
   RingBuffer<int16_t> mTechDataBuffer{16 * 32768};
-  httpHandler * mpHttpHandler = nullptr;
+  HttpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;
   const QString mVersionStr{PRJ_VERS};
   ContentTable * mpContentTable = nullptr;
@@ -294,7 +294,7 @@ private:
   bool mCurFavoriteState = false;
   bool mClockActiveStyle = true;
   std::mutex mMutex;
-  std::vector<tiiResult> transmitterIds;
+  std::vector<STiiResult> transmitterIds;
 
   static QStringList get_soft_bit_gen_names();
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> &, const SServiceId &);
@@ -402,7 +402,7 @@ public slots:
   void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);
   void slot_show_digital_peak_level(float iPeakLevel);
   void slot_show_rs_corrections(int, int);
-  void slot_show_tii(const std::vector<tiiResult> & iTr);
+  void slot_show_tii(const std::vector<STiiResult> & iTr);
   void slot_clock_time(int, int, int, int, int, int, int, int, int);
   void slot_start_announcement(const QString &, int);
   void slot_stop_announcement(const QString &, int);

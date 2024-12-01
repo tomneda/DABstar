@@ -28,15 +28,11 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  <sys/time.h>
-#include  <cinttypes>
 #include  "wav-reader.h"
 #include  "wavfiles.h"
 #include  "device-exceptions.h"
-
-#ifdef _WIN32
-#else
-#endif
+#include  <sys/time.h>
+#include  <cinttypes>
 
 #define  BUFFERSIZE  32768
 

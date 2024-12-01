@@ -57,27 +57,29 @@ typedef struct
   uint16_t Eid;
   uint8_t mainId;
   uint8_t subId;
-  float	strength;
+  float strength;
   int distance;
   int azimuth;
   float power;
-  float	frequency;
+  float frequency;
   int altitude;
   int height;
   bool non_etsi;
 } httpData;
 
-class httpHandler : public QObject
+class HttpHandler : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
+
 public:
-  httpHandler(RadioInterface *, const QString & mapPort, const QString & browserAddress, cmplx address, const QString & saveName, bool autoBrowse);
-  ~httpHandler();
+  HttpHandler(RadioInterface *, const QString & mapPort, const QString & browserAddress, cmplx address, const QString & saveName, bool autoBrowse);
+  ~HttpHandler();
   void start();
   void stop();
   void run();
-  void putData(uint8_t type, CacheElem *tr, QString dateTime,
-  			   float strength, int distance, int azimuth, bool non_etsi);
+  void putData(uint8_t type, CacheElem * tr, QString dateTime,
+               float strength, int distance, int azimuth, bool non_etsi);
+
 private:
   FILE * saveFile;
   QString * saveName;

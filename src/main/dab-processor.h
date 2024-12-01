@@ -167,7 +167,7 @@ signals:
   void signal_set_synced(bool);
   void signal_no_signal_found();
   void signal_set_sync_lost();
-  void signal_show_tii(const std::vector<tiiResult> & iTr);
+  void signal_show_tii(const std::vector<STiiResult> & iTr);
   void signal_show_spectrum(int);
   void signal_show_clock_err(float);
   void signal_set_and_show_freq_corr_rf_Hz(int);

@@ -61,7 +61,7 @@ public:
   CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<float> *);
   ~CorrelationViewer() override = default;
 
-  void showCorrelation(float threshold, const QVector<int> & v, const std::vector<tiiResult> & iTr);
+  void showCorrelation(float threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";

@@ -23,7 +23,7 @@
 #include	<QHeaderView>
 
 
-dxDisplay::dxDisplay(QSettings *s)
+DxDisplay::DxDisplay(QSettings *s)
 {
 	dxSettings = s;
 	myWidget = new QScrollArea(nullptr);
@@ -38,7 +38,7 @@ dxDisplay::dxDisplay(QSettings *s)
 	myWidget->setWindowTitle("dx display");
 }
 
-dxDisplay::~dxDisplay()
+DxDisplay::~DxDisplay()
 {
 	store_widget_position(dxSettings, myWidget, tableWidget, "DX_DISPLAY");
 	int16_t	rows = tableWidget->rowCount();
@@ -48,12 +48,12 @@ dxDisplay::~dxDisplay()
 	delete myWidget;
 }
 
-void dxDisplay::setChannel(const QString &channel)
+void DxDisplay::setChannel(const QString &channel)
 {
 	myWidget->setWindowTitle(channel);
 }
 
-void dxDisplay::cleanUp()
+void DxDisplay::cleanUp()
 {
 	int16_t	rows = tableWidget->rowCount();
 	for (int row = rows; row >= 0; row --)
@@ -61,22 +61,22 @@ void dxDisplay::cleanUp()
 	myWidget->setWindowTitle("dx display");
 }
 
-int	dxDisplay::nrRows()
+int	DxDisplay::nrRows()
 {
 	return tableWidget->rowCount();
 }
 
-void dxDisplay::show()
+void DxDisplay::show()
 {
 	myWidget->show();
 }
 
-void dxDisplay::hide()
+void DxDisplay::hide()
 {
 	myWidget->hide();
 }
 
-void dxDisplay::addRow(const unsigned char mainId, const unsigned char subId, const float strength,
+void DxDisplay::addRow(const unsigned char mainId, const unsigned char subId, const float strength,
 					   const float phase, const bool norm, const QString &ds, const QString &tr)
 {
 	int16_t	row	= tableWidget->rowCount();
@@ -115,7 +115,7 @@ void dxDisplay::addRow(const unsigned char mainId, const unsigned char subId, co
 	tableWidget->item(row, 5)->setText(tr);
 }
 
-void dxDisplay::set_position_and_size(QSettings * settings, QWidget *w, QTableWidget *t, const QString &key)
+void DxDisplay::set_position_and_size(QSettings * settings, QWidget *w, QTableWidget *t, const QString &key)
 {
 	settings->beginGroup(key);
 	int x  = settings->value(key + "-x", 100).toInt();
@@ -139,7 +139,7 @@ void dxDisplay::set_position_and_size(QSettings * settings, QWidget *w, QTableWi
 	t->setColumnWidth(5, c5);
 }
 
-void dxDisplay::store_widget_position(QSettings *settings, QWidget *w, QTableWidget *t, const QString &key)
+void DxDisplay::store_widget_position(QSettings *settings, QWidget *w, QTableWidget *t, const QString &key)
 {
 	settings->beginGroup(key);
 	settings->setValue(key + "-x", w->pos().x());

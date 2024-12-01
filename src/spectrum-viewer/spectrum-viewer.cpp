@@ -341,7 +341,7 @@ void SpectrumViewer::show_clock_error(float iClockErr)
   lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
 }
 
-void SpectrumViewer::show_correlation(float threshold, const QVector<int32_t> & v, const std::vector<tiiResult> & iTr)
+void SpectrumViewer::show_correlation(float threshold, const QVector<int32_t> & v, const std::vector<STiiResult> & iTr)
 {
   mpCorrelationViewer->showCorrelation(threshold, v, iTr);
 }

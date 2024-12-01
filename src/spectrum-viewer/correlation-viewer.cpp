@@ -60,7 +60,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
   mQwtGrid.attach(mpPlotGrid);
 
-  QwtPlotPicker *lm_picker = new QwtPlotPicker(mpPlotGrid->canvas());
+  QwtPlotPicker * lm_picker = new QwtPlotPicker(mpPlotGrid->canvas());
   QwtPickerMachine * lpickerMachine = new QwtPickerClickPointMachine();
   lm_picker->setStateMachine(lpickerMachine);
   lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
@@ -86,7 +86,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mpThresholdMarker->setLinePen(QPen(Qt::darkYellow, 0, Qt::DashLine));
   mpThresholdMarker->setYValue(0); // threshold line is normed to 0dB
   mpThresholdMarker->attach(mpPlotGrid);
-  (void )new QwtPlotPanner(mpPlotGrid->canvas());
+  (void)new QwtPlotPanner(mpPlotGrid->canvas());
   QwtPlotMagnifier * magnifier = new QwtPlotMagnifier(mpPlotGrid->canvas());
   magnifier->setMouseButton(Qt::NoButton);
   magnifier->setAxisEnabled(QwtAxis::YLeft, false);
@@ -94,7 +94,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mpPlotGrid->enableAxis(QwtPlot::xBottom);
 }
 
-void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v, const std::vector<tiiResult> & iTr)
+void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr)
 {
   uint16_t i;
   const int32_t dots = 2048;
@@ -162,12 +162,12 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
     QString tii = QString::number(iTr[i].mainId) + "," + QString::number(iTr[i].subId);
     p->setLabel(tii);
     p->setLabelAlignment(Qt::AlignLeft | Qt::AlignTop);
-    p->setLabelOrientation( Qt::Vertical);
+    p->setLabelOrientation(Qt::Vertical);
     p->setLineStyle(QwtPlotMarker::VLine);
     p->setLinePen(Qt::white, 0, Qt::DashDotLine);
-	float sample = (float)iTr[i].phase * 2048 / 360 + 400;
-	if(sample < 0) sample += 2048;
-	else if(sample > 2407) sample -= 2048;
+    float sample = (float)iTr[i].phase * 2048 / 360 + 400;
+    if (sample < 0) sample += 2048;
+    else if (sample > 2407) sample -= 2048;
     p->setXValue(sample);
     p->attach(mpPlotGrid);
   }
@@ -207,4 +207,3 @@ void CorrelationViewer::_slot_right_mouse_click(const QPointF & point)
   (void)point;
   mpPlotGrid->setAxisScale(QwtPlot::xBottom, 0, 2047);
 }
-

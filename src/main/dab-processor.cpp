@@ -279,7 +279,7 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
     {
       if (mEnableTii)
       {
-        std::vector<tiiResult> transmitterIds = mTiiDetector.processNULL(mTiiThreshold);
+        std::vector<STiiResult> transmitterIds = mTiiDetector.processNULL(mTiiThreshold);
 
         if (transmitterIds.size() > 0)
         {

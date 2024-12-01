@@ -8,11 +8,11 @@
  */
 
 /*
- *	Copyright (C) 2022
- *	Jan van Katwijk (J.vanKatwijk@gmail.com)
- *	Lazy Chair Computing
+ *    Copyright (C) 2022
+ *    Jan van Katwijk (J.vanKatwijk@gmail.com)
+ *    Lazy Chair Computing
  *
- *	This file is part of Qt-DAB
+ *    This file is part of Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -35,12 +35,12 @@
 #include  <sys/types.h>
 
 #if !defined(__MINGW32__) && !defined(_WIN32)
-  #include  <unistd.h>
-  #include  <sys/socket.h>
-  #include  <fcntl.h>
-  #include  <netinet/in.h>
-  #include  <netdb.h>
-  #include  <arpa/inet.h>
+#include  <unistd.h>
+#include  <sys/socket.h>
+#include  <fcntl.h>
+#include  <netinet/in.h>
+#include  <netdb.h>
+#include  <arpa/inet.h>
 #else
   #include  <winsock2.h>
   #include  <windows.h>
@@ -50,7 +50,7 @@
 #include  "http-handler.h"
 #include  "radio.h"
 
-httpHandler::httpHandler(RadioInterface * parent, const QString & mapPort, const QString & browserAddress, cmplx homeAddress, const QString & saveName, bool autoBrowser_off)
+HttpHandler::HttpHandler(RadioInterface * parent, const QString & mapPort, const QString & browserAddress, cmplx homeAddress, const QString & saveName, bool autoBrowser_off)
 {
   this->parent = parent;
   this->mapPort = mapPort;
@@ -64,7 +64,7 @@ httpHandler::httpHandler(RadioInterface * parent, const QString & mapPort, const
 #endif
   this->running.store(false);
 
-  connect(this, SIGNAL (terminating()), parent, SLOT (http_terminate()));
+  connect(this, SIGNAL(terminating()), parent, SLOT(http_terminate()));
   saveFile = fopen(saveName.toUtf8().data(), "w");
   if (saveFile != nullptr)
   {
@@ -75,7 +75,7 @@ httpHandler::httpHandler(RadioInterface * parent, const QString & mapPort, const
   start();
 }
 
-httpHandler::~httpHandler()
+HttpHandler::~HttpHandler()
 {
   if (running.load())
   {
@@ -88,9 +88,9 @@ httpHandler::~httpHandler()
   }
 }
 
-void httpHandler::start()
+void HttpHandler::start()
 {
-  threadHandle = std::thread(&httpHandler::run, this);
+  threadHandle = std::thread(&HttpHandler::run, this);
   if (autoBrowser_off)
   {
     return;
@@ -104,7 +104,7 @@ void httpHandler::start()
 #endif
 }
 
-void httpHandler::stop()
+void HttpHandler::stop()
 {
   if (running.load())
   {
@@ -114,7 +114,7 @@ void httpHandler::stop()
 }
 
 #if !defined(__MINGW32__) && !defined(_WIN32)
-void httpHandler::run()
+void HttpHandler::run()
 {
   char buffer[4096];
   bool keepalive;
@@ -139,9 +139,9 @@ void httpHandler::run()
   setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
   svr_addr.sin_family = AF_INET;
   svr_addr.sin_addr.s_addr = INADDR_ANY;
-  svr_addr.sin_port = htons (mapPort.toInt());
+  svr_addr.sin_port = htons(mapPort.toInt());
 
-  if (::bind(ListenSocket, (struct sockaddr *)&svr_addr, sizeof(svr_addr)) == -1)
+  if (::bind(ListenSocket, (struct sockaddr*)&svr_addr, sizeof(svr_addr)) == -1)
   {
     close(ListenSocket);
     running.store(false);
@@ -154,7 +154,7 @@ void httpHandler::run()
   ::listen(ListenSocket, 5);
   while (running.load())
   {
-    ClientSocket = accept(ListenSocket, (struct sockaddr *)&cli_addr, &sin_len);
+    ClientSocket = accept(ListenSocket, (struct sockaddr*)&cli_addr, &sin_len);
     if (ClientSocket == -1)
     {
       usleep(2000000);
@@ -220,12 +220,12 @@ void httpHandler::run()
       //	Create the header
       char hdr[2048];
       sprintf(hdr, "HTTP/1.1 200 OK\r\n"
-                   "Server: qt-dab\r\n"
-                   "Content-Type: %s\r\n"
-                   "Connection: %s\r\n"
-                   "Content-Length: %d\r\n"
-                   // "Access-Control-Allow-Origin: *\r\n"
-                   "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (int)(strlen(content.c_str())));
+              "Server: qt-dab\r\n"
+              "Content-Type: %s\r\n"
+              "Connection: %s\r\n"
+              "Content-Length: %d\r\n"
+              // "Access-Control-Allow-Origin: *\r\n"
+              "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (int)(strlen(content.c_str())));
       int hdrlen = strlen(hdr);
       //	      fprintf (stderr, "reply header %s \n", hdr);
       if (jsonUpdate)
@@ -437,68 +437,68 @@ L1:
 
 #endif
 
-std::string httpHandler::theMap(cmplx homeAddress)
+std::string HttpHandler::theMap(cmplx homeAddress)
 {
-    std::string res;
-    int bodySize;
-    char * body;
-    std::string latitude = std::to_string(real(homeAddress));
-    std::string longitude = std::to_string(imag(homeAddress));
-    int cc;
-    int teller = 0;
-    int params = 0;
+  std::string res;
+  int bodySize;
+  char * body;
+  std::string latitude = std::to_string(real(homeAddress));
+  std::string longitude = std::to_string(imag(homeAddress));
+  int cc;
+  int teller = 0;
+  int params = 0;
 
-	// read map file from resource file
-	QFile file(":res/qt-map.html");
-	if (file.open(QFile::ReadOnly))
-	{
-	   QByteArray record_data(1, 0);
-	   QDataStream in(&file);
-	   bodySize	= file.size();
-	   body	= (char *)malloc(bodySize + 40);
-	   while (!in.atEnd())
-	   {
-	      in.readRawData(record_data.data(), 1);
-	      cc = (*record_data.constData());
-	      if (cc == '$')
-	      {
-	         if (params == 0)
-	         {
-	            for (int i = 0; latitude.c_str()[i] != 0; i ++)
-	               if (latitude.c_str()[i] == ',')
-	                  body[teller ++] = '.';
-	               else
-	                  body[teller ++] = latitude.c_str()[i];
-	            params++;
-	         }
-	         else if (params == 1)
-	         {
-	            for (int i = 0; longitude.c_str()[i] != 0; i ++)
-	               if (longitude.c_str()[i] == ',')
-	                  body[teller ++] = '.';
-	               else
-	                  body[teller ++] = longitude.c_str()[i];
-	            params++;
-	         }
-	         else
-	            body[teller++] = (char)cc;
-	      }
-	      else
-	         body[teller++] = (char)cc;
-	   }
-	}
-	else
-	{
-	    fprintf(stderr, "cannot open file\n");
-	    return "";
-	}
+  // read map file from resource file
+  QFile file(":res/qt-map.html");
+  if (file.open(QFile::ReadOnly))
+  {
+    QByteArray record_data(1, 0);
+    QDataStream in(&file);
+    bodySize = file.size();
+    body = (char*)malloc(bodySize + 40);
+    while (!in.atEnd())
+    {
+      in.readRawData(record_data.data(), 1);
+      cc = (*record_data.constData());
+      if (cc == '$')
+      {
+        if (params == 0)
+        {
+          for (int i = 0; latitude.c_str()[i] != 0; i++)
+            if (latitude.c_str()[i] == ',')
+              body[teller++] = '.';
+            else
+              body[teller++] = latitude.c_str()[i];
+          params++;
+        }
+        else if (params == 1)
+        {
+          for (int i = 0; longitude.c_str()[i] != 0; i++)
+            if (longitude.c_str()[i] == ',')
+              body[teller++] = '.';
+            else
+              body[teller++] = longitude.c_str()[i];
+          params++;
+        }
+        else
+          body[teller++] = (char)cc;
+      }
+      else
+        body[teller++] = (char)cc;
+    }
+  }
+  else
+  {
+    fprintf(stderr, "cannot open file\n");
+    return "";
+  }
 
-	body[teller ++] = 0;
-	res	= std::string(body);
-	// fprintf(stderr, "The map :\n%s\n", res. c_str ());
-	file.close();
-    free(body);
-    return res;
+  body[teller++] = 0;
+  res = std::string(body);
+  // fprintf(stderr, "The map :\n%s\n", res. c_str ());
+  file.close();
+  free(body);
+  return res;
 }
 
 std::string dotNumber(float f)
@@ -521,7 +521,7 @@ std::string dotNumber(float f)
 }
 
 //
-std::string httpHandler::coordinatesToJson(const std::vector<httpData> & t)
+std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
 {
   char buf[512];
   QString Jsontxt;
@@ -533,8 +533,8 @@ std::string httpHandler::coordinatesToJson(const std::vector<httpData> & t)
   // the Target
   for (unsigned long i = 0; i < t.size(); i++)
   {
-	if(i > 0)
-		Jsontxt += ",\n";
+    if (i > 0)
+      Jsontxt += ",\n";
     snprintf(buf,
              512,
              "{\"type\":%d, \"lat\":%s, \"lon\":%s, \"name\":\"%s\", \"channel\":\"%s\", \"mainId\":%d, \"subId\":%d, \"strength\":%d, \"dist\":%d, \"azimuth\":%d, \"power\":%d, \"altitude\":%d, \"height\":%d, \"dir\":\"%s\", \"pol\":\"%s\", \"nonetsi\":\"%s\"}",
@@ -543,9 +543,9 @@ std::string httpHandler::coordinatesToJson(const std::vector<httpData> & t)
              dotNumber(imag(t[i].coords)).c_str(),
              t[i].transmitterName.toUtf8().data(),
              t[i].channelName.toUtf8().data(),
- 	         t[i].mainId,
- 	         t[i].subId,
- 	         (int)(t[i].strength * 10),
+             t[i].mainId,
+             t[i].subId,
+             (int)(t[i].strength * 10),
              t[i].distance,
              t[i].azimuth,
              (int)(t[i].power * 100),
@@ -562,8 +562,8 @@ std::string httpHandler::coordinatesToJson(const std::vector<httpData> & t)
   return Jsontxt.toStdString();
 }
 
-void httpHandler::putData(uint8_t type, CacheElem *tr, QString dateTime,
-						  float strength, int distance, int azimuth, bool non_etsi)
+void HttpHandler::putData(uint8_t type, CacheElem * tr, QString dateTime,
+                          float strength, int distance, int azimuth, bool non_etsi)
 {
   cmplx target = cmplx(tr->latitude, tr->longitude);
   for (unsigned long i = 0; i < transmitterList.size(); i++)
@@ -583,7 +583,7 @@ void httpHandler::putData(uint8_t type, CacheElem *tr, QString dateTime,
   t.mainId = tr->mainId;
   t.subId = tr->subId;
   t.strength = strength,
-  t.distance = distance;
+    t.distance = distance;
   t.azimuth = azimuth;
   t.power = tr->power;
   t.altitude = tr->altitude;
@@ -599,7 +599,7 @@ void httpHandler::putData(uint8_t type, CacheElem *tr, QString dateTime,
   for (uint32_t i = 0; i < transmitterVector.size(); i++)
   {
     if ((transmitterVector.at(i).transmitterName == tr->transmitterName) &&
-    	(transmitterVector.at(i).channelName == tr->channel))
+        (transmitterVector.at(i).channelName == tr->channel))
       return;
   }
 

@@ -78,7 +78,7 @@ private:
   RadioInterface * const mpRadioInterface;
   const DabParams::SDabPar mDabPar;
   FreqInterleaver mFreqInterleaver;
-  fftHandler mFftHandler;
+  FftHandler mFftHandler;
   RingBuffer<cmplx> * const mpIqBuffer;
   RingBuffer<TQwtData> * const mpCarrBuffer;
 

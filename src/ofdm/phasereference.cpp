@@ -179,7 +179,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
    * This leads to a OFDM symbol interference which was clearly been seen in the IQ scope or Modulation quality.
    * So, the theory and also the experiment says that the first found peak (above the threshold) should be used as timing marker.
    */
-  if(sync_on_strongest_peak)
+  if(mSyncOnStrongestPeak)
   {
     assert(maxIndex >= 0);
     return maxIndex;
@@ -239,5 +239,5 @@ float PhaseReference::phase(const std::vector<cmplx> & iV, const int32_t iTs)
 
 void PhaseReference::set_sync_on_strongest_peak(bool sync)
 {
-  sync_on_strongest_peak = sync;
+  mSyncOnStrongestPeak = sync;
 }

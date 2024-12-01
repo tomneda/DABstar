@@ -71,13 +71,13 @@ MotObject::MotObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
     uint16_t length;
     switch (PLI)
     {
-    case 00:pointer += 1;
+    case 00: pointer += 1;
       break;
 
-    case 01:pointer += 2;
+    case 01: pointer += 2;
       break;
 
-    case 02:pointer += 5;
+    case 02: pointer += 5;
       break;
 
     case 03:
@@ -95,8 +95,7 @@ MotObject::MotObject(RadioInterface * mr, bool dirElement, uint16_t transportId,
       {
       case 12:
       {
-        int16_t i;
-        for (i = 0; i < length - 1; i++)
+        for (int16_t i = 0; i < length - 1; i++)
         {
           name.append((QChar)segment[pointer + i + 1]);
         }
@@ -193,7 +192,7 @@ void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
 void MotObject::handleComplete()
 {
   QByteArray result;
-  for (const auto & it: motMap)
+  for (const auto & it : motMap)
   {
     result.append(it.second);
   }
@@ -211,4 +210,3 @@ int MotObject::get_headerSize()
 {
   return headerSize;
 }
-

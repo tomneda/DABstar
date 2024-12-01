@@ -83,7 +83,7 @@ public:
   ~SpectrumViewer() override;
 
   void show_spectrum(int32_t);
-  void show_correlation(float threshold, const QVector<int> & v, const std::vector<tiiResult> & iTr);
+  void show_correlation(float threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr);
   void show_nominal_frequency_MHz(float);
   void show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
   void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
@@ -117,7 +117,7 @@ private:
   SpecViewLimits<double> mSpecViewLimits;
   double mAvrAlpha = 0.1;
 
-  fftHandler fft{ SP_SPECTRUMSIZE, false };
+  FftHandler fft{ SP_SPECTRUMSIZE, false };
 
   std::array<cmplx, SP_SPECTRUMSIZE> mSpectrumVec{ 0 };
   std::array<float, SP_SPECTRUMSIZE> mWindowVec{ 0 };

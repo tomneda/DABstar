@@ -31,7 +31,7 @@
 #include "fft-handler.h"
 #include "fft-complex.h"
 
-fftHandler::fftHandler(int size, bool dir)
+FftHandler::FftHandler(int size, bool dir)
 {
   this->size = size;
   this->dir = dir;
@@ -49,7 +49,7 @@ fftHandler::fftHandler(int size, bool dir)
 #endif
 }
 
-fftHandler::~fftHandler()
+FftHandler::~FftHandler()
 {
 #ifdef  __KISS_FFT__
   delete fftVector_in;
@@ -60,7 +60,7 @@ fftHandler::~fftHandler()
 #endif
 }
 
-void fftHandler::fft(std::vector<cmplx> & ioV) const
+void FftHandler::fft(std::vector<cmplx> & ioV) const
 {
 #ifdef  __KISS_FFT__
   for (int i = 0; i < size; i++)
@@ -112,7 +112,7 @@ void fftHandler::fft(std::vector<cmplx> & ioV) const
 #endif
 }
 
-void fftHandler::fft(cmplx * const ioV) const
+void FftHandler::fft(cmplx * const ioV) const
 {
 #ifdef  __KISS_FFT__
   for (int i = 0; i < size; i++)
