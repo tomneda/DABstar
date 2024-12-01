@@ -133,6 +133,9 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , mpSH(&SettingHelper::get_instance())
   , mDeviceSelector(ipSettings)
 {
+  mpAudioBufferFromDecoder = sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioFromDecoder).get();
+  mpAudioBufferToOutput = sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioToOutput).get();
+
   int32_t k;
   QString h;
 
@@ -1082,7 +1085,7 @@ void RadioInterface::slot_change_in_configuration()
         Audiodata ad;
         FILE * f = mChannel.backgroundServices.at(i).fd;
         mpDabProcessor->dataforAudioService(ss, &ad);
-        mpDabProcessor->set_audio_channel(&ad, &mAudioBufferFromDecoder, f, BACK_GROUND);
+        mpDabProcessor->set_audio_channel(&ad, mpAudioBufferFromDecoder, f, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = ad.subchId;
       }
       else
@@ -1154,22 +1157,22 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
   assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
   auto * const vec = make_vla(int16_t, iAmount);
 
-  while (mAudioBufferFromDecoder.get_ring_buffer_read_available() > iAmount)
+  while (mpAudioBufferFromDecoder->get_ring_buffer_read_available() > iAmount)
   {
-    mean_filter(mAudioBufferFillFiltered, mAudioBufferToOutput.get_fill_state_in_percent(), 0.05f);
+    mean_filter(mAudioBufferFillFiltered, mpAudioBufferToOutput->get_fill_state_in_percent(), 0.05f);
 
     // vec contains a stereo pair [0][1]...[n-2][n-1]
-    mAudioBufferFromDecoder.get_data_from_ring_buffer(vec, iAmount);
+    mpAudioBufferFromDecoder->get_data_from_ring_buffer(vec, iAmount);
 
     Q_ASSERT(mpCurAudioFifo != nullptr);
 
     // the audio output buffer got flooded, try to begin from new (set to 50% would also be ok, but needs interface in RingBuffer)
-    if (iAmount > mAudioBufferToOutput.get_ring_buffer_write_available())
+    if (iAmount > mpAudioBufferToOutput->get_ring_buffer_write_available())
     {
-      mAudioBufferToOutput.flush_ring_buffer();
+      mpAudioBufferToOutput->flush_ring_buffer();
     }
 
-    mAudioBufferToOutput.put_data_into_ring_buffer(vec, iAmount);
+    mpAudioBufferToOutput->put_data_into_ring_buffer(vec, iAmount);
 
     if (mAudioDumpState == EAudioDumpState::Running)
     {
@@ -1291,6 +1294,18 @@ void RadioInterface::_slot_update_time_display()
   {
     return;
   }
+
+#ifndef NDEBUG
+  if (mResetRingBufferCnt > 5) // wait 5 seconds to start
+  {
+    sRingBufferFactoryInt16.print_status(false);
+  }
+  else
+  {
+    sRingBufferFactoryInt16.print_status(true); // reset min/max state
+    ++mResetRingBufferCnt;
+  }
+#endif
 
   mNumberOfSeconds++;
 
@@ -2378,7 +2393,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
 {
   mChannel.currentService.valid = true;
 
-  (void)mpDabProcessor->set_audio_channel(ad, &mAudioBufferFromDecoder, nullptr, FORE_GROUND);
+  (void)mpDabProcessor->set_audio_channel(ad, mpAudioBufferFromDecoder, nullptr, FORE_GROUND);
   for (int i = 1; i < 10; i++)
   {
     Packetdata pd;
@@ -3595,11 +3610,11 @@ void RadioInterface::_set_device_to_file_mode(const bool iDataFromFile)
 
 void RadioInterface::_setup_audio_output(const uint32_t iSampleRate)
 {
-  mAudioBufferFromDecoder.flush_ring_buffer();
-  mAudioBufferToOutput.flush_ring_buffer();
+  mpAudioBufferFromDecoder->flush_ring_buffer();
+  mpAudioBufferToOutput->flush_ring_buffer();
   mpCurAudioFifo = &mAudioFifo;
   mpCurAudioFifo->sampleRate = iSampleRate;
-  mpCurAudioFifo->pRingbuffer = &mAudioBufferToOutput;
+  mpCurAudioFifo->pRingbuffer = mpAudioBufferToOutput;
 
   if (mPlaybackState == EPlaybackState::Running)
   {
@@ -3610,6 +3625,7 @@ void RadioInterface::_setup_audio_output(const uint32_t iSampleRate)
     mPlaybackState = EPlaybackState::Running;
     emit signal_start_audio(mpCurAudioFifo);
   }
+  mResetRingBufferCnt = 0;
 }
 
 void RadioInterface::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const

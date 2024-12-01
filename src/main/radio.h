@@ -213,8 +213,9 @@ private:
   RingBuffer<float> mResponseBuffer{32768};
   RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
   RingBuffer<uint8_t> mDataBuffer{32768};
-  RingBuffer<int16_t> mAudioBufferFromDecoder{AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS};
-  RingBuffer<int16_t> mAudioBufferToOutput{AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS};
+  RingBuffer<int16_t> * mpAudioBufferFromDecoder = nullptr;
+  RingBuffer<int16_t> * mpAudioBufferToOutput = nullptr;
+  uint32_t mResetRingBufferCnt = 0;
   std::vector<float> mAudioOutBuffer;
   SpectrumViewer mSpectrumViewer;
   BandHandler mBandHandler;
