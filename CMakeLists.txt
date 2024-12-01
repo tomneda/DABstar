@@ -395,6 +395,7 @@ set(${objectName}_SRCS
         src/output/audiofifo.cpp
         src/output/audiooutput.cpp
         src/output/audiooutputqt.cpp
+        src/support/ringbuffer.cpp
         src/support/Xtan2.cpp
         src/support/dab-params.cpp
         src/support/band-handler.cpp

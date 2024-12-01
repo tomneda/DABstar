@@ -76,11 +76,14 @@
 #ifndef RINGBUFFER_H
 #define RINGBUFFER_H
 
+#include <array>
 #include <cstdint>
 #include <atomic>
 #include <vector>
 #include <cstring>
 #include <cassert>
+#include <map>
+#include <memory>
 
 #ifdef __APPLE__
 #include <libkern/OSAtomic.h>
@@ -145,6 +148,14 @@ template<class TElem>
 class RingBuffer
 {
 public:
+  struct SFillState
+  {
+    float Percent;
+    uint32_t Filled;
+    uint32_t Free;
+    uint32_t Total;
+  };
+
   explicit RingBuffer(const uint32_t elementCount)
   {
     bufferSize = _round_up_to_next_power_of_2(elementCount);
@@ -168,6 +179,16 @@ public:
   [[nodiscard]] float get_fill_state_in_percent() const
   {
     return 100.0f * (float)get_ring_buffer_read_available() / (float)bufferSize;
+  }
+
+  [[nodiscard]] SFillState get_fill_state() const
+  {
+    SFillState fs;
+    fs.Filled = get_ring_buffer_read_available();
+    fs.Free = bufferSize - fs.Filled;
+    fs.Total = bufferSize;
+    fs.Percent = 100.0f * fs.Filled / (float)bufferSize;
+    return fs;
   }
 
   void flush_ring_buffer()
@@ -375,6 +396,69 @@ private:
     return iVal;
   }
 };
+
+
+class RingBufferFactoryBase
+{
+public:
+  RingBufferFactoryBase() = default;
+  virtual ~RingBufferFactoryBase() = default;
+protected:
+  static constexpr int32_t cBarWidth = 50;
+  mutable std::array<char, cBarWidth + 3> mProgressBarBuffer; // + [...] plus zero
+
+  const char * _show_progress_bar(float iPercentStop, float iPercentStart = -100) const;
+};
+
+
+template <typename T>
+class RingBufferFactory : public RingBufferFactoryBase
+{
+public:
+  RingBufferFactory();
+  ~RingBufferFactory() override = default;
+
+  enum class EId
+  {
+    AudioFromDecoder,
+    AudioToOutput
+  };
+
+  struct SList
+  {
+    EId Id;
+    const char * pName;
+    std::shared_ptr<RingBuffer<T>> pRingBuffer;
+    mutable uint32_t MinVal;
+    mutable uint32_t MaxVal;
+  };
+
+  void create_ringbuffer(EId iId, const char * const iName, uint32_t iElementCount)
+  {
+    assert (mMap.count(iId) == 0);
+    SList list;
+    list.Id = iId;
+    list.pName = iName;
+    list.pRingBuffer = std::make_shared<RingBuffer<T>>(iElementCount);
+    list.MinVal = iElementCount;
+    list.MaxVal = 0;
+    mMap[iId] = list;
+  }
+
+  std::shared_ptr<RingBuffer<T>> get_ringbuffer(EId iId)
+  {
+    const auto it = mMap.find(iId);
+    assert (it != mMap.end());
+    return it->second.pRingBuffer;
+  }
+
+  void print_status(bool iResetMinMax = false) const;
+
+private:
+  std::map<EId, SList> mMap;
+};
+
+extern RingBufferFactory<int16_t> sRingBufferFactoryInt16;
 
 #endif
 
