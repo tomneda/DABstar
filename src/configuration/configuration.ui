@@ -106,6 +106,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
           <widget class="QPushButton" name="set_coordinatesButton">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enter your local map coordinates&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is necessary to show the correct direction and distance of the received TII information.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Coordinates</string>
            </property>
@@ -188,17 +191,25 @@
          <item>
           <widget class="QComboBox" name="cmbSoftBitGen">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft-bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are different ideas how to calculate the soft-bit values for the Viterbi decoder. As in some weak receiving condition, this could make a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the &amp;quot;Log Likelihood Ratio&amp;quot; performs almost considerably best, it is always the startup-default.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are several ideas on how to calculate the soft bit values for the Virterbi decoder. In some weak reception conditions, this may cause a change.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Soft decision 1&lt;/span&gt; is the best when there is white noise and a difference in the amplitude of the carriers.&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Soft decision 2&lt;/span&gt; is the best when there is frequency selective interference.&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Soft decision 3&lt;/span&gt; is the best when there is strong frequency selective interference. &lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As this is still experimental, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QComboBox" name="streamoutSelector"/>
+        <widget class="QComboBox" name="streamoutSelector">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select audio target&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="deviceSelector"/>
+        <widget class="QComboBox" name="deviceSelector">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select input device&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
