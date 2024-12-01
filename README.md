@@ -239,8 +239,35 @@ make
 sudo make install`
 sudo ldconfig
 ```
+The install process installed a cmake package file to `/usr/local/qwt-6.3.0/lib/pkgconfig/Qt6Qwt6.pc`.
+The path variable PKG_CONFIG_PATH in `CMakeLists.txt` refers to this path to find the Qwt-Package.
 
+Strangely, this error can still happen:
 
+```
+...
+Could not find a package configuration file provided by "Qt6Qwt6" with any
+of the following names:
+
+    Qt6Qwt6Config.cmake
+    qt6qwt6-config.cmake
+...
+```
+The package description `/usr/local/qwt-6.3.0/lib/pkgconfig/Qt6Qwt6.pc` contains this (last) line:
+`Requires: Qt5Widgets Qt5Concurrent Qt5PrintSupport Qt5Svg Qt5OpenGL`, what is strange as this Qwt build was built on the base on Qt 6.
+
+As the requirements of Qt 6 are already fulfilled, 
+I could solve the issue with simply commenting out this (last) line with a hash #. 
+So, the last part of the File should look like this:
+```
+...
+Name: Qwt6
+Description: Qt Widgets for Technical Applications
+Version: 6.3.0
+Libs: -L${libdir} -lqwt
+Cflags: -I${includedir}
+# Requires: Qt5Widgets Qt5Concurrent Qt5PrintSupport Qt5Svg Qt5OpenGL
+```
 
 ### Building DABstar:
 ```
