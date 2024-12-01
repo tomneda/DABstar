@@ -1647,7 +1647,8 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
     {
       text2 += QString::number(fdistance, 'f', 1) + "km, "
         + QString::number(fcorner, 'f', 1)
-        + QString::fromLatin1("\xb0, ")
+        + QString::fromLatin1("\xb0 (")
+        + QString::fromStdString(AngleDirection::get_compass_direction(fcorner)) + "), "
         + QString::number(power, 'f', 1) + "kW, "
         + QString::number(altitude) + "+"
         + QString::number(height) + "m";
