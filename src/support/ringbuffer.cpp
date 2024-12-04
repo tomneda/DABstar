@@ -34,7 +34,7 @@ void RingBufferFactory<int16_t>::print_status(bool iResetMinMax /*= false*/) con
   for (int32_t i = 0; i < 170; ++i) printf(iResetMinMax ? "=" : "-");
   printf("\n");
 
-  float globMinPrc = MAXFLOAT;
+  float globMinPrc = 1.0e10f;
   float globMaxPrc = 0.0f;
 
   for (const auto & [_, list] : mMap)

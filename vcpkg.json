@@ -1,0 +1,30 @@
+{
+  "name": "dabstar",
+  "version-string": "0.0.1",
+  "dependencies": [
+    {
+      "name": "fftw3"
+    },
+    {
+      "name": "faad2"
+    },
+    {
+      "name": "portaudio"
+    },
+    {
+      "name": "libsndfile"
+    },
+    {
+      "name": "libsamplerate"
+    },
+    {
+      "name": "fdk-aac"
+    },
+    {
+      "name": "zlib"
+    },
+    {
+      "name": "pkgconf"
+    }
+  ]
+}
