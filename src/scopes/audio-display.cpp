@@ -63,7 +63,14 @@ AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * 
   lm_picker->setStateMachine(lpickerMachine);
   lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
+#ifdef _WIN32
+  // It is strange, the non-macro based variant seems not working on windows, so use the macro-base version here.
+  connect(lm_picker, SIGNAL(selected(const QPointF&)), this, SLOT(_slot_rightMouseClick(const QPointF &)));
+#else
+  // The non macro-based variant is type-secure so it should be preferred.
+  // Clang-glazy mentioned that QwtPlotPicker::selected would be no signal, but it is?!
   connect(lm_picker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &AudioDisplay::_slot_rightMouseClick);
+#endif
 
   spectrumCurve.setPen(QPen(curveColor, 2.0));
   spectrumCurve.setOrientation(Qt::Horizontal);

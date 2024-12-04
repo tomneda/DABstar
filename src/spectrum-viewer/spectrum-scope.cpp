@@ -39,7 +39,14 @@ SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings 
   mpLmPicker->setStateMachine(lpickerMachine);
   mpLmPicker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
+#ifdef _WIN32
+  // It is strange, the non-macro based variant seems not working on windows, so use the macro-base version here.
+  connect(mpLmPicker, SIGNAL(selected(const QPointF&)), this, SLOT(slot_right_mouse_click(const QPointF &)));
+#else
+  // The non macro-based variant is type-secure so it should be preferred.
+  // Clang-glazy mentioned that QwtPlotPicker::selected would be no signal, but it is?!
   connect(mpLmPicker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &SpectrumScope::slot_right_mouse_click);
+#endif
 
   mSpectrumCurve.setPen(QPen(mCurveColor, 2.0));
   mSpectrumCurve.setOrientation(Qt::Horizontal);
