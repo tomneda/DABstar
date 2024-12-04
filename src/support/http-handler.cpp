@@ -255,7 +255,7 @@ void HttpHandler::run()
 //
 //	windows version
 //
-void httpHandler::run()
+void HttpHandler::run()
 {
   char buffer[4096];
   bool keepalive;

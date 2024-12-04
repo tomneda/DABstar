@@ -49,13 +49,13 @@ int main(int argc, char ** argv)
 
   // Default values
   int32_t dataPort = 8888;
-  int opt;
   QString altFreqList = "";
 
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
 
 #ifndef _WIN32
+  int opt;
   while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:")) != -1)
   {
     switch (opt)
