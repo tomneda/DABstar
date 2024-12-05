@@ -2,7 +2,7 @@
 
 ---
 ![screenshot.png](res/for_readme/screenshot.png)
-(Picture from V3.0.1)
+(Picture from V3.2.0)
 ---
 
 ## Table of Content
@@ -24,11 +24,11 @@
       * [Target Button](#target-button-)
     * [Some help for scanning](#some-help-for-scanning)
   * [How to apply TII info](#how-to-apply-tii-info)
-  * [Installing on Linux](#installing-on-linux)
+  * [Installing on Linux from current mainline](#installing-on-linux-from-current-mainline)
     * [QWT installation / building](#qwt-installation--building)
       * [Original description](#original-description)
       * [QWT short build description](#qwt-short-build-description)
-    * [Building DABstar:](#building-dabstar)
+    * [Building DABstar](#building-dabstar)
     * [Installing USRP UHD](#installing-usrp-uhd)
   * [Licences](#licences)
 <!-- TOC -->
@@ -181,7 +181,7 @@ That the location, distance and direction to the transmitter can be shown, do fo
     Here you will maybe not have the newest in 3) downloaded version of the data base.
 
 
-## Installing on Linux
+## Installing on Linux from current mainline
 
 This is what I needed to install DABstar on a fresh Ubuntu 24.04:
 ```
@@ -269,7 +269,7 @@ Cflags: -I${includedir}
 # Requires: Qt5Widgets Qt5Concurrent Qt5PrintSupport Qt5Svg Qt5OpenGL
 ```
 
-### Building DABstar:
+### Building DABstar
 ```
 git clone https://github.com/tomneda/DABstar.git
 cd DABstar
