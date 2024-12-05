@@ -39,24 +39,18 @@
 
 #include "radio.h"
 
-// Q_LOGGING_CATEGORY(sLCAudioOutput, "AudioOutput", QtInfoMsg)
-Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtWarningMsg)
+// Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtDebugMsg)
+Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtInfoMsg)
 
 AudioOutputQt::AudioOutputQt(RadioInterface * const ipRI, QObject * parent)
   : AudioOutput(parent)
 {
-  mpIoDevice = new AudioIODevice(ipRI);
+  mpIoDevice.reset(new AudioIODevice(ipRI));
 }
 
 AudioOutputQt::~AudioOutputQt()
 {
-  if (mpAudioSink != nullptr)
-  {
-    mpAudioSink->stop();
-    delete mpAudioSink;
-  }
   mpIoDevice->close();
-  delete mpIoDevice;
 }
 
 void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
@@ -73,15 +67,9 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
     format = mCurrentAudioDevice.preferredFormat();
   }
 
-  if (mpAudioSink != nullptr)
-  {
-    delete mpAudioSink;
-    mpAudioSink = nullptr;
-  }
+  mpAudioSink.reset(new QAudioSink(mCurrentAudioDevice, format, this));
 
-  mpAudioSink = new QAudioSink(mCurrentAudioDevice, format, this);
-
-  connect(mpAudioSink, &QAudioSink::stateChanged, this, &AudioOutputQt::_slot_state_changed);
+  connect(mpAudioSink.get(), &QAudioSink::stateChanged, this, &AudioOutputQt::_slot_state_changed);
 
   mpAudioSink->setVolume(mLinearVolume);
   mpCurrentFifo = iBuffer;
@@ -90,7 +78,7 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
   mpIoDevice->close();
   mpIoDevice->set_buffer(mpCurrentFifo);
   mpIoDevice->start();
-  mpAudioSink->start(mpIoDevice);
+  mpAudioSink->start(mpIoDevice.get());
 }
 
 void AudioOutputQt::slot_restart(SAudioFifo * iBuffer)
@@ -244,6 +232,7 @@ AudioIODevice::AudioIODevice(RadioInterface * const ipRI, QObject * const iParen
 
 void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
 {
+  qCInfo(sLogAudioOutput) << "Audio sample rate:" << iBuffer->sampleRate;
   mpInFifo = iBuffer;
 
   mSampleRateKHz = iBuffer->sampleRate / 1000;
@@ -445,6 +434,21 @@ qint64 AudioIODevice::writeData(const char * data, qint64 len)
   Q_UNUSED(len);
 
   return 0;
+}
+
+qint64 AudioIODevice::bytesAvailable() const
+{
+  const qint64 avail_bf = QIODevice::bytesAvailable();
+  const qint64 avail_rb = mpInFifo->pRingbuffer->get_ring_buffer_read_available() * sizeof(int16_t);
+  quint64 avail_sum = avail_bf + avail_rb;
+  if (avail_sum == 0) avail_sum = 0x100; // this is a workaround as readData() will never get read if 0 is given back
+  return avail_sum;
+}
+
+qint64 AudioIODevice::size() const                                  
+{
+  const qint64 avail_bf = QIODevice::size();
+  return avail_bf;
 }
 
 void AudioIODevice::set_mute_state(bool iMuteActive)
