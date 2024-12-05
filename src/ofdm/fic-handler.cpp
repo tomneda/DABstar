@@ -210,7 +210,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
   myViterbi.calculate_BER(viterbiBlock.data(), punctureTable.data(),
   						  reinterpret_cast<uint8_t *>(bitBuffer_out.data()), fic_bits, fic_errors);
   fic_block++;
-  if(fic_block == 33)
+  if(fic_block == 40) // 4 blocks per frame, 10 frames per sec
   {
     emit show_ficBER((float)fic_errors/fic_bits);
     //printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, fic_bits, fic_errors, (float)fic_errors/fic_bits);
@@ -298,6 +298,7 @@ void FicHandler::stop()
 void FicHandler::restart()
 {
   //	clearEnsemble	();
+  fic_decode_success_ratio = 0;
   connect_channel();
   running.store(true);
 }

@@ -76,7 +76,6 @@ void OfdmDecoder::reset()
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
 
   mMeanPowerOvrAll = 1.0f;
-  mSum = mDabPar.K; // TODO: was 0 but causes an "div by zero", how to init correctly? (and use clearer name)
 
   _reset_null_symbol_statistics();
 }
@@ -128,7 +127,7 @@ void OfdmDecoder::store_reference_symbol_0(std::vector<cmplx> buffer) // copy is
 
 void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits)
 {
-  float new_sum = 0.0f;
+  float sum = 0.0f;
   float mStdDevSqOvrAll = 0.0f;
 
   memcpy(mFftBuffer.data(), &(iV[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
@@ -217,21 +216,22 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
      * for the carrier plot.
      */
 
-    if (mSoftBitType == ESoftBitType::SOFTDEC3) //log likelihood ratio
+    if (mSoftBitType == ESoftBitType::SOFTDEC3) // log likelihood ratio
     {
       float sigma = meanLevelPerBinRef / meanSigmaSqPerBinRef;
       r1 = fftBin;
-      new_sum += sigma * abs(r1);
-      weight = -100 * sigma * mDabPar.K / mSum;
-      // Original Qt-DAB decoding is with qtDabWeight == 255.0 and performs imo better than with 127.0 (F_VITERBI_SOFT_BIT_VALUE_MAX)
+      sum += sigma * std::abs(r1);
+      weight = -100 * sigma / mMeanValue;
     }
     else
     {
-      r1 = fftBin * abs(mPhaseReference[fftIdx]); // input power
+      r1 = fftBin * std::abs(mPhaseReference[fftIdx]); // input power
       if (mSoftBitType == ESoftBitType::SOFTDEC2) // input power/sigma * SNR
-        r1 = r1 / (meanSigmaSqPerBinRef * mMeanNullPowerWithoutTII[fftIdx] / meanPowerPerBinRef + 2);
-      new_sum += abs(r1);
-      weight = -140 * mDabPar.K / mSum;
+      {
+        r1 /= meanSigmaSqPerBinRef * mMeanNullPowerWithoutTII[fftIdx] / meanPowerPerBinRef + 2;
+      }
+      sum += std::abs(r1);
+      weight = -140 / mMeanValue;
     }
 
     // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
@@ -270,7 +270,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     }
   } // for (nomCarrIdx...
 
-  mSum = new_sum;
+  mMeanValue = sum / mDabPar.K;
 
   //	From time to time we show the constellation of the current symbol
   if (showScopeData)

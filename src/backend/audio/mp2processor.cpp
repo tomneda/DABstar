@@ -600,13 +600,12 @@ void Mp2Processor::addtoFrame(const std::vector<uint8_t> & v)
   int16_t i, j;
   int16_t lf = baudRate == 48000 ? MP2framesize : 2 * MP2framesize;
   int16_t amount = MP2framesize;
-  auto * const help = make_vla(uint8_t, 24 * bitRate / 8);
   int16_t vLength = 24 * bitRate / 8;
+  auto * const help = make_vla(uint8_t, vLength);
 
-  //fprintf (stderr, "baudrate = %d, inputsize = %d\n",
-  //	          baudRate, v. size ());
-  //	fprintf (stderr, "\n");
-  for (i = 0; i < 24 * bitRate / 8; i++)
+  //fprintf(stderr, "baudrate = %d, inputsize = %d\n", baudRate, v.size());
+  //fprintf(stderr, "\n");
+  for (i = 0; i < vLength; i++)
   {
     help[i] = 0;
     for (j = 0; j < 8; j++)
@@ -619,7 +618,7 @@ void Mp2Processor::addtoFrame(const std::vector<uint8_t> & v)
     uint8_t L0 = help[vLength - 1];
     uint8_t L1 = help[vLength - 2];
     int16_t down = bitRate * 1000 >= 56000 ? 4 : 2;
-    my_padhandler.processPAD(help, vLength - 2 - down - 1, L1, L0);
+    my_padhandler.processPAD(help, vLength - 3 - down, L1, L0);
   }
 
   for (i = 0; i < amount; i++)
