@@ -82,8 +82,8 @@ public:
   ~AudioOutputQt() override;
 
 private:
-  AudioIODevice * mpIoDevice = nullptr;
-  QAudioSink * mpAudioSink = nullptr;
+  QScopedPointer<AudioIODevice> mpIoDevice;
+  QScopedPointer<QAudioSink> mpAudioSink;
   SAudioFifo * mpCurrentFifo = nullptr;
   SAudioFifo * mpRestartFifo = nullptr;
   float mLinearVolume = 1.0f;
@@ -118,6 +118,9 @@ public:
 
   qint64 readData(char * opData, qint64 maxlen) override;
   qint64 writeData(const char * data, qint64 len) override;
+  qint64 bytesAvailable() const override;
+  qint64 size() const override;
+  // bool isSequential() const override { return true; }
 
 private:
   SAudioFifo * mpInFifo = nullptr;

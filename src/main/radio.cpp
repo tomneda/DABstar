@@ -1170,6 +1170,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     if (iAmount > mpAudioBufferToOutput->get_ring_buffer_write_available())
     {
       mpAudioBufferToOutput->flush_ring_buffer();
+      qDebug("RadioInterface::slot_new_audio: Audio output buffer is full, try to start from new");
     }
 
     mpAudioBufferToOutput->put_data_into_ring_buffer(vec, iAmount);
@@ -1295,7 +1296,7 @@ void RadioInterface::_slot_update_time_display()
     return;
   }
 
-#ifndef NDEBUG
+#if 0 && !defined(NDEBUG)
   if (mResetRingBufferCnt > 5) // wait 5 seconds to start
   {
     sRingBufferFactoryInt16.print_status(false);
