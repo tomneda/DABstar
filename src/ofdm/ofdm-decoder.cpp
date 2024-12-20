@@ -207,36 +207,28 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
     float & meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
     mean_filter(meanSigmaSqPerBinRef, sigmaSqPerBin, ALPHA);
 
-    // Calculate (and limit) a soft-bit weight
-    float weight = 0.0f;
-    cmplx r1;
+    float signalPower = meanPowerPerBinRef - mMeanNullPowerWithoutTII[fftIdx];
+    if (signalPower <= 0.0f) signalPower = 0.1f;
 
-    /*
-     * The viterbi decoder will limit the soft-bit values to +/-127, but the "255" were so in Qt-DAB. The limitation below is only
-     * for the carrier plot.
-     */
+    // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
+    cmplx r1 = fftBin * meanLevelPerBinRef / meanSigmaSqPerBinRef;
+    r1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 2; // 1/SNR + 2
+    float weight;
 
-    if (mSoftBitType == ESoftBitType::SOFTDEC3) // log likelihood ratio
+    if (mSoftBitType == ESoftBitType::SOFTDEC1)
     {
-      float sigma = meanLevelPerBinRef / meanSigmaSqPerBinRef;
-      r1 = fftBin;
-      sum += sigma * std::abs(r1);
-      weight = -100 * sigma / mMeanValue;
-    }
-    else
-    {
-      r1 = fftBin * std::abs(mPhaseReference[fftIdx]); // input power
-      if (mSoftBitType == ESoftBitType::SOFTDEC2) // input power/sigma * SNR
-      {
-        r1 /= meanSigmaSqPerBinRef * mMeanNullPowerWithoutTII[fftIdx] / meanPowerPerBinRef + 2;
-      }
-      sum += std::abs(r1);
+      r1 *= abs(mPhaseReference[fftIdx]); // input power
       weight = -140 / mMeanValue;
     }
+    else //log likelihood ratio
+    {
+      weight = -100 / mMeanValue;
+    }
 
-    // split the real and the imaginary part and scale it we make the bits into softbits in the range -127 .. 127 (+/- 255?)
+    // split the real and the imaginary part and scale it
     oBits[0         + nomCarrIdx] = (int16_t)(real(r1) * weight);
     oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(r1) * weight);
+    sum += std::abs(r1);
 
     if (showScopeData)
     {
@@ -253,9 +245,12 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
 
       switch (mCarrierPlotType)
       {
-      case ECarrierPlotType::SB_WEIGHT:       weight = (std::abs(real(r1)) + std::abs(imag(r1))) / 2.0f * (-weight);
-                                              limit_min_max(weight, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
-                                              mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * weight;  break;
+      case ECarrierPlotType::SB_WEIGHT:
+        // Convert and limit the soft bit weigth to percent
+        weight = (std::abs(real(r1)) + std::abs(imag(r1))) / 2.0f * (-weight);
+        limit_min_max(weight, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
+        mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * weight;
+        break;
       case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef); break;
       case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
@@ -284,12 +279,14 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, uint16_t iCurOfdm
   if (showStatisticData)
   {
     const float noisePow = _compute_noise_Power();
+    float snr = (mMeanPowerOvrAll - noisePow) / noisePow;
+    if (snr <= 0.0f) snr = 0.1f;
     mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mQD.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * mDabPar.K / mStdDevSqOvrAll);
     mQD.TimeOffset = _compute_time_offset(mFftBuffer, mPhaseReference);
     mQD.FreqOffset = _compute_frequency_offset(mFftBuffer, mPhaseReference);
     mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
-    mQD.SNR = 10.0f * std::log10(mMeanPowerOvrAll / noisePow);
+    mQD.SNR = 10.0f * std::log10(snr);
     emit signal_show_mod_quality(&mQD);
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % mDabPar.L;
