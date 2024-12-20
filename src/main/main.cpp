@@ -12,7 +12,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -54,7 +54,6 @@ int main(int argc, char ** argv)
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
 
-#ifndef _WIN32
   int opt;
   while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:")) != -1)
   {
@@ -67,7 +66,6 @@ int main(int argc, char ** argv)
     default: ;
     }
   }
-#endif
 
   auto dabSettings(std::make_unique<QSettings>(initFileName, QSettings::IniFormat));
   SettingHelper::get_instance(dabSettings.get()); // create instance of setting helper
