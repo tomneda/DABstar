@@ -250,6 +250,15 @@
        </item>
        <item>
         <widget class="QComboBox" name="cmbChannelSelector">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>52</width>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Direct channel selector.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -341,87 +350,87 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="pictureLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>340</width>
+               <height>260</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>340</width>
+               <height>260</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(83, 17, 17);</string>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::Shape::Box</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Shadow::Raised</enum>
+             </property>
+             <property name="lineWidth">
+              <number>3</number>
+             </property>
+             <property name="midLineWidth">
+              <number>0</number>
+             </property>
+             <property name="text">
+              <string>No Slide</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="layoutStatus"/>
+         </item>
+        </layout>
        </item>
-       <item>
-        <widget class="QLabel" name="pictureLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>340</width>
-           <height>260</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>340</width>
-           <height>260</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(83, 17, 17);</string>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::Shape::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Shadow::Raised</enum>
-         </property>
-         <property name="lineWidth">
-          <number>3</number>
-         </property>
-         <property name="midLineWidth">
-          <number>0</number>
-         </property>
-         <property name="text">
-          <string>No Slide</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
+
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <widget class="QPushButton" name="btnMuteAudio">
-           <property name="minimumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mute or unmute the audio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -439,18 +448,6 @@
          </item>
          <item>
           <widget class="CirclePushButton" name="btnScanning">
-           <property name="minimumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a scan.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -468,18 +465,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="btnHttpServer">
-           <property name="minimumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a webserver for showing a map on which the locations of the transmitters found are shown. &lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Green: Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;Orange: Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -497,18 +482,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="btnTechDetails">
-           <property name="minimumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide a widget showing details of the currently selected service.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -526,18 +499,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="btnSpectrumScope">
-           <property name="minimumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
            <property name="font">
             <font>
              <family>Cantarell</family>
@@ -560,24 +521,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="btnDeviceWidget">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
            <property name="font">
             <font>
              <family>Cantarell</family>
@@ -600,18 +543,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="tiiButton">
-           <property name="minimumSize">
-            <size>
-             <width>32</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>32</width>
-             <height>30</height>
-            </size>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the TII widget.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -629,18 +560,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="configButton">
-           <property name="minimumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide or show the configuration-control widget.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -659,9 +578,6 @@
         </layout>
        </item>
       </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="layoutStatus"/>
      </item>
      <item>
       <widget class="QLabel" name="lblDynLabel">
@@ -789,6 +705,9 @@
            <pointsize>8</pointsize>
           </font>
          </property>
+         <property name="styleSheet">
+          <string notr="true">QProgressBar::chunk { background: #EF8B2A; }</string>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -807,6 +726,13 @@
            <pointsize>8</pointsize>
           </font>
          </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
+         </property>
+
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC processing. &lt;/p&gt;&lt;p&gt;FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -842,7 +768,7 @@
  </customwidgets>
  <resources>
   <include location="../../resources.qrc"/>
-  <include location="../../../../GitHub/old-dab/DABstar/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
+
