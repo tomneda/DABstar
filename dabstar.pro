@@ -18,7 +18,7 @@ QMAKE_LFLAGS	+= -O3 -ffast-math -flto
 QMAKE_LFLAGS    += -mthreads
 
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]
-RC_ICONS	=  res/icons/qt-dab-6.ico
+RC_ICONS	=  res/logo/dabstar.ico
 RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
