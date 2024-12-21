@@ -428,7 +428,7 @@
        </item>
 
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QPushButton" name="btnMuteAudio">
            <property name="toolTip">
