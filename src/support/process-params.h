@@ -4,7 +4,6 @@
 #include  <stdint.h>
 #include  <complex>
 #include  "ringbuffer.h"
-#include  "qwt_defs.h"
 
 class ProcessParams
 {
@@ -19,7 +18,7 @@ public:
   RingBuffer<float> * responseBuffer = nullptr;
   RingBuffer<cmplx> * spectrumBuffer = nullptr;
   RingBuffer<cmplx> * iqBuffer = nullptr;
-  RingBuffer<TQwtData> * carrBuffer = nullptr;
+  RingBuffer<float> * carrBuffer = nullptr;
   RingBuffer<uint8_t> * frameBuffer = nullptr;
 };
 

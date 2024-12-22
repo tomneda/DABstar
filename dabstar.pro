@@ -174,7 +174,6 @@ HEADERS += \
     src/scopes/carrier-display.h \
     src/scopes/spectrogramdata.h \
     src/scopes/audio-display.h \
-    src/scopes/qwt_defs.h \
     src/spectrum-viewer/spectrum-viewer.h \
     src/spectrum-viewer/spectrum-scope.h \
     src/spectrum-viewer/waterfall-scope.h \

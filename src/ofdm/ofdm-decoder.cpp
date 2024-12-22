@@ -38,7 +38,7 @@
 #include "radio.h"
 #include <vector>
 
-OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<TQwtData> * ipCarrBuffer) :
+OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer) :
   mpRadioInterface(ipMr),
   mDabPar(DabParams(iDabMode).get_dab_par()),
   mFreqInterleaver(iDabMode),

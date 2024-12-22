@@ -47,7 +47,6 @@
 #include <qwt_plot_layout.h>
 #include <qwt_scale_widget.h>
 #include "ringbuffer.h"
-#include "qwt_defs.h"
 #include "tii-detector.h"
 
 class RadioInterface;
@@ -77,8 +76,8 @@ private:
   std::vector<int> mIndexVector;
   QColor mGridColor;
   QColor mCurveColor;
-  TQwtData mMinValFlt = -15;
-  TQwtData mMaxValFlt = 10;
+  float mMinValFlt = -15;
+  float mMaxValFlt = 10;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
 
 private slots:

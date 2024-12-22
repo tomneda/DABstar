@@ -43,7 +43,7 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot) :
   select_plot_type(ECarrierPlotType::DEFAULT);
 }
 
-void CarrierDisp::display_carrier_plot(const std::vector<TQwtData> & iYValVec)
+void CarrierDisp::display_carrier_plot(const std::vector<float> & iYValVec)
 {
   if (mDataSize != (int32_t)iYValVec.size())
   {
@@ -128,8 +128,8 @@ void CarrierDisp::_setup_x_axis()
   // the vector iPhaseVec does not contain data for the zero point, so skip the zero also in the x-vector
   for (int32_t i = 0; i < displaySizeHalf; i++)
   {
-    mX_axis_vec[i] = (TQwtData)(i - displaySizeHalf);
-    mX_axis_vec[i + displaySizeHalf] = (TQwtData)(i + 1);
+    mX_axis_vec[i] = (float)(i - displaySizeHalf);
+    mX_axis_vec[i + displaySizeHalf] = (float)(i + 1);
   }
 
   mQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);

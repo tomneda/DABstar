@@ -40,7 +40,7 @@
 #include  "iqdisplay.h"
 
 SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
-                               RingBuffer<cmplx> * ipIqBuffer, RingBuffer<TQwtData> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
+                               RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
   Ui_scopeWidget(),
   mpRadioInterface(ipRI),
   mpDabSettings(ipDabSettings),

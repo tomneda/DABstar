@@ -59,7 +59,6 @@
 #include  "ringbuffer.h"
 #include  "fft-handler.h"
 #include  "custom_frame.h"
-#include  "qwt_defs.h"
 #include  "tii-detector.h"
 
 constexpr int32_t SP_DISPLAYSIZE = 512;
@@ -79,7 +78,7 @@ class SpectrumViewer : public QObject, private Ui_scopeWidget
 {
 Q_OBJECT
 public:
-  SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<TQwtData> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
+  SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
   ~SpectrumViewer() override;
 
   void show_spectrum(int32_t);
@@ -108,10 +107,10 @@ private:
   QSettings * const mpDabSettings;
   RingBuffer<cmplx> * const mpSpectrumBuffer;
   RingBuffer<cmplx> * const mpIqBuffer;
-  RingBuffer<TQwtData> * const mpCarrBuffer;
+  RingBuffer<float> * const mpCarrBuffer;
   RingBuffer<float> * const mpCorrelationBuffer;
   std::vector<cmplx> mIqValuesVec;
-  std::vector<TQwtData> mCarrValuesVec;
+  std::vector<float> mCarrValuesVec;
   uint32_t mThermoPeakLevelConfigured = 0;
   bool mThermoModQualConfigured = false;
   SpecViewLimits<double> mSpecViewLimits;

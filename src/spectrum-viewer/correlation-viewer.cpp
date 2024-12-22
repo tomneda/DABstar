@@ -110,22 +110,22 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
   auto * const data = make_vla(float, dots);
   // using log10_times_10() (not times 20) as the correlation is some kind of energy signal
   const float threshold_dB = 20 * log10(threshold);
-  constexpr TQwtData sScalerFltAlpha = (TQwtData)0.1;
-  const TQwtData scalerFltAlpha = sScalerFltAlpha / (TQwtData)dots;
+  constexpr float sScalerFltAlpha = (float)0.1;
+  const float scalerFltAlpha = sScalerFltAlpha / (float)dots;
   int marker = 1024;
 
   mpResponseBuffer->get_data_from_ring_buffer(data, dots);
 
   constexpr int32_t sPlotLength = dots;
-  std::array<TQwtData, sPlotLength> X_axis;
-  std::array<TQwtData, sPlotLength> Y_values;
+  std::array<float, sPlotLength> X_axis;
+  std::array<float, sPlotLength> Y_values;
 
   for (i = 0; i < sPlotLength; i++)
   {
     X_axis[i] = (float)(marker - sPlotLength / 2 + i);
   }
 
-  TQwtData maxYVal = -1000.0f;
+  float maxYVal = -1000.0f;
 
   for (i = 0; i < sPlotLength; i++)
   {
