@@ -29,22 +29,23 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "correlation-viewer.h"
-#include  <QSettings>
-#include  <QPen>
-#include  <QLabel>
-#include  <qwt_picker_machine.h>
-#include  <qwt_plot_panner.h>
-#include  <qwt_plot_magnifier.h>
-#include  "glob_defs.h"
-#include  "dab-constants.h"
-#include  "qwt_plot_picker.h"
+#include "correlation-viewer.h"
+#include <QSettings>
+#include <QPen>
+#include <QLabel>
+#include <qwt_picker_machine.h>
+#include <qwt_plot_panner.h>
+#include <qwt_plot_magnifier.h>
+#include "glob_defs.h"
+#include "dab-constants.h"
+#include "qwt_plot_picker.h"
 
 CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<float> * b)
   : mpSettings(s)
   , mpResponseBuffer(b)
   , mpPlotGrid(pPlot)
   , mpIndexDisplay(pLabel)
+  , mZoomPan(pPlot)
 {
   QString colorString;
   mpSettings->beginGroup(SETTING_GROUP_NAME);
@@ -95,12 +96,14 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mpThresholdMarker->setLinePen(QPen(Qt::darkYellow, 0, Qt::DashLine));
   mpThresholdMarker->setYValue(0); // threshold line is normed to 0dB
   mpThresholdMarker->attach(mpPlotGrid);
-  (void)new QwtPlotPanner(mpPlotGrid->canvas());
-  QwtPlotMagnifier * magnifier = new QwtPlotMagnifier(mpPlotGrid->canvas());
-  magnifier->setMouseButton(Qt::NoButton);
-  magnifier->setAxisEnabled(QwtAxis::YLeft, false);
+  // (void)new QwtPlotPanner(mpPlotGrid->canvas());
+  // QwtPlotMagnifier * magnifier = new QwtPlotMagnifier(mpPlotGrid->canvas());
+  // magnifier->setMouseButton(Qt::NoButton);
+  // magnifier->setAxisEnabled(QwtAxis::YLeft, false);
   mpPlotGrid->setAxisScale(QwtPlot::xBottom, 0, 2047);
   mpPlotGrid->enableAxis(QwtPlot::xBottom);
+
+  //mpPlotGrid->canvas()->installEventFilter(&mZoomPan);
 }
 
 void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr)

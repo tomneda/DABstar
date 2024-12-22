@@ -46,6 +46,7 @@
 #include <qwt_plot_canvas.h>
 #include <qwt_plot_layout.h>
 #include <qwt_scale_widget.h>
+#include "cust_qwt_zoom_pan.h"
 #include "ringbuffer.h"
 #include "tii-detector.h"
 
@@ -79,6 +80,7 @@ private:
   float mMinValFlt = -15;
   float mMaxValFlt = 10;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
+  CustQwtZoomPan mZoomPan;
 
 private slots:
   void _slot_right_mouse_click(const QPointF &);
