@@ -81,9 +81,6 @@ private:
   float mMaxValFlt = 10;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
   CustQwtZoomPan mZoomPan;
-
-private slots:
-  void _slot_right_mouse_click(const QPointF &);
 };
 
 #endif

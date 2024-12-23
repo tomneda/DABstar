@@ -45,7 +45,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   , mpResponseBuffer(b)
   , mpPlotGrid(pPlot)
   , mpIndexDisplay(pLabel)
-  , mZoomPan(pPlot)
+  , mZoomPan(pPlot, 0, 2047)
 {
   QString colorString;
   mpSettings->beginGroup(SETTING_GROUP_NAME);
@@ -67,15 +67,6 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   lm_picker->setStateMachine(lpickerMachine);
   lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
-
-#ifdef _WIN32
-  // It is strange, the non-macro based variant seems not working on windows, so use the macro-base version here.
-  connect(lm_picker, SIGNAL(selected(const QPointF&)), this, SLOT(_slot_right_mouse_click(const QPointF &)));
-#else
-  // The non macro-based variant is type-secure so it should be preferred.
-  // Clang-glazy mentioned that QwtPlotPicker::selected would be no signal, but it is?!
-  connect(lm_picker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &CorrelationViewer::_slot_right_mouse_click);
-#endif
 
   mQwtPlotCurve.setPen(QPen(mCurveColor, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
@@ -212,10 +203,4 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
   }
 
   return txt;
-}
-
-void CorrelationViewer::_slot_right_mouse_click(const QPointF & point)
-{
-  (void)point;
-  mpPlotGrid->setAxisScale(QwtPlot::xBottom, 0, 2047);
 }

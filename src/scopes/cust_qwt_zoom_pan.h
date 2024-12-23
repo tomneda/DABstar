@@ -25,7 +25,7 @@ class CustQwtZoomPan : public QObject
   Q_OBJECT
 
 public:
-  explicit CustQwtZoomPan(QwtPlot * plot);
+  explicit CustQwtZoomPan(QwtPlot * ipPlot, int32_t ixMin, int32_t ixMax, int32_t iyMin = 0, int32_t iyMax = 0);
   ~CustQwtZoomPan() override = default;
 
 protected:
@@ -33,11 +33,17 @@ protected:
 
 private:
   QwtPlot * const mpQwtPlot;
+  const int32_t mxMin;
+  const int32_t mxMax;
+  const int32_t myMin;
+  const int32_t myMax;
   bool mPanning = false;
+  bool mAllowXChange = false;
+  bool mAllowYChange = false;
   QPoint mLastPos{};
 
-  void _handle_mouse_press(QMouseEvent * event);
-  void _handle_mouse_release(QMouseEvent * event);
+  void _handle_mouse_press(const QMouseEvent * event);
+  void _handle_mouse_release(const QMouseEvent * event);
   void _handle_mouse_move(QMouseEvent * event);
   void _handle_wheel_event(QWheelEvent * event);
 };
