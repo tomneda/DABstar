@@ -19,8 +19,6 @@
 #include <qwt_scale_div.h>
 #include <qwt_plot_zoomer.h>
 #include <qwt_picker_machine.h>
-// #include <qwt_plot_panner.h>
-// #include <qwt_plot_magnifier.h>
 #include <QPen>
 
 CarrierDisp::CarrierDisp(QwtPlot * ipPlot)

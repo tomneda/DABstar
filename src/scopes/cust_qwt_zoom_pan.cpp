@@ -27,11 +27,11 @@ CustQwtZoomPan::CustQwtZoomPan(QwtPlot * ipPlot, const int32_t ixMin, const int3
   
   mDataX.Min = ixMin;
   mDataX.Max = ixMax;
-  mDataX.MinNrPoints = (ixMax - ixMin) / 100.0;
+  mDataX.MinNrPoints = std::round((ixMax - ixMin) / 100.0);
 
   mDataY.Min = iyMin;
   mDataY.Max = iyMax;
-  mDataY.MinNrPoints = (ixMax - iyMin) / 100.0;
+  mDataY.MinNrPoints = std::round((iyMax - iyMin) / 100.0);
 
   mpQwtPlot->canvas()->installEventFilter(this);
 
