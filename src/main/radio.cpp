@@ -3437,7 +3437,6 @@ QStringList RadioInterface::get_soft_bit_gen_names()
   // ATTENTION: use same sequence as in ESoftBitType
   sl << "Soft decision 1";
   sl << "Soft decision 2";
-  sl << "Soft decision 3";
 
   return sl;
 }

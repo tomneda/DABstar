@@ -191,18 +191,14 @@
          <item>
           <widget class="QComboBox" name="cmbSoftBitGen">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are several ideas on how to calculate the soft bit values for the Virterbi decoder. In some weak reception conditions, this may cause a change.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Soft decision 1&lt;/span&gt; is the best when there is white noise and a difference in the amplitude of the carriers.&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Soft decision 2&lt;/span&gt; is the best when there is frequency selective interference.&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Soft decision 3&lt;/span&gt; is the best when there is strong frequency selective interference. &lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As this is still experimental, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are several ideas on how to calculate the soft bit values for the Virterbi decoder. In some weak reception conditions, this may cause a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QComboBox" name="streamoutSelector">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select audio target&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="streamoutSelector"/>
        </item>
        <item>
         <widget class="QComboBox" name="deviceSelector">

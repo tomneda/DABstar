@@ -48,9 +48,8 @@ enum class ECarrierPlotType
 
 enum class ESoftBitType
 {
-  SOFTDEC1,    // input power
-  SOFTDEC2,    // input power/sigma * SNR
-  SOFTDEC3,    // log likelihood ratio
+  SOFTDEC1,    // input power/sigma * SNR
+  SOFTDEC2,    // log likelihood ratio
 
   DEFAULT = SOFTDEC1  // use the first element for startup constellation
 };
