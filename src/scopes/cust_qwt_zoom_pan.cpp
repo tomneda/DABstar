@@ -20,15 +20,23 @@
 CustQwtZoomPan::CustQwtZoomPan(QwtPlot * ipPlot, const int32_t ixMin, const int32_t ixMax, const int32_t iyMin, const int32_t iyMax)
   : QObject(ipPlot)
   , mpQwtPlot(ipPlot)
-  , mxMin(ixMin)
-  , mxMax(ixMax)
-  , myMin(iyMin)
-  , myMax(iyMax)
 {
+  assert(mpQwtPlot != nullptr);
+  assert(ixMin <= ixMax);
+  assert(iyMin <= iyMax);
+  
+  mDataX.Min = ixMin;
+  mDataX.Max = ixMax;
+  mDataX.MinNrPoints = (ixMax - ixMin) / 100.0;
+
+  mDataY.Min = iyMin;
+  mDataY.Max = iyMax;
+  mDataY.MinNrPoints = (ixMax - iyMin) / 100.0;
+
   mpQwtPlot->canvas()->installEventFilter(this);
 
-  mAllowXChange = (mxMin < mxMax);
-  mAllowYChange = (myMin < myMax);
+  mAllowXChange = (mDataX.Min < mDataX.Max);
+  mAllowYChange = (mDataY.Min < mDataY.Max);
 }
 
 bool CustQwtZoomPan::eventFilter(QObject * object, QEvent * event)
@@ -66,12 +74,12 @@ void CustQwtZoomPan::_handle_mouse_press(const QMouseEvent * const event)
   {
     if (mAllowXChange)
     {
-      mpQwtPlot->setAxisScale(QwtPlot::xBottom, mxMin, mxMax);
+      mpQwtPlot->setAxisScale(QwtPlot::xBottom, mDataX.Min, mDataX.Max);
     }
 
     if (mAllowYChange)
     {
-      mpQwtPlot->setAxisScale(QwtPlot::yLeft, myMin, myMax);
+      mpQwtPlot->setAxisScale(QwtPlot::yLeft, mDataY.Min, mDataY.Max);
     }
   }
 }
@@ -84,59 +92,71 @@ void CustQwtZoomPan::_handle_mouse_release(const QMouseEvent * const event)
   }
 }
 
-void CustQwtZoomPan::_handle_mouse_move(QMouseEvent * event)
+void CustQwtZoomPan::_handle_mouse_move(const QMouseEvent * const event)
 {
+  auto set_axis_scale = [this](const QwtAxisId iAxisId, const SInitData &iData, const double iDelta)
+  {
+    const double curMin = mpQwtPlot->axisScaleDiv(iAxisId).lowerBound();
+    const double curMax = mpQwtPlot->axisScaleDiv(iAxisId).upperBound();
+    const double curRange = curMax - curMin;
+    const double dx = -iDelta * (curRange / mpQwtPlot->canvas()->width());
+    const double newMin = curMin + dx;
+    const double newMax = curMax + dx;
+
+    if (newMin >= iData.Min && newMax <= iData.Max)
+    {
+      mpQwtPlot->setAxisScale(iAxisId, newMin, newMax);
+    }
+  };
+
   if (mPanning)
   {
     const QPoint delta = event->pos() - mLastPos;
 
     if (mAllowXChange)
     {
-      const double xMin = mpQwtPlot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-      const double xMax = mpQwtPlot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-      const double xRange = xMax - xMin;
-      const double dx = -delta.x() * (xRange / mpQwtPlot->canvas()->width());
-      mpQwtPlot->setAxisScale(QwtPlot::xBottom, xMin + dx, xMax + dx);
+      set_axis_scale(QwtPlot::xBottom, mDataX, delta.x());
     }
 
     if (mAllowYChange)
     {
-      const double yMin = mpQwtPlot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-      const double yMax = mpQwtPlot->axisScaleDiv(QwtPlot::yLeft).upperBound();
-      const double yRange = yMax - yMin;
-      const double dy =  delta.y() * (yRange / mpQwtPlot->canvas()->height());
-      mpQwtPlot->setAxisScale(QwtPlot::yLeft,   yMin + dy, yMax + dy);
+      set_axis_scale(QwtPlot::yLeft, mDataY, delta.y());
     }
 
     mLastPos = event->pos();
-
     mpQwtPlot->replot();
   }
 }
 
-void CustQwtZoomPan::_handle_wheel_event(QWheelEvent * event)
+void CustQwtZoomPan::_handle_wheel_event(const QWheelEvent * const event) const
 {
+  auto set_axis_scale = [this](const QwtAxisId iAxisId, const SInitData &iData, const double iZoomScale, const double iRelMousePos)
+  {
+    const double curMin = mpQwtPlot->axisScaleDiv(iAxisId).lowerBound();
+    const double curMax = mpQwtPlot->axisScaleDiv(iAxisId).upperBound();
+    const double curRange = curMax - curMin;
+    const double newRange = std::max(curRange * iZoomScale, iData.MinNrPoints);
+    const double curValAtMousePos = curMin + iRelMousePos * curRange;
+    double newMin = curValAtMousePos - newRange * iRelMousePos;
+    double newMax = curValAtMousePos + newRange * (1.0 - iRelMousePos);
+    if (newMin < iData.Min) newMin = iData.Min;
+    if (newMax > iData.Max) newMax = iData.Max;
+    mpQwtPlot->setAxisScale(iAxisId, newMin, newMax);
+  };
+
   constexpr double cZoomFactor = 0.1; // zoom factor for mouse wheel
   const double zoomScale = (event->angleDelta().y() > 0) ? 1 - cZoomFactor : 1 + cZoomFactor;
 
+  const QPointF pos = event->position();
+
   if (mAllowXChange)
   {
-    const double xMin = mpQwtPlot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    const double xMax = mpQwtPlot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-    const double xRange = xMax - xMin;
-    const double centerX = (xMin + xMax) / 2.0;
-    const double newXRange = xRange * zoomScale;
-    mpQwtPlot->setAxisScale(QwtPlot::xBottom, centerX - newXRange / 2.0, centerX + newXRange / 2.0);
+    set_axis_scale(QwtPlot::xBottom, mDataX, zoomScale, pos.x() / mpQwtPlot->canvas()->width());
   }
 
   if (mAllowYChange)
   {
-    const double yMin = mpQwtPlot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    const double yMax = mpQwtPlot->axisScaleDiv(QwtPlot::yLeft).upperBound();
-    const double yRange = yMax - yMin;
-    const double centerY = (yMin + yMax) / 2.0;
-    const double newYRange = yRange * zoomScale;
-    mpQwtPlot->setAxisScale(QwtPlot::yLeft,   centerY - newYRange / 2.0, centerY + newYRange / 2.0);
+    set_axis_scale(QwtPlot::yLeft, mDataY, zoomScale, pos.y() / mpQwtPlot->canvas()->height());
   }
 
   mpQwtPlot->replot();
