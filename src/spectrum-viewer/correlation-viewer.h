@@ -41,7 +41,6 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_curve.h>
 #include <qwt_color_map.h>
-#include <qwt_plot_zoomer.h>
 #include <qwt_plot_textlabel.h>
 #include <qwt_plot_canvas.h>
 #include <qwt_plot_layout.h>
