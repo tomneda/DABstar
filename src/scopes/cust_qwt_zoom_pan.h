@@ -26,33 +26,39 @@ class CustQwtZoomPan : public QObject
 
 public:
   explicit CustQwtZoomPan(QwtPlot * ipPlot,
-                          int32_t ixMin, int32_t ixMax,
+                          int32_t ixMin = 0, int32_t ixMax = 0,
                           int32_t iyMin = 0, int32_t iyMax = 0);
   ~CustQwtZoomPan() override = default;
+
+  void reset_zoom();
+  void set_x_range(double ixMin, double ixMax);
+  void set_y_range(double iyMin, double iyMax);
 
 protected:
   bool eventFilter(QObject * object, QEvent * event) override;
 
 private:
+  static constexpr double cMaxZoomFactor = 100.0;
+
   QwtPlot * const mpQwtPlot;
   struct SInitData
   {
     double Min = 0;
     double Max = 0;
     double MinNrPoints = 0;
+    bool IsZoomed = false;
+    bool AllowChange = false;
   };
 
   SInitData mDataX{};
   SInitData mDataY{};
   bool mPanning = false;
-  bool mAllowXChange = false;
-  bool mAllowYChange = false;
   QPoint mLastPos{};
 
   void _handle_mouse_press(const QMouseEvent * event);
   void _handle_mouse_release(const QMouseEvent * event);
   void _handle_mouse_move(const QMouseEvent * event);
-  void _handle_wheel_event(const QWheelEvent * event) const;
+  void _handle_wheel_event(const QWheelEvent * event);
 };
 
 #endif // CUSTOMZOOMPAN_H

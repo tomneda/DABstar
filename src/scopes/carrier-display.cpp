@@ -73,6 +73,8 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
     }
 
     mQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<double>(), QList<double>(), tickList));
+    mZoomPan.set_y_range(tickList[0], tickList[tickList.size() - 1]);
+    mZoomPan.reset_zoom();
   }
 
   // draw horizontal marker lines at -90, 0 , 90 degrees
@@ -136,7 +138,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
   switch (iPlotType)
   {
   case ECarrierPlotType::SB_WEIGHT:
-    cp.ToolTip = "Shows the soft-bit weight in percentage for each OFDM carrier.<p>This is used for the viterbi decoder data input.";
+    cp.ToolTip = "Shows the soft-bit weight in percentage for each OFDM carrier.<p>This is used for the viterbi decoder data input.</p>";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Soft-Bit Weight";
     cp.YTopValue = 100.0;
@@ -236,8 +238,8 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     break;
 
   case ECarrierPlotType::NULL_OVR_POW:
-    cp.ToolTip = "Shows the averaged null symbol (without TII) power relation to the averaged overall carrier power in dB.<p>"
-      "This reveals disturbing (non-DAB) signals which can degrade decoding quality.";
+    cp.ToolTip = "Shows the averaged null symbol (without TII) power relation to the averaged overall carrier power in dB."
+                 "<p>This reveals disturbing (non-DAB) signals which can degrade decoding quality.</p>";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Null Sym. ovr. Pow.";
     cp.YTopValue = 6.0;
@@ -247,7 +249,9 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     break;
   }
 
-  cp.ToolTip += "<p>The carrier at index 0 is not really existing. The value is interpolated between the two neighbor carriers.";
+  cp.ToolTip += "<p>The carrier at index 0 is not really existing. The value is interpolated between the two neighbor carriers.</p>"
+                "<p>Use mouse wheel for horizontal zooming.<br>Press CTRL key additionally for vertical zooming.<br>"
+                "Press left mouse button for panning.<br>Press right mouse button to reset zoom.</p>";
 
   return cp;
 }

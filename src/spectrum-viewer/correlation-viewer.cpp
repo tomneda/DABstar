@@ -122,7 +122,7 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
 
   mean_filter(mMaxValFlt, maxYVal, sScalerFltAlpha);
 
-  mpPlotGrid->setAxisScale(QwtPlot::yLeft, mMinValFlt - 8, mMaxValFlt + 3);
+  mZoomPan.set_y_range(mMinValFlt - 8, mMaxValFlt + 3);
   mpPlotGrid->enableAxis(QwtPlot::yLeft);
   mQwtPlotCurve.setSamples(X_axis.data(), Y_values.data(), cPlotLength);
   mpPlotGrid->replot();
