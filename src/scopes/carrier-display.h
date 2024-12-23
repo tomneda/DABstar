@@ -18,12 +18,12 @@
 #define PHASE_CARR_DISP_H
 
 #include "glob_enums.h"
-#include <qcolor.h>
 #include <qwt.h>
 #include <qwt_plot.h>
 #include <qwt_plot_marker.h>
 #include <qwt_plot_curve.h>
 #include <vector>
+#include "cust_qwt_zoom_pan.h"
 
 class CarrierDisp : public QObject
 {
@@ -54,17 +54,16 @@ public:
 
 private:
   QwtPlot * const mQwtPlot = nullptr;
+  CustQwtZoomPan mZoomPan;
   QwtPlotCurve mQwtPlotCurve;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
   std::vector<float> mX_axis_vec;
   int32_t mDataSize = 0;
-  ECarrierPlotType pt;
+  ECarrierPlotType mPlotType;
 
-  void customize_plot(const SCustPlot & iCustPlot);
+  void _customize_plot(const SCustPlot & iCustPlot);
   static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);
   void _setup_x_axis();
-private slots:
-  void rightMouseClick(const QPointF &);
 };
 
 #endif // PHASE_CARR_DISP_H

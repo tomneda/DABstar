@@ -19,27 +19,22 @@
 #include <qwt_scale_div.h>
 #include <qwt_plot_zoomer.h>
 #include <qwt_picker_machine.h>
-#include <qwt_plot_panner.h>
-#include <qwt_plot_magnifier.h>
+// #include <qwt_plot_panner.h>
+// #include <qwt_plot_magnifier.h>
 #include <QPen>
 
-CarrierDisp::CarrierDisp(QwtPlot * ipPlot) :
-  mQwtPlot(ipPlot)
+CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
+  : mQwtPlot(ipPlot)
+  , mZoomPan(ipPlot, -1536/2, 1536/2) // TODO: remove magic numbers
 {
   mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Vertical);
   mQwtPlotCurve.attach(mQwtPlot);
 
-  QwtPlotPicker *lm_picker = new QwtPlotPicker(ipPlot->canvas());
-  QwtPickerMachine *lpickerMachine = new QwtPickerClickPointMachine();
-  lm_picker->setStateMachine(lpickerMachine);
-  lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
-  connect(lm_picker, SIGNAL(selected(const QPointF&)), this, SLOT(rightMouseClick(const QPointF &)));
-  // panning with the left mouse button
-  (void)new QwtPlotPanner(ipPlot->canvas());
-
-  // zoom in/out with the wheel
-  (void)new QwtPlotMagnifier(ipPlot->canvas());
+  QwtPlotPicker * pLmPicker = new QwtPlotPicker(ipPlot->canvas());
+  QwtPickerMachine * pLPickerMachine = new QwtPickerClickPointMachine();
+  pLmPicker->setStateMachine(pLPickerMachine);
+  pLmPicker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
   select_plot_type(ECarrierPlotType::DEFAULT);
 }
 
@@ -57,11 +52,11 @@ void CarrierDisp::display_carrier_plot(const std::vector<float> & iYValVec)
 
 void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 {
-  pt = iPlotType;
-  customize_plot(_get_plot_type_data(iPlotType));
+  mPlotType = iPlotType;
+  _customize_plot(_get_plot_type_data(iPlotType));
 }
 
-void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
+void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 {
   mQwtPlot->setToolTip(iCustPlot.ToolTip);
 
@@ -115,8 +110,8 @@ void CarrierDisp::customize_plot(const SCustPlot & iCustPlot)
       }
     }
   }
-  if(iCustPlot.Style == SCustPlot::EStyle::DOTS) mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
-  else if(iCustPlot.Style == SCustPlot::EStyle::LINES) mQwtPlotCurve.setStyle(QwtPlotCurve::Lines);
+  if (iCustPlot.Style == SCustPlot::EStyle::DOTS) mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
+  else if (iCustPlot.Style == SCustPlot::EStyle::LINES) mQwtPlotCurve.setStyle(QwtPlotCurve::Lines);
   else mQwtPlotCurve.setStyle(QwtPlotCurve::Sticks);
 }
 
@@ -244,7 +239,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
 
   case ECarrierPlotType::NULL_OVR_POW:
     cp.ToolTip = "Shows the averaged null symbol (without TII) power relation to the averaged overall carrier power in dB.<p>"
-                 "This reveals disturbing (non-DAB) signals which can degrade decoding quality.";
+      "This reveals disturbing (non-DAB) signals which can degrade decoding quality.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Null Sym. ovr. Pow.";
     cp.YTopValue = 6.0;
@@ -277,11 +272,4 @@ QStringList CarrierDisp::get_plot_type_names()
   sl << _get_plot_type_data(ECarrierPlotType::NULL_OVR_POW).Name;
 
   return sl;
-}
-
-void CarrierDisp::rightMouseClick(const QPointF &point)
-{
-  (void)point;
-  _setup_x_axis();
-  select_plot_type(pt);
 }
