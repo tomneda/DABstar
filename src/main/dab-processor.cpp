@@ -273,13 +273,13 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
     mOfdmDecoder.store_null_symbol_with_tii(mOfdmBuffer); // for displaying TII
 
     // The TII data is encoded in the null period of the	odd frames
-    mTiiDetector.addBuffer(mOfdmBuffer);
+    mTiiDetector.add_to_tii_buffer(mOfdmBuffer);
 
     if (++mTiiCounter >= mcTiiDelay)
     {
       if (mEnableTii)
       {
-        std::vector<STiiResult> transmitterIds = mTiiDetector.processNULL(mTiiThreshold);
+        std::vector<STiiResult> transmitterIds = mTiiDetector.process_tii_data(mTiiThreshold);
 
         if (transmitterIds.size() > 0)
         {
