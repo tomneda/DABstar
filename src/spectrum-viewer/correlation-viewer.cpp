@@ -33,10 +33,8 @@
 #include <QSettings>
 #include <QPen>
 #include <QLabel>
-#include <qwt_picker_machine.h>
 #include "glob_defs.h"
 #include "dab-constants.h"
-#include "qwt_plot_picker.h"
 
 CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<float> * b)
   : mpSettings(s)
@@ -59,11 +57,6 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mQwtGrid.enableYMin(false);
   mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
   mQwtGrid.attach(mpPlotGrid);
-
-  QwtPlotPicker * lm_picker = new QwtPlotPicker(mpPlotGrid->canvas());
-  QwtPickerMachine * lpickerMachine = new QwtPickerClickPointMachine();
-  lm_picker->setStateMachine(lpickerMachine);
-  lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
   mQwtPlotCurve.setPen(QPen(mCurveColor, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Horizontal);

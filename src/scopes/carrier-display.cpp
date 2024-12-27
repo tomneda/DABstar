@@ -17,8 +17,6 @@
 #include "glob_defs.h"
 #include "carrier-display.h"
 #include <qwt_scale_div.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_picker_machine.h>
 #include <QPen>
 
 CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
@@ -29,10 +27,6 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
   mQwtPlotCurve.setOrientation(Qt::Vertical);
   mQwtPlotCurve.attach(mQwtPlot);
 
-  QwtPlotPicker * pLmPicker = new QwtPlotPicker(ipPlot->canvas());
-  QwtPickerMachine * pLPickerMachine = new QwtPickerClickPointMachine();
-  pLmPicker->setStateMachine(pLPickerMachine);
-  pLmPicker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
   select_plot_type(ECarrierPlotType::DEFAULT);
 }
 
