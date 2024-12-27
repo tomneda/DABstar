@@ -12,7 +12,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -83,6 +83,7 @@ private:
   std::vector<cmplx> convBuffer;
   int16_t mapTable_int[2048];
   float mapTable_float[2048];
+  float mapTable[256];
 
 signals:
   void signal_set_progress(int, int);

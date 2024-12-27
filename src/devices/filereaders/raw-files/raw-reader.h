@@ -32,13 +32,12 @@ class	RawFileHandler;
 class	rawReader:public QThread {
 Q_OBJECT
 public:
-			rawReader	(RawFileHandler *,
-                  FILE *, RingBuffer<cmplx> *);
-			~rawReader();
+	rawReader(RawFileHandler *, FILE *, RingBuffer<cmplx> *);
+	~rawReader();
 	void		startReader();
 	void		stopReader();
 private:
-virtual void		run();
+virtual void	run();
 	FILE		*filePointer;
 	RingBuffer<cmplx>	*_I_Buffer;
 	uint64_t	period;
@@ -46,8 +45,9 @@ virtual void		run();
 	uint8_t		*bi;
 	RawFileHandler	*parent;
 	int64_t		fileLength;
+	float 		mapTable[256];
 signals:
-	void		setProgress	(int, float);
+	void		setProgress(int, float);
 };
 
 #endif
