@@ -174,6 +174,7 @@ HEADERS += \
     src/scopes/carrier-display.h \
     src/scopes/spectrogramdata.h \
     src/scopes/audio-display.h \
+    src/scopes/cust_qwt_zoom_pan.h \
     src/spectrum-viewer/spectrum-viewer.h \
     src/spectrum-viewer/spectrum-scope.h \
     src/spectrum-viewer/waterfall-scope.h \
@@ -281,6 +282,7 @@ SOURCES += \
     src/scopes/carrier-display.cpp \
     src/scopes/audio-display.cpp \
     src/scopes/spectrogramdata.cpp \
+    src/scopes/cust_qwt_zoom_pan.cpp \
     src/spectrum-viewer/spectrum-viewer.cpp \
     src/spectrum-viewer/spectrum-scope.cpp \
     src/spectrum-viewer/waterfall-scope.cpp \

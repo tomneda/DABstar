@@ -14,7 +14,7 @@
 #include "cust_qwt_zoom_pan.h"
 #include <QWheelEvent>
 #include <QPoint>
-#include <QwtScaleDiv>
+#include <qwt_scale_div.h>
 #include <qwt_plot.h>
 
 CustQwtZoomPan::CustQwtZoomPan(QwtPlot * ipPlot, const int32_t ixMin, const int32_t ixMax, const int32_t iyMin, const int32_t iyMax)
