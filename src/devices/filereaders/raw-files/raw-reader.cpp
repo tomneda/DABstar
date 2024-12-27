@@ -54,8 +54,11 @@ rawReader::rawReader(RawFileHandler * mr, FILE * filePointer, RingBuffer<cmplx> 
   this->parent = mr;
   this->filePointer = filePointer;
   this->_I_Buffer = _I_Buffer;
+
   for(int i = 0; i < 256; i++)
-    mapTable[i] = ((float)i - 127.38) / 128.0;
+  {
+    mapTable[i] = ((float)i - 127.38f) / 128.0f;
+  }
 
   fseek(filePointer, 0, SEEK_END);
   fileLength = ftell(filePointer);

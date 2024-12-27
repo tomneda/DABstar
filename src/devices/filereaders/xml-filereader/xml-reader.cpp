@@ -78,12 +78,15 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, uint32_t 
 
   for (int i = 0; i < 2048; i++)
   {
-    float inVal = float(fd->sampleRate / 1000);
-    mapTable_int[i] = (int)(floor(i * (inVal / 2048.0)));
-    mapTable_float[i] = i * (inVal / 2048.0) - mapTable_int[i];
+    const float inVal = float(fd->sampleRate / 1000);
+    mapTable_int[i] = (int16_t)(floor(i * (inVal / 2048.0)));
+    mapTable_float[i] = i * (inVal / 2048.0f) - mapTable_int[i];
   }
+
   for(int i = 0; i < 256; i++)
-    mapTable[i] = ((float)i - 127.38) / 128.0;
+  {
+    mapTable[i] = ((float)i - 127.38f) / 128.0f;
+  }
 
   convIndex = 0;
   convBuffer.resize(convBufferSize + 1);
