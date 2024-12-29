@@ -61,25 +61,40 @@ bool RspDuo_handler::set_lna(int lnaState)
   return true;
 }
 
-bool RspDuo_handler::set_antenna(int antenna)
+bool RspDuo_handler::set_amPort(int amPort)
 {
   sdrplay_api_RspDuoTunerParamsT * rspDuoTunerParams;
   sdrplay_api_ErrT err;
 
   rspDuoTunerParams = &(mpChParams->rspDuoTunerParams);
-  rspDuoTunerParams->tuner1AmPortSel = antenna == 'A' ? sdrplay_api_RspDuo_AMPORT_1 : sdrplay_api_RspDuo_AMPORT_2;
-
+  rspDuoTunerParams->tuner1AmPortSel = amPort == 1 ? sdrplay_api_RspDuo_AMPORT_1 : sdrplay_api_RspDuo_AMPORT_2;
 
   err = mpParent->sdrplay_api_Update(mpChosenDevice->dev,
-                                   mpChosenDevice->tuner,
-                                   sdrplay_api_Update_RspDuo_AmPortSelect,
-                                   sdrplay_api_Update_Ext1_None);
+                                     mpChosenDevice->tuner,
+                                     sdrplay_api_Update_RspDuo_AmPortSelect,
+                                     sdrplay_api_Update_Ext1_None);
   if (err != sdrplay_api_Success)
   {
-    fprintf(stderr, "antenna: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
+    fprintf(stderr, "amPort: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
     return false;
   }
 
+  return true;
+}
+
+bool RspDuo_handler::set_antenna(int antenna)
+{
+  sdrplay_api_TunerSelectT tuner = antenna == 'A' ? sdrplay_api_Tuner_A : sdrplay_api_Tuner_B;
+
+  if (tuner == mpChosenDevice->tuner)
+    return true;
+
+  sdrplay_api_ErrT err = mpParent->sdrplay_api_SwapRspDuoActiveTuner(mpChosenDevice->dev, &mpChosenDevice->tuner, sdrplay_api_RspDuo_AMPORT_1);
+  if (err != sdrplay_api_Success)
+  {
+	fprintf (stderr, "Swapping tuner: error %s\n", mpParent->sdrplay_api_GetErrorString(err));
+    return false;
+  }
   return true;
 }
 

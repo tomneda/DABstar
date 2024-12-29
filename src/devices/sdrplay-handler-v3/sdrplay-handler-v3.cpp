@@ -1040,6 +1040,13 @@ bool SdrPlayHandler_v3::loadFunctions()
     return false;
   }
 
+  sdrplay_api_SwapRspDuoActiveTuner = (sdrplay_api_SwapRspDuoActiveTuner_t)GETPROCADDRESS(Handle, "sdrplay_api_SwapRspDuoActiveTuner");
+  if (sdrplay_api_SwapRspDuoActiveTuner == nullptr)
+  {
+	fprintf (stderr, "could not find sdrplay_api_SwapRspDuoActiveTuner\n");
+	return false;
+  }
+
   return true;
 }
 

@@ -98,6 +98,7 @@ public:
   sdrplay_api_Init_t sdrplay_api_Init;
   sdrplay_api_Uninit_t sdrplay_api_Uninit;
   sdrplay_api_Update_t sdrplay_api_Update;
+  sdrplay_api_SwapRspDuoActiveTuner_t sdrplay_api_SwapRspDuoActiveTuner;
   sdrplay_api_DeviceT * chosenDevice;
   Rsp_device * theRsp = nullptr;
 
