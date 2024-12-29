@@ -256,25 +256,28 @@ static int fcmp(const void * a, const void * b)
   return 0;
 }
 
-void TiiDetector::_find_best_main_id_match(int subId, cmplx & sum, int & mainId, const cmplx * cmplx_ptr)
+void TiiDetector::_find_best_main_id_match(const int iSubId, cmplx & oSum, int & oMainId, const TCmplxTable192 & ipCmplxTable)
 {
-  float mm = 0;
+  float maxLevel = 0;
+  oSum = cmplx(0, 0);
+
   for (int k = 0; k < (int)cMainIdPatternTable.size(); k++)
   {
     cmplx val = cmplx(0, 0);
+
     for (int i = 0; i < cNumGroups8; i++)
     {
       if (cMainIdPatternTable[k] & (0x80 >> i))
       {
-        val += cmplx_ptr[subId + cGroupSize24 * i];
+        val += ipCmplxTable[iSubId + cGroupSize24 * i];
       }
     }
 
-    if (abs(val) > mm)
+    if (abs(val) > maxLevel)
     {
-      mm = abs(val);
-      sum = val;
-      mainId = k;
+      maxLevel = abs(val);
+      oSum = val;
+      oMainId = k;
     }
   }
 }
@@ -282,7 +285,7 @@ void TiiDetector::_find_best_main_id_match(int subId, cmplx & sum, int & mainId,
 void TiiDetector::_comp_etsi_and_non_etsi(const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
                                           const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable,
                                           const float iThresholdLevel, int subId,
-                                          cmplx & oSum, int & oCount, int & oPattern, bool & oNorm, const cmplx *& opCmplxTable, const float *& opFloatTable)
+                                          cmplx & oSum, int & oCount, int & oPattern, bool & oNorm)
 {
   cmplx etsi_sum = cmplx(0, 0);
   cmplx nonetsi_sum = cmplx(0, 0);
@@ -292,6 +295,7 @@ void TiiDetector::_comp_etsi_and_non_etsi(const TFloatTable192 & iEtsiFloatTable
   int nonetsi_pattern = 0;
   oCount = 0;
   oSum = cmplx(0, 0);
+  oNorm = false;
 
   // The number of times the limit is reached in the group is counted
   for (int i = 0; i < cNumGroups8; i++)
@@ -316,25 +320,25 @@ void TiiDetector::_comp_etsi_and_non_etsi(const TFloatTable192 & iEtsiFloatTable
     if (abs(nonetsi_sum) > abs(etsi_sum))
     {
       oNorm = true;
-      oSum = nonetsi_sum;
-      opCmplxTable = iNonEtsiCmplxTable.data();
-      opFloatTable = iNonEtsiFloatTable.data();
-      oCount = nonetsi_count;
-      oPattern = nonetsi_pattern;
     }
-    else
-    {
-      oNorm = false;
-      oSum = etsi_sum;
-      opCmplxTable = iEtsiCmplxTable.data();
-      opFloatTable = iEtsiFloatTable.data();
-      oCount = etsi_count;
-      oPattern = etsi_pattern;
-    }
+  }
+
+  if (oNorm)
+  {
+    oSum = nonetsi_sum;
+    oCount = nonetsi_count;
+    oPattern = nonetsi_pattern;
+  }
+  else
+  {
+    oSum = etsi_sum;
+    oCount = etsi_count;
+    oPattern = etsi_pattern;
   }
 }
 
-void TiiDetector::_find_collisions(float max, float noise, std::vector<STiiResult> theResult, const float threshold, int subId, STiiResult & element, cmplx & sum, int count, int pattern, int mainId, bool norm, const cmplx * cmplx_ptr, const float * float_ptr)
+void TiiDetector::_find_collisions(float max, float noise, std::vector<STiiResult> theResult, const float threshold, int subId, STiiResult & element, cmplx & sum, int count, int pattern, int mainId, bool norm, const TCmplxTable192 & cmplx_ptr, const TFloatTable192 &
+                                   float_ptr)
 {
   assert(count > 4);
   sum = cmplx(0, 0);
@@ -384,13 +388,22 @@ void TiiDetector::_find_collisions(float max, float noise, std::vector<STiiResul
   }
 }
 
+void TiiDetector::_get_float_table_and_max_value(TFloatTable192 & oFloatTable, const TCmplxTable192 & iCmplxTable, float & ioMax)
+{
+  for (int i = 0; i < cNumGroups8 * cGroupSize24; i++)
+  {
+    const float x = abs(iCmplxTable[i]);
+    oFloatTable[i] = x;
+    if (x > ioMax) ioMax = x;
+  }
+}
+
 std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_db)
 {
   TFloatTable192 etsiFloatTable;    // collapsed ETSI float values
   TFloatTable192 nonEtsiFloatTable; // collapsed non-ETSI float values
   TCmplxTable192 etsiCmplxTable;          // collapsed ETSI complex values
   TCmplxTable192 nonEtsiCmplxTable;       // collapsed non-ETSI complex values
-  float max = 0;      // abs value of the strongest carrier
   float noise = 1e9;  // noise level
   std::vector<STiiResult> theResult; // results
   const float threshold = std::pow(10.0f, (float)iThreshold_db / 10.0f); // threshold above noise
@@ -399,16 +412,9 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
   _collapse(mDecodedBufferArr, etsiCmplxTable, nonEtsiCmplxTable);
 
   // fill the float tables, determine the abs value of the strongest carrier
-  for (int i = 0; i < cNumGroups8 * cGroupSize24; i++)
-  {
-    float x = abs(etsiCmplxTable[i]);
-    etsiFloatTable[i] = x;
-    if (x > max) max = x;
-
-    x = abs(nonEtsiCmplxTable[i]);
-    nonEtsiFloatTable[i] = x;
-    if (x > max) max = x;
-  }
+  float max = 0;      // abs value of the strongest carrier
+  _get_float_table_and_max_value(etsiFloatTable, etsiCmplxTable, max);
+  _get_float_table_and_max_value(nonEtsiFloatTable, nonEtsiCmplxTable, max);
 
   // determine the noise level of the lowest group
   // set noise level to lowest found noise over each subId
@@ -431,11 +437,13 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
     int pattern = 0;
     int mainId = 0;
     bool norm = false;
-    const cmplx * cmplx_ptr = nullptr;
-    const float * float_ptr = nullptr;
 
     _comp_etsi_and_non_etsi(etsiFloatTable, nonEtsiFloatTable, etsiCmplxTable, nonEtsiCmplxTable, noise * threshold, subId,
-                            sum, count, pattern, norm, cmplx_ptr, float_ptr);
+                            sum, count, pattern, norm);
+
+
+    const TCmplxTable192 & cmplxTable = (norm ? nonEtsiCmplxTable : etsiCmplxTable);
+    const TFloatTable192 & floatTable = (norm ? nonEtsiFloatTable : etsiFloatTable);
 
     // Find the MainId that matches the pattern
     if (count == 4)
@@ -449,7 +457,7 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
     // Find the best match. We extract the four max values as bits
     else if (count > 4)
     {
-      _find_best_main_id_match(subId, sum, mainId, cmplx_ptr);
+      _find_best_main_id_match(subId, sum, mainId, cmplxTable);
     }
 
     // List the result
@@ -465,7 +473,7 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
 
     if ((count > 4) && mCollisions)
     {
-      _find_collisions(max, noise, theResult, threshold, subId, element, sum, count, pattern, mainId, norm, cmplx_ptr, float_ptr);
+      _find_collisions(max, noise, theResult, threshold, subId, element, sum, count, pattern, mainId, norm, cmplxTable, floatTable);
     }
   }
 
