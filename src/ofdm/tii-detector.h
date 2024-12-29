@@ -58,15 +58,15 @@ private:
 
   float _calculate_average_noise(const TFloatTable192 & iFloatTable);
   void _get_float_table_and_max_value(TFloatTable192 & oFloatTable, const TCmplxTable192 & iCmplxTable, float & ioMax);
-  void _comp_etsi_and_non_etsi(const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
-                               const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable,
-                               const float iThresholdLevel, int subId,
-                               cmplx & oSum, int & oCount, int & oPattern, bool & oNorm);
-  void _find_collisions(float iMax, float iThresholdLevel, std::vector<STiiResult> theResult,
-                        int iSubId, cmplx iSum, int iCount, int iPattern, int iMainId, bool iNorm,
+  void _comp_etsi_and_non_etsi(bool & oNorm, int & oCount, cmplx & oSum, int & oPattern,
+                               const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
+                               const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable, const float iThresholdLevel, int iSubId) const;
+  void _find_collisions(std::vector<STiiResult> ioResultVec, float iMax, float iThresholdLevel,
+                        int iSubId, int iCount, int iPattern, int iMainId, bool iNorm,
                         const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable);
-  void _find_best_main_id_match(int iSubId, cmplx & oSum, int & oMainId, const TCmplxTable192 & ipCmplxTable);
+  int _find_exact_main_id_match(int iPattern) const;
+  int _find_best_main_id_match(cmplx & oSum, int iSubId, const TCmplxTable192 & ipCmplxTable) const;
   void _resetBuffer();
-  void _decode(const std::vector<cmplx> &, TBufferArr768 &) const;
-  void _collapse(const TBufferArr768 & iVec, TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec) const;
+  void _decode(TBufferArr768 & ioVec, const std::vector<cmplx> & iVec) const;
+  void _collapse(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec, const TBufferArr768 & iVec) const;
 };
