@@ -18,6 +18,7 @@ public:
   bool set_antenna(int antenna) override;
   bool set_biasT(bool biasT) override;
   bool set_notch(bool) override;
+  bool set_amPort(int amPort) override;
 };
 
 #endif

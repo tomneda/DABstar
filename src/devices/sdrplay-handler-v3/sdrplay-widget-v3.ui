@@ -231,7 +231,8 @@
         <string>unknown</string>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Total tuner gain (LNA+Mixer+IF)
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Total tuner gain (LNA+Mixer+IF).
+         &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
         </string>
        </property>
       </widget>
@@ -249,7 +250,8 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;5V supply for antenna amplifiers
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;5V supply for antenna amplifiers.
+         &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
         </string>
        </property>
        <property name="text">
@@ -269,7 +271,7 @@
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on automatic IF gain control.
-         &lt;/p&gt;&lt;p&gt;If switched on, the IF gain slider is disabled&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+         &lt;/p&gt;&lt;p&gt;If switched on, the IF gain slider is disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
         </string>
        </property>
        <property name="text">
@@ -336,7 +338,8 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select an antenna (RSP-II)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select an antenna (RSP2 and RSPdx).
+         &lt;br&gt;In RSPduo, the tuner is swapped.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
         </string>
        </property>
        <item>
