@@ -31,9 +31,16 @@
 #include	<QFileDialog>
 #include	<QDir>
 #include	"rtl_tcp_client.h"
+#include	"rtl-sdr.h"
 #include	"device-exceptions.h"
 
-#define	DEFAULT_FREQUENCY	(kHz (220000))
+#define	DEFAULT_FREQUENCY (kHz(220000))
+
+typedef struct { /* structure size must be multiple of 2 bytes */
+	char magic[4];
+	uint32_t tuner_type;
+	uint32_t tuner_gain_count;
+} dongle_info_t;
 
 RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
 {
@@ -55,9 +62,9 @@ RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
   Ppm = remoteSettings->value("RtlTcpClient-ppm", 0).toDouble();
   AgcMode = remoteSettings->value("RtlTcpClient-agc", 0).toInt();
   BiasT = remoteSettings->value("RtlTcpClient-biast", 0).toInt();
-  basePort = remoteSettings->value ("rtl_tcp_port", 1234).toInt();
+  basePort = remoteSettings->value("rtl_tcp_port", 1234).toInt();
   Bandwidth = remoteSettings->value("RtlTcpClient-bw", 1536).toInt();
-  ipAddress = remoteSettings->value("remote-server", ipAddress).toString();
+  ipAddress = remoteSettings->value("remote-server", "127.0.0.1").toString();
   remoteSettings->endGroup();
   tcp_gain->setValue(Gain);
   tcp_ppm->setValue(Ppm);
@@ -68,37 +75,28 @@ RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
   vfoFrequency = DEFAULT_FREQUENCY;
   _I_Buffer = new RingBuffer<cmplx>(32 * 32768);
   connected = false;
-//
-  connect(tcp_connect, SIGNAL(clicked(void)),
-	      this, SLOT(wantConnect (void)));
-  connect(tcp_disconnect, SIGNAL(clicked(void)),
-	      this, SLOT(setDisconnect(void)));
-  connect(tcp_gain, SIGNAL(valueChanged(int)),
-	      this, SLOT(sendGain(int)));
-  connect(tcp_ppm, SIGNAL(valueChanged(double)),
-	      this, SLOT(set_fCorrection(double)));
+
+  connect(tcp_connect, SIGNAL(clicked(void)), this, SLOT(wantConnect(void)));
+  connect(tcp_disconnect, SIGNAL(clicked(void)), this, SLOT(setDisconnect(void)));
+  connect(tcp_gain, SIGNAL(valueChanged(int)), this, SLOT(sendGain(int)));
+  connect(tcp_ppm, SIGNAL(valueChanged(double)), this, SLOT(set_fCorrection(double)));
   connect(hw_agc, SIGNAL(clicked()), this, SLOT(handle_hw_agc()));
   connect(sw_agc, SIGNAL(clicked()), this, SLOT(handle_sw_agc()));
   connect(manual, SIGNAL(clicked()), this, SLOT(handle_manual()));
-  connect(tcp_biast, SIGNAL(stateChanged(int)),
-	      this, SLOT(setBiasT(int)));
-  connect(tcp_bandwidth, SIGNAL(valueChanged(int)),
-	      this, SLOT(setBandwidth(int)));
-  connect(tcp_port, SIGNAL(valueChanged(int)),
-	      this, SLOT(setPort(int)));
-  connect (tcp_address, SIGNAL(returnPressed()),
-	      this, SLOT(setAddress()));
+  connect(tcp_biast, SIGNAL(stateChanged(int)), this, SLOT(setBiasT(int)));
+  connect(tcp_bandwidth, SIGNAL(valueChanged(int)), this, SLOT(setBandwidth(int)));
+  connect(tcp_port, SIGNAL(valueChanged(int)), this, SLOT(setPort(int)));
+  connect(tcp_address, SIGNAL(returnPressed()), this, SLOT(setAddress()));
   theState->setText("waiting to start");
 }
 
 RtlTcpClient::~RtlTcpClient()
 {
   remoteSettings->beginGroup("RtlTcpClient");
-  if (connected)
-  {		// close previous connection
+  if (connected) // close previous connection
+  {
 	stopReader();
-    remoteSettings->setValue("remote-server",
-                             toServer.peerAddress().toString());
+    remoteSettings->setValue("remote-server", toServer.peerAddress().toString());
 	remoteSettings->setValue("RtlTcpClient_port", basePort);
   }
   remoteSettings->setValue("position-x", myFrame.pos().x());
@@ -129,13 +127,14 @@ void RtlTcpClient::wantConnect()
 	return;
   }
   connected = true;
-  theState->setText ("connected");
+  theState->setText("connected");
   sendRate(Bitrate);
   setAgcMode(AgcMode);
   set_fCorrection(Ppm);
   setBandwidth(Bandwidth);
   setBiasT(BiasT);
   toServer.waitForBytesWritten();
+  dongle_info_received = false;
 }
 
 int32_t	RtlTcpClient::defaultFrequency()
@@ -148,7 +147,7 @@ void RtlTcpClient::setVFOFrequency(int32_t newFrequency)
   if (!connected)
 	return;
   vfoFrequency = newFrequency;
-//	here the command to set the frequency
+  // here the command to set the frequency
   sendVFO(newFrequency);
 }
 
@@ -162,10 +161,9 @@ bool RtlTcpClient::restartReader(int32_t freq)
   if (!connected)
 	return true;
   vfoFrequency = freq;
-//	here the command to set the frequency
+  // here the command to set the frequency
   sendVFO(freq);
-  connect(&toServer, SIGNAL(readyRead(void)),
-	      this, SLOT(readData(void)));
+  connect(&toServer, SIGNAL(readyRead(void)), this, SLOT(readData(void)));
   return true;
 }
 
@@ -200,19 +198,56 @@ int16_t	RtlTcpClient::bitDepth()
 //	These functions are typical for network use
 void RtlTcpClient::readData()
 {
-  uint8_t buffer[8192];
-  cmplx localBuffer[4096];
-
-  while (toServer.bytesAvailable() > 8192)
+  if(!dongle_info_received)
   {
-	toServer.read((char *)buffer, 8192);
-	for (int i = 0; i < 4096; i ++)
- 	  localBuffer[i] = cmplx(mapTable[buffer[2 * i]], mapTable[buffer[2 * i + 1]]);
-    _I_Buffer->put_data_into_ring_buffer(localBuffer, 4096);
+    dongle_info_t dongle_info;
+    if (toServer.bytesAvailable() >= (qint64)sizeof(dongle_info))
+    {
+      toServer.read((char *)&dongle_info, sizeof(dongle_info));
+	  dongle_info_received = true;
+	  if(memcmp(dongle_info.magic, "RTL0", 4) == 0)
+	  {
+	    switch(htonl(dongle_info.tuner_type))
+	    {
+		  case RTLSDR_TUNER_E4000:
+			tuner_type->setText("E4000");
+			break;
+		  case RTLSDR_TUNER_FC0012:
+			tuner_type->setText("FC0012");
+			break;
+		  case RTLSDR_TUNER_FC0013:
+			tuner_type->setText("FC0013");
+			break;
+		  case RTLSDR_TUNER_FC2580:
+			tuner_type->setText("FC2580");
+			break;
+		  case RTLSDR_TUNER_R820T:
+			tuner_type->setText("R820T");
+			break;
+		  case RTLSDR_TUNER_R828D:
+			tuner_type->setText("R828D");
+			break;
+  		  default:
+			tuner_type->setText("unknown");
+		}
+	  }
+    }
+  }
+  if(dongle_info_received)
+  {
+    uint8_t buffer[8192];
+    cmplx localBuffer[4096];
+
+    while (toServer.bytesAvailable() > 8192)
+    {
+      toServer.read((char *)buffer, 8192);
+	  for (int i = 0; i < 4096; i ++)
+ 	    localBuffer[i] = cmplx(mapTable[buffer[2 * i]], mapTable[buffer[2 * i + 1]]);
+      _I_Buffer->put_data_into_ring_buffer(localBuffer, 4096);
+    }
   }
 }
 
-//
 //	commands are packed in 5 bytes, one "command byte"
 //	and an integer parameter
 struct command {
@@ -251,7 +286,7 @@ void RtlTcpClient::sendRate(int32_t rate)
 
 void RtlTcpClient::sendGain(int gain)
 {
-  Gain	= gain;
+  Gain = gain;
   sendCommand(0x04, 10 * gain);
 }
 
@@ -305,10 +340,10 @@ void RtlTcpClient::setAddress()
 
 void RtlTcpClient::setDisconnect()
 {
-  if (connected)
-  {		// close previous connection
+  if (connected) // close previous connection
+  {
 	stopReader();
-	remoteSettings->beginGroup ("RtlTcpClient");
+	remoteSettings->beginGroup("RtlTcpClient");
     remoteSettings->setValue("remote-server", toServer.peerAddress().toString());
 	remoteSettings->setValue("RtlTcpClient_port", basePort);
 	remoteSettings->setValue("RtlTcpClient-gain", Gain);
@@ -330,7 +365,7 @@ void RtlTcpClient::show()
 
 void RtlTcpClient::hide()
 {
-  //myFrame.hide ();
+  //myFrame.hide();
 }
 
 bool RtlTcpClient::isHidden()
@@ -354,16 +389,16 @@ QString RtlTcpClient::deviceName()
 
 void RtlTcpClient::handle_hw_agc()
 {
-	setAgcMode(0);
+  setAgcMode(0);
 }
 
 void RtlTcpClient::handle_sw_agc()
 {
-	setAgcMode(2);
+  setAgcMode(2);
 }
 
 void RtlTcpClient::handle_manual()
 {
-	setAgcMode(1);
+  setAgcMode(1);
 }
 

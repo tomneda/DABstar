@@ -95,6 +95,7 @@ private:
   bool dumping;
   FILE * dumpfilePointer;
   float mapTable[256];
+  bool dongle_info_received = false;
 
 private slots:
   void sendGain(int);
