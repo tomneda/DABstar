@@ -35,14 +35,16 @@ public:
   std::vector<STiiResult> process_tii_data(int16_t);
 
 private:
-  static constexpr int32_t cNumGroups =  8;
-  static constexpr int32_t cGroupSize = 24;
+  static constexpr int32_t cNumBlocks4 = 4;
+  static constexpr int32_t cNumGroups8 =  8;
+  static constexpr int32_t cGroupSize24 = 24;
+  static constexpr int32_t cBlockSize192 = cNumGroups8 * cGroupSize24; // == 192
 
-  using TBufferArr  = std::array<cmplx, 768>;
-  using TFloatTable = std::array<float, cNumGroups * cGroupSize>;
-  using TCmplxTable = std::array<cmplx, cNumGroups * cGroupSize>;
+  using TBufferArr768  = std::array<cmplx, 768>;
+  using TFloatTable192 = std::array<float, cBlockSize192>;
+  using TCmplxTable192 = std::array<cmplx, cBlockSize192>;
 
-  static const std::array<const uint8_t, cNumGroups> cBits;
+  // static const std::array<const uint8_t, cNumGroups8> cBits;
   const DabParams mParams;
   const int16_t mT_u;
   const int16_t mT_g;
@@ -50,11 +52,11 @@ private:
   bool mCollisions = false;
   bool mCarrierDelete = true;
   uint8_t mSelectedSubId = 0;
-  TBufferArr mDecodedBufferArr;
+  TBufferArr768 mDecodedBufferArr;
   std::vector<cmplx> mNullSymbolBufferVec;
   FftHandler mFftHandler;
 
   void _resetBuffer();
-  void _decode(const std::vector<cmplx> &, TBufferArr &) const;
-  void _collapse(const TBufferArr & iVec, TCmplxTable & oEtsiVec, TCmplxTable & oNonEtsiVec) const;
+  void _decode(const std::vector<cmplx> &, TBufferArr768 &) const;
+  void _collapse(const TBufferArr768 & iVec, TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec) const;
 };
