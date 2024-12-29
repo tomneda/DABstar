@@ -192,14 +192,13 @@ void TiiDetector::add_to_tii_buffer(const std::vector<cmplx> & v)
 
 std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_db)
 {
+  _decode(mDecodedBufferArr, mNullSymbolBufferVec);
+
   TFloatTable192 etsiFloatTable;    // collapsed ETSI float values
   TFloatTable192 nonEtsiFloatTable; // collapsed non-ETSI float values
-  TCmplxTable192 etsiCmplxTable;          // collapsed ETSI complex values
-  TCmplxTable192 nonEtsiCmplxTable;       // collapsed non-ETSI complex values
-  std::vector<STiiResult> theResult; // results
-  const float threshold = std::pow(10.0f, (float)iThreshold_db / 10.0f); // threshold above noise
+  TCmplxTable192 etsiCmplxTable;    // collapsed ETSI complex values
+  TCmplxTable192 nonEtsiCmplxTable; // collapsed non-ETSI complex values
 
-  _decode(mDecodedBufferArr, mNullSymbolBufferVec);
   _collapse(etsiCmplxTable, nonEtsiCmplxTable, mDecodedBufferArr);
 
   // fill the float tables, determine the abs value of the strongest carrier
@@ -211,12 +210,15 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
   // set noise level to lowest found noise over each subId
   const float noise = _calculate_average_noise(etsiFloatTable);
 
+  std::vector<STiiResult> theResult; // results
+
   for (int subId = 0; subId < cGroupSize24; subId++)
   {
     cmplx sum = cmplx(0, 0);
     int count = 0;
     int pattern = 0;
     bool norm = false;
+    const float threshold = std::pow(10.0f, (float)iThreshold_db / 10.0f); // threshold above noise
 
     _comp_etsi_and_non_etsi(norm, count, sum, pattern,
                             etsiFloatTable, nonEtsiFloatTable, etsiCmplxTable, nonEtsiCmplxTable, noise * threshold, subId);
@@ -274,10 +276,41 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
 
 void TiiDetector::_decode(TBufferArr768 & ioVec, const std::vector<cmplx> & iVec) const
 {
-  for (int32_t idx = -mK / 2, i = 0; idx < mK / 2; idx += 2, ++i)
+  for (int32_t k = -mK / 2, i = 0; k < mK / 2; k += 2, ++i)
   {
-    const int32_t fftIdx = fft_shift_skip_dc(idx, mT_u);
+    const int32_t fftIdx = fft_shift_skip_dc(k, mT_u);
     ioVec[i] += iVec[fftIdx] * conj(iVec[fftIdx + 1]); // TII carriers are given in pairs
+  }
+}
+
+void TiiDetector::_remove_single_carrier_values(TBufferArr768 & ioBuffer) const
+{
+  for (int i = 0; i < cBlockSize192; i++)
+  {
+    std::array<float, cNumBlocks4> x;
+    float max = 0;
+    float sum = 0;
+    int index = 0;
+
+    for (int j = 0; j < cNumBlocks4; j++)
+    {
+      x[j] = abs(ioBuffer[i + j * cBlockSize192]);
+      sum += x[j];
+
+      if (x[j] > max)
+      {
+        max = x[j];
+        index = j;
+      }
+    }
+
+    const float min = (sum - max) / (cNumBlocks4 - 1);
+
+    if (sum < max * 1.5 && max > 0.0)
+    {
+      ioBuffer[i + index * cBlockSize192] *= min / max;
+      // fprintf(stderr, "carrier index %d = %d + %d * 192 (%d)\n", i+index*192, i, index, (i+index*192)*2 - 768);
+    }
   }
 }
 
@@ -294,33 +327,7 @@ void TiiDetector::_collapse(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEt
   // a single carrier cannot be a TII carrier.
   if (mCarrierDelete)
   {
-    for (int i = 0; i < cBlockSize192; i++)
-    {
-      std::array<float, cNumBlocks4> x;
-      float max = 0;
-      float sum = 0;
-      int index = 0;
-
-      for (int j = 0; j < cNumBlocks4; j++)
-      {
-        x[j] = abs(buffer[i + j * 192]);
-        sum += x[j];
-
-        if (x[j] > max)
-        {
-          max = x[j];
-          index = j;
-        }
-      }
-
-      const float min = (sum - max) / (cNumBlocks4 - 1);
-
-      if (sum < max * 1.5 && max > 0.0)
-      {
-        buffer[i + index * 192] *= min / max;
-        // fprintf(stderr, "carrier index %d = %d + %d * 192 (%d)\n", i+index*192, i, index, (i+index*192)*2 - 768);
-      }
-    }
+    _remove_single_carrier_values(buffer);
   }
 
   for (int i = 0; i < cBlockSize192; i++)
@@ -436,7 +443,7 @@ void TiiDetector::_comp_etsi_and_non_etsi(bool & oNorm, int & oCount, cmplx & oS
 
 void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iMax, float iThresholdLevel,
                                    int iSubId, int iCount, int iPattern, int iMainId, bool iNorm,
-                                   const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable)
+                                   const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable) const
 {
   assert(iCount > 4);
   cmplx sum = cmplx(0, 0);
@@ -470,7 +477,7 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iM
       {
         STiiResult element;
         element.mainId = k;
-        element.strength = abs(sum) / iMax / (iCount - 4);
+        element.strength = abs(sum) / iMax / (float)(iCount - 4);
         element.phase = arg(sum) * F_DEG_PER_RAD;
         element.norm = iNorm;
         ioResultVec.push_back(element);
@@ -481,14 +488,14 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iM
   {
     STiiResult element;
     element.mainId = 99;
-    element.strength = abs(sum) / iMax / (iCount - 4);
+    element.strength = abs(sum) / iMax / (float)(iCount - 4);
     element.phase = arg(sum) * F_DEG_PER_RAD;
     element.norm = iNorm;
     ioResultVec.push_back(element);
   }
 }
 
-void TiiDetector::_get_float_table_and_max_value(TFloatTable192 & oFloatTable, const TCmplxTable192 & iCmplxTable, float & ioMax)
+void TiiDetector::_get_float_table_and_max_value(TFloatTable192 & oFloatTable, const TCmplxTable192 & iCmplxTable, float & ioMax) const
 {
   for (int i = 0; i < cNumGroups8 * cGroupSize24; i++)
   {
