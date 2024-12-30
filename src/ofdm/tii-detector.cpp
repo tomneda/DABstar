@@ -9,6 +9,10 @@
 
 
 #include "tii-detector.h"
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(sLogTiiDetector, "TiiDetector", QtInfoMsg)
+
 
 // TII pattern for transmission modes I, II and IV
 static constexpr std::array<const uint8_t, 70> cMainIdPatternTable = {
@@ -168,11 +172,6 @@ void TiiDetector::set_subid(uint8_t subid)
   mSelectedSubId = subid;
 }
 
-void TiiDetector::_resetBuffer()
-{
-  for (auto & i : mNullSymbolBufferVec) i = cmplx(0, 0);
-}
-
 void TiiDetector::reset()
 {
   _resetBuffer();
@@ -183,16 +182,21 @@ void TiiDetector::reset()
 // add a few spectra before computing (up to the user)
 void TiiDetector::add_to_tii_buffer(const std::vector<cmplx> & v)
 {
+  assert((int)v.size() >= mT_g + mT_u);
   auto * const buffer = make_vla(cmplx, mT_u);
   memcpy(buffer, &(v[mT_g]), mT_u * sizeof(cmplx));
+
   mFftHandler.fft(buffer);
+
   for (int i = 0; i < mT_u; i++)
+  {
     mNullSymbolBufferVec[i] += buffer[i];
+  }
 }
 
 std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_db)
 {
-  _decode(mDecodedBufferArr, mNullSymbolBufferVec);
+  _conv_fft_carrier_pairs(mDecodedBufferArr, mNullSymbolBufferVec);
 
   TFloatTable192 etsiFloatTable;    // collapsed ETSI float values
   TFloatTable192 nonEtsiFloatTable; // collapsed non-ETSI float values
@@ -217,14 +221,14 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
     cmplx sum = cmplx(0, 0);
     int count = 0;
     int pattern = 0;
-    bool norm = false;
+    bool isNonEtsiPhase = false;
     const float threshold = std::pow(10.0f, (float)iThreshold_db / 10.0f); // threshold above noise
 
-    _comp_etsi_and_non_etsi(norm, count, sum, pattern,
+    _comp_etsi_and_non_etsi(isNonEtsiPhase, count, sum, pattern,
                             etsiFloatTable, nonEtsiFloatTable, etsiCmplxTable, nonEtsiCmplxTable, noise * threshold, subId);
 
-    const TCmplxTable192 & cmplxTable = (norm ? nonEtsiCmplxTable : etsiCmplxTable);
-    const TFloatTable192 & floatTable = (norm ? nonEtsiFloatTable : etsiFloatTable);
+    const TCmplxTable192 & cmplxTable = (isNonEtsiPhase ? nonEtsiCmplxTable : etsiCmplxTable);
+    const TFloatTable192 & floatTable = (isNonEtsiPhase ? nonEtsiFloatTable : etsiFloatTable);
 
     // Find the MainId that matches the pattern
     int mainId = 0;
@@ -247,13 +251,13 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
       element.subId = subId;
       element.strength = abs(sum) / max / 4;
       element.phase = arg(sum) * F_DEG_PER_RAD;
-      element.norm = norm;
+      element.norm = isNonEtsiPhase;
       theResult.push_back(element);
     }
 
     if ((count > 4) && mCollisions)
     {
-      _find_collisions(theResult, max, noise * threshold, subId, count, pattern, mainId, norm, cmplxTable, floatTable);
+      _find_collisions(theResult, max, noise * threshold, subId, count, pattern, mainId, isNonEtsiPhase, cmplxTable, floatTable);
     }
   }
 
@@ -274,12 +278,25 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
   return theResult;
 }
 
-void TiiDetector::_decode(TBufferArr768 & ioVec, const std::vector<cmplx> & iVec) const
+void TiiDetector::_resetBuffer()
+{
+  for (auto & i : mNullSymbolBufferVec) i = cmplx(0, 0);
+}
+
+void TiiDetector::_conv_fft_carrier_pairs(TBufferArr768 & ioVec, const std::vector<cmplx> & iVec) const
 {
   for (int32_t k = -mK / 2, i = 0; k < mK / 2; k += 2, ++i)
   {
     const int32_t fftIdx = fft_shift_skip_dc(k, mT_u);
-    ioVec[i] += iVec[fftIdx] * conj(iVec[fftIdx + 1]); // TII carriers are given in pairs
+    const cmplx prod = iVec[fftIdx] * conj(iVec[fftIdx + 1]); // TII carriers are given in pairs
+    ioVec[i] += prod;
+    if (std::abs(prod) > 1000.0f)
+    {
+      const int32_t k2 = (k >= 0 ? k + 1 : k); // skip DC
+      qCInfo(sLogTiiDetector) << "FFT carrier pair k=" << k2 << ", ioVec " << cmplx_to_polar_str(ioVec[i]) << " += "
+                              << cmplx_to_polar_str(iVec[fftIdx]) << " * " << cmplx_to_polar_str(iVec[fftIdx + 1])
+                              << " = " << cmplx_to_polar_str(iVec[fftIdx] * conj(iVec[fftIdx + 1]));
+    }
   }
 }
 
@@ -387,7 +404,7 @@ int TiiDetector::_find_best_main_id_match(cmplx & oSum, const int iSubId, const 
   return oMainId;
 }
 
-void TiiDetector::_comp_etsi_and_non_etsi(bool & oNorm, int & oCount, cmplx & oSum, int & oPattern,
+void TiiDetector::_comp_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, cmplx & oSum, int & oPattern,
                                           const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
                                           const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable, const float iThresholdLevel, int iSubId) const
 {
@@ -397,7 +414,7 @@ void TiiDetector::_comp_etsi_and_non_etsi(bool & oNorm, int & oCount, cmplx & oS
   int nonEtsi_count = 0;
   int etsi_pattern = 0;
   int nonEtsi_pattern = 0;
-  oNorm = false;
+  oIsNonEtsiPhase = false;
   oCount = 0;
   oSum = cmplx(0, 0);
 
@@ -423,11 +440,11 @@ void TiiDetector::_comp_etsi_and_non_etsi(bool & oNorm, int & oCount, cmplx & oS
   {
     if (abs(nonEtsi_sum) > abs(etsi_sum)) // TODO: is that comp. valid if one count is < 4? I guess yes as the sum with count < 4 got too low
     {
-      oNorm = true;
+      oIsNonEtsiPhase = true;
     }
   }
 
-  if (oNorm)
+  if (oIsNonEtsiPhase)
   {
     oSum = nonEtsi_sum;
     oCount = nonEtsi_count;
@@ -477,6 +494,7 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iM
       {
         STiiResult element;
         element.mainId = k;
+        element.subId = iSubId;
         element.strength = abs(sum) / iMax / (float)(iCount - 4);
         element.phase = arg(sum) * F_DEG_PER_RAD;
         element.norm = iNorm;
@@ -488,6 +506,7 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iM
   {
     STiiResult element;
     element.mainId = 99;
+    element.subId = iSubId;
     element.strength = abs(sum) / iMax / (float)(iCount - 4);
     element.phase = arg(sum) * F_DEG_PER_RAD;
     element.norm = iNorm;

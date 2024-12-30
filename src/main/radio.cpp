@@ -42,6 +42,7 @@
 #include "Qt-audio.h"
 #include "audiooutputqt.h"
 #include "angle_direction.h"
+#include <cmath>
 #include <fstream>
 #include <numeric>
 #include <vector>
@@ -1643,7 +1644,9 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
       theTransmitter.height = 0;
     }
     else
+    {
       theTransmitter = *tr;
+    }
 
     position thePosition;
     thePosition.latitude = theTransmitter.latitude;
@@ -1662,16 +1665,16 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
     if (thePosition.latitude != 0 && thePosition.longitude != 0)
     {
       text2 += QString::number(fdistance, 'f', 1) + "km, "
-        + QString::number(fcorner, 'f', 1)
-        + QString::fromLatin1("\xb0 (")
-        + QString::fromStdString(AngleDirection::get_compass_direction(fcorner)) + "), "
-        + QString::number(power, 'f', 1) + "kW, "
-        + QString::number(altitude) + "+"
-        + QString::number(height) + "m";
+             + QString::number(fcorner, 'f', 1)
+             + QString::fromLatin1("\xb0 (")
+             + QString::fromStdString(AngleDirection::get_compass_direction(fcorner)) + "), "
+             + QString::number(power, 'f', 1) + "kW, "
+             + QString::number(altitude) + "m+"
+             + QString::number(height) + "m";
     }
-    float strength = 10 * log10(iTr[index].strength);
-    mDxDisplay.addRow(mainId, subId, strength, iTr[index].phase, iTr[index].norm,
-                        text2, theTransmitter.transmitterName);
+    const float strength = 10 * std::log10(iTr[index].strength);
+    mDxDisplay.addRow(mainId, subId, strength, iTr[index].phase, iTr[index].norm, text2, theTransmitter.transmitterName);
+
     if (index == 0)
     {
       lblStationLocation->setText(theTransmitter.transmitterName + " " + text2);

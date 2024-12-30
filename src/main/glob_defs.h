@@ -23,6 +23,7 @@
 #include <complex>
 #include <cassert>
 #include <cmath>
+#include <iomanip>
 
 
 #ifndef M_PI
@@ -257,6 +258,13 @@ template<typename T> inline T fft_shift(const T iIdx, const int32_t iFftSize)
 template<typename T> inline T fft_shift_skip_dc(const T iIdx, const int32_t iFftSize)
 {
   return (iIdx < 0 ? iIdx + iFftSize : iIdx + 1);
+}
+
+inline std::string cmplx_to_polar_str(const cmplx & iVal)
+{
+  std::ostringstream s;
+  s << std::fixed << std::setw(7) << std::setprecision(2) << std::abs(iVal) << "/" << std::setw(4) << std::setprecision(0) << conv_rad_to_deg(std::arg(iVal)) << "deg";
+  return s.str();
 }
 
 #endif // GLOB_DEFS_H
