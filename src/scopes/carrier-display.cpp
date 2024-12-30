@@ -74,12 +74,19 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
   // draw horizontal marker lines at -90, 0 , 90 degrees
   {
     // delete old markers
+    for (auto & p : mQwtPlotTiiMarkerVec)
+    {
+      p->detach();
+      delete p;
+    }
+    mQwtPlotTiiMarkerVec.clear();
+
     for (auto & p : mQwtPlotMarkerVec)
     {
       p->detach();
       delete p;
-      p = nullptr;
     }
+    mQwtPlotMarkerVec.clear();
 
     if (iCustPlot.MarkerYValueStep > 0)
     {
@@ -102,6 +109,22 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
         p->setValue(0, iCustPlot.YBottomValue + diffVal * markerIdx * iCustPlot.MarkerYValueStep);
         p->attach(mQwtPlot);
       }
+    }
+  }
+
+  if (iCustPlot.DrawTiiSegments)
+  {
+    constexpr std::array<const double, 3> xPoints  = { -384.5, 0, 384.5 };
+    mQwtPlotTiiMarkerVec.resize(xPoints.size());
+
+    for (int32_t markerIdx = 0; markerIdx < (int32_t)mQwtPlotTiiMarkerVec.size(); ++markerIdx)
+    {
+      mQwtPlotTiiMarkerVec[markerIdx] = new QwtPlotMarker();
+      QwtPlotMarker * const p = mQwtPlotTiiMarkerVec[markerIdx];
+      p->setLineStyle(QwtPlotMarker::VLine);
+      p->setLinePen(0xAA4444, 0.0, Qt::SolidLine);
+      p->setValue(xPoints[markerIdx], 0);
+      p->attach(mQwtPlot);
     }
   }
 
@@ -229,6 +252,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YBottomValue = 0.0;
     cp.YValueElementNo = 6;
     cp.MarkerYValueStep = 1;
+    cp.DrawTiiSegments = true;
     break;
 
   case ECarrierPlotType::NULL_NO_TII:

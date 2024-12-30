@@ -46,6 +46,7 @@ public:
     int32_t YValueElementNo;
 
     int32_t MarkerYValueStep = 1; // if not each Y value a marker should set (0 = no set no marker)
+    bool DrawTiiSegments = false;
   };
 
   void display_carrier_plot(const std::vector<float> & iYValVec);
@@ -57,6 +58,7 @@ private:
   CustQwtZoomPan mZoomPan;
   QwtPlotCurve mQwtPlotCurve;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
+  std::vector<QwtPlotMarker *> mQwtPlotTiiMarkerVec{};
   std::vector<float> mX_axis_vec;
   int32_t mDataSize = 0;
   ECarrierPlotType mPlotType;
