@@ -114,15 +114,21 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 
   if (iCustPlot.DrawTiiSegments)
   {
-    constexpr std::array<const double, 3> xPoints  = { -384.5, 0, 384.5 };
+    std::array<double, 4 * 8 + 1> xPoints;
     mQwtPlotTiiMarkerVec.resize(xPoints.size());
+
+    int32_t c = 0;
+    for (int32_t j = -16; j <= -1; ++j) xPoints[c++] = 48.0 * j - 0.5;
+    xPoints[c++] = 0;
+    for (int32_t j =   1; j <= 16; ++j) xPoints[c++] = 48.0 * j + 0.5;
+    assert(c == (int32_t)xPoints.size());
 
     for (int32_t markerIdx = 0; markerIdx < (int32_t)mQwtPlotTiiMarkerVec.size(); ++markerIdx)
     {
       mQwtPlotTiiMarkerVec[markerIdx] = new QwtPlotMarker();
       QwtPlotMarker * const p = mQwtPlotTiiMarkerVec[markerIdx];
       p->setLineStyle(QwtPlotMarker::VLine);
-      p->setLinePen(0xAA4444, 0.0, Qt::SolidLine);
+      p->setLinePen((markerIdx - 16) % 8 == 0 ? 0x5555BB : 0xAA4444, 0.0, Qt::SolidLine);
       p->setValue(xPoints[markerIdx], 0);
       p->attach(mQwtPlot);
     }
