@@ -139,6 +139,8 @@ static constexpr std::array<const int8_t, 768> cPhaseCorrTable = {
    1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1
 };
 
+inline uint32_t rev_bit_val(const uint32_t iBitPos) { return (0x80 >> iBitPos); }
+
 // Sort the elements according to their strength
 static int fcmp(const void * a, const void * b)
 {
@@ -387,7 +389,7 @@ int TiiDetector::_find_best_main_id_match(cmplx & oSum, const int iSubId, const 
 
     for (int i = 0; i < cNumGroups8; i++)
     {
-      if (cMainIdPatternTable[k] & (0x80 >> i))
+      if (cMainIdPatternTable[k] & rev_bit_val(i))
       {
         val += ipCmplxTable[iSubId + cGroupSize24 * i];
       }
@@ -424,14 +426,14 @@ void TiiDetector::_comp_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, 
     if (iEtsiFloatTable[iSubId + i * cGroupSize24] > iThresholdLevel)
     {
       etsi_count++;
-      etsi_pattern |= (0x80 >> i);
+      etsi_pattern |= rev_bit_val(i);
       etsi_sum += iEtsiCmplxTable[iSubId + cGroupSize24 * i];
     }
 
     if (iNonEtsiFloatTable[iSubId + i * cGroupSize24] > iThresholdLevel)
     {
       nonEtsi_count++;
-      nonEtsi_pattern |= (0x80 >> i);
+      nonEtsi_pattern |= rev_bit_val(i);
       nonEtsi_sum += iNonEtsiCmplxTable[iSubId + cGroupSize24 * i];
     }
   }
@@ -468,7 +470,7 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iM
   // Calculate the level of the second main ID
   for (int i = 0; i < cNumGroups8; i++)
   {
-    if ((cMainIdPatternTable[iMainId] & (0x80 >> i)) == 0)
+    if ((cMainIdPatternTable[iMainId] & rev_bit_val(i)) == 0)
     {
       if (const int index = iSubId + cGroupSize24 * i;
           iFloatTable[index] > iThresholdLevel)
@@ -487,7 +489,7 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iM
 
       for (int i = 0; i < cNumGroups8; i++)
       {
-        if (pattern2 & (0x80 >> i)) count2++;
+        if (pattern2 & rev_bit_val(i)) count2++;
       }
 
       if ((count2 == 4) && (k != iMainId))
