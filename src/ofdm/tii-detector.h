@@ -55,13 +55,14 @@ private:
   std::vector<cmplx> mNullSymbolBufferVec;
   FftHandler mFftHandler;
 
-  float _calculate_average_noise(const TFloatTable192 & iFloatTable);
-  void _get_float_table_and_max_value(TFloatTable192 & oFloatTable, const TCmplxTable192 & iCmplxTable, float & ioMax) const;
+  float _calculate_average_noise(const TFloatTable192 & iFloatTable) const;
+  void _get_float_table_and_max_value(TFloatTable192 & oFloatTable, float & ioMax, const TCmplxTable192 & iCmplxTable) const;
   void _comp_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, cmplx & oSum, std::byte & oPattern,
+                               int iSubId, const float iThresholdLevel,
                                const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
-                               const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable, const float iThresholdLevel, int iSubId) const;
-  void _find_collisions(std::vector<STiiResult> ioResultVec, float iMax, float iThresholdLevel,
-                        int iSubId, int iCount, std::byte iPattern, int iMainId, bool iNorm,
+                               const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable) const;
+  void _find_collisions(std::vector<STiiResult> ioResultVec, int iMainId, int iSubId,
+                        std::byte iPattern, float iMax, float iThresholdLevel, int iCount, bool iIsNonEtsi,
                         const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable) const;
   int _find_exact_main_id_match(std::byte iPattern) const;
   int _find_best_main_id_match(cmplx & oSum, int iSubId, const TCmplxTable192 & ipCmplxTable) const;
