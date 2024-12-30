@@ -15,77 +15,77 @@ Q_LOGGING_CATEGORY(sLogTiiDetector, "TiiDetector", QtInfoMsg)
 
 
 // TII pattern for transmission modes I, II and IV
-static constexpr std::array<const uint8_t, 70> cMainIdPatternTable = {
-  0x0f,	// 0 0 0 0 1 1 1 1		0
-  0x17,	// 0 0 0 1 0 1 1 1		1
-  0x1b,	// 0 0 0 1 1 0 1 1		2
-  0x1d,	// 0 0 0 1 1 1 0 1		3
-  0x1e,	// 0 0 0 1 1 1 1 0		4
-  0x27,	// 0 0 1 0 0 1 1 1		5
-  0x2b,	// 0 0 1 0 1 0 1 1		6
-  0x2d,	// 0 0 1 0 1 1 0 1		7
-  0x2e,	// 0 0 1 0 1 1 1 0		8
-  0x33,	// 0 0 1 1 0 0 1 1		9
-  0x35,	// 0 0 1 1 0 1 0 1		10
-  0x36,	// 0 0 1 1 0 1 1 0		11
-  0x39,	// 0 0 1 1 1 0 0 1		12
-  0x3a,	// 0 0 1 1 1 0 1 0		13
-  0x3c,	// 0 0 1 1 1 1 0 0		14
-  0x47,	// 0 1 0 0 0 1 1 1		15
-  0x4b,	// 0 1 0 0 1 0 1 1		16
-  0x4d,	// 0 1 0 0 1 1 0 1		17
-  0x4e,	// 0 1 0 0 1 1 1 0		18
-  0x53,	// 0 1 0 1 0 0 1 1		19
-  0x55,	// 0 1 0 1 0 1 0 1		20
-  0x56,	// 0 1 0 1 0 1 1 0		21
-  0x59,	// 0 1 0 1 1 0 0 1		22
-  0x5a,	// 0 1 0 1 1 0 1 0		23
-  0x5c,	// 0 1 0 1 1 1 0 0		24
-  0x63,	// 0 1 1 0 0 0 1 1		25
-  0x65,	// 0 1 1 0 0 1 0 1		26
-  0x66,	// 0 1 1 0 0 1 1 0		27
-  0x69,	// 0 1 1 0 1 0 0 1		28
-  0x6a,	// 0 1 1 0 1 0 1 0		29
-  0x6c,	// 0 1 1 0 1 1 0 0		30
-  0x71,	// 0 1 1 1 0 0 0 1		31
-  0x72,	// 0 1 1 1 0 0 1 0		32
-  0x74,	// 0 1 1 1 0 1 0 0		33
-  0x78,	// 0 1 1 1 1 0 0 0		34
-  0x87,	// 1 0 0 0 0 1 1 1		35
-  0x8b,	// 1 0 0 0 1 0 1 1		36
-  0x8d,	// 1 0 0 0 1 1 0 1		37
-  0x8e,	// 1 0 0 0 1 1 1 0		38
-  0x93,	// 1 0 0 1 0 0 1 1		39
-  0x95,	// 1 0 0 1 0 1 0 1		40
-  0x96,	// 1 0 0 1 0 1 1 0		41
-  0x99,	// 1 0 0 1 1 0 0 1		42
-  0x9a,	// 1 0 0 1 1 0 1 0		43
-  0x9c,	// 1 0 0 1 1 1 0 0		44
-  0xa3,	// 1 0 1 0 0 0 1 1		45
-  0xa5,	// 1 0 1 0 0 1 0 1		46
-  0xa6,	// 1 0 1 0 0 1 1 0		47
-  0xa9,	// 1 0 1 0 1 0 0 1		48
-  0xaa,	// 1 0 1 0 1 0 1 0		49
-  0xac,	// 1 0 1 0 1 1 0 0		50
-  0xb1,	// 1 0 1 1 0 0 0 1		51
-  0xb2,	// 1 0 1 1 0 0 1 0		52
-  0xb4,	// 1 0 1 1 0 1 0 0		53
-  0xb8,	// 1 0 1 1 1 0 0 0		54
-  0xc3,	// 1 1 0 0 0 0 1 1		55
-  0xc5,	// 1 1 0 0 0 1 0 1		56
-  0xc6,	// 1 1 0 0 0 1 1 0		57
-  0xc9,	// 1 1 0 0 1 0 0 1		58
-  0xca,	// 1 1 0 0 1 0 1 0		59
-  0xcc,	// 1 1 0 0 1 1 0 0		60
-  0xd1,	// 1 1 0 1 0 0 0 1		61
-  0xd2,	// 1 1 0 1 0 0 1 0		62
-  0xd4,	// 1 1 0 1 0 1 0 0		63
-  0xd8,	// 1 1 0 1 1 0 0 0		64
-  0xe1,	// 1 1 1 0 0 0 0 1		65
-  0xe2,	// 1 1 1 0 0 0 1 0		66
-  0xe4,	// 1 1 1 0 0 1 0 0		67
-  0xe8,	// 1 1 1 0 1 0 0 0		68
-  0xf0	// 1 1 1 1 0 0 0 0		69
+static constexpr std::array<const std::byte, 70> cMainIdPatternTable = {
+  std::byte{0x0f},  // 0 0 0 0 1 1 1 1     0
+  std::byte{0x17},  // 0 0 0 1 0 1 1 1     1
+  std::byte{0x1b},  // 0 0 0 1 1 0 1 1     2
+  std::byte{0x1d},  // 0 0 0 1 1 1 0 1     3
+  std::byte{0x1e},  // 0 0 0 1 1 1 1 0     4
+  std::byte{0x27},  // 0 0 1 0 0 1 1 1     5
+  std::byte{0x2b},  // 0 0 1 0 1 0 1 1     6
+  std::byte{0x2d},  // 0 0 1 0 1 1 0 1     7
+  std::byte{0x2e},  // 0 0 1 0 1 1 1 0     8
+  std::byte{0x33},  // 0 0 1 1 0 0 1 1     9
+  std::byte{0x35},  // 0 0 1 1 0 1 0 1    10
+  std::byte{0x36},  // 0 0 1 1 0 1 1 0    11
+  std::byte{0x39},  // 0 0 1 1 1 0 0 1    12
+  std::byte{0x3a},  // 0 0 1 1 1 0 1 0    13
+  std::byte{0x3c},  // 0 0 1 1 1 1 0 0    14
+  std::byte{0x47},  // 0 1 0 0 0 1 1 1    15
+  std::byte{0x4b},  // 0 1 0 0 1 0 1 1    16
+  std::byte{0x4d},  // 0 1 0 0 1 1 0 1    17
+  std::byte{0x4e},  // 0 1 0 0 1 1 1 0    18
+  std::byte{0x53},  // 0 1 0 1 0 0 1 1    19
+  std::byte{0x55},  // 0 1 0 1 0 1 0 1    20
+  std::byte{0x56},  // 0 1 0 1 0 1 1 0    21
+  std::byte{0x59},  // 0 1 0 1 1 0 0 1    22
+  std::byte{0x5a},  // 0 1 0 1 1 0 1 0    23
+  std::byte{0x5c},  // 0 1 0 1 1 1 0 0    24
+  std::byte{0x63},  // 0 1 1 0 0 0 1 1    25
+  std::byte{0x65},  // 0 1 1 0 0 1 0 1    26
+  std::byte{0x66},  // 0 1 1 0 0 1 1 0    27
+  std::byte{0x69},  // 0 1 1 0 1 0 0 1    28
+  std::byte{0x6a},  // 0 1 1 0 1 0 1 0    29
+  std::byte{0x6c},  // 0 1 1 0 1 1 0 0    30
+  std::byte{0x71},  // 0 1 1 1 0 0 0 1    31
+  std::byte{0x72},  // 0 1 1 1 0 0 1 0    32
+  std::byte{0x74},  // 0 1 1 1 0 1 0 0    33
+  std::byte{0x78},  // 0 1 1 1 1 0 0 0    34
+  std::byte{0x87},  // 1 0 0 0 0 1 1 1    35
+  std::byte{0x8b},  // 1 0 0 0 1 0 1 1    36
+  std::byte{0x8d},  // 1 0 0 0 1 1 0 1    37
+  std::byte{0x8e},  // 1 0 0 0 1 1 1 0    38
+  std::byte{0x93},  // 1 0 0 1 0 0 1 1    39
+  std::byte{0x95},  // 1 0 0 1 0 1 0 1    40
+  std::byte{0x96},  // 1 0 0 1 0 1 1 0    41
+  std::byte{0x99},  // 1 0 0 1 1 0 0 1    42
+  std::byte{0x9a},  // 1 0 0 1 1 0 1 0    43
+  std::byte{0x9c},  // 1 0 0 1 1 1 0 0    44
+  std::byte{0xa3},  // 1 0 1 0 0 0 1 1    45
+  std::byte{0xa5},  // 1 0 1 0 0 1 0 1    46
+  std::byte{0xa6},  // 1 0 1 0 0 1 1 0    47
+  std::byte{0xa9},  // 1 0 1 0 1 0 0 1    48
+  std::byte{0xaa},  // 1 0 1 0 1 0 1 0    49
+  std::byte{0xac},  // 1 0 1 0 1 1 0 0    50
+  std::byte{0xb1},  // 1 0 1 1 0 0 0 1    51
+  std::byte{0xb2},  // 1 0 1 1 0 0 1 0    52
+  std::byte{0xb4},  // 1 0 1 1 0 1 0 0    53
+  std::byte{0xb8},  // 1 0 1 1 1 0 0 0    54
+  std::byte{0xc3},  // 1 1 0 0 0 0 1 1    55
+  std::byte{0xc5},  // 1 1 0 0 0 1 0 1    56
+  std::byte{0xc6},  // 1 1 0 0 0 1 1 0    57
+  std::byte{0xc9},  // 1 1 0 0 1 0 0 1    58
+  std::byte{0xca},  // 1 1 0 0 1 0 1 0    59
+  std::byte{0xcc},  // 1 1 0 0 1 1 0 0    60
+  std::byte{0xd1},  // 1 1 0 1 0 0 0 1    61
+  std::byte{0xd2},  // 1 1 0 1 0 0 1 0    62
+  std::byte{0xd4},  // 1 1 0 1 0 1 0 0    63
+  std::byte{0xd8},  // 1 1 0 1 1 0 0 0    64
+  std::byte{0xe1},  // 1 1 1 0 0 0 0 1    65
+  std::byte{0xe2},  // 1 1 1 0 0 0 1 0    66
+  std::byte{0xe4},  // 1 1 1 0 0 1 0 0    67
+  std::byte{0xe8},  // 1 1 1 0 1 0 0 0    68
+  std::byte{0xf0}   // 1 1 1 1 0 0 0 0    69
 };
 
 static constexpr std::array<const int8_t, 768> cPhaseCorrTable = {
@@ -139,7 +139,7 @@ static constexpr std::array<const int8_t, 768> cPhaseCorrTable = {
    1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1,  1, -1, -1, -1
 };
 
-inline uint32_t rev_bit_val(const uint32_t iBitPos) { return (0x80 >> iBitPos); }
+inline std::byte rev_bit_val(const uint32_t iBitPos) { return static_cast<std::byte>(0x80 >> iBitPos); }
 
 // Sort the elements according to their strength
 static int fcmp(const void * a, const void * b)
@@ -222,7 +222,7 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const int16_t iThreshold_d
   {
     cmplx sum = cmplx(0, 0);
     int count = 0;
-    int pattern = 0;
+    std::byte pattern = std::byte{0};
     bool isNonEtsiPhase = false;
     const float threshold = std::pow(10.0f, (float)iThreshold_db / 10.0f); // threshold above noise
 
@@ -364,7 +364,7 @@ void TiiDetector::_collapse(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEt
   }
 }
 
-int TiiDetector::_find_exact_main_id_match(int iPattern) const
+int TiiDetector::_find_exact_main_id_match(const std::byte iPattern) const
 {
   for (int mainId = 0; mainId < (int)cMainIdPatternTable.size(); mainId++)
   {
@@ -389,7 +389,7 @@ int TiiDetector::_find_best_main_id_match(cmplx & oSum, const int iSubId, const 
 
     for (int i = 0; i < cNumGroups8; i++)
     {
-      if (cMainIdPatternTable[k] & rev_bit_val(i))
+      if ((cMainIdPatternTable[k] & rev_bit_val(i)) != std::byte{0})
       {
         val += ipCmplxTable[iSubId + cGroupSize24 * i];
       }
@@ -406,7 +406,7 @@ int TiiDetector::_find_best_main_id_match(cmplx & oSum, const int iSubId, const 
   return oMainId;
 }
 
-void TiiDetector::_comp_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, cmplx & oSum, int & oPattern,
+void TiiDetector::_comp_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, cmplx & oSum, std::byte & oPattern,
                                           const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
                                           const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable, const float iThresholdLevel, int iSubId) const
 {
@@ -414,8 +414,8 @@ void TiiDetector::_comp_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, 
   cmplx nonEtsi_sum = cmplx(0, 0);
   int etsi_count = 0;
   int nonEtsi_count = 0;
-  int etsi_pattern = 0;
-  int nonEtsi_pattern = 0;
+  std::byte etsi_pattern = std::byte{0};
+  std::byte nonEtsi_pattern = std::byte{0};
   oIsNonEtsiPhase = false;
   oCount = 0;
   oSum = cmplx(0, 0);
@@ -440,7 +440,7 @@ void TiiDetector::_comp_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, 
 
   if ((etsi_count >= 4) || (nonEtsi_count >= 4))
   {
-    if (abs(nonEtsi_sum) > abs(etsi_sum)) // TODO: is that comp. valid if one count is < 4? I guess yes as the sum with count < 4 got too low
+    if (abs(nonEtsi_sum) > abs(etsi_sum))
     {
       oIsNonEtsiPhase = true;
     }
@@ -461,7 +461,7 @@ void TiiDetector::_comp_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, 
 }
 
 void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iMax, float iThresholdLevel,
-                                   int iSubId, int iCount, int iPattern, int iMainId, bool iNorm,
+                                   int iSubId, int iCount, std::byte iPattern, int iMainId, bool iNorm,
                                    const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable) const
 {
   assert(iCount > 4);
@@ -470,7 +470,7 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iM
   // Calculate the level of the second main ID
   for (int i = 0; i < cNumGroups8; i++)
   {
-    if ((cMainIdPatternTable[iMainId] & rev_bit_val(i)) == 0)
+    if ((cMainIdPatternTable[iMainId] & rev_bit_val(i)) == std::byte{0})
     {
       if (const int index = iSubId + cGroupSize24 * i;
           iFloatTable[index] > iThresholdLevel)
@@ -484,12 +484,12 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> ioResultVec, float iM
   {
     for (int k = 0; k < (int)cMainIdPatternTable.size(); k++)
     {
-      const int pattern2 = cMainIdPatternTable[k] & iPattern;
+      const std::byte pattern2 = cMainIdPatternTable[k] & iPattern;
       int count2 = 0;
 
       for (int i = 0; i < cNumGroups8; i++)
       {
-        if (pattern2 & rev_bit_val(i)) count2++;
+        if ((pattern2 & rev_bit_val(i)) != std::byte{0}) count2++;
       }
 
       if ((count2 == 4) && (k != iMainId))
