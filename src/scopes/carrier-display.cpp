@@ -91,22 +91,32 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
         mQwtPlotMarkerVec[markerIdx] = new QwtPlotMarker();
         QwtPlotMarker * const p = mQwtPlotMarkerVec[markerIdx];
         p->setLineStyle(QwtPlotMarker::HLine);
-        if (iCustPlot.Style == SCustPlot::EStyle::LINES)
+        if (iCustPlot.Style == SCustPlot::EStyle::DOTS)
         {
-          p->setLinePen(QColor(Qt::darkGray), 0.0, Qt::DashLine);
+          p->setLinePen(QColor(Qt::gray), 0.0, Qt::SolidLine);
         }
         else
         {
-          p->setLinePen(QColor(Qt::gray), 0.0, Qt::SolidLine);
+          p->setLinePen(QColor(Qt::darkGray), 0.0, Qt::DashLine);
         }
         p->setValue(0, iCustPlot.YBottomValue + diffVal * markerIdx * iCustPlot.MarkerYValueStep);
         p->attach(mQwtPlot);
       }
     }
   }
-  if (iCustPlot.Style == SCustPlot::EStyle::DOTS) mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
-  else if (iCustPlot.Style == SCustPlot::EStyle::LINES) mQwtPlotCurve.setStyle(QwtPlotCurve::Lines);
-  else mQwtPlotCurve.setStyle(QwtPlotCurve::Sticks);
+
+  switch (iCustPlot.Style)
+  {
+  case SCustPlot::EStyle::DOTS:
+    mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
+    break;
+  case SCustPlot::EStyle::LINES:
+    mQwtPlotCurve.setStyle(QwtPlotCurve::Lines);
+    break;
+  case SCustPlot::EStyle::STICKS:
+    mQwtPlotCurve.setStyle(QwtPlotCurve::Sticks);
+    break;
+  }
 }
 
 void CarrierDisp::_setup_x_axis()
