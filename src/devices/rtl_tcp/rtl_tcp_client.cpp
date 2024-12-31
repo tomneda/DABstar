@@ -34,6 +34,11 @@
 #include	"rtl-sdr.h"
 #include	"device-exceptions.h"
 
+#if !defined(__MINGW32__) && !defined(_WIN32)
+  #include <netinet/in.h>  // for macro htonl
+#endif
+
+
 #define	DEFAULT_FREQUENCY (kHz(220000))
 
 typedef struct { /* structure size must be multiple of 2 bytes */
