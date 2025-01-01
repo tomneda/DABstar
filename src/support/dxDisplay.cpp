@@ -77,7 +77,7 @@ void DxDisplay::hide()
 }
 
 void DxDisplay::addRow(const unsigned char mainId, const unsigned char subId, const float strength,
-					   const float phase, const bool norm, const QString &ds, const QString &tr)
+					             const float phase, const bool non_etsi_phase, const QString &ds, const QString &tr)
 {
 	int16_t	row	= tableWidget->rowCount();
 
@@ -110,7 +110,7 @@ void DxDisplay::addRow(const unsigned char mainId, const unsigned char subId, co
 	tableWidget->item(row, 0)->setText(QString::number(mainId));
 	tableWidget->item(row, 1)->setText(QString::number(subId));
 	tableWidget->item(row, 2)->setText(QString::number(strength, 'f', 1));
-	tableWidget->item(row, 3)->setText(QString::number(phase, 'f', 0) + " " + (norm ? '*':' '));
+	tableWidget->item(row, 3)->setText(QString::number(phase, 'f', 0) + " " + (non_etsi_phase ? '*':' '));
 	tableWidget->item(row, 4)->setText(ds);
 	tableWidget->item(row, 5)->setText(tr);
 }

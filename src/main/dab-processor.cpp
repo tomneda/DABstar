@@ -662,12 +662,12 @@ void DabProcessor::set_Tii(bool b)
 
 void DabProcessor::set_tii_collisions(bool b)
 {
-  mTiiDetector.set_collisions(b);
+  mTiiDetector.set_detect_collisions(b);
 }
 
 void DabProcessor::set_tii_subid(uint8_t subid)
 {
-  mTiiDetector.set_subid(subid);
+  mTiiDetector.set_subid_for_collision_search(subid);
 }
 
 void DabProcessor::set_tii_threshold(uint8_t trs)

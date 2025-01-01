@@ -143,7 +143,7 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
     p->setLabelOrientation(Qt::Vertical);
     p->setLineStyle(QwtPlotMarker::VLine);
     p->setLinePen(Qt::white, 0, Qt::DashDotLine);
-    float sample = (float)iTr[i].phase * 2048 / 360 + 400;
+    float sample = (float)iTr[i].phaseDeg * 2048 / 360 + 400;
     if (sample < 0) sample += 2048;
     else if (sample > 2407) sample -= 2048;
     p->setXValue(sample);

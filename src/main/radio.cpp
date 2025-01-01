@@ -1673,7 +1673,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
              + QString::number(height) + "m";
     }
     const float strength = 10 * std::log10(iTr[index].strength);
-    mDxDisplay.addRow(mainId, subId, strength, iTr[index].phase, iTr[index].norm, text2, theTransmitter.transmitterName);
+    mDxDisplay.addRow(mainId, subId, strength, iTr[index].phaseDeg, iTr[index].isNonEtsiPhase, text2, theTransmitter.transmitterName);
 
     if (index == 0)
     {
@@ -1685,7 +1685,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
     {
       const QDateTime theTime = (mpSH->read(SettingHelper::cbUseUtcTime).toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
       mpHttpHandler->putData(MAP_NORM_TRANS, &theTransmitter, theTime.toString(Qt::TextDate),
-                             strength, fdistance, fcorner, iTr[index].norm);
+                             strength, fdistance, fcorner, iTr[index].isNonEtsiPhase);
     }
   }
 }
