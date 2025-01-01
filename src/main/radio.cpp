@@ -408,7 +408,7 @@ void RadioInterface::_set_clock_text(const QString & iText /*= QString()*/)
 {
   if (!iText.isEmpty())
   {
-    mClockResetTimer.start(1300); // if in 1300ms no new clock text is sent, this method is called with an empty iText
+    mClockResetTimer.start(5000); // if in 5000ms no new clock text is sent, this method is called with an empty iText
 
     if (!mClockActiveStyle)
     {
