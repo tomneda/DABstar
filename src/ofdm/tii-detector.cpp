@@ -186,7 +186,7 @@ void TiiDetector::reset()
 // To reduce noise in the input signal, we might add a few spectra before computing (up to the user)
 void TiiDetector::add_to_tii_buffer(const std::vector<cmplx> & iV)
 {
-  assert((int)v.size() >= mT_g + mT_u);
+  assert((int)iV.size() >= mT_g + mT_u);
   auto * const fftBuffer = make_vla(cmplx, mT_u);
   memcpy(fftBuffer, &(iV[mT_g]), mT_u * sizeof(cmplx));
 
