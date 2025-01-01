@@ -61,7 +61,7 @@ private:
                                int iSubId, const float iThresholdLevel,
                                const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
                                const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable) const;
-  void _find_collisions(std::vector<STiiResult> ioResultVec, int iMainId, int iSubId,
+  void _find_collisions(std::vector<STiiResult> & ioResultVec, int iMainId, int iSubId,
                         std::byte iPattern, float iMax, float iThresholdLevel, int iCount, bool iIsNonEtsi,
                         const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable) const;
   int _find_exact_main_id_match(std::byte iPattern) const;
