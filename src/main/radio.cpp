@@ -1603,9 +1603,9 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
     mChannel.countryName = country;
   }
 
-  mDxDisplay.cleanUp();
+  mDxDisplay.clean_up();
   mDxDisplay.show();
-  mDxDisplay.setChannel(mChannel.channelName);
+  mDxDisplay.set_window_title("TII list of channel " + mChannel.channelName);
 
   transmitterIds.resize(count);
   for (int index = 0; index < count; index++)
@@ -1673,7 +1673,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
              + QString::number(height) + "m";
     }
     const float strength = 10 * std::log10(iTr[index].strength);
-    mDxDisplay.addRow(mainId, subId, strength, iTr[index].phaseDeg, iTr[index].isNonEtsiPhase, text2, theTransmitter.transmitterName);
+    mDxDisplay.add_row(mainId, subId, strength, iTr[index].phaseDeg, iTr[index].isNonEtsiPhase, text2, theTransmitter.transmitterName);
 
     if (index == 0)
     {

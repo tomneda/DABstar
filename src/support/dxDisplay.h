@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2024
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -31,22 +30,24 @@
 
 //class	RadioInterface;
 
-class	DxDisplay:public QFrame {
-Q_OBJECT
-public:
-	DxDisplay	(QSettings *);
-	~DxDisplay	();
-	void setChannel(const QString &);
-	void addRow (const unsigned char, const unsigned char, const float, const float, const bool, const QString &, const QString &);
-	void cleanUp();
-	void show	();
-	void hide	();
-	int	nrRows	();
-private:
-	QScrollArea	*myWidget;
-	QTableWidget *tableWidget;
-	QSettings	*dxSettings;
-	void set_position_and_size (QSettings *, QWidget *, QTableWidget *, const QString &);
-	void store_widget_position (QSettings *, QWidget *, QTableWidget *, const QString &);
-};
+class DxDisplay : public QFrame
+{
+  Q_OBJECT
 
+public:
+  DxDisplay(QSettings *);
+  ~DxDisplay();
+  void set_window_title(const QString &);
+  void add_row(const unsigned char, const unsigned char, const float, const float, const bool, const QString &, const QString &);
+  void clean_up();
+  void show();
+  void hide();
+  int get_nr_rows();
+
+private:
+  QScrollArea * myWidget;
+  QTableWidget * tableWidget;
+  QSettings * dxSettings;
+  void _set_position_and_size(QSettings *, QWidget *, QTableWidget *, const QString &);
+  void _store_widget_position(QSettings *, QWidget *, QTableWidget *, const QString &);
+};
