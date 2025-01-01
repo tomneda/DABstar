@@ -405,7 +405,7 @@
        <item>
         <widget class="QCheckBox" name="cbShowNonAudioInServiceList">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show non-audio entries in service list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If selected also non-audio services will be shown in the service list, like EPG/SPI data services.&lt;/p&gt;&lt;p&gt;Needs a new scan or channel-reselection in the service list to shown or hide.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show non-audio entries in service list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If selected also non-audio services will be shown in the service list, like EPG/SPI data services.&lt;/p&gt;&lt;p&gt;Needs a new scan or channel-reselection in the service list to be shown or hidden.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Show non-audio in service list</string>
