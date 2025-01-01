@@ -58,6 +58,7 @@ RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
   remoteSettings->endGroup();
   setupUi(&myFrame);
   myFrame.move(QPoint(x, y));
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
   // setting the defaults and constants
@@ -65,10 +66,10 @@ RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
   remoteSettings->beginGroup("RtlTcpClient");
   Gain = remoteSettings->value("RtlTcpClient-gain", 20).toInt();
   Ppm = remoteSettings->value("RtlTcpClient-ppm", 0).toDouble();
-  AgcMode = remoteSettings->value("RtlTcpClient-agc", 0).toInt();
+  AgcMode = remoteSettings->value("RtlTcpClient-agc", 2).toInt();
   BiasT = remoteSettings->value("RtlTcpClient-biast", 0).toInt();
   basePort = remoteSettings->value("rtl_tcp_port", 1234).toInt();
-  Bandwidth = remoteSettings->value("RtlTcpClient-bw", 1536).toInt();
+  Bandwidth = remoteSettings->value("RtlTcpClient-bw", 1750).toInt();
   ipAddress = remoteSettings->value("remote-server", "127.0.0.1").toString();
   remoteSettings->endGroup();
   tcp_gain->setValue(Gain);
