@@ -134,6 +134,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , mpDataBuffer(sRingBufferFactoryUInt8.get_ringbuffer(RingBufferFactory<uint8_t>::EId::DataBuffer).get())
   , mpAudioBufferFromDecoder(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioFromDecoder).get())
   , mpAudioBufferToOutput(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioToOutput).get())
+  , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
   , mSpectrumViewer(this, ipSettings, mpSpectrumBuffer, mpIqBuffer, mpCarrBuffer, mpResponseBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
   , mDxDisplay(ipSettings)
@@ -198,7 +199,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   mpSH->read_widget_geometry(SettingHelper::mainWidget, this);
 
-  mpTechDataWidget = new TechData(this, mpSH->get_settings(), &mTechDataBuffer);
+  mpTechDataWidget = new TechData(this, mpSH->get_settings(), mpTechDataBuffer);
 
   _show_epg_label(false);
 
@@ -1136,7 +1137,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
 
     if (!mpTechDataWidget->isHidden())
     {
-      mpTechDataWidget->show_sample_rate_and_audio_flags((int32_t)iAudioSampleRate, sbrUsed, psUsed);
+      mpTechDataWidget->slot_show_sample_rate_and_audio_flags((int32_t)iAudioSampleRate, sbrUsed, psUsed);
     }
   }
 
@@ -1204,8 +1205,8 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
 
     if (!mpTechDataWidget->isHidden() && !mMutingActive)
     {
-      mTechDataBuffer.put_data_into_ring_buffer(vec, iAmount);
-      mpTechDataWidget->audioDataAvailable(iAmount, iAudioSampleRate);
+      mpTechDataBuffer->put_data_into_ring_buffer(vec, iAmount);
+      mpTechDataWidget->slot_audio_data_available(iAmount, iAudioSampleRate);
     }
   }
 
@@ -1302,7 +1303,7 @@ void RadioInterface::_slot_update_time_display()
     return;
   }
 
-#if 0 && !defined(NDEBUG)
+#if 1 && !defined(NDEBUG)
   if (mResetRingBufferCnt > 5) // wait 5 seconds to start
   {
     sRingBufferFactoryUInt8.print_status(false);
@@ -1454,7 +1455,7 @@ void RadioInterface::slot_show_frame_errors(int s)
   }
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->show_frameErrors(s);
+    mpTechDataWidget->slot_show_frameErrors(s);
   }
 }
 
@@ -1468,7 +1469,7 @@ void RadioInterface::slot_show_rs_errors(int s)
   }
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->show_rsErrors(s);
+    mpTechDataWidget->slot_show_rsErrors(s);
   }
 }
 
@@ -1483,7 +1484,7 @@ void RadioInterface::slot_show_aac_errors(int s)
 
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->show_aacErrors(s);
+    mpTechDataWidget->slot_show_aacErrors(s);
   }
 }
 
@@ -1535,7 +1536,7 @@ void RadioInterface::slot_show_mot_handling(bool b)
   {
     return;
   }
-  mpTechDataWidget->show_motHandling(b);
+  mpTechDataWidget->slot_show_motHandling(b);
 }
 
 //	just switch a color, called from the dabprocessor
@@ -1755,7 +1756,7 @@ void RadioInterface::slot_show_rs_corrections(int c, int ec)
   }
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->show_rsCorrections(c, ec);
+    mpTechDataWidget->slot_show_rsCorrections(c, ec);
   }
 }
 
@@ -1959,7 +1960,7 @@ void RadioInterface::stop_audio_dumping()
   LOG("Audio dump stops", "");
   mAudioDumpState = EAudioDumpState::Stopped;
   mWavWriter.close();
-  mpTechDataWidget->audiodumpButton_text("Dump WAV", 10);
+  mpTechDataWidget->slot_audio_dump_button_text("Dump WAV", 10);
 }
 
 void RadioInterface::start_audio_dumping()
@@ -1975,7 +1976,7 @@ void RadioInterface::start_audio_dumping()
     return;
   }
   LOG("Audio dump starts ", serviceLabel->text());
-  mpTechDataWidget->audiodumpButton_text("Recording", 12);
+  mpTechDataWidget->slot_audio_dump_button_text("Recording", 12);
   mAudioDumpState = EAudioDumpState::WaitForInit;
 }
 
@@ -2004,7 +2005,7 @@ void RadioInterface::stop_frame_dumping()
   }
 
   fclose(mChannel.currentService.frameDumper);
-  mpTechDataWidget->framedumpButton_text("Dump AAC", 10);
+  mpTechDataWidget->slot_frame_dump_button_text("Dump AAC", 10);
   mChannel.currentService.frameDumper = nullptr;
 }
 
@@ -2018,7 +2019,7 @@ void RadioInterface::start_frame_dumping()
     return;
   }
 
-  mpTechDataWidget->framedumpButton_text("Recording", 12);
+  mpTechDataWidget->slot_frame_dump_button_text("Recording", 12);
 }
 
 //	called from the mp4 handler, using a signal
@@ -2368,7 +2369,7 @@ void RadioInterface::start_service(SDabService & s)
     mChannel.currentService.subChId = ad.subchId;
     if (mpDabProcessor->has_timeTable(ad.SId))
     {
-      mpTechDataWidget->show_timetableButton(true);
+      mpTechDataWidget->slot_show_timetableButton(true);
     }
 
     startAudioservice(&ad);

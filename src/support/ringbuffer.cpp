@@ -26,6 +26,7 @@ RingBufferFactory<int16_t>::RingBufferFactory()
 {
   create_ringbuffer(EId::AudioFromDecoder, "AudioFromDecoder", 4096 * 2 /*stereo*/ * 2 /*security*/, true);
   create_ringbuffer(EId::AudioToOutput,    "AudioToOutput",    AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS, true);
+  create_ringbuffer(EId::TechDataBuffer,   "TechDataBuffer",   16 * 32768, true);
 }
 
 template <>

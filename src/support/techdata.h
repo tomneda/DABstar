@@ -39,7 +39,7 @@ class TechData : public QObject, public Ui_technical_data
 {
 Q_OBJECT
 public:
-  TechData(RadioInterface *, QSettings *, RingBuffer<int16_t> * audioData);
+  TechData(RadioInterface *, QSettings *, RingBuffer<int16_t> * ipAudioBuffer);
   ~TechData() override;
 
   void show_serviceData(Audiodata *);
@@ -49,39 +49,39 @@ public:
   bool isHidden();
 
 private:
-  RadioInterface * myRadioInterface;
-  QSettings * dabSettings;
-  RingBuffer<int16_t> * audioData;
-  CustomFrame myFrame;
-  AudioDisplay * the_audioDisplay;
+  RadioInterface * const mpRadioInterface;
+  QSettings * const mpDabSettings;
+  RingBuffer<int16_t> * mpAudioBuffer;
+  CustomFrame mFrame;
+  AudioDisplay * mpAudioDisplay = nullptr;
 
 public slots:
-  void show_frameErrors(int);
-  void show_aacErrors(int);
-  void show_rsErrors(int);
-  void show_motHandling(bool);
-  void show_rsCorrections(int, int);
-  void show_timetableButton(bool);
-  void show_frameDumpButton(bool);
-  void show_serviceName(const QString &);
-  void show_serviceId(int);
-  void show_bitRate(int);
-  void show_subChId(int);
-  void show_startAddress(int);
-  void show_length(int);
-  void show_language(int);
-  void show_ASCTy(int);
-  void show_uep(int, int);
-  void show_codeRate(int, int);
-  void show_fm(int);
-  void show_sample_rate_and_audio_flags(int32_t iSampleRate, bool iSbrUsed, bool iPsUsed);
+  void slot_show_frameErrors(int);
+  void slot_show_aacErrors(int);
+  void slot_show_rsErrors(int);
+  void slot_show_motHandling(bool);
+  void slot_show_rsCorrections(int, int);
+  void slot_show_timetableButton(bool);
+  void slot_show_frameDumpButton(bool);
+  void slot_show_serviceName(const QString &);
+  void slot_show_serviceId(int);
+  void slot_show_bitRate(int);
+  void slot_show_subChId(int);
+  void slot_show_startAddress(int);
+  void slot_show_length(int);
+  void slot_show_language(int);
+  void slot_show_ASCTy(int);
+  void slot_show_uep(int, int);
+  void slot_show_codeRate(int, int);
+  void slot_show_fm(int);
+  void slot_show_sample_rate_and_audio_flags(int32_t iSampleRate, bool iSbrUsed, bool iPsUsed);
 
-  void hideMissed();
-  void showMissed(int);
-  void audioDataAvailable(int, int);
+  void slot_hide_missed();
+  void slot_show_missed(int);
+  void slot_audio_data_available(int, int);
 
-  void framedumpButton_text(const QString & s, int);
-  void audiodumpButton_text(const QString & s, int);
+  void slot_frame_dump_button_text(const QString & s, int);
+  void slot_audio_dump_button_text(const QString & s, int);
 
 signals:
   void signal_handle_timeTable();

@@ -418,7 +418,8 @@ public:
     FrameBuffer,
     DataBuffer,
     AudioFromDecoder,
-    AudioToOutput
+    AudioToOutput,
+    TechDataBuffer
   };
 
   struct SListPar

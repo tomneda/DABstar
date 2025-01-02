@@ -215,6 +215,7 @@ private:
   RingBuffer<uint8_t> * const mpDataBuffer;
   RingBuffer<int16_t> * const mpAudioBufferFromDecoder;
   RingBuffer<int16_t> * const mpAudioBufferToOutput;
+  RingBuffer<int16_t> * const mpTechDataBuffer;
   uint32_t mResetRingBufferCnt = 0;
   std::vector<float> mAudioOutBuffer;
   SpectrumViewer mSpectrumViewer;
@@ -223,7 +224,6 @@ private:
   TiiHandler mTiiHandler{};
   DxDisplay	mDxDisplay;
   OpenFileDialog mOpenFileDialog;
-  RingBuffer<int16_t> mTechDataBuffer{16 * 32768};
   HttpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;
   const QString mVersionStr{PRJ_VERS};
