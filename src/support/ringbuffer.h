@@ -145,8 +145,7 @@ OSMemoryBarrier();
 #   endif
 #endif
 
-template<class TElem>
-class RingBuffer
+class RingbufferBase
 {
 public:
   struct SFillState
@@ -156,7 +155,12 @@ public:
     uint32_t Free;
     uint32_t Total;
   };
+};
 
+template<class TElem>
+class RingBuffer : public RingbufferBase
+{
+public:
   explicit RingBuffer(const uint32_t elementCount)
   {
     bufferSize = _round_up_to_next_power_of_2(elementCount);
@@ -404,21 +408,6 @@ class RingBufferFactoryBase
 public:
   RingBufferFactoryBase() = default;
   virtual ~RingBufferFactoryBase() = default;
-protected:
-  static constexpr int32_t cBarWidth = 50;
-  mutable std::array<char, cBarWidth + 3> mProgressBarBuffer; // + [...] plus zero
-
-  const char * _show_progress_bar(float iPercentStop, float iPercentStart = -100) const;
-};
-
-
-template <typename T>
-class RingBufferFactory : public RingBufferFactoryBase
-{
-public:
-  RingBufferFactory();
-  ~RingBufferFactory() override = default;
-  void _draw_line(bool iResetMinMax) const;
 
   enum class EId
   {
@@ -432,14 +421,36 @@ public:
     AudioToOutput
   };
 
+  struct SListPar
+  {
+    uint32_t MinVal;
+    uint32_t MaxVal;
+    bool ShowStatistics;
+  };
+
+protected:
+  static constexpr int32_t cBarWidth = 50;
+  mutable std::array<char, cBarWidth + 3> mProgressBarBuffer; // + [...] plus zero
+
+  const char * _show_progress_bar(float iPercentStop, float iPercentStart = -100) const;
+  void _print_line(bool iResetMinMax) const;
+  void _calculate_ring_buffer_statistics(float & oMinPrc, float & oMaxPrc, float & ioGlobMinPrc, float & ioGlobMaxPrc, RingBufferFactoryBase::SListPar & ioPar, bool iResetMinMax, const RingbufferBase::SFillState & iFillState) const;
+};
+
+
+template <typename T>
+class RingBufferFactory : public RingBufferFactoryBase
+{
+public:
+  RingBufferFactory();
+  ~RingBufferFactory() override = default;
+
   struct SList
   {
     EId Id;
     const char * pName;
     std::shared_ptr<RingBuffer<T>> pRingBuffer;
-    mutable uint32_t MinVal;
-    mutable uint32_t MaxVal;
-    bool ShowStatistics;
+    mutable SListPar Par;
   };
 
   void create_ringbuffer(EId iId, const char * const iName, uint32_t iElementCount, bool iShowStatistics = false)
@@ -449,9 +460,9 @@ public:
     list.Id = iId;
     list.pName = iName;
     list.pRingBuffer = std::make_shared<RingBuffer<T>>(iElementCount);
-    list.MinVal = iElementCount;
-    list.MaxVal = 0;
-    list.ShowStatistics = iShowStatistics;
+    list.Par.MinVal = iElementCount;
+    list.Par.MaxVal = 0;
+    list.Par.ShowStatistics = iShowStatistics;
     mMap[iId] = list;
   }
 

@@ -1302,7 +1302,7 @@ void RadioInterface::_slot_update_time_display()
     return;
   }
 
-#if 1 && !defined(NDEBUG)
+#if 0 && !defined(NDEBUG)
   if (mResetRingBufferCnt > 5) // wait 5 seconds to start
   {
     sRingBufferFactoryUInt8.print_status(false);
