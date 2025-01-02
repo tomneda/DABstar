@@ -207,11 +207,11 @@ private:
   int32_t mMotObjectCnt = 0;
   StatusInfo mStatusInfo{};
   FILE * mDlTextFile = nullptr;
-  RingBuffer<cmplx> mSpectrumBuffer{2048};
-  RingBuffer<cmplx> mIqBuffer{2 * 1536};
-  RingBuffer<float> mCarrBuffer{2 * 1536};
+  RingBuffer<cmplx> * const mpSpectrumBuffer;
+  RingBuffer<cmplx> * const mpIqBuffer;
+  RingBuffer<float> * const mpCarrBuffer;
   RingBuffer<float> * const mpResponseBuffer;
-  RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
+  RingBuffer<uint8_t> * const mpFrameBuffer;
   RingBuffer<uint8_t> * const mpDataBuffer;
   RingBuffer<int16_t> * const mpAudioBufferFromDecoder;
   RingBuffer<int16_t> * const mpAudioBufferToOutput;

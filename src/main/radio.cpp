@@ -126,11 +126,15 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const int32_t iDataPort, QWidget * iParent)
   : QWidget(iParent)
   , Ui_DabRadio()
+  , mpSpectrumBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::SpectrumBuffer).get())
+  , mpIqBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::IqBuffer).get())
+  , mpCarrBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<float>::EId::CarrBuffer).get())
   , mpResponseBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<float>::EId::ResponseBuffer).get())
+  , mpFrameBuffer(sRingBufferFactoryUInt8.get_ringbuffer(RingBufferFactory<uint8_t>::EId::FrameBuffer).get())
   , mpDataBuffer(sRingBufferFactoryUInt8.get_ringbuffer(RingBufferFactory<uint8_t>::EId::DataBuffer).get())
   , mpAudioBufferFromDecoder(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioFromDecoder).get())
   , mpAudioBufferToOutput(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioToOutput).get())
-  , mSpectrumViewer(this, ipSettings, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, mpResponseBuffer)
+  , mSpectrumViewer(this, ipSettings, mpSpectrumBuffer, mpIqBuffer, mpCarrBuffer, mpResponseBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
   , mDxDisplay(ipSettings)
   , mOpenFileDialog(ipSettings)
@@ -145,11 +149,11 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mIsScanning.store(false);
 
   // "mProcessParams" is introduced to reduce the number of parameters for the dabProcessor
-  mProcessParams.spectrumBuffer = &mSpectrumBuffer;
-  mProcessParams.iqBuffer = &mIqBuffer;
-  mProcessParams.carrBuffer = &mCarrBuffer;
+  mProcessParams.spectrumBuffer = mpSpectrumBuffer;
+  mProcessParams.iqBuffer = mpIqBuffer;
+  mProcessParams.carrBuffer = mpCarrBuffer;
   mProcessParams.responseBuffer = mpResponseBuffer;
-  mProcessParams.frameBuffer = &mFrameBuffer;
+  mProcessParams.frameBuffer = mpFrameBuffer;
 
   mProcessParams.dabMode = mpSH->read(SettingHelper::dabMode).toInt();
   mProcessParams.threshold = mpSH->read(SettingHelper::threshold).toInt();
@@ -1298,10 +1302,10 @@ void RadioInterface::_slot_update_time_display()
     return;
   }
 
-#if 0 && !defined(NDEBUG)
+#if 1 && !defined(NDEBUG)
   if (mResetRingBufferCnt > 5) // wait 5 seconds to start
   {
-    // sRingBufferFactoryUInt8.print_status(false);
+    sRingBufferFactoryUInt8.print_status(false);
     sRingBufferFactoryInt16.print_status(false);
     sRingBufferFactoryFloat.print_status(false);
     sRingBufferFactoryCmplx.print_status(false);
@@ -1309,7 +1313,7 @@ void RadioInterface::_slot_update_time_display()
   else
   {
     // reset min/max state
-    // sRingBufferFactoryUInt8.print_status(true);
+    sRingBufferFactoryUInt8.print_status(true);
     sRingBufferFactoryInt16.print_status(true);
     sRingBufferFactoryFloat.print_status(true);
     sRingBufferFactoryCmplx.print_status(true);
@@ -2028,13 +2032,13 @@ void RadioInterface::slot_new_frame(int amount)
 
   if (mChannel.currentService.frameDumper == nullptr)
   {
-    mFrameBuffer.flush_ring_buffer();
+    mpFrameBuffer->flush_ring_buffer();
   }
   else
   {
-    while (mFrameBuffer.get_ring_buffer_read_available() >= amount)
+    while (mpFrameBuffer->get_ring_buffer_read_available() >= amount)
     {
-      mFrameBuffer.get_data_from_ring_buffer(buffer, amount);
+      mpFrameBuffer->get_data_from_ring_buffer(buffer, amount);
       if (mChannel.currentService.frameDumper != nullptr)
       {
         fwrite(buffer, amount, 1, mChannel.currentService.frameDumper);

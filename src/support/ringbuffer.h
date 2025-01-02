@@ -418,10 +418,15 @@ class RingBufferFactory : public RingBufferFactoryBase
 public:
   RingBufferFactory();
   ~RingBufferFactory() override = default;
+  void _draw_line(bool iResetMinMax) const;
 
   enum class EId
   {
+    SpectrumBuffer,
+    IqBuffer,
+    CarrBuffer,
     ResponseBuffer,
+    FrameBuffer,
     DataBuffer,
     AudioFromDecoder,
     AudioToOutput
@@ -434,9 +439,10 @@ public:
     std::shared_ptr<RingBuffer<T>> pRingBuffer;
     mutable uint32_t MinVal;
     mutable uint32_t MaxVal;
+    bool ShowStatistics;
   };
 
-  void create_ringbuffer(EId iId, const char * const iName, uint32_t iElementCount)
+  void create_ringbuffer(EId iId, const char * const iName, uint32_t iElementCount, bool iShowStatistics = false)
   {
     assert (mMap.count(iId) == 0);
     SList list;
@@ -445,6 +451,7 @@ public:
     list.pRingBuffer = std::make_shared<RingBuffer<T>>(iElementCount);
     list.MinVal = iElementCount;
     list.MaxVal = 0;
+    list.ShowStatistics = iShowStatistics;
     mMap[iId] = list;
   }
 
