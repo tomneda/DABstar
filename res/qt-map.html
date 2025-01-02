@@ -79,7 +79,7 @@
       function getIconForTransmitter(target)
       {
         var he;
-        var tii = target.mainId + ' ' + target.subId;
+        var tii = target.mainId + '-' + target.subId;
         if (target.strength > -60)
           //he = '<div style="background:rgba(255,0,1.0);color:yellow;">';
           he = '<div style="background:rgba(255,0,0,1.0);">';
@@ -115,8 +115,8 @@
         xx.innerHTML += target.name + ' (' + (target.power/ 100.0).toFixed(2) + ' kW)' + '<br>' +
                         'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
                         'Latitude ' + target.lat + '&#xb0' + ', Longitude ' + target.lon + '&#xb0' + '<br>' +
-                        'Polarization ' + target.pol + ', Direction ' + target.dir + '<br>' +
-                        'TII ' + target.mainId + ' ' + target.subId + target.nonetsi +
+                        'Polarization ' + target.pol.toUpperCase() + ', Direction ' + target.dir + '<br>' +
+                        'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
                         ', Level ' + target.strength / 10 + 'dB' + '<br>' +
                         'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br><br>';
 
@@ -144,7 +144,7 @@
                        target.name + ' (' + (target.power / 100.0).toFixed(2) + ' kW)' + '<br>' +
                        'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
                        'Latitude ' + target.lat + '&#xb0' + ', Longitude ' + target.lon + '&#xb0' + '<br>' +
-                       'TII ' + target.mainId + ' ' + target.subId + target.nonetsi +
+                       'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
                        ', Level ' + target.strength / 10 + 'dB' + '<br>' +
                        'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br></p>'
 	  }

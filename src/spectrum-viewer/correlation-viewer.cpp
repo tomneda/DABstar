@@ -90,7 +90,9 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
   constexpr float sScalerFltAlpha = (float)0.1;
   constexpr float scalerFltAlpha = sScalerFltAlpha / (float)cPlotLength;
 
-  mpResponseBuffer->get_data_from_ring_buffer(data, cPlotLength);
+  const int32_t numRead = mpResponseBuffer->get_data_from_ring_buffer(data, cPlotLength);
+  (void)numRead;
+  assert(numRead == cPlotLength);
 
   std::array<float, cPlotLength> X_axis;
   std::array<float, cPlotLength> Y_values;
@@ -137,7 +139,7 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
   {
     mQwtPlotMarkerVec[i] = new QwtPlotMarker();
     QwtPlotMarker * const p = mQwtPlotMarkerVec[i];
-    QString tii = QString::number(iTr[i].mainId) + "," + QString::number(iTr[i].subId);
+    QString tii = QString::number(iTr[i].mainId) + "-" + QString::number(iTr[i].subId);
     p->setLabel(tii);
     p->setLabelAlignment(Qt::AlignLeft | Qt::AlignTop);
     p->setLabelOrientation(Qt::Vertical);
