@@ -153,7 +153,6 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
 
   if (myFrame.isHidden())
   {
-    mpSpectrumBuffer->flush_ring_buffer();
     return;
   }
 
