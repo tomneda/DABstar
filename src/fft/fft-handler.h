@@ -52,6 +52,8 @@ public:
   void fft(std::vector<cmplx> & ioV) const;
   void fft(cmplx * const ioV) const;
 
+  void fft(float * const ioV) const;
+
 private:
   int size;
   bool dir;

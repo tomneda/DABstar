@@ -144,3 +144,36 @@ void FftHandler::fft(cmplx * const ioV) const
 #endif
 }
 
+void FftHandler::fft(float * const ioV) const
+{
+#ifdef  __KISS_FFT__
+  // for (int i = 0; i < size; i++)  // TODO:
+  // {
+  //   fftVector_in[i].r = real(ioV[i]);
+  //   fftVector_in[i].i = imag(ioV[i]);
+  // }
+  //
+  // kiss_fft(plan, fftVector_in, fftVector_out);
+  //
+  // for (int i = 0; i < size; i++)
+  // {
+  //   ioV[i] = cmplx(fftVector_out[i].r, fftVector_out[i].i);
+  // }
+#elif  __FFTW3__
+  for (int i = 0; i < size; i++)
+  {
+    fftVector[i] = ioV[i]; // copy only too real part
+  }
+
+  fftwf_execute(plan);
+
+  for (int i = 0; i < size; i++)
+  {
+    ioV[i] = std::abs(fftVector[i]);
+  }
+#else
+  // Fft_transform(ioV, size, dir); // TODO:
+#endif
+
+}
+

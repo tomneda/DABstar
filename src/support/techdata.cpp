@@ -292,14 +292,14 @@ void TechData::show_fm(int freq)
   }
 }
 
-void TechData::audioDataAvailable(int amount, int rate)
+void TechData::audioDataAvailable(int iNumSamples, int rate)
 {
-  auto * const buffer = make_vla(int16_t, amount);
+  auto * const buffer = make_vla(int16_t, iNumSamples);
 
-  audioData->get_data_from_ring_buffer(buffer, amount);
+  audioData->get_data_from_ring_buffer(buffer, iNumSamples);
   if (!myFrame.isHidden())
   {
-    the_audioDisplay->create_spectrum(buffer, amount, rate);
+    the_audioDisplay->create_spectrum(buffer, iNumSamples, rate);
   }
 }
 

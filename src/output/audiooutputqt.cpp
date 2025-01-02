@@ -207,8 +207,8 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
       else // some error -> doing stop
       {
         qCWarning(sLogAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart, error code:" << mpAudioSink->error();
-        // _do_restart(mpCurrentFifo);
-        _do_stop();
+        _do_restart(mpCurrentFifo);
+        // _do_stop();
         emit signal_audio_output_error();
       }
     }

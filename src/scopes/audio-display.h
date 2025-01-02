@@ -35,22 +35,13 @@
 #include  "dab-constants.h"
 #include  <array>
 #include  <QSettings>
-#include  <QFrame>
 #include  <QObject>
-#include  <qwt.h>
 #include  <qwt_plot.h>
 #include  <qwt_plot_marker.h>
 #include  <qwt_plot_grid.h>
 #include  <qwt_plot_curve.h>
-#include  <qwt_plot_marker.h>
 #include  <qwt_color_map.h>
-#include  <qwt_plot_zoomer.h>
-#include  <qwt_plot_textlabel.h>
-#include  <qwt_plot_panner.h>
-#include  <qwt_plot_layout.h>
-#include  <qwt_picker_machine.h>
 #include  <qwt_scale_widget.h>
-#include  <QBrush>
 #include  "fft-handler.h"
 
 class RadioInterface;
@@ -60,33 +51,30 @@ class AudioDisplay : public QObject
 Q_OBJECT
 public:
   AudioDisplay(RadioInterface *, QwtPlot *, QSettings *);
-  ~AudioDisplay() override;
+  ~AudioDisplay() override = default;
 
-  void create_spectrum(int16_t *, int, int);
+  void create_spectrum(const int16_t *, int, int);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "audioDisplay";
-  static constexpr int32_t spectrumSize = 2048;
-  static constexpr int32_t normalizer = 16 * 2048;
+  static constexpr int32_t cSpectrumSize = 512;
+  static constexpr int32_t cNormalizer = 32378;
+  static constexpr int32_t cDisplaySize = cSpectrumSize / 2;  // we use only the right half of the FFT
 
-  RadioInterface * myRadioInterface;
-  QSettings * dabSettings;
-  QwtPlot * plotGrid;
-  QwtPlotCurve spectrumCurve{""};
-  QwtPlotGrid grid;
-  int32_t displaySize = 512;
+  RadioInterface * const mpRadioInterface;
+  QSettings * const mpDabSettings;
+  QwtPlot * const pPlotGrid;
+  QwtPlotCurve mSpectrumCurve{""};
+  QwtPlotGrid mGrid;
 
-  std::array<double, 512> displayBuffer;
-  std::array<float, 4 * 512> Window;
-  cmplx * spectrumBuffer;
-  FftHandler fft{ 2048, false };
-  QwtPlotPicker * lm_picker;
-  QColor gridColor;
-  QColor curveColor;
-  bool brush;
-
-  void _view_spectrum(double *, double *, double, int);
-  float _get_db(float);
+  std::array<float, cDisplaySize>  mXDispBuffer{};
+  std::array<float, cDisplaySize>  mYDispBuffer{};
+  std::array<float, cSpectrumSize> mWindow;
+  std::array<float, cSpectrumSize> mSpectrumBuffer;
+  FftHandler mFft{cSpectrumSize, false};
+  QColor GridColor;
+  QColor mCurveColor;
+  int32_t mSampleRateLast = 0;
 
 private slots:
   void _slot_rightMouseClick(const QPointF &);

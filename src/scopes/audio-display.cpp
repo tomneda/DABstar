@@ -33,35 +33,31 @@
 #include  "color-selector.h"
 #include  <QColor>
 #include  <QPen>
+#include  <qwt_plot_picker.h>
+#include  <qwt_picker_machine.h>
 
 AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * dabSettings) :
-  myRadioInterface(mr),
-  dabSettings(dabSettings),
-  plotGrid(plotGrid)
+  mpRadioInterface(mr),
+  mpDabSettings(dabSettings),
+  pPlotGrid(plotGrid)
 {
-  std::fill(displayBuffer.begin(), displayBuffer.end(), 0);
-
-  spectrumBuffer = new cmplx[spectrumSize];
-
   dabSettings->beginGroup(SETTING_GROUP_NAME);
   QString colorString = dabSettings->value("gridColor", "#5e5c64").toString();
-  this->gridColor = QColor(colorString);
-  colorString = dabSettings->value("curveColor", "#f9f06b").toString();
-  this->curveColor = QColor(colorString);
-  brush = dabSettings->value("brush", 1).toInt() == 1;
-  displaySize = dabSettings->value("displaySize", displaySize).toInt();
+  this->GridColor = QColor(colorString);
+  colorString = dabSettings->value("curveColor", "#62a0ea").toString();
+  this->mCurveColor = QColor(colorString);
   dabSettings->endGroup();
 
-  grid.setMajorPen(QPen(gridColor, 0, Qt::DotLine));
-  grid.enableXMin(true);
-  grid.enableYMin(true);
-  grid.setMinorPen(QPen(gridColor, 0, Qt::DotLine));
-  grid.attach(plotGrid);
-  lm_picker = new QwtPlotPicker(plotGrid->canvas());
-  QwtPickerMachine * lpickerMachine = new QwtPickerClickPointMachine();
+  mGrid.setMajorPen(QPen(GridColor, 0, Qt::DashLine));
+  mGrid.setMinorPen(QPen(GridColor, 0, Qt::NoPen));
+  mGrid.enableXMin(false);
+  mGrid.enableYMin(false);
+  mGrid.attach(plotGrid);
+  QwtPlotPicker * pLmPicker = new QwtPlotPicker(plotGrid->canvas());
+  QwtPickerMachine * pLPickerMachine = new QwtPickerClickPointMachine();
 
-  lm_picker->setStateMachine(lpickerMachine);
-  lm_picker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
+  pLmPicker->setStateMachine(pLPickerMachine);
+  pLmPicker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
 
 #ifdef _WIN32
   // It is strange, the non-macro based variant seems not working on windows, so use the macro-base version here.
@@ -69,147 +65,97 @@ AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * 
 #else
   // The non macro-based variant is type-secure so it should be preferred.
   // Clang-glazy mentioned that QwtPlotPicker::selected would be no signal, but it is?!
-  connect(lm_picker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &AudioDisplay::_slot_rightMouseClick);
+  connect(pLmPicker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &AudioDisplay::_slot_rightMouseClick);
 #endif
 
-  spectrumCurve.setPen(QPen(curveColor, 2.0));
-  spectrumCurve.setOrientation(Qt::Horizontal);
-  spectrumCurve.setBaseline(_get_db(0));
-  if (brush)
-  {
-    QBrush ourBrush(curveColor);
-    ourBrush.setStyle(Qt::Dense3Pattern);
-    spectrumCurve.setBrush(ourBrush);
-  }
-  spectrumCurve.attach(plotGrid);
+  mSpectrumCurve.setPen(QPen(mCurveColor, 2.0));
+  mSpectrumCurve.setOrientation(Qt::Horizontal);
+  mSpectrumCurve.attach(plotGrid);
 
-  create_blackman_window(Window.data(), spectrumSize);
+  pPlotGrid->enableAxis(QwtPlot::xBottom);
+  pPlotGrid->setAxisScale(QwtPlot::yLeft, -90, 0);
+
+  create_blackman_window(mWindow.data(), cSpectrumSize);
 }
 
-AudioDisplay::~AudioDisplay()
+void AudioDisplay::create_spectrum(const int16_t * const ipSampleData, const int iNumSamples, int iSampleRate)
 {
-  delete spectrumBuffer;
-}
+  constexpr int16_t averageCount = 10;
 
+  // iNumSamples is number of single samples (so it is halved for stereo)
+  assert(iNumSamples % 2 == 0); // check of even number of samples
+  int32_t numStereoSamples = iNumSamples / 2;
 
-void AudioDisplay::create_spectrum(int16_t * data, int amount, int sampleRate)
-{
-  auto * const X_axis = make_vla(double, displaySize);
-  auto * const Y_values = make_vla(double, displaySize);
-  constexpr int16_t averageCount = 3;
-
-  if (amount > spectrumSize)
+  if (numStereoSamples > cSpectrumSize)
   {
-    amount = spectrumSize;
-  }
-  for (int32_t i = 0; i < amount / 2; i++)
-  {
-    spectrumBuffer[i] = cmplx(data[2 * i] / 8192.0f, data[2 * i + 1] / 8192.0f);
+    numStereoSamples = cSpectrumSize;
   }
 
-  for (int32_t i = amount / 2; i < spectrumSize; i++)
+  for (int32_t i = 0; i < numStereoSamples; i++)
   {
-    spectrumBuffer[i] = cmplx(0, 0);
-  }
-  //	and window it
-
-  for (int32_t i = 0; i < spectrumSize; i++)
-  {
-    spectrumBuffer[i] = spectrumBuffer[i] * Window[i];
+    // mSpectrumBuffer[i] = std::cos(F_2_M_PI * 12000.0f * (float)i / (float)iSampleRate);
+    mSpectrumBuffer[i] = ((float)ipSampleData[2 * i + 0] + (float)ipSampleData[2 * i + 1]) / (2.0f * (float)INT16_MAX);
+    assert(mSpectrumBuffer[i] <= 1.0f);
   }
 
-  fft.fft(spectrumBuffer);
+  // clear not used FFT input samples
+  for (int32_t i = numStereoSamples; i < cSpectrumSize; i++)
+  {
+    mSpectrumBuffer[i] = 0;
+  }
+
+  // and window it
+  for (int32_t i = 0; i < cSpectrumSize; i++)
+  {
+    mSpectrumBuffer[i] *= mWindow[i];
+  }
+
+  // real value FFT, only the first half of the given back vector is useful
+  mFft.fft(mSpectrumBuffer.data());
 
   // first X axis labels
-  for (int32_t i = 0; i < displaySize; i++)
+  if (iSampleRate != mSampleRateLast)
   {
-    X_axis[i] = (double)((i) * (double)sampleRate / 2) / displaySize / 1000;
+    mSampleRateLast = iSampleRate;
+    for (int32_t i = 0; i < cDisplaySize; i++)
+    {
+      mXDispBuffer[i] = (float)i * (float)iSampleRate / (float)cSpectrumSize / 1000.0f; // we use only the half spectrum
+    }
+    pPlotGrid->setAxisScale(QwtPlot::xBottom, (double)mXDispBuffer[0], mXDispBuffer[cDisplaySize - 1]);
   }
+
 
   // and map the spectrumSize values onto displaySize elements
-  for (int32_t i = 0; i < displaySize; i++)
+  for (int32_t i = 0; i < cDisplaySize; i++)
   {
-    double f = 0;
-
-    for (int32_t j = 0; j < spectrumSize / 2 / displaySize; j++)
-    {
-      f += abs(spectrumBuffer[i * spectrumSize / 2 / displaySize + j]);
-    }
-
-    Y_values[i] = f / (spectrumSize / 2 / displaySize);
-  }
-  //
-  //	average the image a little.
-  for (int32_t i = 0; i < displaySize; i++)
-  {
-    if (std::isnan(Y_values[i]) || std::isinf(Y_values[i]))
-    {
-      continue;
-    }
-    displayBuffer[i] = (double)(averageCount - 1) / averageCount * displayBuffer[i] + 1.0f / averageCount * Y_values[i];
+    constexpr float fftOffset = 20.0f * std::log10(cSpectrumSize / 4);
+    const float yVal = log10_times_20(mSpectrumBuffer[i]) - fftOffset;
+    mYDispBuffer[i] = yVal > mYDispBuffer[i] // show peak immediately
+                    ? yVal
+                    : (float)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
   }
 
-  memcpy(Y_values, displayBuffer.data(), displaySize * sizeof(double));
-  _view_spectrum(X_axis, Y_values, 100, 0);
-}
-
-void AudioDisplay::_view_spectrum(double * X_axis, double * Y1_value, double amp, int32_t marker)
-{
-  float amp1 = amp / 100;
-
-  amp = amp / 50.0 * (-_get_db(0));
-  plotGrid->setAxisScale(QwtPlot::xBottom, (double)X_axis[0], X_axis[displaySize - 1]);
-  plotGrid->enableAxis(QwtPlot::xBottom);
-  plotGrid->setAxisScale(QwtPlot::yLeft, _get_db(0), _get_db(0) + amp1 * 40);
-
-  for (int32_t i = 0; i < displaySize; i++)
-  {
-    Y1_value[i] = _get_db(amp1 * Y1_value[i]);
-  }
-
-  spectrumCurve.setBaseline(_get_db(0));
-  Y1_value[0] = _get_db(0);
-  Y1_value[displaySize - 1] = _get_db(0);
-
-  spectrumCurve.setSamples(X_axis, Y1_value, displaySize);
-  plotGrid->replot();
-}
-
-float AudioDisplay::_get_db(float x)
-{
-  return 20 * log10((x + 1) / (float)(normalizer));
+  mSpectrumCurve.setSamples(mXDispBuffer.data(), mYDispBuffer.data(), cDisplaySize);
+  pPlotGrid->replot();
 }
 
 void AudioDisplay::_slot_rightMouseClick(const QPointF & point)
 {
   (void)point;
 
-  //  const QString displayColor = ColorSelector::show_dialog(ColorSelector::DISPCOLOR);
-  //  if (displayColor.isEmpty()) return;
-  if (!ColorSelector::show_dialog(gridColor, ColorSelector::GRIDCOLOR))
-  {
-    return;
-  }
-  if (!ColorSelector::show_dialog(curveColor, ColorSelector::CURVECOLOR))
+  if (!ColorSelector::show_dialog(GridColor, ColorSelector::GRIDCOLOR))
   {
     return;
   }
 
-  dabSettings->beginGroup(SETTING_GROUP_NAME);
-  dabSettings->setValue("gridColor", gridColor.name());
-  dabSettings->setValue("curveColor", curveColor.name());
-  dabSettings->endGroup();
-  spectrumCurve.setPen(QPen(this->curveColor, 2.0));
-
-  if (brush)
+  if (!ColorSelector::show_dialog(mCurveColor, ColorSelector::CURVECOLOR))
   {
-    QBrush ourBrush(this->curveColor);
-    ourBrush.setStyle(Qt::Dense3Pattern);
-    spectrumCurve.setBrush(ourBrush);
+    return;
   }
 
-  grid.setMajorPen(QPen(this->gridColor, 0, Qt::DotLine));
-  grid.enableXMin(true);
-  grid.enableYMin(true);
-  grid.setMinorPen(QPen(this->gridColor, 0, Qt::DotLine));
+  mpDabSettings->beginGroup(SETTING_GROUP_NAME);
+  mpDabSettings->setValue("gridColor", GridColor.name());
+  mpDabSettings->setValue("curveColor", mCurveColor.name());
+  mpDabSettings->endGroup();
+  mSpectrumCurve.setPen(QPen(this->mCurveColor, 2.0));
 }
