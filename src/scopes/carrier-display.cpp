@@ -250,11 +250,22 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.MarkerYValueStep = 1;
     break;
 
-  case ECarrierPlotType::NULL_TII:
+  case ECarrierPlotType::NULL_TII_LIN:
     cp.ToolTip = "Shows the averaged null symbol level with TII carriers in percentage of the maximum peak.";
     cp.Style = SCustPlot::EStyle::STICKS;
-    cp.Name = "Null Sym. TII";
+    cp.Name = "Null Sym. TII (%)";
     cp.YTopValue = 100.0;
+    cp.YBottomValue = 0.0;
+    cp.YValueElementNo = 6;
+    cp.MarkerYValueStep = 1;
+    cp.DrawTiiSegments = true;
+    break;
+
+  case ECarrierPlotType::NULL_TII_LOG:
+    cp.ToolTip = "Shows the averaged null symbol level with TII carriers in dB above noise level.";
+    cp.Style = SCustPlot::EStyle::STICKS;
+    cp.Name = "Null Sym. TII (dB)";
+    cp.YTopValue = 50.0;
     cp.YBottomValue = 0.0;
     cp.YValueElementNo = 6;
     cp.MarkerYValueStep = 1;
@@ -303,7 +314,8 @@ QStringList CarrierDisp::get_plot_type_names()
   sl << _get_plot_type_data(ECarrierPlotType::FOUR_QUAD_PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::REL_POWER).Name;
   sl << _get_plot_type_data(ECarrierPlotType::SNR).Name;
-  sl << _get_plot_type_data(ECarrierPlotType::NULL_TII).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::NULL_TII_LIN).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::NULL_TII_LOG).Name;
   sl << _get_plot_type_data(ECarrierPlotType::NULL_NO_TII).Name;
   sl << _get_plot_type_data(ECarrierPlotType::NULL_OVR_POW).Name;
 

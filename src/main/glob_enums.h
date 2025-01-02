@@ -39,7 +39,8 @@ enum class ECarrierPlotType
   FOUR_QUAD_PHASE,
   REL_POWER,
   SNR,
-  NULL_TII,
+  NULL_TII_LIN,
+  NULL_TII_LOG,
   NULL_NO_TII,
   NULL_OVR_POW,
 
