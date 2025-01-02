@@ -126,7 +126,11 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const int32_t iDataPort, QWidget * iParent)
   : QWidget(iParent)
   , Ui_DabRadio()
-  , mSpectrumViewer(this, ipSettings, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, &mResponseBuffer)
+  , mpResponseBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<float>::EId::ResponseBuffer).get())
+  , mpDataBuffer(sRingBufferFactoryUInt8.get_ringbuffer(RingBufferFactory<uint8_t>::EId::DataBuffer).get())
+  , mpAudioBufferFromDecoder(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioFromDecoder).get())
+  , mpAudioBufferToOutput(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioToOutput).get())
+  , mSpectrumViewer(this, ipSettings, &mSpectrumBuffer, &mIqBuffer, &mCarrBuffer, mpResponseBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
   , mDxDisplay(ipSettings)
   , mOpenFileDialog(ipSettings)
@@ -134,9 +138,6 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , mpSH(&SettingHelper::get_instance())
   , mDeviceSelector(ipSettings)
 {
-  mpAudioBufferFromDecoder = sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioFromDecoder).get();
-  mpAudioBufferToOutput = sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioToOutput).get();
-
   int32_t k;
   QString h;
 
@@ -147,7 +148,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mProcessParams.spectrumBuffer = &mSpectrumBuffer;
   mProcessParams.iqBuffer = &mIqBuffer;
   mProcessParams.carrBuffer = &mCarrBuffer;
-  mProcessParams.responseBuffer = &mResponseBuffer;
+  mProcessParams.responseBuffer = mpResponseBuffer;
   mProcessParams.frameBuffer = &mFrameBuffer;
 
   mProcessParams.dabMode = mpSH->read(SettingHelper::dabMode).toInt();
@@ -951,13 +952,13 @@ void RadioInterface::slot_send_datagram(int length)
 {
   auto * const localBuffer = make_vla(uint8_t, length);
 
-  if (mDataBuffer.get_ring_buffer_read_available() < length)
+  if (mpDataBuffer->get_ring_buffer_read_available() < length)
   {
     fprintf(stderr, "Something went wrong\n");
     return;
   }
 
-  mDataBuffer.get_data_from_ring_buffer(localBuffer, length);
+  mpDataBuffer->get_data_from_ring_buffer(localBuffer, length);
 }
 
 //
@@ -973,7 +974,7 @@ void RadioInterface::slot_handle_tdc_data(int frametype, int length)
   {
     return;
   }
-  if (mDataBuffer.get_ring_buffer_read_available() < length)
+  if (mpDataBuffer->get_ring_buffer_read_available() < length)
   {
     fprintf(stderr, "Something went wrong\n");
     return;
@@ -1093,7 +1094,7 @@ void RadioInterface::slot_change_in_configuration()
       {
         Packetdata pd;
         mpDabProcessor->dataforPacketService(ss, &pd, 0);
-        mpDabProcessor->set_data_channel(&pd, &mDataBuffer, BACK_GROUND);
+        mpDabProcessor->set_data_channel(&pd, mpDataBuffer, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = pd.subchId;
       }
       // TODO: select the background service in service list?
@@ -1300,11 +1301,19 @@ void RadioInterface::_slot_update_time_display()
 #if 0 && !defined(NDEBUG)
   if (mResetRingBufferCnt > 5) // wait 5 seconds to start
   {
+    // sRingBufferFactoryUInt8.print_status(false);
     sRingBufferFactoryInt16.print_status(false);
+    sRingBufferFactoryFloat.print_status(false);
+    sRingBufferFactoryCmplx.print_status(false);
   }
   else
   {
-    sRingBufferFactoryInt16.print_status(true); // reset min/max state
+    // reset min/max state
+    // sRingBufferFactoryUInt8.print_status(true);
+    sRingBufferFactoryInt16.print_status(true);
+    sRingBufferFactoryFloat.print_status(true);
+    sRingBufferFactoryCmplx.print_status(true);
+
     ++mResetRingBufferCnt;
   }
 #endif
@@ -2404,7 +2413,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
     mpDabProcessor->dataforPacketService(ad->serviceName, &pd, i);
     if (pd.defined)
     {
-      mpDabProcessor->set_data_channel(&pd, &mDataBuffer, FORE_GROUND);
+      mpDabProcessor->set_data_channel(&pd, mpDataBuffer, FORE_GROUND);
       fprintf(stdout, "adding %s (%d) as subservice\n", pd.serviceName.toUtf8().data(), pd.subchId);
       break;
     }
@@ -2429,7 +2438,7 @@ void RadioInterface::startPacketservice(const QString & s)
     return;
   }
 
-  if (!mpDabProcessor->set_data_channel(&pd, &mDataBuffer, FORE_GROUND))
+  if (!mpDabProcessor->set_data_channel(&pd, mpDataBuffer, FORE_GROUND))
   {
     QMessageBox::warning(this, tr("sdr"), tr("could not start this service\n"));
     return;
@@ -3009,7 +3018,7 @@ void RadioInterface::slot_epg_timer_timeout()
         LOG("hidden service started ", serv.name);
         _show_epg_label(true);
         fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
-        mpDabProcessor->set_data_channel(&pd, &mDataBuffer, BACK_GROUND);
+        mpDabProcessor->set_data_channel(&pd, mpDataBuffer, BACK_GROUND);
         SDabService s;
         s.channel = pd.channel;
         s.serviceName = pd.serviceName;

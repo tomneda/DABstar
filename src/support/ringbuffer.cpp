@@ -15,10 +15,28 @@
 #include "audiofifo.h"
 
 template <>
+RingBufferFactory<uint8_t>::RingBufferFactory()
+{
+  create_ringbuffer(EId::DataBuffer, "DataBuffer", 32768);
+}
+
+template <>
 RingBufferFactory<int16_t>::RingBufferFactory()
 {
   create_ringbuffer(EId::AudioFromDecoder, "AudioFromDecoder", 4096 * 2 /*stereo*/ * 2 /*security*/);
   create_ringbuffer(EId::AudioToOutput,    "AudioToOutput",    AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS);
+}
+
+template <>
+RingBufferFactory<float>::RingBufferFactory()
+{
+  create_ringbuffer(EId::ResponseBuffer, "ResponseBuffer", 2*2048 /*32768*/);
+}
+
+template <>
+RingBufferFactory<cmplx>::RingBufferFactory()
+{
+  // create_ringbuffer(EId::DataBuffer, "", );
 }
 
 const char * RingBufferFactoryBase::_show_progress_bar(float iPercentStop, float iPercentStart /*= -100*/) const
@@ -35,6 +53,39 @@ const char * RingBufferFactoryBase::_show_progress_bar(float iPercentStop, float
   }
   *p++ = ']';
   return mProgressBarBuffer.data();
+}
+
+template <>
+void RingBufferFactory<uint8_t>::print_status(bool iResetMinMax /*= false*/) const
+{
+  for (int32_t i = 0; i < 170; ++i) printf(iResetMinMax ? "=" : "-");
+  printf("\n");
+
+  float globMinPrc = std::numeric_limits<float>::max();
+  float globMaxPrc = 0.0f;
+
+  for (const auto & [_, list] : mMap)
+  {
+    const RingBuffer<uint8_t>::SFillState fs = list.pRingBuffer->get_fill_state();
+
+    if (iResetMinMax)
+    {
+      list.MinVal = fs.Total;
+      list.MaxVal = 0;
+    }
+
+    if (list.MinVal > fs.Filled) list.MinVal = fs.Filled;
+    if (list.MaxVal < fs.Filled) list.MaxVal = fs.Filled;
+    const float minPrc = 100.0f * (float)list.MinVal / (float)fs.Total;
+    const float maxPrc = 100.0f * (float)list.MaxVal / (float)fs.Total;
+    if (globMinPrc > minPrc) globMinPrc = minPrc;
+    if (globMaxPrc < maxPrc) globMaxPrc = maxPrc;
+    const char * const progBar = _show_progress_bar(fs.Percent);
+    printf("RingbufferUInt8 Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
+      (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+  }
+  const char * const globProgBar = _show_progress_bar(globMaxPrc, globMinPrc);
+  printf("RingbufferUInt8         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
 }
 
 template <>
@@ -70,5 +121,74 @@ void RingBufferFactory<int16_t>::print_status(bool iResetMinMax /*= false*/) con
   printf("RingbufferInt16         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
 }
 
+template <>
+void RingBufferFactory<float>::print_status(bool iResetMinMax /*= false*/) const
+{
+  for (int32_t i = 0; i < 170; ++i) printf(iResetMinMax ? "=" : "-");
+  printf("\n");
+
+  float globMinPrc = std::numeric_limits<float>::max();
+  float globMaxPrc = 0.0f;
+
+  for (const auto & [_, list] : mMap)
+  {
+    const RingBuffer<float>::SFillState fs = list.pRingBuffer->get_fill_state();
+
+    if (iResetMinMax)
+    {
+      list.MinVal = fs.Total;
+      list.MaxVal = 0;
+    }
+
+    if (list.MinVal > fs.Filled) list.MinVal = fs.Filled;
+    if (list.MaxVal < fs.Filled) list.MaxVal = fs.Filled;
+    const float minPrc = 100.0f * (float)list.MinVal / (float)fs.Total;
+    const float maxPrc = 100.0f * (float)list.MaxVal / (float)fs.Total;
+    if (globMinPrc > minPrc) globMinPrc = minPrc;
+    if (globMaxPrc < maxPrc) globMaxPrc = maxPrc;
+    const char * const progBar = _show_progress_bar(fs.Percent);
+    printf("RingbufferFloat Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
+      (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+  }
+  const char * const globProgBar = _show_progress_bar(globMaxPrc, globMinPrc);
+  printf("RingbufferFloat         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
+}
+
+template <>
+void RingBufferFactory<cmplx>::print_status(bool iResetMinMax /*= false*/) const
+{
+  for (int32_t i = 0; i < 170; ++i) printf(iResetMinMax ? "=" : "-");
+  printf("\n");
+
+  float globMinPrc = std::numeric_limits<float>::max();
+  float globMaxPrc = 0.0f;
+
+  for (const auto & [_, list] : mMap)
+  {
+    const RingBuffer<cmplx>::SFillState fs = list.pRingBuffer->get_fill_state();
+
+    if (iResetMinMax)
+    {
+      list.MinVal = fs.Total;
+      list.MaxVal = 0;
+    }
+
+    if (list.MinVal > fs.Filled) list.MinVal = fs.Filled;
+    if (list.MaxVal < fs.Filled) list.MaxVal = fs.Filled;
+    const float minPrc = 100.0f * (float)list.MinVal / (float)fs.Total;
+    const float maxPrc = 100.0f * (float)list.MaxVal / (float)fs.Total;
+    if (globMinPrc > minPrc) globMinPrc = minPrc;
+    if (globMaxPrc < maxPrc) globMaxPrc = maxPrc;
+    const char * const progBar = _show_progress_bar(fs.Percent);
+    printf("RingbufferCmplx Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
+      (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+  }
+  const char * const globProgBar = _show_progress_bar(globMaxPrc, globMinPrc);
+  printf("RingbufferCmplx         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
+}
+
 // instantiation concretion
+RingBufferFactory<uint8_t> sRingBufferFactoryUInt8;
 RingBufferFactory<int16_t> sRingBufferFactoryInt16;
+RingBufferFactory<float>   sRingBufferFactoryFloat;
+RingBufferFactory<cmplx>   sRingBufferFactoryCmplx;

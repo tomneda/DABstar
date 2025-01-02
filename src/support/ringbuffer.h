@@ -76,6 +76,7 @@
 #ifndef RINGBUFFER_H
 #define RINGBUFFER_H
 
+#include "glob_defs.h"
 #include <array>
 #include <cstdint>
 #include <atomic>
@@ -420,6 +421,8 @@ public:
 
   enum class EId
   {
+    ResponseBuffer,
+    DataBuffer,
     AudioFromDecoder,
     AudioToOutput
   };
@@ -458,7 +461,10 @@ private:
   std::map<EId, SList> mMap;
 };
 
+extern RingBufferFactory<uint8_t> sRingBufferFactoryUInt8;
 extern RingBufferFactory<int16_t> sRingBufferFactoryInt16;
+extern RingBufferFactory<float>   sRingBufferFactoryFloat;
+extern RingBufferFactory<cmplx>   sRingBufferFactoryCmplx;
 
 #endif
 

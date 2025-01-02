@@ -210,11 +210,11 @@ private:
   RingBuffer<cmplx> mSpectrumBuffer{2048};
   RingBuffer<cmplx> mIqBuffer{2 * 1536};
   RingBuffer<float> mCarrBuffer{2 * 1536};
-  RingBuffer<float> mResponseBuffer{32768};
+  RingBuffer<float> * const mpResponseBuffer;
   RingBuffer<uint8_t> mFrameBuffer{2 * 32768};
-  RingBuffer<uint8_t> mDataBuffer{32768};
-  RingBuffer<int16_t> * mpAudioBufferFromDecoder = nullptr;
-  RingBuffer<int16_t> * mpAudioBufferToOutput = nullptr;
+  RingBuffer<uint8_t> * const mpDataBuffer;
+  RingBuffer<int16_t> * const mpAudioBufferFromDecoder;
+  RingBuffer<int16_t> * const mpAudioBufferToOutput;
   uint32_t mResetRingBufferCnt = 0;
   std::vector<float> mAudioOutBuffer;
   SpectrumViewer mSpectrumViewer;
