@@ -36,10 +36,10 @@
 #include  <qwt_plot_picker.h>
 #include  <qwt_picker_machine.h>
 
-AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * dabSettings) :
-  mpRadioInterface(mr),
-  mpDabSettings(dabSettings),
-  pPlotGrid(plotGrid)
+AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * dabSettings)
+  : mpRadioInterface(mr)
+  , mpDabSettings(dabSettings)
+  , pPlotGrid(plotGrid)
 {
   dabSettings->beginGroup(SETTING_GROUP_NAME);
   QString colorString = dabSettings->value("gridColor", "#5e5c64").toString();
@@ -73,14 +73,14 @@ AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * 
   mSpectrumCurve.attach(plotGrid);
 
   pPlotGrid->enableAxis(QwtPlot::xBottom);
-  pPlotGrid->setAxisScale(QwtPlot::yLeft, -90, 0);
+  pPlotGrid->setAxisScale(QwtPlot::yLeft, -120, -20);
 
   create_blackman_window(mWindow.data(), cSpectrumSize);
 }
 
 void AudioDisplay::create_spectrum(const int16_t * const ipSampleData, const int iNumSamples, int iSampleRate)
 {
-  constexpr int16_t averageCount = 10;
+  constexpr int16_t averageCount = 3;
 
   // iNumSamples is number of single samples (so it is halved for stereo)
   assert(iNumSamples % 2 == 0); // check of even number of samples
@@ -130,9 +130,7 @@ void AudioDisplay::create_spectrum(const int16_t * const ipSampleData, const int
   {
     constexpr float fftOffset = 20.0f * std::log10(cSpectrumSize / 4);
     const float yVal = log10_times_20(mSpectrumBuffer[i]) - fftOffset;
-    mYDispBuffer[i] = yVal > mYDispBuffer[i] // show peak immediately
-                    ? yVal
-                    : (float)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
+    mYDispBuffer[i] = (float)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
   }
 
   mSpectrumCurve.setSamples(mXDispBuffer.data(), mYDispBuffer.data(), cDisplaySize);

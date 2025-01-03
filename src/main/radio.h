@@ -171,6 +171,8 @@ public:
   RadioInterface(QSettings *, const QString &, const QString &, int32_t iDataPort, QWidget * iParent);
   ~RadioInterface() override;
 
+  [[nodiscard]] TechData * get_techdata_widget() const { return mpTechDataWidget; }
+
   enum EAudioFlags : uint32_t
   {
     AFL_NONE     = 0x0,

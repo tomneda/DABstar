@@ -1202,12 +1202,6 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
       streamerOut->audioOut(vec, amount, rate);
     }
 #endif
-
-    if (!mpTechDataWidget->isHidden() && !mMutingActive)
-    {
-      mpTechDataBuffer->put_data_into_ring_buffer(vec, iAmount);
-      mpTechDataWidget->slot_audio_data_available(iAmount, iAudioSampleRate);
-    }
   }
 
   emit signal_audio_buffer_filled_state((int32_t)mAudioBufferFillFiltered);
@@ -1303,7 +1297,7 @@ void RadioInterface::_slot_update_time_display()
     return;
   }
 
-#if 1 && !defined(NDEBUG)
+#if 0 && !defined(NDEBUG)
   if (mResetRingBufferCnt > 5) // wait 5 seconds to start
   {
     sRingBufferFactoryUInt8.print_status(false);

@@ -128,6 +128,7 @@ private:
   //uint8_t mBytesPerFrame = 0;
   uint32_t mSampleRateKHz = 0;
   bool mDoStop = false;
+  RingBuffer<int16_t> * const mpTechDataBuffer;
 
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
@@ -147,6 +148,7 @@ private:
 
 signals:
   void signal_show_audio_peak_level(float, float) const;
+  void signal_audio_data_available(int iNumSamples, int iSampleRate);
 };
 
 #endif // AUDIOOUTPUTQT_H

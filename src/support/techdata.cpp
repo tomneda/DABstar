@@ -289,15 +289,23 @@ void TechData::slot_show_fm(int freq)
   }
 }
 
-void TechData::slot_audio_data_available(int iNumSamples, int rate)
+void TechData::slot_audio_data_available(int iNumSamples, int iSampleRate)
 {
-  auto * const buffer = make_vla(int16_t, iNumSamples);
+  constexpr int32_t cNumNeededSample = 1024;
 
-  mpAudioBuffer->get_data_from_ring_buffer(buffer, iNumSamples);
+  if (mpAudioBuffer->get_ring_buffer_read_available() < cNumNeededSample)
+  {
+    return;
+  }
+
   if (!mFrame.isHidden())
   {
-    mpAudioDisplay->create_spectrum(buffer, iNumSamples, rate);
+    auto * const buffer = make_vla(int16_t, cNumNeededSample);
+    mpAudioBuffer->get_data_from_ring_buffer(buffer, cNumNeededSample); // get 512 stereo samples
+    mpAudioDisplay->create_spectrum(buffer, cNumNeededSample, iSampleRate);
   }
+
+  mpAudioBuffer->flush_ring_buffer();
 }
 
 void TechData::slot_frame_dump_button_text(const QString & text, int size)

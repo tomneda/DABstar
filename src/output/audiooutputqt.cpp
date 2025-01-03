@@ -31,6 +31,7 @@
  */
 
 #include "audiooutputqt.h"
+#include "techdata.h"
 #include <QDebug>
 #include <QLoggingCategory>
 #include <QThread>
@@ -226,8 +227,10 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
 
 AudioIODevice::AudioIODevice(RadioInterface * const ipRI, QObject * const iParent)
   : QIODevice(iParent)
+  , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
 {
-  connect(this, &AudioIODevice::signal_show_audio_peak_level, ipRI, &RadioInterface::slot_show_audio_peak_level);
+  connect(this, &AudioIODevice::signal_show_audio_peak_level, ipRI, &RadioInterface::slot_show_audio_peak_level, Qt::QueuedConnection);
+  connect(this, &AudioIODevice::signal_audio_data_available, ipRI->get_techdata_widget(), &TechData::slot_audio_data_available, Qt::QueuedConnection);
 }
 
 void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
@@ -458,6 +461,9 @@ void AudioIODevice::set_mute_state(bool iMuteActive)
 
 void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const uint32_t iNumSamples)
 {
+  mpTechDataBuffer->put_data_into_ring_buffer(ipData, (int32_t)iNumSamples);
+  emit signal_audio_data_available((int)iNumSamples, (int)mSampleRateKHz * 1000);
+
   for (uint32_t idx = 0; idx < iNumSamples; idx+=2)
   {
     const int16_t absLeft  = (int16_t)std::abs(ipData[idx + 0]);
