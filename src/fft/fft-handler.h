@@ -62,8 +62,10 @@ private:
   kiss_fft_cpx *fftVector_in;
   kiss_fft_cpx *fftVector_out;
 #elif  __FFTW3__
-  fftwf_plan plan;
-  cmplx * fftVector;
+  fftwf_plan planCmplx;
+  fftwf_plan planFloat;
+  cmplx * fftCmplxVector = nullptr;
+  float * fftFloatVector = nullptr;
 #endif
 };
 

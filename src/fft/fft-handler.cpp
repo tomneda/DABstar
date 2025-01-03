@@ -40,12 +40,17 @@ FftHandler::FftHandler(int size, bool dir)
   fftVector_out = new kiss_fft_cpx[size];
   plan = kiss_fft_alloc(size, dir, nullptr, nullptr);
 #elif  __FFTW3__
-  fftVector = (cmplx *)fftwf_malloc(sizeof(cmplx) * size);
-  plan = fftwf_plan_dft_1d(size,
-                           reinterpret_cast <fftwf_complex *>(fftVector),
-                           reinterpret_cast <fftwf_complex *>(fftVector),
-                           FFTW_FORWARD,
-                           FFTW_ESTIMATE);
+  fftCmplxVector = (cmplx*)fftwf_malloc(sizeof(cmplx) * size);
+  fftFloatVector = (float*)fftwf_malloc(sizeof(float) * size);
+  planCmplx = fftwf_plan_dft_1d(size,
+                                reinterpret_cast<fftwf_complex*>(fftCmplxVector),
+                                reinterpret_cast<fftwf_complex*>(fftCmplxVector),
+                                FFTW_FORWARD,
+                                FFTW_ESTIMATE);
+  planFloat = fftwf_plan_dft_r2c_1d(size,
+                                    fftFloatVector,
+                                    reinterpret_cast<fftwf_complex*>(fftCmplxVector),
+                                    FFTW_ESTIMATE);
 #endif
 }
 
@@ -55,8 +60,10 @@ FftHandler::~FftHandler()
   delete fftVector_in;
   delete fftVector_out;
 #elif  __FFTW3__
-  fftwf_destroy_plan(plan);
-  fftwf_free(fftVector);
+  fftwf_destroy_plan(planCmplx);
+  fftwf_free(fftCmplxVector);
+  fftwf_destroy_plan(planFloat);
+  fftwf_free(fftFloatVector);
 #endif
 }
 
@@ -80,31 +87,31 @@ void FftHandler::fft(std::vector<cmplx> & ioV) const
   {
     for (int i = 0; i < size; i++)
     {
-      fftVector[i] = conj(ioV[i]);
+      fftCmplxVector[i] = conj(ioV[i]);
     }
   }
   else
   {
     for (int i = 0; i < size; i++)
     {
-      fftVector[i] = ioV[i];
+      fftCmplxVector[i] = ioV[i];
     }
   }
 
-  fftwf_execute(plan);
+  fftwf_execute(planCmplx);
 
   if (dir)
   {
     for (int i = 0; i < size; i++)
     {
-      ioV[i] = conj(fftVector[i]);
+      ioV[i] = conj(fftCmplxVector[i]);
     }
   }
   else
   {
     for (int i = 0; i < size; i++)
     {
-      ioV[i] = fftVector[i];
+      ioV[i] = fftCmplxVector[i];
     }
   }
 #else
@@ -130,14 +137,14 @@ void FftHandler::fft(cmplx * const ioV) const
 #elif  __FFTW3__
   for (int i = 0; i < size; i++)
   {
-    fftVector[i] = ioV[i];
+    fftCmplxVector[i] = ioV[i];
   }
 
-  fftwf_execute(plan);
+  fftwf_execute(planCmplx);
 
   for (int i = 0; i < size; i++)
   {
-    ioV[i] = fftVector[i];
+    ioV[i] = fftCmplxVector[i];
   }
 #else
   Fft_transform(ioV, size, dir);
@@ -160,16 +167,18 @@ void FftHandler::fft(float * const ioV) const
     ioV[i] = std::abs(cmplx(fftVector_out[i].r, fftVector_out[i].i));
   }
 #elif  __FFTW3__
+  assert(dir == 0); // only forward FFT supported here
+
   for (int i = 0; i < size; i++)
   {
-    fftVector[i] = ioV[i]; // copy only too real part
+    fftFloatVector[i] = ioV[i];
   }
 
-  fftwf_execute(plan);
+  fftwf_execute(planFloat);
 
-  for (int i = 0; i < size; i++)
+  for (int i = 0; i < size / 2; i++) // only the first half is used
   {
-    ioV[i] = std::abs(fftVector[i]);
+    ioV[i] = std::abs(fftCmplxVector[i]);
   }
 #else
   auto * const buffer = make_vla(cmplx, size);
@@ -186,6 +195,4 @@ void FftHandler::fft(float * const ioV) const
     ioV[i] = std::abs(buffer[i]);
   }
 #endif
-
 }
-
