@@ -147,18 +147,18 @@ void FftHandler::fft(cmplx * const ioV) const
 void FftHandler::fft(float * const ioV) const
 {
 #ifdef  __KISS_FFT__
-  // for (int i = 0; i < size; i++)  // TODO:
-  // {
-  //   fftVector_in[i].r = real(ioV[i]);
-  //   fftVector_in[i].i = imag(ioV[i]);
-  // }
-  //
-  // kiss_fft(plan, fftVector_in, fftVector_out);
-  //
-  // for (int i = 0; i < size; i++)
-  // {
-  //   ioV[i] = cmplx(fftVector_out[i].r, fftVector_out[i].i);
-  // }
+  for (int i = 0; i < size; i++)  
+  {
+    fftVector_in[i].r = ioV[i];
+    fftVector_in[i].i = 0;
+  }
+
+  kiss_fft(plan, fftVector_in, fftVector_out);
+
+  for (int i = 0; i < size; i++)
+  {
+    ioV[i] = std::abs(cmplx(fftVector_out[i].r, fftVector_out[i].i));
+  }
 #elif  __FFTW3__
   for (int i = 0; i < size; i++)
   {
@@ -172,7 +172,19 @@ void FftHandler::fft(float * const ioV) const
     ioV[i] = std::abs(fftVector[i]);
   }
 #else
-  // Fft_transform(ioV, size, dir); // TODO:
+  auto * const buffer = make_vla(cmplx, size);
+
+  for (int i = 0; i < size; i++)
+  {
+    buffer[i] = ioV[i]; // copy only too real part
+  }
+
+  Fft_transform(buffer, size, dir);
+
+  for (int i = 0; i < size; i++)
+  {
+    ioV[i] = std::abs(buffer[i]);
+  }
 #endif
 
 }
