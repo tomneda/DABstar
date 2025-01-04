@@ -32,8 +32,8 @@ enum class EIqPlotType
 enum class ECarrierPlotType
 {
   SB_WEIGHT, // soft bit weight
-  EVM_DB,
   EVM_PER,
+  EVM_DB,
   STD_DEV,
   PHASE_ERROR,
   FOUR_QUAD_PHASE,

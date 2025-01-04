@@ -45,8 +45,9 @@ using cmplx16 = std::complex<int16_t>;
 
 template<typename T> inline void safe_vector_copy(T & oVec, const T & iVec)
 {
-  // This method is intended to copy a (potential) bigger input vector to a already existing smaller one.
+  // This method is intended to copy a (potential) bigger input vector to an already existing smaller one.
   // A direct assignment could do a memory reallocation otherwise which is not wanted in certain cases (like FFTW buffer).
+  assert(!iVec.empty() && !oVec.empty());
   assert(oVec.size() <= iVec.size());
   std::copy(iVec.begin(), iVec.begin() + oVec.size(), oVec.begin());
 }
