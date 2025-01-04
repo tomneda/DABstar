@@ -17,11 +17,11 @@
 #include <iostream>
 #include <chrono>
 
-#define time_meas_print(m_)       const auto __td__##m_ = std::chrono::duration_cast<std::chrono::microseconds>(__te__##m_ - __ts__##m_); \
-                                  std::cout << "Duration of " #m_ ":  " << __td__##m_.count() << " us" << std::endl
 #define time_meas_begin(m_)       const auto __ts__##m_ = std::chrono::high_resolution_clock::now()
 #define time_meas_end(m_)         const auto __te__##m_ = std::chrono::high_resolution_clock::now()
-#define time_meas_end_print(m_)   const auto __te__##m_ = std::chrono::high_resolution_clock::now(); \
+#define time_meas_print(m_)       const auto __td__##m_ = std::chrono::duration_cast<std::chrono::microseconds>(__te__##m_ - __ts__##m_); \
+                                  std::cout << "Duration of " #m_ ":  " << __td__##m_.count() << " us" << std::endl
+#define time_meas_end_print(m_)   time_meas_end(m_); \
                                   time_meas_print(m_)
 
 #endif // TIME_MEAS_H
