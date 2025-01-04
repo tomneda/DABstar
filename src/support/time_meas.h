@@ -17,11 +17,13 @@
 #include <iostream>
 #include <chrono>
 
-#define time_meas_begin(m_)       const auto __ts__##m_ = std::chrono::high_resolution_clock::now()
-#define time_meas_end(m_)         const auto __te__##m_ = std::chrono::high_resolution_clock::now()
-#define time_meas_print(m_)       const auto __td__##m_ = std::chrono::duration_cast<std::chrono::microseconds>(__te__##m_ - __ts__##m_); \
-                                  std::cout << "Duration of " #m_ ":  " << __td__##m_.count() << " us" << std::endl
-#define time_meas_end_print(m_)   time_meas_end(m_); \
-                                  time_meas_print(m_)
+#define time_meas_begin(m_)           const auto __ts__##m_ = std::chrono::high_resolution_clock::now()
+#define time_meas_end(m_)             const auto __te__##m_ = std::chrono::high_resolution_clock::now()
+#define time_meas_print_us(m_)        const auto __td__##m_ = std::chrono::duration_cast<std::chrono::microseconds>(__te__##m_ - __ts__##m_); \
+                                      std::cout << "Duration of " #m_ ":  " << __td__##m_.count() << " us" << std::endl
+#define time_meas_print_ns(m_)        const auto __td__##m_ = std::chrono::duration_cast<std::chrono::nanoseconds>(__te__##m_ - __ts__##m_); \
+                                      std::cout << "Duration of " #m_ ":  " << __td__##m_.count() << " ns" << std::endl
+#define time_meas_end_print_us(m_)    time_meas_end(m_); time_meas_print_us(m_)
+#define time_meas_end_print_ns(m_)    time_meas_end(m_); time_meas_print_ns(m_)
 
 #endif // TIME_MEAS_H
