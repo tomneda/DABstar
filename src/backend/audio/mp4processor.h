@@ -61,40 +61,38 @@ class Mp4Processor : public QObject, public FrameProcessor
 Q_OBJECT
 public:
   Mp4Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *);
-  ~Mp4Processor();
-  void addtoFrame(const std::vector<uint8_t> &);
+  ~Mp4Processor() override;
+
+  void addtoFrame(const std::vector<uint8_t> &) override;
   
 private:
   RadioInterface * myRadioInterface;
-  PadHandler my_padhandler;
+  PadHandler mPadhandler;
   bool processSuperframe(uint8_t [], int16_t);
   int build_aacFile(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer);
 
-  FILE * dump;
-  uint8_t procMode;
-  int16_t superFramesize;
-  int16_t blockFillIndex;
-  int16_t blocksInBuffer;
-  int16_t frameCount;
-  int16_t frameErrors;
-  int16_t rsErrors;
-  int16_t crcErrors;
-  int16_t aacErrors;
-  int16_t aacFrames;
-  int16_t successFrames;
-  int16_t charSet;
-  int superframe_sync;
-  int goodFrames;
-  int totalCorrections;
+  FILE * mpDumpFile = nullptr;
+  int16_t mSuperFrameSize;
+  int16_t mBlockFillIndex = 0;
+  int16_t mBlocksInBuffer = 0;
+  int16_t mFrameCount = 0;
+  int16_t mFrameErrors = 0;
+  int16_t mRsErrors = 0;
+  int16_t mCrcErrors = 0;
+  int16_t mAacErrors = 0;
+  int16_t mAacFrames = 0;
+  int16_t mSuccessFrames = 0;
+  int32_t mSuperFrameSync = 0;
+  int32_t mGoodFrames = 0;
+  int32_t mTotalCorrections = 0;
   int16_t bitRate;
-  RingBuffer<uint8_t> * frameBuffer;
-  std::vector<uint8_t> frameBytes;
-  std::vector<uint8_t> outVector;
-  int16_t RSDims;
-  int16_t au_start[10];
+  RingBuffer<uint8_t> * mpFrameBuffer = nullptr;
+  std::vector<uint8_t> mFrameByteVec;
+  std::vector<uint8_t> mOutVec;
+  const int16_t mRsDims;
+  std::array<int16_t, 10> mAuStartArr;
   FirecodeChecker fc;
-  ReedSolomon my_rsDecoder;
-  //	and for the aac decoder
+  ReedSolomon mRsDecoder;
 #ifdef  __WITH_FDK_AAC__
   FdkAAC		*aacDecoder;
 #else

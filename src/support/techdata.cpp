@@ -140,7 +140,7 @@ void TechData::slot_show_frameErrors(int e)
 void TechData::slot_show_aacErrors(int e)
 {
   QPalette p = aacError_display->palette();
-  if (100 - 4 * e < 80)
+  if (100 - 4 * e < 80)  // e is error out of 25 frames so times 4
   {
     p.setColor(QPalette::Highlight, Qt::red);
   }

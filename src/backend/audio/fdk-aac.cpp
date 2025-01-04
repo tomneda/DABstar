@@ -79,37 +79,37 @@ int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * con
 
   if ((ipBuffer[0] != 0x56) || ((ipBuffer[1] >> 5) != 7))
   {
-    return -1;
+    return -2;
   }
 
   packet_size = ((ipBuffer[1] & 0x1F) << 8) | (ipBuffer[2] + 3);
   if ((signed)packet_size != iPacketLength)
   {
-    return -1;
+    return -3;
   }
 
   valid = packet_size;
   err = aacDecoder_Fill(handle, const_cast<uint8_t **>(&ipBuffer), &packet_size, &valid);
   if (err != AAC_DEC_OK)
   {
-    return -1;
+    return -4;
   }
 
   err = aacDecoder_DecodeFrame(handle, bufp, output_size, 0);
   if (err == AAC_DEC_NOT_ENOUGH_BITS)
   {
-    return -1;
+    return -5;
   }
 
   if (err != AAC_DEC_OK)
   {
-    return -1;
+    return -6;
   }
 
   CStreamInfo * info = aacDecoder_GetStreamInfo(handle);
   if (!info || info->sampleRate <= 0)
   {
-    return -1;
+    return -7;
   }
 
   if (info->numChannels == 2)

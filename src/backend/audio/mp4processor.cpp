@@ -43,13 +43,14 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-Mp4Processor::Mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int16_t> * b, RingBuffer<uint8_t> * frameBuffer, FILE * dump)
-  : my_padhandler(mr)
-  , my_rsDecoder(8, 0435, 0, 1, 10)
+Mp4Processor::Mp4Processor(RadioInterface * mr, const int16_t iBitRate, RingBuffer<int16_t> * b, RingBuffer<uint8_t> * frameBuffer, FILE * dump)
+  : mPadhandler(mr)
+  , mRsDims(iBitRate / 8)
+  , mRsDecoder(8, 0435, 0, 1, 10)
 {
   myRadioInterface = mr;
-  this->frameBuffer = frameBuffer;
-  this->dump = dump;
+  this->mpFrameBuffer = frameBuffer;
+  this->mpDumpFile = dump;
   connect(this, &Mp4Processor::signal_show_frame_errors, mr, &RadioInterface::slot_show_frame_errors);
   connect(this, &Mp4Processor::signal_show_rs_errors, mr, &RadioInterface::slot_show_rs_errors);
   connect(this, &Mp4Processor::signal_show_aac_errors, mr, &RadioInterface::slot_show_aac_errors);
@@ -62,24 +63,11 @@ Mp4Processor::Mp4Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
 #else
   aacDecoder = new faadDecoder(mr, b);
 #endif
-  this->bitRate = bitRate;  // input rate
+  this->bitRate = iBitRate;  // input rate
 
-  superFramesize = 110 * (bitRate / 8);
-  RSDims = bitRate / 8;
-  frameBytes.resize(RSDims * 120);  // input
-  outVector.resize(RSDims * 110);
-  blockFillIndex = 0;
-  blocksInBuffer = 0;
-  frameCount = 0;
-  frameErrors = 0;
-  aacErrors = 0;
-  crcErrors = 0;
-  aacFrames = 0;
-  successFrames = 0;
-  rsErrors = 0;
-  totalCorrections = 0;
-  goodFrames = 0;
-  superframe_sync = 0;
+  mSuperFrameSize = 110 * (iBitRate / 8);
+  mFrameByteVec.resize(mRsDims * 120);  // input
+  mOutVec.resize(mRsDims * 110);
 }
 
 Mp4Processor::~Mp4Processor()
@@ -97,73 +85,72 @@ Mp4Processor::~Mp4Processor()
   *	per Byte, nbits is the number of Bits (i.e. containing bytes)
   *	the function adds nbits bits, packed in bytes, to the frame
   */
-void Mp4Processor::addtoFrame(const std::vector<uint8_t> & V)
+void Mp4Processor::addtoFrame(const std::vector<uint8_t> & iV)
 {
-  int16_t i, j;
   uint8_t temp = 0;
-  int16_t nbits = 24 * bitRate;
+  const int16_t nbits = 24 * bitRate;
 
-  for (i = 0; i < nbits / 8; i++)
+  for (int16_t i = 0; i < nbits / 8; i++)
   {  // in bytes
     temp = 0;
-    for (j = 0; j < 8; j++)
+    for (int16_t j = 0; j < 8; j++)
     {
-      temp = (temp << 1) | (V[i * 8 + j] & 01);
+      temp = (temp << 1) | (iV[i * 8 + j] & 01);
     }
-    frameBytes[blockFillIndex * nbits / 8 + i] = temp;
+    mFrameByteVec[mBlockFillIndex * nbits / 8 + i] = temp;
   }
   //
-  blocksInBuffer++;
-  blockFillIndex = (blockFillIndex + 1) % 5;
+  mBlocksInBuffer++;
+  mBlockFillIndex = (mBlockFillIndex + 1) % 5;
   //
   /**
     *	we take the last five blocks to look at
     */
-  if (blocksInBuffer >= 5)
+  if (mBlocksInBuffer >= 5)
   {
     ///	first, we show the "successrate"
-    if (++frameCount >= 25)
+    if (++mFrameCount >= 25)
     {
-      frameCount = 0;
-      emit signal_show_frame_errors(frameErrors);
-      frameErrors = 0;
+      mFrameCount = 0;
+      emit signal_show_frame_errors(mFrameErrors);
+      mFrameErrors = 0;
     }
     /**
       *	starting for real: check the fire code
       *	if the firecode is OK, we handle the frame
       *	and adjust the buffer here for the next round
       */
-    if (superframe_sync == 0)
+    if (mSuperFrameSync == 0)
     {
-      if (fc.check(&frameBytes[blockFillIndex * nbits / 8]))
-        superframe_sync = 4;
+      if (fc.check(&mFrameByteVec[mBlockFillIndex * nbits / 8]))
+        mSuperFrameSync = 4;
       else
-        blocksInBuffer = 4;
+        mBlocksInBuffer = 4;
     }
     // since we processed a full cycle of 5 blocks, we just start a
     // new sequence, beginning with block blockFillIndex
-    if (superframe_sync)
+    if (mSuperFrameSync)
     {
-      blocksInBuffer = 0;
-      if (processSuperframe(frameBytes.data(), blockFillIndex * nbits / 8))
+      mBlocksInBuffer = 0;
+      if (processSuperframe(mFrameByteVec.data(), mBlockFillIndex * nbits / 8))
       {
-        superframe_sync = 4;
+        mSuperFrameSync = 4;
 
-        if (++successFrames > 25)
+        if (++mSuccessFrames > 25)
         {
-          emit signal_show_rs_errors(rsErrors);
-          successFrames = 0;
-          rsErrors = 0;
+          emit signal_show_rs_errors(mRsErrors);
+          mSuccessFrames = 0;
+          mRsErrors = 0;
         }
       }
       else
       {
-        superframe_sync--;
-        if (superframe_sync == 0)
+        mSuperFrameSync--;
+        if (mSuperFrameSync == 0)
         {
           // we were wrong, virtual shift to left in block sizes
-          blocksInBuffer = 4;
-          frameErrors++;
+          mBlocksInBuffer = 4;
+          mFrameErrors++;
         }
       }
     }
@@ -176,7 +163,7 @@ void Mp4Processor::addtoFrame(const std::vector<uint8_t> & V)
   *	First, we know the firecode checker gave green light
   *	We correct the errors using RS
   */
-bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
+bool Mp4Processor::processSuperframe(uint8_t frameBytes[], const int16_t base)
 {
   uint8_t num_aus;
   int16_t i, j, k;
@@ -191,17 +178,17 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     *	the superframe, containing parity bytes for error repair
     *	take into account the interleaving that is applied.
     */
-  for (j = 0; j < RSDims; j++)
+  for (j = 0; j < mRsDims; j++)
   {
-    int16_t ler = 0;
     for (k = 0; k < 120; k++)
     {
-      rsIn[k] = frameBytes[(base + j + k * RSDims) % (RSDims * 120)];
+      rsIn[k] = frameBytes[(base + j + k * mRsDims) % (mRsDims * 120)];
     }
-    ler = my_rsDecoder.dec(rsIn, rsOut, 135);
-    if (ler < 0)
+
+    if (const int16_t ler = mRsDecoder.dec(rsIn, rsOut, 135);
+        ler < 0)
     {
-      rsErrors++;
+      mRsErrors++;
       //	      fprintf (stderr, "RS failure\n");
       if (!fc.check(&frameBytes[base]) && j == 0)
       {
@@ -210,30 +197,30 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     }
     else
     {
-      totalCorrections += ler;
-      goodFrames++;
-      if (goodFrames >= 100)
+      mTotalCorrections += ler;
+      mGoodFrames++;
+      if (mGoodFrames >= 100)
       {
-        emit signal_show_rs_corrections(totalCorrections, crcErrors);
-        totalCorrections = 0;
-        goodFrames = 0;
-        crcErrors = 0;
+        emit signal_show_rs_corrections(mTotalCorrections, mCrcErrors);
+        mTotalCorrections = 0;
+        mGoodFrames = 0;
+        mCrcErrors = 0;
       }
     }
 
     for (k = 0; k < 110; k++)
     {
-      outVector[j + k * RSDims] = rsOut[k];
+      mOutVec[j + k * mRsDims] = rsOut[k];
     }
   }
 
   //	bits 0 .. 15 is firecode
   //	bit 16 is unused
-  streamParameters.dacRate = (outVector[2] >> 6) & 01;  // bit 17
-  streamParameters.sbrFlag = (outVector[2] >> 5) & 01;  // bit 18
-  streamParameters.aacChannelMode = (outVector[2] >> 4) & 01;  // bit 19
-  streamParameters.psFlag = (outVector[2] >> 3) & 01;  // bit 20
-  streamParameters.mpegSurround = (outVector[2] & 07);  // bits 21 .. 23
+  streamParameters.dacRate = (mOutVec[2] >> 6) & 01;  // bit 17
+  streamParameters.sbrFlag = (mOutVec[2] >> 5) & 01;  // bit 18
+  streamParameters.aacChannelMode = (mOutVec[2] >> 4) & 01;  // bit 19
+  streamParameters.psFlag = (mOutVec[2] >> 3) & 01;  // bit 20
+  streamParameters.mpegSurround = (mOutVec[2] & 07);  // bits 21 .. 23
   //
   //	added for the aac file writer
   streamParameters.CoreSrIndex = streamParameters.dacRate ? (streamParameters.sbrFlag ? 6 : 3) : (streamParameters.sbrFlag ? 8 : 5);
@@ -245,34 +232,34 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
   {
   default:    // cannot happen
   case 0: num_aus = 4;
-    au_start[0] = 8;
-    au_start[1] = outVector[3] * 16 + (outVector[4] >> 4);
-    au_start[2] = (outVector[4] & 0xf) * 256 + outVector[5];
-    au_start[3] = outVector[6] * 16 + (outVector[7] >> 4);
-    au_start[4] = 110 * (bitRate / 8);
+    mAuStartArr[0] = 8;
+    mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
+    mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
+    mAuStartArr[3] = mOutVec[6] * 16 + (mOutVec[7] >> 4);
+    mAuStartArr[4] = 110 * (bitRate / 8);
     break;
   //
   case 1: num_aus = 2;
-    au_start[0] = 5;
-    au_start[1] = outVector[3] * 16 + (outVector[4] >> 4);
-    au_start[2] = 110 * (bitRate / 8);
+    mAuStartArr[0] = 5;
+    mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
+    mAuStartArr[2] = 110 * (bitRate / 8);
     break;
   //
   case 2: num_aus = 6;
-    au_start[0] = 11;
-    au_start[1] = outVector[3] * 16 + (outVector[4] >> 4);
-    au_start[2] = (outVector[4] & 0xf) * 256 + outVector[5];
-    au_start[3] = outVector[6] * 16 + (outVector[7] >> 4);
-    au_start[4] = (outVector[7] & 0xf) * 256 + outVector[8];
-    au_start[5] = outVector[9] * 16 + (outVector[10] >> 4);
-    au_start[6] = 110 * (bitRate / 8);
+    mAuStartArr[0] = 11;
+    mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
+    mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
+    mAuStartArr[3] = mOutVec[6] * 16 + (mOutVec[7] >> 4);
+    mAuStartArr[4] = (mOutVec[7] & 0xf) * 256 + mOutVec[8];
+    mAuStartArr[5] = mOutVec[9] * 16 + (mOutVec[10] >> 4);
+    mAuStartArr[6] = 110 * (bitRate / 8);
     break;
   //
   case 3: num_aus = 3;
-    au_start[0] = 6;
-    au_start[1] = outVector[3] * 16 + (outVector[4] >> 4);
-    au_start[2] = (outVector[4] & 0xf) * 256 + outVector[5];
-    au_start[3] = 110 * (bitRate / 8);
+    mAuStartArr[0] = 6;
+    mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
+    mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
+    mAuStartArr[3] = 110 * (bitRate / 8);
     break;
   }
   /**
@@ -285,14 +272,14 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     int16_t aac_frame_length;
 
     ///	sanity check 1
-    if (au_start[i + 1] < au_start[i])
+    if (mAuStartArr[i + 1] < mAuStartArr[i])
     {
       //	      fprintf (stderr, "%d %d (%d)\n", au_start [i], au_start [i + 1], i);
       //	should not happen, all errors were corrected
       return false;
     }
 
-    aac_frame_length = au_start[i + 1] - au_start[i] - 2;
+    aac_frame_length = mAuStartArr[i + 1] - mAuStartArr[i] - 2;
     //	just a sanity check
     if ((aac_frame_length >= 960) || (aac_frame_length < 0))
     {
@@ -301,33 +288,33 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
     }
 
     //	but first the crc check
-    if (check_crc_bytes(&outVector[au_start[i]], aac_frame_length))
+    if (check_crc_bytes(&mOutVec[mAuStartArr[i]], aac_frame_length))
     {
       //
       //	first prepare dumping
       std::vector<uint8_t> fileBuffer;
-      int segmentSize = build_aacFile(aac_frame_length, &streamParameters, &(outVector.data()[au_start[i]]), fileBuffer);
-      if (dump == nullptr)
+      const int segmentSize = build_aacFile(aac_frame_length, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
+      if (mpDumpFile == nullptr)
       {
-        frameBuffer->put_data_into_ring_buffer(fileBuffer.data(), segmentSize);
+        mpFrameBuffer->put_data_into_ring_buffer(fileBuffer.data(), segmentSize);
         emit signal_new_frame(segmentSize);
       }
       else
       {
-        fwrite(fileBuffer.data(), 1, segmentSize, dump);
+        fwrite(fileBuffer.data(), 1, segmentSize, mpDumpFile);
       }
 
       //	first handle the pad data if any
-      if (dump == nullptr)
+      if (mpDumpFile == nullptr)
       {
-        if (((outVector[au_start[i + 0]] >> 5) & 07) == 4)
+        if (((mOutVec[mAuStartArr[i + 0]] >> 5) & 07) == 4)
         {
-          int16_t count = outVector[au_start[i] + 1];
+          int16_t count = mOutVec[mAuStartArr[i] + 1];
           auto * const buffer = make_vla(uint8_t, count);
-          memcpy(buffer, &outVector[au_start[i] + 2], count);
+          memcpy(buffer, &mOutVec[mAuStartArr[i] + 2], count);
           uint8_t L0 = buffer[count - 1];
           uint8_t L1 = buffer[count - 2];
-          my_padhandler.processPAD(buffer, count - 3, L1, L0);
+          mPadhandler.processPAD(buffer, count - 3, L1, L0);
         }
         //
         //	then handle the audio
@@ -345,19 +332,21 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], int16_t base)
 
         if (tmp <= 0)
         {
-          aacErrors++;
+          fprintf(stderr, "MP4 decoding error: %d\n", tmp);
+          mAacErrors++;
         }
-        if (++aacFrames > 25)
+
+        if (++mAacFrames > 25)
         {
-          emit signal_show_aac_errors(aacErrors);
-          aacErrors = 0;
-          aacFrames = 0;
+          emit signal_show_aac_errors(mAacErrors);
+          mAacErrors = 0;
+          mAacFrames = 0;
         }
       }
     }
     else
     {
-      crcErrors++;
+      mCrcErrors++;
     }
     //
     //	what would happen if the errors were in the 10 parity bytes

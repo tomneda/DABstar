@@ -281,7 +281,7 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
       {
         std::vector<STiiResult> transmitterIds = mTiiDetector.process_tii_data(mTiiThreshold);
 
-        if (transmitterIds.size() > 0)
+        if (!transmitterIds.empty())
         {
           emit signal_show_tii(transmitterIds);
         }
@@ -360,12 +360,10 @@ void DabProcessor::_set_rf_freq_offs_Hz(float iFreqHz)
 
 bool DabProcessor::_state_eval_sync_symbol(int32_t & oSampleCount, float iThreshold)
 {
-  int32_t startIndex;
-
   // get first OFDM symbol after time sync marker
   mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_u, mFreqOffsBBHz, false);
 
-  startIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
+  const int32_t startIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
 
   if (startIndex < 0)
   {
