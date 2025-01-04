@@ -31,10 +31,10 @@
 #include "fft-handler.h"
 #include "fft-complex.h"
 
-FftHandler::FftHandler(int size, bool dir)
+FftHandler::FftHandler(const int iSize, const bool iDir)
 {
-  this->size = size;
-  this->dir = dir;
+  size = iSize;
+  dir = iDir;
 #ifdef  __KISS_FFT__
   fftVector_in = new kiss_fft_cpx[size];
   fftVector_out = new kiss_fft_cpx[size];
@@ -45,7 +45,7 @@ FftHandler::FftHandler(int size, bool dir)
   planCmplx = fftwf_plan_dft_1d(size,
                                 reinterpret_cast<fftwf_complex*>(fftCmplxVector),
                                 reinterpret_cast<fftwf_complex*>(fftCmplxVector),
-                                FFTW_FORWARD,
+                                (dir == 0 ? FFTW_FORWARD : FFTW_BACKWARD),
                                 FFTW_ESTIMATE);
   planFloat = fftwf_plan_dft_r2c_1d(size,
                                     fftFloatVector,
@@ -83,36 +83,16 @@ void FftHandler::fft(std::vector<cmplx> & ioV) const
     ioV[i] = cmplx(fftVector_out[i].r, fftVector_out[i].i);
   }
 #elif __FFTW3__
-  if (dir)
+  for (int i = 0; i < size; i++)
   {
-    for (int i = 0; i < size; i++)
-    {
-      fftCmplxVector[i] = conj(ioV[i]);
-    }
-  }
-  else
-  {
-    for (int i = 0; i < size; i++)
-    {
-      fftCmplxVector[i] = ioV[i];
-    }
+    fftCmplxVector[i] = ioV[i];
   }
 
   fftwf_execute(planCmplx);
 
-  if (dir)
+  for (int i = 0; i < size; i++)
   {
-    for (int i = 0; i < size; i++)
-    {
-      ioV[i] = conj(fftCmplxVector[i]);
-    }
-  }
-  else
-  {
-    for (int i = 0; i < size; i++)
-    {
-      ioV[i] = fftCmplxVector[i];
-    }
+    ioV[i] = fftCmplxVector[i];
   }
 #else
   Fft_transform(ioV.data (), size, dir);
@@ -162,7 +142,7 @@ void FftHandler::fft(float * const ioV) const
 
   kiss_fft(plan, fftVector_in, fftVector_out);
 
-  for (int i = 0; i < size; i++)
+  for (int i = 0; i < size / 2; i++) // only the first half is used
   {
     ioV[i] = std::abs(cmplx(fftVector_out[i].r, fftVector_out[i].i));
   }
@@ -190,7 +170,7 @@ void FftHandler::fft(float * const ioV) const
 
   Fft_transform(buffer, size, dir);
 
-  for (int i = 0; i < size; i++)
+  for (int i = 0; i < size / 2; i++) // only the first half is used
   {
     ioV[i] = std::abs(buffer[i]);
   }
