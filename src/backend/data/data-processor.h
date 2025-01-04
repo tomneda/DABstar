@@ -50,7 +50,7 @@ public:
   DataProcessor(RadioInterface * mr, Packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
   ~DataProcessor();
 
-  void addtoFrame(const std::vector<uint8_t> &);
+  void add_to_frame(const std::vector<uint8_t> &);
 
 private:
   RadioInterface * myRadioInterface;

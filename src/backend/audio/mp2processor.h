@@ -66,7 +66,7 @@ Q_OBJECT
 public:
   Mp2Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *);
   ~Mp2Processor();
-  void addtoFrame(const std::vector<uint8_t> &);
+  void add_to_frame(const std::vector<uint8_t> &);
 
 private:
   RadioInterface * myRadioInterface;

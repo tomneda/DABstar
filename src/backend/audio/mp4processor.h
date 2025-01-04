@@ -63,13 +63,13 @@ public:
   Mp4Processor(RadioInterface *, int16_t, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *);
   ~Mp4Processor() override;
 
-  void addtoFrame(const std::vector<uint8_t> &) override;
+  void add_to_frame(const std::vector<uint8_t> &) override;
   
 private:
   RadioInterface * myRadioInterface;
   PadHandler mPadhandler;
-  bool processSuperframe(uint8_t [], int16_t);
-  int build_aacFile(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer);
+  bool _process_super_frame(uint8_t [], int16_t);
+  int _build_aac_file(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer);
 
   FILE * mpDumpFile = nullptr;
   int16_t mSuperFrameSize;

@@ -85,7 +85,7 @@ Mp4Processor::~Mp4Processor()
   *	per Byte, nbits is the number of Bits (i.e. containing bytes)
   *	the function adds nbits bits, packed in bytes, to the frame
   */
-void Mp4Processor::addtoFrame(const std::vector<uint8_t> & iV)
+void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
 {
   uint8_t temp = 0;
   const int16_t nbits = 24 * bitRate;
@@ -132,7 +132,7 @@ void Mp4Processor::addtoFrame(const std::vector<uint8_t> & iV)
     if (mSuperFrameSync)
     {
       mBlocksInBuffer = 0;
-      if (processSuperframe(mFrameByteVec.data(), mBlockFillIndex * nbits / 8))
+      if (_process_super_frame(mFrameByteVec.data(), mBlockFillIndex * nbits / 8))
       {
         mSuperFrameSync = 4;
 
@@ -163,7 +163,7 @@ void Mp4Processor::addtoFrame(const std::vector<uint8_t> & iV)
   *	First, we know the firecode checker gave green light
   *	We correct the errors using RS
   */
-bool Mp4Processor::processSuperframe(uint8_t frameBytes[], const int16_t base)
+bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base)
 {
   uint8_t num_aus;
   int16_t i, j, k;
@@ -293,7 +293,7 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], const int16_t base)
       //
       //	first prepare dumping
       std::vector<uint8_t> fileBuffer;
-      const int segmentSize = build_aacFile(aac_frame_length, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
+      const int segmentSize = _build_aac_file(aac_frame_length, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
       if (mpDumpFile == nullptr)
       {
         mpFrameBuffer->put_data_into_ring_buffer(fileBuffer.data(), segmentSize);
@@ -355,7 +355,7 @@ bool Mp4Processor::processSuperframe(uint8_t frameBytes[], const int16_t base)
   return true;
 }
 
-int Mp4Processor::build_aacFile(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer)
+int Mp4Processor::_build_aac_file(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer)
 {
   BitWriter au_bw;
 
