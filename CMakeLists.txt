@@ -323,6 +323,7 @@ set(${objectName}_HDRS
         src/support/setting-helper.h
         src/support/wav_writer.h
         src/support/angle_direction.h
+        src/support/time_meas.h
         src/scopes/iqdisplay.h
         src/scopes/carrier-display.h
         src/scopes/audio-display.h
