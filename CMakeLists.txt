@@ -116,6 +116,7 @@ option(VITERBI_SSE   "Use Viterbi SSE"   OFF)
 option(VITERBI_NEON  "Use Viterbi NEON"  OFF)
 option(FDK_AAC       "Use FDK-AAC"        ON)
 
+# Choose one FFT variant out of three. KISS and NAYUKI perform similar, FFTW performs much faster (about 5 times on my i7-6700K for a 2048-FFT, release version)
 set(USE_FFT FFTW3 CACHE STRING "Choose FFT out of these free: FFTW3 KISS NAYUKI")
 set_property(CACHE USE_FFT PROPERTY STRINGS "FFTW3;KISS;NAYUKI")
 
