@@ -49,7 +49,9 @@ template<typename T> inline void safe_vector_copy(T & oVec, const T & iVec)
   // A direct assignment could do a memory reallocation otherwise which is not wanted in certain cases (like FFTW buffer).
   assert(!iVec.empty() && !oVec.empty());
   assert(oVec.size() <= iVec.size());
-  std::copy(iVec.begin(), iVec.begin() + oVec.size(), oVec.begin());
+  // memcpy() is considerable faster than std::copy on my i7-6700K (nearly twice as fast for size == 2048)
+  // std::copy(iVec.begin(), iVec.begin() + oVec.size(), oVec.begin());
+  memcpy(oVec.data(), iVec.data(), oVec.size() * sizeof(oVec[0]));
 }
 
 template<typename T> inline T conv_rad_to_deg(T iVal)
