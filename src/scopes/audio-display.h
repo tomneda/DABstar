@@ -42,7 +42,7 @@
 #include  <qwt_plot_curve.h>
 #include  <qwt_color_map.h>
 #include  <qwt_scale_widget.h>
-#include  "fft-handler.h"
+#include  <fftw3.h>
 
 class RadioInterface;
 
@@ -51,7 +51,7 @@ class AudioDisplay : public QObject
 Q_OBJECT
 public:
   AudioDisplay(RadioInterface *, QwtPlot *, QSettings *);
-  ~AudioDisplay() override = default;
+  ~AudioDisplay() override;
 
   void create_spectrum(const int16_t *, int, int);
 
@@ -70,8 +70,11 @@ private:
   std::array<float, cDisplaySize>  mXDispBuffer{};
   std::array<float, cDisplaySize>  mYDispBuffer{};
   std::array<float, cSpectrumSize> mWindow;
-  std::array<float, cSpectrumSize> mSpectrumBuffer;
-  FftHandler mFft{cSpectrumSize, false};
+
+  std::array<float, cSpectrumSize> mFftInBuffer;
+  std::array<cmplx, cSpectrumSize> mFftOutBuffer;
+  fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex *)mFftOutBuffer.data(), FFTW_ESTIMATE)};
+
   QColor GridColor;
   QColor mCurveColor;
   int32_t mSampleRateLast = 0;

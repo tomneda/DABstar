@@ -48,7 +48,7 @@ public:
   };
 
   explicit PhaseTable(int16_t);
-  ~PhaseTable() = default;;
+  ~PhaseTable() = default;
 
   [[nodiscard]] float get_phi(int32_t k) const;
 

@@ -30,8 +30,6 @@ DEFINES		+= PRJ_VERS=\\\"3.2.0\\\"
 #DEFINES	+=  __THREADED_BACKEND
 
 DEFINES		+= __BITS64__
-DEFINES		+= __FFTW3__
-#DEFINES	+= __KISS_FFT__
 
 # For showing trace output
 #DEFINES	+= __EPG_TRACE__  
@@ -49,7 +47,6 @@ isEmpty(GITHASHSTRING) {
 
 
 DEPENDPATH += src \
-    src/fft \
     src/main \
     src/ofdm \
     src/protection \
@@ -196,10 +193,6 @@ HEADERS += \
     src/devices/filereaders/raw-files/raw-reader.h \
     src/devices/filereaders/wav-files/wavfiles.h \
     src/devices/filereaders/wav-files/wav-reader.h \
-    src/fft/fft-handler.h \
-    src/fft/fft-complex.h \
-    src/fft/kiss_fft.h \
-    src/fft/kiss_fftr.h
 
 SOURCES += \
     src/main/main.cpp \
@@ -301,10 +294,6 @@ SOURCES += \
     src/devices/filereaders/raw-files/raw-reader.cpp \
     src/devices/filereaders/wav-files/wavfiles.cpp \
     src/devices/filereaders/wav-files/wav-reader.cpp \
-    src/fft/fft-handler.cpp \
-    src/fft/fft-complex.cpp \
-    src/fft/kiss_fft.c \
-    src/fft/kiss_fftr.c
 
 FORMS += \
     src/main/radio.ui \

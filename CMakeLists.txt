@@ -116,10 +116,6 @@ option(VITERBI_SSE   "Use Viterbi SSE"   OFF)
 option(VITERBI_NEON  "Use Viterbi NEON"  OFF)
 option(FDK_AAC       "Use FDK-AAC"        ON)
 
-# Choose one FFT variant out of three. KISS and NAYUKI perform similar, FFTW performs much faster (about 5 times on my i7-6700K for a 2048-FFT, release version)
-set(USE_FFT FFTW3 CACHE STRING "Choose FFT out of these free: FFTW3 KISS NAYUKI")
-set_property(CACHE USE_FFT PROPERTY STRINGS "FFTW3;KISS;NAYUKI")
-
 ######################################################################
 ######################################################################
 
@@ -152,25 +148,12 @@ find_package(Qt6Xml REQUIRED)
 find_package(Qt6Sql REQUIRED)
 find_package(Qt6Multimedia REQUIRED)
 
-# this should be in FFT sub project but it is important that the compiler switches are already set here
-if(USE_FFT STREQUAL FFTW3)
-    message("FFTW3 is used for FFT")
-    find_package(FFTW3f)
-    if (NOT FFTW3F_FOUND)
-        message(FATAL_ERROR "Please install FFTW3")
-    endif ()
-    include_directories(${FFTW3F_INCLUDE_DIRS})
-    list(APPEND extraLibs ${FFTW3F_LIBRARIES})
-    add_definitions(-D__FFTW3__)
-elseif(USE_FFT STREQUAL KISS)
-    message("KISS is used for FFT")
-    add_definitions(-D__KISS_FFT__)
-elseif(USE_FFT STREQUAL NAYUKI)
-    message("NAYUKI is used for FFT")
-    add_definitions(-D__NAYUKI__)
-else()
-    #message(FATAL_ERROR "Invalid FFT option in USE_FFT: ${USE_FFT}")
-endif()
+find_package(FFTW3f)
+if (NOT FFTW3F_FOUND)
+    message(FATAL_ERROR "Please install FFTW3")
+endif ()
+include_directories(${FFTW3F_INCLUDE_DIRS})
+list(APPEND extraLibs ${FFTW3F_LIBRARIES})
 
 # Qwt6.3.0 built with Qt6 has an unusual installation path for its Qt6Qwt6.pc file, so add it here
 if (WIN32)
@@ -559,10 +542,8 @@ target_link_libraries(${objectName}
 # Add subsequent libraries
 ########################################################################
 
-add_subdirectory(src/fft)
 add_subdirectory(src/devices)
 
-target_link_libraries(${objectName} PRIVATE ${objectName}_fft)
 target_link_libraries(${objectName} PRIVATE ${objectName}_devices)
 
 ########################################################################

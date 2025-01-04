@@ -108,6 +108,8 @@ SpectrumViewer::~SpectrumViewer()
   delete mpIQDisplay;
   delete mpSpectrumScope;
   delete mpWaterfallScope;
+
+  fftwf_destroy_plan(mFftPlan);
 }
 
 bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<double>::SMaxMin & ioMaxMin) const
@@ -148,7 +150,7 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
     return;
   }
 
-  mpSpectrumBuffer->get_data_from_ring_buffer(mSpectrumVec.data(), SP_SPECTRUMSIZE);
+  mpSpectrumBuffer->get_data_from_ring_buffer(mFftInBuffer.data(), SP_SPECTRUMSIZE);
   mpSpectrumBuffer->flush_ring_buffer();
 
   if (myFrame.isHidden())
@@ -167,13 +169,12 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
   }
 
   //	and window it
-  //	get the buffer data
   for (int32_t i = 0; i < SP_SPECTRUMSIZE; i++)
   {
-    mSpectrumVec[i] = mSpectrumVec[i] * mWindowVec[i];
+    mFftInBuffer[i] *= mWindowVec[i];
   }
 
-  fft.fft(mSpectrumVec.data());
+  fftwf_execute(mFftPlan);
 
   // map the SP_SPECTRUMSIZE values onto SP_DISPLAYSIZE elements
   for (int32_t i = 0; i < SP_DISPLAYSIZE / 2; i++)
@@ -181,7 +182,7 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
     double f = 0;
     for (int32_t j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
     {
-      f += abs(mSpectrumVec[SP_SPEC_OVR_SMP_FAC * i + j]);
+      f += std::abs(mFftOutBuffer[SP_SPEC_OVR_SMP_FAC * i + j]);
     }
 
     mYValVec[SP_DISPLAYSIZE / 2 + i] = f / (double)SP_SPEC_OVR_SMP_FAC;
@@ -189,7 +190,7 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
     f = 0;
     for (int32_t j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
     {
-      f += abs(mSpectrumVec[SP_SPECTRUMSIZE / 2 + SP_SPEC_OVR_SMP_FAC * i + j]);
+      f += std::abs(mFftOutBuffer[SP_SPECTRUMSIZE / 2 + SP_SPEC_OVR_SMP_FAC * i + j]);
     }
 
     mYValVec[i] = f / SP_SPEC_OVR_SMP_FAC;

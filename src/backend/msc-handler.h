@@ -24,19 +24,18 @@
 
 #ifndef  __MSC_HANDLER__
 #define  __MSC_HANDLER__
-#include  <QMutex>
-#include  <atomic>
-#include  <cstdio>
-#include  <cstdint>
-#include  <cstdio>
-#include  <vector>
-#include  "dab-constants.h"
-#include  "dab-params.h"
-#include        "ringbuffer.h"
-#include        "phasetable.h"
-#include        "freq-interleaver.h"
 
-#include  "fft-handler.h"
+#include <QMutex>
+#include <atomic>
+#include <cstdio>
+#include <cstdint>
+#include <cstdio>
+#include <vector>
+#include "dab-constants.h"
+#include "dab-params.h"
+#include "ringbuffer.h"
+#include "phasetable.h"
+#include "freq-interleaver.h"
 
 class RadioInterface;
 class Backend;

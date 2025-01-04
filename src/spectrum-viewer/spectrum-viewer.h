@@ -37,6 +37,13 @@
 #ifndef    SPECTRUM_VIEWER_H
 #define    SPECTRUM_VIEWER_H
 
+
+#include  "dab-constants.h"
+#include  "glob_enums.h"
+#include  "ui_spectrum_viewer.h"
+#include  "ringbuffer.h"
+#include  "custom_frame.h"
+#include  "tii-detector.h"
 #include  <array>
 #include  <QFrame>
 #include  <QObject>
@@ -53,13 +60,7 @@
 #include  <qwt_plot_panner.h>
 #include  <qwt_picker_machine.h>
 #include  <qwt_scale_widget.h>
-#include  "dab-constants.h"
-#include  "glob_enums.h"
-#include  "ui_spectrum_viewer.h"
-#include  "ringbuffer.h"
-#include  "fft-handler.h"
-#include  "custom_frame.h"
-#include  "tii-detector.h"
+#include  <fftw3.h>
 
 constexpr int32_t SP_DISPLAYSIZE = 512;
 constexpr int32_t SP_SPECTRUMSIZE = 2048;
@@ -116,9 +117,10 @@ private:
   SpecViewLimits<double> mSpecViewLimits;
   double mAvrAlpha = 0.1;
 
-  FftHandler fft{ SP_SPECTRUMSIZE, false };
+  std::array<cmplx, SP_SPECTRUMSIZE> mFftInBuffer;
+  std::array<cmplx, SP_SPECTRUMSIZE> mFftOutBuffer;
+  fftwf_plan mFftPlan{fftwf_plan_dft_1d(SP_SPECTRUMSIZE, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE)};
 
-  std::array<cmplx, SP_SPECTRUMSIZE> mSpectrumVec{ 0 };
   std::array<float, SP_SPECTRUMSIZE> mWindowVec{ 0 };
   std::array<double, SP_DISPLAYSIZE> mXAxisVec{ 0 };
   std::array<double, SP_DISPLAYSIZE> mYValVec{ 0 };

@@ -10,8 +10,8 @@
 #pragma once
 
 #include "dab-constants.h"
-#include  "dab-params.h"
-#include "fft/fft-handler.h"
+#include "dab-params.h"
+#include <fftw3.h>
 
 struct STiiResult
 {
@@ -26,7 +26,7 @@ class TiiDetector
 {
 public:
   explicit TiiDetector(uint8_t iDabMode);
-  ~TiiDetector() = default;
+  ~TiiDetector();
 
   void reset();
   void set_detect_collisions(bool);
@@ -53,7 +53,10 @@ private:
   uint8_t mSubIdCollSearch = 0;
   TBufferArr768 mDecodedBufferArr;
   std::vector<cmplx> mNullSymbolBufferVec;
-  FftHandler mFftHandler;
+
+  std::vector<cmplx> mFftInBuffer;
+  std::vector<cmplx> mFftOutBuffer;
+  fftwf_plan mFftPlan;
 
   float _calculate_average_noise(const TFloatTable192 & iFloatTable) const;
   void _get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, float & ioMax, const TCmplxTable192 & iCmplxTable) const;

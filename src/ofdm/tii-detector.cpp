@@ -161,10 +161,18 @@ TiiDetector::TiiDetector(const uint8_t iDabMode)
   , mT_u(mParams.get_T_u())
   , mT_g(mParams.get_T_g())
   , mK(mParams.get_K())
-  , mFftHandler(mT_u, false)
 {
+  mFftInBuffer.resize(mT_u);
+  mFftOutBuffer.resize(mT_u);
+  mFftPlan = fftwf_plan_dft_1d(mT_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
+
   mNullSymbolBufferVec.resize(mT_u);
   reset();
+}
+
+TiiDetector::~TiiDetector()
+{
+  fftwf_destroy_plan(mFftPlan);
 }
 
 void TiiDetector::set_detect_collisions(const bool iActive)
@@ -187,14 +195,13 @@ void TiiDetector::reset()
 void TiiDetector::add_to_tii_buffer(const std::vector<cmplx> & iV)
 {
   assert((int)iV.size() >= mT_g + mT_u);
-  auto * const fftBuffer = make_vla(cmplx, mT_u);
-  memcpy(fftBuffer, &(iV[mT_g]), mT_u * sizeof(cmplx));
+  memcpy(mFftInBuffer.data(), &(iV[mT_g]), mT_u * sizeof(cmplx));
 
-  mFftHandler.fft(fftBuffer);
+  fftwf_execute(mFftPlan);
 
   for (int i = 0; i < mT_u; i++)
   {
-    mNullSymbolBufferVec[i] += fftBuffer[i];
+    mNullSymbolBufferVec[i] += mFftOutBuffer[i];
   }
 }
 

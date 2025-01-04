@@ -31,16 +31,16 @@
 #ifndef  PHASEREFERENCE_H
 #define  PHASEREFERENCE_H
 
-#include  <QObject>
-#include  <cstdio>
-#include  <cstdint>
-#include  <vector>
-#include  "fft-handler.h"
 #include  "phasetable.h"
 #include  "dab-constants.h"
 #include  "dab-params.h"
 #include  "process-params.h"
 #include  "ringbuffer.h"
+#include  <QObject>
+#include  <cstdio>
+#include  <cstdint>
+#include  <vector>
+#include  <fftw3.h>
 
 class RadioInterface;
 
@@ -49,11 +49,11 @@ class PhaseReference : public QObject, public PhaseTable
 Q_OBJECT
 public:
   PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam);
-  ~PhaseReference() override = default;
+  ~PhaseReference() override;
 
-  [[nodiscard]] int32_t correlate_with_phase_ref_and_find_max_peak(std::vector<cmplx> iV, float iThreshold);  // copy of iV is intended
-  [[nodiscard]] int16_t estimate_carrier_offset_from_sync_symbol_0(std::vector<cmplx> iV);       // copy of iV is intended
-  [[nodiscard]] static float phase(const std::vector<cmplx> & iV, int32_t iTs) ;
+  [[nodiscard]] int32_t correlate_with_phase_ref_and_find_max_peak(const std::vector<cmplx> & iV, float iThreshold);
+  [[nodiscard]] int16_t estimate_carrier_offset_from_sync_symbol_0(const std::vector<cmplx> & iV);
+  [[nodiscard]] static float phase(const std::vector<cmplx> & iV, int32_t iTs);
   void set_sync_on_strongest_peak(bool sync);
 
   static constexpr int16_t IDX_NOT_FOUND = 10000;
@@ -70,8 +70,10 @@ private:
   int32_t mDisplayCounter = 0;
   bool mSyncOnStrongestPeak = false;
 
-  FftHandler mFftForward;
-  FftHandler mFftBackwards;
+  std::vector<cmplx> mFftInBuffer;
+  std::vector<cmplx> mFftOutBuffer;
+  fftwf_plan mFftPlanFwd;
+  fftwf_plan mFftPlanBwd;
 
   RingBuffer<float> * const mpResponse;
   std::vector<cmplx> mRefTable;

@@ -47,12 +47,15 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   : PhaseTable(ipParam->dabMode)
   , mDabPar(DabParams(ipParam->dabMode).get_dab_par())
   , mFramesPerSecond(INPUT_RATE / mDabPar.T_F)
-  , mFftForward(mDabPar.T_u, false)
-  , mFftBackwards(mDabPar.T_u, true)
   , mpResponse(ipParam->responseBuffer)
   , mRefTable(mDabPar.T_u, {0, 0})
   , mCorrPeakValues(mDabPar.T_u)
 {
+  mFftInBuffer.resize(mDabPar.T_u);
+  mFftOutBuffer.resize(mDabPar.T_u);
+  mFftPlanFwd = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
+  mFftPlanBwd = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
+
   mMeanCorrPeakValues.resize(mDabPar.T_u);
   std::fill(mMeanCorrPeakValues.begin(), mMeanCorrPeakValues.end(), 0.0f);
 
@@ -76,6 +79,12 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   connect(this, &PhaseReference::signal_show_correlation, ipRadio, &RadioInterface::slot_show_correlation);
 }
 
+PhaseReference::~PhaseReference()
+{
+  fftwf_destroy_plan(mFftPlanBwd);
+  fftwf_destroy_plan(mFftPlanFwd);
+}
+
 /**
   *	\brief findIndex
   *	the vector v contains "T_u" samples that are believed to
@@ -86,18 +95,19 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   *	looking for.
   */
 
-int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<cmplx> iV, float iThreshold) // copy of iV is intended
+int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const std::vector<cmplx> & iV, const float iThreshold)
 {
-  mFftForward.fft(iV); // in-place FFT
+  safe_vector_copy(mFftInBuffer, iV);
+  fftwf_execute(mFftPlanFwd);
 
   //	into the frequency domain, now correlate
   for (int32_t i = 0; i < mDabPar.T_u; i++)
   {
-    iV[i] *= conj(mRefTable[i]);
+    mFftInBuffer[i] = mFftOutBuffer[i] * conj(mRefTable[i]);
   }
 
   //	and, again, back into the time domain
-  mFftBackwards.fft(iV); // in-place IFFT
+  fftwf_execute(mFftPlanBwd);
 
   /**
     *	We compute the average and the max signal values
@@ -106,7 +116,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
 
   for (int32_t i = 0; i < mDabPar.T_u; i++)
   {
-    const float absVal = fast_abs(iV[i]);
+    const float absVal = fast_abs(mFftOutBuffer[i]);
     mCorrPeakValues[i] = absVal;
     mMeanCorrPeakValues[i] += absVal;
     sum += absVal;
@@ -192,15 +202,16 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(std::vector<c
 }
 
 //	an approach that works fine is to correlate the phase differences between subsequent carriers
-int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(std::vector<cmplx> iV) // copy of iV is intended
+int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const std::vector<cmplx> & iV)
 {
-  mFftForward.fft(iV);
+  safe_vector_copy(mFftInBuffer, iV);
+  fftwf_execute(mFftPlanFwd);
 
   //  The phase differences are computed once
   for (int16_t i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
   {
     const int16_t baseIndex = mDabPar.T_u - SEARCHRANGE / 2 + i;
-    mCorrelationVector[i] = arg(iV[baseIndex % mDabPar.T_u] * conj(iV[(baseIndex + 1) % mDabPar.T_u]));
+    mCorrelationVector[i] = arg(mFftOutBuffer[baseIndex % mDabPar.T_u] * conj(mFftOutBuffer[(baseIndex + 1) % mDabPar.T_u]));
   }
 
   int16_t index = IDX_NOT_FOUND;

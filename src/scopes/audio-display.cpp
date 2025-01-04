@@ -78,40 +78,34 @@ AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * 
   create_blackman_window(mWindow.data(), cSpectrumSize);
 }
 
+AudioDisplay::~AudioDisplay()
+{
+  fftwf_destroy_plan(mFftPlan);
+}
+
 void AudioDisplay::create_spectrum(const int16_t * const ipSampleData, const int iNumSamples, int iSampleRate)
 {
   constexpr int16_t averageCount = 3;
 
   // iNumSamples is number of single samples (so it is halved for stereo)
   assert(iNumSamples % 2 == 0); // check of even number of samples
-  int32_t numStereoSamples = iNumSamples / 2;
-
-  if (numStereoSamples > cSpectrumSize)
-  {
-    numStereoSamples = cSpectrumSize;
-  }
+  const int32_t numStereoSamples = iNumSamples / 2;
+  assert(cSpectrumSize == numStereoSamples);
 
   for (int32_t i = 0; i < numStereoSamples; i++)
   {
     // mSpectrumBuffer[i] = std::cos(F_2_M_PI * 12000.0f * (float)i / (float)iSampleRate);
-    mSpectrumBuffer[i] = ((float)ipSampleData[2 * i + 0] + (float)ipSampleData[2 * i + 1]) / (2.0f * (float)INT16_MAX);
-    assert(mSpectrumBuffer[i] <= 1.0f);
-  }
-
-  // clear not used FFT input samples
-  for (int32_t i = numStereoSamples; i < cSpectrumSize; i++)
-  {
-    mSpectrumBuffer[i] = 0;
+    mFftInBuffer[i] = ((float)ipSampleData[2 * i + 0] + (float)ipSampleData[2 * i + 1]) / (2.0f * (float)INT16_MAX);
   }
 
   // and window it
   for (int32_t i = 0; i < cSpectrumSize; i++)
   {
-    mSpectrumBuffer[i] *= mWindow[i];
+    mFftInBuffer[i] *= mWindow[i];
   }
 
   // real value FFT, only the first half of the given back vector is useful
-  mFft.fft(mSpectrumBuffer.data());
+  fftwf_execute(mFftPlan);
 
   // first X axis labels
   if (iSampleRate != mSampleRateLast)
@@ -124,12 +118,11 @@ void AudioDisplay::create_spectrum(const int16_t * const ipSampleData, const int
     pPlotGrid->setAxisScale(QwtPlot::xBottom, (double)mXDispBuffer[0], mXDispBuffer[cDisplaySize - 1]);
   }
 
-
   // and map the spectrumSize values onto displaySize elements
   for (int32_t i = 0; i < cDisplaySize; i++)
   {
     constexpr float fftOffset = 20.0f * std::log10(cSpectrumSize / 4);
-    const float yVal = log10_times_20(mSpectrumBuffer[i]) - fftOffset;
+    const float yVal = log10_times_20(std::abs(mFftOutBuffer[i])) - fftOffset;
     mYDispBuffer[i] = (float)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
   }
 

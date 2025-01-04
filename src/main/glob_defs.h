@@ -43,6 +43,14 @@ using cmplx16 = std::complex<int16_t>;
 // do not make this as a template as it freed the allocated stack buffer at once after call
 #define make_vla(T, iSize) static_cast<T * const>(alloca(iSize * sizeof(T))) // vla = variable length array on stack
 
+template<typename T> inline void safe_vector_copy(T & oVec, const T & iVec)
+{
+  // This method is intended to copy a (potential) bigger input vector to a already existing smaller one.
+  // A direct assignment could do a memory reallocation otherwise which is not wanted in certain cases (like FFTW buffer).
+  assert(oVec.size() <= iVec.size());
+  std::copy(iVec.begin(), iVec.begin() + oVec.size(), oVec.begin());
+}
+
 template<typename T> inline T conv_rad_to_deg(T iVal)
 {
   return iVal * (T)(180.0 / M_PI);

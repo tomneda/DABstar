@@ -34,9 +34,9 @@
 #include "dab-constants.h"
 #include "dab-params.h"
 #include "glob_enums.h"
-#include "fft-handler.h"
 #include "freq-interleaver.h"
 #include "ringbuffer.h"
+#include <fftw3.h>
 #include <QObject>
 #include <cstdint>
 #include <vector>
@@ -48,7 +48,7 @@ class OfdmDecoder : public QObject
 Q_OBJECT
 public:
   OfdmDecoder(RadioInterface *, uint8_t, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
-  ~OfdmDecoder() override = default;
+  ~OfdmDecoder() override;
 
   struct SQualityData
   {
@@ -63,7 +63,7 @@ public:
   void reset();
   void store_null_symbol_with_tii(const std::vector<cmplx> &);
   void store_null_symbol_without_tii(const std::vector<cmplx> &);
-  void store_reference_symbol_0(std::vector<cmplx>);  // copy of vector is intended
+  void store_reference_symbol_0(const std::vector<cmplx> &);
   void decode_symbol(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
@@ -77,7 +77,11 @@ private:
   RadioInterface * const mpRadioInterface;
   const DabParams::SDabPar mDabPar;
   FreqInterleaver mFreqInterleaver;
-  FftHandler mFftHandler;
+
+  std::vector<cmplx> mFftInBuffer;
+  std::vector<cmplx> mFftOutBuffer;
+  fftwf_plan mFftPlan;
+
   RingBuffer<cmplx> * const mpIqBuffer;
   RingBuffer<float> * const mpCarrBuffer;
 
@@ -91,7 +95,6 @@ private:
   int32_t mShowCntIqScope = 0;
   int32_t mNextShownOfdmSymbIdx = 1;
   std::vector<cmplx> mPhaseReference;
-  std::vector<cmplx> mFftBuffer;
   std::vector<cmplx> mIqVector;
   std::vector<float> mCarrVector;
   std::vector<float> mStdDevSqPhaseVector;
