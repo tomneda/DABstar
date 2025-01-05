@@ -99,16 +99,14 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
     }
     mFrameByteVec[mBlockFillIndex * nbits / 8 + i] = temp;
   }
-  //
+
   mBlocksInBuffer++;
   mBlockFillIndex = (mBlockFillIndex + 1) % 5;
-  //
-  /**
-    *	we take the last five blocks to look at
-    */
+
+  // we take the last five blocks to look at
   if (mBlocksInBuffer >= 5)
   {
-    ///	first, we show the "successrate"
+    // first, we show the "successrate"
     if (++mFrameCount >= 25)
     {
       mFrameCount = 0;
@@ -123,15 +121,20 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
     if (mSuperFrameSync == 0)
     {
       if (fc.check(&mFrameByteVec[mBlockFillIndex * nbits / 8]))
+      {
         mSuperFrameSync = 4;
+      }
       else
+      {
         mBlocksInBuffer = 4;
+      }
     }
     // since we processed a full cycle of 5 blocks, we just start a
     // new sequence, beginning with block blockFillIndex
     if (mSuperFrameSync)
     {
       mBlocksInBuffer = 0;
+
       if (_process_super_frame(mFrameByteVec.data(), mBlockFillIndex * nbits / 8))
       {
         mSuperFrameSync = 4;
@@ -214,15 +217,15 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     }
   }
 
-  //	bits 0 .. 15 is firecode
-  //	bit 16 is unused
+  // bits 0 .. 15 is firecode
+  // bit 16 is unused
   streamParameters.dacRate = (mOutVec[2] >> 6) & 01;  // bit 17
   streamParameters.sbrFlag = (mOutVec[2] >> 5) & 01;  // bit 18
   streamParameters.aacChannelMode = (mOutVec[2] >> 4) & 01;  // bit 19
-  streamParameters.psFlag = (mOutVec[2] >> 3) & 01;  // bit 20
+  streamParameters.psFlag = (mOutVec[2] >> 3) & 01;   // bit 20
   streamParameters.mpegSurround = (mOutVec[2] & 07);  // bits 21 .. 23
-  //
-  //	added for the aac file writer
+
+  // added for the aac file writer
   streamParameters.CoreSrIndex = streamParameters.dacRate ? (streamParameters.sbrFlag ? 6 : 3) : (streamParameters.sbrFlag ? 8 : 5);
   streamParameters.CoreChConfig = streamParameters.aacChannelMode ? 2 : 1;
 
@@ -230,7 +233,6 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
 
   switch (2 * streamParameters.dacRate + streamParameters.sbrFlag)
   {
-  default:    // cannot happen
   case 0: num_aus = 4;
     mAuStartArr[0] = 8;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
@@ -261,6 +263,7 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
     mAuStartArr[3] = 110 * (bitRate / 8);
     break;
+  default: assert(false);
   }
   /**
     *	OK, the result is N * 110 * 8 bits (still single bit per byte!!!)
@@ -269,31 +272,29 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     */
   for (i = 0; i < num_aus; i++)
   {
-    int16_t aac_frame_length;
-
     ///	sanity check 1
     if (mAuStartArr[i + 1] < mAuStartArr[i])
     {
-      //	      fprintf (stderr, "%d %d (%d)\n", au_start [i], au_start [i + 1], i);
+      fprintf(stderr, "mAuStartArr[i] %d, mAuStartArr[i + 1] %d, i %d\n", mAuStartArr[i], mAuStartArr[i + 1], i);
       //	should not happen, all errors were corrected
       return false;
     }
 
-    aac_frame_length = mAuStartArr[i + 1] - mAuStartArr[i] - 2;
+    const int16_t aac_frame_length = mAuStartArr[i + 1] - mAuStartArr[i] - 2;
     //	just a sanity check
     if ((aac_frame_length >= 960) || (aac_frame_length < 0))
     {
-      //	      fprintf (stderr, "aac_frame_length = %d\n", aac_frame_length);
-      //	      return false;
+      fprintf(stderr, "aac_frame_length = %d\n", aac_frame_length);
+      // return false;
     }
 
     //	but first the crc check
     if (check_crc_bytes(&mOutVec[mAuStartArr[i]], aac_frame_length))
     {
-      //
       //	first prepare dumping
       std::vector<uint8_t> fileBuffer;
       const int segmentSize = _build_aac_file(aac_frame_length, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
+
       if (mpDumpFile == nullptr)
       {
         mpFrameBuffer->put_data_into_ring_buffer(fileBuffer.data(), segmentSize);
@@ -309,11 +310,11 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
       {
         if (((mOutVec[mAuStartArr[i + 0]] >> 5) & 07) == 4)
         {
-          int16_t count = mOutVec[mAuStartArr[i] + 1];
+          const int16_t count = mOutVec[mAuStartArr[i] + 1];
           auto * const buffer = make_vla(uint8_t, count);
           memcpy(buffer, &mOutVec[mAuStartArr[i] + 2], count);
-          uint8_t L0 = buffer[count - 1];
-          uint8_t L1 = buffer[count - 2];
+          const uint8_t L0 = buffer[count - 1];
+          const uint8_t L1 = buffer[count - 2];
           mPadhandler.processPAD(buffer, count - 3, L1, L0);
         }
         //
@@ -323,7 +324,7 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
 #else
         uint8_t theAudioUnit[2 * 960 + 10];  // sure, large enough
 
-        memcpy(theAudioUnit, &outVector[au_start[i]], aac_frame_length);
+        memcpy(theAudioUnit, &mOutVec[mAuStartArr[i]], aac_frame_length);
         memset(&theAudioUnit[aac_frame_length], 0, 10);
 
         tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aac_frame_length);

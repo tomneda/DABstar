@@ -188,18 +188,16 @@ static inline bool check_CRC_bits(const uint8_t * const iIn, const int32_t iSize
 
 static inline bool check_crc_bytes(const uint8_t * const msg, const int32_t len)
 {
-  int i, j;
   uint16_t accumulator = 0xFFFF;
-  uint16_t crc;
-  uint16_t genpoly = 0x1021;
 
-  for (i = 0; i < len; i++)
+  for (int i = 0; i < len; i++)
   {
-    int16_t data = msg[i] << 8;
-    for (j = 8; j > 0; j--)
+    uint16_t data = (uint16_t)(msg[i]) << 8;
+    for (int j = 8; j > 0; j--)
     {
       if ((data ^ accumulator) & 0x8000)
       {
+        constexpr uint16_t genpoly = 0x1021;
         accumulator = ((accumulator << 1) ^ genpoly) & 0xFFFF;
       }
       else
@@ -209,10 +207,8 @@ static inline bool check_crc_bytes(const uint8_t * const msg, const int32_t len)
       data = (data << 1) & 0xFFFF;
     }
   }
-  //
-  //	ok, now check with the crc that is contained
-  //	in the au
-  crc = ~((msg[len] << 8) | msg[len + 1]) & 0xFFFF;
+  //	ok, now check with the crc that is contained in the au
+  const uint16_t crc = ~((msg[len] << 8) | msg[len + 1]) & 0xFFFF;
   return (crc ^ accumulator) == 0;
 }
 
