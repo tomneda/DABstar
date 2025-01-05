@@ -22,6 +22,13 @@
 
 class ReedSolomon
 {
+public:
+  explicit ReedSolomon(uint16_t symsize = 8, uint16_t gfpoly = 0435, uint16_t fcr = 0, uint16_t prim = 1, uint16_t nroots = 10);
+  ~ReedSolomon() = default;
+
+  int16_t dec(const uint8_t * data_in, uint8_t * data_out, int16_t cutlen);
+  void enc(const uint8_t * data_in, uint8_t * data_out, int16_t cutlen);
+
 private:
   Galois myGalois;
   uint16_t symsize;   /* Bits per symbol */
@@ -39,13 +46,6 @@ private:
   uint16_t computeOmega(uint8_t *, uint8_t *, uint16_t, uint8_t *);
   void encode_rs(const uint8_t * data_in, uint8_t * roots);
   int16_t decode_rs(uint8_t * data);
-
-public:
-  ReedSolomon(uint16_t symsize = 8, uint16_t gfpoly = 0435, uint16_t fcr = 0, uint16_t prim = 1, uint16_t nroots = 10);
-  ~ReedSolomon() = default;
-
-  int16_t dec(const uint8_t * data_in, uint8_t * data_out, int16_t cutlen);
-  void enc(const uint8_t * data_in, uint8_t * data_out, int16_t cutlen);
 };
 
 #endif

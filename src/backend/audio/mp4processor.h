@@ -66,12 +66,14 @@ public:
   void add_to_frame(const std::vector<uint8_t> &) override;
   
 private:
-  RadioInterface * myRadioInterface;
+  RadioInterface * const mpRadioInterface;
   PadHandler mPadhandler;
-  bool _process_super_frame(uint8_t [], int16_t);
-  int _build_aac_file(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer);
+  FILE * const mpDumpFile;
+  int16_t const mBitRate;
+  RingBuffer<uint8_t> * const mpFrameBuffer;
+  const int16_t mRsDims;
+  ReedSolomon mRsDecoder;
 
-  FILE * mpDumpFile = nullptr;
   int16_t mSuperFrameSize;
   int16_t mBlockFillIndex = 0;
   int16_t mBlocksInBuffer = 0;
@@ -85,19 +87,18 @@ private:
   int32_t mSuperFrameSync = 0;
   int32_t mGoodFrames = 0;
   int32_t mTotalCorrections = 0;
-  int16_t bitRate;
-  RingBuffer<uint8_t> * mpFrameBuffer = nullptr;
   std::vector<uint8_t> mFrameByteVec;
   std::vector<uint8_t> mOutVec;
-  const int16_t mRsDims;
   std::array<int16_t, 10> mAuStartArr;
   FirecodeChecker fc;
-  ReedSolomon mRsDecoder;
 #ifdef  __WITH_FDK_AAC__
   FdkAAC		*aacDecoder;
 #else
   faadDecoder * aacDecoder;
 #endif
+
+  bool _process_super_frame(uint8_t [], int16_t);
+  int _build_aac_file(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer);
 
 signals:
   void signal_show_frame_errors(int);

@@ -43,27 +43,27 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-Mp4Processor::Mp4Processor(RadioInterface * mr, const int16_t iBitRate, RingBuffer<int16_t> * b, RingBuffer<uint8_t> * frameBuffer, FILE * dump)
-  : mPadhandler(mr)
+Mp4Processor::Mp4Processor(RadioInterface * iRI, const int16_t iBitRate, RingBuffer<int16_t> * const iopAudioBuffer, RingBuffer<uint8_t> * const iopFrameBuffer, FILE * const ipDumpFile)
+  : mpRadioInterface(iRI)
+  , mPadhandler(iRI)
+  , mpDumpFile(ipDumpFile)
+  , mBitRate(iBitRate)
+  , mpFrameBuffer(iopFrameBuffer)  // input rate
   , mRsDims(iBitRate / 8)
   , mRsDecoder(8, 0435, 0, 1, 10)
 {
-  myRadioInterface = mr;
-  this->mpFrameBuffer = frameBuffer;
-  this->mpDumpFile = dump;
-  connect(this, &Mp4Processor::signal_show_frame_errors, mr, &RadioInterface::slot_show_frame_errors);
-  connect(this, &Mp4Processor::signal_show_rs_errors, mr, &RadioInterface::slot_show_rs_errors);
-  connect(this, &Mp4Processor::signal_show_aac_errors, mr, &RadioInterface::slot_show_aac_errors);
-  connect(this, &Mp4Processor::signal_is_stereo, mr, &RadioInterface::slot_set_stereo);
-  connect(this, &Mp4Processor::signal_new_frame, mr, &RadioInterface::slot_new_frame);
-  connect(this, &Mp4Processor::signal_show_rs_corrections, mr, &RadioInterface::slot_show_rs_corrections);
+  connect(this, &Mp4Processor::signal_show_frame_errors, iRI, &RadioInterface::slot_show_frame_errors);
+  connect(this, &Mp4Processor::signal_show_rs_errors, iRI, &RadioInterface::slot_show_rs_errors);
+  connect(this, &Mp4Processor::signal_show_aac_errors, iRI, &RadioInterface::slot_show_aac_errors);
+  connect(this, &Mp4Processor::signal_is_stereo, iRI, &RadioInterface::slot_set_stereo);
+  connect(this, &Mp4Processor::signal_new_frame, iRI, &RadioInterface::slot_new_frame);
+  connect(this, &Mp4Processor::signal_show_rs_corrections, iRI, &RadioInterface::slot_show_rs_corrections);
 
 #ifdef  __WITH_FDK_AAC__
-  aacDecoder = new FdkAAC(mr, b);
+  aacDecoder = new FdkAAC(iRI, iopAudioBuffer);
 #else
-  aacDecoder = new faadDecoder(mr, b);
+  aacDecoder = new faadDecoder(iRI, iopAudioBuffer);
 #endif
-  this->bitRate = iBitRate;  // input rate
 
   mSuperFrameSize = 110 * (iBitRate / 8);
   mFrameByteVec.resize(mRsDims * 120);  // input
@@ -80,24 +80,24 @@ Mp4Processor::~Mp4Processor()
   *
   *	a DAB+ superframe consists of 5 consecutive DAB frames 
   *	we add vector for vector to the superframe. Once we have
-  *	5 lengths of "old" frames, we check
+  *	5 lengths of "old" frames, we check.
   *	Note that the packing in the entry vector is still one bit
   *	per Byte, nbits is the number of Bits (i.e. containing bytes)
-  *	the function adds nbits bits, packed in bytes, to the frame
+  *	the function adds nbits bits, packed in bytes, to the frame.
   */
 void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
 {
-  uint8_t temp = 0;
-  const int16_t nbits = 24 * bitRate;
+  const int16_t numBits = 24 * mBitRate;
+  const int16_t numBytes = numBits / 8;
 
-  for (int16_t i = 0; i < nbits / 8; i++)
+  for (int16_t i = 0; i < numBytes; i++)
   {  // in bytes
-    temp = 0;
+    uint8_t temp = 0;
     for (int16_t j = 0; j < 8; j++)
     {
-      temp = (temp << 1) | (iV[i * 8 + j] & 01);
+      temp = (temp << 1) | (iV[i * 8 + j] & 0x1);
     }
-    mFrameByteVec[mBlockFillIndex * nbits / 8 + i] = temp;
+    mFrameByteVec[mBlockFillIndex * numBytes + i] = temp;
   }
 
   mBlocksInBuffer++;
@@ -120,7 +120,7 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
       */
     if (mSuperFrameSync == 0)
     {
-      if (fc.check(&mFrameByteVec[mBlockFillIndex * nbits / 8]))
+      if (fc.check(&mFrameByteVec[mBlockFillIndex * numBytes]))
       {
         mSuperFrameSync = 4;
       }
@@ -135,7 +135,7 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
     {
       mBlocksInBuffer = 0;
 
-      if (_process_super_frame(mFrameByteVec.data(), mBlockFillIndex * nbits / 8))
+      if (_process_super_frame(mFrameByteVec.data(), mBlockFillIndex * numBytes))
       {
         mSuperFrameSync = 4;
 
@@ -168,8 +168,6 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
   */
 bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base)
 {
-  uint8_t num_aus;
-  int16_t i, j, k;
   uint8_t rsIn[120];
   uint8_t rsOut[110];
   int tmp;
@@ -181,9 +179,9 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     *	the superframe, containing parity bytes for error repair
     *	take into account the interleaving that is applied.
     */
-  for (j = 0; j < mRsDims; j++)
+  for (int16_t j = 0; j < mRsDims; j++)
   {
-    for (k = 0; k < 120; k++)
+    for (int16_t k = 0; k < 120; k++)
     {
       rsIn[k] = frameBytes[(base + j + k * mRsDims) % (mRsDims * 120)];
     }
@@ -211,7 +209,7 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
       }
     }
 
-    for (k = 0; k < 110; k++)
+    for (int16_t k = 0; k < 110; k++)
     {
       mOutVec[j + k * mRsDims] = rsOut[k];
     }
@@ -231,37 +229,39 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
 
   streamParameters.ExtensionSrIndex = streamParameters.dacRate ? 3 : 5;
 
+  uint8_t auStartMaxIdx;
+
   switch (2 * streamParameters.dacRate + streamParameters.sbrFlag)
   {
-  case 0: num_aus = 4;
+  case 0: auStartMaxIdx = 4;
     mAuStartArr[0] = 8;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
     mAuStartArr[3] = mOutVec[6] * 16 + (mOutVec[7] >> 4);
-    mAuStartArr[4] = 110 * (bitRate / 8);
+    mAuStartArr[4] = 110 * (mBitRate / 8);
     break;
   //
-  case 1: num_aus = 2;
+  case 1: auStartMaxIdx = 2;
     mAuStartArr[0] = 5;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
-    mAuStartArr[2] = 110 * (bitRate / 8);
+    mAuStartArr[2] = 110 * (mBitRate / 8);
     break;
   //
-  case 2: num_aus = 6;
+  case 2: auStartMaxIdx = 6;
     mAuStartArr[0] = 11;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
     mAuStartArr[3] = mOutVec[6] * 16 + (mOutVec[7] >> 4);
     mAuStartArr[4] = (mOutVec[7] & 0xf) * 256 + mOutVec[8];
     mAuStartArr[5] = mOutVec[9] * 16 + (mOutVec[10] >> 4);
-    mAuStartArr[6] = 110 * (bitRate / 8);
+    mAuStartArr[6] = 110 * (mBitRate / 8);
     break;
   //
-  case 3: num_aus = 3;
+  case 3: auStartMaxIdx = 3;
     mAuStartArr[0] = 6;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
-    mAuStartArr[3] = 110 * (bitRate / 8);
+    mAuStartArr[3] = 110 * (mBitRate / 8);
     break;
   default: assert(false);
   }
@@ -270,12 +270,12 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     *	extract the AU's, and prepare a buffer,  with the sufficient
     *	lengthy for conversion to PCM samples
     */
-  for (i = 0; i < num_aus; i++)
+  for (int16_t i = 0; i < auStartMaxIdx; i++)
   {
     ///	sanity check 1
     if (mAuStartArr[i + 1] < mAuStartArr[i])
     {
-      fprintf(stderr, "mAuStartArr[i] %d, mAuStartArr[i + 1] %d, i %d\n", mAuStartArr[i], mAuStartArr[i + 1], i);
+      fprintf(stderr, "AU address sequence error: mAuStartArr[i] %d, mAuStartArr[i + 1] %d, i %d, auStartMaxIdx %d\n", mAuStartArr[i], mAuStartArr[i + 1], i, auStartMaxIdx);
       //	should not happen, all errors were corrected
       return false;
     }
@@ -317,7 +317,7 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
           const uint8_t L1 = buffer[count - 2];
           mPadhandler.processPAD(buffer, count - 3, L1, L0);
         }
-        //
+
         //	then handle the audio
 #ifdef  __WITH_FDK_AAC__
         tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, fileBuffer.data(), segmentSize);
