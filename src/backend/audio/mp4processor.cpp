@@ -90,8 +90,9 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
   const int16_t numBits = 24 * mBitRate;
   const int16_t numBytes = numBits / 8;
 
+  // convert input bit-stream in iV to a byte-stream in mFrameByteVec
   for (int16_t i = 0; i < numBytes; i++)
-  {  // in bytes
+  {
     uint8_t temp = 0;
     for (int16_t j = 0; j < 8; j++)
     {
@@ -166,13 +167,8 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
   *	First, we know the firecode checker gave green light
   *	We correct the errors using RS
   */
-bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base)
+bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iBase)
 {
-  uint8_t rsIn[120];
-  uint8_t rsOut[110];
-  int tmp;
-  stream_parms streamParameters;
-
   /**
     *	apply reed-solomon error repair
     *	OK, what we now have is a vector with RSDims * 120 uint8_t's
@@ -181,18 +177,24 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     */
   for (int16_t j = 0; j < mRsDims; j++)
   {
+    std::array<uint8_t, 120> rsIn;
+
     for (int16_t k = 0; k < 120; k++)
     {
-      rsIn[k] = frameBytes[(base + j + k * mRsDims) % (mRsDims * 120)];
+      rsIn[k] = ipFrameBytes[(iBase + j + k * mRsDims) % (mRsDims * 120)];
     }
 
-    if (const int16_t ler = mRsDecoder.dec(rsIn, rsOut, 135);
-        ler < 0)
+    std::array<uint8_t, 110> rsOut;
+
+    const int16_t ler = mRsDecoder.dec(rsIn.data(), rsOut.data(), 135);  // i7-6700K: ~28us
+
+    if (ler < 0)
     {
       mRsErrors++;
-      //	      fprintf (stderr, "RS failure\n");
-      if (!fc.check(&frameBytes[base]) && j == 0)
+      fprintf (stderr, "RS failure %d\n", mRsErrors);
+      if (!fc.check(&ipFrameBytes[iBase]) && j == 0)
       {
+        fprintf (stderr, "Firecode after RS failure\n");
         return false;
       }
     }
@@ -217,9 +219,10 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
 
   // bits 0 .. 15 is firecode
   // bit 16 is unused
+  stream_parms streamParameters;
   streamParameters.dacRate = (mOutVec[2] >> 6) & 01;  // bit 17
   streamParameters.sbrFlag = (mOutVec[2] >> 5) & 01;  // bit 18
-  streamParameters.aacChannelMode = (mOutVec[2] >> 4) & 01;  // bit 19
+  streamParameters.aacChannelMode = (mOutVec[2] >> 4) & 01;  // bit 19, 0:mono, 1:stereo
   streamParameters.psFlag = (mOutVec[2] >> 3) & 01;   // bit 20
   streamParameters.mpegSurround = (mOutVec[2] & 07);  // bits 21 .. 23
 
@@ -229,11 +232,11 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
 
   streamParameters.ExtensionSrIndex = streamParameters.dacRate ? 3 : 5;
 
-  uint8_t auStartMaxIdx;
+  uint8_t numAUs;
 
   switch (2 * streamParameters.dacRate + streamParameters.sbrFlag)
   {
-  case 0: auStartMaxIdx = 4;
+  case 0: numAUs = 4;
     mAuStartArr[0] = 8;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
@@ -241,13 +244,13 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     mAuStartArr[4] = 110 * (mBitRate / 8);
     break;
   //
-  case 1: auStartMaxIdx = 2;
+  case 1: numAUs = 2;
     mAuStartArr[0] = 5;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = 110 * (mBitRate / 8);
     break;
   //
-  case 2: auStartMaxIdx = 6;
+  case 2: numAUs = 6;
     mAuStartArr[0] = 11;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
@@ -257,7 +260,7 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     mAuStartArr[6] = 110 * (mBitRate / 8);
     break;
   //
-  case 3: auStartMaxIdx = 3;
+  case 3: numAUs = 3;
     mAuStartArr[0] = 6;
     mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
@@ -270,12 +273,12 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     *	extract the AU's, and prepare a buffer,  with the sufficient
     *	lengthy for conversion to PCM samples
     */
-  for (int16_t i = 0; i < auStartMaxIdx; i++)
+  for (int16_t i = 0; i < numAUs; i++)
   {
     ///	sanity check 1
     if (mAuStartArr[i + 1] < mAuStartArr[i])
     {
-      fprintf(stderr, "AU address sequence error: mAuStartArr[i] %d, mAuStartArr[i + 1] %d, i %d, auStartMaxIdx %d\n", mAuStartArr[i], mAuStartArr[i + 1], i, auStartMaxIdx);
+      fprintf(stderr, "error: invalid AU address sequence: mAuStartArr[i] %d, mAuStartArr[i + 1] %d, i %d, numAUs %d\n", mAuStartArr[i], mAuStartArr[i + 1], i, numAUs);
       //	should not happen, all errors were corrected
       return false;
     }
@@ -284,8 +287,8 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
     //	just a sanity check
     if ((aac_frame_length >= 960) || (aac_frame_length < 0))
     {
-      fprintf(stderr, "aac_frame_length = %d\n", aac_frame_length);
-      // return false;
+      fprintf(stderr, "error: invalid aac_frame_length = %d\n", aac_frame_length);
+      return false;
     }
 
     //	but first the crc check
@@ -320,14 +323,14 @@ bool Mp4Processor::_process_super_frame(uint8_t frameBytes[], const int16_t base
 
         //	then handle the audio
 #ifdef  __WITH_FDK_AAC__
-        tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, fileBuffer.data(), segmentSize);
+        const int tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, fileBuffer.data(), segmentSize);
 #else
         uint8_t theAudioUnit[2 * 960 + 10];  // sure, large enough
 
         memcpy(theAudioUnit, &mOutVec[mAuStartArr[i]], aac_frame_length);
         memset(&theAudioUnit[aac_frame_length], 0, 10);
 
-        tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aac_frame_length);
+        const int tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aac_frame_length);
 #endif
         emit signal_is_stereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
 

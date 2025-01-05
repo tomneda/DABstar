@@ -67,9 +67,6 @@ FdkAAC::~FdkAAC()
 int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * const ipBuffer, const int16_t iPacketLength)
 {
   static_assert(sizeof(int16_t) == sizeof(INT_PCM));
-  uint32_t packet_size;
-  uint32_t valid;
-  AAC_DECODER_ERROR err;
   INT_PCM decode_buf[8 * sizeof(INT_PCM) * 2048];
   INT_PCM * bufp = &decode_buf[0];
   int output_size = 8 * 2048;
@@ -84,20 +81,23 @@ int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * con
     return -2;
   }
 
-  packet_size = ((ipBuffer[1] & 0x1F) << 8) | (ipBuffer[2] + 3);
+  const uint32_t packet_size = (((ipBuffer[1] & 0x1F) << 8) | ipBuffer[2]) + 3;
+
   if ((signed)packet_size != iPacketLength)
   {
     return -3;
   }
 
-  valid = packet_size;
-  err = aacDecoder_Fill(handle, const_cast<uint8_t **>(&ipBuffer), &packet_size, &valid);
+  uint32_t validBytes = packet_size; // to remove const-ness
+  AAC_DECODER_ERROR err = aacDecoder_Fill(handle, const_cast<uint8_t **>(&ipBuffer), &packet_size, &validBytes);
+
   if (err != AAC_DEC_OK)
   {
     return -4;
   }
 
   err = aacDecoder_DecodeFrame(handle, bufp, output_size, 0);
+
   if (err == AAC_DEC_NOT_ENOUGH_BITS)
   {
     return -5;
@@ -108,7 +108,7 @@ int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * con
     return -6;
   }
 
-  CStreamInfo * info = aacDecoder_GetStreamInfo(handle);
+  const CStreamInfo * info = aacDecoder_GetStreamInfo(handle);
   if (!info || info->sampleRate <= 0)
   {
     return -7;
