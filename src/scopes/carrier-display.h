@@ -30,7 +30,7 @@ class CarrierDisp : public QObject
 Q_OBJECT
 public:
   explicit CarrierDisp(QwtPlot * plot);
-  ~CarrierDisp() = default;
+  ~CarrierDisp() override = default;
 
   struct SCustPlot
   {
@@ -43,9 +43,11 @@ public:
 
     double YTopValue;
     double YBottomValue;
+    double YTopValueRangeExt = 0;    // this zoom range extension value must be zero or positive
+    double YBottomValueRangeExt = 0; // this zoom range extension value must be zero or negative
     int32_t YValueElementNo;
 
-    int32_t MarkerYValueStep = 1; // if not each Y value a marker should set (0 = no set no marker)
+    int32_t MarkerYValueStep = 1; // if not each Y value a marker should set (0 = to set no marker)
     bool DrawTiiSegments = false;
   };
 
@@ -58,10 +60,10 @@ private:
   CustQwtZoomPan mZoomPan;
   QwtPlotCurve mQwtPlotCurve;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
-  std::vector<QwtPlotMarker *> mQwtPlotTiiMarkerVec{};
+  std::vector<QwtPlotMarker *> mQwtPlotTiiMarkerVec;
   std::vector<float> mX_axis_vec;
   int32_t mDataSize = 0;
-  ECarrierPlotType mPlotType;
+  ECarrierPlotType mPlotType = ECarrierPlotType::DEFAULT;
 
   void _customize_plot(const SCustPlot & iCustPlot);
   static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);

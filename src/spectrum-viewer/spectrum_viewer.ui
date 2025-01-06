@@ -33,7 +33,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display. &lt;/p&gt;&lt;p&gt;Time synchronization is done by correlation. The first found peak over the threshold line is the one at (or near) sample 504. &lt;/p&gt;&lt;p&gt;The signal is in dB and normed to the threshold level.&lt;/p&gt;&lt;p&gt;Use mouse wheel for horizontal zooming.&lt;br/&gt;Press CTRL key additionally for vertical zooming.&lt;br/&gt;Press left mouse button for panning.&lt;br/&gt;Press right mouse button to reset zoom.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display. &lt;/p&gt;&lt;p&gt;Time synchronization is done by correlation. The first found peak over the threshold line is the one at (or near) sample 504. &lt;/p&gt;&lt;p&gt;The signal is in dB and normed to the threshold level. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zooming&lt;/span&gt;&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;CTRL&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;vertical&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;SHIFT&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;horizontal&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Use mouse wheel for zooming.&lt;br/&gt;Press left mouse button for panning.&lt;br/&gt;Press right mouse button to reset zoom.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>

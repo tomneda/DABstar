@@ -87,8 +87,8 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
   auto * const data = make_vla(float, cPlotLength);
   // using log10_times_10() (not times 20) as the correlation is some kind of energy signal
   const float threshold_dB = 20 * log10(threshold);
-  constexpr float sScalerFltAlpha = (float)0.1;
-  constexpr float scalerFltAlpha = sScalerFltAlpha / (float)cPlotLength;
+  constexpr float cScalerFltAlpha1 = (float)0.1;
+  constexpr float cScalerFltAlpha2 = cScalerFltAlpha1 / (float)cPlotLength;
 
   const int32_t numRead = mpResponseBuffer->get_data_from_ring_buffer(data, cPlotLength);
   (void)numRead;
@@ -111,13 +111,13 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
 
     if (Y_values[i] < 0)
     {
-      mean_filter(mMinValFlt, Y_values[i], scalerFltAlpha);
+      mean_filter(mMinValFlt, Y_values[i], cScalerFltAlpha2);
     }
   }
 
-  mean_filter(mMaxValFlt, maxYVal, sScalerFltAlpha);
+  mean_filter(mMaxValFlt, maxYVal, cScalerFltAlpha1);
 
-  mZoomPan.set_y_range(CustQwtZoomPan::SRange(mMinValFlt - 8, mMaxValFlt + 3));
+  mZoomPan.set_y_range(CustQwtZoomPan::SRange(mMinValFlt - 8, mMaxValFlt + 3, -20.0, 20.0));
   mpPlotGrid->enableAxis(QwtPlot::yLeft);
   mQwtPlotCurve.setSamples(X_axis.data(), Y_values.data(), cPlotLength);
   mpPlotGrid->replot();

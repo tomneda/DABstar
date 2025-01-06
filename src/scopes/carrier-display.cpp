@@ -67,8 +67,9 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
     }
 
     mQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<double>(), QList<double>(), tickList));
-    mZoomPan.set_y_range(CustQwtZoomPan::SRange(tickList[0], tickList[tickList.size() - 1]));
-    mZoomPan.reset_zoom();
+    mZoomPan.set_y_range(CustQwtZoomPan::SRange(tickList[0], tickList[tickList.size() - 1], iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
+    mZoomPan.reset_x_zoom();
+    mZoomPan.reset_y_zoom();
   }
 
   // draw horizontal marker lines at -90, 0 , 90 degrees
@@ -196,6 +197,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "EVM (dB)";
     cp.YTopValue = 0.0;
     cp.YBottomValue = -36.0;
+    cp.YBottomValueRangeExt = -24.0;
     cp.YValueElementNo = 7;
     cp.MarkerYValueStep = 1;
     break;
@@ -215,7 +217,9 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Corr. Phase Error";
     cp.YTopValue = 20.0;
+    cp.YTopValueRangeExt = 25.0;
     cp.YBottomValue = -20.0;
+    cp.YBottomValueRangeExt = -25.0;
     cp.YValueElementNo = 5;
     cp.MarkerYValueStep = 1;
     break;
@@ -235,7 +239,9 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Relative Power";
     cp.YTopValue = 12.0;
+    cp.YTopValueRangeExt = 6.0;
     cp.YBottomValue = -24.0;
+    cp.YBottomValueRangeExt = -26.0;
     cp.YValueElementNo = 7;
     cp.MarkerYValueStep = 1;
     break;
@@ -266,6 +272,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Style = SCustPlot::EStyle::STICKS;
     cp.Name = "Null Sym. TII (dB)";
     cp.YTopValue = 50.0;
+    cp.YTopValueRangeExt = 40.0;
     cp.YBottomValue = 0.0;
     cp.YValueElementNo = 6;
     cp.MarkerYValueStep = 1;
@@ -289,13 +296,17 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "Null Sym. ovr. Pow.";
     cp.YTopValue = 6.0;
     cp.YBottomValue = -48.0;
+    cp.YBottomValueRangeExt = -18.0;
     cp.YValueElementNo = 9;
     cp.MarkerYValueStep = 1;
     break;
   }
 
   cp.ToolTip += "<p>The carrier at index 0 is not really existing. The value is interpolated between the two neighbor carriers.</p>"
-                "<p>Use mouse wheel for horizontal zooming.<br>Press CTRL key additionally for vertical zooming.<br>"
+                "<p><b>Zooming</b><br>"
+                "Press <b>&lt;CTRL&gt;</b> key for <b>vertical</b> zooming, panning and reset zoom.<br>"
+                "Press <b>&lt;SHIFT&gt;</b> key for <b>horizontal</b> zooming, panning and reset zoom.<br>"
+                "Use mouse wheel for zooming.<br>"
                 "Press left mouse button for panning.<br>Press right mouse button to reset zoom.</p>";
 
   return cp;
