@@ -25,14 +25,24 @@ class CustQwtZoomPan : public QObject
   Q_OBJECT
 
 public:
-  explicit CustQwtZoomPan(QwtPlot * ipPlot,
-                          int32_t ixMin = 0, int32_t ixMax = 0,
-                          int32_t iyMin = 0, int32_t iyMax = 0);
+  struct SRange
+  {
+    explicit SRange(int32_t iMinDefault = 0, int32_t iMaxDefault = 0, int32_t iMaxZoomOutDelta = 0)
+      : MinDefault(iMinDefault)
+      , MaxDefault(iMaxDefault)
+      , MaxZoomOutDelta(iMaxZoomOutDelta) {}
+    int32_t MinDefault = 0;
+    int32_t MaxDefault = 0;
+    int32_t MaxZoomOutDelta = 0;
+  };
+
+
+  explicit CustQwtZoomPan(QwtPlot * ipPlot, const SRange & iRangeX = SRange(), const SRange & iRangeY = SRange());
   ~CustQwtZoomPan() override = default;
 
   void reset_zoom();
-  void set_x_range(double ixMin, double ixMax);
-  void set_y_range(double iyMin, double iyMax);
+  void set_x_range(const SRange & iRange);
+  void set_y_range(const SRange & iRange);
 
 protected:
   bool eventFilter(QObject * object, QEvent * event) override;
@@ -41,10 +51,10 @@ private:
   static constexpr double cMaxZoomFactor = 100.0;
 
   QwtPlot * const mpQwtPlot;
+
   struct SInitData
   {
-    double Min = 0;
-    double Max = 0;
+    SRange Range{};
     double MinNrPoints = 0;
     bool IsZoomed = false;
     bool AllowChange = false;
@@ -55,6 +65,7 @@ private:
   bool mPanning = false;
   QPoint mLastPos{};
 
+  void _set_range(SInitData & oInitData, const SRange & iRange);
   void _handle_mouse_press(const QMouseEvent * event);
   void _handle_mouse_release(const QMouseEvent * event);
   void _handle_mouse_move(const QMouseEvent * event);

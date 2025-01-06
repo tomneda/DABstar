@@ -21,7 +21,7 @@
 
 CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
   : mQwtPlot(ipPlot)
-  , mZoomPan(ipPlot, -1536/2, 1536/2) // TODO: remove magic numbers
+  , mZoomPan(ipPlot, CustQwtZoomPan::SRange(-1536/2, 1536/2)) // TODO: remove magic numbers
 {
   mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Vertical);
@@ -67,7 +67,7 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
     }
 
     mQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<double>(), QList<double>(), tickList));
-    mZoomPan.set_y_range(tickList[0], tickList[tickList.size() - 1]);
+    mZoomPan.set_y_range(CustQwtZoomPan::SRange(tickList[0], tickList[tickList.size() - 1]));
     mZoomPan.reset_zoom();
   }
 

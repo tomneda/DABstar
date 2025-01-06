@@ -17,14 +17,14 @@
 #include <qwt_scale_div.h>
 #include <qwt_plot.h>
 
-CustQwtZoomPan::CustQwtZoomPan(QwtPlot * ipPlot, const int32_t ixMin, const int32_t ixMax, const int32_t iyMin, const int32_t iyMax)
+CustQwtZoomPan::CustQwtZoomPan(QwtPlot * ipPlot, const SRange & iRangeX, const SRange & iRangeY)
   : QObject(ipPlot)
   , mpQwtPlot(ipPlot)
 {
   assert(mpQwtPlot != nullptr);
 
-  set_x_range(ixMin, ixMax);
-  set_y_range(iyMin, iyMax);
+  set_x_range(iRangeX);
+  set_y_range(iRangeY);
   reset_zoom();
 
   mpQwtPlot->canvas()->installEventFilter(this);
@@ -37,43 +37,43 @@ void CustQwtZoomPan::reset_zoom()
 
   if (mDataX.AllowChange)
   {
-    mpQwtPlot->setAxisScale(QwtPlot::xBottom, mDataX.Min, mDataX.Max);
+    mpQwtPlot->setAxisScale(QwtPlot::xBottom, mDataX.Range.MinDefault, mDataX.Range.MaxDefault);
   }
 
   if (mDataY.AllowChange)
   {
-    mpQwtPlot->setAxisScale(QwtPlot::yLeft, mDataY.Min, mDataY.Max);
+    mpQwtPlot->setAxisScale(QwtPlot::yLeft, mDataY.Range.MinDefault, mDataY.Range.MaxDefault);
   }
 
   mpQwtPlot->replot();
 }
 
-void CustQwtZoomPan::set_x_range(const double ixMin, const double ixMax)
+void CustQwtZoomPan::_set_range(SInitData & oInitData, const SRange & iRange)
 {
-  assert(ixMin <= ixMax);
-  SInitData & d = mDataX;
-  d.Min = ixMin;
-  d.Max = ixMax;
-  d.MinNrPoints = std::round((ixMax - ixMin) / cMaxZoomFactor);
-  d.AllowChange = (d.Min < d.Max);
-  if (d.AllowChange && !d.IsZoomed)
+  assert(iRange.MinDefault <= iRange.MaxDefault + iRange.MaxZoomOutDelta);
+  oInitData.Range = iRange;
+  oInitData.MinNrPoints = std::round((iRange.MaxDefault - iRange.MinDefault) / cMaxZoomFactor);
+  oInitData.AllowChange = (oInitData.Range.MinDefault < oInitData.Range.MaxDefault + oInitData.Range.MaxZoomOutDelta);
+}
+
+void CustQwtZoomPan::set_x_range(const SRange & iRange)
+{
+  _set_range(mDataX, iRange);
+
+  if (mDataX.AllowChange && !mDataX.IsZoomed)
   {
-    mpQwtPlot->setAxisScale(QwtPlot::xBottom, d.Min, d.Max);
+    mpQwtPlot->setAxisScale(QwtPlot::xBottom, mDataX.Range.MinDefault, mDataX.Range.MaxDefault);
     mpQwtPlot->replot();
   }
 }
 
-void CustQwtZoomPan::set_y_range(const double iyMin, const double iyMax)
+void CustQwtZoomPan::set_y_range(const SRange & iRange)
 {
-  assert(iyMin <= iyMax);
-  SInitData & d = mDataY;
-  d.Min = iyMin;
-  d.Max = iyMax;
-  d.MinNrPoints = std::round((iyMax - iyMin) / cMaxZoomFactor);
-  d.AllowChange = (d.Min < d.Max);
-  if (d.AllowChange && !d.IsZoomed)
+  _set_range(mDataY, iRange);
+
+  if (mDataY.AllowChange && !mDataY.IsZoomed)
   {
-    mpQwtPlot->setAxisScale(QwtPlot::yLeft, d.Min, d.Max);
+    mpQwtPlot->setAxisScale(QwtPlot::yLeft, mDataY.Range.MinDefault, mDataY.Range.MaxDefault);
     mpQwtPlot->replot();
   }
 }
@@ -111,18 +111,19 @@ void CustQwtZoomPan::_handle_mouse_press(const QMouseEvent * const event)
   }
   else if (event->button() == Qt::RightButton)
   {
-    if (mDataX.AllowChange)
-    {
-      mpQwtPlot->setAxisScale(QwtPlot::xBottom, mDataX.Min, mDataX.Max);
-    }
-
-    if (mDataY.AllowChange)
-    {
-      mpQwtPlot->setAxisScale(QwtPlot::yLeft, mDataY.Min, mDataY.Max);
-    }
-    mDataX.IsZoomed = false;
-    mDataY.IsZoomed = false;
-    mpQwtPlot->replot();
+    reset_zoom();
+    // if (mDataX.AllowChange)
+    // {
+    //   mpQwtPlot->setAxisScale(QwtPlot::xBottom, mDataX.Min, mDataX.Max);
+    // }
+    //
+    // if (mDataY.AllowChange)
+    // {
+    //   mpQwtPlot->setAxisScale(QwtPlot::yLeft, mDataY.Min, mDataY.Max);
+    // }
+    // mDataX.IsZoomed = false;
+    // mDataY.IsZoomed = false;
+    // mpQwtPlot->replot();
   }
 }
 
@@ -145,7 +146,7 @@ void CustQwtZoomPan::_handle_mouse_move(const QMouseEvent * const event)
     const double newMin = curMin + dx;
     const double newMax = curMax + dx;
 
-    if (newMin >= iData.Min && newMax <= iData.Max)
+    if (newMin >= iData.Range.MinDefault && newMax <= iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta)
     {
       mpQwtPlot->setAxisScale(iAxisId, newMin, newMax);
     }
@@ -181,8 +182,8 @@ void CustQwtZoomPan::_handle_wheel_event(const QWheelEvent * const event)
     const double curValAtMousePos = curMin + iRelMousePos * curRange;
     double newMin = curValAtMousePos - newRange * iRelMousePos;
     double newMax = curValAtMousePos + newRange * (1.0 - iRelMousePos);
-    if (newMin < iData.Min) newMin = iData.Min;
-    if (newMax > iData.Max) newMax = iData.Max;
+    if (newMin < iData.Range.MinDefault) newMin = iData.Range.MinDefault;
+    if (newMax > iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta) newMax = iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta;
     mpQwtPlot->setAxisScale(iAxisId, newMin, newMax);
   };
 

@@ -41,7 +41,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   , mpResponseBuffer(b)
   , mpPlotGrid(pPlot)
   , mpIndexDisplay(pLabel)
-  , mZoomPan(pPlot, 0, 2047)
+  , mZoomPan(pPlot, CustQwtZoomPan::SRange(0, 2047))
 {
   QString colorString;
   mpSettings->beginGroup(SETTING_GROUP_NAME);
@@ -117,7 +117,7 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
 
   mean_filter(mMaxValFlt, maxYVal, sScalerFltAlpha);
 
-  mZoomPan.set_y_range(mMinValFlt - 8, mMaxValFlt + 3);
+  mZoomPan.set_y_range(CustQwtZoomPan::SRange(mMinValFlt - 8, mMaxValFlt + 3));
   mpPlotGrid->enableAxis(QwtPlot::yLeft);
   mQwtPlotCurve.setSamples(X_axis.data(), Y_values.data(), cPlotLength);
   mpPlotGrid->replot();
