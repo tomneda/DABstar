@@ -2,7 +2,8 @@
 
 ---
 ![screenshot.png](res/for_readme/screenshot.png)
-(Picture from V3.2.0)
+(Picture from V3.4.0)
+
 ---
 
 ## Table of Content
