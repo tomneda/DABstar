@@ -43,33 +43,16 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   , mpIndexDisplay(pLabel)
   , mZoomPan(pPlot, CustQwtZoomPan::SRange(0, 2047))
 {
-  QString colorString;
-  mpSettings->beginGroup(SETTING_GROUP_NAME);
-  colorString = mpSettings->value("gridColor", "#5e5c64").toString();
-  mGridColor = QColor(colorString);
-  colorString = mpSettings->value("curveColor", "#ffbe6f").toString();
-  mCurveColor = QColor(colorString);
-  const bool brush = (mpSettings->value("brush", 0).toInt() == 1);
-  mpSettings->endGroup();
-
-  mQwtGrid.setMajorPen(QPen(mGridColor, 0, Qt::DotLine));
+  mQwtGrid.setMajorPen(QPen(QColor(0x5e5c64), 0, Qt::DotLine));
+  mQwtGrid.setMinorPen(QPen(QColor(0x5e5c64), 0, Qt::DotLine));
   mQwtGrid.enableXMin(true);
   mQwtGrid.enableYMin(false);
-  mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
   mQwtGrid.attach(mpQwtPlot);
 
-  mQwtPlotCurve.setPen(QPen(mCurveColor, 2.0));
-  mQwtPlotCurve.setOrientation(Qt::Horizontal);
+  mQwtPlotCurve.setPen(QPen(QColor(0xffbe6f), 2.0));
   mQwtPlotCurve.setBaseline(0);
-
-  if (brush)
-  {
-    QBrush ourBrush(mCurveColor);
-    ourBrush.setStyle(Qt::Dense3Pattern);
-    mQwtPlotCurve.setBrush(ourBrush);
-  }
-
   mQwtPlotCurve.attach(mpQwtPlot);
+
   mpQwtPlot->enableAxis(QwtPlot::yLeft);
 
   mpThresholdMarker = new QwtPlotMarker();

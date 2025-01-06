@@ -24,7 +24,6 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
   , mZoomPan(ipPlot, CustQwtZoomPan::SRange(-1536.0 / 2, 1536.0 / 2)) // TODO: remove magic numbers
 {
   mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
-  int a = mQwtPlotCurve.orientation();
   mQwtPlotCurve.setOrientation(Qt::Vertical); // only for TII "stick" which are should shown vertically
   mQwtPlotCurve.attach(mpQwtPlot);
 
@@ -33,7 +32,7 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
   mQwtGrid.enableX(true);
   mQwtGrid.enableY(true);
   mQwtGrid.enableXMin(true);
-  mQwtGrid.enableYMin(true);
+  mQwtGrid.enableYMin(false);
   mQwtGrid.attach(mpQwtPlot);
 
   select_plot_type(ECarrierPlotType::DEFAULT);
@@ -63,6 +62,7 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 
   assert(iCustPlot.YTopValue > iCustPlot.YBottomValue);
 
+#if 0  // is not more usable with pan and zoom functionality
   // draw vertical ticks
   if (iCustPlot.YValueElementNo > 0)
   {
@@ -83,6 +83,9 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
     mZoomPan.set_y_range(CustQwtZoomPan::SRange(iCustPlot.YBottomValue, iCustPlot.YTopValue, iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
     mpQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv());
   }
+#else
+  mZoomPan.set_y_range(CustQwtZoomPan::SRange(iCustPlot.YBottomValue, iCustPlot.YTopValue, iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
+#endif
 
   mZoomPan.reset_x_zoom();
   mZoomPan.reset_y_zoom();
