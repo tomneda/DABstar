@@ -25,20 +25,27 @@ CustQwtZoomPan::CustQwtZoomPan(QwtPlot * ipPlot, const SRange & iRangeX, const S
 
   set_x_range(iRangeX);
   set_y_range(iRangeY);
-  reset_zoom();
+  reset_x_zoom();
+  reset_y_zoom();
 
   mpQwtPlot->canvas()->installEventFilter(this);
 }
 
-void CustQwtZoomPan::reset_zoom()
+void CustQwtZoomPan::reset_x_zoom()
 {
   mDataX.IsZoomed = false;
-  mDataY.IsZoomed = false;
 
   if (mDataX.AllowChange)
   {
     mpQwtPlot->setAxisScale(QwtPlot::xBottom, mDataX.Range.MinDefault, mDataX.Range.MaxDefault);
   }
+
+  mpQwtPlot->replot();
+}
+
+void CustQwtZoomPan::reset_y_zoom()
+{
+  mDataY.IsZoomed = false;
 
   if (mDataY.AllowChange)
   {
@@ -50,10 +57,12 @@ void CustQwtZoomPan::reset_zoom()
 
 void CustQwtZoomPan::_set_range(SInitData & oInitData, const SRange & iRange)
 {
-  assert(iRange.MinDefault <= iRange.MaxDefault + iRange.MaxZoomOutDelta);
+  assert(iRange.MinZoomOutDelta <= 0); // MinZoomOutDelta must be zero or negative
+  assert(iRange.MaxZoomOutDelta >= 0); // MaxZoomOutDelta must be zero or positive
+  assert(iRange.MinDefault + iRange.MinZoomOutDelta <= iRange.MaxDefault + iRange.MaxZoomOutDelta);
   oInitData.Range = iRange;
   oInitData.MinNrPoints = std::round((iRange.MaxDefault - iRange.MinDefault) / cMaxZoomFactor);
-  oInitData.AllowChange = (oInitData.Range.MinDefault < oInitData.Range.MaxDefault + oInitData.Range.MaxZoomOutDelta);
+  oInitData.AllowChange = (oInitData.Range.MinDefault < oInitData.Range.MaxDefault); // if MinDefault and MaxDefault are zero, no zooming is wanted
 }
 
 void CustQwtZoomPan::set_x_range(const SRange & iRange)
@@ -111,19 +120,15 @@ void CustQwtZoomPan::_handle_mouse_press(const QMouseEvent * const event)
   }
   else if (event->button() == Qt::RightButton)
   {
-    reset_zoom();
-    // if (mDataX.AllowChange)
-    // {
-    //   mpQwtPlot->setAxisScale(QwtPlot::xBottom, mDataX.Min, mDataX.Max);
-    // }
-    //
-    // if (mDataY.AllowChange)
-    // {
-    //   mpQwtPlot->setAxisScale(QwtPlot::yLeft, mDataY.Min, mDataY.Max);
-    // }
-    // mDataX.IsZoomed = false;
-    // mDataY.IsZoomed = false;
-    // mpQwtPlot->replot();
+    if ((event->modifiers() & Qt::ShiftModifier) != 0)
+    {
+      reset_x_zoom();
+    }
+
+    if ((event->modifiers() & Qt::ControlModifier) != 0)
+    {
+      reset_y_zoom();
+    }
   }
 }
 
@@ -146,7 +151,8 @@ void CustQwtZoomPan::_handle_mouse_move(const QMouseEvent * const event)
     const double newMin = curMin + dx;
     const double newMax = curMax + dx;
 
-    if (newMin >= iData.Range.MinDefault && newMax <= iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta)
+    if (newMin >= iData.Range.MinDefault + iData.Range.MinZoomOutDelta &&
+        newMax <= iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta)
     {
       mpQwtPlot->setAxisScale(iAxisId, newMin, newMax);
     }
@@ -156,16 +162,23 @@ void CustQwtZoomPan::_handle_mouse_move(const QMouseEvent * const event)
   {
     const QPoint delta = event->pos() - mLastPos;
 
-    if (mDataX.AllowChange)
+    if ((event->modifiers() & Qt::ShiftModifier) != 0)
     {
-      set_axis_scale(QwtPlot::xBottom, mDataX, -(double)delta.x() / mpQwtPlot->canvas()->width());
+      if (mDataX.AllowChange)
+      {
+        mDataX.IsZoomed = true;
+        set_axis_scale(QwtPlot::xBottom, mDataX, -(double)delta.x() / mpQwtPlot->canvas()->width());
+      }
     }
 
-    if (mDataY.AllowChange)
+    if ((event->modifiers() & Qt::ControlModifier) != 0)
     {
-      set_axis_scale(QwtPlot::yLeft, mDataY, (double)delta.y() / mpQwtPlot->canvas()->height());
+      if (mDataY.AllowChange)
+      {
+        mDataY.IsZoomed = true;
+        set_axis_scale(QwtPlot::yLeft, mDataY, (double)delta.y() / mpQwtPlot->canvas()->height());
+      }
     }
-
     mLastPos = event->pos();
     mpQwtPlot->replot();
   }
@@ -182,7 +195,7 @@ void CustQwtZoomPan::_handle_wheel_event(const QWheelEvent * const event)
     const double curValAtMousePos = curMin + iRelMousePos * curRange;
     double newMin = curValAtMousePos - newRange * iRelMousePos;
     double newMax = curValAtMousePos + newRange * (1.0 - iRelMousePos);
-    if (newMin < iData.Range.MinDefault) newMin = iData.Range.MinDefault;
+    if (newMin < iData.Range.MinDefault + iData.Range.MinZoomOutDelta) newMin = iData.Range.MinDefault + iData.Range.MinZoomOutDelta;
     if (newMax > iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta) newMax = iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta;
     mpQwtPlot->setAxisScale(iAxisId, newMin, newMax);
   };
@@ -192,7 +205,7 @@ void CustQwtZoomPan::_handle_wheel_event(const QWheelEvent * const event)
 
   const QPointF pos = event->position();
 
-  if ((event->modifiers() & Qt::ControlModifier) == 0) // CTRL is not pressed
+  if ((event->modifiers() & Qt::ShiftModifier) != 0)
   {
     if (mDataX.AllowChange)
     {
@@ -200,7 +213,8 @@ void CustQwtZoomPan::_handle_wheel_event(const QWheelEvent * const event)
       set_axis_scale(QwtPlot::xBottom, mDataX, zoomScale, pos.x() / mpQwtPlot->canvas()->width());
     }
   }
-  else // CTRL is pressed
+
+  if ((event->modifiers() & Qt::ControlModifier) != 0)
   {
     if (mDataY.AllowChange)
     {

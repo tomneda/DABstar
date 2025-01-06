@@ -27,20 +27,25 @@ class CustQwtZoomPan : public QObject
 public:
   struct SRange
   {
-    explicit SRange(int32_t iMinDefault = 0, int32_t iMaxDefault = 0, int32_t iMaxZoomOutDelta = 0)
+    explicit SRange(const double iMinDefault = 0, const double iMaxDefault = 0,
+                    const double iMinZoomOutDelta = 0, const double iMaxZoomOutDelta = 0)
       : MinDefault(iMinDefault)
       , MaxDefault(iMaxDefault)
+      , MinZoomOutDelta(iMinZoomOutDelta)
       , MaxZoomOutDelta(iMaxZoomOutDelta) {}
-    int32_t MinDefault = 0;
-    int32_t MaxDefault = 0;
-    int32_t MaxZoomOutDelta = 0;
+
+    double MinDefault = 0;
+    double MaxDefault = 0;
+    double MinZoomOutDelta = 0;
+    double MaxZoomOutDelta = 0;
   };
 
 
   explicit CustQwtZoomPan(QwtPlot * ipPlot, const SRange & iRangeX = SRange(), const SRange & iRangeY = SRange());
   ~CustQwtZoomPan() override = default;
 
-  void reset_zoom();
+  void reset_x_zoom();
+  void reset_y_zoom();
   void set_x_range(const SRange & iRange);
   void set_y_range(const SRange & iRange);
 
