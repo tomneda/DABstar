@@ -39,7 +39,7 @@
 CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<float> * b)
   : mpSettings(s)
   , mpResponseBuffer(b)
-  , mpPlotGrid(pPlot)
+  , mpQwtPlot(pPlot)
   , mpIndexDisplay(pLabel)
   , mZoomPan(pPlot, CustQwtZoomPan::SRange(0, 2047))
 {
@@ -56,7 +56,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mQwtGrid.enableXMin(true);
   mQwtGrid.enableYMin(false);
   mQwtGrid.setMinorPen(QPen(mGridColor, 0, Qt::DotLine));
-  mQwtGrid.attach(mpPlotGrid);
+  mQwtGrid.attach(mpQwtPlot);
 
   mQwtPlotCurve.setPen(QPen(mCurveColor, 2.0));
   mQwtPlotCurve.setOrientation(Qt::Horizontal);
@@ -69,16 +69,16 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
     mQwtPlotCurve.setBrush(ourBrush);
   }
 
-  mQwtPlotCurve.attach(mpPlotGrid);
-  mpPlotGrid->enableAxis(QwtPlot::yLeft);
+  mQwtPlotCurve.attach(mpQwtPlot);
+  mpQwtPlot->enableAxis(QwtPlot::yLeft);
 
   mpThresholdMarker = new QwtPlotMarker();
   mpThresholdMarker->setLineStyle(QwtPlotMarker::HLine);
   mpThresholdMarker->setLinePen(QPen(Qt::darkYellow, 0, Qt::DashLine));
   mpThresholdMarker->setYValue(0); // threshold line is normed to 0dB
-  mpThresholdMarker->attach(mpPlotGrid);
-  mpPlotGrid->setAxisScale(QwtPlot::xBottom, 0, 2047);
-  mpPlotGrid->enableAxis(QwtPlot::xBottom);
+  mpThresholdMarker->attach(mpQwtPlot);
+  mpQwtPlot->setAxisScale(QwtPlot::xBottom, 0, 2047);
+  mpQwtPlot->enableAxis(QwtPlot::xBottom);
 }
 
 void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr)
@@ -118,9 +118,9 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
   mean_filter(mMaxValFlt, maxYVal, cScalerFltAlpha1);
 
   mZoomPan.set_y_range(CustQwtZoomPan::SRange(mMinValFlt - 8, mMaxValFlt + 3, -20.0, 20.0));
-  mpPlotGrid->enableAxis(QwtPlot::yLeft);
+  mpQwtPlot->enableAxis(QwtPlot::yLeft);
   mQwtPlotCurve.setSamples(X_axis.data(), Y_values.data(), cPlotLength);
-  mpPlotGrid->replot();
+  mpQwtPlot->replot();
 
   mpIndexDisplay->setText(_get_best_match_text(v));
 
@@ -149,7 +149,7 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
     if (sample < 0) sample += 2048;
     else if (sample > 2407) sample -= 2048;
     p->setXValue(sample);
-    p->attach(mpPlotGrid);
+    p->attach(mpQwtPlot);
   }
 }
 

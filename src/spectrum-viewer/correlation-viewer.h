@@ -68,7 +68,7 @@ private:
 
   QSettings * const mpSettings = nullptr;
   RingBuffer<float> * const mpResponseBuffer;
-  QwtPlot * const mpPlotGrid;
+  QwtPlot * const mpQwtPlot;
   QLabel * const mpIndexDisplay;
   QwtPlotMarker * mpThresholdMarker = nullptr;
   QwtPlotCurve mQwtPlotCurve;

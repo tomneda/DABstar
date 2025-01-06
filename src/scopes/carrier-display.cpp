@@ -20,12 +20,21 @@
 #include <QPen>
 
 CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
-  : mQwtPlot(ipPlot)
-  , mZoomPan(ipPlot, CustQwtZoomPan::SRange(-1536/2, 1536/2)) // TODO: remove magic numbers
+  : mpQwtPlot(ipPlot)
+  , mZoomPan(ipPlot, CustQwtZoomPan::SRange(-1536.0 / 2, 1536.0 / 2)) // TODO: remove magic numbers
 {
   mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
-  mQwtPlotCurve.setOrientation(Qt::Vertical);
-  mQwtPlotCurve.attach(mQwtPlot);
+  int a = mQwtPlotCurve.orientation();
+  mQwtPlotCurve.setOrientation(Qt::Vertical); // only for TII "stick" which are should shown vertically
+  mQwtPlotCurve.attach(mpQwtPlot);
+
+  mQwtGrid.setMajorPen(QPen(QColor(0x5e5c64), 0, Qt::DotLine));
+  mQwtGrid.setMinorPen(QPen(Qt::black, 0, Qt::NoPen));
+  mQwtGrid.enableX(true);
+  mQwtGrid.enableY(true);
+  mQwtGrid.enableXMin(true);
+  mQwtGrid.enableYMin(true);
+  mQwtGrid.attach(mpQwtPlot);
 
   select_plot_type(ECarrierPlotType::DEFAULT);
 }
@@ -39,7 +48,7 @@ void CarrierDisp::display_carrier_plot(const std::vector<float> & iYValVec)
   }
 
   mQwtPlotCurve.setSamples(mX_axis_vec.data(), iYValVec.data(), mDataSize);
-  mQwtPlot->replot();
+  mpQwtPlot->replot();
 }
 
 void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
@@ -50,15 +59,15 @@ void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 
 void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 {
-  mQwtPlot->setToolTip(iCustPlot.ToolTip);
+  mpQwtPlot->setToolTip(iCustPlot.ToolTip);
 
-  assert(iCustPlot.YValueElementNo >= 2);
   assert(iCustPlot.YTopValue > iCustPlot.YBottomValue);
 
-  const double diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
-
   // draw vertical ticks
+  if (iCustPlot.YValueElementNo > 0)
   {
+    assert(iCustPlot.YValueElementNo >= 2);
+    const double diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
     QList<double> tickList;
 
     for (int32_t elemIdx = 0; elemIdx < iCustPlot.YValueElementNo; ++elemIdx)
@@ -66,11 +75,17 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
       tickList.push_back(iCustPlot.YBottomValue + elemIdx * diffVal);
     }
 
-    mQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<double>(), QList<double>(), tickList));
     mZoomPan.set_y_range(CustQwtZoomPan::SRange(tickList[0], tickList[tickList.size() - 1], iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
-    mZoomPan.reset_x_zoom();
-    mZoomPan.reset_y_zoom();
+    mpQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<double>(), QList<double>(), tickList));
   }
+  else
+  {
+    mZoomPan.set_y_range(CustQwtZoomPan::SRange(iCustPlot.YBottomValue, iCustPlot.YTopValue, iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
+    mpQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv());
+  }
+
+  mZoomPan.reset_x_zoom();
+  mZoomPan.reset_y_zoom();
 
   // draw horizontal marker lines at -90, 0 , 90 degrees
   {
@@ -91,6 +106,8 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 
     if (iCustPlot.MarkerYValueStep > 0)
     {
+      assert(iCustPlot.YValueElementNo >= 2);
+      const double diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
       const int32_t noMarkers = (iCustPlot.YValueElementNo + iCustPlot.MarkerYValueStep - 1) / iCustPlot.MarkerYValueStep;
       mQwtPlotMarkerVec.resize(noMarkers);
 
@@ -108,10 +125,14 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
           p->setLinePen(QColor(Qt::darkGray), 0.0, Qt::DashLine);
         }
         p->setValue(0, iCustPlot.YBottomValue + diffVal * markerIdx * iCustPlot.MarkerYValueStep);
-        p->attach(mQwtPlot);
+        p->attach(mpQwtPlot);
       }
     }
   }
+
+  // enable/disable standard grid
+  mQwtGrid.enableX(iCustPlot.DrawXGrid);
+  mQwtGrid.enableY(iCustPlot.DrawYGrid);
 
   if (iCustPlot.DrawTiiSegments)
   {
@@ -131,7 +152,7 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
       p->setLineStyle(QwtPlotMarker::VLine);
       p->setLinePen((markerIdx - 16) % 8 == 0 ? 0x5555BB : 0xAA4444, 0.0, Qt::SolidLine);
       p->setValue(xPoints[markerIdx], 0);
-      p->attach(mQwtPlot);
+      p->attach(mpQwtPlot);
     }
   }
 
@@ -161,7 +182,7 @@ void CarrierDisp::_setup_x_axis()
     mX_axis_vec[i + displaySizeHalf] = (float)(i + 1);
   }
 
-  mQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
+  mpQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
 }
 
 CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType iPlotType)
@@ -177,8 +198,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "Soft-Bit Weight";
     cp.YTopValue = 100.0;
     cp.YBottomValue = 0.0;
-    cp.YValueElementNo = 6;
-    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::EVM_PER:
@@ -187,8 +206,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "EVM (%)";
     cp.YTopValue = 100.0;
     cp.YBottomValue = 0.0;
-    cp.YValueElementNo = 6;
-    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::EVM_DB:
@@ -198,8 +215,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YTopValue = 0.0;
     cp.YBottomValue = -36.0;
     cp.YBottomValueRangeExt = -24.0;
-    cp.YValueElementNo = 7;
-    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::STD_DEV:
@@ -208,8 +223,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "Phase Std-Dev.";
     cp.YTopValue = 45.0;
     cp.YBottomValue = 0.0;
-    cp.YValueElementNo = 7;
-    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::PHASE_ERROR:
@@ -220,8 +233,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YTopValueRangeExt = 25.0;
     cp.YBottomValue = -20.0;
     cp.YBottomValueRangeExt = -25.0;
-    cp.YValueElementNo = 5;
-    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::FOUR_QUAD_PHASE:
@@ -232,6 +243,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YBottomValue = -180.0;
     cp.YValueElementNo = 9;
     cp.MarkerYValueStep = 2;
+    cp.DrawYGrid = false;
     break;
 
   case ECarrierPlotType::REL_POWER:
@@ -242,8 +254,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YTopValueRangeExt = 6.0;
     cp.YBottomValue = -24.0;
     cp.YBottomValueRangeExt = -26.0;
-    cp.YValueElementNo = 7;
-    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::SNR:
@@ -252,8 +262,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "S/N-Ratio";
     cp.YTopValue = 60.0;
     cp.YBottomValue = 0.0;
-    cp.YValueElementNo = 7;
-    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::NULL_TII_LIN:
@@ -262,9 +270,8 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "Null Sym. TII (%)";
     cp.YTopValue = 100.0;
     cp.YBottomValue = 0.0;
-    cp.YValueElementNo = 6;
-    cp.MarkerYValueStep = 1;
     cp.DrawTiiSegments = true;
+    cp.DrawXGrid = false;
     break;
 
   case ECarrierPlotType::NULL_TII_LOG:
@@ -274,9 +281,8 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YTopValue = 50.0;
     cp.YTopValueRangeExt = 40.0;
     cp.YBottomValue = 0.0;
-    cp.YValueElementNo = 6;
-    cp.MarkerYValueStep = 1;
     cp.DrawTiiSegments = true;
+    cp.DrawXGrid = false;
     break;
 
   case ECarrierPlotType::NULL_NO_TII:
@@ -285,8 +291,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "Null Sym. no TII";
     cp.YTopValue = 100.0;
     cp.YBottomValue = 0.0;
-    cp.YValueElementNo = 6;
-    cp.MarkerYValueStep = 1;
     break;
 
   case ECarrierPlotType::NULL_OVR_POW:
@@ -297,8 +301,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YTopValue = 6.0;
     cp.YBottomValue = -48.0;
     cp.YBottomValueRangeExt = -18.0;
-    cp.YValueElementNo = 9;
-    cp.MarkerYValueStep = 1;
     break;
   }
 

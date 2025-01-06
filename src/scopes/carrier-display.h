@@ -22,8 +22,10 @@
 #include <qwt_plot.h>
 #include <qwt_plot_marker.h>
 #include <qwt_plot_curve.h>
+#include <qwt_plot_grid.h>
 #include <vector>
 #include "cust_qwt_zoom_pan.h"
+
 
 class CarrierDisp : public QObject
 {
@@ -45,9 +47,10 @@ public:
     double YBottomValue;
     double YTopValueRangeExt = 0;    // this zoom range extension value must be zero or positive
     double YBottomValueRangeExt = 0; // this zoom range extension value must be zero or negative
-    int32_t YValueElementNo;
-
-    int32_t MarkerYValueStep = 1; // if not each Y value a marker should set (0 = to set no marker)
+    int32_t YValueElementNo = 0;
+    int32_t MarkerYValueStep = 0; // if not each Y value a marker should set (0 = to set no marker)
+    bool DrawXGrid = true;
+    bool DrawYGrid = true;
     bool DrawTiiSegments = false;
   };
 
@@ -56,9 +59,10 @@ public:
   static QStringList get_plot_type_names();
 
 private:
-  QwtPlot * const mQwtPlot = nullptr;
+  QwtPlot * const mpQwtPlot = nullptr;
   CustQwtZoomPan mZoomPan;
   QwtPlotCurve mQwtPlotCurve;
+  QwtPlotGrid mQwtGrid;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
   std::vector<QwtPlotMarker *> mQwtPlotTiiMarkerVec;
   std::vector<float> mX_axis_vec;
