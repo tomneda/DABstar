@@ -61,7 +61,7 @@ AudioDisplay::AudioDisplay(RadioInterface * mr, QwtPlot * plotGrid, QSettings * 
 
 #ifdef _WIN32
   // It is strange, the non-macro based variant seems not working on windows, so use the macro-base version here.
-  connect(lm_picker, SIGNAL(selected(const QPointF&)), this, SLOT(_slot_rightMouseClick(const QPointF &)));
+  connect(pLmPicker, SIGNAL(selected(const QPointF&)), this, SLOT(_slot_rightMouseClick(const QPointF &)));
 #else
   // The non macro-based variant is type-secure so it should be preferred.
   // Clang-glazy mentioned that QwtPlotPicker::selected would be no signal, but it is?!

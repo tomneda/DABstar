@@ -23,7 +23,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"3.2.0\\\"
+DEFINES		+= PRJ_VERS=\\\"3.4.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -167,6 +167,7 @@ HEADERS += \
     src/support/converter_48000.h \
     src/support/wav_writer.h \
     src/support/angle_direction.h \
+    src/support/time_meas.h \
     src/scopes/iqdisplay.h \
     src/scopes/carrier-display.h \
     src/scopes/spectrogramdata.h \
@@ -314,7 +315,7 @@ CONFIG		+= dabstick
 #CONFIG		+= sdrplay-v2
 #CONFIG		+= pluto
 CONFIG		+= sdrplay-v3
-#CONFIG		+= hackrf
+CONFIG		+= hackrf
 #CONFIG		+= lime
 CONFIG		+= VITERBI_SSE
 CONFIG		+= faad
