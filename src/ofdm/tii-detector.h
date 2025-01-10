@@ -73,4 +73,5 @@ private:
   void _remove_single_carrier_values(TBufferArr768 & ioBuffer) const;
   void _decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const std::vector<cmplx> & iVec) const;
   void _collapse_tii_groups(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec, const TBufferArr768 & iVec) const;
+  cmplx _turn_phase(cmplx const value, const uint8_t phase) const;
 };
