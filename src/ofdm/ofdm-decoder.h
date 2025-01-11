@@ -36,7 +36,6 @@
 #include "glob_enums.h"
 #include "freq-interleaver.h"
 #include "ringbuffer.h"
-#include <fftw3.h>
 #include <QObject>
 #include <cstdint>
 #include <vector>
@@ -78,10 +77,6 @@ private:
   const DabParams::SDabPar mDabPar;
   FreqInterleaver mFreqInterleaver;
 
-  std::vector<cmplx> mFftInBuffer;
-  std::vector<cmplx> mFftOutBuffer;
-  fftwf_plan mFftPlan;
-
   RingBuffer<cmplx> * const mpIqBuffer;
   RingBuffer<float> * const mpCarrBuffer;
 
@@ -120,7 +115,7 @@ private:
   [[nodiscard]] float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
   [[nodiscard]] float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
   [[nodiscard]] float _compute_noise_Power() const;
-  void _eval_null_symbol_statistics();
+  void _eval_null_symbol_statistics(const std::vector<cmplx> &);
   void _reset_null_symbol_statistics();
 
   static cmplx _interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar);

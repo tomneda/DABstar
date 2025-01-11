@@ -56,6 +56,10 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   , mcTiiDelay(p->tii_delay)
   , mDabPar(DabParams(p->dabMode).get_dab_par())
 {
+  mFftInBuffer.resize(mDabPar.T_u);
+  mFftOutBuffer.resize(mDabPar.T_u);
+  mFftPlan = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
+
   //connect(this, &DabProcessor::signal_set_synced, mpRadioInterface, &RadioInterface::slot_set_synced);
   connect(this, &DabProcessor::signal_set_sync_lost, mpRadioInterface, &RadioInterface::slot_set_sync_lost);
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
@@ -73,6 +77,7 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
 
 DabProcessor::~DabProcessor()
 {
+  fftwf_destroy_plan(mFftPlan);
   if (isRunning())
   {
     mSampleReader.setRunning(false);
@@ -198,7 +203,9 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
    * for coarse frequency synchronization and its content is used as a reference for decoding the first datablock.
    */
 
-  mOfdmDecoder.store_reference_symbol_0(mOfdmBuffer);
+  safe_vector_copy(mFftInBuffer, mOfdmBuffer);
+  fftwf_execute(mFftPlan);
+  mOfdmDecoder.store_reference_symbol_0(mFftOutBuffer);
 
   // Here we look only at the symbol 0 when we need a coarse frequency synchronization.
   mCorrectionNeeded = mFicHandler.getFicDecodeRatioPercent() < 50;
@@ -263,24 +270,24 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
 
   // is this null symbol with TII?
   const bool isTiiNullSegment = (mcDabMode == 1 && (mFicHandler.get_CIFcount() & 0x7) >= 4);
+  memcpy(mFftInBuffer.data(), &(mOfdmBuffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
+  fftwf_execute(mFftPlan);
 
   if (!isTiiNullSegment) // eval SNR only in non-TII null segments
   {
-    mOfdmDecoder.store_null_symbol_without_tii(mOfdmBuffer); // for SNR evaluation
+    mOfdmDecoder.store_null_symbol_without_tii(mFftOutBuffer); // for SNR evaluation
   }
   else // this is TII null segment
   {
-    mOfdmDecoder.store_null_symbol_with_tii(mOfdmBuffer); // for displaying TII
+    mOfdmDecoder.store_null_symbol_with_tii(mFftOutBuffer); // for displaying TII
 
     // The TII data is encoded in the null period of the	odd frames
-    mTiiDetector.add_to_tii_buffer(mOfdmBuffer);
-
+    mTiiDetector.add_to_tii_buffer(mFftOutBuffer);
     if (++mTiiCounter >= mcTiiDelay)
     {
       if (mEnableTii)
       {
         std::vector<STiiResult> transmitterIds = mTiiDetector.process_tii_data(mTiiThreshold);
-
         if (!transmitterIds.empty())
         {
           emit signal_show_tii(transmitterIds);
@@ -317,7 +324,9 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
     }
 
     mOfdmDecoder.set_dc_offset(mSampleReader.get_dc_offset());
-    mOfdmDecoder.decode_symbol(mOfdmBuffer, ofdmSymbCntIdx, mPhaseOffsetCyclPrefRad, mBits);
+    memcpy(mFftInBuffer.data(), &(mOfdmBuffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
+    fftwf_execute(mFftPlan);
+    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbCntIdx, mPhaseOffsetCyclPrefRad, mBits);
 
     if (ofdmSymbCntIdx <= 3)
     {
@@ -670,6 +679,6 @@ void DabProcessor::set_tii_subid(uint8_t subid)
 
 void DabProcessor::set_tii_threshold(uint8_t trs)
 {
-  fprintf(stderr, "tii_threshold = %d\n", trs);
+  //fprintf(stderr, "tii_threshold = %d\n", trs);
   mTiiThreshold = trs;
 }

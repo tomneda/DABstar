@@ -52,6 +52,7 @@
 #include  "tii-detector.h"
 #include  "eti-generator.h"
 #include  "timesyncer.h"
+#include  <fftw3.h>
 
 class RadioInterface;
 class DabParams;
@@ -146,6 +147,10 @@ private:
 
   std::vector<cmplx> mOfdmBuffer;
   std::vector<int16_t> mBits;
+
+  std::vector<cmplx> mFftInBuffer;
+  std::vector<cmplx> mFftOutBuffer;
+  fftwf_plan mFftPlan;
 
   void run() override; // the new QThread
 

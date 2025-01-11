@@ -146,17 +146,12 @@ TiiDetector::TiiDetector(const uint8_t iDabMode)
   , mT_g(mParams.get_T_g())
   , mK(mParams.get_K())
 {
-  mFftInBuffer.resize(mT_u);
-  mFftOutBuffer.resize(mT_u);
-  mFftPlan = fftwf_plan_dft_1d(mT_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
-
   mNullSymbolBufferVec.resize(mT_u);
   reset();
 }
 
 TiiDetector::~TiiDetector()
 {
-  fftwf_destroy_plan(mFftPlan);
 }
 
 void TiiDetector::set_detect_collisions(const bool iActive)
@@ -178,14 +173,9 @@ void TiiDetector::reset()
 // To reduce noise in the input signal, we might add a few spectra before computing (up to the user)
 void TiiDetector::add_to_tii_buffer(const std::vector<cmplx> & iV)
 {
-  assert((int)iV.size() >= mT_g + mT_u);
-  memcpy(mFftInBuffer.data(), &(iV[mT_g]), mT_u * sizeof(cmplx));
-
-  fftwf_execute(mFftPlan);
-
   for (int i = 0; i < mT_u; i++)
   {
-    mNullSymbolBufferVec[i] += mFftOutBuffer[i];
+    mNullSymbolBufferVec[i] += iV[i];
   }
 }
 

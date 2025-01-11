@@ -11,7 +11,6 @@
 
 #include "dab-constants.h"
 #include "dab-params.h"
-#include <fftw3.h>
 
 struct STiiResult
 {
@@ -53,10 +52,6 @@ private:
   uint8_t mSubIdCollSearch = 0;
   TBufferArr768 mDecodedBufferArr;
   std::vector<cmplx> mNullSymbolBufferVec;
-
-  std::vector<cmplx> mFftInBuffer;
-  std::vector<cmplx> mFftOutBuffer;
-  fftwf_plan mFftPlan;
 
   float _calculate_average_noise(const TFloatTable192 & iFloatTable) const;
   void _get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, float & ioMax, const TCmplxTable192 & iCmplxTable) const;

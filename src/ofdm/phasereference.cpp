@@ -204,14 +204,11 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const std::ve
 //	an approach that works fine is to correlate the phase differences between subsequent carriers
 int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const std::vector<cmplx> & iV)
 {
-  safe_vector_copy(mFftInBuffer, iV);
-  fftwf_execute(mFftPlanFwd);
-
   //  The phase differences are computed once
   for (int16_t i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
   {
     const int16_t baseIndex = mDabPar.T_u - SEARCHRANGE / 2 + i;
-    mCorrelationVector[i] = arg(mFftOutBuffer[baseIndex % mDabPar.T_u] * conj(mFftOutBuffer[(baseIndex + 1) % mDabPar.T_u]));
+    mCorrelationVector[i] = arg(iV[baseIndex % mDabPar.T_u] * conj(iV[(baseIndex + 1) % mDabPar.T_u]));
   }
 
   int16_t index = IDX_NOT_FOUND;
