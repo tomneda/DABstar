@@ -122,8 +122,16 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
     swInfo << "Ver: " << mHackrf.library_version() << ", " << "Rel: " << mHackrf.library_release();
     lblSwInfo->setText(swInfo.str().c_str());
 
-    char const * pSerial = deviceList->serial_numbers[0];
-    while (*pSerial == '0') ++pSerial; // remove leading '0'
+    char const * pSerial = deviceList->serial_numbers[0]; // pSerial may be NULL!
+
+    if (pSerial != nullptr)
+    {
+      while (*pSerial == '0') ++pSerial; // remove leading '0'
+    }
+    else
+    {
+      pSerial = "unknown";
+    }
 
     uint8_t revNo = 0;
     check_err_throw(mHackrf.board_rev_read(theDevice, &revNo));
@@ -241,7 +249,7 @@ static std::array<std::complex<int8_t>, 32 * 32768> buffer;
 static int callback(hackrf_transfer * transfer)
 {
   auto * ctx = static_cast<HackRfHandler *>(transfer->rx_ctx);
-  const int8_t * const p = reinterpret_cast<const int8_t * const>(transfer->buffer);
+  const int8_t * const p = reinterpret_cast<const int8_t *>(transfer->buffer);
   HackRfHandler::TRingBuffer * q = &(ctx->mRingBuffer);
   int bufferIndex = 0;
 
@@ -311,7 +319,7 @@ void HackRfHandler::stopReader()
 //	size still in I/Q pairs
 int32_t HackRfHandler::getSamples(cmplx * V, int32_t size)
 {
-  std::complex<int8_t> temp[size];
+  auto * const temp = make_vla(std::complex<int8_t>, size);
   int amount = mRingBuffer.get_data_from_ring_buffer(temp, size);
 
   for (int i = 0; i < amount; i++)

@@ -8,3 +8,6 @@ build*/
 /exportToHTML/
 /.vs
 /todo.txt
+/dabstar-libs/
+/dabstar.pro.user
+/CMakeSettings.json
