@@ -170,6 +170,8 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s)
   alternatives[filler].fKHz = 0;
   fclose(f);
   selectedBand = alternatives;
+#else
+  (void)a_band;
 #endif
 }
 

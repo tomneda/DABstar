@@ -33,7 +33,7 @@
 #include "audiooutput.h"
 #include <QAudioSink>
 
-AudioOutput::AudioOutput(QObject * parent)
+AudioOutput::AudioOutput(QObject * /*parent*/)
 {
   mpDevices = new QMediaDevices(this);
   connect(mpDevices, &QMediaDevices::audioOutputsChanged, this, &AudioOutput::_slot_update_audio_devices);

@@ -142,7 +142,7 @@ void etiGenerator::newFrame()
 
 //
 //
-//	we ensure that when starting, we start with a 
+//	we ensure that when starting, we start with a
 //	block 1
 void etiGenerator::processBlock(const std::vector<int16_t> & ibits, int blkno)
 {
@@ -428,7 +428,7 @@ int32_t etiGenerator::process_CIF(const int16_t * input, uint8_t * output, int32
   return offset;
 }
 
-void etiGenerator::process_subCh(int nr, parameter * p, Protection * prot, uint8_t * desc)
+void etiGenerator::process_subCh(int /*nr*/, parameter * p, Protection * prot, uint8_t * desc)
 {
   std::unique_ptr<uint8_t[]> outVector{ new uint8_t[24 * p->bitRate] };
   if (!outVector)
@@ -459,7 +459,7 @@ void etiGenerator::process_subCh(int nr, parameter * p, Protection * prot, uint8
 
 }
 
-void etiGenerator::postProcess(const uint8_t * theVector, int32_t offset)
+void etiGenerator::postProcess(const uint8_t * /*theVector*/, int32_t /*offset*/)
 {
 }
 

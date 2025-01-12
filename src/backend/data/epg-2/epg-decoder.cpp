@@ -103,7 +103,7 @@ int EpgDecoder::process_epg(uint8_t * v, int e_length, uint32_t SId, int subType
 
 #ifdef  __EPG_TRACE__
                                                                                                                           fprintf (stdout, "Length for %x is %d\n",
-	                               v [0], length);
+                                   v [0], length);
 #endif
   int endPoint = index + length;
   if (tag == EPG_TAG)
@@ -241,7 +241,7 @@ int EpgDecoder::process_programGroups(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE
                                                                                                                               fprintf (stderr, "in programGroups we missed %x\n",
-	                                                       v [index]);
+                                                           v [index]);
 #endif
       return endPoint;
     }
@@ -340,7 +340,7 @@ int EpgDecoder::process_programGroup(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "in programGroup we missed %x\n", v [index]);
+                  "in programGroup we missed %x\n", v [index]);
 #endif
       return endPoint;
     }
@@ -668,7 +668,7 @@ int EpgDecoder::process_mediaDescription(uint8_t * v, int index, progDesc * p)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr, "%x not handled in mediaDescription\n",
-	                                                      v [index]);
+                                                          v [index]);
 #endif
       return endPoint;
     }
@@ -742,7 +742,7 @@ int EpgDecoder::process_ensemble(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "Process_ensemble: missing handle %x\n", v [index]);
+                  "Process_ensemble: missing handle %x\n", v [index]);
 #endif
       return endPoint;
     }
@@ -824,7 +824,7 @@ int EpgDecoder::process_service(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                   "%x not handled in service desc\n", v [index]);
+                       "%x not handled in service desc\n", v [index]);
 #endif
       return endPoint;
     }
@@ -885,7 +885,7 @@ int EpgDecoder::process_location(uint8_t * v, int index, progDesc * p)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                  "%x not handled in processLocation\n", v [index]);
+                      "%x not handled in processLocation\n", v [index]);
 #endif
       return endPoint;
     }
@@ -941,7 +941,7 @@ int EpgDecoder::process_bearer(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                  "%x not supported as bearer\n", v [index]);
+                      "%x not supported as bearer\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1007,7 +1007,7 @@ int EpgDecoder::process_geoLocation(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                  "%x not supported in geolocation\n", v [index]);
+                      "%x not supported in geolocation\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1113,7 +1113,7 @@ int EpgDecoder::process_programmeEvent(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                  "%x not supported in programmeEvent\n", v [index]);
+                      "%x not supported in programmeEvent\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1167,7 +1167,7 @@ int EpgDecoder::process_onDemand(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "%x not supported in onDemand\n", v [index]);
+                  "%x not supported in onDemand\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1224,7 +1224,7 @@ int EpgDecoder::process_genre(uint8_t * v, int index, progDesc * p)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                  "%x not supported in genre\n", v [index]);
+                      "%x not supported in genre\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1274,7 +1274,7 @@ int EpgDecoder::process_keyWords(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "in process_keyWords with %x\n", v [index]);
+                  "in process_keyWords with %x\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1340,7 +1340,7 @@ int EpgDecoder::process_link(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                  "%x not supported in link\n", v [index]);
+                      "%x not supported in link\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1683,7 +1683,7 @@ int EpgDecoder::process_multiMedia(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "%x not supported in multimedia\n", v [index]);
+                  "%x not supported in multimedia\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1734,7 +1734,7 @@ int EpgDecoder::process_radiodns(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "%x has no support in radiodns\n", v [index]);
+                  "%x has no support in radiodns\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1792,7 +1792,7 @@ int EpgDecoder::process_time(uint8_t * v, int index, int * t)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                  "%x not supported in timespec\n", v [index]);
+                      "%x not supported in timespec\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1850,7 +1850,7 @@ int EpgDecoder::process_relativeTime(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "%x not supported in relative time\n", v [index]);
+                  "%x not supported in relative time\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1904,7 +1904,7 @@ int EpgDecoder::process_memberOf(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "%x not supported in member-of\n", v [index]);
+                  "%x not supported in member-of\n", v [index]);
 #endif
       return endPoint;
     }
@@ -1958,7 +1958,7 @@ int EpgDecoder::process_presentationTime(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	         	  "%x not supported in presentation time\n", v [index]);
+                  "%x not supported in presentation time\n", v [index]);
 #endif
       return endPoint;
     }
@@ -2011,7 +2011,7 @@ int EpgDecoder::process_acquisitionTime(uint8_t * v, int index)
     default:
 #ifdef  __EPG_TRACE__
                                                                                                                               fprintf (stderr,
-	                  "%x not supported in acquisition time\n", v [index]);
+                      "%x not supported in acquisition time\n", v [index]);
 #endif
       return endPoint;
     }
@@ -2040,7 +2040,7 @@ int EpgDecoder::process_country(uint8_t * v, int index)
 
 #ifdef  __EPG_TRACE__
                                                                                                                           fprintf (stderr, "process_country length %d (not further handled)\n",
-	                                                 length);
+                                                     length);
 #endif
   int endPoint = index + length;
   return endPoint;
@@ -2067,7 +2067,7 @@ int EpgDecoder::process_point(uint8_t * v, int index)
 
 #ifdef  __EPG_TRACE__
                                                                                                                           fprintf (stderr, "process_point length %d (not further handled)\n",
-	                                                 length);
+                                                     length);
 #endif
 
   int endPoint = index + length;
@@ -2095,7 +2095,7 @@ int EpgDecoder::process_polygon(uint8_t * v, int index)
 
 #ifdef  __EPG_TRACE__
                                                                                                                           fprintf (stderr, "process_polygon length %d (not further handled)\n",
-	                                                 length);
+                                                     length);
 #endif
 
   int endPoint = index + length;
@@ -2625,7 +2625,7 @@ void EpgDecoder::record(progDesc * theElement)
                            theElement->shortDescription);
 }
 
-QString EpgDecoder::getCData(uint8_t * v, int index, int eLength)
+QString EpgDecoder::getCData(uint8_t * v, int index, int /*eLength*/)
 {
   int length;
 

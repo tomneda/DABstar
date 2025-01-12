@@ -79,7 +79,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
 
   set_spectrum_averaging_rate(EAvrRate::DEFAULT);
-  
+
   _load_save_combobox_settings(cmbIqScope, "iqPlot", false);
   _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
 
@@ -251,7 +251,7 @@ bool SpectrumViewer::is_hidden()
   return myFrame.isHidden();
 }
 
-void SpectrumViewer::show_iq(int32_t iAmount, float iAvg)
+void SpectrumViewer::show_iq(int32_t iAmount, float /*iAvg*/)
 {
   if (mIqValuesVec.size() != (unsigned)iAmount)
   {
@@ -291,7 +291,7 @@ void SpectrumViewer::show_iq(int32_t iAmount, float iAvg)
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
-void SpectrumViewer::show_quality(int32_t iOfdmSymbNo, float iModQual, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)
+void SpectrumViewer::show_quality(int32_t /*iOfdmSymbNo*/, float iModQual, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)
 {
   if (myFrame.isHidden())
   {

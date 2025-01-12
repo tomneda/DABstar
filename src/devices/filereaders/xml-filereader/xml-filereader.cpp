@@ -184,7 +184,7 @@ int XmlFileReader::getVFOFrequency()
   return theDescriptor->blockList[0].frequency;
 }
 
-void XmlFileReader::slot_handle_cb_loop_file(const bool iChecked)
+void XmlFileReader::slot_handle_cb_loop_file(const bool /*iChecked*/)
 {
   if (theReader == nullptr)
   {

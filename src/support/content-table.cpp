@@ -12,7 +12,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ void ContentTable::_slot_select_service(int row, int column)
   emit signal_go_service(theService);
 }
 
-void ContentTable::_slot_dump(int row, int column)
+void ContentTable::_slot_dump(int /*row*/, int /*column*/)
 {
   OpenFileDialog filenameFinder(dabSettings);
   FILE * dumpFile = filenameFinder.open_content_dump_file_ptr(channel);

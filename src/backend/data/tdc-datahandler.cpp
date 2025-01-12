@@ -23,7 +23,7 @@
 #include  "radio.h"
 #include  "data_manip_and_checks.h"
 
-tdc_dataHandler::tdc_dataHandler(RadioInterface * mr, RingBuffer<uint8_t> * dataBuffer, int16_t appType)
+tdc_dataHandler::tdc_dataHandler(RadioInterface * mr, RingBuffer<uint8_t> * dataBuffer, int16_t /*appType*/)
 {
   myRadioInterface = mr;
   this->dataBuffer = dataBuffer;
@@ -198,7 +198,7 @@ int32_t tdc_dataHandler::handleFrame_type_1(uint8_t * data, int32_t offset, int3
 //	component data. In the case of component data shorter
 //	than 13 bytes, the component identifier, the field
 //	length and all component data shall be taken into account.
-bool tdc_dataHandler::serviceComponentFrameheaderCRC(const uint8_t * data, int16_t offset, int16_t maxL)
+bool tdc_dataHandler::serviceComponentFrameheaderCRC(const uint8_t * data, int16_t offset, int16_t /*maxL*/)
 {
   uint8_t testVector[18];
   int16_t i;

@@ -3,7 +3,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -289,7 +289,7 @@ void TechData::slot_show_fm(int freq)
   }
 }
 
-void TechData::slot_audio_data_available(int iNumSamples, int iSampleRate)
+void TechData::slot_audio_data_available(int /*iNumSamples*/, int iSampleRate)
 {
   constexpr int32_t cNumNeededSample = 1024;
 

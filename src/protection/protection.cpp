@@ -43,7 +43,7 @@ Protection::Protection(int16_t iBitRate) :
 {
 }
 
-bool Protection::deconvolve(const int16_t * iV, int32_t size, uint8_t * outBuffer)
+bool Protection::deconvolve(const int16_t * iV, int32_t /*size*/, uint8_t * outBuffer)
 {
   int16_t inputCounter = 0;
   //	clear the bits in the viterbiBlock,

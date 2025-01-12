@@ -3,7 +3,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ void XmlDescriptor::addChannelOrder(int channelOrder, QString Value)
   }
 }
 
-void XmlDescriptor::add_dataBlock(int currBlock, int Count, int blockNumber, QString Unit)
+void XmlDescriptor::add_dataBlock(int /*currBlock*/, int Count, int blockNumber, QString Unit)
 {
   Blocks b;
   b.blockNumber = blockNumber;

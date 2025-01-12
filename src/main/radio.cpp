@@ -12,7 +12,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -241,6 +241,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mServiceList.clear();
 #ifdef DATA_STREAMER
   dataStreamer = new tcpServer(iDataPort);
+#else
+  (void)iDataPort;
 #endif
 
   // Where do we leave the audio out?
@@ -608,7 +610,7 @@ void RadioInterface::_slot_channel_timeout()
 {
   qCDebug(sLogRadioInterface()) << Q_FUNC_INFO;
   slot_no_signal_found();
-}                                                                   
+}
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -1698,7 +1700,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
   }
 }
 
-void RadioInterface::slot_show_spectrum(int32_t amount)
+void RadioInterface::slot_show_spectrum(int32_t /*amount*/)
 {
   if (!mIsRunning.load())
   {
@@ -3499,7 +3501,7 @@ void RadioInterface::_set_http_server_button(const bool iActive)
   btnHttpServer->setFixedSize(QSize(32, 30));
 }
 
-void RadioInterface::_slot_handle_favorite_button(bool iClicked)
+void RadioInterface::_slot_handle_favorite_button(bool /*iClicked*/)
 {
   mCurFavoriteState = !mCurFavoriteState;
   set_favorite_button_style();

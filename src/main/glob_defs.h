@@ -41,7 +41,7 @@ using cmplx = std::complex<float>;
 using cmplx16 = std::complex<int16_t>;
 
 // do not make this as a template as it freed the allocated stack buffer at once after call
-#define make_vla(T, iSize) static_cast<T * const>(alloca(iSize * sizeof(T))) // vla = variable length array on stack
+#define make_vla(T, iSize) static_cast<T *>(alloca(iSize * sizeof(T))) // vla = variable length array on stack
 
 template<typename T> inline void safe_vector_copy(T & oVec, const T & iVec)
 {
