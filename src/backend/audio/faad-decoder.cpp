@@ -148,7 +148,9 @@ int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const ui
     audioBuffer->put_data_into_ring_buffer(outBuffer, samples);
     if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 8)
     {
-      emit signal_new_audio(sampleRate / 10, sampleRate, (hInfo.ps ? RadioInterface::AFL_PS_USED : 0) | (hInfo.sbr ? RadioInterface::AFL_SBR_USED : 0));
+      emit signal_new_audio(sampleRate / 10, sampleRate,
+                            (hInfo.ps ? RadioInterface::AFL_PS_USED : RadioInterface::AFL_NONE) |
+                            (hInfo.sbr ? RadioInterface::AFL_SBR_USED : RadioInterface::AFL_NONE));
     }
   }
   else if (channels == 1)
@@ -161,7 +163,9 @@ int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const ui
     audioBuffer->put_data_into_ring_buffer(ipBuffer, samples);
     if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 8)
     {
-      emit signal_new_audio(samples, sampleRate, (hInfo.ps ? RadioInterface::AFL_PS_USED : 0) | (hInfo.sbr ? RadioInterface::AFL_SBR_USED : 0));
+      emit signal_new_audio(samples, sampleRate,
+                            (hInfo.ps ? RadioInterface::AFL_PS_USED : RadioInterface::AFL_NONE) |
+                            (hInfo.sbr ? RadioInterface::AFL_SBR_USED : RadioInterface::AFL_NONE));
     }
   }
   else
@@ -171,4 +175,3 @@ int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const ui
 
   return channels;
 }
-

@@ -363,7 +363,7 @@ void RtlSdrHandler::stopReader()
 }
 
 //	when selecting the gain from a table, use the table value
-void RtlSdrHandler::set_ExternalGain(int gain_index)
+void RtlSdrHandler::set_ExternalGain(int /*gain_index*/)
 {
 	const QString gain = gainControl->currentText();
 	rtlsdr_set_tuner_gain(theDevice, (int)(gain.toFloat() * 10));
