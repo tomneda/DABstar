@@ -105,9 +105,9 @@ static inline bool is_infinite(float x)
 
 static inline float fast_abs(cmplx z)
 {
-#if 0
-  return std::abs(z);
-#else
+#if 1 // on my i7-6700K the std::abs is also tiny faster than the "fast_abs" function. Maybe on an Raspi the fast_abs could be faster?!
+  return std::abs(z);  // 44ns
+#else // 49ns
   // this is the former jan_abs() from Jan van Katwijk, should be faster than std::abs()... but is it really? (depends on the device)
   float re = real(z);
   float im = imag(z);
