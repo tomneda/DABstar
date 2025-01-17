@@ -21,9 +21,6 @@
 #include  "dab-constants.h"
 #include  "tii-codes.h"
 #include  <array>
-#ifndef _WIN32 // we cannot read the TII lib in windows
-  #include  "dlfcn.h"
-#endif
 #include  <QMessageBox>
 #include  <cstdio>
 #include  <QDir>
@@ -53,12 +50,6 @@ enum
   NR_COLUMNS = 15
 };
 
-#if defined(__MINGW32__) || defined(_WIN32)
-  #define GETPROCADDRESS  GetProcAddress
-#else
-  #define GETPROCADDRESS  dlsym
-#endif
-
 TiiHandler::~TiiHandler()
 {
   if (mpFn_close_tii != nullptr)
@@ -74,25 +65,14 @@ bool TiiHandler::load_library()
   mpFn_loadTable = nullptr;
 
 #ifdef _WIN32 // we cannot read the TII lib in windows
-  mpHandle = nullptr;
+  phandle = nullptr;
   mpTiiLibHandler = nullptr;
 #else
-  std::string libFile = "libtii-lib.so";
-  mpHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
+  std::string libFile = "libtii-lib";
+  phandle = new QLibrary(libFile.c_str());
+  phandle->load();
 
-  if (mpHandle == nullptr)
-  {
-    libFile = std::string("/usr/local/lib/libtii-lib.so");
-    mpHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
-  }
-
-  if (mpHandle == nullptr)
-  {
-    libFile = std::string("/usr/local/lib/tii-lib.so");
-    mpHandle = dlopen(libFile.c_str(), RTLD_NOW | RTLD_GLOBAL);
-  }
-
-  if (mpHandle != nullptr)
+  if (phandle->isLoaded())
   {
     if (_load_dyn_library_functions())
     {
@@ -101,6 +81,7 @@ bool TiiHandler::load_library()
       if (mpTiiLibHandler != nullptr)
       {
         fprintf(stdout, "Opening '%s' and initialization was successful\n", libFile.c_str());
+        delete(phandle);
         return true;
       }
       else
@@ -113,7 +94,7 @@ bool TiiHandler::load_library()
       mpTiiLibHandler = nullptr;
       fprintf(stderr, "Failed to open functions in library %s with error '%s'\n", libFile.c_str(), dlerror());
     }
-    dlclose(mpHandle);
+    delete(phandle);
   }
   else
   {
@@ -440,7 +421,7 @@ bool TiiHandler::is_valid() const
 
 bool TiiHandler::_load_dyn_library_functions()
 {
-  mpFn_init_tii = (TpFn_init_tii)GETPROCADDRESS(mpHandle, "init_tii_L");
+  mpFn_init_tii = (TpFn_init_tii)phandle->resolve("init_tii_L");
 
   if (mpFn_init_tii == nullptr)
   {
@@ -448,7 +429,7 @@ bool TiiHandler::_load_dyn_library_functions()
     return false;
   }
 
-  mpFn_close_tii = (TpFn_close_tii)GETPROCADDRESS(mpHandle, "close_tii_L");
+  mpFn_close_tii = (TpFn_close_tii)phandle->resolve("close_tii_L");
 
   if (mpFn_close_tii == nullptr)
   {
@@ -456,7 +437,7 @@ bool TiiHandler::_load_dyn_library_functions()
     return false;
   }
 
-  mpFn_loadTable = (TpFn_loadTable)GETPROCADDRESS(mpHandle, "loadTableL");
+  mpFn_loadTable = (TpFn_loadTable)phandle->resolve("loadTableL");
 
   if (mpFn_loadTable == nullptr)
   {
