@@ -7,14 +7,13 @@ TARGET		= dabstar
 TEMPLATE	= app
 QT		+= widgets xml sql multimedia
 CONFIG		+= console
-#CONFIG		-= console
 CONFIG		+= release
 #CONFIG		+= debug
 QMAKE_CXXFLAGS	+= -std=c++17
 
-QMAKE_CFLAGS	+= -O3 -ffast-math -flto
-QMAKE_CXXFLAGS	+= -O3 -ffast-math -flto
-QMAKE_LFLAGS	+= -O3 -ffast-math -flto
+QMAKE_CFLAGS	+= -ffast-math -flto
+QMAKE_CXXFLAGS	+= -ffast-math -flto
+QMAKE_LFLAGS	+= -ffast-math -flto
 QMAKE_LFLAGS    += -mthreads
 
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]
@@ -302,8 +301,6 @@ FORMS += \
     src/support/technical_data.ui \
     src/configuration/configuration.ui \
     src/devices/filereaders/xml-filereader/xmlfiles.ui
-#    src/specials/dumpviewer/dumpwidget.ui 
-#    src/specials/sound-client/soundwidget.ui
 
 #DESTDIR		= ../../DABstar-Qt6.7.3
 LIBS		+= -L../../dabstar-libs/lib
@@ -326,7 +323,6 @@ LIBS		+= -lwinpthread
 LIBS		+= -lws2_32
 #LIBS		+= -lusb-1.0
 LIBS		+= -lzlib
-LIBS		+= -ldl
 LIBS		+= -lfftw3f-3
 LIBS		+= -lqwt
 
@@ -417,11 +413,9 @@ hackrf {
 airspy {
 	DEFINES		+= HAVE_AIRSPY
 	DEPENDPATH	+= src/devices/airspy 
-	INCLUDEPATH	+= src/devices/airspy-handler \
-	                   src/devices/airspy-handler/libairspy
+	INCLUDEPATH	+= src/devices/airspy-handler
 	HEADERS		+= src/devices/airspy-handler/airspy-handler.h \
-	                   src/devices/airspy-handler/airspyselect.h \
-	                   src/devices/airspy-handler/libairspy/airspy.h
+	                   src/devices/airspy-handler/airspyselect.h
 	SOURCES		+= src/devices/airspy-handler/airspy-handler.cpp \
 	                   src/devices/airspy-handler/airspyselect.cpp
 	FORMS		+= src/devices/airspy-handler/airspy-widget.ui
@@ -592,7 +586,6 @@ faad	{
 fdk-aac {
         DEFINES         += __WITH_FDK_AAC__
         INCLUDEPATH     += ../dabstar-libs/include\fdk-aac
-#        INCLUDEPATH     += src/specials/fdk-aac
         HEADERS         += src/backend/audio/fdk-aac.h
         SOURCES         += src/backend/audio/fdk-aac.cpp
 	LIBS		+= -lfdk-aac.dll

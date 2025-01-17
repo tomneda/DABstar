@@ -12,7 +12,7 @@
  *
  *  Copyright 2015 by Andrea Montefusco IW0HDV
  *
- *  Licensed under GNU General Public License 3.0 or later. 
+ *  Licensed under GNU General Public License 3.0 or later.
  *  Some rights reserved. See COPYING, AUTHORS.
  *
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
@@ -28,6 +28,7 @@
 #include  <QObject>
 #include  <QSettings>
 #include  <QFrame>
+#include  <QLibrary>
 #include  <vector>
 #include  <atomic>
 #include  "dab-constants.h"
@@ -35,12 +36,7 @@
 #include  "fir-filters.h"
 #include  "device-handler.h"
 #include  "ui_airspy-widget.h"
-
-#ifndef  __MINGW32__
 #include  "libairspy/airspy.h"
-#else
-#include	"libairspy/airspy.h"
-#endif
 
 class XmlFileWriter;
 
@@ -100,6 +96,7 @@ public:
 
 private:
   QFrame myFrame;
+  QLibrary * phandle;
   RingBuffer<cmplx> _I_Buffer;
   QString recorderVersion;
   FILE * xmlDumper;
@@ -154,11 +151,8 @@ private:
   pfn_airspy_board_id_read my_airspy_board_id_read;
   pfn_airspy_board_id_name my_airspy_board_id_name;
   pfn_airspy_board_partid_serialno_read my_airspy_board_partid_serialno_read;
-  //
-  HINSTANCE Handle_usb;
-  HINSTANCE Handle;
+
   bool success;
-  void releaseLibrary();
   std::atomic<bool> running;
   bool lna_agc;
   bool mixer_agc;

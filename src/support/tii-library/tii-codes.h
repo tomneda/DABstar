@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <QString>
 #include <QSettings>
+#include <QLibrary>
 #include "dab-constants.h"
 
 struct CacheElem
@@ -84,7 +85,7 @@ private:
   uint8_t mShift = 0;
   QString mTiiFileName;
   void * mpTiiLibHandler = nullptr;
-  HINSTANCE mpHandle = nullptr;
+  QLibrary * phandle;
   TpFn_init_tii mpFn_init_tii = nullptr;
   TpFn_close_tii mpFn_close_tii = nullptr;
   TpFn_loadTable mpFn_loadTable = nullptr;

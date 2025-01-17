@@ -36,6 +36,7 @@
 #include  <QFrame>
 #include  <QSettings>
 #include  <QSemaphore>
+#include  <QLibrary>
 #include  <atomic>
 #include  <cstdio>
 #include  <queue>
@@ -50,13 +51,6 @@ class Rsp_device;
 class generalCommand;
 
 class XmlFileWriter;
-
-#ifdef __MINGW32__
-#include "dlfcn.h"
-#define GETPROCADDRESS  GetProcAddress
-#else
-#define GETPROCADDRESS  dlsym
-#endif
 
 class SdrPlayHandler_v3 final : public QThread, public IDeviceHandler, public Ui_sdrplayWidget_v3
 {
@@ -119,7 +113,6 @@ public:
   int GRdBValue;
   int lnaState;
   double ppmValue;
-  HINSTANCE Handle;
   bool biasT;
   bool notch;
   FILE * xmlDumper;
@@ -130,13 +123,12 @@ public:
   std::atomic<bool> dumping;
   std::queue<generalCommand *> server_queue;
   QSemaphore serverjobs;
-  HINSTANCE fetchLibrary();
-  void releaseLibrary();
   bool loadFunctions();
   int errorCode;
 
 private:
   QFrame myFrame;
+  QLibrary * phandle;
 
   // tomneda: was at 14bit but it seems the whole 16bits are used in the callback function (for the RSPdx)
   static constexpr int16_t nrBits = 16;
