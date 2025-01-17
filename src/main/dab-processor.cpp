@@ -212,7 +212,7 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
 
   if (mCorrectionNeeded)
   {
-    const int32_t correction = mPhaseReference.estimate_carrier_offset_from_sync_symbol_0(mOfdmBuffer);
+    const int32_t correction = mPhaseReference.estimate_carrier_offset_from_sync_symbol_0(mFftOutBuffer);
 
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
