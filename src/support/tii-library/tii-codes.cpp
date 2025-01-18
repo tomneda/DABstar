@@ -69,10 +69,10 @@ bool TiiHandler::load_library()
   mpTiiLibHandler = nullptr;
 #else
   std::string libFile = "libtii-lib";
-  phandle = new QLibrary(libFile.c_str());
-  phandle->load();
+  mphandle = new QLibrary(libFile.c_str());
+  mphandle->load();
 
-  if (phandle->isLoaded())
+  if (mphandle->isLoaded())
   {
     if (_load_dyn_library_functions())
     {
@@ -81,7 +81,7 @@ bool TiiHandler::load_library()
       if (mpTiiLibHandler != nullptr)
       {
         fprintf(stdout, "Opening '%s' and initialization was successful\n", libFile.c_str());
-        delete(phandle);
+        delete(mphandle);
         return true;
       }
       else
@@ -94,7 +94,7 @@ bool TiiHandler::load_library()
       mpTiiLibHandler = nullptr;
       fprintf(stderr, "Failed to open functions in library %s with error '%s'\n", libFile.c_str(), dlerror());
     }
-    delete(phandle);
+    delete(mphandle);
   }
   else
   {
@@ -421,7 +421,7 @@ bool TiiHandler::is_valid() const
 
 bool TiiHandler::_load_dyn_library_functions()
 {
-  mpFn_init_tii = (TpFn_init_tii)phandle->resolve("init_tii_L");
+  mpFn_init_tii = (TpFn_init_tii)mphandle->resolve("init_tii_L");
 
   if (mpFn_init_tii == nullptr)
   {
@@ -429,7 +429,7 @@ bool TiiHandler::_load_dyn_library_functions()
     return false;
   }
 
-  mpFn_close_tii = (TpFn_close_tii)phandle->resolve("close_tii_L");
+  mpFn_close_tii = (TpFn_close_tii)mphandle->resolve("close_tii_L");
 
   if (mpFn_close_tii == nullptr)
   {
@@ -437,7 +437,7 @@ bool TiiHandler::_load_dyn_library_functions()
     return false;
   }
 
-  mpFn_loadTable = (TpFn_loadTable)phandle->resolve("loadTableL");
+  mpFn_loadTable = (TpFn_loadTable)mphandle->resolve("loadTableL");
 
   if (mpFn_loadTable == nullptr)
   {

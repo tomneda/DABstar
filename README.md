@@ -315,14 +315,20 @@ sudo apt-get update
 sudo apt-get install libuhd-dev uhd-host
 ```
 
-<!-- 
-Seems not more necessary relating to Qt-DAB
-- sudo apt-get install *pkg-config
-- sudo apt-get install *mesa-common-dev
-- sudo apt-get install *libgl1-mesa-dev *libqt5opengl5-dev
-- sudo apt-get install *qtbase5-dev *libqt5svg5-dev
---> 
+### Installing AirSpy
 
+Details see https://github.com/airspy/airspyone_host
+
+```
+git clone https://github.com/airspy/airspyone_host.git
+cd airspyone_host-master
+mkdir build
+cd build
+cmake ../ -DINSTALL_UDEV_RULES=ON
+make
+sudo make install
+sudo ldconfig
+```
 
 ## Licences
 

@@ -10,17 +10,6 @@ find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Xml REQUIRED)
 
 if (SDRPLAY_V2)
-    set(${devicesLibName}_UIS
-            ${${devicesLibName}_UIS}
-            sdrplay-handler-v2/sdrplay-widget-v2.ui
-    )
-
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            sdrplay-handler-v2/sdrplay-handler-v2.h
-            sdrplay-handler-v2/sdrplayselect.h
-    )
-
     include_directories(
             sdrplay-handler-v2
     )
@@ -42,17 +31,6 @@ if (SDRPLAY_V2)
 endif (SDRPLAY_V2)
 
 if (SDRPLAY_V3)
-    set(${devicesLibName}_UIS
-            ${${devicesLibName}_UIS}
-            sdrplay-handler-v3/sdrplay-widget-v3.ui
-    )
-
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            sdrplay-handler-v3/sdrplay-handler-v3.h
-            sdrplay-handler-v3/Rsp-device.h
-    )
-
     include_directories(
             sdrplay-handler-v3
     )
@@ -84,22 +62,11 @@ if (SDRPLAY_V3)
 endif (SDRPLAY_V3)
 
 if (AIRSPY)
-    #           find_package(LibAIRSPY)
-    #           if (NOT LIBAIRSPY_FOUND)
-    #               message(FATAL_ERROR "please install airspy library")
-    #           endif ()
-    #	   ## include_directories (${AIRSPYLIB_INCLUDE_DIR})
-
-    set(${devicesLibName}_UIS
-            ${${devicesLibName}_UIS}
-            airspy-handler/airspy-widget.ui
-    )
-
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            airspy-handler/airspy-handler.h
-            airspy-handler/airspyselect.h
-    )
+    # find_package(LibAIRSPY)
+    # if (NOT LIBAIRSPY_FOUND)
+    #   message(FATAL_ERROR "please install airspy library")
+    # endif ()
+    # ## include_directories (${AIRSPYLIB_INCLUDE_DIR})
 
     include_directories(
             airspy-handler
@@ -121,16 +88,6 @@ if (AIRSPY)
 endif (AIRSPY)
 
 if (HACKRF)
-    set(${devicesLibName}_UIS
-            ${${devicesLibName}_UIS}
-            hackrf-handler/hackrf-widget.ui
-    )
-
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            hackrf-handler/hackrf-handler.h
-    )
-
     include_directories(
             hackrf-handler
     )
@@ -149,16 +106,6 @@ if (HACKRF)
 endif (HACKRF)
 
 if (PLUTO)
-    set(${devicesLibName}_UIS
-            ${${devicesLibName}_UIS}
-            pluto-handler-2/pluto-widget.ui
-    )
-
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            pluto-handler-2/pluto-handler.h
-    )
-
     include_directories(
             pluto-handler-2
     )
@@ -177,11 +124,6 @@ if (PLUTO)
 endif (PLUTO)
 
 if (LIMESDR)
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            lime-handler/lime-handler.h
-    )
-
     include_directories(
             lime-handler
     )
@@ -203,17 +145,6 @@ if (LIMESDR)
 endif (LIMESDR)
 
 if (RTLSDR)
-    set(${devicesLibName}_UIS
-            ${${devicesLibName}_UIS}
-            rtlsdr-handler/rtlsdr-widget.ui
-    )
-
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            rtlsdr-handler/rtl-dongleselect.h
-            rtlsdr-handler/rtlsdr-handler.h
-    )
-
     include_directories(
             rtlsdr-handler
     )
@@ -240,16 +171,6 @@ if (UHD)
     endif ()
     list(APPEND extraLibs ${UHD_LIBRARIES})
 
-    set(${devicesLibName}_UIS
-            ${${devicesLibName}_UIS}
-            uhd/uhd-widget.ui
-    )
-
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            uhd/uhd-handler.h
-    )
-
     include_directories(
             uhd/
     )
@@ -269,16 +190,6 @@ endif ()
 
 if (RTL_TCP)
     find_package(Qt6Network REQUIRED)
-    set(${devicesLibName}_UIS
-            ${${devicesLibName}_UIS}
-            rtl_tcp/rtl_tcp-widget.ui
-    )
-
-    set(${devicesLibName}_MOCS
-            ${${devicesLibName}_MOCS}
-            rtl_tcp/rtl_tcp_client.h
-    )
-
     include_directories(
             rtl_tcp
             ${Qt6Network_INCLUDE_DIRS}

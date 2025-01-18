@@ -85,7 +85,7 @@ private:
   uint8_t mShift = 0;
   QString mTiiFileName;
   void * mpTiiLibHandler = nullptr;
-  QLibrary * phandle;
+  QLibrary * mphandle = nullptr;
   TpFn_init_tii mpFn_init_tii = nullptr;
   TpFn_close_tii mpFn_close_tii = nullptr;
   TpFn_loadTable mpFn_loadTable = nullptr;
