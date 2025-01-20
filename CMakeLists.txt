@@ -458,32 +458,19 @@ if (VITERBI_NEON)
     set(VITERBI_SSE false)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            src/support/viterbi-spiral/spiral-neon.h
+            src/support/viterbi-spiral/sse2neon.h
     )
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/support/viterbi-spiral/spiral-neon.c
-    )
-
     add_definitions(-DNEON_AVAILABLE)
 elseif (VITERBI_SSE)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            src/support/viterbi-spiral/spiral-sse.h
-    )
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/support/viterbi-spiral/spiral-sse.c
+            src/support/viterbi-spiral/viterbi_8way.h
     )
     add_definitions(-DSSE_AVAILABLE)
 else (VITERBI_SSE)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            src/support/viterbi-spiral/spiral-no-sse.h
-    )
-    set(${objectName}_SRCS
-            ${${objectName}_SRCS}
-            src/support/viterbi-spiral/spiral-no-sse.c
+            src/support/viterbi-spiral/viterbi_scalar.h
     )
 endif (VITERBI_NEON)
 
