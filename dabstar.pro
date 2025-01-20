@@ -315,6 +315,7 @@ CONFIG		+= sdrplay-v3
 CONFIG		+= hackrf
 #CONFIG		+= lime
 CONFIG		+= VITERBI_SSE
+#CONFIG		+= NO_SSE
 CONFIG		+= faad
 #CONFIG		+= fdk-aac
 LIBS		+= -lsndfile-1
@@ -568,13 +569,11 @@ datastreamer	{
 
 VITERBI_SSE	{
 	DEFINES		+= SSE_AVAILABLE
-	HEADERS		+= src/support/viterbi-spiral/spiral-sse.h
-	SOURCES		+= src/support/viterbi-spiral/spiral-sse.c
+	HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
 }
 
 NO_SSE	{
-	HEADERS		+= src/support/viterbi-spiral/spiral-no-sse.h
-	SOURCES		+= src/support/viterbi-spiral/spiral-no-sse.c
+	HEADERS		+= src/support/viterbi-spiral/viterbi_scalar.h
 }
 
 faad	{
