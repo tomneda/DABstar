@@ -60,7 +60,7 @@
 #endif
 
 
-#define DO_TIME_MEAS
+// #define DO_TIME_MEAS
 
 #ifdef DO_TIME_MEAS
   #include "time_meas.h"
