@@ -526,7 +526,6 @@ include_directories(
         ${Qt6Multimedia_INCLUDE_DIRS}
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
-        ${PORTAUDIO_INCLUDE_DIRS}
         ${FAAD_INCLUDE_DIRS}
         ${SNDFILES_INCLUDE_DIRS}
 )

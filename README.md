@@ -193,11 +193,11 @@ sudo apt-get install build-essential
 sudo apt-get install g++
 sudo apt-get install libsndfile1-dev
 sudo apt-get install libfftw3-dev
-sudo apt-get install portaudio19-dev
 sudo apt-get install zlib1g-dev
 sudo apt-get install libsamplerate0-dev
 sudo apt-get install libusb-1.0-0-dev
 sudo apt-get install qt6-base-dev
+sudo apt-get install qt6-multimedia-dev
 ```
 
 If you want to build with qmake:
@@ -332,7 +332,7 @@ sudo ldconfig
 
 ## Licences
 
-Rights of Qt-DAB, AbracaDABra, Qt, Qwt, FFTW, portaudio, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
+Rights of Qt-DAB, AbracaDABra, Qt, Qwt, FFTW, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
 
 Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.
 
