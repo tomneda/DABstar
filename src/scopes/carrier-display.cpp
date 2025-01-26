@@ -201,8 +201,8 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "Soft-Bit Weight";
     cp.YTopValue = 100.0;
     cp.YBottomValue = 0.0;
-    cp.YTopValueRangeExt = 200.0;
-    cp.YBottomValueRangeExt = -20.0;
+    // cp.YTopValueRangeExt = 200.0;
+    // cp.YBottomValueRangeExt = -20.0;
     break;
 
   case ECarrierPlotType::EVM_PER:

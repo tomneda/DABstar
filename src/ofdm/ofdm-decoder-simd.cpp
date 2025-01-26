@@ -518,9 +518,9 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     {
       // Convert and limit the soft bit weight to percent
       // float weight2 = (std::abs(real(mVolk_r1[nomCarrIdx])) + std::abs(imag(mVolk_r1[nomCarrIdx]))) / 2.0f * (-iWeight);
-      float val = /*-iWeight **/ (std::abs(mVolkViterbiFloatVecReal[nomCarrIdx]) + std::abs(mVolkViterbiFloatVecImag[nomCarrIdx])) / 2.0f;
-      // limit_min_max(val, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
-      mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * val;
+      float val = (std::abs(mVolkViterbiFloatVecReal[nomCarrIdx]) + std::abs(mVolkViterbiFloatVecImag[nomCarrIdx])) / 2.0f;
+      if (val > F_VITERBI_SOFT_BIT_VALUE_MAX) val = F_VITERBI_SOFT_BIT_VALUE_MAX; // limit graphics like the Viterbi itself does
+      mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * val;  // show it in percent of the maximum Viterbi input
       break;
     }
     case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(mVolkMeanSigmaSqVector[nomCarrIdx]) / mVolkMeanLevelVector[nomCarrIdx]; break;
