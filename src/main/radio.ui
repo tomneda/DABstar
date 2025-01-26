@@ -252,11 +252,14 @@
         <widget class="QComboBox" name="cmbChannelSelector">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="minimumSize">
           <size>
            <width>52</width>
+           <height>0</height>
           </size>
          </property>
          <property name="toolTip">
@@ -426,7 +429,6 @@
          </item>
         </layout>
        </item>
-
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
@@ -464,9 +466,26 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="tiiButton">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop the TII decoder and show or hide the TII widget.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../resources.qrc">
+             <normaloff>:/res/icons/tii24.png</normaloff>:/res/icons/tii24.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="btnHttpServer">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a webserver for showing a map on which the locations of the transmitters found are shown. &lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Green: Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;Orange: Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a webserver for showing a map on which the locations of the transmitters found are shown. &lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Important:&lt;/span&gt; Activate TII with button above to start the TII decoder that this works.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; color:#26a269;&quot;&gt;Green: &lt;/span&gt;Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700; color:#ff7800;&quot;&gt;Orange:&lt;/span&gt; Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -532,23 +551,6 @@
            <property name="icon">
             <iconset resource="../../resources.qrc">
              <normaloff>:/res/icons/tower24.png</normaloff>:/res/icons/tower24.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>24</width>
-             <height>24</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="tiiButton">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the TII widget.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../../resources.qrc">
-             <normaloff>:/res/icons/tii24.png</normaloff>:/res/icons/tii24.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -705,11 +707,11 @@
            <pointsize>8</pointsize>
           </font>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QProgressBar::chunk { background: #EF8B2A; }</string>
-         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QProgressBar::chunk { background: #EF8B2A; }</string>
          </property>
         </widget>
        </item>
@@ -726,15 +728,14 @@
            <pointsize>8</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC processing. &lt;/p&gt;&lt;p&gt;FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="autoFillBackground">
           <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
-         </property>
-
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC processing. &lt;/p&gt;&lt;p&gt;FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -746,7 +747,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the location, distance and angle to the detected transmitter.&lt;/p&gt;&lt;p&gt;This need a found TII database file and given local coordinates.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Please read file /tii-library/README.txt that this works!</string>
+        <string>Press TII button or/and read file /tii-library/README.txt that this works!</string>
        </property>
       </widget>
      </item>
@@ -771,4 +772,3 @@
  </resources>
  <connections/>
 </ui>
-
