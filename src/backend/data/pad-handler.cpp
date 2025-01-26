@@ -60,6 +60,7 @@ PadHandler::PadHandler(RadioInterface * mr)
   lastSegment = false;
   firstSegment = false;
   segmentNumber = -1;
+  msc_dataGroupBuffer.reserve(1024); // try to avoid future memory swapping
 }
 
 PadHandler::~PadHandler()
@@ -463,8 +464,17 @@ void PadHandler::add_MSC_element(const std::vector<uint8_t> & data)
   {
     return;
   }
-  //msc_dataGroupBuffer.reserve(msc_dataGroupBuffer.size() + data.size());
-  msc_dataGroupBuffer.insert(msc_dataGroupBuffer.cend(), data.cbegin(), data.cend());
+
+  // The GCC compiler (V13.3.0) complains about the insert() function below, but it seems correct.
+  // Do a workaround with a dedicated for-loop. The reserve is obsolete as enough space is reserved.
+  // And push_back() will do it if necessary.
+  // msc_dataGroupBuffer.reserve(msc_dataGroupBuffer.size() + data.size());
+  // msc_dataGroupBuffer.insert(msc_dataGroupBuffer.cend(), data.cbegin(), data.cend());
+  for (auto & d : data)
+  {
+    msc_dataGroupBuffer.push_back(d);
+  }
+
   if (msc_dataGroupBuffer.size() >= (uint32_t)dataGroupLength)
   {
     build_MSC_segment(msc_dataGroupBuffer);

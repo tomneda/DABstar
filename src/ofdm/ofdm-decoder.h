@@ -31,6 +31,8 @@
 #ifndef OFDM_DECODER_H
 #define OFDM_DECODER_H
 
+#ifndef __USE_SIMD__
+
 #include "dab-constants.h"
 #include "dab-params.h"
 #include "glob_enums.h"
@@ -125,4 +127,5 @@ signals:
   void signal_show_mod_quality(const SQualityData *);
 };
 
+#endif // __USE_SIMD__
 #endif

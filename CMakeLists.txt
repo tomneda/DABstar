@@ -115,6 +115,7 @@ option(DATA_STREAMER "Use DataStreamer"  OFF)
 option(VITERBI_SSE   "Use Viterbi SSE"   OFF)
 option(VITERBI_NEON  "Use Viterbi NEON"  OFF)
 option(FDK_AAC       "Use FDK-AAC"        ON)
+option(USE_SIMD      "Use SIMD"          OFF)
 
 ######################################################################
 ######################################################################
@@ -170,6 +171,34 @@ endif ()
 search_for_library(ZLIB zlib)
 search_for_library(LIBSNDFILE sndfile)
 search_for_library(LIBSAMPLERATE samplerate)
+
+if (USE_SIMD)
+    set($(objectName)_HDRS
+            ${${objectName}_HDRS}
+            src/support/simd_extensions.h
+            src/ofdm/ofdm-decoder-simd.h
+    )
+
+    set(${objectName}_SRCS
+            ${${objectName}_SRCS}
+            src/ofdm/ofdm-decoder-simd.cpp
+    )
+    find_package(Volk REQUIRED)
+    include_directories(${VOLK_INCLUDE_DIRS})
+    list(APPEND extraLibs ${VOLK_LIBRARIES})
+    add_definitions(-D__USE_SIMD__)
+    # print_all_vars(VOLK)
+else ()
+    set($(objectName)_HDRS
+            ${${objectName}_HDRS}
+            src/ofdm/ofdm-decoder.h
+    )
+
+    set(${objectName}_SRCS
+            ${${objectName}_SRCS}
+            src/ofdm/ofdm-decoder.cpp
+    )
+endif ()
 
 if (NOT APPLE AND NOT WIN32)
     find_library(PTHREADS pthread)
@@ -232,7 +261,6 @@ set(${objectName}_HDRS
         src/main/data_manip_and_checks.h
         src/ofdm/sample-reader.h
         src/ofdm/phasereference.h
-        src/ofdm/ofdm-decoder.h
         src/ofdm/phasetable.h
         src/ofdm/freq-interleaver.h
         src/ofdm/fib-decoder.h
@@ -308,6 +336,7 @@ set(${objectName}_HDRS
         src/support/wav_writer.h
         src/support/angle_direction.h
         src/support/time_meas.h
+        src/support/copyright_info.h
         src/scopes/iqdisplay.h
         src/scopes/carrier-display.h
         src/scopes/audio-display.h
@@ -333,7 +362,6 @@ set(${objectName}_SRCS
         src/support/techdata.cpp
         src/eti-handler/eti-generator.cpp
         src/ofdm/sample-reader.cpp
-        src/ofdm/ofdm-decoder.cpp
         src/ofdm/phasereference.cpp
         src/ofdm/phasetable.cpp
         src/ofdm/freq-interleaver.cpp
@@ -403,6 +431,7 @@ set(${objectName}_SRCS
         src/support/setting-helper.cpp
         src/support/wav_writer.cpp
         src/support/angle_direction.cpp
+        src/support/copyright_info.cpp
         src/scopes/iqdisplay.cpp
         src/scopes/carrier-display.cpp
         src/scopes/audio-display.cpp

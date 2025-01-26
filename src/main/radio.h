@@ -308,7 +308,6 @@ private:
   void connect_gui();
   void disconnect_gui();
   static QString convertTime(int, int, int, int, int, int = -1);
-  QString get_copyright_text() const;
   void clean_screen();
   void _show_hide_buttons(const bool iShow);
 

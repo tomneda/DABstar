@@ -34,25 +34,37 @@
  *	DabProcessor is the embodying of all functionality related
  *	to the actual DAB processing.
  */
-#include  "dab-constants.h"
-#include  <QThread>
-#include  <QObject>
-#include  <QByteArray>
-#include  <QStringList>
-#include  <vector>
-#include  <cstdint>
-#include  <sndfile.h>
-#include  "sample-reader.h"
-#include  "phasereference.h"
-#include  "ofdm-decoder.h"
-#include  "fic-handler.h"
-#include  "msc-handler.h"
-#include  "device-handler.h"
-#include  "ringbuffer.h"
-#include  "tii-detector.h"
-#include  "eti-generator.h"
-#include  "timesyncer.h"
-#include  <fftw3.h>
+#include "dab-constants.h"
+#include "sample-reader.h"
+#include "phasereference.h"
+#include "fic-handler.h"
+#include "msc-handler.h"
+#include "device-handler.h"
+#include "ringbuffer.h"
+#include "tii-detector.h"
+#include "eti-generator.h"
+#include "timesyncer.h"
+#include <fftw3.h>
+#include <QThread>
+#include <QObject>
+#include <QByteArray>
+#include <QStringList>
+#include <vector>
+#include <cstdint>
+#include <sndfile.h>
+
+#ifdef __USE_SIMD__
+  #include "ofdm-decoder-simd.h"
+#else
+  #include "ofdm-decoder.h"
+#endif
+
+
+#define DO_TIME_MEAS
+
+#ifdef DO_TIME_MEAS
+  #include "time_meas.h"
+#endif
 
 class RadioInterface;
 class DabParams;
@@ -151,6 +163,10 @@ private:
   std::vector<cmplx> mFftInBuffer;
   std::vector<cmplx> mFftOutBuffer;
   fftwf_plan mFftPlan;
+
+#ifdef DO_TIME_MEAS
+  TimeMeas mTimeMeas{"decode_symbol", 1000};
+#endif
 
   void run() override; // the new QThread
 

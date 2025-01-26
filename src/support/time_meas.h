@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 by Thomas Neder (https://github.com/tomneda)
+ * Copyright (c) 2024 by Thomas Neder (https://github.com/tomneda)
  *
  * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2 of the License, or any later version.
@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <chrono>
+#include <assert.h>
 
 // use steady_clock instead of high_resolution_clock
 // #define USE_STEADY_CLOCK
@@ -24,11 +25,13 @@
 class TimeMeas
 {
 public:
-  TimeMeas(const std::string & iName)
-    : mName(iName) {}
+  explicit TimeMeas(const std::string & iName, const uint64_t iPrintCntSteps = 1)
+    : mPrintCntSteps(iPrintCntSteps)
+    , mName(iName)
+  {
+    assert(mPrintCntSteps > 0);
+  }
   ~TimeMeas() = default;
-
-  void start();
 
   inline void trigger_begin()
   {
@@ -69,10 +72,14 @@ public:
     return mTimeAbs.count() / mCntAbsBegin;
   }
 
-  void print_time_per_round() const
+  void print_time_per_round()
   {
-    const auto time = get_time_per_round_in_ns();
-    std::cout << "Duration of " << mName << ":  " << time / 1000 << " us, " << time << "ns  (" << mCntAbsBegin << " rounds)" << std::endl;
+    if (mCntAbsBegin >= mCntAbsBeginPrinted)
+    {
+      mCntAbsBeginPrinted = mCntAbsBegin + mPrintCntSteps;
+      const auto time = get_time_per_round_in_ns();
+      std::cout << "Duration of " << mName << ":  " << time / 1000 << " us, " << time << "ns  (" << mCntAbsBegin << " rounds)" << std::endl;
+    }
   }
 
   void reset()
@@ -91,6 +98,8 @@ private:
   std::chrono::nanoseconds mTimeAbs = std::chrono::nanoseconds(0);
   uint64_t mCntAbsBegin = 0;
   uint64_t mCntAbsEnd = 0;
+  uint64_t mCntAbsBeginPrinted = 0;
+  uint64_t mPrintCntSteps = 1;
   std::string mName;
 };
 

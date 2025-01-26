@@ -326,7 +326,13 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
     mOfdmDecoder.set_dc_offset(mSampleReader.get_dc_offset());
     memcpy(mFftInBuffer.data(), &(mOfdmBuffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
     fftwf_execute(mFftPlan);
+#ifdef DO_TIME_MEAS
+    mTimeMeas.trigger_begin();
+#endif
     mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbCntIdx, mPhaseOffsetCyclPrefRad, mBits);
+#ifdef DO_TIME_MEAS
+    mTimeMeas.trigger_end();
+#endif
 
     if (ofdmSymbCntIdx <= 3)
     {
@@ -343,6 +349,9 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
       mMscHandler.process_msc_block(mBits, ofdmSymbCntIdx);
     }
   }
+#ifdef DO_TIME_MEAS
+  mTimeMeas.print_time_per_round();
+#endif
 
   return arg(freqCorr);
 }

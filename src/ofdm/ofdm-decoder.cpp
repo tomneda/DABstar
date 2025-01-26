@@ -120,7 +120,7 @@ void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iBuffer)
 void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
 {
   float sum = 0.0f;
-  float mStdDevSqOvrAll = 0.0f;
+  float stdDevSqOvrAll = 0.0f;
 
   //const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
 
@@ -173,7 +173,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     const float curStdDevSq = curStdDevDiff * curStdDevDiff;
     float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
-    mStdDevSqOvrAll += stdDevSqRef;
+    stdDevSqOvrAll += stdDevSqRef;
 
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
     // Simplification: The IQ plot would need only the level, not power, so the root of the power is used (below)..
@@ -270,7 +270,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     float snr = (mMeanPowerOvrAll - noisePow) / noisePow;
     if (snr <= 0.0f) snr = 0.1f;
     mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mQD.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * mDabPar.K / mStdDevSqOvrAll);
+    mQD.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * mDabPar.K / stdDevSqOvrAll);
     mQD.TimeOffset = _compute_time_offset(iV, mPhaseReference);
     mQD.FreqOffset = _compute_frequency_offset(iV, mPhaseReference);
     mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
@@ -323,7 +323,7 @@ float OfdmDecoder::_compute_time_offset(const std::vector<cmplx> & r, const std:
     int index_1 = i < 0 ? i + mDabPar.T_u : i;
     int index_2 = (i + 1) < 0 ? (i + 1) + mDabPar.T_u : (i + 1);
 
-    cmplx s = r[index_1] * conj(v[index_2]);
+    cmplx s = r[index_1] * conj(v[index_2]); // TODO: is this a bug? index_2 -> index_1
 
     s = cmplx(std::abs(real(s)), std::abs(imag(s)));
     const cmplx leftTerm = s * conj(cmplx(std::abs(s) / std::sqrt(2), std::abs(s) / std::sqrt(2)));
