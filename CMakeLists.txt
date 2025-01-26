@@ -115,7 +115,7 @@ option(DATA_STREAMER "Use DataStreamer"  OFF)
 option(VITERBI_SSE   "Use Viterbi SSE"   OFF)
 option(VITERBI_NEON  "Use Viterbi NEON"  OFF)
 option(FDK_AAC       "Use FDK-AAC"        ON)
-option(USE_SIMD      "Use SIMD"          OFF)
+option(USE_SIMD      "Use SIMD intrinsics to speed up process" OFF)
 
 ######################################################################
 ######################################################################
