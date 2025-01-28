@@ -320,17 +320,36 @@ float OfdmDecoder::_compute_time_offset(const std::vector<cmplx> & r, const std:
 
   for (int i = -mDabPar.K / 2; i < mDabPar.K / 2; i += 6)
   {
+    /*
+       i  index_1  i+1  index_2
+    -768   1280   -767   1281
+    -762   1286   -761   1287
+    -756   1292   -755   1293
+    ...
+      18   2030    -17   2031
+      12   2036    -11   2037
+       6   2042     -5   2043
+       0      0      1      1  <- index_1 shows to DC with no signal!
+       6      6      7      7
+      12     12     13     13
+      18     18     19     19
+    ...
+    750     750    751    751
+    756     756    757    757
+    762     762    763    763
+    */
+
     int index_1 = i < 0 ? i + mDabPar.T_u : i;
     int index_2 = (i + 1) < 0 ? (i + 1) + mDabPar.T_u : (i + 1);
 
-    cmplx s = r[index_1] * conj(v[index_2]); // TODO: is this a bug? index_2 -> index_1
+    cmplx s = r[index_1] * conj(v[index_1]); // was formerly: cmplx s = r[index_1] * conj(v[index_2]);
 
     s = cmplx(std::abs(real(s)), std::abs(imag(s)));
-    const cmplx leftTerm = s * conj(cmplx(std::abs(s) / std::sqrt(2), std::abs(s) / std::sqrt(2)));
+    const cmplx leftTerm = s * conj(cmplx(std::abs(s) * F_SQRT1_2, std::abs(s) * F_SQRT1_2));
 
     s = r[index_2] * conj(v[index_2]);
     s = cmplx(std::abs(real(s)), std::abs(imag(s)));
-    const cmplx rightTerm = s * conj(cmplx(std::abs(s) / std::sqrt(2), std::abs(s) / std::sqrt(2)));
+    const cmplx rightTerm = s * conj(cmplx(std::abs(s) * F_SQRT1_2, std::abs(s) * F_SQRT1_2));
 
     sum += conj(leftTerm) * rightTerm;
   }
