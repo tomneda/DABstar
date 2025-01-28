@@ -192,12 +192,15 @@ private:
 
   struct StatusInfo
   {
-    StatusInfoElem<bool>    Stereo;
-    StatusInfoElem<bool>    EPG;
-    StatusInfoElem<bool>    SBR;
-    StatusInfoElem<bool>    PS;
-    StatusInfoElem<bool>    Announce;
-    StatusInfoElem<int32_t> BitRate;
+    StatusInfoElem<bool>     Stereo;
+    StatusInfoElem<bool>     EPG;
+    StatusInfoElem<bool>     SBR;
+    StatusInfoElem<bool>     PS;
+    StatusInfoElem<bool>     Announce;
+    StatusInfoElem<bool>     RsError;
+    StatusInfoElem<bool>     CrcError;
+    StatusInfoElem<int32_t>  InpBitRate;  // tricky: bit rates must be of type int32_t
+    StatusInfoElem<uint32_t> OutSampRate; // tricky: sample rates must be of type uint32_t
   };
 
   static constexpr int32_t cDisplayTimeoutMs = 1000;

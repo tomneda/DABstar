@@ -77,7 +77,7 @@ void TechData::cleanUp()
   ASCTy->setText(es);
   language->setText(es);
   lblSbrUsed->setText(es);
-  slot_show_rsCorrections(0, 0); // call via this method to consider color change
+  slot_show_rs_corrections(0, 0); // call via this method to consider color change
   frameError_display->setValue(0);
   rsError_display->setValue(0);
   aacError_display->setValue(0);
@@ -121,7 +121,7 @@ bool TechData::isHidden()
 }
 
 
-void TechData::slot_show_frameErrors(int e)
+void TechData::slot_show_frame_error_bar(int e)
 {
   QPalette p = frameError_display->palette();
   if (100 - 4 * e < 80)
@@ -137,7 +137,7 @@ void TechData::slot_show_frameErrors(int e)
   frameError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_aacErrors(int e)
+void TechData::slot_show_aac_error_bar(int e)
 {
   QPalette p = aacError_display->palette();
   if (100 - 4 * e < 80)  // e is error out of 25 frames so times 4
@@ -152,7 +152,7 @@ void TechData::slot_show_aacErrors(int e)
   aacError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_rsErrors(int e)
+void TechData::slot_show_rs_error_bar(int e)
 {
   QPalette p = rsError_display->palette();
   if (100 - 4 * e < 80)
@@ -167,7 +167,7 @@ void TechData::slot_show_rsErrors(int e)
   rsError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_rsCorrections(int c, int ec)
+void TechData::slot_show_rs_corrections(int c, int ec)
 {
   // highlight non-zero values with color
   auto set_val_with_col = [](QLCDNumber * ipLCD, int iVal)

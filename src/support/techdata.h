@@ -56,11 +56,11 @@ private:
   AudioDisplay * mpAudioDisplay = nullptr;
 
 public slots:
-  void slot_show_frameErrors(int);
-  void slot_show_aacErrors(int);
-  void slot_show_rsErrors(int);
+  void slot_show_frame_error_bar(int);
+  void slot_show_aac_error_bar(int);
+  void slot_show_rs_error_bar(int);
   void slot_show_motHandling(bool);
-  void slot_show_rsCorrections(int, int);
+  void slot_show_rs_corrections(int, int);
   void slot_show_timetableButton(bool);
   void slot_show_frameDumpButton(bool);
   void slot_show_serviceName(const QString &);

@@ -1431,7 +1431,7 @@ void RadioInterface::slot_show_frame_errors(int s)
   }
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_frameErrors(s);
+    mpTechDataWidget->slot_show_frame_error_bar(s);
   }
 }
 
@@ -1443,9 +1443,10 @@ void RadioInterface::slot_show_rs_errors(int s)
   {    // should not happen
     return;
   }
+
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_rsErrors(s);
+    mpTechDataWidget->slot_show_rs_error_bar(s);
   }
 }
 
@@ -1460,7 +1461,7 @@ void RadioInterface::slot_show_aac_errors(int s)
 
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_aacErrors(s);
+    mpTechDataWidget->slot_show_aac_error_bar(s);
   }
 }
 
@@ -1730,9 +1731,13 @@ void RadioInterface::slot_show_rs_corrections(int c, int ec)
   {
     return;
   }
+
+  _set_status_info_status(mStatusInfo.RsError, c > 0);
+  _set_status_info_status(mStatusInfo.CrcError, ec > 0);
+
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_rsCorrections(c, ec);
+    mpTechDataWidget->slot_show_rs_corrections(c, ec);
   }
 }
 
@@ -2405,7 +2410,7 @@ void RadioInterface::startAudioservice(Audiodata * ad)
   programTypeLabel->setText(getProgramType(ad->programType));
   //	show service related data
   mpTechDataWidget->show_serviceData(ad);
-  _set_status_info_status(mStatusInfo.BitRate, (int32_t)(ad->bitRate));
+  _set_status_info_status(mStatusInfo.InpBitRate, (int32_t)(ad->bitRate));
 }
 
 void RadioInterface::startPacketservice(const QString & s)
@@ -3524,12 +3529,15 @@ void RadioInterface::_create_status_info()
 {
   layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-  _add_status_label_elem(mStatusInfo.BitRate,  0x40c6db, "0 kBit/s", "Input bitrate of AAC audio decoder");
-  _add_status_label_elem(mStatusInfo.Stereo,   0xf2c629, "Stereo",   "Stereo");
-  _add_status_label_elem(mStatusInfo.EPG,      0xf2c629, "EPG",      "Electronic Program Guide");
-  _add_status_label_elem(mStatusInfo.SBR,      0xf2c629, "SBR",      "Spectral Band Replication");
-  _add_status_label_elem(mStatusInfo.PS,       0xf2c629, "PS",       "Parametric Stereo");
-  _add_status_label_elem(mStatusInfo.Announce, 0xf2c629, "Announce", "Announcement");
+  _add_status_label_elem(mStatusInfo.InpBitRate,  0x40c6db, "-- kbps",  "Input bit-rate of the audio decoder");
+  _add_status_label_elem(mStatusInfo.OutSampRate, 0xDE9769, "-- kSps",  "Output sample-rate of the audio decoder");
+  _add_status_label_elem(mStatusInfo.Stereo,      0xf2c629, "Stereo",   "Stereo");
+  _add_status_label_elem(mStatusInfo.EPG,         0xf2c629, "EPG",      "Electronic Program Guide");
+  _add_status_label_elem(mStatusInfo.SBR,         0xf2c629, "SBR",      "Spectral Band Replication");
+  _add_status_label_elem(mStatusInfo.PS,          0xf2c629, "PS",       "Parametric Stereo");
+  _add_status_label_elem(mStatusInfo.Announce,    0xf2c629, "Ann",      "Announcement");
+  _add_status_label_elem(mStatusInfo.RsError,     0xFF2E18, "RS",       "Reed Solomon Error occurred");
+  _add_status_label_elem(mStatusInfo.CrcError,    0xFF2E18, "CRC",      "CRC Error occurred");
 
   layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
@@ -3566,21 +3574,43 @@ void RadioInterface::_set_status_info_status(StatusInfoElem<T> & iElem, const T 
     iElem.pLbl->setStyleSheet(iElem.value ? "QLabel { color: " + iElem.colorOn.name() + " }"
                                           : "QLabel { color: " + iElem.colorOff.name() + " }");
 
-    if (!std::is_same<T, bool>::value)
+    // trick a bit: int32_t are bit rates, uint32_t are sample rates
+    if (std::is_same<T, int32_t>::value)
     {
-      iElem.pLbl->setText(QString::number(iValue) + " kBit/s"); // not clean to place the unit here but it is the only one yet
+      if (iElem.value == 0)
+      {
+        iElem.pLbl->setText("-- kbps"); // not clean to place the unit here but it is the only one yet
+      }
+      else
+      {
+        iElem.pLbl->setText(QString::number(iValue) + " kbps"); // not clean to place the unit here but it is the only one yet
+      }
+    }
+    else if (std::is_same<T, uint32_t>::value)
+    {
+      if (iElem.value == 0)
+      {
+        iElem.pLbl->setText("-- kSps"); // not clean to place the unit here but it is the only one yet
+      }
+      else
+      {
+        iElem.pLbl->setText(QString::number(iValue) + " kSps"); // not clean to place the unit here but it is the only one yet
+      }
     }
   }
 }
 
 void RadioInterface::_reset_status_info()
 {
-  _set_status_info_status(mStatusInfo.BitRate, 0);
+  _set_status_info_status(mStatusInfo.InpBitRate, (int32_t)0);
+  _set_status_info_status(mStatusInfo.OutSampRate, (uint32_t)0);
   _set_status_info_status(mStatusInfo.Stereo, false);
   _set_status_info_status(mStatusInfo.EPG, false);
   _set_status_info_status(mStatusInfo.SBR, false);
   _set_status_info_status(mStatusInfo.PS, false);
   _set_status_info_status(mStatusInfo.Announce, false);
+  _set_status_info_status(mStatusInfo.RsError, false);
+  _set_status_info_status(mStatusInfo.CrcError, false);
 }
 
 void RadioInterface::_set_device_to_file_mode(const bool iDataFromFile)
@@ -3608,6 +3638,8 @@ void RadioInterface::_setup_audio_output(const uint32_t iSampleRate)
   mpCurAudioFifo = &mAudioFifo;
   mpCurAudioFifo->sampleRate = iSampleRate;
   mpCurAudioFifo->pRingbuffer = mpAudioBufferToOutput;
+
+  _set_status_info_status(mStatusInfo.OutSampRate, (uint32_t)(iSampleRate / 1000));
 
   if (mPlaybackState == EPlaybackState::Running)
   {
