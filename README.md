@@ -321,7 +321,7 @@ Details see https://github.com/airspy/airspyone_host
 
 ```
 git clone https://github.com/airspy/airspyone_host.git
-cd airspyone_host-master
+cd airspyone_host
 mkdir build
 cd build
 cmake ../ -DINSTALL_UDEV_RULES=ON
