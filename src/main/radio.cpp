@@ -1123,7 +1123,7 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
     }
   }
 
-  if (mpCurAudioFifo == nullptr)
+  if (mpCurAudioFifo == nullptr || mpCurAudioFifo->sampleRate != iAudioSampleRate)
   {
     mAudioBufferFillFiltered = 0.0f; // set back the audio buffer progress bar
     _setup_audio_output(iAudioSampleRate);
