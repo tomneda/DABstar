@@ -1534,6 +1534,7 @@ void RadioInterface::slot_show_label(const QString & s)
 #endif
   if (mIsRunning.load())
   {
+    lblDynLabel->setStyleSheet("color: white");
     lblDynLabel->setText(_convert_links_to_clickable(s));
   }
   //	if we dtText is ON, some work is still to be done
@@ -2455,7 +2456,6 @@ void RadioInterface::startPacketservice(const QString & s)
 void RadioInterface::clean_screen()
 {
   serviceLabel->setText("");
-  lblDynLabel->setStyleSheet("color: white");
   lblDynLabel->setText("");
   mpTechDataWidget->cleanUp();
   programTypeLabel->setText("");
