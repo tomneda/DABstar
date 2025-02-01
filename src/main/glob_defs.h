@@ -103,34 +103,6 @@ static inline bool is_infinite(float x)
   return x == std::numeric_limits<float>::infinity();
 }
 
-static inline float fast_abs(cmplx z)
-{
-#if 1 // on my i7-6700K the std::abs is also tiny faster than the "fast_abs" function. Maybe on an Raspi the fast_abs could be faster?!
-  return std::abs(z);  // 44ns
-#else // 49ns
-  // this is the former jan_abs() from Jan van Katwijk, should be faster than std::abs()... but is it really? (depends on the device)
-  float re = real(z);
-  float im = imag(z);
-
-  if (re < 0)
-  {
-    re = -re;
-  }
-  if (im < 0)
-  {
-    im = -im;
-  }
-  if (re > im)
-  {
-    return re + 0.5f * im;
-  }
-  else
-  {
-    return im + 0.5f * re;
-  }
-#endif
-}
-
 static inline float fast_abs_with_clip_det(cmplx z, bool & oClipped, float iClipLimit)
 {
   // this is the former jan_abs() from Jan van Katwijk, should be faster than std::abs()... but is it really? (depends on the device)
@@ -204,6 +176,27 @@ inline float turn_phase_to_first_quadrant(float iPhase)
     iPhase += (float)M_PI; // fmod will not work as intended with negative values
   }
   return std::fmod(iPhase, (float)M_PI_2);
+}
+
+// turns the given complex point into first quadrant
+inline cmplx turn_complex_phase_to_first_quadrant(const cmplx & iValue)
+{
+  if (real(iValue) < 0.0f)
+  {
+    if (imag(iValue) < 0.0f)
+    {
+      return -iValue; // -90° ... -180°
+    }
+    return {imag(iValue), -real(iValue)}; // 90 ... 180°
+  }
+  else // real(iValue) >= 0.0f
+  {
+    if (imag(iValue) < 0.0f)
+    {
+      return {-imag(iValue), real(iValue)}; // 0° ... -90°
+    }
+    return iValue; // 0° ... 90°
+  }
 }
 
 template<typename T> inline void mean_filter(T & ioVal, const T iVal, const T iAlpha)

@@ -116,7 +116,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const std::ve
 
   for (int32_t i = 0; i < mDabPar.T_u; i++)
   {
-    const float absVal = fast_abs(mFftOutBuffer[i]);
+    const float absVal = std::abs(mFftOutBuffer[i]);
     mCorrPeakValues[i] = absVal;
     mMeanCorrPeakValues[i] += absVal;
     sum += absVal;

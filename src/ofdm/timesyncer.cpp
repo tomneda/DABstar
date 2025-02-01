@@ -51,7 +51,7 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(const int32_
   for (i = 0; i < C_LEVEL_SIZE; i++)
   {
     const cmplx sample = mpSampleReader->getSample(0);
-    envBuffer[mSyncBufferIndex] = fast_abs(sample);
+    envBuffer[mSyncBufferIndex] = std::abs(sample);
     cLevel += envBuffer[mSyncBufferIndex];
     ++mSyncBufferIndex;
   }
@@ -61,7 +61,7 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(const int32_
   while (cLevel / C_LEVEL_SIZE > 0.55 * mpSampleReader->get_sLevel())
   {
     const cmplx sample = mpSampleReader->getSample(0);
-    envBuffer[mSyncBufferIndex] = fast_abs(sample);
+    envBuffer[mSyncBufferIndex] = std::abs(sample);
     cLevel += envBuffer[mSyncBufferIndex] - envBuffer[(mSyncBufferIndex - C_LEVEL_SIZE) & syncBufferMask];
     mSyncBufferIndex = (mSyncBufferIndex + 1) & syncBufferMask;
     ++counter;
@@ -79,7 +79,7 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(const int32_
   while (cLevel / C_LEVEL_SIZE < 0.75 * mpSampleReader->get_sLevel())
   {
     cmplx sample = mpSampleReader->getSample(0);
-    envBuffer[mSyncBufferIndex] = fast_abs(sample);
+    envBuffer[mSyncBufferIndex] = std::abs(sample);
     //      update the levels
     cLevel += envBuffer[mSyncBufferIndex] - envBuffer[(mSyncBufferIndex - C_LEVEL_SIZE) & syncBufferMask];
     mSyncBufferIndex = (mSyncBufferIndex + 1) & syncBufferMask;
