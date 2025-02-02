@@ -225,12 +225,6 @@ QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const
 QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) const
 {
   const bool useNativeFileDialog = SettingHelper::get_instance().read(SettingHelper::cbUseNativeFileDialog).toBool();
-
-  const QString FILETYPE_UFFXML = "UFF-XML (*.uff)";
-  const QString FILETYPE_SDRWAV = "SDR-WAV (*.sdr)";
-  const QString FILETYPE_RAW    = "RAW (*.raw)";
-  const QString FILETYPE_IQ     = "IQ-RAW (*.iq)";
-
   const QDir storedDir = mpSettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
 
   QString fileName;
@@ -239,7 +233,7 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) 
   fileName = QFileDialog::getOpenFileName(nullptr,
                                           "Open file ...",
                                           storedDir.path(),
-                                          FILETYPE_UFFXML + ";;" + FILETYPE_SDRWAV + ";;" + FILETYPE_RAW + ";;" + FILETYPE_IQ,
+                                          "Sample data (*.uff *.sdr *.raw *.iq)",
                                           &selectedFilter,
                                           useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
@@ -248,10 +242,11 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) 
 
   if (!fileName.isEmpty())
   {
-    if      (selectedFilter == FILETYPE_UFFXML) oType = EType::XML;
-    else if (selectedFilter == FILETYPE_SDRWAV) oType = EType::SDR;
-    else if (selectedFilter == FILETYPE_RAW)    oType = EType::RAW;
-    else if (selectedFilter == FILETYPE_IQ)     oType = EType::IQ;
+    if      (fileName.endsWith(".uff", Qt::CaseInsensitive)) oType = EType::XML;
+    else if (fileName.endsWith(".sdr", Qt::CaseInsensitive)) oType = EType::SDR;
+    else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) oType = EType::RAW;
+    else if (fileName.endsWith(".iq",  Qt::CaseInsensitive)) oType = EType::IQ;
+    else qDebug() << "Unknown file type in: " << fileName;
 
     mpSettings->setValue(sSettingSampleStorageDir, QFileInfo(fileName).path());
   }
