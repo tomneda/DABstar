@@ -1516,12 +1516,6 @@ void RadioInterface::slot_show_mot_handling(bool b)
   mpTechDataWidget->slot_show_motHandling(b);
 }
 
-//	just switch a color, called from the dabprocessor
-void RadioInterface::slot_set_synced(bool b)
-{
-  (void)b;
-}
-
 //	called from the PAD handler
 
 void RadioInterface::slot_show_label(const QString & s)
@@ -2675,7 +2669,6 @@ void RadioInterface::stop_channel()
   //	all stopped, now look at the GUI elements
   progBarFicError->setValue(0);
   //	the visual elements related to service and channel
-  slot_set_synced(false);
   ensembleId->setText("");
   transmitter_coordinates->setText(" ");
 

@@ -60,7 +60,6 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   mFftOutBuffer.resize(mDabPar.T_u);
   mFftPlan = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
 
-  //connect(this, &DabProcessor::signal_set_synced, mpRadioInterface, &RadioInterface::slot_set_synced);
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
   connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
   connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
@@ -398,16 +397,12 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oSampleCount, float iThresh
     mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, mDabPar.T_u - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
 
     oSampleCount = startIndex + mDabPar.T_u;
-
-    //emit signal_set_synced(true);
-
     return true;
   }
 }
 
 bool DabProcessor::_state_wait_for_time_sync_marker()
 {
-  //emit signal_set_synced(false);
   mTiiDetector.reset();
   mOfdmDecoder.reset();
   mTiiCounter = 0;

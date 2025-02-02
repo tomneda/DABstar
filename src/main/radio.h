@@ -389,7 +389,6 @@ public slots:
   void slot_show_aac_errors(int);
   void slot_show_fic_success(bool);
   void slot_show_fic_ber(float);
-  void slot_set_synced(bool);
   void slot_show_label(const QString &);
   void slot_handle_mot_object(QByteArray, QString, int, bool);
   void slot_send_datagram(int);

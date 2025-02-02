@@ -185,7 +185,6 @@ public slots:
   void slot_soft_bit_gen_type(ESoftBitType iSoftBitType);
 
 signals:
-  void signal_set_synced(bool);
   void signal_no_signal_found();
   void signal_show_tii(const std::vector<STiiResult> & iTr);
   void signal_show_spectrum(int);
