@@ -29,59 +29,58 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  <sys/time.h>
-#include  <cinttypes>
-#include  "raw-reader.h"
-#include  "rawfiles.h"
+#include "raw-reader.h"
+#include "rawfiles.h"
+#include <QLoggingCategory>
+#include <sys/time.h>
+#include <cinttypes>
 
 #ifdef _WIN32
 #else
   #include  <unistd.h>
 #endif
 
-#define  BUFFERSIZE  32768
+Q_LOGGING_CATEGORY(sLogRawReader, "RawReader", QtInfoMsg)
 
-static inline int64_t getMyTime()
+static inline int64_t get_cur_time_in_us()
 {
   struct timeval tv;
-
   gettimeofday(&tv, nullptr);
   return ((int64_t)tv.tv_sec * 1000000 + (int64_t)tv.tv_usec);
 }
 
-rawReader::rawReader(RawFileHandler * mr, FILE * filePointer, RingBuffer<cmplx> * _I_Buffer)
+RawReader::RawReader(RawFileHandler * ipRFH, FILE * ipFile, RingBuffer<cmplx> * ipRingBuffer)
+  : mParent(ipRFH)
+  , mpFile(ipFile)
+  , mpRingBuffer(ipRingBuffer)
 {
-  this->parent = mr;
-  this->filePointer = filePointer;
-  this->_I_Buffer = _I_Buffer;
+  mByteBuffer.resize(BUFFERSIZE);
+  mCmplxBuffer.resize(BUFFERSIZE / 2);
 
   for(int i = 0; i < 256; i++)
   {
-    mapTable[i] = ((float)i - 127.38f) / 128.0f;
+    // the offset 127.38f is due to the input data comes usually from a SDR stick which has its DC offset a bit shifted from ideal (from old-dab)
+    mMapTable[i] = ((float)i - 127.38f) / 128.0f;
   }
 
-  fseek(filePointer, 0, SEEK_END);
-  fileLength = ftell(filePointer);
-  fprintf(stderr, "fileLength = %d\n", (int)fileLength);
-  fseek(filePointer, 0, SEEK_SET);
-  period = (32768 * 1000) / (2 * 2048);  // full IQś read
-  fprintf(stderr, "Period = %" PRIu64 "\n", period);
-  bi = new uint8_t[BUFFERSIZE];
-  running.store(false);
+  fseek(ipFile, 0, SEEK_END);
+  mFileLength = ftell(ipFile);
+  qCInfo(sLogRawReader) << "RAW file length:" << mFileLength;
+  fseek(ipFile, 0, SEEK_SET);
+  mRunning.store(false);
   start();
 }
 
-rawReader::~rawReader()
+RawReader::~RawReader()
 {
   stopReader();
-  delete[] bi;
 }
 
-void rawReader::stopReader()
+void RawReader::stopReader()
 {
-  if (running)
+  if (mRunning)
   {
-    running = false;
+    mRunning = false;
     while (isRunning())
     {
       usleep(200);
@@ -89,65 +88,67 @@ void rawReader::stopReader()
   }
 }
 
-void rawReader::run()
+void RawReader::run()
 {
-  int64_t nextStop;
-  int i;
-  int teller = 0;
-  cmplx localBuffer[BUFFERSIZE / 2];
+  connect(this, &RawReader::signal_set_progress, mParent, &RawFileHandler::setProgress);
 
-  connect(this, SIGNAL (setProgress(int, float)), parent, SLOT   (setProgress(int, float)));
-  fseek(filePointer, 0, SEEK_SET);
-  running.store(true);
-  nextStop = getMyTime();
+  fseek(mpFile, 0, SEEK_SET);
+  mRunning.store(true);
+
+  qCInfo(sLogRawReader) << "Start playing RAW file";
+
+  int cnt = 0;
+  int64_t nextStopus = get_cur_time_in_us();
+
   try
   {
-    while (running.load())
+    while (mRunning.load())
     {
-      while (_I_Buffer->get_ring_buffer_write_available() < BUFFERSIZE + 10)
+      while (mpRingBuffer->get_ring_buffer_write_available() < BUFFERSIZE + 10)
       {
-        if (!running.load())
+        if (!mRunning.load())
         {
           throw (32);
         }
         usleep(100);
       }
 
-      if (++teller >= 20)
+      if (++cnt >= 20)
       {
-        int xx = ftell(filePointer);
-        float progress = (float)xx / fileLength;
-        setProgress((int)(progress * 100), (float)xx / (2 * 2048000));
-        teller = 0;
+        int xx = ftell(mpFile);
+        float progress = (float)xx / mFileLength;
+        signal_set_progress((int)(progress * 100), (float)xx / (2 * 2048000));
+        cnt = 0;
       }
 
-      nextStop += period;
-      int n = fread(bi, sizeof(uint8_t), BUFFERSIZE, filePointer);
+      int n = fread(mByteBuffer.data(), sizeof(uint8_t), BUFFERSIZE, mpFile);
+
       if (n < BUFFERSIZE)
       {
-        fprintf(stderr, "eof gehad\n");
-        fseek(filePointer, 0, SEEK_SET);
-        for (i = n; i < BUFFERSIZE; i++)
-        {
-          bi[i] = 0;
-        }
+        qCInfo(sLogRawReader) << "Restart file";
+        fseek(mpFile, 0, SEEK_SET);
       }
 
-      for (i = 0; i < BUFFERSIZE / 2; i++)
+      nextStopus += (n * 1000) / (2 * 2048); // add runtime in us for n numbers of entries
+
+      for (int i = 0; i < n / 2; i++)
       {
-        localBuffer[i] = cmplx(4 * mapTable[bi[2 * i]], 4 * mapTable[bi[2 * i + 1]]);
-      }
-      _I_Buffer->put_data_into_ring_buffer(localBuffer, BUFFERSIZE / 2);
-      if (nextStop - getMyTime() > 0)
+        mCmplxBuffer[i] = cmplx(mMapTable[mByteBuffer[2 * i + 0]], mMapTable[mByteBuffer[2 * i + 1]]);
+      }                      
+
+      mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), n / 2);
+
+      if (nextStopus - get_cur_time_in_us() > 0)
       {
-        usleep(nextStop - getMyTime());
+        usleep(nextStopus - get_cur_time_in_us());
       }
     }
   }
   catch (int e)
   {
   }
-  fprintf(stderr, "taak voor replay eindigt hier\n");
+
+  qCInfo(sLogRawReader) << "Playing RAW file stopped";
 }
 
 

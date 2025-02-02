@@ -97,7 +97,7 @@ bool RawFileHandler::restartReader(int32_t freq)
   {
     return true;
   }
-  readerTask = new rawReader(this, filePointer, &_I_Buffer);
+  readerTask = new RawReader(this, filePointer, &_I_Buffer);
   running.store(true);
   return true;
 }

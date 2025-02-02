@@ -42,7 +42,7 @@
 
 class QLabel;
 class QSettings;
-class rawReader;
+class RawReader;
 
 class RawFileHandler final : public QObject, public IDeviceHandler, public FileReaderWidget
 {
@@ -71,7 +71,7 @@ private:
   QString fileName;
   RingBuffer<cmplx> _I_Buffer;
   FILE * filePointer = nullptr;
-  rawReader * readerTask = nullptr;
+  RawReader * readerTask = nullptr;
   std::atomic<bool> running = false;
   
 public slots:

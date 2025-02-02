@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,34 +28,42 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__RAW_READER__
-#define	__RAW_READER__
+#ifndef  RAW_READER_H
+#define  RAW_READER_H
 
-#include	<QThread>
-#include	"dab-constants.h"
-#include	"ringbuffer.h"
-#include	<atomic>
-class	RawFileHandler;
+#include  <QThread>
+#include  "dab-constants.h"
+#include  "ringbuffer.h"
+#include  <atomic>
 
-class	rawReader:public QThread {
+class RawFileHandler;
+
+class RawReader : public QThread
+{
 Q_OBJECT
+
 public:
-	rawReader(RawFileHandler *, FILE *, RingBuffer<cmplx> *);
-	~rawReader();
-	void		startReader();
-	void		stopReader();
+  RawReader(RawFileHandler *, FILE *, RingBuffer<cmplx> *);
+  ~RawReader();
+
+  void stopReader();
+
 private:
-virtual void	run();
-	FILE		*filePointer;
-	RingBuffer<cmplx>	*_I_Buffer;
-	uint64_t	period;
-	std::atomic<bool>	running;
-	uint8_t		*bi;
-	RawFileHandler	*parent;
-	int64_t		fileLength;
-	float 		mapTable[256];
+  static constexpr int32_t BUFFERSIZE = 32768;
+
+  virtual void run();
+
+  RawFileHandler * const mParent;
+  FILE * const mpFile;
+  RingBuffer<cmplx> * const mpRingBuffer;
+  std::atomic<bool> mRunning;
+  std::vector<uint8_t> mByteBuffer;
+  std::vector<cmplx> mCmplxBuffer;
+  int64_t mFileLength;
+  std::array<float, 256> mMapTable;
+
 signals:
-	void		setProgress(int, float);
+  void signal_set_progress(int, float);
 };
 
 #endif
