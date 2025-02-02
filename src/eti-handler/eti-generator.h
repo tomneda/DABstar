@@ -79,7 +79,7 @@ public:
   ~etiGenerator();
 
   void newFrame();
-  void processBlock(const std::vector<int16_t> & fbits, int blkno);
+  void process_block(const std::vector<int16_t> & fbits, int blkno);
   void reset();
   bool start_etiGenerator(const QString &);
   void stop_etiGenerator();

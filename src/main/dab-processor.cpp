@@ -336,17 +336,17 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
 
     if (ofdmSymbCntIdx <= 3)
     {
-      mFicHandler.process_ficBlock(mBits, ofdmSymbCntIdx);
+      mFicHandler.process_block(mBits, ofdmSymbCntIdx);
     }
 
     if (mEti_on)
     {
-      mEtiGenerator.processBlock(mBits, ofdmSymbCntIdx);
+      mEtiGenerator.process_block(mBits, ofdmSymbCntIdx);
     }
 
     if (ofdmSymbCntIdx > 3 && !mScanMode)
     {
-      mMscHandler.process_msc_block(mBits, ofdmSymbCntIdx);
+      mMscHandler.process_block(mBits, ofdmSymbCntIdx);
     }
   }
 #ifdef DO_TIME_MEAS

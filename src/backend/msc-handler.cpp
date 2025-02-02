@@ -148,7 +148,7 @@ bool MscHandler::set_channel(DescriptorType * d, RingBuffer<int16_t> * ipoAudioB
 //	gui thread, so some locking is added
 //
 
-void MscHandler::process_msc_block(const std::vector<int16_t> & iSoftBits, const int16_t iBlockNr)
+void MscHandler::process_block(const std::vector<int16_t> & iSoftBits, const int16_t iBlockNr)
 {
   const int16_t curBlockIdx = (int16_t)((iBlockNr - 4) % mNumberOfBlocksPerCif);
   //	and the normal operation is:

@@ -144,7 +144,7 @@ void etiGenerator::newFrame()
 //
 //	we ensure that when starting, we start with a
 //	block 1
-void etiGenerator::processBlock(const std::vector<int16_t> & ibits, int blkno)
+void etiGenerator::process_block(const std::vector<int16_t> & ibits, int blkno)
 {
 
   if (!running && (etiFile != nullptr) && (blkno == 1))

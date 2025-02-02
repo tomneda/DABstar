@@ -139,7 +139,7 @@ FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
   *	The function is called with a blkno. This should be 1, 2 or 3
   *	for each time 2304 bits are in, we call process_ficInput
   */
-void FicHandler::process_ficBlock(const std::vector<int16_t> & iData, const int32_t iBlkNo)
+void FicHandler::process_block(const std::vector<int16_t> & iData, const int32_t iBlkNo)
 {
   if (iBlkNo == 1)
   {

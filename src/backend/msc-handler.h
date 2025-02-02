@@ -46,7 +46,7 @@ public:
   MscHandler(RadioInterface *, uint8_t, RingBuffer<uint8_t> *);
   ~MscHandler();
 
-  void process_msc_block(const std::vector<int16_t> & iSoftBits, int16_t iBlockNr);
+  void process_block(const std::vector<int16_t> & iSoftBits, int16_t iBlockNr);
   bool set_channel(DescriptorType *, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *, int);
   void reset_channel();
   void stop_service(const DescriptorType *, int);

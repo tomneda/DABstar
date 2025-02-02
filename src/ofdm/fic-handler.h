@@ -56,7 +56,7 @@ public:
   FicHandler(RadioInterface * const iMr, const uint8_t iDabMode);
   ~FicHandler() override = default;
 
-  void process_ficBlock(const std::vector<int16_t> & iData, const int32_t iBlkNo);
+  void process_block(const std::vector<int16_t> & iData, const int32_t iBlkNo);
   void stop();
   void restart();
   void start_ficDump(FILE *);
