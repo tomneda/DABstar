@@ -291,7 +291,7 @@ void SpectrumViewer::show_iq(int32_t iAmount, float /*iAvg*/)
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
-void SpectrumViewer::show_quality(int32_t /*iOfdmSymbNo*/, float iModQual, float iTimeOffset, float iFreqOffset, float iPhaseCorr, float iSNR)
+void SpectrumViewer::show_lcd_data(int32_t /*iOfdmSymbNo*/, float iModQual, float iTestData1, float iTestData2, float iPhaseCorr, float iSNR)
 {
   if (myFrame.isHidden())
   {
@@ -299,11 +299,11 @@ void SpectrumViewer::show_quality(int32_t /*iOfdmSymbNo*/, float iModQual, float
   }
 
   //lcdOfdmSymbNo->display(iOfdmSymbNo);
-  lcdModQuality->display(QString("%1").arg(iModQual, 0, 'f', 1));
-  lcdTimeOffset->display(QString("%1").arg(iTimeOffset, 0, 'f', 2));
-  lcdFreqOffset->display(QString("%1").arg(iFreqOffset, 0, 'f', 2));
-  lcdPhaseCorr->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
+  lcdTestData1->display(QString("%1").arg(iTestData1, 0, 'f', 2));
+  lcdTestData2->display(QString("%1").arg(iTestData2, 0, 'f', 2));
   lcdSnr->display(QString("%1").arg(iSNR, 0, 'f', 1));
+  lcdPhaseCorr->display(QString("%1").arg(iPhaseCorr, 0, 'f', 2));
+  lcdModQuality->display(QString("%1").arg(iModQual, 0, 'f', 1));
 
   // Very strange thing: the configuration of the ThermoWidget colors has to be done in the calling thread.
   if (!mThermoModQualConfigured)

@@ -51,12 +51,12 @@ public:
   OfdmDecoder(RadioInterface *, uint8_t, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
   ~OfdmDecoder() override;
 
-  struct SQualityData
+  struct SLcdData
   {
     int32_t CurOfdmSymbolNo;
     float ModQuality;
-    float TimeOffset;
-    float FreqOffset;
+    float TestData1;
+    float TestData2;
     float PhaseCorr;
     float SNR;
   };
@@ -108,9 +108,9 @@ private:
   float mMeanValue = 1.0f;
   cmplx mDcAdc{ 0.0f, 0.0f };
 
-  // mQD has always be visible due to address access in another thread.
+  // mLcdData has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
-  SQualityData mQD{};
+  SLcdData mLcdData{};
 
   [[nodiscard]] float _compute_mod_quality(const std::vector<cmplx> & v) const;
   [[nodiscard]] float _compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const;
@@ -124,7 +124,7 @@ private:
 
 signals:
   void signal_slot_show_iq(int, float);
-  void signal_show_mod_quality(const SQualityData *);
+  void signal_show_lcd_data(const SLcdData *);
 };
 
 #endif // __USE_SIMD__

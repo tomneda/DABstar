@@ -404,7 +404,7 @@ public slots:
   void slot_show_correlation(float, const QVector<int> & v);
   void slot_show_spectrum(int);
   void slot_show_iq(int, float);
-  void slot_show_mod_quality_data(const OfdmDecoder::SQualityData *);
+  void slot_show_lcd_data(const OfdmDecoder::SLcdData *);
   void slot_show_digital_peak_level(float iPeakLevel);
   void slot_show_rs_corrections(int, int);
   void slot_show_tii(const std::vector<STiiResult> & iTr);

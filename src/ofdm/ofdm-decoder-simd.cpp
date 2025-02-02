@@ -87,7 +87,7 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   }
 
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &RadioInterface::slot_show_iq);
-  connect(this, &OfdmDecoder::signal_show_mod_quality, mpRadioInterface, &RadioInterface::slot_show_mod_quality_data);
+  connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &RadioInterface::slot_show_lcd_data);
 
   reset();
 }
@@ -311,13 +311,13 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
     const float noisePow = _compute_noise_Power();
     float snr = (mMeanPowerOvrAll - noisePow) / noisePow;
     if (snr <= 0.0f) snr = 0.1f;
-    mQD.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mQD.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / stdDevSqOvrAll);
-    mQD.TimeOffset = _compute_time_offset(mVolkNomCarrierVec, mVolkPhaseReference);
-    mQD.FreqOffset = _compute_frequency_offset(mVolkNomCarrierVec, mVolkPhaseReference);
-    mQD.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
-    mQD.SNR = 10.0f * std::log10(snr);
-    emit signal_show_mod_quality(&mQD);
+    mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
+    mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / stdDevSqOvrAll);
+    mLcdData.TestData1 = _compute_time_offset(mVolkNomCarrierVec, mVolkPhaseReference);
+    mLcdData.TestData2 = _compute_frequency_offset(mVolkNomCarrierVec, mVolkPhaseReference);
+    mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
+    mLcdData.SNR = 10.0f * std::log10(snr);
+    emit signal_show_lcd_data(&mLcdData);
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % cL;
     if (mNextShownOfdmSymbIdx == 0) mNextShownOfdmSymbIdx = 1; // as iCurSymbolNo can never be zero here

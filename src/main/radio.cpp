@@ -1702,7 +1702,7 @@ void RadioInterface::slot_show_iq(int iAmount, float iAvg)
   mSpectrumViewer.show_iq(iAmount, iAvg);
 }
 
-void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData * pQD)
+void RadioInterface::slot_show_lcd_data(const OfdmDecoder::SLcdData * pQD)
 {
   if (!mIsRunning.load())
   {
@@ -1711,7 +1711,7 @@ void RadioInterface::slot_show_mod_quality_data(const OfdmDecoder::SQualityData 
 
   if (!mSpectrumViewer.is_hidden())
   {
-    mSpectrumViewer.show_quality(pQD->CurOfdmSymbolNo, pQD->ModQuality, pQD->TimeOffset, pQD->FreqOffset, pQD->PhaseCorr, pQD->SNR);
+    mSpectrumViewer.show_lcd_data(pQD->CurOfdmSymbolNo, pQD->ModQuality, pQD->TestData1, pQD->TestData2, pQD->PhaseCorr, pQD->SNR);
   }
 }
 

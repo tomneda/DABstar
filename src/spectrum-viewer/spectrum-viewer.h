@@ -88,7 +88,7 @@ public:
   void show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
   void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
   void show_iq(int32_t, float);
-  void show_quality(int32_t, float, float, float, float, float);
+  void show_lcd_data(int32_t, float, float, float, float, float);
   void show_fic_ber(float ber);
   void show_clock_error(float e);
   //void set_bit_depth(int16_t);
