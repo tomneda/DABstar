@@ -318,7 +318,10 @@ void SpectrumViewer::show_lcd_data(int32_t /*iOfdmSymbNo*/, float iModQual, floa
 void SpectrumViewer::show_fic_ber(float ber)
 {
   if (!myFrame.isHidden())
-    lcdBER->display(QString("%1").arg(ber, 0, 'e', 1));
+  {
+    // lcdBER->display(QString("%1").arg(ber, 0, 'e', 1));
+    lcdBER->display(QString("%1").arg(ber * 1e6, 0, 'f', 0)); // show BER in ppm
+  }
 }
 
 void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
