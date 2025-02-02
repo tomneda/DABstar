@@ -237,21 +237,26 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) 
                                           &selectedFilter,
                                           useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
-
-  oType = EType::UNDEF;
-
   if (!fileName.isEmpty())
   {
-    if      (fileName.endsWith(".uff", Qt::CaseInsensitive)) oType = EType::XML;
-    else if (fileName.endsWith(".sdr", Qt::CaseInsensitive)) oType = EType::SDR;
-    else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) oType = EType::RAW;
-    else if (fileName.endsWith(".iq",  Qt::CaseInsensitive)) oType = EType::IQ;
-    else qDebug() << "Unknown file type in: " << fileName;
-
+    oType = get_file_type(fileName);
     mpSettings->setValue(sSettingSampleStorageDir, QFileInfo(fileName).path());
   }
 
   return fileName;
+}
+
+OpenFileDialog::EType OpenFileDialog::get_file_type(const QString & fileName) const
+{
+  EType fileType = EType::UNDEF;
+
+  if      (fileName.endsWith(".uff", Qt::CaseInsensitive)) fileType = EType::XML;
+  else if (fileName.endsWith(".sdr", Qt::CaseInsensitive)) fileType = EType::SDR;
+  else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) fileType = EType::RAW;
+  else if (fileName.endsWith(".iq",  Qt::CaseInsensitive)) fileType = EType::IQ;
+  else qDebug() << "Unknown file type in: " << fileName;
+
+  return fileType;
 }
 
 void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const

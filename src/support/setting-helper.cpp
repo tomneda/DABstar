@@ -49,6 +49,7 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(skipFile, { "", "skipFile", "" });
   mMap.insert(tiiFile, { "", "tiiFile", "" });
   mMap.insert(device, { "", "device", "no device" });
+  mMap.insert(deviceFile, { "", "deviceFile", "" });
   mMap.insert(deviceVisible, { "", "deviceVisible", true });
   mMap.insert(spectrumVisible, { "", "spectrumVisible", false });
   mMap.insert(techDataVisible, { "", "techDataVisible", false });

@@ -42,61 +42,62 @@ public:
   enum EElem
   {
     // main widget
-    dabMode, // 0
-    threshold, // 1
-    diffLength, // 2
-    tiiDelay, // 3
-    tiiDepth, // 4
-    echoDepth, // 5
-    soundChannel, // 7
-    picturesPath, // 8
-    filePath, // 9
-    epgPath, // 10
-    dabBand, // 11
-    skipFile, // 12
-    tiiFile, // 13
-    device, // 14
-    deviceVisible, // 15
-    spectrumVisible, // 16
-    techDataVisible, // 17
-    showDeviceWidget, // 18
-    presetName, // 19
-    channel, // 20
-    epgWidth, // 21
-    browserAddress, // 22
-    mapPort, // 23
-    epgFlag, // 24
+    dabMode,
+    threshold,
+    diffLength,
+    tiiDelay,
+    tiiDepth,
+    echoDepth,
+    soundChannel,
+    picturesPath,
+    filePath,
+    epgPath,
+    dabBand,
+    skipFile,
+    tiiFile,
+    device,
+    deviceFile,
+    deviceVisible,
+    spectrumVisible,
+    techDataVisible,
+    showDeviceWidget,
+    presetName,
+    channel,
+    epgWidth,
+    browserAddress,
+    mapPort,
+    epgFlag,
 
     // needed in config widget
-    cbManualBrowserStart, // 25
-    cbCloseDirect, // 26
-    cbUseDcAvoidance, // 27
-    cbUseDcRemoval, // 28
-    cbGenXmlFromEpg, // 29
-    hidden, // 30
-    latitude, // 31
-    longitude, // 32
-    cbAlwaysOnTop, // 33
-    saveDirAudioDump, // 34
-    saveDirSampleDump, // 35
-    saveDirContent, // 36
-    cbSaveTransToCsv, // 37
-    cbSaveSlides, // 38
-    serviceListSortCol, // 39
-    serviceListSortDesc, // 40
-    cbShowNonAudioInServiceList, // 41
-    cbUse_strongest_peak, // 42
-    cbTiiCollisions, // 43
-    cbUseNativeFileDialog, // 44
-    cbUseUtcTime, // 45
-    enableTii, // 46
-    tii_threshold, //47
-    tii_subid, //48
-    cbUrlClickable, // 49
+    cbManualBrowserStart,
+    cbCloseDirect,
+    cbUseDcAvoidance,
+    cbUseDcRemoval,
+    cbGenXmlFromEpg,
+    hidden,
+    latitude,
+    longitude,
+    cbAlwaysOnTop,
+    saveDirAudioDump,
+    saveDirSampleDump,
+    saveDirContent,
+    cbSaveTransToCsv,
+    cbSaveSlides,
+    serviceListSortCol,
+    serviceListSortDesc,
+    cbShowNonAudioInServiceList,
+    cbUse_strongest_peak,
+    cbTiiCollisions,
+    cbUseNativeFileDialog,
+    cbUseUtcTime,
+    enableTii,
+    tii_threshold,
+    tii_subid,
+    cbUrlClickable,
 
     // special enums for windows position and size storage
-    configWidget, // 50
-    mainWidget // 51
+    configWidget,
+    mainWidget
   };
 
   QVariant read(const EElem iElem) const;

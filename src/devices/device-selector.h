@@ -27,6 +27,7 @@ public:
 
   QStringList get_device_name_list() const;
   std::unique_ptr<IDeviceHandler> create_device(const QString & s, bool & oRealDevice);
+  void reset_file_input_last_file(const QString & iDeviceName);
 
 private:
   QSettings * const mpSettings;

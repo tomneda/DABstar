@@ -59,6 +59,7 @@ public:
 
   enum class EType { UNDEF, XML, SDR, IQ, RAW };
   QString open_sample_data_file_dialog_for_reading(EType & oType) const;
+  EType get_file_type(const QString & iFileName) const;
 
 private:
   QSettings * const mpSettings;
