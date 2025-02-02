@@ -3,4 +3,4 @@
 DST=~/DABstarAppImage/build
 cd $DST || exit
 
-cmake --build . -- -j4
+cmake --build . -- -j6

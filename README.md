@@ -2,7 +2,7 @@
 
 ---
 ![screenshot.png](res/for_readme/screenshot.png)
-(Picture from V3.4.0)
+(Picture from V3.5.0)
 
 ---
 
@@ -332,7 +332,7 @@ sudo ldconfig
 
 ## Licences
 
-Rights of Qt-DAB, AbracaDABra, Qt, Qwt, FFTW, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
+Rights of Qt-DAB, AbracaDABra, Qt, Qwt, FFTW, VOLK, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
 
 Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.
 
