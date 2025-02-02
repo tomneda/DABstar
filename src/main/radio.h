@@ -400,7 +400,6 @@ public slots:
   void slot_set_stream_selector(int);
   void slot_no_signal_found();
   void slot_show_mot_handling(bool);
-  void slot_set_sync_lost();
   void slot_show_correlation(float, const QVector<int> & v);
   void slot_show_spectrum(int);
   void slot_show_iq(int, float);

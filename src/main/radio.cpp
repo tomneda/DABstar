@@ -1828,11 +1828,6 @@ void RadioInterface::_show_hide_buttons(const bool iShow)
 #endif
 }
 
-void RadioInterface::slot_set_sync_lost()
-{
-  // TODO: show something in the UI?
-}
-
 void RadioInterface::_slot_handle_reset_button()
 {
   if (!mIsRunning.load())

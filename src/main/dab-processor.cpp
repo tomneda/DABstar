@@ -61,7 +61,6 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   mFftPlan = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
 
   //connect(this, &DabProcessor::signal_set_synced, mpRadioInterface, &RadioInterface::slot_set_synced);
-  connect(this, &DabProcessor::signal_set_sync_lost, mpRadioInterface, &RadioInterface::slot_set_sync_lost);
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
   connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
   connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &RadioInterface::slot_show_clock_error);
@@ -386,10 +385,6 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oSampleCount, float iThresh
   if (startIndex < 0)
   {
     // no sync, try again
-    if (!mCorrectionNeeded)
-    {
-      //emit signal_set_sync_lost();
-    }
     return false;
   }
   else
