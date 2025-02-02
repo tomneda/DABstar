@@ -271,11 +271,13 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * mDabPar.K / stdDevSqOvrAll);
-    mLcdData.TestData1 = _compute_time_offset(iV, mPhaseReference);
-    mLcdData.TestData2 = _compute_frequency_offset(iV, mPhaseReference);
     mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
+    mLcdData.TestData1 = _compute_frequency_offset(iV, mPhaseReference);
+    mLcdData.TestData2 = 0;
+
     emit signal_show_lcd_data(&mLcdData);
+
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % mDabPar.L;
     if (mNextShownOfdmSymbIdx == 0) mNextShownOfdmSymbIdx = 1; // as iCurSymbolNo can never be zero here
@@ -284,112 +286,19 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
   memcpy(mPhaseReference.data(), iV.data(), mDabPar.T_u * sizeof(cmplx));
 }
 
-float OfdmDecoder::_compute_mod_quality(const std::vector<cmplx> & v) const
-{
-  /*
-   * Since we do not equalize, we have a kind of "fake" reference point.
-   * The key parameter here is the phase offset, so we compute the std.
-   * deviation of the phases rather than the computation from the Modulation
-   * Error Ratio as specified in Tr 101 290
-   */
-
-  constexpr cmplx rotator = cmplx(1.0f, -1.0f); // this is the reference phase shift to get the phase zero degree
-  float squareVal = 0;
-
-  for (int i = 0; i < mDabPar.K; i++)
-  {
-    float x1 = arg(cmplx(std::abs(real(v[i])), std::abs(imag(v[i]))) * rotator); // map to top right section and shift phase to zero (nominal)
-    squareVal += x1 * x1;
-  }
-
-  return std::sqrt(squareVal / (float)mDabPar.K) / (float)M_PI * 180.0f; // in degree
-}
-
-/*
- * While DAB symbols do not carry pilots, it is known that
- * arg (carrier [i, j] * conj (carrier [i + 1, j])
- * should be K * M_PI / 4,  (k in {1, 3, 5, 7}) so basically
- * carriers in decoded symbols can be used as if they were pilots
- * so, with that in mind we experiment with formula 5.39
- * and 5.40 from "OFDM Baseband Receiver Design for Wireless
- * Communications (Chiueh and Tsai)"
- */
-float OfdmDecoder::_compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const
-{
-  cmplx sum = cmplx(0, 0);
-
-  for (int i = -mDabPar.K / 2; i < mDabPar.K / 2; i += 6)
-  {
-    /*
-       i  index_1  i+1  index_2
-    -768   1280   -767   1281
-    -762   1286   -761   1287
-    -756   1292   -755   1293
-    ...
-      18   2030    -17   2031
-      12   2036    -11   2037
-       6   2042     -5   2043
-       0      0      1      1  <- index_1 shows to DC with no signal!
-       6      6      7      7
-      12     12     13     13
-      18     18     19     19
-    ...
-    750     750    751    751
-    756     756    757    757
-    762     762    763    763
-    */
-
-    int index_1 = i < 0 ? i + mDabPar.T_u : i;
-    int index_2 = (i + 1) < 0 ? (i + 1) + mDabPar.T_u : (i + 1);
-
-    cmplx s = r[index_1] * conj(v[index_1]); // was formerly: cmplx s = r[index_1] * conj(v[index_2]);
-
-    s = cmplx(std::abs(real(s)), std::abs(imag(s)));
-    const cmplx leftTerm = s * conj(cmplx(std::abs(s) * F_SQRT1_2, std::abs(s) * F_SQRT1_2));
-
-    s = r[index_2] * conj(v[index_2]);
-    s = cmplx(std::abs(real(s)), std::abs(imag(s)));
-    const cmplx rightTerm = s * conj(cmplx(std::abs(s) * F_SQRT1_2, std::abs(s) * F_SQRT1_2));
-
-    sum += conj(leftTerm) * rightTerm;
-  }
-
-  return arg(sum);
-}
-
 float OfdmDecoder::_compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const
 {
   cmplx theta = cmplx(0, 0);
 
-  for (int idx = -mDabPar.K / 2; idx < mDabPar.K / 2; idx += 6)
+  for (int idx = -mDabPar.K / 2; idx < mDabPar.K / 2; idx += 1)
   {
     const int32_t index = fft_shift_skip_dc(idx, mDabPar.T_u); // this was with DC before in QT-DAB
     cmplx val = r[index] * conj(c[index]);
-    val = cmplx(std::abs(real(val)), std::abs(imag(val))); // TODO tomneda: is this correct?
+    val = turn_complex_phase_to_first_quadrant(val);
     theta += val;
   }
-  theta *= cmplx(1, -1);
-
-  return std::arg(theta) / F_2_M_PI * (float)mDabPar.CarrDiff;
-}
-
-float OfdmDecoder::_compute_clock_offset(const cmplx * r, const cmplx * v) const
-{
-  float offsa = 0;
-  int offsb = 0;
-
-  for (int i = -mDabPar.K / 2; i < mDabPar.K / 2; i += 6)
-  {
-    int index = i < 0 ? (i + mDabPar.T_u) : i; // TODO tomneda: i+1 to skip DC?
-    int index_2 = i + mDabPar.K / 2;
-    cmplx a1 = cmplx(std::abs(real(r[index])), std::abs(imag(r[index])));
-    cmplx a2 = cmplx(std::abs(real(v[index])), std::abs(imag(v[index])));
-    float s = std::abs(std::arg(a1 * conj(a2)));
-    offsa += (float)index * s;
-    offsb += index_2 * index_2;
-  }
-
-  return offsa / (2.0f * (float)M_PI * (float)mDabPar.T_s / (float)mDabPar.T_u * (float)offsb);
+  return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.T_u / (float)mDabPar.T_s * (float)mDabPar.CarrDiff;
+  // return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.CarrDiff;
 }
 
 float OfdmDecoder::_compute_noise_Power() const

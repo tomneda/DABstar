@@ -127,12 +127,7 @@ private:
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SLcdData mLcdData{};
 
-  [[nodiscard]] float _compute_mod_quality(const std::vector<cmplx> & v) const;
-  [[nodiscard]] float _compute_time_offset(const cmplx * const & r, const cmplx * const & v) const;
   [[nodiscard]] float _compute_frequency_offset(const cmplx * const & r, const cmplx * const & v) const;
-  // [[nodiscard]] float _compute_time_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & v) const;
-  // [[nodiscard]] float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
-  // [[nodiscard]] float _compute_clock_offset(const cmplx * r, const cmplx * v) const;
   [[nodiscard]] float _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const std::vector<cmplx> & iFftBuffer);
   void _reset_null_symbol_statistics();

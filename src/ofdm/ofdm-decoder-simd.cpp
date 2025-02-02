@@ -313,11 +313,13 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / stdDevSqOvrAll);
-    mLcdData.TestData1 = _compute_time_offset(mVolkNomCarrierVec, mVolkPhaseReference);
-    mLcdData.TestData2 = _compute_frequency_offset(mVolkNomCarrierVec, mVolkPhaseReference);
     mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
+    mLcdData.TestData1 = _compute_frequency_offset(mVolkNomCarrierVec, mVolkPhaseReference);
+    mLcdData.TestData2 = 0;
+
     emit signal_show_lcd_data(&mLcdData);
+
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % cL;
     if (mNextShownOfdmSymbIdx == 0) mNextShownOfdmSymbIdx = 1; // as iCurSymbolNo can never be zero here
@@ -327,80 +329,21 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   memcpy(mVolkPhaseReference, mVolkNomCarrierVec, cK * sizeof(cmplx));
 }
 
-float OfdmDecoder::_compute_mod_quality(const std::vector<cmplx> & v) const
-{
-  /*
-   * Since we do not equalize, we have a kind of "fake" reference point.
-   * The key parameter here is the phase offset, so we compute the std.
-   * deviation of the phases rather than the computation from the Modulation
-   * Error Ratio as specified in Tr 101 290
-   */
-
-  constexpr cmplx rotator = cmplx(1.0f, -1.0f); // this is the reference phase shift to get the phase zero degree
-  float squareVal = 0;
-
-  for (int i = 0; i < cK; i++)
-  {
-    float x1 = arg(cmplx(std::abs(real(v[i])), std::abs(imag(v[i]))) * rotator); // map to top right section and shift phase to zero (nominal)
-    squareVal += x1 * x1;
-  }
-
-  return std::sqrt(squareVal / (float)cK) / (float)M_PI * 180.0f; // in degree
-}
-
-/*
- * While DAB symbols do not carry pilots, it is known that
- * arg (carrier [i, j] * conj (carrier [i + 1, j])
- * should be K * M_PI / 4,  (k in {1, 3, 5, 7}) so basically
- * carriers in decoded symbols can be used as if they were pilots
- * so, with that in mind we experiment with formula 5.39
- * and 5.40 from "OFDM Baseband Receiver Design for Wireless
- * Communications (Chiueh and Tsai)"
- */
-
-float OfdmDecoder::_compute_time_offset(const cmplx * const & r, const cmplx * const & v) const
-{
-  cmplx sum = cmplx(0, 0);
-
-  // TODO: make this correct!
-#if 0
-  for (int i = -mDabPar.K / 2; i < mDabPar.K / 2; i += 6)
-  {
-    int index_1 = i < 0 ? i + mDabPar.T_u : i;
-    int index_2 = (i + 1) < 0 ? (i + 1) + mDabPar.T_u : (i + 1);
-
-    cmplx s = r[index_1] * conj(v[index_2]);
-
-    s = cmplx(std::abs(real(s)), std::abs(imag(s)));
-    const cmplx leftTerm = s * conj(cmplx(std::abs(s) / std::sqrt(2), std::abs(s) / std::sqrt(2)));
-
-    s = r[index_2] * conj(v[index_2]);
-    s = cmplx(std::abs(real(s)), std::abs(imag(s)));
-    const cmplx rightTerm = s * conj(cmplx(std::abs(s) / std::sqrt(2), std::abs(s) / std::sqrt(2)));
-
-    sum += conj(leftTerm) * rightTerm;
-  }
-#endif
-
-  return arg(sum);
-}
-
 float OfdmDecoder::_compute_frequency_offset(const cmplx * const & r, const cmplx * const & v) const
 {
   // TODO: make this correct!
 #if 0
   cmplx theta = cmplx(0, 0);
 
-  for (int idx = -mDabPar.K / 2; idx < mDabPar.K / 2; idx += 6)
+  for (int idx = -mDabPar.K / 2; idx < mDabPar.K / 2; idx += 1)
   {
     const int32_t index = fft_shift_skip_dc(idx, mDabPar.T_u); // this was with DC before in QT-DAB
     cmplx val = r[index] * conj(c[index]);
-    val = cmplx(std::abs(real(val)), std::abs(imag(val))); // TODO tomneda: is this correct?
+    val = turn_complex_phase_to_first_quadrant(val);
     theta += val;
   }
-  theta *= cmplx(1, -1);
-
-  return std::arg(theta) / F_2_M_PI * (float)cCarrDiff;
+  return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.T_u / (float)mDabPar.T_s * (float)mDabPar.CarrDiff;
+  // return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.CarrDiff;
 #endif
   return 0;
 }
