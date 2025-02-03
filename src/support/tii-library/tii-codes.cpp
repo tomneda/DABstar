@@ -64,10 +64,7 @@ bool TiiHandler::load_library()
   mpFn_close_tii = nullptr;
   mpFn_loadTable = nullptr;
 
-#ifdef _WIN32 // we cannot read the TII lib in windows
-  phandle = nullptr;
-  mpTiiLibHandler = nullptr;
-#else
+#ifndef _WIN32 // we cannot read the TII lib in windows
   std::string libFile = "libtii-lib";
   mphandle = new QLibrary(libFile.c_str());
   mphandle->load();

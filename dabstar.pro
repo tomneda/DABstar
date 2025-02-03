@@ -22,7 +22,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"3.4.0\\\"
+DEFINES		+= PRJ_VERS=\\\"3.5.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -44,6 +44,35 @@ isEmpty(GITHASHSTRING) {
     DEFINES += GITHASH=\\\"(unknown)\\\"
 }
 
+#DESTDIR 	= ../../DABstar-Qt6.7.3
+LIBS		+= -L../../dabstar-libs/lib
+CONFIG		+= airspy
+#CONFIG		+= spyServer-16
+#CONFIG		+= spyServer-8
+CONFIG		+= rtl_tcp
+CONFIG		+= dabstick
+#CONFIG		+= sdrplay-v2
+#CONFIG		+= pluto
+CONFIG		+= sdrplay-v3
+CONFIG		+= hackrf
+#CONFIG		+= lime
+CONFIG		+= VITERBI_SSE
+#CONFIG		+= NO_SSE
+CONFIG		+= faad
+#CONFIG		+= fdk-aac
+#CONFIG		+= volk
+CONFIG		+= no_volk
+LIBS		+= -lsndfile-1
+LIBS		+= -lsamplerate
+LIBS		+= -lwinpthread
+LIBS		+= -lws2_32
+#LIBS		+= -lusb-1.0
+LIBS		+= -lzlib
+LIBS		+= -lfftw3f-3
+LIBS		+= -lqwt
+
+# very experimental, simple server for connecting to a tdc handler
+#CONFIG		+= datastreamer
 
 DEPENDPATH += src \
     src/main \
@@ -89,7 +118,6 @@ HEADERS += \
     src/main/data_manip_and_checks.h \
     src/ofdm/sample-reader.h \
     src/ofdm/phasereference.h \
-    src/ofdm/ofdm-decoder.h \
     src/ofdm/phasetable.h \
     src/ofdm/freq-interleaver.h \
     src/ofdm/fib-decoder.h \
@@ -167,6 +195,7 @@ HEADERS += \
     src/support/wav_writer.h \
     src/support/angle_direction.h \
     src/support/time_meas.h \
+    src/support/copyright_info.h \
     src/scopes/iqdisplay.h \
     src/scopes/carrier-display.h \
     src/scopes/spectrogramdata.h \
@@ -201,7 +230,6 @@ SOURCES += \
     src/support/techdata.cpp \
     src/eti-handler/eti-generator.cpp \
     src/ofdm/sample-reader.cpp \
-    src/ofdm/ofdm-decoder.cpp \
     src/ofdm/phasereference.cpp \
     src/ofdm/phasetable.cpp \
     src/ofdm/freq-interleaver.cpp \
@@ -271,6 +299,7 @@ SOURCES += \
     src/support/converter_48000.cpp \
     src/support/wav_writer.cpp \
     src/support/angle_direction.cpp \
+    src/support/copyright_info.cpp \
     src/scopes/iqdisplay.cpp \
     src/scopes/carrier-display.cpp \
     src/scopes/audio-display.cpp \
@@ -302,33 +331,6 @@ FORMS += \
     src/configuration/configuration.ui \
     src/devices/filereaders/xml-filereader/xmlfiles.ui
 
-#DESTDIR		= ../../DABstar-Qt6.7.3
-LIBS		+= -L../../dabstar-libs/lib
-CONFIG		+= airspy
-#CONFIG		+= spyServer-16
-#CONFIG		+= spyServer-8
-CONFIG		+= rtl_tcp
-CONFIG		+= dabstick
-#CONFIG		+= sdrplay-v2
-#CONFIG		+= pluto
-CONFIG		+= sdrplay-v3
-CONFIG		+= hackrf
-#CONFIG		+= lime
-CONFIG		+= VITERBI_SSE
-#CONFIG		+= NO_SSE
-CONFIG		+= faad
-#CONFIG		+= fdk-aac
-LIBS		+= -lsndfile-1
-LIBS		+= -lsamplerate
-LIBS		+= -lwinpthread
-LIBS		+= -lws2_32
-#LIBS		+= -lusb-1.0
-LIBS		+= -lzlib
-LIBS		+= -lfftw3f-3
-LIBS		+= -lqwt
-
-# very experimental, simple server for connecting to a tdc handler
-#CONFIG		+= datastreamer
 
 #	dabstick
 #	Note: the windows version is bound to the dll, the
@@ -588,4 +590,17 @@ fdk-aac {
         HEADERS         += src/backend/audio/fdk-aac.h
         SOURCES         += src/backend/audio/fdk-aac.cpp
 	LIBS		+= -lfdk-aac.dll
+}
+
+volk	{
+        DEFINES		+= __USE_SIMD__
+        HEADERS		+= src/support/simd_extensions.h \
+        		   src/ofdm/ofdm-decoder-simd.h
+        SOURCES         += src/ofdm/ofdm-decoder-simd.cpp
+	LIBS		+= -lvolk.dll
+}
+
+no_volk	{
+        HEADERS         += src/ofdm/ofdm-decoder.h
+        SOURCES         += src/ofdm/ofdm-decoder.cpp
 }
