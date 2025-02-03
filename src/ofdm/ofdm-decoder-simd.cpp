@@ -240,9 +240,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   {
     // Collect data for "Log Likelihood Ratio"
     const float meanLevelAtAxisPerBin = mVolkMeanLevelVector[nomCarrIdx] * F_SQRT1_2;
-    /*const*/ cmplx meanLevelAtAxisPerBinCplx = cmplx(meanLevelAtAxisPerBin, meanLevelAtAxisPerBin);
+    const cmplx meanLevelAtAxisPerBinCplx = cmplx(meanLevelAtAxisPerBin, meanLevelAtAxisPerBin);
     // cmplx meanLevelAtAxisPerBinAbsCplx = cmplx(std::abs(mVolkFftBinRawVecPhaseCorrReal[nomCarrIdx]), std::abs(mVolkFftBinRawVecPhaseCorrImag[nomCarrIdx]));
-    /*const*/ cmplx meanLevelAtAxisPerBinAbsCplx = cmplx(mVolkTemp1FloatVec[nomCarrIdx], mVolkTemp2FloatVec[nomCarrIdx]);
+    const cmplx meanLevelAtAxisPerBinAbsCplx = cmplx(mVolkTemp1FloatVec[nomCarrIdx], mVolkTemp2FloatVec[nomCarrIdx]);
 
     volk_32fc_x2_square_dist_32f_a(mVolkTemp1FloatVec, &meanLevelAtAxisPerBinAbsCplx, &meanLevelAtAxisPerBinCplx, 1);
     const float sigmaSqPerBin = mVolkTemp1FloatVec[0];
