@@ -202,15 +202,20 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     r1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 2; // 1/SNR + 2
     float weight;
 
-    if (mSoftBitType == ESoftBitType::SOFTDEC1)
+    switch (mSoftBitType)
     {
+    case ESoftBitType::SOFTDEC1:
       r1 *= fftBin * std::abs(mPhaseReference[fftIdx]); // input power
       weight = -140 / mMeanValue;
-    }
-    else //log likelihood ratio
-    {
+      break;
+    case ESoftBitType::SOFTDEC2: // log likelihood ratio
+      r1 *= fftBin;
+      weight = -100 / mMeanValue;
+      break;
+    default: // ESoftBitType::SOFTDEC3
       r1 *= norm_to_length_one(fftBin) * std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
       weight = -100 / mMeanValue;
+      break;
     }
 
     // split the real and the imaginary part and scale it

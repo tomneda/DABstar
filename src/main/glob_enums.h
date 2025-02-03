@@ -47,10 +47,13 @@ enum class ECarrierPlotType
   DEFAULT = SB_WEIGHT  // use the first element for startup constellation
 };
 
-enum class ESoftBitType
+enum class ESoftBitType  // adapt RadioInterface::get_soft_bit_gen_names() too if changes made here
 {
-  SOFTDEC1,    // input power/sigma * SNR
-  SOFTDEC2,    // log likelihood ratio
+  SOFTDEC1,
+  SOFTDEC2,
+#ifndef __USE_SIMD__  // not yet implemented with VOLK
+  SOFTDEC3,
+#endif
 
   DEFAULT = SOFTDEC1  // use the first element for startup constellation
 };
