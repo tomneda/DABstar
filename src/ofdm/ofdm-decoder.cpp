@@ -280,7 +280,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = _compute_frequency_offset(iV, mPhaseReference);
-    mLcdData.TestData2 = 0;
+    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)mDabPar.CarrDiff;;
 
     emit signal_show_lcd_data(&mLcdData);
 
