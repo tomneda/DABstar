@@ -319,8 +319,7 @@ void SpectrumViewer::show_fic_ber(float ber)
 {
   if (!myFrame.isHidden())
   {
-    // lcdBER->display(QString("%1").arg(ber, 0, 'e', 1));
-    lcdBER->display(QString("%1").arg(ber * 1e6, 0, 'f', 0)); // show BER in ppm
+    lcdBER->display(QString("%1").arg(ber, 0, 'e', 1));
   }
 }
 
