@@ -108,6 +108,12 @@ private:
   float mMeanValue = 1.0f;
   cmplx mDcAdc{ 0.0f, 0.0f };
 
+  // phase correction LUT to speed up process (there are no (good) SIMD commands for that)
+  static constexpr float cPhaseShiftLimit = 20.0f;
+  static constexpr int32_t cLutLen2 = 127; // -> 255 values in LUT
+  static constexpr float cLutFact = cLutLen2 / (F_RAD_PER_DEG * cPhaseShiftLimit);
+  std::array<cmplx, cLutLen2 * 2 + 1> mLutPhase2Cmplx;
+
   // mLcdData has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SLcdData mLcdData{};

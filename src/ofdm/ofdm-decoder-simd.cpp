@@ -86,6 +86,13 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
     mVolkMapNomToFftIdx[nomCarrIdx] = fftIdx;
   }
 
+  // create phase -> cmplx LUT
+  for (int32_t phaseIdx = -cLutLen2; phaseIdx <= cLutLen2; ++phaseIdx)
+  {
+    const float phase = (float)phaseIdx / cLutFact;
+    mLutPhase2Cmplx[phaseIdx + cLutLen2] = cmplx(std::cos(phase), std::sin(phase));
+  }
+
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &RadioInterface::slot_show_iq);
   connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &RadioInterface::slot_show_lcd_data);
 
@@ -200,7 +207,13 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
   LOOP_OVER_K
   {
-    mVolkFftBinRawVecPhaseCorr[nomCarrIdx] = mVolkFftBinRawVec[nomCarrIdx] * cmplx_from_phase(-mVolkIntegAbsPhaseVector[nomCarrIdx]);
+    const int32_t phaseIdx = (int32_t)std::lround(mVolkIntegAbsPhaseVector[nomCarrIdx] * cLutFact);
+    //limit_symmetrically(phaseIdx, cLutLen2);
+    assert(phaseIdx >= -cLutLen2); // the limitation is done below already
+    assert(phaseIdx <=  cLutLen2);
+    cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
+    mVolkFftBinRawVecPhaseCorr[nomCarrIdx] = mVolkFftBinRawVec[nomCarrIdx] * phase;
+    // mVolkFftBinRawVecPhaseCorr[nomCarrIdx] = mVolkFftBinRawVec[nomCarrIdx] * cmplx_from_phase(-mVolkIntegAbsPhaseVector[nomCarrIdx]);
   }
 
   // get the squared and normal magnitude vector of the input signal
@@ -220,7 +233,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // Integrate phase error to perform the phase correction in the next OFDM symbol.
   volk_32f_s32f_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhase, 0.2f * ALPHA, cK); // weighting
   volk_32f_x2_add_32f_a(mVolkIntegAbsPhaseVector, mVolkIntegAbsPhaseVector, mVolkTemp1FloatVec, cK);
-  LOOP_OVER_K limit_symmetrically(mVolkIntegAbsPhaseVector[nomCarrIdx], F_RAD_PER_DEG * 20.0f);
+  LOOP_OVER_K limit_symmetrically(mVolkIntegAbsPhaseVector[nomCarrIdx], F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
 
   volk_32f_x2_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhase, mVolkFftBinAbsPhase, cK); // variance
   _volk_mean_filter(mVolkStdDevSqPhaseVector, mVolkTemp1FloatVec, ALPHA);

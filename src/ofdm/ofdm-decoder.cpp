@@ -57,6 +57,13 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mMeanLevelVector.resize(mDabPar.K);
   mMeanSigmaSqVector.resize(mDabPar.K);
 
+  // create phase -> cmplx LUT
+  for (int32_t phaseIdx = -cLutLen2; phaseIdx <= cLutLen2; ++phaseIdx)
+  {
+    const float phase = (float)phaseIdx / cLutFact;
+    mLutPhase2Cmplx[phaseIdx + cLutLen2] = cmplx(std::cos(phase), std::sin(phase));
+  }
+
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &RadioInterface::slot_show_iq);
   connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &RadioInterface::slot_show_lcd_data);
 
@@ -158,7 +165,15 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     float & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
 
     //fftBin *= rotator; // Fine correction of phase which can't be done in the time domain (not more necessary as it is done below other way).
-    const cmplx fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
+    // const cmplx fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
+
+    // do phase correction via LUT
+    const int32_t phaseIdx = (int32_t)std::lround(integAbsPhasePerBinRef * cLutFact);
+    //limit_symmetrically(phaseIdx, cLutLen2);
+    assert(phaseIdx >= -cLutLen2); // the limitation is done below already
+    assert(phaseIdx <= cLutLen2);
+    cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
+    const cmplx fftBin = fftBinRaw * phase;
 
     // Get phase and absolute phase for each bin.
     const float fftBinPhase = std::arg(fftBin);
@@ -166,7 +181,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
 
     // Integrate phase error to perform the phase correction in the next OFDM symbol.
     integAbsPhasePerBinRef += 0.2f * ALPHA * (fftBinAbsPhase - F_M_PI_4); // TODO: correction still necessary?
-    limit_symmetrically(integAbsPhasePerBinRef, F_RAD_PER_DEG * 20.0f);
+    limit_symmetrically(integAbsPhasePerBinRef, F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
 
     // Get standard deviation of absolute phase for each bin. The integrator above assures that F_M_PI_4 is the phase mean value.
     const float curStdDevDiff = (fftBinAbsPhase -  F_M_PI_4);
