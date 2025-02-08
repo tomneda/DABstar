@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>uhdWidget</class>
  <widget class="QWidget" name="uhdWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>126</width>
+    <height>162</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>UHD URSP</string>
   </property>
@@ -39,6 +47,9 @@
    </item>
    <item row="2" column="1">
     <widget class="QSpinBox" name="f_correction">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="toolTip">
       <string>(not yet implemented)</string>
      </property>
@@ -59,6 +70,9 @@
    </item>
    <item row="3" column="1">
     <widget class="QSpinBox" name="KhzOffset">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="toolTip">
       <string>(not yet implemented)</string>
      </property>
