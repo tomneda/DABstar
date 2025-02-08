@@ -89,11 +89,13 @@ QRadioButton::indicator:unchecked { background-color: transparent; border: 1px s
 QRadioButton::indicator:unchecked:hover { border: 1px solid #b78620;  border-radius: 6px; }
 QRadioButton::disabled { color: #656565; border-radius: 6px; }
 QRadioButton::indicator:disabled { background-color: #656565; color: #656565; border: 1px solid #656565; }
-QSlider::handle { background-color: #b78620; width: 12px; margin-top: -5px; margin-bottom: -5px; border-radius: 3px; }
+QSlider::handle { background-color: #A14328; width: 12px; margin-top: -5px; margin-bottom: -5px; border-radius: 3px; }
+QSlider::handle:hover { background-color: #C34929; border-radius: 3px; }
+/*
 QSlider::groove { background-color: transparent; height: 3px; }
-QSlider::sub-page { background-color: #582936; }
-QSlider::add-page { background-color: #582936; }
-QSlider::handle:hover { background-color: #d89e25; border-radius: 3px; }
+*/
+QSlider::sub-page { background-color: #463A4A; }
+QSlider::add-page { background-color: #463A4A; }
 QSlider::sub-page:disabled { background-color: #bbb; border-color: #999; }
 QSlider::add-page:disabled { background-color: #eee; border-color: #999; }
 QSlider::handle:disabled { background-color: #eee; border: 1px solid #aaa; border-radius: 3px; }
