@@ -59,7 +59,6 @@
 #include <QSettings>
 
 static const char DN_FILE_INP[] = "File input";
-static const char DN_FILE_INP_AUTO[] = "File input autoplay";
 static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
 static const char DN_SDRPLAY_V2[] = "SDR-Play V2";
 static const char DN_RTLTCP[] = "RTL-TCP";
@@ -86,7 +85,6 @@ QStringList DeviceSelector::get_device_name_list() const
   QStringList sl;
   sl << "select input";
   sl << DN_FILE_INP;
-  sl << DN_FILE_INP_AUTO;
 #ifdef  HAVE_SDRPLAY_V3
   sl << DN_SDRPLAY_V3;
 #endif
@@ -259,26 +257,6 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   {
     oRealDevice = false;
     OpenFileDialog::EType type = OpenFileDialog::EType::UNDEF;
-    const QString file = mOpenFileDialog.open_sample_data_file_dialog_for_reading(type);
-
-    if (file.isEmpty()) // dialog closed with cancel?
-    {
-      return nullptr;
-    }
-
-    switch (type)
-    {
-    case OpenFileDialog::EType::XML: inputDevice = std::make_unique<XmlFileReader>(file); break;
-    case OpenFileDialog::EType::SDR: inputDevice = std::make_unique<WavFileHandler>(file); break;
-    case OpenFileDialog::EType::RAW:
-    case OpenFileDialog::EType::IQ:  inputDevice = std::make_unique<RawFileHandler>(file);break;
-    default: return nullptr;
-    }
-  }
-  else if (iDeviceName == DN_FILE_INP_AUTO) // this file device tries autostart while startup
-  {
-    oRealDevice = false;
-    OpenFileDialog::EType type = OpenFileDialog::EType::UNDEF;
     QString file;
 
     // check if last played file is still valid
@@ -339,7 +317,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 
 void DeviceSelector::reset_file_input_last_file(const QString & iDeviceName)
 {
-  if (iDeviceName == DN_FILE_INP_AUTO)
+  if (iDeviceName == DN_FILE_INP)
   {
     SettingHelper::get_instance().write(SettingHelper::deviceFile, "");
   }
