@@ -157,7 +157,7 @@ void SettingHelper::register_and_connect_ui_element(QCheckBox * const ipPushButt
 
   const auto * const pAB = dynamic_cast<QCheckBox *>(me.pWidget);
   Q_ASSERT(pAB != nullptr);
-  connect(pAB, &QCheckBox::stateChanged, [this, &me](int iState){ _write_setting(me, iState); });
+  connect(pAB, &QCheckBox::checkStateChanged, [this, &me](int iState){ _write_setting(me, iState); });
 }
 
 template<SettingHelper::EElem iElem>

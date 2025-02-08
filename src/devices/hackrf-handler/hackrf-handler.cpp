@@ -148,8 +148,8 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   //	and be prepared for future changes in the settings
   connect(sliderLnaGain, &QSlider::valueChanged, this, &HackRfHandler::slot_set_lna_gain);
   connect(sliderVgaGain, &QSlider::valueChanged, this, &HackRfHandler::slot_set_vga_gain);
-  connect(btnBiasTEnable, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_bias_t);
-  connect(btnAmpEnable, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_amp);
+  connect(btnBiasTEnable, &QCheckBox::checkStateChanged, this, &HackRfHandler::slot_enable_bias_t);
+  connect(btnAmpEnable, &QCheckBox::checkStateChanged, this, &HackRfHandler::slot_enable_amp);
   connect(ppm_correction, qOverload<int>(&QSpinBox::valueChanged), this, &HackRfHandler::slot_set_ppm_correction);
   connect(dumpButton, &QPushButton::clicked, this, &HackRfHandler::slot_xml_dump);
 

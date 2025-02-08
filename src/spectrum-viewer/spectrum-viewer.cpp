@@ -87,7 +87,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   connect(sliderScopeZoom, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
-  connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
+  connect(cbNomChIdx, &QCheckBox::checkStateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
 }
 
 SpectrumViewer::~SpectrumViewer()
