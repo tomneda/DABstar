@@ -169,10 +169,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
 
     // do phase correction via LUT
     const int32_t phaseIdx = (int32_t)std::lround(integAbsPhasePerBinRef * cLutFact);
-    //limit_symmetrically(phaseIdx, cLutLen2);
-    assert(phaseIdx >= -cLutLen2); // the limitation is done below already
-    assert(phaseIdx <= cLutLen2);
-    cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
+    assert(phaseIdx >= -cLutLen2 && phaseIdx <= cLutLen2 );  // the limitation is done below already
+    const cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
     const cmplx fftBin = fftBinRaw * phase;
 
     // Get phase and absolute phase for each bin.
@@ -213,29 +211,33 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     if (signalPower <= 0.0f) signalPower = 0.1f;
 
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
-    cmplx r1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
-    r1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 2; // 1/SNR + 2
-    float weight;
+    float w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+    w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 2; // 1/SNR + 2
+
+    cmplx r1;
+    float w2;
 
     switch (mSoftBitType)
     {
-    case ESoftBitType::SOFTDEC1:
-      r1 *= fftBin * std::abs(mPhaseReference[fftIdx]); // input power
-      weight = -140 / mMeanValue;
+    case ESoftBitType::SOFTDEC1: // input power over current and last OFDM symbol
+      w1 *= std::abs(mPhaseReference[fftIdx]);
+      r1 = fftBin * w1;
+      w2 = -140 / mMeanValue;
       break;
     case ESoftBitType::SOFTDEC2: // log likelihood ratio
-      r1 *= fftBin;
-      weight = -100 / mMeanValue;
+      r1 = fftBin * w1;
+      w2 = -100 / mMeanValue;
       break;
     default: // ESoftBitType::SOFTDEC3
-      r1 *= norm_to_length_one(fftBin) * std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
-      weight = -100 / mMeanValue;
+      w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
+      r1 = norm_to_length_one(fftBin) * w1;
+      w2 = -100 / mMeanValue;
       break;
     }
 
     // split the real and the imaginary part and scale it
-    oBits[0         + nomCarrIdx] = (int16_t)(real(r1) * weight);
-    oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(r1) * weight);
+    oBits[0         + nomCarrIdx] = (int16_t)(real(r1) * w2);
+    oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(r1) * w2);
     sum += std::abs(r1);
 
     if (showScopeData)
@@ -255,9 +257,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
       {
       case ECarrierPlotType::SB_WEIGHT:
         // Convert and limit the soft bit weigth to percent
-        weight = (std::abs(real(r1)) + std::abs(imag(r1))) / 2.0f * (-weight);
-        limit_min_max(weight, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
-        mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * weight;
+        w2 = (std::abs(real(r1)) + std::abs(imag(r1))) / 2.0f * (-w2);
+        limit_min_max(w2, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
+        mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * w2;
         break;
       case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
       case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 20.0f * std::log10(std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef); break;

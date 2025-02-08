@@ -88,8 +88,8 @@ private:
   cmplx * mVolkFftBinRawVec = nullptr;
 
   cmplx * mVolkPhaseReferenceNormedVec    = nullptr;
-  float * mVolkWeightPerBin                   = nullptr;
-  float * mVolkFftBinAbsPhase             = nullptr;
+  float * mVolkWeightPerBin               = nullptr;
+  float * mVolkFftBinAbsPhaseCorr         = nullptr;
   float * mVolkFftBinRawVecPhaseCorrArg   = nullptr;
   float * mVolkFftBinRawVecPhaseCorrAbs   = nullptr;
   float * mVolkFftBinRawVecPhaseCorrAbsSq = nullptr;

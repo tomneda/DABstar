@@ -52,7 +52,7 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mVolkFftBinRawVecPhaseCorr      = VOLK_MALLOC(cmplx, cK);
   mVolkPhaseReferenceNormedVec    = VOLK_MALLOC(cmplx, cK);
   mVolkWeightPerBin               = VOLK_MALLOC(float , cK);
-  mVolkFftBinAbsPhase             = VOLK_MALLOC(float, cK);
+  mVolkFftBinAbsPhaseCorr         = VOLK_MALLOC(float, cK);
   mVolkFftBinRawVecPhaseCorrArg   = VOLK_MALLOC(float, cK);
   mVolkFftBinRawVecPhaseCorrAbs   = VOLK_MALLOC(float, cK);
   mVolkFftBinRawVecPhaseCorrAbsSq = VOLK_MALLOC(float, cK);
@@ -105,7 +105,7 @@ OfdmDecoder::~OfdmDecoder()
   volk_free(mVolkViterbiFloatVecReal);
   volk_free(mVolkTemp2FloatVec);
   volk_free(mVolkTemp1FloatVec);
-  volk_free(mVolkFftBinAbsPhase);
+  volk_free(mVolkFftBinAbsPhaseCorr);
   volk_free(mVolkFftBinRawVecPhaseCorrImag);
   volk_free(mVolkFftBinRawVecPhaseCorrReal);
   volk_free(mVolkFftBinRawVecPhaseCorrAbsSq);
@@ -201,50 +201,82 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
     mVolkNomCarrierVec[nomCarrIdx] = iFftBuffer[fftIdx];
   }
 
-  // perform PI/4-DQPSK demodulation
+  // -------------------------------
+  // mVolkFftBinRawVec = mVolkNomCarrierVec * conj(norm(mVolkPhaseReference))
   simd_normalize(mVolkPhaseReferenceNormedVec, mVolkPhaseReference, cK); // normalize phase reference (only phase information is needed)
   volk_32fc_x2_multiply_conjugate_32fc_a(mVolkFftBinRawVec, mVolkNomCarrierVec, mVolkPhaseReferenceNormedVec, cK);  // PI/4-DQPSK demodulation
+  // -------------------------------
 
+
+  // -------------------------------
+  // mVolkFftBinRawVecPhaseCorr = mVolkFftBinRawVec * cmplx_from_phase(-mVolkIntegAbsPhaseVector);
   LOOP_OVER_K
   {
     const int32_t phaseIdx = (int32_t)std::lround(mVolkIntegAbsPhaseVector[nomCarrIdx] * cLutFact);
-    //limit_symmetrically(phaseIdx, cLutLen2);
-    assert(phaseIdx >= -cLutLen2); // the limitation is done below already
-    assert(phaseIdx <=  cLutLen2);
-    cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
+    assert(phaseIdx >= -cLutLen2 && phaseIdx <= cLutLen2 );  // the limitation is done below already
+    const cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
     mVolkFftBinRawVecPhaseCorr[nomCarrIdx] = mVolkFftBinRawVec[nomCarrIdx] * phase;
-    // mVolkFftBinRawVecPhaseCorr[nomCarrIdx] = mVolkFftBinRawVec[nomCarrIdx] * cmplx_from_phase(-mVolkIntegAbsPhaseVector[nomCarrIdx]);
   }
+  // -------------------------------
 
-  // get the squared and normal magnitude vector of the input signal
+
+  // -------------------------------
+  // mVolkFftBinRawVecPhaseCorrAbsSq = norm_per_bin(mVolkFftBinRawVecPhaseCorr)
+  // mVolkFftBinRawVecPhaseCorrAbs   = abs (mVolkFftBinRawVecPhaseCorr)
   volk_32fc_magnitude_squared_32f_a(mVolkFftBinRawVecPhaseCorrAbsSq, mVolkFftBinRawVecPhaseCorr, cK);
-  // volk_32fc_magnitude_32f_a(mVolkFftBinRawVecPhaseCorrAbs, mVolkFftBinRawVecPhaseCorr, cK); // TODO: check what is faster to volk_32f_sqrt_32f_a
   volk_32f_sqrt_32f_a(mVolkFftBinRawVecPhaseCorrAbs, mVolkFftBinRawVecPhaseCorrAbsSq, cK);
+  // -------------------------------
 
-  // mVolkFftBinRawVecPhaseCorrArg = std::arg(mVolkFftBinRawVecPhaseCorr) * 1.0f;
-  volk_32fc_s32f_atan2_32f_a(mVolkFftBinRawVecPhaseCorrArg, mVolkFftBinRawVecPhaseCorr, 1.0f, cK); // get the phase, this is much slower than the simple loop below!!!
 
-  // turn phase to first quadrant and shift the phase around real axis
-  volk_32f_s32f_s32f_mod_range_32f_a(mVolkFftBinAbsPhase, mVolkFftBinRawVecPhaseCorrArg, 0.0f, F_M_PI_2, cK);
-  volk_32f_s32f_add_32f_a(mVolkFftBinAbsPhase, mVolkFftBinAbsPhase, -F_M_PI_4, cK);
+  // -------------------------------
+  // mVolkFftBinRawVecPhaseCorrArg = arg_per_bin(mVolkFftBinRawVecPhaseCorr);
+  volk_32fc_s32f_atan2_32f_a(mVolkFftBinRawVecPhaseCorrArg, mVolkFftBinRawVecPhaseCorr, 1.0f /*no weigth*/, cK); // this is not really faster than a simple loop
+  // -------------------------------
+
+  // -------------------------------
+  // mVolkFftBinAbsPhaseCorr = turn_phase_to_first_quadrant(mVolkFftBinRawVecPhaseCorrArg) - PI/4;
+  volk_32f_s32f_s32f_mod_range_32f_a(mVolkFftBinAbsPhaseCorr, mVolkFftBinRawVecPhaseCorrArg, 0.0f, F_M_PI_2, cK);
+  volk_32f_s32f_add_32f_a(mVolkFftBinAbsPhaseCorr, mVolkFftBinAbsPhaseCorr, -F_M_PI_4, cK);
+
 
   constexpr float ALPHA = 0.005f;
 
+  // -------------------------------
+  // mVolkIntegAbsPhaseVector = limit(mVolkIntegAbsPhaseVector + mVolkFftBinAbsPhaseCorr * 0.2f * ALPHA)
   // Integrate phase error to perform the phase correction in the next OFDM symbol.
-  volk_32f_s32f_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhase, 0.2f * ALPHA, cK); // weighting
-  volk_32f_x2_add_32f_a(mVolkIntegAbsPhaseVector, mVolkIntegAbsPhaseVector, mVolkTemp1FloatVec, cK);
+  volk_32f_s32f_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhaseCorr, 0.2f * ALPHA, cK); // weighting
+  volk_32f_x2_add_32f_a(mVolkIntegAbsPhaseVector, mVolkIntegAbsPhaseVector, mVolkTemp1FloatVec, cK); // integrator
   LOOP_OVER_K limit_symmetrically(mVolkIntegAbsPhaseVector[nomCarrIdx], F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
+  // -------------------------------
 
-  volk_32f_x2_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhase, mVolkFftBinAbsPhase, cK); // variance
+
+  // -------------------------------
+  // mVolkStdDevSqPhaseVector = mean_per_bin(mVolkFftBinAbsPhaseCorr^2)
+  volk_32f_x2_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhaseCorr, mVolkFftBinAbsPhaseCorr, cK); // variance
   _volk_mean_filter(mVolkStdDevSqPhaseVector, mVolkTemp1FloatVec, ALPHA);
+  // -------------------------------
+
+
+  // -------------------------------
+  // stdDevSqOvrAll = sum_over_bins(mVolkStdDevSqPhaseVector)
   volk_32f_accumulator_s32f_a(mVolkTemp2FloatVec, mVolkStdDevSqPhaseVector, cK);  // this sums all vector elements to the first element
   const float stdDevSqOvrAll = mVolkTemp2FloatVec[0];
+  // -------------------------------
 
+
+  // -------------------------------
+  // mVolkMeanLevelVector = mean_per_bin  (mVolkFftBinRawVecPhaseCorrAbs)
+  // mVolkMeanPowerVector = mean_per_bin  (mVolkFftBinRawVecPhaseCorrAbsSq)
+  // mMeanPowerOvrAll     = mean_over_bins(mVolkFftBinRawVecPhaseCorrAbsSq)
   _volk_mean_filter(mVolkMeanLevelVector, mVolkFftBinRawVecPhaseCorrAbs, ALPHA);
   _volk_mean_filter(mVolkMeanPowerVector, mVolkFftBinRawVecPhaseCorrAbsSq, ALPHA);
   _volk_mean_filter_sum(mMeanPowerOvrAll, mVolkFftBinRawVecPhaseCorrAbsSq, ALPHA / (float)cK);
+  // -------------------------------
 
-  // for further processing we use a single vector for real and imag of the input vector
+
+  // -------------------------------
+  // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
+  // mVolkMeanSigmaSqVector = mean_per_bin(min_distance(mVolkFftBinRawVecPhaseCorr, (1+1j)/sqrt(2)*mVolkMeanLevelVector)^2)
   volk_32fc_deinterleave_32f_x2_a(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag, mVolkFftBinRawVecPhaseCorr, cK);
   simd_abs(mVolkTemp1FloatVec, mVolkFftBinRawVecPhaseCorrReal, cK);
   simd_abs(mVolkTemp2FloatVec, mVolkFftBinRawVecPhaseCorrImag, cK);
@@ -254,7 +286,6 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
     // Collect data for "Log Likelihood Ratio"
     const float meanLevelAtAxisPerBin = mVolkMeanLevelVector[nomCarrIdx] * F_SQRT1_2;
     const cmplx meanLevelAtAxisPerBinCplx = cmplx(meanLevelAtAxisPerBin, meanLevelAtAxisPerBin);
-    // cmplx meanLevelAtAxisPerBinAbsCplx = cmplx(std::abs(mVolkFftBinRawVecPhaseCorrReal[nomCarrIdx]), std::abs(mVolkFftBinRawVecPhaseCorrImag[nomCarrIdx]));
     const cmplx meanLevelAtAxisPerBinAbsCplx = cmplx(mVolkTemp1FloatVec[nomCarrIdx], mVolkTemp2FloatVec[nomCarrIdx]);
 
     volk_32fc_x2_square_dist_32f_a(mVolkTemp1FloatVec, &meanLevelAtAxisPerBinAbsCplx, &meanLevelAtAxisPerBinCplx, 1);
@@ -262,42 +293,68 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
     mean_filter(mVolkMeanSigmaSqVector[nomCarrIdx], sigmaSqPerBin, ALPHA);
   }
+  // -------------------------------
 
-  volk_32f_x2_subtract_32f_a(mVolkTemp1FloatVec, mVolkMeanPowerVector, mVolkMeanNullPowerWithoutTII, cK); // signalPower = meanPower - meanNullPower
-  LOOP_OVER_K if (mVolkTemp1FloatVec[nomCarrIdx] <= 0.0f) mVolkTemp1FloatVec[nomCarrIdx] = 0.1f; // limit signalPower to lowest value
 
-  // mVolkWeightPerBin = (mVolkMeanLevelVector / mVolkMeanSigmaSqVector) / (mVolkMeanNullPowerWithoutTII / mVolkTemp1FloatVec + 2)
-  volk_32f_x2_divide_32f_a(mVolkWeightPerBin, mVolkMeanLevelVector, mVolkMeanSigmaSqVector, cK);
+  // -------------------------------
+  // 1/SNR + 2 = mVolkTemp2FloatVec = mVolkMeanNullPowerWithoutTII / (mVolkMeanPowerVector - mVolkMeanNullPowerWithoutTII) + 2
+  volk_32f_x2_subtract_32f_a(mVolkTemp1FloatVec, mVolkMeanPowerVector, mVolkMeanNullPowerWithoutTII, cK);
+  LOOP_OVER_K if (mVolkTemp1FloatVec[nomCarrIdx] <= 0.0f) mVolkTemp1FloatVec[nomCarrIdx] = 0.1f;
   volk_32f_x2_divide_32f_a(mVolkTemp2FloatVec, mVolkMeanNullPowerWithoutTII, mVolkTemp1FloatVec, cK);
-  volk_32f_s32f_add_32f_a(mVolkTemp2FloatVec, mVolkTemp2FloatVec, 2.0f, cK); // 1/SNR + 2
-  volk_32f_x2_divide_32f_a(mVolkWeightPerBin, mVolkWeightPerBin, mVolkTemp2FloatVec, cK);
+  volk_32f_s32f_add_32f_a(mVolkTemp2FloatVec, mVolkTemp2FloatVec, 2.0f, cK);
+  // -------------------------------
 
-  if (mSoftBitType == ESoftBitType::SOFTDEC1)
+
+  // -------------------------------
+  // w1 = mVolkWeightPerBin = (mVolkMeanLevelVector / mVolkMeanSigmaSqVector) / mVolkTemp2FloatVec (1/SNR + 2)
+  volk_32f_x2_divide_32f_a(mVolkWeightPerBin, mVolkMeanLevelVector, mVolkMeanSigmaSqVector, cK);  // r1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+  volk_32f_x2_divide_32f_a(mVolkWeightPerBin, mVolkWeightPerBin, mVolkTemp2FloatVec, cK);  // r1 /= T2
+  // -------------------------------
+
+
+  switch (mSoftBitType)
   {
-    // mVolkWeightPerBin *= std::abs(mVolkPhaseReference);
+  case ESoftBitType::SOFTDEC1:
+    // w1 = mVolkWeightPerBin *= std::abs(mVolkPhaseReference);
     volk_32fc_magnitude_32f_a(mVolkTemp1FloatVec, mVolkPhaseReference, cK); // TODO: maybe we have this already from the former round?
     volk_32f_x2_multiply_32f_a(mVolkWeightPerBin, mVolkWeightPerBin, mVolkTemp1FloatVec, cK);
-    // mVolkWeightPerBin[nomCarrIdx] *= std::abs(mVolkPhaseReference[nomCarrIdx]); // input power
+    // r1 = mVolkFftBinRawVecPhaseCorrReal * mVolkWeightPerBin
+    volk_32f_x2_multiply_32f_a(mVolkViterbiFloatVecReal, mVolkFftBinRawVecPhaseCorrReal, mVolkWeightPerBin, cK);
+    volk_32f_x2_multiply_32f_a(mVolkViterbiFloatVecImag, mVolkFftBinRawVecPhaseCorrImag, mVolkWeightPerBin, cK);
+    break;
+  case ESoftBitType::SOFTDEC2: // log likelihood ratio
+    // r1 = mVolkFftBinRawVecPhaseCorrReal * mVolkWeightPerBin
+    volk_32f_x2_multiply_32f_a(mVolkViterbiFloatVecReal, mVolkFftBinRawVecPhaseCorrReal, mVolkWeightPerBin, cK);
+    volk_32f_x2_multiply_32f_a(mVolkViterbiFloatVecImag, mVolkFftBinRawVecPhaseCorrImag, mVolkWeightPerBin, cK);
+    break;
+  default: // ESoftBitType::SOFTDEC3
+    // w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
+    // mVolkWeightPerBin *= mVolkFftBinRawVecPhaseCorrAbs;
+    // volk_32fc_deinterleave_32f_x2_a(mVolkViterbiFloatVecReal, mVolkViterbiFloatVecImag, mVolkFftBinRawVecPhaseCorr, cK);
+    // mVolkPhaseReferenceNormedVec
+    ;
   }
 
-  // mVolkViterbiFloatVec = mVolkFftBinRawVecPhaseCorr * mVolkWeightPerBin * weight  (for each real/imag component)
-  const float weight = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140.0f : -100.0f) / mMeanValue;
-  volk_32f_x2_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinRawVecPhaseCorrReal, mVolkWeightPerBin, cK);
-  volk_32f_x2_multiply_32f_a(mVolkTemp2FloatVec, mVolkFftBinRawVecPhaseCorrImag, mVolkWeightPerBin, cK);
-  volk_32f_s32f_multiply_32f_a(mVolkViterbiFloatVecReal, mVolkTemp1FloatVec, weight, cK);
-  volk_32f_s32f_multiply_32f_a(mVolkViterbiFloatVecImag, mVolkTemp2FloatVec, weight, cK);
+  // -------------------------------
+  // apply weight w2 to be conform to the viterbi input range
+  const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
+  volk_32f_s32f_multiply_32f_a(mVolkViterbiFloatVecReal, mVolkViterbiFloatVecReal, w2, cK);
+  volk_32f_s32f_multiply_32f_a(mVolkViterbiFloatVecImag, mVolkViterbiFloatVecImag, w2, cK);
+  // -------------------------------
 
+  // extract coding bits
   LOOP_OVER_K
   {
     oBits[0  + nomCarrIdx] = (int16_t)(mVolkViterbiFloatVecReal[nomCarrIdx]);
     oBits[cK + nomCarrIdx] = (int16_t)(mVolkViterbiFloatVecImag[nomCarrIdx]);
   }
 
+  // -------------------------------
+  // mMeanValue = sum_over_bins() / mDabPar.K;
   volk_32f_x2_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinRawVecPhaseCorrAbs, mVolkWeightPerBin, cK);
-  // volk_32fc_magnitude_32f_a(mVolkTemp1FloatVec, mVolkFftBinRawVecPhaseCorr, cK);
   volk_32f_accumulator_s32f_a(mVolkTemp2FloatVec, mVolkTemp1FloatVec, cK);  // this sums all vector elements to the first element
-  const float sum = mVolkTemp2FloatVec[0];
-  mMeanValue = sum / cK;
+  mMeanValue = mVolkTemp2FloatVec[0] /*sum*/ / cK;
+  // -------------------------------
 
   // mTimeMeas.trigger_end();
   // if (iCurOfdmSymbIdx == 1) mTimeMeas.print_time_per_round();
