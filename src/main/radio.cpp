@@ -3424,9 +3424,7 @@ QStringList RadioInterface::get_soft_bit_gen_names()
   // ATTENTION: use same sequence as in ESoftBitType
   sl << "Soft decision 1"; // ESoftBitType::SOFTDEC1
   sl << "Soft decision 2"; // ESoftBitType::SOFTDEC2
-#ifndef __USE_SIMD__  // not yet implemented with VOLK
   sl << "Soft decision 3"; // ESoftBitType::SOFTDEC3
-#endif
 
   return sl;
 }
