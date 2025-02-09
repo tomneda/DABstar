@@ -466,14 +466,14 @@ bool DabProcessor::is_packetService(const QString & s)
   return pd.defined;
 }
 
-void DabProcessor::dataforAudioService(const QString & s, Audiodata * d)
+void DabProcessor::dataforAudioService(const QString & iS, Audiodata * opAD)
 {
-  mFicHandler.dataforAudioService(s, d);
+  mFicHandler.dataforAudioService(iS, opAD);
 }
 
-void DabProcessor::dataforPacketService(const QString & s, Packetdata * pd, int16_t compnr)
+void DabProcessor::dataforPacketService(const QString & iS, Packetdata * opPD, int16_t iCompNr)
 {
-  mFicHandler.dataforPacketService(s, pd, compnr);
+  mFicHandler.dataforPacketService(iS, opPD, iCompNr);
 }
 
 uint8_t DabProcessor::get_ecc()

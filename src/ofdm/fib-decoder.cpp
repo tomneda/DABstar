@@ -1577,12 +1577,12 @@ int FibDecoder::getSubChId(const QString & s, uint32_t dummy_SId)
   return subChId;
 }
 
-void FibDecoder::dataforAudioService(const QString & s, Audiodata * ad)
+void FibDecoder::dataforAudioService(const QString & iS, Audiodata * opAD)
 {
   int serviceIndex;
 
-  ad->defined = false;  // default
-  serviceIndex = findService(s);
+  opAD->defined = false;  // default
+  serviceIndex = findService(iS);
   if (serviceIndex == -1)
   {
     return;
@@ -1613,30 +1613,30 @@ void FibDecoder::dataforAudioService(const QString & s, Audiodata * ad)
     return;
   }
 
-  ad->SId = SId;
-  ad->SCIds = SCIds;
-  ad->subchId = subChId;
-  ad->serviceName = s;
-  ad->startAddr = currentConfig->subChannels[subChId].startAddr;
-  ad->shortForm = currentConfig->subChannels[subChId].shortForm;
-  ad->protLevel = currentConfig->subChannels[subChId].protLevel;
-  ad->length = currentConfig->subChannels[subChId].Length;
-  ad->bitRate = currentConfig->subChannels[subChId].bitRate;
-  ad->ASCTy = currentConfig->serviceComps[compIndex].ASCTy;
-  ad->language = ensemble->services[serviceIndex].language;
-  ad->programType = ensemble->services[serviceIndex].programType;
-  ad->fmFrequency = ensemble->services[serviceIndex].fmFrequency;
-  ad->defined = true;
+  opAD->SId = SId;
+  opAD->SCIds = SCIds;
+  opAD->subchId = subChId;
+  opAD->serviceName = iS;
+  opAD->startAddr = currentConfig->subChannels[subChId].startAddr;
+  opAD->shortForm = currentConfig->subChannels[subChId].shortForm;
+  opAD->protLevel = currentConfig->subChannels[subChId].protLevel;
+  opAD->length = currentConfig->subChannels[subChId].Length;
+  opAD->bitRate = currentConfig->subChannels[subChId].bitRate;
+  opAD->ASCTy = currentConfig->serviceComps[compIndex].ASCTy;
+  opAD->language = ensemble->services[serviceIndex].language;
+  opAD->programType = ensemble->services[serviceIndex].programType;
+  opAD->fmFrequency = ensemble->services[serviceIndex].fmFrequency;
+  opAD->defined = true;
 
   fibLocker.unlock();
 }
 
-void FibDecoder::dataforPacketService(const QString & s, Packetdata * pd, int16_t SCIds)
+void FibDecoder::dataforPacketService(const QString & iS, Packetdata * opPD, int16_t iSCIds)
 {
   int serviceIndex;
 
-  pd->defined = false;
-  serviceIndex = findService(s);
+  opPD->defined = false;
+  serviceIndex = findService(iS);
   if (serviceIndex == -1)
   {
     return;
@@ -1646,7 +1646,7 @@ void FibDecoder::dataforPacketService(const QString & s, Packetdata * pd, int16_
 
   int SId = ensemble->services[serviceIndex].SId;
 
-  int compIndex = findServiceComponent(currentConfig, SId, SCIds);
+  int compIndex = findServiceComponent(currentConfig, SId, iSCIds);
 
   if ((compIndex == -1) || (currentConfig->serviceComps[compIndex].TMid != 3))
   {
@@ -1654,29 +1654,29 @@ void FibDecoder::dataforPacketService(const QString & s, Packetdata * pd, int16_
     return;
   }
 
-  int subchId = currentConfig->serviceComps[compIndex].subChannelId;
-  if (!currentConfig->subChannels[subchId].inUse)
+  int subChId = currentConfig->serviceComps[compIndex].subChannelId;
+  if (!currentConfig->subChannels[subChId].inUse)
   {
     fibLocker.unlock();
     return;
   }
 
-  pd->serviceName = s;
-  pd->SId = SId;
-  pd->SCIds = SCIds;
-  pd->subchId = subchId;
-  pd->startAddr = currentConfig->subChannels[subchId].startAddr;
-  pd->shortForm = currentConfig->subChannels[subchId].shortForm;
-  pd->protLevel = currentConfig->subChannels[subchId].protLevel;
-  pd->length = currentConfig->subChannels[subchId].Length;
-  pd->bitRate = currentConfig->subChannels[subchId].bitRate;
-  pd->FEC_scheme = currentConfig->subChannels[subchId].FEC_scheme;
-  pd->DSCTy = currentConfig->serviceComps[compIndex].DSCTy;
-  pd->DGflag = currentConfig->serviceComps[compIndex].DgFlag;
-  pd->packetAddress = currentConfig->serviceComps[compIndex].packetAddress;
-  pd->compnr = currentConfig->serviceComps[compIndex].componentNr;
-  pd->appType = currentConfig->serviceComps[compIndex].appType;
-  pd->defined = true;
+  opPD->serviceName = iS;
+  opPD->SId = SId;
+  opPD->SCIds = iSCIds;
+  opPD->subchId = subChId;
+  opPD->startAddr = currentConfig->subChannels[subChId].startAddr;
+  opPD->shortForm = currentConfig->subChannels[subChId].shortForm;
+  opPD->protLevel = currentConfig->subChannels[subChId].protLevel;
+  opPD->length = currentConfig->subChannels[subChId].Length;
+  opPD->bitRate = currentConfig->subChannels[subChId].bitRate;
+  opPD->FEC_scheme = currentConfig->subChannels[subChId].FEC_scheme;
+  opPD->DSCTy = currentConfig->serviceComps[compIndex].DSCTy;
+  opPD->DGflag = currentConfig->serviceComps[compIndex].DgFlag;
+  opPD->packetAddress = currentConfig->serviceComps[compIndex].packetAddress;
+  opPD->compnr = currentConfig->serviceComps[compIndex].componentNr;
+  opPD->appType = currentConfig->serviceComps[compIndex].appType;
+  opPD->defined = true;
 
   fibLocker.unlock();
 }
