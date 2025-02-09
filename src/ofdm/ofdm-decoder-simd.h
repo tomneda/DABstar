@@ -86,34 +86,34 @@ private:
   std::vector<cmplx> mIqVector;
   std::vector<float> mCarrVector;
 
-  VolkVec<cmplx>mVolkFftBinRawVecPhaseCorr{cK};
-  VolkVec<cmplx> mVolkFftBinRawVec{cK};
+  SimdVec<cmplx>mVolkFftBinRawVecPhaseCorr{cK};
+  SimdVec<cmplx> mVolkFftBinRawVec{cK};
 
-  VolkVec<cmplx> mVolkPhaseReferenceNormedVec{cK};
-  VolkVec<float> mVolkWeightPerBin{cK};
-  VolkVec<float> mVolkFftBinAbsPhaseCorr{cK};
-  VolkVec<float> mVolkFftBinRawVecPhaseCorrArg{cK};
-  VolkVec<float> mVolkFftBinRawVecPhaseCorrAbs{cK};
-  VolkVec<float> mVolkFftBinRawVecPhaseCorrAbsSq{cK};
-  VolkVec<float> mVolkFftBinRawVecPhaseCorrReal{cK};
-  VolkVec<float> mVolkFftBinRawVecPhaseCorrImag{cK};
-  VolkVec<float> mVolkTemp1FloatVec{cK};
-  VolkVec<float> mVolkTemp2FloatVec{cK};
-  VolkVec<float> mVolkViterbiFloatVecReal{cK};
-  VolkVec<float> mVolkViterbiFloatVecImag{cK};
+  SimdVec<cmplx> mVolkPhaseReferenceNormedVec{cK};
+  SimdVec<float> mVolkWeightPerBin{cK};
+  SimdVec<float> mVolkFftBinAbsPhaseCorr{cK};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrArg{cK};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrAbs{cK};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrAbsSq{cK};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrReal{cK};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrImag{cK};
+  SimdVec<float> mVolkTemp1FloatVec{cK};
+  SimdVec<float> mVolkTemp2FloatVec{cK};
+  SimdVec<float> mVolkViterbiFloatVecReal{cK};
+  SimdVec<float> mVolkViterbiFloatVecImag{cK};
 
-  VolkVec<cmplx> mVolkNomCarrierVec{cK};
-  VolkVec<cmplx> mVolkPhaseReference{cK};
+  SimdVec<cmplx> mVolkNomCarrierVec{cK};
+  SimdVec<cmplx> mVolkPhaseReference{cK};
 
-  VolkVec<float> mVolkMeanNullPowerWithoutTII{cK};
-  VolkVec<float> mVolkStdDevSqPhaseVector{cK};
-  VolkVec<float> mVolkMeanLevelVector{cK};
-  VolkVec<float> mVolkMeanPowerVector{cK};
-  VolkVec<float> mVolkMeanSigmaSqVector{cK};
-  VolkVec<float> mVolkMeanNullLevel{cK};
-  VolkVec<float> mVolkIntegAbsPhaseVector{cK};
-  VolkVec<int16_t> mVolkMapNomToRealCarrIdx{cK};
-  VolkVec<int16_t> mVolkMapNomToFftIdx{cK};
+  SimdVec<float> mVolkMeanNullPowerWithoutTII{cK};
+  SimdVec<float> mVolkStdDevSqPhaseVector{cK};
+  SimdVec<float> mVolkMeanLevelVector{cK};
+  SimdVec<float> mVolkMeanPowerVector{cK};
+  SimdVec<float> mVolkMeanSigmaSqVector{cK};
+  SimdVec<float> mVolkMeanNullLevel{cK};
+  SimdVec<float> mVolkIntegAbsPhaseVector{cK};
+  SimdVec<int16_t> mVolkMapNomToRealCarrIdx{cK};
+  SimdVec<int16_t> mVolkMapNomToFftIdx{cK};
 
 
   float mMeanPowerOvrAll = 1.0f;

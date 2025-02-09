@@ -118,20 +118,20 @@ inline void simd_phase(float * opOut, const cmplx * ipInp, size_t size)
 
 
 template<typename T>
-class VolkVec
+class SimdVec
 {
 public:
-  explicit VolkVec(uint32_t iSize) : mSize(iSize)
+  explicit SimdVec(uint32_t iSize) : mSize(iSize)
   {
     mVolkVec = (T *)volk_malloc((iSize) * sizeof(T), volk_get_alignment());
   }
 
-  VolkVec(VolkVec&& other) noexcept : mSize(other.mSize), mVolkVec(other.mVolkVec)
+  SimdVec(SimdVec&& other) noexcept : mSize(other.mSize), mVolkVec(other.mVolkVec)
   {
     other.mVolkVec = nullptr; // Null out the moved-from pointer
   }
 
-  VolkVec & operator=(VolkVec&& other) noexcept
+  SimdVec & operator=(SimdVec&& other) noexcept
   {
     if (this != &other)
     {
@@ -142,7 +142,7 @@ public:
     return *this;
   }
 
-  ~VolkVec()
+  ~SimdVec()
   {
     volk_free(mVolkVec);
     delete mpVolkTempVec;
@@ -182,28 +182,28 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline make_norm(const VolkVec<cmplx> & iVec)
+  inline make_norm(const SimdVec<cmplx> & iVec)
   {
     volk_32fc_magnitude_squared_32f_a(mVolkVec, iVec, mSize);
   }
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline make_sqrt(const VolkVec<float> & iVec)
+  inline make_sqrt(const SimdVec<float> & iVec)
   {
     volk_32f_sqrt_32f_a(mVolkVec, iVec, mSize);
   }
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline make_arg(const VolkVec<cmplx> & iVec)
+  inline make_arg(const SimdVec<cmplx> & iVec)
   {
     volk_32fc_s32f_atan2_32f_a(mVolkVec, iVec, 1.0f /*no weigth*/, mSize); // this is not really faster than a simple loop
   }
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline wrap_4QPSK_to_phase_zero(const VolkVec<float> & iVec)
+  inline wrap_4QPSK_to_phase_zero(const SimdVec<float> & iVec)
   {
     volk_32f_s32f_s32f_mod_range_32f_a(mVolkVec, iVec, 0.0f, F_M_PI_2, mSize);
     volk_32f_s32f_add_32f_a(mVolkVec, mVolkVec, -F_M_PI_4, mSize);
@@ -211,21 +211,21 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline multiply_vector_and_scalar(const VolkVec<float> & iVec, float iScalar)
+  inline multiply_vector_and_scalar(const SimdVec<float> & iVec, float iScalar)
   {
     volk_32f_s32f_multiply_32f_a(mVolkVec, iVec, iScalar, mSize);
   }
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline accumulate_vector(const VolkVec<float> & iVec)
+  inline accumulate_vector(const SimdVec<float> & iVec)
   {
     volk_32f_x2_add_32f_a(mVolkVec, mVolkVec, iVec, mSize);
   }
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline make_square(const VolkVec<float> & iVec)
+  inline make_square(const SimdVec<float> & iVec)
   {
     volk_32f_x2_multiply_32f_a(mVolkVec, iVec, iVec, mSize);
   }
@@ -247,21 +247,21 @@ public:
 private:
   const uint32_t mSize;
   T * mVolkVec = nullptr;
-  mutable VolkVec<T> * mpVolkTempVec = nullptr;
+  mutable SimdVec<T> * mpVolkTempVec = nullptr;
 
   T * _get_temp_vector() const
   {
      if (mpVolkTempVec == nullptr)
      {
-       mpVolkTempVec = new VolkVec<T>(mSize);
+       mpVolkTempVec = new SimdVec<T>(mSize);
      }
      return mpVolkTempVec->get();
   }
 
-  friend VolkVec<T> operator*(const VolkVec<T> &lhs, const VolkVec<T> &rhs)
+  friend SimdVec<T> operator*(const SimdVec<T> &lhs, const SimdVec<T> &rhs)
   {
     assert (lhs.mSize == rhs.mSize);
-    VolkVec<T> result(lhs.mSize);
+    SimdVec<T> result(lhs.mSize);
 
     for (size_t i = 0; i < lhs.mSize; ++i)
     {
