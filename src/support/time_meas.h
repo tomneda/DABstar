@@ -53,6 +53,8 @@ public:
 #endif
     const auto lastTimeDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(curTimePoint - mLastCheckedTimePoint);
     mTimeAbs += lastTimeDuration;
+    if (mTimeMin > lastTimeDuration) mTimeMin = lastTimeDuration;
+    if (mTimeMax < lastTimeDuration) mTimeMax = lastTimeDuration;
     ++mCntAbsEnd;
   }
 
@@ -78,7 +80,10 @@ public:
     {
       mCntAbsBeginPrinted = mCntAbsBegin + mPrintCntSteps;
       const auto time = get_time_per_round_in_ns();
-      std::cout << "Duration of " << mName << ":  " << time / 1000 << " us, " << time << "ns  (" << mCntAbsBegin << " rounds)" << std::endl;
+      std::cout << "Duration of " << mName << ":  " << time / 1000 << " us (" << time << " ns),  "
+                                           << "Min: " << mTimeMin.count() / 1000 << " us (" << mTimeMin.count() << " ns),  "
+                                           << "Max: " << mTimeMax.count() / 1000 << " us (" << mTimeMax.count() << " ns),  "
+                                           << "Rounds: " << mCntAbsBegin << std::endl;
     }
   }
 
@@ -95,7 +100,9 @@ private:
 #else
   std::chrono::high_resolution_clock::time_point mLastCheckedTimePoint;
 #endif
-  std::chrono::nanoseconds mTimeAbs = std::chrono::nanoseconds(0);
+  std::chrono::nanoseconds mTimeAbs = std::chrono::nanoseconds::zero();
+  std::chrono::nanoseconds mTimeMin = std::chrono::nanoseconds::max();
+  std::chrono::nanoseconds mTimeMax = std::chrono::nanoseconds::min();
   uint64_t mCntAbsBegin = 0;
   uint64_t mCntAbsEnd = 0;
   uint64_t mCntAbsBeginPrinted = 0;
