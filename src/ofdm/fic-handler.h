@@ -59,11 +59,11 @@ public:
   void process_block(const std::vector<int16_t> & iData, const int32_t iBlkNo);
   void stop();
   void restart();
-  void start_ficDump(FILE *);
-  void stop_ficDump();
-  void get_fibBits(uint8_t *, bool *);
-  int  getFicDecodeRatioPercent();
-  void resetFicDecodeSuccessRatio() { fic_decode_success_ratio = 0; };
+  void start_fic_dump(FILE *);
+  void stop_fic_dump();
+  void get_fib_bits(uint8_t *, bool *);
+  int  get_fic_decode_ratio_percent();
+  void reset_fic_decode_success_ratio() { fic_decode_success_ratio = 0; };
 
 private:
   DabParams params;
@@ -84,15 +84,15 @@ private:
   int fic_errors = 0;
   int fic_bits = 0;
   std::atomic<bool> running;
-  void process_ficInput(int16_t iFicNo, bool * oValid);
+  void _process_fic_input(int16_t iFicNo, bool * oValid);
 
   // Saturating up/down-counter in range [0, 10] corresponding
   // to the number of FICs with correct CRC
   int32_t fic_decode_success_ratio = 0;
 
 signals:
-  void show_ficSuccess(bool);
-  void show_ficBER(float);
+  void show_fic_success(bool);
+  void show_fic_BER(float);
 };
 
 #endif

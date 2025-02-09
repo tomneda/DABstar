@@ -80,38 +80,38 @@ public:
   void start();
   void stop();
   void startDumping(SNDFILE *);
-  void stopDumping();
-  bool start_etiGenerator(const QString &);
-  void stop_etiGenerator();
-  void reset_etiGenerator();
+  void stop_dumping();
+  bool start_eti_generator(const QString &);
+  void stop_eti_generator();
+  void reset_eti_generator();
   void set_scan_mode(bool);
   void add_bb_freq(int32_t iFreqOffHz);
 
   //	inheriting from our delegates
   //	for the FicHandler:
-  QString findService(uint32_t, int);
-  void getParameters(const QString &, uint32_t *, int *);
-  std::vector<SServiceId> getServices();
-  bool is_audioService(const QString & s);
-  bool is_packetService(const QString & s);
-  void dataforAudioService(const QString &, Audiodata *);
-  void dataforPacketService(const QString &, Packetdata *, int16_t);
-  int getSubChId(const QString &, uint32_t);
+  QString find_service(uint32_t, int);
+  void get_parameters(const QString &, uint32_t *, int *);
+  std::vector<SServiceId> get_services();
+  bool is_audio_service(const QString & s);
+  bool is_packet_service(const QString & s);
+  void get_data_for_audio_service(const QString &, Audiodata *);
+  void get_data_for_packet_service(const QString &, Packetdata *, int16_t);
+  int get_sub_channel_id(const QString &, uint32_t);
   uint8_t get_ecc();
-  int32_t get_ensembleId();
-  QString get_ensembleName();
-  uint16_t get_countryName();
-  void set_epgData(int32_t, int32_t, const QString &, const QString &);
-  bool has_timeTable(uint32_t);
-  std::vector<SEpgElement> find_epgData(uint32_t);
-  uint32_t julianDate();
+  int32_t get_ensemble_id();
+  QString get_ensemble_name();
+  uint16_t get_country_name();
+  void set_epg_data(int32_t, int32_t, const QString &, const QString &);
+  bool has_time_table(uint32_t);
+  std::vector<SEpgElement> find_epg_data(uint32_t);
+  uint32_t get_julian_date();
   QStringList basicPrint();
-  int scanWidth();
+  int scan_width();
   void start_ficDump(FILE *);
-  void stop_ficDump();
+  void stop_fic_dump();
 
   //	for the mscHandler
-  void reset_Services();
+  void reset_services();
   void stop_service(DescriptorType *, int);
   void stop_service(int, int);
   bool set_audio_channel(const Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag);
@@ -119,9 +119,9 @@ public:
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);
-  void set_Tii(bool);
+  void set_tii(bool);
   void set_tii_threshold(uint8_t);
-  void set_tii_subid(uint8_t);
+  void set_tii_sub_id(uint8_t);
   void set_tii_collisions(bool);
 
 private:

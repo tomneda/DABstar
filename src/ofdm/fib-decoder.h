@@ -55,30 +55,30 @@ public:
   void clearEnsemble();
   void connect_channel();
   void disconnect_channel();
-  bool syncReached();
-  void dataforAudioService(const QString &, Audiodata *);
-  void dataforPacketService(const QString &, Packetdata *, int16_t);
-  int getSubChId(const QString &, uint32_t);
-  std::vector<SServiceId> getServices();
+  bool sync_reached();
+  void get_data_for_audio_service(const QString &, Audiodata *);
+  void get_data_for_packet_service(const QString &, Packetdata *, int16_t);
+  int get_sub_channel_id(const QString &, uint32_t);
+  std::vector<SServiceId> get_services();
 
-  QString findService(uint32_t, int);
-  void getParameters(const QString &, uint32_t *, int *);
+  QString find_service(uint32_t, int);
+  void get_parameters(const QString &, uint32_t *, int *);
   uint8_t get_ecc();
-  uint16_t get_countryName();
+  uint16_t get_country_name();
   uint8_t get_countryId();
   int32_t get_ensembleId();
-  QString get_ensembleName();
-  void get_channelInfo(ChannelData *, int);
-  int32_t get_CIFcount();
-  void get_CIFcount(int16_t *, int16_t *);
-  uint32_t julianDate();
-  void set_epgData(uint32_t, int32_t, const QString &, const QString &);
+  QString get_ensemble_name();
+  void get_channel_info(ChannelData *, int);
+  int32_t get_cif_count();
+  void get_cif_count(int16_t *, int16_t *);
+  uint32_t get_julian_date();
+  void set_epg_data(uint32_t, int32_t, const QString &, const QString &);
   std::vector<SEpgElement> get_timeTable(uint32_t);
   std::vector<SEpgElement> get_timeTable(const QString &);
-  bool has_timeTable(uint32_t SId);
-  std::vector<SEpgElement> find_epgData(uint32_t);
-  QStringList basicPrint();
-  int scanWidth();
+  bool has_time_table(uint32_t SId);
+  std::vector<SEpgElement> find_epg_data(uint32_t);
+  QStringList basic_print();
+  int scan_width();
 
 protected:
   void process_FIB(const uint8_t *, uint16_t);

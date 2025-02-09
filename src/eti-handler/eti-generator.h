@@ -81,8 +81,8 @@ public:
   void newFrame();
   void process_block(const std::vector<int16_t> & fbits, int blkno);
   void reset();
-  bool start_etiGenerator(const QString &);
-  void stop_etiGenerator();
+  bool start_eti_generator(const QString &);
+  void stop_eti_generator();
 
 private:
   FicHandler * my_ficHandler;
@@ -98,9 +98,9 @@ private:
   int16_t numberofblocksperCIF;
   uint8_t fibBits[4 * 768];
 
-  int32_t init_eti(uint8_t *, int16_t, int16_t, int16_t);
-  int32_t process_CIF(const int16_t *, uint8_t *, int32_t);
-  void process_subCh(int, parameter *, Protection * prot, uint8_t *);
+  int32_t _init_eti(uint8_t *, int16_t, int16_t, int16_t);
+  int32_t _process_cif(const int16_t *, uint8_t *, int32_t);
+  void _process_sub_channel(int, parameter *, Protection * prot, uint8_t *);
 
   void postProcess(const uint8_t *, int32_t);
 };

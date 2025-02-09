@@ -318,8 +318,8 @@ private:
   void stop_etiHandler();
   static QString check_and_create_dir(const QString &);
 
-  void startAudioservice(const Audiodata * const ad);
-  void startPacketservice(const QString &);
+  void start_audio_service(const Audiodata * const ipAD);
+  void start_packet_service(const QString &);
   void start_scanning();
   void stop_scanning();
   void start_audio_dumping();

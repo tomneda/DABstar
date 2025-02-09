@@ -518,7 +518,7 @@ bool RadioInterface::do_start()
   mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
   mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
   mpDabProcessor->set_tii_collisions(mpSH->read(SettingHelper::cbTiiCollisions).toBool());
-  mpDabProcessor->set_Tii(mpSH->read(SettingHelper::enableTii).toBool());
+  mpDabProcessor->set_tii(mpSH->read(SettingHelper::enableTii).toBool());
   {
     const int32_t threshold = mpSH->read(SettingHelper::tii_threshold).toInt();
     mConfig.tii_threshold->setValue(threshold) ;
@@ -527,7 +527,7 @@ bool RadioInterface::do_start()
   {
     const int32_t subid = mpSH->read(SettingHelper::tii_subid).toInt();
     mConfig.tii_subid->setValue(subid) ;
-    mpDabProcessor->set_tii_subid(subid);
+    mpDabProcessor->set_tii_sub_id(subid);
   }
 
   // should the device widget be shown?
@@ -610,7 +610,7 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
 
   qCDebug(sLogRadioInterface()) << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
 
-  const int32_t subChId = mpDabProcessor->getSubChId(iServiceName, iSId);
+  const int32_t subChId = mpDabProcessor->get_sub_channel_id(iServiceName, iSId);
 
   if (subChId < 0)
   {
@@ -627,7 +627,7 @@ void RadioInterface::slot_add_to_ensemble(const QString & iServiceName, const ui
     return; // service already in service list
   }
 
-  const bool isAudioService = mpDabProcessor->is_audioService(iServiceName);
+  const bool isAudioService = mpDabProcessor->is_audio_service(iServiceName);
 
   if (mConfig.cbShowNonAudioInServiceList->isChecked() || isAudioService)
   {
@@ -724,7 +724,7 @@ void RadioInterface::_slot_handle_content_button()
                    + hex_to_str(mChannel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
                    + QString::number(mServiceList.size()) + ";" + lblStationLocation->text() + "\n";
 
-  mpContentTable = new ContentTable(this, mpSH->get_settings(), mChannel.channelName, mpDabProcessor->scanWidth());
+  mpContentTable = new ContentTable(this, mpSH->get_settings(), mChannel.channelName, mpDabProcessor->scan_width());
   connect(mpContentTable, &ContentTable::signal_go_service, this, &RadioInterface::slot_handle_content_selector);
 
   mpContentTable->addLine(header);
@@ -794,9 +794,9 @@ void RadioInterface::slot_handle_mot_object(QByteArray result, QString objectNam
       }
 
       std::vector<uint8_t> epgData(result.begin(), result.end());
-      uint32_t ensembleId = mpDabProcessor->get_ensembleId();
+      uint32_t ensembleId = mpDabProcessor->get_ensemble_id();
       uint32_t currentSId = extract_epg(objectName, mServiceList, ensembleId);
-      uint32_t julianDate = mpDabProcessor->julianDate();
+      uint32_t julianDate = mpDabProcessor->get_julian_date();
       int subType = getContentSubType((MOTContentType)contentType);
       mEpgProcessor.process_epg(epgData.data(), (int32_t)epgData.size(), currentSId, subType, julianDate);
 
@@ -1014,32 +1014,18 @@ void RadioInterface::slot_change_in_configuration()
 
   fprintf(stdout, "configuration change will be effected\n");
 
-  //	we rebuild the services list from the fib and
-  //	then we (try to) restart the service
-  mServiceList = mpDabProcessor->getServices();
+  //	we rebuild the services list from the fib and	then we (try to) restart the service
+  mServiceList = mpDabProcessor->get_services();
 
-  // TODO: use mpDabProcessor->getServices() to setup new service channel list
-//  model.clear();
-//  for (const auto & serv: serviceList)
-//  {
-//    model.appendRow(new QStandardItem(serv.name));
-//  }
-//  int row = model.rowCount();
-//  for (int i = 0; i < row; i++)
-//  {
-//    model.setData(model.index(i, 0), QFont(theFont, fontSize), Qt::FontRole);
-//  }
-  //ensembleDisplay->setModel(&model);
-  //
   if (mChannel.etiActive)
   {
-    mpDabProcessor->reset_etiGenerator();
+    mpDabProcessor->reset_eti_generator();
   }
 
   //	Of course, it may be disappeared
   if (s.valid)
   {
-    if (const QString ss = mpDabProcessor->findService(s.SId, s.SCIds);
+    if (const QString ss = mpDabProcessor->find_service(s.SId, s.SCIds);
         ss != "")
     {
       start_service(s);
@@ -1048,7 +1034,7 @@ void RadioInterface::slot_change_in_configuration()
 
     //	The service is gone, it may be the subservice of another one
     s.SCIds = 0;
-    s.serviceName = mpDabProcessor->findService(s.SId, s.SCIds);
+    s.serviceName = mpDabProcessor->find_service(s.SId, s.SCIds);
 
     if (s.serviceName != "")
     {
@@ -1059,7 +1045,7 @@ void RadioInterface::slot_change_in_configuration()
   //	we also have to restart all background services,
   for (uint16_t i = 0; i < mChannel.backgroundServices.size(); ++i)
   {
-    if (const QString ss = mpDabProcessor->findService(s.SId, s.SCIds);
+    if (const QString ss = mpDabProcessor->find_service(s.SId, s.SCIds);
         ss == "") // it is gone, close the file if any
     {
       if (mChannel.backgroundServices.at(i).fd != nullptr)
@@ -1070,30 +1056,21 @@ void RadioInterface::slot_change_in_configuration()
     }
     else // (re)start the service
     {
-      if (mpDabProcessor->is_audioService(ss))
+      if (mpDabProcessor->is_audio_service(ss))
       {
         Audiodata ad;
         FILE * f = mChannel.backgroundServices.at(i).fd;
-        mpDabProcessor->dataforAudioService(ss, &ad);
+        mpDabProcessor->get_data_for_audio_service(ss, &ad);
         mpDabProcessor->set_audio_channel(&ad, mpAudioBufferFromDecoder, f, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = ad.subchId;
       }
       else
       {
         Packetdata pd;
-        mpDabProcessor->dataforPacketService(ss, &pd, 0);
+        mpDabProcessor->get_data_for_packet_service(ss, &pd, 0);
         mpDabProcessor->set_data_channel(&pd, mpDataBuffer, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = pd.subchId;
       }
-      // TODO: select the background service in service list?
-//      for (int j = 0; j < model.rowCount(); j++)
-//      {
-//        QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
-//        if (itemText == ss)
-//        {
-//          colorService(model.index(j, 0), Qt::blue, fontSize + 2, true);
-//        }
-//      }
     }
   }
 }
@@ -1356,7 +1333,7 @@ void RadioInterface::_slot_handle_tii_button()
   {
     mDxDisplay.show();
   }
-  mpDabProcessor->set_Tii(!b);
+  mpDabProcessor->set_tii(!b);
   mpSH->write(SettingHelper::enableTii, !b);
 }
 
@@ -1371,7 +1348,7 @@ void RadioInterface::slot_handle_tii_subid(int subid)
 {
   assert(mpDabProcessor != nullptr);
   mpSH->write(SettingHelper::tii_subid, subid);
-  mpDabProcessor->set_tii_subid(subid);
+  mpDabProcessor->set_tii_sub_id(subid);
 }
 ///////////////////////////////////////////////////////////////////////////
 //	signals, received from ofdm_decoder for which that data is
@@ -1858,7 +1835,7 @@ void RadioInterface::stop_source_dumping()
   }
 
   LOG("source dump stops ", "");
-  mpDabProcessor->stopDumping();
+  mpDabProcessor->stop_dumping();
   sf_close(mpRawDumper);
   mpRawDumper = nullptr;
   setButtonFont(mConfig.dumpButton, "Raw dump", 10);
@@ -2208,7 +2185,7 @@ void RadioInterface::local_select(const QString & iChannel, const QString & iSer
   {
     mChannel.currentService.valid = false;
     SDabService s;
-    mpDabProcessor->getParameters(serviceName, &s.SId, &s.SCIds);
+    mpDabProcessor->get_parameters(serviceName, &s.SId, &s.SCIds);
     if (s.SId == 0)
     {
       write_warning_message("Insufficient data for this program (1)");
@@ -2287,7 +2264,7 @@ void RadioInterface::stop_service(SDabService & ioDabService)
       for (int32_t i = 0; i < 5; ++i) // TODO: from where the 5?
       {
         Packetdata pd;
-        mpDabProcessor->dataforPacketService(ioDabService.serviceName, &pd, i);
+        mpDabProcessor->get_data_for_packet_service(ioDabService.serviceName, &pd, i);
 
         if (pd.defined)
         {
@@ -2313,12 +2290,7 @@ void RadioInterface::start_service(SDabService & s)
   mChannel.currentService.valid = false;
   LOG("start service ", serviceName.toUtf8().data());
   LOG("service has SNR ", QString::number(mChannel.snr));
-  //
-  //	mark the selected service in the service list
-  //int rowCount = model.rowCount();
-  //(void)rowCount;
 
-  //colorServiceName(serviceName, Qt::red, 16, true);
   mpServiceListHandler->set_selector(mChannel.channelName, serviceName);
 
   //	and display the servicename on the serviceLabel
@@ -2332,19 +2304,19 @@ void RadioInterface::start_service(SDabService & s)
   //lblDynLabel->setOpenExternalLinks(true); // TODO: make this work (Bayern1 sent link)
 
   Audiodata ad;
-  mpDabProcessor->dataforAudioService(serviceName, &ad);
+  mpDabProcessor->get_data_for_audio_service(serviceName, &ad);
 
   if (ad.defined)
   {
     mChannel.currentService.valid = true;
     mChannel.currentService.is_audio = true;
     mChannel.currentService.subChId = ad.subchId;
-    if (mpDabProcessor->has_timeTable(ad.SId))
+    if (mpDabProcessor->has_time_table(ad.SId))
     {
       mpTechDataWidget->slot_show_timetableButton(true);
     }
 
-    startAudioservice(&ad);
+    start_audio_service(&ad);
     const QString csn = mChannel.channelName + ":" + serviceName;
     mpSH->write(SettingHelper::presetName, csn);
 
@@ -2355,14 +2327,14 @@ void RadioInterface::start_service(SDabService & s)
     }
 #endif
   }
-  else if (mpDabProcessor->is_packetService(serviceName))
+  else if (mpDabProcessor->is_packet_service(serviceName))
   {
     Packetdata pd;
-    mpDabProcessor->dataforPacketService(serviceName, &pd, 0);
+    mpDabProcessor->get_data_for_packet_service(serviceName, &pd, 0);
     mChannel.currentService.valid = true;
     mChannel.currentService.is_audio = false;
     mChannel.currentService.subChId = pd.subchId;
-    startPacketservice(serviceName);
+    start_packet_service(serviceName);
   }
   else
   {
@@ -2371,24 +2343,16 @@ void RadioInterface::start_service(SDabService & s)
   }
 }
 
-//void RadioInterface::colorService(QModelIndex ind, QColor c, int pt, bool italic)
-//{
-//  QMap<int, QVariant> vMap = model.itemData(ind);
-//  vMap.insert(Qt::ForegroundRole, QVariant(QBrush(c)));
-//  model.setItemData(ind, vMap);
-//  model.setData(ind, QFont(theFont, pt, -1, italic), Qt::FontRole);
-//}
-
-void RadioInterface::startAudioservice(const Audiodata * const ad)
+void RadioInterface::start_audio_service(const Audiodata * const ipAD)
 {
   mChannel.currentService.valid = true;
 
-  (void)mpDabProcessor->set_audio_channel(ad, mpAudioBufferFromDecoder, nullptr, FORE_GROUND);
+  (void)mpDabProcessor->set_audio_channel(ipAD, mpAudioBufferFromDecoder, nullptr, FORE_GROUND);
 
   for (int i = 1; i < 10; i++)
   {
     Packetdata pd;
-    mpDabProcessor->dataforPacketService(ad->serviceName, &pd, i);
+    mpDabProcessor->get_data_for_packet_service(ipAD->serviceName, &pd, i);
     if (pd.defined)
     {
       mpDabProcessor->set_data_channel(&pd, mpDataBuffer, FORE_GROUND);
@@ -2399,17 +2363,17 @@ void RadioInterface::startAudioservice(const Audiodata * const ad)
   //	activate sound
   mpCurAudioFifo = nullptr; // trigger possible new sample rate setting
   //mpSoundOut->restart();
-  programTypeLabel->setText(getProgramType(ad->programType));
+  programTypeLabel->setText(getProgramType(ipAD->programType));
   //	show service related data
-  mpTechDataWidget->show_serviceData(ad);
-  _set_status_info_status(mStatusInfo.InpBitRate, (int32_t)(ad->bitRate));
+  mpTechDataWidget->show_serviceData(ipAD);
+  _set_status_info_status(mStatusInfo.InpBitRate, (int32_t)(ipAD->bitRate));
 }
 
-void RadioInterface::startPacketservice(const QString & s)
+void RadioInterface::start_packet_service(const QString & iS)
 {
   Packetdata pd;
+  mpDabProcessor->get_data_for_packet_service(iS, &pd, 0);
 
-  mpDabProcessor->dataforPacketService(s, &pd, 0);
   if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
   {
     write_warning_message("Insufficient data for this program (3)");
@@ -2531,7 +2495,7 @@ void RadioInterface::_slot_preset_timeout()
 
   SDabService s;
   s.serviceName = presetName;
-  mpDabProcessor->getParameters(presetName, &s.SId, &s.SCIds);
+  mpDabProcessor->get_parameters(presetName, &s.SId, &s.SCIds);
 
   if (s.SId == 0)
   {
@@ -2634,7 +2598,7 @@ void RadioInterface::stop_channel()
   //	ficDumping - if on - is stopped here
   if (mpFicDumpPointer != nullptr)
   {
-    mpDabProcessor->stop_ficDump();
+    mpDabProcessor->stop_fic_dump();
     mpFicDumpPointer = nullptr;
   }
 
@@ -2652,7 +2616,7 @@ void RadioInterface::stop_channel()
   mChannel.targetPos = cmplx(0, 0);
   if (mpHttpHandler != nullptr)
   {
-  CacheElem theTransmitter;
+    CacheElem theTransmitter;
     theTransmitter.latitude = 0;
     theTransmitter.longitude = 0;
     mpHttpHandler->putData(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
@@ -2982,7 +2946,7 @@ void RadioInterface::slot_epg_timer_timeout()
         serv.name.startsWith("EPG ", Qt::CaseInsensitive))
     {
       Packetdata pd;
-      mpDabProcessor->dataforPacketService(serv.name, &pd, 0);
+      mpDabProcessor->get_data_for_packet_service(serv.name, &pd, 0);
 
       if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
       {
@@ -3003,16 +2967,6 @@ void RadioInterface::slot_epg_timer_timeout()
         s.subChId = pd.subchId;
         s.fd = nullptr;
         mChannel.backgroundServices.push_back(s);
-
-//        for (int j = 0; j < model.rowCount(); j++)
-//        {
-//          QString itemText = model.index(j, 0).data(Qt::DisplayRole).toString();
-//          if (itemText == pd.serviceName)
-//          {
-//            colorService(model.index(j, 0), Qt::blue, fontSize + 2, true);
-//            break;
-//          }
-//        }
       }
     }
 #ifdef  __DABDATA__
@@ -3061,7 +3015,7 @@ void RadioInterface::slot_set_epg_data(int SId, int theTime, const QString & the
 {
   if (mpDabProcessor != nullptr)
   {
-    mpDabProcessor->set_epgData(SId, theTime, theText, theDescr);
+    mpDabProcessor->set_epg_data(SId, theTime, theText, theDescr);
   }
 }
 
@@ -3079,7 +3033,7 @@ void RadioInterface::_slot_handle_time_table()
   {
     epgWidth = 50;
   }
-  std::vector<SEpgElement> res = mpDabProcessor->find_epgData(mChannel.currentService.SId);
+  std::vector<SEpgElement> res = mpDabProcessor->find_epg_data(mChannel.currentService.SId);
   for (const auto & element: res)
   {
     mpTimeTable->addElement(element.theTime, epgWidth, element.theText, element.theDescr);
@@ -3355,7 +3309,7 @@ void RadioInterface::stop_etiHandler()
     return;
   }
 
-  mpDabProcessor->stop_etiGenerator();
+  mpDabProcessor->stop_eti_generator();
   mChannel.etiActive = false;
   btnScanning->setText("ETI");
 }
@@ -3373,7 +3327,7 @@ void RadioInterface::start_etiHandler()
     return;
   }
   LOG("etiHandler started", etiFile);
-  mChannel.etiActive = mpDabProcessor->start_etiGenerator(etiFile);
+  mChannel.etiActive = mpDabProcessor->start_eti_generator(etiFile);
   if (mChannel.etiActive)
   {
     btnScanning->setText("eti runs");

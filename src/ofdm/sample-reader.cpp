@@ -195,7 +195,7 @@ void SampleReader::startDumping(SNDFILE * f)
   dumpfilePointer.store(f);
 }
 
-void SampleReader::stopDumping()
+void SampleReader::stop_dumping()
 {
   dumpfilePointer.store(nullptr);
 }

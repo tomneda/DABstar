@@ -136,7 +136,7 @@ void DabProcessor::run()  // run QThread
   _set_bb_freq_offs_Hz(0.0f);
 
   mCorrectionNeeded = true;
-  mFicHandler.resetFicDecodeSuccessRatio(); // mCorrectionNeeded will be true next call to getFicDecodeRatioPercent()
+  mFicHandler.reset_fic_decode_success_ratio(); // mCorrectionNeeded will be true next call to getFicDecodeRatioPercent()
   mFreqOffsCylcPrefHz = 0.0f;
   mFreqOffsSyncSymb = 0.0f;
 
@@ -206,7 +206,7 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
   mOfdmDecoder.store_reference_symbol_0(mFftOutBuffer);
 
   // Here we look only at the symbol 0 when we need a coarse frequency synchronization.
-  mCorrectionNeeded = mFicHandler.getFicDecodeRatioPercent() < 50;
+  mCorrectionNeeded = mFicHandler.get_fic_decode_ratio_percent() < 50;
 
   if (mCorrectionNeeded)
   {
@@ -267,7 +267,7 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
   ioSampleCount += mDabPar.T_n;
 
   // is this null symbol with TII?
-  const bool isTiiNullSegment = (mcDabMode == 1 && (mFicHandler.get_CIFcount() & 0x7) >= 4);
+  const bool isTiiNullSegment = (mcDabMode == 1 && (mFicHandler.get_cif_count() & 0x7) >= 4);
   memcpy(mFftInBuffer.data(), &(mOfdmBuffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
   fftwf_execute(mFftPlan);
 
@@ -432,48 +432,48 @@ void DabProcessor::set_scan_mode(bool b)
 //	just convenience functions
 //	FicHandler abstracts channel data
 
-QString DabProcessor::findService(uint32_t SId, int SCIds)
+QString DabProcessor::find_service(uint32_t SId, int SCIds)
 {
-  return mFicHandler.findService(SId, SCIds);
+  return mFicHandler.find_service(SId, SCIds);
 }
 
-void DabProcessor::getParameters(const QString & s, uint32_t * p_SId, int * p_SCIds)
+void DabProcessor::get_parameters(const QString & s, uint32_t * p_SId, int * p_SCIds)
 {
-  mFicHandler.getParameters(s, p_SId, p_SCIds);
+  mFicHandler.get_parameters(s, p_SId, p_SCIds);
 }
 
-std::vector<SServiceId> DabProcessor::getServices()
+std::vector<SServiceId> DabProcessor::get_services()
 {
-  return mFicHandler.getServices();
+  return mFicHandler.get_services();
 }
 
-int DabProcessor::getSubChId(const QString & s, uint32_t SId)
+int DabProcessor::get_sub_channel_id(const QString & s, uint32_t SId)
 {
-  return mFicHandler.getSubChId(s, SId);
+  return mFicHandler.get_sub_channel_id(s, SId);
 }
 
-bool DabProcessor::is_audioService(const QString & s)
+bool DabProcessor::is_audio_service(const QString & s)
 {
   Audiodata ad;
-  mFicHandler.dataforAudioService(s, &ad);
+  mFicHandler.get_data_for_audio_service(s, &ad);
   return ad.defined;
 }
 
-bool DabProcessor::is_packetService(const QString & s)
+bool DabProcessor::is_packet_service(const QString & s)
 {
   Packetdata pd;
-  mFicHandler.dataforPacketService(s, &pd, 0);
+  mFicHandler.get_data_for_packet_service(s, &pd, 0);
   return pd.defined;
 }
 
-void DabProcessor::dataforAudioService(const QString & iS, Audiodata * opAD)
+void DabProcessor::get_data_for_audio_service(const QString & iS, Audiodata * opAD)
 {
-  mFicHandler.dataforAudioService(iS, opAD);
+  mFicHandler.get_data_for_audio_service(iS, opAD);
 }
 
-void DabProcessor::dataforPacketService(const QString & iS, Packetdata * opPD, int16_t iCompNr)
+void DabProcessor::get_data_for_packet_service(const QString & iS, Packetdata * opPD, int16_t iCompNr)
 {
-  mFicHandler.dataforPacketService(iS, opPD, iCompNr);
+  mFicHandler.get_data_for_packet_service(iS, opPD, iCompNr);
 }
 
 uint8_t DabProcessor::get_ecc()
@@ -481,49 +481,48 @@ uint8_t DabProcessor::get_ecc()
   return mFicHandler.get_ecc();
 }
 
-[[maybe_unused]] uint16_t DabProcessor::get_countryName()
+[[maybe_unused]] uint16_t DabProcessor::get_country_name()
 {
-  return mFicHandler.get_countryName();
+  return mFicHandler.get_country_name();
 }
 
-int32_t DabProcessor::get_ensembleId()
+int32_t DabProcessor::get_ensemble_id()
 {
   return mFicHandler.get_ensembleId();
 }
 
-[[maybe_unused]] QString DabProcessor::get_ensembleName()
+[[maybe_unused]] QString DabProcessor::get_ensemble_name()
 {
-  return mFicHandler.get_ensembleName();
+  return mFicHandler.get_ensemble_name();
 }
 
-void DabProcessor::set_epgData(int SId, int32_t theTime, const QString & s, const QString & d)
+void DabProcessor::set_epg_data(int SId, int32_t theTime, const QString & s, const QString & d)
 {
-  mFicHandler.set_epgData(SId, theTime, s, d);
+  mFicHandler.set_epg_data(SId, theTime, s, d);
 }
 
-bool DabProcessor::has_timeTable(uint32_t SId)
+bool DabProcessor::has_time_table(uint32_t SId)
 {
-  return mFicHandler.has_timeTable(SId);
+  return mFicHandler.has_time_table(SId);
 }
 
-std::vector<SEpgElement> DabProcessor::find_epgData(uint32_t SId)
+std::vector<SEpgElement> DabProcessor::find_epg_data(uint32_t SId)
 {
-  return mFicHandler.find_epgData(SId);
+  return mFicHandler.find_epg_data(SId);
 }
 
 QStringList DabProcessor::basicPrint()
 {
-  return mFicHandler.basicPrint();
+  return mFicHandler.basic_print();
 }
 
-int DabProcessor::scanWidth()
+int DabProcessor::scan_width()
 {
-  return mFicHandler.scanWidth();
+  return mFicHandler.scan_width();
 }
 
-//
 //	for the mscHandler:
-[[maybe_unused]] void DabProcessor::reset_Services()
+[[maybe_unused]] void DabProcessor::reset_services()
 {
   if (!mScanMode)
   {
@@ -577,42 +576,42 @@ void DabProcessor::startDumping(SNDFILE * f)
   mSampleReader.startDumping(f);
 }
 
-void DabProcessor::stopDumping()
+void DabProcessor::stop_dumping()
 {
-  mSampleReader.stopDumping();
+  mSampleReader.stop_dumping();
 }
 
 void DabProcessor::start_ficDump(FILE * f)
 {
-  mFicHandler.start_ficDump(f);
+  mFicHandler.start_fic_dump(f);
 }
 
-void DabProcessor::stop_ficDump()
+void DabProcessor::stop_fic_dump()
 {
-  mFicHandler.stop_ficDump();
+  mFicHandler.stop_fic_dump();
 }
 
-uint32_t DabProcessor::julianDate()
+uint32_t DabProcessor::get_julian_date()
 {
-  return mFicHandler.julianDate();
+  return mFicHandler.get_julian_date();
 }
 
-bool DabProcessor::start_etiGenerator(const QString & s)
+bool DabProcessor::start_eti_generator(const QString & s)
 {
-  if (mEtiGenerator.start_etiGenerator(s))
+  if (mEtiGenerator.start_eti_generator(s))
   {
     mEti_on = true;
   }
   return mEti_on;
 }
 
-[[maybe_unused]] void DabProcessor::stop_etiGenerator()
+[[maybe_unused]] void DabProcessor::stop_eti_generator()
 {
-  mEtiGenerator.stop_etiGenerator();
+  mEtiGenerator.stop_eti_generator();
   mEti_on = false;
 }
 
-[[maybe_unused]] void DabProcessor::reset_etiGenerator()
+[[maybe_unused]] void DabProcessor::reset_eti_generator()
 {
   mEtiGenerator.reset();
 }
@@ -661,7 +660,7 @@ void DabProcessor::set_sync_on_strongest_peak(bool sync)
   mPhaseReference.set_sync_on_strongest_peak(sync);
 }
 
-void DabProcessor::set_Tii(bool b)
+void DabProcessor::set_tii(bool b)
 {
   mEnableTii = b;
 }
@@ -671,7 +670,7 @@ void DabProcessor::set_tii_collisions(bool b)
   mTiiDetector.set_detect_collisions(b);
 }
 
-void DabProcessor::set_tii_subid(uint8_t subid)
+void DabProcessor::set_tii_sub_id(uint8_t subid)
 {
   mTiiDetector.set_subid_for_collision_search(subid);
 }

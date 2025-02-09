@@ -58,7 +58,7 @@ public:
   cmplx getSample(int32_t);
   void getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec);
   void startDumping(SNDFILE *);
-  void stopDumping();
+  void stop_dumping();
   bool check_clipped_and_clear();
   void set_dc_removal(bool iRemoveDC);
 

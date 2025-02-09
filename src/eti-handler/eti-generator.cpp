@@ -166,7 +166,7 @@ void etiGenerator::process_block(const std::vector<int16_t> & ibits, int blkno)
   {
     // import fibBits
     bool ficValid[4];
-    my_ficHandler->get_fibBits(fibBits, ficValid);
+    my_ficHandler->get_fib_bits(fibBits, ficValid);
 
     for (int i = 0; i < 4; i++)
     {
@@ -183,7 +183,7 @@ void etiGenerator::process_block(const std::vector<int16_t> & ibits, int blkno)
       }
     }
     Minor = 0;
-    my_ficHandler->get_CIFcount(&CIFCount_hi, &CIFCount_lo);
+    my_ficHandler->get_cif_count(&CIFCount_hi, &CIFCount_lo);
   }
 
   //	adding the MSC blocks. Blocks 5 .. 76 are "transformed"
@@ -216,14 +216,14 @@ void etiGenerator::process_block(const std::vector<int16_t> & ibits, int blkno)
     }
     //
     //	3 steps, init the vector, add the fib and add the CIF content
-    int offset = init_eti(theVector, CIFCount_hi, CIFCount_lo, Minor);
+    int offset = _init_eti(theVector, CIFCount_hi, CIFCount_lo, Minor);
     int base = offset;
     memcpy(&theVector[offset], fibVector[index_Out], 96);
     offset += 96;
     //
     //
     //	oef, here we go for handling the CIF
-    offset = process_CIF(temp, theVector, offset);
+    offset = _process_cif(temp, theVector, offset);
     //
     //	EOF - CRC
     //	The "data bytes" are stored in the range base .. offset
@@ -255,7 +255,7 @@ void etiGenerator::process_block(const std::vector<int16_t> & ibits, int blkno)
 }
 
 //	Copied  from dabtools:
-int32_t etiGenerator::init_eti(uint8_t * oEti, int16_t CIFCount_hi, int16_t CIFCount_lo, int16_t minor)
+int32_t etiGenerator::_init_eti(uint8_t * oEti, int16_t CIFCount_hi, int16_t CIFCount_lo, int16_t minor)
 {
   int fillPointer = 0;
   ChannelData data;
@@ -298,7 +298,7 @@ int32_t etiGenerator::init_eti(uint8_t * oEti, int16_t CIFCount_hi, int16_t CIFC
   int FL = 0;      // Frame Length
   for (int j = 0; j < 64; j++)
   {
-    my_ficHandler->get_channelInfo(&data, j);
+    my_ficHandler->get_channel_info(&data, j);
     if (data.in_use)
     {
       NST++;
@@ -320,7 +320,7 @@ int32_t etiGenerator::init_eti(uint8_t * oEti, int16_t CIFCount_hi, int16_t CIFC
   //	STC ()
   for (int j = 0; j < 64; j++)
   {
-    my_ficHandler->get_channelInfo(&data, j);
+    my_ficHandler->get_channel_info(&data, j);
     if (data.in_use)
     {
       int SCID = data.id;
@@ -374,7 +374,7 @@ public:
   uint8_t * output;
 };
 
-int32_t etiGenerator::process_CIF(const int16_t * input, uint8_t * output, int32_t offset)
+int32_t etiGenerator::_process_cif(const int16_t * input, uint8_t * output, int32_t offset)
 {
   uint8_t shiftRegister[9];
   std::vector<parameter *> theParameters;
@@ -382,7 +382,7 @@ int32_t etiGenerator::process_CIF(const int16_t * input, uint8_t * output, int32
   for (int i = 0; i < 64; i++)
   {
     ChannelData data;
-    my_ficHandler->get_channelInfo(&data, i);
+    my_ficHandler->get_channel_info(&data, i);
     if (data.in_use)
     {
       parameter * t = new parameter;
@@ -422,13 +422,13 @@ int32_t etiGenerator::process_CIF(const int16_t * input, uint8_t * output, int32
       }
       //	we need to save a reference to the parameters
       //	since we have to delete the instance later on
-      process_subCh(i, t, protTable[i], descrambler[i]);
+      _process_sub_channel(i, t, protTable[i], descrambler[i]);
     }
   }
   return offset;
 }
 
-void etiGenerator::process_subCh(int /*nr*/, parameter * p, Protection * prot, uint8_t * desc)
+void etiGenerator::_process_sub_channel(int /*nr*/, parameter * p, Protection * prot, uint8_t * desc)
 {
   std::unique_ptr<uint8_t[]> outVector{ new uint8_t[24 * p->bitRate] };
   if (!outVector)
@@ -463,14 +463,14 @@ void etiGenerator::postProcess(const uint8_t * /*theVector*/, int32_t /*offset*/
 {
 }
 
-bool etiGenerator::start_etiGenerator(const QString & f)
+bool etiGenerator::start_eti_generator(const QString & f)
 {
   reset();
   etiFile = fopen(f.toUtf8().data(), "w");
   return etiFile != nullptr;
 }
 
-void etiGenerator::stop_etiGenerator()
+void etiGenerator::stop_eti_generator()
 {
   if (etiFile != nullptr)
   {

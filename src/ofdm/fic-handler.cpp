@@ -121,8 +121,8 @@ FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
     local++;
   }
 
-  connect(this, &FicHandler::show_ficSuccess, iMr, &RadioInterface::slot_show_fic_success);
-  connect(this, &FicHandler::show_ficBER, iMr, &RadioInterface::slot_show_fic_ber);
+  connect(this, &FicHandler::show_fic_success, iMr, &RadioInterface::slot_show_fic_success);
+  connect(this, &FicHandler::show_fic_BER, iMr, &RadioInterface::slot_show_fic_ber);
 }
 
 /**
@@ -156,7 +156,7 @@ void FicHandler::process_block(const std::vector<int16_t> & iData, const int32_t
 
       if (index >= 2304)
       {
-        process_ficInput(ficno, &ficValid[ficno]);
+        _process_fic_input(ficno, &ficValid[ficno]);
         index = 0;
         ficno++;
       }
@@ -179,7 +179,7 @@ void FicHandler::process_block(const std::vector<int16_t> & iData, const int32_t
   *	In the next coding step, we will combine this function with the
   *	one above
   */
-void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
+void FicHandler::_process_fic_input(const int16_t iFicNo, bool * oValid)
 {
   std::array<int16_t, 3072 + 24> viterbiBlock;
   int16_t inputCount = 0;
@@ -212,7 +212,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
   fic_block++;
   if(fic_block == 40) // 4 blocks per frame, 10 frames per sec
   {
-    emit show_ficBER((float)fic_errors/fic_bits);
+    emit show_fic_BER((float)fic_errors / fic_bits);
     //printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, fic_bits, fic_errors, (float)fic_errors/fic_bits);
     fic_block = 0;
     fic_errors /= 2;
@@ -252,7 +252,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     if (!check_CRC_bits(reinterpret_cast<const uint8_t *>(p), 256))
     {
       *oValid = false;
-      emit show_ficSuccess(false);
+      emit show_fic_success(false);
       if (fic_decode_success_ratio > 0)
       {
         fic_decode_success_ratio--;
@@ -278,7 +278,7 @@ void FicHandler::process_ficInput(const int16_t iFicNo, bool * oValid)
     }
     ficLocker.unlock();
 
-    emit show_ficSuccess(true);
+    emit show_fic_success(true);
     FibDecoder::process_FIB(reinterpret_cast<const uint8_t *>(p), iFicNo);
 
     if (fic_decode_success_ratio < 10)
@@ -303,7 +303,7 @@ void FicHandler::restart()
   running.store(true);
 }
 
-void FicHandler::start_ficDump(FILE * f)
+void FicHandler::start_fic_dump(FILE * f)
 {
   if (ficDumpPointer != nullptr)
   {
@@ -312,7 +312,7 @@ void FicHandler::start_ficDump(FILE * f)
   ficDumpPointer = f;
 }
 
-void FicHandler::stop_ficDump()
+void FicHandler::stop_fic_dump()
 {
   ficLocker.lock();
   ficDumpPointer = nullptr;
@@ -320,7 +320,7 @@ void FicHandler::stop_ficDump()
 }
 
 
-void FicHandler::get_fibBits(uint8_t * v, bool * b)
+void FicHandler::get_fib_bits(uint8_t * v, bool * b)
 {
   for (int i = 0; i < 4 * 768; i++)
   {
@@ -333,7 +333,7 @@ void FicHandler::get_fibBits(uint8_t * v, bool * b)
   }
 }
 
-int FicHandler::getFicDecodeRatioPercent()
+int FicHandler::get_fic_decode_ratio_percent()
 {
     return fic_decode_success_ratio * 10;
 }

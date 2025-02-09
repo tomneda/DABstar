@@ -858,7 +858,7 @@ void FibDecoder::FIG0Extension19(const uint8_t * d)
       (void)regionId;
     }
 
-    if (!syncReached())
+    if (!sync_reached())
     {
       return;
     }
@@ -1468,7 +1468,7 @@ QString FibDecoder::announcements(uint16_t a)
 void FibDecoder::setCluster(DabConfig * localBase, int clusterId, int16_t serviceIndex, uint16_t asuFlags)
 {
 
-  if (!syncReached())
+  if (!sync_reached())
   {
     return;
   }
@@ -1550,12 +1550,12 @@ void FibDecoder::disconnect_channel()
   fibLocker.unlock();
 }
 
-bool FibDecoder::syncReached()
+bool FibDecoder::sync_reached()
 {
   return ensemble->isSynced;
 }
 
-int FibDecoder::getSubChId(const QString & s, uint32_t dummy_SId)
+int FibDecoder::get_sub_channel_id(const QString & s, uint32_t dummy_SId)
 {
   int serviceIndex = findService(s);
 
@@ -1577,7 +1577,7 @@ int FibDecoder::getSubChId(const QString & s, uint32_t dummy_SId)
   return subChId;
 }
 
-void FibDecoder::dataforAudioService(const QString & iS, Audiodata * opAD)
+void FibDecoder::get_data_for_audio_service(const QString & iS, Audiodata * opAD)
 {
   int serviceIndex;
 
@@ -1631,7 +1631,7 @@ void FibDecoder::dataforAudioService(const QString & iS, Audiodata * opAD)
   fibLocker.unlock();
 }
 
-void FibDecoder::dataforPacketService(const QString & iS, Packetdata * opPD, int16_t iSCIds)
+void FibDecoder::get_data_for_packet_service(const QString & iS, Packetdata * opPD, int16_t iSCIds)
 {
   int serviceIndex;
 
@@ -1681,7 +1681,7 @@ void FibDecoder::dataforPacketService(const QString & iS, Packetdata * opPD, int
   fibLocker.unlock();
 }
 
-std::vector<SServiceId> FibDecoder::getServices()
+std::vector<SServiceId> FibDecoder::get_services()
 {
   std::vector<SServiceId> services;
 
@@ -1726,7 +1726,7 @@ std::vector<SServiceId> FibDecoder::insert_sorted(const std::vector<SServiceId> 
   return k;
 }
 
-QString FibDecoder::findService(uint32_t SId, int SCIds)
+QString FibDecoder::find_service(uint32_t SId, int SCIds)
 {
   for (auto & service : ensemble->services)
   {
@@ -1738,7 +1738,7 @@ QString FibDecoder::findService(uint32_t SId, int SCIds)
   return "";
 }
 
-void FibDecoder::getParameters(const QString & s, uint32_t * p_SId, int * p_SCIds)
+void FibDecoder::get_parameters(const QString & s, uint32_t * p_SId, int * p_SCIds)
 {
   int serviceIndex = findService(s);
   if (serviceIndex == -1)
@@ -1765,7 +1765,7 @@ int32_t FibDecoder::get_ensembleId()
   }
 }
 
-QString FibDecoder::get_ensembleName()
+QString FibDecoder::get_ensemble_name()
 {
   if (ensemble->namePresent)
   {
@@ -1777,12 +1777,12 @@ QString FibDecoder::get_ensembleName()
   }
 }
 
-int32_t FibDecoder::get_CIFcount()
+int32_t FibDecoder::get_cif_count()
 {
   return CIFcount;
 }
 
-void FibDecoder::get_CIFcount(int16_t * h, int16_t * l)
+void FibDecoder::get_cif_count(int16_t * h, int16_t * l)
 {
   *h = CIFcount_hi;
   *l = CIFcount_lo;
@@ -1797,7 +1797,7 @@ uint8_t FibDecoder::get_ecc()
   return 0;
 }
 
-uint16_t FibDecoder::get_countryName()
+uint16_t FibDecoder::get_country_name()
 {
   return (get_ecc() << 8) | get_countryId();
 }
@@ -1996,7 +1996,7 @@ void FibDecoder::FIG0Extension10(const uint8_t * dd)
   }
 }
 
-void FibDecoder::set_epgData(uint32_t SId, int32_t theTime, const QString & theText, const QString & theDescr)
+void FibDecoder::set_epg_data(uint32_t SId, int32_t theTime, const QString & theText, const QString & theDescr)
 {
   for (int i = 0; i < 64; i++)
   {
@@ -2045,7 +2045,7 @@ std::vector<SEpgElement> FibDecoder::get_timeTable(const QString & service)
   return ensemble->services[index].epgData;
 }
 
-bool FibDecoder::has_timeTable(uint32_t SId)
+bool FibDecoder::has_time_table(uint32_t SId)
 {
   int index = find_service_index_from_SId(SId);
   std::vector<SEpgElement> t;
@@ -2057,7 +2057,7 @@ bool FibDecoder::has_timeTable(uint32_t SId)
   return t.size() > 2;
 }
 
-std::vector<SEpgElement> FibDecoder::find_epgData(uint32_t SId)
+std::vector<SEpgElement> FibDecoder::find_epg_data(uint32_t SId)
 {
   int index = find_service_index_from_SId(SId);
   std::vector<SEpgElement> res;
@@ -2104,7 +2104,7 @@ std::vector<SEpgElement> FibDecoder::find_epgData(uint32_t SId)
 //	packet address
 //	comp nr
 
-QStringList FibDecoder::basicPrint()
+QStringList FibDecoder::basic_print()
 {
   QStringList out;
   bool hasContents = false;
@@ -2308,7 +2308,7 @@ QString FibDecoder::packetData(int index)
 //
 //	We terminate the sequences with a ";", so that is why the
 //	actual number is 1 smaller
-int FibDecoder::scanWidth()
+int FibDecoder::scan_width()
 {
   QString s1 = audioHeader();
   QString s2 = packetHeader();
@@ -2317,12 +2317,12 @@ int FibDecoder::scanWidth()
   return l1.size() >= l2.size() ? l1.size() - 1 : l2.size() - 1;
 }
 
-uint32_t FibDecoder::julianDate()
+uint32_t FibDecoder::get_julian_date()
 {
   return mjd;
 }
 
-void FibDecoder::get_channelInfo(ChannelData * d, int n)
+void FibDecoder::get_channel_info(ChannelData * d, int n)
 {
   d->in_use = currentConfig->subChannels[n].inUse;
   d->id = currentConfig->subChannels[n].SubChId;
