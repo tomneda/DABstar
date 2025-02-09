@@ -141,7 +141,7 @@ private:
   void _eval_null_symbol_statistics(const std::vector<cmplx> & iFftBuffer);
   void _reset_null_symbol_statistics();
   void _display_iq_and_carr_vectors();
-  void _volk_mean_filter(float * ioValVec, const float * iValVec, const float iAlpha) const;
+  // void _volk_mean_filter(float * ioValVec, const float * iValVec, const float iAlpha) const;
   void _volk_mean_filter_sum(float & ioValSum, const float * iValVec, const float iAlpha) const;
 
   static cmplx _interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar);

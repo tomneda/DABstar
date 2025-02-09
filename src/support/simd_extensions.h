@@ -145,6 +145,7 @@ public:
   ~VolkVec()
   {
     volk_free(mVolkVec);
+    delete mpVolkTempVec;
   }
 
   const T &operator[](uint32_t iIdx) const
@@ -179,17 +180,83 @@ public:
     return mSize;
   }
 
-  // use SFINAE (Substitution Failure Is Not An Error) here
   template <typename U = T>
-  typename std::enable_if<std::is_same<U, float>::value, void>::type
-  norm(const VolkVec<cmplx> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline make_norm(const VolkVec<cmplx> & iVec)
   {
     volk_32fc_magnitude_squared_32f_a(mVolkVec, iVec, mSize);
   }
 
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline make_sqrt(const VolkVec<float> & iVec)
+  {
+    volk_32f_sqrt_32f_a(mVolkVec, iVec, mSize);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline make_arg(const VolkVec<cmplx> & iVec)
+  {
+    volk_32fc_s32f_atan2_32f_a(mVolkVec, iVec, 1.0f /*no weigth*/, mSize); // this is not really faster than a simple loop
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline wrap_4QPSK_to_phase_zero(const VolkVec<float> & iVec)
+  {
+    volk_32f_s32f_s32f_mod_range_32f_a(mVolkVec, iVec, 0.0f, F_M_PI_2, mSize);
+    volk_32f_s32f_add_32f_a(mVolkVec, mVolkVec, -F_M_PI_4, mSize);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline multiply_vector_and_scalar(const VolkVec<float> & iVec, float iScalar)
+  {
+    volk_32f_s32f_multiply_32f_a(mVolkVec, iVec, iScalar, mSize);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline accumulate_vector(const VolkVec<float> & iVec)
+  {
+    volk_32f_x2_add_32f_a(mVolkVec, mVolkVec, iVec, mSize);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline make_square(const VolkVec<float> & iVec)
+  {
+    volk_32f_x2_multiply_32f_a(mVolkVec, iVec, iVec, mSize);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline mean_filter(const float * iVec, const float iAlpha) const
+  {
+    T * volkTempVec = _get_temp_vector();
+
+    // ioVal += iAlpha * (iVal - ioVal);
+    volk_32f_x2_subtract_32f_a(volkTempVec, iVec, mVolkVec, mSize);     // temp = (iVal - ioVal)
+    volk_32f_s32f_multiply_32f_a(volkTempVec, volkTempVec, iAlpha, mSize);  // temp = alpha * temp
+    volk_32f_x2_add_32f_a(mVolkVec, mVolkVec, volkTempVec, mSize);      // ioVal += temp
+  }
+
+
+
 private:
   const uint32_t mSize;
   T * mVolkVec = nullptr;
+  mutable VolkVec<T> * mpVolkTempVec = nullptr;
+
+  T * _get_temp_vector() const
+  {
+     if (mpVolkTempVec == nullptr)
+     {
+       mpVolkTempVec = new VolkVec<T>(mSize);
+     }
+     return mpVolkTempVec->get();
+  }
 
   friend VolkVec<T> operator*(const VolkVec<T> &lhs, const VolkVec<T> &rhs)
   {
@@ -204,11 +271,6 @@ private:
     return result;
   }
 };
-
-
-
-
-
 
 
 

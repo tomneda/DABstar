@@ -163,39 +163,37 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
 
   // -------------------------------
-  // mVolkFftBinRawVecPhaseCorrAbsSq = norm_per_bin(mVolkFftBinRawVecPhaseCorr)
-  // mVolkFftBinRawVecPhaseCorrAbs   = abs (mVolkFftBinRawVecPhaseCorr)
-  volk_32fc_magnitude_squared_32f_a(mVolkFftBinRawVecPhaseCorrAbsSq, mVolkFftBinRawVecPhaseCorr, cK);
-  volk_32f_sqrt_32f_a(mVolkFftBinRawVecPhaseCorrAbs, mVolkFftBinRawVecPhaseCorrAbsSq, cK);
+  mVolkFftBinRawVecPhaseCorrAbsSq.make_norm(mVolkFftBinRawVecPhaseCorr);
+  mVolkFftBinRawVecPhaseCorrAbs.make_sqrt(mVolkFftBinRawVecPhaseCorrAbsSq);
   // -------------------------------
 
 
   // -------------------------------
   // mVolkFftBinRawVecPhaseCorrArg = arg_per_bin(mVolkFftBinRawVecPhaseCorr);
-  volk_32fc_s32f_atan2_32f_a(mVolkFftBinRawVecPhaseCorrArg, mVolkFftBinRawVecPhaseCorr, 1.0f /*no weigth*/, cK); // this is not really faster than a simple loop
+  mVolkFftBinRawVecPhaseCorrArg.make_arg(mVolkFftBinRawVecPhaseCorr);
   // -------------------------------
 
   // -------------------------------
   // mVolkFftBinAbsPhaseCorr = turn_phase_to_first_quadrant(mVolkFftBinRawVecPhaseCorrArg) - PI/4;
-  volk_32f_s32f_s32f_mod_range_32f_a(mVolkFftBinAbsPhaseCorr, mVolkFftBinRawVecPhaseCorrArg, 0.0f, F_M_PI_2, cK);
-  volk_32f_s32f_add_32f_a(mVolkFftBinAbsPhaseCorr, mVolkFftBinAbsPhaseCorr, -F_M_PI_4, cK);
-
+  mVolkFftBinAbsPhaseCorr.wrap_4QPSK_to_phase_zero(mVolkFftBinRawVecPhaseCorrArg);
 
   constexpr float ALPHA = 0.005f;
 
   // -------------------------------
   // mVolkIntegAbsPhaseVector = limit(mVolkIntegAbsPhaseVector + mVolkFftBinAbsPhaseCorr * 0.2f * ALPHA)
   // Integrate phase error to perform the phase correction in the next OFDM symbol.
-  volk_32f_s32f_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhaseCorr, 0.2f * ALPHA, cK); // weighting
-  volk_32f_x2_add_32f_a(mVolkIntegAbsPhaseVector, mVolkIntegAbsPhaseVector, mVolkTemp1FloatVec, cK); // integrator
+  // volk_32f_s32f_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhaseCorr, 0.2f * ALPHA, cK); // weighting
+  mVolkTemp1FloatVec.multiply_vector_and_scalar(mVolkFftBinAbsPhaseCorr, 0.2f * ALPHA); // weighting
+  mVolkIntegAbsPhaseVector.accumulate_vector(mVolkTemp1FloatVec); // integrator
   LOOP_OVER_K limit_symmetrically(mVolkIntegAbsPhaseVector[nomCarrIdx], F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
   // -------------------------------
 
 
   // -------------------------------
   // mVolkStdDevSqPhaseVector = mean_per_bin(mVolkFftBinAbsPhaseCorr^2)
-  volk_32f_x2_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinAbsPhaseCorr, mVolkFftBinAbsPhaseCorr, cK); // variance
-  _volk_mean_filter(mVolkStdDevSqPhaseVector, mVolkTemp1FloatVec, ALPHA);
+  mVolkTemp1FloatVec.make_square(mVolkFftBinAbsPhaseCorr); // variance
+  mVolkStdDevSqPhaseVector.mean_filter(mVolkTemp1FloatVec, ALPHA);
+  // _volk_mean_filter(mVolkStdDevSqPhaseVector, mVolkTemp1FloatVec, ALPHA);
   // -------------------------------
 
 
@@ -210,8 +208,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // mVolkMeanLevelVector = mean_per_bin  (mVolkFftBinRawVecPhaseCorrAbs)
   // mVolkMeanPowerVector = mean_per_bin  (mVolkFftBinRawVecPhaseCorrAbsSq)
   // mMeanPowerOvrAll     = mean_over_bins(mVolkFftBinRawVecPhaseCorrAbsSq)
-  _volk_mean_filter(mVolkMeanLevelVector, mVolkFftBinRawVecPhaseCorrAbs, ALPHA);
-  _volk_mean_filter(mVolkMeanPowerVector, mVolkFftBinRawVecPhaseCorrAbsSq, ALPHA);
+  mVolkMeanLevelVector.mean_filter(mVolkFftBinRawVecPhaseCorrAbs, ALPHA);
+  mVolkMeanPowerVector.mean_filter(mVolkFftBinRawVecPhaseCorrAbsSq, ALPHA);
   _volk_mean_filter_sum(mMeanPowerOvrAll, mVolkFftBinRawVecPhaseCorrAbsSq, ALPHA / (float)cK);
   // -------------------------------
 
@@ -491,14 +489,6 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     case ECarrierPlotType::NULL_OVR_POW:    mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mVolkMeanNullPowerWithoutTII[nomCarrIdx] / mMeanPowerOvrAll); break;
     }
   } // for (nomCarrIdx...
-}
-
-void OfdmDecoder::_volk_mean_filter(float * ioValVec, const float * iValVec, const float iAlpha) const
-{
-  // ioVal += iAlpha * (iVal - ioVal);
-  volk_32f_x2_subtract_32f_a(mVolkTemp1FloatVec, iValVec, ioValVec, cK);             // temp1 = (iVal - ioVal)
-  volk_32f_s32f_multiply_32f_a(mVolkTemp2FloatVec, mVolkTemp1FloatVec, iAlpha, cK);  // temp2 = alpha * temp1
-  volk_32f_x2_add_32f_a(ioValVec, ioValVec, mVolkTemp2FloatVec, cK);                 // ioVal += temp2
 }
 
 void OfdmDecoder::_volk_mean_filter_sum(float & ioValSum, const float * iValVec, const float iAlpha) const
