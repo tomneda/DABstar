@@ -302,23 +302,23 @@ public:
   typename std::enable_if_t<std::is_same_v<U, float>, void>
   inline sq_dist_to_nearest_constellation_point(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec, const SimdVec<float> & iMeanLevelVec, float iAlpha)
   {
-    T * const volkTempRealVec = _get_temp1_vector();
-    T * const volkTempImagVec = _get_temp2_vector();
+    T * const volkTemp1Vec = _get_temp1_vector();
+    T * const volkTemp2Vec = _get_temp2_vector();
 
     // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
-    simd_abs(volkTempRealVec, iLevelRealVec, mSize);
-    simd_abs(volkTempImagVec, iLevelImagVec, mSize);
+    simd_abs(volkTemp1Vec, iLevelRealVec, mSize);
+    simd_abs(volkTemp2Vec, iLevelImagVec, mSize);
 
     // TODO: search for a more SIMD way
     for (uint32_t idx = 0; idx < mSize; ++idx)
     {
       const float meanLevelAtAxisPerBin = iMeanLevelVec[idx] * F_SQRT1_2;
       const cmplx meanLevelAtAxisPerBinCplx = cmplx(meanLevelAtAxisPerBin, meanLevelAtAxisPerBin);
-      const cmplx levelAtAxisPerBinAbsCplx = cmplx(volkTempRealVec[idx], volkTempImagVec[idx]);
+      const cmplx levelAtAxisPerBinAbsCplx = cmplx(volkTemp1Vec[idx], volkTemp2Vec[idx]);
 
-      volk_32fc_x2_square_dist_32f_a(volkTempRealVec, &levelAtAxisPerBinAbsCplx, &meanLevelAtAxisPerBinCplx, 1);
+      volk_32fc_x2_square_dist_32f_a(volkTemp1Vec, &levelAtAxisPerBinAbsCplx, &meanLevelAtAxisPerBinCplx, 1);
 
-      ::mean_filter(mVolkVec[idx], volkTempRealVec[0], iAlpha);
+      ::mean_filter(mVolkVec[idx], volkTemp1Vec[0], iAlpha);
     }
   }
 
@@ -351,19 +351,6 @@ private:
       mpVolkTemp2Vec = new SimdVec<T>(mSize);
     }
     return mpVolkTemp2Vec->get();
-  }
-
-  friend SimdVec<T> operator*(const SimdVec<T> &lhs, const SimdVec<T> &rhs)
-  {
-    assert (lhs.mSize == rhs.mSize);
-    SimdVec<T> result(lhs.mSize);
-
-    for (size_t i = 0; i < lhs.mSize; ++i)
-    {
-      result.mVolkVec[i] = lhs.mVolkVec[i] * rhs.mVolkVec[i];
-    }
-
-    return result;
   }
 };
 
