@@ -21,18 +21,21 @@
 #include "glob_enums.h"
 #include "freq-interleaver.h"
 #include "ringbuffer.h"
+#include "simd_extensions.h"
 #include <QObject>
 #include <cstdint>
 #include <vector>
+#include <volk/volk.h>
 
 class RadioInterface;
+
 
 class OfdmDecoder : public QObject
 {
 Q_OBJECT
 public:
   OfdmDecoder(RadioInterface *, uint8_t, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
-  ~OfdmDecoder() override;
+  ~OfdmDecoder() override = default;
 
   struct SLcdData
   {
@@ -83,34 +86,34 @@ private:
   std::vector<cmplx> mIqVector;
   std::vector<float> mCarrVector;
 
-  size_t mVolkAlignment = 0;
-  cmplx * mVolkFftBinRawVecPhaseCorr = nullptr;
-  cmplx * mVolkFftBinRawVec = nullptr;
+  VolkVec<cmplx>mVolkFftBinRawVecPhaseCorr{cK};
+  VolkVec<cmplx> mVolkFftBinRawVec{cK};
 
-  cmplx * mVolkPhaseReferenceNormedVec    = nullptr;
-  float * mVolkWeightPerBin               = nullptr;
-  float * mVolkFftBinAbsPhaseCorr         = nullptr;
-  float * mVolkFftBinRawVecPhaseCorrArg   = nullptr;
-  float * mVolkFftBinRawVecPhaseCorrAbs   = nullptr;
-  float * mVolkFftBinRawVecPhaseCorrAbsSq = nullptr;
-  float * mVolkFftBinRawVecPhaseCorrReal  = nullptr;
-  float * mVolkFftBinRawVecPhaseCorrImag  = nullptr;
-  float * mVolkTemp1FloatVec              = nullptr;
-  float * mVolkTemp2FloatVec              = nullptr;
-  float * mVolkViterbiFloatVecReal        = nullptr;
-  float * mVolkViterbiFloatVecImag        = nullptr;
+  VolkVec<cmplx> mVolkPhaseReferenceNormedVec{cK};
+  VolkVec<float> mVolkWeightPerBin{cK};
+  VolkVec<float> mVolkFftBinAbsPhaseCorr{cK};
+  VolkVec<float> mVolkFftBinRawVecPhaseCorrArg{cK};
+  VolkVec<float> mVolkFftBinRawVecPhaseCorrAbs{cK};
+  VolkVec<float> mVolkFftBinRawVecPhaseCorrAbsSq{cK};
+  VolkVec<float> mVolkFftBinRawVecPhaseCorrReal{cK};
+  VolkVec<float> mVolkFftBinRawVecPhaseCorrImag{cK};
+  VolkVec<float> mVolkTemp1FloatVec{cK};
+  VolkVec<float> mVolkTemp2FloatVec{cK};
+  VolkVec<float> mVolkViterbiFloatVecReal{cK};
+  VolkVec<float> mVolkViterbiFloatVecImag{cK};
 
-  cmplx * mVolkNomCarrierVec = nullptr;
-  cmplx * mVolkPhaseReference = nullptr;
-  float * mVolkMeanNullPowerWithoutTII = nullptr;
-  float * mVolkStdDevSqPhaseVector = nullptr;
-  float * mVolkMeanLevelVector = nullptr;
-  float * mVolkMeanPowerVector = nullptr;
-  float * mVolkMeanSigmaSqVector = nullptr;
-  float * mVolkMeanNullLevel = nullptr;
-  float * mVolkIntegAbsPhaseVector = nullptr;
-  int16_t * mVolkMapNomToRealCarrIdx = nullptr;
-  int16_t * mVolkMapNomToFftIdx = nullptr;
+  VolkVec<cmplx> mVolkNomCarrierVec{cK};
+  VolkVec<cmplx> mVolkPhaseReference{cK};
+
+  VolkVec<float> mVolkMeanNullPowerWithoutTII{cK};
+  VolkVec<float> mVolkStdDevSqPhaseVector{cK};
+  VolkVec<float> mVolkMeanLevelVector{cK};
+  VolkVec<float> mVolkMeanPowerVector{cK};
+  VolkVec<float> mVolkMeanSigmaSqVector{cK};
+  VolkVec<float> mVolkMeanNullLevel{cK};
+  VolkVec<float> mVolkIntegAbsPhaseVector{cK};
+  VolkVec<int16_t> mVolkMapNomToRealCarrIdx{cK};
+  VolkVec<int16_t> mVolkMapNomToFftIdx{cK};
 
 
   float mMeanPowerOvrAll = 1.0f;

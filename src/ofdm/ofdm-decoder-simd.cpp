@@ -19,13 +19,12 @@
 #include <volk/volk.h>
 
 // shortcut syntax to get better overview
-#define VOLK_MALLOC(type_, size_)    (type_ *)volk_malloc((size_) * sizeof(type_), mVolkAlignment)
+// #define VOLK_MALLOC(type_, size_)    (type_ *)volk_malloc((size_) * sizeof(type_), mVolkAlignment)
 #define LOOP_OVER_K                  for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
 
 
 OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer)
   : mpRadioInterface(ipMr)
-  // , mDabPar(DabParams(iDabMode).get_dab_par())
   , mFreqInterleaver(iDabMode)
   , mpIqBuffer(ipIqBuffer)
   , mpCarrBuffer(ipCarrBuffer)
@@ -34,34 +33,6 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mCarrVector.resize(cK);
 
   qInfo() << "Use VOLK machine:" << volk_get_machine();
-
-  mVolkAlignment = volk_get_alignment();
-
-  mVolkPhaseReference             = VOLK_MALLOC(cmplx, cK);
-  mVolkNomCarrierVec              = VOLK_MALLOC(cmplx, cK);
-  mVolkMeanNullPowerWithoutTII    = VOLK_MALLOC(float, cK);
-  mVolkStdDevSqPhaseVector        = VOLK_MALLOC(float, cK);
-  mVolkMeanLevelVector            = VOLK_MALLOC(float, cK);
-  mVolkMeanPowerVector            = VOLK_MALLOC(float, cK);
-  mVolkMeanSigmaSqVector          = VOLK_MALLOC(float, cK);
-  mVolkMeanNullLevel              = VOLK_MALLOC(float, cK);
-  mVolkIntegAbsPhaseVector        = VOLK_MALLOC(float, cK);
-  mVolkMapNomToRealCarrIdx        = VOLK_MALLOC(int16_t, cK);
-  mVolkMapNomToFftIdx             = VOLK_MALLOC(int16_t, cK);
-  mVolkFftBinRawVec               = VOLK_MALLOC(cmplx, cK);
-  mVolkFftBinRawVecPhaseCorr      = VOLK_MALLOC(cmplx, cK);
-  mVolkPhaseReferenceNormedVec    = VOLK_MALLOC(cmplx, cK);
-  mVolkWeightPerBin               = VOLK_MALLOC(float , cK);
-  mVolkFftBinAbsPhaseCorr         = VOLK_MALLOC(float, cK);
-  mVolkFftBinRawVecPhaseCorrArg   = VOLK_MALLOC(float, cK);
-  mVolkFftBinRawVecPhaseCorrAbs   = VOLK_MALLOC(float, cK);
-  mVolkFftBinRawVecPhaseCorrAbsSq = VOLK_MALLOC(float, cK);
-  mVolkFftBinRawVecPhaseCorrReal  = VOLK_MALLOC(float, cK);
-  mVolkFftBinRawVecPhaseCorrImag  = VOLK_MALLOC(float, cK);
-  mVolkTemp1FloatVec              = VOLK_MALLOC(float, cK);
-  mVolkTemp2FloatVec              = VOLK_MALLOC(float, cK);
-  mVolkViterbiFloatVecReal        = VOLK_MALLOC(float, cK);
-  mVolkViterbiFloatVecImag        = VOLK_MALLOC(float, cK);
 
   for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
@@ -99,45 +70,16 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   reset();
 }
 
-OfdmDecoder::~OfdmDecoder()
-{
-  volk_free(mVolkViterbiFloatVecImag);
-  volk_free(mVolkViterbiFloatVecReal);
-  volk_free(mVolkTemp2FloatVec);
-  volk_free(mVolkTemp1FloatVec);
-  volk_free(mVolkFftBinAbsPhaseCorr);
-  volk_free(mVolkFftBinRawVecPhaseCorrImag);
-  volk_free(mVolkFftBinRawVecPhaseCorrReal);
-  volk_free(mVolkFftBinRawVecPhaseCorrAbsSq);
-  volk_free(mVolkFftBinRawVecPhaseCorrAbs);
-  volk_free(mVolkFftBinRawVecPhaseCorrArg);
-  volk_free(mVolkWeightPerBin);
-  volk_free(mVolkPhaseReferenceNormedVec);
-  volk_free(mVolkFftBinRawVecPhaseCorr);
-  volk_free(mVolkFftBinRawVec);
-  volk_free(mVolkIntegAbsPhaseVector);
-  volk_free(mVolkMapNomToFftIdx);
-  volk_free(mVolkMapNomToRealCarrIdx);
-  volk_free(mVolkMeanNullLevel);
-  volk_free(mVolkMeanSigmaSqVector);
-  volk_free(mVolkMeanPowerVector);
-  volk_free(mVolkMeanLevelVector);
-  volk_free(mVolkStdDevSqPhaseVector);
-  volk_free(mVolkMeanNullPowerWithoutTII);
-  volk_free(mVolkNomCarrierVec);
-  volk_free(mVolkPhaseReference);
-}
-
 void OfdmDecoder::reset()
 {
-  std::fill_n(mVolkPhaseReference, cK, cmplx(0.0f, 0.0f));
-  std::fill_n(mVolkNomCarrierVec, cK, cmplx(0.0f, 0.0f));
-  std::fill_n(mVolkMeanNullPowerWithoutTII, cK, 0.0f);
-  std::fill_n(mVolkStdDevSqPhaseVector, cK, 0.0f);
-  std::fill_n(mVolkMeanLevelVector, cK, 0.0f);
-  std::fill_n(mVolkMeanPowerVector, cK, 0.0f);
-  std::fill_n(mVolkMeanSigmaSqVector, cK, 0.0f);
-  std::fill_n(mVolkIntegAbsPhaseVector, cK, 0.0f);
+  mVolkPhaseReference.fill_zeros();
+  mVolkNomCarrierVec.fill_zeros();
+  mVolkMeanNullPowerWithoutTII.fill_zeros();
+  mVolkStdDevSqPhaseVector.fill_zeros();
+  mVolkMeanLevelVector.fill_zeros();
+  mVolkMeanPowerVector.fill_zeros();
+  mVolkMeanSigmaSqVector.fill_zeros();
+  mVolkIntegAbsPhaseVector.fill_zeros();
 
   mMeanPowerOvrAll = 1.0f;
 
@@ -189,7 +131,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // current runtime: 75us (with no VOLK: 240us)
   // mTimeMeas.trigger_begin();
   // we have 1536 carriers, this is 2^10 + 2^9 (1024 + 512), if there is a need to split it to 2^n
-  assert(volk_is_aligned(mVolkPhaseReference)); // example how to test correct alignment
+  // assert(volk_is_aligned(mVolkPhaseReference)); // example how to test correct alignment
 
   mDcFftLast = mDcFft;
   mDcFft = iFftBuffer[0];
@@ -464,7 +406,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iFftBu
 
 void OfdmDecoder::_reset_null_symbol_statistics()
 {
-  std::fill_n(mVolkMeanNullLevel, cK, 0.0f);
+  mVolkMeanNullLevel.fill_zeros();
   mAbsNullLevelMin = 0.0f;
   mAbsNullLevelGain = 0.0f;
 }

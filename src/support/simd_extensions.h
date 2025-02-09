@@ -22,6 +22,7 @@
 #include "glob_defs.h"
 #include <pmmintrin.h>
 //#include <immintrin.h>
+#include <volk/volk.h>
 
 // we try to use the older SSE3 commands to let also older HW be working with that
 
@@ -113,5 +114,102 @@ inline void simd_phase(float * opOut, const cmplx * ipInp, size_t size)
   }
 }
 #endif
+
+
+
+template<typename T>
+class VolkVec
+{
+public:
+  explicit VolkVec(uint32_t iSize) : mSize(iSize)
+  {
+    mVolkVec = (T *)volk_malloc((iSize) * sizeof(T), volk_get_alignment());
+  }
+
+  VolkVec(VolkVec&& other) noexcept : mSize(other.mSize), mVolkVec(other.mVolkVec)
+  {
+    other.mVolkVec = nullptr; // Null out the moved-from pointer
+  }
+
+  VolkVec & operator=(VolkVec&& other) noexcept
+  {
+    if (this != &other)
+    {
+      volk_free(mVolkVec);
+      mVolkVec = other.mVolkVec;
+      other.mVolkVec = nullptr;
+    }
+    return *this;
+  }
+
+  ~VolkVec()
+  {
+    volk_free(mVolkVec);
+  }
+
+  const T &operator[](uint32_t iIdx) const
+  {
+    assert(iIdx < mSize);
+    return mVolkVec[iIdx];
+  }
+
+  T &operator[](uint32_t iIdx)
+  {
+    assert(iIdx < mSize);
+    return mVolkVec[iIdx];
+  }
+
+  void fill_zeros()
+  {
+    std::fill_n(mVolkVec, mSize, T());
+  }
+
+  [[nodiscard]] T * get() const
+  {
+    return mVolkVec;
+  }
+
+  operator T*() const
+  {
+    return mVolkVec;
+  }
+
+  [[nodiscard]] uint32_t size() const
+  {
+    return mSize;
+  }
+
+  // use SFINAE (Substitution Failure Is Not An Error) here
+  template <typename U = T>
+  typename std::enable_if<std::is_same<U, float>::value, void>::type
+  norm(const VolkVec<cmplx> & iVec)
+  {
+    volk_32fc_magnitude_squared_32f_a(mVolkVec, iVec, mSize);
+  }
+
+private:
+  const uint32_t mSize;
+  T * mVolkVec = nullptr;
+
+  friend VolkVec<T> operator*(const VolkVec<T> &lhs, const VolkVec<T> &rhs)
+  {
+    assert (lhs.mSize == rhs.mSize);
+    VolkVec<T> result(lhs.mSize);
+
+    for (size_t i = 0; i < lhs.mSize; ++i)
+    {
+      result.mVolkVec[i] = lhs.mVolkVec[i] * rhs.mVolkVec[i];
+    }
+
+    return result;
+  }
+};
+
+
+
+
+
+
+
 
 #endif //SIMD_EXTENSIONS_H
