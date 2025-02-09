@@ -256,8 +256,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // -------------------------------
   // apply weight w2 to be conform to the viterbi input range
   const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
-  volk_32f_s32f_multiply_32f_a(mVolkViterbiFloatVecReal, mVolkViterbiFloatVecReal, w2, cK);
-  volk_32f_s32f_multiply_32f_a(mVolkViterbiFloatVecImag, mVolkViterbiFloatVecImag, w2, cK);
+  mVolkViterbiFloatVecReal.multiply_scalar(w2);
+  mVolkViterbiFloatVecImag.multiply_scalar(w2);
   // -------------------------------
 
   // extract coding bits

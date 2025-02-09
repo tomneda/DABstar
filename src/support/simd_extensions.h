@@ -189,6 +189,13 @@ public:
   }
 
   template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline multiply_scalar(const float iScalar)
+  {
+    volk_32f_s32f_multiply_32f_a(mVolkVec, mVolkVec, iScalar, mSize);
+  }
+
+  template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, cmplx>, void>
   inline multiply_conj(const SimdVec<cmplx> & iVec1, const SimdVec<cmplx> & iVec2)
   {
