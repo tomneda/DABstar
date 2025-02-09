@@ -318,7 +318,7 @@ private:
   void stop_etiHandler();
   static QString check_and_create_dir(const QString &);
 
-  void startAudioservice(Audiodata *);
+  void startAudioservice(const Audiodata * const ad);
   void startPacketservice(const QString &);
   void start_scanning();
   void stop_scanning();

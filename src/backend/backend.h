@@ -60,7 +60,7 @@ class Backend
 #endif
 
 public:
-  Backend(RadioInterface * ipRI, DescriptorType * ipDescType, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, RingBuffer<uint8_t> *, FILE *, int);
+  Backend(RadioInterface * ipRI, const DescriptorType * ipDescType, RingBuffer<int16_t> * ipoAudiobuffer, RingBuffer<uint8_t> * ipoDatabuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag);
   ~Backend();
 
   int32_t process(const int16_t * iV, int16_t cnt);

@@ -2379,11 +2379,12 @@ void RadioInterface::start_service(SDabService & s)
 //  model.setData(ind, QFont(theFont, pt, -1, italic), Qt::FontRole);
 //}
 
-void RadioInterface::startAudioservice(Audiodata * ad)
+void RadioInterface::startAudioservice(const Audiodata * const ad)
 {
   mChannel.currentService.valid = true;
 
   (void)mpDabProcessor->set_audio_channel(ad, mpAudioBufferFromDecoder, nullptr, FORE_GROUND);
+
   for (int i = 1; i < 10; i++)
   {
     Packetdata pd;

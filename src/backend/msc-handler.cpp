@@ -120,7 +120,7 @@ void MscHandler::stop_service(const int iSubChId, const int iFlag)
   mMutex.unlock();
 }
 
-bool MscHandler::set_channel(DescriptorType * d, RingBuffer<int16_t> * ipoAudioBuffer, RingBuffer<uint8_t> * ipoDataBuffer, FILE * dump, int flag)
+bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<int16_t> * ipoAudioBuffer, RingBuffer<uint8_t> * ipoDataBuffer, FILE * dump, int flag)
 {
   fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
   //	locker. lock();

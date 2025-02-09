@@ -37,7 +37,7 @@ class Protection;
 class BackendDeconvolver
 {
 public:
-  explicit BackendDeconvolver(DescriptorType * d);
+  explicit BackendDeconvolver(const DescriptorType * d);
   ~BackendDeconvolver();
 
   void deconvolve(const int16_t * rawBits_in, int32_t length, uint8_t * outData);

@@ -47,7 +47,7 @@ class DataProcessor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  DataProcessor(RadioInterface * mr, Packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
+  DataProcessor(RadioInterface * mr, const Packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
   ~DataProcessor();
 
   void add_to_frame(const std::vector<uint8_t> &);

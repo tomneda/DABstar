@@ -548,7 +548,7 @@ void DabProcessor::stop_service(int subChId, int flag)
   }
 }
 
-bool DabProcessor::set_audio_channel(Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag)
+bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag)
 {
   if (!mScanMode)
   {

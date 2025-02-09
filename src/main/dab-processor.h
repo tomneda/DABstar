@@ -114,7 +114,7 @@ public:
   void reset_Services();
   void stop_service(DescriptorType *, int);
   void stop_service(int, int);
-  bool set_audio_channel(Audiodata *, RingBuffer<int16_t> *, FILE *, int);
+  bool set_audio_channel(const Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag);
   bool set_data_channel(Packetdata *, RingBuffer<uint8_t> *, int);
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);

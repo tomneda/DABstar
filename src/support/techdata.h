@@ -42,7 +42,7 @@ public:
   TechData(RadioInterface *, QSettings *, RingBuffer<int16_t> * ipAudioBuffer);
   ~TechData() override;
 
-  void show_serviceData(Audiodata *);
+  void show_serviceData(const Audiodata * ad);
   void cleanUp();
   void show();
   void hide();
