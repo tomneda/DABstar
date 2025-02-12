@@ -345,3 +345,4 @@ As I use some icons, I get them from [FlatIcon](https://www.flaticon.com/). The 
 - <a href="https://www.flaticon.com/free-icons/spectrum" title="spectrum icons">Spectrum icons created by JunGSa - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/spectrum" title="spectrum icons">Spectrum icons created by Eucalyp - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/target" title="target icons">Target icons created by Pixel perfect - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/eject-button" title="eject button icons">Eject button icons created by Yudhi Restu - Flaticon</a>

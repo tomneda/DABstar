@@ -368,6 +368,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
     }
   }
 
+  connect(btnEject, &QPushButton::clicked, this, [this](bool){ _slot_new_device(mDeviceSelector.get_device_name()); });
   connect(configButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_config_button);
 
   if (mpSH->read(SettingHelper::spectrumVisible).toBool())
@@ -1783,6 +1784,7 @@ void RadioInterface::_show_hide_buttons(const bool iShow)
     btnScanning->show();
     cmbChannelSelector->show();
     btnToggleFavorite->show();
+    btnEject->hide();
   }
   else
   {
@@ -1790,6 +1792,7 @@ void RadioInterface::_show_hide_buttons(const bool iShow)
     btnScanning->hide();
     cmbChannelSelector->hide();
     btnToggleFavorite->hide();
+    btnEject->show();
   }
 #else
   mConfig.dumpButton->setEnabled(iShow);
@@ -2059,7 +2062,7 @@ void RadioInterface::connect_gui()
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   connect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
-  connect(tiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
+  connect(btnTiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
 }
 
 void RadioInterface::disconnect_gui()
@@ -2083,7 +2086,7 @@ void RadioInterface::disconnect_gui()
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   disconnect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
-  disconnect(tiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
+  disconnect(btnTiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
 }
 
 void RadioInterface::closeEvent(QCloseEvent * event)
@@ -2434,9 +2437,6 @@ void RadioInterface::_slot_handle_prev_service_button()
 void RadioInterface::_slot_handle_next_service_button()
 {
   mpServiceListHandler->jump_entries(+1);
-//  disconnect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
-//  handle_serviceButton(FORWARD);
-//  connect(btnNextService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_next_service_button);
 }
 
 void RadioInterface::_slot_handle_target_service_button()
@@ -2549,7 +2549,6 @@ void RadioInterface::start_channel(const QString & iChannel)
   if (!mIsScanning)
   {
     mpSH->write(SettingHelper::channel, iChannel);
-    // const int32_t switchDelay = mpSH->read(SettingHelper::switchDelay).toInt();
     mEpgTimer.start(cEpgTimeoutMs);
   }
 }
@@ -3418,9 +3417,10 @@ void RadioInterface::setup_ui_colors()
   btnSpectrumScope->setStyleSheet(get_bg_style_sheet({ 197, 69, 240 }));
   btnPrevService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
   btnNextService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
+  btnEject->setStyleSheet(get_bg_style_sheet({ 118, 60, 162 }));
   btnTargetService->setStyleSheet(get_bg_style_sheet({ 33, 106, 105 }));
   btnToggleFavorite->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
-  tiiButton->setStyleSheet(get_bg_style_sheet({ 255, 100, 0 }));
+  btnTiiButton->setStyleSheet(get_bg_style_sheet({ 255, 100, 0 }));
 
   _set_http_server_button(false);
 }
@@ -3451,6 +3451,8 @@ void RadioInterface::_slot_set_static_button_style()
   btnPrevService->setFixedSize(QSize(32, 32));
   btnNextService->setIconSize(QSize(24, 24));
   btnNextService->setFixedSize(QSize(32, 32));
+  btnEject->setIconSize(QSize(24, 24));
+  btnEject->setFixedSize(QSize(32, 32));
   btnTargetService->setIconSize(QSize(24, 24));
   btnTargetService->setFixedSize(QSize(32, 32));
   btnTechDetails->setIconSize(QSize(24, 24));
@@ -3463,8 +3465,8 @@ void RadioInterface::_slot_set_static_button_style()
   btnSpectrumScope->setFixedSize(QSize(32, 30));
   configButton->setIconSize(QSize(24, 24));
   configButton->setFixedSize(QSize(32, 30));
-  tiiButton->setIconSize(QSize(24, 24));
-  tiiButton->setFixedSize(QSize(32, 30));
+  btnTiiButton->setIconSize(QSize(24, 24));
+  btnTiiButton->setFixedSize(QSize(32, 30));
   btnScanning->setIconSize(QSize(24, 24));
   btnScanning->setFixedSize(QSize(32, 30));
   btnScanning->init(":res/icons/scan24.png", 3, 1);

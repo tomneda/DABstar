@@ -28,11 +28,13 @@ public:
   QStringList get_device_name_list() const;
   std::unique_ptr<IDeviceHandler> create_device(const QString & s, bool & oRealDevice);
   void reset_file_input_last_file(const QString & iDeviceName);
+  const QString & get_device_name() const { return mCurDeviceName; }
 
 private:
   QSettings * const mpSettings;
   const QString mVersionStr{ PRJ_VERS };
   OpenFileDialog mOpenFileDialog;
+  QString mCurDeviceName;
 
   std::unique_ptr<IDeviceHandler> _create_device(const QString & iDeviceName, bool & oRealDevice);
 };

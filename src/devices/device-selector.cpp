@@ -145,7 +145,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iD
     QMessageBox::warning(this, "Warning", "Unknown exception happens in device handling");
     inputDevice = nullptr;
   }
-
+  mCurDeviceName = iDeviceName;
   return inputDevice;
 }
 

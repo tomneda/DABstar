@@ -20,6 +20,7 @@
     <file>res/icons/tower24.png</file>
     <file>res/icons/tii24.png</file>
     <file>res/icons/targetwht24.png</file>
+    <file>res/icons/eject24.png</file>
     <file>res/globstyle.qss</file>
     <file>res/qt-map.html</file>
   </qresource>
