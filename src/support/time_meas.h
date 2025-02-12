@@ -30,6 +30,22 @@ public:
     , mName(iName)
   {
     assert(mPrintCntSteps > 0);
+
+#if 0
+    // tests
+    std::cout << _add_ticks(0) << std::endl;
+    std::cout << _add_ticks(9) << std::endl;
+    std::cout << _add_ticks(98) << std::endl;
+    std::cout << _add_ticks(987) << std::endl;
+    std::cout << _add_ticks(9876) << std::endl;
+    std::cout << _add_ticks(98765)<< std::endl;
+    std::cout << _add_ticks(987654) << std::endl;
+    std::cout << _add_ticks(9876543) << std::endl;
+    std::cout << _add_ticks(98765432) << std::endl;
+    std::cout << _add_ticks(987654321) << std::endl;
+    std::cout << _add_ticks(9876543219) << std::endl;
+    std::cout << _add_ticks(98765432198) << std::endl;
+#endif
   }
   ~TimeMeas() = default;
 
@@ -65,7 +81,7 @@ public:
     trigger_begin();
   }
 
-  inline uint64_t get_time_per_round_in_ns() const
+  [[nodiscard]] inline uint64_t get_time_per_round_in_ns() const
   {
     assert(mCntAbsBegin == mCntAbsEnd || mCntAbsBegin == mCntAbsEnd + 1); // were trigger_begin() and trigger_end() evenly called? (loop meas is one behind)
     if (mCntAbsBegin == 0)
@@ -76,14 +92,16 @@ public:
 
   void print_time_per_round()
   {
+    assert(mCntAbsBegin == mCntAbsEnd || mCntAbsBegin == mCntAbsEnd + 1); // were trigger_begin() and trigger_end() evenly called? (loop meas is one behind)
+
     if (mCntAbsBegin >= mCntAbsBeginPrinted)
     {
       mCntAbsBeginPrinted = mCntAbsBegin + mPrintCntSteps;
-      const auto time = get_time_per_round_in_ns();
-      std::cout << "Duration of " << mName << ":  " << time / 1000 << " us (" << time << " ns),  "
-                                           << "Min: " << mTimeMin.count() / 1000 << " us (" << mTimeMin.count() << " ns),  "
-                                           << "Max: " << mTimeMax.count() / 1000 << " us (" << mTimeMax.count() << " ns),  "
-                                           << "Rounds: " << mCntAbsBegin << std::endl;
+      std::cout << "Duration of " << mName
+                << ":  " << _add_ticks(mTimeAbs.count() / mCntAbsBegin) << " ns"
+                << ",  Min: " << _add_ticks(mTimeMin.count()) << " ns"
+                << ",  Max: " << _add_ticks(mTimeMax.count()) << " ns"
+                << ",  Rounds: " << _add_ticks(mCntAbsBegin) << std::endl;
     }
   }
 
@@ -108,6 +126,24 @@ private:
   uint64_t mCntAbsBeginPrinted = 0;
   uint64_t mPrintCntSteps = 1;
   std::string mName;
+
+  std::string _add_ticks(const uint64_t iVal)
+  {
+    const std::string nsString = std::to_string(iVal);
+    const size_t length = nsString.size();
+    std::string outStr;
+    outStr.reserve(2 * length); // very roughly
+
+    for (size_t i = 0; i < length; ++i)
+    {
+      outStr += nsString[i];
+      if (i < length - 1 && (length - i - 1) % 3 == 0)
+      {
+        outStr += '\''; // Add a tick ' on every 1000 step
+      }
+    }
+    return outStr;
+  }
 };
 
 #ifdef USE_STEADY_CLOCK
