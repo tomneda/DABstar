@@ -80,35 +80,31 @@ private:
   std::vector<cmplx> mIqVector;
   std::vector<float> mCarrVector;
 
-  SimdVec<cmplx>mVolkFftBinRawVecPhaseCorr{cK};
-  SimdVec<cmplx> mVolkFftBinRawVec{cK};
-
-  SimdVec<cmplx> mVolkPhaseReferenceNormedVec{cK};
-  SimdVec<float> mVolkWeightPerBin{cK};
-  SimdVec<float> mVolkFftBinAbsPhaseCorr{cK};
-  SimdVec<float> mVolkFftBinRawVecPhaseCorrArg{cK};
-  SimdVec<float> mVolkFftBinRawVecPhaseCorrAbs{cK};
-  SimdVec<float> mVolkFftBinRawVecPhaseCorrAbsSq{cK,1};
-  SimdVec<float> mVolkFftBinRawVecPhaseCorrReal{cK};
-  SimdVec<float> mVolkFftBinRawVecPhaseCorrImag{cK};
-  SimdVec<float> mVolkTemp1FloatVec{cK};
-  SimdVec<float> mVolkTemp2FloatVec{cK};
-  SimdVec<float> mVolkViterbiFloatVecReal{cK};
-  SimdVec<float> mVolkViterbiFloatVecImag{cK};
-
-  SimdVec<cmplx> mVolkNomCarrierVec{cK};
-  SimdVec<cmplx> mVolkPhaseReference{cK};
-
-  SimdVec<float> mVolkMeanNullPowerWithoutTII{cK};
-  SimdVec<float> mVolkStdDevSqPhaseVector{cK,1};
-  SimdVec<float> mVolkMeanLevelVector{cK,1};
-  SimdVec<float> mVolkMeanPowerVector{cK,1};
-  SimdVec<float> mVolkMeanSigmaSqVector{cK,2};
-  SimdVec<float> mVolkMeanNullLevel{cK};
-  SimdVec<float> mVolkIntegAbsPhaseVector{cK};
-  SimdVec<int16_t> mVolkMapNomToRealCarrIdx{cK};
-  SimdVec<int16_t> mVolkMapNomToFftIdx{cK};
-
+  SimdVec<cmplx> mVolkFftBinRawVecPhaseCorr{0};
+  SimdVec<cmplx> mVolkFftBinRawVec{0};
+  SimdVec<cmplx> mVolkPhaseReferenceNormedVec{0};
+  SimdVec<cmplx> mVolkNomCarrierVec{0};
+  SimdVec<cmplx> mVolkPhaseReference{0};
+  SimdVec<float> mVolkWeightPerBin{0};
+  SimdVec<float> mVolkFftBinAbsPhaseCorr{0};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrArg{0};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrAbs{0};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrAbsSq{1};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrReal{0};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrImag{0};
+  SimdVec<float> mVolkTemp1FloatVec{0};
+  SimdVec<float> mVolkTemp2FloatVec{0};
+  SimdVec<float> mVolkViterbiFloatVecReal{0};
+  SimdVec<float> mVolkViterbiFloatVecImag{0};
+  SimdVec<float> mVolkMeanNullPowerWithoutTII{0};
+  SimdVec<float> mVolkStdDevSqPhaseVector{1};
+  SimdVec<float> mVolkMeanLevelVector{1};
+  SimdVec<float> mVolkMeanPowerVector{1};
+  SimdVec<float> mVolkMeanSigmaSqVector{2};
+  SimdVec<float> mVolkMeanNullLevel{0};
+  SimdVec<float> mVolkIntegAbsPhaseVector{0};
+  SimdVec<int16_t> mVolkMapNomToRealCarrIdx{0};
+  SimdVec<int16_t> mVolkMapNomToFftIdx{0};
 
   float mMeanPowerOvrAll = 1.0f;
   float mAbsNullLevelMin = 0.0f;

@@ -121,42 +121,28 @@ template<typename T>
 class SimdVec
 {
 public:
-  explicit SimdVec(uint32_t iSize, uint32_t iNrTempVec = 0)
+  SimdVec() = delete;
+
+  explicit SimdVec(uint32_t iNrTempVec)
   {
     const size_t align = volk_get_alignment();
     mVolkSingleFloat = (T *)volk_malloc(1 * sizeof(T), align);
-    mVolkVec = (T *)volk_malloc(iSize * sizeof(T), align);
+    mVolkVec = (T *)volk_malloc(cK * sizeof(T), align);
     assert(mVolkSingleFloat != nullptr);
     assert(mVolkVec != nullptr);
 
     if (iNrTempVec >= 1)
     {
-      mVolkTemp1Vec = (T *)volk_malloc(iSize * sizeof(T), align);
+      mVolkTemp1Vec = (T *)volk_malloc(cK * sizeof(T), align);
       assert(mVolkTemp1Vec != nullptr);
     }
 
     if (iNrTempVec >= 2)
     {
-      mVolkTemp2Vec = (T *)volk_malloc(iSize * sizeof(T), align);
+      mVolkTemp2Vec = (T *)volk_malloc(cK * sizeof(T), align);
       assert(mVolkTemp2Vec != nullptr);
     }
   }
-
-  // SimdVec(SimdVec&& other) noexcept : mVolkVec(other.mVolkVec)
-  // {
-  //   other.mVolkVec = nullptr; // Null out the moved-from pointer
-  // }
-  //
-  // SimdVec & operator=(SimdVec&& other) noexcept
-  // {
-  //   if (this != &other)
-  //   {
-  //     volk_free(mVolkVec);
-  //     mVolkVec = other.mVolkVec;
-  //     other.mVolkVec = nullptr;
-  //   }
-  //   return *this;
-  // }
 
   ~SimdVec()
   {
