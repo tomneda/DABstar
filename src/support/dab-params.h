@@ -34,6 +34,12 @@
 #include  <cstdint>
 #include  <array>
 
+// use this only DAB mode 1 constants for (hopefully) faster access
+constexpr int16_t cK        = 1536;
+constexpr int16_t cTu       = 2048;
+constexpr int16_t cL        =   76;
+constexpr int16_t cCarrDiff = 1000;
+
 class DabParams
 {
 public:

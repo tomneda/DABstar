@@ -59,12 +59,6 @@ public:
   void set_show_nominal_carrier(bool iShowNominalCarrier);
 
   inline void set_dc_offset(cmplx iDcOffset) { mDcAdc = iDcOffset; };
-
-private:
-  static constexpr int16_t cK = 1536;
-  static constexpr int16_t cTu = 2048;
-  static constexpr int16_t cL = 76;
-  static constexpr int16_t cCarrDiff = 1000;
 private:
 
   RadioInterface * const mpRadioInterface;
@@ -94,7 +88,7 @@ private:
   SimdVec<float> mVolkFftBinAbsPhaseCorr{cK};
   SimdVec<float> mVolkFftBinRawVecPhaseCorrArg{cK};
   SimdVec<float> mVolkFftBinRawVecPhaseCorrAbs{cK};
-  SimdVec<float> mVolkFftBinRawVecPhaseCorrAbsSq{cK};
+  SimdVec<float> mVolkFftBinRawVecPhaseCorrAbsSq{cK,1};
   SimdVec<float> mVolkFftBinRawVecPhaseCorrReal{cK};
   SimdVec<float> mVolkFftBinRawVecPhaseCorrImag{cK};
   SimdVec<float> mVolkTemp1FloatVec{cK};
@@ -106,10 +100,10 @@ private:
   SimdVec<cmplx> mVolkPhaseReference{cK};
 
   SimdVec<float> mVolkMeanNullPowerWithoutTII{cK};
-  SimdVec<float> mVolkStdDevSqPhaseVector{cK};
-  SimdVec<float> mVolkMeanLevelVector{cK};
-  SimdVec<float> mVolkMeanPowerVector{cK};
-  SimdVec<float> mVolkMeanSigmaSqVector{cK};
+  SimdVec<float> mVolkStdDevSqPhaseVector{cK,1};
+  SimdVec<float> mVolkMeanLevelVector{cK,1};
+  SimdVec<float> mVolkMeanPowerVector{cK,1};
+  SimdVec<float> mVolkMeanSigmaSqVector{cK,2};
   SimdVec<float> mVolkMeanNullLevel{cK};
   SimdVec<float> mVolkIntegAbsPhaseVector{cK};
   SimdVec<int16_t> mVolkMapNomToRealCarrIdx{cK};
