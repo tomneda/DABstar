@@ -33,13 +33,13 @@
      <item>
       <widget class="QLCDNumber" name="currentTime">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="smallDecimalPoint">
         <bool>true</bool>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -49,20 +49,20 @@
         <string>seconds of</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignCenter</set>
+        <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLCDNumber" name="totalTime">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="smallDecimalPoint">
         <bool>true</bool>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -207,7 +207,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_13">
          <property name="text">
-          <string>Device Name</string>
+          <string>Device Name:</string>
          </property>
         </widget>
        </item>
@@ -218,17 +218,17 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Recording Date: </string>
-         </property>
-        </widget>
-       </item>
        <item row="4" column="1">
         <widget class="QLabel" name="recordingTime">
          <property name="text">
           <string>recordingTime</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Recording Date:</string>
          </property>
         </widget>
        </item>
@@ -278,7 +278,7 @@
      <item row="0" column="1">
       <widget class="QLCDNumber" name="nrBitsDisplay">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="smallDecimalPoint">
         <bool>true</bool>
@@ -287,14 +287,14 @@
         <number>10</number>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
       <widget class="QLCDNumber" name="nrElementsDisplay">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="smallDecimalPoint">
         <bool>true</bool>
@@ -303,14 +303,14 @@
         <number>10</number>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
       <widget class="QLCDNumber" name="samplerateDisplay">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="smallDecimalPoint">
         <bool>true</bool>
@@ -319,14 +319,14 @@
         <number>10</number>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
       <widget class="QLCDNumber" name="frequencyDisplay">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="smallDecimalPoint">
         <bool>true</bool>
@@ -335,7 +335,7 @@
         <number>10</number>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
