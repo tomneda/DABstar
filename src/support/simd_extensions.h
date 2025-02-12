@@ -259,9 +259,8 @@ public:
   typename std::enable_if_t<std::is_same_v<U, float>, float>
   inline sum_of_elements()
   {
-    alignas(16) float sum;  // normally (the) VOLK should be asked about the alignment but this takes more time?!
-    volk_32f_accumulator_s32f_a(&sum, mVolkVec, cK);  // this sums all vector elements to the first element
-    return sum;
+    volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkVec, cK);  // this sums all vector elements to the first element
+    return mVolkSingleFloat[0];
   }
 
   template <typename U = T>
@@ -281,13 +280,12 @@ public:
   inline mean_filter_sum_of_elements(const float iLastMeanVal, const float iAlpha) const
   {
     assert(mVolkTemp1Vec != nullptr);
-    alignas(16) float sum;  // normally (the) VOLK should be asked about the alignment but this takes more time?!
 
     // ioVal += iAlpha * (iVal - ioVal);
     volk_32f_s32f_add_32f_a(mVolkTemp1Vec, mVolkVec, -iLastMeanVal, cK);   // temp = (mVolkVec - iVal) -> iVal is normally the last returned sum value
     volk_32f_s32f_multiply_32f_a(mVolkTemp1Vec, mVolkTemp1Vec, iAlpha, cK);  // temp = alpha * temp
-    volk_32f_accumulator_s32f_a(&sum, mVolkTemp1Vec, cK);                  // this sums all temp vector elements to the first element
-    return sum / (float)cK + iLastMeanVal; // new mean value over all vector elements
+    volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkTemp1Vec, cK);                  // this sums all temp vector elements to the first element
+    return mVolkSingleFloat[0] / (float)cK + iLastMeanVal; // new mean value over all vector elements
   }
 
   template <typename U = T>
