@@ -69,8 +69,8 @@ public:
 #endif
     const auto lastTimeDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(curTimePoint - mLastCheckedTimePoint);
     mTimeAbs += lastTimeDuration;
-    if (mTimeMin > lastTimeDuration) mTimeMin = lastTimeDuration;
-    if (mTimeMax < lastTimeDuration) mTimeMax = lastTimeDuration;
+    if (mTimeLocMin > lastTimeDuration) mTimeLocMin = lastTimeDuration;
+    if (mTimeLocMax < lastTimeDuration) mTimeLocMax = lastTimeDuration;
     ++mCntAbsEnd;
   }
 
@@ -96,20 +96,28 @@ public:
 
     if (mCntAbsBegin >= mCntAbsBeginPrinted)
     {
-      mCntAbsBeginPrinted = mCntAbsBegin + mPrintCntSteps;
-      std::cout << "Duration of " << mName
-                << ":  " << _add_ticks(mTimeAbs.count() / mCntAbsBegin) << " ns"
-                << ",  Min: " << _add_ticks(mTimeMin.count()) << " ns"
-                << ",  Max: " << _add_ticks(mTimeMax.count()) << " ns"
-                << ",  Rounds: " << _add_ticks(mCntAbsBegin) << std::endl;
-    }
-  }
+      if (mTimeAbsMin > mTimeLocMin) mTimeAbsMin = mTimeLocMin;
+      if (mTimeAbsMax < mTimeLocMax) mTimeAbsMax = mTimeLocMax;
 
-  void reset()
-  {
-    mTimeAbs = std::chrono::nanoseconds(0);
-    mCntAbsBegin = 0;
-    mCntAbsEnd = 0; // for plausibility check
+      mCntAbsBeginPrinted = mCntAbsBegin + mPrintCntSteps;
+      std::cout << "Duration [ns] of " << mName
+                << "  Abs["
+                <<    "Avr: " << _add_ticks(mTimeAbs.count() / mCntAbsBegin)
+                << ",  Min: " << _add_ticks(mTimeAbsMin.count())
+                << ",  Max: " << _add_ticks(mTimeAbsMax.count())
+                << ",  Cnt: " << _add_ticks(mCntAbsBegin)
+                << "]  Loc["
+                <<    "Avr: " << _add_ticks((mTimeAbs.count() - mTimeAbsLast.count()) / (mCntAbsBegin - mCntAbsBeginLast))
+                << ",  Min: " << _add_ticks(mTimeLocMin.count())
+                << ",  Max: " << _add_ticks(mTimeLocMax.count())
+                << ",  Cnt: " << _add_ticks(mCntAbsBegin - mCntAbsBeginLast)
+                << "]" << std::endl;
+
+      mTimeLocMin = std::chrono::nanoseconds::max();
+      mTimeLocMax = std::chrono::nanoseconds::min();
+      mCntAbsBeginLast = mCntAbsBegin;
+      mTimeAbsLast = mTimeAbs;
+    }
   }
 
 private:
@@ -119,9 +127,13 @@ private:
   std::chrono::high_resolution_clock::time_point mLastCheckedTimePoint;
 #endif
   std::chrono::nanoseconds mTimeAbs = std::chrono::nanoseconds::zero();
-  std::chrono::nanoseconds mTimeMin = std::chrono::nanoseconds::max();
-  std::chrono::nanoseconds mTimeMax = std::chrono::nanoseconds::min();
+  std::chrono::nanoseconds mTimeAbsLast = std::chrono::nanoseconds::zero();
+  std::chrono::nanoseconds mTimeAbsMin = std::chrono::nanoseconds::max();
+  std::chrono::nanoseconds mTimeAbsMax = std::chrono::nanoseconds::min();
+  std::chrono::nanoseconds mTimeLocMin = std::chrono::nanoseconds::max();
+  std::chrono::nanoseconds mTimeLocMax = std::chrono::nanoseconds::min();
   uint64_t mCntAbsBegin = 0;
+  uint64_t mCntAbsBeginLast = 0;
   uint64_t mCntAbsEnd = 0;
   uint64_t mCntAbsBeginPrinted = 0;
   uint64_t mPrintCntSteps = 1;
