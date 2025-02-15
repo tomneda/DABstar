@@ -19,8 +19,7 @@
 #include <volk/volk.h>
 
 // shortcut syntax to get better overview
-// #define VOLK_MALLOC(type_, size_)    (type_ *)volk_malloc((size_) * sizeof(type_), mVolkAlignment)
-#define LOOP_OVER_K                  for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+#define LOOP_OVER_K   for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
 
 
 OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer)
@@ -53,8 +52,8 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
     assert(realCarrRelIdx < cK);
     assert(fftIdx >= 0);
     assert(fftIdx < cTu);
-    mVolkMapNomToRealCarrIdx[nomCarrIdx] = realCarrRelIdx;
-    mVolkMapNomToFftIdx[nomCarrIdx] = fftIdx;
+    mMapNomToRealCarrIdx[nomCarrIdx] = realCarrRelIdx;
+    mMapNomToFftIdx[nomCarrIdx] = fftIdx;
   }
 
   // create phase -> cmplx LUT
@@ -72,14 +71,14 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
 
 void OfdmDecoder::reset()
 {
-  mVolkPhaseReference.fill_zeros();
-  mVolkNomCarrierVec.fill_zeros();
-  mVolkMeanNullPowerWithoutTII.fill_zeros();
-  mVolkStdDevSqPhaseVector.fill_zeros();
-  mVolkMeanLevelVector.fill_zeros();
-  mVolkMeanPowerVector.fill_zeros();
-  mVolkMeanSigmaSqVector.fill_zeros();
-  mVolkIntegAbsPhaseVector.fill_zeros();
+  mSimdVecPhaseReference.fill_zeros();
+  mSimdVecNomCarrier.fill_zeros();
+  mSimdVecMeanNullPowerWithoutTII.fill_zeros();
+  mSimdVecStdDevSqPhaseVec.fill_zeros();
+  mSimdVecMeanLevel.fill_zeros();
+  mSimdVecMeanPower.fill_zeros();
+  mSimdVecMeanSigmaSq.fill_zeros();
+  mSimdVecIntegAbsPhase.fill_zeros();
 
   mMeanPowerOvrAll = 1.0f;
 
@@ -108,9 +107,9 @@ void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iFftB
 
   for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
-    const int16_t fftIdx = mVolkMapNomToFftIdx[nomCarrIdx];
+    const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
     const float level = std::abs(iFftBuffer[fftIdx]);
-    mean_filter(mVolkMeanNullPowerWithoutTII[nomCarrIdx], level * level, ALPHA);
+    mean_filter(mSimdVecMeanNullPowerWithoutTII[nomCarrIdx], level * level, ALPHA);
   }
 }
 
@@ -121,17 +120,15 @@ void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iFftBuffer
 
   for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
-    const int16_t fftIdx = mVolkMapNomToFftIdx[nomCarrIdx];
-    mVolkPhaseReference[nomCarrIdx] = iFftBuffer[fftIdx];
+    const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
+    mSimdVecPhaseReference[nomCarrIdx] = iFftBuffer[fftIdx];
   }
 }
 
 void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
 {
-  // current runtime: 75us (with no VOLK: 240us)
+  // current runtime: avr: 66us, min: 26us (with no VOLK: 240us)
   // mTimeMeas.trigger_begin();
-  // we have 1536 carriers, this is 2^10 + 2^9 (1024 + 512), if there is a need to split it to 2^n
-  // assert(volk_is_aligned(mVolkPhaseReference)); // example how to test correct alignment
 
   mDcFftLast = mDcFft;
   mDcFft = iFftBuffer[0];
@@ -139,110 +136,86 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // do frequency de-interleaving and transform FFT vector to contiguous field
   LOOP_OVER_K
   {
-    const int16_t fftIdx = mVolkMapNomToFftIdx[nomCarrIdx];
-    mVolkNomCarrierVec[nomCarrIdx] = iFftBuffer[fftIdx];
+    const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
+    mSimdVecNomCarrier[nomCarrIdx] = iFftBuffer[fftIdx];
   }
 
   // -------------------------------
-  // mVolkFftBinRawVec = mVolkNomCarrierVec * conj(norm(mVolkPhaseReference))
-  mVolkPhaseReferenceNormedVec.set_normalize_each_element(mVolkPhaseReference);
-  mVolkFftBinRawVec.set_multiply_conj_each_element(mVolkNomCarrierVec, mVolkPhaseReferenceNormedVec);  // PI/4-DQPSK demodulation
-  // -------------------------------
-
+  mSimdVecPhaseReferenceNormed.set_normalize_each_element(mSimdVecPhaseReference);
+  mSimdVecFftBinRaw.set_multiply_conj_each_element(mSimdVecNomCarrier, mSimdVecPhaseReferenceNormed);  // PI/4-DQPSK demodulation
 
   // -------------------------------
-  // mVolkFftBinRawVecPhaseCorr = mVolkFftBinRawVec * cmplx_from_phase(-mVolkIntegAbsPhaseVector);
+  // mVolkFftBinPhaseCorrVec = mVolkFftBinRawVec * cmplx_from_phase(-mVolkIntegAbsPhaseVector);
   LOOP_OVER_K
   {
-    const int32_t phaseIdx = (int32_t)std::lround(mVolkIntegAbsPhaseVector[nomCarrIdx] * cLutFact);
+    const int32_t phaseIdx = (int32_t)std::lround(mSimdVecIntegAbsPhase[nomCarrIdx] * cLutFact);
     assert(phaseIdx >= -cLutLen2 && phaseIdx <= cLutLen2 );  // the limitation is done below already
     const cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
-    mVolkFftBinRawVecPhaseCorr[nomCarrIdx] = mVolkFftBinRawVec[nomCarrIdx] * phase;
+    mSimdVecFftBinPhaseCorr[nomCarrIdx] = mSimdVecFftBinRaw[nomCarrIdx] * phase;
   }
-  // -------------------------------
-
 
   // -------------------------------
-  mVolkFftBinRawVecPhaseCorrAbsSq.set_squared_magnitude_each_element(mVolkFftBinRawVecPhaseCorr);
-  mVolkFftBinRawVecPhaseCorrAbs.set_sqrt_each_element(mVolkFftBinRawVecPhaseCorrAbsSq);
-  // -------------------------------
-
+  mSimdVecFftBinPhaseCorrArg.set_arg_each_element(mSimdVecFftBinPhaseCorr);
 
   // -------------------------------
-  // mVolkFftBinRawVecPhaseCorrArg = arg_per_bin(mVolkFftBinRawVecPhaseCorr);
-  mVolkFftBinRawVecPhaseCorrArg.set_arg_each_element(mVolkFftBinRawVecPhaseCorr);
-  // -------------------------------
-
-  // -------------------------------
-  // mVolkFftBinAbsPhaseCorr = turn_phase_to_first_quadrant(mVolkFftBinRawVecPhaseCorrArg) - PI/4;
-  mVolkFftBinAbsPhaseCorr.set_wrap_4QPSK_to_phase_zero_each_element(mVolkFftBinRawVecPhaseCorrArg);
+  // in best case the values in mVolkFftBinAbsPhaseCorrVec should only rest onto the positive real axis
+  mSimdVecFftBinWrapped.set_wrap_4QPSK_to_phase_zero_each_element(mSimdVecFftBinPhaseCorrArg);
 
   constexpr float ALPHA = 0.005f;
 
   // -------------------------------
   // mVolkIntegAbsPhaseVector = limit(mVolkIntegAbsPhaseVector + mVolkFftBinAbsPhaseCorr * 0.2f * ALPHA)
   // Integrate phase error to perform the phase correction in the next OFDM symbol.
-  mVolkTemp1FloatVec.set_multiply_vector_and_scalar_each_element(mVolkFftBinAbsPhaseCorr, 0.2f * ALPHA); // weighting
-  mVolkIntegAbsPhaseVector.modify_accumulate_each_element(mVolkTemp1FloatVec); // integrator
-  mVolkIntegAbsPhaseVector.modify_limit_symmetrically_each_element(F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
-  // -------------------------------
-
+  mSimdVecTemp1Float.set_multiply_vector_and_scalar_each_element(mSimdVecFftBinWrapped, 0.2f * ALPHA); // weighting
+  mSimdVecIntegAbsPhase.modify_accumulate_each_element(mSimdVecTemp1Float); // integrator
+  mSimdVecIntegAbsPhase.modify_limit_symmetrically_each_element(F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
 
   // -------------------------------
-  mVolkTemp1FloatVec.set_square_each_element(mVolkFftBinAbsPhaseCorr); // variance
-  mVolkStdDevSqPhaseVector.modify_mean_filter_each_element(mVolkTemp1FloatVec, ALPHA);
-  // -------------------------------
-
+  mSimdVecTemp1Float.set_square_each_element(mSimdVecFftBinWrapped); // variance
+  mSimdVecStdDevSqPhaseVec.modify_mean_filter_each_element(mSimdVecTemp1Float, ALPHA);
 
   // -------------------------------
-  const float stdDevSqOvrAll = mVolkStdDevSqPhaseVector.get_sum_of_elements();
-  // -------------------------------
-
-
-  // -------------------------------
-  mVolkMeanLevelVector.modify_mean_filter_each_element(mVolkFftBinRawVecPhaseCorrAbs, ALPHA);
-  mVolkMeanPowerVector.modify_mean_filter_each_element(mVolkFftBinRawVecPhaseCorrAbsSq, ALPHA);
-  mMeanPowerOvrAll = mVolkFftBinRawVecPhaseCorrAbsSq.get_mean_filter_sum_of_elements(mMeanPowerOvrAll, ALPHA);
-  // -------------------------------
+  mSimdVecFftBinPower.set_squared_magnitude_each_element(mSimdVecFftBinPhaseCorr);
+  mSimdVecFftBinLevel.set_sqrt_each_element(mSimdVecFftBinPower);
 
   // -------------------------------
-  mVolkFftBinRawVecPhaseCorr.store_to_real_and_imag_each_element(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag);
+  mSimdVecMeanLevel.modify_mean_filter_each_element(mSimdVecFftBinLevel, ALPHA);
+  mSimdVecMeanPower.modify_mean_filter_each_element(mSimdVecFftBinPower, ALPHA);
+  mMeanPowerOvrAll = mSimdVecFftBinPower.get_mean_filter_sum_of_elements(mMeanPowerOvrAll, ALPHA);
+
+  // -------------------------------
+  mSimdVecFftBinPhaseCorr.store_to_real_and_imag_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecFftBinPhaseCorrImag);
   // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
-  mVolkSigmaSqVector.set_squared_distance_to_nearest_constellation_point_each_element(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag, mVolkMeanLevelVector);
-  mVolkMeanSigmaSqVector.modify_mean_filter_each_element(mVolkSigmaSqVector, ALPHA);
-  // -------------------------------
-
+  mSimdVecSigmaSq.set_squared_distance_to_nearest_constellation_point_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecFftBinPhaseCorrImag, mSimdVecMeanLevel);
+  mSimdVecMeanSigmaSq.modify_mean_filter_each_element(mSimdVecSigmaSq, ALPHA);
 
   // -------------------------------
   // 1/SNR + 2 = mVolkTemp2FloatVec = mVolkMeanNullPowerWithoutTII / (mVolkMeanPowerVector - mVolkMeanNullPowerWithoutTII) + 2
-  volk_32f_x2_subtract_32f_a(mVolkTemp1FloatVec, mVolkMeanPowerVector, mVolkMeanNullPowerWithoutTII, cK);
-  LOOP_OVER_K if (mVolkTemp1FloatVec[nomCarrIdx] <= 0.0f) mVolkTemp1FloatVec[nomCarrIdx] = 0.1f;
-  volk_32f_x2_divide_32f_a(mVolkTemp2FloatVec, mVolkMeanNullPowerWithoutTII, mVolkTemp1FloatVec, cK);  // 1/SNR
-  volk_32f_s32f_add_32f_a(mVolkTemp2FloatVec, mVolkTemp2FloatVec, 2.0f, cK);
-  // -------------------------------
-
+  volk_32f_x2_subtract_32f_a(mSimdVecTemp1Float, mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII, cK);
+  LOOP_OVER_K if (mSimdVecTemp1Float[nomCarrIdx] <= 0.0f) mSimdVecTemp1Float[nomCarrIdx] = 0.1f;
+  volk_32f_x2_divide_32f_a(mSimdVecTemp2Float, mSimdVecMeanNullPowerWithoutTII, mSimdVecTemp1Float, cK);  // 1/SNR
+  volk_32f_s32f_add_32f_a(mSimdVecTemp2Float, mSimdVecTemp2Float, 2.0f, cK);                              // T2 = 1/SNR + 2
 
   // -------------------------------
-  // w1 = mVolkWeightPerBin = (mVolkMeanLevelVector / mVolkMeanSigmaSqVector) / mVolkTemp2FloatVec (1/SNR + 2)
-  volk_32f_x2_divide_32f_a(mVolkWeightPerBin, mVolkMeanLevelVector, mVolkMeanSigmaSqVector, cK);  // r1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
-  volk_32f_x2_divide_32f_a(mVolkWeightPerBin, mVolkWeightPerBin, mVolkTemp2FloatVec, cK);  // r1 /= T2
-  // -------------------------------
+  // w1 = mSimdVecWeightPerBin = (mVolkMeanLevelVector / mVolkMeanSigmaSqVector) / mVolkTemp2FloatVec (1/SNR + 2)
+  volk_32f_x2_divide_32f_a(mSimdVecWeightPerBin, mSimdVecMeanLevel, mSimdVecMeanSigmaSq, cK);    // w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+  volk_32f_x2_divide_32f_a(mSimdVecWeightPerBin, mSimdVecWeightPerBin, mSimdVecTemp2Float, cK);  // w1 /= T2
 
 
   switch (mSoftBitType)
   {
   case ESoftBitType::SOFTDEC1:
-    // w1 = mVolkWeightPerBin *= std::abs(mVolkPhaseReference);
-    volk_32fc_magnitude_32f_a(mVolkTemp1FloatVec, mVolkPhaseReference, cK); // TODO: maybe we have this already from the former round?
-    volk_32f_x2_multiply_32f_a(mVolkWeightPerBin, mVolkWeightPerBin, mVolkTemp1FloatVec, cK);
+    // w1 = mSimdVecWeightPerBin *= std::abs(mVolkPhaseReference);
+    volk_32fc_magnitude_32f_a(mSimdVecTemp1Float, mSimdVecPhaseReference, cK); // TODO: maybe we have this already from the former round?
+    volk_32f_x2_multiply_32f_a(mSimdVecWeightPerBin, mSimdVecWeightPerBin, mSimdVecTemp1Float, cK);
     // r1 = mVolkFftBinRawVecPhaseCorrReal * mVolkWeightPerBin
-    volk_32f_x2_multiply_32f_a(mVolkViterbiFloatVecReal, mVolkFftBinRawVecPhaseCorrReal, mVolkWeightPerBin, cK);
-    volk_32f_x2_multiply_32f_a(mVolkViterbiFloatVecImag, mVolkFftBinRawVecPhaseCorrImag, mVolkWeightPerBin, cK);
+    volk_32f_x2_multiply_32f_a(mSimdVecDecodingReal, mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin, cK);
+    volk_32f_x2_multiply_32f_a(mSimdVecDecodingImag, mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin, cK);
     break;
   case ESoftBitType::SOFTDEC2: // log likelihood ratio
     // r1 = mVolkFftBinRawVecPhaseCorrReal * mVolkWeightPerBin
-    volk_32f_x2_multiply_32f_a(mVolkViterbiFloatVecReal, mVolkFftBinRawVecPhaseCorrReal, mVolkWeightPerBin, cK);
-    volk_32f_x2_multiply_32f_a(mVolkViterbiFloatVecImag, mVolkFftBinRawVecPhaseCorrImag, mVolkWeightPerBin, cK);
+    volk_32f_x2_multiply_32f_a(mSimdVecDecodingReal, mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin, cK);
+    volk_32f_x2_multiply_32f_a(mSimdVecDecodingImag, mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin, cK);
     break;
   default: // ESoftBitType::SOFTDEC3
     // w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
@@ -255,22 +228,22 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // -------------------------------
   // apply weight w2 to be conform to the viterbi input range
   const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
-  mVolkViterbiFloatVecReal.modify_multiply_scalar_each_element(w2);
-  mVolkViterbiFloatVecImag.modify_multiply_scalar_each_element(w2);
+  mSimdVecDecodingReal.modify_multiply_scalar_each_element(w2);
+  mSimdVecDecodingImag.modify_multiply_scalar_each_element(w2);
   // -------------------------------
 
   // extract coding bits
   LOOP_OVER_K
   {
-    oBits[0  + nomCarrIdx] = (int16_t)(mVolkViterbiFloatVecReal[nomCarrIdx]);
-    oBits[cK + nomCarrIdx] = (int16_t)(mVolkViterbiFloatVecImag[nomCarrIdx]);
+    oBits[0  + nomCarrIdx] = (int16_t)(mSimdVecDecodingReal[nomCarrIdx]);
+    oBits[cK + nomCarrIdx] = (int16_t)(mSimdVecDecodingImag[nomCarrIdx]);
   }
 
   // -------------------------------
   // mMeanValue = sum_over_bins() / mDabPar.K;
-  volk_32f_x2_multiply_32f_a(mVolkTemp1FloatVec, mVolkFftBinRawVecPhaseCorrAbs, mVolkWeightPerBin, cK);
-  volk_32f_accumulator_s32f_a(mVolkTemp2FloatVec, mVolkTemp1FloatVec, cK);  // this sums all vector elements to the first element
-  mMeanValue = mVolkTemp2FloatVec[0] /*sum*/ / cK;
+  volk_32f_x2_multiply_32f_a(mSimdVecTemp1Float, mSimdVecFftBinLevel, mSimdVecWeightPerBin, cK);
+  volk_32f_accumulator_s32f_a(mSimdVecTemp2Float, mSimdVecTemp1Float, cK);  // this sums all vector elements to the first element
+  mMeanValue = mSimdVecTemp2Float[0] /*sum*/ / cK;
   // -------------------------------
 
   // mTimeMeas.trigger_end();
@@ -299,10 +272,10 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
     float snr = (mMeanPowerOvrAll - noisePow) / noisePow;
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / stdDevSqOvrAll);
+    mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / mSimdVecStdDevSqPhaseVec.get_sum_of_elements());
     mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
-    mLcdData.TestData1 = _compute_frequency_offset(mVolkNomCarrierVec, mVolkPhaseReference);
+    mLcdData.TestData1 = _compute_frequency_offset(mSimdVecNomCarrier, mSimdVecPhaseReference);
     mLcdData.TestData2 = 0;
 
     emit signal_show_lcd_data(&mLcdData);
@@ -313,7 +286,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   }
 
   // copy current FFT values as next OFDM reference
-  memcpy(mVolkPhaseReference, mVolkNomCarrierVec, cK * sizeof(cmplx));
+  memcpy(mSimdVecPhaseReference, mSimdVecNomCarrier, cK * sizeof(cmplx));
 }
 
 float OfdmDecoder::_compute_frequency_offset(const cmplx * const & r, const cmplx * const & v) const
@@ -337,8 +310,8 @@ float OfdmDecoder::_compute_frequency_offset(const cmplx * const & r, const cmpl
 
 float OfdmDecoder::_compute_noise_Power() const
 {
-  volk_32f_accumulator_s32f_a(mVolkTemp1FloatVec, mVolkMeanNullPowerWithoutTII, cK); // this sums all vector elements to the first element
-  return mVolkTemp1FloatVec[0] / (float)cK;
+  volk_32f_accumulator_s32f_a(mSimdVecTemp1Float, mSimdVecMeanNullPowerWithoutTII, cK); // this sums all vector elements to the first element
+  return mSimdVecTemp1Float[0] / (float)cK;
 }
 
 void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iFftBuffer)
@@ -350,9 +323,9 @@ void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iFftBu
     constexpr float ALPHA = 0.20f;
     for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
-      const int16_t fftIdx = mVolkMapNomToFftIdx[nomCarrIdx];
+      const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
       const float level = log10_times_20(std::abs(iFftBuffer[fftIdx]));
-      float & meanNullLevelRef = mVolkMeanNullLevel[nomCarrIdx];
+      float & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -365,9 +338,9 @@ void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iFftBu
     constexpr float ALPHA = 0.20f;
     for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
-      const int16_t fftIdx = mVolkMapNomToFftIdx[nomCarrIdx];
+      const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
       const float level = std::abs(iFftBuffer[fftIdx]);
-      float & meanNullLevelRef = mVolkMeanNullLevel[nomCarrIdx];
+      float & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -381,7 +354,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iFftBu
 
 void OfdmDecoder::_reset_null_symbol_statistics()
 {
-  mVolkMeanNullLevel.fill_zeros();
+  mSimdVecMeanNullLevel.fill_zeros();
   mAbsNullLevelMin = 0.0f;
   mAbsNullLevelGain = 0.0f;
 }
@@ -430,16 +403,16 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
   {
     switch (mIqPlotType)
     {
-    case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = mVolkFftBinRawVecPhaseCorr[nomCarrIdx] / std::sqrt(mVolkMeanPowerVector[nomCarrIdx]); break;
-    case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = mVolkFftBinRawVecPhaseCorr[nomCarrIdx] / std::sqrt(mMeanPowerOvrAll); break;
-    case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = mVolkFftBinRawVec[nomCarrIdx] / std::sqrt(mMeanPowerOvrAll); break;
+    case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] / std::sqrt(mSimdVecMeanPower[nomCarrIdx]); break;
+    case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] / std::sqrt(mMeanPowerOvrAll); break;
+    case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = mSimdVecFftBinRaw[nomCarrIdx] / std::sqrt(mMeanPowerOvrAll); break;
     case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =  10.0f / (float)cTu * _interpolate_2d_plane(mDcFftLast, mDcFft, (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
     case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (float)cTu * _interpolate_2d_plane(mDcFftLast, mDcFft, (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
     case EIqPlotType::DC_OFFSET_ADC_10:       mIqVector[nomCarrIdx] =  10.0f * mDcAdc; break;
     case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;
     }
 
-    const int16_t realCarrRelIdx = mVolkMapNomToRealCarrIdx[nomCarrIdx];
+    const int16_t realCarrRelIdx = mMapNomToRealCarrIdx[nomCarrIdx];
     const int16_t dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
 
     switch (mCarrierPlotType)
@@ -448,22 +421,22 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     {
       // Convert and limit the soft bit weight to percent
       // float weight2 = (std::abs(real(mVolk_r1[nomCarrIdx])) + std::abs(imag(mVolk_r1[nomCarrIdx]))) / 2.0f * (-iWeight);
-      float val = (std::abs(mVolkViterbiFloatVecReal[nomCarrIdx]) + std::abs(mVolkViterbiFloatVecImag[nomCarrIdx])) / 2.0f;
+      float val = (std::abs(mSimdVecDecodingReal[nomCarrIdx]) + std::abs(mSimdVecDecodingImag[nomCarrIdx])) / 2.0f;
       if (val > F_VITERBI_SOFT_BIT_VALUE_MAX) val = F_VITERBI_SOFT_BIT_VALUE_MAX; // limit graphics like the Viterbi itself does
       mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * val;  // show it in percent of the maximum Viterbi input
       break;
     }
-    case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(mVolkMeanSigmaSqVector[nomCarrIdx]) / mVolkMeanLevelVector[nomCarrIdx]; break;
-    case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 20.0f * std::log10(std::sqrt(mVolkMeanSigmaSqVector[nomCarrIdx]) / mVolkMeanLevelVector[nomCarrIdx]); break;
-    case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(mVolkStdDevSqPhaseVector[nomCarrIdx])); break;
-    case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(mVolkIntegAbsPhaseVector[nomCarrIdx]); break;
-    case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(mVolkFftBinRawVecPhaseCorr[nomCarrIdx])); break;
-    case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mVolkMeanPowerVector[nomCarrIdx] / mMeanPowerOvrAll); break;
-    case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mVolkMeanPowerVector[nomCarrIdx] / mVolkMeanNullPowerWithoutTII[nomCarrIdx]); break;
+    case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(mSimdVecMeanSigmaSq[nomCarrIdx]) / mSimdVecMeanLevel[nomCarrIdx]; break;
+    case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 20.0f * std::log10(std::sqrt(mSimdVecMeanSigmaSq[nomCarrIdx]) / mSimdVecMeanLevel[nomCarrIdx]); break;
+    case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(mSimdVecStdDevSqPhaseVec[nomCarrIdx])); break;
+    case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(mSimdVecIntegAbsPhase[nomCarrIdx]); break;
+    case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(mSimdVecFftBinPhaseCorr[nomCarrIdx])); break;
+    case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mMeanPowerOvrAll); break;
+    case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mSimdVecMeanNullPowerWithoutTII[nomCarrIdx]); break;
     case ECarrierPlotType::NULL_TII_LIN:
     case ECarrierPlotType::NULL_TII_LOG:
-    case ECarrierPlotType::NULL_NO_TII:     mCarrVector[dataVecCarrIdx] = mAbsNullLevelGain * (mVolkMeanNullLevel[nomCarrIdx] - mAbsNullLevelMin); break;
-    case ECarrierPlotType::NULL_OVR_POW:    mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mVolkMeanNullPowerWithoutTII[nomCarrIdx] / mMeanPowerOvrAll); break;
+    case ECarrierPlotType::NULL_NO_TII:     mCarrVector[dataVecCarrIdx] = mAbsNullLevelGain * (mSimdVecMeanNullLevel[nomCarrIdx] - mAbsNullLevelMin); break;
+    case ECarrierPlotType::NULL_OVR_POW:    mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanNullPowerWithoutTII[nomCarrIdx] / mMeanPowerOvrAll); break;
     }
   } // for (nomCarrIdx...
 }
