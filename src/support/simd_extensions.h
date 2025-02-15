@@ -142,10 +142,17 @@ public:
       mVolkTemp2Vec = (T *)volk_malloc(cK * sizeof(T), align);
       assert(mVolkTemp2Vec != nullptr);
     }
+
+    if (iNrTempVec >= 3)
+    {
+      mVolkTemp3Vec = (T *)volk_malloc(cK * sizeof(T), align);
+      assert(mVolkTemp3Vec != nullptr);
+    }
   }
 
   ~SimdVec()
   {
+    volk_free(mVolkTemp3Vec);
     volk_free(mVolkTemp2Vec);
     volk_free(mVolkTemp1Vec);
     volk_free(mVolkVec);
@@ -301,26 +308,28 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline sq_dist_to_nearest_constellation_point(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec, const SimdVec<float> & iMeanLevelVec, float iAlpha)
+  inline sq_dist_to_nearest_constellation_point(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec, const SimdVec<float> & iMeanLevelVec)
   {
+    // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
     assert(mVolkTemp1Vec != nullptr);
     assert(mVolkTemp2Vec != nullptr);
+    assert(mVolkTemp3Vec != nullptr);
 
-    // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
-    simd_abs(mVolkTemp1Vec, iLevelRealVec, cK);
-    simd_abs(mVolkTemp2Vec, iLevelImagVec, cK);
+    // the value of the mean level on each axis (45° angle assumed in 1st quadrant)
+    volk_32f_s32f_multiply_32f_a(mVolkTemp3Vec, iMeanLevelVec, F_SQRT1_2, cK); // n = iMean / sqrt(2)
 
-    // TODO: search for a more SIMD way
-    for (uint32_t idx = 0; idx < cK; ++idx)
-    {
-      const float meanLevelAtAxisPerBin = iMeanLevelVec[idx] * F_SQRT1_2;
-      const cmplx meanLevelAtAxisPerBinCplx = cmplx(meanLevelAtAxisPerBin, meanLevelAtAxisPerBin);
-      const cmplx levelAtAxisPerBinAbsCplx = cmplx(mVolkTemp1Vec[idx], mVolkTemp2Vec[idx]);
+    // swap input values to 1st quadrant (phase turn is not necessary)
+    simd_abs(mVolkTemp1Vec, iLevelRealVec, cK); // a
+    simd_abs(mVolkTemp2Vec, iLevelImagVec, cK); // b
 
-      volk_32fc_x2_square_dist_32f_a(mVolkTemp1Vec, &levelAtAxisPerBinAbsCplx, &meanLevelAtAxisPerBinCplx, 1);
+    // subtract mean value to get the distance on each axis
+    volk_32f_x2_subtract_32f_a(mVolkTemp1Vec, mVolkTemp1Vec, mVolkTemp3Vec, cK); // a - n
+    volk_32f_x2_subtract_32f_a(mVolkTemp2Vec, mVolkTemp2Vec, mVolkTemp3Vec, cK); // b - n
 
-      ::mean_filter(mVolkVec[idx], mVolkTemp1Vec[0], iAlpha);
-    }
+    // now calculate the squared cartesian distance
+    volk_32f_x2_multiply_32f_a(mVolkTemp1Vec, mVolkTemp1Vec, mVolkTemp1Vec, cK); // (a - n)^2
+    volk_32f_x2_multiply_32f_a(mVolkTemp2Vec, mVolkTemp2Vec, mVolkTemp2Vec, cK); // (b - n)^2
+    volk_32f_x2_add_32f_a(mVolkVec, mVolkTemp1Vec, mVolkTemp2Vec, cK);           // (a - n)^2 + (b - n)^2
   }
 
   template <typename U = T>
@@ -335,6 +344,7 @@ private:
   T * mVolkVec = nullptr;
   T * mVolkTemp1Vec = nullptr;
   T * mVolkTemp2Vec = nullptr;
+  T * mVolkTemp3Vec = nullptr;
 };
 
 

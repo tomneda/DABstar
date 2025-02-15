@@ -100,7 +100,8 @@ private:
   SimdVec<float> mVolkStdDevSqPhaseVector{1};
   SimdVec<float> mVolkMeanLevelVector{1};
   SimdVec<float> mVolkMeanPowerVector{1};
-  SimdVec<float> mVolkMeanSigmaSqVector{2};
+  SimdVec<float> mVolkSigmaSqVector{3};
+  SimdVec<float> mVolkMeanSigmaSqVector{1};
   SimdVec<float> mVolkMeanNullLevel{0};
   SimdVec<float> mVolkIntegAbsPhaseVector{0};
   SimdVec<int16_t> mVolkMapNomToRealCarrIdx{0};

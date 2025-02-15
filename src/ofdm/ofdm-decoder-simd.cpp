@@ -210,7 +210,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // -------------------------------
   mVolkFftBinRawVecPhaseCorr.store_to_real_and_imag(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag);
   // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
-  mVolkMeanSigmaSqVector.sq_dist_to_nearest_constellation_point(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag, mVolkMeanLevelVector, ALPHA);
+  mVolkSigmaSqVector.sq_dist_to_nearest_constellation_point(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag, mVolkMeanLevelVector);
+  mVolkMeanSigmaSqVector.mean_filter(mVolkSigmaSqVector, ALPHA);
   // -------------------------------
 
 
