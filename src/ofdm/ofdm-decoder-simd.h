@@ -94,7 +94,7 @@ private:
   SimdVec<float> mSimdVecFftBinPower{1};
   SimdVec<float> mSimdVecFftBinPhaseCorrReal{0};
   SimdVec<float> mSimdVecFftBinPhaseCorrImag{0};
-  SimdVec<float> mSimdVecTemp1Float{0};
+  SimdVec<float> mSimdVecTemp1Float{2};
   SimdVec<float> mSimdVecTemp2Float{0};
   SimdVec<float> mSimdVecDecodingReal{0};
   SimdVec<float> mSimdVecDecodingImag{0};

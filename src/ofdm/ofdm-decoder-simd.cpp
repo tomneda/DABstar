@@ -191,31 +191,34 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
   // -------------------------------
   // 1/SNR + 2 = mVolkTemp2FloatVec = mVolkMeanNullPowerWithoutTII / (mVolkMeanPowerVector - mVolkMeanNullPowerWithoutTII) + 2
-  volk_32f_x2_subtract_32f_a(mSimdVecTemp1Float, mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII, cK);
-  LOOP_OVER_K if (mSimdVecTemp1Float[nomCarrIdx] <= 0.0f) mSimdVecTemp1Float[nomCarrIdx] = 0.1f;
-  volk_32f_x2_divide_32f_a(mSimdVecTemp2Float, mSimdVecMeanNullPowerWithoutTII, mSimdVecTemp1Float, cK);  // 1/SNR
-  volk_32f_s32f_add_32f_a(mSimdVecTemp2Float, mSimdVecTemp2Float, 2.0f, cK);                              // T2 = 1/SNR + 2
+  mSimdVecTemp1Float.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
+  if (mSimdVecTemp1Float.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f))
+  {
+    qDebug() << "WARNING: (mSimdVecMeanPower - mSimdVecMeanNullPowerWithoutTII) <= 0!";
+  }
+  mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecTemp1Float);  // T2 = 1/SNR
+  mSimdVecTemp2Float.set_add_scalar_each_element(2.0f); // T2 += 2
 
   // -------------------------------
   // w1 = mSimdVecWeightPerBin = (mVolkMeanLevelVector / mVolkMeanSigmaSqVector) / mVolkTemp2FloatVec (1/SNR + 2)
-  volk_32f_x2_divide_32f_a(mSimdVecWeightPerBin, mSimdVecMeanLevel, mSimdVecMeanSigmaSq, cK);    // w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
-  volk_32f_x2_divide_32f_a(mSimdVecWeightPerBin, mSimdVecWeightPerBin, mSimdVecTemp2Float, cK);  // w1 /= T2
+  mSimdVecWeightPerBin.set_divide_each_element(mSimdVecMeanLevel, mSimdVecMeanSigmaSq);    // w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+  mSimdVecWeightPerBin.set_divide_each_element(mSimdVecWeightPerBin, mSimdVecTemp2Float);  // w1 /= T2
 
 
   switch (mSoftBitType)
   {
   case ESoftBitType::SOFTDEC1:
     // w1 = mSimdVecWeightPerBin *= std::abs(mVolkPhaseReference);
-    volk_32fc_magnitude_32f_a(mSimdVecTemp1Float, mSimdVecPhaseReference, cK); // TODO: maybe we have this already from the former round?
-    volk_32f_x2_multiply_32f_a(mSimdVecWeightPerBin, mSimdVecWeightPerBin, mSimdVecTemp1Float, cK);
+    mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference);
+    mSimdVecWeightPerBin.set_multiply_each_element(mSimdVecWeightPerBin, mSimdVecTemp1Float);
     // r1 = mVolkFftBinRawVecPhaseCorrReal * mVolkWeightPerBin
-    volk_32f_x2_multiply_32f_a(mSimdVecDecodingReal, mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin, cK);
-    volk_32f_x2_multiply_32f_a(mSimdVecDecodingImag, mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin, cK);
+    mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin);
+    mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin);
     break;
   case ESoftBitType::SOFTDEC2: // log likelihood ratio
     // r1 = mVolkFftBinRawVecPhaseCorrReal * mVolkWeightPerBin
-    volk_32f_x2_multiply_32f_a(mSimdVecDecodingReal, mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin, cK);
-    volk_32f_x2_multiply_32f_a(mSimdVecDecodingImag, mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin, cK);
+    mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin);
+    mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin);
     break;
   default: // ESoftBitType::SOFTDEC3
     // w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
@@ -225,9 +228,17 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
     ;
   }
 
+  // use mMeanValue from last round to be conform with the non-SIMD variant
+  const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
+
+  // -------------------------------
+  mSimdVecTemp1Float.set_squared_magnitude_of_elements(mSimdVecDecodingReal, mSimdVecDecodingImag);
+  mSimdVecTemp1Float.set_sqrt_each_element(mSimdVecTemp1Float);
+  mMeanValue = mSimdVecTemp1Float.get_sum_of_elements() / cK;
+
   // -------------------------------
   // apply weight w2 to be conform to the viterbi input range
-  const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
+  // const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
   mSimdVecDecodingReal.modify_multiply_scalar_each_element(w2);
   mSimdVecDecodingImag.modify_multiply_scalar_each_element(w2);
   // -------------------------------
@@ -239,17 +250,10 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
     oBits[cK + nomCarrIdx] = (int16_t)(mSimdVecDecodingImag[nomCarrIdx]);
   }
 
-  // -------------------------------
-  // mMeanValue = sum_over_bins() / mDabPar.K;
-  volk_32f_x2_multiply_32f_a(mSimdVecTemp1Float, mSimdVecFftBinLevel, mSimdVecWeightPerBin, cK);
-  volk_32f_accumulator_s32f_a(mSimdVecTemp2Float, mSimdVecTemp1Float, cK);  // this sums all vector elements to the first element
-  mMeanValue = mSimdVecTemp2Float[0] /*sum*/ / cK;
-  // -------------------------------
-
   // mTimeMeas.trigger_end();
   // if (iCurOfdmSymbIdx == 1) mTimeMeas.print_time_per_round();
 
-  // part for displaying IQ scope and carrier scope
+  // part for displaying IQ scope and carrier bscope
   ++mShowCntIqScope;
   ++mShowCntStatistics;
   const bool showScopeData = (mShowCntIqScope > cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);

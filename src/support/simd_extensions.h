@@ -221,6 +221,41 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline set_multiply_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
+  {
+    volk_32f_x2_multiply_32f_a(mVolkVec, iVec1, iVec2, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline set_divide_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
+  {
+    volk_32f_x2_divide_32f_a(mVolkVec, iVec1, iVec2, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline set_add_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
+  {
+    volk_32f_x2_add_32f_a(mVolkVec, iVec1, iVec2, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline set_subtract_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
+  {
+    volk_32f_x2_subtract_32f_a(mVolkVec, iVec1, iVec2, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline set_magnitude_each_element(const SimdVec<cmplx> & iVec)
+  {
+    volk_32fc_magnitude_32f_a(mVolkVec, iVec, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
   inline set_squared_magnitude_each_element(const SimdVec<cmplx> & iVec)
   {
     volk_32fc_magnitude_squared_32f_a(mVolkVec, iVec, cK);
@@ -246,6 +281,20 @@ public:
   {
     volk_32f_s32f_s32f_mod_range_32f_a(mVolkVec, iVec, 0.0f, F_M_PI_2, cK);
     volk_32f_s32f_add_32f_a(mVolkVec, mVolkVec, -F_M_PI_4, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline set_add_scalar_each_element(float iScalar)
+  {
+    volk_32f_s32f_add_32f_a(mVolkVec, mVolkVec, iScalar, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline set_add_vector_and_scalar_each_element(const SimdVec<float> & iVec, float iScalar)
+  {
+    volk_32f_s32f_add_32f_a(mVolkVec, iVec, iScalar, cK);
   }
 
   template <typename U = T>
@@ -313,6 +362,23 @@ public:
   }
 
   template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, bool>
+  inline modify_check_negative_or_zero_values_and_fallback_each_element(const float iFallbackLimit)
+  {
+    bool fallbackHappened = false;
+    // TODO: check for SIMD
+    for (uint32_t idx = 0; idx < cK; ++idx)
+    {
+      if (mVolkVec[idx] <= 0)
+      {
+        mVolkVec[idx] = iFallbackLimit;
+        fallbackHappened = true;
+      }
+    }
+    return fallbackHappened;
+  }
+
+  template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
   inline set_squared_distance_to_nearest_constellation_point_each_element(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec, const SimdVec<float> & iMeanLevelVec)
   {
@@ -336,6 +402,19 @@ public:
     volk_32f_x2_multiply_32f_a(mVolkTemp1Vec, mVolkTemp1Vec, mVolkTemp1Vec, cK); // (a - n)^2
     volk_32f_x2_multiply_32f_a(mVolkTemp2Vec, mVolkTemp2Vec, mVolkTemp2Vec, cK); // (b - n)^2
     volk_32f_x2_add_32f_a(mVolkVec, mVolkTemp1Vec, mVolkTemp2Vec, cK);           // (a - n)^2 + (b - n)^2
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline set_squared_magnitude_of_elements(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec)
+  {
+    // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
+    assert(mVolkTemp1Vec != nullptr);
+    assert(mVolkTemp2Vec != nullptr);
+
+    volk_32f_x2_multiply_32f_a(mVolkTemp1Vec, iLevelRealVec, iLevelRealVec, cK); // real^2
+    volk_32f_x2_multiply_32f_a(mVolkTemp2Vec, iLevelImagVec, iLevelImagVec, cK); // imag^2
+    volk_32f_x2_add_32f_a(mVolkVec, mVolkTemp1Vec, mVolkTemp2Vec, cK);           // real^2 + imag^2
   }
 
   template <typename U = T>
