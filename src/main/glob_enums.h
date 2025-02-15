@@ -51,8 +51,9 @@ enum class ESoftBitType  // adapt RadioInterface::get_soft_bit_gen_names() too i
 {
   SOFTDEC1,
   SOFTDEC2,
+#ifndef __USE_SIMD__
   SOFTDEC3,
-
+#endif
   DEFAULT = SOFTDEC1  // use the first element for startup constellation
 };
 

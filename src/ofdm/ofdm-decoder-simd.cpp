@@ -205,28 +205,15 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   mSimdVecWeightPerBin.set_divide_each_element(mSimdVecWeightPerBin, mSimdVecTemp2Float);  // w1 /= T2
 
 
-  switch (mSoftBitType)
+  if (mSoftBitType == ESoftBitType::SOFTDEC1)
   {
-  case ESoftBitType::SOFTDEC1:
     // w1 = mSimdVecWeightPerBin *= std::abs(mVolkPhaseReference);
     mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference);
     mSimdVecWeightPerBin.set_multiply_each_element(mSimdVecWeightPerBin, mSimdVecTemp1Float);
-    // r1 = mVolkFftBinRawVecPhaseCorrReal * mVolkWeightPerBin
-    mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin);
-    mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin);
-    break;
-  case ESoftBitType::SOFTDEC2: // log likelihood ratio
-    // r1 = mVolkFftBinRawVecPhaseCorrReal * mVolkWeightPerBin
-    mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin);
-    mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin);
-    break;
-  default: // ESoftBitType::SOFTDEC3
-    // w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
-    // mVolkWeightPerBin *= mVolkFftBinRawVecPhaseCorrAbs;
-    // volk_32fc_deinterleave_32f_x2_a(mVolkViterbiFloatVecReal, mVolkViterbiFloatVecImag, mVolkFftBinRawVecPhaseCorr, cK);
-    // mVolkPhaseReferenceNormedVec
-    ;
   }
+
+  mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin);
+  mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin);
 
   // use mMeanValue from last round to be conform with the non-SIMD variant
   const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
@@ -280,7 +267,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
     mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = _compute_frequency_offset(mSimdVecNomCarrier, mSimdVecPhaseReference);
-    mLcdData.TestData2 = 0;
+    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)cK;
 
     emit signal_show_lcd_data(&mLcdData);
 
