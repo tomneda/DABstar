@@ -218,6 +218,7 @@ void SdrPlayHandler_v3::stopReader()
     return;
   }
   messageHandler(&r);
+  resetBuffer();
 }
 
 //
