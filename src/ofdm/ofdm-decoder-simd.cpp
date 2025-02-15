@@ -145,8 +145,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
   // -------------------------------
   // mVolkFftBinRawVec = mVolkNomCarrierVec * conj(norm(mVolkPhaseReference))
-  mVolkPhaseReferenceNormedVec.normalize(mVolkPhaseReference);
-  mVolkFftBinRawVec.multiply_conj(mVolkNomCarrierVec, mVolkPhaseReferenceNormedVec);  // PI/4-DQPSK demodulation
+  mVolkPhaseReferenceNormedVec.set_normalize_each_element(mVolkPhaseReference);
+  mVolkFftBinRawVec.set_multiply_conj_each_element(mVolkNomCarrierVec, mVolkPhaseReferenceNormedVec);  // PI/4-DQPSK demodulation
   // -------------------------------
 
 
@@ -163,55 +163,53 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
 
   // -------------------------------
-  mVolkFftBinRawVecPhaseCorrAbsSq.squared_magnitude(mVolkFftBinRawVecPhaseCorr);
-  mVolkFftBinRawVecPhaseCorrAbs.make_sqrt(mVolkFftBinRawVecPhaseCorrAbsSq);
+  mVolkFftBinRawVecPhaseCorrAbsSq.set_squared_magnitude_each_element(mVolkFftBinRawVecPhaseCorr);
+  mVolkFftBinRawVecPhaseCorrAbs.set_sqrt_each_element(mVolkFftBinRawVecPhaseCorrAbsSq);
   // -------------------------------
 
 
   // -------------------------------
   // mVolkFftBinRawVecPhaseCorrArg = arg_per_bin(mVolkFftBinRawVecPhaseCorr);
-  mVolkFftBinRawVecPhaseCorrArg.make_arg(mVolkFftBinRawVecPhaseCorr);
+  mVolkFftBinRawVecPhaseCorrArg.set_arg_each_element(mVolkFftBinRawVecPhaseCorr);
   // -------------------------------
 
   // -------------------------------
   // mVolkFftBinAbsPhaseCorr = turn_phase_to_first_quadrant(mVolkFftBinRawVecPhaseCorrArg) - PI/4;
-  mVolkFftBinAbsPhaseCorr.wrap_4QPSK_to_phase_zero(mVolkFftBinRawVecPhaseCorrArg);
+  mVolkFftBinAbsPhaseCorr.set_wrap_4QPSK_to_phase_zero_each_element(mVolkFftBinRawVecPhaseCorrArg);
 
   constexpr float ALPHA = 0.005f;
 
   // -------------------------------
   // mVolkIntegAbsPhaseVector = limit(mVolkIntegAbsPhaseVector + mVolkFftBinAbsPhaseCorr * 0.2f * ALPHA)
   // Integrate phase error to perform the phase correction in the next OFDM symbol.
-  mVolkTemp1FloatVec.multiply_vector_and_scalar(mVolkFftBinAbsPhaseCorr, 0.2f * ALPHA); // weighting
-  mVolkIntegAbsPhaseVector.accumulate_vector(mVolkTemp1FloatVec); // integrator
-  mVolkIntegAbsPhaseVector.limit_symmetrically(F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
+  mVolkTemp1FloatVec.set_multiply_vector_and_scalar_each_element(mVolkFftBinAbsPhaseCorr, 0.2f * ALPHA); // weighting
+  mVolkIntegAbsPhaseVector.modify_accumulate_each_element(mVolkTemp1FloatVec); // integrator
+  mVolkIntegAbsPhaseVector.modify_limit_symmetrically_each_element(F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
   // -------------------------------
 
 
   // -------------------------------
-  // mVolkStdDevSqPhaseVector = mean_per_bin(mVolkFftBinAbsPhaseCorr^2)
-  mVolkTemp1FloatVec.square(mVolkFftBinAbsPhaseCorr); // variance
-  mVolkStdDevSqPhaseVector.mean_filter(mVolkTemp1FloatVec, ALPHA);
-  // _volk_mean_filter(mVolkStdDevSqPhaseVector, mVolkTemp1FloatVec, ALPHA);
+  mVolkTemp1FloatVec.set_square_each_element(mVolkFftBinAbsPhaseCorr); // variance
+  mVolkStdDevSqPhaseVector.modify_mean_filter_each_element(mVolkTemp1FloatVec, ALPHA);
   // -------------------------------
 
 
   // -------------------------------
-  const float stdDevSqOvrAll = mVolkStdDevSqPhaseVector.sum_of_elements();
+  const float stdDevSqOvrAll = mVolkStdDevSqPhaseVector.get_sum_of_elements();
   // -------------------------------
 
 
   // -------------------------------
-  mVolkMeanLevelVector.mean_filter(mVolkFftBinRawVecPhaseCorrAbs, ALPHA);
-  mVolkMeanPowerVector.mean_filter(mVolkFftBinRawVecPhaseCorrAbsSq, ALPHA);
-  mMeanPowerOvrAll = mVolkFftBinRawVecPhaseCorrAbsSq.mean_filter_sum_of_elements(mMeanPowerOvrAll, ALPHA);
+  mVolkMeanLevelVector.modify_mean_filter_each_element(mVolkFftBinRawVecPhaseCorrAbs, ALPHA);
+  mVolkMeanPowerVector.modify_mean_filter_each_element(mVolkFftBinRawVecPhaseCorrAbsSq, ALPHA);
+  mMeanPowerOvrAll = mVolkFftBinRawVecPhaseCorrAbsSq.get_mean_filter_sum_of_elements(mMeanPowerOvrAll, ALPHA);
   // -------------------------------
 
   // -------------------------------
-  mVolkFftBinRawVecPhaseCorr.store_to_real_and_imag(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag);
+  mVolkFftBinRawVecPhaseCorr.store_to_real_and_imag_each_element(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag);
   // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
-  mVolkSigmaSqVector.sq_dist_to_nearest_constellation_point(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag, mVolkMeanLevelVector);
-  mVolkMeanSigmaSqVector.mean_filter(mVolkSigmaSqVector, ALPHA);
+  mVolkSigmaSqVector.set_squared_distance_to_nearest_constellation_point_each_element(mVolkFftBinRawVecPhaseCorrReal, mVolkFftBinRawVecPhaseCorrImag, mVolkMeanLevelVector);
+  mVolkMeanSigmaSqVector.modify_mean_filter_each_element(mVolkSigmaSqVector, ALPHA);
   // -------------------------------
 
 
@@ -257,8 +255,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // -------------------------------
   // apply weight w2 to be conform to the viterbi input range
   const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
-  mVolkViterbiFloatVecReal.multiply_scalar(w2);
-  mVolkViterbiFloatVecImag.multiply_scalar(w2);
+  mVolkViterbiFloatVecReal.modify_multiply_scalar_each_element(w2);
+  mVolkViterbiFloatVecImag.modify_multiply_scalar_each_element(w2);
   // -------------------------------
 
   // extract coding bits
