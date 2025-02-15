@@ -163,7 +163,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
 
   // -------------------------------
-  mVolkFftBinRawVecPhaseCorrAbsSq.sqared_magnitude(mVolkFftBinRawVecPhaseCorr);
+  mVolkFftBinRawVecPhaseCorrAbsSq.squared_magnitude(mVolkFftBinRawVecPhaseCorr);
   mVolkFftBinRawVecPhaseCorrAbs.make_sqrt(mVolkFftBinRawVecPhaseCorrAbsSq);
   // -------------------------------
 

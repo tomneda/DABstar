@@ -159,6 +159,11 @@ public:
     volk_free(mVolkSingleFloat);
   }
 
+  void fill_zeros()
+  {
+    std::fill_n(mVolkVec, cK, T());
+  }
+
   const T &operator[](uint32_t iIdx) const
   {
     assert(iIdx < cK);
@@ -169,11 +174,6 @@ public:
   {
     assert(iIdx < cK);
     return mVolkVec[iIdx];
-  }
-
-  void fill_zeros()
-  {
-    std::fill_n(mVolkVec, cK, T());
   }
 
   [[nodiscard]] T * get() const
@@ -214,7 +214,7 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline sqared_magnitude(const SimdVec<cmplx> & iVec)
+  inline squared_magnitude(const SimdVec<cmplx> & iVec)
   {
     volk_32fc_magnitude_squared_32f_a(mVolkVec, iVec, cK);
   }
@@ -272,7 +272,7 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline mean_filter(const float * iVec, const float iAlpha) const
+  inline mean_filter(const SimdVec<float> & iVec, const float iAlpha) const
   {
     assert(mVolkTemp1Vec != nullptr);
 
