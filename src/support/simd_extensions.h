@@ -337,14 +337,13 @@ public:
     assert(mVolkTemp1Vec != nullptr);
 
     volk_32f_s32f_add_32f_a(mVolkTemp1Vec, mVolkVec, -iLastMeanVal, cK);     // temp = (mVolkVec - iLastMeanVal) -> iLastMeanVal is normally the last returned sum value
-    volk_32f_s32f_multiply_32f_a(mVolkTemp1Vec, mVolkTemp1Vec, iAlpha, cK);  // temp = alpha * temp
     volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkTemp1Vec, cK);        // this sums all temp vector elements to the first element
-    return mVolkSingleFloat[0] / (float)cK + iLastMeanVal;                   // new mean value over all vector elements
+    return iAlpha * mVolkSingleFloat[0] / (float)cK + iLastMeanVal;          // new mean value over all vector elements
   }
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, float>
-  inline get_sum_of_elements()
+  inline get_sum_of_elements() const
   {
     volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkVec, cK);  // this sums all vector elements to the first element
     return mVolkSingleFloat[0];

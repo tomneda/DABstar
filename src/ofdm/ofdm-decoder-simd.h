@@ -98,10 +98,11 @@ private:
   SimdVec<float> mSimdVecTemp2Float{0};
   SimdVec<float> mSimdVecDecodingReal{0};
   SimdVec<float> mSimdVecDecodingImag{0};
-  SimdVec<float> mSimdVecMeanNullPowerWithoutTII{0};
+  SimdVec<float> mSimdVecMeanNullPowerWithoutTII{1};
   SimdVec<float> mSimdVecStdDevSqPhaseVec{1};
   SimdVec<float> mSimdVecMeanLevel{1};
   SimdVec<float> mSimdVecMeanPower{1};
+  SimdVec<float> mSimdVecMeanNettoPower{0};
   SimdVec<float> mSimdVecSigmaSq{3};
   SimdVec<float> mSimdVecMeanSigmaSq{1};
   SimdVec<float> mSimdVecMeanNullLevel{0};

@@ -10,11 +10,10 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include "ofdm-decoder-simd.h"
 #include "phasetable.h"
 #include "radio.h"
 #include "simd_extensions.h"
-#include "ofdm-decoder.h"
+#include "ofdm-decoder-simd.h"
 #include <vector>
 #include <volk/volk.h>
 
@@ -85,7 +84,7 @@ void OfdmDecoder::reset()
   _reset_null_symbol_statistics();
 }
 
-void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iFftBuffer) // with TII information
+void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iFftBuffer)
 {
   if (mCarrierPlotType != ECarrierPlotType::NULL_TII_LIN &&
       mCarrierPlotType != ECarrierPlotType::NULL_TII_LOG)
@@ -96,21 +95,22 @@ void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iFftBuff
   _eval_null_symbol_statistics(iFftBuffer);
 }
 
-void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iFftBuffer) // with TII information
+void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iFftBuffer)
 {
   if (mCarrierPlotType == ECarrierPlotType::NULL_NO_TII)
   {
     _eval_null_symbol_statistics(iFftBuffer);
   }
 
-  constexpr float ALPHA = 0.1f;
-
   for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
     const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
-    const float level = std::abs(iFftBuffer[fftIdx]);
-    mean_filter(mSimdVecMeanNullPowerWithoutTII[nomCarrIdx], level * level, ALPHA);
+    mSimdVecTemp1Float[nomCarrIdx] = std::abs(iFftBuffer[fftIdx]); // level
   }
+
+  constexpr float cAlpha = 0.1f;
+  mSimdVecTemp1Float.set_square_each_element(mSimdVecTemp1Float); // noise power
+  mSimdVecMeanNullPowerWithoutTII.modify_mean_filter_each_element(mSimdVecTemp1Float, cAlpha);
 }
 
 void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iFftBuffer)
@@ -191,9 +191,9 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
   // -------------------------------
   // 1/SNR + 2 = mVolkTemp2FloatVec = mVolkMeanNullPowerWithoutTII / (mVolkMeanPowerVector - mVolkMeanNullPowerWithoutTII) + 2
-  mSimdVecTemp1Float.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
-  mSimdVecTemp1Float.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f);
-  mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecTemp1Float);  // T2 = 1/SNR
+  mSimdVecMeanNettoPower.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
+  mSimdVecMeanNettoPower.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f);
+  mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecMeanNettoPower);  // T2 = 1/SNR
   mSimdVecTemp2Float.set_add_scalar_each_element(2.0f); // T2 += 2
 
   // -------------------------------
@@ -298,8 +298,7 @@ float OfdmDecoder::_compute_frequency_offset(const cmplx * const & r, const cmpl
 
 float OfdmDecoder::_compute_noise_Power() const
 {
-  volk_32f_accumulator_s32f_a(mSimdVecTemp1Float, mSimdVecMeanNullPowerWithoutTII, cK); // this sums all vector elements to the first element
-  return mSimdVecTemp1Float[0] / (float)cK;
+  return mSimdVecMeanNullPowerWithoutTII.get_sum_of_elements() / (float)cK;
 }
 
 void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iFftBuffer)
@@ -308,28 +307,28 @@ void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iFftBu
   float min =  1e38f;
   if (mCarrierPlotType == ECarrierPlotType::NULL_TII_LOG)
   {
-    constexpr float ALPHA = 0.20f;
+    constexpr float cAlpha = 0.20f;
     for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
       const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
       const float level = log10_times_20(std::abs(iFftBuffer[fftIdx]));
       float & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
-      mean_filter(meanNullLevelRef, level, ALPHA);
+      mean_filter(meanNullLevelRef, level, cAlpha);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
     }
-    mean_filter(mAbsNullLevelMin, min, ALPHA);
+    mean_filter(mAbsNullLevelMin, min, cAlpha);
     mAbsNullLevelGain = 1;
   }
   else
   {
-    constexpr float ALPHA = 0.20f;
+    constexpr float cAlpha = 0.20f;
     for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
       const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
       const float level = std::abs(iFftBuffer[fftIdx]);
       float & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
-      mean_filter(meanNullLevelRef, level, ALPHA);
+      mean_filter(meanNullLevelRef, level, cAlpha);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
       if (meanNullLevelRef > max) max = meanNullLevelRef;
@@ -408,7 +407,6 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     case ECarrierPlotType::SB_WEIGHT:
     {
       // Convert and limit the soft bit weight to percent
-      // float weight2 = (std::abs(real(mVolk_r1[nomCarrIdx])) + std::abs(imag(mVolk_r1[nomCarrIdx]))) / 2.0f * (-iWeight);
       float val = (std::abs(mSimdVecDecodingReal[nomCarrIdx]) + std::abs(mSimdVecDecodingImag[nomCarrIdx])) / 2.0f;
       if (val > F_VITERBI_SOFT_BIT_VALUE_MAX) val = F_VITERBI_SOFT_BIT_VALUE_MAX; // limit graphics like the Viterbi itself does
       mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * val;  // show it in percent of the maximum Viterbi input
