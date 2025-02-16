@@ -240,7 +240,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // mTimeMeas.trigger_end();
   // if (iCurOfdmSymbIdx == 1) mTimeMeas.print_time_per_round();
 
-  // part for displaying IQ scope and carrier bscope
+  // displaying IQ scope and carrier scope
   ++mShowCntIqScope;
   ++mShowCntStatistics;
   const bool showScopeData = (mShowCntIqScope > cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);

@@ -3644,7 +3644,7 @@ QString RadioInterface::_convert_links_to_clickable(const QString & iText) const
 
   // Allow uppercase also in top-level-domain as some texts are overall in uppercase letters.
   // Allow also umlauts as part of the URL, maybe there are more special letters valid for an URL outside...
-  static const QRegularExpression regex2(R"([\w\-äöüÄÖÜ]{2,}\.[a-zA-Z]{2,})");
+  static const QRegularExpression regex2(R"([\w\-äöüÄÖÜ]{2,}\.[a-zA-Z]{2,}$)");
   static const QRegularExpression regex1("\\s+"); // match any whitespace
 
   QStringList wordList = iText.split(regex1, Qt::SkipEmptyParts);
