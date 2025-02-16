@@ -95,7 +95,7 @@ private:
   float meanIQ = 0.0f;
   bool dcRemovalActive = false;
 
-  void _dump_samples_to_file(const int32_t iNoSamples, const cmplx * const ipV);
+  void _dump_samples_to_file(const cmplx * const ipV, const int32_t iNoSamples);
   void _wait_for_sample_buffer_filled(int32_t n);
 
 signals:
