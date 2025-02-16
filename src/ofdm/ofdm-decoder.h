@@ -42,6 +42,8 @@
 #include <cstdint>
 #include <vector>
 
+#define USE_PHASE_CORR_LUT
+
 class RadioInterface;
 
 class OfdmDecoder : public QObject
@@ -110,9 +112,11 @@ private:
 
   // phase correction LUT to speed up process (there are no (good) SIMD commands for that)
   static constexpr float cPhaseShiftLimit = 20.0f;
+#ifdef USE_PHASE_CORR_LUT
   static constexpr int32_t cLutLen2 = 127; // -> 255 values in LUT
   static constexpr float cLutFact = cLutLen2 / (F_RAD_PER_DEG * cPhaseShiftLimit);
   std::array<cmplx, cLutLen2 * 2 + 1> mLutPhase2Cmplx;
+#endif
 
   // mLcdData has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
@@ -122,6 +126,9 @@ private:
   [[nodiscard]] float _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const std::vector<cmplx> &);
   void _reset_null_symbol_statistics();
+#ifndef USE_PHASE_CORR_LUT
+  cmplx cmplx_from_phase2(const float iPhase);
+#endif
 
   static cmplx _interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar);
 

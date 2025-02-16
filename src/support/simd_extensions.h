@@ -123,40 +123,49 @@ class SimdVec
 public:
   SimdVec() = delete;
 
-  explicit SimdVec(uint32_t iNrTempVec)
+  explicit SimdVec(uint32_t iNrTempFloatVec, uint32_t iNrTempCmplxVec = 0)
   {
     const size_t align = volk_get_alignment();
-    mVolkSingleFloat = (T *)volk_malloc(1 * sizeof(T), align);
     mVolkVec = (T *)volk_malloc(cK * sizeof(T), align);
+    mVolkSingleFloat = (T *)volk_malloc(1 * sizeof(T), align);
     assert(mVolkSingleFloat != nullptr);
     assert(mVolkVec != nullptr);
 
-    if (iNrTempVec >= 1)
+    switch (iNrTempFloatVec)
     {
-      mVolkTemp1Vec = (T *)volk_malloc(cK * sizeof(T), align);
-      assert(mVolkTemp1Vec != nullptr);
+    case 3:
+      mVolkTempFloat3Vec = (float *)volk_malloc(cK * sizeof(float), align);
+      assert(mVolkTempFloat3Vec != nullptr);
+      [[fallthrough]];
+    case 2:
+      mVolkTempFloat2Vec = (float *)volk_malloc(cK * sizeof(float), align);
+      assert(mVolkTempFloat2Vec != nullptr);
+      [[fallthrough]];
+    case 1:
+      mVolkTempFloat1Vec = (float *)volk_malloc(cK * sizeof(float), align);
+      assert(mVolkTempFloat1Vec != nullptr);
+      [[fallthrough]];
+    default:;
     }
 
-    if (iNrTempVec >= 2)
+    switch (iNrTempCmplxVec)
     {
-      mVolkTemp2Vec = (T *)volk_malloc(cK * sizeof(T), align);
-      assert(mVolkTemp2Vec != nullptr);
-    }
-
-    if (iNrTempVec >= 3)
-    {
-      mVolkTemp3Vec = (T *)volk_malloc(cK * sizeof(T), align);
-      assert(mVolkTemp3Vec != nullptr);
+    case 1:
+      mVolkTempCmplx1Vec = (cmplx *)volk_malloc(cK * sizeof(cmplx), align);
+      assert(mVolkTempCmplx1Vec != nullptr);
+      [[fallthrough]];
+    default:;
     }
   }
 
   ~SimdVec()
   {
-    volk_free(mVolkTemp3Vec);
-    volk_free(mVolkTemp2Vec);
-    volk_free(mVolkTemp1Vec);
-    volk_free(mVolkVec);
+    volk_free(mVolkTempCmplx1Vec);
+    volk_free(mVolkTempFloat3Vec);
+    volk_free(mVolkTempFloat2Vec);
+    volk_free(mVolkTempFloat1Vec);
     volk_free(mVolkSingleFloat);
+    volk_free(mVolkVec);
   }
 
   void fill_zeros()
@@ -203,6 +212,20 @@ public:
   inline set_normalize_each_element(const SimdVec<cmplx> & iVec)
   {
     simd_normalize(mVolkVec, iVec, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, cmplx>, void>
+  inline set_back_rotate_phase_each_element(const SimdVec<cmplx> & iVec, const SimdVec<float> & iPhaseVec)
+  {
+    assert(mVolkTempFloat1Vec != nullptr);
+    assert(mVolkTempFloat2Vec != nullptr);
+    assert(mVolkTempCmplx1Vec != nullptr);
+
+    volk_32f_cos_32f(mVolkTempFloat1Vec, iPhaseVec, cK);
+    volk_32f_sin_32f(mVolkTempFloat2Vec, iPhaseVec, cK);
+    volk_32f_x2_interleave_32fc(mVolkTempCmplx1Vec, mVolkTempFloat1Vec, mVolkTempFloat2Vec, cK);
+    volk_32fc_x2_multiply_conjugate_32fc(mVolkVec, iVec, mVolkTempCmplx1Vec, cK);
   }
 
   template <typename U = T>
@@ -322,23 +345,23 @@ public:
   typename std::enable_if_t<std::is_same_v<U, float>, void>
   inline modify_mean_filter_each_element(const SimdVec<float> & iVec, const float iAlpha) const
   {
-    assert(mVolkTemp1Vec != nullptr);
+    assert(mVolkTempFloat1Vec != nullptr);
 
     // ioVal += iAlpha * (iVal - ioVal);
-    volk_32f_x2_subtract_32f_a(mVolkTemp1Vec, iVec, mVolkVec, cK);           // temp = (iVec - mVolkVec)
-    volk_32f_s32f_multiply_32f_a(mVolkTemp1Vec, mVolkTemp1Vec, iAlpha, cK);  // temp = alpha * temp
-    volk_32f_x2_add_32f_a(mVolkVec, mVolkVec, mVolkTemp1Vec, cK);            // ioVal += temp
+    volk_32f_x2_subtract_32f_a(mVolkTempFloat1Vec, iVec, mVolkVec, cK);                // temp = (iVec - mVolkVec)
+    volk_32f_s32f_multiply_32f_a(mVolkTempFloat1Vec, mVolkTempFloat1Vec, iAlpha, cK);  // temp = alpha * temp
+    volk_32f_x2_add_32f_a(mVolkVec, mVolkVec, mVolkTempFloat1Vec, cK);                 // ioVal += temp
   }
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, float>
   inline get_mean_filter_sum_of_elements(const float iLastMeanVal, const float iAlpha) const
   {
-    assert(mVolkTemp1Vec != nullptr);
+    assert(mVolkTempFloat1Vec != nullptr);
 
-    volk_32f_s32f_add_32f_a(mVolkTemp1Vec, mVolkVec, -iLastMeanVal, cK);     // temp = (mVolkVec - iLastMeanVal) -> iLastMeanVal is normally the last returned sum value
-    volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkTemp1Vec, cK);        // this sums all temp vector elements to the first element
-    return iAlpha * mVolkSingleFloat[0] / (float)cK + iLastMeanVal;          // new mean value over all vector elements
+    volk_32f_s32f_add_32f_a(mVolkTempFloat1Vec, mVolkVec, -iLastMeanVal, cK);   // temp = (mVolkVec - iLastMeanVal) -> iLastMeanVal is normally the last returned sum value
+    volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkTempFloat1Vec, cK);      // this sums all temp vector elements to the first element
+    return iAlpha * mVolkSingleFloat[0] / (float)cK + iLastMeanVal;             // new mean value over all vector elements
   }
 
   template <typename U = T>
@@ -380,25 +403,25 @@ public:
   inline set_squared_distance_to_nearest_constellation_point_each_element(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec, const SimdVec<float> & iMeanLevelVec)
   {
     // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
-    assert(mVolkTemp1Vec != nullptr);
-    assert(mVolkTemp2Vec != nullptr);
-    assert(mVolkTemp3Vec != nullptr);
+    assert(mVolkTempFloat1Vec != nullptr);
+    assert(mVolkTempFloat2Vec != nullptr);
+    assert(mVolkTempFloat3Vec != nullptr);
 
     // the value of the mean level on each axis (45° angle assumed in 1st quadrant)
-    volk_32f_s32f_multiply_32f_a(mVolkTemp3Vec, iMeanLevelVec, F_SQRT1_2, cK); // n = iMean / sqrt(2)
+    volk_32f_s32f_multiply_32f_a(mVolkTempFloat3Vec, iMeanLevelVec, F_SQRT1_2, cK); // n = iMean / sqrt(2)
 
     // swap input values to 1st quadrant (phase turn is not necessary)
-    simd_abs(mVolkTemp1Vec, iLevelRealVec, cK); // a
-    simd_abs(mVolkTemp2Vec, iLevelImagVec, cK); // b
+    simd_abs(mVolkTempFloat1Vec, iLevelRealVec, cK); // a
+    simd_abs(mVolkTempFloat2Vec, iLevelImagVec, cK); // b
 
     // subtract mean value to get the distance on each axis
-    volk_32f_x2_subtract_32f_a(mVolkTemp1Vec, mVolkTemp1Vec, mVolkTemp3Vec, cK); // a - n
-    volk_32f_x2_subtract_32f_a(mVolkTemp2Vec, mVolkTemp2Vec, mVolkTemp3Vec, cK); // b - n
+    volk_32f_x2_subtract_32f_a(mVolkTempFloat1Vec, mVolkTempFloat1Vec, mVolkTempFloat3Vec, cK); // a - n
+    volk_32f_x2_subtract_32f_a(mVolkTempFloat2Vec, mVolkTempFloat2Vec, mVolkTempFloat3Vec, cK); // b - n
 
     // now calculate the squared cartesian distance
-    volk_32f_x2_multiply_32f_a(mVolkTemp1Vec, mVolkTemp1Vec, mVolkTemp1Vec, cK); // (a - n)^2
-    volk_32f_x2_multiply_32f_a(mVolkTemp2Vec, mVolkTemp2Vec, mVolkTemp2Vec, cK); // (b - n)^2
-    volk_32f_x2_add_32f_a(mVolkVec, mVolkTemp1Vec, mVolkTemp2Vec, cK);           // (a - n)^2 + (b - n)^2
+    volk_32f_x2_multiply_32f_a(mVolkTempFloat1Vec, mVolkTempFloat1Vec, mVolkTempFloat1Vec, cK); // (a - n)^2
+    volk_32f_x2_multiply_32f_a(mVolkTempFloat2Vec, mVolkTempFloat2Vec, mVolkTempFloat2Vec, cK); // (b - n)^2
+    volk_32f_x2_add_32f_a(mVolkVec, mVolkTempFloat1Vec, mVolkTempFloat2Vec, cK);                // (a - n)^2 + (b - n)^2
   }
 
   template <typename U = T>
@@ -406,12 +429,12 @@ public:
   inline set_squared_magnitude_of_elements(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec)
   {
     // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
-    assert(mVolkTemp1Vec != nullptr);
-    assert(mVolkTemp2Vec != nullptr);
+    assert(mVolkTempFloat1Vec != nullptr);
+    assert(mVolkTempFloat2Vec != nullptr);
 
-    volk_32f_x2_multiply_32f_a(mVolkTemp1Vec, iLevelRealVec, iLevelRealVec, cK); // real^2
-    volk_32f_x2_multiply_32f_a(mVolkTemp2Vec, iLevelImagVec, iLevelImagVec, cK); // imag^2
-    volk_32f_x2_add_32f_a(mVolkVec, mVolkTemp1Vec, mVolkTemp2Vec, cK);           // real^2 + imag^2
+    volk_32f_x2_multiply_32f_a(mVolkTempFloat1Vec, iLevelRealVec, iLevelRealVec, cK); // real^2
+    volk_32f_x2_multiply_32f_a(mVolkTempFloat2Vec, iLevelImagVec, iLevelImagVec, cK); // imag^2
+    volk_32f_x2_add_32f_a(mVolkVec, mVolkTempFloat1Vec, mVolkTempFloat2Vec, cK);      // real^2 + imag^2
   }
 
   template <typename U = T>
@@ -424,9 +447,10 @@ public:
 private:
   T * mVolkSingleFloat = nullptr;
   T * mVolkVec = nullptr;
-  T * mVolkTemp1Vec = nullptr;
-  T * mVolkTemp2Vec = nullptr;
-  T * mVolkTemp3Vec = nullptr;
+  float * mVolkTempFloat1Vec = nullptr;
+  float * mVolkTempFloat2Vec = nullptr;
+  float * mVolkTempFloat3Vec = nullptr;
+  cmplx * mVolkTempCmplx1Vec = nullptr;
 };
 
 

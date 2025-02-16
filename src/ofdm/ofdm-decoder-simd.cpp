@@ -55,13 +55,6 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
     mMapNomToFftIdx[nomCarrIdx] = fftIdx;
   }
 
-  // create phase -> cmplx LUT
-  for (int32_t phaseIdx = -cLutLen2; phaseIdx <= cLutLen2; ++phaseIdx)
-  {
-    const float phase = (float)phaseIdx / cLutFact;
-    mLutPhase2Cmplx[phaseIdx + cLutLen2] = cmplx(std::cos(phase), std::sin(phase));
-  }
-
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &RadioInterface::slot_show_iq);
   connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &RadioInterface::slot_show_lcd_data);
 
@@ -127,7 +120,7 @@ void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iFftBuffer
 
 void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
 {
-  // current runtime: avr: 66us, min: 26us (with no VOLK: 240us)
+  // current runtime on i7-6700K: avr: 57us, min: 19us
   // mTimeMeas.trigger_begin();
 
   mDcFftLast = mDcFft;
@@ -145,14 +138,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   mSimdVecFftBinRaw.set_multiply_conj_each_element(mSimdVecNomCarrier, mSimdVecPhaseReferenceNormed);  // PI/4-DQPSK demodulation
 
   // -------------------------------
-  // mVolkFftBinPhaseCorrVec = mVolkFftBinRawVec * cmplx_from_phase(-mVolkIntegAbsPhaseVector);
-  LOOP_OVER_K
-  {
-    const int32_t phaseIdx = (int32_t)std::lround(mSimdVecIntegAbsPhase[nomCarrIdx] * cLutFact);
-    assert(phaseIdx >= -cLutLen2 && phaseIdx <= cLutLen2 );  // the limitation is done below already
-    const cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
-    mSimdVecFftBinPhaseCorr[nomCarrIdx] = mSimdVecFftBinRaw[nomCarrIdx] * phase;
-  }
+  mSimdVecFftBinPhaseCorr.set_back_rotate_phase_each_element(mSimdVecFftBinRaw, mSimdVecIntegAbsPhase);
 
   // -------------------------------
   mSimdVecFftBinPhaseCorrArg.set_arg_each_element(mSimdVecFftBinPhaseCorr);

@@ -82,7 +82,7 @@ private:
   std::array<int16_t, cK> mMapNomToRealCarrIdx{};
   std::array<int16_t, cK> mMapNomToFftIdx{};
 
-  SimdVec<cmplx> mSimdVecFftBinPhaseCorr{0};
+  SimdVec<cmplx> mSimdVecFftBinPhaseCorr{2, 1};
   SimdVec<cmplx> mSimdVecFftBinRaw{0};
   SimdVec<cmplx> mSimdVecPhaseReferenceNormed{0};
   SimdVec<cmplx> mSimdVecNomCarrier{0};
@@ -118,9 +118,6 @@ private:
 
   // phase correction LUT to speed up process (there are no (good) SIMD commands for that)
   static constexpr float cPhaseShiftLimit = 20.0f;
-  static constexpr int32_t cLutLen2 = 127; // -> 255 values in LUT
-  static constexpr float cLutFact = cLutLen2 / (F_RAD_PER_DEG * cPhaseShiftLimit);
-  std::array<cmplx, cLutLen2 * 2 + 1> mLutPhase2Cmplx;
 
   TimeMeas mTimeMeas{"ofdm-decoder", 1000};
 

@@ -57,13 +57,15 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mMeanLevelVector.resize(mDabPar.K);
   mMeanSigmaSqVector.resize(mDabPar.K);
 
+#ifdef USE_PHASE_CORR_LUT
   // create phase -> cmplx LUT
   for (int32_t phaseIdx = -cLutLen2; phaseIdx <= cLutLen2; ++phaseIdx)
   {
     const float phase = (float)phaseIdx / cLutFact;
     mLutPhase2Cmplx[phaseIdx + cLutLen2] = cmplx(std::cos(phase), std::sin(phase));
   }
-
+#endif
+  
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &RadioInterface::slot_show_iq);
   connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &RadioInterface::slot_show_lcd_data);
 
@@ -73,6 +75,45 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
 OfdmDecoder::~OfdmDecoder()
 {
 }
+
+#ifndef USE_PHASE_CORR_LUT
+cmplx OfdmDecoder::cmplx_from_phase2(float d)
+{
+  const double M_4_PI = 1.273239544735162542821171882678754627704620361328125;
+  const double PI4_A = 0.7853981554508209228515625;
+  const double PI4_B = 0.794662735614792836713604629039764404296875e-8;
+  const double PI4_C = 0.306161699786838294306516483068750264552437361480769e-16;
+  const int N = 3; // order of argument reduction
+
+  double s = abs(d);
+  int q = (int)(s * M_4_PI);
+  int r = q + (q & 1);
+  s -= r * PI4_A;
+  s -= r * PI4_B;
+  s -= r * PI4_C;
+
+  s = s * 0.125; // 2^-N
+  s = s * s; // Evaluating Taylor series
+  s = ((((s / 1814400. - 1.0 / 20160.0) * s + 1.0 / 360.0) * s - 1.0 / 12.0) * s + 1.0) * s;
+  for (int i = 0; i < N; i++) // Applying double angle formula
+  {
+    s = (4.0 - s) * s;
+  }
+  s = s / 2.0;
+  float sine = sqrt((2.0 - s) * s);
+  float cosine = 1.0 - s;
+
+  if (((q + 1) & 2) != 0)
+  {
+    s = cosine;
+    cosine = sine;
+    sine = s;
+  }
+  if (((q & 4) != 0) != (d < 0.0)) sine = -sine;
+  if (((q + 2) & 4) != 0) cosine = -cosine;
+  return cmplx(cosine, sine);
+}
+#endif
 
 void OfdmDecoder::reset()
 {
@@ -126,10 +167,13 @@ void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iBuffer)
 
 void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
 {
+  // current runtime on i7-6700K:
+  // phase correction via:
+  //   LUT:                avr: 240us, min: 108us
+  //   cmplx_from_phase    avr: 235us, min: 101us
+  //   cmplx_from_phase2   avr: 283us, min: 144us
   float sum = 0.0f;
   float stdDevSqOvrAll = 0.0f;
-
-  //const cmplx rotator = std::exp(cmplx(0.0f, -iPhaseCorr)); // fine correction of phase which can't be done in the time domain
 
   ++mShowCntIqScope;
   ++mShowCntStatistics;
@@ -165,13 +209,17 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     float & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
 
     //fftBin *= rotator; // Fine correction of phase which can't be done in the time domain (not more necessary as it is done below other way).
-    // const cmplx fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
 
+#ifdef USE_PHASE_CORR_LUT
     // do phase correction via LUT
     const int32_t phaseIdx = (int32_t)std::lround(integAbsPhasePerBinRef * cLutFact);
     assert(phaseIdx >= -cLutLen2 && phaseIdx <= cLutLen2 );  // the limitation is done below already
     const cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
     const cmplx fftBin = fftBinRaw * phase;
+#else
+    const cmplx fftBin = fftBinRaw * cmplx_from_phase2(-integAbsPhasePerBinRef);
+    // const cmplx fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
+#endif
 
     // Get phase and absolute phase for each bin.
     const float fftBinPhase = std::arg(fftBin);
@@ -179,7 +227,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
 
     // Integrate phase error to perform the phase correction in the next OFDM symbol.
     integAbsPhasePerBinRef += 0.2f * ALPHA * (fftBinAbsPhase - F_M_PI_4); // TODO: correction still necessary?
-    limit_symmetrically(integAbsPhasePerBinRef, F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
+    limit_symmetrically(integAbsPhasePerBinRef, F_RAD_PER_DEG * 20.0f); // this is important to not overdrive mLutPhase2Cmplx!
 
     // Get standard deviation of absolute phase for each bin. The integrator above assures that F_M_PI_4 is the phase mean value.
     const float curStdDevDiff = (fftBinAbsPhase -  F_M_PI_4);
@@ -212,27 +260,23 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
 
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
     float w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
-    w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 2; // 1/SNR + 2
+    w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) +
+          (mSoftBitType == ESoftBitType::SOFTDEC3 ? 1 : 2); // 1/SNR + 2
 
     cmplx r1;
     float w2;
 
-    switch (mSoftBitType)
-    {
-    case ESoftBitType::SOFTDEC1: // input power over current and last OFDM symbol
+    if (mSoftBitType == ESoftBitType::SOFTDEC1) // input power over current and last OFDM symbol
+	{
       w1 *= std::abs(mPhaseReference[fftIdx]);
       r1 = fftBin * w1;
       w2 = -140 / mMeanValue;
-      break;
-    case ESoftBitType::SOFTDEC2: // log likelihood ratio
-      r1 = fftBin * w1;
-      w2 = -100 / mMeanValue;
-      break;
-    default: // ESoftBitType::SOFTDEC3
+    }
+    else //  // log likelihood ratio
+    {
       w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
       r1 = norm_to_length_one(fftBin) * w1;
       w2 = -100 / mMeanValue;
-      break;
     }
 
     // split the real and the imaginary part and scale it
@@ -321,7 +365,6 @@ float OfdmDecoder::_compute_frequency_offset(const std::vector<cmplx> & r, const
     theta += val;
   }
   return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.T_u / (float)mDabPar.T_s * (float)mDabPar.CarrDiff;
-  // return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.CarrDiff;
 }
 
 float OfdmDecoder::_compute_noise_Power() const
