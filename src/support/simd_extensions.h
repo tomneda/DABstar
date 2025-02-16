@@ -362,20 +362,18 @@ public:
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, bool>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
   inline modify_check_negative_or_zero_values_and_fallback_each_element(const float iFallbackLimit)
   {
-    bool fallbackHappened = false;
     // TODO: check for SIMD
     for (uint32_t idx = 0; idx < cK; ++idx)
     {
       if (mVolkVec[idx] <= 0)
       {
+        // fprintf(stderr, "Change idx %d from %f to fallback value %f\n", idx, mVolkVec[idx], iFallbackLimit);
         mVolkVec[idx] = iFallbackLimit;
-        fallbackHappened = true;
       }
     }
-    return fallbackHappened;
   }
 
   template <typename U = T>

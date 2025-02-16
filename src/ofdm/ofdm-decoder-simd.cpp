@@ -161,41 +161,38 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   // in best case the values in mVolkFftBinAbsPhaseCorrVec should only rest onto the positive real axis
   mSimdVecFftBinWrapped.set_wrap_4QPSK_to_phase_zero_each_element(mSimdVecFftBinPhaseCorrArg);
 
-  constexpr float ALPHA = 0.005f;
+  constexpr float cAlpha = 0.005f;
 
   // -------------------------------
   // mVolkIntegAbsPhaseVector = limit(mVolkIntegAbsPhaseVector + mVolkFftBinAbsPhaseCorr * 0.2f * ALPHA)
   // Integrate phase error to perform the phase correction in the next OFDM symbol.
-  mSimdVecTemp1Float.set_multiply_vector_and_scalar_each_element(mSimdVecFftBinWrapped, 0.2f * ALPHA); // weighting
+  mSimdVecTemp1Float.set_multiply_vector_and_scalar_each_element(mSimdVecFftBinWrapped, 0.2f * cAlpha); // weighting
   mSimdVecIntegAbsPhase.modify_accumulate_each_element(mSimdVecTemp1Float); // integrator
   mSimdVecIntegAbsPhase.modify_limit_symmetrically_each_element(F_RAD_PER_DEG * cPhaseShiftLimit); // this is important to not overdrive mLutPhase2Cmplx!
 
   // -------------------------------
   mSimdVecTemp1Float.set_square_each_element(mSimdVecFftBinWrapped); // variance
-  mSimdVecStdDevSqPhaseVec.modify_mean_filter_each_element(mSimdVecTemp1Float, ALPHA);
+  mSimdVecStdDevSqPhaseVec.modify_mean_filter_each_element(mSimdVecTemp1Float, cAlpha);
 
   // -------------------------------
   mSimdVecFftBinPower.set_squared_magnitude_each_element(mSimdVecFftBinPhaseCorr);
   mSimdVecFftBinLevel.set_sqrt_each_element(mSimdVecFftBinPower);
 
   // -------------------------------
-  mSimdVecMeanLevel.modify_mean_filter_each_element(mSimdVecFftBinLevel, ALPHA);
-  mSimdVecMeanPower.modify_mean_filter_each_element(mSimdVecFftBinPower, ALPHA);
-  mMeanPowerOvrAll = mSimdVecFftBinPower.get_mean_filter_sum_of_elements(mMeanPowerOvrAll, ALPHA);
+  mSimdVecMeanLevel.modify_mean_filter_each_element(mSimdVecFftBinLevel, cAlpha);
+  mSimdVecMeanPower.modify_mean_filter_each_element(mSimdVecFftBinPower, cAlpha);
+  mMeanPowerOvrAll = mSimdVecFftBinPower.get_mean_filter_sum_of_elements(mMeanPowerOvrAll, cAlpha);
 
   // -------------------------------
   mSimdVecFftBinPhaseCorr.store_to_real_and_imag_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecFftBinPhaseCorrImag);
   // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
   mSimdVecSigmaSq.set_squared_distance_to_nearest_constellation_point_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecFftBinPhaseCorrImag, mSimdVecMeanLevel);
-  mSimdVecMeanSigmaSq.modify_mean_filter_each_element(mSimdVecSigmaSq, ALPHA);
+  mSimdVecMeanSigmaSq.modify_mean_filter_each_element(mSimdVecSigmaSq, cAlpha);
 
   // -------------------------------
   // 1/SNR + 2 = mVolkTemp2FloatVec = mVolkMeanNullPowerWithoutTII / (mVolkMeanPowerVector - mVolkMeanNullPowerWithoutTII) + 2
   mSimdVecTemp1Float.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
-  if (mSimdVecTemp1Float.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f))
-  {
-    qDebug() << "WARNING: (mSimdVecMeanPower - mSimdVecMeanNullPowerWithoutTII) <= 0!";
-  }
+  mSimdVecTemp1Float.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f);
   mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecTemp1Float);  // T2 = 1/SNR
   mSimdVecTemp2Float.set_add_scalar_each_element(2.0f); // T2 += 2
 
