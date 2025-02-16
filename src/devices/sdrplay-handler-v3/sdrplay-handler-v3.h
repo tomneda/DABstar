@@ -73,7 +73,7 @@ public:
   QString deviceName() override;
   bool isFileInput() override;
   void update_PowerOverload(sdrplay_api_EventParamsT * params);
-  RingBuffer<std::complex<int16_t>> _I_Buffer;
+  RingBuffer<cmplx16> * const p_I_Buffer;
   std::atomic<bool> receiverRuns;
 
   sdrplay_api_CallbackFnsT cbFns;

@@ -26,7 +26,13 @@ RingBufferFactory<int16_t>::RingBufferFactory()
 {
   create_ringbuffer(EId::AudioFromDecoder, "AudioFromDecoder", 4096 * 2 /*stereo*/ * 2 /*security*/, true);
   create_ringbuffer(EId::AudioToOutput,    "AudioToOutput",    AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS, true);
-  create_ringbuffer(EId::TechDataBuffer,   "TechDataBuffer",   2 * 1024, true);
+  create_ringbuffer(EId::TechDataBuffer,   "TechDataBuffer",   2 * 1024);
+}
+
+template <>
+RingBufferFactory<cmplx16>::RingBufferFactory()
+{
+  create_ringbuffer(EId::DeviceSampleBuffer, "DeviceSampleBuffer", 4 * 1024 * 1024, true);
 }
 
 template <>
@@ -101,13 +107,13 @@ void RingBufferFactory<uint8_t>::print_status(const bool iResetMinMax /*= false*
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
-    printf("RingbufferUInt8 Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
+    printf("RingbufferUInt8   Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
       (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {
     const char * const globProgBar = _show_progress_bar(globMaxPrc, globMinPrc);
-    printf("RingbufferUInt8         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
+    printf("RingbufferUInt8           Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
   }
 }
 
@@ -130,13 +136,42 @@ void RingBufferFactory<int16_t>::print_status(const bool iResetMinMax /*= false*
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
-    printf("RingbufferInt16 Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
+    printf("RingbufferInt16   Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
       (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {
     const char * const globProgBar = _show_progress_bar(globMaxPrc, globMinPrc);
-    printf("RingbufferInt16         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
+    printf("RingbufferInt16           Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
+  }
+}
+
+template <>
+void RingBufferFactory<cmplx16>::print_status(const bool iResetMinMax /*= false*/) const
+{
+  uint32_t showDataCnt = 0;
+  float globMinPrc = std::numeric_limits<float>::max();
+  float globMaxPrc = 0.0f;
+
+  for (const auto & [_, list] : mMap)
+  {
+    SListPar & par = list.Par;
+    if (!par.ShowStatistics) continue;
+    if (showDataCnt++ == 0) _print_line(iResetMinMax);
+
+    const RingbufferBase::SFillState fs = list.pRingBuffer->get_fill_state();
+
+    float minPrc, maxPrc;
+    _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
+
+    const char * const progBar = _show_progress_bar(fs.Percent);
+    printf("RingbufferCmplx16 Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
+           (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+  }
+  if (showDataCnt > 0)
+  {
+    const char * const globProgBar = _show_progress_bar(globMaxPrc, globMinPrc);
+    printf("RingbufferCmplx16         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
   }
 }
 
@@ -159,13 +194,13 @@ void RingBufferFactory<float>::print_status(const bool iResetMinMax /*= false*/)
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
-    printf("RingbufferFloat Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
+    printf("RingbufferFloat   Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
       (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {
     const char * const globProgBar = _show_progress_bar(globMaxPrc, globMinPrc);
-    printf("RingbufferFloat         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
+    printf("RingbufferFloat           Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
   }
 }
 
@@ -188,13 +223,13 @@ void RingBufferFactory<cmplx>::print_status(const bool iResetMinMax /*= false*/)
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
-    printf("RingbufferCmplx Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
+    printf("RingbufferCmplx   Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
       (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {
     const char * const globProgBar = _show_progress_bar(globMaxPrc, globMinPrc);
-    printf("RingbufferCmplx         Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
+    printf("RingbufferCmplx           Name: %20s, FillLevel:      %s (%3.0f%%, %3.0f%%)\n", "MIN/MAX", globProgBar, globMinPrc, globMaxPrc);
   }
 }
 
@@ -202,5 +237,6 @@ void RingBufferFactory<cmplx>::print_status(const bool iResetMinMax /*= false*/)
 // instantiation
 RingBufferFactory<uint8_t> sRingBufferFactoryUInt8;
 RingBufferFactory<int16_t> sRingBufferFactoryInt16;
+RingBufferFactory<cmplx16> sRingBufferFactoryCmplx16;
 RingBufferFactory<float>   sRingBufferFactoryFloat;
 RingBufferFactory<cmplx>   sRingBufferFactoryCmplx;

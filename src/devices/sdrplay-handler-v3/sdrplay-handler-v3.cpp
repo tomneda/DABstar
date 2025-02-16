@@ -69,7 +69,7 @@ std::string errorMessage(int errorCode)
 }
 
 SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVersion)
-  : _I_Buffer(4 * 1024 * 1024)
+  : p_I_Buffer(sRingBufferFactoryCmplx16.get_ringbuffer(RingBufferFactory<cmplx16>::EId::DeviceSampleBuffer).get())
   , myFrame(nullptr)
 {
   sdrplaySettings = s;
@@ -226,9 +226,9 @@ int32_t SdrPlayHandler_v3::getSamples(cmplx * V, int32_t size)
 {
   static constexpr float denominator = (float)(1 << (nrBits-1));
 
-  auto * const temp = make_vla(std::complex<int16_t>, size);
+  auto * const temp = make_vla(cmplx16, size);
 
-  const int amount = _I_Buffer.get_data_from_ring_buffer(temp, size);
+  const int amount = p_I_Buffer->get_data_from_ring_buffer(temp, size);
 
   for (int i = 0; i < amount; i++)
   {
@@ -244,12 +244,12 @@ int32_t SdrPlayHandler_v3::getSamples(cmplx * V, int32_t size)
 
 int32_t SdrPlayHandler_v3::Samples()
 {
-  return _I_Buffer.get_ring_buffer_read_available();
+  return p_I_Buffer->get_ring_buffer_read_available();
 }
 
 void SdrPlayHandler_v3::resetBuffer()
 {
-  _I_Buffer.flush_ring_buffer();
+  p_I_Buffer->flush_ring_buffer();
 }
 
 int16_t SdrPlayHandler_v3::bitDepth()
@@ -486,7 +486,7 @@ bool SdrPlayHandler_v3::messageHandler(generalCommand * r)
 static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, unsigned int numSamples, unsigned int reset, void * cbContext)
 {
   SdrPlayHandler_v3 * p = static_cast<SdrPlayHandler_v3 *> (cbContext);
-  std::complex<int16_t> localBuf[numSamples];
+  cmplx16 localBuf[numSamples];
 
   (void)params;
   if (reset)
@@ -500,10 +500,10 @@ static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT 
 
   for (int i = 0; i < (int)numSamples; i++)
   {
-    std::complex<int16_t> symb = std::complex<int16_t>(xi[i], xq[i]);
+    cmplx16 symb = cmplx16(xi[i], xq[i]);
     localBuf[i] = symb;
   }
-  p->_I_Buffer.put_data_into_ring_buffer(localBuf, numSamples);
+  p->p_I_Buffer->put_data_into_ring_buffer(localBuf, numSamples);
 }
 
 static void StreamBCallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, unsigned int numSamples, unsigned int reset, void * cbContext)

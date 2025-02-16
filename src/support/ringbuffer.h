@@ -419,7 +419,8 @@ public:
     DataBuffer,
     AudioFromDecoder,
     AudioToOutput,
-    TechDataBuffer
+    TechDataBuffer,
+    DeviceSampleBuffer
   };
 
   struct SListPar
@@ -482,6 +483,7 @@ private:
 
 extern RingBufferFactory<uint8_t> sRingBufferFactoryUInt8;
 extern RingBufferFactory<int16_t> sRingBufferFactoryInt16;
+extern RingBufferFactory<cmplx16> sRingBufferFactoryCmplx16;
 extern RingBufferFactory<float>   sRingBufferFactoryFloat;
 extern RingBufferFactory<cmplx>   sRingBufferFactoryCmplx;
 

@@ -1263,6 +1263,7 @@ void RadioInterface::_slot_update_time_display()
   {
     sRingBufferFactoryUInt8.print_status(false);
     sRingBufferFactoryInt16.print_status(false);
+    sRingBufferFactoryCmplx16.print_status(false);
     sRingBufferFactoryFloat.print_status(false);
     sRingBufferFactoryCmplx.print_status(false);
   }
@@ -1271,6 +1272,7 @@ void RadioInterface::_slot_update_time_display()
     // reset min/max state
     sRingBufferFactoryUInt8.print_status(true);
     sRingBufferFactoryInt16.print_status(true);
+    sRingBufferFactoryCmplx16.print_status(true);
     sRingBufferFactoryFloat.print_status(true);
     sRingBufferFactoryCmplx.print_status(true);
 
