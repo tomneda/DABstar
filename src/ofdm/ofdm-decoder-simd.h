@@ -87,6 +87,7 @@ private:
   SimdVec<cmplx> mSimdVecPhaseReferenceNormed{0};
   SimdVec<cmplx> mSimdVecNomCarrier{0};
   SimdVec<cmplx> mSimdVecPhaseReference{0};
+  SimdVec<cmplx> mSimdVecTempCmplx{0};
   SimdVec<float> mSimdVecWeightPerBin{0};
   SimdVec<float> mSimdVecFftBinWrapped{0};
   SimdVec<float> mSimdVecFftBinPhaseCorrArg{0};

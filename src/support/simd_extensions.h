@@ -251,6 +251,13 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline modify_multiply_each_element(const SimdVec<float> & iVec1)
+  {
+    volk_32f_x2_multiply_32f_a(mVolkVec, mVolkVec, iVec1, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
   inline set_divide_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
   {
     volk_32f_x2_divide_32f_a(mVolkVec, iVec1, iVec2, cK);
@@ -293,6 +300,13 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
+  inline modify_sqrt_each_element()
+  {
+    volk_32f_sqrt_32f_a(mVolkVec, mVolkVec, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, float>, void>
   inline set_arg_each_element(const SimdVec<cmplx> & iVec)
   {
     volk_32fc_s32f_atan2_32f_a(mVolkVec, iVec, 1.0f /*no weigth*/, cK); // this is not really faster than a simple loop
@@ -308,7 +322,7 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_add_scalar_each_element(float iScalar)
+  inline modify_add_scalar_each_element(float iScalar)
   {
     volk_32f_s32f_add_32f_a(mVolkVec, mVolkVec, iScalar, cK);
   }

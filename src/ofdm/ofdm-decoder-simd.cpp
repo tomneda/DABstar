@@ -176,27 +176,35 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
   mSimdVecMeanSigmaSq.modify_mean_filter_each_element(mSimdVecSigmaSq, cAlpha);
 
   // -------------------------------
-  // 1/SNR + 2 = mVolkTemp2FloatVec = mVolkMeanNullPowerWithoutTII / (mVolkMeanPowerVector - mVolkMeanNullPowerWithoutTII) + 2
   mSimdVecMeanNettoPower.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
   mSimdVecMeanNettoPower.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f);
   mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecMeanNettoPower);  // T2 = 1/SNR
-  mSimdVecTemp2Float.set_add_scalar_each_element(2.0f); // T2 += 2
+  mSimdVecTemp2Float.modify_add_scalar_each_element(mSoftBitType == ESoftBitType::SOFTDEC3 ? 1.0f : 2.0f); // T2 += (1 or 2)
 
   // -------------------------------
-  // w1 = mSimdVecWeightPerBin = (mVolkMeanLevelVector / mVolkMeanSigmaSqVector) / mVolkTemp2FloatVec (1/SNR + 2)
   mSimdVecWeightPerBin.set_divide_each_element(mSimdVecMeanLevel, mSimdVecMeanSigmaSq);    // w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
   mSimdVecWeightPerBin.set_divide_each_element(mSimdVecWeightPerBin, mSimdVecTemp2Float);  // w1 /= T2
 
-
+  // -------------------------------
   if (mSoftBitType == ESoftBitType::SOFTDEC1)
   {
-    // w1 = mSimdVecWeightPerBin *= std::abs(mVolkPhaseReference);
-    mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference);
-    mSimdVecWeightPerBin.set_multiply_each_element(mSimdVecWeightPerBin, mSimdVecTemp1Float);
+    mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference);  // T1 = abs(phaseRef)
+    mSimdVecWeightPerBin.modify_multiply_each_element(mSimdVecTemp1Float);  // w1 *= T1
+    mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin);  // real of r1 = fftBin * w1
+    mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin);  // imag of r1 = fftBin * w1
+  }
+  else
+  {
+    mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference); // T1 = abs(phaseRef)
+    mSimdVecTemp1Float.modify_multiply_each_element(mSimdVecFftBinLevel);  // T1 *= abs(fftBin)
+    mSimdVecTemp1Float.modify_sqrt_each_element();                         // T1 = sqrt(T1)
+    mSimdVecWeightPerBin.modify_multiply_each_element(mSimdVecTemp1Float); // w1 *= T1
+    mSimdVecTempCmplx.set_normalize_each_element(mSimdVecFftBinPhaseCorr); // T = normalize(fftBin)
+    mSimdVecTempCmplx.store_to_real_and_imag_each_element(mSimdVecDecodingReal, mSimdVecDecodingImag);
+    mSimdVecDecodingReal.modify_multiply_each_element(mSimdVecWeightPerBin);  // real *= w1
+    mSimdVecDecodingImag.modify_multiply_each_element(mSimdVecWeightPerBin);  // imag *= w1
   }
 
-  mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin);
-  mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin);
 
   // use mMeanValue from last round to be conform with the non-SIMD variant
   const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
@@ -208,7 +216,7 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uin
 
   // -------------------------------
   // apply weight w2 to be conform to the viterbi input range
-  // const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
+  //const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC1 ? -140 / mMeanValue : -100 / mMeanValue);
   mSimdVecDecodingReal.modify_multiply_scalar_each_element(w2);
   mSimdVecDecodingImag.modify_multiply_scalar_each_element(w2);
   // -------------------------------

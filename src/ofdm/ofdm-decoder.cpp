@@ -261,13 +261,13 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
     float w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
     w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) +
-          (mSoftBitType == ESoftBitType::SOFTDEC3 ? 1 : 2); // 1/SNR + 2
+          (mSoftBitType == ESoftBitType::SOFTDEC3 ? 1.0f : 2.0f); // 1/SNR + (1 or 2)
 
     cmplx r1;
     float w2;
 
     if (mSoftBitType == ESoftBitType::SOFTDEC1) // input power over current and last OFDM symbol
-	{
+    {
       w1 *= std::abs(mPhaseReference[fftIdx]);
       r1 = fftBin * w1;
       w2 = -140 / mMeanValue;
