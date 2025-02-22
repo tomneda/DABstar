@@ -261,18 +261,18 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
     float w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
     w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) +
-          (mSoftBitType == ESoftBitType::SOFTDEC3 ? 1.0f : 2.0f); // 1/SNR + (1 or 2)
+          (mSoftBitType == ESoftBitType::SOFTDEC1 ? 1.0f : 2.0f); // 1/SNR + (1 or 2)
 
     cmplx r1;
     float w2;
 
-    if (mSoftBitType == ESoftBitType::SOFTDEC1) // input power over current and last OFDM symbol
+    if (mSoftBitType == ESoftBitType::SOFTDEC3)
     {
       w1 *= std::abs(mPhaseReference[fftIdx]);
-      r1 = fftBin * w1;
+      r1 = fftBin * w1; // input power over current and last OFDM symbol
       w2 = -140 / mMeanValue;
     }
-    else //  // log likelihood ratio
+    else // SOFTDEC1 and SOFTDEC2, log likelihood ratio
     {
       w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
       r1 = norm_to_length_one(fftBin) * w1;
@@ -340,7 +340,8 @@ void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iC
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * mDabPar.K / stdDevSqOvrAll);
     mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
-    mLcdData.TestData1 = _compute_frequency_offset(iV, mPhaseReference);
+    // mLcdData.TestData1 = _compute_frequency_offset(iV, mPhaseReference);
+    mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)mDabPar.CarrDiff;;
 
     emit signal_show_lcd_data(&mLcdData);
