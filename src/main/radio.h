@@ -225,7 +225,7 @@ private:
   std::vector<float> mAudioOutBuffer;
   SpectrumViewer mSpectrumViewer;
   BandHandler mBandHandler;
-  dlCache mDlCache{10};
+  DynLinkCache mDynLabelCache{10};
   TiiHandler mTiiHandler{};
   DxDisplay	mDxDisplay;
   OpenFileDialog mOpenFileDialog;

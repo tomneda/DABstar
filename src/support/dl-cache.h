@@ -1,51 +1,21 @@
+#ifndef  DL_CACHE_H
+#define  DL_CACHE_H
 
-#ifndef	__DL_CACHE_H
-#define	__DL_CACHE_H
+#include  <QString>
+#include  <vector>
 
-#include	<QString>
-#include	<vector>
-class	dlCache {
+class DynLinkCache
+{
 private:
-   std::vector<QString> cache;
-   int	p;
-   int	size;
-#define	CACHE_SIZE	16
-#define CACHE_MASK	(CACHE_SIZE - 1)
+  std::vector<QString> cache;
+  int p;
+  int size;
 public:
-	dlCache	(int size) {
-	   (void)size;
-	   cache. resize (CACHE_SIZE);
-	   this	-> size	= CACHE_SIZE;
-	   p = 0;
-	}
+  DynLinkCache(int size);
 
-	dlCache	() {
-	}
-
-void	add		(const QString &s) {
-	cache [p] = s;
-	p = (p + 1) & CACHE_MASK;
-}
-
-bool	isMember	(const QString &s) {
-	for (int i = 0; i < CACHE_SIZE; i ++)
-	   if (cache [i] == s)
-	      return true;
-	return false;
-}
-
-bool	addifNew	(const QString &s) {
-	for (uint16_t i = p; i < p + CACHE_SIZE; i ++) {
-	   if (cache [i & CACHE_MASK] == s) {
-	      for (uint16_t j = i; j < (p - 1) + CACHE_SIZE; j ++)
-	         cache [j & CACHE_MASK] = cache [(j + 1) & CACHE_MASK];
-	      cache [(p - 1 + CACHE_SIZE) & CACHE_MASK] = s;
-	      return true;
-	   }
-	}
-	cache [p] = s;
-	p = (p + 1) & CACHE_MASK;
-	return false;
-}
+  void add(const QString & s);
+  bool is_member(const QString & s);
+  bool add_if_new(const QString & s);
 };
+
 #endif

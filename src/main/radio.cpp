@@ -1512,8 +1512,9 @@ void RadioInterface::slot_show_label(const QString & s)
     lblDynLabel->setStyleSheet("color: white");
     lblDynLabel->setText(_convert_links_to_clickable(s));
   }
+
   //	if we dtText is ON, some work is still to be done
-  if ((mDlTextFile == nullptr) || (mDlCache.addifNew(s)))
+  if ((mDlTextFile == nullptr) || (mDynLabelCache.add_if_new(s)))
   {
     return;
   }

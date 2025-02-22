@@ -421,6 +421,7 @@ set(${objectName}_SRCS
         src/support/time-table.cpp
         src/support/openfiledialog.cpp
         src/support/content-table.cpp
+        src/support/dl-cache.cpp
         src/support/ITU_Region_1.cpp
         src/support/coordinates.cpp
         src/support/mapport.cpp
