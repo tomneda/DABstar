@@ -22,34 +22,37 @@
     m3 = old_metrics[i+32] + metric;\
 \
     /* Compare and select */\
-	decision0 = m0 > m1;\
-	decision1 = m2 > m3;\
+    decision0 = (int)(m0-m1) > 0;\
+    decision1 = (int)(m2-m3) > 0;\
 \
     /* Store surviving metrics */\
     new_metrics[2*i] = decision0 ? m1 : m0;\
     new_metrics[2*i+1] = decision1 ? m3 : m2;\
     *d |= (uint64_t)(decision0 | (decision1 << 1)) << (i*2);\
 }
-/*
-    decision0 = (signed int)(m0-m1) > 0;\
-    decision1 = (signed int)(m2-m3) > 0;\
-*/
+
+#define limit_min_max(sym) {\
+	int16_t tmp = *syms++;\
+    tmp += 127;\
+    if (tmp < 0) tmp = 0;\
+    else if (tmp > 255) tmp = 255;\
+    sym = tmp;\
+}
+
 	uint64_t *d = (uint64_t *)decisions;
 	memset(d, 0, nbits*sizeof(uint64_t));
-    COMPUTETYPE *old_metrics = metrics1.t;
-    COMPUTETYPE *new_metrics = metrics2.t;
-    COMPUTETYPE *Branchtab = (COMPUTETYPE *)Branchtable;
-    COMPUTETYPE *syms = mpSymbols;
+    COMPUTETYPE *old_metrics = metrics1;
+    COMPUTETYPE *new_metrics = metrics2;
+    const COMPUTETYPE *Branchtab = Branchtable;
+    const int16_t *syms = input;
 
 	while(nbits--)
     {
-		COMPUTETYPE *tmp;
 		COMPUTETYPE sym0, sym1, sym2, sym3;
-
-		sym0 = *syms++;
-		sym1 = *syms++;
-		sym2 = *syms++;
-		sym3 = *syms++;
+		limit_min_max(sym0);
+		limit_min_max(sym1);
+		limit_min_max(sym2);
+		limit_min_max(sym3);
 		BFLY(0);
 		BFLY(1);
 		BFLY(2);
@@ -85,7 +88,7 @@
         d++;
 
 		// Swap pointers to old and new metrics
-		tmp = new_metrics;
+		COMPUTETYPE *temp = new_metrics;
 		new_metrics = old_metrics;
-		old_metrics = tmp;
+		old_metrics = temp;
     }

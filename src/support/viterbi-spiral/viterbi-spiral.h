@@ -24,7 +24,6 @@ private:
   int parity(int);
   const short mFrameBits;
   const bool mSpiral;
-  int * mpSymbols = nullptr;
   decision_t *decisions  = nullptr;
 };
 
