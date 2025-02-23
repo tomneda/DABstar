@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2013
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -37,7 +36,8 @@
 #include  "bitWriter.h"
 #include  "data_manip_and_checks.h"
 
-//
+// #define SHOW_ERROR_STATISTICS
+
 /**
   *	\class mp4Processor is the main handler for the aac frames
   *	the class proper processes input and extracts the aac frames
@@ -78,7 +78,7 @@ Mp4Processor::~Mp4Processor()
 /**
   *	\brief addtoFrame
   *
-  *	a DAB+ superframe consists of 5 consecutive DAB frames 
+  *	a DAB+ superframe consists of 5 consecutive DAB frames
   *	we add vector for vector to the superframe. Once we have
   *	5 lengths of "old" frames, we check.
   *	Note that the packing in the entry vector is still one bit
@@ -89,6 +89,7 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
 {
   const int16_t numBits = 24 * mBitRate;
   const int16_t numBytes = numBits / 8;
+  int32_t displayedErrors = mSumCorrections;
 
   // convert input bit-stream in iV to a byte-stream in mFrameByteVec
   for (int16_t i = 0; i < numBytes; i++)
@@ -103,6 +104,7 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
 
   mBlocksInBuffer++;
   mBlockFillIndex = (mBlockFillIndex + 1) % 5;
+  mSumFrameCount++;
 
   // we take the last five blocks to look at
   if (mBlocksInBuffer >= 5)
@@ -155,9 +157,19 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
           // we were wrong, virtual shift to left in block sizes
           mBlocksInBuffer = 4;
           mFrameErrors++;
+          mSumFrameErrors++;
         }
       }
     }
+  }
+
+  if (mSumCorrections > displayedErrors)
+  {
+#ifdef SHOW_ERROR_STATISTICS
+    fprintf(stderr, "Frames=%d, Frame Errors=%d, RS Errors=%d, RS Corrections=%d, CRC Errors=%d\n",
+            mSumFrameCount * mRsDims / 5, mSumFrameErrors, mSumRsErrors, mSumCorrections, mSumCrcErrors);
+#endif
+    displayedErrors = mSumCorrections;
   }
 }
 
@@ -191,16 +203,18 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
     if (ler < 0)
     {
       mRsErrors++;
-      fprintf (stderr, "RS failure %d\n", mRsErrors);
+      mSumRsErrors ++;
+      //fprintf (stderr, "RS failure %d\n", mRsErrors);
       if (!fc.check(&ipFrameBytes[iBase]) && j == 0)
       {
-        fprintf (stderr, "Firecode after RS failure\n");
+        //fprintf (stderr, "Firecode after RS failure\n");
         return false;
       }
     }
     else
     {
       mTotalCorrections += ler;
+      mSumCorrections += ler;
       mGoodFrames++;
       if (mGoodFrames >= 100)
       {
@@ -351,6 +365,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
     else
     {
       mCrcErrors++;
+      mSumCrcErrors++;
     }
     //
     //	what would happen if the errors were in the 10 parity bytes

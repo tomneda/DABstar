@@ -87,6 +87,11 @@ private:
   int32_t mSuperFrameSync = 0;
   int32_t mGoodFrames = 0;
   int32_t mTotalCorrections = 0;
+  int32_t mSumFrameCount = 0;
+  int32_t mSumFrameErrors = 0;
+  int32_t mSumRsErrors = 0;
+  int32_t mSumCorrections = 0;
+  int32_t mSumCrcErrors = 0;
   std::vector<uint8_t> mFrameByteVec;
   std::vector<uint8_t> mOutVec;
   std::array<int16_t, 10> mAuStartArr;
