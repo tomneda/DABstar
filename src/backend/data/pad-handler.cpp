@@ -92,7 +92,7 @@ void PadHandler::processPAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t 
   {
   default: break;
 
-  case 01 : handle_shortPAD(buffer, last, CI_flag);
+  case 01: handle_shortPAD(buffer, last, CI_flag);
     break;
 
   case 02: handle_variablePAD(buffer, last, CI_flag);
@@ -162,7 +162,6 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
 
       if ((still_to_go <= 0) && (shortpadData.size() > 1))
       {
-        shortpadData.push_back(0);
         dynamicLabelTextUnConverted.append((const char *)shortpadData.data(), (int)shortpadData.size());
         check_charset_change();
         shortpadData.resize(0);
@@ -183,8 +182,6 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
     //	at the end of a frame
     if ((still_to_go <= 0) && (shortpadData.size() > 0))
     {
-      shortpadData.push_back(0);
-
       //	just to avoid doubling by unsollicited shortpads
       dynamicLabelTextUnConverted.append((const char *)shortpadData.data());
       check_charset_change();
@@ -312,9 +309,10 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
 
     last_appType = appType;
     base -= length;
+
     if (base < 0 && i < CI_Index - 1)
     {
-      //	      fprintf (stdout, "Hier gaat het fout, base = %d\n", base);
+      // fprintf (stdout, "Hier gaat het fout, base = %d\n", base);
       return;
     }
   }
@@ -325,7 +323,7 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
 //	fields, starting with CI = 2, continuing with CI = 3
 void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
 {
-  //static int16_t segmentno = 0;
+  static int32_t segmentno = -1;
   static int16_t remainDataLength = 0;
   static bool isLastSegment = false;
   static bool moreXPad = false;
@@ -342,25 +340,36 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
 
     if (first)
     {
-      //segmentno = 1;
+      segmentno = 1;
       charSet = (prefix >> 4) & 017;
       dynamicLabelTextUnConverted.clear();
       reset_charset_change();
     }
-    // else
-    // {
-    //   segmentno = ((prefix >> 4) & 07) + 1;
-    // }
+    else
+    {
+      const int32_t test = ((prefix >> 4) & 07) + 1;
+
+      if (test != segmentno + 1)
+      {
+        // fprintf (stderr, "mismatch %d %d\n", test, segmentno);
+        segmentno = -1;
+        return;
+      }
+      segmentno = ((prefix >> 4) & 07) + 1;
+      // fprintf (stderr, "segment %d\n", segmentno);
+    }
 
     if (Cflag) // special dynamic label command
     {
       // the only specified command is to clear the display
       dynamicLabelTextUnConverted.clear();
       reset_charset_change();
+      segmentno = -1;
     }
     else
     {    // Dynamic text length
-      int16_t totalDataLength = field_1 + 1;
+      const int16_t totalDataLength = field_1 + 1;
+
       if (length - 2 < totalDataLength)
       {
         dataLength = length - 2; // the length is shortened by header
@@ -382,6 +391,8 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
         {
           const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
           emit signal_show_label(dynamicLabelTextConverted);
+          //	            fprintf (stderr, "last segment encountered\n");
+          segmentno = -1;
         }
         else
         {
