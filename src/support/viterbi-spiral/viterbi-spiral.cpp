@@ -11,7 +11,7 @@
 #if defined(HAVE_VITERBI_AVX2)
   #include <immintrin.h>
   using COMPUTETYPE = uint16_t;
-#elif defined(HAVE_VITERBI_SSE22)
+#elif defined(HAVE_VITERBI_SSE2)
   #include <immintrin.h>
   using COMPUTETYPE = uint16_t;
 #elif defined(HAVE_VITERBI_NEON)
@@ -59,7 +59,7 @@ ViterbiSpiral::ViterbiSpiral(const int16_t iWordlength, const bool iSpiralMode) 
 #if defined(HAVE_VITERBI_AVX2)
   qInfo("Using AVX2 for Viterbi spiral decoder");
 #elif defined(HAVE_VITERBI_SSE2)
-  qInfo("Using SSE for Viterbi spiral decoder");
+  qInfo("Using SSE2 for Viterbi spiral decoder");
 #elif defined(HAVE_VITERBI_NEON)
   qInfo("Using NEON for Viterbi spiral decoder");
 #else
