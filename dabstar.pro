@@ -570,7 +570,7 @@ datastreamer	{
 }
 
 VITERBI_SSE	{
-	DEFINES		+= SSE_AVAILABLE
+	DEFINES		+= HAVE_VITERBI_SSE
 	HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
 }
 
@@ -593,7 +593,7 @@ fdk-aac {
 }
 
 volk	{
-        DEFINES		+= __USE_SIMD__
+        DEFINES		+= HAVE_SSE_OR_AVX
         HEADERS		+= src/support/simd_extensions.h \
         		   src/ofdm/ofdm-decoder-simd.h
         SOURCES         += src/ofdm/ofdm-decoder-simd.cpp

@@ -53,7 +53,7 @@
 #include <cstdint>
 #include <sndfile.h>
 
-#ifdef __USE_SIMD__
+#ifdef HAVE_SSE_OR_AVX
   #include "ofdm-decoder-simd.h"
 #else
   #include "ofdm-decoder.h"

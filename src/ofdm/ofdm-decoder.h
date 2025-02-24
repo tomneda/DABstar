@@ -31,7 +31,7 @@
 #ifndef OFDM_DECODER_H
 #define OFDM_DECODER_H
 
-#ifndef __USE_SIMD__
+#ifndef HAVE_SSE_OR_AVX
 
 #include "dab-constants.h"
 #include "dab-params.h"
@@ -137,5 +137,5 @@ signals:
   void signal_show_lcd_data(const SLcdData *);
 };
 
-#endif // __USE_SIMD__
+#endif // HAVE_SSE_OR_AVX
 #endif

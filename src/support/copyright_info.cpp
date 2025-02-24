@@ -13,13 +13,13 @@
 
 #include "copyright_info.h"
 #include <qwt.h>
-#ifdef __USE_SIMD__
+#ifdef HAVE_SSE_OR_AVX
   #include <volk/volk.h>
 #endif
 
 QString get_copyright_text()
 {
-#ifdef __USE_SIMD__
+#ifdef HAVE_SSE_OR_AVX
   QString volkVers = QString(" / Volk %1.%2.%3").arg(VOLK_VERSION_MAJOR).arg(VOLK_VERSION_MINOR).arg(VOLK_VERSION_MAINT);
   QString useVolk = ", Volk";
 #else

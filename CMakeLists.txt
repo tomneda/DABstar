@@ -112,10 +112,15 @@ option(RTLSDR     "Use Rtlsdr"      ON)
 # additional options
 option(USE_HBF       "Use oversampling with half band filter" OFF)  # this needs LiquidDsp
 option(DATA_STREAMER "Use DataStreamer"  OFF)
-option(VITERBI_SSE   "Use Viterbi SSE"   OFF)
-option(VITERBI_NEON  "Use Viterbi NEON"  OFF)
-option(FDK_AAC       "Use FDK-AAC"        ON)
-option(USE_SIMD      "Use SIMD intrinsics to speed up process" OFF) # needs VOLK (https://github.com/gnuradio/volk), is still experimental
+option(FDK_AAC       "Use FDK-AAC" ON)
+
+# choose only one of the next three, otherwise the first ON-entry is valid
+option(VITERBI_AVX2  "Use AVX2 for Viterbi" OFF)  # fastest, for modern Intel/AMD processors
+option(VITERBI_SSE   "Use SSE for Viterbi"  OFF)  # quite fast, for bit older Intel/AMD processors
+option(VITERBI_NEON  "Use NEON for Viterbi" OFF)  # for ARM processors like Raspi (not tested)
+
+# there are other places like the OFDM decoder which can use SSE/AVX
+option(SSE_OR_AVX    "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  # needs VOLK (https://github.com/gnuradio/volk)
 
 ######################################################################
 ######################################################################
@@ -172,7 +177,7 @@ search_for_library(ZLIB zlib)
 search_for_library(LIBSNDFILE sndfile)
 search_for_library(LIBSAMPLERATE samplerate)
 
-if (USE_SIMD)
+if (SSE_OR_AVX)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/support/simd_extensions.h
@@ -186,7 +191,7 @@ if (USE_SIMD)
     find_package(Volk REQUIRED)
     include_directories(${VOLK_INCLUDE_DIRS})
     list(APPEND extraLibs ${VOLK_LIBRARIES})
-    add_definitions(-D__USE_SIMD__)
+    add_definitions(-DHAVE_SSE_OR_AVX)
     # print_all_vars(VOLK)
 else ()
     set($(objectName)_HDRS
@@ -484,25 +489,31 @@ elseif (NOT FDK_AAC)
     add_definitions(-D__WITH_FAAD__)
 endif (FDK_AAC)
 
-if (VITERBI_NEON)
-    set(VITERBI_SSE false)
-    set(${objectName}_HDRS
+if (VITERBI_AVX2)
+    set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            src/support/viterbi-spiral/sse2neon.h
+            src/support/viterbi-spiral/viterbi_16way.h
     )
-    add_definitions(-DNEON_AVAILABLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
+    add_definitions(-DHAVE_VITERBI_AVX2)
 elseif (VITERBI_SSE)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/viterbi_8way.h
     )
-    add_definitions(-DSSE_AVAILABLE)
-else (VITERBI_SSE)
+    add_definitions(-DHAVE_VITERBI_SSE)
+elseif (VITERBI_NEON)
+    set(${objectName}_HDRS
+            ${${objectName}_HDRS}
+            src/support/viterbi-spiral/sse2neon.h
+    )
+    add_definitions(-DHAVE_VITERBI_NEON)
+else ()
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/viterbi_scalar.h
     )
-endif (VITERBI_NEON)
+endif ()
 
 if (DATA_STREAMER)
     include_directories(

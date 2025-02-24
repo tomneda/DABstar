@@ -8,24 +8,21 @@
 
 #include "viterbi-spiral.h"
 
-#if defined(NEON_AVAILABLE)
-#include "sse2neon.h"
-#endif
-
-#if defined(SSE_AVAILABLE)
-#include <immintrin.h>
-#endif
-
-#if defined(NEON_AVAILABLE) || defined(SSE_AVAILABLE)
-#define COMPUTETYPE uint16_t
+#if defined(HAVE_VITERBI_AVX2)
+  #include <immintrin.h>
+  #define COMPUTETYPE int32_t
+#elif defined(HAVE_VITERBI_SSE)
+  #include <immintrin.h>
+  #define COMPUTETYPE uint16_t
+#elif defined(HAVE_VITERBI_NEON)
+  #include "sse2neon.h"
+  #define COMPUTETYPE uint16_t
 #else
-#define COMPUTETYPE int32_t
+  #define COMPUTETYPE int32_t
 #endif
 
-#define K 7
-#define RATE 4
-
-
+#define K        7
+#define RATE     4
 #define ALIGN(a) __attribute__ ((aligned(a)))
 
 ALIGN(32) static const COMPUTETYPE Branchtable[RATE*NUMSTATES/2]{
@@ -59,6 +56,16 @@ ViterbiSpiral::ViterbiSpiral(const int16_t iWordlength, const bool iSpiralMode) 
   mFrameBits(iWordlength),
   mSpiral(iSpiralMode)
 {
+#if defined(HAVE_VITERBI_AVX2)
+  qInfo("Using AVX2 for Viterbi spiral decoder");
+#elif defined(HAVE_VITERBI_SSE)
+  qInfo("Using SSE for Viterbi spiral decoder");
+#elif defined(HAVE_VITERBI_NEON)
+  qInfo("Using NEON for Viterbi spiral decoder");
+#else
+  qInfo("Using Scalar for Viterbi spiral decoder");
+#endif
+
   const int nbits = mFrameBits + (K - 1);
   decisions = (decision_t *)malloc(nbits * sizeof(decision_t));
 }
@@ -94,9 +101,10 @@ void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const outp
 
   uint32_t nbits = mFrameBits + (K - 1);
 
-#if defined(NEON_AVAILABLE) || defined(SSE_AVAILABLE)
+#if defined(HAVE_VITERBI_AVX2)
+  #include "viterbi_16way.h"
+#elif defined(HAVE_VITERBI_NEON) || defined(HAVE_VITERBI_SSE)
   #include "viterbi_8way.h"
-  //#include "viterbi_16way.h"
 #else
   #include "viterbi_scalar.h"
 #endif
