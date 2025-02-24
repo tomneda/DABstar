@@ -10,15 +10,15 @@
 
 #if defined(HAVE_VITERBI_AVX2)
   #include <immintrin.h>
-  #define COMPUTETYPE int32_t
+  using COMPUTETYPE = uint16_t;
 #elif defined(HAVE_VITERBI_SSE)
   #include <immintrin.h>
-  #define COMPUTETYPE uint16_t
+  using COMPUTETYPE = uint16_t;
 #elif defined(HAVE_VITERBI_NEON)
   #include "sse2neon.h"
-  #define COMPUTETYPE uint16_t
+  using COMPUTETYPE = uint16_t;
 #else
-  #define COMPUTETYPE int32_t
+  using COMPUTETYPE = int32_t;
 #endif
 
 #define K        7
