@@ -131,11 +131,17 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVers
   //	and be prepared for future changes in the settings
   connect(GRdBSelector, qOverload<int>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_ifgainReduction);
   connect(lnaGainSetting, qOverload<int>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_lnagainReduction);
-  connect(agcControl, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_agcControl);
   connect(ppmControl, SIGNAL(valueChanged(double)), this, SLOT(set_ppmControl(double)));
   connect(dumpButton, &QPushButton::clicked, this, &SdrPlayHandler_v3::set_xmlDump);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+  connect(agcControl, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_agcControl);
   connect(biasT_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_biasT);
   connect(notch_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_notch);
+#else
+  connect(agcControl, &QCheckBox::stateChanged, this, &SdrPlayHandler_v3::set_agcControl);
+  connect(biasT_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler_v3::set_biasT);
+  connect(notch_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler_v3::set_notch);
+#endif
   connect(antennaSelector, &QComboBox::textActivated, this, &SdrPlayHandler_v3::set_selectAntenna);
 
   vfoFrequency = MHz (220);
