@@ -570,7 +570,7 @@ datastreamer	{
 }
 
 VITERBI_SSE	{
-	DEFINES		+= HAVE_VITERBI_SSE
+	DEFINES		+= HAVE_VITERBI_SSE2
 	HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
 }
 

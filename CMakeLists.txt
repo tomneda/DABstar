@@ -116,7 +116,7 @@ option(FDK_AAC       "Use FDK-AAC" ON)
 
 # choose only one of the next three, otherwise the first ON-entry is valid
 option(VITERBI_AVX2  "Use AVX2 for Viterbi" OFF)  # fastest, for modern Intel/AMD processors
-option(VITERBI_SSE   "Use SSE for Viterbi"  OFF)  # quite fast, for bit older Intel/AMD processors
+option(VITERBI_SSE2  "Use SSE2 for Viterbi" OFF)  # quite fast, for bit older Intel/AMD processors
 option(VITERBI_NEON  "Use NEON for Viterbi" OFF)  # for ARM processors like Raspi (not tested)
 
 # there are other places like the OFDM decoder which can use SSE/AVX
@@ -496,12 +496,12 @@ if (VITERBI_AVX2)
     )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
     add_definitions(-DHAVE_VITERBI_AVX2)
-elseif (VITERBI_SSE)
+elseif (VITERBI_SSE2)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/viterbi_8way.h
     )
-    add_definitions(-DHAVE_VITERBI_SSE)
+    add_definitions(-DHAVE_VITERBI_SSE2)
 elseif (VITERBI_NEON)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
