@@ -127,7 +127,7 @@ private:
     QVariant KeyVal;
     QWidget * pWidget = nullptr;
   };
-  
+
   QMap<EElem, SMapElem> mMap;
 
   template<typename T> void _write_setting(SMapElem & me, const T iValue);
@@ -157,7 +157,11 @@ void SettingHelper::register_and_connect_ui_element(QCheckBox * const ipPushButt
 
   const auto * const pAB = dynamic_cast<QCheckBox *>(me.pWidget);
   Q_ASSERT(pAB != nullptr);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
   connect(pAB, &QCheckBox::checkStateChanged, [this, &me](int iState){ _write_setting(me, iState); });
+#else
+  connect(pAB, &QCheckBox::stateChanged, [this, &me](int iState){ _write_setting(me, iState); });
+#endif
 }
 
 template<SettingHelper::EElem iElem>

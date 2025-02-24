@@ -60,19 +60,25 @@ Configuration::Configuration(RadioInterface * ipRI) :
   cpuMonitor->setAutoFillBackground(true);
 
   connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_load_table);
-  connect(cbUse_strongest_peak, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
   connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &RadioInterface::slot_test_slider);
   connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &RadioInterface::slot_handle_dl_text_button);
-  connect(cbActivateLogger, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
   connect(streamoutSelector, qOverload<int>(&QComboBox::activated), mpRadioInterface, &RadioInterface::slot_set_stream_selector);
   connect(portSelector, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_port_selector);
   connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_set_coordinates_button);
-  connect(cbActivateEti, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
   connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_avoidance_algorithm);
   connect(cbUseDcRemoval, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_removal);
   connect(tii_threshold, &QSpinBox::valueChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_threshold);
   connect(cbTiiCollisions, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_tii_collisions);
   connect(tii_subid, &QSpinBox::valueChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_subid);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+  connect(cbUse_strongest_peak, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
+  connect(cbActivateLogger, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
+  connect(cbActivateEti, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
+#else
+  connect(cbUse_strongest_peak, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
+  connect(cbActivateLogger, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
+  connect(cbActivateEti, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
+#endif
 }
 
 void Configuration::save_position_and_config()
