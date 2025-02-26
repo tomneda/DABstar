@@ -530,6 +530,10 @@ bool RadioInterface::do_start()
     mConfig.tii_subid->setValue(subid) ;
     mpDabProcessor->set_tii_sub_id(subid);
   }
+  {
+    int idx = mConfig.cmbSoftBitGen->currentIndex();
+    mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);
+  }
 
   // should the device widget be shown?
   if (mpSH->read(SettingHelper::showDeviceWidget).toBool())
