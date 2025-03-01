@@ -89,7 +89,7 @@ DEPENDPATH += src \
     src/support/tii-library \
     src/support/buttons \
     src/support/viterbi-spiral \
-    src/output \
+    src/audio \
     src/scopes \
     src/spectrum-viewer \
     src/file-devices/xml-filewriter \
@@ -161,12 +161,10 @@ HEADERS += \
     src/backend/data/mot/mot-object.h \
     src/backend/data/mot/mot-dir.h \
     src/backend/data/data-processor.h \
-    src/output/fir-filters.h \
-    src/output/audio-player.h \
-    src/output/newconverter.h \
-    src/output/audiofifo.h \
-    src/output/audiooutput.h \
-    src/output/audiooutputqt.h \
+    src/audio/audiofifo.h \
+    src/audio/audiooutput.h \
+    src/audio/audiooutputqt.h \
+    src/support/fir-filters.h \
     src/support/ringbuffer.h \
     src/support/techdata.h \
     src/support/Xtan2.h \
@@ -209,8 +207,6 @@ HEADERS += \
     src/service-list/service-list-handler.h \
     src/service-list/service-db.h \
     src/configuration/configuration.h \
-    src/output/Qt-audio.h \
-    src/output/Qt-audiodevice.h \
     src/devices/device-handler.h \
     src/devices/device-exceptions.h \
     src/devices/device-selector.h \
@@ -269,12 +265,9 @@ SOURCES += \
     src/backend/data/mot/mot-object.cpp \
     src/backend/data/mot/mot-dir.cpp \
     src/backend/data/data-processor.cpp \
-    src/output/audio-player.cpp \
-    src/output/newconverter.cpp \
-    src/output/fir-filters.cpp \
-    src/output/audiofifo.cpp \
-    src/output/audiooutput.cpp \
-    src/output/audiooutputqt.cpp \
+    src/audio/audiooutput.cpp \
+    src/audio/audiooutputqt.cpp \
+    src/support/fir-filters.cpp \
     src/support/ringbuffer.cpp \
     src/support/Xtan2.cpp \
     src/support/dab-params.cpp \
@@ -313,8 +306,6 @@ SOURCES += \
     src/service-list/service-list-handler.cpp \
     src/service-list/service-db.cpp \
     src/configuration/configuration.cpp \
-    src/output/Qt-audio.cpp \
-    src/output/Qt-audiodevice.cpp \
     src/devices/device-selector.cpp \
     src/devices/filereaders/xml-filereader/xml-filereader.cpp \
     src/devices/filereaders/xml-filereader/xml-reader.cpp \
