@@ -9,9 +9,6 @@
       "name": "faad2"
     },
     {
-      "name": "portaudio"
-    },
-    {
       "name": "libsndfile"
     },
     {

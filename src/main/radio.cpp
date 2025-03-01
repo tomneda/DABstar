@@ -39,7 +39,6 @@
 #include "techdata.h"
 #include "service-list-handler.h"
 #include "setting-helper.h"
-#include "Qt-audio.h"
 #include "audiooutputqt.h"
 #include "angle_direction.h"
 #include "copyright_info.h"
@@ -56,7 +55,6 @@
 #include <QMouseEvent>
 #include <QDir>
 #include <QSpacerItem>
-#include "Qt-audio.h"
 #include "audiooutputqt.h"
 #include "time-table.h"
 #include "device-exceptions.h"

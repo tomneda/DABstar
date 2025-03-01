@@ -301,6 +301,8 @@ void AudioIODevice::_fade_out_audio_samples(int16_t * const opData, const int32_
 
 qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWantedBytesBothChannels) // this is called periodically by QtAudio subsystem
 {
+  // iMaxWantedBytesBothChannels = std::min<qint64>(iMaxWantedBytesBothChannels, 8192);
+
   // qDebug() << Q_FUNC_INFO << iMaxWantedSizeOfReadDataBytes;
   if (mDoStop || iMaxWantedBytesBothChannels == 0)
   {
