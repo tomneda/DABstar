@@ -47,6 +47,7 @@ public:
   ~RawReader();
 
   void stopReader();
+  bool handle_continuousButton();
 
 private:
   static constexpr int32_t BUFFERSIZE = 32768;
@@ -57,6 +58,7 @@ private:
   FILE * const mpFile;
   RingBuffer<cmplx> * const mpRingBuffer;
   std::atomic<bool> mRunning;
+  std::atomic<bool> continuous;
   std::vector<uint8_t> mByteBuffer;
   std::vector<cmplx> mCmplxBuffer;
   int64_t mFileLength;

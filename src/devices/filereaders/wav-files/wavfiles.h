@@ -75,6 +75,7 @@ private:
 
 public slots:
   void setProgress(int, float);
+  void slot_handle_cb_loop_file(const bool iChecked);
 };
 
 #endif

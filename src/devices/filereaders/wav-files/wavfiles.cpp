@@ -77,6 +77,8 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   currentTime->display(0);
   int64_t fileLength = sf_seek(filePointer, 0, SEEK_END);
   totalTime->display(QString("%1").arg((float)fileLength / 2048000, 0, 'f', 1));
+
+  connect(cbLoopFile, &QCheckBox::clicked, this, &WavFileHandler::slot_handle_cb_loop_file);
   running.store(false);
 }
 //
@@ -197,4 +199,14 @@ int16_t WavFileHandler::bitDepth()
 QString WavFileHandler::deviceName()
 {
   return "WavFile";
+}
+
+void WavFileHandler::slot_handle_cb_loop_file(const bool iChecked)
+{
+  if (filePointer == nullptr)
+  {
+    return;
+  }
+
+  cbLoopFile->setChecked(readerTask->handle_continuousButton());
 }
