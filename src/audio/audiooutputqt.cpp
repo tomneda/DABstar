@@ -61,11 +61,18 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
   format.setSampleFormat(QAudioFormat::Int16);
   format.setChannelCount(2);
   format.setChannelConfig(QAudioFormat::ChannelConfigStereo);
+  qCInfo(sLogAudioOutput) << "Wanted audio format:" << format;
+
+  _print_audio_device_formats("Slot Start", mCurrentAudioDevice);
 
   if (!mCurrentAudioDevice.isFormatSupported(format))
   {
-    qWarning() << "Default format not supported - trying to use preferred";
-    format = mCurrentAudioDevice.preferredFormat();
+    // format = mCurrentAudioDevice.preferredFormat();
+    // qCFatal() lets the program quit
+    qCFatal(sLogAudioOutput) << "Reclaimed audio format (48000 Sps, Int16 format, 2 channels) not supported -> no chance to go on, quit program";
+    #if defined(_WIN32) && QT_VERSION >= QT_VERSION_CHECK(6, 8, 2)
+      #error "Qt version >= 6.8.2 (6.8.1 works!) with Windows has issues with setting a range of sample rates -> minimumSampleRate() == maximumSampleRate()"
+    #endif
   }
 
   mpAudioSink.reset(new QAudioSink(mCurrentAudioDevice, format, this));
@@ -80,6 +87,15 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
   mpIoDevice->set_buffer(mpCurrentFifo);
   mpIoDevice->start();
   mpAudioSink->start(mpIoDevice.get());
+}
+
+void AudioOutputQt::_print_audio_device_formats(const std::string & iCaptionText, const QAudioDevice & ad) const
+{
+  qCInfo(sLogAudioOutput) << "------------- " << iCaptionText << " -------------";
+  qCInfo(sLogAudioOutput) << "Supported sample formats:" << ad.supportedSampleFormats();
+  qCInfo(sLogAudioOutput) << "Sample rate range:" << ad.minimumSampleRate() << "-" << ad.maximumSampleRate();
+  qCInfo(sLogAudioOutput) << "Channel configuration:" << ad.channelConfiguration();
+  qCInfo(sLogAudioOutput) << "-------------";
 }
 
 void AudioOutputQt::slot_restart(SAudioFifo * iBuffer)
@@ -129,6 +145,7 @@ void AudioOutputQt::slot_set_audio_device(const QByteArray & iDeviceId)
       if (dev.id() == iDeviceId)
       {
         mCurrentAudioDevice = dev;
+        _print_audio_device_formats("Set new audio device", mCurrentAudioDevice);
         emit signal_audio_device_changed(mCurrentAudioDevice.id());
         // change output device to newly selected
         slot_restart(mpCurrentFifo);
@@ -139,6 +156,7 @@ void AudioOutputQt::slot_set_audio_device(const QByteArray & iDeviceId)
 
   // device not found => choosing default
   mCurrentAudioDevice = mpDevices->defaultAudioOutput();
+  _print_audio_device_formats("Set default audio device", mCurrentAudioDevice);
   emit signal_audio_device_changed(mCurrentAudioDevice.id());
   // change output device to newly selected
   slot_restart(mpCurrentFifo);
