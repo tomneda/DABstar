@@ -30,7 +30,7 @@
  *
  * 	File reader:
  *	For the (former) files with 8 bit raw data from the
- *	dabsticks 
+ *	dabsticks
  */
 #include  "rawfiles.h"
 #include  "raw-reader.h"
@@ -70,6 +70,7 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
   fileProgress->setValue(0);
   currentTime->display(0);
 
+  connect(cbLoopFile, &QCheckBox::clicked, this, &RawFileHandler::slot_handle_cb_loop_file);
   running.store(false);
 }
 
@@ -187,5 +188,15 @@ int16_t RawFileHandler::bitDepth()
 QString RawFileHandler::deviceName()
 {
   return "RawFile";
+}
+
+void RawFileHandler::slot_handle_cb_loop_file(const bool iChecked)
+{
+  if (filePointer == nullptr)
+  {
+    return;
+  }
+
+  cbLoopFile->setChecked(readerTask->handle_continuousButton());
 }
 

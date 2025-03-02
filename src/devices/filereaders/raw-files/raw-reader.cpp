@@ -68,6 +68,7 @@ RawReader::RawReader(RawFileHandler * ipRFH, FILE * ipFile, RingBuffer<cmplx> * 
   qCInfo(sLogRawReader) << "RAW file length:" << mFileLength;
   fseek(ipFile, 0, SEEK_SET);
   mRunning.store(false);
+  continuous.store(ipRFH->cbLoopFile->isChecked());
   start();
 }
 
@@ -127,6 +128,8 @@ void RawReader::run()
       {
         qCInfo(sLogRawReader) << "Restart file";
         fseek(mpFile, 0, SEEK_SET);
+        if (!continuous.load())
+	      break;
       }
 
       nextStopus += (n * 1000) / (2 * 2048); // add runtime in us for n numbers of entries
@@ -134,7 +137,7 @@ void RawReader::run()
       for (int i = 0; i < n / 2; i++)
       {
         mCmplxBuffer[i] = cmplx(mMapTable[mByteBuffer[2 * i + 0]], mMapTable[mByteBuffer[2 * i + 1]]);
-      }                      
+      }
 
       mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), n / 2);
 
@@ -151,4 +154,9 @@ void RawReader::run()
   qCInfo(sLogRawReader) << "Playing RAW file stopped";
 }
 
+bool RawReader::handle_continuousButton()
+{
+  continuous.store(!continuous.load());
+  return continuous.load();
+}
 

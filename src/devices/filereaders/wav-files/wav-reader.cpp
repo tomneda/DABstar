@@ -55,6 +55,7 @@ WavReader::WavReader(WavFileHandler * mr, SNDFILE * filePointer, RingBuffer<cmpl
   period = (32768 * 1000) / (2048);  // full IQś read
   fprintf(stderr, "Period = %" PRIu64 "\n", period);
   running.store(false);
+  continuous.store(mr->cbLoopFile->isChecked());
   start();
 }
 
@@ -113,11 +114,14 @@ void WavReader::run()
       int n = sf_readf_float(filePointer, (float *)bi, bufferSize);
       if (n < bufferSize)
       {
+        fprintf(stderr, "eof gehad\n");
         sf_seek(filePointer, 0, SEEK_SET);
         for (int i = n; i < bufferSize; i++)
         {
           bi[i] = std::complex<float>(0, 0);
         }
+        if (!continuous.load())
+	      break;
       }
       theBuffer->put_data_into_ring_buffer(bi, bufferSize);
       if (nextStop - getMyTime() > 0)
@@ -131,5 +135,11 @@ void WavReader::run()
   }
   fprintf(stderr, "taak voor replay eindigt hier\n");
   fflush(stderr);
+}
+
+bool WavReader::handle_continuousButton()
+{
+  continuous.store(!continuous.load());
+  return continuous.load();
 }
 

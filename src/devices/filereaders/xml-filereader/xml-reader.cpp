@@ -74,7 +74,7 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, uint32_t 
   //	convBufferSize is a little confusing since the actual
   //	buffer is one larger
   convBufferSize = fd->sampleRate / 1000;
-  continuous.store(true);
+  continuous.store(mr->cbLoopFile->isChecked());
 
   for (int i = 0; i < 2048; i++)
   {

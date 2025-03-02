@@ -6,6 +6,8 @@
 #include  <QLCDNumber>
 #include  <QHBoxLayout>
 #include  <QVBoxLayout>
+#include  <QCheckBox>
+#include  <QSpacerItem>
 
 class FileReaderWidget
 {
@@ -16,6 +18,8 @@ public:
   QLCDNumber * currentTime{};
   QLabel * seconds{};
   QLCDNumber * totalTime{};
+  QCheckBox *cbLoopFile;
+  QSpacerItem *horizontalSpacer;
 
   FileReaderWidget() = default;
   ~FileReaderWidget() = default;
@@ -37,10 +41,16 @@ public:
     totalTime->setFrameShape(QFrame::NoFrame);
     totalTime->setSegmentStyle(QLCDNumber::Flat);
 
+    horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+    cbLoopFile = new QCheckBox("Loop");
+    cbLoopFile->setChecked(true);
+
     QHBoxLayout * bottom = new QHBoxLayout();
     bottom->addWidget(currentTime);
     bottom->addWidget(seconds);
     bottom->addWidget(totalTime);
+    bottom->addItem(horizontalSpacer);
+    bottom->addWidget(cbLoopFile);
 
     QVBoxLayout * base = new QVBoxLayout();
     base->addWidget(titleLabel);
