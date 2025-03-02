@@ -33,7 +33,7 @@ QString get_copyright_text()
 #endif
   QString versionText = "<html><head/><body><p>";
   versionText = "<h3>" + QString(PRJ_NAME) + " " + PRJ_VERS + " (Qt " QT_VERSION_STR " / Qwt " QWT_VERSION_STR + volkVers + ")</h3>";
-  versionText += "<p><b>Built on " + QString(__TIMESTAMP__) + QString("<br/>Commit ") + QString(GITHASH) + ".</b></p>";
+  versionText += "<p><b>Built on " + QString(__DATE__) + "&nbsp;&nbsp;" + QString(__TIME__) + QString("<br/>Commit ") + QString(GITHASH) + "</b></p>"; // __TIMESTAMP__ seems to use the file date not the compile date
   versionText += "<p>Forked from Qt-DAB, partly extensive changed, extended, some things also removed, by Thomas Neder "
                  "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>).<br/>"
                  "For Qt-DAB see <a href=\"https://github.com/JvanKatwijk/qt-dab\">https://github.com/JvanKatwijk/qt-dab</a> by Jan van Katwijk<br/>"
