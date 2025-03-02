@@ -90,7 +90,7 @@ private:
 
   void _do_stop() const;
   void _do_restart(SAudioFifo * buffer);
-  void _print_audio_device_formats(const std::string & iCaptionText, const QAudioDevice & ad) const;
+  void _print_audio_device_formats(const QAudioDevice & ad) const;
 
 public slots:
   void slot_start(SAudioFifo * iBuffer) override;
