@@ -1,9 +1,8 @@
 #!/bin/bash
 
-export PATH=/home/workvm/fs_Qt/6.8.2/gcc_64/bin/:$PATH
-# export QT_QPA_PLATFORM_PLUGIN_PATH=/home/workvm/fs_Qt/6.7.3/gcc_64/plugins/platforms/
-# export LD_LIBRARY_PATH=$QT_QPA_PLATFORM_PLUGIN_PATH:/home/workvm/fs_Qt/6.7.3/gcc_64/lib/:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/home/workvm/fs_Qt/6.8.2/gcc_64/lib/:$LD_LIBRARY_PATH
+QT_VERSION=6.8.2
+export PATH=/home/workvm/fs_Qt/$QT_VERSION/gcc_64/bin/:$PATH
+export LD_LIBRARY_PATH=/home/workvm/fs_Qt/$QT_VERSION/gcc_64/lib/:$LD_LIBRARY_PATH
 
 DST=~/DABstarAppImage
 
