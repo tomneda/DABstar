@@ -99,20 +99,20 @@ print(CMAKE_MODULE_PATH)
 # select one or more devices (set to ON)
 # attention: option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this
 # As I (tomneda) possess not all of these devices I place an "untested" behind. They may run, or not run.
-option(AIRSPY     "Use AirSpy"     OFF)   # untested
-option(SDRPLAY_V2 "Use SdrPlay V2" OFF)   # untested
+option(AIRSPY     "Use AirSpy"     OFF)  # untested
+option(SDRPLAY_V2 "Use SdrPlay V2" OFF)  # untested
 option(SDRPLAY_V3 "Use SdrPlay V3" OFF)
 option(HACKRF     "Use HackRf"     OFF)
-option(LIMESDR    "Use LimeSdr"    OFF)   # untested
-option(RTL_TCP    "Use RtlTcp"     OFF)   # untested
-option(PLUTO      "Use Pluto"      OFF)   # untested
+option(LIMESDR    "Use LimeSdr"    OFF)  # untested
+option(RTL_TCP    "Use RtlTcp"     OFF)
+option(PLUTO      "Use Pluto"      OFF)  # untested
 option(UHD        "Use UHD"        OFF)
-option(RTLSDR     "Use Rtlsdr"      ON)
+option(RTLSDR     "Use RtlSdr"      ON)
 
 # additional options
-option(USE_HBF       "Use oversampling with half band filter" OFF)  # this needs LiquidDsp
-option(DATA_STREAMER "Use DataStreamer"  OFF)
-option(FDK_AAC       "Use FDK-AAC" ON)
+option(USE_HBF       "Use oversampling with half band filter" OFF)  # this needs LiquidDsp (https://github.com/jgaeddert/liquid-dsp)
+option(DATA_STREAMER "Use DataStreamer"                       OFF)  # untested
+option(FDK_AAC       "Use FDK-AAC instead of FAAD"             ON)
 
 # choose only one of the next three, otherwise the first ON-entry is valid
 option(VITERBI_AVX2  "Use AVX2 for Viterbi" OFF)  # fastest, for modern Intel/AMD processors

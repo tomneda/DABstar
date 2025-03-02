@@ -42,6 +42,8 @@
 #include "audiooutputqt.h"
 #include "angle_direction.h"
 #include "copyright_info.h"
+#include "time-table.h"
+#include "device-exceptions.h"
 #include <cmath>
 #include <fstream>
 #include <numeric>
@@ -55,9 +57,6 @@
 #include <QMouseEvent>
 #include <QDir>
 #include <QSpacerItem>
-#include "audiooutputqt.h"
-#include "time-table.h"
-#include "device-exceptions.h"
 
 #if defined(__MINGW32__) || defined(_WIN32)
   #include <windows.h>
