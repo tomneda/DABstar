@@ -30,7 +30,7 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmp
   mIqVector.resize(cK);
   mCarrVector.resize(cK);
 
-  qInfo() << "Use VOLK machine:" << volk_get_machine();
+  qInfo() << "Using VOLK machine:" << volk_get_machine();
 
   for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
