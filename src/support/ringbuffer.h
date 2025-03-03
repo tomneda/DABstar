@@ -420,7 +420,8 @@ public:
     AudioFromDecoder,
     AudioToOutput,
     TechDataBuffer,
-    DeviceSampleBuffer
+    DeviceSampleBuffer,
+    PeakLevelBuffer
   };
 
   struct SListPar

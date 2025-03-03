@@ -38,6 +38,7 @@
 #include "glob_defs.h"
 #include <QObject>
 #include <QIODevice>
+#include <QTimer>
 
 class AudioIODevice;
 class QAudioSink;
@@ -124,12 +125,14 @@ public:
   // bool isSequential() const override { return true; }
 
 private:
+  static constexpr int32_t cNumPeakLevelPerSecond = 20;
   SAudioFifo * mpInFifo = nullptr;
   EPlaybackState mPlaybackState = EPlaybackState::Muted;
   //uint8_t mBytesPerFrame = 0;
   uint32_t mSampleRateKHz = 0;
   bool mDoStop = false;
   RingBuffer<int16_t> * const mpTechDataBuffer;
+  RingBuffer<cmplx16> * const mpStereoPeakLevelRingBuffer;
 
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
@@ -140,12 +143,17 @@ private:
   uint32_t mPeakLevelSampleCntBothChannels = 0;
   int16_t mAbsPeakLeft = 0;
   int16_t mAbsPeakRight = 0;
+  QTimer mTimerPeakLevel;
+  // union SStereoPeakLevel { struct { float Left, Right; }; cmplx Cmplx; };
 
   // void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead) const;
   void _fade(int32_t iNumStereoSamples, float coe, float gain, int16_t * dataPtr) const;
   void _fade_in_audio_samples(int16_t * opData, int32_t iNumStereoSamples) const;
   void _fade_out_audio_samples(int16_t * opData, int32_t iNumStereoSamples) const;
   void _eval_peak_audio_level(const int16_t * ipData, uint32_t iNumSamples);
+
+private slots:
+  void _slot_peak_level_timeout();
 
 signals:
   void signal_show_audio_peak_level(float, float) const;
