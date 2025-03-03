@@ -14,7 +14,6 @@ QMAKE_CXXFLAGS	+= -std=c++17
 QMAKE_CFLAGS	+= -ffast-math -flto
 QMAKE_CXXFLAGS	+= -ffast-math -flto
 QMAKE_LFLAGS	+= -ffast-math -flto
-QMAKE_LFLAGS    += -mthreads
 
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]
 RC_ICONS	=  res/logo/dabstar.ico
@@ -44,7 +43,7 @@ isEmpty(GITHASHSTRING) {
     DEFINES += GITHASH=\\\"(unknown)\\\"
 }
 
-#DESTDIR 	= ../../DABstar-Qt6.7.3
+#DESTDIR 	= ../../DABstar-Qt6.8.1
 LIBS		+= -L../../dabstar-libs/lib
 CONFIG		+= airspy
 #CONFIG		+= spyServer-16
@@ -56,12 +55,12 @@ CONFIG		+= dabstick
 CONFIG		+= sdrplay-v3
 CONFIG		+= hackrf
 #CONFIG		+= lime
-CONFIG		+= VITERBI_SSE
-#CONFIG		+= NO_SSE
+CONFIG		+= VITERBI_SSE2
+#CONFIG		+= VITERBI_AVX2
+#CONFIG		+= VITERBI_SCALAR
 CONFIG		+= faad
 #CONFIG		+= fdk-aac
-#CONFIG		+= volk
-CONFIG		+= no_volk
+CONFIG		+= volk
 LIBS		+= -lsndfile-1
 LIBS		+= -lsamplerate
 LIBS		+= -lwinpthread
@@ -182,14 +181,12 @@ HEADERS += \
     src/support/coordinates.h \
     src/support/mapport.h \
     src/support/http-handler.h \
-    src/support/converted_map.h \
     src/support/tii-library/tii-codes.h \
     src/support/buttons/newpushbutton.h \
     src/support/buttons/normalpushbutton.h \
     src/support/buttons/circlepushbutton.h \
     src/support/custom_frame.h \
     src/support/setting-helper.h \
-    src/support/converter_48000.h \
     src/support/wav_writer.h \
     src/support/angle_direction.h \
     src/support/time_meas.h \
@@ -281,6 +278,7 @@ SOURCES += \
     src/support/time-table.cpp \
     src/support/openfiledialog.cpp \
     src/support/content-table.cpp \
+    src/support/dl-cache.cpp \
     src/support/ITU_Region_1.cpp \
     src/support/coordinates.cpp \
     src/support/mapport.cpp \
@@ -289,7 +287,6 @@ SOURCES += \
     src/support/tii-library/tii-codes.cpp \
     src/support/custom_frame.cpp \
     src/support/setting-helper.cpp \
-    src/support/converter_48000.cpp \
     src/support/wav_writer.cpp \
     src/support/angle_direction.cpp \
     src/support/copyright_info.cpp \
@@ -560,12 +557,18 @@ datastreamer	{
 	SOURCES		+= src/server-thread/tcp-server.cpp
 }
 
-VITERBI_SSE	{
+VITERBI_SSE2	{
 	DEFINES		+= HAVE_VITERBI_SSE2
 	HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
 }
 
-NO_SSE	{
+VITERBI_AVX2	{
+	QMAKE_CXXFLAGS	+= -mavx2
+	DEFINES		+= HAVE_VITERBI_AVX2
+	HEADERS		+= src/support/viterbi-spiral/viterbi_16way.h
+}
+
+VITERBI_SCALAR	{
 	HEADERS		+= src/support/viterbi-spiral/viterbi_scalar.h
 }
 
@@ -591,7 +594,7 @@ volk	{
 	LIBS		+= -lvolk.dll
 }
 
-no_volk	{
+!volk	{
         HEADERS         += src/ofdm/ofdm-decoder.h
         SOURCES         += src/ofdm/ofdm-decoder.cpp
 }
