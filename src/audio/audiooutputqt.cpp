@@ -244,9 +244,14 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
 AudioIODevice::AudioIODevice(RadioInterface * const ipRI, QObject * const iParent)
   : QIODevice(iParent)
   , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
+  , mpStereoPeakLevelRingBuffer(sRingBufferFactoryCmplx16.get_ringbuffer(RingBufferFactory<cmplx>::EId::PeakLevelBuffer).get())
 {
   connect(this, &AudioIODevice::signal_show_audio_peak_level, ipRI, &RadioInterface::slot_show_audio_peak_level, Qt::QueuedConnection);
   connect(this, &AudioIODevice::signal_audio_data_available, ipRI->get_techdata_widget(), &TechData::slot_audio_data_available, Qt::QueuedConnection);
+  connect(&mTimerPeakLevel, &QTimer::timeout, this, &AudioIODevice::_slot_peak_level_timeout);
+
+  mTimerPeakLevel.setSingleShot(true);
+  mTimerPeakLevel.start(50);
 }
 
 void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
@@ -255,7 +260,7 @@ void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
   mpInFifo = iBuffer;
 
   mSampleRateKHz = iBuffer->sampleRate / 1000;
-  mPeakLevelSampleCntBothChannels = iBuffer->sampleRate / (20 * 2 /*channels*/); // 20 "peaks" per second
+  mPeakLevelSampleCntBothChannels = iBuffer->sampleRate / cNumPeakLevelPerSecond; // 20 "peaks" per second
 }
 
 void AudioIODevice::start()
@@ -479,6 +484,7 @@ void AudioIODevice::set_mute_state(bool iMuteActive)
 
 void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const uint32_t iNumSamples)
 {
+  assert(iNumSamples % 2 == 0);
   mpTechDataBuffer->put_data_into_ring_buffer(ipData, (int32_t)iNumSamples);
   emit signal_audio_data_available((int)iNumSamples, (int)mSampleRateKHz * 1000);
 
@@ -491,6 +497,7 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const u
     {
       mAbsPeakLeft = absLeft;
     }
+
     if (absRight > mAbsPeakRight)
     {
       mAbsPeakRight = absRight;
@@ -499,21 +506,49 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const u
     mPeakLevelCurSampleCnt++;
     if (mPeakLevelCurSampleCnt > mPeakLevelSampleCntBothChannels)
     {
+      const cmplx16 sample = { mAbsPeakLeft, mAbsPeakRight };
+      const int32_t num_written = mpStereoPeakLevelRingBuffer->put_data_into_ring_buffer(&sample, 1);
+
+      if (num_written < 1)
+      {
+        mpStereoPeakLevelRingBuffer->flush_ring_buffer();
+        qDebug() << "AudioIODevice::_eval_peak_audio_level: No space left in ring buffer";
+      }
+
       mPeakLevelCurSampleCnt = 0;
-
-      constexpr float cOffs_dB = 20 * std::log10((float)INT16_MAX); // in the assumption that subtraction is faster than dividing (but not sure with float)
-      const float left_dB  = (mAbsPeakLeft  > 0 ? 20.0f * std::log10((float)mAbsPeakLeft)  - cOffs_dB : -40.0f);
-      const float right_dB = (mAbsPeakRight > 0 ? 20.0f * std::log10((float)mAbsPeakRight) - cOffs_dB : -40.0f);
-
-      emit signal_show_audio_peak_level(left_dB, right_dB);
-
-      //	correct audio sample buffer delay for peak display
-      // const cmplx delayed_dB = delayLine.get_set_value(cmplx(left_dB, right_dB));
-      // emit signal_show_audio_peak_level(real(delayed_dB), imag(delayed_dB));
-
       mAbsPeakLeft = 0.0f;
       mAbsPeakRight = 0.0f;
     }
+  }
+}
+
+void AudioIODevice::_slot_peak_level_timeout()
+{
+  cmplx16 sample;
+  const int32_t amount = mpStereoPeakLevelRingBuffer->get_data_from_ring_buffer(&sample, 1);
+
+  if (amount == 0)
+  {
+    qDebug() << "AudioIODevice::_slot_peak_level_timeout: No data available";
+  }
+  else
+  {
+    constexpr float cOffs_dB = 20 * std::log10((float) INT16_MAX); // in the assumption that subtraction is faster than dividing (but not sure with float)
+    const float left_dB = (real(sample) > 0 ? 20.0f * std::log10((float) real(sample)) - cOffs_dB : -40.0f);
+    const float right_dB = (imag(sample) > 0 ? 20.0f * std::log10((float) imag(sample)) - cOffs_dB : -40.0f);
+
+    emit signal_show_audio_peak_level(left_dB, right_dB);
+  }
+
+  if (mSampleRateKHz > 0)
+  {
+    const int32_t intervallMs = mPeakLevelSampleCntBothChannels / mSampleRateKHz;
+    // qDebug() << "mPeakLevelSampleCntBothChannels" << mPeakLevelSampleCntBothChannels << "intervallMs" << intervallMs;
+    mTimerPeakLevel.start(intervallMs); // next run
+  }
+  else
+  {
+    mTimerPeakLevel.start(50); // next run
   }
 }
 
