@@ -74,7 +74,7 @@ class SettingHelper;
 class Qt_Audio;
 class timeTableHandler;
 class ServiceListHandler;
-class AudioOutput;
+class IAudioOutput;
 
 
 #ifdef  HAVE_PLUTO_RXTX
@@ -255,7 +255,7 @@ private:
   dabStreamer * streamerOut = nullptr;
 #endif
   QScopedPointer<DabProcessor> mpDabProcessor;
-  AudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
+  IAudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
   QThread * mAudioOutputThread = nullptr;
   SAudioFifo mAudioFifo{};
   SAudioFifo * mpCurAudioFifo = nullptr;

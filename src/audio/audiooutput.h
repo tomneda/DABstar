@@ -47,13 +47,13 @@ enum class EPlaybackState { Muted = 0, Playing = 1 };
 
 class RadioInterface;
 
-class AudioOutput : public QObject
+class IAudioOutput : public QObject
 {
   Q_OBJECT
 
 public:
-  explicit AudioOutput(QObject * parent = nullptr);
-  ~AudioOutput() override = default;
+  explicit IAudioOutput(QObject * parent = nullptr);
+  ~IAudioOutput() override = default;
 
   QList<QAudioDevice> get_audio_device_list() const;
 

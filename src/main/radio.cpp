@@ -245,12 +245,12 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   // Where do we leave the audio out?
   mpAudioOutput = new AudioOutputQt(this);
-  connect(mpAudioOutput, &AudioOutput::signal_audio_devices_list, this, &RadioInterface::_slot_load_audio_device_list);
-  connect(this, &RadioInterface::signal_start_audio, mpAudioOutput, &AudioOutput::slot_start, Qt::QueuedConnection);
-  connect(this, &RadioInterface::signal_switch_audio, mpAudioOutput, &AudioOutput::slot_restart, Qt::QueuedConnection);
-  connect(this, &RadioInterface::signal_stop_audio, mpAudioOutput, &AudioOutput::slot_stop, Qt::QueuedConnection);
-  connect(this, &RadioInterface::signal_set_audio_device, mpAudioOutput, &AudioOutput::slot_set_audio_device, Qt::QueuedConnection);
-  connect(this, &RadioInterface::signal_audio_mute, mpAudioOutput, &AudioOutput::slot_mute, Qt::QueuedConnection);
+  connect(mpAudioOutput, &IAudioOutput::signal_audio_devices_list, this, &RadioInterface::_slot_load_audio_device_list);
+  connect(this, &RadioInterface::signal_start_audio, mpAudioOutput, &IAudioOutput::slot_start, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_switch_audio, mpAudioOutput, &IAudioOutput::slot_restart, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_stop_audio, mpAudioOutput, &IAudioOutput::slot_stop, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_set_audio_device, mpAudioOutput, &IAudioOutput::slot_set_audio_device, Qt::QueuedConnection);
+  connect(this, &RadioInterface::signal_audio_mute, mpAudioOutput, &IAudioOutput::slot_mute, Qt::QueuedConnection);
   connect(this, &RadioInterface::signal_audio_buffer_filled_state, progBarAudioBuffer, &QProgressBar::setValue);
 
   mAudioOutputThread = new QThread(this);

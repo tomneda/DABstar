@@ -33,13 +33,13 @@
 #include "audiooutput.h"
 #include <QAudioSink>
 
-AudioOutput::AudioOutput(QObject * /*parent*/)
+IAudioOutput::IAudioOutput(QObject * /*parent*/)
 {
   mpDevices = new QMediaDevices(this);
-  connect(mpDevices, &QMediaDevices::audioOutputsChanged, this, &AudioOutput::_slot_update_audio_devices);
+  connect(mpDevices, &QMediaDevices::audioOutputsChanged, this, &IAudioOutput::_slot_update_audio_devices);
 }
 
-QList<QAudioDevice> AudioOutput::get_audio_device_list() const
+QList<QAudioDevice> IAudioOutput::get_audio_device_list() const
 {
   QList<QAudioDevice> list;
   const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
@@ -55,7 +55,7 @@ QList<QAudioDevice> AudioOutput::get_audio_device_list() const
   return list;
 }
 
-void AudioOutput::_slot_update_audio_devices()
+void IAudioOutput::_slot_update_audio_devices()
 {
   QList<QAudioDevice> list = get_audio_device_list();
 

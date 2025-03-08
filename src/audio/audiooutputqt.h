@@ -44,6 +44,7 @@ class AudioIODevice;
 class QAudioSink;
 class RadioInterface;
 
+#if 0
 template <typename T>
 class DelayLine
 {
@@ -72,9 +73,10 @@ private:
   std::vector<T> mDelayBuffer;
   T mDefault;
 };
+#endif
 
 
-class AudioOutputQt final : public AudioOutput
+class AudioOutputQt final : public IAudioOutput
 {
   Q_OBJECT
 

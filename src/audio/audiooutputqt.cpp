@@ -44,7 +44,7 @@
 Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtInfoMsg)
 
 AudioOutputQt::AudioOutputQt(RadioInterface * const ipRI, QObject * parent)
-  : AudioOutput(parent)
+  : IAudioOutput(parent)
 {
   mpIoDevice.reset(new AudioIODevice(ipRI));
 }
@@ -464,17 +464,25 @@ qint64 AudioIODevice::writeData(const char * data, qint64 len)
 
 qint64 AudioIODevice::bytesAvailable() const
 {
+#ifdef _WIN32
+  return 32768;
+#else
   const qint64 avail_bf = QIODevice::bytesAvailable();
   const qint64 avail_rb = mpInFifo->pRingbuffer->get_ring_buffer_read_available() * sizeof(int16_t);
   quint64 avail_sum = avail_bf + avail_rb;
   if (avail_sum == 0) avail_sum = 0x100; // this is a workaround as readData() will never get read if 0 is given back
   return avail_sum;
+#endif
 }
 
 qint64 AudioIODevice::size() const                                  
 {
+#ifdef _WIN32
+  return 32768;
+#else
   const qint64 avail_bf = QIODevice::size();
   return avail_bf;
+#endif
 }
 
 void AudioIODevice::set_mute_state(bool iMuteActive)
@@ -529,7 +537,7 @@ void AudioIODevice::_slot_peak_level_timeout()
 
   if (amount == 0)
   {
-    qDebug() << "AudioIODevice::_slot_peak_level_timeout: No data available";
+    // qDebug() << "AudioIODevice::_slot_peak_level_timeout: No data available";
   }
   else
   {
