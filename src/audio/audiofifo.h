@@ -33,17 +33,13 @@
 #ifndef AUDIOFIFO_H
 #define AUDIOFIFO_H
 
-#include <QMutex>
-#include <QWaitCondition>
-
 #include "ringbuffer.h"
-
-#define AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS    (131072)
-#define AUDIO_FIFO_SIZE_BYTES_BOTH_CHANNELS      (AUDIO_FIFO_SIZE_SAMPLES_BOTH_CHANNELS * sizeof(int16_t)) 
 
 struct SAudioFifo
 {
-  RingBuffer<int16_t> *pRingbuffer;
+  static constexpr int32_t cAudioFifoSizeSamplesBothChannels = 131072;
+  static constexpr int32_t cAudioFifoSizeBytesBothChannels = cAudioFifoSizeSamplesBothChannels * sizeof(int16_t);
+  RingBuffer<int16_t> * pRingbuffer;
   uint32_t sampleRate;
 };
 

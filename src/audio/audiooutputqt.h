@@ -45,37 +45,6 @@ class QAudioSink;
 class QMediaDevices;
 class RadioInterface;
 
-#if 0
-template <typename T>
-class DelayLine
-{
-public:
-  explicit DelayLine(const T & iDefault)
-    : mDefault(iDefault)
-  {
-    set_delay_steps(0); // reserve memory for at least one sample
-  }
-
-  void set_delay_steps(const uint32_t iSteps)
-  {
-    mDataPtrIdx = 0;
-    mDelayBuffer.resize(iSteps + 1, mDefault);
-  }
-
-  const T & get_set_value(const T & iVal)
-  {
-    mDelayBuffer[mDataPtrIdx] = iVal;
-    mDataPtrIdx = (mDataPtrIdx + 1) % mDelayBuffer.size();
-    return mDelayBuffer[mDataPtrIdx];
-  }
-
-private:
-  uint32_t mDataPtrIdx = 0;
-  std::vector<T> mDelayBuffer;
-  T mDefault;
-};
-#endif
-
 
 class AudioOutputQt final : public IAudioOutput
 {

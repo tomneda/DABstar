@@ -2,8 +2,8 @@
 // Created by work on 2025-03-09.
 //
 
-#ifndef AUDIO_IO_DEVICE_H
-#define AUDIO_IO_DEVICE_H
+#ifndef AUDIOIODEVICE_H
+#define AUDIOIODEVICE_H
 
 #include "glob_defs.h"
 #include "ringbuffer.h"
@@ -32,20 +32,18 @@ public:
   // bool isSequential() const override { return true; }
 
 private:
-  static constexpr float AUDIOOUTPUT_FADE_TIME_MS =  60.0f;
-  static constexpr float AUDIOOUTPUT_FADE_MIN_DB  = -40.0f;
-  static constexpr float AUDIOOUTPUT_FADE_MIN_LIN =  std::pow(10.0f, AUDIOOUTPUT_FADE_MIN_DB / 20.0f);
+  static constexpr float cFadeTimeMs =  60.0f;
+  static constexpr float cFadeMinDb  = -40.0f;
+  static constexpr float cFadeMinLin =  std::pow(10.0f, cFadeMinDb / 20.0f);
+  static constexpr int32_t cNumPeakLevelPerSecond = 20;
 
   enum class EPlaybackState { Muted = 0, Playing = 1 };
 
-  static constexpr int32_t cNumPeakLevelPerSecond = 20;
   SAudioFifo * mpInFifo = nullptr;
   EPlaybackState mPlaybackState = EPlaybackState::Muted;
-  //uint8_t mBytesPerFrame = 0;
   uint32_t mSampleRateKHz = 0;
   bool mDoStop = false;
   RingBuffer<int16_t> * const mpTechDataBuffer;
-  RingBuffer<cmplx16> * const mpStereoPeakLevelRingBuffer;
 
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
@@ -63,15 +61,12 @@ private:
   void _fade(int32_t iNumStereoSamples, float coe, float gain, int16_t * dataPtr) const;
   void _fade_in_audio_samples(int16_t * opData, int32_t iNumStereoSamples) const;
   void _fade_out_audio_samples(int16_t * opData, int32_t iNumStereoSamples) const;
-  void _eval_peak_audio_level(const int16_t * ipData, uint32_t iNumSamples);
+  void _eval_peak_audio_level(const int16_t * ipData, int32_t iNumSamples);
 
-private slots:
-  void _slot_peak_level_timeout();
-
-  signals:
-    void signal_show_audio_peak_level(float, float) const;
+signals:
+  void signal_show_audio_peak_level(float, float) const;
   void signal_audio_data_available(int iNumSamples, int iSampleRate);
 };
 
 
-#endif //AUDIO_IO_DEVICE_H
+#endif // AUDIOIODEVICE_H

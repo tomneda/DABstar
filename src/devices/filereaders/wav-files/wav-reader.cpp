@@ -114,7 +114,7 @@ void WavReader::run()
       int n = sf_readf_float(filePointer, (float *)bi, bufferSize);
       if (n < bufferSize)
       {
-        fprintf(stderr, "eof gehad\n");
+        fprintf(stderr, "End of file reached\n");
         sf_seek(filePointer, 0, SEEK_SET);
         for (int i = n; i < bufferSize; i++)
         {
