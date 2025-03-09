@@ -42,6 +42,7 @@
 
 class AudioIODevice;
 class QAudioSink;
+class QMediaDevices;
 class RadioInterface;
 
 #if 0
@@ -84,12 +85,19 @@ public:
   explicit AudioOutputQt(RadioInterface * ipRI, QObject * parent = nullptr);
   ~AudioOutputQt() override;
 
+  QList<QAudioDevice> get_audio_device_list() const override;
+
 private:
+  QScopedPointer<QMediaDevices>	mpMediaDevices;
   QScopedPointer<AudioIODevice> mpIoDevice;
   QScopedPointer<QAudioSink> mpAudioSink;
+  QList<QAudioDevice> mOutputDevices;
+  QAudioDevice mCurrentAudioDevice;
+
   SAudioFifo * mpCurrentFifo = nullptr;
   SAudioFifo * mpRestartFifo = nullptr;
   float mLinearVolume = 1.0f;
+  QAudioFormat mAudioFormat;
 
   void _do_stop() const;
   void _do_restart(SAudioFifo * buffer);
@@ -105,6 +113,7 @@ public slots:
 
 private slots:
   void _slot_state_changed(QAudio::State iNewState);
+  void _slot_update_audio_devices();
 };
 
 

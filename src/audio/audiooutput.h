@@ -34,7 +34,7 @@
 #define AUDIOOUTPUT_H
 
 #include <QObject>
-#include <QMediaDevices>
+// #include <QMediaDevices>
 #include <QAudioDevice>
 
 #include "audiofifo.h"
@@ -55,7 +55,7 @@ public:
   explicit IAudioOutput(QObject * parent = nullptr);
   ~IAudioOutput() override = default;
 
-  QList<QAudioDevice> get_audio_device_list() const;
+  virtual QList<QAudioDevice> get_audio_device_list() const = 0;
 
 public slots:
   virtual void slot_start(SAudioFifo * iBuffer) = 0;
@@ -71,12 +71,12 @@ signals:
   void signal_audio_devices_list(QList<QAudioDevice> deviceList);
   void signal_audio_device_changed(const QByteArray & id);
 
-protected:
-  QMediaDevices * mpDevices = nullptr;
-  QAudioDevice mCurrentAudioDevice;
+//protected:
+  //QMediaDevices * mpDevices = nullptr;
+  //QAudioDevice mCurrentAudioDevice;
 
-private slots:
-  void _slot_update_audio_devices();
+// private slots:
+//   void _slot_update_audio_devices();
 };
 
 #endif // AUDIOOUTPUT_H

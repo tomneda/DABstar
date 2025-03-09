@@ -75,7 +75,13 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
 
   const int32_t numRead = mpResponseBuffer->get_data_from_ring_buffer(data, cPlotLength);
   (void)numRead;
-  assert(numRead == cPlotLength);
+
+  if (numRead != cPlotLength)
+  {
+    // TODO: sometimes this happens in windows while startup
+    qWarning("numRead != cPlotLength in correlation plot)");
+    return;
+  }
 
   std::array<float, cPlotLength> X_axis;
   std::array<float, cPlotLength> Y_values;

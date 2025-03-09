@@ -37,6 +37,7 @@
 #include <QThread>
 #include <QAudioSink>
 #include <QAudioDevice>
+#include <QMediaDevices>
 
 #include "radio.h"
 
@@ -47,35 +48,74 @@ AudioOutputQt::AudioOutputQt(RadioInterface * const ipRI, QObject * parent)
   : IAudioOutput(parent)
 {
   mpIoDevice.reset(new AudioIODevice(ipRI));
+
+  //mAudioFormat.setSampleRate((int)iBuffer->sampleRate);
+  mAudioFormat.setSampleRate(48000);
+  mAudioFormat.setSampleFormat(QAudioFormat::Int16);
+  mAudioFormat.setChannelCount(2);
+  mAudioFormat.setChannelConfig(QAudioFormat::ChannelConfigStereo);
+
+  mpMediaDevices.reset(new QMediaDevices(this));
+  connect(mpMediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &AudioOutputQt::_slot_update_audio_devices);
+  //connect(mpMediaDevices, &QMediaDevices::audioOutputsChanged, this, &Qt_Audio::updateDeviceList);
+
+  const QAudioDevice & defaultDevice = QMediaDevices::defaultAudioOutput();
+
+  mOutputDevices.push_back(defaultDevice);
+
+  for (auto & deviceInfo : QMediaDevices::audioOutputs())
+  {
+    if (deviceInfo != defaultDevice && deviceInfo.isFormatSupported(mAudioFormat))
+    {
+      mOutputDevices.push_back(deviceInfo);
+    }
+  }
+
+  qCInfo(sLogAudioOutput) << "List of supported audio devices (start):";
+  for (auto & deviceInfo : mOutputDevices)
+  {
+    _print_audio_device_formats(deviceInfo);
+  }
+  qCInfo(sLogAudioOutput) << "List of supported audio devices (end):";
 }
 
 AudioOutputQt::~AudioOutputQt()
 {
-  mpIoDevice->close();
+  if (mpAudioSink)
+  {
+    mpAudioSink->stop();
+  }
+
+  if (mpIoDevice)
+  {
+    mpIoDevice->stop();
+    mpIoDevice->close();
+  }
 }
 
 void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
 {
-  QAudioFormat format;
-  format.setSampleRate((int)iBuffer->sampleRate);
-  format.setSampleFormat(QAudioFormat::Int16);
-  format.setChannelCount(2);
-  format.setChannelConfig(QAudioFormat::ChannelConfigStereo);
+  // QAudioFormat format;
+  mAudioFormat.setSampleRate((int)iBuffer->sampleRate);
+  mAudioFormat.setSampleFormat(QAudioFormat::Int16);
+  mAudioFormat.setChannelCount(2);
+  mAudioFormat.setChannelConfig(QAudioFormat::ChannelConfigStereo);
 
-  qCInfo(sLogAudioOutput) << "Needed audio format:" << format;
+  qCInfo(sLogAudioOutput) << "Needed audio format:" << mAudioFormat;
   _print_audio_device_formats(mCurrentAudioDevice);
 
-  if (!mCurrentAudioDevice.isFormatSupported(format))
+  if (!mCurrentAudioDevice.isFormatSupported(mAudioFormat))
   {
     // format = mCurrentAudioDevice.preferredFormat();
     // qCFatal() lets the program quit
-    qCFatal(sLogAudioOutput) << "Reclaimed audio format (48000 Sps, Int16 format, 2 channels) not supported -> no chance to go on, quit program";
-    #if defined(_WIN32) && QT_VERSION >= QT_VERSION_CHECK(6, 8, 2)
-      #error "Qt version >= 6.8.2 (6.8.1 works!) with Windows has issues with setting a range of sample rates -> minimumSampleRate() == maximumSampleRate()"
-    #endif
+    qWarning(sLogAudioOutput) << "QAudioDevice thinks that reclaimed audio format (48000 Sps, Int16 format, 2 channels) is not supported, hope we have luck nevertheless (otherwise use Qt <= 6.8.1)";
+    // qCFatal(sLogAudioOutput) << "Reclaimed audio format (48000 Sps, Int16 format, 2 channels) not supported -> no chance to go on, quit program";
+    // #if defined(_WIN32) && QT_VERSION >= QT_VERSION_CHECK(6, 8, 2)
+    //   #error "Qt version >= 6.8.2 (6.8.1 works!) with Windows has issues with setting a range of sample rates -> minimumSampleRate() == maximumSampleRate()"
+    // #endif
   }
 
-  mpAudioSink.reset(new QAudioSink(mCurrentAudioDevice, format, this));
+  mpAudioSink.reset(new QAudioSink(mCurrentAudioDevice, mAudioFormat, this));
 
   connect(mpAudioSink.get(), &QAudioSink::stateChanged, this, &AudioOutputQt::_slot_state_changed);
 
@@ -154,7 +194,7 @@ void AudioOutputQt::slot_set_audio_device(const QByteArray & iDeviceId)
   }
 
   // device not found => choosing default
-  mCurrentAudioDevice = mpDevices->defaultAudioOutput();
+  mCurrentAudioDevice = mpMediaDevices->defaultAudioOutput();
   emit signal_audio_device_changed(mCurrentAudioDevice.id());
   // change output device to newly selected
   slot_restart(mpCurrentFifo);
@@ -240,7 +280,48 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
   }
 }
 
+QList<QAudioDevice> AudioOutputQt::get_audio_device_list() const
+{
+  QList<QAudioDevice> list;
+  const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
+  list.append(defaultDeviceInfo);
 
+  for (auto & deviceInfo : QMediaDevices::audioOutputs())
+  {
+    if (deviceInfo != defaultDeviceInfo)
+    {
+      list.append(deviceInfo);
+    }
+  }
+  return list;
+}
+
+void AudioOutputQt::_slot_update_audio_devices()
+{
+  QList<QAudioDevice> list = get_audio_device_list();
+
+  emit signal_audio_devices_list(list);
+
+  bool currentDeviceFound = false;
+  for (auto & dev : list)
+  {
+    if (dev.id() == mCurrentAudioDevice.id())
+    {
+      currentDeviceFound = true;
+      break;
+    }
+  }
+
+  if (!currentDeviceFound)
+  {
+    // current device no longer exists => default is used
+    mCurrentAudioDevice = QMediaDevices::defaultAudioOutput();
+  }
+  emit signal_audio_device_changed(mCurrentAudioDevice.id());
+}
+
+
+/*********************************************************************************/
 AudioIODevice::AudioIODevice(RadioInterface * const ipRI, QObject * const iParent)
   : QIODevice(iParent)
   , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
@@ -587,4 +668,3 @@ void AudioIODevice::_slot_peak_level_timeout()
 //     testTone.PhaseIncr = 2 * M_PI / workingRate * toneFreqHz;
 //   }
 // }
-

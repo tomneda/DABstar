@@ -35,48 +35,48 @@
 
 IAudioOutput::IAudioOutput(QObject * /*parent*/)
 {
-  mpDevices = new QMediaDevices(this);
-  connect(mpDevices, &QMediaDevices::audioOutputsChanged, this, &IAudioOutput::_slot_update_audio_devices);
+  // mpDevices = new QMediaDevices(this);
+  // connect(mpDevices, &QMediaDevices::audioOutputsChanged, this, &IAudioOutput::_slot_update_audio_devices);
 }
 
-QList<QAudioDevice> IAudioOutput::get_audio_device_list() const
-{
-  QList<QAudioDevice> list;
-  const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
-  list.append(defaultDeviceInfo);
-
-  for (auto & deviceInfo : QMediaDevices::audioOutputs())
-  {
-    if (deviceInfo != defaultDeviceInfo)
-    {
-      list.append(deviceInfo);
-    }
-  }
-  return list;
-}
-
-void IAudioOutput::_slot_update_audio_devices()
-{
-  QList<QAudioDevice> list = get_audio_device_list();
-
-  emit signal_audio_devices_list(list);
-
-  bool currentDeviceFound = false;
-  for (auto & dev : list)
-  {
-    if (dev.id() == mCurrentAudioDevice.id())
-    {
-      currentDeviceFound = true;
-      break;
-    }
-  }
-
-  if (!currentDeviceFound)
-  {
-    // current device no longer exists => default is used
-    mCurrentAudioDevice = QMediaDevices::defaultAudioOutput();
-  }
-  emit signal_audio_device_changed(mCurrentAudioDevice.id());
-}
+// QList<QAudioDevice> IAudioOutput::get_audio_device_list() const
+// {
+//   QList<QAudioDevice> list;
+//   const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
+//   list.append(defaultDeviceInfo);
+//
+//   for (auto & deviceInfo : QMediaDevices::audioOutputs())
+//   {
+//     if (deviceInfo != defaultDeviceInfo)
+//     {
+//       list.append(deviceInfo);
+//     }
+//   }
+//   return list;
+// }
+//
+// void IAudioOutput::_slot_update_audio_devices()
+// {
+//   QList<QAudioDevice> list = get_audio_device_list();
+//
+//   emit signal_audio_devices_list(list);
+//
+//   bool currentDeviceFound = false;
+//   for (auto & dev : list)
+//   {
+//     if (dev.id() == mCurrentAudioDevice.id())
+//     {
+//       currentDeviceFound = true;
+//       break;
+//     }
+//   }
+//
+//   if (!currentDeviceFound)
+//   {
+//     // current device no longer exists => default is used
+//     mCurrentAudioDevice = QMediaDevices::defaultAudioOutput();
+//   }
+//   emit signal_audio_device_changed(mCurrentAudioDevice.id());
+// }
 
 
