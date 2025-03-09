@@ -311,6 +311,7 @@ set(${objectName}_HDRS
         src/backend/data/data-processor.h
         src/audio/audiofifo.h
         src/audio/audiooutput.h
+        src/audio/audioiodevice.h
         src/audio/audiooutputqt.h
         src/support/fir-filters.h
         src/support/ringbuffer.h
@@ -401,7 +402,7 @@ set(${objectName}_SRCS
         src/backend/data/mot/mot-object.cpp
         src/backend/data/mot/mot-dir.cpp
         src/backend/data/data-processor.cpp
-        src/audio/audiooutput.cpp
+        src/audio/audioiodevice.cpp
         src/audio/audiooutputqt.cpp
         src/support/fir-filters.cpp
         src/support/ringbuffer.cpp

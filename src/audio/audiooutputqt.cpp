@@ -45,7 +45,7 @@
 Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtInfoMsg)
 
 AudioOutputQt::AudioOutputQt(RadioInterface * const ipRI, QObject * parent)
-  : IAudioOutput(parent)
+  // : IAudioOutput(parent)
 {
   mpIoDevice.reset(new AudioIODevice(ipRI));
 
@@ -102,13 +102,13 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
   mAudioFormat.setChannelConfig(QAudioFormat::ChannelConfigStereo);
 
   qCInfo(sLogAudioOutput) << "Needed audio format:" << mAudioFormat;
-  _print_audio_device_formats(mCurrentAudioDevice);
 
   if (!mCurrentAudioDevice.isFormatSupported(mAudioFormat))
   {
     // format = mCurrentAudioDevice.preferredFormat();
     // qCFatal() lets the program quit
     qWarning(sLogAudioOutput) << "QAudioDevice thinks that reclaimed audio format (48000 Sps, Int16 format, 2 channels) is not supported, hope we have luck nevertheless (otherwise use Qt <= 6.8.1)";
+    _print_audio_device_formats(mCurrentAudioDevice);
     // qCFatal(sLogAudioOutput) << "Reclaimed audio format (48000 Sps, Int16 format, 2 channels) not supported -> no chance to go on, quit program";
     // #if defined(_WIN32) && QT_VERSION >= QT_VERSION_CHECK(6, 8, 2)
     //   #error "Qt version >= 6.8.2 (6.8.1 works!) with Windows has issues with setting a range of sample rates -> minimumSampleRate() == maximumSampleRate()"

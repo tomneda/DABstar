@@ -52,7 +52,7 @@ class IAudioOutput : public QObject
   Q_OBJECT
 
 public:
-  explicit IAudioOutput(QObject * parent = nullptr);
+  // explicit IAudioOutput(QObject * parent = nullptr);
   ~IAudioOutput() override = default;
 
   virtual QList<QAudioDevice> get_audio_device_list() const = 0;
