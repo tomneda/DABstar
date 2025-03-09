@@ -224,25 +224,12 @@ qint64 AudioIODevice::writeData(const char * data, qint64 len)
 
 qint64 AudioIODevice::bytesAvailable() const
 {
-#ifdef _WIN32
   return 16384; // the minimum block size in windows seems to be 16768 Bytes, make it short to have a fluid peak level meter
-#else
-  const qint64 avail_bf = QIODevice::bytesAvailable();
-  const qint64 avail_rb = mpInFifo->pRingbuffer->get_ring_buffer_read_available() * sizeof(int16_t);
-  quint64 avail_sum = avail_bf + avail_rb;
-  if (avail_sum == 0) avail_sum = 0x100; // this is a workaround as readData() will never get read if 0 is given back
-  return avail_sum;
-#endif
 }
 
 qint64 AudioIODevice::size() const
 {
-#ifdef _WIN32
   return SAudioFifo::cAudioFifoSizeSamplesBothChannels >> 1;
-#else
-  const qint64 avail_bf = QIODevice::size();
-  return avail_bf;
-#endif
 }
 
 void AudioIODevice::set_mute_state(bool iMuteActive)
