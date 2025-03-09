@@ -34,12 +34,8 @@
 #define AUDIOOUTPUT_H
 
 #include <QObject>
-// #include <QMediaDevices>
 #include <QAudioDevice>
-
 #include "audiofifo.h"
-
-class RadioInterface;
 
 class IAudioOutput : public QObject
 {

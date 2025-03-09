@@ -66,7 +66,6 @@ AudioOutputQt::~AudioOutputQt()
 
 void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
 {
-  // QAudioFormat format;
   mAudioFormat.setSampleRate((int)iBuffer->sampleRate);
   mAudioFormat.setSampleFormat(QAudioFormat::Int16);
   mAudioFormat.setChannelCount(2);
