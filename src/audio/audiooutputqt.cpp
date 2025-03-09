@@ -40,43 +40,14 @@
 #include <QAudioDevice>
 #include <QMediaDevices>
 
-
 // Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtInfoMsg)
 
 AudioOutputQt::AudioOutputQt(RadioInterface * const ipRI, QObject * parent)
-  // : IAudioOutput(parent)
 {
   mpIoDevice.reset(new AudioIODevice(ipRI));
-
-  //mAudioFormat.setSampleRate((int)iBuffer->sampleRate);
-  mAudioFormat.setSampleRate(48000);
-  mAudioFormat.setSampleFormat(QAudioFormat::Int16);
-  mAudioFormat.setChannelCount(2);
-  mAudioFormat.setChannelConfig(QAudioFormat::ChannelConfigStereo);
-
   mpMediaDevices.reset(new QMediaDevices(this));
   connect(mpMediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &AudioOutputQt::_slot_update_audio_devices);
-  //connect(mpMediaDevices, &QMediaDevices::audioOutputsChanged, this, &Qt_Audio::updateDeviceList);
-
-  const QAudioDevice & defaultDevice = QMediaDevices::defaultAudioOutput();
-
-  mOutputDevices.push_back(defaultDevice);
-
-  for (auto & deviceInfo : QMediaDevices::audioOutputs())
-  {
-    if (deviceInfo != defaultDevice && deviceInfo.isFormatSupported(mAudioFormat))
-    {
-      mOutputDevices.push_back(deviceInfo);
-    }
-  }
-
-  qCInfo(sLogAudioOutput) << "List of supported audio devices (start):";
-  for (auto & deviceInfo : mOutputDevices)
-  {
-    _print_audio_device_formats(deviceInfo);
-  }
-  qCInfo(sLogAudioOutput) << "List of supported audio devices (end):";
 }
 
 AudioOutputQt::~AudioOutputQt()

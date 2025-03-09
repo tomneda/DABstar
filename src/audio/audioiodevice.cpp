@@ -261,17 +261,11 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const i
     const int16_t absLeft  = (int16_t)std::abs(ipData[idx + 0]);
     const int16_t absRight = (int16_t)std::abs(ipData[idx + 1]);
 
-    if (absLeft > mAbsPeakLeft)
-    {
-      mAbsPeakLeft = absLeft;
-    }
-
-    if (absRight > mAbsPeakRight)
-    {
-      mAbsPeakRight = absRight;
-    }
+    if (absLeft  > mAbsPeakLeft)  mAbsPeakLeft  = absLeft;
+    if (absRight > mAbsPeakRight) mAbsPeakRight = absRight;
 
     mPeakLevelCurSampleCnt++;
+
     if (mPeakLevelCurSampleCnt > mPeakLevelSampleCntBothChannels) // collect much enough samples? (also over more blocks)
     {
       constexpr float cOffs_dB = 20 * std::log10((float) INT16_MAX); // in the assumption that subtraction is faster than dividing (but not sure with float)

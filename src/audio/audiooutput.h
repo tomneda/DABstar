@@ -46,7 +46,6 @@ class IAudioOutput : public QObject
   Q_OBJECT
 
 public:
-  // explicit IAudioOutput(QObject * parent = nullptr);
   ~IAudioOutput() override = default;
 
   virtual QList<QAudioDevice> get_audio_device_list() const = 0;
@@ -64,13 +63,6 @@ signals:
   void signal_audio_output_restart();
   void signal_audio_devices_list(QList<QAudioDevice> deviceList);
   void signal_audio_device_changed(const QByteArray & id);
-
-//protected:
-  //QMediaDevices * mpDevices = nullptr;
-  //QAudioDevice mCurrentAudioDevice;
-
-// private slots:
-//   void _slot_update_audio_devices();
 };
 
 #endif // AUDIOOUTPUT_H
