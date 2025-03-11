@@ -146,24 +146,24 @@ int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const ui
   if (channels == 2)
   {
     audioBuffer->put_data_into_ring_buffer(outBuffer, samples);
-    if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 8)
+    if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 10)
     {
-      emit signal_new_audio(sampleRate / 10, sampleRate,
+      emit signal_new_audio((int)sampleRate / 10, sampleRate,
                             (hInfo.ps ? RadioInterface::AFL_PS_USED : RadioInterface::AFL_NONE) |
                             (hInfo.sbr ? RadioInterface::AFL_SBR_USED : RadioInterface::AFL_NONE));
     }
   }
-  else if (channels == 1)
+  else if (channels == 1) // TODO: this is not called with a mono service but the stereo above
   {
     auto * const buffer = make_vla(int16_t, 2 * samples);
     for (int16_t i = 0; i < samples; i++)
     {
       buffer[2 * i + 0] = buffer[2 * i + 1] = outBuffer[i];
     }
-    audioBuffer->put_data_into_ring_buffer(ipBuffer, samples);
-    if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 8)
+    audioBuffer->put_data_into_ring_buffer(buffer, 2 * samples);
+    if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 10)
     {
-      emit signal_new_audio(samples, sampleRate,
+      emit signal_new_audio((int)sampleRate / 10, sampleRate,
                             (hInfo.ps ? RadioInterface::AFL_PS_USED : RadioInterface::AFL_NONE) |
                             (hInfo.sbr ? RadioInterface::AFL_SBR_USED : RadioInterface::AFL_NONE));
     }
