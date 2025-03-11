@@ -222,7 +222,7 @@ private:
   RingBuffer<int16_t> * const mpAudioBufferToOutput;
   RingBuffer<int16_t> * const mpTechDataBuffer;
   uint32_t mResetRingBufferCnt = 0;
-  std::vector<float> mAudioOutBuffer;
+  std::vector<int16_t> mAudioTempBuffer;
   SpectrumViewer mSpectrumViewer;
   BandHandler mBandHandler;
   DynLinkCache mDynLabelCache{10};

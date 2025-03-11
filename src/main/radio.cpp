@@ -1124,29 +1124,31 @@ void RadioInterface::slot_new_audio(const int32_t iAmount, const uint32_t iAudio
   }
 
   assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
-  auto * const vec = make_vla(int16_t, iAmount);
 
-  while (mpAudioBufferFromDecoder->get_ring_buffer_read_available() > iAmount)
+  const int32_t availableBytes = mpAudioBufferFromDecoder->get_ring_buffer_read_available();
+
+  if (availableBytes >= iAmount) // should always be true when this slot method is called
   {
+    mAudioTempBuffer.resize(availableBytes); // after max. size set, there will be no further memory reallocation
     mean_filter(mAudioBufferFillFiltered, mpAudioBufferToOutput->get_fill_state_in_percent(), 0.05f);
 
-    // vec contains a stereo pair [0][1]...[n-2][n-1]
-    mpAudioBufferFromDecoder->get_data_from_ring_buffer(vec, iAmount);
+    // mAudioTempBuffer contains a stereo pair [0][1]...[n-2][n-1]
+    mpAudioBufferFromDecoder->get_data_from_ring_buffer(mAudioTempBuffer.data(), availableBytes);
 
     Q_ASSERT(mpCurAudioFifo != nullptr);
 
     // the audio output buffer got flooded, try to begin from new (set to 50% would also be ok, but needs interface in RingBuffer)
-    if (iAmount > mpAudioBufferToOutput->get_ring_buffer_write_available())
+    if (availableBytes > mpAudioBufferToOutput->get_ring_buffer_write_available())
     {
       mpAudioBufferToOutput->flush_ring_buffer();
       qDebug("RadioInterface::slot_new_audio: Audio output buffer is full, try to start from new");
     }
 
-    mpAudioBufferToOutput->put_data_into_ring_buffer(vec, iAmount);
+    mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data(), availableBytes);
 
     if (mAudioDumpState == EAudioDumpState::Running)
     {
-      mWavWriter.write(vec, iAmount);
+      mWavWriter.write(mAudioTempBuffer.data(), availableBytes);
     }
 
     // ugly, but palette of progressbar can only be set in the same thread of the value setting, save time calling this only once
