@@ -310,16 +310,19 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   lblCopyrightIcon->setTextInteractionFlags(Qt::TextBrowserInteraction);
   lblCopyrightIcon->setOpenExternalLinks(true);
 
-  const QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
+  QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
   mChannel.tiiFile = false;
-  if (!tiiFileName.isEmpty())
+
+  if (tiiFileName.isEmpty() || !QFile(tiiFileName).exists())
   {
-    mChannel.tiiFile = mTiiHandler.fill_cache_from_tii_file(tiiFileName);
-    if (!mChannel.tiiFile)
-    {
-      btnHttpServer->setToolTip("File '" + tiiFileName + "' could not be loaded. So this feature is switched off.");
-      btnHttpServer->setEnabled(false);
-    }
+    tiiFileName = ":res/txdata.tii";
+  }
+
+  mChannel.tiiFile = mTiiHandler.fill_cache_from_tii_file(tiiFileName);
+  if (!mChannel.tiiFile)
+  {
+    btnHttpServer->setToolTip("File '" + tiiFileName + "' could not be loaded. So this feature is switched off.");
+    btnHttpServer->setEnabled(false);
   }
 
   connect(this, &RadioInterface::signal_dab_processor_started, &mSpectrumViewer, &SpectrumViewer::slot_update_settings);
@@ -3194,7 +3197,7 @@ void RadioInterface::slot_load_table()
 
   if (mTiiHandler.is_valid())
   {
-    QMessageBox::information(this, tr("success"), tr("Loading and installing database complete\n"));
+    QMessageBox::information(this, tr("success"), tr("Loading and installing TII database completed\n"));
     mChannel.tiiFile = mTiiHandler.fill_cache_from_tii_file(tableFile);
   }
   else

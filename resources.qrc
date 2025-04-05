@@ -23,5 +23,6 @@
     <file>res/icons/eject24.png</file>
     <file>res/globstyle.qss</file>
     <file>res/qt-map.html</file>
+    <file>res/txdata.tii</file>
   </qresource>
 </RCC>

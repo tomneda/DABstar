@@ -28,6 +28,7 @@
 #include  <cmath>
 #include  <cstdio>
 #include  <string>
+#include  <fstream>
 
 enum
 {
@@ -123,14 +124,17 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
   }
   mBlackListVec.resize(0);
   mContentCacheVec.resize(0);
-  FILE * f = fopen(iTiiFileName.toUtf8().data(), "r+b");
-  if (f != nullptr)
+
+  QFile fp(iTiiFileName);
+
+  if (fp.open(QIODevice::ReadOnly))
   {
     fprintf(stdout, "TiiFile is %s\n", iTiiFileName.toUtf8().data());
     dataLoaded = true;
-    _read_file(f);
-    fclose(f);
+    _read_file(fp);
+    fp.close();
   }
+
   return dataLoaded;
 }
 
@@ -311,17 +315,18 @@ uint8_t TiiHandler::_get_sub_id(const QString & s) const
   return res % 100;
 }
 
-void TiiHandler::_read_file(FILE * f)
+void TiiHandler::_read_file(QFile & fp)
 {
   uint32_t count = 0;
   std::array<char, 1024> buffer;
   std::vector<QString> columnVector;
 
-  this->mShift = fgetc(f);
-  while (_eread(buffer.data(), 1024, f) != nullptr)
+  fp.read(reinterpret_cast<char *>(&mShift), 1);
+
+  while (_eread(buffer.data(), buffer.size(), fp) != nullptr)
   {
     CacheElem ed;
-    if (feof(f))
+    if (fp.atEnd())
     {
       break;
     }
@@ -387,10 +392,10 @@ int TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, int N) 
   return elementCount;
 }
 
-char * TiiHandler::_eread(char * buffer, int amount, FILE * f) const
+char * TiiHandler::_eread(char * buffer, int amount, QFile & fp) const
 {
   char * bufferP;
-  if (fgets(buffer, amount, f) == nullptr)
+  if (fp.readLine(buffer, amount) < 0)
   {
     return nullptr;
   }

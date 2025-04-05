@@ -120,7 +120,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touching this button instructs the software to (try to) load a so-called tii table, a table with the&lt;/p&gt;&lt;p&gt;encodings of tii data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Load Table</string>
+            <string>Load TII Table</string>
            </property>
           </widget>
          </item>

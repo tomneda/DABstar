@@ -25,6 +25,7 @@
 #include <QString>
 #include <QSettings>
 #include <QLibrary>
+#include <QFile>
 #include "dab-constants.h"
 
 struct CacheElem
@@ -97,8 +98,8 @@ private:
   uint8_t _get_sub_id(const QString & s) const;
   double _distance_2(float, float, float, float) const;
   int _read_columns(std::vector<QString> & oV, const char * b, int N) const;
-  void _read_file(FILE *);
-  char * _eread(char *, int, FILE *) const;
+  void _read_file(QFile & fp);
+  char * _eread(char * buffer, int amount, QFile & fp) const;
   bool _load_dyn_library_functions();
 };
 
