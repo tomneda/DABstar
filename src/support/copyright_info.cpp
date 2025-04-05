@@ -38,7 +38,7 @@ QString get_copyright_text()
                  "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>).<br/>"
                  "For Qt-DAB see <a href=\"https://github.com/JvanKatwijk/qt-dab\">https://github.com/JvanKatwijk/qt-dab</a> by Jan van Katwijk<br/>"
                  "(<a href=\"mailto:J.vanKatwijk@gmail.com\">J.vanKatwijk@gmail.com</a>).</p>";
-  versionText += "<p>Rights of Qt, Qwt, FFTW, Kiss, liquid-DSP, portaudio, " + usedDecoder + useVolk + ", libsamplerate and libsndfile gratefully acknowledged.<br/>"
+  versionText += "<p>Rights of Qt, Qwt, FFTW, Kiss, liquid-DSP, " + usedDecoder + useVolk + ", libsamplerate and libsndfile gratefully acknowledged.<br/>"
                  "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.<br/>"
                  "Rights of other contributors gratefully acknowledged.</p>";
   versionText += "</p></body></html>";

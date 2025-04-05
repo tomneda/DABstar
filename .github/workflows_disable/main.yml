@@ -108,7 +108,6 @@ jobs:
             libsndfile \
             libusb \
             pkg-config \
-            portaudio \
             qt@5 \
             qwt-qt5 \
             zlib
@@ -128,7 +127,6 @@ jobs:
             mingw-w64-x86_64-libsamplerate
             mingw-w64-x86_64-libsndfile
             mingw-w64-x86_64-libusb
-            mingw-w64-x86_64-portaudio
             mingw-w64-x86_64-qt5-base
             mingw-w64-x86_64-qt5-tools
             mingw-w64-x86_64-qt5-winextras
