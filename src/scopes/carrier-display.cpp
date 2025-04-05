@@ -40,6 +40,13 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
 
 void CarrierDisp::display_carrier_plot(const std::vector<float> & iYValVec)
 {
+  // customize plot first with new data to avoid flickering after plot type change
+  if (mPlotTypeChanged)
+  {
+    mPlotTypeChanged = false;
+    _customize_plot(_get_plot_type_data(mPlotType));
+  }
+
   if (mDataSize != (int32_t)iYValVec.size())
   {
     mDataSize = (int32_t)iYValVec.size();
@@ -53,7 +60,7 @@ void CarrierDisp::display_carrier_plot(const std::vector<float> & iYValVec)
 void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 {
   mPlotType = iPlotType;
-  _customize_plot(_get_plot_type_data(iPlotType));
+  mPlotTypeChanged = true; // configure plot first time with new data
 }
 
 void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)

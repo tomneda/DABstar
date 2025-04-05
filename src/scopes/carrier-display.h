@@ -68,6 +68,7 @@ private:
   std::vector<float> mX_axis_vec;
   int32_t mDataSize = 0;
   ECarrierPlotType mPlotType = ECarrierPlotType::DEFAULT;
+  bool mPlotTypeChanged = false;
 
   void _customize_plot(const SCustPlot & iCustPlot);
   static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);
