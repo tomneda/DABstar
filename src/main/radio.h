@@ -54,7 +54,7 @@
 #include "configuration.h"
 #include "wav_writer.h"
 #include "audiofifo.h"
-#include "dxDisplay.h"
+#include "tii_list_display.h"
 #include <set>
 #include <memory>
 #include <mutex>
@@ -229,7 +229,7 @@ private:
   BandHandler mBandHandler;
   DynLinkCache mDynLabelCache{10};
   TiiHandler mTiiHandler{};
-  DxDisplay	mDxDisplay;
+  TiiListDisplay	mTiiListDisplay;
   OpenFileDialog mOpenFileDialog;
   HttpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;

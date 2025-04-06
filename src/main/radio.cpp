@@ -135,7 +135,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
   , mSpectrumViewer(this, ipSettings, mpSpectrumBuffer, mpIqBuffer, mpCarrBuffer, mpResponseBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
-  , mDxDisplay(ipSettings)
+  , mTiiListDisplay(ipSettings)
   , mOpenFileDialog(ipSettings)
   , mConfig(this)
   , mpSH(&SettingHelper::get_instance())
@@ -516,7 +516,7 @@ bool RadioInterface::do_start()
   connect_gui();
   connect_dab_processor();
 
-  mDxDisplay.hide();
+  mTiiListDisplay.hide();
 
   mpDabProcessor->set_sync_on_strongest_peak(mpSH->read(SettingHelper::cbUse_strongest_peak).toBool());
   mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
@@ -1193,7 +1193,7 @@ void RadioInterface::_slot_terminate_process()
   }
   mIsRunning.store(false);
   _show_hide_buttons(false);
-  mDxDisplay.hide();
+  mTiiListDisplay.hide();
 
   mpSH->write_widget_geometry(SettingHelper::mainWidget, this);
 
@@ -1338,12 +1338,12 @@ void RadioInterface::_slot_handle_tii_button()
   bool b = mpSH->read(SettingHelper::enableTii).toBool();
   if (b)
   {
-    mDxDisplay.hide();
+    mTiiListDisplay.hide();
     transmitterIds.resize(0);
   }
   else
   {
-    mDxDisplay.show();
+    mTiiListDisplay.show();
   }
   mpDabProcessor->set_tii(!b);
   mpSH->write(SettingHelper::enableTii, !b);
@@ -1580,9 +1580,9 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
     mChannel.countryName = country;
   }
 
-  mDxDisplay.clean_up();
-  mDxDisplay.show();
-  mDxDisplay.set_window_title("TII list of channel " + mChannel.channelName);
+  mTiiListDisplay.clean_up();
+  mTiiListDisplay.show();
+  mTiiListDisplay.set_window_title("TII list of channel " + mChannel.channelName);
 
   transmitterIds.resize(count);
   for (uint32_t index = 0; index < count; index++)
@@ -1655,7 +1655,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
              + QString::number(height) + "m";
     }
     const float strength = 10 * std::log10(iTr[index].strength);
-    mDxDisplay.add_row(mainId, subId, strength, iTr[index].phaseDeg, iTr[index].isNonEtsiPhase, text2, theTransmitter.transmitterName);
+    mTiiListDisplay.add_row(mainId, subId, strength, iTr[index].phaseDeg, iTr[index].isNonEtsiPhase, text2, theTransmitter.transmitterName);
 
     if(!mTiiIndexCntTimer.isActive() && index == (mTiiIndex % count))
     {
@@ -1675,6 +1675,8 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
                              strength, fdistance, fcorner, iTr[index].isNonEtsiPhase);
     }
   }
+
+  mTiiListDisplay.format_content();
 }
 
 void RadioInterface::slot_show_spectrum(int32_t /*amount*/)

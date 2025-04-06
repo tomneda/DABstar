@@ -319,7 +319,7 @@ set(${objectName}_HDRS
         src/support/dab-params.h
         src/support/band-handler.h
         src/support/dab-tables.h
-        src/support/dxDisplay.h
+        src/support/tii_list_display.h
         src/support/viterbi-spiral/viterbi-spiral.h
         src/support/color-selector.h
         src/support/time-table.h
@@ -423,7 +423,7 @@ set(${objectName}_SRCS
         src/support/coordinates.cpp
         src/support/mapport.cpp
         src/support/http-handler.cpp
-        src/support/dxDisplay.cpp
+        src/support/tii_list_display.cpp
         src/support/tii-library/tii-codes.cpp
         src/support/custom_frame.cpp
         src/support/setting-helper.cpp
