@@ -352,8 +352,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mClockResetTimer.setSingleShot(true);
   connect(&mClockResetTimer, &QTimer::timeout, [this](){ _set_clock_text(); });
 
-  mTiiIndexCntTimer.setSingleShot(true);
-  mTiiIndexCntTimer.setInterval(cTiiIndexCntTimeoutMs);
+  // mTiiIndexCntTimer.setSingleShot(true);
+  // mTiiIndexCntTimer.setInterval(cTiiIndexCntTimeoutMs);
 
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
@@ -383,6 +383,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   {
     mpTechDataWidget->show();
   }
+
+  mFeedTiiListWindow = mpSH->read(SettingHelper::cbShowTiiList).toBool();
 
   // if a device was selected, we just start, otherwise we wait until one is selected
   if (mpInputDevice != nullptr)
@@ -522,7 +524,7 @@ bool RadioInterface::do_start()
   mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
   mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
   mpDabProcessor->set_tii_collisions(mpSH->read(SettingHelper::cbTiiCollisions).toBool());
-  mpDabProcessor->set_tii(mpSH->read(SettingHelper::enableTii).toBool());
+  mpDabProcessor->set_tii_processing(true);
   {
     const int32_t threshold = mpSH->read(SettingHelper::tii_threshold).toInt();
     mConfig.tii_threshold->setValue(threshold) ;
@@ -730,7 +732,7 @@ void RadioInterface::_slot_handle_content_button()
 
   QString header = mChannel.ensembleName + ";" + mChannel.channelName + ";" + QString::number(mChannel.nominalFreqHz / 1000) + ";"
                    + hex_to_str(mChannel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
-                   + QString::number(mServiceList.size()) + ";" + lblStationLocation->text() + "\n";
+                   + QString::number(mServiceList.size()) + ";" + cmbStationLocation->currentText() + "\n"; // TODO: cmbStationLocation->currentText() may change
 
   mpContentTable = new ContentTable(this, mpSH->get_settings(), mChannel.channelName, mpDabProcessor->scan_width());
   connect(mpContentTable, &ContentTable::signal_go_service, this, &RadioInterface::slot_handle_content_selector);
@@ -1335,18 +1337,18 @@ void RadioInterface::_slot_handle_device_widget_button()
 void RadioInterface::_slot_handle_tii_button()
 {
   assert(mpDabProcessor != nullptr);
-  bool b = mpSH->read(SettingHelper::enableTii).toBool();
-  if (b)
+
+  if (mFeedTiiListWindow)
   {
     mTiiListDisplay.hide();
-    transmitterIds.resize(0);
   }
   else
   {
     mTiiListDisplay.show();
   }
-  mpDabProcessor->set_tii(!b);
-  mpSH->write(SettingHelper::enableTii, !b);
+
+  mFeedTiiListWindow = !mFeedTiiListWindow;
+  mpSH->write(SettingHelper::cbShowTiiList, mFeedTiiListWindow);
 }
 
 void RadioInterface::slot_handle_tii_threshold(int trs)
@@ -1580,11 +1582,22 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
     mChannel.countryName = country;
   }
 
-  mTiiListDisplay.clean_up();
-  mTiiListDisplay.show();
-  mTiiListDisplay.set_window_title("TII list of channel " + mChannel.channelName);
+  bool isDropDownVisible = cmbStationLocation->view()->isVisible();
+
+  if (!isDropDownVisible)
+  {
+    cmbStationLocation->clear();
+  }
+
+  if (mFeedTiiListWindow)
+  {
+    mTiiListDisplay.clean_up();
+    mTiiListDisplay.show();
+    mTiiListDisplay.set_window_title("TII list of channel " + mChannel.channelName);
+  }
 
   transmitterIds.resize(count);
+
   for (uint32_t index = 0; index < count; index++)
   {
     transmitterIds[index] = iTr[index];
@@ -1644,6 +1657,8 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
     QString text2 = " ";
     const bool dataValid = (thePosition.latitude != 0 && thePosition.longitude != 0);
 
+    const float strength = 10 * std::log10(iTr[index].strength);
+
     if (dataValid)
     {
       text2 += QString::number(fdistance, 'f', 1) + "km, "
@@ -1654,18 +1669,33 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
              + QString::number(altitude) + "m+"
              + QString::number(height) + "m";
     }
-    const float strength = 10 * std::log10(iTr[index].strength);
-    mTiiListDisplay.add_row(mainId, subId, strength, iTr[index].phaseDeg, iTr[index].isNonEtsiPhase, text2, theTransmitter.transmitterName);
 
-    if(!mTiiIndexCntTimer.isActive() && index == (mTiiIndex % count))
+    if (mFeedTiiListWindow)
     {
-      if (dataValid)
-      {
-        lblStationLocation->setText(QString("%1/%2: %3 %4").arg(index + 1).arg(count).arg(theTransmitter.transmitterName).arg(text2));
-        mTiiIndexCntTimer.start();
-      }
-      mTiiIndex = (mTiiIndex + 1) % count;
+      mTiiListDisplay.add_row(mainId, subId, strength, iTr[index].phaseDeg, iTr[index].isNonEtsiPhase, text2, theTransmitter.transmitterName);
     }
+
+    if (!isDropDownVisible)
+    {
+      cmbStationLocation->addItem(QString("%1/%2: %3, %4, %5-%6, %7dB, %8°%9")
+                                 .arg(index + 1).arg(count)
+                                 .arg(theTransmitter.transmitterName)
+                                 .arg(text2)
+                                 .arg(mainId, 2, 10, QChar('0')).arg(subId, 2, 10, QChar('0'))
+                                 .arg(strength, 0, 'f', 1)
+                                 .arg(QString::number(iTr[index].phaseDeg, 'f', 0))
+                                 .arg(iTr[index].isNonEtsiPhase ? "*" : ""));
+    }
+
+    // if(!mTiiIndexCntTimer.isActive() && index == (mTiiIndex % count))
+    // {
+    //   if (dataValid)
+    //   {
+    //     lblStationLocation->setText(QString("%1/%2: %3 %4").arg(index + 1).arg(count).arg(theTransmitter.transmitterName).arg(text2));
+    //     mTiiIndexCntTimer.start();
+    //   }
+    //   mTiiIndex = (mTiiIndex + 1) % count;
+    // }
 
     // see if we have a map
     if (mpHttpHandler && thePosition.latitude != 0 && thePosition.longitude != 0)
@@ -2564,7 +2594,7 @@ void RadioInterface::start_channel(const QString & iChannel)
     theTransmitter.longitude = 0;
     mpHttpHandler->putData(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
   }
-  transmitterIds.resize(0);
+  transmitterIds.clear();
 
   enable_ui_elements_for_safety(!mIsScanning);
 
@@ -2664,7 +2694,7 @@ void RadioInterface::stop_channel()
   mServiceList.clear();
   clean_screen();
   _show_epg_label(false);
-  lblStationLocation->setText("");
+  cmbStationLocation->clear();
 }
 
 //

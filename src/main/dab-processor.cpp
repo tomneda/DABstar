@@ -660,7 +660,7 @@ void DabProcessor::set_sync_on_strongest_peak(bool sync)
   mPhaseReference.set_sync_on_strongest_peak(sync);
 }
 
-void DabProcessor::set_tii(bool b)
+void DabProcessor::set_tii_processing(bool b)
 {
   mEnableTii = b;
 }

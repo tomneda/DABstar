@@ -90,7 +90,7 @@ public:
     cbTiiCollisions,
     cbUseNativeFileDialog,
     cbUseUtcTime,
-    enableTii,
+    cbShowTiiList,
     tii_threshold,
     tii_subid,
     cbUrlClickable,

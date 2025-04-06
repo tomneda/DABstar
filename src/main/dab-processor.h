@@ -119,7 +119,7 @@ public:
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);
-  void set_tii(bool);
+  void set_tii_processing(bool);
   void set_tii_threshold(uint8_t);
   void set_tii_sub_id(uint8_t);
   void set_tii_collisions(bool);

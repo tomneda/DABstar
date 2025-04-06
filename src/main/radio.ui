@@ -498,13 +498,13 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnTiiButton">
+          <widget class="QPushButton" name="btnHttpServer">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop the TII decoder and show or hide the TII widget.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a webserver for showing a map on which the locations of the transmitters found are shown. &lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; color:#26a269;&quot;&gt;Green: &lt;/span&gt;Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700; color:#ff7800;&quot;&gt;Orange:&lt;/span&gt; Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
-             <normaloff>:/res/icons/tii24.png</normaloff>:/res/icons/tii24.png</iconset>
+             <normaloff>:/res/icons/maps24.png</normaloff>:/res/icons/maps24.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -515,13 +515,13 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnHttpServer">
+          <widget class="QPushButton" name="btnTiiButton">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a webserver for showing a map on which the locations of the transmitters found are shown. &lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Important:&lt;/span&gt; Activate TII with button above to start the TII decoder that this works.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; color:#26a269;&quot;&gt;Green: &lt;/span&gt;Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700; color:#ff7800;&quot;&gt;Orange:&lt;/span&gt; Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the TII list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
-             <normaloff>:/res/icons/maps24.png</normaloff>:/res/icons/maps24.png</iconset>
+             <normaloff>:/res/icons/tii24.png</normaloff>:/res/icons/tii24.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -774,14 +774,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="lblStationLocation">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the location, distance and angle to the detected transmitter.&lt;/p&gt;&lt;p&gt;This need a found TII database file and given local coordinates.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Press TII button or/and read file /tii-library/README.txt that this works!</string>
-       </property>
-      </widget>
+      <widget class="QComboBox" name="cmbStationLocation"/>
      </item>
     </layout>
    </item>
