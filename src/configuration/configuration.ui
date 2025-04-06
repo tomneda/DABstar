@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>634</width>
+    <width>637</width>
     <height>330</height>
    </rect>
   </property>
@@ -299,31 +299,14 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QCheckBox" name="cbTiiCollisions">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows TII collisions as main id = 99&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Show TII coll. for Sub Id</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="tii_subid">
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>23</number>
-           </property>
-           <property name="value">
-            <number>0</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QCheckBox" name="cbUse_strongest_peak">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Use strongest correlation peak</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -339,16 +322,6 @@
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QCheckBox" name="cbUse_strongest_peak">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Use strongest correlation peak</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QCheckBox" name="cbShowOnlyCurrTrans">
          <property name="toolTip">
@@ -423,7 +396,44 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <widget class="QCheckBox" name="cbAutoIterTiiEntries">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Automatically iterate over TII entries&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The TII location list in the main window can be iterated automatically. If not selected then always the first (strongest) TII entry is shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Autom. iterate over TTI entries</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,1">
+         <item>
+          <widget class="QCheckBox" name="cbTiiCollisions">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows TII collisions as main id = 99&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Show TII coll. for Sub Id</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="tii_subid">
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>23</number>
+           </property>
+           <property name="value">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="3,1">
          <item>
           <widget class="QLabel" name="label_6">
            <property name="text">

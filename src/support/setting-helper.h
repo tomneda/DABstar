@@ -94,6 +94,7 @@ public:
     tii_threshold,
     tii_subid,
     cbUrlClickable,
+    cbAutoIterTiiEntries,
 
     // special enums for windows position and size storage
     configWidget,

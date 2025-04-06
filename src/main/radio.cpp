@@ -352,8 +352,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mClockResetTimer.setSingleShot(true);
   connect(&mClockResetTimer, &QTimer::timeout, [this](){ _set_clock_text(); });
 
-  // mTiiIndexCntTimer.setSingleShot(true);
-  // mTiiIndexCntTimer.setInterval(cTiiIndexCntTimeoutMs);
+  mTiiIndexCntTimer.setSingleShot(true);
+  mTiiIndexCntTimer.setInterval(cTiiIndexCntTimeoutMs);
 
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
@@ -730,9 +730,10 @@ void RadioInterface::_slot_handle_content_button()
     theTime = convertTime(mLocalTime.year, mLocalTime.month, mLocalTime.day, mLocalTime.hour, mLocalTime.minute);
   }
 
+  QString convLocation = cmbTiiList->itemText(0).replace(",", ";");
   QString header = mChannel.ensembleName + ";" + mChannel.channelName + ";" + QString::number(mChannel.nominalFreqHz / 1000) + ";"
                    + hex_to_str(mChannel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
-                   + QString::number(mServiceList.size()) + ";" + cmbStationLocation->currentText() + "\n"; // TODO: cmbStationLocation->currentText() may change
+                   + QString::number(mServiceList.size()) + ";" + convLocation + "\n";
 
   mpContentTable = new ContentTable(this, mpSH->get_settings(), mChannel.channelName, mpDabProcessor->scan_width());
   connect(mpContentTable, &ContentTable::signal_go_service, this, &RadioInterface::slot_handle_content_selector);
@@ -1582,11 +1583,11 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     mChannel.countryName = country;
   }
 
-  bool isDropDownVisible = cmbStationLocation->view()->isVisible();
+  bool isDropDownVisible = cmbTiiList->view()->isVisible();
 
   if (!isDropDownVisible)
   {
-    cmbStationLocation->clear();
+    cmbTiiList->clear();
   }
 
   if (mFeedTiiListWindow)
@@ -1670,7 +1671,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
 
     if (!isDropDownVisible)
     {
-      cmbStationLocation->addItem(QString("%1/%2: %3, %4, %5-%6, %7dB, %8°%9")
+      cmbTiiList->addItem(QString("%1/%2: %3, %4, %5-%6, %7dB, %8°%9")
                                  .arg(index + 1).arg(mTransmitterIds.size())
                                  .arg(theTransmitter.transmitterName)
                                  .arg(t1 + t2a + t3)
@@ -1680,22 +1681,24 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
                                  .arg(mTransmitterIds[index].isNonEtsiPhase ? "*" : ""));
     }
 
-    // if(!mTiiIndexCntTimer.isActive() && index == (mTiiIndex % count))
-    // {
-    //   if (dataValid)
-    //   {
-    //     lblStationLocation->setText(QString("%1/%2: %3 %4").arg(index + 1).arg(count).arg(theTransmitter.transmitterName).arg(text2));
-    //     mTiiIndexCntTimer.start();
-    //   }
-    //   mTiiIndex = (mTiiIndex + 1) % count;
-    // }
-
     // see if we have a map
     if (mpHttpHandler && dataValid)
     {
       const QDateTime theTime = (mpSH->read(SettingHelper::cbUseUtcTime).toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
       mpHttpHandler->putData(MAP_NORM_TRANS, &theTransmitter, theTime.toString(Qt::TextDate),
                              strength, fdistance, fcorner, mTransmitterIds[index].isNonEtsiPhase);
+    }
+  }
+
+  if (mConfig.cbAutoIterTiiEntries->isChecked() && !isDropDownVisible)
+  {
+    // emit signal_set_tii_list_index(mTiiIndex);
+    cmbTiiList->setCurrentIndex(mTiiIndex % cmbTiiList->count());
+
+    if (!mTiiIndexCntTimer.isActive())
+    {
+      mTiiIndex = (mTiiIndex + 1) % cmbTiiList->count();
+      mTiiIndexCntTimer.start();
     }
   }
 
@@ -2687,7 +2690,8 @@ void RadioInterface::stop_channel()
   mServiceList.clear();
   clean_screen();
   _show_epg_label(false);
-  cmbStationLocation->clear();
+  cmbTiiList->clear();
+  mTiiIndex = 0;
 }
 
 //
@@ -3731,3 +3735,4 @@ QString RadioInterface::_convert_links_to_clickable(const QString & iText) const
   // qDebug() << "result:" << result << result.length();
   return result;
 }
+

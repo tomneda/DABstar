@@ -45,6 +45,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
   mpSH->register_and_connect_ui_element<SettingHelper::cbShowNonAudioInServiceList>(cbShowNonAudioInServiceList);
   mpSH->register_and_connect_ui_element<SettingHelper::cbTiiCollisions>(cbTiiCollisions);
   mpSH->register_and_connect_ui_element<SettingHelper::cbUrlClickable>(cbUrlClickable);
+  mpSH->register_and_connect_ui_element<SettingHelper::cbAutoIterTiiEntries>(cbAutoIterTiiEntries);
   // cbActivateLogger is not stored in settings
   // cbActivateEti is not stored in settings
 
@@ -105,4 +106,5 @@ void Configuration::_sync_ui_elements(const bool iWriteSettings)
   mpSH->sync_ui_state(SettingHelper::cbShowNonAudioInServiceList, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbTiiCollisions, iWriteSettings);
   mpSH->sync_ui_state(SettingHelper::cbUrlClickable, iWriteSettings);
+  mpSH->sync_ui_state(SettingHelper::cbAutoIterTiiEntries, iWriteSettings);
 }
