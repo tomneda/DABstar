@@ -352,6 +352,9 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mClockResetTimer.setSingleShot(true);
   connect(&mClockResetTimer, &QTimer::timeout, [this](){ _set_clock_text(); });
 
+  mTiiIndexCntTimer.setSingleShot(true);
+  mTiiIndexCntTimer.setInterval(cTiiIndexCntTimeoutMs);
+
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
   h = mpSH->read(SettingHelper::device).toString();
@@ -418,7 +421,7 @@ void RadioInterface::_set_clock_text(const QString & iText /*= QString()*/)
 {
   if (!iText.isEmpty())
   {
-    mClockResetTimer.start(5000); // if in 5000ms no new clock text is sent, this method is called with an empty iText
+    mClockResetTimer.start(cClockResetTimeoutMs); // if in 5000ms no new clock text is sent, this method is called with an empty iText
 
     if (!mClockActiveStyle)
     {
@@ -1557,7 +1560,7 @@ static QString tiiNumber(int n)
 void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
 {
   QString country = "";
-  int count = iTr.size();
+  const uint32_t count = iTr.size();
 
   if (!mIsRunning.load())
     return;
@@ -1582,10 +1585,12 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
   mDxDisplay.set_window_title("TII list of channel " + mChannel.channelName);
 
   transmitterIds.resize(count);
-  for (int index = 0; index < count; index++)
+  for (uint32_t index = 0; index < count; index++)
+  {
     transmitterIds[index] = iTr[index];
+  }
 
-  for (int index = 0; index < count; index++)
+  for (uint32_t index = 0; index < count; index++)
   {
     int mainId = iTr[index].mainId;
     int subId = iTr[index].subId;
@@ -1622,21 +1627,24 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
       theTransmitter = *tr;
     }
 
-    position thePosition;
+    SPosition thePosition;
     thePosition.latitude = theTransmitter.latitude;
     thePosition.longitude = theTransmitter.longitude;
 
-    float power = theTransmitter.power;
-    float altitude = theTransmitter.altitude;
-    float height = theTransmitter.height;
-    float ownLatitude = real(mChannel.localPos);
-    float ownLongitude = imag(mChannel.localPos);
+    const float power = theTransmitter.power;
+    const float altitude = theTransmitter.altitude;
+    const float height = theTransmitter.height;
+    const float ownLatitude = real(mChannel.localPos);
+    const float ownLongitude = imag(mChannel.localPos);
 
     // if positions are known, we can compute distance and corner
     const float fdistance = mTiiHandler.distance(thePosition.latitude, thePosition.longitude, ownLatitude, ownLongitude);
     const float fcorner = mTiiHandler.corner(thePosition.latitude, thePosition.longitude, ownLatitude, ownLongitude);
+
     QString text2 = " ";
-    if (thePosition.latitude != 0 && thePosition.longitude != 0)
+    const bool dataValid = (thePosition.latitude != 0 && thePosition.longitude != 0);
+
+    if (dataValid)
     {
       text2 += QString::number(fdistance, 'f', 1) + "km, "
              + QString::number(fcorner, 'f', 1)
@@ -1649,9 +1657,14 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTr)
     const float strength = 10 * std::log10(iTr[index].strength);
     mDxDisplay.add_row(mainId, subId, strength, iTr[index].phaseDeg, iTr[index].isNonEtsiPhase, text2, theTransmitter.transmitterName);
 
-    if (index == 0)
+    if(!mTiiIndexCntTimer.isActive() && index == (mTiiIndex % count))
     {
-      lblStationLocation->setText(theTransmitter.transmitterName + " " + text2);
+      if (dataValid)
+      {
+        lblStationLocation->setText(QString("%1/%2: %3 %4").arg(index + 1).arg(count).arg(theTransmitter.transmitterName).arg(text2));
+        mTiiIndexCntTimer.start();
+      }
+      mTiiIndex = (mTiiIndex + 1) % count;
     }
 
     // see if we have a map

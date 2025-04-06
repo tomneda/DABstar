@@ -48,21 +48,23 @@ struct CacheElem
   QString direction;
 };
 
-struct BlackListElem
+struct SBlackListElem
 {
   uint16_t Eid;
   uint8_t mainId;
   uint8_t subId;
 };
-typedef struct {
-        float   latitude;
-        float   longitude;
-} position;
+
+struct SPosition
+{
+  float latitude;
+  float longitude;
+};
 
 // DLL and ".so" function prototypes
-using TpFn_init_tii  = void *(*)();
-using TpFn_close_tii = void  (*)(void *);
-using TpFn_loadTable = void  (*)(void *, const std::string &);
+using TpFn_init_tii = void * (*)();
+using TpFn_close_tii = void (*)(void *);
+using TpFn_loadTable = void (*)(void *, const std::string &);
 
 class TiiHandler
 {
@@ -71,7 +73,7 @@ public:
   ~TiiHandler();
 
   bool fill_cache_from_tii_file(const QString &);
-  const CacheElem *get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
+  const CacheElem * get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
   void get_coordinates(float *, float *, float *, const QString &, const QString &);
   [[nodiscard]] float distance(float, float, float, float) const;
   float corner(float, float, float, float) const;
@@ -81,7 +83,7 @@ public:
   void loadTable(const QString & iTiiFileName);
 
 private:
-  std::vector<BlackListElem> mBlackListVec;
+  std::vector<SBlackListElem> mBlackListVec;
   std::vector<CacheElem> mContentCacheVec;
   uint8_t mShift = 0;
   QString mTiiFileName;

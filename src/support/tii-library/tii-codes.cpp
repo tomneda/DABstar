@@ -79,7 +79,7 @@ bool TiiHandler::load_library()
       if (mpTiiLibHandler != nullptr)
       {
         fprintf(stdout, "Opening '%s' and initialization was successful\n", libFile.c_str());
-        delete(mphandle);
+        delete (mphandle);
         return true;
       }
       else
@@ -92,7 +92,7 @@ bool TiiHandler::load_library()
       mpTiiLibHandler = nullptr;
       fprintf(stderr, "Failed to open functions in library %s with error '%s'\n", libFile.c_str(), dlerror());
     }
-    delete(mphandle);
+    delete (mphandle);
   }
   else
   {
@@ -138,18 +138,18 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
   return dataLoaded;
 }
 
-const CacheElem *TiiHandler::get_transmitter_name(const QString & channel,
-											uint16_t Eid, uint8_t mainId, uint8_t subId)
+const CacheElem * TiiHandler::get_transmitter_name(const QString & channel,
+                                                   uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
   //fprintf(stdout, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
 
   for (const auto & i : mContentCacheVec)
   {
     if ((channel == "any" || channel == i.channel) &&
-    	i.Eid == Eid &&
-    	i.mainId == mainId &&
-    	i.subId == subId &&
-	    !(i.transmitterName.contains("tunnel", Qt::CaseInsensitive)))
+        i.Eid == Eid &&
+        i.mainId == mainId &&
+        i.subId == subId &&
+        !(i.transmitterName.contains("tunnel", Qt::CaseInsensitive)))
     {
       return &i;
     }
@@ -212,7 +212,7 @@ float TiiHandler::distance(float latitude1, float longitude1, float latitude2, f
   {
     dx = _distance_2(latitude2, longitude1, latitude2, longitude2);
   }
-  return (float)sqrt(dx * dx + dy * dy);
+  return (float) sqrt(dx * dx + dy * dy);
 }
 
 float TiiHandler::corner(float latitude1, float longitude1, float latitude2, float longitude2) const
@@ -260,7 +260,7 @@ bool TiiHandler::is_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
 
 void TiiHandler::set_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
-  BlackListElem element;
+  SBlackListElem element;
   element.Eid = Eid;
   element.mainId = mainId;
   element.subId = subId;
@@ -423,7 +423,7 @@ bool TiiHandler::is_valid() const
 
 bool TiiHandler::_load_dyn_library_functions()
 {
-  mpFn_init_tii = (TpFn_init_tii)mphandle->resolve("init_tii_L");
+  mpFn_init_tii = (TpFn_init_tii) mphandle->resolve("init_tii_L");
 
   if (mpFn_init_tii == nullptr)
   {
@@ -431,7 +431,7 @@ bool TiiHandler::_load_dyn_library_functions()
     return false;
   }
 
-  mpFn_close_tii = (TpFn_close_tii)mphandle->resolve("close_tii_L");
+  mpFn_close_tii = (TpFn_close_tii) mphandle->resolve("close_tii_L");
 
   if (mpFn_close_tii == nullptr)
   {
@@ -439,7 +439,7 @@ bool TiiHandler::_load_dyn_library_functions()
     return false;
   }
 
-  mpFn_loadTable = (TpFn_loadTable)mphandle->resolve("loadTableL");
+  mpFn_loadTable = (TpFn_loadTable) mphandle->resolve("loadTableL");
 
   if (mpFn_loadTable == nullptr)
   {

@@ -203,10 +203,12 @@ private:
     StatusInfoElem<uint32_t> OutSampRate; // tricky: sample rates must be of type uint32_t
   };
 
-  static constexpr int32_t cDisplayTimeoutMs = 1000;
-  static constexpr int32_t cChannelTimeoutMs = 3000;
-  static constexpr int32_t cEpgTimeoutMs     = 3000;
-  static constexpr int32_t cPresetTimeoutMs  =  500;
+  static constexpr int32_t cDisplayTimeoutMs     = 1000;
+  static constexpr int32_t cChannelTimeoutMs     = 3000;
+  static constexpr int32_t cEpgTimeoutMs         = 3000;
+  static constexpr int32_t cPresetTimeoutMs      =  500;
+  static constexpr int32_t cClockResetTimeoutMs  = 5000;
+  static constexpr int32_t cTiiIndexCntTimeoutMs = 2000;
 
   int32_t mAudioFrameCnt = 0;
   int32_t mMotObjectCnt = 0;
@@ -286,6 +288,8 @@ private:
   QTimer mChannelTimer;
   QTimer mPresetTimer;
   QTimer mClockResetTimer;
+  QTimer mTiiIndexCntTimer;
+  uint32_t mTiiIndex = 0;
   bool mMutingActive = true;
   int32_t mNumberOfSeconds = 0;
   int16_t mFicBlocks = 0;
