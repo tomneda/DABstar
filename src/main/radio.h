@@ -305,7 +305,7 @@ private:
   bool mCurFavoriteState = false;
   bool mClockActiveStyle = true;
   std::mutex mMutex;
-  std::vector<STiiResult> transmitterIds;
+  std::vector<STiiResult> mTransmitterIds;
 
   static QStringList get_soft_bit_gen_names();
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> &, const SServiceId &);

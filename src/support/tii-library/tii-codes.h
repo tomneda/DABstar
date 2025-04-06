@@ -55,12 +55,6 @@ struct SBlackListElem
   uint8_t subId;
 };
 
-struct SPosition
-{
-  float latitude;
-  float longitude;
-};
-
 // DLL and ".so" function prototypes
 using TpFn_init_tii = void * (*)();
 using TpFn_close_tii = void (*)(void *);

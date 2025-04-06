@@ -23,7 +23,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
   mpRadioInterface(ipRI)
 {
   setupUi(this);
-  setFixedSize(650, 330);
+  setFixedSize(700, 330);
 
   mpSH->read_widget_geometry(SettingHelper::configWidget, this);
 

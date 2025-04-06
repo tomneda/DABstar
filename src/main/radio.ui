@@ -774,7 +774,11 @@
       </layout>
      </item>
      <item>
-      <widget class="QComboBox" name="cmbStationLocation"/>
+      <widget class="QComboBox" name="cmbStationLocation">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;List of TII transmitter data&lt;/p&gt;&lt;p&gt;Click to see overview. &lt;/p&gt;&lt;p&gt;Alternativ you can open the TII list in an extra table.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

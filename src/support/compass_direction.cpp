@@ -11,12 +11,12 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "angle_direction.h"
+#include "compass_direction.h"
 #include <vector>
 #include <cmath>
 
 // Function to find the compass direction for a given angle
-/*static*/ std::string AngleDirection::get_compass_direction(double iAngleInDegree)
+/*static*/ std::string CompassDirection::get_compass_direction(double iAngleInDegree)
 {
   struct SAngleDirection
   {

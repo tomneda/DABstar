@@ -10,19 +10,19 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef ANGLE_DIRECTION_H
-#define ANGLE_DIRECTION_H
+#ifndef COMPASS_DIRECTION_H
+#define COMPASS_DIRECTION_H
 #include <string>
 
 
-class AngleDirection
+class CompassDirection
 {
 public:
-  AngleDirection() = default;
-  ~AngleDirection() = default;
+  CompassDirection() = default;
+  ~CompassDirection() = default;
 
   static std::string get_compass_direction(double iAngleInDegree);
 };
 
 
-#endif //ANGLE_DIRECTION_H
+#endif // COMPASS_DIRECTION_H

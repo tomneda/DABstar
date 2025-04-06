@@ -337,7 +337,7 @@ set(${objectName}_HDRS
         src/support/custom_frame.h
         src/support/setting-helper.h
         src/support/wav_writer.h
-        src/support/angle_direction.h
+        src/support/compass_direction.h
         src/support/time_meas.h
         src/support/copyright_info.h
         src/scopes/iqdisplay.h
@@ -428,7 +428,7 @@ set(${objectName}_SRCS
         src/support/custom_frame.cpp
         src/support/setting-helper.cpp
         src/support/wav_writer.cpp
-        src/support/angle_direction.cpp
+        src/support/compass_direction.cpp
         src/support/copyright_info.cpp
         src/scopes/iqdisplay.cpp
         src/scopes/carrier-display.cpp
