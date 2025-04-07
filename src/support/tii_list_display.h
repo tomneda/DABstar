@@ -29,6 +29,7 @@
  */
 #pragma once
 
+#include "tii-codes.h"
 #include <QString>
 #include <QWidget>
 #include <QScrollArea>
@@ -38,7 +39,6 @@
 #include <QSettings>
 #include <QScopedPointer>
 
-//class	RadioInterface;
 
 class TiiListDisplay : public QFrame
 {
@@ -48,15 +48,25 @@ public:
   TiiListDisplay(QSettings *);
   ~TiiListDisplay();
 
+  struct SDerivedData
+  {
+    float strength_dB;
+    float phase_deg;
+    bool  isNonEtsiPhase;
+    float distance_km;
+    float corner_deg;
+  };
+
   void set_window_title(const QString &);
-  void add_row(const uint8_t mainId, const uint8_t subId, const float strength, const float phase, const bool non_etsi_phase, const QString & ds, const QString & tr);
-  void clean_up();
+  void add_row(const SCacheElem & iTr, const SDerivedData & iDD);
+  void start_adding();
   void show();
   void hide();
   int get_nr_rows();
-  void format_content();
+  void finish_adding();
 
 private:
+  static constexpr int32_t cColNr = 10;
   QScopedPointer<QScrollArea> mpWidget;
   QScopedPointer<QTableWidget> mpTableWidget;
   QSettings * mpSettings;

@@ -466,7 +466,7 @@
          <item>
           <widget class="QPushButton" name="btnMuteAudio">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mute or unmute the audio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Mute or unmute the audio&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -483,7 +483,7 @@
          <item>
           <widget class="CirclePushButton" name="btnScanning">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a scan.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Start or stop a scan&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -500,7 +500,7 @@
          <item>
           <widget class="QPushButton" name="btnHttpServer">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start or stop a webserver for showing a map on which the locations of the transmitters found are shown. &lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; color:#26a269;&quot;&gt;Green: &lt;/span&gt;Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700; color:#ff7800;&quot;&gt;Orange:&lt;/span&gt; Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Start or stop a webserver &lt;/span&gt;&lt;/p&gt;&lt;p&gt;...for showing a map on which the locations of the transmitters found are shown&lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; color:#26a269;&quot;&gt;Green: &lt;/span&gt;Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700; color:#ff7800;&quot;&gt;Orange:&lt;/span&gt; Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -517,7 +517,7 @@
          <item>
           <widget class="QPushButton" name="btnTiiButton">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the TII list.&lt;/p&gt;&lt;p&gt;This works only if the receivers map coordinates are set in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the detailed TII list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This works only if the receivers map coordinates are set in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -534,7 +534,7 @@
          <item>
           <widget class="QPushButton" name="btnTechDetails">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide a widget showing details of the currently selected service.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide a widget showing details of the currently selected service&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -556,7 +556,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the spectrum, the constellation and many more of the DAB signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the spectrum, the constellation and many more of the DAB signal&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -578,7 +578,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the control widget of the SDR device.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the control widget of the SDR device&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -595,7 +595,7 @@
          <item>
           <widget class="QPushButton" name="configButton">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide or show the configuration-control widget.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Hide or show the configuration-control widget&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
@@ -776,7 +776,7 @@
      <item>
       <widget class="QComboBox" name="cmbTiiList">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;List of TII transmitter data&lt;/p&gt;&lt;p&gt;Click to see overview. &lt;/p&gt;&lt;p&gt;Alternativ you can open the TII list in an extra table.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;List of TII transmitter data &lt;/span&gt;(simplified)&lt;/p&gt;&lt;p&gt;Click to see overview. &lt;/p&gt;&lt;p&gt;Only reasonable entries are shown, so some entries may be missed.&lt;/p&gt;&lt;p&gt;Shown is: &lt;br/&gt;  - Transmitter Location &lt;br/&gt;  - Distance to transmitter location&lt;br/&gt;  - Compass direction to the transmitter location&lt;br/&gt;  - Altitude of the base of the transmitter antenna&lt;br/&gt;  - Height of the transmitter antenna&lt;/p&gt;&lt;p&gt;For more detailed information, click on the TII button to open an extra TII list.&lt;/p&gt;&lt;p&gt;This works only if the receivers map coordinates are set in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>

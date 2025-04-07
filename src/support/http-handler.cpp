@@ -562,7 +562,7 @@ std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
   return Jsontxt.toStdString();
 }
 
-void HttpHandler::putData(uint8_t type, CacheElem * tr, QString dateTime,
+void HttpHandler::putData(uint8_t type, const SCacheElem * tr, const QString & dateTime,
                           float strength, int distance, int azimuth, bool non_etsi)
 {
   cmplx target = cmplx(tr->latitude, tr->longitude);
@@ -583,7 +583,7 @@ void HttpHandler::putData(uint8_t type, CacheElem * tr, QString dateTime,
   t.mainId = tr->mainId;
   t.subId = tr->subId;
   t.strength = strength,
-    t.distance = distance;
+  t.distance = distance;
   t.azimuth = azimuth;
   t.power = tr->power;
   t.altitude = tr->altitude;

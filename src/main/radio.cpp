@@ -1590,7 +1590,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
 
   if (mFeedTiiListWindow)
   {
-    mTiiListDisplay.clean_up();
+    mTiiListDisplay.start_adding();
   }
 
   if (!isDropDownVisible)
@@ -1610,101 +1610,82 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     mTiiListDisplay.set_window_title("TII list of channel " + mChannel.channelName);
   }
 
-  mTransmitterIds = std::move(iTiiList);
+  mTransmitterIds = iTiiList;
+  SCacheElem tr_fb; // fallback data storage, if no database entry was found
 
   for (uint32_t index = 0; index < mTransmitterIds.size(); index++)
   {
-    int mainId = mTransmitterIds[index].mainId;
-    int subId = mTransmitterIds[index].subId;
-    if (mainId == 0xFF)	// shouldn't be
+    const STiiResult & tii = mTransmitterIds[index];
+
+    if (tii.mainId == 0xFF)	// shouldn't be
       continue;
-    if (index == 0)
+
+    if (index == 0) // show only the "strongest" TII number
     {
-      QString a = "TII: " + tiiNumber(mainId) + "-" + tiiNumber(subId);
+      QString a = "TII: " + tiiNumber(tii.mainId) + "-" + tiiNumber(tii.subId);
       transmitter_coordinates->setAlignment(Qt::AlignRight);
       transmitter_coordinates->setText(a);
     }
 
-    CacheElem theTransmitter;
-    const CacheElem * tr = mTiiHandler.get_transmitter_name((mChannel.realChannel ? mChannel.channelName : "any"), mChannel.Eid, mainId, subId);
+    const SCacheElem * pTr = mTiiHandler.get_transmitter_name((mChannel.realChannel ? mChannel.channelName : "any"), mChannel.Eid, tii.mainId, tii.subId);
+    const bool dataValid = (pTr != nullptr);
 
-    if (tr == nullptr)
+    if (!dataValid)
     {
-      //fprintf(stderr,"Eid = %x mainId = %d, subId = %d\n", channel.Eid, mainId, subId);
-      theTransmitter.mainId = mainId;
-      theTransmitter.subId = subId;
-      theTransmitter.country = country;
-      theTransmitter.channel = "";
-      theTransmitter.ensemble = "";
-      theTransmitter.Eid = mChannel.Eid;
-      theTransmitter.transmitterName = "(unknown transmitter)";
-      theTransmitter.latitude = 0;
-      theTransmitter.longitude = 0;
-      theTransmitter.power = 0;
-      theTransmitter.altitude = 0;
-      theTransmitter.height = 0;
-    }
-    else
-    {
-      theTransmitter = *tr;
+      tr_fb = {};
+      tr_fb.mainId = tii.mainId;
+      tr_fb.subId = tii.subId;
+      tr_fb.country = country;
+      tr_fb.Eid = mChannel.Eid;
+      tr_fb.transmitterName = "(no database entry)";
+      pTr = &tr_fb;
     }
 
-    const bool dataValid = (tr != nullptr);
-    const float power = theTransmitter.power;
-    const float altitude = theTransmitter.altitude;
-    const float height = theTransmitter.height;
-
-    // if positions are known, we can compute distance and corner
-    const float fdistance = mTiiHandler.distance(theTransmitter.latitude, theTransmitter.longitude, ownLatitude, ownLongitude);
-    const float fcorner = mTiiHandler.corner(theTransmitter.latitude, theTransmitter.longitude, ownLatitude, ownLongitude);
-
-    const float strength = 10 * std::log10(mTransmitterIds[index].strength);
-    QString t1, t2a, t2b, t3;
+    TiiListDisplay::SDerivedData bd;
 
     if (dataValid)
     {
-      t1  = QString::number(fdistance, 'f', 1) + "km";
-      t2a = " " + QString::fromStdString(CompassDirection::get_compass_direction(fcorner)) + ", ";
-      t2b = ", " + QString::number(fcorner, 'f', 1) + "°" + t2a;
-      t3  = QString::number(power, 'f', 1) + "kW, "
-          + QString::number(altitude) + "m+"
-          + QString::number(height) + "m";
+      bd.distance_km = mTiiHandler.distance(pTr->latitude, pTr->longitude, ownLatitude, ownLongitude);
+      bd.corner_deg = mTiiHandler.corner(pTr->latitude, pTr->longitude, ownLatitude, ownLongitude);
+      bd.strength_dB = log10_times_10(tii.strength);
+      bd.phase_deg = tii.phaseDeg;
+      bd.isNonEtsiPhase = tii.isNonEtsiPhase;
     }
     else
     {
-      t1 = "(no transmitter data available)";
+      bd = {};
     }
-
+    
     if (mFeedTiiListWindow)
     {
-      mTiiListDisplay.add_row(mainId, subId, strength, mTransmitterIds[index].phaseDeg, mTransmitterIds[index].isNonEtsiPhase, t1 + t2b + t3, theTransmitter.transmitterName);
+      mTiiListDisplay.add_row(*pTr, bd);
     }
 
-    if (!isDropDownVisible)
+    if (!isDropDownVisible && dataValid)
     {
-      cmbTiiList->addItem(QString("%1/%2: %3, %4, %5-%6, %7dB, %8°%9")
-                                 .arg(index + 1).arg(mTransmitterIds.size())
-                                 .arg(theTransmitter.transmitterName)
-                                 .arg(t1 + t2a + t3)
-                                 .arg(mainId, 2, 10, QChar('0')).arg(subId, 2, 10, QChar('0'))
-                                 .arg(strength, 0, 'f', 1)
-                                 .arg(QString::number(mTransmitterIds[index].phaseDeg, 'f', 0))
-                                 .arg(mTransmitterIds[index].isNonEtsiPhase ? "*" : ""));
+      cmbTiiList->addItem(QString("%1/%2: %3  %4km  %5  %6m + %7m")
+                                 .arg(index + 1)
+                                 .arg(mTransmitterIds.size())
+                                 .arg(pTr->transmitterName)
+                                 .arg(bd.distance_km, 0, 'f', 1)
+                                 .arg(QString(CompassDirection::get_compass_direction(bd.corner_deg).c_str()))
+                                 .arg(pTr->altitude)
+                                 .arg(pTr->height));
     }
 
     // see if we have a map
     if (mpHttpHandler && dataValid)
     {
       const QDateTime theTime = (mpSH->read(SettingHelper::cbUseUtcTime).toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
-      mpHttpHandler->putData(MAP_NORM_TRANS, &theTransmitter, theTime.toString(Qt::TextDate),
-                             strength, fdistance, fcorner, mTransmitterIds[index].isNonEtsiPhase);
+      mpHttpHandler->putData(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
+                             bd.strength_dB, (int)bd.distance_km, (int)bd.corner_deg, bd.isNonEtsiPhase);
     }
   }
 
+  // iterate over combobox entries, if activated
   if (mConfig.cbAutoIterTiiEntries->isChecked() && !isDropDownVisible)
   {
-    // emit signal_set_tii_list_index(mTiiIndex);
-    cmbTiiList->setCurrentIndex(mTiiIndex % cmbTiiList->count());
+    cmbTiiList->setCurrentIndex((int)mTiiIndex % cmbTiiList->count());
 
     if (!mTiiIndexCntTimer.isActive())
     {
@@ -1713,7 +1694,10 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     }
   }
 
-  mTiiListDisplay.format_content();
+  if (mFeedTiiListWindow)
+  {
+    mTiiListDisplay.finish_adding();
+  }
 }
 
 void RadioInterface::slot_show_spectrum(int32_t /*amount*/)
@@ -2594,7 +2578,7 @@ void RadioInterface::start_channel(const QString & iChannel)
 
   mpServiceListHandler->set_selector_channel_only(mChannel.channelName);
 
-  CacheElem theTransmitter;
+  SCacheElem theTransmitter;
   if (mpHttpHandler != nullptr)
   {
     theTransmitter.latitude = 0;
@@ -2676,7 +2660,7 @@ void RadioInterface::stop_channel()
   mChannel.targetPos = cmplx(0, 0);
   if (mpHttpHandler != nullptr)
   {
-    CacheElem theTransmitter;
+    SCacheElem theTransmitter;
     theTransmitter.latitude = 0;
     theTransmitter.longitude = 0;
     mpHttpHandler->putData(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);

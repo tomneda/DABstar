@@ -36,8 +36,9 @@ TiiListDisplay::TiiListDisplay(QSettings * s)
 {
   mpSettings = s;
 
-  mpTableWidget.reset(new QTableWidget(0, 6));
-  mpTableWidget->setHorizontalHeaderLabels(QStringList() << tr("Main") << ("Sub") << tr("dB") << ("Phase") << tr("Transmitter") << tr("Distance, Direction, Power, Height"));
+  mpTableWidget.reset(new QTableWidget(0, cColNr));
+  mpTableWidget->setHorizontalHeaderLabels(QStringList() << "Main" << "Sub" << "Level" << "Phase" << "Transmitter"
+                                                         << "Distance" << "Dir" << "Power" << "Altitude" << "Height");
 
   mpWidget.reset(new QScrollArea(nullptr));
   mpWidget->setWidgetResizable(true);
@@ -58,10 +59,15 @@ void TiiListDisplay::set_window_title(const QString & channel)
   mpWidget->setWindowTitle(channel);
 }
 
-void TiiListDisplay::clean_up()
+void TiiListDisplay::start_adding()
 {
   mpTableWidget->setRowCount(0);
   mpWidget->setWindowTitle("TII list");
+}
+
+void TiiListDisplay::finish_adding()
+{
+  mpTableWidget->resizeColumnsToContents();
 }
 
 int TiiListDisplay::get_nr_rows()
@@ -80,30 +86,33 @@ void TiiListDisplay::hide()
   mpWidget->hide();
 }
 
-void TiiListDisplay::add_row(const uint8_t mainId, const uint8_t subId, const float strength,
-                             const float phase, const bool non_etsi_phase, const QString & ds, const QString & tr)
+void TiiListDisplay::add_row(const SCacheElem & iTr, const SDerivedData & iDD)
 {
   int16_t row = mpTableWidget->rowCount();
   mpTableWidget->insertRow(row);
 
-  mpTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(mainId)));
-  mpTableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(subId)));
-  mpTableWidget->setItem(row, 2, new QTableWidgetItem(QString::number(strength, 'f', 1)));
-  mpTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(phase, 'f', 0) + " " + (non_etsi_phase ? '*' : ' ')));
-  mpTableWidget->setItem(row, 4, new QTableWidgetItem(tr));
-  mpTableWidget->setItem(row, 5, new QTableWidgetItem(ds));
+  mpTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(iTr.mainId)));
+  mpTableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(iTr.subId)));
+  mpTableWidget->setItem(row, 2, new QTableWidgetItem(QString::number(iDD.strength_dB, 'f', 1) + "dB"));
+  mpTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(iDD.phase_deg, 'f', 0) + "°" + (iDD.isNonEtsiPhase ? '*' : ' ')));
+  mpTableWidget->setItem(row, 4, new QTableWidgetItem(iTr.transmitterName));
+  mpTableWidget->setItem(row, 5, new QTableWidgetItem(QString::number(iDD.distance_km, 'f', 1) + "km"));
+  mpTableWidget->setItem(row, 6, new QTableWidgetItem(QString::number(iDD.corner_deg, 'f', 1) + "°"));
+  mpTableWidget->setItem(row, 7, new QTableWidgetItem(QString::number(iTr.power, 'f', 1) + "kW"));
+  mpTableWidget->setItem(row, 8, new QTableWidgetItem(QString::number(iTr.altitude) + "m"));
+  mpTableWidget->setItem(row, 9, new QTableWidgetItem(QString::number(iTr.height) + "m"));
 
-  mpTableWidget->item(row, 0)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  mpTableWidget->item(row, 1)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  mpTableWidget->item(row, 2)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  mpTableWidget->item(row, 3)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  mpTableWidget->item(row, 4)->setTextAlignment(Qt::AlignLeft  | Qt::AlignVCenter);
-  mpTableWidget->item(row, 5)->setTextAlignment(Qt::AlignLeft  | Qt::AlignVCenter);
-}
-
-void TiiListDisplay::format_content()
-{
-  mpTableWidget->resizeColumnsToContents();
+  for (int colIdx = 0; colIdx < cColNr; colIdx++)
+  {
+    if (colIdx == 4) // transmitter name is left aligned
+    {
+      mpTableWidget->item(row, colIdx)->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    }
+    else
+    {
+      mpTableWidget->item(row, colIdx)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    }
+  }
 }
 
 void TiiListDisplay::_set_position_and_size(QSettings * settings, QScopedPointer<QScrollArea> & w, QScopedPointer<QTableWidget> & t, const QString & key)
@@ -113,21 +122,9 @@ void TiiListDisplay::_set_position_and_size(QSettings * settings, QScopedPointer
   int y = settings->value(key + "-y", 100).toInt();
   int wi = settings->value(key + "-w", 748).toInt();
   int he = settings->value(key + "-h", 200).toInt();
-  int c0 = settings->value(key + "-c0", 39).toInt();
-  int c1 = settings->value(key + "-c1", 41).toInt();
-  int c2 = settings->value(key + "-c2", 52).toInt();
-  int c3 = settings->value(key + "-c3", 44).toInt();
-  int c4 = settings->value(key + "-c4", 268).toInt();
-  int c5 = settings->value(key + "-c5", 268).toInt();
   settings->endGroup();
   w->resize(QSize(wi, he));
   w->move(QPoint(x, y));
-  t->setColumnWidth(0, c0);
-  t->setColumnWidth(1, c1);
-  t->setColumnWidth(2, c2);
-  t->setColumnWidth(3, c3);
-  t->setColumnWidth(4, c4);
-  t->setColumnWidth(5, c5);
 }
 
 void TiiListDisplay::_store_widget_position(QSettings * settings, QScopedPointer<QScrollArea> & w, QScopedPointer<QTableWidget> & t, const QString & key)
@@ -137,11 +134,6 @@ void TiiListDisplay::_store_widget_position(QSettings * settings, QScopedPointer
   settings->setValue(key + "-y", w->pos().y());
   settings->setValue(key + "-w", w->size().width());
   settings->setValue(key + "-h", w->size().height());
-  settings->setValue(key + "-c0", t->columnWidth(0));
-  settings->setValue(key + "-c1", t->columnWidth(1));
-  settings->setValue(key + "-c2", t->columnWidth(2));
-  settings->setValue(key + "-c3", t->columnWidth(3));
-  settings->setValue(key + "-c4", t->columnWidth(4));
-  settings->setValue(key + "-c5", t->columnWidth(5));
   settings->endGroup();
 }
+

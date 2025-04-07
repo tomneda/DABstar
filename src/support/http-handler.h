@@ -77,7 +77,7 @@ public:
   void start();
   void stop();
   void run();
-  void putData(uint8_t type, CacheElem * tr, QString dateTime,
+  void putData(uint8_t type, const SCacheElem * tr, const QString & dateTime,
                float strength, int distance, int azimuth, bool non_etsi);
 
 private:

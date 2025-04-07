@@ -28,7 +28,7 @@
 #include <QFile>
 #include "dab-constants.h"
 
-struct CacheElem
+struct SCacheElem
 {
   int id;
   QString country;
@@ -67,7 +67,7 @@ public:
   ~TiiHandler();
 
   bool fill_cache_from_tii_file(const QString &);
-  const CacheElem * get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
+  const SCacheElem * get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
   void get_coordinates(float *, float *, float *, const QString &, const QString &);
   [[nodiscard]] float distance(float, float, float, float) const;
   float corner(float, float, float, float) const;
@@ -78,7 +78,7 @@ public:
 
 private:
   std::vector<SBlackListElem> mBlackListVec;
-  std::vector<CacheElem> mContentCacheVec;
+  std::vector<SCacheElem> mContentCacheVec;
   uint8_t mShift = 0;
   QString mTiiFileName;
   void * mpTiiLibHandler = nullptr;

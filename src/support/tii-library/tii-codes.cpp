@@ -138,8 +138,8 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
   return dataLoaded;
 }
 
-const CacheElem * TiiHandler::get_transmitter_name(const QString & channel,
-                                                   uint16_t Eid, uint8_t mainId, uint8_t subId)
+const SCacheElem * TiiHandler::get_transmitter_name(const QString & channel,
+                                                    uint16_t Eid, uint8_t mainId, uint8_t subId)
 {
   //fprintf(stdout, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
 
@@ -325,7 +325,7 @@ void TiiHandler::_read_file(QFile & fp)
 
   while (_eread(buffer.data(), buffer.size(), fp) != nullptr)
   {
-    CacheElem ed;
+    SCacheElem ed;
     if (fp.atEnd())
     {
       break;
