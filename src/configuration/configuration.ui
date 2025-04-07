@@ -401,7 +401,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Automatically iterate over TII entries&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The TII location list in the main window can be iterated automatically. If not selected then always the first (strongest) TII entry is shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Autom. iterate over TTI entries</string>
+          <string>Autom. iterate over TII entries</string>
          </property>
         </widget>
        </item>

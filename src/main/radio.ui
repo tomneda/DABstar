@@ -517,7 +517,7 @@
          <item>
           <widget class="QPushButton" name="btnTiiButton">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the TII list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show or hide the TII list.&lt;/p&gt;&lt;p&gt;This works only if the receivers map coordinates are set in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">

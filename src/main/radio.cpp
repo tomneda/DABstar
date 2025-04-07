@@ -1564,6 +1564,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
 {
   if (!mIsRunning.load())
     return;
+
   if (mpDabProcessor->get_ecc() == 0)
     return;
 
@@ -1583,16 +1584,28 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     mChannel.countryName = country;
   }
 
-  bool isDropDownVisible = cmbTiiList->view()->isVisible();
+  const bool isDropDownVisible = cmbTiiList->view()->isVisible();
+  const float ownLatitude = real(mChannel.localPos);
+  const float ownLongitude = imag(mChannel.localPos);
+
+  if (mFeedTiiListWindow)
+  {
+    mTiiListDisplay.clean_up();
+  }
 
   if (!isDropDownVisible)
   {
     cmbTiiList->clear();
   }
 
+  if (ownLatitude == 0.0f && ownLongitude == 0.0f)
+  {
+    cmbTiiList->addItem("Provide the receivers map coordinates in the settings to use this feature");
+    return;
+  }
+
   if (mFeedTiiListWindow)
   {
-    mTiiListDisplay.clean_up();
     mTiiListDisplay.show();
     mTiiListDisplay.set_window_title("TII list of channel " + mChannel.channelName);
   }
@@ -1640,8 +1653,6 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     const float power = theTransmitter.power;
     const float altitude = theTransmitter.altitude;
     const float height = theTransmitter.height;
-    const float ownLatitude = real(mChannel.localPos);
-    const float ownLongitude = imag(mChannel.localPos);
 
     // if positions are known, we can compute distance and corner
     const float fdistance = mTiiHandler.distance(theTransmitter.latitude, theTransmitter.longitude, ownLatitude, ownLongitude);
