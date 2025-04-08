@@ -1,6 +1,6 @@
 #!/bin/bash
 
-QT_VERSION=6.8.2
+QT_VERSION=6.8.3
 CUD=$PWD
 SRC=$CUD/..
 DST=~/DABstarAppImage/build
