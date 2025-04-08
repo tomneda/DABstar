@@ -1587,6 +1587,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   const bool isDropDownVisible = cmbTiiList->view()->isVisible();
   const float ownLatitude = real(mChannel.localPos);
   const float ownLongitude = imag(mChannel.localPos);
+  const bool ownCoordinatesSet = (ownLatitude != 0.0f && ownLongitude != 0.0f);
 
   if (mFeedTiiListWindow)
   {
@@ -1596,12 +1597,6 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   if (!isDropDownVisible)
   {
     cmbTiiList->clear();
-  }
-
-  if (ownLatitude == 0.0f && ownLongitude == 0.0f)
-  {
-    cmbTiiList->addItem("Provide the receivers map coordinates in the settings to use this feature");
-    return;
   }
 
   if (mFeedTiiListWindow)
@@ -1645,8 +1640,15 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
 
     if (dataValid)
     {
-      bd.distance_km = mTiiHandler.distance(pTr->latitude, pTr->longitude, ownLatitude, ownLongitude);
-      bd.corner_deg = mTiiHandler.corner(pTr->latitude, pTr->longitude, ownLatitude, ownLongitude);
+      if (ownCoordinatesSet)
+      {
+        bd.distance_km = mTiiHandler.distance(pTr->latitude, pTr->longitude, ownLatitude, ownLongitude);
+        bd.corner_deg = mTiiHandler.corner(pTr->latitude, pTr->longitude, ownLatitude, ownLongitude);
+      }
+      else
+      {
+        bd.distance_km = bd.corner_deg = 0.0f;
+      }
       bd.strength_dB = log10_times_10(tii.strength);
       bd.phase_deg = tii.phaseDeg;
       bd.isNonEtsiPhase = tii.isNonEtsiPhase;
@@ -1663,14 +1665,27 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
 
     if (!isDropDownVisible && dataValid)
     {
-      cmbTiiList->addItem(QString("%1/%2: %3  %4km  %5  %6m + %7m")
-                                 .arg(index + 1)
-                                 .arg(mTransmitterIds.size())
-                                 .arg(pTr->transmitterName)
-                                 .arg(bd.distance_km, 0, 'f', 1)
-                                 .arg(QString(CompassDirection::get_compass_direction(bd.corner_deg).c_str()))
-                                 .arg(pTr->altitude)
-                                 .arg(pTr->height));
+      if (ownCoordinatesSet)
+      {
+        cmbTiiList->addItem(QString("%1/%2: %3  %4km  %5  %6m + %7m")
+                              .arg(index + 1)
+                              .arg(mTransmitterIds.size())
+                              .arg(pTr->transmitterName)
+                              .arg(bd.distance_km, 0, 'f', 1)
+                              .arg(CompassDirection::get_compass_direction(bd.corner_deg).c_str())
+                              .arg(pTr->altitude)
+                              .arg(pTr->height));
+      }
+      else
+      {
+        cmbTiiList->addItem(QString("%1/%2: %3 (set map coord. for dist./dir.) %4m + %5m")
+                              .arg(index + 1)
+                              .arg(mTransmitterIds.size())
+                              .arg(pTr->transmitterName)
+                              .arg(pTr->altitude)
+                              .arg(pTr->height));
+
+      }
     }
 
     // see if we have a map

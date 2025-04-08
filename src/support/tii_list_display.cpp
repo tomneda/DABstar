@@ -45,12 +45,12 @@ TiiListDisplay::TiiListDisplay(QSettings * s)
   mpWidget->setWindowTitle("TII list");
   mpWidget->setWidget(mpTableWidget.get());
 
-  _set_position_and_size(s, mpWidget, mpTableWidget, "DX_DISPLAY");
+  _set_position_and_size(s, mpWidget, mpTableWidget, "tiiList");
 }
 
 TiiListDisplay::~TiiListDisplay()
 {
-  _store_widget_position(mpSettings, mpWidget, mpTableWidget, "DX_DISPLAY");
+  _store_widget_position(mpSettings, mpWidget, mpTableWidget, "tiiList");
   mpTableWidget->setRowCount(0);
 }
 
@@ -120,8 +120,8 @@ void TiiListDisplay::_set_position_and_size(QSettings * settings, QScopedPointer
   settings->beginGroup(key);
   int x = settings->value(key + "-x", 100).toInt();
   int y = settings->value(key + "-y", 100).toInt();
-  int wi = settings->value(key + "-w", 748).toInt();
-  int he = settings->value(key + "-h", 200).toInt();
+  int wi = settings->value(key + "-w", 660).toInt();
+  int he = settings->value(key + "-h", 250).toInt();
   settings->endGroup();
   w->resize(QSize(wi, he));
   w->move(QPoint(x, y));
