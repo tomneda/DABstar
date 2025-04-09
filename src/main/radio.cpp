@@ -1698,7 +1698,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   }
 
   // iterate over combobox entries, if activated
-  if (mConfig.cbAutoIterTiiEntries->isChecked() && !isDropDownVisible)
+  if (mConfig.cbAutoIterTiiEntries->isChecked() && cmbTiiList->count() > 0 && !isDropDownVisible)
   {
     cmbTiiList->setCurrentIndex((int)mTiiIndex % cmbTiiList->count());
 
