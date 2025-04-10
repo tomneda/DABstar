@@ -47,6 +47,7 @@ RingBufferFactory<cmplx>::RingBufferFactory()
 {
   create_ringbuffer(EId::SpectrumBuffer, "SpectrumBuffer",     2048);
   create_ringbuffer(EId::IqBuffer,       "IqBuffer",       2 * 1536);
+  create_ringbuffer(EId::CirBuffer,      "CirBuffer",     97 * 2048);
 }
 
 const char * RingBufferFactoryBase::_show_progress_bar(float iPercentStop, float iPercentStart /*= -100*/) const

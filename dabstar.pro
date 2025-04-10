@@ -43,7 +43,7 @@ isEmpty(GITHASHSTRING) {
     DEFINES += GITHASH=\\\"(unknown)\\\"
 }
 
-#DESTDIR 	= ../../DABstar-Qt6.8.1
+#DESTDIR 	= ../../DABstar-Qt6.8.3
 LIBS		+= -L../../dabstar-libs/lib
 CONFIG		+= airspy
 #CONFIG		+= spyServer-16
@@ -55,14 +55,11 @@ CONFIG		+= dabstick
 CONFIG		+= sdrplay-v3
 CONFIG		+= hackrf
 #CONFIG		+= lime
-CONFIG		+= VITERBI_SSE2
-#CONFIG		+= VITERBI_AVX2
-#CONFIG		+= VITERBI_SCALAR
-CONFIG		+= faad
+CONFIG		+= sse2
+#CONFIG		+= avx2
 #CONFIG		+= fdk-aac
 CONFIG		+= volk
 LIBS		+= -lsndfile-1
-LIBS		+= -lsamplerate
 LIBS		+= -lwinpthread
 LIBS		+= -lws2_32
 #LIBS		+= -lusb-1.0
@@ -163,6 +160,7 @@ HEADERS += \
     src/audio/audiofifo.h \
     src/audio/audiooutput.h \
     src/audio/audiooutputqt.h \
+    src/audio/audioiodevice.h \
     src/support/fir-filters.h \
     src/support/ringbuffer.h \
     src/support/techdata.h \
@@ -170,7 +168,7 @@ HEADERS += \
     src/support/dab-params.h \
     src/support/band-handler.h \
     src/support/dab-tables.h \
-    src/support/dxDisplay.h \
+    src/support/tii_list_display.h \
     src/support/viterbi-spiral/viterbi-spiral.h \
     src/support/color-selector.h \
     src/support/time-table.h \
@@ -188,7 +186,7 @@ HEADERS += \
     src/support/custom_frame.h \
     src/support/setting-helper.h \
     src/support/wav_writer.h \
-    src/support/angle_direction.h \
+    src/support/compass_direction.h \
     src/support/time_meas.h \
     src/support/copyright_info.h \
     src/scopes/iqdisplay.h \
@@ -200,6 +198,7 @@ HEADERS += \
     src/spectrum-viewer/spectrum-scope.h \
     src/spectrum-viewer/waterfall-scope.h \
     src/spectrum-viewer/correlation-viewer.h \
+    src/spectrum-viewer/cir-viewer.h \
     src/file-devices/xml-filewriter/xml-filewriter.h \
     src/service-list/service-list-handler.h \
     src/service-list/service-db.h \
@@ -214,7 +213,7 @@ HEADERS += \
     src/devices/filereaders/raw-files/rawfiles.h \
     src/devices/filereaders/raw-files/raw-reader.h \
     src/devices/filereaders/wav-files/wavfiles.h \
-    src/devices/filereaders/wav-files/wav-reader.h \
+    src/devices/filereaders/wav-files/wav-reader.h
 
 SOURCES += \
     src/main/main.cpp \
@@ -262,7 +261,7 @@ SOURCES += \
     src/backend/data/mot/mot-object.cpp \
     src/backend/data/mot/mot-dir.cpp \
     src/backend/data/data-processor.cpp \
-    src/audio/audiooutput.cpp \
+    src/audio/audioiodevice.cpp \
     src/audio/audiooutputqt.cpp \
     src/support/fir-filters.cpp \
     src/support/ringbuffer.cpp \
@@ -283,12 +282,12 @@ SOURCES += \
     src/support/coordinates.cpp \
     src/support/mapport.cpp \
     src/support/http-handler.cpp \
-    src/support/dxDisplay.cpp \
+    src/support/tii_list_display.cpp \
     src/support/tii-library/tii-codes.cpp \
     src/support/custom_frame.cpp \
     src/support/setting-helper.cpp \
     src/support/wav_writer.cpp \
-    src/support/angle_direction.cpp \
+    src/support/compass_direction.cpp \
     src/support/copyright_info.cpp \
     src/scopes/iqdisplay.cpp \
     src/scopes/carrier-display.cpp \
@@ -299,6 +298,7 @@ SOURCES += \
     src/spectrum-viewer/spectrum-scope.cpp \
     src/spectrum-viewer/waterfall-scope.cpp \
     src/spectrum-viewer/correlation-viewer.cpp \
+    src/spectrum-viewer/cir-viewer.cpp \
     src/file-devices/xml-filewriter/xml-filewriter.cpp \
     src/service-list/service-list-handler.cpp \
     src/service-list/service-db.cpp \
@@ -310,11 +310,12 @@ SOURCES += \
     src/devices/filereaders/raw-files/rawfiles.cpp \
     src/devices/filereaders/raw-files/raw-reader.cpp \
     src/devices/filereaders/wav-files/wavfiles.cpp \
-    src/devices/filereaders/wav-files/wav-reader.cpp \
+    src/devices/filereaders/wav-files/wav-reader.cpp
 
 FORMS += \
     src/main/radio.ui \
     src/spectrum-viewer/spectrum_viewer.ui \
+    src/spectrum-viewer/cir-widget.ui \
     src/support/technical_data.ui \
     src/configuration/configuration.ui \
     src/devices/filereaders/xml-filereader/xmlfiles.ui
@@ -557,26 +558,17 @@ datastreamer	{
 	SOURCES		+= src/server-thread/tcp-server.cpp
 }
 
-VITERBI_SSE2	{
-	DEFINES		+= HAVE_VITERBI_SSE2
-	HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
-}
-
-VITERBI_AVX2	{
+avx2	{
 	QMAKE_CXXFLAGS	+= -mavx2
 	DEFINES		+= HAVE_VITERBI_AVX2
 	HEADERS		+= src/support/viterbi-spiral/viterbi_16way.h
-}
-
-VITERBI_SCALAR	{
+}else:sse2	{
+	DEFINES		+= HAVE_VITERBI_SSE2
+	HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
+}else	{
 	HEADERS		+= src/support/viterbi-spiral/viterbi_scalar.h
 }
 
-faad	{
-	HEADERS		+= src/backend/audio/faad-decoder.h
-	SOURCES		+= src/backend/audio/faad-decoder.cpp
-	LIBS		+= -lfaad-2
-}
 
 fdk-aac {
         DEFINES         += __WITH_FDK_AAC__
@@ -584,6 +576,10 @@ fdk-aac {
         HEADERS         += src/backend/audio/fdk-aac.h
         SOURCES         += src/backend/audio/fdk-aac.cpp
 	LIBS		+= -lfdk-aac.dll
+}else	{
+	HEADERS		+= src/backend/audio/faad-decoder.h
+	SOURCES		+= src/backend/audio/faad-decoder.cpp
+	LIBS		+= -lfaad-2
 }
 
 volk	{
@@ -592,9 +588,7 @@ volk	{
         		   src/ofdm/ofdm-decoder-simd.h
         SOURCES         += src/ofdm/ofdm-decoder-simd.cpp
 	LIBS		+= -lvolk.dll
-}
-
-!volk	{
+}else	{
         HEADERS         += src/ofdm/ofdm-decoder.h
         SOURCES         += src/ofdm/ofdm-decoder.cpp
 }

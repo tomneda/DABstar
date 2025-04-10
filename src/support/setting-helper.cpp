@@ -52,6 +52,7 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(deviceFile, { "", "deviceFile", "" });
   mMap.insert(deviceVisible, { "", "deviceVisible", true });
   mMap.insert(spectrumVisible, { "", "spectrumVisible", false });
+  mMap.insert(cirVisible, { "", "cirVisible", false });
   mMap.insert(techDataVisible, { "", "techDataVisible", false });
   mMap.insert(showDeviceWidget, { "", "showDeviceWidget", false });
   mMap.insert(presetName, { "", "presetname", "" });
@@ -129,7 +130,7 @@ void SettingHelper::read_widget_geometry(const SettingHelper::EElem iElem, QWidg
     qWarning("Cannot retrieve widget geometry from settings.");
     return;
   }
-  
+
   if (!iopWidget->restoreGeometry(var.toByteArray()))
   {
     qWarning("restoreGeometry() returns false");

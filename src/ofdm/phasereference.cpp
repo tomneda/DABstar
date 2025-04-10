@@ -48,7 +48,6 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   , mDabPar(DabParams(ipParam->dabMode).get_dab_par())
   , mFramesPerSecond(INPUT_RATE / mDabPar.T_F)
   , mpResponse(ipParam->responseBuffer)
-  , mRefTable(mDabPar.T_u, {0, 0})
   , mCorrPeakValues(mDabPar.T_u)
 {
   mFftInBuffer.resize(mDabPar.T_u);
@@ -58,13 +57,6 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
 
   mMeanCorrPeakValues.resize(mDabPar.T_u);
   std::fill(mMeanCorrPeakValues.begin(), mMeanCorrPeakValues.end(), 0.0f);
-
-  // mRefTable is in the frequency domain
-  for (int32_t i = 1; i <= mDabPar.K / 2; i++) // skip DC
-  {
-    mRefTable[0           + i] = cmplx_from_phase(get_phi(i));
-    mRefTable[mDabPar.T_u - i] = cmplx_from_phase(get_phi(-i));
-  }
 
   // Prepare a table for the coarse frequency synchronization.
   // We collect data of SEARCHRANGE/2 bins at the end of the FFT buffer and wrap to the begin and check SEARCHRANGE/2 elements further.

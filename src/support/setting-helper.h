@@ -59,6 +59,7 @@ public:
     deviceFile,
     deviceVisible,
     spectrumVisible,
+    cirVisible,
     techDataVisible,
     showDeviceWidget,
     presetName,

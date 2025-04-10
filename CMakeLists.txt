@@ -346,6 +346,7 @@ set(${objectName}_HDRS
         src/scopes/spectrogramdata.h
         src/scopes/cust_qwt_zoom_pan.h
         src/spectrum-viewer/spectrum-viewer.h
+        src/spectrum-viewer/cir-viewer.h
         src/spectrum-viewer/spectrum-scope.h
         src/spectrum-viewer/waterfall-scope.h
         src/spectrum-viewer/correlation-viewer.h
@@ -439,6 +440,7 @@ set(${objectName}_SRCS
         src/spectrum-viewer/spectrum-scope.cpp
         src/spectrum-viewer/waterfall-scope.cpp
         src/spectrum-viewer/correlation-viewer.cpp
+        src/spectrum-viewer/cir-viewer.cpp
         src/file-devices/xml-filewriter/xml-filewriter.cpp
         src/service-list/service-list-handler.cpp
         src/service-list/service-db.cpp

@@ -49,7 +49,7 @@ class SampleReader : public QObject
 {
 Q_OBJECT
 public:
-  SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr);
+  SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr, RingBuffer<cmplx> * iCirBuffer = nullptr);
   ~SampleReader() override = default;
 
   void setRunning(bool b);
@@ -67,10 +67,12 @@ public:
 private:
   static constexpr uint16_t DUMP_SIZE = 4096;
   static constexpr int32_t SPEC_BUFF_SIZE = 2048;
+  static constexpr int32_t CIR_BUFF_SIZE = 2048*97;
 
-  RadioInterface * myRadioInterface;
+  const RadioInterface * myRadioInterface;
   IDeviceHandler * theRig;
   RingBuffer<cmplx> * spectrumBuffer;
+  RingBuffer<cmplx> * cirBuffer;
   std::array<cmplx, SPEC_BUFF_SIZE> specBuff;
   std::array<cmplx, INPUT_RATE> oscillatorTable{};
   std::vector<cmplx> oneSampleBuffer;
@@ -81,7 +83,7 @@ private:
   int32_t bufferContent = 0;
   float sLevel = 0.0f;
   int32_t sampleCount = 0;
-  bool dumping; 
+  bool dumping;
   int16_t dumpIndex = 0;
   int16_t dumpScale;
   std::array<int16_t, DUMP_SIZE> dumpBuffer{};
@@ -94,12 +96,16 @@ private:
   float meanQQ = 1.0f;
   float meanIQ = 0.0f;
   bool dcRemovalActive = false;
+  int32_t mWholeFrameIndex = 0;
+  int32_t mWholeFrameCount = 0;
+  cmplx	mWholeFrameBuff[CIR_BUFF_SIZE];
 
   void _dump_samples_to_file(const cmplx * const ipV, const int32_t iNoSamples);
   void _wait_for_sample_buffer_filled(int32_t n);
 
 signals:
   void signal_show_spectrum(int);
+  void signal_show_cir(int);
 };
 
 #endif

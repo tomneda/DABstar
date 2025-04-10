@@ -133,7 +133,9 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , mpAudioBufferFromDecoder(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioFromDecoder).get())
   , mpAudioBufferToOutput(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioToOutput).get())
   , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
+  , mpCirBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::CirBuffer).get())
   , mSpectrumViewer(this, ipSettings, mpSpectrumBuffer, mpIqBuffer, mpCarrBuffer, mpResponseBuffer)
+  , mCirViewer(ipSettings, mpCirBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
   , mTiiListDisplay(ipSettings)
   , mOpenFileDialog(ipSettings)
@@ -153,6 +155,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mProcessParams.carrBuffer = mpCarrBuffer;
   mProcessParams.responseBuffer = mpResponseBuffer;
   mProcessParams.frameBuffer = mpFrameBuffer;
+  mProcessParams.cirBuffer = mpCirBuffer;
 
   mProcessParams.dabMode = mpSH->read(SettingHelper::dabMode).toInt();
   mProcessParams.threshold = mpSH->read(SettingHelper::threshold).toInt();
@@ -377,6 +380,12 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   if (mpSH->read(SettingHelper::spectrumVisible).toBool())
   {
     mSpectrumViewer.show();
+  }
+
+  if (mpSH->read(SettingHelper::cirVisible).toBool())
+  {
+    mCirViewer.show();
+    cir_window = true;
   }
 
   if (mpSH->read(SettingHelper::techDataVisible).toBool())
@@ -1255,6 +1264,7 @@ void RadioInterface::_slot_terminate_process()
   // everything should be halted by now
   mpSH->sync_and_unregister_ui_elements();
   mSpectrumViewer.hide();
+  mCirViewer.hide();
 
   mpDabProcessor.reset();
   delete mpTimeTable;
@@ -1657,7 +1667,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     {
       bd = {};
     }
-    
+
     if (mFeedTiiListWindow)
     {
       mTiiListDisplay.add_row(*pTr, bd);
@@ -1723,6 +1733,16 @@ void RadioInterface::slot_show_spectrum(int32_t /*amount*/)
   }
 
   mSpectrumViewer.show_spectrum(mpInputDevice->getVFOFrequency());
+}
+
+void RadioInterface::slot_show_cir()
+{
+  if (!mIsRunning.load() || !cir_window)
+  {
+    return;
+  }
+
+  mCirViewer.show_cir();
 }
 
 void RadioInterface::slot_show_iq(int iAmount, float iAvg)
@@ -1832,6 +1852,26 @@ void RadioInterface::_slot_handle_tech_detail_button()
   }
   mpSH->write(SettingHelper::techDataVisible, !mpTechDataWidget->isHidden());
 }
+
+void RadioInterface::_slot_handle_cir_button()
+{
+  if (!mIsRunning.load())
+    return;
+
+  if (mCirViewer.is_hidden())
+  {
+    mCirViewer.show();
+    cir_window = true;
+  }
+  else
+  {
+    mCirViewer.hide();
+    cir_window = false;
+  }
+  mpSH->write(SettingHelper::cirVisible, !mCirViewer.is_hidden());
+  //dabSettings->setValue("cirVisible", my_cirViewer.is_hidden() ? 0 : 1);
+}
+
 
 // Whenever the input device is a file, some functions, e.g. selecting a channel,
 // setting an alarm, are not meaningful
@@ -2123,6 +2163,7 @@ void RadioInterface::connect_gui()
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   connect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
   connect(btnTiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
+  connect(mConfig.cirButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_cir_button);
 }
 
 void RadioInterface::disconnect_gui()
@@ -2147,6 +2188,7 @@ void RadioInterface::disconnect_gui()
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   disconnect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
   disconnect(btnTiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
+  disconnect(mConfig.cirButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_cir_button);
 }
 
 void RadioInterface::closeEvent(QCloseEvent * event)

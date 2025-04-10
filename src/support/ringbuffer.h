@@ -16,7 +16,7 @@
  * modified for SMP safety on Mac OS X by Bjorn Roche
  * modified for SMP safety on Linux by Leland Lucius
  * also, allowed for const where possible
- * modified for multiple-byte-sized data elements by Sven Fischer 
+ * modified for multiple-byte-sized data elements by Sven Fischer
  *
  * Note that this is safe only for a single-thread reader and a
  * single-thread writer.
@@ -55,7 +55,7 @@
  *    All rights remain with their owners
  *    This file is part of the SDR-J.
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -101,7 +101,7 @@ inline void Apple_MemoryBarrier() {
 std::atomic_thread_fence(std::memory_order_seq_cst);
 #else
 OSMemoryBarrier();
-#endif  
+#endif
 }
 #   define PaUtil_FullMemoryBarrier()  Apple_MemoryBarrier()
 #   define PaUtil_ReadMemoryBarrier()  Apple_MemoryBarrier()
@@ -420,7 +420,8 @@ public:
     AudioFromDecoder,
     AudioToOutput,
     TechDataBuffer,
-    DeviceSampleBuffer
+    DeviceSampleBuffer,
+    CirBuffer
   };
 
   struct SListPar

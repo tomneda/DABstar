@@ -43,7 +43,7 @@
 
 DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
   : mpRadioInterface(mr)
-  , mSampleReader(mr, inputDevice, p->spectrumBuffer)
+  , mSampleReader(mr, inputDevice, p->spectrumBuffer, p->cirBuffer)
   , mFicHandler(mr, p->dabMode)
   , mMscHandler(mr, p->dabMode, p->frameBuffer)
   , mPhaseReference(mr, p)

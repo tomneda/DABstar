@@ -59,11 +59,7 @@ public:
   static constexpr int16_t IDX_NOT_FOUND = 10000;
 
 private:
-  //static constexpr int16_t DIFFLENGTH = 128;
   static constexpr int16_t SEARCHRANGE = (2 * 35);
-
-  //std::array<float, SEARCHRANGE + DIFFLENGTH + 1> mComputedDiffs{};
-  //std::array<float, DIFFLENGTH> mPhaseDifferences{};
 
   const DabParams::SDabPar mDabPar;
   const int32_t mFramesPerSecond;
@@ -76,7 +72,6 @@ private:
   fftwf_plan mFftPlanBwd;
 
   RingBuffer<float> * const mpResponse;
-  std::vector<cmplx> mRefTable;
   std::vector<float> mCorrPeakValues;
   std::vector<float> mMeanCorrPeakValues;
   std::vector<float> mCorrelationVector;

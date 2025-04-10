@@ -48,6 +48,7 @@
 #include "epgdec.h"
 #include "epg-decoder.h"
 #include "spectrum-viewer.h"
+#include "cir-viewer.h"
 #include "openfiledialog.h"
 #include "http-handler.h"
 #include "device-selector.h"
@@ -179,6 +180,7 @@ public:
     AFL_SBR_USED = 0x1,
     AFL_PS_USED  = 0x2
   };
+  bool cir_window = false;
 
 private:
   template<typename T>
@@ -223,9 +225,11 @@ private:
   RingBuffer<int16_t> * const mpAudioBufferFromDecoder;
   RingBuffer<int16_t> * const mpAudioBufferToOutput;
   RingBuffer<int16_t> * const mpTechDataBuffer;
+  RingBuffer<cmplx> * const mpCirBuffer;
   uint32_t mResetRingBufferCnt = 0;
   std::vector<int16_t> mAudioTempBuffer;
   SpectrumViewer mSpectrumViewer;
+  CirViewer mCirViewer;
   BandHandler mBandHandler;
   DynLinkCache mDynLabelCache{10};
   TiiHandler mTiiHandler{};
@@ -406,6 +410,7 @@ public slots:
   void slot_show_mot_handling(bool);
   void slot_show_correlation(float, const QVector<int> & v);
   void slot_show_spectrum(int);
+  void slot_show_cir();
   void slot_show_iq(int, float);
   void slot_show_lcd_data(const OfdmDecoder::SLcdData *);
   void slot_show_digital_peak_level(float iPeakLevel);
@@ -448,6 +453,7 @@ private slots:
   void _slot_handle_scan_button();
   void _slot_handle_eti_handler();
   void _slot_handle_spectrum_button();
+  void _slot_handle_cir_button();
   void _slot_handle_device_widget_button();
   void _slot_do_start(const QString &);
   void _slot_new_device(const QString &);

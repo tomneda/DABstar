@@ -43,9 +43,11 @@ static inline int16_t value_for_bit_pos(int16_t b)
   return res;
 }
 
-SampleReader::SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer) :
+SampleReader::SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer, RingBuffer<cmplx> * iCirBuffer) :
+  myRadioInterface(mr),
   theRig(iTheRig),
   spectrumBuffer(iSpectrumBuffer),
+  cirBuffer(iCirBuffer),
   oneSampleBuffer(1)
 {
   dumpfilePointer.store(nullptr);
@@ -59,6 +61,7 @@ SampleReader::SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, 
   }
 
   connect(this, &SampleReader::signal_show_spectrum, mr, &RadioInterface::slot_show_spectrum);
+  connect(this, &SampleReader::signal_show_cir     , mr, &RadioInterface::slot_show_cir);
 }
 
 void SampleReader::setRunning(bool b)
@@ -80,9 +83,9 @@ cmplx SampleReader::getSample(int32_t phaseOffset)
 void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec)
 {
   assert((signed)oV.size() >= iStartIdx + iNoSamples);
-  
+
   cmplx * const buffer = oV.data() + iStartIdx;
-  
+
   if (!running.load()) throw 21;
 
   if (iNoSamples > bufferContent)
@@ -139,6 +142,7 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
     const float v_abs = std::abs(v);
     if (v_abs > peakLevel) peakLevel = v_abs;
     mean_filter(sLevel, v_abs, 0.00001f);
+    buffer[i] = v * oscillatorTable[currentPhase];
 
     if (specBuffIdx < SPEC_BUFF_SIZE)
     {
@@ -146,7 +150,23 @@ void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, 
       ++specBuffIdx;
     }
 
-    buffer[i] = v * oscillatorTable[currentPhase];
+
+    if (cirBuffer != nullptr && myRadioInterface->cir_window)
+    {
+      if(mWholeFrameIndex < CIR_BUFF_SIZE)
+      {
+        mWholeFrameBuff[mWholeFrameIndex++] = v;
+      }
+      mWholeFrameCount += 1;
+      if ((mWholeFrameCount >= (2048*96*6)) && (mWholeFrameIndex >= CIR_BUFF_SIZE)) // 6 frames
+      {
+        //fprintf(stderr, "mWholeFrameIndex = %d\n", mWholeFrameIndex);
+        cirBuffer->put_data_into_ring_buffer(mWholeFrameBuff, CIR_BUFF_SIZE);
+        emit signal_show_cir(CIR_BUFF_SIZE);
+        mWholeFrameIndex = 0;
+        mWholeFrameCount = 0;
+      }
+    }
   }
 
   sampleCount += iNoSamples;
