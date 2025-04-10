@@ -17,6 +17,7 @@ public:
   int16_t bitDepth = 0;
   RingBuffer<float> * responseBuffer = nullptr;
   RingBuffer<cmplx> * spectrumBuffer = nullptr;
+  RingBuffer<cmplx> * cirBuffer = nullptr;
   RingBuffer<cmplx> * iqBuffer = nullptr;
   RingBuffer<float> * carrBuffer = nullptr;
   RingBuffer<uint8_t> * frameBuffer = nullptr;
