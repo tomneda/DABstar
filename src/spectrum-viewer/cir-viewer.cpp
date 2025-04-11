@@ -2,63 +2,65 @@
 #include <QColor>
 #include <QPen>
 #include "cir-viewer.h"
-#include  "time_meas.h"
 
 CirViewer::CirViewer(QSettings * s, RingBuffer<cmplx> * iCirBuffer) :
   Ui_cirWidget(),
   PhaseTable(1),
+  mpCirSettings(s),
   mpCirBuffer(iCirBuffer)
 {
   mFftPlanFwd = fftwf_plan_dft_1d(2048, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
   mFftPlanBwd = fftwf_plan_dft_1d(2048, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
 
-  cirSettings = s;
-  cirSettings->beginGroup(SETTING_GROUP_NAME);
-  int x = cirSettings->value("position-x", 100).toInt();
-  int y = cirSettings->value("position-y", 100).toInt();
-  cirSettings->endGroup();
+  mpCirSettings->beginGroup(SETTING_GROUP_NAME);
+  int x = mpCirSettings->value("position-x", 100).toInt();
+  int y = mpCirSettings->value("position-y", 100).toInt();
+  int w = mpCirSettings->value("size-w", 500).toInt();
+  int h = mpCirSettings->value("size-h", 250).toInt();
+  mpCirSettings->endGroup();
 
-  setupUi(&myFrame);
-  myFrame.move(QPoint(x, y));
-  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.hide();
+  setupUi(&mFrame);
+  
+  mFrame.resize(QSize(w, h));
+  mFrame.move(QPoint(x, y));
+  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  mFrame.hide();
 
-  mpPlot = cirPlot;
   QColor color = QColor("#5e5c64");
-  grid.setMajorPen(QPen(color, 0, Qt::DotLine));
-  grid.setMinorPen(QPen(color, 0, Qt::DotLine));
-  grid.enableXMin(true);
-  grid.enableYMin(false);
-  grid.attach(mpPlot);
+  mGrid.setMajorPen(QPen(color, 0, Qt::DotLine));
+  mGrid.setMinorPen(QPen(color, 0, Qt::DotLine));
+  mGrid.enableXMin(true);
+  mGrid.enableYMin(false);
+  mGrid.attach(cirPlot);
 
   color = QColor("#ffbe6f");
-  curve.setPen(QPen(color, 2.0));
-  curve.setOrientation(Qt::Horizontal);
-  curve.setBaseline(0);
-  curve.attach(mpPlot);
+  mCurve.setPen(QPen(color, 2.0));
+  mCurve.setOrientation(Qt::Horizontal);
+  mCurve.setBaseline(0);
+  mCurve.attach(cirPlot);
 
-  mpPlot->setAxisScale(QwtPlot::yLeft, 0, 1.0);
-  mpPlot->enableAxis(QwtPlot::yLeft);
+  cirPlot->setAxisScale(QwtPlot::yLeft, 0, 1.0);
+  cirPlot->enableAxis(QwtPlot::yLeft);
 
-  mpPlot->setAxisScale(QwtPlot::xBottom, 0, 96);
-  mpPlot->enableAxis(QwtPlot::xBottom);
+  cirPlot->setAxisScale(QwtPlot::xBottom, 0, 96);
+  cirPlot->enableAxis(QwtPlot::xBottom);
 }
 
 CirViewer::~CirViewer()
 {
-  cirSettings->beginGroup(SETTING_GROUP_NAME);
-  cirSettings->setValue("position-x", myFrame.pos().x());
-  cirSettings->setValue("position-y", myFrame.pos().y());
-  cirSettings->endGroup();
-  myFrame.hide();
+  mpCirSettings->beginGroup(SETTING_GROUP_NAME);
+  mpCirSettings->setValue("position-x", mFrame.pos().x());
+  mpCirSettings->setValue("position-y", mFrame.pos().y());
+  mpCirSettings->setValue("size-w", mFrame.size().width());
+  mpCirSettings->setValue("size-h", mFrame.size().height());
+  mpCirSettings->endGroup();
+  mFrame.hide();
   fftwf_destroy_plan(mFftPlanBwd);
   fftwf_destroy_plan(mFftPlanFwd);
-  delete mpPlot;
 }
 
 void CirViewer::show_cir()
 {
-  //time_meas_begin(show_cir);
   cmplx cirbuffer[CIR_SPECTRUMSIZE];
   constexpr int32_t sPlotLength = 385;
   std::array<float, sPlotLength> X_axis;
@@ -85,10 +87,10 @@ void CirViewer::show_cir()
     // and, again, back into the time domain
     fftwf_execute(mFftPlanBwd);
 
-	// find maximum value
+    // find maximum value
     for(i = 0; i < 2048; i++)
     {
-   	  const float x = abs(mFftOutBuffer[i]);
+      const float x = abs(mFftOutBuffer[i]);
       if(x > max)
         max = x;
       //if(x > 10000) fprintf(stderr, "j=%d, i=%d, x=%.0f\n",j,i,x);
@@ -102,23 +104,22 @@ void CirViewer::show_cir()
   {
     Y_value[i] /= 26000;
   }
-  mpPlot->enableAxis(QwtPlot::yLeft);
-  curve.setSamples(X_axis.data(), Y_value.data(), sPlotLength);
-  mpPlot->replot();
-  //time_meas_end_print_us(show_cir);
+  cirPlot->enableAxis(QwtPlot::yLeft);
+  mCurve.setSamples(X_axis.data(), Y_value.data(), sPlotLength);
+  cirPlot->replot();
 }
 
 void CirViewer::show()
 {
-  myFrame.show();
+  mFrame.show();
 }
 
 void CirViewer::hide()
 {
-  myFrame.hide();
+  mFrame.hide();
 }
 
 bool CirViewer::is_hidden()
 {
-  return myFrame.isHidden();
+  return mFrame.isHidden();
 }

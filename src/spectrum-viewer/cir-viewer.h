@@ -34,12 +34,11 @@ public:
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "cirViewer";
-  QFrame myFrame{nullptr};
-  QSettings * cirSettings;
+  QFrame mFrame;
+  QSettings * const mpCirSettings;
   RingBuffer<cmplx> * const mpCirBuffer;
-  QwtPlot *mpPlot;
-  QwtPlotCurve curve;
-  QwtPlotGrid grid;
+  QwtPlotCurve mCurve;
+  QwtPlotGrid mGrid;
   std::array<cmplx, 2048> mFftInBuffer;
   std::array<cmplx, 2048> mFftOutBuffer;
   fftwf_plan mFftPlanFwd;
