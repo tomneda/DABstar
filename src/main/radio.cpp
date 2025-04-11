@@ -1659,14 +1659,14 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
       {
         bd.distance_km = bd.corner_deg = 0.0f;
       }
-      bd.strength_dB = log10_times_10(tii.strength);
-      bd.phase_deg = tii.phaseDeg;
-      bd.isNonEtsiPhase = tii.isNonEtsiPhase;
     }
     else
     {
       bd = {};
     }
+    bd.strength_dB = log10_times_10(tii.strength);
+    bd.phase_deg = tii.phaseDeg;
+    bd.isNonEtsiPhase = tii.isNonEtsiPhase;
 
     if (mFeedTiiListWindow)
     {
