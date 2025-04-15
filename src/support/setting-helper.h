@@ -14,15 +14,307 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DABSTAR_SETTING_HELPER_H
-#define DABSTAR_SETTING_HELPER_H
+#ifndef SETTING_HELPER_H
+#define SETTING_HELPER_H
 
 #include <QObject>
 #include <QMap>
 #include <QVariant>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QSpinBox>
 #include <QSettings>
+
+#if 1
+
+// class SettingsManager
+// {
+// public:
+//   // Define all setting keys as enum
+//   enum class Key
+//   {
+//     WindowWidth,
+//     IsDarkMode,
+//     LastChannel,
+//     // ... add more keys
+//   };
+//
+//   // Template specialization to define types and defaults for each key
+//   template<Key K>
+//   struct SettingTraits;
+//
+//   template<>
+//   struct SettingTraits<Key::WindowWidth>
+//   {
+//     using Type = int;
+//     static constexpr Type defaultValue = 800;
+//     static const QString key; // = "window/width"
+//   };
+//
+//   template<>
+//   struct SettingTraits<Key::IsDarkMode>
+//   {
+//     using Type = bool;
+//     static constexpr Type defaultValue = false;
+//     static const QString key; // = "appearance/darkMode"
+//   };
+//
+//   // Get setting value
+//   template<typename Key K>
+//   static K SettingTraits<K>::Type get()
+//   {
+//     return instance().getSetting<K>();
+//   }
+//
+//   // Set setting value
+//   template<Key K>
+//   static void set(const typename SettingTraits<K>::Type & value)
+//   {
+//     instance().setSetting<K>(value);
+//   }
+//
+//   // ... rest of the singleton implementation ...
+//
+// private:
+//   template<Key K>
+//   typename SettingTraits<K>::Type getSetting()
+//   {
+//     return mSettings.value(
+//       SettingTraits<K>::key,
+//       SettingTraits<K>::defaultValue
+//     ).template value<typename SettingTraits<K>::Type>();
+//   }
+//
+//   template<Key K>
+//   void setSetting(const typename SettingTraits<K>::Type & value)
+//   {
+//     mSettings.setValue(SettingTraits<K>::key, value);
+//   }
+// };
+//
+// // Define the static key strings
+// const QString SettingsManager::SettingTraits<SettingsManager::Key::WindowWidth>::key = "window/width";
+// const QString SettingsManager::SettingTraits<SettingsManager::Key::IsDarkMode>::key = "appearance/darkMode";
+
+#else
+class SettingsManager
+{
+public:
+  template<typename T>
+  class Setting
+  {
+  private:
+    QString mKey;
+    T mDefaultValue;
+    QSettings & mSettings;
+
+  public:
+    Setting(QSettings & settings, const QString & key, const T & defaultValue = T())
+      : mKey(key)
+      , mDefaultValue(defaultValue)
+      , mSettings(settings)
+    {}
+
+    explicit operator T() const
+    {
+      return mSettings.value(mKey, mDefaultValue).template value<T>();
+    }
+
+    Setting & operator=(const T & value)
+    {
+      mSettings.setValue(mKey, value);
+      return *this;
+    }
+
+    void reset()
+    {
+      mSettings.setValue(mKey, mDefaultValue);
+    }
+
+    // Add getter/setter for more explicit access if preferred
+    T get() const { return operator T(); }
+    void set(const T & value) { operator=(value); }
+  };
+
+  // Singleton access
+  static SettingsManager & instance()
+  {
+    static SettingsManager instance("DABstar", "DABstar");  // Created once
+    return instance;
+  }
+
+  // Delete copy and move operations
+  SettingsManager(const SettingsManager &) = delete;
+  SettingsManager & operator=(const SettingsManager &) = delete;
+  SettingsManager(SettingsManager &&) = delete;
+  SettingsManager & operator=(SettingsManager &&) = delete;
+
+  // Helper method to define new settings (if needed)
+  template<typename T>
+  Setting<T> define(const QString & key, const T & defaultValue = T())
+  {
+    return Setting<T>(mSettings, key, defaultValue);
+  }
+
+  // Define your application settings here as static members
+  static inline Setting<int> windowWidth = instance().define<int>("window/width", 800);
+  static inline Setting<bool> isDarkMode = instance().define<bool>("appearance/darkMode", false);
+  static inline Setting<QString> lastChannel = instance().define<QString>("radio/lastChannel", "");
+  // Add more settings as needed...
+
+private:
+  SettingsManager(const QString & organization, const QString & application)
+    : mSettings(organization, application)
+  {}
+
+  QSettings mSettings;
+};
+#endif
+
+
+class SettingsStorage
+{
+public:
+  static SettingsStorage & instance(QSettings * ipSettings = nullptr)
+  {
+    static SettingsStorage instance(ipSettings);
+    return instance;
+  }
+  explicit SettingsStorage(QSettings * ipSettings)
+  : mpSettings(ipSettings)
+    {}
+
+  QSettings * get() const
+  {
+    assert(mpSettings != nullptr);
+    return mpSettings;
+  }
+private:
+  QSettings * const mpSettings;
+};
+
+template<typename T>
+class Setting
+{
+private:
+  QString mKey;
+  T mDefaultValue;
+  // QSettings * const mpSettings;
+
+public:
+  Setting(const QString & key, const T & defaultValue = T())
+    : mKey(key)
+    , mDefaultValue(defaultValue)
+  {}
+
+  Setting & operator=(const T & value)
+  {
+    SettingsStorage::instance().get()->setValue(mKey, value);
+    return *this;
+  }
+
+  void reset()
+  {
+    SettingsStorage::instance().get()->setValue(mKey, mDefaultValue);
+  }
+
+  operator T() const
+  {
+    return SettingsStorage::instance().get()->value(mKey, mDefaultValue).template value<T>();
+  }
+
+  T get() const { return operator T(); }
+  void set(const T & value) { operator=(value); }
+};
+
+class SettingsManager
+{
+public:
+  static SettingsManager & instance(/*QSettings * ipSettings = nullptr*/)
+  {
+    static SettingsManager instance;
+    return instance; 
+  }
+
+  template<typename T>
+  Setting<T> define(const QString & key, const T & defaultValue = T())
+  {
+    return Setting<T>(key, defaultValue);
+  }
+
+  static inline Setting<int> windowWidth{"window/width", 800};
+private:
+  // QSettings * const mpSettings;
+};
+
+// inline static SettingsManager settingManager;
+
+// static inline Setting<int> windowWidth = define<int>("window/width", 800);
+
+// class SettingsGroup
+// {
+// public:
+//   SettingsGroup(QSettings & settings, const QString & group)
+//     : mSettings(settings)
+//   {
+//     mSettings.beginGroup(group);
+//   }
+//
+//   ~SettingsGroup()
+//   {
+//     mSettings.endGroup();
+//   }
+//
+// private:
+//   QSettings & mSettings;
+// };
+
+
+class WidgetSettingsHelper
+{
+public:
+  template<typename T>
+  static void saveWidgetState(QSettings & settings, T * widget, const QString & key)
+  {
+    if constexpr (std::is_base_of_v<QCheckBox, T>)
+    {
+      settings.setValue(key, widget->isChecked());
+    }
+    else if constexpr (std::is_base_of_v<QComboBox, T>)
+    {
+      settings.setValue(key, widget->currentIndex());
+    }
+    else if constexpr (std::is_base_of_v<QSpinBox, T>)
+    {
+      settings.setValue(key, widget->value());
+    }
+    // Add more widget types as needed
+  }
+
+  template<typename T>
+  static void loadWidgetState(QSettings & settings, T * widget, const QString & key)
+  {
+    if constexpr (std::is_base_of_v<QCheckBox, T>)
+    {
+      widget->setChecked(settings.value(key, false).toBool());
+    }
+    else if constexpr (std::is_base_of_v<QComboBox, T>)
+    {
+      widget->setCurrentIndex(settings.value(key, 0).toInt());
+    }
+    else if constexpr (std::is_base_of_v<QSpinBox, T>)
+    {
+      widget->setValue(settings.value(key, 0).toInt());
+    }
+    // Add more widget types as needed
+  }
+};
+
+
+
+
+
+
 
 class QWidget;
 
@@ -176,4 +468,4 @@ void SettingHelper::register_and_connect_ui_element(QSpinBox * const ipSpinBox)
   connect(pSB, qOverload<int>(&QSpinBox::valueChanged), [this, &me](int iValue){ _write_setting(me, iValue); });
 }
 
-#endif // DABSTAR_SETTING_HELPER_H
+#endif // SETTING_HELPER_H
