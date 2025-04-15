@@ -29,15 +29,16 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  <QSettings>
-#include  <QColor>
-#include  <QPen>
-#include  "spectrum-viewer.h"
-#include  "spectrum-scope.h"
-#include  "waterfall-scope.h"
-#include  "correlation-viewer.h"
-#include  "carrier-display.h"
-#include  "iqdisplay.h"
+#include <QSettings>
+#include <QColor>
+#include <QPen>
+#include "spectrum-viewer.h"
+#include "spectrum-scope.h"
+#include "waterfall-scope.h"
+#include "correlation-viewer.h"
+#include "carrier-display.h"
+#include "iqdisplay.h"
+#include "setting-helper.h"
 
 SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
                                RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
@@ -49,20 +50,12 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   mpCarrBuffer(ipCarrBuffer),
   mpCorrelationBuffer(ipCorrBuffer)
 {
-  ipDabSettings->beginGroup(SETTING_GROUP_NAME);
-  int32_t x = ipDabSettings->value("position-x", 100).toInt();
-  int32_t y = ipDabSettings->value("position-y", 100).toInt();
-  int32_t w = ipDabSettings->value("width", 1100).toInt();
-  int32_t h = ipDabSettings->value("height", 600).toInt();
-  ipDabSettings->endGroup();
-
   setupUi(&myFrame);
 
   connect(&myFrame, &CustomFrame::signal_frame_closed, this, &SpectrumViewer::signal_window_closed);
 
-  myFrame.resize(QSize(w, h));
-  myFrame.move(QPoint(x, y));
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  SettingsManager::Spectrum::posAndSize.read_widget_geometry(&myFrame, 100, 100, 1100, 600);
   myFrame.hide();
 
   //create_blackman_window(mWindowVec.data(), SP_SPECTRUMSIZE);
@@ -96,14 +89,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
 
 SpectrumViewer::~SpectrumViewer()
 {
-  mpDabSettings->beginGroup(SETTING_GROUP_NAME);
-  mpDabSettings->setValue("position-x", myFrame.pos().x());
-  mpDabSettings->setValue("position-y", myFrame.pos().y());
-
-  QSize size = myFrame.size();
-  mpDabSettings->setValue("width", size.width());
-  mpDabSettings->setValue("height", size.height());
-  mpDabSettings->endGroup();
+  SettingsManager::Spectrum::posAndSize.write_widget_geometry(&myFrame);
 
   myFrame.hide();
 

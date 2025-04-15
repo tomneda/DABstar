@@ -196,11 +196,6 @@ private:
 template<typename T>
 class Setting
 {
-private:
-  QString mKey;
-  T mDefaultValue;
-  // QSettings * const mpSettings;
-
 public:
   Setting(const QString & key, const T & defaultValue = T())
     : mKey(key)
@@ -225,6 +220,43 @@ public:
 
   T get() const { return operator T(); }
   void set(const T & value) { operator=(value); }
+
+private:
+  QString mKey;
+  T mDefaultValue;
+};
+
+class SettingPosAndSize
+{
+public:
+  SettingPosAndSize(const QString & iCat) : mCat(iCat) {}
+  
+  void read_widget_geometry(QWidget * const iopWidget, int32_t x_def, int32_t y_def, int32_t w_def, int32_t h_def) const
+  {
+    const QVariant var = SettingsStorage::instance().get()->value(mCat + "PosAndSize", QVariant());
+
+    if(!var.canConvert<QByteArray>())
+    {
+      qWarning("Cannot retrieve widget geometry from settings. Using default settings.");
+      iopWidget->resize(QSize(w_def, h_def));
+      iopWidget->move(QPoint(x_def, y_def));
+      return;
+    }
+
+    if (!iopWidget->restoreGeometry(var.toByteArray()))
+    {
+      qWarning("restoreGeometry() returns false");
+    }
+  }
+
+  void write_widget_geometry(QWidget * const ipWidget)
+  {
+    const QByteArray var = ipWidget->saveGeometry();
+    SettingsStorage::instance().get()->setValue(mCat + "PosAndSize", var);
+  }
+
+private:
+  QString mCat;
 };
 
 class SettingsManager
@@ -242,9 +274,17 @@ public:
     return Setting<T>(key, defaultValue);
   }
 
-  static inline Setting<int> windowWidth{"window/width", 800};
-private:
-  // QSettings * const mpSettings;
+  struct Spectrum
+  {
+    #define catSpectrumViewer "spectrumViewer/" // did not find nicer way to declare that once
+    static inline SettingPosAndSize posAndSize{catSpectrumViewer};
+  };
+
+  struct Configuration
+  {
+    #define catConfiguration "configuration/" // did not find nicer way to declare that once
+    static inline Setting<int> width{catConfiguration "width", 800};
+  };
 };
 
 // inline static SettingsManager settingManager;
