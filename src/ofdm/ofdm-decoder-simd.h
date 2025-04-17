@@ -48,10 +48,10 @@ public:
   };
 
   void reset();
-  void store_null_symbol_with_tii(const std::vector<cmplx> & iFftBuffer);
-  void store_null_symbol_without_tii(const std::vector<cmplx> & iFftBuffer);
-  void store_reference_symbol_0(const std::vector<cmplx> & iFftBuffer);
-  void decode_symbol(const std::vector<cmplx> & iFftBuffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
+  void store_null_symbol_with_tii(const TArrayTu & iV);
+  void store_null_symbol_without_tii(const TArrayTu & iV);
+  void store_reference_symbol_0(const TArrayTu & iFftBuffer);
+  void decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);
@@ -128,7 +128,7 @@ private:
 
   [[nodiscard]] float _compute_frequency_offset(const cmplx * const & r, const cmplx * const & v) const;
   [[nodiscard]] float _compute_noise_Power() const;
-  void _eval_null_symbol_statistics(const std::vector<cmplx> & iFftBuffer);
+  void _eval_null_symbol_statistics(const TArrayTu & iV);
   void _reset_null_symbol_statistics();
   void _display_iq_and_carr_vectors();
   // void _volk_mean_filter(float * ioValVec, const float * iValVec, const float iAlpha) const;

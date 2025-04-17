@@ -157,12 +157,11 @@ private:
   bool mAllowRfFreqShift = false;
   bool mInputOverdrivenShown = false;
 
-  std::vector<cmplx> mOfdmBuffer;
-  std::vector<int16_t> mBits;
-
-  std::vector<cmplx> mFftInBuffer;
-  std::vector<cmplx> mFftOutBuffer;
+  alignas(32) TArrayTn mOfdmBuffer;
+  alignas(32) TArrayTu mFftInBuffer;
+  alignas(32) TArrayTu mFftOutBuffer;
   fftwf_plan mFftPlan;
+  std::vector<int16_t> mBits;
 
 #ifdef DO_TIME_MEAS
   TimeMeas mTimeMeas{"decode_symbol", 1000};

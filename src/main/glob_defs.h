@@ -37,22 +37,24 @@
 #endif
 
 
+// "Mode 1" constants, other modes are not used anymore in the DAB standard
+constexpr auto cL        =     76;  // blocks per frame
+constexpr auto cK        =   1536;  // number carriers
+constexpr auto cTn       =   2656;  // null length
+constexpr auto cTF       = 196608;  // samples per frame (T_n + L * T_s)
+constexpr auto cTs       =   2552;  // block length
+constexpr auto cTu       =   2048;  // useful part, FFT length
+constexpr auto cTg       =    504;  // guard length (T_s - T_u)
+constexpr auto cCarrDiff =   1000;  // freq. dist. between each OFDM Bin in Hz
+
+
 using cmplx = std::complex<float>;
 using cmplx16 = std::complex<int16_t>;
+using TArrayTu = std::array<cmplx, cTu>;
+using TArrayTn = std::array<cmplx, cTn>;
 
 // do not make this as a template as it freed the allocated stack buffer at once after call
 #define make_vla(T, iSize) static_cast<T *>(alloca(iSize * sizeof(T))) // vla = variable length array on stack
-
-template<typename T> inline void safe_vector_copy(T & oVec, const T & iVec)
-{
-  // This method is intended to copy a (potential) bigger input vector to an already existing smaller one.
-  // A direct assignment could do a memory reallocation otherwise which is not wanted in certain cases (like FFTW buffer).
-  assert(!iVec.empty() && !oVec.empty());
-  assert(oVec.size() <= iVec.size());
-  // memcpy() is considerable faster than std::copy on my i7-6700K (nearly twice as fast for size == 2048)
-  // std::copy(iVec.begin(), iVec.begin() + oVec.size(), oVec.begin());
-  memcpy(oVec.data(), iVec.data(), oVec.size() * sizeof(oVec[0]));
-}
 
 template<typename T> inline T conv_rad_to_deg(T iVal)
 {

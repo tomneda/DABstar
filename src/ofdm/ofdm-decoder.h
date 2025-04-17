@@ -64,10 +64,10 @@ public:
   };
 
   void reset();
-  void store_null_symbol_with_tii(const std::vector<cmplx> &);
-  void store_null_symbol_without_tii(const std::vector<cmplx> &);
+  void store_null_symbol_with_tii(const TArrayTu &);
+  void store_null_symbol_without_tii(const TArrayTu &);
   void store_reference_symbol_0(const std::vector<cmplx> &);
-  void decode_symbol(const std::vector<cmplx> & buffer, uint16_t iCurOfdmSymbIdx, float iPhaseCorr, std::vector<int16_t> & oBits);
+  void decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);
@@ -124,7 +124,7 @@ private:
 
   [[nodiscard]] float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
   [[nodiscard]] float _compute_noise_Power() const;
-  void _eval_null_symbol_statistics(const std::vector<cmplx> &);
+  void _eval_null_symbol_statistics(const TArrayTu &);
   void _reset_null_symbol_statistics();
 #ifndef USE_PHASE_CORR_LUT
   cmplx cmplx_from_phase2(const float iPhase);

@@ -77,7 +77,7 @@ void OfdmDecoder::reset()
   _reset_null_symbol_statistics();
 }
 
-void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iFftBuffer)
+void OfdmDecoder::store_null_symbol_with_tii(const TArrayTu & iFftBuffer)
 {
   if (mCarrierPlotType != ECarrierPlotType::NULL_TII_LIN &&
       mCarrierPlotType != ECarrierPlotType::NULL_TII_LOG)
@@ -88,7 +88,7 @@ void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iFftBuff
   _eval_null_symbol_statistics(iFftBuffer);
 }
 
-void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iFftBuffer)
+void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iFftBuffer)
 {
   if (mCarrierPlotType == ECarrierPlotType::NULL_NO_TII)
   {
@@ -106,7 +106,7 @@ void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iFftB
   mSimdVecMeanNullPowerWithoutTII.modify_mean_filter_each_element(mSimdVecTemp1Float, cAlpha);
 }
 
-void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iFftBuffer)
+void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
 {
   // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
   mDcFft = iFftBuffer[0];
@@ -118,7 +118,7 @@ void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iFftBuffer
   }
 }
 
-void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iFftBuffer, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
 {
   // current runtime on i7-6700K: avr: 57us, min: 19us
   // mTimeMeas.trigger_begin();
@@ -294,7 +294,7 @@ float OfdmDecoder::_compute_noise_Power() const
   return mSimdVecMeanNullPowerWithoutTII.get_sum_of_elements() / (float)cK;
 }
 
-void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iFftBuffer)
+void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
 {
   float max = -1e38f;
   float min =  1e38f;

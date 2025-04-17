@@ -51,7 +51,7 @@ public:
   explicit PhaseTable(int16_t);
   ~PhaseTable() = default;
 
-  alignas(32) std::array<cmplx, cTu> mRefTable;
+  alignas(32) TArrayTu mRefTable;
 
 private:
   const struct SPhasetableElement * mpCurrentTable;

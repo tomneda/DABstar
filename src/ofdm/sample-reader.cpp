@@ -43,12 +43,11 @@ static inline int16_t value_for_bit_pos(int16_t b)
   return res;
 }
 
-SampleReader::SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer, RingBuffer<cmplx> * iCirBuffer) :
-  myRadioInterface(mr),
-  theRig(iTheRig),
-  spectrumBuffer(iSpectrumBuffer),
-  cirBuffer(iCirBuffer),
-  oneSampleBuffer(1)
+SampleReader::SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer, RingBuffer<cmplx> * iCirBuffer)
+  : myRadioInterface(mr)
+  , theRig(iTheRig)
+  , spectrumBuffer(iSpectrumBuffer)
+  , cirBuffer(iCirBuffer)
 {
   dumpfilePointer.store(nullptr);
   dumpScale = value_for_bit_pos(theRig->bitDepth());
@@ -76,11 +75,11 @@ float SampleReader::get_sLevel() const
 
 cmplx SampleReader::getSample(int32_t phaseOffset)
 {
-  getSamples(oneSampleBuffer, 0, 1, phaseOffset, true); // show spectrum while scanning
-  return oneSampleBuffer[0];
+  getSamples(mSampleBuffer, 0, 1, phaseOffset, true); // show spectrum while scanning
+  return mSampleBuffer[0];
 }
 
-void SampleReader::getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec)
+void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec)
 {
   assert((signed)oV.size() >= iStartIdx + iNoSamples);
 

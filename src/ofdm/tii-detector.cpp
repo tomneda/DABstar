@@ -146,7 +146,6 @@ TiiDetector::TiiDetector(const uint8_t iDabMode)
   , mT_g(mParams.get_T_g())
   , mK(mParams.get_K())
 {
-  mNullSymbolBufferVec.resize(mT_u);
   reset();
 }
 
@@ -171,7 +170,7 @@ void TiiDetector::reset()
 }
 
 // To reduce noise in the input signal, we might add a few spectra before computing (up to the user)
-void TiiDetector::add_to_tii_buffer(const std::vector<cmplx> & iV)
+void TiiDetector::add_to_tii_buffer(const TArrayTu & iV)
 {
   for (int i = 0; i < mT_u; i++)
   {
@@ -265,7 +264,7 @@ void TiiDetector::_reset_null_symbol_buffer()
   for (auto & i : mNullSymbolBufferVec) i = cmplx(0, 0);
 }
 
-void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const std::vector<cmplx> & iVec) const
+void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const TArrayTu & iVec) const
 {
   for (int32_t k = -mK / 2, i = 0; k < mK / 2; k += 2, ++i)
   {

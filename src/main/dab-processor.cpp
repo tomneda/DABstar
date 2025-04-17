@@ -56,8 +56,6 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   , mcTiiDelay(p->tii_delay)
   , mDabPar(DabParams(p->dabMode).get_dab_par())
 {
-  mFftInBuffer.resize(mDabPar.T_u);
-  mFftOutBuffer.resize(mDabPar.T_u);
   mFftPlan = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
 
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
@@ -67,8 +65,7 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &RadioInterface::slot_show_freq_corr_bb_Hz);
   connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &RadioInterface::slot_show_digital_peak_level);
 
-  mOfdmBuffer.resize(2 * mDabPar.T_s);
-  mBits.resize(2 * mDabPar.K);
+  mBits.resize(2 * cK);
   mTiiDetector.reset();
   mTiiCounter = 0;
 }
@@ -201,7 +198,9 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
    * for coarse frequency synchronization and its content is used as a reference for decoding the first datablock.
    */
 
-  safe_vector_copy(mFftInBuffer, mOfdmBuffer);
+  // memcpy() is considerable faster than std::copy on my i7-6700K (nearly twice as fast for size == 2048)
+  memcpy(mFftInBuffer.data(), mOfdmBuffer.data(), mFftInBuffer.size() * sizeof(cmplx));
+
   fftwf_execute(mFftPlan);
   mOfdmDecoder.store_reference_symbol_0(mFftOutBuffer);
 

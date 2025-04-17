@@ -130,7 +130,7 @@ void OfdmDecoder::reset()
   _reset_null_symbol_statistics();
 }
 
-void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iV) // with TII information
+void OfdmDecoder::store_null_symbol_with_tii(const TArrayTu & iV) // with TII information
 {
   if (mCarrierPlotType != ECarrierPlotType::NULL_TII_LIN &&
       mCarrierPlotType != ECarrierPlotType::NULL_TII_LOG)
@@ -141,7 +141,7 @@ void OfdmDecoder::store_null_symbol_with_tii(const std::vector<cmplx> & iV) // w
   _eval_null_symbol_statistics(iV);
 }
 
-void OfdmDecoder::store_null_symbol_without_tii(const std::vector<cmplx> & iV) // with TII information
+void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII information
 {
   if (mCarrierPlotType == ECarrierPlotType::NULL_NO_TII)
   {
@@ -165,7 +165,7 @@ void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iBuffer)
   memcpy(mPhaseReference.data(), iBuffer.data(), mDabPar.T_u * sizeof(cmplx));
 }
 
-void OfdmDecoder::decode_symbol(const std::vector<cmplx> & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
 {
   // current runtime on i7-6700K:
   // phase correction via:
@@ -380,7 +380,7 @@ float OfdmDecoder::_compute_noise_Power() const
   return sumNoise / (float)mDabPar.K;
 }
 
-void OfdmDecoder::_eval_null_symbol_statistics(const std::vector<cmplx> & iV)
+void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
 {
   float max = -1e38f;
   float min =  1e38f;

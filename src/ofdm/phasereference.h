@@ -51,8 +51,8 @@ public:
   PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam);
   ~PhaseReference() override;
 
-  [[nodiscard]] int32_t correlate_with_phase_ref_and_find_max_peak(const std::vector<cmplx> & iV, float iThreshold);
-  [[nodiscard]] int16_t estimate_carrier_offset_from_sync_symbol_0(const std::vector<cmplx> & iV);
+  [[nodiscard]] int32_t correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const float iThreshold);
+  [[nodiscard]] int16_t estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV);
   [[nodiscard]] static float phase(const std::vector<cmplx> & iV, int32_t iTs);
   void set_sync_on_strongest_peak(bool sync);
 
@@ -66,8 +66,8 @@ private:
   int32_t mDisplayCounter = 0;
   bool mSyncOnStrongestPeak = false;
 
-  std::vector<cmplx> mFftInBuffer;
-  std::vector<cmplx> mFftOutBuffer;
+  alignas(32) TArrayTu mFftInBuffer;
+  alignas(32) TArrayTu mFftOutBuffer;
   fftwf_plan mFftPlanFwd;
   fftwf_plan mFftPlanBwd;
 

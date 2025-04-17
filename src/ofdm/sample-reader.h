@@ -56,7 +56,7 @@ public:
   [[nodiscard]] float get_sLevel() const;
   float get_linear_peak_level_and_clear();
   cmplx getSample(int32_t);
-  void getSamples(std::vector<cmplx> & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec);
+  void getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec);
   void startDumping(SNDFILE *);
   void stop_dumping();
   bool check_clipped_and_clear();
@@ -75,7 +75,7 @@ private:
   RingBuffer<cmplx> * cirBuffer;
   std::array<cmplx, SPEC_BUFF_SIZE> specBuff;
   std::array<cmplx, INPUT_RATE> oscillatorTable{};
-  std::vector<cmplx> oneSampleBuffer;
+  TArrayTn mSampleBuffer; // unfortunatelly, only one sample is needed
 
   int32_t specBuffIdx = 0;
   int32_t currentPhase = 0;

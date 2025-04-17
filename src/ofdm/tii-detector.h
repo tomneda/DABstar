@@ -30,7 +30,7 @@ public:
   void reset();
   void set_detect_collisions(bool);
   void set_subid_for_collision_search(uint8_t);
-  void add_to_tii_buffer(const std::vector<cmplx> &);
+  void add_to_tii_buffer(const TArrayTu & iV);
   std::vector<STiiResult> process_tii_data(int16_t);
 
 private:
@@ -51,7 +51,7 @@ private:
   bool mCarrierDelete = true;
   uint8_t mSubIdCollSearch = 0;
   TBufferArr768 mDecodedBufferArr;
-  std::vector<cmplx> mNullSymbolBufferVec;
+  TArrayTu mNullSymbolBufferVec;
 
   float _calculate_average_noise(const TFloatTable192 & iFloatTable) const;
   void _get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, float & ioMax, const TCmplxTable192 & iCmplxTable) const;
@@ -66,7 +66,7 @@ private:
   int _find_best_main_id_match(cmplx & oSum, int iSubId, const TCmplxTable192 & ipCmplxTable) const;
   void _reset_null_symbol_buffer();
   void _remove_single_carrier_values(TBufferArr768 & ioBuffer) const;
-  void _decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const std::vector<cmplx> & iVec) const;
+  void _decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const TArrayTu & iVec) const;
   void _collapse_tii_groups(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec, const TBufferArr768 & iVec) const;
   cmplx _turn_phase(cmplx const value, const uint8_t phase) const;
 };

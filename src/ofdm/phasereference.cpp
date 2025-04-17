@@ -50,8 +50,6 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   , mpResponse(ipParam->responseBuffer)
   , mCorrPeakValues(mDabPar.T_u)
 {
-  mFftInBuffer.resize(mDabPar.T_u);
-  mFftOutBuffer.resize(mDabPar.T_u);
   mFftPlanFwd = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
   mFftPlanBwd = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
 
@@ -87,9 +85,11 @@ PhaseReference::~PhaseReference()
   *	looking for.
   */
 
-int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const std::vector<cmplx> & iV, const float iThreshold)
+int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const float iThreshold)
 {
-  safe_vector_copy(mFftInBuffer, iV);
+  // memcpy() is considerable faster than std::copy on my i7-6700K (nearly twice as fast for size == 2048)
+  memcpy(mFftInBuffer.data(), iV.data(), mFftInBuffer.size() * sizeof(cmplx));
+
   fftwf_execute(mFftPlanFwd);
 
   //	into the frequency domain, now correlate
@@ -194,7 +194,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const std::ve
 }
 
 //	an approach that works fine is to correlate the phase differences between subsequent carriers
-int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const std::vector<cmplx> & iV)
+int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV)
 {
   //  The phase differences are computed once
   for (int16_t i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
