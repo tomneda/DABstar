@@ -2,6 +2,9 @@
 #include <QColor>
 #include <QPen>
 #include "cir-viewer.h"
+#ifdef HAVE_SSE_OR_AVX
+  #include <volk/volk.h>
+#endif
 
 CirViewer::CirViewer(QSettings * s, RingBuffer<cmplx> * iCirBuffer) :
   Ui_cirWidget(),
@@ -9,8 +12,10 @@ CirViewer::CirViewer(QSettings * s, RingBuffer<cmplx> * iCirBuffer) :
   mpCirSettings(s),
   mpCirBuffer(iCirBuffer)
 {
-  mFftPlanFwd = fftwf_plan_dft_1d(2048, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
-  mFftPlanBwd = fftwf_plan_dft_1d(2048, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
+  mFftInBuffer  = (cmplx *)fftwf_malloc(sizeof(cmplx)*2048);
+  mFftOutBuffer = (cmplx *)fftwf_malloc(sizeof(cmplx)*2048);
+  mFftPlanFwd = fftwf_plan_dft_1d(2048, (fftwf_complex*)mFftInBuffer, (fftwf_complex*)mFftOutBuffer, FFTW_FORWARD, FFTW_ESTIMATE);
+  mFftPlanBwd = fftwf_plan_dft_1d(2048, (fftwf_complex*)mFftInBuffer, (fftwf_complex*)mFftOutBuffer, FFTW_BACKWARD, FFTW_ESTIMATE);
 
   mpCirSettings->beginGroup(SETTING_GROUP_NAME);
   int x = mpCirSettings->value("position-x", 100).toInt();
@@ -20,7 +25,7 @@ CirViewer::CirViewer(QSettings * s, RingBuffer<cmplx> * iCirBuffer) :
   mpCirSettings->endGroup();
 
   setupUi(&mFrame);
-  
+
   mFrame.resize(QSize(w, h));
   mFrame.move(QPoint(x, y));
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
@@ -57,6 +62,8 @@ CirViewer::~CirViewer()
   mFrame.hide();
   fftwf_destroy_plan(mFftPlanBwd);
   fftwf_destroy_plan(mFftPlanFwd);
+  fftwf_free(mFftInBuffer);
+  fftwf_free(mFftOutBuffer);
 }
 
 void CirViewer::show_cir()
@@ -74,36 +81,39 @@ void CirViewer::show_cir()
 
   for(int j = 0; j < sPlotLength; j++)
   {
-    int i;
-    float max = 0;
-
-    memcpy(mFftInBuffer.data(), &cirbuffer[j*512], sizeof(cmplx)*2048);
+    memcpy(mFftInBuffer, &cirbuffer[j*512], sizeof(cmplx)*2048);
     fftwf_execute(mFftPlanFwd);
 
     // into the frequency domain, now correlate
-    for (i = 0; i < 2048; i++)
+#ifdef HAVE_SSE_OR_AVX
+    volk_32fc_x2_multiply_conjugate_32fc(mFftInBuffer, mFftOutBuffer, mRefTable.data(), 2048);
+#else
+    for (int i = 0; i < 2048; i++)
       mFftInBuffer[i] = mFftOutBuffer[i] * conj(mRefTable[i]);
-
+#endif
     // and, again, back into the time domain
     fftwf_execute(mFftPlanBwd);
 
     // find maximum value
-    for(i = 0; i < 2048; i++)
+#ifdef HAVE_SSE_OR_AVX
+    uint32_t index[1];
+    volk_32fc_index_max_32u(index, mFftOutBuffer, 2048);
+    Y_value[j] = abs(mFftOutBuffer[*index]) / 26000.0;
+#else
+    float max = 0;
+    for(int i = 0; i < 2048; i++)
     {
-      const float x = abs(mFftOutBuffer[i]);
+      const float x = norm(mFftOutBuffer[i]);
       if(x > max)
         max = x;
       //if(x > 10000) fprintf(stderr, "j=%d, i=%d, x=%.0f\n",j,i,x);
     }
-    Y_value[j] = max;
+    Y_value[j] = sqrt(max) / 26000.0;
+#endif
     X_axis[j] = (float)(j) / 4.0; // X-axis shows ms
   }
 
   mpCirBuffer->flush_ring_buffer();
-  for (int i = 0; i < sPlotLength; i++)
-  {
-    Y_value[i] /= 26000;
-  }
   cirPlot->enableAxis(QwtPlot::yLeft);
   mCurve.setSamples(X_axis.data(), Y_value.data(), sPlotLength);
   cirPlot->replot();

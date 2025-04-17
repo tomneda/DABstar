@@ -39,8 +39,8 @@ private:
   RingBuffer<cmplx> * const mpCirBuffer;
   QwtPlotCurve mCurve;
   QwtPlotGrid mGrid;
-  std::array<cmplx, 2048> mFftInBuffer;
-  std::array<cmplx, 2048> mFftOutBuffer;
+  cmplx * mFftInBuffer;
+  cmplx * mFftOutBuffer;
   fftwf_plan mFftPlanFwd;
   fftwf_plan mFftPlanBwd;
 };
