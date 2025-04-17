@@ -143,7 +143,6 @@ PhaseTable::PhaseTable(const int16_t iMode)
   default: assert(0);
   }
   // mRefTable is in the frequency domain
-  mRefTable.resize(mDabPar.T_u);
   for (int32_t i = 0; i < mDabPar.T_u; i++)
     mRefTable[i] = cmplx(0,0);
   for (int32_t i = 1; i <= mDabPar.K / 2; i++) // skip DC
