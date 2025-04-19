@@ -24,29 +24,30 @@ Configuration::Configuration(RadioInterface * ipRI) :
 {
   setupUi(this);
 
-  SettingsManager::Configuration::posAndSize.read_widget_geometry(this, 100, 100, 700, 330, true);
+  Settings::Config::posAndSize.read_widget_geometry(this, 100, 100, 700, 330, true);
 
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   sliderTest->hide(); // only used for test
 
-
-  SettingsManager::Configuration::sbTiiThreshold.register_widget_and_update_ui_from_setting(tii_threshold, 7);
-  SettingsManager::Configuration::cbCloseDirect.register_widget_and_update_ui_from_setting(cbCloseDirect, 0);
-  SettingsManager::Configuration::cbUse_strongest_peak.register_widget_and_update_ui_from_setting(cbUse_strongest_peak, 0);
-  SettingsManager::Configuration::cbUseNativeFileDialog.register_widget_and_update_ui_from_setting(cbUseNativeFileDialog, 0);
-  SettingsManager::Configuration::cbUseUtcTime.register_widget_and_update_ui_from_setting(cbUseUtcTime, 0);
-  SettingsManager::Configuration::cbGenXmlFromEpg.register_widget_and_update_ui_from_setting(cbGenXmlFromEpg, 0);
-  SettingsManager::Configuration::cbAlwaysOnTop.register_widget_and_update_ui_from_setting(cbAlwaysOnTop, 0);
-  SettingsManager::Configuration::cbManualBrowserStart.register_widget_and_update_ui_from_setting(cbManualBrowserStart, 0);
-  SettingsManager::Configuration::cbSaveSlides.register_widget_and_update_ui_from_setting(cbSaveSlides, 0);
-  SettingsManager::Configuration::cbSaveTransToCsv.register_widget_and_update_ui_from_setting(cbSaveTransToCsv, 0);
-  SettingsManager::Configuration::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
-  SettingsManager::Configuration::cbUseDcRemoval.register_widget_and_update_ui_from_setting(cbUseDcRemoval, 0);
-  SettingsManager::Configuration::cbShowNonAudioInServiceList.register_widget_and_update_ui_from_setting(cbShowNonAudioInServiceList, 0);
-  SettingsManager::Configuration::cbTiiCollisions.register_widget_and_update_ui_from_setting(cbTiiCollisions, 0);
-  SettingsManager::Configuration::cbUrlClickable.register_widget_and_update_ui_from_setting(cbUrlClickable, 2);
-  SettingsManager::Configuration::cbAutoIterTiiEntries.register_widget_and_update_ui_from_setting(cbAutoIterTiiEntries, 2);
+  // register UI elements to setting manager and provide default setting
+  Settings::Config::sbTiiThreshold.register_widget_and_update_ui_from_setting(sbTiiThreshold, 8);
+  Settings::Config::sbTiiSubId.register_widget_and_update_ui_from_setting(sbTiiSubId, 2);
+  Settings::Config::cbCloseDirect.register_widget_and_update_ui_from_setting(cbCloseDirect, 0);
+  Settings::Config::cbUseStrongestPeak.register_widget_and_update_ui_from_setting(cbUseStrongestPeak, 0);
+  Settings::Config::cbUseNativeFileDialog.register_widget_and_update_ui_from_setting(cbUseNativeFileDialog, 0);
+  Settings::Config::cbUseUtcTime.register_widget_and_update_ui_from_setting(cbUseUtcTime, 0);
+  Settings::Config::cbGenXmlFromEpg.register_widget_and_update_ui_from_setting(cbGenXmlFromEpg, 0);
+  Settings::Config::cbAlwaysOnTop.register_widget_and_update_ui_from_setting(cbAlwaysOnTop, 0);
+  Settings::Config::cbManualBrowserStart.register_widget_and_update_ui_from_setting(cbManualBrowserStart, 0);
+  Settings::Config::cbSaveSlides.register_widget_and_update_ui_from_setting(cbSaveSlides, 0);
+  Settings::Config::cbSaveTransToCsv.register_widget_and_update_ui_from_setting(cbSaveTransToCsv, 0);
+  Settings::Config::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
+  Settings::Config::cbUseDcRemoval.register_widget_and_update_ui_from_setting(cbUseDcRemoval, 0);
+  Settings::Config::cbShowNonAudioInServiceList.register_widget_and_update_ui_from_setting(cbShowNonAudioInServiceList, 0);
+  Settings::Config::cbTiiCollisions.register_widget_and_update_ui_from_setting(cbTiiCollisions, 0);
+  Settings::Config::cbUrlClickable.register_widget_and_update_ui_from_setting(cbUrlClickable, 2);
+  Settings::Config::cbAutoIterTiiEntries.register_widget_and_update_ui_from_setting(cbAutoIterTiiEntries, 2);
 
   QPalette lcdPalette;
 #ifndef __MAC__
@@ -65,15 +66,15 @@ Configuration::Configuration(RadioInterface * ipRI) :
   connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_set_coordinates_button);
   connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_avoidance_algorithm);
   connect(cbUseDcRemoval, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_removal);
-  connect(tii_threshold, &QSpinBox::valueChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_threshold);
+  connect(sbTiiThreshold, &QSpinBox::valueChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_threshold);
   connect(cbTiiCollisions, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_tii_collisions);
-  connect(tii_subid, &QSpinBox::valueChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_subid);
+  connect(sbTiiSubId, &QSpinBox::valueChanged, mpRadioInterface, &RadioInterface::slot_handle_tii_subid);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(cbUse_strongest_peak, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
+  connect(cbUseStrongestPeak, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
   connect(cbActivateLogger, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
   connect(cbActivateEti, &QCheckBox::checkStateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
 #else
-  connect(cbUse_strongest_peak, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
+  connect(cbUseStrongestPeak, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
   connect(cbActivateLogger, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);
   connect(cbActivateEti, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_eti_active_selector);
 #endif
@@ -81,5 +82,5 @@ Configuration::Configuration(RadioInterface * ipRI) :
 
 void Configuration::save_position_and_config()
 {
-  SettingsManager::Configuration::posAndSize.write_widget_geometry(this);
+  Settings::Config::posAndSize.write_widget_geometry(this);
 }

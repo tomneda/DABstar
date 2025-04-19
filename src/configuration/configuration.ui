@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>637</width>
-    <height>330</height>
+    <height>337</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -315,7 +315,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbUse_strongest_peak">
+        <widget class="QCheckBox" name="cbUseStrongestPeak">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -434,7 +434,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="tii_subid">
+          <widget class="QSpinBox" name="sbTiiSubId">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -458,7 +458,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="tii_threshold">
+          <widget class="QSpinBox" name="sbTiiThreshold">
            <property name="toolTip">
             <string>Threshold above noise level</string>
            </property>

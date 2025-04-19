@@ -19,6 +19,150 @@
 #include <QDir>
 #include <QWidget>
 
+
+SettingWidget::SettingWidget(const QString & key)
+  : mKey(key)
+{
+}
+
+void SettingWidget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue)
+{
+  assert(mpWidget == nullptr); // only one-time registration necessary
+  mpWidget = ipWidget;
+  mDefaultValue = iDefaultValue;
+  _update_ui_state_from_setting();
+
+  if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+  {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+    connect(pD, &QCheckBox::checkStateChanged, [this](int iState){ _update_ui_state_to_setting(); });
+#else
+    connect(pD, &QCheckBox::stateChanged, [this](int iState){ update_ui_state_to_setting(); });
+#endif
+    return;
+  }
+
+  if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+  {
+    connect(pD, &QComboBox::currentTextChanged, [this](const QString &){ _update_ui_state_to_setting(); });
+    return;
+  }
+
+  if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+  {
+    connect(pD, qOverload<int>(&QSpinBox::valueChanged), [this](int iValue){ _update_ui_state_to_setting(); });
+    return;
+  }
+
+  qFatal("Pointer to mpWidget not handled (1)");
+}
+
+QVariant SettingWidget::get_variant() const
+{
+  return SettingsStorage::instance().value(mKey, mDefaultValue);
+}
+
+void SettingWidget::_update_ui_state_from_setting() const
+{
+  assert(mpWidget != nullptr); // only one-time registration necessary
+
+  if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+  {
+    const int32_t var = SettingsStorage::instance().value(mKey, mDefaultValue).toInt();
+    pD->setCheckState(static_cast<Qt::CheckState>(var));
+    return;
+  }
+
+  if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+  {
+    const QString var = SettingsStorage::instance().value(mKey, mDefaultValue).toString();
+    if (const int32_t k = pD->findText(var);
+        k >= 0)
+    {
+      pD->setCurrentIndex(k);
+    }
+    return;
+  }
+
+  if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+  {
+    const int32_t var = SettingsStorage::instance().value(mKey, mDefaultValue).toInt();
+    pD->setValue(var);
+    return;
+  }
+
+  qFatal("Pointer to mpWidget not handled (2)");
+}
+
+void SettingWidget::_update_ui_state_to_setting() const
+{
+  assert(mpWidget != nullptr); // only one-time registration necessary
+
+  if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+  {
+    SettingsStorage::instance().setValue(mKey, pD->checkState());
+    return;
+  }
+
+  if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+  {
+    SettingsStorage::instance().setValue(mKey, pD->currentText());
+    return;
+  }
+
+  if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+  {
+    SettingsStorage::instance().setValue(mKey, pD->value());
+    return;
+  }
+
+  qFatal("Pointer to pWidget not handled");
+}
+
+
+SettingPosAndSize::SettingPosAndSize(const QString & iCat)
+: mCat(iCat)
+{}
+
+void SettingPosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t iXPosDef, const int32_t iYPosDef, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
+{
+  const QVariant var = SettingsStorage::instance().value(mCat + "posAndSize", QVariant());
+
+  if(!var.canConvert<QByteArray>())
+  {
+    qWarning("Cannot retrieve widget geometry from settings. Using default settings.");
+    iopWidget->resize(QSize(iWidthDef, iHeightDef));
+    iopWidget->move(QPoint(iXPosDef, iYPosDef));
+    return;
+  }
+
+  if (!iopWidget->restoreGeometry(var.toByteArray()))
+  {
+    qWarning("restoreGeometry() returns false");
+  }
+
+  if (iIsFixedSized)
+  {
+    iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
+  }
+}
+
+void SettingPosAndSize::write_widget_geometry(const QWidget * const ipWidget) const
+{
+  const QByteArray var = ipWidget->saveGeometry();
+  SettingsStorage::instance().setValue(mCat + "posAndSize", var);
+}
+
+
+
+
+
+
+
+
+
+
+
 SettingHelper::SettingHelper(QSettings * ipSettings) :
   mpSettings(ipSettings)
 {
@@ -71,7 +215,7 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
   mMap.insert(cbShowTiiList, {"", "showTiiList", false });
   // mMap.insert(tii_threshold, { "", "tii_threshold", 6 });
-  mMap.insert(tii_subid, { "", "tii_subid", 0 });
+  // mMap.insert(tii_subid, { "", "tii_subid", 0 });
 
   // special enums for windows position and size storage
   mMap.insert(mainWidget, { "", "mainWidget", QVariant() });

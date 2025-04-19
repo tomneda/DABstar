@@ -18,176 +18,21 @@
 #define SETTING_HELPER_H
 
 #include <QObject>
-#include <QMap>
 #include <QVariant>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QSpinBox>
 #include <QSettings>
 
-#include "filereaders/raw-files/raw-reader.h"
-
-#if 1
-
-// class SettingsManager
-// {
-// public:
-//   // Define all setting keys as enum
-//   enum class Key
-//   {
-//     WindowWidth,
-//     IsDarkMode,
-//     LastChannel,
-//     // ... add more keys
-//   };
-//
-//   // Template specialization to define types and defaults for each key
-//   template<Key K>
-//   struct SettingTraits;
-//
-//   template<>
-//   struct SettingTraits<Key::WindowWidth>
-//   {
-//     using Type = int;
-//     static constexpr Type defaultValue = 800;
-//     static const QString key; // = "window/width"
-//   };
-//
-//   template<>
-//   struct SettingTraits<Key::IsDarkMode>
-//   {
-//     using Type = bool;
-//     static constexpr Type defaultValue = false;
-//     static const QString key; // = "appearance/darkMode"
-//   };
-//
-//   // Get setting value
-//   template<typename Key K>
-//   static K SettingTraits<K>::Type get()
-//   {
-//     return instance().getSetting<K>();
-//   }
-//
-//   // Set setting value
-//   template<Key K>
-//   static void set(const typename SettingTraits<K>::Type & value)
-//   {
-//     instance().setSetting<K>(value);
-//   }
-//
-//   // ... rest of the singleton implementation ...
-//
-// private:
-//   template<Key K>
-//   typename SettingTraits<K>::Type getSetting()
-//   {
-//     return mSettings.value(
-//       SettingTraits<K>::key,
-//       SettingTraits<K>::defaultValue
-//     ).template value<typename SettingTraits<K>::Type>();
-//   }
-//
-//   template<Key K>
-//   void setSetting(const typename SettingTraits<K>::Type & value)
-//   {
-//     mSettings.setValue(SettingTraits<K>::key, value);
-//   }
-// };
-//
-// // Define the static key strings
-// const QString SettingsManager::SettingTraits<SettingsManager::Key::WindowWidth>::key = "window/width";
-// const QString SettingsManager::SettingTraits<SettingsManager::Key::IsDarkMode>::key = "appearance/darkMode";
-
-#else
-class SettingsManager
-{
-public:
-  template<typename T>
-  class Setting
-  {
-  private:
-    QString mKey;
-    T mDefaultValue;
-    QSettings & mSettings;
-
-  public:
-    Setting(QSettings & settings, const QString & key, const T & defaultValue = T())
-      : mKey(key)
-      , mDefaultValue(defaultValue)
-      , mSettings(settings)
-    {}
-
-    explicit operator T() const
-    {
-      return mSettings.value(mKey, mDefaultValue).template value<T>();
-    }
-
-    Setting & operator=(const T & value)
-    {
-      mSettings.setValue(mKey, value);
-      return *this;
-    }
-
-    void reset()
-    {
-      mSettings.setValue(mKey, mDefaultValue);
-    }
-
-    // Add getter/setter for more explicit access if preferred
-    T get() const { return operator T(); }
-    void set(const T & value) { operator=(value); }
-  };
-
-  // Singleton access
-  static SettingsManager & instance()
-  {
-    static SettingsManager instance("DABstar", "DABstar");  // Created once
-    return instance;
-  }
-
-  // Delete copy and move operations
-  SettingsManager(const SettingsManager &) = delete;
-  SettingsManager & operator=(const SettingsManager &) = delete;
-  SettingsManager(SettingsManager &&) = delete;
-  SettingsManager & operator=(SettingsManager &&) = delete;
-
-  // Helper method to define new settings (if needed)
-  template<typename T>
-  Setting<T> define(const QString & key, const T & defaultValue = T())
-  {
-    return Setting<T>(mSettings, key, defaultValue);
-  }
-
-  // Define your application settings here as static members
-  static inline Setting<int> windowWidth = instance().define<int>("window/width", 800);
-  static inline Setting<bool> isDarkMode = instance().define<bool>("appearance/darkMode", false);
-  static inline Setting<QString> lastChannel = instance().define<QString>("radio/lastChannel", "");
-  // Add more settings as needed...
-
-private:
-  SettingsManager(const QString & organization, const QString & application)
-    : mSettings(organization, application)
-  {}
-
-  QSettings mSettings;
-};
-#endif
-
-
 class SettingsStorage
 {
 public:
-  static SettingsStorage & instance(QSettings * ipSettings = nullptr)
+  static QSettings & instance(QSettings * ipSettings = nullptr)
   {
     static SettingsStorage instance(ipSettings);
-    return instance;
+    return *instance.mpSettings;
   }
 
-  QSettings * get() const
-  {
-    assert(mpSettings != nullptr);
-    return mpSettings;
-  }
 private:
   explicit SettingsStorage(QSettings * ipSettings)
   : mpSettings(ipSettings)
@@ -195,6 +40,7 @@ private:
 
   QSettings * const mpSettings;
 };
+
 
 template<typename T>
 class SettingEnum
@@ -207,19 +53,19 @@ public:
 
   void reset()
   {
-    SettingsStorage::instance().get()->setValue(mKey, mDefaultValue);
+    SettingsStorage::instance().setValue(mKey, mDefaultValue);
   }
 
   // direct getter method (direct usage of Setter instance)
   operator T() const // do not make explicit!
   {
-    return SettingsStorage::instance().get()->value(mKey, mDefaultValue).template value<T>();
+    return SettingsStorage::instance().value(mKey, mDefaultValue).template value<T>();
   }
 
   // direct setter method (direct usage of Setter instance)
   SettingEnum & operator=(const T & value)
   {
-    SettingsStorage::instance().get()->setValue(mKey, value);
+    SettingsStorage::instance().setValue(mKey, value);
     return *this;
   }
 
@@ -244,107 +90,15 @@ class SettingWidget : public QObject
 {
   Q_OBJECT
 public:
-  explicit SettingWidget(const QString & key)
-    : mKey(key)
-  {
-  }
+  explicit SettingWidget(const QString & key);
 
-  template<typename T>
-  void register_widget_and_update_ui_from_setting(T * const ipWidget, const QVariant & iDefaultValue)
-  {
-    assert(mpWidget == nullptr); // only one-time registration necessary
-    mpWidget = ipWidget;
-    mDefaultValue = iDefaultValue;
-    update_ui_state_from_setting();
-
-    if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
-    {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-      connect(pD, &QCheckBox::checkStateChanged, [this](int iState){ update_ui_state_to_setting(); });
-#else
-      connect(pD, &QCheckBox::stateChanged, [this](int iState){ update_ui_state_to_setting(); });
-#endif
-      return;
-    }
-
-    if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
-    {
-      connect(pD, &QComboBox::currentTextChanged, [this](const QString &){ update_ui_state_to_setting(); });
-      return;
-    }
-
-    if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
-    {
-      connect(pD, qOverload<int>(&QSpinBox::valueChanged), [this](int iValue){ update_ui_state_to_setting(); });
-      return;
-    }
-
-    qFatal("Pointer to mpWidget not handled (1)");
-  }
-
-  void update_ui_state_from_setting()
-  {
-    assert(mpWidget != nullptr); // only one-time registration necessary
-    
-    if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
-    {
-      const int32_t var = SettingsStorage::instance().get()->value(mKey, mDefaultValue).toInt();
-      pD->setCheckState(static_cast<Qt::CheckState>(var));
-      return;
-    }
-
-    if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
-    {
-      const QString var = SettingsStorage::instance().get()->value(mKey, mDefaultValue).toString();
-      if (const int32_t k = pD->findText(var);
-          k >= 0)
-      {
-        pD->setCurrentIndex(k);
-      }
-      return;
-    }
-
-    if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
-    {
-      const int32_t var = SettingsStorage::instance().get()->value(mKey, mDefaultValue).toInt();
-      pD->setValue(var);
-      return;
-    }
-
-    qFatal("Pointer to mpWidget not handled (2)");
-  }
-
-  void update_ui_state_to_setting()
-  {
-    assert(mpWidget != nullptr); // only one-time registration necessary
-
-    if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
-    {
-      SettingsStorage::instance().get()->setValue(mKey, pD->checkState());
-      return;
-    }
-
-    if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
-    {
-      SettingsStorage::instance().get()->setValue(mKey, pD->currentText());
-      return;
-    }
-
-    if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
-    {
-      SettingsStorage::instance().get()->setValue(mKey, pD->value());
-      return;
-    }
-
-    qFatal("Pointer to pWidget not handled");
-  }
-
-  QVariant get_variant() const
-  {
-    return SettingsStorage::instance().get()->value(mKey, mDefaultValue);
-  }
+  void register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue);
+  QVariant get_variant() const;
 
 private:
+  void _update_ui_state_from_setting() const;
+  void _update_ui_state_to_setting() const;
+
   QString mKey;
   QWidget * mpWidget = nullptr;
   QVariant mDefaultValue;
@@ -353,74 +107,31 @@ private:
 class SettingPosAndSize
 {
 public:
-  explicit SettingPosAndSize(const QString & iCat)
-  : mCat(iCat)
-  {}
-  
-  void read_widget_geometry(QWidget * const iopWidget, const int32_t iXPosDef, const int32_t iYPosDef, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
-  {
-    const QVariant var = SettingsStorage::instance().get()->value(mCat + "posAndSize", QVariant());
-
-    if(!var.canConvert<QByteArray>())
-    {
-      qWarning("Cannot retrieve widget geometry from settings. Using default settings.");
-      iopWidget->resize(QSize(iWidthDef, iHeightDef));
-      iopWidget->move(QPoint(iXPosDef, iYPosDef));
-      return;
-    }
-
-    if (!iopWidget->restoreGeometry(var.toByteArray()))
-    {
-      qWarning("restoreGeometry() returns false");
-    }
-
-    if (iIsFixedSized)
-    {
-      iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
-    }
-  }
-
-  void write_widget_geometry(const QWidget * const ipWidget) const
-  {
-    const QByteArray var = ipWidget->saveGeometry();
-    SettingsStorage::instance().get()->setValue(mCat + "posAndSize", var);
-  }
+  explicit SettingPosAndSize(const QString & iCat);
+  void read_widget_geometry(QWidget * iopWidget, int32_t iXPosDef, int32_t iYPosDef, int32_t iWidthDef, int32_t iHeightDef, bool iIsFixedSized) const;
+  void write_widget_geometry(const QWidget * ipWidget) const;
 
 private:
   QString mCat;
 };
 
-class SettingsManager
+struct Settings
 {
-public:
-  static SettingsManager & instance()
-  {
-    static SettingsManager instance;
-    return instance; 
-  }
-
-  // template<typename T>
-  // Setting<T> define(const QString & key, const T & defaultValue = T())
-  // {
-  //   return Setting<T>(key, defaultValue);
-  // }
-
-  struct Spectrum
+  struct Spectrum // namespace for the spectrum window
   {
     #define catSpectrumViewer "spectrumViewer/" // did not find nicer way to declare that once
     static inline SettingPosAndSize posAndSize{catSpectrumViewer};
   };
 
-  struct Configuration
+  struct Config  // namespace for the configuration window
   {
     #define catConfiguration "configuration/" // did not find nicer way to declare that once
     static inline SettingPosAndSize posAndSize{catConfiguration};
 
-    static inline SettingEnum<int> width{catConfiguration "width", 800};
+    // static inline SettingEnum<int> width{catConfiguration "width", 800};
 
-    static inline SettingWidget sbTiiThreshold{catConfiguration "sbTiiThreshold"};
     static inline SettingWidget cbCloseDirect{catConfiguration "cbCloseDirect"};
-    static inline SettingWidget cbUse_strongest_peak{catConfiguration "cbUseStrongestPeak"};
+    static inline SettingWidget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
     static inline SettingWidget cbUseNativeFileDialog{catConfiguration "cbUseNativeFileDialog"};
     static inline SettingWidget cbUseUtcTime{catConfiguration "cbUseUtcTime"};
     static inline SettingWidget cbGenXmlFromEpg{catConfiguration "cbGenXmlFromEpg"};
@@ -431,85 +142,17 @@ public:
     static inline SettingWidget cbUseDcAvoidance{catConfiguration "cbUseDcAvoidance"};
     static inline SettingWidget cbUseDcRemoval{catConfiguration "cbUseDcRemoval"};
     static inline SettingWidget cbShowNonAudioInServiceList{catConfiguration "cbShowNonAudioInService"};
+    static inline SettingWidget sbTiiThreshold{catConfiguration "sbTiiThreshold"};
     static inline SettingWidget cbTiiCollisions{catConfiguration "cbTiiCollisions"};
+    static inline SettingWidget sbTiiSubId{catConfiguration "sbTiiSubId"};
     static inline SettingWidget cbUrlClickable{catConfiguration "cbUrlClickable"};
     static inline SettingWidget cbAutoIterTiiEntries{catConfiguration "cbAutoIterTiiEntries"};
-
   };
-
-private:
-  SettingsManager() {}
-};
-
-
-// inline static SettingsManager settingManager;
-
-// static inline Setting<int> windowWidth = define<int>("window/width", 800);
-
-// class SettingsGroup
-// {
-// public:
-//   SettingsGroup(QSettings & settings, const QString & group)
-//     : mSettings(settings)
-//   {
-//     mSettings.beginGroup(group);
-//   }
-//
-//   ~SettingsGroup()
-//   {
-//     mSettings.endGroup();
-//   }
-//
-// private:
-//   QSettings & mSettings;
-// };
-
-
-class WidgetSettingsHelper
-{
-public:
-  template<typename T>
-  static void saveWidgetState(QSettings & settings, T * widget, const QString & key)
-  {
-    if constexpr (std::is_base_of_v<QCheckBox, T>)
-    {
-      settings.setValue(key, widget->isChecked());
-    }
-    else if constexpr (std::is_base_of_v<QComboBox, T>)
-    {
-      settings.setValue(key, widget->currentIndex());
-    }
-    else if constexpr (std::is_base_of_v<QSpinBox, T>)
-    {
-      settings.setValue(key, widget->value());
-    }
-    // Add more widget types as needed
-  }
-
-  template<typename T>
-  static void loadWidgetState(QSettings & settings, T * widget, const QString & key)
-  {
-    if constexpr (std::is_base_of_v<QCheckBox, T>)
-    {
-      widget->setChecked(settings.value(key, false).toBool());
-    }
-    else if constexpr (std::is_base_of_v<QComboBox, T>)
-    {
-      widget->setCurrentIndex(settings.value(key, 0).toInt());
-    }
-    else if constexpr (std::is_base_of_v<QSpinBox, T>)
-    {
-      widget->setValue(settings.value(key, 0).toInt());
-    }
-    // Add more widget types as needed
-  }
 };
 
 
 
-
-
-
+// legacy stuff
 
 class QWidget;
 
@@ -565,8 +208,7 @@ public:
     serviceListSortCol,
     serviceListSortDesc,
     cbShowTiiList,
-    // tii_threshold,
-    tii_subid,
+    // tii_subid,
 
     // special enums for windows position and size storage
     mainWidget

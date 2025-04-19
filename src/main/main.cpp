@@ -44,7 +44,8 @@ int main(int argc, char ** argv)
   qRegisterMetaType<QVector<int>>("QVector<int>");  // windows needs that...
 
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
-  const QString initFileName = QDir::toNativeSeparators(configPath +  "settings02.ini");
+  const QString initFileName02 = QDir::toNativeSeparators(configPath +  "settings02.ini");
+  const QString initFileName03 = QDir::toNativeSeparators(configPath +  "settingsTest.ini");
   const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist02.db");
 
   // Default values
@@ -67,8 +68,10 @@ int main(int argc, char ** argv)
     }
   }
 
-  auto dabSettings(std::make_unique<QSettings>(initFileName, QSettings::IniFormat));
-  SettingHelper::get_instance(dabSettings.get()); // create instance of setting helper
+  const auto dabSettings02(std::make_unique<QSettings>(initFileName02, QSettings::IniFormat));
+  const auto dabSettings03(std::make_unique<QSettings>(initFileName03, QSettings::IniFormat));
+  SettingHelper::get_instance(dabSettings02.get()); // create instance of setting helper
+  SettingsStorage::instance(dabSettings03.get()); // create instance of settingstorage
 
   QApplication a(argc, argv);
 
@@ -86,9 +89,9 @@ int main(int argc, char ** argv)
     qFatal("Could not open stylesheet resource");
   }
 
-  QApplication::setWindowIcon(QIcon(":res/logo/dabstar.png")); // used for all dialog windows except main window (is overwritten)
+  QApplication::setWindowIcon(QIcon(":res/logo/dabstar.png"));
 
-  auto radioInterface(std::make_unique<RadioInterface>(dabSettings.get(), dbFileName, altFreqList, dataPort, nullptr));
+  const auto radioInterface(std::make_unique<RadioInterface>(dabSettings03.get(), dbFileName, altFreqList, dataPort, nullptr));
   radioInterface->show();
 
   QApplication::exec();
