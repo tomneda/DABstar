@@ -25,6 +25,8 @@
 #include <QSpinBox>
 #include <QSettings>
 
+#include "filereaders/raw-files/raw-reader.h"
+
 #if 1
 
 // class SettingsManager
@@ -180,9 +182,6 @@ public:
     static SettingsStorage instance(ipSettings);
     return instance;
   }
-  explicit SettingsStorage(QSettings * ipSettings)
-  : mpSettings(ipSettings)
-    {}
 
   QSettings * get() const
   {
@@ -190,56 +189,183 @@ public:
     return mpSettings;
   }
 private:
+  explicit SettingsStorage(QSettings * ipSettings)
+  : mpSettings(ipSettings)
+  {}
+
   QSettings * const mpSettings;
 };
 
 template<typename T>
-class Setting
+class SettingEnum
 {
 public:
-  Setting(const QString & key, const T & defaultValue = T())
+  explicit SettingEnum(const QString & key, const T & defaultValue = T())
     : mKey(key)
     , mDefaultValue(defaultValue)
   {}
-
-  Setting & operator=(const T & value)
-  {
-    SettingsStorage::instance().get()->setValue(mKey, value);
-    return *this;
-  }
 
   void reset()
   {
     SettingsStorage::instance().get()->setValue(mKey, mDefaultValue);
   }
 
-  operator T() const
+  // direct getter method (direct usage of Setter instance)
+  operator T() const // do not make explicit!
   {
     return SettingsStorage::instance().get()->value(mKey, mDefaultValue).template value<T>();
   }
 
-  T get() const { return operator T(); }
-  void set(const T & value) { operator=(value); }
+  // direct setter method (direct usage of Setter instance)
+  SettingEnum & operator=(const T & value)
+  {
+    SettingsStorage::instance().get()->setValue(mKey, value);
+    return *this;
+  }
+
+  // provide getter method
+  T get() const
+  {
+    return operator T();
+  }
+
+  // provide setter method
+  void set(const T & value)
+  {
+    operator=(value);
+  }
 
 private:
   QString mKey;
   T mDefaultValue;
 };
 
+class SettingWidget : public QObject
+{
+  Q_OBJECT
+public:
+  explicit SettingWidget(const QString & key)
+    : mKey(key)
+  {
+  }
+
+  template<typename T>
+  void register_widget_and_update_ui_from_setting(T * const ipWidget, const QVariant & iDefaultValue)
+  {
+    assert(mpWidget == nullptr); // only one-time registration necessary
+    mpWidget = ipWidget;
+    mDefaultValue = iDefaultValue;
+    update_ui_state_from_setting();
+
+    if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+    {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+      connect(pD, &QCheckBox::checkStateChanged, [this](int iState){ update_ui_state_to_setting(); });
+#else
+      connect(pD, &QCheckBox::stateChanged, [this](int iState){ update_ui_state_to_setting(); });
+#endif
+      return;
+    }
+
+    if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+    {
+      connect(pD, &QComboBox::currentTextChanged, [this](const QString &){ update_ui_state_to_setting(); });
+      return;
+    }
+
+    if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+    {
+      connect(pD, qOverload<int>(&QSpinBox::valueChanged), [this](int iValue){ update_ui_state_to_setting(); });
+      return;
+    }
+
+    qFatal("Pointer to mpWidget not handled (1)");
+  }
+
+  void update_ui_state_from_setting()
+  {
+    assert(mpWidget != nullptr); // only one-time registration necessary
+    
+    if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+    {
+      const int32_t var = SettingsStorage::instance().get()->value(mKey, mDefaultValue).toInt();
+      pD->setCheckState(static_cast<Qt::CheckState>(var));
+      return;
+    }
+
+    if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+    {
+      const QString var = SettingsStorage::instance().get()->value(mKey, mDefaultValue).toString();
+      if (const int32_t k = pD->findText(var);
+          k >= 0)
+      {
+        pD->setCurrentIndex(k);
+      }
+      return;
+    }
+
+    if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+    {
+      const int32_t var = SettingsStorage::instance().get()->value(mKey, mDefaultValue).toInt();
+      pD->setValue(var);
+      return;
+    }
+
+    qFatal("Pointer to mpWidget not handled (2)");
+  }
+
+  void update_ui_state_to_setting()
+  {
+    assert(mpWidget != nullptr); // only one-time registration necessary
+
+    if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+    {
+      SettingsStorage::instance().get()->setValue(mKey, pD->checkState());
+      return;
+    }
+
+    if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+    {
+      SettingsStorage::instance().get()->setValue(mKey, pD->currentText());
+      return;
+    }
+
+    if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+    {
+      SettingsStorage::instance().get()->setValue(mKey, pD->value());
+      return;
+    }
+
+    qFatal("Pointer to pWidget not handled");
+  }
+
+  QVariant get_variant() const
+  {
+    return SettingsStorage::instance().get()->value(mKey, mDefaultValue);
+  }
+
+private:
+  QString mKey;
+  QWidget * mpWidget = nullptr;
+  QVariant mDefaultValue;
+};
+
 class SettingPosAndSize
 {
 public:
-  SettingPosAndSize(const QString & iCat) : mCat(iCat) {}
+  explicit SettingPosAndSize(const QString & iCat)
+  : mCat(iCat)
+  {}
   
-  void read_widget_geometry(QWidget * const iopWidget, int32_t x_def, int32_t y_def, int32_t w_def, int32_t h_def) const
+  void read_widget_geometry(QWidget * const iopWidget, const int32_t iXPosDef, const int32_t iYPosDef, const int32_t iWidthDef, const int32_t iHeightDef) const
   {
     const QVariant var = SettingsStorage::instance().get()->value(mCat + "PosAndSize", QVariant());
 
     if(!var.canConvert<QByteArray>())
     {
       qWarning("Cannot retrieve widget geometry from settings. Using default settings.");
-      iopWidget->resize(QSize(w_def, h_def));
-      iopWidget->move(QPoint(x_def, y_def));
+      iopWidget->resize(QSize(iWidthDef, iHeightDef));
+      iopWidget->move(QPoint(iXPosDef, iYPosDef));
       return;
     }
 
@@ -249,7 +375,7 @@ public:
     }
   }
 
-  void write_widget_geometry(QWidget * const ipWidget)
+  void write_widget_geometry(const QWidget * const ipWidget) const
   {
     const QByteArray var = ipWidget->saveGeometry();
     SettingsStorage::instance().get()->setValue(mCat + "PosAndSize", var);
@@ -262,17 +388,17 @@ private:
 class SettingsManager
 {
 public:
-  static SettingsManager & instance(/*QSettings * ipSettings = nullptr*/)
+  static SettingsManager & instance()
   {
     static SettingsManager instance;
     return instance; 
   }
 
-  template<typename T>
-  Setting<T> define(const QString & key, const T & defaultValue = T())
-  {
-    return Setting<T>(key, defaultValue);
-  }
+  // template<typename T>
+  // Setting<T> define(const QString & key, const T & defaultValue = T())
+  // {
+  //   return Setting<T>(key, defaultValue);
+  // }
 
   struct Spectrum
   {
@@ -283,9 +409,15 @@ public:
   struct Configuration
   {
     #define catConfiguration "configuration/" // did not find nicer way to declare that once
-    static inline Setting<int> width{catConfiguration "width", 800};
+    static inline SettingEnum<int> width{catConfiguration "width", 800};
+    static inline SettingWidget tiiThreshold{catConfiguration "tiiThreshold"};
+
   };
+
+private:
+  SettingsManager() {}
 };
+
 
 // inline static SettingsManager settingManager;
 
@@ -423,7 +555,7 @@ public:
     cbUseNativeFileDialog,
     cbUseUtcTime,
     cbShowTiiList,
-    tii_threshold,
+    // tii_threshold,
     tii_subid,
     cbUrlClickable,
     cbAutoIterTiiEntries,

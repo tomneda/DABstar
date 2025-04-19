@@ -83,7 +83,7 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(cbUseNativeFileDialog, { "", "useNativeFileDialogs", false });
   mMap.insert(cbUseUtcTime, { "", "utcSelector", false });
   mMap.insert(cbShowTiiList, {"", "showTiiList", false });
-  mMap.insert(tii_threshold, { "", "tii_threshold", 6 });
+  // mMap.insert(tii_threshold, { "", "tii_threshold", 6 });
   mMap.insert(tii_subid, { "", "tii_subid", 0 });
   mMap.insert(cbUrlClickable, { "", "urlClickable", 2 });  // 2 is clicked
   mMap.insert(cbAutoIterTiiEntries, { "", "autoIterTiiEntries", 2 });  // 2 is clicked
