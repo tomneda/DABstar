@@ -357,9 +357,9 @@ public:
   : mCat(iCat)
   {}
   
-  void read_widget_geometry(QWidget * const iopWidget, const int32_t iXPosDef, const int32_t iYPosDef, const int32_t iWidthDef, const int32_t iHeightDef) const
+  void read_widget_geometry(QWidget * const iopWidget, const int32_t iXPosDef, const int32_t iYPosDef, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
   {
-    const QVariant var = SettingsStorage::instance().get()->value(mCat + "PosAndSize", QVariant());
+    const QVariant var = SettingsStorage::instance().get()->value(mCat + "posAndSize", QVariant());
 
     if(!var.canConvert<QByteArray>())
     {
@@ -373,12 +373,17 @@ public:
     {
       qWarning("restoreGeometry() returns false");
     }
+
+    if (iIsFixedSized)
+    {
+      iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
+    }
   }
 
   void write_widget_geometry(const QWidget * const ipWidget) const
   {
     const QByteArray var = ipWidget->saveGeometry();
-    SettingsStorage::instance().get()->setValue(mCat + "PosAndSize", var);
+    SettingsStorage::instance().get()->setValue(mCat + "posAndSize", var);
   }
 
 private:
@@ -409,8 +414,26 @@ public:
   struct Configuration
   {
     #define catConfiguration "configuration/" // did not find nicer way to declare that once
+    static inline SettingPosAndSize posAndSize{catConfiguration};
+
     static inline SettingEnum<int> width{catConfiguration "width", 800};
-    static inline SettingWidget tiiThreshold{catConfiguration "tiiThreshold"};
+
+    static inline SettingWidget sbTiiThreshold{catConfiguration "sbTiiThreshold"};
+    static inline SettingWidget cbCloseDirect{catConfiguration "cbCloseDirect"};
+    static inline SettingWidget cbUse_strongest_peak{catConfiguration "cbUseStrongestPeak"};
+    static inline SettingWidget cbUseNativeFileDialog{catConfiguration "cbUseNativeFileDialog"};
+    static inline SettingWidget cbUseUtcTime{catConfiguration "cbUseUtcTime"};
+    static inline SettingWidget cbGenXmlFromEpg{catConfiguration "cbGenXmlFromEpg"};
+    static inline SettingWidget cbAlwaysOnTop{catConfiguration "cbAlwaysOnTop"};
+    static inline SettingWidget cbManualBrowserStart{catConfiguration "cbManualBrowserStart"};
+    static inline SettingWidget cbSaveSlides{catConfiguration "cbSaveSlides"};
+    static inline SettingWidget cbSaveTransToCsv{catConfiguration "cbSaveTransToCsv"};
+    static inline SettingWidget cbUseDcAvoidance{catConfiguration "cbUseDcAvoidance"};
+    static inline SettingWidget cbUseDcRemoval{catConfiguration "cbUseDcRemoval"};
+    static inline SettingWidget cbShowNonAudioInServiceList{catConfiguration "cbShowNonAudioInService"};
+    static inline SettingWidget cbTiiCollisions{catConfiguration "cbTiiCollisions"};
+    static inline SettingWidget cbUrlClickable{catConfiguration "cbUrlClickable"};
+    static inline SettingWidget cbAutoIterTiiEntries{catConfiguration "cbAutoIterTiiEntries"};
 
   };
 
@@ -533,35 +556,19 @@ public:
     epgFlag,
 
     // needed in config widget
-    cbManualBrowserStart,
-    cbCloseDirect,
-    cbUseDcAvoidance,
-    cbUseDcRemoval,
-    cbGenXmlFromEpg,
     hidden,
     latitude,
     longitude,
-    cbAlwaysOnTop,
     saveDirAudioDump,
     saveDirSampleDump,
     saveDirContent,
-    cbSaveTransToCsv,
-    cbSaveSlides,
     serviceListSortCol,
     serviceListSortDesc,
-    cbShowNonAudioInServiceList,
-    cbUse_strongest_peak,
-    cbTiiCollisions,
-    cbUseNativeFileDialog,
-    cbUseUtcTime,
     cbShowTiiList,
     // tii_threshold,
     tii_subid,
-    cbUrlClickable,
-    cbAutoIterTiiEntries,
 
     // special enums for windows position and size storage
-    configWidget,
     mainWidget
   };
 

@@ -23,33 +23,30 @@ Configuration::Configuration(RadioInterface * ipRI) :
   mpRadioInterface(ipRI)
 {
   setupUi(this);
-  setFixedSize(700, 330);
 
-  mpSH->read_widget_geometry(SettingHelper::configWidget, this);
+  SettingsManager::Configuration::posAndSize.read_widget_geometry(this, 100, 100, 700, 330, true);
 
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   sliderTest->hide(); // only used for test
 
-  mpSH->register_and_connect_ui_element<SettingHelper::cbCloseDirect>(cbCloseDirect);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbUse_strongest_peak>(cbUse_strongest_peak);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbUseNativeFileDialog>(cbUseNativeFileDialog);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbUseUtcTime>(cbUseUtcTime);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbGenXmlFromEpg>(cbGenXmlFromEpg);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbAlwaysOnTop>(cbAlwaysOnTop);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbManualBrowserStart>(cbManualBrowserStart);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbSaveSlides>(cbSaveSlides);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbSaveTransToCsv>(cbSaveTransToCsv);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbUseDcAvoidance>(cbUseDcAvoidance);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbUseDcRemoval>(cbUseDcRemoval);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbShowNonAudioInServiceList>(cbShowNonAudioInServiceList);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbTiiCollisions>(cbTiiCollisions);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbUrlClickable>(cbUrlClickable);
-  mpSH->register_and_connect_ui_element<SettingHelper::cbAutoIterTiiEntries>(cbAutoIterTiiEntries);
-  // cbActivateLogger is not stored in settings
-  // cbActivateEti is not stored in settings
 
-  _sync_ui_elements(false);
+  SettingsManager::Configuration::sbTiiThreshold.register_widget_and_update_ui_from_setting(tii_threshold, 7);
+  SettingsManager::Configuration::cbCloseDirect.register_widget_and_update_ui_from_setting(cbCloseDirect, 0);
+  SettingsManager::Configuration::cbUse_strongest_peak.register_widget_and_update_ui_from_setting(cbUse_strongest_peak, 0);
+  SettingsManager::Configuration::cbUseNativeFileDialog.register_widget_and_update_ui_from_setting(cbUseNativeFileDialog, 0);
+  SettingsManager::Configuration::cbUseUtcTime.register_widget_and_update_ui_from_setting(cbUseUtcTime, 0);
+  SettingsManager::Configuration::cbGenXmlFromEpg.register_widget_and_update_ui_from_setting(cbGenXmlFromEpg, 0);
+  SettingsManager::Configuration::cbAlwaysOnTop.register_widget_and_update_ui_from_setting(cbAlwaysOnTop, 0);
+  SettingsManager::Configuration::cbManualBrowserStart.register_widget_and_update_ui_from_setting(cbManualBrowserStart, 0);
+  SettingsManager::Configuration::cbSaveSlides.register_widget_and_update_ui_from_setting(cbSaveSlides, 0);
+  SettingsManager::Configuration::cbSaveTransToCsv.register_widget_and_update_ui_from_setting(cbSaveTransToCsv, 0);
+  SettingsManager::Configuration::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
+  SettingsManager::Configuration::cbUseDcRemoval.register_widget_and_update_ui_from_setting(cbUseDcRemoval, 0);
+  SettingsManager::Configuration::cbShowNonAudioInServiceList.register_widget_and_update_ui_from_setting(cbShowNonAudioInServiceList, 0);
+  SettingsManager::Configuration::cbTiiCollisions.register_widget_and_update_ui_from_setting(cbTiiCollisions, 0);
+  SettingsManager::Configuration::cbUrlClickable.register_widget_and_update_ui_from_setting(cbUrlClickable, 2);
+  SettingsManager::Configuration::cbAutoIterTiiEntries.register_widget_and_update_ui_from_setting(cbAutoIterTiiEntries, 2);
 
   QPalette lcdPalette;
 #ifndef __MAC__
@@ -84,27 +81,5 @@ Configuration::Configuration(RadioInterface * ipRI) :
 
 void Configuration::save_position_and_config()
 {
-  mpSH->write_widget_geometry(SettingHelper::configWidget, this);
-  _sync_ui_elements(true);
-}
-
-void Configuration::_sync_ui_elements(const bool iWriteSettings)
-{
-  mpSH->sync_ui_state(SettingHelper::cbCloseDirect, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbUse_strongest_peak, iWriteSettings);
-  // cbActivateLogger is not stored in settings
-  mpSH->sync_ui_state(SettingHelper::cbUseNativeFileDialog, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbUseUtcTime, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbGenXmlFromEpg, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbAlwaysOnTop, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbManualBrowserStart, iWriteSettings);
-  // cbActivateEti is not stored in settings
-  mpSH->sync_ui_state(SettingHelper::cbSaveSlides, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbSaveTransToCsv, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbUseDcAvoidance, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbUseDcRemoval, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbShowNonAudioInServiceList, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbTiiCollisions, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbUrlClickable, iWriteSettings);
-  mpSH->sync_ui_state(SettingHelper::cbAutoIterTiiEntries, iWriteSettings);
+  SettingsManager::Configuration::posAndSize.write_widget_geometry(this);
 }

@@ -61,35 +61,19 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(mapPort, { "", "mapPort", 8080 });
   mMap.insert(epgFlag, { "", "epgFlag", false });
 
-  mMap.insert(cbManualBrowserStart, { "", "autoBrowser", false });
-  mMap.insert(cbCloseDirect, { "", "closeDirect", false });
-  mMap.insert(cbUseDcAvoidance, { "", "dcAvoidance", false });
-  mMap.insert(cbUseDcRemoval, { "", "dcRemoval", false });
-  mMap.insert(cbGenXmlFromEpg, { "", "epg2xml", false });
   mMap.insert(hidden, { "", "hidden", true });
   mMap.insert(latitude, { "", "latitude", 0 });
   mMap.insert(longitude, { "", "longitude", 0 });
-  mMap.insert(cbAlwaysOnTop, { "", "onTop", false });
   mMap.insert(saveDirAudioDump, { "", "saveDirAudioDump", QDir::homePath() });
   mMap.insert(saveDirSampleDump, { "", "saveDirSampleDump", QDir::homePath() });
   mMap.insert(saveDirContent, { "", "saveDirContent", QDir::homePath() });
-  mMap.insert(cbSaveTransToCsv, { "", "saveLocations", false });
-  mMap.insert(cbSaveSlides, { "", "saveSlides", false });
   mMap.insert(serviceListSortCol, { "", "serviceListSortCol", false });
   mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
-  mMap.insert(cbShowNonAudioInServiceList, { "", "serviceListShowNonAudio", false });
-  mMap.insert(cbUse_strongest_peak, { "", "use_strongest_peak", false });
-  mMap.insert(cbTiiCollisions, { "", "tii_collisions", false });
-  mMap.insert(cbUseNativeFileDialog, { "", "useNativeFileDialogs", false });
-  mMap.insert(cbUseUtcTime, { "", "utcSelector", false });
   mMap.insert(cbShowTiiList, {"", "showTiiList", false });
   // mMap.insert(tii_threshold, { "", "tii_threshold", 6 });
   mMap.insert(tii_subid, { "", "tii_subid", 0 });
-  mMap.insert(cbUrlClickable, { "", "urlClickable", 2 });  // 2 is clicked
-  mMap.insert(cbAutoIterTiiEntries, { "", "autoIterTiiEntries", 2 });  // 2 is clicked
 
   // special enums for windows position and size storage
-  mMap.insert(configWidget, { "", "configWidget", QVariant() });
   mMap.insert(mainWidget, { "", "mainWidget", QVariant() });
 }
 

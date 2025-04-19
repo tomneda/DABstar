@@ -165,7 +165,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mProcessParams.echo_depth = mpSH->read(SettingHelper::echoDepth).toInt();
 
   //	set on top or not? checked at start up
-  if (mpSH->read(SettingHelper::cbAlwaysOnTop).toBool())
+  if (SettingsManager::Configuration::cbAlwaysOnTop.get_variant().toBool())
   {
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
   }
@@ -528,16 +528,12 @@ bool RadioInterface::do_start()
 
   mTiiListDisplay.hide();
 
-  mpDabProcessor->set_sync_on_strongest_peak(mpSH->read(SettingHelper::cbUse_strongest_peak).toBool());
-  mpDabProcessor->set_dc_avoidance_algorithm(mpSH->read(SettingHelper::cbUseDcAvoidance).toBool());
-  mpDabProcessor->set_dc_removal(mpSH->read(SettingHelper::cbUseDcRemoval).toBool());
-  mpDabProcessor->set_tii_collisions(mpSH->read(SettingHelper::cbTiiCollisions).toBool());
+  mpDabProcessor->set_sync_on_strongest_peak(SettingsManager::Configuration::cbUse_strongest_peak.get_variant().toBool());
+  mpDabProcessor->set_dc_avoidance_algorithm(SettingsManager::Configuration::cbUseDcAvoidance.get_variant().toBool());
+  mpDabProcessor->set_dc_removal(SettingsManager::Configuration::cbUseDcRemoval.get_variant().toBool());
+  mpDabProcessor->set_tii_collisions(SettingsManager::Configuration::cbTiiCollisions.get_variant().toBool());
   mpDabProcessor->set_tii_processing(true);
-  {
-    const int32_t threshold = mpSH->read(SettingHelper::tii_threshold).toInt();
-    mConfig.tii_threshold->setValue(threshold) ;
-    mpDabProcessor->set_tii_threshold(threshold);
-  }
+  mpDabProcessor->set_tii_threshold(SettingsManager::Configuration::sbTiiThreshold.get_variant().toInt());
   {
     const int32_t subid = mpSH->read(SettingHelper::tii_subid).toInt();
     mConfig.tii_subid->setValue(subid) ;
@@ -729,7 +725,7 @@ void RadioInterface::_slot_handle_content_button()
   QString theTime;
   QString SNR = "SNR " + QString::number(mChannel.snr);
 
-  if (mpSH->read(SettingHelper::cbUseUtcTime).toBool())
+  if (SettingsManager::Configuration::cbUseUtcTime.get_variant().toBool())
   {
     theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
@@ -819,7 +815,7 @@ void RadioInterface::slot_handle_mot_object(QByteArray result, QString objectNam
       int subType = getContentSubType((MOTContentType)contentType);
       mEpgProcessor.process_epg(epgData.data(), (int32_t)epgData.size(), currentSId, subType, julianDate);
 
-      if (mpSH->read(SettingHelper::cbGenXmlFromEpg).toBool())
+      if (SettingsManager::Configuration::cbGenXmlFromEpg.get_variant().toBool())
       {
         mEpgHandler.decode(epgData, QDir::toNativeSeparators(objectName));
       }
@@ -895,7 +891,7 @@ void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, const QSt
   default: return;
   }
 
-  if (mpSH->read(SettingHelper::cbSaveSlides).toBool() && (mPicturesPath != ""))
+  if (SettingsManager::Configuration::cbSaveSlides.get_variant().toBool() && (mPicturesPath != ""))
   {
     QString pict = mPicturesPath + pictureName;
     QString temp = pict;
@@ -1363,8 +1359,11 @@ void RadioInterface::_slot_handle_tii_button()
 
 void RadioInterface::slot_handle_tii_threshold(int trs)
 {
-  assert(mpDabProcessor != nullptr);
-  mpSH->write(SettingHelper::tii_threshold, trs);
+  if (mpDabProcessor == nullptr)
+  {
+    return;
+  }
+
   mpDabProcessor->set_tii_threshold(trs);
 }
 
@@ -1397,7 +1396,7 @@ void RadioInterface::slot_clock_time(int year, int month, int day, int hours, in
 
   QString result;
 
-  if (mpSH->read(SettingHelper::cbUseUtcTime).toBool())
+  if (SettingsManager::Configuration::cbUseUtcTime.get_variant().toBool())
   {
     result = convertTime(year, month, day, utc_hour, utc_min, utc_sec);
   }
@@ -1700,7 +1699,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     // see if we have a map
     if (mpHttpHandler && dataValid)
     {
-      const QDateTime theTime = (mpSH->read(SettingHelper::cbUseUtcTime).toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
+      const QDateTime theTime = (SettingsManager::Configuration::cbUseUtcTime.get_variant().toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
       mpHttpHandler->putData(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
                              bd.strength_dB, (int)bd.distance_km, (int)bd.corner_deg, bd.isNonEtsiPhase);
     }
@@ -2192,7 +2191,7 @@ void RadioInterface::disconnect_gui()
 
 void RadioInterface::closeEvent(QCloseEvent * event)
 {
-  if (mpSH->read(SettingHelper::cbCloseDirect).toBool())
+  if (SettingsManager::Configuration::cbCloseDirect.get_variant().toBool())
   {
     _slot_terminate_process();
     event->accept();
@@ -3229,7 +3228,7 @@ void RadioInterface::LOG(const QString & a1, const QString & a2)
   }
 
   QString theTime;
-  if (mpSH->read(SettingHelper::cbUseUtcTime).toBool())
+  if (SettingsManager::Configuration::cbUseUtcTime.get_variant().toBool())
   {
     theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
@@ -3316,7 +3315,7 @@ void RadioInterface::_slot_handle_http_button()
     QString mapPort = mpSH->read(SettingHelper::mapPort).toString();
 
     QString mapFile;
-    if (mpSH->read(SettingHelper::cbSaveTransToCsv).toBool())
+    if (SettingsManager::Configuration::cbSaveTransToCsv.get_variant().toBool())
     {
       mapFile = mOpenFileDialog.get_maps_file_name();
     }
@@ -3329,7 +3328,7 @@ void RadioInterface::_slot_handle_http_button()
                                     browserAddress,
                                     mChannel.localPos,
                                     mapFile,
-                                    mpSH->read(SettingHelper::cbManualBrowserStart).toBool());
+                                    SettingsManager::Configuration::cbManualBrowserStart.get_variant().toBool());
     mMaxDistance = -1;
     if (mpHttpHandler != nullptr)
     {

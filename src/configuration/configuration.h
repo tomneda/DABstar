@@ -34,8 +34,6 @@ public:
 private:
   SettingHelper * const mpSH;
   RadioInterface * const mpRadioInterface;
-
-  void _sync_ui_elements(const bool iWriteSettings);
 };
 
 

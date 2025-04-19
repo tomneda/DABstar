@@ -191,7 +191,7 @@ QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const Q
 
 QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt)
 {
-  const bool useNativeFileDialog = SettingHelper::get_instance().read(SettingHelper::cbUseNativeFileDialog).toBool();
+  const bool useNativeFileDialog = SettingsManager::Configuration::cbUseNativeFileDialog.get_variant().toBool();
 
   const QDir storedDir = mpSettings->value(iSettingName, QDir::homePath()).toString();
   QString fileName;
@@ -224,7 +224,7 @@ QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const
 
 QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) const
 {
-  const bool useNativeFileDialog = SettingHelper::get_instance().read(SettingHelper::cbUseNativeFileDialog).toBool();
+  const bool useNativeFileDialog = SettingsManager::Configuration::cbUseNativeFileDialog.get_variant().toBool();
   const QDir storedDir = mpSettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
 
   QString fileName;
