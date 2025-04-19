@@ -167,7 +167,9 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
-  setFixedSize(730, 490+50);
+
+  Settings::General::posAndSize.read_widget_geometry(this, 100, 100, 730, 490+50, true);
+
   setup_ui_colors();
   _create_status_info();
 
@@ -191,8 +193,6 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
   setWindowTitle(PRJ_NAME);
-
-  mpSH->read_widget_geometry(SettingHelper::mainWidget, this);
 
   mpTechDataWidget = new TechData(this, mpSH->get_settings(), mpTechDataBuffer);
 
@@ -1190,7 +1190,7 @@ void RadioInterface::_slot_terminate_process()
   _show_hide_buttons(false);
   mTiiListDisplay.hide();
 
-  mpSH->write_widget_geometry(SettingHelper::mainWidget, this);
+  Settings::General::posAndSize.write_widget_geometry(this);
 
   mConfig.save_position_and_config();
 

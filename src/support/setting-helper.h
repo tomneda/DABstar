@@ -187,10 +187,6 @@ public:
     serviceListSortCol,
     serviceListSortDesc,
     cbShowTiiList,
-    // tii_subid,
-
-    // special enums for windows position and size storage
-    mainWidget
   };
 
   QVariant read(const EElem iElem) const;

@@ -156,8 +156,15 @@ void SettingPosAndSize::read_widget_geometry(QWidget * const iopWidget, const in
   if(!var.canConvert<QByteArray>())
   {
     qWarning("Cannot retrieve widget geometry from settings. Using default settings.");
-    iopWidget->resize(QSize(iWidthDef, iHeightDef));
     iopWidget->move(QPoint(iXPosDef, iYPosDef));
+    if (iIsFixedSized)
+    {
+      iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
+    }
+    else
+    {
+      iopWidget->resize(QSize(iWidthDef, iHeightDef));
+    }
     return;
   }
 
@@ -233,11 +240,6 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(serviceListSortCol, { "", "serviceListSortCol", false });
   mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
   mMap.insert(cbShowTiiList, {"", "showTiiList", false });
-  // mMap.insert(tii_threshold, { "", "tii_threshold", 6 });
-  // mMap.insert(tii_subid, { "", "tii_subid", 0 });
-
-  // special enums for windows position and size storage
-  mMap.insert(mainWidget, { "", "mainWidget", QVariant() });
 }
 
 void SettingHelper::_fill_map_from_settings()
