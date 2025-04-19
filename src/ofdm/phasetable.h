@@ -47,14 +47,13 @@ public:
     int32_t n;
   };
 
-  explicit PhaseTable(int16_t);
+  explicit PhaseTable();
   ~PhaseTable() = default;
 
   alignas(32) TArrayTu mRefTable;
 
 private:
   const struct SPhasetableElement * mpCurrentTable;
-  const int16_t mMode;
 
   int32_t h_table(int32_t i, int32_t j) const;
   float get_phi(int32_t k) const;

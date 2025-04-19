@@ -38,18 +38,17 @@
 //	a service is selected or not. 
 
 constexpr uint32_t CUSize = 4 * 16;
-static constexpr int16_t cifTable[] = { 18, 72, 0, 36 };
+static constexpr int16_t cifTable[] = { 18, 72, 0, 36 }; // for each DAB-Mode
 
 //	Note CIF counts from 0 .. 3
 //
-MscHandler::MscHandler(RadioInterface * const iRI, const uint8_t iDabMode, RingBuffer<uint8_t> * const ipFrameBuffer)
+MscHandler::MscHandler(RadioInterface * const iRI, RingBuffer<uint8_t> * const ipFrameBuffer)
   : mpRadioInterface(iRI)
   , mpFrameBuffer(ipFrameBuffer)
 {
   mCifVector.resize(55296);
   mBitsPerBlock = 2 * cK;
-  assert(iDabMode >= 1 && iDabMode <= 4);
-  mNumberOfBlocksPerCif = cifTable[(iDabMode - 1) & 03];
+  mNumberOfBlocksPerCif = cifTable[0]; // first entry is for DAB-Mode 1
 }
 
 MscHandler::~MscHandler()

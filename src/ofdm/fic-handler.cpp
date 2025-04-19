@@ -52,7 +52,7 @@
   *	The data is sent through to the fib processor
   */
 
-FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode)
+FicHandler::FicHandler(RadioInterface * const iMr)
   : FibDecoder(iMr)
 {
   std::array<std::byte, 9> shiftRegister;

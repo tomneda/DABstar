@@ -8,7 +8,6 @@
 class ProcessParams
 {
 public:
-  uint8_t dabMode = 0;
   int16_t threshold = 0;
   int16_t diff_length = 0;
   int16_t tii_delay = 0;

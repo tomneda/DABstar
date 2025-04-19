@@ -37,18 +37,14 @@
   *	of the DAB standard
   */
 
-FreqInterleaver::FreqInterleaver(const uint8_t iDabMode)
+FreqInterleaver::FreqInterleaver()
 {
   mPermTable.resize(cTu);
 
-  switch (iDabMode)
-  {
-  case 1: createMapper(511, 256, 256 + cK); break;
-  case 2: createMapper(127,  64,  64 + cK); break;
-  case 3: createMapper(63,   32,  32 + cK); break;
-  case 4: createMapper(255, 128, 128 + cK); break;
-  default:;
-  }
+  createMapper(511, 256, 256 + cK); // we use DAB-Mode 1 only
+  // Mode 2: createMapper(127,  64,  64 + cK);
+  // Mode 3: createMapper(63,   32,  32 + cK);
+  // Mode 4: createMapper(255, 128, 128 + cK);
 }
 
 void FreqInterleaver::createMapper(const int16_t iV1, const int16_t iLwb, const int16_t iUpb)

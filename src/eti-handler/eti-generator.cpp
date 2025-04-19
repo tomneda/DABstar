@@ -83,7 +83,7 @@ uint8_t theVector[6144];
 //	amount of cycles, the eti-generation is done in a different thread
 //	Note CIF counts from 0 .. 3
 //
-etiGenerator::etiGenerator(uint8_t dabMode, FicHandler * my_ficHandler)
+etiGenerator::etiGenerator(FicHandler * my_ficHandler)
 {
   this->my_ficHandler = my_ficHandler;
 

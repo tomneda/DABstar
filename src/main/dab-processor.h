@@ -134,7 +134,6 @@ private:
   OfdmDecoder mOfdmDecoder;
   etiGenerator mEtiGenerator;
   TimeSyncer mTimeSyncer;
-  const uint8_t mcDabMode;
   const float mcThreshold;
   const int16_t mcTiiDelay;
   uint8_t mTiiThreshold;

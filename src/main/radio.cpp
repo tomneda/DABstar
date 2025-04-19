@@ -157,7 +157,6 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mProcessParams.frameBuffer = mpFrameBuffer;
   mProcessParams.cirBuffer = mpCirBuffer;
 
-  mProcessParams.dabMode = mpSH->read(SettingHelper::dabMode).toInt();
   mProcessParams.threshold = mpSH->read(SettingHelper::threshold).toInt();
   mProcessParams.diff_length = mpSH->read(SettingHelper::diffLength).toInt();
   mProcessParams.tii_delay = mpSH->read(SettingHelper::tiiDelay).toInt();

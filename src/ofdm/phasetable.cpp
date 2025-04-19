@@ -130,20 +130,16 @@ static const std::array<PhaseTable::SPhasetableElement, 25> modeIV_table
   { -1000, -1000, 0, 0 }
 }};
 
-PhaseTable::PhaseTable(const int16_t iMode)
-  : mMode(iMode)
+PhaseTable::PhaseTable()
 {
-  switch (mMode)
-  {
-  case 1:
-  case 3: mpCurrentTable = modeI_table.data();  break;
-  case 2: mpCurrentTable = modeII_table.data(); break;
-  case 4: mpCurrentTable = modeIV_table.data(); break;
-  default: assert(0);
-  }
+  mpCurrentTable = modeI_table.data();
+
   // mRefTable is in the frequency domain
   for (int32_t i = 0; i < cTu; i++)
-    mRefTable[i] = cmplx(0,0);
+  {
+    mRefTable[i] = cmplx(0, 0);
+  }
+
   for (int32_t i = 1; i <= cK / 2; i++) // skip DC
   {
     mRefTable[0   + i] = cmplx_from_phase(get_phi(i));

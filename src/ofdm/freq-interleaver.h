@@ -43,7 +43,7 @@
 class FreqInterleaver
 {
 public:
-  explicit FreqInterleaver(const uint8_t iDabMode);
+  explicit FreqInterleaver();
   ~FreqInterleaver() = default;
 
   //	according to the standard, the map is a function from

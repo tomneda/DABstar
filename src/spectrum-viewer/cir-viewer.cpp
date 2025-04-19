@@ -8,7 +8,7 @@
 
 CirViewer::CirViewer(QSettings * s, RingBuffer<cmplx> * iCirBuffer) :
   Ui_cirWidget(),
-  PhaseTable(1),
+  PhaseTable(),
   mpCirSettings(s),
   mpCirBuffer(iCirBuffer)
 {

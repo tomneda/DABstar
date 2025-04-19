@@ -52,7 +52,7 @@ class FicHandler : public FibDecoder
 {
 Q_OBJECT
 public:
-  FicHandler(RadioInterface * const iMr, const uint8_t iDabMode);
+  FicHandler(RadioInterface * const iMr);
   ~FicHandler() override = default;
 
   void process_block(const std::vector<int16_t> & iData, const int32_t iBlkNo);

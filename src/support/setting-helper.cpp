@@ -35,7 +35,6 @@ void SettingHelper::_fill_map_with_defaults()
   const QString tempMotPath = tempPath.filePath("MOT").append('/');
   const QString tempEpgPath = tempPath.filePath("EPG").append('/');
 
-  mMap.insert(dabMode, { "", "dabMode", 1 });
   mMap.insert(threshold, { "", "threshold", 3 });
   mMap.insert(diffLength, { "", "diff_length", DIFF_LENGTH });
   mMap.insert(tiiDelay, { "", "tii_delay", 5 });

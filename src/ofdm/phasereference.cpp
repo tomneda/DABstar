@@ -44,7 +44,7 @@
 #define CORRELATION_LENGTH  48
 
 PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam)
-  : PhaseTable(ipParam->dabMode)
+  : PhaseTable()
   , mFramesPerSecond(INPUT_RATE / cTF)
   , mpResponse(ipParam->responseBuffer)
   , mCorrPeakValues(cTu)

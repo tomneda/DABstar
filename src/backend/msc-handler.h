@@ -42,7 +42,7 @@ class Backend;
 class MscHandler
 {
 public:
-  MscHandler(RadioInterface *, uint8_t, RingBuffer<uint8_t> *);
+  MscHandler(RadioInterface *, RingBuffer<uint8_t> *);
   ~MscHandler();
 
   void process_block(const std::vector<int16_t> & iSoftBits, int16_t iBlockNr);

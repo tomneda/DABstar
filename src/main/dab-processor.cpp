@@ -44,14 +44,13 @@
 DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
   : mpRadioInterface(mr)
   , mSampleReader(mr, inputDevice, p->spectrumBuffer, p->cirBuffer)
-  , mFicHandler(mr, p->dabMode)
-  , mMscHandler(mr, p->dabMode, p->frameBuffer)
+  , mFicHandler(mr)
+  , mMscHandler(mr, p->frameBuffer)
   , mPhaseReference(mr, p)
   , mTiiDetector()
-  , mOfdmDecoder(mr, p->dabMode, p->iqBuffer, p->carrBuffer)
-  , mEtiGenerator(p->dabMode, &mFicHandler)
+  , mOfdmDecoder(mr, p->iqBuffer, p->carrBuffer)
+  , mEtiGenerator(&mFicHandler)
   , mTimeSyncer(&mSampleReader)
-  , mcDabMode(p->dabMode)
   , mcThreshold(p->threshold)
   , mcTiiDelay(p->tii_delay)
 {
@@ -265,7 +264,7 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
   ioSampleCount += cTn;
 
   // is this null symbol with TII?
-  const bool isTiiNullSegment = (mcDabMode == 1 && (mFicHandler.get_cif_count() & 0x7) >= 4);
+  const bool isTiiNullSegment = ((mFicHandler.get_cif_count() & 0x7) >= 4);
   memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cmplx));
   fftwf_execute(mFftPlan);
 

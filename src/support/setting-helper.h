@@ -42,7 +42,6 @@ public:
   enum EElem
   {
     // main widget
-    dabMode,
     threshold,
     diffLength,
     tiiDelay,

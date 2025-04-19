@@ -33,7 +33,7 @@ class OfdmDecoder : public QObject
 {
 Q_OBJECT
 public:
-  OfdmDecoder(RadioInterface *, uint8_t, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
+  OfdmDecoder(RadioInterface *, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
   ~OfdmDecoder() override = default;
 
   struct SLcdData

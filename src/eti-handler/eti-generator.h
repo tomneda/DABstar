@@ -74,7 +74,7 @@ typedef struct
 class etiGenerator
 {
 public:
-  etiGenerator(uint8_t dabMode, FicHandler * my_ficHandler);
+  etiGenerator(FicHandler * my_ficHandler);
   ~etiGenerator();
 
   void newFrame();
