@@ -92,18 +92,17 @@ private:
 struct General // namespace for main window data
 {
   static inline PosAndSize posAndSize{""};
-
 };
 
 struct Spectrum // namespace for the spectrum window
 {
-#define catSpectrumViewer "spectrumViewer/" // did not find nicer way to declare that once
+  #define catSpectrumViewer "spectrumViewer/" // did not find nicer way to declare that once
   static inline PosAndSize posAndSize{catSpectrumViewer};
 };
 
 struct Config  // namespace for the configuration window
 {
-#define catConfiguration "configuration/" // did not find nicer way to declare that once
+  #define catConfiguration "configuration/" // did not find nicer way to declare that once
   static inline PosAndSize posAndSize{catConfiguration};
 
   static inline Variant width{catConfiguration "width", 800};
@@ -129,7 +128,7 @@ struct Config  // namespace for the configuration window
 
 struct CirViewer // namespace for the CIR viewer window
 {
-#define catCirViewer "cirViewer/" // did not find nicer way to declare that once
+  #define catCirViewer "cirViewer/" // did not find nicer way to declare that once
   static inline PosAndSize posAndSize{catCirViewer};
 
 };
