@@ -19,6 +19,31 @@
 #include <QDir>
 #include <QWidget>
 
+SettingVariant::SettingVariant(const QString & key)
+  : mKey(key)
+{}
+
+SettingVariant::SettingVariant(const QString & key, const QVariant & iDefaultValue)
+  : mKey(key)
+  , mDefaultValue(iDefaultValue)
+{}
+
+void SettingVariant::define_default_value(const QVariant & iDefaultValue)
+{
+  assert(!mDefaultValue.isValid()); // is is really not initialized yet?
+  mDefaultValue = iDefaultValue;
+}
+
+QVariant SettingVariant::get_variant() const
+{
+  return SettingsStorage::instance().value(mKey, mDefaultValue);
+}
+
+void SettingVariant::set(const QVariant & iValue) const
+{
+  return SettingsStorage::instance().setValue(mKey, iValue);
+}
+
 
 SettingWidget::SettingWidget(const QString & key)
   : mKey(key)

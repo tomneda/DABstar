@@ -24,6 +24,7 @@
 #include <QSpinBox>
 #include <QSettings>
 
+
 class SettingsStorage
 {
 public:
@@ -42,49 +43,20 @@ private:
 };
 
 
-template<typename T>
-class SettingEnum
+class SettingVariant
 {
 public:
-  explicit SettingEnum(const QString & key, const T & defaultValue = T())
-    : mKey(key)
-    , mDefaultValue(defaultValue)
-  {}
-
-  void reset()
-  {
-    SettingsStorage::instance().setValue(mKey, mDefaultValue);
-  }
-
-  // direct getter method (direct usage of Setter instance)
-  operator T() const // do not make explicit!
-  {
-    return SettingsStorage::instance().value(mKey, mDefaultValue).template value<T>();
-  }
-
-  // direct setter method (direct usage of Setter instance)
-  SettingEnum & operator=(const T & value)
-  {
-    SettingsStorage::instance().setValue(mKey, value);
-    return *this;
-  }
-
-  // provide getter method
-  T get() const
-  {
-    return operator T();
-  }
-
-  // provide setter method
-  void set(const T & value)
-  {
-    operator=(value);
-  }
+  explicit SettingVariant(const QString & key);
+  explicit SettingVariant(const QString & key, const QVariant & iDefaultValue);
+  void define_default_value(const QVariant & iDefaultValue);
+  QVariant get_variant() const;
+  void set(const QVariant & iValue) const;
 
 private:
   QString mKey;
-  T mDefaultValue;
+  QVariant mDefaultValue;
 };
+
 
 class SettingWidget : public QObject
 {
@@ -117,6 +89,12 @@ private:
 
 struct Settings
 {
+  struct General // namespace for main window data
+  {
+    static inline SettingPosAndSize posAndSize{""};
+
+  };
+
   struct Spectrum // namespace for the spectrum window
   {
     #define catSpectrumViewer "spectrumViewer/" // did not find nicer way to declare that once
@@ -128,7 +106,7 @@ struct Settings
     #define catConfiguration "configuration/" // did not find nicer way to declare that once
     static inline SettingPosAndSize posAndSize{catConfiguration};
 
-    static inline SettingEnum<int> width{catConfiguration "width", 800};
+    static inline SettingVariant width{catConfiguration "width", 800};
 
     static inline SettingWidget cbCloseDirect{catConfiguration "cbCloseDirect"};
     static inline SettingWidget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
@@ -149,7 +127,7 @@ struct Settings
     static inline SettingWidget cbAutoIterTiiEntries{catConfiguration "cbAutoIterTiiEntries"};
   };
 
-  struct CirViewer // namespace for the CIR spectrum window
+  struct CirViewer // namespace for the CIR viewer window
   {
     #define catCirViewer "cirViewer/" // did not find nicer way to declare that once
     static inline SettingPosAndSize posAndSize{catCirViewer};
