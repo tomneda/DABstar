@@ -179,16 +179,10 @@ void SettingHelper::_fill_map_with_defaults()
   const QString tempMotPath = tempPath.filePath("MOT").append('/');
   const QString tempEpgPath = tempPath.filePath("EPG").append('/');
 
-  mMap.insert(threshold, { "", "threshold", 3 });
-  mMap.insert(diffLength, { "", "diff_length", DIFF_LENGTH });
-  mMap.insert(tiiDelay, { "", "tii_delay", 5 });
-  mMap.insert(tiiDepth, { "", "tii_depth", 4 });
-  mMap.insert(echoDepth, { "", "echo_depth", 1  });
   mMap.insert(soundChannel, { "", "soundChannelQt", "default" });
   mMap.insert(picturesPath, { "", "picturesPath", tempPicPath });
   mMap.insert(filePath, { "", "filePath", tempMotPath });
   mMap.insert(epgPath, { "", "epgPath", tempEpgPath });
-  mMap.insert(dabBand, { "", "dabBand", "VHF Band III" });
   mMap.insert(skipFile, { "", "skipFile", "" });
   mMap.insert(tiiFile, { "", "tiiFile", "" });
   mMap.insert(device, { "", "device", "no device" });

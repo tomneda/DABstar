@@ -47,12 +47,11 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   , mFicHandler(mr)
   , mMscHandler(mr, p->frameBuffer)
   , mPhaseReference(mr, p)
-  , mTiiDetector()
   , mOfdmDecoder(mr, p->iqBuffer, p->carrBuffer)
   , mEtiGenerator(&mFicHandler)
   , mTimeSyncer(&mSampleReader)
   , mcThreshold(p->threshold)
-  , mcTiiDelay(p->tii_delay)
+  , mcTiiFramesToCount(p->tiiFramesToCount)
 {
   mFftPlan = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
 
@@ -278,7 +277,7 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
 
     // The TII data is encoded in the null period of the	odd frames
     mTiiDetector.add_to_tii_buffer(mFftOutBuffer);
-    if (++mTiiCounter >= mcTiiDelay)
+    if (++mTiiCounter >= mcTiiFramesToCount)
     {
       if (mEnableTii)
       {

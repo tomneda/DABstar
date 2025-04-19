@@ -156,13 +156,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mProcessParams.responseBuffer = mpResponseBuffer;
   mProcessParams.frameBuffer = mpFrameBuffer;
   mProcessParams.cirBuffer = mpCirBuffer;
-
-  mProcessParams.threshold = mpSH->read(SettingHelper::threshold).toInt();
-  mProcessParams.diff_length = mpSH->read(SettingHelper::diffLength).toInt();
-  mProcessParams.tii_delay = mpSH->read(SettingHelper::tiiDelay).toInt();
-  if (mProcessParams.tii_delay < 2) { mProcessParams.tii_delay = 2; }
-  mProcessParams.tii_depth = mpSH->read(SettingHelper::tiiDepth).toInt();
-  mProcessParams.echo_depth = mpSH->read(SettingHelper::echoDepth).toInt();
+  mProcessParams.threshold = 3.0f;
+  mProcessParams.tiiFramesToCount = 5;
 
   //	set on top or not? checked at start up
   if (Settings::Config::cbAlwaysOnTop.get_variant().toBool())
@@ -298,10 +293,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   connect(btnHttpServer, &QPushButton::clicked, this,  &RadioInterface::_slot_handle_http_button);
 
   //	restore some settings from previous incarnations
-  const QString t = mpSH->read(SettingHelper::dabBand).toString();
-  const uint8_t dabBand = (t == "VHF Band III" ? BAND_III : L_BAND);
-
-  mBandHandler.setupChannels(cmbChannelSelector, dabBand);
+  mBandHandler.setupChannels(cmbChannelSelector, BAND_III);
   const QString skipFileName = mpSH->read(SettingHelper::skipFile).toString();
   mBandHandler.setup_skipList(skipFileName);
 

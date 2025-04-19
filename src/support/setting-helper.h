@@ -128,7 +128,7 @@ struct Settings
     #define catConfiguration "configuration/" // did not find nicer way to declare that once
     static inline SettingPosAndSize posAndSize{catConfiguration};
 
-    // static inline SettingEnum<int> width{catConfiguration "width", 800};
+    static inline SettingEnum<int> width{catConfiguration "width", 800};
 
     static inline SettingWidget cbCloseDirect{catConfiguration "cbCloseDirect"};
     static inline SettingWidget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
@@ -172,16 +172,10 @@ public:
   enum EElem
   {
     // main widget
-    threshold,
-    diffLength,
-    tiiDelay,
-    tiiDepth,
-    echoDepth,
     soundChannel,
     picturesPath,
     filePath,
     epgPath,
-    dabBand,
     skipFile,
     tiiFile,
     device,

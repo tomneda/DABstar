@@ -130,12 +130,12 @@ private:
   FicHandler mFicHandler;
   MscHandler mMscHandler;
   PhaseReference mPhaseReference;
-  TiiDetector mTiiDetector;
+  TiiDetector mTiiDetector{};
   OfdmDecoder mOfdmDecoder;
   etiGenerator mEtiGenerator;
   TimeSyncer mTimeSyncer;
   const float mcThreshold;
-  const int16_t mcTiiDelay;
+  const int16_t mcTiiFramesToCount;
   uint8_t mTiiThreshold;
   bool mScanMode = false;
   int16_t mTiiCounter = 0;

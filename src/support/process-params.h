@@ -8,12 +8,8 @@
 class ProcessParams
 {
 public:
-  int16_t threshold = 0;
-  int16_t diff_length = 0;
-  int16_t tii_delay = 0;
-  int16_t tii_depth = 0;
-  int16_t echo_depth = 0;
-  int16_t bitDepth = 0;
+  float threshold = 0;
+  int16_t tiiFramesToCount = 0;
   RingBuffer<float> * responseBuffer = nullptr;
   RingBuffer<cmplx> * spectrumBuffer = nullptr;
   RingBuffer<cmplx> * cirBuffer = nullptr;

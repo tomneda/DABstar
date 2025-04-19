@@ -104,30 +104,14 @@ struct SServiceId
 {
   QString name;
   uint32_t SId;
-  //uint16_t subChId;
-  //bool isAudio;
-  //int16_t programType;
-  //QString channel;        // just for presets
 };
 
-// 40 up shows good results
-#define    DIFF_LENGTH  60
+constexpr uint8_t BAND_III = 0100;
+constexpr uint8_t L_BAND   = 0101;
+constexpr uint8_t A_BAND   = 0102;
 
-static constexpr int32_t SWITCH_DELAY = 3; // switch time in second until service is called after channel selection
-
-
-#define    BAND_III  0100
-#define    L_BAND    0101
-#define    A_BAND    0102
-
-#define    FORE_GROUND  0000
-#define    BACK_GROUND  0100
-
-struct presetData
-{
-  QString serviceName;
-  QString channel;
-};
+constexpr int32_t FORE_GROUND = 0000;
+constexpr int32_t BACK_GROUND = 0100;
 
 class DescriptorType
 {
