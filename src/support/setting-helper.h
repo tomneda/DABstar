@@ -148,6 +148,13 @@ struct Settings
     static inline SettingWidget cbUrlClickable{catConfiguration "cbUrlClickable"};
     static inline SettingWidget cbAutoIterTiiEntries{catConfiguration "cbAutoIterTiiEntries"};
   };
+
+  struct CirViewer // namespace for the CIR spectrum window
+  {
+    #define catCirViewer "cirViewer/" // did not find nicer way to declare that once
+    static inline SettingPosAndSize posAndSize{catCirViewer};
+    
+  };
 };
 
 

@@ -135,7 +135,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
   , mpCirBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::CirBuffer).get())
   , mSpectrumViewer(this, ipSettings, mpSpectrumBuffer, mpIqBuffer, mpCarrBuffer, mpResponseBuffer)
-  , mCirViewer(ipSettings, mpCirBuffer)
+  , mCirViewer(mpCirBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
   , mTiiListDisplay(ipSettings)
   , mOpenFileDialog(ipSettings)

@@ -2,32 +2,26 @@
 #include <QColor>
 #include <QPen>
 #include "cir-viewer.h"
+
+#include "setting-helper.h"
 #ifdef HAVE_SSE_OR_AVX
   #include <volk/volk.h>
 #endif
 
-CirViewer::CirViewer(QSettings * s, RingBuffer<cmplx> * iCirBuffer) :
-  Ui_cirWidget(),
-  PhaseTable(),
-  mpCirSettings(s),
-  mpCirBuffer(iCirBuffer)
+CirViewer::CirViewer(RingBuffer<cmplx> * iCirBuffer)
+  : Ui_cirWidget()
+  , PhaseTable()
+  , mpCirBuffer(iCirBuffer)
 {
   assert(((uintptr_t)mFftInBuffer.data()  & 0x1F) == 0);  // check for 32-byte alignment
   assert(((uintptr_t)mFftOutBuffer.data() & 0x1F) == 0);
   mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
   mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
 
-  mpCirSettings->beginGroup(SETTING_GROUP_NAME);
-  int x = mpCirSettings->value("position-x", 100).toInt();
-  int y = mpCirSettings->value("position-y", 100).toInt();
-  int w = mpCirSettings->value("size-w", 500).toInt();
-  int h = mpCirSettings->value("size-h", 250).toInt();
-  mpCirSettings->endGroup();
-
   setupUi(&mFrame);
 
-  mFrame.resize(QSize(w, h));
-  mFrame.move(QPoint(x, y));
+  Settings::CirViewer::posAndSize.read_widget_geometry(&mFrame, 100, 100, 500, 250, false);
+
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mFrame.hide();
 
@@ -53,12 +47,8 @@ CirViewer::CirViewer(QSettings * s, RingBuffer<cmplx> * iCirBuffer) :
 
 CirViewer::~CirViewer()
 {
-  mpCirSettings->beginGroup(SETTING_GROUP_NAME);
-  mpCirSettings->setValue("position-x", mFrame.pos().x());
-  mpCirSettings->setValue("position-y", mFrame.pos().y());
-  mpCirSettings->setValue("size-w", mFrame.size().width());
-  mpCirSettings->setValue("size-h", mFrame.size().height());
-  mpCirSettings->endGroup();
+  Settings::CirViewer::posAndSize.write_widget_geometry(&mFrame);
+
   mFrame.hide();
   fftwf_destroy_plan(mFftPlanBwd);
   fftwf_destroy_plan(mFftPlanFwd);

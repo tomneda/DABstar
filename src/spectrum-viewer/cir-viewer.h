@@ -25,7 +25,7 @@ class CirViewer : public QObject, private Ui_cirWidget, private PhaseTable
 {
 Q_OBJECT
 public:
-  CirViewer(QSettings * s, RingBuffer<cmplx> * iCirBuffer);
+  CirViewer(RingBuffer<cmplx> * iCirBuffer);
   ~CirViewer();
   void show_cir();
   void show();
@@ -33,9 +33,7 @@ public:
   bool is_hidden();
 
 private:
-  static constexpr char SETTING_GROUP_NAME[] = "cirViewer";
   QFrame mFrame;
-  QSettings * const mpCirSettings;
   RingBuffer<cmplx> * const mpCirBuffer;
   QwtPlotCurve mCurve;
   QwtPlotGrid mGrid;
