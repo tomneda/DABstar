@@ -19,38 +19,40 @@
 #include <QDir>
 #include <QWidget>
 
-SettingVariant::SettingVariant(const QString & key)
+namespace Settings
+{
+Variant::Variant(const QString & key)
   : mKey(key)
 {}
 
-SettingVariant::SettingVariant(const QString & key, const QVariant & iDefaultValue)
+Variant::Variant(const QString & key, const QVariant & iDefaultValue)
   : mKey(key)
   , mDefaultValue(iDefaultValue)
 {}
 
-void SettingVariant::define_default_value(const QVariant & iDefaultValue)
+void Variant::define_default_value(const QVariant & iDefaultValue)
 {
   assert(!mDefaultValue.isValid()); // is is really not initialized yet?
   mDefaultValue = iDefaultValue;
 }
 
-QVariant SettingVariant::get_variant() const
+QVariant Variant::get_variant() const
 {
-  return SettingsStorage::instance().value(mKey, mDefaultValue);
+  return Storage::instance().value(mKey, mDefaultValue);
 }
 
-void SettingVariant::set(const QVariant & iValue) const
+void Variant::set(const QVariant & iValue) const
 {
-  return SettingsStorage::instance().setValue(mKey, iValue);
+  return Storage::instance().setValue(mKey, iValue);
 }
 
 
-SettingWidget::SettingWidget(const QString & key)
+Widget::Widget(const QString & key)
   : mKey(key)
 {
 }
 
-void SettingWidget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue)
+void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue)
 {
   assert(mpWidget == nullptr); // only one-time registration necessary
   mpWidget = ipWidget;
@@ -82,25 +84,25 @@ void SettingWidget::register_widget_and_update_ui_from_setting(QWidget * const i
   qFatal("Pointer to mpWidget not handled (1)");
 }
 
-QVariant SettingWidget::get_variant() const
+QVariant Widget::get_variant() const
 {
-  return SettingsStorage::instance().value(mKey, mDefaultValue);
+  return Storage::instance().value(mKey, mDefaultValue);
 }
 
-void SettingWidget::_update_ui_state_from_setting() const
+void Widget::_update_ui_state_from_setting() const
 {
   assert(mpWidget != nullptr); // only one-time registration necessary
 
   if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
   {
-    const int32_t var = SettingsStorage::instance().value(mKey, mDefaultValue).toInt();
+    const int32_t var = Storage::instance().value(mKey, mDefaultValue).toInt();
     pD->setCheckState(static_cast<Qt::CheckState>(var));
     return;
   }
 
   if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
   {
-    const QString var = SettingsStorage::instance().value(mKey, mDefaultValue).toString();
+    const QString var = Storage::instance().value(mKey, mDefaultValue).toString();
     if (const int32_t k = pD->findText(var);
         k >= 0)
     {
@@ -111,7 +113,7 @@ void SettingWidget::_update_ui_state_from_setting() const
 
   if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
   {
-    const int32_t var = SettingsStorage::instance().value(mKey, mDefaultValue).toInt();
+    const int32_t var = Storage::instance().value(mKey, mDefaultValue).toInt();
     pD->setValue(var);
     return;
   }
@@ -119,25 +121,25 @@ void SettingWidget::_update_ui_state_from_setting() const
   qFatal("Pointer to mpWidget not handled (2)");
 }
 
-void SettingWidget::_update_ui_state_to_setting() const
+void Widget::_update_ui_state_to_setting() const
 {
   assert(mpWidget != nullptr); // only one-time registration necessary
 
   if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
   {
-    SettingsStorage::instance().setValue(mKey, pD->checkState());
+    Storage::instance().setValue(mKey, pD->checkState());
     return;
   }
 
   if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
   {
-    SettingsStorage::instance().setValue(mKey, pD->currentText());
+    Storage::instance().setValue(mKey, pD->currentText());
     return;
   }
 
   if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
   {
-    SettingsStorage::instance().setValue(mKey, pD->value());
+    Storage::instance().setValue(mKey, pD->value());
     return;
   }
 
@@ -145,13 +147,13 @@ void SettingWidget::_update_ui_state_to_setting() const
 }
 
 
-SettingPosAndSize::SettingPosAndSize(const QString & iCat)
+PosAndSize::PosAndSize(const QString & iCat)
 : mCat(iCat)
 {}
 
-void SettingPosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t iXPosDef, const int32_t iYPosDef, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
+void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t iXPosDef, const int32_t iYPosDef, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
 {
-  const QVariant var = SettingsStorage::instance().value(mCat + "posAndSize", QVariant());
+  const QVariant var = Storage::instance().value(mCat + "posAndSize", QVariant());
 
   if(!var.canConvert<QByteArray>())
   {
@@ -179,13 +181,13 @@ void SettingPosAndSize::read_widget_geometry(QWidget * const iopWidget, const in
   }
 }
 
-void SettingPosAndSize::write_widget_geometry(const QWidget * const ipWidget) const
+void PosAndSize::write_widget_geometry(const QWidget * const ipWidget) const
 {
   const QByteArray var = ipWidget->saveGeometry();
-  SettingsStorage::instance().setValue(mCat + "posAndSize", var);
+  Storage::instance().setValue(mCat + "posAndSize", var);
 }
 
-
+} // namespace Settings
 
 
 

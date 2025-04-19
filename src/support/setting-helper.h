@@ -24,18 +24,20 @@
 #include <QSpinBox>
 #include <QSettings>
 
+namespace Settings
+{
 
-class SettingsStorage
+class Storage
 {
 public:
   static QSettings & instance(QSettings * ipSettings = nullptr)
   {
-    static SettingsStorage instance(ipSettings);
+    static Storage instance(ipSettings);
     return *instance.mpSettings;
   }
 
 private:
-  explicit SettingsStorage(QSettings * ipSettings)
+  explicit Storage(QSettings * ipSettings)
   : mpSettings(ipSettings)
   {}
 
@@ -43,11 +45,11 @@ private:
 };
 
 
-class SettingVariant
+class Variant
 {
 public:
-  explicit SettingVariant(const QString & key);
-  explicit SettingVariant(const QString & key, const QVariant & iDefaultValue);
+  explicit Variant(const QString & key);
+  explicit Variant(const QString & key, const QVariant & iDefaultValue);
   void define_default_value(const QVariant & iDefaultValue);
   QVariant get_variant() const;
   void set(const QVariant & iValue) const;
@@ -58,11 +60,11 @@ private:
 };
 
 
-class SettingWidget : public QObject
+class Widget : public QObject
 {
   Q_OBJECT
 public:
-  explicit SettingWidget(const QString & key);
+  explicit Widget(const QString & key);
 
   void register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue);
   QVariant get_variant() const;
@@ -76,10 +78,10 @@ private:
   QVariant mDefaultValue;
 };
 
-class SettingPosAndSize
+class PosAndSize
 {
 public:
-  explicit SettingPosAndSize(const QString & iCat);
+  explicit PosAndSize(const QString & iCat);
   void read_widget_geometry(QWidget * iopWidget, int32_t iXPosDef, int32_t iYPosDef, int32_t iWidthDef, int32_t iHeightDef, bool iIsFixedSized) const;
   void write_widget_geometry(const QWidget * ipWidget) const;
 
@@ -87,55 +89,52 @@ private:
   QString mCat;
 };
 
-struct Settings
+struct General // namespace for main window data
 {
-  struct General // namespace for main window data
-  {
-    static inline SettingPosAndSize posAndSize{""};
+  static inline PosAndSize posAndSize{""};
 
-  };
-
-  struct Spectrum // namespace for the spectrum window
-  {
-    #define catSpectrumViewer "spectrumViewer/" // did not find nicer way to declare that once
-    static inline SettingPosAndSize posAndSize{catSpectrumViewer};
-  };
-
-  struct Config  // namespace for the configuration window
-  {
-    #define catConfiguration "configuration/" // did not find nicer way to declare that once
-    static inline SettingPosAndSize posAndSize{catConfiguration};
-
-    static inline SettingVariant width{catConfiguration "width", 800};
-
-    static inline SettingWidget cbCloseDirect{catConfiguration "cbCloseDirect"};
-    static inline SettingWidget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
-    static inline SettingWidget cbUseNativeFileDialog{catConfiguration "cbUseNativeFileDialog"};
-    static inline SettingWidget cbUseUtcTime{catConfiguration "cbUseUtcTime"};
-    static inline SettingWidget cbGenXmlFromEpg{catConfiguration "cbGenXmlFromEpg"};
-    static inline SettingWidget cbAlwaysOnTop{catConfiguration "cbAlwaysOnTop"};
-    static inline SettingWidget cbManualBrowserStart{catConfiguration "cbManualBrowserStart"};
-    static inline SettingWidget cbSaveSlides{catConfiguration "cbSaveSlides"};
-    static inline SettingWidget cbSaveTransToCsv{catConfiguration "cbSaveTransToCsv"};
-    static inline SettingWidget cbUseDcAvoidance{catConfiguration "cbUseDcAvoidance"};
-    static inline SettingWidget cbUseDcRemoval{catConfiguration "cbUseDcRemoval"};
-    static inline SettingWidget cbShowNonAudioInServiceList{catConfiguration "cbShowNonAudioInService"};
-    static inline SettingWidget sbTiiThreshold{catConfiguration "sbTiiThreshold"};
-    static inline SettingWidget cbTiiCollisions{catConfiguration "cbTiiCollisions"};
-    static inline SettingWidget sbTiiSubId{catConfiguration "sbTiiSubId"};
-    static inline SettingWidget cbUrlClickable{catConfiguration "cbUrlClickable"};
-    static inline SettingWidget cbAutoIterTiiEntries{catConfiguration "cbAutoIterTiiEntries"};
-  };
-
-  struct CirViewer // namespace for the CIR viewer window
-  {
-    #define catCirViewer "cirViewer/" // did not find nicer way to declare that once
-    static inline SettingPosAndSize posAndSize{catCirViewer};
-    
-  };
 };
 
+struct Spectrum // namespace for the spectrum window
+{
+#define catSpectrumViewer "spectrumViewer/" // did not find nicer way to declare that once
+  static inline PosAndSize posAndSize{catSpectrumViewer};
+};
 
+struct Config  // namespace for the configuration window
+{
+#define catConfiguration "configuration/" // did not find nicer way to declare that once
+  static inline PosAndSize posAndSize{catConfiguration};
+
+  static inline Variant width{catConfiguration "width", 800};
+
+  static inline Widget cbCloseDirect{catConfiguration "cbCloseDirect"};
+  static inline Widget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
+  static inline Widget cbUseNativeFileDialog{catConfiguration "cbUseNativeFileDialog"};
+  static inline Widget cbUseUtcTime{catConfiguration "cbUseUtcTime"};
+  static inline Widget cbGenXmlFromEpg{catConfiguration "cbGenXmlFromEpg"};
+  static inline Widget cbAlwaysOnTop{catConfiguration "cbAlwaysOnTop"};
+  static inline Widget cbManualBrowserStart{catConfiguration "cbManualBrowserStart"};
+  static inline Widget cbSaveSlides{catConfiguration "cbSaveSlides"};
+  static inline Widget cbSaveTransToCsv{catConfiguration "cbSaveTransToCsv"};
+  static inline Widget cbUseDcAvoidance{catConfiguration "cbUseDcAvoidance"};
+  static inline Widget cbUseDcRemoval{catConfiguration "cbUseDcRemoval"};
+  static inline Widget cbShowNonAudioInServiceList{catConfiguration "cbShowNonAudioInService"};
+  static inline Widget sbTiiThreshold{catConfiguration "sbTiiThreshold"};
+  static inline Widget cbTiiCollisions{catConfiguration "cbTiiCollisions"};
+  static inline Widget sbTiiSubId{catConfiguration "sbTiiSubId"};
+  static inline Widget cbUrlClickable{catConfiguration "cbUrlClickable"};
+  static inline Widget cbAutoIterTiiEntries{catConfiguration "cbAutoIterTiiEntries"};
+};
+
+struct CirViewer // namespace for the CIR viewer window
+{
+#define catCirViewer "cirViewer/" // did not find nicer way to declare that once
+  static inline PosAndSize posAndSize{catCirViewer};
+
+};
+
+} // namespace Settings
 
 // legacy stuff
 
