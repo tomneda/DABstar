@@ -83,13 +83,12 @@ uint8_t theVector[6144];
 //	amount of cycles, the eti-generation is done in a different thread
 //	Note CIF counts from 0 .. 3
 //
-etiGenerator::etiGenerator(uint8_t dabMode, FicHandler * my_ficHandler) :
-  params(dabMode)
+etiGenerator::etiGenerator(uint8_t dabMode, FicHandler * my_ficHandler)
 {
   this->my_ficHandler = my_ficHandler;
 
   index_Out = 0;
-  BitsperBlock = 2 * params.get_K();
+  BitsperBlock = 2 * cK;
   numberofblocksperCIF = 18;  // mode I
   amount = 0;
   CIFCount_hi = -1;
@@ -127,7 +126,7 @@ void etiGenerator::reset()
     descrambler[i] = nullptr;
   }
   index_Out = 0;
-  BitsperBlock = 2 * params.get_K();
+  BitsperBlock = 2 * cK;
   numberofblocksperCIF = 18;  // mode I
   amount = 0;
   CIFCount_hi = -1;

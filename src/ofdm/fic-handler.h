@@ -42,7 +42,6 @@
 #include  <vector>
 #include  <atomic>
 #include  "viterbi-spiral.h"
-#include  "dab-params.h"
 #include  "fib-decoder.h"
 
 class RadioInterface;
@@ -66,7 +65,6 @@ public:
   void reset_fic_decode_success_ratio() { fic_decode_success_ratio = 0; };
 
 private:
-  DabParams params;
   ViterbiSpiral myViterbi{ 768, true };
   std::array<std::byte, 768> bitBuffer_out;
   std::array<std::byte, 4 * 768> fibBits;

@@ -55,7 +55,6 @@
 #include  "dab-constants.h"
 #include  "ringbuffer.h"
 #include  "fic-handler.h"
-#include  "dab-params.h"
 #include  "protection.h"
 
 class RadioInterface;
@@ -87,7 +86,6 @@ public:
 private:
   FicHandler * my_ficHandler;
   FILE * etiFile;
-  DabParams params;
   bool running;
   int16_t index_Out;
   int Minor;

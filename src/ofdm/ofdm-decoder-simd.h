@@ -17,7 +17,6 @@
 #ifdef HAVE_SSE_OR_AVX
 
 #include "dab-constants.h"
-// #include "dab-params.h"
 #include "glob_enums.h"
 #include "freq-interleaver.h"
 #include "ringbuffer.h"
@@ -62,7 +61,6 @@ public:
 private:
 
   RadioInterface * const mpRadioInterface;
-  // const DabParams::SDabPar mDabPar;
   FreqInterleaver mFreqInterleaver;
 
   RingBuffer<cmplx> * const mpIqBuffer;

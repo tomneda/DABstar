@@ -32,7 +32,6 @@
 #include  "radio.h"
 #include  "msc-handler.h"
 #include  "backend.h"
-#include  "dab-params.h"
 //
 //	Interface program for processing the MSC.
 //	The DabProcessor assumes the existence of an msc-handler, whether
@@ -45,11 +44,10 @@ static constexpr int16_t cifTable[] = { 18, 72, 0, 36 };
 //
 MscHandler::MscHandler(RadioInterface * const iRI, const uint8_t iDabMode, RingBuffer<uint8_t> * const ipFrameBuffer)
   : mpRadioInterface(iRI)
-  , mDabPar(DabParams(iDabMode).get_dab_par())
   , mpFrameBuffer(ipFrameBuffer)
 {
   mCifVector.resize(55296);
-  mBitsPerBlock = 2 * mDabPar.K;
+  mBitsPerBlock = 2 * cK;
   assert(iDabMode >= 1 && iDabMode <= 4);
   mNumberOfBlocksPerCif = cifTable[(iDabMode - 1) & 03];
 }

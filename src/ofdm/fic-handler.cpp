@@ -52,14 +52,13 @@
   *	The data is sent through to the fib processor
   */
 
-FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode) :
-  FibDecoder(iMr),
-  params(iDabMode)
+FicHandler::FicHandler(RadioInterface * const iMr, const uint8_t iDabMode)
+  : FibDecoder(iMr)
 {
   std::array<std::byte, 9> shiftRegister;
   std::fill(shiftRegister.begin(), shiftRegister.end(), static_cast<std::byte>(1));
 
-  BitsperBlock = 2 * params.get_K();
+  BitsperBlock = 2 * cK;
 
   for (int16_t i = 0; i < 768; i++)
   {

@@ -32,7 +32,6 @@
 #include <cstdio>
 #include <vector>
 #include "dab-constants.h"
-#include "dab-params.h"
 #include "ringbuffer.h"
 #include "phasetable.h"
 #include "freq-interleaver.h"
@@ -54,7 +53,6 @@ public:
 
 private:
   RadioInterface * const mpRadioInterface;
-  const DabParams::SDabPar mDabPar;
   RingBuffer<uint8_t> * const mpFrameBuffer;
 
   QMutex mMutex;

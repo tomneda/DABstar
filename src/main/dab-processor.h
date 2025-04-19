@@ -138,7 +138,6 @@ private:
   const float mcThreshold;
   const int16_t mcTiiDelay;
   uint8_t mTiiThreshold;
-  const DabParams::SDabPar mDabPar;
   bool mScanMode = false;
   int16_t mTiiCounter = 0;
   bool mEti_on = false;

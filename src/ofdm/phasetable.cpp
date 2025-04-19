@@ -131,8 +131,7 @@ static const std::array<PhaseTable::SPhasetableElement, 25> modeIV_table
 }};
 
 PhaseTable::PhaseTable(const int16_t iMode)
-  : mMode(iMode),
-  mDabPar(DabParams(iMode).get_dab_par())
+  : mMode(iMode)
 {
   switch (mMode)
   {
@@ -143,12 +142,12 @@ PhaseTable::PhaseTable(const int16_t iMode)
   default: assert(0);
   }
   // mRefTable is in the frequency domain
-  for (int32_t i = 0; i < mDabPar.T_u; i++)
+  for (int32_t i = 0; i < cTu; i++)
     mRefTable[i] = cmplx(0,0);
-  for (int32_t i = 1; i <= mDabPar.K / 2; i++) // skip DC
+  for (int32_t i = 1; i <= cK / 2; i++) // skip DC
   {
-    mRefTable[0           + i] = cmplx_from_phase(get_phi(i));
-    mRefTable[mDabPar.T_u - i] = cmplx_from_phase(get_phi(-i));
+    mRefTable[0   + i] = cmplx_from_phase(get_phi(i));
+    mRefTable[cTu - i] = cmplx_from_phase(get_phi(-i));
   }
 }
 

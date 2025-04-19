@@ -37,35 +37,34 @@
   *	of the DAB standard
   */
 
-FreqInterleaver::FreqInterleaver(const uint8_t iDabMode) :
-  mDabPar(DabParams(iDabMode).get_dab_par())
+FreqInterleaver::FreqInterleaver(const uint8_t iDabMode)
 {
-  mPermTable.resize(mDabPar.T_u);
+  mPermTable.resize(cTu);
 
   switch (iDabMode)
   {
-  case 1: createMapper(511, 256, 256 + mDabPar.K); break;
-  case 2: createMapper(127,  64,  64 + mDabPar.K); break;
-  case 3: createMapper(63,   32,  32 + mDabPar.K); break;
-  case 4: createMapper(255, 128, 128 + mDabPar.K); break;
+  case 1: createMapper(511, 256, 256 + cK); break;
+  case 2: createMapper(127,  64,  64 + cK); break;
+  case 3: createMapper(63,   32,  32 + cK); break;
+  case 4: createMapper(255, 128, 128 + cK); break;
   default:;
   }
 }
 
 void FreqInterleaver::createMapper(const int16_t iV1, const int16_t iLwb, const int16_t iUpb)
 {
-  auto * const tmp = make_vla(int16_t, mDabPar.T_u);
+  auto * const tmp = make_vla(int16_t, cTu);
   int16_t index = 0;
   int16_t i;
 
   tmp[0] = 0;
-  for (i = 1; i < mDabPar.T_u; i++)
+  for (i = 1; i < cTu; i++)
   {
-    tmp[i] = (13 * tmp[i - 1] + iV1) % mDabPar.T_u;
+    tmp[i] = (13 * tmp[i - 1] + iV1) % cTu;
   }
-  for (i = 0; i < mDabPar.T_u; i++)
+  for (i = 0; i < cTu; i++)
   {
-    if (tmp[i] == mDabPar.T_u / 2)
+    if (tmp[i] == cTu / 2)
     {
       continue;
     }
@@ -75,7 +74,7 @@ void FreqInterleaver::createMapper(const int16_t iV1, const int16_t iLwb, const 
     }
     //	we now have a table with values from lwb .. upb
     //
-    mPermTable.at(index++) = tmp[i] - mDabPar.T_u / 2;
+    mPermTable.at(index++) = tmp[i] - cTu / 2;
     //	we now have a table with values from lwb - T_u / 2 .. lwb + T_u / 2
   }
 }

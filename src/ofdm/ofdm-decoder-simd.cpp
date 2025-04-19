@@ -276,15 +276,15 @@ float OfdmDecoder::_compute_frequency_offset(const cmplx * const & r, const cmpl
 #if 0
   cmplx theta = cmplx(0, 0);
 
-  for (int idx = -mDabPar.K / 2; idx < mDabPar.K / 2; idx += 1)
+  for (int idx = -cK / 2; idx < cK / 2; idx += 1)
   {
-    const int32_t index = fft_shift_skip_dc(idx, mDabPar.T_u); // this was with DC before in QT-DAB
+    const int32_t index = fft_shift_skip_dc(idx, cTu); // this was with DC before in QT-DAB
     cmplx val = r[index] * conj(c[index]);
     val = turn_complex_phase_to_first_quadrant(val);
     theta += val;
   }
-  return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.T_u / (float)mDabPar.T_s * (float)mDabPar.CarrDiff;
-  // return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.CarrDiff;
+  return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)cTu / (float)cTs * (float)cCarrDiff;
+  // return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)cCarrDiff;
 #endif
   return 0;
 }

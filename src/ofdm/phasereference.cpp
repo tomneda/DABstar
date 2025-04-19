@@ -45,15 +45,14 @@
 
 PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const ProcessParams * const ipParam)
   : PhaseTable(ipParam->dabMode)
-  , mDabPar(DabParams(ipParam->dabMode).get_dab_par())
-  , mFramesPerSecond(INPUT_RATE / mDabPar.T_F)
+  , mFramesPerSecond(INPUT_RATE / cTF)
   , mpResponse(ipParam->responseBuffer)
-  , mCorrPeakValues(mDabPar.T_u)
+  , mCorrPeakValues(cTu)
 {
-  mFftPlanFwd = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
-  mFftPlanBwd = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
+  mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
+  mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
 
-  mMeanCorrPeakValues.resize(mDabPar.T_u);
+  mMeanCorrPeakValues.resize(cTu);
   std::fill(mMeanCorrPeakValues.begin(), mMeanCorrPeakValues.end(), 0.0f);
 
   // Prepare a table for the coarse frequency synchronization.
@@ -62,7 +61,7 @@ PhaseReference::PhaseReference(const RadioInterface * const ipRadio, const Proce
   mRefArg.resize(CORRELATION_LENGTH);
   for (int i = 0; i < CORRELATION_LENGTH; i++)
   {
-    mRefArg[i] = arg(mRefTable[(mDabPar.T_u + i) % mDabPar.T_u] * conj(mRefTable[(mDabPar.T_u + i + 1) % mDabPar.T_u]));
+    mRefArg[i] = arg(mRefTable[(cTu + i) % cTu] * conj(mRefTable[(cTu + i + 1) % cTu]));
   }
   mCorrelationVector.resize(SEARCHRANGE + CORRELATION_LENGTH);
 
@@ -93,7 +92,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
   fftwf_execute(mFftPlanFwd);
 
   //	into the frequency domain, now correlate
-  for (int32_t i = 0; i < mDabPar.T_u; i++)
+  for (int32_t i = 0; i < cTu; i++)
   {
     mFftInBuffer[i] = mFftOutBuffer[i] * conj(mRefTable[i]);
   }
@@ -106,7 +105,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
     */
   float sum = 0;
 
-  for (int32_t i = 0; i < mDabPar.T_u; i++)
+  for (int32_t i = 0; i < cTu; i++)
   {
     const float absVal = std::abs(mFftOutBuffer[i]);
     mCorrPeakValues[i] = absVal;
@@ -114,18 +113,18 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
     sum += absVal;
   }
 
-  sum /= (float)(mDabPar.T_u);
+  sum /= (float)(cTu);
   QVector<int> indices;
   int32_t maxIndex = -1;
   float maxL = -1000;
   constexpr int16_t GAP_SEARCH_WIDTH = 10;
   constexpr int16_t EXTENDED_SEARCH_REGION = 250;
-  const int16_t idxStart = mDabPar.T_g - EXTENDED_SEARCH_REGION;
-  const int16_t idxStop  = mDabPar.T_g + EXTENDED_SEARCH_REGION;
+  const int16_t idxStart = cTg - EXTENDED_SEARCH_REGION;
+  const int16_t idxStop  = cTg + EXTENDED_SEARCH_REGION;
   assert(idxStart >= 0);
   assert(idxStop <= (signed)mCorrPeakValues.size());
 
-  for (int16_t i = idxStart; i < idxStop; ++i)  // TODO: underflow with other DabModes != 1!
+  for (int16_t i = idxStart; i < idxStop; ++i)
   {
     if (mCorrPeakValues[i] / sum > iThreshold)
     {
@@ -166,7 +165,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
 
     if (mDisplayCounter > mFramesPerSecond / 2)
     {
-      for (int32_t i = 0; i < mDabPar.T_u; i++)
+      for (int32_t i = 0; i < cTu; i++)
          mMeanCorrPeakValues[i] /= 6;
       mpResponse->put_data_into_ring_buffer(mMeanCorrPeakValues.data(), (int32_t)mMeanCorrPeakValues.size());
       //mpResponse->put_data_into_ring_buffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
@@ -199,8 +198,8 @@ int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayT
   //  The phase differences are computed once
   for (int16_t i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
   {
-    const int16_t baseIndex = mDabPar.T_u - SEARCHRANGE / 2 + i;
-    mCorrelationVector[i] = arg(iV[baseIndex % mDabPar.T_u] * conj(iV[(baseIndex + 1) % mDabPar.T_u]));
+    const int16_t baseIndex = cTu - SEARCHRANGE / 2 + i;
+    mCorrelationVector[i] = arg(iV[baseIndex % cTu] * conj(iV[(baseIndex + 1) % cTu]));
   }
 
   int16_t index = IDX_NOT_FOUND;

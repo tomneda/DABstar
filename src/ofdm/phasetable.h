@@ -35,7 +35,6 @@
 #include  <cstdio>
 #include  <cstdint>
 #include  "dab-constants.h"
-#include  "dab-params.h"
 
 class PhaseTable
 {
@@ -56,7 +55,6 @@ public:
 private:
   const struct SPhasetableElement * mpCurrentTable;
   const int16_t mMode;
-  const DabParams::SDabPar mDabPar;
 
   int32_t h_table(int32_t i, int32_t j) const;
   float get_phi(int32_t k) const;

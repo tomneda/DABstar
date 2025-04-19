@@ -47,16 +47,15 @@ DabProcessor::DabProcessor(RadioInterface * const mr, IDeviceHandler * const inp
   , mFicHandler(mr, p->dabMode)
   , mMscHandler(mr, p->dabMode, p->frameBuffer)
   , mPhaseReference(mr, p)
-  , mTiiDetector(p->dabMode)
+  , mTiiDetector()
   , mOfdmDecoder(mr, p->dabMode, p->iqBuffer, p->carrBuffer)
   , mEtiGenerator(p->dabMode, &mFicHandler)
   , mTimeSyncer(&mSampleReader)
   , mcDabMode(p->dabMode)
   , mcThreshold(p->threshold)
   , mcTiiDelay(p->tii_delay)
-  , mDabPar(DabParams(p->dabMode).get_dab_par())
 {
-  mFftPlan = fftwf_plan_dft_1d(mDabPar.T_u, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
+  mFftPlan = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
 
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &RadioInterface::slot_show_spectrum);
   connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &RadioInterface::slot_show_tii);
@@ -142,7 +141,7 @@ void DabProcessor::run()  // run QThread
   try
   {
     // To get some idea of the signal strength
-    for (int32_t i = 0; i < mDabPar.T_F / 5; i++)
+    for (int32_t i = 0; i < cTF / 5; i++)
     {
       mSampleReader.getSample(0);
     }
@@ -213,7 +212,7 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
 
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
-      mFreqOffsSyncSymb += (float)correction * (float)mDabPar.CarrDiff;
+      mFreqOffsSyncSymb += (float)correction * (float)cCarrDiff;
 
       if (std::abs(mFreqOffsSyncSymb) > kHz(35))
       {
@@ -241,7 +240,7 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
   // The first sample to be found for the next frame should be T_g samples ahead. Before going for the next frame, we just check the fineCorrector
   // We integrate the newly found frequency error with the existing frequency error.
   limit_symmetrically(mPhaseOffsetCyclPrefRad, 20.0f * F_RAD_PER_DEG);
-  mFreqOffsCylcPrefHz += mPhaseOffsetCyclPrefRad / F_2_M_PI * (float)mDabPar.CarrDiff; // formerly 0.05
+  mFreqOffsCylcPrefHz += mPhaseOffsetCyclPrefRad / F_2_M_PI * (float)cCarrDiff; // formerly 0.05
 
   _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
 
@@ -249,7 +248,7 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
 
   if (++mClockOffsetFrameCount > 10) // about each second
   {
-    const float clockErrHz = INPUT_RATE * ((float)mClockOffsetTotalSamples / ((float)mClockOffsetFrameCount * (float)mDabPar.T_F) - 1.0f);
+    const float clockErrHz = INPUT_RATE * ((float)mClockOffsetTotalSamples / ((float)mClockOffsetFrameCount * (float)cTF) - 1.0f);
     emit signal_show_clock_err(clockErrHz);
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
@@ -262,12 +261,12 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
 void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
 {
   // We are at the end of the frame and we read the next T_n null samples
-  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_n, mFreqOffsBBHz, false);
-  ioSampleCount += mDabPar.T_n;
+  mSampleReader.getSamples(mOfdmBuffer, 0, cTn, mFreqOffsBBHz, false);
+  ioSampleCount += cTn;
 
   // is this null symbol with TII?
   const bool isTiiNullSegment = (mcDabMode == 1 && (mFicHandler.get_cif_count() & 0x7) >= 4);
-  memcpy(mFftInBuffer.data(), &(mOfdmBuffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
+  memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cmplx));
   fftwf_execute(mFftPlan);
 
   if (!isTiiNullSegment) // eval SNR only in non-TII null segments
@@ -310,18 +309,18 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
   */
   cmplx freqCorr = cmplx(0, 0);
 
-  for (int16_t ofdmSymbCntIdx = 1; ofdmSymbCntIdx < mDabPar.L; ofdmSymbCntIdx++)
+  for (int16_t ofdmSymbCntIdx = 1; ofdmSymbCntIdx < cL; ofdmSymbCntIdx++)
   {
-    mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_s, mFreqOffsBBHz, true);
-    ioSampleCount += mDabPar.T_s;
+    mSampleReader.getSamples(mOfdmBuffer, 0, cTs, mFreqOffsBBHz, true);
+    ioSampleCount += cTs;
 
-    for (int32_t i = mDabPar.T_u; i < mDabPar.T_s; i++)
+    for (int32_t i = cTu; i < cTs; i++)
     {
-      freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - mDabPar.T_u]); // eval phase shift in cyclic prefix part
+      freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - cTu]); // eval phase shift in cyclic prefix part
     }
 
     mOfdmDecoder.set_dc_offset(mSampleReader.get_dc_offset());
-    memcpy(mFftInBuffer.data(), &(mOfdmBuffer[mDabPar.T_g]), mDabPar.T_u * sizeof(cmplx));
+    memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cmplx));
     fftwf_execute(mFftPlan);
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_begin();
@@ -376,7 +375,7 @@ void DabProcessor::_set_rf_freq_offs_Hz(float iFreqHz)
 bool DabProcessor::_state_eval_sync_symbol(int32_t & oSampleCount, float iThreshold)
 {
   // get first OFDM symbol after time sync marker
-  mSampleReader.getSamples(mOfdmBuffer, 0, mDabPar.T_u, mFreqOffsBBHz, false);
+  mSampleReader.getSamples(mOfdmBuffer, 0, cTu, mFreqOffsBBHz, false);
 
   const int32_t startIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
 
@@ -388,14 +387,14 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oSampleCount, float iThresh
   else
   {
     // Once here, we are synchronized, we need to copy the data we used for synchronization for symbol 0
-    const int32_t nextOfdmBufferIdx = mDabPar.T_u - startIndex;
+    const int32_t nextOfdmBufferIdx = cTu - startIndex;
     assert(nextOfdmBufferIdx >= 0);
 
     // move/read OFDM symbol 0 which contains the synchronization data
     memmove(mOfdmBuffer.data(), &(mOfdmBuffer[startIndex]), nextOfdmBufferIdx * sizeof(cmplx)); // memmove can move overlapping segments correctly
-    mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, mDabPar.T_u - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
+    mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, cTu - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
 
-    oSampleCount = startIndex + mDabPar.T_u;
+    oSampleCount = startIndex + cTu;
     return true;
   }
 }
@@ -406,7 +405,7 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
   mOfdmDecoder.reset();
   mTiiCounter = 0;
 
-  switch (mTimeSyncer.read_samples_until_end_of_level_drop(mDabPar.T_n, mDabPar.T_F))
+  switch (mTimeSyncer.read_samples_until_end_of_level_drop(cTn, cTF))
   {
   case TimeSyncer::EState::TIMESYNC_ESTABLISHED:
     return true;

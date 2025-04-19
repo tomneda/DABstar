@@ -33,7 +33,6 @@
 
 #include  "phasetable.h"
 #include  "dab-constants.h"
-#include  "dab-params.h"
 #include  "process-params.h"
 #include  "ringbuffer.h"
 #include  <QObject>
@@ -61,7 +60,6 @@ public:
 private:
   static constexpr int16_t SEARCHRANGE = (2 * 35);
 
-  const DabParams::SDabPar mDabPar;
   const int32_t mFramesPerSecond;
   int32_t mDisplayCounter = 0;
   bool mSyncOnStrongestPeak = false;

@@ -40,22 +40,21 @@
 
 OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, uint8_t iDabMode, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer) :
   mpRadioInterface(ipMr),
-  mDabPar(DabParams(iDabMode).get_dab_par()),
   mFreqInterleaver(iDabMode),
   mpIqBuffer(ipIqBuffer),
   mpCarrBuffer(ipCarrBuffer)
 {
-  mMeanNullLevel.resize(mDabPar.T_u);
-  mMeanNullPowerWithoutTII.resize(mDabPar.T_u);
-  mPhaseReference.resize(mDabPar.T_u);
-  mIqVector.resize(mDabPar.K);
-  mCarrVector.resize(mDabPar.K);
-  mStdDevSqPhaseVector.resize(mDabPar.K);
-  mIntegAbsPhaseVector.resize(mDabPar.K);
-  mMeanPhaseVector.resize(mDabPar.K);
-  mMeanPowerVector.resize(mDabPar.K);
-  mMeanLevelVector.resize(mDabPar.K);
-  mMeanSigmaSqVector.resize(mDabPar.K);
+  mMeanNullLevel.resize(cTu);
+  mMeanNullPowerWithoutTII.resize(cTu);
+  mPhaseReference.resize(cTu);
+  mIqVector.resize(cK);
+  mCarrVector.resize(cK);
+  mStdDevSqPhaseVector.resize(cK);
+  mIntegAbsPhaseVector.resize(cK);
+  mMeanPhaseVector.resize(cK);
+  mMeanPowerVector.resize(cK);
+  mMeanLevelVector.resize(cK);
+  mMeanSigmaSqVector.resize(cK);
 
 #ifdef USE_PHASE_CORR_LUT
   // create phase -> cmplx LUT
@@ -150,10 +149,10 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII
 
   constexpr float ALPHA = 0.1f;
 
-  for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
+  for (int32_t idx = -cK / 2; idx < cK / 2; ++idx)
   {
     // Consider FFT shift and skipping DC (0 Hz) bin.
-    const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
+    const int32_t fftIdx = fft_shift_skip_dc(idx, cTu);
     const float level = std::abs(iV[fftIdx]);
     mean_filter(mMeanNullPowerWithoutTII[fftIdx], level * level, ALPHA);
   }
@@ -162,7 +161,7 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII
 void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iBuffer)
 {
   // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
-  memcpy(mPhaseReference.data(), iBuffer.data(), mDabPar.T_u * sizeof(cmplx));
+  memcpy(mPhaseReference.data(), iBuffer.data(), cTu * sizeof(cmplx));
 }
 
 void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
@@ -177,10 +176,10 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
 
   ++mShowCntIqScope;
   ++mShowCntStatistics;
-  const bool showScopeData = (mShowCntIqScope > mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
-  const bool showStatisticData = (mShowCntStatistics > 5 * mDabPar.L && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
+  const bool showScopeData = (mShowCntIqScope > cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
+  const bool showStatisticData = (mShowCntStatistics > 5 * cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
 
-  for (int16_t nomCarrIdx = 0; nomCarrIdx < mDabPar.K; ++nomCarrIdx)
+  for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
     // We do not interchange the positive/negative frequencies to their right positions, the de-interleaving understands this.
     int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrIdx);
@@ -188,12 +187,12 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
 
     if (fftIdx < 0)
     {
-      realCarrRelIdx += mDabPar.K / 2;
-      fftIdx += mDabPar.T_u;
+      realCarrRelIdx += cK / 2;
+      fftIdx += cTu;
     }
     else // > 0 (there is no 0)
     {
-      realCarrRelIdx += mDabPar.K / 2 - 1;
+      realCarrRelIdx += cK / 2 - 1;
     }
 
     const int16_t dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
@@ -245,7 +244,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
     float & meanPowerPerBinRef = mMeanPowerVector[nomCarrIdx];
     mean_filter(meanLevelPerBinRef, fftBinAbsLevel, ALPHA);
     mean_filter(meanPowerPerBinRef, fftBinPower, ALPHA);
-    mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (float)mDabPar.K);
+    mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (float)cK);
 
     // Collect data for "Log Likelihood Ratio"
     const float meanLevelAtAxisPerBin = meanLevelPerBinRef * F_SQRT1_2;
@@ -280,8 +279,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
     }
 
     // split the real and the imaginary part and scale it
-    oBits[0         + nomCarrIdx] = (int16_t)(real(r1) * w2);
-    oBits[mDabPar.K + nomCarrIdx] = (int16_t)(imag(r1) * w2);
+    oBits[0  + nomCarrIdx] = (int16_t)(real(r1) * w2);
+    oBits[cK + nomCarrIdx] = (int16_t)(imag(r1) * w2);
     sum += std::abs(r1);
 
     if (showScopeData)
@@ -291,8 +290,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
       case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(meanPowerPerBinRef); break;
       case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(mMeanPowerOvrAll); break;
       case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / std::sqrt(mMeanPowerOvrAll); break;
-      case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =  10.0f / (float)mDabPar.T_u * _interpolate_2d_plane(mPhaseReference[0], iV[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
-      case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (float)mDabPar.T_u * _interpolate_2d_plane(mPhaseReference[0], iV[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
+      case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =  10.0f / (float)cTu * _interpolate_2d_plane(mPhaseReference[0], iV[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
+      case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (float)cTu * _interpolate_2d_plane(mPhaseReference[0], iV[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
       case EIqPlotType::DC_OFFSET_ADC_10:       mIqVector[nomCarrIdx] =  10.0f * mDcAdc; break;
       case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;
       }
@@ -320,14 +319,14 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
     }
   } // for (nomCarrIdx...
 
-  mMeanValue = sum / mDabPar.K;
+  mMeanValue = sum / cK;
 
   //	From time to time we show the constellation of the current symbol
   if (showScopeData)
   {
-    mpIqBuffer->put_data_into_ring_buffer(mIqVector.data(), mDabPar.K);
-    mpCarrBuffer->put_data_into_ring_buffer(mCarrVector.data(), mDabPar.K);
-    emit signal_slot_show_iq(mDabPar.K, 1.0f /*mGain / TOP_VAL*/);
+    mpIqBuffer->put_data_into_ring_buffer(mIqVector.data(), cK);
+    mpCarrBuffer->put_data_into_ring_buffer(mCarrVector.data(), cK);
+    emit signal_slot_show_iq(cK, 1.0f /*mGain / TOP_VAL*/);
     mShowCntIqScope = 0;
   }
 
@@ -337,47 +336,47 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
     float snr = (mMeanPowerOvrAll - noisePow) / noisePow;
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * mDabPar.K / stdDevSqOvrAll);
+    mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / stdDevSqOvrAll);
     mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     // mLcdData.TestData1 = _compute_frequency_offset(iV, mPhaseReference);
     mLcdData.TestData1 = mMeanValue;
-    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)mDabPar.CarrDiff;;
+    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;;
 
     emit signal_show_lcd_data(&mLcdData);
 
     mShowCntStatistics = 0;
-    mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % mDabPar.L;
+    mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % cL;
     if (mNextShownOfdmSymbIdx == 0) mNextShownOfdmSymbIdx = 1; // as iCurSymbolNo can never be zero here
   }
 
-  memcpy(mPhaseReference.data(), iV.data(), mDabPar.T_u * sizeof(cmplx));
+  memcpy(mPhaseReference.data(), iV.data(), cTu * sizeof(cmplx));
 }
 
 float OfdmDecoder::_compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const
 {
   cmplx theta = cmplx(0, 0);
 
-  for (int idx = -mDabPar.K / 2; idx < mDabPar.K / 2; idx += 1)
+  for (int idx = -cK / 2; idx < cK / 2; idx += 1)
   {
-    const int32_t index = fft_shift_skip_dc(idx, mDabPar.T_u); // this was with DC before in QT-DAB
+    const int32_t index = fft_shift_skip_dc(idx, cTu); // this was with DC before in QT-DAB
     cmplx val = r[index] * conj(c[index]);
     val = turn_complex_phase_to_first_quadrant(val);
     theta += val;
   }
-  return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)mDabPar.T_u / (float)mDabPar.T_s * (float)mDabPar.CarrDiff;
+  return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)cTu / (float)cTs * (float)cCarrDiff;
 }
 
 float OfdmDecoder::_compute_noise_Power() const
 {
   float sumNoise = 0.0f;
-  for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
+  for (int32_t idx = -cK / 2; idx < cK / 2; ++idx)
   {
     // Consider FFT shift and skipping DC (0 Hz) bin.
-    const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
+    const int32_t fftIdx = fft_shift_skip_dc(idx, cTu);
     sumNoise += mMeanNullPowerWithoutTII[fftIdx]; // the component already squared
   }
-  return sumNoise / (float)mDabPar.K;
+  return sumNoise / (float)cK;
 }
 
 void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
@@ -388,10 +387,10 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
   if (mCarrierPlotType == ECarrierPlotType::NULL_TII_LOG)
   {
     constexpr float ALPHA = 0.20f;
-    for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
+    for (int32_t idx = -cK / 2; idx < cK / 2; ++idx)
     {
       // Consider FFT shift and skipping DC (0 Hz) bin.
-      const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
+      const int32_t fftIdx = fft_shift_skip_dc(idx, cTu);
       const float level = log10_times_20(std::abs(iV[fftIdx]));
       float & meanNullLevelRef = mMeanNullLevel[fftIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
@@ -404,10 +403,10 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
   else
   {
     constexpr float ALPHA = 0.20f;
-    for (int32_t idx = -mDabPar.K / 2; idx < mDabPar.K / 2; ++idx)
+    for (int32_t idx = -cK / 2; idx < cK / 2; ++idx)
     {
       // Consider FFT shift and skipping DC (0 Hz) bin.
-      const int32_t fftIdx = fft_shift_skip_dc(idx, mDabPar.T_u);
+      const int32_t fftIdx = fft_shift_skip_dc(idx, cTu);
       const float level = std::abs(iV[fftIdx]);
       float & meanNullLevelRef = mMeanNullLevel[fftIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);

@@ -140,11 +140,7 @@ static int fcmp(const void * a, const void * b)
   return 0;
 }
 
-TiiDetector::TiiDetector(const uint8_t iDabMode)
-  : mParams(iDabMode)
-  , mT_u(mParams.get_T_u())
-  , mT_g(mParams.get_T_g())
-  , mK(mParams.get_K())
+TiiDetector::TiiDetector()
 {
   reset();
 }
@@ -172,7 +168,7 @@ void TiiDetector::reset()
 // To reduce noise in the input signal, we might add a few spectra before computing (up to the user)
 void TiiDetector::add_to_tii_buffer(const TArrayTu & iV)
 {
-  for (int i = 0; i < mT_u; i++)
+  for (int i = 0; i < cTu; i++)
   {
     mNullSymbolBufferVec[i] += iV[i];
   }
@@ -266,9 +262,9 @@ void TiiDetector::_reset_null_symbol_buffer()
 
 void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const TArrayTu & iVec) const
 {
-  for (int32_t k = -mK / 2, i = 0; k < mK / 2; k += 2, ++i)
+  for (int32_t k = -cK / 2, i = 0; k < cK / 2; k += 2, ++i)
   {
-    const int32_t fftIdx = fft_shift_skip_dc(k, mT_u);
+    const int32_t fftIdx = fft_shift_skip_dc(k, cTu);
     const cmplx prod = iVec[fftIdx] * conj(iVec[fftIdx + 1]); // TII carriers are given in pairs
     ioVec[i] += prod;
 
@@ -340,7 +336,7 @@ cmplx TiiDetector::_turn_phase(cmplx value, uint8_t phase) const
 // taken from the 4 quadrants -768 .. 385, 384 .. -1, 1 .. 384, 385 .. 768
 void TiiDetector::_collapse_tii_groups(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec, const TBufferArr768 & iVec) const
 {
-  assert(mK / 2 == (int)iVec.size());
+  assert(cK / 2 == (int)iVec.size());
   TBufferArr768 buffer = iVec;
 
   // assumption: a single carrier cannot be a TII carrier.

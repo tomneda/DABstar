@@ -10,7 +10,6 @@
 #pragma once
 
 #include "dab-constants.h"
-#include "dab-params.h"
 
 struct STiiResult
 {
@@ -24,7 +23,7 @@ struct STiiResult
 class TiiDetector
 {
 public:
-  explicit TiiDetector(uint8_t iDabMode);
+  explicit TiiDetector();
   ~TiiDetector();
 
   void reset();
@@ -43,10 +42,6 @@ private:
   using TFloatTable192 = std::array<float, cBlockSize192>;
   using TCmplxTable192 = std::array<cmplx, cBlockSize192>;
 
-  const DabParams mParams;
-  const int16_t mT_u;
-  const int16_t mT_g;
-  const int16_t mK;
   bool mShowTiiCollisions = false;
   bool mCarrierDelete = true;
   uint8_t mSubIdCollSearch = 0;

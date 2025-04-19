@@ -316,7 +316,6 @@ set(${objectName}_HDRS
         src/support/fir-filters.h
         src/support/ringbuffer.h
         src/support/Xtan2.h
-        src/support/dab-params.h
         src/support/band-handler.h
         src/support/dab-tables.h
         src/support/tii_list_display.h
@@ -408,7 +407,6 @@ set(${objectName}_SRCS
         src/support/fir-filters.cpp
         src/support/ringbuffer.cpp
         src/support/Xtan2.cpp
-        src/support/dab-params.cpp
         src/support/band-handler.cpp
         src/support/dab-tables.cpp
         src/support/buttons/newpushbutton.cpp

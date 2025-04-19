@@ -34,7 +34,6 @@
 #include  <cstdint>
 #include  <vector>
 #include  "dab-constants.h"
-#include  "dab-params.h"
 
 /**
   *	\class FreqInterleaver
@@ -52,7 +51,6 @@ public:
   [[nodiscard]] inline int16_t map_k_to_fft_bin(int16_t k) const { return mPermTable[k]; }
 
 private:
-  const DabParams::SDabPar mDabPar;
   std::vector<int16_t> mPermTable;
 
   void createMapper(const int16_t iV1, const int16_t iLwb, const int16_t iUpb);
