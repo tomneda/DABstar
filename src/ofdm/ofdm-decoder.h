@@ -65,7 +65,7 @@ public:
   void reset();
   void store_null_symbol_with_tii(const TArrayTu &);
   void store_null_symbol_without_tii(const TArrayTu &);
-  void store_reference_symbol_0(const std::vector<cmplx> &);
+  void store_reference_symbol_0(const TArrayTu &);
   void decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);

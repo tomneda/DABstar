@@ -158,7 +158,7 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII
   }
 }
 
-void OfdmDecoder::store_reference_symbol_0(const std::vector<cmplx> & iBuffer)
+void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iBuffer)
 {
   // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
   memcpy(mPhaseReference.data(), iBuffer.data(), cTu * sizeof(cmplx));
