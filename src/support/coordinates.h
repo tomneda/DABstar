@@ -42,12 +42,11 @@ class Coordinates : public QDialog
 {
 Q_OBJECT
 public:
-  Coordinates(QSettings *);
+  Coordinates();
   ~Coordinates() override;
 
 private:
   QLabel * mpLabelUrlHint;
-  QSettings * mpDabSettings;
   QLabel * mpLabelLatitude;
   QLineEdit * mpEditBoxLatitude;
   QLabel * mpLabelLongitude;

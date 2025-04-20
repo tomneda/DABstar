@@ -222,8 +222,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   }
 
   mChannel.targetPos = cmplx(0, 0);
-  const float local_lat = mpSH->read(SettingHelper::latitude).toFloat();
-  const float local_lon = mpSH->read(SettingHelper::longitude).toFloat();
+  const float local_lat = Settings::Config::varLatitude.get_variant().toFloat();
+  const float local_lon = Settings::Config::varLongitude.get_variant().toFloat();
   mChannel.localPos = cmplx(local_lat, local_lon);
 
   mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
@@ -3257,10 +3257,10 @@ void RadioInterface::slot_handle_logger_button(int)
 
 void RadioInterface::slot_handle_set_coordinates_button()
 {
-  Coordinates theCoordinator(mpSH->get_settings());
+  Coordinates theCoordinator;
   (void)theCoordinator.QDialog::exec();
-  float local_lat = mpSH->read(SettingHelper::latitude).toFloat();
-  float local_lon = mpSH->read(SettingHelper::longitude).toFloat();
+  const float local_lat = Settings::Config::varLatitude.get_variant().toFloat();
+  const float local_lon = Settings::Config::varLongitude.get_variant().toFloat();
   mChannel.localPos = cmplx(local_lat, local_lon);
 }
 

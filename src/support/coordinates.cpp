@@ -29,12 +29,13 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "coordinates.h"
-#include  <QDoubleValidator>
-#include  <QFormLayout>
-#include  <QVBoxLayout>
-#include  <QSettings>
-#include  <QRegularExpression>
+#include "coordinates.h"
+#include "setting-helper.h"
+#include <QDoubleValidator>
+#include <QFormLayout>
+#include <QVBoxLayout>
+#include <QSettings>
+#include <QRegularExpression>
 
 
 class MyDoubleValidator : public QDoubleValidator
@@ -74,8 +75,7 @@ class MyDoubleValidator : public QDoubleValidator
   }
 };
 
-Coordinates::Coordinates(QSettings * ipDabSettings) :
-  mpDabSettings(ipDabSettings)
+Coordinates::Coordinates()
 {
   mpLabelUrlHint = new QLabel(this);
 
@@ -120,8 +120,8 @@ Coordinates::Coordinates(QSettings * ipDabSettings) :
   total->addWidget(mpBtnAccept);
   setLayout(total);
 
-  mpEditBoxLatitude->setText(mpDabSettings->value("latitude", "").toString());
-  mpEditBoxLongitude->setText(mpDabSettings->value("longitude", "").toString());
+  mpEditBoxLatitude->setText(Settings::Config::varLatitude.get_variant().toString());
+  mpEditBoxLongitude->setText(Settings::Config::varLongitude.get_variant().toString());
 
   connect(mpBtnAccept, &QPushButton::clicked, this, &Coordinates::slot_accept_button);
 
@@ -135,8 +135,8 @@ Coordinates::~Coordinates()
 
 void Coordinates::slot_accept_button()
 {
-  mpDabSettings->setValue("latitude", mpEditBoxLatitude->text());
-  mpDabSettings->setValue("longitude", mpEditBoxLongitude->text());
+  Settings::Config::varLatitude.set(mpEditBoxLatitude->text());
+  Settings::Config::varLongitude.set(mpEditBoxLongitude->text());
 
   QDialog::done(0);
 }

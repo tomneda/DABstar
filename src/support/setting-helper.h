@@ -113,6 +113,8 @@ struct Config  // namespace for the configuration window
   static inline Variant varTiiFile{catConfiguration "varTiiFile"};
   static inline Variant varBrowserAddress{catConfiguration "varBrowserAddress", "http://localhost"};
   static inline Variant varMapPort{catConfiguration "varMapPort", 8080};
+  static inline Variant varLatitude{catConfiguration "varLatitude", 0};
+  static inline Variant varLongitude{catConfiguration "varLongitude", 0};
 
   static inline Widget cbCloseDirect{catConfiguration "cbCloseDirect"};
   static inline Widget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
@@ -182,9 +184,6 @@ public:
     channel,
 
     // needed in config widget
-    hidden,
-    latitude,
-    longitude,
     saveDirAudioDump,
     saveDirSampleDump,
     saveDirContent,

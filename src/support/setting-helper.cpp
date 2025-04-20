@@ -232,9 +232,6 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(presetName, { "", "presetname", "" });
   mMap.insert(channel, { "", "channel", "" });
 
-  mMap.insert(hidden, { "", "hidden", true });
-  mMap.insert(latitude, { "", "latitude", 0 });
-  mMap.insert(longitude, { "", "longitude", 0 });
   mMap.insert(saveDirAudioDump, { "", "saveDirAudioDump", QDir::homePath() });
   mMap.insert(saveDirSampleDump, { "", "saveDirSampleDump", QDir::homePath() });
   mMap.insert(saveDirContent, { "", "saveDirContent", QDir::homePath() });
