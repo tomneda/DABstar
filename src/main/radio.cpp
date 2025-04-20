@@ -2183,7 +2183,8 @@ void RadioInterface::closeEvent(QCloseEvent * event)
     return;
   }
 
-  QMessageBox::StandardButton resultButton = QMessageBox::question(this, PRJ_NAME, tr("Are you sure?\n"), QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
+  QMessageBox::StandardButton resultButton = QMessageBox::question(this, PRJ_NAME, "Quitting " PRJ_NAME "\n\nAre you really sure?\n\n(You can switch-off this message in the configuration settings)",
+    QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
   if (resultButton != QMessageBox::Yes)
   {
     event->ignore();

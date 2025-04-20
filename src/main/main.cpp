@@ -34,6 +34,7 @@
 #include "radio.h"
 #include <QApplication>
 #include <QDir>
+#include <QMessageBox>
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
@@ -45,7 +46,7 @@ int main(int argc, char ** argv)
 
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
   const QString initFileName02 = QDir::toNativeSeparators(configPath +  "settings02.ini");
-  const QString initFileName03 = QDir::toNativeSeparators(configPath +  "settingsTest.ini");
+  const QString initFileName03 = QDir::toNativeSeparators(configPath +  "settings03.ini");
   const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist02.db");
 
   // Default values
@@ -68,9 +69,7 @@ int main(int argc, char ** argv)
     }
   }
 
-  // const auto dabSettings02(std::make_unique<QSettings>(initFileName02, QSettings::IniFormat));
   const auto dabSettings03(std::make_unique<QSettings>(initFileName03, QSettings::IniFormat));
-  // SettingHelper::get_instance(dabSettings02.get()); // create instance of setting helper
   Settings::Storage::instance(dabSettings03.get()); // create instance of settingstorage
 
   QApplication a(argc, argv);
@@ -90,6 +89,14 @@ int main(int argc, char ** argv)
   }
 
   QApplication::setWindowIcon(QIcon(":res/logo/dabstar.png"));
+
+  // we changed the setting file name, so inform the user who already used DABstar in a former version
+  if (!QFile::exists(initFileName03) && QFile::exists(initFileName02)) // no new file yet but had already the former file?
+  {
+    QMessageBox::warning(nullptr, "Warning", "The setting configurations have changed. "
+                                             "Therefore, some settings need to be re-entered, "
+                                             "such as the map coordinates.");
+  }
 
   const auto radioInterface(std::make_unique<RadioInterface>(dabSettings03.get(), dbFileName, altFreqList, dataPort, nullptr));
   radioInterface->show();
