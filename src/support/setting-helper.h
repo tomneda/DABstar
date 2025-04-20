@@ -51,7 +51,7 @@ public:
   explicit Variant(const QString & key);
   explicit Variant(const QString & key, const QVariant & iDefaultValue);
   void define_default_value(const QVariant & iDefaultValue);
-  QVariant read() const;
+  [[nodiscard]] QVariant read() const;
   void write(const QVariant & iValue) const;
 
 private:
@@ -67,7 +67,7 @@ public:
   explicit Widget(const QString & key);
 
   void register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue);
-  QVariant read() const;
+  [[nodiscard]] QVariant read() const;
   int32_t get_combobox_index() const;  // only usable for ComboBoxes, returns the last selected index
 
 private:
@@ -118,15 +118,12 @@ struct Config  // namespace for the configuration window
   static inline Variant varSdrDevice{catConfiguration "varSdrDevice", "no device"};
   static inline Variant varDeviceFile{catConfiguration "varDeviceFile", ""};
   static inline Variant varDeviceVisible{catConfiguration "varDeviceVisible", true};
-
   static inline Variant varSpectrumVisible{catConfiguration "varSpectrumVisible", false};
   static inline Variant varCirVisible{catConfiguration "varCirVisible", false};
   static inline Variant varTechDataVisible{catConfiguration "varTechDataVisible", false};
   static inline Variant varShowDeviceWidget{catConfiguration "varShowDeviceWidget", false};
   static inline Variant varPresetName{catConfiguration "varPresetName", ""};
   static inline Variant varChannel{catConfiguration "varChannel", ""};
-  static inline Variant varSaveDirAudioDump{catConfiguration "varSaveDirAudioDump", ""};
-  static inline Variant varSaveDirSampleDump{catConfiguration "varSaveDirSampleDump", ""};
 
   static inline Widget cbCloseDirect{catConfiguration "cbCloseDirect"};
   static inline Widget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
@@ -163,6 +160,13 @@ struct TiiList // namespace for the TII list viewer window
   static inline Variant varShowTiiList{catConfiguration "varShowTiiList", false};
 };
 
+struct ServiceList // namespace for the TII list viewer window
+{
+  #define catServiceList "ServiceList/" // did not find nicer way to declare that once
+  static inline Variant varSortCol{catServiceList "varSortCol", 0};
+  static inline Variant varSortDesc{catServiceList "varSSortDesc", false};
+};
+
 } // namespace Settings
 
 // legacy stuff
@@ -184,13 +188,6 @@ public:
 
   enum EElem
   {
-
-    // needed in config widget
-    saveDirAudioDump,
-    saveDirSampleDump,
-    saveDirContent,
-    serviceListSortCol,
-    serviceListSortDesc,
   };
 
   QVariant read(const EElem iElem) const;

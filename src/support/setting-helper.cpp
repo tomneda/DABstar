@@ -222,11 +222,6 @@ void SettingHelper::_fill_map_with_defaults()
   const QString tempMotPath = tempPath.filePath("MOT").append('/');
   const QString tempEpgPath = tempPath.filePath("EPG").append('/');
 
-  mMap.insert(saveDirAudioDump, { "", "saveDirAudioDump", QDir::homePath() });
-  mMap.insert(saveDirSampleDump, { "", "saveDirSampleDump", QDir::homePath() });
-  mMap.insert(saveDirContent, { "", "saveDirContent", QDir::homePath() });
-  mMap.insert(serviceListSortCol, { "", "serviceListSortCol", false });
-  mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
 }
 
 void SettingHelper::_fill_map_from_settings()

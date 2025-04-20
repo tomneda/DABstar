@@ -15,6 +15,7 @@
 #include <QPainter>
 #include <QSettings>
 #include "radio.h"
+#include "setting-helper.h"
 #include "service-list-handler.h"
 #include <QLoggingCategory>
 
@@ -66,9 +67,8 @@ bool CustomItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model,
 }
 
 
-ServiceListHandler::ServiceListHandler(QSettings * const iopSettings, const QString & iDbFileName, QTableView * const ipSL) :
+ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL) :
   mpTableView(ipSL),
-  mpSettings(iopSettings),
   mServiceDB(iDbFileName)
 {
   mpTableView->setItemDelegate(&mCustomItemDelegate);
@@ -86,11 +86,11 @@ ServiceListHandler::ServiceListHandler(QSettings * const iopSettings, const QStr
   //mServiceDB.delete_table();
   mServiceDB.create_table();
 
-  if (auto sortColIdx = static_cast<ServiceDB::EColIdx>(mpSettings->value("serviceListSortCol", ServiceDB::CI_Channel).toUInt());
-      sortColIdx < ServiceDB::CI_MAX)
+    if (const auto sortColIdx = static_cast<ServiceDB::EColIdx>(Settings::ServiceList::varSortCol.read().toUInt());
+        sortColIdx < ServiceDB::CI_MAX)
   {
     mServiceDB.sort_column(sortColIdx, true); // first switch to ascending sorting
-    if (mpSettings->value("serviceListSortDesc", false).toBool())
+    if (Settings::ServiceList::varSortDesc.read().toBool())
     {
       mServiceDB.sort_column(sortColIdx, false); // second call will change sorting direction
     }
@@ -307,8 +307,8 @@ void ServiceListHandler::_slot_header_clicked(int iIndex)
 {
   mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex), false);
 
-  mpSettings->setValue("serviceListSortCol", iIndex);
-  mpSettings->setValue("serviceListSortDesc", (mServiceDB.is_sort_desc() ? 1 : 0));
+  Settings::ServiceList::varSortCol.write(iIndex);
+  Settings::ServiceList::varSortDesc.write((mServiceDB.is_sort_desc() ? 1 : 0));
 
   _fill_table_view_from_db();
   _jump_to_list_entry_and_emit_fav_status();

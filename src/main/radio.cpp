@@ -180,7 +180,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   thermoPeakLevelLeft->setBorderWidth(0);
   thermoPeakLevelRight->setBorderWidth(0);
 
-  mpServiceListHandler.reset(new ServiceListHandler(mpSH->get_settings(), iFileNameDb, tblServiceList));
+  mpServiceListHandler.reset(new ServiceListHandler(iFileNameDb, tblServiceList));
 
   // only the queued call will consider the button size?!
   QMetaObject::invokeMethod(this, &RadioInterface::_slot_handle_mute_button, Qt::QueuedConnection);

@@ -47,7 +47,7 @@ class ServiceListHandler : public QObject
 {
   Q_OBJECT
 public:
-  ServiceListHandler(QSettings * const iopSettings, const QString & iDbFileName, QTableView * const ipSL);
+  ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL);
   ~ServiceListHandler() override = default;
 
   using EDataMode = ServiceDB::EDataMode;
@@ -66,7 +66,6 @@ public:
 
 private:
   QTableView * const mpTableView;
-  QSettings * const mpSettings;
   ServiceDB mServiceDB;
   CustomItemDelegate mCustomItemDelegate;
   QString mChannelLast;
