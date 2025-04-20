@@ -41,7 +41,7 @@ MapPortHandler::MapPortHandler()
   total->addItem(layout);
   total->addWidget(acceptButton);
   setLayout(total);
-  mapPortSetting->setText(Settings::Config::varMapPort.get_variant().toString());
+  mapPortSetting->setText(Settings::Config::varMapPort.read().toString());
   connect(acceptButton, SIGNAL(clicked ()), this, SLOT(handle_acceptButton ()));
   show();
 }
@@ -56,6 +56,6 @@ MapPortHandler::~MapPortHandler()
 
 void MapPortHandler::handle_acceptButton()
 {
-  Settings::Config::varMapPort.set(mapPortSetting->text());
+  Settings::Config::varMapPort.write(mapPortSetting->text());
   QDialog::done(0);
 }

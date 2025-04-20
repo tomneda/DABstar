@@ -436,7 +436,7 @@ bool SdrPlayHandler_v3::setup_xmlDump()
     }
   }
 
-  const bool useNativeFileDialog = Settings::Config::cbUseNativeFileDialog.get_variant().toBool();
+  const bool useNativeFileDialog = Settings::Config::cbUseNativeFileDialog.read().toBool();
   QString suggestedFileName = saveDir + deviceModel + "-" + channel + "-" + timeString;
   QString fileName = QFileDialog::getSaveFileName(nullptr, tr("Save file ..."), suggestedFileName + ".uff", tr("Xml (*.uff)"), nullptr,
                                                   (useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog));

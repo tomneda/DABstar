@@ -51,8 +51,8 @@ public:
   explicit Variant(const QString & key);
   explicit Variant(const QString & key, const QVariant & iDefaultValue);
   void define_default_value(const QVariant & iDefaultValue);
-  QVariant get_variant() const;
-  void set(const QVariant & iValue) const;
+  QVariant read() const;
+  void write(const QVariant & iValue) const;
 
 private:
   QString mKey;
@@ -67,7 +67,7 @@ public:
   explicit Widget(const QString & key);
 
   void register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue);
-  QVariant get_variant() const;
+  QVariant read() const;
   int32_t get_combobox_index() const;  // only usable for ComboBoxes, returns the last selected index
 
 private:

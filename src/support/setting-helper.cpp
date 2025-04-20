@@ -36,13 +36,13 @@ void Variant::define_default_value(const QVariant & iDefaultValue)
   mDefaultValue = iDefaultValue;
 }
 
-QVariant Variant::get_variant() const
+QVariant Variant::read() const
 {
   assert(mDefaultValue.isValid()); // is it really initialized yet?
   return Storage::instance().value(mKey, mDefaultValue);
 }
 
-void Variant::set(const QVariant & iValue) const
+void Variant::write(const QVariant & iValue) const
 {
   return Storage::instance().setValue(mKey, iValue);
 }
@@ -86,7 +86,7 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
   qFatal("Pointer to mpWidget not handled (1)");
 }
 
-QVariant Widget::get_variant() const
+QVariant Widget::read() const
 {
   return Storage::instance().value(mKey, mDefaultValue);
 }
@@ -95,7 +95,7 @@ int32_t Widget::get_combobox_index() const
 {
   auto * const pD = dynamic_cast<QComboBox *>(mpWidget);
   assert(pD != nullptr); // only for comboboxes
-  const QString var = get_variant().toString();
+  const QString var = read().toString();
   return pD->findText(var);
 }
 

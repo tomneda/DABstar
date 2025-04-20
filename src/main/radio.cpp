@@ -156,7 +156,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mProcessParams.tiiFramesToCount = 5;
 
   //	set on top or not? checked at start up
-  if (Settings::Config::cbAlwaysOnTop.get_variant().toBool())
+  if (Settings::Config::cbAlwaysOnTop.read().toBool())
   {
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
   }
@@ -200,7 +200,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   // load last used service
 
-  if (QString presetName = Settings::Config::varPresetName.get_variant().toString();
+  if (QString presetName = Settings::Config::varPresetName.read().toString();
       !presetName.isEmpty())
   {
     QStringList ss = presetName.split(":");
@@ -222,8 +222,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   }
 
   mChannel.targetPos = cmplx(0, 0);
-  const float local_lat = Settings::Config::varLatitude.get_variant().toFloat();
-  const float local_lon = Settings::Config::varLongitude.get_variant().toFloat();
+  const float local_lat = Settings::Config::varLatitude.read().toFloat();
+  const float local_lon = Settings::Config::varLongitude.read().toFloat();
   mChannel.localPos = cmplx(local_lat, local_lon);
 
   mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
@@ -266,13 +266,13 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
     emit signal_set_audio_device(QByteArray());  // activates the default audio device
   }
 
-  mPicturesPath = Settings::Config::varPicturesPath.get_variant().toString();
+  mPicturesPath = Settings::Config::varPicturesPath.read().toString();
   mPicturesPath = check_and_create_dir(mPicturesPath);
 
-  mFilePath = Settings::Config::varMotPath.get_variant().toString();
+  mFilePath = Settings::Config::varMotPath.read().toString();
   mFilePath = check_and_create_dir(mFilePath);
 
-  mEpgPath = Settings::Config::varEpgPath.get_variant().toString();
+  mEpgPath = Settings::Config::varEpgPath.read().toString();
   mEpgPath = check_and_create_dir(mEpgPath);
 
   connect(&mEpgProcessor, &EpgDecoder::signal_set_epg_data, this, &RadioInterface::slot_set_epg_data);
@@ -289,7 +289,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   //	restore some settings from previous incarnations
   mBandHandler.setupChannels(cmbChannelSelector, BAND_III);
-  const QString skipFileName = Settings::Config::varSkipFile.get_variant().toString();
+  const QString skipFileName = Settings::Config::varSkipFile.read().toString();
   mBandHandler.setup_skipList(skipFileName);
 
   connect(mpTechDataWidget, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
@@ -299,7 +299,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   lblCopyrightIcon->setTextInteractionFlags(Qt::TextBrowserInteraction);
   lblCopyrightIcon->setOpenExternalLinks(true);
 
-  QString tiiFileName = Settings::Config::varTiiFile.get_variant().toString();
+  QString tiiFileName = Settings::Config::varTiiFile.read().toString();
   mChannel.tiiFile = false;
 
   if (tiiFileName.isEmpty() || !QFile(tiiFileName).exists())
@@ -347,7 +347,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
   {
-    const QString h = Settings::Config::varSdrDevice.get_variant().toString();
+    const QString h = Settings::Config::varSdrDevice.read().toString();
     const int32_t k = mConfig.deviceSelector->findText(h);
 
     if (k != -1)
@@ -366,23 +366,23 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   connect(btnEject, &QPushButton::clicked, this, [this](bool){ _slot_new_device(mDeviceSelector.get_device_name()); });
   connect(configButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_config_button);
 
-  if (Settings::Config::varSpectrumVisible.get_variant().toBool())
+  if (Settings::Config::varSpectrumVisible.read().toBool())
   {
     mSpectrumViewer.show();
   }
 
-  if (Settings::Config::varCirVisible.get_variant().toBool())
+  if (Settings::Config::varCirVisible.read().toBool())
   {
     mCirViewer.show();
     cir_window = true;
   }
 
-  if (Settings::Config::varTechDataVisible.get_variant().toBool())
+  if (Settings::Config::varTechDataVisible.read().toBool())
   {
     mpTechDataWidget->show();
   }
 
-  mShowTiiListWindow = Settings::TiiList::varShowTiiList.get_variant().toBool();
+  mShowTiiListWindow = Settings::TiiList::varShowTiiList.read().toBool();
 
   // if a device was selected, we just start, otherwise we wait until one is selected
   if (mpInputDevice != nullptr)
@@ -518,20 +518,20 @@ bool RadioInterface::do_start()
 
   mTiiListDisplay.hide();
 
-  mpDabProcessor->set_sync_on_strongest_peak(Settings::Config::cbUseStrongestPeak.get_variant().toBool());
-  mpDabProcessor->set_dc_avoidance_algorithm(Settings::Config::cbUseDcAvoidance.get_variant().toBool());
-  mpDabProcessor->set_dc_removal(Settings::Config::cbUseDcRemoval.get_variant().toBool());
-  mpDabProcessor->set_tii_collisions(Settings::Config::cbTiiCollisions.get_variant().toBool());
+  mpDabProcessor->set_sync_on_strongest_peak(Settings::Config::cbUseStrongestPeak.read().toBool());
+  mpDabProcessor->set_dc_avoidance_algorithm(Settings::Config::cbUseDcAvoidance.read().toBool());
+  mpDabProcessor->set_dc_removal(Settings::Config::cbUseDcRemoval.read().toBool());
+  mpDabProcessor->set_tii_collisions(Settings::Config::cbTiiCollisions.read().toBool());
   mpDabProcessor->set_tii_processing(true);
-  mpDabProcessor->set_tii_threshold(Settings::Config::sbTiiThreshold.get_variant().toInt());
-  mpDabProcessor->set_tii_sub_id(Settings::Config::sbTiiSubId.get_variant().toInt());
+  mpDabProcessor->set_tii_threshold(Settings::Config::sbTiiThreshold.read().toInt());
+  mpDabProcessor->set_tii_sub_id(Settings::Config::sbTiiSubId.read().toInt());
   {
     int idx = mConfig.cmbSoftBitGen->currentIndex();
     mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);
   }
 
   // should the device widget be shown?
-  if (Settings::Config::varShowDeviceWidget.get_variant().toBool())
+  if (Settings::Config::varShowDeviceWidget.read().toBool())
   {
     mpInputDevice->show();
   }
@@ -711,7 +711,7 @@ void RadioInterface::_slot_handle_content_button()
   QString theTime;
   QString SNR = "SNR " + QString::number(mChannel.snr);
 
-  if (Settings::Config::cbUseUtcTime.get_variant().toBool())
+  if (Settings::Config::cbUseUtcTime.read().toBool())
   {
     theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
@@ -801,7 +801,7 @@ void RadioInterface::slot_handle_mot_object(QByteArray result, QString objectNam
       int subType = getContentSubType((MOTContentType)contentType);
       mEpgProcessor.process_epg(epgData.data(), (int32_t)epgData.size(), currentSId, subType, julianDate);
 
-      if (Settings::Config::cbGenXmlFromEpg.get_variant().toBool())
+      if (Settings::Config::cbGenXmlFromEpg.read().toBool())
       {
         mEpgHandler.decode(epgData, QDir::toNativeSeparators(objectName));
       }
@@ -877,7 +877,7 @@ void RadioInterface::show_MOTlabel(QByteArray & data, int contentType, const QSt
   default: return;
   }
 
-  if (Settings::Config::cbSaveSlides.get_variant().toBool() && (mPicturesPath != ""))
+  if (Settings::Config::cbSaveSlides.read().toBool() && (mPicturesPath != ""))
   {
     QString pict = mPicturesPath + pictureName;
     QString temp = pict;
@@ -1323,7 +1323,7 @@ void RadioInterface::_slot_handle_device_widget_button()
     mpInputDevice->hide();
   }
 
-  Settings::Config::varDeviceVisible.set(!mpInputDevice->isHidden());
+  Settings::Config::varDeviceVisible.write(!mpInputDevice->isHidden());
 }
 
 void RadioInterface::_slot_handle_tii_button()
@@ -1340,7 +1340,7 @@ void RadioInterface::_slot_handle_tii_button()
   }
 
   mShowTiiListWindow = !mShowTiiListWindow;
-  Settings::TiiList::varShowTiiList.set(mShowTiiListWindow);
+  Settings::TiiList::varShowTiiList.write(mShowTiiListWindow);
 }
 
 void RadioInterface::slot_handle_tii_threshold(int trs)
@@ -1385,7 +1385,7 @@ void RadioInterface::slot_clock_time(int year, int month, int day, int hours, in
 
   QString result;
 
-  if (Settings::Config::cbUseUtcTime.get_variant().toBool())
+  if (Settings::Config::cbUseUtcTime.read().toBool())
   {
     result = convertTime(year, month, day, utc_hour, utc_min, utc_sec);
   }
@@ -1688,7 +1688,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     // see if we have a map
     if (mpHttpHandler && dataValid)
     {
-      const QDateTime theTime = (Settings::Config::cbUseUtcTime.get_variant().toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
+      const QDateTime theTime = (Settings::Config::cbUseUtcTime.read().toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
       mpHttpHandler->putData(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
                              bd.strength_dB, (int)bd.distance_km, (int)bd.corner_deg, bd.isNonEtsiPhase);
     }
@@ -1836,7 +1836,7 @@ void RadioInterface::_slot_handle_tech_detail_button()
   {
     mpTechDataWidget->hide();
   }
-  Settings::Config::varTechDataVisible.set(!mpTechDataWidget->isHidden());
+  Settings::Config::varTechDataVisible.write(!mpTechDataWidget->isHidden());
 }
 
 void RadioInterface::_slot_handle_cir_button()
@@ -1854,7 +1854,7 @@ void RadioInterface::_slot_handle_cir_button()
     mCirViewer.hide();
     cir_window = false;
   }
-  Settings::Config::varCirVisible.set(!mCirViewer.is_hidden());
+  Settings::Config::varCirVisible.write(!mCirViewer.is_hidden());
 }
 
 
@@ -2100,7 +2100,7 @@ void RadioInterface::_slot_handle_spectrum_button()
   {
     mSpectrumViewer.hide();
   }
-  Settings::Config::varSpectrumVisible.set(!mSpectrumViewer.is_hidden());
+  Settings::Config::varSpectrumVisible.write(!mSpectrumViewer.is_hidden());
 }
 
 void RadioInterface::connect_dab_processor()
@@ -2178,7 +2178,7 @@ void RadioInterface::disconnect_gui()
 
 void RadioInterface::closeEvent(QCloseEvent * event)
 {
-  if (Settings::Config::cbCloseDirect.get_variant().toBool())
+  if (Settings::Config::cbCloseDirect.read().toBool())
   {
     _slot_terminate_process();
     event->accept();
@@ -2408,7 +2408,7 @@ void RadioInterface::start_service(SDabService & s)
 
     start_audio_service(&ad);
     const QString csn = mChannel.channelName + ":" + serviceName;
-    Settings::Config::varPresetName.set(csn);
+    Settings::Config::varPresetName.write(csn);
 
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -2429,7 +2429,7 @@ void RadioInterface::start_service(SDabService & s)
   else
   {
     write_warning_message("Insufficient data for this program (2)");
-    Settings::Config::varPresetName.set("");
+    Settings::Config::varPresetName.write("");
   }
 }
 
@@ -2635,7 +2635,7 @@ void RadioInterface::start_channel(const QString & iChannel)
 
   if (!mIsScanning)
   {
-    Settings::Config::varChannel.set(iChannel);
+    Settings::Config::varChannel.write(iChannel);
     mEpgTimer.start(cEpgTimeoutMs);
   }
 }
@@ -3216,7 +3216,7 @@ void RadioInterface::LOG(const QString & a1, const QString & a2)
   }
 
   QString theTime;
-  if (Settings::Config::cbUseUtcTime.get_variant().toBool())
+  if (Settings::Config::cbUseUtcTime.read().toBool())
   {
     theTime = convertTime(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute);
   }
@@ -3258,19 +3258,19 @@ void RadioInterface::slot_handle_set_coordinates_button()
 {
   Coordinates theCoordinator;
   (void)theCoordinator.QDialog::exec();
-  const float local_lat = Settings::Config::varLatitude.get_variant().toFloat();
-  const float local_lon = Settings::Config::varLongitude.get_variant().toFloat();
+  const float local_lat = Settings::Config::varLatitude.read().toFloat();
+  const float local_lon = Settings::Config::varLongitude.read().toFloat();
   mChannel.localPos = cmplx(local_lat, local_lon);
 }
 
 void RadioInterface::slot_load_table()
 {
-  QString tableFile = Settings::Config::varTiiFile.get_variant().toString();
+  QString tableFile = Settings::Config::varTiiFile.read().toString();
 
   if (tableFile.isEmpty())
   {
     tableFile = QDir::homePath() + "/.txdata.tii";
-    Settings::Config::varTiiFile.set(tableFile);
+    Settings::Config::varTiiFile.write(tableFile);
   }
 
   mTiiHandler.loadTable(tableFile);
@@ -3299,11 +3299,11 @@ void RadioInterface::_slot_handle_http_button()
 
   if (mpHttpHandler == nullptr)
   {
-    const QString browserAddress = Settings::Config::varBrowserAddress.get_variant().toString();
-    const QString mapPort = Settings::Config::varMapPort.get_variant().toString();
+    const QString browserAddress = Settings::Config::varBrowserAddress.read().toString();
+    const QString mapPort = Settings::Config::varMapPort.read().toString();
 
     QString mapFile;
-    if (Settings::Config::cbSaveTransToCsv.get_variant().toBool())
+    if (Settings::Config::cbSaveTransToCsv.read().toBool())
     {
       mapFile = mOpenFileDialog.get_maps_file_name();
     }
@@ -3316,7 +3316,7 @@ void RadioInterface::_slot_handle_http_button()
                                     browserAddress,
                                     mChannel.localPos,
                                     mapFile,
-                                    Settings::Config::cbManualBrowserStart.get_variant().toBool());
+                                    Settings::Config::cbManualBrowserStart.read().toBool());
     mMaxDistance = -1;
     if (mpHttpHandler != nullptr)
     {

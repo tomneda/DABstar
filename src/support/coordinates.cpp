@@ -120,8 +120,8 @@ Coordinates::Coordinates()
   total->addWidget(mpBtnAccept);
   setLayout(total);
 
-  mpEditBoxLatitude->setText(Settings::Config::varLatitude.get_variant().toString());
-  mpEditBoxLongitude->setText(Settings::Config::varLongitude.get_variant().toString());
+  mpEditBoxLatitude->setText(Settings::Config::varLatitude.read().toString());
+  mpEditBoxLongitude->setText(Settings::Config::varLongitude.read().toString());
 
   connect(mpBtnAccept, &QPushButton::clicked, this, &Coordinates::slot_accept_button);
 
@@ -135,8 +135,8 @@ Coordinates::~Coordinates()
 
 void Coordinates::slot_accept_button()
 {
-  Settings::Config::varLatitude.set(mpEditBoxLatitude->text());
-  Settings::Config::varLongitude.set(mpEditBoxLongitude->text());
+  Settings::Config::varLatitude.write(mpEditBoxLatitude->text());
+  Settings::Config::varLongitude.write(mpEditBoxLongitude->text());
 
   QDialog::done(0);
 }
