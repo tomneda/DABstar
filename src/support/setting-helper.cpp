@@ -167,7 +167,7 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t i
 
   if (!var.canConvert<QByteArray>())
   {
-    qWarning("Cannot retrieve widget geometry from settings. Using default settings.");
+    // qWarning("Cannot retrieve widget geometry from settings. Using default settings.");
     if (iIsFixedSized)
     {
       iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));

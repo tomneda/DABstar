@@ -233,7 +233,7 @@ private:
   BandHandler mBandHandler;
   DynLinkCache mDynLabelCache{10};
   TiiHandler mTiiHandler{};
-  TiiListDisplay	mTiiListDisplay;
+  TiiListDisplay mTiiListDisplay{};
   OpenFileDialog mOpenFileDialog;
   HttpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;

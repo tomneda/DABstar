@@ -97,13 +97,13 @@ struct General // namespace for main window data
 
 struct Spectrum // namespace for the spectrum window
 {
-  #define catSpectrumViewer "spectrumViewer/" // did not find nicer way to declare that once
+  #define catSpectrumViewer "SpectrumViewer/" // did not find nicer way to declare that once
   static inline PosAndSize posAndSize{catSpectrumViewer};
 };
 
 struct Config  // namespace for the configuration window
 {
-  #define catConfiguration "configuration/" // did not find nicer way to declare that once
+  #define catConfiguration "Configuration/" // did not find nicer way to declare that once
   static inline PosAndSize posAndSize{catConfiguration};
 
   static inline Variant varPicturesPath{catConfiguration "varPicturesPath"};
@@ -111,7 +111,6 @@ struct Config  // namespace for the configuration window
   static inline Variant varEpgPath{catConfiguration "varEpgPath"};
   static inline Variant varSkipFile{catConfiguration "varSkipFile"};
   static inline Variant varTiiFile{catConfiguration "varTiiFile"};
-  static inline Variant varShowTiiList{catConfiguration "varShowTiiList", false};
   static inline Variant varBrowserAddress{catConfiguration "varBrowserAddress", "http://localhost"};
   static inline Variant varMapPort{catConfiguration "varMapPort", 8080};
 
@@ -138,9 +137,16 @@ struct Config  // namespace for the configuration window
 
 struct CirViewer // namespace for the CIR viewer window
 {
-  #define catCirViewer "cirViewer/" // did not find nicer way to declare that once
+  #define catCirViewer "CirViewer/" // did not find nicer way to declare that once
   static inline PosAndSize posAndSize{catCirViewer};
+};
 
+struct TiiList // namespace for the TII list viewer window
+{
+  #define catTiiList "TiiList/" // did not find nicer way to declare that once
+  static inline PosAndSize posAndSize{catTiiList};
+
+  static inline Variant varShowTiiList{catConfiguration "varShowTiiList", false};
 };
 
 } // namespace Settings

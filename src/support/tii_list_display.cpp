@@ -30,12 +30,11 @@
 #include "tii_list_display.h"
 #include "radio.h"
 #include <QHeaderView>
+#include "setting-helper.h"
 
 
-TiiListDisplay::TiiListDisplay(QSettings * s)
+TiiListDisplay::TiiListDisplay()
 {
-  mpSettings = s;
-
   mpTableWidget.reset(new QTableWidget(0, cColNr));
   mpTableWidget->setHorizontalHeaderLabels(QStringList() << "Main" << "Sub" << "Level" << "Phase" << "Transmitter"
                                                          << "Distance" << "Dir" << "Power" << "Altitude" << "Height");
@@ -45,12 +44,12 @@ TiiListDisplay::TiiListDisplay(QSettings * s)
   mpWidget->setWindowTitle("TII list");
   mpWidget->setWidget(mpTableWidget.get());
 
-  _set_position_and_size(s, mpWidget, mpTableWidget, "tiiList");
+  Settings::TiiList::posAndSize.read_widget_geometry(mpWidget.get(), 660, 250, false);
 }
 
 TiiListDisplay::~TiiListDisplay()
 {
-  _store_widget_position(mpSettings, mpWidget, mpTableWidget, "tiiList");
+  Settings::TiiList::posAndSize.write_widget_geometry(mpWidget.get());
   mpTableWidget->setRowCount(0);
 }
 
@@ -113,27 +112,5 @@ void TiiListDisplay::add_row(const SCacheElem & iTr, const SDerivedData & iDD)
       mpTableWidget->item(row, colIdx)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     }
   }
-}
-
-void TiiListDisplay::_set_position_and_size(QSettings * settings, QScopedPointer<QScrollArea> & w, QScopedPointer<QTableWidget> & t, const QString & key)
-{
-  settings->beginGroup(key);
-  int x = settings->value(key + "-x", 100).toInt();
-  int y = settings->value(key + "-y", 100).toInt();
-  int wi = settings->value(key + "-w", 660).toInt();
-  int he = settings->value(key + "-h", 250).toInt();
-  settings->endGroup();
-  w->resize(QSize(wi, he));
-  w->move(QPoint(x, y));
-}
-
-void TiiListDisplay::_store_widget_position(QSettings * settings, QScopedPointer<QScrollArea> & w, QScopedPointer<QTableWidget> & t, const QString & key)
-{
-  settings->beginGroup(key);
-  settings->setValue(key + "-x", w->pos().x());
-  settings->setValue(key + "-y", w->pos().y());
-  settings->setValue(key + "-w", w->size().width());
-  settings->setValue(key + "-h", w->size().height());
-  settings->endGroup();
 }
 

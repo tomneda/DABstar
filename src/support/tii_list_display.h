@@ -45,7 +45,7 @@ class TiiListDisplay : public QFrame
   Q_OBJECT
 
 public:                                                                        
-  TiiListDisplay(QSettings *);
+  TiiListDisplay();
   ~TiiListDisplay();
 
   struct SDerivedData
@@ -69,8 +69,4 @@ private:
   static constexpr int32_t cColNr = 10;
   QScopedPointer<QScrollArea> mpWidget;
   QScopedPointer<QTableWidget> mpTableWidget;
-  QSettings * mpSettings;
-  
-  void _set_position_and_size(QSettings * settings, QScopedPointer<QScrollArea> & w, QScopedPointer<QTableWidget> & t, const QString & key);
-  void _store_widget_position(QSettings * settings, QScopedPointer<QScrollArea> & w, QScopedPointer<QTableWidget> & t, const QString & key);
 };

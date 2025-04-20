@@ -137,15 +137,11 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , mSpectrumViewer(this, ipSettings, mpSpectrumBuffer, mpIqBuffer, mpCarrBuffer, mpResponseBuffer)
   , mCirViewer(mpCirBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
-  , mTiiListDisplay(ipSettings)
   , mOpenFileDialog(ipSettings)
   , mConfig(this)
   , mpSH(&SettingHelper::get_instance())
   , mDeviceSelector(ipSettings)
 {
-  int32_t k;
-  QString h;
-
   mIsRunning.store(false);
   mIsScanning.store(false);
 
@@ -259,8 +255,8 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   _slot_load_audio_device_list(mpAudioOutput->get_audio_device_list());
   mConfig.cmbSoundOutput->show();
 
-  k = Settings::Config::cmbSoundOutput.get_combobox_index();
-  if (k != -1)
+  if (const int32_t k = Settings::Config::cmbSoundOutput.get_combobox_index();
+      k != -1)
   {
     mConfig.cmbSoundOutput->setCurrentIndex(k);
     emit signal_set_audio_device(mConfig.cmbSoundOutput->itemData(k).toByteArray());
@@ -350,17 +346,20 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
-  h = mpSH->read(SettingHelper::device).toString();
-  k = mConfig.deviceSelector->findText(h);
-  if (k != -1)
   {
-    mConfig.deviceSelector->setCurrentIndex(k);
+    const QString h = mpSH->read(SettingHelper::device).toString();
+    const int32_t k = mConfig.deviceSelector->findText(h);
 
-    mpInputDevice = mDeviceSelector.create_device(mConfig.deviceSelector->currentText(), mChannel.realChannel);
-
-    if (mpInputDevice != nullptr)
+    if (k != -1)
     {
-      _set_device_to_file_mode(!mChannel.realChannel);
+      mConfig.deviceSelector->setCurrentIndex(k);
+
+      mpInputDevice = mDeviceSelector.create_device(mConfig.deviceSelector->currentText(), mChannel.realChannel);
+
+      if (mpInputDevice != nullptr)
+      {
+        _set_device_to_file_mode(!mChannel.realChannel);
+      }
     }
   }
 
@@ -383,7 +382,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
     mpTechDataWidget->show();
   }
 
-  mShowTiiListWindow = Settings::Config::varShowTiiList.get_variant().toBool();
+  mShowTiiListWindow = Settings::TiiList::varShowTiiList.get_variant().toBool();
 
   // if a device was selected, we just start, otherwise we wait until one is selected
   if (mpInputDevice != nullptr)
@@ -1341,7 +1340,7 @@ void RadioInterface::_slot_handle_tii_button()
   }
 
   mShowTiiListWindow = !mShowTiiListWindow;
-  Settings::Config::varShowTiiList.set(mShowTiiListWindow);
+  Settings::TiiList::varShowTiiList.set(mShowTiiListWindow);
 }
 
 void RadioInterface::slot_handle_tii_threshold(int trs)
