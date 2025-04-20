@@ -91,6 +91,8 @@ struct Main // namespace for main window data
   static inline QString category = "Main";
 
   static inline PosAndSize posAndSize{category};
+
+  static inline Widget slVolume{category, "slVolume"};
 };
 
 struct Config  // namespace for the configuration window

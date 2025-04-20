@@ -43,7 +43,6 @@
 #include "compass_direction.h"
 #include "copyright_info.h"
 #include "time-table.h"
-#include "device-exceptions.h"
 #include <cmath>
 #include <fstream>
 #include <numeric>
@@ -163,7 +162,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
 
-  Settings::Main::posAndSize.read_widget_geometry(this, 730, 490+50, true);
+  Settings::Main::posAndSize.read_widget_geometry(this, 720, 540, true);
 
   setup_ui_colors();
   _create_status_info();
@@ -244,6 +243,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   connect(this, &RadioInterface::signal_set_audio_device, mpAudioOutput, &IAudioOutput::slot_set_audio_device, Qt::QueuedConnection);
   connect(this, &RadioInterface::signal_audio_mute, mpAudioOutput, &IAudioOutput::slot_mute, Qt::QueuedConnection);
   connect(this, &RadioInterface::signal_audio_buffer_filled_state, progBarAudioBuffer, &QProgressBar::setValue);
+  connect(sliderVolume, &QSlider::valueChanged, mpAudioOutput, &IAudioOutput::slot_setVolume);
 
   mAudioOutputThread = new QThread(this);
   mAudioOutputThread->setObjectName("audioOutThr");
@@ -264,6 +264,9 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   {
     emit signal_set_audio_device(QByteArray());  // activates the default audio device
   }
+
+  Settings::Main::slVolume.register_widget_and_update_ui_from_setting(sliderVolume, 100); // do this after the above connect to the volume handler as it triggers read from setting file
+
 
   mPicturesPath = Settings::Config::varPicturesPath.read().toString();
   mPicturesPath = check_and_create_dir(mPicturesPath);
@@ -3496,7 +3499,6 @@ QString RadioInterface::get_bg_style_sheet(const QColor & iBgBaseColor, const ch
 void RadioInterface::setup_ui_colors()
 {
   btnMuteAudio->setStyleSheet(get_bg_style_sheet({ 255, 60, 60 }));
-
   btnScanning->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
   btnDeviceWidget->setStyleSheet(get_bg_style_sheet({ 87, 230, 236 }));
   configButton->setStyleSheet(get_bg_style_sheet({ 80, 155, 80 }));
