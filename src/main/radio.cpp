@@ -200,7 +200,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   // load last used service
 
-  if (QString presetName = mpSH->read(SettingHelper::presetName).toString();
+  if (QString presetName = Settings::Config::varPresetName.get_variant().toString();
       !presetName.isEmpty())
   {
     QStringList ss = presetName.split(":");
@@ -347,7 +347,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
   {
-    const QString h = mpSH->read(SettingHelper::device).toString();
+    const QString h = Settings::Config::varSdrDevice.get_variant().toString();
     const int32_t k = mConfig.deviceSelector->findText(h);
 
     if (k != -1)
@@ -366,18 +366,18 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   connect(btnEject, &QPushButton::clicked, this, [this](bool){ _slot_new_device(mDeviceSelector.get_device_name()); });
   connect(configButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_config_button);
 
-  if (mpSH->read(SettingHelper::spectrumVisible).toBool())
+  if (Settings::Config::varSpectrumVisible.get_variant().toBool())
   {
     mSpectrumViewer.show();
   }
 
-  if (mpSH->read(SettingHelper::cirVisible).toBool())
+  if (Settings::Config::varCirVisible.get_variant().toBool())
   {
     mCirViewer.show();
     cir_window = true;
   }
 
-  if (mpSH->read(SettingHelper::techDataVisible).toBool())
+  if (Settings::Config::varTechDataVisible.get_variant().toBool())
   {
     mpTechDataWidget->show();
   }
@@ -531,7 +531,7 @@ bool RadioInterface::do_start()
   }
 
   // should the device widget be shown?
-  if (mpSH->read(SettingHelper::showDeviceWidget).toBool())
+  if (Settings::Config::varShowDeviceWidget.get_variant().toBool())
   {
     mpInputDevice->show();
   }
@@ -1323,7 +1323,7 @@ void RadioInterface::_slot_handle_device_widget_button()
     mpInputDevice->hide();
   }
 
-  mpSH->write(SettingHelper::deviceVisible, !mpInputDevice->isHidden());
+  Settings::Config::varDeviceVisible.set(!mpInputDevice->isHidden());
 }
 
 void RadioInterface::_slot_handle_tii_button()
@@ -1836,7 +1836,7 @@ void RadioInterface::_slot_handle_tech_detail_button()
   {
     mpTechDataWidget->hide();
   }
-  mpSH->write(SettingHelper::techDataVisible, !mpTechDataWidget->isHidden());
+  Settings::Config::varTechDataVisible.set(!mpTechDataWidget->isHidden());
 }
 
 void RadioInterface::_slot_handle_cir_button()
@@ -1854,8 +1854,7 @@ void RadioInterface::_slot_handle_cir_button()
     mCirViewer.hide();
     cir_window = false;
   }
-  mpSH->write(SettingHelper::cirVisible, !mCirViewer.is_hidden());
-  //dabSettings->setValue("cirVisible", my_cirViewer.is_hidden() ? 0 : 1);
+  Settings::Config::varCirVisible.set(!mCirViewer.is_hidden());
 }
 
 
@@ -2101,7 +2100,7 @@ void RadioInterface::_slot_handle_spectrum_button()
   {
     mSpectrumViewer.hide();
   }
-  mpSH->write(SettingHelper::spectrumVisible, !mSpectrumViewer.is_hidden());
+  Settings::Config::varSpectrumVisible.set(!mSpectrumViewer.is_hidden());
 }
 
 void RadioInterface::connect_dab_processor()
@@ -2409,7 +2408,7 @@ void RadioInterface::start_service(SDabService & s)
 
     start_audio_service(&ad);
     const QString csn = mChannel.channelName + ":" + serviceName;
-    mpSH->write(SettingHelper::presetName, csn);
+    Settings::Config::varPresetName.set(csn);
 
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -2430,7 +2429,7 @@ void RadioInterface::start_service(SDabService & s)
   else
   {
     write_warning_message("Insufficient data for this program (2)");
-    mpSH->write(SettingHelper::presetName, "");
+    Settings::Config::varPresetName.set("");
   }
 }
 
@@ -2636,7 +2635,7 @@ void RadioInterface::start_channel(const QString & iChannel)
 
   if (!mIsScanning)
   {
-    mpSH->write(SettingHelper::channel, iChannel);
+    Settings::Config::varChannel.set(iChannel);
     mEpgTimer.start(cEpgTimeoutMs);
   }
 }

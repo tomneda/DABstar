@@ -115,6 +115,18 @@ struct Config  // namespace for the configuration window
   static inline Variant varMapPort{catConfiguration "varMapPort", 8080};
   static inline Variant varLatitude{catConfiguration "varLatitude", 0};
   static inline Variant varLongitude{catConfiguration "varLongitude", 0};
+  static inline Variant varSdrDevice{catConfiguration "varSdrDevice", "no device"};
+  static inline Variant varDeviceFile{catConfiguration "varDeviceFile", ""};
+  static inline Variant varDeviceVisible{catConfiguration "varDeviceVisible", true};
+
+  static inline Variant varSpectrumVisible{catConfiguration "varSpectrumVisible", false};
+  static inline Variant varCirVisible{catConfiguration "varCirVisible", false};
+  static inline Variant varTechDataVisible{catConfiguration "varTechDataVisible", false};
+  static inline Variant varShowDeviceWidget{catConfiguration "varShowDeviceWidget", false};
+  static inline Variant varPresetName{catConfiguration "varPresetName", ""};
+  static inline Variant varChannel{catConfiguration "varChannel", ""};
+  static inline Variant varSaveDirAudioDump{catConfiguration "varSaveDirAudioDump", ""};
+  static inline Variant varSaveDirSampleDump{catConfiguration "varSaveDirSampleDump", ""};
 
   static inline Widget cbCloseDirect{catConfiguration "cbCloseDirect"};
   static inline Widget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
@@ -172,16 +184,6 @@ public:
 
   enum EElem
   {
-    // main widget
-    device,
-    deviceFile,
-    deviceVisible,
-    spectrumVisible,
-    cirVisible,
-    techDataVisible,
-    showDeviceWidget,
-    presetName,
-    channel,
 
     // needed in config widget
     saveDirAudioDump,

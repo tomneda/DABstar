@@ -260,8 +260,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
     QString file;
 
     // check if last played file is still valid
-    SettingHelper & sh = SettingHelper::get_instance();
-    const QString lastFileName = sh.read(SettingHelper::deviceFile).toString();
+    const QString lastFileName = Settings::Config::varDeviceFile.get_variant().toString();
 
     if (!lastFileName.isEmpty() && QFile::exists(lastFileName))
     {
@@ -279,7 +278,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 
       if (file.isEmpty()) // dialog closed with cancel?
       {
-        sh.write(SettingHelper::deviceFile, "");
+        Settings::Config::varDeviceFile.set("");
         return nullptr;
       }
     }
@@ -293,17 +292,16 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
     default: return nullptr;
     }
 
-    sh.write(SettingHelper::deviceFile, file);
+    Settings::Config::varDeviceFile.set(file);
   }
   else
   {
     return nullptr;
   }
 
-  SettingHelper & sh = SettingHelper::get_instance();
-  sh.write(SettingHelper::device, iDeviceName); // remember for next restart
+  Settings::Config::varSdrDevice.set(iDeviceName);
 
-  if (sh.read(SettingHelper::deviceVisible).toBool())
+  if (Settings::Config::varDeviceVisible.get_variant().toBool())
   {
     inputDevice->show();
   }
@@ -319,7 +317,7 @@ void DeviceSelector::reset_file_input_last_file(const QString & iDeviceName)
 {
   if (iDeviceName == DN_FILE_INP)
   {
-    SettingHelper::get_instance().write(SettingHelper::deviceFile, "");
+    Settings::Config::varDeviceFile.set("");
   }
 }
 

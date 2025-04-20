@@ -222,16 +222,6 @@ void SettingHelper::_fill_map_with_defaults()
   const QString tempMotPath = tempPath.filePath("MOT").append('/');
   const QString tempEpgPath = tempPath.filePath("EPG").append('/');
 
-  mMap.insert(device, { "", "device", "no device" });
-  mMap.insert(deviceFile, { "", "deviceFile", "" });
-  mMap.insert(deviceVisible, { "", "deviceVisible", true });
-  mMap.insert(spectrumVisible, { "", "spectrumVisible", false });
-  mMap.insert(cirVisible, { "", "cirVisible", false });
-  mMap.insert(techDataVisible, { "", "techDataVisible", false });
-  mMap.insert(showDeviceWidget, { "", "showDeviceWidget", false });
-  mMap.insert(presetName, { "", "presetname", "" });
-  mMap.insert(channel, { "", "channel", "" });
-
   mMap.insert(saveDirAudioDump, { "", "saveDirAudioDump", QDir::homePath() });
   mMap.insert(saveDirSampleDump, { "", "saveDirSampleDump", QDir::homePath() });
   mMap.insert(saveDirContent, { "", "saveDirContent", QDir::homePath() });
