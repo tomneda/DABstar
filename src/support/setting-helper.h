@@ -82,7 +82,7 @@ public:
   void write_widget_geometry(const QWidget * ipWidget) const;
 
 private:
-  QString mCat;
+  QString mKey;
 };
 
 
