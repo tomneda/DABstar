@@ -270,13 +270,13 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
     emit signal_set_audio_device(QByteArray());  // activates the default audio device
   }
 
-  mPicturesPath = mpSH->read(SettingHelper::picturesPath).toString();
+  mPicturesPath = Settings::Config::varPicturesPath.get_variant().toString();
   mPicturesPath = check_and_create_dir(mPicturesPath);
 
-  mFilePath = mpSH->read(SettingHelper::filePath).toString();
+  mFilePath = Settings::Config::varMotPath.get_variant().toString();
   mFilePath = check_and_create_dir(mFilePath);
 
-  mEpgPath = mpSH->read(SettingHelper::epgPath).toString();
+  mEpgPath = Settings::Config::varEpgPath.get_variant().toString();
   mEpgPath = check_and_create_dir(mEpgPath);
 
   connect(&mEpgProcessor, &EpgDecoder::signal_set_epg_data, this, &RadioInterface::slot_set_epg_data);
@@ -293,7 +293,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
 
   //	restore some settings from previous incarnations
   mBandHandler.setupChannels(cmbChannelSelector, BAND_III);
-  const QString skipFileName = mpSH->read(SettingHelper::skipFile).toString();
+  const QString skipFileName = Settings::Config::varSkipFile.get_variant().toString();
   mBandHandler.setup_skipList(skipFileName);
 
   connect(mpTechDataWidget, &TechData::signal_handle_timeTable, this, &RadioInterface::_slot_handle_time_table);
@@ -303,7 +303,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   lblCopyrightIcon->setTextInteractionFlags(Qt::TextBrowserInteraction);
   lblCopyrightIcon->setOpenExternalLinks(true);
 
-  QString tiiFileName = mpSH->read(SettingHelper::tiiFile).toString();
+  QString tiiFileName = Settings::Config::varTiiFile.get_variant().toString();
   mChannel.tiiFile = false;
 
   if (tiiFileName.isEmpty() || !QFile(tiiFileName).exists())
@@ -3266,12 +3266,12 @@ void RadioInterface::slot_handle_set_coordinates_button()
 
 void RadioInterface::slot_load_table()
 {
-  QString tableFile = mpSH->read(SettingHelper::tiiFile).toString();
+  QString tableFile = Settings::Config::varTiiFile.get_variant().toString();
 
   if (tableFile.isEmpty())
   {
     tableFile = QDir::homePath() + "/.txdata.tii";
-    mpSH->write(SettingHelper::tiiFile, tableFile);
+    Settings::Config::varTiiFile.set(tableFile);
   }
 
   mTiiHandler.loadTable(tableFile);

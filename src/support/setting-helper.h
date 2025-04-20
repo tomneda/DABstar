@@ -106,7 +106,11 @@ struct Config  // namespace for the configuration window
   #define catConfiguration "configuration/" // did not find nicer way to declare that once
   static inline PosAndSize posAndSize{catConfiguration};
 
-  static inline Variant width{catConfiguration "width", 800};
+  static inline Variant varPicturesPath{catConfiguration "varPicturesPath"};
+  static inline Variant varMotPath{catConfiguration "varFilePath"};
+  static inline Variant varEpgPath{catConfiguration "varEpgPath"};
+  static inline Variant varSkipFile{catConfiguration "varSkipFile"};
+  static inline Variant varTiiFile{catConfiguration "varTiiFile"};
 
   static inline Widget cbCloseDirect{catConfiguration "cbCloseDirect"};
   static inline Widget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
@@ -158,11 +162,6 @@ public:
   enum EElem
   {
     // main widget
-    picturesPath,
-    filePath,
-    epgPath,
-    skipFile,
-    tiiFile,
     device,
     deviceFile,
     deviceVisible,

@@ -32,12 +32,13 @@ Variant::Variant(const QString & key, const QVariant & iDefaultValue)
 
 void Variant::define_default_value(const QVariant & iDefaultValue)
 {
-  assert(!mDefaultValue.isValid()); // is is really not initialized yet?
+  assert(!mDefaultValue.isValid()); // is it really not initialized yet?
   mDefaultValue = iDefaultValue;
 }
 
 QVariant Variant::get_variant() const
 {
+  assert(mDefaultValue.isValid()); // is it really initialized yet?
   return Storage::instance().value(mKey, mDefaultValue);
 }
 
@@ -222,11 +223,6 @@ void SettingHelper::_fill_map_with_defaults()
   const QString tempMotPath = tempPath.filePath("MOT").append('/');
   const QString tempEpgPath = tempPath.filePath("EPG").append('/');
 
-  mMap.insert(picturesPath, { "", "picturesPath", tempPicPath });
-  mMap.insert(filePath, { "", "filePath", tempMotPath });
-  mMap.insert(epgPath, { "", "epgPath", tempEpgPath });
-  mMap.insert(skipFile, { "", "skipFile", "" });
-  mMap.insert(tiiFile, { "", "tiiFile", "" });
   mMap.insert(device, { "", "device", "no device" });
   mMap.insert(deviceFile, { "", "deviceFile", "" });
   mMap.insert(deviceVisible, { "", "deviceVisible", true });
