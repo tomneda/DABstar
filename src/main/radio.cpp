@@ -2145,8 +2145,8 @@ void RadioInterface::connect_gui()
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   connect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
-  connect(btnTiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
-  connect(mConfig.cirButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_cir_button);
+  connect(btnTii, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
+  connect(btnCir, &QPushButton::clicked, this, &RadioInterface::_slot_handle_cir_button);
 }
 
 void RadioInterface::disconnect_gui()
@@ -2170,8 +2170,8 @@ void RadioInterface::disconnect_gui()
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &RadioInterface::_slot_service_changed);
   disconnect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &RadioInterface::_slot_favorite_changed);
   disconnect(btnToggleFavorite, &QPushButton::clicked, this, &RadioInterface::_slot_handle_favorite_button);
-  disconnect(btnTiiButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
-  disconnect(mConfig.cirButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_cir_button);
+  disconnect(btnTii, &QPushButton::clicked, this, &RadioInterface::_slot_handle_tii_button);
+  disconnect(btnCir, &QPushButton::clicked, this, &RadioInterface::_slot_handle_cir_button);
 }
 
 void RadioInterface::closeEvent(QCloseEvent * event)
@@ -3507,7 +3507,8 @@ void RadioInterface::setup_ui_colors()
   btnEject->setStyleSheet(get_bg_style_sheet({ 118, 60, 162 }));
   btnTargetService->setStyleSheet(get_bg_style_sheet({ 33, 106, 105 }));
   btnToggleFavorite->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
-  btnTiiButton->setStyleSheet(get_bg_style_sheet({ 255, 100, 0 }));
+  btnTii->setStyleSheet(get_bg_style_sheet({ 255, 100, 0 }));
+  btnCir->setStyleSheet(get_bg_style_sheet({ 220, 37, 192 }));
 
   _set_http_server_button(false);
 }
@@ -3552,8 +3553,10 @@ void RadioInterface::_slot_set_static_button_style()
   btnSpectrumScope->setFixedSize(QSize(32, 30));
   configButton->setIconSize(QSize(24, 24));
   configButton->setFixedSize(QSize(32, 30));
-  btnTiiButton->setIconSize(QSize(24, 24));
-  btnTiiButton->setFixedSize(QSize(32, 30));
+  btnTii->setIconSize(QSize(24, 24));
+  btnTii->setFixedSize(QSize(32, 30));
+  btnCir->setIconSize(QSize(24, 24));
+  btnCir->setFixedSize(QSize(32, 30));
   btnScanning->setIconSize(QSize(24, 24));
   btnScanning->setFixedSize(QSize(32, 30));
   btnScanning->init(":res/icons/scan24.png", 3, 1);
