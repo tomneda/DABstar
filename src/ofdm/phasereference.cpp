@@ -32,6 +32,9 @@
 #include  <QVector>
 #include  "radio.h"
 #include  <vector>
+#ifdef HAVE_SSE_OR_AVX
+  #include <volk/volk.h>
+#endif
 
 /**
   *	\class PhaseReference
@@ -92,10 +95,14 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
   fftwf_execute(mFftPlanFwd);
 
   //	into the frequency domain, now correlate
+#ifdef HAVE_SSE_OR_AVX
+  volk_32fc_x2_multiply_conjugate_32fc_a(mFftInBuffer.data(), mFftOutBuffer.data(), mRefTable.data(), cTu);
+#else
   for (int32_t i = 0; i < cTu; i++)
   {
     mFftInBuffer[i] = mFftOutBuffer[i] * conj(mRefTable[i]);
   }
+#endif
 
   //	and, again, back into the time domain
   fftwf_execute(mFftPlanBwd);
@@ -166,7 +173,9 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
     if (mDisplayCounter > mFramesPerSecond / 2)
     {
       for (int32_t i = 0; i < cTu; i++)
-         mMeanCorrPeakValues[i] /= 6;
+      {
+        mMeanCorrPeakValues[i] /= 6;
+      }
       mpResponse->put_data_into_ring_buffer(mMeanCorrPeakValues.data(), (int32_t)mMeanCorrPeakValues.size());
       //mpResponse->put_data_into_ring_buffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
       emit signal_show_correlation(sum * iThreshold, indices);
