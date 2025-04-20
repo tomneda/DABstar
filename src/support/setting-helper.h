@@ -68,9 +68,10 @@ public:
 
   void register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue);
   QVariant get_variant() const;
+  int32_t get_combobox_index() const;  // only usable for ComboBoxes, returns the last selected index
 
 private:
-  void _update_ui_state_from_setting() const;
+  void _update_ui_state_from_setting();
   void _update_ui_state_to_setting() const;
 
   QString mKey;
@@ -124,6 +125,8 @@ struct Config  // namespace for the configuration window
   static inline Widget sbTiiSubId{catConfiguration "sbTiiSubId"};
   static inline Widget cbUrlClickable{catConfiguration "cbUrlClickable"};
   static inline Widget cbAutoIterTiiEntries{catConfiguration "cbAutoIterTiiEntries"};
+  static inline Widget cmbSoundOutput{catConfiguration "cmbSoundOutput"};
+
 };
 
 struct CirViewer // namespace for the CIR viewer window
@@ -155,7 +158,6 @@ public:
   enum EElem
   {
     // main widget
-    soundChannel,
     picturesPath,
     filePath,
     epgPath,

@@ -71,7 +71,8 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
 
   if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
   {
-    connect(pD, &QComboBox::currentTextChanged, [this](const QString &){ _update_ui_state_to_setting(); });
+    // connect(pD, &QComboBox::currentTextChanged, [this](const QString &){ _update_ui_state_to_setting(); });
+    connect(pD, &QComboBox::currentIndexChanged, [this](int){ _update_ui_state_to_setting(); });
     return;
   }
 
@@ -89,7 +90,15 @@ QVariant Widget::get_variant() const
   return Storage::instance().value(mKey, mDefaultValue);
 }
 
-void Widget::_update_ui_state_from_setting() const
+int32_t Widget::get_combobox_index() const
+{
+  auto * const pD = dynamic_cast<QComboBox *>(mpWidget);
+  assert(pD != nullptr); // only for comboboxes
+  const QString var = get_variant().toString();
+  return pD->findText(var);
+}
+
+void Widget::_update_ui_state_from_setting()
 {
   assert(mpWidget != nullptr); // only one-time registration necessary
 
@@ -103,8 +112,8 @@ void Widget::_update_ui_state_from_setting() const
   if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
   {
     const QString var = Storage::instance().value(mKey, mDefaultValue).toString();
-    if (const int32_t k = pD->findText(var);
-        k >= 0)
+    const int32_t k = pD->findText(var);
+    if (k >= 0)
     {
       pD->setCurrentIndex(k);
     }
@@ -213,7 +222,6 @@ void SettingHelper::_fill_map_with_defaults()
   const QString tempMotPath = tempPath.filePath("MOT").append('/');
   const QString tempEpgPath = tempPath.filePath("EPG").append('/');
 
-  mMap.insert(soundChannel, { "", "soundChannelQt", "default" });
   mMap.insert(picturesPath, { "", "picturesPath", tempPicPath });
   mMap.insert(filePath, { "", "filePath", tempMotPath });
   mMap.insert(epgPath, { "", "epgPath", tempEpgPath });

@@ -257,14 +257,13 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   mAudioOutputThread->start();
 
   _slot_load_audio_device_list(mpAudioOutput->get_audio_device_list());
-  mConfig.streamoutSelector->show();
+  mConfig.cmbSoundOutput->show();
 
-  h = mpSH->read(SettingHelper::soundChannel).toString();
-  k = mConfig.streamoutSelector->findText(h);
+  k = Settings::Config::cmbSoundOutput.get_combobox_index();
   if (k != -1)
   {
-    mConfig.streamoutSelector->setCurrentIndex(k);
-    emit signal_set_audio_device(mConfig.streamoutSelector->itemData(k).toByteArray());
+    mConfig.cmbSoundOutput->setCurrentIndex(k);
+    emit signal_set_audio_device(mConfig.cmbSoundOutput->itemData(k).toByteArray());
   }
   else
   {
@@ -1820,8 +1819,7 @@ void RadioInterface::slot_set_stream_selector(int k)
     return;
   }
 
-  mpSH->write(SettingHelper::soundChannel, mConfig.streamoutSelector->currentText());
-  emit signal_set_audio_device(mConfig.streamoutSelector->itemData(k).toByteArray());
+  emit signal_set_audio_device(mConfig.cmbSoundOutput->itemData(k).toByteArray());
 }
 
 void RadioInterface::_slot_handle_tech_detail_button()
@@ -3693,10 +3691,12 @@ void RadioInterface::_setup_audio_output(const uint32_t iSampleRate)
 
 void RadioInterface::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const
 {
-  mConfig.streamoutSelector->clear();
+  const QSignalBlocker blocker(mConfig.cmbSoundOutput); // block signals as the settings would be updated always with the first written entry
+
+  mConfig.cmbSoundOutput->clear();
   for (const QAudioDevice &device : iDeviceList)
   {
-    mConfig.streamoutSelector->addItem(device.description(), QVariant::fromValue(device.id()));
+    mConfig.cmbSoundOutput->addItem(device.description(), QVariant::fromValue(device.id()));
   }
 }
 

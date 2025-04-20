@@ -214,7 +214,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QComboBox" name="streamoutSelector"/>
+        <widget class="QComboBox" name="cmbSoundOutput"/>
        </item>
        <item>
         <widget class="QComboBox" name="deviceSelector">

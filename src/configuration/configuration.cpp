@@ -48,6 +48,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
   Settings::Config::cbTiiCollisions.register_widget_and_update_ui_from_setting(cbTiiCollisions, 0);
   Settings::Config::cbUrlClickable.register_widget_and_update_ui_from_setting(cbUrlClickable, 2);
   Settings::Config::cbAutoIterTiiEntries.register_widget_and_update_ui_from_setting(cbAutoIterTiiEntries, 2);
+  Settings::Config::cmbSoundOutput.register_widget_and_update_ui_from_setting(cmbSoundOutput, "default");
 
   QPalette lcdPalette;
 #ifndef __MAC__
@@ -61,7 +62,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
   connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_load_table);
   connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &RadioInterface::slot_test_slider);
   connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &RadioInterface::slot_handle_dl_text_button);
-  connect(streamoutSelector, qOverload<int>(&QComboBox::activated), mpRadioInterface, &RadioInterface::slot_set_stream_selector);
+  connect(cmbSoundOutput, qOverload<int>(&QComboBox::activated), mpRadioInterface, &RadioInterface::slot_set_stream_selector);
   connect(portSelector, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_port_selector);
   connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &RadioInterface::slot_handle_set_coordinates_button);
   connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &RadioInterface::slot_handle_dc_avoidance_algorithm);
