@@ -41,8 +41,8 @@ MapPortHandler::MapPortHandler()
   total->addItem(layout);
   total->addWidget(acceptButton);
   setLayout(total);
-  connect(acceptButton, SIGNAL(clicked ()),
-          this, SLOT(handle_acceptButton ()));
+  mapPortSetting->setText(Settings::Config::varMapPort.get_variant().toString());
+  connect(acceptButton, SIGNAL(clicked ()), this, SLOT(handle_acceptButton ()));
   show();
 }
 
