@@ -24,7 +24,7 @@ Configuration::Configuration(RadioInterface * ipRI) :
 {
   setupUi(this);
 
-  Settings::Config::posAndSize.read_widget_geometry(this, 100, 100, 700, 330, true);
+  Settings::Config::posAndSize.read_widget_geometry(this, 700, 330, true);
 
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 

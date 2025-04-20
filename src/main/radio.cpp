@@ -168,7 +168,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
 
-  Settings::General::posAndSize.read_widget_geometry(this, 100, 100, 730, 490+50, true);
+  Settings::General::posAndSize.read_widget_geometry(this, 730, 490+50, true);
 
   setup_ui_colors();
   _create_status_info();

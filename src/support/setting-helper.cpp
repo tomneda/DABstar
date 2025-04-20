@@ -161,14 +161,13 @@ PosAndSize::PosAndSize(const QString & iCat)
 : mCat(iCat)
 {}
 
-void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t iXPosDef, const int32_t iYPosDef, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
+void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
 {
   const QVariant var = Storage::instance().value(mCat + "posAndSize", QVariant());
 
-  if(!var.canConvert<QByteArray>())
+  if (!var.canConvert<QByteArray>())
   {
     qWarning("Cannot retrieve widget geometry from settings. Using default settings.");
-    iopWidget->move(QPoint(iXPosDef, iYPosDef));
     if (iIsFixedSized)
     {
       iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
@@ -185,7 +184,7 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t i
     qWarning("restoreGeometry() returns false");
   }
 
-  if (iIsFixedSized)
+  if (iIsFixedSized) // overwrite read settings if fixed-sized in width and height, take only over the position
   {
     iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
   }
