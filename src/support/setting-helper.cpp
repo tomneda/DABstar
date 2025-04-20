@@ -232,10 +232,6 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(showDeviceWidget, { "", "showDeviceWidget", false });
   mMap.insert(presetName, { "", "presetname", "" });
   mMap.insert(channel, { "", "channel", "" });
-  mMap.insert(epgWidth, { "", "epgWidth", 70 });
-  mMap.insert(browserAddress, { "", "browserAddress", "http://localhost" });
-  mMap.insert(mapPort, { "", "mapPort", 8080 });
-  mMap.insert(epgFlag, { "", "epgFlag", false });
 
   mMap.insert(hidden, { "", "hidden", true });
   mMap.insert(latitude, { "", "latitude", 0 });
@@ -245,7 +241,6 @@ void SettingHelper::_fill_map_with_defaults()
   mMap.insert(saveDirContent, { "", "saveDirContent", QDir::homePath() });
   mMap.insert(serviceListSortCol, { "", "serviceListSortCol", false });
   mMap.insert(serviceListSortDesc, { "", "serviceListSortDesc", false });
-  mMap.insert(cbShowTiiList, {"", "showTiiList", false });
 }
 
 void SettingHelper::_fill_map_from_settings()

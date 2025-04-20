@@ -23,36 +23,39 @@
 #include	"mapport.h"
 #include	<QFormLayout>
 #include	<QVBoxLayout>
-#include	<QSettings>
+#include	<QPushButton>
 
-	mapPortHandler::mapPortHandler	(QSettings *dabSettings) {
-	this	-> dabSettings = dabSettings;
-	mapPortText	= new QLabel (this);
-	mapPortText	-> setText ("Port Address for maps");
-	mapPortSetting	= new QLineEdit (this);	
-	acceptButton	= new QPushButton ("accept");
-	QFormLayout	*layout = new QFormLayout;
-	layout		-> addWidget (mapPortText);
-	layout		-> addWidget (mapPortSetting);
-	setWindowTitle ("set Port Address");
-	QVBoxLayout	*total = new QVBoxLayout;
-	total		-> addItem (layout);
-	total		-> addWidget (acceptButton);
-	setLayout (total);
-	connect (acceptButton, SIGNAL (clicked ()),
-	         this, SLOT (handle_acceptButton ()));
-	show ();
+#include "setting-helper.h"
+
+MapPortHandler::MapPortHandler()
+{
+  mapPortText = new QLabel(this);
+  mapPortText->setText("Port Address for maps");
+  mapPortSetting = new QLineEdit(this);
+  acceptButton = new QPushButton("accept");
+  QFormLayout * layout = new QFormLayout;
+  layout->addWidget(mapPortText);
+  layout->addWidget(mapPortSetting);
+  setWindowTitle("set Port Address");
+  QVBoxLayout * total = new QVBoxLayout;
+  total->addItem(layout);
+  total->addWidget(acceptButton);
+  setLayout(total);
+  connect(acceptButton, SIGNAL(clicked ()),
+          this, SLOT(handle_acceptButton ()));
+  show();
 }
 
-	mapPortHandler::~mapPortHandler	() {
-	hide ();
-	delete	mapPortText;
-	delete	mapPortSetting;
-	delete	acceptButton;
+MapPortHandler::~MapPortHandler()
+{
+  hide();
+  delete mapPortText;
+  delete mapPortSetting;
+  delete acceptButton;
 }
 
-void	mapPortHandler::handle_acceptButton () {
-	dabSettings	-> setValue ("mapPort", mapPortSetting -> text ());
-	QDialog::done (0);
+void MapPortHandler::handle_acceptButton()
+{
+  Settings::Config::varMapPort.set(mapPortSetting->text());
+  QDialog::done(0);
 }
-

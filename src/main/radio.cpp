@@ -383,7 +383,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
     mpTechDataWidget->show();
   }
 
-  mFeedTiiListWindow = mpSH->read(SettingHelper::cbShowTiiList).toBool();
+  mShowTiiListWindow = Settings::Config::varShowTiiList.get_variant().toBool();
 
   // if a device was selected, we just start, otherwise we wait until one is selected
   if (mpInputDevice != nullptr)
@@ -1331,7 +1331,7 @@ void RadioInterface::_slot_handle_tii_button()
 {
   assert(mpDabProcessor != nullptr);
 
-  if (mFeedTiiListWindow)
+  if (mShowTiiListWindow)
   {
     mTiiListDisplay.hide();
   }
@@ -1340,8 +1340,8 @@ void RadioInterface::_slot_handle_tii_button()
     mTiiListDisplay.show();
   }
 
-  mFeedTiiListWindow = !mFeedTiiListWindow;
-  mpSH->write(SettingHelper::cbShowTiiList, mFeedTiiListWindow);
+  mShowTiiListWindow = !mShowTiiListWindow;
+  Settings::Config::varShowTiiList.set(mShowTiiListWindow);
 }
 
 void RadioInterface::slot_handle_tii_threshold(int trs)
@@ -1587,7 +1587,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   const float ownLongitude = imag(mChannel.localPos);
   const bool ownCoordinatesSet = (ownLatitude != 0.0f && ownLongitude != 0.0f);
 
-  if (mFeedTiiListWindow)
+  if (mShowTiiListWindow)
   {
     mTiiListDisplay.start_adding();
   }
@@ -1597,7 +1597,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     cmbTiiList->clear();
   }
 
-  if (mFeedTiiListWindow)
+  if (mShowTiiListWindow)
   {
     mTiiListDisplay.show();
     mTiiListDisplay.set_window_title("TII list of channel " + mChannel.channelName);
@@ -1656,7 +1656,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     bd.phase_deg = tii.phaseDeg;
     bd.isNonEtsiPhase = tii.isNonEtsiPhase;
 
-    if (mFeedTiiListWindow)
+    if (mShowTiiListWindow)
     {
       mTiiListDisplay.add_row(*pTr, bd);
     }
@@ -1707,7 +1707,7 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     }
   }
 
-  if (mFeedTiiListWindow)
+  if (mShowTiiListWindow)
   {
     mTiiListDisplay.finish_adding();
   }
@@ -3013,7 +3013,8 @@ void RadioInterface::slot_epg_timer_timeout()
 {
   mEpgTimer.stop();
 
-  if (!mpSH->read(SettingHelper::epgFlag).toBool())
+  // TODO: there is a public switch for this missing?!
+  // if (!mpSH->read(SettingHelper::epgFlag).toBool())
   {
     return;
   }
@@ -3110,14 +3111,14 @@ void RadioInterface::slot_set_epg_data(int SId, int theTime, const QString & the
 
 void RadioInterface::_slot_handle_time_table()
 {
-  int epgWidth;
+  int epgWidth = 70; // comes only from ini file formerly
   if (!mChannel.currentService.valid || !mChannel.currentService.is_audio)
   {
     return;
   }
 
   mpTimeTable->clear();
-  epgWidth = mpSH->read(SettingHelper::epgWidth).toInt();
+
   if (epgWidth < 50)
   {
     epgWidth = 50;
@@ -3300,8 +3301,8 @@ void RadioInterface::_slot_handle_http_button()
 
   if (mpHttpHandler == nullptr)
   {
-    QString browserAddress = mpSH->read(SettingHelper::browserAddress).toString();
-    QString mapPort = mpSH->read(SettingHelper::mapPort).toString();
+    const QString browserAddress = Settings::Config::varBrowserAddress.get_variant().toString();
+    const QString mapPort = Settings::Config::varMapPort.get_variant().toString();
 
     QString mapFile;
     if (Settings::Config::cbSaveTransToCsv.get_variant().toBool())
@@ -3361,7 +3362,7 @@ void RadioInterface::show_pause_slide()
 
 void RadioInterface::slot_handle_port_selector()
 {
-  mapPortHandler theHandler(mpSH->get_settings());
+  MapPortHandler theHandler;
   (void)theHandler.QDialog::exec();
 }
 

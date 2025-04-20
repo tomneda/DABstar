@@ -20,29 +20,28 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__MAPPORT_HANDLER_H
-#define	__MAPPORT_HANDLER_H
+#ifndef	MAPPORT_HANDLER_H
+#define	MAPPORT_HANDLER_H
+
 #include	<QDialog>
 #include	<QLabel>
-#include	<QPushButton>
 #include	<QLineEdit>
 
-class	QSettings;
+class MapPortHandler : public QDialog
+{
+  Q_OBJECT
 
-class	mapPortHandler: public QDialog {
-Q_OBJECT
-	public:
-		mapPortHandler	(QSettings *);
-		~mapPortHandler	();
-	private:
-	QSettings	*dabSettings;
-	QLabel		*mapPortText;
-        QLineEdit	*mapPortSetting;
-	QPushButton	*acceptButton;
+public:
+  MapPortHandler();
+  ~MapPortHandler();
+
+private:
+  QLabel * mapPortText;
+  QLineEdit * mapPortSetting;
+  QPushButton * acceptButton;
+
 private slots:
-	void		handle_acceptButton 	();
+  void handle_acceptButton();
 };
 
 #endif
-
-

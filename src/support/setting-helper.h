@@ -111,6 +111,9 @@ struct Config  // namespace for the configuration window
   static inline Variant varEpgPath{catConfiguration "varEpgPath"};
   static inline Variant varSkipFile{catConfiguration "varSkipFile"};
   static inline Variant varTiiFile{catConfiguration "varTiiFile"};
+  static inline Variant varShowTiiList{catConfiguration "varShowTiiList", false};
+  static inline Variant varBrowserAddress{catConfiguration "varBrowserAddress", "http://localhost"};
+  static inline Variant varMapPort{catConfiguration "varMapPort", 8080};
 
   static inline Widget cbCloseDirect{catConfiguration "cbCloseDirect"};
   static inline Widget cbUseStrongestPeak{catConfiguration "cbUseStrongestPeak"};
@@ -171,10 +174,6 @@ public:
     showDeviceWidget,
     presetName,
     channel,
-    epgWidth,
-    browserAddress,
-    mapPort,
-    epgFlag,
 
     // needed in config widget
     hidden,
@@ -185,7 +184,6 @@ public:
     saveDirContent,
     serviceListSortCol,
     serviceListSortDesc,
-    cbShowTiiList,
   };
 
   QVariant read(const EElem iElem) const;

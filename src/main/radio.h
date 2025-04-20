@@ -294,7 +294,7 @@ private:
   QTimer mClockResetTimer;
   QTimer mTiiIndexCntTimer;
   uint32_t mTiiIndex = 0;
-  bool mFeedTiiListWindow = false;
+  bool mShowTiiListWindow = false;
   bool mMutingActive = true;
   int32_t mNumberOfSeconds = 0;
   int16_t mFicBlocks = 0;
