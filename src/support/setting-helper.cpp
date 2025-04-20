@@ -89,12 +89,6 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
-  {
-    connect(pD, &QSlider::valueChanged, [this](int iValue){ _update_ui_state_to_setting(); });
-    return;
-  }
-
   qFatal("Pointer to mpWidget not handled (1)");
 }
 
@@ -140,13 +134,6 @@ void Widget::_update_ui_state_from_setting()
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
-  {
-    const int32_t var = Storage::instance().value(mKey, mDefaultValue).toInt();
-    pD->setValue(var);
-    return;
-  }
-
   qFatal("Pointer to mpWidget not handled (2)");
 }
 
@@ -167,12 +154,6 @@ void Widget::_update_ui_state_to_setting() const
   }
 
   if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
-  {
-    Storage::instance().setValue(mKey, pD->value());
-    return;
-  }
-
-  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
   {
     Storage::instance().setValue(mKey, pD->value());
     return;

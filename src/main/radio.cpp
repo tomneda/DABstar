@@ -265,8 +265,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
     emit signal_set_audio_device(QByteArray());  // activates the default audio device
   }
 
-  Settings::Main::slVolume.register_widget_and_update_ui_from_setting(sliderVolume, 100); // do this after the above connect to the volume handler as it triggers read from setting file
-
+  sliderVolume->setValue(Settings::Main::varVolume.read().toInt());
 
   mPicturesPath = Settings::Config::varPicturesPath.read().toString();
   mPicturesPath = check_and_create_dir(mPicturesPath);
@@ -1190,6 +1189,7 @@ void RadioInterface::_slot_terminate_process()
   _show_hide_buttons(false);
   mTiiListDisplay.hide();
 
+  Settings::Main::varVolume.write(sliderVolume->value());
   Settings::Main::posAndSize.write_widget_geometry(this);
 
   mConfig.save_position_and_config();

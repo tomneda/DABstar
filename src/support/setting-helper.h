@@ -92,7 +92,7 @@ struct Main // namespace for main window data
 
   static inline PosAndSize posAndSize{category};
 
-  static inline Widget slVolume{category, "slVolume"};
+  static inline Variant varVolume{category, "varVolume", 100};
 };
 
 struct Config  // namespace for the configuration window
