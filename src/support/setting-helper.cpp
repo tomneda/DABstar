@@ -24,12 +24,13 @@
 
 namespace Settings
 {
-Variant::Variant(const QString & key)
-  : mKey(key)
+
+Variant::Variant(const QString & cat, const QString & key)
+  : mKey(cat + "/" + key)
 {}
 
-Variant::Variant(const QString & key, const QVariant & iDefaultValue)
-  : mKey(key)
+Variant::Variant(const QString & cat, const QString & key, const QVariant & iDefaultValue)
+  : mKey(cat + "/" + key)
   , mDefaultValue(iDefaultValue)
 {}
 
@@ -51,8 +52,8 @@ void Variant::write(const QVariant & iValue) const
 }
 
 
-Widget::Widget(const QString & key)
-  : mKey(key)
+Widget::Widget(const QString & cat, const QString & key)
+  : mKey(cat + "/" + key)
 {
 }
 
@@ -166,7 +167,7 @@ PosAndSize::PosAndSize(const QString & iCat)
 
 void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
 {
-  const QVariant var = Storage::instance().value(mCat + "posAndSize", QVariant());
+  const QVariant var = Storage::instance().value(mCat + "/posAndSize", QVariant());
 
   if (!var.canConvert<QByteArray>())
   {
@@ -196,7 +197,7 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t i
 void PosAndSize::write_widget_geometry(const QWidget * const ipWidget) const
 {
   const QByteArray var = ipWidget->saveGeometry();
-  Storage::instance().setValue(mCat + "posAndSize", var);
+  Storage::instance().setValue(mCat + "/posAndSize", var);
 }
 
 } // namespace Settings

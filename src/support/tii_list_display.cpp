@@ -44,12 +44,12 @@ TiiListDisplay::TiiListDisplay()
   mpWidget->setWindowTitle("TII list");
   mpWidget->setWidget(mpTableWidget.get());
 
-  Settings::TiiList::posAndSize.read_widget_geometry(mpWidget.get(), 660, 250, false);
+  Settings::TiiViewer::posAndSize.read_widget_geometry(mpWidget.get(), 660, 250, false);
 }
 
 TiiListDisplay::~TiiListDisplay()
 {
-  Settings::TiiList::posAndSize.write_widget_geometry(mpWidget.get());
+  Settings::TiiViewer::posAndSize.write_widget_geometry(mpWidget.get());
   mpTableWidget->setRowCount(0);
 }
 

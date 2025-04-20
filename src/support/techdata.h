@@ -39,7 +39,7 @@ class TechData : public QObject, public Ui_technical_data
 {
 Q_OBJECT
 public:
-  TechData(RadioInterface *, QSettings *, RingBuffer<int16_t> * ipAudioBuffer);
+  TechData(RadioInterface *, RingBuffer<int16_t> * ipAudioBuffer);
   ~TechData() override;
 
   void show_serviceData(const Audiodata * ad);
@@ -50,7 +50,6 @@ public:
 
 private:
   RadioInterface * const mpRadioInterface;
-  QSettings * const mpDabSettings;
   RingBuffer<int16_t> * mpAudioBuffer;
   CustomFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;

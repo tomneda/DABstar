@@ -55,7 +55,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
   connect(&myFrame, &CustomFrame::signal_frame_closed, this, &SpectrumViewer::signal_window_closed);
 
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  Settings::Spectrum::posAndSize.read_widget_geometry(&myFrame, 1100, 600, false);
+  Settings::SpectrumViewer::posAndSize.read_widget_geometry(&myFrame, 1100, 600, false);
   myFrame.hide();
 
   //create_blackman_window(mWindowVec.data(), SP_SPECTRUMSIZE);
@@ -89,7 +89,7 @@ SpectrumViewer::SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings,
 
 SpectrumViewer::~SpectrumViewer()
 {
-  Settings::Spectrum::posAndSize.write_widget_geometry(&myFrame);
+  Settings::SpectrumViewer::posAndSize.write_widget_geometry(&myFrame);
 
   myFrame.hide();
 

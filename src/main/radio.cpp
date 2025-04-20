@@ -163,7 +163,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   //	The settings are done, now creation of the GUI parts
   setupUi(this);
 
-  Settings::General::posAndSize.read_widget_geometry(this, 730, 490+50, true);
+  Settings::Main::posAndSize.read_widget_geometry(this, 730, 490+50, true);
 
   setup_ui_colors();
   _create_status_info();
@@ -189,7 +189,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
   setWindowTitle(PRJ_NAME);
 
-  mpTechDataWidget = new TechData(this, &Settings::Storage::instance(), mpTechDataBuffer);
+  mpTechDataWidget = new TechData(this, mpTechDataBuffer);
 
   _show_epg_label(false);
 
@@ -365,23 +365,23 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   connect(btnEject, &QPushButton::clicked, this, [this](bool){ _slot_new_device(mDeviceSelector.get_device_name()); });
   connect(configButton, &QPushButton::clicked, this, &RadioInterface::_slot_handle_config_button);
 
-  if (Settings::Config::varSpectrumVisible.read().toBool())
+  if (Settings::SpectrumViewer::varUiVisible.read().toBool())
   {
     mSpectrumViewer.show();
   }
 
-  if (Settings::Config::varCirVisible.read().toBool())
+  if (Settings::CirViewer::varUiVisible.read().toBool())
   {
     mCirViewer.show();
     cir_window = true;
   }
 
-  if (Settings::Config::varTechDataVisible.read().toBool())
+  if (Settings::TechDataViewer::varUiVisible.read().toBool())
   {
     mpTechDataWidget->show();
   }
 
-  mShowTiiListWindow = Settings::TiiList::varShowTiiList.read().toBool();
+  mShowTiiListWindow = Settings::TiiViewer::varUiVisible.read().toBool();
 
   // if a device was selected, we just start, otherwise we wait until one is selected
   if (mpInputDevice != nullptr)
@@ -530,7 +530,7 @@ bool RadioInterface::do_start()
   }
 
   // should the device widget be shown?
-  if (Settings::Config::varShowDeviceWidget.read().toBool())
+  if (Settings::Config::varDeviceUiVisible.read().toBool())
   {
     mpInputDevice->show();
   }
@@ -1187,7 +1187,7 @@ void RadioInterface::_slot_terminate_process()
   _show_hide_buttons(false);
   mTiiListDisplay.hide();
 
-  Settings::General::posAndSize.write_widget_geometry(this);
+  Settings::Main::posAndSize.write_widget_geometry(this);
 
   mConfig.save_position_and_config();
 
@@ -1321,7 +1321,7 @@ void RadioInterface::_slot_handle_device_widget_button()
     mpInputDevice->hide();
   }
 
-  Settings::Config::varDeviceVisible.write(!mpInputDevice->isHidden());
+  Settings::Config::varDeviceUiVisible.write(!mpInputDevice->isHidden());
 }
 
 void RadioInterface::_slot_handle_tii_button()
@@ -1338,7 +1338,7 @@ void RadioInterface::_slot_handle_tii_button()
   }
 
   mShowTiiListWindow = !mShowTiiListWindow;
-  Settings::TiiList::varShowTiiList.write(mShowTiiListWindow);
+  Settings::TiiViewer::varUiVisible.write(mShowTiiListWindow);
 }
 
 void RadioInterface::slot_handle_tii_threshold(int trs)
@@ -1834,7 +1834,7 @@ void RadioInterface::_slot_handle_tech_detail_button()
   {
     mpTechDataWidget->hide();
   }
-  Settings::Config::varTechDataVisible.write(!mpTechDataWidget->isHidden());
+  Settings::TechDataViewer::varUiVisible.write(!mpTechDataWidget->isHidden());
 }
 
 void RadioInterface::_slot_handle_cir_button()
@@ -1852,7 +1852,7 @@ void RadioInterface::_slot_handle_cir_button()
     mCirViewer.hide();
     cir_window = false;
   }
-  Settings::Config::varCirVisible.write(!mCirViewer.is_hidden());
+  Settings::CirViewer::varUiVisible.write(!mCirViewer.is_hidden());
 }
 
 
@@ -2098,7 +2098,7 @@ void RadioInterface::_slot_handle_spectrum_button()
   {
     mSpectrumViewer.hide();
   }
-  Settings::Config::varSpectrumVisible.write(!mSpectrumViewer.is_hidden());
+  Settings::SpectrumViewer::varUiVisible.write(!mSpectrumViewer.is_hidden());
 }
 
 void RadioInterface::connect_dab_processor()

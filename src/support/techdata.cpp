@@ -26,29 +26,24 @@
 #include  "audio-display.h"
 #include  "dab-tables.h"
 #include  "color-selector.h"
+#include "setting-helper.h"
 
-TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * ipAudioBuffer)
+TechData::TechData(RadioInterface * mr, RingBuffer<int16_t> * ipAudioBuffer)
   : Ui_technical_data(),
     mpRadioInterface(mr)
-  , mpDabSettings(s)
   , mFrame()
 {
   mpAudioBuffer = ipAudioBuffer;
 
   setupUi(&mFrame);
 
-  mpDabSettings->beginGroup("techDataSettings");
-  int x = mpDabSettings->value("position-x", 100).toInt();
-  int y = mpDabSettings->value("position-y", 100).toInt();
-  mpDabSettings->endGroup();
-  mFrame.move(QPoint(x, y));
-  mFrame.setFixedSize(310, 670);
+  Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame, 310, 670, true);
 
   formLayout->setLabelAlignment(Qt::AlignLeft);
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mFrame.hide();
   timeTable_button->setEnabled(false);
-  mpAudioDisplay = new AudioDisplay(mr, audio, mpDabSettings);
+  mpAudioDisplay = new AudioDisplay(mr, audio, &Settings::Storage::instance());
 
   connect(&mFrame, &CustomFrame::signal_frame_closed, this, &TechData::signal_window_closed);
   connect(framedumpButton, &QPushButton::clicked, this, &TechData::signal_handle_frameDumping);
@@ -58,13 +53,10 @@ TechData::TechData(RadioInterface * mr, QSettings * s, RingBuffer<int16_t> * ipA
 
 TechData::~TechData()
 {
-  mpDabSettings->beginGroup("techDataSettings");
-  mpDabSettings->setValue("position-x", mFrame.pos().x());
-  mpDabSettings->setValue("position-y", mFrame.pos().y());
-  mpDabSettings->setValue("width", mFrame.width());
-  mpDabSettings->setValue("height", mFrame.height());
-  mpDabSettings->endGroup();
+  Settings::TechDataViewer::posAndSize.write_widget_geometry(&mFrame);
+
   mFrame.hide();
+
   delete mpAudioDisplay;
 }
 

@@ -301,7 +301,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 
   Settings::Config::varSdrDevice.write(iDeviceName);
 
-  if (Settings::Config::varDeviceVisible.read().toBool())
+  if (Settings::Config::varDeviceUiVisible.read().toBool())
   {
     inputDevice->show();
   }
