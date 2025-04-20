@@ -68,9 +68,9 @@ int main(int argc, char ** argv)
     }
   }
 
-  const auto dabSettings02(std::make_unique<QSettings>(initFileName02, QSettings::IniFormat));
+  // const auto dabSettings02(std::make_unique<QSettings>(initFileName02, QSettings::IniFormat));
   const auto dabSettings03(std::make_unique<QSettings>(initFileName03, QSettings::IniFormat));
-  SettingHelper::get_instance(dabSettings02.get()); // create instance of setting helper
+  // SettingHelper::get_instance(dabSettings02.get()); // create instance of setting helper
   Settings::Storage::instance(dabSettings03.get()); // create instance of settingstorage
 
   QApplication a(argc, argv);

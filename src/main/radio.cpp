@@ -139,7 +139,6 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   , mBandHandler(iFileNameAltFreqList, ipSettings)
   , mOpenFileDialog(ipSettings)
   , mConfig(this)
-  , mpSH(&SettingHelper::get_instance())
   , mDeviceSelector(ipSettings)
 {
   mIsRunning.store(false);
@@ -190,7 +189,7 @@ RadioInterface::RadioInterface(QSettings * const ipSettings, const QString & iFi
   //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
   setWindowTitle(PRJ_NAME);
 
-  mpTechDataWidget = new TechData(this, mpSH->get_settings(), mpTechDataBuffer);
+  mpTechDataWidget = new TechData(this, &Settings::Storage::instance(), mpTechDataBuffer);
 
   _show_epg_label(false);
 
@@ -725,7 +724,7 @@ void RadioInterface::_slot_handle_content_button()
                    + hex_to_str(mChannel.Eid) + " " + ";" + transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
                    + QString::number(mServiceList.size()) + ";" + convLocation + "\n";
 
-  mpContentTable = new ContentTable(this, mpSH->get_settings(), mChannel.channelName, mpDabProcessor->scan_width());
+  mpContentTable = new ContentTable(this, &Settings::Storage::instance(), mChannel.channelName, mpDabProcessor->scan_width());
   connect(mpContentTable, &ContentTable::signal_go_service, this, &RadioInterface::slot_handle_content_selector);
 
   mpContentTable->addLine(header);
@@ -1243,7 +1242,6 @@ void RadioInterface::_slot_terminate_process()
   mpLogFile = nullptr;
 
   // everything should be halted by now
-  mpSH->sync_and_unregister_ui_elements();
   mSpectrumViewer.hide();
   mCirViewer.hide();
 

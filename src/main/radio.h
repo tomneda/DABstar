@@ -71,7 +71,6 @@
 #include <sndfile.h>
 
 class QSettings;
-class SettingHelper;
 class Qt_Audio;
 class timeTableHandler;
 class ServiceListHandler;
@@ -244,7 +243,6 @@ private:
   int32_t mMaxDistance = -1;
   TechData * mpTechDataWidget = nullptr;
   Configuration mConfig;
-  SettingHelper * const mpSH;
   std::atomic<bool> mIsRunning{false};
   std::atomic<bool> mIsScanning{false};
   std::unique_ptr<IDeviceHandler> mpInputDevice;

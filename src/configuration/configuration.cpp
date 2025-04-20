@@ -19,7 +19,6 @@
 
 Configuration::Configuration(RadioInterface * ipRI) :
   Ui_configWidget(),
-  mpSH(&SettingHelper::get_instance()),
   mpRadioInterface(ipRI)
 {
   setupUi(this);

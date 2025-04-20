@@ -17,7 +17,6 @@
 #include "ui_configuration.h"
 #include <QWidget>
 
-class SettingHelper;
 class RadioInterface;
 
 // allow direct access to components -> makes a live simpler but more dangerous!
@@ -32,7 +31,6 @@ public:
   void save_position_and_config();
 
 private:
-  SettingHelper * const mpSH;
   RadioInterface * const mpRadioInterface;
 };
 
