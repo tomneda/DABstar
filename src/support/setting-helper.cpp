@@ -15,9 +15,12 @@
  */
 
 #include "setting-helper.h"
-#include "dab-constants.h"
-#include <QDir>
 #include <QWidget>
+#include <QObject>
+#include <QVariant>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <QComboBox>
 
 namespace Settings
 {

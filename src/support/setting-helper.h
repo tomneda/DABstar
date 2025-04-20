@@ -17,11 +17,6 @@
 #ifndef SETTING_HELPER_H
 #define SETTING_HELPER_H
 
-#include <QObject>
-#include <QVariant>
-#include <QCheckBox>
-#include <QComboBox>
-#include <QSpinBox>
 #include <QSettings>
 
 namespace Settings
