@@ -16,8 +16,10 @@
 #include "ui_configuration.h"
 #include "dabradio_if.h"
 #include <QSettings>
+#include <QDir>
 
-Configuration::Configuration(DabRadio * ipRI) :
+
+Configuration::Configuration(IDabRadio * ipRI) :
   Ui_configWidget(),
   mpRadioInterface(ipRI)
 {
@@ -70,21 +72,21 @@ Configuration::Configuration(DabRadio * ipRI) :
   cpuMonitor->setPalette(lcdPalette);
   cpuMonitor->setAutoFillBackground(true);
 
-  connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_load_table);
-  connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &DabRadio::slot_test_slider);
-  connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &DabRadio::slot_handle_dl_text_button);
-  connect(cmbSoundOutput, qOverload<int>(&QComboBox::activated), mpRadioInterface, &DabRadio::slot_set_stream_selector);
-  connect(portSelector, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_handle_port_selector);
-  connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_handle_set_coordinates_button);
-  connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_dc_avoidance_algorithm);
-  connect(cbUseDcRemoval, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_dc_removal);
-  connect(sbTiiThreshold, &QSpinBox::valueChanged, mpRadioInterface, &DabRadio::slot_handle_tii_threshold);
-  connect(cbTiiCollisions, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_tii_collisions);
-  connect(sbTiiSubId, &QSpinBox::valueChanged, mpRadioInterface, &DabRadio::slot_handle_tii_subid);
+  connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &IDabRadio::slot_load_table);
+  connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &IDabRadio::slot_test_slider);
+  connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &IDabRadio::slot_handle_dl_text_button);
+  connect(cmbSoundOutput, qOverload<int>(&QComboBox::activated), mpRadioInterface, &IDabRadio::slot_set_stream_selector);
+  connect(portSelector, &QPushButton::clicked, mpRadioInterface, &IDabRadio::slot_handle_port_selector);
+  connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &IDabRadio::slot_handle_set_coordinates_button);
+  connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &IDabRadio::slot_handle_dc_avoidance_algorithm);
+  connect(cbUseDcRemoval, &QCheckBox::clicked, mpRadioInterface, &IDabRadio::slot_handle_dc_removal);
+  connect(sbTiiThreshold, &QSpinBox::valueChanged, mpRadioInterface, &IDabRadio::slot_handle_tii_threshold);
+  connect(cbTiiCollisions, &QCheckBox::clicked, mpRadioInterface, &IDabRadio::slot_handle_tii_collisions);
+  connect(sbTiiSubId, &QSpinBox::valueChanged, mpRadioInterface, &IDabRadio::slot_handle_tii_subid);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(cbUseStrongestPeak, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_use_strongest_peak);
-  connect(cbActivateLogger, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_handle_logger_button);
-  connect(cbActivateEti, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_handle_eti_active_selector);
+  connect(cbUseStrongestPeak, &QCheckBox::checkStateChanged, mpRadioInterface, &IDabRadio::slot_use_strongest_peak);
+  connect(cbActivateLogger, &QCheckBox::checkStateChanged, mpRadioInterface, &IDabRadio::slot_handle_logger_button);
+  connect(cbActivateEti, &QCheckBox::checkStateChanged, mpRadioInterface, &IDabRadio::slot_handle_eti_active_selector);
 #else
   connect(cbUseStrongestPeak, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_use_strongest_peak);
   connect(cbActivateLogger, &QCheckBox::stateChanged, mpRadioInterface, &RadioInterface::slot_handle_logger_button);

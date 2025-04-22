@@ -43,7 +43,7 @@
 class AudioIODevice;
 class QAudioSink;
 class QMediaDevices;
-class DabRadio;
+class IDabRadio;
 
 
 class AudioOutputQt final : public IAudioOutput
@@ -51,7 +51,7 @@ class AudioOutputQt final : public IAudioOutput
   Q_OBJECT
 
 public:
-  explicit AudioOutputQt(DabRadio * ipRI, QObject * parent = nullptr);
+  explicit AudioOutputQt(IDabRadio * ipRI, QObject * parent = nullptr);
   ~AudioOutputQt() override;
 
   QList<QAudioDevice> get_audio_device_list() const override;

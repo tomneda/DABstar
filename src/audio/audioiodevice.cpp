@@ -7,15 +7,17 @@
 #include "audioiodevice.h"
 #include "dabradio_if.h"
 #include "techdata.h"
+#include "audiofifo.h"
+#include <QLoggingCategory>
 
 // Q_LOGGING_CATEGORY(sLogAudioIODevice, "AudioIODevice", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogAudioIODevice, "AudioIODevice", QtInfoMsg)
 
-AudioIODevice::AudioIODevice(DabRadio * const ipRI, QObject * const iParent)
+AudioIODevice::AudioIODevice(IDabRadio * const ipRI, QObject * const iParent)
   : QIODevice(iParent)
   , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
 {
-  connect(this, &AudioIODevice::signal_show_audio_peak_level, ipRI, &DabRadio::slot_show_audio_peak_level, Qt::QueuedConnection);
+  connect(this, &AudioIODevice::signal_show_audio_peak_level, ipRI, &IDabRadio::slot_show_audio_peak_level, Qt::QueuedConnection);
   connect(this, &AudioIODevice::signal_audio_data_available, ipRI->get_techdata_widget(), &TechData::slot_audio_data_available, Qt::QueuedConnection);
 
   mTimerPeakLevel.setSingleShot(true);

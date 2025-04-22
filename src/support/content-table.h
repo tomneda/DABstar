@@ -41,7 +41,7 @@
 #include  <QString>
 #include  <QByteArray>
 
-class DabRadio;
+class IDabRadio;
 class QSettings;
 class Audiodata;
 
@@ -49,7 +49,7 @@ class ContentTable : public QObject
 {
 Q_OBJECT
 public:
-  ContentTable(DabRadio *, QSettings *, const QString &, int);
+  ContentTable(IDabRadio *, QSettings *, const QString &, int);
   ~ContentTable();
 
   void show();
@@ -62,7 +62,7 @@ public:
 private:
   QString channel;
   int columns;
-  DabRadio * theRadio;
+  IDabRadio * theRadio;
   QSettings * dabSettings;
   QScrollArea * myWidget;
   QTableWidget * contentWidget;

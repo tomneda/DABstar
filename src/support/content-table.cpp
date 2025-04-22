@@ -38,7 +38,7 @@
 //static const char *eep_Arates [] = {nullptr, "1/4",  "3/8", "1/2", "3/4"};
 //static const char *eep_Brates [] = {nullptr, "4/9",  "4/7", "4/6", "4/5"};
 
-ContentTable::ContentTable(DabRadio * theRadio, QSettings * s, const QString & channel, int cols)
+ContentTable::ContentTable(IDabRadio * theRadio, QSettings * s, const QString & channel, int cols)
 {
   this->theRadio = theRadio;
   this->dabSettings = s;

@@ -41,7 +41,7 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-FdkAAC::FdkAAC(DabRadio * mr, RingBuffer<int16_t> * iipBuffer)
+FdkAAC::FdkAAC(IDabRadio * mr, RingBuffer<int16_t> * iipBuffer)
   : mpAudioBuffer(iipBuffer)
 {
   handle = aacDecoder_Open(TT_MP4_LOAS, 1);
@@ -51,7 +51,7 @@ FdkAAC::FdkAAC(DabRadio * mr, RingBuffer<int16_t> * iipBuffer)
     return;
   }
 
-  connect(this, &FdkAAC::signal_new_audio, mr, &DabRadio::slot_new_audio);
+  connect(this, &FdkAAC::signal_new_audio, mr, &IDabRadio::slot_new_audio);
 
   mIsWorking = true;
 }
@@ -119,7 +119,7 @@ int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * con
     mpAudioBuffer->put_data_into_ring_buffer(bufp, info->frameSize * 2);
     if (mpAudioBuffer->get_ring_buffer_read_available() > (int)info->sampleRate / 8)
     {
-      emit signal_new_audio(info->frameSize, info->sampleRate,  (iSP->psFlag ? DabRadio::AFL_PS_USED : 0) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : 0));
+      emit signal_new_audio(info->frameSize, info->sampleRate,  (iSP->psFlag ? IDabRadio::AFL_PS_USED : 0) | (iSP->sbrFlag ? IDabRadio::AFL_SBR_USED : 0));
     }
   }
   else if (info->numChannels == 1)
@@ -133,7 +133,7 @@ int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * con
     mpAudioBuffer->put_data_into_ring_buffer(buffer, info->frameSize * 2);
     if (mpAudioBuffer->get_ring_buffer_read_available() > info->sampleRate / 8)
     {
-      emit signal_new_audio(info->frameSize, info->sampleRate, (iSP->psFlag ? DabRadio::AFL_PS_USED : 0) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : 0));
+      emit signal_new_audio(info->frameSize, info->sampleRate, (iSP->psFlag ? IDabRadio::AFL_PS_USED : 0) | (iSP->sbrFlag ? IDabRadio::AFL_SBR_USED : 0));
     }
   }
   else

@@ -40,7 +40,7 @@
 #include  <QMutex>
 #include  "dab-config.h"
 
-class DabRadio;
+class IDabRadio;
 class EnsembleDescriptor;
 class DabConfig;
 class Cluster;
@@ -49,7 +49,7 @@ class FibDecoder : public QObject
 {
 Q_OBJECT
 public:
-  explicit FibDecoder(DabRadio *);
+  explicit FibDecoder(IDabRadio *);
   ~FibDecoder();
 
   void clearEnsemble();
@@ -85,7 +85,7 @@ protected:
 
 private:
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & l, SServiceId n);
-  DabRadio * myRadioInterface = nullptr;
+  IDabRadio * myRadioInterface = nullptr;
   DabConfig * currentConfig = nullptr;
   DabConfig * nextConfig = nullptr;
   EnsembleDescriptor * ensemble = nullptr;

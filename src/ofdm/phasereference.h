@@ -41,13 +41,13 @@
 #include  <vector>
 #include  <fftw3.h>
 
-class DabRadio;
+class IDabRadio;
 
 class PhaseReference : public QObject, public PhaseTable
 {
 Q_OBJECT
 public:
-  PhaseReference(const DabRadio * const ipRadio, const ProcessParams * const ipParam);
+  PhaseReference(const IDabRadio * const ipRadio, const ProcessParams * const ipParam);
   ~PhaseReference() override;
 
   [[nodiscard]] int32_t correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const float iThreshold);

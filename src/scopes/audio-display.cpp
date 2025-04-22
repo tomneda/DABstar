@@ -36,7 +36,7 @@
 #include  <qwt_plot_picker.h>
 #include  <qwt_picker_machine.h>
 
-AudioDisplay::AudioDisplay(DabRadio * mr, QwtPlot * plotGrid, QSettings * dabSettings)
+AudioDisplay::AudioDisplay(IDabRadio * mr, QwtPlot * plotGrid, QSettings * dabSettings)
   : mpRadioInterface(mr)
   , mpDabSettings(dabSettings)
   , pPlotGrid(plotGrid)

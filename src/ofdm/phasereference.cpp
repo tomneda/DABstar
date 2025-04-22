@@ -46,7 +46,7 @@
 
 #define CORRELATION_LENGTH  48
 
-PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessParams * const ipParam)
+PhaseReference::PhaseReference(const IDabRadio * const ipRadio, const ProcessParams * const ipParam)
   : PhaseTable()
   , mFramesPerSecond(INPUT_RATE / cTF)
   , mpResponse(ipParam->responseBuffer)
@@ -68,7 +68,7 @@ PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessPara
   }
   mCorrelationVector.resize(SEARCHRANGE + CORRELATION_LENGTH);
 
-  connect(this, &PhaseReference::signal_show_correlation, ipRadio, &DabRadio::slot_show_correlation);
+  connect(this, &PhaseReference::signal_show_correlation, ipRadio, &IDabRadio::slot_show_correlation);
 }
 
 PhaseReference::~PhaseReference()

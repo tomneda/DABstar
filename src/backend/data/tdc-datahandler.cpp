@@ -23,12 +23,12 @@
 #include  "dabradio_if.h"
 #include  "data_manip_and_checks.h"
 
-tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<uint8_t> * dataBuffer, int16_t /*appType*/)
+tdc_dataHandler::tdc_dataHandler(IDabRadio * mr, RingBuffer<uint8_t> * dataBuffer, int16_t /*appType*/)
 {
   myRadioInterface = mr;
   this->dataBuffer = dataBuffer;
   //	for the moment we assume appType 4
-  connect(this, &tdc_dataHandler::bytesOut, myRadioInterface,  &DabRadio::slot_handle_tdc_data);
+  connect(this, &tdc_dataHandler::bytesOut, myRadioInterface,  &IDabRadio::slot_handle_tdc_data);
 }
 
 #define  swap(a)  (((a) << 8) | ((a) >> 8))

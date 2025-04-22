@@ -43,7 +43,7 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-Mp4Processor::Mp4Processor(DabRadio * iRI, const int16_t iBitRate, RingBuffer<int16_t> * const iopAudioBuffer, RingBuffer<uint8_t> * const iopFrameBuffer, FILE * const ipDumpFile)
+Mp4Processor::Mp4Processor(IDabRadio * iRI, const int16_t iBitRate, RingBuffer<int16_t> * const iopAudioBuffer, RingBuffer<uint8_t> * const iopFrameBuffer, FILE * const ipDumpFile)
   : mpRadioInterface(iRI)
   , mPadhandler(iRI)
   , mpDumpFile(ipDumpFile)
@@ -52,12 +52,12 @@ Mp4Processor::Mp4Processor(DabRadio * iRI, const int16_t iBitRate, RingBuffer<in
   , mRsDims(iBitRate / 8)
   , mRsDecoder(8, 0435, 0, 1, 10)
 {
-  connect(this, &Mp4Processor::signal_show_frame_errors, iRI, &DabRadio::slot_show_frame_errors);
-  connect(this, &Mp4Processor::signal_show_rs_errors, iRI, &DabRadio::slot_show_rs_errors);
-  connect(this, &Mp4Processor::signal_show_aac_errors, iRI, &DabRadio::slot_show_aac_errors);
-  connect(this, &Mp4Processor::signal_is_stereo, iRI, &DabRadio::slot_set_stereo);
-  connect(this, &Mp4Processor::signal_new_frame, iRI, &DabRadio::slot_new_frame);
-  connect(this, &Mp4Processor::signal_show_rs_corrections, iRI, &DabRadio::slot_show_rs_corrections);
+  connect(this, &Mp4Processor::signal_show_frame_errors, iRI, &IDabRadio::slot_show_frame_errors);
+  connect(this, &Mp4Processor::signal_show_rs_errors, iRI, &IDabRadio::slot_show_rs_errors);
+  connect(this, &Mp4Processor::signal_show_aac_errors, iRI, &IDabRadio::slot_show_aac_errors);
+  connect(this, &Mp4Processor::signal_is_stereo, iRI, &IDabRadio::slot_set_stereo);
+  connect(this, &Mp4Processor::signal_new_frame, iRI, &IDabRadio::slot_new_frame);
+  connect(this, &Mp4Processor::signal_show_rs_corrections, iRI, &IDabRadio::slot_show_rs_corrections);
 
 #ifdef  __WITH_FDK_AAC__
   aacDecoder = new FdkAAC(iRI, iopAudioBuffer);

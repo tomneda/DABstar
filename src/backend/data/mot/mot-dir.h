@@ -29,11 +29,11 @@
 #include	"mot-object.h"
 #include	<QString>
 #include	<vector>
-class	DabRadio;
+class	IDabRadio;
 
 class	MotDirectory {
 public:
-			MotDirectory	(DabRadio *,
+			MotDirectory	(IDabRadio *,
                      uint16_t,
                      int16_t,
                      int32_t,
@@ -52,7 +52,7 @@ private:
 	void		analyse_theDirectory();
 	uint16_t	transportId;
 
-	DabRadio	*myRadioInterface;
+	IDabRadio	*myRadioInterface;
 	std::vector<uint8_t>	dir_segments;
 	bool		marked [512];
 	int16_t		dir_segmentSize;

@@ -44,13 +44,13 @@
 #include  <qwt_scale_widget.h>
 #include  <fftw3.h>
 
-class DabRadio;
+class IDabRadio;
 
 class AudioDisplay : public QObject
 {
 Q_OBJECT
 public:
-  AudioDisplay(DabRadio *, QwtPlot *, QSettings *);
+  AudioDisplay(IDabRadio *, QwtPlot *, QSettings *);
   ~AudioDisplay() override;
 
   void create_spectrum(const int16_t *, int, int);
@@ -61,7 +61,7 @@ private:
   static constexpr int32_t cNormalizer = 32378;
   static constexpr int32_t cDisplaySize = cSpectrumSize / 2;  // we use only the right half of the FFT
 
-  DabRadio * const mpRadioInterface;
+  IDabRadio * const mpRadioInterface;
   QSettings * const mpDabSettings;
   QwtPlot * const pPlotGrid;
   QwtPlotCurve mSpectrumCurve{""};

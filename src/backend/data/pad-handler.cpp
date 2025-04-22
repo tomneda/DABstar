@@ -39,11 +39,11 @@
   *	\class padHandler
   *	Handles the pad segments passed on from mp2- and mp4Processor
   */
-PadHandler::PadHandler(DabRadio * mr)
+PadHandler::PadHandler(IDabRadio * mr)
 {
   myRadioInterface = mr;
-  connect(this, &PadHandler::signal_show_label, mr, &DabRadio::slot_show_label);
-  connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_show_mot_handling);
+  connect(this, &PadHandler::signal_show_label, mr, &IDabRadio::slot_show_label);
+  connect(this, &PadHandler::signal_show_mot_handling, mr, &IDabRadio::slot_show_mot_handling);
   currentSlide = nullptr;
   //
   //	mscGroupElement indicates whether we are handling an

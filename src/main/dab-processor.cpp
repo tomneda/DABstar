@@ -41,9 +41,9 @@
   *	local are classes OfdmDecoder, FicHandler and mschandler.
   */
 
-DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
+DabProcessor::DabProcessor(IDabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
   : mpRadioInterface(mr)
-  , mSampleReader(mr, inputDevice, p->spectrumBuffer, p->cirBuffer)
+  , mSampleReader(mr, inputDevice, p->spectrumBuffer)
   , mFicHandler(mr)
   , mMscHandler(mr, p->frameBuffer)
   , mPhaseReference(mr, p)
@@ -55,12 +55,12 @@ DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevi
 {
   mFftPlan = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
 
-  connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &DabRadio::slot_show_spectrum);
-  connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &DabRadio::slot_show_tii);
-  connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &DabRadio::slot_show_clock_error);
-  connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &DabRadio::slot_set_and_show_freq_corr_rf_Hz);
-  connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &DabRadio::slot_show_freq_corr_bb_Hz);
-  connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &DabRadio::slot_show_digital_peak_level);
+  connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &IDabRadio::slot_show_spectrum);
+  connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &IDabRadio::slot_show_tii);
+  connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &IDabRadio::slot_show_clock_error);
+  connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &IDabRadio::slot_set_and_show_freq_corr_rf_Hz);
+  connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &IDabRadio::slot_show_freq_corr_bb_Hz);
+  connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &IDabRadio::slot_show_digital_peak_level);
 
   mBits.resize(2 * cK);
   mTiiDetector.reset();

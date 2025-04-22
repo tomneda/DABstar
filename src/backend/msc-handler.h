@@ -36,13 +36,13 @@
 #include "phasetable.h"
 #include "freq-interleaver.h"
 
-class DabRadio;
+class IDabRadio;
 class Backend;
 
 class MscHandler
 {
 public:
-  MscHandler(DabRadio *, RingBuffer<uint8_t> *);
+  MscHandler(IDabRadio *, RingBuffer<uint8_t> *);
   ~MscHandler();
 
   void process_block(const std::vector<int16_t> & iSoftBits, int16_t iBlockNr);
@@ -52,7 +52,7 @@ public:
   void stop_service(int, int);
 
 private:
-  DabRadio * const mpRadioInterface;
+  IDabRadio * const mpRadioInterface;
   RingBuffer<uint8_t> * const mpFrameBuffer;
 
   QMutex mMutex;

@@ -29,13 +29,13 @@
 #include  <QStringListModel>
 #include  <QModelIndex>
 
-class DabRadio;
+class IDabRadio;
 
 class timeTableHandler : public QListView
 {
 Q_OBJECT
 public:
-  timeTableHandler(DabRadio * radio);
+  timeTableHandler(IDabRadio * radio);
   ~timeTableHandler();
 
   void addElement(int, int, const QString &, const QString &);
@@ -44,7 +44,7 @@ public:
 private:
   QStringList timeTableList;
   QStringListModel displayList;
-  DabRadio * radio;
+  IDabRadio * radio;
 };
 
 #endif

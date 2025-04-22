@@ -42,7 +42,7 @@
 #include  <mutex>
 #include  <QString>
 
-class DabRadio;
+class IDabRadio;
 
 typedef struct
 {
@@ -72,7 +72,7 @@ class HttpHandler : public QObject
   Q_OBJECT
 
 public:
-  HttpHandler(DabRadio *, const QString & mapPort, const QString & browserAddress, cmplx address, const QString & saveName, bool autoBrowse);
+  HttpHandler(IDabRadio *, const QString & mapPort, const QString & browserAddress, cmplx address, const QString & saveName, bool autoBrowse);
   ~HttpHandler();
   void start();
   void stop();
@@ -83,7 +83,7 @@ public:
 private:
   FILE * saveFile;
   QString * saveName;
-  DabRadio * parent;
+  IDabRadio * parent;
   QString mapPort;
   cmplx homeAddress;
   std::vector<httpData> transmitterVector;

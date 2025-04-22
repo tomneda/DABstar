@@ -54,14 +54,14 @@ typedef struct
   int ExtensionSrIndex;
 } stream_parms;
 
-class DabRadio;
+class IDabRadio;
 
 // fdkAAC is an interface to the fdk-aac library, using the LOAS protocol
 class FdkAAC : public QObject
 {
   Q_OBJECT
 public:
-  FdkAAC(DabRadio * mr, RingBuffer<int16_t> * iipBuffer);
+  FdkAAC(IDabRadio * mr, RingBuffer<int16_t> * iipBuffer);
   ~FdkAAC() override;
 
   int16_t convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * ipBuffer, int16_t iPacketLength);

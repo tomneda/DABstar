@@ -44,7 +44,7 @@ struct motTable_
   MotObject * motSlide;
 } motTable[55];
 
-motHandler::motHandler(DabRadio * mr)
+motHandler::motHandler(IDabRadio * mr)
 {
   myRadioInterface = mr;
   orderNumber = 0;

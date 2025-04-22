@@ -43,11 +43,10 @@ static inline int16_t value_for_bit_pos(int16_t b)
   return res;
 }
 
-SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer, RingBuffer<cmplx> * iCirBuffer)
+SampleReader::SampleReader(const IDabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer)
   : myRadioInterface(mr)
   , theRig(iTheRig)
   , spectrumBuffer(iSpectrumBuffer)
-  , cirBuffer(iCirBuffer)
 {
   dumpfilePointer.store(nullptr);
   dumpScale = value_for_bit_pos(theRig->bitDepth());
@@ -60,7 +59,7 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
   }
 
   connect(this, &SampleReader::signal_show_spectrum, mr, &IDabRadio::slot_show_spectrum);
-  connect(this, &SampleReader::signal_show_cir     , mr, &DabRadio::slot_show_cir);
+  connect(this, &SampleReader::signal_show_cir     , mr, &IDabRadio::slot_show_cir);
 }
 
 void SampleReader::setRunning(bool b)
@@ -150,7 +149,7 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
     }
 
 
-    if (cirBuffer != nullptr && myRadioInterface->cir_window)
+    if (cirBuffer != nullptr)
     {
       if(mWholeFrameIndex < CIR_BUFF_SIZE)
       {

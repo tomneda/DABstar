@@ -43,13 +43,13 @@
 #include <random>
 
 // Note: It was found that enlarging the buffersize to e.g. 8192 cannot be handled properly by the underlying system.
-class DabRadio;
+class IDabRadio;
 
 class SampleReader : public QObject
 {
 Q_OBJECT
 public:
-  SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr, RingBuffer<cmplx> * iCirBuffer = nullptr);
+  SampleReader(const IDabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr);
   ~SampleReader() override = default;
 
   void setRunning(bool b);
@@ -61,6 +61,7 @@ public:
   void stop_dumping();
   bool check_clipped_and_clear();
   void set_dc_removal(bool iRemoveDC);
+  void set_cir_buffer(RingBuffer<cmplx> * iCirBuffer) { cirBuffer = iCirBuffer; }
 
   [[nodiscard]] inline cmplx get_dc_offset() const { return { meanI, meanQ }; }
 
@@ -69,10 +70,10 @@ private:
   static constexpr int32_t SPEC_BUFF_SIZE = 2048;
   static constexpr int32_t CIR_BUFF_SIZE = 2048*97;
 
-  const DabRadio * myRadioInterface;
-  IDeviceHandler * theRig;
+  const IDabRadio * const myRadioInterface;
+  IDeviceHandler * const theRig;
   RingBuffer<cmplx> * spectrumBuffer;
-  RingBuffer<cmplx> * cirBuffer;
+  RingBuffer<cmplx> * cirBuffer = nullptr;
   std::array<cmplx, SPEC_BUFF_SIZE> specBuff;
   std::array<cmplx, INPUT_RATE> oscillatorTable{};
   TArrayTn mSampleBuffer; // unfortunatelly, only one sample is needed

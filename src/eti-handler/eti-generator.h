@@ -57,7 +57,7 @@
 #include  "fic-handler.h"
 #include  "protection.h"
 
-class DabRadio;
+class IDabRadio;
 
 class parameter;
 

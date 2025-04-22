@@ -11,12 +11,13 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <QTableView>
-#include <QPainter>
-#include <QSettings>
 #include "dabradio_if.h"
 #include "setting-helper.h"
 #include "service-list-handler.h"
+#include <QTableView>
+#include <QPainter>
+#include <QSettings>
+#include <QHeaderView>
 #include <QLoggingCategory>
 
 // Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtDebugMsg)

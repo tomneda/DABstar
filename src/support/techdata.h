@@ -32,14 +32,14 @@
 #include  "ringbuffer.h"
 #include  "custom_frame.h"
 
-class DabRadio;
+class IDabRadio;
 class QSettings;
 
 class TechData : public QObject, public Ui_technical_data
 {
 Q_OBJECT
 public:
-  TechData(DabRadio *, RingBuffer<int16_t> * ipAudioBuffer);
+  TechData(IDabRadio *, RingBuffer<int16_t> * ipAudioBuffer);
   ~TechData() override;
 
   void show_serviceData(const Audiodata * ad);
@@ -49,7 +49,7 @@ public:
   bool isHidden();
 
 private:
-  DabRadio * const mpRadioInterface;
+  IDabRadio * const mpRadioInterface;
   RingBuffer<int16_t> * mpAudioBuffer;
   CustomFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;

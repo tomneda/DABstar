@@ -15,15 +15,25 @@
   #include "ofdm-decoder.h"
 #endif
 #include "dab-processor.h"
+#include "techdata.h"
 
 #include <QWidget>
 
 
-class IDabRadio : public QWidget
+class IDabRadio: public QWidget
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ~IDabRadio() override = default;
+  ~IDabRadio() = default;
+
+  enum EAudioFlags : uint32_t
+  {
+    AFL_NONE     = 0x0,
+    AFL_SBR_USED = 0x1,
+    AFL_PS_USED  = 0x2
+  };
+
+  [[nodiscard]] virtual TechData * get_techdata_widget() const = 0;
 
 public slots:
   virtual void slot_add_to_ensemble(const QString &, uint32_t) = 0;

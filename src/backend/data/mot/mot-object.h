@@ -43,13 +43,13 @@
 #include  <map>
 #include  <iterator>
 
-class DabRadio;
+class IDabRadio;
 
 class MotObject : public QObject
 {
 Q_OBJECT
 public:
-  MotObject(DabRadio * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag);
+  MotObject(IDabRadio * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag);
   ~MotObject() override = default;
 
   void addBodySegment(const uint8_t * bodySegment, int16_t segmentNumber, int32_t segmentSize, bool lastFlag);

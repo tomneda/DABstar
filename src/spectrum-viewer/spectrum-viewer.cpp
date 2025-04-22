@@ -40,7 +40,7 @@
 #include "iqdisplay.h"
 #include "setting-helper.h"
 
-SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
+SpectrumViewer::SpectrumViewer(IDabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
                                RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
   Ui_scopeWidget(),
   mpRadioInterface(ipRI),

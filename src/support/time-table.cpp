@@ -24,7 +24,7 @@
 #include  "time-table.h"
 #include  "dabradio_if.h"
 
-timeTableHandler::timeTableHandler(DabRadio * radio) :
+timeTableHandler::timeTableHandler(IDabRadio * radio) :
                                                      QListView(nullptr)
 {
   this->radio = radio;

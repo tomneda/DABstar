@@ -44,7 +44,7 @@
 #include  "viterbi-spiral.h"
 #include  "fib-decoder.h"
 
-class DabRadio;
+class IDabRadio;
 
 class DabParams;
 
@@ -52,7 +52,7 @@ class FicHandler : public FibDecoder
 {
 Q_OBJECT
 public:
-  FicHandler(DabRadio * const iMr);
+  FicHandler(IDabRadio * const iMr);
   ~FicHandler() override = default;
 
   void process_block(const std::vector<int16_t> & iData, const int32_t iBlkNo);

@@ -52,7 +52,7 @@
   *	The data is sent through to the fib processor
   */
 
-FicHandler::FicHandler(DabRadio * const iMr)
+FicHandler::FicHandler(IDabRadio * const iMr)
   : FibDecoder(iMr)
 {
   std::array<std::byte, 9> shiftRegister;
@@ -120,8 +120,8 @@ FicHandler::FicHandler(DabRadio * const iMr)
     local++;
   }
 
-  connect(this, &FicHandler::show_fic_success, iMr, &DabRadio::slot_show_fic_success);
-  connect(this, &FicHandler::show_fic_BER, iMr, &DabRadio::slot_show_fic_ber);
+  connect(this, &FicHandler::show_fic_success, iMr, &IDabRadio::slot_show_fic_success);
+  connect(this, &FicHandler::show_fic_BER, iMr, &IDabRadio::slot_show_fic_ber);
 }
 
 /**

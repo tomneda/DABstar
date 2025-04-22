@@ -28,7 +28,7 @@
 #include  "color-selector.h"
 #include "setting-helper.h"
 
-TechData::TechData(DabRadio * mr, RingBuffer<int16_t> * ipAudioBuffer)
+TechData::TechData(IDabRadio * mr, RingBuffer<int16_t> * ipAudioBuffer)
   : Ui_technical_data(),
     mpRadioInterface(mr)
   , mFrame()

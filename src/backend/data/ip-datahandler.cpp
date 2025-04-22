@@ -33,11 +33,11 @@
 #include  "dabradio_if.h"
 #include  "data_manip_and_checks.h"
 
-ip_dataHandler::ip_dataHandler(DabRadio * mr, RingBuffer<uint8_t> * dataBuffer)
+ip_dataHandler::ip_dataHandler(IDabRadio * mr, RingBuffer<uint8_t> * dataBuffer)
 {
   this->dataBuffer = dataBuffer;
   this->handledPackets = 0;
-  connect(this, &ip_dataHandler::writeDatagram, mr,  &DabRadio::slot_send_datagram);
+  connect(this, &ip_dataHandler::writeDatagram, mr,  &IDabRadio::slot_send_datagram);
 }
 
 void ip_dataHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)

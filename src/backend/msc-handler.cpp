@@ -42,7 +42,7 @@ static constexpr int16_t cifTable[] = { 18, 72, 0, 36 }; // for each DAB-Mode
 
 //	Note CIF counts from 0 .. 3
 //
-MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<uint8_t> * const ipFrameBuffer)
+MscHandler::MscHandler(IDabRadio * const iRI, RingBuffer<uint8_t> * const ipFrameBuffer)
   : mpRadioInterface(iRI)
   , mpFrameBuffer(ipFrameBuffer)
 {
