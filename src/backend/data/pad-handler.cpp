@@ -30,7 +30,7 @@
  */
 
 #include  "pad-handler.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "charsets.h"
 #include  "mot-object.h"
 #include  "data_manip_and_checks.h"

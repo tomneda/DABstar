@@ -31,7 +31,7 @@
 #include  <QDataStream>
 #include  <QSettings>
 #include  "content-table.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "openfiledialog.h"
 
 //static const char *uep_rates  [] = {nullptr, "7/20", "2/5", "1/2", "3/5", "3/4"};

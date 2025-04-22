@@ -35,7 +35,7 @@
  */
 #include "ofdm-decoder.h"
 #include "phasetable.h"
-#include "dabradio.h"
+#include "dabradio_if.h"
 #include <vector>
 
 OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer) :

@@ -30,7 +30,7 @@
  */
 
 #include  "fic-handler.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "protTables.h"
 #include  "data_manip_and_checks.h"
 

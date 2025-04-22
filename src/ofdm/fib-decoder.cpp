@@ -35,7 +35,7 @@
 #include  "fib-decoder.h"
 #include  <cstring>
 #include  <vector>
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "charsets.h"
 #include  "dab-config.h"
 #include  "fib-table.h"

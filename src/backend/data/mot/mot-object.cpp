@@ -33,7 +33,7 @@
  */
 
 #include  "mot-object.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 
 MotObject::MotObject(DabRadio * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag)
 {

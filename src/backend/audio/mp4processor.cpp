@@ -29,7 +29,7 @@
  ************************************************************************
  */
 #include  "mp4processor.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  <cstring>
 #include  "charsets.h"
 #include  "pad-handler.h"

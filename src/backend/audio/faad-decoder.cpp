@@ -30,7 +30,7 @@
 */
 #include        "faad-decoder.h"
 #include        "neaacdec.h"
-#include        "dabradio.h"
+#include        "dabradio_if.h"
 
 faadDecoder::faadDecoder(DabRadio * mr, RingBuffer<int16_t> * buffer)
 {

@@ -22,7 +22,7 @@
 
 #include  <QSettings>
 #include  "techdata.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "audio-display.h"
 #include  "dab-tables.h"
 #include  "color-selector.h"

@@ -32,6 +32,7 @@
 #define DABRADIO_H
 
 #include  "dab-constants.h"
+#include  "dabradio_if.h"
 #include  "ui_radio.h"
 #include  "dab-processor.h"
 #include  "ringbuffer.h"
@@ -56,7 +57,6 @@
 #include "wav_writer.h"
 #include "audiofifo.h"
 #include "tii_list_display.h"
-#include "dabradio_if.h"
 #include <set>
 #include <memory>
 #include <mutex>
@@ -165,7 +165,7 @@ struct SChannelDescriptor
 };
 
 
-class DabRadio : public IDabRadio, private Ui_DabRadio
+class DabRadio : public QWidget, private Ui_DabRadio
 {
 Q_OBJECT
 public:
@@ -390,62 +390,63 @@ signals:
   void signal_audio_buffer_filled_state(int);
 
 public slots:
-void slot_add_to_ensemble(const QString &, uint32_t) override;
-void slot_name_of_ensemble(int, const QString &) override;
-void slot_show_frame_errors(int) override;
-void slot_show_rs_errors(int) override;
-void slot_show_aac_errors(int) override;
-void slot_show_fic_success(bool) override;
-void slot_show_fic_ber(float) override;
-void slot_show_label(const QString &) override;
-void slot_handle_mot_object(QByteArray, QString, int, bool) override;
-void slot_send_datagram(int) override;
-void slot_handle_tdc_data(int, int) override;
-void slot_change_in_configuration() override;
-void slot_new_audio(int32_t, uint32_t, uint32_t) override;
-void slot_set_stereo(bool) override;
-void slot_set_stream_selector(int) override;
-void slot_no_signal_found() override;
-void slot_show_mot_handling(bool) override;
-void slot_show_correlation(float, const QVector<int> & v) override;
-void slot_show_spectrum(int) override;
-void slot_show_cir() override;
-void slot_show_iq(int, float) override;
-void slot_show_lcd_data(const OfdmDecoder::SLcdData *) override;
-void slot_show_digital_peak_level(float iPeakLevel) override;
-void slot_show_rs_corrections(int, int) override;
-void slot_show_tii(const std::vector<STiiResult> & iTr) override;
-void slot_clock_time(int, int, int, int, int, int, int, int, int) override;
-void slot_start_announcement(const QString &, int) override;
-void slot_stop_announcement(const QString &, int) override;
-void slot_new_frame(int) override;
-void slot_show_clock_error(float e) override;
-void slot_set_epg_data(int, int, const QString &, const QString &) override;
-void slot_epg_timer_timeout() override;
-void slot_nr_services(int) override;
-void slot_handle_content_selector(const QString &) override;
-void slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF) override;
-void slot_show_freq_corr_bb_Hz(int iFreqCorrBB) override;
-void slot_test_slider(int) override;
-void slot_load_table() override;
-//void slot_handle_transmitter_tags(int);
-void slot_handle_dl_text_button() override;
-void slot_handle_logger_button(int) override;
-void slot_handle_port_selector() override;
-void slot_handle_set_coordinates_button() override;
-void slot_handle_eti_active_selector(int) override;
-void slot_use_strongest_peak(bool) override;
-void slot_handle_dc_avoidance_algorithm(bool) override;
-void slot_handle_dc_removal(bool) override;
-void slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight) override;
-void slot_handle_tii_collisions(bool) override;
-void slot_handle_tii_threshold(int) override;
-void slot_handle_tii_subid(int) override;
-void closeEvent(QCloseEvent * event) override;
+  void slot_add_to_ensemble(const QString &, uint32_t);
+  void slot_name_of_ensemble(int, const QString &);
+  void slot_show_frame_errors(int);
+  void slot_show_rs_errors(int);
+  void slot_show_aac_errors(int);
+  void slot_show_fic_success(bool);
+  void slot_show_fic_ber(float);
+  void slot_show_label(const QString &);
+  void slot_handle_mot_object(QByteArray, QString, int, bool);
+  void slot_send_datagram(int);
+  void slot_handle_tdc_data(int, int);
+  void slot_change_in_configuration();
+  void slot_new_audio(int32_t, uint32_t, uint32_t);
+  void slot_set_stereo(bool);
+  void slot_set_stream_selector(int);
+  void slot_no_signal_found();
+  void slot_show_mot_handling(bool);
+  void slot_show_correlation(float, const QVector<int> & v);
+  void slot_show_spectrum(int);
+  void slot_show_cir();
+  void slot_show_iq(int, float);
+  void slot_show_lcd_data(const OfdmDecoder::SLcdData *);
+  void slot_show_digital_peak_level(float iPeakLevel);
+  void slot_show_rs_corrections(int, int);
+  void slot_show_tii(const std::vector<STiiResult> & iTr);
+  void slot_clock_time(int, int, int, int, int, int, int, int, int);
+  void slot_start_announcement(const QString &, int);
+  void slot_stop_announcement(const QString &, int);
+  void slot_new_frame(int);
+  void slot_show_clock_error(float e);
+  void slot_set_epg_data(int, int, const QString &, const QString &);
+  void slot_epg_timer_timeout();
+  void slot_nr_services(int);
+  void slot_handle_content_selector(const QString &);
+  void slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF);
+  void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
+  void slot_test_slider(int);
+  void slot_load_table();
+  //void slot_handle_transmitter_tags(int);
+  void slot_handle_dl_text_button();
+  void slot_handle_logger_button(int);
+  void slot_handle_port_selector();
+  void slot_handle_set_coordinates_button();
+  void slot_handle_eti_active_selector(int);
+  void slot_use_strongest_peak(bool);
+  void slot_handle_dc_avoidance_algorithm(bool);
+  void slot_handle_dc_removal(bool);
+  void slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight);
+  void slot_handle_tii_collisions(bool);
+  void slot_handle_tii_threshold(int);
+  void slot_handle_tii_subid(int);
+
+  void closeEvent(QCloseEvent * event) override;
 
 private slots:
-void _slot_handle_time_table();
-void _slot_handle_content_button();
+  void _slot_handle_time_table();
+  void _slot_handle_content_button();
   void _slot_handle_tech_detail_button();
   void _slot_handle_reset_button();
   void _slot_handle_scan_button();

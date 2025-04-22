@@ -31,7 +31,7 @@
  *      Main program
  */
 #include "setting-helper.h"
-#include "dabradio.h"
+#include "dabradio_if.h"
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>

@@ -48,7 +48,7 @@
 #endif
 
 #include  "http-handler.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 
 HttpHandler::HttpHandler(DabRadio * parent, const QString & mapPort, const QString & browserAddress, cmplx homeAddress, const QString & saveName, bool autoBrowser_off)
 {

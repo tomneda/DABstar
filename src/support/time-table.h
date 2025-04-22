@@ -23,7 +23,7 @@
 #ifndef  TIMETABLE_HANDLER_H
 #define  TIMETABLE_HANDLER_H
 
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  <QListView>
 #include  <QStringList>
 #include  <QStringListModel>

@@ -29,7 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include  "sample-reader.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  <ctime>
 
 static inline int16_t value_for_bit_pos(int16_t b)
@@ -59,7 +59,7 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
                                (float)sin(2.0 * M_PI * i / INPUT_RATE));
   }
 
-  connect(this, &SampleReader::signal_show_spectrum, mr, &DabRadio::slot_show_spectrum);
+  connect(this, &SampleReader::signal_show_spectrum, mr, &IDabRadio::slot_show_spectrum);
   connect(this, &SampleReader::signal_show_cir     , mr, &DabRadio::slot_show_cir);
 }
 

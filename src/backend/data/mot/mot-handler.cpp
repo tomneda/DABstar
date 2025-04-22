@@ -32,7 +32,7 @@
 #include  "mot-handler.h"
 #include  "mot-object.h"
 #include  "mot-dir.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "data_manip_and_checks.h"
 
 

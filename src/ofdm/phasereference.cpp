@@ -30,7 +30,7 @@
  */
 #include  "phasereference.h"
 #include  <QVector>
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  <vector>
 #ifdef HAVE_SSE_OR_AVX
   #include <volk/volk.h>

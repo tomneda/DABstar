@@ -36,7 +36,7 @@
 //	of the sdr-j DAB/DAB+ software
 //
 #include  "mp2processor.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "pad-handler.h"
 
 #ifdef _MSC_VER

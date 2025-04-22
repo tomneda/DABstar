@@ -5,7 +5,7 @@
  */
 
 #include "audioiodevice.h"
-#include "dabradio.h"
+#include "dabradio_if.h"
 #include "techdata.h"
 
 // Q_LOGGING_CATEGORY(sLogAudioIODevice, "AudioIODevice", QtDebugMsg)

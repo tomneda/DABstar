@@ -30,7 +30,7 @@
  */
 #include  "dab-processor.h"
 #include  "msc-handler.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "process-params.h"
 
 /**

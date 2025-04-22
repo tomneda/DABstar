@@ -14,7 +14,7 @@
 #include "configuration.h"
 #include "setting-helper.h"
 #include "ui_configuration.h"
-#include "dabradio.h"
+#include "dabradio_if.h"
 #include <QSettings>
 
 Configuration::Configuration(DabRadio * ipRI) :

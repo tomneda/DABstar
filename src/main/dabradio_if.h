@@ -9,7 +9,15 @@
 #ifndef DABRADIO_IF_H
 #define DABRADIO_IF_H
 
+#ifdef HAVE_SSE_OR_AVX
+  #include "ofdm-decoder-simd.h"
+#else
+  #include "ofdm-decoder.h"
+#endif
+#include "dab-processor.h"
+
 #include <QWidget>
+
 
 class IDabRadio : public QWidget
 {

@@ -31,7 +31,7 @@
  */
 
 #include "audiooutputqt.h"
-#include "dabradio.h"
+#include "dabradio_if.h"
 #include "audioiodevice.h"
 #include <QDebug>
 #include <QLoggingCategory>

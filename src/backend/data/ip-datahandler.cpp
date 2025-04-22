@@ -30,7 +30,7 @@
  */
 
 #include  "ip-datahandler.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "data_manip_and_checks.h"
 
 ip_dataHandler::ip_dataHandler(DabRadio * mr, RingBuffer<uint8_t> * dataBuffer)

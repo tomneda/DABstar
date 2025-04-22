@@ -32,7 +32,7 @@
 
 
 #include  "dab-constants.h"
-#include  "dabradio.h"
+#include  "dabradio_if.h"
 #include  "backend.h"
 //
 //	Interleaving is - for reasons of simplicity - done
