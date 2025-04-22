@@ -43,13 +43,13 @@
 
 #define USE_PHASE_CORR_LUT
 
-class RadioInterface;
+class DabRadio;
 
 class OfdmDecoder : public QObject
 {
 Q_OBJECT
 public:
-  OfdmDecoder(RadioInterface *, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
+  OfdmDecoder(DabRadio *, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
   ~OfdmDecoder() override;
 
   struct SLcdData
@@ -76,7 +76,7 @@ public:
   inline void set_dc_offset(cmplx iDcOffset) { mDcAdc = iDcOffset; };
 
 private:
-  RadioInterface * const mpRadioInterface;
+  DabRadio * const mpRadioInterface;
   FreqInterleaver mFreqInterleaver;
 
   RingBuffer<cmplx> * const mpIqBuffer;

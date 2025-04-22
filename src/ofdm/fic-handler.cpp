@@ -30,7 +30,7 @@
  */
 
 #include  "fic-handler.h"
-#include  "radio.h"
+#include  "dabradio.h"
 #include  "protTables.h"
 #include  "data_manip_and_checks.h"
 
@@ -52,7 +52,7 @@
   *	The data is sent through to the fib processor
   */
 
-FicHandler::FicHandler(RadioInterface * const iMr)
+FicHandler::FicHandler(DabRadio * const iMr)
   : FibDecoder(iMr)
 {
   std::array<std::byte, 9> shiftRegister;
@@ -120,8 +120,8 @@ FicHandler::FicHandler(RadioInterface * const iMr)
     local++;
   }
 
-  connect(this, &FicHandler::show_fic_success, iMr, &RadioInterface::slot_show_fic_success);
-  connect(this, &FicHandler::show_fic_BER, iMr, &RadioInterface::slot_show_fic_ber);
+  connect(this, &FicHandler::show_fic_success, iMr, &DabRadio::slot_show_fic_success);
+  connect(this, &FicHandler::show_fic_BER, iMr, &DabRadio::slot_show_fic_ber);
 }
 
 /**

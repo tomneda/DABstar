@@ -49,7 +49,7 @@
 #include "ringbuffer.h"
 #include "tii-detector.h"
 
-class RadioInterface;
+class DabRadio;
 class QSettings;
 class QLabel;
 

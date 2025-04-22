@@ -256,7 +256,8 @@ include_directories(
 
 set(${objectName}_HDRS
         ${${objectName}_HDRS}
-        src/main/radio.h
+        src/main/dabradio_if.h
+        src/main/dabradio.h
         src/main/glob_defs.h
         src/main/glob_enums.h
         src/main/dab-processor.h
@@ -358,7 +359,7 @@ set(${objectName}_HDRS
 set(${objectName}_SRCS
         ${${objectName}_SRCS}
         src/main/main.cpp
-        src/main/radio.cpp
+        src/main/dabradio.cpp
         src/main/dab-processor.cpp
         src/support/techdata.cpp
         src/eti-handler/eti-generator.cpp

@@ -29,7 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include  "dab-constants.h"
-#include  "radio.h"
+#include  "dabradio.h"
 #include  "msc-handler.h"
 #include  "backend.h"
 //
@@ -42,7 +42,7 @@ static constexpr int16_t cifTable[] = { 18, 72, 0, 36 }; // for each DAB-Mode
 
 //	Note CIF counts from 0 .. 3
 //
-MscHandler::MscHandler(RadioInterface * const iRI, RingBuffer<uint8_t> * const ipFrameBuffer)
+MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<uint8_t> * const ipFrameBuffer)
   : mpRadioInterface(iRI)
   , mpFrameBuffer(ipFrameBuffer)
 {

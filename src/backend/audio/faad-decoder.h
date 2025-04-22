@@ -34,7 +34,7 @@
 #include        "neaacdec.h"
 #include        "ringbuffer.h"
 
-class RadioInterface;
+class DabRadio;
 
 typedef struct
 {
@@ -54,7 +54,7 @@ class faadDecoder : public QObject
 {
 Q_OBJECT
 public:
-  faadDecoder(RadioInterface * mr, RingBuffer<int16_t> * buffer);
+  faadDecoder(DabRadio * mr, RingBuffer<int16_t> * buffer);
   ~faadDecoder();
 
   int16_t convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * ipBuffer, int16_t iBufferLength);

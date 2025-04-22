@@ -36,13 +36,13 @@
 #include  <vector>
 #include  "ringbuffer.h"
 
-class RadioInterface;
+class DabRadio;
 
 class ip_dataHandler : public virtual_dataHandler
 {
 Q_OBJECT
 public:
-  ip_dataHandler(RadioInterface *, RingBuffer<uint8_t> *);
+  ip_dataHandler(DabRadio *, RingBuffer<uint8_t> *);
   ~ip_dataHandler() override = default;
 
   void add_mscDatagroup(const std::vector<uint8_t> &) override ;

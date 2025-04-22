@@ -11,7 +11,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "phasetable.h"
-#include "radio.h"
+#include "dabradio.h"
 #include "simd_extensions.h"
 #include "ofdm-decoder-simd.h"
 #include <vector>
@@ -21,7 +21,7 @@
 #define LOOP_OVER_K   for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
 
 
-OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer)
+OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer)
   : mpRadioInterface(ipMr)
   , mFreqInterleaver()
   , mpIqBuffer(ipIqBuffer)
@@ -55,8 +55,8 @@ OfdmDecoder::OfdmDecoder(RadioInterface * ipMr, RingBuffer<cmplx> * ipIqBuffer, 
     mMapNomToFftIdx[nomCarrIdx] = fftIdx;
   }
 
-  connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &RadioInterface::slot_show_iq);
-  connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &RadioInterface::slot_show_lcd_data);
+  connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &DabRadio::slot_show_iq);
+  connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &DabRadio::slot_show_lcd_data);
 
   reset();
 }

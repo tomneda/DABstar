@@ -43,13 +43,13 @@
 #include <random>
 
 // Note: It was found that enlarging the buffersize to e.g. 8192 cannot be handled properly by the underlying system.
-class RadioInterface;
+class DabRadio;
 
 class SampleReader : public QObject
 {
 Q_OBJECT
 public:
-  SampleReader(const RadioInterface * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr, RingBuffer<cmplx> * iCirBuffer = nullptr);
+  SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr, RingBuffer<cmplx> * iCirBuffer = nullptr);
   ~SampleReader() override = default;
 
   void setRunning(bool b);
@@ -69,7 +69,7 @@ private:
   static constexpr int32_t SPEC_BUFF_SIZE = 2048;
   static constexpr int32_t CIR_BUFF_SIZE = 2048*97;
 
-  const RadioInterface * myRadioInterface;
+  const DabRadio * myRadioInterface;
   IDeviceHandler * theRig;
   RingBuffer<cmplx> * spectrumBuffer;
   RingBuffer<cmplx> * cirBuffer;

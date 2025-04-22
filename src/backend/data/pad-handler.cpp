@@ -30,7 +30,7 @@
  */
 
 #include  "pad-handler.h"
-#include  "radio.h"
+#include  "dabradio.h"
 #include  "charsets.h"
 #include  "mot-object.h"
 #include  "data_manip_and_checks.h"
@@ -39,11 +39,11 @@
   *	\class padHandler
   *	Handles the pad segments passed on from mp2- and mp4Processor
   */
-PadHandler::PadHandler(RadioInterface * mr)
+PadHandler::PadHandler(DabRadio * mr)
 {
   myRadioInterface = mr;
-  connect(this, &PadHandler::signal_show_label, mr, &RadioInterface::slot_show_label);
-  connect(this, &PadHandler::signal_show_mot_handling, mr, &RadioInterface::slot_show_mot_handling);
+  connect(this, &PadHandler::signal_show_label, mr, &DabRadio::slot_show_label);
+  connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_show_mot_handling);
   currentSlide = nullptr;
   //
   //	mscGroupElement indicates whether we are handling an

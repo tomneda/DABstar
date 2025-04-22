@@ -25,7 +25,7 @@
  */
 #include	"mot-dir.h"
 
-	MotDirectory::MotDirectory (RadioInterface *mr,
+	MotDirectory::MotDirectory (DabRadio *mr,
                               uint16_t	transportId,
                               int16_t	segmentSize,
                               int32_t	dirSize,

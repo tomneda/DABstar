@@ -23,19 +23,19 @@
 #ifndef  TIMETABLE_HANDLER_H
 #define  TIMETABLE_HANDLER_H
 
-#include  "radio.h"
+#include  "dabradio.h"
 #include  <QListView>
 #include  <QStringList>
 #include  <QStringListModel>
 #include  <QModelIndex>
 
-class RadioInterface;
+class DabRadio;
 
 class timeTableHandler : public QListView
 {
 Q_OBJECT
 public:
-  timeTableHandler(RadioInterface * radio);
+  timeTableHandler(DabRadio * radio);
   ~timeTableHandler();
 
   void addElement(int, int, const QString &, const QString &);
@@ -44,7 +44,7 @@ public:
 private:
   QStringList timeTableList;
   QStringListModel displayList;
-  RadioInterface * radio;
+  DabRadio * radio;
 };
 
 #endif

@@ -36,7 +36,7 @@
 //	of the sdr-j DAB/DAB+ software
 //
 #include  "mp2processor.h"
-#include  "radio.h"
+#include  "dabradio.h"
 #include  "pad-handler.h"
 
 #ifdef _MSC_VER
@@ -191,7 +191,7 @@ static struct quantizer_spec quantizer_table[17] = {{ 3,     1, 5 },  //  1
 //	(J van Katwijk)
 ////////////////////////////////////////////////////////////////////////////////
 
-Mp2Processor::Mp2Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int16_t> * buffer) :
+Mp2Processor::Mp2Processor(DabRadio * mr, int16_t bitRate, RingBuffer<int16_t> * buffer) :
   my_padhandler(mr)
 {
   int16_t i, j;
@@ -218,9 +218,9 @@ Mp2Processor::Mp2Processor(RadioInterface * mr, int16_t bitRate, RingBuffer<int1
   myRadioInterface = mr;
   this->buffer = buffer;
   this->bitRate = bitRate;
-  connect(this, &Mp2Processor::signal_show_frameErrors, mr, &RadioInterface::slot_show_frame_errors);
-  connect(this, &Mp2Processor::signal_new_audio, mr, &RadioInterface::slot_new_audio);
-  connect(this, &Mp2Processor::signal_is_stereo, mr, &RadioInterface::slot_set_stereo);
+  connect(this, &Mp2Processor::signal_show_frameErrors, mr, &DabRadio::slot_show_frame_errors);
+  connect(this, &Mp2Processor::signal_new_audio, mr, &DabRadio::slot_new_audio);
+  connect(this, &Mp2Processor::signal_is_stereo, mr, &DabRadio::slot_set_stereo);
 
   Voffs = 0;
   baudRate = 48000;  // default for DAB

@@ -48,9 +48,9 @@
 #endif
 
 #include  "http-handler.h"
-#include  "radio.h"
+#include  "dabradio.h"
 
-HttpHandler::HttpHandler(RadioInterface * parent, const QString & mapPort, const QString & browserAddress, cmplx homeAddress, const QString & saveName, bool autoBrowser_off)
+HttpHandler::HttpHandler(DabRadio * parent, const QString & mapPort, const QString & browserAddress, cmplx homeAddress, const QString & saveName, bool autoBrowser_off)
 {
   this->parent = parent;
   this->mapPort = mapPort;

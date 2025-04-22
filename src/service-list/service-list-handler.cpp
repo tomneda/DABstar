@@ -14,7 +14,7 @@
 #include <QTableView>
 #include <QPainter>
 #include <QSettings>
-#include "radio.h"
+#include "dabradio.h"
 #include "setting-helper.h"
 #include "service-list-handler.h"
 #include <QLoggingCategory>

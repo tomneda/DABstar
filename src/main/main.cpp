@@ -31,7 +31,7 @@
  *      Main program
  */
 #include "setting-helper.h"
-#include "radio.h"
+#include "dabradio.h"
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
@@ -98,7 +98,7 @@ int main(int argc, char ** argv)
                                              "such as the map coordinates.");
   }
 
-  const auto radioInterface(std::make_unique<RadioInterface>(dabSettings03.get(), dbFileName, altFreqList, dataPort, nullptr));
+  const auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbFileName, altFreqList, dataPort, nullptr));
   radioInterface->show();
 
   QApplication::exec();

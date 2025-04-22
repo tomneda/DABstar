@@ -67,7 +67,7 @@ constexpr int32_t SP_SPECTRUMSIZE = 2048;
 constexpr int32_t SP_SPEC_OVR_SMP_FAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
 
 
-class RadioInterface;
+class DabRadio;
 class QSettings;
 class IQDisplay;
 class CarrierDisp;
@@ -79,7 +79,7 @@ class SpectrumViewer : public QObject, private Ui_scopeWidget
 {
 Q_OBJECT
 public:
-  SpectrumViewer(RadioInterface * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
+  SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
   ~SpectrumViewer() override;
 
   void show_spectrum(int32_t);
@@ -104,7 +104,7 @@ private:
   static constexpr char SETTING_GROUP_NAME[] = "spectrumViewer";
 
   CustomFrame myFrame{ nullptr };
-  RadioInterface * const mpRadioInterface;
+  DabRadio * const mpRadioInterface;
   QSettings * const mpDabSettings;
   RingBuffer<cmplx> * const mpSpectrumBuffer;
   RingBuffer<cmplx> * const mpIqBuffer;

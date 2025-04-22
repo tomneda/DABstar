@@ -26,14 +26,14 @@
 #include <vector>
 #include <volk/volk.h>
 
-class RadioInterface;
+class DabRadio;
 
 
 class OfdmDecoder : public QObject
 {
 Q_OBJECT
 public:
-  OfdmDecoder(RadioInterface *, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
+  OfdmDecoder(DabRadio *, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
   ~OfdmDecoder() override = default;
 
   struct SLcdData
@@ -60,7 +60,7 @@ public:
   inline void set_dc_offset(cmplx iDcOffset) { mDcAdc = iDcOffset; };
 private:
 
-  RadioInterface * const mpRadioInterface;
+  DabRadio * const mpRadioInterface;
   FreqInterleaver mFreqInterleaver;
 
   RingBuffer<cmplx> * const mpIqBuffer;

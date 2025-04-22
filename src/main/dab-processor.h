@@ -66,7 +66,7 @@
   #include "time_meas.h"
 #endif
 
-class RadioInterface;
+class DabRadio;
 class DabParams;
 class ProcessParams;
 
@@ -74,7 +74,7 @@ class DabProcessor : public QThread
 {
 Q_OBJECT
 public:
-  DabProcessor(RadioInterface * mr, IDeviceHandler * inputDevice, ProcessParams * p);
+  DabProcessor(DabRadio * mr, IDeviceHandler * inputDevice, ProcessParams * p);
   ~DabProcessor() override;
 
   void start();
@@ -125,7 +125,7 @@ public:
   void set_tii_collisions(bool);
 
 private:
-  RadioInterface * const mpRadioInterface;
+  DabRadio * const mpRadioInterface;
   SampleReader mSampleReader;
   FicHandler mFicHandler;
   MscHandler mMscHandler;

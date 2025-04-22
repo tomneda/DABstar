@@ -26,19 +26,19 @@
 #include  "virtual-datahandler.h"
 #include  "ringbuffer.h"
 
-class RadioInterface;
+class DabRadio;
 
 class tdc_dataHandler : public virtual_dataHandler
 {
 Q_OBJECT
 public:
-  tdc_dataHandler(RadioInterface *, RingBuffer<uint8_t> *, int16_t);
+  tdc_dataHandler(DabRadio *, RingBuffer<uint8_t> *, int16_t);
   ~tdc_dataHandler() override = default;
 
   void add_mscDatagroup(const std::vector<uint8_t> &) override;
 
 private:
-  RadioInterface * myRadioInterface;
+  DabRadio * myRadioInterface;
   RingBuffer<uint8_t> * dataBuffer;
 
   int32_t handleFrame_type_0(uint8_t * data, int32_t offset, int32_t length);

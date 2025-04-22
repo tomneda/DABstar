@@ -10,14 +10,14 @@
 #include <QTimer>
 #include <QIODevice>
 
-class RadioInterface;
+class DabRadio;
 struct SAudioFifo;
 
 class AudioIODevice final : public QIODevice
 {
   Q_OBJECT
 public:
-  explicit AudioIODevice(RadioInterface * ipRI, QObject * iParent = nullptr);
+  explicit AudioIODevice(DabRadio * ipRI, QObject * iParent = nullptr);
 
   void start();
   void stop();

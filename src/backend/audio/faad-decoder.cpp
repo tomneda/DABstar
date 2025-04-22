@@ -30,9 +30,9 @@
 */
 #include        "faad-decoder.h"
 #include        "neaacdec.h"
-#include        "radio.h"
+#include        "dabradio.h"
 
-faadDecoder::faadDecoder(RadioInterface * mr, RingBuffer<int16_t> * buffer)
+faadDecoder::faadDecoder(DabRadio * mr, RingBuffer<int16_t> * buffer)
 {
   this->audioBuffer = buffer;
   aacCap = NeAACDecGetCapabilities();
@@ -40,7 +40,7 @@ faadDecoder::faadDecoder(RadioInterface * mr, RingBuffer<int16_t> * buffer)
   aacConf = NeAACDecGetCurrentConfiguration(aacHandle);
   aacInitialized = false;
   baudRate = 48000;
-  connect(this, &faadDecoder::signal_new_audio, mr, &RadioInterface::slot_new_audio);
+  connect(this, &faadDecoder::signal_new_audio, mr, &DabRadio::slot_new_audio);
 }
 
 faadDecoder::~faadDecoder()
@@ -149,8 +149,8 @@ int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const ui
     if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 10)
     {
       emit signal_new_audio((int)sampleRate / 10, sampleRate,
-                            (hInfo.ps ? RadioInterface::AFL_PS_USED : RadioInterface::AFL_NONE) |
-                            (hInfo.sbr ? RadioInterface::AFL_SBR_USED : RadioInterface::AFL_NONE));
+                            (hInfo.ps ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) |
+                            (hInfo.sbr ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
     }
   }
   else if (channels == 1) // TODO: this is not called with a mono service but the stereo above
@@ -164,8 +164,8 @@ int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const ui
     if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 10)
     {
       emit signal_new_audio((int)sampleRate / 10, sampleRate,
-                            (hInfo.ps ? RadioInterface::AFL_PS_USED : RadioInterface::AFL_NONE) |
-                            (hInfo.sbr ? RadioInterface::AFL_SBR_USED : RadioInterface::AFL_NONE));
+                            (hInfo.ps ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) |
+                            (hInfo.sbr ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
     }
   }
   else
