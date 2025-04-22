@@ -1574,12 +1574,12 @@ void RadioInterface::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     country = find_ITU_code(mChannel.ecc_byte, (mChannel.Eid >> 12) & 0xF);
     mChannel.has_ecc = true;
     mChannel.transmitterName = "";
-  }
 
-  if (country != mChannel.countryName)
-  {
-    transmitter_country->setText(country);
-    mChannel.countryName = country;
+    if (country != mChannel.countryName)
+    {
+      transmitter_country->setText(country);
+      mChannel.countryName = country;
+    }
   }
 
   const bool isDropDownVisible = cmbTiiList->view()->isVisible();
@@ -3518,7 +3518,7 @@ void RadioInterface::setup_ui_colors()
 void RadioInterface::_set_http_server_button(const bool iActive)
 {
   btnHttpServer->setStyleSheet(get_bg_style_sheet((iActive ? 0xf97903 : 0x45bb24)));
-  btnHttpServer->setFixedSize(QSize(32, 30));
+  btnHttpServer->setFixedSize(QSize(32, 32));
 }
 
 void RadioInterface::_slot_handle_favorite_button(bool /*iClicked*/)
@@ -3546,21 +3546,21 @@ void RadioInterface::_slot_set_static_button_style()
   btnTargetService->setIconSize(QSize(24, 24));
   btnTargetService->setFixedSize(QSize(32, 32));
   btnTechDetails->setIconSize(QSize(24, 24));
-  btnTechDetails->setFixedSize(QSize(32, 30));
+  btnTechDetails->setFixedSize(QSize(32, 32));
   btnHttpServer->setIconSize(QSize(24, 24));
-  btnHttpServer->setFixedSize(QSize(32, 30));
+  btnHttpServer->setFixedSize(QSize(32, 32));
   btnDeviceWidget->setIconSize(QSize(24, 24));
-  btnDeviceWidget->setFixedSize(QSize(32, 30));
+  btnDeviceWidget->setFixedSize(QSize(32, 32));
   btnSpectrumScope->setIconSize(QSize(24, 24));
-  btnSpectrumScope->setFixedSize(QSize(32, 30));
+  btnSpectrumScope->setFixedSize(QSize(32, 32));
   configButton->setIconSize(QSize(24, 24));
-  configButton->setFixedSize(QSize(32, 30));
+  configButton->setFixedSize(QSize(32, 32));
   btnTii->setIconSize(QSize(24, 24));
-  btnTii->setFixedSize(QSize(32, 30));
+  btnTii->setFixedSize(QSize(32, 32));
   btnCir->setIconSize(QSize(24, 24));
-  btnCir->setFixedSize(QSize(32, 30));
+  btnCir->setFixedSize(QSize(32, 32));
   btnScanning->setIconSize(QSize(24, 24));
-  btnScanning->setFixedSize(QSize(32, 30));
+  btnScanning->setFixedSize(QSize(32, 32));
   btnScanning->init(":res/icons/scan24.png", 3, 1);
 }
 

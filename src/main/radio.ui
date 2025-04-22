@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>765</width>
+    <width>779</width>
     <height>528</height>
    </rect>
   </property>
@@ -620,16 +620,6 @@
           </layout>
          </item>
          <item>
-          <widget class="Line" name="line_2">
-           <property name="styleSheet">
-            <string notr="true">background-color: rgb(61, 56, 70);</string>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Orientation::Vertical</enum>
@@ -848,6 +838,12 @@
      </item>
      <item>
       <widget class="QComboBox" name="cmbTiiList">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>20</height>
+        </size>
+       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;List of TII transmitter data &lt;/span&gt;(simplified)&lt;/p&gt;&lt;p&gt;Click to see overview. &lt;/p&gt;&lt;p&gt;Only reasonable entries are shown, so some entries may be missed.&lt;/p&gt;&lt;p&gt;Shown is: &lt;br/&gt;  - Transmitter Location &lt;br/&gt;  - Distance to transmitter location&lt;br/&gt;  - Compass direction to the transmitter location&lt;br/&gt;  - Altitude of the base of the transmitter antenna&lt;br/&gt;  - Height of the transmitter antenna&lt;/p&gt;&lt;p&gt;For more detailed information, click on the TII button to open an extra TII list.&lt;/p&gt;&lt;p&gt;The full data only shown if the receivers map coordinates are set in the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
