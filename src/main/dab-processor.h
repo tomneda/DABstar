@@ -155,9 +155,9 @@ private:
   bool mAllowRfFreqShift = false;
   bool mInputOverdrivenShown = false;
 
-  alignas(32) TArrayTn mOfdmBuffer;
-  alignas(32) TArrayTu mFftInBuffer;
-  alignas(32) TArrayTu mFftOutBuffer;
+  alignas(64) TArrayTn mOfdmBuffer;
+  alignas(64) TArrayTu mFftInBuffer;
+  alignas(64) TArrayTu mFftOutBuffer;
   fftwf_plan mFftPlan;
   std::vector<int16_t> mBits;
 

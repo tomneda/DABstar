@@ -50,7 +50,7 @@ public:
   explicit PhaseTable();
   ~PhaseTable() = default;
 
-  alignas(32) TArrayTu mRefTable;
+  alignas(64) TArrayTu mRefTable;
 
 private:
   const struct SPhasetableElement * mpCurrentTable;

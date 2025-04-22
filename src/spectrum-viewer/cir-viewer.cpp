@@ -13,8 +13,8 @@ CirViewer::CirViewer(RingBuffer<cmplx> * iCirBuffer)
   , PhaseTable()
   , mpCirBuffer(iCirBuffer)
 {
-  assert(((uintptr_t)mFftInBuffer.data()  & 0x1F) == 0);  // check for 32-byte alignment
-  assert(((uintptr_t)mFftOutBuffer.data() & 0x1F) == 0);
+  assert(((uintptr_t)mFftInBuffer.data()  & 0x3F) == 0);  // check for 64-byte alignment
+  assert(((uintptr_t)mFftOutBuffer.data() & 0x3F) == 0);
   mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
   mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
 
@@ -84,7 +84,7 @@ void CirViewer::show_cir()
 
     // find maximum value
 #ifdef HAVE_SSE_OR_AVX
-    alignas(32) uint32_t index;
+    alignas(64) uint32_t index;
     volk_32fc_index_max_32u_a(&index, mFftOutBuffer.data(), cTu);
     Y_value[j] = abs(mFftOutBuffer[index]) / 26000.0f;
 #else

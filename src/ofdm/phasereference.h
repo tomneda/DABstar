@@ -64,8 +64,8 @@ private:
   int32_t mDisplayCounter = 0;
   bool mSyncOnStrongestPeak = false;
 
-  alignas(32) TArrayTu mFftInBuffer;
-  alignas(32) TArrayTu mFftOutBuffer;
+  alignas(64) TArrayTu mFftInBuffer;
+  alignas(64) TArrayTu mFftOutBuffer;
   fftwf_plan mFftPlanFwd;
   fftwf_plan mFftPlanBwd;
 
