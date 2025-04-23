@@ -28,10 +28,10 @@
  *    along with Qt-DAB if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include  "dab-processor.h"
-#include  "msc-handler.h"
-#include  "dabradio_if.h"
-#include  "process-params.h"
+#include "dab-processor.h"
+#include "msc-handler.h"
+#include "dabradio.h"
+#include "process-params.h"
 
 /**
   *	\brief DabProcessor
@@ -41,7 +41,7 @@
   *	local are classes OfdmDecoder, FicHandler and mschandler.
   */
 
-DabProcessor::DabProcessor(IDabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
+DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
   : mpRadioInterface(mr)
   , mSampleReader(mr, inputDevice, p->spectrumBuffer)
   , mFicHandler(mr)
@@ -52,15 +52,16 @@ DabProcessor::DabProcessor(IDabRadio * const mr, IDeviceHandler * const inputDev
   , mTimeSyncer(&mSampleReader)
   , mcThreshold(p->threshold)
   , mcTiiFramesToCount(p->tiiFramesToCount)
+  , mpCirBuffer(p->cirBuffer)
 {
   mFftPlan = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
 
-  connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &IDabRadio::slot_show_spectrum);
-  connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &IDabRadio::slot_show_tii);
-  connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &IDabRadio::slot_show_clock_error);
-  connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &IDabRadio::slot_set_and_show_freq_corr_rf_Hz);
-  connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &IDabRadio::slot_show_freq_corr_bb_Hz);
-  connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &IDabRadio::slot_show_digital_peak_level);
+  connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &DabRadio::slot_show_spectrum);
+  connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &DabRadio::slot_show_tii);
+  connect(this, &DabProcessor::signal_show_clock_err, mpRadioInterface, &DabRadio::slot_show_clock_error);
+  connect(this, &DabProcessor::signal_set_and_show_freq_corr_rf_Hz, mpRadioInterface, &DabRadio::slot_set_and_show_freq_corr_rf_Hz);
+  connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &DabRadio::slot_show_freq_corr_bb_Hz);
+  connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &DabRadio::slot_show_digital_peak_level);
 
   mBits.resize(2 * cK);
   mTiiDetector.reset();
@@ -427,6 +428,11 @@ void DabProcessor::set_scan_mode(bool b)
 
 //	just convenience functions
 //	FicHandler abstracts channel data
+
+void DabProcessor::activate_cir_viewer(bool iActivate)
+{
+  mSampleReader.set_cir_buffer(iActivate ? mpCirBuffer : nullptr);
+}
 
 QString DabProcessor::find_service(uint32_t SId, int SCIds)
 {

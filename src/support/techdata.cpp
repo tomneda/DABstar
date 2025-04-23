@@ -22,13 +22,13 @@
 
 #include  <QSettings>
 #include  "techdata.h"
-#include  "dabradio_if.h"
+#include  "dabradio.h"
 #include  "audio-display.h"
 #include  "dab-tables.h"
 #include  "color-selector.h"
 #include "setting-helper.h"
 
-TechData::TechData(IDabRadio * mr, RingBuffer<int16_t> * ipAudioBuffer)
+TechData::TechData(DabRadio * mr, RingBuffer<int16_t> * ipAudioBuffer)
   : Ui_technical_data(),
     mpRadioInterface(mr)
   , mFrame()

@@ -35,19 +35,19 @@
 #include  "virtual-datahandler.h"
 #include  <vector>
 
-class IDabRadio;
+class DabRadio;
 class MotObject;
 class MotDirectory;
 
 class motHandler : public virtual_dataHandler
 {
 public:
-  explicit motHandler(IDabRadio *);
+  explicit motHandler(DabRadio *);
   ~motHandler() override;
 
   void add_mscDatagroup(const std::vector<uint8_t> &);
 private:
-  IDabRadio * myRadioInterface;
+  DabRadio * myRadioInterface;
   int orderNumber;
   MotDirectory * theDirectory;
 

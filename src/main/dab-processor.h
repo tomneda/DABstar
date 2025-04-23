@@ -66,7 +66,7 @@
   #include "time_meas.h"
 #endif
 
-class IDabRadio;
+class DabRadio;
 class DabParams;
 class ProcessParams;
 
@@ -74,7 +74,7 @@ class DabProcessor : public QThread
 {
 Q_OBJECT
 public:
-  DabProcessor(IDabRadio * mr, IDeviceHandler * inputDevice, ProcessParams * p);
+  DabProcessor(DabRadio * mr, IDeviceHandler * inputDevice, ProcessParams * p);
   ~DabProcessor() override;
 
   void start();
@@ -86,6 +86,7 @@ public:
   void reset_eti_generator();
   void set_scan_mode(bool);
   void add_bb_freq(int32_t iFreqOffHz);
+  void activate_cir_viewer(bool iActivate);
 
   //	inheriting from our delegates
   //	for the FicHandler:
@@ -125,7 +126,7 @@ public:
   void set_tii_collisions(bool);
 
 private:
-  IDabRadio * const mpRadioInterface;
+  DabRadio * const mpRadioInterface;
   SampleReader mSampleReader;
   FicHandler mFicHandler;
   MscHandler mMscHandler;
@@ -154,6 +155,7 @@ private:
   bool mRfFreqShiftUsed = false;
   bool mAllowRfFreqShift = false;
   bool mInputOverdrivenShown = false;
+  RingBuffer<cmplx> * mpCirBuffer = nullptr;
 
   alignas(64) TArrayTn mOfdmBuffer;
   alignas(64) TArrayTu mFftInBuffer;

@@ -33,9 +33,9 @@
  */
 
 #include  "mot-object.h"
-#include  "dabradio_if.h"
+#include  "dabradio.h"
 
-MotObject::MotObject(IDabRadio * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag)
+MotObject::MotObject(DabRadio * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag)
 {
   int32_t pointer = 7;
   uint16_t rawContentType = 0;
@@ -43,7 +43,7 @@ MotObject::MotObject(IDabRadio * mr, bool dirElement, uint16_t transportId, cons
   (void)segmentSize;
   (void)lastFlag;
   this->dirElement = dirElement;
-  connect(this, &MotObject::handle_motObject, mr, &IDabRadio::slot_handle_mot_object);
+  connect(this, &MotObject::handle_motObject, mr, &DabRadio::slot_handle_mot_object);
   this->transportId = transportId;
   this->numofSegments = -1;
   this->segmentSize = -1;

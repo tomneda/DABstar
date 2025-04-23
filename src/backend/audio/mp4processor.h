@@ -53,19 +53,19 @@
 
 #endif
 
-class IDabRadio;
+class DabRadio;
 
 class Mp4Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  Mp4Processor(IDabRadio *, int16_t, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *);
+  Mp4Processor(DabRadio *, int16_t, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *);
   ~Mp4Processor() override;
 
   void add_to_frame(const std::vector<uint8_t> &) override;
   
 private:
-  IDabRadio * const mpRadioInterface;
+  DabRadio * const mpRadioInterface;
   PadHandler mPadhandler;
   FILE * const mpDumpFile;
   int16_t const mBitRate;

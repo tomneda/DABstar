@@ -48,7 +48,7 @@
 
 #define  NUMBER_SLOTS  25
 
-class IDabRadio;
+class DabRadio;
 
 #ifdef  __THREADED_BACKEND__
 class Backend : public QThread
@@ -60,7 +60,7 @@ class Backend
 #endif
 
 public:
-  Backend(IDabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<int16_t> * ipoAudiobuffer, RingBuffer<uint8_t> * ipoDatabuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag);
+  Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<int16_t> * ipoAudiobuffer, RingBuffer<uint8_t> * ipoDatabuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag);
   ~Backend();
 
   int32_t process(const int16_t * iV, int16_t cnt);
@@ -92,7 +92,7 @@ private:
   int16_t nextOut;
 #endif
   void processSegment(const int16_t * iData);
-  IDabRadio * radioInterface;
+  DabRadio * radioInterface;
 
   int16_t fragmentSize;
   std::vector<std::vector<int16_t>> interleaveData;

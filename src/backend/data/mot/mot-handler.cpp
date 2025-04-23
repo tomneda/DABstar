@@ -32,7 +32,7 @@
 #include  "mot-handler.h"
 #include  "mot-object.h"
 #include  "mot-dir.h"
-#include  "dabradio_if.h"
+#include  "dabradio.h"
 #include  "data_manip_and_checks.h"
 
 
@@ -44,7 +44,7 @@ struct motTable_
   MotObject * motSlide;
 } motTable[55];
 
-motHandler::motHandler(IDabRadio * mr)
+motHandler::motHandler(DabRadio * mr)
 {
   myRadioInterface = mr;
   orderNumber = 0;

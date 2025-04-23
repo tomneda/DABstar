@@ -18,7 +18,7 @@
 #include <QStyledItemDelegate>
 #include "service-db.h"
 
-class IDabRadio;
+class DabRadio;
 class QTableView;
 class QSettings;
 

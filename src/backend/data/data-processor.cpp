@@ -28,7 +28,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include  "dab-constants.h"
-#include  "dabradio_if.h"
+#include  "dabradio.h"
 #include  "data-processor.h"
 #include  "virtual-datahandler.h"
 #include  "ip-datahandler.h"
@@ -42,7 +42,7 @@
 //	MSCdatagroups and dispatch to the appropriate handler
 //
 //	fragmentsize == Length * CUSize
-DataProcessor::DataProcessor(IDabRadio * mr, const Packetdata * pd, RingBuffer<uint8_t> * dataBuffer)
+DataProcessor::DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<uint8_t> * dataBuffer)
 {
   this->myRadioInterface = mr;
   this->bitRate = pd->bitRate;

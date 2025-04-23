@@ -17,7 +17,7 @@
 #include "ui_configuration.h"
 #include <QWidget>
 
-class IDabRadio;
+class DabRadio;
 
 // allow direct access to components -> makes a live simpler but more dangerous!
 class Configuration : public QWidget, public Ui_configWidget
@@ -25,13 +25,13 @@ class Configuration : public QWidget, public Ui_configWidget
   Q_OBJECT
 
 public:
-  Configuration(IDabRadio * ipRI);
+  Configuration(DabRadio * ipRI);
   ~Configuration() override = default;
 
   void save_position_and_config();
 
 private:
-  IDabRadio * const mpRadioInterface;
+  DabRadio * const mpRadioInterface;
 };
 
 

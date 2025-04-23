@@ -32,7 +32,7 @@
 
 
 #include  "dab-constants.h"
-#include  "dabradio_if.h"
+#include  "dabradio.h"
 #include  "backend.h"
 //
 //	Interleaving is - for reasons of simplicity - done
@@ -40,7 +40,7 @@
 #define CUSize  (4 * 16)
 
 //	fragmentsize == Length * CUSize
-Backend::Backend(IDabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<int16_t> * ipoAudiobuffer, RingBuffer<uint8_t> * ipoDatabuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag)
+Backend::Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<int16_t> * ipoAudiobuffer, RingBuffer<uint8_t> * ipoDatabuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag)
   : deconvolver(ipDescType)
   , outV(ipDescType->bitRate * 24)
   , driver(ipRI, ipDescType, ipoAudiobuffer, ipoDatabuffer, frameBuffer, dump)

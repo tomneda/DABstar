@@ -28,7 +28,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "tii_list_display.h"
-#include "dabradio_if.h"
+#include "dabradio.h"
 #include <QHeaderView>
 #include "setting-helper.h"
 

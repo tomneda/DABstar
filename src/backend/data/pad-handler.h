@@ -37,20 +37,20 @@
 #include  <cstdint>
 #include  <vector>
 
-class IDabRadio;
+class DabRadio;
 class MotObject;
 
 class PadHandler : public QObject
 {
 Q_OBJECT
 public:
-  explicit PadHandler(IDabRadio *);
+  explicit PadHandler(DabRadio *);
   ~PadHandler() override;
 
   void processPAD(uint8_t *, int16_t, uint8_t, uint8_t);
 
 private:
-  IDabRadio * myRadioInterface;
+  DabRadio * myRadioInterface;
   void handle_variablePAD(const uint8_t *, int16_t, uint8_t);
   void handle_shortPAD(const uint8_t *, int16_t, uint8_t);
   void dynamicLabel(const uint8_t *, int16_t, uint8_t);

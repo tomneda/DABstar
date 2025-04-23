@@ -32,8 +32,7 @@
 #define DABRADIO_H
 
 #include  "dab-constants.h"
-#include  "dabradio_if.h"
-#include  "ui_dabradio.h"
+#include  "dabradio.h"
 #include  "dab-processor.h"
 #include  "ringbuffer.h"
 #include  "band-handler.h"
@@ -164,17 +163,23 @@ struct SChannelDescriptor
   }
 };
 
+class Ui_DabRadio;
 
-class DabRadio : public IDabRadio
+class DabRadio : public QWidget
 {
 Q_OBJECT
 public:
   DabRadio(QSettings *, const QString &, const QString &, int32_t iDataPort, QWidget * iParent);
   ~DabRadio() override;
 
-  [[nodiscard]] TechData * get_techdata_widget() const override { return mpTechDataWidget; }
+  enum EAudioFlags : uint32_t
+  {
+    AFL_NONE     = 0x0,
+    AFL_SBR_USED = 0x1,
+    AFL_PS_USED  = 0x2
+  };
 
-  bool cir_window = false;
+  [[nodiscard]] TechData * get_techdata_widget() const { return mpTechDataWidget; }
 
 private:
   template<typename T>
@@ -206,7 +211,7 @@ private:
   static constexpr int32_t cClockResetTimeoutMs  = 5000;
   static constexpr int32_t cTiiIndexCntTimeoutMs = 2000;
 
-  Ui_DabRadio ui;
+  Ui_DabRadio * const ui;
 
   int32_t mAudioFrameCnt = 0;
   int32_t mMotObjectCnt = 0;

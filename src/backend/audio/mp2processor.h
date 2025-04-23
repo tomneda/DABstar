@@ -58,18 +58,18 @@ struct quantizer_spec
   uint8_t cw_bits;
 };
 
-class IDabRadio;
+class DabRadio;
 
 class Mp2Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  Mp2Processor(IDabRadio *, int16_t, RingBuffer<int16_t> *);
+  Mp2Processor(DabRadio *, int16_t, RingBuffer<int16_t> *);
   ~Mp2Processor();
   void add_to_frame(const std::vector<uint8_t> &);
 
 private:
-  IDabRadio * myRadioInterface;
+  DabRadio * myRadioInterface;
   int16_t bitRate;
   PadHandler my_padhandler;
   int32_t mp2sampleRate(uint8_t *);

@@ -256,7 +256,6 @@ include_directories(
 
 set(${objectName}_HDRS
         ${${objectName}_HDRS}
-        src/main/dabradio_if.h
         src/main/dabradio.h
         src/main/glob_defs.h
         src/main/glob_enums.h

@@ -29,7 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include  "sample-reader.h"
-#include  "dabradio_if.h"
+#include  "dabradio.h"
 #include  <ctime>
 
 static inline int16_t value_for_bit_pos(int16_t b)
@@ -43,7 +43,7 @@ static inline int16_t value_for_bit_pos(int16_t b)
   return res;
 }
 
-SampleReader::SampleReader(const IDabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer)
+SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer)
   : myRadioInterface(mr)
   , theRig(iTheRig)
   , spectrumBuffer(iSpectrumBuffer)
@@ -58,8 +58,8 @@ SampleReader::SampleReader(const IDabRadio * mr, IDeviceHandler * iTheRig, RingB
                                (float)sin(2.0 * M_PI * i / INPUT_RATE));
   }
 
-  connect(this, &SampleReader::signal_show_spectrum, mr, &IDabRadio::slot_show_spectrum);
-  connect(this, &SampleReader::signal_show_cir     , mr, &IDabRadio::slot_show_cir);
+  connect(this, &SampleReader::signal_show_spectrum, mr, &DabRadio::slot_show_spectrum);
+  connect(this, &SampleReader::signal_show_cir     , mr, &DabRadio::slot_show_cir);
 }
 
 void SampleReader::setRunning(bool b)
@@ -237,5 +237,10 @@ void SampleReader::set_dc_removal(bool iRemoveDC)
 {
   meanI = meanQ = 0.0f;
   dcRemovalActive = iRemoveDC;
+}
+
+void SampleReader::set_cir_buffer(RingBuffer<cmplx> * iCirBuffer)
+{
+  cirBuffer = iCirBuffer;
 }
 

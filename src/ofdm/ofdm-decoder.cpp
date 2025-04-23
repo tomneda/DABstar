@@ -35,10 +35,10 @@
  */
 #include "ofdm-decoder.h"
 #include "phasetable.h"
-#include "dabradio_if.h"
+#include "dabradio.h"
 #include <vector>
 
-OfdmDecoder::OfdmDecoder(IDabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer) :
+OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer) :
   mpRadioInterface(ipMr),
   mFreqInterleaver(),
   mpIqBuffer(ipIqBuffer),
@@ -65,8 +65,8 @@ OfdmDecoder::OfdmDecoder(IDabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingB
   }
 #endif
   
-  connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &IDabRadio::slot_show_iq);
-  connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &IDabRadio::slot_show_lcd_data);
+  connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &DabRadio::slot_show_iq);
+  connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &DabRadio::slot_show_lcd_data);
 
   reset();
 }

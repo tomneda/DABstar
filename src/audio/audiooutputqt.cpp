@@ -31,7 +31,7 @@
  */
 
 #include "audiooutputqt.h"
-#include "dabradio_if.h"
+#include "dabradio.h"
 #include "audioiodevice.h"
 #include <QDebug>
 #include <QLoggingCategory>
@@ -43,7 +43,7 @@
 // Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtInfoMsg)
 
-AudioOutputQt::AudioOutputQt(IDabRadio * const ipRI, QObject * parent)
+AudioOutputQt::AudioOutputQt(DabRadio * const ipRI, QObject * parent)
 {
   mpIoDevice.reset(new AudioIODevice(ipRI));
   mpMediaDevices.reset(new QMediaDevices(this));

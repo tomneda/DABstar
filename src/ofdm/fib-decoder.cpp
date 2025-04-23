@@ -35,7 +35,7 @@
 #include  "fib-decoder.h"
 #include  <cstring>
 #include  <vector>
-#include  "dabradio_if.h"
+#include  "dabradio.h"
 #include  "charsets.h"
 #include  "dab-config.h"
 #include  "fib-table.h"
@@ -45,16 +45,16 @@
 #include  "dab-tables.h"
 
 
-FibDecoder::FibDecoder(IDabRadio * mr) :
+FibDecoder::FibDecoder(DabRadio * mr) :
   myRadioInterface(mr)
 {
   //connect(this, &FibDecoder::addtoEnsemble, myRadioInterface, &RadioInterface::slot_add_to_ensemble);
-  connect(this, &FibDecoder::signal_name_of_ensemble, myRadioInterface, &IDabRadio::slot_name_of_ensemble);
-  connect(this, &FibDecoder::signal_clock_time, myRadioInterface, &IDabRadio::slot_clock_time);
-  connect(this, &FibDecoder::signal_change_in_configuration, myRadioInterface, &IDabRadio::slot_change_in_configuration);
-  connect(this, &FibDecoder::signal_start_announcement, myRadioInterface, &IDabRadio::slot_start_announcement);
-  connect(this, &FibDecoder::signal_stop_announcement, myRadioInterface, &IDabRadio::slot_stop_announcement);
-  connect(this, &FibDecoder::signal_nr_services, myRadioInterface, &IDabRadio::slot_nr_services);
+  connect(this, &FibDecoder::signal_name_of_ensemble, myRadioInterface, &DabRadio::slot_name_of_ensemble);
+  connect(this, &FibDecoder::signal_clock_time, myRadioInterface, &DabRadio::slot_clock_time);
+  connect(this, &FibDecoder::signal_change_in_configuration, myRadioInterface, &DabRadio::slot_change_in_configuration);
+  connect(this, &FibDecoder::signal_start_announcement, myRadioInterface, &DabRadio::slot_start_announcement);
+  connect(this, &FibDecoder::signal_stop_announcement, myRadioInterface, &DabRadio::slot_stop_announcement);
+  connect(this, &FibDecoder::signal_nr_services, myRadioInterface, &DabRadio::slot_nr_services);
 
   currentConfig = new DabConfig();
   nextConfig = new DabConfig();
@@ -1536,14 +1536,14 @@ void FibDecoder::connect_channel()
   currentConfig->reset();
   nextConfig->reset();
   ensemble->reset();
-  connect(this, &FibDecoder::signal_add_to_ensemble, myRadioInterface, &IDabRadio::slot_add_to_ensemble);
+  connect(this, &FibDecoder::signal_add_to_ensemble, myRadioInterface, &DabRadio::slot_add_to_ensemble);
   fibLocker.unlock();
 }
 
 void FibDecoder::disconnect_channel()
 {
   fibLocker.lock();
-  disconnect(this, &FibDecoder::signal_add_to_ensemble, myRadioInterface, &IDabRadio::slot_add_to_ensemble);
+  disconnect(this, &FibDecoder::signal_add_to_ensemble, myRadioInterface, &DabRadio::slot_add_to_ensemble);
   currentConfig->reset();
   nextConfig->reset();
   ensemble->reset();

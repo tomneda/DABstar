@@ -19,7 +19,7 @@ constexpr int32_t CIR_SPECTRUMSIZE = 2048*97;
 
 class QSettings;
 class QLabel;
-class IDabRadio;
+class DabRadio;
 
 class CirViewer : public QObject, private Ui_cirWidget, private PhaseTable
 {
