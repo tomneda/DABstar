@@ -122,8 +122,8 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 
 
 DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const int32_t iDataPort, QWidget * iParent)
-  // : QWidget(iParent)
-  : ui(new Ui_DabRadio)
+  : QWidget(iParent)
+  , ui(new Ui_DabRadio)
   , mpSpectrumBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::SpectrumBuffer).get())
   , mpIqBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::IqBuffer).get())
   , mpCarrBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<float>::EId::CarrBuffer).get())
