@@ -641,7 +641,7 @@
              <enum>Qt::Orientation::Vertical</enum>
             </property>
             <property name="tickPosition">
-             <enum>QSlider::TickPosition::TicksBothSides</enum>
+             <enum>QSlider::TickPosition::NoTicks</enum>
             </property>
            </widget>
           </widget>
