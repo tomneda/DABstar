@@ -85,101 +85,10 @@ private:
   QString mKey;
 };
 
-
-struct Main // namespace for main window data
-{
-  static QString category;
-
-  static PosAndSize posAndSize;
-
-  static Variant varVolume;
-};
-
-struct Config  // namespace for the configuration window
-{
-  static QString category;
-
-  static PosAndSize posAndSize;
-
-  static Variant varPicturesPath;
-  static Variant varMotPath;
-  static Variant varEpgPath;
-  static Variant varSkipFile;
-  static Variant varTiiFile;
-  static Variant varBrowserAddress;
-  static Variant varMapPort;
-  static Variant varLatitude;
-  static Variant varLongitude;
-  static Variant varSdrDevice;
-  static Variant varDeviceFile;
-  static Variant varDeviceUiVisible;
-  static Variant varPresetName;
-  static Variant varChannel;
-
-  static Widget cbCloseDirect;
-  static Widget cbUseStrongestPeak;
-  static Widget cbUseNativeFileDialog;
-  static Widget cbUseUtcTime;
-  static Widget cbGenXmlFromEpg;
-  static Widget cbAlwaysOnTop;
-  static Widget cbManualBrowserStart;
-  static Widget cbSaveSlides;
-  static Widget cbSaveTransToCsv;
-  static Widget cbUseDcAvoidance;
-  static Widget cbUseDcRemoval;
-  static Widget cbShowNonAudioInServiceList;
-  static Widget sbTiiThreshold;
-  static Widget cbTiiCollisions;
-  static Widget sbTiiSubId;
-  static Widget cbUrlClickable;
-  static Widget cbAutoIterTiiEntries;
-  static Widget cmbSoundOutput;
-};
-
-struct SpectrumViewer // namespace for the spectrum window
-{
-  static QString category;
-
-  static PosAndSize posAndSize;
-
-  static Variant varUiVisible;
-};
-
-struct CirViewer // namespace for the CIR viewer window
-{
-  static QString category;
-
-  static PosAndSize posAndSize;
-
-  static Variant varUiVisible;
-};
-
-struct TiiViewer // namespace for the TII list viewer window
-{
-  static QString category;
-
-  static PosAndSize posAndSize;
-
-  static Variant varUiVisible;
-};
-
-struct ServiceList // namespace for the TII list viewer window
-{
-  static QString category;
-
-  static Variant varSortCol;
-  static Variant varSortDesc;
-};
-
-struct TechDataViewer // namespace for the TII list viewer window
-{
-  static QString category;
-
-  static PosAndSize posAndSize;
-
-  static Variant varUiVisible;
-};
-
+// here all the declarations of the ini file objects are done via macro filters
+#define FILTER_DECLARATIONS
+#include "setting-helper.cnf.h"
+#undef FILTER_DECLARATIONS
 } // namespace Settings
 
 #endif // SETTING_HELPER_H

@@ -27,71 +27,10 @@
 namespace Settings
 {
 
-QString Config::category = "Configuration";
-PosAndSize Config::posAndSize{category};
-Variant Config::varPicturesPath{category, "varPicturesPath"};
-Variant Config::varMotPath{category, "varFilePath"};
-Variant Config::varEpgPath{category, "varEpgPath"};
-Variant Config::varSkipFile{category, "varSkipFile"};
-Variant Config::varTiiFile{category, "varTiiFile"};
-Variant Config::varBrowserAddress{category, "varBrowserAddress", "http://localhost"};
-Variant Config::varMapPort{category, "varMapPort", 8080};
-Variant Config::varLatitude{category, "varLatitude", 0};
-Variant Config::varLongitude{category, "varLongitude", 0};
-Variant Config::varSdrDevice{category, "varSdrDevice", "no device"};
-Variant Config::varDeviceFile{category, "varDeviceFile", ""};
-Variant Config::varDeviceUiVisible{category, "varDeviceUiVisible", true};
-Variant Config::varPresetName{category, "varPresetName", ""};
-Variant Config::varChannel{category, "varChannel", ""};
-Widget Config::cbCloseDirect{category, "cbCloseDirect"};
-Widget Config::cbUseStrongestPeak{category, "cbUseStrongestPeak"};
-Widget Config::cbUseNativeFileDialog{category, "cbUseNativeFileDialog"};
-Widget Config::cbUseUtcTime{category, "cbUseUtcTime"};
-Widget Config::cbGenXmlFromEpg{category, "cbGenXmlFromEpg"};
-Widget Config::cbAlwaysOnTop{category, "cbAlwaysOnTop"};
-Widget Config::cbManualBrowserStart{category, "cbManualBrowserStart"};
-Widget Config::cbSaveSlides{category, "cbSaveSlides"};
-Widget Config::cbSaveTransToCsv{category, "cbSaveTransToCsv"};
-Widget Config::cbUseDcAvoidance{category, "cbUseDcAvoidance"};
-Widget Config::cbUseDcRemoval{category, "cbUseDcRemoval"};
-Widget Config::cbShowNonAudioInServiceList{category, "cbShowNonAudioInService"};
-Widget Config::sbTiiThreshold{category, "sbTiiThreshold"};
-Widget Config::cbTiiCollisions{category, "cbTiiCollisions"};
-Widget Config::sbTiiSubId{category, "sbTiiSubId"};
-Widget Config::cbUrlClickable{category, "cbUrlClickable"};
-Widget Config::cbAutoIterTiiEntries{category, "cbAutoIterTiiEntries"};
-Widget Config::cmbSoundOutput{category, "cmbSoundOutput"};
-
-
-QString Main::category = "Main";
-PosAndSize Main::posAndSize{category};
-Variant Main::varVolume{category, "varVolume", 100};
-
-
-QString SpectrumViewer::category = "SpectrumViewer";
-PosAndSize SpectrumViewer::posAndSize{category};
-Variant SpectrumViewer::varUiVisible{category, "varUiVisible", false};
-
-
-QString CirViewer::category = "CirViewer";
-PosAndSize CirViewer::posAndSize{category};
-Variant CirViewer::varUiVisible{category, "varUiVisible", false};
-
-
-QString TiiViewer::category = "TiiViewer";
-PosAndSize TiiViewer::posAndSize{category};
-Variant TiiViewer::varUiVisible{category, "varUiVisible", false};
-
-
-QString ServiceList::category = "ServiceList";
-Variant ServiceList::varSortCol{category, "varSortCol", 0};
-Variant ServiceList::varSortDesc{category, "varSSortDesc", false};
-
-
-QString TechDataViewer::category = "TechDataViewer";
-PosAndSize TechDataViewer::posAndSize{category};
-Variant TechDataViewer::varUiVisible{category, "varUiVisible", false};
-
+// here all the definitions of the ini file objects are done via macro filters
+#define FILTER_DEFINITIONS
+#include "setting-helper.cnf.h"
+#undef FILTER_DEFINITIONS
 
 Variant::Variant(const QString & cat, const QString & key)
   : mKey(cat + "/" + key)
