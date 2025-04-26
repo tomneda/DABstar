@@ -88,96 +88,96 @@ private:
 
 struct Main // namespace for main window data
 {
-  static inline QString category = "Main";
+  static QString category;
 
-  static inline PosAndSize posAndSize{category};
+  static PosAndSize posAndSize;
 
-  static inline Variant varVolume{category, "varVolume", 100};
+  static Variant varVolume;
 };
 
 struct Config  // namespace for the configuration window
 {
-  static inline QString category = "Configuration";
+  static QString category;
 
-  static inline PosAndSize posAndSize{category};
+  static PosAndSize posAndSize;
 
-  static inline Variant varPicturesPath{category, "varPicturesPath"};
-  static inline Variant varMotPath{category, "varFilePath"};
-  static inline Variant varEpgPath{category, "varEpgPath"};
-  static inline Variant varSkipFile{category, "varSkipFile"};
-  static inline Variant varTiiFile{category, "varTiiFile"};
-  static inline Variant varBrowserAddress{category, "varBrowserAddress", "http://localhost"};
-  static inline Variant varMapPort{category, "varMapPort", 8080};
-  static inline Variant varLatitude{category, "varLatitude", 0};
-  static inline Variant varLongitude{category, "varLongitude", 0};
-  static inline Variant varSdrDevice{category, "varSdrDevice", "no device"};
-  static inline Variant varDeviceFile{category, "varDeviceFile", ""};
-  static inline Variant varDeviceUiVisible{category, "varDeviceUiVisible", true};
-  static inline Variant varPresetName{category, "varPresetName", ""};
-  static inline Variant varChannel{category, "varChannel", ""};
+  static Variant varPicturesPath;
+  static Variant varMotPath;
+  static Variant varEpgPath;
+  static Variant varSkipFile;
+  static Variant varTiiFile;
+  static Variant varBrowserAddress;
+  static Variant varMapPort;
+  static Variant varLatitude;
+  static Variant varLongitude;
+  static Variant varSdrDevice;
+  static Variant varDeviceFile;
+  static Variant varDeviceUiVisible;
+  static Variant varPresetName;
+  static Variant varChannel;
 
-  static inline Widget cbCloseDirect{category, "cbCloseDirect"};
-  static inline Widget cbUseStrongestPeak{category, "cbUseStrongestPeak"};
-  static inline Widget cbUseNativeFileDialog{category, "cbUseNativeFileDialog"};
-  static inline Widget cbUseUtcTime{category, "cbUseUtcTime"};
-  static inline Widget cbGenXmlFromEpg{category, "cbGenXmlFromEpg"};
-  static inline Widget cbAlwaysOnTop{category, "cbAlwaysOnTop"};
-  static inline Widget cbManualBrowserStart{category, "cbManualBrowserStart"};
-  static inline Widget cbSaveSlides{category, "cbSaveSlides"};
-  static inline Widget cbSaveTransToCsv{category, "cbSaveTransToCsv"};
-  static inline Widget cbUseDcAvoidance{category, "cbUseDcAvoidance"};
-  static inline Widget cbUseDcRemoval{category, "cbUseDcRemoval"};
-  static inline Widget cbShowNonAudioInServiceList{category, "cbShowNonAudioInService"};
-  static inline Widget sbTiiThreshold{category, "sbTiiThreshold"};
-  static inline Widget cbTiiCollisions{category, "cbTiiCollisions"};
-  static inline Widget sbTiiSubId{category, "sbTiiSubId"};
-  static inline Widget cbUrlClickable{category, "cbUrlClickable"};
-  static inline Widget cbAutoIterTiiEntries{category, "cbAutoIterTiiEntries"};
-  static inline Widget cmbSoundOutput{category, "cmbSoundOutput"};
+  static Widget cbCloseDirect;
+  static Widget cbUseStrongestPeak;
+  static Widget cbUseNativeFileDialog;
+  static Widget cbUseUtcTime;
+  static Widget cbGenXmlFromEpg;
+  static Widget cbAlwaysOnTop;
+  static Widget cbManualBrowserStart;
+  static Widget cbSaveSlides;
+  static Widget cbSaveTransToCsv;
+  static Widget cbUseDcAvoidance;
+  static Widget cbUseDcRemoval;
+  static Widget cbShowNonAudioInServiceList;
+  static Widget sbTiiThreshold;
+  static Widget cbTiiCollisions;
+  static Widget sbTiiSubId;
+  static Widget cbUrlClickable;
+  static Widget cbAutoIterTiiEntries;
+  static Widget cmbSoundOutput;
 };
 
 struct SpectrumViewer // namespace for the spectrum window
 {
-  static inline QString category = "SpectrumViewer";
+  static QString category;
 
-  static inline PosAndSize posAndSize{category};
+  static PosAndSize posAndSize;
 
-  static inline Variant varUiVisible{category, "varUiVisible", false};
+  static Variant varUiVisible;
 };
 
 struct CirViewer // namespace for the CIR viewer window
 {
-  static inline QString category = "CirViewer";
+  static QString category;
 
-  static inline PosAndSize posAndSize{category};
+  static PosAndSize posAndSize;
 
-  static inline Variant varUiVisible{category, "varUiVisible", false};
+  static Variant varUiVisible;
 };
 
 struct TiiViewer // namespace for the TII list viewer window
 {
-  static inline QString category = "TiiViewer";
+  static QString category;
 
-  static inline PosAndSize posAndSize{category};
+  static PosAndSize posAndSize;
 
-  static inline Variant varUiVisible{category, "varUiVisible", false};
+  static Variant varUiVisible;
 };
 
 struct ServiceList // namespace for the TII list viewer window
 {
-  static inline QString category = "ServiceList";
+  static QString category;
 
-  static inline Variant varSortCol{category, "varSortCol", 0};
-  static inline Variant varSortDesc{category, "varSSortDesc", false};
+  static Variant varSortCol;
+  static Variant varSortDesc;
 };
 
 struct TechDataViewer // namespace for the TII list viewer window
 {
-  static inline QString category = "TechDataViewer";
+  static QString category;
 
-  static inline PosAndSize posAndSize{category};
+  static PosAndSize posAndSize;
 
-  static inline Variant varUiVisible{category, "varUiVisible", false};
+  static Variant varUiVisible;
 };
 
 } // namespace Settings
