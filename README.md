@@ -1,17 +1,19 @@
 # DABstar
 
----
-![screenshot.png](res/for_readme/screenshot.png)
-(Picture from V3.5.0)
-
----
-
 ## Table of Content
 <!-- TOC -->
 * [DABstar](#dabstar)
   * [Table of Content](#table-of-content)
+  * [Pictures from version V3.9.0](#pictures-from-version-v390)
+    * [Main window](#main-window-)
+    * [Scope Spectrum Correlation Statistic window](#scope-spectrum-correlation-statistic-window)
+    * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
+    * [Map view of received transmitters](#map-view-of-received-transmitters)
+    * [Technical details window of the selected service](#technical-details-window-of-the-selected-service)
+    * [Configuration window](#configuration-window)
+    * [Some of the device windows](#some-of-the-device-windows)
   * [Releases](#releases)
-  * [Introduction](#introduction)
+  * [Introduction and history](#introduction-and-history)
   * [V3.x.y](#v3xy)
   * [Version 2.3.0 and above](#version-230-and-above)
   * [What is new in 2.2.0](#what-is-new-in-220)
@@ -31,8 +33,44 @@
       * [QWT short build description](#qwt-short-build-description)
     * [Building DABstar](#building-dabstar)
     * [Installing USRP UHD](#installing-usrp-uhd)
+    * [Installing AirSpy](#installing-airspy)
   * [Licences](#licences)
 <!-- TOC -->
+
+---
+## Pictures from version V3.9.0
+
+### Main window                                 
+
+![](res/for_readme/mainwidget-new.png)
+
+### Scope Spectrum Correlation Statistic window
+
+![](res/for_readme/scope-spec-corr.png)
+
+### TII-list window which shows received transmitter details
+
+![](res/for_readme/TII-list.png)
+                       
+### Map view of received transmitters
+
+![](res/for_readme/map.png)
+
+### Technical details window of the selected service
+
+![](res/for_readme/tech-details.png)
+
+### Configuration window
+
+![](res/for_readme/configuration.png)
+
+### Some of the device windows
+
+![](res/for_readme/device-rtlsdr.png) 
+![](res/for_readme/device-hackrf.png)
+![](res/for_readme/device-sdrplay.png)
+
+---
 
 ## Releases
 Latest AppImage versions see
@@ -40,23 +78,23 @@ Latest AppImage versions see
 
 [old-dab](https://github.com/old-dab) provides also Windows versions, see
 [Windows Release Page](https://github.com/old-dab/DABstar/releases).
-The feature-set could be different between Linux and Windows, even with same version number.
+The feature-set could be a bit different between Linux and Windows, even with same version number.
 
-## Introduction
+## Introduction and history
 [DABstar](https://github.com/tomneda/DABstar) was originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab)
 from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes and adaptions afterwards to Qt-DAB are included.
 
-As there are huge changes and additions (but also reductions) made and there will be bigger changes in the future,
+With meanwhile (not just perceived) hundreds to thousand of hours work, there are huge changes and additions (but also reductions) made and there will be bigger changes in the future,
 I decided to give it the new name **DABstar**.
 
-I saw that with starting of Qt-DAB 6.x, it uses also new code parts and ideas from here. I am very appreciated about this :smiley:.
+I saw that with starting of Qt-DAB 6.x, Qt-DAB uses also new code parts and ideas from here. I am very appreciated about this :smiley:.
 This is of course very acknowledged that my work can give something back.
 
-I will try to maintain always a working state on `main` branch, so use this for building the software for yourself.
+I will try to maintain always a working state on the head of the `main` branch, so use this for building the software for yourself.
 **Please do not try any other branch besides `main` branch.**
 They are indented for development, backups and tests and will not always work in their current state.
 
-Recommended is to checkout a [tag](https://github.com/tomneda/DABstar/tags) of a released version, these are better tested.
+Recommended is to checkout a [Tag](https://github.com/tomneda/DABstar/tags) of a released version, these are better tested.
 
 As this README got meanwhile quite long, I cut off the description regarding versions until 1.7.1, but you can still read
 it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f5297a5f44cd7aab0c016370e010ed3e/README.md)
