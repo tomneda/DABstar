@@ -10,6 +10,7 @@
     * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
     * [Map view of received transmitters](#map-view-of-received-transmitters)
     * [Technical details window of the selected service](#technical-details-window-of-the-selected-service)
+    * [The PRS correlation window of a whole DAB frame (CIR)](#the-prs-correlation-window-of-a-whole-dab-frame-cir)
     * [Configuration window](#configuration-window)
     * [Some of the device windows](#some-of-the-device-windows)
   * [Releases](#releases)
