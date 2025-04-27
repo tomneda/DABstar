@@ -260,7 +260,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
     QString file;
 
     // check if last played file is still valid
-    const QString lastFileName = Settings::Config::varDeviceFile.read().toString();
+    const QString lastFileName = Settings::Main::varDeviceFile.read().toString();
 
     if (!lastFileName.isEmpty() && QFile::exists(lastFileName))
     {
@@ -278,7 +278,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 
       if (file.isEmpty()) // dialog closed with cancel?
       {
-        Settings::Config::varDeviceFile.write("");
+        Settings::Main::varDeviceFile.write("");
         return nullptr;
       }
     }
@@ -292,16 +292,16 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
     default: return nullptr;
     }
 
-    Settings::Config::varDeviceFile.write(file);
+    Settings::Main::varDeviceFile.write(file);
   }
   else
   {
     return nullptr;
   }
 
-  Settings::Config::varSdrDevice.write(iDeviceName);
+  Settings::Main::varSdrDevice.write(iDeviceName);
 
-  if (Settings::Config::varDeviceUiVisible.read().toBool())
+  if (Settings::Main::varDeviceUiVisible.read().toBool())
   {
     inputDevice->show();
   }
@@ -317,7 +317,7 @@ void DeviceSelector::reset_file_input_last_file(const QString & iDeviceName)
 {
   if (iDeviceName == DN_FILE_INP)
   {
-    Settings::Config::varDeviceFile.write("");
+    Settings::Main::varDeviceFile.write("");
   }
 }
 

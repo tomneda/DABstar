@@ -46,6 +46,11 @@
 CATEGORY_BEGIN(Main)
   DEFINE_POS_SIZE(Main)
   DEFINE_VARIANT(Main, varVolume, 100)
+  DEFINE_VARIANT(Main, varDeviceUiVisible, true)
+  DEFINE_VARIANT(Main, varSdrDevice, "no device")
+  DEFINE_VARIANT(Main, varDeviceFile, "")
+  DEFINE_VARIANT(Main, varPresetName, "")
+  DEFINE_VARIANT(Main, varChannel, "")
 CATEGORY_END(Main)
 
 CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configuration" as category name in ini file instead of "Config"
@@ -59,11 +64,6 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_VARIANT(Config, varMapPort, 8080)
   DEFINE_VARIANT(Config, varLatitude, 0)
   DEFINE_VARIANT(Config, varLongitude, 0)
-  DEFINE_VARIANT(Config, varSdrDevice, "no device")
-  DEFINE_VARIANT(Config, varDeviceFile, "")
-  DEFINE_VARIANT(Config, varDeviceUiVisible, true)
-  DEFINE_VARIANT(Config, varPresetName, "")
-  DEFINE_VARIANT(Config, varChannel, "")
   DEFINE_WIDGET(Config, cbCloseDirect)
   DEFINE_WIDGET(Config, cbUseStrongestPeak)
   DEFINE_WIDGET(Config, cbUseNativeFileDialog)

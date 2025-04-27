@@ -199,7 +199,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
 
   // load last used service
 
-  if (QString presetName = Settings::Config::varPresetName.read().toString();
+  if (QString presetName = Settings::Main::varPresetName.read().toString();
       !presetName.isEmpty())
   {
     QStringList ss = presetName.split(":");
@@ -349,7 +349,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
   {
-    const QString h = Settings::Config::varSdrDevice.read().toString();
+    const QString h = Settings::Main::varSdrDevice.read().toString();
     const int32_t k = mConfig.deviceSelector->findText(h);
 
     if (k != -1)
@@ -535,7 +535,7 @@ bool DabRadio::do_start()
   }
 
   // should the device widget be shown?
-  if (Settings::Config::varDeviceUiVisible.read().toBool())
+  if (Settings::Main::varDeviceUiVisible.read().toBool())
   {
     mpInputDevice->show();
   }
@@ -1327,7 +1327,7 @@ void DabRadio::_slot_handle_device_widget_button()
     mpInputDevice->hide();
   }
 
-  Settings::Config::varDeviceUiVisible.write(!mpInputDevice->isHidden());
+  Settings::Main::varDeviceUiVisible.write(!mpInputDevice->isHidden());
 }
 
 void DabRadio::_slot_handle_tii_button()
@@ -2413,7 +2413,7 @@ void DabRadio::start_service(SDabService & s)
 
     start_audio_service(&ad);
     const QString csn = mChannel.channelName + ":" + serviceName;
-    Settings::Config::varPresetName.write(csn);
+    Settings::Main::varPresetName.write(csn);
 
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -2434,7 +2434,7 @@ void DabRadio::start_service(SDabService & s)
   else
   {
     write_warning_message("Insufficient data for this program (2)");
-    Settings::Config::varPresetName.write("");
+    Settings::Main::varPresetName.write("");
   }
 }
 
@@ -2640,7 +2640,7 @@ void DabRadio::start_channel(const QString & iChannel)
 
   if (!mIsScanning)
   {
-    Settings::Config::varChannel.write(iChannel);
+    Settings::Main::varChannel.write(iChannel);
     mEpgTimer.start(cEpgTimeoutMs);
   }
 }
