@@ -131,7 +131,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="scopeSlider">
+          <widget class="QSlider" name="sliderIqScopeZoom">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -549,7 +549,7 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QSlider" name="sliderScopeZoom">
+          <widget class="QSlider" name="sliderRfScopeZoom">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom in/out&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>

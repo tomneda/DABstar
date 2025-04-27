@@ -89,6 +89,8 @@ CATEGORY_BEGIN(SpectrumViewer)
   DEFINE_VARIANT(SpectrumViewer, varUiVisible, false)
   DEFINE_WIDGET(SpectrumViewer, cmbIqScope)
   DEFINE_WIDGET(SpectrumViewer, cmbCarrier)
+  DEFINE_WIDGET(SpectrumViewer, sliderRfScopeZoom);
+  DEFINE_WIDGET(SpectrumViewer, sliderIqScopeZoom);
 CATEGORY_END(SpectrumViewer)
 
 CATEGORY_BEGIN(CirViewer)

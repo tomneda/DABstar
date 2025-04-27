@@ -75,8 +75,8 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
   Settings::SpectrumViewer::cmbIqScope.register_widget_and_update_ui_from_setting(cmbIqScope, "default");
   Settings::SpectrumViewer::cmbCarrier.register_widget_and_update_ui_from_setting(cmbCarrier, "default");
 
-  connect(sliderScopeZoom, &QSlider::valueChanged, mpWaterfallScope, &WaterfallScope::slot_scaling_changed);
-  connect(sliderScopeZoom, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
+  connect(sliderRfScopeZoom, &QSlider::valueChanged, mpWaterfallScope, &WaterfallScope::slot_scaling_changed);
+  connect(sliderRfScopeZoom, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
   connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
@@ -84,6 +84,9 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
 #else
   connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
 #endif
+
+  Settings::SpectrumViewer::sliderRfScopeZoom.register_widget_and_update_ui_from_setting(sliderRfScopeZoom, 0);
+  Settings::SpectrumViewer::sliderIqScopeZoom.register_widget_and_update_ui_from_setting(sliderIqScopeZoom, 50);
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -256,7 +259,7 @@ void SpectrumViewer::show_iq(int32_t iAmount, float /*iAvg*/)
     return;
   }
 
-  const int32_t scopeWidth = scopeSlider->value();
+  const int32_t scopeWidth = sliderIqScopeZoom->value();
   mpIQDisplay->display_iq(mIqValuesVec, (float)scopeWidth / 100.0f);
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
