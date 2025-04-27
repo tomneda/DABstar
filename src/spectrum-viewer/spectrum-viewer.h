@@ -101,7 +101,6 @@ public:
   void set_spectrum_averaging_rate(EAvrRate iAvrRate);
 
 private:
-  static constexpr char SETTING_GROUP_NAME[] = "spectrumViewer";
 
   CustomFrame myFrame{ nullptr };
   DabRadio * const mpRadioInterface;
@@ -135,7 +134,6 @@ private:
   WaterfallScope * mpWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
 
-  void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);
   bool _calc_spectrum_display_limits(SpecViewLimits<double>::SMaxMin & ioMaxMin) const;
 
 public slots:

@@ -73,8 +73,8 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
 
   set_spectrum_averaging_rate(EAvrRate::DEFAULT);
 
-  _load_save_combobox_settings(cmbIqScope, "iqPlot", false);
-  _load_save_combobox_settings(cmbCarrier, "carrierPlot", false);
+  Settings::SpectrumViewer::cmbIqScope.register_widget_and_update_ui_from_setting(cmbIqScope, "default");
+  Settings::SpectrumViewer::cmbCarrier.register_widget_and_update_ui_from_setting(cmbCarrier, "default");
 
   connect(sliderScopeZoom, &QSlider::valueChanged, mpWaterfallScope, &WaterfallScope::slot_scaling_changed);
   connect(sliderScopeZoom, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
@@ -343,7 +343,6 @@ void SpectrumViewer::_slot_handle_cmb_carrier(int32_t iSel)
   auto pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
   emit signal_cmb_carrier_changed(pt);
-  _load_save_combobox_settings(cmbCarrier, "carrierPlot", true);
 }
 
 void SpectrumViewer::_slot_handle_cmb_iqscope(int32_t iSel)
@@ -351,31 +350,11 @@ void SpectrumViewer::_slot_handle_cmb_iqscope(int32_t iSel)
   auto pt = static_cast<EIqPlotType>(iSel);
   mpIQDisplay->select_plot_type(pt);
   emit signal_cmb_iqscope_changed(pt);
-  _load_save_combobox_settings(cmbIqScope, "iqPlot", true);
 }
 
 void SpectrumViewer::_slot_handle_cb_nom_carrier(int32_t iSel)
 {
   emit signal_cb_nom_carrier_changed(iSel != 0);
-}
-
-void SpectrumViewer::_load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave)
-{
-  mpDabSettings->beginGroup(SETTING_GROUP_NAME);
-  if (iSave)
-  {
-    mpDabSettings->setValue(iName, ipCmb->currentText());
-  }
-  else
-  {
-    const QString h = mpDabSettings->value(iName, "default").toString();
-    const int32_t k = ipCmb->findText(h);
-    if (k != -1)
-    {
-      ipCmb->setCurrentIndex(k);
-    }
-  }
-  mpDabSettings->endGroup();
 }
 
 void SpectrumViewer::slot_update_settings()

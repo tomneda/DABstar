@@ -87,6 +87,8 @@ CATEGORY_END(Config)
 CATEGORY_BEGIN(SpectrumViewer)
   DEFINE_POS_SIZE(SpectrumViewer)
   DEFINE_VARIANT(SpectrumViewer, varUiVisible, false)
+  DEFINE_WIDGET(SpectrumViewer, cmbIqScope)
+  DEFINE_WIDGET(SpectrumViewer, cmbCarrier)
 CATEGORY_END(SpectrumViewer)
 
 CATEGORY_BEGIN(CirViewer)
