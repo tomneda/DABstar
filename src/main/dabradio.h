@@ -179,7 +179,7 @@ public:
     AFL_PS_USED  = 0x2
   };
 
-  [[nodiscard]] TechData * get_techdata_widget() const { return mpTechDataWidget; }
+  [[nodiscard]] TechData * get_techdata_widget() const { return mpTechDataWidget.get(); }
 
 private:
   template<typename T>
@@ -243,7 +243,7 @@ private:
   FILE * mpLogFile = nullptr;
   SChannelDescriptor mChannel{};
   int32_t mMaxDistance = -1;
-  TechData * mpTechDataWidget = nullptr;
+  QScopedPointer<TechData> mpTechDataWidget;
   Configuration mConfig;
   std::atomic<bool> mIsRunning{false};
   std::atomic<bool> mIsScanning{false};

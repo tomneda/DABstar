@@ -186,10 +186,9 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   QMetaObject::invokeMethod(this, &DabRadio::_slot_set_static_button_style, Qt::QueuedConnection);
   QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false)); // only this works with arguments
 
-  //setWindowTitle(QString(PRJ_NAME) + QString(" (V" PRJ_VERS ")"));
   setWindowTitle(PRJ_NAME);
 
-  mpTechDataWidget = new TechData(this, mpTechDataBuffer);
+  mpTechDataWidget.reset(new TechData(this, mpTechDataBuffer));
 
   _show_epg_label(false);
 
@@ -246,6 +245,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   connect(this, &DabRadio::signal_audio_buffer_filled_state, ui->progBarAudioBuffer, &QProgressBar::setValue);
   connect(ui->sliderVolume, &QSlider::valueChanged, mpAudioOutput, &IAudioOutput::slot_setVolume);
 
+  Settings::Main::sliderVolume.register_widget_and_update_ui_from_setting(ui->sliderVolume, 100); // register after connection then mpAudioOutput get informed immediately
+
   mAudioOutputThread = new QThread(this);
   mAudioOutputThread->setObjectName("audioOutThr");
   mpAudioOutput->moveToThread(mAudioOutputThread);
@@ -265,8 +266,6 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   {
     emit signal_set_audio_device(QByteArray());  // activates the default audio device
   }
-
-  ui->sliderVolume->setValue(Settings::Main::varVolume.read().toInt());
 
   mPicturesPath = Settings::Config::varPicturesPath.read().toString();
   mPicturesPath = check_and_create_dir(mPicturesPath);
@@ -294,7 +293,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   const QString skipFileName = Settings::Config::varSkipFile.read().toString();
   mBandHandler.setup_skipList(skipFileName);
 
-  connect(mpTechDataWidget, &TechData::signal_handle_timeTable, this, &DabRadio::_slot_handle_time_table);
+  connect(mpTechDataWidget.get(), &TechData::signal_handle_timeTable, this, &DabRadio::_slot_handle_time_table);
 
   ui->lblVersion->setText(QString("V" + mVersionStr));
   ui->lblCopyrightIcon->setToolTip(get_copyright_text());
@@ -318,7 +317,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
 
   connect(this, &DabRadio::signal_dab_processor_started, &mSpectrumViewer, &SpectrumViewer::slot_update_settings);
   connect(&mSpectrumViewer, &SpectrumViewer::signal_window_closed, this, &DabRadio::_slot_handle_spectrum_button);
-  connect(mpTechDataWidget, &TechData::signal_window_closed, this, &DabRadio::_slot_handle_tech_detail_button);
+  connect(mpTechDataWidget.get(), &TechData::signal_window_closed, this, &DabRadio::_slot_handle_tech_detail_button);
 
   mChannel.etiActive = false;
   show_pause_slide();
@@ -1192,7 +1191,6 @@ void DabRadio::_slot_terminate_process()
   _show_hide_buttons(false);
   mTiiListDisplay.hide();
 
-  Settings::Main::varVolume.write(ui->sliderVolume->value());
   Settings::Main::posAndSize.write_widget_geometry(this);
 
   mConfig.save_position_and_config();
@@ -1224,8 +1222,9 @@ void DabRadio::_slot_terminate_process()
   {
     mpDabProcessor->stop();
   }
+
   mpTechDataWidget->hide();
-  delete mpTechDataWidget;
+
   if (mpContentTable != nullptr)
   {
     mpContentTable->clearTable();
@@ -2142,8 +2141,8 @@ void DabRadio::connect_gui()
   connect(ui->btnPrevService, &QPushButton::clicked, this, &DabRadio::_slot_handle_prev_service_button);
   connect(ui->btnNextService, &QPushButton::clicked, this, &DabRadio::_slot_handle_next_service_button);
   connect(ui->btnTargetService, &QPushButton::clicked, this, &DabRadio::_slot_handle_target_service_button);
-  connect(mpTechDataWidget, &TechData::signal_handle_audioDumping, this, &DabRadio::_slot_handle_audio_dump_button);
-  connect(mpTechDataWidget, &TechData::signal_handle_frameDumping, this, &DabRadio::_slot_handle_frame_dump_button);
+  connect(mpTechDataWidget.get(), &TechData::signal_handle_audioDumping, this, &DabRadio::_slot_handle_audio_dump_button);
+  connect(mpTechDataWidget.get(), &TechData::signal_handle_frameDumping, this, &DabRadio::_slot_handle_frame_dump_button);
   connect(ui->btnMuteAudio, &QPushButton::clicked, this, &DabRadio::_slot_handle_mute_button);
   //connect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   connect(mConfig.skipList_button, &QPushButton::clicked, this, &DabRadio::_slot_handle_skip_list_button);
@@ -2167,8 +2166,8 @@ void DabRadio::disconnect_gui()
   disconnect(ui->btnPrevService, &QPushButton::clicked, this, &DabRadio::_slot_handle_prev_service_button);
   disconnect(ui->btnNextService, &QPushButton::clicked, this, &DabRadio::_slot_handle_next_service_button);
   disconnect(ui->btnTargetService, &QPushButton::clicked, this, &DabRadio::_slot_handle_target_service_button);
-  disconnect(mpTechDataWidget, &TechData::signal_handle_audioDumping, this, &DabRadio::_slot_handle_audio_dump_button);
-  disconnect(mpTechDataWidget, &TechData::signal_handle_frameDumping, this, &DabRadio::_slot_handle_frame_dump_button);
+  disconnect(mpTechDataWidget.get(), &TechData::signal_handle_audioDumping, this, &DabRadio::_slot_handle_audio_dump_button);
+  disconnect(mpTechDataWidget.get(), &TechData::signal_handle_frameDumping, this, &DabRadio::_slot_handle_frame_dump_button);
   disconnect(ui->btnMuteAudio, &QPushButton::clicked, this, &DabRadio::_slot_handle_mute_button);
   //disconnect(ensembleDisplay, &QListView::clicked, this, &RadioInterface::_slot_select_service);
   disconnect(mConfig.skipList_button, &QPushButton::clicked, this, &DabRadio::_slot_handle_skip_list_button);

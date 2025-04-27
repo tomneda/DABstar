@@ -45,12 +45,12 @@
 
 CATEGORY_BEGIN(Main)
   DEFINE_POS_SIZE(Main)
-  DEFINE_VARIANT(Main, varVolume, 100)
   DEFINE_VARIANT(Main, varDeviceUiVisible, true)
   DEFINE_VARIANT(Main, varSdrDevice, "no device")
   DEFINE_VARIANT(Main, varDeviceFile, "")
   DEFINE_VARIANT(Main, varPresetName, "")
   DEFINE_VARIANT(Main, varChannel, "")
+  DEFINE_WIDGET(Main, sliderVolume)
 CATEGORY_END(Main)
 
 CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configuration" as category name in ini file instead of "Config"

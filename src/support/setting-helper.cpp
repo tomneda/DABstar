@@ -21,6 +21,8 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QComboBox>
+#include <QSlider>
+#include <QTimer>
 
 // #define USE_RESTORE_GEOMETRY  // with this switch the ini file is not so well readable
 
@@ -64,6 +66,14 @@ Widget::Widget(const QString & cat, const QString & key)
 {
 }
 
+Widget::~Widget()
+{
+  if (mpDeferTimer != nullptr)
+  {
+    delete mpDeferTimer;
+  }
+}
+
 void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue)
 {
   assert(mpWidget == nullptr); // only one-time registration necessary
@@ -90,7 +100,13 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
 
   if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
   {
-    connect(pD, qOverload<int>(&QSpinBox::valueChanged), [this](int iValue){ _update_ui_state_to_setting(); });
+    connect(pD, &QSpinBox::valueChanged, [this](int iValue){ _update_ui_state_to_setting(); });
+    return;
+  }
+
+  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
+  {
+    connect(pD, &QSlider::valueChanged, [this](int iValue){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
@@ -139,6 +155,13 @@ void Widget::_update_ui_state_from_setting()
     return;
   }
 
+  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
+  {
+    const int32_t var = Storage::instance().value(mKey, mDefaultValue).toInt();
+    pD->setValue(var);
+    return;
+  }
+
   qFatal("Pointer to mpWidget not handled (2)");
 }
 
@@ -164,9 +187,36 @@ void Widget::_update_ui_state_to_setting() const
     return;
   }
 
+  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
+  {
+    Storage::instance().setValue(mKey, pD->value());
+    return;
+  }
+
   qFatal("Pointer to pWidget not handled (3)");
 }
 
+/**
+ * Triggers a deferred update to synchronize the UI state with the current setting.
+ *
+ * This method internally manages a timer to delay the UI update operation by a fixed interval.
+ * If the timer is not already created, it initializes the timer and sets it up to operate in
+ * single-shot mode with an interval of 500 milliseconds. The method ensures that each call
+ * starts the timer, scheduling the `_update_ui_state_to_setting` method to execute after the
+ * timeout. This prevents frequent immediate updates and consolidates them into a single
+ * update after the specified delay.
+ */
+void Widget::_update_ui_state_to_setting_deferred()
+{
+  if (mpDeferTimer == nullptr)
+  {
+    mpDeferTimer = new QTimer;
+    mpDeferTimer->setSingleShot(true);
+    mpDeferTimer->setInterval(500);
+    connect(mpDeferTimer, &QTimer::timeout, [this](){ _update_ui_state_to_setting(); });
+  }
+  mpDeferTimer->start();
+}
 
 PosAndSize::PosAndSize(const QString & iCat)
 : mKey(iCat + "/posAndSize")

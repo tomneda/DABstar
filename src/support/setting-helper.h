@@ -19,6 +19,8 @@
 
 #include <QSettings>
 
+class QTimer;
+
 namespace Settings
 {
 
@@ -60,6 +62,7 @@ class Widget : public QObject
   Q_OBJECT
 public:
   explicit Widget(const QString & cat, const QString & key);
+  ~Widget() override;
 
   void register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue);
   [[nodiscard]] QVariant read() const;
@@ -68,9 +71,11 @@ public:
 private:
   void _update_ui_state_from_setting();
   void _update_ui_state_to_setting() const;
+  void _update_ui_state_to_setting_deferred();
 
   QString mKey;
   QWidget * mpWidget = nullptr;
+  QTimer * mpDeferTimer = nullptr; // we use a simple pointer here as one instance should not take too much memory
   QVariant mDefaultValue;
 };
 
