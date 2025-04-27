@@ -500,16 +500,6 @@
            </item>
           </layout>
          </item>
-         <item row="13" column="1">
-          <widget class="QCheckBox" name="cbLogIqScope">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show vector length in IQ scope in logarithmic scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Log. Scale</string>
-           </property>
-          </widget>
-         </item>
          <item row="14" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_7">
            <item>

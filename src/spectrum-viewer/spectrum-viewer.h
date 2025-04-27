@@ -126,7 +126,6 @@ private:
   std::array<double, SP_DISPLAYSIZE> mDisplayBuffer{ 0 };
 
   int32_t mLastVcoFreq = -1; // do not use 0 as input files can have 0Hz center frequencies and this cache would be "valid"
-  bool mShowInLogScale = false;
 
   CarrierDisp * mpCarrierDisp = nullptr;
   IQDisplay * mpIQDisplay = nullptr;

@@ -66,7 +66,6 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
   mpIQDisplay = new IQDisplay(iqDisplay);
   mpCarrierDisp = new CarrierDisp(phaseCarrPlot);
   mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, ipDabSettings, mpCorrelationBuffer);
-  mShowInLogScale = cbLogIqScope->isChecked();
 
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
   cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
@@ -249,34 +248,15 @@ void SpectrumViewer::show_iq(int32_t iAmount, float /*iAvg*/)
     mCarrValuesVec.resize(iAmount);
   }
 
-  const int32_t scopeWidth = scopeSlider->value();
-  const bool logIqScope = cbLogIqScope->isChecked();
-
-  if (mShowInLogScale != logIqScope)
-  {
-    mShowInLogScale = logIqScope;
-  }
-
-  const int32_t numRead = mpIqBuffer->get_data_from_ring_buffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
-  /*const int32_t numRead2 =*/ mpCarrBuffer->get_data_from_ring_buffer(mCarrValuesVec.data(), (int32_t)mCarrValuesVec.size());
+  mpIqBuffer->get_data_from_ring_buffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
+  mpCarrBuffer->get_data_from_ring_buffer(mCarrValuesVec.data(), (int32_t)mCarrValuesVec.size());
 
   if (myFrame.isHidden())
   {
     return;
   }
 
-  if (logIqScope)
-  {
-    constexpr float logNorm = 0.30102999f; // Value of std::log10(1.0f + 1.0f);
-
-    for (auto i = 0; i < numRead; i++)
-    {
-      const float phi = std::arg(mIqValuesVec[i]);
-      const float rl = log10f(1.0f + std::abs(mIqValuesVec[i])) / logNorm;
-      mIqValuesVec[i] = rl * cmplx_from_phase(phi); // retain phase, only log the vector length
-    }
-  }
-
+  const int32_t scopeWidth = scopeSlider->value();
   mpIQDisplay->display_iq(mIqValuesVec, (float)scopeWidth / 100.0f);
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
