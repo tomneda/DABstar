@@ -60,6 +60,10 @@
 
 ![](res/for_readme/tech-details.png)
 
+### The PRS correlation window of a whole DAB frame (CIR)
+
+![](res/for_readme/corr-over-frame.png)
+
 ### Configuration window
 
 ![](res/for_readme/configuration.png)
