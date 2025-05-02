@@ -2849,9 +2849,7 @@ void DabRadio::stop_scanning()
 
 void DabRadio::slot_no_signal_found()
 {
-  disconnect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &DabRadio::slot_no_signal_found);
   mChannelTimer.stop();
-  disconnect(&mChannelTimer, &QTimer::timeout, this, &DabRadio::_slot_channel_timeout);
 
   if (mIsRunning.load() && mIsScanning.load())
   {
@@ -2862,7 +2860,8 @@ void DabRadio::slot_no_signal_found()
     // }
     stop_channel();
     cc = mBandHandler.nextChannel(cc);
-    fprintf(stdout, "going to channel %d\n", cc);
+
+    // qInfo() << "going to channel" << cc;
 
     if (cc >= ui->cmbChannelSelector->count())
     {
@@ -2872,9 +2871,6 @@ void DabRadio::slot_no_signal_found()
     {
       //	To avoid reaction of the system on setting a different value:
       _update_channel_selector(cc);
-
-      connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &DabRadio::slot_no_signal_found);
-      connect(&mChannelTimer, &QTimer::timeout, this, &DabRadio::_slot_channel_timeout);
 
       ui->lblDynLabel->setText(_get_scan_message(false));
       mChannelTimer.start(cChannelTimeoutMs);

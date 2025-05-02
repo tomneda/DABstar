@@ -65,6 +65,15 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
 void SampleReader::setRunning(bool b)
 {
   running.store(b);
+  theRig->resetBuffer();
+
+  // in the case resetBuffer() is not implemented, read out the remaining buffer
+  int32_t readSampleSize = 0;
+  do
+  {
+    readSampleSize = theRig->getSamples(mSampleBuffer.data(), (int32_t)mSampleBuffer.size());
+  }
+  while(readSampleSize >= (int32_t)mSampleBuffer.size()); // repeat if full buffer could be read-in as there could be more
 }
 
 float SampleReader::get_sLevel() const
@@ -84,17 +93,14 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
 
   cmplx * const buffer = oV.data() + iStartIdx;
 
-  if (!running.load()) throw 21;
-
-  if (iNoSamples > bufferContent)
+  while (running.load() && theRig->Samples() < iNoSamples)
   {
-    _wait_for_sample_buffer_filled(iNoSamples);
+    usleep(10);
   }
 
-  if (!running.load()) throw 20;
+  if (!running.load()) throw 20; // stops the DAB processor
 
   iNoSamples = theRig->getSamples(buffer, iNoSamples);
-  bufferContent -= iNoSamples;
 
   if (dumpfilePointer.load() != nullptr)
   {
@@ -181,16 +187,6 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
   }
 }
 
-void SampleReader::_wait_for_sample_buffer_filled(int32_t n)
-{
-  bufferContent = theRig->Samples();
-  while ((bufferContent < n) && running.load())
-  {
-    usleep(10);
-    bufferContent = theRig->Samples();
-  }
-}
-
 void SampleReader::_dump_samples_to_file(const cmplx * const ipV, const int32_t iNoSamples)
 {
   const float scaleFactor = (INT16_MAX >> 2) / sLevel; // scale to 14 bit mean dynamic range
@@ -219,16 +215,9 @@ void SampleReader::stop_dumping()
   dumpfilePointer.store(nullptr);
 }
 
-bool SampleReader::check_clipped_and_clear()
-{
-  bool z = clippingOccurred;
-  clippingOccurred = false;
-  return z;
-}
-
 float SampleReader::get_linear_peak_level_and_clear()
 {
-  const float peakLevelTemp  = peakLevel;
+  const float peakLevelTemp = peakLevel;
   peakLevel = -1.0e6;
   return peakLevelTemp;
 }

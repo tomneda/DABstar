@@ -735,7 +735,7 @@ void SdrPlayHandler_v3::run()
     {
       restartRequest * p = (restartRequest *)(server_queue.front());
       server_queue.pop();
-      fprintf(stderr, "restart request\n");
+      // fprintf(stderr, "restart request\n");
       p->result = theRsp->restart(p->freq);
       receiverRuns.store(true);
       p->waiter.release(1);

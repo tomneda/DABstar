@@ -134,6 +134,7 @@ void DabProcessor::run()  // run QThread
   mFicHandler.reset_fic_decode_success_ratio(); // mCorrectionNeeded will be true next call to getFicDecodeRatioPercent()
   mFreqOffsCylcPrefHz = 0.0f;
   mFreqOffsSyncSymb = 0.0f;
+  mTimeSyncAttemptCount = 0;
 
   EState state = EState::WAIT_FOR_TIME_SYNC_MARKER;
 
@@ -184,8 +185,7 @@ void DabProcessor::run()  // run QThread
   catch (int e)
   {
     (void)e;
-    //fprintf(stderr, "Caught exception in DabProcessor: %d\n", e);
-    fprintf(stdout, "DabProcessor has stopped\n");  // TODO: find a nicer way stopping the DAB processor
+    // qInfo() << "DabProcessor has stopped" << thread()->currentThreadId() << e;
   }
 }
 
@@ -404,9 +404,10 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
   mOfdmDecoder.reset();
   mTiiCounter = 0;
 
-  switch (mTimeSyncer.read_samples_until_end_of_level_drop(cTn, cTF))
+  switch (mTimeSyncer.read_samples_until_end_of_level_drop())
   {
   case TimeSyncer::EState::TIMESYNC_ESTABLISHED:
+    mTimeSyncAttemptCount = 0;
     return true;
   case TimeSyncer::EState::NO_DIP_FOUND:
     if (++mTimeSyncAttemptCount >= 8)
@@ -416,6 +417,7 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
     }
     break;
   case TimeSyncer::EState::NO_END_OF_DIP_FOUND:
+    mTimeSyncAttemptCount = 0;
     break;
   }
   return false;

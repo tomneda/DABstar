@@ -46,11 +46,13 @@ public:
   TimeSyncer(SampleReader * mr);
   ~TimeSyncer() = default;
 
-  EState read_samples_until_end_of_level_drop(const int32_t iT_null, const int32_t iT_F);
+  EState read_samples_until_end_of_level_drop();
 
 private:
+  static constexpr int32_t cSyncBufferSize = 4096;
+  static constexpr int32_t cLevelSearchSize = 50;
+
   SampleReader * const mpSampleReader;
-  const int32_t mcSyncBufferSize = 4096;
   int32_t mSyncBufferIndex = 0;
 };
 

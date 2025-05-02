@@ -59,7 +59,6 @@ public:
   void getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec);
   void startDumping(SNDFILE *);
   void stop_dumping();
-  bool check_clipped_and_clear();
   void set_dc_removal(bool iRemoveDC);
   void set_cir_buffer(RingBuffer<cmplx> * iCirBuffer);
 
@@ -76,12 +75,11 @@ private:
   RingBuffer<cmplx> * cirBuffer = nullptr;
   std::array<cmplx, SPEC_BUFF_SIZE> specBuff;
   std::array<cmplx, INPUT_RATE> oscillatorTable{};
-  TArrayTn mSampleBuffer; // unfortunatelly, only one sample is needed
+  TArrayTn mSampleBuffer;
 
   int32_t specBuffIdx = 0;
   int32_t currentPhase = 0;
   std::atomic<bool> running;
-  int32_t bufferContent = 0;
   float sLevel = 0.0f;
   int32_t sampleCount = 0;
   bool dumping;
@@ -89,7 +87,6 @@ private:
   int16_t dumpScale;
   std::array<int16_t, DUMP_SIZE> dumpBuffer{};
   std::atomic<SNDFILE *> dumpfilePointer;
-  bool clippingOccurred = false;
   float peakLevel = -1.0e6;
   float meanI = 0.0f;
   float meanQ = 0.0f;
@@ -102,7 +99,6 @@ private:
   cmplx	mWholeFrameBuff[CIR_BUFF_SIZE];
 
   void _dump_samples_to_file(const cmplx * const ipV, const int32_t iNoSamples);
-  void _wait_for_sample_buffer_filled(int32_t n);
 
 signals:
   void signal_show_spectrum(int);

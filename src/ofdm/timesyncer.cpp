@@ -31,24 +31,22 @@
 #include  "timesyncer.h"
 #include  "sample-reader.h"
 
-constexpr int32_t C_LEVEL_SIZE = 50;
-
 TimeSyncer::TimeSyncer(SampleReader * mr)
   : mpSampleReader(mr)
 {
 }
 
-TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(const int32_t iT_null, const int32_t iT_F)
+TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop()
 {
   float cLevel = 0;
   int counter = 0;
-  auto * const envBuffer = make_vla(float, mcSyncBufferSize);
-  const int syncBufferMask = mcSyncBufferSize - 1;
+  auto * const envBuffer = make_vla(float, cSyncBufferSize);
+  constexpr int32_t syncBufferMask = cSyncBufferSize - 1;
   int i;
 
   mSyncBufferIndex = 0;
 
-  for (i = 0; i < C_LEVEL_SIZE; i++)
+  for (i = 0; i < cLevelSearchSize; i++)
   {
     const cmplx sample = mpSampleReader->getSample(0);
     envBuffer[mSyncBufferIndex] = std::abs(sample);
@@ -58,15 +56,16 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(const int32_
 
   //SyncOnNull:
   counter = 0;
-  while (cLevel / C_LEVEL_SIZE > 0.55 * mpSampleReader->get_sLevel())
+  while (cLevel / cLevelSearchSize > 0.55 * mpSampleReader->get_sLevel())
   {
     const cmplx sample = mpSampleReader->getSample(0);
     envBuffer[mSyncBufferIndex] = std::abs(sample);
-    cLevel += envBuffer[mSyncBufferIndex] - envBuffer[(mSyncBufferIndex - C_LEVEL_SIZE) & syncBufferMask];
+    cLevel += envBuffer[mSyncBufferIndex] - envBuffer[(mSyncBufferIndex - cLevelSearchSize) & syncBufferMask];
     mSyncBufferIndex = (mSyncBufferIndex + 1) & syncBufferMask;
     ++counter;
-    if (counter > iT_F)
-    { // hopeless
+
+    if (counter > cTF) // no DIP found within one frame?
+    {
       return EState::NO_DIP_FOUND;
     }
   }
@@ -76,16 +75,17 @@ TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop(const int32_
     */
   counter = 0;
   //SyncOnEndNull:
-  while (cLevel / C_LEVEL_SIZE < 0.75 * mpSampleReader->get_sLevel())
+  while (cLevel / cLevelSearchSize < 0.75 * mpSampleReader->get_sLevel())
   {
     cmplx sample = mpSampleReader->getSample(0);
     envBuffer[mSyncBufferIndex] = std::abs(sample);
     //      update the levels
-    cLevel += envBuffer[mSyncBufferIndex] - envBuffer[(mSyncBufferIndex - C_LEVEL_SIZE) & syncBufferMask];
+    cLevel += envBuffer[mSyncBufferIndex] - envBuffer[(mSyncBufferIndex - cLevelSearchSize) & syncBufferMask];
     mSyncBufferIndex = (mSyncBufferIndex + 1) & syncBufferMask;
     ++counter;
-    if (counter > iT_null + 50)
-    { // hopeless
+
+    if (counter > cTn + cLevelSearchSize) // no rising edge found within null period?
+    {
       return EState::NO_END_OF_DIP_FOUND;
     }
   }
