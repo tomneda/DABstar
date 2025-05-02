@@ -65,15 +65,20 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
 void SampleReader::setRunning(bool b)
 {
   running.store(b);
-  theRig->resetBuffer();
 
-  // in the case resetBuffer() is not implemented, read out the remaining buffer
-  int32_t readSampleSize = 0;
-  do
+  // with (looped) file input the while loop will hang, so skip this, deleting the buffer does not make sense here either
+  if (!theRig->isFileInput())
   {
-    readSampleSize = theRig->getSamples(mSampleBuffer.data(), (int32_t)mSampleBuffer.size());
+    theRig->resetBuffer();
+
+    // in the case resetBuffer() is not implemented, read out the remaining buffer
+    int32_t readSampleSize = 0;
+    do
+    {
+      readSampleSize = theRig->getSamples(mSampleBuffer.data(), (int32_t)mSampleBuffer.size());
+    }
+    while(readSampleSize >= (int32_t)mSampleBuffer.size()); // repeat if full buffer could be read-in as there could be more
   }
-  while(readSampleSize >= (int32_t)mSampleBuffer.size()); // repeat if full buffer could be read-in as there could be more
 }
 
 float SampleReader::get_sLevel() const
