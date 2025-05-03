@@ -42,7 +42,7 @@ public:
     float ModQuality;
     float TestData1;
     float TestData2;
-    float PhaseCorr;
+    float MeanSigmaSqFreqCorr;
     float SNR;
   };
 
@@ -111,7 +111,7 @@ private:
   float mAbsNullLevelMin = 0.0f;
   float mAbsNullLevelGain = 0.0f;
   float mMeanValue = 1.0f;
-  float meanSigmaSqFreqCorr = 0.0f;
+  float mMeanSigmaSqFreqCorr = 0.0f;
   cmplx mDcAdc{ 0.0f, 0.0f };
   cmplx mDcFft{ 0.0f, 0.0f };
   cmplx mDcFftLast{ 0.0f, 0.0f };

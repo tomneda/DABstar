@@ -55,7 +55,7 @@ public:
   struct SLcdData
   {
     int32_t CurOfdmSymbolNo;
-    float PhaseCorr;
+    float MeanSigmaSqFreqCorr;
     float SNR;
     float ModQuality;
     float TestData1;
@@ -106,7 +106,7 @@ private:
   float mAbsNullLevelMin = 0.0f;
   float mAbsNullLevelGain = 0.0f;
   float mMeanValue = 1.0f;
-  float meanSigmaSqFreqCorr = 0.0f;
+  float mMeanSigmaSqFreqCorr = 0.0f;
   cmplx mDcAdc{ 0.0f, 0.0f };
 
   // phase correction LUT to speed up process (there are no (good) SIMD commands for that)

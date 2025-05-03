@@ -1754,7 +1754,7 @@ void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData * pQD)
 
   if (!mSpectrumViewer.is_hidden())
   {
-    mSpectrumViewer.show_lcd_data(pQD->CurOfdmSymbolNo, pQD->ModQuality, pQD->TestData1, pQD->TestData2, pQD->PhaseCorr, pQD->SNR);
+    mSpectrumViewer.show_lcd_data(pQD->CurOfdmSymbolNo, pQD->ModQuality, pQD->TestData1, pQD->TestData2, pQD->MeanSigmaSqFreqCorr, pQD->SNR);
   }
 }
 

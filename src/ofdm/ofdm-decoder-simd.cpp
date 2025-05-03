@@ -232,7 +232,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
   if (iCurOfdmSymbIdx == 1)
   {
     const float FreqCorr = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;
-    mean_filter(meanSigmaSqFreqCorr, FreqCorr * FreqCorr, 0.2f);
+    mean_filter(mMeanSigmaSqFreqCorr, FreqCorr * FreqCorr, 0.2f);
   }
 
   // displaying IQ scope and carrier scope
@@ -260,7 +260,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / mSimdVecStdDevSqPhaseVec.get_sum_of_elements());
     //mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
-    mLcdData.PhaseCorr = sqrt(meanSigmaSqFreqCorr);
+    mLcdData.MeanSigmaSqFreqCorr = sqrt(mMeanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)cK;
