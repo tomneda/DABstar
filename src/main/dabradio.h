@@ -205,7 +205,7 @@ private:
   };
 
   static constexpr int32_t cDisplayTimeoutMs     = 1000;
-  static constexpr int32_t cChannelTimeoutMs     = 3000;
+  static constexpr int32_t cChannelTimeoutMs     = 5000;
   static constexpr int32_t cEpgTimeoutMs         = 3000;
   static constexpr int32_t cPresetTimeoutMs      =  500;
   static constexpr int32_t cClockResetTimeoutMs  = 5000;
