@@ -229,6 +229,12 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
   // mTimeMeas.trigger_end();
   // if (iCurOfdmSymbIdx == 1) mTimeMeas.print_time_per_round();
 
+  if (iCurOfdmSymbIdx == 1)
+  {
+    const float FreqCorr = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;
+    mean_filter(meanSigmaSqFreqCorr, FreqCorr * FreqCorr, 0.2f);
+  }
+
   // displaying IQ scope and carrier scope
   ++mShowCntIqScope;
   ++mShowCntStatistics;
@@ -253,9 +259,9 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / mSimdVecStdDevSqPhaseVec.get_sum_of_elements());
-    mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
+    //mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
+    mLcdData.PhaseCorr = sqrt(meanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
-    //mLcdData.TestData1 = _compute_frequency_offset(mSimdVecNomCarrier, mSimdVecPhaseReference);
     mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)cK;
 
@@ -268,25 +274,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
 
   // copy current FFT values as next OFDM reference
   memcpy(mSimdVecPhaseReference, mSimdVecNomCarrier, cK * sizeof(cmplx));
-}
-
-float OfdmDecoder::_compute_frequency_offset(const cmplx * const & r, const cmplx * const & v) const
-{
-  // TODO: make this correct!
-#if 0
-  cmplx theta = cmplx(0, 0);
-
-  for (int idx = -cK / 2; idx < cK / 2; idx += 1)
-  {
-    const int32_t index = fft_shift_skip_dc(idx, cTu); // this was with DC before in QT-DAB
-    cmplx val = r[index] * conj(c[index]);
-    val = turn_complex_phase_to_first_quadrant(val);
-    theta += val;
-  }
-  return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)cTu / (float)cTs * (float)cCarrDiff;
-  // return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)cCarrDiff;
-#endif
-  return 0;
 }
 
 float OfdmDecoder::_compute_noise_Power() const

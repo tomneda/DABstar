@@ -64,7 +64,7 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBu
     mLutPhase2Cmplx[phaseIdx + cLutLen2] = cmplx(std::cos(phase), std::sin(phase));
   }
 #endif
-  
+
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &DabRadio::slot_show_iq);
   connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &DabRadio::slot_show_lcd_data);
 
@@ -321,6 +321,12 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
 
   mMeanValue = sum / cK;
 
+  if (iCurOfdmSymbIdx == 1)
+  {
+    const float FreqCorr = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;
+    mean_filter(meanSigmaSqFreqCorr, FreqCorr * FreqCorr, 0.2f);
+  }
+
   //	From time to time we show the constellation of the current symbol
   if (showScopeData)
   {
@@ -337,11 +343,11 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / stdDevSqOvrAll);
-    mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
+    //mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
+    mLcdData.PhaseCorr = sqrt(meanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
-    // mLcdData.TestData1 = _compute_frequency_offset(iV, mPhaseReference);
     mLcdData.TestData1 = mMeanValue;
-    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;;
+    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;
 
     emit signal_show_lcd_data(&mLcdData);
 
@@ -351,20 +357,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
   }
 
   memcpy(mPhaseReference.data(), iV.data(), cTu * sizeof(cmplx));
-}
-
-float OfdmDecoder::_compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const
-{
-  cmplx theta = cmplx(0, 0);
-
-  for (int idx = -cK / 2; idx < cK / 2; idx += 1)
-  {
-    const int32_t index = fft_shift_skip_dc(idx, cTu); // this was with DC before in QT-DAB
-    cmplx val = r[index] * conj(c[index]);
-    val = turn_complex_phase_to_first_quadrant(val);
-    theta += val;
-  }
-  return (arg(theta) - F_M_PI_4) / F_2_M_PI * (float)cTu / (float)cTs * (float)cCarrDiff;
 }
 
 float OfdmDecoder::_compute_noise_Power() const

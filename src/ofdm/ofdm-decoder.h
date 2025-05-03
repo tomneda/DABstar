@@ -106,6 +106,7 @@ private:
   float mAbsNullLevelMin = 0.0f;
   float mAbsNullLevelGain = 0.0f;
   float mMeanValue = 1.0f;
+  float meanSigmaSqFreqCorr = 0.0f;
   cmplx mDcAdc{ 0.0f, 0.0f };
 
   // phase correction LUT to speed up process (there are no (good) SIMD commands for that)
@@ -120,7 +121,6 @@ private:
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SLcdData mLcdData{};
 
-  [[nodiscard]] float _compute_frequency_offset(const std::vector<cmplx> & r, const std::vector<cmplx> & c) const;
   [[nodiscard]] float _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const TArrayTu &);
   void _reset_null_symbol_statistics();

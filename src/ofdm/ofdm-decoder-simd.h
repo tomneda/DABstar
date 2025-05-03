@@ -111,6 +111,7 @@ private:
   float mAbsNullLevelMin = 0.0f;
   float mAbsNullLevelGain = 0.0f;
   float mMeanValue = 1.0f;
+  float meanSigmaSqFreqCorr = 0.0f;
   cmplx mDcAdc{ 0.0f, 0.0f };
   cmplx mDcFft{ 0.0f, 0.0f };
   cmplx mDcFftLast{ 0.0f, 0.0f };
@@ -124,7 +125,6 @@ private:
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SLcdData mLcdData{};
 
-  [[nodiscard]] float _compute_frequency_offset(const cmplx * const & r, const cmplx * const & v) const;
   [[nodiscard]] float _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const TArrayTu & iV);
   void _reset_null_symbol_statistics();
