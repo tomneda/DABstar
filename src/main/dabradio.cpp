@@ -181,8 +181,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
 
   mpServiceListHandler.reset(new ServiceListHandler(iFileNameDb, ui->tblServiceList));
 
-  // only the queued call will consider the button size?!
-  QMetaObject::invokeMethod(this, &DabRadio::_slot_handle_mute_button, Qt::QueuedConnection);
+  // only the queued call will consider the button size
+  // _slot_handle_mute_button() is called indirectly while startup in _slot_handle_volume_slider()
   QMetaObject::invokeMethod(this, &DabRadio::_slot_set_static_button_style, Qt::QueuedConnection);
   QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false)); // only this works with arguments
 
@@ -243,7 +243,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   connect(this, &DabRadio::signal_set_audio_device, mpAudioOutput, &IAudioOutput::slot_set_audio_device, Qt::QueuedConnection);
   connect(this, &DabRadio::signal_audio_mute, mpAudioOutput, &IAudioOutput::slot_mute, Qt::QueuedConnection);
   connect(this, &DabRadio::signal_audio_buffer_filled_state, ui->progBarAudioBuffer, &QProgressBar::setValue);
-  connect(ui->sliderVolume, &QSlider::valueChanged, mpAudioOutput, &IAudioOutput::slot_setVolume);
+  connect(ui->sliderVolume, &QSlider::valueChanged, this, &DabRadio::_slot_handle_volume_slider);
 
   Settings::Main::sliderVolume.register_widget_and_update_ui_from_setting(ui->sliderVolume, 100); // register after connection then mpAudioOutput get informed immediately
 
@@ -3699,6 +3699,18 @@ void DabRadio::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceL
   {
     mConfig.cmbSoundOutput->addItem(device.description(), QVariant::fromValue(device.id()));
   }
+}
+
+void DabRadio::_slot_handle_volume_slider(const int iSliderValue)
+{
+  // if muting is currently active, unmute audio with touching the volume slider
+  if (mMutingActive)
+  {
+    // only the queued call will consider the button size (this is also called while startup here)
+    QMetaObject::invokeMethod(this, &DabRadio::_slot_handle_mute_button, Qt::QueuedConnection);
+  }
+
+  mpAudioOutput->slot_setVolume(iSliderValue);
 }
 
 void DabRadio::slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight)
