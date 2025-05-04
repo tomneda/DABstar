@@ -1132,7 +1132,7 @@ void DabRadio::slot_new_audio(const int32_t iAmount, const uint32_t iAudioSample
   if (availableBytes >= iAmount) // should always be true when this slot method is called
   {
     mAudioTempBuffer.resize(availableBytes); // after max. size set, there will be no further memory reallocation
-    mean_filter(mAudioBufferFillFiltered, mpAudioBufferToOutput->get_fill_state_in_percent(), 0.05f);
+    mean_filter_adaptive(mAudioBufferFillFiltered, mpAudioBufferToOutput->get_fill_state_in_percent(), 50.0f, 1.0f, 0.05f);
 
     // mAudioTempBuffer contains a stereo pair [0][1]...[n-2][n-1]
     mpAudioBufferFromDecoder->get_data_from_ring_buffer(mAudioTempBuffer.data(), availableBytes);

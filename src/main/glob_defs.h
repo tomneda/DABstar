@@ -201,9 +201,26 @@ inline cmplx turn_complex_phase_to_first_quadrant(const cmplx & iValue)
   }
 }
 
+template<typename T> inline T calc_adaptive_alpha(const T iAlphaBegin, const T iAlphaFinal, const T iCurValNormed)
+{
+  const T alphaBeginLog = std::log10(iAlphaBegin);
+  const T alphaFinalLog = std::log10(iAlphaFinal);
+  T beta = std::abs(iCurValNormed - 1);  // iCurValNormed is expected at 1 in swing-in state
+  if (beta > 1) beta = 1;
+  const T alphaLog = alphaBeginLog * beta + alphaFinalLog * (1 - beta);
+  const T alpha = std::pow((T)10, alphaLog);
+  return alpha;
+}
+
 template<typename T> inline void mean_filter(T & ioVal, const T iVal, const T iAlpha)
 {
   ioVal += iAlpha * (iVal - ioVal);
+}
+
+template<typename T> inline void mean_filter_adaptive(T & ioVal, const T iVal, const T iValFinal, const T iAlphaBegin, const T iAlphaFinal)
+{
+  const T alpha = calc_adaptive_alpha(iAlphaBegin, iAlphaFinal, ioVal / iValFinal);
+  ioVal += alpha * (iVal - ioVal);
 }
 
 template<typename T> inline void create_blackman_window(T * opVal, int32_t iWindowWidth)
