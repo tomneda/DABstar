@@ -3710,6 +3710,7 @@ void DabRadio::_slot_handle_volume_slider(const int iSliderValue)
     QMetaObject::invokeMethod(this, &DabRadio::_slot_handle_mute_button, Qt::QueuedConnection);
   }
 
+  assert(mpAudioOutput != nullptr);
   mpAudioOutput->slot_setVolume(iSliderValue);
 }
 
