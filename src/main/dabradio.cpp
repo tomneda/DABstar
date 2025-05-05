@@ -182,7 +182,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   mpServiceListHandler.reset(new ServiceListHandler(iFileNameDb, ui->tblServiceList));
 
   // only the queued call will consider the button size
-  // _slot_handle_mute_button() is called indirectly while startup in _slot_handle_volume_slider()
+  QMetaObject::invokeMethod(this, &DabRadio::_slot_handle_mute_button, Qt::QueuedConnection);
   QMetaObject::invokeMethod(this, &DabRadio::_slot_set_static_button_style, Qt::QueuedConnection);
   QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false)); // only this works with arguments
 
@@ -3704,11 +3704,11 @@ void DabRadio::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceL
 void DabRadio::_slot_handle_volume_slider(const int iSliderValue)
 {
   // if muting is currently active, unmute audio with touching the volume slider
-  if (mMutingActive)
-  {
-    // only the queued call will consider the button size (this is also called while startup here)
-    QMetaObject::invokeMethod(this, &DabRadio::_slot_handle_mute_button, Qt::QueuedConnection);
-  }
+  // if (mMutingActive)
+  // {
+  //   // only the queued call will consider the button size (this is also called while startup here)
+  //   QMetaObject::invokeMethod(this, &DabRadio::_slot_handle_mute_button, Qt::QueuedConnection);
+  // }
 
   assert(mpAudioOutput != nullptr);
   mpAudioOutput->slot_setVolume(iSliderValue);
