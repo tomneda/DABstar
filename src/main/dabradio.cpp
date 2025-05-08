@@ -182,9 +182,9 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   mpServiceListHandler.reset(new ServiceListHandler(iFileNameDb, ui->tblServiceList));
 
   // only the queued call will consider the button size
-  QMetaObject::invokeMethod(this, &DabRadio::_slot_handle_mute_button, Qt::QueuedConnection);
+  QMetaObject::invokeMethod(this, "_slot_update_mute_state", Qt::QueuedConnection, Q_ARG(bool, false));
+  QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false));
   QMetaObject::invokeMethod(this, &DabRadio::_slot_set_static_button_style, Qt::QueuedConnection);
-  QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false)); // only this works with arguments
 
   setWindowTitle(PRJ_NAME);
 
@@ -2970,7 +2970,12 @@ void DabRadio::enable_ui_elements_for_safety(const bool iEnable)
 
 void DabRadio::_slot_handle_mute_button()
 {
-  mMutingActive = !mMutingActive;
+  _slot_update_mute_state(!mMutingActive);
+}
+
+void DabRadio::_slot_update_mute_state(const bool iMute)
+{
+  mMutingActive = iMute;
   ui->btnMuteAudio->setIcon(QIcon(mMutingActive ? ":res/icons/muted24.png" : ":res/icons/unmuted24.png"));
   ui->btnMuteAudio->setIconSize(QSize(24, 24));
   ui->btnMuteAudio->setFixedSize(QSize(32, 32));
@@ -3704,11 +3709,10 @@ void DabRadio::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceL
 void DabRadio::_slot_handle_volume_slider(const int iSliderValue)
 {
   // if muting is currently active, unmute audio with touching the volume slider
-  // if (mMutingActive)
-  // {
-  //   // only the queued call will consider the button size (this is also called while startup here)
-  //   QMetaObject::invokeMethod(this, &DabRadio::_slot_handle_mute_button, Qt::QueuedConnection);
-  // }
+  if (mMutingActive)
+  {
+    _slot_update_mute_state(false);
+  }
 
   assert(mpAudioOutput != nullptr);
   mpAudioOutput->slot_setVolume(iSliderValue);

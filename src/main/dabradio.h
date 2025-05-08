@@ -295,7 +295,7 @@ private:
   QTimer mTiiIndexCntTimer;
   uint32_t mTiiIndex = 0;
   bool mShowTiiListWindow = false;
-  bool mMutingActive = true;
+  bool mMutingActive = false;
   int32_t mNumberOfSeconds = 0;
   int16_t mFicBlocks = 0;
   int16_t mFicSuccess = 0;
@@ -475,6 +475,7 @@ private slots:
   void _slot_set_static_button_style();
   void _slot_preset_timeout();
   void _slot_handle_mute_button();
+  void _slot_update_mute_state(const bool iMute);
   void _slot_handle_config_button();
   void _slot_handle_http_button();
   void _slot_handle_skip_list_button();
