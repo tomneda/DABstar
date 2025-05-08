@@ -108,7 +108,7 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVers
   ppmControl->setValue(sdrplaySettings->value("sdrplay-ppm", 0.0).toDouble());
   ppmValue = ppmControl->value();
 
-  agcMode = sdrplaySettings->value("sdrplay-agcMode", 0).toInt() != 0;
+  agcMode = sdrplaySettings->value("sdrplay-agcMode", 1).toInt() != 0;
   if (agcMode)
   {
     agcControl->setChecked(true);
