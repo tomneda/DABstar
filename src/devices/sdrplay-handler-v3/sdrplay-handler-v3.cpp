@@ -491,8 +491,7 @@ bool SdrPlayHandler_v3::messageHandler(generalCommand * r)
 
 static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, unsigned int numSamples, unsigned int reset, void * cbContext)
 {
-  SdrPlayHandler_v3 * p = static_cast<SdrPlayHandler_v3 *> (cbContext);
-  cmplx16 localBuf[numSamples];
+  const SdrPlayHandler_v3 * const p = static_cast<SdrPlayHandler_v3 *>(cbContext);
 
   (void)params;
   if (reset)
@@ -504,12 +503,16 @@ static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT 
     return;
   }
 
-  for (int i = 0; i < (int)numSamples; i++)
+  auto * const localBuf = make_vla(cmplx16, numSamples);
+  cmplx16 * localBuf2 = localBuf;
+
+  for (int i = 0; i < (int)numSamples; ++i, ++localBuf2, ++xi, ++xq)
   {
-    cmplx16 symb = cmplx16(xi[i], xq[i]);
-    localBuf[i] = symb;
+    localBuf2->real(*xi);
+    localBuf2->imag(*xq);
   }
-  p->p_I_Buffer->put_data_into_ring_buffer(localBuf, numSamples);
+
+  p->p_I_Buffer->put_data_into_ring_buffer(localBuf, (int32_t)numSamples);
 }
 
 static void StreamBCallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, unsigned int numSamples, unsigned int reset, void * cbContext)
