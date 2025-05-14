@@ -151,14 +151,16 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
     const float v_abs = std::abs(v);
     if (v_abs > peakLevel) peakLevel = v_abs;
     mean_filter(sLevel, v_abs, 0.00001f);
-    buffer[i] = v * oscillatorTable[currentPhase];
+
+    v *= oscillatorTable[currentPhase]; // we mix after the IQ/DC compensation as these effects are only related to the ADC properties
+
+    buffer[i] = v;
 
     if (specBuffIdx < SPEC_BUFF_SIZE)
     {
       specBuff[specBuffIdx] = v;
       ++specBuffIdx;
     }
-
 
     if (cirBuffer != nullptr)
     {
