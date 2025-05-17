@@ -152,16 +152,7 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
     if (v_abs > peakLevel) peakLevel = v_abs;
     mean_filter(sLevel, v_abs, 0.00001f);
 
-    v *= oscillatorTable[currentPhase]; // we mix after the IQ/DC compensation as these effects are only related to the ADC properties
-
-    buffer[i] = v;
-
-    if (specBuffIdx < SPEC_BUFF_SIZE)
-    {
-      specBuff[specBuffIdx] = v;
-      ++specBuffIdx;
-    }
-
+    // use the non-frequency corrected sample data for CIR analyzer
     if (cirBuffer != nullptr)
     {
       if(mWholeFrameIndex < CIR_BUFF_SIZE)
@@ -171,12 +162,21 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
       mWholeFrameCount += 1;
       if ((mWholeFrameCount >= (2048*96*6)) && (mWholeFrameIndex >= CIR_BUFF_SIZE)) // 6 frames
       {
-        //fprintf(stderr, "mWholeFrameIndex = %d\n", mWholeFrameIndex);
         cirBuffer->put_data_into_ring_buffer(mWholeFrameBuff, CIR_BUFF_SIZE);
         emit signal_show_cir(CIR_BUFF_SIZE);
         mWholeFrameIndex = 0;
         mWholeFrameCount = 0;
       }
+    }
+
+    v *= oscillatorTable[currentPhase]; // we mix after the IQ/DC compensation as these effects are only related to the ADC properties
+    buffer[i] = v;
+
+    // use the frequency corrected sample data for the spectrum
+    if (specBuffIdx < SPEC_BUFF_SIZE)
+    {
+      specBuff[specBuffIdx] = v;
+      ++specBuffIdx;
     }
   }
 
