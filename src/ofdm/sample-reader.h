@@ -42,7 +42,9 @@
 #include "ringbuffer.h"
 #include <random>
 
-// Note: It was found that enlarging the buffersize to e.g. 8192 cannot be handled properly by the underlying system.
+
+// #define USE_IQ_COMPENSATION  // not well tested
+
 class DabRadio;
 
 class SampleReader : public QObject
@@ -90,9 +92,11 @@ private:
   float peakLevel = -1.0e6;
   float meanI = 0.0f;
   float meanQ = 0.0f;
+#ifdef USE_IQ_COMPENSATION
   float meanII = 1.0f;
   float meanQQ = 1.0f;
   float meanIQ = 0.0f;
+#endif
   bool dcRemovalActive = false;
   int32_t mWholeFrameIndex = 0;
   int32_t mWholeFrameCount = 0;

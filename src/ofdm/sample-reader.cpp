@@ -132,7 +132,7 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
       constexpr float ALPHA = 1.0f / INPUT_RATE / 1.00f /*s*/;
       mean_filter(meanI, v_i, ALPHA);
       mean_filter(meanQ, v_q, ALPHA);
-#if 0
+#ifdef USE_IQ_COMPENSATION
       const float x_i = v_i - meanI;
       const float x_q = v_q - meanQ;
       mean_filter(meanII, x_i * x_i, ALPHA);
