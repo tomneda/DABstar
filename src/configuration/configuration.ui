@@ -323,22 +323,12 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QCheckBox" name="cbShowOnlyCurrTrans">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set in the configuration that - rather than showing all transmitters on a map - only the transmitters that are seen for the currrent channel are made visible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Current channel transmitters</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QCheckBox" name="cbActivateEti">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate ETI files. Since generating an ETI file from an ensemble seems incompatible with scanning, the scan button is replaced by an &amp;quot;ETI&amp;quot; button when ETI is activated.&lt;/p&gt;&lt;p&gt;Note that building up an ETI file requires quite some resources.&lt;/p&gt;&lt;p&gt;If ETI is activated, the scanButton is replaced by the etiButton. Touching that button shows a fileselection menu, after selecting a file the content of the ensemble is sent in ETi format to the file. The eti session stops when (a) the eti button is touched again, (b) switching to another channel or (c) disabling eti by unchecking the checkbox.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is (currently) not supported&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Activate ETI</string>
