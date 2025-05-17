@@ -2618,6 +2618,7 @@ void DabRadio::start_channel(const QString & iChannel)
   mpInputDevice->resetBuffer();
   mServiceList.clear();
   mpInputDevice->restartReader(tunedFrequencyHz);
+  usleep(250'000); // wait for the reader to start as some LOs on some devices need some more time to swing-in
   mChannel.clean_channel();
   mChannel.channelName = mChannel.realChannel ? iChannel : "File";
   mChannel.nominalFreqHz = tunedFrequencyHz;
