@@ -169,15 +169,15 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
       }
     }
 
-    v *= oscillatorTable[currentPhase]; // we mix after the IQ/DC compensation as these effects are only related to the ADC properties
-    buffer[i] = v;
-
-    // use the frequency corrected sample data for the spectrum
+    // use the non-frequency corrected sample data for the spectrum as it could jump widely with +/-35 kHz with weak signals
     if (specBuffIdx < SPEC_BUFF_SIZE)
     {
       specBuff[specBuffIdx] = v;
       ++specBuffIdx;
     }
+
+    // we mix after the IQ/DC compensation as these effects are only related to the ADC properties
+    buffer[i] = v * oscillatorTable[currentPhase];
   }
 
   sampleCount += iNoSamples;
