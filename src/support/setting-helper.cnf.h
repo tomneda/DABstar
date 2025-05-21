@@ -113,6 +113,16 @@ CATEGORY_BEGIN(TechDataViewer)
   DEFINE_VARIANT(TechDataViewer, varUiVisible, false)
 CATEGORY_END(TechDataViewer)
 
+CATEGORY_BEGIN(SdrPlayV3) 
+  DEFINE_POS_SIZE(SdrPlayV3)
+  DEFINE_WIDGET(SdrPlayV3, sbPpmControl)
+  DEFINE_WIDGET(SdrPlayV3, sbIfGainRed)
+  DEFINE_WIDGET(SdrPlayV3, sbLnaStage)
+  DEFINE_WIDGET(SdrPlayV3, cbBiasT)
+  DEFINE_WIDGET(SdrPlayV3, cbAgc)
+  DEFINE_WIDGET(SdrPlayV3, cbNotch)
+  DEFINE_WIDGET(SdrPlayV3, cmbAntenna)
+CATEGORY_END(SdrPlayV3)
 
 
 /********************************

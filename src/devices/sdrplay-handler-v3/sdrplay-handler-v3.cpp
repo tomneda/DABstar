@@ -47,7 +47,7 @@
 
 #include  "device-exceptions.h"
 #include  <chrono>
-#include <thread>
+#include  <thread>
 
 std::string errorMessage(int errorCode)
 {
@@ -68,65 +68,45 @@ std::string errorMessage(int errorCode)
   return "";
 }
 
-SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * s, const QString & recorderVersion)
+SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * /*s*/, const QString & recorderVersion)
   : p_I_Buffer(sRingBufferFactoryCmplx16.get_ringbuffer(RingBufferFactory<cmplx16>::EId::DeviceSampleBuffer).get())
   , myFrame(nullptr)
 {
-  sdrplaySettings = s;
   this->recorderVersion = recorderVersion;
-  sdrplaySettings->beginGroup("sdrplaySettings_v3");
-  int x = sdrplaySettings->value("position-x", 100).toInt();
-  int y = sdrplaySettings->value("position-y", 100).toInt();
-  sdrplaySettings->endGroup();
 
   setupUi(&myFrame);
 
-  myFrame.setFixedSize(myFrame.geometry().size());
-  myFrame.move(QPoint(x, y));
+  Settings::SdrPlayV3::posAndSize.read_widget_geometry(&myFrame, 210, 278, true);
+
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
   slot_overload_detected(false);
 
   antennaSelector->hide();
-  //	denominator		= 2048;	// default
 
   xmlDumper = nullptr;
   dumping.store(false);
-  //	See if there are settings from previous incarnations
-  //	and config stuff
 
-  sdrplaySettings->beginGroup("sdrplaySettings_v3");
+  Settings::SdrPlayV3::sbIfGainRed.register_widget_and_update_ui_from_setting(GRdBSelector, 20);
+  Settings::SdrPlayV3::sbLnaStage.register_widget_and_update_ui_from_setting(lnaGainSetting, 4);
+  Settings::SdrPlayV3::sbPpmControl.register_widget_and_update_ui_from_setting(ppmControl, 0.0);
+  Settings::SdrPlayV3::cbAgc.register_widget_and_update_ui_from_setting(agcControl, 2);// 2 == checked
+  Settings::SdrPlayV3::cbBiasT.register_widget_and_update_ui_from_setting(biasT_selector, 0);
+  Settings::SdrPlayV3::cbNotch.register_widget_and_update_ui_from_setting(notch_selector, 0);
 
-  GRdBSelector->setValue(sdrplaySettings->value("sdrplay-ifgrdb", 20).toInt());
   GRdBValue = GRdBSelector->value();
-
-  lnaGainSetting->setValue(sdrplaySettings->value("sdrplay-lnastate", 4).toInt());
-
   lnaState = lnaGainSetting->value();
-
-  ppmControl->setValue(sdrplaySettings->value("sdrplay-ppm", 0.0).toDouble());
   ppmValue = ppmControl->value();
+  agcMode = agcControl->isChecked();
+  biasT = biasT_selector->isChecked();
+  notch = notch_selector->isChecked();
 
-  agcMode = sdrplaySettings->value("sdrplay-agcMode", 1).toInt() != 0;
   if (agcMode)
   {
-    agcControl->setChecked(true);
     GRdBSelector->setEnabled(false);
     gainsliderLabel->setEnabled(false);
   }
-
-  biasT = sdrplaySettings->value("biasT_selector", 0).toInt() != 0;
-  if (biasT)
-    biasT_selector->setChecked(true);
-
-  notch = sdrplaySettings->value("notch_selector", 0).toInt() != 0;
-  if (notch)
-    notch_selector->setChecked(true);
-
-  sdrplaySettings->endGroup();
-
-
 
   //	and be prepared for future changes in the settings
   connect(GRdBSelector, qOverload<int>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_ifgainReduction);
@@ -176,18 +156,8 @@ SdrPlayHandler_v3::~SdrPlayHandler_v3()
   }
   //	thread should be stopped by now
   myFrame.hide();
-  sdrplaySettings->beginGroup("sdrplaySettings_v3");
-  sdrplaySettings->setValue("position-x", myFrame.pos().x());
-  sdrplaySettings->setValue("position-y", myFrame.pos().y());
 
-  sdrplaySettings->setValue("sdrplay-ppm", ppmControl->value());
-  sdrplaySettings->setValue("sdrplay-ifgrdb", GRdBSelector->value());
-  sdrplaySettings->setValue("sdrplay-lnastate", lnaGainSetting->value());
-  sdrplaySettings->setValue("sdrplay-agcMode", agcControl->isChecked() ? 1 : 0);
-  sdrplaySettings->setValue("biasT_selector", biasT_selector->isChecked() ? 1 : 0);
-  sdrplaySettings->setValue("notch_selector", notch_selector->isChecked() ? 1 : 0);
-  sdrplaySettings->endGroup();
-  sdrplaySettings->sync();
+  Settings::SdrPlayV3::posAndSize.write_widget_geometry(&myFrame);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -354,9 +324,6 @@ void SdrPlayHandler_v3::set_biasT(int v)
   (void)v;
   biasT_Request r(biasT_selector->isChecked() ? 1 : 0);
   messageHandler(&r);
-  sdrplaySettings->beginGroup("sdrplaySettings_v3");
-  sdrplaySettings->setValue("biasT_selector", biasT_selector->isChecked() ? 1 : 0);
-  sdrplaySettings->endGroup();
 }
 
 void SdrPlayHandler_v3::set_notch(int v)
@@ -364,9 +331,6 @@ void SdrPlayHandler_v3::set_notch(int v)
   (void)v;
   notch_Request r(notch_selector->isChecked() ? 1 : 0);
   messageHandler(&r);
-  sdrplaySettings->beginGroup("sdrplaySettings_v3");
-  sdrplaySettings->setValue("biasT_selector", notch_selector->isChecked() ? 1 : 0);
-  sdrplaySettings->endGroup();
 }
 
 void SdrPlayHandler_v3::set_selectAntenna(const QString & s)
@@ -409,6 +373,9 @@ void SdrPlayHandler_v3::set_antennaSelect(int n)
   {
     antennaSelector->hide();
   }
+
+  Settings::SdrPlayV3::cmbAntenna.register_widget_and_update_ui_from_setting(antennaSelector, "default");
+  set_selectAntenna(antennaSelector->currentText());
 }
 
 static inline bool isValid(QChar c)
@@ -420,6 +387,7 @@ bool SdrPlayHandler_v3::setup_xmlDump()
 {
   QTime theTime;
   QDate theDate;
+  QSettings * const sdrplaySettings = &Settings::Storage::instance();
   QString saveDir = sdrplaySettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
   if ((saveDir != "") && (!saveDir.endsWith("/")))
   {

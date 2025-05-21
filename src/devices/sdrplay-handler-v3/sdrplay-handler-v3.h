@@ -104,7 +104,6 @@ public:
   QString recorderVersion;
   int32_t vfoFrequency;
   int16_t hwVersion;
-  QSettings * sdrplaySettings;
   bool agcMode;
   int lna_upperBound;
   float apiVersion;

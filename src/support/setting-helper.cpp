@@ -20,6 +20,7 @@
 #include <QVariant>
 #include <QCheckBox>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QComboBox>
 #include <QSlider>
 #include <QTimer>
@@ -68,10 +69,7 @@ Widget::Widget(const QString & cat, const QString & key)
 
 Widget::~Widget()
 {
-  if (mpDeferTimer != nullptr)
-  {
-    delete mpDeferTimer;
-  }
+  delete mpDeferTimer;
 }
 
 void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue)
@@ -101,6 +99,12 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
   if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
   {
     connect(pD, &QSpinBox::valueChanged, [this](int iValue){ _update_ui_state_to_setting(); });
+    return;
+  }
+
+  if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
+  {
+    connect(pD, &QDoubleSpinBox::valueChanged, [this](double iValue){ _update_ui_state_to_setting(); });
     return;
   }
 
@@ -155,6 +159,13 @@ void Widget::_update_ui_state_from_setting()
     return;
   }
 
+  if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
+  {
+    const double var = Storage::instance().value(mKey, mDefaultValue).toDouble();
+    pD->setValue(var);
+    return;
+  }
+
   if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
   {
     const int32_t var = Storage::instance().value(mKey, mDefaultValue).toInt();
@@ -187,6 +198,12 @@ void Widget::_update_ui_state_to_setting() const
     return;
   }
 
+  if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
+  {
+    Storage::instance().setValue(mKey, pD->value());
+    return;
+  }
+
   if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
   {
     Storage::instance().setValue(mKey, pD->value());
@@ -197,7 +214,7 @@ void Widget::_update_ui_state_to_setting() const
 }
 
 /**
- * Triggers a deferred update to synchronize the UI state with the current setting.
+ * @brief Triggers a deferred update to synchronize the UI state with the current setting.
  *
  * This method internally manages a timer to delay the UI update operation by a fixed interval.
  * If the timer is not already created, it initializes the timer and sets it up to operate in
