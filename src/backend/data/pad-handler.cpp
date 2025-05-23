@@ -221,14 +221,15 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
   //	If an xpadfield shows with a CI_flag == 0, and if we are
   //	dealing with an msc field, the size to be taken is
   //	the size of the latest xpadfield that had a CI_flag != 0
+  //fprintf(stderr, "CI_flag=%x, last=%d, ", CI_flag, last);
   if (CI_flag == 0)
   {
-    if (mscGroupElement && (xpadLength > 0))
+    //fprintf(stderr,"mscGroupElement=%d, last_appType=%d\n", mscGroupElement, last_appType);
+    if (xpadLength > 0)
     {
-
       if (last < xpadLength - 1)
       {
-        //	         fprintf(stdout, "handle_variablePAD: last < xpadLength - 1\n");
+        // fprintf(stdout, "handle_variablePAD: last < xpadLength - 1\n");
         return;
       }
 
@@ -237,7 +238,20 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
       {
         data[j] = b[last - j];
       }
-      add_MSC_element(data);
+
+      switch (last_appType)
+      {
+	    case 2:   // Dynamic label segment, start of X-PAD data group
+	    case 3:   // Dynamic label segment, continuation of X-PAD data group
+	      dynamicLabel((uint8_t *)(data.data()), xpadLength, 3);
+	      break;
+
+	    case 12:   // MOT, start of X-PAD data group
+	    case 13:   // MOT, continuation of X-PAD data group
+	  	  if (mscGroupElement)
+        	add_MSC_element(data);
+	      break;
+	  }
     }
     return;
   }
@@ -257,7 +271,7 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
 
   //	The space for the CI's does belong to the Cpadfield, so
   //	but do not forget to take into account the '0'field if CI_Index < 4
-  if (mscGroupElement)
+  //if (mscGroupElement)
   {
     xpadLength = 0;
     for (i = 0; i < CI_Index; i++)
@@ -274,6 +288,7 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
     uint8_t appType = CI_table[i] & 037;
     int16_t length = lengthTable[CI_table[i] >> 5];
 
+    //fprintf(stderr, "appType(%d) = %d, length=%d\n", i, appType, length);
     if (appType == 1)
     {
       dataGroupLength = ((b[base] & 077) << 8) | b[base - 1];
@@ -543,6 +558,7 @@ void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
   {
     lastFlag = data[index] & 0x80;
     segmentNumber = ((data[index] & 0x7F) << 8) | data[index + 1];
+    //fprintf(stderr, "segmentNumber=%d\n", segmentNumber);
     index += 2;
   }
 
@@ -553,13 +569,13 @@ void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
     if ((data[index] & 0x10) != 0)
     { //transportid flag
       transportId = data[index + 1] << 8 | data[index + 2];
-      //	      fprintf (stdout, "transportId = %d\n", transportId);
+      //fprintf (stdout, "transportId = %d\n", transportId);
       index += 3;
     }
-    //	   else {
-    //	      fprintf (stderr, "sorry no transportId\n");
-    //	      return;
-    //	   }
+    /*else
+    {
+      fprintf (stderr, "sorry no transportId\n");
+    }*/
     index += (lengthIndicator - 2);
   }
 
@@ -574,7 +590,7 @@ void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
   case 3:
     if (currentSlide == nullptr)
     {
-      //	         fprintf (stdout, "creating %d\n", transportId);
+      //fprintf (stdout, "creating %d\n", transportId);
       currentSlide = new MotObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
     }
     else
@@ -583,9 +599,7 @@ void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
       {
         break;
       }
-      //	         fprintf (stdout, "out goes %d, in comes %d\n",
-      //	                          currentSlide -> get_transportId(),
-      //	                                           transportId);
+      //fprintf (stdout, "out goes %d, in comes %d\n", currentSlide -> get_transportId(), transportId);
       delete currentSlide;
       currentSlide = new MotObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
     }
@@ -598,8 +612,7 @@ void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
     }
     if (currentSlide->get_transportId() == transportId)
     {
-      //	         fprintf (stdout, "add segment %d of  %d\n",
-      //	                           segmentNumber, transportId);
+      //fprintf (stdout, "add segment %d size %d of %d\n", segmentNumber, segmentSize, transportId);
       currentSlide->addBodySegment(&data[index + 2], segmentNumber, segmentSize, lastFlag);
     }
     break;
