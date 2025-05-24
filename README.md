@@ -4,7 +4,7 @@
 <!-- TOC -->
 * [DABstar](#dabstar)
   * [Table of Content](#table-of-content)
-  * [Pictures from version V3.9.0](#pictures-from-version-v390)
+  * [Pictures from version V3.10.0](#pictures-from-version-v3100)
     * [Main window](#main-window-)
     * [Scope Spectrum Correlation Statistic window](#scope-spectrum-correlation-statistic-window)
     * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
@@ -39,7 +39,7 @@
 <!-- TOC -->
 
 ---
-## Pictures from version V3.9.0
+## Pictures from version V3.10.0
 
 ### Main window                                 
 
