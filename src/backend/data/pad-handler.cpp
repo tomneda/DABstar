@@ -56,28 +56,35 @@ PadHandler::~PadHandler()
 //	Data is stored reverse, we pass the vector and the index of the
 //	last element of the XPad data.
 //	 L0 is the "top" byte of the L field, L1 the next to top one.
-void PadHandler::process_PAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t L0)
+void PadHandler::process_PAD(const uint8_t * const iBuffer, const int16_t iLast, const uint8_t iL1, const uint8_t iL0)
 {
-  uint8_t fpadType = (L1 >> 6) & 03;
+  const uint8_t fpadType = (iL1 >> 6) & 0x3;
 
-  if (fpadType != 00)
+  if (fpadType != 0x0)
   {
+    qWarning() << "fpadType" << fpadType << "not supported";
     return;
   }
-  //
-  //	OK, we'll try
 
-  uint8_t x_padInd = (L1 >> 4) & 03;
-  uint8_t CI_flag = L0 & 02;
+  const uint8_t x_padInd = (iL1 >> 4) & 0x3;
+  const bool CI_flag = (iL0 & 0x2) != 0;
+  // const uint8_t L_ByteInd = L1 & 0xF;
 
+  // qInfo() << "L1" << L1 << "L0" << L0 << "last" << last;
   switch (x_padInd)
   {
-  default: break;
-
-  case 01: _handle_short_PAD(buffer, last, CI_flag);
+  default:
+    // qWarning() << "x_padInd" << x_padInd << "not supported" << "L1" << L1 << "L0" << L0;;
     break;
 
-  case 02: _handle_variable_PAD(buffer, last, CI_flag);
+  case 0x1:
+    qInfo() << "_handle_short_PAD()" << "buffer" << iBuffer << "last" << iLast << "CI_flag" << CI_flag;
+    _handle_short_PAD(iBuffer, iLast, CI_flag);
+    break;
+
+  case 0x2:
+    // qInfo() << "_handle_variable_PAD()" << "buffer" << buffer << "last" << last << "CI_flag" << CI_flag;
+    _handle_variable_PAD(iBuffer, iLast, CI_flag);
     break;
   }
 }
@@ -94,16 +101,17 @@ void PadHandler::process_PAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t
 //	of these 2 values, but it is not clear to me how.
 //	For me, the end of a segment is when we collected the amount
 //	of values specified for the segment.
-void PadHandler::_handle_short_PAD(const uint8_t * b, int16_t last, uint8_t CIf)
+void PadHandler::_handle_short_PAD(const uint8_t * const iBuffer, const int16_t iLast, const bool iCIFlag)
 {
   int16_t i;
 
-  if (CIf != 0)
-  {  // has a CI flag
-    uint8_t CI = b[last];
-    mFirstSegment = (b[last - 1] & 0x40) != 0;
-    mLastSegment = (b[last - 1] & 0x20) != 0;
-    mCharSet = b[last - 2] & 0x0F;
+  if (iCIFlag)
+  {
+    // has a CI flag
+    uint8_t CI = iBuffer[iLast];
+    mFirstSegment = (iBuffer[iLast - 1] & 0x40) != 0;
+    mLastSegment = (iBuffer[iLast - 1] & 0x20) != 0;
+    mCharSet = iBuffer[iLast - 2] & 0x0F;
     uint8_t AcTy = CI & 037;  // application type
 
     if (mFirstSegment)
@@ -121,7 +129,7 @@ void PadHandler::_handle_short_PAD(const uint8_t * b, int16_t last, uint8_t CIf)
     case 2:  // start of fragment, extract the length
       if (mFirstSegment && !mLastSegment)
       {
-        mSegmentNumber = b[last - 2] >> 4;
+        mSegmentNumber = iBuffer[iLast - 2] >> 4;
         if (!mDynamicLabelTextUnConverted.isEmpty())
         {
           const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
@@ -130,16 +138,16 @@ void PadHandler::_handle_short_PAD(const uint8_t * b, int16_t last, uint8_t CIf)
         mDynamicLabelTextUnConverted.clear();
         _reset_charset_change();
       }
-      mStillToGo = b[last - 1] & 0x0F;
+      mStillToGo = iBuffer[iLast - 1] & 0x0F;
       mShortPadData.resize(0);
-      mShortPadData.push_back(b[last - 3]);
+      mShortPadData.push_back(iBuffer[iLast - 3]);
       break;
 
     case 3:  // continuation of fragment
       for (i = 0; (i < 3) && (mStillToGo > 0); i++)
       {
         mStillToGo--;
-        mShortPadData.push_back(b[last - 1 - i]);
+        mShortPadData.push_back(iBuffer[iLast - 1 - i]);
       }
 
       if ((mStillToGo <= 0) && (mShortPadData.size() > 1))
@@ -149,7 +157,6 @@ void PadHandler::_handle_short_PAD(const uint8_t * b, int16_t last, uint8_t CIf)
         mShortPadData.resize(0);
       }
       break;
-
     }
   }
   else
@@ -157,7 +164,7 @@ void PadHandler::_handle_short_PAD(const uint8_t * b, int16_t last, uint8_t CIf)
     //	X-PAD field is all data
     for (i = 0; (i < 4) && (mStillToGo > 0); i++)
     {
-      mShortPadData.push_back(b[last - i]);
+      mShortPadData.push_back(iBuffer[iLast - i]);
       mStillToGo--;
     }
 
@@ -192,24 +199,22 @@ static int16_t lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
 //	Since the data is reversed, we pass on the vector address
 //	and the offset of the last element in the vector,
 //	i.e. we start (downwards)  beginning at b [last];
-void PadHandler::_handle_variable_PAD(const uint8_t * b, int16_t last, uint8_t CI_flag)
+void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16_t iLast, const bool iCiFlag)
 {
-  int16_t CI_Index = 0;
-  uint8_t CI_table[4];
   int16_t i, j;
-  int16_t base = last;
+  int16_t base = iLast;
   std::vector<uint8_t> data;    // for the local addition
 
   //	If an xpadfield shows with a CI_flag == 0, and if we are
   //	dealing with an msc field, the size to be taken is
   //	the size of the latest xpadfield that had a CI_flag != 0
   //fprintf(stderr, "CI_flag=%x, last=%d, ", CI_flag, last);
-  if (CI_flag == 0)
+  if (!iCiFlag)
   {
     //fprintf(stderr,"mscGroupElement=%d, last_appType=%d\n", mscGroupElement, last_appType);
     if (mXPadLength > 0)
     {
-      if (last < mXPadLength - 1)
+      if (iLast < mXPadLength - 1)
       {
         // fprintf(stdout, "handle_variablePAD: last < xpadLength - 1\n");
         return;
@@ -218,22 +223,22 @@ void PadHandler::_handle_variable_PAD(const uint8_t * b, int16_t last, uint8_t C
       data.resize(mXPadLength);
       for (j = 0; j < mXPadLength; j++)
       {
-        data[j] = b[last - j];
+        data[j] = iBuffer[iLast - j];
       }
 
       switch (mLastAppType)
       {
-	    case 2:   // Dynamic label segment, start of X-PAD data group
-	    case 3:   // Dynamic label segment, continuation of X-PAD data group
-	      _dynamic_label((uint8_t *)(data.data()), mXPadLength, 3);
-	      break;
+      case 2:   // Dynamic label segment, start of X-PAD data group
+      case 3:   // Dynamic label segment, continuation of X-PAD data group
+        _dynamic_label((uint8_t *)(data.data()), mXPadLength, 3);
+        break;
 
-	    case 12:   // MOT, start of X-PAD data group
-	    case 13:   // MOT, continuation of X-PAD data group
-	  	  if (mMscGroupElement)
-        	_add_MSC_element(data);
-	      break;
-	  }
+      case 12:   // MOT, start of X-PAD data group
+      case 13:   // MOT, continuation of X-PAD data group
+        if (mMscGroupElement)
+          _add_MSC_element(data);
+        break;
+      }
     }
     return;
   }
@@ -241,13 +246,17 @@ void PadHandler::_handle_variable_PAD(const uint8_t * b, int16_t last, uint8_t C
   //	The CI flag in the F_PAD data is set, so we have local CI's
   //	7.4.2.2: Contents indicators are one byte long
 
-  while (((b[base] & 037) != 0) && (CI_Index < 4))
+  int16_t CI_Index = 0;
+  std::array<uint8_t, 4> CI_table;
+
+  while (((iBuffer[base] & 037) != 0) && (CI_Index < 4))
   {
-    CI_table[CI_Index++] = b[base--];
+    CI_table[CI_Index++] = iBuffer[base--];
   }
 
   if (CI_Index < 4)
-  {  // we have a "0" indicator, adjust base
+  {
+    // we have a "0" indicator, adjust base
     base -= 1;
   }
 
@@ -273,7 +282,7 @@ void PadHandler::_handle_variable_PAD(const uint8_t * b, int16_t last, uint8_t C
     //fprintf(stderr, "appType(%d) = %d, length=%d\n", i, appType, length);
     if (appType == 1)
     {
-      mDataGroupLength = ((b[base] & 077) << 8) | b[base - 1];
+      mDataGroupLength = ((iBuffer[base] & 077) << 8) | iBuffer[base - 1];
       base -= 4;
       mLastAppType = 1;
       continue;
@@ -283,7 +292,7 @@ void PadHandler::_handle_variable_PAD(const uint8_t * b, int16_t last, uint8_t C
     data.resize(length);
     for (j = 0; j < length; j++)
     {
-      data[j] = b[base - j];
+      data[j] = iBuffer[base - j];
     }
 
     switch (appType)
@@ -327,7 +336,8 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
   int16_t dataLength = 0;
 
   if ((CI & 037) == 02)
-  {  // start of segment
+  {
+    // start of segment
     uint16_t prefix = (data[0] << 8) | data[1];
     uint8_t field_1 = (prefix >> 8) & 017;
     uint8_t Cflag = (prefix >> 12) & 01;
@@ -364,7 +374,8 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
       segmentno = -1;
     }
     else
-    {    // Dynamic text length
+    {
+      // Dynamic text length
       const int16_t totalDataLength = field_1 + 1;
 
       if (length - 2 < totalDataLength)
@@ -433,7 +444,6 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
 //	the msc_length was given by the preceding appType "1"
 void PadHandler::_new_MSC_element(const std::vector<uint8_t> & data)
 {
-
   //	if (mscGroupElement) {
   ////	   if (msc_dataGroupBuffer. size() < dataGroupLength)
   ////	      fprintf (stdout, "short ? %d %d\n",
@@ -446,7 +456,8 @@ void PadHandler::_new_MSC_element(const std::vector<uint8_t> & data)
   //	}
 
   if (data.size() >= (uint16_t)mDataGroupLength)
-  { // msc element is single item
+  {
+    // msc element is single item
     mMscDataGroupBuffer.clear();
     _build_MSC_segment(data);
     mMscGroupElement = false;
@@ -508,9 +519,9 @@ void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & data)
   uint8_t groupType = data[0] & 0xF;
   //uint8_t	continuityIndex = (data [1] & 0xF0) >> 4;
   //uint8_t	repetitionIndex =  data [1] & 0xF;
-  int16_t segmentNumber = -1;    // default
-  uint16_t transportId = 0;  // default
-  bool lastFlag = false;  // default
+  int16_t segmentNumber = -1; // default
+  uint16_t transportId = 0;   // default
+  bool lastFlag = false;      // default
   uint16_t index;
 
   if ((data[0] & 0x40) != 0)
@@ -549,7 +560,8 @@ void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & data)
   {
     int16_t lengthIndicator = data[index] & 0x0F;
     if ((data[index] & 0x10) != 0)
-    { //transportid flag
+    {
+      //transportid flag
       transportId = data[index + 1] << 8 | data[index + 2];
       //fprintf (stdout, "transportId = %d\n", transportId);
       index += 3;
@@ -631,5 +643,3 @@ void PadHandler::_check_charset_change()
     }
   }
 }
-
-

@@ -47,12 +47,12 @@ public:
   explicit PadHandler(DabRadio *);
   ~PadHandler() override;
 
-  void process_PAD(uint8_t *, int16_t, uint8_t, uint8_t);
+  void process_PAD(const uint8_t * iBuffer, int16_t iLast, uint8_t iL1, uint8_t iL0);
 
 private:
   DabRadio * const mpRadioInterface;
-  void _handle_variable_PAD(const uint8_t *, int16_t, uint8_t);
-  void _handle_short_PAD(const uint8_t *, int16_t, uint8_t);
+  void _handle_variable_PAD(const uint8_t * iBuffer, int16_t iLast, bool iCiFlag);
+  void _handle_short_PAD(const uint8_t * iBuffer, int16_t iLast, bool iCIFlag);
   void _dynamic_label(const uint8_t *, int16_t, uint8_t);
   void _new_MSC_element(const std::vector<uint8_t> &);
   void _add_MSC_element(const std::vector<uint8_t> &);
