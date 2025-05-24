@@ -137,8 +137,6 @@ uint16_t MotObject::get_transportId()
 //	Note that segments do not need to come in in the right order
 void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumber, int32_t segmentSize, bool lastFlag)
 {
-  int32_t i;
-
   //	fprintf (stdout, "adding segment %d (size %d)\n", segmentNumber,
   //	                                                  segmentSize);
   if ((segmentNumber < 0) || (segmentNumber >= 8192))
@@ -148,6 +146,7 @@ void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
 
   if (motMap.find(segmentNumber) != motMap.end())
   {
+    qInfo() << "Duplicate segment number" << segmentNumber;
     return;
   }
 
@@ -159,12 +158,15 @@ void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
 
   QByteArray segment;
   segment.resize(segmentSize);
-  for (i = 0; i < segmentSize; i++)
+
+  for (int32_t i = 0; i < segmentSize; i++)
   {
     segment[i] = bodySegment[i];
   }
+
+  qInfo() << "Adding segment" << segmentNumber << " to motMap with size" << segmentSize;
   motMap.insert(std::make_pair(segmentNumber, segment));
-  //
+
   if (lastFlag)
   {
     numofSegments = segmentNumber + 1;
@@ -174,16 +176,25 @@ void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
   {
     return;
   }
-  //
-  //	once we know how many segments there are/should be,
-  //	we check for completeness
-  for (i = 0; i < numofSegments; i++)
+
+  // shortcut map search if we have more segments than collected so far
+  if (numofSegments > (signed)motMap.size())
+  {
+    qInfo() << "MOT object" << transportId << "with segment number" << numofSegments << "is larger than collected" << motMap.size();
+    return;
+  }
+
+  //	once we know how many segments there are/should be, we check for completeness
+  for (int32_t i = 0; i < numofSegments; i++)
   {
     if (motMap.find(i) == motMap.end())
     {
+      qInfo() << "MOT object" << transportId << "not complete yet, missing at least segment" << i;
       return;
     }
   }
+
+  qInfo() << "MOT object" << transportId << "complete with numofSegments" << numofSegments << "and" << motMap.size() << "segments in motMap";
   //	The motObject is (seems to be) complete
   handleComplete();
 }

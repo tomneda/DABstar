@@ -32,7 +32,6 @@
 #include  "pad-handler.h"
 #include  "dabradio.h"
 #include  "charsets.h"
-#include  "mot-object.h"
 #include  "data_manip_and_checks.h"
 
 /**
@@ -46,11 +45,6 @@ PadHandler::PadHandler(DabRadio * mr)
   connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_show_mot_handling);
 
   mMscDataGroupBuffer.reserve(1024); // try to avoid future memory swapping
-}
-
-PadHandler::~PadHandler()
-{
-  delete mpCurrentSlide;
 }
 
 //	Data is stored reverse, we pass the vector and the index of the
@@ -194,7 +188,7 @@ void PadHandler::_handle_short_PAD(const uint8_t * const iBuffer, const int16_t 
 ///////////////////////////////////////////////////////////////////////
 //
 //	Here we end up when F_PAD type = 00 and X-PAD Ind = 02
-static int16_t lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
+static constexpr int16_t lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
 
 //	Since the data is reversed, we pass on the vector address
 //	and the offset of the last element in the vector,
@@ -301,14 +295,17 @@ void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16
 
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
+      //qInfo() << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _dynamic_label((uint8_t *)(data.data()), data.size(), CI_table[i]);
       break;
 
     case 12:   // MOT, start of X-PAD data group
+      // qInfo() << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _new_MSC_element(data);
       break;
 
     case 13:   // MOT, continuation of X-PAD data group
+      // qInfo() << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _add_MSC_element(data);
       break;
     }
@@ -461,7 +458,7 @@ void PadHandler::_new_MSC_element(const std::vector<uint8_t> & data)
     mMscDataGroupBuffer.clear();
     _build_MSC_segment(data);
     mMscGroupElement = false;
-    emit signal_show_mot_handling(true);
+    emit signal_show_mot_handling();
     //	   fprintf (stdout, "msc element is single\n");
     return;
   }
@@ -469,7 +466,7 @@ void PadHandler::_new_MSC_element(const std::vector<uint8_t> & data)
   mMscGroupElement = true;
   mMscDataGroupBuffer.clear();
   mMscDataGroupBuffer = data;
-  emit signal_show_mot_handling(true);
+  emit signal_show_mot_handling();
 }
 
 //
@@ -485,10 +482,10 @@ void PadHandler::_add_MSC_element(const std::vector<uint8_t> & data)
   }
 
   // The GCC compiler (V13.3.0) complains about the insert() function below, but it seems correct.
-  // Do a workaround with a dedicated for-loop. The reserve is obsolete as enough space is reserved.
-  // And push_back() will do it if necessary.
-  // msc_dataGroupBuffer.reserve(msc_dataGroupBuffer.size() + data.size());
-  // msc_dataGroupBuffer.insert(msc_dataGroupBuffer.cend(), data.cbegin(), data.cend());
+  // Do a workaround with a dedicated for-loop. The reserve is obsolete as enough space is reserved,
+  // and push_back() will do it if necessary.
+  // mMscDataGroupBuffer.reserve(mMscDataGroupBuffer.size() + data.size());
+  // mMscDataGroupBuffer.insert(mMscDataGroupBuffer.cend(), data.cbegin(), data.cend());
   for (auto & d : data)
   {
     mMscDataGroupBuffer.push_back(d);
@@ -499,16 +496,16 @@ void PadHandler::_add_MSC_element(const std::vector<uint8_t> & data)
     _build_MSC_segment(mMscDataGroupBuffer);
     mMscDataGroupBuffer.clear();
     //	   mscGroupElement	= false;
-    emit signal_show_mot_handling(false);
+    // emit signal_show_mot_handling(false);
   }
 }
 
-void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & data)
+void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & iData)
 {
   //	we have a MOT segment, let us look what is in it
   //	according to DAB 300 401 (page 37) the header (MSC data group)
   //	is
-  int32_t size = data.size() < (uint32_t)mDataGroupLength ? data.size() : mDataGroupLength;
+  const int32_t size = iData.size() < (uint32_t)mDataGroupLength ? iData.size() : mDataGroupLength;
 
   if (size < 2)
   {
@@ -516,54 +513,51 @@ void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & data)
     return;
   }
 
-  uint8_t groupType = data[0] & 0xF;
-  //uint8_t	continuityIndex = (data [1] & 0xF0) >> 4;
-  //uint8_t	repetitionIndex =  data [1] & 0xF;
-  int16_t segmentNumber = -1; // default
-  uint16_t transportId = 0;   // default
-  bool lastFlag = false;      // default
-  uint16_t index;
-
-  if ((data[0] & 0x40) != 0)
+  if ((iData[0] & 0x40) != 0)
   {
-    bool res = check_crc_bytes(data.data(), size - 2);
-    if (!res)
+    if (!check_crc_bytes(iData.data(), size - 2))
     {
-      //	      fprintf (stderr, "build_MSC_segment fails on crc check\n");
+      qWarning() << "build_MSC_segment() fails on crc check";
       return;
     }
-    //	   else
-    //	      fprintf (stdout, "crc success ");
+    // qInfo() << "build_MSC_segment() CRC success";
   }
+
+  int16_t segmentNumber = -1; // default
+  bool lastFlag = false;      // default
+  const uint8_t groupType = iData[0] & 0xF;
+  // const uint8_t continuityIndex = (data [1] & 0xF0) >> 4;
+  // const uint8_t repetitionIndex =  data [1] & 0xF;
 
   if ((groupType != 3) && (groupType != 4))
   {
     return;    // do not know yet
   }
-  //	extensionflag
-  bool extensionFlag = (data[0] & 0x80) != 0;
-  //	if the segmentflag is on, then a lastflag and segmentnumber are
-  //	available, i.e. 2 bytes more.
-  //	Theoretically, the segment number can be as large as 16384
-  index = extensionFlag ? 4 : 2;
-  bool segmentFlag = (data[0] & 0x20) != 0;
-  if ((segmentFlag) != 0)
+
+  // If the segmentflag is on, then a lastflag and segmentnumber are available, i.e. 2 bytes more.
+  // Theoretically, the segment number can be as large as 16384
+  bool extensionFlag = (iData[0] & 0x80) != 0;
+  uint16_t index = extensionFlag ? 4 : 2;
+  const bool segmentFlag = (iData[0] & 0x20) != 0;
+
+  if (segmentFlag)
   {
-    lastFlag = data[index] & 0x80;
-    segmentNumber = ((data[index] & 0x7F) << 8) | data[index + 1];
-    //fprintf(stderr, "segmentNumber=%d\n", segmentNumber);
+    lastFlag = iData[index] & 0x80;
+    segmentNumber = ((iData[index] & 0x7F) << 8) | iData[index + 1];
+    qInfo() << "segmentNumber" << segmentNumber << "lastFlag" << lastFlag << "extensionFlag" << extensionFlag;
     index += 2;
   }
 
+  uint16_t transportId = 0;   // default
+
   //	if the user access flag is on there is a user accessfield
-  if ((data[0] & 0x10) != 0)
+  if ((iData[0] & 0x10) != 0)
   {
-    int16_t lengthIndicator = data[index] & 0x0F;
-    if ((data[index] & 0x10) != 0)
+    const int16_t lengthIndicator = iData[index] & 0x0F;
+    if ((iData[index] & 0x10) != 0)
     {
-      //transportid flag
-      transportId = data[index + 1] << 8 | data[index + 2];
-      //fprintf (stdout, "transportId = %d\n", transportId);
+      transportId = iData[index + 1] << 8 | iData[index + 2];
+      qInfo() << "transportId" << transportId;
       index += 3;
     }
     /*else
@@ -573,41 +567,43 @@ void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & data)
     index += (lengthIndicator - 2);
   }
 
-  //	if (transportId == 0)	// no idea wat it means
-  //	   return;
+  if (transportId == 0)
+  {
+    qWarning() << "build_MSC_segment() transportId is 0";
+    // return; // should this be handled?
+  }
 
-  uint32_t segmentSize = ((data[index + 0] & 0x1F) << 8) | data[index + 1];
+  const uint32_t segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1];
 
   //	handling MOT in the PAD, we only deal here with type 3/4
   switch (groupType)
   {
   case 3:
-    if (mpCurrentSlide == nullptr)
+    if (mpMotObject == nullptr)
     {
-      //fprintf (stdout, "creating %d\n", transportId);
-      mpCurrentSlide = new MotObject(mpRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
+      qInfo() << "Creating MotObject with transportId" << transportId;
+      mpMotObject.reset(new MotObject(mpRadioInterface, false, transportId, &iData[index + 2], segmentSize, lastFlag));
     }
     else
     {
-      if (mpCurrentSlide->get_transportId() == transportId)
+      if (mpMotObject->get_transportId() == transportId)
       {
         break;
       }
-      //fprintf (stdout, "out goes %d, in comes %d\n", currentSlide -> get_transportId(), transportId);
-      delete mpCurrentSlide;
-      mpCurrentSlide = new MotObject(mpRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
+      qInfo() << "Re-Creating MotObject with transportId" << transportId << "old transportId" << mpMotObject->get_transportId();
+      mpMotObject.reset(new MotObject(mpRadioInterface, false, transportId, &iData[index + 2], segmentSize, lastFlag));
     }
     break;
 
   case 4:
-    if (mpCurrentSlide == nullptr)
+    if (mpMotObject == nullptr)
     {
       return;
     }
-    if (mpCurrentSlide->get_transportId() == transportId)
+    if (mpMotObject->get_transportId() == transportId)
     {
       //fprintf (stdout, "add segment %d size %d of %d\n", segmentNumber, segmentSize, transportId);
-      mpCurrentSlide->addBodySegment(&data[index + 2], segmentNumber, segmentSize, lastFlag);
+      mpMotObject->addBodySegment(&iData[index + 2], segmentNumber, segmentSize, lastFlag);
     }
     break;
 

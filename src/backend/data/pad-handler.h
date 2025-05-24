@@ -32,10 +32,12 @@
 #ifndef  PAD_HANDLER_H
 #define  PAD_HANDLER_H
 
-#include  <QObject>
+#include  "mot-object.h"
 #include  <cstring>
 #include  <cstdint>
 #include  <vector>
+#include  <QObject>
+#include  <QScopedPointer>
 
 class DabRadio;
 class MotObject;
@@ -45,7 +47,7 @@ class PadHandler : public QObject
 Q_OBJECT
 public:
   explicit PadHandler(DabRadio *);
-  ~PadHandler() override;
+  ~PadHandler() override = default;
 
   void process_PAD(const uint8_t * iBuffer, int16_t iLast, uint8_t iL1, uint8_t iL0);
 
@@ -64,7 +66,7 @@ private:
   QByteArray mDynamicLabelTextUnConverted;
   int16_t mCharSet = 0;
   int16_t mLastConvCharSet = -1;
-  MotObject * mpCurrentSlide = nullptr;
+  QScopedPointer<MotObject> mpMotObject;
   uint8_t mLastAppType = 0;
   bool mMscGroupElement = false;
   int32_t mXPadLength = -1;
@@ -78,7 +80,7 @@ private:
 
 signals:
   void signal_show_label(const QString &);
-  void signal_show_mot_handling(bool);
+  void signal_show_mot_handling();
 };
 
 #endif
