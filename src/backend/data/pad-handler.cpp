@@ -40,41 +40,23 @@
   *	Handles the pad segments passed on from mp2- and mp4Processor
   */
 PadHandler::PadHandler(DabRadio * mr)
+  : mpRadioInterface(mr)
 {
-  myRadioInterface = mr;
   connect(this, &PadHandler::signal_show_label, mr, &DabRadio::slot_show_label);
   connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_show_mot_handling);
-  currentSlide = nullptr;
-  //
-  //	mscGroupElement indicates whether we are handling an
-  //	msc datagroup or not.
-  mscGroupElement = false;
-  dataGroupLength = 0;
 
-  //	xpadLength tells - if mscGroupElement is "on" - the size of the
-  //	xpadfields, needed for handling xpads without CI's
-  xpadLength = -1;
-  //
-  //	and for the shortPad we maintain
-  still_to_go = 0;
-  lastSegment = false;
-  firstSegment = false;
-  segmentNumber = -1;
-  msc_dataGroupBuffer.reserve(1024); // try to avoid future memory swapping
+  mMscDataGroupBuffer.reserve(1024); // try to avoid future memory swapping
 }
 
 PadHandler::~PadHandler()
 {
-  if (currentSlide != nullptr)
-  {
-    delete currentSlide;
-  }
+  delete mpCurrentSlide;
 }
 
 //	Data is stored reverse, we pass the vector and the index of the
 //	last element of the XPad data.
 //	 L0 is the "top" byte of the L field, L1 the next to top one.
-void PadHandler::processPAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t L0)
+void PadHandler::process_PAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t L0)
 {
   uint8_t fpadType = (L1 >> 6) & 03;
 
@@ -92,10 +74,10 @@ void PadHandler::processPAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t 
   {
   default: break;
 
-  case 01: handle_shortPAD(buffer, last, CI_flag);
+  case 01: _handle_short_PAD(buffer, last, CI_flag);
     break;
 
-  case 02: handle_variablePAD(buffer, last, CI_flag);
+  case 02: _handle_variable_PAD(buffer, last, CI_flag);
     break;
   }
 }
@@ -112,22 +94,22 @@ void PadHandler::processPAD(uint8_t * buffer, int16_t last, uint8_t L1, uint8_t 
 //	of these 2 values, but it is not clear to me how.
 //	For me, the end of a segment is when we collected the amount
 //	of values specified for the segment.
-void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
+void PadHandler::_handle_short_PAD(const uint8_t * b, int16_t last, uint8_t CIf)
 {
   int16_t i;
 
   if (CIf != 0)
   {  // has a CI flag
     uint8_t CI = b[last];
-    firstSegment = (b[last - 1] & 0x40) != 0;
-    lastSegment = (b[last - 1] & 0x20) != 0;
-    charSet = b[last - 2] & 0x0F;
+    mFirstSegment = (b[last - 1] & 0x40) != 0;
+    mLastSegment = (b[last - 1] & 0x20) != 0;
+    mCharSet = b[last - 2] & 0x0F;
     uint8_t AcTy = CI & 037;  // application type
 
-    if (firstSegment)
+    if (mFirstSegment)
     {
-      dynamicLabelTextUnConverted.clear();
-      reset_charset_change();
+      mDynamicLabelTextUnConverted.clear();
+      _reset_charset_change();
     }
     switch (AcTy)
     {
@@ -137,34 +119,34 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
       break;
       //
     case 2:  // start of fragment, extract the length
-      if (firstSegment && !lastSegment)
+      if (mFirstSegment && !mLastSegment)
       {
-        segmentNumber = b[last - 2] >> 4;
-        if (!dynamicLabelTextUnConverted.isEmpty())
+        mSegmentNumber = b[last - 2] >> 4;
+        if (!mDynamicLabelTextUnConverted.isEmpty())
         {
-          const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
         }
-        dynamicLabelTextUnConverted.clear();
-        reset_charset_change();
+        mDynamicLabelTextUnConverted.clear();
+        _reset_charset_change();
       }
-      still_to_go = b[last - 1] & 0x0F;
-      shortpadData.resize(0);
-      shortpadData.push_back(b[last - 3]);
+      mStillToGo = b[last - 1] & 0x0F;
+      mShortPadData.resize(0);
+      mShortPadData.push_back(b[last - 3]);
       break;
 
     case 3:  // continuation of fragment
-      for (i = 0; (i < 3) && (still_to_go > 0); i++)
+      for (i = 0; (i < 3) && (mStillToGo > 0); i++)
       {
-        still_to_go--;
-        shortpadData.push_back(b[last - 1 - i]);
+        mStillToGo--;
+        mShortPadData.push_back(b[last - 1 - i]);
       }
 
-      if ((still_to_go <= 0) && (shortpadData.size() > 1))
+      if ((mStillToGo <= 0) && (mShortPadData.size() > 1))
       {
-        dynamicLabelTextUnConverted.append((const char *)shortpadData.data(), (int)shortpadData.size());
-        check_charset_change();
-        shortpadData.resize(0);
+        mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data(), (int)mShortPadData.size());
+        _check_charset_change();
+        mShortPadData.resize(0);
       }
       break;
 
@@ -173,30 +155,30 @@ void PadHandler::handle_shortPAD(const uint8_t * b, int16_t last, uint8_t CIf)
   else
   {  // No CI flag
     //	X-PAD field is all data
-    for (i = 0; (i < 4) && (still_to_go > 0); i++)
+    for (i = 0; (i < 4) && (mStillToGo > 0); i++)
     {
-      shortpadData.push_back(b[last - i]);
-      still_to_go--;
+      mShortPadData.push_back(b[last - i]);
+      mStillToGo--;
     }
 
     //	at the end of a frame
-    if ((still_to_go <= 0) && (shortpadData.size() > 0))
+    if ((mStillToGo <= 0) && (mShortPadData.size() > 0))
     {
       //	just to avoid doubling by unsollicited shortpads
-      dynamicLabelTextUnConverted.append((const char *)shortpadData.data());
-      check_charset_change();
-      shortpadData.resize(0);
+      mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data());
+      _check_charset_change();
+      mShortPadData.resize(0);
       //	if we are at the end of the last segment (and the text is not empty)
       //	then show it.
-      if (!firstSegment && lastSegment)
+      if (!mFirstSegment && mLastSegment)
       {
-        if (!dynamicLabelTextUnConverted.isEmpty())
+        if (!mDynamicLabelTextUnConverted.isEmpty())
         {
-          const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
         }
-        dynamicLabelTextUnConverted.clear();
-        reset_charset_change();
+        mDynamicLabelTextUnConverted.clear();
+        _reset_charset_change();
       }
     }
   }
@@ -210,7 +192,7 @@ static int16_t lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
 //	Since the data is reversed, we pass on the vector address
 //	and the offset of the last element in the vector,
 //	i.e. we start (downwards)  beginning at b [last];
-void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_flag)
+void PadHandler::_handle_variable_PAD(const uint8_t * b, int16_t last, uint8_t CI_flag)
 {
   int16_t CI_Index = 0;
   uint8_t CI_table[4];
@@ -225,31 +207,31 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
   if (CI_flag == 0)
   {
     //fprintf(stderr,"mscGroupElement=%d, last_appType=%d\n", mscGroupElement, last_appType);
-    if (xpadLength > 0)
+    if (mXPadLength > 0)
     {
-      if (last < xpadLength - 1)
+      if (last < mXPadLength - 1)
       {
         // fprintf(stdout, "handle_variablePAD: last < xpadLength - 1\n");
         return;
       }
 
-      data.resize(xpadLength);
-      for (j = 0; j < xpadLength; j++)
+      data.resize(mXPadLength);
+      for (j = 0; j < mXPadLength; j++)
       {
         data[j] = b[last - j];
       }
 
-      switch (last_appType)
+      switch (mLastAppType)
       {
 	    case 2:   // Dynamic label segment, start of X-PAD data group
 	    case 3:   // Dynamic label segment, continuation of X-PAD data group
-	      dynamicLabel((uint8_t *)(data.data()), xpadLength, 3);
+	      _dynamic_label((uint8_t *)(data.data()), mXPadLength, 3);
 	      break;
 
 	    case 12:   // MOT, start of X-PAD data group
 	    case 13:   // MOT, continuation of X-PAD data group
-	  	  if (mscGroupElement)
-        	add_MSC_element(data);
+	  	  if (mMscGroupElement)
+        	_add_MSC_element(data);
 	      break;
 	  }
     }
@@ -273,12 +255,12 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
   //	but do not forget to take into account the '0'field if CI_Index < 4
   //if (mscGroupElement)
   {
-    xpadLength = 0;
+    mXPadLength = 0;
     for (i = 0; i < CI_Index; i++)
     {
-      xpadLength += lengthTable[CI_table[i] >> 5];
+      mXPadLength += lengthTable[CI_table[i] >> 5];
     }
-    xpadLength += CI_Index == 4 ? 4 : CI_Index + 1;
+    mXPadLength += CI_Index == 4 ? 4 : CI_Index + 1;
     //	   fprintf (stdout, "xpadLength set to %d\n", xpadLength);
   }
 
@@ -291,9 +273,9 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
     //fprintf(stderr, "appType(%d) = %d, length=%d\n", i, appType, length);
     if (appType == 1)
     {
-      dataGroupLength = ((b[base] & 077) << 8) | b[base - 1];
+      mDataGroupLength = ((b[base] & 077) << 8) | b[base - 1];
       base -= 4;
-      last_appType = 1;
+      mLastAppType = 1;
       continue;
     }
 
@@ -310,19 +292,19 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
 
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
-      dynamicLabel((uint8_t *)(data.data()), data.size(), CI_table[i]);
+      _dynamic_label((uint8_t *)(data.data()), data.size(), CI_table[i]);
       break;
 
     case 12:   // MOT, start of X-PAD data group
-      new_MSC_element(data);
+      _new_MSC_element(data);
       break;
 
     case 13:   // MOT, continuation of X-PAD data group
-      add_MSC_element(data);
+      _add_MSC_element(data);
       break;
     }
 
-    last_appType = appType;
+    mLastAppType = appType;
     base -= length;
 
     if (base < 0 && i < CI_Index - 1)
@@ -336,7 +318,7 @@ void PadHandler::handle_variablePAD(const uint8_t * b, int16_t last, uint8_t CI_
 //
 //	A dynamic label is created from a sequence of (dynamic) xpad
 //	fields, starting with CI = 2, continuing with CI = 3
-void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
+void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI)
 {
   static int32_t segmentno = -1;
   static int16_t remainDataLength = 0;
@@ -356,9 +338,9 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
     if (first)
     {
       segmentno = 1;
-      charSet = (prefix >> 4) & 017;
-      dynamicLabelTextUnConverted.clear();
-      reset_charset_change();
+      mCharSet = (prefix >> 4) & 017;
+      mDynamicLabelTextUnConverted.clear();
+      _reset_charset_change();
     }
     else
     {
@@ -377,8 +359,8 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
     if (Cflag) // special dynamic label command
     {
       // the only specified command is to clear the display
-      dynamicLabelTextUnConverted.clear();
-      reset_charset_change();
+      mDynamicLabelTextUnConverted.clear();
+      _reset_charset_change();
       segmentno = -1;
     }
     else
@@ -396,15 +378,15 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
         moreXPad = false;
       }
 
-      dynamicLabelTextUnConverted.append((const char *)&data[2], dataLength);
-      check_charset_change();
+      mDynamicLabelTextUnConverted.append((const char *)&data[2], dataLength);
+      _check_charset_change();
 
       //	if at the end, show the label
       if (last)
       {
         if (!moreXPad)
         {
-          const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
           //	            fprintf (stderr, "last segment encountered\n");
           segmentno = -1;
@@ -435,12 +417,12 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
       moreXPad = false;
     }
 
-    dynamicLabelTextUnConverted.append((const char *)data, dataLength);
-    check_charset_change();
+    mDynamicLabelTextUnConverted.append((const char *)data, dataLength);
+    _check_charset_change();
 
     if (!moreXPad && isLastSegment)
     {
-      const QString dynamicLabelTextConverted = toQStringUsingCharset(dynamicLabelTextUnConverted, (CharacterSet)charSet);
+      const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
       emit signal_show_label(dynamicLabelTextConverted);
     }
   }
@@ -449,7 +431,7 @@ void PadHandler::dynamicLabel(const uint8_t * data, int16_t length, uint8_t CI)
 //
 //	Called at the start of the msc datagroupfield,
 //	the msc_length was given by the preceding appType "1"
-void PadHandler::new_MSC_element(const std::vector<uint8_t> & data)
+void PadHandler::_new_MSC_element(const std::vector<uint8_t> & data)
 {
 
   //	if (mscGroupElement) {
@@ -463,26 +445,26 @@ void PadHandler::new_MSC_element(const std::vector<uint8_t> & data)
   //	   show_motHandling (true);
   //	}
 
-  if (data.size() >= (uint16_t)dataGroupLength)
+  if (data.size() >= (uint16_t)mDataGroupLength)
   { // msc element is single item
-    msc_dataGroupBuffer.clear();
-    build_MSC_segment(data);
-    mscGroupElement = false;
+    mMscDataGroupBuffer.clear();
+    _build_MSC_segment(data);
+    mMscGroupElement = false;
     emit signal_show_mot_handling(true);
     //	   fprintf (stdout, "msc element is single\n");
     return;
   }
 
-  mscGroupElement = true;
-  msc_dataGroupBuffer.clear();
-  msc_dataGroupBuffer = data;
+  mMscGroupElement = true;
+  mMscDataGroupBuffer.clear();
+  mMscDataGroupBuffer = data;
   emit signal_show_mot_handling(true);
 }
 
 //
-void PadHandler::add_MSC_element(const std::vector<uint8_t> & data)
+void PadHandler::_add_MSC_element(const std::vector<uint8_t> & data)
 {
-  int32_t currentLength = msc_dataGroupBuffer.size();
+  int32_t currentLength = mMscDataGroupBuffer.size();
   //
   //	just to ensure that, when a "12" appType is missing, the
   //	data of "13" appType elements is not endlessly collected.
@@ -498,24 +480,24 @@ void PadHandler::add_MSC_element(const std::vector<uint8_t> & data)
   // msc_dataGroupBuffer.insert(msc_dataGroupBuffer.cend(), data.cbegin(), data.cend());
   for (auto & d : data)
   {
-    msc_dataGroupBuffer.push_back(d);
+    mMscDataGroupBuffer.push_back(d);
   }
 
-  if (msc_dataGroupBuffer.size() >= (uint32_t)dataGroupLength)
+  if (mMscDataGroupBuffer.size() >= (uint32_t)mDataGroupLength)
   {
-    build_MSC_segment(msc_dataGroupBuffer);
-    msc_dataGroupBuffer.clear();
+    _build_MSC_segment(mMscDataGroupBuffer);
+    mMscDataGroupBuffer.clear();
     //	   mscGroupElement	= false;
     emit signal_show_mot_handling(false);
   }
 }
 
-void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
+void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & data)
 {
   //	we have a MOT segment, let us look what is in it
   //	according to DAB 300 401 (page 37) the header (MSC data group)
   //	is
-  int32_t size = data.size() < (uint32_t)dataGroupLength ? data.size() : dataGroupLength;
+  int32_t size = data.size() < (uint32_t)mDataGroupLength ? data.size() : mDataGroupLength;
 
   if (size < 2)
   {
@@ -588,32 +570,32 @@ void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
   switch (groupType)
   {
   case 3:
-    if (currentSlide == nullptr)
+    if (mpCurrentSlide == nullptr)
     {
       //fprintf (stdout, "creating %d\n", transportId);
-      currentSlide = new MotObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
+      mpCurrentSlide = new MotObject(mpRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
     }
     else
     {
-      if (currentSlide->get_transportId() == transportId)
+      if (mpCurrentSlide->get_transportId() == transportId)
       {
         break;
       }
       //fprintf (stdout, "out goes %d, in comes %d\n", currentSlide -> get_transportId(), transportId);
-      delete currentSlide;
-      currentSlide = new MotObject(myRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
+      delete mpCurrentSlide;
+      mpCurrentSlide = new MotObject(mpRadioInterface, false, transportId, &data[index + 2], segmentSize, lastFlag);
     }
     break;
 
   case 4:
-    if (currentSlide == nullptr)
+    if (mpCurrentSlide == nullptr)
     {
       return;
     }
-    if (currentSlide->get_transportId() == transportId)
+    if (mpCurrentSlide->get_transportId() == transportId)
     {
       //fprintf (stdout, "add segment %d size %d of %d\n", segmentNumber, segmentSize, transportId);
-      currentSlide->addBodySegment(&data[index + 2], segmentNumber, segmentSize, lastFlag);
+      mpCurrentSlide->addBodySegment(&data[index + 2], segmentNumber, segmentSize, lastFlag);
     }
     break;
 
@@ -622,12 +604,12 @@ void PadHandler::build_MSC_segment(const std::vector<uint8_t> & data)
   }
 }
 
-void PadHandler::reset_charset_change()
+void PadHandler::_reset_charset_change()
 {
-  lastConvCharSet = -1;
+  mLastConvCharSet = -1;
 }
 
-void PadHandler::check_charset_change()
+void PadHandler::_check_charset_change()
 {
   /*
    *  Tomneda: This check is only done to ensure that the charSet had not changed within collecting data in dynamicLabelTextUnConverted
@@ -637,15 +619,15 @@ void PadHandler::check_charset_change()
    *  (with two inversed "??" instead) while a segmented UTF8 transmission.
    */
 
-  if (lastConvCharSet < 0) // first call after reset? only store current value
+  if (mLastConvCharSet < 0) // first call after reset? only store current value
   {
-    lastConvCharSet = charSet;
+    mLastConvCharSet = mCharSet;
   }
   else
   {
-    if (lastConvCharSet != charSet) // has value change? show this with an error
+    if (mLastConvCharSet != mCharSet) // has value change? show this with an error
     {
-      qCritical("charSet changed from %d to %d", lastConvCharSet, charSet);
+      qCritical("charSet changed from %d to %d", mLastConvCharSet, mCharSet);
     }
   }
 }

@@ -47,38 +47,34 @@ public:
   explicit PadHandler(DabRadio *);
   ~PadHandler() override;
 
-  void processPAD(uint8_t *, int16_t, uint8_t, uint8_t);
+  void process_PAD(uint8_t *, int16_t, uint8_t, uint8_t);
 
 private:
-  DabRadio * myRadioInterface;
-  void handle_variablePAD(const uint8_t *, int16_t, uint8_t);
-  void handle_shortPAD(const uint8_t *, int16_t, uint8_t);
-  void dynamicLabel(const uint8_t *, int16_t, uint8_t);
-  void new_MSC_element(const std::vector<uint8_t> &);
-  void add_MSC_element(const std::vector<uint8_t> &);
-  void build_MSC_segment(const std::vector<uint8_t> &);
-  bool pad_crc(const uint8_t *, int16_t);
-  void reset_charset_change();
-  void check_charset_change();
+  DabRadio * const mpRadioInterface;
+  void _handle_variable_PAD(const uint8_t *, int16_t, uint8_t);
+  void _handle_short_PAD(const uint8_t *, int16_t, uint8_t);
+  void _dynamic_label(const uint8_t *, int16_t, uint8_t);
+  void _new_MSC_element(const std::vector<uint8_t> &);
+  void _add_MSC_element(const std::vector<uint8_t> &);
+  void _build_MSC_segment(const std::vector<uint8_t> &);
+  bool _pad_crc(const uint8_t *, int16_t);
+  void _reset_charset_change();
+  void _check_charset_change();
 
-  QByteArray dynamicLabelTextUnConverted;
-  int16_t charSet;
-  int16_t lastConvCharSet = -1;
-  MotObject * currentSlide;
-  uint8_t last_appType;
-  bool mscGroupElement;
-  int xpadLength;
-  int16_t still_to_go;
-  std::vector<uint8_t> shortpadData;
-  bool lastSegment;
-  bool firstSegment;
-  int16_t segmentNumber;
-  //      dataGroupLength is set when having processed an appType 1
-  int dataGroupLength;
-
-  //      The msc_dataGroupBuffer is - as the name suggests - used for
-  //      assembling the msc_data group.
-  std::vector<uint8_t> msc_dataGroupBuffer;
+  QByteArray mDynamicLabelTextUnConverted;
+  int16_t mCharSet = 0;
+  int16_t mLastConvCharSet = -1;
+  MotObject * mpCurrentSlide = nullptr;
+  uint8_t mLastAppType = 0;
+  bool mMscGroupElement = false;
+  int32_t mXPadLength = -1;
+  int16_t mStillToGo = 0;
+  std::vector<uint8_t> mShortPadData;
+  bool mLastSegment = false;
+  bool mFirstSegment = false;
+  int16_t mSegmentNumber = -1;
+  int32_t mDataGroupLength = 0; // mDataGroupLength is set when having processed an appType 1
+  std::vector<uint8_t> mMscDataGroupBuffer; // The msc_dataGroupBuffer is used for assembling the msc_data group.
 
 signals:
   void signal_show_label(const QString &);

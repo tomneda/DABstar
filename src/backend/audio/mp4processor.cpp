@@ -332,7 +332,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
           memcpy(buffer, &mOutVec[mAuStartArr[i] + 2], count);
           const uint8_t L0 = buffer[count - 1];
           const uint8_t L1 = buffer[count - 2];
-          mPadhandler.processPAD(buffer, count - 3, L1, L0);
+          mPadhandler.process_PAD(buffer, count - 3, L1, L0);
         }
 
         //	then handle the audio

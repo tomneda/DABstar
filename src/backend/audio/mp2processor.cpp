@@ -618,7 +618,7 @@ void Mp2Processor::add_to_frame(const std::vector<uint8_t> & v)
     uint8_t L0 = help[vLength - 1];
     uint8_t L1 = help[vLength - 2];
     int16_t down = bitRate * 1000 >= 56000 ? 4 : 2;
-    my_padhandler.processPAD(help, vLength - 3 - down, L1, L0);
+    my_padhandler.process_PAD(help, vLength - 3 - down, L1, L0);
   }
 
   for (i = 0; i < amount; i++)
