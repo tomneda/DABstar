@@ -280,7 +280,7 @@ private:
   QString mEpgPath;
   QTimer mEpgTimer;
   QString mPicturesPath;
-  QString mFilePath;
+  QString mMotPath;
   SNDFILE * mpRawDumper = nullptr;
   WavWriter mWavWriter;
   enum class EAudioDumpState { Stopped, WaitForInit, Running };
@@ -407,7 +407,7 @@ public slots:
   void slot_set_stereo(bool);
   void slot_set_stream_selector(int);
   void slot_no_signal_found();
-  void slot_show_mot_handling(bool);
+  void slot_show_mot_handling();
   void slot_show_correlation(float, const QVector<int> & v);
   void slot_show_spectrum(int);
   void slot_show_cir();

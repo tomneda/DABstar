@@ -270,8 +270,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   mPicturesPath = Settings::Config::varPicturesPath.read().toString();
   mPicturesPath = check_and_create_dir(mPicturesPath);
 
-  mFilePath = Settings::Config::varMotPath.read().toString();
-  mFilePath = check_and_create_dir(mFilePath);
+  mMotPath = Settings::Config::varMotPath.read().toString();
+  mMotPath = check_and_create_dir(mMotPath);
 
   mEpgPath = Settings::Config::varEpgPath.read().toString();
   mEpgPath = check_and_create_dir(mEpgPath);
@@ -818,12 +818,12 @@ void DabRadio::slot_handle_mot_object(QByteArray result, QString objectName, int
 void DabRadio::save_MOTtext(QByteArray & result, int contentType, QString name)
 {
   (void)contentType;
-  if (mFilePath == "")
+  if (mMotPath == "")
   {
     return;
   }
 
-  QString textName = QDir::toNativeSeparators(mFilePath + name);
+  QString textName = QDir::toNativeSeparators(mMotPath + name);
 
   FILE * x = fopen(textName.toUtf8().data(), "w+b");
   if (x == nullptr)
@@ -840,7 +840,7 @@ void DabRadio::save_MOTtext(QByteArray & result, int contentType, QString name)
 
 void DabRadio::save_MOTObject(QByteArray & result, QString name)
 {
-  if (mFilePath == "")
+  if (mMotPath == "")
   {
     return;
   }
@@ -1500,13 +1500,13 @@ void DabRadio::slot_show_fic_ber(float ber)
 }
 
 // called from the PAD handler
-void DabRadio::slot_show_mot_handling(bool b)
+void DabRadio::slot_show_mot_handling()
 {
-  if (!mIsRunning.load() || !b)
+  if (!mIsRunning.load())
   {
     return;
   }
-  mpTechDataWidget->slot_show_motHandling(b);
+  mpTechDataWidget->slot_trigger_motHandling();
 }
 
 //	called from the PAD handler

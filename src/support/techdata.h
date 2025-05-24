@@ -24,13 +24,14 @@
 #ifndef  TECH_DATA_H
 #define  TECH_DATA_H
 
-#include  <QObject>
-#include  <QFrame>
 #include  "ui_technical_data.h"
 #include  "dab-constants.h"
 #include  "audio-display.h"
 #include  "ringbuffer.h"
 #include  "custom_frame.h"
+#include  <QObject>
+#include  <QFrame>
+#include  <QTimer>
 
 class DabRadio;
 class QSettings;
@@ -53,12 +54,13 @@ private:
   RingBuffer<int16_t> * mpAudioBuffer;
   CustomFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;
+  QTimer mTimerMotReceived; // avoid fast flickering of the MOT indicator
 
 public slots:
+  void slot_trigger_motHandling();
   void slot_show_frame_error_bar(int);
   void slot_show_aac_error_bar(int);
   void slot_show_rs_error_bar(int);
-  void slot_show_motHandling(bool);
   void slot_show_rs_corrections(int, int);
   void slot_show_timetableButton(bool);
   void slot_show_frameDumpButton(bool);
@@ -81,6 +83,9 @@ public slots:
 
   void slot_frame_dump_button_text(const QString & s, int);
   void slot_audio_dump_button_text(const QString & s, int);
+
+private slots:
+  void _slot_show_motHandling(bool);
 
 signals:
   void signal_handle_timeTable();

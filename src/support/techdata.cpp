@@ -45,6 +45,12 @@ TechData::TechData(DabRadio * mr, RingBuffer<int16_t> * ipAudioBuffer)
   timeTable_button->setEnabled(false);
   mpAudioDisplay = new AudioDisplay(mr, audio, &Settings::Storage::instance());
 
+  mTimerMotReceived.setInterval(2000);
+  mTimerMotReceived.setSingleShot(true);
+  connect(&mTimerMotReceived, &QTimer::timeout, this, [this](){ _slot_show_motHandling(false); });
+
+  cleanUp();
+
   connect(&mFrame, &CustomFrame::signal_frame_closed, this, &TechData::signal_window_closed);
   connect(framedumpButton, &QPushButton::clicked, this, &TechData::signal_handle_frameDumping);
   connect(audiodumpButton, &QPushButton::clicked, this, &TechData::signal_handle_audioDumping);
@@ -77,7 +83,7 @@ void TechData::cleanUp()
   startAddressDisplay->display(0);
   lengthDisplay->display(0);
   subChIdDisplay->display(0);
-  motAvailable->setStyleSheet("QLabel {background-color : red}");
+  _slot_show_motHandling(false);
   timeTable_button->setEnabled(false);
   audioRate->display(0);
 }
@@ -111,7 +117,6 @@ bool TechData::isHidden()
 {
   return mFrame.isHidden();
 }
-
 
 void TechData::slot_show_frame_error_bar(int e)
 {
@@ -174,9 +179,18 @@ void TechData::slot_show_rs_corrections(int c, int ec)
   set_val_with_col(ecCorrections, ec);
 }
 
-void TechData::slot_show_motHandling(bool b)
+void TechData::slot_trigger_motHandling()
 {
-  motAvailable->setStyleSheet(b ? "QLabel {background-color : green; color: white}" : "QLabel {background-color : red; color : white}");
+  if (!mTimerMotReceived.isActive())
+  {
+    _slot_show_motHandling(true);
+  }
+  mTimerMotReceived.start();
+}
+
+void TechData::_slot_show_motHandling(bool b)
+{
+  motAvailable->setStyleSheet(b ? "QLabel {background-color : green; color: white}" : "QLabel {background-color : #444444; color : white}");
 }
 
 void TechData::slot_show_timetableButton(bool b)
