@@ -35,7 +35,7 @@
 #include "data_manip_and_checks.h"
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtWarningMsg)
+Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
 
 PadHandler::PadHandler(DabRadio * mr)
   : mpRadioInterface(mr)
@@ -70,12 +70,12 @@ void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8
     break;
 
   case 0x1:
-    qCDebug(sLogPadHandler) << "_handle_short_PAD()" << "buffer" << iBuffer << "last" << iLast << "CI_flag" << CI_flag;
+    // qCDebug(sLogPadHandler) << "_handle_short_PAD()" << "buffer" << iBuffer << "last" << iLast << "CI_flag" << CI_flag;
     _handle_short_PAD(iBuffer, iLast, CI_flag);
     break;
 
   case 0x2:
-    qCDebug(sLogPadHandler) << "_handle_variable_PAD()" << "buffer" << iBuffer << "last" << iLast << "CI_flag" << CI_flag;
+    // qCDebug(sLogPadHandler) << "_handle_variable_PAD()" << "buffer" << iBuffer << "last" << iLast << "CI_flag" << CI_flag;
     _handle_variable_PAD(iBuffer, iLast, CI_flag);
     break;
   }
@@ -292,17 +292,17 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
 
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
-      qCDebug(sLogPadHandler) << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
+      // qCDebug(sLogPadHandler) << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _dynamic_label((u8 *)(data.data()), data.size(), CI_table[i]);
       break;
 
     case 12:   // MOT, start of X-PAD data group
-      qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
+      // qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _new_MSC_element(data);
       break;
 
     case 13:   // MOT, continuation of X-PAD data group
-      qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
+      // qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _add_MSC_element(data);
       break;
     }
@@ -465,8 +465,8 @@ void PadHandler::_new_MSC_element(const std::vector<u8> & data)
 //
 void PadHandler::_add_MSC_element(const std::vector<u8> & data)
 {
-  i32 currentLength = mMscDataGroupBuffer.size();
-  //
+  const i32 currentLength = mMscDataGroupBuffer.size();
+
   //	just to ensure that, when a "12" appType is missing, the
   //	data of "13" appType elements is not endlessly collected.
   if (currentLength == 0)
@@ -495,9 +495,7 @@ void PadHandler::_add_MSC_element(const std::vector<u8> & data)
 
 void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 {
-  //	we have a MOT segment, let us look what is in it
-  //	according to DAB 300 401 (page 37) the header (MSC data group)
-  //	is
+  // we have a MOT segment, let us look what is in it according to DAB 300 401 (page 37) the header (MSC data group)
   const i32 size = iData.size() < (u32)mDataGroupLength ? iData.size() : mDataGroupLength;
 
   if (size < 2)
@@ -513,6 +511,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
       qCWarning(sLogPadHandler) << "build_MSC_segment() fails on crc check";
       return;
     }
+    qCDebug(sLogPadHandler) << "build_MSC_segment() crc check ok";
   }
 
   i16 segmentNumber = -1; // default

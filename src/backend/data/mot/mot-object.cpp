@@ -36,7 +36,7 @@
 #include "dabradio.h"
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtWarningMsg)
+Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtDebugMsg)
 
 MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag)
   : mTransportId(transportId)
