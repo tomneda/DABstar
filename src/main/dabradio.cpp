@@ -270,13 +270,13 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   }
 
   mPicturesPath = Settings::Config::varPicturesPath.read().toString();
-  mPicturesPath = check_and_create_dir(mPicturesPath);
+  // mPicturesPath = check_and_create_dir(mPicturesPath);
 
   mMotPath = Settings::Config::varMotPath.read().toString();
-  mMotPath = check_and_create_dir(mMotPath);
+  // mMotPath = check_and_create_dir(mMotPath);
 
   mEpgPath = Settings::Config::varEpgPath.read().toString();
-  mEpgPath = check_and_create_dir(mEpgPath);
+  // mEpgPath = check_and_create_dir(mEpgPath);
 
   connect(&mEpgProcessor, &EpgDecoder::signal_set_epg_data, this, &DabRadio::slot_set_epg_data);
 
