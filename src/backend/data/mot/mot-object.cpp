@@ -32,54 +32,49 @@
  *	for handling a single MOT message with a given transportId
  */
 
-#include  "mot-object.h"
-#include  "dabradio.h"
+#include "mot-object.h"
+#include "dabradio.h"
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtWarningMsg)
 
 MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag)
+  : mTransportId(transportId)
+  , mDirElement(dirElement)
 {
-  i32 pointer = 7;
-  u16 rawContentType = 0;
-
   (void)segmentSize;
   (void)lastFlag;
-  this->dirElement = dirElement;
-  connect(this, &MotObject::handle_motObject, mr, &DabRadio::slot_handle_mot_object);
-  this->transportId = transportId;
-  this->numofSegments = -1;
-  this->segmentSize = -1;
 
-  headerSize =
-    //	   ((segment [3] & 0x0F) << 9) |
-    (segment[4] << 1) | ((segment[5] >> 7) & 0x01);
-  bodySize = (segment[0] << 20) | (segment[1] << 12) | (segment[2] << 4) | ((segment[3] & 0xF0) >> 4);
+  connect(this, &MotObject::signal_new_MOT_object, mr, &DabRadio::slot_handle_mot_object);
+
+  mHeaderSize = /*((segment [3] & 0x0F) << 9) |*/ (segment[4] << 1) | ((segment[5] >> 7) & 0x01);
+  mBodySize = (segment[0] << 20) | (segment[1] << 12) | (segment[2] << 4) | ((segment[3] & 0xF0) >> 4);
 
   // Extract the content type
   //	int b	= (segment [5] >> 1) & 0x3F;
+  u16 rawContentType = 0;
   rawContentType |= ((segment[5] >> 1) & 0x3F) << 8;
   rawContentType |= ((segment[5] & 0x01) << 8) | segment[6];
-  contentType = static_cast<MOTContentType>(rawContentType);
+  mContentType = static_cast<MOTContentType>(rawContentType);
 
   //	fprintf (stdout, "headerSize %d, bodySize %d. contentType %d, transportId %d, segmentSize %d, lastFlag %d\n",
   //	                  headerSize, bodySize, b, transportId,
   //	                  segmentSize, lastFlag);
   //	we are actually only interested in the name, if any
 
-  while ((u16)pointer < headerSize)
+  i32 pointer = 7;
+
+  while ((u16)pointer < mHeaderSize)
   {
     u8 PLI = (segment[pointer] & 0300) >> 6;
     u8 paramId = (segment[pointer] & 077);
-    u16 length;
+    u16 length = 0;
+
     switch (PLI)
     {
-    case 00: pointer += 1;
-      break;
-
-    case 01: pointer += 2;
-      break;
-
-    case 02: pointer += 5;
-      break;
-
+    case 00: pointer += 1; break;
+    case 01: pointer += 2; break;
+    case 02: pointer += 5; break;
     case 03:
       if ((segment[pointer + 1] & 0200) != 0)
       {
@@ -91,13 +86,14 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 *
         length = segment[pointer + 1] & 0177;
         pointer += 2;
       }
+
       switch (paramId)
       {
       case 12:
       {
         for (i16 i = 0; i < length - 1; i++)
         {
-          name.append((QChar)segment[pointer + i + 1]);
+          mName.append((QChar)segment[pointer + i + 1]);
         }
       }
         pointer += length;
@@ -116,7 +112,7 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 *
         pointer += length;
         break;
 
-      default: pointer += headerSize;  // this is so wrong!!!
+      default: pointer += mHeaderSize;  // this is so wrong!!!
         break;
       }
     }
@@ -125,9 +121,9 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 *
   //	fprintf (stdout, "creating mot object %x\n", transportId);
 }
 
-u16 MotObject::get_transportId()
+u16 MotObject::get_transport_id()
 {
-  return transportId;
+  return mTransportId;
 }
 
 //      type 4 is a segment.
@@ -135,25 +131,23 @@ u16 MotObject::get_transportId()
 //	established that the current slide has the right transportId
 //
 //	Note that segments do not need to come in in the right order
-void MotObject::addBodySegment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag)
+void MotObject::add_body_segment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag)
 {
-  //	fprintf (stdout, "adding segment %d (size %d)\n", segmentNumber,
-  //	                                                  segmentSize);
-  if ((segmentNumber < 0) || (segmentNumber >= 8192))
+  if (segmentNumber < 0 || segmentNumber >= 8192)
   {
     return;
   }
 
-  if (motMap.find(segmentNumber) != motMap.end())
+  if (mMotMap.find(segmentNumber) != mMotMap.end())
   {
-    qInfo() << "Duplicate segment number" << segmentNumber;
+    qCDebug(sLogMotObject) << "Duplicate segment number" << segmentNumber;
     return;
   }
 
   //      Note that the last segment may have a different size
-  if (!lastFlag && (this->segmentSize == -1))
+  if (!lastFlag && (this->mSegmentSize == -1))
   {
-    this->segmentSize = segmentSize;
+    this->mSegmentSize = segmentSize;
   }
 
   QByteArray segment;
@@ -164,60 +158,59 @@ void MotObject::addBodySegment(const u8 * bodySegment, i16 segmentNumber, i32 se
     segment[i] = bodySegment[i];
   }
 
-  qInfo() << "Adding segment" << segmentNumber << " to motMap with size" << segmentSize;
-  motMap.insert(std::make_pair(segmentNumber, segment));
+  qCDebug(sLogMotObject) << "Adding segment" << segmentNumber << "to motMap with size" << segmentSize;
+  mMotMap.insert(std::make_pair(segmentNumber, segment));
 
   if (lastFlag)
   {
-    numofSegments = segmentNumber + 1;
+    mNumofSegments = segmentNumber + 1;
   }
 
-  if (numofSegments == -1)
+  if (mNumofSegments == -1)
   {
     return;
   }
 
   // shortcut map search if we have more segments than collected so far
-  if (numofSegments > (signed)motMap.size())
+  if (mNumofSegments > (signed)mMotMap.size())
   {
-    qInfo() << "MOT object" << transportId << "with segment number" << numofSegments << "is larger than collected" << motMap.size();
+    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "with segment number" << mNumofSegments << "is larger than collected" << mMotMap.size();
     return;
   }
 
   //	once we know how many segments there are/should be, we check for completeness
-  for (i32 i = 0; i < numofSegments; i++)
+  for (i32 i = 0; i < mNumofSegments; i++)
   {
-    if (motMap.find(i) == motMap.end())
+    if (mMotMap.find(i) == mMotMap.end())
     {
-      qInfo() << "MOT object" << transportId << "not complete yet, missing at least segment" << i;
+      qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing at least segment" << i;
       return;
     }
   }
 
-  qInfo() << "MOT object" << transportId << "complete with numofSegments" << numofSegments << "and" << motMap.size() << "segments in motMap";
+  qCDebug(sLogMotObject) << "MOT object" << mTransportId << "complete with numofSegments" << mNumofSegments << "and" << mMotMap.size() << "segments in motMap";
   //	The motObject is (seems to be) complete
-  handleComplete();
+  _handle_complete();
 }
 
 
-void MotObject::handleComplete()
+void MotObject::_handle_complete()
 {
   QByteArray result;
-  for (const auto & it : motMap)
+  for (const auto & it : mMotMap)
   {
     result.append(it.second);
   }
-  //	fprintf (stdout,
-  //	"Handling complete %s, type %d\n", name. toLatin1 (). data (),
-  //	                                                  (int)contentType);
-  if (name == "")
+
+  if (mName.isEmpty())
   {
-    name = QString::number(get_transportId());
+    mName = QString("trid_") + QString::number(get_transport_id());
   }
-  handle_motObject(result, name, (int)contentType, dirElement);
+
+  emit signal_new_MOT_object(result, mName, (int)mContentType, mDirElement);
 }
 
-int MotObject::get_headerSize()
+int MotObject::get_header_size()
 {
-  return headerSize;
+  return mHeaderSize;
 }

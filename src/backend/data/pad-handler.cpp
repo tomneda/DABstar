@@ -29,15 +29,14 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "pad-handler.h"
-#include  "dabradio.h"
-#include  "charsets.h"
-#include  "data_manip_and_checks.h"
+#include "pad-handler.h"
+#include "dabradio.h"
+#include "charsets.h"
+#include "data_manip_and_checks.h"
+#include <QLoggingCategory>
 
-/**
-  *	\class padHandler
-  *	Handles the pad segments passed on from mp2- and mp4Processor
-  */
+Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtWarningMsg)
+
 PadHandler::PadHandler(DabRadio * mr)
   : mpRadioInterface(mr)
 {
@@ -64,7 +63,6 @@ void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8
   const bool CI_flag = (iL0 & 0x2) != 0;
   // const u8 L_ByteInd = L1 & 0xF;
 
-  // qInfo() << "L1" << L1 << "L0" << L0 << "last" << last;
   switch (x_padInd)
   {
   default:
@@ -72,12 +70,12 @@ void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8
     break;
 
   case 0x1:
-    qInfo() << "_handle_short_PAD()" << "buffer" << iBuffer << "last" << iLast << "CI_flag" << CI_flag;
+    qCDebug(sLogPadHandler) << "_handle_short_PAD()" << "buffer" << iBuffer << "last" << iLast << "CI_flag" << CI_flag;
     _handle_short_PAD(iBuffer, iLast, CI_flag);
     break;
 
   case 0x2:
-    // qInfo() << "_handle_variable_PAD()" << "buffer" << buffer << "last" << last << "CI_flag" << CI_flag;
+    qCDebug(sLogPadHandler) << "_handle_variable_PAD()" << "buffer" << iBuffer << "last" << iLast << "CI_flag" << CI_flag;
     _handle_variable_PAD(iBuffer, iLast, CI_flag);
     break;
   }
@@ -195,7 +193,6 @@ static constexpr i16 lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
 //	i.e. we start (downwards)  beginning at b [last];
 void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast, const bool iCiFlag)
 {
-  i16 i, j;
   i16 base = iLast;
   std::vector<u8> data;    // for the local addition
 
@@ -215,7 +212,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
       }
 
       data.resize(mXPadLength);
-      for (j = 0; j < mXPadLength; j++)
+      for (i16 j = 0; j < mXPadLength; j++)
       {
         data[j] = iBuffer[iLast - j];
       }
@@ -259,7 +256,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
   //if (mscGroupElement)
   {
     mXPadLength = 0;
-    for (i = 0; i < CI_Index; i++)
+    for (i16 i = 0; i < CI_Index; i++)
     {
       mXPadLength += lengthTable[CI_table[i] >> 5];
     }
@@ -268,7 +265,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
   }
 
   //	Handle the contents
-  for (i = 0; i < CI_Index; i++)
+  for (i16 i = 0; i < CI_Index; i++)
   {
     u8 appType = CI_table[i] & 037;
     i16 length = lengthTable[CI_table[i] >> 5];
@@ -284,7 +281,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
 
     //	collect data, reverse the reversed bytes
     data.resize(length);
-    for (j = 0; j < length; j++)
+    for (i16 j = 0; j < length; j++)
     {
       data[j] = iBuffer[base - j];
     }
@@ -295,17 +292,17 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
 
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
-      //qInfo() << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
+      qCDebug(sLogPadHandler) << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _dynamic_label((u8 *)(data.data()), data.size(), CI_table[i]);
       break;
 
     case 12:   // MOT, start of X-PAD data group
-      // qInfo() << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
+      qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _new_MSC_element(data);
       break;
 
     case 13:   // MOT, continuation of X-PAD data group
-      // qInfo() << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
+      qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _add_MSC_element(data);
       break;
     }
@@ -513,10 +510,9 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   {
     if (!check_crc_bytes(iData.data(), size - 2))
     {
-      qWarning() << "build_MSC_segment() fails on crc check";
+      qCWarning(sLogPadHandler) << "build_MSC_segment() fails on crc check";
       return;
     }
-    // qInfo() << "build_MSC_segment() CRC success";
   }
 
   i16 segmentNumber = -1; // default
@@ -540,7 +536,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   {
     lastFlag = iData[index] & 0x80;
     segmentNumber = ((iData[index] & 0x7F) << 8) | iData[index + 1];
-    qInfo() << "segmentNumber" << segmentNumber << "lastFlag" << lastFlag << "extensionFlag" << extensionFlag;
+    qCDebug(sLogPadHandler) << "segmentNumber" << segmentNumber << "lastFlag" << lastFlag << "extensionFlag" << extensionFlag;
     index += 2;
   }
 
@@ -553,7 +549,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     if ((iData[index] & 0x10) != 0)
     {
       transportId = iData[index + 1] << 8 | iData[index + 2];
-      qInfo() << "transportId" << transportId;
+      qCDebug(sLogPadHandler) << "transportId" << transportId;
       index += 3;
     }
     /*else
@@ -577,16 +573,16 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   case 3:
     if (mpMotObject == nullptr)
     {
-      qInfo() << "Creating MotObject with transportId" << transportId;
+      qCDebug(sLogPadHandler) << "Creating MotObject with transportId" << transportId;
       mpMotObject.reset(new MotObject(mpRadioInterface, false, transportId, &iData[index + 2], segmentSize, lastFlag));
     }
     else
     {
-      if (mpMotObject->get_transportId() == transportId)
+      if (mpMotObject->get_transport_id() == transportId)
       {
         break;
       }
-      qInfo() << "Re-Creating MotObject with transportId" << transportId << "old transportId" << mpMotObject->get_transportId();
+      qCDebug(sLogPadHandler) << "Re-Creating MotObject with transportId" << transportId << "old transportId" << mpMotObject->get_transport_id();
       mpMotObject.reset(new MotObject(mpRadioInterface, false, transportId, &iData[index + 2], segmentSize, lastFlag));
     }
     break;
@@ -596,10 +592,10 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     {
       return;
     }
-    if (mpMotObject->get_transportId() == transportId)
+    if (mpMotObject->get_transport_id() == transportId)
     {
       //fprintf (stdout, "add segment %d size %d of %d\n", segmentNumber, segmentSize, transportId);
-      mpMotObject->addBodySegment(&iData[index + 2], segmentNumber, segmentSize, lastFlag);
+      mpMotObject->add_body_segment(&iData[index + 2], segmentNumber, segmentSize, lastFlag);
     }
     break;
 

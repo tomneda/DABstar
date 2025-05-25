@@ -52,25 +52,26 @@ public:
   MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag);
   ~MotObject() override = default;
 
-  void addBodySegment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag);
-  u16 get_transportId();
-  int get_headerSize();
+  void add_body_segment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag);
+  u16 get_transport_id();
+  int get_header_size();
+
 private:
-  bool dirElement;
-  QString picturePath;
-  u16 transportId;
-  i16 numofSegments;
-  i32 segmentSize;
-  u32 headerSize;
-  u32 bodySize;
-  MOTContentType contentType;
-  QString name;
-  void handleComplete();
-  std::map<int, QByteArray> motMap;
+  const u16 mTransportId;
+  const bool mDirElement;
+  QString mPicturePath;
+  i16 mNumofSegments = -1;
+  i32 mSegmentSize = -1;
+  u32 mHeaderSize = 0;
+  u32 mBodySize = 0;
+  MOTContentType mContentType = (MOTContentType)0;
+  QString mName;
+  std::map<int, QByteArray> mMotMap;
+
+  void _handle_complete();
 
 signals:
-  void the_picture(QByteArray, int, QString);
-  void handle_motObject(QByteArray, QString, int, bool);
+  void signal_new_MOT_object(const QByteArray &, const QString &, int, bool);
 };
 
 #endif

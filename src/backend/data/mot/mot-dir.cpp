@@ -145,7 +145,7 @@ u16 extensionLength	= (dir_segments [currentBase] << 8) |
                                          false);
 
 	   
-	   currentBase		+= 2 + handle -> get_headerSize();
+	   currentBase		+= 2 + handle -> get_header_size();
 	   setHandle (handle, transportId);
 	}
 }

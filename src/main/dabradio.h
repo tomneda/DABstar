@@ -325,7 +325,8 @@ private:
 
   void start_etiHandler();
   void stop_etiHandler();
-  static QString check_and_create_dir(const QString &);
+  QString check_and_create_dir(const QString &) const;
+  bool save_MOT_EPG_data(const QByteArray & result, const QString & objectName, int contentType);
 
   void start_audio_service(const Audiodata * const ipAD);
   void start_packet_service(const QString &);
@@ -348,10 +349,11 @@ private:
   // void showServices() const;
 
   bool do_start();
-  void save_MOTObject(QByteArray &, QString);
+  void save_MOT_object(const QByteArray &, const QString &);
+  void create_directory(const QString & iDir) const;
 
-  void save_MOTtext(QByteArray &, int, QString);
-  void show_MOTlabel(QByteArray & data, int contentType, const QString & pictureName, int dirs);
+  void save_MOT_text(const QByteArray &, int, const QString &);
+  void show_MOT_label(const QByteArray & data, int contentType, const QString & pictureName, int dirs);
 
   //enum direction { FORWARD, BACKWARDS };
   //void handle_serviceButton(direction);
@@ -399,7 +401,7 @@ public slots:
   void slot_show_fic_success(bool);
   void slot_show_fic_ber(f32);
   void slot_show_label(const QString &);
-  void slot_handle_mot_object(QByteArray, QString, int, bool);
+  void slot_handle_mot_object(const QByteArray &, const QString &, int, bool);
   void slot_send_datagram(int);
   void slot_handle_tdc_data(int, int);
   void slot_change_in_configuration();

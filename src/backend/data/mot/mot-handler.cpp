@@ -177,7 +177,7 @@ void motHandler::add_mscDatagroup(const std::vector<u8> & msc)
     }
     if (h != nullptr)
     {
-      h->addBodySegment(&motVector[2], segmentNumber, segmentSize, lastFlag);
+      h->add_body_segment(&motVector[2], segmentNumber, segmentSize, lastFlag);
     }
   }
     break;

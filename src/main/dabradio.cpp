@@ -741,7 +741,7 @@ void DabRadio::_slot_handle_content_button()
   mpContentTable->show();
 }
 
-QString DabRadio::check_and_create_dir(const QString & s)
+QString DabRadio::check_and_create_dir(const QString & s) const
 {
   if (s.isEmpty())
   {
@@ -755,67 +755,62 @@ QString DabRadio::check_and_create_dir(const QString & s)
     dir += QChar('/');
   }
 
-  if (QDir(dir).exists())
-  {
-    return dir;
-  }
-  QDir().mkpath(dir);
+  create_directory(dir);
+
   return dir;
 }
 
-void DabRadio::slot_handle_mot_object(QByteArray result, QString objectName, int contentType, bool dirElement)
+bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & objectName, int contentType)
+{
+  if (mEpgPath == "")
+  {
+    return false;
+  }
+
+  QString temp2 = objectName;
+  if (temp2.isEmpty())
+  {
+    temp2 = "epg_file";
+  }
+  temp2 = mEpgPath + temp2;
+
+  QString temp = temp2;
+  temp = temp.left(temp.lastIndexOf(QChar('/')));
+  create_directory(temp);
+
+  std::vector<u8> epgData(result.begin(), result.end());
+  const u32 ensembleId = mpDabProcessor->get_ensemble_id();
+  const u32 currentSId = extract_epg(temp2, mServiceList, ensembleId);
+  const u32 julianDate = mpDabProcessor->get_julian_date();
+  const i32 subType = getContentSubType((MOTContentType)contentType);
+  mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
+
+  if (Settings::Config::cbGenXmlFromEpg.read().toBool())
+  {
+    mEpgHandler.decode(epgData, QDir::toNativeSeparators(temp2));
+  }
+  return true;
+}
+
+void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString & objectName, int contentType, bool dirElement)
 {
   QString realName;
 
   switch (getContentBaseType((MOTContentType)contentType))
   {
   case MOTBaseTypeGeneralData: break;
-  case MOTBaseTypeText: save_MOTtext(result, contentType, objectName); break;
-  case MOTBaseTypeImage: show_MOTlabel(result, contentType, objectName, dirElement); break;
+  case MOTBaseTypeText: save_MOT_text(result, contentType, objectName); break;
+  case MOTBaseTypeImage: show_MOT_label(result, contentType, objectName, dirElement); break;
   case MOTBaseTypeAudio: break;
   case MOTBaseTypeVideo: break;
-  case MOTBaseTypeTransport: save_MOTObject(result, objectName); break;
+  case MOTBaseTypeTransport: save_MOT_object(result, objectName); break;
   case MOTBaseTypeSystem: break;
-
-  case MOTBaseTypeApplication:  // epg data
-    if (mEpgPath == "")
-    {
-      return;
-    }
-
-    if (objectName == QString(""))
-    {
-      objectName = "epg file";
-    }
-    objectName = mEpgPath + objectName;
-
-    {
-      QString temp = objectName;
-      temp = temp.left(temp.lastIndexOf(QChar('/')));
-      if (!QDir(temp).exists())
-      {
-        QDir().mkpath(temp);
-      }
-
-      std::vector<u8> epgData(result.begin(), result.end());
-      u32 ensembleId = mpDabProcessor->get_ensemble_id();
-      u32 currentSId = extract_epg(objectName, mServiceList, ensembleId);
-      u32 julianDate = mpDabProcessor->get_julian_date();
-      int subType = getContentSubType((MOTContentType)contentType);
-      mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
-
-      if (Settings::Config::cbGenXmlFromEpg.read().toBool())
-      {
-        mEpgHandler.decode(epgData, QDir::toNativeSeparators(objectName));
-      }
-    }
-    return;
-
-  case MOTBaseTypeProprietary: break;
+  case MOTBaseTypeApplication: save_MOT_EPG_data(result, objectName, contentType); break;
+  case MOTBaseTypeProprietary:; break;
   }
 }
 
-void DabRadio::save_MOTtext(QByteArray & result, int contentType, QString name)
+void DabRadio::save_MOT_text(const QByteArray & result, int contentType, const QString & name)
 {
   (void)contentType;
   if (mMotPath == "")
@@ -838,7 +833,7 @@ void DabRadio::save_MOTtext(QByteArray & result, int contentType, QString name)
   }
 }
 
-void DabRadio::save_MOTObject(QByteArray & result, QString name)
+void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
 {
   if (mMotPath == "")
   {
@@ -847,60 +842,63 @@ void DabRadio::save_MOTObject(QByteArray & result, QString name)
 
   if (name == "")
   {
-    name = "motObject_" + QString::number(mMotObjectCnt);
+    const QString name2 = "motObject_" + QString::number(mMotObjectCnt);
     ++mMotObjectCnt;
+    save_MOT_text(result, 5, name2);
   }
-  save_MOTtext(result, 5, name);
+  else
+  {
+    save_MOT_text(result, 5, name);
+  }
+}
+
+void DabRadio::create_directory(const QString & iDir) const
+{
+  if (!QDir(iDir).exists())
+  {
+    QDir().mkpath(iDir);
+  }
 }
 
 //	MOT slide, to show
-void DabRadio::show_MOTlabel(QByteArray & data, int contentType, const QString & pictureName, int dirs)
+void DabRadio::show_MOT_label(const QByteArray & data, const int contentType, const QString & pictureName, const int dirs)
 {
   const char * type;
-  if (!mIsRunning.load() || (pictureName == QString("")))
+  if (!mIsRunning.load() || pictureName.isEmpty())
   {
     return;
   }
 
-  (void)dirs;
   switch (static_cast<MOTContentType>(contentType))
   {
-  case MOTCTImageGIF: type = "GIF";
-    break;
-
-  case MOTCTImageJFIF: type = "JPG";
-    break;
-
-  case MOTCTImageBMP: type = "BMP";
-    break;
-
-  case MOTCTImagePNG: type = "PNG";
-    break;
-
+  case MOTCTImageGIF:  type = "GIF"; break;
+  case MOTCTImageJFIF: type = "JPG"; break;
+  case MOTCTImageBMP:  type = "BMP"; break;
+  case MOTCTImagePNG:  type = "PNG"; break;
   default: return;
   }
+
+  qCDebug(sLogRadioInterface(), "show_MOTlabel %s, contentType 0x%x, dirs %d, type %s",
+          pictureName.toLocal8Bit().constData(), contentType, dirs, type);
 
   if (Settings::Config::cbSaveSlides.read().toBool() && (mPicturesPath != ""))
   {
     QString pict = mPicturesPath + pictureName;
     QString temp = pict;
     temp = temp.left(temp.lastIndexOf(QChar('/')));
-    if (!QDir(temp).exists())
-    {
-      QDir().mkpath(temp);
-    }
+    create_directory(temp);
     pict = QDir::toNativeSeparators(pict);
-    FILE * x = fopen(pict.toUtf8().data(), "w+b");
+    FILE * fp = fopen(pict.toUtf8().data(), "w+b");
 
-    if (x == nullptr)
+    if (fp == nullptr)
     {
-      fprintf(stderr, "cannot write file %s\n", pict.toUtf8().data());
+      qCCritical(sLogRadioInterface(), "cannot write file %s", pict.toUtf8().data());
     }
     else
     {
-      fprintf(stdout, "going to write picture file %s\n", pict.toUtf8().data());
-      (void)fwrite(data.data(), 1, data.length(), x);
-      fclose(x);
+      qCDebug(sLogRadioInterface(), "going to write picture file %s", pict.toUtf8().data());
+      (void)fwrite(data.data(), 1, data.length(), fp);
+      fclose(fp);
     }
   }
 
@@ -908,9 +906,6 @@ void DabRadio::show_MOTlabel(QByteArray & data, int contentType, const QString &
   {
     return;
   }
-
-  //	if (dirs != 0)
-  //	   return;
 
   QPixmap p;
   p.loadFromData(data, type);
