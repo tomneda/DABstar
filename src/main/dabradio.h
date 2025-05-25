@@ -350,7 +350,7 @@ private:
 
   bool do_start();
   void save_MOT_object(const QByteArray &, const QString &);
-  void create_directory(const QString & iDir) const;
+  void create_directory(const QString & iDirOrPath, bool iContainsFileName) const;
 
   void save_MOT_text(const QByteArray &, int, const QString &);
   void show_MOT_image(const QByteArray & data, int contentType, const QString & pictureName, int dirs);

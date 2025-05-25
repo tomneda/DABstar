@@ -58,6 +58,7 @@
 #include <QDir>
 #include <QSpacerItem>
 #include <QCryptographicHash>
+#include <QRegularExpression>
 
 #if defined(__MINGW32__) || defined(_WIN32)
   #include <windows.h>
@@ -756,7 +757,7 @@ QString DabRadio::check_and_create_dir(const QString & s) const
     dir += QChar('/');
   }
 
-  create_directory(dir);
+  create_directory(dir, false);
 
   return dir;
 }
@@ -768,27 +769,25 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
     return false;
   }
 
-  QString temp2 = objectName;
-  if (temp2.isEmpty())
+  QString temp = objectName;
+  if (temp.isEmpty())
   {
-    temp2 = "epg_file";
+    temp = "epg_file";
   }
-  temp2 = mEpgPath + temp2;
+  temp = mEpgPath + temp;
 
-  QString temp = temp2;
-  temp = temp.left(temp.lastIndexOf(QChar('/')));
-  create_directory(temp);
+  create_directory(temp, true);
 
   std::vector<u8> epgData(result.begin(), result.end());
   const u32 ensembleId = mpDabProcessor->get_ensemble_id();
-  const u32 currentSId = extract_epg(temp2, mServiceList, ensembleId);
+  const u32 currentSId = extract_epg(temp, mServiceList, ensembleId);
   const u32 julianDate = mpDabProcessor->get_julian_date();
   const i32 subType = getContentSubType((MOTContentType)contentType);
   mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
 
   if (Settings::Config::cbGenXmlFromEpg.read().toBool())
   {
-    mEpgHandler.decode(epgData, QDir::toNativeSeparators(temp2));
+    mEpgHandler.decode(epgData, QDir::toNativeSeparators(temp));
   }
   return true;
 }
@@ -853,11 +852,13 @@ void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
   }
 }
 
-void DabRadio::create_directory(const QString & iDir) const
+void DabRadio::create_directory(const QString & iDirOrPath, const bool iContainsFileName) const
 {
-  if (!QDir(iDir).exists())
+  const QString temp = iContainsFileName ? iDirOrPath.left(iDirOrPath.lastIndexOf(QChar('/'))) : iDirOrPath;
+
+  if (!QDir(temp).exists())
   {
-    QDir().mkpath(iDir);
+    QDir().mkpath(temp);
   }
 }
 
@@ -872,10 +873,10 @@ void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, co
 
   switch (static_cast<MOTContentType>(contentType))
   {
-  case MOTCTImageGIF:  type = "GIF"; break;
-  case MOTCTImageJFIF: type = "JPG"; break;
-  case MOTCTImageBMP:  type = "BMP"; break;
-  case MOTCTImagePNG:  type = "PNG"; break;
+  case MOTCTImageGIF:  type = "gif"; break;
+  case MOTCTImageJFIF: type = "jpg"; break;
+  case MOTCTImageBMP:  type = "bmp"; break;
+  case MOTCTImagePNG:  type = "png"; break;
   default: return;
   }
 
@@ -885,11 +886,15 @@ void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, co
   if (Settings::Config::cbSaveSlides.read().toBool() && (mPicturesPath != ""))
   {
     const QString hashStr = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex().left(8);
-    //QString pict = mPicturesPath + pictureName;
-    QString filename = mChannel.ensembleName + "_" + mChannel.currentService.serviceName.trimmed() + "_" + hashStr;
-    QString pict = mPicturesPath + filename;
-    create_directory(mPicturesPath);
+    static const QRegularExpression regex(R"([<>:\"/\\|?*\s])");
+    const QString pathEnsemble = mChannel.ensembleName.trimmed().replace(regex, "-");
+    const QString pathService = mChannel.currentService.serviceName.trimmed().replace(regex, "-");
+    const QString filename = pathEnsemble + "_" + pathService + "_" + hashStr + "." + type;
+    const QString filepath = pathEnsemble + "/" + pathService + "/";
+    QString pict = mPicturesPath + filepath + filename;
+    create_directory(pict, true);
     pict = QDir::toNativeSeparators(pict);
+    qInfo() << "filepath:" << pict << "(pictureName:" << pictureName << ")";
 
     if (!QFile::exists(pict))
     {
