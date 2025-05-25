@@ -326,25 +326,21 @@ void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16
 //	fields, starting with CI = 2, continuing with CI = 3
 void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI)
 {
-  static int32_t segmentno = -1;
-  static int16_t remainDataLength = 0;
-  static bool isLastSegment = false;
-  static bool moreXPad = false;
   int16_t dataLength = 0;
 
   if ((CI & 037) == 02)
   {
     // start of segment
-    uint16_t prefix = (data[0] << 8) | data[1];
-    uint8_t field_1 = (prefix >> 8) & 017;
-    uint8_t Cflag = (prefix >> 12) & 01;
-    uint8_t first = (prefix >> 14) & 01;
-    uint8_t last = (prefix >> 13) & 01;
+    const uint16_t prefix = (data[0] << 8) | data[1];
+    const uint8_t field_1 = (prefix >> 8) & 017;
+    const uint8_t Cflag = (prefix >> 12) & 01;
+    const uint8_t first = (prefix >> 14) & 01;
+    const uint8_t last = (prefix >> 13) & 01;
     dataLength = length - 2; // The length with header removed
 
     if (first)
     {
-      segmentno = 1;
+      mSegmentNo = 1;
       mCharSet = (prefix >> 4) & 017;
       mDynamicLabelTextUnConverted.clear();
       _reset_charset_change();
@@ -353,22 +349,22 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
     {
       const int32_t test = ((prefix >> 4) & 07) + 1;
 
-      if (test != segmentno + 1)
+      if (test != mSegmentNo + 1)
       {
         // fprintf (stderr, "mismatch %d %d\n", test, segmentno);
-        segmentno = -1;
+        mSegmentNo = -1;
         return;
       }
-      segmentno = ((prefix >> 4) & 07) + 1;
+      mSegmentNo = ((prefix >> 4) & 07) + 1;
       // fprintf (stderr, "segment %d\n", segmentno);
     }
 
     if (Cflag) // special dynamic label command
     {
-      // the only specified command is to clear the display
+      // TODO: the only specified command is to clear the display
       mDynamicLabelTextUnConverted.clear();
       _reset_charset_change();
-      segmentno = -1;
+      mSegmentNo = -1;
     }
     else
     {
@@ -378,12 +374,12 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
       if (length - 2 < totalDataLength)
       {
         dataLength = length - 2; // the length is shortened by header
-        moreXPad = true;
+        mMoreXPad = true;
       }
       else
       {
         dataLength = totalDataLength;  // no more xpad app's 3
-        moreXPad = false;
+        mMoreXPad = false;
       }
 
       mDynamicLabelTextUnConverted.append((const char *)&data[2], dataLength);
@@ -392,43 +388,43 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
       //	if at the end, show the label
       if (last)
       {
-        if (!moreXPad)
+        if (!mMoreXPad)
         {
           const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
           //	            fprintf (stderr, "last segment encountered\n");
-          segmentno = -1;
+          mSegmentNo = -1;
         }
         else
         {
-          isLastSegment = true;
+          mIsLastSegment = true;
         }
       }
       else
       {
-        isLastSegment = false;
+        mIsLastSegment = false;
       }
       //	calculate remaining data length
-      remainDataLength = totalDataLength - dataLength;
+      mRemainDataLength = totalDataLength - dataLength;
     }
   }
-  else if (((CI & 037) == 03) && moreXPad)
+  else if (((CI & 037) == 03) && mMoreXPad)
   {
-    if (remainDataLength > length)
+    if (mRemainDataLength > length)
     {
       dataLength = length;
-      remainDataLength -= length;
+      mRemainDataLength -= length;
     }
     else
     {
-      dataLength = remainDataLength;
-      moreXPad = false;
+      dataLength = mRemainDataLength;
+      mMoreXPad = false;
     }
 
     mDynamicLabelTextUnConverted.append((const char *)data, dataLength);
     _check_charset_change();
 
-    if (!moreXPad && isLastSegment)
+    if (!mMoreXPad && mIsLastSegment)
     {
       const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
       emit signal_show_label(dynamicLabelTextConverted);

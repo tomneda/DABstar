@@ -77,6 +77,10 @@ private:
   int16_t mSegmentNumber = -1;
   int32_t mDataGroupLength = 0; // mDataGroupLength is set when having processed an appType 1
   std::vector<uint8_t> mMscDataGroupBuffer; // The msc_dataGroupBuffer is used for assembling the msc_data group.
+  int32_t mSegmentNo = -1;
+  int16_t mRemainDataLength = 0;
+  bool mIsLastSegment = false;
+  bool mMoreXPad = false;
 
 signals:
   void signal_show_label(const QString &);
