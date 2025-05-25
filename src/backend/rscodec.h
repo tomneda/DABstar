@@ -44,17 +44,17 @@ public:
 	rscodec();
 	 ~rscodec();
 // decode shortened code
-	int16_t dec (const uint8_t *r, uint8_t *d, int16_t cutlen = 135);
+	i16 dec (const u8 *r, u8 *d, i16 cutlen = 135);
 //	encode shortened code, cutlen bytes were shortened
 //	not used for the DAB+ decoding
-	void enc (const uint8_t *u, uint8_t *c, int16_t cutlen = 135);
+	void enc (const u8 *u, u8 *c, i16 cutlen = 135);
 private:
-	static	const int16_t d_m	= 8;		// m
-	static	const int16_t d_q	= 1 << 8;	// q = 2 ^ m
+	static	const i16 d_m	= 8;		// m
+	static	const i16 d_q	= 1 << 8;	// q = 2 ^ m
 // primitive polynomial to generate GF(q)
-	static	const int16_t d_p	= 0435;		
+	static	const i16 d_p	= 0435;
 // starting exponent for generator polynomial, j
-	static	const int16_t	d_j	= 0;
+	static	const i16	d_j	= 0;
 //
 //	LUT translating power form to polynomial form
 	int gexp [512];
@@ -62,33 +62,33 @@ private:
 	int glog [512];
 	
 // all in power representations
- 	int16_t	add_poly	(int16_t a, int16_t b);
-	int16_t add_power	(int16_t a, int16_t b);
-	int16_t multiply_poly	(int16_t a, int16_t b); // a*b
-	int16_t multiply_power	(int16_t a, int16_t b);
-	int16_t divide_poly	(int16_t a, int16_t b); 	// a/b
-	int16_t divide_power	(int16_t a, int16_t b);
-	int16_t pow_poly	(int16_t a, int16_t n);		// a^n
-	int16_t pow_power	(int16_t a, int16_t n);
-	int16_t power2poly	(int16_t a);
-	int16_t poly2power	(int16_t a);
-	int16_t	inverse_poly	(int16_t a);
-	int16_t	inverse_power	(int16_t a);
+ 	i16	add_poly	(i16 a, i16 b);
+	i16 add_power	(i16 a, i16 b);
+	i16 multiply_poly	(i16 a, i16 b); // a*b
+	i16 multiply_power	(i16 a, i16 b);
+	i16 divide_poly	(i16 a, i16 b); 	// a/b
+	i16 divide_power	(i16 a, i16 b);
+	i16 pow_poly	(i16 a, i16 n);		// a^n
+	i16 pow_power	(i16 a, i16 n);
+	i16 power2poly	(i16 a);
+	i16 poly2power	(i16 a);
+	i16	inverse_poly	(i16 a);
+	i16	inverse_power	(i16 a);
 
 // convert a polynomial representation to m-tuple representation
 // returned in tuple, lowest degree first.
 // tuple must have size d_m at minimum
-	void poly2tuple		(int16_t a, uint8_t tuple[]);
-	void power2tuple	(int16_t a, uint8_t tuple[]);
+	void poly2tuple		(i16 a, u8 tuple[]);
+	void power2tuple	(i16 a, u8 tuple[]);
 
 // round mod algorithm, calculate a % n, n > 0, a is any integer, a % n >= 0
-	int16_t round_mod (int16_t a, int16_t n);
+	i16 round_mod (i16 a, i16 n);
 
 // u and c are in polynomial representation. This is more common in practice
-	void enc_poly (const uint16_t * u, uint16_t * c);
+	void enc_poly (const u16 * u, u16 * c);
 	   
 // r and d are in polynomial representation. This is more common in practice
-	int16_t dec_poly (const uint16_t *r, uint16_t *d);
+	i16 dec_poly (const u16 *r, u16 *d);
 
 //	int d_m;		// GF(2^m)
 //	dabp_galois d_gf;	// Galois field

@@ -59,41 +59,41 @@ class Mp4Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  Mp4Processor(DabRadio *, int16_t, RingBuffer<int16_t> *, RingBuffer<uint8_t> *, FILE *);
+  Mp4Processor(DabRadio *, i16, RingBuffer<i16> *, RingBuffer<u8> *, FILE *);
   ~Mp4Processor() override;
 
-  void add_to_frame(const std::vector<uint8_t> &) override;
+  void add_to_frame(const std::vector<u8> &) override;
   
 private:
   DabRadio * const mpRadioInterface;
   PadHandler mPadhandler;
   FILE * const mpDumpFile;
-  int16_t const mBitRate;
-  RingBuffer<uint8_t> * const mpFrameBuffer;
-  const int16_t mRsDims;
+  i16 const mBitRate;
+  RingBuffer<u8> * const mpFrameBuffer;
+  const i16 mRsDims;
   ReedSolomon mRsDecoder;
 
-  int16_t mSuperFrameSize;
-  int16_t mBlockFillIndex = 0;
-  int16_t mBlocksInBuffer = 0;
-  int16_t mFrameCount = 0;
-  int16_t mFrameErrors = 0;
-  int16_t mRsErrors = 0;
-  int16_t mCrcErrors = 0;
-  int16_t mAacErrors = 0;
-  int16_t mAacFrames = 0;
-  int16_t mSuccessFrames = 0;
-  int32_t mSuperFrameSync = 0;
-  int32_t mGoodFrames = 0;
-  int32_t mTotalCorrections = 0;
-  int32_t mSumFrameCount = 0;
-  int32_t mSumFrameErrors = 0;
-  int32_t mSumRsErrors = 0;
-  int32_t mSumCorrections = 0;
-  int32_t mSumCrcErrors = 0;
-  std::vector<uint8_t> mFrameByteVec;
-  std::vector<uint8_t> mOutVec;
-  std::array<int16_t, 10> mAuStartArr;
+  i16 mSuperFrameSize;
+  i16 mBlockFillIndex = 0;
+  i16 mBlocksInBuffer = 0;
+  i16 mFrameCount = 0;
+  i16 mFrameErrors = 0;
+  i16 mRsErrors = 0;
+  i16 mCrcErrors = 0;
+  i16 mAacErrors = 0;
+  i16 mAacFrames = 0;
+  i16 mSuccessFrames = 0;
+  i32 mSuperFrameSync = 0;
+  i32 mGoodFrames = 0;
+  i32 mTotalCorrections = 0;
+  i32 mSumFrameCount = 0;
+  i32 mSumFrameErrors = 0;
+  i32 mSumRsErrors = 0;
+  i32 mSumCorrections = 0;
+  i32 mSumCrcErrors = 0;
+  std::vector<u8> mFrameByteVec;
+  std::vector<u8> mOutVec;
+  std::array<i16, 10> mAuStartArr;
   FirecodeChecker fc;
 #ifdef  __WITH_FDK_AAC__
   FdkAAC		*aacDecoder;
@@ -101,8 +101,8 @@ private:
   faadDecoder * aacDecoder;
 #endif
 
-  bool _process_super_frame(uint8_t [], int16_t);
-  int _build_aac_file(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer);
+  bool _process_super_frame(u8 [], i16);
+  int _build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer);
 
 signals:
   void signal_show_frame_errors(int);

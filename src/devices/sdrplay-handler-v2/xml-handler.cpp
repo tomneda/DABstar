@@ -5,18 +5,18 @@
 #include	<time.h>
 
 struct kort_woord {
-	uint8_t byte_1;
-	uint8_t byte_2;
+	u8 byte_1;
+	u8 byte_2;
 };
 
 	xmlHandler::xmlHandler (FILE *f, int denominator, int frequency) {
-uint8_t t	= 0;
+u8 t	= 0;
 	xmlFile		= f;
 	this	-> denominator	= denominator;
 	this	-> frequency	= frequency;
 	for (int i = 0; i < 5000; i ++)
 	   fwrite (&t, 1, 1, f);
-	int16_t testWord	= 0xFF;
+	i16 testWord	= 0xFF;
 
 	struct kort_woord *p	= (struct kort_woord *)(&testWord);
 	if (p -> byte_1  == 0xFF)
@@ -43,15 +43,15 @@ QString	topLine = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 }
 
 #define	BLOCK_SIZE	8192
-static int16_t buffer [BLOCK_SIZE];
+static i16 buffer [BLOCK_SIZE];
 static int bufferP	= 0;
-void	xmlHandler::add		(std::complex<int16_t> * data, int count) {
+void	xmlHandler::add		(std::complex<i16> * data, int count) {
 	nrElements	+= 2 * count;
 	for (int i = 0; i < count; i ++) {
 	   buffer [bufferP ++] = real (data [i]);
 	   buffer [bufferP ++] = imag (data [i]);
 	   if (bufferP >= BLOCK_SIZE) {
-	      fwrite (buffer, sizeof (int16_t), BLOCK_SIZE, xmlFile);
+	      fwrite (buffer, sizeof (i16), BLOCK_SIZE, xmlFile);
 	      bufferP = 0;
 	   }
 	}

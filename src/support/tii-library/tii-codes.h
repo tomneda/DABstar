@@ -34,25 +34,25 @@ struct SCacheElem
   QString country;
   QString channel;
   QString ensemble;
-  uint16_t Eid;
-  uint8_t mainId;
-  uint8_t subId;
+  u16 Eid;
+  u8 mainId;
+  u8 subId;
   QString transmitterName;
-  float latitude;
-  float longitude;
-  float power;
+  f32 latitude;
+  f32 longitude;
+  f32 power;
   int altitude;
   int height;
   QString polarization;
-  float frequency;
+  f32 frequency;
   QString direction;
 };
 
 struct SBlackListElem
 {
-  uint16_t Eid;
-  uint8_t mainId;
-  uint8_t subId;
+  u16 Eid;
+  u8 mainId;
+  u8 subId;
 };
 
 // DLL and ".so" function prototypes
@@ -67,19 +67,19 @@ public:
   ~TiiHandler();
 
   bool fill_cache_from_tii_file(const QString &);
-  const SCacheElem * get_transmitter_name(const QString &, uint16_t, uint8_t, uint8_t);
-  void get_coordinates(float *, float *, float *, const QString &, const QString &);
-  [[nodiscard]] float distance(float, float, float, float) const;
-  float corner(float, float, float, float) const;
-  bool is_black(uint16_t, uint8_t, uint8_t);
-  void set_black(uint16_t, uint8_t, uint8_t);
+  const SCacheElem * get_transmitter_name(const QString &, u16, u8, u8);
+  void get_coordinates(f32 *, f32 *, f32 *, const QString &, const QString &);
+  [[nodiscard]] f32 distance(f32, f32, f32, f32) const;
+  f32 corner(f32, f32, f32, f32) const;
+  bool is_black(u16, u8, u8);
+  void set_black(u16, u8, u8);
   bool is_valid() const;
   void loadTable(const QString & iTiiFileName);
 
 private:
   std::vector<SBlackListElem> mBlackListVec;
   std::vector<SCacheElem> mContentCacheVec;
-  uint8_t mShift = 0;
+  u8 mShift = 0;
   QString mTiiFileName;
   void * mpTiiLibHandler = nullptr;
   QLibrary * mphandle = nullptr;
@@ -88,11 +88,11 @@ private:
   TpFn_loadTable mpFn_loadTable = nullptr;
 
   bool load_library();
-  float _convert(const QString & s) const;
-  uint16_t _get_E_id(const QString & s) const;
-  uint8_t _get_main_id(const QString & s) const;
-  uint8_t _get_sub_id(const QString & s) const;
-  double _distance_2(float, float, float, float) const;
+  f32 _convert(const QString & s) const;
+  u16 _get_E_id(const QString & s) const;
+  u8 _get_main_id(const QString & s) const;
+  u8 _get_sub_id(const QString & s) const;
+  f64 _distance_2(f32, f32, f32, f32) const;
   int _read_columns(std::vector<QString> & oV, const char * b, int N) const;
   void _read_file(QFile & fp);
   char * _eread(char * buffer, int amount, QFile & fp) const;

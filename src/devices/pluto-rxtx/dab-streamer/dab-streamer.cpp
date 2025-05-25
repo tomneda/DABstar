@@ -38,12 +38,12 @@
 #include  "dab-streamer.h"
 #include  "pluto-rxtx-handler.h"
 
-static inline int64_t getMyTime(void)
+static inline i64 getMyTime(void)
 {
   struct timeval tv;
 
   gettimeofday(&tv, NULL);
-  return ((int64_t)tv.tv_sec * 1000000 + (int64_t)tv.tv_usec);
+  return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
 }
 
 dabStreamer::dabStreamer(int inRate, int outRate, plutoHandler * generator) :
@@ -57,20 +57,20 @@ dabStreamer::dabStreamer(int inRate, int outRate, plutoHandler * generator) :
   this->outRate = outRate;
   this->generator = generator;
 
-  oscillatorTable = new cmplx[outRate];
+  oscillatorTable = new cf32[outRate];
   for (int i = 0; i < outRate; i++)
   {
-    oscillatorTable[i] = cmplx(cos(2 * M_PI * (float)i / outRate), sin(2 * M_PI * (float)i / outRate));
+    oscillatorTable[i] = cf32(cos(2 * M_PI * (f32)i / outRate), sin(2 * M_PI * (f32)i / outRate));
   }
 
   running.store(false);
   pos = 0;
   nextPhase = 0;
 
-  sinTable = new float[outRate];
+  sinTable = new f32[outRate];
   for (int i = 0; i < outRate; i++)
   {
-    sinTable[i] = sin((float)i / outRate * 2 * M_PI);
+    sinTable[i] = sin((f32)i / outRate * 2 * M_PI);
   }
 
   rt_pos = 0;
@@ -113,9 +113,9 @@ void dabStreamer::stop(void)
   threadHandle.join();
 }
 
-void dabStreamer::audioOutput(float * v, int amount)
+void dabStreamer::audioOutput(f32 * v, int amount)
 {
-  float lBuffer[2 * amount];
+  f32 lBuffer[2 * amount];
 
   while (pcmBuffer.GetRingBufferWriteAvailable() < 2 * amount)
   {
@@ -123,7 +123,7 @@ void dabStreamer::audioOutput(float * v, int amount)
   }
   for (int i = 0; i < amount; i++)
   {
-    cmplx x = cmplx(v[2 * i], v[2 * i + 1]);
+    cf32 x = cf32(v[2 * i], v[2 * i + 1]);
     x = lowPassFilter.Pass(x);
     lBuffer[2 * i + 0] = real(x);
     lBuffer[2 * i + 1] = imag(x);
@@ -147,9 +147,9 @@ void dabStreamer::addName(const std::string n)
 
 void dabStreamer::run()
 {
-  int32_t outputLimit = 2 * outRate / 5;  // in single values
+  i32 outputLimit = 2 * outRate / 5;  // in single values
   upFilter theFilter(15, inRate, outRate);
-  uint64_t nextStop;
+  u64 nextStop;
 
   //	the rds text will be the name of the file that is being played
   rds_info.pi = 0x10f0;
@@ -165,11 +165,11 @@ void dabStreamer::run()
 
   running.store(true);
 
-  float lBuf[inRate / 5];
+  f32 lBuf[inRate / 5];
   while (running.load())
   {
     int readCount;
-    //	   uint64_t currentTime      = getMyTime ();
+    //	   u64 currentTime      = getMyTime ();
     //
     //	check to see if  we need/can update the rds text
     int rdsCount = rdsBuffer.GetRingBufferReadAvailable();
@@ -190,8 +190,8 @@ void dabStreamer::run()
 
     while (running.load() && (pcmBuffer.GetRingBufferReadAvailable() < inRate / 10))
     {
-      //	      cmplx filler [48];
-      //	      memset (filler, 0, 48 * sizeof (cmplx));
+      //	      cf32 filler [48];
+      //	      memset (filler, 0, 48 * sizeof (cf32));
       usleep(10000);
     }
 
@@ -202,35 +202,35 @@ void dabStreamer::run()
     readCount = pcmBuffer.getDataFromBuffer(lBuf, inRate / 10);
     for (int i = 0; i < readCount / 2; i++)
     {
-      cmplx v = cmplx(4 * lBuf[2 * i], 4 * lBuf[2 * i + 1]);
-      cmplx lbuf[outRate / inRate];
+      cf32 v = cf32(4 * lBuf[2 * i], 4 * lBuf[2 * i + 1]);
+      cf32 lbuf[outRate / inRate];
       theFilter.Filter(v, lbuf);
-      modulateData((float *)lbuf, outRate / inRate, 2);
+      modulateData((f32 *)lbuf, outRate / inRate, 2);
     }
   }
 }
 
 //
 //	Preemphasis filter derived from the one by Jonti (Jonathan Olds)
-static double a0 = 5.309858008;
-static double a1 = -4.794606188;
-static double b1 = 0.4847481783;
+static f64 a0 = 5.309858008;
+static f64 a1 = -4.794606188;
+static f64 b1 = 0.4847481783;
 
-float sample;
+f32 sample;
 struct sample_i
 {
-  float l;
-  float r;
+  f32 l;
+  f32 r;
 };
 
 struct sample_i samp_s;
 
 struct sample_i preemp(struct sample_i in)
 {
-  static double x_l = 0;
-  static double x_r = 0;
-  static double y_l = 0;
-  static double y_r = 0;
+  static f64 x_l = 0;
+  static f64 x_r = 0;
+  static f64 y_l = 0;
+  static f64 y_r = 0;
   struct sample_i res;
 
   y_l = a0 * in.l + a1 * x_l - b1 * y_l;
@@ -242,41 +242,41 @@ struct sample_i preemp(struct sample_i in)
   return res;
 }
 
-float preemp(float in)
+f32 preemp(f32 in)
 {
-  static double x = 0;
-  static double y = 0;
+  static f64 x = 0;
+  static f64 y = 0;
 
   y = a0 * in + a1 * x - b1 * y;
   x = in;
   return y;
 }
 
-float lowPass(float s)
+f32 lowPass(f32 s)
 {
-  static double out = 0;
+  static f64 out = 0;
   out = out + 0.05 * (s - out);
   return out;
 }
 
-void dabStreamer::modulateData(float * bo, int amount, int channels)
+void dabStreamer::modulateData(f32 * bo, int amount, int channels)
 {
   int i;
 
   for (i = 0; i < amount; i++)
   {
-    //	   double clock		= 2 * M_PI * (double)pos * 19000.0 / outRate;
+    //	   f64 clock		= 2 * M_PI * (f64)pos * 19000.0 / outRate;
 
     //	taking 3468 as period works fine
-    int ind_1 = (int)(((int64_t)pos * 19000) % outRate);
-    int ind_2 = (int)(((int64_t)pos * 19000 * 2) % outRate);
-    int ind_3 = (int)(((int64_t)pos * 19000 * 3) % outRate);
-    int ind_4 = (int)(((int64_t)pos * 19000 / 16) % outRate);
-    double pilot = sinTable[ind_1];
-    double carrier = sinTable[ind_2];
-    double rds_carrier = 4.0 * sinTable[ind_3];
-    double symclk = sinTable[ind_4];
-    double bit_d = 0;
+    int ind_1 = (int)(((i64)pos * 19000) % outRate);
+    int ind_2 = (int)(((i64)pos * 19000 * 2) % outRate);
+    int ind_3 = (int)(((i64)pos * 19000 * 3) % outRate);
+    int ind_4 = (int)(((i64)pos * 19000 / 16) % outRate);
+    f64 pilot = sinTable[ind_1];
+    f64 carrier = sinTable[ind_2];
+    f64 rds_carrier = 4.0 * sinTable[ind_3];
+    f64 symclk = sinTable[ind_4];
+    f64 bit_d = 0;
 
     if ((symclk_p <= 0) && (symclk > 0))
     {
@@ -311,13 +311,13 @@ void dabStreamer::modulateData(float * bo, int amount, int channels)
       //
       //	sound elements are preempted
       samp_s = preemp(samp_s);
-      double lpr = (samp_s.l + samp_s.r);
-      double lmr = (samp_s.l - samp_s.r);
+      f64 lpr = (samp_s.l + samp_s.r);
+      f64 lmr = (samp_s.l - samp_s.r);
 
       //	the rds signal
       //
       //	and build up the resulting sample
-      float sym = lowPass(fabs(symclk) * bit_d);
+      f32 sym = lowPass(fabs(symclk) * bit_d);
       sample = 0.50 * lpr + 0.05 * pilot + 0.35 * lmr * carrier +
                //	                          lmrFilter. Pass (0.85	* lmr * carrier) +
                10 * sym * rds_carrier;
@@ -355,11 +355,11 @@ void dabStreamer::modulateData(float * bo, int amount, int channels)
   }
 }
 
-uint16_t dabStreamer::rds_crc(uint16_t in)
+u16 dabStreamer::rds_crc(u16 in)
 {
   int i;
-  uint16_t reg = 0;
-  static const uint16_t rds_poly = 0x5B9;
+  u16 reg = 0;
+  static const u16 rds_poly = 0x5B9;
 
   for (i = 16; i > 0; i--)
   {
@@ -381,10 +381,10 @@ uint16_t dabStreamer::rds_crc(uint16_t in)
   return (reg & ((1 << 10) - 1));
 }
 
-void dabStreamer::rds_bits_to_values(char * out, uint16_t in, int len)
+void dabStreamer::rds_bits_to_values(char * out, u16 in, int len)
 {
   int n = len;
-  uint16_t mask;
+  u16 mask;
 
   while (n--)
   {
@@ -396,13 +396,13 @@ void dabStreamer::rds_bits_to_values(char * out, uint16_t in, int len)
 void dabStreamer::rds_serialize(struct rds_group_s * group, char flags)
 {
   int n = 4;
-  static const uint16_t rds_checkwords[] = { 0xFC, 0x198, 0x168, 0x1B4, 0x350, 0x0 };
+  static const u16 rds_checkwords[] = { 0xFC, 0x198, 0x168, 0x1B4, 0x350, 0x0 };
 
   while (n--)
   {
     int start = RDS_BLOCK_LEN * n;
-    uint16_t block = group->blocks[n];
-    uint16_t crc;
+    u16 block = group->blocks[n];
+    u16 crc;
 
     if (!((flags >> n) & 0x1))
     {
@@ -457,7 +457,7 @@ void dabStreamer::rds_init_groups(struct rds_info_s * info)
 void dabStreamer::rds_group_0A_update(void)
 {
   static int af_pos = 0, ps_pos = 0;
-  uint16_t di = (group_0a.info_block->di >> (ps_pos >> 1)) & 0x1;
+  u16 di = (group_0a.info_block->di >> (ps_pos >> 1)) & 0x1;
 
   group_0a.blocks[index_B] = (group_0a.blocks[index_B] & 0xfff8) | (di << 2) | (ps_pos >> 1);
   group_0a.blocks[index_C] = group_0a.info_block->af[af_pos];

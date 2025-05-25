@@ -42,7 +42,7 @@ public:
   virtual_dataHandler() = default;
   virtual ~virtual_dataHandler() = default;
 
-  virtual void add_mscDatagroup(const std::vector<uint8_t> &)  {}
+  virtual void add_mscDatagroup(const std::vector<u8> &)  {}
 };
 
 #endif

@@ -52,30 +52,30 @@ public:
   explicit RawFileHandler(const QString & iFilename);
   ~RawFileHandler() override;
 
-  int32_t getSamples(cmplx *, int32_t) override;
-  int32_t Samples() override;
-  bool restartReader(int32_t) override;
+  i32 getSamples(cf32 *, i32) override;
+  i32 Samples() override;
+  bool restartReader(i32) override;
   void stopReader() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   bool isFileInput() override;
-  void setVFOFrequency(int32_t) override;
+  void setVFOFrequency(i32) override;
   int getVFOFrequency() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   QString deviceName() override;
 
 private:
   QFrame myFrame;
   QString fileName;
-  RingBuffer<cmplx> _I_Buffer;
+  RingBuffer<cf32> _I_Buffer;
   FILE * filePointer = nullptr;
   RawReader * readerTask = nullptr;
   std::atomic<bool> running = false;
 
 public slots:
-  void setProgress(int, float);
+  void setProgress(int, f32);
   void slot_handle_cb_loop_file(const bool iChecked);
 };
 

@@ -24,7 +24,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-//	special instantiation for pairs of int16_t
+//	special instantiation for pairs of i16
 //	to be used for the faad decoder
 #ifndef	__CONVERTER_2
 #define	__CONVERTER_2
@@ -34,25 +34,25 @@
 
 class	converter_2 {
 private:
-	int32_t		rateIn;	
-	int32_t		rateOut;
-	int32_t		blockLength;
-	int32_t		width;
+	i32		rateIn;
+	i32		rateOut;
+	i32		blockLength;
+	i32		width;
 	DSPCOMPLEX	*buffer;
-	int32_t		bufferP;
-	long double	floatTime;
-	long double	inPeriod;
-	long double	outPeriod;
+	i32		bufferP;
+	long f64	floatTime;
+	long f64	inPeriod;
+	long f64	outPeriod;
 //
 //	sin (-a) = - sin (--a)
-double sincPI (double a) {
+f64 sincPI (f64 a) {
 	if (a == 0)
 	   return 1.0;
 	return sin (M_PI * a) / (M_PI * a);
 }
 //
 //	cos (-a) = cos (a)
-double HannCoeff (double a, int16_t width) {
+f64 HannCoeff (f64 a, i16 width) {
 DSPFLOAT x = 2 * M_PI * (0.5 + a / width);
 	if (x < 0)
 	   x = - x;
@@ -61,19 +61,19 @@ DSPFLOAT x = 2 * M_PI * (0.5 + a / width);
 //
 //	Shannon applied to floatTime
 //	We determine the entry in the table acting as zero
-DSPCOMPLEX	getInterpolate (double floatTime) {
-int32_t	index	= (int32_t)(floor (floatTime * rateIn));
-int32_t	i;
+DSPCOMPLEX	getInterpolate (f64 floatTime) {
+i32	index	= (i32)(floor (floatTime * rateIn));
+i32	i;
 DSPCOMPLEX	res	= 0;
-double	localTime = floatTime - index * inPeriod;
+f64	localTime = floatTime - index * inPeriod;
 //
 //	Due to rounding of the (floating) computation, it
 //	might happen that index + i is sometimes out of bounds
 	for (i = - width / 2; i < width / 2; i ++) {
 	   if (index + i < 0 || index + i >= blockLength + width)
 	      continue;
-	   double ag = (localTime - i * inPeriod) / inPeriod;
-	   double factor = HannCoeff (ag, width) * sincPI (ag);
+	   f64 ag = (localTime - i * inPeriod) / inPeriod;
+	   f64 factor = HannCoeff (ag, width) * sincPI (ag);
 	   res	=  res + DSPCOMPLEX (real (buffer [index + i]) * factor,
 	                             imag (buffer [index + i]) * factor);
 	}
@@ -82,10 +82,10 @@ double	localTime = floatTime - index * inPeriod;
 }
 //
 public:
-		converter_2 (int32_t	rateIn,
-	                     int32_t	rateOut,
-	                     int32_t	blockLength,
-	                     int16_t	width) {
+		converter_2 (i32	rateIn,
+	                     i32	rateOut,
+	                     i32	blockLength,
+	                     i16	width) {
 	this	-> rateIn	= rateIn;
 	this	-> rateOut	= rateOut;
 	this	-> blockLength	= blockLength;
@@ -111,11 +111,11 @@ public:
 //
 //	Whenever the buffer filling reaches blockLength + width,
 //	we map the blockLength samples in the middle
-bool	add	(int16_t in_re,  int16_t in_im,
-	         int16_t *out, int16_t *nOut) {
-int32_t	i;
+bool	add	(i16 in_re,  i16 in_im,
+	         i16 *out, i16 *nOut) {
+i32	i;
 int	outP		= 0;
-double	endTime;
+f64	endTime;
 
 	buffer [bufferP ++] = DSPCOMPLEX (in_re, in_im);
 	if (bufferP < blockLength + width)
@@ -146,7 +146,7 @@ double	endTime;
 	return true;
 }
 
-int32_t	getOutputSize	(void) {
+i32	getOutputSize	(void) {
 	return rateOut * blockLength / rateIn;
 }
 };

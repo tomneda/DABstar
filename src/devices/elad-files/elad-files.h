@@ -41,9 +41,9 @@ Q_OBJECT
 public:
 			eladFiles	(QString);
 	       		~eladFiles	();
-	int32_t		getSamples	(cmplx *, int32_t);
-	int32_t		Samples		();
-	bool		restartReader	(int32_t);
+	i32		getSamples	(cf32 *, i32);
+	i32		Samples		();
+	bool		restartReader	(i32);
 	void		stopReader	();
 	void		show		();	
 	void		hide		();
@@ -51,17 +51,17 @@ public:
 private:
 	QFrame		myFrame;
 	QString		fileName;
-	RingBuffer<uint8_t>	_I_Buffer;
-	RingBuffer<cmplx> _O_Buffer;
-	int32_t		bufferSize;
+	RingBuffer<u8>	_I_Buffer;
+	RingBuffer<cf32> _O_Buffer;
+	i32		bufferSize;
 	FILE		*filePointer;
 	eladReader	*readerTask;
 	std::atomic<bool>	running;
 
 	int             iqSize;
-        cmplx convBuffer  [ELAD_RATE / 1000 + 1];
+        cf32 convBuffer  [ELAD_RATE / 1000 + 1];
         int             mapTable_int    [DAB_RATE / 1000];
-        float           mapTable_float  [DAB_RATE / 1000];
+        f32           mapTable_float  [DAB_RATE / 1000];
         int             convIndex;
 	std::atomic<bool> iqSwitch;
 

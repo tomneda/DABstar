@@ -25,8 +25,8 @@
 #include	<time.h>
 
 struct kort_woord {
-	uint8_t byte_1;
-	uint8_t byte_2;
+	u8 byte_1;
+	u8 byte_2;
 };
 
 	XmlFileWriter::XmlFileWriter (FILE *f,
@@ -37,7 +37,7 @@ struct kort_woord {
                                 QString	deviceName,
                                 QString	deviceModel,
                                 QString	recorderVersion) {
-uint8_t t	= 0;
+u8 t	= 0;
 	xmlFile		= f;
 	this	-> nrBits	= nrBits;
 	this	-> container	= container;
@@ -49,7 +49,7 @@ uint8_t t	= 0;
 
 	for (int i = 0; i < 5000; i ++)
 	   fwrite (&t, 1, 1, f);
-	int16_t testWord	= 0xFF;
+	i16 testWord	= 0xFF;
 
 	struct kort_woord *p	= (struct kort_woord *)(&testWord);
 	if (p -> byte_1  == 0xFF)
@@ -76,43 +76,43 @@ QString	topLine = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 }
 
 #define	BLOCK_SIZE	8192
-static int16_t buffer_int16 [BLOCK_SIZE];
+static i16 buffer_int16 [BLOCK_SIZE];
 static int bufferP_int16	= 0;
-void	XmlFileWriter::add	(std::complex<int16_t> * data, int count) {
+void	XmlFileWriter::add	(std::complex<i16> * data, int count) {
 	nrElements	+= 2 * count;
 	for (int i = 0; i < count; i ++) {
 	   buffer_int16 [bufferP_int16 ++] = real (data [i]);
 	   buffer_int16 [bufferP_int16 ++] = imag (data [i]);
 	   if (bufferP_int16 >= BLOCK_SIZE) {
-	      fwrite (buffer_int16, sizeof (int16_t), BLOCK_SIZE, xmlFile);
+	      fwrite (buffer_int16, sizeof (i16), BLOCK_SIZE, xmlFile);
 	      bufferP_int16 = 0;
 	   }
 	}
 }
 
-static uint8_t buffer_uint8 [BLOCK_SIZE];
+static u8 buffer_uint8 [BLOCK_SIZE];
 static int bufferP_uint8	= 0;
-void	XmlFileWriter::add	(std::complex<uint8_t> * data, int count) {
+void	XmlFileWriter::add	(std::complex<u8> * data, int count) {
 	nrElements	+= 2 * count;
 	for (int i = 0; i < count; i ++) {
 	   buffer_uint8 [bufferP_uint8 ++] = real (data [i]);
 	   buffer_uint8 [bufferP_uint8 ++] = imag (data [i]);
 	   if (bufferP_uint8 >= BLOCK_SIZE) {
-	      fwrite (buffer_uint8, sizeof (uint8_t), BLOCK_SIZE, xmlFile);
+	      fwrite (buffer_uint8, sizeof (u8), BLOCK_SIZE, xmlFile);
 	      bufferP_uint8 = 0;
 	   }
 	}
 }
 
-static int8_t buffer_int8 [BLOCK_SIZE];
+static i8 buffer_int8 [BLOCK_SIZE];
 static int bufferP_int8	= 0;
-void	XmlFileWriter::add	(std::complex<int8_t> * data, int count) {
+void	XmlFileWriter::add	(std::complex<i8> * data, int count) {
 	nrElements	+= 2 * count;
 	for (int i = 0; i < count; i ++) {
 	   buffer_int8 [bufferP_int8 ++] = real (data [i]);
 	   buffer_int8 [bufferP_int8 ++] = imag (data [i]);
 	   if (bufferP_int8 >= BLOCK_SIZE) {
-	      fwrite (buffer_int8, sizeof (int8_t), BLOCK_SIZE, xmlFile);
+	      fwrite (buffer_int8, sizeof (i8), BLOCK_SIZE, xmlFile);
 	      bufferP_int8 = 0;
 	   }
 	}

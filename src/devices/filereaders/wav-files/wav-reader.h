@@ -34,7 +34,7 @@ class	WavFileHandler;
 class	WavReader: public QThread {
 Q_OBJECT
 public:
-	WavReader(WavFileHandler *, SNDFILE *, RingBuffer<cmplx> *);
+	WavReader(WavFileHandler *, SNDFILE *, RingBuffer<cf32> *);
 	~WavReader();
 	void startReader();
 	void stopReader();
@@ -43,14 +43,14 @@ public:
 private:
 	virtual void run();
 	SNDFILE	*filePointer;
-	RingBuffer<cmplx> *theBuffer;
-	uint64_t period;
+	RingBuffer<cf32> *theBuffer;
+	u64 period;
 	std::atomic<bool> running;
 	std::atomic<bool> continuous;
 	WavFileHandler *parent;
-	int64_t	fileLength;
+	i64	fileLength;
 signals:
-	void setProgress(int, float);
+	void setProgress(int, f32);
 };
 
 #endif

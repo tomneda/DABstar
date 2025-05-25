@@ -108,8 +108,8 @@ public:
 
 class	ppmRequest: public generalCommand {
 public:
-	double	ppmValue;
-	ppmRequest (double ppmValue):
+	f64	ppmValue;
+	ppmRequest (f64 ppmValue):
 	           generalCommand (PPM_REQUEST) {
 	   this	-> ppmValue	= ppmValue;
 	}

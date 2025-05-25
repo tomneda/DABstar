@@ -36,16 +36,16 @@
 
 struct protectionProfile
 {
-  int16_t bitRate;
-  int16_t protLevel;
-  int16_t L1;
-  int16_t L2;
-  int16_t L3;
-  int16_t L4;
-  int16_t PI1;
-  int16_t PI2;
-  int16_t PI3;
-  int16_t PI4;
+  i16 bitRate;
+  i16 protLevel;
+  i16 L1;
+  i16 L2;
+  i16 L3;
+  i16 L4;
+  i16 PI1;
+  i16 PI2;
+  i16 PI3;
+  i16 PI4;
 } profileTable[] = {{ 32,  5,  3,  4,  17,  0,  5,  3,  2,  -1 },
                     { 32,  4,  3,  3,  18,  0,  11, 6,  5,  -1 },
                     { 32,  3,  3,  4,  14,  3,  15, 9,  6,  8 },
@@ -128,7 +128,7 @@ struct protectionProfile
                     { 384, 1,  12, 28, 245, 3,  24, 20, 14, 23 },
                     { 0,   -1, -1, -1, -1,  -1, -1, -1, -1, -1 }};
 
-static int16_t findIndex(int16_t bitRate, int16_t protLevel)
+static i16 findIndex(i16 bitRate, i16 protLevel)
 {
 
   for (int i = 0; profileTable[i].bitRate != 0; i++)
@@ -150,20 +150,20 @@ static int16_t findIndex(int16_t bitRate, int16_t protLevel)
   *	The bitRate and the protectionLevel determine the 
   *	depuncturing scheme.
   */
-UepProtection::UepProtection(int16_t bitRate, int16_t protLevel) :
+UepProtection::UepProtection(i16 bitRate, i16 protLevel) :
   Protection(bitRate)
 {
-  int16_t index;
-  int16_t viterbiCounter = 0;
-  int16_t L1;
-  int16_t L2;
-  int16_t L3;
-  int16_t L4;
-  const int8_t * PI1;
-  const int8_t * PI2;
-  const int8_t * PI3;
-  const int8_t * PI4;
-  const int8_t * PI_X;
+  i16 index;
+  i16 viterbiCounter = 0;
+  i16 L1;
+  i16 L2;
+  i16 L3;
+  i16 L4;
+  const i8 * PI1;
+  const i8 * PI2;
+  const i8 * PI3;
+  const i8 * PI4;
+  const i8 * PI_X;
 
   fprintf(stderr, "protLevel %d, bitRate %d outSize = %d\n", protLevel, bitRate, outSize);
   index = findIndex(bitRate, protLevel);
@@ -193,7 +193,7 @@ UepProtection::UepProtection(int16_t bitRate, int16_t protLevel) :
   PI_X = get_PCodes(8 - 1);
   //
   //	We prepare a mapping table with the given punctures
-  memset(indexTable.data(), 0, (4 * outSize + 24) * sizeof(uint8_t));
+  memset(indexTable.data(), 0, (4 * outSize + 24) * sizeof(u8));
   for (int i = 0; i < L1; i++)
   {
     for (int j = 0; j < 128; j++)

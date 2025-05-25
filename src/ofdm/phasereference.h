@@ -50,18 +50,18 @@ public:
   PhaseReference(const DabRadio * const ipRadio, const ProcessParams * const ipParam);
   ~PhaseReference() override;
 
-  [[nodiscard]] int32_t correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const float iThreshold);
-  [[nodiscard]] int16_t estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV);
-  [[nodiscard]] static float phase(const std::vector<cmplx> & iV, int32_t iTs);
+  [[nodiscard]] i32 correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const f32 iThreshold);
+  [[nodiscard]] i16 estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV);
+  [[nodiscard]] static f32 phase(const std::vector<cf32> & iV, i32 iTs);
   void set_sync_on_strongest_peak(bool sync);
 
-  static constexpr int16_t IDX_NOT_FOUND = 10000;
+  static constexpr i16 IDX_NOT_FOUND = 10000;
 
 private:
-  static constexpr int16_t SEARCHRANGE = (2 * 35);
+  static constexpr i16 SEARCHRANGE = (2 * 35);
 
-  const int32_t mFramesPerSecond;
-  int32_t mDisplayCounter = 0;
+  const i32 mFramesPerSecond;
+  i32 mDisplayCounter = 0;
   bool mSyncOnStrongestPeak = false;
 
   alignas(64) TArrayTu mFftInBuffer;
@@ -69,14 +69,14 @@ private:
   fftwf_plan mFftPlanFwd;
   fftwf_plan mFftPlanBwd;
 
-  RingBuffer<float> * const mpResponse;
-  std::vector<float> mCorrPeakValues;
-  std::vector<float> mMeanCorrPeakValues;
-  std::vector<float> mCorrelationVector;
-  std::vector<float> mRefArg;
+  RingBuffer<f32> * const mpResponse;
+  std::vector<f32> mCorrPeakValues;
+  std::vector<f32> mMeanCorrPeakValues;
+  std::vector<f32> mCorrelationVector;
+  std::vector<f32> mRefArg;
 
 signals:
-  void signal_show_correlation(float, const QVector<int> &);
+  void signal_show_correlation(f32, const QVector<int> &);
 };
 
 #endif

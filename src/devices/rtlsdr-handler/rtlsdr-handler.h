@@ -57,26 +57,26 @@ class XmlFileWriter;
 typedef struct rtlsdr_dev rtlsdr_dev_t;
 
 extern "C" {
-typedef void (* rtlsdr_read_async_cb_t)(uint8_t * buf, uint32_t len, void * ctx);
-typedef int (* pfnrtlsdr_open )(rtlsdr_dev_t **, uint32_t);
+typedef void (* rtlsdr_read_async_cb_t)(u8 * buf, u32 len, void * ctx);
+typedef int (* pfnrtlsdr_open )(rtlsdr_dev_t **, u32);
 typedef int (* pfnrtlsdr_close)(rtlsdr_dev_t *);
 typedef int (* pfnrtlsdr_get_usb_strings)(rtlsdr_dev_t *, char *, char *, char *);
-typedef int (* pfnrtlsdr_set_center_freq)(rtlsdr_dev_t *, uint32_t);
-typedef int (* pfnrtlsdr_set_tuner_bandwidth)(rtlsdr_dev_t *, uint32_t);
-typedef uint32_t (* pfnrtlsdr_get_center_freq)(rtlsdr_dev_t *);
+typedef int (* pfnrtlsdr_set_center_freq)(rtlsdr_dev_t *, u32);
+typedef int (* pfnrtlsdr_set_tuner_bandwidth)(rtlsdr_dev_t *, u32);
+typedef u32 (* pfnrtlsdr_get_center_freq)(rtlsdr_dev_t *);
 typedef int (* pfnrtlsdr_get_tuner_gains)(rtlsdr_dev_t *, int *);
 typedef int (* pfnrtlsdr_set_tuner_gain_mode)(rtlsdr_dev_t *, int);
 typedef int (* pfnrtlsdr_set_agc_mode)(rtlsdr_dev_t *, int);
-typedef int (* pfnrtlsdr_set_sample_rate)(rtlsdr_dev_t *, uint32_t);
+typedef int (* pfnrtlsdr_set_sample_rate)(rtlsdr_dev_t *, u32);
 typedef int (* pfnrtlsdr_get_sample_rate)(rtlsdr_dev_t *);
 typedef int (* pfnrtlsdr_set_tuner_gain)(rtlsdr_dev_t *, int);
 typedef int (* pfnrtlsdr_get_tuner_gain)(rtlsdr_dev_t *);
 typedef int (* pfnrtlsdr_reset_buffer)(rtlsdr_dev_t *);
-typedef int (* pfnrtlsdr_read_async)(rtlsdr_dev_t *, rtlsdr_read_async_cb_t, void *, uint32_t, uint32_t);
+typedef int (* pfnrtlsdr_read_async)(rtlsdr_dev_t *, rtlsdr_read_async_cb_t, void *, u32, u32);
 typedef int (* pfnrtlsdr_set_bias_tee)(rtlsdr_dev_t *, int);
 typedef int (* pfnrtlsdr_cancel_async)(rtlsdr_dev_t *);
 typedef int (* pfnrtlsdr_set_direct_sampling)(rtlsdr_dev_t *, int);
-typedef uint32_t (* pfnrtlsdr_get_device_count)();
+typedef u32 (* pfnrtlsdr_get_device_count)();
 typedef int (* pfnrtlsdr_set_freq_correction)(rtlsdr_dev_t *, int);
 typedef int (* pfnrtlsdr_set_freq_correction_ppb)(rtlsdr_dev_t *, int);
 typedef char * (* pfnrtlsdr_get_device_name)(int);
@@ -93,24 +93,24 @@ Q_OBJECT
 public:
   RtlSdrHandler(QSettings * s, const QString & recorderVersion);
   ~RtlSdrHandler() override;
-  void setVFOFrequency(int32_t) override;
-  int32_t getVFOFrequency() override;
-  bool restartReader(int32_t) override;
+  void setVFOFrequency(i32) override;
+  i32 getVFOFrequency() override;
+  bool restartReader(i32) override;
   void stopReader() override;
-  int32_t getSamples(cmplx *, int32_t) override;
-  int32_t Samples() override;
+  i32 getSamples(cf32 *, i32) override;
+  i32 Samples() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   QString deviceName() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   bool isFileInput() override;
-  int16_t maxGain();
-  bool detect_overload(uint8_t *buf, int len);
+  i16 maxGain();
+  bool detect_overload(u8 *buf, int len);
 
   //	These need to be visible for the separate usb handling thread
-  RingBuffer<std::complex<uint8_t>> _I_Buffer;
+  RingBuffer<std::complex<u8>> _I_Buffer;
   pfnrtlsdr_read_async rtlsdr_read_async;
   struct rtlsdr_dev * theDevice;
   std::atomic<bool> isActive;
@@ -118,12 +118,12 @@ public:
 private:
   QFrame myFrame;
   QSettings * rtlsdrSettings;
-  int32_t inputRate;
-  int32_t deviceCount;
+  i32 inputRate;
+  i32 deviceCount;
   QLibrary * phandle;
   dll_driver * workerHandle;
-  int32_t lastFrequency;
-  int16_t gainsCount;
+  i32 lastFrequency;
+  i16 gainsCount;
   QString deviceModel;
   QString recorderVersion;
   FILE * xmlDumper;
@@ -135,7 +135,7 @@ private:
   bool setup_iqDump();
   void close_iqDump();
   std::atomic<bool> iq_dumping;
-  float mapTable[256];
+  f32 mapTable[256];
   bool filtering;
   LowPassFIR theFilter;
   int currentDepth;
@@ -173,7 +173,7 @@ private:
 
 private slots:
   void set_ExternalGain(int);
-  void set_ppmCorrection(double);
+  void set_ppmCorrection(f64);
   void set_bandwidth(int);
   void set_xmlDump();
   void set_iqDump();

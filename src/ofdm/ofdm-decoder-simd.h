@@ -33,38 +33,38 @@ class OfdmDecoder : public QObject
 {
 Q_OBJECT
 public:
-  OfdmDecoder(DabRadio *, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
+  OfdmDecoder(DabRadio *, RingBuffer<cf32> * iqBuffer, RingBuffer<f32> * ipCarrBuffer);
   ~OfdmDecoder() override = default;
 
   struct SLcdData
   {
-    int32_t CurOfdmSymbolNo;
-    float ModQuality;
-    float TestData1;
-    float TestData2;
-    float MeanSigmaSqFreqCorr;
-    float SNR;
+    i32 CurOfdmSymbolNo;
+    f32 ModQuality;
+    f32 TestData1;
+    f32 TestData2;
+    f32 MeanSigmaSqFreqCorr;
+    f32 SNR;
   };
 
   void reset();
   void store_null_symbol_with_tii(const TArrayTu & iV);
   void store_null_symbol_without_tii(const TArrayTu & iV);
   void store_reference_symbol_0(const TArrayTu & iFftBuffer);
-  void decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits);
+  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, std::vector<i16> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);
   void set_soft_bit_gen_type(ESoftBitType iSoftBitType);
   void set_show_nominal_carrier(bool iShowNominalCarrier);
 
-  inline void set_dc_offset(cmplx iDcOffset) { mDcAdc = iDcOffset; };
+  inline void set_dc_offset(cf32 iDcOffset) { mDcAdc = iDcOffset; };
 private:
 
   DabRadio * const mpRadioInterface;
   FreqInterleaver mFreqInterleaver;
 
-  RingBuffer<cmplx> * const mpIqBuffer;
-  RingBuffer<float> * const mpCarrBuffer;
+  RingBuffer<cf32> * const mpIqBuffer;
+  RingBuffer<f32> * const mpCarrBuffer;
 
   ECarrierPlotType mCarrierPlotType = ECarrierPlotType::DEFAULT;
   EIqPlotType mIqPlotType = EIqPlotType::DEFAULT;
@@ -72,52 +72,52 @@ private:
 
   bool mShowNomCarrier = false;
 
-  int32_t mShowCntStatistics = 0;
-  int32_t mShowCntIqScope = 0;
-  int32_t mNextShownOfdmSymbIdx = 1;
-  std::vector<cmplx> mIqVector;
-  std::vector<float> mCarrVector;
-  std::array<int16_t, cK> mMapNomToRealCarrIdx{};
-  std::array<int16_t, cK> mMapNomToFftIdx{};
+  i32 mShowCntStatistics = 0;
+  i32 mShowCntIqScope = 0;
+  i32 mNextShownOfdmSymbIdx = 1;
+  std::vector<cf32> mIqVector;
+  std::vector<f32> mCarrVector;
+  std::array<i16, cK> mMapNomToRealCarrIdx{};
+  std::array<i16, cK> mMapNomToFftIdx{};
 
-  SimdVec<cmplx> mSimdVecFftBinPhaseCorr{2, 1};
-  SimdVec<cmplx> mSimdVecFftBinRaw{0};
-  SimdVec<cmplx> mSimdVecPhaseReferenceNormed{0};
-  SimdVec<cmplx> mSimdVecNomCarrier{0};
-  SimdVec<cmplx> mSimdVecPhaseReference{0};
-  SimdVec<cmplx> mSimdVecTempCmplx{0};
-  SimdVec<float> mSimdVecWeightPerBin{0};
-  SimdVec<float> mSimdVecFftBinWrapped{0};
-  SimdVec<float> mSimdVecFftBinPhaseCorrArg{0};
-  SimdVec<float> mSimdVecFftBinLevel{0};
-  SimdVec<float> mSimdVecFftBinPower{1};
-  SimdVec<float> mSimdVecFftBinPhaseCorrReal{0};
-  SimdVec<float> mSimdVecFftBinPhaseCorrImag{0};
-  SimdVec<float> mSimdVecTemp1Float{2};
-  SimdVec<float> mSimdVecTemp2Float{0};
-  SimdVec<float> mSimdVecDecodingReal{0};
-  SimdVec<float> mSimdVecDecodingImag{0};
-  SimdVec<float> mSimdVecMeanNullPowerWithoutTII{1};
-  SimdVec<float> mSimdVecStdDevSqPhaseVec{1};
-  SimdVec<float> mSimdVecMeanLevel{1};
-  SimdVec<float> mSimdVecMeanPower{1};
-  SimdVec<float> mSimdVecMeanNettoPower{0};
-  SimdVec<float> mSimdVecSigmaSq{3};
-  SimdVec<float> mSimdVecMeanSigmaSq{1};
-  SimdVec<float> mSimdVecMeanNullLevel{0};
-  SimdVec<float> mSimdVecIntegAbsPhase{0};
+  SimdVec<cf32> mSimdVecFftBinPhaseCorr{2, 1};
+  SimdVec<cf32> mSimdVecFftBinRaw{0};
+  SimdVec<cf32> mSimdVecPhaseReferenceNormed{0};
+  SimdVec<cf32> mSimdVecNomCarrier{0};
+  SimdVec<cf32> mSimdVecPhaseReference{0};
+  SimdVec<cf32> mSimdVecTempCmplx{0};
+  SimdVec<f32> mSimdVecWeightPerBin{0};
+  SimdVec<f32> mSimdVecFftBinWrapped{0};
+  SimdVec<f32> mSimdVecFftBinPhaseCorrArg{0};
+  SimdVec<f32> mSimdVecFftBinLevel{0};
+  SimdVec<f32> mSimdVecFftBinPower{1};
+  SimdVec<f32> mSimdVecFftBinPhaseCorrReal{0};
+  SimdVec<f32> mSimdVecFftBinPhaseCorrImag{0};
+  SimdVec<f32> mSimdVecTemp1Float{2};
+  SimdVec<f32> mSimdVecTemp2Float{0};
+  SimdVec<f32> mSimdVecDecodingReal{0};
+  SimdVec<f32> mSimdVecDecodingImag{0};
+  SimdVec<f32> mSimdVecMeanNullPowerWithoutTII{1};
+  SimdVec<f32> mSimdVecStdDevSqPhaseVec{1};
+  SimdVec<f32> mSimdVecMeanLevel{1};
+  SimdVec<f32> mSimdVecMeanPower{1};
+  SimdVec<f32> mSimdVecMeanNettoPower{0};
+  SimdVec<f32> mSimdVecSigmaSq{3};
+  SimdVec<f32> mSimdVecMeanSigmaSq{1};
+  SimdVec<f32> mSimdVecMeanNullLevel{0};
+  SimdVec<f32> mSimdVecIntegAbsPhase{0};
 
-  float mMeanPowerOvrAll = 1.0f;
-  float mAbsNullLevelMin = 0.0f;
-  float mAbsNullLevelGain = 0.0f;
-  float mMeanValue = 1.0f;
-  float mMeanSigmaSqFreqCorr = 0.0f;
-  cmplx mDcAdc{ 0.0f, 0.0f };
-  cmplx mDcFft{ 0.0f, 0.0f };
-  cmplx mDcFftLast{ 0.0f, 0.0f };
+  f32 mMeanPowerOvrAll = 1.0f;
+  f32 mAbsNullLevelMin = 0.0f;
+  f32 mAbsNullLevelGain = 0.0f;
+  f32 mMeanValue = 1.0f;
+  f32 mMeanSigmaSqFreqCorr = 0.0f;
+  cf32 mDcAdc{ 0.0f, 0.0f };
+  cf32 mDcFft{ 0.0f, 0.0f };
+  cf32 mDcFftLast{ 0.0f, 0.0f };
 
   // phase correction LUT to speed up process (there are no (good) SIMD commands for that)
-  static constexpr float cPhaseShiftLimit = 20.0f;
+  static constexpr f32 cPhaseShiftLimit = 20.0f;
 
   TimeMeas mTimeMeas{"ofdm-decoder", 1000};
 
@@ -125,17 +125,17 @@ private:
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SLcdData mLcdData{};
 
-  [[nodiscard]] float _compute_noise_Power() const;
+  [[nodiscard]] f32 _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const TArrayTu & iV);
   void _reset_null_symbol_statistics();
   void _display_iq_and_carr_vectors();
-  // void _volk_mean_filter(float * ioValVec, const float * iValVec, const float iAlpha) const;
-  void _volk_mean_filter_sum(float & ioValSum, const float * iValVec, const float iAlpha) const;
+  // void _volk_mean_filter(f32 * ioValVec, const f32 * iValVec, const f32 iAlpha) const;
+  void _volk_mean_filter_sum(f32 & ioValSum, const f32 * iValVec, const f32 iAlpha) const;
 
-  static cmplx _interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar);
+  static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
 
 signals:
-  void signal_slot_show_iq(int, float);
+  void signal_slot_show_iq(int, f32);
   void signal_show_lcd_data(const SLcdData *);
 };
 

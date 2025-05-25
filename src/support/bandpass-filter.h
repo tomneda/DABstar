@@ -13,18 +13,18 @@
 
 class	BandPassFIR {
 public:
-		BandPassFIR	(int16_t filterSize,
-	                          int32_t low, int32_t high,
-	                          int32_t sampleRate);
+		BandPassFIR	(i16 filterSize,
+	                          i32 low, i32 high,
+	                          i32 sampleRate);
 		~BandPassFIR	();
-cmplx	Pass	(cmplx);
-float		Pass		(float);
+cf32	Pass	(cf32);
+f32		Pass		(f32);
 private:
 
 	int	filterSize;
 	int	sampleRate;
 	int	ip;
-	cmplx *kernel;
-	cmplx *buffer;
+	cf32 *kernel;
+	cf32 *buffer;
 };
 #endif

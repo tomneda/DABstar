@@ -36,15 +36,15 @@
 
 #define  BUFFERSIZE  32768
 
-static inline int64_t getMyTime()
+static inline i64 getMyTime()
 {
   struct timeval tv;
 
   gettimeofday(&tv, nullptr);
-  return ((int64_t)tv.tv_sec * 1000000 + (int64_t)tv.tv_usec);
+  return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
 }
 
-WavReader::WavReader(WavFileHandler * mr, SNDFILE * filePointer, RingBuffer<cmplx> * theBuffer)
+WavReader::WavReader(WavFileHandler * mr, SNDFILE * filePointer, RingBuffer<cf32> * theBuffer)
 {
   this->parent = mr;
   this->filePointer = filePointer;
@@ -78,10 +78,10 @@ void WavReader::stopReader()
 
 void WavReader::run()
 {
-  int32_t bufferSize = 32768;
-  int64_t nextStop;
+  i32 bufferSize = 32768;
+  i64 nextStop;
   int teller = 0;
-  auto * const bi  = make_vla(cmplx, bufferSize);
+  auto * const bi  = make_vla(cf32, bufferSize);
 
   connect(this, SIGNAL (setProgress(int, float)), parent, SLOT (setProgress(int, float)));
   sf_seek(filePointer, 0, SEEK_SET);
@@ -105,20 +105,20 @@ void WavReader::run()
       if (++teller >= 20)
       {
         int xx = sf_seek(filePointer, 0, SEEK_CUR);
-        float progress = (float)xx / fileLength;
-        setProgress((int)(progress * 100), (float)xx / 2048000);
+        f32 progress = (f32)xx / fileLength;
+        setProgress((int)(progress * 100), (f32)xx / 2048000);
         teller = 0;
       }
 
       nextStop += period;
-      int n = sf_readf_float(filePointer, (float *)bi, bufferSize);
+      int n = sf_readf_float(filePointer, (f32 *)bi, bufferSize);
       if (n < bufferSize)
       {
         fprintf(stderr, "End of file reached\n");
         sf_seek(filePointer, 0, SEEK_SET);
         for (int i = n; i < bufferSize; i++)
         {
-          bi[i] = std::complex<float>(0, 0);
+          bi[i] = std::complex<f32>(0, 0);
         }
         if (!continuous.load())
 	      break;

@@ -5,9 +5,9 @@
 int main(int /*argc*/, const char ** /*argv*/)
 {
     SSE2NEON::SSE2NEONTest *test = SSE2NEON::SSE2NEONTest::create();
-    uint32_t passCount = 0;
-    uint32_t failedCount = 0;
-    for (uint32_t i = 0; i < SSE2NEON::IT_LAST; i++) {
+    u32 passCount = 0;
+    u32 failedCount = 0;
+    for (u32 i = 0; i < SSE2NEON::IT_LAST; i++) {
         SSE2NEON::InstructionTest it = SSE2NEON::InstructionTest(i);
         printf("Running Test %s\n",
                SSE2NEON::SSE2NEONTest::getInstructionTestString(it));

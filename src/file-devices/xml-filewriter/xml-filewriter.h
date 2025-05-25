@@ -27,12 +27,12 @@
 #ifndef	__XML_FILEWRITER__
 #define	__XML_FILEWRITER__
 
+#include "glob_data_types.h"
+#include <QString>
+#include <stdint.h>
+#include <cstdio>
+#include <complex>
 #include <QtXml>
-
-#include	<QString>
-#include	<stdint.h>
-#include	<cstdio>
-#include	<complex>
 
 class Blocks	{
 public:
@@ -57,9 +57,9 @@ public:
                     QString);
 	                         
 			~XmlFileWriter		();
-	void		add			(std::complex<int16_t> *, int);
-	void		add			(std::complex<uint8_t> *, int);
-	void		add			(std::complex<int8_t> *, int);
+	void		add			(std::complex<i16> *, int);
+	void		add			(std::complex<u8> *, int);
+	void		add			(std::complex<i8> *, int);
 	void		computeHeader		();
 private:
 	int		nrBits;

@@ -103,7 +103,7 @@ class plutoHandler;
   (((clk ^ bit) << 1) | ((clk ^ 0x1 ^ bit)))
 
 #define NRZ(in) \
-  (double)(((int)((in) & 0x1) << 1) - 1)
+  (f64)(((int)((in) & 0x1) << 1) - 1)
 
 #define  index_A    0
 #define  index_B    1
@@ -112,9 +112,9 @@ class plutoHandler;
 
 struct rds_info_s
 {
-  uint16_t pi;
-  uint16_t af[RDS_AF_MAX];
-  uint16_t di;
+  u16 pi;
+  u16 af[RDS_AF_MAX];
+  u16 di;
   char pty;
   char ps_name[RDS_PS_LEN];
   char radiotext[RDS_RT_MAX];
@@ -123,15 +123,15 @@ struct rds_info_s
 struct rds_group_s
 {
   char bits[RDS_GROUP_LEN];
-  uint16_t blocks[RDS_GROUP_NUMBLOCKS];
+  u16 blocks[RDS_GROUP_NUMBLOCKS];
   int info;
   struct rds_info_s * info_block;
 };
 
 typedef struct
 {
-  float leftChannel;
-  float rightChannel;
+  f32 leftChannel;
+  f32 rightChannel;
 } floatSample;
 
 class dabStreamer : public AudioBase
@@ -139,7 +139,7 @@ class dabStreamer : public AudioBase
 public:
   dabStreamer(int, int, plutoHandler *);
   ~dabStreamer(void);
-  void audioOutput(float *, int);
+  void audioOutput(f32 *, int);
   void addRds(const std::string);
   void addName(const std::string);
   void stop(void);
@@ -147,25 +147,25 @@ private:
   LowPassFIR lowPassFilter;
   BandPassFIR lmrFilter;
   BandPassFIR rdsFilter;
-  RingBuffer<float> pcmBuffer;
+  RingBuffer<f32> pcmBuffer;
   RingBuffer<char> rdsBuffer;
   void run(void);
   std::thread threadHandle;
   int inRate;
   int outRate;
   plutoHandler * generator;
-  cmplx * oscillatorTable;
-  float * sinTable;
-  void modulateData(float *, int, int);
+  cf32 * oscillatorTable;
+  f32 * sinTable;
+  void modulateData(f32 *, int, int);
   std::atomic<bool> running;
   std::atomic<bool> messageIn;
-  float nextPhase;
+  f32 nextPhase;
   int pos;
   char m;
   char e;
   char prev_e;
   int bpos;
-  double symclk_p;
+  f64 symclk_p;
   char symclk_b;
 
   struct rds_group_s * group;
@@ -177,8 +177,8 @@ private:
   struct rds_group_s group_8a;
 
   int rt_pos;
-  uint16_t rds_crc(uint16_t);
-  void rds_bits_to_values(char *, uint16_t, int);
+  u16 rds_crc(u16);
+  void rds_bits_to_values(char *, u16, int);
   void rds_serialize(struct rds_group_s *, char);
   void rds_init_groups(struct rds_info_s * info);
 

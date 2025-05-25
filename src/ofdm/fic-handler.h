@@ -55,12 +55,12 @@ public:
   FicHandler(DabRadio * const iMr);
   ~FicHandler() override = default;
 
-  void process_block(const std::vector<int16_t> & iData, const int32_t iBlkNo);
+  void process_block(const std::vector<i16> & iData, const i32 iBlkNo);
   void stop();
   void restart();
   void start_fic_dump(FILE *);
   void stop_fic_dump();
-  void get_fib_bits(uint8_t *, bool *);
+  void get_fib_bits(u8 *, bool *);
   int  get_fic_decode_ratio_percent();
   void reset_fic_decode_success_ratio() { fic_decode_success_ratio = 0; };
 
@@ -70,27 +70,27 @@ private:
   std::array<std::byte, 4 * 768> fibBits;
   std::array<std::byte, 768> PRBS;
   std::array<std::byte, 256> ficBuffer;
-  std::array<int16_t, 2304> ofdm_input;
-  std::array<uint8_t, 3072 + 24> punctureTable{};
+  std::array<i16, 2304> ofdm_input;
+  std::array<u8, 3072 + 24> punctureTable{};
   std::array<bool, 4> ficValid{ false };
-  int16_t index = 0;
-  int16_t BitsperBlock = 0;
-  int16_t ficno = 0;
+  i16 index = 0;
+  i16 BitsperBlock = 0;
+  i16 ficno = 0;
   FILE * ficDumpPointer = nullptr;
   QMutex ficLocker;
   int fic_block = 0;
   int fic_errors = 0;
   int fic_bits = 0;
   std::atomic<bool> running;
-  void _process_fic_input(int16_t iFicNo, bool * oValid);
+  void _process_fic_input(i16 iFicNo, bool * oValid);
 
   // Saturating up/down-counter in range [0, 10] corresponding
   // to the number of FICs with correct CRC
-  int32_t fic_decode_success_ratio = 0;
+  i32 fic_decode_success_ratio = 0;
 
 signals:
   void show_fic_success(bool);
-  void show_fic_BER(float);
+  void show_fic_BER(f32);
 };
 
 #endif

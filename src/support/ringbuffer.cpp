@@ -15,14 +15,14 @@
 #include "audiofifo.h"
 
 template <>
-RingBufferFactory<uint8_t>::RingBufferFactory()
+RingBufferFactory<u8>::RingBufferFactory()
 {
   create_ringbuffer(EId::FrameBuffer, "FrameBuffer", 2 * 32768);
   create_ringbuffer(EId::DataBuffer,  "DataBuffer",      32768);
 }
 
 template <>
-RingBufferFactory<int16_t>::RingBufferFactory()
+RingBufferFactory<i16>::RingBufferFactory()
 {
   create_ringbuffer(EId::AudioFromDecoder, "AudioFromDecoder", 4096 * 2 /*stereo*/ * 2 /*security*/);
   create_ringbuffer(EId::AudioToOutput,    "AudioToOutput",    SAudioFifo::cAudioFifoSizeSamplesBothChannels, true);
@@ -30,33 +30,33 @@ RingBufferFactory<int16_t>::RingBufferFactory()
 }
 
 template <>
-RingBufferFactory<cmplx16>::RingBufferFactory()
+RingBufferFactory<ci16>::RingBufferFactory()
 {
   create_ringbuffer(EId::DeviceSampleBuffer,  "DeviceSampleBuffer", 4 * 1024 * 1024);
 }
 
 template <>
-RingBufferFactory<float>::RingBufferFactory()
+RingBufferFactory<f32>::RingBufferFactory()
 {
   create_ringbuffer(EId::CarrBuffer,     "CarrBuffer",     2 * 1536);
   create_ringbuffer(EId::ResponseBuffer, "ResponseBuffer", 2 * 2048 /*32768*/);
 }
 
 template <>
-RingBufferFactory<cmplx>::RingBufferFactory()
+RingBufferFactory<cf32>::RingBufferFactory()
 {
   create_ringbuffer(EId::SpectrumBuffer, "SpectrumBuffer",     2048);
   create_ringbuffer(EId::IqBuffer,       "IqBuffer",       2 * 1536);
   create_ringbuffer(EId::CirBuffer,      "CirBuffer",     97 * 2048);
 }
 
-const char * RingBufferFactoryBase::_show_progress_bar(float iPercentStop, float iPercentStart /*= -100*/) const
+const char * RingBufferFactoryBase::_show_progress_bar(f32 iPercentStop, f32 iPercentStart /*= -100*/) const
 {
   char * p = mProgressBarBuffer.data();
   *p++ = '[';
-  const int32_t posStart = (int32_t)((float)cBarWidth * iPercentStart / 100.0f); // < 0 -> no startmarker should be shown
-  const int32_t posStop  = (int32_t)((float)cBarWidth * iPercentStop  / 100.0f);
-  for (int32_t i = 0; i < cBarWidth; ++i)
+  const i32 posStart = (i32)((f32)cBarWidth * iPercentStart / 100.0f); // < 0 -> no startmarker should be shown
+  const i32 posStop  = (i32)((f32)cBarWidth * iPercentStop  / 100.0f);
+  for (i32 i = 0; i < cBarWidth; ++i)
   {
     if      (i == posStart || i == posStop) *p++ = '|';
     else if (i >  posStart && i <  posStop) *p++ = '=';
@@ -68,11 +68,11 @@ const char * RingBufferFactoryBase::_show_progress_bar(float iPercentStop, float
 
 void RingBufferFactoryBase::_print_line(bool iResetMinMax) const
 {
-  for (int32_t i = 0; i < 170; ++i) printf(iResetMinMax ? "=" : "-");
+  for (i32 i = 0; i < 170; ++i) printf(iResetMinMax ? "=" : "-");
   printf("\n");
 }
 
-void RingBufferFactoryBase::_calculate_ring_buffer_statistics(float & oMinPrc, float & oMaxPrc, float & ioGlobMinPrc, float & ioGlobMaxPrc, SListPar & ioPar,
+void RingBufferFactoryBase::_calculate_ring_buffer_statistics(f32 & oMinPrc, f32 & oMaxPrc, f32 & ioGlobMinPrc, f32 & ioGlobMaxPrc, SListPar & ioPar,
                                                               const bool iResetMinMax, const RingbufferBase::SFillState & iFillState) const
 {
   if (iResetMinMax)
@@ -83,18 +83,18 @@ void RingBufferFactoryBase::_calculate_ring_buffer_statistics(float & oMinPrc, f
 
   if (ioPar.MinVal > iFillState.Filled) ioPar.MinVal = iFillState.Filled;
   if (ioPar.MaxVal < iFillState.Filled) ioPar.MaxVal = iFillState.Filled;
-  oMinPrc = 100.0f * (float)ioPar.MinVal / (float)iFillState.Total;
-  oMaxPrc = 100.0f * (float)ioPar.MaxVal / (float)iFillState.Total;
+  oMinPrc = 100.0f * (f32)ioPar.MinVal / (f32)iFillState.Total;
+  oMaxPrc = 100.0f * (f32)ioPar.MaxVal / (f32)iFillState.Total;
   if (ioGlobMinPrc > oMinPrc) ioGlobMinPrc = oMinPrc;
   if (ioGlobMaxPrc < oMaxPrc) ioGlobMaxPrc = oMaxPrc;
 }
 
 template <>
-void RingBufferFactory<uint8_t>::print_status(const bool iResetMinMax /*= false*/) const
+void RingBufferFactory<u8>::print_status(const bool iResetMinMax /*= false*/) const
 {
-  uint32_t showDataCnt = 0;
-  float globMinPrc = std::numeric_limits<float>::max();
-  float globMaxPrc = 0.0f;
+  u32 showDataCnt = 0;
+  f32 globMinPrc = std::numeric_limits<f32>::max();
+  f32 globMaxPrc = 0.0f;
 
   for (const auto & [_, list] : mMap)
   {
@@ -104,7 +104,7 @@ void RingBufferFactory<uint8_t>::print_status(const bool iResetMinMax /*= false*
 
     const RingbufferBase::SFillState fs = list.pRingBuffer->get_fill_state();
 
-    float minPrc, maxPrc;
+    f32 minPrc, maxPrc;
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
@@ -119,11 +119,11 @@ void RingBufferFactory<uint8_t>::print_status(const bool iResetMinMax /*= false*
 }
 
 template <>
-void RingBufferFactory<int16_t>::print_status(const bool iResetMinMax /*= false*/) const
+void RingBufferFactory<i16>::print_status(const bool iResetMinMax /*= false*/) const
 {
-  uint32_t showDataCnt = 0;
-  float globMinPrc = std::numeric_limits<float>::max();
-  float globMaxPrc = 0.0f;
+  u32 showDataCnt = 0;
+  f32 globMinPrc = std::numeric_limits<f32>::max();
+  f32 globMaxPrc = 0.0f;
 
   for (const auto & [_, list] : mMap)
   {
@@ -133,7 +133,7 @@ void RingBufferFactory<int16_t>::print_status(const bool iResetMinMax /*= false*
 
     const RingbufferBase::SFillState fs = list.pRingBuffer->get_fill_state();
 
-    float minPrc, maxPrc;
+    f32 minPrc, maxPrc;
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
@@ -148,11 +148,11 @@ void RingBufferFactory<int16_t>::print_status(const bool iResetMinMax /*= false*
 }
 
 template <>
-void RingBufferFactory<cmplx16>::print_status(const bool iResetMinMax /*= false*/) const
+void RingBufferFactory<ci16>::print_status(const bool iResetMinMax /*= false*/) const
 {
-  uint32_t showDataCnt = 0;
-  float globMinPrc = std::numeric_limits<float>::max();
-  float globMaxPrc = 0.0f;
+  u32 showDataCnt = 0;
+  f32 globMinPrc = std::numeric_limits<f32>::max();
+  f32 globMaxPrc = 0.0f;
 
   for (const auto & [_, list] : mMap)
   {
@@ -162,7 +162,7 @@ void RingBufferFactory<cmplx16>::print_status(const bool iResetMinMax /*= false*
 
     const RingbufferBase::SFillState fs = list.pRingBuffer->get_fill_state();
 
-    float minPrc, maxPrc;
+    f32 minPrc, maxPrc;
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
@@ -177,11 +177,11 @@ void RingBufferFactory<cmplx16>::print_status(const bool iResetMinMax /*= false*
 }
 
 template <>
-void RingBufferFactory<float>::print_status(const bool iResetMinMax /*= false*/) const
+void RingBufferFactory<f32>::print_status(const bool iResetMinMax /*= false*/) const
 {
-  uint32_t showDataCnt = 0;
-  float globMinPrc = std::numeric_limits<float>::max();
-  float globMaxPrc = 0.0f;
+  u32 showDataCnt = 0;
+  f32 globMinPrc = std::numeric_limits<f32>::max();
+  f32 globMaxPrc = 0.0f;
 
   for (const auto & [_, list] : mMap)
   {
@@ -191,7 +191,7 @@ void RingBufferFactory<float>::print_status(const bool iResetMinMax /*= false*/)
 
     const RingbufferBase::SFillState fs = list.pRingBuffer->get_fill_state();
 
-    float minPrc, maxPrc;
+    f32 minPrc, maxPrc;
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
@@ -206,11 +206,11 @@ void RingBufferFactory<float>::print_status(const bool iResetMinMax /*= false*/)
 }
 
 template <>
-void RingBufferFactory<cmplx>::print_status(const bool iResetMinMax /*= false*/) const
+void RingBufferFactory<cf32>::print_status(const bool iResetMinMax /*= false*/) const
 {
-  uint32_t showDataCnt = 0;
-  float globMinPrc = std::numeric_limits<float>::max();
-  float globMaxPrc = 0.0f;
+  u32 showDataCnt = 0;
+  f32 globMinPrc = std::numeric_limits<f32>::max();
+  f32 globMaxPrc = 0.0f;
 
   for (const auto & [_, list] : mMap)
   {
@@ -220,7 +220,7 @@ void RingBufferFactory<cmplx>::print_status(const bool iResetMinMax /*= false*/)
 
     const RingbufferBase::SFillState fs = list.pRingBuffer->get_fill_state();
 
-    float minPrc, maxPrc;
+    f32 minPrc, maxPrc;
     _calculate_ring_buffer_statistics(minPrc, maxPrc, globMinPrc, globMaxPrc, par, iResetMinMax, fs);
 
     const char * const progBar = _show_progress_bar(fs.Percent);
@@ -236,8 +236,8 @@ void RingBufferFactory<cmplx>::print_status(const bool iResetMinMax /*= false*/)
 
 
 // instantiation
-RingBufferFactory<uint8_t> sRingBufferFactoryUInt8;
-RingBufferFactory<int16_t> sRingBufferFactoryInt16;
-RingBufferFactory<cmplx16> sRingBufferFactoryCmplx16;
-RingBufferFactory<float>   sRingBufferFactoryFloat;
-RingBufferFactory<cmplx>   sRingBufferFactoryCmplx;
+RingBufferFactory<u8> sRingBufferFactoryUInt8;
+RingBufferFactory<i16> sRingBufferFactoryInt16;
+RingBufferFactory<ci16> sRingBufferFactoryCmplx16;
+RingBufferFactory<f32>   sRingBufferFactoryFloat;
+RingBufferFactory<cf32>   sRingBufferFactoryCmplx;

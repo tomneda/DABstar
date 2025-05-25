@@ -57,14 +57,14 @@ public:
   explicit UhdHandler(QSettings * dabSettings);
   ~UhdHandler() override;
 
-  void setVFOFrequency(int32_t freq) override;
-  int32_t getVFOFrequency() override;
-  bool restartReader(int32_t freq) override;
+  void setVFOFrequency(i32 freq) override;
+  i32 getVFOFrequency() override;
+  bool restartReader(i32 freq) override;
   void stopReader() override;
-  int32_t getSamples(cmplx *, int32_t size) override;
-  int32_t Samples() override;
+  i32 getSamples(cf32 *, i32 size) override;
+  i32 Samples() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
@@ -77,13 +77,13 @@ private:
   QFrame myFrame{nullptr};
   uhd::usrp::multi_usrp::sptr m_usrp;
   uhd::rx_streamer::sptr m_rx_stream;
-  RingBuffer<cmplx> * theBuffer = nullptr;
+  RingBuffer<cf32> * theBuffer = nullptr;
   uhd_streamer * m_workerHandle = nullptr;
-  int32_t inputRate = 2048000;
-  int32_t ringbufferSize = 1024;
-  int32_t vfoOffset = 0;
+  i32 inputRate = 2048000;
+  i32 ringbufferSize = 1024;
+  i32 vfoOffset = 0;
 
-  [[nodiscard]] int16_t _maxGain() const;
+  [[nodiscard]] i16 _maxGain() const;
   void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);
 
 private slots:

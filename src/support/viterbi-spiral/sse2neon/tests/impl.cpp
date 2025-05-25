@@ -1,6 +1,6 @@
 #include "impl.h"
 #include <assert.h>
-#include <float.h>
+#include <f32.h>
 #include <math.h>
 #include <stdint.h>
 #include <cstdio>
@@ -28,15 +28,15 @@
 #endif
 
 typedef union ALIGN_STRUCT(16) SIMDVec {
-    float m128_f32[4];     // as floats - DON'T USE. Added for convenience.
-    int8_t m128_i8[16];    // as signed 8-bit integers.
-    int16_t m128_i16[8];   // as signed 16-bit integers.
-    int32_t m128_i32[4];   // as signed 32-bit integers.
-    int64_t m128_i64[2];   // as signed 64-bit integers.
-    uint8_t m128_u8[16];   // as unsigned 8-bit integers.
-    uint16_t m128_u16[8];  // as unsigned 16-bit integers.
-    uint32_t m128_u32[4];  // as unsigned 32-bit integers.
-    uint64_t m128_u64[2];  // as unsigned 64-bit integers.
+    f32 m128_f32[4];     // as floats - DON'T USE. Added for convenience.
+    i8 m128_i8[16];    // as signed 8-bit integers.
+    i16 m128_i16[8];   // as signed 16-bit integers.
+    i32 m128_i32[4];   // as signed 32-bit integers.
+    i64 m128_i64[2];   // as signed 64-bit integers.
+    u8 m128_u8[16];   // as unsigned 8-bit integers.
+    u16 m128_u16[8];  // as unsigned 16-bit integers.
+    u32 m128_u32[4];  // as unsigned 32-bit integers.
+    u64 m128_u64[2];  // as unsigned 64-bit integers.
 } SIMDVec;
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -48,48 +48,48 @@ typedef union ALIGN_STRUCT(16) SIMDVec {
 namespace SSE2NEON
 {
 // hex representation of an IEEE NAN
-const uint32_t inan = 0xffffffff;
+const u32 inan = 0xffffffff;
 
-static inline float getNAN(void)
+static inline f32 getNAN(void)
 {
-    const float *fn = (const float *) &inan;
+    const f32 *fn = (const f32 *) &inan;
     return *fn;
 }
 
-static inline bool isNAN(float a)
+static inline bool isNAN(f32 a)
 {
-    const uint32_t *ia = (const uint32_t *) &a;
+    const u32 *ia = (const u32 *) &a;
     return (*ia) == inan ? true : false;
 }
 
 // Do a round operation that produces results the same as SSE instructions
-static inline float bankersRounding(float val)
+static inline f32 bankersRounding(f32 val)
 {
     if (val < 0)
         return -bankersRounding(-val);
 
-    float ret;
-    int32_t truncateInteger = int32_t(val);
-    int32_t roundInteger = int32_t(val + 0.5f);
-    float diff1 = val - float(truncateInteger);  // Truncate value
-    float diff2 = val - float(roundInteger);     // Round up value
+    f32 ret;
+    i32 truncateInteger = i32(val);
+    i32 roundInteger = i32(val + 0.5f);
+    f32 diff1 = val - f32(truncateInteger);  // Truncate value
+    f32 diff2 = val - f32(roundInteger);     // Round up value
     if (diff2 < 0)
         diff2 *= -1;  // get the positive difference from the round up value
     // If it's closest to the truncate integer; then use it
     if (diff1 < diff2) {
-        ret = float(truncateInteger);
+        ret = f32(truncateInteger);
     } else if (diff2 <
                diff1) {  // if it's closest to the round-up integer; use it
-        ret = float(roundInteger);
+        ret = f32(roundInteger);
     } else {
         // If it's equidistant between rounding up and rounding down, pick the
         // one which is an even number
         if (truncateInteger &
             1) {  // If truncate is odd, then return the rounded integer
-            ret = float(roundInteger);
+            ret = f32(roundInteger);
         } else {
             // If the rounded up value is odd, use return the truncated integer
-            ret = float(truncateInteger);
+            ret = f32(truncateInteger);
         }
     }
     return ret;
@@ -575,21 +575,21 @@ const char *SSE2NEONTest::getInstructionTestString(InstructionTest test)
     if (!(x))            \
         return false;
 
-static float ranf(void)
+static f32 ranf(void)
 {
-    uint32_t ir = rand() & 0x7FFF;
-    return (float) ir * (1.0f / 32768.0f);
+    u32 ir = rand() & 0x7FFF;
+    return (f32) ir * (1.0f / 32768.0f);
 }
 
-static float ranf(float low, float high)
+static f32 ranf(f32 low, f32 high)
 {
     return ranf() * (high - low) + low;
 }
 
 bool validate128(__m128i a, __m128i b)
 {
-    const int32_t *t1 = (const int32_t *) &a;
-    const int32_t *t2 = (const int32_t *) &b;
+    const i32 *t1 = (const i32 *) &a;
+    const i32 *t2 = (const i32 *) &b;
 
     ASSERT_RETURN(t1[0] == t2[0]);
     ASSERT_RETURN(t1[1] == t2[1]);
@@ -598,25 +598,25 @@ bool validate128(__m128i a, __m128i b)
     return true;
 }
 
-bool validateInt64(__m128i a, int64_t i0, int64_t i1)
+bool validateInt64(__m128i a, i64 i0, i64 i1)
 {
-    const int64_t *t = (const int64_t *) &a;
+    const i64 *t = (const i64 *) &a;
     ASSERT_RETURN(t[0] == i0);
     ASSERT_RETURN(t[1] == i1);
     return true;
 }
 
-bool validateUInt64(__m128i a, uint64_t u0, uint64_t u1)
+bool validateUInt64(__m128i a, u64 u0, u64 u1)
 {
-    const uint64_t *t = (const uint64_t *) &a;
+    const u64 *t = (const u64 *) &a;
     ASSERT_RETURN(t[0] == u0);
     ASSERT_RETURN(t[1] == u1);
     return true;
 }
 
-bool validateInt32(__m128i a, int32_t i0, int32_t i1, int32_t i2, int32_t i3)
+bool validateInt32(__m128i a, i32 i0, i32 i1, i32 i2, i32 i3)
 {
-    const int32_t *t = (const int32_t *) &a;
+    const i32 *t = (const i32 *) &a;
     ASSERT_RETURN(t[0] == i0);
     ASSERT_RETURN(t[1] == i1);
     ASSERT_RETURN(t[2] == i2);
@@ -625,16 +625,16 @@ bool validateInt32(__m128i a, int32_t i0, int32_t i1, int32_t i2, int32_t i3)
 }
 
 bool validateInt16(__m128i a,
-                   int16_t i0,
-                   int16_t i1,
-                   int16_t i2,
-                   int16_t i3,
-                   int16_t i4,
-                   int16_t i5,
-                   int16_t i6,
-                   int16_t i7)
+                   i16 i0,
+                   i16 i1,
+                   i16 i2,
+                   i16 i3,
+                   i16 i4,
+                   i16 i5,
+                   i16 i6,
+                   i16 i7)
 {
-    const int16_t *t = (const int16_t *) &a;
+    const i16 *t = (const i16 *) &a;
     ASSERT_RETURN(t[0] == i0);
     ASSERT_RETURN(t[1] == i1);
     ASSERT_RETURN(t[2] == i2);
@@ -647,16 +647,16 @@ bool validateInt16(__m128i a,
 }
 
 bool validateUInt16(__m128i a,
-                    uint16_t u0,
-                    uint16_t u1,
-                    uint16_t u2,
-                    uint16_t u3,
-                    uint16_t u4,
-                    uint16_t u5,
-                    uint16_t u6,
-                    uint16_t u7)
+                    u16 u0,
+                    u16 u1,
+                    u16 u2,
+                    u16 u3,
+                    u16 u4,
+                    u16 u5,
+                    u16 u6,
+                    u16 u7)
 {
-    const uint16_t *t = (const uint16_t *) &a;
+    const u16 *t = (const u16 *) &a;
     ASSERT_RETURN(t[0] == u0);
     ASSERT_RETURN(t[1] == u1);
     ASSERT_RETURN(t[2] == u2);
@@ -669,24 +669,24 @@ bool validateUInt16(__m128i a,
 }
 
 bool validateInt8(__m128i a,
-                  int8_t i0,
-                  int8_t i1,
-                  int8_t i2,
-                  int8_t i3,
-                  int8_t i4,
-                  int8_t i5,
-                  int8_t i6,
-                  int8_t i7,
-                  int8_t i8,
-                  int8_t i9,
-                  int8_t i10,
-                  int8_t i11,
-                  int8_t i12,
-                  int8_t i13,
-                  int8_t i14,
-                  int8_t i15)
+                  i8 i0,
+                  i8 i1,
+                  i8 i2,
+                  i8 i3,
+                  i8 i4,
+                  i8 i5,
+                  i8 i6,
+                  i8 i7,
+                  i8 i8,
+                  i8 i9,
+                  i8 i10,
+                  i8 i11,
+                  i8 i12,
+                  i8 i13,
+                  i8 i14,
+                  i8 i15)
 {
-    const int8_t *t = (const int8_t *) &a;
+    const i8 *t = (const i8 *) &a;
     ASSERT_RETURN(t[0] == i0);
     ASSERT_RETURN(t[1] == i1);
     ASSERT_RETURN(t[2] == i2);
@@ -707,24 +707,24 @@ bool validateInt8(__m128i a,
 }
 
 bool validateUInt8(__m128i a,
-                   uint8_t u0,
-                   uint8_t u1,
-                   uint8_t u2,
-                   uint8_t u3,
-                   uint8_t u4,
-                   uint8_t u5,
-                   uint8_t u6,
-                   uint8_t u7,
-                   uint8_t u8,
-                   uint8_t u9,
-                   uint8_t u10,
-                   uint8_t u11,
-                   uint8_t u12,
-                   uint8_t u13,
-                   uint8_t u14,
-                   uint8_t u15)
+                   u8 u0,
+                   u8 u1,
+                   u8 u2,
+                   u8 u3,
+                   u8 u4,
+                   u8 u5,
+                   u8 u6,
+                   u8 u7,
+                   u8 u8,
+                   u8 u9,
+                   u8 u10,
+                   u8 u11,
+                   u8 u12,
+                   u8 u13,
+                   u8 u14,
+                   u8 u15)
 {
-    const uint8_t *t = (const uint8_t *) &a;
+    const u8 *t = (const u8 *) &a;
     ASSERT_RETURN(t[0] == u0);
     ASSERT_RETURN(t[1] == u1);
     ASSERT_RETURN(t[2] == u2);
@@ -744,29 +744,29 @@ bool validateUInt8(__m128i a,
     return true;
 }
 
-bool validateSingleFloatPair(float a, float b)
+bool validateSingleFloatPair(f32 a, f32 b)
 {
-    const uint32_t *ua = (const uint32_t *) &a;
-    const uint32_t *ub = (const uint32_t *) &b;
+    const u32 *ua = (const u32 *) &a;
+    const u32 *ub = (const u32 *) &b;
     // We do an integer (binary) compare rather than a
     // floating point compare to take nands and infinities
     // into account as well.
     return (*ua) == (*ub);
 }
 
-bool validateSingleDoublePair(double a, double b)
+bool validateSingleDoublePair(f64 a, f64 b)
 {
-    const uint64_t *ua = (const uint64_t *) &a;
-    const uint64_t *ub = (const uint64_t *) &b;
+    const u64 *ua = (const u64 *) &a;
+    const u64 *ub = (const u64 *) &b;
     // We do an integer (binary) compare rather than a
     // floating point compare to take nands and infinities
     // into account as well.
     return (*ua) == (*ub);
 }
 
-bool validateFloat(__m128 a, float f0, float f1, float f2, float f3)
+bool validateFloat(__m128 a, f32 f0, f32 f1, f32 f2, f32 f3)
 {
-    const float *t = (const float *) &a;
+    const f32 *t = (const f32 *) &a;
     ASSERT_RETURN(validateSingleFloatPair(t[0], f0));
     ASSERT_RETURN(validateSingleFloatPair(t[1], f1));
     ASSERT_RETURN(validateSingleFloatPair(t[2], f2));
@@ -775,17 +775,17 @@ bool validateFloat(__m128 a, float f0, float f1, float f2, float f3)
 }
 
 bool validateFloatEpsilon(__m128 a,
-                          float f0,
-                          float f1,
-                          float f2,
-                          float f3,
-                          float epsilon)
+                          f32 f0,
+                          f32 f1,
+                          f32 f2,
+                          f32 f3,
+                          f32 epsilon)
 {
-    const float *t = (const float *) &a;
-    float df0 = fabsf(t[0] - f0);
-    float df1 = fabsf(t[1] - f1);
-    float df2 = fabsf(t[2] - f2);
-    float df3 = fabsf(t[3] - f3);
+    const f32 *t = (const f32 *) &a;
+    f32 df0 = fabsf(t[0] - f0);
+    f32 df1 = fabsf(t[1] - f1);
+    f32 df2 = fabsf(t[2] - f2);
+    f32 df3 = fabsf(t[3] - f3);
     ASSERT_RETURN(df0 < epsilon);
     ASSERT_RETURN(df1 < epsilon);
     ASSERT_RETURN(df2 < epsilon);
@@ -793,9 +793,9 @@ bool validateFloatEpsilon(__m128 a,
     return true;
 }
 
-bool validateDouble(__m128d a, double d0, double d1)
+bool validateDouble(__m128d a, f64 d0, f64 d1)
 {
-    const double *t = (const double *) &a;
+    const f64 *t = (const f64 *) &a;
     ASSERT_RETURN(validateSingleDoublePair(t[0], d0));
     ASSERT_RETURN(validateSingleDoublePair(t[1], d1));
     return true;
@@ -813,42 +813,42 @@ bool test_mm_setzero_ps(void)
     return validateFloat(a, 0, 0, 0, 0);
 }
 
-bool test_mm_set1_ps(float w)
+bool test_mm_set1_ps(f32 w)
 {
     __m128 a = _mm_set1_ps(w);
     return validateFloat(a, w, w, w, w);
 }
 
-bool test_mm_set_ps(float x, float y, float z, float w)
+bool test_mm_set_ps(f32 x, f32 y, f32 z, f32 w)
 {
     __m128 a = _mm_set_ps(x, y, z, w);
     return validateFloat(a, w, z, y, x);
 }
 
-bool test_mm_set_ss(float a)
+bool test_mm_set_ss(f32 a)
 {
     __m128 c = _mm_set_ss(a);
     return validateFloat(c, a, 0, 0, 0);
 }
 
-bool test_mm_set_epi8(const int8_t *_a)
+bool test_mm_set_epi8(const i8 *_a)
 {
-    int8_t d0 = _a[0];
-    int8_t d1 = _a[1];
-    int8_t d2 = _a[2];
-    int8_t d3 = _a[3];
-    int8_t d4 = _a[4];
-    int8_t d5 = _a[5];
-    int8_t d6 = _a[6];
-    int8_t d7 = _a[7];
-    int8_t d8 = _a[8];
-    int8_t d9 = _a[9];
-    int8_t d10 = _a[10];
-    int8_t d11 = _a[11];
-    int8_t d12 = _a[12];
-    int8_t d13 = _a[13];
-    int8_t d14 = _a[14];
-    int8_t d15 = _a[15];
+    i8 d0 = _a[0];
+    i8 d1 = _a[1];
+    i8 d2 = _a[2];
+    i8 d3 = _a[3];
+    i8 d4 = _a[4];
+    i8 d5 = _a[5];
+    i8 d6 = _a[6];
+    i8 d7 = _a[7];
+    i8 d8 = _a[8];
+    i8 d9 = _a[9];
+    i8 d10 = _a[10];
+    i8 d11 = _a[11];
+    i8 d12 = _a[12];
+    i8 d13 = _a[13];
+    i8 d14 = _a[14];
+    i8 d15 = _a[15];
 
     __m128i c = _mm_set_epi8(d15, d14, d13, d12, d11, d10, d9, d8, d7, d6, d5,
                              d4, d3, d2, d1, d0);
@@ -856,26 +856,26 @@ bool test_mm_set_epi8(const int8_t *_a)
                         d12, d13, d14, d15);
 }
 
-bool test_mm_set1_epi32(int32_t i)
+bool test_mm_set1_epi32(i32 i)
 {
     __m128i a = _mm_set1_epi32(i);
     return validateInt32(a, i, i, i, i);
 }
 
-bool testret_mm_set_epi32(int32_t x, int32_t y, int32_t z, int32_t w)
+bool testret_mm_set_epi32(i32 x, i32 y, i32 z, i32 w)
 {
     __m128i a = _mm_set_epi32(x, y, z, w);
     return validateInt32(a, w, z, y, x);
 }
 
-__m128i test_mm_set_epi32(int32_t x, int32_t y, int32_t z, int32_t w)
+__m128i test_mm_set_epi32(i32 x, i32 y, i32 z, i32 w)
 {
     __m128i a = _mm_set_epi32(x, y, z, w);
     validateInt32(a, w, z, y, x);
     return a;
 }
 
-bool test_mm_store_ps(float *p, float x, float y, float z, float w)
+bool test_mm_store_ps(f32 *p, f32 x, f32 y, f32 z, f32 w)
 {
     __m128 a = _mm_set_ps(x, y, z, w);
     _mm_store_ps(p, a);
@@ -886,10 +886,10 @@ bool test_mm_store_ps(float *p, float x, float y, float z, float w)
     return true;
 }
 
-bool test_mm_store_ps(int32_t *p, int32_t x, int32_t y, int32_t z, int32_t w)
+bool test_mm_store_ps(i32 *p, i32 x, i32 y, i32 z, i32 w)
 {
     __m128i a = _mm_set_epi32(x, y, z, w);
-    _mm_store_ps((float *) p, *(const __m128 *) &a);
+    _mm_store_ps((f32 *) p, *(const __m128 *) &a);
     ASSERT_RETURN(p[0] == w);
     ASSERT_RETURN(p[1] == z);
     ASSERT_RETURN(p[2] == y);
@@ -897,11 +897,11 @@ bool test_mm_store_ps(int32_t *p, int32_t x, int32_t y, int32_t z, int32_t w)
     return true;
 }
 
-bool test_mm_storel_pi(const float *p)
+bool test_mm_storel_pi(const f32 *p)
 {
     __m128 a = _mm_load_ps(p);
 
-    float d[4] = {1.0f, 2.0f, 3.0f, 4.0f};
+    f32 d[4] = {1.0f, 2.0f, 3.0f, 4.0f};
 
     __m64 *b = (__m64 *) d;
 
@@ -914,11 +914,11 @@ bool test_mm_storel_pi(const float *p)
     return true;
 }
 
-bool test_mm_storeh_pi(const float *p)
+bool test_mm_storeh_pi(const f32 *p)
 {
     __m128 a = _mm_load_ps(p);
 
-    float d[4] = {1.0f, 2.0f, 3.0f, 4.0f};
+    f32 d[4] = {1.0f, 2.0f, 3.0f, 4.0f};
 
     __m64 *b = (__m64 *) d;
 
@@ -931,13 +931,13 @@ bool test_mm_storeh_pi(const float *p)
     return true;
 }
 
-bool test_mm_load1_ps(const float *p)
+bool test_mm_load1_ps(const f32 *p)
 {
     __m128 a = _mm_load1_ps(p);
     return validateFloat(a, p[0], p[0], p[0], p[0]);
 }
 
-bool test_mm_loadl_pi(const float *p1, const float *p2)
+bool test_mm_loadl_pi(const f32 *p1, const f32 *p2)
 {
     __m128 a = _mm_load_ps(p1);
     const __m64 *b = (const __m64 *) p2;
@@ -946,7 +946,7 @@ bool test_mm_loadl_pi(const float *p1, const float *p2)
     return validateFloat(c, p2[0], p2[1], p1[2], p1[3]);
 }
 
-bool test_mm_loadh_pi(const float *p1, const float *p2)
+bool test_mm_loadh_pi(const f32 *p1, const f32 *p2)
 {
     __m128 a = _mm_load_ps(p1);
     const __m64 *b = (const __m64 *) p2;
@@ -955,22 +955,22 @@ bool test_mm_loadh_pi(const float *p1, const float *p2)
     return validateFloat(c, p1[0], p1[1], p2[0], p2[1]);
 }
 
-__m128 test_mm_load_ps(const float *p)
+__m128 test_mm_load_ps(const f32 *p)
 {
     __m128 a = _mm_load_ps(p);
     validateFloat(a, p[0], p[1], p[2], p[3]);
     return a;
 }
 
-__m128i test_mm_load_ps(const int32_t *p)
+__m128i test_mm_load_ps(const i32 *p)
 {
-    __m128 a = _mm_load_ps((const float *) p);
+    __m128 a = _mm_load_ps((const f32 *) p);
     __m128i ia = *(const __m128i *) &a;
     validateInt32(ia, p[0], p[1], p[2], p[3]);
     return ia;
 }
 
-bool test_mm_load_sd(const double *p)
+bool test_mm_load_sd(const f64 *p)
 {
     __m128d a = _mm_load_sd(p);
     return validateDouble(a, p[0], 0);
@@ -980,7 +980,7 @@ bool test_mm_load_sd(const double *p)
 // r1 := ~a1 & b1
 // r2 := ~a2 & b2
 // r3 := ~a3 & b3
-bool test_mm_andnot_ps(const float *_a, const float *_b)
+bool test_mm_andnot_ps(const f32 *_a, const f32 *_b)
 {
     bool r = false;
 
@@ -988,12 +988,12 @@ bool test_mm_andnot_ps(const float *_a, const float *_b)
     __m128 b = test_mm_load_ps(_b);
     __m128 c = _mm_andnot_ps(a, b);
     // now for the assertion...
-    const uint32_t *ia = (const uint32_t *) &a;
-    const uint32_t *ib = (const uint32_t *) &b;
-    uint32_t r0 = ~ia[0] & ib[0];
-    uint32_t r1 = ~ia[1] & ib[1];
-    uint32_t r2 = ~ia[2] & ib[2];
-    uint32_t r3 = ~ia[3] & ib[3];
+    const u32 *ia = (const u32 *) &a;
+    const u32 *ib = (const u32 *) &b;
+    u32 r0 = ~ia[0] & ib[0];
+    u32 r1 = ~ia[1] & ib[1];
+    u32 r2 = ~ia[2] & ib[2];
+    u32 r3 = ~ia[3] & ib[3];
     __m128i ret = test_mm_set_epi32(r3, r2, r1, r0);
     r = validateInt32(*(const __m128i *) &c, r0, r1, r2, r3);
     if (r) {
@@ -1002,18 +1002,18 @@ bool test_mm_andnot_ps(const float *_a, const float *_b)
     return r;
 }
 
-bool test_mm_and_ps(const float *_a, const float *_b)
+bool test_mm_and_ps(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
     __m128 c = _mm_and_ps(a, b);
     // now for the assertion...
-    const uint32_t *ia = (const uint32_t *) &a;
-    const uint32_t *ib = (const uint32_t *) &b;
-    uint32_t r0 = ia[0] & ib[0];
-    uint32_t r1 = ia[1] & ib[1];
-    uint32_t r2 = ia[2] & ib[2];
-    uint32_t r3 = ia[3] & ib[3];
+    const u32 *ia = (const u32 *) &a;
+    const u32 *ib = (const u32 *) &b;
+    u32 r0 = ia[0] & ib[0];
+    u32 r1 = ia[1] & ib[1];
+    u32 r2 = ia[2] & ib[2];
+    u32 r3 = ia[3] & ib[3];
     __m128i ret = test_mm_set_epi32(r3, r2, r1, r0);
     bool r = validateInt32(*(const __m128i *) &c, r0, r1, r2, r3);
     if (r) {
@@ -1022,18 +1022,18 @@ bool test_mm_and_ps(const float *_a, const float *_b)
     return r;
 }
 
-bool test_mm_or_ps(const float *_a, const float *_b)
+bool test_mm_or_ps(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
     __m128 c = _mm_or_ps(a, b);
     // now for the assertion...
-    const uint32_t *ia = (const uint32_t *) &a;
-    const uint32_t *ib = (const uint32_t *) &b;
-    uint32_t r0 = ia[0] | ib[0];
-    uint32_t r1 = ia[1] | ib[1];
-    uint32_t r2 = ia[2] | ib[2];
-    uint32_t r3 = ia[3] | ib[3];
+    const u32 *ia = (const u32 *) &a;
+    const u32 *ib = (const u32 *) &b;
+    u32 r0 = ia[0] | ib[0];
+    u32 r1 = ia[1] | ib[1];
+    u32 r2 = ia[2] | ib[2];
+    u32 r3 = ia[3] | ib[3];
     __m128i ret = test_mm_set_epi32(r3, r2, r1, r0);
     bool r = validateInt32(*(const __m128i *) &c, r0, r1, r2, r3);
     if (r) {
@@ -1042,7 +1042,7 @@ bool test_mm_or_ps(const float *_a, const float *_b)
     return r;
 }
 
-bool test_mm_andnot_si128(const int32_t *_a, const int32_t *_b)
+bool test_mm_andnot_si128(const i32 *_a, const i32 *_b)
 {
     bool r = true;
     __m128i a = test_mm_load_ps(_a);
@@ -1050,12 +1050,12 @@ bool test_mm_andnot_si128(const int32_t *_a, const int32_t *_b)
     __m128 fc = _mm_andnot_ps(*(const __m128 *) &a, *(const __m128 *) &b);
     __m128i c = *(const __m128i *) &fc;
     // now for the assertion...
-    const uint32_t *ia = (const uint32_t *) &a;
-    const uint32_t *ib = (const uint32_t *) &b;
-    uint32_t r0 = ~ia[0] & ib[0];
-    uint32_t r1 = ~ia[1] & ib[1];
-    uint32_t r2 = ~ia[2] & ib[2];
-    uint32_t r3 = ~ia[3] & ib[3];
+    const u32 *ia = (const u32 *) &a;
+    const u32 *ib = (const u32 *) &b;
+    u32 r0 = ~ia[0] & ib[0];
+    u32 r1 = ~ia[1] & ib[1];
+    u32 r2 = ~ia[2] & ib[2];
+    u32 r3 = ~ia[3] & ib[3];
     __m128i ret = test_mm_set_epi32(r3, r2, r1, r0);
     r = validateInt32(c, r0, r1, r2, r3);
     if (r) {
@@ -1064,19 +1064,19 @@ bool test_mm_andnot_si128(const int32_t *_a, const int32_t *_b)
     return r;
 }
 
-bool test_mm_and_si128(const int32_t *_a, const int32_t *_b)
+bool test_mm_and_si128(const i32 *_a, const i32 *_b)
 {
     __m128i a = test_mm_load_ps(_a);
     __m128i b = test_mm_load_ps(_b);
     __m128 fc = _mm_and_ps(*(const __m128 *) &a, *(const __m128 *) &b);
     __m128i c = *(const __m128i *) &fc;
     // now for the assertion...
-    const uint32_t *ia = (const uint32_t *) &a;
-    const uint32_t *ib = (const uint32_t *) &b;
-    uint32_t r0 = ia[0] & ib[0];
-    uint32_t r1 = ia[1] & ib[1];
-    uint32_t r2 = ia[2] & ib[2];
-    uint32_t r3 = ia[3] & ib[3];
+    const u32 *ia = (const u32 *) &a;
+    const u32 *ib = (const u32 *) &b;
+    u32 r0 = ia[0] & ib[0];
+    u32 r1 = ia[1] & ib[1];
+    u32 r2 = ia[2] & ib[2];
+    u32 r3 = ia[3] & ib[3];
     __m128i ret = test_mm_set_epi32(r3, r2, r1, r0);
     bool r = validateInt32(c, r0, r1, r2, r3);
     if (r) {
@@ -1085,19 +1085,19 @@ bool test_mm_and_si128(const int32_t *_a, const int32_t *_b)
     return r;
 }
 
-bool test_mm_or_si128(const int32_t *_a, const int32_t *_b)
+bool test_mm_or_si128(const i32 *_a, const i32 *_b)
 {
     __m128i a = test_mm_load_ps(_a);
     __m128i b = test_mm_load_ps(_b);
     __m128 fc = _mm_or_ps(*(const __m128 *) &a, *(const __m128 *) &b);
     __m128i c = *(const __m128i *) &fc;
     // now for the assertion...
-    const uint32_t *ia = (const uint32_t *) &a;
-    const uint32_t *ib = (const uint32_t *) &b;
-    uint32_t r0 = ia[0] | ib[0];
-    uint32_t r1 = ia[1] | ib[1];
-    uint32_t r2 = ia[2] | ib[2];
-    uint32_t r3 = ia[3] | ib[3];
+    const u32 *ia = (const u32 *) &a;
+    const u32 *ib = (const u32 *) &b;
+    u32 r0 = ia[0] | ib[0];
+    u32 r1 = ia[1] | ib[1];
+    u32 r2 = ia[2] | ib[2];
+    u32 r3 = ia[3] | ib[3];
     __m128i ret = test_mm_set_epi32(r3, r2, r1, r0);
     bool r = validateInt32(c, r0, r1, r2, r3);
     if (r) {
@@ -1106,11 +1106,11 @@ bool test_mm_or_si128(const int32_t *_a, const int32_t *_b)
     return r;
 }
 
-bool test_mm_movemask_ps(const float *p)
+bool test_mm_movemask_ps(const f32 *p)
 {
     int ret = 0;
 
-    const uint32_t *ip = (const uint32_t *) p;
+    const u32 *ip = (const u32 *) p;
     if (ip[0] & 0x80000000) {
         ret |= 1;
     }
@@ -1131,7 +1131,7 @@ bool test_mm_movemask_ps(const float *p)
 // Note, NEON does not have a general purpose shuffled command like SSE.
 // When invoking this method, there is special code for a number of the most
 // common shuffle permutations
-bool test_mm_shuffle_ps(const float *_a, const float *_b)
+bool test_mm_shuffle_ps(const f32 *_a, const f32 *_b)
 {
     bool isValid = true;
     __m128 a = test_mm_load_ps(_a);
@@ -1195,14 +1195,14 @@ bool test_mm_shuffle_ps(const float *_a, const float *_b)
     return isValid;
 }
 
-bool test_mm_movemask_epi8(const int32_t *_a)
+bool test_mm_movemask_epi8(const i32 *_a)
 {
     __m128i a = test_mm_load_ps(_a);
 
-    const uint8_t *ip = (const uint8_t *) _a;
+    const u8 *ip = (const u8 *) _a;
     int ret = 0;
-    uint32_t mask = 1;
-    for (uint32_t i = 0; i < 16; i++) {
+    u32 mask = 1;
+    for (u32 i = 0; i < 16; i++) {
         if (ip[i] & 0x80) {
             ret |= mask;
         }
@@ -1213,12 +1213,12 @@ bool test_mm_movemask_epi8(const int32_t *_a)
     return true;
 }
 
-bool test_mm_sub_ps(const float *_a, const float *_b)
+bool test_mm_sub_ps(const f32 *_a, const f32 *_b)
 {
-    float dx = _a[0] - _b[0];
-    float dy = _a[1] - _b[1];
-    float dz = _a[2] - _b[2];
-    float dw = _a[3] - _b[3];
+    f32 dx = _a[0] - _b[0];
+    f32 dy = _a[1] - _b[1];
+    f32 dz = _a[2] - _b[2];
+    f32 dw = _a[3] - _b[3];
 
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
@@ -1226,12 +1226,12 @@ bool test_mm_sub_ps(const float *_a, const float *_b)
     return validateFloat(c, dx, dy, dz, dw);
 }
 
-bool test_mm_sub_epi32(const int32_t *_a, const int32_t *_b)
+bool test_mm_sub_epi32(const i32 *_a, const i32 *_b)
 {
-    int32_t dx = _a[0] - _b[0];
-    int32_t dy = _a[1] - _b[1];
-    int32_t dz = _a[2] - _b[2];
-    int32_t dw = _a[3] - _b[3];
+    i32 dx = _a[0] - _b[0];
+    i32 dy = _a[1] - _b[1];
+    i32 dz = _a[2] - _b[2];
+    i32 dw = _a[3] - _b[3];
 
     __m128i a = test_mm_load_ps(_a);
     __m128i b = test_mm_load_ps(_b);
@@ -1239,23 +1239,23 @@ bool test_mm_sub_epi32(const int32_t *_a, const int32_t *_b)
     return validateInt32(c, dx, dy, dz, dw);
 }
 
-bool test_mm_sub_epi64(const int64_t *_a, const int64_t *_b)
+bool test_mm_sub_epi64(const i64 *_a, const i64 *_b)
 {
-    int64_t d0 = _a[0] - _b[0];
-    int64_t d1 = _a[1] - _b[1];
+    i64 d0 = _a[0] - _b[0];
+    i64 d1 = _a[1] - _b[1];
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_sub_epi64(a, b);
     return validateInt64(c, d0, d1);
 }
 
-bool test_mm_add_ps(const float *_a, const float *_b)
+bool test_mm_add_ps(const f32 *_a, const f32 *_b)
 {
-    float dx = _a[0] + _b[0];
-    float dy = _a[1] + _b[1];
-    float dz = _a[2] + _b[2];
-    float dw = _a[3] + _b[3];
+    f32 dx = _a[0] + _b[0];
+    f32 dy = _a[1] + _b[1];
+    f32 dz = _a[2] + _b[2];
+    f32 dw = _a[3] + _b[3];
 
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
@@ -1263,12 +1263,12 @@ bool test_mm_add_ps(const float *_a, const float *_b)
     return validateFloat(c, dx, dy, dz, dw);
 }
 
-bool test_mm_add_epi32(const int32_t *_a, const int32_t *_b)
+bool test_mm_add_epi32(const i32 *_a, const i32 *_b)
 {
-    int32_t dx = _a[0] + _b[0];
-    int32_t dy = _a[1] + _b[1];
-    int32_t dz = _a[2] + _b[2];
-    int32_t dw = _a[3] + _b[3];
+    i32 dx = _a[0] + _b[0];
+    i32 dy = _a[1] + _b[1];
+    i32 dz = _a[2] + _b[2];
+    i32 dw = _a[3] + _b[3];
 
     __m128i a = test_mm_load_ps(_a);
     __m128i b = test_mm_load_ps(_b);
@@ -1276,27 +1276,27 @@ bool test_mm_add_epi32(const int32_t *_a, const int32_t *_b)
     return validateInt32(c, dx, dy, dz, dw);
 }
 
-bool test_mm_mullo_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_mullo_epi16(const i16 *_a, const i16 *_b)
 {
-    int16_t d0 = _a[0] * _b[0];
-    int16_t d1 = _a[1] * _b[1];
-    int16_t d2 = _a[2] * _b[2];
-    int16_t d3 = _a[3] * _b[3];
-    int16_t d4 = _a[4] * _b[4];
-    int16_t d5 = _a[5] * _b[5];
-    int16_t d6 = _a[6] * _b[6];
-    int16_t d7 = _a[7] * _b[7];
+    i16 d0 = _a[0] * _b[0];
+    i16 d1 = _a[1] * _b[1];
+    i16 d2 = _a[2] * _b[2];
+    i16 d3 = _a[3] * _b[3];
+    i16 d4 = _a[4] * _b[4];
+    i16 d5 = _a[5] * _b[5];
+    i16 d6 = _a[6] * _b[6];
+    i16 d7 = _a[7] * _b[7];
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_mullo_epi16(a, b);
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_mul_epu32(const uint32_t *_a, const uint32_t *_b)
+bool test_mm_mul_epu32(const u32 *_a, const u32 *_b)
 {
-    uint64_t dx = (uint64_t)(_a[0]) * (uint64_t)(_b[0]);
-    uint64_t dy = (uint64_t)(_a[2]) * (uint64_t)(_b[2]);
+    u64 dx = (u64)(_a[0]) * (u64)(_b[0]);
+    u64 dy = (u64)(_a[2]) * (u64)(_b[2]);
 
     __m128i a = _mm_loadu_si128((const __m128i *) _a);
     __m128i b = _mm_loadu_si128((const __m128i *) _b);
@@ -1304,32 +1304,32 @@ bool test_mm_mul_epu32(const uint32_t *_a, const uint32_t *_b)
     return validateUInt64(r, dx, dy);
 }
 
-bool test_mm_madd_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_madd_epi16(const i16 *_a, const i16 *_b)
 {
-    int32_t d0 = (int32_t) _a[0] * _b[0];
-    int32_t d1 = (int32_t) _a[1] * _b[1];
-    int32_t d2 = (int32_t) _a[2] * _b[2];
-    int32_t d3 = (int32_t) _a[3] * _b[3];
-    int32_t d4 = (int32_t) _a[4] * _b[4];
-    int32_t d5 = (int32_t) _a[5] * _b[5];
-    int32_t d6 = (int32_t) _a[6] * _b[6];
-    int32_t d7 = (int32_t) _a[7] * _b[7];
+    i32 d0 = (i32) _a[0] * _b[0];
+    i32 d1 = (i32) _a[1] * _b[1];
+    i32 d2 = (i32) _a[2] * _b[2];
+    i32 d3 = (i32) _a[3] * _b[3];
+    i32 d4 = (i32) _a[4] * _b[4];
+    i32 d5 = (i32) _a[5] * _b[5];
+    i32 d6 = (i32) _a[6] * _b[6];
+    i32 d7 = (i32) _a[7] * _b[7];
 
-    int32_t e0 = d0 + d1;
-    int32_t e1 = d2 + d3;
-    int32_t e2 = d4 + d5;
-    int32_t e3 = d6 + d7;
+    i32 e0 = d0 + d1;
+    i32 e1 = d2 + d3;
+    i32 e2 = d4 + d5;
+    i32 e3 = d6 + d7;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_madd_epi16(a, b);
     return validateInt32(c, e0, e1, e2, e3);
 }
 
-static inline int16_t saturate_16(int32_t a)
+static inline i16 saturate_16(i32 a)
 {
-    int32_t max = (1 << 15) - 1;
-    int32_t min = -(1 << 15);
+    i32 max = (1 << 15) - 1;
+    i32 min = -(1 << 15);
     if (a > max)
         return max;
     if (a < min)
@@ -1337,45 +1337,45 @@ static inline int16_t saturate_16(int32_t a)
     return a;
 }
 
-bool test_mm_maddubs_epi16(const uint8_t *_a, const int8_t *_b)
+bool test_mm_maddubs_epi16(const u8 *_a, const i8 *_b)
 {
-    int32_t d0 = (int32_t)(_a[0] * _b[0]);
-    int32_t d1 = (int32_t)(_a[1] * _b[1]);
-    int32_t d2 = (int32_t)(_a[2] * _b[2]);
-    int32_t d3 = (int32_t)(_a[3] * _b[3]);
-    int32_t d4 = (int32_t)(_a[4] * _b[4]);
-    int32_t d5 = (int32_t)(_a[5] * _b[5]);
-    int32_t d6 = (int32_t)(_a[6] * _b[6]);
-    int32_t d7 = (int32_t)(_a[7] * _b[7]);
-    int32_t d8 = (int32_t)(_a[8] * _b[8]);
-    int32_t d9 = (int32_t)(_a[9] * _b[9]);
-    int32_t d10 = (int32_t)(_a[10] * _b[10]);
-    int32_t d11 = (int32_t)(_a[11] * _b[11]);
-    int32_t d12 = (int32_t)(_a[12] * _b[12]);
-    int32_t d13 = (int32_t)(_a[13] * _b[13]);
-    int32_t d14 = (int32_t)(_a[14] * _b[14]);
-    int32_t d15 = (int32_t)(_a[15] * _b[15]);
+    i32 d0 = (i32)(_a[0] * _b[0]);
+    i32 d1 = (i32)(_a[1] * _b[1]);
+    i32 d2 = (i32)(_a[2] * _b[2]);
+    i32 d3 = (i32)(_a[3] * _b[3]);
+    i32 d4 = (i32)(_a[4] * _b[4]);
+    i32 d5 = (i32)(_a[5] * _b[5]);
+    i32 d6 = (i32)(_a[6] * _b[6]);
+    i32 d7 = (i32)(_a[7] * _b[7]);
+    i32 d8 = (i32)(_a[8] * _b[8]);
+    i32 d9 = (i32)(_a[9] * _b[9]);
+    i32 d10 = (i32)(_a[10] * _b[10]);
+    i32 d11 = (i32)(_a[11] * _b[11]);
+    i32 d12 = (i32)(_a[12] * _b[12]);
+    i32 d13 = (i32)(_a[13] * _b[13]);
+    i32 d14 = (i32)(_a[14] * _b[14]);
+    i32 d15 = (i32)(_a[15] * _b[15]);
 
-    int16_t e0 = saturate_16(d0 + d1);
-    int16_t e1 = saturate_16(d2 + d3);
-    int16_t e2 = saturate_16(d4 + d5);
-    int16_t e3 = saturate_16(d6 + d7);
-    int16_t e4 = saturate_16(d8 + d9);
-    int16_t e5 = saturate_16(d10 + d11);
-    int16_t e6 = saturate_16(d12 + d13);
-    int16_t e7 = saturate_16(d14 + d15);
+    i16 e0 = saturate_16(d0 + d1);
+    i16 e1 = saturate_16(d2 + d3);
+    i16 e2 = saturate_16(d4 + d5);
+    i16 e3 = saturate_16(d6 + d7);
+    i16 e4 = saturate_16(d8 + d9);
+    i16 e5 = saturate_16(d10 + d11);
+    i16 e6 = saturate_16(d12 + d13);
+    i16 e7 = saturate_16(d14 + d15);
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_maddubs_epi16(a, b);
     return validateInt16(c, e0, e1, e2, e3, e4, e5, e6, e7);
 }
 
-bool test_mm_shuffle_epi8(const int32_t *a, const int32_t *b)
+bool test_mm_shuffle_epi8(const i32 *a, const i32 *b)
 {
-    const uint8_t *tbl = (const uint8_t *) a;
-    const uint8_t *idx = (const uint8_t *) b;
-    int32_t r[4];
+    const u8 *tbl = (const u8 *) a;
+    const u8 *idx = (const u8 *) b;
+    i32 r[4];
 
     r[0] = ((idx[3] & 0x80) ? 0 : tbl[idx[3] % 16]) << 24;
     r[0] |= ((idx[2] & 0x80) ? 0 : tbl[idx[2] % 16]) << 16;
@@ -1402,12 +1402,12 @@ bool test_mm_shuffle_epi8(const int32_t *a, const int32_t *b)
     return validateInt32(ret, r[0], r[1], r[2], r[3]);
 }
 
-bool test_mm_mul_ps(const float *_a, const float *_b)
+bool test_mm_mul_ps(const f32 *_a, const f32 *_b)
 {
-    float dx = _a[0] * _b[0];
-    float dy = _a[1] * _b[1];
-    float dz = _a[2] * _b[2];
-    float dw = _a[3] * _b[3];
+    f32 dx = _a[0] * _b[0];
+    f32 dy = _a[1] * _b[1];
+    f32 dz = _a[2] * _b[2];
+    f32 dw = _a[3] * _b[3];
 
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
@@ -1415,21 +1415,21 @@ bool test_mm_mul_ps(const float *_a, const float *_b)
     return validateFloat(c, dx, dy, dz, dw);
 }
 
-bool test_mm_rcp_ps(const float *_a)
+bool test_mm_rcp_ps(const f32 *_a)
 {
-    float dx = 1.0f / _a[0];
-    float dy = 1.0f / _a[1];
-    float dz = 1.0f / _a[2];
-    float dw = 1.0f / _a[3];
+    f32 dx = 1.0f / _a[0];
+    f32 dy = 1.0f / _a[1];
+    f32 dz = 1.0f / _a[2];
+    f32 dw = 1.0f / _a[3];
 
     __m128 a = test_mm_load_ps(_a);
     __m128 c = _mm_rcp_ps(a);
     return validateFloatEpsilon(c, dx, dy, dz, dw, 300.0f);
 }
 
-bool test_mm_max_ps(const float *_a, const float *_b)
+bool test_mm_max_ps(const f32 *_a, const f32 *_b)
 {
-    float c[4];
+    f32 c[4];
 
     c[0] = _a[0] > _b[0] ? _a[0] : _b[0];
     c[1] = _a[1] > _b[1] ? _a[1] : _b[1];
@@ -1442,9 +1442,9 @@ bool test_mm_max_ps(const float *_a, const float *_b)
     return validateFloat(ret, c[0], c[1], c[2], c[3]);
 }
 
-bool test_mm_min_ps(const float *_a, const float *_b)
+bool test_mm_min_ps(const f32 *_a, const f32 *_b)
 {
-    float c[4];
+    f32 c[4];
 
     c[0] = _a[0] < _b[0] ? _a[0] : _b[0];
     c[1] = _a[1] < _b[1] ? _a[1] : _b[1];
@@ -1457,43 +1457,43 @@ bool test_mm_min_ps(const float *_a, const float *_b)
     return validateFloat(ret, c[0], c[1], c[2], c[3]);
 }
 
-bool test_mm_min_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_min_epi16(const i16 *_a, const i16 *_b)
 {
-    int16_t d0 = _a[0] < _b[0] ? _a[0] : _b[0];
-    int16_t d1 = _a[1] < _b[1] ? _a[1] : _b[1];
-    int16_t d2 = _a[2] < _b[2] ? _a[2] : _b[2];
-    int16_t d3 = _a[3] < _b[3] ? _a[3] : _b[3];
-    int16_t d4 = _a[4] < _b[4] ? _a[4] : _b[4];
-    int16_t d5 = _a[5] < _b[5] ? _a[5] : _b[5];
-    int16_t d6 = _a[6] < _b[6] ? _a[6] : _b[6];
-    int16_t d7 = _a[7] < _b[7] ? _a[7] : _b[7];
+    i16 d0 = _a[0] < _b[0] ? _a[0] : _b[0];
+    i16 d1 = _a[1] < _b[1] ? _a[1] : _b[1];
+    i16 d2 = _a[2] < _b[2] ? _a[2] : _b[2];
+    i16 d3 = _a[3] < _b[3] ? _a[3] : _b[3];
+    i16 d4 = _a[4] < _b[4] ? _a[4] : _b[4];
+    i16 d5 = _a[5] < _b[5] ? _a[5] : _b[5];
+    i16 d6 = _a[6] < _b[6] ? _a[6] : _b[6];
+    i16 d7 = _a[7] < _b[7] ? _a[7] : _b[7];
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_min_epi16(a, b);
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_mulhi_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_mulhi_epi16(const i16 *_a, const i16 *_b)
 {
-    int16_t d[8];
-    for (uint32_t i = 0; i < 8; i++) {
-        int32_t m = (int32_t) _a[i] * (int32_t) _b[i];
-        d[i] = (int16_t)(m >> 16);
+    i16 d[8];
+    for (u32 i = 0; i < 8; i++) {
+        i32 m = (i32) _a[i] * (i32) _b[i];
+        d[i] = (i16)(m >> 16);
     }
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_mulhi_epi16(a, b);
     return validateInt16(c, d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7]);
 }
 
-bool test_mm_cmplt_ps(const float *_a, const float *_b)
+bool test_mm_cmplt_ps(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
 
-    int32_t result[4];
+    i32 result[4];
     result[0] = _a[0] < _b[0] ? -1 : 0;
     result[1] = _a[1] < _b[1] ? -1 : 0;
     result[2] = _a[2] < _b[2] ? -1 : 0;
@@ -1504,12 +1504,12 @@ bool test_mm_cmplt_ps(const float *_a, const float *_b)
     return validateInt32(iret, result[0], result[1], result[2], result[3]);
 }
 
-bool test_mm_cmpgt_ps(const float *_a, const float *_b)
+bool test_mm_cmpgt_ps(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
 
-    int32_t result[4];
+    i32 result[4];
     result[0] = _a[0] > _b[0] ? -1 : 0;
     result[1] = _a[1] > _b[1] ? -1 : 0;
     result[2] = _a[2] > _b[2] ? -1 : 0;
@@ -1520,12 +1520,12 @@ bool test_mm_cmpgt_ps(const float *_a, const float *_b)
     return validateInt32(iret, result[0], result[1], result[2], result[3]);
 }
 
-bool test_mm_cmpge_ps(const float *_a, const float *_b)
+bool test_mm_cmpge_ps(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
 
-    int32_t result[4];
+    i32 result[4];
     result[0] = _a[0] >= _b[0] ? -1 : 0;
     result[1] = _a[1] >= _b[1] ? -1 : 0;
     result[2] = _a[2] >= _b[2] ? -1 : 0;
@@ -1536,12 +1536,12 @@ bool test_mm_cmpge_ps(const float *_a, const float *_b)
     return validateInt32(iret, result[0], result[1], result[2], result[3]);
 }
 
-bool test_mm_cmple_ps(const float *_a, const float *_b)
+bool test_mm_cmple_ps(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
 
-    int32_t result[4];
+    i32 result[4];
     result[0] = _a[0] <= _b[0] ? -1 : 0;
     result[1] = _a[1] <= _b[1] ? -1 : 0;
     result[2] = _a[2] <= _b[2] ? -1 : 0;
@@ -1552,12 +1552,12 @@ bool test_mm_cmple_ps(const float *_a, const float *_b)
     return validateInt32(iret, result[0], result[1], result[2], result[3]);
 }
 
-bool test_mm_cmpeq_ps(const float *_a, const float *_b)
+bool test_mm_cmpeq_ps(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
 
-    int32_t result[4];
+    i32 result[4];
     result[0] = _a[0] == _b[0] ? -1 : 0;
     result[1] = _a[1] == _b[1] ? -1 : 0;
     result[2] = _a[2] == _b[2] ? -1 : 0;
@@ -1568,12 +1568,12 @@ bool test_mm_cmpeq_ps(const float *_a, const float *_b)
     return validateInt32(iret, result[0], result[1], result[2], result[3]);
 }
 
-bool test_mm_cmplt_epi32(const int32_t *_a, const int32_t *_b)
+bool test_mm_cmplt_epi32(const i32 *_a, const i32 *_b)
 {
     __m128i a = test_mm_load_ps(_a);
     __m128i b = test_mm_load_ps(_b);
 
-    int32_t result[4];
+    i32 result[4];
     result[0] = _a[0] < _b[0] ? -1 : 0;
     result[1] = _a[1] < _b[1] ? -1 : 0;
     result[2] = _a[2] < _b[2] ? -1 : 0;
@@ -1583,12 +1583,12 @@ bool test_mm_cmplt_epi32(const int32_t *_a, const int32_t *_b)
     return validateInt32(iret, result[0], result[1], result[2], result[3]);
 }
 
-bool test_mm_cmpgt_epi32(const int32_t *_a, const int32_t *_b)
+bool test_mm_cmpgt_epi32(const i32 *_a, const i32 *_b)
 {
     __m128i a = test_mm_load_ps(_a);
     __m128i b = test_mm_load_ps(_b);
 
-    int32_t result[4];
+    i32 result[4];
 
     result[0] = _a[0] > _b[0] ? -1 : 0;
     result[1] = _a[1] > _b[1] ? -1 : 0;
@@ -1599,9 +1599,9 @@ bool test_mm_cmpgt_epi32(const int32_t *_a, const int32_t *_b)
     return validateInt32(iret, result[0], result[1], result[2], result[3]);
 }
 
-float compord(float a, float b)
+f32 compord(f32 a, f32 b)
 {
-    float ret;
+    f32 ret;
 
     bool isNANA = isNAN(a);
     bool isNANB = isNAN(b);
@@ -1613,14 +1613,14 @@ float compord(float a, float b)
     return ret;
 }
 
-bool test_mm_cmpord_ps(const float *_a, const float *_b)
+bool test_mm_cmpord_ps(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
 
-    float result[4];
+    f32 result[4];
 
-    for (uint32_t i = 0; i < 4; i++) {
+    for (u32 i = 0; i < 4; i++) {
         result[i] = compord(_a[i], _b[i]);
     }
 
@@ -1629,9 +1629,9 @@ bool test_mm_cmpord_ps(const float *_a, const float *_b)
     return validateFloat(ret, result[0], result[1], result[2], result[3]);
 }
 
-int32_t comilt_ss(float a, float b)
+i32 comilt_ss(f32 a, f32 b)
 {
-    int32_t ret;
+    i32 ret;
 
     bool isNANA = isNAN(a);
     bool isNANB = isNAN(b);
@@ -1645,7 +1645,7 @@ int32_t comilt_ss(float a, float b)
     return ret;
 }
 
-bool test_mm_comilt_ss(const float *_a, const float *_b)
+bool test_mm_comilt_ss(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
@@ -1654,16 +1654,16 @@ bool test_mm_comilt_ss(const float *_a, const float *_b)
         // Test disabled: GCC and Clang on x86_64 return different values.
         return true;
 
-    int32_t result = comilt_ss(_a[0], _b[0]);
+    i32 result = comilt_ss(_a[0], _b[0]);
 
-    int32_t ret = _mm_comilt_ss(a, b);
+    i32 ret = _mm_comilt_ss(a, b);
 
     return result == ret ? true : false;
 }
 
-int32_t comigt_ss(float a, float b)
+i32 comigt_ss(f32 a, f32 b)
 {
-    int32_t ret;
+    i32 ret;
 
     bool isNANA = isNAN(a);
     bool isNANB = isNAN(b);
@@ -1677,20 +1677,20 @@ int32_t comigt_ss(float a, float b)
     return ret;
 }
 
-bool test_mm_comigt_ss(const float *_a, const float *_b)
+bool test_mm_comigt_ss(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
 
-    int32_t result = comigt_ss(_a[0], _b[0]);
-    int32_t ret = _mm_comigt_ss(a, b);
+    i32 result = comigt_ss(_a[0], _b[0]);
+    i32 ret = _mm_comigt_ss(a, b);
 
     return result == ret ? true : false;
 }
 
-int32_t comile_ss(float a, float b)
+i32 comile_ss(f32 a, f32 b)
 {
-    int32_t ret;
+    i32 ret;
 
     bool isNANA = isNAN(a);
     bool isNANB = isNAN(b);
@@ -1704,7 +1704,7 @@ int32_t comile_ss(float a, float b)
     return ret;
 }
 
-bool test_mm_comile_ss(const float *_a, const float *_b)
+bool test_mm_comile_ss(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
@@ -1713,15 +1713,15 @@ bool test_mm_comile_ss(const float *_a, const float *_b)
         // Test disabled: GCC and Clang on x86_64 return different values.
         return true;
 
-    int32_t result = comile_ss(_a[0], _b[0]);
-    int32_t ret = _mm_comile_ss(a, b);
+    i32 result = comile_ss(_a[0], _b[0]);
+    i32 ret = _mm_comile_ss(a, b);
 
     return result == ret ? true : false;
 }
 
-int32_t comige_ss(float a, float b)
+i32 comige_ss(f32 a, f32 b)
 {
-    int32_t ret;
+    i32 ret;
 
     bool isNANA = isNAN(a);
     bool isNANB = isNAN(b);
@@ -1735,20 +1735,20 @@ int32_t comige_ss(float a, float b)
     return ret;
 }
 
-bool test_mm_comige_ss(const float *_a, const float *_b)
+bool test_mm_comige_ss(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
 
-    int32_t result = comige_ss(_a[0], _b[0]);
-    int32_t ret = _mm_comige_ss(a, b);
+    i32 result = comige_ss(_a[0], _b[0]);
+    i32 ret = _mm_comige_ss(a, b);
 
     return result == ret ? true : false;
 }
 
-int32_t comieq_ss(float a, float b)
+i32 comieq_ss(f32 a, f32 b)
 {
-    int32_t ret;
+    i32 ret;
 
     bool isNANA = isNAN(a);
     bool isNANB = isNAN(b);
@@ -1762,7 +1762,7 @@ int32_t comieq_ss(float a, float b)
     return ret;
 }
 
-bool test_mm_comieq_ss(const float *_a, const float *_b)
+bool test_mm_comieq_ss(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
@@ -1771,15 +1771,15 @@ bool test_mm_comieq_ss(const float *_a, const float *_b)
         // Test disabled: GCC and Clang on x86_64 return different values.
         return true;
 
-    int32_t result = comieq_ss(_a[0], _b[0]);
-    int32_t ret = _mm_comieq_ss(a, b);
+    i32 result = comieq_ss(_a[0], _b[0]);
+    i32 ret = _mm_comieq_ss(a, b);
 
     return result == ret ? true : false;
 }
 
-int32_t comineq_ss(float a, float b)
+i32 comineq_ss(f32 a, f32 b)
 {
-    int32_t ret;
+    i32 ret;
 
     bool isNANA = isNAN(a);
     bool isNANB = isNAN(b);
@@ -1791,7 +1791,7 @@ int32_t comineq_ss(float a, float b)
     return ret;
 }
 
-bool test_mm_comineq_ss(const float *_a, const float *_b)
+bool test_mm_comineq_ss(const f32 *_a, const f32 *_b)
 {
     __m128 a = test_mm_load_ps(_a);
     __m128 b = test_mm_load_ps(_b);
@@ -1800,46 +1800,46 @@ bool test_mm_comineq_ss(const float *_a, const float *_b)
         // Test disabled: GCC and Clang on x86_64 return different values.
         return true;
 
-    int32_t result = comineq_ss(_a[0], _b[0]);
-    int32_t ret = _mm_comineq_ss(a, b);
+    i32 result = comineq_ss(_a[0], _b[0]);
+    i32 ret = _mm_comineq_ss(a, b);
 
     return result == ret ? true : false;
 }
 
-bool test_mm_hadd_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_hadd_epi16(const i16 *_a, const i16 *_b)
 {
-    int16_t d0 = _a[0] + _a[1];
-    int16_t d1 = _a[2] + _a[3];
-    int16_t d2 = _a[4] + _a[5];
-    int16_t d3 = _a[6] + _a[7];
-    int16_t d4 = _b[0] + _b[1];
-    int16_t d5 = _b[2] + _b[3];
-    int16_t d6 = _b[4] + _b[5];
-    int16_t d7 = _b[6] + _b[7];
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    i16 d0 = _a[0] + _a[1];
+    i16 d1 = _a[2] + _a[3];
+    i16 d2 = _a[4] + _a[5];
+    i16 d3 = _a[6] + _a[7];
+    i16 d4 = _b[0] + _b[1];
+    i16 d5 = _b[2] + _b[3];
+    i16 d6 = _b[4] + _b[5];
+    i16 d7 = _b[6] + _b[7];
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i ret = _mm_hadd_epi16(a, b);
     return validateInt16(ret, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_cvttps_epi32(const float *_a)
+bool test_mm_cvttps_epi32(const f32 *_a)
 {
     __m128 a = test_mm_load_ps(_a);
-    int32_t trun[4];
-    for (uint32_t i = 0; i < 4; i++) {
-        trun[i] = (int32_t) _a[i];
+    i32 trun[4];
+    for (u32 i = 0; i < 4; i++) {
+        trun[i] = (i32) _a[i];
     }
 
     __m128i ret = _mm_cvttps_epi32(a);
     return validateInt32(ret, trun[0], trun[1], trun[2], trun[3]);
 }
 
-bool test_mm_cvtepi32_ps(const int32_t *_a)
+bool test_mm_cvtepi32_ps(const i32 *_a)
 {
     __m128i a = test_mm_load_ps(_a);
-    float trun[4];
-    for (uint32_t i = 0; i < 4; i++) {
-        trun[i] = (float) _a[i];
+    f32 trun[4];
+    for (u32 i = 0; i < 4; i++) {
+        trun[i] = (f32) _a[i];
     }
 
     __m128 ret = _mm_cvtepi32_ps(a);
@@ -1847,844 +1847,844 @@ bool test_mm_cvtepi32_ps(const int32_t *_a)
 }
 
 // https://msdn.microsoft.com/en-us/library/xdc42k5e%28v=vs.90%29.aspx?f=255&MSPPError=-2147217396
-bool test_mm_cvtps_epi32(const float _a[4])
+bool test_mm_cvtps_epi32(const f32 _a[4])
 {
     __m128 a = test_mm_load_ps(_a);
-    int32_t trun[4];
-    for (uint32_t i = 0; i < 4; i++) {
-        trun[i] = (int32_t)(bankersRounding(_a[i]));
+    i32 trun[4];
+    for (u32 i = 0; i < 4; i++) {
+        trun[i] = (i32)(bankersRounding(_a[i]));
     }
 
     __m128i ret = _mm_cvtps_epi32(a);
     return validateInt32(ret, trun[0], trun[1], trun[2], trun[3]);
 }
 
-bool test_mm_set1_epi16(const int16_t *_a)
+bool test_mm_set1_epi16(const i16 *_a)
 {
-    int16_t d0 = _a[0];
+    i16 d0 = _a[0];
 
     __m128i c = _mm_set1_epi16(d0);
     return validateInt16(c, d0, d0, d0, d0, d0, d0, d0, d0);
 }
 
-bool test_mm_set_epi16(const int16_t *_a)
+bool test_mm_set_epi16(const i16 *_a)
 {
-    int16_t d0 = _a[0];
-    int16_t d1 = _a[1];
-    int16_t d2 = _a[2];
-    int16_t d3 = _a[3];
-    int16_t d4 = _a[4];
-    int16_t d5 = _a[5];
-    int16_t d6 = _a[6];
-    int16_t d7 = _a[7];
+    i16 d0 = _a[0];
+    i16 d1 = _a[1];
+    i16 d2 = _a[2];
+    i16 d3 = _a[3];
+    i16 d4 = _a[4];
+    i16 d5 = _a[5];
+    i16 d6 = _a[6];
+    i16 d7 = _a[7];
 
     __m128i c = _mm_set_epi16(d7, d6, d5, d4, d3, d2, d1, d0);
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_sra_epi16(const int16_t *_a, const int64_t count)
+bool test_mm_sra_epi16(const i16 *_a, const i64 count)
 {
     __m128i a = _mm_load_si128((const __m128i *) _a);
     __m128i b = _mm_set1_epi64x(count);
     __m128i c = _mm_sra_epi16(a, b);
     if (count > 15) {
-        int16_t d0 = _a[0] < 0 ? 0xffff : 0;
-        int16_t d1 = _a[1] < 0 ? 0xffff : 0;
-        int16_t d2 = _a[2] < 0 ? 0xffff : 0;
-        int16_t d3 = _a[3] < 0 ? 0xffff : 0;
-        int16_t d4 = _a[4] < 0 ? 0xffff : 0;
-        int16_t d5 = _a[5] < 0 ? 0xffff : 0;
-        int16_t d6 = _a[6] < 0 ? 0xffff : 0;
-        int16_t d7 = _a[7] < 0 ? 0xffff : 0;
+        i16 d0 = _a[0] < 0 ? 0xffff : 0;
+        i16 d1 = _a[1] < 0 ? 0xffff : 0;
+        i16 d2 = _a[2] < 0 ? 0xffff : 0;
+        i16 d3 = _a[3] < 0 ? 0xffff : 0;
+        i16 d4 = _a[4] < 0 ? 0xffff : 0;
+        i16 d5 = _a[5] < 0 ? 0xffff : 0;
+        i16 d6 = _a[6] < 0 ? 0xffff : 0;
+        i16 d7 = _a[7] < 0 ? 0xffff : 0;
 
         return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
     }
 
-    int16_t d0 = _a[0] >> count;
-    int16_t d1 = _a[1] >> count;
-    int16_t d2 = _a[2] >> count;
-    int16_t d3 = _a[3] >> count;
-    int16_t d4 = _a[4] >> count;
-    int16_t d5 = _a[5] >> count;
-    int16_t d6 = _a[6] >> count;
-    int16_t d7 = _a[7] >> count;
+    i16 d0 = _a[0] >> count;
+    i16 d1 = _a[1] >> count;
+    i16 d2 = _a[2] >> count;
+    i16 d3 = _a[3] >> count;
+    i16 d4 = _a[4] >> count;
+    i16 d5 = _a[5] >> count;
+    i16 d6 = _a[6] >> count;
+    i16 d7 = _a[7] >> count;
 
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_sra_epi32(const int32_t *_a, const int64_t count)
+bool test_mm_sra_epi32(const i32 *_a, const i64 count)
 {
     __m128i a = _mm_load_si128((const __m128i *) _a);
     __m128i b = _mm_set1_epi64x(count);
     __m128i c = _mm_sra_epi32(a, b);
     if (count > 31) {
-        int32_t d0 = _a[0] < 0 ? 0xffffffff : 0;
-        int32_t d1 = _a[1] < 0 ? 0xffffffff : 0;
-        int32_t d2 = _a[2] < 0 ? 0xffffffff : 0;
-        int32_t d3 = _a[3] < 0 ? 0xffffffff : 0;
+        i32 d0 = _a[0] < 0 ? 0xffffffff : 0;
+        i32 d1 = _a[1] < 0 ? 0xffffffff : 0;
+        i32 d2 = _a[2] < 0 ? 0xffffffff : 0;
+        i32 d3 = _a[3] < 0 ? 0xffffffff : 0;
 
         return validateInt32(c, d0, d1, d2, d3);
     }
 
-    int32_t d0 = _a[0] >> count;
-    int32_t d1 = _a[1] >> count;
-    int32_t d2 = _a[2] >> count;
-    int32_t d3 = _a[3] >> count;
+    i32 d0 = _a[0] >> count;
+    i32 d1 = _a[1] >> count;
+    i32 d2 = _a[2] >> count;
+    i32 d3 = _a[3] >> count;
 
     return validateInt32(c, d0, d1, d2, d3);
 }
 
-bool test_mm_slli_epi16(const int16_t *_a)
+bool test_mm_slli_epi16(const i16 *_a)
 {
     const int count = 3;
 
-    int16_t d0 = _a[0] << count;
-    int16_t d1 = _a[1] << count;
-    int16_t d2 = _a[2] << count;
-    int16_t d3 = _a[3] << count;
-    int16_t d4 = _a[4] << count;
-    int16_t d5 = _a[5] << count;
-    int16_t d6 = _a[6] << count;
-    int16_t d7 = _a[7] << count;
+    i16 d0 = _a[0] << count;
+    i16 d1 = _a[1] << count;
+    i16 d2 = _a[2] << count;
+    i16 d3 = _a[3] << count;
+    i16 d4 = _a[4] << count;
+    i16 d5 = _a[5] << count;
+    i16 d6 = _a[6] << count;
+    i16 d7 = _a[7] << count;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i c = _mm_slli_epi16(a, count);
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_sll_epi16(const int16_t *_a, const int64_t count)
+bool test_mm_sll_epi16(const i16 *_a, const i64 count)
 {
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i b = _mm_set1_epi64x(count);
     __m128i c = _mm_sll_epi16(a, b);
     if (count < 0 || count > 15)
         return validateInt16(c, 0, 0, 0, 0, 0, 0, 0, 0);
 
-    uint16_t d0 = _a[0] << count;
-    uint16_t d1 = _a[1] << count;
-    uint16_t d2 = _a[2] << count;
-    uint16_t d3 = _a[3] << count;
-    uint16_t d4 = _a[4] << count;
-    uint16_t d5 = _a[5] << count;
-    uint16_t d6 = _a[6] << count;
-    uint16_t d7 = _a[7] << count;
+    u16 d0 = _a[0] << count;
+    u16 d1 = _a[1] << count;
+    u16 d2 = _a[2] << count;
+    u16 d3 = _a[3] << count;
+    u16 d4 = _a[4] << count;
+    u16 d5 = _a[5] << count;
+    u16 d6 = _a[6] << count;
+    u16 d7 = _a[7] << count;
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_sll_epi32(const int32_t *_a, const int64_t count)
+bool test_mm_sll_epi32(const i32 *_a, const i64 count)
 {
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i b = _mm_set1_epi64x(count);
     __m128i c = _mm_sll_epi32(a, b);
     if (count < 0 || count > 31)
         return validateInt32(c, 0, 0, 0, 0);
 
-    uint32_t d0 = _a[0] << count;
-    uint32_t d1 = _a[1] << count;
-    uint32_t d2 = _a[2] << count;
-    uint32_t d3 = _a[3] << count;
+    u32 d0 = _a[0] << count;
+    u32 d1 = _a[1] << count;
+    u32 d2 = _a[2] << count;
+    u32 d3 = _a[3] << count;
     return validateInt32(c, d0, d1, d2, d3);
 }
 
-bool test_mm_sll_epi64(const int64_t *_a, const int64_t count)
+bool test_mm_sll_epi64(const i64 *_a, const i64 count)
 {
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i b = _mm_set1_epi64x(count);
     __m128i c = _mm_sll_epi64(a, b);
     if (count < 0 || count > 63)
         return validateInt64(c, 0, 0);
 
-    uint64_t d0 = _a[0] << count;
-    uint64_t d1 = _a[1] << count;
+    u64 d0 = _a[0] << count;
+    u64 d1 = _a[1] << count;
     return validateInt64(c, d0, d1);
 }
 
-bool test_mm_srl_epi16(const int16_t *_a, const int64_t count)
+bool test_mm_srl_epi16(const i16 *_a, const i64 count)
 {
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i b = _mm_set1_epi64x(count);
     __m128i c = _mm_srl_epi16(a, b);
     if (count < 0 || count > 15)
         return validateInt16(c, 0, 0, 0, 0, 0, 0, 0, 0);
 
-    uint16_t d0 = (uint16_t)(_a[0]) >> count;
-    uint16_t d1 = (uint16_t)(_a[1]) >> count;
-    uint16_t d2 = (uint16_t)(_a[2]) >> count;
-    uint16_t d3 = (uint16_t)(_a[3]) >> count;
-    uint16_t d4 = (uint16_t)(_a[4]) >> count;
-    uint16_t d5 = (uint16_t)(_a[5]) >> count;
-    uint16_t d6 = (uint16_t)(_a[6]) >> count;
-    uint16_t d7 = (uint16_t)(_a[7]) >> count;
+    u16 d0 = (u16)(_a[0]) >> count;
+    u16 d1 = (u16)(_a[1]) >> count;
+    u16 d2 = (u16)(_a[2]) >> count;
+    u16 d3 = (u16)(_a[3]) >> count;
+    u16 d4 = (u16)(_a[4]) >> count;
+    u16 d5 = (u16)(_a[5]) >> count;
+    u16 d6 = (u16)(_a[6]) >> count;
+    u16 d7 = (u16)(_a[7]) >> count;
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_srl_epi32(const int32_t *_a, const int64_t count)
+bool test_mm_srl_epi32(const i32 *_a, const i64 count)
 {
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i b = _mm_set1_epi64x(count);
     __m128i c = _mm_srl_epi32(a, b);
     if (count < 0 || count > 31)
         return validateInt32(c, 0, 0, 0, 0);
 
-    uint32_t d0 = (uint32_t)(_a[0]) >> count;
-    uint32_t d1 = (uint32_t)(_a[1]) >> count;
-    uint32_t d2 = (uint32_t)(_a[2]) >> count;
-    uint32_t d3 = (uint32_t)(_a[3]) >> count;
+    u32 d0 = (u32)(_a[0]) >> count;
+    u32 d1 = (u32)(_a[1]) >> count;
+    u32 d2 = (u32)(_a[2]) >> count;
+    u32 d3 = (u32)(_a[3]) >> count;
     return validateInt32(c, d0, d1, d2, d3);
 }
 
-bool test_mm_srl_epi64(const int64_t *_a, const int64_t count)
+bool test_mm_srl_epi64(const i64 *_a, const i64 count)
 {
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i b = _mm_set1_epi64x(count);
     __m128i c = _mm_srl_epi64(a, b);
     if (count < 0 || count > 63)
         return validateInt64(c, 0, 0);
 
-    uint64_t d0 = (uint64_t)(_a[0]) >> count;
-    uint64_t d1 = (uint64_t)(_a[1]) >> count;
+    u64 d0 = (u64)(_a[0]) >> count;
+    u64 d1 = (u64)(_a[1]) >> count;
     return validateInt64(c, d0, d1);
 }
 
-bool test_mm_srli_epi16(const int16_t *_a)
+bool test_mm_srli_epi16(const i16 *_a)
 {
     const int count = 3;
 
-    int16_t d0 = (uint16_t)(_a[0]) >> count;
-    int16_t d1 = (uint16_t)(_a[1]) >> count;
-    int16_t d2 = (uint16_t)(_a[2]) >> count;
-    int16_t d3 = (uint16_t)(_a[3]) >> count;
-    int16_t d4 = (uint16_t)(_a[4]) >> count;
-    int16_t d5 = (uint16_t)(_a[5]) >> count;
-    int16_t d6 = (uint16_t)(_a[6]) >> count;
-    int16_t d7 = (uint16_t)(_a[7]) >> count;
+    i16 d0 = (u16)(_a[0]) >> count;
+    i16 d1 = (u16)(_a[1]) >> count;
+    i16 d2 = (u16)(_a[2]) >> count;
+    i16 d3 = (u16)(_a[3]) >> count;
+    i16 d4 = (u16)(_a[4]) >> count;
+    i16 d5 = (u16)(_a[5]) >> count;
+    i16 d6 = (u16)(_a[6]) >> count;
+    i16 d7 = (u16)(_a[7]) >> count;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i c = _mm_srli_epi16(a, count);
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_cmpeq_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_cmpeq_epi16(const i16 *_a, const i16 *_b)
 {
-    int16_t d0 = (_a[0] == _b[0]) ? 0xffff : 0x0;
-    int16_t d1 = (_a[1] == _b[1]) ? 0xffff : 0x0;
-    int16_t d2 = (_a[2] == _b[2]) ? 0xffff : 0x0;
-    int16_t d3 = (_a[3] == _b[3]) ? 0xffff : 0x0;
+    i16 d0 = (_a[0] == _b[0]) ? 0xffff : 0x0;
+    i16 d1 = (_a[1] == _b[1]) ? 0xffff : 0x0;
+    i16 d2 = (_a[2] == _b[2]) ? 0xffff : 0x0;
+    i16 d3 = (_a[3] == _b[3]) ? 0xffff : 0x0;
     ;
-    int16_t d4 = (_a[4] == _b[4]) ? 0xffff : 0x0;
+    i16 d4 = (_a[4] == _b[4]) ? 0xffff : 0x0;
     ;
-    int16_t d5 = (_a[5] == _b[5]) ? 0xffff : 0x0;
-    int16_t d6 = (_a[6] == _b[6]) ? 0xffff : 0x0;
+    i16 d5 = (_a[5] == _b[5]) ? 0xffff : 0x0;
+    i16 d6 = (_a[6] == _b[6]) ? 0xffff : 0x0;
     ;
-    int16_t d7 = (_a[7] == _b[7]) ? 0xffff : 0x0;
+    i16 d7 = (_a[7] == _b[7]) ? 0xffff : 0x0;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_cmpeq_epi16(a, b);
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_cmpeq_epi64(const int64_t *_a, const int64_t *_b)
+bool test_mm_cmpeq_epi64(const i64 *_a, const i64 *_b)
 {
-    int64_t d0 = (_a[0] == _b[0]) ? 0xffffffffffffffff : 0x0;
-    int64_t d1 = (_a[1] == _b[1]) ? 0xffffffffffffffff : 0x0;
+    i64 d0 = (_a[0] == _b[0]) ? 0xffffffffffffffff : 0x0;
+    i64 d1 = (_a[1] == _b[1]) ? 0xffffffffffffffff : 0x0;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_cmpeq_epi64(a, b);
     return validateInt64(c, d0, d1);
 }
 
-bool test_mm_set1_epi8(const int8_t *_a)
+bool test_mm_set1_epi8(const i8 *_a)
 {
-    int8_t d0 = _a[0];
+    i8 d0 = _a[0];
     __m128i c = _mm_set1_epi8(d0);
     return validateInt8(c, d0, d0, d0, d0, d0, d0, d0, d0, d0, d0, d0, d0, d0,
                         d0, d0, d0);
 }
 
-bool test_mm_adds_epu8(const int8_t *_a, const int8_t *_b)
+bool test_mm_adds_epu8(const i8 *_a, const i8 *_b)
 {
-    uint8_t d0 = (uint8_t) _a[0] + (uint8_t) _b[0];
-    if (d0 < (uint8_t) _a[0])
+    u8 d0 = (u8) _a[0] + (u8) _b[0];
+    if (d0 < (u8) _a[0])
         d0 = 255;
-    uint8_t d1 = (uint8_t) _a[1] + (uint8_t) _b[1];
-    if (d1 < (uint8_t) _a[1])
+    u8 d1 = (u8) _a[1] + (u8) _b[1];
+    if (d1 < (u8) _a[1])
         d1 = 255;
-    uint8_t d2 = (uint8_t) _a[2] + (uint8_t) _b[2];
-    if (d2 < (uint8_t) _a[2])
+    u8 d2 = (u8) _a[2] + (u8) _b[2];
+    if (d2 < (u8) _a[2])
         d2 = 255;
-    uint8_t d3 = (uint8_t) _a[3] + (uint8_t) _b[3];
-    if (d3 < (uint8_t) _a[3])
+    u8 d3 = (u8) _a[3] + (u8) _b[3];
+    if (d3 < (u8) _a[3])
         d3 = 255;
-    uint8_t d4 = (uint8_t) _a[4] + (uint8_t) _b[4];
-    if (d4 < (uint8_t) _a[4])
+    u8 d4 = (u8) _a[4] + (u8) _b[4];
+    if (d4 < (u8) _a[4])
         d4 = 255;
-    uint8_t d5 = (uint8_t) _a[5] + (uint8_t) _b[5];
-    if (d5 < (uint8_t) _a[5])
+    u8 d5 = (u8) _a[5] + (u8) _b[5];
+    if (d5 < (u8) _a[5])
         d5 = 255;
-    uint8_t d6 = (uint8_t) _a[6] + (uint8_t) _b[6];
-    if (d6 < (uint8_t) _a[6])
+    u8 d6 = (u8) _a[6] + (u8) _b[6];
+    if (d6 < (u8) _a[6])
         d6 = 255;
-    uint8_t d7 = (uint8_t) _a[7] + (uint8_t) _b[7];
-    if (d7 < (uint8_t) _a[7])
+    u8 d7 = (u8) _a[7] + (u8) _b[7];
+    if (d7 < (u8) _a[7])
         d7 = 255;
-    uint8_t d8 = (uint8_t) _a[8] + (uint8_t) _b[8];
-    if (d8 < (uint8_t) _a[8])
+    u8 d8 = (u8) _a[8] + (u8) _b[8];
+    if (d8 < (u8) _a[8])
         d8 = 255;
-    uint8_t d9 = (uint8_t) _a[9] + (uint8_t) _b[9];
-    if (d9 < (uint8_t) _a[9])
+    u8 d9 = (u8) _a[9] + (u8) _b[9];
+    if (d9 < (u8) _a[9])
         d9 = 255;
-    uint8_t d10 = (uint8_t) _a[10] + (uint8_t) _b[10];
-    if (d10 < (uint8_t) _a[10])
+    u8 d10 = (u8) _a[10] + (u8) _b[10];
+    if (d10 < (u8) _a[10])
         d10 = 255;
-    uint8_t d11 = (uint8_t) _a[11] + (uint8_t) _b[11];
-    if (d11 < (uint8_t) _a[11])
+    u8 d11 = (u8) _a[11] + (u8) _b[11];
+    if (d11 < (u8) _a[11])
         d11 = 255;
-    uint8_t d12 = (uint8_t) _a[12] + (uint8_t) _b[12];
-    if (d12 < (uint8_t) _a[12])
+    u8 d12 = (u8) _a[12] + (u8) _b[12];
+    if (d12 < (u8) _a[12])
         d12 = 255;
-    uint8_t d13 = (uint8_t) _a[13] + (uint8_t) _b[13];
-    if (d13 < (uint8_t) _a[13])
+    u8 d13 = (u8) _a[13] + (u8) _b[13];
+    if (d13 < (u8) _a[13])
         d13 = 255;
-    uint8_t d14 = (uint8_t) _a[14] + (uint8_t) _b[14];
-    if (d14 < (uint8_t) _a[14])
+    u8 d14 = (u8) _a[14] + (u8) _b[14];
+    if (d14 < (u8) _a[14])
         d14 = 255;
-    uint8_t d15 = (uint8_t) _a[15] + (uint8_t) _b[15];
-    if (d15 < (uint8_t) _a[15])
+    u8 d15 = (u8) _a[15] + (u8) _b[15];
+    if (d15 < (u8) _a[15])
         d15 = 255;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_adds_epu8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_subs_epu8(const int8_t *_a, const int8_t *_b)
+bool test_mm_subs_epu8(const i8 *_a, const i8 *_b)
 {
-    uint8_t d0 = (uint8_t) _a[0] - (uint8_t) _b[0];
-    if (d0 > (uint8_t) _a[0])
+    u8 d0 = (u8) _a[0] - (u8) _b[0];
+    if (d0 > (u8) _a[0])
         d0 = 0;
-    uint8_t d1 = (uint8_t) _a[1] - (uint8_t) _b[1];
-    if (d1 > (uint8_t) _a[1])
+    u8 d1 = (u8) _a[1] - (u8) _b[1];
+    if (d1 > (u8) _a[1])
         d1 = 0;
-    uint8_t d2 = (uint8_t) _a[2] - (uint8_t) _b[2];
-    if (d2 > (uint8_t) _a[2])
+    u8 d2 = (u8) _a[2] - (u8) _b[2];
+    if (d2 > (u8) _a[2])
         d2 = 0;
-    uint8_t d3 = (uint8_t) _a[3] - (uint8_t) _b[3];
-    if (d3 > (uint8_t) _a[3])
+    u8 d3 = (u8) _a[3] - (u8) _b[3];
+    if (d3 > (u8) _a[3])
         d3 = 0;
-    uint8_t d4 = (uint8_t) _a[4] - (uint8_t) _b[4];
-    if (d4 > (uint8_t) _a[4])
+    u8 d4 = (u8) _a[4] - (u8) _b[4];
+    if (d4 > (u8) _a[4])
         d4 = 0;
-    uint8_t d5 = (uint8_t) _a[5] - (uint8_t) _b[5];
-    if (d5 > (uint8_t) _a[5])
+    u8 d5 = (u8) _a[5] - (u8) _b[5];
+    if (d5 > (u8) _a[5])
         d5 = 0;
-    uint8_t d6 = (uint8_t) _a[6] - (uint8_t) _b[6];
-    if (d6 > (uint8_t) _a[6])
+    u8 d6 = (u8) _a[6] - (u8) _b[6];
+    if (d6 > (u8) _a[6])
         d6 = 0;
-    uint8_t d7 = (uint8_t) _a[7] - (uint8_t) _b[7];
-    if (d7 > (uint8_t) _a[7])
+    u8 d7 = (u8) _a[7] - (u8) _b[7];
+    if (d7 > (u8) _a[7])
         d7 = 0;
-    uint8_t d8 = (uint8_t) _a[8] - (uint8_t) _b[8];
-    if (d8 > (uint8_t) _a[8])
+    u8 d8 = (u8) _a[8] - (u8) _b[8];
+    if (d8 > (u8) _a[8])
         d8 = 0;
-    uint8_t d9 = (uint8_t) _a[9] - (uint8_t) _b[9];
-    if (d9 > (uint8_t) _a[9])
+    u8 d9 = (u8) _a[9] - (u8) _b[9];
+    if (d9 > (u8) _a[9])
         d9 = 0;
-    uint8_t d10 = (uint8_t) _a[10] - (uint8_t) _b[10];
-    if (d10 > (uint8_t) _a[10])
+    u8 d10 = (u8) _a[10] - (u8) _b[10];
+    if (d10 > (u8) _a[10])
         d10 = 0;
-    uint8_t d11 = (uint8_t) _a[11] - (uint8_t) _b[11];
-    if (d11 > (uint8_t) _a[11])
+    u8 d11 = (u8) _a[11] - (u8) _b[11];
+    if (d11 > (u8) _a[11])
         d11 = 0;
-    uint8_t d12 = (uint8_t) _a[12] - (uint8_t) _b[12];
-    if (d12 > (uint8_t) _a[12])
+    u8 d12 = (u8) _a[12] - (u8) _b[12];
+    if (d12 > (u8) _a[12])
         d12 = 0;
-    uint8_t d13 = (uint8_t) _a[13] - (uint8_t) _b[13];
-    if (d13 > (uint8_t) _a[13])
+    u8 d13 = (u8) _a[13] - (u8) _b[13];
+    if (d13 > (u8) _a[13])
         d13 = 0;
-    uint8_t d14 = (uint8_t) _a[14] - (uint8_t) _b[14];
-    if (d14 > (uint8_t) _a[14])
+    u8 d14 = (u8) _a[14] - (u8) _b[14];
+    if (d14 > (u8) _a[14])
         d14 = 0;
-    uint8_t d15 = (uint8_t) _a[15] - (uint8_t) _b[15];
-    if (d15 > (uint8_t) _a[15])
+    u8 d15 = (u8) _a[15] - (u8) _b[15];
+    if (d15 > (u8) _a[15])
         d15 = 0;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_subs_epu8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_max_epu8(const int8_t *_a, const int8_t *_b)
+bool test_mm_max_epu8(const i8 *_a, const i8 *_b)
 {
-    uint8_t d0 = ((uint8_t) _a[0] > (uint8_t) _b[0]) ? ((uint8_t) _a[0])
-                                                     : ((uint8_t) _b[0]);
-    uint8_t d1 = ((uint8_t) _a[1] > (uint8_t) _b[1]) ? ((uint8_t) _a[1])
-                                                     : ((uint8_t) _b[1]);
-    uint8_t d2 = ((uint8_t) _a[2] > (uint8_t) _b[2]) ? ((uint8_t) _a[2])
-                                                     : ((uint8_t) _b[2]);
-    uint8_t d3 = ((uint8_t) _a[3] > (uint8_t) _b[3]) ? ((uint8_t) _a[3])
-                                                     : ((uint8_t) _b[3]);
-    uint8_t d4 = ((uint8_t) _a[4] > (uint8_t) _b[4]) ? ((uint8_t) _a[4])
-                                                     : ((uint8_t) _b[4]);
-    uint8_t d5 = ((uint8_t) _a[5] > (uint8_t) _b[5]) ? ((uint8_t) _a[5])
-                                                     : ((uint8_t) _b[5]);
-    uint8_t d6 = ((uint8_t) _a[6] > (uint8_t) _b[6]) ? ((uint8_t) _a[6])
-                                                     : ((uint8_t) _b[6]);
-    uint8_t d7 = ((uint8_t) _a[7] > (uint8_t) _b[7]) ? ((uint8_t) _a[7])
-                                                     : ((uint8_t) _b[7]);
-    uint8_t d8 = ((uint8_t) _a[8] > (uint8_t) _b[8]) ? ((uint8_t) _a[8])
-                                                     : ((uint8_t) _b[8]);
-    uint8_t d9 = ((uint8_t) _a[9] > (uint8_t) _b[9]) ? ((uint8_t) _a[9])
-                                                     : ((uint8_t) _b[9]);
-    uint8_t d10 = ((uint8_t) _a[10] > (uint8_t) _b[10]) ? ((uint8_t) _a[10])
-                                                        : ((uint8_t) _b[10]);
-    uint8_t d11 = ((uint8_t) _a[11] > (uint8_t) _b[11]) ? ((uint8_t) _a[11])
-                                                        : ((uint8_t) _b[11]);
-    uint8_t d12 = ((uint8_t) _a[12] > (uint8_t) _b[12]) ? ((uint8_t) _a[12])
-                                                        : ((uint8_t) _b[12]);
-    uint8_t d13 = ((uint8_t) _a[13] > (uint8_t) _b[13]) ? ((uint8_t) _a[13])
-                                                        : ((uint8_t) _b[13]);
-    uint8_t d14 = ((uint8_t) _a[14] > (uint8_t) _b[14]) ? ((uint8_t) _a[14])
-                                                        : ((uint8_t) _b[14]);
-    uint8_t d15 = ((uint8_t) _a[15] > (uint8_t) _b[15]) ? ((uint8_t) _a[15])
-                                                        : ((uint8_t) _b[15]);
+    u8 d0 = ((u8) _a[0] > (u8) _b[0]) ? ((u8) _a[0])
+                                                     : ((u8) _b[0]);
+    u8 d1 = ((u8) _a[1] > (u8) _b[1]) ? ((u8) _a[1])
+                                                     : ((u8) _b[1]);
+    u8 d2 = ((u8) _a[2] > (u8) _b[2]) ? ((u8) _a[2])
+                                                     : ((u8) _b[2]);
+    u8 d3 = ((u8) _a[3] > (u8) _b[3]) ? ((u8) _a[3])
+                                                     : ((u8) _b[3]);
+    u8 d4 = ((u8) _a[4] > (u8) _b[4]) ? ((u8) _a[4])
+                                                     : ((u8) _b[4]);
+    u8 d5 = ((u8) _a[5] > (u8) _b[5]) ? ((u8) _a[5])
+                                                     : ((u8) _b[5]);
+    u8 d6 = ((u8) _a[6] > (u8) _b[6]) ? ((u8) _a[6])
+                                                     : ((u8) _b[6]);
+    u8 d7 = ((u8) _a[7] > (u8) _b[7]) ? ((u8) _a[7])
+                                                     : ((u8) _b[7]);
+    u8 d8 = ((u8) _a[8] > (u8) _b[8]) ? ((u8) _a[8])
+                                                     : ((u8) _b[8]);
+    u8 d9 = ((u8) _a[9] > (u8) _b[9]) ? ((u8) _a[9])
+                                                     : ((u8) _b[9]);
+    u8 d10 = ((u8) _a[10] > (u8) _b[10]) ? ((u8) _a[10])
+                                                        : ((u8) _b[10]);
+    u8 d11 = ((u8) _a[11] > (u8) _b[11]) ? ((u8) _a[11])
+                                                        : ((u8) _b[11]);
+    u8 d12 = ((u8) _a[12] > (u8) _b[12]) ? ((u8) _a[12])
+                                                        : ((u8) _b[12]);
+    u8 d13 = ((u8) _a[13] > (u8) _b[13]) ? ((u8) _a[13])
+                                                        : ((u8) _b[13]);
+    u8 d14 = ((u8) _a[14] > (u8) _b[14]) ? ((u8) _a[14])
+                                                        : ((u8) _b[14]);
+    u8 d15 = ((u8) _a[15] > (u8) _b[15]) ? ((u8) _a[15])
+                                                        : ((u8) _b[15]);
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_max_epu8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_cmpeq_epi8(const int8_t *_a, const int8_t *_b)
+bool test_mm_cmpeq_epi8(const i8 *_a, const i8 *_b)
 {
-    int8_t d0 = (_a[0] == _b[0]) ? 0xff : 0x00;
-    int8_t d1 = (_a[1] == _b[1]) ? 0xff : 0x00;
-    int8_t d2 = (_a[2] == _b[2]) ? 0xff : 0x00;
-    int8_t d3 = (_a[3] == _b[3]) ? 0xff : 0x00;
-    int8_t d4 = (_a[4] == _b[4]) ? 0xff : 0x00;
-    int8_t d5 = (_a[5] == _b[5]) ? 0xff : 0x00;
-    int8_t d6 = (_a[6] == _b[6]) ? 0xff : 0x00;
-    int8_t d7 = (_a[7] == _b[7]) ? 0xff : 0x00;
-    int8_t d8 = (_a[8] == _b[8]) ? 0xff : 0x00;
-    int8_t d9 = (_a[9] == _b[9]) ? 0xff : 0x00;
-    int8_t d10 = (_a[10] == _b[10]) ? 0xff : 0x00;
-    int8_t d11 = (_a[11] == _b[11]) ? 0xff : 0x00;
-    int8_t d12 = (_a[12] == _b[12]) ? 0xff : 0x00;
-    int8_t d13 = (_a[13] == _b[13]) ? 0xff : 0x00;
-    int8_t d14 = (_a[14] == _b[14]) ? 0xff : 0x00;
-    int8_t d15 = (_a[15] == _b[15]) ? 0xff : 0x00;
+    i8 d0 = (_a[0] == _b[0]) ? 0xff : 0x00;
+    i8 d1 = (_a[1] == _b[1]) ? 0xff : 0x00;
+    i8 d2 = (_a[2] == _b[2]) ? 0xff : 0x00;
+    i8 d3 = (_a[3] == _b[3]) ? 0xff : 0x00;
+    i8 d4 = (_a[4] == _b[4]) ? 0xff : 0x00;
+    i8 d5 = (_a[5] == _b[5]) ? 0xff : 0x00;
+    i8 d6 = (_a[6] == _b[6]) ? 0xff : 0x00;
+    i8 d7 = (_a[7] == _b[7]) ? 0xff : 0x00;
+    i8 d8 = (_a[8] == _b[8]) ? 0xff : 0x00;
+    i8 d9 = (_a[9] == _b[9]) ? 0xff : 0x00;
+    i8 d10 = (_a[10] == _b[10]) ? 0xff : 0x00;
+    i8 d11 = (_a[11] == _b[11]) ? 0xff : 0x00;
+    i8 d12 = (_a[12] == _b[12]) ? 0xff : 0x00;
+    i8 d13 = (_a[13] == _b[13]) ? 0xff : 0x00;
+    i8 d14 = (_a[14] == _b[14]) ? 0xff : 0x00;
+    i8 d15 = (_a[15] == _b[15]) ? 0xff : 0x00;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_cmpeq_epi8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_adds_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_adds_epi16(const i16 *_a, const i16 *_b)
 {
-    int32_t d0 = (int32_t) _a[0] + (int32_t) _b[0];
+    i32 d0 = (i32) _a[0] + (i32) _b[0];
     if (d0 > 32767)
         d0 = 32767;
     if (d0 < -32768)
         d0 = -32768;
-    int32_t d1 = (int32_t) _a[1] + (int32_t) _b[1];
+    i32 d1 = (i32) _a[1] + (i32) _b[1];
     if (d1 > 32767)
         d1 = 32767;
     if (d1 < -32768)
         d1 = -32768;
-    int32_t d2 = (int32_t) _a[2] + (int32_t) _b[2];
+    i32 d2 = (i32) _a[2] + (i32) _b[2];
     if (d2 > 32767)
         d2 = 32767;
     if (d2 < -32768)
         d2 = -32768;
-    int32_t d3 = (int32_t) _a[3] + (int32_t) _b[3];
+    i32 d3 = (i32) _a[3] + (i32) _b[3];
     if (d3 > 32767)
         d3 = 32767;
     if (d3 < -32768)
         d3 = -32768;
-    int32_t d4 = (int32_t) _a[4] + (int32_t) _b[4];
+    i32 d4 = (i32) _a[4] + (i32) _b[4];
     if (d4 > 32767)
         d4 = 32767;
     if (d4 < -32768)
         d4 = -32768;
-    int32_t d5 = (int32_t) _a[5] + (int32_t) _b[5];
+    i32 d5 = (i32) _a[5] + (i32) _b[5];
     if (d5 > 32767)
         d5 = 32767;
     if (d5 < -32768)
         d5 = -32768;
-    int32_t d6 = (int32_t) _a[6] + (int32_t) _b[6];
+    i32 d6 = (i32) _a[6] + (i32) _b[6];
     if (d6 > 32767)
         d6 = 32767;
     if (d6 < -32768)
         d6 = -32768;
-    int32_t d7 = (int32_t) _a[7] + (int32_t) _b[7];
+    i32 d7 = (i32) _a[7] + (i32) _b[7];
     if (d7 > 32767)
         d7 = 32767;
     if (d7 < -32768)
         d7 = -32768;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
 
     __m128i c = _mm_adds_epi16(a, b);
-    return validateInt16(c, (int16_t) d0, (int16_t) d1, (int16_t) d2,
-                         (int16_t) d3, (int16_t) d4, (int16_t) d5, (int16_t) d6,
-                         (int16_t) d7);
+    return validateInt16(c, (i16) d0, (i16) d1, (i16) d2,
+                         (i16) d3, (i16) d4, (i16) d5, (i16) d6,
+                         (i16) d7);
 }
 
-bool test_mm_max_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_max_epi16(const i16 *_a, const i16 *_b)
 {
-    int16_t d0 = _a[0] > _b[0] ? _a[0] : _b[0];
-    int16_t d1 = _a[1] > _b[1] ? _a[1] : _b[1];
-    int16_t d2 = _a[2] > _b[2] ? _a[2] : _b[2];
-    int16_t d3 = _a[3] > _b[3] ? _a[3] : _b[3];
-    int16_t d4 = _a[4] > _b[4] ? _a[4] : _b[4];
-    int16_t d5 = _a[5] > _b[5] ? _a[5] : _b[5];
-    int16_t d6 = _a[6] > _b[6] ? _a[6] : _b[6];
-    int16_t d7 = _a[7] > _b[7] ? _a[7] : _b[7];
+    i16 d0 = _a[0] > _b[0] ? _a[0] : _b[0];
+    i16 d1 = _a[1] > _b[1] ? _a[1] : _b[1];
+    i16 d2 = _a[2] > _b[2] ? _a[2] : _b[2];
+    i16 d3 = _a[3] > _b[3] ? _a[3] : _b[3];
+    i16 d4 = _a[4] > _b[4] ? _a[4] : _b[4];
+    i16 d5 = _a[5] > _b[5] ? _a[5] : _b[5];
+    i16 d6 = _a[6] > _b[6] ? _a[6] : _b[6];
+    i16 d7 = _a[7] > _b[7] ? _a[7] : _b[7];
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
 
     __m128i c = _mm_max_epi16(a, b);
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_subs_epu16(const int16_t *_a, const int16_t *_b)
+bool test_mm_subs_epu16(const i16 *_a, const i16 *_b)
 {
-    uint16_t d0 = (uint16_t) _a[0] - (uint16_t) _b[0];
-    if (d0 > (uint16_t) _a[0])
+    u16 d0 = (u16) _a[0] - (u16) _b[0];
+    if (d0 > (u16) _a[0])
         d0 = 0;
-    uint16_t d1 = (uint16_t) _a[1] - (uint16_t) _b[1];
-    if (d1 > (uint16_t) _a[1])
+    u16 d1 = (u16) _a[1] - (u16) _b[1];
+    if (d1 > (u16) _a[1])
         d1 = 0;
-    uint16_t d2 = (uint16_t) _a[2] - (uint16_t) _b[2];
-    if (d2 > (uint16_t) _a[2])
+    u16 d2 = (u16) _a[2] - (u16) _b[2];
+    if (d2 > (u16) _a[2])
         d2 = 0;
-    uint16_t d3 = (uint16_t) _a[3] - (uint16_t) _b[3];
-    if (d3 > (uint16_t) _a[3])
+    u16 d3 = (u16) _a[3] - (u16) _b[3];
+    if (d3 > (u16) _a[3])
         d3 = 0;
-    uint16_t d4 = (uint16_t) _a[4] - (uint16_t) _b[4];
-    if (d4 > (uint16_t) _a[4])
+    u16 d4 = (u16) _a[4] - (u16) _b[4];
+    if (d4 > (u16) _a[4])
         d4 = 0;
-    uint16_t d5 = (uint16_t) _a[5] - (uint16_t) _b[5];
-    if (d5 > (uint16_t) _a[5])
+    u16 d5 = (u16) _a[5] - (u16) _b[5];
+    if (d5 > (u16) _a[5])
         d5 = 0;
-    uint16_t d6 = (uint16_t) _a[6] - (uint16_t) _b[6];
-    if (d6 > (uint16_t) _a[6])
+    u16 d6 = (u16) _a[6] - (u16) _b[6];
+    if (d6 > (u16) _a[6])
         d6 = 0;
-    uint16_t d7 = (uint16_t) _a[7] - (uint16_t) _b[7];
-    if (d7 > (uint16_t) _a[7])
+    u16 d7 = (u16) _a[7] - (u16) _b[7];
+    if (d7 > (u16) _a[7])
         d7 = 0;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
 
     __m128i c = _mm_subs_epu16(a, b);
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_cmplt_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_cmplt_epi16(const i16 *_a, const i16 *_b)
 {
-    uint16_t d0 = _a[0] < _b[0] ? 0xffff : 0;
-    uint16_t d1 = _a[1] < _b[1] ? 0xffff : 0;
-    uint16_t d2 = _a[2] < _b[2] ? 0xffff : 0;
-    uint16_t d3 = _a[3] < _b[3] ? 0xffff : 0;
-    uint16_t d4 = _a[4] < _b[4] ? 0xffff : 0;
-    uint16_t d5 = _a[5] < _b[5] ? 0xffff : 0;
-    uint16_t d6 = _a[6] < _b[6] ? 0xffff : 0;
-    uint16_t d7 = _a[7] < _b[7] ? 0xffff : 0;
+    u16 d0 = _a[0] < _b[0] ? 0xffff : 0;
+    u16 d1 = _a[1] < _b[1] ? 0xffff : 0;
+    u16 d2 = _a[2] < _b[2] ? 0xffff : 0;
+    u16 d3 = _a[3] < _b[3] ? 0xffff : 0;
+    u16 d4 = _a[4] < _b[4] ? 0xffff : 0;
+    u16 d5 = _a[5] < _b[5] ? 0xffff : 0;
+    u16 d6 = _a[6] < _b[6] ? 0xffff : 0;
+    u16 d7 = _a[7] < _b[7] ? 0xffff : 0;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_cmplt_epi16(a, b);
 
     return validateUInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_cmpgt_epi16(const int16_t *_a, const int16_t *_b)
+bool test_mm_cmpgt_epi16(const i16 *_a, const i16 *_b)
 {
-    uint16_t d0 = _a[0] > _b[0] ? 0xffff : 0;
-    uint16_t d1 = _a[1] > _b[1] ? 0xffff : 0;
-    uint16_t d2 = _a[2] > _b[2] ? 0xffff : 0;
-    uint16_t d3 = _a[3] > _b[3] ? 0xffff : 0;
-    uint16_t d4 = _a[4] > _b[4] ? 0xffff : 0;
-    uint16_t d5 = _a[5] > _b[5] ? 0xffff : 0;
-    uint16_t d6 = _a[6] > _b[6] ? 0xffff : 0;
-    uint16_t d7 = _a[7] > _b[7] ? 0xffff : 0;
+    u16 d0 = _a[0] > _b[0] ? 0xffff : 0;
+    u16 d1 = _a[1] > _b[1] ? 0xffff : 0;
+    u16 d2 = _a[2] > _b[2] ? 0xffff : 0;
+    u16 d3 = _a[3] > _b[3] ? 0xffff : 0;
+    u16 d4 = _a[4] > _b[4] ? 0xffff : 0;
+    u16 d5 = _a[5] > _b[5] ? 0xffff : 0;
+    u16 d6 = _a[6] > _b[6] ? 0xffff : 0;
+    u16 d7 = _a[7] > _b[7] ? 0xffff : 0;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_cmpgt_epi16(a, b);
 
     return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_loadu_si128(const int32_t *_a)
+bool test_mm_loadu_si128(const i32 *_a)
 {
     __m128i c = _mm_loadu_si128((const __m128i *) _a);
     return validateInt32(c, _a[0], _a[1], _a[2], _a[3]);
 }
 
-bool test_mm_storeu_si128(const int32_t *_a)
+bool test_mm_storeu_si128(const i32 *_a)
 {
     __m128i b;
     __m128i a = _mm_loadu_si128((const __m128i *) _a);
     _mm_storeu_si128(&b, a);
-    int32_t *_b = (int32_t *) &b;
+    i32 *_b = (i32 *) &b;
     return validateInt32(a, _b[0], _b[1], _b[2], _b[3]);
     return 1;
 }
 
-bool test_mm_add_epi8(const int8_t *_a, const int8_t *_b)
+bool test_mm_add_epi8(const i8 *_a, const i8 *_b)
 {
-    int8_t d0 = _a[0] + _b[0];
-    int8_t d1 = _a[1] + _b[1];
-    int8_t d2 = _a[2] + _b[2];
-    int8_t d3 = _a[3] + _b[3];
-    int8_t d4 = _a[4] + _b[4];
-    int8_t d5 = _a[5] + _b[5];
-    int8_t d6 = _a[6] + _b[6];
-    int8_t d7 = _a[7] + _b[7];
-    int8_t d8 = _a[8] + _b[8];
-    int8_t d9 = _a[9] + _b[9];
-    int8_t d10 = _a[10] + _b[10];
-    int8_t d11 = _a[11] + _b[11];
-    int8_t d12 = _a[12] + _b[12];
-    int8_t d13 = _a[13] + _b[13];
-    int8_t d14 = _a[14] + _b[14];
-    int8_t d15 = _a[15] + _b[15];
+    i8 d0 = _a[0] + _b[0];
+    i8 d1 = _a[1] + _b[1];
+    i8 d2 = _a[2] + _b[2];
+    i8 d3 = _a[3] + _b[3];
+    i8 d4 = _a[4] + _b[4];
+    i8 d5 = _a[5] + _b[5];
+    i8 d6 = _a[6] + _b[6];
+    i8 d7 = _a[7] + _b[7];
+    i8 d8 = _a[8] + _b[8];
+    i8 d9 = _a[9] + _b[9];
+    i8 d10 = _a[10] + _b[10];
+    i8 d11 = _a[11] + _b[11];
+    i8 d12 = _a[12] + _b[12];
+    i8 d13 = _a[13] + _b[13];
+    i8 d14 = _a[14] + _b[14];
+    i8 d15 = _a[15] + _b[15];
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_add_epi8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_cmpgt_epi8(const int8_t *_a, const int8_t *_b)
+bool test_mm_cmpgt_epi8(const i8 *_a, const i8 *_b)
 {
-    int8_t d0 = (_a[0] > _b[0]) ? 0xff : 0x00;
-    int8_t d1 = (_a[1] > _b[1]) ? 0xff : 0x00;
-    int8_t d2 = (_a[2] > _b[2]) ? 0xff : 0x00;
-    int8_t d3 = (_a[3] > _b[3]) ? 0xff : 0x00;
-    int8_t d4 = (_a[4] > _b[4]) ? 0xff : 0x00;
-    int8_t d5 = (_a[5] > _b[5]) ? 0xff : 0x00;
-    int8_t d6 = (_a[6] > _b[6]) ? 0xff : 0x00;
-    int8_t d7 = (_a[7] > _b[7]) ? 0xff : 0x00;
-    int8_t d8 = (_a[8] > _b[8]) ? 0xff : 0x00;
-    int8_t d9 = (_a[9] > _b[9]) ? 0xff : 0x00;
-    int8_t d10 = (_a[10] > _b[10]) ? 0xff : 0x00;
-    int8_t d11 = (_a[11] > _b[11]) ? 0xff : 0x00;
-    int8_t d12 = (_a[12] > _b[12]) ? 0xff : 0x00;
-    int8_t d13 = (_a[13] > _b[13]) ? 0xff : 0x00;
-    int8_t d14 = (_a[14] > _b[14]) ? 0xff : 0x00;
-    int8_t d15 = (_a[15] > _b[15]) ? 0xff : 0x00;
+    i8 d0 = (_a[0] > _b[0]) ? 0xff : 0x00;
+    i8 d1 = (_a[1] > _b[1]) ? 0xff : 0x00;
+    i8 d2 = (_a[2] > _b[2]) ? 0xff : 0x00;
+    i8 d3 = (_a[3] > _b[3]) ? 0xff : 0x00;
+    i8 d4 = (_a[4] > _b[4]) ? 0xff : 0x00;
+    i8 d5 = (_a[5] > _b[5]) ? 0xff : 0x00;
+    i8 d6 = (_a[6] > _b[6]) ? 0xff : 0x00;
+    i8 d7 = (_a[7] > _b[7]) ? 0xff : 0x00;
+    i8 d8 = (_a[8] > _b[8]) ? 0xff : 0x00;
+    i8 d9 = (_a[9] > _b[9]) ? 0xff : 0x00;
+    i8 d10 = (_a[10] > _b[10]) ? 0xff : 0x00;
+    i8 d11 = (_a[11] > _b[11]) ? 0xff : 0x00;
+    i8 d12 = (_a[12] > _b[12]) ? 0xff : 0x00;
+    i8 d13 = (_a[13] > _b[13]) ? 0xff : 0x00;
+    i8 d14 = (_a[14] > _b[14]) ? 0xff : 0x00;
+    i8 d15 = (_a[15] > _b[15]) ? 0xff : 0x00;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_cmpgt_epi8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_cmplt_epi8(const int8_t *_a, const int8_t *_b)
+bool test_mm_cmplt_epi8(const i8 *_a, const i8 *_b)
 {
-    int8_t d0 = (_a[0] < _b[0]) ? 0xff : 0x00;
-    int8_t d1 = (_a[1] < _b[1]) ? 0xff : 0x00;
-    int8_t d2 = (_a[2] < _b[2]) ? 0xff : 0x00;
-    int8_t d3 = (_a[3] < _b[3]) ? 0xff : 0x00;
-    int8_t d4 = (_a[4] < _b[4]) ? 0xff : 0x00;
-    int8_t d5 = (_a[5] < _b[5]) ? 0xff : 0x00;
-    int8_t d6 = (_a[6] < _b[6]) ? 0xff : 0x00;
-    int8_t d7 = (_a[7] < _b[7]) ? 0xff : 0x00;
-    int8_t d8 = (_a[8] < _b[8]) ? 0xff : 0x00;
-    int8_t d9 = (_a[9] < _b[9]) ? 0xff : 0x00;
-    int8_t d10 = (_a[10] < _b[10]) ? 0xff : 0x00;
-    int8_t d11 = (_a[11] < _b[11]) ? 0xff : 0x00;
-    int8_t d12 = (_a[12] < _b[12]) ? 0xff : 0x00;
-    int8_t d13 = (_a[13] < _b[13]) ? 0xff : 0x00;
-    int8_t d14 = (_a[14] < _b[14]) ? 0xff : 0x00;
-    int8_t d15 = (_a[15] < _b[15]) ? 0xff : 0x00;
+    i8 d0 = (_a[0] < _b[0]) ? 0xff : 0x00;
+    i8 d1 = (_a[1] < _b[1]) ? 0xff : 0x00;
+    i8 d2 = (_a[2] < _b[2]) ? 0xff : 0x00;
+    i8 d3 = (_a[3] < _b[3]) ? 0xff : 0x00;
+    i8 d4 = (_a[4] < _b[4]) ? 0xff : 0x00;
+    i8 d5 = (_a[5] < _b[5]) ? 0xff : 0x00;
+    i8 d6 = (_a[6] < _b[6]) ? 0xff : 0x00;
+    i8 d7 = (_a[7] < _b[7]) ? 0xff : 0x00;
+    i8 d8 = (_a[8] < _b[8]) ? 0xff : 0x00;
+    i8 d9 = (_a[9] < _b[9]) ? 0xff : 0x00;
+    i8 d10 = (_a[10] < _b[10]) ? 0xff : 0x00;
+    i8 d11 = (_a[11] < _b[11]) ? 0xff : 0x00;
+    i8 d12 = (_a[12] < _b[12]) ? 0xff : 0x00;
+    i8 d13 = (_a[13] < _b[13]) ? 0xff : 0x00;
+    i8 d14 = (_a[14] < _b[14]) ? 0xff : 0x00;
+    i8 d15 = (_a[15] < _b[15]) ? 0xff : 0x00;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_cmplt_epi8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_sub_epi8(const int8_t *_a, const int8_t *_b)
+bool test_mm_sub_epi8(const i8 *_a, const i8 *_b)
 {
-    int8_t d0 = _a[0] - _b[0];
-    int8_t d1 = _a[1] - _b[1];
-    int8_t d2 = _a[2] - _b[2];
-    int8_t d3 = _a[3] - _b[3];
-    int8_t d4 = _a[4] - _b[4];
-    int8_t d5 = _a[5] - _b[5];
-    int8_t d6 = _a[6] - _b[6];
-    int8_t d7 = _a[7] - _b[7];
-    int8_t d8 = _a[8] - _b[8];
-    int8_t d9 = _a[9] - _b[9];
-    int8_t d10 = _a[10] - _b[10];
-    int8_t d11 = _a[11] - _b[11];
-    int8_t d12 = _a[12] - _b[12];
-    int8_t d13 = _a[13] - _b[13];
-    int8_t d14 = _a[14] - _b[14];
-    int8_t d15 = _a[15] - _b[15];
+    i8 d0 = _a[0] - _b[0];
+    i8 d1 = _a[1] - _b[1];
+    i8 d2 = _a[2] - _b[2];
+    i8 d3 = _a[3] - _b[3];
+    i8 d4 = _a[4] - _b[4];
+    i8 d5 = _a[5] - _b[5];
+    i8 d6 = _a[6] - _b[6];
+    i8 d7 = _a[7] - _b[7];
+    i8 d8 = _a[8] - _b[8];
+    i8 d9 = _a[9] - _b[9];
+    i8 d10 = _a[10] - _b[10];
+    i8 d11 = _a[11] - _b[11];
+    i8 d12 = _a[12] - _b[12];
+    i8 d13 = _a[13] - _b[13];
+    i8 d14 = _a[14] - _b[14];
+    i8 d15 = _a[15] - _b[15];
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_sub_epi8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_setr_epi32(const int32_t *_a)
+bool test_mm_setr_epi32(const i32 *_a)
 {
     __m128i c = _mm_setr_epi32(_a[0], _a[1], _a[2], _a[3]);
     return validateInt32(c, _a[0], _a[1], _a[2], _a[3]);
 }
 
-bool test_mm_min_epu8(const int8_t *_a, const int8_t *_b)
+bool test_mm_min_epu8(const i8 *_a, const i8 *_b)
 {
-    uint8_t d0 =
-        ((uint8_t) _a[0] < (uint8_t) _b[0]) ? (uint8_t) _a[0] : (uint8_t) _b[0];
-    uint8_t d1 =
-        ((uint8_t) _a[1] < (uint8_t) _b[1]) ? (uint8_t) _a[1] : (uint8_t) _b[1];
-    uint8_t d2 =
-        ((uint8_t) _a[2] < (uint8_t) _b[2]) ? (uint8_t) _a[2] : (uint8_t) _b[2];
-    uint8_t d3 =
-        ((uint8_t) _a[3] < (uint8_t) _b[3]) ? (uint8_t) _a[3] : (uint8_t) _b[3];
-    uint8_t d4 =
-        ((uint8_t) _a[4] < (uint8_t) _b[4]) ? (uint8_t) _a[4] : (uint8_t) _b[4];
-    uint8_t d5 =
-        ((uint8_t) _a[5] < (uint8_t) _b[5]) ? (uint8_t) _a[5] : (uint8_t) _b[5];
-    uint8_t d6 =
-        ((uint8_t) _a[6] < (uint8_t) _b[6]) ? (uint8_t) _a[6] : (uint8_t) _b[6];
-    uint8_t d7 =
-        ((uint8_t) _a[7] < (uint8_t) _b[7]) ? (uint8_t) _a[7] : (uint8_t) _b[7];
-    uint8_t d8 =
-        ((uint8_t) _a[8] < (uint8_t) _b[8]) ? (uint8_t) _a[8] : (uint8_t) _b[8];
-    uint8_t d9 =
-        ((uint8_t) _a[9] < (uint8_t) _b[9]) ? (uint8_t) _a[9] : (uint8_t) _b[9];
-    uint8_t d10 = ((uint8_t) _a[10] < (uint8_t) _b[10]) ? (uint8_t) _a[10]
-                                                        : (uint8_t) _b[10];
-    uint8_t d11 = ((uint8_t) _a[11] < (uint8_t) _b[11]) ? (uint8_t) _a[11]
-                                                        : (uint8_t) _b[11];
-    uint8_t d12 = ((uint8_t) _a[12] < (uint8_t) _b[12]) ? (uint8_t) _a[12]
-                                                        : (uint8_t) _b[12];
-    uint8_t d13 = ((uint8_t) _a[13] < (uint8_t) _b[13]) ? (uint8_t) _a[13]
-                                                        : (uint8_t) _b[13];
-    uint8_t d14 = ((uint8_t) _a[14] < (uint8_t) _b[14]) ? (uint8_t) _a[14]
-                                                        : (uint8_t) _b[14];
-    uint8_t d15 = ((uint8_t) _a[15] < (uint8_t) _b[15]) ? (uint8_t) _a[15]
-                                                        : (uint8_t) _b[15];
+    u8 d0 =
+        ((u8) _a[0] < (u8) _b[0]) ? (u8) _a[0] : (u8) _b[0];
+    u8 d1 =
+        ((u8) _a[1] < (u8) _b[1]) ? (u8) _a[1] : (u8) _b[1];
+    u8 d2 =
+        ((u8) _a[2] < (u8) _b[2]) ? (u8) _a[2] : (u8) _b[2];
+    u8 d3 =
+        ((u8) _a[3] < (u8) _b[3]) ? (u8) _a[3] : (u8) _b[3];
+    u8 d4 =
+        ((u8) _a[4] < (u8) _b[4]) ? (u8) _a[4] : (u8) _b[4];
+    u8 d5 =
+        ((u8) _a[5] < (u8) _b[5]) ? (u8) _a[5] : (u8) _b[5];
+    u8 d6 =
+        ((u8) _a[6] < (u8) _b[6]) ? (u8) _a[6] : (u8) _b[6];
+    u8 d7 =
+        ((u8) _a[7] < (u8) _b[7]) ? (u8) _a[7] : (u8) _b[7];
+    u8 d8 =
+        ((u8) _a[8] < (u8) _b[8]) ? (u8) _a[8] : (u8) _b[8];
+    u8 d9 =
+        ((u8) _a[9] < (u8) _b[9]) ? (u8) _a[9] : (u8) _b[9];
+    u8 d10 = ((u8) _a[10] < (u8) _b[10]) ? (u8) _a[10]
+                                                        : (u8) _b[10];
+    u8 d11 = ((u8) _a[11] < (u8) _b[11]) ? (u8) _a[11]
+                                                        : (u8) _b[11];
+    u8 d12 = ((u8) _a[12] < (u8) _b[12]) ? (u8) _a[12]
+                                                        : (u8) _b[12];
+    u8 d13 = ((u8) _a[13] < (u8) _b[13]) ? (u8) _a[13]
+                                                        : (u8) _b[13];
+    u8 d14 = ((u8) _a[14] < (u8) _b[14]) ? (u8) _a[14]
+                                                        : (u8) _b[14];
+    u8 d15 = ((u8) _a[15] < (u8) _b[15]) ? (u8) _a[15]
+                                                        : (u8) _b[15];
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_min_epu8(a, b);
     return validateInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                         d12, d13, d14, d15);
 }
 
-bool test_mm_minpos_epu16(const int16_t *_a)
+bool test_mm_minpos_epu16(const i16 *_a)
 {
-    uint16_t index = 0, min = (uint16_t) _a[0];
+    u16 index = 0, min = (u16) _a[0];
     for (int i = 0; i < 8; i++) {
-        if ((uint16_t) _a[i] < min) {
-            index = (uint16_t) i;
-            min = (uint16_t) _a[i];
+        if ((u16) _a[i] < min) {
+            index = (u16) i;
+            min = (u16) _a[i];
         }
     }
-    uint16_t d0 = min;
-    uint16_t d1 = index;
-    uint16_t d2 = 0, d3 = 0, d4 = 0, d5 = 0, d6 = 0, d7 = 0;
+    u16 d0 = min;
+    u16 d1 = index;
+    u16 d2 = 0, d3 = 0, d4 = 0, d5 = 0, d6 = 0, d7 = 0;
 
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
     __m128i ret = _mm_minpos_epu16(a);
     return validateUInt16(ret, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_test_all_zeros(const int32_t *_a, const int32_t *_mask)
+bool test_mm_test_all_zeros(const i32 *_a, const i32 *_mask)
 {
     __m128i a = test_mm_load_ps(_a);
     __m128i mask = test_mm_load_ps(_mask);
 
-    int32_t d0 = _a[0] & _mask[0];
-    int32_t d1 = _a[1] & _mask[1];
-    int32_t d2 = _a[2] & _mask[2];
-    int32_t d3 = _a[3] & _mask[3];
-    int32_t result = ((d0 | d1 | d2 | d3) == 0) ? 1 : 0;
+    i32 d0 = _a[0] & _mask[0];
+    i32 d1 = _a[1] & _mask[1];
+    i32 d2 = _a[2] & _mask[2];
+    i32 d3 = _a[3] & _mask[3];
+    i32 result = ((d0 | d1 | d2 | d3) == 0) ? 1 : 0;
 
-    int32_t ret = _mm_test_all_zeros(a, mask);
+    i32 ret = _mm_test_all_zeros(a, mask);
 
     return result == ret ? true : false;
 }
 
-bool test_mm_avg_epu8(const int8_t *_a, const int8_t *_b)
+bool test_mm_avg_epu8(const i8 *_a, const i8 *_b)
 {
-    uint8_t d0 = ((uint8_t) _a[0] + (uint8_t) _b[0] + 1) >> 1;
-    uint8_t d1 = ((uint8_t) _a[1] + (uint8_t) _b[1] + 1) >> 1;
-    uint8_t d2 = ((uint8_t) _a[2] + (uint8_t) _b[2] + 1) >> 1;
-    uint8_t d3 = ((uint8_t) _a[3] + (uint8_t) _b[3] + 1) >> 1;
-    uint8_t d4 = ((uint8_t) _a[4] + (uint8_t) _b[4] + 1) >> 1;
-    uint8_t d5 = ((uint8_t) _a[5] + (uint8_t) _b[5] + 1) >> 1;
-    uint8_t d6 = ((uint8_t) _a[6] + (uint8_t) _b[6] + 1) >> 1;
-    uint8_t d7 = ((uint8_t) _a[7] + (uint8_t) _b[7] + 1) >> 1;
-    uint8_t d8 = ((uint8_t) _a[8] + (uint8_t) _b[8] + 1) >> 1;
-    uint8_t d9 = ((uint8_t) _a[9] + (uint8_t) _b[9] + 1) >> 1;
-    uint8_t d10 = ((uint8_t) _a[10] + (uint8_t) _b[10] + 1) >> 1;
-    uint8_t d11 = ((uint8_t) _a[11] + (uint8_t) _b[11] + 1) >> 1;
-    uint8_t d12 = ((uint8_t) _a[12] + (uint8_t) _b[12] + 1) >> 1;
-    uint8_t d13 = ((uint8_t) _a[13] + (uint8_t) _b[13] + 1) >> 1;
-    uint8_t d14 = ((uint8_t) _a[14] + (uint8_t) _b[14] + 1) >> 1;
-    uint8_t d15 = ((uint8_t) _a[15] + (uint8_t) _b[15] + 1) >> 1;
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    u8 d0 = ((u8) _a[0] + (u8) _b[0] + 1) >> 1;
+    u8 d1 = ((u8) _a[1] + (u8) _b[1] + 1) >> 1;
+    u8 d2 = ((u8) _a[2] + (u8) _b[2] + 1) >> 1;
+    u8 d3 = ((u8) _a[3] + (u8) _b[3] + 1) >> 1;
+    u8 d4 = ((u8) _a[4] + (u8) _b[4] + 1) >> 1;
+    u8 d5 = ((u8) _a[5] + (u8) _b[5] + 1) >> 1;
+    u8 d6 = ((u8) _a[6] + (u8) _b[6] + 1) >> 1;
+    u8 d7 = ((u8) _a[7] + (u8) _b[7] + 1) >> 1;
+    u8 d8 = ((u8) _a[8] + (u8) _b[8] + 1) >> 1;
+    u8 d9 = ((u8) _a[9] + (u8) _b[9] + 1) >> 1;
+    u8 d10 = ((u8) _a[10] + (u8) _b[10] + 1) >> 1;
+    u8 d11 = ((u8) _a[11] + (u8) _b[11] + 1) >> 1;
+    u8 d12 = ((u8) _a[12] + (u8) _b[12] + 1) >> 1;
+    u8 d13 = ((u8) _a[13] + (u8) _b[13] + 1) >> 1;
+    u8 d14 = ((u8) _a[14] + (u8) _b[14] + 1) >> 1;
+    u8 d15 = ((u8) _a[15] + (u8) _b[15] + 1) >> 1;
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_avg_epu8(a, b);
     return validateUInt8(c, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
                          d12, d13, d14, d15);
 }
 
-bool test_mm_avg_epu16(const int16_t *_a, const int16_t *_b)
+bool test_mm_avg_epu16(const i16 *_a, const i16 *_b)
 {
-    uint16_t d0 = ((uint16_t) _a[0] + (uint16_t) _b[0] + 1) >> 1;
-    uint16_t d1 = ((uint16_t) _a[1] + (uint16_t) _b[1] + 1) >> 1;
-    uint16_t d2 = ((uint16_t) _a[2] + (uint16_t) _b[2] + 1) >> 1;
-    uint16_t d3 = ((uint16_t) _a[3] + (uint16_t) _b[3] + 1) >> 1;
-    uint16_t d4 = ((uint16_t) _a[4] + (uint16_t) _b[4] + 1) >> 1;
-    uint16_t d5 = ((uint16_t) _a[5] + (uint16_t) _b[5] + 1) >> 1;
-    uint16_t d6 = ((uint16_t) _a[6] + (uint16_t) _b[6] + 1) >> 1;
-    uint16_t d7 = ((uint16_t) _a[7] + (uint16_t) _b[7] + 1) >> 1;
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    u16 d0 = ((u16) _a[0] + (u16) _b[0] + 1) >> 1;
+    u16 d1 = ((u16) _a[1] + (u16) _b[1] + 1) >> 1;
+    u16 d2 = ((u16) _a[2] + (u16) _b[2] + 1) >> 1;
+    u16 d3 = ((u16) _a[3] + (u16) _b[3] + 1) >> 1;
+    u16 d4 = ((u16) _a[4] + (u16) _b[4] + 1) >> 1;
+    u16 d5 = ((u16) _a[5] + (u16) _b[5] + 1) >> 1;
+    u16 d6 = ((u16) _a[6] + (u16) _b[6] + 1) >> 1;
+    u16 d7 = ((u16) _a[7] + (u16) _b[7] + 1) >> 1;
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     __m128i c = _mm_avg_epu16(a, b);
     return validateUInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-bool test_mm_popcnt_u32(const uint32_t *a)
+bool test_mm_popcnt_u32(const u32 *a)
 {
     ASSERT_RETURN(__builtin_popcount(a[0]) == _mm_popcnt_u32(a[0]));
     return true;
 }
 
-bool test_mm_popcnt_u64(const uint64_t *a)
+bool test_mm_popcnt_u64(const u64 *a)
 {
     ASSERT_RETURN(__builtin_popcountll(a[0]) == _mm_popcnt_u64(a[0]));
     return true;
 }
 
-static inline uint64_t MUL(uint32_t a, uint32_t b)
+static inline u64 MUL(u32 a, u32 b)
 {
-    return (uint64_t) a * (uint64_t) b;
+    return (u64) a * (u64) b;
 }
 
 // From BearSSL. Performs a 32-bit->64-bit carryless/polynomial
@@ -2698,28 +2698,28 @@ static inline uint64_t MUL(uint32_t a, uint32_t b)
 // carryless add).
 //
 // https://www.bearssl.org/gitweb/?p=BearSSL;a=blob;f=src/hash/ghash_ctmul.c;h=3623202;hb=5f045c7#l164
-static uint64_t clmul_32(uint32_t x, uint32_t y)
+static u64 clmul_32(u32 x, u32 y)
 {
-    uint32_t x0, x1, x2, x3;
-    uint32_t y0, y1, y2, y3;
-    uint64_t z0, z1, z2, z3;
+    u32 x0, x1, x2, x3;
+    u32 y0, y1, y2, y3;
+    u64 z0, z1, z2, z3;
 
-    x0 = x & (uint32_t) 0x11111111;
-    x1 = x & (uint32_t) 0x22222222;
-    x2 = x & (uint32_t) 0x44444444;
-    x3 = x & (uint32_t) 0x88888888;
-    y0 = y & (uint32_t) 0x11111111;
-    y1 = y & (uint32_t) 0x22222222;
-    y2 = y & (uint32_t) 0x44444444;
-    y3 = y & (uint32_t) 0x88888888;
+    x0 = x & (u32) 0x11111111;
+    x1 = x & (u32) 0x22222222;
+    x2 = x & (u32) 0x44444444;
+    x3 = x & (u32) 0x88888888;
+    y0 = y & (u32) 0x11111111;
+    y1 = y & (u32) 0x22222222;
+    y2 = y & (u32) 0x44444444;
+    y3 = y & (u32) 0x88888888;
     z0 = MUL(x0, y0) ^ MUL(x1, y3) ^ MUL(x2, y2) ^ MUL(x3, y1);
     z1 = MUL(x0, y1) ^ MUL(x1, y0) ^ MUL(x2, y3) ^ MUL(x3, y2);
     z2 = MUL(x0, y2) ^ MUL(x1, y1) ^ MUL(x2, y0) ^ MUL(x3, y3);
     z3 = MUL(x0, y3) ^ MUL(x1, y2) ^ MUL(x2, y1) ^ MUL(x3, y0);
-    z0 &= (uint64_t) 0x1111111111111111;
-    z1 &= (uint64_t) 0x2222222222222222;
-    z2 &= (uint64_t) 0x4444444444444444;
-    z3 &= (uint64_t) 0x8888888888888888;
+    z0 &= (u64) 0x1111111111111111;
+    z1 &= (u64) 0x2222222222222222;
+    z2 &= (u64) 0x4444444444444444;
+    z3 &= (u64) 0x8888888888888888;
     return z0 | z1 | z2 | z3;
 }
 
@@ -2746,36 +2746,36 @@ static uint64_t clmul_32(uint32_t x, uint32_t y)
 // The comments represent the actual mathematical
 // operations being performed (instead of the bitwise
 // operations) and to reflect the linked Wikipedia article.
-static std::pair<uint64_t, uint64_t> clmul_64(uint64_t x, uint64_t y)
+static std::pair<u64, u64> clmul_64(u64 x, u64 y)
 {
     // B = 2
     // m = 32
     // x = (x1 * B^m) + x0
-    uint32_t x0 = x & 0xffffffff;
-    uint32_t x1 = x >> 32;
+    u32 x0 = x & 0xffffffff;
+    u32 x1 = x >> 32;
     // y = (y1 * B^m) + y0
-    uint32_t y0 = y & 0xffffffff;
-    uint32_t y1 = y >> 32;
+    u32 y0 = y & 0xffffffff;
+    u32 y1 = y >> 32;
 
     // z0 = x0 * y0
-    uint64_t z0 = clmul_32(x0, y0);
+    u64 z0 = clmul_32(x0, y0);
     // z2 = x1 * y1
-    uint64_t z2 = clmul_32(x1, y1);
+    u64 z2 = clmul_32(x1, y1);
     // z1 = (x0 + x1) * (y0 + y1) - z0 - z2
-    uint64_t z1 = clmul_32(x0 ^ x1, y0 ^ y1) ^ z0 ^ z2;
+    u64 z1 = clmul_32(x0 ^ x1, y0 ^ y1) ^ z0 ^ z2;
 
     // xy = z0 + (z1 * B^m) + (z2 * B^2m)
     // note: z1 is split between the low and high halves
-    uint64_t xy0 = z0 ^ (z1 << 32);
-    uint64_t xy1 = z2 ^ (z1 >> 32);
+    u64 xy0 = z0 ^ (z1 << 32);
+    u64 xy1 = z2 ^ (z1 >> 32);
 
     return std::make_pair(xy0, xy1);
 }
 
-bool test_mm_clmulepi64_si128(const uint64_t *_a, const uint64_t *_b)
+bool test_mm_clmulepi64_si128(const u64 *_a, const u64 *_b)
 {
-    __m128i a = test_mm_load_ps((const int32_t *) _a);
-    __m128i b = test_mm_load_ps((const int32_t *) _b);
+    __m128i a = test_mm_load_ps((const i32 *) _a);
+    __m128i b = test_mm_load_ps((const i32 *) _b);
     auto result = clmul_64(_a[0], _b[0]);
     if (!validateUInt64(_mm_clmulepi64_si128(a, b, 0x00), result.first,
                         result.second))
@@ -2798,7 +2798,7 @@ bool test_mm_clmulepi64_si128(const uint64_t *_a, const uint64_t *_b)
 #define XT(x) (((x) << 1) ^ ((((x) >> 7) & 1) * 0x1b))
 inline __m128i aesenc_128_reference(__m128i a, __m128i b)
 {
-    static const uint8_t sbox[256] = {
+    static const u8 sbox[256] = {
         0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b,
         0xfe, 0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0,
         0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, 0xb7, 0xfd, 0x93, 0x26,
@@ -2821,7 +2821,7 @@ inline __m128i aesenc_128_reference(__m128i a, __m128i b)
         0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
         0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f,
         0xb0, 0x54, 0xbb, 0x16};
-    uint8_t i, t, u, v[4][4];
+    u8 i, t, u, v[4][4];
     for (i = 0; i < 16; ++i) {
         v[((i / 4) + 4 - (i % 4)) % 4][i % 4] =
             sbox[((SIMDVec *) &a)->m128_u8[i]];
@@ -2842,7 +2842,7 @@ inline __m128i aesenc_128_reference(__m128i a, __m128i b)
 }
 
 #if !defined(__arm__) && __ARM_ARCH != 7
-bool test_mm_aesenc_si128(const int32_t *a, const int32_t *b)
+bool test_mm_aesenc_si128(const i32 *a, const i32 *b)
 {
     __m128i data = _mm_loadu_si128((const __m128i *) a);
     __m128i rk = _mm_loadu_si128((const __m128i *) b);
@@ -2867,63 +2867,63 @@ bool test_mm_malloc(const size_t *a, const size_t *b)
     return res;
 }
 
-uint32_t canonical_crc32_u8(uint32_t crc, uint8_t v)
+u32 canonical_crc32_u8(u32 crc, u8 v)
 {
     crc ^= v;
     for (int bit = 0; bit < 8; bit++) {
         if (crc & 1)
-            crc = (crc >> 1) ^ uint32_t(0x82f63b78);
+            crc = (crc >> 1) ^ u32(0x82f63b78);
         else
             crc = (crc >> 1);
     }
     return crc;
 }
 
-uint32_t canonical_crc32_u16(uint32_t crc, uint16_t v)
+u32 canonical_crc32_u16(u32 crc, u16 v)
 {
     crc = canonical_crc32_u8(crc, v & 0xff);
     crc = canonical_crc32_u8(crc, (v >> 8) & 0xff);
     return crc;
 }
 
-uint32_t canonical_crc32_u32(uint32_t crc, uint32_t v)
+u32 canonical_crc32_u32(u32 crc, u32 v)
 {
     crc = canonical_crc32_u16(crc, v & 0xffff);
     crc = canonical_crc32_u16(crc, (v >> 16) & 0xffff);
     return crc;
 }
 
-uint64_t canonical_crc32_u64(uint64_t crc, uint64_t v)
+u64 canonical_crc32_u64(u64 crc, u64 v)
 {
-    crc = canonical_crc32_u32((uint32_t)(crc), v & 0xffffffff);
-    crc = canonical_crc32_u32((uint32_t)(crc), (v >> 32) & 0xffffffff);
+    crc = canonical_crc32_u32((u32)(crc), v & 0xffffffff);
+    crc = canonical_crc32_u32((u32)(crc), (v >> 32) & 0xffffffff);
     return crc;
 }
 
-bool test_mm_crc32_u8(uint32_t crc, uint8_t v)
+bool test_mm_crc32_u8(u32 crc, u8 v)
 {
-    uint32_t result = _mm_crc32_u8(crc, v);
+    u32 result = _mm_crc32_u8(crc, v);
     ASSERT_RETURN(result == canonical_crc32_u8(crc, v));
     return true;
 }
 
-bool test_mm_crc32_u16(uint32_t crc, uint16_t v)
+bool test_mm_crc32_u16(u32 crc, u16 v)
 {
-    uint32_t result = _mm_crc32_u16(crc, v);
+    u32 result = _mm_crc32_u16(crc, v);
     ASSERT_RETURN(result == canonical_crc32_u16(crc, v));
     return true;
 }
 
-bool test_mm_crc32_u32(uint32_t crc, uint32_t v)
+bool test_mm_crc32_u32(u32 crc, u32 v)
 {
-    uint32_t result = _mm_crc32_u32(crc, v);
+    u32 result = _mm_crc32_u32(crc, v);
     ASSERT_RETURN(result == canonical_crc32_u32(crc, v));
     return true;
 }
 
-bool test_mm_crc32_u64(uint64_t crc, uint64_t v)
+bool test_mm_crc32_u64(u64 crc, u64 v)
 {
-    uint64_t result = _mm_crc32_u64(crc, v);
+    u64 result = _mm_crc32_u64(crc, v);
     ASSERT_RETURN(result == canonical_crc32_u64(crc, v));
     return true;
 }
@@ -2936,14 +2936,14 @@ class SSE2NEONTestImpl : public SSE2NEONTest
 public:
     SSE2NEONTestImpl(void)
     {
-        mTestFloatPointer1 = (float *) platformAlignedAlloc(sizeof(__m128));
-        mTestFloatPointer2 = (float *) platformAlignedAlloc(sizeof(__m128));
-        mTestIntPointer1 = (int32_t *) platformAlignedAlloc(sizeof(__m128i));
-        mTestIntPointer2 = (int32_t *) platformAlignedAlloc(sizeof(__m128i));
+        mTestFloatPointer1 = (f32 *) platformAlignedAlloc(sizeof(__m128));
+        mTestFloatPointer2 = (f32 *) platformAlignedAlloc(sizeof(__m128));
+        mTestIntPointer1 = (i32 *) platformAlignedAlloc(sizeof(__m128i));
+        mTestIntPointer2 = (i32 *) platformAlignedAlloc(sizeof(__m128i));
         srand(0);
-        for (uint32_t i = 0; i < MAX_TEST_VALUE; i++) {
+        for (u32 i = 0; i < MAX_TEST_VALUE; i++) {
             mTestFloats[i] = ranf(-100000, 100000);
-            mTestInts[i] = (int32_t) ranf(-100000, 100000);
+            mTestInts[i] = (i32) ranf(-100000, 100000);
         }
     }
 
@@ -2955,7 +2955,7 @@ public:
         platformAlignedFree(mTestIntPointer2);
     }
 
-    bool loadTestFloatPointers(uint32_t i)
+    bool loadTestFloatPointers(u32 i)
     {
         bool ret = test_mm_store_ps(mTestFloatPointer1, mTestFloats[i],
                                     mTestFloats[i + 1], mTestFloats[i + 2],
@@ -2968,7 +2968,7 @@ public:
         return ret;
     }
 
-    bool loadTestIntPointers(uint32_t i)
+    bool loadTestIntPointers(u32 i)
     {
         bool ret =
             test_mm_store_ps(mTestIntPointer1, mTestInts[i], mTestInts[i + 1],
@@ -2982,7 +2982,7 @@ public:
         return ret;
     }
 
-    bool runSingleTest(InstructionTest test, uint32_t i)
+    bool runSingleTest(InstructionTest test, u32 i)
     {
         bool ret = true;
 
@@ -3007,7 +3007,7 @@ public:
             ret = test_mm_set_ss(mTestFloats[i]);
             break;
         case IT_MM_SET_EPI8:
-            ret = test_mm_set_epi8((const int8_t *) mTestIntPointer1);
+            ret = test_mm_set_epi8((const i8 *) mTestIntPointer1);
             break;
         case IT_MM_SET1_EPI32:
             ret = test_mm_set1_epi32(mTestInts[i]);
@@ -3067,8 +3067,8 @@ public:
             ret = test_mm_sub_ps(mTestFloatPointer1, mTestFloatPointer2);
             break;
         case IT_MM_SUB_EPI64:
-            ret = test_mm_sub_epi64((int64_t *) mTestIntPointer1,
-                                    (int64_t *) mTestIntPointer2);
+            ret = test_mm_sub_epi64((i64 *) mTestIntPointer1,
+                                    (i64 *) mTestIntPointer2);
             break;
         case IT_MM_SUB_EPI32:
             ret = test_mm_sub_epi32(mTestIntPointer1, mTestIntPointer2);
@@ -3080,8 +3080,8 @@ public:
             ret = test_mm_add_epi32(mTestIntPointer1, mTestIntPointer2);
             break;
         case IT_MM_MULLO_EPI16:
-            ret = test_mm_mullo_epi16((const int16_t *) mTestIntPointer1,
-                                      (const int16_t *) mTestIntPointer2);
+            ret = test_mm_mullo_epi16((const i16 *) mTestIntPointer1,
+                                      (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_MUL_PS:
             ret = test_mm_mul_ps(mTestFloatPointer1, mTestFloatPointer2);
@@ -3096,12 +3096,12 @@ public:
             ret = test_mm_min_ps(mTestFloatPointer1, mTestFloatPointer2);
             break;
         case IT_MM_MIN_EPI16:
-            ret = test_mm_min_epi16((const int16_t *) mTestIntPointer1,
-                                    (const int16_t *) mTestIntPointer2);
+            ret = test_mm_min_epi16((const i16 *) mTestIntPointer1,
+                                    (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_MULHI_EPI16:
-            ret = test_mm_mulhi_epi16((const int16_t *) mTestIntPointer1,
-                                      (const int16_t *) mTestIntPointer2);
+            ret = test_mm_mulhi_epi16((const i16 *) mTestIntPointer1,
+                                      (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_CMPLT_PS:
             ret = test_mm_cmplt_ps(mTestFloatPointer1, mTestFloatPointer2);
@@ -3158,8 +3158,8 @@ public:
             ret = true;
             break;
         case IT_MM_HADD_EPI16:
-            ret = test_mm_hadd_epi16((const int16_t *) mTestIntPointer1,
-                                     (const int16_t *) mTestIntPointer2);
+            ret = test_mm_hadd_epi16((const i16 *) mTestIntPointer1,
+                                     (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_MAX_EPI32:
             ret = true;
@@ -3168,7 +3168,7 @@ public:
             ret = true;
             break;
         case IT_MM_MINPOS_EPU16:
-            ret = test_mm_minpos_epu16((const int16_t *) mTestIntPointer1);
+            ret = test_mm_minpos_epu16((const i16 *) mTestIntPointer1);
             break;
         case IT_MM_MAX_SS:
             ret = true;
@@ -3195,19 +3195,19 @@ public:
             ret = true;
             break;
         case IT_MM_MUL_EPU32:
-            ret = test_mm_mul_epu32((const uint32_t *) mTestIntPointer1,
-                                    (const uint32_t *) mTestIntPointer2);
+            ret = test_mm_mul_epu32((const u32 *) mTestIntPointer1,
+                                    (const u32 *) mTestIntPointer2);
             break;
         case IT_MM_ADD_EPI16:
             ret = true;
             break;
         case IT_MM_MADD_EPI16:
-            ret = test_mm_madd_epi16((const int16_t *) mTestIntPointer1,
-                                     (const int16_t *) mTestIntPointer2);
+            ret = test_mm_madd_epi16((const i16 *) mTestIntPointer1,
+                                     (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_MADDUBS_EPI16:
-            ret = test_mm_maddubs_epi16((const uint8_t *) mTestIntPointer1,
-                                        (const int8_t *) mTestIntPointer2);
+            ret = test_mm_maddubs_epi16((const u8 *) mTestIntPointer1,
+                                        (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_ADD_SS:
             ret = true;
@@ -3243,7 +3243,7 @@ public:
             ret = true;
             break;
         case IT_MM_LOAD_SD:
-            ret = test_mm_load_sd((const double *) mTestFloatPointer1);
+            ret = test_mm_load_sd((const f64 *) mTestFloatPointer1);
             break;
         case IT_MM_LOAD_SS:
             ret = true;
@@ -3329,142 +3329,142 @@ public:
             break;
 
         case IT_MM_SET1_EPI16:
-            ret = test_mm_set1_epi16((const int16_t *) mTestIntPointer1);
+            ret = test_mm_set1_epi16((const i16 *) mTestIntPointer1);
             break;
         case IT_MM_SET_EPI16:
-            ret = test_mm_set_epi16((const int16_t *) mTestIntPointer1);
+            ret = test_mm_set_epi16((const i16 *) mTestIntPointer1);
             break;
         case IT_MM_SRA_EPI16:
-            ret = test_mm_sra_epi16((const int16_t *) mTestIntPointer1,
-                                    (int64_t) i);
+            ret = test_mm_sra_epi16((const i16 *) mTestIntPointer1,
+                                    (i64) i);
             break;
         case IT_MM_SRA_EPI32:
-            ret = test_mm_sra_epi32((const int32_t *) mTestIntPointer1,
-                                    (int64_t) i);
+            ret = test_mm_sra_epi32((const i32 *) mTestIntPointer1,
+                                    (i64) i);
             break;
         case IT_MM_SLLI_EPI16:
-            ret = test_mm_slli_epi16((const int16_t *) mTestIntPointer1);
+            ret = test_mm_slli_epi16((const i16 *) mTestIntPointer1);
             break;
         case IT_MM_SLL_EPI16:
-            ret = test_mm_sll_epi16((const int16_t *) mTestIntPointer1,
-                                    (int64_t) i);
+            ret = test_mm_sll_epi16((const i16 *) mTestIntPointer1,
+                                    (i64) i);
             break;
         case IT_MM_SLL_EPI32:
-            ret = test_mm_sll_epi32((const int32_t *) mTestIntPointer1,
-                                    (int64_t) i);
+            ret = test_mm_sll_epi32((const i32 *) mTestIntPointer1,
+                                    (i64) i);
             break;
         case IT_MM_SLL_EPI64:
-            ret = test_mm_sll_epi64((const int64_t *) mTestIntPointer1,
-                                    (int64_t) i);
+            ret = test_mm_sll_epi64((const i64 *) mTestIntPointer1,
+                                    (i64) i);
             break;
         case IT_MM_SRL_EPI16:
-            ret = test_mm_srl_epi16((const int16_t *) mTestIntPointer1,
-                                    (int64_t) i);
+            ret = test_mm_srl_epi16((const i16 *) mTestIntPointer1,
+                                    (i64) i);
             break;
         case IT_MM_SRL_EPI32:
-            ret = test_mm_srl_epi32((const int32_t *) mTestIntPointer1,
-                                    (int64_t) i);
+            ret = test_mm_srl_epi32((const i32 *) mTestIntPointer1,
+                                    (i64) i);
             break;
         case IT_MM_SRL_EPI64:
-            ret = test_mm_srl_epi64((const int64_t *) mTestIntPointer1,
-                                    (int64_t) i);
+            ret = test_mm_srl_epi64((const i64 *) mTestIntPointer1,
+                                    (i64) i);
             break;
         case IT_MM_SRLI_EPI16:
-            ret = test_mm_srli_epi16((const int16_t *) mTestIntPointer1);
+            ret = test_mm_srli_epi16((const i16 *) mTestIntPointer1);
             break;
         case IT_MM_CMPEQ_EPI16:
-            ret = test_mm_cmpeq_epi16((const int16_t *) mTestIntPointer1,
-                                      (const int16_t *) mTestIntPointer2);
+            ret = test_mm_cmpeq_epi16((const i16 *) mTestIntPointer1,
+                                      (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_CMPEQ_EPI64:
-            ret = test_mm_cmpeq_epi64((const int64_t *) mTestIntPointer1,
-                                      (const int64_t *) mTestIntPointer2);
+            ret = test_mm_cmpeq_epi64((const i64 *) mTestIntPointer1,
+                                      (const i64 *) mTestIntPointer2);
             break;
         case IT_MM_SET1_EPI8:
-            ret = test_mm_set1_epi8((const int8_t *) mTestIntPointer1);
+            ret = test_mm_set1_epi8((const i8 *) mTestIntPointer1);
             break;
         case IT_MM_ADDS_EPU8:
-            ret = test_mm_adds_epu8((const int8_t *) mTestIntPointer1,
-                                    (const int8_t *) mTestIntPointer2);
+            ret = test_mm_adds_epu8((const i8 *) mTestIntPointer1,
+                                    (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_SUBS_EPU8:
-            ret = test_mm_subs_epu8((const int8_t *) mTestIntPointer1,
-                                    (const int8_t *) mTestIntPointer2);
+            ret = test_mm_subs_epu8((const i8 *) mTestIntPointer1,
+                                    (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_MAX_EPU8:
-            ret = test_mm_max_epu8((const int8_t *) mTestIntPointer1,
-                                   (const int8_t *) mTestIntPointer2);
+            ret = test_mm_max_epu8((const i8 *) mTestIntPointer1,
+                                   (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_CMPEQ_EPI8:
-            ret = test_mm_cmpeq_epi8((const int8_t *) mTestIntPointer1,
-                                     (const int8_t *) mTestIntPointer2);
+            ret = test_mm_cmpeq_epi8((const i8 *) mTestIntPointer1,
+                                     (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_ADDS_EPI16:
-            ret = test_mm_adds_epi16((const int16_t *) mTestIntPointer1,
-                                     (const int16_t *) mTestIntPointer2);
+            ret = test_mm_adds_epi16((const i16 *) mTestIntPointer1,
+                                     (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_MAX_EPI16:
-            ret = test_mm_max_epi16((const int16_t *) mTestIntPointer1,
-                                    (const int16_t *) mTestIntPointer2);
+            ret = test_mm_max_epi16((const i16 *) mTestIntPointer1,
+                                    (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_SUBS_EPU16:
-            ret = test_mm_subs_epu16((const int16_t *) mTestIntPointer1,
-                                     (const int16_t *) mTestIntPointer2);
+            ret = test_mm_subs_epu16((const i16 *) mTestIntPointer1,
+                                     (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_CMPLT_EPI16:
-            ret = test_mm_cmplt_epi16((const int16_t *) mTestIntPointer1,
-                                      (const int16_t *) mTestIntPointer2);
+            ret = test_mm_cmplt_epi16((const i16 *) mTestIntPointer1,
+                                      (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_CMPGT_EPI16:
-            ret = test_mm_cmpgt_epi16((const int16_t *) mTestIntPointer1,
-                                      (const int16_t *) mTestIntPointer2);
+            ret = test_mm_cmpgt_epi16((const i16 *) mTestIntPointer1,
+                                      (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_LOADU_SI128:
-            ret = test_mm_loadu_si128((const int32_t *) mTestIntPointer1);
+            ret = test_mm_loadu_si128((const i32 *) mTestIntPointer1);
             break;
         case IT_MM_STOREU_SI128:
-            ret = test_mm_storeu_si128((const int32_t *) mTestIntPointer1);
+            ret = test_mm_storeu_si128((const i32 *) mTestIntPointer1);
             break;
         case IT_MM_ADD_EPI8:
-            ret = test_mm_add_epi8((const int8_t *) mTestIntPointer1,
-                                   (const int8_t *) mTestIntPointer2);
+            ret = test_mm_add_epi8((const i8 *) mTestIntPointer1,
+                                   (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_CMPGT_EPI8:
-            ret = test_mm_cmpgt_epi8((const int8_t *) mTestIntPointer1,
-                                     (const int8_t *) mTestIntPointer2);
+            ret = test_mm_cmpgt_epi8((const i8 *) mTestIntPointer1,
+                                     (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_CMPLT_EPI8:
-            ret = test_mm_cmplt_epi8((const int8_t *) mTestIntPointer1,
-                                     (const int8_t *) mTestIntPointer2);
+            ret = test_mm_cmplt_epi8((const i8 *) mTestIntPointer1,
+                                     (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_SUB_EPI8:
-            ret = test_mm_sub_epi8((const int8_t *) mTestIntPointer1,
-                                   (const int8_t *) mTestIntPointer2);
+            ret = test_mm_sub_epi8((const i8 *) mTestIntPointer1,
+                                   (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_SETR_EPI32:
-            ret = test_mm_setr_epi32((const int32_t *) mTestIntPointer1);
+            ret = test_mm_setr_epi32((const i32 *) mTestIntPointer1);
             break;
         case IT_MM_MIN_EPU8:
-            ret = test_mm_min_epu8((const int8_t *) mTestIntPointer1,
-                                   (const int8_t *) mTestIntPointer2);
+            ret = test_mm_min_epu8((const i8 *) mTestIntPointer1,
+                                   (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_TEST_ALL_ZEROS:
-            ret = test_mm_test_all_zeros((const int32_t *) mTestIntPointer1,
-                                         (const int32_t *) mTestIntPointer2);
+            ret = test_mm_test_all_zeros((const i32 *) mTestIntPointer1,
+                                         (const i32 *) mTestIntPointer2);
             break;
         case IT_MM_AVG_EPU8:
-            ret = test_mm_avg_epu8((const int8_t *) mTestIntPointer1,
-                                   (const int8_t *) mTestIntPointer2);
+            ret = test_mm_avg_epu8((const i8 *) mTestIntPointer1,
+                                   (const i8 *) mTestIntPointer2);
             break;
         case IT_MM_AVG_EPU16:
-            ret = test_mm_avg_epu16((const int16_t *) mTestIntPointer1,
-                                    (const int16_t *) mTestIntPointer2);
+            ret = test_mm_avg_epu16((const i16 *) mTestIntPointer1,
+                                    (const i16 *) mTestIntPointer2);
             break;
         case IT_MM_POPCNT_U32:
-            ret = test_mm_popcnt_u32((const uint32_t *) mTestIntPointer1);
+            ret = test_mm_popcnt_u32((const u32 *) mTestIntPointer1);
             break;
         case IT_MM_POPCNT_U64:
-            ret = test_mm_popcnt_u64((const uint64_t *) mTestIntPointer1);
+            ret = test_mm_popcnt_u64((const u64 *) mTestIntPointer1);
             break;
 #if !defined(__arm__) && __ARM_ARCH != 7
         case IT_MM_AESENC_SI128:
@@ -3472,26 +3472,26 @@ public:
             break;
 #endif
         case IT_MM_CLMULEPI64_SI128:
-            ret = test_mm_clmulepi64_si128((const uint64_t *) mTestIntPointer1,
-                                           (const uint64_t *) mTestIntPointer2);
+            ret = test_mm_clmulepi64_si128((const u64 *) mTestIntPointer1,
+                                           (const u64 *) mTestIntPointer2);
             break;
         case IT_MM_MALLOC:
             ret = test_mm_malloc((const size_t *) mTestIntPointer1,
                                  (const size_t *) mTestIntPointer2);
             break;
         case IT_MM_CRC32_U8:
-            ret = test_mm_crc32_u8(*(const uint32_t *) mTestIntPointer1, i);
+            ret = test_mm_crc32_u8(*(const u32 *) mTestIntPointer1, i);
             break;
         case IT_MM_CRC32_U16:
-            ret = test_mm_crc32_u16(*(const uint32_t *) mTestIntPointer1, i);
+            ret = test_mm_crc32_u16(*(const u32 *) mTestIntPointer1, i);
             break;
         case IT_MM_CRC32_U32:
-            ret = test_mm_crc32_u32(*(const uint32_t *) mTestIntPointer1,
-                                    *(const uint32_t *) mTestIntPointer2);
+            ret = test_mm_crc32_u32(*(const u32 *) mTestIntPointer1,
+                                    *(const u32 *) mTestIntPointer2);
             break;
         case IT_MM_CRC32_U64:
-            ret = test_mm_crc32_u64(*(const uint64_t *) mTestIntPointer1,
-                                    *(const uint64_t *) mTestIntPointer2);
+            ret = test_mm_crc32_u64(*(const u64 *) mTestIntPointer1,
+                                    *(const u64 *) mTestIntPointer2);
             break;
         case IT_LAST: /* should not happend */
             break;
@@ -3505,13 +3505,13 @@ public:
         bool ret = true;
 
         // Test a whole bunch of values
-        for (uint32_t i = 0; i < (MAX_TEST_VALUE - 8); i++) {
-            ret = loadTestFloatPointers(i);  // Load some random float values
+        for (u32 i = 0; i < (MAX_TEST_VALUE - 8); i++) {
+            ret = loadTestFloatPointers(i);  // Load some random f32 values
             if (!ret)
-                break;                     // load test float failed??
+                break;                     // load test f32 failed??
             ret = loadTestIntPointers(i);  // load some random int values
             if (!ret)
-                break;  // load test float failed??
+                break;  // load test f32 failed??
             // If we are testing the reciprocal, then invert the input data
             // (easier for debugging)
             if (test == IT_MM_RCP_PS) {
@@ -3534,8 +3534,8 @@ public:
                 // One out of four times
                 // Make sure a couple of values have NANs for testing purposes
                 if ((rand() & 3) == 0) {
-                    uint32_t r1 = rand() & 3;
-                    uint32_t r2 = rand() & 3;
+                    u32 r1 = rand() & 3;
+                    u32 r2 = rand() & 3;
                     mTestFloatPointer1[r1] = getNAN();
                     mTestFloatPointer2[r2] = getNAN();
                 }
@@ -3544,50 +3544,50 @@ public:
             // one out of every random 64 times or so, mix up the test floats to
             // contain some integer values
             if ((rand() & 63) == 0) {
-                uint32_t option = rand() & 3;
+                u32 option = rand() & 3;
                 switch (option) {
                 // All integers..
                 case 0:
-                    mTestFloatPointer1[0] = float(mTestIntPointer1[0]);
-                    mTestFloatPointer1[1] = float(mTestIntPointer1[1]);
-                    mTestFloatPointer1[2] = float(mTestIntPointer1[2]);
-                    mTestFloatPointer1[3] = float(mTestIntPointer1[3]);
+                    mTestFloatPointer1[0] = f32(mTestIntPointer1[0]);
+                    mTestFloatPointer1[1] = f32(mTestIntPointer1[1]);
+                    mTestFloatPointer1[2] = f32(mTestIntPointer1[2]);
+                    mTestFloatPointer1[3] = f32(mTestIntPointer1[3]);
 
-                    mTestFloatPointer2[0] = float(mTestIntPointer2[0]);
-                    mTestFloatPointer2[1] = float(mTestIntPointer2[1]);
-                    mTestFloatPointer2[2] = float(mTestIntPointer2[2]);
-                    mTestFloatPointer2[3] = float(mTestIntPointer2[3]);
+                    mTestFloatPointer2[0] = f32(mTestIntPointer2[0]);
+                    mTestFloatPointer2[1] = f32(mTestIntPointer2[1]);
+                    mTestFloatPointer2[2] = f32(mTestIntPointer2[2]);
+                    mTestFloatPointer2[3] = f32(mTestIntPointer2[3]);
 
                     break;
                 case 1: {
-                    uint32_t index = rand() & 3;
-                    mTestFloatPointer1[index] = float(mTestIntPointer1[index]);
+                    u32 index = rand() & 3;
+                    mTestFloatPointer1[index] = f32(mTestIntPointer1[index]);
                     index = rand() & 3;
-                    mTestFloatPointer2[index] = float(mTestIntPointer2[index]);
+                    mTestFloatPointer2[index] = f32(mTestIntPointer2[index]);
                 } break;
                 case 2: {
-                    uint32_t index1 = rand() & 3;
-                    uint32_t index2 = rand() & 3;
+                    u32 index1 = rand() & 3;
+                    u32 index2 = rand() & 3;
                     mTestFloatPointer1[index1] =
-                        float(mTestIntPointer1[index1]);
+                        f32(mTestIntPointer1[index1]);
                     mTestFloatPointer1[index2] =
-                        float(mTestIntPointer1[index2]);
+                        f32(mTestIntPointer1[index2]);
                     index1 = rand() & 3;
                     index2 = rand() & 3;
                     mTestFloatPointer1[index1] =
-                        float(mTestIntPointer1[index1]);
+                        f32(mTestIntPointer1[index1]);
                     mTestFloatPointer1[index2] =
-                        float(mTestIntPointer1[index2]);
+                        f32(mTestIntPointer1[index2]);
                 } break;
                 case 3:
-                    mTestFloatPointer1[0] = float(mTestIntPointer1[0]);
-                    mTestFloatPointer1[1] = float(mTestIntPointer1[1]);
-                    mTestFloatPointer1[2] = float(mTestIntPointer1[2]);
-                    mTestFloatPointer1[3] = float(mTestIntPointer1[3]);
+                    mTestFloatPointer1[0] = f32(mTestIntPointer1[0]);
+                    mTestFloatPointer1[1] = f32(mTestIntPointer1[1]);
+                    mTestFloatPointer1[2] = f32(mTestIntPointer1[2]);
+                    mTestFloatPointer1[3] = f32(mTestIntPointer1[3]);
                     break;
                 }
                 if ((rand() & 3) == 0) {  // one out of 4 times, make halves
-                    for (uint32_t j = 0; j < 4; j++) {
+                    for (u32 j = 0; j < 4; j++) {
                         mTestFloatPointer1[j] *= 0.5f;
                         mTestFloatPointer2[j] *= 0.5f;
                     }
@@ -3617,12 +3617,12 @@ public:
 
     virtual void release(void) { delete this; }
 
-    float *mTestFloatPointer1;
-    float *mTestFloatPointer2;
-    int32_t *mTestIntPointer1;
-    int32_t *mTestIntPointer2;
-    float mTestFloats[MAX_TEST_VALUE];
-    int32_t mTestInts[MAX_TEST_VALUE];
+    f32 *mTestFloatPointer1;
+    f32 *mTestFloatPointer2;
+    i32 *mTestIntPointer1;
+    i32 *mTestIntPointer2;
+    f32 mTestFloats[MAX_TEST_VALUE];
+    i32 mTestInts[MAX_TEST_VALUE];
 };
 
 SSE2NEONTest *SSE2NEONTest::create(void)

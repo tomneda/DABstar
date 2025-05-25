@@ -4,12 +4,12 @@
 /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 /*::  This function converts decimal degrees to radians             :*/
 /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-double deg2rad (double deg) {
+f64 deg2rad (f64 deg) {
   return (deg * pi / 180);
 }
 
-double distance (double lat1, double lon1, double lat2, double lon2) {
-double theta, dist;
+f64 distance (f64 lat1, f64 lon1, f64 lat2, f64 lon2) {
+f64 theta, dist;
 theta = lon1 - lon2;
 
 	dist = sin (deg2rad (lat1)) * sin (deg2rad (lat2)) +

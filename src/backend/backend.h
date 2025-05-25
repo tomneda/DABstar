@@ -60,10 +60,10 @@ class Backend
 #endif
 
 public:
-  Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<int16_t> * ipoAudiobuffer, RingBuffer<uint8_t> * ipoDatabuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag);
+  Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, FILE * dump, int flag);
   ~Backend();
 
-  int32_t process(const int16_t * iV, int16_t cnt);
+  i32 process(const i16 * iV, i16 cnt);
   void stopRunning();
 
   // we need sometimes to access the key parameters for decoding
@@ -72,34 +72,34 @@ public:
   int Length;
   bool shortForm;
   int protLevel;
-  int16_t bitRate;
-  int16_t subChId;
+  i16 bitRate;
+  i16 subChId;
   QString serviceName;
   int borf;
   FILE * dump;
 
 private:
   BackendDeconvolver deconvolver;
-  std::vector<uint8_t> outV;
+  std::vector<u8> outV;
   BackendDriver driver;
 #ifdef  __THREADED_BACKEND__
   void run();
   std::atomic<bool> running;
   QSemaphore freeSlots;
   QSemaphore usedSlots;
-  std::vector<int16_t> theData[NUMBER_SLOTS];
-  int16_t nextIn;
-  int16_t nextOut;
+  std::vector<i16> theData[NUMBER_SLOTS];
+  i16 nextIn;
+  i16 nextOut;
 #endif
-  void processSegment(const int16_t * iData);
+  void processSegment(const i16 * iData);
   DabRadio * radioInterface;
 
-  int16_t fragmentSize;
-  std::vector<std::vector<int16_t>> interleaveData;
-  std::vector<int16_t> tempX;
-  int16_t countforInterleaver;
-  int16_t interleaverIndex;
-  std::vector<uint8_t> disperseVector;
+  i16 fragmentSize;
+  std::vector<std::vector<i16>> interleaveData;
+  std::vector<i16> tempX;
+  i16 countforInterleaver;
+  i16 interleaverIndex;
+  std::vector<u8> disperseVector;
 };
 
 #endif

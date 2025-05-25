@@ -61,7 +61,7 @@ public:
   void set_selector_channel_only(const QString & iChannel);
   void set_favorite_state(const bool iIsFavorite);
   void restore_favorites();
-  void jump_entries(int32_t iSteps); // typ -1/+1, with wrap around
+  void jump_entries(i32 iSteps); // typ -1/+1, with wrap around
   QStringList get_list_of_services_in_channel(const QString & iChannel) const;
 
 private:
@@ -72,7 +72,7 @@ private:
   QString mServiceLast;
 
   void _fill_table_view_from_db();
-  void _jump_to_list_entry_and_emit_fav_status(const int32_t iSkipOffset = 0, const bool iCenterContent = false);
+  void _jump_to_list_entry_and_emit_fav_status(const i32 iSkipOffset = 0, const bool iCenterContent = false);
 
 private slots:
   void _slot_selection_changed_with_fav(const QString & iChannel, const QString & iService, const bool iIsFav);

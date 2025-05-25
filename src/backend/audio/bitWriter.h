@@ -18,21 +18,20 @@
 
 // --- BitWriter ------------------------------------------------------------
 
-#include	<stdlib.h>
-#include	<stdint.h>
-#include	<vector>
+#include "glob_data_types.h"
+#include <vector>
 
 class BitWriter {
 private:
-        std::vector<uint8_t> data;
+        std::vector<u8> data;
         size_t byte_bits;
 public:
         BitWriter() {Reset();}
 
         void Reset();
         void AddBits(int data_new, size_t count);
-        void AddBytes(const uint8_t *data, size_t len);
-        const std::vector<uint8_t> GetData() {
+        void AddBytes(const u8 *data, size_t len);
+        const std::vector<u8> GetData() {
 	   return data;
 	}
 

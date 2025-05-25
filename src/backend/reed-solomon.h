@@ -23,29 +23,29 @@
 class ReedSolomon
 {
 public:
-  explicit ReedSolomon(uint16_t symsize = 8, uint16_t gfpoly = 0435, uint16_t fcr = 0, uint16_t prim = 1, uint16_t nroots = 10);
+  explicit ReedSolomon(u16 symsize = 8, u16 gfpoly = 0435, u16 fcr = 0, u16 prim = 1, u16 nroots = 10);
   ~ReedSolomon() = default;
 
-  int16_t dec(const uint8_t * data_in, uint8_t * data_out, int16_t cutlen);
-  void enc(const uint8_t * data_in, uint8_t * data_out, int16_t cutlen);
+  i16 dec(const u8 * data_in, u8 * data_out, i16 cutlen);
+  void enc(const u8 * data_in, u8 * data_out, i16 cutlen);
 
 private:
   Galois myGalois;
-  uint16_t symsize;   /* Bits per symbol */
-  uint16_t codeLength;  /* Symbols per block (= (1<<mm)-1) */
-  std::vector<uint8_t> generator;  /* Generator polynomial */
-  uint16_t nroots;  /* Number of generator roots = number of parity symbols */
-  uint8_t fcr;    /* First consecutive root, index form */
-  uint8_t prim;    /* Primitive element, index form */
-  uint8_t iprim;    /* prim-th root of 1, index form */
+  u16 symsize;   /* Bits per symbol */
+  u16 codeLength;  /* Symbols per block (= (1<<mm)-1) */
+  std::vector<u8> generator;  /* Generator polynomial */
+  u16 nroots;  /* Number of generator roots = number of parity symbols */
+  u8 fcr;    /* First consecutive root, index form */
+  u8 prim;    /* Primitive element, index form */
+  u8 iprim;    /* prim-th root of 1, index form */
 
-  bool computeSyndromes(uint8_t *, uint8_t *);
-  uint8_t getSyndrome(uint8_t *, uint8_t);
-  uint16_t computeLambda(uint8_t *, uint8_t *);
-  int16_t computeErrors(uint8_t *, uint16_t, uint8_t *, uint8_t *);
-  uint16_t computeOmega(uint8_t *, uint8_t *, uint16_t, uint8_t *);
-  void encode_rs(const uint8_t * data_in, uint8_t * roots);
-  int16_t decode_rs(uint8_t * data);
+  bool computeSyndromes(u8 *, u8 *);
+  u8 getSyndrome(u8 *, u8);
+  u16 computeLambda(u8 *, u8 *);
+  i16 computeErrors(u8 *, u16, u8 *, u8 *);
+  u16 computeOmega(u8 *, u8 *, u16, u8 *);
+  void encode_rs(const u8 * data_in, u8 * roots);
+  i16 decode_rs(u8 * data);
 };
 
 #endif

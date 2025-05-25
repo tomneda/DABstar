@@ -8,14 +8,14 @@
 class ProcessParams
 {
 public:
-  float threshold = 0;
-  int16_t tiiFramesToCount = 0;
-  RingBuffer<float> * responseBuffer = nullptr;
-  RingBuffer<cmplx> * spectrumBuffer = nullptr;
-  RingBuffer<cmplx> * cirBuffer = nullptr;
-  RingBuffer<cmplx> * iqBuffer = nullptr;
-  RingBuffer<float> * carrBuffer = nullptr;
-  RingBuffer<uint8_t> * frameBuffer = nullptr;
+  f32 threshold = 0;
+  i16 tiiFramesToCount = 0;
+  RingBuffer<f32> * responseBuffer = nullptr;
+  RingBuffer<cf32> * spectrumBuffer = nullptr;
+  RingBuffer<cf32> * cirBuffer = nullptr;
+  RingBuffer<cf32> * iqBuffer = nullptr;
+  RingBuffer<f32> * carrBuffer = nullptr;
+  RingBuffer<u8> * frameBuffer = nullptr;
 };
 
 #endif

@@ -51,58 +51,58 @@ class SampleReader : public QObject
 {
 Q_OBJECT
 public:
-  SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer = nullptr);
+  SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer = nullptr);
   ~SampleReader() override = default;
 
   void setRunning(bool b);
-  [[nodiscard]] float get_sLevel() const;
-  float get_linear_peak_level_and_clear();
-  cmplx getSample(int32_t);
-  void getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec);
+  [[nodiscard]] f32 get_sLevel() const;
+  f32 get_linear_peak_level_and_clear();
+  cf32 getSample(i32);
+  void getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, bool iShowSpec);
   void startDumping(SNDFILE *);
   void stop_dumping();
   void set_dc_removal(bool iRemoveDC);
-  void set_cir_buffer(RingBuffer<cmplx> * iCirBuffer);
+  void set_cir_buffer(RingBuffer<cf32> * iCirBuffer);
 
-  [[nodiscard]] inline cmplx get_dc_offset() const { return { meanI, meanQ }; }
+  [[nodiscard]] inline cf32 get_dc_offset() const { return { meanI, meanQ }; }
 
 private:
-  static constexpr uint16_t DUMP_SIZE = 4096;
-  static constexpr int32_t SPEC_BUFF_SIZE = 2048;
-  static constexpr int32_t CIR_BUFF_SIZE = 2048*97;
+  static constexpr u16 DUMP_SIZE = 4096;
+  static constexpr i32 SPEC_BUFF_SIZE = 2048;
+  static constexpr i32 CIR_BUFF_SIZE = 2048*97;
 
   const DabRadio * const myRadioInterface;
   IDeviceHandler * const theRig;
-  RingBuffer<cmplx> * spectrumBuffer;
-  RingBuffer<cmplx> * cirBuffer = nullptr;
-  std::array<cmplx, SPEC_BUFF_SIZE> specBuff;
-  std::array<cmplx, INPUT_RATE> oscillatorTable{};
+  RingBuffer<cf32> * spectrumBuffer;
+  RingBuffer<cf32> * cirBuffer = nullptr;
+  std::array<cf32, SPEC_BUFF_SIZE> specBuff;
+  std::array<cf32, INPUT_RATE> oscillatorTable{};
   TArrayTn mSampleBuffer;
 
-  int32_t specBuffIdx = 0;
-  int32_t currentPhase = 0;
+  i32 specBuffIdx = 0;
+  i32 currentPhase = 0;
   std::atomic<bool> running;
-  float sLevel = 0.0f;
-  int32_t sampleCount = 0;
+  f32 sLevel = 0.0f;
+  i32 sampleCount = 0;
   bool dumping;
-  int16_t dumpIndex = 0;
-  int16_t dumpScale;
-  std::array<int16_t, DUMP_SIZE> dumpBuffer{};
+  i16 dumpIndex = 0;
+  i16 dumpScale;
+  std::array<i16, DUMP_SIZE> dumpBuffer{};
   std::atomic<SNDFILE *> dumpfilePointer;
-  float peakLevel = -1.0e6;
-  float meanI = 0.0f;
-  float meanQ = 0.0f;
+  f32 peakLevel = -1.0e6;
+  f32 meanI = 0.0f;
+  f32 meanQ = 0.0f;
 #ifdef USE_IQ_COMPENSATION
-  float meanII = 1.0f;
-  float meanQQ = 1.0f;
-  float meanIQ = 0.0f;
+  f32 meanII = 1.0f;
+  f32 meanQQ = 1.0f;
+  f32 meanIQ = 0.0f;
 #endif
   bool dcRemovalActive = false;
-  int32_t mWholeFrameIndex = 0;
-  int32_t mWholeFrameCount = 0;
-  cmplx	mWholeFrameBuff[CIR_BUFF_SIZE];
+  i32 mWholeFrameIndex = 0;
+  i32 mWholeFrameCount = 0;
+  cf32	mWholeFrameBuff[CIR_BUFF_SIZE];
 
-  void _dump_samples_to_file(const cmplx * const ipV, const int32_t iNoSamples);
+  void _dump_samples_to_file(const cf32 * const ipV, const i32 iNoSamples);
 
 signals:
   void signal_show_spectrum(int);

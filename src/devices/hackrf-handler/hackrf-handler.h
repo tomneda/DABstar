@@ -66,21 +66,21 @@ using pfn_hackrf_exit = int (*)();
 using pfn_hackrf_start_rx = int (*)(hackrf_device *, hackrf_sample_block_cb_fn, void *);
 using pfn_hackrf_stop_rx = int (*)(hackrf_device *);
 using pfn_hackrf_device_list = hackrf_device_list_t * (*)();
-using pfn_hackrf_set_baseband_filter_bandwidth = int (*)(hackrf_device *, const uint32_t bandwidth_hz);
-using pfn_hackrf_set_lna_gain = int (*)(hackrf_device *, uint32_t);
-using pfn_hackrf_set_vga_gain = int (*)(hackrf_device *, uint32_t);
-using pfn_hackrf_set_freq = int (*)(hackrf_device *, const uint64_t);
-using pfn_hackrf_set_sample_rate = int (*)(hackrf_device *, const double freq_hz);
+using pfn_hackrf_set_baseband_filter_bandwidth = int (*)(hackrf_device *, const u32 bandwidth_hz);
+using pfn_hackrf_set_lna_gain = int (*)(hackrf_device *, u32);
+using pfn_hackrf_set_vga_gain = int (*)(hackrf_device *, u32);
+using pfn_hackrf_set_freq = int (*)(hackrf_device *, const u64);
+using pfn_hackrf_set_sample_rate = int (*)(hackrf_device *, const f64 freq_hz);
 using pfn_hackrf_is_streaming = int (*)(hackrf_device *);
 using pfn_hackrf_error_name = const char * (*)(enum hackrf_error errcode);
 using pfn_hackrf_usb_board_id_name = const char * (*)(enum hackrf_usb_board_id);
-using pfn_hackrf_set_antenna_enable = int (*)(hackrf_device *, const uint8_t);
-using pfn_hackrf_set_amp_enable = int (*)(hackrf_device *, const uint8_t);
-using pfn_hackrf_si5351c_read = int (*)(hackrf_device *, const uint16_t, uint16_t *);
-using pfn_hackrf_si5351c_write = int (*)(hackrf_device *, const uint16_t, const uint16_t);
-using pfn_hackrf_board_rev_read = int (*)(hackrf_device* device, uint8_t* value);
+using pfn_hackrf_set_antenna_enable = int (*)(hackrf_device *, const u8);
+using pfn_hackrf_set_amp_enable = int (*)(hackrf_device *, const u8);
+using pfn_hackrf_si5351c_read = int (*)(hackrf_device *, const u16, u16 *);
+using pfn_hackrf_si5351c_write = int (*)(hackrf_device *, const u16, const u16);
+using pfn_hackrf_board_rev_read = int (*)(hackrf_device* device, u8* value);
 using pfn_hackrf_board_rev_name = const char* (*)(enum hackrf_board_rev board_rev);
-using pfn_version_string_read = int (*)(hackrf_device *, const char *, uint8_t);
+using pfn_version_string_read = int (*)(hackrf_device *, const char *, u8);
 using pfn_hackrf_library_version = const char* (*)();
 using pfn_hackrf_library_release = const char* (*)();
 
@@ -95,15 +95,15 @@ public:
   HackRfHandler(QSettings * iSetting, const QString & iRecorderVersion);
   ~HackRfHandler() override;
 
-  void setVFOFrequency(int32_t) override;
-  int32_t getVFOFrequency() override;
+  void setVFOFrequency(i32) override;
+  i32 getVFOFrequency() override;
 
-  bool restartReader(int32_t) override;
+  bool restartReader(i32) override;
   void stopReader() override;
-  int32_t getSamples(cmplx *, int32_t) override;
-  int32_t Samples() override;
+  i32 getSamples(cf32 *, i32) override;
+  i32 Samples() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
@@ -111,13 +111,13 @@ public:
   bool isFileInput() override;
 
 
-  using TRingBuffer = RingBuffer<std::complex<int8_t> >;
+  using TRingBuffer = RingBuffer<std::complex<i8> >;
   TRingBuffer mRingBuffer{ 4 * 1024 * 1024 }; // The buffer should be visible by the callback function
 #ifdef HAVE_HBF
-  static constexpr int32_t OVERSAMPLING = 4; // The value should be visible by the callback function
+  static constexpr i32 OVERSAMPLING = 4; // The value should be visible by the callback function
   HalfBandFilter mHbf{ 2 };
 #else
-  static constexpr int32_t OVERSAMPLING = 1; // The value should be visible by the callback function
+  static constexpr i32 OVERSAMPLING = 1; // The value should be visible by the callback function
 #endif
 
 private:
@@ -155,23 +155,23 @@ private:
   SHackRf mHackrf{};
   QSettings * const mpHackrfSettings;
   const QString mRecorderVersion;
-  int32_t mVfoFreqHz = 0;
+  i32 mVfoFreqHz = 0;
   std::atomic<bool> mRunning{};
   QLibrary * mpHandle = nullptr;
   FILE * mpXmlDumper = nullptr;
   XmlFileWriter * mpXmlWriter = nullptr;
   std::atomic<bool> mDumping{};
   bool save_gain_settings = false;
-  float mRefFreqErrFac = 1.0f;  // for workaround to set the ppm offset
+  f32 mRefFreqErrFac = 1.0f;  // for workaround to set the ppm offset
 
   bool load_hackrf_functions();
   bool setup_xml_dump();
   void close_xml_dump();
   void record_gain_settings(int);
   void update_gain_settings(int);
-  void check_err_throw(int32_t iResult) const;
-  bool check_err(int32_t iResult, const char * iFncName, uint32_t iLine) const;
-  template<typename T> bool load_method(T *& oMethodPtr, const char * iName, uint32_t iLine) const;
+  void check_err_throw(i32 iResult) const;
+  bool check_err(i32 iResult, const char * iFncName, u32 iLine) const;
+  template<typename T> bool load_method(T *& oMethodPtr, const char * iName, u32 iLine) const;
 
 signals:
   void signal_new_ant_enable(bool);

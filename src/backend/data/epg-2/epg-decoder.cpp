@@ -43,9 +43,9 @@ EpgDecoder::EpgDecoder()
 {
 }
 
-static uint8_t bitTable[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+static u8 bitTable[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 
-int EpgDecoder::getBit(uint8_t * v, int bitnr)
+int EpgDecoder::getBit(u8 * v, int bitnr)
 {
   int bytenr = bitnr / 8;
 
@@ -53,9 +53,9 @@ int EpgDecoder::getBit(uint8_t * v, int bitnr)
   return (v[bytenr] & bitTable[bitnr]) != 0 ? 1 : 0;
 }
 
-uint32_t EpgDecoder::getBits(uint8_t * v, int bitnr, int length)
+u32 EpgDecoder::getBits(u8 * v, int bitnr, int length)
 {
-  uint16_t res = 0;
+  u16 res = 0;
   for (int i = 0; i < length; i++)
   {
     res <<= 1;
@@ -64,9 +64,9 @@ uint32_t EpgDecoder::getBits(uint8_t * v, int bitnr, int length)
   return res;
 }
 
-int EpgDecoder::process_epg(uint8_t * v, int e_length, uint32_t SId, int subType, uint32_t theDay)
+int EpgDecoder::process_epg(u8 * v, int e_length, u32 SId, int subType, u32 theDay)
 {
-  uint8_t tag = v[0];
+  u8 tag = v[0];
   int length = v[1];
   int index = 0;
 
@@ -190,9 +190,9 @@ int EpgDecoder::process_epg(uint8_t * v, int e_length, uint32_t SId, int subType
   return endPoint;
 }
 
-int EpgDecoder::process_programGroups(uint8_t * v, int index)
+int EpgDecoder::process_programGroups(u8 * v, int index)
 {
-  uint8_t tag = v[index];
+  u8 tag = v[index];
   int length = v[index + 1];
 
   (void)tag;
@@ -249,7 +249,7 @@ int EpgDecoder::process_programGroups(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_programGroup(uint8_t * v, int index)
+int EpgDecoder::process_programGroup(u8 * v, int index)
 {
   int length = v[index + 1];
   progDesc p;
@@ -349,7 +349,7 @@ int EpgDecoder::process_programGroup(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_schedule(uint8_t * v, int index)
+int EpgDecoder::process_schedule(u8 * v, int index)
 {
   int length = v[index + 1];
   progDesc p;
@@ -412,7 +412,7 @@ int EpgDecoder::process_schedule(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_program(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_program(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
   progDesc theElement;
@@ -524,7 +524,7 @@ int EpgDecoder::process_program(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_scope(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_scope(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -576,7 +576,7 @@ int EpgDecoder::process_scope(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_serviceScope(uint8_t * v, int index)
+int EpgDecoder::process_serviceScope(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -623,7 +623,7 @@ int EpgDecoder::process_serviceScope(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_mediaDescription(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_mediaDescription(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -676,7 +676,7 @@ int EpgDecoder::process_mediaDescription(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_ensemble(uint8_t * v, int index)
+int EpgDecoder::process_ensemble(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -750,7 +750,7 @@ int EpgDecoder::process_ensemble(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_service(uint8_t * v, int index)
+int EpgDecoder::process_service(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -832,7 +832,7 @@ int EpgDecoder::process_service(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_location(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_location(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -893,7 +893,7 @@ int EpgDecoder::process_location(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_bearer(uint8_t * v, int index)
+int EpgDecoder::process_bearer(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -949,7 +949,7 @@ int EpgDecoder::process_bearer(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_geoLocation(uint8_t * v, int index)
+int EpgDecoder::process_geoLocation(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1015,7 +1015,7 @@ int EpgDecoder::process_geoLocation(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_programmeEvent(uint8_t * v, int index)
+int EpgDecoder::process_programmeEvent(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1121,7 +1121,7 @@ int EpgDecoder::process_programmeEvent(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_onDemand(uint8_t * v, int index)
+int EpgDecoder::process_onDemand(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1175,7 +1175,7 @@ int EpgDecoder::process_onDemand(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_genre(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_genre(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -1232,7 +1232,7 @@ int EpgDecoder::process_genre(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_keyWords(uint8_t * v, int index)
+int EpgDecoder::process_keyWords(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1282,7 +1282,7 @@ int EpgDecoder::process_keyWords(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_link(uint8_t * v, int index)
+int EpgDecoder::process_link(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1348,7 +1348,7 @@ int EpgDecoder::process_link(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_shortName(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_shortName(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -1404,7 +1404,7 @@ int EpgDecoder::process_shortName(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_mediumName(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_mediumName(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -1459,7 +1459,7 @@ int EpgDecoder::process_mediumName(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_longName(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_longName(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -1514,7 +1514,7 @@ int EpgDecoder::process_longName(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_shortDescription(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_shortDescription(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -1569,7 +1569,7 @@ int EpgDecoder::process_shortDescription(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_longDescription(uint8_t * v, int index, progDesc * p)
+int EpgDecoder::process_longDescription(u8 * v, int index, progDesc * p)
 {
   int length = v[index + 1];
 
@@ -1624,7 +1624,7 @@ int EpgDecoder::process_longDescription(uint8_t * v, int index, progDesc * p)
   return endPoint;
 }
 
-int EpgDecoder::process_multiMedia(uint8_t * v, int index)
+int EpgDecoder::process_multiMedia(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1691,7 +1691,7 @@ int EpgDecoder::process_multiMedia(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_radiodns(uint8_t * v, int index)
+int EpgDecoder::process_radiodns(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1742,7 +1742,7 @@ int EpgDecoder::process_radiodns(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_time(uint8_t * v, int index, int * t)
+int EpgDecoder::process_time(u8 * v, int index, int * t)
 {
   int length = v[index + 1];
 
@@ -1800,7 +1800,7 @@ int EpgDecoder::process_time(uint8_t * v, int index, int * t)
   return endPoint;
 }
 
-int EpgDecoder::process_relativeTime(uint8_t * v, int index)
+int EpgDecoder::process_relativeTime(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1858,7 +1858,7 @@ int EpgDecoder::process_relativeTime(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_memberOf(uint8_t * v, int index)
+int EpgDecoder::process_memberOf(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1912,7 +1912,7 @@ int EpgDecoder::process_memberOf(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_presentationTime(uint8_t * v, int index)
+int EpgDecoder::process_presentationTime(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -1966,7 +1966,7 @@ int EpgDecoder::process_presentationTime(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_acquisitionTime(uint8_t * v, int index)
+int EpgDecoder::process_acquisitionTime(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2019,7 +2019,7 @@ int EpgDecoder::process_acquisitionTime(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_country(uint8_t * v, int index)
+int EpgDecoder::process_country(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2046,7 +2046,7 @@ int EpgDecoder::process_country(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_point(uint8_t * v, int index)
+int EpgDecoder::process_point(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2074,7 +2074,7 @@ int EpgDecoder::process_point(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_polygon(uint8_t * v, int index)
+int EpgDecoder::process_polygon(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2109,7 +2109,7 @@ int EpgDecoder::process_polygon(uint8_t * v, int index)
 //
 /////////////////////////////////////////////////////////////////////////////
 //
-int EpgDecoder::process_412(uint8_t * v, int index)
+int EpgDecoder::process_412(u8 * v, int index)
 {
   int length = v[index + 1];
   //
@@ -2117,7 +2117,7 @@ int EpgDecoder::process_412(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_440(uint8_t * v, int index)
+int EpgDecoder::process_440(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2139,7 +2139,7 @@ int EpgDecoder::process_440(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_46(uint8_t * v, int index)
+int EpgDecoder::process_46(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2161,7 +2161,7 @@ int EpgDecoder::process_46(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_471(uint8_t * v, int index)
+int EpgDecoder::process_471(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2183,7 +2183,7 @@ int EpgDecoder::process_471(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_472(uint8_t * v, int index)
+int EpgDecoder::process_472(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2205,7 +2205,7 @@ int EpgDecoder::process_472(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_473(uint8_t * v, int index)
+int EpgDecoder::process_473(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2229,11 +2229,11 @@ int EpgDecoder::process_473(uint8_t * v, int index)
 
 //
 //	ETSI TS 102 371: 4.7.4 time point
-int EpgDecoder::process_474(uint8_t * v, int index, int * t)
+int EpgDecoder::process_474(u8 * v, int index, int * t)
 {
   int length = v[index + 1];
-  uint8_t ltoFlag;
-  uint8_t utcFlag;
+  u8 ltoFlag;
+  u8 utcFlag;
   int hours;
   int minutes;
   int ltoBase;
@@ -2261,7 +2261,7 @@ int EpgDecoder::process_474(uint8_t * v, int index, int * t)
   }
 
 
-  uint32_t date = getBits(v, 8 * index + 1, 17);
+  u32 date = getBits(v, 8 * index + 1, 17);
   if (julianDate != date)
   {
     //	   fprintf (stderr, "%d vs schedule date %d\n",
@@ -2280,7 +2280,7 @@ int EpgDecoder::process_474(uint8_t * v, int index, int * t)
 
   if (ltoFlag)
   {
-    uint16_t halfHours = getBits(v, 8 * index + ltoBase, 8);
+    u16 halfHours = getBits(v, 8 * index + ltoBase, 8);
     if (halfHours & 0x20)
     {
       halfHours = -halfHours & 0x1F;
@@ -2297,7 +2297,7 @@ int EpgDecoder::process_474(uint8_t * v, int index, int * t)
 
 //
 //	ETSI TS 102 371: 4.7.5 Duration type
-int EpgDecoder::process_475(uint8_t * v, int index)
+int EpgDecoder::process_475(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2321,7 +2321,7 @@ int EpgDecoder::process_475(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_476(uint8_t * v, int index)
+int EpgDecoder::process_476(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2342,8 +2342,8 @@ int EpgDecoder::process_476(uint8_t * v, int index)
 
   return index + length;  // TODO: early return or wrong (missing!) else braces?
 
-  uint8_t ensFlag = getBit(v, 8 * index + 1);
-  uint8_t sidFlag = getBit(v, 8 * index + 3);
+  u8 ensFlag = getBit(v, 8 * index + 1);
+  u8 sidFlag = getBit(v, 8 * index + 3);
   // TODO: do not dare yet make the clearer
   if (ensFlag == 1)
   {
@@ -2362,7 +2362,7 @@ int EpgDecoder::process_476(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_481(uint8_t * v, int index)
+int EpgDecoder::process_481(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2384,7 +2384,7 @@ int EpgDecoder::process_481(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_482(uint8_t * v, int index)
+int EpgDecoder::process_482(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2406,7 +2406,7 @@ int EpgDecoder::process_482(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_483(uint8_t * v, int index)
+int EpgDecoder::process_483(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2430,7 +2430,7 @@ int EpgDecoder::process_483(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_484(uint8_t * v, int index)
+int EpgDecoder::process_484(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2454,7 +2454,7 @@ int EpgDecoder::process_484(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_485(uint8_t * v, int index)
+int EpgDecoder::process_485(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2476,7 +2476,7 @@ int EpgDecoder::process_485(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_4171(uint8_t * v, int index)
+int EpgDecoder::process_4171(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2498,7 +2498,7 @@ int EpgDecoder::process_4171(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_tokenTable(uint8_t * v, int index)
+int EpgDecoder::process_tokenTable(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2526,7 +2526,7 @@ int EpgDecoder::process_tokenTable(uint8_t * v, int index)
   return endPoint;
 }
 
-int EpgDecoder::process_token(uint8_t * v, int index)
+int EpgDecoder::process_token(u8 * v, int index)
 {
   int tag = v[index];
   int length = v[index + 1];
@@ -2560,7 +2560,7 @@ int EpgDecoder::process_token(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_defaultLanguage(uint8_t * v, int index)
+int EpgDecoder::process_defaultLanguage(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2583,7 +2583,7 @@ int EpgDecoder::process_defaultLanguage(uint8_t * v, int index)
   return index + length;
 }
 
-int EpgDecoder::process_obsolete(uint8_t * v, int index)
+int EpgDecoder::process_obsolete(u8 * v, int index)
 {
   int length = v[index + 1];
 
@@ -2625,7 +2625,7 @@ void EpgDecoder::record(progDesc * theElement)
                            theElement->shortDescription);
 }
 
-QString EpgDecoder::getCData(uint8_t * v, int index, int /*eLength*/)
+QString EpgDecoder::getCData(u8 * v, int index, int /*eLength*/)
 {
   int length;
 

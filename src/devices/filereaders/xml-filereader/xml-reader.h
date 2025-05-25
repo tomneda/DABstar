@@ -48,7 +48,7 @@ class XmlReader : public QThread
 {
 Q_OBJECT
 public:
-  XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b);
+  XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 filePointer, RingBuffer<cf32> * b);
   ~XmlReader() override;
   void stopReader();
   bool handle_continuousButton();
@@ -56,34 +56,34 @@ public:
 private:
   union UCnv // to avoid warnings "dereferencing type-punned pointer will break strict-aliasing rules"
   {
-    int32_t int32Data;
-    float   floatData;
+    i32 int32Data;
+    f32   floatData;
   };
 
   std::atomic<bool> continuous;
   FILE * file;
   XmlDescriptor * fd;
-  uint32_t filePointer;
-  RingBuffer<cmplx> * sampleBuffer;
+  u32 filePointer;
+  RingBuffer<cf32> * sampleBuffer;
   XmlFileReader * parent;
   int nrElements;
   int samplesToRead;
   std::atomic<bool> running;
   void run();
   int compute_nrSamples(FILE * f, int blockNumber);
-  int readSamples(FILE * f, void(XmlReader::*)(FILE *, cmplx *, int));
-  void readElements_IQ(FILE * f, cmplx *, int amount);
-  void readElements_QI(FILE * f, cmplx *, int amount);
-  void readElements_I(FILE * f, cmplx *, int amount);
-  void readElements_Q(FILE * f, cmplx *, int amount);
+  int readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, int));
+  void readElements_IQ(FILE * f, cf32 *, int amount);
+  void readElements_QI(FILE * f, cf32 *, int amount);
+  void readElements_I(FILE * f, cf32 *, int amount);
+  void readElements_Q(FILE * f, cf32 *, int amount);
   //
   //	for the conversion - if any
-  int16_t convBufferSize;
-  int16_t convIndex;
-  std::vector<cmplx> convBuffer;
-  int16_t mapTable_int[2048];
-  float mapTable_float[2048];
-  float mapTable[256];
+  i16 convBufferSize;
+  i16 convIndex;
+  std::vector<cf32> convBuffer;
+  i16 mapTable_int[2048];
+  f32 mapTable_float[2048];
+  f32 mapTable[256];
 
 signals:
   void signal_set_progress(int, int);

@@ -114,7 +114,7 @@ static const int D[512] = {
 ///////////// Table 3-B.2: Possible quantization per subband ///////////////////
 
 // quantizer lookup, step 1: bitrate classes
-static uint8_t quant_lut_step1[2][16] = {
+static u8 quant_lut_step1[2][16] = {
   // 32, 48, 56, 64, 80, 96,112,128,160,192,224,256,320,384 <- bitrate
   { 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2 },  // mono
   // 16, 24, 28, 32, 40, 48, 56, 64, 80, 96,112,128,160,192 <- BR / chan
@@ -136,7 +136,7 @@ static const char quant_lut_step2[3][4] = {
 
 // quantizer lookup, step 3: B2 table, subband -> nbal, row index
 // (upper 4 bits: nbal, lower 4 bits: row index)
-static uint8_t quant_lut_step3[3][32] = {
+static u8 quant_lut_step3[3][32] = {
   // low-rate table (3-B.2c and 3-B.2d)
   {
     0x44, 0x44,                                                   // SB  0 -  1
@@ -191,18 +191,18 @@ static struct quantizer_spec quantizer_table[17] = {{ 3,     1, 5 },  //  1
 //	(J van Katwijk)
 ////////////////////////////////////////////////////////////////////////////////
 
-Mp2Processor::Mp2Processor(DabRadio * mr, int16_t bitRate, RingBuffer<int16_t> * buffer) :
+Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * buffer) :
   my_padhandler(mr)
 {
-  int16_t i, j;
-  int16_t * nPtr = &N[0][0];
+  i16 i, j;
+  i16 * nPtr = &N[0][0];
 
   // compute N[i][j]
   for (i = 0; i < 64; i++)
   {
     for (j = 0; j < 32; ++j)
     {
-      *nPtr++ = (int16_t)(256.0 * cos(((16 + i) * ((j << 1) + 1)) * 0.0490873852123405));
+      *nPtr++ = (i16)(256.0 * cos(((16 + i) * ((j << 1) + 1)) * 0.0490873852123405));
     }
   }
 
@@ -225,7 +225,7 @@ Mp2Processor::Mp2Processor(DabRadio * mr, int16_t bitRate, RingBuffer<int16_t> *
   Voffs = 0;
   baudRate = 48000;  // default for DAB
   MP2framesize = 24 * bitRate;  // may be changed
-  MP2frame = new uint8_t[2 * MP2framesize];
+  MP2frame = new u8[2 * MP2framesize];
   MP2Header_OK = 0;
   MP2headerCount = 0;
   MP2bitCount = 0;
@@ -241,7 +241,7 @@ Mp2Processor::~Mp2Processor()
 
 #define  valid(x)  ((x == 48000) || (x == 24000))
 
-void Mp2Processor::setSamplerate(int32_t rate)
+void Mp2Processor::setSamplerate(i32 rate)
 {
   if (baudRate == rate)
   {
@@ -260,7 +260,7 @@ void Mp2Processor::setSamplerate(int32_t rate)
 // //
 ////////////////////////////////////////////////////////////////////////////////
 
-int32_t Mp2Processor::mp2sampleRate(uint8_t * frame)
+i32 Mp2Processor::mp2sampleRate(u8 * frame)
 {
   if (!frame)
   {
@@ -346,10 +346,10 @@ void Mp2Processor::read_samples(struct quantizer_spec * q, int scalefactor, int 
 
 #define show_bits(bit_count) (bit_window >> (24 - (bit_count)))
 
-int32_t Mp2Processor::get_bits(int32_t bit_count)
+i32 Mp2Processor::get_bits(i32 bit_count)
 {
-  //int32_t result = show_bits (bit_count);
-  int32_t result = bit_window >> (24 - bit_count);
+  //i32 result = show_bits (bit_count);
+  i32 result = bit_window >> (24 - bit_count);
 
   bit_window = (bit_window << bit_count) & 0xFFFFFF;
   bits_in_window -= bit_count;
@@ -366,16 +366,16 @@ int32_t Mp2Processor::get_bits(int32_t bit_count)
 // FRAME DECODE FUNCTION                                                      //
 ////////////////////////////////////////////////////////////////////////////////
 
-int32_t Mp2Processor::mp2decodeFrame(uint8_t * frame, int16_t * pcm)
+i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
 {
-  uint32_t bit_rate_index_minus1;
-  uint32_t sampling_frequency;
-  uint32_t padding_bit;
-  uint32_t mode;
-  uint32_t frame_size;
-  int32_t bound, sblimit;
-  int32_t sb, ch, gr, part, idx, nch, i, j, sum;
-  int32_t table_idx;
+  u32 bit_rate_index_minus1;
+  u32 sampling_frequency;
+  u32 padding_bit;
+  u32 mode;
+  u32 frame_size;
+  i32 bound, sblimit;
+  i32 sb, ch, gr, part, idx, nch, i, j, sum;
+  i32 table_idx;
 
   numberofFrames++;
   if (numberofFrames >= 25)
@@ -582,7 +582,7 @@ int32_t Mp2Processor::mp2decodeFrame(uint8_t * frame, int16_t * pcm)
               sum = -32768;
             if (sum > 32767)
               sum = 32767;
-            pcm[(idx << 6) | (j << 1) | ch] = (uint16_t)sum;
+            pcm[(idx << 6) | (j << 1) | ch] = (u16)sum;
           }
         } // end of synthesis channel loop
       } // end of synthesis sub-block loop
@@ -595,13 +595,13 @@ int32_t Mp2Processor::mp2decodeFrame(uint8_t * frame, int16_t * pcm)
 
 //
 //	bits to MP2 frames, amount is amount of bits
-void Mp2Processor::add_to_frame(const std::vector<uint8_t> & v)
+void Mp2Processor::add_to_frame(const std::vector<u8> & v)
 {
-  int16_t i, j;
-  int16_t lf = baudRate == 48000 ? MP2framesize : 2 * MP2framesize;
-  int16_t amount = MP2framesize;
-  int16_t vLength = 24 * bitRate / 8;
-  auto * const help = make_vla(uint8_t, vLength);
+  i16 i, j;
+  i16 lf = baudRate == 48000 ? MP2framesize : 2 * MP2framesize;
+  i16 amount = MP2framesize;
+  i16 vLength = 24 * bitRate / 8;
+  auto * const help = make_vla(u8, vLength);
 
   //fprintf(stderr, "baudrate = %d, inputsize = %d\n", baudRate, v.size());
   //fprintf(stderr, "\n");
@@ -615,9 +615,9 @@ void Mp2Processor::add_to_frame(const std::vector<uint8_t> & v)
     }
   }
   {
-    uint8_t L0 = help[vLength - 1];
-    uint8_t L1 = help[vLength - 2];
-    int16_t down = bitRate * 1000 >= 56000 ? 4 : 2;
+    u8 L0 = help[vLength - 1];
+    u8 L1 = help[vLength - 2];
+    i16 down = bitRate * 1000 >= 56000 ? 4 : 2;
     my_padhandler.process_PAD(help, vLength - 3 - down, L1, L0);
   }
 
@@ -628,13 +628,13 @@ void Mp2Processor::add_to_frame(const std::vector<uint8_t> & v)
       addbittoMP2(MP2frame, v[i], MP2bitCount++);
       if (MP2bitCount >= lf)
       {
-        int16_t sample_buf[KJMP2_SAMPLES_PER_FRAME * 2];
+        i16 sample_buf[KJMP2_SAMPLES_PER_FRAME * 2];
         if (mp2decodeFrame(MP2frame, sample_buf))
         {
-          buffer->put_data_into_ring_buffer(sample_buf, 2 * (int32_t)KJMP2_SAMPLES_PER_FRAME);
+          buffer->put_data_into_ring_buffer(sample_buf, 2 * (i32)KJMP2_SAMPLES_PER_FRAME);
           if (buffer->get_ring_buffer_read_available() > baudRate / 8)
           {
-            emit signal_new_audio(2 * (int32_t)KJMP2_SAMPLES_PER_FRAME, baudRate, 0);
+            emit signal_new_audio(2 * (i32)KJMP2_SAMPLES_PER_FRAME, baudRate, 0);
           }
         }
 
@@ -676,11 +676,11 @@ void Mp2Processor::add_to_frame(const std::vector<uint8_t> & v)
 
 }
 
-void Mp2Processor::addbittoMP2(uint8_t * v, uint8_t b, int16_t nm)
+void Mp2Processor::addbittoMP2(u8 * v, u8 b, i16 nm)
 {
-  uint8_t byte = v[nm / 8];
-  int16_t bitnr = 7 - (nm & 7);
-  uint8_t newbyte = (01 << bitnr);
+  u8 byte = v[nm / 8];
+  i16 bitnr = 7 - (nm & 7);
+  u8 newbyte = (01 << bitnr);
 
   if (b == 0)
   {

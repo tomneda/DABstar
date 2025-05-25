@@ -47,11 +47,11 @@ FreqInterleaver::FreqInterleaver()
   // Mode 4: createMapper(255, 128, 128 + cK);
 }
 
-void FreqInterleaver::createMapper(const int16_t iV1, const int16_t iLwb, const int16_t iUpb)
+void FreqInterleaver::createMapper(const i16 iV1, const i16 iLwb, const i16 iUpb)
 {
-  auto * const tmp = make_vla(int16_t, cTu);
-  int16_t index = 0;
-  int16_t i;
+  auto * const tmp = make_vla(i16, cTu);
+  i16 index = 0;
+  i16 i;
 
   tmp[0] = 0;
   for (i = 1; i < cTu; i++)

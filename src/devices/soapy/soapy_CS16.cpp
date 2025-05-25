@@ -52,12 +52,12 @@ int	soapy_CS16::Samples	(void) {
 	return theBuffer. GetRingBufferReadAvailable() / 2;
 }
 
-int	soapy_CS16::getSamples	(cmplx *v, int amount) {
-int16_t temp [amount * 2];
+int	soapy_CS16::getSamples	(cf32 *v, int amount) {
+i16 temp [amount * 2];
 int	realAmount;
 	realAmount	= theBuffer. getDataFromBuffer (temp, amount * 2);
 	for (int i = 0; i < realAmount / 2; i ++) 
-	   v [i] = cmplx (temp [2 * i] / 8191.0,
+	   v [i] = cf32 (temp [2 * i] / 8191.0,
 	                                temp [2 * i + 1] / 8191.0);
 	return realAmount / 2;
 }

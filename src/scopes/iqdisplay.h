@@ -67,27 +67,27 @@ public:
     const char * ToolTip;
   };
 
-  void display_iq(const std::vector<cmplx> & z, float iScale);
+  void display_iq(const std::vector<cf32> & z, f32 iScale);
   void customize_plot(const SCustPlot & iCustPlot);
   void select_plot_type(const EIqPlotType iPlotType);
   static QStringList get_plot_type_names();
 
 private:
-  static constexpr int32_t RADIUS = 100;
+  static constexpr i32 RADIUS = 100;
 
-  float mLastCircleSize = 0;
+  f32 mLastCircleSize = 0;
   QwtPlot * mPlotgrid = nullptr;
   SpectrogramData * mIQData = nullptr;
 
-  std::vector<std::complex<int32_t>> mPoints;
-  std::vector<double> mPlotDataBackgroundBuffer;
-  std::vector<double> mPlotDataDrawBuffer;
+  std::vector<std::complex<i32>> mPoints;
+  std::vector<f64> mPlotDataBackgroundBuffer;
+  std::vector<f64> mPlotDataDrawBuffer;
 
   void set_point(int, int, int);
   void clean_screen_from_old_data_points();
   void draw_cross();
-  void draw_circle(float ref, int val);
-  void repaint_circle(float size);
+  void draw_circle(f32 ref, int val);
+  void repaint_circle(f32 size);
 
   static SCustPlot _get_plot_type_data(const EIqPlotType iPlotType);
 };

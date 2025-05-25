@@ -103,9 +103,9 @@ inline MOTContentBaseType getContentBaseType(MOTContentType ct)
 /**
  * Return the sub type from the MOTContentType
  */
-inline uint8_t getContentSubType(MOTContentType ct)
+inline u8 getContentSubType(MOTContentType ct)
 {
-  return static_cast<uint8_t>(ct & MOTCTSubTypeMask);
+  return static_cast<u8>(ct & MOTCTSubTypeMask);
 }
 
 #endif

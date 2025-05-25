@@ -10,15 +10,15 @@
 
 #if defined(HAVE_VITERBI_AVX2)
   #include <immintrin.h>
-  using COMPUTETYPE = uint16_t;
+  using COMPUTETYPE = u16;
 #elif defined(HAVE_VITERBI_SSE2)
   #include <immintrin.h>
-  using COMPUTETYPE = uint16_t;
+  using COMPUTETYPE = u16;
 #elif defined(HAVE_VITERBI_NEON)
   #include "sse2neon.h"
-  using COMPUTETYPE = uint16_t;
+  using COMPUTETYPE = u16;
 #else
-  using COMPUTETYPE = int32_t;
+  using COMPUTETYPE = i32;
 #endif
 
 #define K        7
@@ -39,7 +39,7 @@ ALIGN(32) static const COMPUTETYPE Branchtable[RATE*NUMSTATES/2]{
 
 ALIGN(32) static COMPUTETYPE metrics1[NUMSTATES], metrics2[NUMSTATES];
 
-static const uint8_t PARTAB[256] =
+static const u8 PARTAB[256] =
 {
   0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
   1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
@@ -52,7 +52,7 @@ static const uint8_t PARTAB[256] =
 };
 
 
-ViterbiSpiral::ViterbiSpiral(const int16_t iWordlength, const bool iSpiralMode) :
+ViterbiSpiral::ViterbiSpiral(const i16 iWordlength, const bool iSpiralMode) :
   mFrameBits(iWordlength),
   mSpiral(iSpiralMode)
 {
@@ -91,7 +91,7 @@ v ^= v >> 4;
 v &= 0xf;
 return (0x6996 >> v) & 1;*/
 
-void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const output)
+void ViterbiSpiral::deconvolve(const i16 * const input, u8 * const output)
 {
   /* Initialize Viterbi decoder for start of new frame */
   for (int i = 0; i<NUMSTATES; i++)
@@ -99,7 +99,7 @@ void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const outp
 
   metrics1[0] = 0; /* Bias known start state */
 
-  uint32_t nbits = mFrameBits + (K - 1);
+  u32 nbits = mFrameBits + (K - 1);
 
 #if defined(HAVE_VITERBI_AVX2)
   #include "viterbi_16way.h"
@@ -123,7 +123,7 @@ void ViterbiSpiral::deconvolve(const int16_t * const input, uint8_t * const outp
   }
 }
 
-void ViterbiSpiral::calculate_BER(const int16_t * const input, uint8_t *punctureTable, uint8_t const *output, int &bits, int &errors)
+void ViterbiSpiral::calculate_BER(const i16 * const input, u8 *punctureTable, u8 const *output, int &bits, int &errors)
 {
   int i;
   int sr = 0;
@@ -134,7 +134,7 @@ void ViterbiSpiral::calculate_BER(const int16_t * const input, uint8_t *puncture
     sr = ((sr << 1) | output[i]) & 0xff;
     for(int j=0; j<RATE; j++)
     {
-      uint8_t b = parity(sr & polys[j]);
+      u8 b = parity(sr & polys[j]);
       if (punctureTable[i*RATE+j])
       {
         bits++;
@@ -150,7 +150,7 @@ void ViterbiSpiral::calculate_BER(const int16_t * const input, uint8_t *puncture
     sr = (sr << 1) & 0xff;
     for(int j=0; j<RATE; j++)
     {
-      uint8_t b = parity(sr & polys[j]);
+      u8 b = parity(sr & polys[j]);
       if (punctureTable[i*RATE+j])
       {
         bits++;

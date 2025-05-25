@@ -28,7 +28,7 @@
 #ifndef  FIRECODE_CHECKER_H
 #define  FIRECODE_CHECKER_H
 
-#include  <cstdint>
+#include "glob_data_types.h"
 
 class FirecodeChecker
 {
@@ -37,13 +37,13 @@ public:
   ~FirecodeChecker() = default;
 
   // error detection. x[0-1] contains parity, x[2-10] contains data
-  bool check(const uint8_t * x); // return true if firecode check is passed
+  bool check(const u8 * x); // return true if firecode check is passed
 
 private:
-  uint16_t tab[256];
+  u16 tab[256];
 
-  uint16_t _run8(unsigned char regs[]);
-  static const uint8_t g[16];
+  u16 _run8(unsigned char regs[]);
+  static const u8 g[16];
 };
 
 #endif

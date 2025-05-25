@@ -23,13 +23,13 @@
 #
 #ifndef	__AIRSPY_SELECT__
 #define	__AIRSPY_SELECT__
-#
+
+#include "glob_data_types.h"
 #include	<QDialog>
 #include	<QLabel>
 #include	<QListView>
 #include	<QStringListModel>
 #include	<QStringList>
-#include	<cstdint>
 
 class	airspySelect: public QDialog {
 Q_OBJECT
@@ -42,7 +42,7 @@ private:
 	QListView	*selectorDisplay;
 	QStringListModel deviceList;
 	QStringList	Devices;
-	int16_t		selectedItem;
+	i16		selectedItem;
 private slots:
 void	select_airspy	(QModelIndex);
 };

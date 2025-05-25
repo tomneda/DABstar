@@ -142,14 +142,14 @@ void CustQwtZoomPan::_handle_mouse_release(const QMouseEvent * const event)
 
 void CustQwtZoomPan::_handle_mouse_move(const QMouseEvent * const event)
 {
-  auto set_axis_scale = [this](const QwtAxisId iAxisId, const SInitData &iData, const double iDelta)
+  auto set_axis_scale = [this](const QwtAxisId iAxisId, const SInitData &iData, const f64 iDelta)
   {
-    const double curMin = mpQwtPlot->axisScaleDiv(iAxisId).lowerBound();
-    const double curMax = mpQwtPlot->axisScaleDiv(iAxisId).upperBound();
-    const double curRange = curMax - curMin;
-    const double dx = iDelta * curRange;
-    const double newMin = curMin + dx;
-    const double newMax = curMax + dx;
+    const f64 curMin = mpQwtPlot->axisScaleDiv(iAxisId).lowerBound();
+    const f64 curMax = mpQwtPlot->axisScaleDiv(iAxisId).upperBound();
+    const f64 curRange = curMax - curMin;
+    const f64 dx = iDelta * curRange;
+    const f64 newMin = curMin + dx;
+    const f64 newMax = curMax + dx;
 
     if (newMin >= iData.Range.MinDefault + iData.Range.MinZoomOutDelta &&
         newMax <= iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta)
@@ -167,7 +167,7 @@ void CustQwtZoomPan::_handle_mouse_move(const QMouseEvent * const event)
       if (mDataX.AllowChange)
       {
         mDataX.IsZoomed = true;
-        set_axis_scale(QwtPlot::xBottom, mDataX, -(double)delta.x() / mpQwtPlot->canvas()->width());
+        set_axis_scale(QwtPlot::xBottom, mDataX, -(f64)delta.x() / mpQwtPlot->canvas()->width());
       }
     }
 
@@ -176,7 +176,7 @@ void CustQwtZoomPan::_handle_mouse_move(const QMouseEvent * const event)
       if (mDataY.AllowChange)
       {
         mDataY.IsZoomed = true;
-        set_axis_scale(QwtPlot::yLeft, mDataY, (double)delta.y() / mpQwtPlot->canvas()->height());
+        set_axis_scale(QwtPlot::yLeft, mDataY, (f64)delta.y() / mpQwtPlot->canvas()->height());
       }
     }
     mLastPos = event->pos();
@@ -186,22 +186,22 @@ void CustQwtZoomPan::_handle_mouse_move(const QMouseEvent * const event)
 
 void CustQwtZoomPan::_handle_wheel_event(const QWheelEvent * const event)
 {
-  auto set_axis_scale = [this](const QwtAxisId iAxisId, const SInitData & iData, const double iZoomScale, const double iRelMousePos)
+  auto set_axis_scale = [this](const QwtAxisId iAxisId, const SInitData & iData, const f64 iZoomScale, const f64 iRelMousePos)
   {
-    const double curMin = mpQwtPlot->axisScaleDiv(iAxisId).lowerBound();
-    const double curMax = mpQwtPlot->axisScaleDiv(iAxisId).upperBound();
-    const double curRange = curMax - curMin;
-    const double newRange = std::max(curRange * iZoomScale, iData.MinNrPoints);
-    const double curValAtMousePos = curMin + iRelMousePos * curRange;
-    double newMin = curValAtMousePos - newRange * iRelMousePos;
-    double newMax = curValAtMousePos + newRange * (1.0 - iRelMousePos);
+    const f64 curMin = mpQwtPlot->axisScaleDiv(iAxisId).lowerBound();
+    const f64 curMax = mpQwtPlot->axisScaleDiv(iAxisId).upperBound();
+    const f64 curRange = curMax - curMin;
+    const f64 newRange = std::max(curRange * iZoomScale, iData.MinNrPoints);
+    const f64 curValAtMousePos = curMin + iRelMousePos * curRange;
+    f64 newMin = curValAtMousePos - newRange * iRelMousePos;
+    f64 newMax = curValAtMousePos + newRange * (1.0 - iRelMousePos);
     if (newMin < iData.Range.MinDefault + iData.Range.MinZoomOutDelta) newMin = iData.Range.MinDefault + iData.Range.MinZoomOutDelta;
     if (newMax > iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta) newMax = iData.Range.MaxDefault + iData.Range.MaxZoomOutDelta;
     mpQwtPlot->setAxisScale(iAxisId, newMin, newMax);
   };
 
-  constexpr double cZoomFactor = 0.1; // zoom factor for mouse wheel
-  const double zoomScale = (event->angleDelta().y() > 0) ? 1 - cZoomFactor : 1 + cZoomFactor;
+  constexpr f64 cZoomFactor = 0.1; // zoom factor for mouse wheel
+  const f64 zoomScale = (event->angleDelta().y() > 0) ? 1 - cZoomFactor : 1 + cZoomFactor;
 
   const QPointF pos = event->position();
 

@@ -39,7 +39,7 @@
 	                                     myFrame (nullptr),
 	                                     _I_Buffer  (256 * 32768),
 	                                     _O_Buffer  (16 * 32768) {
-int16_t	success;
+i16	success;
 
 	this	-> eladSettings	= s;
 	setupUi (&myFrame);
@@ -93,7 +93,7 @@ int16_t	success;
 	gainLabel	-> setText ("0");
 
         for (int i = 0; i < 2048; i ++) {
-           float inVal  = float (ELAD_RATE / 1000);
+           f32 inVal  = f32 (ELAD_RATE / 1000);
            mapTable_int [i] =  int (floor (i * (inVal / 2048.0)));
            mapTable_float [i] = i * (inVal / 2048.0) - mapTable_int [i];
         }
@@ -124,15 +124,15 @@ int16_t	success;
 	   delete theLoader;
 }
 
-int32_t	eladHandler::defaultFrequency	(void) {
+i32	eladHandler::defaultFrequency	(void) {
 	return Khz (220000);
 }
 
-int32_t	eladHandler::getVFOFrequency	(void) {
+i32	eladHandler::getVFOFrequency	(void) {
 	return externalFrequency;
 }
 
-bool	eladHandler::restartReader	(int32_t externalFrequency) {
+bool	eladHandler::restartReader	(i32 externalFrequency) {
 bool	success;
 
 	if (theWorker != nullptr) 
@@ -184,26 +184,26 @@ void	eladHandler::stopReader	(void) {
 	theWorker = nullptr;
 }
 
-cmplx	makeSample_31bits (uint8_t *, bool);
+cf32	makeSample_31bits (u8 *, bool);
 
 typedef union {
 	struct __attribute__((__packed__)) {
-		float	i;
-		float	q;
+		f32	i;
+		f32	q;
 		} iqf;
 	struct __attribute__((__packed__)) {
-		int32_t	i;
-		int32_t	q;
+		i32	i;
+		i32	q;
 		} iq;
 	struct __attribute__((__packed__)) {
-		uint8_t		i1;
-		uint8_t		i2;
-		uint8_t		i3;
-		uint8_t		i4;
-		uint8_t		q1;
-		uint8_t		q2;
-		uint8_t		q3;
-		uint8_t		q4;
+		u8		i1;
+		u8		i2;
+		u8		i3;
+		u8		i4;
+		u8		q1;
+		u8		q2;
+		u8		q3;
+		u8		q4;
 		};
 } iq_sample;
 
@@ -213,20 +213,20 @@ typedef union {
 // ADC out unsigned 14 bit input to FPGA output signed 16 bit
 #define SCALE_FACTOR_16to14    (0.250)       //(8192/32768)  
 
-cmplx	makeSample_31bits (uint8_t *buf, bool iqSwitch) {
+cf32	makeSample_31bits (u8 *buf, bool iqSwitch) {
 int ii = 0; int qq = 0;
-int16_t	i = 0;
-uint32_t	uii = 0, uqq = 0;
+i16	i = 0;
+u32	uii = 0, uqq = 0;
 
-	uint8_t i0 = buf [i++]; //i+0
-        uint8_t i1 = buf [i++]; //i+1
-        uint8_t i2 = buf [i++]; //i+2
-        uint8_t i3 = buf [i++]; //i+3
+	u8 i0 = buf [i++]; //i+0
+        u8 i1 = buf [i++]; //i+1
+        u8 i2 = buf [i++]; //i+2
+        u8 i3 = buf [i++]; //i+3
 
-        uint8_t q0 = buf [i++]; //i+4
-        uint8_t q1 = buf [i++]; //i+5
-        uint8_t q2 = buf [i++]; //i+6
-        uint8_t q3 = buf [i++]; //i+7
+        u8 q0 = buf [i++]; //i+4
+        u8 q1 = buf [i++]; //i+5
+        u8 q2 = buf [i++]; //i+6
+        u8 q3 = buf [i++]; //i+7
 
 // Andrea Montefusco recipe
 // from four unsigned 8bit little endian order to unsigned 32bit (just move),
@@ -238,11 +238,11 @@ uint32_t	uii = 0, uqq = 0;
         qq =(int)uqq;
 
 	if (iqSwitch)
-	   return cmplx ((float)qq * SCALE_FACTOR_32to14,
-	                               (float)ii * SCALE_FACTOR_32to14);
+	   return cf32 ((f32)qq * SCALE_FACTOR_32to14,
+	                               (f32)ii * SCALE_FACTOR_32to14);
 	else
-	   return cmplx ((float)ii * SCALE_FACTOR_32to14,
-	                               (float)qq * SCALE_FACTOR_32to14);
+	   return cf32 ((f32)ii * SCALE_FACTOR_32to14,
+	                               (f32)qq * SCALE_FACTOR_32to14);
 }
 
 //	we are - in this context - certain that whenever getSamples
@@ -260,9 +260,9 @@ uint32_t	uii = 0, uqq = 0;
 #define	SEGMENT_SIZE	(1024 * iqSize)
 static
 int	teller		= 0;
-int32_t	eladHandler::getSamples (cmplx *V, int32_t size) {
-uint8_t lBuf [SEGMENT_SIZE];
-cmplx temp [2048];
+i32	eladHandler::getSamples (cf32 *V, i32 size) {
+u8 lBuf [SEGMENT_SIZE];
+cf32 temp [2048];
 //
 //	if we have sufficient samples in the buffer, go for it
 	if (_O_Buffer. GetRingBufferReadAvailable () >= size) 
@@ -283,11 +283,11 @@ cmplx temp [2048];
 	                     makeSample_31bits (&lBuf [iqSize * i],
                                                 iqSwitch. load ());
 	      if (convIndex > ELAD_RATE / 1000) {
-	         float sum = 0;
-	         int16_t j;
+	         f32 sum = 0;
+	         i16 j;
 	         for (j = 0; j < 2048; j ++) {
-	            int16_t  inpBase		= mapTable_int [j];
-	            float    inpRatio		= mapTable_float [j];
+	            i16  inpBase		= mapTable_int [j];
+	            f32    inpRatio		= mapTable_float [j];
 	            temp [j]  = convBuffer [inpBase + 1] * inpRatio +
                           convBuffer [inpBase] * (1 - inpRatio);
 	            sum += abs (temp [j]);
@@ -320,10 +320,10 @@ cmplx temp [2048];
 //	for the computation.
 //	but the bottom line is that 3072 * iqSize input samples result in
 //	2048 "output" samples
-int32_t	eladHandler::Samples	(void) {
-int64_t	bufferContent	= _I_Buffer. GetRingBufferReadAvailable ();
+i32	eladHandler::Samples	(void) {
+i64	bufferContent	= _I_Buffer. GetRingBufferReadAvailable ();
 	return _O_Buffer. GetRingBufferReadAvailable () +
-	       (int)(((int64_t)2048 * bufferContent / (int64_t)3072) / iqSize);
+	       (int)(((i64)2048 * bufferContent / (i64)3072) / iqSize);
 }
 
 void	eladHandler::resetBuffer	(void) {
@@ -334,7 +334,7 @@ void	eladHandler::resetBuffer	(void) {
 //	elad gives us 14 bits. That + 20 db gain results in app 105 db
 //	plus a marge it is app 120 a 130 db, so the bit depth for the scope
 //	is 21
-int16_t	eladHandler::bitDepth	(void) {
+i16	eladHandler::bitDepth	(void) {
 	return 14;
 }
 

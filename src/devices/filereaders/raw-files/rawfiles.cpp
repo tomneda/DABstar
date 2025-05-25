@@ -64,8 +64,8 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
   }
   nameofFile->setText(iFilename);
   fseek(filePointer, 0, SEEK_END);
-  int64_t fileLength = ftell(filePointer);
-  totalTime->display(QString("%1").arg((float)fileLength / (2048000 * 2), 0, 'f', 1));
+  i64 fileLength = ftell(filePointer);
+  totalTime->display(QString("%1").arg((f32)fileLength / (2048000 * 2), 0, 'f', 1));
   fseek(filePointer, 0, SEEK_SET);
   fileProgress->setValue(0);
   currentTime->display(0);
@@ -91,7 +91,7 @@ RawFileHandler::~RawFileHandler()
   }
 }
 
-bool RawFileHandler::restartReader(int32_t freq)
+bool RawFileHandler::restartReader(i32 freq)
 {
   (void)freq;
   if (running.load())
@@ -118,16 +118,16 @@ void RawFileHandler::stopReader()
 }
 
 //	size is in I/Q pairs, file contains 8 bits values
-int32_t RawFileHandler::getSamples(cmplx * V, int32_t size)
+i32 RawFileHandler::getSamples(cf32 * V, i32 size)
 {
-  int32_t amount;
+  i32 amount;
 
   if (filePointer == nullptr)
   {
     return 0;
   }
 
-  while ((int32_t)(_I_Buffer.get_ring_buffer_read_available()) < size)
+  while ((i32)(_I_Buffer.get_ring_buffer_read_available()) < size)
   {
     usleep(500);
   }
@@ -136,12 +136,12 @@ int32_t RawFileHandler::getSamples(cmplx * V, int32_t size)
   return amount;
 }
 
-int32_t RawFileHandler::Samples()
+i32 RawFileHandler::Samples()
 {
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-void RawFileHandler::setProgress(int progress, float timelength)
+void RawFileHandler::setProgress(int progress, f32 timelength)
 {
   fileProgress->setValue(progress);
   currentTime->display(QString("%1").arg(timelength, 0, 'f', 1));
@@ -167,7 +167,7 @@ bool RawFileHandler::isFileInput()
   return true;
 }
 
-void RawFileHandler::setVFOFrequency(int32_t)
+void RawFileHandler::setVFOFrequency(i32)
 {
 }
 
@@ -180,7 +180,7 @@ void RawFileHandler::resetBuffer()
 {
 }
 
-int16_t RawFileHandler::bitDepth()
+i16 RawFileHandler::bitDepth()
 {
   return 10; // TODO: taken from former default interface, is it correct?
 }

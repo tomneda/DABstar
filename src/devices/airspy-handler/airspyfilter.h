@@ -30,15 +30,15 @@
 
 class	airspyFilter {
 public:
-			airspyFilter	(int16_t, int32_t, int32_t);
+			airspyFilter	(i16, i32, i32);
 	                ~airspyFilter();
-	cmplx Pass	(float re, float im);
-	int16_t		firSize;
-	int16_t		ip;
-	int32_t		sampleRate;
-	float		buffer_re [];
-	float		buffer_im [];
-	float		kernel[];
+	cf32 Pass	(f32 re, f32 im);
+	i16		firSize;
+	i16		ip;
+	i32		sampleRate;
+	f32		buffer_re [];
+	f32		buffer_im [];
+	f32		kernel[];
 };
 
 #endif

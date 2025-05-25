@@ -49,36 +49,36 @@ public:
   explicit PadHandler(DabRadio *);
   ~PadHandler() override = default;
 
-  void process_PAD(const uint8_t * iBuffer, int16_t iLast, uint8_t iL1, uint8_t iL0);
+  void process_PAD(const u8 * iBuffer, i16 iLast, u8 iL1, u8 iL0);
 
 private:
   DabRadio * const mpRadioInterface;
-  void _handle_variable_PAD(const uint8_t * iBuffer, int16_t iLast, bool iCiFlag);
-  void _handle_short_PAD(const uint8_t * iBuffer, int16_t iLast, bool iCIFlag);
-  void _dynamic_label(const uint8_t *, int16_t, uint8_t);
-  void _new_MSC_element(const std::vector<uint8_t> &);
-  void _add_MSC_element(const std::vector<uint8_t> &);
-  void _build_MSC_segment(const std::vector<uint8_t> &);
-  bool _pad_crc(const uint8_t *, int16_t);
+  void _handle_variable_PAD(const u8 * iBuffer, i16 iLast, bool iCiFlag);
+  void _handle_short_PAD(const u8 * iBuffer, i16 iLast, bool iCIFlag);
+  void _dynamic_label(const u8 *, i16, u8);
+  void _new_MSC_element(const std::vector<u8> &);
+  void _add_MSC_element(const std::vector<u8> &);
+  void _build_MSC_segment(const std::vector<u8> &);
+  bool _pad_crc(const u8 *, i16);
   void _reset_charset_change();
   void _check_charset_change();
 
   QByteArray mDynamicLabelTextUnConverted;
-  int16_t mCharSet = 0;
-  int16_t mLastConvCharSet = -1;
+  i16 mCharSet = 0;
+  i16 mLastConvCharSet = -1;
   QScopedPointer<MotObject> mpMotObject;
-  uint8_t mLastAppType = 0;
+  u8 mLastAppType = 0;
   bool mMscGroupElement = false;
-  int32_t mXPadLength = -1;
-  int16_t mStillToGo = 0;
-  std::vector<uint8_t> mShortPadData;
+  i32 mXPadLength = -1;
+  i16 mStillToGo = 0;
+  std::vector<u8> mShortPadData;
   bool mLastSegment = false;
   bool mFirstSegment = false;
-  int16_t mSegmentNumber = -1;
-  int32_t mDataGroupLength = 0; // mDataGroupLength is set when having processed an appType 1
-  std::vector<uint8_t> mMscDataGroupBuffer; // The msc_dataGroupBuffer is used for assembling the msc_data group.
-  int32_t mSegmentNo = -1;
-  int16_t mRemainDataLength = 0;
+  i16 mSegmentNumber = -1;
+  i32 mDataGroupLength = 0; // mDataGroupLength is set when having processed an appType 1
+  std::vector<u8> mMscDataGroupBuffer; // The msc_dataGroupBuffer is used for assembling the msc_data group.
+  i32 mSegmentNo = -1;
+  i16 mRemainDataLength = 0;
   bool mIsLastSegment = false;
   bool mMoreXPad = false;
 

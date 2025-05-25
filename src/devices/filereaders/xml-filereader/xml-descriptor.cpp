@@ -20,8 +20,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include  "xml-descriptor.h"
 
+#include "glob_data_types.h"
+#include  "xml-descriptor.h"
 
 void XmlDescriptor::printDescriptor()
 {
@@ -110,10 +111,10 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
   sampleRate = 2048000;
   nrChannels = 2;
   bitsperChannel = 16;
-  container = "int16_t";
+  container = "i16";
   byteOrder = QString("MSB");
   iqOrder = "IQ";
-  uint8_t theChar;
+  u8 theChar;
   while (zeroCount < 500)
   {
     theChar = fgetc(f);
@@ -174,7 +175,7 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
         {
           QString Amount = Child.attribute("Amount", "2");
           QString Bits = Child.attribute("Bits", "8");
-          QString Container = Child.attribute("Container", "uint8_t");
+          QString Container = Child.attribute("Container", "u8");
           QString Ordering = Child.attribute("Ordering", "N/A");
           setChannels(Amount.toInt(), Bits.toInt(), Container, Ordering);
           QDomNodeList subnodes = Child.childNodes();

@@ -54,22 +54,22 @@ class faadDecoder : public QObject
 {
 Q_OBJECT
 public:
-  faadDecoder(DabRadio * mr, RingBuffer<int16_t> * buffer);
+  faadDecoder(DabRadio * mr, RingBuffer<i16> * buffer);
   ~faadDecoder();
 
-  int16_t convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * ipBuffer, int16_t iBufferLength);
+  i16 convert_mp4_to_pcm(const stream_parms * iSP, const u8 * ipBuffer, i16 iBufferLength);
 
 private:
   bool initialize(const stream_parms *);
 
   bool processorOK;
   bool aacInitialized;
-  uint32_t aacCap;
+  u32 aacCap;
   NeAACDecHandle aacHandle;
   NeAACDecConfigurationPtr aacConf;
   NeAACDecFrameInfo hInfo;
-  int32_t baudRate;
-  RingBuffer<int16_t> * audioBuffer;
+  i32 baudRate;
+  RingBuffer<i16> * audioBuffer;
 
 signals:
   void signal_new_audio(int, unsigned int, unsigned int);

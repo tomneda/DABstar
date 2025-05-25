@@ -37,7 +37,7 @@
 //
 #include	"wav_writer.h"
 
-bool WavWriter::init(const QString & fileName, const uint32_t iSampleRate, const uint16_t iNumChannels)
+bool WavWriter::init(const QString & fileName, const u32 iSampleRate, const u16 iNumChannels)
 {
   static const char * const cRiffStr = "RIFF";
   static const char * const cWaveStr = "WAVE";
@@ -65,26 +65,26 @@ bool WavWriter::init(const QString & fileName, const uint32_t iSampleRate, const
   // The default header:
   fwrite(cFmtStr, 1, 4, mFilePointer);
   mLocationCounter += 4;
-  const uint32_t fmtSize = 16;
+  const u32 fmtSize = 16;
   fwrite(&fmtSize, 1, 4, mFilePointer);
   mLocationCounter += 4;
-  const uint16_t formatTag = 1; // == PCM integer
-  fwrite(&formatTag, 1, sizeof(uint16_t), mFilePointer);
+  const u16 formatTag = 1; // == PCM integer
+  fwrite(&formatTag, 1, sizeof(u16), mFilePointer);
   mLocationCounter += 2;
-  const uint16_t nrChannels = mNumChannels;
-  fwrite(&nrChannels, 1, sizeof(uint16_t), mFilePointer);
+  const u16 nrChannels = mNumChannels;
+  fwrite(&nrChannels, 1, sizeof(u16), mFilePointer);
   mLocationCounter += 2;
-  const uint32_t samplingRate = iSampleRate;
-  fwrite(&samplingRate, 1, sizeof(uint32_t), mFilePointer);
+  const u32 samplingRate = iSampleRate;
+  fwrite(&samplingRate, 1, sizeof(u32), mFilePointer);
   mLocationCounter += 4;
-  const uint16_t bytesPerBlock = mNumChannels * 2 /*bytesPerSamp*/;
-  const uint32_t bytesPerSecond = bytesPerBlock * samplingRate;
-  fwrite(&bytesPerSecond, 1, sizeof(uint32_t), mFilePointer);
+  const u16 bytesPerBlock = mNumChannels * 2 /*bytesPerSamp*/;
+  const u32 bytesPerSecond = bytesPerBlock * samplingRate;
+  fwrite(&bytesPerSecond, 1, sizeof(u32), mFilePointer);
   mLocationCounter += 4;
-  fwrite(&bytesPerBlock, 1, sizeof(uint16_t), mFilePointer);
+  fwrite(&bytesPerBlock, 1, sizeof(u16), mFilePointer);
   mLocationCounter += 2;
-  const uint16_t bitsPerSample = 16;
-  fwrite(&bitsPerSample, 1, sizeof(uint16_t), mFilePointer);
+  const u16 bitsPerSample = 16;
+  fwrite(&bitsPerSample, 1, sizeof(u16), mFilePointer);
   mLocationCounter += 2;
 
   // start of the "data" chunk
@@ -106,7 +106,7 @@ void WavWriter::close()
     return;
 
   mIsValid = false;
-  const uint32_t nrBytes = mNrElements * mNumChannels * sizeof(int16_t);
+  const u32 nrBytes = mNrElements * mNumChannels * sizeof(i16);
 
   // reset the fp to the location where the nr bytes in the data chunk should be written
   fseek(mFilePointer, mLocationCounter, SEEK_SET);
@@ -114,7 +114,7 @@ void WavWriter::close()
 
   // compute the overall file size
   fseek(mFilePointer, 0, SEEK_END);
-  const uint32_t riffSize = (uint32_t)ftell(mFilePointer) - 8;
+  const u32 riffSize = (u32)ftell(mFilePointer) - 8;
 
   // and record the value at loc 4
   fseek(mFilePointer, 4, SEEK_SET);
@@ -123,13 +123,13 @@ void WavWriter::close()
   fclose(mFilePointer);
 }
 
-void WavWriter::write(const int16_t * iBuffer, const int32_t iSamples)
+void WavWriter::write(const i16 * iBuffer, const i32 iSamples)
 {
   std::lock_guard lock(mMutex);
 
   if (!mIsValid)
     return;
 
-  fwrite(iBuffer, sizeof(int16_t), iSamples, mFilePointer);
+  fwrite(iBuffer, sizeof(i16), iSamples, mFilePointer);
   mNrElements += iSamples;
 }

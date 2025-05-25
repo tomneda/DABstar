@@ -29,7 +29,7 @@ public:
 		soapyWorker	(void);
 virtual		~soapyWorker	(void);
 virtual	int	Samples		(void);
-virtual	int	getSamples	(cmplx *, int);
+virtual	int	getSamples	(cf32 *, int);
 };
 
 #endif

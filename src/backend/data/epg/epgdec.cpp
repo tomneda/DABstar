@@ -80,7 +80,7 @@ typedef struct {
 
 static char token_list[20][255];
 
-static uint32_t default_content_id;
+static u32 default_content_id;
 
 static const char *enums0 [] = { (char*)2, "DAB", "DRM" };
 static const char *enums1[] = { (char*)9, nullptr, "series",
@@ -312,14 +312,14 @@ void attribute (std::map<std::string, std::string>  &out, _BYTE element_tag,
 static
 void string_token_table (const tag_length_value &tlv);
 
-uint16_t get_uint16 (const _BYTE *p) {
-uint16_t h = p[0], l = p[1];
+u16 get_uint16 (const _BYTE *p) {
+u16 h = p[0], l = p[1];
 
 	return ((h << 8) | l);
 }
 
-uint32_t get_uint24 (const _BYTE* p) {
-uint32_t h = p[0], m = p[1], l = p[2];
+u32 get_uint24 (const _BYTE* p) {
+u32 h = p[0], m = p[1], l = p[2];
 
 	return ((((h << 8) | m) << 8) | l);
 }
@@ -472,9 +472,9 @@ std::stringstream out;
 
 static
 std::string	decode_dateandtime (const _BYTE* p) {
-uint32_t mjd;
-uint32_t h = p[0], m = p[1], l = p[2];
-uint16_t n, year;
+u32 mjd;
+u32 h = p[0], m = p[1], l = p[2];
+u16 n, year;
 _BYTE month, day;
 int hours, minutes, seconds = 0;
 int utc_flag, lto_flag, sign = 0, lto = 0;
@@ -550,7 +550,7 @@ int utc_flag, lto_flag, sign = 0, lto = 0;
 
 static
 std::string	decode_duration (const _BYTE* p) {
-uint16_t hours, minutes, seconds;
+u16 hours, minutes, seconds;
 
 	seconds = get_uint16(p);
 	minutes = seconds / 60;
@@ -572,9 +572,9 @@ uint16_t hours, minutes, seconds;
 static
 std::string	decode_bitrate (const _BYTE* p) {
 std::stringstream out;
-uint16_t n	= get_uint16(p);
+u16 n	= get_uint16(p);
 
-	out << float(n) / 0.1f;
+	out << f32(n) / 0.1f;
 	return out. str();
 }
 
@@ -686,19 +686,19 @@ _BYTE* p = tlv.value;
 /******************************************************************************\
 * Modified Julian Date                                                         *
 \******************************************************************************/
-void	CModJulDate::Set(const uint32_t iModJulDate) {
-uint32_t iZ, iA, iAlpha, iB, iC, iD, iE;
-double rJulDate, rF;
+void	CModJulDate::Set(const u32 iModJulDate) {
+u32 iZ, iA, iAlpha, iB, iC, iD, iE;
+f64 rJulDate, rF;
 
 	/* Definition of the Modified Julian Date */
-	rJulDate = (double) iModJulDate + 2400000.5;
+	rJulDate = (f64) iModJulDate + 2400000.5;
 
 //	Get "real" date out of Julian Date
 //	(Taken from "http://mathforum.org/library/drmath/view/51907.html") */
 //	1. Add .5 to the JD and let Z = integer part of (JD+.5) and F the
 //	fractional part F = (JD+.5)-Z
-	iZ = (uint32_t) (rJulDate + (double) 0.5);
-	rF = (rJulDate + (double) 0.5) - iZ;
+	iZ = (u32) (rJulDate + (f64) 0.5);
+	rF = (rJulDate + (f64) 0.5) - iZ;
 
 	(void)rF;
 //	2. If Z < 2299161, take A = Z
@@ -707,8 +707,8 @@ double rJulDate, rF;
 	if (iZ < 2299161)
 	   iA = iZ;
 	else {
-	   iAlpha = (int) (((double)iZ - (double)1867216.25) / (double)36524.25);
-	   iA = iZ + 1 + iAlpha - (int) ((double) iAlpha / (double) 4.0);
+	   iAlpha = (int) (((f64)iZ - (f64)1867216.25) / (f64)36524.25);
+	   iA = iZ + 1 + iAlpha - (int) ((f64) iAlpha / (f64) 4.0);
 	}
 
 //	3. Then calculate:
@@ -717,19 +717,19 @@ double rJulDate, rF;
 //	D = INT( 365.25*C )
 //	E = INT( (B-D)/30.6001 )
 	iB = iA + 1524;
-	iC = (int) (((double) iB - (double) 122.1) / (double) 365.25);
-	iD = (int) ((double) 365.25 * iC);
-	iE = (int) (((double) iB - iD) / (double) 30.6001);
+	iC = (int) (((f64) iB - (f64) 122.1) / (f64) 365.25);
+	iD = (int) ((f64) 365.25 * iC);
+	iE = (int) (((f64) iB - iD) / (f64) 30.6001);
 
 //	The day of the month dd (with decimals) is:
 //	dd = B - D - INT(30.6001*E) + F
-	iDay = iB - iD - (int) ((double) 30.6001 * iE);	// + rF;
+	iDay = iB - iD - (int) ((f64) 30.6001 * iE);	// + rF;
 
 //	The month number mm is:
 //	mm = E - 1, if E < 13.5
 //	or
 //	mm = E - 13, if E > 13.5
-	if ((double) iE < 13.5)
+	if ((f64) iE < 13.5)
 	   iMonth = iE - 1;
 	else
 	   iMonth = iE - 13;
@@ -738,7 +738,7 @@ double rJulDate, rF;
 //	yyyy = C - 4716   if m > 2.5
 //	or
 //	yyyy = C - 4715   if m < 2.5
-	if ((float) iMonth > 2.5)
+	if ((f32) iMonth > 2.5)
 	   iYear = iC - 4716;
 	else
 	   iYear = iC - 4715;

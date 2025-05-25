@@ -47,19 +47,19 @@ public:
     Range(void);
 
     //! Create a min/max range
-    Range(const double minimum, const double maximum, const double step=0.0);
+    Range(const f64 minimum, const f64 maximum, const f64 step=0.0);
 
     //! Get the range minimum
-    double minimum(void) const;
+    f64 minimum(void) const;
 
     //! Get the range maximum
-    double maximum(void) const;
+    f64 maximum(void) const;
 
     //! Get the range step size
-    double step(void) const;
+    f64 step(void) const;
 
 private:
-    double _min, _max, _step;
+    f64 _min, _max, _step;
 };
 
 /*!
@@ -128,17 +128,17 @@ typedef std::vector<ArgInfo> ArgInfoList;
 
 }
 
-inline double SoapySDR::Range::minimum(void) const
+inline f64 SoapySDR::Range::minimum(void) const
 {
     return _min;
 }
 
-inline double SoapySDR::Range::maximum(void) const
+inline f64 SoapySDR::Range::maximum(void) const
 {
     return _max;
 }
 
-inline double SoapySDR::Range::step(void) const
+inline f64 SoapySDR::Range::step(void) const
 {
     return _step;
 }

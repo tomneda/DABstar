@@ -10,7 +10,7 @@
 #include "spectrogramdata.h"
 
 
-SpectrogramData::SpectrogramData(const double * ipData, int32_t iLeft, int32_t iWidth, int32_t iHeight, int32_t iDatawidth) :
+SpectrogramData::SpectrogramData(const f64 * ipData, i32 iLeft, i32 iWidth, i32 iHeight, i32 iDatawidth) :
   QwtRasterData(),
   mpData(ipData),
   mLeft(iLeft),
@@ -50,10 +50,10 @@ QwtInterval SpectrogramData::interval(Qt::Axis x) const
 }
 #endif
 
-double SpectrogramData::value(const double iX, const double iY) const
+f64 SpectrogramData::value(const f64 iX, const f64 iY) const
 {
-  const int32_t idxX = (int32_t)((iX - mLeft) / mWidth * (mDataWidth - 1));
-  const int32_t idxY = (int32_t)(iY / mHeight * (mDataHeight - 1));
+  const i32 idxX = (i32)((iX - mLeft) / mWidth * (mDataWidth - 1));
+  const i32 idxY = (i32)(iY / mHeight * (mDataHeight - 1));
 
   assert(idxX >= 0);
   assert(idxX < mDataWidth);
@@ -63,7 +63,7 @@ double SpectrogramData::value(const double iX, const double iY) const
   return mpData[idxY * mDataWidth + idxX];
 }
 
-void SpectrogramData::set_min_max_z_value(const double izMin, const double izMax)
+void SpectrogramData::set_min_max_z_value(const f64 izMin, const f64 izMax)
 {
 #if ((QWT_VERSION >> 8) < 0x0602)
   setInterval(Qt::ZAxis, QwtInterval(izMin, izMax));

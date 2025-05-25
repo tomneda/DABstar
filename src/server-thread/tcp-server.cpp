@@ -29,7 +29,7 @@
 #include	"tcp-server.h"
 
 	tcpServer::tcpServer (int port) {
-	   buffer	= new RingBuffer<uint8_t> (32 * 32768);
+	   buffer	= new RingBuffer<u8> (32 * 32768);
 	   connected. store (false);
 	   socketDesc	= -1;
 	   threadHandle	= std::thread (&tcpServer::run, this, port);
@@ -48,7 +48,7 @@
 	delete buffer;
 }
 
-void	tcpServer::sendData (uint8_t *data, int32_t amount) {
+void	tcpServer::sendData (u8 *data, i32 amount) {
 	if (connected)
 	   buffer -> put_data_into_ring_buffer (data, amount);
 }
@@ -107,8 +107,8 @@ void	tcpServer::run (int port) {
 	   fprintf (stderr, "Connection accepted");
 	   connected = true;
 	   try {
-	      uint8_t	localBuffer [BUF_SIZE];
-	      int16_t	amount;
+	      u8	localBuffer [BUF_SIZE];
+	      i16	amount;
 	      int status;
 	      while (running. load()) {
 	         while (running. load() &&

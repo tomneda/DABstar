@@ -28,17 +28,17 @@ struct resamp2_crcf_s;
 class HalfBandFilter
 {
 public:
-  explicit HalfBandFilter(uint32_t iDecimationPow = 1);
+  explicit HalfBandFilter(u32 iDecimationPow = 1);
   ~HalfBandFilter();
 
-  bool decimate(const cmplx & iX, cmplx & oY, uint32_t iLevel = 0);
+  bool decimate(const cf32 & iX, cf32 & oY, u32 iLevel = 0);
 
 private:
   struct SLevel
   {
     resamp2_crcf_s * qResamp2;
-    std::array<cmplx, 2> InBuffer;
-    uint32_t InBufferIdx = 0;
+    std::array<cf32, 2> InBuffer;
+    u32 InBufferIdx = 0;
   };
   std::vector<SLevel> mLevelVec;
 };

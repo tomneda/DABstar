@@ -42,7 +42,7 @@
 //	MSCdatagroups and dispatch to the appropriate handler
 //
 //	fragmentsize == Length * CUSize
-DataProcessor::DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<uint8_t> * dataBuffer)
+DataProcessor::DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<u8> * dataBuffer)
 {
   this->myRadioInterface = mr;
   this->bitRate = pd->bitRate;
@@ -82,7 +82,7 @@ DataProcessor::~DataProcessor()
 }
 
 
-void DataProcessor::add_to_frame(const std::vector<uint8_t> & outV)
+void DataProcessor::add_to_frame(const std::vector<u8> & outV)
 {
   //	There is - obviously - some exception, that is
   //	when the DG flag is on and there are no datagroups for DSCTy5
@@ -100,11 +100,11 @@ void DataProcessor::add_to_frame(const std::vector<uint8_t> & outV)
 //
 //	While for a full mix data and audio there will be a single packet in a
 //	data compartment, for an empty mix, there may be many more
-void DataProcessor::handlePackets(const uint8_t * data, int32_t length)
+void DataProcessor::handlePackets(const u8 * data, i32 length)
 {
   while (true)
   {
-    int32_t pLength = (getBits_2(data, 0) + 1) * 24 * 8;
+    i32 pLength = (getBits_2(data, 0) + 1) * 24 * 8;
     if (length < pLength)
     {  // be on the safe side
       return;
@@ -125,14 +125,14 @@ void DataProcessor::handlePackets(const uint8_t * data, int32_t length)
 //	there may be multiple streams, to be identified by
 //	the address. For the time being we only handle a single
 //	stream!!!!
-void DataProcessor::handlePacket(const uint8_t * data)
+void DataProcessor::handlePacket(const u8 * data)
 {
-  int32_t packetLength = (getBits_2(data, 0) + 1) * 24;
-  int16_t continuityIndex = getBits_2(data, 2);
-  int16_t firstLast = getBits_2(data, 4);
-  int16_t address = getBits(data, 6, 10);
-  uint16_t command = getBits_1(data, 16);
-  int32_t usefulLength = getBits_7(data, 17);
+  i32 packetLength = (getBits_2(data, 0) + 1) * 24;
+  i16 continuityIndex = getBits_2(data, 2);
+  i16 firstLast = getBits_2(data, 4);
+  i16 address = getBits(data, 6, 10);
+  u16 command = getBits_1(data, 16);
+  i32 usefulLength = getBits_7(data, 17);
   //	if (usefulLength > 0)
   //	   fprintf (stdout, "CI = %d, address = %d, usefulLength = %d\n",
   //	                       continuityIndex, address, usefulLength);
@@ -169,7 +169,7 @@ void DataProcessor::handlePacket(const uint8_t * data)
     {  // first packet
       packetState = 1;
       series.resize(usefulLength * 8);
-      for (uint16_t i = 0; i < series.size(); i++)
+      for (u16 i = 0; i < series.size(); i++)
       {
         series[i] = data[24 + i];
       }
@@ -177,7 +177,7 @@ void DataProcessor::handlePacket(const uint8_t * data)
     else if (firstLast == 03)
     {  // single packet, mostly padding
       series.resize(usefulLength * 8);
-      for (uint16_t i = 0; i < series.size(); i++)
+      for (u16 i = 0; i < series.size(); i++)
       {
         series[i] = data[24 + i];
       }
@@ -192,18 +192,18 @@ void DataProcessor::handlePacket(const uint8_t * data)
   {  // within a series
     if (firstLast == 0)
     {  // intermediate packet
-      int32_t currentLength = series.size();
+      i32 currentLength = series.size();
       series.resize(currentLength + 8 * usefulLength);
-      for (uint16_t i = 0; i < 8 * usefulLength; i++)
+      for (u16 i = 0; i < 8 * usefulLength; i++)
       {
         series[currentLength + i] = data[24 + i];
       }
     }
     else if (firstLast == 01)
     {  // last packet
-      int32_t currentLength = series.size();
+      i32 currentLength = series.size();
       series.resize(currentLength + 8 * usefulLength);
-      for (uint16_t i = 0; i < 8 * usefulLength; i++)
+      for (u16 i = 0; i < 8 * usefulLength; i++)
       {
         series[currentLength + i] = data[24 + i];
       }
@@ -215,7 +215,7 @@ void DataProcessor::handlePacket(const uint8_t * data)
     {  // first packet, previous one erroneous
       packetState = 1;
       series.resize(usefulLength * 8);
-      for (uint16_t i = 0; i < series.size(); i++)
+      for (u16 i = 0; i < series.size(); i++)
       {
         series[i] = data[24 + i];
       }
@@ -229,14 +229,14 @@ void DataProcessor::handlePacket(const uint8_t * data)
 }
 
 //	Really no idea what to do here
-void DataProcessor::handleTDCAsyncstream(const uint8_t * data, int32_t length)
+void DataProcessor::handleTDCAsyncstream(const u8 * data, i32 length)
 {
-  int16_t packetLength = (getBits_2(data, 0) + 1) * 24;
-  int16_t continuityIndex = getBits_2(data, 2);
-  int16_t firstLast = getBits_2(data, 4);
-  int16_t address = getBits(data, 6, 10);
-  uint16_t command = getBits_1(data, 16);
-  int16_t usefulLength = getBits_7(data, 17);
+  i16 packetLength = (getBits_2(data, 0) + 1) * 24;
+  i16 continuityIndex = getBits_2(data, 2);
+  i16 firstLast = getBits_2(data, 4);
+  i16 address = getBits(data, 6, 10);
+  u16 command = getBits_1(data, 16);
+  i16 usefulLength = getBits_7(data, 17);
 
   (void)length;
   (void)packetLength;

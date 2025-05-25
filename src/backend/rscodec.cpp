@@ -43,8 +43,8 @@
 //	with the rs decoder "borrowed" from Gnu radio
 //
 	rscodec::rscodec() {
-int16_t i, pm;
-int16_t pinit, p1, p2, p3, p4, p5, p6, p7, p8;
+i16 i, pm;
+i16 pinit, p1, p2, p3, p4, p5, p6, p7, p8;
 
 //	d_m = 8;
 //        d_q = 1 << 8;
@@ -74,7 +74,7 @@ int16_t pinit, p1, p2, p3, p4, p5, p6, p7, p8;
 	}
 
 	for (i = 1; i < 256; i++) {
-	int16_t z;
+	i16 z;
 	   for (z = 0; z < 256; z++) {
 	      if (gexp [z] == i) {
 	         glog [i] = z;
@@ -100,9 +100,9 @@ int16_t pinit, p1, p2, p3, p4, p5, p6, p7, p8;
 }
 
 void rscodec::create_polynomials (int start_j) {
-int16_t i;
-int16_t tmp_g, tmp_g2;
-int16_t	k;
+i16 i;
+i16 tmp_g, tmp_g2;
+i16	k;
 
 // g has degree 2t, g(0), g(1),..., g(2t-1) are its coefficients,
 // g (2t) = 1 is not included
@@ -124,19 +124,19 @@ int16_t	k;
 	}
 }
 
-int16_t	rscodec::dec (const uint8_t *r, uint8_t *d, int16_t cutlen) {
-uint16_t rf [CODE_LENGTH];
-uint16_t df [MESSAGE_LENGTH];
-int16_t i;
-int16_t	ret;
+i16	rscodec::dec (const u8 *r, u8 *d, i16 cutlen) {
+u16 rf [CODE_LENGTH];
+u16 df [MESSAGE_LENGTH];
+i16 i;
+i16	ret;
 
-	memset (rf, 0, cutlen * sizeof (uint16_t));
+	memset (rf, 0, cutlen * sizeof (u16));
 	for (i = cutlen; i < CODE_LENGTH; i++)
-	   rf [i] = (int16_t) r[i - cutlen];
+	   rf [i] = (i16) r[i - cutlen];
 
 	ret = dec_poly (rf, df);
 	for (i = cutlen; i < MESSAGE_LENGTH; i++)
-	   d [i - cutlen] = (uint8_t) df [i];
+	   d [i - cutlen] = (u8) df [i];
 	return ret;
 }
 //	calculate the syndrome with Horner
@@ -144,12 +144,12 @@ int16_t	ret;
 //	syndrone [2t-1] is the lowest degree coefficient
 //	i.e. S(X) = syndrome [0]X ^ (2t-1) + syndrome [1]X ^ (2t-2)+...
 //	+ syndrome [2t-1]
-int16_t	rscodec::dec_poly (const uint16_t *r, uint16_t *d) {
-int16_t i,j;
+i16	rscodec::dec_poly (const u16 *r, u16 *d) {
+i16 i,j;
 
 	for (i = 0; i < NUM_PARITY; i++) {
-	   uint16_t sum = r [0];
-	   uint16_t alpha_i = power2poly (d_j + i + 1);
+	   u16 sum = r [0];
+	   u16 alpha_i = power2poly (d_j + i + 1);
 // syndrome also in polynomial representation
 	   for (j = 1; j < CODE_LENGTH; j++)
 	      sum = add_poly (r [j], 
@@ -160,8 +160,8 @@ int16_t i,j;
 // Euclidean algorithm
 // step 1: initialize
 // index to 'top', index to 'bottom' is !top
-	int16_t top	 = 0;
-	int16_t deg [2] = {NUM_PARITY, NUM_PARITY - 1}; // top and bottom relaxed degree
+	i16 top	 = 0;
+	i16 deg [2] = {NUM_PARITY, NUM_PARITY - 1}; // top and bottom relaxed degree
 //	d_euc [top]. clear();
 //	d_euc [!top].clear();
 	memset (d_euc [top], 0, (NUM_PARITY + 2) * sizeof (d_euc [0][0]));
@@ -172,7 +172,7 @@ int16_t i,j;
 	memcpy (d_euc [!top], syndrome, NUM_PARITY * sizeof (syndrome [0]));
 
 // step 2: repeat 2t times
-	int16_t mu [2];
+	i16 mu [2];
 	for (i = 0; i < NUM_PARITY; i++) {
 // step 2.a
 	   mu [top] = d_euc [top][0];
@@ -230,11 +230,11 @@ int16_t i,j;
 	}
 
 // Chien's Search
-	int16_t x, x2, y;
-	int16_t sig_high, sig_low; // sigma_high, sigma_low (temporary)
-	int16_t sig_even, sig_odd; // sigma_even, sigma_odd: error locator value
-	int16_t omega; 			// error evaluator value
-	int16_t err_cnt	= 0;		// error symbol counter
+	i16 x, x2, y;
+	i16 sig_high, sig_low; // sigma_high, sigma_low (temporary)
+	i16 sig_even, sig_odd; // sigma_even, sigma_odd: error locator value
+	i16 omega; 			// error evaluator value
+	i16 err_cnt	= 0;		// error symbol counter
 //	for each information symbol position i, i.e.
 //	alpha ^ (-i). i represents the exponent of the received polynomial
 	for (i = CODE_LENGTH - 1; i >= NUM_PARITY; i--){
@@ -298,93 +298,93 @@ int16_t i,j;
 //	The relevant operations on the galois field and the
 //	polynomes
 
-int16_t	rscodec::add_poly (int16_t a, int16_t b) {
+i16	rscodec::add_poly (i16 a, i16 b) {
 	return a ^ b;
 }
 
-int16_t	rscodec::add_power (int16_t a, int16_t b) {
+i16	rscodec::add_power (i16 a, i16 b) {
 	return glog [gexp [a] ^ gexp [b]];
 }
 
-int16_t	rscodec::multiply_poly (int16_t a, int16_t b) {
+i16	rscodec::multiply_poly (i16 a, i16 b) {
 	return gexp [multiply_power (glog [a], glog [b])];
 }
 
-int16_t	rscodec::multiply_power (int16_t a, int16_t b) {
+i16	rscodec::multiply_power (i16 a, i16 b) {
 	return (a == 0 || b == 0) ? 0 :
 	          (a + b - 2) % (d_q - 1) + 1;
 }
 
-int16_t	rscodec::divide_poly (int16_t a, int16_t b) {
+i16	rscodec::divide_poly (i16 a, i16 b) {
 	return gexp [divide_power (glog [a], glog [b])];
 }
 
-int16_t	rscodec::divide_power (int16_t a, int16_t b) {
+i16	rscodec::divide_power (i16 a, i16 b) {
 	assert (b != 0);
 	return (a == 0) ? 0 : round_mod (a - b, d_q - 1) + 1;
 }
 
-int16_t	rscodec::pow_poly (int16_t a, int16_t n) {
+i16	rscodec::pow_poly (i16 a, i16 n) {
 	return gexp [pow_power (glog [a], n)];
 }
 
-int16_t	rscodec::pow_power (int16_t a, int16_t n) {
+i16	rscodec::pow_power (i16 a, i16 n) {
 	return (a == 0) ? 0 : (a - 1) * n % (d_q - 1) + 1;
 }
 
-void	rscodec::poly2tuple (int16_t a, uint8_t tuple[]) {
-int16_t	i;
+void	rscodec::poly2tuple (i16 a, u8 tuple[]) {
+i16	i;
 	for (i = 0; i < d_m; i++, a >>= 1)
-	   tuple [i] = (uint8_t)(a & 1);
+	   tuple [i] = (u8)(a & 1);
 }
 
-void	rscodec::power2tuple (int16_t a, uint8_t tuple []) {
+void	rscodec::power2tuple (i16 a, u8 tuple []) {
 	poly2tuple (gexp [a], tuple);
 }
 
-int16_t	rscodec::round_mod (int16_t a, int16_t n) {
+i16	rscodec::round_mod (i16 a, i16 n) {
 	   return (a % n < 0)? (a % n + n) : (a % n);
 }
 
-int16_t	rscodec::power2poly (int16_t a) {
+i16	rscodec::power2poly (i16 a) {
 	return gexp [a];
 }
 
-int16_t	rscodec::poly2power (int16_t a) {
+i16	rscodec::poly2power (i16 a) {
 	return glog [a];
 }
 
-int16_t	rscodec::inverse_poly	(int16_t a) {
+i16	rscodec::inverse_poly	(i16 a) {
 	return divide_poly (1, a);
 }
 
-int16_t	rscodec::inverse_power	(int16_t a) {
+i16	rscodec::inverse_power	(i16 a) {
 	return divide_power (1, a);
 }
 //
 //	we do not really need here the encoding facility
 //	it is useful for testing though
-void	rscodec::enc (const uint8_t *u, uint8_t *c, int16_t cutlen) {
-uint16_t uf [MESSAGE_LENGTH]; // full length info bytes
-uint16_t cf [CODE_LENGTH]; // full length code bytes
-int16_t i;
+void	rscodec::enc (const u8 *u, u8 *c, i16 cutlen) {
+u16 uf [MESSAGE_LENGTH]; // full length info bytes
+u16 cf [CODE_LENGTH]; // full length code bytes
+i16 i;
 
 	assert (cutlen >= 0);
 	for (i = 0; i < cutlen; i++)
 	   uf [i] = 0;
 	for (; i < MESSAGE_LENGTH; i++)
-	   uf [i] = (uint16_t)u [i - cutlen];
+	   uf [i] = (u16)u [i - cutlen];
 	enc_poly (uf,cf);
 	for (i = cutlen; i < CODE_LENGTH; i++)
-	   c [i - cutlen] = (uint8_t)cf [i];
+	   c [i - cutlen] = (u8)cf [i];
 }
 //
 //
 //	encoder is not used in the dab receiver
 //
-void	rscodec::enc_poly (const uint16_t * u, uint16_t * c) {
-int16_t i,j;
-int16_t fb;
+void	rscodec::enc_poly (const u16 * u, u16 * c) {
+i16 i,j;
+i16 fb;
 
 	//d_reg.clear();
 	memset (d_reg, 0, NUM_PARITY * sizeof (d_reg[0]));

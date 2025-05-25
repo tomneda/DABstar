@@ -65,32 +65,32 @@ inline void IQDisplay::set_point(int x, int y, int val)
   mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
 }
 
-void IQDisplay::display_iq(const std::vector<cmplx> & z, float iScale)
+void IQDisplay::display_iq(const std::vector<cf32> & z, f32 iScale)
 {
   if (z.size() != mPoints.size())
   {
     mPoints.resize(z.size(), { 0, 0 });
   }
 
-  const float scaleNormed = iScale * RADIUS;
+  const f32 scaleNormed = iScale * RADIUS;
 
   clean_screen_from_old_data_points();
   draw_cross();
   repaint_circle(iScale);
 
-  for (uint32_t i = 0; i < z.size(); i++)
+  for (u32 i = 0; i < z.size(); i++)
   {
-    auto x = (int32_t)(scaleNormed * real(z[i]));
-    auto y = (int32_t)(scaleNormed * imag(z[i]));
+    auto x = (i32)(scaleNormed * real(z[i]));
+    auto y = (i32)(scaleNormed * imag(z[i]));
 
     limit_symmetrically(x, RADIUS - 1);
     limit_symmetrically(y, RADIUS - 1);
 
-    mPoints[i] = std::complex<int32_t>(x, y);
+    mPoints[i] = std::complex<i32>(x, y);
     set_point(x, y, 100);
   }
 
-  constexpr int32_t elemSize = sizeof(decltype(mPlotDataBackgroundBuffer.back()));
+  constexpr i32 elemSize = sizeof(decltype(mPlotDataBackgroundBuffer.back()));
   memcpy(mPlotDataDrawBuffer.data(), mPlotDataBackgroundBuffer.data(), 2 * 2 * RADIUS * RADIUS * elemSize);
 
   mPlotgrid->replot();
@@ -106,23 +106,23 @@ void IQDisplay::clean_screen_from_old_data_points()
 
 void IQDisplay::draw_cross()
 {
-  for (int32_t i = -(RADIUS - 1); i < RADIUS; i++)
+  for (i32 i = -(RADIUS - 1); i < RADIUS; i++)
   {
     set_point(0, i, 20); // vertical line
     set_point(i, 0, 20); // horizontal line
   }
 }
 
-void IQDisplay::draw_circle(float scale, int val)
+void IQDisplay::draw_circle(f32 scale, int val)
 {
-  const int32_t MAX_CIRCLE_POINTS = static_cast<int32_t>(180 * scale); // per quarter
+  const i32 MAX_CIRCLE_POINTS = static_cast<i32>(180 * scale); // per quarter
 
-  for (int32_t i = 0; i < MAX_CIRCLE_POINTS; ++i)
+  for (i32 i = 0; i < MAX_CIRCLE_POINTS; ++i)
   {
-    const float phase = 0.5f * (float)M_PI * (float)i / MAX_CIRCLE_POINTS;
+    const f32 phase = 0.5f * (f32)M_PI * (f32)i / MAX_CIRCLE_POINTS;
 
-    auto h = (int32_t)(RADIUS * scale * cosf(phase));
-    auto v = (int32_t)(RADIUS * scale * sinf(phase));
+    auto h = (i32)(RADIUS * scale * cosf(phase));
+    auto v = (i32)(RADIUS * scale * sinf(phase));
 
     limit_symmetrically(h, RADIUS - 1);
     limit_symmetrically(v, RADIUS - 1);
@@ -135,7 +135,7 @@ void IQDisplay::draw_circle(float scale, int val)
   }
 }
 
-void IQDisplay::repaint_circle(float size)
+void IQDisplay::repaint_circle(f32 size)
 {
   if (size != mLastCircleSize)
   {

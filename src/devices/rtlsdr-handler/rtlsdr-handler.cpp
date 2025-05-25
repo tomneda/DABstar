@@ -47,7 +47,7 @@ static clock_t time1 = 0;
 //
 //	This is the user-side call back function
 //	ctx is the calling task
-static void RTLSDRCallBack(uint8_t *buf, uint32_t len, void *ctx)
+static void RTLSDRCallBack(u8 *buf, u32 len, void *ctx)
 {
 	clock_t time2;
     RtlSdrHandler *theStick	= (RtlSdrHandler *)ctx;
@@ -62,7 +62,7 @@ static void RTLSDRCallBack(uint8_t *buf, uint32_t len, void *ctx)
     {
 	    if (theStick->_I_Buffer.get_ring_buffer_write_available() < (signed)len / 2)
 	    	fprintf(stderr, "xx? ");
-	    (void)theStick->_I_Buffer.put_data_into_ring_buffer((std::complex<uint8_t> *)buf, len / 2);
+	    (void)theStick->_I_Buffer.put_data_into_ring_buffer((std::complex<u8> *)buf, len / 2);
 		//fprintf(stderr, "put_data=%d\n", len/2);
 
 		time2 = clock();
@@ -115,16 +115,16 @@ RtlSdrHandler::RtlSdrHandler(QSettings *s,
 	                         myFrame(nullptr),
 	                         theFilter(5, 1560000 / 2, INPUT_RATE)
 {
-    int16_t	deviceCount;
-    int32_t	r;
-    int16_t	deviceIndex;
-    int16_t	i;
+    i16	deviceCount;
+    i32	r;
+    i16	deviceIndex;
+    i16	i;
     int	k;
     QString	temp;
     char manufac[256], product[256], serial[256];
 
 	for(i = 0; i < 256; i++)
-		mapTable[i] = ((float)i - 127.38) / 128.0;
+		mapTable[i] = ((f32)i - 127.38) / 128.0;
 	rtlsdrSettings = s;
 	this->recorderVersion = recorderVersion;
 	rtlsdrSettings->beginGroup("rtlsdrSettings");
@@ -293,7 +293,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings *s,
 RtlSdrHandler::~RtlSdrHandler()
 {
 	fprintf(stdout, "closing on freq %d\n",
-	        (int32_t)(this->rtlsdr_get_center_freq(theDevice)));
+	        (i32)(this->rtlsdr_get_center_freq(theDevice)));
 	stopReader();
 	rtlsdrSettings->beginGroup("rtlsdrSettings");
     rtlsdrSettings->setValue("position-x", myFrame.pos().x());
@@ -313,14 +313,14 @@ RtlSdrHandler::~RtlSdrHandler()
 	delete phandle;
 }
 
-void RtlSdrHandler::setVFOFrequency(int32_t f)
+void RtlSdrHandler::setVFOFrequency(i32 f)
 {
 	(void)(this->rtlsdr_set_center_freq(theDevice, f));
 }
 
-int32_t	RtlSdrHandler::getVFOFrequency()
+i32	RtlSdrHandler::getVFOFrequency()
 {
-	return (int32_t)(this->rtlsdr_get_center_freq(theDevice));
+	return (i32)(this->rtlsdr_get_center_freq(theDevice));
 }
 
 void RtlSdrHandler::set_filter(int c)
@@ -328,7 +328,7 @@ void RtlSdrHandler::set_filter(int c)
 	filtering = c ? 1 : 0;
 }
 
-bool RtlSdrHandler::restartReader(int32_t freq)
+bool RtlSdrHandler::restartReader(i32 freq)
 {
 	_I_Buffer.flush_ring_buffer();
 
@@ -371,7 +371,7 @@ void RtlSdrHandler::set_ExternalGain(int /*gain_index*/)
     //fprintf(stderr, "rtlsdr_set_tuner_gain = %d\n", (int)(gain.toFloat() * 10));
 }
 
-void RtlSdrHandler::set_bandwidth(int32_t bandwidth)
+void RtlSdrHandler::set_bandwidth(i32 bandwidth)
 {
 	if (rtlsdr_set_tuner_bandwidth != nullptr)
     	rtlsdr_set_tuner_bandwidth(theDevice, bandwidth*1000);
@@ -401,18 +401,18 @@ void RtlSdrHandler::set_biasControl(int bias)
 }
 
 //	correction is in ppm
-void RtlSdrHandler::set_ppmCorrection(double ppm)
+void RtlSdrHandler::set_ppmCorrection(f64 ppm)
 {
 	int corr = ppm*1000;
 	this->rtlsdr_set_freq_correction_ppb(theDevice, corr);
 	//fprintf(stderr,"ppm=%d\n",corr);
 }
 
-int32_t	RtlSdrHandler::getSamples(cmplx *V, int32_t size)
+i32	RtlSdrHandler::getSamples(cf32 *V, i32 size)
 {
-    std::complex<uint8_t> temp[size];
+    std::complex<u8> temp[size];
     int	amount;
-    static uint8_t dumpBuffer[4096];
+    static u8 dumpBuffer[4096];
     static int iqTeller	= 0;
 
 	if (!isActive.load())
@@ -428,12 +428,12 @@ int32_t	RtlSdrHandler::getSamples(cmplx *V, int32_t size)
 	        theFilter.resize (currentDepth);
 	    }
 	    for (int i = 0; i < amount; i ++)
-	        V[i] = theFilter.Pass(cmplx(mapTable[real(temp[i]) & 0xFF],
+	        V[i] = theFilter.Pass(cf32(mapTable[real(temp[i]) & 0xFF],
 	                                    mapTable[imag(temp[i]) & 0xFF]));
 	}
 	else
 	    for (int i = 0; i < amount; i ++)
-	        V[i] = cmplx(mapTable[real(temp[i]) & 0xFF],
+	        V[i] = cf32(mapTable[real(temp[i]) & 0xFF],
 	                     mapTable[imag(temp[i]) & 0xFF]);
 	if (xml_dumping.load())
 	    xmlWriter->add(temp, amount);
@@ -454,7 +454,7 @@ int32_t	RtlSdrHandler::getSamples(cmplx *V, int32_t size)
 	return amount;
 }
 
-int32_t	RtlSdrHandler::Samples()
+i32	RtlSdrHandler::Samples()
 {
 	if (!isActive.load())
 	    return 0;
@@ -663,12 +663,12 @@ void RtlSdrHandler::resetBuffer()
 	_I_Buffer.flush_ring_buffer();
 }
 
-int16_t	RtlSdrHandler::maxGain()
+i16	RtlSdrHandler::maxGain()
 {
 	return gainsCount;
 }
 
-int16_t	RtlSdrHandler::bitDepth()
+i16	RtlSdrHandler::bitDepth()
 {
 	return 8;
 }
@@ -853,7 +853,7 @@ void RtlSdrHandler::enable_gainControl(int agc)
 	dbLabel->setEnabled(agc == 1);
 }
 
-bool RtlSdrHandler::detect_overload(uint8_t *buf, int len)
+bool RtlSdrHandler::detect_overload(u8 *buf, int len)
 {
 	int overload_count = 0;
 	for(int i=0; i<len; i++)

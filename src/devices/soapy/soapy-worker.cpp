@@ -24,7 +24,7 @@
 	soapyWorker::soapyWorker	(void) {}
 	soapyWorker::~soapyWorker	(void) {}
 int	soapyWorker::Samples		(void) {return 0;}
-int	soapyWorker::getSamples		(cmplx *, int) {
+int	soapyWorker::getSamples		(cf32 *, int) {
 	   return 0;
 }
 

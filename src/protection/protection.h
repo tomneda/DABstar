@@ -36,21 +36,21 @@
 #include  <vector>
 #include  "viterbi-spiral.h"
 
-//extern uint8_t PI_X[];
+//extern u8 PI_X[];
 
 class Protection : public ViterbiSpiral
 {
 public:
-  explicit Protection(int16_t);
+  explicit Protection(i16);
   virtual ~Protection() = default;
 
-  virtual bool deconvolve(const int16_t *, int32_t, uint8_t *);
+  virtual bool deconvolve(const i16 *, i32, u8 *);
   
 protected:
-  int16_t bitRate;
-  int32_t outSize;
-  std::vector<uint8_t> indexTable;
-  std::vector<int16_t> viterbiBlock;
+  i16 bitRate;
+  i32 outSize;
+  std::vector<u8> indexTable;
+  std::vector<i16> viterbiBlock;
 };
 
 #endif

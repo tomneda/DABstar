@@ -43,7 +43,7 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-Mp4Processor::Mp4Processor(DabRadio * iRI, const int16_t iBitRate, RingBuffer<int16_t> * const iopAudioBuffer, RingBuffer<uint8_t> * const iopFrameBuffer, FILE * const ipDumpFile)
+Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> * const iopAudioBuffer, RingBuffer<u8> * const iopFrameBuffer, FILE * const ipDumpFile)
   : mpRadioInterface(iRI)
   , mPadhandler(iRI)
   , mpDumpFile(ipDumpFile)
@@ -85,17 +85,17 @@ Mp4Processor::~Mp4Processor()
   *	per Byte, nbits is the number of Bits (i.e. containing bytes)
   *	the function adds nbits bits, packed in bytes, to the frame.
   */
-void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
+void Mp4Processor::add_to_frame(const std::vector<u8> & iV)
 {
-  const int16_t numBits = 24 * mBitRate;
-  const int16_t numBytes = numBits / 8;
-  int32_t displayedErrors = mSumCorrections;
+  const i16 numBits = 24 * mBitRate;
+  const i16 numBytes = numBits / 8;
+  i32 displayedErrors = mSumCorrections;
 
   // convert input bit-stream in iV to a byte-stream in mFrameByteVec
-  for (int16_t i = 0; i < numBytes; i++)
+  for (i16 i = 0; i < numBytes; i++)
   {
-    uint8_t temp = 0;
-    for (int16_t j = 0; j < 8; j++)
+    u8 temp = 0;
+    for (i16 j = 0; j < 8; j++)
     {
       temp = (temp << 1) | (iV[i * 8 + j] & 0x1);
     }
@@ -179,26 +179,26 @@ void Mp4Processor::add_to_frame(const std::vector<uint8_t> & iV)
   *	First, we know the firecode checker gave green light
   *	We correct the errors using RS
   */
-bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iBase)
+bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 {
   /**
     *	apply reed-solomon error repair
-    *	OK, what we now have is a vector with RSDims * 120 uint8_t's
+    *	OK, what we now have is a vector with RSDims * 120 u8's
     *	the superframe, containing parity bytes for error repair
     *	take into account the interleaving that is applied.
     */
-  for (int16_t j = 0; j < mRsDims; j++)
+  for (i16 j = 0; j < mRsDims; j++)
   {
-    std::array<uint8_t, 120> rsIn;
+    std::array<u8, 120> rsIn;
 
-    for (int16_t k = 0; k < 120; k++)
+    for (i16 k = 0; k < 120; k++)
     {
       rsIn[k] = ipFrameBytes[(iBase + j + k * mRsDims) % (mRsDims * 120)];
     }
 
-    std::array<uint8_t, 110> rsOut;
+    std::array<u8, 110> rsOut;
 
-    const int16_t ler = mRsDecoder.dec(rsIn.data(), rsOut.data(), 135);  // i7-6700K: ~28us
+    const i16 ler = mRsDecoder.dec(rsIn.data(), rsOut.data(), 135);  // i7-6700K: ~28us
 
     if (ler < 0)
     {
@@ -225,7 +225,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
       }
     }
 
-    for (int16_t k = 0; k < 110; k++)
+    for (i16 k = 0; k < 110; k++)
     {
       mOutVec[j + k * mRsDims] = rsOut[k];
     }
@@ -246,7 +246,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
 
   streamParameters.ExtensionSrIndex = streamParameters.dacRate ? 3 : 5;
 
-  uint8_t numAUs;
+  u8 numAUs;
 
   switch (2 * streamParameters.dacRate + streamParameters.sbrFlag)
   {
@@ -287,7 +287,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
     *	extract the AU's, and prepare a buffer,  with the sufficient
     *	lengthy for conversion to PCM samples
     */
-  for (int16_t i = 0; i < numAUs; i++)
+  for (i16 i = 0; i < numAUs; i++)
   {
     ///	sanity check 1
     if (mAuStartArr[i + 1] < mAuStartArr[i])
@@ -297,7 +297,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
       return false;
     }
 
-    const int16_t aac_frame_length = mAuStartArr[i + 1] - mAuStartArr[i] - 2;
+    const i16 aac_frame_length = mAuStartArr[i + 1] - mAuStartArr[i] - 2;
     //	just a sanity check
     if ((aac_frame_length >= 960) || (aac_frame_length < 0))
     {
@@ -309,7 +309,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
     if (check_crc_bytes(&mOutVec[mAuStartArr[i]], aac_frame_length))
     {
       //	first prepare dumping
-      std::vector<uint8_t> fileBuffer;
+      std::vector<u8> fileBuffer;
       const int segmentSize = _build_aac_file(aac_frame_length, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
 
       if (mpDumpFile == nullptr)
@@ -327,11 +327,11 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
       {
         if (((mOutVec[mAuStartArr[i + 0]] >> 5) & 07) == 4)
         {
-          const int16_t count = mOutVec[mAuStartArr[i] + 1];
-          auto * const buffer = make_vla(uint8_t, count);
+          const i16 count = mOutVec[mAuStartArr[i] + 1];
+          auto * const buffer = make_vla(u8, count);
           memcpy(buffer, &mOutVec[mAuStartArr[i] + 2], count);
-          const uint8_t L0 = buffer[count - 1];
-          const uint8_t L1 = buffer[count - 2];
+          const u8 L0 = buffer[count - 1];
+          const u8 L1 = buffer[count - 2];
           mPadhandler.process_PAD(buffer, count - 3, L1, L0);
         }
 
@@ -339,7 +339,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
 #ifdef  __WITH_FDK_AAC__
         const int tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, fileBuffer.data(), segmentSize);
 #else
-        uint8_t theAudioUnit[2 * 960 + 10];  // sure, large enough
+        u8 theAudioUnit[2 * 960 + 10];  // sure, large enough
 
         memcpy(theAudioUnit, &mOutVec[mAuStartArr[i]], aac_frame_length);
         memset(&theAudioUnit[aac_frame_length], 0, 10);
@@ -374,7 +374,7 @@ bool Mp4Processor::_process_super_frame(uint8_t ipFrameBytes[], const int16_t iB
   return true;
 }
 
-int Mp4Processor::_build_aac_file(int16_t aac_frame_len, stream_parms * sp, uint8_t * data, std::vector<uint8_t> & fileBuffer)
+int Mp4Processor::_build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer)
 {
   BitWriter au_bw;
 

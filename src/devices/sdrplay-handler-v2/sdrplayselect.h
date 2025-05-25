@@ -24,12 +24,12 @@
 #ifndef	__SDRPLAY_SELECT__
 #define	__SDRPLAY_SELECT__
 #
-#include	<QDialog>
-#include	<QLabel>
-#include	<QListView>
-#include	<QStringListModel>
-#include	<QStringList>
-#include	<cstdint>
+#include "glob_data_types.h"
+#include <QDialog>
+#include <QLabel>
+#include <QListView>
+#include <QStringListModel>
+#include <QStringList>
 
 class	sdrplaySelect: public QDialog {
 Q_OBJECT
@@ -42,7 +42,7 @@ private:
 	QListView	*selectorDisplay;
 	QStringListModel deviceList;
 	QStringList	Devices;
-	int16_t		selectedItem;
+	i16		selectedItem;
 private slots:
 void	select_rsp	(QModelIndex);
 };

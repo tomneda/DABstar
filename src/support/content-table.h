@@ -31,15 +31,16 @@
 #ifndef  CONTENT_TABLE_H
 #define  CONTENT_TABLE_H
 
-#include  <QWidget>
-#include  <QObject>
-#include  <QScrollArea>
-#include  <QTableWidget>
-#include  <QStringList>
-#include  <QTableWidgetItem>
-#include  <QObject>
-#include  <QString>
-#include  <QByteArray>
+#include "glob_data_types.h"
+#include <QWidget>
+#include <QObject>
+#include <QScrollArea>
+#include <QTableWidget>
+#include <QStringList>
+#include <QTableWidgetItem>
+#include <QObject>
+#include <QString>
+#include <QByteArray>
 
 class DabRadio;
 class QSettings;
@@ -68,7 +69,7 @@ private:
   QTableWidget * contentWidget;
   bool is_clear;
 
-  int16_t addRow();
+  i16 addRow();
 
 private slots:
   void _slot_select_service(int, int);

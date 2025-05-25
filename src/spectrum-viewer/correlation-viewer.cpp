@@ -36,7 +36,7 @@
 #include "glob_defs.h"
 #include "dab-constants.h"
 
-CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<float> * b)
+CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<f32> * b)
   : mpSettings(s)
   , mpResponseBuffer(b)
   , mpQwtPlot(pPlot)
@@ -64,16 +64,16 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mpQwtPlot->enableAxis(QwtPlot::xBottom);
 }
 
-void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr)
+void CorrelationViewer::showCorrelation(f32 threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr)
 {
-  constexpr int32_t cPlotLength = 2048;
-  auto * const data = make_vla(float, cPlotLength);
+  constexpr i32 cPlotLength = 2048;
+  auto * const data = make_vla(f32, cPlotLength);
   // using log10_times_10() (not times 20) as the correlation is some kind of energy signal
-  const float threshold_dB = 20 * log10(threshold);
-  constexpr float cScalerFltAlpha1 = (float)0.1;
-  constexpr float cScalerFltAlpha2 = cScalerFltAlpha1 / (float)cPlotLength;
+  const f32 threshold_dB = 20 * log10(threshold);
+  constexpr f32 cScalerFltAlpha1 = (f32)0.1;
+  constexpr f32 cScalerFltAlpha2 = cScalerFltAlpha1 / (f32)cPlotLength;
 
-  const int32_t numRead = mpResponseBuffer->get_data_from_ring_buffer(data, cPlotLength);
+  const i32 numRead = mpResponseBuffer->get_data_from_ring_buffer(data, cPlotLength);
   (void)numRead;
 
   if (numRead != cPlotLength)
@@ -83,14 +83,14 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
     return;
   }
 
-  std::array<float, cPlotLength> X_axis;
-  std::array<float, cPlotLength> Y_values;
+  std::array<f32, cPlotLength> X_axis;
+  std::array<f32, cPlotLength> Y_values;
 
-  float maxYVal = -1000.0f;
+  f32 maxYVal = -1000.0f;
 
-  for (uint16_t i = 0; i < cPlotLength; ++i)
+  for (u16 i = 0; i < cPlotLength; ++i)
   {
-    X_axis[i] = (float)i;
+    X_axis[i] = (f32)i;
     Y_values[i] = 20.0f * std::log10(data[i]) - threshold_dB; // norm to threshold value
 
     if (Y_values[i] > maxYVal)
@@ -122,9 +122,9 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
   }
 
   // ...a vertical line for each TII
-  const int32_t noMarkers = iTr.size();
+  const i32 noMarkers = iTr.size();
   mQwtPlotMarkerVec.resize(noMarkers);
-  for (int32_t i = 0; i < noMarkers; ++i)
+  for (i32 i = 0; i < noMarkers; ++i)
   {
     mQwtPlotMarkerVec[i] = new QwtPlotMarker();
     QwtPlotMarker * const p = mQwtPlotMarkerVec[i];
@@ -134,7 +134,7 @@ void CorrelationViewer::showCorrelation(float threshold, const QVector<int> & v,
     p->setLabelOrientation(Qt::Vertical);
     p->setLineStyle(QwtPlotMarker::VLine);
     p->setLinePen(Qt::white, 0, Qt::DashDotLine);
-    float sample = (float)iTr[i].phaseDeg * 2048 / 360 + 400;
+    f32 sample = (f32)iTr[i].phaseDeg * 2048 / 360 + 400;
     if (sample < 0) sample += 2048;
     else if (sample > 2407) sample -= 2048;
     p->setXValue(sample);
@@ -149,15 +149,15 @@ QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
   if (!v.empty())
   {
     txt = "Best matches at (km): ";
-    constexpr int32_t MAX_NO_ELEM = 7;
-    const int32_t vSize = (v.size() < MAX_NO_ELEM ? v.size() : MAX_NO_ELEM); // limit size as display will broaden
-    for (int32_t i = 0; i < vSize; i++)
+    constexpr i32 MAX_NO_ELEM = 7;
+    const i32 vSize = (v.size() < MAX_NO_ELEM ? v.size() : MAX_NO_ELEM); // limit size as display will broaden
+    for (i32 i = 0; i < vSize; i++)
     {
       txt += "<b>" + QString::number(v[i]) + "</b>"; // display in "bold"
 
       if (i > 0)
       {
-        const double distKm = (double)(v[i] - v[0]) / (double)INPUT_RATE * (double)LIGHT_SPEED_MPS / 1000.0;
+        const f64 distKm = (f64)(v[i] - v[0]) / (f64)INPUT_RATE * (f64)LIGHT_SPEED_MPS / 1000.0;
         txt += " (" + QString::number(distKm, 'f', 1) + ")";
       }
 

@@ -1,17 +1,17 @@
 #pragma once
 
-#include <cinttypes>
+#include "glob_data_types.h"
 
-const char * getASCTy (int16_t ASCTy);
-const char * getDSCTy (int16_t DSCTy);
-const char * getLanguage (int16_t language);
-const char * getCountry	(uint8_t ecc, uint8_t countryId);
-//const char * getProgramType_Not_NorthAmerica(int16_t programType);
-const char * getProgramType (int16_t programType);
-const char * getProgramType_For_NorthAmerica(int16_t programType);
-//const char * getProgramType(bool, uint8_t interTabId, int16_t programType);
-const char * getUserApplicationType(int16_t appType);
-const char * getFECscheme(int16_t FEC_scheme);
-const char * getProtectionLevel (bool shortForm, int16_t protLevel);
-const char * getCodeRate (bool shortForm, int16_t protLevel);
+const char * getASCTy (i16 ASCTy);
+const char * getDSCTy (i16 DSCTy);
+const char * getLanguage (i16 language);
+const char * getCountry	(u8 ecc, u8 countryId);
+//const char * getProgramType_Not_NorthAmerica(i16 programType);
+const char * getProgramType (i16 programType);
+const char * getProgramType_For_NorthAmerica(i16 programType);
+//const char * getProgramType(bool, u8 interTabId, i16 programType);
+const char * getUserApplicationType(i16 appType);
+const char * getFECscheme(i16 FEC_scheme);
+const char * getProtectionLevel (bool shortForm, i16 protLevel);
+const char * getCodeRate (bool shortForm, i16 protLevel);
 

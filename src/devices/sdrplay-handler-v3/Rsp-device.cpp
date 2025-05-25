@@ -4,7 +4,7 @@
 #include  <sdrplay_api.h>
 #include  "sdrplay-handler-v3.h"
 
-Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice, int startFreq, bool agcMode, int lnaState, int GRdB, double ppmValue)
+Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice, int startFreq, bool agcMode, int lnaState, int GRdB, f64 ppmValue)
 {
   int mGRdB = GRdB;
   sdrplay_api_ErrT err;
@@ -38,7 +38,7 @@ Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDev
   mpChParams->tunerParams.ifType = sdrplay_api_IF_Zero;
 
   //      these will change:
-  mpChParams->tunerParams.rfFreq.rfHz = (float)startFreq;
+  mpChParams->tunerParams.rfFreq.rfHz = (f32)startFreq;
   //
   //	It is known that all supported Rsp's can handle the values
   //	as given below. It is up to the particular Rsp to check
@@ -133,7 +133,7 @@ bool Rsp_device::set_GRdB(int GRdBValue)
   return true;
 }
 
-bool Rsp_device::set_ppm(double ppmValue)
+bool Rsp_device::set_ppm(f64 ppmValue)
 {
   sdrplay_api_ErrT err;
 

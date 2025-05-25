@@ -67,7 +67,7 @@ typedef struct
   bool uepFlag;
   int bitRate;
   int protLevel;
-  uint8_t * dispersionVector;
+  u8 * dispersionVector;
   Protection * theDeconvolver;
 } protDesc;
 
@@ -78,7 +78,7 @@ public:
   ~etiGenerator();
 
   void newFrame();
-  void process_block(const std::vector<int16_t> & fbits, int blkno);
+  void process_block(const std::vector<i16> & fbits, int blkno);
   void reset();
   bool start_eti_generator(const QString &);
   void stop_eti_generator();
@@ -87,20 +87,20 @@ private:
   FicHandler * my_ficHandler;
   FILE * etiFile;
   bool running;
-  int16_t index_Out;
+  i16 index_Out;
   int Minor;
-  int16_t CIFCount_hi;
-  int16_t CIFCount_lo;
-  std::atomic<int16_t> amount;
-  int16_t BitsperBlock;
-  int16_t numberofblocksperCIF;
-  uint8_t fibBits[4 * 768];
+  i16 CIFCount_hi;
+  i16 CIFCount_lo;
+  std::atomic<i16> amount;
+  i16 BitsperBlock;
+  i16 numberofblocksperCIF;
+  u8 fibBits[4 * 768];
 
-  int32_t _init_eti(uint8_t *, int16_t, int16_t, int16_t);
-  int32_t _process_cif(const int16_t *, uint8_t *, int32_t);
-  void _process_sub_channel(int, parameter *, Protection * prot, uint8_t *);
+  i32 _init_eti(u8 *, i16, i16, i16);
+  i32 _process_cif(const i16 *, u8 *, i32);
+  void _process_sub_channel(int, parameter *, Protection * prot, u8 *);
 
-  void postProcess(const uint8_t *, int32_t);
+  void postProcess(const u8 *, i32);
 };
 
 #endif

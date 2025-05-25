@@ -50,7 +50,7 @@ typedef int  (*FDMS1_HW_INIT)(libusb_device_handle *);
 class	eladLoader {
 public:
 
-		eladLoader		(int32_t, int16_t *);
+		eladLoader		(i32, i16 *);
 		~eladLoader		(void);
 	bool	OK			(void);
 libusb_device_handle	*getHandle	(void);
@@ -74,7 +74,7 @@ private:
 	bool		hardware_OK;
 const	char		*cwLibname;
 	char		*hwLibname;
-	int32_t		theRate;
+	i32		theRate;
 };
 
 #endif

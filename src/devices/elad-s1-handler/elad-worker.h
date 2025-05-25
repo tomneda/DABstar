@@ -41,17 +41,17 @@ class	eladHandler;
 class	eladWorker: public QThread {
 Q_OBJECT
 public:
-			eladWorker	(int32_t,	// selected frequency
+			eladWorker	(i32,	// selected frequency
 	                                 eladLoader *,
 	                                 eladHandler *,
-	                                 RingBuffer<uint8_t> *,
+	                                 RingBuffer<u8> *,
 	                                 bool *);
 			~eladWorker		();
 	void		stop			();
 private:
 	void			run		();
 	eladLoader		*functions;	// 
-	RingBuffer<uint8_t>	*_O_Buffer;
+	RingBuffer<u8>	*_O_Buffer;
 	long int		eladFrequency;
 	std::atomic<bool>	running;
 };

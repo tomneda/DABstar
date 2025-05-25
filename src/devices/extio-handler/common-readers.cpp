@@ -29,9 +29,9 @@
 //
 //	The reader for 16 bit int values
 //
-	reader_16::reader_16 (RingBuffer<cmplx> *p,
-	                      int32_t base_16,
-	                      int32_t rate):virtualReader (p, rate) {
+	reader_16::reader_16 (RingBuffer<cf32> *p,
+	                      i32 base_16,
+	                      i32 rate):virtualReader (p, rate) {
 	this	-> base = base_16;
 }
 
@@ -39,35 +39,35 @@
 }
 //
 //	apparently bytes are read in from low byte to high byte
-void	reader_16::processData	(float IQoffs, void *data, int cnt) {
-int32_t	i;
-cmplx IQData [blockSize];
-uint8_t	*p	= (uint8_t *)data;
+void	reader_16::processData	(f32 IQoffs, void *data, int cnt) {
+i32	i;
+cf32 IQData [blockSize];
+u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	(void)cnt;
 
 	for (i = 0; i < blockSize; i ++) {
-	   uint8_t r0	= p [4 * i];
-	   uint8_t r1	= p [4 * i + 1];
-	   uint8_t i0	= p [4 * i + 2];
-	   uint8_t i1	= p [4 * i + 3];
-	   int16_t re	= (r1 << 8) | r0;
-	   int16_t im	= (i1 << 8) | i0;
-	   IQData [i]	= cmplx ((float)re / base,
-	                                       (float)im / base);
+	   u8 r0	= p [4 * i];
+	   u8 r1	= p [4 * i + 1];
+	   u8 i0	= p [4 * i + 2];
+	   u8 i1	= p [4 * i + 3];
+	   i16 re	= (r1 << 8) | r0;
+	   i16 im	= (i1 << 8) | i0;
+	   IQData [i]	= cf32 ((f32)re / base,
+	                                       (f32)im / base);
 	}
 	
 	convertandStore (IQData, blockSize);
 }
 
-int16_t reader_16::bitDepth	(void) {
+i16 reader_16::bitDepth	(void) {
 	return 16;
 }
 //
 //	The reader for 24 bit integer values
 //
-	reader_24::reader_24 (RingBuffer<cmplx> *p,
-	                      int32_t base_24, int32_t rate):
+	reader_24::reader_24 (RingBuffer<cf32> *p,
+	                      i32 base_24, i32 rate):
 	                                       virtualReader (p, rate) {
 	this	-> base	= base_24;
 }
@@ -75,37 +75,37 @@ int16_t reader_16::bitDepth	(void) {
 	reader_24::~reader_24 (void) {
 }
 
-void	reader_24::processData	(float IQoffs, void *data, int cnt) {
-int32_t	i;
-cmplx	IQData [blockSize];
-uint8_t	*p	= (uint8_t *)data;
+void	reader_24::processData	(f32 IQoffs, void *data, int cnt) {
+i32	i;
+cf32	IQData [blockSize];
+u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	(void)cnt;
 
 	for (i = 0; i < blockSize; i ++) {
-	   uint8_t r0	= p [6 * i];
-	   uint8_t r1	= p [6 * i + 1];
-	   uint8_t r2	= p [6 * i + 2];
-	   uint8_t i0	= p [6 * i + 3];
-	   uint8_t i1	= p [6 * i + 4];
-	   uint8_t i2	= p [6 * i + 5];
-	   int32_t re	= int32_t (uint32_t (r2 << 16 | r1 << 8 | r0));
-	   int32_t im	= int32_t (uint32_t (i2 << 16 | i1 << 8 | i0));
-	   IQData [i]	= cmplx ((float)re / base,
-	                                       (float)im / base);
+	   u8 r0	= p [6 * i];
+	   u8 r1	= p [6 * i + 1];
+	   u8 r2	= p [6 * i + 2];
+	   u8 i0	= p [6 * i + 3];
+	   u8 i1	= p [6 * i + 4];
+	   u8 i2	= p [6 * i + 5];
+	   i32 re	= i32 (u32 (r2 << 16 | r1 << 8 | r0));
+	   i32 im	= i32 (u32 (i2 << 16 | i1 << 8 | i0));
+	   IQData [i]	= cf32 ((f32)re / base,
+	                                       (f32)im / base);
 	}
 	
 	convertandStore (IQData, blockSize);
 }
 
-int16_t reader_24::bitDepth	(void) {
+i16 reader_24::bitDepth	(void) {
 	return 24;
 }
 //
 //	The reader for 32 bit integer values
 //
-	reader_32::reader_32 (RingBuffer<cmplx> *p,
-	                      int32_t base_32, int32_t rate):
+	reader_32::reader_32 (RingBuffer<cf32> *p,
+	                      i32 base_32, i32 rate):
 	                                         virtualReader (p, rate) {
 	this	-> base = base_32;
 }
@@ -113,62 +113,62 @@ int16_t reader_24::bitDepth	(void) {
 	reader_32::~reader_32 (void) {
 }
 
-void	reader_32::processData	(float IQoffs, void *data, int cnt) {
-int32_t	i;
-cmplx IQData [blockSize];
-uint8_t	*p	= (uint8_t *)data;
+void	reader_32::processData	(f32 IQoffs, void *data, int cnt) {
+i32	i;
+cf32 IQData [blockSize];
+u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	(void)cnt;
 
 	for (i = 0; i < blockSize; i ++) {
-	   uint8_t r0	= p [8 * i];
-	   uint8_t r1	= p [8 * i + 1];
-	   uint8_t r2	= p [8 * i + 2];
-	   uint8_t r3	= p [8 * i + 3];
-	   uint8_t i0	= p [8 * i + 4];
-	   uint8_t i1	= p [8 * i + 5];
-	   uint8_t i2	= p [8 * i + 6];
-	   uint8_t i3	= p [8 * i + 7];
-	   int32_t re	= int32_t (uint32_t (r3 << 24 | r2 << 16 |
+	   u8 r0	= p [8 * i];
+	   u8 r1	= p [8 * i + 1];
+	   u8 r2	= p [8 * i + 2];
+	   u8 r3	= p [8 * i + 3];
+	   u8 i0	= p [8 * i + 4];
+	   u8 i1	= p [8 * i + 5];
+	   u8 i2	= p [8 * i + 6];
+	   u8 i3	= p [8 * i + 7];
+	   i32 re	= i32 (u32 (r3 << 24 | r2 << 16 |
 	                                             r1 << 8 | r0));
-	   int32_t im	= int32_t (uint32_t (i3 << 24 | i2 << 16 |
+	   i32 im	= i32 (u32 (i3 << 24 | i2 << 16 |
 	                                             i1 << 8 | i0));
-	   IQData [i]	= cmplx ((float)re / base,
-	                                       (float)im / base);
+	   IQData [i]	= cf32 ((f32)re / base,
+	                                       (f32)im / base);
 	}
 	
 	convertandStore (IQData, blockSize);
 }
 
-int16_t	reader_32::bitDepth	(void) {
+i16	reader_32::bitDepth	(void) {
 	return 32;
 }
 //
-//	The reader for 32 bit float values
+//	The reader for 32 bit f32 values
 //
-	reader_float::reader_float (RingBuffer<cmplx> *p,
-	                                                     int32_t rate):
+	reader_float::reader_float (RingBuffer<cf32> *p,
+	                                                     i32 rate):
 	                                             virtualReader (p, rate) {
-int16_t	i;
+i16	i;
 }
 
 	reader_float::~reader_float (void) {
 }
 //
-void	reader_float::processData	(float IQoffs, void *data, int cnt) {
-int32_t	i, j;
-cmplx IQData [blockSize];
-float	*p	= (float *)data;
+void	reader_float::processData	(f32 IQoffs, void *data, int cnt) {
+i32	i, j;
+cf32 IQData [blockSize];
+f32	*p	= (f32 *)data;
 	(void)IQoffs;
 	(void)cnt;
 
 	for (i = 0; i < blockSize; i ++) 
-	   IQData [i]	= cmplx (p [2 * i], p [2 * i + 1]);
+	   IQData [i]	= cf32 (p [2 * i], p [2 * i + 1]);
 
 	convertandStore (IQData, blockSize);
 }
 
-int16_t reader_float::bitDepth	(void) {
+i16 reader_float::bitDepth	(void) {
 	return 24;
 }
 

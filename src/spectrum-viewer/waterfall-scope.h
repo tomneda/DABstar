@@ -47,20 +47,20 @@ public:
   WaterfallScope(QwtPlot *, int, int);
   ~WaterfallScope() override;
 
-  void show_waterfall(const double *, const double *, const SpecViewLimits<double> & iSpecViewLimits);
+  void show_waterfall(const f64 *, const f64 *, const SpecViewLimits<f64> & iSpecViewLimits);
 
 private:
   QwtPlot * const mpPlotgrid;
-  const int32_t mDisplaySize;
-  const int32_t mRasterSize;
-  int32_t mOrig = 0;
-  int32_t mWidth = 0;
+  const i32 mDisplaySize;
+  const i32 mRasterSize;
+  i32 mOrig = 0;
+  i32 mWidth = 0;
   SpectrogramData * mpWaterfallData = nullptr;
   QwtLinearColorMap * mpColorMap = nullptr;
-  std::vector<double> mPlotDataVec;
-  double mScale = 0.0;
+  std::vector<f64> mPlotDataVec;
+  f64 mScale = 0.0;
 
-  void _gen_color_map(const int32_t iStyleNr);
+  void _gen_color_map(const i32 iStyleNr);
 public slots:
   void slot_scaling_changed(int);
 };

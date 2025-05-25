@@ -39,12 +39,12 @@ int main(int argc, char ** argv)
     FILE * fout =fopen(fncpp, "w");
 
     int teller = 0;
-    uint8_t element;
+    u8 element;
 
     // first a header for the out file
     fprintf(fout, "// generated with %s\n\n", argv[0]);
     fprintf(fout, "#include \"%s\"\n\n", fnhpp);
-    fprintf(fout, "const uint8_t PAUSESLIDE[] =\n{\n  ");
+    fprintf(fout, "const u8 PAUSESLIDE[] =\n{\n  ");
 
     while ((fread(&element, 1, 1, fin)) > 0)
     {
@@ -58,7 +58,7 @@ int main(int argc, char ** argv)
     }
 
     fprintf(fout, "0x00\n};\n\n"); // fill with zero to conclude the last comma
-    fprintf(fout, "const int32_t PAUSESLIDE_SIZE = sizeof(PAUSESLIDE) - 1; // ignore last artificial zero\n\n");
+    fprintf(fout, "const i32 PAUSESLIDE_SIZE = sizeof(PAUSESLIDE) - 1; // ignore last artificial zero\n\n");
 
     fclose(fout);
     fclose(fin);
@@ -70,8 +70,8 @@ int main(int argc, char ** argv)
 
     fprintf(fout, "// generated with %s\n\n", argv[0]);
     fprintf(fout, "#include <stdint.h>\n\n");
-    fprintf(fout, "extern const uint8_t PAUSESLIDE[];\n");
-    fprintf(fout, "extern const int32_t PAUSESLIDE_SIZE;\n\n");
+    fprintf(fout, "extern const u8 PAUSESLIDE[];\n");
+    fprintf(fout, "extern const i32 PAUSESLIDE_SIZE;\n\n");
 
     fclose(fout);
   }

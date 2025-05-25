@@ -15,7 +15,7 @@
 #include "phasetable.h"
 #include <fftw3.h>
 
-constexpr int32_t CIR_SPECTRUMSIZE = 2048*97;
+constexpr i32 CIR_SPECTRUMSIZE = 2048*97;
 
 class QSettings;
 class QLabel;
@@ -25,7 +25,7 @@ class CirViewer : public QObject, private Ui_cirWidget, private PhaseTable
 {
 Q_OBJECT
 public:
-  CirViewer(RingBuffer<cmplx> * iCirBuffer);
+  CirViewer(RingBuffer<cf32> * iCirBuffer);
   ~CirViewer();
   void show_cir();
   void show();
@@ -34,7 +34,7 @@ public:
 
 private:
   QFrame mFrame;
-  RingBuffer<cmplx> * const mpCirBuffer;
+  RingBuffer<cf32> * const mpCirBuffer;
   QwtPlotCurve mCurve;
   QwtPlotGrid mGrid;
   alignas(64) TArrayTu mFftInBuffer;

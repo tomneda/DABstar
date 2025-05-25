@@ -20,10 +20,10 @@
 #include <cinttypes>
 
 //	generic, up to 16 bits
-static inline uint16_t getBits(const uint8_t * d, int32_t offset, int16_t size)
+static inline u16 getBits(const u8 * d, i32 offset, i16 size)
 {
-  int16_t i;
-  uint16_t res = 0;
+  i16 i;
+  u16 res = 0;
 
   for (i = 0; i < size; i++)
   {
@@ -33,22 +33,22 @@ static inline uint16_t getBits(const uint8_t * d, int32_t offset, int16_t size)
   return res;
 }
 
-static inline uint16_t getBits_1(const uint8_t * d, int32_t offset)
+static inline u16 getBits_1(const u8 * d, i32 offset)
 {
   return (d[offset] & 0x01);
 }
 
-static inline uint16_t getBits_2(const uint8_t * d, int32_t offset)
+static inline u16 getBits_2(const u8 * d, i32 offset)
 {
-  uint16_t res = d[offset];
+  u16 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   return res;
 }
 
-static inline uint16_t getBits_3(const uint8_t * d, int32_t offset)
+static inline u16 getBits_3(const u8 * d, i32 offset)
 {
-  uint16_t res = d[offset];
+  u16 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -56,9 +56,9 @@ static inline uint16_t getBits_3(const uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_4(const uint8_t * d, int32_t offset)
+static inline u16 getBits_4(const u8 * d, i32 offset)
 {
-  uint16_t res = d[offset];
+  u16 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -68,9 +68,9 @@ static inline uint16_t getBits_4(const uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_5(const uint8_t * d, int32_t offset)
+static inline u16 getBits_5(const u8 * d, i32 offset)
 {
-  uint16_t res = d[offset];
+  u16 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -82,9 +82,9 @@ static inline uint16_t getBits_5(const uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_6(const uint8_t * d, int32_t offset)
+static inline u16 getBits_6(const u8 * d, i32 offset)
 {
-  uint16_t res = d[offset];
+  u16 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -98,9 +98,9 @@ static inline uint16_t getBits_6(const uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_7(const uint8_t * d, int32_t offset)
+static inline u16 getBits_7(const u8 * d, i32 offset)
 {
-  uint16_t res = d[offset];
+  u16 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -116,9 +116,9 @@ static inline uint16_t getBits_7(const uint8_t * d, int32_t offset)
   return res;
 }
 
-static inline uint16_t getBits_8(const uint8_t * d, int32_t offset)
+static inline u16 getBits_8(const u8 * d, i32 offset)
 {
-  uint16_t res = d[offset];
+  u16 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -137,10 +137,10 @@ static inline uint16_t getBits_8(const uint8_t * d, int32_t offset)
 }
 
 
-static inline uint32_t getLBits(const uint8_t * d, int32_t offset, int16_t amount)
+static inline u32 getLBits(const u8 * d, i32 offset, i16 amount)
 {
-  uint32_t res = 0;
-  int16_t i;
+  u32 res = 0;
+  i16 i;
 
   for (i = 0; i < amount; i++)
   {
@@ -150,18 +150,18 @@ static inline uint32_t getLBits(const uint8_t * d, int32_t offset, int16_t amoun
   return res;
 }
 
-static inline bool check_CRC_bits(const uint8_t * const iIn, const int32_t iSize)
+static inline bool check_CRC_bits(const u8 * const iIn, const i32 iSize)
 {
-  static const uint8_t crcPolynome[] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 };  // MSB .. LSB
-  int32_t f;
-  uint8_t b[16];
-  int16_t Sum = 0;
+  static const u8 crcPolynome[] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 };  // MSB .. LSB
+  i32 f;
+  u8 b[16];
+  i16 Sum = 0;
 
   memset(b, 1, 16);
 
-  for (int32_t i = 0; i < iSize; i++)
+  for (i32 i = 0; i < iSize; i++)
   {
-    const uint8_t invBit = (i >= iSize - 16 ? 1 : 0);
+    const u8 invBit = (i >= iSize - 16 ? 1 : 0);
 
     if ((b[0] ^ (iIn[i] ^ invBit)) == 1)
     {
@@ -173,12 +173,12 @@ static inline bool check_CRC_bits(const uint8_t * const iIn, const int32_t iSize
     }
     else
     {
-      memmove(&b[0], &b[1], sizeof(uint8_t) * 15); // Shift
+      memmove(&b[0], &b[1], sizeof(u8) * 15); // Shift
       b[15] = 0;
     }
   }
 
-  for (int32_t i = 0; i < 16; i++)
+  for (i32 i = 0; i < 16; i++)
   {
     Sum += b[i];
   }
@@ -186,18 +186,18 @@ static inline bool check_CRC_bits(const uint8_t * const iIn, const int32_t iSize
   return Sum == 0;
 }
 
-static inline bool check_crc_bytes(const uint8_t * const msg, const int32_t len)
+static inline bool check_crc_bytes(const u8 * const msg, const i32 len)
 {
-  uint16_t accumulator = 0xFFFF;
+  u16 accumulator = 0xFFFF;
 
   for (int i = 0; i < len; i++)
   {
-    uint16_t data = (uint16_t)(msg[i]) << 8;
+    u16 data = (u16)(msg[i]) << 8;
     for (int j = 8; j > 0; j--)
     {
       if ((data ^ accumulator) & 0x8000)
       {
-        constexpr uint16_t genpoly = 0x1021;
+        constexpr u16 genpoly = 0x1021;
         accumulator = ((accumulator << 1) ^ genpoly) & 0xFFFF;
       }
       else
@@ -208,7 +208,7 @@ static inline bool check_crc_bytes(const uint8_t * const msg, const int32_t len)
     }
   }
   //	ok, now check with the crc that is contained in the au
-  const uint16_t crc = ~((msg[len] << 8) | msg[len + 1]) & 0xFFFF;
+  const u16 crc = ~((msg[len] << 8) | msg[len + 1]) & 0xFFFF;
   return (crc ^ accumulator) == 0;
 }
 

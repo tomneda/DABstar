@@ -39,8 +39,8 @@
 //	we "cache" the most recent single motSlides (not those in a directory)
 struct motTable_
 {
-  uint16_t transportId;
-  int32_t orderNumber;
+  u16 transportId;
+  i32 orderNumber;
   MotObject * motSlide;
 } motTable[55];
 
@@ -78,22 +78,22 @@ motHandler::~motHandler()
   }
 }
 
-void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
+void motHandler::add_mscDatagroup(const std::vector<u8> & msc)
 {
-  uint8_t * data = (uint8_t *)(msc.data());
+  u8 * data = (u8 *)(msc.data());
   bool extensionFlag = getBits_1(data, 0) != 0;
   bool crcFlag = getBits_1(data, 1) != 0;
   bool segmentFlag = getBits_1(data, 2) != 0;
   bool userAccessFlag = getBits_1(data, 3) != 0;
-  uint8_t groupType = getBits_4(data, 4);
-  uint8_t CI = getBits_4(data, 8);
-  int32_t next = 16;    // bits
+  u8 groupType = getBits_4(data, 4);
+  u8 CI = getBits_4(data, 8);
+  i32 next = 16;    // bits
   bool lastFlag = false;
-  uint16_t segmentNumber = 0;
+  u16 segmentNumber = 0;
   bool transportIdFlag = false;
-  uint16_t transportId = 0;
-  uint8_t lengthInd;
-  int32_t i;
+  u16 transportId = 0;
+  u8 lengthInd;
+  i32 i;
 
   (void)CI;
   if (msc.size() <= 0)
@@ -130,18 +130,18 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
     next += lengthInd * 8;
   }
 
-  int32_t sizeinBits = msc.size() - next - (crcFlag != 0 ? 16 : 0);
+  i32 sizeinBits = msc.size() - next - (crcFlag != 0 ? 16 : 0);
 
   if (!transportIdFlag)
   {
     return;
   }
 
-  std::vector<uint8_t> motVector;
+  std::vector<u8> motVector;
   motVector.resize(sizeinBits / 8);
   for (i = 0; i < sizeinBits / 8; i++)
   {
-    uint8_t t = 0;
+    u8 t = 0;
     for (int j = 0; j < 8; j++)
     {
       t = (t << 1) | data[next + 8 * i + j];
@@ -149,7 +149,7 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
     motVector[i] = t;
   }
 
-  uint32_t segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
+  u32 segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
   switch (groupType)
   {
   case 3:
@@ -196,13 +196,13 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
       if (theDirectory != nullptr)  // an old one, replace it
         delete theDirectory;
 
-      int32_t segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
-      uint8_t * segment = &motVector[2];
+      i32 segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
+      u8 * segment = &motVector[2];
       int dirSize = ((segment[0] & 0x3F) << 24) | ((segment[1]) << 16) | ((segment[2]) << 8) | segment[3];
-      uint16_t numObjects = (segment[4] << 8) | segment[5];
-      //	         int32_t period = (segment [6] << 16) |
+      u16 numObjects = (segment[4] << 8) | segment[5];
+      //	         i32 period = (segment [6] << 16) |
       //	                          (segment [7] <<  8) | segment [8];
-      //	         int32_t segSize
+      //	         i32 segSize
       //	                        = ((segment [9] & 0x1F) << 8) | segment [10];
       theDirectory = new MotDirectory(myRadioInterface, transportId, segmentSize, dirSize, numObjects, segment);
     }
@@ -221,7 +221,7 @@ void motHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
   }
 }
 
-MotObject * motHandler::getHandle(uint16_t transportId)
+MotObject * motHandler::getHandle(u16 transportId)
 {
   int i;
 
@@ -239,7 +239,7 @@ MotObject * motHandler::getHandle(uint16_t transportId)
   return nullptr;
 }
 
-void motHandler::setHandle(MotObject * h, uint16_t transportId)
+void motHandler::setHandle(MotObject * h, u16 transportId)
 {
   int i;
   int oldest = orderNumber;

@@ -6,7 +6,7 @@
 #include	"uep-protection.h"
 #include	<memory>
 
-static uint16_t const crctab_1021[256] = {
+static u16 const crctab_1021[256] = {
   0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
   0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
   0x1231, 0x0210, 0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6,
@@ -41,7 +41,7 @@ static uint16_t const crctab_1021[256] = {
   0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-static uint16_t calc_crc(unsigned char * data, int length, uint16_t const * crctab, unsigned int crc)
+static u16 calc_crc(unsigned char * data, int length, u16 const * crctab, unsigned int crc)
 {
   int count;
   unsigned int temp;
@@ -55,9 +55,9 @@ static uint16_t calc_crc(unsigned char * data, int length, uint16_t const * crct
   return crc & 0xffff;
 }
 
-int16_t cif_In[55296];
-int16_t cifVector[16][55296];
-uint8_t fibVector[16][96];
+i16 cif_In[55296];
+i16 cifVector[16][55296];
+u8 fibVector[16][96];
 bool fibValid[16];
 
 #define  CUSize  (4 * 16)
@@ -65,11 +65,11 @@ bool fibValid[16];
 //	For each subchannel we create a
 //	deconvoluter and a descramble table up front
 Protection * protTable[64] = { nullptr };
-uint8_t * descrambler[64] = { nullptr };
+u8 * descrambler[64] = { nullptr };
 
-int16_t temp[55296];
-const int16_t interleaveMap[] = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
-uint8_t theVector[6144];
+i16 temp[55296];
+const i16 interleaveMap[] = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
+u8 theVector[6144];
 
 //
 //	fibvector contains the processed fics, i.e ready for addition
@@ -143,7 +143,7 @@ void etiGenerator::newFrame()
 //
 //	we ensure that when starting, we start with a
 //	block 1
-void etiGenerator::process_block(const std::vector<int16_t> & ibits, int blkno)
+void etiGenerator::process_block(const std::vector<i16> & ibits, int blkno)
 {
 
   if (!running && (etiFile != nullptr) && (blkno == 1))
@@ -188,7 +188,7 @@ void etiGenerator::process_block(const std::vector<int16_t> & ibits, int blkno)
   //	adding the MSC blocks. Blocks 5 .. 76 are "transformed"
   //	into the "soft" bits arrays
   int CIF_index = (blkno - 4) % numberofblocksperCIF;
-  memcpy(&cif_In[CIF_index * BitsperBlock], ibits.data(), BitsperBlock * sizeof(int16_t));
+  memcpy(&cif_In[CIF_index * BitsperBlock], ibits.data(), BitsperBlock * sizeof(i16));
   if (CIF_index == numberofblocksperCIF - 1)
   {
     for (int i = 0; i < 3072 * 18; i++)
@@ -254,7 +254,7 @@ void etiGenerator::process_block(const std::vector<int16_t> & ibits, int blkno)
 }
 
 //	Copied  from dabtools:
-int32_t etiGenerator::_init_eti(uint8_t * oEti, int16_t CIFCount_hi, int16_t CIFCount_lo, int16_t minor)
+i32 etiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
 {
   int fillPointer = 0;
   ChannelData data;
@@ -309,7 +309,7 @@ int32_t etiGenerator::_init_eti(uint8_t * oEti, int16_t CIFCount_hi, int16_t CIF
   oEti[fillPointer++] = (FICF << 7) | NST;
   //
   //	The FP is computed as remainder of the total CIFCount,
-  uint8_t FP = ((CIFCount_hi * 250) + CIFCount_lo) % 8;
+  u8 FP = ((CIFCount_hi * 250) + CIFCount_lo) % 8;
   //
   int MID = 0x01; // We only support Mode 1
   oEti[fillPointer++] = (FP << 5) | (MID << 3) | ((FL & 0x700) >> 8);
@@ -364,18 +364,18 @@ int32_t etiGenerator::_init_eti(uint8_t * oEti, int16_t CIFCount_hi, int16_t CIF
 class parameter
 {
 public:
-  const int16_t * input;
+  const i16 * input;
   bool uepFlag;
   int bitRate;
   int protLevel;
   int start_cu;
   int size;
-  uint8_t * output;
+  u8 * output;
 };
 
-int32_t etiGenerator::_process_cif(const int16_t * input, uint8_t * output, int32_t offset)
+i32 etiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
 {
-  uint8_t shiftRegister[9];
+  u8 shiftRegister[9];
   std::vector<parameter *> theParameters;
 
   for (int i = 0; i < 64; i++)
@@ -406,11 +406,11 @@ int32_t etiGenerator::_process_cif(const int16_t * input, uint8_t * output, int3
         }
 
         memset(shiftRegister, 1, 9);
-        descrambler[i] = new uint8_t[24 * t->bitRate];
+        descrambler[i] = new u8[24 * t->bitRate];
 
         for (int j = 0; j < 24 * t->bitRate; j++)
         {
-          uint8_t b = shiftRegister[8] ^ shiftRegister[4];
+          u8 b = shiftRegister[8] ^ shiftRegister[4];
           for (int k = 8; k > 0; k--)
           {
             shiftRegister[k] = shiftRegister[k - 1];
@@ -427,16 +427,16 @@ int32_t etiGenerator::_process_cif(const int16_t * input, uint8_t * output, int3
   return offset;
 }
 
-void etiGenerator::_process_sub_channel(int /*nr*/, parameter * p, Protection * prot, uint8_t * desc)
+void etiGenerator::_process_sub_channel(int /*nr*/, parameter * p, Protection * prot, u8 * desc)
 {
-  std::unique_ptr<uint8_t[]> outVector{ new uint8_t[24 * p->bitRate] };
+  std::unique_ptr<u8[]> outVector{ new u8[24 * p->bitRate] };
   if (!outVector)
   {
     std::cerr << "process_subCh - alloc fail";
     return;
   }
 
-  memset(outVector.get(), 0, sizeof(uint8_t) * 24 * p->bitRate);
+  memset(outVector.get(), 0, sizeof(u8) * 24 * p->bitRate);
 
   prot->deconvolve(&p->input[p->start_cu * CUSize], p->size * CUSize, outVector.get());
   //
@@ -458,7 +458,7 @@ void etiGenerator::_process_sub_channel(int /*nr*/, parameter * p, Protection * 
 
 }
 
-void etiGenerator::postProcess(const uint8_t * /*theVector*/, int32_t /*offset*/)
+void etiGenerator::postProcess(const u8 * /*theVector*/, i32 /*offset*/)
 {
 }
 

@@ -27,8 +27,8 @@
 //	This is the - almost empty - default implementation
 #include	"virtual-reader.h"
 
-	virtualReader::virtualReader	(RingBuffer<cmplx> *p,
-	                                                       int32_t rate) {
+	virtualReader::virtualReader	(RingBuffer<cf32> *p,
+	                                                       i32 rate) {
 	theBuffer	= p;
 	blockSize	= -1;
 	setMapper (rate, 2048000);
@@ -37,7 +37,7 @@
 	virtualReader::~virtualReader		(void) {
 }
 
-void	virtualReader::restartReader	(int32_t s) {
+void	virtualReader::restartReader	(i32 s) {
 	fprintf (stderr, "Restart met block %d\n", s);
 	blockSize	= s;
 }
@@ -45,39 +45,39 @@ void	virtualReader::restartReader	(int32_t s) {
 void	virtualReader::stopReader	(void) {
 }
 
-void	virtualReader::processData	(float IQoffs, void *data, int cnt) {
+void	virtualReader::processData	(f32 IQoffs, void *data, int cnt) {
 	(void)IQoffs;
 	(void)data;
 	(void)cnt;
 }
 
-int16_t	virtualReader::bitDepth	(void) {
+i16	virtualReader::bitDepth	(void) {
 	return 12;
 }
 
-void	virtualReader::setMapper	(int32_t inRate, int32_t outRate) {
-int32_t	i;
+void	virtualReader::setMapper	(i32 inRate, i32 outRate) {
+i32	i;
 
 	this	-> inSize	= inRate / 1000;
 	this	-> outSize	= outRate / 1000;
-	inTable			= new cmplx [inSize];
-	outTable		= new cmplx [outSize];
-	mapTable		= new float [outSize];
+	inTable			= new cf32 [inSize];
+	outTable		= new cf32 [outSize];
+	mapTable		= new f32 [outSize];
 	for (i = 0; i < outSize; i ++)
-	   mapTable [i] = (float) i * inRate / outRate;
+	   mapTable [i] = (f32) i * inRate / outRate;
 	conv	= 0;
 }
 
-void	virtualReader::convertandStore (cmplx *s,
-	                                             int32_t amount) {
-int32_t	i, j;
+void	virtualReader::convertandStore (cf32 *s,
+	                                             i32 amount) {
+i32	i, j;
 
 	for (i = 0; i < amount; i ++) {
 	   inTable [conv++]	= s [i];
 	   if (conv >= inSize) {	// full buffer, map
 	      for (j = 0; j < outSize - 1; j ++) {
-	         int16_t base	= (int)(floor (mapTable [j]));
-	         float  frac	= mapTable [j] - base;
+	         i16 base	= (int)(floor (mapTable [j]));
+	         f32  frac	= mapTable [j] - base;
 	         outTable [j]	=  inTable [base] * (1 - frac) +
 	                         inTable [base + 1] * frac;
 	      }

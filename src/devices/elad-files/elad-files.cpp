@@ -50,7 +50,7 @@ SF_INFO *sf_info;
 	}
 
         for (int i = 0; i < DAB_RATE / 1000; i ++) {
-           float inVal  = float (ELAD_RATE / 1000);
+           f32 inVal  = f32 (ELAD_RATE / 1000);
            mapTable_int [i] =  int (floor (i * (inVal / 2048.0)));
            mapTable_float [i] = i * (inVal / 2048.0) - mapTable_int [i];
         }
@@ -79,7 +79,7 @@ SF_INFO *sf_info;
 	   fclose (filePointer);
 }
 
-bool	eladFiles::restartReader	(int32_t freq) {
+bool	eladFiles::restartReader	(i32 freq) {
 	(void)freq;
 	if (running. load())
            return true;
@@ -98,26 +98,26 @@ void	eladFiles::stopReader() {
         running. store (false);
 }
 
-//cmplx	makeSample_31bits (uint8_t *, bool);
+//cf32	makeSample_31bits (u8 *, bool);
 
 typedef union {
 	struct __attribute__((__packed__)) {
-		float	i;
-		float	q;
+		f32	i;
+		f32	q;
 		} iqf;
 	struct __attribute__((__packed__)) {
-		int32_t	i;
-		int32_t	q;
+		i32	i;
+		i32	q;
 		} iq;
 	struct __attribute__((__packed__)) {
-		uint8_t		i1;
-		uint8_t		i2;
-		uint8_t		i3;
-		uint8_t		i4;
-		uint8_t		q1;
-		uint8_t		q2;
-		uint8_t		q3;
-		uint8_t		q4;
+		u8		i1;
+		u8		i2;
+		u8		i3;
+		u8		i4;
+		u8		q1;
+		u8		q2;
+		u8		q3;
+		u8		q4;
 		};
 } iq_sample;
 
@@ -127,21 +127,21 @@ typedef union {
 // ADC out unsigned 14 bit input to FPGA output signed 16 bit
 #define SCALE_FACTOR_16to14    (0.250)       //(8192/32768)  
 
-cmplx	makeSample (uint8_t *buf, bool iqSwitch) {
-//cmplx	makeSample_31bits (uint8_t *buf, bool iqSwitch) {
+cf32	makeSample (u8 *buf, bool iqSwitch) {
+//cf32	makeSample_31bits (u8 *buf, bool iqSwitch) {
 int ii = 0; int qq = 0;
-int16_t	i = 0;
-uint32_t	uii = 0, uqq = 0;
+i16	i = 0;
+u32	uii = 0, uqq = 0;
 
-	uint8_t i0 = buf [i++];
-	uint8_t i1 = buf [i++];
-	uint8_t i2 = buf [i++];
-	uint8_t i3 = buf [i++];
+	u8 i0 = buf [i++];
+	u8 i1 = buf [i++];
+	u8 i2 = buf [i++];
+	u8 i3 = buf [i++];
 
-	uint8_t q0 = buf [i++];
-	uint8_t q1 = buf [i++];
-	uint8_t q2 = buf [i++];
-	uint8_t q3 = buf [i++];
+	u8 q0 = buf [i++];
+	u8 q1 = buf [i++];
+	u8 q2 = buf [i++];
+	u8 q3 = buf [i++];
 
 
 	uii = (i3 << 24) | (i2 << 16) | (i1 << 8) | i0;
@@ -150,22 +150,22 @@ uint32_t	uii = 0, uqq = 0;
 	ii	= (int) uii;
 	qq	= (int) uqq;
 	if (iqSwitch)
-	   return cmplx ((float)qq * SCALE_FACTOR_32to14,
-	                               (float)ii * SCALE_FACTOR_32to14);
+	   return cf32 ((f32)qq * SCALE_FACTOR_32to14,
+	                               (f32)ii * SCALE_FACTOR_32to14);
 	else
-	   return cmplx ((float)ii * SCALE_FACTOR_32to14,
-	                               (float)qq * SCALE_FACTOR_32to14);
+	   return cf32 ((f32)ii * SCALE_FACTOR_32to14,
+	                               (f32)qq * SCALE_FACTOR_32to14);
 }
 
 #define	SEGMENT_SIZE	(1024 * 8)
-uint8_t	lbuffer [SEGMENT_SIZE];
+u8	lbuffer [SEGMENT_SIZE];
 //	size is in I/Q pairs
 //	Note: Samples computes the amount of samples that either
 //	are already available or can be computed based on the
 //	current content of the _I_Buffer
-int32_t	eladFiles::getSamples	(cmplx *V, int32_t size) {
-int32_t	amount;
-cmplx temp [2048];
+i32	eladFiles::getSamples	(cf32 *V, i32 size) {
+i32	amount;
+cf32 temp [2048];
 
 	if (filePointer == nullptr)
 	   return 0;
@@ -177,11 +177,11 @@ cmplx temp [2048];
 	   _I_Buffer. getDataFromBuffer (lbuffer, SEGMENT_SIZE);
 	   for (int i = 0; i < SEGMENT_SIZE / iqSize; i ++) {
 	      if (convIndex > ELAD_RATE / 1000) {
-	         float sum = 0;
-	         int16_t j;
+	         f32 sum = 0;
+	         i16 j;
 	         for (j = 0; j < 2048; j ++) {
-	            int16_t  inpBase		= mapTable_int [j];
-	            float    inpRatio		= mapTable_float [j];
+	            i16  inpBase		= mapTable_int [j];
+	            f32    inpRatio		= mapTable_float [j];
 	            temp [j]  = convBuffer [inpBase + 1] * inpRatio +
 	                        convBuffer [inpBase] * (1 - inpRatio);
 	            sum += abs (temp [j]);
@@ -198,10 +198,10 @@ cmplx temp [2048];
 	return _O_Buffer. getDataFromBuffer (V, size);
 }
 
-int32_t	eladFiles::Samples	(void) {
-int64_t	bufferContent	= _I_Buffer. GetRingBufferReadAvailable ();
+i32	eladFiles::Samples	(void) {
+i64	bufferContent	= _I_Buffer. GetRingBufferReadAvailable ();
 	return _O_Buffer. GetRingBufferReadAvailable () +
-	       (int)(((int64_t)2048 * bufferContent / (int64_t)3072) / iqSize);
+	       (int)(((i64)2048 * bufferContent / (i64)3072) / iqSize);
 }
 
 void    eladFiles::setProgress (int progress) {

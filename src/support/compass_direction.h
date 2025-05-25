@@ -12,8 +12,9 @@
  */
 #ifndef COMPASS_DIRECTION_H
 #define COMPASS_DIRECTION_H
-#include <string>
 
+#include "glob_data_types.h"
+#include <string>
 
 class CompassDirection
 {
@@ -21,7 +22,7 @@ public:
   CompassDirection() = default;
   ~CompassDirection() = default;
 
-  static std::string get_compass_direction(double iAngleInDegree);
+  static std::string get_compass_direction(f64 iAngleInDegree);
 };
 
 

@@ -29,7 +29,7 @@
 
 #define	FIFO_SIZE	32768
 static
-int16_t localBuffer [4 * FIFO_SIZE];
+i16 localBuffer [4 * FIFO_SIZE];
 lms_info_str_t limedevices [10];
 
 	LimeHandler::LimeHandler (QSettings *s,
@@ -120,7 +120,7 @@ lms_info_str_t limedevices [10];
 	res	= LMS_GetSampleRate (theDevice, LMS_CH_RX, 0,
 	                                            &host_Hz, &rf_Hz);
 
-	fprintf (stderr, "samplerate = %f %f\n", (float)host_Hz, (float)rf_Hz);
+	fprintf (stderr, "samplerate = %f %f\n", (f32)host_Hz, (f32)rf_Hz);
 	
 	res		= LMS_GetAntennaList (theDevice, LMS_CH_RX, 0, antennas);
 	for (int i = 0; i < res; i ++) 	
@@ -195,11 +195,11 @@ lms_info_str_t limedevices [10];
 	LMS_Close (theDevice);
 }
 
-void	LimeHandler::setVFOFrequency	(int32_t f) {
+void	LimeHandler::setVFOFrequency	(i32 f) {
 	LMS_SetLOFrequency (theDevice, LMS_CH_RX, 0, f);
 }
 
-int32_t	LimeHandler::getVFOFrequency() {
+i32	LimeHandler::getVFOFrequency() {
 float_type freq;
 	/*int res = */LMS_GetLOFrequency (theDevice, LMS_CH_RX, 0, &freq);
 	return (int)freq;
@@ -221,7 +221,7 @@ void	LimeHandler::set_filter		(int c) {
 	fprintf (stderr, "filter set %s\n", filtering ? "on" : "off");
 }
 
-bool	LimeHandler::restartReader	(int32_t freq) {
+bool	LimeHandler::restartReader	(i32 freq) {
 int	res;
 
 	if (isRunning())
@@ -264,8 +264,8 @@ void	LimeHandler::stopReader() {
 	(void)LMS_DestroyStream	(theDevice, &stream);
 }
 
-int	LimeHandler::getSamples	(cmplx *V, int32_t size) {
-std::complex<int16_t> temp [size];
+int	LimeHandler::getSamples	(cf32 *V, i32 size) {
+std::complex<i16> temp [size];
 
         int amount      = _I_Buffer. get_data_from_ring_buffer (temp, size);
 	if (filtering) {
@@ -274,13 +274,13 @@ std::complex<int16_t> temp [size];
 	      theFilter. resize (currentDepth);
 	   }
            for (int i = 0; i < amount; i ++) 
-	      V [i] = theFilter. Pass (cmplx (
+	      V [i] = theFilter. Pass (cf32 (
 	                                         real (temp [i]) / 2048.0,
 	                                         imag (temp [i]) / 2048.0));
 	}
 	else
            for (int i = 0; i < amount; i ++)
-              V [i] = cmplx (real (temp [i]) / 2048.0,
+              V [i] = cf32 (real (temp [i]) / 2048.0,
                                            imag (temp [i]) / 2048.0);
         if (dumping. load ())
            xmlWriter -> add (temp, amount);
@@ -295,7 +295,7 @@ void	LimeHandler::resetBuffer() {
 	_I_Buffer. flush_ring_buffer();
 }
 
-int16_t	LimeHandler::bitDepth() {
+i16	LimeHandler::bitDepth() {
 	return 12;
 }
 

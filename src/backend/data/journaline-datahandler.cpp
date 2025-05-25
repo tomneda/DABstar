@@ -40,13 +40,13 @@ journaline_dataHandler::~journaline_dataHandler()
 }
 
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
-void journaline_dataHandler::add_mscDatagroup(const std::vector<uint8_t> & msc)
+void journaline_dataHandler::add_mscDatagroup(const std::vector<u8> & msc)
 {
-  int16_t len = msc.size();
-  uint8_t * data = (uint8_t *)(msc.data());
-  auto * const buffer = make_vla(uint8_t, len / 8);
-  int16_t i;
-  int32_t res;
+  i16 len = msc.size();
+  u8 * data = (u8 *)(msc.data());
+  auto * const buffer = make_vla(u8, len / 8);
+  i16 i;
+  i32 res;
   for (i = 0; i < len / 8; i++)
   {
     buffer[i] = getBits(data, 8 * i, 8);

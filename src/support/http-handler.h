@@ -46,22 +46,22 @@ class DabRadio;
 
 typedef struct
 {
-  uint8_t type;
-  cmplx coords;
+  u8 type;
+  cf32 coords;
   QString transmitterName;
   QString channelName;
   QString dateTime;
   QString ensemble;
   QString polarization;
   QString direction;
-  uint16_t Eid;
-  uint8_t mainId;
-  uint8_t subId;
-  float strength;
+  u16 Eid;
+  u8 mainId;
+  u8 subId;
+  f32 strength;
   int distance;
   int azimuth;
-  float power;
-  float frequency;
+  f32 power;
+  f32 frequency;
   int altitude;
   int height;
   bool non_etsi;
@@ -72,20 +72,20 @@ class HttpHandler : public QObject
   Q_OBJECT
 
 public:
-  HttpHandler(DabRadio *, const QString & mapPort, const QString & browserAddress, cmplx address, const QString & saveName, bool autoBrowse);
+  HttpHandler(DabRadio *, const QString & mapPort, const QString & browserAddress, cf32 address, const QString & saveName, bool autoBrowse);
   ~HttpHandler();
   void start();
   void stop();
   void run();
-  void putData(uint8_t type, const SCacheElem * tr, const QString & dateTime,
-               float strength, int distance, int azimuth, bool non_etsi);
+  void putData(u8 type, const SCacheElem * tr, const QString & dateTime,
+               f32 strength, int distance, int azimuth, bool non_etsi);
 
 private:
   FILE * saveFile;
   QString * saveName;
   DabRadio * parent;
   QString mapPort;
-  cmplx homeAddress;
+  cf32 homeAddress;
   std::vector<httpData> transmitterVector;
 
 #if defined(__MINGW32__) || defined(_WIN32)
@@ -95,7 +95,7 @@ private:
 #endif
   std::atomic<bool> running;
   std::thread threadHandle;
-  std::string theMap(cmplx address);
+  std::string theMap(cf32 address);
   std::string coordinatesToJson(const std::vector<httpData> & t);
   std::vector<httpData> transmitterList;
   std::mutex locker;

@@ -62,9 +62,9 @@
 #include  <qwt_scale_widget.h>
 #include  <fftw3.h>
 
-constexpr int32_t SP_DISPLAYSIZE = 512;
-constexpr int32_t SP_SPECTRUMSIZE = 2048;
-constexpr int32_t SP_SPEC_OVR_SMP_FAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
+constexpr i32 SP_DISPLAYSIZE = 512;
+constexpr i32 SP_SPECTRUMSIZE = 2048;
+constexpr i32 SP_SPEC_OVR_SMP_FAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
 
 
 class DabRadio;
@@ -79,23 +79,23 @@ class SpectrumViewer : public QObject, private Ui_scopeWidget
 {
 Q_OBJECT
 public:
-  SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer);
+  SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cf32> * ipSpecBuffer, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer, RingBuffer<f32> * ipCorrBuffer);
   ~SpectrumViewer() override;
 
-  void show_spectrum(int32_t);
-  void show_correlation(float threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr);
-  void show_nominal_frequency_MHz(float);
-  void show_freq_corr_rf_Hz(int32_t iFreqCorrRF);
-  void show_freq_corr_bb_Hz(int32_t iFreqCorrBB);
-  void show_iq(int32_t, float);
-  void show_lcd_data(int32_t, float, float, float, float, float);
-  void show_fic_ber(float ber);
-  void show_clock_error(float e);
-  //void set_bit_depth(int16_t);
+  void show_spectrum(i32);
+  void show_correlation(f32 threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr);
+  void show_nominal_frequency_MHz(f32);
+  void show_freq_corr_rf_Hz(i32 iFreqCorrRF);
+  void show_freq_corr_bb_Hz(i32 iFreqCorrBB);
+  void show_iq(i32, f32);
+  void show_lcd_data(i32, f32, f32, f32, f32, f32);
+  void show_fic_ber(f32 ber);
+  void show_clock_error(f32 e);
+  //void set_bit_depth(i16);
   void show();
   void hide();
   bool is_hidden();
-  void show_digital_peak_level(float);
+  void show_digital_peak_level(f32);
 
   enum class EAvrRate { SLOW, MEDIUM, FAST, DEFAULT = MEDIUM };
   void set_spectrum_averaging_rate(EAvrRate iAvrRate);
@@ -105,27 +105,27 @@ private:
   CustomFrame myFrame{ nullptr };
   DabRadio * const mpRadioInterface;
   QSettings * const mpDabSettings;
-  RingBuffer<cmplx> * const mpSpectrumBuffer;
-  RingBuffer<cmplx> * const mpIqBuffer;
-  RingBuffer<float> * const mpCarrBuffer;
-  RingBuffer<float> * const mpCorrelationBuffer;
-  std::vector<cmplx> mIqValuesVec;
-  std::vector<float> mCarrValuesVec;
-  uint32_t mThermoPeakLevelConfigured = 0;
+  RingBuffer<cf32> * const mpSpectrumBuffer;
+  RingBuffer<cf32> * const mpIqBuffer;
+  RingBuffer<f32> * const mpCarrBuffer;
+  RingBuffer<f32> * const mpCorrelationBuffer;
+  std::vector<cf32> mIqValuesVec;
+  std::vector<f32> mCarrValuesVec;
+  u32 mThermoPeakLevelConfigured = 0;
   bool mThermoModQualConfigured = false;
-  SpecViewLimits<double> mSpecViewLimits;
-  double mAvrAlpha = 0.1;
+  SpecViewLimits<f64> mSpecViewLimits;
+  f64 mAvrAlpha = 0.1;
 
-  std::array<cmplx, SP_SPECTRUMSIZE> mFftInBuffer;
-  std::array<cmplx, SP_SPECTRUMSIZE> mFftOutBuffer;
+  std::array<cf32, SP_SPECTRUMSIZE> mFftInBuffer;
+  std::array<cf32, SP_SPECTRUMSIZE> mFftOutBuffer;
   fftwf_plan mFftPlan{fftwf_plan_dft_1d(SP_SPECTRUMSIZE, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE)};
 
-  std::array<float, SP_SPECTRUMSIZE> mWindowVec{ 0 };
-  std::array<double, SP_DISPLAYSIZE> mXAxisVec{ 0 };
-  std::array<double, SP_DISPLAYSIZE> mYValVec{ 0 };
-  std::array<double, SP_DISPLAYSIZE> mDisplayBuffer{ 0 };
+  std::array<f32, SP_SPECTRUMSIZE> mWindowVec{ 0 };
+  std::array<f64, SP_DISPLAYSIZE> mXAxisVec{ 0 };
+  std::array<f64, SP_DISPLAYSIZE> mYValVec{ 0 };
+  std::array<f64, SP_DISPLAYSIZE> mDisplayBuffer{ 0 };
 
-  int32_t mLastVcoFreq = -1; // do not use 0 as input files can have 0Hz center frequencies and this cache would be "valid"
+  i32 mLastVcoFreq = -1; // do not use 0 as input files can have 0Hz center frequencies and this cache would be "valid"
 
   CarrierDisp * mpCarrierDisp = nullptr;
   IQDisplay * mpIQDisplay = nullptr;
@@ -133,7 +133,7 @@ private:
   WaterfallScope * mpWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
 
-  bool _calc_spectrum_display_limits(SpecViewLimits<double>::SMaxMin & ioMaxMin) const;
+  bool _calc_spectrum_display_limits(SpecViewLimits<f64>::SMaxMin & ioMaxMin) const;
 
 public slots:
   void slot_update_settings();

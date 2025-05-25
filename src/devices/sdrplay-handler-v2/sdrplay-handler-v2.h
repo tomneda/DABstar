@@ -44,8 +44,8 @@
 #include  "mirsdrapi-rsp.h"
 #include  <QLibrary>
 
-typedef void (* mir_sdr_StreamCallback_t)(int16_t * xi, int16_t * xq, uint32_t firstSampleNum, int32_t grChanged, int32_t rfChanged, int32_t fsChanged, uint32_t numSamples, uint32_t reset, uint32_t hwRemoved, void * cbContext);
-typedef void (* mir_sdr_GainChangeCallback_t)(uint32_t gRdB, uint32_t lnaGRdB, void * cbContext);
+typedef void (* mir_sdr_StreamCallback_t)(i16 * xi, i16 * xq, u32 firstSampleNum, i32 grChanged, i32 rfChanged, i32 fsChanged, u32 numSamples, u32 reset, u32 hwRemoved, void * cbContext);
+typedef void (* mir_sdr_GainChangeCallback_t)(u32 gRdB, u32 lnaGRdB, void * cbContext);
 
 #ifdef __MINGW32__
 #define	GETPROCADDRESS	GetProcAddress
@@ -56,11 +56,11 @@ typedef void (* mir_sdr_GainChangeCallback_t)(uint32_t gRdB, uint32_t lnaGRdB, v
 class XmlFileWriter;
 
 // Dll and ".so" function prototypes
-typedef mir_sdr_ErrT (* pfn_mir_sdr_StreamInit)(int * gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int LNAEnable, int * gRdBsystem, int useGrAltMode, int * samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void * cbContext);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_Reinit)(int * gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, mir_sdr_LoModeT, int, int *, int, int *, mir_sdr_ReasonForReinitT);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_StreamInit)(int * gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int LNAEnable, int * gRdBsystem, int useGrAltMode, int * samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void * cbContext);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_Reinit)(int * gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, mir_sdr_LoModeT, int, int *, int, int *, mir_sdr_ReasonForReinitT);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_StreamUninit)();
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetRf)(double drfHz, int abs, int syncUpdate);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetFs)(double dfsHz, int abs, int syncUpdate, int reCal);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetRf)(f64 drfHz, int abs, int syncUpdate);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetFs)(f64 dfsHz, int abs, int syncUpdate, int reCal);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_SetGr)(int gRdB, int abs, int syncUpdate);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_RSP_SetGr)(int gRdB, int lnaState, int abs, int syncUpdate);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_SetGrParams)(int minimumGr, int lnaGrThreshold);
@@ -68,13 +68,13 @@ typedef mir_sdr_ErrT (* pfn_mir_sdr_SetDcMode)(int dcCal, int speedUp);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_SetDcTrackTime)(int trackTime);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_SetSyncUpdateSampleNum)(unsigned int sampleNum);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_SetSyncUpdatePeriod)(unsigned int period);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_ApiVersion)(float * version);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_ApiVersion)(f32 * version);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_ResetUpdateFlags)(int resetGainUpdate, int resetRfUpdate, int resetFsUpdate);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_AgcControl)(uint32_t, int, int, uint32_t, uint32_t, int, int);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_DCoffsetIQimbalanceControl)(uint32_t, uint32_t);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetPpm)(double);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_DebugEnable)(uint32_t);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_GetDevices)(mir_sdr_DeviceT *, uint32_t *, uint32_t);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_AgcControl)(u32, int, int, u32, u32, int, int);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_DCoffsetIQimbalanceControl)(u32, u32);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetPpm)(f64);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_DebugEnable)(u32);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_GetDevices)(mir_sdr_DeviceT *, u32 *, u32);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_GetCurrentGain)(mir_sdr_GainValuesT *);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_GetHwVersion)(unsigned char *);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_RSPII_AntennaControl)(mir_sdr_RSPII_AntennaSelectT);
@@ -95,14 +95,14 @@ public:
   SdrPlayHandler_v2(QSettings * s, const QString & recorderVersion);
   ~SdrPlayHandler_v2() override;
 
-  void setVFOFrequency(int32_t) override;
-  int32_t getVFOFrequency() override;
-  bool restartReader(int32_t) override;
+  void setVFOFrequency(i32) override;
+  i32 getVFOFrequency() override;
+  bool restartReader(i32) override;
   void stopReader() override;
-  int32_t getSamples(cmplx *, int32_t) override;
-  int32_t Samples() override;
+  i32 getSamples(cf32 *, i32) override;
+  i32 Samples() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   QString deviceName() override;
   void show() override;
   void hide() override;
@@ -111,13 +111,13 @@ public:
 
 
   void adjustFreq(int);
-  int32_t defaultFrequency();
+  i32 defaultFrequency();
   QPoint get_coords();
   void moveTo(QPoint);
   //
   //	The buffer should be visible by the callback function
-  RingBuffer<std::complex<int16_t>> _I_Buffer;
-  float denominator;
+  RingBuffer<std::complex<i16>> _I_Buffer;
+  f32 denominator;
 
 private:
   QFrame myFrame;
@@ -157,18 +157,18 @@ private:
   bool fetchLibrary();
   void releaseLibrary();
   QString errorCodes(mir_sdr_ErrT);
-  int16_t hwVersion;
-  uint32_t numofDevs;
-  int16_t deviceIndex;
+  i16 hwVersion;
+  u32 numofDevs;
+  i16 deviceIndex;
   bool loadFunctions();
   QSettings * sdrplaySettings;
-  int32_t inputRate;
-  int32_t vfoFrequency;
+  i32 inputRate;
+  i32 vfoFrequency;
   bool libraryLoaded;
   std::atomic<bool> running;
   HINSTANCE Handle;
   bool agcMode;
-  int16_t nrBits;
+  i16 nrBits;
 
   int lnaMax;
   FILE * xmlDumper;

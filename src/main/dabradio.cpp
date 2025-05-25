@@ -121,19 +121,19 @@ bool get_cpu_times(size_t & idle_time, size_t & total_time)
 #endif
 
 
-DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const int32_t iDataPort, QWidget * iParent)
+DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const i32 iDataPort, QWidget * iParent)
   : QWidget(iParent)
   , ui(new Ui_DabRadio)
-  , mpSpectrumBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::SpectrumBuffer).get())
-  , mpIqBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::IqBuffer).get())
-  , mpCarrBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<float>::EId::CarrBuffer).get())
-  , mpResponseBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<float>::EId::ResponseBuffer).get())
-  , mpFrameBuffer(sRingBufferFactoryUInt8.get_ringbuffer(RingBufferFactory<uint8_t>::EId::FrameBuffer).get())
-  , mpDataBuffer(sRingBufferFactoryUInt8.get_ringbuffer(RingBufferFactory<uint8_t>::EId::DataBuffer).get())
-  , mpAudioBufferFromDecoder(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioFromDecoder).get())
-  , mpAudioBufferToOutput(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::AudioToOutput).get())
-  , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
-  , mpCirBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cmplx>::EId::CirBuffer).get())
+  , mpSpectrumBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cf32>::EId::SpectrumBuffer).get())
+  , mpIqBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cf32>::EId::IqBuffer).get())
+  , mpCarrBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<f32>::EId::CarrBuffer).get())
+  , mpResponseBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<f32>::EId::ResponseBuffer).get())
+  , mpFrameBuffer(sRingBufferFactoryUInt8.get_ringbuffer(RingBufferFactory<u8>::EId::FrameBuffer).get())
+  , mpDataBuffer(sRingBufferFactoryUInt8.get_ringbuffer(RingBufferFactory<u8>::EId::DataBuffer).get())
+  , mpAudioBufferFromDecoder(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<i16>::EId::AudioFromDecoder).get())
+  , mpAudioBufferToOutput(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<i16>::EId::AudioToOutput).get())
+  , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<i16>::EId::TechDataBuffer).get())
+  , mpCirBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cf32>::EId::CirBuffer).get())
   , mSpectrumViewer(this, ipSettings, mpSpectrumBuffer, mpIqBuffer, mpCarrBuffer, mpResponseBuffer)
   , mCirViewer(mpCirBuffer)
   , mBandHandler(iFileNameAltFreqList, ipSettings)
@@ -219,10 +219,10 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
     mChannel.nextService.valid = true;
   }
 
-  mChannel.targetPos = cmplx(0, 0);
-  const float local_lat = Settings::Config::varLatitude.read().toFloat();
-  const float local_lon = Settings::Config::varLongitude.read().toFloat();
-  mChannel.localPos = cmplx(local_lat, local_lon);
+  mChannel.targetPos = cf32(0, 0);
+  const f32 local_lat = Settings::Config::varLatitude.read().toFloat();
+  const f32 local_lon = Settings::Config::varLongitude.read().toFloat();
+  mChannel.localPos = cf32(local_lat, local_lon);
 
   mConfig.cmbSoftBitGen->addItems(get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
 
@@ -256,7 +256,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   _slot_load_audio_device_list(mpAudioOutput->get_audio_device_list());
   mConfig.cmbSoundOutput->show();
 
-  if (const int32_t k = Settings::Config::cmbSoundOutput.get_combobox_index();
+  if (const i32 k = Settings::Config::cmbSoundOutput.get_combobox_index();
       k != -1)
   {
     mConfig.cmbSoundOutput->setCurrentIndex(k);
@@ -349,7 +349,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
 
   {
     const QString h = Settings::Main::varSdrDevice.read().toString();
-    const int32_t k = mConfig.deviceSelector->findText(h);
+    const i32 k = mConfig.deviceSelector->findText(h);
 
     if (k != -1)
     {
@@ -599,7 +599,7 @@ void DabRadio::_slot_channel_timeout()
 ///////////////////////////////////////////////////////////////////////////
 //
 //	a slot, called by the fic/fib handlers
-void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const uint32_t iSId)
+void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId)
 {
   if (!mIsRunning.load())
   {
@@ -613,7 +613,7 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const uint32_t
 
   qCDebug(sLogRadioInterface()) << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
 
-  const int32_t subChId = mpDabProcessor->get_sub_channel_id(iServiceName, iSId);
+  const i32 subChId = mpDabProcessor->get_sub_channel_id(iServiceName, iSId);
 
   if (subChId < 0)
   {
@@ -668,7 +668,7 @@ static QString hex_to_str(int v)
   QString res;
   for (int i = 0; i < 4; i++)
   {
-    uint8_t t = (v & 0xF000) >> 12;
+    u8 t = (v & 0xF000) >> 12;
     QChar c = t <= 9 ? (char)('0' + t) : (char)('A' + t - 10);
     res.append(c);
     v <<= 4;
@@ -797,12 +797,12 @@ void DabRadio::slot_handle_mot_object(QByteArray result, QString objectName, int
         QDir().mkpath(temp);
       }
 
-      std::vector<uint8_t> epgData(result.begin(), result.end());
-      uint32_t ensembleId = mpDabProcessor->get_ensemble_id();
-      uint32_t currentSId = extract_epg(objectName, mServiceList, ensembleId);
-      uint32_t julianDate = mpDabProcessor->get_julian_date();
+      std::vector<u8> epgData(result.begin(), result.end());
+      u32 ensembleId = mpDabProcessor->get_ensemble_id();
+      u32 currentSId = extract_epg(objectName, mServiceList, ensembleId);
+      u32 julianDate = mpDabProcessor->get_julian_date();
       int subType = getContentSubType((MOTContentType)contentType);
-      mEpgProcessor.process_epg(epgData.data(), (int32_t)epgData.size(), currentSId, subType, julianDate);
+      mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
 
       if (Settings::Config::cbGenXmlFromEpg.read().toBool())
       {
@@ -942,7 +942,7 @@ void DabRadio::write_picture(const QPixmap & iPixMap) const
 //	sendDatagram is triggered by the ip handler,
 void DabRadio::slot_send_datagram(int length)
 {
-  auto * const localBuffer = make_vla(uint8_t, length);
+  auto * const localBuffer = make_vla(u8, length);
 
   if (mpDataBuffer->get_ring_buffer_read_available() < length)
   {
@@ -959,7 +959,7 @@ void DabRadio::slot_handle_tdc_data(int frametype, int length)
 {
   qCDebug(sLogRadioInterface) << Q_FUNC_INFO << frametype << length;
 #ifdef DATA_STREAMER
-  uint8_t localBuffer [length + 8];
+  u8 localBuffer [length + 8];
 #endif
   (void)frametype;
   if (!mIsRunning.load())
@@ -1047,7 +1047,7 @@ void DabRadio::slot_change_in_configuration()
   }
 
   //	we also have to restart all background services,
-  for (uint16_t i = 0; i < mChannel.backgroundServices.size(); ++i)
+  for (u16 i = 0; i < mChannel.backgroundServices.size(); ++i)
   {
     if (const QString ss = mpDabProcessor->find_service(s.SId, s.SCIds);
         ss == "") // it is gone, close the file if any
@@ -1083,7 +1083,7 @@ void DabRadio::slot_change_in_configuration()
 //	In order to not overload with an enormous amount of
 //	signals, we trigger this function at most 10 times a second
 //
-void DabRadio::slot_new_audio(const int32_t iAmount, const uint32_t iAudioSampleRate, const uint32_t iAudioFlags)
+void DabRadio::slot_new_audio(const i32 iAmount, const u32 iAudioSampleRate, const u32 iAudioFlags)
 {
   if (!mIsRunning.load())
   {
@@ -1101,7 +1101,7 @@ void DabRadio::slot_new_audio(const int32_t iAmount, const uint32_t iAudioSample
 
     if (!mpTechDataWidget->isHidden())
     {
-      mpTechDataWidget->slot_show_sample_rate_and_audio_flags((int32_t)iAudioSampleRate, sbrUsed, psUsed);
+      mpTechDataWidget->slot_show_sample_rate_and_audio_flags((i32)iAudioSampleRate, sbrUsed, psUsed);
     }
   }
 
@@ -1127,7 +1127,7 @@ void DabRadio::slot_new_audio(const int32_t iAmount, const uint32_t iAudioSample
 
   assert((iAmount & 1) == 0); // assert that there are always a stereo pair of data
 
-  const int32_t availableBytes = mpAudioBufferFromDecoder->get_ring_buffer_read_available();
+  const i32 availableBytes = mpAudioBufferFromDecoder->get_ring_buffer_read_available();
 
   if (availableBytes >= iAmount) // should always be true when this slot method is called
   {
@@ -1170,7 +1170,7 @@ void DabRadio::slot_new_audio(const int32_t iAmount, const uint32_t iAudioSample
 #endif
   }
 
-  emit signal_audio_buffer_filled_state((int32_t)mAudioBufferFillFiltered);
+  emit signal_audio_buffer_filled_state((i32)mAudioBufferFillFiltered);
 }
 //
 
@@ -1293,9 +1293,9 @@ void DabRadio::_slot_update_time_display()
     size_t idle_time, total_time;
     if (get_cpu_times(idle_time, total_time))
     {
-      const float idle_time_delta = static_cast<float>(idle_time - mPreviousIdleTime);
-      const float total_time_delta = static_cast<float>(total_time - mPreviousTotalTime);
-      const float utilization = 100.0f * (1.0f - idle_time_delta / total_time_delta);
+      const f32 idle_time_delta = static_cast<f32>(idle_time - mPreviousIdleTime);
+      const f32 total_time_delta = static_cast<f32>(total_time - mPreviousTotalTime);
+      const f32 utilization = 100.0f * (1.0f - idle_time_delta / total_time_delta);
       mConfig.cpuMonitor->display(QString("%1").arg(utilization, 0, 'f', 2));
       mPreviousIdleTime = idle_time;
       mPreviousTotalTime = total_time;
@@ -1491,7 +1491,7 @@ void DabRadio::slot_show_fic_success(bool b)
   }
 }
 
-void DabRadio::slot_show_fic_ber(float ber)
+void DabRadio::slot_show_fic_ber(f32 ber)
 {
   if (!mIsRunning.load())
     return;
@@ -1585,8 +1585,8 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   }
 
   const bool isDropDownVisible = ui->cmbTiiList->view()->isVisible();
-  const float ownLatitude = real(mChannel.localPos);
-  const float ownLongitude = imag(mChannel.localPos);
+  const f32 ownLatitude = real(mChannel.localPos);
+  const f32 ownLongitude = imag(mChannel.localPos);
   const bool ownCoordinatesSet = (ownLatitude != 0.0f && ownLongitude != 0.0f);
 
   if (mShowTiiListWindow)
@@ -1608,7 +1608,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   mTransmitterIds = iTiiList;
   SCacheElem tr_fb; // fallback data storage, if no database entry was found
 
-  for (uint32_t index = 0; index < mTransmitterIds.size(); index++)
+  for (u32 index = 0; index < mTransmitterIds.size(); index++)
   {
     const STiiResult & tii = mTransmitterIds[index];
 
@@ -1715,7 +1715,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   }
 }
 
-void DabRadio::slot_show_spectrum(int32_t /*amount*/)
+void DabRadio::slot_show_spectrum(i32 /*amount*/)
 {
   if (!mIsRunning.load())
   {
@@ -1735,7 +1735,7 @@ void DabRadio::slot_show_cir()
   mCirViewer.show_cir();
 }
 
-void DabRadio::slot_show_iq(int iAmount, float iAvg)
+void DabRadio::slot_show_iq(int iAmount, f32 iAvg)
 {
   if (!mIsRunning.load())
   {
@@ -1758,7 +1758,7 @@ void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData * pQD)
   }
 }
 
-void DabRadio::slot_show_digital_peak_level(float iPeakLevel)
+void DabRadio::slot_show_digital_peak_level(f32 iPeakLevel)
 {
   if (!mIsRunning.load())
   {
@@ -1787,7 +1787,7 @@ void DabRadio::slot_show_rs_corrections(int c, int ec)
 
 //
 //	called from the DAB processor
-void DabRadio::slot_show_clock_error(float e)
+void DabRadio::slot_show_clock_error(f32 e)
 {
   if (!mIsRunning.load())
   {
@@ -1801,7 +1801,7 @@ void DabRadio::slot_show_clock_error(float e)
 
 //
 //	called from the phasesynchronizer
-void DabRadio::slot_show_correlation(float threshold, const QVector<int> & v)
+void DabRadio::slot_show_correlation(f32 threshold, const QVector<int> & v)
 {
   if (!mIsRunning.load())
   {
@@ -2065,7 +2065,7 @@ void DabRadio::start_frame_dumping()
 //	called from the mp4 handler, using a signal
 void DabRadio::slot_new_frame(int amount)
 {
-  auto * const buffer = make_vla(uint8_t, amount);
+  auto * const buffer = make_vla(u8, amount);
   if (!mIsRunning.load())
   {
     return;
@@ -2355,7 +2355,7 @@ void DabRadio::stop_service(SDabService & ioDabService)
     {
       emit signal_stop_audio();
 
-      for (int32_t i = 0; i < 5; ++i) // TODO: from where the 5?
+      for (i32 i = 0; i < 5; ++i) // TODO: from where the 5?
       {
         Packetdata pd;
         mpDabProcessor->get_data_for_packet_service(ioDabService.serviceName, &pd, i);
@@ -2460,7 +2460,7 @@ void DabRadio::start_audio_service(const Audiodata * const ipAD)
   ui->programTypeLabel->setText(getProgramType(ipAD->programType));
   //	show service related data
   mpTechDataWidget->show_serviceData(ipAD);
-  _set_status_info_status(mStatusInfo.InpBitRate, (int32_t)(ipAD->bitRate));
+  _set_status_info_status(mStatusInfo.InpBitRate, (i32)(ipAD->bitRate));
 }
 
 void DabRadio::start_packet_service(const QString & iS)
@@ -2612,9 +2612,9 @@ void DabRadio::write_warning_message(const QString & iMsg)
 //
 void DabRadio::start_channel(const QString & iChannel)
 {
-  const int32_t tunedFrequencyHz = mChannel.realChannel ? mBandHandler.get_frequency_Hz(iChannel) : mpInputDevice->getVFOFrequency();
+  const i32 tunedFrequencyHz = mChannel.realChannel ? mBandHandler.get_frequency_Hz(iChannel) : mpInputDevice->getVFOFrequency();
   LOG("channel starts ", iChannel);
-  mSpectrumViewer.show_nominal_frequency_MHz((float)tunedFrequencyHz / 1'000'000.0f);
+  mSpectrumViewer.show_nominal_frequency_MHz((f32)tunedFrequencyHz / 1'000'000.0f);
   mpInputDevice->resetBuffer();
   mServiceList.clear();
   mpInputDevice->restartReader(tunedFrequencyHz);
@@ -2704,7 +2704,7 @@ void DabRadio::stop_channel()
   mPresetTimer.stop();
   mChannelTimer.stop();
   mChannel.clean_channel();
-  mChannel.targetPos = cmplx(0, 0);
+  mChannel.targetPos = cf32(0, 0);
   if (mpHttpHandler != nullptr)
   {
     SCacheElem theTransmitter;
@@ -3092,7 +3092,7 @@ void DabRadio::slot_epg_timer_timeout()
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 
-uint32_t DabRadio::extract_epg(const QString& iName, const std::vector<SServiceId> & iServiceList, uint32_t ensembleId)
+u32 DabRadio::extract_epg(const QString& iName, const std::vector<SServiceId> & iServiceList, u32 ensembleId)
 {
   (void)ensembleId;
   for (const auto & serv: iServiceList)
@@ -3264,9 +3264,9 @@ void DabRadio::slot_handle_set_coordinates_button()
 {
   Coordinates theCoordinator;
   (void)theCoordinator.QDialog::exec();
-  const float local_lat = Settings::Config::varLatitude.read().toFloat();
-  const float local_lon = Settings::Config::varLongitude.read().toFloat();
-  mChannel.localPos = cmplx(local_lat, local_lon);
+  const f32 local_lat = Settings::Config::varLatitude.read().toFloat();
+  const f32 local_lon = Settings::Config::varLongitude.read().toFloat();
+  mChannel.localPos = cf32(local_lat, local_lon);
 }
 
 void DabRadio::slot_load_table()
@@ -3479,13 +3479,13 @@ QStringList DabRadio::get_soft_bit_gen_names()
 
 QString DabRadio::get_bg_style_sheet(const QColor & iBgBaseColor, const char * const iWidgetType /*= nullptr*/)
 {
-  const float fac = 0.6f;
-  const int32_t r1 = iBgBaseColor.red();
-  const int32_t g1 = iBgBaseColor.green();
-  const int32_t b1 = iBgBaseColor.blue();
-  const int32_t r2 = (int32_t)((float)r1 * fac);
-  const int32_t g2 = (int32_t)((float)g1 * fac);
-  const int32_t b2 = (int32_t)((float)b1 * fac);
+  const f32 fac = 0.6f;
+  const i32 r1 = iBgBaseColor.red();
+  const i32 g1 = iBgBaseColor.green();
+  const i32 b1 = iBgBaseColor.blue();
+  const i32 r2 = (i32)((f32)r1 * fac);
+  const i32 g2 = (i32)((f32)g1 * fac);
+  const i32 b2 = (i32)((f32)b1 * fac);
   assert(r2 >= 0);
   assert(g2 >= 0);
   assert(b2 >= 0);
@@ -3588,7 +3588,7 @@ void DabRadio::_create_status_info()
 }
 
 template<typename T>
-void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const uint32_t iColor, const QString & iName, const QString & iToolTip)
+void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
 {
   ioElem.colorOn = iColor;
   ioElem.colorOff = 0x444444;
@@ -3617,8 +3617,8 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue
     iElem.pLbl->setStyleSheet(iElem.value ? "QLabel { color: " + iElem.colorOn.name() + " }"
                                           : "QLabel { color: " + iElem.colorOff.name() + " }");
 
-    // trick a bit: int32_t are bit rates, uint32_t are sample rates
-    if (std::is_same<T, int32_t>::value)
+    // trick a bit: i32 are bit rates, u32 are sample rates
+    if (std::is_same<T, i32>::value)
     {
       if (iElem.value == 0)
       {
@@ -3629,7 +3629,7 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue
         iElem.pLbl->setText(QString::number(iValue) + " kbps"); // not clean to place the unit here but it is the only one yet
       }
     }
-    else if (std::is_same<T, uint32_t>::value)
+    else if (std::is_same<T, u32>::value)
     {
       if (iElem.value == 0)
       {
@@ -3645,8 +3645,8 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue
 
 void DabRadio::_reset_status_info()
 {
-  _set_status_info_status(mStatusInfo.InpBitRate, (int32_t)0);
-  _set_status_info_status(mStatusInfo.OutSampRate, (uint32_t)0);
+  _set_status_info_status(mStatusInfo.InpBitRate, (i32)0);
+  _set_status_info_status(mStatusInfo.OutSampRate, (u32)0);
   _set_status_info_status(mStatusInfo.Stereo, false);
   _set_status_info_status(mStatusInfo.EPG, false);
   _set_status_info_status(mStatusInfo.SBR, false);
@@ -3674,7 +3674,7 @@ void DabRadio::_set_device_to_file_mode(const bool iDataFromFile)
   }
 }
 
-void DabRadio::_setup_audio_output(const uint32_t iSampleRate)
+void DabRadio::_setup_audio_output(const u32 iSampleRate)
 {
   mpAudioBufferFromDecoder->flush_ring_buffer();
   mpAudioBufferToOutput->flush_ring_buffer();
@@ -3682,7 +3682,7 @@ void DabRadio::_setup_audio_output(const uint32_t iSampleRate)
   mpCurAudioFifo->sampleRate = iSampleRate;
   mpCurAudioFifo->pRingbuffer = mpAudioBufferToOutput;
 
-  _set_status_info_status(mStatusInfo.OutSampRate, (uint32_t)(iSampleRate / 1000));
+  _set_status_info_status(mStatusInfo.OutSampRate, (u32)(iSampleRate / 1000));
 
   if (mPlaybackState == EPlaybackState::Running)
   {
@@ -3719,9 +3719,9 @@ void DabRadio::_slot_handle_volume_slider(const int iSliderValue)
   mpAudioOutput->slot_setVolume(iSliderValue);
 }
 
-void DabRadio::slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight)
+void DabRadio::slot_show_audio_peak_level(const f32 iPeakLeft, const f32 iPeakRight)
 {
-  auto decay = [](float iPeak, float & ioPeakAvr) -> void
+  auto decay = [](f32 iPeak, f32 & ioPeakAvr) -> void
   {
     ioPeakAvr = (iPeak >= ioPeakAvr ? iPeak : ioPeakAvr - 0.5f /*decay*/);
   };

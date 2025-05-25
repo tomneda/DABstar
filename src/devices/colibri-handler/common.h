@@ -17,7 +17,7 @@ typedef enum {
     Sr_3072kHz,
 } SampleRateIndex;
 
-typedef bool (*pCallbackRx)(cmplx *, uint32_t, bool, void *);
+typedef bool (*pCallbackRx)(cf32 *, u32, bool, void *);
 
 
 #endif // COMMON_H

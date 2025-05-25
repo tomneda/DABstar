@@ -195,7 +195,7 @@ typedef int64x2_t __m128i; /* 128-bit vector containing integers */
 // union intended to allow direct access to an __m128 variable using the names
 // that the MSVC compiler provides.  This union should really only be used when
 // trying to access the members of the vector as integer values.  GCC/clang
-// allow native access to the float members through a simple array access
+// allow native access to the f32 members through a simple array access
 // operator (in C since 4.6, in C++ since 4.8).
 //
 // Ideally direct accesses to SIMD vectors should not be used since it can cause
@@ -205,15 +205,15 @@ typedef int64x2_t __m128i; /* 128-bit vector containing integers */
 // that is used throughout the codebase to access the members instead of always
 // declaring this type of variable.
 typedef union ALIGN_STRUCT(16) SIMDVec {
-    float m128_f32[4];     // as floats - DON'T USE. Added for convenience.
-    int8_t m128_i8[16];    // as signed 8-bit integers.
-    int16_t m128_i16[8];   // as signed 16-bit integers.
-    int32_t m128_i32[4];   // as signed 32-bit integers.
-    int64_t m128_i64[2];   // as signed 64-bit integers.
-    uint8_t m128_u8[16];   // as unsigned 8-bit integers.
-    uint16_t m128_u16[8];  // as unsigned 16-bit integers.
-    uint32_t m128_u32[4];  // as unsigned 32-bit integers.
-    uint64_t m128_u64[2];  // as unsigned 64-bit integers.
+    f32 m128_f32[4];     // as floats - DON'T USE. Added for convenience.
+    i8 m128_i8[16];    // as signed 8-bit integers.
+    i16 m128_i16[8];   // as signed 16-bit integers.
+    i32 m128_i32[4];   // as signed 32-bit integers.
+    i64 m128_i64[2];   // as signed 64-bit integers.
+    u8 m128_u8[16];   // as unsigned 8-bit integers.
+    u16 m128_u16[8];  // as unsigned 16-bit integers.
+    u32 m128_u32[4];  // as unsigned 32-bit integers.
+    u64 m128_u64[2];  // as unsigned 64-bit integers.
 } SIMDVec;
 
 // casting using SIMDVec
@@ -225,7 +225,7 @@ typedef union ALIGN_STRUCT(16) SIMDVec {
 // Older gcc does not define vld1q_u8_x4 type
 #if defined(__GNUC__) && !defined(__clang__)
 #if __GNUC__ <= 9
-FORCE_INLINE uint8x16x4_t vld1q_u8_x4(const uint8_t *p)
+FORCE_INLINE uint8x16x4_t vld1q_u8_x4(const u8 *p)
 {
     uint8x16x4_t ret;
     ret.val[0] = vld1q_u8(p + 0);
@@ -249,7 +249,7 @@ FORCE_INLINE uint8x16x4_t vld1q_u8_x4(const uint8_t *p)
  * This last part, <data_type>, is a little complicated. It identifies the
  * content of the input values, and can be set to any of the following values:
  * + ps - vectors contain floats (ps stands for packed single-precision)
- * + pd - vectors cantain doubles (pd stands for packed double-precision)
+ * + pd - vectors cantain doubles (pd stands for packed f64-precision)
  * + epi8/epi16/epi32/epi64 - vectors contain 8-bit/16-bit/32-bit/64-bit
  *                            signed integers
  * + epu8/epu16/epu32/epu64 - vectors contain 8-bit/16-bit/32-bit/64-bit
@@ -338,7 +338,7 @@ FORCE_INLINE void _mm_prefetch(const void *p, int i)
 
 // extracts the lower order floating point value from the parameter :
 // https://msdn.microsoft.com/en-us/library/bb514059%28v=vs.120%29.aspx?f=255&MSPPError=-2147217396
-FORCE_INLINE float _mm_cvtss_f32(__m128 a)
+FORCE_INLINE f32 _mm_cvtss_f32(__m128 a)
 {
     return vgetq_lane_f32(vreinterpretq_f32_m128(a), 0);
 }
@@ -362,41 +362,41 @@ FORCE_INLINE __m128 _mm_setzero_ps(void)
 //   r0 := r1 := r2 := r3 := w
 //
 // https://msdn.microsoft.com/en-us/library/vstudio/2x1se8ha(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_set1_ps(float _w)
+FORCE_INLINE __m128 _mm_set1_ps(f32 _w)
 {
     return vreinterpretq_m128_f32(vdupq_n_f32(_w));
 }
 
 // Sets the four single-precision, floating-point values to w.
 // https://msdn.microsoft.com/en-us/library/vstudio/2x1se8ha(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_set_ps1(float _w)
+FORCE_INLINE __m128 _mm_set_ps1(f32 _w)
 {
     return vreinterpretq_m128_f32(vdupq_n_f32(_w));
 }
 
 // Sets the four single-precision, floating-point values to the four inputs.
 // https://msdn.microsoft.com/en-us/library/vstudio/afh0zf75(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_set_ps(float w, float z, float y, float x)
+FORCE_INLINE __m128 _mm_set_ps(f32 w, f32 z, f32 y, f32 x)
 {
-    float ALIGN_STRUCT(16) data[4] = {x, y, z, w};
+    f32 ALIGN_STRUCT(16) data[4] = {x, y, z, w};
     return vreinterpretq_m128_f32(vld1q_f32(data));
 }
 
 // Copy single-precision (32-bit) floating-point element a to the lower element
 // of dst, and zero the upper 3 elements.
 // https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_set_ss&expand=4901,4895,4901
-FORCE_INLINE __m128 _mm_set_ss(float a)
+FORCE_INLINE __m128 _mm_set_ss(f32 a)
 {
-    float ALIGN_STRUCT(16) data[4] = {a, 0, 0, 0};
+    f32 ALIGN_STRUCT(16) data[4] = {a, 0, 0, 0};
     return vreinterpretq_m128_f32(vld1q_f32(data));
 }
 
 // Sets the four single-precision, floating-point values to the four inputs in
 // reverse order.
 // https://msdn.microsoft.com/en-us/library/vstudio/d2172ct3(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_setr_ps(float w, float z, float y, float x)
+FORCE_INLINE __m128 _mm_setr_ps(f32 w, f32 z, f32 y, f32 x)
 {
-    float ALIGN_STRUCT(16) data[4] = {w, z, y, x};
+    f32 ALIGN_STRUCT(16) data[4] = {w, z, y, x};
     return vreinterpretq_m128_f32(vld1q_f32(data));
 }
 
@@ -416,15 +416,15 @@ FORCE_INLINE __m128i _mm_setr_epi16(short w0,
                                     short w6,
                                     short w7)
 {
-    int16_t ALIGN_STRUCT(16) data[8] = {w0, w1, w2, w3, w4, w5, w6, w7};
-    return vreinterpretq_m128i_s16(vld1q_s16((int16_t *) data));
+    i16 ALIGN_STRUCT(16) data[8] = {w0, w1, w2, w3, w4, w5, w6, w7};
+    return vreinterpretq_m128i_s16(vld1q_s16((i16 *) data));
 }
 
 // Sets the 4 signed 32-bit integer values in reverse order
 // https://technet.microsoft.com/en-us/library/security/27yb3ee5(v=vs.90).aspx
 FORCE_INLINE __m128i _mm_setr_epi32(int i3, int i2, int i1, int i0)
 {
-    int32_t ALIGN_STRUCT(16) data[4] = {i3, i2, i1, i0};
+    i32 ALIGN_STRUCT(16) data[4] = {i3, i2, i1, i0};
     return vreinterpretq_m128i_s32(vld1q_s32(data));
 }
 
@@ -473,11 +473,11 @@ FORCE_INLINE __m128i _mm_set_epi8(signed char b15,
                                   signed char b1,
                                   signed char b0)
 {
-    int8_t ALIGN_STRUCT(16)
-        data[16] = {(int8_t) b0,  (int8_t) b1,  (int8_t) b2,  (int8_t) b3,
-                    (int8_t) b4,  (int8_t) b5,  (int8_t) b6,  (int8_t) b7,
-                    (int8_t) b8,  (int8_t) b9,  (int8_t) b10, (int8_t) b11,
-                    (int8_t) b12, (int8_t) b13, (int8_t) b14, (int8_t) b15};
+    i8 ALIGN_STRUCT(16)
+        data[16] = {(i8) b0,  (i8) b1,  (i8) b2,  (i8) b3,
+                    (i8) b4,  (i8) b5,  (i8) b6,  (i8) b7,
+                    (i8) b8,  (i8) b9,  (i8) b10, (i8) b11,
+                    (i8) b12, (i8) b13, (i8) b14, (i8) b15};
     return (__m128i) vld1q_s8(data);
 }
 
@@ -492,7 +492,7 @@ FORCE_INLINE __m128i _mm_set_epi16(short i7,
                                    short i1,
                                    short i0)
 {
-    int16_t ALIGN_STRUCT(16) data[8] = {i0, i1, i2, i3, i4, i5, i6, i7};
+    i16 ALIGN_STRUCT(16) data[8] = {i0, i1, i2, i3, i4, i5, i6, i7};
     return vreinterpretq_m128i_s16(vld1q_s16(data));
 }
 
@@ -515,11 +515,11 @@ FORCE_INLINE __m128i _mm_setr_epi8(signed char b0,
                                    signed char b14,
                                    signed char b15)
 {
-    int8_t ALIGN_STRUCT(16)
-        data[16] = {(int8_t) b0,  (int8_t) b1,  (int8_t) b2,  (int8_t) b3,
-                    (int8_t) b4,  (int8_t) b5,  (int8_t) b6,  (int8_t) b7,
-                    (int8_t) b8,  (int8_t) b9,  (int8_t) b10, (int8_t) b11,
-                    (int8_t) b12, (int8_t) b13, (int8_t) b14, (int8_t) b15};
+    i8 ALIGN_STRUCT(16)
+        data[16] = {(i8) b0,  (i8) b1,  (i8) b2,  (i8) b3,
+                    (i8) b4,  (i8) b5,  (i8) b6,  (i8) b7,
+                    (i8) b8,  (i8) b9,  (i8) b10, (i8) b11,
+                    (i8) b12, (i8) b13, (i8) b14, (i8) b15};
     return (__m128i) vld1q_s8(data);
 }
 
@@ -538,14 +538,14 @@ FORCE_INLINE __m128i _mm_set1_epi32(int _i)
 
 // Sets the 2 signed 64-bit integer values to i.
 // https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/whtfzhzk(v=vs.100)
-FORCE_INLINE __m128i _mm_set1_epi64(int64_t _i)
+FORCE_INLINE __m128i _mm_set1_epi64(i64 _i)
 {
     return vreinterpretq_m128i_s64(vdupq_n_s64(_i));
 }
 
 // Sets the 2 signed 64-bit integer values to i.
 // https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_set1_epi64x&expand=4961
-FORCE_INLINE __m128i _mm_set1_epi64x(int64_t _i)
+FORCE_INLINE __m128i _mm_set1_epi64x(i64 _i)
 {
     return vreinterpretq_m128i_s64(vdupq_n_s64(_i));
 }
@@ -554,29 +554,29 @@ FORCE_INLINE __m128i _mm_set1_epi64x(int64_t _i)
 // https://msdn.microsoft.com/en-us/library/vstudio/019beekt(v=vs.100).aspx
 FORCE_INLINE __m128i _mm_set_epi32(int i3, int i2, int i1, int i0)
 {
-    int32_t ALIGN_STRUCT(16) data[4] = {i0, i1, i2, i3};
+    i32 ALIGN_STRUCT(16) data[4] = {i0, i1, i2, i3};
     return vreinterpretq_m128i_s32(vld1q_s32(data));
 }
 
 // Returns the __m128i structure with its two 64-bit integer values
 // initialized to the values of the two 64-bit integers passed in.
 // https://msdn.microsoft.com/en-us/library/dk2sdw0h(v=vs.120).aspx
-FORCE_INLINE __m128i _mm_set_epi64x(int64_t i1, int64_t i2)
+FORCE_INLINE __m128i _mm_set_epi64x(i64 i1, i64 i2)
 {
-    int64_t ALIGN_STRUCT(16) data[2] = {i2, i1};
+    i64 ALIGN_STRUCT(16) data[2] = {i2, i1};
     return vreinterpretq_m128i_s64(vld1q_s64(data));
 }
 
 // Stores four single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/vstudio/s3h4ay6y(v=vs.100).aspx
-FORCE_INLINE void _mm_store_ps(float *p, __m128 a)
+FORCE_INLINE void _mm_store_ps(f32 *p, __m128 a)
 {
     vst1q_f32(p, vreinterpretq_f32_m128(a));
 }
 
 // Stores four single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/44e30x22(v=vs.100).aspx
-FORCE_INLINE void _mm_storeu_ps(float *p, __m128 a)
+FORCE_INLINE void _mm_storeu_ps(f32 *p, __m128 a)
 {
     vst1q_f32(p, vreinterpretq_f32_m128(a));
 }
@@ -585,19 +585,19 @@ FORCE_INLINE void _mm_storeu_ps(float *p, __m128 a)
 // https://msdn.microsoft.com/en-us/library/vstudio/edk11s13(v=vs.100).aspx
 FORCE_INLINE void _mm_store_si128(__m128i *p, __m128i a)
 {
-    vst1q_s32((int32_t *) p, vreinterpretq_s32_m128i(a));
+    vst1q_s32((i32 *) p, vreinterpretq_s32_m128i(a));
 }
 
 // Stores four 32-bit integer values as (as a __m128i value) at the address p.
 // https://msdn.microsoft.com/en-us/library/vstudio/edk11s13(v=vs.100).aspx
 FORCE_INLINE void _mm_storeu_si128(__m128i *p, __m128i a)
 {
-    vst1q_s32((int32_t *) p, vreinterpretq_s32_m128i(a));
+    vst1q_s32((i32 *) p, vreinterpretq_s32_m128i(a));
 }
 
 // Stores the lower single - precision, floating - point value.
 // https://msdn.microsoft.com/en-us/library/tzz10fbx(v=vs.100).aspx
-FORCE_INLINE void _mm_store_ss(float *p, __m128 a)
+FORCE_INLINE void _mm_store_ss(f32 *p, __m128 a)
 {
     vst1q_lane_f32(p, vreinterpretq_f32_m128(a), 0);
 }
@@ -638,7 +638,7 @@ FORCE_INLINE void _mm_storeh_pi(__m64 *p, __m128 a)
 // Loads a single single-precision, floating-point value, copying it into all
 // four words
 // https://msdn.microsoft.com/en-us/library/vstudio/5cdkf716(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_load1_ps(const float *p)
+FORCE_INLINE __m128 _mm_load1_ps(const f32 *p)
 {
     return vreinterpretq_m128_f32(vld1q_dup_f32(p));
 }
@@ -679,31 +679,31 @@ FORCE_INLINE __m128 _mm_loadh_pi(__m128 a, __m64 const *p)
 
 // Loads four single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/vstudio/zzd50xxt(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_load_ps(const float *p)
+FORCE_INLINE __m128 _mm_load_ps(const f32 *p)
 {
     return vreinterpretq_m128_f32(vld1q_f32(p));
 }
 
 // Loads four single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/x1b16s7z%28v=vs.90%29.aspx
-FORCE_INLINE __m128 _mm_loadu_ps(const float *p)
+FORCE_INLINE __m128 _mm_loadu_ps(const f32 *p)
 {
     // for neon, alignment doesn't matter, so _mm_load_ps and _mm_loadu_ps are
     // equivalent for neon
     return vreinterpretq_m128_f32(vld1q_f32(p));
 }
 
-// Loads a double-precision, floating-point value.
-// The upper double-precision, floating-point is set to zero. The address p does
+// Loads a f64-precision, floating-point value.
+// The upper f64-precision, floating-point is set to zero. The address p does
 // not need to be 16-byte aligned.
 // https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/574w9fdd(v%3dvs.100)
-FORCE_INLINE __m128d _mm_load_sd(const double *p)
+FORCE_INLINE __m128d _mm_load_sd(const f64 *p)
 {
 #if defined(__aarch64__)
     return vsetq_lane_f64(*p, vdupq_n_f64(0), 0);
 #else
-    const float *fp = (const float *) p;
-    float ALIGN_STRUCT(16) data[4] = {fp[0], fp[1], 0, 0};
+    const f32 *fp = (const f32 *) p;
+    f32 ALIGN_STRUCT(16) data[4] = {fp[0], fp[1], 0, 0};
     return vld1q_f32(data);
 #endif
 }
@@ -711,7 +711,7 @@ FORCE_INLINE __m128d _mm_load_sd(const double *p)
 // Loads an single - precision, floating - point value into the low word and
 // clears the upper three words.
 // https://msdn.microsoft.com/en-us/library/548bb9h4%28v=vs.90%29.aspx
-FORCE_INLINE __m128 _mm_load_ss(const float *p)
+FORCE_INLINE __m128 _mm_load_ss(const f32 *p)
 {
     return vreinterpretq_m128_f32(vsetq_lane_f32(*p, vdupq_n_f32(0), 0));
 }
@@ -722,7 +722,7 @@ FORCE_INLINE __m128i _mm_loadl_epi64(__m128i const *p)
      * lower 64 bits of the result, zeroing the upper 64 bits of the result.
      */
     return vreinterpretq_m128i_s32(
-        vcombine_s32(vld1_s32((int32_t const *) p), vcreate_s32(0)));
+        vcombine_s32(vld1_s32((i32 const *) p), vcreate_s32(0)));
 }
 
 /* Logic/Binary operations */
@@ -1425,7 +1425,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
 //                                      __constrange(0,255) int imm)
 #define _mm_blend_epi16(a, b, imm)                                        \
     __extension__({                                                       \
-        const uint16_t _mask[8] = {((imm) & (1 << 0)) ? 0xFFFF : 0x0000,  \
+        const u16 _mask[8] = {((imm) & (1 << 0)) ? 0xFFFF : 0x0000,  \
                                    ((imm) & (1 << 1)) ? 0xFFFF : 0x0000,  \
                                    ((imm) & (1 << 2)) ? 0xFFFF : 0x0000,  \
                                    ((imm) & (1 << 3)) ? 0xFFFF : 0x0000,  \
@@ -1674,11 +1674,11 @@ FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int count)
 // https://msdn.microsoft.com/en-us/library/c79w388h(v%3dvs.90).aspx
 FORCE_INLINE __m128i _mm_sll_epi16(__m128i a, __m128i count)
 {
-    uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
+    u64 c = vreinterpretq_nth_u64_m128i(count, 0);
     if (c > 15)
         return _mm_setzero_si128();
 
-    int16x8_t vc = vdupq_n_s16((int16_t) c);
+    int16x8_t vc = vdupq_n_s16((i16) c);
     return vreinterpretq_m128i_s16(vshlq_s16(vreinterpretq_s16_m128i(a), vc));
 }
 
@@ -1693,11 +1693,11 @@ FORCE_INLINE __m128i _mm_sll_epi16(__m128i a, __m128i count)
 // https://msdn.microsoft.com/en-us/library/6fe5a6s9(v%3dvs.90).aspx
 FORCE_INLINE __m128i _mm_sll_epi32(__m128i a, __m128i count)
 {
-    uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
+    u64 c = vreinterpretq_nth_u64_m128i(count, 0);
     if (c > 31)
         return _mm_setzero_si128();
 
-    int32x4_t vc = vdupq_n_s32((int32_t) c);
+    int32x4_t vc = vdupq_n_s32((i32) c);
     return vreinterpretq_m128i_s32(vshlq_s32(vreinterpretq_s32_m128i(a), vc));
 }
 
@@ -1710,11 +1710,11 @@ FORCE_INLINE __m128i _mm_sll_epi32(__m128i a, __m128i count)
 // https://msdn.microsoft.com/en-us/library/6ta9dffd(v%3dvs.90).aspx
 FORCE_INLINE __m128i _mm_sll_epi64(__m128i a, __m128i count)
 {
-    uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
+    u64 c = vreinterpretq_nth_u64_m128i(count, 0);
     if (c > 63)
         return _mm_setzero_si128();
 
-    int64x2_t vc = vdupq_n_s64((int64_t) c);
+    int64x2_t vc = vdupq_n_s64((i64) c);
     return vreinterpretq_m128i_s64(vshlq_s64(vreinterpretq_s64_m128i(a), vc));
 }
 
@@ -1729,11 +1729,11 @@ FORCE_INLINE __m128i _mm_sll_epi64(__m128i a, __m128i count)
 // https://msdn.microsoft.com/en-us/library/wd5ax830(v%3dvs.90).aspx
 FORCE_INLINE __m128i _mm_srl_epi16(__m128i a, __m128i count)
 {
-    uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
+    u64 c = vreinterpretq_nth_u64_m128i(count, 0);
     if (c > 15)
         return _mm_setzero_si128();
 
-    int16x8_t vc = vdupq_n_s16(-(int16_t) c);
+    int16x8_t vc = vdupq_n_s16(-(i16) c);
     return vreinterpretq_m128i_u16(vshlq_u16(vreinterpretq_u16_m128i(a), vc));
 }
 
@@ -1748,11 +1748,11 @@ FORCE_INLINE __m128i _mm_srl_epi16(__m128i a, __m128i count)
 // https://msdn.microsoft.com/en-us/library/a9cbttf4(v%3dvs.90).aspx
 FORCE_INLINE __m128i _mm_srl_epi32(__m128i a, __m128i count)
 {
-    uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
+    u64 c = vreinterpretq_nth_u64_m128i(count, 0);
     if (c > 31)
         return _mm_setzero_si128();
 
-    int32x4_t vc = vdupq_n_s32(-(int32_t) c);
+    int32x4_t vc = vdupq_n_s32(-(i32) c);
     return vreinterpretq_m128i_u32(vshlq_u32(vreinterpretq_u32_m128i(a), vc));
 }
 
@@ -1765,11 +1765,11 @@ FORCE_INLINE __m128i _mm_srl_epi32(__m128i a, __m128i count)
 // https://msdn.microsoft.com/en-us/library/yf6cf9k8(v%3dvs.90).aspx
 FORCE_INLINE __m128i _mm_srl_epi64(__m128i a, __m128i count)
 {
-    uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
+    u64 c = vreinterpretq_nth_u64_m128i(count, 0);
     if (c > 63)
         return _mm_setzero_si128();
 
-    int64x2_t vc = vdupq_n_s64(-(int64_t) c);
+    int64x2_t vc = vdupq_n_s64(-(i64) c);
     return vreinterpretq_m128i_u64(vshlq_u64(vreinterpretq_u64_m128i(a), vc));
 }
 
@@ -1781,7 +1781,7 @@ FORCE_INLINE int _mm_movemask_epi8(__m128i a)
 {
 #if defined(__aarch64__)
     uint8x16_t input = vreinterpretq_u8_m128i(a);
-    const int8_t ALIGN_STRUCT(16)
+    const i8 ALIGN_STRUCT(16)
         xr[16] = {-7, -6, -5, -4, -3, -2, -1, 0, -7, -6, -5, -4, -3, -2, -1, 0};
     const uint8x16_t mask_and = vdupq_n_u8(0x80);
     const int8x16_t mask_shift = vld1q_s8(xr);
@@ -2296,8 +2296,8 @@ FORCE_INLINE __m128i _mm_mul_epu32(__m128i a, __m128i b)
 // Multiply the low signed 32-bit integers from each packed 64-bit element in
 // a and b, and store the signed 64-bit results in dst.
 //
-//   r0 :=  (int64_t)(int32_t)a0 * (int64_t)(int32_t)b0
-//   r1 :=  (int64_t)(int32_t)a2 * (int64_t)(int32_t)b2
+//   r0 :=  (i64)(i32)a0 * (i64)(i32)b0
+//   r1 :=  (i64)(i32)a2 * (i64)(i32)b2
 FORCE_INLINE __m128i _mm_mul_epi32(__m128i a, __m128i b)
 {
     // vmull_s32 upcasts instead of masking, so we downcast.
@@ -2331,11 +2331,11 @@ FORCE_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b)
 // signed 32-bit integers. Shift right by 15 bits while rounding up, and store
 // the packed 16-bit integers in dst.
 //
-//   r0 := Round(((int32_t)a0 * (int32_t)b0) >> 15)
-//   r1 := Round(((int32_t)a1 * (int32_t)b1) >> 15)
-//   r2 := Round(((int32_t)a2 * (int32_t)b2) >> 15)
+//   r0 := Round(((i32)a0 * (i32)b0) >> 15)
+//   r1 := Round(((i32)a1 * (i32)b1) >> 15)
+//   r2 := Round(((i32)a2 * (i32)b2) >> 15)
 //   ...
-//   r7 := Round(((int32_t)a7 * (int32_t)b7) >> 15)
+//   r7 := Round(((i32)a7 * (i32)b7) >> 15)
 FORCE_INLINE __m128i _mm_mulhrs_epi16(__m128i a, __m128i b)
 {
     // Has issues due to saturation
@@ -2348,7 +2348,7 @@ FORCE_INLINE __m128i _mm_mulhrs_epi16(__m128i a, __m128i b)
                                  vget_high_s16(vreinterpretq_s16_m128i(b)));
 
     // Rounding narrowing shift right
-    // narrow = (int16_t)((mul + 16384) >> 15);
+    // narrow = (i16)((mul + 16384) >> 15);
     int16x4_t narrow_lo = vrshrn_n_s32(mul_lo, 15);
     int16x4_t narrow_hi = vrshrn_n_s32(mul_hi, 15);
 
@@ -2408,8 +2408,8 @@ FORCE_INLINE __m128i _mm_maddubs_epi16(__m128i _a, __m128i _b)
 FORCE_INLINE __m128i _mm_sad_epu8(__m128i a, __m128i b)
 {
     uint16x8_t t = vpaddlq_u8(vabdq_u8((uint8x16_t) a, (uint8x16_t) b));
-    uint16_t r0 = t[0] + t[1] + t[2] + t[3];
-    uint16_t r4 = t[4] + t[5] + t[6] + t[7];
+    u16 r0 = t[0] + t[1] + t[2] + t[3];
+    u16 r4 = t[4] + t[5] + t[6] + t[7];
     uint16x8_t r = vsetq_lane_u16(r0, vdupq_n_u16(0), 0);
     return (__m128i) vsetq_lane_u16(r4, r, 4);
 }
@@ -3237,7 +3237,7 @@ FORCE_INLINE int _mm_cvtsi128_si32(__m128i a)
 
 // Extracts the low order 64-bit integer from the parameter.
 // https://msdn.microsoft.com/en-us/library/bb531384(v=vs.120).aspx
-FORCE_INLINE uint64_t _mm_cvtsi128_si64(__m128i a)
+FORCE_INLINE u64 _mm_cvtsi128_si64(__m128i a)
 {
     return vgetq_lane_s64(vreinterpretq_s64_m128i(a), 0);
 }
@@ -3261,7 +3261,7 @@ FORCE_INLINE __m128i _mm_cvtsi32_si128(int a)
 //
 //   r0 := a
 //   r1 := 0x0
-FORCE_INLINE __m128i _mm_cvtsi64_si128(int64_t a)
+FORCE_INLINE __m128i _mm_cvtsi64_si128(i64 a)
 {
     return vreinterpretq_m128i_s64(vsetq_lane_s64(a, vdupq_n_s64(0), 0));
 }
@@ -3286,14 +3286,14 @@ FORCE_INLINE __m128 _mm_castsi128_ps(__m128i a)
 // https://msdn.microsoft.com/en-us/library/atzzad1h(v=vs.80).aspx
 FORCE_INLINE __m128i _mm_load_si128(const __m128i *p)
 {
-    return vreinterpretq_m128i_s32(vld1q_s32((const int32_t *) p));
+    return vreinterpretq_m128i_s32(vld1q_s32((const i32 *) p));
 }
 
 // Loads 128-bit value. :
 // https://msdn.microsoft.com/zh-cn/library/f4k12ae8(v=vs.90).aspx
 FORCE_INLINE __m128i _mm_loadu_si128(const __m128i *p)
 {
-    return vreinterpretq_m128i_s32(vld1q_s32((const int32_t *) p));
+    return vreinterpretq_m128i_s32(vld1q_s32((const i32 *) p));
 }
 
 // _mm_lddqu_si128 functions the same as _mm_loadu_si128.
@@ -3312,7 +3312,7 @@ FORCE_INLINE __m128i _mm_loadu_si128(const __m128i *p)
 // https://msdn.microsoft.com/en-us/library/3c9997dk(v%3dvs.90).aspx
 FORCE_INLINE __m128i _mm_sra_epi16(__m128i a, __m128i count)
 {
-    int64_t c = (int64_t) vget_low_s64((int64x2_t) count);
+    i64 c = (i64) vget_low_s64((int64x2_t) count);
     if (c > 15)
         return _mm_cmplt_epi16(a, _mm_setzero_si128());
     return vreinterpretq_m128i_s16(vshlq_s16((int16x8_t) a, vdupq_n_s16(-c)));
@@ -3329,7 +3329,7 @@ FORCE_INLINE __m128i _mm_sra_epi16(__m128i a, __m128i count)
 // https://msdn.microsoft.com/en-us/library/ce40009e(v%3dvs.100).aspx
 FORCE_INLINE __m128i _mm_sra_epi32(__m128i a, __m128i count)
 {
-    int64_t c = (int64_t) vget_low_s64((int64x2_t) count);
+    i64 c = (i64) vget_low_s64((int64x2_t) count);
     if (c > 31)
         return _mm_cmplt_epi32(a, _mm_setzero_si128());
     return vreinterpretq_m128i_s32(vshlq_s32((int32x4_t) a, vdupq_n_s32(-c)));
@@ -3628,7 +3628,7 @@ FORCE_INLINE __m128i _mm_unpackhi_epi64(__m128i a, __m128i b)
 FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
 {
     __m128i dst;
-    uint16_t min, idx = 0;
+    u16 min, idx = 0;
     // Find the minimum value
 #if defined(__aarch64__)
     min = vminvq_u16(vreinterpretq_u16_m128i(a));
@@ -3647,7 +3647,7 @@ FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
     int i;
     for (i = 0; i < 8; i++) {
         if (min == vgetq_lane_u16(vreinterpretq_u16_m128i(a), 0)) {
-            idx = (uint16_t) i;
+            idx = (u16) i;
             break;
         }
         a = _mm_srli_si128(a, 2);
@@ -3747,15 +3747,15 @@ FORCE_INLINE int _mm_popcnt_u32(unsigned int a)
 #if __has_builtin(__builtin_popcount)
     return __builtin_popcount(a);
 #else
-    return (int) vaddlv_u8(vcnt_u8(vcreate_u8((uint64_t) a)));
+    return (int) vaddlv_u8(vcnt_u8(vcreate_u8((u64) a)));
 #endif
 #else
-    uint32_t count = 0;
+    u32 count = 0;
     uint8x8_t input_val, count8x8_val;
     uint16x4_t count16x4_val;
     uint32x2_t count32x2_val;
 
-    input_val = vld1_u8((uint8_t *) &a);
+    input_val = vld1_u8((u8 *) &a);
     count8x8_val = vcnt_u8(input_val);
     count16x4_val = vpaddl_u8(count8x8_val);
     count32x2_val = vpaddl_u16(count16x4_val);
@@ -3768,22 +3768,22 @@ FORCE_INLINE int _mm_popcnt_u32(unsigned int a)
 // Count the number of bits set to 1 in unsigned 64-bit integer a, and
 // return that count in dst.
 // https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_popcnt_u64
-FORCE_INLINE int64_t _mm_popcnt_u64(uint64_t a)
+FORCE_INLINE i64 _mm_popcnt_u64(u64 a)
 {
 #if defined(__aarch64__)
 #if __has_builtin(__builtin_popcountll)
     return __builtin_popcountll(a);
 #else
-    return (int64_t) vaddlv_u8(vcnt_u8(vcreate_u8(a)));
+    return (i64) vaddlv_u8(vcnt_u8(vcreate_u8(a)));
 #endif
 #else
-    uint64_t count = 0;
+    u64 count = 0;
     uint8x8_t input_val, count8x8_val;
     uint16x4_t count16x4_val;
     uint32x2_t count32x2_val;
     uint64x1_t count64x1_val;
 
-    input_val = vld1_u8((uint8_t *) &a);
+    input_val = vld1_u8((u8 *) &a);
     count8x8_val = vcnt_u8(input_val);
     count16x4_val = vpaddl_u8(count8x8_val);
     count32x2_val = vpaddl_u16(count16x4_val);
@@ -3958,7 +3958,7 @@ FORCE_INLINE __m128i _mm_clmulepi64_si128(__m128i _a, __m128i _b, const int imm)
 // for more information Reproduced with permission of the author.
 FORCE_INLINE __m128i _mm_aesenc_si128(__m128i EncBlock, __m128i RoundKey)
 {
-    static const uint8_t crypto_aes_sbox[256] = {
+    static const u8 crypto_aes_sbox[256] = {
         0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b,
         0xfe, 0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0,
         0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, 0xb7, 0xfd, 0x93, 0x26,
@@ -3981,10 +3981,10 @@ FORCE_INLINE __m128i _mm_aesenc_si128(__m128i EncBlock, __m128i RoundKey)
         0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
         0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f,
         0xb0, 0x54, 0xbb, 0x16};
-    static const uint8_t shift_rows[] = {0x0, 0x5, 0xa, 0xf, 0x4, 0x9,
+    static const u8 shift_rows[] = {0x0, 0x5, 0xa, 0xf, 0x4, 0x9,
                                          0xe, 0x3, 0x8, 0xd, 0x2, 0x7,
                                          0xc, 0x1, 0x6, 0xb};
-    static const uint8_t ror32by8[] = {0x1, 0x2, 0x3, 0x0, 0x5, 0x6, 0x7, 0x4,
+    static const u8 ror32by8[] = {0x1, 0x2, 0x3, 0x0, 0x5, 0x6, 0x7, 0x4,
                                        0x9, 0xa, 0xb, 0x8, 0xd, 0xe, 0xf, 0xc};
 
     uint8x16_t v;
@@ -4041,7 +4041,7 @@ FORCE_INLINE void _mm_stream_si128(__m128i *p, __m128i a)
 #if __has_builtin(__builtin_nontemporal_store)
     __builtin_nontemporal_store(a, p);
 #else
-    vst1q_s64((int64_t *) p, vreinterpretq_s64_m128i(a));
+    vst1q_s64((i64 *) p, vreinterpretq_s64_m128i(a));
 #endif
 }
 
@@ -4077,7 +4077,7 @@ FORCE_INLINE void _mm_free(void *addr)
 // Starting with the initial value in crc, accumulates a CRC32 value for
 // unsigned 8-bit integer v.
 // https://msdn.microsoft.com/en-us/library/bb514036(v=vs.100)
-FORCE_INLINE uint32_t _mm_crc32_u8(uint32_t crc, uint8_t v)
+FORCE_INLINE u32 _mm_crc32_u8(u32 crc, u8 v)
 {
 #if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cb %w[c], %w[c], %w[v]\n\t"
@@ -4098,7 +4098,7 @@ FORCE_INLINE uint32_t _mm_crc32_u8(uint32_t crc, uint8_t v)
 // Starting with the initial value in crc, accumulates a CRC32 value for
 // unsigned 16-bit integer v.
 // https://msdn.microsoft.com/en-us/library/bb531411(v=vs.100)
-FORCE_INLINE uint32_t _mm_crc32_u16(uint32_t crc, uint16_t v)
+FORCE_INLINE u32 _mm_crc32_u16(u32 crc, u16 v)
 {
 #if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32ch %w[c], %w[c], %w[v]\n\t"
@@ -4114,7 +4114,7 @@ FORCE_INLINE uint32_t _mm_crc32_u16(uint32_t crc, uint16_t v)
 // Starting with the initial value in crc, accumulates a CRC32 value for
 // unsigned 32-bit integer v.
 // https://msdn.microsoft.com/en-us/library/bb531394(v=vs.100)
-FORCE_INLINE uint32_t _mm_crc32_u32(uint32_t crc, uint32_t v)
+FORCE_INLINE u32 _mm_crc32_u32(u32 crc, u32 v)
 {
 #if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cw %w[c], %w[c], %w[v]\n\t"
@@ -4130,15 +4130,15 @@ FORCE_INLINE uint32_t _mm_crc32_u32(uint32_t crc, uint32_t v)
 // Starting with the initial value in crc, accumulates a CRC32 value for
 // unsigned 64-bit integer v.
 // https://msdn.microsoft.com/en-us/library/bb514033(v=vs.100)
-FORCE_INLINE uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v)
+FORCE_INLINE u64 _mm_crc32_u64(u64 crc, u64 v)
 {
 #if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cx %w[c], %w[c], %x[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
 #else
-    crc = _mm_crc32_u32((uint32_t)(crc), v & 0xffffffff);
-    crc = _mm_crc32_u32((uint32_t)(crc), (v >> 32) & 0xffffffff);
+    crc = _mm_crc32_u32((u32)(crc), v & 0xffffffff);
+    crc = _mm_crc32_u32((u32)(crc), (v >> 32) & 0xffffffff);
 #endif
     return crc;
 }

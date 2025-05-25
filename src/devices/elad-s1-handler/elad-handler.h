@@ -39,24 +39,24 @@
 class	QSettings;
 class	eladWorker;
 class	eladLoader;
-//typedef	cmplx(*makeSampleP)(uint8_t *);
+//typedef	cf32(*makeSampleP)(u8 *);
 
 class	eladHandler: public deviceHandler, public Ui_eladWidget {
 Q_OBJECT
 public:
 		eladHandler		(QSettings *);
 		~eladHandler		();
-	int32_t	getVFOFrequency		();
-	bool	legalFrequency		(int32_t);
-	int32_t	defaultFrequency	();
+	i32	getVFOFrequency		();
+	bool	legalFrequency		(i32);
+	i32	defaultFrequency	();
 
-	bool	restartReader		(int32_t);
+	bool	restartReader		(i32);
 	void	stopReader		();
-	int32_t	getSamples		(cmplx *, int32_t);
-	int32_t	Samples			();
+	i32	getSamples		(cf32 *, i32);
+	i32	Samples			();
 	void	resetBuffer		();
-	int32_t	getRate			();
-	int16_t	bitDepth		();
+	i32	getRate			();
+	i16	bitDepth		();
 private	slots:
 	void	setGainReduction	();
 	void	setFilter		();
@@ -67,22 +67,22 @@ private	slots:
 private:
 	QSettings	*eladSettings;
 	QFrame		myFrame;
-	RingBuffer<uint8_t>	_I_Buffer;
-	RingBuffer<cmplx>	_O_Buffer;
+	RingBuffer<u8>	_I_Buffer;
+	RingBuffer<cf32>	_O_Buffer;
 	bool		deviceOK;
 	eladLoader	*theLoader;
 	eladWorker	*theWorker;
-	int32_t		externalFrequency;
-	int32_t		eladFrequency;
+	i32		externalFrequency;
+	i32		eladFrequency;
 	int		gainReduced;
 	int		localFilter;
 	int		Offset;
 	int		Nyquist;
 	std::atomic<bool> iqSwitch;
 	int		iqSize;
-	cmplx convBuffer	[ELAD_RATE / 1000 + 1];
+	cf32 convBuffer	[ELAD_RATE / 1000 + 1];
 	int		mapTable_int	[INPUT_RATE / 1000];
-        float		mapTable_float	[INPUT_RATE / 1000];
+        f32		mapTable_float	[INPUT_RATE / 1000];
 	int		convIndex;
 };
 #endif

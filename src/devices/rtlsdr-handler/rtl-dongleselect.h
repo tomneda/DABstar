@@ -24,6 +24,7 @@
 #ifndef	__DONGLE_SELECT__
 #define	__DONGLE_SELECT__
 #
+#include  "glob_data_types.h"
 #include	<QDialog>
 #include	<QLabel>
 #include	<QListView>
@@ -42,7 +43,7 @@ private:
 	QListView	*selectorDisplay;
 	QStringListModel	dongleList;
 	QStringList	Dongles;
-	int16_t		selectedItem;
+	i16		selectedItem;
 private slots:
 	void		selectDongle	(QModelIndex);
 };

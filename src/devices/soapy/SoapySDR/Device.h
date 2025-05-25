@@ -226,7 +226,7 @@ SOAPY_SDR_API char **SoapySDRDevice_getStreamFormats(const SoapySDRDevice *devic
  * \param [out] fullScale the maximum possible value
  * \return the native stream buffer format string
  */
-SOAPY_SDR_API char *SoapySDRDevice_getNativeStreamFormat(const SoapySDRDevice *device, const int direction, const size_t channel, double *fullScale);
+SOAPY_SDR_API char *SoapySDRDevice_getNativeStreamFormat(const SoapySDRDevice *device, const int direction, const size_t channel, f64 *fullScale);
 
 /*!
  * Query the argument info description for stream args.
@@ -651,7 +651,7 @@ SOAPY_SDR_API bool SoapySDRDevice_hasDCOffset(const SoapySDRDevice *device, cons
  * \param offsetQ the relative correction (1.0 max)
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setDCOffset(SoapySDRDevice *device, const int direction, const size_t channel, const double offsetI, const double offsetQ);
+SOAPY_SDR_API int SoapySDRDevice_setDCOffset(SoapySDRDevice *device, const int direction, const size_t channel, const f64 offsetI, const f64 offsetQ);
 
 /*!
  * Get the frontend DC offset correction.
@@ -662,7 +662,7 @@ SOAPY_SDR_API int SoapySDRDevice_setDCOffset(SoapySDRDevice *device, const int d
  * \param [out] offsetQ the relative correction (1.0 max)
  * \return 0 for success or error code on failure
  */
-SOAPY_SDR_API int SoapySDRDevice_getDCOffset(const SoapySDRDevice *device, const int direction, const size_t channel, double *offsetI, double *offsetQ);
+SOAPY_SDR_API int SoapySDRDevice_getDCOffset(const SoapySDRDevice *device, const int direction, const size_t channel, f64 *offsetI, f64 *offsetQ);
 
 /*!
  * Does the device support frontend IQ balance correction?
@@ -682,7 +682,7 @@ SOAPY_SDR_API bool SoapySDRDevice_hasIQBalance(const SoapySDRDevice *device, con
  * \param balanceQ the relative correction (1.0 max)
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setIQBalance(SoapySDRDevice *device, const int direction, const size_t channel, const double balanceI, const double balanceQ);
+SOAPY_SDR_API int SoapySDRDevice_setIQBalance(SoapySDRDevice *device, const int direction, const size_t channel, const f64 balanceI, const f64 balanceQ);
 
 /*!
  * Get the frontend IQ balance correction.
@@ -693,7 +693,7 @@ SOAPY_SDR_API int SoapySDRDevice_setIQBalance(SoapySDRDevice *device, const int 
  * \param [out] balanceQ the relative correction (1.0 max)
  * \return 0 for success or error code on failure
  */
-SOAPY_SDR_API int SoapySDRDevice_getIQBalance(const SoapySDRDevice *device, const int direction, const size_t channel, double *balanceI, double *balanceQ);
+SOAPY_SDR_API int SoapySDRDevice_getIQBalance(const SoapySDRDevice *device, const int direction, const size_t channel, f64 *balanceI, f64 *balanceQ);
 
 /*!
  * Does the device support frontend frequency correction?
@@ -712,7 +712,7 @@ SOAPY_SDR_API bool SoapySDRDevice_hasFrequencyCorrection(const SoapySDRDevice *d
  * \param value the correction in PPM
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setFrequencyCorrection(SoapySDRDevice *device, const int direction, const size_t channel, const double value);
+SOAPY_SDR_API int SoapySDRDevice_setFrequencyCorrection(SoapySDRDevice *device, const int direction, const size_t channel, const f64 value);
 
 /*!
  * Get the frontend frequency correction value.
@@ -721,7 +721,7 @@ SOAPY_SDR_API int SoapySDRDevice_setFrequencyCorrection(SoapySDRDevice *device, 
  * \param channel an available channel on the device
  * \return the correction value in PPM
  */
-SOAPY_SDR_API double SoapySDRDevice_getFrequencyCorrection(const SoapySDRDevice *device, const int direction, const size_t channel);
+SOAPY_SDR_API f64 SoapySDRDevice_getFrequencyCorrection(const SoapySDRDevice *device, const int direction, const size_t channel);
 
 /*******************************************************************
  * Gain API
@@ -775,7 +775,7 @@ SOAPY_SDR_API bool SoapySDRDevice_getGainMode(const SoapySDRDevice *device, cons
  * \param value the new amplification value in dB
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setGain(SoapySDRDevice *device, const int direction, const size_t channel, const double value);
+SOAPY_SDR_API int SoapySDRDevice_setGain(SoapySDRDevice *device, const int direction, const size_t channel, const f64 value);
 
 /*!
  * Set the value of a amplification element in a chain.
@@ -786,7 +786,7 @@ SOAPY_SDR_API int SoapySDRDevice_setGain(SoapySDRDevice *device, const int direc
  * \param value the new amplification value in dB
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setGainElement(SoapySDRDevice *device, const int direction, const size_t channel, const char *name, const double value);
+SOAPY_SDR_API int SoapySDRDevice_setGainElement(SoapySDRDevice *device, const int direction, const size_t channel, const char *name, const f64 value);
 
 /*!
  * Get the overall value of the gain elements in a chain.
@@ -795,7 +795,7 @@ SOAPY_SDR_API int SoapySDRDevice_setGainElement(SoapySDRDevice *device, const in
  * \param channel an available channel on the device
  * \return the value of the gain in dB
  */
-SOAPY_SDR_API double SoapySDRDevice_getGain(const SoapySDRDevice *device, const int direction, const size_t channel);
+SOAPY_SDR_API f64 SoapySDRDevice_getGain(const SoapySDRDevice *device, const int direction, const size_t channel);
 
 /*!
  * Get the value of an individual amplification element in a chain.
@@ -805,7 +805,7 @@ SOAPY_SDR_API double SoapySDRDevice_getGain(const SoapySDRDevice *device, const 
  * \param name the name of an amplification element
  * \return the value of the gain in dB
  */
-SOAPY_SDR_API double SoapySDRDevice_getGainElement(const SoapySDRDevice *device, const int direction, const size_t channel, const char *name);
+SOAPY_SDR_API f64 SoapySDRDevice_getGainElement(const SoapySDRDevice *device, const int direction, const size_t channel, const char *name);
 
 /*!
  * Get the overall range of possible gain values.
@@ -859,7 +859,7 @@ SOAPY_SDR_API SoapySDRRange SoapySDRDevice_getGainElementRange(const SoapySDRDev
  * \param args optional tuner arguments
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setFrequency(SoapySDRDevice *device, const int direction, const size_t channel, const double frequency, const SoapySDRKwargs *args);
+SOAPY_SDR_API int SoapySDRDevice_setFrequency(SoapySDRDevice *device, const int direction, const size_t channel, const f64 frequency, const SoapySDRKwargs *args);
 
 /*!
  * Tune the center frequency of the specified element.
@@ -879,7 +879,7 @@ SOAPY_SDR_API int SoapySDRDevice_setFrequency(SoapySDRDevice *device, const int 
  * \param args optional tuner arguments
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setFrequencyComponent(SoapySDRDevice *device, const int direction, const size_t channel, const char *name, const double frequency, const SoapySDRKwargs *args);
+SOAPY_SDR_API int SoapySDRDevice_setFrequencyComponent(SoapySDRDevice *device, const int direction, const size_t channel, const char *name, const f64 frequency, const SoapySDRKwargs *args);
 
 /*!
  * Get the overall center frequency of the chain.
@@ -890,7 +890,7 @@ SOAPY_SDR_API int SoapySDRDevice_setFrequencyComponent(SoapySDRDevice *device, c
  * \param channel an available channel on the device
  * \return the center frequency in Hz
  */
-SOAPY_SDR_API double SoapySDRDevice_getFrequency(const SoapySDRDevice *device, const int direction, const size_t channel);
+SOAPY_SDR_API f64 SoapySDRDevice_getFrequency(const SoapySDRDevice *device, const int direction, const size_t channel);
 
 /*!
  * Get the frequency of a tunable element in the chain.
@@ -900,7 +900,7 @@ SOAPY_SDR_API double SoapySDRDevice_getFrequency(const SoapySDRDevice *device, c
  * \param name the name of a tunable element
  * \return the tunable element's frequency in Hz
  */
-SOAPY_SDR_API double SoapySDRDevice_getFrequencyComponent(const SoapySDRDevice *device, const int direction, const size_t channel, const char *name);
+SOAPY_SDR_API f64 SoapySDRDevice_getFrequencyComponent(const SoapySDRDevice *device, const int direction, const size_t channel, const char *name);
 
 /*!
  * List available tunable elements in the chain.
@@ -956,7 +956,7 @@ SOAPY_SDR_API SoapySDRArgInfo *SoapySDRDevice_getFrequencyArgsInfo(const SoapySD
  * \param rate the sample rate in samples per second
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setSampleRate(SoapySDRDevice *device, const int direction, const size_t channel, const double rate);
+SOAPY_SDR_API int SoapySDRDevice_setSampleRate(SoapySDRDevice *device, const int direction, const size_t channel, const f64 rate);
 
 /*!
  * Get the baseband sample rate of the chain.
@@ -965,7 +965,7 @@ SOAPY_SDR_API int SoapySDRDevice_setSampleRate(SoapySDRDevice *device, const int
  * \param channel an available channel on the device
  * \return the sample rate in samples per second
  */
-SOAPY_SDR_API double SoapySDRDevice_getSampleRate(const SoapySDRDevice *device, const int direction, const size_t channel);
+SOAPY_SDR_API f64 SoapySDRDevice_getSampleRate(const SoapySDRDevice *device, const int direction, const size_t channel);
 
 /*!
  * Get the range of possible baseband sample rates.
@@ -976,7 +976,7 @@ SOAPY_SDR_API double SoapySDRDevice_getSampleRate(const SoapySDRDevice *device, 
  * \param [out] length the number of sample rates
  * \return a list of possible rates in samples per second
  */
-SOAPY_SDR_API double *SoapySDRDevice_listSampleRates(const SoapySDRDevice *device, const int direction, const size_t channel, size_t *length);
+SOAPY_SDR_API f64 *SoapySDRDevice_listSampleRates(const SoapySDRDevice *device, const int direction, const size_t channel, size_t *length);
 
 /*!
  * Get the range of possible baseband sample rates.
@@ -1000,7 +1000,7 @@ SOAPY_SDR_API SoapySDRRange *SoapySDRDevice_getSampleRateRange(const SoapySDRDev
  * \param bw the baseband filter width in Hz
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setBandwidth(SoapySDRDevice *device, const int direction, const size_t channel, const double bw);
+SOAPY_SDR_API int SoapySDRDevice_setBandwidth(SoapySDRDevice *device, const int direction, const size_t channel, const f64 bw);
 
 /*!
  * Get the baseband filter width of the chain.
@@ -1009,7 +1009,7 @@ SOAPY_SDR_API int SoapySDRDevice_setBandwidth(SoapySDRDevice *device, const int 
  * \param channel an available channel on the device
  * \return the baseband filter width in Hz
  */
-SOAPY_SDR_API double SoapySDRDevice_getBandwidth(const SoapySDRDevice *device, const int direction, const size_t channel);
+SOAPY_SDR_API f64 SoapySDRDevice_getBandwidth(const SoapySDRDevice *device, const int direction, const size_t channel);
 
 /*!
  * Get the range of possible baseband filter widths.
@@ -1020,7 +1020,7 @@ SOAPY_SDR_API double SoapySDRDevice_getBandwidth(const SoapySDRDevice *device, c
  * \param [out] length the number of bandwidths
  * \return a list of possible bandwidths in Hz
  */
-SOAPY_SDR_API double *SoapySDRDevice_listBandwidths(const SoapySDRDevice *device, const int direction, const size_t channel, size_t *length);
+SOAPY_SDR_API f64 *SoapySDRDevice_listBandwidths(const SoapySDRDevice *device, const int direction, const size_t channel, size_t *length);
 
 /*!
  * Get the range of possible baseband filter widths.
@@ -1042,14 +1042,14 @@ SOAPY_SDR_API SoapySDRRange *SoapySDRDevice_getBandwidthRange(const SoapySDRDevi
  * \param rate the clock rate in Hz
  * \return an error code or 0 for success
  */
-SOAPY_SDR_API int SoapySDRDevice_setMasterClockRate(SoapySDRDevice *device, const double rate);
+SOAPY_SDR_API int SoapySDRDevice_setMasterClockRate(SoapySDRDevice *device, const f64 rate);
 
 /*!
  * Get the master clock rate of the device.
  * \param device a pointer to a device instance
  * \return the clock rate in Hz
  */
-SOAPY_SDR_API double SoapySDRDevice_getMasterClockRate(const SoapySDRDevice *device);
+SOAPY_SDR_API f64 SoapySDRDevice_getMasterClockRate(const SoapySDRDevice *device);
 
 /*!
  * Get the range of available master clock rates.
@@ -1173,7 +1173,7 @@ SOAPY_SDR_API SoapySDRArgInfo SoapySDRDevice_getSensorInfo(const SoapySDRDevice 
 /*!
  * Readback a global sensor given the name.
  * The value returned is a string which can represent
- * a boolean ("true"/"false"), an integer, or float.
+ * a boolean ("true"/"false"), an integer, or f32.
  * \param device a pointer to a device instance
  * \param key the ID name of an available sensor
  * \return the current value of the sensor
@@ -1205,7 +1205,7 @@ SOAPY_SDR_API SoapySDRArgInfo SoapySDRDevice_getChannelSensorInfo(const SoapySDR
 /*!
  * Readback a channel sensor given the name.
  * The value returned is a string which can represent
- * a boolean ("true"/"false"), an integer, or float.
+ * a boolean ("true"/"false"), an integer, or f32.
  * \param device a pointer to a device instance
  * \param direction the channel direction RX or TX
  * \param channel an available channel on the device

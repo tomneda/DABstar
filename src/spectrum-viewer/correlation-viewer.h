@@ -57,17 +57,17 @@ class CorrelationViewer : public QObject
 {
 Q_OBJECT
 public:
-  CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<float> *);
+  CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<f32> *);
   ~CorrelationViewer() override = default;
 
-  void showCorrelation(float threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr);
+  void showCorrelation(f32 threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";
   static QString _get_best_match_text(const QVector<int> & v);
 
   QSettings * const mpSettings = nullptr;
-  RingBuffer<float> * const mpResponseBuffer;
+  RingBuffer<f32> * const mpResponseBuffer;
   QwtPlot * const mpQwtPlot;
   QLabel * const mpIndexDisplay;
   QwtPlotMarker * mpThresholdMarker = nullptr;
@@ -76,8 +76,8 @@ private:
   std::vector<int> mIndexVector;
   QColor mGridColor;
   QColor mCurveColor;
-  float mMinValFlt = -15;
-  float mMaxValFlt = 10;
+  f32 mMinValFlt = -15;
+  f32 mMaxValFlt = 10;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
   CustQwtZoomPan mZoomPan;
 };

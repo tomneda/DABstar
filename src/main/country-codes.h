@@ -5,8 +5,8 @@
 #include	<cstdint>
 
 struct country_codes {
-	uint8_t ecc;
-	uint8_t countryId;
+	u8 ecc;
+	u8 countryId;
 	const char *countryName;
 } countryTable [] = {
 {0xE0, 0x9, "Albania"},

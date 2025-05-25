@@ -27,13 +27,13 @@ CirclePushButton::CirclePushButton(QWidget * parent /*= nullptr*/) :
   connect(mTimer, &QTimer::timeout, this, &CirclePushButton::_slot_update_position);
 }
 
-void CirclePushButton::init(const QString & iImagePath, const float iRadiusPixels, const float iSecPerRound)
+void CirclePushButton::init(const QString & iImagePath, const f32 iRadiusPixels, const f32 iSecPerRound)
 {
   mAnimationActive = false;
   mTimer->stop();
   mImagePath = iImagePath;
   mRadius = iRadiusPixels;
-  mTimerMs = int32_t(1000.0f * sDegPerStep / 360.0f * iSecPerRound);
+  mTimerMs = i32(1000.0f * sDegPerStep / 360.0f * iSecPerRound);
   setIcon(QIcon(mImagePath));
   update();
 }

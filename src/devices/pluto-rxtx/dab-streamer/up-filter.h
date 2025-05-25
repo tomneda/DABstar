@@ -29,8 +29,8 @@
 
 
 class	upFilter {
-	std::vector<cmplx> kernel;
-	std::vector<cmplx> buffer;
+	std::vector<cf32> kernel;
+	std::vector<cf32> buffer;
 	int		ip;
 	int		order;
 	int		bufferSize;
@@ -38,7 +38,7 @@ class	upFilter {
 public:
 	upFilter	(int, int, int);
 	~upFilter	();
-void	Filter	(cmplx, cmplx *);
+void	Filter	(cf32, cf32 *);
 };
 #endif
 

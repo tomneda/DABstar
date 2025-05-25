@@ -18,18 +18,18 @@ class	compAtan {
 public:
 		compAtan	(void);
 		~compAtan	(void);
-	float	atan2		(float, float);
-	float	argX		(cmplx);
+	f32	atan2		(f32, f32);
+	f32	argX		(cf32);
 private:
-	float	*ATAN2_TABLE_PPY;
-	float	*ATAN2_TABLE_PPX;
-	float	*ATAN2_TABLE_PNY;
-	float	*ATAN2_TABLE_PNX;
-	float	*ATAN2_TABLE_NPY;
-	float	*ATAN2_TABLE_NPX;
-	float	*ATAN2_TABLE_NNY;
-	float	*ATAN2_TABLE_NNX;
-	float	Stretch;
+	f32	*ATAN2_TABLE_PPY;
+	f32	*ATAN2_TABLE_PPX;
+	f32	*ATAN2_TABLE_PNY;
+	f32	*ATAN2_TABLE_PNX;
+	f32	*ATAN2_TABLE_NPY;
+	f32	*ATAN2_TABLE_NPX;
+	f32	*ATAN2_TABLE_NNY;
+	f32	*ATAN2_TABLE_NNX;
+	f32	Stretch;
 };
 
 #endif

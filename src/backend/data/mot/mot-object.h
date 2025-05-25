@@ -49,20 +49,20 @@ class MotObject : public QObject
 {
 Q_OBJECT
 public:
-  MotObject(DabRadio * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag);
+  MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag);
   ~MotObject() override = default;
 
-  void addBodySegment(const uint8_t * bodySegment, int16_t segmentNumber, int32_t segmentSize, bool lastFlag);
-  uint16_t get_transportId();
+  void addBodySegment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag);
+  u16 get_transportId();
   int get_headerSize();
 private:
   bool dirElement;
   QString picturePath;
-  uint16_t transportId;
-  int16_t numofSegments;
-  int32_t segmentSize;
-  uint32_t headerSize;
-  uint32_t bodySize;
+  u16 transportId;
+  i16 numofSegments;
+  i32 segmentSize;
+  u32 headerSize;
+  u32 bodySize;
   MOTContentType contentType;
   QString name;
   void handleComplete();

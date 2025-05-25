@@ -53,13 +53,13 @@ public:
   AudioDisplay(DabRadio *, QwtPlot *, QSettings *);
   ~AudioDisplay() override;
 
-  void create_spectrum(const int16_t *, int, int);
+  void create_spectrum(const i16 *, int, int);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "audioDisplay";
-  static constexpr int32_t cSpectrumSize = 512;
-  static constexpr int32_t cNormalizer = 32378;
-  static constexpr int32_t cDisplaySize = cSpectrumSize / 2;  // we use only the right half of the FFT
+  static constexpr i32 cSpectrumSize = 512;
+  static constexpr i32 cNormalizer = 32378;
+  static constexpr i32 cDisplaySize = cSpectrumSize / 2;  // we use only the right half of the FFT
 
   DabRadio * const mpRadioInterface;
   QSettings * const mpDabSettings;
@@ -67,17 +67,17 @@ private:
   QwtPlotCurve mSpectrumCurve{""};
   QwtPlotGrid mGrid;
 
-  std::array<float, cDisplaySize>  mXDispBuffer{};
-  std::array<float, cDisplaySize>  mYDispBuffer{};
-  std::array<float, cSpectrumSize> mWindow;
+  std::array<f32, cDisplaySize>  mXDispBuffer{};
+  std::array<f32, cDisplaySize>  mYDispBuffer{};
+  std::array<f32, cSpectrumSize> mWindow;
 
-  std::array<float, cSpectrumSize> mFftInBuffer;
-  std::array<cmplx, cSpectrumSize> mFftOutBuffer;
+  std::array<f32, cSpectrumSize> mFftInBuffer;
+  std::array<cf32, cSpectrumSize> mFftOutBuffer;
   fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex *)mFftOutBuffer.data(), FFTW_ESTIMATE)};
 
   QColor GridColor;
   QColor mCurveColor;
-  int32_t mSampleRateLast = 0;
+  i32 mSampleRateLast = 0;
 
 private slots:
   void _slot_rightMouseClick(const QPointF &);

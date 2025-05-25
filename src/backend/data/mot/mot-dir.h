@@ -34,34 +34,34 @@ class	DabRadio;
 class	MotDirectory {
 public:
 			MotDirectory	(DabRadio *,
-                     uint16_t,
-                     int16_t,
-                     int32_t,
-                     int16_t,
-                     uint8_t *);
+                     u16,
+                     i16,
+                     i32,
+                     i16,
+                     u8 *);
 			~MotDirectory();
-	MotObject	*getHandle	(uint16_t);
-	void		setHandle	(MotObject *, uint16_t);
-	void		directorySegment (uint16_t transportId,
-                                        uint8_t *segment,
-                                        int16_t segmentNumber,
-                                        int32_t segmentSize,
+	MotObject	*getHandle	(u16);
+	void		setHandle	(MotObject *, u16);
+	void		directorySegment (u16 transportId,
+                                        u8 *segment,
+                                        i16 segmentNumber,
+                                        i32 segmentSize,
                                         bool    lastSegment);
-	uint16_t	get_transportId();
+	u16	get_transportId();
 private:
 	void		analyse_theDirectory();
-	uint16_t	transportId;
+	u16	transportId;
 
 	DabRadio	*myRadioInterface;
-	std::vector<uint8_t>	dir_segments;
+	std::vector<u8>	dir_segments;
 	bool		marked [512];
-	int16_t		dir_segmentSize;
-	int16_t		num_dirSegments;
-	int16_t		dirSize;
-	int16_t		numObjects;
+	i16		dir_segmentSize;
+	i16		num_dirSegments;
+	i16		dirSize;
+	i16		numObjects;
 	typedef struct {
 	   bool		inUse;
-	   uint16_t	transportId;
+	   u16	transportId;
 	   MotObject	*motSlide;
 	} motComponentType;
 	std::vector<motComponentType>	motComponents;

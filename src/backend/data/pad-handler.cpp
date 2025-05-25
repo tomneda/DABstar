@@ -50,9 +50,9 @@ PadHandler::PadHandler(DabRadio * mr)
 //	Data is stored reverse, we pass the vector and the index of the
 //	last element of the XPad data.
 //	 L0 is the "top" byte of the L field, L1 the next to top one.
-void PadHandler::process_PAD(const uint8_t * const iBuffer, const int16_t iLast, const uint8_t iL1, const uint8_t iL0)
+void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8 iL1, const u8 iL0)
 {
-  const uint8_t fpadType = (iL1 >> 6) & 0x3;
+  const u8 fpadType = (iL1 >> 6) & 0x3;
 
   if (fpadType != 0x0)
   {
@@ -60,9 +60,9 @@ void PadHandler::process_PAD(const uint8_t * const iBuffer, const int16_t iLast,
     return;
   }
 
-  const uint8_t x_padInd = (iL1 >> 4) & 0x3;
+  const u8 x_padInd = (iL1 >> 4) & 0x3;
   const bool CI_flag = (iL0 & 0x2) != 0;
-  // const uint8_t L_ByteInd = L1 & 0xF;
+  // const u8 L_ByteInd = L1 & 0xF;
 
   // qInfo() << "L1" << L1 << "L0" << L0 << "last" << last;
   switch (x_padInd)
@@ -95,18 +95,18 @@ void PadHandler::process_PAD(const uint8_t * const iBuffer, const int16_t iLast,
 //	of these 2 values, but it is not clear to me how.
 //	For me, the end of a segment is when we collected the amount
 //	of values specified for the segment.
-void PadHandler::_handle_short_PAD(const uint8_t * const iBuffer, const int16_t iLast, const bool iCIFlag)
+void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, const bool iCIFlag)
 {
-  int16_t i;
+  i16 i;
 
   if (iCIFlag)
   {
     // has a CI flag
-    uint8_t CI = iBuffer[iLast];
+    u8 CI = iBuffer[iLast];
     mFirstSegment = (iBuffer[iLast - 1] & 0x40) != 0;
     mLastSegment = (iBuffer[iLast - 1] & 0x20) != 0;
     mCharSet = iBuffer[iLast - 2] & 0x0F;
-    uint8_t AcTy = CI & 037;  // application type
+    u8 AcTy = CI & 037;  // application type
 
     if (mFirstSegment)
     {
@@ -188,16 +188,16 @@ void PadHandler::_handle_short_PAD(const uint8_t * const iBuffer, const int16_t 
 ///////////////////////////////////////////////////////////////////////
 //
 //	Here we end up when F_PAD type = 00 and X-PAD Ind = 02
-static constexpr int16_t lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
+static constexpr i16 lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
 
 //	Since the data is reversed, we pass on the vector address
 //	and the offset of the last element in the vector,
 //	i.e. we start (downwards)  beginning at b [last];
-void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16_t iLast, const bool iCiFlag)
+void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast, const bool iCiFlag)
 {
-  int16_t i, j;
-  int16_t base = iLast;
-  std::vector<uint8_t> data;    // for the local addition
+  i16 i, j;
+  i16 base = iLast;
+  std::vector<u8> data;    // for the local addition
 
   //	If an xpadfield shows with a CI_flag == 0, and if we are
   //	dealing with an msc field, the size to be taken is
@@ -224,7 +224,7 @@ void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16
       {
       case 2:   // Dynamic label segment, start of X-PAD data group
       case 3:   // Dynamic label segment, continuation of X-PAD data group
-        _dynamic_label((uint8_t *)(data.data()), mXPadLength, 3);
+        _dynamic_label((u8 *)(data.data()), mXPadLength, 3);
         break;
 
       case 12:   // MOT, start of X-PAD data group
@@ -240,8 +240,8 @@ void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16
   //	The CI flag in the F_PAD data is set, so we have local CI's
   //	7.4.2.2: Contents indicators are one byte long
 
-  int16_t CI_Index = 0;
-  std::array<uint8_t, 4> CI_table;
+  i16 CI_Index = 0;
+  std::array<u8, 4> CI_table;
 
   while (((iBuffer[base] & 037) != 0) && (CI_Index < 4))
   {
@@ -270,8 +270,8 @@ void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16
   //	Handle the contents
   for (i = 0; i < CI_Index; i++)
   {
-    uint8_t appType = CI_table[i] & 037;
-    int16_t length = lengthTable[CI_table[i] >> 5];
+    u8 appType = CI_table[i] & 037;
+    i16 length = lengthTable[CI_table[i] >> 5];
 
     //fprintf(stderr, "appType(%d) = %d, length=%d\n", i, appType, length);
     if (appType == 1)
@@ -296,7 +296,7 @@ void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
       //qInfo() << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
-      _dynamic_label((uint8_t *)(data.data()), data.size(), CI_table[i]);
+      _dynamic_label((u8 *)(data.data()), data.size(), CI_table[i]);
       break;
 
     case 12:   // MOT, start of X-PAD data group
@@ -324,18 +324,18 @@ void PadHandler::_handle_variable_PAD(const uint8_t * const iBuffer, const int16
 //
 //	A dynamic label is created from a sequence of (dynamic) xpad
 //	fields, starting with CI = 2, continuing with CI = 3
-void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI)
+void PadHandler::_dynamic_label(const u8 * data, i16 length, u8 CI)
 {
-  int16_t dataLength = 0;
+  i16 dataLength = 0;
 
   if ((CI & 037) == 02)
   {
     // start of segment
-    const uint16_t prefix = (data[0] << 8) | data[1];
-    const uint8_t field_1 = (prefix >> 8) & 017;
-    const uint8_t Cflag = (prefix >> 12) & 01;
-    const uint8_t first = (prefix >> 14) & 01;
-    const uint8_t last = (prefix >> 13) & 01;
+    const u16 prefix = (data[0] << 8) | data[1];
+    const u8 field_1 = (prefix >> 8) & 017;
+    const u8 Cflag = (prefix >> 12) & 01;
+    const u8 first = (prefix >> 14) & 01;
+    const u8 last = (prefix >> 13) & 01;
     dataLength = length - 2; // The length with header removed
 
     if (first)
@@ -347,7 +347,7 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
     }
     else
     {
-      const int32_t test = ((prefix >> 4) & 07) + 1;
+      const i32 test = ((prefix >> 4) & 07) + 1;
 
       if (test != mSegmentNo + 1)
       {
@@ -369,7 +369,7 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
     else
     {
       // Dynamic text length
-      const int16_t totalDataLength = field_1 + 1;
+      const i16 totalDataLength = field_1 + 1;
 
       if (length - 2 < totalDataLength)
       {
@@ -435,7 +435,7 @@ void PadHandler::_dynamic_label(const uint8_t * data, int16_t length, uint8_t CI
 //
 //	Called at the start of the msc datagroupfield,
 //	the msc_length was given by the preceding appType "1"
-void PadHandler::_new_MSC_element(const std::vector<uint8_t> & data)
+void PadHandler::_new_MSC_element(const std::vector<u8> & data)
 {
   //	if (mscGroupElement) {
   ////	   if (msc_dataGroupBuffer. size() < dataGroupLength)
@@ -448,7 +448,7 @@ void PadHandler::_new_MSC_element(const std::vector<uint8_t> & data)
   //	   show_motHandling (true);
   //	}
 
-  if (data.size() >= (uint16_t)mDataGroupLength)
+  if (data.size() >= (u16)mDataGroupLength)
   {
     // msc element is single item
     mMscDataGroupBuffer.clear();
@@ -466,9 +466,9 @@ void PadHandler::_new_MSC_element(const std::vector<uint8_t> & data)
 }
 
 //
-void PadHandler::_add_MSC_element(const std::vector<uint8_t> & data)
+void PadHandler::_add_MSC_element(const std::vector<u8> & data)
 {
-  int32_t currentLength = mMscDataGroupBuffer.size();
+  i32 currentLength = mMscDataGroupBuffer.size();
   //
   //	just to ensure that, when a "12" appType is missing, the
   //	data of "13" appType elements is not endlessly collected.
@@ -487,7 +487,7 @@ void PadHandler::_add_MSC_element(const std::vector<uint8_t> & data)
     mMscDataGroupBuffer.push_back(d);
   }
 
-  if (mMscDataGroupBuffer.size() >= (uint32_t)mDataGroupLength)
+  if (mMscDataGroupBuffer.size() >= (u32)mDataGroupLength)
   {
     _build_MSC_segment(mMscDataGroupBuffer);
     mMscDataGroupBuffer.clear();
@@ -496,12 +496,12 @@ void PadHandler::_add_MSC_element(const std::vector<uint8_t> & data)
   }
 }
 
-void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & iData)
+void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 {
   //	we have a MOT segment, let us look what is in it
   //	according to DAB 300 401 (page 37) the header (MSC data group)
   //	is
-  const int32_t size = iData.size() < (uint32_t)mDataGroupLength ? iData.size() : mDataGroupLength;
+  const i32 size = iData.size() < (u32)mDataGroupLength ? iData.size() : mDataGroupLength;
 
   if (size < 2)
   {
@@ -519,11 +519,11 @@ void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & iData)
     // qInfo() << "build_MSC_segment() CRC success";
   }
 
-  int16_t segmentNumber = -1; // default
+  i16 segmentNumber = -1; // default
   bool lastFlag = false;      // default
-  const uint8_t groupType = iData[0] & 0xF;
-  // const uint8_t continuityIndex = (data [1] & 0xF0) >> 4;
-  // const uint8_t repetitionIndex =  data [1] & 0xF;
+  const u8 groupType = iData[0] & 0xF;
+  // const u8 continuityIndex = (data [1] & 0xF0) >> 4;
+  // const u8 repetitionIndex =  data [1] & 0xF;
 
   if ((groupType != 3) && (groupType != 4))
   {
@@ -533,7 +533,7 @@ void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & iData)
   // If the segmentflag is on, then a lastflag and segmentnumber are available, i.e. 2 bytes more.
   // Theoretically, the segment number can be as large as 16384
   bool extensionFlag = (iData[0] & 0x80) != 0;
-  uint16_t index = extensionFlag ? 4 : 2;
+  u16 index = extensionFlag ? 4 : 2;
   const bool segmentFlag = (iData[0] & 0x20) != 0;
 
   if (segmentFlag)
@@ -544,12 +544,12 @@ void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & iData)
     index += 2;
   }
 
-  uint16_t transportId = 0;   // default
+  u16 transportId = 0;   // default
 
   //	if the user access flag is on there is a user accessfield
   if ((iData[0] & 0x10) != 0)
   {
-    const int16_t lengthIndicator = iData[index] & 0x0F;
+    const i16 lengthIndicator = iData[index] & 0x0F;
     if ((iData[index] & 0x10) != 0)
     {
       transportId = iData[index + 1] << 8 | iData[index + 2];
@@ -569,7 +569,7 @@ void PadHandler::_build_MSC_segment(const std::vector<uint8_t> & iData)
     // return; // should this be handled?
   }
 
-  const uint32_t segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1];
+  const u32 segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1];
 
   //	handling MOT in the PAD, we only deal here with type 3/4
   switch (groupType)

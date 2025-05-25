@@ -32,36 +32,36 @@
 #ifndef  GALOIS_H
 #define  GALOIS_H
 
-#include  <cstdint>
-#include  <vector>
+#include "glob_data_types.h"
+#include <vector>
 
 class Galois
 {
 private:
-  uint16_t mm;    /* Bits per symbol */
-  uint16_t gfpoly;
-  uint16_t codeLength;  /* Symbols per block (= (1<<mm)-1) */
-  uint16_t d_q;
-  std::vector<uint16_t> alpha_to;  /* log lookup table */
-  std::vector<uint16_t> index_of;  /* Antilog lookup table */
+  u16 mm;    /* Bits per symbol */
+  u16 gfpoly;
+  u16 codeLength;  /* Symbols per block (= (1<<mm)-1) */
+  u16 d_q;
+  std::vector<u16> alpha_to;  /* log lookup table */
+  std::vector<u16> index_of;  /* Antilog lookup table */
 
 public:
-  Galois(uint16_t mm, uint16_t poly);
+  Galois(u16 mm, u16 poly);
   ~Galois() = default;
 
   int modnn(int);
-  uint16_t add_poly(uint16_t a, uint16_t b);
-  uint16_t add_power(uint16_t a, uint16_t b);
-  uint16_t multiply_poly(uint16_t a, uint16_t b);  // a*b
-  uint16_t multiply_power(uint16_t a, uint16_t b);
-  uint16_t divide_poly(uint16_t a, uint16_t b);  // a/b
-  uint16_t divide_power(uint16_t a, uint16_t b);
-  uint16_t pow_poly(uint16_t a, uint16_t n);  // a^n
-  uint16_t pow_power(uint16_t a, uint16_t n);
-  uint16_t power2poly(uint16_t a);
-  uint16_t poly2power(uint16_t a);
-  uint16_t inverse_poly(uint16_t a);
-  uint16_t inverse_power(uint16_t a);
+  u16 add_poly(u16 a, u16 b);
+  u16 add_power(u16 a, u16 b);
+  u16 multiply_poly(u16 a, u16 b);  // a*b
+  u16 multiply_power(u16 a, u16 b);
+  u16 divide_poly(u16 a, u16 b);  // a/b
+  u16 divide_power(u16 a, u16 b);
+  u16 pow_poly(u16 a, u16 n);  // a^n
+  u16 pow_power(u16 a, u16 n);
+  u16 power2poly(u16 a);
+  u16 poly2power(u16 a);
+  u16 inverse_poly(u16 a);
+  u16 inverse_power(u16 a);
 };
 
 #endif

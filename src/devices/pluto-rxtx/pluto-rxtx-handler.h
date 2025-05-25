@@ -142,18 +142,18 @@ public:
 			plutoHandler		(QSettings *,
 	                                         QString &, int fmFreq = 0);
             		~plutoHandler		();
-	void		setVFOFrequency		(int32_t);
-	int32_t		getVFOFrequency		();
-	bool		restartReader		(int32_t);
+	void		setVFOFrequency		(i32);
+	i32		getVFOFrequency		();
+	bool		restartReader		(i32);
 	void		stopReader		();
-	int32_t		getSamples		(cmplx *,
-	                                                          int32_t);
-	int32_t		Samples			();
-	void		sendSample		(cmplx, float);
+	i32		getSamples		(cf32 *,
+	                                                          i32);
+	i32		Samples			();
+	void		sendSample		(cf32, f32);
 	void		startTransmitter	(int);
 	void		stopTransmitter		();
 	void		resetBuffer		();
-	int16_t		bitDepth		();
+	i16		bitDepth		();
 
 	void		show			();
 	void		hide			();
@@ -163,8 +163,8 @@ private:
 	bool			loadFunctions	();
 	HINSTANCE		Handle;
 	QFrame			myFrame;
-	RingBuffer<cmplx>	_I_Buffer;
-	RingBuffer<cmplx>	_O_Buffer;
+	RingBuffer<cf32>	_I_Buffer;
+	RingBuffer<cf32>	_O_Buffer;
 	upFilter		theFilter;
 	int			fmFrequency;
 	QSettings		*plutoSettings;
@@ -177,8 +177,8 @@ private:
 	bool			filterOn;
 	void			run_receiver	();
 	void			run_transmitter	();
-	int32_t			inputRate;
-	int32_t			vfoFrequency;
+	i32			inputRate;
+	i32			vfoFrequency;
 	std::atomic<bool>	running;
 	std::atomic<bool>	transmitting;
 	bool			debugFlag;
@@ -189,11 +189,11 @@ private:
 	QColor			gridColor;
         QColor			curveColor;
 
-	float		window	[8192];
+	f32		window	[8192];
 	QwtPlot         *plotgrid;
-	cmplx*	fftBuffer;
+	cf32*	fftBuffer;
 
-	void		showBuffer		(float *);
+	void		showBuffer		(f32 *);
 //      configuration items
 
 	int			ad9361_set_trx_fir_enable (
@@ -294,10 +294,10 @@ private:
         struct  stream_cfg      tx_cfg;
 
 	bool			connected;
-	cmplx	convBuffer	[CONV_SIZE + 1];
+	cf32	convBuffer	[CONV_SIZE + 1];
 	int			convIndex;
-	int16_t			mapTable_int	[DAB_RATE / DIVIDER];
-	float			mapTable_float	[DAB_RATE / DIVIDER];
+	i16			mapTable_int	[DAB_RATE / DIVIDER];
+	f32			mapTable_float	[DAB_RATE / DIVIDER];
 
 	void			record_gainSettings	(int);
 	void			update_gainSettings	(int);
@@ -306,14 +306,14 @@ private:
 signals:
 	void		new_gainValue		(int);
 	void		new_agcValue		(bool);
-	void		showSignal		(float);	
+	void		showSignal		(f32);
 private slots:
 	void		set_gainControl		(int);
 	void		set_agcControl		(int);
 	void		toggle_debugButton	();
 	void		set_filter		();
 	void		set_xmlDump		();
-	void		handleSignal		(float);
+	void		handleSignal		(f32);
 	void		set_fmFrequency		(int);
 private:		// for the display
 

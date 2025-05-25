@@ -32,15 +32,15 @@
 #ifndef  BANDHANDLER_H
 #define  BANDHANDLER_H
 
-#include  <cstdint>
-#include  <QComboBox>
-#include  <QObject>
-#include  <QString>
-#include  <QSettings>
-#include  <QTableWidget>
-#include  <QFile>
-#include  <QtXml>
-#include  <cstdio>
+#include "glob_data_types.h"
+#include <QComboBox>
+#include <QObject>
+#include <QString>
+#include <QSettings>
+#include <QTableWidget>
+#include <QFile>
+#include <QtXml>
+#include <cstdio>
 
 struct SDabFrequencies;
 
@@ -52,9 +52,9 @@ public:
   ~BandHandler() override;
 
   void saveSettings();
-  void setupChannels(QComboBox * s, uint8_t band);
+  void setupChannels(QComboBox * s, u8 band);
   void setup_skipList(const QString &);
-  int32_t get_frequency_Hz(const QString & Channel) const;
+  i32 get_frequency_Hz(const QString & Channel) const;
   int firstChannel() const;
   int nextChannel(int) const;
   // int prevChannel(int);

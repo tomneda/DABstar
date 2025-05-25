@@ -27,7 +27,7 @@
 static
 const	int	EXTIO_NS = 8192;
 static
-const	int	EXTIO_BASE_TYPE_SIZE = sizeof (float);
+const	int	EXTIO_BASE_TYPE_SIZE = sizeof (f32);
 
 AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
                              myFrame(nullptr),
@@ -35,8 +35,8 @@ AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
 {
 	int	result, i;
 	int	distance = 1000000;
-	std::vector <uint32_t> sampleRates;
-	uint32_t samplerateCount;
+	std::vector <u32> sampleRates;
+	u32 samplerateCount;
 
 	this->airspySettings = s;
 	this->recorderVersion = recorderVersion;
@@ -88,7 +88,7 @@ AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
 	   throw(std_exception_string(my_airspy_error_name((airspy_error)result)));
 	}
 
-	uint64_t deviceList[4];
+	u64 deviceList[4];
 	int	deviceIndex;
 	int numofDevs = my_airspy_list_devices (deviceList, 4);
 	fprintf (stderr, "we have %d devices\n", numofDevs);
@@ -160,7 +160,7 @@ AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
 	convBufferSize		= selectedRate / 1000;
 	for (i = 0; i < 2048; i ++)
 	{
-	   float inVal	= float (selectedRate / 1000);
+	   f32 inVal	= f32 (selectedRate / 1000);
 	   mapTable_int [i]	= int (floor (i * (inVal / 2048.0)));
 	   mapTable_float [i]	= i * (inVal / 2048.0) - mapTable_int [i];
 	}
@@ -235,7 +235,7 @@ AirspyHandler::~AirspyHandler ()
     if(phandle) delete(phandle);
 }
 
-void	AirspyHandler::setVFOFrequency (int32_t nf)
+void	AirspyHandler::setVFOFrequency (i32 nf)
 {
 	int result = my_airspy_set_freq (device, nf);
 
@@ -246,12 +246,12 @@ void	AirspyHandler::setVFOFrequency (int32_t nf)
 	}
 }
 
-int32_t	AirspyHandler::getVFOFrequency()
+i32	AirspyHandler::getVFOFrequency()
 {
 	return vfoFrequency;
 }
 
-int32_t	AirspyHandler::defaultFrequency()
+i32	AirspyHandler::defaultFrequency()
 {
 	return kHz (220000);
 }
@@ -263,10 +263,10 @@ void	AirspyHandler::set_filter	(int c)
 //	fprintf (stderr, "filter set %s\n", filtering ? "on" : "off");
 }
 
-bool	AirspyHandler::restartReader	(int32_t freq)
+bool	AirspyHandler::restartReader	(i32 freq)
 {
 	int	result;
-	//int32_t	bufSize	= EXTIO_NS * EXTIO_BASE_TYPE_SIZE * 2;
+	//i32	bufSize	= EXTIO_NS * EXTIO_BASE_TYPE_SIZE * 2;
 
 	if (running.load())
 	   return true;
@@ -351,8 +351,8 @@ int AirspyHandler::callback (airspy_transfer* transfer)
 	p = static_cast<AirspyHandler *> (transfer->ctx);
 
 // we read  AIRSPY_SAMPLE_INT16_IQ:
-	int32_t bytes_to_write = transfer->sample_count * sizeof (int16_t) * 2;
-	uint8_t *pt_rx_buffer   = (uint8_t *)transfer->samples;
+	i32 bytes_to_write = transfer->sample_count * sizeof (i16) * 2;
+	u8 *pt_rx_buffer   = (u8 *)transfer->samples;
 	p->data_available (pt_rx_buffer, bytes_to_write);
 	return 0;
 }
@@ -363,13 +363,13 @@ int AirspyHandler::callback (airspy_transfer* transfer)
 //	and transform them into groups of 2 * 512 samples
 int 	AirspyHandler::data_available (void *buf, int buf_size)
 {
-	int16_t	*sbuf	= (int16_t *)buf;
-	int nSamples	= buf_size / (sizeof (int16_t) * 2);
-	cmplx temp [2048];
-	int32_t  i, j;
+	i16	*sbuf	= (i16 *)buf;
+	int nSamples	= buf_size / (sizeof (i16) * 2);
+	cf32 temp [2048];
+	i32  i, j;
 
 	if (dumping.load ())
-	   xmlWriter->add ((std::complex<int16_t> *)sbuf, nSamples);
+	   xmlWriter->add ((std::complex<i16> *)sbuf, nSamples);
 	if (filtering)
 	{
 	   if (filterDepth->value () != currentDepth)
@@ -384,16 +384,16 @@ int 	AirspyHandler::data_available (void *buf, int buf_size)
 	   for (i = 0; i < nSamples; i ++)
 	   {
 	      convBuffer [convIndex ++] = theFilter->Pass (
-	                                     cmplx (
-	                                        sbuf [2 * i] / (float)2048,
-	                                        sbuf [2 * i + 1] / (float)2048)
+	                                     cf32 (
+	                                        sbuf [2 * i] / (f32)2048,
+	                                        sbuf [2 * i + 1] / (f32)2048)
 	                                     );
 	      if (convIndex > convBufferSize)
 	      {
 	         for (j = 0; j < 2048; j ++)
 	         {
-	            int16_t  inpBase	= mapTable_int [j];
-	            float    inpRatio	= mapTable_float [j];
+	            i16  inpBase	= mapTable_int [j];
+	            f32    inpRatio	= mapTable_float [j];
 	            temp [j]	= convBuffer [inpBase + 1] * inpRatio +
 	                        convBuffer [inpBase] * (1 - inpRatio);
 	         }
@@ -410,15 +410,15 @@ int 	AirspyHandler::data_available (void *buf, int buf_size)
 	else
 	for (i = 0; i < nSamples; i ++)
 	{
-	   convBuffer [convIndex ++] = cmplx (
-	                                     sbuf [2 * i] / (float)2048,
-	                                     sbuf [2 * i + 1] / (float)2048);
+	   convBuffer [convIndex ++] = cf32 (
+	                                     sbuf [2 * i] / (f32)2048,
+	                                     sbuf [2 * i + 1] / (f32)2048);
 	   if (convIndex > convBufferSize)
 	   {
 	      for (j = 0; j < 2048; j ++)
 	      {
-	         int16_t  inpBase	= mapTable_int [j];
-	         float    inpRatio	= mapTable_float [j];
+	         i16  inpBase	= mapTable_int [j];
+	         f32    inpRatio	= mapTable_float [j];
 	         temp [j]	= convBuffer [inpBase + 1] * inpRatio +
                       convBuffer [inpBase] * (1 - inpRatio);
 	      }
@@ -476,24 +476,24 @@ void	AirspyHandler::resetBuffer	()
 	_I_Buffer.flush_ring_buffer	();
 }
 
-int16_t	AirspyHandler::bitDepth		()
+i16	AirspyHandler::bitDepth		()
 {
 	return 13;
 }
 
-int32_t	AirspyHandler::getSamples (cmplx *v, int32_t size)
+i32	AirspyHandler::getSamples (cf32 *v, i32 size)
 {
 
 	return _I_Buffer.get_data_from_ring_buffer (v, size);
 }
 
-int32_t	AirspyHandler::Samples		() {
+i32	AirspyHandler::Samples		() {
 	return _I_Buffer.get_ring_buffer_read_available();
 }
 
 const char* AirspyHandler::board_id_name()
 {
-	uint8_t bid;
+	u8 bid;
 
 	if (my_airspy_board_id_read (device, &bid) == AIRSPY_SUCCESS)
 	   return my_airspy_board_id_name ((airspy_board_id)bid);
@@ -953,12 +953,12 @@ void	AirspyHandler::switch_tab (int t)
 
 #define GAIN_COUNT (22)
 
-uint8_t airspy_linearity_vga_gains[GAIN_COUNT] = { 13, 12, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4 };
-uint8_t airspy_linearity_mixer_gains[GAIN_COUNT] = { 12, 12, 11, 9, 8, 7, 6, 6, 5, 0, 0, 1, 0, 0, 2, 2, 1, 1, 1, 1, 0, 0 };
-uint8_t airspy_linearity_lna_gains[GAIN_COUNT] = { 14, 14, 14, 13, 12, 10, 9, 9, 8, 9, 8, 6, 5, 3, 1, 0, 0, 0, 0, 0, 0, 0 };
-uint8_t airspy_sensitivity_vga_gains[GAIN_COUNT] = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
-uint8_t airspy_sensitivity_mixer_gains[GAIN_COUNT] = { 12, 12, 12, 12, 11, 10, 10, 9, 9, 8, 7, 4, 4, 4, 3, 2, 2, 1, 0, 0, 0, 0 };
-uint8_t airspy_sensitivity_lna_gains[GAIN_COUNT] = { 14, 14, 14, 14, 14, 14, 14, 14, 14, 13, 12, 12, 9, 9, 8, 7, 6, 5, 3, 2, 1, 0 };
+u8 airspy_linearity_vga_gains[GAIN_COUNT] = { 13, 12, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4 };
+u8 airspy_linearity_mixer_gains[GAIN_COUNT] = { 12, 12, 11, 9, 8, 7, 6, 6, 5, 0, 0, 1, 0, 0, 2, 2, 1, 1, 1, 1, 0, 0 };
+u8 airspy_linearity_lna_gains[GAIN_COUNT] = { 14, 14, 14, 13, 12, 10, 9, 9, 8, 9, 8, 6, 5, 3, 1, 0, 0, 0, 0, 0, 0, 0 };
+u8 airspy_sensitivity_vga_gains[GAIN_COUNT] = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
+u8 airspy_sensitivity_mixer_gains[GAIN_COUNT] = { 12, 12, 12, 12, 11, 10, 10, 9, 9, 8, 7, 4, 4, 4, 3, 2, 2, 1, 0, 0, 0, 0 };
+u8 airspy_sensitivity_lna_gains[GAIN_COUNT] = { 14, 14, 14, 14, 14, 14, 14, 14, 14, 13, 12, 12, 9, 9, 8, 7, 6, 5, 3, 2, 1, 0 };
 
 void	AirspyHandler::set_linearity (int value)
 {

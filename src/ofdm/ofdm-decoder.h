@@ -49,38 +49,38 @@ class OfdmDecoder : public QObject
 {
 Q_OBJECT
 public:
-  OfdmDecoder(DabRadio *, RingBuffer<cmplx> * iqBuffer, RingBuffer<float> * ipCarrBuffer);
+  OfdmDecoder(DabRadio *, RingBuffer<cf32> * iqBuffer, RingBuffer<f32> * ipCarrBuffer);
   ~OfdmDecoder() override;
 
   struct SLcdData
   {
-    int32_t CurOfdmSymbolNo;
-    float MeanSigmaSqFreqCorr;
-    float SNR;
-    float ModQuality;
-    float TestData1;
-    float TestData2;
+    i32 CurOfdmSymbolNo;
+    f32 MeanSigmaSqFreqCorr;
+    f32 SNR;
+    f32 ModQuality;
+    f32 TestData1;
+    f32 TestData2;
   };
 
   void reset();
   void store_null_symbol_with_tii(const TArrayTu &);
   void store_null_symbol_without_tii(const TArrayTu &);
   void store_reference_symbol_0(const TArrayTu &);
-  void decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits);
+  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, std::vector<i16> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);
   void set_soft_bit_gen_type(ESoftBitType iSoftBitType);
   void set_show_nominal_carrier(bool iShowNominalCarrier);
 
-  inline void set_dc_offset(cmplx iDcOffset) { mDcAdc = iDcOffset; };
+  inline void set_dc_offset(cf32 iDcOffset) { mDcAdc = iDcOffset; };
 
 private:
   DabRadio * const mpRadioInterface;
   FreqInterleaver mFreqInterleaver;
 
-  RingBuffer<cmplx> * const mpIqBuffer;
-  RingBuffer<float> * const mpCarrBuffer;
+  RingBuffer<cf32> * const mpIqBuffer;
+  RingBuffer<f32> * const mpCarrBuffer;
 
   ECarrierPlotType mCarrierPlotType = ECarrierPlotType::DEFAULT;
   EIqPlotType mIqPlotType = EIqPlotType::DEFAULT;
@@ -88,50 +88,50 @@ private:
 
   bool mShowNomCarrier = false;
 
-  int32_t mShowCntStatistics = 0;
-  int32_t mShowCntIqScope = 0;
-  int32_t mNextShownOfdmSymbIdx = 1;
-  std::vector<cmplx> mPhaseReference;
-  std::vector<cmplx> mIqVector;
-  std::vector<float> mCarrVector;
-  std::vector<float> mStdDevSqPhaseVector;
-  std::vector<float> mIntegAbsPhaseVector;
-  std::vector<float> mMeanPhaseVector;
-  std::vector<float> mMeanLevelVector;
-  std::vector<float> mMeanSigmaSqVector;
-  std::vector<float> mMeanPowerVector;
-  std::vector<float> mMeanNullLevel;
-  std::vector<float> mMeanNullPowerWithoutTII;
-  float mMeanPowerOvrAll = 1.0f;
-  float mAbsNullLevelMin = 0.0f;
-  float mAbsNullLevelGain = 0.0f;
-  float mMeanValue = 1.0f;
-  float mMeanSigmaSqFreqCorr = 0.0f;
-  cmplx mDcAdc{ 0.0f, 0.0f };
+  i32 mShowCntStatistics = 0;
+  i32 mShowCntIqScope = 0;
+  i32 mNextShownOfdmSymbIdx = 1;
+  std::vector<cf32> mPhaseReference;
+  std::vector<cf32> mIqVector;
+  std::vector<f32> mCarrVector;
+  std::vector<f32> mStdDevSqPhaseVector;
+  std::vector<f32> mIntegAbsPhaseVector;
+  std::vector<f32> mMeanPhaseVector;
+  std::vector<f32> mMeanLevelVector;
+  std::vector<f32> mMeanSigmaSqVector;
+  std::vector<f32> mMeanPowerVector;
+  std::vector<f32> mMeanNullLevel;
+  std::vector<f32> mMeanNullPowerWithoutTII;
+  f32 mMeanPowerOvrAll = 1.0f;
+  f32 mAbsNullLevelMin = 0.0f;
+  f32 mAbsNullLevelGain = 0.0f;
+  f32 mMeanValue = 1.0f;
+  f32 mMeanSigmaSqFreqCorr = 0.0f;
+  cf32 mDcAdc{ 0.0f, 0.0f };
 
   // phase correction LUT to speed up process (there are no (good) SIMD commands for that)
-  static constexpr float cPhaseShiftLimit = 20.0f;
+  static constexpr f32 cPhaseShiftLimit = 20.0f;
 #ifdef USE_PHASE_CORR_LUT
-  static constexpr int32_t cLutLen2 = 127; // -> 255 values in LUT
-  static constexpr float cLutFact = cLutLen2 / (F_RAD_PER_DEG * cPhaseShiftLimit);
-  std::array<cmplx, cLutLen2 * 2 + 1> mLutPhase2Cmplx;
+  static constexpr i32 cLutLen2 = 127; // -> 255 values in LUT
+  static constexpr f32 cLutFact = cLutLen2 / (F_RAD_PER_DEG * cPhaseShiftLimit);
+  std::array<cf32, cLutLen2 * 2 + 1> mLutPhase2Cmplx;
 #endif
 
   // mLcdData has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SLcdData mLcdData{};
 
-  [[nodiscard]] float _compute_noise_Power() const;
+  [[nodiscard]] f32 _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const TArrayTu &);
   void _reset_null_symbol_statistics();
 #ifndef USE_PHASE_CORR_LUT
-  cmplx cmplx_from_phase2(const float iPhase);
+  cf32 cmplx_from_phase2(const f32 iPhase);
 #endif
 
-  static cmplx _interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar);
+  static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
 
 signals:
-  void signal_slot_show_iq(int, float);
+  void signal_slot_show_iq(int, f32);
   void signal_show_lcd_data(const SLcdData *);
 };
 

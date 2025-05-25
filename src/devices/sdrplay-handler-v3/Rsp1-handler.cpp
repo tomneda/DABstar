@@ -23,7 +23,7 @@
 #include	"sdrplay-handler-v3.h"
 
 Rsp1_handler::Rsp1_handler(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice,
-						   int freq, bool agcMode, int lnaState, int GRdB, double ppm)
+						   int freq, bool agcMode, int lnaState, int GRdB, f64 ppm)
   : Rsp_device(parent, chosenDevice, freq, agcMode, lnaState, GRdB, ppm)
 {
   int mLna_upperBound = lnaStates(freq) -1;
@@ -46,7 +46,7 @@ bool Rsp1_handler::restart(int freq)
 {
   sdrplay_api_ErrT err;
 
-  mpChParams->tunerParams.rfFreq.rfHz = (float)freq;
+  mpChParams->tunerParams.rfFreq.rfHz = (f32)freq;
   err = mpParent->sdrplay_api_Update(mpChosenDevice->dev,
                                    mpChosenDevice->tuner,
                                        sdrplay_api_Update_Tuner_Frf,

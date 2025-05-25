@@ -45,14 +45,14 @@ public:
   explicit motHandler(DabRadio *);
   ~motHandler() override;
 
-  void add_mscDatagroup(const std::vector<uint8_t> &);
+  void add_mscDatagroup(const std::vector<u8> &);
 private:
   DabRadio * myRadioInterface;
   int orderNumber;
   MotDirectory * theDirectory;
 
-  void setHandle(MotObject *, uint16_t);
-  MotObject * getHandle(uint16_t);
+  void setHandle(MotObject *, u16);
+  MotObject * getHandle(u16);
 };
 
 #endif

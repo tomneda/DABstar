@@ -187,10 +187,10 @@ BandHandler::~BandHandler()
 
 //
 //	The main program calls this once, the combobox will be filled
-void BandHandler::setupChannels(QComboBox * s, uint8_t band)
+void BandHandler::setupChannels(QComboBox * s, u8 band)
 {
-  int16_t i;
-  int16_t c = s->count();
+  i16 i;
+  i16 c = s->count();
 
   if (selectedBand == nullptr)
   {  // no preset band
@@ -360,9 +360,9 @@ void BandHandler::updateEntry(const QString & channel) const
 }
 
 //	find the frequency for a given channel in a given band
-int32_t BandHandler::get_frequency_Hz(const QString & Channel) const
+i32 BandHandler::get_frequency_Hz(const QString & Channel) const
 {
-  int32_t tunedFrequency = 0;
+  i32 tunedFrequency = 0;
   int i;
 
   for (i = 0; selectedBand[i].key != nullptr; i++)

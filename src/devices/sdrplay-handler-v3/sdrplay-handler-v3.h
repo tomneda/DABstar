@@ -59,21 +59,21 @@ public:
   SdrPlayHandler_v3(QSettings *, const QString &);
   ~SdrPlayHandler_v3() override;
 
-  void setVFOFrequency(int32_t) override;
-  int32_t getVFOFrequency() override;
-  bool restartReader(int32_t) override;
+  void setVFOFrequency(i32) override;
+  i32 getVFOFrequency() override;
+  bool restartReader(i32) override;
   void stopReader() override;
-  int32_t getSamples(cmplx *, int32_t) override;
-  int32_t Samples() override;
+  i32 getSamples(cf32 *, i32) override;
+  i32 Samples() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
   bool isFileInput() override;
   void update_PowerOverload(sdrplay_api_EventParamsT * params);
-  RingBuffer<cmplx16> * const p_I_Buffer;
+  RingBuffer<ci16> * const p_I_Buffer;
   std::atomic<bool> receiverRuns;
 
   sdrplay_api_CallbackFnsT cbFns;
@@ -102,16 +102,16 @@ public:
   void run() override;
   bool messageHandler(generalCommand *);
   QString recorderVersion;
-  int32_t vfoFrequency;
-  int16_t hwVersion;
+  i32 vfoFrequency;
+  i16 hwVersion;
   bool agcMode;
   int lna_upperBound;
-  float apiVersion;
+  f32 apiVersion;
   bool has_antennaSelect;
   QString deviceModel = "SDRplay";
   int GRdBValue;
   int lnaState;
-  double ppmValue;
+  f64 ppmValue;
   bool biasT;
   bool notch;
   FILE * xmlDumper;
@@ -130,22 +130,22 @@ private:
   QLibrary * phandle;
 
   // tomneda: was at 14bit but it seems the whole 16bits are used in the callback function (for the RSPdx)
-  static constexpr int16_t nrBits = 16;
+  static constexpr i16 nrBits = 16;
 
   void set_deviceName(const QString &);
   void set_serial(const QString &);
-  void set_apiVersion(float);
+  void set_apiVersion(f32);
 
 private slots:
   void set_ifgainReduction(int);
   void set_lnagainReduction(int);
   void set_agcControl(int);
-  void set_ppmControl(double);
+  void set_ppmControl(f64);
   void set_selectAntenna(const QString &);
   void set_biasT(int);
   void set_notch(int);
   void slot_overload_detected(bool);
-  void slot_tuner_gain(double, int);
+  void slot_tuner_gain(f64, int);
 public slots:
   void set_lnabounds(int, int);
   void set_antennaSelect(int);
@@ -154,7 +154,7 @@ public slots:
 signals:
   void set_antennaSelect_signal(bool);
   void signal_overload_detected(bool);
-  void signal_tuner_gain(double, int);
+  void signal_tuner_gain(f64, int);
 };
 
 #endif

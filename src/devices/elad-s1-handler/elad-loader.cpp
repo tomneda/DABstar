@@ -26,7 +26,7 @@
 //	Straight forward class to load the functions from the
 //	elad library
 
-	eladLoader::eladLoader	(int32_t theRate, int16_t *success) {
+	eladLoader::eladLoader	(i32 theRate, i16 *success) {
 int	rc;
 	libraryLoaded	= false;
 	hardware_OK	= false;
@@ -150,8 +150,8 @@ int	rc;
 
 libusb_device_handle *eladLoader::startUSB	(void) {
 libusb_device_handle	*dev_handle	= nullptr;
-uint16_t vendor_id =  0x1721;
-uint16_t product_id = 0x0610;
+u16 vendor_id =  0x1721;
+u16 product_id = 0x0610;
 
 	context		= 0;
 int rc = libusb_init ( &context );

@@ -35,6 +35,7 @@
 #ifndef  SPECTROGRAM_H
 #define  SPECTROGRAM_H
 
+#include "glob_data_types.h"
 #include  <qwt_raster_data.h>
 
 #if !defined(QWT_VERSION)
@@ -44,25 +45,25 @@
 class SpectrogramData : public QwtRasterData
 {
 public:
-  const double * const mpData;  // pointer to actual data
-  const double mLeft;           // index of left most element in raster
-  const double mWidth;          // raster width
-  const double mHeight;         // raster height
-  const int32_t mDataWidth;     // width of matrix
-  const int32_t mDataHeight;    // for now == raster height
+  const f64 * const mpData;  // pointer to actual data
+  const f64 mLeft;           // index of left most element in raster
+  const f64 mWidth;          // raster width
+  const f64 mHeight;         // raster height
+  const i32 mDataWidth;     // width of matrix
+  const i32 mDataHeight;    // for now == raster height
 #if ((QWT_VERSION >> 8) >= 0x0602)
-  double mzMin = 0.0;
-  double mzMax = 1.0;
+  f64 mzMin = 0.0;
+  f64 mzMax = 1.0;
 #endif
 
-  SpectrogramData(const double * ipData, int32_t iLeft, int32_t iWidth, int32_t iHeight, int32_t iDatawidth);
+  SpectrogramData(const f64 * ipData, i32 iLeft, i32 iWidth, i32 iHeight, i32 iDatawidth);
   ~SpectrogramData() override = default;
 
-  void set_min_max_z_value(const double izMin, const double izMax);
+  void set_min_max_z_value(const f64 izMin, const f64 izMax);
 
   void initRaster(const QRectF & x, const QSize & raster) override;
 
-  double value(double iX, double iY) const override;
+  f64 value(f64 iX, f64 iY) const override;
 
   // unfortunately the older Qwt interface provides no override-able virtual interface interval() -> do it another way
 #if ((QWT_VERSION >> 8) >= 0x0602)

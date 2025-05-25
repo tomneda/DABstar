@@ -129,15 +129,15 @@ Q_OBJECT
 public:
 			PlutoHandler		(QSettings *, QString &);
             		~PlutoHandler		();
-	void		setVFOFrequency		(int32_t);
-	int32_t		getVFOFrequency		();
-	bool		restartReader		(int32_t);
+	void		setVFOFrequency		(i32);
+	i32		getVFOFrequency		();
+	bool		restartReader		(i32);
 	void		stopReader		();
-	int32_t		getSamples		(cmplx *,
-	                                                          int32_t);
-	int32_t		Samples			();
+	i32		getSamples		(cf32 *,
+	                                                          i32);
+	i32		Samples			();
 	void		resetBuffer		();
-	int16_t		bitDepth		();
+	i16		bitDepth		();
 
 	void		show			();
 	void		hide			();
@@ -147,7 +147,7 @@ private:
 	bool			loadFunctions	();
 	QLibrary		*pHandle;
 	QFrame			myFrame;
-	RingBuffer<cmplx>	_I_Buffer;
+	RingBuffer<cf32>	_I_Buffer;
 	QSettings		*plutoSettings;
 	QString			recorderVersion;
 	FILE			*xmlDumper;
@@ -157,8 +157,8 @@ private:
 	std::atomic<bool>	dumping;
 	bool			filterOn;
 	void			run		();
-	int32_t			inputRate;
-	int32_t			vfoFrequency;
+	i32			inputRate;
+	i32			vfoFrequency;
 	std::atomic<bool>	running;
 	bool			debugFlag;
 //      configuration items
@@ -170,10 +170,10 @@ private:
 	struct	iio_buffer	*rxbuf;
 	struct stream_cfg	rx_cfg;
 	bool			connected;
-	cmplx	convBuffer	[CONV_SIZE + 1];
+	cf32	convBuffer	[CONV_SIZE + 1];
 	int			convIndex;
-	int16_t			mapTable_int	[DAB_RATE / DIVIDER];
-	float			mapTable_float	[DAB_RATE / DIVIDER];
+	i16			mapTable_int	[DAB_RATE / DIVIDER];
+	f32			mapTable_float	[DAB_RATE / DIVIDER];
 
 	void			record_gainSettings	(int);
 	void			update_gainSettings	(int);

@@ -40,12 +40,12 @@
   *	equal error protection, bitRate and protLevel
   *	define the puncturing table
   */
-EepProtection::EepProtection(int16_t bitRate, int16_t protLevel) :
+EepProtection::EepProtection(i16 bitRate, i16 protLevel) :
   Protection(bitRate)
 {
-  int16_t viterbiCounter = 0;
-  int16_t L1 = 0, L2 = 0;
-  const int8_t * PI1, * PI2, * PI_X;
+  i16 viterbiCounter = 0;
+  i16 L1 = 0, L2 = 0;
+  const i8 * PI1, * PI2, * PI_X;
 
   if ((protLevel & (1 << 2)) == 0)
   {  // set A profiles
@@ -125,7 +125,7 @@ EepProtection::EepProtection(int16_t bitRate, int16_t protLevel) :
   }
   PI_X = get_PCodes(8 - 1);
 
-  memset(indexTable.data(), 0, (outSize * 4 + 24) * sizeof(uint8_t));
+  memset(indexTable.data(), 0, (outSize * 4 + 24) * sizeof(u8));
   //
   //	according to the standard we process the logical frame
   //	with a pair of tuples

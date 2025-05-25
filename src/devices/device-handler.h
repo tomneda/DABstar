@@ -44,14 +44,14 @@ class IDeviceHandler
 public:
   virtual ~IDeviceHandler() = default;
 
-  virtual bool restartReader(int32_t freq) = 0;
+  virtual bool restartReader(i32 freq) = 0;
   virtual void stopReader() = 0;
-  virtual void setVFOFrequency(int32_t) = 0;
-  virtual int32_t getVFOFrequency() = 0;
-  virtual int32_t getSamples(cmplx *, int32_t) = 0;
-  virtual int32_t Samples() = 0;
+  virtual void setVFOFrequency(i32) = 0;
+  virtual i32 getVFOFrequency() = 0;
+  virtual i32 getSamples(cf32 *, i32) = 0;
+  virtual i32 Samples() = 0;
   virtual void resetBuffer() = 0;
-  virtual int16_t bitDepth() = 0;
+  virtual i16 bitDepth() = 0;
   virtual void hide() = 0;
   virtual void show() = 0;
   virtual bool isHidden() = 0;

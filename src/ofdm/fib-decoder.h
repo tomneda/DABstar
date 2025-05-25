@@ -57,31 +57,31 @@ public:
   void disconnect_channel();
   bool sync_reached();
   void get_data_for_audio_service(const QString &, Audiodata *);
-  void get_data_for_packet_service(const QString &, Packetdata *, int16_t);
-  int get_sub_channel_id(const QString &, uint32_t);
+  void get_data_for_packet_service(const QString &, Packetdata *, i16);
+  int get_sub_channel_id(const QString &, u32);
   std::vector<SServiceId> get_services();
 
-  QString find_service(uint32_t, int);
-  void get_parameters(const QString &, uint32_t *, int *);
-  uint8_t get_ecc();
-  uint16_t get_country_name();
-  uint8_t get_countryId();
-  int32_t get_ensembleId();
+  QString find_service(u32, int);
+  void get_parameters(const QString &, u32 *, int *);
+  u8 get_ecc();
+  u16 get_country_name();
+  u8 get_countryId();
+  i32 get_ensembleId();
   QString get_ensemble_name();
   void get_channel_info(ChannelData *, int);
-  int32_t get_cif_count();
-  void get_cif_count(int16_t *, int16_t *);
-  uint32_t get_julian_date();
-  void set_epg_data(uint32_t, int32_t, const QString &, const QString &);
-  std::vector<SEpgElement> get_timeTable(uint32_t);
+  i32 get_cif_count();
+  void get_cif_count(i16 *, i16 *);
+  u32 get_julian_date();
+  void set_epg_data(u32, i32, const QString &, const QString &);
+  std::vector<SEpgElement> get_timeTable(u32);
   std::vector<SEpgElement> get_timeTable(const QString &);
-  bool has_time_table(uint32_t SId);
-  std::vector<SEpgElement> find_epg_data(uint32_t);
+  bool has_time_table(u32 SId);
+  std::vector<SEpgElement> find_epg_data(u32);
   QStringList basic_print();
   int scan_width();
 
 protected:
-  void process_FIB(const uint8_t *, uint16_t);
+  void process_FIB(const u8 *, u16);
 
 private:
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & l, SServiceId n);
@@ -89,59 +89,59 @@ private:
   DabConfig * currentConfig = nullptr;
   DabConfig * nextConfig = nullptr;
   EnsembleDescriptor * ensemble = nullptr;
-  std::array<int32_t, 8> dateTime{};
+  std::array<i32, 8> dateTime{};
   QMutex fibLocker;
-  int32_t CIFcount = 0;
-  int16_t CIFcount_hi = 0;
-  int16_t CIFcount_lo = 0;
-  uint32_t mjd = 0;      // julianDate
+  i32 CIFcount = 0;
+  i16 CIFcount_hi = 0;
+  i16 CIFcount_lo = 0;
+  u32 mjd = 0;      // julianDate
 
-  void process_FIG0(const uint8_t *);
-  void process_FIG1(const uint8_t *);
-  void FIG0Extension0(const uint8_t *);
-  void FIG0Extension1(const uint8_t *);
-  void FIG0Extension2(const uint8_t *);
-  void FIG0Extension3(const uint8_t *);
-  void FIG0Extension5(const uint8_t *);
-  void FIG0Extension7(const uint8_t *);
-  void FIG0Extension8(const uint8_t *);
-  void FIG0Extension9(const uint8_t *);
-  void FIG0Extension10(const uint8_t *);
-  void FIG0Extension13(const uint8_t *);
-  void FIG0Extension14(const uint8_t *);
-  void FIG0Extension17(const uint8_t *);
-  void FIG0Extension18(const uint8_t *);
-  void FIG0Extension19(const uint8_t *);
-  void FIG0Extension21(const uint8_t *);
+  void process_FIG0(const u8 *);
+  void process_FIG1(const u8 *);
+  void FIG0Extension0(const u8 *);
+  void FIG0Extension1(const u8 *);
+  void FIG0Extension2(const u8 *);
+  void FIG0Extension3(const u8 *);
+  void FIG0Extension5(const u8 *);
+  void FIG0Extension7(const u8 *);
+  void FIG0Extension8(const u8 *);
+  void FIG0Extension9(const u8 *);
+  void FIG0Extension10(const u8 *);
+  void FIG0Extension13(const u8 *);
+  void FIG0Extension14(const u8 *);
+  void FIG0Extension17(const u8 *);
+  void FIG0Extension18(const u8 *);
+  void FIG0Extension19(const u8 *);
+  void FIG0Extension21(const u8 *);
 
-  int16_t HandleFIG0Extension1(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension2(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension3(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension5(const uint8_t *, uint8_t, uint8_t, uint8_t, int16_t);
-  int16_t HandleFIG0Extension8(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension13(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension21(const uint8_t *, uint8_t, uint8_t, uint8_t, int16_t);
+  i16 HandleFIG0Extension1(const u8 *, i16, u8, u8, u8);
+  i16 HandleFIG0Extension2(const u8 *, i16, u8, u8, u8);
+  i16 HandleFIG0Extension3(const u8 *, i16, u8, u8, u8);
+  i16 HandleFIG0Extension5(const u8 *, u8, u8, u8, i16);
+  i16 HandleFIG0Extension8(const u8 *, i16, u8, u8, u8);
+  i16 HandleFIG0Extension13(const u8 *, i16, u8, u8, u8);
+  i16 HandleFIG0Extension21(const u8 *, u8, u8, u8, i16);
 
-  void FIG1Extension0(const uint8_t *);
-  void FIG1Extension1(const uint8_t *);
-  void FIG1Extension4(const uint8_t *);
-  void FIG1Extension5(const uint8_t *);
-  void FIG1Extension6(const uint8_t *);
+  void FIG1Extension0(const u8 *);
+  void FIG1Extension1(const u8 *);
+  void FIG1Extension4(const u8 *);
+  void FIG1Extension5(const u8 *);
+  void FIG1Extension6(const u8 *);
 
   int findService(const QString &);
-  int find_service_index_from_SId(uint32_t);
+  int find_service_index_from_SId(u32);
   void cleanupServiceList();
-  void createService(QString name, uint32_t SId, int SCIds);
-  int findServiceComponent(DabConfig *, int16_t);
-  int findComponent(DabConfig * db, uint32_t SId, int16_t subChId);
-  int findServiceComponent(DabConfig *, uint32_t, uint8_t);
-  void bind_audioService(DabConfig *, int8_t, uint32_t, int16_t, int16_t, int16_t, int16_t);
-  void bind_packetService(DabConfig *, int8_t, uint32_t, int16_t, int16_t, int16_t, int16_t);
+  void createService(QString name, u32 SId, int SCIds);
+  int findServiceComponent(DabConfig *, i16);
+  int findComponent(DabConfig * db, u32 SId, i16 subChId);
+  int findServiceComponent(DabConfig *, u32, u8);
+  void bind_audioService(DabConfig *, i8, u32, i16, i16, i16, i16);
+  void bind_packetService(DabConfig *, i8, u32, i16, i16, i16, i16);
 
-  QString announcements(uint16_t);
+  QString announcements(u16);
 
-  void setCluster(DabConfig *, int, int16_t, uint16_t);
-  Cluster * getCluster(DabConfig *, int16_t);
+  void setCluster(DabConfig *, int, i16, u16);
+  Cluster * getCluster(DabConfig *, i16);
 
   QString serviceName(int index);
   QString serviceIdOf(int index);
@@ -166,7 +166,7 @@ private:
   QString packetData(int index);
 
 signals:
-  void signal_add_to_ensemble(const QString &, uint32_t);
+  void signal_add_to_ensemble(const QString &, u32);
   void signal_name_of_ensemble(int, const QString &);
   void signal_clock_time(int, int, int, int, int, int, int, int, int);
   void signal_change_in_configuration();

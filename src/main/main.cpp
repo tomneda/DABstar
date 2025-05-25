@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
   const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist02.db");
 
   // Default values
-  int32_t dataPort = 8888;
+  i32 dataPort = 8888;
   QString altFreqList = "";
 
   QCoreApplication::setApplicationName(PRJ_NAME);

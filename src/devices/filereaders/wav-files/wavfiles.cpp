@@ -75,8 +75,8 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   nameofFile->setText(iFilename);
   fileProgress->setValue(0);
   currentTime->display(0);
-  int64_t fileLength = sf_seek(filePointer, 0, SEEK_END);
-  totalTime->display(QString("%1").arg((float)fileLength / 2048000, 0, 'f', 1));
+  i64 fileLength = sf_seek(filePointer, 0, SEEK_END);
+  totalTime->display(QString("%1").arg((f32)fileLength / 2048000, 0, 'f', 1));
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &WavFileHandler::slot_handle_cb_loop_file);
   running.store(false);
@@ -101,7 +101,7 @@ WavFileHandler::~WavFileHandler()
   }
 }
 
-bool WavFileHandler::restartReader(int32_t freq)
+bool WavFileHandler::restartReader(i32 freq)
 {
   (void)freq;
   if (running.load())
@@ -128,9 +128,9 @@ void WavFileHandler::stopReader()
 }
 
 //	size is in I/Q pairs
-int32_t WavFileHandler::getSamples(cmplx * V, int32_t size)
+i32 WavFileHandler::getSamples(cf32 * V, i32 size)
 {
-  int32_t amount;
+  i32 amount;
 
   if (filePointer == nullptr)
   {
@@ -147,12 +147,12 @@ int32_t WavFileHandler::getSamples(cmplx * V, int32_t size)
   return amount;
 }
 
-int32_t WavFileHandler::Samples()
+i32 WavFileHandler::Samples()
 {
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-void WavFileHandler::setProgress(int progress, float timelength)
+void WavFileHandler::setProgress(int progress, f32 timelength)
 {
   fileProgress->setValue(progress);
   currentTime->display(QString("%1").arg(timelength, 0, 'f', 1));
@@ -178,7 +178,7 @@ bool WavFileHandler::isFileInput()
   return true;
 }
 
-void WavFileHandler::setVFOFrequency(int32_t)
+void WavFileHandler::setVFOFrequency(i32)
 {
 }
 
@@ -191,7 +191,7 @@ void WavFileHandler::resetBuffer()
 {
 }
 
-int16_t WavFileHandler::bitDepth()
+i16 WavFileHandler::bitDepth()
 {
   return 10; // TODO: taken from former default interface, is it correct?
 }

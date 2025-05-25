@@ -51,27 +51,27 @@ public:
   explicit XmlFileReader(const QString &);
   ~XmlFileReader() override;
 
-  int32_t getSamples(cmplx *, int32_t) override;
-  int32_t Samples() override;
-  bool restartReader(int32_t) override;
+  i32 getSamples(cf32 *, i32) override;
+  i32 Samples() override;
+  bool restartReader(i32) override;
   void stopReader() override;
-  void setVFOFrequency(int32_t) override;
+  void setVFOFrequency(i32) override;
   int getVFOFrequency() override;
   void hide() override;
   void show() override;
   bool isHidden() override;
   bool isFileInput() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   QString deviceName() override;
 
 private:
   QFrame myFrame;
   std::atomic<bool> running = false;
   QString fileName;
-  RingBuffer<cmplx> _I_Buffer;
+  RingBuffer<cf32> _I_Buffer;
   FILE * theFile = nullptr;
-  uint32_t filePointer = 0;
+  u32 filePointer = 0;
   XmlDescriptor * theDescriptor = nullptr;
   XmlReader * theReader = nullptr;
   

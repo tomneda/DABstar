@@ -29,14 +29,15 @@
 
 #ifndef _EPGDEC_H
 #define _EPGDEC_H
-#include	<cstdint>
-#include	<vector>
-#include	<qdom.h>
 
-#define	_BYTE uint8_t
+#include "glob_data_types.h"
+#include <vector>
+#include <qdom.h>
+
+#define	_BYTE u8
 class tag_length_value {
 public:
-	uint8_t tag;
+	u8 tag;
 		tag_length_value	(const _BYTE* p);
 	bool	is_cdata() const { return tag == 1; }
 	bool	is_epg() const { return tag == 2; }
@@ -65,9 +66,9 @@ class CModJulDate
 {
 public:
 	CModJulDate() : iYear(0), iDay(0), iMonth(0) {}
-	CModJulDate(const uint32_t iModJulDate) {Set(iModJulDate);}
+	CModJulDate(const u32 iModJulDate) {Set(iModJulDate);}
 
-	void Set(const uint32_t iModJulDate);
+	void Set(const u32 iModJulDate);
 
 	int GetYear() {return iYear;}
 	int GetDay() {return iDay;}

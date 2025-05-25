@@ -41,7 +41,7 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-FdkAAC::FdkAAC(DabRadio * mr, RingBuffer<int16_t> * iipBuffer)
+FdkAAC::FdkAAC(DabRadio * mr, RingBuffer<i16> * iipBuffer)
   : mpAudioBuffer(iipBuffer)
 {
   handle = aacDecoder_Open(TT_MP4_LOAS, 1);
@@ -64,9 +64,9 @@ FdkAAC::~FdkAAC()
   }
 }
 
-int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * const ipBuffer, const int16_t iPacketLength)
+i16 FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const u8 * const ipBuffer, const i16 iPacketLength)
 {
-  static_assert(sizeof(int16_t) == sizeof(INT_PCM));
+  static_assert(sizeof(i16) == sizeof(INT_PCM));
   INT_PCM decode_buf[8 * sizeof(INT_PCM) * 2048];
   INT_PCM * bufp = &decode_buf[0];
   int output_size = 8 * 2048;
@@ -81,15 +81,15 @@ int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * con
     return -2;
   }
 
-  const uint32_t packet_size = (((ipBuffer[1] & 0x1F) << 8) | ipBuffer[2]) + 3;
+  const u32 packet_size = (((ipBuffer[1] & 0x1F) << 8) | ipBuffer[2]) + 3;
 
   if ((signed)packet_size != iPacketLength)
   {
     return -3;
   }
 
-  uint32_t validBytes = packet_size; // to remove const-ness
-  AAC_DECODER_ERROR err = aacDecoder_Fill(handle, const_cast<uint8_t **>(&ipBuffer), &packet_size, &validBytes);
+  u32 validBytes = packet_size; // to remove const-ness
+  AAC_DECODER_ERROR err = aacDecoder_Fill(handle, const_cast<u8 **>(&ipBuffer), &packet_size, &validBytes);
 
   if (err != AAC_DEC_OK)
   {
@@ -124,9 +124,9 @@ int16_t FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * con
   }
   else if (info->numChannels == 1)
   {
-    auto * const buffer = make_vla(int16_t, 2 * info->frameSize);
+    auto * const buffer = make_vla(i16, 2 * info->frameSize);
 
-    for (int32_t i = 0; i < info->frameSize; i++)
+    for (i32 i = 0; i < info->frameSize; i++)
     {
       buffer[2 * i + 0] = buffer[2 * i + 1] = bufp[i];
     }

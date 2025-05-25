@@ -37,12 +37,12 @@
 //	The DabProcessor assumes the existence of an msc-handler, whether
 //	a service is selected or not. 
 
-constexpr uint32_t CUSize = 4 * 16;
-static constexpr int16_t cifTable[] = { 18, 72, 0, 36 }; // for each DAB-Mode
+constexpr u32 CUSize = 4 * 16;
+static constexpr i16 cifTable[] = { 18, 72, 0, 36 }; // for each DAB-Mode
 
 //	Note CIF counts from 0 .. 3
 //
-MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<uint8_t> * const ipFrameBuffer)
+MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<u8> * const ipFrameBuffer)
   : mpRadioInterface(iRI)
   , mpFrameBuffer(ipFrameBuffer)
 {
@@ -117,7 +117,7 @@ void MscHandler::stop_service(const int iSubChId, const int iFlag)
   mMutex.unlock();
 }
 
-bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<int16_t> * ipoAudioBuffer, RingBuffer<uint8_t> * ipoDataBuffer, FILE * dump, int flag)
+bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, FILE * dump, int flag)
 {
   fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
   //	locker. lock();
@@ -145,11 +145,11 @@ bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<int16_t> * ipo
 //	gui thread, so some locking is added
 //
 
-void MscHandler::process_block(const std::vector<int16_t> & iSoftBits, const int16_t iBlockNr)
+void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i16 iBlockNr)
 {
-  const int16_t curBlockIdx = (int16_t)((iBlockNr - 4) % mNumberOfBlocksPerCif);
+  const i16 curBlockIdx = (i16)((iBlockNr - 4) % mNumberOfBlocksPerCif);
   //	and the normal operation is:
-  memcpy(&mCifVector[curBlockIdx * mBitsPerBlock], iSoftBits.data(), mBitsPerBlock * sizeof(int16_t));
+  memcpy(&mCifVector[curBlockIdx * mBitsPerBlock], iSoftBits.data(), mBitsPerBlock * sizeof(i16));
 
   if (curBlockIdx < mNumberOfBlocksPerCif - 1)
   {
@@ -161,8 +161,8 @@ void MscHandler::process_block(const std::vector<int16_t> & iSoftBits, const int
   mMutex.lock();
   for (const auto & b: mBackendList)
   {
-    const int16_t startAddr = b->startAddr;
-    const int16_t length = b->Length;
+    const i16 startAddr = b->startAddr;
+    const i16 length = b->Length;
     if (length > 0) // Length = 0? should not happen
     {
       b->process(&mCifVector[startAddr * CUSize], length * CUSize);

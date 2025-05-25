@@ -9,7 +9,7 @@ class RspDuo_handler : public Rsp_device
 {
 public:
   RspDuo_handler(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenDevice,
-                 int freq, bool agcMode, int lnaState, int GRdB, bool biasT, bool notch, double ppmValue);
+                 int freq, bool agcMode, int lnaState, int GRdB, bool biasT, bool notch, f64 ppmValue);
   ~RspDuo_handler() override = default;
 
   int lnaStates(int frequency) override;

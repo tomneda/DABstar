@@ -59,7 +59,7 @@ extern "C" {
 #endif
 
 ///Floating point data type
-typedef double float_type;
+typedef f64 float_type;
 
 ///convenience constant for good return code
 static const int LMS_SUCCESS = 0;
@@ -495,7 +495,7 @@ API_EXPORT int CALL_CONV LMS_SetGFIRLPF(lms_device_t *device, bool dir_tx,
  * @return  0 on success, (-1) on failure
  */
 API_EXPORT int CALL_CONV LMS_Calibrate(lms_device_t *device, bool dir_tx,
-                                        size_t chan, double bw, unsigned flags);
+                                        size_t chan, f64 bw, unsigned flags);
 
 /**
  * Load LMS chip configuration from a file
@@ -534,7 +534,7 @@ API_EXPORT int CALL_CONV LMS_SaveConfig(lms_device_t *device, const char *filena
  * @return  0 on success, (-1) on failure
  */
 API_EXPORT int CALL_CONV LMS_SetTestSignal(lms_device_t *device, bool dir_tx,
-                    size_t chan, lms_testsig_t sig, int16_t dc_i, int16_t dc_q);
+                    size_t chan, lms_testsig_t sig, i16 dc_i, i16 dc_q);
 /**
  * Get the currently active test signal
  *
@@ -801,8 +801,8 @@ API_EXPORT int CALL_CONV LMS_Reset(lms_device_t *device);
  *
  * @return  0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_ReadLMSReg(lms_device_t *device, uint32_t address,
-                                        uint16_t *val);
+API_EXPORT int CALL_CONV LMS_ReadLMSReg(lms_device_t *device, u32 address,
+                                        u16 *val);
 
 /**
  * Write device LMS chip register
@@ -813,8 +813,8 @@ API_EXPORT int CALL_CONV LMS_ReadLMSReg(lms_device_t *device, uint32_t address,
  *
  * @return  0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_WriteLMSReg(lms_device_t *device, uint32_t address,
-                                        uint16_t val);
+API_EXPORT int CALL_CONV LMS_WriteLMSReg(lms_device_t *device, u32 address,
+                                        u16 val);
 
 /**
  * Read device parameter. Parameter defines specific bits in device register.
@@ -826,7 +826,7 @@ API_EXPORT int CALL_CONV LMS_WriteLMSReg(lms_device_t *device, uint32_t address,
  * @return  0 on success, (-1) on failure
  */
 API_EXPORT int CALL_CONV LMS_ReadParam(lms_device_t *device,
-                                     struct LMS7Parameter param, uint16_t *val);
+                                     struct LMS7Parameter param, u16 *val);
 
 /**
  * Write device parameter. Parameter defines specific bits in device register.
@@ -838,7 +838,7 @@ API_EXPORT int CALL_CONV LMS_ReadParam(lms_device_t *device,
  * @return  0 on success, (-1) on failure
  */
 API_EXPORT int CALL_CONV LMS_WriteParam(lms_device_t *device,
-                                      struct LMS7Parameter param, uint16_t val);
+                                      struct LMS7Parameter param, u16 val);
 
 /**
  * Read device FPGA register
@@ -849,8 +849,8 @@ API_EXPORT int CALL_CONV LMS_WriteParam(lms_device_t *device,
  *
  * @return  0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_ReadFPGAReg(lms_device_t *device, uint32_t address,
-                                        uint16_t *val);
+API_EXPORT int CALL_CONV LMS_ReadFPGAReg(lms_device_t *device, u32 address,
+                                        u16 *val);
 
 /**
  * Write device FPGA register
@@ -861,8 +861,8 @@ API_EXPORT int CALL_CONV LMS_ReadFPGAReg(lms_device_t *device, uint32_t address,
  *
  * @return  0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_WriteFPGAReg(lms_device_t *device, uint32_t address,
-                                        uint16_t val);
+API_EXPORT int CALL_CONV LMS_WriteFPGAReg(lms_device_t *device, u32 address,
+                                        u16 val);
 
 /**
  * @defgroup BOARD_PARAM  Board parameter
@@ -886,7 +886,7 @@ API_EXPORT int CALL_CONV LMS_WriteFPGAReg(lms_device_t *device, uint32_t address
  * @return  0 on success, (-1) on failure
  */
 API_EXPORT int CALL_CONV LMS_ReadCustomBoardParam(lms_device_t *device,
-                                 uint8_t id, float_type *val, lms_name_t units);
+                                 u8 id, float_type *val, lms_name_t units);
 
 /**
  * Write custom parameter from board
@@ -899,7 +899,7 @@ API_EXPORT int CALL_CONV LMS_ReadCustomBoardParam(lms_device_t *device,
  * @return  0 on success, (-1) on failure
  */
 API_EXPORT int CALL_CONV LMS_WriteCustomBoardParam(lms_device_t *device,
-                            uint8_t id, float_type val, const lms_name_t units);
+                            u8 id, float_type val, const lms_name_t units);
 
 /**
  * @defgroup LMS_CLOCK_ID   Clock definitions
@@ -966,7 +966,7 @@ API_EXPORT int CALL_CONV LMS_SetClockFreq(lms_device_t *dev, size_t clk_id,
  *
  * @return 0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_VCTCXOWrite(lms_device_t * dev, uint16_t val);
+API_EXPORT int CALL_CONV LMS_VCTCXOWrite(lms_device_t * dev, u16 val);
 
 /**
  * Read VCTCXO trim DAC value from non-volatile storage. Returned value is value
@@ -977,7 +977,7 @@ API_EXPORT int CALL_CONV LMS_VCTCXOWrite(lms_device_t * dev, uint16_t val);
  *
  * @return 0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_VCTCXORead(lms_device_t * dev, uint16_t *val);
+API_EXPORT int CALL_CONV LMS_VCTCXORead(lms_device_t * dev, u16 *val);
 
 /**
  * Synchronizes register values between API cache and chip
@@ -996,7 +996,7 @@ API_EXPORT int CALL_CONV LMS_Synchronize(lms_device_t *dev, bool toChip);
  *
  * @return 0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_GPIORead(lms_device_t *dev, uint8_t* buffer, size_t len);
+API_EXPORT int CALL_CONV LMS_GPIORead(lms_device_t *dev, u8* buffer, size_t len);
 
 /**
  * @param       dev     Device handle previously obtained by LMS_Open().
@@ -1005,7 +1005,7 @@ API_EXPORT int CALL_CONV LMS_GPIORead(lms_device_t *dev, uint8_t* buffer, size_t
  *
  * @return 0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_GPIOWrite(lms_device_t *dev, const uint8_t* buffer, size_t len);
+API_EXPORT int CALL_CONV LMS_GPIOWrite(lms_device_t *dev, const u8* buffer, size_t len);
 
 /**
  * @param       dev     Device handle previously obtained by LMS_Open().
@@ -1014,7 +1014,7 @@ API_EXPORT int CALL_CONV LMS_GPIOWrite(lms_device_t *dev, const uint8_t* buffer,
  *
  * @return 0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_GPIODirRead(lms_device_t *dev, uint8_t* buffer, size_t len);
+API_EXPORT int CALL_CONV LMS_GPIODirRead(lms_device_t *dev, u8* buffer, size_t len);
 
 /**
  * @param       dev     Device handle previously obtained by LMS_Open().
@@ -1023,7 +1023,7 @@ API_EXPORT int CALL_CONV LMS_GPIODirRead(lms_device_t *dev, uint8_t* buffer, siz
  *
  * @return 0 on success, (-1) on failure
  */
-API_EXPORT int CALL_CONV LMS_GPIODirWrite(lms_device_t *dev, const uint8_t* buffer, size_t len);
+API_EXPORT int CALL_CONV LMS_GPIODirWrite(lms_device_t *dev, const u8* buffer, size_t len);
 
 /** @} (End FN_LOW_LVL) */
 
@@ -1042,7 +1042,7 @@ typedef struct
      * In RX: time when the first sample in the returned buffer was received
      * In TX: time when the first sample in the submitted buffer should be send
      */
-    uint64_t timestamp;
+    u64 timestamp;
 
     /**In TX: wait for the specified HW timestamp before broadcasting data over
      * the air
@@ -1069,10 +1069,10 @@ typedef struct
     bool isTx;
 
     //! Channel number. Starts at 0.
-    uint32_t channel;
+    u32 channel;
 
     //! FIFO size (in samples) used by stream.
-    uint32_t fifoSize;
+    u32 fifoSize;
 
     /**
      * Parameter for controlling configuration bias toward low latency or high
@@ -1080,7 +1080,7 @@ typedef struct
      * 0 - lowest latency, usually results in lower throughput
      * 1 - higher throughput, usually results in higher latency
      */
-    float throughputVsLatency;
+    f32 throughputVsLatency;
 
     //! Data output format
     enum
@@ -1097,21 +1097,21 @@ typedef struct
     ///Indicates whether the stream is currently active
     bool active;
     ///Number of samples in FIFO buffer
-    uint32_t fifoFilledCount;
+    u32 fifoFilledCount;
     ///Size of FIFO buffer
-    uint32_t fifoSize;
+    u32 fifoSize;
     ///FIFO underrun count
-    uint32_t underrun;
+    u32 underrun;
     ///FIFO overrun count
-    uint32_t overrun;
+    u32 overrun;
     ///Number of dropped packets by HW
-    uint32_t droppedPackets;
+    u32 droppedPackets;
     ///Currently not used
     float_type sampleRate;
     ///Combined data rate of all stream of the same direction (TX or RX)
     float_type linkRate;
     ///Current HW timestamp
-    uint64_t timestamp;
+    u64 timestamp;
 
 } lms_stream_status_t;
 
@@ -1204,7 +1204,7 @@ API_EXPORT int CALL_CONV LMS_SendStream(lms_stream_t *stream,
  * @return              0 on success, (-1) on failure
  */
 API_EXPORT int CALL_CONV LMS_UploadWFM(lms_device_t *device, const void **samples,
-                                uint8_t chCount, size_t sample_count, int format);
+                                u8 chCount, size_t sample_count, int format);
 
 /**
  * Enables/Disables transmitting of uploaded waveform
@@ -1266,7 +1266,7 @@ typedef struct
     char firmwareVersion[16];       ///<The firmware version as a string
     char hardwareVersion[16];       ///<The hardware version as a string
     char protocolVersion[16];       ///<The protocol version as a string
-    uint64_t boardSerialNumber;     ///<A unique board serial number
+    u64 boardSerialNumber;     ///<A unique board serial number
     char gatewareVersion[16];       ///<Gateware version as a string
     char gatewareTargetBoard[32];   ///<Which board should use this gateware
 }lms_dev_info_t;

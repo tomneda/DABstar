@@ -37,7 +37,7 @@
  * nroots	= RS code generator polynomial degree (number of roots)
  */
 
-ReedSolomon::ReedSolomon(uint16_t symsize, uint16_t gfpoly, uint16_t fcr, uint16_t prim, uint16_t nroots) :
+ReedSolomon::ReedSolomon(u16 symsize, u16 gfpoly, u16 fcr, u16 prim, u16 nroots) :
   myGalois(symsize, gfpoly)
 {
   int i, j, root, iprim;
@@ -52,7 +52,7 @@ ReedSolomon::ReedSolomon(uint16_t symsize, uint16_t gfpoly, uint16_t fcr, uint16
   }
   this->iprim = iprim / prim;
   this->generator.resize(nroots + 1);
-  memset(generator.data(), 0, (nroots + 1) * sizeof(uint8_t));
+  memset(generator.data(), 0, (nroots + 1) * sizeof(u8));
   generator[0] = 1;
 
   for (i = 0, root = fcr * prim; i < nroots; i++, root += 1)
@@ -62,7 +62,7 @@ ReedSolomon::ReedSolomon(uint16_t symsize, uint16_t gfpoly, uint16_t fcr, uint16
     {
       if (generator[j] != 0)
       {
-        uint16_t p1 = myGalois.multiply_power(myGalois.poly2power(generator[j]), root);
+        u16 p1 = myGalois.multiply_power(myGalois.poly2power(generator[j]), root);
         generator[j] = myGalois.add_poly(generator[j - 1], myGalois.power2poly(p1));
 
       }
@@ -82,12 +82,12 @@ ReedSolomon::ReedSolomon(uint16_t symsize, uint16_t gfpoly, uint16_t fcr, uint16
 }
 
 //	Basic encoder, returns - in bb - the parity bytes
-void ReedSolomon::encode_rs(const uint8_t * data, uint8_t * bb)
+void ReedSolomon::encode_rs(const u8 * data, u8 * bb)
 {
   int i, j;
-  uint8_t feedback;
+  u8 feedback;
 
-  memset(bb, 0, nroots * sizeof(uint8_t));
+  memset(bb, 0, nroots * sizeof(u8));
 
   for (i = 0; i < codeLength - nroots; i++)
   {
@@ -112,11 +112,11 @@ void ReedSolomon::encode_rs(const uint8_t * data, uint8_t * bb)
   }
 }
 
-void ReedSolomon::enc(const uint8_t * r, uint8_t * d, int16_t cutlen)
+void ReedSolomon::enc(const u8 * r, u8 * d, i16 cutlen)
 {
-  auto * const rf = make_vla(uint8_t, codeLength);
-  auto * const bb = make_vla(uint8_t, nroots);
-  int16_t i;
+  auto * const rf = make_vla(u8, codeLength);
+  auto * const bb = make_vla(u8, nroots);
+  i16 i;
 
   memset(rf, 0, cutlen * sizeof(rf[0]));
   for (i = cutlen; i < codeLength; i++)
@@ -137,11 +137,11 @@ void ReedSolomon::enc(const uint8_t * r, uint8_t * d, int16_t cutlen)
 }
 
 
-int16_t ReedSolomon::dec(const uint8_t * r, uint8_t * d, int16_t cutlen)
+i16 ReedSolomon::dec(const u8 * r, u8 * d, i16 cutlen)
 {
-  auto * const rf = make_vla(uint8_t, codeLength);
-  int16_t i;
-  int16_t ret;
+  auto * const rf = make_vla(u8, codeLength);
+  i16 i;
+  i16 ret;
 
   memset(rf, 0, cutlen * sizeof(rf[0]));
   for (i = cutlen; i < codeLength; i++)
@@ -157,17 +157,17 @@ int16_t ReedSolomon::dec(const uint8_t * r, uint8_t * d, int16_t cutlen)
   return ret;
 }
 
-int16_t ReedSolomon::decode_rs(uint8_t * data)
+i16 ReedSolomon::decode_rs(u8 * data)
 {
-  auto * const syndromes = make_vla(uint8_t, nroots);
-  auto * const Lambda = make_vla(uint8_t, nroots + 1);
-  auto * const rootTable = make_vla(uint8_t, nroots);
-  auto * const locTable = make_vla(uint8_t, nroots);
-  auto * const omega = make_vla(uint8_t, nroots + 1);
+  auto * const syndromes = make_vla(u8, nroots);
+  auto * const Lambda = make_vla(u8, nroots + 1);
+  auto * const rootTable = make_vla(u8, nroots);
+  auto * const locTable = make_vla(u8, nroots);
+  auto * const omega = make_vla(u8, nroots + 1);
 
-  uint16_t lambda_degree, omega_degree;
-  int16_t rootCount;
-  int16_t i;
+  u16 lambda_degree, omega_degree;
+  i16 rootCount;
+  i16 i;
   //
   //	returning syndromes in poly
   if (computeSyndromes(data, syndromes))
@@ -191,8 +191,8 @@ int16_t ReedSolomon::decode_rs(uint8_t * data)
    *	num2 = inv (X (l))**(FCR-1) and
    *	den = lambda_pr(inv(X(l))) all in poly-form
    */
-  uint16_t num1, num2, den;
-  int16_t j;
+  u16 num1, num2, den;
+  i16 j;
   for (j = rootCount - 1; j >= 0; j--)
   {
     num1 = 0;
@@ -200,11 +200,11 @@ int16_t ReedSolomon::decode_rs(uint8_t * data)
     {
       if (omega[i] != codeLength)
       {
-        uint16_t tmp = myGalois.multiply_power(omega[i], myGalois.pow_power(i, rootTable[j]));
+        u16 tmp = myGalois.multiply_power(omega[i], myGalois.pow_power(i, rootTable[j]));
         num1 = myGalois.add_poly(num1, myGalois.power2poly(tmp));
       }
     }
-    uint16_t tmp = myGalois.multiply_power(myGalois.pow_power(rootTable[j], myGalois.divide_power(fcr, 1)), codeLength);
+    u16 tmp = myGalois.multiply_power(myGalois.pow_power(rootTable[j], myGalois.divide_power(fcr, 1)), codeLength);
     num2 = myGalois.power2poly(tmp);
     den = 0;
     /*
@@ -215,7 +215,7 @@ int16_t ReedSolomon::decode_rs(uint8_t * data)
     {
       if (Lambda[i + 1] != codeLength)
       {
-        uint16_t tmp = myGalois.multiply_power(Lambda[i + 1], myGalois.pow_power(i, rootTable[j]));
+        u16 tmp = myGalois.multiply_power(Lambda[i + 1], myGalois.pow_power(i, rootTable[j]));
         den = myGalois.add_poly(den, myGalois.power2poly(tmp));
       }
     }
@@ -228,16 +228,16 @@ int16_t ReedSolomon::decode_rs(uint8_t * data)
     /*	Apply error to data */
     if (num1 != 0)
     {
-      if (locTable[j] >= uint8_t(codeLength - nroots))
+      if (locTable[j] >= u8(codeLength - nroots))
       {
         rootCount--;
       }
       else
       {
-        uint16_t tmp1 = codeLength - myGalois.poly2power(den);
-        uint16_t tmp2 = myGalois.multiply_power(myGalois.poly2power(num1), myGalois.poly2power(num2));
+        u16 tmp1 = codeLength - myGalois.poly2power(den);
+        u16 tmp2 = myGalois.multiply_power(myGalois.poly2power(num1), myGalois.poly2power(num2));
         tmp2 = myGalois.multiply_power(tmp2, tmp1);
-        uint16_t corr = myGalois.power2poly(tmp2);
+        u16 corr = myGalois.power2poly(tmp2);
         data[locTable[j]] = myGalois.add_poly(data[locTable[j]], corr);
       }
     }
@@ -248,10 +248,10 @@ int16_t ReedSolomon::decode_rs(uint8_t * data)
 
 //
 //	Apply Horner on the input for root "root"
-uint8_t ReedSolomon::getSyndrome(uint8_t * data, uint8_t root)
+u8 ReedSolomon::getSyndrome(u8 * data, u8 root)
 {
-  uint8_t syn = data[0];
-  int16_t j;
+  u8 syn = data[0];
+  i16 j;
 
   for (j = 1; j < codeLength; j++)
   {
@@ -261,7 +261,7 @@ uint8_t ReedSolomon::getSyndrome(uint8_t * data, uint8_t root)
     }
     else
     {
-      uint16_t uu1 = myGalois.pow_power(myGalois.multiply_power(fcr, root), prim);
+      u16 uu1 = myGalois.pow_power(myGalois.multiply_power(fcr, root), prim);
       syn = myGalois.add_poly(data[j], myGalois.power2poly(myGalois.multiply_power(myGalois.poly2power(syn), uu1)));
       //	                                                   (fcr + root) * prim)));
     }
@@ -271,10 +271,10 @@ uint8_t ReedSolomon::getSyndrome(uint8_t * data, uint8_t root)
 
 //
 //	use Horner to compute the syndromes
-bool ReedSolomon::computeSyndromes(uint8_t * data, uint8_t * syndromes)
+bool ReedSolomon::computeSyndromes(u8 * data, u8 * syndromes)
 {
-  int16_t i;
-  uint16_t syn_error = 0;
+  i16 i;
+  u16 syn_error = 0;
 
   /* form the syndromes; i.e., evaluate data (x) at roots of g(x) */
 
@@ -291,19 +291,19 @@ bool ReedSolomon::computeSyndromes(uint8_t * data, uint8_t * syndromes)
 //	compute Lambda with Berlekamp-Massey
 //	syndromes in poly-form in, Lambda in power form out
 //	
-uint16_t ReedSolomon::computeLambda(uint8_t * syndromes, uint8_t * Lambda)
+u16 ReedSolomon::computeLambda(u8 * syndromes, u8 * Lambda)
 {
-  uint16_t K = 1, L = 0;
-  auto * const Corrector = make_vla(uint8_t, nroots);
-  int16_t i;
-  int16_t deg_lambda = 0;
+  u16 K = 1, L = 0;
+  auto * const Corrector = make_vla(u8, nroots);
+  i16 i;
+  i16 deg_lambda = 0;
 
   for (i = 0; i < nroots; i++)
   {
     Corrector[i] = Lambda[i] = 0;
   }
 
-  uint8_t error = syndromes[0];
+  u8 error = syndromes[0];
   //
   //	Initializers:
   Lambda[0] = 1;
@@ -311,7 +311,7 @@ uint16_t ReedSolomon::computeLambda(uint8_t * syndromes, uint8_t * Lambda)
   //
   while (K < nroots)
   {
-    auto * const oldLambda = make_vla(uint8_t, nroots);
+    auto * const oldLambda = make_vla(u8, nroots);
     memcpy(oldLambda, Lambda, nroots * sizeof(Lambda[0]));
     //
     //	Compute new lambda
@@ -365,18 +365,18 @@ uint16_t ReedSolomon::computeLambda(uint8_t * syndromes, uint8_t * Lambda)
 //	Compute the roots of lambda by evaluating the
 //	lambda polynome for all (inverted) powers of the symbols
 //	of the data (Chien search)
-int16_t ReedSolomon::computeErrors(uint8_t * Lambda, uint16_t deg_lambda, uint8_t * rootTable, uint8_t * locTable)
+i16 ReedSolomon::computeErrors(u8 * Lambda, u16 deg_lambda, u8 * rootTable, u8 * locTable)
 {
-  int16_t i, j, k;
-  int16_t rootCount = 0;
+  i16 i, j, k;
+  i16 rootCount = 0;
   //
-  auto * const workRegister = make_vla(uint8_t, nroots + 1);
-  memcpy(workRegister, Lambda, (nroots + 1) * sizeof(uint8_t));
+  auto * const workRegister = make_vla(u8, nroots + 1);
+  memcpy(workRegister, Lambda, (nroots + 1) * sizeof(u8));
   //
   //	reg is lambda in power notation
   for (i = 1, k = iprim - 1; i <= codeLength; i++, k = (k + iprim))
   {
-    uint16_t result = 1;  // lambda [0] is always 1
+    u16 result = 1;  // lambda [0] is always 1
     //	Note that for i + 1, the powers in the workregister just need
     //	to be increased by "j".
     for (j = deg_lambda; j > 0; j--)
@@ -409,20 +409,20 @@ int16_t ReedSolomon::computeErrors(uint8_t * Lambda, uint16_t deg_lambda, uint8_
  *
  *	Note that syndromes are in poly form, while lambda in power form
  */
-uint16_t ReedSolomon::computeOmega(uint8_t * syndromes, uint8_t * lambda, uint16_t deg_lambda, uint8_t * omega)
+u16 ReedSolomon::computeOmega(u8 * syndromes, u8 * lambda, u16 deg_lambda, u8 * omega)
 {
-  int16_t i, j;
-  int16_t deg_omega = 0;
+  i16 i, j;
+  i16 deg_omega = 0;
 
   for (i = 0; i < nroots; i++)
   {
-    uint16_t tmp = 0;
+    u16 tmp = 0;
     j = (deg_lambda < i) ? deg_lambda : i;
     for (; j >= 0; j--)
     {
       if ((myGalois.poly2power(syndromes[i - j]) != codeLength) && (lambda[j] != codeLength))
       {
-        uint16_t res = myGalois.power2poly(myGalois.multiply_power(myGalois.poly2power(syndromes[i - j]), lambda[j]));
+        u16 res = myGalois.power2poly(myGalois.multiply_power(myGalois.poly2power(syndromes[i - j]), lambda[j]));
         tmp = myGalois.add_poly(tmp, res);
       }
     }

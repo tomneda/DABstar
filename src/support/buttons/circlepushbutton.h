@@ -14,6 +14,7 @@
 #ifndef DABSTAR_CIRCLEPUSHBUTTON_H
 #define DABSTAR_CIRCLEPUSHBUTTON_H
 
+#include "glob_data_types.h"
 #include <QPushButton>
 
 class CirclePushButton : public QPushButton
@@ -22,7 +23,7 @@ class CirclePushButton : public QPushButton
 public:
   explicit CirclePushButton(QWidget * parent = nullptr);
 
-  void init(const QString & iImagePath, const float iRadiusPixels, const float iSecPerRound);
+  void init(const QString & iImagePath, const f32 iRadiusPixels, const f32 iSecPerRound);
   void start_animation();
   void stop_animation();
 
@@ -33,13 +34,13 @@ private slots:
   void _slot_update_position();
 
 private:
-  static constexpr float sDegPerStep = 5.0f;
+  static constexpr f32 sDegPerStep = 5.0f;
   bool mAnimationActive = false;
   QString mImagePath;
   QTimer * mTimer = nullptr;
-  float mCurAngle = 0;
-  float mRadius = 0;
-  int32_t mTimerMs = 50;
+  f32 mCurAngle = 0;
+  f32 mRadius = 0;
+  i32 mTimerMs = 50;
 };
 
 #endif // DABSTAR_CIRCLEPUSHBUTTON_H

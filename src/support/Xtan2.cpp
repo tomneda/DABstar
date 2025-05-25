@@ -13,20 +13,20 @@
 
 	Stretch		= M_PI;
 //	private static final int           SIZE                 = 1024;
-//	private static final float         Stretch            = (float)Math.PI;
+//	private static final f32         Stretch            = (f32)Math.PI;
 // Output will swing from -Stretch to Stretch (default: Math.PI)
 // Useful to change to 1 if you would normally do "atan2(y, x) / Math.PI"
 
-	ATAN2_TABLE_PPY    = new float [SIZE + 1];
-	ATAN2_TABLE_PPX    = new float [SIZE + 1];
-	ATAN2_TABLE_PNY    = new float [SIZE + 1];
-	ATAN2_TABLE_PNX    = new float [SIZE + 1];
-	ATAN2_TABLE_NPY    = new float [SIZE + 1];
-	ATAN2_TABLE_NPX    = new float [SIZE + 1];
-	ATAN2_TABLE_NNY    = new float [SIZE + 1];
-	ATAN2_TABLE_NNX    = new float [SIZE + 1];
+	ATAN2_TABLE_PPY    = new f32 [SIZE + 1];
+	ATAN2_TABLE_PPX    = new f32 [SIZE + 1];
+	ATAN2_TABLE_PNY    = new f32 [SIZE + 1];
+	ATAN2_TABLE_PNX    = new f32 [SIZE + 1];
+	ATAN2_TABLE_NPY    = new f32 [SIZE + 1];
+	ATAN2_TABLE_NPX    = new f32 [SIZE + 1];
+	ATAN2_TABLE_NNY    = new f32 [SIZE + 1];
+	ATAN2_TABLE_NNX    = new f32 [SIZE + 1];
         for (int i = 0; i <= SIZE; i++) {
-            float f = (float)i / SIZE;
+            f32 f = (f32)i / SIZE;
             ATAN2_TABLE_PPY [i] = atan(f) * Stretch / M_PI;
             ATAN2_TABLE_PPX [i] = Stretch * 0.5f - ATAN2_TABLE_PPY[i];
             ATAN2_TABLE_PNY [i] = -ATAN2_TABLE_PPY [i];
@@ -53,10 +53,10 @@
   * ATAN2 : performance degrades due to the many "0" tests
   */
 
-float	compAtan::atan2 (float y, float x) {
+f32	compAtan::atan2 (f32 y, f32 x) {
 	if (x == 0) {
 	   if (y == 0)  return 0;
-//	      return std::numeric_limits<float>::infinity ();
+//	      return std::numeric_limits<f32>::infinity ();
 	   else
 	   if (y > 0)
 	      return  M_PI / 2;
@@ -95,6 +95,6 @@ float	compAtan::atan2 (float y, float x) {
 	}
 }
 
-float	compAtan::argX	(cmplx v) {
+f32	compAtan::argX	(cf32 v) {
 	return this -> atan2 (imag (v), real (v));
 }

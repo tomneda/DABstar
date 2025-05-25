@@ -44,28 +44,28 @@ class XmlFileWriter;
 extern "C" {
 typedef int (* pfn_airspy_init)();
 typedef int (* pfn_airspy_exit)();
-typedef int (* pfn_airspy_list_devices)(uint64_t *, int);
-typedef int (* pfn_airspy_open)(struct airspy_device **, uint64_t);
+typedef int (* pfn_airspy_list_devices)(u64 *, int);
+typedef int (* pfn_airspy_open)(struct airspy_device **, u64);
 // typedef int (*pfn_airspy_open) (struct airspy_device**);
 typedef int (* pfn_airspy_close)(struct airspy_device *);
-typedef int (* pfn_airspy_get_samplerates)(struct airspy_device * device, uint32_t * buffer, const uint32_t len);
-typedef int (* pfn_airspy_set_samplerate)(struct airspy_device * device, uint32_t samplerate);
+typedef int (* pfn_airspy_get_samplerates)(struct airspy_device * device, u32 * buffer, const u32 len);
+typedef int (* pfn_airspy_set_samplerate)(struct airspy_device * device, u32 samplerate);
 typedef int (* pfn_airspy_start_rx)(struct airspy_device * device, airspy_sample_block_cb_fn callback, void * rx_ctx);
 typedef int (* pfn_airspy_stop_rx)(struct airspy_device * device);
 typedef int (* pfn_airspy_set_sample_type)(struct airspy_device *, airspy_sample_type);
-typedef int (* pfn_airspy_set_freq)(struct airspy_device * device, const uint32_t freq_hz);
-typedef int (* pfn_airspy_set_lna_gain)(struct airspy_device * device, uint8_t value);
-typedef int (* pfn_airspy_set_mixer_gain)(struct airspy_device * device, uint8_t value);
-typedef int (* pfn_airspy_set_vga_gain)(struct airspy_device * device, uint8_t value);
-typedef int (* pfn_airspy_set_lna_agc)(struct airspy_device * device, uint8_t value);
-typedef int (* pfn_airspy_set_mixer_agc)(struct airspy_device * device, uint8_t value);
-typedef int (* pfn_airspy_set_rf_bias)(struct airspy_device * dev, uint8_t value);
+typedef int (* pfn_airspy_set_freq)(struct airspy_device * device, const u32 freq_hz);
+typedef int (* pfn_airspy_set_lna_gain)(struct airspy_device * device, u8 value);
+typedef int (* pfn_airspy_set_mixer_gain)(struct airspy_device * device, u8 value);
+typedef int (* pfn_airspy_set_vga_gain)(struct airspy_device * device, u8 value);
+typedef int (* pfn_airspy_set_lna_agc)(struct airspy_device * device, u8 value);
+typedef int (* pfn_airspy_set_mixer_agc)(struct airspy_device * device, u8 value);
+typedef int (* pfn_airspy_set_rf_bias)(struct airspy_device * dev, u8 value);
 typedef const char * (* pfn_airspy_error_name)(enum airspy_error errcode);
-typedef int (* pfn_airspy_board_id_read)(struct airspy_device *, uint8_t *);
+typedef int (* pfn_airspy_board_id_read)(struct airspy_device *, u8 *);
 typedef const char * (* pfn_airspy_board_id_name)(enum airspy_board_id board_id);
 typedef int (* pfn_airspy_board_partid_serialno_read)(struct airspy_device * device, airspy_read_partid_serialno_t * read_partid_serialno);
-typedef int (* pfn_airspy_set_linearity_gain)(struct airspy_device * device, uint8_t value);
-typedef int (* pfn_airspy_set_sensitivity_gain)(struct airspy_device * device, uint8_t value);
+typedef int (* pfn_airspy_set_linearity_gain)(struct airspy_device * device, u8 value);
+typedef int (* pfn_airspy_set_sensitivity_gain)(struct airspy_device * device, u8 value);
 }
 
 class AirspyHandler final : public QObject, public IDeviceHandler, public Ui_airspyWidget
@@ -75,29 +75,29 @@ public:
   AirspyHandler(QSettings *, QString);
   ~AirspyHandler() override;
 
-  void setVFOFrequency(int32_t nf) override;
-  int32_t getVFOFrequency() override;
-  bool restartReader(int32_t) override;
+  void setVFOFrequency(i32 nf) override;
+  i32 getVFOFrequency() override;
+  bool restartReader(i32) override;
   void stopReader() override;
-  int32_t getSamples(cmplx * v, int32_t size) override;
-  int32_t Samples() override;
+  i32 getSamples(cf32 * v, i32 size) override;
+  i32 Samples() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
   bool isFileInput() override;
 
-  int32_t defaultFrequency();
-  int32_t getBufferSpace();
+  i32 defaultFrequency();
+  i32 getBufferSpace();
 
-  int16_t currentTab;
+  i16 currentTab;
 
 private:
   QFrame myFrame;
   QLibrary * phandle;
-  RingBuffer<cmplx> _I_Buffer;
+  RingBuffer<cf32> _I_Buffer;
   QString recorderVersion;
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
@@ -159,19 +159,19 @@ private:
   bool rf_bias;
   const char * board_id_name();
 
-  int16_t vgaGain;
-  int16_t mixerGain;
-  int16_t lnaGain;
-  int32_t selectedRate;
-  int16_t convBufferSize;
-  int16_t convIndex;
-  std::vector<cmplx> convBuffer;
-  int16_t mapTable_int[4 * 512];
-  float mapTable_float[4 * 512];
+  i16 vgaGain;
+  i16 mixerGain;
+  i16 lnaGain;
+  i32 selectedRate;
+  i16 convBufferSize;
+  i16 convIndex;
+  std::vector<cf32> convBuffer;
+  i16 mapTable_int[4 * 512];
+  f32 mapTable_float[4 * 512];
   QSettings * airspySettings;
-  int32_t inputRate;
+  i32 inputRate;
   struct airspy_device * device;
-  uint64_t serialNumber;
+  u64 serialNumber;
   char serial[128];
   static int callback(airspy_transfer_t *);
   int data_available(void * buf, int buf_size);

@@ -29,7 +29,7 @@ class	Rsp1_handler: public Rsp_device
 {
 public:
 	Rsp1_handler(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice,
-	             int freq, bool agcMode, int lnaState, int GRdB, double ppm);
+	             int freq, bool agcMode, int lnaState, int GRdB, f64 ppm);
 	~Rsp1_handler() override = default;
 
 	int	lnaStates(int frequency) override;

@@ -61,13 +61,13 @@ class FdkAAC : public QObject
 {
   Q_OBJECT
 public:
-  FdkAAC(DabRadio * mr, RingBuffer<int16_t> * iipBuffer);
+  FdkAAC(DabRadio * mr, RingBuffer<i16> * iipBuffer);
   ~FdkAAC() override;
 
-  int16_t convert_mp4_to_pcm(const stream_parms * iSP, const uint8_t * ipBuffer, int16_t iPacketLength);
+  i16 convert_mp4_to_pcm(const stream_parms * iSP, const u8 * ipBuffer, i16 iPacketLength);
 
 private:
-  RingBuffer<int16_t> * const mpAudioBuffer;
+  RingBuffer<i16> * const mpAudioBuffer;
   bool mIsWorking = false;
   HANDLE_AACDECODER handle;
 

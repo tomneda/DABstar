@@ -42,14 +42,14 @@
 
 Q_LOGGING_CATEGORY(sLogRawReader, "RawReader", QtInfoMsg)
 
-static inline int64_t get_cur_time_in_us()
+static inline i64 get_cur_time_in_us()
 {
   struct timeval tv;
   gettimeofday(&tv, nullptr);
-  return ((int64_t)tv.tv_sec * 1000000 + (int64_t)tv.tv_usec);
+  return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
 }
 
-RawReader::RawReader(RawFileHandler * ipRFH, FILE * ipFile, RingBuffer<cmplx> * ipRingBuffer)
+RawReader::RawReader(RawFileHandler * ipRFH, FILE * ipFile, RingBuffer<cf32> * ipRingBuffer)
   : mParent(ipRFH)
   , mpFile(ipFile)
   , mpRingBuffer(ipRingBuffer)
@@ -60,7 +60,7 @@ RawReader::RawReader(RawFileHandler * ipRFH, FILE * ipFile, RingBuffer<cmplx> * 
   for(int i = 0; i < 256; i++)
   {
     // the offset 127.38f is due to the input data comes usually from a SDR stick which has its DC offset a bit shifted from ideal (from old-dab)
-    mMapTable[i] = ((float)i - 127.38f) / 128.0f;
+    mMapTable[i] = ((f32)i - 127.38f) / 128.0f;
   }
 
   fseek(ipFile, 0, SEEK_END);
@@ -99,7 +99,7 @@ void RawReader::run()
   qCInfo(sLogRawReader) << "Start playing RAW file";
 
   int cnt = 0;
-  int64_t nextStopus = get_cur_time_in_us();
+  i64 nextStopus = get_cur_time_in_us();
 
   try
   {
@@ -117,12 +117,12 @@ void RawReader::run()
       if (++cnt >= 20)
       {
         int xx = ftell(mpFile);
-        float progress = (float)xx / mFileLength;
-        signal_set_progress((int)(progress * 100), (float)xx / (2 * 2048000));
+        f32 progress = (f32)xx / mFileLength;
+        signal_set_progress((int)(progress * 100), (f32)xx / (2 * 2048000));
         cnt = 0;
       }
 
-      int n = fread(mByteBuffer.data(), sizeof(uint8_t), BUFFERSIZE, mpFile);
+      int n = fread(mByteBuffer.data(), sizeof(u8), BUFFERSIZE, mpFile);
 
       if (n < BUFFERSIZE)
       {
@@ -136,7 +136,7 @@ void RawReader::run()
 
       for (int i = 0; i < n / 2; i++)
       {
-        mCmplxBuffer[i] = cmplx(mMapTable[mByteBuffer[2 * i + 0]], mMapTable[mByteBuffer[2 * i + 1]]);
+        mCmplxBuffer[i] = cf32(mMapTable[mByteBuffer[2 * i + 0]], mMapTable[mByteBuffer[2 * i + 1]]);
       }
 
       mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), n / 2);

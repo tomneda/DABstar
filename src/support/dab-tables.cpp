@@ -34,8 +34,8 @@ static const char *eep_Brates[] = {"4/9",  "4/7", "4/6", "4/5"};  // see ETSI EN
 
 
 struct country_codes {
-    uint8_t ecc;
-    uint8_t countryId;
+    u8 ecc;
+    u8 countryId;
     const char *countryName;
 };
 
@@ -237,7 +237,7 @@ static country_codes countryTable[] = {
 
 {0xE4, 0x1, "Moldova"},
 {0xE4, 0x2, "Estonia"},
-{0xE4, 0x3, "Macedonia / Kyrghyzstan"}, // amended "/ Kyrghyzstan" double used Id
+{0xE4, 0x3, "Macedonia / Kyrghyzstan"}, // amended "/ Kyrghyzstan" f64 used Id
 {0xE4, 0x3, "Kyrghyzstan"},         // keep this entry .. doesn't hurt
 {0xE4, 0x6, "Ukraine"},
 {0xE4, 0x7, "Kosovo"},
@@ -309,7 +309,7 @@ static country_codes countryTable[] = {
 };
 
 // from Table 2a
-const char * getASCTy (int16_t ASCTy) {
+const char * getASCTy (i16 ASCTy) {
 	switch (ASCTy) {
 	   case 0:     return "DAB";
 	   case 63:    return "DAB+";
@@ -318,7 +318,7 @@ const char * getASCTy (int16_t ASCTy) {
 }
 
 // from Table 2b
-const char * getDSCTy (int16_t DSCTy) {
+const char * getDSCTy (i16 DSCTy) {
 	switch (DSCTy) {
 	   case 1:     return "Traffic Message CHannel (TMC)";
 	   case 2:     return "Emergency Warning System (EWS)";
@@ -334,7 +334,7 @@ const char * getDSCTy (int16_t DSCTy) {
 }
 
 //	from Table 9 and 10
-const char * getLanguage (int16_t language) {
+const char * getLanguage (i16 language) {
 	switch (language) {
 	   case 0x00:  return "Unknown/na";
 	   case 0x01:  return "Albanian";
@@ -460,8 +460,8 @@ const char * getLanguage (int16_t language) {
 	}
 }
 
-const char *getCountry (uint8_t ecc, uint8_t countryId) {
-int16_t	i = 0;
+const char *getCountry (u8 ecc, u8 countryId) {
+i16	i = 0;
 
 	while (countryTable [i].ecc != 0) {
 	   if ((countryTable[i].ecc == ecc) &&
@@ -475,8 +475,8 @@ int16_t	i = 0;
 
 //	from Table 12
 //
-//const char *getProgramType_Not_NorthAmerica (int16_t programType) {
-const char *getProgramType (int16_t programType) {
+//const char *getProgramType_Not_NorthAmerica (i16 programType) {
+const char *getProgramType (i16 programType) {
 
 	switch (programType) {
 	   case 0:     return "No programme type";
@@ -516,7 +516,7 @@ const char *getProgramType (int16_t programType) {
 }
 
 //	from Table 13
-const char *getProgramType_For_NorthAmerica (int16_t programType) {
+const char *getProgramType_For_NorthAmerica (i16 programType) {
 	switch (programType) {
 	   case 0:     return "No programme type";
 	   case 1:     return "News";
@@ -555,7 +555,7 @@ const char *getProgramType_For_NorthAmerica (int16_t programType) {
 }
 
 //const char *getProgramType (bool gotInterTabId,
-//	                    uint8_t interTabId, int16_t programType) {
+//	                    u8 interTabId, i16 programType) {
 //	if (gotInterTabId &&  (interTabId == 1))
 //	   return getProgramType_Not_NorthAmerica (programType);
 //	else
@@ -602,7 +602,7 @@ const char *getProgramType_For_NorthAmerica (int16_t programType) {
 //}
 
 //	11-bit from HandleFIG0Extension13, see ETSI TS 101 756 table 16
-const char *getUserApplicationType (int16_t appType) {
+const char *getUserApplicationType (i16 appType) {
 	switch (appType) {
 	   case 1:     return "Dynamic labels (X-PAD only)";
 	   case 2:     return "MOT Slide Show";
@@ -622,7 +622,7 @@ const char *getUserApplicationType (int16_t appType) {
 	}
 }
 
-const char * getFECscheme (int16_t FEC_scheme) {
+const char * getFECscheme (i16 FEC_scheme) {
 	switch (FEC_scheme) {
 	   case 0:     return "no FEC";
 	   case 1:     return "FEC";
@@ -631,7 +631,7 @@ const char * getFECscheme (int16_t FEC_scheme) {
 }
 
 
-const char * getProtectionLevel (bool shortForm, int16_t protLevel) {
+const char * getProtectionLevel (bool shortForm, i16 protLevel) {
 	if (!shortForm) {
 	   switch (protLevel) {
 	      case 0:     return "EEP 1-A";
@@ -657,7 +657,7 @@ const char * getProtectionLevel (bool shortForm, int16_t protLevel) {
 	}
 }
 
-const char *getCodeRate (bool shortForm, int16_t protLevel) {
+const char *getCodeRate (bool shortForm, i16 protLevel) {
 int h = protLevel;
 
 	if (!shortForm)

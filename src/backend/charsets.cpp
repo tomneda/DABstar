@@ -22,7 +22,10 @@
  *	This charset handling was kindly added by Przemyslaw Wegrzyn	
  *	all rights acknowledged
  */
+
+#include "glob_data_types.h"
 #include "charsets.h"
+
 /**
  * This table maps "EBU Latin" charset to corresponding
  * Unicode (UCS2-encoded) characters.
@@ -70,7 +73,7 @@ QString toQStringUsingCharset(const QByteArray & iByteArray, const CharacterSet 
 
 QString toQStringUsingCharset(const char * buffer, CharacterSet charset, int size)
 {
-  const uint16_t length = (size == -1 ? strlen(buffer) : size);
+  const u16 length = (size == -1 ? strlen(buffer) : size);
 
   switch (charset)
   {
@@ -79,9 +82,9 @@ QString toQStringUsingCharset(const char * buffer, CharacterSet charset, int siz
   case EbuLatin:
   default:
     QString s;
-    for (uint16_t i = 0; i < length; ++i)
+    for (u16 i = 0; i < length; ++i)
     {
-      s.append(QChar(ebuLatinToUcs2[((uint8_t *)buffer)[i]]));
+      s.append(QChar(ebuLatinToUcs2[((u8 *)buffer)[i]]));
     }
     return s;
   }

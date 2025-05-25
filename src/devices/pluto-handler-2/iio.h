@@ -26,8 +26,8 @@
 extern "C" {
 #endif
 
+#include "glob_data_types.h"
 #include <limits.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
 
@@ -649,11 +649,11 @@ __api int iio_device_attr_read_longlong(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A pointer to a double variable where the value should be stored
+ * @param val A pointer to a f64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_device_attr_read_double(const struct iio_device *dev,
-		const char *attr, double *val);
+		const char *attr, f64 *val);
 
 
 /** @brief Set the value of the given device-specific attribute
@@ -732,11 +732,11 @@ __api int iio_device_attr_write_longlong(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A double value to set the attribute to
+ * @param val A f64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_device_attr_write_double(const struct iio_device *dev,
-		const char *attr, double val);
+		const char *attr, f64 val);
 
 /** @brief Read the content of the given buffer-specific attribute
  * @param dev A pointer to an iio_device structure
@@ -805,11 +805,11 @@ __api int iio_device_buffer_attr_read_longlong(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A pointer to a double variable where the value should be stored
+ * @param val A pointer to a f64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_device_buffer_attr_read_double(const struct iio_device *dev,
-		const char *attr, double *val);
+		const char *attr, f64 *val);
 
 
 /** @brief Set the value of the given buffer-specific attribute
@@ -889,11 +889,11 @@ __api int iio_device_buffer_attr_write_longlong(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A double value to set the attribute to
+ * @param val A f64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_device_buffer_attr_write_double(const struct iio_device *dev,
-		const char *attr, double val);
+		const char *attr, f64 val);
 
 
 /** @brief Associate a pointer to an iio_device structure
@@ -1098,11 +1098,11 @@ __api int iio_channel_attr_read_longlong(const struct iio_channel *chn,
  * @param chn A pointer to an iio_channel structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A pointer to a double variable where the value should be stored
+ * @param val A pointer to a f64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_channel_attr_read_double(const struct iio_channel *chn,
-		const char *attr, double *val);
+		const char *attr, f64 *val);
 
 
 /** @brief Set the value of the given channel-specific attribute
@@ -1181,11 +1181,11 @@ __api int iio_channel_attr_write_longlong(const struct iio_channel *chn,
  * @param chn A pointer to an iio_channel structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A double value to set the attribute to
+ * @param val A f64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_channel_attr_write_double(const struct iio_channel *chn,
-		const char *attr, double val);
+		const char *attr, f64 val);
 
 
 /** @brief Enable the given channel
@@ -1491,7 +1491,7 @@ struct iio_data_format {
 	bool with_scale;
 
 	/** @brief Contains the scale to apply if with_scale is set */
-	double scale;
+	f64 scale;
 
 	/** @brief Number of times length repeats (added in v0.8) */
 	unsigned int repeat;
@@ -1689,11 +1689,11 @@ __api int iio_device_debug_attr_read_longlong(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * debug attribute
- * @param val A pointer to a double variable where the value should be stored
+ * @param val A pointer to a f64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_device_debug_attr_read_double(const struct iio_device *dev,
-		const char *attr, double *val);
+		const char *attr, f64 *val);
 
 
 /** @brief Set the value of the given debug attribute
@@ -1722,11 +1722,11 @@ __api int iio_device_debug_attr_write_longlong(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * debug attribute
- * @param val A double value to set the debug attribute to
+ * @param val A f64 value to set the debug attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_device_debug_attr_write_double(const struct iio_device *dev,
-		const char *attr, double val);
+		const char *attr, f64 val);
 
 
 /** @brief Identify the channel or debug attribute corresponding to a filename
@@ -1753,7 +1753,7 @@ __api int iio_device_identify_filename(const struct iio_device *dev,
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_device_reg_write(struct iio_device *dev,
-		uint32_t address, uint32_t value);
+		u32 address, u32 value);
 
 
 /** @brief Get the value of a hardware register
@@ -1763,7 +1763,7 @@ __api int iio_device_reg_write(struct iio_device *dev,
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
 __api int iio_device_reg_read(struct iio_device *dev,
-		uint32_t address, uint32_t *value);
+		u32 address, u32 *value);
 
 
 /** @} */

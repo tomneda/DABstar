@@ -64,14 +64,14 @@ public:
   }
 
   bool inUse;
-  uint32_t SId;
+  u32 SId;
   int SCIds;
   bool hasName;
   QString serviceLabel;
   int language;
   int programType;
   bool is_shown;
-  int32_t fmFrequency;
+  i32 fmFrequency;
   std::vector<SEpgElement> epgData;
 };
 
@@ -98,11 +98,11 @@ public:
   }
 
   QString ensembleName;
-  int32_t ensembleId;
+  i32 ensembleId;
   bool namePresent;
   bool ecc_Present;
-  uint8_t ecc_byte;
-  uint8_t countryId;
+  u8 ecc_byte;
+  u8 countryId;
   bool isSynced;
   Service services[64];
 };
@@ -126,15 +126,15 @@ public:
   }
 
   bool inUse = false;
-  int32_t SubChId  = 0;
-  int32_t startAddr = 0;
-  int32_t Length = 0;
+  i32 SubChId  = 0;
+  i32 startAddr = 0;
+  i32 Length = 0;
   bool shortForm = false;
-  int32_t protLevel = 0;
-  int32_t bitRate = 0;
-  int16_t language = 0;
-  int16_t FEC_scheme = 0;
-  int16_t SCIds = 0;    // for audio channels
+  i32 protLevel = 0;
+  i32 bitRate = 0;
+  i16 language = 0;
+  i16 FEC_scheme = 0;
+  i16 SCIds = 0;    // for audio channels
 };
 
 //      The service component describes the actual service
@@ -161,20 +161,20 @@ public:
   }
 
   bool inUse;            // field in use
-  int8_t TMid;           // the transport mode
-  uint32_t SId;
-  int16_t SCIds;         // component within service
-  int16_t subChannelId;  // used in both audio and packet
-  int16_t componentNr;   // component
-  int16_t ASCTy;         // used for audio
-  int16_t DSCTy;         // used in packet
-  int16_t PsFlag;        // use for both audio and packet
-  uint16_t SCId;         // Component Id (12 bit, unique)
-  uint8_t CaFlag;        // used in packet (or not at all)
-  uint8_t DgFlag;        // used for TDC
-  int16_t packetAddress; // used in packet
-  int16_t appType;       // used in packet and Xpad
-  int16_t language;
+  i8 TMid;           // the transport mode
+  u32 SId;
+  i16 SCIds;         // component within service
+  i16 subChannelId;  // used in both audio and packet
+  i16 componentNr;   // component
+  i16 ASCTy;         // used for audio
+  i16 DSCTy;         // used in packet
+  i16 PsFlag;        // use for both audio and packet
+  u16 SCId;         // Component Id (12 bit, unique)
+  u8 CaFlag;        // used in packet (or not at all)
+  u8 DgFlag;        // used for TDC
+  i16 packetAddress; // used in packet
+  i16 appType;       // used in packet and Xpad
+  i16 language;
   bool isMadePublic;     // used to make service visible
 };
 
@@ -183,8 +183,8 @@ public:
 class Cluster
 {
 public:
-  uint16_t flags;
-  std::vector<uint16_t> services;
+  u16 flags;
+  std::vector<u16> services;
   bool inUse;
   int announcing;
   int clusterId;

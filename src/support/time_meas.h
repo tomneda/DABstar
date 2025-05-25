@@ -25,7 +25,7 @@
 class TimeMeas
 {
 public:
-  explicit TimeMeas(const std::string & iName, const uint64_t iPrintCntSteps = 1)
+  explicit TimeMeas(const std::string & iName, const u64 iPrintCntSteps = 1)
     : mPrintCntSteps(iPrintCntSteps)
     , mName(iName)
   {
@@ -81,7 +81,7 @@ public:
     trigger_begin();
   }
 
-  [[nodiscard]] inline uint64_t get_time_per_round_in_ns() const
+  [[nodiscard]] inline u64 get_time_per_round_in_ns() const
   {
     assert(mCntAbsBegin == mCntAbsEnd || mCntAbsBegin == mCntAbsEnd + 1); // were trigger_begin() and trigger_end() evenly called? (loop meas is one behind)
     if (mCntAbsBegin == 0)
@@ -132,14 +132,14 @@ private:
   std::chrono::nanoseconds mTimeAbsMax = std::chrono::nanoseconds::min();
   std::chrono::nanoseconds mTimeLocMin = std::chrono::nanoseconds::max();
   std::chrono::nanoseconds mTimeLocMax = std::chrono::nanoseconds::min();
-  uint64_t mCntAbsBegin = 0;
-  uint64_t mCntAbsBeginLast = 0;
-  uint64_t mCntAbsEnd = 0;
-  uint64_t mCntAbsBeginPrinted = 0;
-  uint64_t mPrintCntSteps = 1;
+  u64 mCntAbsBegin = 0;
+  u64 mCntAbsBeginLast = 0;
+  u64 mCntAbsEnd = 0;
+  u64 mCntAbsBeginPrinted = 0;
+  u64 mPrintCntSteps = 1;
   std::string mName;
 
-  std::string _add_ticks(const uint64_t iVal)
+  std::string _add_ticks(const u64 iVal)
   {
     const std::string nsString = std::to_string(iVal);
     const size_t length = nsString.size();

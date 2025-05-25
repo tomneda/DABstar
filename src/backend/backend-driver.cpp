@@ -26,7 +26,7 @@
 
 //	Driver program for the selected backend. Embodying that in a separate class makes the "Backend" class simpler.
 
-BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer<int16_t> * audioBuffer, RingBuffer<uint8_t> * dataBuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump)
+BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer, FILE * dump)
 {
   if (d->type == AUDIO_SERVICE)
   {
@@ -55,7 +55,7 @@ BackendDriver::~BackendDriver()
 }
 
 
-void BackendDriver::addtoFrame(const std::vector<uint8_t> & theData)
+void BackendDriver::addtoFrame(const std::vector<u8> & theData)
 {
   theProcessor->add_to_frame(theData);
 }

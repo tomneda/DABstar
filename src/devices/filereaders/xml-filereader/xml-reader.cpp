@@ -50,20 +50,20 @@ static int shift(int a)
   return r;
 }
 
-static inline cmplx compmul(cmplx a, float b)
+static inline cf32 compmul(cf32 a, f32 b)
 {
-  return cmplx(real(a) * b, imag(a) * b);
+  return cf32(real(a) * b, imag(a) * b);
 }
 
-static inline uint64_t currentTime()
+static inline u64 currentTime()
 {
   struct timeval tv;
 
   gettimeofday(&tv, nullptr);
-  return (uint64_t)(tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec);
+  return (u64)(tv.tv_sec * 1000000 + (u64)tv.tv_usec);
 }
 
-XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, uint32_t filePointer, RingBuffer<cmplx> * b)
+XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 filePointer, RingBuffer<cf32> * b)
 {
   this->parent = mr;
   this->file = f;
@@ -78,14 +78,14 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, uint32_t 
 
   for (int i = 0; i < 2048; i++)
   {
-    const float inVal = float(fd->sampleRate / 1000);
-    mapTable_int[i] = (int16_t)(floor(i * (inVal / 2048.0)));
+    const f32 inVal = f32(fd->sampleRate / 1000);
+    mapTable_int[i] = (i16)(floor(i * (inVal / 2048.0)));
     mapTable_float[i] = i * (inVal / 2048.0f) - mapTable_int[i];
   }
 
   for(int i = 0; i < 256; i++)
   {
-    mapTable[i] = ((float)i - 127.38f) / 128.0f;
+    mapTable[i] = ((f32)i - 127.38f) / 128.0f;
   }
 
   convIndex = 0;
@@ -125,7 +125,7 @@ static int cycleCount = 0;
 void XmlReader::run()
 {
   int samplesRead = 0;
-  uint64_t nextStop;
+  u64 nextStop;
   int startPoint = filePointer;
 
   running.store(true);
@@ -165,7 +165,7 @@ void XmlReader::run()
         }
 
         // the readSamples function returns 1 msec of data, we assume taking this data does not take time
-        nextStop = nextStop + (uint64_t)1000;
+        nextStop = nextStop + (u64)1000;
         if (nextStop > currentTime())
         {
           usleep(nextStop - currentTime());
@@ -212,15 +212,15 @@ int XmlReader::compute_nrSamples(FILE * f, int blockNumber)
   return samplesToRead;
 }
 
-int XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, cmplx *, int))
+int XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, cf32 *, int))
 {
-  cmplx temp[2048];
+  cf32 temp[2048];
 
   (*this.*r)(theFile, &convBuffer[1], convBufferSize);
   for (int i = 0; i < 2048; i++)
   {
-    int16_t inpBase = mapTable_int[i];
-    float inpRatio = mapTable_float[i];
+    i16 inpBase = mapTable_int[i];
+    f32 inpRatio = mapTable_float[i];
     temp[i] = compmul(convBuffer[inpBase + 1], inpRatio) + compmul(convBuffer[inpBase], 1 - inpRatio);
   }
   convBuffer[0] = convBuffer[convBufferSize];
@@ -230,53 +230,53 @@ int XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, c
 }
 
 //	the readers
-void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
+void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
 {
   int nrBits = fd->bitsperChannel;
-  float scaler = float(shift(nrBits));
+  f32 scaler = f32(shift(nrBits));
 
   if (fd->container == "int8")
   {
-    auto * const lbuf = make_vla(uint8_t, 2 * amount);
+    auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx(((int8_t)lbuf[2 * i]) / 127.0f, ((int8_t)lbuf[2 * i + 1]) / 127.0f);
+      buffer[i] = cf32(((i8)lbuf[2 * i]) / 127.0f, ((i8)lbuf[2 * i + 1]) / 127.0f);
     }
     return;
   }
 
   if (fd->container == "uint8")
   {
-    auto * const lbuf = make_vla(uint8_t, 2 * amount);
+    auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx(mapTable[lbuf[2 * i]], mapTable[lbuf[2 * i + 1]]);
+      buffer[i] = cf32(mapTable[lbuf[2 * i]], mapTable[lbuf[2 * i + 1]]);
     }
     return;
   }
 
   if (fd->container == "int16")
   {
-    auto * const lbuf = make_vla(uint8_t, 4 * amount);
+    auto * const lbuf = make_vla(u8, 4 * amount);
     fread_chk(lbuf, 2, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int16_t temp_16_1 = (lbuf[4 * i] << 8) | lbuf[4 * i + 1];
-        int16_t temp_16_2 = (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
-        buffer[i] = cmplx((float)temp_16_1 / scaler, (float)temp_16_2 / scaler);
+        i16 temp_16_1 = (lbuf[4 * i] << 8) | lbuf[4 * i + 1];
+        i16 temp_16_2 = (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
+        buffer[i] = cf32((f32)temp_16_1 / scaler, (f32)temp_16_2 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int16_t temp_16_1 = (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
-        int16_t temp_16_2 = (lbuf[4 * i + 3] << 8) | lbuf[4 * i + 2];
-        buffer[i] = cmplx((float)temp_16_1 / scaler, (float)temp_16_2 / scaler);
+        i16 temp_16_1 = (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
+        i16 temp_16_2 = (lbuf[4 * i + 3] << 8) | lbuf[4 * i + 2];
+        buffer[i] = cf32((f32)temp_16_1 / scaler, (f32)temp_16_2 / scaler);
       }
     }
     return;
@@ -284,14 +284,14 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int24")
   {
-    auto * const lbuf = make_vla(uint8_t, 6 * amount);
+    auto * const lbuf = make_vla(u8, 6 * amount);
     fread_chk(lbuf, 3, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[6 * i] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i + 2];
-        int32_t temp_32_2 = (lbuf[6 * i + 3] << 16) | (lbuf[4 * i + 4] << 8) | lbuf[6 * i + 5];
+        i32 temp_32_1 = (lbuf[6 * i] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i + 2];
+        i32 temp_32_2 = (lbuf[6 * i + 3] << 16) | (lbuf[4 * i + 4] << 8) | lbuf[6 * i + 5];
         if (temp_32_1 & 0x800000)
         {
           temp_32_1 |= 0xFF000000;
@@ -300,15 +300,15 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
         {
           temp_32_2 |= 0xFF000000;
         }
-        buffer[i] = cmplx((float)temp_32_1 / scaler, (float)temp_32_2 / scaler);
+        buffer[i] = cf32((f32)temp_32_1 / scaler, (f32)temp_32_2 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[6 * i + 2] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i];
-        int32_t temp_32_2 = (lbuf[6 * i + 5] << 16) | (lbuf[6 * i + 4] << 8) | lbuf[6 * i + 3];
+        i32 temp_32_1 = (lbuf[6 * i + 2] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i];
+        i32 temp_32_2 = (lbuf[6 * i + 5] << 16) | (lbuf[6 * i + 4] << 8) | lbuf[6 * i + 3];
         if (temp_32_1 & 0x800000)
         {
           temp_32_1 |= 0xFF000000;
@@ -317,7 +317,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
         {
           temp_32_2 |= 0xFF000000;
         }
-        buffer[i] = cmplx((float)temp_32_1 / scaler, (float)temp_32_2 / scaler);
+        buffer[i] = cf32((f32)temp_32_1 / scaler, (f32)temp_32_2 / scaler);
       }
     }
     return;
@@ -325,24 +325,24 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int32")
   {
-    auto * const lbuf = make_vla(uint8_t, 8 * amount);
+    auto * const lbuf = make_vla(u8, 8 * amount);
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
-        int32_t temp_32_2 = (lbuf[8 * i + 4] << 24) | (lbuf[8 * i + 5] << 16) | (lbuf[8 * i + 6] << 8) | lbuf[8 * i + 7];
-        buffer[i] = cmplx((float)temp_32_1 / scaler, (float)temp_32_2 / scaler);
+        i32 temp_32_1 = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
+        i32 temp_32_2 = (lbuf[8 * i + 4] << 24) | (lbuf[8 * i + 5] << 16) | (lbuf[8 * i + 6] << 8) | lbuf[8 * i + 7];
+        buffer[i] = cf32((f32)temp_32_1 / scaler, (f32)temp_32_2 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
-        int32_t temp_32_2 = (lbuf[8 * i + 7] << 24) | (lbuf[8 * i + 6] << 16) | (lbuf[8 * i + 5] << 8) | lbuf[8 * i + 4];
-        buffer[i] = cmplx((float)temp_32_1 / scaler, (float)temp_32_2 / scaler);
+        i32 temp_32_1 = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
+        i32 temp_32_2 = (lbuf[8 * i + 7] << 24) | (lbuf[8 * i + 6] << 16) | (lbuf[8 * i + 5] << 8) | lbuf[8 * i + 4];
+        buffer[i] = cf32((f32)temp_32_1 / scaler, (f32)temp_32_2 / scaler);
       }
     }
     return;
@@ -350,7 +350,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "float32")
   {
-    auto * const lbuf = make_vla(uint8_t, 8 * amount);
+    auto * const lbuf = make_vla(u8, 8 * amount);
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -359,7 +359,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
         UCnv c1, c2;
         c1.int32Data = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
         c2.int32Data = (lbuf[8 * i + 4] << 24) | (lbuf[8 * i + 5] << 16) | (lbuf[8 * i + 6] << 8) | lbuf[8 * i + 7];
-        buffer[i] = cmplx(c1.floatData, c2.floatData);
+        buffer[i] = cf32(c1.floatData, c2.floatData);
       }
     }
     else
@@ -369,61 +369,61 @@ void XmlReader::readElements_IQ(FILE * theFile, cmplx * buffer, int amount)
         UCnv c1, c2;
         c1.int32Data = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
         c2.int32Data = (lbuf[8 * i + 7] << 24) | (lbuf[8 * i + 6] << 16) | (lbuf[8 * i + 5] << 8) | lbuf[8 * i + 4];
-        buffer[i] = cmplx(c1.floatData, c2.floatData);
+        buffer[i] = cf32(c1.floatData, c2.floatData);
       }
     }
     return;
   }
 }
 
-void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
+void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
 {
 
   int nrBits = fd->bitsperChannel;
-  float scaler = float(shift(nrBits));
+  f32 scaler = f32(shift(nrBits));
 
   if (fd->container == "int8")
   {
-    auto * const lbuf = make_vla(uint8_t, 2 * amount);
+    auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx(((int8_t)lbuf[2 * i + 1]) / 127.0, ((int8_t)lbuf[2 * i]) / 127.0);
+      buffer[i] = cf32(((i8)lbuf[2 * i + 1]) / 127.0, ((i8)lbuf[2 * i]) / 127.0);
     }
     return;
   }
 
   if (fd->container == "uint8")
   {
-    auto * const lbuf = make_vla(uint8_t, 2 * amount);
+    auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx(mapTable[2 * i + 1], mapTable[2 * i]);
+      buffer[i] = cf32(mapTable[2 * i + 1], mapTable[2 * i]);
     }
     return;
   }
 
   if (fd->container == "int16")
   {
-    auto * const lbuf = make_vla(uint8_t, 4 * amount);
+    auto * const lbuf = make_vla(u8, 4 * amount);
     fread_chk(lbuf, 2, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int16_t temp_16_1 = (lbuf[4 * i] << 8) | lbuf[4 * i + 1];
-        int16_t temp_16_2 = (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
-        buffer[i] = cmplx((float)temp_16_2 / scaler, (float)temp_16_1 / scaler);
+        i16 temp_16_1 = (lbuf[4 * i] << 8) | lbuf[4 * i + 1];
+        i16 temp_16_2 = (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
+        buffer[i] = cf32((f32)temp_16_2 / scaler, (f32)temp_16_1 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int16_t temp_16_1 = (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
-        int16_t temp_16_2 = (lbuf[4 * i + 3] << 8) | lbuf[4 * i + 2];
-        buffer[i] = cmplx((float)temp_16_2 / scaler, (float)temp_16_1 / scaler);
+        i16 temp_16_1 = (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
+        i16 temp_16_2 = (lbuf[4 * i + 3] << 8) | lbuf[4 * i + 2];
+        buffer[i] = cf32((f32)temp_16_2 / scaler, (f32)temp_16_1 / scaler);
       }
     }
     return;
@@ -431,14 +431,14 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int24")
   {
-    auto * const lbuf = make_vla(uint8_t, 6 * amount);
+    auto * const lbuf = make_vla(u8, 6 * amount);
     fread_chk(lbuf, 3, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[6 * i] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i + 2];
-        int32_t temp_32_2 = (lbuf[6 * i + 3] << 16) | (lbuf[4 * i + 4] << 8) | lbuf[6 * i + 5];
+        i32 temp_32_1 = (lbuf[6 * i] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i + 2];
+        i32 temp_32_2 = (lbuf[6 * i + 3] << 16) | (lbuf[4 * i + 4] << 8) | lbuf[6 * i + 5];
         if (temp_32_1 & 0x800000)
         {
           temp_32_1 |= 0x7F000000;
@@ -447,15 +447,15 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
         {
           temp_32_2 |= 0x7F000000;
         }
-        buffer[i] = cmplx((float)temp_32_2 / scaler, (float)temp_32_1 / scaler);
+        buffer[i] = cf32((f32)temp_32_2 / scaler, (f32)temp_32_1 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[6 * i + 2] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i];
-        int32_t temp_32_2 = (lbuf[6 * i + 5] << 16) | (lbuf[6 * i + 4] << 8) | lbuf[6 * i + 3];
+        i32 temp_32_1 = (lbuf[6 * i + 2] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i];
+        i32 temp_32_2 = (lbuf[6 * i + 5] << 16) | (lbuf[6 * i + 4] << 8) | lbuf[6 * i + 3];
         if (temp_32_1 & 0x800000)
         {
           temp_32_1 |= 0xFF000000;
@@ -464,7 +464,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
         {
           temp_32_2 |= 0xFF000000;
         }
-        buffer[i] = cmplx((float)temp_32_2 / scaler, (float)temp_32_1 / scaler);
+        buffer[i] = cf32((f32)temp_32_2 / scaler, (f32)temp_32_1 / scaler);
       }
     }
     return;
@@ -472,24 +472,24 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int32")
   {
-    auto * const lbuf = make_vla(uint8_t, 8 * amount);
+    auto * const lbuf = make_vla(u8, 8 * amount);
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
-        int32_t temp_32_2 = (lbuf[8 * i + 4] << 24) | (lbuf[8 * i + 5] << 16) | (lbuf[8 * i + 6] << 8) | lbuf[8 * i + 7];
-        buffer[i] = cmplx((float)temp_32_2 / scaler, (float)temp_32_1 / scaler);
+        i32 temp_32_1 = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
+        i32 temp_32_2 = (lbuf[8 * i + 4] << 24) | (lbuf[8 * i + 5] << 16) | (lbuf[8 * i + 6] << 8) | lbuf[8 * i + 7];
+        buffer[i] = cf32((f32)temp_32_2 / scaler, (f32)temp_32_1 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
-        int32_t temp_32_2 = (lbuf[8 * i + 7] << 24) | (lbuf[8 * i + 6] << 16) | (lbuf[8 * i + 5] << 8) | lbuf[8 * i + 4];
-        buffer[i] = cmplx((float)temp_32_2 / scaler, (float)temp_32_1 / scaler);
+        i32 temp_32_1 = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
+        i32 temp_32_2 = (lbuf[8 * i + 7] << 24) | (lbuf[8 * i + 6] << 16) | (lbuf[8 * i + 5] << 8) | lbuf[8 * i + 4];
+        buffer[i] = cf32((f32)temp_32_2 / scaler, (f32)temp_32_1 / scaler);
       }
     }
     return;
@@ -497,7 +497,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "float32")
   {
-    auto * const lbuf = make_vla(uint8_t, 8 * amount);
+    auto * const lbuf = make_vla(u8, 8 * amount);
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -506,7 +506,7 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
         UCnv c1, c2;
         c1.int32Data = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
         c2.int32Data = (lbuf[8 * i + 4] << 24) | (lbuf[8 * i + 5] << 16) | (lbuf[8 * i + 6] << 8) | lbuf[8 * i + 7];
-        buffer[i] = cmplx(c1.floatData, c2.floatData);
+        buffer[i] = cf32(c1.floatData, c2.floatData);
       }
     }
     else
@@ -516,59 +516,59 @@ void XmlReader::readElements_QI(FILE * theFile, cmplx * buffer, int amount)
         UCnv c1, c2;
         c1.int32Data = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
         c2.int32Data = (lbuf[8 * i + 7] << 24) | (lbuf[8 * i + 6] << 16) | (lbuf[8 * i + 5] << 8) | lbuf[8 * i + 4];
-        buffer[i] = cmplx(c1.floatData, c2.floatData);
+        buffer[i] = cf32(c1.floatData, c2.floatData);
       }
     }
     return;
   }
 }
 
-void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
+void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
 {
 
   int nrBits = fd->bitsperChannel;
-  float scaler = float(shift(nrBits));
+  f32 scaler = f32(shift(nrBits));
 
   if (fd->container == "int8")
   {
-    auto * const lbuf = make_vla(uint8_t, amount);
+    auto * const lbuf = make_vla(u8, amount);
     fread_chk(lbuf, 1, amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx((int8_t)lbuf[i] / 127.0, 0);
+      buffer[i] = cf32((i8)lbuf[i] / 127.0, 0);
     }
     return;
   }
 
   if (fd->container == "uint8")
   {
-    auto * const lbuf = make_vla(uint8_t, amount);
+    auto * const lbuf = make_vla(u8, amount);
     fread_chk(lbuf, 1, amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx(mapTable[lbuf[i]], 0);
+      buffer[i] = cf32(mapTable[lbuf[i]], 0);
     }
     return;
   }
 
   if (fd->container == "int16")
   {
-    auto * const lbuf = make_vla(uint8_t, 2 * amount);
+    auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 2, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int16_t temp_16_1 = (lbuf[2 * i] << 8) | lbuf[2 * i + 1];
-        buffer[i] = cmplx((float)temp_16_1 / scaler, 0);
+        i16 temp_16_1 = (lbuf[2 * i] << 8) | lbuf[2 * i + 1];
+        buffer[i] = cf32((f32)temp_16_1 / scaler, 0);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int16_t temp_16_1 = (lbuf[2 * i + 1] << 8) | lbuf[2 * i];
-        buffer[i] = cmplx((float)temp_16_1 / scaler, 0);
+        i16 temp_16_1 = (lbuf[2 * i + 1] << 8) | lbuf[2 * i];
+        buffer[i] = cf32((f32)temp_16_1 / scaler, 0);
       }
     }
     return;
@@ -576,30 +576,30 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int24")
   {
-    auto * const lbuf = make_vla(uint8_t, 3 * amount);
+    auto * const lbuf = make_vla(u8, 3 * amount);
     fread_chk(lbuf, 3, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[3 * i] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i + 2];
+        i32 temp_32_1 = (lbuf[3 * i] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i + 2];
         if (temp_32_1 & 0x800000)
         {
           temp_32_1 |= 0xFF000000;
         }
-        buffer[i] = cmplx((float)temp_32_1 / scaler, 0);
+        buffer[i] = cf32((f32)temp_32_1 / scaler, 0);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[3 * i + 2] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i];
+        i32 temp_32_1 = (lbuf[3 * i + 2] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i];
         if (temp_32_1 & 0x800000)
         {
           temp_32_1 |= 0xFF000000;
         }
-        buffer[i] = cmplx((float)temp_32_1 / scaler, 0);
+        buffer[i] = cf32((f32)temp_32_1 / scaler, 0);
       }
     }
     return;
@@ -607,22 +607,22 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int32")
   {
-    auto * const lbuf = make_vla(uint8_t, 4 * amount);
+    auto * const lbuf = make_vla(u8, 4 * amount);
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
-        buffer[i] = cmplx((float)temp_32_1 / scaler, 0);
+        i32 temp_32_1 = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
+        buffer[i] = cf32((f32)temp_32_1 / scaler, 0);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
-        buffer[i] = cmplx((float)temp_32_1 / scaler, 0);
+        i32 temp_32_1 = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
+        buffer[i] = cf32((f32)temp_32_1 / scaler, 0);
       }
     }
     return;
@@ -630,7 +630,7 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "float32")
   {
-    auto * const lbuf = make_vla(uint8_t, 4 * amount);
+    auto * const lbuf = make_vla(u8, 4 * amount);
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -638,7 +638,7 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
       {
         UCnv c;
         c.int32Data = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
-        buffer[i] = cmplx(c.floatData, 0);
+        buffer[i] = cf32(c.floatData, 0);
       }
     }
     else
@@ -647,59 +647,59 @@ void XmlReader::readElements_I(FILE * theFile, cmplx * buffer, int amount)
       {
         UCnv c;
         c.int32Data = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
-        buffer[i] = cmplx(c.floatData, 0);
+        buffer[i] = cf32(c.floatData, 0);
       }
     }
     return;
   }
 }
 
-void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
+void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
 {
 
   int nrBits = fd->bitsperChannel;
-  float scaler = float(shift(nrBits));
+  f32 scaler = f32(shift(nrBits));
 
   if (fd->container == "int8")
   {
-    auto * const lbuf = make_vla(uint8_t, amount);
+    auto * const lbuf = make_vla(u8, amount);
     fread_chk(lbuf, 1, amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx(127.0, ((int8_t)lbuf[i] / 127.0));
+      buffer[i] = cf32(127.0, ((i8)lbuf[i] / 127.0));
     }
     return;
   }
 
   if (fd->container == "uint8")
   {
-    auto * const lbuf = make_vla(uint8_t, amount);
+    auto * const lbuf = make_vla(u8, amount);
     fread_chk(lbuf, 1, amount, theFile);
     for (int i = 0; i < amount; i++)
     {
-      buffer[i] = cmplx(0, mapTable[lbuf[i]]);
+      buffer[i] = cf32(0, mapTable[lbuf[i]]);
     }
     return;
   }
 
   if (fd->container == "int16")
   {
-    auto * const lbuf = make_vla(uint8_t, 2 * amount);
+    auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 2, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int16_t temp_16_1 = (lbuf[2 * i] << 8) | lbuf[2 * i + 1];
-        buffer[i] = cmplx(0, (float)temp_16_1 / scaler);
+        i16 temp_16_1 = (lbuf[2 * i] << 8) | lbuf[2 * i + 1];
+        buffer[i] = cf32(0, (f32)temp_16_1 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int16_t temp_16_1 = (lbuf[2 * i + 1] << 8) | lbuf[2 * i];
-        buffer[i] = cmplx(0, (float)temp_16_1 / scaler);
+        i16 temp_16_1 = (lbuf[2 * i + 1] << 8) | lbuf[2 * i];
+        buffer[i] = cf32(0, (f32)temp_16_1 / scaler);
       }
     }
     return;
@@ -707,30 +707,30 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int24")
   {
-    auto * const lbuf = make_vla(uint8_t, 3 * amount);
+    auto * const lbuf = make_vla(u8, 3 * amount);
     fread_chk(lbuf, 3, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[3 * i] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i + 2];
+        i32 temp_32_1 = (lbuf[3 * i] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i + 2];
         if (temp_32_1 & 0x800000)
         {
           temp_32_1 |= 0xFF000000;
         }
-        buffer[i] = cmplx(0, (float)temp_32_1 / scaler);
+        buffer[i] = cf32(0, (f32)temp_32_1 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[3 * i + 2] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i];
+        i32 temp_32_1 = (lbuf[3 * i + 2] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i];
         if (temp_32_1 & 0x800000)
         {
           temp_32_1 |= 0xFF000000;
         }
-        buffer[i] = cmplx(0, (float)temp_32_1 / scaler);
+        buffer[i] = cf32(0, (f32)temp_32_1 / scaler);
       }
     }
     return;
@@ -738,22 +738,22 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "int32")
   {
-    auto * const lbuf = make_vla(uint8_t, 4 * amount);
+    auto * const lbuf = make_vla(u8, 4 * amount);
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
-        buffer[i] = cmplx(0, (float)temp_32_1 / scaler);
+        i32 temp_32_1 = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
+        buffer[i] = cf32(0, (f32)temp_32_1 / scaler);
       }
     }
     else
     {
       for (int i = 0; i < amount; i++)
       {
-        int32_t temp_32_1 = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
-        buffer[i] = cmplx(0, (float)temp_32_1 / scaler);
+        i32 temp_32_1 = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
+        buffer[i] = cf32(0, (f32)temp_32_1 / scaler);
       }
     }
     return;
@@ -761,7 +761,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
 
   if (fd->container == "float32")
   {
-    auto * const lbuf = make_vla(uint8_t, 4 * amount);
+    auto * const lbuf = make_vla(u8, 4 * amount);
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
@@ -769,7 +769,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
       {
         UCnv c;
         c.int32Data = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
-        buffer[i] = cmplx(0, c.floatData);
+        buffer[i] = cf32(0, c.floatData);
       }
     }
     else
@@ -778,7 +778,7 @@ void XmlReader::readElements_Q(FILE * theFile, cmplx * buffer, int amount)
       {
         UCnv c;
         c.int32Data = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
-        buffer[i] = cmplx(0, c.floatData);
+        buffer[i] = cf32(0, c.floatData);
       }
     }
     return;

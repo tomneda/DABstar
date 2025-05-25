@@ -30,9 +30,9 @@
 #ifndef  FRAME_PROCESSOR_H
 #define  FRAME_PROCESSOR_H
 
-#include  <vector>
-#include  <cstdint>
-#include  <cstdio>
+#include "glob_data_types.h"
+#include <vector>
+#include <cstdio>
 
 //
 //	virtual class, just for providing a common base
@@ -47,7 +47,7 @@ public:
   virtual ~FrameProcessor()
   {}
 
-  virtual void add_to_frame(const std::vector<uint8_t> &)
+  virtual void add_to_frame(const std::vector<u8> &)
   {
     fprintf(stderr, "missing overridden method in frameprocessor\n");
   }

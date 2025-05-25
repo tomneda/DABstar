@@ -25,12 +25,12 @@
 
 //	FIR LowPass
 
-	LowPassFIR::LowPassFIR (int16_t firsize,
-	                        int32_t Fc, int32_t fs){
-float	sum	= 0.0;
-auto * const temp = make_vla(float, firsize);
+	LowPassFIR::LowPassFIR (i16 firsize,
+	                        i32 Fc, i32 fs){
+f32	sum	= 0.0;
+auto * const temp = make_vla(f32, firsize);
 
-	this -> frequency	= (float)Fc / fs;
+	this -> frequency	= (f32)Fc / fs;
 	this -> filterSize	= firsize;
 	this -> ip		= 0;
 	filterKernel.	resize (filterSize);
@@ -38,7 +38,7 @@ auto * const temp = make_vla(float, firsize);
 
 	for (int i = 0; i < filterSize; i ++) {
 	   filterKernel [i]	= 0;
-	   Buffer [i]		= cmplx (0, 0);
+	   Buffer [i]		= cf32 (0, 0);
 	}
 
 	for (int i = 0; i < filterSize; i ++) {
@@ -50,8 +50,8 @@ auto * const temp = make_vla(float, firsize);
 //
 //	Blackman window
 	   temp [i]  *= (0.42 -
-		    0.5 * cos (2 * M_PI * (float)i / filterSize) +
-		    0.08 * cos (4 * M_PI * (float)i / filterSize));
+		    0.5 * cos (2 * M_PI * (f32)i / filterSize) +
+		    0.08 * cos (4 * M_PI * (f32)i / filterSize));
 
 	   sum += temp [i];
 	}
@@ -68,8 +68,8 @@ int	LowPassFIR::theSize	() {
 }
 
 void	LowPassFIR::resize (int newSize) {
-float	*temp 	= (float *)alloca (newSize * sizeof (float));
-float	sum = 0;
+f32	*temp 	= (f32 *)alloca (newSize * sizeof (f32));
+f32	sum = 0;
 
 	filterSize	= newSize;
 	filterKernel. resize (filterSize);
@@ -89,8 +89,8 @@ float	sum = 0;
 //
 //	Blackman window
 	   temp [i]  *= (0.42 -
-		    0.5 * cos (2 * M_PI * (float)i / filterSize) +
-		    0.08 * cos (4 * M_PI * (float)i / filterSize));
+		    0.5 * cos (2 * M_PI * (f32)i / filterSize) +
+		    0.08 * cos (4 * M_PI * (f32)i / filterSize));
 
 	   sum += temp [i];
 	}
@@ -101,13 +101,13 @@ float	sum = 0;
 
 //	we process the samples backwards rather than reversing
 //	the kernel
-cmplx	LowPassFIR::Pass (cmplx z) {
-int16_t	i;
-cmplx	tmp	= 0;
+cf32	LowPassFIR::Pass (cf32 z) {
+i16	i;
+cf32	tmp	= 0;
 
 	Buffer [ip]	= z;
 	for (i = 0; i < filterSize; i ++) {
-	   int16_t index = ip - i;
+	   i16 index = ip - i;
 	   if (index < 0)
 	      index += filterSize;
 	   tmp		+= Buffer [index] * filterKernel [i];
@@ -117,8 +117,8 @@ cmplx	tmp	= 0;
 	return tmp;
 }
 
-float	LowPassFIR::Pass (float v) {
-	return real (Pass (cmplx (v, 0)));
+f32	LowPassFIR::Pass (f32 v) {
+	return real (Pass (cf32 (v, 0)));
 }
 
 

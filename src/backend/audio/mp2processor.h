@@ -53,9 +53,9 @@
 // quantizer specification structure
 struct quantizer_spec
 {
-  int32_t nlevels;
-  uint8_t grouping;
-  uint8_t cw_bits;
+  i32 nlevels;
+  u8 grouping;
+  u8 cw_bits;
 };
 
 class DabRadio;
@@ -64,43 +64,43 @@ class Mp2Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  Mp2Processor(DabRadio *, int16_t, RingBuffer<int16_t> *);
+  Mp2Processor(DabRadio *, i16, RingBuffer<i16> *);
   ~Mp2Processor();
-  void add_to_frame(const std::vector<uint8_t> &);
+  void add_to_frame(const std::vector<u8> &);
 
 private:
   DabRadio * myRadioInterface;
-  int16_t bitRate;
+  i16 bitRate;
   PadHandler my_padhandler;
-  int32_t mp2sampleRate(uint8_t *);
-  int32_t mp2decodeFrame(uint8_t *, int16_t *);
-  RingBuffer<int16_t> * buffer;
-  int32_t baudRate;
-  void setSamplerate(int32_t);
+  i32 mp2sampleRate(u8 *);
+  i32 mp2decodeFrame(u8 *, i16 *);
+  RingBuffer<i16> * buffer;
+  i32 baudRate;
+  void setSamplerate(i32);
   struct quantizer_spec * read_allocation(int, int);
   void read_samples(struct quantizer_spec *, int, int *);
-  int32_t get_bits(int32_t);
-  int16_t V[2][1024];
-  int16_t Voffs;
-  int16_t N[64][32];
+  i32 get_bits(i32);
+  i16 V[2][1024];
+  i16 Voffs;
+  i16 N[64][32];
   struct quantizer_spec * allocation[2][32];
-  int32_t scfsi[2][32];
-  int32_t scalefactor[2][32][3];
-  int32_t sample[2][32][3];
-  int32_t U[512];
+  i32 scfsi[2][32];
+  i32 scalefactor[2][32][3];
+  i32 sample[2][32][3];
+  i32 U[512];
 
-  int32_t bit_window;
-  int32_t bits_in_window;
-  uint8_t * frame_pos;
-  uint8_t * MP2frame;
+  i32 bit_window;
+  i32 bits_in_window;
+  u8 * frame_pos;
+  u8 * MP2frame;
 
-  int16_t MP2framesize;
-  int16_t MP2Header_OK;
-  int16_t MP2headerCount;
-  int16_t MP2bitCount;
-  void addbittoMP2(uint8_t *, uint8_t, int16_t);
-  int16_t numberofFrames;
-  int16_t errorFrames;
+  i16 MP2framesize;
+  i16 MP2Header_OK;
+  i16 MP2headerCount;
+  i16 MP2bitCount;
+  void addbittoMP2(u8 *, u8, i16);
+  i16 numberofFrames;
+  i16 errorFrames;
   
 signals:
   void signal_show_frameErrors(int);

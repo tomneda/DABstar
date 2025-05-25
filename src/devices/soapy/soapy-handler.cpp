@@ -146,7 +146,7 @@ QString	handlerName	= "driver=";
                                              freqs [i]. maximum());
 
 
-        std::vector<double>bandwidths =
+        std::vector<f64>bandwidths =
                            device -> listBandwidths (SOAPY_SDR_RX, 0);
 
 	int	minDist	= 10000000;
@@ -159,7 +159,7 @@ QString	handlerName	= "driver=";
 	   }
 
 	bool	validRate = false;
-        std::vector<double> samplerates =
+        std::vector<f64> samplerates =
                            device -> listSampleRates (SOAPY_SDR_RX, 0);
         for (int i = 0; i < samplerates. size(); i ++)
 	   if ((int)(samplerates [i]) == 2048000) {
@@ -181,46 +181,46 @@ QString	handlerName	= "driver=";
 	statusLabel	-> setText ("OK");
 }
 
-void	soapyHandler::setVFOFrequency		(int32_t f) {
+void	soapyHandler::setVFOFrequency		(i32 f) {
 	if (worker == nullptr)
 	   return;
 	device	-> setFrequency (SOAPY_SDR_RX, 0, f);
 }
 
-int32_t	soapyHandler::getVFOFrequency		(void) {
+i32	soapyHandler::getVFOFrequency		(void) {
 	return device	-> getFrequency (SOAPY_SDR_RX, 0);
 }
 	
-int32_t	soapyHandler::defaultFrequency		(void) {return 220000000;}
+i32	soapyHandler::defaultFrequency		(void) {return 220000000;}
 
-bool	soapyHandler::restartReader		(int32_t freq) {
+bool	soapyHandler::restartReader		(i32 freq) {
 	setVFOFrequency (freq);
 	return true;
 }
 
 void	soapyHandler::stopReader		(void) {}
-int32_t	soapyHandler::getSamples		(cmplx *v,
-                                                             int32_t a) {
+i32	soapyHandler::getSamples		(cf32 *v,
+                                                             i32 a) {
 	if (worker == nullptr)
 	   return 0;
 	return worker -> getSamples (v, a);
 }
 
-int32_t	soapyHandler::Samples			(void) {
+i32	soapyHandler::Samples			(void) {
 	if (worker == nullptr)
 	   return 0;
 	return worker	-> Samples();
 }
 
 void	soapyHandler::resetBuffer		(void) {}
-int16_t soapyHandler::bitDepth			(void) {return 12;}
+i16 soapyHandler::bitDepth			(void) {return 12;}
 
 void	soapyHandler::handle_spinBox_1 (int v) {
-        device -> setGain (SOAPY_SDR_RX, 0, gains [0], (float)v);
+        device -> setGain (SOAPY_SDR_RX, 0, gains [0], (f32)v);
 }
 
 void	soapyHandler::handle_spinBox_2 (int v) {
-        device -> setGain (SOAPY_SDR_RX, 0, gains [1], (float)v);
+        device -> setGain (SOAPY_SDR_RX, 0, gains [1], (f32)v);
 }
 
 void	soapyHandler::set_agcControl	(int v) {

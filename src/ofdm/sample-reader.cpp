@@ -32,10 +32,10 @@
 #include  "dabradio.h"
 #include  <ctime>
 
-static inline int16_t value_for_bit_pos(int16_t b)
+static inline i16 value_for_bit_pos(i16 b)
 {
   assert(b > 0);
-  int16_t res = 1;
+  i16 res = 1;
   while (--b > 0)
   {
     res <<= 1;
@@ -43,7 +43,7 @@ static inline int16_t value_for_bit_pos(int16_t b)
   return res;
 }
 
-SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cmplx> * iSpectrumBuffer)
+SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer)
   : myRadioInterface(mr)
   , theRig(iTheRig)
   , spectrumBuffer(iSpectrumBuffer)
@@ -54,8 +54,8 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
 
   for (int i = 0; i < INPUT_RATE; i++)
   {
-    oscillatorTable[i] = cmplx((float)cos(2.0 * M_PI * i / INPUT_RATE),
-                               (float)sin(2.0 * M_PI * i / INPUT_RATE));
+    oscillatorTable[i] = cf32((f32)cos(2.0 * M_PI * i / INPUT_RATE),
+                              (f32)sin(2.0 * M_PI * i / INPUT_RATE));
   }
 
   connect(this, &SampleReader::signal_show_spectrum, mr, &DabRadio::slot_show_spectrum);
@@ -72,31 +72,31 @@ void SampleReader::setRunning(bool b)
     theRig->resetBuffer();
 
     // in the case resetBuffer() is not implemented, read out the remaining buffer
-    int32_t readSampleSize = 0;
+    i32 readSampleSize = 0;
     do
     {
-      readSampleSize = theRig->getSamples(mSampleBuffer.data(), (int32_t)mSampleBuffer.size());
+      readSampleSize = theRig->getSamples(mSampleBuffer.data(), (i32)mSampleBuffer.size());
     }
-    while(readSampleSize >= (int32_t)mSampleBuffer.size()); // repeat if full buffer could be read-in as there could be more
+    while(readSampleSize >= (i32)mSampleBuffer.size()); // repeat if full buffer could be read-in as there could be more
   }
 }
 
-float SampleReader::get_sLevel() const
+f32 SampleReader::get_sLevel() const
 {
   return sLevel;
 }
 
-cmplx SampleReader::getSample(int32_t phaseOffset)
+cf32 SampleReader::getSample(i32 phaseOffset)
 {
   getSamples(mSampleBuffer, 0, 1, phaseOffset, true); // show spectrum while scanning
   return mSampleBuffer[0];
 }
 
-void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iNoSamples, const int32_t iFreqOffsetBBHz, bool iShowSpec)
+void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, bool iShowSpec)
 {
   assert((signed)oV.size() >= iStartIdx + iNoSamples);
 
-  cmplx * const buffer = oV.data() + iStartIdx;
+  cf32 * const buffer = oV.data() + iStartIdx;
 
   while (running.load() && theRig->Samples() < iNoSamples)
   {
@@ -114,7 +114,7 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
 
   //	OK, we have samples!!
   //	first: adjust frequency. We need Hz accuracy
-  for (int32_t i = 0; i < iNoSamples; i++)
+  for (i32 i = 0; i < iNoSamples; i++)
   {
     currentPhase -= iFreqOffsetBBHz;
 
@@ -122,33 +122,33 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
     currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
     assert(currentPhase >= 0);  // could happen with currentPhase < -INPUT_RATE
 
-    cmplx v = buffer[i];
+    cf32 v = buffer[i];
 
     // Perform DC removal if wanted
     if (dcRemovalActive)
     {
-      const float v_i = real(v);
-      const float v_q = imag(v);
-      constexpr float ALPHA = 1.0f / INPUT_RATE / 1.00f /*s*/;
+      const f32 v_i = real(v);
+      const f32 v_q = imag(v);
+      constexpr f32 ALPHA = 1.0f / INPUT_RATE / 1.00f /*s*/;
       mean_filter(meanI, v_i, ALPHA);
       mean_filter(meanQ, v_q, ALPHA);
 #ifdef USE_IQ_COMPENSATION
-      const float x_i = v_i - meanI;
-      const float x_q = v_q - meanQ;
+      const f32 x_i = v_i - meanI;
+      const f32 x_q = v_q - meanQ;
       mean_filter(meanII, x_i * x_i, ALPHA);
       mean_filter(meanIQ, x_i * x_q, ALPHA);
-      const float phi = meanIQ / meanII;
-      const float x_q_corr = x_q - phi * x_i;
+      const f32 phi = meanIQ / meanII;
+      const f32 x_q_corr = x_q - phi * x_i;
       mean_filter(meanQQ, x_q_corr * x_q_corr, ALPHA);
-      const float gainQ = std::sqrt(meanII / meanQQ);
-      v = cmplx(x_i, x_q_corr * gainQ);
+      const f32 gainQ = std::sqrt(meanII / meanQQ);
+      v = cf32(x_i, x_q_corr * gainQ);
 #else
-      v = cmplx(v_i - meanI, v_q - meanQ);
+      v = cf32(v_i - meanI, v_q - meanQ);
 #endif
     }
 
     // The mixing has no effect on the absolute level detection, so do it beforehand
-    const float v_abs = std::abs(v);
+    const f32 v_abs = std::abs(v);
     if (v_abs > peakLevel) peakLevel = v_abs;
     mean_filter(sLevel, v_abs, 0.00001f);
 
@@ -194,14 +194,14 @@ void SampleReader::getSamples(TArrayTn & oV, const int32_t iStartIdx, int32_t iN
   }
 }
 
-void SampleReader::_dump_samples_to_file(const cmplx * const ipV, const int32_t iNoSamples)
+void SampleReader::_dump_samples_to_file(const cf32 * const ipV, const i32 iNoSamples)
 {
-  const float scaleFactor = (INT16_MAX >> 2) / sLevel; // scale to 14 bit mean dynamic range
+  const f32 scaleFactor = (INT16_MAX >> 2) / sLevel; // scale to 14 bit mean dynamic range
 
-  for (int32_t i = 0; i < iNoSamples; i++)
+  for (i32 i = 0; i < iNoSamples; i++)
   {
-    dumpBuffer[2 * dumpIndex + 0] = (int16_t)(real(ipV[i]) * scaleFactor);
-    dumpBuffer[2 * dumpIndex + 1] = (int16_t)(imag(ipV[i]) * scaleFactor);
+    dumpBuffer[2 * dumpIndex + 0] = (i16)(real(ipV[i]) * scaleFactor);
+    dumpBuffer[2 * dumpIndex + 1] = (i16)(imag(ipV[i]) * scaleFactor);
 
     if (++dumpIndex >= DUMP_SIZE / 2)
     {
@@ -222,9 +222,9 @@ void SampleReader::stop_dumping()
   dumpfilePointer.store(nullptr);
 }
 
-float SampleReader::get_linear_peak_level_and_clear()
+f32 SampleReader::get_linear_peak_level_and_clear()
 {
-  const float peakLevelTemp = peakLevel;
+  const f32 peakLevelTemp = peakLevel;
   peakLevel = -1.0e6;
   return peakLevelTemp;
 }
@@ -235,7 +235,7 @@ void SampleReader::set_dc_removal(bool iRemoveDC)
   dcRemovalActive = iRemoveDC;
 }
 
-void SampleReader::set_cir_buffer(RingBuffer<cmplx> * iCirBuffer)
+void SampleReader::set_cir_buffer(RingBuffer<cf32> * iCirBuffer)
 {
   cirBuffer = iCirBuffer;
 }

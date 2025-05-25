@@ -116,8 +116,8 @@ void DabProcessor::stop()
 void DabProcessor::run()  // run QThread
 {
   // this method is called with each new set frequency
-  float syncThreshold;
-  int32_t sampleCount = 0;
+  f32 syncThreshold;
+  i32 sampleCount = 0;
   mRfFreqShiftUsed = false;
 
   mSampleReader.setRunning(true);  // useful after a restart
@@ -141,7 +141,7 @@ void DabProcessor::run()  // run QThread
   try
   {
     // To get some idea of the signal strength
-    for (int32_t i = 0; i < cTF / 5; i++)
+    for (i32 i = 0; i < cTF / 5; i++)
     {
       mSampleReader.getSample(0);
     }
@@ -189,7 +189,7 @@ void DabProcessor::run()  // run QThread
   }
 }
 
-void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
+void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
 {
   /*
    * The current OFDM symbol 0 in mOfdmBuffer is special in that it is used for fine time synchronization,
@@ -197,7 +197,7 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
    */
 
   // memcpy() is considerable faster than std::copy on my i7-6700K (nearly twice as fast for size == 2048)
-  memcpy(mFftInBuffer.data(), mOfdmBuffer.data(), mFftInBuffer.size() * sizeof(cmplx));
+  memcpy(mFftInBuffer.data(), mOfdmBuffer.data(), mFftInBuffer.size() * sizeof(cf32));
 
   fftwf_execute(mFftPlan);
   mOfdmDecoder.store_reference_symbol_0(mFftOutBuffer);
@@ -207,11 +207,11 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
 
   if (mCorrectionNeeded)
   {
-    const int32_t correction = mPhaseReference.estimate_carrier_offset_from_sync_symbol_0(mFftOutBuffer);
+    const i32 correction = mPhaseReference.estimate_carrier_offset_from_sync_symbol_0(mFftOutBuffer);
 
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
-      mFreqOffsSyncSymb += (float)correction * (float)cCarrDiff;
+      mFreqOffsSyncSymb += (f32)correction * (f32)cCarrDiff;
 
       if (std::abs(mFreqOffsSyncSymb) > kHz(35))
       {
@@ -239,7 +239,7 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
   // The first sample to be found for the next frame should be T_g samples ahead. Before going for the next frame, we just check the fineCorrector
   // We integrate the newly found frequency error with the existing frequency error.
   limit_symmetrically(mPhaseOffsetCyclPrefRad, 20.0f * F_RAD_PER_DEG);
-  mFreqOffsCylcPrefHz += mPhaseOffsetCyclPrefRad / F_2_M_PI * (float)cCarrDiff; // formerly 0.05
+  mFreqOffsCylcPrefHz += mPhaseOffsetCyclPrefRad / F_2_M_PI * (f32)cCarrDiff; // formerly 0.05
 
   _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
 
@@ -247,17 +247,17 @@ void DabProcessor::_state_process_rest_of_frame(int32_t & ioSampleCount)
 
   if (++mClockOffsetFrameCount > 10) // about each second
   {
-    const float clockErrHz = INPUT_RATE * ((float)mClockOffsetTotalSamples / ((float)mClockOffsetFrameCount * (float)cTF) - 1.0f);
+    const f32 clockErrHz = INPUT_RATE * ((f32)mClockOffsetTotalSamples / ((f32)mClockOffsetFrameCount * (f32)cTF) - 1.0f);
     emit signal_show_clock_err(clockErrHz);
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
 
-    const float peakLevel = mSampleReader.get_linear_peak_level_and_clear();
+    const f32 peakLevel = mSampleReader.get_linear_peak_level_and_clear();
     emit signal_linear_peak_level(peakLevel);
   }
 }
 
-void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
+void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
 {
   // We are at the end of the frame and we read the next T_n null samples
   mSampleReader.getSamples(mOfdmBuffer, 0, cTn, mFreqOffsBBHz, false);
@@ -265,7 +265,7 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
 
   // is this null symbol with TII?
   const bool isTiiNullSegment = ((mFicHandler.get_cif_count() & 0x7) >= 4);
-  memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cmplx));
+  memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cf32));
   fftwf_execute(mFftPlan);
 
   if (!isTiiNullSegment) // eval SNR only in non-TII null segments
@@ -293,7 +293,7 @@ void DabProcessor::_process_null_symbol(int32_t & ioSampleCount)
   }
 }
 
-float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
+f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
 {
 /**
   * After symbol 0, we will just read in the other (params -> L - 1) blocks
@@ -306,20 +306,20 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
   * the phase difference between the samples in the cyclic prefix
   * and the	corresponding samples in the datapart.
   */
-  cmplx freqCorr = cmplx(0, 0);
+  cf32 freqCorr = cf32(0, 0);
 
-  for (int16_t ofdmSymbCntIdx = 1; ofdmSymbCntIdx < cL; ofdmSymbCntIdx++)
+  for (i16 ofdmSymbCntIdx = 1; ofdmSymbCntIdx < cL; ofdmSymbCntIdx++)
   {
     mSampleReader.getSamples(mOfdmBuffer, 0, cTs, mFreqOffsBBHz, true);
     ioSampleCount += cTs;
 
-    for (int32_t i = cTu; i < cTs; i++)
+    for (i32 i = cTu; i < cTs; i++)
     {
       freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - cTu]); // eval phase shift in cyclic prefix part
     }
 
     mOfdmDecoder.set_dc_offset(mSampleReader.get_dc_offset());
-    memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cmplx));
+    memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cf32));
     fftwf_execute(mFftPlan);
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_begin();
@@ -351,9 +351,9 @@ float DabProcessor::_process_ofdm_symbols_1_to_L(int32_t & ioSampleCount)
   return arg(freqCorr);
 }
 
-void DabProcessor::_set_bb_freq_offs_Hz(float iFreqHz)
+void DabProcessor::_set_bb_freq_offs_Hz(f32 iFreqHz)
 {
-  const int32_t iFreqHzInt = (int32_t)std::round(iFreqHz);
+  const i32 iFreqHzInt = (i32)std::round(iFreqHz);
   if (mFreqOffsBBHz != iFreqHzInt)
   {
     mFreqOffsBBHz = iFreqHzInt;
@@ -361,9 +361,9 @@ void DabProcessor::_set_bb_freq_offs_Hz(float iFreqHz)
   }
 }
 
-void DabProcessor::_set_rf_freq_offs_Hz(float iFreqHz)
+void DabProcessor::_set_rf_freq_offs_Hz(f32 iFreqHz)
 {
-  const int32_t iFreqHzInt = (int32_t)std::round(iFreqHz);
+  const i32 iFreqHzInt = (i32)std::round(iFreqHz);
   if (mFreqOffsRFHz != iFreqHzInt)
   {
     mFreqOffsRFHz = iFreqHzInt;
@@ -371,12 +371,12 @@ void DabProcessor::_set_rf_freq_offs_Hz(float iFreqHz)
   }
 }
 
-bool DabProcessor::_state_eval_sync_symbol(int32_t & oSampleCount, float iThreshold)
+bool DabProcessor::_state_eval_sync_symbol(i32 & oSampleCount, f32 iThreshold)
 {
   // get first OFDM symbol after time sync marker
   mSampleReader.getSamples(mOfdmBuffer, 0, cTu, mFreqOffsBBHz, false);
 
-  const int32_t startIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
+  const i32 startIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
 
   if (startIndex < 0)
   {
@@ -386,11 +386,11 @@ bool DabProcessor::_state_eval_sync_symbol(int32_t & oSampleCount, float iThresh
   else
   {
     // Once here, we are synchronized, we need to copy the data we used for synchronization for symbol 0
-    const int32_t nextOfdmBufferIdx = cTu - startIndex;
+    const i32 nextOfdmBufferIdx = cTu - startIndex;
     assert(nextOfdmBufferIdx >= 0);
 
     // move/read OFDM symbol 0 which contains the synchronization data
-    memmove(mOfdmBuffer.data(), &(mOfdmBuffer[startIndex]), nextOfdmBufferIdx * sizeof(cmplx)); // memmove can move overlapping segments correctly
+    memmove(mOfdmBuffer.data(), &(mOfdmBuffer[startIndex]), nextOfdmBufferIdx * sizeof(cf32)); // memmove can move overlapping segments correctly
     mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, cTu - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
 
     oSampleCount = startIndex + cTu;
@@ -436,12 +436,12 @@ void DabProcessor::activate_cir_viewer(bool iActivate)
   mSampleReader.set_cir_buffer(iActivate ? mpCirBuffer : nullptr);
 }
 
-QString DabProcessor::find_service(uint32_t SId, int SCIds)
+QString DabProcessor::find_service(u32 SId, int SCIds)
 {
   return mFicHandler.find_service(SId, SCIds);
 }
 
-void DabProcessor::get_parameters(const QString & s, uint32_t * p_SId, int * p_SCIds)
+void DabProcessor::get_parameters(const QString & s, u32 * p_SId, int * p_SCIds)
 {
   mFicHandler.get_parameters(s, p_SId, p_SCIds);
 }
@@ -451,7 +451,7 @@ std::vector<SServiceId> DabProcessor::get_services()
   return mFicHandler.get_services();
 }
 
-int DabProcessor::get_sub_channel_id(const QString & s, uint32_t SId)
+int DabProcessor::get_sub_channel_id(const QString & s, u32 SId)
 {
   return mFicHandler.get_sub_channel_id(s, SId);
 }
@@ -475,22 +475,22 @@ void DabProcessor::get_data_for_audio_service(const QString & iS, Audiodata * op
   mFicHandler.get_data_for_audio_service(iS, opAD);
 }
 
-void DabProcessor::get_data_for_packet_service(const QString & iS, Packetdata * opPD, int16_t iCompNr)
+void DabProcessor::get_data_for_packet_service(const QString & iS, Packetdata * opPD, i16 iCompNr)
 {
   mFicHandler.get_data_for_packet_service(iS, opPD, iCompNr);
 }
 
-uint8_t DabProcessor::get_ecc()
+u8 DabProcessor::get_ecc()
 {
   return mFicHandler.get_ecc();
 }
 
-[[maybe_unused]] uint16_t DabProcessor::get_country_name()
+[[maybe_unused]] u16 DabProcessor::get_country_name()
 {
   return mFicHandler.get_country_name();
 }
 
-int32_t DabProcessor::get_ensemble_id()
+i32 DabProcessor::get_ensemble_id()
 {
   return mFicHandler.get_ensembleId();
 }
@@ -500,17 +500,17 @@ int32_t DabProcessor::get_ensemble_id()
   return mFicHandler.get_ensemble_name();
 }
 
-void DabProcessor::set_epg_data(int SId, int32_t theTime, const QString & s, const QString & d)
+void DabProcessor::set_epg_data(int SId, i32 theTime, const QString & s, const QString & d)
 {
   mFicHandler.set_epg_data(SId, theTime, s, d);
 }
 
-bool DabProcessor::has_time_table(uint32_t SId)
+bool DabProcessor::has_time_table(u32 SId)
 {
   return mFicHandler.has_time_table(SId);
 }
 
-std::vector<SEpgElement> DabProcessor::find_epg_data(uint32_t SId)
+std::vector<SEpgElement> DabProcessor::find_epg_data(u32 SId)
 {
   return mFicHandler.find_epg_data(SId);
 }
@@ -551,11 +551,11 @@ void DabProcessor::stop_service(int subChId, int flag)
   }
 }
 
-bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag)
+bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, FILE * dump, int flag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(d, b, (RingBuffer<uint8_t>*)nullptr, dump, flag);
+    return mMscHandler.set_channel(d, b, (RingBuffer<u8>*)nullptr, dump, flag);
   }
   else
   {
@@ -563,11 +563,11 @@ bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<int16_t> * 
   }
 }
 
-bool DabProcessor::set_data_channel(Packetdata * d, RingBuffer<uint8_t> * b, int flag)
+bool DabProcessor::set_data_channel(Packetdata * d, RingBuffer<u8> * b, int flag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(d, (RingBuffer<int16_t>*)nullptr, b, nullptr, flag);
+    return mMscHandler.set_channel(d, (RingBuffer<i16>*)nullptr, b, nullptr, flag);
   }
   else
   {
@@ -595,7 +595,7 @@ void DabProcessor::stop_fic_dump()
   mFicHandler.stop_fic_dump();
 }
 
-uint32_t DabProcessor::get_julian_date()
+u32 DabProcessor::get_julian_date()
 {
   return mFicHandler.get_julian_date();
 }
@@ -644,7 +644,7 @@ void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
 {
   if (!iUseDcAvoidanceAlgorithm)
   {
-    mFreqOffsSyncSymb += (float)mFreqOffsRFHz;  // take RF offset to BB
+    mFreqOffsSyncSymb += (f32)mFreqOffsRFHz;  // take RF offset to BB
     _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
     _set_rf_freq_offs_Hz(0.0f); // reset RF shift, sets mFreqOffsRFHz = 0
   }
@@ -674,12 +674,12 @@ void DabProcessor::set_tii_collisions(bool b)
   mTiiDetector.set_detect_collisions(b);
 }
 
-void DabProcessor::set_tii_sub_id(uint8_t subid)
+void DabProcessor::set_tii_sub_id(u8 subid)
 {
   mTiiDetector.set_subid_for_collision_search(subid);
 }
 
-void DabProcessor::set_tii_threshold(uint8_t trs)
+void DabProcessor::set_tii_threshold(u8 trs)
 {
   //fprintf(stderr, "tii_threshold = %d\n", trs);
   mTiiThreshold = trs;

@@ -41,16 +41,16 @@
  */
 
 class LibLoader {
-    typedef void (COLIBRI_NANO_API *pVersion)(uint32_t&, uint32_t&, uint32_t&);
+    typedef void (COLIBRI_NANO_API *pVersion)(u32&, u32&, u32&);
     typedef void (COLIBRI_NANO_API *pInformation)(char**);
-    typedef void (COLIBRI_NANO_API *pDevices)(uint32_t&);
+    typedef void (COLIBRI_NANO_API *pDevices)(u32&);
     typedef void (COLIBRI_NANO_API *pFunc1)(void);
-    typedef bool (COLIBRI_NANO_API *pOpen)(Descriptor*, const uint32_t);
+    typedef bool (COLIBRI_NANO_API *pOpen)(Descriptor*, const u32);
     typedef void (COLIBRI_NANO_API *pClose)(Descriptor);
     typedef bool (COLIBRI_NANO_API *pStart)(Descriptor, SampleRateIndex, pCallbackRx, void*);
     typedef bool (COLIBRI_NANO_API *pStop)(Descriptor);
-    typedef bool (COLIBRI_NANO_API *pSetPreamp)(Descriptor, float);
-    typedef bool (COLIBRI_NANO_API *pSetFrequency)(Descriptor, uint32_t);
+    typedef bool (COLIBRI_NANO_API *pSetPreamp)(Descriptor, f32);
+    typedef bool (COLIBRI_NANO_API *pSetFrequency)(Descriptor, u32);
 
 public:
     LibLoader() = default;
@@ -86,7 +86,7 @@ public:
      * \param minor
      * \param patch
      */
-    void version (uint32_t &major, uint32_t &minor, uint32_t &patch);
+    void version (u32 &major, u32 &minor, u32 &patch);
 
     /**
      * \brief Return line info about the library.
@@ -96,7 +96,7 @@ public:
     /**
      * \brief Return amount of found ColibriNANO receivers.
      */
-    uint32_t devices ();
+    u32 devices ();
 
 
     /**
@@ -107,7 +107,7 @@ public:
      *
      * \details If function ended with an error, then descriptor will be equal nullptr.
      */
-    bool open(Descriptor *pDev, const uint32_t devIndex);
+    bool open(Descriptor *pDev, const u32 devIndex);
 
     /**
      * \brief Close the ColibriNANO receiver.
@@ -137,7 +137,7 @@ public:
      *
      * \details Preamplifier range from -31.5 up to 6 dB with 0.5 dB step.
      */
-    bool setPream(Descriptor dev, float value);
+    bool setPream(Descriptor dev, f32 value);
 
     /**
      * \brief Set the tuning frequency for ColibriNANO receiver.
@@ -147,7 +147,7 @@ public:
      *
      * \details Tuning frequency range from 0.5*SampleRate Hz up to 500 MHz - 0.5 SampleRate.
      */
-    bool setFrequency(Descriptor dev, uint32_t value);
+    bool setFrequency(Descriptor dev, u32 value);
 
 private:
 #ifndef __linux__

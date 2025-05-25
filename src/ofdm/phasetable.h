@@ -41,10 +41,10 @@ class PhaseTable
 public:
   struct SPhasetableElement
   {
-    int32_t kmin;
-    int32_t kmax;
-    int32_t i;
-    int32_t n;
+    i32 kmin;
+    i32 kmax;
+    i32 i;
+    i32 n;
   };
 
   explicit PhaseTable();
@@ -55,8 +55,8 @@ public:
 private:
   const struct SPhasetableElement * mpCurrentTable;
 
-  int32_t h_table(int32_t i, int32_t j) const;
-  float get_phi(int32_t k) const;
+  i32 h_table(i32 i, i32 j) const;
+  f32 get_phi(i32 k) const;
 };
 
 #endif

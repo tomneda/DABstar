@@ -47,8 +47,8 @@
 #define CHECK_ERR_RETURN_FALSE(x_)        if (!check_err(x_, __FUNCTION__, __LINE__)) return false
 #define LOAD_METHOD_RETURN_FALSE(m_, n_)  if (!load_method(m_, n_, __LINE__)) return false
 
-constexpr int32_t DEFAULT_LNA_GAIN = 16;
-constexpr int32_t DEFAULT_VGA_GAIN = 30;
+constexpr i32 DEFAULT_LNA_GAIN = 16;
+constexpr i32 DEFAULT_VGA_GAIN = 30;
 
 HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVersion) :
   Ui_hackrfWidget(),
@@ -102,7 +102,7 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   save_gain_settings = mpHackrfSettings->value("save_gainSettings", 1).toInt() != 0;
   mpHackrfSettings->endGroup();
 
-  mRefFreqErrFac = 1.0f + (float)ppm_correction->value() / 1.0e6f;
+  mRefFreqErrFac = 1.0f + (f32)ppm_correction->value() / 1.0e6f;
 
   check_err_throw(mHackrf.init());
   check_err_throw(mHackrf.open(&theDevice));
@@ -133,7 +133,7 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
       pSerial = "unknown";
     }
 
-    uint8_t revNo = 0;
+    u8 revNo = 0;
     check_err_throw(mHackrf.board_rev_read(theDevice, &revNo));
     mRevNo = (hackrf_board_rev)revNo;
 
@@ -188,7 +188,7 @@ HackRfHandler::~HackRfHandler()
   mHackrf.exit();
 }
 
-void HackRfHandler::setVFOFrequency(int32_t newFrequency)
+void HackRfHandler::setVFOFrequency(i32 newFrequency)
 {
   CHECK_ERR_RETURN(mHackrf.set_freq(theDevice, newFrequency * mRefFreqErrFac));
 
@@ -202,7 +202,7 @@ void HackRfHandler::setVFOFrequency(int32_t newFrequency)
   mVfoFreqHz = newFrequency;
 }
 
-int32_t HackRfHandler::getVFOFrequency()
+i32 HackRfHandler::getVFOFrequency()
 {
   return mVfoFreqHz;
 }
@@ -237,10 +237,10 @@ void HackRfHandler::slot_enable_amp(int a)
   CHECK_ERR_RETURN(mHackrf.set_amp_enable(theDevice, btnAmpEnable->isChecked() ? 1 : 0));
 }
 
-void HackRfHandler::slot_set_ppm_correction(int32_t ppm)
+void HackRfHandler::slot_set_ppm_correction(i32 ppm)
 {
   // writing in the si5351 (Ref clock generator) register does not seem to work, so do it other way...
-  mRefFreqErrFac = 1.0f + (float)ppm / 1.0e6f;
+  mRefFreqErrFac = 1.0f + (f32)ppm / 1.0e6f;
 
   CHECK_ERR_RETURN(mHackrf.set_sample_rate(theDevice, OVERSAMPLING * (2048000.0 * mRefFreqErrFac)));
   CHECK_ERR_RETURN(mHackrf.set_baseband_filter_bandwidth(theDevice, 1750000)); // the filter must be set after the sample rate to be not overwritten
@@ -249,19 +249,19 @@ void HackRfHandler::slot_set_ppm_correction(int32_t ppm)
 }
 
 //	we use a static large buffer, rather than trying to allocate a buffer on the stack
-static std::array<std::complex<int8_t>, 32 * 32768> buffer;
+static std::array<std::complex<i8>, 32 * 32768> buffer;
 
 static int callback(hackrf_transfer * transfer)
 {
   auto * ctx = static_cast<HackRfHandler *>(transfer->rx_ctx);
-  const int8_t * const p = reinterpret_cast<const int8_t *>(transfer->buffer);
+  const i8 * const p = reinterpret_cast<const i8 *>(transfer->buffer);
   HackRfHandler::TRingBuffer * q = &(ctx->mRingBuffer);
   int bufferIndex = 0;
 
   for (int i = 0; i < transfer->valid_length / 2; ++i)
   {
-    const cmplx x = cmplx(p[2 * i + 0], p[2 * i + 1]);
-    cmplx y;
+    const cf32 x = cf32(p[2 * i + 0], p[2 * i + 1]);
+    cf32 y;
 #ifdef HAVE_HBF
     if (!ctx->mHbf.decimate(x, y))
     {
@@ -271,14 +271,14 @@ static int callback(hackrf_transfer * transfer)
     y = x;
 #endif
     assert(bufferIndex < (signed)buffer.size());
-    buffer[bufferIndex] = std::complex<int8_t>((int8_t)(y.real()), (int8_t)(y.imag()));
+    buffer[bufferIndex] = std::complex<i8>((i8)(y.real()), (i8)(y.imag()));
     ++bufferIndex;
   }
   q->put_data_into_ring_buffer(buffer.data(), bufferIndex);
   return 0;
 }
 
-bool HackRfHandler::restartReader(int32_t iFreqHz)
+bool HackRfHandler::restartReader(i32 iFreqHz)
 {
   if (mRunning.load())
   {
@@ -322,14 +322,14 @@ void HackRfHandler::stopReader()
 
 //	The brave old getSamples. For the hackrf, we get
 //	size still in I/Q pairs
-int32_t HackRfHandler::getSamples(cmplx * V, int32_t size)
+i32 HackRfHandler::getSamples(cf32 * V, i32 size)
 {
-  auto * const temp = make_vla(std::complex<int8_t>, size);
+  auto * const temp = make_vla(std::complex<i8>, size);
   int amount = mRingBuffer.get_data_from_ring_buffer(temp, size);
 
   for (int i = 0; i < amount; i++)
   {
-    V[i] = cmplx((float)temp[i].real() / 127.0f, (float)temp[i].imag() / 127.0f);
+    V[i] = cf32((f32)temp[i].real() / 127.0f, (f32)temp[i].imag() / 127.0f);
   }
 
   if (mDumping.load())
@@ -340,7 +340,7 @@ int32_t HackRfHandler::getSamples(cmplx * V, int32_t size)
   return amount;
 }
 
-int32_t HackRfHandler::Samples()
+i32 HackRfHandler::Samples()
 {
   return mRingBuffer.get_ring_buffer_read_available();
 }
@@ -350,7 +350,7 @@ void HackRfHandler::resetBuffer()
   mRingBuffer.flush_ring_buffer();
 }
 
-int16_t HackRfHandler::bitDepth()
+i16 HackRfHandler::bitDepth()
 {
   return 8;
 }
@@ -554,7 +554,7 @@ void HackRfHandler::update_gain_settings(int iFreqMHz)
   btnAmpEnable->blockSignals(false);
 }
 
-void HackRfHandler::check_err_throw(int32_t iResult) const
+void HackRfHandler::check_err_throw(i32 iResult) const
 {
   if (iResult != HACKRF_SUCCESS)
   {
@@ -562,7 +562,7 @@ void HackRfHandler::check_err_throw(int32_t iResult) const
   }
 }
 
-bool HackRfHandler::check_err(int32_t iResult, const char * const iFncName, uint32_t iLine) const
+bool HackRfHandler::check_err(i32 iResult, const char * const iFncName, u32 iLine) const
 {
   if (iResult != HACKRF_SUCCESS)
   {
@@ -577,7 +577,7 @@ bool HackRfHandler::isFileInput()
   return false;
 }
 
-template<typename T> bool HackRfHandler::load_method(T *& oMethodPtr, const char * iName, uint32_t iLine) const
+template<typename T> bool HackRfHandler::load_method(T *& oMethodPtr, const char * iName, u32 iLine) const
 {
   oMethodPtr = reinterpret_cast<T*>(mpHandle->resolve(iName));
 

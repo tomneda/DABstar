@@ -15,7 +15,7 @@ Q_LOGGING_CATEGORY(sLogAudioIODevice, "AudioIODevice", QtInfoMsg)
 
 AudioIODevice::AudioIODevice(DabRadio * const ipRI, QObject * const iParent)
   : QIODevice(iParent)
-  , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<int16_t>::EId::TechDataBuffer).get())
+  , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<i16>::EId::TechDataBuffer).get())
 {
   connect(this, &AudioIODevice::signal_show_audio_peak_level, ipRI, &DabRadio::slot_show_audio_peak_level, Qt::QueuedConnection);
   connect(this, &AudioIODevice::signal_audio_data_available, ipRI->get_techdata_widget(), &TechData::slot_audio_data_available, Qt::QueuedConnection);
@@ -49,7 +49,7 @@ void AudioIODevice::stop()
   mStopFlag = true;     // set stop bit
 }
 
-void AudioIODevice::_fade(const int32_t iNumStereoSamples, const float coe, float gain, int16_t * dataPtr) const
+void AudioIODevice::_fade(const i32 iNumStereoSamples, const f32 coe, f32 gain, i16 * dataPtr) const
 {
   for (int_fast32_t n = 0; n < iNumStereoSamples; ++n)
   {
@@ -57,28 +57,28 @@ void AudioIODevice::_fade(const int32_t iNumStereoSamples, const float coe, floa
     // printf("%.1f ", 20 * std::log10(gain));
     for (uint_fast8_t c = 0; c < 2 /*channels*/; ++c) // apply to both channels the same
     {
-      *dataPtr = (int16_t)qRound(gain * (float)(*dataPtr));
+      *dataPtr = (i16)qRound(gain * (f32)(*dataPtr));
       dataPtr++;
     }
   }
   // printf("\n");
 }
 
-void AudioIODevice::_fade_in_audio_samples(int16_t * const opData, const int32_t iNumStereoSamples) const
+void AudioIODevice::_fade_in_audio_samples(i16 * const opData, const i32 iNumStereoSamples) const
 {
   qCDebug(sLogAudioIODevice) << "Unmuting audio";
-  const int32_t numFadedStereoSamples = std::min<int32_t>(iNumStereoSamples, (int32_t)(cFadeTimeMs * (float)mSampleRateKHz));
-  const float coe = 2.0f - powf(10.0f, cFadeMinDb / (20.0f * (float)numFadedStereoSamples));
+  const i32 numFadedStereoSamples = std::min<i32>(iNumStereoSamples, (i32)(cFadeTimeMs * (f32)mSampleRateKHz));
+  const f32 coe = 2.0f - powf(10.0f, cFadeMinDb / (20.0f * (f32)numFadedStereoSamples));
   qCDebug(sLogAudioIODevice) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
 
   _fade(numFadedStereoSamples, coe, cFadeMinLin, opData);
 }
 
-void AudioIODevice::_fade_out_audio_samples(int16_t * const opData, const int32_t iNumStereoSamples) const
+void AudioIODevice::_fade_out_audio_samples(i16 * const opData, const i32 iNumStereoSamples) const
 {
   qCDebug(sLogAudioIODevice, "Muting... [available %u samples]", static_cast<unsigned int>(iNumStereoSamples));
-  const int32_t numFadedStereoSamples = std::min<int32_t>(iNumStereoSamples, (int32_t)(cFadeTimeMs * (float)mSampleRateKHz));
-  const float coe = powf(10.0f, cFadeMinDb / (20.0f * (float)numFadedStereoSamples));
+  const i32 numFadedStereoSamples = std::min<i32>(iNumStereoSamples, (i32)(cFadeTimeMs * (f32)mSampleRateKHz));
+  const f32 coe = powf(10.0f, cFadeMinDb / (20.0f * (f32)numFadedStereoSamples));
   qCDebug(sLogAudioIODevice) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
 
   _fade(numFadedStereoSamples, coe, 1.0f, opData);
@@ -86,7 +86,7 @@ void AudioIODevice::_fade_out_audio_samples(int16_t * const opData, const int32_
   // are there remaining samples to overwrite to zero?
   if (iNumStereoSamples > numFadedStereoSamples)
   {
-    memset(opData + numFadedStereoSamples * 2 /*channels*/, 0, (iNumStereoSamples - numFadedStereoSamples) * (2 /*channels*/ * sizeof(int16_t)));
+    memset(opData + numFadedStereoSamples * 2 /*channels*/, 0, (iNumStereoSamples - numFadedStereoSamples) * (2 /*channels*/ * sizeof(i16)));
   }
 }
 
@@ -98,17 +98,17 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
     return 0;
   }
 
-  RingBuffer<int16_t> * const rb = mpInFifo->pRingbuffer;
-  int16_t * const opDataSamplesBothChannels = reinterpret_cast<int16_t *>(opDataBytes); // left channel [2n + 0]: right channel [2n + 1]
+  RingBuffer<i16> * const rb = mpInFifo->pRingbuffer;
+  i16 * const opDataSamplesBothChannels = reinterpret_cast<i16 *>(opDataBytes); // left channel [2n + 0]: right channel [2n + 1]
 
-  assert(iMaxWantedBytesBothChannels <= INT32_MAX); // would be strange but better check it, we go on using only int32_t length further
-  const int32_t maxWantedBytesBothChannels = static_cast<int32_t>(iMaxWantedBytesBothChannels);
+  assert(iMaxWantedBytesBothChannels <= INT32_MAX); // would be strange but better check it, we go on using only i32 length further
+  const i32 maxWantedBytesBothChannels = static_cast<i32>(iMaxWantedBytesBothChannels);
   assert((maxWantedBytesBothChannels & 0x3) == 0); // stereo with 2 byte sized samples (divisible by 4)
-  const int32_t maxWantedSamplesBothChannels = maxWantedBytesBothChannels >> 1; // sizeof(int16_t)
-  const int32_t maxWantedSamplesStereoPair = maxWantedBytesBothChannels >> 2;
-  int32_t maxWantedSamplesStereoPairForFading = maxWantedSamplesStereoPair;
+  const i32 maxWantedSamplesBothChannels = maxWantedBytesBothChannels >> 1; // sizeof(i16)
+  const i32 maxWantedSamplesStereoPair = maxWantedBytesBothChannels >> 2;
+  i32 maxWantedSamplesStereoPairForFading = maxWantedSamplesStereoPair;
 
-  const int32_t availableSamplesBothChannels = rb->get_ring_buffer_read_available();
+  const i32 availableSamplesBothChannels = rb->get_ring_buffer_read_available();
   assert((availableSamplesBothChannels & 0x1) == 0); // as both stereo samples are given, it must be even!
 
   bool muteRequest = mMuteFlag || mStopFlag;
@@ -161,7 +161,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
     {
       // not enough samples -> reading what we have and filling rest with zeros
       // minimum mute time is 1ms (m_sampleRate_kHz samples) , if less then hard mute
-      if (availableSamplesBothChannels < (int32_t)(mSampleRateKHz * (2 /*channels*/ * sizeof(int16_t))))
+      if (availableSamplesBothChannels < (i32)(mSampleRateKHz * (2 /*channels*/ * sizeof(i16))))
       {
         // nothing to play
         qCDebug(sLogAudioIODevice, "Hard mute [no samples available]");
@@ -173,7 +173,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
 
       //_extract_audio_data_from_fifo(opData, numSamplesAvailBothChannels);
       rb->get_data_from_ring_buffer(opDataSamplesBothChannels, availableSamplesBothChannels); // take what we have ...
-      memset(opDataSamplesBothChannels + availableSamplesBothChannels, 0, maxWantedBytesBothChannels - (availableSamplesBothChannels * sizeof(int16_t))); // ... and set rest of the samples to be 0
+      memset(opDataSamplesBothChannels + availableSamplesBothChannels, 0, maxWantedBytesBothChannels - (availableSamplesBothChannels * sizeof(i16))); // ... and set rest of the samples to be 0
 
       maxWantedSamplesStereoPairForFading = availableSamplesBothChannels / 2 /*channels*/;
 
@@ -239,16 +239,16 @@ void AudioIODevice::set_mute_state(bool iMuteActive)
   mMuteFlag = iMuteActive;
 }
 
-void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const int32_t iNumSamples)
+void AudioIODevice::_eval_peak_audio_level(const i16 * const ipData, const i32 iNumSamples)
 {
   assert(iNumSamples % 2 == 0);
-  mpTechDataBuffer->put_data_into_ring_buffer(ipData, (int32_t)iNumSamples);
+  mpTechDataBuffer->put_data_into_ring_buffer(ipData, (i32)iNumSamples);
   emit signal_audio_data_available((int)iNumSamples, (int)mSampleRateKHz * 1000);
 
-  for (int32_t idx = 0; idx < iNumSamples; idx+=2)
+  for (i32 idx = 0; idx < iNumSamples; idx+=2)
   {
-    const int16_t absLeft  = (int16_t)std::abs(ipData[idx + 0]);
-    const int16_t absRight = (int16_t)std::abs(ipData[idx + 1]);
+    const i16 absLeft  = (i16)std::abs(ipData[idx + 0]);
+    const i16 absRight = (i16)std::abs(ipData[idx + 1]);
 
     if (absLeft  > mAbsPeakLeft)  mAbsPeakLeft  = absLeft;
     if (absRight > mAbsPeakRight) mAbsPeakRight = absRight;
@@ -257,9 +257,9 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const i
 
     if (mPeakLevelCurSampleCnt > mPeakLevelSampleCntBothChannels) // collect much enough samples? (also over more blocks)
     {
-      constexpr float cOffs_dB = 20 * std::log10((float) INT16_MAX); // in the assumption that subtraction is faster than dividing (but not sure with float)
-      const float left_dB =  (mAbsPeakLeft >  0 ? 20.0f * std::log10((float) mAbsPeakLeft)  - cOffs_dB : -40.0f);
-      const float right_dB = (mAbsPeakRight > 0 ? 20.0f * std::log10((float) mAbsPeakRight) - cOffs_dB : -40.0f);
+      constexpr f32 cOffs_dB = 20 * std::log10((f32) INT16_MAX); // in the assumption that subtraction is faster than dividing (but not sure with f32)
+      const f32 left_dB =  (mAbsPeakLeft >  0 ? 20.0f * std::log10((f32) mAbsPeakLeft)  - cOffs_dB : -40.0f);
+      const f32 right_dB = (mAbsPeakRight > 0 ? 20.0f * std::log10((f32) mAbsPeakRight) - cOffs_dB : -40.0f);
 
       emit signal_show_audio_peak_level(left_dB, right_dB);
 
@@ -273,8 +273,8 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const i
 
 // void AudioIODevice::insertTestTone(DSPCOMPLEX & ioS)
 // {
-//   float toneFreqHz = 1000.0f;
-//   float level = 0.9f;
+//   f32 toneFreqHz = 1000.0f;
+//   f32 level = 0.9f;
 //
 //   if (!testTone.Enabled)
 //   {
@@ -287,7 +287,7 @@ void AudioIODevice::_eval_peak_audio_level(const int16_t * const ipData, const i
 //     testTone.NoSamplRemain--;
 //     testTone.CurPhase += testTone.PhaseIncr;
 //     testTone.CurPhase = PI_Constrain(testTone.CurPhase);
-//     const float smpl = sin(testTone.CurPhase);
+//     const f32 smpl = sin(testTone.CurPhase);
 //     ioS += level * DSPCOMPLEX(smpl, smpl);
 //   }
 //   else if (++testTone.TimePeriodCounter > workingRate * testTone.TimePeriod)

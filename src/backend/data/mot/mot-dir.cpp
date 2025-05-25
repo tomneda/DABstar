@@ -26,12 +26,12 @@
 #include	"mot-dir.h"
 
 	MotDirectory::MotDirectory (DabRadio *mr,
-                              uint16_t	transportId,
-                              int16_t	segmentSize,
-                              int32_t	dirSize,
-                              int16_t	objects,
-                              uint8_t	*segment) {
-int16_t	i;
+                              u16	transportId,
+                              i16	segmentSize,
+                              i32	dirSize,
+                              i16	objects,
+                              u8	*segment) {
+i16	i;
 
 	   this	-> myRadioInterface	= mr;
 	   for (i = 0; i < 512; i ++)
@@ -65,7 +65,7 @@ int	i;
 	      delete motComponents [i]. motSlide;
 }
 
-MotObject	*MotDirectory::getHandle (uint16_t transportId) {
+MotObject	*MotDirectory::getHandle (u16 transportId) {
 int i;
 	for (i = 0; i < numObjects; i ++)
 	   if ((motComponents [i]. inUse) &&
@@ -75,7 +75,7 @@ int i;
 	return nullptr;
 }
 
-void	MotDirectory::setHandle (MotObject *h, uint16_t transportId) {
+void	MotDirectory::setHandle (MotObject *h, u16 transportId) {
 int	i;
 
 	for (i = 0; i < numObjects; i ++)
@@ -89,12 +89,12 @@ int	i;
 //
 //	unfortunately, directory segments do not need to come in
 //	in order
-void	MotDirectory::directorySegment (uint16_t transportId,
-                                      uint8_t	*segment,
-                                      int16_t	segmentNumber,
-                                      int32_t	segmentSize,
+void	MotDirectory::directorySegment (u16 transportId,
+                                      u8	*segment,
+                                      i16	segmentNumber,
+                                      i32	segmentSize,
                                       bool	lastSegment) {
-int16_t	i;
+i16	i;
 
 //	fprintf (stdout, "adding dir segment %d\n", segmentNumber);
 	if (this -> transportId != transportId)
@@ -104,7 +104,7 @@ int16_t	i;
 	if (lastSegment)
 	   this -> num_dirSegments = segmentNumber + 1;
 	this	-> marked [segmentNumber] = true;
-	uint8_t	*address = &dir_segments [segmentNumber * dir_segmentSize];
+	u8	*address = &dir_segments [segmentNumber * dir_segmentSize];
 	memcpy (address, segment, segmentSize);
 //
 //	we are "complete" if we know the number of segments and
@@ -122,21 +122,21 @@ int16_t	i;
 //	we need to extract the "motObject"s from it
 
 void	MotDirectory::analyse_theDirectory () {
-uint32_t	currentBase	= 11;	// in bytes
-//uint8_t	*data			= dir_segments;
-uint16_t extensionLength	= (dir_segments [currentBase] << 8) |
+u32	currentBase	= 11;	// in bytes
+//u8	*data			= dir_segments;
+u16 extensionLength	= (dir_segments [currentBase] << 8) |
 	                                         dir_segments [currentBase + 1];
 
 	currentBase += 2 + extensionLength;
 //	fprintf (stdout, "directory with transportId %d\n", transportId);
 	for (int i = 0; i < numObjects; i ++) {
-	   uint16_t transportId	= (dir_segments [currentBase] << 8) |
+	   u16 transportId	= (dir_segments [currentBase] << 8) |
 	                                    dir_segments [currentBase + 1];
 	   if (transportId == 0)	// just a dummy
 	      break;
 
 //	   fprintf (stdout, "motObject with transportId %d and \n", transportId);
-	   uint8_t *segment	= &dir_segments [currentBase + 2];
+	   u8 *segment	= &dir_segments [currentBase + 2];
 	   MotObject *handle	= new MotObject (myRadioInterface,
                                          true,
                                          transportId,
@@ -150,7 +150,7 @@ uint16_t extensionLength	= (dir_segments [currentBase] << 8) |
 	}
 }
 
-uint16_t	MotDirectory::get_transportId() {
+u16	MotDirectory::get_transportId() {
 	return transportId;
 }
 

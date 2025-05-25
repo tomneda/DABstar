@@ -43,14 +43,14 @@
 
 typedef struct { /* structure size must be multiple of 2 bytes */
 	char magic[4];
-	uint32_t tuner_type;
-	uint32_t tuner_gain_count;
+	u32 tuner_type;
+	u32 tuner_gain_count;
 } dongle_info_t;
 
 RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
 {
   for(int i = 0; i < 256; i++)
-	mapTable[i] = ((float)i - 127.38) / 128.0;
+	mapTable[i] = ((f32)i - 127.38) / 128.0;
   remoteSettings = s;
   remoteSettings->beginGroup("RtlTcpClient");
   int x = remoteSettings->value("position-x", 100).toInt();
@@ -79,7 +79,7 @@ RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
   tcp_port->setValue(basePort);
   tcp_address->setText(ipAddress);
   vfoFrequency = DEFAULT_FREQUENCY;
-  _I_Buffer = new RingBuffer<cmplx>(32 * 32768);
+  _I_Buffer = new RingBuffer<cf32>(32 * 32768);
   connected = false;
 
   connect(tcp_connect, SIGNAL(clicked(void)), this, SLOT(wantConnect(void)));
@@ -143,12 +143,12 @@ void RtlTcpClient::wantConnect()
   dongle_info_received = false;
 }
 
-int32_t	RtlTcpClient::defaultFrequency()
+i32	RtlTcpClient::defaultFrequency()
 {
   return DEFAULT_FREQUENCY;	// choose any legal frequency here
 }
 
-void RtlTcpClient::setVFOFrequency(int32_t newFrequency)
+void RtlTcpClient::setVFOFrequency(i32 newFrequency)
 {
   if (!connected)
 	return;
@@ -157,12 +157,12 @@ void RtlTcpClient::setVFOFrequency(int32_t newFrequency)
   sendVFO(newFrequency);
 }
 
-int32_t	RtlTcpClient::getVFOFrequency()
+i32	RtlTcpClient::getVFOFrequency()
 {
   return vfoFrequency;
 }
 
-bool RtlTcpClient::restartReader(int32_t freq)
+bool RtlTcpClient::restartReader(i32 freq)
 {
   if (!connected)
 	return true;
@@ -183,20 +183,20 @@ void RtlTcpClient::stopReader()
 //
 //	The brave old getSamples.For the dab stick, we get
 //	size: still in I/Q pairs, but we have to convert the data from
-//	uint8_t to DSPCOMPLEX *
-int32_t	RtlTcpClient::getSamples(cmplx *V, int32_t size)
+//	u8 to DSPCOMPLEX *
+i32	RtlTcpClient::getSamples(cf32 *V, i32 size)
 {
-  int32_t amount = 0;
+  i32 amount = 0;
   amount = _I_Buffer->get_data_from_ring_buffer(V, size);
   return amount;
 }
 
-int32_t	RtlTcpClient::Samples()
+i32	RtlTcpClient::Samples()
 {
   return _I_Buffer->get_ring_buffer_read_available();
 }
 
-int16_t	RtlTcpClient::bitDepth()
+i16	RtlTcpClient::bitDepth()
 {
   return 8;
 }
@@ -241,14 +241,14 @@ void RtlTcpClient::readData()
   }
   if(dongle_info_received)
   {
-    uint8_t buffer[8192];
-    cmplx localBuffer[4096];
+    u8 buffer[8192];
+    cf32 localBuffer[4096];
 
     while (toServer.bytesAvailable() > 8192)
     {
       toServer.read((char *)buffer, 8192);
 	  for (int i = 0; i < 4096; i ++)
- 	    localBuffer[i] = cmplx(mapTable[buffer[2 * i]], mapTable[buffer[2 * i + 1]]);
+ 	    localBuffer[i] = cf32(mapTable[buffer[2 * i]], mapTable[buffer[2 * i + 1]]);
       _I_Buffer->put_data_into_ring_buffer(localBuffer, 4096);
     }
   }
@@ -263,7 +263,7 @@ struct command {
 
 #define	ONE_BYTE	8
 
-void RtlTcpClient::sendCommand(uint8_t cmd, int32_t param)
+void RtlTcpClient::sendCommand(u8 cmd, i32 param)
 {
   if(connected)
   {
@@ -279,12 +279,12 @@ void RtlTcpClient::sendCommand(uint8_t cmd, int32_t param)
   }
 }
 
-void RtlTcpClient::sendVFO(int32_t frequency)
+void RtlTcpClient::sendVFO(i32 frequency)
 {
   sendCommand(0x01, frequency);
 }
 
-void RtlTcpClient::sendRate(int32_t rate)
+void RtlTcpClient::sendRate(i32 rate)
 {
   Bitrate = rate;
   sendCommand(0x02, rate);
@@ -297,7 +297,7 @@ void RtlTcpClient::sendGain(int gain)
 }
 
 //	correction is in ppm
-void RtlTcpClient::set_fCorrection(double ppm)
+void RtlTcpClient::set_fCorrection(f64 ppm)
 {
   Ppm = ppm;
   int corr = ppm * 1000;

@@ -26,13 +26,13 @@
 
 // we try to use the older SSE3 commands to let also older HW be working with that
 
-// perform abs() on float input vector (remove sign)
-inline void simd_abs(float * opOut, const float * ipInp, const size_t iN)
+// perform abs() on f32 input vector (remove sign)
+inline void simd_abs(f32 * opOut, const f32 * ipInp, const size_t iN)
 {
   assert(iN % 4 == 0);
 
-  const float * pInp = reinterpret_cast<const float *>(ipInp);
-  float * pOut = reinterpret_cast<float *>(opOut);
+  const f32 * pInp = reinterpret_cast<const f32 *>(ipInp);
+  f32 * pOut = reinterpret_cast<f32 *>(opOut);
 
   __m128 mask = _mm_castsi128_ps(_mm_set1_epi32(0x7FFFFFFF));
 
@@ -44,12 +44,12 @@ inline void simd_abs(float * opOut, const float * ipInp, const size_t iN)
   }
 }
 
-inline void simd_normalize(cmplx * opOut, const cmplx * ipInp, const size_t iN)
+inline void simd_normalize(cf32 * opOut, const cf32 * ipInp, const size_t iN)
 {
   assert(iN % 4 == 0);
 
-  const float * pInp = reinterpret_cast<const float *>(ipInp);
-  float * pOut = reinterpret_cast<float *>(opOut);
+  const f32 * pInp = reinterpret_cast<const f32 *>(ipInp);
+  f32 * pOut = reinterpret_cast<f32 *>(opOut);
 
   for (size_t i = 0; i < iN; i += 2, pInp += 4, pOut += 4)
   {
@@ -78,7 +78,7 @@ inline void simd_normalize(cmplx * opOut, const cmplx * ipInp, const size_t iN)
 // Alternative to implement _mm_atan2_ps if unavailable
 static inline __m128 _mm_atan2_ps(__m128 y, __m128 x)
 {
-  __attribute__((aligned(16))) float yArray[4], xArray[4], result[4];
+  __attribute__((aligned(16))) f32 yArray[4], xArray[4], result[4];
   _mm_storeu_ps(yArray, y);
   _mm_storeu_ps(xArray, x);
 
@@ -91,12 +91,12 @@ static inline __m128 _mm_atan2_ps(__m128 y, __m128 x)
 }
 
 // get the phase, works but is slow related to VOLK, do not use this! (_mm_atan2_ps)
-inline void simd_phase(float * opOut, const cmplx * ipInp, size_t size)
+inline void simd_phase(f32 * opOut, const cf32 * ipInp, size_t size)
 {
   assert(size % 4 == 0);
 
-  const float * pInp = reinterpret_cast<const float *>(ipInp);
-  float * pOut = opOut;
+  const f32 * pInp = reinterpret_cast<const f32 *>(ipInp);
+  f32 * pOut = opOut;
 
   for (size_t i = 0; i < size; i += 4, pInp += 8, pOut += 4)
   {
@@ -123,7 +123,7 @@ class SimdVec
 public:
   SimdVec() = delete;
 
-  explicit SimdVec(uint32_t iNrTempFloatVec, uint32_t iNrTempCmplxVec = 0)
+  explicit SimdVec(u32 iNrTempFloatVec, u32 iNrTempCmplxVec = 0)
   {
     const size_t align = volk_get_alignment();
     mVolkVec = (T *)volk_malloc(cK * sizeof(T), align);
@@ -134,15 +134,15 @@ public:
     switch (iNrTempFloatVec)
     {
     case 3:
-      mVolkTempFloat3Vec = (float *)volk_malloc(cK * sizeof(float), align);
+      mVolkTempFloat3Vec = (f32 *)volk_malloc(cK * sizeof(f32), align);
       assert(mVolkTempFloat3Vec != nullptr);
       [[fallthrough]];
     case 2:
-      mVolkTempFloat2Vec = (float *)volk_malloc(cK * sizeof(float), align);
+      mVolkTempFloat2Vec = (f32 *)volk_malloc(cK * sizeof(f32), align);
       assert(mVolkTempFloat2Vec != nullptr);
       [[fallthrough]];
     case 1:
-      mVolkTempFloat1Vec = (float *)volk_malloc(cK * sizeof(float), align);
+      mVolkTempFloat1Vec = (f32 *)volk_malloc(cK * sizeof(f32), align);
       assert(mVolkTempFloat1Vec != nullptr);
       [[fallthrough]];
     default:;
@@ -151,7 +151,7 @@ public:
     switch (iNrTempCmplxVec)
     {
     case 1:
-      mVolkTempCmplx1Vec = (cmplx *)volk_malloc(cK * sizeof(cmplx), align);
+      mVolkTempCmplx1Vec = (cf32 *)volk_malloc(cK * sizeof(cf32), align);
       assert(mVolkTempCmplx1Vec != nullptr);
       [[fallthrough]];
     default:;
@@ -173,13 +173,13 @@ public:
     std::fill_n(mVolkVec, cK, T());
   }
 
-  const T &operator[](uint32_t iIdx) const
+  const T &operator[](u32 iIdx) const
   {
     assert(iIdx < cK);
     return mVolkVec[iIdx];
   }
 
-  T &operator[](uint32_t iIdx)
+  T &operator[](u32 iIdx)
   {
     assert(iIdx < cK);
     return mVolkVec[iIdx];
@@ -195,7 +195,7 @@ public:
     return mVolkVec;
   }
 
-  [[nodiscard]] uint32_t size() const
+  [[nodiscard]] u32 size() const
   {
     return cK;
   }
@@ -208,15 +208,15 @@ public:
    */
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, cmplx>, void>
-  inline set_normalize_each_element(const SimdVec<cmplx> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline set_normalize_each_element(const SimdVec<cf32> & iVec)
   {
     simd_normalize(mVolkVec, iVec, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, cmplx>, void>
-  inline set_back_rotate_phase_each_element(const SimdVec<cmplx> & iVec, const SimdVec<float> & iPhaseVec)
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline set_back_rotate_phase_each_element(const SimdVec<cf32> & iVec, const SimdVec<f32> & iPhaseVec)
   {
     assert(mVolkTempFloat1Vec != nullptr);
     assert(mVolkTempFloat2Vec != nullptr);
@@ -229,135 +229,135 @@ public:
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline modify_multiply_scalar_each_element(const float iScalar)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_multiply_scalar_each_element(const f32 iScalar)
   {
     volk_32f_s32f_multiply_32f_a(mVolkVec, mVolkVec, iScalar, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, cmplx>, void>
-  inline set_multiply_conj_each_element(const SimdVec<cmplx> & iVec1, const SimdVec<cmplx> & iVec2)
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline set_multiply_conj_each_element(const SimdVec<cf32> & iVec1, const SimdVec<cf32> & iVec2)
   {
     volk_32fc_x2_multiply_conjugate_32fc_a(mVolkVec, iVec1, iVec2, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_multiply_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_multiply_each_element(const SimdVec<f32> & iVec1, const SimdVec<f32> & iVec2)
   {
     volk_32f_x2_multiply_32f_a(mVolkVec, iVec1, iVec2, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline modify_multiply_each_element(const SimdVec<float> & iVec1)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_multiply_each_element(const SimdVec<f32> & iVec1)
   {
     volk_32f_x2_multiply_32f_a(mVolkVec, mVolkVec, iVec1, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_divide_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_divide_each_element(const SimdVec<f32> & iVec1, const SimdVec<f32> & iVec2)
   {
     volk_32f_x2_divide_32f_a(mVolkVec, iVec1, iVec2, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_add_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_add_each_element(const SimdVec<f32> & iVec1, const SimdVec<f32> & iVec2)
   {
     volk_32f_x2_add_32f_a(mVolkVec, iVec1, iVec2, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_subtract_each_element(const SimdVec<float> & iVec1, const SimdVec<float> & iVec2)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_subtract_each_element(const SimdVec<f32> & iVec1, const SimdVec<f32> & iVec2)
   {
     volk_32f_x2_subtract_32f_a(mVolkVec, iVec1, iVec2, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_magnitude_each_element(const SimdVec<cmplx> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_magnitude_each_element(const SimdVec<cf32> & iVec)
   {
     volk_32fc_magnitude_32f_a(mVolkVec, iVec, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_squared_magnitude_each_element(const SimdVec<cmplx> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_squared_magnitude_each_element(const SimdVec<cf32> & iVec)
   {
     volk_32fc_magnitude_squared_32f_a(mVolkVec, iVec, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_sqrt_each_element(const SimdVec<float> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_sqrt_each_element(const SimdVec<f32> & iVec)
   {
     volk_32f_sqrt_32f_a(mVolkVec, iVec, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
   inline modify_sqrt_each_element()
   {
     volk_32f_sqrt_32f_a(mVolkVec, mVolkVec, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_arg_each_element(const SimdVec<cmplx> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_arg_each_element(const SimdVec<cf32> & iVec)
   {
     volk_32fc_s32f_atan2_32f_a(mVolkVec, iVec, 1.0f /*no weigth*/, cK); // this is not really faster than a simple loop
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_wrap_4QPSK_to_phase_zero_each_element(const SimdVec<float> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_wrap_4QPSK_to_phase_zero_each_element(const SimdVec<f32> & iVec)
   {
     volk_32f_s32f_s32f_mod_range_32f_a(mVolkVec, iVec, 0.0f, F_M_PI_2, cK);
     volk_32f_s32f_add_32f_a(mVolkVec, mVolkVec, -F_M_PI_4, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline modify_add_scalar_each_element(float iScalar)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_add_scalar_each_element(f32 iScalar)
   {
     volk_32f_s32f_add_32f_a(mVolkVec, mVolkVec, iScalar, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_add_vector_and_scalar_each_element(const SimdVec<float> & iVec, float iScalar)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_add_vector_and_scalar_each_element(const SimdVec<f32> & iVec, f32 iScalar)
   {
     volk_32f_s32f_add_32f_a(mVolkVec, iVec, iScalar, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_multiply_vector_and_scalar_each_element(const SimdVec<float> & iVec, float iScalar)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_multiply_vector_and_scalar_each_element(const SimdVec<f32> & iVec, f32 iScalar)
   {
     volk_32f_s32f_multiply_32f_a(mVolkVec, iVec, iScalar, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline modify_accumulate_each_element(const SimdVec<float> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_accumulate_each_element(const SimdVec<f32> & iVec)
   {
     volk_32f_x2_add_32f_a(mVolkVec, mVolkVec, iVec, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_square_each_element(const SimdVec<float> & iVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_square_each_element(const SimdVec<f32> & iVec)
   {
     volk_32f_x2_multiply_32f_a(mVolkVec, iVec, iVec, cK);
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline modify_mean_filter_each_element(const SimdVec<float> & iVec, const float iAlpha) const
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_mean_filter_each_element(const SimdVec<f32> & iVec, const f32 iAlpha) const
   {
     assert(mVolkTempFloat1Vec != nullptr);
 
@@ -368,18 +368,18 @@ public:
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, float>
-  inline get_mean_filter_sum_of_elements(const float iLastMeanVal, const float iAlpha) const
+  typename std::enable_if_t<std::is_same_v<U, f32>, f32>
+  inline get_mean_filter_sum_of_elements(const f32 iLastMeanVal, const f32 iAlpha) const
   {
     assert(mVolkTempFloat1Vec != nullptr);
 
     volk_32f_s32f_add_32f_a(mVolkTempFloat1Vec, mVolkVec, -iLastMeanVal, cK);   // temp = (mVolkVec - iLastMeanVal) -> iLastMeanVal is normally the last returned sum value
     volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkTempFloat1Vec, cK);      // this sums all temp vector elements to the first element
-    return iAlpha * mVolkSingleFloat[0] / (float)cK + iLastMeanVal;             // new mean value over all vector elements
+    return iAlpha * mVolkSingleFloat[0] / (f32)cK + iLastMeanVal;             // new mean value over all vector elements
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, float>
+  typename std::enable_if_t<std::is_same_v<U, f32>, f32>
   inline get_sum_of_elements() const
   {
     volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkVec, cK);  // this sums all vector elements to the first element
@@ -387,22 +387,22 @@ public:
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline modify_limit_symmetrically_each_element(const float iLimit)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_limit_symmetrically_each_element(const f32 iLimit)
   {
     // TODO: check for SIMD
-    for (uint32_t idx = 0; idx < cK; ++idx)
+    for (u32 idx = 0; idx < cK; ++idx)
     {
       ::limit_symmetrically(mVolkVec[idx], iLimit);
     }
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline modify_check_negative_or_zero_values_and_fallback_each_element(const float iFallbackLimit)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_check_negative_or_zero_values_and_fallback_each_element(const f32 iFallbackLimit)
   {
     // TODO: check for SIMD
-    for (uint32_t idx = 0; idx < cK; ++idx)
+    for (u32 idx = 0; idx < cK; ++idx)
     {
       if (mVolkVec[idx] <= 0)
       {
@@ -413,8 +413,8 @@ public:
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_squared_distance_to_nearest_constellation_point_each_element(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec, const SimdVec<float> & iMeanLevelVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_squared_distance_to_nearest_constellation_point_each_element(const SimdVec<f32> & iLevelRealVec, const SimdVec<f32> & iLevelImagVec, const SimdVec<f32> & iMeanLevelVec)
   {
     // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
     assert(mVolkTempFloat1Vec != nullptr);
@@ -439,8 +439,8 @@ public:
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, float>, void>
-  inline set_squared_magnitude_of_elements(const SimdVec<float> & iLevelRealVec, const SimdVec<float> & iLevelImagVec)
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_squared_magnitude_of_elements(const SimdVec<f32> & iLevelRealVec, const SimdVec<f32> & iLevelImagVec)
   {
     // calculate the mean squared distance from the current point in 1st quadrant to the point where it should be
     assert(mVolkTempFloat1Vec != nullptr);
@@ -452,8 +452,8 @@ public:
   }
 
   template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, cmplx>, void>
-  inline store_to_real_and_imag_each_element(SimdVec<float> & oRealVec, SimdVec<float> & oImagVec)
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline store_to_real_and_imag_each_element(SimdVec<f32> & oRealVec, SimdVec<f32> & oImagVec)
   {
     volk_32fc_deinterleave_32f_x2_a(oRealVec, oImagVec, mVolkVec, cK);
   }
@@ -461,10 +461,10 @@ public:
 private:
   T * mVolkSingleFloat = nullptr;
   T * mVolkVec = nullptr;
-  float * mVolkTempFloat1Vec = nullptr;
-  float * mVolkTempFloat2Vec = nullptr;
-  float * mVolkTempFloat3Vec = nullptr;
-  cmplx * mVolkTempCmplx1Vec = nullptr;
+  f32 * mVolkTempFloat1Vec = nullptr;
+  f32 * mVolkTempFloat2Vec = nullptr;
+  f32 * mVolkTempFloat3Vec = nullptr;
+  cf32 * mVolkTempCmplx1Vec = nullptr;
 };
 
 

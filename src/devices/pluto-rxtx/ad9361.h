@@ -62,29 +62,29 @@ struct iio_device;
  * in both TX and RX paths.
  */
 struct filter_design_parameters {
-    double Rdata; /**< Data rate of digital interface */
-    double Fpass; /**< Stop edge frequency in hertz of passband */
-    double Fstop; /**< Start edge frequency in hertz of stopband */
-    double caldiv; /**< Baseband analog filter calibration divider setting [1-511]  */
-    double FIR; /**< Decimation/Interpolation setting of FIR [1,2,4] */
-    double HB1; /**< Decimation/Interpolation setting of HB1 [1,2] */
-    double DAC_div; /**< Divider enable setting of DAC clock [0,1] */
+    f64 Rdata; /**< Data rate of digital interface */
+    f64 Fpass; /**< Stop edge frequency in hertz of passband */
+    f64 Fstop; /**< Start edge frequency in hertz of stopband */
+    f64 caldiv; /**< Baseband analog filter calibration divider setting [1-511]  */
+    f64 FIR; /**< Decimation/Interpolation setting of FIR [1,2,4] */
+    f64 HB1; /**< Decimation/Interpolation setting of HB1 [1,2] */
+    f64 DAC_div; /**< Divider enable setting of DAC clock [0,1] */
     const char *Type; /**< Designer mode (only Lowpass supported) */
     const char *RxTx; /**< Filter path [Tx,Rx] */
-    double RFbw; /**< 3dB corner of analog filter in hertz */
-    double converter_rate; /**< Rate of ADC in hertz */
-    double PLL_rate; /**< Rate of PLL in hertz */
-    double Fcenter; /**< Center frequency in hertz of bandpass (Unused) */
-    double wnom; /**< RF bandwidth of analog filter in hertz */
-    double FIRdBmin; /**< Minimum stop band attentuation of the FIR in dB */
-    double int_FIR; /**< Enable use of internal FIR filter [0,1] */
-    double PLL_mult; /**< Ratio of converter to PLL rate */
-    double Apass; /**< Desired passband ripple in dB */
-    double Astop; /**< Desired stopband attenuation in dB */
-    double phEQ; /**< Enable phase equalization [0,1] */
-    double HB2; /**< Decimation/Interpolation setting of HB2 [1,2] */
-    double HB3; /**< Decimation/Interpolation setting of HB3 [1,2,3] */
-    double maxTaps; /**< Maximum allowed FIR taps */
+    f64 RFbw; /**< 3dB corner of analog filter in hertz */
+    f64 converter_rate; /**< Rate of ADC in hertz */
+    f64 PLL_rate; /**< Rate of PLL in hertz */
+    f64 Fcenter; /**< Center frequency in hertz of bandpass (Unused) */
+    f64 wnom; /**< RF bandwidth of analog filter in hertz */
+    f64 FIRdBmin; /**< Minimum stop band attentuation of the FIR in dB */
+    f64 int_FIR; /**< Enable use of internal FIR filter [0,1] */
+    f64 PLL_mult; /**< Ratio of converter to PLL rate */
+    f64 Apass; /**< Desired passband ripple in dB */
+    f64 Astop; /**< Desired stopband attenuation in dB */
+    f64 phEQ; /**< Enable phase equalization [0,1] */
+    f64 HB2; /**< Decimation/Interpolation setting of HB2 [1,2] */
+    f64 HB3; /**< Decimation/Interpolation setting of HB3 [1,2,3] */
+    f64 maxTaps; /**< Maximum allowed FIR taps */
 };
 
 /* ---------------------------------------------------------------------------*/
@@ -95,7 +95,7 @@ struct filter_design_parameters {
 
 /** @brief Multi-chip synchronization (MCS) management
  * @param master A pointer to an iio_device structure
- * @param slaves A double pointer to an iio_device structure
+ * @param slaves A f64 pointer to an iio_device structure
  * @param num_slaves Number of slave devices associated with the master
  * @param flags Control flags for MCS configuration
  * @return On success, 0 is returned

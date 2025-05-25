@@ -34,7 +34,7 @@
 #include  <vector>
 #include  "protection.h"
 
-Protection::Protection(int16_t iBitRate) :
+Protection::Protection(i16 iBitRate) :
   ViterbiSpiral(24 * iBitRate, true),
   bitRate(iBitRate),
   outSize(24 * iBitRate),
@@ -43,12 +43,12 @@ Protection::Protection(int16_t iBitRate) :
 {
 }
 
-bool Protection::deconvolve(const int16_t * iV, int32_t /*size*/, uint8_t * outBuffer)
+bool Protection::deconvolve(const i16 * iV, i32 /*size*/, u8 * outBuffer)
 {
-  int16_t inputCounter = 0;
+  i16 inputCounter = 0;
   //	clear the bits in the viterbiBlock,
   //	only the non-punctured ones are set
-  memset(viterbiBlock.data(), 0, (outSize * 4 + 24) * sizeof(int16_t));
+  memset(viterbiBlock.data(), 0, (outSize * 4 + 24) * sizeof(i16));
   //	The actual deconvolution is done by the viterbi decoder
 
   for (int i = 0; i < outSize * 4 + 24; i++)

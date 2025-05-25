@@ -15,25 +15,25 @@ class SpectrumScope : public QObject
 {
 Q_OBJECT
 public:
-  SpectrumScope(QwtPlot *, int32_t, QSettings *);
+  SpectrumScope(QwtPlot *, i32, QSettings *);
   ~SpectrumScope() override;
 
-  void show_spectrum(const double *, const double *, const SpecViewLimits<double> & iSpecViewLimits);
+  void show_spectrum(const f64 *, const f64 *, const SpecViewLimits<f64> & iSpecViewLimits);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "spectrumScope";
 
   QwtPlotCurve mSpectrumCurve;
   QSettings * const mpDabSettings;
-  const int32_t mDisplaySize;
+  const i32 mDisplaySize;
   QwtPlotPicker * mpLmPicker;
   QColor mGridColor;
   QColor mCurveColor;
-  double mScale = 0.0;
+  f64 mScale = 0.0;
 
   QwtPlot * mpPlotgrid = nullptr;
   QwtPlotGrid * mpGrid = nullptr;
-  std::vector<double> mYValVec;
+  std::vector<f64> mYValVec;
   
 public slots:
   void slot_scaling_changed(int);

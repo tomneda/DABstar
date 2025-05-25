@@ -28,14 +28,14 @@
 #include <cstring>
 
 //	g(x)=(x^11+1)(x^5+x^3+x^2+x+1)=1+x+x^2+x^3+x^5+x^11+x^12+x^13+x^14+x^16
-const uint8_t FirecodeChecker::g[16] = { 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0 };
+const u8 FirecodeChecker::g[16] = { 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0 };
 
 FirecodeChecker::FirecodeChecker()
 {
   // prepare the table
-  uint8_t regs[16];
-  int16_t i, j;
-  uint16_t itab[8];
+  u8 regs[16];
+  i16 i, j;
+  u16 itab[8];
 
   for (i = 0; i < 8; i++)
   {
@@ -56,11 +56,11 @@ FirecodeChecker::FirecodeChecker()
   }
 }
 
-uint16_t FirecodeChecker::_run8(uint8_t regs[])
+u16 FirecodeChecker::_run8(u8 regs[])
 {
-  int16_t i, j;
-  uint16_t z;
-  uint16_t v = 0;
+  i16 i, j;
+  u16 z;
+  u16 v = 0;
 
   for (i = 0; i < 8; i++)
   {
@@ -80,11 +80,11 @@ uint16_t FirecodeChecker::_run8(uint8_t regs[])
   return v;
 }
 
-bool FirecodeChecker::check(const uint8_t * x)
+bool FirecodeChecker::check(const u8 * x)
 {
-  int16_t i;
-  uint16_t state = (x[2] << 8) | x[3];
-  uint16_t istate;
+  i16 i;
+  u16 state = (x[2] << 8) | x[3];
+  u16 istate;
 
   for (i = 4; i < 11; i++)
   {

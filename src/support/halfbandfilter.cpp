@@ -17,7 +17,7 @@
 #include <liquid/liquid.h>
 #include <cassert>
 
-HalfBandFilter::HalfBandFilter(uint32_t iDecimationPow)
+HalfBandFilter::HalfBandFilter(u32 iDecimationPow)
 {
   mLevelVec.resize(iDecimationPow);
 
@@ -37,7 +37,7 @@ HalfBandFilter::~HalfBandFilter()
   }
 }
 
-bool HalfBandFilter::decimate(const cmplx & iX, cmplx & oY, uint32_t iLevel)
+bool HalfBandFilter::decimate(const cf32 & iX, cf32 & oY, u32 iLevel)
 {
   assert(iLevel < mLevelVec.size());
   SLevel & level = mLevelVec[iLevel];
@@ -48,7 +48,7 @@ bool HalfBandFilter::decimate(const cmplx & iX, cmplx & oY, uint32_t iLevel)
   {
     level.InBufferIdx = 0;
 
-    cmplx y;
+    cf32 y;
     resamp2_crcf_decim_execute(level.qResamp2, level.InBuffer.data(), &y);
 
     if (iLevel + 1 >= mLevelVec.size())

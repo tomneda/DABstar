@@ -34,10 +34,10 @@
 
 #include  "galois.h"
 
-Galois::Galois(uint16_t symsize, uint16_t gfpoly)
+Galois::Galois(u16 symsize, u16 gfpoly)
 {
-  uint16_t sr;
-  uint16_t i;
+  u16 sr;
+  u16 i;
 
   this->mm = symsize;
   this->gfpoly = gfpoly;
@@ -73,32 +73,32 @@ int Galois::modnn(int x)
   return x;
 }
 
-uint16_t Galois::add_poly(uint16_t a, uint16_t b)
+u16 Galois::add_poly(u16 a, u16 b)
 {
   return a ^ b;
 }
 
-uint16_t Galois::poly2power(uint16_t a)
+u16 Galois::poly2power(u16 a)
 {
   return index_of[a];
 }
 
-uint16_t Galois::power2poly(uint16_t a)
+u16 Galois::power2poly(u16 a)
 {
   return alpha_to[a];
 }
 
-uint16_t Galois::add_power(uint16_t a, uint16_t b)
+u16 Galois::add_power(u16 a, u16 b)
 {
   return index_of[alpha_to[a] ^ alpha_to[b]];
 }
 
-uint16_t Galois::multiply_power(uint16_t a, uint16_t b)
+u16 Galois::multiply_power(u16 a, u16 b)
 {
   return modnn(a + b);
 }
 
-uint16_t Galois::multiply_poly(uint16_t a, uint16_t b)
+u16 Galois::multiply_poly(u16 a, u16 b)
 {
   if ((a == 0) || (b == 0))
   {
@@ -107,12 +107,12 @@ uint16_t Galois::multiply_poly(uint16_t a, uint16_t b)
   return alpha_to[multiply_power(index_of[a], index_of[b])];
 }
 
-uint16_t Galois::divide_power(uint16_t a, uint16_t b)
+u16 Galois::divide_power(u16 a, u16 b)
 {
   return modnn(d_q - 1 + a - b);
 }
 
-uint16_t Galois::divide_poly(uint16_t a, uint16_t b)
+u16 Galois::divide_poly(u16 a, u16 b)
 {
   if (a == 0)
   {
@@ -121,22 +121,22 @@ uint16_t Galois::divide_poly(uint16_t a, uint16_t b)
   return alpha_to[divide_power(index_of[a], index_of[b])];
 }
 
-uint16_t Galois::inverse_poly(uint16_t a)
+u16 Galois::inverse_poly(u16 a)
 {
   return alpha_to[inverse_power(index_of[a])];
 }
 
-uint16_t Galois::inverse_power(uint16_t a)
+u16 Galois::inverse_power(u16 a)
 {
   return d_q - 1 - a;
 }
 
-uint16_t Galois::pow_poly(uint16_t a, uint16_t n)
+u16 Galois::pow_poly(u16 a, u16 n)
 {
   return alpha_to[pow_power(index_of[a], n)];
 }
 
-uint16_t Galois::pow_power(uint16_t a, uint16_t n)
+u16 Galois::pow_power(u16 a, u16 n)
 {
   return (a == 0) ? 0 : (a * n) % (d_q - 1);
 }

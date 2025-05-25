@@ -58,7 +58,7 @@
     __m256i *new_metrics = (__m256i *)metrics2;
     const __m256i *Branchtab = (__m256i *)Branchtable;
    	const __m128i *syms = (const __m128i *)input;
-    uint32_t *d = (uint32_t *)decisions;
+    u32 *d = (u32 *)decisions;
     const __m256i m1020 = _mm256_set1_epi16(1020);
     const __m128i m127 = _mm_set1_epi16(127);
     const __m128i m255 = _mm_set1_epi16(255);

@@ -125,7 +125,7 @@ void AudioOutputQt::slot_mute(bool iMuteActive)
 
 void AudioOutputQt::slot_setVolume(const int iLogVolVal)
 {
-  mLinearVolume = QAudio::convertVolume((float)iLogVolVal / 100.0f, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
+  mLinearVolume = QAudio::convertVolume((f32)iLogVolVal / 100.0f, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
   if (mpAudioSink != nullptr)
   {
     mpAudioSink->setVolume(mLinearVolume);

@@ -50,7 +50,7 @@
 #include  "http-handler.h"
 #include  "dabradio.h"
 
-HttpHandler::HttpHandler(DabRadio * parent, const QString & mapPort, const QString & browserAddress, cmplx homeAddress, const QString & saveName, bool autoBrowser_off)
+HttpHandler::HttpHandler(DabRadio * parent, const QString & mapPort, const QString & browserAddress, cf32 homeAddress, const QString & saveName, bool autoBrowser_off)
 {
   this->parent = parent;
   this->mapPort = mapPort;
@@ -437,7 +437,7 @@ L1:
 
 #endif
 
-std::string HttpHandler::theMap(cmplx homeAddress)
+std::string HttpHandler::theMap(cf32 homeAddress)
 {
   std::string res;
   int bodySize;
@@ -501,11 +501,11 @@ std::string HttpHandler::theMap(cmplx homeAddress)
   return res;
 }
 
-std::string dotNumber(float f)
+std::string dotNumber(f32 f)
 {
   char temp[256];
   std::string s = std::to_string(f);
-  for (uint32_t i = 0; i < s.size(); i++)
+  for (u32 i = 0; i < s.size(); i++)
   {
     if (s.c_str()[i] == ',')
     {
@@ -562,10 +562,10 @@ std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
   return Jsontxt.toStdString();
 }
 
-void HttpHandler::putData(uint8_t type, const SCacheElem * tr, const QString & dateTime,
-                          float strength, int distance, int azimuth, bool non_etsi)
+void HttpHandler::putData(u8 type, const SCacheElem * tr, const QString & dateTime,
+                          f32 strength, int distance, int azimuth, bool non_etsi)
 {
-  cmplx target = cmplx(tr->latitude, tr->longitude);
+  cf32 target = cf32(tr->latitude, tr->longitude);
   for (unsigned long i = 0; i < transmitterList.size(); i++)
   {
     if (transmitterList[i].coords == target)
@@ -596,7 +596,7 @@ void HttpHandler::putData(uint8_t type, const SCacheElem * tr, const QString & d
   transmitterList.push_back(t);
   locker.unlock();
 
-  for (uint32_t i = 0; i < transmitterVector.size(); i++)
+  for (u32 i = 0; i < transmitterVector.size(); i++)
   {
     if ((transmitterVector.at(i).transmitterName == tr->transmitterName) &&
         (transmitterVector.at(i).channelName == tr->channel))

@@ -29,9 +29,9 @@
 	upFilter::upFilter (int bufferSize, int  inRate, int outRate):
 	                                    kernel (bufferSize * (outRate / inRate)),
 	                                    buffer (bufferSize) {
-float	 tmp [bufferSize * (outRate / inRate)];
-float	f	= (float)(inRate / 2) / outRate;
-float	sum	= 0;
+f32	 tmp [bufferSize * (outRate / inRate)];
+f32	f	= (f32)(inRate / 2) / outRate;
+f32	sum	= 0;
 
 	this	-> multiplier	= outRate / inRate;
 	this	-> order	= bufferSize * multiplier;
@@ -39,7 +39,7 @@ float	sum	= 0;
 	this	-> bufferSize	= bufferSize;
 
 	for (int i = 0; i < bufferSize; i ++)
-	   buffer [i] = cmplx (0, 0);
+	   buffer [i] = cf32 (0, 0);
 
 	for (int i = 0; i < order; i ++) {
 	   if (i == order / 2)
@@ -49,24 +49,24 @@ float	sum	= 0;
 //
 //	Blackman window
 	   tmp [i]  *= (0.42 -
-		    0.5 * cos (2 * M_PI * (float)i / (float) order) +
-		    0.08 * cos (4 * M_PI * (float)i / (float) order));
+		    0.5 * cos (2 * M_PI * (f32)i / (f32) order) +
+		    0.08 * cos (4 * M_PI * (f32)i / (f32) order));
 	   sum += tmp [i];
 	}
 
 	for (int i = 0; i < order; i ++)
-	   kernel [i] = cmplx (tmp [i] / sum, 0);
+	   kernel [i] = cf32 (tmp [i] / sum, 0);
 }
 
 	upFilter::~upFilter	() {
 }
 //
 static bool first_time = false;
-void	upFilter::Filter (cmplx in, cmplx *res) {
+void	upFilter::Filter (cf32 in, cf32 *res) {
 
 	buffer [ip] = in;
 	for (int i = 0; i < multiplier; i ++) {
-	   res [i] = cmplx (0, 0);
+	   res [i] = cf32 (0, 0);
 	   for (int j = 0; j < bufferSize; j ++) {
 	      int index = ip - j;
 	      if (index < 0)

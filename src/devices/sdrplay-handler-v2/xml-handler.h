@@ -25,7 +25,7 @@ class xmlHandler {
 public:
 		xmlHandler	(FILE *, int, int);
 		~xmlHandler	();
-	void	add		(std::complex<int16_t> *, int);
+	void	add		(std::complex<i16> *, int);
 	void	computeHeader	(QString &, QString &);
 private:
 	QFrame		myFrame;

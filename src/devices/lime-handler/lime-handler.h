@@ -73,7 +73,7 @@ typedef int  (* pfn_LMS_GetNormalizedGain)(lms_device_t * device, bool dir_tx, s
 typedef int  (* pfn_LMS_GetGaindB)(lms_device_t * device, bool dir_tx, size_t chan, unsigned * gain);
 typedef int  (* pfn_LMS_SetLPFBW)(lms_device_t * device, bool dir_tx, size_t chan, float_type bandwidth);
 typedef int  (* pfn_LMS_GetLPFBW)(lms_device_t * device, bool dir_tx, size_t chan, float_type * bandwidth);
-typedef int  (* pfn_LMS_Calibrate)(lms_device_t * device, bool dir_tx, size_t chan, double bw, unsigned flags);
+typedef int  (* pfn_LMS_Calibrate)(lms_device_t * device, bool dir_tx, size_t chan, f64 bw, unsigned flags);
 typedef int  (* pfn_LMS_SetupStream)(lms_device_t * device, lms_stream_t * stream);
 typedef int  (* pfn_LMS_DestroyStream)(lms_device_t * dev, lms_stream_t * stream);
 typedef int  (* pfn_LMS_StartStream)(lms_stream_t * stream);
@@ -87,14 +87,14 @@ Q_OBJECT
 public:
   LimeHandler(QSettings * s, const QString & recorderVersion);
   ~LimeHandler() override;
-  void setVFOFrequency(int32_t) override;
-  int32_t getVFOFrequency() override;
-  bool restartReader(int32_t) override;
+  void setVFOFrequency(i32) override;
+  i32 getVFOFrequency() override;
+  bool restartReader(i32) override;
   void stopReader() override;
-  int32_t getSamples(cmplx *, int32_t) override;
-  int32_t Samples() override;
+  i32 getSamples(cf32 *, i32) override;
+  i32 Samples() override;
   void resetBuffer() override;
-  int16_t bitDepth() override;
+  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
@@ -103,11 +103,11 @@ public:
 
 private:
   QFrame myFrame;
-  RingBuffer<std::complex<int16_t>> _I_Buffer;
+  RingBuffer<std::complex<i16>> _I_Buffer;
   QString recorderVersion;
   QString deviceModel;
   QSettings * limeSettings;
-  int32_t vfoFrequency;
+  i32 vfoFrequency;
   std::atomic<bool> running;
   lms_device_t * theDevice;
   lms_name_t antennas[10];

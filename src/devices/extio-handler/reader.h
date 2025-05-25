@@ -34,10 +34,10 @@
 
 class	reader {
 protected:
-	RingBuffer<cmplx>	*theBuffer;
-	int32_t	blockSize;
+	RingBuffer<cf32>	*theBuffer;
+	i32	blockSize;
 public:
-	reader		(RingBuffer<cmplx> *p) {
+	reader		(RingBuffer<cf32> *p) {
 	theBuffer	= p;
 	blockSize	= -1;
 }
@@ -45,116 +45,116 @@ public:
 virtual	~reader		(void) {
 }
 
-virtual void	restartReader	(int32_t s) {
+virtual void	restartReader	(i32 s) {
 	blockSize	= s;
 }
 
 virtual void	stopReader	(void) {
 }
 
-virtual void	processData	(float IQoffs, void *data, int cnt) {
+virtual void	processData	(f32 IQoffs, void *data, int cnt) {
 	(void)IQoffs;
 	(void)data;
 	(void)cnt;
 }
 
-virtual	int16_t	bitDepth	(void) {
+virtual	i16	bitDepth	(void) {
 	return 12;
 }
 };
 
 class	reader_16: public reader {
 public:
-	reader_16 (RingBuffer<cmplx> *p):reader (p) {
+	reader_16 (RingBuffer<cf32> *p):reader (p) {
 }
 
 	~reader_16 (void) {
 }
 
-void	processData	(float IQoffs, void *data, int cnt) {
-int32_t	i;
-cmplx temp [blockSize];
-uint8_t	*p	= (uint8_t *)data;
+void	processData	(f32 IQoffs, void *data, int cnt) {
+i32	i;
+cf32 temp [blockSize];
+u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	for (i = 0; i < blockSize; i ++) {
-	   uint8_t r0	= p [4 * i];
-	   uint8_t r1	= p [4 * i + 1];
-	   uint8_t i0	= p [4 * i + 2];
-	   uint8_t i1	= p [4 * i + 3];
-	   float re	= (r0 << 8 | r1) / 32767.0;
-	   float im	= (i0 << 8 | i1) / 32767.0;
-	   temp [i] = cmplx (re, im);
+	   u8 r0	= p [4 * i];
+	   u8 r1	= p [4 * i + 1];
+	   u8 i0	= p [4 * i + 2];
+	   u8 i1	= p [4 * i + 3];
+	   f32 re	= (r0 << 8 | r1) / 32767.0;
+	   f32 im	= (i0 << 8 | i1) / 32767.0;
+	   temp [i] = cf32 (re, im);
 	}
 	theBuffer	-> putDataIntoBuffer (temp, blockSize);
 }
 
-int16_t bitDepth	(void) {
+i16 bitDepth	(void) {
 	return 16;
 }
 };
 
 class	reader_24: public reader {
 public:
-	reader_24 (RingBuffer<cmplx> *p):reader (p) {
+	reader_24 (RingBuffer<cf32> *p):reader (p) {
 }
 
 	~reader_24 (void) {
 }
 
-void	processData	(float IQoffs, void *data, int cnt) {
-int32_t	i;
-cmplx temp [blockSize];
-uint8_t	*p	= (uint8_t *)data;
+void	processData	(f32 IQoffs, void *data, int cnt) {
+i32	i;
+cf32 temp [blockSize];
+u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	for (i = 0; i < 6 * blockSize; i ++) {
-	   uint8_t r0	= p [6 * i];
-	   uint8_t r1	= p [6 * i + 1];
-	   uint8_t r2	= p [6 * i + 2];
-	   uint8_t i0	= p [6 * i + 3];
-	   uint8_t i1	= p [6 * i + 4];
-	   uint8_t i2	= p [6 * i + 5];
-	   float re	= (r0 << 16 | r1 << 8 | r2) / (32768 * 256);
-	   float im	= (i0 << 16 | i1 << 8 | i2) / (32768 * 256);
-	   temp [i]	= cmplx (re, im);
+	   u8 r0	= p [6 * i];
+	   u8 r1	= p [6 * i + 1];
+	   u8 r2	= p [6 * i + 2];
+	   u8 i0	= p [6 * i + 3];
+	   u8 i1	= p [6 * i + 4];
+	   u8 i2	= p [6 * i + 5];
+	   f32 re	= (r0 << 16 | r1 << 8 | r2) / (32768 * 256);
+	   f32 im	= (i0 << 16 | i1 << 8 | i2) / (32768 * 256);
+	   temp [i]	= cf32 (re, im);
 	}
 	theBuffer	-> putDataIntoBuffer (temp, blockSize);
 }
 
-int16_t bitDepth	(void) {
+i16 bitDepth	(void) {
 	return 24;
 }
 };
 
 class	reader_32: public reader {
 public:
-	reader_32 (RingBuffer<cmplx> *p):reader (p) {
+	reader_32 (RingBuffer<cf32> *p):reader (p) {
 }
 
 	~reader_32 (void) {
 }
 
-void	processData	(float IQoffs, void *data, int cnt) {
-int32_t	i;
-cmplx temp [blockSize];
-uint8_t	*p	= (uint8_t *)data;
+void	processData	(f32 IQoffs, void *data, int cnt) {
+i32	i;
+cf32 temp [blockSize];
+u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	for (i = 0; i < 8 * blockSize; i ++) {
-	   uint8_t r0	= p [8 * i];
-	   uint8_t r1	= p [8 * i + 1];
-	   uint8_t r2	= p [8 * i + 2];
-	   uint8_t r3	= p [8 * i + 3];
-	   uint8_t i0	= p [8 * i + 4];
-	   uint8_t i1	= p [8 * i + 5];
-	   uint8_t i2	= p [8 * i + 6];
-	   uint8_t i3	= p [8 * i + 7];
-	   float re	= (r0 << 24 | r1 << 16 | r2 << 8 | r3) / (32767 * 65536);
-	   float im	= (i0 << 24 | i1 << 16 | i2 << 8 | i3) / (32767 * 65336);
-	   temp [i]	= cmplx (re, im);
+	   u8 r0	= p [8 * i];
+	   u8 r1	= p [8 * i + 1];
+	   u8 r2	= p [8 * i + 2];
+	   u8 r3	= p [8 * i + 3];
+	   u8 i0	= p [8 * i + 4];
+	   u8 i1	= p [8 * i + 5];
+	   u8 i2	= p [8 * i + 6];
+	   u8 i3	= p [8 * i + 7];
+	   f32 re	= (r0 << 24 | r1 << 16 | r2 << 8 | r3) / (32767 * 65536);
+	   f32 im	= (i0 << 24 | i1 << 16 | i2 << 8 | i3) / (32767 * 65336);
+	   temp [i]	= cf32 (re, im);
 	}
 	theBuffer	-> putDataIntoBuffer (temp, blockSize);
 }
 
-int16_t	bitDepth	(void) {
+i16	bitDepth	(void) {
 	return 32;
 }
 };
@@ -162,23 +162,23 @@ int16_t	bitDepth	(void) {
 
 class	reader_float: public reader {
 public:
-	reader_float (RingBuffer<cmplx> *p):reader (p) {
+	reader_float (RingBuffer<cf32> *p):reader (p) {
 }
 
 	~reader_float (void) {
 }
 
-void	processData	(float IQoffs, void *data, int cnt) {
-int32_t	i;
-cmplx temp [blockSize];
-float	*p	= (float *)data;
+void	processData	(f32 IQoffs, void *data, int cnt) {
+i32	i;
+cf32 temp [blockSize];
+f32	*p	= (f32 *)data;
 	(void)IQoffs;
 	for (i = 0; i < 2 * blockSize; i ++) 
-	   temp [i] = cmplx (p [2 * i], p [2 * i + 1]);
+	   temp [i] = cf32 (p [2 * i], p [2 * i + 1]);
 	theBuffer	-> putDataIntoBuffer (temp, blockSize);
 }
 
-int16_t bitDepth	(void) {
+i16 bitDepth	(void) {
 	return 32;
 }
 };

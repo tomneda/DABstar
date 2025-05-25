@@ -36,12 +36,12 @@ public:
 	soapy_CS8	(SoapySDR::Device *);
 	~soapy_CS8	(void);
 int	Samples		(void);
-int	getSamples	(cmplx *, int);
+int	getSamples	(cf32 *, int);
 void	run		(void);
 private:
 SoapySDR::Device	*theDevice;
 SoapySDR::Stream	*stream;
-RingBuffer<int8_t>	theBuffer;
+RingBuffer<i8>	theBuffer;
 bool	running;
 };
 

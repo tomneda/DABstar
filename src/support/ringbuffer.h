@@ -150,10 +150,10 @@ class RingbufferBase
 public:
   struct SFillState
   {
-    float Percent;
-    uint32_t Filled;
-    uint32_t Free;
-    uint32_t Total;
+    f32 Percent;
+    u32 Filled;
+    u32 Free;
+    u32 Total;
   };
 };
 
@@ -161,7 +161,7 @@ template<class TElem>
 class RingBuffer : public RingbufferBase
 {
 public:
-  explicit RingBuffer(const uint32_t elementCount)
+  explicit RingBuffer(const u32 elementCount)
   {
     bufferSize = _round_up_to_next_power_of_2(elementCount);
     buffer.resize(bufferSize * sizeof(TElem));
@@ -171,19 +171,19 @@ public:
 
   ~RingBuffer() = default;
 
-  [[nodiscard]] int32_t get_ring_buffer_read_available() const
+  [[nodiscard]] i32 get_ring_buffer_read_available() const
   {
     return (writeIndex - readIndex) & bigMask;
   }
 
-  [[nodiscard]] int32_t get_ring_buffer_write_available() const
+  [[nodiscard]] i32 get_ring_buffer_write_available() const
   {
     return bufferSize - get_ring_buffer_read_available();
   }
 
-  [[nodiscard]] float get_fill_state_in_percent() const
+  [[nodiscard]] f32 get_fill_state_in_percent() const
   {
-    return 100.0f * (float)get_ring_buffer_read_available() / (float)bufferSize;
+    return 100.0f * (f32)get_ring_buffer_read_available() / (f32)bufferSize;
   }
 
   [[nodiscard]] SFillState get_fill_state() const
@@ -192,7 +192,7 @@ public:
     fs.Filled = get_ring_buffer_read_available();
     fs.Free = bufferSize - fs.Filled;
     fs.Total = bufferSize;
-    fs.Percent = 100.0f * fs.Filled / (float)bufferSize;
+    fs.Percent = 100.0f * fs.Filled / (f32)bufferSize;
     return fs;
   }
 
@@ -205,7 +205,7 @@ public:
   /* ensure that previous writes are seen before we update the write index
      (write after write)
    */
-  int32_t advance_ring_buffer_write_index(int32_t elementCount)
+  i32 advance_ring_buffer_write_index(i32 elementCount)
   {
     PaUtil_WriteMemoryBarrier();
     return writeIndex = (writeIndex + elementCount) & bigMask;
@@ -215,20 +215,20 @@ public:
    * always completed before updating (writing) the read index.
    * (write-after-read) => full barrier
    */
-  int32_t advance_ring_buffer_read_index(int32_t elementCount)
+  i32 advance_ring_buffer_read_index(i32 elementCount)
   {
     PaUtil_FullMemoryBarrier();
     return readIndex = (readIndex + elementCount) & bigMask;
   }
 
-  int32_t put_data_into_ring_buffer(const void * data, int32_t elementCount)
+  i32 put_data_into_ring_buffer(const void * data, i32 elementCount)
   {
-    int32_t size1;
-    int32_t size2;
+    i32 size1;
+    i32 size2;
     void * data1;
     void * data2;
 
-    const int32_t numWritten = _get_ring_buffer_write_regions(elementCount, &data1, &size1, &data2, &size2);
+    const i32 numWritten = _get_ring_buffer_write_regions(elementCount, &data1, &size1, &data2, &size2);
 
     if (size2 > 0)
     {
@@ -245,14 +245,14 @@ public:
     return numWritten;
   }
 
-  int32_t get_data_from_ring_buffer(void * data, int32_t elementCount)
+  i32 get_data_from_ring_buffer(void * data, i32 elementCount)
   {
-    int32_t size1;
-    int32_t size2;
+    i32 size1;
+    i32 size2;
     void * data1;
     void * data2;
 
-    const int32_t numRead = _get_ring_buffer_read_regions(elementCount, &data1, &size1, &data2, &size2);
+    const i32 numRead = _get_ring_buffer_read_regions(elementCount, &data1, &size1, &data2, &size2);
 
     if (size2 > 0)
     {
@@ -269,7 +269,7 @@ public:
     return numRead;
   }
 
-  uint32_t skip_data_in_ring_buffer(uint32_t n_values)
+  u32 skip_data_in_ring_buffer(u32 n_values)
   {
     //	ensure that we have the correct read and write indices
     PaUtil_FullMemoryBarrier();
@@ -281,19 +281,19 @@ public:
     return n_values;
   }
 
-  int32_t get_writable_ring_buffer_segment(uint32_t iElemCnt, void ** const opData, int32_t * opSize)
+  i32 get_writable_ring_buffer_segment(u32 iElemCnt, void ** const opData, i32 * opSize)
   {
-    int32_t dummySize;
+    i32 dummySize;
     void * dummyData;
     return _get_ring_buffer_write_regions(iElemCnt, opData, opSize, &dummyData, &dummySize);
   }
 
 private:
-  uint32_t bufferSize;
-  std::atomic<uint32_t> writeIndex{ 0 };
-  std::atomic<uint32_t> readIndex{ 0 };
-  uint32_t bigMask;
-  uint32_t smallMask;
+  u32 bufferSize;
+  std::atomic<u32> writeIndex{ 0 };
+  std::atomic<u32> readIndex{ 0 };
+  u32 bigMask;
+  u32 smallMask;
   std::vector<char> buffer;
 
   /***************************************************************************
@@ -302,9 +302,9 @@ private:
   ** If non-contiguous, size2 will be the size of second region.
   ** Returns room available to be written or elementCount, whichever is smaller.
   */
-  int32_t _get_ring_buffer_write_regions(uint32_t elementCount, void ** const dataPtr1, int32_t * sizePtr1, void ** dataPtr2, int32_t * sizePtr2)
+  i32 _get_ring_buffer_write_regions(u32 elementCount, void ** const dataPtr1, i32 * sizePtr1, void ** dataPtr2, i32 * sizePtr2)
   {
-    const uint32_t available = get_ring_buffer_write_available();
+    const u32 available = get_ring_buffer_write_available();
 
     if (elementCount > available)
     {
@@ -313,20 +313,20 @@ private:
 
     /* Check to see if write is not contiguous. */
 
-    if (const uint32_t index = writeIndex & smallMask;
+    if (const u32 index = writeIndex & smallMask;
         index + elementCount > bufferSize)
     {
       /* Write data in two blocks that wrap the buffer. */
-      int32_t firstHalf = bufferSize - index;
+      i32 firstHalf = bufferSize - index;
       *dataPtr1 = &buffer[index * sizeof(TElem)];
       *sizePtr1 = firstHalf;
       *dataPtr2 = &buffer[0];
-      *sizePtr2 = (int32_t)elementCount - firstHalf;
+      *sizePtr2 = (i32)elementCount - firstHalf;
     }
     else
     {    // fits
       *dataPtr1 = &buffer[index * sizeof(TElem)];
-      *sizePtr1 = (int32_t)elementCount;
+      *sizePtr1 = (i32)elementCount;
       *dataPtr2 = nullptr;
       *sizePtr2 = 0;
     }
@@ -336,7 +336,7 @@ private:
       PaUtil_FullMemoryBarrier(); /* (write-after-read) => full barrier */
     }
 
-    return (int32_t)elementCount;
+    return (i32)elementCount;
   }
 
   /***************************************************************************
@@ -345,9 +345,9 @@ private:
    ** If non-contiguous, size2 will be the size of second region.
    ** Returns room available to be read or elementCount, whichever is smaller.
    */
-  int32_t _get_ring_buffer_read_regions(uint32_t elementCount, void ** dataPtr1, int32_t * sizePtr1, void ** dataPtr2, int32_t * sizePtr2)
+  i32 _get_ring_buffer_read_regions(u32 elementCount, void ** dataPtr1, i32 * sizePtr1, void ** dataPtr2, i32 * sizePtr2)
   {
-    const uint32_t available = get_ring_buffer_read_available(); /* doesn't use memory barrier */
+    const u32 available = get_ring_buffer_read_available(); /* doesn't use memory barrier */
 
     if (elementCount > available)
     {
@@ -356,20 +356,20 @@ private:
 
     /* Check to see if read is not contiguous. */
 
-    if (const uint32_t index = readIndex & smallMask;
+    if (const u32 index = readIndex & smallMask;
         index + elementCount > bufferSize)
     {
       /* Write data in two blocks that wrap the buffer. */
-      int32_t firstHalf = bufferSize - index;
+      i32 firstHalf = bufferSize - index;
       *dataPtr1 = &buffer[index * sizeof(TElem)];
       *sizePtr1 = firstHalf;
       *dataPtr2 = &buffer[0];
-      *sizePtr2 = (int32_t)elementCount - firstHalf;
+      *sizePtr2 = (i32)elementCount - firstHalf;
     }
     else
     {
       *dataPtr1 = &buffer[index * sizeof(TElem)];
-      *sizePtr1 = (int32_t)elementCount;
+      *sizePtr1 = (i32)elementCount;
       *dataPtr2 = nullptr;
       *sizePtr2 = 0;
     }
@@ -379,10 +379,10 @@ private:
       PaUtil_ReadMemoryBarrier(); /* (read-after-read) => read barrier */
     }
 
-    return (int32_t)elementCount;
+    return (i32)elementCount;
   }
 
-  [[nodiscard]] uint32_t _round_up_to_next_power_of_2(uint32_t iVal) const
+  [[nodiscard]] u32 _round_up_to_next_power_of_2(u32 iVal) const
   {
     // iVal with exact power of 2 keeps the size
     if (iVal == 0)
@@ -391,7 +391,7 @@ private:
     }
     --iVal;
 
-    for (uint32_t i = 1; i < sizeof(uint32_t) * 8; i <<= 1)
+    for (u32 i = 1; i < sizeof(u32) * 8; i <<= 1)
     {
       iVal |= iVal >> i;
     }
@@ -426,18 +426,18 @@ public:
 
   struct SListPar
   {
-    uint32_t MinVal;
-    uint32_t MaxVal;
+    u32 MinVal;
+    u32 MaxVal;
     bool ShowStatistics;
   };
 
 protected:
-  static constexpr int32_t cBarWidth = 50;
+  static constexpr i32 cBarWidth = 50;
   mutable std::array<char, cBarWidth + 3> mProgressBarBuffer; // + [...] plus zero
 
-  const char * _show_progress_bar(float iPercentStop, float iPercentStart = -100) const;
+  const char * _show_progress_bar(f32 iPercentStop, f32 iPercentStart = -100) const;
   void _print_line(bool iResetMinMax) const;
-  void _calculate_ring_buffer_statistics(float & oMinPrc, float & oMaxPrc, float & ioGlobMinPrc, float & ioGlobMaxPrc, RingBufferFactoryBase::SListPar & ioPar, bool iResetMinMax, const RingbufferBase::SFillState & iFillState) const;
+  void _calculate_ring_buffer_statistics(f32 & oMinPrc, f32 & oMaxPrc, f32 & ioGlobMinPrc, f32 & ioGlobMaxPrc, RingBufferFactoryBase::SListPar & ioPar, bool iResetMinMax, const RingbufferBase::SFillState & iFillState) const;
 };
 
 
@@ -456,7 +456,7 @@ public:
     mutable SListPar Par;
   };
 
-  void create_ringbuffer(EId iId, const char * const iName, uint32_t iElementCount, bool iShowStatistics = false)
+  void create_ringbuffer(EId iId, const char * const iName, u32 iElementCount, bool iShowStatistics = false)
   {
     assert (mMap.count(iId) == 0);
     SList list;
@@ -482,11 +482,11 @@ private:
   std::map<EId, SList> mMap;
 };
 
-extern RingBufferFactory<uint8_t> sRingBufferFactoryUInt8;
-extern RingBufferFactory<int16_t> sRingBufferFactoryInt16;
-extern RingBufferFactory<cmplx16> sRingBufferFactoryCmplx16;
-extern RingBufferFactory<float>   sRingBufferFactoryFloat;
-extern RingBufferFactory<cmplx>   sRingBufferFactoryCmplx;
+extern RingBufferFactory<u8> sRingBufferFactoryUInt8;
+extern RingBufferFactory<i16> sRingBufferFactoryInt16;
+extern RingBufferFactory<ci16> sRingBufferFactoryCmplx16;
+extern RingBufferFactory<f32>   sRingBufferFactoryFloat;
+extern RingBufferFactory<cf32>   sRingBufferFactoryCmplx;
 
 #endif
 

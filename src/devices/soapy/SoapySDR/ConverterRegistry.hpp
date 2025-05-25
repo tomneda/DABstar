@@ -39,7 +39,7 @@ namespace SoapySDR
      * output buffer of another format.
      * The parameters are (input pointer, output pointer, number of elements, optional scalar)
      */
-    typedef void (*ConverterFunction)(const void *, void *, const size_t, const double);
+    typedef void (*ConverterFunction)(const void *, void *, const size_t, const f64);
 
     /*!
      * FunctionPriority: allow selection of a converter function with a given source and target format.

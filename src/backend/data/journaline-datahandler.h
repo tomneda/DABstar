@@ -43,7 +43,7 @@ public:
   journaline_dataHandler();
   ~journaline_dataHandler();
 
-  void add_mscDatagroup(const std::vector<uint8_t> &);
+  void add_mscDatagroup(const std::vector<u8> &);
   //void	add_mscDatagroup	(QByteArray &);
 
 private:

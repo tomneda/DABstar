@@ -32,7 +32,7 @@
 #include        "neaacdec.h"
 #include        "dabradio.h"
 
-faadDecoder::faadDecoder(DabRadio * mr, RingBuffer<int16_t> * buffer)
+faadDecoder::faadDecoder(DabRadio * mr, RingBuffer<i16> * buffer)
 {
   this->audioBuffer = buffer;
   aacCap = NeAACDecGetCapabilities();
@@ -48,7 +48,7 @@ faadDecoder::~faadDecoder()
   NeAACDecClose(aacHandle);
 }
 
-int get_aac_channel_configuration(int16_t m_mpeg_surround_config, uint8_t aacChannelMode)
+int get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
 {
 
   switch (m_mpeg_surround_config)
@@ -66,7 +66,7 @@ int get_aac_channel_configuration(int16_t m_mpeg_surround_config, uint8_t aacCha
 bool faadDecoder::initialize(const stream_parms * iSP)
 {
   long unsigned int sample_rate;
-  uint8_t channels;
+  u8 channels;
   /* AudioSpecificConfig structure (the only way to select 960 transform here!)
    *
    *  00010 = AudioObjectType 2 (AAC LC)
@@ -92,7 +92,7 @@ bool faadDecoder::initialize(const stream_parms * iSP)
     return false;
   }
 
-  uint8_t asc[2];
+  u8 asc[2];
   asc[0] = 0b00010 << 3 | core_sr_index >> 1;
   asc[1] = (core_sr_index & 0x01) << 7 | core_ch_config << 3 | 0b100;
   long int init_result = NeAACDecInit2(aacHandle, asc, sizeof(asc), &sample_rate, &channels);
@@ -106,13 +106,13 @@ bool faadDecoder::initialize(const stream_parms * iSP)
   return true;
 }
 
-int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const uint8_t * const ipBuffer, const int16_t iBufferLength)
+i16 faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const u8 * const ipBuffer, const i16 iBufferLength)
 {
-  int16_t samples;
+  i16 samples;
   long unsigned int sampleRate;
-  int16_t * outBuffer;
+  i16 * outBuffer;
   NeAACDecFrameInfo hInfo;
-  uint8_t channels;
+  u8 channels;
 
   if (!aacInitialized)
   {
@@ -123,7 +123,7 @@ int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const ui
     aacInitialized = true;
   }
 
-  outBuffer = (int16_t *)NeAACDecDecode(aacHandle, &hInfo, const_cast<uint8_t*>(ipBuffer), iBufferLength);
+  outBuffer = (i16 *)NeAACDecDecode(aacHandle, &hInfo, const_cast<u8*>(ipBuffer), iBufferLength);
   sampleRate = hInfo.samplerate;
 
   samples = hInfo.samples;
@@ -155,8 +155,8 @@ int16_t faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const ui
   }
   else if (channels == 1) // TODO: this is not called with a mono service but the stereo above
   {
-    auto * const buffer = make_vla(int16_t, 2 * samples);
-    for (int16_t i = 0; i < samples; i++)
+    auto * const buffer = make_vla(i16, 2 * samples);
+    for (i16 i = 0; i < samples; i++)
     {
       buffer[2 * i + 0] = buffer[2 * i + 1] = outBuffer[i];
     }

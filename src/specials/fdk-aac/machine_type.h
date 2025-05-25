@@ -120,7 +120,7 @@ amm-info@iis.fraunhofer.de
 
 #if defined(__ANDROID__) && (__GNUC__ == 4) && (__GNUC_MINOR__ == 4) && \
     (__GNUC_GNU_INLINE__ == 1)
-typedef unsigned long long uint64_t;
+typedef unsigned long long u64;
 #include <sys/types.h>
 #endif
 

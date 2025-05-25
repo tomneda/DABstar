@@ -87,9 +87,9 @@ struct SDabService
 {
   QString channel;
   QString serviceName;
-  uint32_t SId = 0;
-  int32_t SCIds = 0;
-  int32_t subChId = 0;
+  u32 SId = 0;
+  i32 SCIds = 0;
+  i32 subChId = 0;
   bool valid = false;
   bool is_audio = false;
   FILE * fd = nullptr;
@@ -112,35 +112,35 @@ struct SChannelDescriptor
   bool realChannel = false;
   bool etiActive = false;
   int serviceCount = 0;
-  int32_t nominalFreqHz = 0;
+  i32 nominalFreqHz = 0;
   QString ensembleName;
-  uint8_t mainId = 0;
-  uint8_t subId = 0;
+  u8 mainId = 0;
+  u8 subId = 0;
   std::vector<SDabService> backgroundServices;
   SDabService currentService{};
   SDabService nextService{};
-  uint32_t Eid = 0;
+  u32 Eid = 0;
   bool has_ecc = false;
-  uint8_t ecc_byte = 0;
+  u8 ecc_byte = 0;
   bool tiiFile = false;
   QString transmitterName;
   QString countryName;
   int nrTransmitters = 0;
-  cmplx localPos{};
-  cmplx targetPos{};
+  cf32 localPos{};
+  cf32 targetPos{};
   int snr = 0;
-  std::set<uint16_t> transmitters;
+  std::set<u16> transmitters;
 
   union UTiiId
   {
     UTiiId(int mainId, int subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
     explicit UTiiId(int fullId) : FullId(fullId) {};
 
-    uint16_t FullId = 0;
+    u16 FullId = 0;
     struct
     {
-      uint8_t MainId;
-      uint8_t SubId;
+      u8 MainId;
+      u8 SubId;
     };
   };
 
@@ -151,7 +151,7 @@ struct SChannelDescriptor
     ensembleName = "";
     nrTransmitters = 0;
     countryName = "";
-    targetPos = cmplx(0, 0);
+    targetPos = cf32(0, 0);
     mainId = 0;
     subId = 0;
     Eid = 0;
@@ -169,10 +169,10 @@ class DabRadio : public QWidget
 {
 Q_OBJECT
 public:
-  DabRadio(QSettings *, const QString &, const QString &, int32_t iDataPort, QWidget * iParent);
+  DabRadio(QSettings *, const QString &, const QString &, i32 iDataPort, QWidget * iParent);
   ~DabRadio() override;
 
-  enum EAudioFlags : uint32_t
+  enum EAudioFlags : u32
   {
     AFL_NONE     = 0x0,
     AFL_SBR_USED = 0x1,
@@ -200,35 +200,35 @@ private:
     StatusInfoElem<bool>     Announce;
     StatusInfoElem<bool>     RsError;
     StatusInfoElem<bool>     CrcError;
-    StatusInfoElem<int32_t>  InpBitRate;  // tricky: bit rates must be of type int32_t
-    StatusInfoElem<uint32_t> OutSampRate; // tricky: sample rates must be of type uint32_t
+    StatusInfoElem<i32>  InpBitRate;  // tricky: bit rates must be of type i32
+    StatusInfoElem<u32> OutSampRate; // tricky: sample rates must be of type u32
   };
 
-  static constexpr int32_t cDisplayTimeoutMs     = 1000;
-  static constexpr int32_t cChannelTimeoutMs     = 5000;
-  static constexpr int32_t cEpgTimeoutMs         = 3000;
-  static constexpr int32_t cPresetTimeoutMs      =  500;
-  static constexpr int32_t cClockResetTimeoutMs  = 5000;
-  static constexpr int32_t cTiiIndexCntTimeoutMs = 2000;
+  static constexpr i32 cDisplayTimeoutMs     = 1000;
+  static constexpr i32 cChannelTimeoutMs     = 5000;
+  static constexpr i32 cEpgTimeoutMs         = 3000;
+  static constexpr i32 cPresetTimeoutMs      =  500;
+  static constexpr i32 cClockResetTimeoutMs  = 5000;
+  static constexpr i32 cTiiIndexCntTimeoutMs = 2000;
 
   Ui_DabRadio * const ui;
 
-  int32_t mAudioFrameCnt = 0;
-  int32_t mMotObjectCnt = 0;
+  i32 mAudioFrameCnt = 0;
+  i32 mMotObjectCnt = 0;
   StatusInfo mStatusInfo{};
   FILE * mDlTextFile = nullptr;
-  RingBuffer<cmplx> * const mpSpectrumBuffer;
-  RingBuffer<cmplx> * const mpIqBuffer;
-  RingBuffer<float> * const mpCarrBuffer;
-  RingBuffer<float> * const mpResponseBuffer;
-  RingBuffer<uint8_t> * const mpFrameBuffer;
-  RingBuffer<uint8_t> * const mpDataBuffer;
-  RingBuffer<int16_t> * const mpAudioBufferFromDecoder;
-  RingBuffer<int16_t> * const mpAudioBufferToOutput;
-  RingBuffer<int16_t> * const mpTechDataBuffer;
-  RingBuffer<cmplx> * const mpCirBuffer;
-  uint32_t mResetRingBufferCnt = 0;
-  std::vector<int16_t> mAudioTempBuffer;
+  RingBuffer<cf32> * const mpSpectrumBuffer;
+  RingBuffer<cf32> * const mpIqBuffer;
+  RingBuffer<f32> * const mpCarrBuffer;
+  RingBuffer<f32> * const mpResponseBuffer;
+  RingBuffer<u8> * const mpFrameBuffer;
+  RingBuffer<u8> * const mpDataBuffer;
+  RingBuffer<i16> * const mpAudioBufferFromDecoder;
+  RingBuffer<i16> * const mpAudioBufferToOutput;
+  RingBuffer<i16> * const mpTechDataBuffer;
+  RingBuffer<cf32> * const mpCirBuffer;
+  u32 mResetRingBufferCnt = 0;
+  std::vector<i16> mAudioTempBuffer;
   SpectrumViewer mSpectrumViewer;
   CirViewer mCirViewer;
   BandHandler mBandHandler;
@@ -242,7 +242,7 @@ private:
   ContentTable * mpContentTable = nullptr;
   FILE * mpLogFile = nullptr;
   SChannelDescriptor mChannel{};
-  int32_t mMaxDistance = -1;
+  i32 mMaxDistance = -1;
   QScopedPointer<TechData> mpTechDataWidget;
   Configuration mConfig;
   std::atomic<bool> mIsRunning{false};
@@ -251,9 +251,9 @@ private:
   DeviceSelector mDeviceSelector;
   struct SScanResult
   {
-    uint32_t NrChannels = 0;
-    uint32_t NrAudioServices = 0;
-    uint32_t NrNonAudioServices = 0;
+    u32 NrChannels = 0;
+    u32 NrAudioServices = 0;
+    u32 NrNonAudioServices = 0;
     QString LastChannel;
   };
   SScanResult mScanResult{};
@@ -267,9 +267,9 @@ private:
   SAudioFifo * mpCurAudioFifo = nullptr;
   enum class EPlaybackState { Stopped, WaitForInit, Running };
   EPlaybackState mPlaybackState = EPlaybackState::Stopped;
-  float mAudioBufferFillFiltered = 0.0f;
-  float mPeakLeftDamped = -100.0f;
-  float mPeakRightDamped = -100.0f;
+  f32 mAudioBufferFillFiltered = 0.0f;
+  f32 mPeakLeftDamped = -100.0f;
+  f32 mPeakRightDamped = -100.0f;
   bool mProgBarAudioBufferFullColorSet = false;
 
 #ifdef  DATA_STREAMER
@@ -293,12 +293,12 @@ private:
   QTimer mPresetTimer;
   QTimer mClockResetTimer;
   QTimer mTiiIndexCntTimer;
-  uint32_t mTiiIndex = 0;
+  u32 mTiiIndex = 0;
   bool mShowTiiListWindow = false;
   bool mMutingActive = false;
-  int32_t mNumberOfSeconds = 0;
-  int16_t mFicBlocks = 0;
-  int16_t mFicSuccess = 0;
+  i32 mNumberOfSeconds = 0;
+  i16 mFicBlocks = 0;
+  i16 mFicSuccess = 0;
   STheTime mLocalTime{};
   STheTime mUTC{};
   timeTableHandler * mpTimeTable = nullptr;
@@ -314,7 +314,7 @@ private:
   static QStringList get_soft_bit_gen_names();
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> &, const SServiceId &);
   void LOG(const QString &, const QString &);
-  uint32_t extract_epg(const QString&, const std::vector<SServiceId> & iServiceList, uint32_t);
+  u32 extract_epg(const QString&, const std::vector<SServiceId> & iServiceList, u32);
   void show_pause_slide();
   void connect_dab_processor();
   void connect_gui();
@@ -369,12 +369,12 @@ private:
   void _set_http_server_button(const bool iActive);
   void _set_clock_text(const QString & iText = QString());
   void _create_status_info();
-  template<typename T> void _add_status_label_elem(StatusInfoElem<T> & ioElem, const uint32_t iColor, const QString & iName, const QString & iToolTip);
+  template<typename T> void _add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip);
   template<typename T> void _set_status_info_status(StatusInfoElem<T> & iElem, const T iValue);
   void _reset_status_info();
   void _update_channel_selector();
   void _set_device_to_file_mode(const bool iDataFromFile);
-  void _setup_audio_output(uint32_t iSampleRate);
+  void _setup_audio_output(u32 iSampleRate);
   QString _get_scan_message(bool iEndMsg) const;
   QString _convert_links_to_clickable(const QString& iText) const;
 
@@ -391,36 +391,36 @@ signals:
   void signal_audio_buffer_filled_state(int);
 
 public slots:
-  void slot_add_to_ensemble(const QString &, uint32_t);
+  void slot_add_to_ensemble(const QString &, u32);
   void slot_name_of_ensemble(int, const QString &);
   void slot_show_frame_errors(int);
   void slot_show_rs_errors(int);
   void slot_show_aac_errors(int);
   void slot_show_fic_success(bool);
-  void slot_show_fic_ber(float);
+  void slot_show_fic_ber(f32);
   void slot_show_label(const QString &);
   void slot_handle_mot_object(QByteArray, QString, int, bool);
   void slot_send_datagram(int);
   void slot_handle_tdc_data(int, int);
   void slot_change_in_configuration();
-  void slot_new_audio(int32_t, uint32_t, uint32_t);
+  void slot_new_audio(i32, u32, u32);
   void slot_set_stereo(bool);
   void slot_set_stream_selector(int);
   void slot_no_signal_found();
   void slot_show_mot_handling();
-  void slot_show_correlation(float, const QVector<int> & v);
+  void slot_show_correlation(f32, const QVector<int> & v);
   void slot_show_spectrum(int);
   void slot_show_cir();
-  void slot_show_iq(int, float);
+  void slot_show_iq(int, f32);
   void slot_show_lcd_data(const OfdmDecoder::SLcdData *);
-  void slot_show_digital_peak_level(float iPeakLevel);
+  void slot_show_digital_peak_level(f32 iPeakLevel);
   void slot_show_rs_corrections(int, int);
   void slot_show_tii(const std::vector<STiiResult> & iTr);
   void slot_clock_time(int, int, int, int, int, int, int, int, int);
   void slot_start_announcement(const QString &, int);
   void slot_stop_announcement(const QString &, int);
   void slot_new_frame(int);
-  void slot_show_clock_error(float e);
+  void slot_show_clock_error(f32 e);
   void slot_set_epg_data(int, int, const QString &, const QString &);
   void slot_epg_timer_timeout();
   void slot_nr_services(int);
@@ -438,7 +438,7 @@ public slots:
   void slot_use_strongest_peak(bool);
   void slot_handle_dc_avoidance_algorithm(bool);
   void slot_handle_dc_removal(bool);
-  void slot_show_audio_peak_level(const float iPeakLeft, const float iPeakRight);
+  void slot_show_audio_peak_level(const f32 iPeakLeft, const f32 iPeakRight);
   void slot_handle_tii_collisions(bool);
   void slot_handle_tii_threshold(int);
   void slot_handle_tii_subid(int);

@@ -50,11 +50,11 @@ public:
 
   struct SDerivedData
   {
-    float strength_dB;
-    float phase_deg;
+    f32 strength_dB;
+    f32 phase_deg;
     bool  isNonEtsiPhase;
-    float distance_km;
-    float corner_deg;
+    f32 distance_km;
+    f32 corner_deg;
   };
 
   void set_window_title(const QString &);
@@ -66,7 +66,7 @@ public:
   void finish_adding();
 
 private:
-  static constexpr int32_t cColNr = 10;
+  static constexpr i32 cColNr = 10;
   QScopedPointer<QScrollArea> mpWidget;
   QScopedPointer<QTableWidget> mpTableWidget;
 };

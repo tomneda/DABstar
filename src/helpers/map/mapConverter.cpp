@@ -31,9 +31,9 @@ int	element;
 //	first a header for the out file
 	fprintf (fout, "#\n#include <stdint.h>\n");
 	fprintf (fout, "// generated map \n");
-	fprintf (fout, "static uint8_t qt_map [] = {\n");
+	fprintf (fout, "static u8 qt_map [] = {\n");
 	while ((element = fgetc (fin)) >= 0) {
-	   fprintf (fout, "%d, ", (uint8_t) element);
+	   fprintf (fout, "%d, ", (u8) element);
 	   teller ++;
 	   if (teller > 14) {
 	      fprintf (fout, "\n\t");

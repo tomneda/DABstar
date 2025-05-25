@@ -917,7 +917,7 @@ and high bandwidths are chosen because the available bits are just not enough to
 encode all frequencies well.
 
 Unfortunately some people evaluate encoding quality based on possible bandwidth
-as well, but it is a double-edged sword considering the trade-off described
+as well, but it is a f64-edged sword considering the trade-off described
 above.
 
 Another aspect is workload consumption. The higher the allowed bandwidth, the

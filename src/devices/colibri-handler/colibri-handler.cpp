@@ -47,7 +47,7 @@
 	m_loader. initialize ();
 
 	fprintf (stderr, "... and initialized\n");
-	uint32_t t_devices	= m_loader. devices ();
+	u32 t_devices	= m_loader. devices ();
 	if (t_devices == 0) {
 	   QMessageBox::critical (nullptr, "colibri",
 	                          tr ("No device available\n"));
@@ -91,7 +91,7 @@
 //	so we end up with buffers with 1 msec content
 	convBufferSize		= selectedRate / 1000;
 	for (int i = 0; i < 2048; i ++) {
-	   float inVal	= float (selectedRate / 1000);
+	   f32 inVal	= f32 (selectedRate / 1000);
 	   mapTable_int [i]	=  int (floor (i * (inVal / 2048.0)));
 	   mapTable_float [i]	= i * (inVal / 2048.0) - mapTable_int [i];
 	}
@@ -114,17 +114,17 @@
 }
 //
 
-void	colibriHandler::setVFOFrequency	(int32_t newFrequency) {
+void	colibriHandler::setVFOFrequency	(i32 newFrequency) {
         m_loader. setFrequency (m_deskriptor, newFrequency);
 	this	-> lastFrequency	= newFrequency;
 }
 
-int32_t	colibriHandler::getVFOFrequency () {
+i32	colibriHandler::getVFOFrequency () {
 	return this -> lastFrequency;
 }
 
 void	colibriHandler::set_gainControl	(int newGain) {
-float	gainValue	= -31.5 + newGain * 0.5;
+f32	gainValue	= -31.5 + newGain * 0.5;
 	if (gainValue <= 6) {
            m_loader.setPream (m_deskriptor, gainValue);
 	   actualGain	-> display (gainValue);
@@ -140,10 +140,10 @@ void	colibriHandler::handle_iqSwitcher	()  {
 }
 
 static
-bool	the_callBackRx (cmplx *buffer, uint32_t len,
+bool	the_callBackRx (cf32 *buffer, u32 len,
 	                               bool overload, void *ctx) {
 colibriHandler *p = static_cast<colibriHandler *>(ctx);
-cmplx temp [2048];
+cf32 temp [2048];
 
 	(void)overload;
 	for (int i = 0; i < len; i ++) {
@@ -151,8 +151,8 @@ cmplx temp [2048];
 	   p -> convIndex ++;
 	   if (p -> convIndex > p -> convBufferSize) {
 	      for (int j = 0; j < 2048; j ++) {
-	         int16_t  inpBase	= p -> mapTable_int [j];
-	         float	inpRatio	= p ->  mapTable_float [j];
+	         i16  inpBase	= p -> mapTable_int [j];
+	         f32	inpRatio	= p ->  mapTable_float [j];
                  temp [j]  = p -> convBuffer [inpBase + 1] * inpRatio +
                              p -> convBuffer [inpBase] * (1 - inpRatio);
               }
@@ -165,7 +165,7 @@ cmplx temp [2048];
 	return true;
 }
 
-bool	colibriHandler::restartReader	(int32_t newFrequency) {
+bool	colibriHandler::restartReader	(i32 newFrequency) {
 	if (running. load ())
 	   return true;		// should not happen
 
@@ -189,19 +189,19 @@ void	colibriHandler::stopReader() {
 	running. store (false);
 }
 
-int32_t	colibriHandler::getSamples (cmplx *V, int32_t size) {
+i32	colibriHandler::getSamples (cf32 *V, i32 size) {
 	if (iqSwitcher) {
-	   cmplx xx [size];
+	   cf32 xx [size];
 	   _I_Buffer. getDataFromBuffer (xx, size);
 	   for (int i = 0; i < size; i ++)
-	      V[i] = cmplx (imag (xx [i]), real (xx [i]));
+	      V[i] = cf32 (imag (xx [i]), real (xx [i]));
 	   return size;
 	}
 	else
 	   return _I_Buffer. getDataFromBuffer (V, size);
 }
 
-int32_t	colibriHandler::Samples () {
+i32	colibriHandler::Samples () {
 	return _I_Buffer. GetRingBufferReadAvailable ();
 }
 
@@ -209,7 +209,7 @@ void	colibriHandler::resetBuffer() {
 	_I_Buffer. FlushRingBuffer();
 }
 
-int16_t	colibriHandler::bitDepth () {
+i16	colibriHandler::bitDepth () {
 	return 16;
 }
 

@@ -65,7 +65,7 @@ private:
 
   SAudioFifo * mpCurrentFifo = nullptr;
   SAudioFifo * mpRestartFifo = nullptr;
-  float mLinearVolume = 1.0f;
+  f32 mLinearVolume = 1.0f;
   QAudioFormat mAudioFormat;
 
   void _do_stop() const;

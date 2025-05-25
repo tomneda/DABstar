@@ -28,23 +28,23 @@
     /* Store surviving metrics */\
     new_metrics[2*i] = decision0 ? m1 : m0;\
     new_metrics[2*i+1] = decision1 ? m3 : m2;\
-    *d |= (uint64_t)(decision0 | (decision1 << 1)) << (i*2);\
+    *d |= (u64)(decision0 | (decision1 << 1)) << (i*2);\
 }
 
 #define limit_min_max(sym) {\
-	int16_t tmp = *syms++;\
+	i16 tmp = *syms++;\
     tmp += 127;\
     if (tmp < 0) tmp = 0;\
     else if (tmp > 255) tmp = 255;\
     sym = tmp;\
 }
 
-	uint64_t *d = (uint64_t *)decisions;
-	memset(d, 0, nbits*sizeof(uint64_t));
+	u64 *d = (u64 *)decisions;
+	memset(d, 0, nbits*sizeof(u64));
     COMPUTETYPE *old_metrics = metrics1;
     COMPUTETYPE *new_metrics = metrics2;
     const COMPUTETYPE *Branchtab = Branchtable;
-    const int16_t *syms = input;
+    const i16 *syms = input;
 
 	while(nbits--)
     {

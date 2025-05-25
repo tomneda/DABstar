@@ -47,29 +47,29 @@ class DataProcessor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<uint8_t> * dataBuffer);
+  DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<u8> * dataBuffer);
   ~DataProcessor();
 
-  void add_to_frame(const std::vector<uint8_t> &);
+  void add_to_frame(const std::vector<u8> &);
 
 private:
   DabRadio * myRadioInterface;
-  int16_t bitRate;
-  uint8_t DSCTy;
-  int16_t appType;
-  int16_t packetAddress;
-  uint8_t DGflag;
-  int16_t FEC_scheme;
-  RingBuffer<uint8_t> * dataBuffer;
-  int16_t expectedIndex;
-  std::vector<uint8_t> series;
-  uint8_t packetState;
-  int32_t streamAddress;    // int since we init with -1
+  i16 bitRate;
+  u8 DSCTy;
+  i16 appType;
+  i16 packetAddress;
+  u8 DGflag;
+  i16 FEC_scheme;
+  RingBuffer<u8> * dataBuffer;
+  i16 expectedIndex;
+  std::vector<u8> series;
+  u8 packetState;
+  i32 streamAddress;    // int since we init with -1
 
   //	result handlers
-  void handleTDCAsyncstream(const uint8_t *, int32_t);
-  void handlePackets(const uint8_t *, int32_t);
-  void handlePacket(const uint8_t *);
+  void handleTDCAsyncstream(const u8 *, i32);
+  void handlePackets(const u8 *, i32);
+  void handlePacket(const u8 *);
   virtual_dataHandler * my_dataHandler;
   
 signals:

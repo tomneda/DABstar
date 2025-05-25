@@ -8,7 +8,7 @@
   #include <volk/volk.h>
 #endif
 
-CirViewer::CirViewer(RingBuffer<cmplx> * iCirBuffer)
+CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
   : Ui_cirWidget()
   , PhaseTable()
   , mpCirBuffer(iCirBuffer)
@@ -56,10 +56,10 @@ CirViewer::~CirViewer()
 
 void CirViewer::show_cir()
 {
-  cmplx cirbuffer[CIR_SPECTRUMSIZE];
-  constexpr int32_t sPlotLength = 385;
-  std::array<float, sPlotLength> X_axis;
-  std::array<float, sPlotLength> Y_value;
+  cf32 cirbuffer[CIR_SPECTRUMSIZE];
+  constexpr i32 sPlotLength = 385;
+  std::array<f32, sPlotLength> X_axis;
+  std::array<f32, sPlotLength> Y_value;
 
   if (mpCirBuffer->get_ring_buffer_read_available() < CIR_SPECTRUMSIZE)
   {
@@ -69,7 +69,7 @@ void CirViewer::show_cir()
 
   for(int j = 0; j < sPlotLength; j++)
   {
-    memcpy(mFftInBuffer.data(), &cirbuffer[j*512], sizeof(cmplx)*cTu);
+    memcpy(mFftInBuffer.data(), &cirbuffer[j*512], sizeof(cf32)*cTu);
     fftwf_execute(mFftPlanFwd);
 
     // into the frequency domain, now correlate
@@ -84,21 +84,21 @@ void CirViewer::show_cir()
 
     // find maximum value
 #ifdef HAVE_SSE_OR_AVX
-    alignas(64) uint32_t index;
+    alignas(64) u32 index;
     volk_32fc_index_max_32u_a(&index, mFftOutBuffer.data(), cTu);
     Y_value[j] = abs(mFftOutBuffer[index]) / 26000.0f;
 #else
-    float max = 0;
+    f32 max = 0;
     for(int i = 0; i < cTu; i++)
     {
-      const float x = norm(mFftOutBuffer[i]);
+      const f32 x = norm(mFftOutBuffer[i]);
       if(x > max)
         max = x;
       //if(x > 10000) fprintf(stderr, "j=%d, i=%d, x=%.0f\n",j,i,x);
     }
     Y_value[j] = sqrt(max) / 26000.0;
 #endif
-    X_axis[j] = (float)(j) / 4.0f; // X-axis shows ms
+    X_axis[j] = (f32)(j) / 4.0f; // X-axis shows ms
   }
 
   mpCirBuffer->flush_ring_buffer();

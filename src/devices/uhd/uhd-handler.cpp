@@ -62,7 +62,7 @@ void uhd_streamer::run()
   while (!m_stop_signal_called)
   {
     //	get write position, ignore data2 and size2
-    int32_t size;
+    i32 size;
     void * data;
     m_theStick->theBuffer->get_writable_ring_buffer_segment(10000, &data, &size);
 
@@ -74,7 +74,7 @@ void uhd_streamer::run()
     }
 
     uhd::rx_metadata_t md;
-    const auto num_rx_samps = (int32_t)m_theStick->m_rx_stream->recv(data, size, md, 1.0);
+    const auto num_rx_samps = (i32)m_theStick->m_rx_stream->recv(data, size, md, 1.0);
 
     m_theStick->theBuffer->advance_ring_buffer_write_index(num_rx_samps);
 
@@ -132,11 +132,11 @@ UhdHandler::UhdHandler(QSettings * s) :
     std::cout << boost::format("Using Device: %s") % m_usrp->get_pp_string() << std::endl;
     //	set sample rate
     m_usrp->set_rx_rate(inputRate);
-    inputRate = (int32_t)std::round(m_usrp->get_rx_rate());
+    inputRate = (i32)std::round(m_usrp->get_rx_rate());
     std::cout << boost::format("Actual RX Rate: %f Msps...") % (inputRate / 1e6) << std::endl << std::endl;
 
     //	allocate the rx buffer
-    theBuffer = new RingBuffer<cmplx>(ringbufferSize * 1024);
+    theBuffer = new RingBuffer<cf32>(ringbufferSize * 1024);
   }
   catch (...)
   {
@@ -178,21 +178,21 @@ UhdHandler::~UhdHandler()
   }
 }
 
-void UhdHandler::setVFOFrequency(int32_t freq)
+void UhdHandler::setVFOFrequency(i32 freq)
 {
   std::cout << boost::format("Setting RX Freq: %f MHz...") % (freq / 1e6) << std::endl;
   uhd::tune_request_t tune_request(freq);
   m_usrp->set_rx_freq(tune_request);
 }
 
-int32_t UhdHandler::getVFOFrequency()
+i32 UhdHandler::getVFOFrequency()
 {
-  auto freq = (int32_t)std::round(m_usrp->get_rx_freq());
+  auto freq = (i32)std::round(m_usrp->get_rx_freq());
   //std::cout << boost::format("Actual RX Freq: %f MHz...") % (freq / 1e6) << std::endl << std::endl;
   return freq;
 }
 
-bool UhdHandler::restartReader(int32_t freq)
+bool UhdHandler::restartReader(i32 freq)
 {
   setVFOFrequency(freq);
 
@@ -219,14 +219,14 @@ void UhdHandler::stopReader()
   m_workerHandle = nullptr;
 }
 
-int32_t UhdHandler::getSamples(cmplx * v, int32_t size)
+i32 UhdHandler::getSamples(cf32 * v, i32 size)
 {
   size = std::min(size, theBuffer->get_ring_buffer_read_available());
   theBuffer->get_data_from_ring_buffer(v, size);
   return size;
 }
 
-int32_t UhdHandler::Samples()
+i32 UhdHandler::Samples()
 {
   return theBuffer->get_ring_buffer_read_available();
 }
@@ -236,7 +236,7 @@ void UhdHandler::resetBuffer()
   theBuffer->flush_ring_buffer();
 }
 
-int16_t UhdHandler::bitDepth()
+i16 UhdHandler::bitDepth()
 {
   return 12;
 }
@@ -261,17 +261,17 @@ QString UhdHandler::deviceName()
   return "UHD";
 }
 
-int16_t UhdHandler::_maxGain() const
+i16 UhdHandler::_maxGain() const
 {
   uhd::gain_range_t range = m_usrp->get_rx_gain_range();
-  return (int16_t)std::round(range.stop());
+  return (i16)std::round(range.stop());
 }
 
 void UhdHandler::_slot_set_external_gain(int gain) const
 {
   std::cout << boost::format("Setting RX Gain: %f dB...") % gain << std::endl;
   m_usrp->set_rx_gain(gain);
-  //double gain_f = m_usrp->get_rx_gain();
+  //f64 gain_f = m_usrp->get_rx_gain();
   //std::cout << boost::format("Actual RX Gain: %f dB...") % gain_f << std::endl << std::endl;
 }
 
@@ -308,7 +308,7 @@ void UhdHandler::_load_save_combobox_settings(QComboBox * ipCmb, const QString &
   else
   {
     const QString h = uhdSettings->value(iName, "default").toString();
-    const int32_t k = ipCmb->findText(h);
+    const i32 k = ipCmb->findText(h);
     if (k != -1)
     {
       ipCmb->setCurrentIndex(k);

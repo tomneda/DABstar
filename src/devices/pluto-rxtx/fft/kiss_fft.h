@@ -45,14 +45,14 @@ extern "C" {
 #ifdef FIXED_POINT
 #include <sys/types.h>	
 # if (FIXED_POINT == 32)
-#  define kiss_fft_scalar int32_t
+#  define kiss_fft_scalar i32
 # else	
-#  define kiss_fft_scalar int16_t
+#  define kiss_fft_scalar i16
 # endif
 #else
 # ifndef kiss_fft_scalar
-/*  default is float */
-#   define kiss_fft_scalar float
+/*  default is f32 */
+#   define kiss_fft_scalar f32
 # endif
 #endif
 

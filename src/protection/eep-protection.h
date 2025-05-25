@@ -38,7 +38,7 @@
 class EepProtection : public Protection
 {
 public:
-  EepProtection(int16_t, int16_t);
+  EepProtection(i16, i16);
   ~EepProtection() override = default;
 };
 

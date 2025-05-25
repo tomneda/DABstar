@@ -16,10 +16,10 @@ extern "C" {
 
 struct LMS7Parameter
 {
-    uint16_t address;
-    uint8_t msb;
-    uint8_t lsb;
-    uint16_t defaultValue;
+    u16 address;
+    u8 msb;
+    u8 lsb;
+    u16 defaultValue;
     const char* name;
     const char* tooltip;
 };

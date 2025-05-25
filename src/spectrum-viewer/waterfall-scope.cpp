@@ -62,11 +62,11 @@ WaterfallScope::~WaterfallScope()
   detach();
 }
 
-void WaterfallScope::show_waterfall(const double * ipX_axis, const double * ipY1_value, const SpecViewLimits<double> & iSpecViewLimits)
+void WaterfallScope::show_waterfall(const f64 * ipX_axis, const f64 * ipY1_value, const SpecViewLimits<f64> & iSpecViewLimits)
 {
-  const int32_t orig = (int32_t)(ipX_axis[0]);
+  const i32 orig = (i32)(ipX_axis[0]);
 
-  if (const int32_t width = (int32_t)(ipX_axis[mDisplaySize - 1] - orig);
+  if (const i32 width = (i32)(ipX_axis[mDisplaySize - 1] - orig);
       mOrig != orig || mWidth != width)
   {
     mpWaterfallData = new SpectrogramData(mPlotDataVec.data(), orig, width, -mRasterSize, mDisplaySize);
@@ -78,11 +78,11 @@ void WaterfallScope::show_waterfall(const double * ipX_axis, const double * ipY1
   }
 
   // weight with slider (scale) between global and local minimum and maximum level values
-  const double yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
-  const double yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
+  const f64 yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
+  const f64 yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
   mpWaterfallData->set_min_max_z_value(yMin, yMax);
 
-  constexpr int32_t elemSize = sizeof(decltype(mPlotDataVec.back()));
+  constexpr i32 elemSize = sizeof(decltype(mPlotDataVec.back()));
   memmove(&mPlotDataVec[mDisplaySize], &mPlotDataVec[0], (mRasterSize - 1) * mDisplaySize * elemSize); // move rows one row further
   memcpy(&mPlotDataVec[0], ipY1_value, mDisplaySize * elemSize);
 
@@ -92,7 +92,7 @@ void WaterfallScope::show_waterfall(const double * ipX_axis, const double * ipY1
   mpPlotgrid->replot();
 }
 
-void WaterfallScope::_gen_color_map(const int32_t iStyleNr)
+void WaterfallScope::_gen_color_map(const i32 iStyleNr)
 {
   switch (iStyleNr)
   {
@@ -118,29 +118,29 @@ void WaterfallScope::_gen_color_map(const int32_t iStyleNr)
 
   case 2:
   {
-    constexpr int32_t COL_STEPS = 16;
+    constexpr i32 COL_STEPS = 16;
 
-    const int32_t R_start = 0x40;
-    const int32_t G_start = 0x00;
-    const int32_t B_start = 0x00;
+    const i32 R_start = 0x40;
+    const i32 G_start = 0x00;
+    const i32 B_start = 0x00;
 
-    const int32_t R_stop = 0xA0;
-    const int32_t G_stop = 0x80;
-    const int32_t B_stop = 0xFF;
+    const i32 R_stop = 0xA0;
+    const i32 G_stop = 0x80;
+    const i32 B_stop = 0xFF;
 
-    const double R_step = (double)(R_stop - R_start) / COL_STEPS;
-    const double G_step = (double)(G_stop - G_start) / COL_STEPS;
-    const double B_step = (double)(B_stop - B_start) / COL_STEPS;
+    const f64 R_step = (f64)(R_stop - R_start) / COL_STEPS;
+    const f64 G_step = (f64)(G_stop - G_start) / COL_STEPS;
+    const f64 B_step = (f64)(B_stop - B_start) / COL_STEPS;
 
     mpColorMap = new QwtLinearColorMap(Qt::black, R_stop << 16 | G_stop << 8 | B_stop);
 
     for (int colIdx = 1; colIdx < COL_STEPS; ++colIdx)
     {
-      const int32_t R_val = (int32_t)(R_step * colIdx) + R_start;
-      const int32_t G_val = (int32_t)(G_step * colIdx) + G_start;
-      const int32_t B_val = (int32_t)(B_step * colIdx) + B_start;
-      const int32_t col_val = R_val << 16 | G_val << 8 | B_val;
-      mpColorMap->addColorStop((double)colIdx / COL_STEPS, col_val);
+      const i32 R_val = (i32)(R_step * colIdx) + R_start;
+      const i32 G_val = (i32)(G_step * colIdx) + G_start;
+      const i32 B_val = (i32)(B_step * colIdx) + B_start;
+      const i32 col_val = R_val << 16 | G_val << 8 | B_val;
+      mpColorMap->addColorStop((f64)colIdx / COL_STEPS, col_val);
     }
     break;
   }
@@ -152,5 +152,5 @@ void WaterfallScope::_gen_color_map(const int32_t iStyleNr)
 
 void WaterfallScope::slot_scaling_changed(int iScale)
 {
-  mScale = (double)iScale / 100.0;
+  mScale = (f64)iScale / 100.0;
 }

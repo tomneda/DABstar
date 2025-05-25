@@ -62,7 +62,7 @@ int	get_lnaGRdB (int hwVersion, int lnaState) {
 	                                           _I_Buffer (4 * 1024 * 1024),
 	                                           myFrame (nullptr) {
 mir_sdr_ErrT	err;
-float	ver;
+f32	ver;
 mir_sdr_DeviceT devDesc [4];
 //mir_sdr_GainValuesT gainDesc;
 //sdrplaySelect	*sdrplaySelector;
@@ -129,7 +129,7 @@ mir_sdr_DeviceT devDesc [4];
 	       sdrplaySettings	-> value ("save_gainSettings", 1). toInt () != 0;
 	sdrplaySettings	-> endGroup();
 
-	err = my_mir_sdr_GetDevices (devDesc, &numofDevs, uint32_t (4));
+	err = my_mir_sdr_GetDevices (devDesc, &numofDevs, u32 (4));
 	if (err != mir_sdr_Success) {
 	   fprintf (stderr, "error at GetDevices %s \n",
 	                   errorCodes (err). toLatin1(). data());
@@ -273,11 +273,11 @@ mir_sdr_DeviceT devDesc [4];
 	releaseLibrary ();
 }
 
-int32_t	SdrPlayHandler_v2::defaultFrequency() {
+i32	SdrPlayHandler_v2::defaultFrequency() {
 	return MHz (220);
 }
 
-int32_t	SdrPlayHandler_v2::getVFOFrequency() {
+i32	SdrPlayHandler_v2::getVFOFrequency() {
 	return vfoFrequency;
 }
 
@@ -318,27 +318,27 @@ void	SdrPlayHandler_v2::set_lnagainReduction (int lnaState) {
 
 //
 static
-void myStreamCallback (int16_t		*xi,
-	               int16_t		*xq,
-	               uint32_t		firstSampleNum, 
-	               int32_t		grChanged,
-	               int32_t		rfChanged,
-	               int32_t		fsChanged,
-	               uint32_t		numSamples,
-	               uint32_t		reset,
-	               uint32_t		hwRemoved,
+void myStreamCallback (i16		*xi,
+	               i16		*xq,
+	               u32		firstSampleNum,
+	               i32		grChanged,
+	               i32		rfChanged,
+	               i32		fsChanged,
+	               u32		numSamples,
+	               u32		reset,
+	               u32		hwRemoved,
 	               void		*cbContext) {
-int16_t	i;
+i16	i;
 SdrPlayHandler_v2	*p	= static_cast<SdrPlayHandler_v2 *> (cbContext);
-std::complex<int16_t> localBuf [numSamples];
+std::complex<i16> localBuf [numSamples];
 
 	if (hwRemoved)
 	   fprintf (stderr, "Hardware removed\n");
 	if (reset || hwRemoved)
 	   return;
 	for (i = 0; i <  (int)numSamples; i ++)
-//	   localBuf [i] = std::complex<int16_t> (xq [i], xi [i]);
-	   localBuf [i] = std::complex<int16_t> (xi [i], xq [i]);
+//	   localBuf [i] = std::complex<i16> (xq [i], xi [i]);
+	   localBuf [i] = std::complex<i16> (xi [i], xq [i]);
 	int n = p -> _I_Buffer. get_ring_buffer_write_available ();
 	if (n >= (int)numSamples) 
 	   p -> _I_Buffer. put_data_into_ring_buffer (localBuf, numSamples);
@@ -351,8 +351,8 @@ std::complex<int16_t> localBuf [numSamples];
 	(void)	fsChanged;
 }
 
-void	myGainChangeCallback (uint32_t	GRdB,
-	                      uint32_t	lnaGRdB,
+void	myGainChangeCallback (u32	GRdB,
+	                      u32	lnaGRdB,
 	                      void	*cbContext) {
 //sdrplayHandler	*p	= static_cast<sdrplayHandler *> (cbContext);
 	(void)GRdB;
@@ -363,10 +363,10 @@ void	myGainChangeCallback (uint32_t	GRdB,
 
 void	SdrPlayHandler_v2::adjustFreq	(int offset) {
 //	vfoFrequency	+= offset;
-//	my_mir_sdr_SetRf ((double)(vfoFrequency), 1, 0);
+//	my_mir_sdr_SetRf ((f64)(vfoFrequency), 1, 0);
 }
 	
-bool	SdrPlayHandler_v2::restartReader	(int32_t freq) {
+bool	SdrPlayHandler_v2::restartReader	(i32 freq) {
 int	gRdBSystem;
 int	samplesPerPacket;
 mir_sdr_ErrT	err;
@@ -389,8 +389,8 @@ int	agc		= agcControl	-> isChecked () ? 1 : 0;
 	   agc		= agcControl	-> isChecked () ? 1 : 0;
 	}
 	err	= my_mir_sdr_StreamInit (&GRdB,
-	                                 double (inputRate) / MHz (1),
-	                                 double (vfoFrequency) / MHz (1),
+	                                 f64 (inputRate) / MHz (1),
+	                                 f64 (vfoFrequency) / MHz (1),
 	                                 mir_sdr_BW_1_536,
 	                                 mir_sdr_IF_Zero,
 	                                 lnaState,
@@ -407,7 +407,7 @@ int	agc		= agcControl	-> isChecked () ? 1 : 0;
 	}
 	if (err != mir_sdr_Success) 
 	   fprintf (stderr, "setting gain failed (plaats 2)\n");
-	err	= my_mir_sdr_SetPpm (double (ppmControl -> value()));
+	err	= my_mir_sdr_SetPpm (f64 (ppmControl -> value()));
 	if (err != mir_sdr_Success) 
 	   fprintf (stderr, "error = %s\n",
 	                errorCodes (err). toLatin1(). data());
@@ -481,19 +481,19 @@ mir_sdr_ErrT err;
 //
 //	The brave old getSamples. For the sdrplay, we get
 //	size still in I/Q pairs
-int32_t	SdrPlayHandler_v2::getSamples (cmplx *V, int32_t size) {
-std::complex<int16_t> temp [size];
+i32	SdrPlayHandler_v2::getSamples (cf32 *V, i32 size) {
+std::complex<i16> temp [size];
 int i;
 	int amount	= _I_Buffer. get_data_from_ring_buffer (temp, size);
 	for (i = 0; i < amount; i ++) 
-	   V [i] = cmplx (real (temp [i]) / (float) denominator,
-	                                imag (temp [i]) / (float) denominator);
+	   V [i] = cf32 (real (temp [i]) / (f32) denominator,
+	                                imag (temp [i]) / (f32) denominator);
 	if (dumping. load ()) 
 	   xmlWriter -> add (temp, amount);
 	return amount;
 }
 
-int32_t	SdrPlayHandler_v2::Samples () {
+i32	SdrPlayHandler_v2::Samples () {
 	return _I_Buffer. get_ring_buffer_read_available();
 }
 
@@ -501,7 +501,7 @@ void	SdrPlayHandler_v2::resetBuffer () {
 	_I_Buffer. flush_ring_buffer();
 }
 
-int16_t	SdrPlayHandler_v2::bitDepth () {
+i16	SdrPlayHandler_v2::bitDepth () {
 	return nrBits;
 }
 
@@ -539,8 +539,8 @@ void	SdrPlayHandler_v2::set_debugControl (int debugMode) {
 
 void	SdrPlayHandler_v2::set_ppmControl (int ppm) {
 	if (running. load()) {
-	   my_mir_sdr_SetPpm	((float)ppm);
-	   my_mir_sdr_SetRf	((float)vfoFrequency, 1, 0);
+	   my_mir_sdr_SetPpm	((f32)ppm);
+	   my_mir_sdr_SetRf	((f32)vfoFrequency, 1, 0);
 	}
 }
 
@@ -1081,7 +1081,7 @@ void	SdrPlayHandler_v2::moveTo		(QPoint p) {
 	myFrame. move (p);
 }
 
-void SdrPlayHandler_v2::setVFOFrequency(int32_t)
+void SdrPlayHandler_v2::setVFOFrequency(i32)
 {
   // TODO: implement this (needed for 'DC avoidance algorithm')
 }

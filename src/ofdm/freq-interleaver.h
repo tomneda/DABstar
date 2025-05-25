@@ -48,12 +48,12 @@ public:
 
   //	according to the standard, the map is a function from
   //	0 .. 1535 -> -768 .. 768 (with exclusion of {0})
-  [[nodiscard]] inline int16_t map_k_to_fft_bin(int16_t k) const { return mPermTable[k]; }
+  [[nodiscard]] inline i16 map_k_to_fft_bin(i16 k) const { return mPermTable[k]; }
 
 private:
-  std::vector<int16_t> mPermTable;
+  std::vector<i16> mPermTable;
 
-  void createMapper(const int16_t iV1, const int16_t iLwb, const int16_t iUpb);
+  void createMapper(const i16 iV1, const i16 iLwb, const i16 iUpb);
 };
 
 #endif

@@ -40,7 +40,7 @@
 #define CUSize  (4 * 16)
 
 //	fragmentsize == Length * CUSize
-Backend::Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<int16_t> * ipoAudiobuffer, RingBuffer<uint8_t> * ipoDatabuffer, RingBuffer<uint8_t> * frameBuffer, FILE * dump, int flag)
+Backend::Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, FILE * dump, int flag)
   : deconvolver(ipDescType)
   , outV(ipDescType->bitRate * 24)
   , driver(ipRI, ipDescType, ipoAudiobuffer, ipoDatabuffer, frameBuffer, dump)
@@ -48,7 +48,7 @@ Backend::Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<
   , freeSlots(NUMBER_SLOTS)
 #endif
 {
-  int32_t i, j;
+  i32 i, j;
   this->radioInterface = ipRI;
   this->startAddr = ipDescType->startAddr;
   this->Length = ipDescType->length;
@@ -66,7 +66,7 @@ Backend::Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<
   for (i = 0; i < 16; i++)
   {
     interleaveData[i].resize(fragmentSize);
-    memset(interleaveData[i].data(), 0, fragmentSize * sizeof(int16_t));
+    memset(interleaveData[i].data(), 0, fragmentSize * sizeof(i16));
   }
 
   countforInterleaver = 0;
@@ -74,12 +74,12 @@ Backend::Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<
 
   tempX.resize(fragmentSize);
 
-  uint8_t shiftRegister[9];
+  u8 shiftRegister[9];
   disperseVector.resize(24 * bitRate);
   memset(shiftRegister, 1, 9);
   for (i = 0; i < bitRate * 24; i++)
   {
-    uint8_t b = shiftRegister[8] ^ shiftRegister[4];
+    u8 b = shiftRegister[8] ^ shiftRegister[4];
     for (j = 8; j > 0; j--)
     {
       shiftRegister[j] = shiftRegister[j - 1];
@@ -111,7 +111,7 @@ Backend::~Backend()
 #endif
 }
 
-int32_t Backend::process(const int16_t * iV, int16_t cnt)
+i32 Backend::process(const i16 * iV, i16 cnt)
 {
   (void)cnt;
 #ifdef  __THREADED_BACKEND__
@@ -122,7 +122,7 @@ int32_t Backend::process(const int16_t * iV, int16_t cnt)
       return 0;
     }
   }
-  memcpy(theData[nextIn].data(), iV, fragmentSize * sizeof(int16_t));
+  memcpy(theData[nextIn].data(), iV, fragmentSize * sizeof(i16));
   nextIn = (nextIn + 1) % NUMBER_SLOTS;
   usedSlots.release(1);
 #else
@@ -131,11 +131,11 @@ int32_t Backend::process(const int16_t * iV, int16_t cnt)
   return 1;
 }
 
-const int16_t interleaveMap[] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
+const i16 interleaveMap[] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
-void Backend::processSegment(const int16_t * iData)
+void Backend::processSegment(const i16 * iData)
 {
-  for (int16_t i = 0; i < fragmentSize; i++)
+  for (i16 i = 0; i < fragmentSize; i++)
   {
     tempX[i] = interleaveData[(interleaverIndex + interleaveMap[i & 0x0F]) & 0x0F][i];
     interleaveData[interleaverIndex][i] = iData[i];
@@ -156,7 +156,7 @@ void Backend::processSegment(const int16_t * iData)
 
   deconvolver.deconvolve(tempX.data(), fragmentSize, outV.data());
   //	and the energy dispersal
-  for (int16_t i = 0; i < bitRate * 24; i++)
+  for (i16 i = 0; i < bitRate * 24; i++)
   {
     outV[i] ^= disperseVector[i];
   }

@@ -87,10 +87,10 @@ PhaseReference::~PhaseReference()
   *	looking for.
   */
 
-int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const float iThreshold)
+i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const f32 iThreshold)
 {
   // memcpy() is considerable faster than std::copy on my i7-6700K (nearly twice as fast for size == 2048)
-  memcpy(mFftInBuffer.data(), iV.data(), mFftInBuffer.size() * sizeof(cmplx));
+  memcpy(mFftInBuffer.data(), iV.data(), mFftInBuffer.size() * sizeof(cf32));
 
   fftwf_execute(mFftPlanFwd);
 
@@ -98,7 +98,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
 #ifdef HAVE_SSE_OR_AVX
   volk_32fc_x2_multiply_conjugate_32fc_a(mFftInBuffer.data(), mFftOutBuffer.data(), mRefTable.data(), cTu);
 #else
-  for (int32_t i = 0; i < cTu; i++)
+  for (i32 i = 0; i < cTu; i++)
   {
     mFftInBuffer[i] = mFftOutBuffer[i] * conj(mRefTable[i]);
   }
@@ -110,34 +110,34 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
   /**
     *	We compute the average and the max signal values
     */
-  float sum = 0;
+  f32 sum = 0;
 
-  for (int32_t i = 0; i < cTu; i++)
+  for (i32 i = 0; i < cTu; i++)
   {
-    const float absVal = std::abs(mFftOutBuffer[i]);
+    const f32 absVal = std::abs(mFftOutBuffer[i]);
     mCorrPeakValues[i] = absVal;
     mMeanCorrPeakValues[i] += absVal;
     sum += absVal;
   }
 
-  sum /= (float)(cTu);
+  sum /= (f32)(cTu);
   QVector<int> indices;
-  int32_t maxIndex = -1;
-  float maxL = -1000;
-  constexpr int16_t GAP_SEARCH_WIDTH = 10;
-  constexpr int16_t EXTENDED_SEARCH_REGION = 250;
-  const int16_t idxStart = cTg - EXTENDED_SEARCH_REGION;
-  const int16_t idxStop  = cTg + EXTENDED_SEARCH_REGION;
+  i32 maxIndex = -1;
+  f32 maxL = -1000;
+  constexpr i16 GAP_SEARCH_WIDTH = 10;
+  constexpr i16 EXTENDED_SEARCH_REGION = 250;
+  const i16 idxStart = cTg - EXTENDED_SEARCH_REGION;
+  const i16 idxStop  = cTg + EXTENDED_SEARCH_REGION;
   assert(idxStart >= 0);
   assert(idxStop <= (signed)mCorrPeakValues.size());
 
-  for (int16_t i = idxStart; i < idxStop; ++i)
+  for (i16 i = idxStart; i < idxStop; ++i)
   {
     if (mCorrPeakValues[i] / sum > iThreshold)
     {
       bool foundOne = true;
 
-      for (int16_t j = 1; (j < GAP_SEARCH_WIDTH) && (i + j < idxStop); j++)
+      for (i16 j = 1; (j < GAP_SEARCH_WIDTH) && (i + j < idxStop); j++)
       {
         if (mCorrPeakValues[i + j] > mCorrPeakValues[i])
         {
@@ -162,7 +162,7 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
   if (maxL / sum < iThreshold)
   {
     return -1; // no (relevant) peak found
-    //return (int32_t)(-abs(maxL / sum) - 1);
+    //return (i32)(-abs(maxL / sum) - 1);
   }
 
   // display correlation spectrum
@@ -172,12 +172,12 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
 
     if (mDisplayCounter > mFramesPerSecond / 2)
     {
-      for (int32_t i = 0; i < cTu; i++)
+      for (i32 i = 0; i < cTu; i++)
       {
         mMeanCorrPeakValues[i] /= 6;
       }
-      mpResponse->put_data_into_ring_buffer(mMeanCorrPeakValues.data(), (int32_t)mMeanCorrPeakValues.size());
-      //mpResponse->put_data_into_ring_buffer(mCorrPeakValues.data(), (int32_t)mCorrPeakValues.size());
+      mpResponse->put_data_into_ring_buffer(mMeanCorrPeakValues.data(), (i32)mMeanCorrPeakValues.size());
+      //mpResponse->put_data_into_ring_buffer(mCorrPeakValues.data(), (i32)mCorrPeakValues.size());
       emit signal_show_correlation(sum * iThreshold, indices);
       mDisplayCounter = 0;
     }
@@ -202,22 +202,22 @@ int32_t PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayT
 }
 
 //	an approach that works fine is to correlate the phase differences between subsequent carriers
-int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV)
+i16 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV)
 {
   //  The phase differences are computed once
-  for (int16_t i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
+  for (i16 i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
   {
-    const int16_t baseIndex = cTu - SEARCHRANGE / 2 + i;
+    const i16 baseIndex = cTu - SEARCHRANGE / 2 + i;
     mCorrelationVector[i] = arg(iV[baseIndex % cTu] * conj(iV[(baseIndex + 1) % cTu]));
   }
 
-  int16_t index = IDX_NOT_FOUND;
-  float MMax = 0;
+  i16 index = IDX_NOT_FOUND;
+  f32 MMax = 0;
 
-  for (int16_t i = 0; i < SEARCHRANGE; i++)
+  for (i16 i = 0; i < SEARCHRANGE; i++)
   {
-    float sum = 0;
-    for (int16_t j = 0; j < CORRELATION_LENGTH; ++j)
+    f32 sum = 0;
+    for (i16 j = 0; j < CORRELATION_LENGTH; ++j)
     {
       sum += abs(mRefArg[j] * mCorrelationVector[i + j]);
       if (sum > MMax)
@@ -233,9 +233,9 @@ int16_t PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayT
 }
 
 /*static*/
-float PhaseReference::phase(const std::vector<cmplx> & iV, const int32_t iTs)
+f32 PhaseReference::phase(const std::vector<cf32> & iV, const i32 iTs)
 {
-  cmplx sum = cmplx(0, 0);
+  cf32 sum = cf32(0, 0);
 
   for (int i = 0; i < iTs; i++)
   {

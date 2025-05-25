@@ -43,25 +43,25 @@ public:
 			colibriHandler		(QSettings *,
 	                                         bool);
 			~colibriHandler		(void);
-	bool		restartReader		(int32_t);
+	bool		restartReader		(i32);
 	void		stopReader		();
-	void		setVFOFrequency		(int32_t);
-	int32_t		getVFOFrequency		(void);
-	int32_t		getSamples		(cmplx *, int32_t);
-	int32_t		Samples			();
+	void		setVFOFrequency		(i32);
+	i32		getVFOFrequency		(void);
+	i32		getSamples		(cf32 *, i32);
+	i32		Samples			();
 	void		resetBuffer		(void);
-	int16_t		bitDepth		(void);
+	i16		bitDepth		(void);
 	void		hide			();
 	void		show			();
 	bool		isHidden		();
 	QString		deviceName		();
 
-	RingBuffer<cmplx>	_I_Buffer;
-	int16_t		convBufferSize;
-	int16_t		convIndex;
-	std::vector <cmplx>   convBuffer;
-	int16_t		mapTable_int   [2048];
-	float		mapTable_float [2048];
+	RingBuffer<cf32>	_I_Buffer;
+	i16		convBufferSize;
+	i16		convIndex;
+	std::vector <cf32>   convBuffer;
+	i16		mapTable_int   [2048];
+	f32		mapTable_float [2048];
 private:
 	QFrame			myFrame;
 	LibLoader		m_loader;

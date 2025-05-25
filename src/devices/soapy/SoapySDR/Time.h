@@ -21,7 +21,7 @@ extern "C" {
  * \param rate the ticks per second
  * \return the time in nanoseconds
  */
-SOAPY_SDR_API long long SoapySDR_ticksToTimeNs(const long long ticks, const double rate);
+SOAPY_SDR_API long long SoapySDR_ticksToTimeNs(const long long ticks, const f64 rate);
 
 /*!
  * Convert a time in nanoseconds into a tick count using the tick rate.
@@ -29,7 +29,7 @@ SOAPY_SDR_API long long SoapySDR_ticksToTimeNs(const long long ticks, const doub
  * \param rate the ticks per second
  * \return the integer tick count
  */
-SOAPY_SDR_API long long SoapySDR_timeNsToTicks(const long long timeNs, const double rate);
+SOAPY_SDR_API long long SoapySDR_timeNsToTicks(const long long timeNs, const f64 rate);
 
 #ifdef __cplusplus
 }

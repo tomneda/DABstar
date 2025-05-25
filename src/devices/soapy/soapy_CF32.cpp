@@ -52,7 +52,7 @@ int	soapy_CF32::Samples	(void) {
 	return theBuffer. GetRingBufferReadAvailable();
 }
 
-int	soapy_CF32::getSamples	(cmplx *v, int amount) {
+int	soapy_CF32::getSamples	(cf32 *v, int amount) {
 int	realAmount;
 	realAmount	= theBuffer. getDataFromBuffer (v, amount);
 	return realAmount;
@@ -61,7 +61,7 @@ int	realAmount;
 void	soapy_CF32::run	(void) {
 int     flag    = 0;
 long long int timeNS;
-cmplx buffer [4096];
+cf32 buffer [4096];
 void *const buffs [] = {buffer};
 	running	= true;
 

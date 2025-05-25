@@ -2,8 +2,8 @@
 
 struct
 {
-  uint8_t ecc;
-  uint8_t countryId;
+  u8 ecc;
+  u8 countryId;
   const char * ITU_Code;
   const char * Country;
 } ITU_table_1[] = {{ 0xE0, 0x09, "ALB", "Albania" },
@@ -82,8 +82,8 @@ struct
 
 struct
 {
-  uint8_t ecc;
-  uint8_t countryId;
+  u8 ecc;
+  u8 countryId;
   const char * ITU_Code;
   const char * Country;
 } ITU_table_4[] = {{ 0xF0, 0x0A, "AFG", "Afghanistan" },
@@ -98,7 +98,7 @@ struct
                    { 0,    0,    "",    "" }};
 
 
-QString find_ITU_code(uint8_t ecc, uint8_t countryId)
+QString find_ITU_code(u8 ecc, u8 countryId)
 {
   if ((ecc >> 4) == 0xE)
   {
@@ -123,7 +123,7 @@ QString find_ITU_code(uint8_t ecc, uint8_t countryId)
   return "";
 }
 
-QString find_Country(uint8_t ecc, uint8_t countryId)
+QString find_Country(u8 ecc, u8 countryId)
 {
   if ((ecc >> 4) == 0xE)
   {

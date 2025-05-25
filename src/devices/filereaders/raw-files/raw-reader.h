@@ -43,29 +43,29 @@ class RawReader : public QThread
 Q_OBJECT
 
 public:
-  RawReader(RawFileHandler *, FILE *, RingBuffer<cmplx> *);
+  RawReader(RawFileHandler *, FILE *, RingBuffer<cf32> *);
   ~RawReader();
 
   void stopReader();
   bool handle_continuousButton();
 
 private:
-  static constexpr int32_t BUFFERSIZE = 32768;
+  static constexpr i32 BUFFERSIZE = 32768;
 
   virtual void run();
 
   RawFileHandler * const mParent;
   FILE * const mpFile;
-  RingBuffer<cmplx> * const mpRingBuffer;
+  RingBuffer<cf32> * const mpRingBuffer;
   std::atomic<bool> mRunning;
   std::atomic<bool> continuous;
-  std::vector<uint8_t> mByteBuffer;
-  std::vector<cmplx> mCmplxBuffer;
-  int64_t mFileLength;
-  std::array<float, 256> mMapTable;
+  std::vector<u8> mByteBuffer;
+  std::vector<cf32> mCmplxBuffer;
+  i64 mFileLength;
+  std::array<f32, 256> mMapTable;
 
 signals:
-  void signal_set_progress(int, float);
+  void signal_set_progress(int, f32);
 };
 
 #endif

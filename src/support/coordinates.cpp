@@ -60,8 +60,8 @@ class MyDoubleValidator : public QDoubleValidator
     QLocale previousLocale = QLocale::system();
     QLocale::setDefault(englishLocale);
 
-    // Convert the QString to a double using the current (English, United States) locale.
-    const double val = input.toDouble();
+    // Convert the QString to a f64 using the current (English, United States) locale.
+    const f64 val = input.toDouble();
 
     // Reset the locale to its previous value.
     QLocale::setDefault(previousLocale);

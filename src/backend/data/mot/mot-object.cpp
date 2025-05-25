@@ -35,10 +35,10 @@
 #include  "mot-object.h"
 #include  "dabradio.h"
 
-MotObject::MotObject(DabRadio * mr, bool dirElement, uint16_t transportId, const uint8_t * segment, int32_t segmentSize, bool lastFlag)
+MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag)
 {
-  int32_t pointer = 7;
-  uint16_t rawContentType = 0;
+  i32 pointer = 7;
+  u16 rawContentType = 0;
 
   (void)segmentSize;
   (void)lastFlag;
@@ -64,11 +64,11 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, uint16_t transportId, const
   //	                  segmentSize, lastFlag);
   //	we are actually only interested in the name, if any
 
-  while ((uint16_t)pointer < headerSize)
+  while ((u16)pointer < headerSize)
   {
-    uint8_t PLI = (segment[pointer] & 0300) >> 6;
-    uint8_t paramId = (segment[pointer] & 077);
-    uint16_t length;
+    u8 PLI = (segment[pointer] & 0300) >> 6;
+    u8 paramId = (segment[pointer] & 077);
+    u16 length;
     switch (PLI)
     {
     case 00: pointer += 1;
@@ -95,7 +95,7 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, uint16_t transportId, const
       {
       case 12:
       {
-        for (int16_t i = 0; i < length - 1; i++)
+        for (i16 i = 0; i < length - 1; i++)
         {
           name.append((QChar)segment[pointer + i + 1]);
         }
@@ -125,7 +125,7 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, uint16_t transportId, const
   //	fprintf (stdout, "creating mot object %x\n", transportId);
 }
 
-uint16_t MotObject::get_transportId()
+u16 MotObject::get_transportId()
 {
   return transportId;
 }
@@ -135,7 +135,7 @@ uint16_t MotObject::get_transportId()
 //	established that the current slide has the right transportId
 //
 //	Note that segments do not need to come in in the right order
-void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumber, int32_t segmentSize, bool lastFlag)
+void MotObject::addBodySegment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag)
 {
   //	fprintf (stdout, "adding segment %d (size %d)\n", segmentNumber,
   //	                                                  segmentSize);
@@ -159,7 +159,7 @@ void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
   QByteArray segment;
   segment.resize(segmentSize);
 
-  for (int32_t i = 0; i < segmentSize; i++)
+  for (i32 i = 0; i < segmentSize; i++)
   {
     segment[i] = bodySegment[i];
   }
@@ -185,7 +185,7 @@ void MotObject::addBodySegment(const uint8_t * bodySegment, int16_t segmentNumbe
   }
 
   //	once we know how many segments there are/should be, we check for completeness
-  for (int32_t i = 0; i < numofSegments; i++)
+  for (i32 i = 0; i < numofSegments; i++)
   {
     if (motMap.find(i) == motMap.end())
     {

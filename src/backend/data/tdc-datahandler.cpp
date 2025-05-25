@@ -23,7 +23,7 @@
 #include  "dabradio.h"
 #include  "data_manip_and_checks.h"
 
-tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<uint8_t> * dataBuffer, int16_t /*appType*/)
+tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer, i16 /*appType*/)
 {
   myRadioInterface = mr;
   this->dataBuffer = dataBuffer;
@@ -34,26 +34,26 @@ tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<uint8_t> * dataBuffer
 #define  swap(a)  (((a) << 8) | ((a) >> 8))
 
 //---------------------------------------------------------------------------
-uint16_t usCalculCRC(uint8_t * buf, int lg)
+u16 usCalculCRC(u8 * buf, int lg)
 {
-  uint16_t crc;
+  u16 crc;
   int count;
   crc = 0xFFFF;
   for (count = 0; count < lg; count++)
   {
-    crc = (uint16_t)(swap(crc) ^ (uint16_t)buf[count]);
-    crc ^= ((uint8_t)crc) >> 4;
-    crc = (uint16_t)(crc ^ (swap((uint8_t)(crc)) << 4) ^ ((uint8_t)(crc) << 5));
+    crc = (u16)(swap(crc) ^ (u16)buf[count]);
+    crc ^= ((u8)crc) >> 4;
+    crc = (u16)(crc ^ (swap((u8)(crc)) << 4) ^ ((u8)(crc) << 5));
   }
-  return ((uint16_t)(crc ^ 0xFFFF));
+  return ((u16)(crc ^ 0xFFFF));
 }
 
-void tdc_dataHandler::add_mscDatagroup(const std::vector<uint8_t> & m)
+void tdc_dataHandler::add_mscDatagroup(const std::vector<u8> & m)
 {
-  int32_t offset = 0;
-  uint8_t * data = (uint8_t *)(m.data());
-  int32_t size = m.size();
-  int16_t i;
+  i32 offset = 0;
+  u8 * data = (u8 *)(m.data());
+  i32 size = m.size();
+  i16 i;
 
   //	we maintain offsets in bits, the "m" array has one bit per byte
   while (offset < size)
@@ -75,19 +75,19 @@ void tdc_dataHandler::add_mscDatagroup(const std::vector<uint8_t> & m)
     }
 
     //	we have a syncword
-    //	   uint16_t syncword	= getBits (data, offset,      16);
-    int16_t length = getBits(data, offset + 16, 16);
-    uint16_t crc = getBits(data, offset + 32, 16);
+    //	   u16 syncword	= getBits (data, offset,      16);
+    i16 length = getBits(data, offset + 16, 16);
+    u16 crc = getBits(data, offset + 32, 16);
 
     (void)crc;
-    uint8_t frametypeIndicator = getBits(data, offset + 48, 8);
+    u8 frametypeIndicator = getBits(data, offset + 48, 8);
     if ((length < 0) || (length >= (size - offset) / 8))
     {
       return;
     }    // garbage
     //
     //	OK, prepare to check the crc
-    uint8_t checkVector[18];
+    u8 checkVector[18];
     //
     //	first the syncword and the length
     for (i = 0; i < 4; i++)
@@ -126,11 +126,11 @@ void tdc_dataHandler::add_mscDatagroup(const std::vector<uint8_t> & m)
   }
 }
 
-int32_t tdc_dataHandler::handleFrame_type_0(uint8_t * data, int32_t offset, int32_t length)
+i32 tdc_dataHandler::handleFrame_type_0(u8 * data, i32 offset, i32 length)
 {
-  int16_t i;
-  //int16_t noS	= getBits (data, offset, 8);
-  auto * const buffer = make_vla(uint8_t, length);
+  i16 i;
+  //i16 noS	= getBits (data, offset, 8);
+  auto * const buffer = make_vla(u8, length);
 
   for (i = 0; i < length; i++)
   {
@@ -149,10 +149,10 @@ int32_t tdc_dataHandler::handleFrame_type_0(uint8_t * data, int32_t offset, int3
   return offset + length * 8;
 }
 
-int32_t tdc_dataHandler::handleFrame_type_1(uint8_t * data, int32_t offset, int32_t length)
+i32 tdc_dataHandler::handleFrame_type_1(u8 * data, i32 offset, i32 length)
 {
-  int16_t i;
-  auto * const buffer = make_vla(uint8_t, length);
+  i16 i;
+  auto * const buffer = make_vla(u8, length);
   int lOffset;
   int llengths = length - 4;
 #if 0
@@ -198,13 +198,13 @@ int32_t tdc_dataHandler::handleFrame_type_1(uint8_t * data, int32_t offset, int3
 //	component data. In the case of component data shorter
 //	than 13 bytes, the component identifier, the field
 //	length and all component data shall be taken into account.
-bool tdc_dataHandler::serviceComponentFrameheaderCRC(const uint8_t * data, int16_t offset, int16_t /*maxL*/)
+bool tdc_dataHandler::serviceComponentFrameheaderCRC(const u8 * data, i16 offset, i16 /*maxL*/)
 {
-  uint8_t testVector[18];
-  int16_t i;
-  int16_t length = getBits(data, offset + 8, 16);
-  int16_t size = length < 13 ? length : 13;
-  uint16_t crc;
+  u8 testVector[18];
+  i16 i;
+  i16 length = getBits(data, offset + 8, 16);
+  i16 size = length < 13 ? length : 13;
+  u16 crc;
 
   if (length < 0)
   {

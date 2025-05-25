@@ -28,7 +28,7 @@
 #include  "color-selector.h"
 #include "setting-helper.h"
 
-TechData::TechData(DabRadio * mr, RingBuffer<int16_t> * ipAudioBuffer)
+TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   : Ui_technical_data(),
     mpRadioInterface(mr)
   , mFrame()
@@ -297,7 +297,7 @@ void TechData::slot_show_fm(int freq)
 
 void TechData::slot_audio_data_available(int /*iNumSamples*/, int iSampleRate)
 {
-  constexpr int32_t cNumNeededSample = 1024;
+  constexpr i32 cNumNeededSample = 1024;
 
   if (mpAudioBuffer->get_ring_buffer_read_available() < cNumNeededSample)
   {
@@ -306,7 +306,7 @@ void TechData::slot_audio_data_available(int /*iNumSamples*/, int iSampleRate)
 
   if (!mFrame.isHidden())
   {
-    auto * const buffer = make_vla(int16_t, cNumNeededSample);
+    auto * const buffer = make_vla(i16, cNumNeededSample);
     mpAudioBuffer->get_data_from_ring_buffer(buffer, cNumNeededSample); // get 512 stereo samples
     mpAudioDisplay->create_spectrum(buffer, cNumNeededSample, iSampleRate);
   }
@@ -332,7 +332,7 @@ void TechData::slot_audio_dump_button_text(const QString & text, int size)
   audiodumpButton->update();
 }
 
-void TechData::slot_show_sample_rate_and_audio_flags(int32_t iSampleRate, bool iSbrUsed, bool iPsUsed)
+void TechData::slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed)
 {
   audioRate->display(iSampleRate);
   QString afs;

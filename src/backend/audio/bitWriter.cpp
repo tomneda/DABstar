@@ -33,7 +33,7 @@ void BitWriter::AddBits(int data_new, size_t count) {
 	      data.push_back (0x00);
 
 	   size_t copy_bits = std::min(count, 8 - byte_bits);
-	   uint8_t copy_data =
+	   u8 copy_data =
 	       (data_new >> (count - copy_bits)) & (0xFF >> (8 - copy_bits));
 	   data.back() |= copy_data << (8 - byte_bits - copy_bits);
 
@@ -44,7 +44,7 @@ void BitWriter::AddBits(int data_new, size_t count) {
 	}
 }
 
-void BitWriter::AddBytes (const uint8_t *data, size_t len) {
+void BitWriter::AddBytes (const u8 *data, size_t len) {
 	for(size_t i = 0; i < len; i++)
 	   AddBits (data[i], 8);
 }

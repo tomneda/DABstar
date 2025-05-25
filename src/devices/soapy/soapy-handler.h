@@ -43,20 +43,20 @@ Q_OBJECT
 public:
 			soapyHandler		(QSettings *);
 			~soapyHandler		(void);
-	void		setVFOFrequency		(int32_t);
-	int32_t		getVFOFrequency		(void);
-	int32_t		defaultFrequency	(void);
+	void		setVFOFrequency		(i32);
+	i32		getVFOFrequency		(void);
+	i32		defaultFrequency	(void);
 
-	bool		restartReader		(int32_t);
+	bool		restartReader		(i32);
 	void		stopReader		(void);
-	int32_t		getSamples		(cmplx *,
-	                                                          int32_t);
-	int32_t		Samples			(void);
+	i32		getSamples		(cf32 *,
+	                                                          i32);
+	i32		Samples			(void);
 	void		resetBuffer		(void);
 	void		show			();
 	void		hide			();
 	bool		isHidden		();
-	int16_t		bitDepth		(void);
+	i16		bitDepth		(void);
 private:
 	QFrame			myFrame;
 	SoapySDR::Device	*device;

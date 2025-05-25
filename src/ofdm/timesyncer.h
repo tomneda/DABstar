@@ -49,11 +49,11 @@ public:
   EState read_samples_until_end_of_level_drop();
 
 private:
-  static constexpr int32_t cSyncBufferSize = 4096;
-  static constexpr int32_t cLevelSearchSize = 50;
+  static constexpr i32 cSyncBufferSize = 4096;
+  static constexpr i32 cLevelSearchSize = 50;
 
   SampleReader * const mpSampleReader;
-  int32_t mSyncBufferIndex = 0;
+  i32 mSyncBufferIndex = 0;
 };
 
 #endif

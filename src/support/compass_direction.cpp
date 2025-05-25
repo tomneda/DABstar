@@ -16,11 +16,11 @@
 #include <cmath>
 
 // Function to find the compass direction for a given angle
-/*static*/ std::string CompassDirection::get_compass_direction(double iAngleInDegree)
+/*static*/ std::string CompassDirection::get_compass_direction(f64 iAngleInDegree)
 {
   struct SAngleDirection
   {
-    const double angle;
+    const f64 angle;
     std::string direction;
   };
 
@@ -43,11 +43,11 @@
 
   // Determine the closest direction
   std::string pResult = "N";
-  double minDiff = 360.0;
+  f64 minDiff = 360.0;
 
   for (const auto & point : compassPoints)
   {
-    if (double diff = std::abs(iAngleInDegree - point.angle);
+    if (f64 diff = std::abs(iAngleInDegree - point.angle);
         diff < minDiff)
     {
       minDiff = diff;

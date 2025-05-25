@@ -12,10 +12,10 @@
 #include <SoapySDR/Config.h>
 #include <stddef.h> //size_t
 
-//! Complex 64-bit floats (complex double)
+//! Complex 64-bit floats (complex f64)
 #define SOAPY_SDR_CF64 "CF64"
 
-//! Complex 32-bit floats (complex float)
+//! Complex 32-bit floats (complex f32)
 #define SOAPY_SDR_CF32 "CF32"
 
 //! Complex signed 32-bit integers (complex int32)
@@ -48,10 +48,10 @@
 //! Complex unsigned 4-bit integers (1 byte)
 #define SOAPY_SDR_CU4 "CU4"
 
-//! Real 64-bit floats (double)
+//! Real 64-bit floats (f64)
 #define SOAPY_SDR_F64 "F64"
 
-//! Real 32-bit floats (float)
+//! Real 32-bit floats (f32)
 #define SOAPY_SDR_F32 "F32"
 
 //! Real signed 32-bit integers (int32)

@@ -31,10 +31,10 @@
 //	basic functions, it reads the bytes, converts them to
 //	samples and converts the rate to 2048000
 //	
-	eladWorker::eladWorker (int32_t		eladFrequency,
+	eladWorker::eladWorker (i32		eladFrequency,
 	                        eladLoader	*f,
 	                        eladHandler	*h,
-	                        RingBuffer<uint8_t> *_O_Buffer,
+	                        RingBuffer<u8> *_O_Buffer,
 	                        bool	*OK) {
 	fprintf (stderr, "creating a worker\n");
 	(void)h;
@@ -62,7 +62,7 @@ void	eladWorker::stop	(void) {
 }
 
 #define	BUFFER_SIZE	(8 * 8192)
-uint8_t	buffer [BUFFER_SIZE];
+u8	buffer [BUFFER_SIZE];
 //
 //	The libusb function is synchronous, meaning that
 //	we do not have time to do the conversion from 3072
@@ -70,7 +70,7 @@ uint8_t	buffer [BUFFER_SIZE];
 //	So here we convert the samplestream to a stream of
 //	complex IQ samples, and pass them on
 void	eladWorker:: run (void) {
-int32_t	amount;
+i32	amount;
 int	rc;
 
 	running. store (false);
@@ -86,8 +86,8 @@ int	rc;
 	while (running. load ()) {
 	   rc = libusb_bulk_transfer (functions -> getHandle (),
 	                              (6 | LIBUSB_ENDPOINT_IN),
-	                              (uint8_t *)buffer,
-	                              BUFFER_SIZE * sizeof (uint8_t),
+	                              (u8 *)buffer,
+	                              BUFFER_SIZE * sizeof (u8),
 	                              &amount,
 	                              2000);
 	   if (rc) {

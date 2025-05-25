@@ -14,6 +14,7 @@
 #ifndef CUSTOMZOOMPAN_H
 #define CUSTOMZOOMPAN_H
 
+#include "glob_data_types.h"
 #include <QObject>
 #include <QMouseEvent>
 #include <QWheelEvent>
@@ -27,17 +28,17 @@ class CustQwtZoomPan : public QObject
 public:
   struct SRange
   {
-    explicit SRange(const double iMinDefault = 0, const double iMaxDefault = 0,
-                    const double iMinZoomOutDelta = 0, const double iMaxZoomOutDelta = 0)
+    explicit SRange(const f64 iMinDefault = 0, const f64 iMaxDefault = 0,
+                    const f64 iMinZoomOutDelta = 0, const f64 iMaxZoomOutDelta = 0)
       : MinDefault(iMinDefault)
       , MaxDefault(iMaxDefault)
       , MinZoomOutDelta(iMinZoomOutDelta)
       , MaxZoomOutDelta(iMaxZoomOutDelta) {}
 
-    double MinDefault = 0;
-    double MaxDefault = 0;
-    double MinZoomOutDelta = 0;
-    double MaxZoomOutDelta = 0;
+    f64 MinDefault = 0;
+    f64 MaxDefault = 0;
+    f64 MinZoomOutDelta = 0;
+    f64 MaxZoomOutDelta = 0;
   };
 
 
@@ -53,14 +54,14 @@ protected:
   bool eventFilter(QObject * object, QEvent * event) override;
 
 private:
-  static constexpr double cMaxZoomFactor = 100.0;
+  static constexpr f64 cMaxZoomFactor = 100.0;
 
   QwtPlot * const mpQwtPlot;
 
   struct SInitData
   {
     SRange Range{};
-    double MinNrPoints = 0;
+    f64 MinNrPoints = 0;
     bool IsZoomed = false;
     bool AllowChange = false;
   };

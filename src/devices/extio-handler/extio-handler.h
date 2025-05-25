@@ -40,7 +40,7 @@ class		virtualReader;
 #define	STDCALL 
 #endif
 
-typedef	int	(*pfnExtIOCallback) (int cnt, int status, float IQoffs, void *IQdata);
+typedef	int	(*pfnExtIOCallback) (int cnt, int status, f32 IQoffs, void *IQdata);
 typedef bool (STDCALL *pfnDllMain)(HINSTANCE, DWORD, LPVOID);
 typedef bool (STDCALL *pfnInitHW)(char *, char *, int& ); // 
 typedef bool (STDCALL *pfnOpenHW)(void);
@@ -57,7 +57,7 @@ typedef void (STDCALL *pfnRawDataReady)(long, void *, void *, int);
 typedef void (STDCALL *pfnShowGUI)(void);
 typedef void (STDCALL *pfnHideGUI)(void);
 typedef long (STDCALL *pfnGetTune)(void);
-typedef	uint8_t (STDCALL *pfnGetMode)(void);
+typedef	u8 (STDCALL *pfnGetMode)(void);
 typedef void (STDCALL *pfnModeChanged)(char);
 typedef void (STDCALL *pfnTuneChanged)(long freq);
 typedef void (STDCALL *pfnIfLimitsChanged)(long low, long high);
@@ -85,7 +85,7 @@ typedef enum {
   , exthwUSBdata32  = 6 // the hardware does its own digitization and the audio data are returned to Winrad
                         // via the callback device. Data are in 32-bit  integer format, little endian.
   , exthwUSBfloat32 = 7 // the hardware does its own digitization and the audio data are returned to Winrad
-                        // via the callback device. Data are in 32-bit  float format, little endian.
+                        // via the callback device. Data are in 32-bit  f32 format, little endian.
   , exthwHPSDR      = 8 // for HPSDR only!
 } extHWtypeT;
 
@@ -175,17 +175,17 @@ Q_OBJECT
 public:
 			extioHandler		(QSettings *);
 			~extioHandler		(void);
-	int32_t		getRate			(void);
-	void		setVFOFrequency		(int32_t);
-	int32_t		getVFOFrequency		(void);
-	int32_t		defaultFrequency	(void);
+	i32		getRate			(void);
+	void		setVFOFrequency		(i32);
+	i32		getVFOFrequency		(void);
+	i32		defaultFrequency	(void);
 
-	bool		restartReader		(int32_t);
+	bool		restartReader		(i32);
 	void		stopReader		(void);
-	int32_t		Samples			(void);
-	int32_t		getSamples		(cmplx *,
-	                                                        int32_t);
-	int16_t		bitDepth		(void);
+	i32		Samples			(void);
+	i32		getSamples		(cf32 *,
+	                                                        i32);
+	i16		bitDepth		(void);
 	long		GetHWLO			(void);	// should be available
 	long		GetHWSR			(void); // may be a noop
 //
@@ -193,12 +193,12 @@ public:
 	virtualReader	*theReader;
 	bool		isStarted;
 private:
-	int32_t		base_16;
-	int32_t		base_24;
-	int32_t		base_32;
-	int32_t		inputRate;
+	i32		base_16;
+	i32		base_24;
+	i32		base_32;
+	i32		inputRate;
 	bool		loadFunctions	(void);
-	RingBuffer<cmplx>	*_I_Buffer;
+	RingBuffer<cf32>	*_I_Buffer;
 //	functions to be extracted from the dll
 	pfnDllMain	DllMain;	// maybe available
 	pfnInitHW	InitHW;		// should be available

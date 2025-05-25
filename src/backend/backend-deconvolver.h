@@ -40,7 +40,7 @@ public:
   explicit BackendDeconvolver(const DescriptorType * d);
   ~BackendDeconvolver();
 
-  void deconvolve(const int16_t * rawBits_in, int32_t length, uint8_t * outData);
+  void deconvolve(const i16 * rawBits_in, i32 length, u8 * outData);
   
 private:
   Protection * protectionHandler;

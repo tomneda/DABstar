@@ -85,27 +85,27 @@ public:
   void stop_eti_generator();
   void reset_eti_generator();
   void set_scan_mode(bool);
-  void add_bb_freq(int32_t iFreqOffHz);
+  void add_bb_freq(i32 iFreqOffHz);
   void activate_cir_viewer(bool iActivate);
 
   //	inheriting from our delegates
   //	for the FicHandler:
-  QString find_service(uint32_t, int);
-  void get_parameters(const QString &, uint32_t *, int *);
+  QString find_service(u32, int);
+  void get_parameters(const QString &, u32 *, int *);
   std::vector<SServiceId> get_services();
   bool is_audio_service(const QString & s);
   bool is_packet_service(const QString & s);
   void get_data_for_audio_service(const QString &, Audiodata *);
-  void get_data_for_packet_service(const QString &, Packetdata *, int16_t);
-  int get_sub_channel_id(const QString &, uint32_t);
-  uint8_t get_ecc();
-  int32_t get_ensemble_id();
+  void get_data_for_packet_service(const QString &, Packetdata *, i16);
+  int get_sub_channel_id(const QString &, u32);
+  u8 get_ecc();
+  i32 get_ensemble_id();
   QString get_ensemble_name();
-  uint16_t get_country_name();
-  void set_epg_data(int32_t, int32_t, const QString &, const QString &);
-  bool has_time_table(uint32_t);
-  std::vector<SEpgElement> find_epg_data(uint32_t);
-  uint32_t get_julian_date();
+  u16 get_country_name();
+  void set_epg_data(i32, i32, const QString &, const QString &);
+  bool has_time_table(u32);
+  std::vector<SEpgElement> find_epg_data(u32);
+  u32 get_julian_date();
   QStringList basicPrint();
   int scan_width();
   void start_ficDump(FILE *);
@@ -115,14 +115,14 @@ public:
   void reset_services();
   void stop_service(DescriptorType *, int);
   void stop_service(int, int);
-  bool set_audio_channel(const Audiodata * d, RingBuffer<int16_t> * b, FILE * dump, int flag);
-  bool set_data_channel(Packetdata *, RingBuffer<uint8_t> *, int);
+  bool set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, FILE * dump, int flag);
+  bool set_data_channel(Packetdata *, RingBuffer<u8> *, int);
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);
   void set_tii_processing(bool);
-  void set_tii_threshold(uint8_t);
-  void set_tii_sub_id(uint8_t);
+  void set_tii_threshold(u8);
+  void set_tii_sub_id(u8);
   void set_tii_collisions(bool);
 
 private:
@@ -135,33 +135,33 @@ private:
   OfdmDecoder mOfdmDecoder;
   etiGenerator mEtiGenerator;
   TimeSyncer mTimeSyncer;
-  const float mcThreshold;
-  const int16_t mcTiiFramesToCount;
-  uint8_t mTiiThreshold;
+  const f32 mcThreshold;
+  const i16 mcTiiFramesToCount;
+  u8 mTiiThreshold;
   bool mScanMode = false;
-  int16_t mTiiCounter = 0;
+  i16 mTiiCounter = 0;
   bool mEti_on = false;
   bool mEnableTii = false;
   bool mCorrectionNeeded = true;
-  float mPhaseOffsetCyclPrefRad = 0.0f;
-  float mFreqOffsCylcPrefHz = 0.0f;
-  float mFreqOffsSyncSymb = 0.0f;
-  int32_t mFreqOffsBBAddedHz = 0;
-  int32_t mFreqOffsBBHz = 0;
-  int32_t mFreqOffsRFHz = 0;
-  int32_t mTimeSyncAttemptCount = 0;
-  int32_t mClockOffsetTotalSamples = 0;
-  int32_t mClockOffsetFrameCount = 0;
+  f32 mPhaseOffsetCyclPrefRad = 0.0f;
+  f32 mFreqOffsCylcPrefHz = 0.0f;
+  f32 mFreqOffsSyncSymb = 0.0f;
+  i32 mFreqOffsBBAddedHz = 0;
+  i32 mFreqOffsBBHz = 0;
+  i32 mFreqOffsRFHz = 0;
+  i32 mTimeSyncAttemptCount = 0;
+  i32 mClockOffsetTotalSamples = 0;
+  i32 mClockOffsetFrameCount = 0;
   bool mRfFreqShiftUsed = false;
   bool mAllowRfFreqShift = false;
   bool mInputOverdrivenShown = false;
-  RingBuffer<cmplx> * mpCirBuffer = nullptr;
+  RingBuffer<cf32> * mpCirBuffer = nullptr;
 
   alignas(64) TArrayTn mOfdmBuffer;
   alignas(64) TArrayTu mFftInBuffer;
   alignas(64) TArrayTu mFftOutBuffer;
   fftwf_plan mFftPlan;
-  std::vector<int16_t> mBits;
+  std::vector<i16> mBits;
 
 #ifdef DO_TIME_MEAS
   TimeMeas mTimeMeas{"decode_symbol", 1000};
@@ -170,12 +170,12 @@ private:
   void run() override; // the new QThread
 
   bool _state_wait_for_time_sync_marker();
-  bool _state_eval_sync_symbol(int32_t & oSampleCount, float iThreshold);
-  void _state_process_rest_of_frame(int32_t & ioSampleCount);
-  float _process_ofdm_symbols_1_to_L(int32_t & ioSampleCount);
-  void _process_null_symbol(int32_t & ioSampleCount);
-  void _set_rf_freq_offs_Hz(float iFreqHz);
-  void _set_bb_freq_offs_Hz(float iFreqHz);
+  bool _state_eval_sync_symbol(i32 & oSampleCount, f32 iThreshold);
+  void _state_process_rest_of_frame(i32 & ioSampleCount);
+  f32 _process_ofdm_symbols_1_to_L(i32 & ioSampleCount);
+  void _process_null_symbol(i32 & ioSampleCount);
+  void _set_rf_freq_offs_Hz(f32 iFreqHz);
+  void _set_bb_freq_offs_Hz(f32 iFreqHz);
 
 public slots:
   void slot_select_carrier_plot_type(ECarrierPlotType iPlotType);
@@ -187,10 +187,10 @@ signals:
   void signal_no_signal_found();
   void signal_show_tii(const std::vector<STiiResult> & iTr);
   void signal_show_spectrum(int);
-  void signal_show_clock_err(float);
+  void signal_show_clock_err(f32);
   void signal_set_and_show_freq_corr_rf_Hz(int);
   void signal_show_freq_corr_bb_Hz(int);
-  void signal_linear_peak_level(float);
+  void signal_linear_peak_level(f32);
 };
 
 #endif

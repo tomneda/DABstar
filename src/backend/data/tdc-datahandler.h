@@ -32,18 +32,18 @@ class tdc_dataHandler : public virtual_dataHandler
 {
 Q_OBJECT
 public:
-  tdc_dataHandler(DabRadio *, RingBuffer<uint8_t> *, int16_t);
+  tdc_dataHandler(DabRadio *, RingBuffer<u8> *, i16);
   ~tdc_dataHandler() override = default;
 
-  void add_mscDatagroup(const std::vector<uint8_t> &) override;
+  void add_mscDatagroup(const std::vector<u8> &) override;
 
 private:
   DabRadio * myRadioInterface;
-  RingBuffer<uint8_t> * dataBuffer;
+  RingBuffer<u8> * dataBuffer;
 
-  int32_t handleFrame_type_0(uint8_t * data, int32_t offset, int32_t length);
-  int32_t handleFrame_type_1(uint8_t * data, int32_t offset, int32_t length);
-  bool serviceComponentFrameheaderCRC(const uint8_t *, int16_t, int16_t);
+  i32 handleFrame_type_0(u8 * data, i32 offset, i32 length);
+  i32 handleFrame_type_1(u8 * data, i32 offset, i32 length);
+  bool serviceComponentFrameheaderCRC(const u8 *, i16, i16);
 
 signals:
   void bytesOut(int, int);

@@ -43,18 +43,18 @@ public:
     const char * Name;
     QString ToolTip;
 
-    double YTopValue;
-    double YBottomValue;
-    double YTopValueRangeExt = 0;    // this zoom range extension value must be zero or positive
-    double YBottomValueRangeExt = 0; // this zoom range extension value must be zero or negative
-    int32_t YValueElementNo = 0;
-    int32_t MarkerYValueStep = 0; // if not each Y value a marker should set (0 = to set no marker)
+    f64 YTopValue;
+    f64 YBottomValue;
+    f64 YTopValueRangeExt = 0;    // this zoom range extension value must be zero or positive
+    f64 YBottomValueRangeExt = 0; // this zoom range extension value must be zero or negative
+    i32 YValueElementNo = 0;
+    i32 MarkerYValueStep = 0; // if not each Y value a marker should set (0 = to set no marker)
     bool DrawXGrid = true;
     bool DrawYGrid = true;
     bool DrawTiiSegments = false;
   };
 
-  void display_carrier_plot(const std::vector<float> & iYValVec);
+  void display_carrier_plot(const std::vector<f32> & iYValVec);
   void select_plot_type(const ECarrierPlotType iPlotType);
   static QStringList get_plot_type_names();
 
@@ -65,8 +65,8 @@ private:
   QwtPlotGrid mQwtGrid;
   std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
   std::vector<QwtPlotMarker *> mQwtPlotTiiMarkerVec;
-  std::vector<float> mX_axis_vec;
-  int32_t mDataSize = 0;
+  std::vector<f32> mX_axis_vec;
+  i32 mDataSize = 0;
   ECarrierPlotType mPlotType = ECarrierPlotType::DEFAULT;
   bool mPlotTypeChanged = false;
 

@@ -1,10 +1,10 @@
 #ifndef  RSP_DEVICE_H
 #define  RSP_DEVICE_H
 
-#include  <QObject>
-#include  <cstdint>
-#include  <cstdio>
-#include  <sdrplay_api.h>
+#include "glob_data_types.h"
+#include <QObject>
+#include <cstdio>
+#include <sdrplay_api.h>
 
 class SdrPlayHandler_v3;
 
@@ -21,7 +21,7 @@ protected:
 
 public:
   Rsp_device(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenDevice,
-             int startFrequency, bool agcMode, int lnaState, int GRdB, double ppmValue);
+             int startFrequency, bool agcMode, int lnaState, int GRdB, f64 ppmValue);
   ~Rsp_device() override;
 
   virtual int lnaStates(int frequency);
@@ -29,7 +29,7 @@ public:
   bool set_agc(int setPoint, bool on);
   virtual bool set_lna(int lnaState);
   bool set_GRdB(int GRdBValue);
-  bool set_ppm(double ppm);
+  bool set_ppm(f64 ppm);
   virtual bool set_antenna(int antenna);
   virtual bool set_amPort(int amPort);
   virtual bool set_biasT(bool biasT);

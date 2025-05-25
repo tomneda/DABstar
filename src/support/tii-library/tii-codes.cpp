@@ -139,7 +139,7 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
 }
 
 const SCacheElem * TiiHandler::get_transmitter_name(const QString & channel,
-                                                    uint16_t Eid, uint8_t mainId, uint8_t subId)
+                                                    u16 Eid, u8 mainId, u8 subId)
 {
   //fprintf(stdout, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
 
@@ -157,7 +157,7 @@ const SCacheElem * TiiHandler::get_transmitter_name(const QString & channel,
   return nullptr;
 }
 
-void TiiHandler::get_coordinates(float * latitude, float * longitude, float * power, const QString & channel, const QString & transmitter)
+void TiiHandler::get_coordinates(f32 * latitude, f32 * longitude, f32 * power, const QString & channel, const QString & transmitter)
 {
   for (const auto & i : mContentCacheVec)
   {
@@ -176,34 +176,34 @@ void TiiHandler::get_coordinates(float * latitude, float * longitude, float * po
 //	Great circle distance https://towardsdatascience.com/calculating-the-distance-between-two-locations-using-geocodes-1136d810e517 and
 //	https://www.movable-type.co.uk/scripts/latlong.html
 //	Haversine formula applied
-double TiiHandler::_distance_2(float latitude1, float longitude1, float latitude2, float longitude2) const
+f64 TiiHandler::_distance_2(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitude2) const
 {
-  double R = 6371;
-  double Phi1 = latitude1 * M_PI / 180;
-  double Phi2 = latitude2 * M_PI / 180;
-  //double	dPhi	= (latitude2 - latitude1) * M_PI / 180;
-  double dDelta = (longitude2 - longitude1) * M_PI / 180;
+  f64 R = 6371;
+  f64 Phi1 = latitude1 * M_PI / 180;
+  f64 Phi2 = latitude2 * M_PI / 180;
+  //f64	dPhi	= (latitude2 - latitude1) * M_PI / 180;
+  f64 dDelta = (longitude2 - longitude1) * M_PI / 180;
 
   if ((latitude2 == 0) || (longitude2 == 0))
   {
     return -32768;
   }
-  //double a = sin(dPhi / 2) * sin(dPhi / 2) + cos(Phi1) * cos(Phi2) * sin(dDelta / 2) * sin(dDelta / 2);
-  //double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+  //f64 a = sin(dPhi / 2) * sin(dPhi / 2) + cos(Phi1) * cos(Phi2) * sin(dDelta / 2) * sin(dDelta / 2);
+  //f64 c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-  double x = dDelta * cos((Phi1 + Phi2) / 2);
-  double y = (Phi2 - Phi1);
-  double d = sqrt(x * x + y * y);
+  f64 x = dDelta * cos((Phi1 + Phi2) / 2);
+  f64 y = (Phi2 - Phi1);
+  f64 d = sqrt(x * x + y * y);
 
   //return (int)(R * c + 0.5);
   return (R * d + 0.5);
 }
 
-float TiiHandler::distance(float latitude1, float longitude1, float latitude2, float longitude2) const
+f32 TiiHandler::distance(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitude2) const
 {
   bool dy_sign = latitude1 > latitude2;
-  double dx;
-  double dy = _distance_2(latitude1, longitude2, latitude2, longitude2);
+  f64 dx;
+  f64 dy = _distance_2(latitude1, longitude2, latitude2, longitude2);
   if (dy_sign)
   {    // lat1 is "higher" than lat2
     dx = _distance_2(latitude1, longitude1, latitude1, longitude2);
@@ -212,15 +212,15 @@ float TiiHandler::distance(float latitude1, float longitude1, float latitude2, f
   {
     dx = _distance_2(latitude2, longitude1, latitude2, longitude2);
   }
-  return (float) sqrt(dx * dx + dy * dy);
+  return (f32) sqrt(dx * dx + dy * dy);
 }
 
-float TiiHandler::corner(float latitude1, float longitude1, float latitude2, float longitude2) const
+f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitude2) const
 {
   bool dx_sign = longitude1 - longitude2 > 0;
   bool dy_sign = latitude1 - latitude2 > 0;
-  float dx;
-  float dy = distance(latitude1, longitude2, latitude2, longitude2);
+  f32 dx;
+  f32 dy = distance(latitude1, longitude2, latitude2, longitude2);
   if (dy_sign)
   {    // lat1 is "higher" than lat2
     dx = distance(latitude1, longitude1, latitude1, longitude2);
@@ -229,7 +229,7 @@ float TiiHandler::corner(float latitude1, float longitude1, float latitude2, flo
   {
     dx = distance(latitude2, longitude1, latitude2, longitude2);
   }
-  const float azimuth = std::atan2(dy, dx);
+  const f32 azimuth = std::atan2(dy, dx);
 
   if (dx_sign && dy_sign)
   {    // first quadrant
@@ -246,7 +246,7 @@ float TiiHandler::corner(float latitude1, float longitude1, float latitude2, flo
   return ((3 * F_M_PI_2 + azimuth) / F_M_PI * 180);
 }
 
-bool TiiHandler::is_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
+bool TiiHandler::is_black(u16 Eid, u8 mainId, u8 subId)
 {
   for (auto & i : mBlackListVec)
   {
@@ -258,7 +258,7 @@ bool TiiHandler::is_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
   return false;
 }
 
-void TiiHandler::set_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
+void TiiHandler::set_black(u16 Eid, u8 mainId, u8 subId)
 {
   SBlackListElem element;
   element.Eid = Eid;
@@ -267,10 +267,10 @@ void TiiHandler::set_black(uint16_t Eid, uint8_t mainId, uint8_t subId)
   mBlackListVec.push_back(element);
 }
 
-float TiiHandler::_convert(const QString & s) const
+f32 TiiHandler::_convert(const QString & s) const
 {
   bool flag;
-  float v;
+  f32 v;
   v = s.trimmed().toFloat(&flag);
   if (!flag)
   {
@@ -279,10 +279,10 @@ float TiiHandler::_convert(const QString & s) const
   return v;
 }
 
-uint16_t TiiHandler::_get_E_id(const QString & s) const
+u16 TiiHandler::_get_E_id(const QString & s) const
 {
   bool flag;
-  uint16_t res;
+  u16 res;
   res = s.trimmed().toInt(&flag, 16);
   if (!flag)
   {
@@ -291,10 +291,10 @@ uint16_t TiiHandler::_get_E_id(const QString & s) const
   return res;
 }
 
-uint8_t TiiHandler::_get_main_id(const QString & s) const
+u8 TiiHandler::_get_main_id(const QString & s) const
 {
   bool flag;
-  uint16_t res;
+  u16 res;
   res = s.trimmed().toInt(&flag);
   if (!flag)
   {
@@ -303,10 +303,10 @@ uint8_t TiiHandler::_get_main_id(const QString & s) const
   return res / 100;
 }
 
-uint8_t TiiHandler::_get_sub_id(const QString & s) const
+u8 TiiHandler::_get_sub_id(const QString & s) const
 {
   bool flag;
-  uint16_t res;
+  u16 res;
   res = s.trimmed().toInt(&flag);
   if (!flag)
   {
@@ -317,7 +317,7 @@ uint8_t TiiHandler::_get_sub_id(const QString & s) const
 
 void TiiHandler::_read_file(QFile & fp)
 {
-  uint32_t count = 0;
+  u32 count = 0;
   std::array<char, 1024> buffer;
   std::vector<QString> columnVector;
 

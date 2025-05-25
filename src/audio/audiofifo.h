@@ -37,10 +37,10 @@
 
 struct SAudioFifo
 {
-  static constexpr int32_t cAudioFifoSizeSamplesBothChannels = 131072;
-  static constexpr int32_t cAudioFifoSizeBytesBothChannels = cAudioFifoSizeSamplesBothChannels * sizeof(int16_t);
-  RingBuffer<int16_t> * pRingbuffer;
-  uint32_t sampleRate;
+  static constexpr i32 cAudioFifoSizeSamplesBothChannels = 131072;
+  static constexpr i32 cAudioFifoSizeBytesBothChannels = cAudioFifoSizeSamplesBothChannels * sizeof(i16);
+  RingBuffer<i16> * pRingbuffer;
+  u32 sampleRate;
 };
 
 #endif // AUDIOFIFO_H

@@ -40,8 +40,8 @@
 #include "iqdisplay.h"
 #include "setting-helper.h"
 
-SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cmplx> * ipSpecBuffer,
-                               RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer, RingBuffer<float> * ipCorrBuffer) :
+SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cf32> * ipSpecBuffer,
+                               RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer, RingBuffer<f32> * ipCorrBuffer) :
   Ui_scopeWidget(),
   mpRadioInterface(ipRI),
   mpDabSettings(ipDabSettings),
@@ -77,8 +77,8 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
 
   connect(sliderRfScopeZoom, &QSlider::valueChanged, mpWaterfallScope, &WaterfallScope::slot_scaling_changed);
   connect(sliderRfScopeZoom, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
-  connect(cmbCarrier, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
-  connect(cmbIqScope, qOverload<int32_t>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
+  connect(cmbCarrier, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
+  connect(cmbIqScope, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
   connect(cbNomChIdx, &QCheckBox::checkStateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
 #else
@@ -104,10 +104,10 @@ SpectrumViewer::~SpectrumViewer()
   fftwf_destroy_plan(mFftPlan);
 }
 
-bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<double>::SMaxMin & ioMaxMin) const
+bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<f64>::SMaxMin & ioMaxMin) const
 {
-  constexpr double cMinShownLevel = -99.0;
-  constexpr double cMinLevelRange = 20.0;
+  constexpr f64 cMinShownLevel = -99.0;
+  constexpr f64 cMinLevelRange = 20.0;
   bool limitChanged = false;
 
   // first avoid drifting down lower than -99dB, as the display content will jump then, keep the top level for the first
@@ -121,7 +121,7 @@ bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<double>::SMaxM
   if (ioMaxMin.Max - ioMaxMin.Min < cMinLevelRange)
   {
     limitChanged = true;
-    const double mean = (ioMaxMin.Max + ioMaxMin.Min) / 2;
+    const f64 mean = (ioMaxMin.Max + ioMaxMin.Min) / 2;
     ioMaxMin.Min = mean - cMinLevelRange / 2;
     ioMaxMin.Max = mean + cMinLevelRange / 2;
     if (ioMaxMin.Min < cMinShownLevel) // maybe we shifted now too low? -> correct this
@@ -133,9 +133,9 @@ bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<double>::SMaxM
   return limitChanged;
 }
 
-void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
+void SpectrumViewer::show_spectrum(i32 vfoFrequency)
 {
-  constexpr int32_t averageCount = 5;
+  constexpr i32 averageCount = 5;
 
   if (mpSpectrumBuffer->get_ring_buffer_read_available() < SP_SPECTRUMSIZE)
   {
@@ -153,15 +153,15 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
   if (vfoFrequency != mLastVcoFreq) // same a bit time
   {
     mLastVcoFreq = vfoFrequency;
-    constexpr double temp = (double)INPUT_RATE / 2 / SP_DISPLAYSIZE;
-    for (int32_t i = 0; i < SP_DISPLAYSIZE; i++)
+    constexpr f64 temp = (f64)INPUT_RATE / 2 / SP_DISPLAYSIZE;
+    for (i32 i = 0; i < SP_DISPLAYSIZE; i++)
     {
-      mXAxisVec[i] = ((double)vfoFrequency - (double)(INPUT_RATE / 2) + (i * 2.0 * temp)) / 1000.0;
+      mXAxisVec[i] = ((f64)vfoFrequency - (f64)(INPUT_RATE / 2) + (i * 2.0 * temp)) / 1000.0;
     }
   }
 
   //	and window it
-  for (int32_t i = 0; i < SP_SPECTRUMSIZE; i++)
+  for (i32 i = 0; i < SP_SPECTRUMSIZE; i++)
   {
     mFftInBuffer[i] *= mWindowVec[i];
   }
@@ -169,18 +169,18 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
   fftwf_execute(mFftPlan);
 
   // map the SP_SPECTRUMSIZE values onto SP_DISPLAYSIZE elements
-  for (int32_t i = 0; i < SP_DISPLAYSIZE / 2; i++)
+  for (i32 i = 0; i < SP_DISPLAYSIZE / 2; i++)
   {
-    double f = 0;
-    for (int32_t j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
+    f64 f = 0;
+    for (i32 j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
     {
       f += std::abs(mFftOutBuffer[SP_SPEC_OVR_SMP_FAC * i + j]);
     }
 
-    mYValVec[SP_DISPLAYSIZE / 2 + i] = f / (double)SP_SPEC_OVR_SMP_FAC;
+    mYValVec[SP_DISPLAYSIZE / 2 + i] = f / (f64)SP_SPEC_OVR_SMP_FAC;
 
     f = 0;
-    for (int32_t j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
+    for (i32 j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
     {
       f += std::abs(mFftOutBuffer[SP_SPECTRUMSIZE / 2 + SP_SPEC_OVR_SMP_FAC * i + j]);
     }
@@ -188,19 +188,19 @@ void SpectrumViewer::show_spectrum(int32_t vfoFrequency)
     mYValVec[i] = f / SP_SPEC_OVR_SMP_FAC;
   }
 
-  double valdBGlobMin =  1000.0;
-  double valdBGlobMax = -1000.0;
-  double valdBLocMin =  1000.0;
-  double valdBLocMax = -1000.0;
+  f64 valdBGlobMin =  1000.0;
+  f64 valdBGlobMax = -1000.0;
+  f64 valdBLocMin =  1000.0;
+  f64 valdBLocMax = -1000.0;
 
-  constexpr int32_t signalBeginIdx = (int32_t)(SP_DISPLAYSIZE * (1.0 - (1536000.0  / INPUT_RATE)) / 2.0);
-  constexpr int32_t signalEndIdx   = SP_DISPLAYSIZE - signalBeginIdx - 1;
+  constexpr i32 signalBeginIdx = (i32)(SP_DISPLAYSIZE * (1.0 - (1536000.0  / INPUT_RATE)) / 2.0);
+  constexpr i32 signalEndIdx   = SP_DISPLAYSIZE - signalBeginIdx - 1;
 
   // average the image a little.
-  for (int32_t i = 0; i < SP_DISPLAYSIZE; i++)
+  for (i32 i = 0; i < SP_DISPLAYSIZE; i++)
   {
-    const double val = 20.0 * std::log10(mYValVec[i] / (double)SP_DISPLAYSIZE + 1.0e-6);
-    double & valdBMean = mDisplayBuffer[i];
+    const f64 val = 20.0 * std::log10(mYValVec[i] / (f64)SP_DISPLAYSIZE + 1.0e-6);
+    f64 & valdBMean = mDisplayBuffer[i];
     mean_filter(valdBMean, val, 1.0 / averageCount);
 
     if (valdBMean > valdBGlobMax) valdBGlobMax = valdBMean;
@@ -243,7 +243,7 @@ bool SpectrumViewer::is_hidden()
   return myFrame.isHidden();
 }
 
-void SpectrumViewer::show_iq(int32_t iAmount, float /*iAvg*/)
+void SpectrumViewer::show_iq(i32 iAmount, f32 /*iAvg*/)
 {
   if (mIqValuesVec.size() != (unsigned)iAmount)
   {
@@ -251,20 +251,20 @@ void SpectrumViewer::show_iq(int32_t iAmount, float /*iAvg*/)
     mCarrValuesVec.resize(iAmount);
   }
 
-  mpIqBuffer->get_data_from_ring_buffer(mIqValuesVec.data(), (int32_t)mIqValuesVec.size());
-  mpCarrBuffer->get_data_from_ring_buffer(mCarrValuesVec.data(), (int32_t)mCarrValuesVec.size());
+  mpIqBuffer->get_data_from_ring_buffer(mIqValuesVec.data(), (i32)mIqValuesVec.size());
+  mpCarrBuffer->get_data_from_ring_buffer(mCarrValuesVec.data(), (i32)mCarrValuesVec.size());
 
   if (myFrame.isHidden())
   {
     return;
   }
 
-  const int32_t scopeWidth = sliderIqScopeZoom->value();
-  mpIQDisplay->display_iq(mIqValuesVec, (float)scopeWidth / 100.0f);
+  const i32 scopeWidth = sliderIqScopeZoom->value();
+  mpIQDisplay->display_iq(mIqValuesVec, (f32)scopeWidth / 100.0f);
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
-void SpectrumViewer::show_lcd_data(int32_t /*iOfdmSymbNo*/, float iModQual, float iTestData1, float iTestData2, float iMeanSigmaSqFreqCorr, float iSNR)
+void SpectrumViewer::show_lcd_data(i32 /*iOfdmSymbNo*/, f32 iModQual, f32 iTestData1, f32 iTestData2, f32 iMeanSigmaSqFreqCorr, f32 iSNR)
 {
   if (myFrame.isHidden())
   {
@@ -288,7 +288,7 @@ void SpectrumViewer::show_lcd_data(int32_t /*iOfdmSymbNo*/, float iModQual, floa
   thermoModQual->setValue(iModQual);
 }
 
-void SpectrumViewer::show_fic_ber(float ber)
+void SpectrumViewer::show_fic_ber(f32 ber)
 {
   if (!myFrame.isHidden())
   {
@@ -296,46 +296,46 @@ void SpectrumViewer::show_fic_ber(float ber)
   }
 }
 
-void SpectrumViewer::show_nominal_frequency_MHz(float iFreqMHz)
+void SpectrumViewer::show_nominal_frequency_MHz(f32 iFreqMHz)
 {
   lcdNomFrequency->display(QString("%1").arg(iFreqMHz, 0, 'f', 3));
 }
 
-void SpectrumViewer::show_freq_corr_rf_Hz(int32_t iFreqCorrRF)
+void SpectrumViewer::show_freq_corr_rf_Hz(i32 iFreqCorrRF)
 {
   lcdFreqCorrRF->display(iFreqCorrRF);
 }
 
-void SpectrumViewer::show_freq_corr_bb_Hz(int32_t iFreqCorrBB)
+void SpectrumViewer::show_freq_corr_bb_Hz(i32 iFreqCorrBB)
 {
   lcdFreqCorrBB->display(iFreqCorrBB);
 }
 
-void SpectrumViewer::show_clock_error(float iClockErr)
+void SpectrumViewer::show_clock_error(f32 iClockErr)
 {
   lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
 }
 
-void SpectrumViewer::show_correlation(float threshold, const QVector<int32_t> & v, const std::vector<STiiResult> & iTr)
+void SpectrumViewer::show_correlation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr)
 {
   mpCorrelationViewer->showCorrelation(threshold, v, iTr);
 }
 
-void SpectrumViewer::_slot_handle_cmb_carrier(int32_t iSel)
+void SpectrumViewer::_slot_handle_cmb_carrier(i32 iSel)
 {
   auto pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
   emit signal_cmb_carrier_changed(pt);
 }
 
-void SpectrumViewer::_slot_handle_cmb_iqscope(int32_t iSel)
+void SpectrumViewer::_slot_handle_cmb_iqscope(i32 iSel)
 {
   auto pt = static_cast<EIqPlotType>(iSel);
   mpIQDisplay->select_plot_type(pt);
   emit signal_cmb_iqscope_changed(pt);
 }
 
-void SpectrumViewer::_slot_handle_cb_nom_carrier(int32_t iSel)
+void SpectrumViewer::_slot_handle_cb_nom_carrier(i32 iSel)
 {
   emit signal_cb_nom_carrier_changed(iSel != 0);
 }
@@ -347,7 +347,7 @@ void SpectrumViewer::slot_update_settings()
   emit _slot_handle_cmb_iqscope(cmbIqScope->currentIndex());
 }
 
-void SpectrumViewer::show_digital_peak_level(float iDigLevel)
+void SpectrumViewer::show_digital_peak_level(f32 iDigLevel)
 {
   assert(iDigLevel >= 0.0f); // exact 0.0 is considered below.
 
@@ -361,7 +361,7 @@ void SpectrumViewer::show_digital_peak_level(float iDigLevel)
     ++mThermoPeakLevelConfigured;
   }
 
-  const float valuedB = 20.0f * std::log10(iDigLevel + 1.0e-6f);
+  const f32 valuedB = 20.0f * std::log10(iDigLevel + 1.0e-6f);
 
   thermoDigLevel->setValue(valuedB);
 }

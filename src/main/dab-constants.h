@@ -70,15 +70,15 @@
 #define    MAP_MAX_TRANS  2
 #define    MAP_NORM_TRANS  4
 
-constexpr float F_2_M_PI = (float)(2 * M_PI);
-constexpr float F_M_PI   = (float)M_PI;
-constexpr float F_M_PI_4 = (float)M_PI_4;
-constexpr float F_M_PI_2 = (float)M_PI_2;
-constexpr float F_SQRT1_2 = 0.70710678118654752440084436210485f;
-constexpr float F_RAD_PER_DEG = (float)(M_PI / 180.0);
-constexpr float F_DEG_PER_RAD = (float)(180.0 / M_PI);
-constexpr int16_t VITERBI_SOFT_BIT_VALUE_MAX = 127;
-constexpr float F_VITERBI_SOFT_BIT_VALUE_MAX = (float)VITERBI_SOFT_BIT_VALUE_MAX;
+constexpr f32 F_2_M_PI = (f32)(2 * M_PI);
+constexpr f32 F_M_PI   = (f32)M_PI;
+constexpr f32 F_M_PI_4 = (f32)M_PI_4;
+constexpr f32 F_M_PI_2 = (f32)M_PI_2;
+constexpr f32 F_SQRT1_2 = 0.70710678118654752440084436210485f;
+constexpr f32 F_RAD_PER_DEG = (f32)(M_PI / 180.0);
+constexpr f32 F_DEG_PER_RAD = (f32)(180.0 / M_PI);
+constexpr i16 VITERBI_SOFT_BIT_VALUE_MAX = 127;
+constexpr f32 F_VITERBI_SOFT_BIT_VALUE_MAX = (f32)VITERBI_SOFT_BIT_VALUE_MAX;
 
 constexpr char sSettingSampleStorageDir[]  = "saveDirSampleDump";
 constexpr char sSettingAudioStorageDir[]   = "saveDirAudioDump";
@@ -103,30 +103,30 @@ struct SEpgElement
 struct SServiceId
 {
   QString name;
-  uint32_t SId;
+  u32 SId;
 };
 
-constexpr uint8_t BAND_III = 0100;
-constexpr uint8_t L_BAND   = 0101;
-constexpr uint8_t A_BAND   = 0102;
+constexpr u8 BAND_III = 0100;
+constexpr u8 L_BAND   = 0101;
+constexpr u8 A_BAND   = 0102;
 
-constexpr int32_t FORE_GROUND = 0000;
-constexpr int32_t BACK_GROUND = 0100;
+constexpr i32 FORE_GROUND = 0000;
+constexpr i32 BACK_GROUND = 0100;
 
 class DescriptorType
 {
 public:
-  uint8_t type;
+  u8 type;
   bool defined;
   QString serviceName;
-  int32_t SId;
+  i32 SId;
   int SCIds;
-  int16_t subchId;
-  int16_t startAddr;
+  i16 subchId;
+  i16 startAddr;
   bool shortForm;
-  int16_t protLevel;
-  int16_t length;
-  int16_t bitRate;
+  i16 protLevel;
+  i16 length;
+  i16 bitRate;
   QString channel;  // just for presets
 
 public:
@@ -143,12 +143,12 @@ public:
 class Packetdata : public DescriptorType
 {
 public:
-  int16_t DSCTy;
-  int16_t FEC_scheme;
-  int16_t DGflag;
-  int16_t appType;
-  int16_t compnr;
-  int16_t packetAddress;
+  i16 DSCTy;
+  i16 FEC_scheme;
+  i16 DGflag;
+  i16 appType;
+  i16 compnr;
+  i16 packetAddress;
 
   Packetdata()
   {
@@ -159,11 +159,11 @@ public:
 class Audiodata : public DescriptorType
 {
 public:
-  int16_t ASCTy;
-  int16_t language;
-  int16_t programType;
-  int16_t compnr;
-  int32_t fmFrequency;
+  i16 ASCTy;
+  i16 language;
+  i16 programType;
+  i16 compnr;
+  i32 fmFrequency;
 
   Audiodata()
   {
@@ -175,13 +175,13 @@ public:
 struct ChannelData
 {
   bool in_use;
-  int16_t id;
-  int16_t start_cu;
-  uint8_t uepFlag;
-  int16_t protlev;
-  int16_t size;
-  int16_t bitrate;
-  int16_t ASCTy;
+  i16 id;
+  i16 start_cu;
+  u8 uepFlag;
+  i16 protlev;
+  i16 size;
+  i16 bitrate;
+  i16 ASCTy;
 };
 
 #endif

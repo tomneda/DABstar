@@ -37,27 +37,27 @@
 //	made fitting the framework
 class	virtualReader {
 protected:
-RingBuffer<cmplx>	*theBuffer;
-int32_t	blockSize;
+RingBuffer<cf32>	*theBuffer;
+i32	blockSize;
 public:
-		virtualReader	(RingBuffer<cmplx> *p,
-	                                                  int32_t rate);
+		virtualReader	(RingBuffer<cf32> *p,
+	                                                  i32 rate);
 virtual		~virtualReader	(void);
-virtual void	restartReader	(int32_t s);
+virtual void	restartReader	(i32 s);
 virtual void	stopReader	(void);
-virtual void	processData	(float IQoffs, void *data, int cnt);
-virtual	int16_t	bitDepth	(void);
+virtual void	processData	(f32 IQoffs, void *data, int cnt);
+virtual	i16	bitDepth	(void);
 protected:
-	int32_t	base;
-	void	convertandStore		(cmplx *, int32_t);
+	i32	base;
+	void	convertandStore		(cf32 *, i32);
 private:
-	void	setMapper	(int32_t, int32_t);
-	float	*mapTable;
-	int16_t	conv;
-	int16_t	inSize;
-	int16_t	outSize;
-	cmplx	*inTable;
-	cmplx	*outTable;
+	void	setMapper	(i32, i32);
+	f32	*mapTable;
+	i16	conv;
+	i16	inSize;
+	i16	outSize;
+	cf32	*inTable;
+	cf32	*outTable;
 	
 };
 

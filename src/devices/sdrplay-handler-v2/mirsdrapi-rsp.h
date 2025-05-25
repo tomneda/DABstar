@@ -24,7 +24,7 @@
 
 // Application code should check that it is compiled against the same API version
 // mir_sdr_ApiVersion() returns the API version 
-#define MIR_SDR_API_VERSION   (float)(2.13)
+#define MIR_SDR_API_VERSION   (f32)(2.13)
 
 #if defined(ANDROID) || defined(__ANDROID__)
 // Android requires a mechanism to request info from Java application
@@ -182,9 +182,9 @@ typedef struct
 
 typedef struct
 {
-   float curr;
-   float max;
-   float min;
+   f32 curr;
+   f32 max;
+   f32 min;
 } mir_sdr_GainValuesT;
 
 typedef enum
@@ -197,18 +197,18 @@ typedef enum
 typedef void (*mir_sdr_StreamCallback_t)(short *xi, short *xq, unsigned int firstSampleNum, int grChanged, int rfChanged, int fsChanged, unsigned int numSamples, unsigned int reset, unsigned int hwRemoved, void *cbContext); 
 typedef void (*mir_sdr_GainChangeCallback_t)(unsigned int gRdB, unsigned int lnaGRdB, void *cbContext); 
 
-typedef mir_sdr_ErrT (*mir_sdr_Init_t)(int gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int *samplesPerPacket);
+typedef mir_sdr_ErrT (*mir_sdr_Init_t)(int gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int *samplesPerPacket);
 typedef mir_sdr_ErrT (*mir_sdr_Uninit_t)();
 typedef mir_sdr_ErrT (*mir_sdr_ReadPacket_t)(short *xi, short *xq, unsigned int *firstSampleNum, int *grChanged, int *rfChanged, int *fsChanged);
-typedef mir_sdr_ErrT (*mir_sdr_SetRf_t)(double drfHz, int abs, int syncUpdate);
-typedef mir_sdr_ErrT (*mir_sdr_SetFs_t)(double dfsHz, int abs, int syncUpdate, int reCal);
+typedef mir_sdr_ErrT (*mir_sdr_SetRf_t)(f64 drfHz, int abs, int syncUpdate);
+typedef mir_sdr_ErrT (*mir_sdr_SetFs_t)(f64 dfsHz, int abs, int syncUpdate, int reCal);
 typedef mir_sdr_ErrT (*mir_sdr_SetGr_t)(int gRdB, int abs, int syncUpdate);
 typedef mir_sdr_ErrT (*mir_sdr_SetGrParams_t)(int minimumGr, int lnaGrThreshold);
 typedef mir_sdr_ErrT (*mir_sdr_SetDcMode_t)(int dcCal, int speedUp);
 typedef mir_sdr_ErrT (*mir_sdr_SetDcTrackTime_t)(int trackTime);
 typedef mir_sdr_ErrT (*mir_sdr_SetSyncUpdateSampleNum_t)(unsigned int sampleNum);
 typedef mir_sdr_ErrT (*mir_sdr_SetSyncUpdatePeriod_t)(unsigned int period);
-typedef mir_sdr_ErrT (*mir_sdr_ApiVersion_t)(float *version);   
+typedef mir_sdr_ErrT (*mir_sdr_ApiVersion_t)(f32 *version);
 typedef mir_sdr_ErrT (*mir_sdr_ResetUpdateFlags_t)(int resetGainUpdate, int resetRfUpdate, int resetFsUpdate);   
 #if defined(ANDROID) || defined(__ANDROID__)
 typedef mir_sdr_ErrT (*mir_sdr_SetJavaReqCallback_t)(mir_sdr_SendJavaReq_t sendJavaReq);   
@@ -216,16 +216,16 @@ typedef mir_sdr_ErrT (*mir_sdr_SetJavaReqCallback_t)(mir_sdr_SendJavaReq_t sendJ
 typedef mir_sdr_ErrT (*mir_sdr_SetTransferMode_t)(mir_sdr_TransferModeT mode);
 typedef mir_sdr_ErrT (*mir_sdr_DownConvert_t)(short *in, short *xi, short *xq, unsigned int samplesPerPacket, mir_sdr_If_kHzT ifType, unsigned int M, unsigned int preReset);
 typedef mir_sdr_ErrT (*mir_sdr_SetParam_t)(unsigned int id, unsigned int value);   
-typedef mir_sdr_ErrT (*mir_sdr_SetPpm_t)(double ppm);   
+typedef mir_sdr_ErrT (*mir_sdr_SetPpm_t)(f64 ppm);
 typedef mir_sdr_ErrT (*mir_sdr_SetLoMode_t)(mir_sdr_LoModeT loMode);                   
 typedef mir_sdr_ErrT (*mir_sdr_SetGrAltMode_t)(int *gRidx, int LNAstate, int *gRdBsystem, int abs, int syncUpdate);
 typedef mir_sdr_ErrT (*mir_sdr_DCoffsetIQimbalanceControl_t)(unsigned int DCenable, unsigned int IQenable);   
 typedef mir_sdr_ErrT (*mir_sdr_DecimateControl_t)(unsigned int enable, unsigned int decimationFactor, unsigned int wideBandSignal); 
 typedef mir_sdr_ErrT (*mir_sdr_AgcControl_t)(mir_sdr_AgcControlT enable, int setPoint_dBfs, int knee_dBfs, unsigned int decay_ms, unsigned int hang_ms, int syncUpdate, int LNAstate); 
-typedef mir_sdr_ErrT (*mir_sdr_StreamInit_t)(int *gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode, int *samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void *cbContext); 
+typedef mir_sdr_ErrT (*mir_sdr_StreamInit_t)(int *gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode, int *samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void *cbContext);
 typedef mir_sdr_ErrT (*mir_sdr_StreamUninit_t)(); 
-typedef mir_sdr_ErrT (*mir_sdr_Reinit_t)(int *gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, mir_sdr_LoModeT loMode, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode, int *samplesPerPacket, mir_sdr_ReasonForReinitT reasonForReinit);
-typedef mir_sdr_ErrT (*mir_sdr_GetGrByFreq_t)(double rfMHz, mir_sdr_BandT *band, int *gRdB, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode); 
+typedef mir_sdr_ErrT (*mir_sdr_Reinit_t)(int *gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, mir_sdr_LoModeT loMode, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode, int *samplesPerPacket, mir_sdr_ReasonForReinitT reasonForReinit);
+typedef mir_sdr_ErrT (*mir_sdr_GetGrByFreq_t)(f64 rfMHz, mir_sdr_BandT *band, int *gRdB, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode);
 typedef mir_sdr_ErrT (*mir_sdr_DebugEnable_t)(unsigned int enable);    
 typedef mir_sdr_ErrT (*mir_sdr_GetCurrentGain_t)(mir_sdr_GainValuesT *gainVals);    
 typedef mir_sdr_ErrT (*mir_sdr_GainChangeCallbackMessageReceived_t)(); 
@@ -261,18 +261,18 @@ extern "C"
 {
 #endif
 
-   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_Init(int gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int *samplesPerPacket);
+   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_Init(int gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int *samplesPerPacket);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_Uninit(void);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_ReadPacket(short *xi, short *xq, unsigned int *firstSampleNum, int *grChanged, int *rfChanged, int *fsChanged);
-   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetRf(double drfHz, int abs, int syncUpdate);
-   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetFs(double dfsHz, int abs, int syncUpdate, int reCal);
+   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetRf(f64 drfHz, int abs, int syncUpdate);
+   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetFs(f64 dfsHz, int abs, int syncUpdate, int reCal);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetGr(int gRdB, int abs, int syncUpdate);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetGrParams(int minimumGr, int lnaGrThreshold);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetDcMode(int dcCal, int speedUp);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetDcTrackTime(int trackTime);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetSyncUpdateSampleNum(unsigned int sampleNum);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetSyncUpdatePeriod(unsigned int period);
-   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_ApiVersion(float *version);    // Called by application to retrieve version of API used to create Dll
+   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_ApiVersion(f32 *version);    // Called by application to retrieve version of API used to create Dll
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_ResetUpdateFlags(int resetGainUpdate, int resetRfUpdate, int resetFsUpdate);    
 #if defined(ANDROID) || defined(__ANDROID__)
    // This function provides a machanism for the Java application to set
@@ -295,7 +295,7 @@ extern "C"
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_DownConvert(short *in, short *xi, short *xq, unsigned int samplesPerPacket, mir_sdr_If_kHzT ifType, unsigned int M, unsigned int preReset);   
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetParam(unsigned int id, unsigned int value);   // This MAY be called before mir_sdr_Init()
 
-   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetPpm(double ppm);                              // This MAY be called before mir_sdr_Init()
+   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetPpm(f64 ppm);                              // This MAY be called before mir_sdr_Init()
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetLoMode(mir_sdr_LoModeT loMode);               // This MUST be called before mir_sdr_Init()/mir_sdr_StreamInit() - otherwise use mir_sdr_Reinit()         
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_SetGrAltMode(int *gRidx, int LNAstate, int *gRdBsystem, int abs, int syncUpdate);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_DCoffsetIQimbalanceControl(unsigned int DCenable, unsigned int IQenable);   
@@ -317,10 +317,10 @@ extern "C"
     * IQimbalanceCorrection()  - enabled by default
     * Agc()                    - disabled by default
 	 */
-   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_StreamInit(int *gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode, int *samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void *cbContext); 
+   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_StreamInit(int *gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode, int *samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void *cbContext);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_StreamUninit(void); 
-   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_Reinit(int *gRdB, double fsMHz, double rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, mir_sdr_LoModeT loMode, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode, int *samplesPerPacket, mir_sdr_ReasonForReinitT reasonForReinit);
-   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_GetGrByFreq(double rfMHz, mir_sdr_BandT *band, int *gRdB, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode);
+   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_Reinit(int *gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, mir_sdr_LoModeT loMode, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode, int *samplesPerPacket, mir_sdr_ReasonForReinitT reasonForReinit);
+   _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_GetGrByFreq(f64 rfMHz, mir_sdr_BandT *band, int *gRdB, int LNAstate, int *gRdBsystem, mir_sdr_SetGrModeT setGrMode);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_DebugEnable(unsigned int enable);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_GetCurrentGain(mir_sdr_GainValuesT *gainVals);
    _MIR_SDR_QUALIFIER mir_sdr_ErrT mir_sdr_GainChangeCallbackMessageReceived(void); 

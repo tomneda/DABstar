@@ -30,21 +30,21 @@
 
 class	LowPassFIR {
 public:
-			LowPassFIR (int16_t,	// order
-	                            int32_t, 	// cutoff frequency
-	                            int32_t	// samplerate
+			LowPassFIR (i16,	// order
+	                            i32, 	// cutoff frequency
+	                            i32	// samplerate
 	                           );
 			~LowPassFIR ();
-	cmplx	Pass		(cmplx);
-	float			Pass		(float);
+	cf32	Pass		(cf32);
+	f32			Pass		(f32);
 	void			resize		(int);
 	int			theSize		();
 private:
-	int16_t		filterSize;
-	int16_t		ip;
-	std::vector<float>	filterKernel;
-	std::vector<cmplx>	Buffer;
-	float		frequency;
+	i16		filterSize;
+	i16		ip;
+	std::vector<f32>	filterKernel;
+	std::vector<cf32>	Buffer;
+	f32		frequency;
 };
 
 #endif

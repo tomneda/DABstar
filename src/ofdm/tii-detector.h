@@ -13,10 +13,10 @@
 
 struct STiiResult
 {
-  uint8_t mainId;
-  uint8_t subId;
-  float strength;
-  float phaseDeg;
+  u8 mainId;
+  u8 subId;
+  f32 strength;
+  f32 phaseDeg;
   bool isNonEtsiPhase;
 };
 
@@ -28,40 +28,40 @@ public:
 
   void reset();
   void set_detect_collisions(bool);
-  void set_subid_for_collision_search(uint8_t);
+  void set_subid_for_collision_search(u8);
   void add_to_tii_buffer(const TArrayTu & iV);
-  std::vector<STiiResult> process_tii_data(int16_t);
+  std::vector<STiiResult> process_tii_data(i16);
 
 private:
-  static constexpr int32_t cNumBlocks4 = 4;
-  static constexpr int32_t cNumGroups8 =  8;
-  static constexpr int32_t cGroupSize24 = 24;
-  static constexpr int32_t cBlockSize192 = cNumGroups8 * cGroupSize24; // == 192
+  static constexpr i32 cNumBlocks4 = 4;
+  static constexpr i32 cNumGroups8 =  8;
+  static constexpr i32 cGroupSize24 = 24;
+  static constexpr i32 cBlockSize192 = cNumGroups8 * cGroupSize24; // == 192
 
-  using TBufferArr768  = std::array<cmplx, 768>;
-  using TFloatTable192 = std::array<float, cBlockSize192>;
-  using TCmplxTable192 = std::array<cmplx, cBlockSize192>;
+  using TBufferArr768  = std::array<cf32, 768>;
+  using TFloatTable192 = std::array<f32, cBlockSize192>;
+  using TCmplxTable192 = std::array<cf32, cBlockSize192>;
 
   bool mShowTiiCollisions = false;
   bool mCarrierDelete = true;
-  uint8_t mSubIdCollSearch = 0;
+  u8 mSubIdCollSearch = 0;
   TBufferArr768 mDecodedBufferArr;
   TArrayTu mNullSymbolBufferVec;
 
-  float _calculate_average_noise(const TFloatTable192 & iFloatTable) const;
-  void _get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, float & ioMax, const TCmplxTable192 & iCmplxTable) const;
-  void _compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, cmplx & oSum, std::byte & oPattern,
-                               int iSubId, const float iThresholdLevel,
+  f32 _calculate_average_noise(const TFloatTable192 & iFloatTable) const;
+  void _get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, f32 & ioMax, const TCmplxTable192 & iCmplxTable) const;
+  void _compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, cf32 & oSum, std::byte & oPattern,
+                               int iSubId, const f32 iThresholdLevel,
                                const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
                                const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable) const;
   void _find_collisions(std::vector<STiiResult> & ioResultVec, int iMainId, int iSubId,
-                        std::byte iPattern, float iMax, float iThresholdLevel, int iCount, bool iIsNonEtsi,
+                        std::byte iPattern, f32 iMax, f32 iThresholdLevel, int iCount, bool iIsNonEtsi,
                         const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable) const;
   int _find_exact_main_id_match(std::byte iPattern) const;
-  int _find_best_main_id_match(cmplx & oSum, int iSubId, const TCmplxTable192 & ipCmplxTable) const;
+  int _find_best_main_id_match(cf32 & oSum, int iSubId, const TCmplxTable192 & ipCmplxTable) const;
   void _reset_null_symbol_buffer();
   void _remove_single_carrier_values(TBufferArr768 & ioBuffer) const;
   void _decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const TArrayTu & iVec) const;
   void _collapse_tii_groups(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec, const TBufferArr768 & iVec) const;
-  cmplx _turn_phase(cmplx const value, const uint8_t phase) const;
+  cf32 _turn_phase(cf32 const value, const u8 phase) const;
 };

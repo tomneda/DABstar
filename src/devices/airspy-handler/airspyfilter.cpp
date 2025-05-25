@@ -26,16 +26,16 @@
 # define M_PI           3.14159265358979323846  /* pi */
 #endif
 
-	airspyFilter::airspyFilter (int16_t firSize,
-	                            int32_t cutoffFreq,
-	                            int32_t sampleRate),
-	                               buffer_re (firSize),
-	                               buffer_im (firSize),
-	                               kernel (firSize) {
-float	tmp [firSize];
-float	lo	= (float)(cutoffFreq) / sampleRate;
-float	sum	= 0.0;
-int16_t	i;
+	airspyFilter::airspyFilter (i16 firSize,
+	                            i32 cutoffFreq,
+	                            i32 sampleRate),
+	                            buffer_re (firSize),
+	                            buffer_im (firSize),
+	                            kernel (firSize) {
+f32	tmp [firSize];
+f32	lo	= (f32)(cutoffFreq) / sampleRate;
+f32	sum	= 0.0;
+i16	i;
 
 	this	-> firSize	= firSize;
 	ip			= 0;
@@ -49,8 +49,8 @@ int16_t	i;
 //
 //	windowing with Blackman
 	   tmp [i]  *= (0.42 -
-		    0.5 * cos (2 * M_PI * (float)i / (float)firSize) +
-		    0.08 * cos (4 * M_PI * (float)i / (float)firSize));
+		    0.5 * cos (2 * M_PI * (f32)i / (f32)firSize) +
+		    0.08 * cos (4 * M_PI * (f32)i / (f32)firSize));
 
 	   sum += tmp [i];
 	}
@@ -65,15 +65,15 @@ int16_t	i;
 
 //      we process the samples backwards rather than reversing
 //      the kernel
-cmplx	airspyFilter::Pass (float re, float im) {
-int16_t i;
-float	tmp_1	= 0;
-float	tmp_2	= 0;
+cf32	airspyFilter::Pass (f32 re, f32 im) {
+i16 i;
+f32	tmp_1	= 0;
+f32	tmp_2	= 0;
 
         buffer_re [ip]     = re;
         buffer_im [ip]     = im;
         for (i = 0; i < firSize; i ++) {
-           int16_t index = ip - i;
+           i16 index = ip - i;
            if (index < 0)
               index += firSize;
            tmp_1	+= buffer_re [index] * kernel [i];
@@ -81,6 +81,6 @@ float	tmp_2	= 0;
         }
 
         ip = (ip + 1) % firSize;
-        return cmplx (tmp_1, tmp_2);;
+        return cf32 (tmp_1, tmp_2);;
 }
 

@@ -212,7 +212,7 @@ void ServiceListHandler::_fill_table_view_from_db()
   mpTableView->setFixedWidth(mpTableView->sizeHint().width()); // strange, only this works more reliable
 }
 
-void ServiceListHandler::jump_entries(int32_t iSteps)
+void ServiceListHandler::jump_entries(i32 iSteps)
 {
   _jump_to_list_entry_and_emit_fav_status(iSteps, true);
 }
@@ -229,7 +229,7 @@ QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & 
   const QAbstractItemModel * const pModel = mpTableView->model();
   assert(pModel != nullptr);
 
-  for (int32_t rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
+  for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
   {
     QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
     QModelIndex modIdxService = pModel->index(rowIdx, ServiceDB::CI_Service);
@@ -243,7 +243,7 @@ QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & 
   return sl;
 }
 
-void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t iSkipOffset /*= 0*/, const bool iCenterContent /*= false*/)
+void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkipOffset /*= 0*/, const bool iCenterContent /*= false*/)
 {
   if (mChannelLast.isEmpty() || mServiceLast.isEmpty())
   {
@@ -253,9 +253,9 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t i
   const QAbstractItemModel * const pModel = mpTableView->model();
   assert(pModel != nullptr);
 
-  int32_t rowIdxFound = -1;
+  i32 rowIdxFound = -1;
 
-  for (int32_t rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
+  for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
   {
     QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
     QModelIndex modIdxService = pModel->index(rowIdx, ServiceDB::CI_Service);
@@ -270,7 +270,7 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const int32_t i
 
   if (rowIdxFound >= 0)
   {
-    const int32_t maxRows = pModel->rowCount();
+    const i32 maxRows = pModel->rowCount();
     rowIdxFound += iSkipOffset;
     while (rowIdxFound < 0) rowIdxFound += maxRows;
     while (rowIdxFound >= maxRows) rowIdxFound -= maxRows;

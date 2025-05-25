@@ -40,7 +40,7 @@ class TechData : public QObject, public Ui_technical_data
 {
 Q_OBJECT
 public:
-  TechData(DabRadio *, RingBuffer<int16_t> * ipAudioBuffer);
+  TechData(DabRadio *, RingBuffer<i16> * ipAudioBuffer);
   ~TechData() override;
 
   void show_serviceData(const Audiodata * ad);
@@ -51,7 +51,7 @@ public:
 
 private:
   DabRadio * const mpRadioInterface;
-  RingBuffer<int16_t> * mpAudioBuffer;
+  RingBuffer<i16> * mpAudioBuffer;
   CustomFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;
   QTimer mTimerMotReceived; // avoid fast flickering of the MOT indicator
@@ -75,7 +75,7 @@ public slots:
   void slot_show_uep(int, int);
   void slot_show_codeRate(int, int);
   void slot_show_fm(int);
-  void slot_show_sample_rate_and_audio_flags(int32_t iSampleRate, bool iSbrUsed, bool iPsUsed);
+  void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed);
 
   void slot_hide_missed();
   void slot_show_missed(int);

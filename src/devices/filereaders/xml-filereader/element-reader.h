@@ -25,7 +25,7 @@
 //	THIS FILE WILL BE INCLUDED IN xml-reader.cpp
 //
 static 
-float uint8_Table [] = {
+f32 uint8_Table [] = {
  -128 / 128.0 , -127 / 128.0 , -126 / 128.0 , -125 / 128.0 , -124 / 128.0 , -123 / 128.0 , -122 / 128.0 , -121 / 128.0 , -120 / 128.0 , -119 / 128.0 , -118 / 128.0 , -117 / 128.0 , -116 / 128.0 , -115 / 128.0 , -114 / 128.0 , -113 / 128.0 
 , -112 / 128.0 , -111 / 128.0 , -110 / 128.0 , -109 / 128.0 , -108 / 128.0 , -107 / 128.0 , -106 / 128.0 , -105 / 128.0 , -104 / 128.0 , -103 / 128.0 , -102 / 128.0 , -101 / 128.0 , -100 / 128.0 , -99 / 128.0 , -98 / 128.0 , -97 / 128.0 
 , -96 / 128.0 , -95 / 128.0 , -94 / 128.0 , -93 / 128.0 , -92 / 128.0 , -91 / 128.0 , -90 / 128.0 , -89 / 128.0 , -88 / 128.0 , -87 / 128.0 , -86 / 128.0 , -85 / 128.0 , -84 / 128.0 , -83 / 128.0 , -82 / 128.0 , -81 / 128.0 
@@ -47,7 +47,7 @@ float uint8_Table [] = {
 protected:
 	FILE		*theFile;
 	xmlDescriptor	*fd;
-	float		scaler;
+	f32		scaler;
 public:
 		elementReader	(FILE *theFile, xmlDescriptor *fd) {
 	this	-> theFile	= theFile;
@@ -56,11 +56,11 @@ public:
 	int	r		= 1;
 	while (-- a > 0) 
 	   r <<= 1;
-	scaler			= float (r);
+	scaler			= f32 (r);
 }
 
 virtual		~elementReader	() {}
-virtual	float	readElement	() { return 0; }
+virtual	f32	readElement	() { return 0; }
 };
 
 	class	int8_reader: public elementReader {
@@ -72,10 +72,10 @@ public:
 	~int8_reader	() {
 }
 
-float	readElement	() {
-uint8_t	s1;
+f32	readElement	() {
+u8	s1;
 	fread (&s1, 1, 1, theFile);
-	return (float)((int8_t)s1) / 127.0;
+	return (f32)((i8)s1) / 127.0;
 }
 };
 
@@ -87,8 +87,8 @@ public:
 	~uint8_reader	() {
 }
 
-float	readElement	() {
-uint8_t s1;
+f32	readElement	() {
+u8 s1;
 
 	fread (&s1, 1, 1, theFile);
 	return uint8_Table [s1];
@@ -104,18 +104,18 @@ public:
 	~int16_reader	() {
 }
 
-float	readElement	() {
-uint8_t	bytes_16 [2];
-int16_t	temp_16;
+f32	readElement	() {
+u8	bytes_16 [2];
+i16	temp_16;
 
 	if (fd -> byteOrder == "MSB") {
 	   fread (bytes_16, 2, 1, theFile);
 	      temp_16 = (bytes_16 [0] << 8) | bytes_16 [1];
-	      return ((float)temp_16) / scaler;
+	      return ((f32)temp_16) / scaler;
 	}
 	else {
 	   fread (&temp_16, 2, 1, theFile);
-	   return ((float)temp_16) / scaler;
+	   return ((f32)temp_16) / scaler;
 	}
 }
 
@@ -129,9 +129,9 @@ public:
 
 	~int24_reader () {}
 
-float	readElement	() {
-uint8_t	bytes_24 [3];
-uint32_t temp_32;
+f32	readElement	() {
+u8	bytes_24 [3];
+u32 temp_32;
 
 	fread (bytes_24, 3, 1, theFile);
            if (fd -> byteOrder == "MSB")
@@ -142,7 +142,7 @@ uint32_t temp_32;
                            (bytes_24 [1] << 8) | bytes_24 [0];
            if (temp_32 & 0x800000)
               temp_32 |= 0xFF000000;
-           return (float)temp_32 / scaler;
+           return (f32)temp_32 / scaler;
 }
 
 };
@@ -155,18 +155,18 @@ public:
 
 	~int32_reader	() {}
 
-float	readElement	() {
-uint8_t	bytes_32 [4];
-uint32_t temp_32;
+f32	readElement	() {
+u8	bytes_32 [4];
+u32 temp_32;
 
-	fread (bytes_32, sizeof (int32_t), 1, theFile);
+	fread (bytes_32, sizeof (i32), 1, theFile);
 	if (fd -> byteOrder == "MSB")
 	   temp_32 = (bytes_32 [0]<< 24) | (bytes_32 [1] << 16) |
 	             (bytes_32 [2] << 8) | bytes_32 [3];
 	else
 	   temp_32 = (bytes_32 [3] << 24) | (bytes_32 [2] << 16) |
 	             (bytes_32 [1] << 8) | bytes_32 [0];
-	return (float)temp_32 / scaler;
+	return (f32)temp_32 / scaler;
 }
 };
 
@@ -178,18 +178,18 @@ public:
 
 	~float_reader	() {}
 
-float	readElement	() {
-uint8_t bytes_32 [4];
-uint32_t temp_32;
+f32	readElement	() {
+u8 bytes_32 [4];
+u32 temp_32;
 
-	fread (bytes_32, sizeof (float), 1, theFile);
+	fread (bytes_32, sizeof (f32), 1, theFile);
 	if (fd -> byteOrder == "MSB")
 	   temp_32 = (bytes_32 [0]<< 24) | (bytes_32 [1] << 16) |
 	             (bytes_32 [2] << 8) | bytes_32 [3];
 	else
 	   temp_32 = (bytes_32 [3] << 24) | (bytes_32 [2] << 16) |
 	             (bytes_32 [1] << 8) | bytes_32 [0];
-	return *(float*)(&temp_32);
+	return *(f32*)(&temp_32);
 }
 };
 

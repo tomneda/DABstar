@@ -25,9 +25,10 @@
 #ifndef  PROTTABLES_H
 #define  PROTTABLES_H
 
+#include "glob_data_types.h"
 #include  <cstdint>
 
-const int8_t * get_PCodes(int16_t);
+const i8 * get_PCodes(i16);
 
 #endif
 

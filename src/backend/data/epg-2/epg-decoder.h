@@ -32,11 +32,10 @@
 #ifndef	EPG_DECODER2_H
 #define	EPG_DECODER2_H
 
-#include  <QObject>
-#include  <cstdio>
-#include  <cstdint>
-#include  <cstdlib>
-#include  <QString>
+#include "glob_data_types.h"
+#include <QObject>
+#include <cstdio>
+#include <QString>
 
 class progDesc
 {
@@ -76,72 +75,72 @@ public:
   EpgDecoder();
   ~EpgDecoder() override = default;
 
-  int process_epg(uint8_t * v, int e_length, uint32_t SId, int subType, uint32_t theDay);
+  int process_epg(u8 * v, int e_length, u32 SId, int subType, u32 theDay);
 
 private:
-  uint32_t SId;
+  u32 SId;
   QString stringTable[20];
   int subType;
-  uint32_t julianDate;
-  int getBit(uint8_t * v, int bitnr);
-  uint32_t getBits(uint8_t * v, int bitnr, int length);
-  int process_programGroups(uint8_t * v, int index);
-  int process_programGroup(uint8_t * v, int index);
-  int process_schedule(uint8_t * v, int index);
-  int process_program(uint8_t * v, int index, progDesc *);
-  int process_scope(uint8_t * v, int index, progDesc *);
-  int process_serviceScope(uint8_t * v, int index);
-  int process_mediaDescription(uint8_t * v, int index, progDesc *);
-  int process_ensemble(uint8_t * v, int index);
-  int process_service(uint8_t * v, int index);
-  int process_location(uint8_t * v, int index, progDesc *);
-  int process_bearer(uint8_t * v, int index);
-  int process_geoLocation(uint8_t * v, int index);
-  int process_programmeEvent(uint8_t * v, int index);
-  int process_onDemand(uint8_t * v, int index);
-  int process_genre(uint8_t * v, int index, progDesc *);
-  int process_keyWords(uint8_t * v, int index);
-  int process_link(uint8_t * v, int index);
-  int process_shortName(uint8_t * v, int index, progDesc *);
-  int process_mediumName(uint8_t * v, int index, progDesc *);
-  int process_longName(uint8_t * v, int index, progDesc *);
-  int process_shortDescription(uint8_t * v, int index, progDesc *);
-  int process_longDescription(uint8_t * v, int index, progDesc *);
-  int process_multiMedia(uint8_t * v, int index);
-  int process_radiodns(uint8_t * v, int index);
-  int process_time(uint8_t * v, int index, int *);
-  int process_relativeTime(uint8_t * v, int index);
-  int process_memberOf(uint8_t * v, int index);
-  int process_presentationTime(uint8_t * v, int index);
-  int process_acquisitionTime(uint8_t * v, int index);
+  u32 julianDate;
+  int getBit(u8 * v, int bitnr);
+  u32 getBits(u8 * v, int bitnr, int length);
+  int process_programGroups(u8 * v, int index);
+  int process_programGroup(u8 * v, int index);
+  int process_schedule(u8 * v, int index);
+  int process_program(u8 * v, int index, progDesc *);
+  int process_scope(u8 * v, int index, progDesc *);
+  int process_serviceScope(u8 * v, int index);
+  int process_mediaDescription(u8 * v, int index, progDesc *);
+  int process_ensemble(u8 * v, int index);
+  int process_service(u8 * v, int index);
+  int process_location(u8 * v, int index, progDesc *);
+  int process_bearer(u8 * v, int index);
+  int process_geoLocation(u8 * v, int index);
+  int process_programmeEvent(u8 * v, int index);
+  int process_onDemand(u8 * v, int index);
+  int process_genre(u8 * v, int index, progDesc *);
+  int process_keyWords(u8 * v, int index);
+  int process_link(u8 * v, int index);
+  int process_shortName(u8 * v, int index, progDesc *);
+  int process_mediumName(u8 * v, int index, progDesc *);
+  int process_longName(u8 * v, int index, progDesc *);
+  int process_shortDescription(u8 * v, int index, progDesc *);
+  int process_longDescription(u8 * v, int index, progDesc *);
+  int process_multiMedia(u8 * v, int index);
+  int process_radiodns(u8 * v, int index);
+  int process_time(u8 * v, int index, int *);
+  int process_relativeTime(u8 * v, int index);
+  int process_memberOf(u8 * v, int index);
+  int process_presentationTime(u8 * v, int index);
+  int process_acquisitionTime(u8 * v, int index);
 
-  int process_country(uint8_t * v, int index);
-  int process_point(uint8_t * v, int index);
-  int process_polygon(uint8_t * v, int index);
+  int process_country(u8 * v, int index);
+  int process_point(u8 * v, int index);
+  int process_polygon(u8 * v, int index);
   //
-  int process_412(uint8_t * v, int index);
-  int process_440(uint8_t * v, int index);
-  int process_46(uint8_t * v, int index);
-  int process_471(uint8_t * v, int index);
-  int process_472(uint8_t * v, int index);
-  int process_473(uint8_t * v, int index);
-  int process_474(uint8_t * v, int index, int *);
-  int process_475(uint8_t * v, int index);
-  int process_476(uint8_t * v, int index);
-  int process_481(uint8_t * v, int index);
-  int process_482(uint8_t * v, int index);
-  int process_483(uint8_t * v, int index);
-  int process_484(uint8_t * v, int index);
-  int process_485(uint8_t * v, int index);
-  int process_4171(uint8_t * v, int index);
+  int process_412(u8 * v, int index);
+  int process_440(u8 * v, int index);
+  int process_46(u8 * v, int index);
+  int process_471(u8 * v, int index);
+  int process_472(u8 * v, int index);
+  int process_473(u8 * v, int index);
+  int process_474(u8 * v, int index, int *);
+  int process_475(u8 * v, int index);
+  int process_476(u8 * v, int index);
+  int process_481(u8 * v, int index);
+  int process_482(u8 * v, int index);
+  int process_483(u8 * v, int index);
+  int process_484(u8 * v, int index);
+  int process_485(u8 * v, int index);
+  int process_4171(u8 * v, int index);
 
-  int process_tokenTable(uint8_t * v, int index);
-  int process_token(uint8_t * v, int index);
-  int process_defaultLanguage(uint8_t * v, int index);
-  int process_obsolete(uint8_t * v, int index);
+  int process_tokenTable(u8 * v, int index);
+  int process_token(u8 * v, int index);
+  int process_defaultLanguage(u8 * v, int index);
+  int process_obsolete(u8 * v, int index);
 
   void record(progDesc *);
-  QString getCData(uint8_t * v, int index, int elength);
+  QString getCData(u8 * v, int index, int elength);
 
 signals:
   void signal_set_epg_data(int, int, const QString &, const QString &);

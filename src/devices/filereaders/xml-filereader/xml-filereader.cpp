@@ -47,7 +47,7 @@
 #include  "xml-descriptor.h"
 #include  "xml-reader.h"
 
-constexpr uint32_t INPUT_FRAMEBUFFERSIZE = 8 * 32768;
+constexpr u32 INPUT_FRAMEBUFFERSIZE = 8 * 32768;
 
 XmlFileReader::XmlFileReader(const QString & iFilename)
   : Ui_xmlfile_widget(), myFrame(nullptr)
@@ -119,7 +119,7 @@ XmlFileReader::~XmlFileReader()
   delete theDescriptor;
 }
 
-bool XmlFileReader::restartReader(int32_t freq)
+bool XmlFileReader::restartReader(i32 freq)
 {
   (void)freq;
   if (running.load())
@@ -147,7 +147,7 @@ void XmlFileReader::stopReader()
 }
 
 //	size is in "samples"
-int32_t XmlFileReader::getSamples(cmplx * V, int32_t size)
+i32 XmlFileReader::getSamples(cf32 * V, i32 size)
 {
 
   if (theFile == nullptr)
@@ -155,7 +155,7 @@ int32_t XmlFileReader::getSamples(cmplx * V, int32_t size)
     return 0;
   }
 
-  while ((int32_t)(_I_Buffer.get_ring_buffer_read_available()) < size)
+  while ((i32)(_I_Buffer.get_ring_buffer_read_available()) < size)
   {
     usleep(1000);
   }
@@ -163,7 +163,7 @@ int32_t XmlFileReader::getSamples(cmplx * V, int32_t size)
   return _I_Buffer.get_data_from_ring_buffer(V, size);
 }
 
-int32_t XmlFileReader::Samples()
+i32 XmlFileReader::Samples()
 {
   if (theFile == nullptr)
   {
@@ -174,7 +174,7 @@ int32_t XmlFileReader::Samples()
 
 void XmlFileReader::slot_set_progress(int samplesRead, int samplesToRead)
 {
-  fileProgress->setValue((float)samplesRead / samplesToRead * 100);
+  fileProgress->setValue((f32)samplesRead / samplesToRead * 100);
   currentTime->display(QString("%1").arg(samplesRead / 2048000.0, 0, 'f', 1));
   totalTime->display(QString("%1").arg(samplesToRead / 2048000.0, 0, 'f', 1));
 }
@@ -214,7 +214,7 @@ bool XmlFileReader::isFileInput()
   return true;
 }
 
-void XmlFileReader::setVFOFrequency(int32_t)
+void XmlFileReader::setVFOFrequency(i32)
 {
 }
 
@@ -222,9 +222,9 @@ void XmlFileReader::resetBuffer()
 {
 }
 
-int16_t XmlFileReader::bitDepth()
+i16 XmlFileReader::bitDepth()
 {
-  return static_cast<int16_t>(theDescriptor->bitsperChannel);
+  return static_cast<i16>(theDescriptor->bitsperChannel);
 }
 
 QString XmlFileReader::deviceName()

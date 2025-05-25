@@ -38,7 +38,7 @@
 #include "dabradio.h"
 #include <vector>
 
-OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer) :
+OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer) :
   mpRadioInterface(ipMr),
   mFreqInterleaver(),
   mpIqBuffer(ipIqBuffer),
@@ -57,11 +57,11 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBu
   mMeanSigmaSqVector.resize(cK);
 
 #ifdef USE_PHASE_CORR_LUT
-  // create phase -> cmplx LUT
-  for (int32_t phaseIdx = -cLutLen2; phaseIdx <= cLutLen2; ++phaseIdx)
+  // create phase -> cf32 LUT
+  for (i32 phaseIdx = -cLutLen2; phaseIdx <= cLutLen2; ++phaseIdx)
   {
-    const float phase = (float)phaseIdx / cLutFact;
-    mLutPhase2Cmplx[phaseIdx + cLutLen2] = cmplx(std::cos(phase), std::sin(phase));
+    const f32 phase = (f32)phaseIdx / cLutFact;
+    mLutPhase2Cmplx[phaseIdx + cLutLen2] = cf32(std::cos(phase), std::sin(phase));
   }
 #endif
 
@@ -76,15 +76,15 @@ OfdmDecoder::~OfdmDecoder()
 }
 
 #ifndef USE_PHASE_CORR_LUT
-cmplx OfdmDecoder::cmplx_from_phase2(float d)
+cf32 OfdmDecoder::cmplx_from_phase2(f32 d)
 {
-  const double M_4_PI = 1.273239544735162542821171882678754627704620361328125;
-  const double PI4_A = 0.7853981554508209228515625;
-  const double PI4_B = 0.794662735614792836713604629039764404296875e-8;
-  const double PI4_C = 0.306161699786838294306516483068750264552437361480769e-16;
+  const f64 M_4_PI = 1.273239544735162542821171882678754627704620361328125;
+  const f64 PI4_A = 0.7853981554508209228515625;
+  const f64 PI4_B = 0.794662735614792836713604629039764404296875e-8;
+  const f64 PI4_C = 0.306161699786838294306516483068750264552437361480769e-16;
   const int N = 3; // order of argument reduction
 
-  double s = abs(d);
+  f64 s = abs(d);
   int q = (int)(s * M_4_PI);
   int r = q + (q & 1);
   s -= r * PI4_A;
@@ -94,13 +94,13 @@ cmplx OfdmDecoder::cmplx_from_phase2(float d)
   s = s * 0.125; // 2^-N
   s = s * s; // Evaluating Taylor series
   s = ((((s / 1814400. - 1.0 / 20160.0) * s + 1.0 / 360.0) * s - 1.0 / 12.0) * s + 1.0) * s;
-  for (int i = 0; i < N; i++) // Applying double angle formula
+  for (int i = 0; i < N; i++) // Applying f64 angle formula
   {
     s = (4.0 - s) * s;
   }
   s = s / 2.0;
-  float sine = sqrt((2.0 - s) * s);
-  float cosine = 1.0 - s;
+  f32 sine = sqrt((2.0 - s) * s);
+  f32 cosine = 1.0 - s;
 
   if (((q + 1) & 2) != 0)
   {
@@ -110,7 +110,7 @@ cmplx OfdmDecoder::cmplx_from_phase2(float d)
   }
   if (((q & 4) != 0) != (d < 0.0)) sine = -sine;
   if (((q + 2) & 4) != 0) cosine = -cosine;
-  return cmplx(cosine, sine);
+  return cf32(cosine, sine);
 }
 #endif
 
@@ -147,13 +147,13 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII
     _eval_null_symbol_statistics(iV);
   }
 
-  constexpr float ALPHA = 0.1f;
+  constexpr f32 ALPHA = 0.1f;
 
-  for (int32_t idx = -cK / 2; idx < cK / 2; ++idx)
+  for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
   {
     // Consider FFT shift and skipping DC (0 Hz) bin.
-    const int32_t fftIdx = fft_shift_skip_dc(idx, cTu);
-    const float level = std::abs(iV[fftIdx]);
+    const i32 fftIdx = fft_shift_skip_dc(idx, cTu);
+    const f32 level = std::abs(iV[fftIdx]);
     mean_filter(mMeanNullPowerWithoutTII[fftIdx], level * level, ALPHA);
   }
 }
@@ -161,29 +161,29 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII
 void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iBuffer)
 {
   // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
-  memcpy(mPhaseReference.data(), iBuffer.data(), cTu * sizeof(cmplx));
+  memcpy(mPhaseReference.data(), iBuffer.data(), cTu * sizeof(cf32));
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, std::vector<i16> & oBits)
 {
   // current runtime on i7-6700K:
   // phase correction via:
   //   LUT:                avr: 240us, min: 108us
   //   cmplx_from_phase    avr: 235us, min: 101us
   //   cmplx_from_phase2   avr: 283us, min: 144us
-  float sum = 0.0f;
-  float stdDevSqOvrAll = 0.0f;
+  f32 sum = 0.0f;
+  f32 stdDevSqOvrAll = 0.0f;
 
   ++mShowCntIqScope;
   ++mShowCntStatistics;
   const bool showScopeData = (mShowCntIqScope > cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
   const bool showStatisticData = (mShowCntStatistics > 5 * cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
 
-  for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+  for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
     // We do not interchange the positive/negative frequencies to their right positions, the de-interleaving understands this.
-    int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrIdx);
-    int16_t realCarrRelIdx = fftIdx;
+    i16 fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrIdx);
+    i16 realCarrRelIdx = fftIdx;
 
     if (fftIdx < 0)
     {
@@ -195,75 +195,75 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
       realCarrRelIdx += cK / 2 - 1;
     }
 
-    const int16_t dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
+    const i16 dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
 
-    constexpr float ALPHA = 0.005f;
+    constexpr f32 ALPHA = 0.005f;
 
     /*
      * Decoding is computing the phase difference between carriers with the same index in subsequent blocks.
      * The carrier of a block is the reference for the carrier on the same position in the next block.
      */
-    const cmplx fftBinRaw = iV[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
+    const cf32 fftBinRaw = iV[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
 
-    float & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
+    f32 & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
 
     //fftBin *= rotator; // Fine correction of phase which can't be done in the time domain (not more necessary as it is done below other way).
 
 #ifdef USE_PHASE_CORR_LUT
     // do phase correction via LUT
-    const int32_t phaseIdx = (int32_t)std::lround(integAbsPhasePerBinRef * cLutFact);
+    const i32 phaseIdx = (i32)std::lround(integAbsPhasePerBinRef * cLutFact);
     assert(phaseIdx >= -cLutLen2 && phaseIdx <= cLutLen2 );  // the limitation is done below already
-    const cmplx phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
-    const cmplx fftBin = fftBinRaw * phase;
+    const cf32 phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
+    const cf32 fftBin = fftBinRaw * phase;
 #else
-    const cmplx fftBin = fftBinRaw * cmplx_from_phase2(-integAbsPhasePerBinRef);
-    // const cmplx fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
+    const cf32 fftBin = fftBinRaw * cmplx_from_phase2(-integAbsPhasePerBinRef);
+    // const cf32 fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
 #endif
 
     // Get phase and absolute phase for each bin.
-    const float fftBinPhase = std::arg(fftBin);
-    const float fftBinAbsPhase = turn_phase_to_first_quadrant(fftBinPhase);
+    const f32 fftBinPhase = std::arg(fftBin);
+    const f32 fftBinAbsPhase = turn_phase_to_first_quadrant(fftBinPhase);
 
     // Integrate phase error to perform the phase correction in the next OFDM symbol.
     integAbsPhasePerBinRef += 0.2f * ALPHA * (fftBinAbsPhase - F_M_PI_4); // TODO: correction still necessary?
     limit_symmetrically(integAbsPhasePerBinRef, F_RAD_PER_DEG * 20.0f); // this is important to not overdrive mLutPhase2Cmplx!
 
     // Get standard deviation of absolute phase for each bin. The integrator above assures that F_M_PI_4 is the phase mean value.
-    const float curStdDevDiff = (fftBinAbsPhase -  F_M_PI_4);
-    const float curStdDevSq = curStdDevDiff * curStdDevDiff;
-    float & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
+    const f32 curStdDevDiff = (fftBinAbsPhase -  F_M_PI_4);
+    const f32 curStdDevSq = curStdDevDiff * curStdDevDiff;
+    f32 & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
     stdDevSqOvrAll += stdDevSqRef;
 
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
     // Simplification: The IQ plot would need only the level, not power, so the root of the power is used (below)..
-    const float fftBinAbsLevel = std::abs(fftBin);
-    const float fftBinPower = fftBinAbsLevel * fftBinAbsLevel;
+    const f32 fftBinAbsLevel = std::abs(fftBin);
+    const f32 fftBinPower = fftBinAbsLevel * fftBinAbsLevel;
 
-    float & meanLevelPerBinRef = mMeanLevelVector[nomCarrIdx];
-    float & meanPowerPerBinRef = mMeanPowerVector[nomCarrIdx];
+    f32 & meanLevelPerBinRef = mMeanLevelVector[nomCarrIdx];
+    f32 & meanPowerPerBinRef = mMeanPowerVector[nomCarrIdx];
     mean_filter(meanLevelPerBinRef, fftBinAbsLevel, ALPHA);
     mean_filter(meanPowerPerBinRef, fftBinPower, ALPHA);
-    mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (float)cK);
+    mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (f32)cK);
 
     // Collect data for "Log Likelihood Ratio"
-    const float meanLevelAtAxisPerBin = meanLevelPerBinRef * F_SQRT1_2;
-    const float realLevelDistPerBin = (std::abs(real(fftBin)) - meanLevelAtAxisPerBin); // x-distance to reference point
-    const float imagLevelDistPerBin = (std::abs(imag(fftBin)) - meanLevelAtAxisPerBin); // y-distance to reference point
-    const float sigmaSqPerBin = realLevelDistPerBin * realLevelDistPerBin + imagLevelDistPerBin * imagLevelDistPerBin; // squared distance to reference point
-    float & meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
+    const f32 meanLevelAtAxisPerBin = meanLevelPerBinRef * F_SQRT1_2;
+    const f32 realLevelDistPerBin = (std::abs(real(fftBin)) - meanLevelAtAxisPerBin); // x-distance to reference point
+    const f32 imagLevelDistPerBin = (std::abs(imag(fftBin)) - meanLevelAtAxisPerBin); // y-distance to reference point
+    const f32 sigmaSqPerBin = realLevelDistPerBin * realLevelDistPerBin + imagLevelDistPerBin * imagLevelDistPerBin; // squared distance to reference point
+    f32 & meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
     mean_filter(meanSigmaSqPerBinRef, sigmaSqPerBin, ALPHA);
 
-    float signalPower = meanPowerPerBinRef - mMeanNullPowerWithoutTII[fftIdx];
+    f32 signalPower = meanPowerPerBinRef - mMeanNullPowerWithoutTII[fftIdx];
     if (signalPower <= 0.0f) signalPower = 0.1f;
 
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
-    float w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+    f32 w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
     w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) +
           (mSoftBitType == ESoftBitType::SOFTDEC1 ? 1.0f : 2.0f); // 1/SNR + (1 or 2)
 
-    cmplx r1;
-    float w2;
+    cf32 r1;
+    f32 w2;
 
     if (mSoftBitType == ESoftBitType::SOFTDEC3)
     {
@@ -279,8 +279,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
     }
 
     // split the real and the imaginary part and scale it
-    oBits[0  + nomCarrIdx] = (int16_t)(real(r1) * w2);
-    oBits[cK + nomCarrIdx] = (int16_t)(imag(r1) * w2);
+    oBits[0  + nomCarrIdx] = (i16)(real(r1) * w2);
+    oBits[cK + nomCarrIdx] = (i16)(imag(r1) * w2);
     sum += std::abs(r1);
 
     if (showScopeData)
@@ -290,8 +290,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
       case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(meanPowerPerBinRef); break;
       case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(mMeanPowerOvrAll); break;
       case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / std::sqrt(mMeanPowerOvrAll); break;
-      case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =  10.0f / (float)cTu * _interpolate_2d_plane(mPhaseReference[0], iV[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
-      case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (float)cTu * _interpolate_2d_plane(mPhaseReference[0], iV[0], (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
+      case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =  10.0f / (f32)cTu * _interpolate_2d_plane(mPhaseReference[0], iV[0], (f32)nomCarrIdx / ((f32)mIqVector.size() - 1)); break;
+      case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (f32)cTu * _interpolate_2d_plane(mPhaseReference[0], iV[0], (f32)nomCarrIdx / ((f32)mIqVector.size() - 1)); break;
       case EIqPlotType::DC_OFFSET_ADC_10:       mIqVector[nomCarrIdx] =  10.0f * mDcAdc; break;
       case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;
       }
@@ -323,7 +323,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
 
   if (iCurOfdmSymbIdx == 1)
   {
-    const float FreqCorr = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;
+    const f32 FreqCorr = iPhaseCorr / F_2_M_PI * (f32)cCarrDiff;
     mean_filter(mMeanSigmaSqFreqCorr, FreqCorr * FreqCorr, 0.2f);
   }
 
@@ -338,8 +338,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
 
   if (showStatisticData)
   {
-    const float noisePow = _compute_noise_Power();
-    float snr = (mMeanPowerOvrAll - noisePow) / noisePow;
+    const f32 noisePow = _compute_noise_Power();
+    f32 snr = (mMeanPowerOvrAll - noisePow) / noisePow;
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / stdDevSqOvrAll);
@@ -347,7 +347,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
     mLcdData.MeanSigmaSqFreqCorr = sqrt(mMeanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
-    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;
+    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (f32)cCarrDiff;
 
     emit signal_show_lcd_data(&mLcdData);
 
@@ -356,35 +356,35 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const uint16_t iCurOfdmSymb
     if (mNextShownOfdmSymbIdx == 0) mNextShownOfdmSymbIdx = 1; // as iCurSymbolNo can never be zero here
   }
 
-  memcpy(mPhaseReference.data(), iV.data(), cTu * sizeof(cmplx));
+  memcpy(mPhaseReference.data(), iV.data(), cTu * sizeof(cf32));
 }
 
-float OfdmDecoder::_compute_noise_Power() const
+f32 OfdmDecoder::_compute_noise_Power() const
 {
-  float sumNoise = 0.0f;
-  for (int32_t idx = -cK / 2; idx < cK / 2; ++idx)
+  f32 sumNoise = 0.0f;
+  for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
   {
     // Consider FFT shift and skipping DC (0 Hz) bin.
-    const int32_t fftIdx = fft_shift_skip_dc(idx, cTu);
+    const i32 fftIdx = fft_shift_skip_dc(idx, cTu);
     sumNoise += mMeanNullPowerWithoutTII[fftIdx]; // the component already squared
   }
-  return sumNoise / (float)cK;
+  return sumNoise / (f32)cK;
 }
 
 void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
 {
-  float max = -1e38f;
-  float min =  1e38f;
+  f32 max = -1e38f;
+  f32 min =  1e38f;
 
   if (mCarrierPlotType == ECarrierPlotType::NULL_TII_LOG)
   {
-    constexpr float ALPHA = 0.20f;
-    for (int32_t idx = -cK / 2; idx < cK / 2; ++idx)
+    constexpr f32 ALPHA = 0.20f;
+    for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
     {
       // Consider FFT shift and skipping DC (0 Hz) bin.
-      const int32_t fftIdx = fft_shift_skip_dc(idx, cTu);
-      const float level = log10_times_20(std::abs(iV[fftIdx]));
-      float & meanNullLevelRef = mMeanNullLevel[fftIdx];
+      const i32 fftIdx = fft_shift_skip_dc(idx, cTu);
+      const f32 level = log10_times_20(std::abs(iV[fftIdx]));
+      f32 & meanNullLevelRef = mMeanNullLevel[fftIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -394,13 +394,13 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
   }
   else
   {
-    constexpr float ALPHA = 0.20f;
-    for (int32_t idx = -cK / 2; idx < cK / 2; ++idx)
+    constexpr f32 ALPHA = 0.20f;
+    for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
     {
       // Consider FFT shift and skipping DC (0 Hz) bin.
-      const int32_t fftIdx = fft_shift_skip_dc(idx, cTu);
-      const float level = std::abs(iV[fftIdx]);
-      float & meanNullLevelRef = mMeanNullLevel[fftIdx];
+      const i32 fftIdx = fft_shift_skip_dc(idx, cTu);
+      const f32 level = std::abs(iV[fftIdx]);
+      f32 & meanNullLevelRef = mMeanNullLevel[fftIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -445,14 +445,14 @@ void OfdmDecoder::set_show_nominal_carrier(bool iShowNominalCarrier)
   mShowNomCarrier = iShowNominalCarrier;
 }
 
-cmplx OfdmDecoder::_interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar)
+cf32 OfdmDecoder::_interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar)
 {
   assert(iPar >= 0.0f && iPar <= 1.0f);
-  const float a_r = real(iStart);
-  const float a_i = imag(iStart);
-  const float b_r = real(iEnd);
-  const float b_i = imag(iEnd);
-  const float c_r = (b_r - a_r) * iPar + a_r;
-  const float c_i = (b_i - a_i) * iPar + a_i;
+  const f32 a_r = real(iStart);
+  const f32 a_i = imag(iStart);
+  const f32 b_r = real(iEnd);
+  const f32 b_i = imag(iEnd);
+  const f32 c_r = (b_r - a_r) * iPar + a_r;
+  const f32 c_i = (b_i - a_i) * iPar + a_i;
   return { c_r, c_i };
 }

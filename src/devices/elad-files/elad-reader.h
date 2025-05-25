@@ -35,17 +35,17 @@ Q_OBJECT
 public:
 			eladReader	(eladFiles *,
 	                                 FILE *,
-	                                 RingBuffer<uint8_t> *); 
+	                                 RingBuffer<u8> *);
 			~eladReader	();
 	void		startReader	();
 	void		stopReader	();
 private:
 virtual void		run		();
 	FILE		*filePointer;
-	RingBuffer<uint8_t> *theBuffer;
-	uint64_t	period;
+	RingBuffer<u8> *theBuffer;
+	u64	period;
 	std::atomic<bool>	running;
-	int64_t		fileLength;
+	i64		fileLength;
 	eladFiles	*parent;
 signals:
 	void		setProgress	(int);

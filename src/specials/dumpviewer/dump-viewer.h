@@ -55,8 +55,8 @@ private	slots:
 	void	handle_compressor	(int);
 private:
 	FILE		*theFile;
-	float		seconds_per_frame;
-	float		seconds_per_sample;
+	f32		seconds_per_frame;
+	f32		seconds_per_sample;
 	void		show_segment	(int, int);
 	int		fileLength;
 	QwtPlot         *plotgrid;

@@ -414,11 +414,11 @@ int	ret;
 	         gainControl, SLOT (setValue (int)));
 	connect (this, SIGNAL (new_agcValue (bool)),
 	         agcControl, SLOT (setChecked (bool)));
-	connect (this, SIGNAL (showSignal (float)),
-	         this, SLOT (handleSignal (float)));
+	connect (this, SIGNAL (showSignal (f32)),
+	         this, SLOT (handleSignal (f32)));
 //	set up for interpolator
-	float	denominator	= float (DAB_RATE) / DIVIDER;
-	float inVal		= float (RX_RATE) / DIVIDER;
+	f32	denominator	= f32 (DAB_RATE) / DIVIDER;
+	f32 inVal		= f32 (RX_RATE) / DIVIDER;
 	for (int i = 0; i < DAB_RATE / DIVIDER; i ++) {
 	   mapTable_int [i]	= int (floor (i * (inVal / denominator)));
 	   mapTable_float [i] =
@@ -443,7 +443,7 @@ int	ret;
 	connected	= true;
 	state -> setText ("ready to go");
 //	set up for the display
-	fftBuffer	= new cmplx [8192];
+	fftBuffer	= new cf32 [8192];
         plotgrid        = transmittedSignal;
         plotgrid        -> setCanvasBackground (QColor("black"));
 	gridColor	= QColor ("white");
@@ -495,7 +495,7 @@ int	ret;
 	iio_context_destroy (ctx);
 }
 //
-void	plutoHandler::setVFOFrequency	(int32_t newFrequency) {
+void	plutoHandler::setVFOFrequency	(i32 newFrequency) {
 int	ret;
 struct iio_channel *lo_channel;
 
@@ -512,7 +512,7 @@ struct iio_channel *lo_channel;
 	                                 (int)(rx_cfg. lo_hz));
 }
 
-int32_t	plutoHandler::getVFOFrequency () {
+i32	plutoHandler::getVFOFrequency () {
 	return rx_cfg. lo_hz;
 }
 //
@@ -593,7 +593,7 @@ struct iio_channel *gain_channel;
 	}
 }
 
-bool	plutoHandler::restartReader	(int32_t freq) {
+bool	plutoHandler::restartReader	(i32 freq) {
 int ret;
 iio_channel *lo_channel;
 iio_channel *gain_channel;
@@ -666,8 +666,8 @@ void	plutoHandler::run_receiver	() {
 char	*p_end, *p_dat;
 int	p_inc;
 int	nbytes_rx;
-cmplx localBuf [DAB_RATE / DIVIDER];
-std::complex<int16_t> dumpBuf [CONV_SIZE + 1];
+cf32 localBuf [DAB_RATE / DIVIDER];
+std::complex<i16> dumpBuf [CONV_SIZE + 1];
 
 	state -> setText ("running");
 	running. store (true);
@@ -678,18 +678,18 @@ std::complex<int16_t> dumpBuf [CONV_SIZE + 1];
 
 	   for (p_dat = (char *)iio_buffer_first (rxbuf, rx0_i);
 	        p_dat < p_end; p_dat += p_inc) {
-	      const int16_t i_p = ((int16_t *)p_dat) [0];
-	      const int16_t q_p = ((int16_t *)p_dat) [1];
-	      dumpBuf [convIndex] = std::complex<int16_t> (i_p, q_p);
-	      cmplxsample = cmplx (i_p / 2048.0,
+	      const i16 i_p = ((i16 *)p_dat) [0];
+	      const i16 q_p = ((i16 *)p_dat) [1];
+	      dumpBuf [convIndex] = std::complex<i16> (i_p, q_p);
+	      cmplxsample = cf32 (i_p / 2048.0,
 	                                                       q_p / 2048.0);
 	      convBuffer [convIndex ++] = sample;
 	      if (convIndex > CONV_SIZE) {
 	         if (dumping. load ())
 	            xmlWriter -> add (&dumpBuf [1], CONV_SIZE);
 	         for (int j = 0; j < DAB_RATE / DIVIDER; j ++) {
-	            int16_t inpBase	= mapTable_int [j];
-	            float   inpRatio	= mapTable_float [j];
+	            i16 inpBase	= mapTable_int [j];
+	            f32   inpRatio	= mapTable_float [j];
 	            localBuf [j]	= convBuffer [inpBase + 1] * inpRatio +
 	                            convBuffer [inpBase] * (1 - inpRatio);
 	         }
@@ -702,13 +702,13 @@ std::complex<int16_t> dumpBuf [CONV_SIZE + 1];
 	}
 }
 
-int32_t	plutoHandler::getSamples (cmplx *V, int32_t size) {
+i32	plutoHandler::getSamples (cf32 *V, i32 size) {
 	if (!running. load ())
 	   return 0;
 	return _I_Buffer. getDataFromBuffer (V, size);
 }
 
-int32_t	plutoHandler::Samples () {
+i32	plutoHandler::Samples () {
 	return _I_Buffer. GetRingBufferReadAvailable();
 }
 //
@@ -731,7 +731,7 @@ void	plutoHandler::resetBuffer() {
 	_I_Buffer. FlushRingBuffer();
 }
 
-int16_t	plutoHandler::bitDepth () {
+i16	plutoHandler::bitDepth () {
 	return 12;
 }
 
@@ -869,7 +869,7 @@ QString	theValue	= "";
 	agcControl	-> blockSignals (false);
 }
 
-void	plutoHandler::set_fmFrequency (int32_t freq) {
+void	plutoHandler::set_fmFrequency (i32 freq) {
 struct  iio_channel *lo_channel;
 	get_lo_chan (ctx, TX, &lo_channel);
         tx_cfg. lo_hz   = this  -> fmFrequency;
@@ -883,7 +883,7 @@ struct  iio_channel *lo_channel;
         }
 }
 	
-void    plutoHandler::startTransmitter  (int32_t freq) {
+void    plutoHandler::startTransmitter  (i32 freq) {
 struct  iio_channel *lo_channel;
 
 	this	-> fmFrequency	= freq * KHz (1);
@@ -914,7 +914,7 @@ char	*p_begin	= (char *)(iio_buffer_start (txbuf));
 char	*p_end		= (char *)(iio_buffer_end  (txbuf));
 int	p_inc		= iio_buffer_step          (txbuf);
 int	bufferLength	= int (p_end - p_begin);
-int	sourceSize	= bufferLength / (2 * sizeof (int16_t));
+int	sourceSize	= bufferLength / (2 * sizeof (i16));
 
 	fprintf (stderr, "sourcesize is %d\n", sourceSize);
 
@@ -933,19 +933,19 @@ int	sourceSize	= bufferLength / (2 * sizeof (int16_t));
 	      }
 	      if (!transmitting)
 	         break;
-	      cmplx bb;
+	      cf32 bb;
 	      _O_Buffer. getDataFromBuffer (&bb, 1);
-	      int16_t *i_p = &((int16_t *)p_dat) [0];
-	      int16_t *q_p = &((int16_t *)p_dat) [1];
-	      *i_p = (int16_t)(real (bb) * 4096) << 4;
-	      *q_p = (int16_t)(imag (bb) * 4096) << 4;
+	      i16 *i_p = &((i16 *)p_dat) [0];
+	      i16 *q_p = &((i16 *)p_dat) [1];
+	      *i_p = (i16)(real (bb) * 4096) << 4;
+	      *q_p = (i16)(imag (bb) * 4096) << 4;
 	   }
 	   int  nbytes_tx	= iio_buffer_push (txbuf);
 	}
 }
 
-void    plutoHandler::sendSample        (cmplx v, float s) {
-cmplx buf [FM_RATE / 192000];
+void    plutoHandler::sendSample        (cf32 v, f32 s) {
+cf32 buf [FM_RATE / 192000];
 	if (!transmitting. load ())
 	   return;
 	showSignal (s);
@@ -1148,8 +1148,8 @@ bool	plutoHandler::loadFunctions	() {
 	return true;
 }
 
-void	plutoHandler::handleSignal (float s) {
-static float buffer [8192];
+void	plutoHandler::handleSignal (f32 s) {
+static f32 buffer [8192];
 static int bufferP	= 0;
 static int bufferC	= 0;
 
@@ -1165,13 +1165,13 @@ static int bufferC	= 0;
 	}
 }
 
-void	plutoHandler::showBuffer (float *b) {
-static double X_axis [2048];
-static double Y_values [2048];
-static double endV [2048] = {0};
+void	plutoHandler::showBuffer (f32 *b) {
+static f64 X_axis [2048];
+static f64 Y_values [2048];
+static f64 endV [2048] = {0};
 
 	for (int i = 0; i < 8192; i ++)
-	   fftBuffer [i] = cmplx (b [i] * window [i], 0);
+	   fftBuffer [i] = cf32 (b [i] * window [i], 0);
 
 	Fft_transform (fftBuffer, 8192, false);
 	
@@ -1185,7 +1185,7 @@ static double endV [2048] = {0};
 	   if (!isnan (Y_values [i]) && !isinf (Y_values [i]))
 	      endV [i] = 0.1 * get_db (Y_values [i]) + 0.9 * endV [i];
 
-	float max	= -100;
+	f32 max	= -100;
 	for (int i = 0; i < 2048; i ++)
 	   if (endV [i] > max)
 	      max = endV [i];

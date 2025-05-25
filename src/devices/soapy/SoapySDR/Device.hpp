@@ -194,7 +194,7 @@ public:
      * \param [out] fullScale the maximum possible value
      * \return the native stream buffer format string
      */
-    virtual std::string getNativeStreamFormat(const int direction, const size_t channel, double &fullScale) const;
+    virtual std::string getNativeStreamFormat(const int direction, const size_t channel, f64 &fullScale) const;
 
     /*!
      * Query the argument info description for stream args.
@@ -585,7 +585,7 @@ public:
      * \param channel an available channel on the device
      * \param offset the relative correction (1.0 max)
      */
-    virtual void setDCOffset(const int direction, const size_t channel, const std::complex<double> &offset);
+    virtual void setDCOffset(const int direction, const size_t channel, const std::complex<f64> &offset);
 
     /*!
      * Get the frontend DC offset correction.
@@ -593,7 +593,7 @@ public:
      * \param channel an available channel on the device
      * \return the relative correction (1.0 max)
      */
-    virtual std::complex<double> getDCOffset(const int direction, const size_t channel) const;
+    virtual std::complex<f64> getDCOffset(const int direction, const size_t channel) const;
 
     /*!
      * Does the device support frontend IQ balance correction?
@@ -609,7 +609,7 @@ public:
      * \param channel an available channel on the device
      * \param balance the relative correction (1.0 max)
      */
-    virtual void setIQBalance(const int direction, const size_t channel, const std::complex<double> &balance);
+    virtual void setIQBalance(const int direction, const size_t channel, const std::complex<f64> &balance);
 
     /*!
      * Get the frontend IQ balance correction.
@@ -617,7 +617,7 @@ public:
      * \param channel an available channel on the device
      * \return the relative correction (1.0 max)
      */
-    virtual std::complex<double> getIQBalance(const int direction, const size_t channel) const;
+    virtual std::complex<f64> getIQBalance(const int direction, const size_t channel) const;
 
     /*!
      * Does the device support frontend frequency correction?
@@ -633,7 +633,7 @@ public:
      * \param channel an available channel on the device
      * \param value the correction in PPM
      */
-    virtual void setFrequencyCorrection(const int direction, const size_t channel, const double value);
+    virtual void setFrequencyCorrection(const int direction, const size_t channel, const f64 value);
 
     /*!
      * Get the frontend frequency correction value.
@@ -641,7 +641,7 @@ public:
      * \param channel an available channel on the device
      * \return the correction value in PPM
      */
-    virtual double getFrequencyCorrection(const int direction, const size_t channel) const;
+    virtual f64 getFrequencyCorrection(const int direction, const size_t channel) const;
 
     /*******************************************************************
      * Gain API
@@ -687,7 +687,7 @@ public:
      * \param channel an available channel on the device
      * \param value the new amplification value in dB
      */
-    virtual void setGain(const int direction, const size_t channel, const double value);
+    virtual void setGain(const int direction, const size_t channel, const f64 value);
 
     /*!
      * Set the value of a amplification element in a chain.
@@ -696,7 +696,7 @@ public:
      * \param name the name of an amplification element
      * \param value the new amplification value in dB
      */
-    virtual void setGain(const int direction, const size_t channel, const std::string &name, const double value);
+    virtual void setGain(const int direction, const size_t channel, const std::string &name, const f64 value);
 
     /*!
      * Get the overall value of the gain elements in a chain.
@@ -704,7 +704,7 @@ public:
      * \param channel an available channel on the device
      * \return the value of the gain in dB
      */
-    virtual double getGain(const int direction, const size_t channel) const;
+    virtual f64 getGain(const int direction, const size_t channel) const;
 
     /*!
      * Get the value of an individual amplification element in a chain.
@@ -713,7 +713,7 @@ public:
      * \param name the name of an amplification element
      * \return the value of the gain in dB
      */
-    virtual double getGain(const int direction, const size_t channel, const std::string &name) const;
+    virtual f64 getGain(const int direction, const size_t channel, const std::string &name) const;
 
     /*!
      * Get the overall range of possible gain values.
@@ -763,7 +763,7 @@ public:
      * \param frequency the center frequency in Hz
      * \param args optional tuner arguments
      */
-    virtual void setFrequency(const int direction, const size_t channel, const double frequency, const Kwargs &args = Kwargs());
+    virtual void setFrequency(const int direction, const size_t channel, const f64 frequency, const Kwargs &args = Kwargs());
 
     /*!
      * Tune the center frequency of the specified element.
@@ -781,7 +781,7 @@ public:
      * \param frequency the center frequency in Hz
      * \param args optional tuner arguments
      */
-    virtual void setFrequency(const int direction, const size_t channel, const std::string &name, const double frequency, const Kwargs &args = Kwargs());
+    virtual void setFrequency(const int direction, const size_t channel, const std::string &name, const f64 frequency, const Kwargs &args = Kwargs());
 
     /*!
      * Get the overall center frequency of the chain.
@@ -791,7 +791,7 @@ public:
      * \param channel an available channel on the device
      * \return the center frequency in Hz
      */
-    virtual double getFrequency(const int direction, const size_t channel) const;
+    virtual f64 getFrequency(const int direction, const size_t channel) const;
 
     /*!
      * Get the frequency of a tunable element in the chain.
@@ -800,7 +800,7 @@ public:
      * \param name the name of a tunable element
      * \return the tunable element's frequency in Hz
      */
-    virtual double getFrequency(const int direction, const size_t channel, const std::string &name) const;
+    virtual f64 getFrequency(const int direction, const size_t channel, const std::string &name) const;
 
     /*!
      * List available tunable elements in the chain.
@@ -846,7 +846,7 @@ public:
      * \param channel an available channel on the device
      * \param rate the sample rate in samples per second
      */
-    virtual void setSampleRate(const int direction, const size_t channel, const double rate);
+    virtual void setSampleRate(const int direction, const size_t channel, const f64 rate);
 
     /*!
      * Get the baseband sample rate of the chain.
@@ -854,7 +854,7 @@ public:
      * \param channel an available channel on the device
      * \return the sample rate in samples per second
      */
-    virtual double getSampleRate(const int direction, const size_t channel) const;
+    virtual f64 getSampleRate(const int direction, const size_t channel) const;
 
     /*!
      * Get the range of possible baseband sample rates.
@@ -863,7 +863,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of possible rates in samples per second
      */
-    virtual std::vector<double> listSampleRates(const int direction, const size_t channel) const;
+    virtual std::vector<f64> listSampleRates(const int direction, const size_t channel) const;
 
     /*!
      * Get the range of possible baseband sample rates.
@@ -883,7 +883,7 @@ public:
      * \param channel an available channel on the device
      * \param bw the baseband filter width in Hz
      */
-    virtual void setBandwidth(const int direction, const size_t channel, const double bw);
+    virtual void setBandwidth(const int direction, const size_t channel, const f64 bw);
 
     /*!
      * Get the baseband filter width of the chain.
@@ -891,7 +891,7 @@ public:
      * \param channel an available channel on the device
      * \return the baseband filter width in Hz
      */
-    virtual double getBandwidth(const int direction, const size_t channel) const;
+    virtual f64 getBandwidth(const int direction, const size_t channel) const;
 
     /*!
      * Get the range of possible baseband filter widths.
@@ -900,7 +900,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of possible bandwidths in Hz
      */
-    virtual std::vector<double> listBandwidths(const int direction, const size_t channel) const;
+    virtual std::vector<f64> listBandwidths(const int direction, const size_t channel) const;
 
     /*!
      * Get the range of possible baseband filter widths.
@@ -918,13 +918,13 @@ public:
      * Set the master clock rate of the device.
      * \param rate the clock rate in Hz
      */
-    virtual void setMasterClockRate(const double rate);
+    virtual void setMasterClockRate(const f64 rate);
 
     /*!
      * Get the master clock rate of the device.
      * \return the clock rate in Hz
      */
-    virtual double getMasterClockRate(void) const;
+    virtual f64 getMasterClockRate(void) const;
 
     /*!
      * Get the range of available master clock rates.
@@ -1027,7 +1027,7 @@ public:
     /*!
      * Readback a global sensor given the name.
      * The value returned is a string which can represent
-     * a boolean ("true"/"false"), an integer, or float.
+     * a boolean ("true"/"false"), an integer, or f32.
      * \param key the ID name of an available sensor
      * \return the current value of the sensor
      */
@@ -1055,7 +1055,7 @@ public:
     /*!
      * Readback a channel sensor given the name.
      * The value returned is a string which can represent
-     * a boolean ("true"/"false"), an integer, or float.
+     * a boolean ("true"/"false"), an integer, or f32.
      * \param direction the channel direction RX or TX
      * \param channel an available channel on the device
      * \param key the ID name of an available sensor

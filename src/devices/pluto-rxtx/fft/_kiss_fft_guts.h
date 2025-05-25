@@ -7,7 +7,7 @@
  */
 
 /* kiss_fft.h
-   defines kiss_fft_scalar as either short or a float type
+   defines kiss_fft_scalar as either short or a f32 type
    and defines
    typedef struct { kiss_fft_scalar r; kiss_fft_scalar i; }kiss_fft_cpx; */
 #include "kiss_fft.h"
@@ -38,11 +38,11 @@ struct kiss_fft_state{
 #ifdef FIXED_POINT
 #if (FIXED_POINT==32)
 # define FRACBITS 31
-# define SAMPPROD int64_t
+# define SAMPPROD i64
 #define SAMP_MAX 2147483647
 #else
 # define FRACBITS 15
-# define SAMPPROD int32_t 
+# define SAMPPROD i32
 #define SAMP_MAX 32767
 #endif
 
@@ -141,7 +141,7 @@ struct kiss_fft_state{
 
 /* a debugging function */
 #define pcpx(c)\
-    fprintf(stderr,"%g + %gi\n",(double)((c)->r),(double)((c)->i) )
+    fprintf(stderr,"%g + %gi\n",(f64)((c)->r),(f64)((c)->i) )
 
 
 #ifdef KISS_FFT_USE_ALLOCA

@@ -81,7 +81,7 @@ void LibLoader::finalize() {
         m_finalize();
 }
 
-void LibLoader::version(uint32_t &major, uint32_t &minor, uint32_t &patch) {
+void LibLoader::version(u32 &major, u32 &minor, u32 &patch) {
     if (m_version) {
         m_version (major, minor, patch);
     }
@@ -105,14 +105,14 @@ string t_str;
     return t_str;
 }
 
-uint32_t LibLoader::devices () {
-uint32_t t_count = 0;
+u32 LibLoader::devices () {
+u32 t_count = 0;
     if (m_devices)
         m_devices(t_count);
     return t_count;
 }
 
-bool LibLoader::open(Descriptor *pDev, const uint32_t devIndex) {
+bool LibLoader::open(Descriptor *pDev, const u32 devIndex) {
 	if (m_open)
         return m_open(pDev, devIndex);
     return false;
@@ -136,13 +136,13 @@ bool LibLoader::stop(Descriptor dev) {
 	return false;
 }
 
-bool LibLoader::setPream (Descriptor dev, float value) {
+bool LibLoader::setPream (Descriptor dev, f32 value) {
 	if (m_setPreamp)
 	   return m_setPreamp (dev, value);
 	return false;
 }
 
-bool LibLoader::setFrequency(Descriptor dev, uint32_t value) {
+bool LibLoader::setFrequency(Descriptor dev, u32 value) {
 	if (m_setFrequency)
 	   return m_setFrequency(dev, value);
 	return false;

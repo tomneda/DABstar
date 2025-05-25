@@ -1,7 +1,7 @@
 #include  "Rsp2-handler.h"
 #include  "sdrplay-handler-v3.h"
 
-Rsp2_handler::Rsp2_handler(SdrPlayHandler_v3 *mpParent, sdrplay_api_DeviceT *chosenDevice, int freq, bool agcMode, int lnaState, int GRdB, bool biasT, bool notch, double ppmValue)
+Rsp2_handler::Rsp2_handler(SdrPlayHandler_v3 *mpParent, sdrplay_api_DeviceT *chosenDevice, int freq, bool agcMode, int lnaState, int GRdB, bool biasT, bool notch, f64 ppmValue)
   : Rsp_device(mpParent, chosenDevice, freq, agcMode, lnaState, GRdB, ppmValue)
 {
   int mLna_upperBound = lnaStates(freq) - 1;
@@ -30,7 +30,7 @@ bool Rsp2_handler::restart(int freq)
 {
   sdrplay_api_ErrT err;
 
-  mpChParams->tunerParams.rfFreq.rfHz = (float)freq;
+  mpChParams->tunerParams.rfFreq.rfHz = (f32)freq;
   err = mpParent->sdrplay_api_Update(mpChosenDevice->dev, mpChosenDevice->tuner, sdrplay_api_Update_Tuner_Frf, sdrplay_api_Update_Ext1_None);
   if (err != sdrplay_api_Success)
   {

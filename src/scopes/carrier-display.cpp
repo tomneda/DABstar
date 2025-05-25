@@ -38,7 +38,7 @@ CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
   select_plot_type(ECarrierPlotType::DEFAULT);
 }
 
-void CarrierDisp::display_carrier_plot(const std::vector<float> & iYValVec)
+void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
 {
   // customize plot first with new data to avoid flickering after plot type change
   if (mPlotTypeChanged)
@@ -47,9 +47,9 @@ void CarrierDisp::display_carrier_plot(const std::vector<float> & iYValVec)
     _customize_plot(_get_plot_type_data(mPlotType));
   }
 
-  if (mDataSize != (int32_t)iYValVec.size())
+  if (mDataSize != (i32)iYValVec.size())
   {
-    mDataSize = (int32_t)iYValVec.size();
+    mDataSize = (i32)iYValVec.size();
     _setup_x_axis();
   }
 
@@ -74,16 +74,16 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
   if (iCustPlot.YValueElementNo > 0)
   {
     assert(iCustPlot.YValueElementNo >= 2);
-    const double diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
-    QList<double> tickList;
+    const f64 diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
+    QList<f64> tickList;
 
-    for (int32_t elemIdx = 0; elemIdx < iCustPlot.YValueElementNo; ++elemIdx)
+    for (i32 elemIdx = 0; elemIdx < iCustPlot.YValueElementNo; ++elemIdx)
     {
       tickList.push_back(iCustPlot.YBottomValue + elemIdx * diffVal);
     }
 
     mZoomPan.set_y_range(CustQwtZoomPan::SRange(tickList[0], tickList[tickList.size() - 1], iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
-    mpQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<double>(), QList<double>(), tickList));
+    mpQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<f64>(), QList<f64>(), tickList));
   }
   else
   {
@@ -117,11 +117,11 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
     if (iCustPlot.MarkerYValueStep > 0)
     {
       assert(iCustPlot.YValueElementNo >= 2);
-      const double diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
-      const int32_t noMarkers = (iCustPlot.YValueElementNo + iCustPlot.MarkerYValueStep - 1) / iCustPlot.MarkerYValueStep;
+      const f64 diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
+      const i32 noMarkers = (iCustPlot.YValueElementNo + iCustPlot.MarkerYValueStep - 1) / iCustPlot.MarkerYValueStep;
       mQwtPlotMarkerVec.resize(noMarkers);
 
-      for (int32_t markerIdx = 0; markerIdx < noMarkers; ++markerIdx)
+      for (i32 markerIdx = 0; markerIdx < noMarkers; ++markerIdx)
       {
         mQwtPlotMarkerVec[markerIdx] = new QwtPlotMarker();
         QwtPlotMarker * const p = mQwtPlotMarkerVec[markerIdx];
@@ -146,16 +146,16 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 
   if (iCustPlot.DrawTiiSegments)
   {
-    std::array<double, 4 * 8 + 1> xPoints;
+    std::array<f64, 4 * 8 + 1> xPoints;
     mQwtPlotTiiMarkerVec.resize(xPoints.size());
 
-    int32_t c = 0;
-    for (int32_t j = -16; j <= -1; ++j) xPoints[c++] = 48.0 * j - 0.5;
+    i32 c = 0;
+    for (i32 j = -16; j <= -1; ++j) xPoints[c++] = 48.0 * j - 0.5;
     xPoints[c++] = 0;
-    for (int32_t j =   1; j <= 16; ++j) xPoints[c++] = 48.0 * j + 0.5;
-    assert(c == (int32_t)xPoints.size());
+    for (i32 j =   1; j <= 16; ++j) xPoints[c++] = 48.0 * j + 0.5;
+    assert(c == (i32)xPoints.size());
 
-    for (int32_t markerIdx = 0; markerIdx < (int32_t)mQwtPlotTiiMarkerVec.size(); ++markerIdx)
+    for (i32 markerIdx = 0; markerIdx < (i32)mQwtPlotTiiMarkerVec.size(); ++markerIdx)
     {
       mQwtPlotTiiMarkerVec[markerIdx] = new QwtPlotMarker();
       QwtPlotMarker * const p = mQwtPlotTiiMarkerVec[markerIdx];
@@ -182,14 +182,14 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 
 void CarrierDisp::_setup_x_axis()
 {
-  const int32_t displaySizeHalf = mDataSize / 2;
+  const i32 displaySizeHalf = mDataSize / 2;
   mX_axis_vec.resize(mDataSize);
 
   // the vector iPhaseVec does not contain data for the zero point, so skip the zero also in the x-vector
-  for (int32_t i = 0; i < displaySizeHalf; i++)
+  for (i32 i = 0; i < displaySizeHalf; i++)
   {
-    mX_axis_vec[i] = (float)(i - displaySizeHalf);
-    mX_axis_vec[i + displaySizeHalf] = (float)(i + 1);
+    mX_axis_vec[i] = (f32)(i - displaySizeHalf);
+    mX_axis_vec[i + displaySizeHalf] = (f32)(i + 1);
   }
 
   mpQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);

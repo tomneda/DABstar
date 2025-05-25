@@ -17,6 +17,7 @@
 #ifndef SETTING_HELPER_H
 #define SETTING_HELPER_H
 
+#include "glob_data_types.h"
 #include <QSettings>
 
 class QTimer;
@@ -66,7 +67,7 @@ public:
 
   void register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue);
   [[nodiscard]] QVariant read() const;
-  int32_t get_combobox_index() const;  // only usable for ComboBoxes, returns the last selected index
+  i32 get_combobox_index() const;  // only usable for ComboBoxes, returns the last selected index
 
 private:
   void _update_ui_state_from_setting();
@@ -83,7 +84,7 @@ class PosAndSize
 {
 public:
   explicit PosAndSize(const QString & iCat);
-  void read_widget_geometry(QWidget * iopWidget, int32_t iWidthDef, int32_t iHeightDef, bool iIsFixedSized) const;
+  void read_widget_geometry(QWidget * iopWidget, i32 iWidthDef, i32 iHeightDef, bool iIsFixedSized) const;
   void write_widget_geometry(const QWidget * ipWidget) const;
 
 private:

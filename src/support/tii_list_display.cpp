@@ -87,7 +87,7 @@ void TiiListDisplay::hide()
 
 void TiiListDisplay::add_row(const SCacheElem & iTr, const SDerivedData & iDD)
 {
-  int16_t row = mpTableWidget->rowCount();
+  i16 row = mpTableWidget->rowCount();
   mpTableWidget->insertRow(row);
 
   mpTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(iTr.mainId)));

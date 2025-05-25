@@ -25,16 +25,16 @@
 #include	"elad-files.h"
 
 static inline
-int64_t         getMyTime() {
+i64         getMyTime() {
 struct timeval  tv;
 
         gettimeofday (&tv, nullptr);
-        return ((int64_t)tv. tv_sec * 1000000 + (int64_t)tv. tv_usec);
+        return ((i64)tv. tv_sec * 1000000 + (i64)tv. tv_usec);
 }
 
 	eladReader::eladReader	(eladFiles	*mr,
 	                         FILE		*filePointer,
-	                         RingBuffer<uint8_t> *theBuffer) {
+	                         RingBuffer<u8> *theBuffer) {
 	this	-> parent	= mr;
 	this	-> filePointer	= filePointer;
 	this	-> theBuffer	= theBuffer;
@@ -62,10 +62,10 @@ void	eladReader::stopReader () {
 }
 
 void	eladReader::run	() {
-int32_t	bufferSize	= 3072 * 8;
-int64_t	nextStop;
+i32	bufferSize	= 3072 * 8;
+i64	nextStop;
 int	teller		= 0;
-uint8_t lBuffer [bufferSize];
+u8 lBuffer [bufferSize];
 
 	fseek (filePointer, 0, SEEK_SET);
 	running. store (true);

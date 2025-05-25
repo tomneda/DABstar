@@ -32,39 +32,39 @@ public:
   // bool isSequential() const override { return true; }
 
 private:
-  static constexpr float cFadeTimeMs =  60.0f;
-  static constexpr float cFadeMinDb  = -40.0f;
-  static constexpr float cFadeMinLin =  std::pow(10.0f, cFadeMinDb / 20.0f);
-  static constexpr int32_t cNumPeakLevelPerSecond = 20;
+  static constexpr f32 cFadeTimeMs =  60.0f;
+  static constexpr f32 cFadeMinDb  = -40.0f;
+  static constexpr f32 cFadeMinLin =  std::pow(10.0f, cFadeMinDb / 20.0f);
+  static constexpr i32 cNumPeakLevelPerSecond = 20;
 
   enum class EPlaybackState { Muted = 0, Playing = 1 };
 
   SAudioFifo * mpInFifo = nullptr;
   EPlaybackState mPlaybackState = EPlaybackState::Muted;
-  uint32_t mSampleRateKHz = 0;
+  u32 mSampleRateKHz = 0;
   bool mDoStop = false;
-  RingBuffer<int16_t> * const mpTechDataBuffer;
+  RingBuffer<i16> * const mpTechDataBuffer;
 
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
 
   // peak level meter
-  // DelayLine<cmplx> delayLine{cmplx(-40.0f, -40.0f)};
-  uint32_t mPeakLevelCurSampleCnt = 0;
-  uint32_t mPeakLevelSampleCntBothChannels = 0;
-  int16_t mAbsPeakLeft = 0;
-  int16_t mAbsPeakRight = 0;
+  // DelayLine<cf32> delayLine{cf32(-40.0f, -40.0f)};
+  u32 mPeakLevelCurSampleCnt = 0;
+  u32 mPeakLevelSampleCntBothChannels = 0;
+  i16 mAbsPeakLeft = 0;
+  i16 mAbsPeakRight = 0;
   QTimer mTimerPeakLevel;
-  // union SStereoPeakLevel { struct { float Left, Right; }; cmplx Cmplx; };
+  // union SStereoPeakLevel { struct { f32 Left, Right; }; cf32 Cmplx; };
 
-  // void _extract_audio_data_from_fifo(char * opData, int64_t iBytesToRead) const;
-  void _fade(int32_t iNumStereoSamples, float coe, float gain, int16_t * dataPtr) const;
-  void _fade_in_audio_samples(int16_t * opData, int32_t iNumStereoSamples) const;
-  void _fade_out_audio_samples(int16_t * opData, int32_t iNumStereoSamples) const;
-  void _eval_peak_audio_level(const int16_t * ipData, int32_t iNumSamples);
+  // void _extract_audio_data_from_fifo(char * opData, i64 iBytesToRead) const;
+  void _fade(i32 iNumStereoSamples, f32 coe, f32 gain, i16 * dataPtr) const;
+  void _fade_in_audio_samples(i16 * opData, i32 iNumStereoSamples) const;
+  void _fade_out_audio_samples(i16 * opData, i32 iNumStereoSamples) const;
+  void _eval_peak_audio_level(const i16 * ipData, i32 iNumSamples);
 
 signals:
-  void signal_show_audio_peak_level(float, float) const;
+  void signal_show_audio_peak_level(f32, f32) const;
   void signal_audio_data_available(int iNumSamples, int iSampleRate);
 };
 

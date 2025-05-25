@@ -50,7 +50,7 @@ static
 extioHandler	*myContext	= NULL;
 
 static
-int	extioCallback (int cnt, int status, float IQoffs, void *IQData) {
+int	extioCallback (int cnt, int status, f32 IQoffs, void *IQData) {
 	if (cnt > 0) { 	//	we got data
 	   if (myContext != NULL && myContext -> isStarted) 
 	      myContext -> theReader -> processData (IQoffs, IQData, cnt);
@@ -103,9 +103,9 @@ int	extioCallback (int cnt, int status, float IQoffs, void *IQData) {
 #ifdef	__MINGW32__
 char	temp [256];
 wchar_t	*windowsName;
-int16_t	wchars_num;
+i16	wchars_num;
 #endif
-int32_t	inputRate	= 0;
+i32	inputRate	= 0;
 
 	inputRate	= 2048000;	// default
 	lastFrequency	= Khz (25000);
@@ -216,7 +216,7 @@ int32_t	inputRate	= 0;
 	   }
 	}
 
-	_I_Buffer	= new RingBuffer<cmplx>(1024 * 1024);
+	_I_Buffer	= new RingBuffer<cf32>(1024 * 1024);
 	fprintf (stderr, "hardware type = %d\n", hardwareType);
 	switch (hardwareType) {
 	   case exthwNone:
@@ -332,17 +332,17 @@ bool	extioHandler::loadFunctions (void) {
 	return true;
 }
 
-int32_t	extioHandler::getRate	(void) {
+i32	extioHandler::getRate	(void) {
 	return GetHWSR();
 }
 
-void	extioHandler::setVFOFrequency (int32_t f) {
+void	extioHandler::setVFOFrequency (i32 f) {
 	fprintf (stderr, "setting freq to %d\n", f);
 int	h =  (*SetHWLO) ((int)f);
 	lastFrequency = f;
 }
 
-int32_t	extioHandler::getVFOFrequency (void) {
+i32	extioHandler::getVFOFrequency (void) {
 //	lastFrequency = (*GetHWLO)();
 	return lastFrequency;
 }
@@ -371,12 +371,12 @@ long	extioHandler::GetHWLO		(void) {
 //
 //
 //	Handling the data
-bool	extioHandler::restartReader	(int32_t freq) {
+bool	extioHandler::restartReader	(i32 freq) {
 	fprintf (stderr, "setting freq to %d\n", freq);
 int	h =  (*SetHWLO) ((int)freq);
 	lastFrequency = freq;
 	fprintf (stderr, "restart reader entered (%d)\n", lastFrequency);
-int32_t	size	= (*StartHW)(lastFrequency);
+i32	size	= (*StartHW)(lastFrequency);
 	fprintf (stderr, "restart reader returned with %d\n", size);
 	theReader -> restartReader (size);
 	fprintf (stderr, "now we have restarted the reader\n");
@@ -392,23 +392,23 @@ void	extioHandler::stopReader	(void) {
 	}
 }
 
-int32_t	extioHandler::Samples		(void) {
-int32_t	x = _I_Buffer -> GetRingBufferReadAvailable();
+i32	extioHandler::Samples		(void) {
+i32	x = _I_Buffer -> GetRingBufferReadAvailable();
 	if (x < 0)
 	   fprintf (stderr, "toch een fout in ringbuffer\n");
 	return x;
 }
 
-int32_t	extioHandler::getSamples	(cmplx *buffer,
-	                                 int32_t number) {
+i32	extioHandler::getSamples	(cf32 *buffer,
+	                                 i32 number) {
 	return _I_Buffer -> getDataFromBuffer (buffer, number);
 }
 
-int16_t	extioHandler::bitDepth		(void) {
+i16	extioHandler::bitDepth		(void) {
 	return	theReader	-> bitDepth();
 }
 
-int32_t	extioHandler::defaultFrequency (void) {
+i32	extioHandler::defaultFrequency (void) {
 	return Khz (220000);
 }
 

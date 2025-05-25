@@ -83,23 +83,23 @@ AudioDisplay::~AudioDisplay()
   fftwf_destroy_plan(mFftPlan);
 }
 
-void AudioDisplay::create_spectrum(const int16_t * const ipSampleData, const int iNumSamples, int iSampleRate)
+void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const int iNumSamples, int iSampleRate)
 {
-  constexpr int16_t averageCount = 3;
+  constexpr i16 averageCount = 3;
 
   // iNumSamples is number of single samples (so it is halved for stereo)
   assert(iNumSamples % 2 == 0); // check of even number of samples
-  const int32_t numStereoSamples = iNumSamples / 2;
+  const i32 numStereoSamples = iNumSamples / 2;
   assert(cSpectrumSize == numStereoSamples);
 
-  for (int32_t i = 0; i < numStereoSamples; i++)
+  for (i32 i = 0; i < numStereoSamples; i++)
   {
-    // mSpectrumBuffer[i] = std::cos(F_2_M_PI * 12000.0f * (float)i / (float)iSampleRate);
-    mFftInBuffer[i] = ((float)ipSampleData[2 * i + 0] + (float)ipSampleData[2 * i + 1]) / (2.0f * (float)INT16_MAX);
+    // mSpectrumBuffer[i] = std::cos(F_2_M_PI * 12000.0f * (f32)i / (f32)iSampleRate);
+    mFftInBuffer[i] = ((f32)ipSampleData[2 * i + 0] + (f32)ipSampleData[2 * i + 1]) / (2.0f * (f32)INT16_MAX);
   }
 
   // and window it
-  for (int32_t i = 0; i < cSpectrumSize; i++)
+  for (i32 i = 0; i < cSpectrumSize; i++)
   {
     mFftInBuffer[i] *= mWindow[i];
   }
@@ -111,19 +111,19 @@ void AudioDisplay::create_spectrum(const int16_t * const ipSampleData, const int
   if (iSampleRate != mSampleRateLast)
   {
     mSampleRateLast = iSampleRate;
-    for (int32_t i = 0; i < cDisplaySize; i++)
+    for (i32 i = 0; i < cDisplaySize; i++)
     {
-      mXDispBuffer[i] = (float)i * (float)iSampleRate / (float)cSpectrumSize / 1000.0f; // we use only the half spectrum
+      mXDispBuffer[i] = (f32)i * (f32)iSampleRate / (f32)cSpectrumSize / 1000.0f; // we use only the half spectrum
     }
-    pPlotGrid->setAxisScale(QwtPlot::xBottom, (double)mXDispBuffer[0], mXDispBuffer[cDisplaySize - 1]);
+    pPlotGrid->setAxisScale(QwtPlot::xBottom, (f64)mXDispBuffer[0], mXDispBuffer[cDisplaySize - 1]);
   }
 
   // and map the spectrumSize values onto displaySize elements
-  for (int32_t i = 0; i < cDisplaySize; i++)
+  for (i32 i = 0; i < cDisplaySize; i++)
   {
-    constexpr float fftOffset = 20.0f * std::log10(cSpectrumSize / 4);
-    const float yVal = log10_times_20(std::abs(mFftOutBuffer[i])) - fftOffset;
-    mYDispBuffer[i] = (float)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
+    constexpr f32 fftOffset = 20.0f * std::log10(cSpectrumSize / 4);
+    const f32 yVal = log10_times_20(std::abs(mFftOutBuffer[i])) - fftOffset;
+    mYDispBuffer[i] = (f32)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
   }
 
   mSpectrumCurve.setSamples(mXDispBuffer.data(), mYDispBuffer.data(), cDisplaySize);

@@ -18,10 +18,10 @@
 #include <volk/volk.h>
 
 // shortcut syntax to get better overview
-#define LOOP_OVER_K   for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+#define LOOP_OVER_K   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
 
 
-OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBuffer<float> * ipCarrBuffer)
+OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer)
   : mpRadioInterface(ipMr)
   , mFreqInterleaver()
   , mpIqBuffer(ipIqBuffer)
@@ -32,11 +32,11 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cmplx> * ipIqBuffer, RingBu
 
   qInfo() << "Using VOLK machine:" << volk_get_machine();
 
-  for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+  for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
     // We do not interchange the positive/negative frequencies to their right positions, the de-interleaving understands this.
-    int16_t fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrIdx);
-    int16_t realCarrRelIdx = fftIdx;
+    i16 fftIdx = mFreqInterleaver.map_k_to_fft_bin(nomCarrIdx);
+    i16 realCarrRelIdx = fftIdx;
 
     if (fftIdx < 0)
     {
@@ -95,13 +95,13 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iFftBuffer)
     _eval_null_symbol_statistics(iFftBuffer);
   }
 
-  for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+  for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
-    const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
+    const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
     mSimdVecTemp1Float[nomCarrIdx] = std::abs(iFftBuffer[fftIdx]); // level
   }
 
-  constexpr float cAlpha = 0.1f;
+  constexpr f32 cAlpha = 0.1f;
   mSimdVecTemp1Float.set_square_each_element(mSimdVecTemp1Float); // noise power
   mSimdVecMeanNullPowerWithoutTII.modify_mean_filter_each_element(mSimdVecTemp1Float, cAlpha);
 }
@@ -111,14 +111,14 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
   // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
   mDcFft = iFftBuffer[0];
 
-  for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+  for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
-    const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
+    const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
     mSimdVecPhaseReference[nomCarrIdx] = iFftBuffer[fftIdx];
   }
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCurOfdmSymbIdx, const float iPhaseCorr, std::vector<int16_t> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, std::vector<i16> & oBits)
 {
   // current runtime on i7-6700K: avr: 57us, min: 19us
   // mTimeMeas.trigger_begin();
@@ -129,7 +129,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
   // do frequency de-interleaving and transform FFT vector to contiguous field
   LOOP_OVER_K
   {
-    const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
+    const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
     mSimdVecNomCarrier[nomCarrIdx] = iFftBuffer[fftIdx];
   }
 
@@ -147,7 +147,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
   // in best case the values in mVolkFftBinAbsPhaseCorrVec should only rest onto the positive real axis
   mSimdVecFftBinWrapped.set_wrap_4QPSK_to_phase_zero_each_element(mSimdVecFftBinPhaseCorrArg);
 
-  constexpr float cAlpha = 0.005f;
+  constexpr f32 cAlpha = 0.005f;
 
   // -------------------------------
   // Integrate phase error to perform the phase correction in the next OFDM symbol.
@@ -205,7 +205,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
   }
 
   // use mMeanValue from last round to be conform with the non-SIMD variant
-  // const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC3 ? -140.0f : -100.0f) / mMeanValue;
+  // const f32 w2 = (mSoftBitType == ESoftBitType::SOFTDEC3 ? -140.0f : -100.0f) / mMeanValue;
 
   // -------------------------------
   mSimdVecTemp1Float.set_squared_magnitude_of_elements(mSimdVecDecodingReal, mSimdVecDecodingImag);
@@ -214,7 +214,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
 
   // -------------------------------
   // apply weight w2 to be conform to the viterbi input range
-  const float w2 = (mSoftBitType == ESoftBitType::SOFTDEC3 ? -140.0f : -100.0f) / mMeanValue;
+  const f32 w2 = (mSoftBitType == ESoftBitType::SOFTDEC3 ? -140.0f : -100.0f) / mMeanValue;
   mSimdVecDecodingReal.modify_multiply_scalar_each_element(w2);
   mSimdVecDecodingImag.modify_multiply_scalar_each_element(w2);
   // -------------------------------
@@ -222,8 +222,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
   // extract coding bits
   LOOP_OVER_K
   {
-    oBits[0  + nomCarrIdx] = (int16_t)(mSimdVecDecodingReal[nomCarrIdx]);
-    oBits[cK + nomCarrIdx] = (int16_t)(mSimdVecDecodingImag[nomCarrIdx]);
+    oBits[0  + nomCarrIdx] = (i16)(mSimdVecDecodingReal[nomCarrIdx]);
+    oBits[cK + nomCarrIdx] = (i16)(mSimdVecDecodingImag[nomCarrIdx]);
   }
 
   // mTimeMeas.trigger_end();
@@ -231,7 +231,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
 
   if (iCurOfdmSymbIdx == 1)
   {
-    const float FreqCorr = iPhaseCorr / F_2_M_PI * (float)cCarrDiff;
+    const f32 FreqCorr = iPhaseCorr / F_2_M_PI * (f32)cCarrDiff;
     mean_filter(mMeanSigmaSqFreqCorr, FreqCorr * FreqCorr, 0.2f);
   }
 
@@ -254,8 +254,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
 
   if (showStatisticData)
   {
-    const float noisePow = _compute_noise_Power();
-    float snr = (mMeanPowerOvrAll - noisePow) / noisePow;
+    const f32 noisePow = _compute_noise_Power();
+    f32 snr = (mMeanPowerOvrAll - noisePow) / noisePow;
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / mSimdVecStdDevSqPhaseVec.get_sum_of_elements());
@@ -263,7 +263,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
     mLcdData.MeanSigmaSqFreqCorr = sqrt(mMeanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
-    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (float)cK;
+    mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (f32)cK;
 
     emit signal_show_lcd_data(&mLcdData);
 
@@ -273,26 +273,26 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const uint16_t iCur
   }
 
   // copy current FFT values as next OFDM reference
-  memcpy(mSimdVecPhaseReference, mSimdVecNomCarrier, cK * sizeof(cmplx));
+  memcpy(mSimdVecPhaseReference, mSimdVecNomCarrier, cK * sizeof(cf32));
 }
 
-float OfdmDecoder::_compute_noise_Power() const
+f32 OfdmDecoder::_compute_noise_Power() const
 {
-  return mSimdVecMeanNullPowerWithoutTII.get_sum_of_elements() / (float)cK;
+  return mSimdVecMeanNullPowerWithoutTII.get_sum_of_elements() / (f32)cK;
 }
 
 void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
 {
-  float max = -1e38f;
-  float min =  1e38f;
+  f32 max = -1e38f;
+  f32 min =  1e38f;
   if (mCarrierPlotType == ECarrierPlotType::NULL_TII_LOG)
   {
-    constexpr float cAlpha = 0.20f;
-    for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+    constexpr f32 cAlpha = 0.20f;
+    for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
-      const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
-      const float level = log10_times_20(std::abs(iFftBuffer[fftIdx]));
-      float & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
+      const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
+      const f32 level = log10_times_20(std::abs(iFftBuffer[fftIdx]));
+      f32 & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, cAlpha);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -302,12 +302,12 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
   }
   else
   {
-    constexpr float cAlpha = 0.20f;
-    for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+    constexpr f32 cAlpha = 0.20f;
+    for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
-      const int16_t fftIdx = mMapNomToFftIdx[nomCarrIdx];
-      const float level = std::abs(iFftBuffer[fftIdx]);
-      float & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
+      const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
+      const f32 level = std::abs(iFftBuffer[fftIdx]);
+      f32 & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, cAlpha);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -352,42 +352,42 @@ void OfdmDecoder::set_show_nominal_carrier(bool iShowNominalCarrier)
   mShowNomCarrier = iShowNominalCarrier;
 }
 
-cmplx OfdmDecoder::_interpolate_2d_plane(const cmplx & iStart, const cmplx & iEnd, float iPar)
+cf32 OfdmDecoder::_interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar)
 {
   assert(iPar >= 0.0f && iPar <= 1.0f);
-  const float a_r = real(iStart);
-  const float a_i = imag(iStart);
-  const float b_r = real(iEnd);
-  const float b_i = imag(iEnd);
-  const float c_r = (b_r - a_r) * iPar + a_r;
-  const float c_i = (b_i - a_i) * iPar + a_i;
+  const f32 a_r = real(iStart);
+  const f32 a_i = imag(iStart);
+  const f32 b_r = real(iEnd);
+  const f32 b_i = imag(iEnd);
+  const f32 c_r = (b_r - a_r) * iPar + a_r;
+  const f32 c_i = (b_i - a_i) * iPar + a_i;
   return { c_r, c_i };
 }
 
 void OfdmDecoder::_display_iq_and_carr_vectors()
 {
-  for (int16_t nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+  for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
     switch (mIqPlotType)
     {
     case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] / std::sqrt(mSimdVecMeanPower[nomCarrIdx]); break;
     case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] / std::sqrt(mMeanPowerOvrAll); break;
     case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = mSimdVecFftBinRaw[nomCarrIdx] / std::sqrt(mMeanPowerOvrAll); break;
-    case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =  10.0f / (float)cTu * _interpolate_2d_plane(mDcFftLast, mDcFft, (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
-    case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (float)cTu * _interpolate_2d_plane(mDcFftLast, mDcFft, (float)nomCarrIdx / ((float)mIqVector.size() - 1)); break;
+    case EIqPlotType::DC_OFFSET_FFT_10:       mIqVector[nomCarrIdx] =  10.0f / (f32)cTu * _interpolate_2d_plane(mDcFftLast, mDcFft, (f32)nomCarrIdx / ((f32)mIqVector.size() - 1)); break;
+    case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (f32)cTu * _interpolate_2d_plane(mDcFftLast, mDcFft, (f32)nomCarrIdx / ((f32)mIqVector.size() - 1)); break;
     case EIqPlotType::DC_OFFSET_ADC_10:       mIqVector[nomCarrIdx] =  10.0f * mDcAdc; break;
     case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;
     }
 
-    const int16_t realCarrRelIdx = mMapNomToRealCarrIdx[nomCarrIdx];
-    const int16_t dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
+    const i16 realCarrRelIdx = mMapNomToRealCarrIdx[nomCarrIdx];
+    const i16 dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
 
     switch (mCarrierPlotType)
     {
     case ECarrierPlotType::SB_WEIGHT:
     {
       // Convert and limit the soft bit weight to percent
-      float val = (std::abs(mSimdVecDecodingReal[nomCarrIdx]) + std::abs(mSimdVecDecodingImag[nomCarrIdx])) / 2.0f;
+      f32 val = (std::abs(mSimdVecDecodingReal[nomCarrIdx]) + std::abs(mSimdVecDecodingImag[nomCarrIdx])) / 2.0f;
       if (val > F_VITERBI_SOFT_BIT_VALUE_MAX) val = F_VITERBI_SOFT_BIT_VALUE_MAX; // limit graphics like the Viterbi itself does
       mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * val;  // show it in percent of the maximum Viterbi input
       break;

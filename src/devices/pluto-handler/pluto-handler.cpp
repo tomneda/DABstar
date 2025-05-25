@@ -328,8 +328,8 @@ int	ret;
 	connect (this, SIGNAL (new_agcValue (bool)),
 	         agcControl, SLOT (setChecked (bool)));
 //	set up for interpolator
-	float	denominator	= float (DAB_RATE) / DIVIDER;
-        float inVal		= float (PLUTO_RATE) / DIVIDER;
+	f32	denominator	= f32 (DAB_RATE) / DIVIDER;
+        f32 inVal		= f32 (PLUTO_RATE) / DIVIDER;
 	for (int i = 0; i < DAB_RATE / DIVIDER; i ++) {
            mapTable_int [i]	= int (floor (i * (inVal / denominator)));
 	   mapTable_float [i] =
@@ -372,7 +372,7 @@ int	ret;
 }
 //
 
-void	plutoHandler::setVFOFrequency	(int32_t newFrequency) {
+void	plutoHandler::setVFOFrequency	(i32 newFrequency) {
 int	ret;
 struct iio_channel *lo_channel;
 
@@ -389,7 +389,7 @@ struct iio_channel *lo_channel;
 	                                 (int)(rx_cfg. lo_hz));
 }
 
-int32_t	plutoHandler::getVFOFrequency () {
+i32	plutoHandler::getVFOFrequency () {
 	return rx_cfg. lo_hz;
 }
 //
@@ -470,7 +470,7 @@ struct iio_channel *gain_channel;
 	}
 }
 
-bool	plutoHandler::restartReader	(int32_t freq) {
+bool	plutoHandler::restartReader	(i32 freq) {
 int ret;
 iio_channel *lo_channel;
 iio_channel *gain_channel;
@@ -543,8 +543,8 @@ void	plutoHandler::run	() {
 char	*p_end, *p_dat;
 int	p_inc;
 int	nbytes_rx;
-cmplx localBuf [DAB_RATE / DIVIDER];
-std::complex<int16_t> dumpBuf [CONV_SIZE + 1];
+cf32 localBuf [DAB_RATE / DIVIDER];
+std::complex<i16> dumpBuf [CONV_SIZE + 1];
 
 	state -> setText ("running");
 	running. store (true);
@@ -555,18 +555,18 @@ std::complex<int16_t> dumpBuf [CONV_SIZE + 1];
 
 	   for (p_dat = (char *)iio_buffer_first (rxbuf, rx0_i);
 	        p_dat < p_end; p_dat += p_inc) {
-	      const int16_t i_p = ((int16_t *)p_dat) [0];
-	      const int16_t q_p = ((int16_t *)p_dat) [1];
-	      dumpBuf [convIndex] = std::complex<int16_t> (i_p, q_p);
-	      cmplxsample = cmplx (i_p / 2048.0,
+	      const i16 i_p = ((i16 *)p_dat) [0];
+	      const i16 q_p = ((i16 *)p_dat) [1];
+	      dumpBuf [convIndex] = std::complex<i16> (i_p, q_p);
+	      cmplxsample = cf32 (i_p / 2048.0,
 	                                                       q_p / 2048.0);
 	      convBuffer [convIndex ++] = sample;
 	      if (convIndex > CONV_SIZE) {
 	         if (dumping. load ())
 	            xmlWriter -> add (&dumpBuf [1], CONV_SIZE);
 	         for (int j = 0; j < DAB_RATE / DIVIDER; j ++) {
-	            int16_t inpBase	= mapTable_int [j];
-	            float   inpRatio	= mapTable_float [j];
+	            i16 inpBase	= mapTable_int [j];
+	            f32   inpRatio	= mapTable_float [j];
 	            localBuf [j]	= convBuffer [inpBase + 1] * inpRatio +
                               convBuffer [inpBase] * (1 - inpRatio);
                  }
@@ -579,13 +579,13 @@ std::complex<int16_t> dumpBuf [CONV_SIZE + 1];
 	}
 }
 
-int32_t	plutoHandler::getSamples (cmplx *V, int32_t size) {
+i32	plutoHandler::getSamples (cf32 *V, i32 size) {
 	if (!isRunning ())
 	   return 0;
 	return _I_Buffer. getDataFromBuffer (V, size);
 }
 
-int32_t	plutoHandler::Samples () {
+i32	plutoHandler::Samples () {
 	return _I_Buffer. GetRingBufferReadAvailable();
 }
 //
@@ -608,7 +608,7 @@ void	plutoHandler::resetBuffer() {
 	_I_Buffer. FlushRingBuffer();
 }
 
-int16_t	plutoHandler::bitDepth () {
+i16	plutoHandler::bitDepth () {
 	return 12;
 }
 

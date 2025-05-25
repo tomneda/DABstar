@@ -32,6 +32,7 @@
 #ifndef	WAV_WRITER_H
 #define	WAV_WRITER_H
 
+#include "glob_data_types.h"
 #include <mutex>
 #include <QMutex>
 #include <QString>
@@ -42,17 +43,17 @@ public:
   WavWriter() = default;
   ~WavWriter() = default;
 
-  bool init(const QString &, uint32_t iSampleRate, uint16_t iNumChannels);
-  void write(const int16_t *, int);
+  bool init(const QString &, u32 iSampleRate, u16 iNumChannels);
+  void write(const i16 *, int);
   void close();
 
 private:
   std::mutex mMutex;
   FILE * mFilePointer = nullptr;
   bool mIsValid = false;
-  uint16_t mNumChannels = 0;
-  uint32_t mNrElements = 0;
-  uint32_t mLocationCounter = 0;
+  u16 mNumChannels = 0;
+  u32 mNrElements = 0;
+  u32 mLocationCounter = 0;
 };
 
 #endif

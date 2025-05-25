@@ -19,9 +19,9 @@ extern "C" {
 //! Definition for a min/max numeric range
 typedef struct
 {
-    double minimum;
-    double maximum;
-    double step;
+    f64 minimum;
+    f64 maximum;
+    f64 step;
 } SoapySDRRange;
 
 //! Definition for a key/value string map

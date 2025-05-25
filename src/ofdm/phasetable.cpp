@@ -135,24 +135,24 @@ PhaseTable::PhaseTable()
   mpCurrentTable = modeI_table.data();
 
   // mRefTable is in the frequency domain
-  for (int32_t i = 0; i < cTu; i++)
+  for (i32 i = 0; i < cTu; i++)
   {
-    mRefTable[i] = cmplx(0, 0);
+    mRefTable[i] = cf32(0, 0);
   }
 
-  for (int32_t i = 1; i <= cK / 2; i++) // skip DC
+  for (i32 i = 1; i <= cK / 2; i++) // skip DC
   {
     mRefTable[0   + i] = cmplx_from_phase(get_phi(i));
     mRefTable[cTu - i] = cmplx_from_phase(get_phi(-i));
   }
 }
 
-static const int8_t h0[32] = { 0, 2, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2, 1, 1, 0, 2, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2, 1, 1 };
-static const int8_t h1[32] = { 0, 3, 2, 3, 0, 1, 3, 0, 2, 1, 2, 3, 2, 3, 3, 0, 0, 3, 2, 3, 0, 1, 3, 0, 2, 1, 2, 3, 2, 3, 3, 0 };
-static const int8_t h2[32] = { 0, 0, 0, 2, 0, 2, 1, 3, 2, 2, 0, 2, 2, 0, 1, 3, 0, 0, 0, 2, 0, 2, 1, 3, 2, 2, 0, 2, 2, 0, 1, 3 };
-static const int8_t h3[32] = { 0, 1, 2, 1, 0, 3, 3, 2, 2, 3, 2, 1, 2, 1, 3, 2, 0, 1, 2, 1, 0, 3, 3, 2, 2, 3, 2, 1, 2, 1, 3, 2 };
+static const i8 h0[32] = { 0, 2, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2, 1, 1, 0, 2, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2, 1, 1 };
+static const i8 h1[32] = { 0, 3, 2, 3, 0, 1, 3, 0, 2, 1, 2, 3, 2, 3, 3, 0, 0, 3, 2, 3, 0, 1, 3, 0, 2, 1, 2, 3, 2, 3, 3, 0 };
+static const i8 h2[32] = { 0, 0, 0, 2, 0, 2, 1, 3, 2, 2, 0, 2, 2, 0, 1, 3, 0, 0, 0, 2, 0, 2, 1, 3, 2, 2, 0, 2, 2, 0, 1, 3 };
+static const i8 h3[32] = { 0, 1, 2, 1, 0, 3, 3, 2, 2, 3, 2, 1, 2, 1, 3, 2, 0, 1, 2, 1, 0, 3, 3, 2, 2, 3, 2, 1, 2, 1, 3, 2 };
 
-int32_t PhaseTable::h_table(const int32_t i, const int32_t j) const
+i32 PhaseTable::h_table(const i32 i, const i32 j) const
 {
   assert(j < 32);
   switch (i)
@@ -166,16 +166,16 @@ int32_t PhaseTable::h_table(const int32_t i, const int32_t j) const
   return 0;
 }
 
-float PhaseTable::get_phi(const int32_t k) const
+f32 PhaseTable::get_phi(const i32 k) const
 {
-  for (int32_t j = 0; mpCurrentTable[j].kmin != -1000; j++)
+  for (i32 j = 0; mpCurrentTable[j].kmin != -1000; j++)
   {
     if (mpCurrentTable[j].kmin <= k && k <= mpCurrentTable[j].kmax)
     {
-      const int32_t k_prime = mpCurrentTable[j].kmin;
-      const int32_t i = mpCurrentTable[j].i;
-      const int32_t n = mpCurrentTable[j].n;
-      return F_M_PI_2 * (float)(h_table(i, k - k_prime) + n);
+      const i32 k_prime = mpCurrentTable[j].kmin;
+      const i32 i = mpCurrentTable[j].i;
+      const i32 n = mpCurrentTable[j].n;
+      return F_M_PI_2 * (f32)(h_table(i, k - k_prime) + n);
     }
   }
   return 0;

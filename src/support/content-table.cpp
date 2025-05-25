@@ -159,9 +159,9 @@ void ContentTable::dump(FILE * dumpFilePointer)
   }
 }
 
-int16_t ContentTable::addRow()
+i16 ContentTable::addRow()
 {
-  int16_t row = contentWidget->rowCount();
+  i16 row = contentWidget->rowCount();
 
   contentWidget->insertRow(row);
 

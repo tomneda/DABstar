@@ -104,7 +104,7 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
 
   if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
   {
-    connect(pD, &QDoubleSpinBox::valueChanged, [this](double iValue){ _update_ui_state_to_setting(); });
+    connect(pD, &QDoubleSpinBox::valueChanged, [this](f64 iValue){ _update_ui_state_to_setting(); });
     return;
   }
 
@@ -122,7 +122,7 @@ QVariant Widget::read() const
   return Storage::instance().value(mKey, mDefaultValue);
 }
 
-int32_t Widget::get_combobox_index() const
+i32 Widget::get_combobox_index() const
 {
   auto * const pD = dynamic_cast<QComboBox *>(mpWidget);
   assert(pD != nullptr); // only for comboboxes
@@ -136,7 +136,7 @@ void Widget::_update_ui_state_from_setting()
 
   if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
   {
-    const int32_t var = Storage::instance().value(mKey, mDefaultValue).toInt();
+    const i32 var = Storage::instance().value(mKey, mDefaultValue).toInt();
     pD->setCheckState(static_cast<Qt::CheckState>(var));
     return;
   }
@@ -144,7 +144,7 @@ void Widget::_update_ui_state_from_setting()
   if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
   {
     const QString var = Storage::instance().value(mKey, mDefaultValue).toString();
-    const int32_t k = pD->findText(var);
+    const i32 k = pD->findText(var);
     if (k >= 0)
     {
       pD->setCurrentIndex(k);
@@ -154,21 +154,21 @@ void Widget::_update_ui_state_from_setting()
 
   if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
   {
-    const int32_t var = Storage::instance().value(mKey, mDefaultValue).toInt();
+    const i32 var = Storage::instance().value(mKey, mDefaultValue).toInt();
     pD->setValue(var);
     return;
   }
 
   if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
   {
-    const double var = Storage::instance().value(mKey, mDefaultValue).toDouble();
+    const f64 var = Storage::instance().value(mKey, mDefaultValue).toDouble();
     pD->setValue(var);
     return;
   }
 
   if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
   {
-    const int32_t var = Storage::instance().value(mKey, mDefaultValue).toInt();
+    const i32 var = Storage::instance().value(mKey, mDefaultValue).toInt();
     pD->setValue(var);
     return;
   }
@@ -239,7 +239,7 @@ PosAndSize::PosAndSize(const QString & iCat)
 : mKey(iCat + "/posAndSize")
 {}
 
-void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t iWidthDef, const int32_t iHeightDef, const bool iIsFixedSized) const
+void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef, const i32 iHeightDef, const bool iIsFixedSized) const
 {
 #ifdef USE_RESTORE_GEOMETRY
   const QVariant var = Storage::instance().value(mKey, QVariant());
@@ -262,10 +262,10 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const int32_t i
     qWarning("restoreGeometry() returns false");
   }
 #else
-  const int32_t x = Storage::instance().value(mKey + "-x", -1).toInt();
-  const int32_t y = Storage::instance().value(mKey + "-y", -1).toInt();
-  const int32_t w = Storage::instance().value(mKey + "-w", iWidthDef).toInt();
-  const int32_t h = Storage::instance().value(mKey + "-h", iHeightDef).toInt();
+  const i32 x = Storage::instance().value(mKey + "-x", -1).toInt();
+  const i32 y = Storage::instance().value(mKey + "-y", -1).toInt();
+  const i32 w = Storage::instance().value(mKey + "-w", iWidthDef).toInt();
+  const i32 h = Storage::instance().value(mKey + "-h", iHeightDef).toInt();
 
   if (x >= 0 && y >= 0 && h > 0 && w > 0) // entries valid?
   {

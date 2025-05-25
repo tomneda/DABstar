@@ -10,7 +10,7 @@
 #include  <qwt_picker_machine.h>
 #include  "color-selector.h"
 
-SpectrumScope::SpectrumScope(QwtPlot * dabScope, int32_t displaySize, QSettings * dabSettings) :
+SpectrumScope::SpectrumScope(QwtPlot * dabScope, i32 displaySize, QSettings * dabSettings) :
   mSpectrumCurve(""),
   mpDabSettings(dabSettings),
   mDisplaySize(displaySize)
@@ -67,14 +67,14 @@ SpectrumScope::~SpectrumScope()
   delete mpGrid;
 }
 
-void SpectrumScope::show_spectrum(const double * X_axis, const double * Y_value, const SpecViewLimits<double> & iSpecViewLimits)
+void SpectrumScope::show_spectrum(const f64 * X_axis, const f64 * Y_value, const SpecViewLimits<f64> & iSpecViewLimits)
 {
-  mpPlotgrid->setAxisScale(QwtPlot::xBottom, (double)X_axis[0], X_axis[mDisplaySize - 1]);
+  mpPlotgrid->setAxisScale(QwtPlot::xBottom, (f64)X_axis[0], X_axis[mDisplaySize - 1]);
   mpPlotgrid->enableAxis(QwtPlot::xBottom);
 
   // weight with slider (scale) between global and local minimum and maximum level values
-  const double yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
-  const double yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
+  const f64 yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
+  const f64 yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
 
   mpPlotgrid->setAxisScale(QwtPlot::yLeft, yMin, yMax);
   mSpectrumCurve.setSamples(X_axis, Y_value, mDisplaySize);
@@ -102,6 +102,6 @@ void SpectrumScope::slot_right_mouse_click(const QPointF & point)
 
 void SpectrumScope::slot_scaling_changed(int iScale)
 {
-  mScale = (double)iScale / 100.0;
+  mScale = (f64)iScale / 100.0;
 }
 
