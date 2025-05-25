@@ -51,7 +51,8 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::cbAutoIterTiiEntries.register_widget_and_update_ui_from_setting(cbAutoIterTiiEntries, 2);
   Settings::Config::cmbSoundOutput.register_widget_and_update_ui_from_setting(cmbSoundOutput, "default");
 
-  QDir tempPath = QDir::tempPath();
+  // QDir tempPath = QDir::tempPath();
+  QDir tempPath = QDir::homePath();
   tempPath.setPath(tempPath.filePath(PRJ_NAME));
   const QString tempPicPath = tempPath.filePath("PIC").append('/');
   const QString tempMotPath = tempPath.filePath("MOT").append('/');
