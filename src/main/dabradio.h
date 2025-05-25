@@ -353,7 +353,7 @@ private:
   void create_directory(const QString & iDir) const;
 
   void save_MOT_text(const QByteArray &, int, const QString &);
-  void show_MOT_label(const QByteArray & data, int contentType, const QString & pictureName, int dirs);
+  void show_MOT_image(const QByteArray & data, int contentType, const QString & pictureName, int dirs);
 
   //enum direction { FORWARD, BACKWARDS };
   //void handle_serviceButton(direction);

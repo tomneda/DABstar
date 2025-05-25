@@ -57,6 +57,7 @@
 #include <QMouseEvent>
 #include <QDir>
 #include <QSpacerItem>
+#include <QCryptographicHash>
 
 #if defined(__MINGW32__) || defined(_WIN32)
   #include <windows.h>
@@ -800,7 +801,7 @@ void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString &
   {
   case MOTBaseTypeGeneralData: break;
   case MOTBaseTypeText: save_MOT_text(result, contentType, objectName); break;
-  case MOTBaseTypeImage: show_MOT_label(result, contentType, objectName, dirElement); break;
+  case MOTBaseTypeImage: show_MOT_image(result, contentType, objectName, dirElement); break;
   case MOTBaseTypeAudio: break;
   case MOTBaseTypeVideo: break;
   case MOTBaseTypeTransport: save_MOT_object(result, objectName); break;
@@ -861,7 +862,7 @@ void DabRadio::create_directory(const QString & iDir) const
 }
 
 //	MOT slide, to show
-void DabRadio::show_MOT_label(const QByteArray & data, const int contentType, const QString & pictureName, const int dirs)
+void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, const QString & pictureName, const int dirs)
 {
   const char * type;
   if (!mIsRunning.load() || pictureName.isEmpty())
@@ -883,33 +884,39 @@ void DabRadio::show_MOT_label(const QByteArray & data, const int contentType, co
 
   if (Settings::Config::cbSaveSlides.read().toBool() && (mPicturesPath != ""))
   {
-    QString pict = mPicturesPath + pictureName;
-    QString temp = pict;
-    temp = temp.left(temp.lastIndexOf(QChar('/')));
-    create_directory(temp);
+    const QString hashStr = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex().left(8);
+    //QString pict = mPicturesPath + pictureName;
+    QString filename = mChannel.ensembleName + "_" + mChannel.currentService.serviceName.trimmed() + "_" + hashStr;
+    QString pict = mPicturesPath + filename;
+    create_directory(mPicturesPath);
     pict = QDir::toNativeSeparators(pict);
-    FILE * fp = fopen(pict.toUtf8().data(), "w+b");
 
-    if (fp == nullptr)
+    if (!QFile::exists(pict))
     {
-      qCCritical(sLogRadioInterface(), "cannot write file %s", pict.toUtf8().data());
+      QFile file(pict);
+      if (!file.open(QIODevice::WriteOnly))
+      {
+        qCCritical(sLogRadioInterface(), "cannot write file %s", pict.toUtf8().data());
+      }
+      else
+      {
+        qCDebug(sLogRadioInterface(), "going to write picture file %s", pict.toUtf8().data());
+        file.write(data);
+      }
     }
     else
     {
-      qCDebug(sLogRadioInterface(), "going to write picture file %s", pict.toUtf8().data());
-      (void)fwrite(data.data(), 1, data.length(), fp);
-      fclose(fp);
+      qCDebug(sLogRadioInterface(), "file %s already exists", pict.toUtf8().data());
     }
   }
 
-  if (!mChannel.currentService.is_audio)
+  // only show slides if it is a audio service
+  if (mChannel.currentService.is_audio)
   {
-    return;
+    QPixmap p;
+    p.loadFromData(data, type);
+    write_picture(p);
   }
-
-  QPixmap p;
-  p.loadFromData(data, type);
-  write_picture(p);
 }
 
 void DabRadio::write_picture(const QPixmap & iPixMap) const
