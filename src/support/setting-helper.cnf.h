@@ -72,6 +72,7 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_WIDGET(Config, cbAlwaysOnTop)
   DEFINE_WIDGET(Config, cbManualBrowserStart)
   DEFINE_WIDGET(Config, cbSaveSlides)
+  DEFINE_WIDGET(Config, cbSaveSlidesDirStruct)
   DEFINE_WIDGET(Config, cbSaveTransToCsv)
   DEFINE_WIDGET(Config, cbUseDcAvoidance)
   DEFINE_WIDGET(Config, cbUseDcRemoval)

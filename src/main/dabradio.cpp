@@ -891,7 +891,9 @@ void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, co
     const QString pathService = mChannel.currentService.serviceName.trimmed().replace(regex, "-");
     const QString filename = pathEnsemble + "_" + pathService + "_" + hashStr + "." + type;
     const QString filepath = pathEnsemble + "/" + pathService + "/";
-    QString pict = mPicturesPath + filepath + filename;
+    QString pict = mPicturesPath;
+    if (Settings::Config::cbSaveSlidesDirStruct.read().toBool()) pict += filepath;
+    pict += filename;
     create_directory(pict, true);
     pict = QDir::toNativeSeparators(pict);
     qInfo() << "filepath:" << pict << "(pictureName:" << pictureName << ")";
