@@ -104,7 +104,7 @@ INCLUDEPATH += \
     ../dabstar-libs/include + $${DEPENDPATH}
 
 HEADERS += \
-    src/main/radio.h \
+    src/main/dabradio.h \
     src/main/glob_defs.h \
     src/main/glob_enums.h \
     src/main/dab-processor.h \
@@ -216,7 +216,7 @@ HEADERS += \
 
 SOURCES += \
     src/main/main.cpp \
-    src/main/radio.cpp \
+    src/main/dabradio.cpp \
     src/main/dab-processor.cpp \
     src/support/techdata.cpp \
     src/eti-handler/eti-generator.cpp \
@@ -311,7 +311,7 @@ SOURCES += \
     src/devices/filereaders/wav-files/wav-reader.cpp
 
 FORMS += \
-    src/main/radio.ui \
+    src/main/dabradio.ui \
     src/spectrum-viewer/spectrum_viewer.ui \
     src/spectrum-viewer/cir-widget.ui \
     src/support/technical_data.ui \
