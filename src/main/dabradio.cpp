@@ -634,8 +634,7 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
 
   const bool isAudioService = mpDabProcessor->is_audio_service(iServiceName);
 
-  if ((mConfig.cbShowNonAudioInServiceList->isChecked() && !isAudioService) ||
-     (!mConfig.cbShowNonAudioInServiceList->isChecked() && isAudioService))
+  if (mConfig.cbShowNonAudioInServiceList->isChecked() || isAudioService)
   {
     mServiceList = insert_sorted(mServiceList, ed);
     mpServiceListHandler->add_entry(mChannel.channelName, iServiceName);
