@@ -69,59 +69,6 @@
 // Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
 
-#if defined(__MINGW32__) || defined(_WIN32)
-
-__int64 FileTimeToInt64 (FILETIME & ft)
-{
-  ULARGE_INTEGER foo;
-
-  foo.LowPart	= ft.dwLowDateTime;
-  foo.HighPart	= ft.dwHighDateTime;
-  return (foo.QuadPart);
-}
-
-bool get_cpu_times (size_t &idle_time, size_t &total_time)
-{
-  FILETIME IdleTime, KernelTime, UserTime;
-  size_t	thisIdle, thisKernel, thisUser;
-
-  GetSystemTimes (&IdleTime, &KernelTime, &UserTime);
-
-  thisIdle	= FileTimeToInt64 (IdleTime);
-  thisKernel	= FileTimeToInt64 (KernelTime);
-  thisUser	= FileTimeToInt64 (UserTime);
-  idle_time	= (size_t) thisIdle;
-  total_time	= (size_t)(thisKernel + thisUser);
-  return true;
-}
-
-#else
-
-std::vector<size_t> get_cpu_times()
-{
-  std::ifstream proc_stat("/proc/stat");
-  proc_stat.ignore(5, ' ');    // Skip the 'cpu' prefix.
-  std::vector<size_t> times;
-  for (size_t time; proc_stat >> time; times.push_back(time))
-  {
-  }
-  return times;
-}
-
-bool get_cpu_times(size_t & idle_time, size_t & total_time)
-{
-  const std::vector<size_t> cpu_times = get_cpu_times();
-  if (cpu_times.size() < 4)
-  {
-    return false;
-  }
-  idle_time = cpu_times[3];
-  total_time = std::accumulate(cpu_times.begin(), cpu_times.end(), (size_t)0);
-  return true;
-}
-
-#endif
-
 
 DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const i32 iDataPort, QWidget * iParent)
   : QWidget(iParent)
@@ -1315,29 +1262,6 @@ void DabRadio::_slot_update_time_display()
     ++mResetRingBufferCnt;
   }
 #endif
-
-  mNumberOfSeconds++;
-
-  if ((mNumberOfSeconds % 2) == 0)
-  {
-    size_t idle_time, total_time;
-    if (get_cpu_times(idle_time, total_time))
-    {
-      const f32 idle_time_delta = static_cast<f32>(idle_time - mPreviousIdleTime);
-      const f32 total_time_delta = static_cast<f32>(total_time - mPreviousTotalTime);
-      const f32 utilization = 100.0f * (1.0f - idle_time_delta / total_time_delta);
-      mConfig.cpuMonitor->display(QString("%1").arg(utilization, 0, 'f', 2));
-      mPreviousIdleTime = idle_time;
-      mPreviousTotalTime = total_time;
-    }
-  }
-
-  //	The timer runs autonomously, so it might happen
-  //	that it rings when there is no processor running
-  if (mpDabProcessor == nullptr)
-  {
-    return;
-  }
 }
 
 void DabRadio::_slot_handle_device_widget_button()

@@ -25,7 +25,7 @@ Configuration::Configuration(DabRadio * ipRI) :
 {
   setupUi(this);
 
-  Settings::Config::posAndSize.read_widget_geometry(this, 700, 330, true);
+  Settings::Config::posAndSize.read_widget_geometry(this, 700, 270, true);
 
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
@@ -74,9 +74,6 @@ Configuration::Configuration(DabRadio * ipRI) :
   lcdPalette.setColor(QPalette::Window, Qt::white);
   lcdPalette.setColor(QPalette::Base, Qt::black);
 #endif
-
-  cpuMonitor->setPalette(lcdPalette);
-  cpuMonitor->setAutoFillBackground(true);
 
   connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_load_table);
   connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &DabRadio::slot_test_slider);

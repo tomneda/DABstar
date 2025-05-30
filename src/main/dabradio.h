@@ -296,7 +296,6 @@ private:
   u32 mTiiIndex = 0;
   bool mShowTiiListWindow = false;
   bool mMutingActive = false;
-  i32 mNumberOfSeconds = 0;
   i16 mFicBlocks = 0;
   i16 mFicSuccess = 0;
   STheTime mLocalTime{};
