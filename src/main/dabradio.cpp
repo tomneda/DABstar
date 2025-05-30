@@ -819,20 +819,26 @@ void DabRadio::save_MOT_text(const QByteArray & result, int contentType, const Q
     return;
   }
 
-  create_directory(mMotPath, false);
+  // TODO: we do not know the real content type for sure, so we omit the file extension here (seems to be almost png images)
+  QString path = generate_unique_file_path_from_hash(mMotPath, "", result);
+  path = QDir::toNativeSeparators(path);
 
-  const QString textName = QDir::toNativeSeparators(mMotPath + name);
-
-  FILE * x = fopen(textName.toUtf8().data(), "w+b");
-  if (x == nullptr)
+  if (!QFile::exists(path))
   {
-    qCCritical(sLogRadioInterface()) << "save_MOT_text(): cannot open file " << textName.toUtf8().data();
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly))
+    {
+      qCCritical(sLogRadioInterface(), "save_MOT_text(): cannot write file %s", path.toUtf8().data());
+    }
+    else
+    {
+      qCDebug(sLogRadioInterface(), "save_MOT_text(): going to write MOT file %s", path.toUtf8().data());
+      file.write(result);
+    }
   }
   else
   {
-    qCDebug(sLogRadioInterface()) << "save_MOT_text(): going to write text file " << textName.toUtf8().data();
-    (void)fwrite(result.data(), 1, result.length(), x);
-    fclose(x);
+    qCDebug(sLogRadioInterface(), "save_MOT_text(): file %s already exists", path.toUtf8().data());
   }
 }
 
@@ -857,13 +863,13 @@ void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
   }
 }
 
-QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath, const char * iFileExt, const QByteArray & iData) const
+QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData) const
 {
   const QString hashStr = QCryptographicHash::hash(iData, QCryptographicHash::Sha1).toHex().left(8);
   static const QRegularExpression regex(R"([<>:\"/\\|?*\s])"); // remove invalid file path characters
   const QString pathEnsemble = mChannel.ensembleName.trimmed().replace(regex, "-");
   const QString pathService = mChannel.currentService.serviceName.trimmed().replace(regex, "-");
-  const QString filename = pathEnsemble + "_" + pathService + "_" + hashStr + "." + iFileExt;
+  const QString filename = pathEnsemble + "_" + pathService + "_" + hashStr + (iFileExt.isEmpty() ? "" : "." + iFileExt);
   const QString filepath = pathEnsemble + "/" + pathService + "/";
   QString path = iBasePath;
   if (Settings::Config::cbSaveSlidesDirStruct.read().toBool()) path += filepath;
@@ -904,17 +910,17 @@ void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, co
       QFile file(pict);
       if (!file.open(QIODevice::WriteOnly))
       {
-        qCCritical(sLogRadioInterface(), "cannot write file %s", pict.toUtf8().data());
+        qCCritical(sLogRadioInterface(), "show_MOT_image(): cannot write file %s", pict.toUtf8().data());
       }
       else
       {
-        qCDebug(sLogRadioInterface(), "going to write picture file %s", pict.toUtf8().data());
+        qCDebug(sLogRadioInterface(), "show_MOT_image(): going to write picture file %s", pict.toUtf8().data());
         file.write(data);
       }
     }
     else
     {
-      qCDebug(sLogRadioInterface(), "file %s already exists", pict.toUtf8().data());
+      qCDebug(sLogRadioInterface(), "show_MOT_image(): file %s already exists", pict.toUtf8().data());
     }
   }
 
