@@ -65,8 +65,8 @@ class Mp2Processor : public QObject, public FrameProcessor
 Q_OBJECT
 public:
   Mp2Processor(DabRadio *, i16, RingBuffer<i16> *);
-  ~Mp2Processor();
-  void add_to_frame(const std::vector<u8> &);
+  ~Mp2Processor() override;
+  void add_to_frame(const std::vector<u8> &) override;
 
 private:
   DabRadio * myRadioInterface;

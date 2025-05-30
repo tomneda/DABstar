@@ -48,9 +48,9 @@ class DataProcessor : public QObject, public FrameProcessor
 Q_OBJECT
 public:
   DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<u8> * dataBuffer);
-  ~DataProcessor();
+  ~DataProcessor() override;
 
-  void add_to_frame(const std::vector<u8> &);
+  void add_to_frame(const std::vector<u8> &) override;
 
 private:
   DabRadio * myRadioInterface;

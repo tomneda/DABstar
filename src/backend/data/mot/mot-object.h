@@ -60,7 +60,7 @@ private:
   const u16 mTransportId;
   const bool mDirElement;
   QString mPicturePath;
-  i16 mNumofSegments = -1;
+  i16 mNumOfSegments = -1;
   i32 mSegmentSize = -1;
   u32 mHeaderSize = 0;
   u32 mBodySize = 0;
@@ -69,6 +69,7 @@ private:
   std::map<int, QByteArray> mMotMap;
 
   void _handle_complete();
+  void _process_parameter_id(const u8 * ipSegment, i32 & ioPointer, u8 iParamId, u16 iLength);
 
 signals:
   void signal_new_MOT_object(const QByteArray &, const QString &, int, bool);

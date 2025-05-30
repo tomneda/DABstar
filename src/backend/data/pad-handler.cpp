@@ -511,7 +511,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
       qCWarning(sLogPadHandler) << "build_MSC_segment() fails on crc check";
       return;
     }
-    qCDebug(sLogPadHandler) << "build_MSC_segment() crc check ok";
+    // qCDebug(sLogPadHandler) << "build_MSC_segment() crc check ok";
   }
 
   i16 segmentNumber = -1; // default
@@ -535,7 +535,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   {
     lastFlag = iData[index] & 0x80;
     segmentNumber = ((iData[index] & 0x7F) << 8) | iData[index + 1];
-    qCDebug(sLogPadHandler) << "segmentNumber" << segmentNumber << "lastFlag" << lastFlag << "extensionFlag" << extensionFlag;
+    // qCDebug(sLogPadHandler) << "segmentNumber" << segmentNumber << "- lastFlag" << lastFlag << "- extensionFlag" << extensionFlag;
     index += 2;
   }
 
@@ -548,7 +548,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     if ((iData[index] & 0x10) != 0)
     {
       transportId = iData[index + 1] << 8 | iData[index + 2];
-      qCDebug(sLogPadHandler) << "transportId" << transportId;
+      // qCDebug(sLogPadHandler) << "transportId" << transportId;
       index += 3;
     }
     /*else
@@ -570,18 +570,9 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   switch (groupType)
   {
   case 3:
-    if (mpMotObject == nullptr)
+    if (mpMotObject == nullptr || mpMotObject->get_transport_id() != transportId)
     {
-      qCDebug(sLogPadHandler) << "Creating MotObject with transportId" << transportId;
-      mpMotObject.reset(new MotObject(mpRadioInterface, false, transportId, &iData[index + 2], segmentSize, lastFlag));
-    }
-    else
-    {
-      if (mpMotObject->get_transport_id() == transportId)
-      {
-        break;
-      }
-      qCDebug(sLogPadHandler) << "Re-Creating MotObject with transportId" << transportId << "old transportId" << mpMotObject->get_transport_id();
+      qCDebug(sLogPadHandler) << "Creating MotObject with transportId" << transportId << "old transportId" << (mpMotObject != nullptr ? mpMotObject->get_transport_id() : -1);
       mpMotObject.reset(new MotObject(mpRadioInterface, false, transportId, &iData[index + 2], segmentSize, lastFlag));
     }
     break;
@@ -591,6 +582,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     {
       return;
     }
+
     if (mpMotObject->get_transport_id() == transportId)
     {
       //fprintf (stdout, "add segment %d size %d of %d\n", segmentNumber, segmentSize, transportId);
