@@ -28,7 +28,7 @@
 
 BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer, FILE * dump)
 {
-  if (d->type == AUDIO_SERVICE)
+  if (d->type == EServiceType::AUDIO)
   {
     if (((Audiodata *)d)->ASCTy != 077)
     {
@@ -39,7 +39,7 @@ BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer
       theProcessor = new Mp4Processor(mr, d->bitRate, audioBuffer, frameBuffer, dump);
     }
   }
-  else if (d->type == PACKET_SERVICE)
+  else if (d->type == EServiceType::PACKET)
   {
     theProcessor = new DataProcessor(mr, (Packetdata *)d, dataBuffer);
   }

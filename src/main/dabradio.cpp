@@ -67,7 +67,7 @@
 #endif
 
 // Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
-Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtWarningMsg)
+Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
 
 #if defined(__MINGW32__) || defined(_WIN32)
 
@@ -634,7 +634,8 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
 
   const bool isAudioService = mpDabProcessor->is_audio_service(iServiceName);
 
-  if (mConfig.cbShowNonAudioInServiceList->isChecked() || isAudioService)
+  if ((mConfig.cbShowNonAudioInServiceList->isChecked() && !isAudioService) ||
+     (!mConfig.cbShowNonAudioInServiceList->isChecked() && isAudioService))
   {
     mServiceList = insert_sorted(mServiceList, ed);
     mpServiceListHandler->add_entry(mChannel.channelName, iServiceName);
@@ -762,6 +763,24 @@ QString DabRadio::check_and_create_dir(const QString & s) const
   return dir;
 }
 
+void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString & objectName, int contentType, bool dirElement)
+{
+  QString realName;
+
+  switch (getContentBaseType((MOTContentType)contentType))
+  {
+  case MOTBaseTypeGeneralData: break;
+  case MOTBaseTypeText: save_MOT_text(result, contentType, objectName); break;
+  case MOTBaseTypeImage: show_MOT_image(result, contentType, objectName, dirElement); break;
+  case MOTBaseTypeAudio: break;
+  case MOTBaseTypeVideo: break;
+  case MOTBaseTypeTransport: save_MOT_object(result, objectName); break;
+  case MOTBaseTypeSystem: break;
+  case MOTBaseTypeApplication: save_MOT_EPG_data(result, objectName, contentType); break;
+  case MOTBaseTypeProprietary:; break;
+  }
+}
+
 bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & objectName, int contentType)
 {
   if (mEpgPath == "")
@@ -792,24 +811,6 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
   return true;
 }
 
-void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString & objectName, int contentType, bool dirElement)
-{
-  QString realName;
-
-  switch (getContentBaseType((MOTContentType)contentType))
-  {
-  case MOTBaseTypeGeneralData: break;
-  case MOTBaseTypeText: save_MOT_text(result, contentType, objectName); break;
-  case MOTBaseTypeImage: show_MOT_image(result, contentType, objectName, dirElement); break;
-  case MOTBaseTypeAudio: break;
-  case MOTBaseTypeVideo: break;
-  case MOTBaseTypeTransport: save_MOT_object(result, objectName); break;
-  case MOTBaseTypeSystem: break;
-  case MOTBaseTypeApplication: save_MOT_EPG_data(result, objectName, contentType); break;
-  case MOTBaseTypeProprietary:; break;
-  }
-}
-
 void DabRadio::save_MOT_text(const QByteArray & result, int contentType, const QString & name)
 {
   (void)contentType;
@@ -818,16 +819,18 @@ void DabRadio::save_MOT_text(const QByteArray & result, int contentType, const Q
     return;
   }
 
-  QString textName = QDir::toNativeSeparators(mMotPath + name);
+  create_directory(mMotPath, false);
+
+  const QString textName = QDir::toNativeSeparators(mMotPath + name);
 
   FILE * x = fopen(textName.toUtf8().data(), "w+b");
   if (x == nullptr)
   {
-    fprintf(stderr, "cannot write file %s\n", textName.toUtf8().data());
+    qCCritical(sLogRadioInterface()) << "save_MOT_text(): cannot open file " << textName.toUtf8().data();
   }
   else
   {
-    fprintf(stdout, "going to write text file %s\n", textName.toUtf8().data());
+    qCDebug(sLogRadioInterface()) << "save_MOT_text(): going to write text file " << textName.toUtf8().data();
     (void)fwrite(result.data(), 1, result.length(), x);
     fclose(x);
   }
@@ -840,6 +843,8 @@ void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
     return;
   }
 
+  // create_directory(mMotPath, false) is called in save_MOT_text()
+
   if (name == "")
   {
     const QString name2 = "motObject_" + QString::number(mMotObjectCnt);
@@ -849,16 +854,6 @@ void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
   else
   {
     save_MOT_text(result, 5, name);
-  }
-}
-
-void DabRadio::create_directory(const QString & iDirOrPath, const bool iContainsFileName) const
-{
-  const QString temp = iContainsFileName ? iDirOrPath.left(iDirOrPath.lastIndexOf(QChar('/'))) : iDirOrPath;
-
-  if (!QDir(temp).exists())
-  {
-    QDir().mkpath(temp);
   }
 }
 
@@ -883,7 +878,7 @@ void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, co
   qCDebug(sLogRadioInterface(), "show_MOTlabel %s, contentType 0x%x, dirs %d, type %s",
           pictureName.toLocal8Bit().constData(), contentType, dirs, type);
 
-  if (Settings::Config::cbSaveSlides.read().toBool() && (mPicturesPath != ""))
+  if (Settings::Config::cbSaveSlides.read().toBool() && !mPicturesPath.isEmpty())
   {
     const QString hashStr = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex().left(8);
     static const QRegularExpression regex(R"([<>:\"/\\|?*\s])");
@@ -918,11 +913,21 @@ void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, co
   }
 
   // only show slides if it is a audio service
-  if (mChannel.currentService.is_audio)
+  //if (mChannel.currentService.is_audio)
   {
     QPixmap p;
     p.loadFromData(data, type);
     write_picture(p);
+  }
+}
+
+void DabRadio::create_directory(const QString & iDirOrPath, const bool iContainsFileName) const
+{
+  const QString temp = iContainsFileName ? iDirOrPath.left(iDirOrPath.lastIndexOf(QChar('/'))) : iDirOrPath;
+
+  if (!QDir(temp).exists())
+  {
+    QDir().mkpath(temp);
   }
 }
 
@@ -968,7 +973,7 @@ void DabRadio::slot_handle_tdc_data(int frametype, int length)
 {
   qCDebug(sLogRadioInterface) << Q_FUNC_INFO << frametype << length;
 #ifdef DATA_STREAMER
-  u8 localBuffer [length + 8];
+  auto * const localBuffer = make_vla(u8, length + 8);
 #endif
   (void)frametype;
   if (!mIsRunning.load())
@@ -980,6 +985,11 @@ void DabRadio::slot_handle_tdc_data(int frametype, int length)
     fprintf(stderr, "Something went wrong\n");
     return;
   }
+
+  // dump data to screen
+  // mpDataBuffer->get_data_from_ring_buffer(localBuffer, length);
+  // qCDebug(sLogRadioInterface) << "tdcData: " << QString::fromWCharArray(reinterpret_cast<wchar_t *>(localBuffer), length);
+
 #ifdef DATA_STREAMER
   localBuffer[0] = 0xFF;
   localBuffer[1] = 0x00;

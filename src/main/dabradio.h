@@ -326,7 +326,6 @@ private:
   void start_etiHandler();
   void stop_etiHandler();
   QString check_and_create_dir(const QString &) const;
-  bool save_MOT_EPG_data(const QByteArray & result, const QString & objectName, int contentType);
 
   void start_audio_service(const Audiodata * const ipAD);
   void start_packet_service(const QString &);
@@ -349,11 +348,13 @@ private:
   // void showServices() const;
 
   bool do_start();
-  void save_MOT_object(const QByteArray &, const QString &);
-  void create_directory(const QString & iDirOrPath, bool iContainsFileName) const;
 
+  bool save_MOT_EPG_data(const QByteArray & result, const QString & objectName, int contentType);
+  void save_MOT_object(const QByteArray &, const QString &);
   void save_MOT_text(const QByteArray &, int, const QString &);
   void show_MOT_image(const QByteArray & data, int contentType, const QString & pictureName, int dirs);
+
+  void create_directory(const QString & iDirOrPath, bool iContainsFileName) const;
 
   //enum direction { FORWARD, BACKWARDS };
   //void handle_serviceButton(direction);

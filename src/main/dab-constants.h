@@ -57,10 +57,6 @@
 #define  kHz(x)    (x * 1000)
 #define  MHz(x)    (kHz (x) * 1000)
 
-#define    AUDIO_SERVICE  0101
-#define    PACKET_SERVICE  0102
-#define    UNKNOWN_SERVICE  0100
-
 #define    INPUT_RATE  2048000
 #define    BANDWIDTH  1536000
 #define    LIGHT_SPEED_MPS  299792458
@@ -83,6 +79,12 @@ constexpr f32 F_VITERBI_SOFT_BIT_VALUE_MAX = (f32)VITERBI_SOFT_BIT_VALUE_MAX;
 constexpr char sSettingSampleStorageDir[]  = "saveDirSampleDump";
 constexpr char sSettingAudioStorageDir[]   = "saveDirAudioDump";
 constexpr char sSettingContentStorageDir[] = "saveDirContent";
+
+enum class EServiceType
+{
+  AUDIO = 0101,
+  PACKET = 0102
+};
 
 template<typename T>
 struct SpecViewLimits
@@ -116,7 +118,7 @@ constexpr i32 BACK_GROUND = 0100;
 class DescriptorType
 {
 public:
-  u8 type;
+  EServiceType type;
   bool defined;
   QString serviceName;
   i32 SId;
@@ -152,7 +154,7 @@ public:
 
   Packetdata()
   {
-    type = PACKET_SERVICE;
+    type = EServiceType::PACKET;
   }
 };
 
@@ -167,7 +169,7 @@ public:
 
   Audiodata()
   {
-    type = AUDIO_SERVICE;
+    type = EServiceType::AUDIO;
     fmFrequency = -1;
   }
 };
