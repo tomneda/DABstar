@@ -35,50 +35,37 @@
 #include  "dabradio.h"
 #include  "data_manip_and_checks.h"
 
-
-//	we "cache" the most recent single motSlides (not those in a directory)
-struct motTable_
+MotHandler::MotHandler(DabRadio * mr)
+  : mpRadioInterface(mr)
 {
-  u16 transportId;
-  i32 orderNumber;
-  MotObject * motSlide;
-} motTable[55];
-
-motHandler::motHandler(DabRadio * mr)
-{
-  myRadioInterface = mr;
-  orderNumber = 0;
-
-  theDirectory = nullptr;
-  for (int i = 0; i < 55; i++)
+  for (auto & mt: mMotTable)
   {
-    motTable[i].orderNumber = -1;
-    motTable[i].motSlide = nullptr;
+    mt.orderNumber = -1;
+    mt.motSlide = nullptr;
   }
 }
 
-motHandler::~motHandler()
+MotHandler::~MotHandler()
 {
-  int i;
-
-  for (i = 0; i < 55; i++)
+  for (auto & mt: mMotTable)
   {
-    if (motTable[i].orderNumber > 0)
+    if (mt.orderNumber > 0)
     {
-      if (motTable[i].motSlide != nullptr)
+      if (mt.motSlide != nullptr)
       {
-        delete motTable[i].motSlide;
-        motTable[i].motSlide = nullptr;
+        delete mt.motSlide;
+        mt.motSlide = nullptr;
       }
     }
   }
-  if (theDirectory != nullptr)
+
+  if (mpDirectory != nullptr)
   {
-    delete theDirectory;
+    delete mpDirectory;
   }
 }
 
-void motHandler::add_mscDatagroup(const std::vector<u8> & msc)
+void MotHandler::add_mscDatagroup(const std::vector<u8> & msc)
 {
   u8 * data = (u8 *)(msc.data());
   bool extensionFlag = getBits_1(data, 0) != 0;
@@ -142,7 +129,7 @@ void motHandler::add_mscDatagroup(const std::vector<u8> & msc)
   for (i = 0; i < sizeinBits / 8; i++)
   {
     u8 t = 0;
-    for (int j = 0; j < 8; j++)
+    for (i32 j = 0; j < 8; j++)
     {
       t = (t << 1) | data[next + 8 * i + j];
     }
@@ -160,7 +147,7 @@ void motHandler::add_mscDatagroup(const std::vector<u8> & msc)
       {
         break;
       }
-      h = new MotObject(myRadioInterface, false,  // not within a directory
+      h = new MotObject(mpRadioInterface, false,  // not within a directory
                         transportId, &motVector[2], segmentSize, lastFlag);
       setHandle(h, transportId);
     }
@@ -171,7 +158,7 @@ void motHandler::add_mscDatagroup(const std::vector<u8> & msc)
     MotObject * h = getHandle(transportId);
     if (h == nullptr)
     {
-      h = new MotObject(myRadioInterface, false,  // not within a directory
+      h = new MotObject(mpRadioInterface, false,  // not within a directory
                         transportId, &motVector[2], segmentSize, lastFlag);
       setHandle(h, transportId);
     }
@@ -185,34 +172,34 @@ void motHandler::add_mscDatagroup(const std::vector<u8> & msc)
   case 6:
     if (segmentNumber == 0)
     {  // MOT directory
-      if (theDirectory != nullptr)
+      if (mpDirectory != nullptr)
       {
-        if (theDirectory->get_transportId() == transportId)
+        if (mpDirectory->get_transportId() == transportId)
         {
           break;
         }
       }  // already existing
 
-      if (theDirectory != nullptr)  // an old one, replace it
-        delete theDirectory;
+      if (mpDirectory != nullptr)  // an old one, replace it
+        delete mpDirectory;
 
       i32 segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
       u8 * segment = &motVector[2];
-      int dirSize = ((segment[0] & 0x3F) << 24) | ((segment[1]) << 16) | ((segment[2]) << 8) | segment[3];
+      i32 dirSize = ((segment[0] & 0x3F) << 24) | ((segment[1]) << 16) | ((segment[2]) << 8) | segment[3];
       u16 numObjects = (segment[4] << 8) | segment[5];
       //	         i32 period = (segment [6] << 16) |
       //	                          (segment [7] <<  8) | segment [8];
       //	         i32 segSize
       //	                        = ((segment [9] & 0x1F) << 8) | segment [10];
-      theDirectory = new MotDirectory(myRadioInterface, transportId, segmentSize, dirSize, numObjects, segment);
+      mpDirectory = new MotDirectory(mpRadioInterface, transportId, segmentSize, dirSize, numObjects, segment);
     }
     else
     {
-      if ((theDirectory == nullptr) || (theDirectory->get_transportId() != transportId))
+      if ((mpDirectory == nullptr) || (mpDirectory->get_transportId() != transportId))
       {
         break;
       }
-      theDirectory->directorySegment(transportId, &motVector[2], segmentNumber, segmentSize, lastFlag);
+      mpDirectory->directorySegment(transportId, &motVector[2], segmentNumber, segmentSize, lastFlag);
     }
     break;
 
@@ -221,55 +208,52 @@ void motHandler::add_mscDatagroup(const std::vector<u8> & msc)
   }
 }
 
-MotObject * motHandler::getHandle(u16 transportId)
+MotObject * MotHandler::getHandle(u16 transportId)
 {
-  int i;
-
-  for (i = 0; i < 15; i++)
+  for (const auto & mt: mMotTable)
   {
-    if ((motTable[i].orderNumber >= 0) && (motTable[i].transportId == transportId))
+    if ((mt.orderNumber >= 0) && (mt.transportId == transportId))
     {
-      return motTable[i].motSlide;
+      return mt.motSlide;
     }
   }
-  if (theDirectory != nullptr)
+
+  if (mpDirectory != nullptr)
   {
-    return theDirectory->getHandle(transportId);
+    return mpDirectory->getHandle(transportId);
   }
   return nullptr;
 }
 
-void motHandler::setHandle(MotObject * h, u16 transportId)
+void MotHandler::setHandle(MotObject * h, u16 transportId)
 {
-  int i;
-  int oldest = orderNumber;
-  int index = 0;
-
-  for (i = 0; i < 15; i++)
+  for (auto & mt: mMotTable)
   {
-    if (motTable[i].orderNumber == -1)
+    if (mt.orderNumber == -1)
     {
-      motTable[i].orderNumber = orderNumber++;
-      motTable[i].transportId = transportId;
-      motTable[i].motSlide = h;
+      mt.orderNumber = mOrderNumber++;
+      mt.transportId = transportId;
+      mt.motSlide = h;
       return;
     }
   }
-  //
-  //	if here, the cache is full, so we delete the oldest one
-  index = 0;
-  for (i = 0; i < 15; i++)
+
+  //	if here, the cache is full, so we delete the older than current one
+  i32 oldest = mOrderNumber;
+  i32 index = 0;
+
+  for (i32 i = 0; i < (i32)mMotTable.size(); i++)
   {
-    if (motTable[i].orderNumber < oldest)
+    if (mMotTable[i].orderNumber < oldest)
     {
-      oldest = motTable[i].orderNumber;
+      oldest = mMotTable[i].orderNumber;
       index = i;
     }
   }
 
-  delete motTable[index].motSlide;
-  motTable[index].orderNumber = orderNumber++;
-  motTable[index].transportId = transportId;
-  motTable[index].motSlide = h;
+  delete mMotTable[index].motSlide;
+  mMotTable[index].orderNumber = mOrderNumber++;
+  mMotTable[index].transportId = transportId;
+  mMotTable[index].motSlide = h;
 }
 

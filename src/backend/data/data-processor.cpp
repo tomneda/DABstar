@@ -68,7 +68,7 @@ DataProcessor::DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<u8
   case 59: my_dataHandler = new ip_dataHandler(mr, dataBuffer);
     break;
 
-  case 60: my_dataHandler = new motHandler(mr);
+  case 60: my_dataHandler = new MotHandler(mr);
     break;
 
   }
