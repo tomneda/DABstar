@@ -857,6 +857,21 @@ void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
   }
 }
 
+QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath, const char * iFileExt, const QByteArray & iData) const
+{
+  const QString hashStr = QCryptographicHash::hash(iData, QCryptographicHash::Sha1).toHex().left(8);
+  static const QRegularExpression regex(R"([<>:\"/\\|?*\s])"); // remove invalid file path characters
+  const QString pathEnsemble = mChannel.ensembleName.trimmed().replace(regex, "-");
+  const QString pathService = mChannel.currentService.serviceName.trimmed().replace(regex, "-");
+  const QString filename = pathEnsemble + "_" + pathService + "_" + hashStr + "." + iFileExt;
+  const QString filepath = pathEnsemble + "/" + pathService + "/";
+  QString path = iBasePath;
+  if (Settings::Config::cbSaveSlidesDirStruct.read().toBool()) path += filepath;
+  path += filename;
+  create_directory(path, true);
+  return path;
+}
+
 //	MOT slide, to show
 void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, const QString & pictureName, const int dirs)
 {
@@ -880,16 +895,7 @@ void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, co
 
   if (Settings::Config::cbSaveSlides.read().toBool() && !mPicturesPath.isEmpty())
   {
-    const QString hashStr = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex().left(8);
-    static const QRegularExpression regex(R"([<>:\"/\\|?*\s])");
-    const QString pathEnsemble = mChannel.ensembleName.trimmed().replace(regex, "-");
-    const QString pathService = mChannel.currentService.serviceName.trimmed().replace(regex, "-");
-    const QString filename = pathEnsemble + "_" + pathService + "_" + hashStr + "." + type;
-    const QString filepath = pathEnsemble + "/" + pathService + "/";
-    QString pict = mPicturesPath;
-    if (Settings::Config::cbSaveSlidesDirStruct.read().toBool()) pict += filepath;
-    pict += filename;
-    create_directory(pict, true);
+    QString pict = generate_unique_file_path_from_hash(mPicturesPath, type, data);
     pict = QDir::toNativeSeparators(pict);
     qInfo() << "filepath:" << pict << "(pictureName:" << pictureName << ")";
 

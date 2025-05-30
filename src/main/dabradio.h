@@ -355,6 +355,7 @@ private:
   void show_MOT_image(const QByteArray & data, int contentType, const QString & pictureName, int dirs);
 
   void create_directory(const QString & iDirOrPath, bool iContainsFileName) const;
+  QString generate_unique_file_path_from_hash(const QString & iBasePath, const char * iFileExt, const QByteArray & iData) const;
 
   //enum direction { FORWARD, BACKWARDS };
   //void handle_serviceButton(direction);
