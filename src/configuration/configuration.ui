@@ -241,6 +241,9 @@
        </item>
        <item>
         <widget class="QComboBox" name="cmbMotObjectSaving">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether MOT objects (such slices/images) should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;You can choose whether the files should be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;p&gt;The base folder is &lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;$(HOME)/DABstar/PIC/&lt;/span&gt; or&lt;span style=&quot; font-weight:700;&quot;&gt;&lt;br/&gt;$(HOME)/DABstar/MOT/&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <item>
           <property name="text">
            <string>Do not save MOT objects</string>
@@ -260,6 +263,9 @@
        </item>
        <item>
         <widget class="QComboBox" name="cmbEpgObjectSaving">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether EPG data should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;You can choose whether the files should be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;p&gt;The base folder is &lt;span style=&quot; font-weight:700;&quot;&gt;$(HOME)/DABstar/EPG/&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <item>
           <property name="text">
            <string>Do not save EPG objects</string>
@@ -267,13 +273,21 @@
          </item>
          <item>
           <property name="text">
-           <string>Save EPG objects as XML file</string>
+           <string>Save EPG objects in a single folder</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Save EPG objects in a directory tree</string>
           </property>
          </item>
         </widget>
        </item>
        <item>
         <widget class="QComboBox" name="cmbScanServiceListFilter">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select which kind of services are searched for while scanning&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are two major kinds of services: &lt;span style=&quot; font-style:italic;&quot;&gt;audio&lt;/span&gt; and &lt;span style=&quot; font-style:italic;&quot;&gt;non-audio&lt;/span&gt; (SPI, EPG, MOT, etc.).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <item>
           <property name="text">
            <string>Scan audio services only</string>
@@ -321,7 +335,7 @@
        <item>
         <widget class="QCheckBox" name="cbManualBrowserStart">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set in the configuration that on starting the http service a browser will have to be started manually. Default is browser starts automatically. Effective immediately&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set in the configuration that on starting the http service a browser will have to be started manually. Default is browser starts automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Start map browser manually</string>

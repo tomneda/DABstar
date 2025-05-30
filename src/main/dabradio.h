@@ -355,6 +355,7 @@ private:
 
   void create_directory(const QString & iDirOrPath, bool iContainsFileName) const;
   QString generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData, const bool iStoreAsDir) const;
+  QString generate_file_path(const QString & iBasePath, const QString & iFileName, bool iStoreAsDir) const;
 
   //enum direction { FORWARD, BACKWARDS };
   //void handle_serviceButton(direction);

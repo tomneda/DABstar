@@ -737,26 +737,26 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
     return false;
   }
 
-  QString temp = objectName;
-  if (temp.isEmpty())
-  {
-    temp = "epg_file";
-  }
-  temp = mEpgPath + temp;
-
-  create_directory(temp, true);
-
   std::vector<u8> epgData(result.begin(), result.end());
   const u32 ensembleId = mpDabProcessor->get_ensemble_id();
-  const u32 currentSId = extract_epg(temp, mServiceList, ensembleId);
+  const u32 currentSId = extract_epg(objectName, mServiceList, ensembleId);
   const u32 julianDate = mpDabProcessor->get_julian_date();
   const i32 subType = getContentSubType((MOTContentType)contentType);
   mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
 
   if (mConfig.cmbEpgObjectSaving->currentIndex() > 0)
   {
-    mEpgHandler.decode(epgData, QDir::toNativeSeparators(temp));
+    QString temp = objectName;
+    if (temp.isEmpty())
+    {
+      temp = "epg_file";
+    }
+
+    const bool saveToDir = mConfig.cmbEpgObjectSaving->currentIndex() == 2;
+    const QString path = generate_file_path(mEpgPath, temp, saveToDir);
+    mEpgHandler.decode(epgData, QDir::toNativeSeparators(path));
   }
+
   return true;
 }
 
@@ -816,10 +816,15 @@ void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
 QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData, const bool iStoreAsDir) const
 {
   const QString hashStr = QCryptographicHash::hash(iData, QCryptographicHash::Sha1).toHex().left(8);
+  return generate_file_path(iBasePath, hashStr + iFileExt, iStoreAsDir);
+}
+
+QString DabRadio::generate_file_path(const QString & iBasePath, const QString & iFileName, const bool iStoreAsDir) const
+{
   static const QRegularExpression regex(R"([<>:\"/\\|?*\s])"); // remove invalid file path characters
   const QString pathEnsemble = mChannel.ensembleName.trimmed().replace(regex, "-");
   const QString pathService = mChannel.currentService.serviceName.trimmed().replace(regex, "-");
-  const QString filename = pathEnsemble + "_" + pathService + "_" + hashStr + (iFileExt.isEmpty() ? "" : "." + iFileExt);
+  const QString filename = pathEnsemble + "_" + pathService + "_" + iFileName;
   const QString filepath = pathEnsemble + "/" + pathService + "/";
   QString path = iBasePath;
   if (iStoreAsDir) path += filepath;
