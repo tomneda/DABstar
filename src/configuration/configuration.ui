@@ -230,66 +230,65 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbGenXmlFromEpg">
+        <widget class="QCheckBox" name="cbUrlClickable">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The EPG detector has two components, one collecting data to present as &amp;quot;time table&amp;quot; for today, the other one - using a library written by Julian Cable from the BBC - to generate textual xml.&lt;/p&gt;&lt;p&gt;If selected, the xml will be generated. Note however that we encountered at least one example where the library generating the textual xml causes a crash.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;URLs are clickable in dynamic label text&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The dynamic label text is scanned for URLs and email addresses and the links are (tried to) converted into clickable links. So the web browser or email program should be opened automatically by clicking on them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Save EPG to XML</string>
+          <string>URLs clickable in dyn. label</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbSaveTransToCsv">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this is set, the transmitter descriptions visible on the map are also stored in a &amp;quot;.csv&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the httpHandler, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Save transmitters to CSV</string>
-         </property>
+        <widget class="QComboBox" name="cmbMotObjectSaving">
+         <item>
+          <property name="text">
+           <string>Do not save MOT objects</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Save MOT objects in a single folder</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Save MOT objects in a directory tree</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0">
-         <property name="sizeConstraint">
-          <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
-         </property>
+        <widget class="QComboBox" name="cmbEpgObjectSaving">
          <item>
-          <widget class="QCheckBox" name="cbSaveSlides">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set then slides (images) are being saved to&lt;span style=&quot; font-weight:600;&quot;&gt; $(HOME)/DABstar/PIC/&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Save slides</string>
-           </property>
-           <property name="tristate">
-            <bool>false</bool>
-           </property>
-          </widget>
+          <property name="text">
+           <string>Do not save EPG objects</string>
+          </property>
          </item>
          <item>
-          <widget class="QCheckBox" name="cbSaveSlidesDirStruct">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set then the slides (images) are stored in a directory structured manner.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Dir. structure</string>
-           </property>
-           <property name="tristate">
-            <bool>false</bool>
-           </property>
-          </widget>
+          <property name="text">
+           <string>Save EPG objects as XML file</string>
+          </property>
          </item>
-        </layout>
+        </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbUseStrongestPeak">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Use strongest correlation peak</string>
-         </property>
+        <widget class="QComboBox" name="cmbScanServiceListFilter">
+         <item>
+          <property name="text">
+           <string>Scan audio services only</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Scan non-audio services only</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Scan all services</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
@@ -330,6 +329,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="cbSaveTransToCsv">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this is set, the transmitter descriptions visible on the map are also stored in a &amp;quot;.csv&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the httpHandler, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Save transmitters to CSV</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="cbUseDcAvoidance">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Try to avoid a DC compoment on used OFDM-bins around the 0Hz-OFDM-bin.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Many SDR devices have an analog IQ receiving concept. This tends to have a DC component at 0Hz baseband. &lt;/p&gt;&lt;p&gt;Therefore, the DAB standard do not use the OFDM-bin at 0Hz to avoid decoding problems. But as the frequency correction is usually done only in the baseband, the DC could be seen also in the neighbor OFDM-bins where the demodulation of the data could be bad.&lt;/p&gt;&lt;p&gt;This feature tries to use the RF synthesizer on the SDR device to shift the DC component to the unsused 0Hz-OFDM-bin again. The remaining frequency correction is still done in the baseband.&lt;/p&gt;&lt;p&gt;Not all devices allows fine RF frequency tuning (and not on all relevant frequencies), so this is not always working fully well, but should also not cause any harm.&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;p&gt;While switching audio could drop for a short time.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -350,22 +359,12 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbShowNonAudioInServiceList">
+        <widget class="QCheckBox" name="cbUseStrongestPeak">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show non-audio entries in service list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If selected also non-audio services will be shown in the service list, like EPG/SPI data services.&lt;/p&gt;&lt;p&gt;Needs a new scan or channel-reselection in the service list to be shown or hidden.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Show non-audio in service list</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbUrlClickable">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;URLs are clickable in dynamic label text&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The dynamic label text is scanned for URLs and email addresses and the links are (tried to) converted into clickable links. So the web browser or email program should be opened automatically by clicking on them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>URLs clickable in dyn. label</string>
+          <string>Use strongest correlation peak</string>
          </property>
         </widget>
        </item>

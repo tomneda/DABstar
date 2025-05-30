@@ -580,8 +580,11 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
   }
 
   const bool isAudioService = mpDabProcessor->is_audio_service(iServiceName);
+  const i32 scanFilter = mConfig.cmbScanServiceListFilter->currentIndex();
 
-  if (mConfig.cbShowNonAudioInServiceList->isChecked() || isAudioService)
+  if (scanFilter == 2 ||
+     (scanFilter == 0 && isAudioService) ||
+     (scanFilter == 1 && !isAudioService))
   {
     mServiceList = insert_sorted(mServiceList, ed);
     mpServiceListHandler->add_entry(mChannel.channelName, iServiceName);
@@ -750,7 +753,7 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
   const i32 subType = getContentSubType((MOTContentType)contentType);
   mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
 
-  if (Settings::Config::cbGenXmlFromEpg.read().toBool())
+  if (mConfig.cmbEpgObjectSaving->currentIndex() > 0)
   {
     mEpgHandler.decode(epgData, QDir::toNativeSeparators(temp));
   }
@@ -766,7 +769,8 @@ void DabRadio::save_MOT_text(const QByteArray & result, int contentType, const Q
   }
 
   // TODO: we do not know the real content type for sure, so we omit the file extension here (seems to be almost png images)
-  QString path = generate_unique_file_path_from_hash(mMotPath, "", result);
+  const bool saveToDir = mConfig.cmbMotObjectSaving->currentIndex() == 2;
+  QString path = generate_unique_file_path_from_hash(mMotPath, "", result, saveToDir);
   path = QDir::toNativeSeparators(path);
 
   if (!QFile::exists(path))
@@ -809,7 +813,7 @@ void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
   }
 }
 
-QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData) const
+QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData, const bool iStoreAsDir) const
 {
   const QString hashStr = QCryptographicHash::hash(iData, QCryptographicHash::Sha1).toHex().left(8);
   static const QRegularExpression regex(R"([<>:\"/\\|?*\s])"); // remove invalid file path characters
@@ -818,7 +822,7 @@ QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath,
   const QString filename = pathEnsemble + "_" + pathService + "_" + hashStr + (iFileExt.isEmpty() ? "" : "." + iFileExt);
   const QString filepath = pathEnsemble + "/" + pathService + "/";
   QString path = iBasePath;
-  if (Settings::Config::cbSaveSlidesDirStruct.read().toBool()) path += filepath;
+  if (iStoreAsDir) path += filepath;
   path += filename;
   create_directory(path, true);
   return path;
@@ -845,9 +849,12 @@ void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, co
   qCDebug(sLogRadioInterface(), "show_MOTlabel %s, contentType 0x%x, dirs %d, type %s",
           pictureName.toLocal8Bit().constData(), contentType, dirs, type);
 
-  if (Settings::Config::cbSaveSlides.read().toBool() && !mPicturesPath.isEmpty())
+  const bool saveMotObject = mConfig.cmbMotObjectSaving->currentIndex() > 0;
+
+  if (saveMotObject && !mPicturesPath.isEmpty())
   {
-    QString pict = generate_unique_file_path_from_hash(mPicturesPath, type, data);
+    const bool saveToDir = mConfig.cmbMotObjectSaving->currentIndex() == 2;
+    QString pict = generate_unique_file_path_from_hash(mPicturesPath, type, data, saveToDir);
     pict = QDir::toNativeSeparators(pict);
     qInfo() << "filepath:" << pict << "(pictureName:" << pictureName << ")";
 

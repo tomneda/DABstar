@@ -25,7 +25,7 @@ Configuration::Configuration(DabRadio * ipRI) :
 {
   setupUi(this);
 
-  Settings::Config::posAndSize.read_widget_geometry(this, 700, 270, true);
+  Settings::Config::posAndSize.read_widget_geometry(this, 720, 276, true);
 
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
@@ -38,15 +38,14 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::cbUseStrongestPeak.register_widget_and_update_ui_from_setting(cbUseStrongestPeak, 0);
   Settings::Config::cbUseNativeFileDialog.register_widget_and_update_ui_from_setting(cbUseNativeFileDialog, 0);
   Settings::Config::cbUseUtcTime.register_widget_and_update_ui_from_setting(cbUseUtcTime, 0);
-  Settings::Config::cbGenXmlFromEpg.register_widget_and_update_ui_from_setting(cbGenXmlFromEpg, 0);
   Settings::Config::cbAlwaysOnTop.register_widget_and_update_ui_from_setting(cbAlwaysOnTop, 0);
   Settings::Config::cbManualBrowserStart.register_widget_and_update_ui_from_setting(cbManualBrowserStart, 0);
-  Settings::Config::cbSaveSlides.register_widget_and_update_ui_from_setting(cbSaveSlides, 0);
-  Settings::Config::cbSaveSlidesDirStruct.register_widget_and_update_ui_from_setting(cbSaveSlidesDirStruct, 2);
+  Settings::Config::cmbMotObjectSaving.register_widget_and_update_ui_from_setting(cmbMotObjectSaving, "");
+  Settings::Config::cmbEpgObjectSaving.register_widget_and_update_ui_from_setting(cmbEpgObjectSaving, "");
+  Settings::Config::cmbScanServiceListFilter.register_widget_and_update_ui_from_setting(cmbScanServiceListFilter, "");
   Settings::Config::cbSaveTransToCsv.register_widget_and_update_ui_from_setting(cbSaveTransToCsv, 0);
   Settings::Config::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
   Settings::Config::cbUseDcRemoval.register_widget_and_update_ui_from_setting(cbUseDcRemoval, 0);
-  Settings::Config::cbShowNonAudioInServiceList.register_widget_and_update_ui_from_setting(cbShowNonAudioInServiceList, 0);
   Settings::Config::cbTiiCollisions.register_widget_and_update_ui_from_setting(cbTiiCollisions, 0);
   Settings::Config::cbUrlClickable.register_widget_and_update_ui_from_setting(cbUrlClickable, 2);
   Settings::Config::cbAutoIterTiiEntries.register_widget_and_update_ui_from_setting(cbAutoIterTiiEntries, 2);
@@ -64,10 +63,6 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::varEpgPath.define_default_value(tempEpgPath);
   Settings::Config::varSkipFile.define_default_value("");
   Settings::Config::varTiiFile.define_default_value("");
-
-  // enable checkbox for "directory structure" only when "save slide" is active
-  cbSaveSlidesDirStruct->setEnabled(Settings::Config::cbSaveSlides.read().toBool());
-  connect(cbSaveSlides, &QCheckBox::checkStateChanged, [this](const int state){ cbSaveSlidesDirStruct->setEnabled(state > 0); });
 
   QPalette lcdPalette;
 #ifndef __MAC__
