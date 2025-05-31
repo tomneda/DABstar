@@ -823,7 +823,7 @@ QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath,
 QString DabRadio::generate_file_path(const QString & iBasePath, const QString & iFileName, const bool iStoreAsDir) const
 {
   static const QRegularExpression regex(R"([<>:\"/\\|?*\s])"); // remove invalid file path characters
-  const QString pathEnsemble = mChannel.ensembleName.trimmed().replace(regex, "-");
+  const QString pathEnsemble = mChannel.channelName + "-" + mChannel.ensembleName.trimmed().replace(regex, "-");
   const QString pathService = mChannel.currentService.serviceName.trimmed().replace(regex, "-");
   const QString filename = pathEnsemble + "_" + pathService + "_" + iFileName;
   const QString filepath = pathEnsemble + "/" + pathService + "/";
