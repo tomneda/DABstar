@@ -21,9 +21,7 @@ enum class EIqPlotType
   PHASE_CORR_CARR_NORMED,
   PHASE_CORR_MEAN_NORMED,
   RAW_MEAN_NORMED,
-  DC_OFFSET_FFT_10,
   DC_OFFSET_FFT_100,
-  DC_OFFSET_ADC_10,
   DC_OFFSET_ADC_100,
 
   DEFAULT = PHASE_CORR_CARR_NORMED  // use the first element for startup constellation

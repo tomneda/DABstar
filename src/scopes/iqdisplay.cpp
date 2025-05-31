@@ -179,19 +179,9 @@ IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
     cp.Name = "Real Mean";
     break;
 
-  case EIqPlotType::DC_OFFSET_FFT_10:
-    cp.ToolTip = "Shows the DC offset of the input signal after OFDM-FFT at FFT-bin 0. See the effect of 'DC removal filter'. The trace is the distance to the last OFDM-symbol. The value is 10 times magnified.";
-    cp.Name = "DC Off. (FFT) 10x";
-    break;
-
   case EIqPlotType::DC_OFFSET_FFT_100:
     cp.ToolTip = "Shows the DC offset of the input signal after OFDM-FFT at FFT-bin 0. See the effect of 'DC removal filter'. The trace is the distance to the last OFDM-symbol. The value is 100 times magnified.";
     cp.Name = "DC Off. (FFT) 100x";
-    break;
-
-  case EIqPlotType::DC_OFFSET_ADC_10:
-    cp.ToolTip = "Shows the DC offset of the input signal after ADC (before DC removal filtering). The 'DC removal filter' has to be activated to see changes. The value is 10 times magnified.";
-    cp.Name = "DC Off. (ADC) 10x";
     break;
 
   case EIqPlotType::DC_OFFSET_ADC_100:
@@ -210,9 +200,7 @@ QStringList IQDisplay::get_plot_type_names()
   sl << _get_plot_type_data(EIqPlotType::PHASE_CORR_CARR_NORMED).Name;
   sl << _get_plot_type_data(EIqPlotType::PHASE_CORR_MEAN_NORMED).Name;
   sl << _get_plot_type_data(EIqPlotType::RAW_MEAN_NORMED).Name;
-  sl << _get_plot_type_data(EIqPlotType::DC_OFFSET_FFT_10).Name;
   sl << _get_plot_type_data(EIqPlotType::DC_OFFSET_FFT_100).Name;
-  sl << _get_plot_type_data(EIqPlotType::DC_OFFSET_ADC_10).Name;
   sl << _get_plot_type_data(EIqPlotType::DC_OFFSET_ADC_100).Name;
 
   return sl;
