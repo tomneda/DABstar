@@ -45,7 +45,7 @@ void	virtualReader::restartReader	(i32 s) {
 void	virtualReader::stopReader	(void) {
 }
 
-void	virtualReader::processData	(f32 IQoffs, void *data, int cnt) {
+void	virtualReader::processData	(f32 IQoffs, void *data, i32 cnt) {
 	(void)IQoffs;
 	(void)data;
 	(void)cnt;
@@ -76,7 +76,7 @@ i32	i, j;
 	   inTable [conv++]	= s [i];
 	   if (conv >= inSize) {	// full buffer, map
 	      for (j = 0; j < outSize - 1; j ++) {
-	         i16 base	= (int)(floor (mapTable [j]));
+	         i16 base	= (i32)(floor (mapTable [j]));
 	         f32  frac	= mapTable [j] - base;
 	         outTable [j]	=  inTable [base] * (1 - frac) +
 	                         inTable [base + 1] * frac;

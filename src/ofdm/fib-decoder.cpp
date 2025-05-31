@@ -296,8 +296,8 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   i16 option, protLevel, subChanSize;
   SubChannelDescriptor subChannel;
   DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
-  static int table_1[] = { 12, 8, 6, 4 };
-  static int table_2[] = { 27, 21, 18, 15 };
+  static i32 table_1[] = { 12, 8, 6, 4 };
+  static i32 table_2[] = { 27, 21, 18, 15 };
 
   (void)OE_bit;
   (void)PD_bit;
@@ -456,8 +456,8 @@ i16 FibDecoder::HandleFIG0Extension3(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
   i16 packetAddress = getBits(d, used * 8 + 30, 10);
   u16 CAOrg = 0;
 
-  int serviceCompIndex;
-  int serviceIndex;
+  i32 serviceCompIndex;
+  i32 serviceIndex;
   DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
@@ -554,7 +554,7 @@ i16 FibDecoder::HandleFIG0Extension5(const u8 * d, u8 CN_bit, u8 OE_bit, u8 PD_b
   {      // long form
     i16 SCId = getBits(d, bitOffset + 4, 12);
     language = getBits_8(d, bitOffset + 16);
-    int compIndex = findServiceComponent(localBase, SCId);
+    i32 compIndex = findServiceComponent(localBase, SCId);
 
     if (compIndex != -1)
     {
@@ -576,8 +576,8 @@ void FibDecoder::FIG0Extension7(const u8 * d)
   u8 OE_bit = getBits_1(d, 8 + 1);
   u8 PD_bit = getBits_1(d, 8 + 2);
 
-  int serviceCount = getBits_6(d, used * 8);
-  int counter = getBits(d, used * 8 + 6, 10);
+  i32 serviceCount = getBits_6(d, used * 8);
+  i32 counter = getBits(d, used * 8 + 6, 10);
 
   (void)Length;
   (void)CN_bit;
@@ -621,7 +621,7 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
   extensionFlag = getBits_1(d, bitOffset);
   SCIds = getBits_4(d, bitOffset + 4);
 
-  //	int serviceIndex = findService (SId);
+  //	i32 serviceIndex = findService (SId);
   bitOffset += 8;
   lsFlag = getBits_1(d, bitOffset);
 
@@ -641,7 +641,7 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
   }
   else
   {      // long form
-    int SCId = getBits(d, bitOffset + 4, 12);
+    i32 SCId = getBits(d, bitOffset + 4, 12);
     i16 compIndex = findServiceComponent(localBase, SCId);
     if (compIndex != -1)
     {
@@ -691,7 +691,7 @@ i16 FibDecoder::HandleFIG0Extension13(const u8 * d, i16 used, u8 CN_bit, u8 OE_b
   NoApplications = getBits_4(d, bitOffset + 4);
   bitOffset += 8;
 
-  int serviceIndex = find_service_index_from_SId(SId);
+  i32 serviceIndex = find_service_index_from_SId(SId);
 
   for (i = 0; i < NoApplications; i++)
   {
@@ -704,7 +704,7 @@ i16 FibDecoder::HandleFIG0Extension13(const u8 * d, i16 used, u8 CN_bit, u8 OE_b
       continue;
     }
 
-    int compIndex = findServiceComponent(localBase, SId, SCIds);
+    i32 compIndex = findServiceComponent(localBase, SId, SCIds);
     if (compIndex != -1)
     {
       if (localBase->serviceComps[compIndex].TMid == 3)
@@ -745,7 +745,7 @@ void FibDecoder::FIG0Extension17(const u8 * d)
 {
   i16 length = getBits_5(d, 3);
   i16 offset = 16;
-  int serviceIndex;
+  i32 serviceIndex;
 
   while (offset < length * 8)
   {
@@ -806,7 +806,7 @@ void FibDecoder::FIG0Extension18(const u8 * d)
     const u8 nrClusters = getBits(d, bitOffset + 5, 3);
     bitOffset += 8;
 
-    for (int i = 0; i < nrClusters; i++)
+    for (i32 i = 0; i < nrClusters; i++)
     {
       if (getBits(d, bitOffset + 8 * i, 8) == 0)
       {
@@ -1000,7 +1000,7 @@ void FibDecoder::FIG1Extension0(const u8 * d)
   if (charSet <= 16) // EBU Latin based repertoire
   {
     char label[17];
-    for (int i = 0; i < 16; i++)
+    for (i32 i = 0; i < 16; i++)
     {
       constexpr i32 offset = 32;
       label[i] = getBits_8(d, offset + 8 * i);
@@ -1030,7 +1030,7 @@ void FibDecoder::FIG1Extension1(const u8 * d)
   u8 Rfu;
   i32 SId = getBits(d, 16, 16);
   i16 offset = 32;
-  int serviceIndex;
+  i32 serviceIndex;
   char label[17];
 
   //      from byte 1 we deduce:
@@ -1050,7 +1050,7 @@ void FibDecoder::FIG1Extension1(const u8 * d)
     label[i] = getBits_8(d, offset + 8 * i);
   }
   QString dataName = toQStringUsingCharset((const char *)label, (CharacterSet)charSet);
-  for (int i = dataName.length(); i < 16; i++)
+  for (i32 i = dataName.length(); i < 16; i++)
   {
     dataName.append(' ');
   }
@@ -1093,12 +1093,12 @@ void FibDecoder::FIG1Extension4(const u8 * d)
 
   char label[17];
   label[16] = 0;
-  for (int i = 0; i < 16; i++)
+  for (i32 i = 0; i < 16; i++)
   {
     label[i] = getBits_8(d, offset + 8 * i);
   }
 
-  int charSet = getBits_4(d, 8);
+  i32 charSet = getBits_4(d, 8);
   QString dataName = toQStringUsingCharset((const char *)label, (CharacterSet)charSet);
   i16 compIndex = findServiceComponent(currentConfig, SId, SCIds);
   if (compIndex > 0)
@@ -1119,7 +1119,7 @@ void FibDecoder::FIG1Extension5(const u8 * d)
 {
   u8 charSet, extension;
   u8 Rfu;
-  int serviceIndex;
+  i32 serviceIndex;
   i16 i;
   char label[17];
 
@@ -1197,7 +1197,7 @@ void FibDecoder::FIG1Extension6(const u8 * d)
 //	by creating a service Component
 void FibDecoder::bind_audioService(DabConfig * ioDabConfig, i8 TMid, u32 SId, i16 compnr, i16 subChId, i16 ps_flag, i16 ASCTy)
 {
-  const int serviceIndex = find_service_index_from_SId(SId);
+  const i32 serviceIndex = find_service_index_from_SId(SId);
 
   if (serviceIndex == -1)
   {
@@ -1262,9 +1262,9 @@ void FibDecoder::bind_audioService(DabConfig * ioDabConfig, i8 TMid, u32 SId, i1
 //	decide whether it should be visible or not
 void FibDecoder::bind_packetService(DabConfig * base, const i8 iTMid, const u32 iSId, const i16 iCompNr, const i16 iSCId, const i16 iPsFlag, const i16 iCaFlag)
 {
-  int firstFree = -1;
+  i32 firstFree = -1;
 
-  const int serviceIndex = find_service_index_from_SId(iSId);
+  const i32 serviceIndex = find_service_index_from_SId(iSId);
 
   if (serviceIndex == -1)
   {
@@ -1313,9 +1313,9 @@ void FibDecoder::bind_packetService(DabConfig * base, const i8 iTMid, const u32 
   }
 }
 
-int FibDecoder::findService(const QString & s)
+i32 FibDecoder::findService(const QString & s)
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (!ensemble->services[i].inUse)
     {
@@ -1329,9 +1329,9 @@ int FibDecoder::findService(const QString & s)
   return -1;
 }
 
-int FibDecoder::find_service_index_from_SId(u32 SId)
+i32 FibDecoder::find_service_index_from_SId(u32 SId)
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (!ensemble->services[i].inUse)
     {
@@ -1346,9 +1346,9 @@ int FibDecoder::find_service_index_from_SId(u32 SId)
 }
 
 //	find data component using the SCId
-int FibDecoder::findServiceComponent(DabConfig * db, i16 SCId)
+i32 FibDecoder::findServiceComponent(DabConfig * db, i16 SCId)
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (db->serviceComps[i].inUse && (db->serviceComps[i].SCId == SCId))
     {
@@ -1360,17 +1360,17 @@ int FibDecoder::findServiceComponent(DabConfig * db, i16 SCId)
 
 //
 //	find serviceComponent using the SId and the SCIds
-int FibDecoder::findServiceComponent(DabConfig * db, u32 SId, u8 SCIds)
+i32 FibDecoder::findServiceComponent(DabConfig * db, u32 SId, u8 SCIds)
 {
 
-  const int serviceIndex = find_service_index_from_SId(SId);
+  const i32 serviceIndex = find_service_index_from_SId(SId);
 
   if (serviceIndex == -1)
   {
     return -1;
   }
 
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (!db->serviceComps[i].inUse)
     {
@@ -1385,9 +1385,9 @@ int FibDecoder::findServiceComponent(DabConfig * db, u32 SId, u8 SCIds)
 }
 
 //	find serviceComponent using the SId and the subchannelId
-int FibDecoder::findComponent(DabConfig * db, u32 SId, i16 subChId)
+i32 FibDecoder::findComponent(DabConfig * db, u32 SId, i16 subChId)
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (!db->serviceComps[i].inUse)
     {
@@ -1402,9 +1402,9 @@ int FibDecoder::findComponent(DabConfig * db, u32 SId, i16 subChId)
   return -1;
 }
 
-void FibDecoder::createService(QString name, u32 SId, int SCIds)
+void FibDecoder::createService(QString name, u32 SId, i32 SCIds)
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (ensemble->services[i].inUse)
     {
@@ -1425,14 +1425,14 @@ void FibDecoder::createService(QString name, u32 SId, int SCIds)
 //
 void FibDecoder::cleanupServiceList()
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (!ensemble->services[i].inUse)
     {
       continue;
     }
     u32 SId = ensemble->services[i].SId;
-    int SCIds = ensemble->services[i].SCIds;
+    i32 SCIds = ensemble->services[i].SCIds;
     if (findServiceComponent(currentConfig, SId, SCIds) == -1)
     {
       ensemble->services[i].inUse = false;
@@ -1465,7 +1465,7 @@ QString FibDecoder::announcements(u16 a)
   }
 }
 
-void FibDecoder::setCluster(DabConfig * localBase, int clusterId, i16 serviceIndex, u16 asuFlags)
+void FibDecoder::setCluster(DabConfig * localBase, i32 clusterId, i16 serviceIndex, u16 asuFlags)
 {
 
   if (!sync_reached())
@@ -1487,7 +1487,7 @@ void FibDecoder::setCluster(DabConfig * localBase, int clusterId, i16 serviceInd
     myCluster->flags = asuFlags;
   }
 
-  for (unsigned short service : myCluster->services)
+  for (u16 service : myCluster->services)
   {
     if (service == serviceIndex)
     {
@@ -1499,7 +1499,7 @@ void FibDecoder::setCluster(DabConfig * localBase, int clusterId, i16 serviceInd
 
 Cluster * FibDecoder::getCluster(DabConfig * localBase, i16 clusterId)
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if ((localBase->clusterTable[i].inUse) && (localBase->clusterTable[i].clusterId == clusterId))
     {
@@ -1507,7 +1507,7 @@ Cluster * FibDecoder::getCluster(DabConfig * localBase, i16 clusterId)
     }
   }
 
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (!localBase->clusterTable[i].inUse)
     {
@@ -1555,31 +1555,31 @@ bool FibDecoder::sync_reached()
   return ensemble->isSynced;
 }
 
-int FibDecoder::get_sub_channel_id(const QString & s, u32 dummy_SId)
+i32 FibDecoder::get_sub_channel_id(const QString & s, u32 dummy_SId)
 {
-  int serviceIndex = findService(s);
+  i32 serviceIndex = findService(s);
 
   (void)dummy_SId;
   fibLocker.lock();
 
-  int SId = ensemble->services[serviceIndex].SId;
-  int SCIds = ensemble->services[serviceIndex].SCIds;
+  i32 SId = ensemble->services[serviceIndex].SId;
+  i32 SCIds = ensemble->services[serviceIndex].SCIds;
 
-  int compIndex = findServiceComponent(currentConfig, SId, SCIds);
+  i32 compIndex = findServiceComponent(currentConfig, SId, SCIds);
   if (compIndex == -1)
   {
     fibLocker.unlock();
     return -1;
   }
 
-  int subChId = currentConfig->serviceComps[compIndex].subChannelId;
+  i32 subChId = currentConfig->serviceComps[compIndex].subChannelId;
   fibLocker.unlock();
   return subChId;
 }
 
 void FibDecoder::get_data_for_audio_service(const QString & iS, Audiodata * opAD)
 {
-  int serviceIndex;
+  i32 serviceIndex;
 
   opAD->defined = false;  // default
   serviceIndex = findService(iS);
@@ -1590,10 +1590,10 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, Audiodata * opAD
 
   fibLocker.lock();
 
-  int SId = ensemble->services[serviceIndex].SId;
-  int SCIds = ensemble->services[serviceIndex].SCIds;
+  i32 SId = ensemble->services[serviceIndex].SId;
+  i32 SCIds = ensemble->services[serviceIndex].SCIds;
 
-  int compIndex = findServiceComponent(currentConfig, SId, SCIds);
+  i32 compIndex = findServiceComponent(currentConfig, SId, SCIds);
   if (compIndex == -1)
   {
     fibLocker.unlock();
@@ -1606,7 +1606,7 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, Audiodata * opAD
     return;
   }
 
-  int subChId = currentConfig->serviceComps[compIndex].subChannelId;
+  i32 subChId = currentConfig->serviceComps[compIndex].subChannelId;
   if (!currentConfig->subChannels[subChId].inUse)
   {
     fibLocker.unlock();
@@ -1633,7 +1633,7 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, Audiodata * opAD
 
 void FibDecoder::get_data_for_packet_service(const QString & iS, Packetdata * opPD, i16 iSCIds)
 {
-  int serviceIndex;
+  i32 serviceIndex;
 
   opPD->defined = false;
   serviceIndex = findService(iS);
@@ -1644,9 +1644,9 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, Packetdata * op
 
   fibLocker.lock();
 
-  int SId = ensemble->services[serviceIndex].SId;
+  i32 SId = ensemble->services[serviceIndex].SId;
 
-  int compIndex = findServiceComponent(currentConfig, SId, iSCIds);
+  i32 compIndex = findServiceComponent(currentConfig, SId, iSCIds);
 
   if ((compIndex == -1) || (currentConfig->serviceComps[compIndex].TMid != 3))
   {
@@ -1654,7 +1654,7 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, Packetdata * op
     return;
   }
 
-  int subChId = currentConfig->serviceComps[compIndex].subChannelId;
+  i32 subChId = currentConfig->serviceComps[compIndex].subChannelId;
   if (!currentConfig->subChannels[subChId].inUse)
   {
     fibLocker.unlock();
@@ -1685,7 +1685,7 @@ std::vector<SServiceId> FibDecoder::get_services()
 {
   std::vector<SServiceId> services;
 
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (ensemble->services[i].inUse && ensemble->services[i].hasName)
     {
@@ -1726,7 +1726,7 @@ std::vector<SServiceId> FibDecoder::insert_sorted(const std::vector<SServiceId> 
   return k;
 }
 
-QString FibDecoder::find_service(u32 SId, int SCIds)
+QString FibDecoder::find_service(u32 SId, i32 SCIds)
 {
   for (auto & service : ensemble->services)
   {
@@ -1738,9 +1738,9 @@ QString FibDecoder::find_service(u32 SId, int SCIds)
   return "";
 }
 
-void FibDecoder::get_parameters(const QString & s, u32 * p_SId, int * p_SCIds)
+void FibDecoder::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIds)
 {
-  int serviceIndex = findService(s);
+  i32 serviceIndex = findService(s);
   if (serviceIndex == -1)
   {
     *p_SId = 0;
@@ -1817,7 +1817,7 @@ void FibDecoder::FIG0Extension9(const u8 * d)
   u8 ecc;
   //
   //	6 indicates the number of hours
-  int signbit = getBits_1(d, offset + 2);
+  i32 signbit = getBits_1(d, offset + 2);
   dateTime[6] = (signbit == 1) ? -1 * getBits_4(d, offset + 3) : getBits_4(d, offset + 3);
   //
   //	7 indicates a possible remaining half our
@@ -1839,7 +1839,7 @@ void FibDecoder::FIG0Extension9(const u8 * d)
 //"jan", "feb", "mar", "apr", "may", "jun",
 //"jul", "aug", "sep", "oct", "nov", "dec"};
 
-int monthLength[]{
+i32 monthLength[]{
   31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 //
@@ -1916,7 +1916,7 @@ void adjustTime(i32 * ioDateTime)
 //	                      arg (dateTime [2], 2, 10, QChar ('0'));
 //	result. append (day);
 //	result. append (" ");
-//	int hours	= dateTime [3];
+//	i32 hours	= dateTime [3];
 //	if (hours < 0)	hours += 24;
 //	if (hours >= 24) hours -= 24;
 //
@@ -1976,7 +1976,7 @@ void FibDecoder::FIG0Extension10(const u8 * dd)
   //
   //	take care of different time zones
   bool change = false;
-  for (int i = 0; i < 6; i++)
+  for (i32 i = 0; i < 6; i++)
   {
     if (theTime[i] != dateTime[i])
     {
@@ -1987,10 +1987,10 @@ void FibDecoder::FIG0Extension10(const u8 * dd)
 
   if (change)
   {
-    int utc_day = dateTime[2];
-    int utc_hour = dateTime[3];
-    int utc_minute = dateTime[4];
-    int utc_seconds = dateTime[5];
+    i32 utc_day = dateTime[2];
+    i32 utc_hour = dateTime[3];
+    i32 utc_minute = dateTime[4];
+    i32 utc_seconds = dateTime[5];
     adjustTime(dateTime.data());
     emit  signal_clock_time(dateTime[0], dateTime[1], dateTime[2], dateTime[3], dateTime[4], utc_day, utc_hour, utc_minute, utc_seconds);
   }
@@ -1998,7 +1998,7 @@ void FibDecoder::FIG0Extension10(const u8 * dd)
 
 void FibDecoder::set_epg_data(u32 SId, i32 theTime, const QString & theText, const QString & theDescr)
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (ensemble->services[i].inUse && ensemble->services[i].SId == SId)
     {
@@ -2026,7 +2026,7 @@ void FibDecoder::set_epg_data(u32 SId, i32 theTime, const QString & theText, con
 std::vector<SEpgElement> FibDecoder::get_timeTable(u32 SId)
 {
   std::vector<SEpgElement> res;
-  int index = find_service_index_from_SId(SId);
+  i32 index = find_service_index_from_SId(SId);
   if (index == -1)
   {
     return res;
@@ -2037,7 +2037,7 @@ std::vector<SEpgElement> FibDecoder::get_timeTable(u32 SId)
 std::vector<SEpgElement> FibDecoder::get_timeTable(const QString & service)
 {
   std::vector<SEpgElement> res;
-  int index = findService(service);
+  i32 index = findService(service);
   if (index == -1)
   {
     return res;
@@ -2047,7 +2047,7 @@ std::vector<SEpgElement> FibDecoder::get_timeTable(const QString & service)
 
 bool FibDecoder::has_time_table(u32 SId)
 {
-  int index = find_service_index_from_SId(SId);
+  i32 index = find_service_index_from_SId(SId);
   std::vector<SEpgElement> t;
   if (index == -1)
   {
@@ -2059,7 +2059,7 @@ bool FibDecoder::has_time_table(u32 SId)
 
 std::vector<SEpgElement> FibDecoder::find_epg_data(u32 SId)
 {
-  int index = find_service_index_from_SId(SId);
+  i32 index = find_service_index_from_SId(SId);
   std::vector<SEpgElement> res;
 
   if (index == -1)
@@ -2108,7 +2108,7 @@ QStringList FibDecoder::basic_print()
 {
   QStringList out;
   bool hasContents = false;
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (currentConfig->serviceComps[i].inUse)
     {
@@ -2125,7 +2125,7 @@ QStringList FibDecoder::basic_print()
     }
   }
   hasContents = false;
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (currentConfig->serviceComps[i].inUse)
     {
@@ -2151,10 +2151,10 @@ QStringList FibDecoder::basic_print()
 
 //
 //
-QString FibDecoder::serviceName(int index)
+QString FibDecoder::serviceName(i32 index)
 {
-  int sid = currentConfig->serviceComps[index].SId;
-  int serviceIndex = find_service_index_from_SId(sid);
+  i32 sid = currentConfig->serviceComps[index].SId;
+  i32 serviceIndex = find_service_index_from_SId(sid);
   if (serviceIndex != -1)
   {
     return ensemble->services[serviceIndex].serviceLabel;
@@ -2162,14 +2162,14 @@ QString FibDecoder::serviceName(int index)
   return "";
 }
 
-QString FibDecoder::serviceIdOf(int index)
+QString FibDecoder::serviceIdOf(i32 index)
 {
   return QString::number(currentConfig->serviceComps[index].SId, 16);
 }
 
-QString FibDecoder::subChannelOf(int index)
+QString FibDecoder::subChannelOf(i32 index)
 {
-  int subChannel = currentConfig->serviceComps[index].subChannelId;
+  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
   if (subChannel < 0)
   {
     return "";
@@ -2177,99 +2177,99 @@ QString FibDecoder::subChannelOf(int index)
   return QString::number(subChannel);
 }
 
-QString FibDecoder::startAddressOf(int index)
+QString FibDecoder::startAddressOf(i32 index)
 {
-  int subChannel = currentConfig->serviceComps[index].subChannelId;
-  int startAddr = currentConfig->subChannels[subChannel].startAddr;
+  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  i32 startAddr = currentConfig->subChannels[subChannel].startAddr;
   return QString::number(startAddr);
 }
 
-QString FibDecoder::lengthOf(int index)
+QString FibDecoder::lengthOf(i32 index)
 {
-  int subChannel = currentConfig->serviceComps[index].subChannelId;
-  int Length = currentConfig->subChannels[subChannel].Length;
+  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  i32 Length = currentConfig->subChannels[subChannel].Length;
   return QString::number(Length);
 }
 
-QString FibDecoder::protLevelOf(int index)
+QString FibDecoder::protLevelOf(i32 index)
 {
-  int subChannel = currentConfig->serviceComps[index].subChannelId;
+  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
   bool shortForm = currentConfig->subChannels[subChannel].shortForm;
-  int protLevel = currentConfig->subChannels[subChannel].protLevel;
+  i32 protLevel = currentConfig->subChannels[subChannel].protLevel;
   return getProtectionLevel(shortForm, protLevel);
 }
 
-QString FibDecoder::codeRateOf(int index)
+QString FibDecoder::codeRateOf(i32 index)
 {
-  int subChannel = currentConfig->serviceComps[index].subChannelId;
+  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
   bool shortForm = currentConfig->subChannels[subChannel].shortForm;
-  int protLevel = currentConfig->subChannels[subChannel].protLevel;
+  i32 protLevel = currentConfig->subChannels[subChannel].protLevel;
   return getCodeRate(shortForm, protLevel);
 }
 
-QString FibDecoder::bitRateOf(int index)
+QString FibDecoder::bitRateOf(i32 index)
 {
-  int subChannel = currentConfig->serviceComps[index].subChannelId;
-  int bitRate = currentConfig->subChannels[subChannel].bitRate;
+  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  i32 bitRate = currentConfig->subChannels[subChannel].bitRate;
   return QString::number(bitRate);
 }
 
-QString FibDecoder::dabType(int index)
+QString FibDecoder::dabType(i32 index)
 {
-  int dabType = currentConfig->serviceComps[index].ASCTy;
+  i32 dabType = currentConfig->serviceComps[index].ASCTy;
   return dabType == 077 ? "DAB+" : "DAB";
 }
 
-QString FibDecoder::languageOf(int index)
+QString FibDecoder::languageOf(i32 index)
 {
-  int subChannel = currentConfig->serviceComps[index].subChannelId;
-  int language = currentConfig->subChannels[subChannel].language;
+  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  i32 language = currentConfig->subChannels[subChannel].language;
   //textMapper theMapper;
 
   return getLanguage(language);
   //	return theMapper. get_programm_language_string (language);
 }
 
-QString FibDecoder::programTypeOf(int index)
+QString FibDecoder::programTypeOf(i32 index)
 {
-  int sid = currentConfig->serviceComps[index].SId;
-  int serviceIndex = find_service_index_from_SId(sid);
-  int programType = ensemble->services[serviceIndex].programType;
+  i32 sid = currentConfig->serviceComps[index].SId;
+  i32 serviceIndex = find_service_index_from_SId(sid);
+  i32 programType = ensemble->services[serviceIndex].programType;
   //textMapper theMapper;
 
   return getProgramType(programType);
   //	return theMapper. get_programm_type_string (programType);
 }
 
-QString FibDecoder::fmFreqOf(int index)
+QString FibDecoder::fmFreqOf(i32 index)
 {
-  int sid = currentConfig->serviceComps[index].SId;
-  int serviceIndex = find_service_index_from_SId(sid);
+  i32 sid = currentConfig->serviceComps[index].SId;
+  i32 serviceIndex = find_service_index_from_SId(sid);
   return ensemble->services[serviceIndex].fmFrequency != -1 ? QString::number(ensemble->services[serviceIndex].fmFrequency) : "    ";
 }
 
-QString FibDecoder::appTypeOf(int index)
+QString FibDecoder::appTypeOf(i32 index)
 {
-  int appType = currentConfig->serviceComps[index].appType;
+  i32 appType = currentConfig->serviceComps[index].appType;
   return QString::number(appType);
 }
 
-QString FibDecoder::FEC_scheme(int index)
+QString FibDecoder::FEC_scheme(i32 index)
 {
-  int subChannel = currentConfig->serviceComps[index].subChannelId;
-  int FEC_scheme = currentConfig->subChannels[subChannel].FEC_scheme;
+  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  i32 FEC_scheme = currentConfig->subChannels[subChannel].FEC_scheme;
   return QString::number(FEC_scheme);
 }
 
-QString FibDecoder::packetAddress(int index)
+QString FibDecoder::packetAddress(i32 index)
 {
-  int packetAddr = currentConfig->serviceComps[index].packetAddress;
+  i32 packetAddr = currentConfig->serviceComps[index].packetAddress;
   return QString::number(packetAddr);
 }
 
-QString FibDecoder::DSCTy(int index)
+QString FibDecoder::DSCTy(i32 index)
 {
-  int DSCTy = currentConfig->serviceComps[index].DSCTy;
+  i32 DSCTy = currentConfig->serviceComps[index].DSCTy;
   switch (DSCTy)
   {
   case 60 : return "mot data";
@@ -2286,7 +2286,7 @@ QString FibDecoder::audioHeader()
   return QString("serviceName") + ";" + "serviceId" + ";" + "subChannel" + ";" + "start address (CU's)" + ";" + "length (CU's)" + ";" + "protection" + ";" + "code rate" + ";" + "bitrate" + ";" + "dab type" + ";" + "language" + ";" + "program type" + ";" + "fm freq" + ";";
 }
 
-QString FibDecoder::audioData(int index)
+QString FibDecoder::audioData(i32 index)
 {
   return QString(serviceName(index)) + ";" + serviceIdOf(index) + ";" + subChannelOf(index) + ";" + startAddressOf(index) + ";" + lengthOf(
     index) + ";" + protLevelOf(index) + ";" + codeRateOf(index) + ";" + bitRateOf(index) + ";" + dabType(index) + ";" + languageOf(index) + ";" + programTypeOf(
@@ -2299,7 +2299,7 @@ QString FibDecoder::packetHeader()
   return QString("serviceName") + ";" + "serviceId" + ";" + "subChannel" + ";" + "start address" + ";" + "length" + ";" + "protection" + ";" + "code rate" + ";" + "appType" + ";" + "FEC_scheme" + ";" + "packetAddress" + ";" + "DSCTy" + ";";
 }
 
-QString FibDecoder::packetData(int index)
+QString FibDecoder::packetData(i32 index)
 {
   return serviceName(index) + ";" + serviceIdOf(index) + ";" + subChannelOf(index) + ";" + startAddressOf(index) + ";" + lengthOf(index) + ";" + protLevelOf(
     index) + ";" + codeRateOf(index) + ";" + appTypeOf(index) + ";" + FEC_scheme(index) + ";" + packetAddress(index) + ";" + DSCTy(index) + ";";
@@ -2308,7 +2308,7 @@ QString FibDecoder::packetData(int index)
 //
 //	We terminate the sequences with a ";", so that is why the
 //	actual number is 1 smaller
-int FibDecoder::scan_width()
+i32 FibDecoder::scan_width()
 {
   QString s1 = audioHeader();
   QString s2 = packetHeader();
@@ -2322,7 +2322,7 @@ u32 FibDecoder::get_julian_date()
   return mjd;
 }
 
-void FibDecoder::get_channel_info(ChannelData * d, int n)
+void FibDecoder::get_channel_info(ChannelData * d, i32 n)
 {
   d->in_use = currentConfig->subChannels[n].inUse;
   d->id = currentConfig->subChannels[n].SubChId;

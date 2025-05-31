@@ -16,7 +16,7 @@
 
 static
 void	kf_bfly2 (kiss_fft_cpx * Fout, const size_t fstride,
-	          const kiss_fft_cfg st, int m) {
+	          const kiss_fft_cfg st, i32 m) {
 
 kiss_fft_cpx *Fout2;
 kiss_fft_cpx *tw1 = st -> twiddles;
@@ -132,11 +132,11 @@ static void kf_bfly5(
         kiss_fft_cpx * Fout,
         const size_t fstride,
         const kiss_fft_cfg st,
-        int m
+        i32 m
         )
 {
     kiss_fft_cpx *Fout0,*Fout1,*Fout2,*Fout3,*Fout4;
-    int u;
+    i32 u;
     kiss_fft_cpx scratch[13];
     kiss_fft_cpx * twiddles = st->twiddles;
     kiss_fft_cpx *tw;
@@ -194,14 +194,14 @@ static void kf_bfly_generic(
         kiss_fft_cpx * Fout,
         const size_t fstride,
         const kiss_fft_cfg st,
-        int m,
-        int p
+        i32 m,
+        i32 p
         )
 {
-    int u,k,q1,q;
+    i32 u,k,q1,q;
     kiss_fft_cpx * twiddles = st->twiddles;
     kiss_fft_cpx t;
-    int Norig = st->nfft;
+    i32 Norig = st->nfft;
 
     kiss_fft_cpx * scratch = (kiss_fft_cpx*)KISS_FFT_TMP_ALLOC(sizeof(kiss_fft_cpx)*p);
 
@@ -215,7 +215,7 @@ static void kf_bfly_generic(
 
         k=u;
         for ( q1=0 ; q1<p ; ++q1 ) {
-            int twidx=0;
+            i32 twidx=0;
             Fout[ k ] = scratch[0];
             for (q=1;q<p;++q ) {
                 twidx += fstride * k;
@@ -234,14 +234,14 @@ void kf_work(
         kiss_fft_cpx * Fout,
         const kiss_fft_cpx * f,
         const size_t fstride,
-        int in_stride,
-        int * factors,
+        i32 in_stride,
+        i32 * factors,
         const kiss_fft_cfg st
         )
 {
     kiss_fft_cpx * Fout_beg=Fout;
-    const int p=*factors++; /* the radix  */
-    const int m=*factors++; /* stage's fft length/p */
+    const i32 p=*factors++; /* the radix  */
+    const i32 m=*factors++; /* stage's fft length/p */
     const kiss_fft_cpx * Fout_end = Fout + p*m;
 
 #ifdef _OPENMP
@@ -249,7 +249,7 @@ void kf_work(
     // top-level (not recursive)
     if (fstride==1 && p<=5)
     {
-        int k;
+        i32 k;
 
         // execute the p different work units in different threads
 #       pragma omp parallel for
@@ -301,9 +301,9 @@ void kf_work(
     p[i] * m[i] = m[i-1]
     m0 = n                  */
 static 
-void kf_factor(int n,int * facbuf)
+void kf_factor(i32 n,i32 * facbuf)
 {
-    int p=4;
+    i32 p=4;
     f64 floor_sqrt;
     floor_sqrt = floor( sqrt((f64)n) );
 
@@ -331,7 +331,7 @@ void kf_factor(int n,int * facbuf)
  * The return value is a contiguous block of memory, allocated with malloc.  As such,
  * It can be freed with free(), rather than a kiss_fft-specific function.
  * */
-kiss_fft_cfg kiss_fft_alloc(int nfft,int inverse_fft,void * mem,size_t * lenmem )
+kiss_fft_cfg kiss_fft_alloc(i32 nfft,i32 inverse_fft,void * mem,size_t * lenmem )
 {
     kiss_fft_cfg st=NULL;
     size_t memneeded = sizeof(struct kiss_fft_state)
@@ -345,7 +345,7 @@ kiss_fft_cfg kiss_fft_alloc(int nfft,int inverse_fft,void * mem,size_t * lenmem 
         *lenmem = memneeded;
     }
     if (st) {
-        int i;
+        i32 i;
         st->nfft=nfft;
         st->inverse = inverse_fft;
 
@@ -363,7 +363,7 @@ kiss_fft_cfg kiss_fft_alloc(int nfft,int inverse_fft,void * mem,size_t * lenmem 
 }
 
 
-void kiss_fft_stride(kiss_fft_cfg st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout,int in_stride)
+void kiss_fft_stride(kiss_fft_cfg st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout,i32 in_stride)
 {
     if (fin == fout) {
         //NOTE: this is not really an in-place FFT algorithm.
@@ -388,10 +388,10 @@ void kiss_fft_cleanup(void)
     // nothing needed any more
 }
 
-int kiss_fft_next_fast_size(int n)
+i32 kiss_fft_next_fast_size(i32 n)
 {
     while(1) {
-        int m=n;
+        i32 m=n;
         while ( (m%2) == 0 ) m/=2;
         while ( (m%3) == 0 ) m/=3;
         while ( (m%5) == 0 ) m/=5;

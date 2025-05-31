@@ -36,12 +36,12 @@ auto * const temp = make_vla(f32, firsize);
 	filterKernel.	resize (filterSize);
 	Buffer.		resize (filterSize);
 
-	for (int i = 0; i < filterSize; i ++) {
+	for (i32 i = 0; i < filterSize; i ++) {
 	   filterKernel [i]	= 0;
 	   Buffer [i]		= cf32 (0, 0);
 	}
 
-	for (int i = 0; i < filterSize; i ++) {
+	for (i32 i = 0; i < filterSize; i ++) {
 	   if (i == filterSize / 2)
 	      temp [i] = 2 * M_PI * frequency;
 	   else 
@@ -56,18 +56,18 @@ auto * const temp = make_vla(f32, firsize);
 	   sum += temp [i];
 	}
 
-	for (int i = 0; i < filterSize; i ++)
+	for (i32 i = 0; i < filterSize; i ++)
 	   filterKernel [i] = temp [i] / sum;
 }
 
 	LowPassFIR::~LowPassFIR () {
 }
 
-int	LowPassFIR::theSize	() {
+i32	LowPassFIR::theSize	() {
 	return Buffer. size ();
 }
 
-void	LowPassFIR::resize (int newSize) {
+void	LowPassFIR::resize (i32 newSize) {
 f32	*temp 	= (f32 *)alloca (newSize * sizeof (f32));
 f32	sum = 0;
 
@@ -76,11 +76,11 @@ f32	sum = 0;
 	Buffer. resize (filterSize);
 	ip		= 0;
 
-	for (int i = 0; i < filterSize; i ++) {
+	for (i32 i = 0; i < filterSize; i ++) {
 	   filterKernel [i]	= 0;
 	}
 
-	for (int i = 0; i < filterSize; i ++) {
+	for (i32 i = 0; i < filterSize; i ++) {
 	   if (i == filterSize / 2)
 	      temp [i] = 2 * M_PI * frequency;
 	   else 
@@ -95,7 +95,7 @@ f32	sum = 0;
 	   sum += temp [i];
 	}
 
-	for (int i = 0; i < filterSize; i ++)
+	for (i32 i = 0; i < filterSize; i ++)
 	   filterKernel [i] = temp [i] / sum;
 }
 

@@ -50,7 +50,7 @@ private:
 	WavFileHandler *parent;
 	i64	fileLength;
 signals:
-	void setProgress(int, f32);
+	void setProgress(i32, f32);
 };
 
 #endif

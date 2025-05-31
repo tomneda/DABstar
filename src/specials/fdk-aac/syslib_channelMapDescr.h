@@ -165,7 +165,7 @@ void FDK_chMapDescr_init(FDK_channelMapDescr* const pMapDescr,
  * \return               Value unequal to zero if set operation was not
  * successful. And zero on success.
  */
-int FDK_chMapDescr_setPassThrough(FDK_channelMapDescr* const pMapDescr,
+i32 FDK_chMapDescr_setPassThrough(FDK_channelMapDescr* const pMapDescr,
                                   UINT fPassThrough);
 
 /**
@@ -187,7 +187,7 @@ UCHAR FDK_chMapDescr_getMapValue(const FDK_channelMapDescr* const pMapDescr,
  * \return           Value unequal to zero if descriptor is valid, otherwise
  * zero.
  */
-int FDK_chMapDescr_isValid(const FDK_channelMapDescr* const pMapDescr);
+i32 FDK_chMapDescr_isValid(const FDK_channelMapDescr* const pMapDescr);
 
 /**
  * Extra variables for setting up Wg4 channel mapping.

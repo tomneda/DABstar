@@ -56,7 +56,7 @@
 #define MONO         3
 
 // sample rate table
-static const unsigned short sample_rates[8] = {
+static const u16 sample_rates[8] = {
   44100, 48000, 32000, 0,  // MPEG-1
   22050, 24000, 16000, 0   // MPEG-2
 };
@@ -68,10 +68,10 @@ static const short bitrates[28] = {
 };
 
 // scale factor base values (24-bit fixed-point)
-static const int scf_base[3] = { 0x02000000, 0x01965FEA, 0x01428A30 };
+static const i32 scf_base[3] = { 0x02000000, 0x01965FEA, 0x01428A30 };
 
 // synthesis window
-static const int D[512] = {
+static const i32 D[512] = {
   0x00000, 0x00000, 0x00000, 0x00000, 0x00000, 0x00000, 0x00000, -0x00001, -0x00001, -0x00001, -0x00001, -0x00002, -0x00002, -0x00003,
   -0x00003, -0x00004, -0x00004, -0x00005, -0x00006, -0x00006, -0x00007, -0x00008, -0x00009, -0x0000A, -0x0000C, -0x0000D, -0x0000F,
   -0x00010, -0x00012, -0x00014, -0x00017, -0x00019, -0x0001C, -0x0001E, -0x00022, -0x00025, -0x00028, -0x0002C, -0x00030, -0x00034,
@@ -281,17 +281,17 @@ i32 Mp2Processor::mp2sampleRate(u8 * frame)
 // DECODE HELPER FUNCTIONS                                                    //
 ////////////////////////////////////////////////////////////////////////////////
 
-struct quantizer_spec * Mp2Processor::read_allocation(int sb, int b2_table)
+struct quantizer_spec * Mp2Processor::read_allocation(i32 sb, i32 b2_table)
 {
-  int table_idx = quant_lut_step3[b2_table][sb];
+  i32 table_idx = quant_lut_step3[b2_table][sb];
   table_idx = quant_lut_step4[table_idx & 15][get_bits(table_idx >> 4)];
   return table_idx ? (&quantizer_table[table_idx - 1]) : nullptr;
 }
 
-void Mp2Processor::read_samples(struct quantizer_spec * q, int scalefactor, int * sample)
+void Mp2Processor::read_samples(struct quantizer_spec * q, i32 scalefactor, i32 * sample)
 {
-  int idx, adj, scale;
-  int val;
+  i32 idx, adj, scale;
+  i32 val;
 
   if (!q)
   {

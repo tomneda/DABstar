@@ -42,7 +42,7 @@ class MyDoubleValidator : public QDoubleValidator
 {
   using QDoubleValidator::QDoubleValidator; // takeover the base class constructors
 
-  QValidator::State validate(QString & input, int &) const override
+  QValidator::State validate(QString & input, i32 &) const override
   {
     // number of decimal digits are ignored
     const QRegularExpression regExpAllowed("^-?\\d*(\\.\\d*)?$");

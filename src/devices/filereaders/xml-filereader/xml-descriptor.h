@@ -35,10 +35,10 @@ public:
   Blocks() = default;
   ~Blocks() = default;
 
-  int blockNumber = 0;
-  int nrElements = 0;
+  i32 blockNumber = 0;
+  i32 nrElements = 0;
   QString typeofUnit;
-  int frequency = 0;
+  i32 frequency = 0;
   QString modType;
 };
 
@@ -50,25 +50,25 @@ public:
   QString recorderName;
   QString recorderVersion;
   QString recordingTime;
-  int sampleRate;
-  int nrChannels;
-  int bitsperChannel;
+  i32 sampleRate;
+  i32 nrChannels;
+  i32 bitsperChannel;
   QString container;
   QString byteOrder;
   QString iqOrder;
-  int nrBlocks;
+  i32 nrBlocks;
   std::vector<Blocks> blockList;
 
   XmlDescriptor(FILE *, bool *);
   ~XmlDescriptor() = default;
 
   void printDescriptor();
-  void setSamplerate(int sr);
-  void setChannels(int nrChannels, int bitsperChannel, QString ct, QString byteOrder);
-  void addChannelOrder(int channelOrder, QString Value);
-  void add_dataBlock(int currBlock, int Count, int blockNumber, QString Unit);
-  void add_freqtoBlock(int blockno, int freq);
-  void add_modtoBlock(int blockno, QString modType);
+  void setSamplerate(i32 sr);
+  void setChannels(i32 nrChannels, i32 bitsperChannel, QString ct, QString byteOrder);
+  void addChannelOrder(i32 channelOrder, QString Value);
+  void add_dataBlock(i32 currBlock, i32 Count, i32 blockNumber, QString Unit);
+  void add_freqtoBlock(i32 blockno, i32 freq);
+  void add_modtoBlock(i32 blockno, QString modType);
 };
 
 #endif

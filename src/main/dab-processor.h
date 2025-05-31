@@ -90,14 +90,14 @@ public:
 
   //	inheriting from our delegates
   //	for the FicHandler:
-  QString find_service(u32, int);
-  void get_parameters(const QString &, u32 *, int *);
+  QString find_service(u32, i32);
+  void get_parameters(const QString &, u32 *, i32 *);
   std::vector<SServiceId> get_services();
   bool is_audio_service(const QString & s);
   bool is_packet_service(const QString & s);
   void get_data_for_audio_service(const QString &, Audiodata *);
   void get_data_for_packet_service(const QString &, Packetdata *, i16);
-  int get_sub_channel_id(const QString &, u32);
+  i32 get_sub_channel_id(const QString &, u32);
   u8 get_ecc();
   i32 get_ensemble_id();
   QString get_ensemble_name();
@@ -107,16 +107,16 @@ public:
   std::vector<SEpgElement> find_epg_data(u32);
   u32 get_julian_date();
   QStringList basicPrint();
-  int scan_width();
+  i32 scan_width();
   void start_ficDump(FILE *);
   void stop_fic_dump();
 
   //	for the mscHandler
   void reset_services();
-  void stop_service(DescriptorType *, int);
-  void stop_service(int, int);
-  bool set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, FILE * dump, int flag);
-  bool set_data_channel(Packetdata *, RingBuffer<u8> *, int);
+  void stop_service(DescriptorType *, i32);
+  void stop_service(i32, i32);
+  bool set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, FILE * dump, i32 flag);
+  bool set_data_channel(Packetdata *, RingBuffer<u8> *, i32);
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);
@@ -186,10 +186,10 @@ public slots:
 signals:
   void signal_no_signal_found();
   void signal_show_tii(const std::vector<STiiResult> & iTr);
-  void signal_show_spectrum(int);
+  void signal_show_spectrum(i32);
   void signal_show_clock_err(f32);
-  void signal_set_and_show_freq_corr_rf_Hz(int);
-  void signal_show_freq_corr_bb_Hz(int);
+  void signal_set_and_show_freq_corr_rf_Hz(i32);
+  void signal_show_freq_corr_bb_Hz(i32);
   void signal_linear_peak_level(f32);
 };
 

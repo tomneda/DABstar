@@ -38,17 +38,17 @@
 //static const char *eep_Arates [] = {nullptr, "1/4",  "3/8", "1/2", "3/4"};
 //static const char *eep_Brates [] = {nullptr, "4/9",  "4/7", "4/6", "4/5"};
 
-ContentTable::ContentTable(DabRadio * theRadio, QSettings * s, const QString & channel, int cols)
+ContentTable::ContentTable(DabRadio * theRadio, QSettings * s, const QString & channel, i32 cols)
 {
   this->theRadio = theRadio;
   this->dabSettings = s;
   this->channel = channel;
   this->columns = cols;
   dabSettings->beginGroup("contentTable");
-  int x = dabSettings->value("position-x", 200).toInt();
-  int y = dabSettings->value("position-y", 200).toInt();
-  int wi = dabSettings->value("table-width", 200).toInt();
-  int hi = dabSettings->value("table-height", 200).toInt();
+  i32 x = dabSettings->value("position-x", 200).toInt();
+  i32 y = dabSettings->value("position-y", 200).toInt();
+  i32 wi = dabSettings->value("table-width", 200).toInt();
+  i32 hi = dabSettings->value("table-height", 200).toInt();
   myWidget = new QScrollArea(nullptr);
   myWidget->resize(wi, hi);
   myWidget->setWidgetResizable(true);
@@ -83,8 +83,8 @@ ContentTable::~ContentTable()
 
 void ContentTable::clearTable()
 {
-  int rows = contentWidget->rowCount();
-  for (int i = rows; i > 0; i--)
+  i32 rows = contentWidget->rowCount();
+  for (i32 i = rows; i > 0; i--)
   {
     contentWidget->removeRow(i - 1);
   }
@@ -106,7 +106,7 @@ bool ContentTable::isVisible()
   return !myWidget->isHidden();
 }
 
-void ContentTable::_slot_select_service(int row, int column)
+void ContentTable::_slot_select_service(i32 row, i32 column)
 {
   QTableWidgetItem * theItem = contentWidget->item(row, 0);
 
@@ -120,7 +120,7 @@ void ContentTable::_slot_select_service(int row, int column)
   emit signal_go_service(theService);
 }
 
-void ContentTable::_slot_dump(int /*row*/, int /*column*/)
+void ContentTable::_slot_dump(i32 /*row*/, i32 /*column*/)
 {
   OpenFileDialog filenameFinder(dabSettings);
   FILE * dumpFile = filenameFinder.open_content_dump_file_ptr(channel);
@@ -130,9 +130,9 @@ void ContentTable::_slot_dump(int /*row*/, int /*column*/)
     return;
   }
 
-  for (int i = 0; i < contentWidget->rowCount(); i++)
+  for (i32 i = 0; i < contentWidget->rowCount(); i++)
   {
-    for (int j = 0; j < contentWidget->columnCount(); j++)
+    for (i32 j = 0; j < contentWidget->columnCount(); j++)
     {
       QString t = contentWidget->item(i, j)->text();
       fprintf(dumpFile, "%s;", t.toUtf8().data());
@@ -148,9 +148,9 @@ void ContentTable::dump(FILE * dumpFilePointer)
   {
     return;
   }
-  for (int i = 0; i < contentWidget->rowCount(); i++)
+  for (i32 i = 0; i < contentWidget->rowCount(); i++)
   {
-    for (int j = 0; j < contentWidget->columnCount(); j++)
+    for (i32 j = 0; j < contentWidget->columnCount(); j++)
     {
       QString t = contentWidget->item(i, j)->text();
       fprintf(dumpFilePointer, "%s;", t.toUtf8().data());
@@ -165,7 +165,7 @@ i16 ContentTable::addRow()
 
   contentWidget->insertRow(row);
 
-  for (int i = 0; i < columns; i++)
+  for (i32 i = 0; i < columns; i++)
   {
     QTableWidgetItem * item0 = new QTableWidgetItem;
     item0->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -176,10 +176,10 @@ i16 ContentTable::addRow()
 
 void ContentTable::addLine(const QString & s)
 {
-  int row = addRow();
+  i32 row = addRow();
   QStringList h = s.split(";");
 
-  for (int i = 0; i < h.size(); i++)
+  for (i32 i = 0; i < h.size(); i++)
   {
     if (i < columns)
     {    // just for safety

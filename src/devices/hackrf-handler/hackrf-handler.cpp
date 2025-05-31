@@ -56,8 +56,8 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   mRecorderVersion(iRecorderVersion)
 {
   mpHackrfSettings->beginGroup("hackrfSettings");
-  int x = mpHackrfSettings->value("position-x", 100).toInt();
-  int y = mpHackrfSettings->value("position-y", 100).toInt();
+  i32 x = mpHackrfSettings->value("position-x", 100).toInt();
+  i32 y = mpHackrfSettings->value("position-y", 100).toInt();
   mpHackrfSettings->endGroup();
 
   setupUi(&myFrame);
@@ -155,15 +155,15 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   connect(btnBiasTEnable, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_bias_t);
   connect(btnAmpEnable, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_amp);
 #endif
-  connect(ppm_correction, qOverload<int>(&QSpinBox::valueChanged), this, &HackRfHandler::slot_set_ppm_correction);
+  connect(ppm_correction, qOverload<i32>(&QSpinBox::valueChanged), this, &HackRfHandler::slot_set_ppm_correction);
   connect(dumpButton, &QPushButton::clicked, this, &HackRfHandler::slot_xml_dump);
 
   connect(this, &HackRfHandler::signal_new_ant_enable, btnBiasTEnable, &QCheckBox::setChecked);
   connect(this, &HackRfHandler::signal_new_amp_enable, btnAmpEnable, &QCheckBox::setChecked);
   connect(this, &HackRfHandler::signal_new_vga_value, sliderVgaGain, &QSlider::setValue);
-  connect(this, &HackRfHandler::signal_new_vga_value, vgagainDisplay, qOverload<int>(&QLCDNumber::display));
+  connect(this, &HackRfHandler::signal_new_vga_value, vgagainDisplay, qOverload<i32>(&QLCDNumber::display));
   connect(this, &HackRfHandler::signal_new_lna_value, sliderLnaGain, &QSlider::setValue);
-  connect(this, &HackRfHandler::signal_new_lna_value, lnagainDisplay, qOverload<int>(&QLCDNumber::display));
+  connect(this, &HackRfHandler::signal_new_lna_value, lnagainDisplay, qOverload<i32>(&QLCDNumber::display));
 
   mpXmlDumper = nullptr;
   mDumping.store(false);
@@ -207,7 +207,7 @@ i32 HackRfHandler::getVFOFrequency()
   return mVfoFreqHz;
 }
 
-void HackRfHandler::slot_set_lna_gain(int newGain)
+void HackRfHandler::slot_set_lna_gain(i32 newGain)
 {
   if (newGain >= 0 && newGain <= 40)
   {
@@ -216,7 +216,7 @@ void HackRfHandler::slot_set_lna_gain(int newGain)
   }
 }
 
-void HackRfHandler::slot_set_vga_gain(int newGain)
+void HackRfHandler::slot_set_vga_gain(i32 newGain)
 {
   if (newGain >= 0 && newGain <= 62)
   {
@@ -225,13 +225,13 @@ void HackRfHandler::slot_set_vga_gain(int newGain)
   }
 }
 
-void HackRfHandler::slot_enable_bias_t(int d)
+void HackRfHandler::slot_enable_bias_t(i32 d)
 {
   (void)d;
   CHECK_ERR_RETURN(mHackrf.set_antenna_enable(theDevice, btnBiasTEnable->isChecked() ? 1 : 0));
 }
 
-void HackRfHandler::slot_enable_amp(int a)
+void HackRfHandler::slot_enable_amp(i32 a)
 {
   (void)a;
   CHECK_ERR_RETURN(mHackrf.set_amp_enable(theDevice, btnAmpEnable->isChecked() ? 1 : 0));
@@ -251,14 +251,14 @@ void HackRfHandler::slot_set_ppm_correction(i32 ppm)
 //	we use a static large buffer, rather than trying to allocate a buffer on the stack
 static std::array<std::complex<i8>, 32 * 32768> buffer;
 
-static int callback(hackrf_transfer * transfer)
+static i32 callback(hackrf_transfer * transfer)
 {
   auto * ctx = static_cast<HackRfHandler *>(transfer->rx_ctx);
   const i8 * const p = reinterpret_cast<const i8 *>(transfer->buffer);
   HackRfHandler::TRingBuffer * q = &(ctx->mRingBuffer);
-  int bufferIndex = 0;
+  i32 bufferIndex = 0;
 
-  for (int i = 0; i < transfer->valid_length / 2; ++i)
+  for (i32 i = 0; i < transfer->valid_length / 2; ++i)
   {
     const cf32 x = cf32(p[2 * i + 0], p[2 * i + 1]);
     cf32 y;
@@ -325,9 +325,9 @@ void HackRfHandler::stopReader()
 i32 HackRfHandler::getSamples(cf32 * V, i32 size)
 {
   auto * const temp = make_vla(std::complex<i8>, size);
-  int amount = mRingBuffer.get_data_from_ring_buffer(temp, size);
+  i32 amount = mRingBuffer.get_data_from_ring_buffer(temp, size);
 
-  for (int i = 0; i < amount; i++)
+  for (i32 i = 0; i < amount; i++)
   {
     V[i] = cf32((f32)temp[i].real() / 127.0f, (f32)temp[i].imag() / 127.0f);
   }
@@ -425,7 +425,7 @@ bool HackRfHandler::setup_xml_dump()
   QString channel = mpHackrfSettings->value("channel", "xx").toString();
   QString timeString = QDate::currentDate().toString() + "-" + QTime::currentTime().toString();
 
-  for (int i = 0; i < timeString.length(); i++)
+  for (i32 i = 0; i < timeString.length(); i++)
   {
     if (!isValid(timeString.at(i)))
     {
@@ -446,7 +446,7 @@ bool HackRfHandler::setup_xml_dump()
   mDumping.store(true);
 
   QString dumper = QDir::fromNativeSeparators(fileName);
-  int x = dumper.lastIndexOf("/");
+  i32 x = dumper.lastIndexOf("/");
   saveDir = dumper.remove(x, dumper.size() - x);
   mpHackrfSettings->setValue(sSettingSampleStorageDir, saveDir);
 
@@ -482,11 +482,11 @@ bool HackRfHandler::isHidden()
   return myFrame.isHidden();
 }
 
-void HackRfHandler::record_gain_settings(int freq)
+void HackRfHandler::record_gain_settings(i32 freq)
 {
-  int vgaValue;
-  int lnaValue;
-  int ampEnable;
+  i32 vgaValue;
+  i32 lnaValue;
+  i32 ampEnable;
   QString theValue;
 
   vgaValue = sliderVgaGain->value();
@@ -501,11 +501,11 @@ void HackRfHandler::record_gain_settings(int freq)
   mpHackrfSettings->endGroup();
 }
 
-void HackRfHandler::update_gain_settings(int iFreqMHz)
+void HackRfHandler::update_gain_settings(i32 iFreqMHz)
 {
-  int vgaValue;
-  int lnaValue;
-  int ampEnable;
+  i32 vgaValue;
+  i32 lnaValue;
+  i32 ampEnable;
   QString theValue = "";
 
   mpHackrfSettings->beginGroup("hackrfSettings");

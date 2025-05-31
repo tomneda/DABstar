@@ -65,7 +65,7 @@ private:
   std::array<f32, 256> mMapTable;
 
 signals:
-  void signal_set_progress(int, f32);
+  void signal_set_progress(i32, f32);
 };
 
 #endif

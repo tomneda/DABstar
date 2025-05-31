@@ -37,8 +37,8 @@ public:
 			~LowPassFIR ();
 	cf32	Pass		(cf32);
 	f32			Pass		(f32);
-	void			resize		(int);
-	int			theSize		();
+	void			resize		(i32);
+	i32			theSize		();
 private:
 	i16		filterSize;
 	i16		ip;

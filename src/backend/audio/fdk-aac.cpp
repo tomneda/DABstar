@@ -69,7 +69,7 @@ i16 FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const u8 * const ipBuff
   static_assert(sizeof(i16) == sizeof(INT_PCM));
   INT_PCM decode_buf[8 * sizeof(INT_PCM) * 2048];
   INT_PCM * bufp = &decode_buf[0];
-  int output_size = 8 * 2048;
+  i32 output_size = 8 * 2048;
 
   if (!mIsWorking)
   {
@@ -117,7 +117,7 @@ i16 FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const u8 * const ipBuff
   if (info->numChannels == 2)
   {
     mpAudioBuffer->put_data_into_ring_buffer(bufp, info->frameSize * 2);
-    if (mpAudioBuffer->get_ring_buffer_read_available() > (int)info->sampleRate / 8)
+    if (mpAudioBuffer->get_ring_buffer_read_available() > (i32)info->sampleRate / 8)
     {
       emit signal_new_audio(info->frameSize, info->sampleRate,  (iSP->psFlag ? DabRadio::AFL_PS_USED : 0) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : 0));
     }

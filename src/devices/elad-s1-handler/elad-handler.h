@@ -60,8 +60,8 @@ public:
 private	slots:
 	void	setGainReduction	();
 	void	setFilter		();
-	void	set_Offset		(int);
-	void	set_NyquistWidth	(int);
+	void	set_Offset		(i32);
+	void	set_NyquistWidth	(i32);
 	void	toggle_IQSwitch		();
 	void	show_iqSwitch		(bool);
 private:
@@ -74,16 +74,16 @@ private:
 	eladWorker	*theWorker;
 	i32		externalFrequency;
 	i32		eladFrequency;
-	int		gainReduced;
-	int		localFilter;
-	int		Offset;
-	int		Nyquist;
+	i32		gainReduced;
+	i32		localFilter;
+	i32		Offset;
+	i32		Nyquist;
 	std::atomic<bool> iqSwitch;
-	int		iqSize;
+	i32		iqSize;
 	cf32 convBuffer	[ELAD_RATE / 1000 + 1];
-	int		mapTable_int	[INPUT_RATE / 1000];
+	i32		mapTable_int	[INPUT_RATE / 1000];
         f32		mapTable_float	[INPUT_RATE / 1000];
-	int		convIndex;
+	i32		convIndex;
 };
 #endif
 

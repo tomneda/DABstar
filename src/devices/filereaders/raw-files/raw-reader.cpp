@@ -57,7 +57,7 @@ RawReader::RawReader(RawFileHandler * ipRFH, FILE * ipFile, RingBuffer<cf32> * i
   mByteBuffer.resize(BUFFERSIZE);
   mCmplxBuffer.resize(BUFFERSIZE / 2);
 
-  for(int i = 0; i < 256; i++)
+  for(i32 i = 0; i < 256; i++)
   {
     // the offset 127.38f is due to the input data comes usually from a SDR stick which has its DC offset a bit shifted from ideal (from old-dab)
     mMapTable[i] = ((f32)i - 127.38f) / 128.0f;
@@ -98,7 +98,7 @@ void RawReader::run()
 
   qCInfo(sLogRawReader) << "Start playing RAW file";
 
-  int cnt = 0;
+  i32 cnt = 0;
   i64 nextStopus = get_cur_time_in_us();
 
   try
@@ -116,13 +116,13 @@ void RawReader::run()
 
       if (++cnt >= 20)
       {
-        int xx = ftell(mpFile);
+        i32 xx = ftell(mpFile);
         f32 progress = (f32)xx / mFileLength;
-        signal_set_progress((int)(progress * 100), (f32)xx / (2 * 2048000));
+        signal_set_progress((i32)(progress * 100), (f32)xx / (2 * 2048000));
         cnt = 0;
       }
 
-      int n = fread(mByteBuffer.data(), sizeof(u8), BUFFERSIZE, mpFile);
+      i32 n = fread(mByteBuffer.data(), sizeof(u8), BUFFERSIZE, mpFile);
 
       if (n < BUFFERSIZE)
       {
@@ -134,7 +134,7 @@ void RawReader::run()
 
       nextStopus += (n * 1000) / (2 * 2048); // add runtime in us for n numbers of entries
 
-      for (int i = 0; i < n / 2; i++)
+      for (i32 i = 0; i < n / 2; i++)
       {
         mCmplxBuffer[i] = cf32(mMapTable[mByteBuffer[2 * i + 0]], mMapTable[mByteBuffer[2 * i + 1]]);
       }
@@ -147,7 +147,7 @@ void RawReader::run()
       }
     }
   }
-  catch (int e)
+  catch (i32 e)
   {
   }
 

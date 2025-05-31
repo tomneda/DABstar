@@ -73,7 +73,7 @@ Configuration::Configuration(DabRadio * ipRI) :
   connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_load_table);
   connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &DabRadio::slot_test_slider);
   connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &DabRadio::slot_handle_dl_text_button);
-  connect(cmbSoundOutput, qOverload<int>(&QComboBox::activated), mpRadioInterface, &DabRadio::slot_set_stream_selector);
+  connect(cmbSoundOutput, qOverload<i32>(&QComboBox::activated), mpRadioInterface, &DabRadio::slot_set_stream_selector);
   connect(portSelector, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_handle_port_selector);
   connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_handle_set_coordinates_button);
   connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_dc_avoidance_algorithm);

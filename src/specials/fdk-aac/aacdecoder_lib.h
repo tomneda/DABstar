@@ -925,7 +925,7 @@ extern "C" {
  * \return        Error code.
  */
 LINKSPEC_H AAC_DECODER_ERROR aacDecoder_AncDataInit(HANDLE_AACDECODER self,
-                                                    UCHAR *buffer, int size);
+                                                    UCHAR *buffer, i32 size);
 
 /**
  * \brief Get one ancillary data element.
@@ -939,8 +939,8 @@ LINKSPEC_H AAC_DECODER_ERROR aacDecoder_AncDataInit(HANDLE_AACDECODER self,
  * \return       Error code.
  */
 LINKSPEC_H AAC_DECODER_ERROR aacDecoder_AncDataGet(HANDLE_AACDECODER self,
-                                                   int index, UCHAR **ptr,
-                                                   int *size);
+                                                   i32 index, UCHAR **ptr,
+                                                   i32 *size);
 
 /**
  * \brief Set one single decoder parameter.
@@ -982,7 +982,7 @@ LINKSPEC_H HANDLE_AACDECODER aacDecoder_Open(TRANSPORT_TYPE transportFmt,
  * formats an ASC.
  *
  * \param self    AAC decoder handle.
- * \param conf    Pointer to an unsigned char buffer containing the binary
+ * \param conf    Pointer to an u8 buffer containing the binary
  * configuration buffer (either ASC or SMC).
  * \param length  Length of the configuration buffer in bytes.
  * \return        Error code.
@@ -996,7 +996,7 @@ LINKSPEC_H AAC_DECODER_ERROR aacDecoder_ConfigRaw(HANDLE_AACDECODER self,
  * (only some box types are recognized).
  *
  * \param self    AAC decoder handle.
- * \param buffer  Pointer to an unsigned char buffer containing the binary box
+ * \param buffer  Pointer to an u8 buffer containing the binary box
  * data (including size and type, can be a sequence of multiple boxes).
  * \param length  Length of the data in bytes.
  * \return        Error code.

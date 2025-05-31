@@ -39,13 +39,13 @@ static char tmpstr[64];
 
 /* helper function generating channel names */
 static
-char*	get_ch_name (const char* type, int id) {
+char*	get_ch_name (const char* type, i32 id) {
         snprintf (tmpstr, sizeof(tmpstr), "%s%d", type, id);
         return tmpstr;
 }
 
-int	ad9361_set_trx_fir_enable(struct iio_device *dev, int enable) {
-int ret = iio_device_attr_write_bool (dev,
+i32	ad9361_set_trx_fir_enable(struct iio_device *dev, i32 enable) {
+i32 ret = iio_device_attr_write_bool (dev,
 	                              "in_out_voltage_filter_fir_en",
 	                              !!enable);
 	if (ret < 0)
@@ -55,10 +55,10 @@ int ret = iio_device_attr_write_bool (dev,
 	return ret;
 }
 
-int	ad9361_get_trx_fir_enable (struct iio_device *dev, int *enable) {
+i32	ad9361_get_trx_fir_enable (struct iio_device *dev, i32 *enable) {
 bool value;
 
-	int ret = iio_device_attr_read_bool (dev,
+	i32 ret = iio_device_attr_read_bool (dev,
 	                                     "in_out_voltage_filter_fir_en",
 	                                     &value);
 
@@ -103,7 +103,7 @@ bool get_ad9361_stream_dev (struct iio_context *ctx,
 static
 bool get_ad9361_stream_ch (__notused struct iio_context *ctx,
 	                   enum iodev d, struct iio_device *dev,
-	                   int chid, struct iio_channel **chn) {
+	                   i32 chid, struct iio_channel **chn) {
 	*chn = iio_device_find_channel (dev,
 	                                get_ch_name ("voltage", chid),
 	                                d == TX);
@@ -117,7 +117,7 @@ bool get_ad9361_stream_ch (__notused struct iio_context *ctx,
 /* finds AD9361 phy IIO configuration channel with id chid */
 static
 bool	get_phy_chan (struct iio_context *ctx,
-	              enum iodev d, int chid, struct iio_channel **chn) {
+	              enum iodev d, i32 chid, struct iio_channel **chn) {
 	switch (d) {
 	   case RX:
 	      *chn = iio_device_find_channel (get_ad9361_phy (ctx),
@@ -162,9 +162,9 @@ bool	get_lo_chan (struct iio_context *ctx,
 /* applies streaming configuration through IIO */
 bool cfg_ad9361_streaming_ch (struct iio_context *ctx,
 	                      struct stream_cfg *cfg,
-	                      enum iodev type, int chid) {
+	                      enum iodev type, i32 chid) {
 struct iio_channel *chn = NULL;
-int	ret;
+i32	ret;
 
 // Configure phy and lo channels
 	printf("* Acquiring AD9361 phy channel %d\n", chid);
@@ -214,7 +214,7 @@ int	ret;
 	plutoSettings	-> beginGroup ("plutoSettings");
 	bool agcMode	=
 	             plutoSettings -> value ("pluto-agc", 0). toInt () == 1;
-	int  gainValue	=
+	i32  gainValue	=
 	             plutoSettings -> value ("pluto-gain", 50). toInt ();
 	debugFlag	=
 	             plutoSettings -> value ("pluto-debug", 0). toInt () == 1;
@@ -271,7 +271,7 @@ int	ret;
 
 	struct iio_channel *chn;
 	if (get_phy_chan (ctx, RX, 0, &chn)) {
-	   int ret;
+	   i32 ret;
 	   if (agcMode)
 	      ret = iio_channel_attr_write (chn,
 	                                    "gain_control_mode",
@@ -330,8 +330,8 @@ int	ret;
 //	set up for interpolator
 	f32	denominator	= f32 (DAB_RATE) / DIVIDER;
         f32 inVal		= f32 (PLUTO_RATE) / DIVIDER;
-	for (int i = 0; i < DAB_RATE / DIVIDER; i ++) {
-           mapTable_int [i]	= int (floor (i * (inVal / denominator)));
+	for (i32 i = 0; i < DAB_RATE / DIVIDER; i ++) {
+           mapTable_int [i]	= i32 (floor (i * (inVal / denominator)));
 	   mapTable_float [i] =
 	                     i * (inVal / denominator) - mapTable_int [i];
         }
@@ -339,7 +339,7 @@ int	ret;
 	dumping. store	(false);
 	xmlDumper	= nullptr;
 	running. store (false);
-	int enabled;
+	i32 enabled;
 //
 //	go for the filter
         (void)  ad9361_set_bb_rate_custom_filter_manual (get_ad9361_phy (ctx),
@@ -373,7 +373,7 @@ int	ret;
 //
 
 void	plutoHandler::setVFOFrequency	(i32 newFrequency) {
-int	ret;
+i32	ret;
 struct iio_channel *lo_channel;
 
 	rx_cfg. lo_hz = newFrequency;
@@ -386,7 +386,7 @@ struct iio_channel *lo_channel;
 	}
 	if (debugFlag)
 	   fprintf (stderr, "frequency set to %d\n",
-	                                 (int)(rx_cfg. lo_hz));
+	                                 (i32)(rx_cfg. lo_hz));
 }
 
 i32	plutoHandler::getVFOFrequency () {
@@ -397,8 +397,8 @@ i32	plutoHandler::getVFOFrequency () {
 //	the agc is switched off. Btw, this is hypothetically
 //	since the gain control is made invisible when the
 //	agc is set
-void	plutoHandler::set_gainControl	(int newGain) {
-int ret;
+void	plutoHandler::set_gainControl	(i32 newGain) {
+i32 ret;
 struct iio_channel *chn;
 	ret = get_phy_chan (ctx, RX, 0, &chn);
 	if (ret < 0)
@@ -428,8 +428,8 @@ struct iio_channel *chn;
 	}
 }
 
-void	plutoHandler::set_agcControl	(int dummy) {
-int ret;
+void	plutoHandler::set_agcControl	(i32 dummy) {
+i32 ret;
 struct iio_channel *gain_channel;
 
 	get_phy_chan (ctx, RX, 0, &gain_channel);
@@ -471,7 +471,7 @@ struct iio_channel *gain_channel;
 }
 
 bool	plutoHandler::restartReader	(i32 freq) {
-int ret;
+i32 ret;
 iio_channel *lo_channel;
 iio_channel *gain_channel;
 	if (debugFlag)
@@ -541,8 +541,8 @@ void	plutoHandler::stopReader() {
 
 void	plutoHandler::run	() {
 char	*p_end, *p_dat;
-int	p_inc;
-int	nbytes_rx;
+i32	p_inc;
+i32	nbytes_rx;
 cf32 localBuf [DAB_RATE / DIVIDER];
 std::complex<i16> dumpBuf [CONV_SIZE + 1];
 
@@ -564,7 +564,7 @@ std::complex<i16> dumpBuf [CONV_SIZE + 1];
 	      if (convIndex > CONV_SIZE) {
 	         if (dumping. load ())
 	            xmlWriter -> add (&dumpBuf [1], CONV_SIZE);
-	         for (int j = 0; j < DAB_RATE / DIVIDER; j ++) {
+	         for (i32 j = 0; j < DAB_RATE / DIVIDER; j ++) {
 	            i16 inpBase	= mapTable_int [j];
 	            f32   inpRatio	= mapTable_float [j];
 	            localBuf [j]	= convBuffer [inpBase + 1] * inpRatio +
@@ -591,7 +591,7 @@ i32	plutoHandler::Samples () {
 //
 //	we know that the coefficients are loaded
 void	plutoHandler::set_filter () {
-int ret;
+i32 ret;
 	if (filterOn) {
            ad9361_set_trx_fir_enable (get_ad9361_phy (ctx), 0);
 	   filterButton -> setText ("filter on");
@@ -660,7 +660,7 @@ QString saveDir = plutoSettings -> value (sSettingSampleStorageDir,
 	                                                     toString ();
         QString timeString      = theDate. currentDate (). toString () + "-" +
 	                          theTime. currentTime (). toString ();
-	for (int i = 0; i < timeString. length (); i ++)
+	for (i32 i = 0; i < timeString. length (); i ++)
 	   if (!isValid (timeString. at (i)))
 	      timeString. replace (i, 1, "-");
         QString suggestedFileName =
@@ -686,7 +686,7 @@ QString saveDir = plutoSettings -> value (sSettingSampleStorageDir,
 	dumping. store (true);
 
 	QString dumper	= QDir::fromNativeSeparators (fileName);
-	int x		= dumper. lastIndexOf ("/");
+	i32 x		= dumper. lastIndexOf ("/");
         saveDir		= dumper. remove (x, dumper. count () - x);
         plutoSettings	-> setValue (sSettingSampleStorageDir, saveDir);
 	return true;
@@ -703,9 +703,9 @@ void	plutoHandler::close_xmlDump () {
 	xmlDumper	= nullptr;
 }
 
-void	plutoHandler::record_gainSettings (int freq) {
-int	gainValue	= gainControl		-> value ();
-int	agc		= agcControl		-> isChecked () ? 1 : 0;
+void	plutoHandler::record_gainSettings (i32 freq) {
+i32	gainValue	= gainControl		-> value ();
+i32	agc		= agcControl		-> isChecked () ? 1 : 0;
 QString theValue	= QString::number (gainValue) + ":" +
 	                               QString::number (agc);
 
@@ -714,9 +714,9 @@ QString theValue	= QString::number (gainValue) + ":" +
 	plutoSettings	-> endGroup ();
 }
 
-void	plutoHandler::update_gainSettings (int freq) {
-int	gainValue;
-int	agc;
+void	plutoHandler::update_gainSettings (i32 freq) {
+i32	gainValue;
+i32	agc;
 QString	theValue	= "";
 
 	plutoSettings	-> beginGroup ("plutoSettings");

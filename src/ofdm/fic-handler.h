@@ -61,7 +61,7 @@ public:
   void start_fic_dump(FILE *);
   void stop_fic_dump();
   void get_fib_bits(u8 *, bool *);
-  int  get_fic_decode_ratio_percent();
+  i32  get_fic_decode_ratio_percent();
   void reset_fic_decode_success_ratio() { fic_decode_success_ratio = 0; };
 
 private:
@@ -78,9 +78,9 @@ private:
   i16 ficno = 0;
   FILE * ficDumpPointer = nullptr;
   QMutex ficLocker;
-  int fic_block = 0;
-  int fic_errors = 0;
-  int fic_bits = 0;
+  i32 fic_block = 0;
+  i32 fic_errors = 0;
+  i32 fic_bits = 0;
   std::atomic<bool> running;
   void _process_fic_input(i16 iFicNo, bool * oValid);
 

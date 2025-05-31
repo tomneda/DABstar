@@ -76,7 +76,7 @@ void MscHandler::reset_channel()
   mMutex.unlock();
 }
 
-void MscHandler::stop_service(const DescriptorType * const iDescType, const int iFlag)
+void MscHandler::stop_service(const DescriptorType * const iDescType, const i32 iFlag)
 {
   fprintf(stderr, "obsolete function stopService\n");
   mMutex.lock();
@@ -97,7 +97,7 @@ void MscHandler::stop_service(const DescriptorType * const iDescType, const int 
   mMutex.unlock();
 }
 
-void MscHandler::stop_service(const int iSubChId, const int iFlag)
+void MscHandler::stop_service(const i32 iSubChId, const i32 iFlag)
 {
   mMutex.lock();
 
@@ -117,11 +117,11 @@ void MscHandler::stop_service(const int iSubChId, const int iFlag)
   mMutex.unlock();
 }
 
-bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, FILE * dump, int flag)
+bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, FILE * dump, i32 flag)
 {
   fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
   //	locker. lock();
-  //	for (int i = 0; i < theBackends. size (); i ++) {
+  //	for (i32 i = 0; i < theBackends. size (); i ++) {
   //	   if (d -> subchId == theBackends. at (i) -> subChId) {
   //	      fprintf (stdout, "The service is already running\n");
   //	      theBackends. at (i) -> stopRunning ();
@@ -133,7 +133,7 @@ bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<i16> * ipoAudi
   const QSharedPointer<Backend> backend(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, dump, flag));
   mBackendList.append(backend);
   //mBackendList.append(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, dump, flag));
-  fprintf(stdout, "we have now %d backends running\n", (int)mBackendList.size());
+  fprintf(stdout, "we have now %d backends running\n", (i32)mBackendList.size());
   return true;
 }
 

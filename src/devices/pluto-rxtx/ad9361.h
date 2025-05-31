@@ -100,17 +100,17 @@ struct filter_design_parameters {
  * @param flags Control flags for MCS configuration
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int ad9361_multichip_sync(struct iio_device *master,
-		struct iio_device **slaves, unsigned int num_slaves,
-		unsigned int flags);
+__api i32 ad9361_multichip_sync(struct iio_device *master,
+		struct iio_device **slaves, u32 num_slaves,
+		u32 flags);
 
 /** @brief FMComms5 specific MCS management
  * @param ctx A pointer to an iio_context structure
  * @param flags Control flags for MCS configuration
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int ad9361_fmcomms5_multichip_sync(
-		struct iio_context *ctx, unsigned int flags);
+__api i32 ad9361_fmcomms5_multichip_sync(
+		struct iio_context *ctx, u32 flags);
 
 /** @brief Baseband rate configuration with generic filter support
  * @param dev A pointer to an iio_device structure
@@ -121,21 +121,21 @@ __api int ad9361_fmcomms5_multichip_sync(
  * <b>NOTE:</b> Three possible filters are loaded based on required rate and
  * associated decimation/interpolation. These filters are generally very wide
  * band and not waveform specific. */
-__api int ad9361_set_bb_rate(struct iio_device *dev, unsigned long rate);
+__api i32 ad9361_set_bb_rate(struct iio_device *dev, u32 rate);
 
 /** @brief Enable or disable transmit and receiver FIRs simultaneously
  * @param dev A pointer to an iio_device structure
  * @param enable Integer to enable FIRs when 1 or disable when 0
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int ad9361_set_trx_fir_enable(struct iio_device *dev, int enable);
+__api i32 ad9361_set_trx_fir_enable(struct iio_device *dev, i32 enable);
 
 /** @brief Get current enable value of transmit and receiver FIRs
  * @param dev A pointer to an iio_device structure
  * @param enable Returned integer value of FIR enabled
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int ad9361_get_trx_fir_enable(struct iio_device *dev, int *enable);
+__api i32 ad9361_get_trx_fir_enable(struct iio_device *dev, i32 *enable);
 
 /** @brief Design custom FIR filter from specific design criteria
  * @param parameters A pointer filter designer structure
@@ -144,20 +144,20 @@ __api int ad9361_get_trx_fir_enable(struct iio_device *dev, int *enable);
  * @param gain Integer gain for designed filter
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int ad9361_generate_fir_taps(struct filter_design_parameters *parameters,
-                                   short *taps, int *num_taps, int *gain);
+__api i32 ad9361_generate_fir_taps(struct filter_design_parameters *parameters,
+                                   short *taps, i32 *num_taps, i32 *gain);
 
 /** @brief Calculate the clock path rates for both transmit and receiver paths
  * @param tx_sample_rate Sample rate in samples per second of desired baseband rate
  * @param rate_gov Rate governor enable setting forcing HB3=3 when enabled
- * @param rx_path_clks A pointer to a unsigned long variable where the 6 RX path rates should be stored
- * @param tx_path_clks A pointer to a unsigned long variable where the 6 TX path rates should be stored
+ * @param rx_path_clks A pointer to a u32 variable where the 6 RX path rates should be stored
+ * @param tx_path_clks A pointer to a u32 variable where the 6 TX path rates should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int ad9361_calculate_rf_clock_chain(unsigned long tx_sample_rate,
-                                          unsigned long rate_gov,
-                                          unsigned long *rx_path_clks,
-                                          unsigned long *tx_path_clks);
+__api i32 ad9361_calculate_rf_clock_chain(u32 tx_sample_rate,
+                                          u32 rate_gov,
+                                          u32 *rx_path_clks,
+                                          u32 *tx_path_clks);
 
 /** @brief Calculate the clock path rates and default filter settings for both transmit and receiver for a desired baseband rate
  * @param fdpTX Filter design parameters structure where TX filter design parameters will be stored
@@ -165,9 +165,9 @@ __api int ad9361_calculate_rf_clock_chain(unsigned long tx_sample_rate,
  * @param sample_rate Desired basedband sample rate in samples per second for both RX and TX filter configurations
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int ad9361_calculate_rf_clock_chain_fdp(struct filter_design_parameters *fdpTX,
+__api i32 ad9361_calculate_rf_clock_chain_fdp(struct filter_design_parameters *fdpTX,
                                               struct filter_design_parameters *fdpRX,
-                                              unsigned long sample_rate);
+                                              u32 sample_rate);
 
 /** @brief Baseband rate configuration with custom filter support based on desired baseband sample rate
  * @param dev A pointer to an iio_device structure
@@ -180,8 +180,8 @@ __api int ad9361_calculate_rf_clock_chain_fdp(struct filter_design_parameters *f
  * Fstop = Fpass * 1.25
  * wnomTX = 1.6 * Fstop
  * wnomRX = 1.4 * Fstop */
-__api int ad9361_set_bb_rate_custom_filter_auto(struct iio_device *dev,
-                                                unsigned long rate);
+__api i32 ad9361_set_bb_rate_custom_filter_auto(struct iio_device *dev,
+                                                u32 rate);
 
 /** @brief Baseband rate configuration with custom filter support based on desired baseband sample rate and simplified filter configuration
  * @param dev A pointer to an iio_device structure
@@ -192,10 +192,10 @@ __api int ad9361_set_bb_rate_custom_filter_auto(struct iio_device *dev,
  * @param wnom_rx RX RF bandwidth of analog filter in hertz
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int ad9361_set_bb_rate_custom_filter_manual(struct iio_device *dev,
-                                                  unsigned long rate, unsigned long Fpass,
-                                                  unsigned long Fstop, unsigned long wnom_tx,
-                                                  unsigned long wnom_rx);
+__api i32 ad9361_set_bb_rate_custom_filter_manual(struct iio_device *dev,
+                                                  u32 rate, u32 Fpass,
+                                                  u32 Fstop, u32 wnom_tx,
+                                                  u32 wnom_rx);
 
 /** @brief FMComms5 phase synchronize all TX and RX channels together
  * @param ctx A pointer to an iio_context structure
@@ -214,7 +214,7 @@ __api int ad9361_set_bb_rate_custom_filter_manual(struct iio_device *dev,
  * <b>External Links:</b>
  * - <a href="https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms5-ebz/multi-chip-sync">Detailed information on synchronization process</a>
  * - <a href="https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms5-ebz/hardware">Phase synchronization performance can depend on revision of hardware</a>*/
-__api int ad9361_fmcomms5_phase_sync(struct iio_context *ctx, long long lo);
+__api i32 ad9361_fmcomms5_phase_sync(struct iio_context *ctx, i64 lo);
 
 /** @} */
 

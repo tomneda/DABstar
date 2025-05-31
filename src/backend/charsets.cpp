@@ -31,7 +31,7 @@
  * Unicode (UCS2-encoded) characters.
  * See ETSI TS 101 756 v1.8.1, Annex C
  */
-static const unsigned short ebuLatinToUcs2[] = {
+static const u16 ebuLatinToUcs2[] = {
 /* 0x00 - 0x07 */   0x00,  0x118,  0x12e,  0x172,  0x102,  0x116,  0x10e,  0x218,
 /*  0x8 -  0xf */  0x21a,  0x10a,    0xa,    0xb,  0x120,  0x139,  0x17b,  0x143,
 /* 0x10 - 0x17 */  0x105,  0x119,  0x12f,  0x173,  0x103,  0x117,  0x10f,  0x219,
@@ -71,7 +71,7 @@ QString toQStringUsingCharset(const QByteArray & iByteArray, const CharacterSet 
   return toQStringUsingCharset(iByteArray.data(), iCharset, iByteArray.size());
 }
 
-QString toQStringUsingCharset(const char * buffer, CharacterSet charset, int size)
+QString toQStringUsingCharset(const char * buffer, CharacterSet charset, i32 size)
 {
   const u16 length = (size == -1 ? strlen(buffer) : size);
 

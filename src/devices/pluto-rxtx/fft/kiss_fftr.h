@@ -26,7 +26,7 @@ extern "C" {
 typedef struct kiss_fftr_state *kiss_fftr_cfg;
 
 
-kiss_fftr_cfg kiss_fftr_alloc(int nfft,int inverse_fft,void * mem, size_t * lenmem);
+kiss_fftr_cfg kiss_fftr_alloc(i32 nfft,i32 inverse_fft,void * mem, size_t * lenmem);
 /*
  nfft must be even
 

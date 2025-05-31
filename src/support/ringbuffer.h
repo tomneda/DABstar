@@ -273,7 +273,7 @@ public:
   {
     //	ensure that we have the correct read and write indices
     PaUtil_FullMemoryBarrier();
-    if ((int)n_values > get_ring_buffer_read_available())
+    if ((i32)n_values > get_ring_buffer_read_available())
     {
       n_values = get_ring_buffer_read_available();
     }

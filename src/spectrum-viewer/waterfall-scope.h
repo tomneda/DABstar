@@ -44,7 +44,7 @@ class WaterfallScope : public QObject, public QwtPlotSpectrogram
 {
 Q_OBJECT
 public:
-  WaterfallScope(QwtPlot *, int, int);
+  WaterfallScope(QwtPlot *, i32, i32);
   ~WaterfallScope() override;
 
   void show_waterfall(const f64 *, const f64 *, const SpecViewLimits<f64> & iSpecViewLimits);
@@ -62,7 +62,7 @@ private:
 
   void _gen_color_map(const i32 iStyleNr);
 public slots:
-  void slot_scaling_changed(int);
+  void slot_scaling_changed(i32);
 };
 
 #endif

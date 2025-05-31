@@ -76,7 +76,7 @@ private:
 
 private slots:
   void _slot_selection_changed_with_fav(const QString & iChannel, const QString & iService, const bool iIsFav);
-  void _slot_header_clicked(int iIndex);
+  void _slot_header_clicked(i32 iIndex);
 
 signals:
   void signal_selection_changed(const QString & oChannel, const QString & oService);

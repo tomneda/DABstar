@@ -83,7 +83,7 @@ AudioDisplay::~AudioDisplay()
   fftwf_destroy_plan(mFftPlan);
 }
 
-void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const int iNumSamples, int iSampleRate)
+void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const i32 iNumSamples, i32 iSampleRate)
 {
   constexpr i16 averageCount = 3;
 

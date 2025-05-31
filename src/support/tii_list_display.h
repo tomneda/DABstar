@@ -62,7 +62,7 @@ public:
   void start_adding();
   void show();
   void hide();
-  int get_nr_rows();
+  i32 get_nr_rows();
   void finish_adding();
 
 private:

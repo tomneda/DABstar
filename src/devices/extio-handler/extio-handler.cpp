@@ -50,7 +50,7 @@ static
 extioHandler	*myContext	= NULL;
 
 static
-int	extioCallback (int cnt, int status, f32 IQoffs, void *IQData) {
+i32	extioCallback (i32 cnt, i32 status, f32 IQoffs, void *IQData) {
 	if (cnt > 0) { 	//	we got data
 	   if (myContext != NULL && myContext -> isStarted) 
 	      myContext -> theReader -> processData (IQoffs, IQData, cnt);
@@ -338,7 +338,7 @@ i32	extioHandler::getRate	(void) {
 
 void	extioHandler::setVFOFrequency (i32 f) {
 	fprintf (stderr, "setting freq to %d\n", f);
-int	h =  (*SetHWLO) ((int)f);
+i32	h =  (*SetHWLO) ((i32)f);
 	lastFrequency = f;
 }
 
@@ -373,7 +373,7 @@ long	extioHandler::GetHWLO		(void) {
 //	Handling the data
 bool	extioHandler::restartReader	(i32 freq) {
 	fprintf (stderr, "setting freq to %d\n", freq);
-int	h =  (*SetHWLO) ((int)freq);
+i32	h =  (*SetHWLO) ((i32)freq);
 	lastFrequency = freq;
 	fprintf (stderr, "restart reader entered (%d)\n", lastFrequency);
 i32	size	= (*StartHW)(lastFrequency);

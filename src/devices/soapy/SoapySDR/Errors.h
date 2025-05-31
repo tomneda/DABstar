@@ -30,7 +30,7 @@ extern "C" {
  * \param errorCode a negative integer return code
  * \return a pointer to a string representing the error
  */
-SOAPY_SDR_API const char *SoapySDR_errToStr(const int errorCode);
+SOAPY_SDR_API const char *SoapySDR_errToStr(const i32 errorCode);
 
 #ifdef __cplusplus
 }

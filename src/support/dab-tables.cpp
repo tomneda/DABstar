@@ -658,7 +658,7 @@ const char * getProtectionLevel (bool shortForm, i16 protLevel) {
 }
 
 const char *getCodeRate (bool shortForm, i16 protLevel) {
-int h = protLevel;
+i32 h = protLevel;
 
 	if (!shortForm)
 	   return ((h & (1 << 2)) == 0) ?

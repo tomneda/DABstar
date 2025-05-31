@@ -55,15 +55,15 @@ public:
   void setupChannels(QComboBox * s, u8 band);
   void setup_skipList(const QString &);
   i32 get_frequency_Hz(const QString & Channel) const;
-  int firstChannel() const;
-  int nextChannel(int) const;
-  // int prevChannel(int);
+  i32 firstChannel() const;
+  i32 nextChannel(i32) const;
+  // i32 prevChannel(i32);
   void show();
   void hide();
   bool isHidden() const;
 
 public slots:
-  void slot_cell_selected(int, int) const;
+  void slot_cell_selected(i32, i32) const;
 
 private:
   QSettings * dabSettings;
@@ -71,7 +71,7 @@ private:
   SDabFrequencies * selectedBand;
   QTableWidget theTable;
 
-  // int lastOf(SDabFrequencies *) const;
+  // i32 lastOf(SDabFrequencies *) const;
   void default_skipList() const;
   void file_skipList(const QString &) const;
   void updateEntry(const QString &) const;

@@ -477,7 +477,7 @@ bool DabRadio::do_start()
   mpDabProcessor->set_tii_threshold(Settings::Config::sbTiiThreshold.read().toInt());
   mpDabProcessor->set_tii_sub_id(Settings::Config::sbTiiSubId.read().toInt());
   {
-    int idx = mConfig.cmbSoftBitGen->currentIndex();
+    i32 idx = mConfig.cmbSoftBitGen->currentIndex();
     mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx);
   }
 
@@ -511,7 +511,7 @@ void DabRadio::_update_channel_selector()
 {
   if (mChannel.nextService.channel != "")
   {
-    int k = ui->cmbChannelSelector->findText(mChannel.nextService.channel);
+    i32 k = ui->cmbChannelSelector->findText(mChannel.nextService.channel);
     if (k != -1)
     {
       ui->cmbChannelSelector->setCurrentIndex(k);
@@ -527,7 +527,7 @@ void DabRadio::_update_channel_selector()
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	a slot called by the DAB-processor
-void DabRadio::slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
+void DabRadio::slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF)
 {
   if (mpInputDevice != nullptr && mChannel.nominalFreqHz > 0)
   {
@@ -537,7 +537,7 @@ void DabRadio::slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF)
   mSpectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
 }
 
-void DabRadio::slot_show_freq_corr_bb_Hz(int iFreqCorrBB)
+void DabRadio::slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB)
 {
   mSpectrumViewer.show_freq_corr_bb_Hz(iFreqCorrBB);
 }
@@ -620,10 +620,10 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
 
 //	The ensembleId is written as hexadecimal, however, the
 //	number display of Qt is only 7 segments ...
-static QString hex_to_str(int v)
+static QString hex_to_str(i32 v)
 {
   QString res;
-  for (int i = 0; i < 4; i++)
+  for (i32 i = 0; i < 4; i++)
   {
     u8 t = (v & 0xF000) >> 12;
     QChar c = t <= 9 ? (char)('0' + t) : (char)('A' + t - 10);
@@ -634,7 +634,7 @@ static QString hex_to_str(int v)
 }
 
 //	a slot, called by the fib processor
-void DabRadio::slot_name_of_ensemble(int id, const QString & v)
+void DabRadio::slot_name_of_ensemble(i32 id, const QString & v)
 {
   qCDebug(sLogRadioInterface) << Q_FUNC_INFO << id << v;
 
@@ -717,7 +717,7 @@ QString DabRadio::check_and_create_dir(const QString & s) const
   return dir;
 }
 
-void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString & objectName, int contentType, bool dirElement)
+void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString & objectName, i32 contentType, bool dirElement)
 {
   QString realName;
 
@@ -735,7 +735,7 @@ void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString &
   }
 }
 
-bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & objectName, int contentType)
+bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & objectName, i32 contentType)
 {
   if (mEpgPath == "")
   {
@@ -765,7 +765,7 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
   return true;
 }
 
-void DabRadio::save_MOT_text(const QByteArray & result, int contentType, const QString & name)
+void DabRadio::save_MOT_text(const QByteArray & result, i32 contentType, const QString & name)
 {
   (void)contentType;
   if (mMotPath == "")
@@ -840,7 +840,7 @@ QString DabRadio::generate_file_path(const QString & iBasePath, const QString & 
 }
 
 //	MOT slide, to show
-void DabRadio::show_MOT_image(const QByteArray & data, const int contentType, const QString & pictureName, const int dirs)
+void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, const QString & pictureName, const i32 dirs)
 {
   const char * type;
   if (!mIsRunning.load() || pictureName.isEmpty())
@@ -909,8 +909,8 @@ void DabRadio::create_directory(const QString & iDirOrPath, const bool iContains
 
 void DabRadio::write_picture(const QPixmap & iPixMap) const
 {
-  constexpr int w = 320;
-  constexpr int h = 240;
+  constexpr i32 w = 320;
+  constexpr i32 h = 240;
 
   // typical the MOT size is 320 : 240 , so only scale for other sizes
   if (iPixMap.width() != w || iPixMap.height() != h)
@@ -930,7 +930,7 @@ void DabRadio::write_picture(const QPixmap & iPixMap) const
 
 //
 //	sendDatagram is triggered by the ip handler,
-void DabRadio::slot_send_datagram(int length)
+void DabRadio::slot_send_datagram(i32 length)
 {
   auto * const localBuffer = make_vla(u8, length);
 
@@ -945,7 +945,7 @@ void DabRadio::slot_send_datagram(int length)
 
 //
 //	tdcData is triggered by the backend.
-void DabRadio::slot_handle_tdc_data(int frametype, int length)
+void DabRadio::slot_handle_tdc_data(i32 frametype, i32 length)
 {
   qCDebug(sLogRadioInterface) << Q_FUNC_INFO << frametype << length;
 #ifdef DATA_STREAMER
@@ -1318,7 +1318,7 @@ void DabRadio::_slot_handle_tii_button()
   Settings::TiiViewer::varUiVisible.write(mShowTiiListWindow);
 }
 
-void DabRadio::slot_handle_tii_threshold(int trs)
+void DabRadio::slot_handle_tii_threshold(i32 trs)
 {
   if (mpDabProcessor == nullptr)
   {
@@ -1328,7 +1328,7 @@ void DabRadio::slot_handle_tii_threshold(int trs)
   mpDabProcessor->set_tii_threshold(trs);
 }
 
-void DabRadio::slot_handle_tii_subid(int subid)
+void DabRadio::slot_handle_tii_subid(i32 subid)
 {
   if (mpDabProcessor == nullptr)
   {
@@ -1343,7 +1343,7 @@ void DabRadio::slot_handle_tii_subid(int subid)
 ///////////////////////////////////////////////////////////////////////////
 
 //	called from the fibDecoder
-void DabRadio::slot_clock_time(int year, int month, int day, int hours, int minutes, int utc_day, int utc_hour, int utc_min, int utc_sec)
+void DabRadio::slot_clock_time(i32 year, i32 month, i32 day, i32 hours, i32 minutes, i32 utc_day, i32 utc_hour, i32 utc_min, i32 utc_sec)
 {
   mLocalTime.year = year;
   mLocalTime.month = month;
@@ -1371,7 +1371,7 @@ void DabRadio::slot_clock_time(int year, int month, int day, int hours, int minu
   _set_clock_text(result);
 }
 
-QString DabRadio::convertTime(int year, int month, int day, int hours, int minutes, int seconds /*= -1*/)
+QString DabRadio::convertTime(i32 year, i32 month, i32 day, i32 hours, i32 minutes, i32 seconds /*= -1*/)
 {
   QString t = QString::number(year).rightJustified(4, '0') + "-" +
               QString::number(month).rightJustified(2, '0') + "-" +
@@ -1388,7 +1388,7 @@ QString DabRadio::convertTime(int year, int month, int day, int hours, int minut
 
 //
 //	called from the MP4 decoder
-void DabRadio::slot_show_frame_errors(int s)
+void DabRadio::slot_show_frame_errors(i32 s)
 {
   if (!mIsRunning.load())
   {
@@ -1402,7 +1402,7 @@ void DabRadio::slot_show_frame_errors(int s)
 
 //
 //	called from the MP4 decoder
-void DabRadio::slot_show_rs_errors(int s)
+void DabRadio::slot_show_rs_errors(i32 s)
 {
   if (!mIsRunning.load())
   {    // should not happen
@@ -1417,7 +1417,7 @@ void DabRadio::slot_show_rs_errors(int s)
 
 //
 //	called from the aac decoder
-void DabRadio::slot_show_aac_errors(int s)
+void DabRadio::slot_show_aac_errors(i32 s)
 {
   if (!mIsRunning.load())
   {
@@ -1523,7 +1523,7 @@ void DabRadio::slot_set_stereo(bool b)
   _set_status_info_status(mStatusInfo.Stereo, b);
 }
 
-static QString tiiNumber(int n)
+static QString tiiNumber(i32 n)
 {
   if (n >= 10)
   {
@@ -1665,14 +1665,14 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     {
       const QDateTime theTime = (Settings::Config::cbUseUtcTime.read().toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
       mpHttpHandler->putData(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
-                             bd.strength_dB, (int)bd.distance_km, (int)bd.corner_deg, bd.isNonEtsiPhase);
+                             bd.strength_dB, (i32)bd.distance_km, (i32)bd.corner_deg, bd.isNonEtsiPhase);
     }
   }
 
   // iterate over combobox entries, if activated
   if (mConfig.cbAutoIterTiiEntries->isChecked() && ui->cmbTiiList->count() > 0 && !isDropDownVisible)
   {
-    ui->cmbTiiList->setCurrentIndex((int)mTiiIndex % ui->cmbTiiList->count());
+    ui->cmbTiiList->setCurrentIndex((i32)mTiiIndex % ui->cmbTiiList->count());
 
     if (!mTiiIndexCntTimer.isActive())
     {
@@ -1707,7 +1707,7 @@ void DabRadio::slot_show_cir()
   mCirViewer.show_cir();
 }
 
-void DabRadio::slot_show_iq(int iAmount, f32 iAvg)
+void DabRadio::slot_show_iq(i32 iAmount, f32 iAvg)
 {
   if (!mIsRunning.load())
   {
@@ -1741,7 +1741,7 @@ void DabRadio::slot_show_digital_peak_level(f32 iPeakLevel)
 }
 
 //	called from the MP4 decoder
-void DabRadio::slot_show_rs_corrections(int c, int ec)
+void DabRadio::slot_show_rs_corrections(i32 c, i32 ec)
 {
   if (!mIsRunning)
   {
@@ -1773,7 +1773,7 @@ void DabRadio::slot_show_clock_error(f32 e)
 
 //
 //	called from the phasesynchronizer
-void DabRadio::slot_show_correlation(f32 threshold, const QVector<int> & v)
+void DabRadio::slot_show_correlation(f32 threshold, const QVector<i32> & v)
 {
   if (!mIsRunning.load())
   {
@@ -1786,7 +1786,7 @@ void DabRadio::slot_show_correlation(f32 threshold, const QVector<int> & v)
 
 ////////////////////////////////////////////////////////////////////////////
 
-void DabRadio::slot_set_stream_selector(int k)
+void DabRadio::slot_set_stream_selector(i32 k)
 {
   if (!mIsRunning.load())
   {
@@ -1881,7 +1881,7 @@ void DabRadio::_slot_handle_reset_button()
 //
 /////////////////////////////////////////////////////////////////////////
 
-void setButtonFont(QPushButton * b, const QString& text, int size)
+void setButtonFont(QPushButton * b, const QString& text, i32 size)
 {
   QFont font = b->font();
   font.setPointSize(size);
@@ -2035,7 +2035,7 @@ void DabRadio::start_frame_dumping()
 }
 
 //	called from the mp4 handler, using a signal
-void DabRadio::slot_new_frame(int amount)
+void DabRadio::slot_new_frame(i32 amount)
 {
   auto * const buffer = make_vla(u8, amount);
   if (!mIsRunning.load())
@@ -2087,7 +2087,7 @@ void DabRadio::connect_dab_processor()
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cb_nom_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_show_nominal_carrier);
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_select_carrier_plot_type);
   connect(&mSpectrumViewer, &SpectrumViewer::signal_cmb_iqscope_changed, mpDabProcessor.get(), &DabProcessor::slot_select_iq_plot_type);
-  connect(mConfig.cmbSoftBitGen, qOverload<int>(&QComboBox::currentIndexChanged), mpDabProcessor.get(), [this](int idx) { mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx); });
+  connect(mConfig.cmbSoftBitGen, qOverload<i32>(&QComboBox::currentIndexChanged), mpDabProcessor.get(), [this](i32 idx) { mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx); });
 
   //	Just to be sure we disconnect here.
   //	It would have been helpful to have a function
@@ -2173,7 +2173,7 @@ void DabRadio::closeEvent(QCloseEvent * event)
   }
 }
 
-void DabRadio::slot_start_announcement(const QString & name, int subChId)
+void DabRadio::slot_start_announcement(const QString & name, i32 subChId)
 {
   if (!mIsRunning.load())
   {
@@ -2188,7 +2188,7 @@ void DabRadio::slot_start_announcement(const QString & name, int subChId)
   }
 }
 
-void DabRadio::slot_stop_announcement(const QString & name, int subChId)
+void DabRadio::slot_stop_announcement(const QString & name, i32 subChId)
 {
   if (!mIsRunning.load())
   {
@@ -2265,7 +2265,7 @@ void DabRadio::local_select(const QString & iChannel, const QString & iService)
   // The hard part is stopping the current service, quitting the current channel, selecting a new channel, waiting a while
   stop_channel();
   //      and start the new channel first
-  int k = ui->cmbChannelSelector->findText(iChannel);
+  i32 k = ui->cmbChannelSelector->findText(iChannel);
   if (k != -1)
   {
     _update_channel_selector(k);
@@ -2415,7 +2415,7 @@ void DabRadio::start_audio_service(const Audiodata * const ipAD)
 
   (void)mpDabProcessor->set_audio_channel(ipAD, mpAudioBufferFromDecoder, nullptr, FORE_GROUND);
 
-  for (int i = 1; i < 10; i++)
+  for (i32 i = 1; i < 10; i++)
   {
     Packetdata pd;
     mpDabProcessor->get_data_for_packet_service(ipAD->serviceName, &pd, i);
@@ -2759,7 +2759,7 @@ void DabRadio::start_scanning()
 
   mScanResult = {};
 
-  const int cc = mBandHandler.firstChannel();
+  const i32 cc = mBandHandler.firstChannel();
   LOG("scanning starts with ", QString::number(cc));
   mIsScanning.store(true);
 
@@ -2826,7 +2826,7 @@ void DabRadio::slot_no_signal_found()
 
   if (mIsRunning.load() && mIsScanning.load())
   {
-    int cc = ui->cmbChannelSelector->currentIndex();
+    i32 cc = ui->cmbChannelSelector->currentIndex();
     // if (!mServiceList.empty())
     // {
     //   showServices();
@@ -2863,7 +2863,7 @@ void DabRadio::slot_no_signal_found()
 
 // void RadioInterface::showServices() const
 // {
-//   // int scanMode = mConfig.scanmodeSelector->currentIndex();
+//   // i32 scanMode = mConfig.scanmodeSelector->currentIndex();
 //   QString SNR = "SNR " + QString::number(mChannel.snr);
 //
 //   if (mpDabProcessor == nullptr)
@@ -2955,7 +2955,7 @@ void DabRadio::_slot_update_mute_state(const bool iMute)
   signal_audio_mute(mMutingActive);
 }
 
-void DabRadio::_update_channel_selector(int index)
+void DabRadio::_update_channel_selector(i32 index)
 {
   if (ui->cmbChannelSelector->currentIndex() == index)
   {
@@ -3077,7 +3077,7 @@ u32 DabRadio::extract_epg(const QString& iName, const std::vector<SServiceId> & 
   return 0;
 }
 
-void DabRadio::slot_set_epg_data(int SId, int theTime, const QString & theText, const QString & theDescr)
+void DabRadio::slot_set_epg_data(i32 SId, i32 theTime, const QString & theText, const QString & theDescr)
 {
   if (mpDabProcessor != nullptr)
   {
@@ -3087,7 +3087,7 @@ void DabRadio::slot_set_epg_data(int SId, int theTime, const QString & theText, 
 
 void DabRadio::_slot_handle_time_table()
 {
-  int epgWidth = 70; // comes only from ini file formerly
+  i32 epgWidth = 70; // comes only from ini file formerly
   if (!mChannel.currentService.valid || !mChannel.currentService.is_audio)
   {
     return;
@@ -3181,7 +3181,7 @@ void DabRadio::_slot_handle_config_button()
   }
 }
 
-void DabRadio::slot_nr_services(int n)
+void DabRadio::slot_nr_services(i32 n)
 {
   mChannel.serviceCount = n; // only a minor channel transmit this information, so do not rely on this
 }
@@ -3206,7 +3206,7 @@ void DabRadio::LOG(const QString & a1, const QString & a2)
   fprintf(mpLogFile, "at %s: %s %s\n", theTime.toUtf8().data(), a1.toUtf8().data(), a2.toUtf8().data());
 }
 
-void DabRadio::slot_handle_logger_button(int)
+void DabRadio::slot_handle_logger_button(i32)
 {
   if (mConfig.cbActivateLogger->isChecked())
   {
@@ -3400,7 +3400,7 @@ void DabRadio::start_etiHandler()
   }
 }
 
-void DabRadio::slot_handle_eti_active_selector(int /*k*/)
+void DabRadio::slot_handle_eti_active_selector(i32 /*k*/)
 {
   if (mpInputDevice == nullptr)
   {
@@ -3433,7 +3433,7 @@ void DabRadio::slot_handle_eti_active_selector(int /*k*/)
   }
 }
 
-void DabRadio::slot_test_slider(int iVal) // iVal 0..1000
+void DabRadio::slot_test_slider(i32 iVal) // iVal 0..1000
 {
   emit signal_test_slider_changed(iVal);
 }
@@ -3679,7 +3679,7 @@ void DabRadio::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceL
   }
 }
 
-void DabRadio::_slot_handle_volume_slider(const int iSliderValue)
+void DabRadio::_slot_handle_volume_slider(const i32 iSliderValue)
 {
   // if muting is currently active, unmute audio with touching the volume slider
   if (mMutingActive)

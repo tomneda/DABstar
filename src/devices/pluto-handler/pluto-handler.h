@@ -48,9 +48,9 @@ class	xml_fileWriter;
 
 
 struct stream_cfg {
-        long long bw_hz;
-        long long fs_hz;
-        long long lo_hz;
+        i64 bw_hz;
+        i64 fs_hz;
+        i64 lo_hz;
         const char *rfport;
 };
 
@@ -99,20 +99,20 @@ private:
 	struct stream_cfg	rx_cfg;
 	bool			connected;
 	cf32	convBuffer	[CONV_SIZE + 1];
-	int			convIndex;
+	i32			convIndex;
 	i16			mapTable_int	[DAB_RATE / DIVIDER];
 	f32			mapTable_float	[DAB_RATE / DIVIDER];
 
-	void			record_gainSettings	(int);
-	void			update_gainSettings	(int);
+	void			record_gainSettings	(i32);
+	void			update_gainSettings	(i32);
 	bool			save_gainSettings;
 //
 signals:
-	void		new_gainValue		(int);
+	void		new_gainValue		(i32);
 	void		new_agcValue		(bool);
 private slots:
-	void		set_gainControl		(int);
-	void		set_agcControl		(int);
+	void		set_gainControl		(i32);
+	void		set_agcControl		(i32);
 	void		toggle_debugButton	();
 	void		set_filter		();
 	void		set_xmlDump		();

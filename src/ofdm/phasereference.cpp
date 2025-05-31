@@ -62,7 +62,7 @@ PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessPara
   // We collect data of SEARCHRANGE/2 bins at the end of the FFT buffer and wrap to the begin and check SEARCHRANGE/2 elements further.
   // This is equal to check +/- SEARCHRANGE/2 bins (== (35) kHz in DabMode 1) around the DC
   mRefArg.resize(CORRELATION_LENGTH);
-  for (int i = 0; i < CORRELATION_LENGTH; i++)
+  for (i32 i = 0; i < CORRELATION_LENGTH; i++)
   {
     mRefArg[i] = arg(mRefTable[(cTu + i) % cTu] * conj(mRefTable[(cTu + i + 1) % cTu]));
   }
@@ -121,7 +121,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   }
 
   sum /= (f32)(cTu);
-  QVector<int> indices;
+  QVector<i32> indices;
   i32 maxIndex = -1;
   f32 maxL = -1000;
   constexpr i16 GAP_SEARCH_WIDTH = 10;
@@ -237,7 +237,7 @@ f32 PhaseReference::phase(const std::vector<cf32> & iV, const i32 iTs)
 {
   cf32 sum = cf32(0, 0);
 
-  for (int i = 0; i < iTs; i++)
+  for (i32 i = 0; i < iTs; i++)
   {
     sum += iV[i];
   }

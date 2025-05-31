@@ -117,7 +117,7 @@ SOAPY_SDR_API void SoapySDRStrings_clear(char ***elems, const size_t length);
  * and args is guaranteed to be in a good state.
  * \return 0 for success, otherwise allocation error
  */
-SOAPY_SDR_API int SoapySDRKwargs_set(SoapySDRKwargs *args, const char *key, const char *val);
+SOAPY_SDR_API i32 SoapySDRKwargs_set(SoapySDRKwargs *args, const char *key, const char *val);
 
 /*!
  * Get a value given a key in a kwargs structure.

@@ -30,7 +30,7 @@
 
 struct SCacheElem
 {
-  int id;
+  i32 id;
   QString country;
   QString channel;
   QString ensemble;
@@ -41,8 +41,8 @@ struct SCacheElem
   f32 latitude;
   f32 longitude;
   f32 power;
-  int altitude;
-  int height;
+  i32 altitude;
+  i32 height;
   QString polarization;
   f32 frequency;
   QString direction;
@@ -93,9 +93,9 @@ private:
   u8 _get_main_id(const QString & s) const;
   u8 _get_sub_id(const QString & s) const;
   f64 _distance_2(f32, f32, f32, f32) const;
-  int _read_columns(std::vector<QString> & oV, const char * b, int N) const;
+  i32 _read_columns(std::vector<QString> & oV, const char * b, i32 N) const;
   void _read_file(QFile & fp);
-  char * _eread(char * buffer, int amount, QFile & fp) const;
+  char * _eread(char * buffer, i32 amount, QFile & fp) const;
   bool _load_dyn_library_functions();
 };
 

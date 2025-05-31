@@ -49,7 +49,7 @@ public:
   Galois(u16 mm, u16 poly);
   ~Galois() = default;
 
-  int modnn(int);
+  i32 modnn(i32);
   u16 add_poly(u16 a, u16 b);
   u16 add_power(u16 a, u16 b);
   u16 multiply_poly(u16 a, u16 b);  // a*b

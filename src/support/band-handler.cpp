@@ -38,7 +38,7 @@
 struct SDabFrequencies
 {
   QString key;
-  int fKHz;
+  i32 fKHz;
   bool skip;
 };
 
@@ -136,24 +136,24 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s)
 
   //	OK we have a file with - hopefully - some input
   size_t amount = 128;
-  int filler = 0;
+  i32 filler = 0;
   char * line = new char[512];
   while ((filler < 100) && (amount > 0))
   {
     amount = getline(&line, &amount, f);
-    //	   fprintf (stderr, "%s (%d)\n", line, (int)amount);
-    if ((int)amount <= 0)
+    //	   fprintf (stderr, "%s (%d)\n", line, (i32)amount);
+    if ((i32)amount <= 0)
     {  // eof detected
       break;
     }
-    if (((int)amount < 8) || ((int)amount > 128))
+    if (((i32)amount < 8) || ((i32)amount > 128))
     { // ?????
       continue;
     }
     line[amount] = 0;
     char channelName[128];
-    int freq;
-    int res = sscanf(line, "%s %d", channelName, &freq);
+    i32 freq;
+    i32 res = sscanf(line, "%s %d", channelName, &freq);
     if (res != 2)
     {
       continue;
@@ -211,7 +211,7 @@ void BandHandler::setupChannels(QComboBox * s, u8 band)
   }
   //
   //	The table elements are by default all "+";
-  for (int i = 0; selectedBand[i].fKHz != 0; i++)
+  for (i32 i = 0; selectedBand[i].fKHz != 0; i++)
   {
     s->insertItem(i, selectedBand[i].key, QVariant(i));
     theTable.insertRow(i);
@@ -232,7 +232,7 @@ void BandHandler::saveSettings()
   if (fileName == "")
   {
     dabSettings->beginGroup("skipTable");
-    for (int i = 0; selectedBand[i].fKHz != 0; i++)
+    for (i32 i = 0; selectedBand[i].fKHz != 0; i++)
     {
       if (selectedBand[i].skip)
       {
@@ -253,7 +253,7 @@ void BandHandler::saveSettings()
     root = skipList.createElement("skipList");
     skipList.appendChild(root);
 
-    for (int i = 0; selectedBand[i].fKHz != 0; i++)
+    for (i32 i = 0; selectedBand[i].fKHz != 0; i++)
     {
       if (!selectedBand[i].skip)
       {
@@ -284,7 +284,7 @@ void BandHandler::setup_skipList(const QString & fileName)
 {
   disconnect(&theTable, &QTableWidget::cellDoubleClicked, this, &BandHandler::slot_cell_selected);
 
-  for (int i = 0; selectedBand[i].fKHz > 0; i++)
+  for (i32 i = 0; selectedBand[i].fKHz > 0; i++)
   {
     selectedBand[i].skip = false;
     theTable.item(i, 1)->setText("+");
@@ -308,7 +308,7 @@ void BandHandler::setup_skipList(const QString & fileName)
 void BandHandler::default_skipList() const
 {
   dabSettings->beginGroup("skipTable");
-  for (int i = 0; selectedBand[i].fKHz != 0; i++)
+  for (i32 i = 0; selectedBand[i].fKHz != 0; i++)
   {
     bool skipValue = dabSettings->value(selectedBand[i].key, 0).toInt() == 1;
     if (skipValue)
@@ -348,7 +348,7 @@ void BandHandler::file_skipList(const QString & fileName) const
 
 void BandHandler::updateEntry(const QString & channel) const
 {
-  for (int i = 0; selectedBand[i].key != nullptr; i++)
+  for (i32 i = 0; selectedBand[i].key != nullptr; i++)
   {
     if (selectedBand[i].key == channel)
     {
@@ -363,7 +363,7 @@ void BandHandler::updateEntry(const QString & channel) const
 i32 BandHandler::get_frequency_Hz(const QString & Channel) const
 {
   i32 tunedFrequency = 0;
-  int i;
+  i32 i;
 
   for (i = 0; selectedBand[i].key != nullptr; i++)
   {
@@ -382,9 +382,9 @@ i32 BandHandler::get_frequency_Hz(const QString & Channel) const
   return tunedFrequency;
 }
 
-int BandHandler::firstChannel() const
+i32 BandHandler::firstChannel() const
 {
-  int index = 0;
+  i32 index = 0;
   while (selectedBand[index].skip)
   {
     index++;
@@ -396,9 +396,9 @@ int BandHandler::firstChannel() const
   return index;
 }
 
-int BandHandler::nextChannel(int index) const
+i32 BandHandler::nextChannel(i32 index) const
 {
-  int hulp = index;
+  i32 hulp = index;
   do
   {
     hulp++;
@@ -411,16 +411,16 @@ int BandHandler::nextChannel(int index) const
   return hulp;
 }
 
-// int BandHandler::lastOf(SDabFrequencies * b) const
+// i32 BandHandler::lastOf(SDabFrequencies * b) const
 // {
-//   int index;
+//   i32 index;
 //   for (index = 0; selectedBand[index].fKHz != 0; index++) {}
 //   return index - 1;
 // }
 
-// int BandHandler::prevChannel(int index)
+// i32 BandHandler::prevChannel(i32 index)
 // {
-//   int hulp = index;
+//   i32 hulp = index;
 //   do
 //   {
 //     if (hulp == 0)
@@ -436,7 +436,7 @@ int BandHandler::nextChannel(int index) const
 //   return hulp;
 // }
 
-void BandHandler::slot_cell_selected(int row, int column) const
+void BandHandler::slot_cell_selected(i32 row, i32 column) const
 {
   QString s1 = theTable.item(row, 0)->text();
   QString s2 = theTable.item(row, 1)->text();

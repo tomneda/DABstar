@@ -190,10 +190,10 @@ static inline bool check_crc_bytes(const u8 * const msg, const i32 len)
 {
   u16 accumulator = 0xFFFF;
 
-  for (int i = 0; i < len; i++)
+  for (i32 i = 0; i < len; i++)
   {
     u16 data = (u16)(msg[i]) << 8;
-    for (int j = 8; j > 0; j--)
+    for (i32 j = 8; j > 0; j--)
     {
       if ((data ^ accumulator) & 0x8000)
       {

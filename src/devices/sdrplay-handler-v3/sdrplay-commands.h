@@ -42,10 +42,10 @@
 
 class generalCommand {
 public:
-	int	cmd;
+	i32	cmd;
 	bool	result;
 	QSemaphore waiter;
-	generalCommand (int command):
+	generalCommand (i32 command):
 	                waiter (0){
 	   this -> cmd = command;
 	}
@@ -54,9 +54,9 @@ public:
 
 class	restartRequest: public generalCommand {
 public:
-	int	freq;
+	i32	freq;
 	bool	result;
-	restartRequest (int newFrequency):
+	restartRequest (i32 newFrequency):
 	   generalCommand (RESTART_REQUEST) {
 	   this	-> freq = newFrequency;
 	}
@@ -75,8 +75,8 @@ public:
 
 class set_frequencyRequest: public generalCommand {
 public:
-	int freq;
-	set_frequencyRequest (int newFreq):
+	i32 freq;
+	set_frequencyRequest (i32 newFreq):
 	   generalCommand (SETFREQUENCY_REQUEST) {
 	   this	-> freq = newFreq;
 	}
@@ -86,9 +86,9 @@ public:
 
 class agcRequest: public generalCommand {
 public:
-	int	setPoint;
+	i32	setPoint;
 	bool	agcMode;
-	agcRequest (bool onoff, int setPoint) :
+	agcRequest (bool onoff, i32 setPoint) :
 	                generalCommand (AGC_REQUEST) {
 	   this	-> setPoint	= setPoint;
 	   this	-> agcMode	= onoff;
@@ -98,8 +98,8 @@ public:
 
 class	GRdBRequest: public generalCommand {
 public:
-	int	GRdBValue;
-	GRdBRequest (int GRdBValue):
+	i32	GRdBValue;
+	GRdBRequest (i32 GRdBValue):
 	               generalCommand (GRDB_REQUEST) {
 	   this	-> GRdBValue	= GRdBValue;
 	}
@@ -118,8 +118,8 @@ public:
 
 class	lnaRequest: public generalCommand {
 public:
-	int	lnaState;
-	lnaRequest (int lnaState):
+	i32	lnaState;
+	lnaRequest (i32 lnaState):
 	           generalCommand (LNA_REQUEST) {
 	   this	-> lnaState	= lnaState;
 	}
@@ -128,8 +128,8 @@ public:
 
 class	antennaRequest: public generalCommand {
 public:
-	int	antenna;
-	antennaRequest (int antenna) :
+	i32	antenna;
+	antennaRequest (i32 antenna) :
 	           generalCommand (ANTENNASELECT_REQUEST) {
 	   this	-> antenna	= antenna;
 	}

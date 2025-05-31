@@ -68,7 +68,7 @@ static void RTLSDRCallBack(u8 *buf, u32 len, void *ctx)
 		time2 = clock();
 		if((time2 - time1) >= (CLOCKS_PER_SEC)) // >= 1s
 		{
-			int overload = (int)theStick->detect_overload(buf, len);
+			i32 overload = (i32)theStick->detect_overload(buf, len);
 		  	//fprintf(stderr, "Overload=%d\n", overload);
 			emit theStick->signal_timer(overload);
 			time1 = time2;
@@ -119,7 +119,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings *s,
     i32	r;
     i16	deviceIndex;
     i16	i;
-    int	k;
+    i32	k;
     QString	temp;
     char manufac[256], product[256], serial[256];
 
@@ -128,8 +128,8 @@ RtlSdrHandler::RtlSdrHandler(QSettings *s,
 	rtlsdrSettings = s;
 	this->recorderVersion = recorderVersion;
 	rtlsdrSettings->beginGroup("rtlsdrSettings");
-	int x = rtlsdrSettings->value("position-x", 100).toInt();
-    int y = rtlsdrSettings->value("position-y", 100).toInt();
+	i32 x = rtlsdrSettings->value("position-x", 100).toInt();
+    i32 y = rtlsdrSettings->value("position-y", 100).toInt();
 	filtering = rtlsdrSettings->value("filterSelector", 0).toInt();
 	currentDepth = rtlsdrSettings->value("filterDepth", 5).toInt();
     rtlsdrSettings->endGroup();
@@ -205,7 +205,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings *s,
 	gainsCount = rtlsdr_get_tuner_gains(theDevice, nullptr);
 	fprintf(stdout, "Supported gain values (%d): ", gainsCount);
 	{
-       int gains[gainsCount];
+       i32 gains[gainsCount];
 	   gainsCount = rtlsdr_get_tuner_gains(theDevice, gains);
 	   for (i = gainsCount; i > 0; i--)
        {
@@ -215,7 +215,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings *s,
 	   fprintf(stdout, "\n");
 	}
 
-	int tuner_type = rtlsdr_get_tuner_type(theDevice);
+	i32 tuner_type = rtlsdr_get_tuner_type(theDevice);
 	switch (tuner_type)
 	{
 	   case RTLSDR_TUNER_E4000:
@@ -323,7 +323,7 @@ i32	RtlSdrHandler::getVFOFrequency()
 	return (i32)(this->rtlsdr_get_center_freq(theDevice));
 }
 
-void RtlSdrHandler::set_filter(int c)
+void RtlSdrHandler::set_filter(i32 c)
 {
 	filtering = c ? 1 : 0;
 }
@@ -363,12 +363,12 @@ void RtlSdrHandler::stopReader()
 }
 
 //	when selecting the gain from a table, use the table value
-void RtlSdrHandler::set_ExternalGain(int /*gain_index*/)
+void RtlSdrHandler::set_ExternalGain(i32 /*gain_index*/)
 {
 	const QString gain = gainControl->currentText();
-	rtlsdr_set_tuner_gain(theDevice, (int)(gain.toFloat() * 10));
+	rtlsdr_set_tuner_gain(theDevice, (i32)(gain.toFloat() * 10));
     //qDebug() << "gain =" << gain << ", index =" << gainControl->currentIndex();
-    //fprintf(stderr, "rtlsdr_set_tuner_gain = %d\n", (int)(gain.toFloat() * 10));
+    //fprintf(stderr, "rtlsdr_set_tuner_gain = %d\n", (i32)(gain.toFloat() * 10));
 }
 
 void RtlSdrHandler::set_bandwidth(i32 bandwidth)
@@ -378,7 +378,7 @@ void RtlSdrHandler::set_bandwidth(i32 bandwidth)
     //fprintf(stderr, "Bandwidth = %d\n", bandwidth*1000);
 }
 
-void RtlSdrHandler::set_autogain(int agc)
+void RtlSdrHandler::set_autogain(i32 agc)
 {
 	//fprintf(stderr, "set_autogain = %d\n", agc);
 	agcControl = agc;
@@ -394,7 +394,7 @@ void RtlSdrHandler::set_autogain(int agc)
 	if(agc == 1) set_ExternalGain(0);
 }
 
-void RtlSdrHandler::set_biasControl(int bias)
+void RtlSdrHandler::set_biasControl(i32 bias)
 {
 	if (rtlsdr_set_bias_tee != nullptr)
 	    rtlsdr_set_bias_tee(theDevice, bias ? 1 : 0);
@@ -403,7 +403,7 @@ void RtlSdrHandler::set_biasControl(int bias)
 //	correction is in ppm
 void RtlSdrHandler::set_ppmCorrection(f64 ppm)
 {
-	int corr = ppm*1000;
+	i32 corr = ppm*1000;
 	this->rtlsdr_set_freq_correction_ppb(theDevice, corr);
 	//fprintf(stderr,"ppm=%d\n",corr);
 }
@@ -411,9 +411,9 @@ void RtlSdrHandler::set_ppmCorrection(f64 ppm)
 i32	RtlSdrHandler::getSamples(cf32 *V, i32 size)
 {
     std::complex<u8> temp[size];
-    int	amount;
+    i32	amount;
     static u8 dumpBuffer[4096];
-    static int iqTeller	= 0;
+    static i32 iqTeller	= 0;
 
 	if (!isActive.load())
 	    return 0;
@@ -427,19 +427,19 @@ i32	RtlSdrHandler::getSamples(cf32 *V, i32 size)
 	        currentDepth = filterDepth->value();
 	        theFilter.resize (currentDepth);
 	    }
-	    for (int i = 0; i < amount; i ++)
+	    for (i32 i = 0; i < amount; i ++)
 	        V[i] = theFilter.Pass(cf32(mapTable[real(temp[i]) & 0xFF],
 	                                    mapTable[imag(temp[i]) & 0xFF]));
 	}
 	else
-	    for (int i = 0; i < amount; i ++)
+	    for (i32 i = 0; i < amount; i ++)
 	        V[i] = cf32(mapTable[real(temp[i]) & 0xFF],
 	                     mapTable[imag(temp[i]) & 0xFF]);
 	if (xml_dumping.load())
 	    xmlWriter->add(temp, amount);
 	else if (iq_dumping.load())
     {
-	    for (int i = 0; i < size; i ++)
+	    for (i32 i = 0; i < size; i ++)
         {
 	        dumpBuffer[iqTeller] = real(temp[i]);
 	        dumpBuffer[iqTeller + 1] = imag(temp[i]);
@@ -777,7 +777,7 @@ bool RtlSdrHandler::setup_xmlDump()
 	QString channel	= rtlsdrSettings->value("channel", "xx").toString();
 	QString timeString = theDate.currentDate().toString() + "-" +
 	                     theTime.currentTime().toString();
-	for (int i = 0; i < timeString.length(); i ++)
+	for (i32 i = 0; i < timeString.length(); i ++)
 	    if (!isValid(timeString.at(i)))
 	        timeString.replace(i, 1, '-');
 	QString suggestedFileName =
@@ -805,7 +805,7 @@ bool RtlSdrHandler::setup_xmlDump()
 	xml_dumping.store(true);
 
 	QString	dumper = QDir::fromNativeSeparators(fileName);
-	int x = dumper.lastIndexOf("/");
+	i32 x = dumper.lastIndexOf("/");
 	saveDir	= dumper.remove(x, dumper.length() - x);
 	rtlsdrSettings->setValue("saveDir_xmlDump", saveDir);
 
@@ -846,17 +846,17 @@ void RtlSdrHandler::handle_manual()
 	set_autogain(1);
 }
 
-void RtlSdrHandler::enable_gainControl(int agc)
+void RtlSdrHandler::enable_gainControl(i32 agc)
 {
 	gainControl->setEnabled(agc == 1);
 	gainLabel->setEnabled(agc == 1);
 	dbLabel->setEnabled(agc == 1);
 }
 
-bool RtlSdrHandler::detect_overload(u8 *buf, int len)
+bool RtlSdrHandler::detect_overload(u8 *buf, i32 len)
 {
-	int overload_count = 0;
-	for(int i=0; i<len; i++)
+	i32 overload_count = 0;
+	for(i32 i=0; i<len; i++)
 	{
 		if ((buf[i] == 0) || (buf[i] == 255))
 			overload_count++;
@@ -864,11 +864,11 @@ bool RtlSdrHandler::detect_overload(u8 *buf, int len)
 	return (8000 * overload_count >= len);
 }
 
-void RtlSdrHandler::slot_timer(int overload)
+void RtlSdrHandler::slot_timer(i32 overload)
 {
-    unsigned char data[192];
-    int reg_len, tuner_gain;
-    int result;
+    u8 data[192];
+    i32 reg_len, tuner_gain;
+    i32 result;
 
     if(old_overload != overload)
     {

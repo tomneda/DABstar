@@ -66,16 +66,16 @@ private:
   u32 filePointer;
   RingBuffer<cf32> * sampleBuffer;
   XmlFileReader * parent;
-  int nrElements;
-  int samplesToRead;
+  i32 nrElements;
+  i32 samplesToRead;
   std::atomic<bool> running;
   void run();
-  int compute_nrSamples(FILE * f, int blockNumber);
-  int readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, int));
-  void readElements_IQ(FILE * f, cf32 *, int amount);
-  void readElements_QI(FILE * f, cf32 *, int amount);
-  void readElements_I(FILE * f, cf32 *, int amount);
-  void readElements_Q(FILE * f, cf32 *, int amount);
+  i32 compute_nrSamples(FILE * f, i32 blockNumber);
+  i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, i32));
+  void readElements_IQ(FILE * f, cf32 *, i32 amount);
+  void readElements_QI(FILE * f, cf32 *, i32 amount);
+  void readElements_I(FILE * f, cf32 *, i32 amount);
+  void readElements_Q(FILE * f, cf32 *, i32 amount);
   //
   //	for the conversion - if any
   i16 convBufferSize;
@@ -86,7 +86,7 @@ private:
   f32 mapTable[256];
 
 signals:
-  void signal_set_progress(int, int);
+  void signal_set_progress(i32, i32);
 };
 
 #endif

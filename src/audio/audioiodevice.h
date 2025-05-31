@@ -65,7 +65,7 @@ private:
 
 signals:
   void signal_show_audio_peak_level(f32, f32) const;
-  void signal_audio_data_available(int iNumSamples, int iSampleRate);
+  void signal_audio_data_available(i32 iNumSamples, i32 iSampleRate);
 };
 
 

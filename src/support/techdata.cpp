@@ -118,7 +118,7 @@ bool TechData::isHidden()
   return mFrame.isHidden();
 }
 
-void TechData::slot_show_frame_error_bar(int e)
+void TechData::slot_show_frame_error_bar(i32 e)
 {
   QPalette p = frameError_display->palette();
   if (100 - 4 * e < 80)
@@ -134,7 +134,7 @@ void TechData::slot_show_frame_error_bar(int e)
   frameError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_aac_error_bar(int e)
+void TechData::slot_show_aac_error_bar(i32 e)
 {
   QPalette p = aacError_display->palette();
   if (100 - 4 * e < 80)  // e is error out of 25 frames so times 4
@@ -149,7 +149,7 @@ void TechData::slot_show_aac_error_bar(int e)
   aacError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_rs_error_bar(int e)
+void TechData::slot_show_rs_error_bar(i32 e)
 {
   QPalette p = rsError_display->palette();
   if (100 - 4 * e < 80)
@@ -164,10 +164,10 @@ void TechData::slot_show_rs_error_bar(int e)
   rsError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_rs_corrections(int c, int ec)
+void TechData::slot_show_rs_corrections(i32 c, i32 ec)
 {
   // highlight non-zero values with color
-  auto set_val_with_col = [](QLCDNumber * ipLCD, int iVal)
+  auto set_val_with_col = [](QLCDNumber * ipLCD, i32 iVal)
   {
     QPalette p = ipLCD->palette();
     p.setColor(QPalette::WindowText, (iVal > 0 ? Qt::yellow : Qt::white));
@@ -222,37 +222,37 @@ void TechData::slot_show_serviceName(const QString & s)
   programName->setText(s);
 }
 
-void TechData::slot_show_serviceId(int SId)
+void TechData::slot_show_serviceId(i32 SId)
 {
   serviceIdDisplay->display(SId);
 }
 
-void TechData::slot_show_bitRate(int br)
+void TechData::slot_show_bitRate(i32 br)
 {
   bitrateDisplay->display(br);
 }
 
-void TechData::slot_show_startAddress(int sa)
+void TechData::slot_show_startAddress(i32 sa)
 {
   startAddressDisplay->display(sa);
 }
 
-void TechData::slot_show_length(int l)
+void TechData::slot_show_length(i32 l)
 {
   lengthDisplay->display(l);
 }
 
-void TechData::slot_show_subChId(int subChId)
+void TechData::slot_show_subChId(i32 subChId)
 {
   subChIdDisplay->display(subChId);
 }
 
-void TechData::slot_show_language(int l)
+void TechData::slot_show_language(i32 l)
 {
   language->setText(getLanguage(l));
 }
 
-void TechData::slot_show_ASCTy(int a)
+void TechData::slot_show_ASCTy(i32 a)
 {
   ASCTy->setText(a == 077 ? "DAB+" : "DAB");
   if (a == 077)
@@ -267,18 +267,18 @@ void TechData::slot_show_ASCTy(int a)
   }
 }
 
-void TechData::slot_show_uep(int shortForm, int protLevel)
+void TechData::slot_show_uep(i32 shortForm, i32 protLevel)
 {
   QString protL = getProtectionLevel(shortForm, protLevel);
   uepField->setText(protL);
 }
 
-void TechData::slot_show_codeRate(int shortForm, int protLevel)
+void TechData::slot_show_codeRate(i32 shortForm, i32 protLevel)
 {
   codeRate->setText(getCodeRate(shortForm, protLevel));
 }
 
-void TechData::slot_show_fm(int freq)
+void TechData::slot_show_fm(i32 freq)
 {
   if (freq == -1)
   {
@@ -295,7 +295,7 @@ void TechData::slot_show_fm(int freq)
   }
 }
 
-void TechData::slot_audio_data_available(int /*iNumSamples*/, int iSampleRate)
+void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate)
 {
   constexpr i32 cNumNeededSample = 1024;
 
@@ -314,7 +314,7 @@ void TechData::slot_audio_data_available(int /*iNumSamples*/, int iSampleRate)
   mpAudioBuffer->flush_ring_buffer();
 }
 
-void TechData::slot_frame_dump_button_text(const QString & text, int size)
+void TechData::slot_frame_dump_button_text(const QString & text, i32 size)
 {
   QFont font = framedumpButton->font();
   font.setPointSize(size);
@@ -323,7 +323,7 @@ void TechData::slot_frame_dump_button_text(const QString & text, int size)
   framedumpButton->update();
 }
 
-void TechData::slot_audio_dump_button_text(const QString & text, int size)
+void TechData::slot_audio_dump_button_text(const QString & text, i32 size)
 {
   QFont font = audiodumpButton->font();
   font.setPointSize(size);
@@ -341,7 +341,7 @@ void TechData::slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrU
   lblSbrUsed->setText(afs);
 }
 
-void TechData::slot_show_missed(int missed)
+void TechData::slot_show_missed(i32 missed)
 {
   missedSamples->display(missed);
 }

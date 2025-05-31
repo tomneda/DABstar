@@ -38,41 +38,41 @@ class Blocks	{
 public:
 			Blocks		() {}
 			~Blocks		() {}
-	int		blockNumber;
-	int		nrElements;
+	i32		blockNumber;
+	i32		nrElements;
 	QString		typeofUnit;
-	int		frequency;
+	i32		frequency;
 	QString		modType;
 };
 
 class XmlFileWriter {
 public:
 		XmlFileWriter	(FILE *,
-                    int,
+                    i32,
                     QString,
-                    int,
-                    int,
+                    i32,
+                    i32,
                     QString,
                     QString,
                     QString);
 	                         
 			~XmlFileWriter		();
-	void		add			(std::complex<i16> *, int);
-	void		add			(std::complex<u8> *, int);
-	void		add			(std::complex<i8> *, int);
+	void		add			(std::complex<i16> *, i32);
+	void		add			(std::complex<u8> *, i32);
+	void		add			(std::complex<i8> *, i32);
 	void		computeHeader		();
 private:
-	int		nrBits;
+	i32		nrBits;
 	QString		container;
-	int		sampleRate;
-	int		frequency;
+	i32		sampleRate;
+	i32		frequency;
 	QString		deviceName;
 	QString		deviceModel;
 	QString		recorderVersion;
 	QString		create_xmltree		();
 	FILE		*xmlFile;
 	QString		byteOrder;
-	int		nrElements;
+	i32		nrElements;
 };
 
 #endif

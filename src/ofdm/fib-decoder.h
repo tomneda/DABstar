@@ -58,17 +58,17 @@ public:
   bool sync_reached();
   void get_data_for_audio_service(const QString &, Audiodata *);
   void get_data_for_packet_service(const QString &, Packetdata *, i16);
-  int get_sub_channel_id(const QString &, u32);
+  i32 get_sub_channel_id(const QString &, u32);
   std::vector<SServiceId> get_services();
 
-  QString find_service(u32, int);
-  void get_parameters(const QString &, u32 *, int *);
+  QString find_service(u32, i32);
+  void get_parameters(const QString &, u32 *, i32 *);
   u8 get_ecc();
   u16 get_country_name();
   u8 get_countryId();
   i32 get_ensembleId();
   QString get_ensemble_name();
-  void get_channel_info(ChannelData *, int);
+  void get_channel_info(ChannelData *, i32);
   i32 get_cif_count();
   void get_cif_count(i16 *, i16 *);
   u32 get_julian_date();
@@ -78,7 +78,7 @@ public:
   bool has_time_table(u32 SId);
   std::vector<SEpgElement> find_epg_data(u32);
   QStringList basic_print();
-  int scan_width();
+  i32 scan_width();
 
 protected:
   void process_FIB(const u8 *, u16);
@@ -128,51 +128,51 @@ private:
   void FIG1Extension5(const u8 *);
   void FIG1Extension6(const u8 *);
 
-  int findService(const QString &);
-  int find_service_index_from_SId(u32);
+  i32 findService(const QString &);
+  i32 find_service_index_from_SId(u32);
   void cleanupServiceList();
-  void createService(QString name, u32 SId, int SCIds);
-  int findServiceComponent(DabConfig *, i16);
-  int findComponent(DabConfig * db, u32 SId, i16 subChId);
-  int findServiceComponent(DabConfig *, u32, u8);
+  void createService(QString name, u32 SId, i32 SCIds);
+  i32 findServiceComponent(DabConfig *, i16);
+  i32 findComponent(DabConfig * db, u32 SId, i16 subChId);
+  i32 findServiceComponent(DabConfig *, u32, u8);
   void bind_audioService(DabConfig *, i8, u32, i16, i16, i16, i16);
   void bind_packetService(DabConfig *, i8, u32, i16, i16, i16, i16);
 
   QString announcements(u16);
 
-  void setCluster(DabConfig *, int, i16, u16);
+  void setCluster(DabConfig *, i32, i16, u16);
   Cluster * getCluster(DabConfig *, i16);
 
-  QString serviceName(int index);
-  QString serviceIdOf(int index);
-  QString subChannelOf(int index);
-  QString startAddressOf(int index);
-  QString lengthOf(int index);
-  QString protLevelOf(int index);
-  QString codeRateOf(int index);
-  QString bitRateOf(int index);
-  QString dabType(int index);
-  QString languageOf(int index);
-  QString programTypeOf(int index);
-  QString fmFreqOf(int index);
-  QString appTypeOf(int index);
-  QString FEC_scheme(int index);
-  QString packetAddress(int index);
-  QString DSCTy(int index);
+  QString serviceName(i32 index);
+  QString serviceIdOf(i32 index);
+  QString subChannelOf(i32 index);
+  QString startAddressOf(i32 index);
+  QString lengthOf(i32 index);
+  QString protLevelOf(i32 index);
+  QString codeRateOf(i32 index);
+  QString bitRateOf(i32 index);
+  QString dabType(i32 index);
+  QString languageOf(i32 index);
+  QString programTypeOf(i32 index);
+  QString fmFreqOf(i32 index);
+  QString appTypeOf(i32 index);
+  QString FEC_scheme(i32 index);
+  QString packetAddress(i32 index);
+  QString DSCTy(i32 index);
 
   QString audioHeader();
   QString packetHeader();
-  QString audioData(int index);
-  QString packetData(int index);
+  QString audioData(i32 index);
+  QString packetData(i32 index);
 
 signals:
   void signal_add_to_ensemble(const QString &, u32);
-  void signal_name_of_ensemble(int, const QString &);
-  void signal_clock_time(int, int, int, int, int, int, int, int, int);
+  void signal_name_of_ensemble(i32, const QString &);
+  void signal_clock_time(i32, i32, i32, i32, i32, i32, i32, i32, i32);
   void signal_change_in_configuration();
-  void signal_start_announcement(const QString &, int);
-  void signal_stop_announcement(const QString &, int);
-  void signal_nr_services(int);
+  void signal_start_announcement(const QString &, i32);
+  void signal_stop_announcement(const QString &, i32);
+  void signal_nr_services(i32);
 };
 
 #endif

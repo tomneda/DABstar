@@ -60,11 +60,11 @@ public:
   CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<f32> *);
   ~CorrelationViewer() override = default;
 
-  void showCorrelation(f32 threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr);
+  void showCorrelation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";
-  static QString _get_best_match_text(const QVector<int> & v);
+  static QString _get_best_match_text(const QVector<i32> & v);
 
   QSettings * const mpSettings = nullptr;
   RingBuffer<f32> * const mpResponseBuffer;
@@ -73,7 +73,7 @@ private:
   QwtPlotMarker * mpThresholdMarker = nullptr;
   QwtPlotCurve mQwtPlotCurve;
   QwtPlotGrid mQwtGrid;
-  std::vector<int> mIndexVector;
+  std::vector<i32> mIndexVector;
   QColor mGridColor;
   QColor mCurveColor;
   f32 mMinValFlt = -15;

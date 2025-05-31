@@ -27,7 +27,7 @@
 //
 #include	"common-readers.h"
 //
-//	The reader for 16 bit int values
+//	The reader for 16 bit i32 values
 //
 	reader_16::reader_16 (RingBuffer<cf32> *p,
 	                      i32 base_16,
@@ -39,7 +39,7 @@
 }
 //
 //	apparently bytes are read in from low byte to high byte
-void	reader_16::processData	(f32 IQoffs, void *data, int cnt) {
+void	reader_16::processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
 cf32 IQData [blockSize];
 u8	*p	= (u8 *)data;
@@ -75,7 +75,7 @@ i16 reader_16::bitDepth	(void) {
 	reader_24::~reader_24 (void) {
 }
 
-void	reader_24::processData	(f32 IQoffs, void *data, int cnt) {
+void	reader_24::processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
 cf32	IQData [blockSize];
 u8	*p	= (u8 *)data;
@@ -113,7 +113,7 @@ i16 reader_24::bitDepth	(void) {
 	reader_32::~reader_32 (void) {
 }
 
-void	reader_32::processData	(f32 IQoffs, void *data, int cnt) {
+void	reader_32::processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
 cf32 IQData [blockSize];
 u8	*p	= (u8 *)data;
@@ -155,7 +155,7 @@ i16	i;
 	reader_float::~reader_float (void) {
 }
 //
-void	reader_float::processData	(f32 IQoffs, void *data, int cnt) {
+void	reader_float::processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i, j;
 cf32 IQData [blockSize];
 f32	*p	= (f32 *)data;

@@ -31,12 +31,12 @@
 class	upFilter {
 	std::vector<cf32> kernel;
 	std::vector<cf32> buffer;
-	int		ip;
-	int		order;
-	int		bufferSize;
-	int		multiplier;
+	i32		ip;
+	i32		order;
+	i32		bufferSize;
+	i32		multiplier;
 public:
-	upFilter	(int, int, int);
+	upFilter	(i32, i32, i32);
 	~upFilter	();
 void	Filter	(cf32, cf32 *);
 };

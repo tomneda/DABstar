@@ -63,7 +63,7 @@ Galois::Galois(u16 symsize, u16 gfpoly)
   }
 }
 
-int Galois::modnn(int x)
+i32 Galois::modnn(i32 x)
 {
   while (x >= codeLength)
   {

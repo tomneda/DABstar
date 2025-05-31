@@ -57,9 +57,9 @@ private:
 	static	const i16	d_j	= 0;
 //
 //	LUT translating power form to polynomial form
-	int gexp [512];
+	i32 gexp [512];
 //	LUT translating polynomial form to power form
-	int glog [512];
+	i32 glog [512];
 	
 // all in power representations
  	i16	add_poly	(i16 a, i16 b);
@@ -90,21 +90,21 @@ private:
 // r and d are in polynomial representation. This is more common in practice
 	i16 dec_poly (const u16 *r, u16 *d);
 
-//	int d_m;		// GF(2^m)
+//	i32 d_m;		// GF(2^m)
 //	dabp_galois d_gf;	// Galois field
 
 // d_g[0] is the lowest exponent coefficient,
 // d_g[2t-1] is the highest exponent coefficient, d_g[2t]=1 is not included
-	int *d_g;		// generator g.
+	i32 *d_g;		// generator g.
 
 // error correcting capability t, info length k, codeword length n,
 // all measured in unit of GF(2^m) symbols
 	
-	int *d_reg;	// registers for encoding
-	int *syndrome;	// syndrome
-	int *d_euc [2];	// data structure for Euclidean computation
+	i32 *d_reg;	// registers for encoding
+	i32 *syndrome;	// syndrome
+	i32 *d_euc [2];	// data structure for Euclidean computation
 	
-	void create_polynomials (int start_j); // initialize the generator polynomial g
+	void create_polynomials (i32 start_j); // initialize the generator polynomial g
 };
 
 #endif		// DABP_RSCODE

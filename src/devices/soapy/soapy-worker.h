@@ -28,8 +28,8 @@ class	soapyWorker: public QThread {
 public:
 		soapyWorker	(void);
 virtual		~soapyWorker	(void);
-virtual	int	Samples		(void);
-virtual	int	getSamples	(cf32 *, int);
+virtual	i32	Samples		(void);
+virtual	i32	getSamples	(cf32 *, i32);
 };
 
 #endif

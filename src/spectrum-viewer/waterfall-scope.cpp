@@ -35,7 +35,7 @@
 #include <qwt_color_map.h>
 #include <qwt_scale_widget.h>
 
-WaterfallScope::WaterfallScope(QwtPlot * scope, int displaySize, int rasterSize) :
+WaterfallScope::WaterfallScope(QwtPlot * scope, i32 displaySize, i32 rasterSize) :
   QwtPlotSpectrogram(),
   mpPlotgrid(scope),
   mDisplaySize(displaySize),
@@ -134,7 +134,7 @@ void WaterfallScope::_gen_color_map(const i32 iStyleNr)
 
     mpColorMap = new QwtLinearColorMap(Qt::black, R_stop << 16 | G_stop << 8 | B_stop);
 
-    for (int colIdx = 1; colIdx < COL_STEPS; ++colIdx)
+    for (i32 colIdx = 1; colIdx < COL_STEPS; ++colIdx)
     {
       const i32 R_val = (i32)(R_step * colIdx) + R_start;
       const i32 G_val = (i32)(G_step * colIdx) + G_start;
@@ -150,7 +150,7 @@ void WaterfallScope::_gen_color_map(const i32 iStyleNr)
   setColorMap(mpColorMap);
 }
 
-void WaterfallScope::slot_scaling_changed(int iScale)
+void WaterfallScope::slot_scaling_changed(i32 iScale)
 {
   mScale = (f64)iScale / 100.0;
 }

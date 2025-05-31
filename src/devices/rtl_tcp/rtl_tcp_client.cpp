@@ -49,12 +49,12 @@ typedef struct { /* structure size must be multiple of 2 bytes */
 
 RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
 {
-  for(int i = 0; i < 256; i++)
+  for(i32 i = 0; i < 256; i++)
 	mapTable[i] = ((f32)i - 127.38) / 128.0;
   remoteSettings = s;
   remoteSettings->beginGroup("RtlTcpClient");
-  int x = remoteSettings->value("position-x", 100).toInt();
-  int y = remoteSettings->value("position-y", 100).toInt();
+  i32 x = remoteSettings->value("position-x", 100).toInt();
+  i32 y = remoteSettings->value("position-y", 100).toInt();
   remoteSettings->endGroup();
   setupUi(&myFrame);
   myFrame.move(QPoint(x, y));
@@ -247,7 +247,7 @@ void RtlTcpClient::readData()
     while (toServer.bytesAvailable() > 8192)
     {
       toServer.read((char *)buffer, 8192);
-	  for (int i = 0; i < 4096; i ++)
+	  for (i32 i = 0; i < 4096; i ++)
  	    localBuffer[i] = cf32(mapTable[buffer[2 * i]], mapTable[buffer[2 * i + 1]]);
       _I_Buffer->put_data_into_ring_buffer(localBuffer, 4096);
     }
@@ -257,8 +257,8 @@ void RtlTcpClient::readData()
 //	commands are packed in 5 bytes, one "command byte"
 //	and an integer parameter
 struct command {
-  unsigned char cmd;
-  unsigned int param;
+  u8 cmd;
+  u32 param;
 }__attribute__((packed));
 
 #define	ONE_BYTE	8
@@ -290,7 +290,7 @@ void RtlTcpClient::sendRate(i32 rate)
   sendCommand(0x02, rate);
 }
 
-void RtlTcpClient::sendGain(int gain)
+void RtlTcpClient::sendGain(i32 gain)
 {
   Gain = gain;
   sendCommand(0x04, 10 * gain);
@@ -300,11 +300,11 @@ void RtlTcpClient::sendGain(int gain)
 void RtlTcpClient::set_fCorrection(f64 ppm)
 {
   Ppm = ppm;
-  int corr = ppm * 1000;
+  i32 corr = ppm * 1000;
   sendCommand(0x83, corr);
 }
 
-void RtlTcpClient::setAgcMode(int agc)
+void RtlTcpClient::setAgcMode(i32 agc)
 {
   AgcMode = agc;
   if(agc == 0)
@@ -321,19 +321,19 @@ void RtlTcpClient::setAgcMode(int agc)
   gainLabel->setEnabled(agc == 1);
 }
 
-void RtlTcpClient::setBiasT(int biast)
+void RtlTcpClient::setBiasT(i32 biast)
 {
   BiasT = biast ? 1 : 0;
   sendCommand(0x0e, biast ? 1 : 0);
 }
 
-void RtlTcpClient::setBandwidth(int bw)
+void RtlTcpClient::setBandwidth(i32 bw)
 {
   Bandwidth = bw;
   sendCommand(0x40, bw * 1000);
 }
 
-void RtlTcpClient::setPort(int port)
+void RtlTcpClient::setPort(i32 port)
 {
   basePort = port;
 }

@@ -50,15 +50,15 @@ public:
 		~dumpViewer	(void);
 
 private	slots:
-	void	handle_viewSlider	(int);
-	void	handle_amplitudeSlider	(int);
-	void	handle_compressor	(int);
+	void	handle_viewSlider	(i32);
+	void	handle_amplitudeSlider	(i32);
+	void	handle_compressor	(i32);
 private:
 	FILE		*theFile;
 	f32		seconds_per_frame;
 	f32		seconds_per_sample;
-	void		show_segment	(int, int);
-	int		fileLength;
+	void		show_segment	(i32, i32);
+	i32		fileLength;
 	QwtPlot         *plotgrid;
         QwtPlotGrid     *grid;
         QwtPlotCurve    *spectrumCurve;

@@ -21,9 +21,9 @@ cf32	Pass	(cf32);
 f32		Pass		(f32);
 private:
 
-	int	filterSize;
-	int	sampleRate;
-	int	ip;
+	i32	filterSize;
+	i32	sampleRate;
+	i32	ip;
 	cf32 *kernel;
 	cf32 *buffer;
 };

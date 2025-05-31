@@ -66,13 +66,13 @@ private:
 	QFrame			myFrame;
 	LibLoader		m_loader;
 	QSettings		*colibriSettings;
-	int			sampleRate	(int);
-	int			selectedRate;
+	i32			sampleRate	(i32);
+	i32			selectedRate;
 	Descriptor		m_deskriptor;
 	std::atomic<bool>	running;
 	bool			iqSwitcher;
 private slots:
-	void			set_gainControl	(int);
+	void			set_gainControl	(i32);
 	void			handle_iqSwitcher	();
 };
 #endif

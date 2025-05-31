@@ -310,7 +310,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
     {
       //	first prepare dumping
       std::vector<u8> fileBuffer;
-      const int segmentSize = _build_aac_file(aac_frame_length, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
+      const i32 segmentSize = _build_aac_file(aac_frame_length, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
 
       if (mpDumpFile == nullptr)
       {
@@ -337,14 +337,14 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 
         //	then handle the audio
 #ifdef  __WITH_FDK_AAC__
-        const int tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, fileBuffer.data(), segmentSize);
+        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, fileBuffer.data(), segmentSize);
 #else
         u8 theAudioUnit[2 * 960 + 10];  // sure, large enough
 
         memcpy(theAudioUnit, &mOutVec[mAuStartArr[i]], aac_frame_length);
         memset(&theAudioUnit[aac_frame_length], 0, 10);
 
-        const int tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aac_frame_length);
+        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aac_frame_length);
 #endif
         emit signal_is_stereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
 
@@ -374,7 +374,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
   return true;
 }
 
-int Mp4Processor::_build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer)
+i32 Mp4Processor::_build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer)
 {
   BitWriter au_bw;
 

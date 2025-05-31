@@ -6,7 +6,7 @@
 constexpr u32 cCacheSize = 16;
 constexpr u32 cCacheMask = (cCacheSize - 1);
 
-DynLinkCache::DynLinkCache(int size)
+DynLinkCache::DynLinkCache(i32 size)
 {
   (void) size;
   cache.resize(cCacheSize);

@@ -36,7 +36,7 @@ private:
   std::vector<f64> mYValVec;
   
 public slots:
-  void slot_scaling_changed(int);
+  void slot_scaling_changed(i32);
 
 private slots:
   void slot_right_mouse_click(const QPointF &);

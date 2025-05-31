@@ -139,19 +139,19 @@ public:
      * \param direction the channel direction RX or TX
      * \param mapping a vendor-specific mapping string
      */
-    virtual void setFrontendMapping(const int direction, const std::string &mapping);
+    virtual void setFrontendMapping(const i32 direction, const std::string &mapping);
 
     /*!
      * Get the mapping configuration string.
      * \param direction the channel direction RX or TX
      * \return the vendor-specific mapping string
      */
-    virtual std::string getFrontendMapping(const int direction) const;
+    virtual std::string getFrontendMapping(const i32 direction) const;
 
     /*!
      * Get a number of channels given the streaming direction
      */
-    virtual size_t getNumChannels(const int direction) const;
+    virtual size_t getNumChannels(const i32 direction) const;
 
     /*!
      * Query a dictionary of available channel information.
@@ -163,7 +163,7 @@ public:
      * \param channel an available channel on the device
      * \return channel information
      */
-    virtual Kwargs getChannelInfo(const int direction, const size_t channel) const;
+    virtual Kwargs getChannelInfo(const i32 direction, const size_t channel) const;
 
     /*!
      * Find out if the specified channel is full or half duplex.
@@ -171,7 +171,7 @@ public:
      * \param channel an available channel on the device
      * \return true for full duplex, false for half duplex
      */
-    virtual bool getFullDuplex(const int direction, const size_t channel) const;
+    virtual bool getFullDuplex(const i32 direction, const size_t channel) const;
 
     /*******************************************************************
      * Stream API
@@ -183,7 +183,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of allowed format strings. See setupStream() for the format syntax.
      */
-    virtual std::vector<std::string> getStreamFormats(const int direction, const size_t channel) const;
+    virtual std::vector<std::string> getStreamFormats(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the hardware's native stream format for this channel.
@@ -194,7 +194,7 @@ public:
      * \param [out] fullScale the maximum possible value
      * \return the native stream buffer format string
      */
-    virtual std::string getNativeStreamFormat(const int direction, const size_t channel, f64 &fullScale) const;
+    virtual std::string getNativeStreamFormat(const i32 direction, const size_t channel, f64 &fullScale) const;
 
     /*!
      * Query the argument info description for stream args.
@@ -202,7 +202,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of argument info structures
      */
-    virtual ArgInfoList getStreamArgsInfo(const int direction, const size_t channel) const;
+    virtual ArgInfoList getStreamArgsInfo(const i32 direction, const size_t channel) const;
 
     /*!
      * Initialize a stream given a list of channels and stream arguments.
@@ -254,7 +254,7 @@ public:
      * \endparblock
      */
     virtual Stream *setupStream(
-        const int direction,
+        const i32 direction,
         const std::string &format,
         const std::vector<size_t> &channels = std::vector<size_t>(),
         const Kwargs &args = Kwargs());
@@ -294,10 +294,10 @@ public:
      * \param numElems optional element count for burst control
      * \return 0 for success or error code on failure
      */
-    virtual int activateStream(
+    virtual i32 activateStream(
         Stream *stream,
-        const int flags = 0,
-        const long long timeNs = 0,
+        const i32 flags = 0,
+        const i64 timeNs = 0,
         const size_t numElems = 0);
 
     /*!
@@ -314,10 +314,10 @@ public:
      * \param timeNs optional deactivation time in nanoseconds
      * \return 0 for success or error code on failure
      */
-    virtual int deactivateStream(
+    virtual i32 deactivateStream(
         Stream *stream,
-        const int flags = 0,
-        const long long timeNs = 0);
+        const i32 flags = 0,
+        const i64 timeNs = 0);
 
     /*!
      * Read elements from a stream for reception.
@@ -338,12 +338,12 @@ public:
      * \param timeoutUs the timeout in microseconds
      * \return the number of elements read per buffer or error code
      */
-    virtual int readStream(
+    virtual i32 readStream(
         Stream *stream,
         void * const *buffs,
         const size_t numElems,
-        int &flags,
-        long long &timeNs,
+        i32 &flags,
+        i64 &timeNs,
         const long timeoutUs = 100000);
 
     /*!
@@ -365,12 +365,12 @@ public:
      * \param timeoutUs the timeout in microseconds
      * \return the number of elements written per buffer or error
      */
-    virtual int writeStream(
+    virtual i32 writeStream(
         Stream *stream,
         const void * const *buffs,
         const size_t numElems,
-        int &flags,
-        const long long timeNs = 0,
+        i32 &flags,
+        const i64 timeNs = 0,
         const long timeoutUs = 100000);
 
     /*!
@@ -393,11 +393,11 @@ public:
      * \param timeoutUs the timeout in microseconds
      * \return 0 for success or error code like timeout
      */
-    virtual int readStreamStatus(
+    virtual i32 readStreamStatus(
         Stream *stream,
         size_t &chanMask,
-        int &flags,
-        long long &timeNs,
+        i32 &flags,
+        i64 &timeNs,
         const long timeoutUs = 100000);
 
     /*******************************************************************
@@ -428,7 +428,7 @@ public:
      * \param buffs an array of void* buffers num chans in size
      * \return 0 for success or error code when not supported
      */
-    virtual int getDirectAccessBufferAddrs(Stream *stream, const size_t handle, void **buffs);
+    virtual i32 getDirectAccessBufferAddrs(Stream *stream, const size_t handle, void **buffs);
 
     /*!
      * Acquire direct buffers from a receive stream.
@@ -450,12 +450,12 @@ public:
      * \param timeoutUs the timeout in microseconds
      * \return the number of elements read per buffer or error code
      */
-    virtual int acquireReadBuffer(
+    virtual i32 acquireReadBuffer(
         Stream *stream,
         size_t &handle,
         const void **buffs,
-        int &flags,
-        long long &timeNs,
+        i32 &flags,
+        i64 &timeNs,
         const long timeoutUs = 100000);
 
     /*!
@@ -487,7 +487,7 @@ public:
      * \param timeoutUs the timeout in microseconds
      * \return the number of available elements per buffer or error
      */
-    virtual int acquireWriteBuffer(
+    virtual i32 acquireWriteBuffer(
         Stream *stream,
         size_t &handle,
         void **buffs,
@@ -512,8 +512,8 @@ public:
         Stream *stream,
         const size_t handle,
         const size_t numElems,
-        int &flags,
-        const long long timeNs = 0);
+        i32 &flags,
+        const i64 timeNs = 0);
 
     /*******************************************************************
      * Antenna API
@@ -525,7 +525,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of available antenna names
      */
-    virtual std::vector<std::string> listAntennas(const int direction, const size_t channel) const;
+    virtual std::vector<std::string> listAntennas(const i32 direction, const size_t channel) const;
 
     /*!
      * Set the selected antenna on a chain.
@@ -533,7 +533,7 @@ public:
      * \param channel an available channel on the device
      * \param name the name of an available antenna
      */
-    virtual void setAntenna(const int direction, const size_t channel, const std::string &name);
+    virtual void setAntenna(const i32 direction, const size_t channel, const std::string &name);
 
     /*!
      * Get the selected antenna on a chain.
@@ -541,7 +541,7 @@ public:
      * \param channel an available channel on the device
      * \return the name of an available antenna
      */
-    virtual std::string getAntenna(const int direction, const size_t channel) const;
+    virtual std::string getAntenna(const i32 direction, const size_t channel) const;
 
     /*******************************************************************
      * Frontend corrections API
@@ -553,7 +553,7 @@ public:
      * \param channel an available channel on the device
      * \return true if automatic corrections are supported
      */
-    virtual bool hasDCOffsetMode(const int direction, const size_t channel) const;
+    virtual bool hasDCOffsetMode(const i32 direction, const size_t channel) const;
 
     /*!
      * Set the automatic DC offset corrections mode.
@@ -561,7 +561,7 @@ public:
      * \param channel an available channel on the device
      * \param automatic true for automatic offset correction
      */
-    virtual void setDCOffsetMode(const int direction, const size_t channel, const bool automatic);
+    virtual void setDCOffsetMode(const i32 direction, const size_t channel, const bool automatic);
 
     /*!
      * Get the automatic DC offset corrections mode.
@@ -569,7 +569,7 @@ public:
      * \param channel an available channel on the device
      * \return true for automatic offset correction
      */
-    virtual bool getDCOffsetMode(const int direction, const size_t channel) const;
+    virtual bool getDCOffsetMode(const i32 direction, const size_t channel) const;
 
     /*!
      * Does the device support frontend DC offset correction?
@@ -577,7 +577,7 @@ public:
      * \param channel an available channel on the device
      * \return true if DC offset corrections are supported
      */
-    virtual bool hasDCOffset(const int direction, const size_t channel) const;
+    virtual bool hasDCOffset(const i32 direction, const size_t channel) const;
 
     /*!
      * Set the frontend DC offset correction.
@@ -585,7 +585,7 @@ public:
      * \param channel an available channel on the device
      * \param offset the relative correction (1.0 max)
      */
-    virtual void setDCOffset(const int direction, const size_t channel, const std::complex<f64> &offset);
+    virtual void setDCOffset(const i32 direction, const size_t channel, const std::complex<f64> &offset);
 
     /*!
      * Get the frontend DC offset correction.
@@ -593,7 +593,7 @@ public:
      * \param channel an available channel on the device
      * \return the relative correction (1.0 max)
      */
-    virtual std::complex<f64> getDCOffset(const int direction, const size_t channel) const;
+    virtual std::complex<f64> getDCOffset(const i32 direction, const size_t channel) const;
 
     /*!
      * Does the device support frontend IQ balance correction?
@@ -601,7 +601,7 @@ public:
      * \param channel an available channel on the device
      * \return true if IQ balance corrections are supported
      */
-    virtual bool hasIQBalance(const int direction, const size_t channel) const;
+    virtual bool hasIQBalance(const i32 direction, const size_t channel) const;
 
     /*!
      * Set the frontend IQ balance correction.
@@ -609,7 +609,7 @@ public:
      * \param channel an available channel on the device
      * \param balance the relative correction (1.0 max)
      */
-    virtual void setIQBalance(const int direction, const size_t channel, const std::complex<f64> &balance);
+    virtual void setIQBalance(const i32 direction, const size_t channel, const std::complex<f64> &balance);
 
     /*!
      * Get the frontend IQ balance correction.
@@ -617,7 +617,7 @@ public:
      * \param channel an available channel on the device
      * \return the relative correction (1.0 max)
      */
-    virtual std::complex<f64> getIQBalance(const int direction, const size_t channel) const;
+    virtual std::complex<f64> getIQBalance(const i32 direction, const size_t channel) const;
 
     /*!
      * Does the device support frontend frequency correction?
@@ -625,7 +625,7 @@ public:
      * \param channel an available channel on the device
      * \return true if frequency corrections are supported
      */
-    virtual bool hasFrequencyCorrection(const int direction, const size_t channel) const;
+    virtual bool hasFrequencyCorrection(const i32 direction, const size_t channel) const;
 
     /*!
      * Fine tune the frontend frequency correction.
@@ -633,7 +633,7 @@ public:
      * \param channel an available channel on the device
      * \param value the correction in PPM
      */
-    virtual void setFrequencyCorrection(const int direction, const size_t channel, const f64 value);
+    virtual void setFrequencyCorrection(const i32 direction, const size_t channel, const f64 value);
 
     /*!
      * Get the frontend frequency correction value.
@@ -641,7 +641,7 @@ public:
      * \param channel an available channel on the device
      * \return the correction value in PPM
      */
-    virtual f64 getFrequencyCorrection(const int direction, const size_t channel) const;
+    virtual f64 getFrequencyCorrection(const i32 direction, const size_t channel) const;
 
     /*******************************************************************
      * Gain API
@@ -654,7 +654,7 @@ public:
      * \param channel an available channel
      * \return a list of gain string names
      */
-    virtual std::vector<std::string> listGains(const int direction, const size_t channel) const;
+    virtual std::vector<std::string> listGains(const i32 direction, const size_t channel) const;
 
     /*!
      * Does the device support automatic gain control?
@@ -662,7 +662,7 @@ public:
      * \param channel an available channel on the device
      * \return true for automatic gain control
      */
-    virtual bool hasGainMode(const int direction, const size_t channel) const;
+    virtual bool hasGainMode(const i32 direction, const size_t channel) const;
 
     /*!
      * Set the automatic gain mode on the chain.
@@ -670,7 +670,7 @@ public:
      * \param channel an available channel on the device
      * \param automatic true for automatic gain setting
      */
-    virtual void setGainMode(const int direction, const size_t channel, const bool automatic);
+    virtual void setGainMode(const i32 direction, const size_t channel, const bool automatic);
 
     /*!
      * Get the automatic gain mode on the chain.
@@ -678,7 +678,7 @@ public:
      * \param channel an available channel on the device
      * \return true for automatic gain setting
      */
-    virtual bool getGainMode(const int direction, const size_t channel) const;
+    virtual bool getGainMode(const i32 direction, const size_t channel) const;
 
     /*!
      * Set the overall amplification in a chain.
@@ -687,7 +687,7 @@ public:
      * \param channel an available channel on the device
      * \param value the new amplification value in dB
      */
-    virtual void setGain(const int direction, const size_t channel, const f64 value);
+    virtual void setGain(const i32 direction, const size_t channel, const f64 value);
 
     /*!
      * Set the value of a amplification element in a chain.
@@ -696,7 +696,7 @@ public:
      * \param name the name of an amplification element
      * \param value the new amplification value in dB
      */
-    virtual void setGain(const int direction, const size_t channel, const std::string &name, const f64 value);
+    virtual void setGain(const i32 direction, const size_t channel, const std::string &name, const f64 value);
 
     /*!
      * Get the overall value of the gain elements in a chain.
@@ -704,7 +704,7 @@ public:
      * \param channel an available channel on the device
      * \return the value of the gain in dB
      */
-    virtual f64 getGain(const int direction, const size_t channel) const;
+    virtual f64 getGain(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the value of an individual amplification element in a chain.
@@ -713,7 +713,7 @@ public:
      * \param name the name of an amplification element
      * \return the value of the gain in dB
      */
-    virtual f64 getGain(const int direction, const size_t channel, const std::string &name) const;
+    virtual f64 getGain(const i32 direction, const size_t channel, const std::string &name) const;
 
     /*!
      * Get the overall range of possible gain values.
@@ -721,7 +721,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of gain ranges in dB
      */
-    virtual Range getGainRange(const int direction, const size_t channel) const;
+    virtual Range getGainRange(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the range of possible gain values for a specific element.
@@ -730,7 +730,7 @@ public:
      * \param name the name of an amplification element
      * \return a list of gain ranges in dB
      */
-    virtual Range getGainRange(const int direction, const size_t channel, const std::string &name) const;
+    virtual Range getGainRange(const i32 direction, const size_t channel, const std::string &name) const;
 
     /*******************************************************************
      * Frequency API
@@ -763,7 +763,7 @@ public:
      * \param frequency the center frequency in Hz
      * \param args optional tuner arguments
      */
-    virtual void setFrequency(const int direction, const size_t channel, const f64 frequency, const Kwargs &args = Kwargs());
+    virtual void setFrequency(const i32 direction, const size_t channel, const f64 frequency, const Kwargs &args = Kwargs());
 
     /*!
      * Tune the center frequency of the specified element.
@@ -781,7 +781,7 @@ public:
      * \param frequency the center frequency in Hz
      * \param args optional tuner arguments
      */
-    virtual void setFrequency(const int direction, const size_t channel, const std::string &name, const f64 frequency, const Kwargs &args = Kwargs());
+    virtual void setFrequency(const i32 direction, const size_t channel, const std::string &name, const f64 frequency, const Kwargs &args = Kwargs());
 
     /*!
      * Get the overall center frequency of the chain.
@@ -791,7 +791,7 @@ public:
      * \param channel an available channel on the device
      * \return the center frequency in Hz
      */
-    virtual f64 getFrequency(const int direction, const size_t channel) const;
+    virtual f64 getFrequency(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the frequency of a tunable element in the chain.
@@ -800,7 +800,7 @@ public:
      * \param name the name of a tunable element
      * \return the tunable element's frequency in Hz
      */
-    virtual f64 getFrequency(const int direction, const size_t channel, const std::string &name) const;
+    virtual f64 getFrequency(const i32 direction, const size_t channel, const std::string &name) const;
 
     /*!
      * List available tunable elements in the chain.
@@ -809,7 +809,7 @@ public:
      * \param channel an available channel
      * \return a list of tunable elements by name
      */
-    virtual std::vector<std::string> listFrequencies(const int direction, const size_t channel) const;
+    virtual std::vector<std::string> listFrequencies(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the range of overall frequency values.
@@ -817,7 +817,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of frequency ranges in Hz
      */
-    virtual RangeList getFrequencyRange(const int direction, const size_t channel) const;
+    virtual RangeList getFrequencyRange(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the range of tunable values for the specified element.
@@ -826,7 +826,7 @@ public:
      * \param name the name of a tunable element
      * \return a list of frequency ranges in Hz
      */
-    virtual RangeList getFrequencyRange(const int direction, const size_t channel, const std::string &name) const;
+    virtual RangeList getFrequencyRange(const i32 direction, const size_t channel, const std::string &name) const;
 
     /*!
      * Query the argument info description for tune args.
@@ -834,7 +834,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of argument info structures
      */
-    virtual ArgInfoList getFrequencyArgsInfo(const int direction, const size_t channel) const;
+    virtual ArgInfoList getFrequencyArgsInfo(const i32 direction, const size_t channel) const;
 
     /*******************************************************************
      * Sample Rate API
@@ -846,7 +846,7 @@ public:
      * \param channel an available channel on the device
      * \param rate the sample rate in samples per second
      */
-    virtual void setSampleRate(const int direction, const size_t channel, const f64 rate);
+    virtual void setSampleRate(const i32 direction, const size_t channel, const f64 rate);
 
     /*!
      * Get the baseband sample rate of the chain.
@@ -854,7 +854,7 @@ public:
      * \param channel an available channel on the device
      * \return the sample rate in samples per second
      */
-    virtual f64 getSampleRate(const int direction, const size_t channel) const;
+    virtual f64 getSampleRate(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the range of possible baseband sample rates.
@@ -863,7 +863,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of possible rates in samples per second
      */
-    virtual std::vector<f64> listSampleRates(const int direction, const size_t channel) const;
+    virtual std::vector<f64> listSampleRates(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the range of possible baseband sample rates.
@@ -871,7 +871,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of sample rate ranges in samples per second
      */
-    virtual RangeList getSampleRateRange(const int direction, const size_t channel) const;
+    virtual RangeList getSampleRateRange(const i32 direction, const size_t channel) const;
 
     /*******************************************************************
      * Bandwidth API
@@ -883,7 +883,7 @@ public:
      * \param channel an available channel on the device
      * \param bw the baseband filter width in Hz
      */
-    virtual void setBandwidth(const int direction, const size_t channel, const f64 bw);
+    virtual void setBandwidth(const i32 direction, const size_t channel, const f64 bw);
 
     /*!
      * Get the baseband filter width of the chain.
@@ -891,7 +891,7 @@ public:
      * \param channel an available channel on the device
      * \return the baseband filter width in Hz
      */
-    virtual f64 getBandwidth(const int direction, const size_t channel) const;
+    virtual f64 getBandwidth(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the range of possible baseband filter widths.
@@ -900,7 +900,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of possible bandwidths in Hz
      */
-    virtual std::vector<f64> listBandwidths(const int direction, const size_t channel) const;
+    virtual std::vector<f64> listBandwidths(const i32 direction, const size_t channel) const;
 
     /*!
      * Get the range of possible baseband filter widths.
@@ -908,7 +908,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of bandwidth ranges in Hz
      */
-    virtual RangeList getBandwidthRange(const int direction, const size_t channel) const;
+    virtual RangeList getBandwidthRange(const i32 direction, const size_t channel) const;
 
     /*******************************************************************
      * Clocking API
@@ -985,7 +985,7 @@ public:
      * \param what optional argument
      * \return the time in nanoseconds
      */
-    virtual long long getHardwareTime(const std::string &what = "") const;
+    virtual i64 getHardwareTime(const std::string &what = "") const;
 
     /*!
      * Write the time to the hardware clock on the device.
@@ -993,7 +993,7 @@ public:
      * \param timeNs time in nanoseconds
      * \param what optional argument
      */
-    virtual void setHardwareTime(const long long timeNs, const std::string &what = "");
+    virtual void setHardwareTime(const i64 timeNs, const std::string &what = "");
 
     /*!
      * Set the time of subsequent configuration calls.
@@ -1003,7 +1003,7 @@ public:
      * \param timeNs time in nanoseconds
      * \param what optional argument
      */
-    virtual void setCommandTime(const long long timeNs, const std::string &what = "");
+    virtual void setCommandTime(const i64 timeNs, const std::string &what = "");
 
     /*******************************************************************
      * Sensor API
@@ -1040,7 +1040,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of available sensor string names
      */
-    virtual std::vector<std::string> listSensors(const int direction, const size_t channel) const;
+    virtual std::vector<std::string> listSensors(const i32 direction, const size_t channel) const;
 
     /*!
      * Get meta-information about a channel sensor.
@@ -1050,7 +1050,7 @@ public:
      * \param key the ID name of an available sensor
      * \return meta-information about a sensor
      */
-    virtual ArgInfo getSensorInfo(const int direction, const size_t channel, const std::string &key) const;
+    virtual ArgInfo getSensorInfo(const i32 direction, const size_t channel, const std::string &key) const;
 
     /*!
      * Readback a channel sensor given the name.
@@ -1061,7 +1061,7 @@ public:
      * \param key the ID name of an available sensor
      * \return the current value of the sensor
      */
-    virtual std::string readSensor(const int direction, const size_t channel, const std::string &key) const;
+    virtual std::string readSensor(const i32 direction, const size_t channel, const std::string &key) const;
 
     /*******************************************************************
      * Register API
@@ -1159,7 +1159,7 @@ public:
      * \param channel an available channel on the device
      * \return a list of argument info structures
      */
-    virtual ArgInfoList getSettingInfo(const int direction, const size_t channel) const;
+    virtual ArgInfoList getSettingInfo(const i32 direction, const size_t channel) const;
 
     /*!
      * Write an arbitrary channel setting on the device.
@@ -1169,7 +1169,7 @@ public:
      * \param key the setting identifier
      * \param value the setting value
      */
-    virtual void writeSetting(const int direction, const size_t channel, const std::string &key, const std::string &value);
+    virtual void writeSetting(const i32 direction, const size_t channel, const std::string &key, const std::string &value);
 
     /*!
      * Read an arbitrary channel setting on the device.
@@ -1178,7 +1178,7 @@ public:
      * \param key the setting identifier
      * \return the setting value
      */
-    virtual std::string readSetting(const int direction, const size_t channel, const std::string &key) const;
+    virtual std::string readSetting(const i32 direction, const size_t channel, const std::string &key) const;
 
     /*******************************************************************
      * GPIO API
@@ -1247,7 +1247,7 @@ public:
      * \param addr the address of the slave
      * \param data an array of bytes write out
      */
-    virtual void writeI2C(const int addr, const std::string &data);
+    virtual void writeI2C(const i32 addr, const std::string &data);
 
     /*!
      * Read from an available I2C slave.
@@ -1257,7 +1257,7 @@ public:
      * \param numBytes the number of bytes to read
      * \return an array of bytes read from the slave
      */
-    virtual std::string readI2C(const int addr, const size_t numBytes);
+    virtual std::string readI2C(const i32 addr, const size_t numBytes);
 
     /*******************************************************************
      * SPI API
@@ -1277,7 +1277,7 @@ public:
      * \param numBits the number of bits to clock out
      * \return the readback data, numBits-1 is first in
      */
-    virtual unsigned transactSPI(const int addr, const unsigned data, const size_t numBits);
+    virtual unsigned transactSPI(const i32 addr, const unsigned data, const size_t numBits);
 
     /*******************************************************************
      * UART API

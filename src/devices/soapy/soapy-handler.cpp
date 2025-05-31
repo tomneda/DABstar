@@ -55,7 +55,7 @@
 }
 
 bool	contains (std::vector<std::string> s, std::string key) {
-	for (int i = 0; i < s. size(); i ++)
+	for (i32 i = 0; i < s. size(); i ++)
 	   if (s. at (i) == key)
 	      return true;
 	return false;
@@ -84,14 +84,14 @@ QString	handlerName	= "driver=";
         std::vector<std::string> antennas =
                                  device -> listAntennas (SOAPY_SDR_RX, 0);
 	if (antennas. size() > 1) {
-	   for (int i = 0; i < antennas. size(); i ++)
+	   for (i32 i = 0; i < antennas. size(); i ++)
 	      comboBox_1	-> addItem (antennas [i]. c_str());
 	   connect (comboBox_1, SIGNAL (textActivated (const QString &)),
 	            this, SLOT (handleAntenna (const QString &)));
 	   comboBox_1	-> show();
 	}
 	
-        for (int i = 0; i < antennas. size(); i ++)
+        for (i32 i = 0; i < antennas. size(); i ++)
            fprintf (stderr, "antenna %d = %s\n", i, antennas [i]. c_str());
 
 	if (device -> hasGainMode (SOAPY_SDR_RX, 0)) {
@@ -141,7 +141,7 @@ QString	handlerName	= "driver=";
 
 	std::vector<SoapySDR::Range> freqs =
                           device -> getFrequencyRange (SOAPY_SDR_RX, 0);
-        for (int i = 0; i < freqs. size(); i ++)
+        for (i32 i = 0; i < freqs. size(); i ++)
            fprintf (stderr, "freqs %f %f\n", freqs [i]. minimum(),
                                              freqs [i]. maximum());
 
@@ -149,9 +149,9 @@ QString	handlerName	= "driver=";
         std::vector<f64>bandwidths =
                            device -> listBandwidths (SOAPY_SDR_RX, 0);
 
-	int	minDist	= 10000000;
-	int	selectedWidth	= 0;
-	for (int i = 0; i < bandwidths. size(); i ++)
+	i32	minDist	= 10000000;
+	i32	selectedWidth	= 0;
+	for (i32 i = 0; i < bandwidths. size(); i ++)
 	   if ((bandwidths [i] >= 1536000) &&
 	              (bandwidths [i] - 1536000 < minDist)) {
 	      minDist = bandwidths [i] - 1536000;
@@ -161,8 +161,8 @@ QString	handlerName	= "driver=";
 	bool	validRate = false;
         std::vector<f64> samplerates =
                            device -> listSampleRates (SOAPY_SDR_RX, 0);
-        for (int i = 0; i < samplerates. size(); i ++)
-	   if ((int)(samplerates [i]) == 2048000) {
+        for (i32 i = 0; i < samplerates. size(); i ++)
+	   if ((i32)(samplerates [i]) == 2048000) {
 	      validRate = true;
 	      break;
 	   }
@@ -215,15 +215,15 @@ i32	soapyHandler::Samples			(void) {
 void	soapyHandler::resetBuffer		(void) {}
 i16 soapyHandler::bitDepth			(void) {return 12;}
 
-void	soapyHandler::handle_spinBox_1 (int v) {
+void	soapyHandler::handle_spinBox_1 (i32 v) {
         device -> setGain (SOAPY_SDR_RX, 0, gains [0], (f32)v);
 }
 
-void	soapyHandler::handle_spinBox_2 (int v) {
+void	soapyHandler::handle_spinBox_2 (i32 v) {
         device -> setGain (SOAPY_SDR_RX, 0, gains [1], (f32)v);
 }
 
-void	soapyHandler::set_agcControl	(int v) {
+void	soapyHandler::set_agcControl	(i32 v) {
 	if (agcControl -> isChecked())
 	   device -> setGainMode (SOAPY_SDR_RX, 0, 1);
 	else

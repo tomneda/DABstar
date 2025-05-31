@@ -41,10 +41,10 @@ static u16 const crctab_1021[256] = {
   0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-static u16 calc_crc(unsigned char * data, int length, u16 const * crctab, unsigned int crc)
+static u16 calc_crc(u8 * data, i32 length, u16 const * crctab, u32 crc)
 {
-  int count;
-  unsigned int temp;
+  i32 count;
+  u32 temp;
 
   for (count = 0; count < length; ++count)
   {
@@ -111,7 +111,7 @@ etiGenerator::~etiGenerator()
 //
 void etiGenerator::reset()
 {
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     if (descrambler[i] != nullptr)
     {
@@ -143,7 +143,7 @@ void etiGenerator::newFrame()
 //
 //	we ensure that when starting, we start with a
 //	block 1
-void etiGenerator::process_block(const std::vector<i16> & ibits, int blkno)
+void etiGenerator::process_block(const std::vector<i16> & ibits, i32 blkno)
 {
 
   if (!running && (etiFile != nullptr) && (blkno == 1))
@@ -167,14 +167,14 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, int blkno)
     bool ficValid[4];
     my_ficHandler->get_fib_bits(fibBits, ficValid);
 
-    for (int i = 0; i < 4; i++)
+    for (i32 i = 0; i < 4; i++)
     {
       fibValid[index_Out + i] = ficValid[i];
 
-      for (int j = 0; j < 96; j++)
+      for (i32 j = 0; j < 96; j++)
       {
         fibVector[(index_Out + i) & 017][j] = 0;
-        for (int k = 0; k < 8; k++)
+        for (i32 k = 0; k < 8; k++)
         {
           fibVector[(index_Out + i) & 017][j] <<= 1;
           fibVector[(index_Out + i) & 017][j] |= (fibBits[i * 768 + 8 * j + k] & 01);
@@ -187,13 +187,13 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, int blkno)
 
   //	adding the MSC blocks. Blocks 5 .. 76 are "transformed"
   //	into the "soft" bits arrays
-  int CIF_index = (blkno - 4) % numberofblocksperCIF;
+  i32 CIF_index = (blkno - 4) % numberofblocksperCIF;
   memcpy(&cif_In[CIF_index * BitsperBlock], ibits.data(), BitsperBlock * sizeof(i16));
   if (CIF_index == numberofblocksperCIF - 1)
   {
-    for (int i = 0; i < 3072 * 18; i++)
+    for (i32 i = 0; i < 3072 * 18; i++)
     {
-      int index = interleaveMap[i & 017];
+      i32 index = interleaveMap[i & 017];
       temp[i] = cifVector[(index_Out + index) & 017][i];
       cifVector[index_Out & 0xF][i] = cif_In[i];
     }
@@ -215,8 +215,8 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, int blkno)
     }
     //
     //	3 steps, init the vector, add the fib and add the CIF content
-    int offset = _init_eti(theVector, CIFCount_hi, CIFCount_lo, Minor);
-    int base = offset;
+    i32 offset = _init_eti(theVector, CIFCount_hi, CIFCount_lo, Minor);
+    i32 base = offset;
     memcpy(&theVector[offset], fibVector[index_Out], 96);
     offset += 96;
     //
@@ -226,7 +226,7 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, int blkno)
     //
     //	EOF - CRC
     //	The "data bytes" are stored in the range base .. offset
-    int crc = calc_crc(&(theVector[base]), offset - base, crctab_1021, 0xFFFF);
+    i32 crc = calc_crc(&(theVector[base]), offset - base, crctab_1021, 0xFFFF);
     crc = ~crc;
     theVector[offset++] = (crc & 0xFF00) >> 8;
     theVector[offset++] = crc & 0xFF;
@@ -256,7 +256,7 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, int blkno)
 //	Copied  from dabtools:
 i32 etiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
 {
-  int fillPointer = 0;
+  i32 fillPointer = 0;
   ChannelData data;
 
   CIFCount_lo += minor;
@@ -292,10 +292,10 @@ i32 etiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
   //	LIDATA ()
   //	FC()
   oEti[fillPointer++] = CIFCount_lo; // FCT from CIFCount_lo
-  int FICF = 1;      // FIC present in MST
-  int NST = 0;      // number of streams
-  int FL = 0;      // Frame Length
-  for (int j = 0; j < 64; j++)
+  i32 FICF = 1;      // FIC present in MST
+  i32 NST = 0;      // number of streams
+  i32 FL = 0;      // Frame Length
+  for (i32 j = 0; j < 64; j++)
   {
     my_ficHandler->get_channel_info(&data, j);
     if (data.in_use)
@@ -311,20 +311,20 @@ i32 etiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
   //	The FP is computed as remainder of the total CIFCount,
   u8 FP = ((CIFCount_hi * 250) + CIFCount_lo) % 8;
   //
-  int MID = 0x01; // We only support Mode 1
+  i32 MID = 0x01; // We only support Mode 1
   oEti[fillPointer++] = (FP << 5) | (MID << 3) | ((FL & 0x700) >> 8);
   oEti[fillPointer++] = FL & 0xff;
   //	Now for each of the streams in the FIC we add information
   //	on how to get it
   //	STC ()
-  for (int j = 0; j < 64; j++)
+  for (i32 j = 0; j < 64; j++)
   {
     my_ficHandler->get_channel_info(&data, j);
     if (data.in_use)
     {
-      int SCID = data.id;
-      int SAD = data.start_cu;
-      int TPL;
+      i32 SCID = data.id;
+      i32 SAD = data.start_cu;
+      i32 TPL;
       if (data.uepFlag)
       {
         TPL = 0x10 | (data.protlev - 1);
@@ -333,7 +333,7 @@ i32 etiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
       {
         TPL = 0x20 | data.protlev;
       }
-      int STL = data.bitrate * 3 / 8;
+      i32 STL = data.bitrate * 3 / 8;
       oEti[fillPointer++] = (SCID << 2) | ((SAD & 0x300) >> 8);
       oEti[fillPointer++] = SAD & 0xFF;
       oEti[fillPointer++] = (TPL << 2) | ((STL & 0x300) >> 8);
@@ -345,7 +345,7 @@ i32 etiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
   oEti[fillPointer++] = 0xFF;
   oEti[fillPointer++] = 0xFF;
   //	HCRC
-  int HCRC = calc_crc(&oEti[4], fillPointer - 4, crctab_1021, 0xffff);
+  i32 HCRC = calc_crc(&oEti[4], fillPointer - 4, crctab_1021, 0xffff);
   HCRC = ~HCRC;
   oEti[fillPointer++] = (HCRC & 0xff00) >> 8;
   oEti[fillPointer++] = HCRC & 0xff;
@@ -366,10 +366,10 @@ class parameter
 public:
   const i16 * input;
   bool uepFlag;
-  int bitRate;
-  int protLevel;
-  int start_cu;
-  int size;
+  i32 bitRate;
+  i32 protLevel;
+  i32 start_cu;
+  i32 size;
   u8 * output;
 };
 
@@ -378,7 +378,7 @@ i32 etiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
   u8 shiftRegister[9];
   std::vector<parameter *> theParameters;
 
-  for (int i = 0; i < 64; i++)
+  for (i32 i = 0; i < 64; i++)
   {
     ChannelData data;
     my_ficHandler->get_channel_info(&data, i);
@@ -408,10 +408,10 @@ i32 etiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
         memset(shiftRegister, 1, 9);
         descrambler[i] = new u8[24 * t->bitRate];
 
-        for (int j = 0; j < 24 * t->bitRate; j++)
+        for (i32 j = 0; j < 24 * t->bitRate; j++)
         {
           u8 b = shiftRegister[8] ^ shiftRegister[4];
-          for (int k = 8; k > 0; k--)
+          for (i32 k = 8; k > 0; k--)
           {
             shiftRegister[k] = shiftRegister[k - 1];
           }
@@ -427,7 +427,7 @@ i32 etiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
   return offset;
 }
 
-void etiGenerator::_process_sub_channel(int /*nr*/, parameter * p, Protection * prot, u8 * desc)
+void etiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * prot, u8 * desc)
 {
   std::unique_ptr<u8[]> outVector{ new u8[24 * p->bitRate] };
   if (!outVector)
@@ -440,16 +440,16 @@ void etiGenerator::_process_sub_channel(int /*nr*/, parameter * p, Protection * 
 
   prot->deconvolve(&p->input[p->start_cu * CUSize], p->size * CUSize, outVector.get());
   //
-  for (int j = 0; j < 24 * p->bitRate; j++)
+  for (i32 j = 0; j < 24 * p->bitRate; j++)
   {
     outVector[j] ^= desc[j];
   }
   //
   //	and the storage:
-  for (int j = 0; j < 24 * p->bitRate / 8; j++)
+  for (i32 j = 0; j < 24 * p->bitRate / 8; j++)
   {
-    int temp = 0;
-    for (int k = 0; k < 8; k++)
+    i32 temp = 0;
+    for (i32 k = 0; k < 8; k++)
     {
       temp = (temp << 1) | (outVector[j * 8 + k] & 01);
     }

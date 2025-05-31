@@ -98,12 +98,12 @@ struct SDabService
 
 struct STheTime
 {
-  int year;
-  int month;
-  int day;
-  int hour;
-  int minute;
-  int second;
+  i32 year;
+  i32 month;
+  i32 day;
+  i32 hour;
+  i32 minute;
+  i32 second;
 };
 
 struct SChannelDescriptor
@@ -111,7 +111,7 @@ struct SChannelDescriptor
   QString channelName;
   bool realChannel = false;
   bool etiActive = false;
-  int serviceCount = 0;
+  i32 serviceCount = 0;
   i32 nominalFreqHz = 0;
   QString ensembleName;
   u8 mainId = 0;
@@ -125,16 +125,16 @@ struct SChannelDescriptor
   bool tiiFile = false;
   QString transmitterName;
   QString countryName;
-  int nrTransmitters = 0;
+  i32 nrTransmitters = 0;
   cf32 localPos{};
   cf32 targetPos{};
-  int snr = 0;
+  i32 snr = 0;
   std::set<u16> transmitters;
 
   union UTiiId
   {
-    UTiiId(int mainId, int subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
-    explicit UTiiId(int fullId) : FullId(fullId) {};
+    UTiiId(i32 mainId, i32 subId) : MainId(mainId & 0x7F), SubId(subId & 0xFF) {};
+    explicit UTiiId(i32 fullId) : FullId(fullId) {};
 
     u16 FullId = 0;
     struct
@@ -318,7 +318,7 @@ private:
   void connect_dab_processor();
   void connect_gui();
   void disconnect_gui();
-  static QString convertTime(int, int, int, int, int, int = -1);
+  static QString convertTime(i32, i32, i32, i32, i32, i32 = -1);
   void clean_screen();
   void _show_hide_buttons(const bool iShow);
 
@@ -342,16 +342,16 @@ private:
   void clean_up();
   void stop_service(SDabService &);
   void start_service(SDabService &);
-  //void colorService(QModelIndex ind, QColor c, int pt, bool italic = false);
+  //void colorService(QModelIndex ind, QColor c, i32 pt, bool italic = false);
   void local_select(const QString &, const QString &);
   // void showServices() const;
 
   bool do_start();
 
-  bool save_MOT_EPG_data(const QByteArray & result, const QString & objectName, int contentType);
+  bool save_MOT_EPG_data(const QByteArray & result, const QString & objectName, i32 contentType);
   void save_MOT_object(const QByteArray &, const QString &);
-  void save_MOT_text(const QByteArray &, int, const QString &);
-  void show_MOT_image(const QByteArray & data, int contentType, const QString & pictureName, int dirs);
+  void save_MOT_text(const QByteArray &, i32, const QString &);
+  void show_MOT_image(const QByteArray & data, i32 contentType, const QString & pictureName, i32 dirs);
 
   void create_directory(const QString & iDirOrPath, bool iContainsFileName) const;
   QString generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData, const bool iStoreAsDir) const;
@@ -361,14 +361,14 @@ private:
   //void handle_serviceButton(direction);
   void enable_ui_elements_for_safety(bool iEnable);
 
-  //void colorServiceName(const QString & s, QColor color, int fS, bool);
+  //void colorServiceName(const QString & s, QColor color, i32 fS, bool);
   void write_warning_message(const QString & iMsg);
   void write_picture(const QPixmap & iPixMap) const;
 
   static QString get_bg_style_sheet(const QColor & iBgBaseColor, const char * const ipWidgetType = nullptr);
   void setup_ui_colors();
   void set_favorite_button_style();
-  void _update_channel_selector(int);
+  void _update_channel_selector(i32);
   void _show_epg_label(const bool iShowLabel);
   void _set_http_server_button(const bool iActive);
   void _set_clock_text(const QString & iText = QString());
@@ -383,69 +383,69 @@ private:
   QString _convert_links_to_clickable(const QString& iText) const;
 
 signals:
-  void signal_set_new_channel(int);
+  void signal_set_new_channel(i32);
   void signal_dab_processor_started();
-  void signal_test_slider_changed(int);
+  void signal_test_slider_changed(i32);
   void signal_audio_mute(bool iMuted);
 
   void signal_start_audio(SAudioFifo *buffer);
   void signal_switch_audio(SAudioFifo *buffer);
   void signal_stop_audio();
   void signal_set_audio_device(const QByteArray & deviceId);
-  void signal_audio_buffer_filled_state(int);
+  void signal_audio_buffer_filled_state(i32);
 
 public slots:
   void slot_add_to_ensemble(const QString &, u32);
-  void slot_name_of_ensemble(int, const QString &);
-  void slot_show_frame_errors(int);
-  void slot_show_rs_errors(int);
-  void slot_show_aac_errors(int);
+  void slot_name_of_ensemble(i32, const QString &);
+  void slot_show_frame_errors(i32);
+  void slot_show_rs_errors(i32);
+  void slot_show_aac_errors(i32);
   void slot_show_fic_success(bool);
   void slot_show_fic_ber(f32);
   void slot_show_label(const QString &);
-  void slot_handle_mot_object(const QByteArray &, const QString &, int, bool);
-  void slot_send_datagram(int);
-  void slot_handle_tdc_data(int, int);
+  void slot_handle_mot_object(const QByteArray &, const QString &, i32, bool);
+  void slot_send_datagram(i32);
+  void slot_handle_tdc_data(i32, i32);
   void slot_change_in_configuration();
   void slot_new_audio(i32, u32, u32);
   void slot_set_stereo(bool);
-  void slot_set_stream_selector(int);
+  void slot_set_stream_selector(i32);
   void slot_no_signal_found();
   void slot_show_mot_handling();
-  void slot_show_correlation(f32, const QVector<int> & v);
-  void slot_show_spectrum(int);
+  void slot_show_correlation(f32, const QVector<i32> & v);
+  void slot_show_spectrum(i32);
   void slot_show_cir();
-  void slot_show_iq(int, f32);
+  void slot_show_iq(i32, f32);
   void slot_show_lcd_data(const OfdmDecoder::SLcdData *);
   void slot_show_digital_peak_level(f32 iPeakLevel);
-  void slot_show_rs_corrections(int, int);
+  void slot_show_rs_corrections(i32, i32);
   void slot_show_tii(const std::vector<STiiResult> & iTr);
-  void slot_clock_time(int, int, int, int, int, int, int, int, int);
-  void slot_start_announcement(const QString &, int);
-  void slot_stop_announcement(const QString &, int);
-  void slot_new_frame(int);
+  void slot_clock_time(i32, i32, i32, i32, i32, i32, i32, i32, i32);
+  void slot_start_announcement(const QString &, i32);
+  void slot_stop_announcement(const QString &, i32);
+  void slot_new_frame(i32);
   void slot_show_clock_error(f32 e);
-  void slot_set_epg_data(int, int, const QString &, const QString &);
+  void slot_set_epg_data(i32, i32, const QString &, const QString &);
   void slot_epg_timer_timeout();
-  void slot_nr_services(int);
+  void slot_nr_services(i32);
   void slot_handle_content_selector(const QString &);
-  void slot_set_and_show_freq_corr_rf_Hz(int iFreqCorrRF);
-  void slot_show_freq_corr_bb_Hz(int iFreqCorrBB);
-  void slot_test_slider(int);
+  void slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF);
+  void slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB);
+  void slot_test_slider(i32);
   void slot_load_table();
-  //void slot_handle_transmitter_tags(int);
+  //void slot_handle_transmitter_tags(i32);
   void slot_handle_dl_text_button();
-  void slot_handle_logger_button(int);
+  void slot_handle_logger_button(i32);
   void slot_handle_port_selector();
   void slot_handle_set_coordinates_button();
-  void slot_handle_eti_active_selector(int);
+  void slot_handle_eti_active_selector(i32);
   void slot_use_strongest_peak(bool);
   void slot_handle_dc_avoidance_algorithm(bool);
   void slot_handle_dc_removal(bool);
   void slot_show_audio_peak_level(const f32 iPeakLeft, const f32 iPeakRight);
   void slot_handle_tii_collisions(bool);
-  void slot_handle_tii_threshold(int);
-  void slot_handle_tii_subid(int);
+  void slot_handle_tii_threshold(i32);
+  void slot_handle_tii_subid(i32);
 
   void closeEvent(QCloseEvent * event) override;
 
@@ -485,7 +485,7 @@ private slots:
   void _slot_handle_skip_list_button();
   void _slot_handle_skip_file_button();
   void _slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
-  void _slot_handle_volume_slider(int);
+  void _slot_handle_volume_slider(i32);
 };
 
 #endif

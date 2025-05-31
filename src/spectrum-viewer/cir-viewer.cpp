@@ -67,7 +67,7 @@ void CirViewer::show_cir()
   }
   mpCirBuffer->get_data_from_ring_buffer(cirbuffer, CIR_SPECTRUMSIZE);
 
-  for(int j = 0; j < sPlotLength; j++)
+  for(i32 j = 0; j < sPlotLength; j++)
   {
     memcpy(mFftInBuffer.data(), &cirbuffer[j*512], sizeof(cf32)*cTu);
     fftwf_execute(mFftPlanFwd);
@@ -76,7 +76,7 @@ void CirViewer::show_cir()
 #ifdef HAVE_SSE_OR_AVX
     volk_32fc_x2_multiply_conjugate_32fc_a(mFftInBuffer.data(), mFftOutBuffer.data(), mRefTable.data(), cTu);
 #else
-    for (int i = 0; i < cTu; i++)
+    for (i32 i = 0; i < cTu; i++)
       mFftInBuffer[i] = mFftOutBuffer[i] * conj(mRefTable[i]);
 #endif
     // and, again, back into the time domain
@@ -89,7 +89,7 @@ void CirViewer::show_cir()
     Y_value[j] = abs(mFftOutBuffer[index]) / 26000.0f;
 #else
     f32 max = 0;
-    for(int i = 0; i < cTu; i++)
+    for(i32 i = 0; i < cTu; i++)
     {
       const f32 x = norm(mFftOutBuffer[i]);
       if(x > max)

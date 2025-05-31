@@ -8,7 +8,7 @@ namespace SSE2NEON
 void *platformAlignedAlloc(size_t size)
 {
     void *address;
-    int ret = posix_memalign(&address, 16, size);
+    i32 ret = posix_memalign(&address, 16, size);
     if (ret != 0) {
         fprintf(stderr, "Error at File %s line number %d\n", __FILE__,
                 __LINE__);

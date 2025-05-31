@@ -9,12 +9,12 @@ struct kort_woord {
 	u8 byte_2;
 };
 
-	xmlHandler::xmlHandler (FILE *f, int denominator, int frequency) {
+	xmlHandler::xmlHandler (FILE *f, i32 denominator, i32 frequency) {
 u8 t	= 0;
 	xmlFile		= f;
 	this	-> denominator	= denominator;
 	this	-> frequency	= frequency;
-	for (int i = 0; i < 5000; i ++)
+	for (i32 i = 0; i < 5000; i ++)
 	   fwrite (&t, 1, 1, f);
 	i16 testWord	= 0xFF;
 
@@ -38,16 +38,16 @@ QString	topLine = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 	fseek (xmlFile, 0, SEEK_SET);
 	fprintf (xmlFile, topLine. toLatin1 (). data ());
 	char * cs = s. toLatin1 (). data ();
-	int len = strlen (cs);
+	i32 len = strlen (cs);
 	fwrite (cs, 1, len, xmlFile);
 }
 
 #define	BLOCK_SIZE	8192
 static i16 buffer [BLOCK_SIZE];
-static int bufferP	= 0;
-void	xmlHandler::add		(std::complex<i16> * data, int count) {
+static i32 bufferP	= 0;
+void	xmlHandler::add		(std::complex<i16> * data, i32 count) {
 	nrElements	+= 2 * count;
-	for (int i = 0; i < count; i ++) {
+	for (i32 i = 0; i < count; i ++) {
 	   buffer [bufferP ++] = real (data [i]);
 	   buffer [bufferP ++] = imag (data [i]);
 	   if (bufferP >= BLOCK_SIZE) {

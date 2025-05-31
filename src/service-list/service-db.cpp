@@ -36,7 +36,7 @@ class CustomSqlQueryModel : public QSqlQueryModel
 {
   using QSqlQueryModel::QSqlQueryModel;
 public:
-  [[nodiscard]] QVariant data(const QModelIndex & index, int role) const override
+  [[nodiscard]] QVariant data(const QModelIndex & index, i32 role) const override
   {
     // certain columns should be right aligned
     if (role == Qt::TextAlignmentRole)

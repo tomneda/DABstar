@@ -69,7 +69,7 @@ void TiiListDisplay::finish_adding()
   mpTableWidget->resizeColumnsToContents();
 }
 
-int TiiListDisplay::get_nr_rows()
+i32 TiiListDisplay::get_nr_rows()
 {
   return mpTableWidget->rowCount();
 }
@@ -101,7 +101,7 @@ void TiiListDisplay::add_row(const SCacheElem & iTr, const SDerivedData & iDD)
   mpTableWidget->setItem(row, 8, new QTableWidgetItem(QString::number(iTr.altitude) + "m"));
   mpTableWidget->setItem(row, 9, new QTableWidgetItem(QString::number(iTr.height) + "m"));
 
-  for (int colIdx = 0; colIdx < cColNr; colIdx++)
+  for (i32 colIdx = 0; colIdx < cColNr; colIdx++)
   {
     if (colIdx == 4) // transmitter name is left aligned
     {

@@ -58,30 +58,30 @@ typedef struct rtlsdr_dev rtlsdr_dev_t;
 
 extern "C" {
 typedef void (* rtlsdr_read_async_cb_t)(u8 * buf, u32 len, void * ctx);
-typedef int (* pfnrtlsdr_open )(rtlsdr_dev_t **, u32);
-typedef int (* pfnrtlsdr_close)(rtlsdr_dev_t *);
-typedef int (* pfnrtlsdr_get_usb_strings)(rtlsdr_dev_t *, char *, char *, char *);
-typedef int (* pfnrtlsdr_set_center_freq)(rtlsdr_dev_t *, u32);
-typedef int (* pfnrtlsdr_set_tuner_bandwidth)(rtlsdr_dev_t *, u32);
+typedef i32 (* pfnrtlsdr_open )(rtlsdr_dev_t **, u32);
+typedef i32 (* pfnrtlsdr_close)(rtlsdr_dev_t *);
+typedef i32 (* pfnrtlsdr_get_usb_strings)(rtlsdr_dev_t *, char *, char *, char *);
+typedef i32 (* pfnrtlsdr_set_center_freq)(rtlsdr_dev_t *, u32);
+typedef i32 (* pfnrtlsdr_set_tuner_bandwidth)(rtlsdr_dev_t *, u32);
 typedef u32 (* pfnrtlsdr_get_center_freq)(rtlsdr_dev_t *);
-typedef int (* pfnrtlsdr_get_tuner_gains)(rtlsdr_dev_t *, int *);
-typedef int (* pfnrtlsdr_set_tuner_gain_mode)(rtlsdr_dev_t *, int);
-typedef int (* pfnrtlsdr_set_agc_mode)(rtlsdr_dev_t *, int);
-typedef int (* pfnrtlsdr_set_sample_rate)(rtlsdr_dev_t *, u32);
-typedef int (* pfnrtlsdr_get_sample_rate)(rtlsdr_dev_t *);
-typedef int (* pfnrtlsdr_set_tuner_gain)(rtlsdr_dev_t *, int);
-typedef int (* pfnrtlsdr_get_tuner_gain)(rtlsdr_dev_t *);
-typedef int (* pfnrtlsdr_reset_buffer)(rtlsdr_dev_t *);
-typedef int (* pfnrtlsdr_read_async)(rtlsdr_dev_t *, rtlsdr_read_async_cb_t, void *, u32, u32);
-typedef int (* pfnrtlsdr_set_bias_tee)(rtlsdr_dev_t *, int);
-typedef int (* pfnrtlsdr_cancel_async)(rtlsdr_dev_t *);
-typedef int (* pfnrtlsdr_set_direct_sampling)(rtlsdr_dev_t *, int);
+typedef i32 (* pfnrtlsdr_get_tuner_gains)(rtlsdr_dev_t *, i32 *);
+typedef i32 (* pfnrtlsdr_set_tuner_gain_mode)(rtlsdr_dev_t *, i32);
+typedef i32 (* pfnrtlsdr_set_agc_mode)(rtlsdr_dev_t *, i32);
+typedef i32 (* pfnrtlsdr_set_sample_rate)(rtlsdr_dev_t *, u32);
+typedef i32 (* pfnrtlsdr_get_sample_rate)(rtlsdr_dev_t *);
+typedef i32 (* pfnrtlsdr_set_tuner_gain)(rtlsdr_dev_t *, i32);
+typedef i32 (* pfnrtlsdr_get_tuner_gain)(rtlsdr_dev_t *);
+typedef i32 (* pfnrtlsdr_reset_buffer)(rtlsdr_dev_t *);
+typedef i32 (* pfnrtlsdr_read_async)(rtlsdr_dev_t *, rtlsdr_read_async_cb_t, void *, u32, u32);
+typedef i32 (* pfnrtlsdr_set_bias_tee)(rtlsdr_dev_t *, i32);
+typedef i32 (* pfnrtlsdr_cancel_async)(rtlsdr_dev_t *);
+typedef i32 (* pfnrtlsdr_set_direct_sampling)(rtlsdr_dev_t *, i32);
 typedef u32 (* pfnrtlsdr_get_device_count)();
-typedef int (* pfnrtlsdr_set_freq_correction)(rtlsdr_dev_t *, int);
-typedef int (* pfnrtlsdr_set_freq_correction_ppb)(rtlsdr_dev_t *, int);
-typedef char * (* pfnrtlsdr_get_device_name)(int);
-typedef int (* pfnrtlsdr_get_tuner_i2c_register)(rtlsdr_dev_t *dev, unsigned char* data, int *len, int *strength);
-typedef int (* pfnrtlsdr_get_tuner_type)(rtlsdr_dev_t *dev);
+typedef i32 (* pfnrtlsdr_set_freq_correction)(rtlsdr_dev_t *, i32);
+typedef i32 (* pfnrtlsdr_set_freq_correction_ppb)(rtlsdr_dev_t *, i32);
+typedef char * (* pfnrtlsdr_get_device_name)(i32);
+typedef i32 (* pfnrtlsdr_get_tuner_i2c_register)(rtlsdr_dev_t *dev, u8* data, i32 *len, i32 *strength);
+typedef i32 (* pfnrtlsdr_get_tuner_type)(rtlsdr_dev_t *dev);
 }
 
 //	This class is a simple wrapper around the
@@ -107,7 +107,7 @@ public:
   bool isHidden() override;
   bool isFileInput() override;
   i16 maxGain();
-  bool detect_overload(u8 *buf, int len);
+  bool detect_overload(u8 *buf, i32 len);
 
   //	These need to be visible for the separate usb handling thread
   RingBuffer<std::complex<u8>> _I_Buffer;
@@ -138,12 +138,12 @@ private:
   f32 mapTable[256];
   bool filtering;
   LowPassFIR theFilter;
-  int currentDepth;
-  int agcControl;
-  void set_autogain(int);
-  void enable_gainControl(int);
-  int old_overload = 2;
-  int old_gain = 0;
+  i32 currentDepth;
+  i32 agcControl;
+  void set_autogain(i32);
+  void enable_gainControl(i32);
+  i32 old_overload = 2;
+  i32 old_gain = 0;
 
   //	here we need to load functions from the dll
   bool load_rtlFunctions();
@@ -172,20 +172,20 @@ private:
   pfnrtlsdr_get_tuner_type rtlsdr_get_tuner_type;
 
 private slots:
-  void set_ExternalGain(int);
+  void set_ExternalGain(i32);
   void set_ppmCorrection(f64);
-  void set_bandwidth(int);
+  void set_bandwidth(i32);
   void set_xmlDump();
   void set_iqDump();
-  void set_filter(int);
-  void set_biasControl(int);
+  void set_filter(i32);
+  void set_biasControl(i32);
   void handle_hw_agc();
   void handle_sw_agc();
   void handle_manual();
-  void slot_timer(int);
+  void slot_timer(i32);
 
 signals:
-  void signal_timer(int);
+  void signal_timer(i32);
 };
 
 #endif

@@ -39,10 +39,10 @@ TimeSyncer::TimeSyncer(SampleReader * mr)
 TimeSyncer::EState TimeSyncer::read_samples_until_end_of_level_drop()
 {
   f32 cLevel = 0;
-  int counter = 0;
+  i32 counter = 0;
   auto * const envBuffer = make_vla(f32, cSyncBufferSize);
   constexpr i32 syncBufferMask = cSyncBufferSize - 1;
-  int i;
+  i32 i;
 
   mSyncBufferIndex = 0;
 

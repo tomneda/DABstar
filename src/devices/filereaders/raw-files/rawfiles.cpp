@@ -147,7 +147,7 @@ i32 RawFileHandler::Samples()
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-void RawFileHandler::setProgress(int progress, f32 timelength)
+void RawFileHandler::setProgress(i32 progress, f32 timelength)
 {
   fileProgress->setValue(progress);
   currentTime->display(QString("%1").arg(timelength, 0, 'f', 1));
@@ -177,7 +177,7 @@ void RawFileHandler::setVFOFrequency(i32)
 {
 }
 
-int RawFileHandler::getVFOFrequency()
+i32 RawFileHandler::getVFOFrequency()
 {
   return 0;
 }

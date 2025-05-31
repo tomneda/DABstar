@@ -26,7 +26,7 @@ void BitWriter::Reset() {
 	byte_bits = 0;
 }
 
-void BitWriter::AddBits(int data_new, size_t count) {
+void BitWriter::AddBits(i32 data_new, size_t count) {
 	while (count > 0) {
 //	add new byte, if needed
 	   if (byte_bits == 0)

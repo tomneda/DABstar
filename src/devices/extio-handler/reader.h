@@ -52,7 +52,7 @@ virtual void	restartReader	(i32 s) {
 virtual void	stopReader	(void) {
 }
 
-virtual void	processData	(f32 IQoffs, void *data, int cnt) {
+virtual void	processData	(f32 IQoffs, void *data, i32 cnt) {
 	(void)IQoffs;
 	(void)data;
 	(void)cnt;
@@ -71,7 +71,7 @@ public:
 	~reader_16 (void) {
 }
 
-void	processData	(f32 IQoffs, void *data, int cnt) {
+void	processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
 cf32 temp [blockSize];
 u8	*p	= (u8 *)data;
@@ -101,7 +101,7 @@ public:
 	~reader_24 (void) {
 }
 
-void	processData	(f32 IQoffs, void *data, int cnt) {
+void	processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
 cf32 temp [blockSize];
 u8	*p	= (u8 *)data;
@@ -133,7 +133,7 @@ public:
 	~reader_32 (void) {
 }
 
-void	processData	(f32 IQoffs, void *data, int cnt) {
+void	processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
 cf32 temp [blockSize];
 u8	*p	= (u8 *)data;
@@ -168,7 +168,7 @@ public:
 	~reader_float (void) {
 }
 
-void	processData	(f32 IQoffs, void *data, int cnt) {
+void	processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
 cf32 temp [blockSize];
 f32	*p	= (f32 *)data;

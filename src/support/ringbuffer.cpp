@@ -109,7 +109,7 @@ void RingBufferFactory<u8>::print_status(const bool iResetMinMax /*= false*/) co
 
     const char * const progBar = _show_progress_bar(fs.Percent);
     printf("RingbufferUInt8   Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
-      (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+      (i32)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {
@@ -138,7 +138,7 @@ void RingBufferFactory<i16>::print_status(const bool iResetMinMax /*= false*/) c
 
     const char * const progBar = _show_progress_bar(fs.Percent);
     printf("RingbufferInt16   Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
-      (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+      (i32)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {
@@ -167,7 +167,7 @@ void RingBufferFactory<ci16>::print_status(const bool iResetMinMax /*= false*/) 
 
     const char * const progBar = _show_progress_bar(fs.Percent);
     printf("RingbufferCmplx16 Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
-           (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+           (i32)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {
@@ -196,7 +196,7 @@ void RingBufferFactory<f32>::print_status(const bool iResetMinMax /*= false*/) c
 
     const char * const progBar = _show_progress_bar(fs.Percent);
     printf("RingbufferFloat   Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
-      (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+      (i32)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {
@@ -225,7 +225,7 @@ void RingBufferFactory<cf32>::print_status(const bool iResetMinMax /*= false*/) 
 
     const char * const progBar = _show_progress_bar(fs.Percent);
     printf("RingbufferCmplx   Id: %2d, Name: %20s, FillLevel: %3.0f%% %s (%3.0f%%, %3.0f%% | %7u, %7u, %7u)\n",
-      (int)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
+      (i32)list.Id, list.pName, fs.Percent, progBar, minPrc, maxPrc, fs.Filled, fs.Free, fs.Free + fs.Filled);
   }
   if (showDataCnt > 0)
   {

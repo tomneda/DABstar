@@ -48,7 +48,7 @@ faadDecoder::~faadDecoder()
   NeAACDecClose(aacHandle);
 }
 
-int get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
+i32 get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
 {
 
   switch (m_mpeg_surround_config)
@@ -65,7 +65,7 @@ int get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
 
 bool faadDecoder::initialize(const stream_parms * iSP)
 {
-  long unsigned int sample_rate;
+  u64 sample_rate;
   u8 channels;
   /* AudioSpecificConfig structure (the only way to select 960 transform here!)
    *
@@ -84,8 +84,8 @@ bool faadDecoder::initialize(const stream_parms * iSP)
    * support AudioObjectType 29 (PS)
    */
 
-  int core_sr_index = iSP->dacRate ? (iSP->sbrFlag ? 6 : 3) : (iSP->sbrFlag ? 8 : 5);   // 24/48/16/32 kHz
-  int core_ch_config = get_aac_channel_configuration(iSP->mpegSurround, iSP->aacChannelMode);
+  i32 core_sr_index = iSP->dacRate ? (iSP->sbrFlag ? 6 : 3) : (iSP->sbrFlag ? 8 : 5);   // 24/48/16/32 kHz
+  i32 core_ch_config = get_aac_channel_configuration(iSP->mpegSurround, iSP->aacChannelMode);
   if (core_ch_config == -1)
   {
     printf("Unrecognized mpeg surround config (ignored): %d\n", iSP->mpegSurround);
@@ -95,7 +95,7 @@ bool faadDecoder::initialize(const stream_parms * iSP)
   u8 asc[2];
   asc[0] = 0b00010 << 3 | core_sr_index >> 1;
   asc[1] = (core_sr_index & 0x01) << 7 | core_ch_config << 3 | 0b100;
-  long int init_result = NeAACDecInit2(aacHandle, asc, sizeof(asc), &sample_rate, &channels);
+  const i32 init_result = NeAACDecInit2(aacHandle, asc, sizeof(asc), &sample_rate, &channels);
   if (init_result != 0)
   {
     /*      If some error initializing occured, skip the file */
@@ -108,11 +108,7 @@ bool faadDecoder::initialize(const stream_parms * iSP)
 
 i16 faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const u8 * const ipBuffer, const i16 iBufferLength)
 {
-  i16 samples;
-  long unsigned int sampleRate;
-  i16 * outBuffer;
   NeAACDecFrameInfo hInfo;
-  u8 channels;
 
   if (!aacInitialized)
   {
@@ -123,20 +119,20 @@ i16 faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const u8 * c
     aacInitialized = true;
   }
 
-  outBuffer = (i16 *)NeAACDecDecode(aacHandle, &hInfo, const_cast<u8*>(ipBuffer), iBufferLength);
-  sampleRate = hInfo.samplerate;
+  const i16 * const outBuffer = (i16 *)NeAACDecDecode(aacHandle, &hInfo, const_cast<u8*>(ipBuffer), iBufferLength);
+  const u64 sampleRate = hInfo.samplerate;
 
-  samples = hInfo.samples;
-  if ((sampleRate == 24000) || (sampleRate == 32000) || (sampleRate == 48000) || (sampleRate != (long unsigned)baudRate))
+  const i16 samples = hInfo.samples;
+  if ((sampleRate == 24000) || (sampleRate == 32000) || (sampleRate == 48000) || (sampleRate != (u64)baudRate))
   {
     baudRate = sampleRate;
   }
 
-  //fprintf (stdout, "bytes consumed %d\n", (int)(hInfo. bytesconsumed));
+  //fprintf (stdout, "bytes consumed %d\n", (i32)(hInfo. bytesconsumed));
   //fprintf (stdout, "samplerate = %lu, samples = %d, channels = %d, error = %d, sbr = %d\n", sampleRate, samples, hInfo. channels, hInfo.error, hInfo.sbr);
   //fprintf (stdout, "header = %d\n", hInfo. header_type);
 
-  channels = hInfo.channels;
+  const u8 channels = hInfo.channels;
   if (hInfo.error != 0)
   {
     fprintf(stderr, "Warning: %s\n", faacDecGetErrorMessage(hInfo.error));
@@ -146,9 +142,9 @@ i16 faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const u8 * c
   if (channels == 2)
   {
     audioBuffer->put_data_into_ring_buffer(outBuffer, samples);
-    if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 10)
+    if (audioBuffer->get_ring_buffer_read_available() > (i32)sampleRate / 10)
     {
-      emit signal_new_audio((int)sampleRate / 10, sampleRate,
+      emit signal_new_audio((i32)sampleRate / 10, sampleRate,
                             (hInfo.ps ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) |
                             (hInfo.sbr ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
     }
@@ -161,9 +157,9 @@ i16 faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const u8 * c
       buffer[2 * i + 0] = buffer[2 * i + 1] = outBuffer[i];
     }
     audioBuffer->put_data_into_ring_buffer(buffer, 2 * samples);
-    if (audioBuffer->get_ring_buffer_read_available() > (int)sampleRate / 10)
+    if (audioBuffer->get_ring_buffer_read_available() > (i32)sampleRate / 10)
     {
-      emit signal_new_audio((int)sampleRate / 10, sampleRate,
+      emit signal_new_audio((i32)sampleRate / 10, sampleRate,
                             (hInfo.ps ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) |
                             (hInfo.sbr ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
     }

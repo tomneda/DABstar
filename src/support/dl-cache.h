@@ -8,10 +8,10 @@ class DynLinkCache
 {
 private:
   std::vector<QString> cache;
-  int p;
-  int size;
+  i32 p;
+  i32 size;
 public:
-  DynLinkCache(int size);
+  DynLinkCache(i32 size);
 
   void add(const QString & s);
   bool is_member(const QString & s);

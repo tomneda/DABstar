@@ -35,8 +35,8 @@ class	soapy_CS8: public soapyWorker {
 public:
 	soapy_CS8	(SoapySDR::Device *);
 	~soapy_CS8	(void);
-int	Samples		(void);
-int	getSamples	(cf32 *, int);
+i32	Samples		(void);
+i32	getSamples	(cf32 *, i32);
 void	run		(void);
 private:
 SoapySDR::Device	*theDevice;

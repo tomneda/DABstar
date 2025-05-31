@@ -12,7 +12,7 @@
  */
 
 
-int main(int argc, char ** argv)
+i32 main(i32 argc, char ** argv)
 {
   if (argc < 2)
   {
@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
 
     FILE * fout =fopen(fncpp, "w");
 
-    int teller = 0;
+    i32 teller = 0;
     u8 element;
 
     // first a header for the out file

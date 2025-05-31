@@ -100,7 +100,7 @@ void SpectrumScope::slot_right_mouse_click(const QPointF & point)
   mpGrid->enableYMin(true);
 }
 
-void SpectrumScope::slot_scaling_changed(int iScale)
+void SpectrumScope::slot_scaling_changed(i32 iScale)
 {
   mScale = (f64)iScale / 100.0;
 }

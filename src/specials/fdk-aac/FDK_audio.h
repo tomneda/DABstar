@@ -385,14 +385,14 @@ typedef struct {
   INT downscaleSamplingRate; /**< Downscale sampling rate (ELD downscaled mode)
                               */
   INT bitRate;               /**< Average bitrate.                   */
-  int samplesPerFrame; /**< Number of PCM samples per codec frame and audio
+  i32 samplesPerFrame; /**< Number of PCM samples per codec frame and audio
                           channel. */
-  int noChannels;      /**< Number of audio channels.          */
-  int bitsFrame;
-  int nSubFrames; /**< Amount of encoder subframes. 1 means no subframing. */
-  int BSACnumOfSubFrame; /**< The number of the sub-frames which are grouped and
+  i32 noChannels;      /**< Number of audio channels.          */
+  i32 bitsFrame;
+  i32 nSubFrames; /**< Amount of encoder subframes. 1 means no subframing. */
+  i32 BSACnumOfSubFrame; /**< The number of the sub-frames which are grouped and
                             transmitted in a super-frame (BSAC). */
-  int BSAClayerLength; /**< The average length of the large-step layers in bytes
+  i32 BSAClayerLength; /**< The average length of the large-step layers in bytes
                           (BSAC).                            */
   UINT flags;          /**< flags */
   UCHAR matrixMixdownA; /**< Matrix mixdown index to put into PCE. Default value
@@ -408,7 +408,7 @@ typedef struct {
                                     hierarcical explicit signaling */
 
   UCHAR rawConfig[64]; /**< raw codec specific config as bit stream */
-  int rawConfigBits;   /**< Size of rawConfig in bits */
+  i32 rawConfigBits;   /**< Size of rawConfig in bits */
 
   UCHAR sbrPresent;
   UCHAR psPresent;
@@ -733,7 +733,7 @@ typedef struct LIB_INFO {
 
 /** Initialize library info. */
 static FDK_AUDIO_INLINE void FDKinitLibInfo(LIB_INFO* info) {
-  int i;
+  i32 i;
 
   for (i = 0; i < FDK_MODULE_LAST; i++) {
     info[i].module_id = FDK_NONE;
@@ -743,7 +743,7 @@ static FDK_AUDIO_INLINE void FDKinitLibInfo(LIB_INFO* info) {
 /** Aquire supported features of library. */
 static FDK_AUDIO_INLINE UINT
 FDKlibInfo_getCapabilities(const LIB_INFO* info, FDK_MODULE_ID module_id) {
-  int i;
+  i32 i;
 
   for (i = 0; i < FDK_MODULE_LAST; i++) {
     if (info[i].module_id == module_id) {
@@ -756,7 +756,7 @@ FDKlibInfo_getCapabilities(const LIB_INFO* info, FDK_MODULE_ID module_id) {
 /** Search for next free tab. */
 static FDK_AUDIO_INLINE INT FDKlibInfo_lookup(const LIB_INFO* info,
                                               FDK_MODULE_ID module_id) {
-  int i = -1;
+  i32 i = -1;
 
   for (i = 0; i < FDK_MODULE_LAST; i++) {
     if (info[i].module_id == module_id) return -1;

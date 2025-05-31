@@ -48,7 +48,7 @@ virtual void		run		();
 	i64		fileLength;
 	eladFiles	*parent;
 signals:
-	void		setProgress	(int);
+	void		setProgress	(i32);
 };
 
 #endif

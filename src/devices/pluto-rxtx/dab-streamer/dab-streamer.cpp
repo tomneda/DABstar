@@ -46,7 +46,7 @@ static inline i64 getMyTime(void)
   return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
 }
 
-dabStreamer::dabStreamer(int inRate, int outRate, plutoHandler * generator) :
+dabStreamer::dabStreamer(i32 inRate, i32 outRate, plutoHandler * generator) :
   lowPassFilter(21, 13000, inRate),
   lmrFilter(25, 38000 - 12000, 38000 + 12000, outRate),
   rdsFilter(45, 57000 - 1500, 57000 + 1500, outRate),
@@ -58,7 +58,7 @@ dabStreamer::dabStreamer(int inRate, int outRate, plutoHandler * generator) :
   this->generator = generator;
 
   oscillatorTable = new cf32[outRate];
-  for (int i = 0; i < outRate; i++)
+  for (i32 i = 0; i < outRate; i++)
   {
     oscillatorTable[i] = cf32(cos(2 * M_PI * (f32)i / outRate), sin(2 * M_PI * (f32)i / outRate));
   }
@@ -68,7 +68,7 @@ dabStreamer::dabStreamer(int inRate, int outRate, plutoHandler * generator) :
   nextPhase = 0;
 
   sinTable = new f32[outRate];
-  for (int i = 0; i < outRate; i++)
+  for (i32 i = 0; i < outRate; i++)
   {
     sinTable[i] = sin((f32)i / outRate * 2 * M_PI);
   }
@@ -113,7 +113,7 @@ void dabStreamer::stop(void)
   threadHandle.join();
 }
 
-void dabStreamer::audioOutput(f32 * v, int amount)
+void dabStreamer::audioOutput(f32 * v, i32 amount)
 {
   f32 lBuffer[2 * amount];
 
@@ -121,7 +121,7 @@ void dabStreamer::audioOutput(f32 * v, int amount)
   {
     usleep(1000);
   }
-  for (int i = 0; i < amount; i++)
+  for (i32 i = 0; i < amount; i++)
   {
     cf32 x = cf32(v[2 * i], v[2 * i + 1]);
     x = lowPassFilter.Pass(x);
@@ -168,17 +168,17 @@ void dabStreamer::run()
   f32 lBuf[inRate / 5];
   while (running.load())
   {
-    int readCount;
+    i32 readCount;
     //	   u64 currentTime      = getMyTime ();
     //
     //	check to see if  we need/can update the rds text
-    int rdsCount = rdsBuffer.GetRingBufferReadAvailable();
+    i32 rdsCount = rdsBuffer.GetRingBufferReadAvailable();
     if ((rdsCount >= 10) && (rt_pos == 0))
     {
       char rds[rdsCount];
       rdsBuffer.getDataFromBuffer(rds, rdsCount);
       messageIn.store(false);
-      for (int i = 0; i < rdsCount; i++)
+      for (i32 i = 0; i < rdsCount; i++)
       {
         rds_info.radiotext[i] = rds[i];
       }
@@ -200,7 +200,7 @@ void dabStreamer::run()
       break;
     }
     readCount = pcmBuffer.getDataFromBuffer(lBuf, inRate / 10);
-    for (int i = 0; i < readCount / 2; i++)
+    for (i32 i = 0; i < readCount / 2; i++)
     {
       cf32 v = cf32(4 * lBuf[2 * i], 4 * lBuf[2 * i + 1]);
       cf32 lbuf[outRate / inRate];
@@ -259,19 +259,19 @@ f32 lowPass(f32 s)
   return out;
 }
 
-void dabStreamer::modulateData(f32 * bo, int amount, int channels)
+void dabStreamer::modulateData(f32 * bo, i32 amount, i32 channels)
 {
-  int i;
+  i32 i;
 
   for (i = 0; i < amount; i++)
   {
     //	   f64 clock		= 2 * M_PI * (f64)pos * 19000.0 / outRate;
 
     //	taking 3468 as period works fine
-    int ind_1 = (int)(((i64)pos * 19000) % outRate);
-    int ind_2 = (int)(((i64)pos * 19000 * 2) % outRate);
-    int ind_3 = (int)(((i64)pos * 19000 * 3) % outRate);
-    int ind_4 = (int)(((i64)pos * 19000 / 16) % outRate);
+    i32 ind_1 = (i32)(((i64)pos * 19000) % outRate);
+    i32 ind_2 = (i32)(((i64)pos * 19000 * 2) % outRate);
+    i32 ind_3 = (i32)(((i64)pos * 19000 * 3) % outRate);
+    i32 ind_4 = (i32)(((i64)pos * 19000 / 16) % outRate);
     f64 pilot = sinTable[ind_1];
     f64 carrier = sinTable[ind_2];
     f64 rds_carrier = 4.0 * sinTable[ind_3];
@@ -342,11 +342,11 @@ void dabStreamer::modulateData(f32 * bo, int amount, int channels)
     {
       nextPhase += 2 * M_PI;
     }
-    int index = nextPhase / (2 * M_PI) * outRate;
+    i32 index = nextPhase / (2 * M_PI) * outRate;
     //
     //	there might be an issue with the resulting index, nextPhase
     //	may be nan, inf, or just too large
-    int aa = index % outRate;
+    i32 aa = index % outRate;
     if ((0 <= aa) && (aa < outRate))
     {
       generator->sendSample(oscillatorTable[aa], sample);
@@ -357,7 +357,7 @@ void dabStreamer::modulateData(f32 * bo, int amount, int channels)
 
 u16 dabStreamer::rds_crc(u16 in)
 {
-  int i;
+  i32 i;
   u16 reg = 0;
   static const u16 rds_poly = 0x5B9;
 
@@ -381,9 +381,9 @@ u16 dabStreamer::rds_crc(u16 in)
   return (reg & ((1 << 10) - 1));
 }
 
-void dabStreamer::rds_bits_to_values(char * out, u16 in, int len)
+void dabStreamer::rds_bits_to_values(char * out, u16 in, i32 len)
 {
-  int n = len;
+  i32 n = len;
   u16 mask;
 
   while (n--)
@@ -395,12 +395,12 @@ void dabStreamer::rds_bits_to_values(char * out, u16 in, int len)
 
 void dabStreamer::rds_serialize(struct rds_group_s * group, char flags)
 {
-  int n = 4;
+  i32 n = 4;
   static const u16 rds_checkwords[] = { 0xFC, 0x198, 0x168, 0x1B4, 0x350, 0x0 };
 
   while (n--)
   {
-    int start = RDS_BLOCK_LEN * n;
+    i32 start = RDS_BLOCK_LEN * n;
     u16 block = group->blocks[n];
     u16 crc;
 
@@ -456,7 +456,7 @@ void dabStreamer::rds_init_groups(struct rds_info_s * info)
 //	group 0: deals with af and ps name
 void dabStreamer::rds_group_0A_update(void)
 {
-  static int af_pos = 0, ps_pos = 0;
+  static i32 af_pos = 0, ps_pos = 0;
   u16 di = (group_0a.info_block->di >> (ps_pos >> 1)) & 0x1;
 
   group_0a.blocks[index_B] = (group_0a.blocks[index_B] & 0xfff8) | (di << 2) | (ps_pos >> 1);
@@ -473,7 +473,7 @@ void dabStreamer::rds_group_0A_update(void)
 //	group 2: deals with the tekst
 void dabStreamer::rds_group_2A_update(void)
 {
-  static int b_pos = 0;
+  static i32 b_pos = 0;
   group_2a.blocks[index_B] = (group_2a.blocks[index_B] & 0xffe0) | b_pos;
   group_2a.blocks[index_C] = group_2a.info_block->radiotext[rt_pos + 0] << 8 | group_2a.info_block->radiotext[rt_pos + 1];
   group_2a.blocks[index_D] = group_2a.info_block->radiotext[rt_pos + 2] << 8 | group_2a.info_block->radiotext[rt_pos + 3];
@@ -489,7 +489,7 @@ void dabStreamer::rds_group_2A_update(void)
 
 void dabStreamer::rds_group_3A_update(void)
 {
-  static int toggle = 1;
+  static i32 toggle = 1;
 
   if (toggle)
   {
@@ -510,7 +510,7 @@ void dabStreamer::rds_group_8A_update(void)
 
 struct rds_group_s * dabStreamer::rds_group_schedule(void)
 {
-  static int ps = 1;
+  static i32 ps = 1;
   struct rds_group_s * group = NULL;
 
   switch (ps)

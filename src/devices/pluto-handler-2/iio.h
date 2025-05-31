@@ -194,7 +194,7 @@ enum iio_modifier {
  * @return on success, a pointer to a iio_scan_context structure
  * @return On failure, NULL is returned and errno is set appropriately */
 __api struct iio_scan_context * iio_create_scan_context(
-		const char *backend, unsigned int flags);
+		const char *backend, u32 flags);
 
 
 /** @brief Destroy the given scan context
@@ -247,8 +247,8 @@ __api __pure const char * iio_context_info_get_uri(
  * @param major A pointer to an unsigned integer (NULL accepted)
  * @param minor A pointer to an unsigned integer (NULL accepted)
  * @param git_tag A pointer to a 8-characters buffer (NULL accepted) */
-__api void iio_library_get_version(unsigned int *major,
-		unsigned int *minor, char git_tag[8]);
+__api void iio_library_get_version(u32 *major,
+		u32 *minor, char git_tag[8]);
 
 
 /** @brief Get a string description of an error code
@@ -256,7 +256,7 @@ __api void iio_library_get_version(unsigned int *major,
  * @param dst A pointer to the memory area where the NULL-terminated string
  * corresponding to the error message will be stored
  * @param len The available length of the memory area, in bytes */
-__api void iio_strerror(int err, char *dst, size_t len);
+__api void iio_strerror(i32 err, char *dst, size_t len);
 
 
 /** @brief Check if the specified backend is available
@@ -271,7 +271,7 @@ __api __cnst bool iio_has_backend(const char *backend);
  * @return The number of available backends
  *
  * Introduced in version 0.9. */
-__api __cnst unsigned int iio_get_backends_count(void);
+__api __cnst u32 iio_get_backends_count(void);
 
 
 /** @brief Retrieve the name of a given backend
@@ -280,7 +280,7 @@ __api __cnst unsigned int iio_get_backends_count(void);
  * @return If the index is invalid, NULL is returned
  *
  * Introduced in version 0.9. */
-__api __cnst const char * iio_get_backend(unsigned int index);
+__api __cnst const char * iio_get_backend(u32 index);
 
 
 /** @} *//* ------------------------------------------------------------------*/
@@ -366,8 +366,8 @@ __api void iio_context_destroy(struct iio_context *ctx);
  * @param git_tag A pointer to a 8-characters buffer (NULL accepted)
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_context_get_version(const struct iio_context *ctx,
-		unsigned int *major, unsigned int *minor, char git_tag[8]);
+__api i32 iio_context_get_version(const struct iio_context *ctx,
+		u32 *major, u32 *minor, char git_tag[8]);
 
 
 /** @brief Obtain a XML representation of the given context
@@ -401,7 +401,7 @@ __api __pure const char * iio_context_get_description(
  * @return The number of context-specific attributes
  *
  * Introduced in version 0.9. */
-__api __pure unsigned int iio_context_get_attrs_count(
+__api __pure u32 iio_context_get_attrs_count(
 		const struct iio_context *ctx);
 
 
@@ -414,8 +414,8 @@ __api __pure unsigned int iio_context_get_attrs_count(
  * @return On error, a negative errno code is returned
  *
  * Introduced in version 0.9. */
-__api int iio_context_get_attr(
-		const struct iio_context *ctx, unsigned int index,
+__api i32 iio_context_get_attr(
+		const struct iio_context *ctx, u32 index,
 		const char **name, const char **value);
 
 
@@ -434,7 +434,7 @@ __api const char * iio_context_get_attr_value(
 /** @brief Enumerate the devices found in the given context
  * @param ctx A pointer to an iio_context structure
  * @return The number of devices found */
-__api __pure unsigned int iio_context_get_devices_count(
+__api __pure u32 iio_context_get_devices_count(
 		const struct iio_context *ctx);
 
 
@@ -444,7 +444,7 @@ __api __pure unsigned int iio_context_get_devices_count(
  * @return On success, a pointer to an iio_device structure
  * @return If the index is invalid, NULL is returned */
 __api __pure struct iio_device * iio_context_get_device(
-		const struct iio_context *ctx, unsigned int index);
+		const struct iio_context *ctx, u32 index);
 
 
 /** @brief Try to find a device structure by its name of ID
@@ -465,8 +465,8 @@ __api __pure struct iio_device * iio_context_find_device(
  * timeout should occur.
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_context_set_timeout(
-		struct iio_context *ctx, unsigned int timeout_ms);
+__api i32 iio_context_set_timeout(
+		struct iio_context *ctx, u32 timeout_ms);
 
 
 /** @} *//* ------------------------------------------------------------------*/
@@ -501,20 +501,20 @@ __api __pure const char * iio_device_get_name(const struct iio_device *dev);
 /** @brief Enumerate the channels of the given device
  * @param dev A pointer to an iio_device structure
  * @return The number of channels found */
-__api __pure unsigned int iio_device_get_channels_count(
+__api __pure u32 iio_device_get_channels_count(
 		const struct iio_device *dev);
 
 
 /** @brief Enumerate the device-specific attributes of the given device
  * @param dev A pointer to an iio_device structure
  * @return The number of device-specific attributes found */
-__api __pure unsigned int iio_device_get_attrs_count(
+__api __pure u32 iio_device_get_attrs_count(
 		const struct iio_device *dev);
 
 /** @brief Enumerate the buffer-specific attributes of the given device
  * @param dev A pointer to an iio_device structure
  * @return The number of buffer-specific attributes found */
-__api __pure unsigned int iio_device_get_buffer_attrs_count(
+__api __pure u32 iio_device_get_buffer_attrs_count(
 		const struct iio_device *dev);
 
 /** @brief Get the channel present at the given index
@@ -523,7 +523,7 @@ __api __pure unsigned int iio_device_get_buffer_attrs_count(
  * @return On success, a pointer to an iio_channel structure
  * @return If the index is invalid, NULL is returned */
 __api __pure struct iio_channel * iio_device_get_channel(
-		const struct iio_device *dev, unsigned int index);
+		const struct iio_device *dev, u32 index);
 
 
 /** @brief Get the device-specific attribute present at the given index
@@ -532,7 +532,7 @@ __api __pure struct iio_channel * iio_device_get_channel(
  * @return On success, a pointer to a static NULL-terminated string
  * @return If the index is invalid, NULL is returned */
 __api __pure const char * iio_device_get_attr(
-		const struct iio_device *dev, unsigned int index);
+		const struct iio_device *dev, u32 index);
 
 /** @brief Get the buffer-specific attribute present at the given index
  * @param dev A pointer to an iio_device structure
@@ -540,7 +540,7 @@ __api __pure const char * iio_device_get_attr(
  * @return On success, a pointer to a static NULL-terminated string
  * @return If the index is invalid, NULL is returned */
 __api __pure const char * iio_device_get_buffer_attr(
-		const struct iio_device *dev, unsigned int index);
+		const struct iio_device *dev, u32 index);
 
 /** @brief Try to find a channel structure by its name of ID
  * @param dev A pointer to an iio_device structure
@@ -617,8 +617,8 @@ __api __pure const char * iio_device_find_buffer_attr(
  * <b>NOTE:</b> This function is especially useful when used with the network
  * backend, as all the device-specific attributes are read in one single
  * command. */
-__api int iio_device_attr_read_all(struct iio_device *dev,
-		int (*cb)(struct iio_device *dev, const char *attr,
+__api i32 iio_device_attr_read_all(struct iio_device *dev,
+		i32 (*cb)(struct iio_device *dev, const char *attr,
 			const char *value, size_t len, void *d),
 		void *data);
 
@@ -630,7 +630,7 @@ __api int iio_device_attr_read_all(struct iio_device *dev,
  * @param val A pointer to a bool variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_attr_read_bool(const struct iio_device *dev,
+__api i32 iio_device_attr_read_bool(const struct iio_device *dev,
 		const char *attr, bool *val);
 
 
@@ -638,11 +638,11 @@ __api int iio_device_attr_read_bool(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A pointer to a long long variable where the value should be stored
+ * @param val A pointer to a i64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_attr_read_longlong(const struct iio_device *dev,
-		const char *attr, long long *val);
+__api i32 iio_device_attr_read_longlong(const struct iio_device *dev,
+		const char *attr, i64 *val);
 
 
 /** @brief Read the content of the given device-specific attribute
@@ -652,7 +652,7 @@ __api int iio_device_attr_read_longlong(const struct iio_device *dev,
  * @param val A pointer to a f64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_attr_read_double(const struct iio_device *dev,
+__api i32 iio_device_attr_read_double(const struct iio_device *dev,
 		const char *attr, f64 *val);
 
 
@@ -700,7 +700,7 @@ __api ssize_t iio_device_attr_write_raw(const struct iio_device *dev,
  * <b>NOTE:</b> This function is especially useful when used with the network
  * backend, as all the device-specific attributes are written in one single
  * command. */
-__api int iio_device_attr_write_all(struct iio_device *dev,
+__api i32 iio_device_attr_write_all(struct iio_device *dev,
 		ssize_t (*cb)(struct iio_device *dev,
 			const char *attr, void *buf, size_t len, void *d),
 		void *data);
@@ -713,7 +713,7 @@ __api int iio_device_attr_write_all(struct iio_device *dev,
  * @param val A bool value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_attr_write_bool(const struct iio_device *dev,
+__api i32 iio_device_attr_write_bool(const struct iio_device *dev,
 		const char *attr, bool val);
 
 
@@ -721,11 +721,11 @@ __api int iio_device_attr_write_bool(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A long long value to set the attribute to
+ * @param val A i64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_attr_write_longlong(const struct iio_device *dev,
-		const char *attr, long long val);
+__api i32 iio_device_attr_write_longlong(const struct iio_device *dev,
+		const char *attr, i64 val);
 
 
 /** @brief Set the value of the given device-specific attribute
@@ -735,7 +735,7 @@ __api int iio_device_attr_write_longlong(const struct iio_device *dev,
  * @param val A f64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_attr_write_double(const struct iio_device *dev,
+__api i32 iio_device_attr_write_double(const struct iio_device *dev,
 		const char *attr, f64 val);
 
 /** @brief Read the content of the given buffer-specific attribute
@@ -773,8 +773,8 @@ __api int iio_device_attr_write_double(const struct iio_device *dev,
  * <b>NOTE:</b> This function is especially useful when used with the network
  * backend, as all the buffer-specific attributes are read in one single
  * command. */
-__api int iio_device_buffer_attr_read_all(struct iio_device *dev,
-		int (*cb)(struct iio_device *dev, const char *attr,
+__api i32 iio_device_buffer_attr_read_all(struct iio_device *dev,
+		i32 (*cb)(struct iio_device *dev, const char *attr,
 			const char *value, size_t len, void *d),
 		void *data);
 
@@ -786,7 +786,7 @@ __api int iio_device_buffer_attr_read_all(struct iio_device *dev,
  * @param val A pointer to a bool variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_buffer_attr_read_bool(const struct iio_device *dev,
+__api i32 iio_device_buffer_attr_read_bool(const struct iio_device *dev,
 		const char *attr, bool *val);
 
 
@@ -794,11 +794,11 @@ __api int iio_device_buffer_attr_read_bool(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A pointer to a long long variable where the value should be stored
+ * @param val A pointer to a i64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_buffer_attr_read_longlong(const struct iio_device *dev,
-		const char *attr, long long *val);
+__api i32 iio_device_buffer_attr_read_longlong(const struct iio_device *dev,
+		const char *attr, i64 *val);
 
 
 /** @brief Read the content of the given buffer-specific attribute
@@ -808,7 +808,7 @@ __api int iio_device_buffer_attr_read_longlong(const struct iio_device *dev,
  * @param val A pointer to a f64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_buffer_attr_read_double(const struct iio_device *dev,
+__api i32 iio_device_buffer_attr_read_double(const struct iio_device *dev,
 		const char *attr, f64 *val);
 
 
@@ -857,7 +857,7 @@ __api ssize_t iio_device_buffer_attr_write_raw(const struct iio_device *dev,
  * <b>NOTE:</b> This function is especially useful when used with the network
  * backend, as all the buffer-specific attributes are written in one single
  * command. */
-__api int iio_device_buffer_attr_write_all(struct iio_device *dev,
+__api i32 iio_device_buffer_attr_write_all(struct iio_device *dev,
 		ssize_t (*cb)(struct iio_device *dev,
 			const char *attr, void *buf, size_t len, void *d),
 		void *data);
@@ -870,7 +870,7 @@ __api int iio_device_buffer_attr_write_all(struct iio_device *dev,
  * @param val A bool value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_buffer_attr_write_bool(const struct iio_device *dev,
+__api i32 iio_device_buffer_attr_write_bool(const struct iio_device *dev,
 		const char *attr, bool val);
 
 
@@ -878,11 +878,11 @@ __api int iio_device_buffer_attr_write_bool(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A long long value to set the attribute to
+ * @param val A i64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_buffer_attr_write_longlong(const struct iio_device *dev,
-		const char *attr, long long val);
+__api i32 iio_device_buffer_attr_write_longlong(const struct iio_device *dev,
+		const char *attr, i64 val);
 
 
 /** @brief Set the value of the given buffer-specific attribute
@@ -892,7 +892,7 @@ __api int iio_device_buffer_attr_write_longlong(const struct iio_device *dev,
  * @param val A f64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_buffer_attr_write_double(const struct iio_device *dev,
+__api i32 iio_device_buffer_attr_write_double(const struct iio_device *dev,
 		const char *attr, f64 val);
 
 
@@ -915,7 +915,7 @@ __api void * iio_device_get_data(const struct iio_device *dev);
  * to the associated trigger device.
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_get_trigger(const struct iio_device *dev,
+__api i32 iio_device_get_trigger(const struct iio_device *dev,
 		const struct iio_device **trigger);
 
 
@@ -925,7 +925,7 @@ __api int iio_device_get_trigger(const struct iio_device *dev,
  * trigger that should be associated.
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_set_trigger(const struct iio_device *dev,
+__api i32 iio_device_set_trigger(const struct iio_device *dev,
 		const struct iio_device *trigger);
 
 
@@ -942,8 +942,8 @@ __api __pure bool iio_device_is_trigger(const struct iio_device *dev);
  * @param nb_buffers The number of buffers
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_set_kernel_buffers_count(const struct iio_device *dev,
-		unsigned int nb_buffers);
+__api i32 iio_device_set_kernel_buffers_count(const struct iio_device *dev,
+		u32 nb_buffers);
 
 /** @} *//* ------------------------------------------------------------------*/
 /* ------------------------- Channel functions -------------------------------*/
@@ -993,7 +993,7 @@ __api __pure bool iio_channel_is_scan_element(const struct iio_channel *chn);
 /** @brief Enumerate the channel-specific attributes of the given channel
  * @param chn A pointer to an iio_channel structure
  * @return The number of channel-specific attributes found */
-__api __pure unsigned int iio_channel_get_attrs_count(
+__api __pure u32 iio_channel_get_attrs_count(
 		const struct iio_channel *chn);
 
 
@@ -1003,7 +1003,7 @@ __api __pure unsigned int iio_channel_get_attrs_count(
  * @return On success, a pointer to a static NULL-terminated string
  * @return If the index is invalid, NULL is returned */
 __api __pure const char * iio_channel_get_attr(
-		const struct iio_channel *chn, unsigned int index);
+		const struct iio_channel *chn, u32 index);
 
 
 /** @brief Try to find a channel-specific attribute by its name
@@ -1066,8 +1066,8 @@ __api ssize_t iio_channel_attr_read(const struct iio_channel *chn,
  * <b>NOTE:</b> This function is especially useful when used with the network
  * backend, as all the channel-specific attributes are read in one single
  * command. */
-__api int iio_channel_attr_read_all(struct iio_channel *chn,
-		int (*cb)(struct iio_channel *chn,
+__api i32 iio_channel_attr_read_all(struct iio_channel *chn,
+		i32 (*cb)(struct iio_channel *chn,
 			const char *attr, const char *val, size_t len, void *d),
 		void *data);
 
@@ -1079,7 +1079,7 @@ __api int iio_channel_attr_read_all(struct iio_channel *chn,
  * @param val A pointer to a bool variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_channel_attr_read_bool(const struct iio_channel *chn,
+__api i32 iio_channel_attr_read_bool(const struct iio_channel *chn,
 		const char *attr, bool *val);
 
 
@@ -1087,11 +1087,11 @@ __api int iio_channel_attr_read_bool(const struct iio_channel *chn,
  * @param chn A pointer to an iio_channel structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A pointer to a long long variable where the value should be stored
+ * @param val A pointer to a i64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_channel_attr_read_longlong(const struct iio_channel *chn,
-		const char *attr, long long *val);
+__api i32 iio_channel_attr_read_longlong(const struct iio_channel *chn,
+		const char *attr, i64 *val);
 
 
 /** @brief Read the content of the given channel-specific attribute
@@ -1101,7 +1101,7 @@ __api int iio_channel_attr_read_longlong(const struct iio_channel *chn,
  * @param val A pointer to a f64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_channel_attr_read_double(const struct iio_channel *chn,
+__api i32 iio_channel_attr_read_double(const struct iio_channel *chn,
 		const char *attr, f64 *val);
 
 
@@ -1149,7 +1149,7 @@ __api ssize_t iio_channel_attr_write_raw(const struct iio_channel *chn,
  * <b>NOTE:</b> This function is especially useful when used with the network
  * backend, as all the channel-specific attributes are written in one single
  * command. */
-__api int iio_channel_attr_write_all(struct iio_channel *chn,
+__api i32 iio_channel_attr_write_all(struct iio_channel *chn,
 		ssize_t (*cb)(struct iio_channel *chn,
 			const char *attr, void *buf, size_t len, void *d),
 		void *data);
@@ -1162,7 +1162,7 @@ __api int iio_channel_attr_write_all(struct iio_channel *chn,
  * @param val A bool value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_channel_attr_write_bool(const struct iio_channel *chn,
+__api i32 iio_channel_attr_write_bool(const struct iio_channel *chn,
 		const char *attr, bool val);
 
 
@@ -1170,11 +1170,11 @@ __api int iio_channel_attr_write_bool(const struct iio_channel *chn,
  * @param chn A pointer to an iio_channel structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * attribute
- * @param val A long long value to set the attribute to
+ * @param val A i64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_channel_attr_write_longlong(const struct iio_channel *chn,
-		const char *attr, long long val);
+__api i32 iio_channel_attr_write_longlong(const struct iio_channel *chn,
+		const char *attr, i64 val);
 
 
 /** @brief Set the value of the given channel-specific attribute
@@ -1184,7 +1184,7 @@ __api int iio_channel_attr_write_longlong(const struct iio_channel *chn,
  * @param val A f64 value to set the attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_channel_attr_write_double(const struct iio_channel *chn,
+__api i32 iio_channel_attr_write_double(const struct iio_channel *chn,
 		const char *attr, f64 val);
 
 
@@ -1320,7 +1320,7 @@ __api void iio_buffer_destroy(struct iio_buffer *buf);
  * @return On success, valid file descriptor
  * @return On error, a negative errno code is returned
  */
-__api int iio_buffer_get_poll_fd(struct iio_buffer *buf);
+__api i32 iio_buffer_get_poll_fd(struct iio_buffer *buf);
 
 /** @brief Make iio_buffer_refill() and iio_buffer_push() blocking or not
  *
@@ -1333,7 +1333,7 @@ __api int iio_buffer_get_poll_fd(struct iio_buffer *buf);
  * @return On success, 0
  * @return On error, a negative errno code is returned
  */
-__api int iio_buffer_set_blocking_mode(struct iio_buffer *buf, bool blocking);
+__api i32 iio_buffer_set_blocking_mode(struct iio_buffer *buf, bool blocking);
 
 
 /** @brief Fetch more samples from the hardware
@@ -1470,13 +1470,13 @@ __api void * iio_buffer_get_data(const struct iio_buffer *buf);
  */
 struct iio_data_format {
 	/** @brief Total length of the sample, in bits */
-	unsigned int length;
+	u32 length;
 
 	/** @brief Length of valuable data in the sample, in bits */
-	unsigned int bits;
+	u32 bits;
 
 	/** @brief Right-shift to apply when converting sample */
-	unsigned int shift;
+	u32 shift;
 
 	/** @brief Contains True if the sample is signed */
 	bool is_signed;
@@ -1494,7 +1494,7 @@ struct iio_data_format {
 	f64 scale;
 
 	/** @brief Number of times length repeats (added in v0.8) */
-	unsigned int repeat;
+	u32 repeat;
 };
 
 
@@ -1543,7 +1543,7 @@ __api void iio_channel_convert_inverse(const struct iio_channel *chn,
 /** @brief Enumerate the debug attributes of the given device
  * @param dev A pointer to an iio_device structure
  * @return The number of debug attributes found */
-__api __pure unsigned int iio_device_get_debug_attrs_count(
+__api __pure u32 iio_device_get_debug_attrs_count(
 		const struct iio_device *dev);
 
 
@@ -1553,7 +1553,7 @@ __api __pure unsigned int iio_device_get_debug_attrs_count(
  * @return On success, a pointer to a static NULL-terminated string
  * @return If the index is invalid, NULL is returned */
 __api __pure const char * iio_device_get_debug_attr(
-		const struct iio_device *dev, unsigned int index);
+		const struct iio_device *dev, u32 index);
 
 
 /** @brief Try to find a debug attribute by its name
@@ -1607,8 +1607,8 @@ __api ssize_t iio_device_debug_attr_read(const struct iio_device *dev,
  *
  * <b>NOTE:</b> This function is especially useful when used with the network
  * backend, as all the debug attributes are read in one single command. */
-__api int iio_device_debug_attr_read_all(struct iio_device *dev,
-		int (*cb)(struct iio_device *dev, const char *attr,
+__api i32 iio_device_debug_attr_read_all(struct iio_device *dev,
+		i32 (*cb)(struct iio_device *dev, const char *attr,
 			const char *value, size_t len, void *d),
 		void *data);
 
@@ -1657,7 +1657,7 @@ __api ssize_t iio_device_debug_attr_write_raw(const struct iio_device *dev,
  *
  * <b>NOTE:</b> This function is especially useful when used with the network
  * backend, as all the debug attributes are written in one single command. */
-__api int iio_device_debug_attr_write_all(struct iio_device *dev,
+__api i32 iio_device_debug_attr_write_all(struct iio_device *dev,
 		ssize_t (*cb)(struct iio_device *dev,
 			const char *attr, void *buf, size_t len, void *d),
 		void *data);
@@ -1670,7 +1670,7 @@ __api int iio_device_debug_attr_write_all(struct iio_device *dev,
  * @param val A pointer to a bool variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_debug_attr_read_bool(const struct iio_device *dev,
+__api i32 iio_device_debug_attr_read_bool(const struct iio_device *dev,
 		const char *attr, bool *val);
 
 
@@ -1678,11 +1678,11 @@ __api int iio_device_debug_attr_read_bool(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * debug attribute
- * @param val A pointer to a long long variable where the value should be stored
+ * @param val A pointer to a i64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_debug_attr_read_longlong(const struct iio_device *dev,
-		const char *attr, long long *val);
+__api i32 iio_device_debug_attr_read_longlong(const struct iio_device *dev,
+		const char *attr, i64 *val);
 
 
 /** @brief Read the content of the given debug attribute
@@ -1692,7 +1692,7 @@ __api int iio_device_debug_attr_read_longlong(const struct iio_device *dev,
  * @param val A pointer to a f64 variable where the value should be stored
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_debug_attr_read_double(const struct iio_device *dev,
+__api i32 iio_device_debug_attr_read_double(const struct iio_device *dev,
 		const char *attr, f64 *val);
 
 
@@ -1703,7 +1703,7 @@ __api int iio_device_debug_attr_read_double(const struct iio_device *dev,
  * @param val A bool value to set the debug attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_debug_attr_write_bool(const struct iio_device *dev,
+__api i32 iio_device_debug_attr_write_bool(const struct iio_device *dev,
 		const char *attr, bool val);
 
 
@@ -1711,11 +1711,11 @@ __api int iio_device_debug_attr_write_bool(const struct iio_device *dev,
  * @param dev A pointer to an iio_device structure
  * @param attr A NULL-terminated string corresponding to the name of the
  * debug attribute
- * @param val A long long value to set the debug attribute to
+ * @param val A i64 value to set the debug attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_debug_attr_write_longlong(const struct iio_device *dev,
-		const char *attr, long long val);
+__api i32 iio_device_debug_attr_write_longlong(const struct iio_device *dev,
+		const char *attr, i64 val);
 
 
 /** @brief Set the value of the given debug attribute
@@ -1725,7 +1725,7 @@ __api int iio_device_debug_attr_write_longlong(const struct iio_device *dev,
  * @param val A f64 value to set the debug attribute to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_debug_attr_write_double(const struct iio_device *dev,
+__api i32 iio_device_debug_attr_write_double(const struct iio_device *dev,
 		const char *attr, f64 val);
 
 
@@ -1741,7 +1741,7 @@ __api int iio_device_debug_attr_write_double(const struct iio_device *dev,
  * @return On success, 0 is returned, and *chn and *attr are modified.
  * @return On error, a negative errno code is returned. *chn and *attr are not
  * modified. */
-__api int iio_device_identify_filename(const struct iio_device *dev,
+__api i32 iio_device_identify_filename(const struct iio_device *dev,
 		const char *filename, struct iio_channel **chn,
 		const char **attr);
 
@@ -1752,7 +1752,7 @@ __api int iio_device_identify_filename(const struct iio_device *dev,
  * @param value The value to set the register to
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_reg_write(struct iio_device *dev,
+__api i32 iio_device_reg_write(struct iio_device *dev,
 		u32 address, u32 value);
 
 
@@ -1762,7 +1762,7 @@ __api int iio_device_reg_write(struct iio_device *dev,
  * @param value A pointer to the variable where the value will be written
  * @return On success, 0 is returned
  * @return On error, a negative errno code is returned */
-__api int iio_device_reg_read(struct iio_device *dev,
+__api i32 iio_device_reg_read(struct iio_device *dev,
 		u32 address, u32 *value);
 
 

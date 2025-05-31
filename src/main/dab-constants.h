@@ -97,7 +97,7 @@ struct SpecViewLimits
 
 struct SEpgElement
 {
-  int theTime;
+  i32 theTime;
   QString theText;
   QString theDescr;
 };
@@ -122,7 +122,7 @@ public:
   bool defined;
   QString serviceName;
   i32 SId;
-  int SCIds;
+  i32 SCIds;
   i16 subchId;
   i16 startAddr;
   bool shortForm;

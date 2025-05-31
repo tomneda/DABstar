@@ -102,7 +102,7 @@ QString find_ITU_code(u8 ecc, u8 countryId)
 {
   if ((ecc >> 4) == 0xE)
   {
-    for (int i = 0; ITU_table_1[i].ecc != 0; i++)
+    for (i32 i = 0; ITU_table_1[i].ecc != 0; i++)
     {
       if ((ITU_table_1[i].ecc == ecc) && (ITU_table_1[i].countryId == countryId))
       {
@@ -112,7 +112,7 @@ QString find_ITU_code(u8 ecc, u8 countryId)
   }
   else if ((ecc >> 4) == 0xF)
   {
-    for (int i = 0; ITU_table_1[i].ecc != 0; i++)
+    for (i32 i = 0; ITU_table_1[i].ecc != 0; i++)
     {
       if ((ITU_table_4[i].ecc == ecc) && (ITU_table_4[i].countryId == countryId))
       {
@@ -127,7 +127,7 @@ QString find_Country(u8 ecc, u8 countryId)
 {
   if ((ecc >> 4) == 0xE)
   {
-    for (int i = 0; ITU_table_1[i].ecc != 0; i++)
+    for (i32 i = 0; ITU_table_1[i].ecc != 0; i++)
     {
       if ((ITU_table_1[i].ecc == ecc) && (ITU_table_1[i].countryId == countryId))
       {
@@ -137,7 +137,7 @@ QString find_Country(u8 ecc, u8 countryId)
   }
   else if ((ecc >> 4) == 0xF)
   {
-    for (int i = 0; ITU_table_4[i].ecc != 0; i++)
+    for (i32 i = 0; ITU_table_4[i].ecc != 0; i++)
     {
       if ((ITU_table_4[i].ecc == ecc) && (ITU_table_4[i].countryId == countryId))
       {

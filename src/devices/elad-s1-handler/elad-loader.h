@@ -37,15 +37,15 @@
 
 // Dll function prototypes
 
-typedef	void (*Pset_en_ext_io_ATT20)(libusb_device_handle *, int *);
-typedef void (*Pset_en_ext_io_LP30)(libusb_device_handle *, int *);
-typedef	int  (*OPEN_HW)(libusb_device_handle *, long);
-typedef int  (*SET_HWLO)(libusb_device_handle *, long *);
+typedef	void (*Pset_en_ext_io_ATT20)(libusb_device_handle *, i32 *);
+typedef void (*Pset_en_ext_io_LP30)(libusb_device_handle *, i32 *);
+typedef	i32  (*OPEN_HW)(libusb_device_handle *, long);
+typedef i32  (*SET_HWLO)(libusb_device_handle *, long *);
 typedef void (*START_FIFO)(libusb_device_handle *);
 typedef void (*STOP_FIFO)(libusb_device_handle *);
 typedef void (*STOP_HW)(void);
 typedef	void (*CLOSE_HW)(void);
-typedef int  (*FDMS1_HW_INIT)(libusb_device_handle *);
+typedef i32  (*FDMS1_HW_INIT)(libusb_device_handle *);
 
 class	eladLoader {
 public:

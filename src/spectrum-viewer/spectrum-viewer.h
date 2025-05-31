@@ -83,7 +83,7 @@ public:
   ~SpectrumViewer() override;
 
   void show_spectrum(i32);
-  void show_correlation(f32 threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr);
+  void show_correlation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr);
   void show_nominal_frequency_MHz(f32);
   void show_freq_corr_rf_Hz(i32 iFreqCorrRF);
   void show_freq_corr_bb_Hz(i32 iFreqCorrBB);
@@ -139,9 +139,9 @@ public slots:
   void slot_update_settings();
 
 private slots:
-  void _slot_handle_cmb_carrier(int);
-  void _slot_handle_cmb_iqscope(int);
-  void _slot_handle_cb_nom_carrier(int);
+  void _slot_handle_cmb_carrier(i32);
+  void _slot_handle_cmb_iqscope(i32);
+  void _slot_handle_cb_nom_carrier(i32);
 
 signals:
   void signal_cmb_carrier_changed(ECarrierPlotType);

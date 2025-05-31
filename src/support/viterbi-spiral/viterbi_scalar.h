@@ -7,7 +7,7 @@
  */
 
 #define BFLY(i) {\
-	int decision0, decision1;\
+	i32 decision0, decision1;\
 	COMPUTETYPE m_metric, metric, m0, m1, m2, m3;\
 \
     /* Form branch metrics */\
@@ -22,8 +22,8 @@
     m3 = old_metrics[i+32] + metric;\
 \
     /* Compare and select */\
-    decision0 = (int)(m0-m1) > 0;\
-    decision1 = (int)(m2-m3) > 0;\
+    decision0 = (i32)(m0-m1) > 0;\
+    decision1 = (i32)(m2-m3) > 0;\
 \
     /* Store surviving metrics */\
     new_metrics[2*i] = decision0 ? m1 : m0;\

@@ -60,7 +60,7 @@ IQDisplay::~IQDisplay()
   // delete mIQData;
 }
 
-inline void IQDisplay::set_point(int x, int y, int val)
+inline void IQDisplay::set_point(i32 x, i32 y, i32 val)
 {
   mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
 }
@@ -72,8 +72,7 @@ void IQDisplay::display_iq(const std::vector<cf32> & z, const f32 iScale)
     mPoints.resize(z.size(), { 0, 0 });
   }
 
-  f32 scale = std::pow(10.0f, 2.0f * iScale - 1.0f); // scale [0.0..1.0] to [0.1..10.0]
-
+  const f32 scale = std::pow(10.0f, 2.0f * iScale - 1.0f); // scale [0.0..1.0] to [0.1..10.0]
   const f32 scaleNormed = scale * RADIUS;
 
   clean_screen_from_old_data_points();
@@ -115,7 +114,7 @@ void IQDisplay::draw_cross()
   }
 }
 
-void IQDisplay::draw_circle(f32 scale, int val)
+void IQDisplay::draw_circle(f32 scale, i32 val)
 {
   const i32 MAX_CIRCLE_POINTS = static_cast<i32>(180 * scale); // per quarter
 

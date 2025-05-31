@@ -77,8 +77,8 @@ private:
   RingBuffer<i16> * buffer;
   i32 baudRate;
   void setSamplerate(i32);
-  struct quantizer_spec * read_allocation(int, int);
-  void read_samples(struct quantizer_spec *, int, int *);
+  struct quantizer_spec * read_allocation(i32, i32);
+  void read_samples(struct quantizer_spec *, i32, i32 *);
   i32 get_bits(i32);
   i16 V[2][1024];
   i16 Voffs;
@@ -103,8 +103,8 @@ private:
   i16 errorFrames;
   
 signals:
-  void signal_show_frameErrors(int);
-  void signal_new_audio(int, unsigned int, unsigned int);
+  void signal_show_frameErrors(i32);
+  void signal_new_audio(i32, u32, u32);
   void signal_is_stereo(bool);
 };
 

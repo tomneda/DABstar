@@ -85,16 +85,16 @@ i16	success;
 	externalFrequency	= Khz (220000);
 //
 //	since localFilter and gainReduced are also used as
-//	parameter for the API functions, they are int's rather
+//	parameter for the API functions, they are i32's rather
 //	than bool.
 	localFilter	= 1;
 	filterText	-> setText ("no filter");
 	gainReduced	= 1;
 	gainLabel	-> setText ("0");
 
-        for (int i = 0; i < 2048; i ++) {
+        for (i32 i = 0; i < 2048; i ++) {
            f32 inVal  = f32 (ELAD_RATE / 1000);
-           mapTable_int [i] =  int (floor (i * (inVal / 2048.0)));
+           mapTable_int [i] =  i32 (floor (i * (inVal / 2048.0)));
            mapTable_float [i] = i * (inVal / 2048.0) - mapTable_int [i];
         }
 	convIndex	= 0;
@@ -117,7 +117,7 @@ i16	success;
 	eladHandler::~eladHandler	(void) {
 	stopReader ();
 //
-//	theWorker refers to the loader, so clean up int his order
+//	theWorker refers to the loader, so clean up i32 his order
 	if (theWorker != nullptr)
 	   delete theWorker;
 	if (theLoader != nullptr)
@@ -145,7 +145,7 @@ bool	success;
 //
 //	first map the external frequency to an elad frequency
 
-	int K = 1;
+	i32 K = 1;
 	iqSwitch. store (false);
 	eladFrequency	= externalFrequency - MHz (Offset);
 	while (eladFrequency > KHz (Nyquist)) {
@@ -214,7 +214,7 @@ typedef union {
 #define SCALE_FACTOR_16to14    (0.250)       //(8192/32768)  
 
 cf32	makeSample_31bits (u8 *buf, bool iqSwitch) {
-int ii = 0; int qq = 0;
+i32 ii = 0; i32 qq = 0;
 i16	i = 0;
 u32	uii = 0, uqq = 0;
 
@@ -234,8 +234,8 @@ u32	uii = 0, uqq = 0;
         uii = (i3 << 24) | (i2 << 16) | (i1 << 8) | i0;
         uqq = (q3 << 24) | (q2 << 16) | (q1 << 8) | q0;
 
-        ii =(int)uii;
-        qq =(int)uqq;
+        ii =(i32)uii;
+        qq =(i32)uqq;
 
 	if (iqSwitch)
 	   return cf32 ((f32)qq * SCALE_FACTOR_32to14,
@@ -259,7 +259,7 @@ u32	uii = 0, uqq = 0;
 //	   until the _O_Buffer is filled up with at least "size" samples
 #define	SEGMENT_SIZE	(1024 * iqSize)
 static
-int	teller		= 0;
+i32	teller		= 0;
 i32	eladHandler::getSamples (cf32 *V, i32 size) {
 u8 lBuf [SEGMENT_SIZE];
 cf32 temp [2048];
@@ -278,7 +278,7 @@ cf32 temp [2048];
 	       (_O_Buffer. GetRingBufferReadAvailable () < size)) {
 	   _I_Buffer. getDataFromBuffer (lBuf, SEGMENT_SIZE);
 
-	   for (int i = 0; i < SEGMENT_SIZE / iqSize; i ++) {
+	   for (i32 i = 0; i < SEGMENT_SIZE / iqSize; i ++) {
 	      convBuffer [convIndex ++] =
 	                     makeSample_31bits (&lBuf [iqSize * i],
                                                 iqSwitch. load ());
@@ -323,7 +323,7 @@ cf32 temp [2048];
 i32	eladHandler::Samples	(void) {
 i64	bufferContent	= _I_Buffer. GetRingBufferReadAvailable ();
 	return _O_Buffer. GetRingBufferReadAvailable () +
-	       (int)(((i64)2048 * bufferContent / (i64)3072) / iqSize);
+	       (i32)(((i64)2048 * bufferContent / (i64)3072) / iqSize);
 }
 
 void	eladHandler::resetBuffer	(void) {
@@ -340,7 +340,7 @@ i16	eladHandler::bitDepth	(void) {
 
 //
 void	eladHandler::setGainReduction	(void) {
-  	static int tempG;
+  	static i32 tempG;
 	//fprintf(stderr, "\n--gainReduced=%2d tempG=%2d\n",gainReduced,tempG);
 	gainReduced = gainReduced == 1 ? 0 : 1;
 	tempG=gainReduced;
@@ -352,7 +352,7 @@ void	eladHandler::setGainReduction	(void) {
 }
 
 void	eladHandler::setFilter	(void) {
-        static int tempF;
+        static i32 tempF;
 	localFilter = localFilter == 1 ? 0: 1;
 	tempF=localFilter; 
 	//fprintf(stderr,"\n--localFilter=%2d tempF=%2d\n",localFilter,tempF); 
@@ -378,11 +378,11 @@ void	eladHandler::toggle_IQSwitch	() {
 	show_iqSwitch (iqSwitch. load ());
 }
 
-void	eladHandler::set_NyquistWidth	(int w) {
+void	eladHandler::set_NyquistWidth	(i32 w) {
 	Nyquist		= w;
 }
 
-void	eladHandler::set_Offset		(int w) {
+void	eladHandler::set_Offset		(i32 w) {
 	Offset		= w;
 }
 

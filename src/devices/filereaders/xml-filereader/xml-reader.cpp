@@ -40,9 +40,9 @@ static size_t fread_chk(void * iPtr, size_t iSize, size_t iN, FILE * iStream)
   return fread(iPtr, iSize, iN, iStream); // TODO: some check should be done here?!
 }
 
-static int shift(int a)
+static i32 shift(i32 a)
 {
-  int r = 1;
+  i32 r = 1;
   while (--a > 0)
   {
     r <<= 1;
@@ -76,14 +76,14 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 fileP
   convBufferSize = fd->sampleRate / 1000;
   continuous.store(mr->cbLoopFile->isChecked());
 
-  for (int i = 0; i < 2048; i++)
+  for (i32 i = 0; i < 2048; i++)
   {
     const f32 inVal = f32(fd->sampleRate / 1000);
     mapTable_int[i] = (i16)(floor(i * (inVal / 2048.0)));
     mapTable_float[i] = i * (inVal / 2048.0f) - mapTable_int[i];
   }
 
-  for(int i = 0; i < 256; i++)
+  for(i32 i = 0; i < 256; i++)
   {
     mapTable[i] = ((f32)i - 127.38f) / 128.0f;
   }
@@ -120,18 +120,18 @@ void XmlReader::stopReader()
   }
 }
 
-static int cycleCount = 0;
+static i32 cycleCount = 0;
 
 void XmlReader::run()
 {
-  int samplesRead = 0;
+  i32 samplesRead = 0;
   u64 nextStop;
-  int startPoint = filePointer;
+  i32 startPoint = filePointer;
 
   running.store(true);
   fseek(file, filePointer, SEEK_SET);
   nextStop = currentTime();
-  for (int blocks = 0; blocks < fd->nrBlocks; blocks++)
+  for (i32 blocks = 0; blocks < fd->nrBlocks; blocks++)
   {
     samplesToRead = compute_nrSamples(file, blocks);
     fprintf(stderr, "samples to read %d\n", samplesToRead);
@@ -186,10 +186,10 @@ bool XmlReader::handle_continuousButton()
   return continuous.load();
 }
 
-int XmlReader::compute_nrSamples(FILE * f, int blockNumber)
+i32 XmlReader::compute_nrSamples(FILE * f, i32 blockNumber)
 {
-  int nrElements = fd->blockList.at(blockNumber).nrElements;
-  int samplesToRead = 0;
+  i32 nrElements = fd->blockList.at(blockNumber).nrElements;
+  i32 samplesToRead = 0;
 
   (void)f;
   if (fd->blockList.at(blockNumber).typeofUnit == "Channel")
@@ -212,12 +212,12 @@ int XmlReader::compute_nrSamples(FILE * f, int blockNumber)
   return samplesToRead;
 }
 
-int XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, cf32 *, int))
+i32 XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, cf32 *, i32))
 {
   cf32 temp[2048];
 
   (*this.*r)(theFile, &convBuffer[1], convBufferSize);
-  for (int i = 0; i < 2048; i++)
+  for (i32 i = 0; i < 2048; i++)
   {
     i16 inpBase = mapTable_int[i];
     f32 inpRatio = mapTable_float[i];
@@ -230,16 +230,16 @@ int XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, c
 }
 
 //	the readers
-void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
+void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, i32 amount)
 {
-  int nrBits = fd->bitsperChannel;
+  i32 nrBits = fd->bitsperChannel;
   f32 scaler = f32(shift(nrBits));
 
   if (fd->container == "int8")
   {
     auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
-    for (int i = 0; i < amount; i++)
+    for (i32 i = 0; i < amount; i++)
     {
       buffer[i] = cf32(((i8)lbuf[2 * i]) / 127.0f, ((i8)lbuf[2 * i + 1]) / 127.0f);
     }
@@ -250,7 +250,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
   {
     auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
-    for (int i = 0; i < amount; i++)
+    for (i32 i = 0; i < amount; i++)
     {
       buffer[i] = cf32(mapTable[lbuf[2 * i]], mapTable[lbuf[2 * i + 1]]);
     }
@@ -263,7 +263,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 2, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i16 temp_16_1 = (lbuf[4 * i] << 8) | lbuf[4 * i + 1];
         i16 temp_16_2 = (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
@@ -272,7 +272,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i16 temp_16_1 = (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
         i16 temp_16_2 = (lbuf[4 * i + 3] << 8) | lbuf[4 * i + 2];
@@ -288,7 +288,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 3, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[6 * i] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i + 2];
         i32 temp_32_2 = (lbuf[6 * i + 3] << 16) | (lbuf[4 * i + 4] << 8) | lbuf[6 * i + 5];
@@ -305,7 +305,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[6 * i + 2] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i];
         i32 temp_32_2 = (lbuf[6 * i + 5] << 16) | (lbuf[6 * i + 4] << 8) | lbuf[6 * i + 3];
@@ -329,7 +329,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
         i32 temp_32_2 = (lbuf[8 * i + 4] << 24) | (lbuf[8 * i + 5] << 16) | (lbuf[8 * i + 6] << 8) | lbuf[8 * i + 7];
@@ -338,7 +338,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
         i32 temp_32_2 = (lbuf[8 * i + 7] << 24) | (lbuf[8 * i + 6] << 16) | (lbuf[8 * i + 5] << 8) | lbuf[8 * i + 4];
@@ -354,7 +354,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         UCnv c1, c2;
         c1.int32Data = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
@@ -364,7 +364,7 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         UCnv c1, c2;
         c1.int32Data = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
@@ -376,17 +376,17 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, int amount)
   }
 }
 
-void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
+void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, i32 amount)
 {
 
-  int nrBits = fd->bitsperChannel;
+  i32 nrBits = fd->bitsperChannel;
   f32 scaler = f32(shift(nrBits));
 
   if (fd->container == "int8")
   {
     auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
-    for (int i = 0; i < amount; i++)
+    for (i32 i = 0; i < amount; i++)
     {
       buffer[i] = cf32(((i8)lbuf[2 * i + 1]) / 127.0, ((i8)lbuf[2 * i]) / 127.0);
     }
@@ -397,7 +397,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
   {
     auto * const lbuf = make_vla(u8, 2 * amount);
     fread_chk(lbuf, 1, 2 * amount, theFile);
-    for (int i = 0; i < amount; i++)
+    for (i32 i = 0; i < amount; i++)
     {
       buffer[i] = cf32(mapTable[2 * i + 1], mapTable[2 * i]);
     }
@@ -410,7 +410,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 2, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i16 temp_16_1 = (lbuf[4 * i] << 8) | lbuf[4 * i + 1];
         i16 temp_16_2 = (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
@@ -419,7 +419,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i16 temp_16_1 = (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
         i16 temp_16_2 = (lbuf[4 * i + 3] << 8) | lbuf[4 * i + 2];
@@ -435,7 +435,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 3, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[6 * i] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i + 2];
         i32 temp_32_2 = (lbuf[6 * i + 3] << 16) | (lbuf[4 * i + 4] << 8) | lbuf[6 * i + 5];
@@ -452,7 +452,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[6 * i + 2] << 16) | (lbuf[6 * i + 1] << 8) | lbuf[6 * i];
         i32 temp_32_2 = (lbuf[6 * i + 5] << 16) | (lbuf[6 * i + 4] << 8) | lbuf[6 * i + 3];
@@ -476,7 +476,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
         i32 temp_32_2 = (lbuf[8 * i + 4] << 24) | (lbuf[8 * i + 5] << 16) | (lbuf[8 * i + 6] << 8) | lbuf[8 * i + 7];
@@ -485,7 +485,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
         i32 temp_32_2 = (lbuf[8 * i + 7] << 24) | (lbuf[8 * i + 6] << 16) | (lbuf[8 * i + 5] << 8) | lbuf[8 * i + 4];
@@ -501,7 +501,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 4, 2 * amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         UCnv c1, c2;
         c1.int32Data = (lbuf[8 * i] << 24) | (lbuf[8 * i + 1] << 16) | (lbuf[8 * i + 2] << 8) | lbuf[8 * i + 3];
@@ -511,7 +511,7 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         UCnv c1, c2;
         c1.int32Data = (lbuf[8 * i + 3] << 24) | (lbuf[8 * i + 2] << 16) | (lbuf[8 * i + 1] << 8) | lbuf[8 * i];
@@ -523,17 +523,17 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, int amount)
   }
 }
 
-void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
+void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, i32 amount)
 {
 
-  int nrBits = fd->bitsperChannel;
+  i32 nrBits = fd->bitsperChannel;
   f32 scaler = f32(shift(nrBits));
 
   if (fd->container == "int8")
   {
     auto * const lbuf = make_vla(u8, amount);
     fread_chk(lbuf, 1, amount, theFile);
-    for (int i = 0; i < amount; i++)
+    for (i32 i = 0; i < amount; i++)
     {
       buffer[i] = cf32((i8)lbuf[i] / 127.0, 0);
     }
@@ -544,7 +544,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
   {
     auto * const lbuf = make_vla(u8, amount);
     fread_chk(lbuf, 1, amount, theFile);
-    for (int i = 0; i < amount; i++)
+    for (i32 i = 0; i < amount; i++)
     {
       buffer[i] = cf32(mapTable[lbuf[i]], 0);
     }
@@ -557,7 +557,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 2, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i16 temp_16_1 = (lbuf[2 * i] << 8) | lbuf[2 * i + 1];
         buffer[i] = cf32((f32)temp_16_1 / scaler, 0);
@@ -565,7 +565,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i16 temp_16_1 = (lbuf[2 * i + 1] << 8) | lbuf[2 * i];
         buffer[i] = cf32((f32)temp_16_1 / scaler, 0);
@@ -580,7 +580,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 3, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[3 * i] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i + 2];
         if (temp_32_1 & 0x800000)
@@ -592,7 +592,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[3 * i + 2] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i];
         if (temp_32_1 & 0x800000)
@@ -611,7 +611,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
         buffer[i] = cf32((f32)temp_32_1 / scaler, 0);
@@ -619,7 +619,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
         buffer[i] = cf32((f32)temp_32_1 / scaler, 0);
@@ -634,7 +634,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         UCnv c;
         c.int32Data = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
@@ -643,7 +643,7 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         UCnv c;
         c.int32Data = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
@@ -654,17 +654,17 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, int amount)
   }
 }
 
-void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
+void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, i32 amount)
 {
 
-  int nrBits = fd->bitsperChannel;
+  i32 nrBits = fd->bitsperChannel;
   f32 scaler = f32(shift(nrBits));
 
   if (fd->container == "int8")
   {
     auto * const lbuf = make_vla(u8, amount);
     fread_chk(lbuf, 1, amount, theFile);
-    for (int i = 0; i < amount; i++)
+    for (i32 i = 0; i < amount; i++)
     {
       buffer[i] = cf32(127.0, ((i8)lbuf[i] / 127.0));
     }
@@ -675,7 +675,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
   {
     auto * const lbuf = make_vla(u8, amount);
     fread_chk(lbuf, 1, amount, theFile);
-    for (int i = 0; i < amount; i++)
+    for (i32 i = 0; i < amount; i++)
     {
       buffer[i] = cf32(0, mapTable[lbuf[i]]);
     }
@@ -688,7 +688,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 2, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i16 temp_16_1 = (lbuf[2 * i] << 8) | lbuf[2 * i + 1];
         buffer[i] = cf32(0, (f32)temp_16_1 / scaler);
@@ -696,7 +696,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i16 temp_16_1 = (lbuf[2 * i + 1] << 8) | lbuf[2 * i];
         buffer[i] = cf32(0, (f32)temp_16_1 / scaler);
@@ -711,7 +711,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 3, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[3 * i] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i + 2];
         if (temp_32_1 & 0x800000)
@@ -723,7 +723,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[3 * i + 2] << 16) | (lbuf[3 * i + 1] << 8) | lbuf[3 * i];
         if (temp_32_1 & 0x800000)
@@ -742,7 +742,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
         buffer[i] = cf32(0, (f32)temp_32_1 / scaler);
@@ -750,7 +750,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         i32 temp_32_1 = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];
         buffer[i] = cf32(0, (f32)temp_32_1 / scaler);
@@ -765,7 +765,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
     fread_chk(lbuf, 4, amount, theFile);
     if (fd->byteOrder == "MSB")
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         UCnv c;
         c.int32Data = (lbuf[4 * i] << 24) | (lbuf[4 * i + 1] << 16) | (lbuf[4 * i + 2] << 8) | lbuf[4 * i + 3];
@@ -774,7 +774,7 @@ void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, int amount)
     }
     else
     {
-      for (int i = 0; i < amount; i++)
+      for (i32 i = 0; i < amount; i++)
       {
         UCnv c;
         c.int32Data = (lbuf[4 * i + 3] << 24) | (lbuf[4 * i + 2] << 16) | (lbuf[4 * i + 1] << 8) | lbuf[4 * i];

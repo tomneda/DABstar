@@ -66,7 +66,7 @@ AudioOutputQt::~AudioOutputQt()
 
 void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
 {
-  mAudioFormat.setSampleRate((int)iBuffer->sampleRate);
+  mAudioFormat.setSampleRate((i32)iBuffer->sampleRate);
   mAudioFormat.setSampleFormat(QAudioFormat::Int16);
   mAudioFormat.setChannelCount(2);
   mAudioFormat.setChannelConfig(QAudioFormat::ChannelConfigStereo);
@@ -123,7 +123,7 @@ void AudioOutputQt::slot_mute(bool iMuteActive)
   mpIoDevice->set_mute_state(iMuteActive);
 }
 
-void AudioOutputQt::slot_setVolume(const int iLogVolVal)
+void AudioOutputQt::slot_setVolume(const i32 iLogVolVal)
 {
   mLinearVolume = QAudio::convertVolume((f32)iLogVolVal / 100.0f, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
   if (mpAudioSink != nullptr)

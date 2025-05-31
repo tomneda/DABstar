@@ -195,7 +195,7 @@ f64 TiiHandler::_distance_2(f32 latitude1, f32 longitude1, f32 latitude2, f32 lo
   f64 y = (Phi2 - Phi1);
   f64 d = sqrt(x * x + y * y);
 
-  //return (int)(R * c + 0.5);
+  //return (i32)(R * c + 0.5);
   return (R * d + 0.5);
 }
 
@@ -331,7 +331,7 @@ void TiiHandler::_read_file(QFile & fp)
       break;
     }
     columnVector.resize(0);
-    int columns = _read_columns(columnVector, buffer.data(), NR_COLUMNS);
+    i32 columns = _read_columns(columnVector, buffer.data(), NR_COLUMNS);
     if (columns < NR_COLUMNS)
     {
       continue;
@@ -363,11 +363,11 @@ void TiiHandler::_read_file(QFile & fp)
   mContentCacheVec.resize(count);
 }
 
-int TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, int N) const
+i32 TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, i32 N) const
 {
-  int charp = 0;
+  i32 charp = 0;
   std::array<char, 256> tb;
-  int elementCount = 0;
+  i32 elementCount = 0;
   oV.resize(0);
   while ((*b != 0) && (*b != '\n'))
   {
@@ -392,7 +392,7 @@ int TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, int N) 
   return elementCount;
 }
 
-char * TiiHandler::_eread(char * buffer, int amount, QFile & fp) const
+char * TiiHandler::_eread(char * buffer, i32 amount, QFile & fp) const
 {
   char * bufferP;
   if (fp.readLine(buffer, amount) < 0)

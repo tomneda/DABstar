@@ -71,7 +71,7 @@ u8	buffer [BUFFER_SIZE];
 //	complex IQ samples, and pass them on
 void	eladWorker:: run (void) {
 i32	amount;
-int	rc;
+i32	rc;
 
 	running. store (false);
 //	when (re)starting, clean up first

@@ -65,8 +65,8 @@ class parameter;
 typedef struct
 {
   bool uepFlag;
-  int bitRate;
-  int protLevel;
+  i32 bitRate;
+  i32 protLevel;
   u8 * dispersionVector;
   Protection * theDeconvolver;
 } protDesc;
@@ -78,7 +78,7 @@ public:
   ~etiGenerator();
 
   void newFrame();
-  void process_block(const std::vector<i16> & fbits, int blkno);
+  void process_block(const std::vector<i16> & fbits, i32 blkno);
   void reset();
   bool start_eti_generator(const QString &);
   void stop_eti_generator();
@@ -88,7 +88,7 @@ private:
   FILE * etiFile;
   bool running;
   i16 index_Out;
-  int Minor;
+  i32 Minor;
   i16 CIFCount_hi;
   i16 CIFCount_lo;
   std::atomic<i16> amount;
@@ -98,7 +98,7 @@ private:
 
   i32 _init_eti(u8 *, i16, i16, i16);
   i32 _process_cif(const i16 *, u8 *, i32);
-  void _process_sub_channel(int, parameter *, Protection * prot, u8 *);
+  void _process_sub_channel(i32, parameter *, Protection * prot, u8 *);
 
   void postProcess(const u8 *, i32);
 };

@@ -32,8 +32,8 @@ void XmlDescriptor::printDescriptor()
   fprintf(stderr, "container	= %s\n", container.toLatin1().data());
   fprintf(stderr, "byteOrder	= %s\n", byteOrder.toLatin1().data());
   fprintf(stderr, "iqOrder	= %s\n", iqOrder.toLatin1().data());
-  fprintf(stderr, "nrBlocks	= %d (%d)\n", nrBlocks, (int)(blockList.size()));
-  for (int i = 0; i < (int)blockList.size(); i++)
+  fprintf(stderr, "nrBlocks	= %d (%d)\n", nrBlocks, (i32)(blockList.size()));
+  for (i32 i = 0; i < (i32)blockList.size(); i++)
   {
     fprintf(stderr,
             ">>>   %d %d %s %d %s\n",
@@ -45,12 +45,12 @@ void XmlDescriptor::printDescriptor()
   }
 }
 
-void XmlDescriptor::setSamplerate(int sr)
+void XmlDescriptor::setSamplerate(i32 sr)
 {
   this->sampleRate = sr;
 }
 
-void XmlDescriptor::setChannels(int nrChannels, int bitsperChannel, QString ct, QString byteOrder)
+void XmlDescriptor::setChannels(i32 nrChannels, i32 bitsperChannel, QString ct, QString byteOrder)
 {
   this->nrChannels = nrChannels;
   this->bitsperChannel = bitsperChannel;
@@ -58,7 +58,7 @@ void XmlDescriptor::setChannels(int nrChannels, int bitsperChannel, QString ct, 
   this->byteOrder = byteOrder;
 }
 
-void XmlDescriptor::addChannelOrder(int channelOrder, QString Value)
+void XmlDescriptor::addChannelOrder(i32 channelOrder, QString Value)
 {
   if (channelOrder > 1)
   {
@@ -78,7 +78,7 @@ void XmlDescriptor::addChannelOrder(int channelOrder, QString Value)
   }
 }
 
-void XmlDescriptor::add_dataBlock(int /*currBlock*/, int Count, int blockNumber, QString Unit)
+void XmlDescriptor::add_dataBlock(i32 /*currBlock*/, i32 Count, i32 blockNumber, QString Unit)
 {
   Blocks b;
   b.blockNumber = blockNumber;
@@ -87,12 +87,12 @@ void XmlDescriptor::add_dataBlock(int /*currBlock*/, int Count, int blockNumber,
   blockList.push_back(b);
 }
 
-void XmlDescriptor::add_freqtoBlock(int blockno, int freq)
+void XmlDescriptor::add_freqtoBlock(i32 blockno, i32 freq)
 {
   blockList.at(blockno).frequency = freq;
 }
 
-void XmlDescriptor::add_modtoBlock(int blockno, QString modType)
+void XmlDescriptor::add_modtoBlock(i32 blockno, QString modType)
 {
   blockList.at(blockno).modType = modType;
 }
@@ -105,7 +105,7 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
 {
   QDomDocument xmlDoc;
   QByteArray xmlText;
-  int zeroCount = 0;
+  i32 zeroCount = 0;
   //
   //	set default values
   sampleRate = 2048000;
@@ -135,7 +135,7 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
   QDomNodeList nodes = root.childNodes();
 
   fprintf(stderr, "document has %d topnodes\n", nodes.count());
-  for (int i = 0; i < nodes.count(); i++)
+  for (i32 i = 0; i < nodes.count(); i++)
   {
     if (nodes.at(i).isComment())
     {
@@ -161,14 +161,14 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
     if (component.tagName() == "Sample")
     {
       QDomNodeList childNodes = component.childNodes();
-      for (int k = 0; k < childNodes.count(); k++)
+      for (i32 k = 0; k < childNodes.count(); k++)
       {
         QDomElement Child = childNodes.at(k).toElement();
         if (Child.tagName() == "Samplerate")
         {
           QString SR = Child.attribute("Value", "2048000");
           QString Hz = Child.attribute("Unit", "Hz");
-          int factor = Hz == "Hz" ? 1 : (Hz == "KHz") || (Hz == "Khz") ? 1000 : 1000000;
+          i32 factor = Hz == "Hz" ? 1 : (Hz == "KHz") || (Hz == "Khz") ? 1000 : 1000000;
           setSamplerate(SR.toInt() * factor);
         }
         if (Child.tagName() == "Channels")
@@ -179,8 +179,8 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
           QString Ordering = Child.attribute("Ordering", "N/A");
           setChannels(Amount.toInt(), Bits.toInt(), Container, Ordering);
           QDomNodeList subnodes = Child.childNodes();
-          int channelOrder = 0;
-          for (int k = 0; k < subnodes.count(); k++)
+          i32 channelOrder = 0;
+          for (i32 k = 0; k < subnodes.count(); k++)
           {
             QDomElement subChild = subnodes.at(k).toElement();
             if (subChild.tagName() == "Channel")
@@ -197,9 +197,9 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
     {
       //	      QString Count = component.attribute ("Count", "3");
       this->nrBlocks = 0;
-      int currBlock = 0;
+      i32 currBlock = 0;
       QDomNodeList nodes = component.childNodes();
-      for (int j = 0; j < nodes.count(); j++)
+      for (i32 j = 0; j < nodes.count(); j++)
       {
         if (nodes.at(j).isComment())
         {
@@ -210,12 +210,12 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
         if (Child.tagName() == "Datablock")
         {
           //fprintf(stderr, "weer een block\n");
-          int Count = (Child.attribute("Count", "100")).toInt();
-          int Number = (Child.attribute("Number", "10")).toInt();
+          i32 Count = (Child.attribute("Count", "100")).toInt();
+          i32 Number = (Child.attribute("Number", "10")).toInt();
           QString Unit = Child.attribute("Channel", "Channel");
           add_dataBlock(currBlock, Count, Number, Unit);
           QDomNodeList nodeList = Child.childNodes();
-          for (int k = 0; k < nodeList.count(); k++)
+          for (i32 k = 0; k < nodeList.count(); k++)
           {
             if (nodeList.at(k).isComment())
             {
@@ -225,8 +225,8 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
             if (subChild.tagName() == "Frequency")
             {
               QString unitUcStr = subChild.attribute("Unit", "Hz").toUpper();
-              int value = (subChild.attribute("Value", "200")).toInt();
-              int Frequency = (unitUcStr == "HZ" ? value : (unitUcStr == "KHZ" ? value * 1'000 : value * 1'000'000)); // TODO: not found is in MHz?
+              i32 value = (subChild.attribute("Value", "200")).toInt();
+              i32 Frequency = (unitUcStr == "HZ" ? value : (unitUcStr == "KHZ" ? value * 1'000 : value * 1'000'000)); // TODO: not found is in MHz?
               add_freqtoBlock(currBlock, Frequency);
             }
             if (subChild.tagName() == "Modulation")

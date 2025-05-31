@@ -58,12 +58,12 @@ typedef struct
   u8 mainId;
   u8 subId;
   f32 strength;
-  int distance;
-  int azimuth;
+  i32 distance;
+  i32 azimuth;
   f32 power;
   f32 frequency;
-  int altitude;
-  int height;
+  i32 altitude;
+  i32 height;
   bool non_etsi;
 } httpData;
 
@@ -78,7 +78,7 @@ public:
   void stop();
   void run();
   void putData(u8 type, const SCacheElem * tr, const QString & dateTime,
-               f32 strength, int distance, int azimuth, bool non_etsi);
+               f32 strength, i32 distance, i32 azimuth, bool non_etsi);
 
 private:
   FILE * saveFile;

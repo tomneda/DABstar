@@ -56,7 +56,7 @@ public:
   bool restartReader(i32) override;
   void stopReader() override;
   void setVFOFrequency(i32) override;
-  int getVFOFrequency() override;
+  i32 getVFOFrequency() override;
   void hide() override;
   void show() override;
   bool isHidden() override;
@@ -76,7 +76,7 @@ private:
   XmlReader * theReader = nullptr;
   
 public slots:
-  void slot_set_progress(int, int);
+  void slot_set_progress(i32, i32);
   void slot_handle_cb_loop_file(const bool iChecked);
 };
 

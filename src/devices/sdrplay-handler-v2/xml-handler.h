@@ -14,27 +14,27 @@ class Blocks	{
 public:
 			Blocks		() {}
 			~Blocks		() {}
-	int		blockNumber;
-	int		nrElements;
+	i32		blockNumber;
+	i32		nrElements;
 	QString		typeofUnit;
-	int		frequency;
+	i32		frequency;
 	QString		modType;
 };
 
 class xmlHandler {
 public:
-		xmlHandler	(FILE *, int, int);
+		xmlHandler	(FILE *, i32, i32);
 		~xmlHandler	();
-	void	add		(std::complex<i16> *, int);
+	void	add		(std::complex<i16> *, i32);
 	void	computeHeader	(QString &, QString &);
 private:
 	QFrame		myFrame;
-	int		denominator;
-	int		frequency;
+	i32		denominator;
+	i32		frequency;
 	QString		create_xmltree		(QString &, QString &);
 	FILE		*xmlFile;
 	QString		byteOrder;
-	int		nrElements;
+	i32		nrElements;
 };
 
 #endif

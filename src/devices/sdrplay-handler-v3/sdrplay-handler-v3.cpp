@@ -49,7 +49,7 @@
 #include  <chrono>
 #include  <thread>
 
-std::string errorMessage(int errorCode)
+std::string errorMessage(i32 errorCode)
 {
   switch (errorCode)
   {
@@ -109,8 +109,8 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * /*s*/, const QString & recorder
   }
 
   //	and be prepared for future changes in the settings
-  connect(GRdBSelector, qOverload<int>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_ifgainReduction);
-  connect(lnaGainSetting, qOverload<int>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_lnagainReduction);
+  connect(GRdBSelector, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_ifgainReduction);
+  connect(lnaGainSetting, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_lnagainReduction);
   connect(ppmControl, SIGNAL(valueChanged(double)), this, SLOT(set_ppmControl(double)));
   connect(dumpButton, &QPushButton::clicked, this, &SdrPlayHandler_v3::set_xmlDump);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
@@ -204,9 +204,9 @@ i32 SdrPlayHandler_v3::getSamples(cf32 * V, i32 size)
 
   auto * const temp = make_vla(ci16, size);
 
-  const int amount = p_I_Buffer->get_data_from_ring_buffer(temp, size);
+  const i32 amount = p_I_Buffer->get_data_from_ring_buffer(temp, size);
 
-  for (int i = 0; i < amount; i++)
+  for (i32 i = 0; i < amount; i++)
   {
     V[i] = cf32((f32)real(temp[i]) / denominator, (f32)imag(temp[i]) / denominator);
   }
@@ -247,7 +247,7 @@ QString SdrPlayHandler_v3::deviceName()
 //	Communication with that thread is synchronous!
 //
 
-void SdrPlayHandler_v3::set_lnabounds(int low, int high)
+void SdrPlayHandler_v3::set_lnabounds(i32 low, i32 high)
 {
   lnaGainSetting->setRange(low, high);
 }
@@ -269,12 +269,12 @@ void SdrPlayHandler_v3::set_apiVersion(f32 version)
   api_version->display(v);
 }
 
-void SdrPlayHandler_v3::show_lnaGain(int g)
+void SdrPlayHandler_v3::show_lnaGain(i32 g)
 {
   lnaGRdBDisplay->display(g);
 }
 
-void SdrPlayHandler_v3::set_ifgainReduction(int GRdB)
+void SdrPlayHandler_v3::set_ifgainReduction(i32 GRdB)
 {
   GRdBRequest r(GRdB);
 
@@ -285,7 +285,7 @@ void SdrPlayHandler_v3::set_ifgainReduction(int GRdB)
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_lnagainReduction(int lnaState)
+void SdrPlayHandler_v3::set_lnagainReduction(i32 lnaState)
 {
   lnaRequest r(lnaState);
 
@@ -296,7 +296,7 @@ void SdrPlayHandler_v3::set_lnagainReduction(int lnaState)
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_agcControl(int dummy)
+void SdrPlayHandler_v3::set_agcControl(i32 dummy)
 {
   bool agcMode = agcControl->isChecked();
   agcRequest r(agcMode, -20);
@@ -319,14 +319,14 @@ void SdrPlayHandler_v3::set_ppmControl(f64 ppm)
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_biasT(int v)
+void SdrPlayHandler_v3::set_biasT(i32 v)
 {
   (void)v;
   biasT_Request r(biasT_selector->isChecked() ? 1 : 0);
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_notch(int v)
+void SdrPlayHandler_v3::set_notch(i32 v)
 {
   (void)v;
   notch_Request r(notch_selector->isChecked() ? 1 : 0);
@@ -358,7 +358,7 @@ void SdrPlayHandler_v3::set_xmlDump()
 ////////////////////////////////////////////////////////////////////////
 //	showing data
 ////////////////////////////////////////////////////////////////////////
-void SdrPlayHandler_v3::set_antennaSelect(int n)
+void SdrPlayHandler_v3::set_antennaSelect(i32 n)
 {
   if (n > 0)
   {
@@ -396,7 +396,7 @@ bool SdrPlayHandler_v3::setup_xmlDump()
 
   QString channel = sdrplaySettings->value("channel", "xx").toString();
   QString timeString = theDate.currentDate().toString() + "-" + theTime.currentTime().toString();
-  for (int i = 0; i < timeString.length(); i++)
+  for (i32 i = 0; i < timeString.length(); i++)
   {
     if (!isValid(timeString.at(i)))
     {
@@ -419,7 +419,7 @@ bool SdrPlayHandler_v3::setup_xmlDump()
   dumping.store(true);
 
   QString dumper = QDir::fromNativeSeparators(fileName);
-  int x = dumper.lastIndexOf("/");
+  i32 x = dumper.lastIndexOf("/");
   saveDir = dumper.remove(x, dumper.size() - x);
   sdrplaySettings->setValue(sSettingSampleStorageDir, saveDir);
   return true;
@@ -457,7 +457,7 @@ bool SdrPlayHandler_v3::messageHandler(generalCommand * r)
   return true;
 }
 
-static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, unsigned int numSamples, unsigned int reset, void * cbContext)
+static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, u32 numSamples, u32 reset, void * cbContext)
 {
   const SdrPlayHandler_v3 * const p = static_cast<SdrPlayHandler_v3 *>(cbContext);
 
@@ -474,7 +474,7 @@ static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT 
   auto * const localBuf = make_vla(ci16, numSamples);
   ci16 * localBuf2 = localBuf;
 
-  for (int i = 0; i < (int)numSamples; ++i, ++localBuf2, ++xi, ++xq)
+  for (i32 i = 0; i < (i32)numSamples; ++i, ++localBuf2, ++xi, ++xq)
   {
     localBuf2->real(*xi);
     localBuf2->imag(*xq);
@@ -483,7 +483,7 @@ static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT 
   p->p_I_Buffer->put_data_into_ring_buffer(localBuf, (i32)numSamples);
 }
 
-static void StreamBCallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, unsigned int numSamples, unsigned int reset, void * cbContext)
+static void StreamBCallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, u32 numSamples, u32 reset, void * cbContext)
 {
   (void)xi;
   (void)xq;
@@ -588,7 +588,7 @@ void SdrPlayHandler_v3::run()
   sdrplay_api_LockDeviceApi();
   do
   {
-    int s = sizeof(devs) / sizeof(sdrplay_api_DeviceT);
+    i32 s = sizeof(devs) / sizeof(sdrplay_api_DeviceT);
     err = sdrplay_api_GetDevices(devs, &ndev, s);
 
     if (err != sdrplay_api_Success)
@@ -680,7 +680,7 @@ void SdrPlayHandler_v3::run()
     	break;
     }
   }
-  catch (int e)
+  catch (i32 e)
   {
     goto closeAPI;
   }
@@ -983,7 +983,7 @@ void SdrPlayHandler_v3::slot_overload_detected(bool iOvlDetected)
   }
 }
 
-void SdrPlayHandler_v3::slot_tuner_gain(f64 gain, int g)
+void SdrPlayHandler_v3::slot_tuner_gain(f64 gain, i32 g)
 {
   tunerGain->setText(QString::number(gain, 'f', 0) + " dB");
   lnaGRdBDisplay->display(g);

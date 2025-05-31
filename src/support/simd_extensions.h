@@ -82,7 +82,7 @@ static inline __m128 _mm_atan2_ps(__m128 y, __m128 x)
   _mm_storeu_ps(yArray, y);
   _mm_storeu_ps(xArray, x);
 
-  for (int i = 0; i < 4; i++)
+  for (i32 i = 0; i < 4; i++)
   {
     result[i] = atan2f(yArray[i], xArray[i]);
   }

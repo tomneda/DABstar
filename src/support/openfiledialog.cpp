@@ -55,7 +55,7 @@ FILE * OpenFileDialog::open_file(const QString & iFileName, const QString & iFil
   return pF;
 }
 
-SNDFILE * OpenFileDialog::open_snd_file(const QString & iFileName, int iMode, SF_INFO * ipSfInfo)
+SNDFILE * OpenFileDialog::open_snd_file(const QString & iFileName, i32 iMode, SF_INFO * ipSfInfo)
 {
   SNDFILE * pSf = sf_open(iFileName.toUtf8().data(), iMode, ipSfInfo);
   if (pSf == nullptr)
@@ -266,7 +266,7 @@ void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const
     return c.isLetter() || c.isDigit() || (c == '-');
   };
 
-  for (int i = 0; i < ioStr.length(); i++)
+  for (i32 i = 0; i < ioStr.length(); i++)
   {
     if (!isValid(ioStr.at(i)))
     {

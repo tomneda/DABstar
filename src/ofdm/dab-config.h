@@ -65,11 +65,11 @@ public:
 
   bool inUse;
   u32 SId;
-  int SCIds;
+  i32 SCIds;
   bool hasName;
   QString serviceLabel;
-  int language;
-  int programType;
+  i32 language;
+  i32 programType;
   bool is_shown;
   i32 fmFrequency;
   std::vector<SEpgElement> epgData;
@@ -186,8 +186,8 @@ public:
   u16 flags;
   std::vector<u16> services;
   bool inUse;
-  int announcing;
-  int clusterId;
+  i32 announcing;
+  i32 clusterId;
 
   Cluster()
   {

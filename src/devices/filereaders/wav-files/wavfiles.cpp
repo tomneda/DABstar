@@ -157,7 +157,7 @@ i32 WavFileHandler::Samples()
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-void WavFileHandler::setProgress(int progress, f32 timelength)
+void WavFileHandler::setProgress(i32 progress, f32 timelength)
 {
   fileProgress->setValue(progress);
   currentTime->display(QString("%1").arg(timelength, 0, 'f', 1));
@@ -187,7 +187,7 @@ void WavFileHandler::setVFOFrequency(i32)
 {
 }
 
-int WavFileHandler::getVFOFrequency()
+i32 WavFileHandler::getVFOFrequency()
 {
   return 0;
 }

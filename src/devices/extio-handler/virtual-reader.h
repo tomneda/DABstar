@@ -45,7 +45,7 @@ public:
 virtual		~virtualReader	(void);
 virtual void	restartReader	(i32 s);
 virtual void	stopReader	(void);
-virtual void	processData	(f32 IQoffs, void *data, int cnt);
+virtual void	processData	(f32 IQoffs, void *data, i32 cnt);
 virtual	i16	bitDepth	(void);
 protected:
 	i32	base;

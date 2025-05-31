@@ -48,27 +48,27 @@
 	theDevice	-> deactivateStream (stream);
 }
 
-int	soapy_CS16::Samples	(void) {
+i32	soapy_CS16::Samples	(void) {
 	return theBuffer. GetRingBufferReadAvailable() / 2;
 }
 
-int	soapy_CS16::getSamples	(cf32 *v, int amount) {
+i32	soapy_CS16::getSamples	(cf32 *v, i32 amount) {
 i16 temp [amount * 2];
-int	realAmount;
+i32	realAmount;
 	realAmount	= theBuffer. getDataFromBuffer (temp, amount * 2);
-	for (int i = 0; i < realAmount / 2; i ++) 
+	for (i32 i = 0; i < realAmount / 2; i ++)
 	   v [i] = cf32 (temp [2 * i] / 8191.0,
 	                                temp [2 * i + 1] / 8191.0);
 	return realAmount / 2;
 }
 
 void	soapy_CS16::run	(void) {
-int     flag    = 0;
-long long int timeNS;
-int buffer [2048 * 2];
+i32     flag    = 0;
+i64 timeNS;
+i32 buffer [2048 * 2];
 void *const buffs [] = {buffer};
 	running	= true;
-int	cnt	= 0;
+i32	cnt	= 0;
 	while (running) {
            theDevice -> readStream (stream, buffs, 2048, flag, timeNS, 10000);
 	   theBuffer. putDataIntoBuffer (buffer, 2 * 2048);

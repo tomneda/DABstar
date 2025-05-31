@@ -49,9 +49,9 @@ SF_INFO *sf_info;
 	   throw (24);
 	}
 
-        for (int i = 0; i < DAB_RATE / 1000; i ++) {
+        for (i32 i = 0; i < DAB_RATE / 1000; i ++) {
            f32 inVal  = f32 (ELAD_RATE / 1000);
-           mapTable_int [i] =  int (floor (i * (inVal / 2048.0)));
+           mapTable_int [i] =  i32 (floor (i * (inVal / 2048.0)));
            mapTable_float [i] = i * (inVal / 2048.0) - mapTable_int [i];
         }
         convIndex       = 0;
@@ -129,7 +129,7 @@ typedef union {
 
 cf32	makeSample (u8 *buf, bool iqSwitch) {
 //cf32	makeSample_31bits (u8 *buf, bool iqSwitch) {
-int ii = 0; int qq = 0;
+i32 ii = 0; i32 qq = 0;
 i16	i = 0;
 u32	uii = 0, uqq = 0;
 
@@ -147,8 +147,8 @@ u32	uii = 0, uqq = 0;
 	uii = (i3 << 24) | (i2 << 16) | (i1 << 8) | i0;
 	uqq = (q3 << 24) | (q2 << 16) | (q1 << 8) | q0;
 
-	ii	= (int) uii;
-	qq	= (int) uqq;
+	ii	= (i32) uii;
+	qq	= (i32) uqq;
 	if (iqSwitch)
 	   return cf32 ((f32)qq * SCALE_FACTOR_32to14,
 	                               (f32)ii * SCALE_FACTOR_32to14);
@@ -175,7 +175,7 @@ cf32 temp [2048];
 
 	while (_O_Buffer. GetRingBufferReadAvailable () < size) {
 	   _I_Buffer. getDataFromBuffer (lbuffer, SEGMENT_SIZE);
-	   for (int i = 0; i < SEGMENT_SIZE / iqSize; i ++) {
+	   for (i32 i = 0; i < SEGMENT_SIZE / iqSize; i ++) {
 	      if (convIndex > ELAD_RATE / 1000) {
 	         f32 sum = 0;
 	         i16 j;
@@ -201,10 +201,10 @@ cf32 temp [2048];
 i32	eladFiles::Samples	(void) {
 i64	bufferContent	= _I_Buffer. GetRingBufferReadAvailable ();
 	return _O_Buffer. GetRingBufferReadAvailable () +
-	       (int)(((i64)2048 * bufferContent / (i64)3072) / iqSize);
+	       (i32)(((i64)2048 * bufferContent / (i64)3072) / iqSize);
 }
 
-void    eladFiles::setProgress (int progress) {
+void    eladFiles::setProgress (i32 progress) {
 	fileProgress	-> setValue (progress);
 }
 

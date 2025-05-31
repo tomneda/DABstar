@@ -1108,7 +1108,7 @@ bool test_mm_or_si128(const i32 *_a, const i32 *_b)
 
 bool test_mm_movemask_ps(const f32 *p)
 {
-    int ret = 0;
+    i32 ret = 0;
 
     const u32 *ip = (const u32 *) p;
     if (ip[0] & 0x80000000) {
@@ -1124,7 +1124,7 @@ bool test_mm_movemask_ps(const f32 *p)
         ret |= 8;
     }
     __m128 a = test_mm_load_ps(p);
-    int val = _mm_movemask_ps(a);
+    i32 val = _mm_movemask_ps(a);
     return val == ret ? true : false;
 }
 
@@ -1200,7 +1200,7 @@ bool test_mm_movemask_epi8(const i32 *_a)
     __m128i a = test_mm_load_ps(_a);
 
     const u8 *ip = (const u8 *) _a;
-    int ret = 0;
+    i32 ret = 0;
     u32 mask = 1;
     for (u32 i = 0; i < 16; i++) {
         if (ip[i] & 0x80) {
@@ -1208,7 +1208,7 @@ bool test_mm_movemask_epi8(const i32 *_a)
         }
         mask = mask << 1;
     }
-    int test = _mm_movemask_epi8(a);
+    i32 test = _mm_movemask_epi8(a);
     ASSERT_RETURN(test == ret);
     return true;
 }
@@ -1936,7 +1936,7 @@ bool test_mm_sra_epi32(const i32 *_a, const i64 count)
 
 bool test_mm_slli_epi16(const i16 *_a)
 {
-    const int count = 3;
+    const i32 count = 3;
 
     i16 d0 = _a[0] << count;
     i16 d1 = _a[1] << count;
@@ -2048,7 +2048,7 @@ bool test_mm_srl_epi64(const i64 *_a, const i64 count)
 
 bool test_mm_srli_epi16(const i16 *_a)
 {
-    const int count = 3;
+    const i32 count = 3;
 
     i16 d0 = (u16)(_a[0]) >> count;
     i16 d1 = (u16)(_a[1]) >> count;
@@ -2598,7 +2598,7 @@ bool test_mm_min_epu8(const i8 *_a, const i8 *_b)
 bool test_mm_minpos_epu16(const i16 *_a)
 {
     u16 index = 0, min = (u16) _a[0];
-    for (int i = 0; i < 8; i++) {
+    for (i32 i = 0; i < 8; i++) {
         if ((u16) _a[i] < min) {
             index = (u16) i;
             min = (u16) _a[i];
@@ -2870,7 +2870,7 @@ bool test_mm_malloc(const size_t *a, const size_t *b)
 u32 canonical_crc32_u8(u32 crc, u8 v)
 {
     crc ^= v;
-    for (int bit = 0; bit < 8; bit++) {
+    for (i32 bit = 0; bit < 8; bit++) {
         if (crc & 1)
             crc = (crc >> 1) ^ u32(0x82f63b78);
         else
@@ -3509,7 +3509,7 @@ public:
             ret = loadTestFloatPointers(i);  // Load some random f32 values
             if (!ret)
                 break;                     // load test f32 failed??
-            ret = loadTestIntPointers(i);  // load some random int values
+            ret = loadTestIntPointers(i);  // load some random i32 values
             if (!ret)
                 break;  // load test f32 failed??
             // If we are testing the reciprocal, then invert the input data

@@ -52,8 +52,8 @@ public:
 		elementReader	(FILE *theFile, xmlDescriptor *fd) {
 	this	-> theFile	= theFile;
 	this	-> fd		= fd;
-	int 	a		= fd -> bitsperChannel;
-	int	r		= 1;
+	i32 	a		= fd -> bitsperChannel;
+	i32	r		= 1;
 	while (-- a > 0) 
 	   r <<= 1;
 	scaler			= f32 (r);

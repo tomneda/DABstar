@@ -4,9 +4,9 @@
 #include  <sdrplay_api.h>
 #include  "sdrplay-handler-v3.h"
 
-Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice, int startFreq, bool agcMode, int lnaState, int GRdB, f64 ppmValue)
+Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice, i32 startFreq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppmValue)
 {
-  int mGRdB = GRdB;
+  i32 mGRdB = GRdB;
   sdrplay_api_ErrT err;
   mpParent = parent;
   mpChosenDevice = chosenDevice;
@@ -78,19 +78,19 @@ Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDev
 Rsp_device::~Rsp_device()
 {}
 
-int Rsp_device::lnaStates(int frequency)
+i32 Rsp_device::lnaStates(i32 frequency)
 {
   (void)frequency;
   return 0;
 }
 
-bool Rsp_device::restart(int freq)
+bool Rsp_device::restart(i32 freq)
 {
   (void)freq;
   return false;
 }
 
-bool Rsp_device::set_agc(int setPoint, bool on)
+bool Rsp_device::set_agc(i32 setPoint, bool on)
 {
   sdrplay_api_ErrT err;
 
@@ -113,13 +113,13 @@ bool Rsp_device::set_agc(int setPoint, bool on)
   return true;
 }
 
-bool Rsp_device::set_lna(int lnaState)
+bool Rsp_device::set_lna(i32 lnaState)
 {
   (void)lnaState;
   return false;
 }
 
-bool Rsp_device::set_GRdB(int GRdBValue)
+bool Rsp_device::set_GRdB(i32 GRdBValue)
 {
   sdrplay_api_ErrT err;
 
@@ -147,13 +147,13 @@ bool Rsp_device::set_ppm(f64 ppmValue)
   return true;
 }
 
-bool Rsp_device::set_antenna(int antenna)
+bool Rsp_device::set_antenna(i32 antenna)
 {
   (void)antenna;
   return false;
 }
 
-bool Rsp_device::set_amPort(int amPort)
+bool Rsp_device::set_amPort(i32 amPort)
 {
   (void)amPort;
   return false;

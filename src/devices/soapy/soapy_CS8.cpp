@@ -47,23 +47,23 @@
 	}
 }
 
-int	soapy_CS8::Samples	(void) {
+i32	soapy_CS8::Samples	(void) {
 	return theBuffer. GetRingBufferReadAvailable () / 2;
 }
 
-int	soapy_CS8::getSamples	(cf32 *v, int amount) {
+i32	soapy_CS8::getSamples	(cf32 *v, i32 amount) {
 i8 temp [amount * 2];
-int	realAmount;
+i32	realAmount;
 	realAmount	= theBuffer. getDataFromBuffer (temp, amount * 2);
-	for (int i = 0; i < realAmount / 2; i ++) 
+	for (i32 i = 0; i < realAmount / 2; i ++)
 	   v [i] = cf32 (temp [2 * i] / 127.0,
 	                                temp [2 * i + 1] / 127.0);
 	return realAmount / 2;
 }
 
 void	soapy_CS8::run	(void) {
-int     flag    = 0;
-long long int timeNS;
+i32     flag    = 0;
+i64 timeNS;
 i8 buffer [2048 * 2];
 void *const buffs [] = {buffer};
 	running	= true;

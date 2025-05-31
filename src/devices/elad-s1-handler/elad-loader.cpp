@@ -27,7 +27,7 @@
 //	elad library
 
 	eladLoader::eladLoader	(i32 theRate, i16 *success) {
-int	rc;
+i32	rc;
 	libraryLoaded	= false;
 	hardware_OK	= false;
 	usb_OK		= false;
@@ -117,8 +117,8 @@ int	rc;
 	   
 	if (hardware_OK) {
 	   fprintf(stderr,"init undersampling mode: no filter LP30=1 , no attenuation ATT20=1\n");
-	   int d_en_ext_io_ATT20 = 1;
-	   int d_en_ext_io_LP30  = 1;
+	   i32 d_en_ext_io_ATT20 = 1;
+	   i32 d_en_ext_io_LP30  = 1;
 	   //fprintf(stderr,"LP30=%2d ATT20=%2d   pre\n",d_en_ext_io_LP30,d_en_ext_io_ATT20);
 	   
 	   set_en_ext_io_ATT20 (dev_handle, &d_en_ext_io_ATT20);
@@ -154,7 +154,7 @@ u16 vendor_id =  0x1721;
 u16 product_id = 0x0610;
 
 	context		= 0;
-int rc = libusb_init ( &context );
+i32 rc = libusb_init ( &context );
 	
 	if (rc == 0 && context != 0) {
 	   libusb_set_debug (context,3); 

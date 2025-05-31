@@ -26,7 +26,7 @@
 # define M_PI           3.14159265358979323846  /* pi */
 #endif
 
-	upFilter::upFilter (int bufferSize, int  inRate, int outRate):
+	upFilter::upFilter (i32 bufferSize, i32  inRate, i32 outRate):
 	                                    kernel (bufferSize * (outRate / inRate)),
 	                                    buffer (bufferSize) {
 f32	 tmp [bufferSize * (outRate / inRate)];
@@ -38,10 +38,10 @@ f32	sum	= 0;
 	this	-> ip		= 0;
 	this	-> bufferSize	= bufferSize;
 
-	for (int i = 0; i < bufferSize; i ++)
+	for (i32 i = 0; i < bufferSize; i ++)
 	   buffer [i] = cf32 (0, 0);
 
-	for (int i = 0; i < order; i ++) {
+	for (i32 i = 0; i < order; i ++) {
 	   if (i == order / 2)
 	      tmp [i] = 2 * M_PI * f;
 	   else 
@@ -54,7 +54,7 @@ f32	sum	= 0;
 	   sum += tmp [i];
 	}
 
-	for (int i = 0; i < order; i ++)
+	for (i32 i = 0; i < order; i ++)
 	   kernel [i] = cf32 (tmp [i] / sum, 0);
 }
 
@@ -65,10 +65,10 @@ static bool first_time = false;
 void	upFilter::Filter (cf32 in, cf32 *res) {
 
 	buffer [ip] = in;
-	for (int i = 0; i < multiplier; i ++) {
+	for (i32 i = 0; i < multiplier; i ++) {
 	   res [i] = cf32 (0, 0);
-	   for (int j = 0; j < bufferSize; j ++) {
-	      int index = ip - j;
+	   for (i32 j = 0; j < bufferSize; j ++) {
+	      i32 index = ip - j;
 	      if (index < 0)
 	         index += bufferSize;
 	      res [i] += buffer [index] *

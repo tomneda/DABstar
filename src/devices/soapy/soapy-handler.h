@@ -67,9 +67,9 @@ private:
 	soapyWorker		*worker;
 private slots:
 	void		createDevice		(void);
-	void		handle_spinBox_1	(int);
-	void		handle_spinBox_2	(int);
-	void		set_agcControl		(int);
+	void		handle_spinBox_1	(i32);
+	void		handle_spinBox_2	(i32);
+	void		set_agcControl		(i32);
 	void		handleAntenna		(const QString &);
 };
 #endif

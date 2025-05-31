@@ -55,7 +55,7 @@ public:
   bool restartReader(i32) override;
   void stopReader() override;
   void setVFOFrequency(i32) override;
-  int getVFOFrequency() override;
+  i32 getVFOFrequency() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
@@ -74,7 +74,7 @@ private:
   std::atomic<bool> running = false;
 
 public slots:
-  void setProgress(int, f32);
+  void setProgress(i32, f32);
   void slot_handle_cb_loop_file(const bool iChecked);
 };
 

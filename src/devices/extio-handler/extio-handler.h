@@ -40,20 +40,20 @@ class		virtualReader;
 #define	STDCALL 
 #endif
 
-typedef	int	(*pfnExtIOCallback) (int cnt, int status, f32 IQoffs, void *IQdata);
+typedef	i32	(*pfnExtIOCallback) (i32 cnt, i32 status, f32 IQoffs, void *IQdata);
 typedef bool (STDCALL *pfnDllMain)(HINSTANCE, DWORD, LPVOID);
-typedef bool (STDCALL *pfnInitHW)(char *, char *, int& ); // 
+typedef bool (STDCALL *pfnInitHW)(char *, char *, i32& ); //
 typedef bool (STDCALL *pfnOpenHW)(void);
 typedef void (STDCALL *pfnCloseHW)(void);
-typedef int  (STDCALL *pfnStartHW)(long);
+typedef i32  (STDCALL *pfnStartHW)(long);
 typedef void (STDCALL *pfnStopHW)(void);
-typedef int  (STDCALL *pfnSetHWLO)(long);
+typedef i32  (STDCALL *pfnSetHWLO)(long);
 typedef	void (STDCALL *pfnSetCallback)(pfnExtIOCallback funcptr);
-typedef int  (STDCALL *pfnGetStatus)(void);
+typedef i32  (STDCALL *pfnGetStatus)(void);
 //
 typedef long (STDCALL *pfnGetHWLO)(void);
 typedef	long (STDCALL *pfnGetHWSR)(void);
-typedef void (STDCALL *pfnRawDataReady)(long, void *, void *, int);
+typedef void (STDCALL *pfnRawDataReady)(long, void *, void *, i32);
 typedef void (STDCALL *pfnShowGUI)(void);
 typedef void (STDCALL *pfnHideGUI)(void);
 typedef long (STDCALL *pfnGetTune)(void);
@@ -61,9 +61,9 @@ typedef	u8 (STDCALL *pfnGetMode)(void);
 typedef void (STDCALL *pfnModeChanged)(char);
 typedef void (STDCALL *pfnTuneChanged)(long freq);
 typedef void (STDCALL *pfnIfLimitsChanged)(long low, long high);
-typedef void (STDCALL *pfnFiltersChanged)(int, int, int, bool);
+typedef void (STDCALL *pfnFiltersChanged)(i32, i32, i32, bool);
 typedef void (STDCALL *pfnMuteChanged)(bool);
-typedef void (STDCALL *pfnGetFilters)(int&, int&, int&);
+typedef void (STDCALL *pfnGetFilters)(i32&, i32&, i32&);
 
 //	hwtype codes to be set with pfnInitHW
 //	Please ask Alberto di Bene (i2phd@weaksignals.com)
@@ -227,7 +227,7 @@ private:
 	bool		dll_open;
 	char		*rigName;
 	char		*rigModel;
-	int		hardwareType;
+	i32		hardwareType;
 signals:
 //	The following signals originate from the Winrad Extio interface
 };

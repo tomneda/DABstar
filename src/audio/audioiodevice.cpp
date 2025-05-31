@@ -76,7 +76,7 @@ void AudioIODevice::_fade_in_audio_samples(i16 * const opData, const i32 iNumSte
 
 void AudioIODevice::_fade_out_audio_samples(i16 * const opData, const i32 iNumStereoSamples) const
 {
-  qCDebug(sLogAudioIODevice, "Muting... [available %u samples]", static_cast<unsigned int>(iNumStereoSamples));
+  qCDebug(sLogAudioIODevice, "Muting... [available %u samples]", static_cast<u32>(iNumStereoSamples));
   const i32 numFadedStereoSamples = std::min<i32>(iNumStereoSamples, (i32)(cFadeTimeMs * (f32)mSampleRateKHz));
   const f32 coe = powf(10.0f, cFadeMinDb / (20.0f * (f32)numFadedStereoSamples));
   qCDebug(sLogAudioIODevice) << "numFadedStereoSamples" << numFadedStereoSamples << "coe" << coe;
@@ -143,7 +143,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
     }
     else
     {   // not enough samples ==> inserting silence
-      qCDebug(sLogAudioIODevice, "Muted: Inserting silence [%u ms]", static_cast<unsigned int>(maxWantedSamplesBothChannels / (2 /*channels*/ * mSampleRateKHz)));
+      qCDebug(sLogAudioIODevice, "Muted: Inserting silence [%u ms]", static_cast<u32>(maxWantedSamplesBothChannels / (2 /*channels*/ * mSampleRateKHz)));
 
       memset(opDataSamplesBothChannels, 0, maxWantedBytesBothChannels);
 
@@ -243,7 +243,7 @@ void AudioIODevice::_eval_peak_audio_level(const i16 * const ipData, const i32 i
 {
   assert(iNumSamples % 2 == 0);
   mpTechDataBuffer->put_data_into_ring_buffer(ipData, (i32)iNumSamples);
-  emit signal_audio_data_available((int)iNumSamples, (int)mSampleRateKHz * 1000);
+  emit signal_audio_data_available((i32)iNumSamples, (i32)mSampleRateKHz * 1000);
 
   for (i32 idx = 0; idx < iNumSamples; idx+=2)
   {

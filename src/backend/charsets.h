@@ -45,7 +45,7 @@ typedef enum {
  * @return converted QString
  */
 QString toQStringUsingCharset(const QByteArray & iByteArray, CharacterSet iCharset);
-QString toQStringUsingCharset(const char* buffer, CharacterSet charset, int size = -1);
+QString toQStringUsingCharset(const char* buffer, CharacterSet charset, i32 size = -1);
 
 #endif // CHARSETS_H
 

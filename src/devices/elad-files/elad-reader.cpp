@@ -39,7 +39,7 @@ struct timeval  tv;
 	this	-> filePointer	= filePointer;
 	this	-> theBuffer	= theBuffer;
 	fileLength		= fseek (filePointer, 0, SEEK_END);
-	fprintf (stderr, "fileLength = %d\n", (int)fileLength);
+	fprintf (stderr, "fileLength = %d\n", (i32)fileLength);
         fseek (filePointer, 0, SEEK_SET);
 	period          = 1000;  // segments of 1 millisecond
         fprintf (stderr, "Period = %ld\n", period);
@@ -64,7 +64,7 @@ void	eladReader::stopReader () {
 void	eladReader::run	() {
 i32	bufferSize	= 3072 * 8;
 i64	nextStop;
-int	teller		= 0;
+i32	teller		= 0;
 u8 lBuffer [bufferSize];
 
 	fseek (filePointer, 0, SEEK_SET);
@@ -80,9 +80,9 @@ u8 lBuffer [bufferSize];
 	      }
 
 	      nextStop += period;
-	      int n = fread (lBuffer, 1, 6 * 8 * 512, filePointer);
+	      i32 n = fread (lBuffer, 1, 6 * 8 * 512, filePointer);
 	      if (n < 8 * 512) {
-	         for (int i = n; i < bufferSize; i ++)
+	         for (i32 i = n; i < bufferSize; i ++)
 	            lBuffer [i] = 0;
 	         fseek (filePointer, 0, SEEK_SET);
 	         fprintf (stderr, "file reset\n");
@@ -93,7 +93,7 @@ u8 lBuffer [bufferSize];
 	         usleep (period);
 //	         usleep (nextStop - getMyTime());
 	   }
-	} catch (int e) {}
+	} catch (i32 e) {}
 	fprintf (stderr, "taak voor replay eindigt hier\n"); fflush (stderr);
 }
 

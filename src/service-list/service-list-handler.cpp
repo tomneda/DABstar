@@ -39,8 +39,8 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
     const QPixmap & curPM = (index.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
 
     // Calculate the position to center the pixmap within the item rectangle
-    const int x = option.rect.x() + (option.rect.width()  - 16) / 2; // 16 = width of icon
-    const int y = option.rect.y() + (option.rect.height() - 16) / 2; // 16 = height of icon
+    const i32 x = option.rect.x() + (option.rect.width()  - 16) / 2; // 16 = width of icon
+    const i32 y = option.rect.y() + (option.rect.height() - 16) / 2; // 16 = height of icon
 
     painter->drawPixmap(x, y, curPM);
     return;
@@ -304,7 +304,7 @@ void ServiceListHandler::_slot_selection_changed_with_fav(const QString & iChann
   emit signal_favorite_status(iIsFav); // this emit speeds up the FavButton setting, the other one is more important
 }
 
-void ServiceListHandler::_slot_header_clicked(int iIndex)
+void ServiceListHandler::_slot_header_clicked(i32 iIndex)
 {
   mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex), false);
 

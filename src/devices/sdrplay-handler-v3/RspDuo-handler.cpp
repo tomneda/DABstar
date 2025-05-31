@@ -1,10 +1,10 @@
 #include  "RspDuo-handler.h"
 #include  "sdrplay-handler-v3.h"
 
-RspDuo_handler::RspDuo_handler(SdrPlayHandler_v3 *mpParent, sdrplay_api_DeviceT *chosenDevice, int freq, bool agcMode, int lnaState, int GRdB, bool biasT, bool notch, f64 ppmValue)
+RspDuo_handler::RspDuo_handler(SdrPlayHandler_v3 *mpParent, sdrplay_api_DeviceT *chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
   : Rsp_device(mpParent, chosenDevice, freq, agcMode, lnaState, GRdB, ppmValue)
 {
-  int mLna_upperBound = lnaStates(freq) - 1;
+  i32 mLna_upperBound = lnaStates(freq) - 1;
   if (lnaState > mLna_upperBound)
     this->mLnaState = mLna_upperBound;
 
@@ -19,7 +19,7 @@ RspDuo_handler::RspDuo_handler(SdrPlayHandler_v3 *mpParent, sdrplay_api_DeviceT 
     set_notch(true);
 }
 
-int RspDuo_handler::lnaStates(int freq)
+i32 RspDuo_handler::lnaStates(i32 freq)
 {
   if (freq < MHz (60))
     return 7;
@@ -28,7 +28,7 @@ int RspDuo_handler::lnaStates(int freq)
   return 9;
 }
 
-bool RspDuo_handler::restart(int freq)
+bool RspDuo_handler::restart(i32 freq)
 {
   sdrplay_api_ErrT err;
 
@@ -46,7 +46,7 @@ bool RspDuo_handler::restart(int freq)
   return true;
 }
 
-bool RspDuo_handler::set_lna(int lnaState)
+bool RspDuo_handler::set_lna(i32 lnaState)
 {
   sdrplay_api_ErrT err;
 
@@ -61,7 +61,7 @@ bool RspDuo_handler::set_lna(int lnaState)
   return true;
 }
 
-bool RspDuo_handler::set_amPort(int amPort)
+bool RspDuo_handler::set_amPort(i32 amPort)
 {
   sdrplay_api_RspDuoTunerParamsT * rspDuoTunerParams;
   sdrplay_api_ErrT err;
@@ -82,7 +82,7 @@ bool RspDuo_handler::set_amPort(int amPort)
   return true;
 }
 
-bool RspDuo_handler::set_antenna(int antenna)
+bool RspDuo_handler::set_antenna(i32 antenna)
 {
   sdrplay_api_TunerSelectT tuner = antenna == 'A' ? sdrplay_api_Tuner_A : sdrplay_api_Tuner_B;
 

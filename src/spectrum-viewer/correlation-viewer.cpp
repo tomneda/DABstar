@@ -64,7 +64,7 @@ CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings
   mpQwtPlot->enableAxis(QwtPlot::xBottom);
 }
 
-void CorrelationViewer::showCorrelation(f32 threshold, const QVector<int> & v, const std::vector<STiiResult> & iTr)
+void CorrelationViewer::showCorrelation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr)
 {
   constexpr i32 cPlotLength = 2048;
   auto * const data = make_vla(f32, cPlotLength);
@@ -142,7 +142,7 @@ void CorrelationViewer::showCorrelation(f32 threshold, const QVector<int> & v, c
   }
 }
 
-QString CorrelationViewer::_get_best_match_text(const QVector<int> & v)
+QString CorrelationViewer::_get_best_match_text(const QVector<i32> & v)
 {
   QString txt;
 

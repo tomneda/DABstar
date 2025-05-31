@@ -22,12 +22,12 @@ f32	sum	= 0.0;
 	this	-> buffer	= new cf32 [filterSize];
 	this	-> ip		= 0;
 
-	for (int i = 0; i < filterSize; i ++) {
+	for (i32 i = 0; i < filterSize; i ++) {
 	   kernel [i] = cf32 (0, 0);
 	   buffer [i] = cf32 (0, 0);
 	}
 
-	for (int i = 0; i < filterSize; i ++) {
+	for (i32 i = 0; i < filterSize; i ++) {
 	   if (i == filterSize / 2)
 	      tmp [i] = 2 * M_PI * lo;
 	   else 
@@ -41,7 +41,7 @@ f32	sum	= 0.0;
 	   sum += tmp [i];
 	}
 
-	for (int i = 0; i < filterSize; i ++) {	// shifting
+	for (i32 i = 0; i < filterSize; i ++) {	// shifting
 	   f32 v = (i - filterSize / 2) * (2 * M_PI * shift);
 	   kernel [i] = cf32 (tmp [i] * cos (v) / sum,
 	                                          tmp [i] * sin (v) / sum);

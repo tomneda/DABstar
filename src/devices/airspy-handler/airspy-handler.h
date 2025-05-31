@@ -42,30 +42,30 @@ class XmlFileWriter;
 
 
 extern "C" {
-typedef int (* pfn_airspy_init)();
-typedef int (* pfn_airspy_exit)();
-typedef int (* pfn_airspy_list_devices)(u64 *, int);
-typedef int (* pfn_airspy_open)(struct airspy_device **, u64);
-// typedef int (*pfn_airspy_open) (struct airspy_device**);
-typedef int (* pfn_airspy_close)(struct airspy_device *);
-typedef int (* pfn_airspy_get_samplerates)(struct airspy_device * device, u32 * buffer, const u32 len);
-typedef int (* pfn_airspy_set_samplerate)(struct airspy_device * device, u32 samplerate);
-typedef int (* pfn_airspy_start_rx)(struct airspy_device * device, airspy_sample_block_cb_fn callback, void * rx_ctx);
-typedef int (* pfn_airspy_stop_rx)(struct airspy_device * device);
-typedef int (* pfn_airspy_set_sample_type)(struct airspy_device *, airspy_sample_type);
-typedef int (* pfn_airspy_set_freq)(struct airspy_device * device, const u32 freq_hz);
-typedef int (* pfn_airspy_set_lna_gain)(struct airspy_device * device, u8 value);
-typedef int (* pfn_airspy_set_mixer_gain)(struct airspy_device * device, u8 value);
-typedef int (* pfn_airspy_set_vga_gain)(struct airspy_device * device, u8 value);
-typedef int (* pfn_airspy_set_lna_agc)(struct airspy_device * device, u8 value);
-typedef int (* pfn_airspy_set_mixer_agc)(struct airspy_device * device, u8 value);
-typedef int (* pfn_airspy_set_rf_bias)(struct airspy_device * dev, u8 value);
+typedef i32 (* pfn_airspy_init)();
+typedef i32 (* pfn_airspy_exit)();
+typedef i32 (* pfn_airspy_list_devices)(u64 *, i32);
+typedef i32 (* pfn_airspy_open)(struct airspy_device **, u64);
+// typedef i32 (*pfn_airspy_open) (struct airspy_device**);
+typedef i32 (* pfn_airspy_close)(struct airspy_device *);
+typedef i32 (* pfn_airspy_get_samplerates)(struct airspy_device * device, u32 * buffer, const u32 len);
+typedef i32 (* pfn_airspy_set_samplerate)(struct airspy_device * device, u32 samplerate);
+typedef i32 (* pfn_airspy_start_rx)(struct airspy_device * device, airspy_sample_block_cb_fn callback, void * rx_ctx);
+typedef i32 (* pfn_airspy_stop_rx)(struct airspy_device * device);
+typedef i32 (* pfn_airspy_set_sample_type)(struct airspy_device *, airspy_sample_type);
+typedef i32 (* pfn_airspy_set_freq)(struct airspy_device * device, const u32 freq_hz);
+typedef i32 (* pfn_airspy_set_lna_gain)(struct airspy_device * device, u8 value);
+typedef i32 (* pfn_airspy_set_mixer_gain)(struct airspy_device * device, u8 value);
+typedef i32 (* pfn_airspy_set_vga_gain)(struct airspy_device * device, u8 value);
+typedef i32 (* pfn_airspy_set_lna_agc)(struct airspy_device * device, u8 value);
+typedef i32 (* pfn_airspy_set_mixer_agc)(struct airspy_device * device, u8 value);
+typedef i32 (* pfn_airspy_set_rf_bias)(struct airspy_device * dev, u8 value);
 typedef const char * (* pfn_airspy_error_name)(enum airspy_error errcode);
-typedef int (* pfn_airspy_board_id_read)(struct airspy_device *, u8 *);
+typedef i32 (* pfn_airspy_board_id_read)(struct airspy_device *, u8 *);
 typedef const char * (* pfn_airspy_board_id_name)(enum airspy_board_id board_id);
-typedef int (* pfn_airspy_board_partid_serialno_read)(struct airspy_device * device, airspy_read_partid_serialno_t * read_partid_serialno);
-typedef int (* pfn_airspy_set_linearity_gain)(struct airspy_device * device, u8 value);
-typedef int (* pfn_airspy_set_sensitivity_gain)(struct airspy_device * device, u8 value);
+typedef i32 (* pfn_airspy_board_partid_serialno_read)(struct airspy_device * device, airspy_read_partid_serialno_t * read_partid_serialno);
+typedef i32 (* pfn_airspy_set_linearity_gain)(struct airspy_device * device, u8 value);
+typedef i32 (* pfn_airspy_set_sensitivity_gain)(struct airspy_device * device, u8 value);
 }
 
 class AirspyHandler final : public QObject, public IDeviceHandler, public Ui_airspyWidget
@@ -104,27 +104,27 @@ private:
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> dumping;
-  int vfoFrequency;
-  void record_gainSettings(int, int);
-  void restore_gainSliders(int, int);
-  void restore_gainSettings(int);
+  i32 vfoFrequency;
+  void record_gainSettings(i32, i32);
+  void restore_gainSliders(i32, i32);
+  void restore_gainSettings(i32);
   LowPassFIR * theFilter;
   bool filtering;
-  int currentDepth;
+  i32 currentDepth;
 private slots:
-  void set_linearity(int value);
-  void set_sensitivity(int value);
-  void set_lna_gain(int value);
-  void set_mixer_gain(int value);
-  void set_vga_gain(int value);
-  void set_lna_agc(int);
-  void set_mixer_agc(int);
-  void set_rf_bias(int);
-  void switch_tab(int);
+  void set_linearity(i32 value);
+  void set_sensitivity(i32 value);
+  void set_lna_gain(i32 value);
+  void set_mixer_gain(i32 value);
+  void set_vga_gain(i32 value);
+  void set_lna_agc(i32);
+  void set_mixer_agc(i32);
+  void set_rf_bias(i32);
+  void switch_tab(i32);
   void set_xmlDump();
-  void set_filter(int);
+  void set_filter(i32);
 signals:
-  void new_tabSetting(int);
+  void new_tabSetting(i32);
 private:
   bool load_airspyFunctions();
   //	The functions to be extracted from the dll/.so file
@@ -173,10 +173,10 @@ private:
   struct airspy_device * device;
   u64 serialNumber;
   char serial[128];
-  static int callback(airspy_transfer_t *);
-  int data_available(void * buf, int buf_size);
+  static i32 callback(airspy_transfer_t *);
+  i32 data_available(void * buf, i32 buf_size);
   const char * getSerial();
-  int open();
+  i32 open();
 };
 
 #endif

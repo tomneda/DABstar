@@ -40,7 +40,7 @@
 ReedSolomon::ReedSolomon(u16 symsize, u16 gfpoly, u16 fcr, u16 prim, u16 nroots) :
   myGalois(symsize, gfpoly)
 {
-  int i, j, root, iprim;
+  i32 i, j, root, iprim;
 
   this->symsize = symsize;    // in bits
   this->codeLength = (1 << symsize) - 1;
@@ -84,7 +84,7 @@ ReedSolomon::ReedSolomon(u16 symsize, u16 gfpoly, u16 fcr, u16 prim, u16 nroots)
 //	Basic encoder, returns - in bb - the parity bytes
 void ReedSolomon::encode_rs(const u8 * data, u8 * bb)
 {
-  int i, j;
+  i32 i, j;
   u8 feedback;
 
   memset(bb, 0, nroots * sizeof(u8));

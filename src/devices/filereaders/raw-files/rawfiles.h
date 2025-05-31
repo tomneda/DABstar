@@ -61,7 +61,7 @@ public:
   bool isHidden() override;
   bool isFileInput() override;
   void setVFOFrequency(i32) override;
-  int getVFOFrequency() override;
+  i32 getVFOFrequency() override;
   void resetBuffer() override;
   i16 bitDepth() override;
   QString deviceName() override;
@@ -75,7 +75,7 @@ private:
   std::atomic<bool> running = false;
 
 public slots:
-  void setProgress(int, f32);
+  void setProgress(i32, f32);
   void slot_handle_cb_loop_file(const bool iChecked);
 };
 

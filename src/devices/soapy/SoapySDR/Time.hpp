@@ -21,7 +21,7 @@ namespace SoapySDR
  * \param rate the ticks per second
  * \return the time in nanoseconds
  */
-static inline long long ticksToTimeNs(const long long ticks, const f64 rate);
+static inline i64 ticksToTimeNs(const i64 ticks, const f64 rate);
 
 /*!
  * Convert a time in nanoseconds into a tick count using the tick rate.
@@ -29,16 +29,16 @@ static inline long long ticksToTimeNs(const long long ticks, const f64 rate);
  * \param rate the ticks per second
  * \return the integer tick count
  */
-static inline long long timeNsToTicks(const long long timeNs, const f64 rate);
+static inline i64 timeNsToTicks(const i64 timeNs, const f64 rate);
 
 }
 
-static inline long long SoapySDR::ticksToTimeNs(const long long ticks, const f64 rate)
+static inline i64 SoapySDR::ticksToTimeNs(const i64 ticks, const f64 rate)
 {
     return SoapySDR_ticksToTimeNs(ticks, rate);
 }
 
-static inline long long SoapySDR::timeNsToTicks(const long long timeNs, const f64 rate)
+static inline i64 SoapySDR::timeNsToTicks(const i64 timeNs, const f64 rate)
 {
     return SoapySDR_timeNsToTicks(timeNs, rate);
 }

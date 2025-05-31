@@ -60,22 +60,22 @@ class Backend
 #endif
 
 public:
-  Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, FILE * dump, int flag);
+  Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, FILE * dump, i32 flag);
   ~Backend();
 
   i32 process(const i16 * iV, i16 cnt);
   void stopRunning();
 
   // we need sometimes to access the key parameters for decoding
-  int serviceId;
-  int startAddr;
-  int Length;
+  i32 serviceId;
+  i32 startAddr;
+  i32 Length;
   bool shortForm;
-  int protLevel;
+  i32 protLevel;
   i16 bitRate;
   i16 subChId;
   QString serviceName;
-  int borf;
+  i32 borf;
   FILE * dump;
 
 private:

@@ -52,7 +52,7 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
   dumpScale = value_for_bit_pos(theRig->bitDepth());
   running.store(true);
 
-  for (int i = 0; i < INPUT_RATE; i++)
+  for (i32 i = 0; i < INPUT_RATE; i++)
   {
     oscillatorTable[i] = cf32((f32)cos(2.0 * M_PI * i / INPUT_RATE),
                               (f32)sin(2.0 * M_PI * i / INPUT_RATE));
@@ -113,7 +113,7 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
   }
 
   //	OK, we have samples!!
-  //	first: adjust frequency. We need Hz accuracy
+  //	First: adjust frequency. We need Hz accuracy
   for (i32 i = 0; i < iNoSamples; i++)
   {
     currentPhase -= iFreqOffsetBBHz;

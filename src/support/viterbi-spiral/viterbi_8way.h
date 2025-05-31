@@ -11,14 +11,14 @@
 #define renormalize {\
     if (metrics2[0] > RENORMALIZE_THRESHOLD) {\
 	    m0 = new_metrics[0];\
-	    for (int i = 1; i < 8; i++)\
+	    for (i32 i = 1; i < 8; i++)\
 	        m0 = _mm_min_epi16(m0, new_metrics[i]);\
 	    m0 = _mm_min_epi16(_mm_srli_si128(m0, 8), m0);\
     	m0 = _mm_min_epi16(_mm_srli_epi64(m0, 32), m0);\
     	m0 = _mm_min_epi16(_mm_srli_epi64(m0, 16), m0);\
     	m0 = _mm_shufflelo_epi16(m0, 0);\
     	m0 = _mm_unpacklo_epi64(m0, m0);\
-	    for (int i = 0; i < 8; i++)\
+	    for (i32 i = 0; i < 8; i++)\
     	    new_metrics[i] = _mm_subs_epi16(new_metrics[i], m0);\
 	}\
 }

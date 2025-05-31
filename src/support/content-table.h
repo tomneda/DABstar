@@ -50,7 +50,7 @@ class ContentTable : public QObject
 {
 Q_OBJECT
 public:
-  ContentTable(DabRadio *, QSettings *, const QString &, int);
+  ContentTable(DabRadio *, QSettings *, const QString &, i32);
   ~ContentTable();
 
   void show();
@@ -62,7 +62,7 @@ public:
 
 private:
   QString channel;
-  int columns;
+  i32 columns;
   DabRadio * theRadio;
   QSettings * dabSettings;
   QScrollArea * myWidget;
@@ -72,8 +72,8 @@ private:
   i16 addRow();
 
 private slots:
-  void _slot_select_service(int, int);
-  void _slot_dump(int, int);
+  void _slot_select_service(i32, i32);
+  void _slot_dump(i32, i32);
 
 signals:
   void signal_go_service(const QString &);

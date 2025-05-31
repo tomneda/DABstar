@@ -50,7 +50,7 @@ WavReader::WavReader(WavFileHandler * mr, SNDFILE * filePointer, RingBuffer<cf32
   this->filePointer = filePointer;
   this->theBuffer = theBuffer;
   fileLength = sf_seek(filePointer, 0, SEEK_END);
-  fprintf(stderr, "fileLength = %d\n", (int)fileLength);
+  fprintf(stderr, "fileLength = %d\n", (i32)fileLength);
   sf_seek(filePointer, 0, SEEK_SET);
   period = (32768 * 1000) / (2048);  // full IQś read
   fprintf(stderr, "Period = %" PRIu64 "\n", period);
@@ -80,7 +80,7 @@ void WavReader::run()
 {
   i32 bufferSize = 32768;
   i64 nextStop;
-  int teller = 0;
+  i32 teller = 0;
   auto * const bi  = make_vla(cf32, bufferSize);
 
   connect(this, SIGNAL (setProgress(int, float)), parent, SLOT (setProgress(int, float)));
@@ -104,19 +104,19 @@ void WavReader::run()
 
       if (++teller >= 20)
       {
-        int xx = sf_seek(filePointer, 0, SEEK_CUR);
+        i32 xx = sf_seek(filePointer, 0, SEEK_CUR);
         f32 progress = (f32)xx / fileLength;
-        setProgress((int)(progress * 100), (f32)xx / 2048000);
+        setProgress((i32)(progress * 100), (f32)xx / 2048000);
         teller = 0;
       }
 
       nextStop += period;
-      int n = sf_readf_float(filePointer, (f32 *)bi, bufferSize);
+      i32 n = sf_readf_float(filePointer, (f32 *)bi, bufferSize);
       if (n < bufferSize)
       {
         fprintf(stderr, "End of file reached\n");
         sf_seek(filePointer, 0, SEEK_SET);
-        for (int i = n; i < bufferSize; i++)
+        for (i32 i = n; i < bufferSize; i++)
         {
           bi[i] = std::complex<f32>(0, 0);
         }
@@ -130,7 +130,7 @@ void WavReader::run()
       }
     }
   }
-  catch (int e)
+  catch (i32 e)
   {
   }
   fprintf(stderr, "taak voor replay eindigt hier\n");

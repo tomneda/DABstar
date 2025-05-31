@@ -31,19 +31,19 @@
 #include	"xml-filewriter.h"
 #include	"device-exceptions.h"
 static
-int     RSP1_Table [] = {0, 24, 19, 43};
+i32     RSP1_Table [] = {0, 24, 19, 43};
 
 static
-int     RSP1A_Table [] = {0, 6, 12, 18, 20, 26, 32, 38, 57, 62};
+i32     RSP1A_Table [] = {0, 6, 12, 18, 20, 26, 32, 38, 57, 62};
 
 static
-int     RSP2_Table [] = {0, 10, 15, 21, 24, 34, 39, 45, 64};
+i32     RSP2_Table [] = {0, 10, 15, 21, 24, 34, 39, 45, 64};
 
 //static
-//int	RSPduo_Table [] = {0, 6, 12, 18, 20, 26, 32, 38, 57, 62};
+//i32	RSPduo_Table [] = {0, 6, 12, 18, 20, 26, 32, 38, 57, 62};
 
 static
-int	get_lnaGRdB (int hwVersion, int lnaState) {
+i32	get_lnaGRdB (i32 hwVersion, i32 lnaState) {
 	switch (hwVersion) {
 	   case 1:
 	      return RSP1_Table [lnaState];
@@ -70,8 +70,8 @@ mir_sdr_DeviceT devDesc [4];
 	sdrplaySettings			= s;
 	this	-> recorderVersion	= recorderVersion;
 	sdrplaySettings	-> beginGroup ("sdrplaySettings");
-	int x	= sdrplaySettings -> value ("position-x", 100). toInt ();
-	int y	= sdrplaySettings -> value ("position-y", 100). toInt ();
+	i32 x	= sdrplaySettings -> value ("position-x", 100). toInt ();
+	i32 y	= sdrplaySettings -> value ("position-y", 100). toInt ();
 	sdrplaySettings	-> endGroup ();
 	setupUi (&myFrame);
 	myFrame. move (QPoint (x, y));
@@ -106,7 +106,7 @@ mir_sdr_DeviceT devDesc [4];
 	         agcControl, SLOT (setChecked (bool)));
 
 	sdrplaySettings		-> beginGroup ("sdrplaySettings");
-	int val		=
+	i32 val		=
 	            sdrplaySettings -> value ("sdrplay-ifgrdb", 20). toInt();
 	if (20 <= val && val <= 59)
 	   new_GRdBValue (val);
@@ -144,7 +144,7 @@ mir_sdr_DeviceT devDesc [4];
 
 	if (numofDevs > 1) {
            sdrplaySelect sdrplaySelector;
-           for (deviceIndex = 0; deviceIndex < (int)numofDevs; deviceIndex ++) {
+           for (deviceIndex = 0; deviceIndex < (i32)numofDevs; deviceIndex ++) {
 #ifndef	__MINGW32__
               sdrplaySelector.
                    addtoList (devDesc [deviceIndex]. DevNm);
@@ -281,10 +281,10 @@ i32	SdrPlayHandler_v2::getVFOFrequency() {
 	return vfoFrequency;
 }
 
-void	SdrPlayHandler_v2::set_ifgainReduction	(int newGain) {
+void	SdrPlayHandler_v2::set_ifgainReduction	(i32 newGain) {
 mir_sdr_ErrT	err;
-//int	GRdB		= GRdBSelector	-> value();
-int	lnaState	= lnaGainSetting -> value();
+//i32	GRdB		= GRdBSelector	-> value();
+i32	lnaState	= lnaGainSetting -> value();
 
 	if (!running. load ())
 	   return;
@@ -296,7 +296,7 @@ int	lnaState	= lnaGainSetting -> value();
 	lnaGRdBDisplay	-> display (get_lnaGRdB (hwVersion, lnaState));
 }
 
-void	SdrPlayHandler_v2::set_lnagainReduction (int lnaState) {
+void	SdrPlayHandler_v2::set_lnagainReduction (i32 lnaState) {
 //mir_sdr_ErrT err;
 
 
@@ -336,11 +336,11 @@ std::complex<i16> localBuf [numSamples];
 	   fprintf (stderr, "Hardware removed\n");
 	if (reset || hwRemoved)
 	   return;
-	for (i = 0; i <  (int)numSamples; i ++)
+	for (i = 0; i <  (i32)numSamples; i ++)
 //	   localBuf [i] = std::complex<i16> (xq [i], xi [i]);
 	   localBuf [i] = std::complex<i16> (xi [i], xq [i]);
-	int n = p -> _I_Buffer. get_ring_buffer_write_available ();
-	if (n >= (int)numSamples) 
+	i32 n = p -> _I_Buffer. get_ring_buffer_write_available ();
+	if (n >= (i32)numSamples)
 	   p -> _I_Buffer. put_data_into_ring_buffer (localBuf, numSamples);
 	else {
 	   p -> _I_Buffer. skip_data_in_ring_buffer (2048000 / 2);
@@ -358,21 +358,21 @@ void	myGainChangeCallback (u32	GRdB,
 	(void)GRdB;
 	(void)lnaGRdB;
 	(void)cbContext;
-//	p -> lnaGRdBDisplay	-> display ((int)lnaGRdB);
+//	p -> lnaGRdBDisplay	-> display ((i32)lnaGRdB);
 }
 
-void	SdrPlayHandler_v2::adjustFreq	(int offset) {
+void	SdrPlayHandler_v2::adjustFreq	(i32 offset) {
 //	vfoFrequency	+= offset;
 //	my_mir_sdr_SetRf ((f64)(vfoFrequency), 1, 0);
 }
 	
 bool	SdrPlayHandler_v2::restartReader	(i32 freq) {
-int	gRdBSystem;
-int	samplesPerPacket;
+i32	gRdBSystem;
+i32	samplesPerPacket;
 mir_sdr_ErrT	err;
-int	GRdB		= GRdBSelector	-> value ();
-int	lnaState	= lnaGainSetting	-> value ();
-int	agc		= agcControl	-> isChecked () ? 1 : 0;
+i32	GRdB		= GRdBSelector	-> value ();
+i32	lnaState	= lnaGainSetting	-> value ();
+i32	agc		= agcControl	-> isChecked () ? 1 : 0;
 
 	vfoFrequency	= freq;
 	if (running. load())
@@ -448,7 +448,7 @@ int	agc		= agcControl	-> isChecked () ? 1 : 0;
 	return true;
 }
 
-void	SdrPlayHandler_v2::voidSignal	(int s) {
+void	SdrPlayHandler_v2::voidSignal	(i32 s) {
 	fprintf (stderr, "signal gehad\n");
 }
 
@@ -483,8 +483,8 @@ mir_sdr_ErrT err;
 //	size still in I/Q pairs
 i32	SdrPlayHandler_v2::getSamples (cf32 *V, i32 size) {
 std::complex<i16> temp [size];
-int i;
-	int amount	= _I_Buffer. get_data_from_ring_buffer (temp, size);
+i32 i;
+	i32 amount	= _I_Buffer. get_data_from_ring_buffer (temp, size);
 	for (i = 0; i < amount; i ++) 
 	   V [i] = cf32 (real (temp [i]) / (f32) denominator,
 	                                imag (temp [i]) / (f32) denominator);
@@ -509,7 +509,7 @@ QString	SdrPlayHandler_v2::deviceName	() {
 	return deviceModel;
 }
 
-void	SdrPlayHandler_v2::set_agcControl (int dummy) {
+void	SdrPlayHandler_v2::set_agcControl (i32 dummy) {
 bool agcMode	= agcControl -> isChecked();
 	(void)dummy;
 	my_mir_sdr_AgcControl (agcMode ? mir_sdr_AGC_5HZ :
@@ -532,12 +532,12 @@ bool agcMode	= agcControl -> isChecked();
 	}
 }
 
-void	SdrPlayHandler_v2::set_debugControl (int debugMode) {
+void	SdrPlayHandler_v2::set_debugControl (i32 debugMode) {
 	(void)debugMode;
 	my_mir_sdr_DebugEnable (debugControl -> isChecked() ? 1 : 0);
 }
 
-void	SdrPlayHandler_v2::set_ppmControl (int ppm) {
+void	SdrPlayHandler_v2::set_ppmControl (i32 ppm) {
 	if (running. load()) {
 	   my_mir_sdr_SetPpm	((f32)ppm);
 	   my_mir_sdr_SetRf	((f32)vfoFrequency, 1, 0);
@@ -821,7 +821,7 @@ ULONG APIkeyValue_length = 255;
 	                   &APIkey) != ERROR_SUCCESS) {
               fprintf (stderr,
 	               "failed to locate API registry entry, error = %d\n",
-	               (int)GetLastError ());
+	               (i32)GetLastError ());
 	      return false;
 	   }
 
@@ -947,7 +947,7 @@ QString	saveDir	= sdrplaySettings -> value (sSettingSampleStorageDir,
 	                                                       toString ();
 	QString timeString      = theDate. currentDate (). toString () + "-" +
 	                           theTime. currentTime(). toString ();
-	for (int i = 0; i < timeString. length (); i ++)
+	for (i32 i = 0; i < timeString. length (); i ++)
            if (!isValid (timeString. at (i)))
               timeString. replace (i, 1, '-');
 	
@@ -974,7 +974,7 @@ QString	saveDir	= sdrplaySettings -> value (sSettingSampleStorageDir,
 	dumping. store (true);
 
 	QString dumper	= QDir::fromNativeSeparators (fileName);
-	int x		= dumper. lastIndexOf ("/");
+	i32 x		= dumper. lastIndexOf ("/");
         saveDir		= dumper. remove (x, dumper. size () - x);
 	sdrplaySettings	-> setValue (sSettingSampleStorageDir, saveDir);
 	return true;
@@ -997,10 +997,10 @@ void	SdrPlayHandler_v2::close_xmlDump () {
 //
 //	the frequency (the MHz component) is used as key
 //
-void	SdrPlayHandler_v2::record_gainSettings (int freq) {
-int	GRdB		= GRdBSelector		-> value ();
-int	lnaState	= lnaGainSetting	-> value ();
-int	agc		= agcControl		-> isChecked () == 1;
+void	SdrPlayHandler_v2::record_gainSettings (i32 freq) {
+i32	GRdB		= GRdBSelector		-> value ();
+i32	lnaState	= lnaGainSetting	-> value ();
+i32	agc		= agcControl		-> isChecked () == 1;
 QString theValue	= QString::number (GRdB) + ":";
 
 	theValue. append (QString::number (lnaState));
@@ -1012,10 +1012,10 @@ QString theValue	= QString::number (GRdB) + ":";
 	sdrplaySettings		-> endGroup ();
 }
 
-void	SdrPlayHandler_v2::update_gainSettings (int freq) {
-int	GRdB;
-int	lnaState;
-int	agc;
+void	SdrPlayHandler_v2::update_gainSettings (i32 freq) {
+i32	GRdB;
+i32	lnaState;
+i32	agc;
 QString	theValue	= "";
 
 	sdrplaySettings	-> beginGroup ("sdrplaySettings");
@@ -1055,7 +1055,7 @@ QString	theValue	= "";
 	agcControl	-> blockSignals (false);
 }
 
-void	SdrPlayHandler_v2::biasT_selectorHandler (int k) {
+void	SdrPlayHandler_v2::biasT_selectorHandler (i32 k) {
 bool setting = biasT_selector -> isChecked ();
 	sdrplaySettings -> setValue ("biasT_selector", setting ? 1 : 0);
 	switch (hwVersion) {

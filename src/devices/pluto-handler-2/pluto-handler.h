@@ -67,22 +67,22 @@ typedef struct iio_context * (*pfn_iio_create_default_context)(void);
 typedef struct iio_context * (*pfn_iio_create_local_context) (void);
 typedef struct iio_context * (*pfn_iio_create_network_context)(const char *host);
 typedef const char * (*pfn_iio_context_get_name)(const struct iio_context *ctx);
-typedef unsigned int (*pfn_iio_context_get_devices_count)(
+typedef u32 (*pfn_iio_context_get_devices_count)(
                                    const struct iio_context *ctx);
 typedef struct iio_device * (*pfn_iio_context_find_device)(
                                    const struct iio_context *ctx,
 	                           const char *name);
 typedef void (*pfn_iio_channel_enable)(struct iio_channel *chn);
 
-typedef int (*pfn_iio_device_attr_write_bool)(const struct iio_device *dev,
+typedef i32 (*pfn_iio_device_attr_write_bool)(const struct iio_device *dev,
                                           const char *attr, bool val);
-typedef int (*pfn_iio_device_attr_read_bool)(const struct iio_device *dev,
+typedef i32 (*pfn_iio_device_attr_read_bool)(const struct iio_device *dev,
                                          const char *attr, bool *val);
 
-typedef int (*pfn_iio_channel_attr_read_bool)(
+typedef i32 (*pfn_iio_channel_attr_read_bool)(
 	                                 const struct iio_channel *chn,
                                          const char *attr, bool *val);
-typedef int (*pfn_iio_channel_attr_write_bool)(
+typedef i32 (*pfn_iio_channel_attr_write_bool)(
 	                                 const struct iio_channel *chn,
                                          const char *attr, bool val);
 
@@ -90,14 +90,14 @@ typedef ssize_t (*pfn_iio_channel_attr_write)(
 	                                 const struct iio_channel *chn,
                                          const char *attr,
 	                                 const char *src);
-typedef int (*pfn_iio_channel_attr_write_longlong)(
+typedef i32 (*pfn_iio_channel_attr_write_longlong)(
 	                                 const struct iio_channel *chn,
                                          const char *attr,
-	                                 long long val);
-typedef int (*pfn_iio_device_attr_write_longlong)(
+	                                 i64 val);
+typedef i32 (*pfn_iio_device_attr_write_longlong)(
 	                                 const struct iio_device *dev,
                                          const char *attr,
-	                                 long long val);
+	                                 i64 val);
 typedef ssize_t (*pfn_iio_device_attr_write_raw)(
 	                                 const struct iio_device *dev,
                                          const char *attr,
@@ -105,7 +105,7 @@ typedef ssize_t (*pfn_iio_device_attr_write_raw)(
 
 typedef struct iio_buffer * (*pfn_iio_device_create_buffer)(const struct iio_device *dev,
                                    size_t samples_count, bool cyclic);
-typedef int  (*pfn_iio_buffer_set_blocking_mode)(struct iio_buffer *buf,
+typedef i32  (*pfn_iio_buffer_set_blocking_mode)(struct iio_buffer *buf,
 	                           bool blocking);
 typedef void (*pfn_iio_buffer_destroy) (struct iio_buffer *buf);
 typedef void (*pfn_iio_context_destroy) (struct iio_context *ctx);
@@ -117,9 +117,9 @@ typedef void * (*pfn_iio_buffer_first)(const struct iio_buffer *buf,
                                    const struct iio_channel *chn);
 
 struct stream_cfg {
-        long long bw_hz;
-        long long fs_hz;
-        long long lo_hz;
+        i64 bw_hz;
+        i64 fs_hz;
+        i64 lo_hz;
         const char *rfport;
 };
 
@@ -171,20 +171,20 @@ private:
 	struct stream_cfg	rx_cfg;
 	bool			connected;
 	cf32	convBuffer	[CONV_SIZE + 1];
-	int			convIndex;
+	i32			convIndex;
 	i16			mapTable_int	[DAB_RATE / DIVIDER];
 	f32			mapTable_float	[DAB_RATE / DIVIDER];
 
-	void			record_gainSettings	(int);
-	void			update_gainSettings	(int);
+	void			record_gainSettings	(i32);
+	void			update_gainSettings	(i32);
 	bool			save_gainSettings;
 //
-	int			ad9361_set_trx_fir_enable (
+	i32			ad9361_set_trx_fir_enable (
                                                  struct iio_device *dev,
-	                                         int enable);
-	int			ad9361_get_trx_fir_enable (
+	                                         i32 enable);
+	i32			ad9361_get_trx_fir_enable (
 	                                         struct iio_device *dev,
-	                                         int *enable);
+	                                         i32 *enable);
 	struct iio_device* 	get_ad9361_phy (struct iio_context *ctx);
 	bool			get_ad9361_stream_dev (
 	                                        struct iio_context *ctx,
@@ -194,11 +194,11 @@ private:
 	                                 __notused struct iio_context *ctx,
                                          enum iodev d,
                                          struct iio_device *dev,
-                                         int chid,
+                                         i32 chid,
                                          struct iio_channel **chn);
 	bool			get_phy_chan (struct iio_context *ctx,
                                               enum iodev d,
-	                                      int chid,
+	                                      i32 chid,
 	                                      struct iio_channel **chn);
 	bool			get_lo_chan (struct iio_context *ctx,
                                              enum iodev d,
@@ -206,7 +206,7 @@ private:
 	bool		        cfg_ad9361_streaming_ch (
 	                                     struct iio_context *ctx,
                                              struct stream_cfg *cfg,
-                                             enum iodev type, int chid);
+                                             enum iodev type, i32 chid);
 
 
 	pfn_iio_device_find_channel
@@ -263,11 +263,11 @@ private:
 		                iio_buffer_first;
 
 signals:
-	void		new_gainValue		(int);
+	void		new_gainValue		(i32);
 	void		new_agcValue		(bool);
 private slots:
-	void		set_gainControl		(int);
-	void		set_agcControl		(int);
+	void		set_gainControl		(i32);
+	void		set_agcControl		(i32);
 	void		toggle_debugButton	();
 	void		set_filter		();
 	void		set_xmlDump		();

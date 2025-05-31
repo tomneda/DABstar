@@ -8,7 +8,7 @@
 #define NUMSTATES 64
 
 typedef struct {
-	unsigned int w[NUMSTATES / 32];
+	u32 w[NUMSTATES / 32];
 } decision_t;
 
 class ViterbiSpiral
@@ -17,11 +17,11 @@ public:
   explicit ViterbiSpiral(const short iWordlength, const bool iSpiralMode = false);
   ~ViterbiSpiral();
 
-  void deconvolve(const short * const input, unsigned char * const output);
-  void calculate_BER(const short * const input, unsigned char *punctureTable,
-  	                 unsigned char const *output, int &bits, int &errors);
+  void deconvolve(const short * const input, u8 * const output);
+  void calculate_BER(const short * const input, u8 *punctureTable,
+  	                 u8 const *output, i32 &bits, i32 &errors);
 private:
-  int parity(int);
+  i32 parity(i32);
   const short mFrameBits;
   const bool mSpiral;
   decision_t *decisions  = nullptr;

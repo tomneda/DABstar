@@ -56,36 +56,36 @@ typedef void (* mir_sdr_GainChangeCallback_t)(u32 gRdB, u32 lnaGRdB, void * cbCo
 class XmlFileWriter;
 
 // Dll and ".so" function prototypes
-typedef mir_sdr_ErrT (* pfn_mir_sdr_StreamInit)(int * gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, int LNAEnable, int * gRdBsystem, int useGrAltMode, int * samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void * cbContext);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_Reinit)(int * gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, mir_sdr_LoModeT, int, int *, int, int *, mir_sdr_ReasonForReinitT);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_StreamInit)(i32 * gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, i32 LNAEnable, i32 * gRdBsystem, i32 useGrAltMode, i32 * samplesPerPacket, mir_sdr_StreamCallback_t StreamCbFn, mir_sdr_GainChangeCallback_t GainChangeCbFn, void * cbContext);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_Reinit)(i32 * gRdB, f64 fsMHz, f64 rfMHz, mir_sdr_Bw_MHzT bwType, mir_sdr_If_kHzT ifType, mir_sdr_LoModeT, i32, i32 *, i32, i32 *, mir_sdr_ReasonForReinitT);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_StreamUninit)();
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetRf)(f64 drfHz, int abs, int syncUpdate);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetFs)(f64 dfsHz, int abs, int syncUpdate, int reCal);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetGr)(int gRdB, int abs, int syncUpdate);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_RSP_SetGr)(int gRdB, int lnaState, int abs, int syncUpdate);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetGrParams)(int minimumGr, int lnaGrThreshold);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetDcMode)(int dcCal, int speedUp);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetDcTrackTime)(int trackTime);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetSyncUpdateSampleNum)(unsigned int sampleNum);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetSyncUpdatePeriod)(unsigned int period);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetRf)(f64 drfHz, i32 abs, i32 syncUpdate);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetFs)(f64 dfsHz, i32 abs, i32 syncUpdate, i32 reCal);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetGr)(i32 gRdB, i32 abs, i32 syncUpdate);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_RSP_SetGr)(i32 gRdB, i32 lnaState, i32 abs, i32 syncUpdate);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetGrParams)(i32 minimumGr, i32 lnaGrThreshold);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetDcMode)(i32 dcCal, i32 speedUp);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetDcTrackTime)(i32 trackTime);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetSyncUpdateSampleNum)(u32 sampleNum);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetSyncUpdatePeriod)(u32 period);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_ApiVersion)(f32 * version);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_ResetUpdateFlags)(int resetGainUpdate, int resetRfUpdate, int resetFsUpdate);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_AgcControl)(u32, int, int, u32, u32, int, int);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_ResetUpdateFlags)(i32 resetGainUpdate, i32 resetRfUpdate, i32 resetFsUpdate);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_AgcControl)(u32, i32, i32, u32, u32, i32, i32);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_DCoffsetIQimbalanceControl)(u32, u32);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_SetPpm)(f64);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_DebugEnable)(u32);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_GetDevices)(mir_sdr_DeviceT *, u32 *, u32);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_GetCurrentGain)(mir_sdr_GainValuesT *);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_GetHwVersion)(unsigned char *);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_GetHwVersion)(u8 *);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_RSPII_AntennaControl)(mir_sdr_RSPII_AntennaSelectT);
 typedef mir_sdr_ErrT (* pfn_mir_sdr_rspDuo_TunerSel)(mir_sdr_rspDuo_TunerSelT);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_SetDeviceIdx)(unsigned int);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_ReleaseDeviceIdx)(unsigned int);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_RSPII_RfNotchEnable)(unsigned int);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_SetDeviceIdx)(u32);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_ReleaseDeviceIdx)(u32);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_RSPII_RfNotchEnable)(u32);
 
-typedef mir_sdr_ErrT (* pfn_mir_sdr_RSPII_BiasTControl)(unsigned int enable);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_rsp1a_BiasT)(int enable);
-typedef mir_sdr_ErrT (* pfn_mir_sdr_rspDuo_BiasT)(int enable);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_RSPII_BiasTControl)(u32 enable);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_rsp1a_BiasT)(i32 enable);
+typedef mir_sdr_ErrT (* pfn_mir_sdr_rspDuo_BiasT)(i32 enable);
 
 ///////////////////////////////////////////////////////////////////////////
 class SdrPlayHandler_v2 final : public QObject, public IDeviceHandler, public Ui_sdrplayWidget
@@ -110,7 +110,7 @@ public:
   bool isFileInput() override;
 
 
-  void adjustFreq(int);
+  void adjustFreq(i32);
   i32 defaultFrequency();
   QPoint get_coords();
   void moveTo(QPoint);
@@ -170,31 +170,31 @@ private:
   bool agcMode;
   i16 nrBits;
 
-  int lnaMax;
+  i32 lnaMax;
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> dumping;
   //	experimental
-  void record_gainSettings(int);
-  void update_gainSettings(int);
+  void record_gainSettings(i32);
+  void update_gainSettings(i32);
   bool save_gainSettings;
 signals:
-  void new_GRdBValue(int);
-  void new_lnaValue(int);
+  void new_GRdBValue(i32);
+  void new_lnaValue(i32);
   void new_agcSetting(bool);
 private slots:
-  void set_ifgainReduction(int);
-  void set_lnagainReduction(int);
-  void set_agcControl(int);
-  void set_debugControl(int);
-  void set_ppmControl(int);
+  void set_ifgainReduction(i32);
+  void set_lnagainReduction(i32);
+  void set_agcControl(i32);
+  void set_debugControl(i32);
+  void set_ppmControl(i32);
   void set_antennaSelect(const QString &);
   void set_tunerSelect(const QString &);
   void set_xmlDump();
-  void voidSignal(int);
-  void biasT_selectorHandler(int);
+  void voidSignal(i32);
+  void biasT_selectorHandler(i32);
 };
 
 #endif

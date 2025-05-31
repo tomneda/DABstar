@@ -105,8 +105,8 @@ private:
   void _dump_samples_to_file(const cf32 * const ipV, const i32 iNoSamples);
 
 signals:
-  void signal_show_spectrum(int);
-  void signal_show_cir(int);
+  void signal_show_spectrum(i32);
+  void signal_show_cir(i32);
 };
 
 #endif

@@ -178,14 +178,14 @@ i32 XmlFileReader::Samples()
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-void XmlFileReader::slot_set_progress(int samplesRead, int samplesToRead)
+void XmlFileReader::slot_set_progress(i32 samplesRead, i32 samplesToRead)
 {
   fileProgress->setValue((f32)samplesRead / samplesToRead * 100);
   currentTime->display(QString("%1").arg(samplesRead / 2048000.0, 0, 'f', 1));
   totalTime->display(QString("%1").arg(samplesToRead / 2048000.0, 0, 'f', 1));
 }
 
-int XmlFileReader::getVFOFrequency()
+i32 XmlFileReader::getVFOFrequency()
 {
   return theDescriptor->blockList[0].frequency;
 }

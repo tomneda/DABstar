@@ -83,12 +83,12 @@ i16 pinit, p1, p2, p3, p4, p5, p6, p7, p8;
 	   }
 	}
 
-	d_g		= new int [NUM_PARITY];
+	d_g		= new i32 [NUM_PARITY];
 	create_polynomials (d_j); // construct the generator polynomial
-	d_reg		= new int [NUM_PARITY];
-	syndrome	= new int [NUM_PARITY];
-	d_euc[0]	= new int [NUM_PARITY + 2];
-	d_euc[1]	= new int [NUM_PARITY + 2];
+	d_reg		= new i32 [NUM_PARITY];
+	syndrome	= new i32 [NUM_PARITY];
+	d_euc[0]	= new i32 [NUM_PARITY + 2];
+	d_euc[1]	= new i32 [NUM_PARITY + 2];
 }
 
 	rscodec::~rscodec() {
@@ -99,7 +99,7 @@ i16 pinit, p1, p2, p3, p4, p5, p6, p7, p8;
 	delete [] d_euc [1];
 }
 
-void rscodec::create_polynomials (int start_j) {
+void rscodec::create_polynomials (i32 start_j) {
 i16 i;
 i16 tmp_g, tmp_g2;
 i16	k;

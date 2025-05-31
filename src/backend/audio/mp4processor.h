@@ -102,15 +102,15 @@ private:
 #endif
 
   bool _process_super_frame(u8 [], i16);
-  int _build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer);
+  i32 _build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer);
 
 signals:
-  void signal_show_frame_errors(int);
-  void signal_show_rs_errors(int);
-  void signal_show_aac_errors(int);
+  void signal_show_frame_errors(i32);
+  void signal_show_rs_errors(i32);
+  void signal_show_aac_errors(i32);
   void signal_is_stereo(bool);
-  void signal_new_frame(int);
-  void signal_show_rs_corrections(int, int);
+  void signal_new_frame(i32);
+  void signal_show_rs_corrections(i32, i32);
 };
 
 #endif

@@ -77,15 +77,15 @@ lms_info_str_t limedevices [10];
         }
 //
 //      From here we have a library available
-	int ndevs	= LMS_GetDeviceList (limedevices);
+	i32 ndevs	= LMS_GetDeviceList (limedevices);
 	if (ndevs == 0) {	// no devices found
 	   throw (std_exception_string ("No lime device found"));
 	}
 
-	for (int i = 0; i < ndevs; i ++)
+	for (i32 i = 0; i < ndevs; i ++)
 	   fprintf (stderr, "device %s\n", limedevices [i]);
 
-	int res		= LMS_Open (&theDevice, nullptr, nullptr);
+	i32 res		= LMS_Open (&theDevice, nullptr, nullptr);
 	if (res < 0) {	// some error
 	   throw (std_exception_string ("failed to open device"));
 	}
@@ -123,7 +123,7 @@ lms_info_str_t limedevices [10];
 	fprintf (stderr, "samplerate = %f %f\n", (f32)host_Hz, (f32)rf_Hz);
 	
 	res		= LMS_GetAntennaList (theDevice, LMS_CH_RX, 0, antennas);
-	for (int i = 0; i < res; i ++) 	
+	for (i32 i = 0; i < res; i ++)
 	   antennaList	-> addItem (QString (antennas [i]));
 
 	limeSettings -> beginGroup ("limeSettings");
@@ -132,7 +132,7 @@ lms_info_str_t limedevices [10];
 	          limeSettings -> value ("save_gainSettings", 1). toInt () != 0;
 	limeSettings	-> endGroup();
 
-	int k       = antennaList -> findText (antenne);
+	i32 k       = antennaList -> findText (antenne);
         if (k != -1) 
            antennaList -> setCurrentIndex (k);
 	
@@ -201,28 +201,28 @@ void	LimeHandler::setVFOFrequency	(i32 f) {
 
 i32	LimeHandler::getVFOFrequency() {
 float_type freq;
-	/*int res = */LMS_GetLOFrequency (theDevice, LMS_CH_RX, 0, &freq);
-	return (int)freq;
+	/*i32 res = */LMS_GetLOFrequency (theDevice, LMS_CH_RX, 0, &freq);
+	return (i32)freq;
 }
 
-void	LimeHandler::setGain		(int g) {
+void	LimeHandler::setGain		(i32 g) {
 float_type gg;
 	LMS_SetGaindB (theDevice, LMS_CH_RX, 0, g);
 	LMS_GetNormalizedGain (theDevice, LMS_CH_RX, 0, &gg);
 	actualGain	-> display (gg);
 }
 
-void	LimeHandler::setAntenna		(int ind) {
+void	LimeHandler::setAntenna		(i32 ind) {
 	(void)LMS_SetAntenna (theDevice, LMS_CH_RX, 0, ind);
 }
 
-void	LimeHandler::set_filter		(int c) {
+void	LimeHandler::set_filter		(i32 c) {
 	filtering	= filterSelector -> isChecked ();
 	fprintf (stderr, "filter set %s\n", filtering ? "on" : "off");
 }
 
 bool	LimeHandler::restartReader	(i32 freq) {
-int	res;
+i32	res;
 
 	if (isRunning())
 	   return true;
@@ -264,22 +264,22 @@ void	LimeHandler::stopReader() {
 	(void)LMS_DestroyStream	(theDevice, &stream);
 }
 
-int	LimeHandler::getSamples	(cf32 *V, i32 size) {
+i32	LimeHandler::getSamples	(cf32 *V, i32 size) {
 std::complex<i16> temp [size];
 
-        int amount      = _I_Buffer. get_data_from_ring_buffer (temp, size);
+        i32 amount      = _I_Buffer. get_data_from_ring_buffer (temp, size);
 	if (filtering) {
 	   if (filterDepth -> value () != currentDepth) {
 	      currentDepth = filterDepth -> value ();
 	      theFilter. resize (currentDepth);
 	   }
-           for (int i = 0; i < amount; i ++) 
+           for (i32 i = 0; i < amount; i ++)
 	      V [i] = theFilter. Pass (cf32 (
 	                                         real (temp [i]) / 2048.0,
 	                                         imag (temp [i]) / 2048.0));
 	}
 	else
-           for (int i = 0; i < amount; i ++)
+           for (i32 i = 0; i < amount; i ++)
               V [i] = cf32 (real (temp [i]) / 2048.0,
                                            imag (temp [i]) / 2048.0);
         if (dumping. load ())
@@ -287,7 +287,7 @@ std::complex<i16> temp [size];
         return amount;
 }
 
-int	LimeHandler::Samples() {
+i32	LimeHandler::Samples() {
 	return _I_Buffer. get_ring_buffer_read_available();
 }
 
@@ -303,19 +303,19 @@ QString	LimeHandler::deviceName	() {
 	return "limeSDR";
 }
 
-void	LimeHandler::showErrors		(int underrun, int overrun) {
+void	LimeHandler::showErrors		(i32 underrun, i32 overrun) {
 	underrunDisplay	-> display (underrun);
 	overrunDisplay	-> display (overrun);
 }
 
 
 void	LimeHandler::run() {
-int	res;
+i32	res;
 lms_stream_status_t streamStatus;
-int	underruns	= 0;
-int	overruns	= 0;
-//int	dropped		= 0;
-int	amountRead	= 0;
+i32	underruns	= 0;
+i32	overruns	= 0;
+//i32	dropped		= 0;
+i32	amountRead	= 0;
 
 	running. store (true);
 	while (running. load()) {
@@ -533,7 +533,7 @@ QString saveDir = limeSettings -> value (sSettingSampleStorageDir,
 	                                                      toString ();
 	QString timeString      = theDate. currentDate (). toString () + "-" +
 	                          theTime. currentTime (). toString ();
-	for (int i = 0; i < timeString. length (); i ++)
+	for (i32 i = 0; i < timeString. length (); i ++)
 	if (!isValid (timeString. at (i)))
 	   timeString. replace (i, 1, '-');
         QString suggestedFileName =
@@ -559,7 +559,7 @@ QString saveDir = limeSettings -> value (sSettingSampleStorageDir,
 	dumping. store (true);
 
 	QString dumper	= QDir::fromNativeSeparators (fileName);
-	int x		= dumper. lastIndexOf ("/");
+	i32 x		= dumper. lastIndexOf ("/");
 	saveDir		= dumper. remove (x, dumper. size () - x);
 	limeSettings -> setValue (sSettingSampleStorageDir, saveDir);
 	return true;
@@ -588,8 +588,8 @@ bool	LimeHandler::isHidden	() {
 	return myFrame. isHidden ();
 }
 
-void	LimeHandler::record_gainSettings	(int key) {
-int gainValue	= gainSelector -> value ();
+void	LimeHandler::record_gainSettings	(i32 key) {
+i32 gainValue	= gainSelector -> value ();
 QString theValue	= QString::number (gainValue);
 
 	limeSettings	-> beginGroup ("limeSettings");
@@ -597,8 +597,8 @@ QString theValue	= QString::number (gainValue);
         limeSettings	-> endGroup ();
 }
 
-void	LimeHandler::update_gainSettings	(int key) {
-int	gainValue;
+void	LimeHandler::update_gainSettings	(i32 key) {
+i32	gainValue;
 
 	limeSettings	-> beginGroup ("limeSettings");
         gainValue	= limeSettings -> value (QString::number (key), -1). toInt ();

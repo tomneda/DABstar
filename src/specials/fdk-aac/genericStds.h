@@ -158,19 +158,19 @@ typedef enum {
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define H_ALLOC_MEM(name, type) \
-  type *Get##name(int n = 0);   \
+  type *Get##name(i32 n = 0);   \
   void Free##name(type **p);    \
   UINT GetRequiredMem##name(void);
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define H_ALLOC_MEM_OVERLAY(name, type) \
-  type *Get##name(int n = 0);           \
+  type *Get##name(i32 n = 0);           \
   void Free##name(type **p);            \
   UINT GetRequiredMem##name(void);
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define C_ALLOC_MEM(name, type, num)               \
-  type *Get##name(int n) {                         \
+  type *Get##name(i32 n) {                         \
     FDK_ASSERT((n) == 0);                          \
     return ((type *)FDKcalloc(num, sizeof(type))); \
   }                                                \
@@ -186,7 +186,7 @@ typedef enum {
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define C_ALLOC_MEM2(name, type, n1, n2)                 \
-  type *Get##name(int n) {                               \
+  type *Get##name(i32 n) {                               \
     FDK_ASSERT((n) < (n2));                              \
     return ((type *)FDKcalloc(n1, sizeof(type)));        \
   }                                                      \
@@ -202,7 +202,7 @@ typedef enum {
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define C_AALLOC_MEM(name, type, num)                                  \
-  type *Get##name(int n) {                                             \
+  type *Get##name(i32 n) {                                             \
     type *ap;                                                          \
     FDK_ASSERT((n) == 0);                                              \
     ap = ((type *)FDKaalloc((num) * sizeof(type), ALIGNMENT_DEFAULT)); \
@@ -221,7 +221,7 @@ typedef enum {
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define C_AALLOC_MEM2(name, type, n1, n2)                             \
-  type *Get##name(int n) {                                            \
+  type *Get##name(i32 n) {                                            \
     type *ap;                                                         \
     FDK_ASSERT((n) < (n2));                                           \
     ap = ((type *)FDKaalloc((n1) * sizeof(type), ALIGNMENT_DEFAULT)); \
@@ -241,7 +241,7 @@ typedef enum {
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define C_ALLOC_MEM_L(name, type, num, s)               \
-  type *Get##name(int n) {                              \
+  type *Get##name(i32 n) {                              \
     FDK_ASSERT((n) == 0);                               \
     return ((type *)FDKcalloc_L(num, sizeof(type), s)); \
   }                                                     \
@@ -257,7 +257,7 @@ typedef enum {
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define C_ALLOC_MEM2_L(name, type, n1, n2, s)            \
-  type *Get##name(int n) {                               \
+  type *Get##name(i32 n) {                               \
     FDK_ASSERT((n) < (n2));                              \
     return (type *)FDKcalloc_L(n1, sizeof(type), s);     \
   }                                                      \
@@ -273,7 +273,7 @@ typedef enum {
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define C_AALLOC_MEM_L(name, type, num, s)                                  \
-  type *Get##name(int n) {                                                  \
+  type *Get##name(i32 n) {                                                  \
     type *ap;                                                               \
     FDK_ASSERT((n) == 0);                                                   \
     ap = ((type *)FDKaalloc_L((num) * sizeof(type), ALIGNMENT_DEFAULT, s)); \
@@ -292,7 +292,7 @@ typedef enum {
 
 /** See \ref SYSLIB_MEMORY_MACROS for description. */
 #define C_AALLOC_MEM2_L(name, type, n1, n2, s)                             \
-  type *Get##name(int n) {                                                 \
+  type *Get##name(i32 n) {                                                 \
     type *ap;                                                              \
     FDK_ASSERT((n) < (n2));                                                \
     ap = ((type *)FDKaalloc_L((n1) * sizeof(type), ALIGNMENT_DEFAULT, s)); \
@@ -387,7 +387,7 @@ void FDKprintf(const char *szFmt, ...);
 void FDKprintfErr(const char *szFmt, ...);
 
 /** Wrapper for <cstdio>'s getchar(). */
-int FDKgetchar(void);
+i32 FDKgetchar(void);
 
 INT FDKfprintf(void *stream, const char *format, ...);
 INT FDKsprintf(char *str, const char *format, ...);
@@ -509,7 +509,7 @@ UINT FDKstrlen(const char *s);
  *
  * \return  1 if platform is little endian, non-1 if platform is big endian.
  */
-int IS_LITTLE_ENDIAN(void);
+i32 IS_LITTLE_ENDIAN(void);
 
 /*!
  *  Convert input value to little endian format.
@@ -524,7 +524,7 @@ UINT TO_LITTLE_ENDIAN(UINT val);
  *         Standard fopen() wrapper.
  * \fn     INT FDKfclose(FDKFILE *FP);
  *         Standard fclose() wrapper.
- * \fn     INT FDKfseek(FDKFILE *FP, LONG OFFSET, int WHENCE);
+ * \fn     INT FDKfseek(FDKFILE *FP, LONG OFFSET, i32 WHENCE);
  *         Standard fseek() wrapper.
  * \fn     INT FDKftell(FDKFILE *FP);
  *         Standard ftell() wrapper.
@@ -540,7 +540,7 @@ extern const INT FDKSEEK_SET, FDKSEEK_CUR, FDKSEEK_END;
 
 FDKFILE *FDKfopen(const char *filename, const char *mode);
 INT FDKfclose(FDKFILE *FP);
-INT FDKfseek(FDKFILE *FP, LONG OFFSET, int WHENCE);
+INT FDKfseek(FDKFILE *FP, LONG OFFSET, i32 WHENCE);
 INT FDKftell(FDKFILE *FP);
 INT FDKfflush(FDKFILE *fp);
 UINT FDKfwrite(const void *ptrf, INT size, UINT nmemb, FDKFILE *fp);

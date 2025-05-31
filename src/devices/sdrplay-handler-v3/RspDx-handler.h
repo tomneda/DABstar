@@ -9,14 +9,14 @@ class RspDx_handler : public Rsp_device
 {
 public:
   RspDx_handler(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenDevice,
-                int freq, bool agcMode, int lnaState, int GRdB, bool biasT, bool notch, f64 ppmValue);
+                i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue);
   ~RspDx_handler() override = default;
 
-  int lnaStates(int frequency) override;
-  bool restart(int freq) override;
-  bool set_lna(int lnaState) override;
-  bool set_antenna(int antenna) override;
-  bool set_amPort(int amPort) override;
+  i32 lnaStates(i32 frequency) override;
+  bool restart(i32 freq) override;
+  bool set_lna(i32 lnaState) override;
+  bool set_antenna(i32 antenna) override;
+  bool set_amPort(i32 amPort) override;
   bool set_biasT(bool biasT) override;
   bool set_notch(bool) override;
 };

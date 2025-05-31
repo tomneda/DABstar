@@ -2,7 +2,7 @@
 #include <cstdio>
 #include "impl.h"
 
-int main(int /*argc*/, const char ** /*argv*/)
+i32 main(i32 /*argc*/, const char ** /*argv*/)
 {
     SSE2NEON::SSE2NEONTest *test = SSE2NEON::SSE2NEONTest::create();
     u32 passCount = 0;

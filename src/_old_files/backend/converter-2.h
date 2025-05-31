@@ -114,7 +114,7 @@ public:
 bool	add	(i16 in_re,  i16 in_im,
 	         i16 *out, i16 *nOut) {
 i32	i;
-int	outP		= 0;
+i32	outP		= 0;
 f64	endTime;
 
 	buffer [bufferP ++] = DSPCOMPLEX (in_re, in_im);

@@ -87,9 +87,9 @@ private:
   void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);
 
 private slots:
-  void _slot_set_external_gain(int) const;
-  void _slot_set_f_correction(int) const;
-  void _slot_set_khz_offset(int);
+  void _slot_set_external_gain(i32) const;
+  void _slot_set_f_correction(i32) const;
+  void _slot_set_khz_offset(i32);
   void _slot_handle_ant_selector(const QString &);
 };
 

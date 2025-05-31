@@ -81,9 +81,9 @@ i16	i;
 	fileLength	= ftell (theFile);
 	fseek (theFile, 0, SEEK_SET);
 	fprintf (stderr, "samples per minute: %d\n",
-	                          (int)(60 / seconds_per_sample));
+	                          (i32)(60 / seconds_per_sample));
 	fprintf (stderr, "duration of record: %d seconds\n", 
-	                     (int)(fileLength / sizeof (f32) * seconds_per_sample));
+	                     (i32)(fileLength / sizeof (f32) * seconds_per_sample));
 	show_segment (0, 1);
 }
 //
@@ -91,35 +91,35 @@ i16	i;
 	dumpViewer::~dumpViewer	(void) {
 }
 
-void	dumpViewer::handle_viewSlider	(int pos) {
+void	dumpViewer::handle_viewSlider	(i32 pos) {
 	show_segment (pos, compressor -> value ());
 }
 
-void	dumpViewer::handle_amplitudeSlider (int h) {
+void	dumpViewer::handle_amplitudeSlider (i32 h) {
 	(void)h;
 	show_segment (viewSlider -> value (), 
 	              compressor -> value ());
 }
 
-void	dumpViewer::handle_compressor	(int h) {
+void	dumpViewer::handle_compressor	(i32 h) {
 	show_segment (viewSlider -> value (), h);
 }
 
 //
 //	pos is the pos of the slider, so a value between 0 .. 100
-void	dumpViewer::show_segment (int pos, int compression) {
+void	dumpViewer::show_segment (i32 pos, i32 compression) {
 f64	X_axis [512];
 f64	Y_Values [512];
 f32	temp [512 * compression];
-int	lengthF	=  fileLength / sizeof (f32);
-int	p	= pos * lengthF / 100;
-	for (int i = 0; i < 512; i ++)
+i32	lengthF	=  fileLength / sizeof (f32);
+i32	p	= pos * lengthF / 100;
+	for (i32 i = 0; i < 512; i ++)
 	   X_axis [i] = (p + i) * compression * seconds_per_sample;
 
 	memset (Y_Values, 0, sizeof (f64) * 512);
 	fseek (theFile, p * sizeof (f32), SEEK_SET);
-	int length = fread (temp, sizeof (f32), 512 * compression, theFile);
-	for (int i = 0; i < length / compression; i ++)
+	i32 length = fread (temp, sizeof (f32), 512 * compression, theFile);
+	for (i32 i = 0; i < length / compression; i ++)
 	   Y_Values [i] = temp [i * compression];
 
 	plotgrid        -> setAxisScale (QwtPlot::xBottom,

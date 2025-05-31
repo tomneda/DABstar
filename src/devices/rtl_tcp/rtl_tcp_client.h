@@ -77,7 +77,7 @@ private:
   void sendCommand(u8, i32);
   QLineEdit * hostLineEdit;
   bool isvalidRate(i32);
-  void setAgcMode(int);
+  void setAgcMode(i32);
   QSettings * remoteSettings;
   i32 Bitrate;
   i32 vfoFrequency;
@@ -98,14 +98,14 @@ private:
   bool dongle_info_received = false;
 
 private slots:
-  void sendGain(int);
+  void sendGain(i32);
   void set_fCorrection(f64);
   void readData();
   void wantConnect();
   void setDisconnect();
-  void setBiasT(int);
-  void setBandwidth(int);
-  void setPort(int);
+  void setBiasT(i32);
+  void setBandwidth(i32);
+  void setPort(i32);
   void setAddress();
   void handle_hw_agc();
   void handle_sw_agc();

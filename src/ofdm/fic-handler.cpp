@@ -76,7 +76,7 @@ FicHandler::FicHandler(DabRadio * const iMr)
   //	(even through all instances, so we could create a static
   //	table), we make an punctureTable that contains the indices of
   //	the ofdmInput table
-  int local = 0;
+  i32 local = 0;
 
   for (i16 i = 0; i < 21; i++)
   {
@@ -259,10 +259,10 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
       continue;
     }
 
-    for (int j = 0; j < 32; j++)
+    for (i32 j = 0; j < 32; j++)
     {
       ficBuffer[j] = static_cast<std::byte>(0);
-      for (int k = 0; k < 8; k++)
+      for (i32 k = 0; k < 8; k++)
       {
         ficBuffer[j] <<= 1;
         ficBuffer[j] &= static_cast<std::byte>(0xFE);
@@ -321,18 +321,18 @@ void FicHandler::stop_fic_dump()
 
 void FicHandler::get_fib_bits(u8 * v, bool * b)
 {
-  for (int i = 0; i < 4 * 768; i++)
+  for (i32 i = 0; i < 4 * 768; i++)
   {
     v[i] = static_cast<u8>(fibBits[i]);
   }
 
-  for (int i = 0; i < 4; i++)
+  for (i32 i = 0; i < 4; i++)
   {
     b[i] = ficValid[i];
   }
 }
 
-int FicHandler::get_fic_decode_ratio_percent()
+i32 FicHandler::get_fic_decode_ratio_percent()
 {
     return fic_decode_success_ratio * 10;
 }

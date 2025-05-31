@@ -53,33 +53,33 @@
 class XmlFileWriter;
 
 //	DLL and ".so" function prototypes
-typedef int  (* pfn_LMS_GetDeviceList)(lms_info_str_t * dev_list);
-typedef int  (* pfn_LMS_Open)(lms_device_t ** device, const lms_info_str_t info, void * args);
-typedef int  (* pfn_LMS_Close)(lms_device_t *);
-typedef int  (* pfn_LMS_Init)(lms_device_t *);
-typedef int  (* pfn_LMS_GetNumChannels)(lms_device_t * device, bool dir_tx);
-typedef int  (* pfn_LMS_EnableChannel)(lms_device_t * device, bool dir_tx, size_t chan, bool enabled);
-typedef int  (* pfn_LMS_SetSampleRate)(lms_device_t * device, float_type rate, size_t oversample);
-typedef int  (* pfn_LMS_GetSampleRate)(lms_device_t * device, bool dir_tx, size_t chan, float_type * host_Hz, float_type * rf_Hz);
-typedef int  (* pfn_LMS_SetLOFrequency)(lms_device_t * device, bool dir_tx, size_t chan, float_type frequency);
-typedef int  (* pfn_LMS_GetLOFrequency)(lms_device_t * device, bool dir_tx, size_t chan, float_type * frequency);
-typedef int  (* pfn_LMS_GetAntennaList)(lms_device_t * device, bool dir_tx, size_t chan, lms_name_t * list);
-typedef int  (* pfn_LMS_SetAntenna)(lms_device_t * dev, bool dir_tx, size_t chan, size_t index);
-typedef int  (* pfn_LMS_GetAntenna)(lms_device_t * dev, bool dir_tx, size_t chan);
-typedef int  (* pfn_LMS_GetAntennaBW)(lms_device_t * dev, bool dir_tx, size_t chan, size_t index, lms_range_t * range);
-typedef int  (* pfn_LMS_SetNormalizedGain)(lms_device_t * device, bool dir_tx, size_t chan, float_type gain);
-typedef int  (* pfn_LMS_SetGaindB)(lms_device_t * device, bool dir_tx, size_t chan, unsigned gain);
-typedef int  (* pfn_LMS_GetNormalizedGain)(lms_device_t * device, bool dir_tx, size_t chan, float_type * gain);
-typedef int  (* pfn_LMS_GetGaindB)(lms_device_t * device, bool dir_tx, size_t chan, unsigned * gain);
-typedef int  (* pfn_LMS_SetLPFBW)(lms_device_t * device, bool dir_tx, size_t chan, float_type bandwidth);
-typedef int  (* pfn_LMS_GetLPFBW)(lms_device_t * device, bool dir_tx, size_t chan, float_type * bandwidth);
-typedef int  (* pfn_LMS_Calibrate)(lms_device_t * device, bool dir_tx, size_t chan, f64 bw, unsigned flags);
-typedef int  (* pfn_LMS_SetupStream)(lms_device_t * device, lms_stream_t * stream);
-typedef int  (* pfn_LMS_DestroyStream)(lms_device_t * dev, lms_stream_t * stream);
-typedef int  (* pfn_LMS_StartStream)(lms_stream_t * stream);
-typedef int  (* pfn_LMS_StopStream)(lms_stream_t * stream);
-typedef int  (* pfn_LMS_RecvStream)(lms_stream_t * stream, void * samples, size_t sample_count, lms_stream_meta_t * meta, unsigned timeout_ms);
-typedef int  (* pfn_LMS_GetStreamStatus)(lms_stream_t * stream, lms_stream_status_t * status);
+typedef i32  (* pfn_LMS_GetDeviceList)(lms_info_str_t * dev_list);
+typedef i32  (* pfn_LMS_Open)(lms_device_t ** device, const lms_info_str_t info, void * args);
+typedef i32  (* pfn_LMS_Close)(lms_device_t *);
+typedef i32  (* pfn_LMS_Init)(lms_device_t *);
+typedef i32  (* pfn_LMS_GetNumChannels)(lms_device_t * device, bool dir_tx);
+typedef i32  (* pfn_LMS_EnableChannel)(lms_device_t * device, bool dir_tx, size_t chan, bool enabled);
+typedef i32  (* pfn_LMS_SetSampleRate)(lms_device_t * device, float_type rate, size_t oversample);
+typedef i32  (* pfn_LMS_GetSampleRate)(lms_device_t * device, bool dir_tx, size_t chan, float_type * host_Hz, float_type * rf_Hz);
+typedef i32  (* pfn_LMS_SetLOFrequency)(lms_device_t * device, bool dir_tx, size_t chan, float_type frequency);
+typedef i32  (* pfn_LMS_GetLOFrequency)(lms_device_t * device, bool dir_tx, size_t chan, float_type * frequency);
+typedef i32  (* pfn_LMS_GetAntennaList)(lms_device_t * device, bool dir_tx, size_t chan, lms_name_t * list);
+typedef i32  (* pfn_LMS_SetAntenna)(lms_device_t * dev, bool dir_tx, size_t chan, size_t index);
+typedef i32  (* pfn_LMS_GetAntenna)(lms_device_t * dev, bool dir_tx, size_t chan);
+typedef i32  (* pfn_LMS_GetAntennaBW)(lms_device_t * dev, bool dir_tx, size_t chan, size_t index, lms_range_t * range);
+typedef i32  (* pfn_LMS_SetNormalizedGain)(lms_device_t * device, bool dir_tx, size_t chan, float_type gain);
+typedef i32  (* pfn_LMS_SetGaindB)(lms_device_t * device, bool dir_tx, size_t chan, unsigned gain);
+typedef i32  (* pfn_LMS_GetNormalizedGain)(lms_device_t * device, bool dir_tx, size_t chan, float_type * gain);
+typedef i32  (* pfn_LMS_GetGaindB)(lms_device_t * device, bool dir_tx, size_t chan, unsigned * gain);
+typedef i32  (* pfn_LMS_SetLPFBW)(lms_device_t * device, bool dir_tx, size_t chan, float_type bandwidth);
+typedef i32  (* pfn_LMS_GetLPFBW)(lms_device_t * device, bool dir_tx, size_t chan, float_type * bandwidth);
+typedef i32  (* pfn_LMS_Calibrate)(lms_device_t * device, bool dir_tx, size_t chan, f64 bw, unsigned flags);
+typedef i32  (* pfn_LMS_SetupStream)(lms_device_t * device, lms_stream_t * stream);
+typedef i32  (* pfn_LMS_DestroyStream)(lms_device_t * dev, lms_stream_t * stream);
+typedef i32  (* pfn_LMS_StartStream)(lms_stream_t * stream);
+typedef i32  (* pfn_LMS_StopStream)(lms_stream_t * stream);
+typedef i32  (* pfn_LMS_RecvStream)(lms_stream_t * stream, void * samples, size_t sample_count, lms_stream_meta_t * meta, unsigned timeout_ms);
+typedef i32  (* pfn_LMS_GetStreamStatus)(lms_stream_t * stream, lms_stream_status_t * status);
 
 class LimeHandler final : public QThread, public IDeviceHandler, public limeWidget
 {
@@ -124,12 +124,12 @@ private:
   void close_xmlDump();
   std::atomic<bool> dumping;
 
-  void record_gainSettings(int);
-  void update_gainSettings(int);
+  void record_gainSettings(i32);
+  void update_gainSettings(i32);
   bool save_gainSettings;
   bool filtering;
   LowPassFIR theFilter;
-  int currentDepth;
+  i32 currentDepth;
   //	imported functions
 public:
   pfn_LMS_GetDeviceList LMS_GetDeviceList;
@@ -161,14 +161,14 @@ public:
   pfn_LMS_RecvStream LMS_RecvStream;
   pfn_LMS_GetStreamStatus LMS_GetStreamStatus;
 signals:
-  void new_gainValue(int);
+  void new_gainValue(i32);
 private slots:
-  void setGain(int);
-  void setAntenna(int);
+  void setGain(i32);
+  void setAntenna(i32);
   void set_xmlDump();
-  void set_filter(int);
+  void set_filter(i32);
 public slots:
-  void showErrors(int, int);
+  void showErrors(i32, i32);
 };
 
 #endif

@@ -23,8 +23,8 @@
 
 	soapyWorker::soapyWorker	(void) {}
 	soapyWorker::~soapyWorker	(void) {}
-int	soapyWorker::Samples		(void) {return 0;}
-int	soapyWorker::getSamples		(cf32 *, int) {
+i32	soapyWorker::Samples		(void) {return 0;}
+i32	soapyWorker::getSamples		(cf32 *, i32) {
 	   return 0;
 }
 

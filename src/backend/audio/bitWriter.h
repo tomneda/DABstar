@@ -29,7 +29,7 @@ public:
         BitWriter() {Reset();}
 
         void Reset();
-        void AddBits(int data_new, size_t count);
+        void AddBits(i32 data_new, size_t count);
         void AddBytes(const u8 *data, size_t len);
         const std::vector<u8> GetData() {
 	   return data;

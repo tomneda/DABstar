@@ -39,10 +39,10 @@ timeTableHandler::~timeTableHandler()
 {
 }
 
-void timeTableHandler::addElement(int theTime, int epgWidth, const QString & theText, const QString & theDescr)
+void timeTableHandler::addElement(i32 theTime, i32 epgWidth, const QString & theText, const QString & theDescr)
 {
-  //int	hours	= theTime / 60;
-  //int	minutes	= theTime % 60;
+  //i32	hours	= theTime / 60;
+  //i32	minutes	= theTime % 60;
   char t[16];
 
   if (theTime >= 24 * 60)
@@ -61,7 +61,7 @@ void timeTableHandler::addElement(int theTime, int epgWidth, const QString & the
   bool tooLong = false;
   if (listElement.size() > epgWidth)
   {
-    int breaker = listElement.indexOf(' ', epgWidth - 10);
+    i32 breaker = listElement.indexOf(' ', epgWidth - 10);
     if (breaker > 0)
     {
       tooLong = true;

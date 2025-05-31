@@ -37,16 +37,16 @@
 
 class	tcpServer {
 public:
-		tcpServer	(int);
+		tcpServer	(i32);
 		~tcpServer	(void);
 	void	sendData	(u8 *, i32);
-	void	run		(int port);
+	void	run		(i32 port);
 private:
 	std::thread	threadHandle;
 	RingBuffer<u8> 	*buffer;
 	std::atomic<bool>	running;
 	std::atomic<bool>	connected;
-	int			socketDesc;
+	i32			socketDesc;
 };
 #endif
 

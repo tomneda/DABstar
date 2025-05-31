@@ -28,7 +28,7 @@
 #include	<arpa/inet.h>
 #include	"tcp-server.h"
 
-	tcpServer::tcpServer (int port) {
+	tcpServer::tcpServer (i32 port) {
 	   buffer	= new RingBuffer<u8> (32 * 32768);
 	   connected. store (false);
 	   socketDesc	= -1;
@@ -54,7 +54,7 @@ void	tcpServer::sendData (u8 *data, i32 amount) {
 }
 #define	BUF_SIZE	1024
 
-void	tcpServer::run (int port) {
+void	tcpServer::run (i32 port) {
 // Variables for writing a server. 
 /*
  *	1. Getting the address data structure.
@@ -65,7 +65,7 @@ void	tcpServer::run (int port) {
  *	6. Receive Data.
  *	7. Close Connection. 
  */
-	int client_sock , c /*, read_size*/;
+	i32 client_sock , c /*, read_size*/;
 	struct sockaddr_in server , client;
 
 //	Create socket
@@ -109,7 +109,7 @@ void	tcpServer::run (int port) {
 	   try {
 	      u8	localBuffer [BUF_SIZE];
 	      i16	amount;
-	      int status;
+	      i32 status;
 	      while (running. load()) {
 	         while (running. load() &&
 	                 (buffer -> get_ring_buffer_read_available() < BUF_SIZE))
@@ -121,7 +121,7 @@ void	tcpServer::run (int port) {
 	         }
 	      }
 	   }
-	   catch (int e) {}
+	   catch (i32 e) {}
 	   connected = false;
 	}
 	// Close the socket before we finish 

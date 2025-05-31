@@ -158,9 +158,9 @@ UhdHandler::UhdHandler(QSettings * s) :
   _slot_set_f_correction(f_correction->value());
   _slot_handle_ant_selector(cmbAnt->currentText());
 
-  connect(externalGain, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_external_gain);
-  connect(KhzOffset, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_khz_offset);
-  connect(f_correction, qOverload<int>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_f_correction);
+  connect(externalGain, qOverload<i32>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_external_gain);
+  connect(KhzOffset, qOverload<i32>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_khz_offset);
+  connect(f_correction, qOverload<i32>(&QSpinBox::valueChanged), this, &UhdHandler::_slot_set_f_correction);
   connect(cmbAnt, &QComboBox::textActivated, this, &UhdHandler::_slot_handle_ant_selector);
 }
 
@@ -267,7 +267,7 @@ i16 UhdHandler::_maxGain() const
   return (i16)std::round(range.stop());
 }
 
-void UhdHandler::_slot_set_external_gain(int gain) const
+void UhdHandler::_slot_set_external_gain(i32 gain) const
 {
   std::cout << boost::format("Setting RX Gain: %f dB...") % gain << std::endl;
   m_usrp->set_rx_gain(gain);
@@ -275,12 +275,12 @@ void UhdHandler::_slot_set_external_gain(int gain) const
   //std::cout << boost::format("Actual RX Gain: %f dB...") % gain_f << std::endl << std::endl;
 }
 
-void UhdHandler::_slot_set_f_correction(int f) const
+void UhdHandler::_slot_set_f_correction(i32 f) const
 {
   (void)f;
 }
 
-void UhdHandler::_slot_set_khz_offset(int o)
+void UhdHandler::_slot_set_khz_offset(i32 o)
 {
   vfoOffset = o;
 }

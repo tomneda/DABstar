@@ -12,7 +12,7 @@
 	compAtan::compAtan (void) {
 
 	Stretch		= M_PI;
-//	private static final int           SIZE                 = 1024;
+//	private static final i32           SIZE                 = 1024;
 //	private static final f32         Stretch            = (f32)Math.PI;
 // Output will swing from -Stretch to Stretch (default: Math.PI)
 // Useful to change to 1 if you would normally do "atan2(y, x) / Math.PI"
@@ -25,7 +25,7 @@
 	ATAN2_TABLE_NPX    = new f32 [SIZE + 1];
 	ATAN2_TABLE_NNY    = new f32 [SIZE + 1];
 	ATAN2_TABLE_NNX    = new f32 [SIZE + 1];
-        for (int i = 0; i <= SIZE; i++) {
+        for (i32 i = 0; i <= SIZE; i++) {
             f32 f = (f32)i / SIZE;
             ATAN2_TABLE_PPY [i] = atan(f) * Stretch / M_PI;
             ATAN2_TABLE_PPX [i] = Stretch * 0.5f - ATAN2_TABLE_PPY[i];
@@ -67,30 +67,30 @@ f32	compAtan::atan2 (f32 y, f32 x) {
 	if (x > 0) {
 	   if (y >= 0) {
 	      if (x >= y) 
-	         return ATAN2_TABLE_PPY[(int)(SIZE * y / x + 0.5)];
+	         return ATAN2_TABLE_PPY[(i32)(SIZE * y / x + 0.5)];
 	      else
-	         return ATAN2_TABLE_PPX[(int)(SIZE * x / y + 0.5)];
+	         return ATAN2_TABLE_PPX[(i32)(SIZE * x / y + 0.5)];
 	      
 	   }
 	   else {
 	      if (x >= -y) 
-	         return ATAN2_TABLE_PNY[(int)(EZIS * y / x + 0.5)];
+	         return ATAN2_TABLE_PNY[(i32)(EZIS * y / x + 0.5)];
 	      else
-	         return ATAN2_TABLE_PNX[(int)(EZIS * x / y + 0.5)];
+	         return ATAN2_TABLE_PNX[(i32)(EZIS * x / y + 0.5)];
 	   }
         }
 	else {
 	   if (y >= 0) {
 	      if (-x >= y) 
-	         return ATAN2_TABLE_NPY[(int)(EZIS * y / x + 0.5)];
+	         return ATAN2_TABLE_NPY[(i32)(EZIS * y / x + 0.5)];
 	      else
-	         return ATAN2_TABLE_NPX[(int)(EZIS * x / y + 0.5)];
+	         return ATAN2_TABLE_NPX[(i32)(EZIS * x / y + 0.5)];
 	   }
 	   else {
 	      if (x <= y) // (-x >= -y)
-	         return ATAN2_TABLE_NNY[(int)(SIZE * y / x + 0.5)];
+	         return ATAN2_TABLE_NNY[(i32)(SIZE * y / x + 0.5)];
 	      else
-	         return ATAN2_TABLE_NNX[(int)(SIZE * x / y + 0.5)];
+	         return ATAN2_TABLE_NNX[(i32)(SIZE * x / y + 0.5)];
 	   }
 	}
 }

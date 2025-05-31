@@ -51,7 +51,7 @@ bool Protection::deconvolve(const i16 * iV, i32 /*size*/, u8 * outBuffer)
   memset(viterbiBlock.data(), 0, (outSize * 4 + 24) * sizeof(i16));
   //	The actual deconvolution is done by the viterbi decoder
 
-  for (int i = 0; i < outSize * 4 + 24; i++)
+  for (i32 i = 0; i < outSize * 4 + 24; i++)
   {
     if (indexTable[i])
     {

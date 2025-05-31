@@ -38,7 +38,7 @@ public:
   timeTableHandler(DabRadio * radio);
   ~timeTableHandler();
 
-  void addElement(int, int, const QString &, const QString &);
+  void addElement(i32, i32, const QString &, const QString &);
   void clear();
 
 private:

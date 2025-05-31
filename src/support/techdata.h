@@ -58,31 +58,31 @@ private:
 
 public slots:
   void slot_trigger_motHandling();
-  void slot_show_frame_error_bar(int);
-  void slot_show_aac_error_bar(int);
-  void slot_show_rs_error_bar(int);
-  void slot_show_rs_corrections(int, int);
+  void slot_show_frame_error_bar(i32);
+  void slot_show_aac_error_bar(i32);
+  void slot_show_rs_error_bar(i32);
+  void slot_show_rs_corrections(i32, i32);
   void slot_show_timetableButton(bool);
   void slot_show_frameDumpButton(bool);
   void slot_show_serviceName(const QString &);
-  void slot_show_serviceId(int);
-  void slot_show_bitRate(int);
-  void slot_show_subChId(int);
-  void slot_show_startAddress(int);
-  void slot_show_length(int);
-  void slot_show_language(int);
-  void slot_show_ASCTy(int);
-  void slot_show_uep(int, int);
-  void slot_show_codeRate(int, int);
-  void slot_show_fm(int);
+  void slot_show_serviceId(i32);
+  void slot_show_bitRate(i32);
+  void slot_show_subChId(i32);
+  void slot_show_startAddress(i32);
+  void slot_show_length(i32);
+  void slot_show_language(i32);
+  void slot_show_ASCTy(i32);
+  void slot_show_uep(i32, i32);
+  void slot_show_codeRate(i32, i32);
+  void slot_show_fm(i32);
   void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed);
 
   void slot_hide_missed();
-  void slot_show_missed(int);
-  void slot_audio_data_available(int, int);
+  void slot_show_missed(i32);
+  void slot_audio_data_available(i32, i32);
 
-  void slot_frame_dump_button_text(const QString & s, int);
-  void slot_audio_dump_button_text(const QString & s, int);
+  void slot_frame_dump_button_text(const QString & s, i32);
+  void slot_audio_dump_button_text(const QString & s, i32);
 
 private slots:
   void _slot_show_motHandling(bool);

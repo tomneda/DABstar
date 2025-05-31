@@ -42,7 +42,7 @@ public:
 private:
   u16 tab[256];
 
-  u16 _run8(unsigned char regs[]);
+  u16 _run8(u8 regs[]);
   static const u8 g[16];
 };
 

@@ -1,10 +1,10 @@
 #include  "RspDx-handler.h"
 #include  "sdrplay-handler-v3.h"
 
-RspDx_handler::RspDx_handler(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice, int freq, bool agcMode, int lnaState, int GRdB, bool biasT, bool notch, f64 ppmValue)
+RspDx_handler::RspDx_handler(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
   : Rsp_device(parent, chosenDevice, freq, agcMode, lnaState, GRdB, ppmValue)
 {
-  int mLna_upperBound = lnaStates(freq) - 1;
+  i32 mLna_upperBound = lnaStates(freq) - 1;
   if (lnaState > mLna_upperBound)
     this->mLnaState = mLna_upperBound;
 
@@ -19,7 +19,7 @@ RspDx_handler::RspDx_handler(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *cho
     set_notch(true);
 }
 
-int RspDx_handler::lnaStates(int freq)
+i32 RspDx_handler::lnaStates(i32 freq)
 {
   if (freq < MHz (60))
     return 19;
@@ -32,7 +32,7 @@ int RspDx_handler::lnaStates(int freq)
   return 19;
 }
 
-bool RspDx_handler::restart(int freq)
+bool RspDx_handler::restart(i32 freq)
 {
   sdrplay_api_ErrT err;
 
@@ -50,7 +50,7 @@ bool RspDx_handler::restart(int freq)
   return true;
 }
 
-bool RspDx_handler::set_lna(int lnaState)
+bool RspDx_handler::set_lna(i32 lnaState)
 {
   sdrplay_api_ErrT err;
 
@@ -65,7 +65,7 @@ bool RspDx_handler::set_lna(int lnaState)
   return true;
 }
 
-bool RspDx_handler::set_antenna(int antenna)
+bool RspDx_handler::set_antenna(i32 antenna)
 {
   sdrplay_api_ErrT err;
 
@@ -85,7 +85,7 @@ bool RspDx_handler::set_antenna(int antenna)
   return true;
 }
 
-bool RspDx_handler::set_amPort(int amPort)
+bool RspDx_handler::set_amPort(i32 amPort)
 {
   sdrplay_api_ErrT err;
 

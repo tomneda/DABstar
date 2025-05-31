@@ -67,8 +67,8 @@ void CirclePushButton::paintEvent(QPaintEvent * event)
     QSize buttonSize = size();
     QPixmap image(mImagePath);
 
-    const int x = buttonSize.width()  / 2 + fixround<int>(mRadius * std::cos(mCurAngle));
-    const int y = buttonSize.height() / 2 + fixround<int>(mRadius * std::sin(mCurAngle));
+    const i32 x = buttonSize.width()  / 2 + fixround<i32>(mRadius * std::cos(mCurAngle));
+    const i32 y = buttonSize.height() / 2 + fixround<i32>(mRadius * std::sin(mCurAngle));
 
     QPainter painter(this);
     painter.drawPixmap(x - image.width() / 2, y - image.height() / 2, image);

@@ -53,7 +53,7 @@ public:
   AudioDisplay(DabRadio *, QwtPlot *, QSettings *);
   ~AudioDisplay() override;
 
-  void create_spectrum(const i16 *, int, int);
+  void create_spectrum(const i16 *, i32, i32);
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "audioDisplay";

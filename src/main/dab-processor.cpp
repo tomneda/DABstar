@@ -182,7 +182,7 @@ void DabProcessor::run()  // run QThread
       } // switch
     } // while (true)
   }
-  catch (int e)
+  catch (i32 e)
   {
     (void)e;
     // qInfo() << "DabProcessor has stopped" << thread()->currentThreadId() << e;
@@ -436,12 +436,12 @@ void DabProcessor::activate_cir_viewer(bool iActivate)
   mSampleReader.set_cir_buffer(iActivate ? mpCirBuffer : nullptr);
 }
 
-QString DabProcessor::find_service(u32 SId, int SCIds)
+QString DabProcessor::find_service(u32 SId, i32 SCIds)
 {
   return mFicHandler.find_service(SId, SCIds);
 }
 
-void DabProcessor::get_parameters(const QString & s, u32 * p_SId, int * p_SCIds)
+void DabProcessor::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIds)
 {
   mFicHandler.get_parameters(s, p_SId, p_SCIds);
 }
@@ -451,7 +451,7 @@ std::vector<SServiceId> DabProcessor::get_services()
   return mFicHandler.get_services();
 }
 
-int DabProcessor::get_sub_channel_id(const QString & s, u32 SId)
+i32 DabProcessor::get_sub_channel_id(const QString & s, u32 SId)
 {
   return mFicHandler.get_sub_channel_id(s, SId);
 }
@@ -500,7 +500,7 @@ i32 DabProcessor::get_ensemble_id()
   return mFicHandler.get_ensemble_name();
 }
 
-void DabProcessor::set_epg_data(int SId, i32 theTime, const QString & s, const QString & d)
+void DabProcessor::set_epg_data(i32 SId, i32 theTime, const QString & s, const QString & d)
 {
   mFicHandler.set_epg_data(SId, theTime, s, d);
 }
@@ -520,7 +520,7 @@ QStringList DabProcessor::basicPrint()
   return mFicHandler.basic_print();
 }
 
-int DabProcessor::scan_width()
+i32 DabProcessor::scan_width()
 {
   return mFicHandler.scan_width();
 }
@@ -534,7 +534,7 @@ int DabProcessor::scan_width()
   }
 }
 
-[[maybe_unused]] void DabProcessor::stop_service(DescriptorType * d, int flag)
+[[maybe_unused]] void DabProcessor::stop_service(DescriptorType * d, i32 flag)
 {
   fprintf(stderr, "function obsolete\n");
   if (!mScanMode)
@@ -543,7 +543,7 @@ int DabProcessor::scan_width()
   }
 }
 
-void DabProcessor::stop_service(int subChId, int flag)
+void DabProcessor::stop_service(i32 subChId, i32 flag)
 {
   if (!mScanMode)
   {
@@ -551,7 +551,7 @@ void DabProcessor::stop_service(int subChId, int flag)
   }
 }
 
-bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, FILE * dump, int flag)
+bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, FILE * dump, i32 flag)
 {
   if (!mScanMode)
   {
@@ -563,7 +563,7 @@ bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, F
   }
 }
 
-bool DabProcessor::set_data_channel(Packetdata * d, RingBuffer<u8> * b, int flag)
+bool DabProcessor::set_data_channel(Packetdata * d, RingBuffer<u8> * b, i32 flag)
 {
   if (!mScanMode)
   {

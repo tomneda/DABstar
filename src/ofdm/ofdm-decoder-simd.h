@@ -135,7 +135,7 @@ private:
   static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
 
 signals:
-  void signal_slot_show_iq(int, f32);
+  void signal_slot_show_iq(i32, f32);
   void signal_show_lcd_data(const SLcdData *);
 };
 

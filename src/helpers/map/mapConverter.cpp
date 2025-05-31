@@ -13,11 +13,11 @@
 #include	<stdint.h>
 
 
-int	main (int argc, char **argv) {
+i32	main (i32 argc, char **argv) {
 FILE	*fout	= stdout;
 FILE	*fin	= stdin;
-int	teller	= 0;
-int	element;
+i32	teller	= 0;
+i32	element;
 
 	if (argc < 2) {
 	   fprintf (stderr, "Usage converter infile outfile\n");

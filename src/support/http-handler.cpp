@@ -99,7 +99,7 @@ void HttpHandler::start()
   ShellExecute(nullptr, L"open", browserAddress.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 #else
   std::string x = "xdg-open " + browserAddress;
-  const int result = system(x.c_str());
+  const i32 result = system(x.c_str());
   (void)result;
 #endif
 }
@@ -119,7 +119,7 @@ void HttpHandler::run()
   char buffer[4096];
   bool keepalive;
   char * url;
-  int one = 1, ClientSocket = 0, ListenSocket;
+  i32 one = 1, ClientSocket = 0, ListenSocket;
   struct sockaddr_in svr_addr, cli_addr;
   std::string content;
   std::string ctype;
@@ -134,9 +134,9 @@ void HttpHandler::run()
     return;
   }
 
-  int flags = fcntl(ListenSocket, F_GETFL);
+  i32 flags = fcntl(ListenSocket, F_GETFL);
   fcntl(ListenSocket, F_SETFL, flags | O_NONBLOCK);
-  setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+  setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(i32));
   svr_addr.sin_family = AF_INET;
   svr_addr.sin_addr.s_addr = INADDR_ANY;
   svr_addr.sin_port = htons(mapPort.toInt());
@@ -171,7 +171,7 @@ void HttpHandler::run()
       }
 
       // fprintf (stderr, "Buffer - %s\n", buffer);
-      int httpver = (strstr(buffer, "HTTP/1.1") != nullptr) ? 11 : 10;
+      i32 httpver = (strstr(buffer, "HTTP/1.1") != nullptr) ? 11 : 10;
       if (httpver == 11)
       {
         //	HTTP 1.1 defaults to keep-alive, unless close is specified.
@@ -225,8 +225,8 @@ void HttpHandler::run()
               "Connection: %s\r\n"
               "Content-Length: %d\r\n"
               // "Access-Control-Allow-Origin: *\r\n"
-              "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (int)(strlen(content.c_str())));
-      int hdrlen = strlen(hdr);
+              "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (i32)(strlen(content.c_str())));
+      i32 hdrlen = strlen(hdr);
       //	      fprintf (stderr, "reply header %s \n", hdr);
       if (jsonUpdate)
       {
@@ -263,7 +263,7 @@ void HttpHandler::run()
   std::string content;
   std::string ctype;
   WSADATA wsa;
-  int iResult;
+  i32 iResult;
   SOCKET ListenSocket = INVALID_SOCKET;
   SOCKET ClientSocket = INVALID_SOCKET;
   struct addrinfo * result = nullptr;
@@ -299,11 +299,11 @@ void HttpHandler::run()
     terminating();
     return;
   }
-  unsigned long mode = 1;
+  u32 mode = 1;
   ioctlsocket(ListenSocket, FIONBIO, &mode);
 
   // Setup the TCP listening socket
-  iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+  iResult = ::bind(ListenSocket, result->ai_addr, (i32)result->ai_addrlen);
   if (iResult == SOCKET_ERROR)
   {
     freeaddrinfo(result);
@@ -329,7 +329,7 @@ void HttpHandler::run()
 
     while (running.load())
     {
-      int xx;
+      i32 xx;
 L1:
       if ((xx = recv(ClientSocket, buffer, 4096, 0)) < 0)
       {
@@ -360,7 +360,7 @@ L1:
         goto L1;
       }
 
-      int httpver = (strstr(buffer, "HTTP/1.1") != nullptr) ? 11 : 10;
+      i32 httpver = (strstr(buffer, "HTTP/1.1") != nullptr) ? 11 : 10;
       if (httpver == 11)
       {
         //	HTTP 1.1 defaults to keep-alive, unless close is specified.
@@ -413,8 +413,8 @@ L1:
                    "Connection: %s\r\n"
                    "Content-Length: %d\r\n"
                    // "Access-Control-Allow-Origin: *\r\n"
-                   "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (int)(strlen(content.c_str())));
-      int hdrlen = strlen(hdr);
+                   "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (i32)(strlen(content.c_str())));
+      i32 hdrlen = strlen(hdr);
       //	      if (jsonUpdate) {
       //	         parent -> show_text (std::string ("Json update requested\n"));
       //	         parent -> show_text (content);
@@ -440,13 +440,13 @@ L1:
 std::string HttpHandler::theMap(cf32 homeAddress)
 {
   std::string res;
-  int bodySize;
+  i32 bodySize;
   char * body;
   std::string latitude = std::to_string(real(homeAddress));
   std::string longitude = std::to_string(imag(homeAddress));
-  int cc;
-  int teller = 0;
-  int params = 0;
+  i32 cc;
+  i32 teller = 0;
+  i32 params = 0;
 
   // read map file from resource file
   QFile file(":res/qt-map.html");
@@ -464,7 +464,7 @@ std::string HttpHandler::theMap(cf32 homeAddress)
       {
         if (params == 0)
         {
-          for (int i = 0; latitude.c_str()[i] != 0; i++)
+          for (i32 i = 0; latitude.c_str()[i] != 0; i++)
             if (latitude.c_str()[i] == ',')
               body[teller++] = '.';
             else
@@ -473,7 +473,7 @@ std::string HttpHandler::theMap(cf32 homeAddress)
         }
         else if (params == 1)
         {
-          for (int i = 0; longitude.c_str()[i] != 0; i++)
+          for (i32 i = 0; longitude.c_str()[i] != 0; i++)
             if (longitude.c_str()[i] == ',')
               body[teller++] = '.';
             else
@@ -531,7 +531,7 @@ std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
   Jsontxt += "[\n";
   locker.lock();
   // the Target
-  for (unsigned long i = 0; i < t.size(); i++)
+  for (u32 i = 0; i < t.size(); i++)
   {
     if (i > 0)
       Jsontxt += ",\n";
@@ -545,10 +545,10 @@ std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
              t[i].channelName.toUtf8().data(),
              t[i].mainId,
              t[i].subId,
-             (int)(t[i].strength * 10),
+             (i32)(t[i].strength * 10),
              t[i].distance,
              t[i].azimuth,
-             (int)(t[i].power * 100),
+             (i32)(t[i].power * 100),
              t[i].altitude,
              t[i].height,
              t[i].direction.toUtf8().data(),
@@ -563,10 +563,10 @@ std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
 }
 
 void HttpHandler::putData(u8 type, const SCacheElem * tr, const QString & dateTime,
-                          f32 strength, int distance, int azimuth, bool non_etsi)
+                          f32 strength, i32 distance, i32 azimuth, bool non_etsi)
 {
   cf32 target = cf32(tr->latitude, tr->longitude);
-  for (unsigned long i = 0; i < transmitterList.size(); i++)
+  for (u32 i = 0; i < transmitterList.size(); i++)
   {
     if (transmitterList[i].coords == target)
       return;

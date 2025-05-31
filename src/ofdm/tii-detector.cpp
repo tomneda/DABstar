@@ -129,7 +129,7 @@ inline std::byte rev_bit_val(const u32 iBitPos)
 }
 
 // Sort the elements according to their strength
-static int fcmp(const void * a, const void * b)
+static i32 fcmp(const void * a, const void * b)
 {
   const auto * element1 = (const STiiResult *)a;
   const auto * element2 = (const STiiResult *)b;
@@ -168,7 +168,7 @@ void TiiDetector::reset()
 // To reduce noise in the input signal, we might add a few spectra before computing (up to the user)
 void TiiDetector::add_to_tii_buffer(const TArrayTu & iV)
 {
-  for (int i = 0; i < cTu; i++)
+  for (i32 i = 0; i < cTu; i++)
   {
     mNullSymbolBufferVec[i] += iV[i];
   }
@@ -196,10 +196,10 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
 
   std::vector<STiiResult> theResult; // results
 
-  for (int subId = 0; subId < cGroupSize24; subId++)
+  for (i32 subId = 0; subId < cGroupSize24; subId++)
   {
     cf32 sum = cf32(0, 0);
-    int count = 0;
+    i32 count = 0;
     std::byte pattern = std::byte{0};
     bool isNonEtsiPhase = false;
     const f32 thresholdLevel = noise * std::pow(10.0f, (f32)iThreshold_db / 10.0f); // threshold above noise
@@ -212,7 +212,7 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
     const TFloatTable192 & floatTable = (isNonEtsiPhase ? nonEtsiFloatTable : etsiFloatTable);
 
     // Find the MainId that matches the pattern
-    int mainId = 0;
+    i32 mainId = 0;
 
     if (count == 4)
     {
@@ -282,13 +282,13 @@ void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, co
 
 void TiiDetector::_remove_single_carrier_values(TBufferArr768 & ioBuffer) const
 {
-  for (int i = 0; i < cBlockSize192; i++)
+  for (i32 i = 0; i < cBlockSize192; i++)
   {
     f32 max = 0;
     f32 sum = 0;
-    int index = 0;
+    i32 index = 0;
 
-    for (int j = 0; j < cNumBlocks4; j++)
+    for (i32 j = 0; j < cNumBlocks4; j++)
     {
       const f32 x = abs(ioBuffer[i + j * cBlockSize192]);
       sum += x;
@@ -336,7 +336,7 @@ cf32 TiiDetector::_turn_phase(cf32 value, u8 phase) const
 // taken from the 4 quadrants -768 .. 385, 384 .. -1, 1 .. 384, 385 .. 768
 void TiiDetector::_collapse_tii_groups(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec, const TBufferArr768 & iVec) const
 {
-  assert(cK / 2 == (int)iVec.size());
+  assert(cK / 2 == (i32)iVec.size());
   TBufferArr768 buffer = iVec;
 
   // assumption: a single carrier cannot be a TII carrier.
@@ -345,12 +345,12 @@ void TiiDetector::_collapse_tii_groups(TCmplxTable192 & ioEtsiVec, TCmplxTable19
     _remove_single_carrier_values(buffer);
   }
 
-  for (int i = 0; i < cBlockSize192; i++)
+  for (i32 i = 0; i < cBlockSize192; i++)
   {
     ioEtsiVec[i] = cf32(0, 0);
     ioNonEtsiVec[i] = cf32(0, 0);
 
-    for (int blockIdx = 0; blockIdx < cNumBlocks4; blockIdx++)
+    for (i32 blockIdx = 0; blockIdx < cNumBlocks4; blockIdx++)
     {
       const cf32 x = buffer[i + blockIdx * cBlockSize192];
       ioEtsiVec[i] += x;
@@ -360,9 +360,9 @@ void TiiDetector::_collapse_tii_groups(TCmplxTable192 & ioEtsiVec, TCmplxTable19
   }
 }
 
-int TiiDetector::_find_exact_main_id_match(const std::byte iPattern) const
+i32 TiiDetector::_find_exact_main_id_match(const std::byte iPattern) const
 {
-  for (int mainId = 0; mainId < (int)cMainIdPatternTable.size(); mainId++)
+  for (i32 mainId = 0; mainId < (i32)cMainIdPatternTable.size(); mainId++)
   {
     if (cMainIdPatternTable[mainId] == iPattern)
     {
@@ -373,17 +373,17 @@ int TiiDetector::_find_exact_main_id_match(const std::byte iPattern) const
   return -1; // should never happen
 }
 
-int TiiDetector::_find_best_main_id_match(cf32 & oSum, const int iSubId, const TCmplxTable192 & ipCmplxTable) const
+i32 TiiDetector::_find_best_main_id_match(cf32 & oSum, const i32 iSubId, const TCmplxTable192 & ipCmplxTable) const
 {
-  int oMainId = -1;
+  i32 oMainId = -1;
   f32 maxLevel = 0;
   oSum = cf32(0, 0);
 
-  for (int mainId = 0; mainId < (int)cMainIdPatternTable.size(); mainId++)
+  for (i32 mainId = 0; mainId < (i32)cMainIdPatternTable.size(); mainId++)
   {
     cf32 val = cf32(0, 0);
 
-    for (int i = 0; i < cNumGroups8; i++)
+    for (i32 i = 0; i < cNumGroups8; i++)
     {
       if ((cMainIdPatternTable[mainId] & rev_bit_val(i)) != std::byte{0})
       {
@@ -402,15 +402,15 @@ int TiiDetector::_find_best_main_id_match(cf32 & oSum, const int iSubId, const T
   return oMainId;
 }
 
-void TiiDetector::_compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, cf32 & oSum, std::byte & oPattern,
-                                             const int iSubId, const f32 iThresholdLevel,
+void TiiDetector::_compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, i32 & oCount, cf32 & oSum, std::byte & oPattern,
+                                             const i32 iSubId, const f32 iThresholdLevel,
                                              const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
                                              const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable) const
 {
   cf32 etsi_sum = cf32(0, 0);
   cf32 nonEtsi_sum = cf32(0, 0);
-  int etsi_count = 0;
-  int nonEtsi_count = 0;
+  i32 etsi_count = 0;
+  i32 nonEtsi_count = 0;
   std::byte etsi_pattern = std::byte{0};
   std::byte nonEtsi_pattern = std::byte{0};
   oIsNonEtsiPhase = false;
@@ -418,9 +418,9 @@ void TiiDetector::_compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCoun
   oSum = cf32(0, 0);
 
   // The number of times the limit is reached in the group is counted
-  for (int i = 0; i < cNumGroups8; i++)
+  for (i32 i = 0; i < cNumGroups8; i++)
   {
-    const int tableIdx = iSubId + i * cGroupSize24;
+    const i32 tableIdx = iSubId + i * cGroupSize24;
 
     if (iEtsiFloatTable[tableIdx] > iThresholdLevel)
     {
@@ -459,19 +459,19 @@ void TiiDetector::_compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCoun
   }
 }
 
-void TiiDetector::_find_collisions(std::vector<STiiResult> & ioResultVec, int iMainId, int iSubId,
-                                   const std::byte iPattern, const f32 iMax, const f32 iThresholdLevel, const int iCount, const bool iIsNonEtsi,
+void TiiDetector::_find_collisions(std::vector<STiiResult> & ioResultVec, i32 iMainId, i32 iSubId,
+                                   const std::byte iPattern, const f32 iMax, const f32 iThresholdLevel, const i32 iCount, const bool iIsNonEtsi,
                                    const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable) const
 {
   assert(iCount > 4);
   cf32 sum = cf32(0, 0);
 
   // Calculate the level of the second main ID
-  for (int i = 0; i < cNumGroups8; i++)
+  for (i32 i = 0; i < cNumGroups8; i++)
   {
     if ((cMainIdPatternTable[iMainId] & rev_bit_val(i)) == std::byte{0})
     {
-      if (const int index = iSubId + cGroupSize24 * i;
+      if (const i32 index = iSubId + cGroupSize24 * i;
           iFloatTable[index] > iThresholdLevel)
       {
         sum += iCmplxTable[index];
@@ -481,12 +481,12 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> & ioResultVec, int iM
 
   if (iSubId == mSubIdCollSearch) // List all possible main IDs
   {
-    for (int mainId = 0; mainId < (int)cMainIdPatternTable.size(); mainId++)
+    for (i32 mainId = 0; mainId < (i32)cMainIdPatternTable.size(); mainId++)
     {
       const std::byte pattern2 = cMainIdPatternTable[mainId] & iPattern;
-      int count2 = 0;
+      i32 count2 = 0;
 
-      for (int i = 0; i < cNumGroups8; i++)
+      for (i32 i = 0; i < cNumGroups8; i++)
       {
         if ((pattern2 & rev_bit_val(i)) != std::byte{0}) count2++;
       }
@@ -517,7 +517,7 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> & ioResultVec, int iM
 
 void TiiDetector::_get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, f32 & ioMax, const TCmplxTable192 & iCmplxTable) const
 {
-  for (int i = 0; i < cBlockSize192; i++)
+  for (i32 i = 0; i < cBlockSize192; i++)
   {
     const f32 x = abs(iCmplxTable[i]);
     oFloatTable[i] = x;
@@ -529,10 +529,10 @@ f32 TiiDetector::_calculate_average_noise(const TFloatTable192 & iFloatTable) co
 {
   f32 noise = 1e9;
 
-  for (int subId = 0; subId < cGroupSize24; subId++)
+  for (i32 subId = 0; subId < cGroupSize24; subId++)
   {
     f32 avg = 0;
-    for (int i = 0; i < cNumGroups8; i++)
+    for (i32 i = 0; i < cNumGroups8; i++)
     {
       avg += iFloatTable[subId + i * cGroupSize24];
     }

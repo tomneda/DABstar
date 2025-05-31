@@ -76,7 +76,7 @@ private:
   std::vector<f32> mRefArg;
 
 signals:
-  void signal_show_correlation(f32, const QVector<int> &);
+  void signal_show_correlation(f32, const QVector<i32> &);
 };
 
 #endif

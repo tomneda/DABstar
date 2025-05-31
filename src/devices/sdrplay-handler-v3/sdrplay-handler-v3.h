@@ -105,25 +105,25 @@ public:
   i32 vfoFrequency;
   i16 hwVersion;
   bool agcMode;
-  int lna_upperBound;
+  i32 lna_upperBound;
   f32 apiVersion;
   bool has_antennaSelect;
   QString deviceModel = "SDRplay";
-  int GRdBValue;
-  int lnaState;
+  i32 GRdBValue;
+  i32 lnaState;
   f64 ppmValue;
   bool biasT;
   bool notch;
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
-  int startupCnt = 0;
+  i32 startupCnt = 0;
   bool setup_xmlDump();
   void close_xmlDump();
   std::atomic<bool> dumping;
   std::queue<generalCommand *> server_queue;
   QSemaphore serverjobs;
   bool loadFunctions();
-  int errorCode;
+  i32 errorCode;
 
 private:
   QFrame myFrame;
@@ -137,24 +137,24 @@ private:
   void set_apiVersion(f32);
 
 private slots:
-  void set_ifgainReduction(int);
-  void set_lnagainReduction(int);
-  void set_agcControl(int);
+  void set_ifgainReduction(i32);
+  void set_lnagainReduction(i32);
+  void set_agcControl(i32);
   void set_ppmControl(f64);
   void set_selectAntenna(const QString &);
-  void set_biasT(int);
-  void set_notch(int);
+  void set_biasT(i32);
+  void set_notch(i32);
   void slot_overload_detected(bool);
-  void slot_tuner_gain(f64, int);
+  void slot_tuner_gain(f64, i32);
 public slots:
-  void set_lnabounds(int, int);
-  void set_antennaSelect(int);
+  void set_lnabounds(i32, i32);
+  void set_antennaSelect(i32);
   void set_xmlDump();
-  void show_lnaGain(int);
+  void show_lnaGain(i32);
 signals:
   void set_antennaSelect_signal(bool);
   void signal_overload_detected(bool);
-  void signal_tuner_gain(f64, int);
+  void signal_tuner_gain(f64, i32);
 };
 
 #endif

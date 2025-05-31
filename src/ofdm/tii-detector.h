@@ -50,15 +50,15 @@ private:
 
   f32 _calculate_average_noise(const TFloatTable192 & iFloatTable) const;
   void _get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, f32 & ioMax, const TCmplxTable192 & iCmplxTable) const;
-  void _compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, int & oCount, cf32 & oSum, std::byte & oPattern,
-                               int iSubId, const f32 iThresholdLevel,
+  void _compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, i32 & oCount, cf32 & oSum, std::byte & oPattern,
+                               i32 iSubId, const f32 iThresholdLevel,
                                const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
                                const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable) const;
-  void _find_collisions(std::vector<STiiResult> & ioResultVec, int iMainId, int iSubId,
-                        std::byte iPattern, f32 iMax, f32 iThresholdLevel, int iCount, bool iIsNonEtsi,
+  void _find_collisions(std::vector<STiiResult> & ioResultVec, i32 iMainId, i32 iSubId,
+                        std::byte iPattern, f32 iMax, f32 iThresholdLevel, i32 iCount, bool iIsNonEtsi,
                         const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable) const;
-  int _find_exact_main_id_match(std::byte iPattern) const;
-  int _find_best_main_id_match(cf32 & oSum, int iSubId, const TCmplxTable192 & ipCmplxTable) const;
+  i32 _find_exact_main_id_match(std::byte iPattern) const;
+  i32 _find_best_main_id_match(cf32 & oSum, i32 iSubId, const TCmplxTable192 & ipCmplxTable) const;
   void _reset_null_symbol_buffer();
   void _remove_single_carrier_values(TBufferArr768 & ioBuffer) const;
   void _decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const TArrayTu & iVec) const;

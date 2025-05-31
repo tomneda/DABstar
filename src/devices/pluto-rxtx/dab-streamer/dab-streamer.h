@@ -103,7 +103,7 @@ class plutoHandler;
   (((clk ^ bit) << 1) | ((clk ^ 0x1 ^ bit)))
 
 #define NRZ(in) \
-  (f64)(((int)((in) & 0x1) << 1) - 1)
+  (f64)(((i32)((in) & 0x1) << 1) - 1)
 
 #define  index_A    0
 #define  index_B    1
@@ -124,7 +124,7 @@ struct rds_group_s
 {
   char bits[RDS_GROUP_LEN];
   u16 blocks[RDS_GROUP_NUMBLOCKS];
-  int info;
+  i32 info;
   struct rds_info_s * info_block;
 };
 
@@ -137,9 +137,9 @@ typedef struct
 class dabStreamer : public AudioBase
 {
 public:
-  dabStreamer(int, int, plutoHandler *);
+  dabStreamer(i32, i32, plutoHandler *);
   ~dabStreamer(void);
-  void audioOutput(f32 *, int);
+  void audioOutput(f32 *, i32);
   void addRds(const std::string);
   void addName(const std::string);
   void stop(void);
@@ -151,20 +151,20 @@ private:
   RingBuffer<char> rdsBuffer;
   void run(void);
   std::thread threadHandle;
-  int inRate;
-  int outRate;
+  i32 inRate;
+  i32 outRate;
   plutoHandler * generator;
   cf32 * oscillatorTable;
   f32 * sinTable;
-  void modulateData(f32 *, int, int);
+  void modulateData(f32 *, i32, i32);
   std::atomic<bool> running;
   std::atomic<bool> messageIn;
   f32 nextPhase;
-  int pos;
+  i32 pos;
   char m;
   char e;
   char prev_e;
-  int bpos;
+  i32 bpos;
   f64 symclk_p;
   char symclk_b;
 
@@ -176,9 +176,9 @@ private:
   struct rds_group_s group_3a;
   struct rds_group_s group_8a;
 
-  int rt_pos;
+  i32 rt_pos;
   u16 rds_crc(u16);
-  void rds_bits_to_values(char *, u16, int);
+  void rds_bits_to_values(char *, u16, i32);
   void rds_serialize(struct rds_group_s *, char);
   void rds_init_groups(struct rds_info_s * info);
 

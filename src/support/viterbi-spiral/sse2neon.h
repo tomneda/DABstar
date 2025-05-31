@@ -96,7 +96,7 @@
  * most operate on data types that are specific to SSE.
  * If a vector type ends in d, it contains doubles, and if it does not have
  * a suffix, it contains floats. An integer vector type can contain any type
- * of integer, from chars to shorts to unsigned long longs.
+ * of integer, from chars to shorts to u32 longs.
  */
 typedef float32x2_t __m64;
 typedef float32x4_t __m128; /* 128-bit vector containing 4 floats */
@@ -330,7 +330,7 @@ enum _mm_hint {
 
 // Loads one cache line of data from address p to a location closer to the
 // processor. https://msdn.microsoft.com/en-us/library/84szxsww(v=vs.100).aspx
-FORCE_INLINE void _mm_prefetch(const void *p, int i)
+FORCE_INLINE void _mm_prefetch(const void *p, i32 i)
 {
     (void) i;
     __builtin_prefetch(p);
@@ -422,7 +422,7 @@ FORCE_INLINE __m128i _mm_setr_epi16(short w0,
 
 // Sets the 4 signed 32-bit integer values in reverse order
 // https://technet.microsoft.com/en-us/library/security/27yb3ee5(v=vs.90).aspx
-FORCE_INLINE __m128i _mm_setr_epi32(int i3, int i2, int i1, int i0)
+FORCE_INLINE __m128i _mm_setr_epi32(i32 i3, i32 i2, i32 i1, i32 i0)
 {
     i32 ALIGN_STRUCT(16) data[4] = {i3, i2, i1, i0};
     return vreinterpretq_m128i_s32(vld1q_s32(data));
@@ -436,7 +436,7 @@ FORCE_INLINE __m128i _mm_setr_epi32(int i3, int i2, int i1, int i0)
 //   r15 := b
 //
 // https://msdn.microsoft.com/en-us/library/6e14xhyf(v=vs.100).aspx
-FORCE_INLINE __m128i _mm_set1_epi8(signed char w)
+FORCE_INLINE __m128i _mm_set1_epi8(i8 w)
 {
     return vreinterpretq_m128i_s8(vdupq_n_s8(w));
 }
@@ -456,22 +456,22 @@ FORCE_INLINE __m128i _mm_set1_epi16(short w)
 
 // Sets the 16 signed 8-bit integer values.
 // https://msdn.microsoft.com/en-us/library/x0cx8zd3(v=vs.90).aspx
-FORCE_INLINE __m128i _mm_set_epi8(signed char b15,
-                                  signed char b14,
-                                  signed char b13,
-                                  signed char b12,
-                                  signed char b11,
-                                  signed char b10,
-                                  signed char b9,
-                                  signed char b8,
-                                  signed char b7,
-                                  signed char b6,
-                                  signed char b5,
-                                  signed char b4,
-                                  signed char b3,
-                                  signed char b2,
-                                  signed char b1,
-                                  signed char b0)
+FORCE_INLINE __m128i _mm_set_epi8(i8 b15,
+                                  i8 b14,
+                                  i8 b13,
+                                  i8 b12,
+                                  i8 b11,
+                                  i8 b10,
+                                  i8 b9,
+                                  i8 b8,
+                                  i8 b7,
+                                  i8 b6,
+                                  i8 b5,
+                                  i8 b4,
+                                  i8 b3,
+                                  i8 b2,
+                                  i8 b1,
+                                  i8 b0)
 {
     i8 ALIGN_STRUCT(16)
         data[16] = {(i8) b0,  (i8) b1,  (i8) b2,  (i8) b3,
@@ -498,22 +498,22 @@ FORCE_INLINE __m128i _mm_set_epi16(short i7,
 
 // Sets the 16 signed 8-bit integer values in reverse order.
 // https://msdn.microsoft.com/en-us/library/2khb9c7k(v=vs.90).aspx
-FORCE_INLINE __m128i _mm_setr_epi8(signed char b0,
-                                   signed char b1,
-                                   signed char b2,
-                                   signed char b3,
-                                   signed char b4,
-                                   signed char b5,
-                                   signed char b6,
-                                   signed char b7,
-                                   signed char b8,
-                                   signed char b9,
-                                   signed char b10,
-                                   signed char b11,
-                                   signed char b12,
-                                   signed char b13,
-                                   signed char b14,
-                                   signed char b15)
+FORCE_INLINE __m128i _mm_setr_epi8(i8 b0,
+                                   i8 b1,
+                                   i8 b2,
+                                   i8 b3,
+                                   i8 b4,
+                                   i8 b5,
+                                   i8 b6,
+                                   i8 b7,
+                                   i8 b8,
+                                   i8 b9,
+                                   i8 b10,
+                                   i8 b11,
+                                   i8 b12,
+                                   i8 b13,
+                                   i8 b14,
+                                   i8 b15)
 {
     i8 ALIGN_STRUCT(16)
         data[16] = {(i8) b0,  (i8) b1,  (i8) b2,  (i8) b3,
@@ -531,7 +531,7 @@ FORCE_INLINE __m128i _mm_setr_epi8(signed char b0,
 //   r3 := I
 //
 // https://msdn.microsoft.com/en-us/library/vstudio/h4xscxat(v=vs.100).aspx
-FORCE_INLINE __m128i _mm_set1_epi32(int _i)
+FORCE_INLINE __m128i _mm_set1_epi32(i32 _i)
 {
     return vreinterpretq_m128i_s32(vdupq_n_s32(_i));
 }
@@ -552,7 +552,7 @@ FORCE_INLINE __m128i _mm_set1_epi64x(i64 _i)
 
 // Sets the 4 signed 32-bit integer values.
 // https://msdn.microsoft.com/en-us/library/vstudio/019beekt(v=vs.100).aspx
-FORCE_INLINE __m128i _mm_set_epi32(int i3, int i2, int i1, int i0)
+FORCE_INLINE __m128i _mm_set_epi32(i32 i3, i32 i2, i32 i1, i32 i0)
 {
     i32 ALIGN_STRUCT(16) data[4] = {i0, i1, i2, i3};
     return vreinterpretq_m128i_s32(vld1q_s32(data));
@@ -1011,7 +1011,7 @@ FORCE_INLINE __m128 _mm_shuffle_ps_2032(__m128 a, __m128 b)
 #if 0 /* C version */
 FORCE_INLINE __m128 _mm_shuffle_ps_default(__m128 a,
                                            __m128 b,
-                                           __constrange(0, 255) int imm)
+                                           __constrange(0, 255) i32 imm)
 {
     __m128 ret;
     ret[0] = a[imm & 0x3];
@@ -1039,7 +1039,7 @@ FORCE_INLINE __m128 _mm_shuffle_ps_default(__m128 a,
     })
 
 // FORCE_INLINE __m128 _mm_shuffle_ps(__m128 a, __m128 b, __constrange(0,255)
-// int imm)
+// i32 imm)
 #if __has_builtin(__builtin_shufflevector)
 #define _mm_shuffle_ps(a, b, imm)                                \
     __extension__({                                              \
@@ -1228,7 +1228,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi8(__m128i a, __m128i b)
 
 #if 0 /* C version */
 FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
-                                               __constrange(0, 255) int imm)
+                                               __constrange(0, 255) i32 imm)
 {
     __m128i ret;
     ret[0] = a[imm & 0x3];
@@ -1256,7 +1256,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
     })
 
 // FORCE_INLINE __m128i _mm_shuffle_epi32_splat(__m128i a, __constrange(0,255)
-// int imm)
+// i32 imm)
 #if defined(__aarch64__)
 #define _mm_shuffle_epi32_splat(a, imm)                          \
     __extension__({                                              \
@@ -1274,7 +1274,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
 // Shuffles the 4 signed or unsigned 32-bit integers in a as specified by imm.
 // https://msdn.microsoft.com/en-us/library/56f67xbk%28v=vs.90%29.aspx
 // FORCE_INLINE __m128i _mm_shuffle_epi32(__m128i a,
-//                                        __constrange(0,255) int imm)
+//                                        __constrange(0,255) i32 imm)
 #if __has_builtin(__builtin_shufflevector)
 #define _mm_shuffle_epi32(a, imm)                              \
     __extension__({                                            \
@@ -1343,7 +1343,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
 // by imm.
 // https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/y41dkk37(v=vs.100)
 // FORCE_INLINE __m128i _mm_shufflelo_epi16_function(__m128i a,
-//                                                   __constrange(0,255) int
+//                                                   __constrange(0,255) i32
 //                                                   imm)
 #define _mm_shufflelo_epi16_function(a, imm)                                  \
     __extension__({                                                           \
@@ -1360,7 +1360,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
     })
 
 // FORCE_INLINE __m128i _mm_shufflelo_epi16(__m128i a,
-//                                          __constrange(0,255) int imm)
+//                                          __constrange(0,255) i32 imm)
 #if __has_builtin(__builtin_shufflevector)
 #define _mm_shufflelo_epi16(a, imm)                                  \
     __extension__({                                                  \
@@ -1378,7 +1378,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
 // by imm.
 // https://msdn.microsoft.com/en-us/library/13ywktbs(v=vs.100).aspx
 // FORCE_INLINE __m128i _mm_shufflehi_epi16_function(__m128i a,
-//                                                   __constrange(0,255) int
+//                                                   __constrange(0,255) i32
 //                                                   imm)
 #define _mm_shufflehi_epi16_function(a, imm)                                   \
     __extension__({                                                            \
@@ -1395,7 +1395,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
     })
 
 // FORCE_INLINE __m128i _mm_shufflehi_epi16(__m128i a,
-//                                          __constrange(0,255) int imm)
+//                                          __constrange(0,255) i32 imm)
 #if __has_builtin(__builtin_shufflevector)
 #define _mm_shufflehi_epi16(a, imm)                             \
     __extension__({                                             \
@@ -1422,7 +1422,7 @@ FORCE_INLINE __m128i _mm_shuffle_epi32_default(__m128i a,
 //       FI
 //   ENDFOR
 // FORCE_INLINE __m128i _mm_blend_epi16(__m128i a, __m128i b,
-//                                      __constrange(0,255) int imm)
+//                                      __constrange(0,255) i32 imm)
 #define _mm_blend_epi16(a, b, imm)                                        \
     __extension__({                                                       \
         const u16 _mask[8] = {((imm) & (1 << 0)) ? 0xFFFF : 0x0000,  \
@@ -1469,7 +1469,7 @@ FORCE_INLINE __m128i _mm_blendv_epi8(__m128i _a, __m128i _b, __m128i _mask)
 //   r1 := a1 >> count
 //   r2 := a2 >> count
 //   r3 := a3 >> count immediate
-FORCE_INLINE __m128i _mm_srai_epi32(__m128i a, int count)
+FORCE_INLINE __m128i _mm_srai_epi32(__m128i a, i32 count)
 {
     return (__m128i) vshlq_s32((int32x4_t) a, vdupq_n_s32(-count));
 }
@@ -1481,7 +1481,7 @@ FORCE_INLINE __m128i _mm_srai_epi32(__m128i a, int count)
 //   r1 := a1 >> count
 //   ...
 //   r7 := a7 >> count
-FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int count)
+FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, i32 count)
 {
     return (__m128i) vshlq_s16((int16x8_t) a, vdupq_n_s16(-count));
 }
@@ -1512,7 +1512,7 @@ FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int count)
 // Shifts the 4 signed or unsigned 32-bit integers in a left by count bits while
 // shifting in zeros. :
 // https://msdn.microsoft.com/en-us/library/z2k3bbtb%28v=vs.90%29.aspx
-// FORCE_INLINE __m128i _mm_slli_epi32(__m128i a, __constrange(0,255) int imm)
+// FORCE_INLINE __m128i _mm_slli_epi32(__m128i a, __constrange(0,255) i32 imm)
 #define _mm_slli_epi32(a, imm)                                   \
     __extension__({                                              \
         __m128i ret;                                             \
@@ -1569,7 +1569,7 @@ FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int count)
 // Shifts the 4 signed or unsigned 32-bit integers in a right by count bits
 // while shifting in zeros.
 // https://msdn.microsoft.com/en-us/library/w486zcfa(v=vs.100).aspx FORCE_INLINE
-// __m128i _mm_srli_epi32(__m128i a, __constrange(0,255) int imm)
+// __m128i _mm_srli_epi32(__m128i a, __constrange(0,255) i32 imm)
 #define _mm_srli_epi32(a, imm)                                   \
     __extension__({                                              \
         __m128i ret;                                             \
@@ -1603,7 +1603,7 @@ FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int count)
 // Shifts the 4 signed 32 - bit integers in a right by count bits while shifting
 // in the sign bit.
 // https://msdn.microsoft.com/en-us/library/z1939387(v=vs.100).aspx
-// FORCE_INLINE __m128i _mm_srai_epi32(__m128i a, __constrange(0,255) int imm)
+// FORCE_INLINE __m128i _mm_srai_epi32(__m128i a, __constrange(0,255) i32 imm)
 #define _mm_srai_epi32(a, imm)                                   \
     __extension__({                                              \
         __m128i ret;                                             \
@@ -1627,7 +1627,7 @@ FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int count)
 //   r := srl(a, imm*8)
 //
 // https://msdn.microsoft.com/en-us/library/305w28yz(v=vs.100).aspx
-// FORCE_INLINE _mm_srli_si128(__m128i a, __constrange(0,255) int imm)
+// FORCE_INLINE _mm_srli_si128(__m128i a, __constrange(0,255) i32 imm)
 #define _mm_srli_si128(a, imm)                                              \
     __extension__({                                                         \
         __m128i ret;                                                        \
@@ -1648,7 +1648,7 @@ FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int count)
 //   r := a << (imm * 8)
 //
 // https://msdn.microsoft.com/en-us/library/34d3k2kt(v=vs.100).aspx
-// FORCE_INLINE __m128i _mm_slli_si128(__m128i a, __constrange(0,255) int imm)
+// FORCE_INLINE __m128i _mm_slli_si128(__m128i a, __constrange(0,255) i32 imm)
 #define _mm_slli_si128(a, imm)                                          \
     __extension__({                                                     \
         __m128i ret;                                                    \
@@ -1777,7 +1777,7 @@ FORCE_INLINE __m128i _mm_srl_epi64(__m128i a, __m128i count)
 // Creates a 16-bit mask from the most significant bits of the 16 signed or
 // unsigned 8-bit integers in a and zero extends the upper bits.
 // https://msdn.microsoft.com/en-us/library/vstudio/s090c8fk(v=vs.100).aspx
-FORCE_INLINE int _mm_movemask_epi8(__m128i a)
+FORCE_INLINE i32 _mm_movemask_epi8(__m128i a)
 {
 #if defined(__aarch64__)
     uint8x16_t input = vreinterpretq_u8_m128i(a);
@@ -1867,7 +1867,7 @@ FORCE_INLINE int _mm_movemask_epi8(__m128i a)
     //                      ||  return paired64[0]
     //                      d2
     // Note: Little endian would return the correct value 4b (01001011) instead.
-    return vgetq_lane_u8(paired64, 0) | ((int) vgetq_lane_u8(paired64, 8) << 8);
+    return vgetq_lane_u8(paired64, 0) | ((i32) vgetq_lane_u8(paired64, 8) << 8);
 #endif
 }
 
@@ -1875,7 +1875,7 @@ FORCE_INLINE int _mm_movemask_epi8(__m128i a)
 // Creates a 4-bit mask from the most significant bits of the four
 // single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/vstudio/4490ys29(v=vs.100).aspx
-FORCE_INLINE int _mm_movemask_ps(__m128 a)
+FORCE_INLINE i32 _mm_movemask_ps(__m128 a)
 {
     uint32x4_t input = vreinterpretq_u32_m128(a);
 #if defined(__aarch64__)
@@ -1899,7 +1899,7 @@ FORCE_INLINE int _mm_movemask_ps(__m128 a)
 // Compute the bitwise AND of 128 bits (representing integer data) in a and
 // mask, and return 1 if the result is zero, otherwise return 0.
 // https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_test_all_zeros&expand=5871
-FORCE_INLINE int _mm_test_all_zeros(__m128i a, __m128i mask)
+FORCE_INLINE i32 _mm_test_all_zeros(__m128i a, __m128i mask)
 {
     int64x2_t a_and_mask =
         vandq_s64(vreinterpretq_s64_m128i(a), vreinterpretq_s64_m128i(mask));
@@ -2956,7 +2956,7 @@ FORCE_INLINE __m128 _mm_cmpord_ps(__m128 a, __m128 b)
 // https://msdn.microsoft.com/en-us/library/2kwe606b(v=vs.90).aspx Important
 // note!! The documentation on MSDN is incorrect!  If either of the values is a
 // NAN the docs say you will get a one, but in fact, it will return a zero!!
-FORCE_INLINE int _mm_comilt_ss(__m128 a, __m128 b)
+FORCE_INLINE i32 _mm_comilt_ss(__m128 a, __m128 b)
 {
     uint32x4_t a_not_nan =
         vceqq_f32(vreinterpretq_f32_m128(a), vreinterpretq_f32_m128(a));
@@ -2971,7 +2971,7 @@ FORCE_INLINE int _mm_comilt_ss(__m128 a, __m128 b)
 // Compares the lower single-precision floating point scalar values of a and b
 // using a greater than operation. :
 // https://msdn.microsoft.com/en-us/library/b0738e0t(v=vs.100).aspx
-FORCE_INLINE int _mm_comigt_ss(__m128 a, __m128 b)
+FORCE_INLINE i32 _mm_comigt_ss(__m128 a, __m128 b)
 {
     // return vgetq_lane_u32(vcgtq_f32(vreinterpretq_f32_m128(a),
     // vreinterpretq_f32_m128(b)), 0);
@@ -2988,7 +2988,7 @@ FORCE_INLINE int _mm_comigt_ss(__m128 a, __m128 b)
 // Compares the lower single-precision floating point scalar values of a and b
 // using a less than or equal operation. :
 // https://msdn.microsoft.com/en-us/library/1w4t7c57(v=vs.90).aspx
-FORCE_INLINE int _mm_comile_ss(__m128 a, __m128 b)
+FORCE_INLINE i32 _mm_comile_ss(__m128 a, __m128 b)
 {
     // return vgetq_lane_u32(vcleq_f32(vreinterpretq_f32_m128(a),
     // vreinterpretq_f32_m128(b)), 0);
@@ -3005,7 +3005,7 @@ FORCE_INLINE int _mm_comile_ss(__m128 a, __m128 b)
 // Compares the lower single-precision floating point scalar values of a and b
 // using a greater than or equal operation. :
 // https://msdn.microsoft.com/en-us/library/8t80des6(v=vs.100).aspx
-FORCE_INLINE int _mm_comige_ss(__m128 a, __m128 b)
+FORCE_INLINE i32 _mm_comige_ss(__m128 a, __m128 b)
 {
     // return vgetq_lane_u32(vcgeq_f32(vreinterpretq_f32_m128(a),
     // vreinterpretq_f32_m128(b)), 0);
@@ -3022,7 +3022,7 @@ FORCE_INLINE int _mm_comige_ss(__m128 a, __m128 b)
 // Compares the lower single-precision floating point scalar values of a and b
 // using an equality operation. :
 // https://msdn.microsoft.com/en-us/library/93yx2h2b(v=vs.100).aspx
-FORCE_INLINE int _mm_comieq_ss(__m128 a, __m128 b)
+FORCE_INLINE i32 _mm_comieq_ss(__m128 a, __m128 b)
 {
     // return vgetq_lane_u32(vceqq_f32(vreinterpretq_f32_m128(a),
     // vreinterpretq_f32_m128(b)), 0);
@@ -3039,7 +3039,7 @@ FORCE_INLINE int _mm_comieq_ss(__m128 a, __m128 b)
 // Compares the lower single-precision floating point scalar values of a and b
 // using an inequality operation. :
 // https://msdn.microsoft.com/en-us/library/bafh5e0a(v=vs.90).aspx
-FORCE_INLINE int _mm_comineq_ss(__m128 a, __m128 b)
+FORCE_INLINE i32 _mm_comineq_ss(__m128 a, __m128 b)
 {
     // return !vgetq_lane_u32(vceqq_f32(vreinterpretq_f32_m128(a),
     // vreinterpretq_f32_m128(b)), 0);
@@ -3196,10 +3196,10 @@ FORCE_INLINE __m128i _mm_cvtepi32_epi64(__m128i a)
 // Converts the four single-precision, floating-point values of a to signed
 // 32-bit integer values.
 //
-//   r0 := (int) a0
-//   r1 := (int) a1
-//   r2 := (int) a2
-//   r3 := (int) a3
+//   r0 := (i32) a0
+//   r1 := (i32) a1
+//   r2 := (i32) a2
+//   r3 := (i32) a3
 //
 // https://msdn.microsoft.com/en-us/library/vstudio/xdc42k5e(v=vs.100).aspx
 // *NOTE*. The default rounding mode on SSE is 'round to even', which ARMv7-A
@@ -3230,7 +3230,7 @@ FORCE_INLINE __m128i _mm_cvtps_epi32(__m128 a)
 
 // Moves the least significant 32 bits of a to a 32-bit integer.
 // https://msdn.microsoft.com/en-us/library/5z7a9642%28v=vs.90%29.aspx
-FORCE_INLINE int _mm_cvtsi128_si32(__m128i a)
+FORCE_INLINE i32 _mm_cvtsi128_si32(__m128i a)
 {
     return vgetq_lane_s32(vreinterpretq_s32_m128i(a), 0);
 }
@@ -3251,7 +3251,7 @@ FORCE_INLINE u64 _mm_cvtsi128_si64(__m128i a)
 //   r3 := 0x0
 //
 // https://msdn.microsoft.com/en-us/library/ct3539ha%28v=vs.90%29.aspx
-FORCE_INLINE __m128i _mm_cvtsi32_si128(int a)
+FORCE_INLINE __m128i _mm_cvtsi32_si128(i32 a)
 {
     return vreinterpretq_m128i_s32(vsetq_lane_s32(a, vdupq_n_s32(0), 0));
 }
@@ -3644,7 +3644,7 @@ FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
     min = vget_lane_u16(vreinterpret_u16_m64i(tmp), 0);
 #endif
     // Get the index of the minimum value
-    int i;
+    i32 i;
     for (i = 0; i < 8; i++) {
         if (min == vgetq_lane_u16(vreinterpretq_u16_m128i(a), 0)) {
             idx = (u16) i;
@@ -3671,13 +3671,13 @@ FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
 
 // Extracts the selected signed or unsigned 8-bit integer from a and zero
 // extends.
-// FORCE_INLINE int _mm_extract_epi8(__m128i a, __constrange(0,16) int imm)
+// FORCE_INLINE i32 _mm_extract_epi8(__m128i a, __constrange(0,16) i32 imm)
 #define _mm_extract_epi8(a, imm) vgetq_lane_u8(vreinterpretq_u8_m128i(a), (imm))
 
 // Inserts the least significant 8 bits of b into the selected 8-bit integer
 // of a.
-// FORCE_INLINE __m128i _mm_insert_epi8(__m128i a, int b,
-//                                      __constrange(0,16) int imm)
+// FORCE_INLINE __m128i _mm_insert_epi8(__m128i a, i32 b,
+//                                      __constrange(0,16) i32 imm)
 #define _mm_insert_epi8(a, b, imm)                                 \
     __extension__({                                                \
         vreinterpretq_m128i_s8(                                    \
@@ -3687,15 +3687,15 @@ FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
 // Extracts the selected signed or unsigned 16-bit integer from a and zero
 // extends.
 // https://msdn.microsoft.com/en-us/library/6dceta0c(v=vs.100).aspx
-// FORCE_INLINE int _mm_extract_epi16(__m128i a, __constrange(0,8) int imm)
+// FORCE_INLINE i32 _mm_extract_epi16(__m128i a, __constrange(0,8) i32 imm)
 #define _mm_extract_epi16(a, imm) \
     vgetq_lane_u16(vreinterpretq_u16_m128i(a), (imm))
 
 // Inserts the least significant 16 bits of b into the selected 16-bit integer
 // of a.
 // https://msdn.microsoft.com/en-us/library/kaze8hz1%28v=vs.100%29.aspx
-// FORCE_INLINE __m128i _mm_insert_epi16(__m128i a, int b,
-//                                       __constrange(0,8) int imm)
+// FORCE_INLINE __m128i _mm_insert_epi16(__m128i a, i32 b,
+//                                       __constrange(0,8) i32 imm)
 #define _mm_insert_epi16(a, b, imm)                                  \
     __extension__({                                                  \
         vreinterpretq_m128i_s16(                                     \
@@ -3704,18 +3704,18 @@ FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
 
 // Extracts the selected signed or unsigned 32-bit integer from a and zero
 // extends.
-// FORCE_INLINE int _mm_extract_epi32(__m128i a, __constrange(0,4) int imm)
+// FORCE_INLINE i32 _mm_extract_epi32(__m128i a, __constrange(0,4) i32 imm)
 #define _mm_extract_epi32(a, imm) \
     vgetq_lane_s32(vreinterpretq_s32_m128i(a), (imm))
 
 // Extracts the selected single-precision (32-bit) floating-point from a.
-// FORCE_INLINE int _mm_extract_ps(__m128 a, __constrange(0,4) int imm)
+// FORCE_INLINE i32 _mm_extract_ps(__m128 a, __constrange(0,4) i32 imm)
 #define _mm_extract_ps(a, imm) vgetq_lane_s32(vreinterpretq_s32_m128(a), (imm))
 
 // Inserts the least significant 32 bits of b into the selected 32-bit integer
 // of a.
-// FORCE_INLINE __m128i _mm_insert_epi32(__m128i a, int b,
-//                                       __constrange(0,4) int imm)
+// FORCE_INLINE __m128i _mm_insert_epi32(__m128i a, i32 b,
+//                                       __constrange(0,4) i32 imm)
 #define _mm_insert_epi32(a, b, imm)                                  \
     __extension__({                                                  \
         vreinterpretq_m128i_s32(                                     \
@@ -3724,14 +3724,14 @@ FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
 
 // Extracts the selected signed or unsigned 64-bit integer from a and zero
 // extends.
-// FORCE_INLINE __int64 _mm_extract_epi64(__m128i a, __constrange(0,2) int imm)
+// FORCE_INLINE __int64 _mm_extract_epi64(__m128i a, __constrange(0,2) i32 imm)
 #define _mm_extract_epi64(a, imm) \
     vgetq_lane_s64(vreinterpretq_s64_m128i(a), (imm))
 
 // Inserts the least significant 64 bits of b into the selected 64-bit integer
 // of a.
 // FORCE_INLINE __m128i _mm_insert_epi64(__m128i a, __int64 b,
-//                                       __constrange(0,2) int imm)
+//                                       __constrange(0,2) i32 imm)
 #define _mm_insert_epi64(a, b, imm)                                  \
     __extension__({                                                  \
         vreinterpretq_m128i_s64(                                     \
@@ -3741,13 +3741,13 @@ FORCE_INLINE __m128i _mm_minpos_epu16(__m128i a)
 // Count the number of bits set to 1 in unsigned 32-bit integer a, and
 // return that count in dst.
 // https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_popcnt_u32
-FORCE_INLINE int _mm_popcnt_u32(unsigned int a)
+FORCE_INLINE i32 _mm_popcnt_u32(u32 a)
 {
 #if defined(__aarch64__)
 #if __has_builtin(__builtin_popcount)
     return __builtin_popcount(a);
 #else
-    return (int) vaddlv_u8(vcnt_u8(vcreate_u8((u64) a)));
+    return (i32) vaddlv_u8(vcnt_u8(vcreate_u8((u64) a)));
 #endif
 #else
     u32 count = 0;
@@ -3927,7 +3927,7 @@ static uint64x2_t _sse2neon_vmull_p64(uint64x1_t _a, uint64x1_t _b)
 }
 #endif  // ARMv7 polyfill
 
-FORCE_INLINE __m128i _mm_clmulepi64_si128(__m128i _a, __m128i _b, const int imm)
+FORCE_INLINE __m128i _mm_clmulepi64_si128(__m128i _a, __m128i _b, const i32 imm)
 {
     uint64x2_t a = vreinterpretq_u64_m128i(_a);
     uint64x2_t b = vreinterpretq_u64_m128i(_b);
@@ -4085,7 +4085,7 @@ FORCE_INLINE u32 _mm_crc32_u8(u32 crc, u8 v)
                          : [v] "r"(v));
 #else
     crc ^= v;
-    for (int bit = 0; bit < 8; bit++) {
+    for (i32 bit = 0; bit < 8; bit++) {
         if (crc & 1)
             crc = (crc >> 1) ^ UINT32_C(0x82f63b78);
         else

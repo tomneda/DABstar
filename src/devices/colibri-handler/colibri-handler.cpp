@@ -68,7 +68,7 @@
 	this		-> lastFrequency	= 220000000;
 	fprintf (stderr, "set on %d\n", lastFrequency);
 	colibriSettings -> beginGroup ("colibriSettings");
-	int gainSetting = colibriSettings -> value ("colibri-gain", 20). toInt ();
+	i32 gainSetting = colibriSettings -> value ("colibri-gain", 20). toInt ();
 	gainSelector	-> setValue (gainSetting);
 	colibriSettings -> endGroup ();
         m_loader.setPream (m_deskriptor, gainSelector ->value () * 0.5 + -31.5);
@@ -90,9 +90,9 @@
 //	(selectedRate / 1000) vs (2048000 / 1000)
 //	so we end up with buffers with 1 msec content
 	convBufferSize		= selectedRate / 1000;
-	for (int i = 0; i < 2048; i ++) {
+	for (i32 i = 0; i < 2048; i ++) {
 	   f32 inVal	= f32 (selectedRate / 1000);
-	   mapTable_int [i]	=  int (floor (i * (inVal / 2048.0)));
+	   mapTable_int [i]	=  i32 (floor (i * (inVal / 2048.0)));
 	   mapTable_float [i]	= i * (inVal / 2048.0) - mapTable_int [i];
 	}
 	convIndex	= 0;
@@ -123,7 +123,7 @@ i32	colibriHandler::getVFOFrequency () {
 	return this -> lastFrequency;
 }
 
-void	colibriHandler::set_gainControl	(int newGain) {
+void	colibriHandler::set_gainControl	(i32 newGain) {
 f32	gainValue	= -31.5 + newGain * 0.5;
 	if (gainValue <= 6) {
            m_loader.setPream (m_deskriptor, gainValue);
@@ -146,11 +146,11 @@ colibriHandler *p = static_cast<colibriHandler *>(ctx);
 cf32 temp [2048];
 
 	(void)overload;
-	for (int i = 0; i < len; i ++) {
+	for (i32 i = 0; i < len; i ++) {
 	   p -> convBuffer [p -> convIndex] = buffer [i];
 	   p -> convIndex ++;
 	   if (p -> convIndex > p -> convBufferSize) {
-	      for (int j = 0; j < 2048; j ++) {
+	      for (i32 j = 0; j < 2048; j ++) {
 	         i16  inpBase	= p -> mapTable_int [j];
 	         f32	inpRatio	= p ->  mapTable_float [j];
                  temp [j]  = p -> convBuffer [inpBase + 1] * inpRatio +
@@ -193,7 +193,7 @@ i32	colibriHandler::getSamples (cf32 *V, i32 size) {
 	if (iqSwitcher) {
 	   cf32 xx [size];
 	   _I_Buffer. getDataFromBuffer (xx, size);
-	   for (int i = 0; i < size; i ++)
+	   for (i32 i = 0; i < size; i ++)
 	      V[i] = cf32 (imag (xx [i]), real (xx [i]));
 	   return size;
 	}
@@ -219,7 +219,7 @@ std::string s = m_loader. information ();
 	return QString (s. c_str ());
 }
 
-int colibriHandler::sampleRate (int index) {
+i32 colibriHandler::sampleRate (i32 index) {
     switch (index) {
         case Sr_48kHz: return 48000;
         case Sr_96kHz: return 96000;

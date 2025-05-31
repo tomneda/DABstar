@@ -40,9 +40,9 @@
 #include <QTranslator>
 //#include <unistd.h>
 
-int main(int argc, char ** argv)
+i32 main(i32 argc, char ** argv)
 {
-  qRegisterMetaType<QVector<int>>("QVector<int>");  // windows needs that...
+  qRegisterMetaType<QVector<i32>>("QVector<i32>");  // windows needs that...
 
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
   const QString initFileName02 = QDir::toNativeSeparators(configPath +  "settings02.ini");
@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
 
-  int opt;
+  i32 opt;
   while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:")) != -1)
   {
     switch (opt)

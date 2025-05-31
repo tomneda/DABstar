@@ -21,6 +21,6 @@ namespace SoapySDR
  * \param errorCode a negative integer return code
  * \return a pointer to a string representing the error
  */
-SOAPY_SDR_API const char *errToStr(const int errorCode);
+SOAPY_SDR_API const char *errToStr(const i32 errorCode);
 
 }

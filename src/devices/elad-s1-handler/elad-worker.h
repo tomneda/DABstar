@@ -52,7 +52,7 @@ private:
 	void			run		();
 	eladLoader		*functions;	// 
 	RingBuffer<u8>	*_O_Buffer;
-	long int		eladFrequency;
+	long i32		eladFrequency;
 	std::atomic<bool>	running;
 };
 #endif

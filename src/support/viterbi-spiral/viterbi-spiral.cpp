@@ -66,7 +66,7 @@ ViterbiSpiral::ViterbiSpiral(const i16 iWordlength, const bool iSpiralMode) :
   qInfo("Using Scalar for Viterbi spiral decoder");
 #endif
 
-  const int nbits = mFrameBits + (K - 1);
+  const i32 nbits = mFrameBits + (K - 1);
   decisions = (decision_t *)malloc(nbits * sizeof(decision_t));
 }
 
@@ -76,7 +76,7 @@ ViterbiSpiral::~ViterbiSpiral()
   free(decisions);
 }
 
-int ViterbiSpiral::parity(int x)
+i32 ViterbiSpiral::parity(i32 x)
 {
   /* Fold down to one byte */
   x ^= (x >> 16);
@@ -84,7 +84,7 @@ int ViterbiSpiral::parity(int x)
   return PARTAB[x];
 }
 
-/*unsigned int v;  // word value to compute the parity of
+/*u32 v;  // word value to compute the parity of
 v ^= v >> 16;
 v ^= v >> 8;
 v ^= v >> 4;
@@ -94,7 +94,7 @@ return (0x6996 >> v) & 1;*/
 void ViterbiSpiral::deconvolve(const i16 * const input, u8 * const output)
 {
   /* Initialize Viterbi decoder for start of new frame */
-  for (int i = 0; i<NUMSTATES; i++)
+  for (i32 i = 0; i<NUMSTATES; i++)
     metrics1[i] = 1000;
 
   metrics1[0] = 0; /* Bias known start state */
@@ -110,29 +110,29 @@ void ViterbiSpiral::deconvolve(const i16 * const input, u8 * const output)
 #endif
 
   /* Do Viterbi chainback */
-  unsigned int endstate = 0; /* Terminal encoder state */
-  unsigned int framebits = mFrameBits;
+  u32 endstate = 0; /* Terminal encoder state */
+  u32 framebits = mFrameBits;
   decision_t *dec = decisions;
 
   dec += (K - 1); /* Look past tail */
   while (framebits--)
   {
-	int k = (dec[framebits].w[(endstate >> 2) / 32] >> ((endstate >> 2) % 32)) & 1;
+	i32 k = (dec[framebits].w[(endstate >> 2) / 32] >> ((endstate >> 2) % 32)) & 1;
 	endstate = (endstate >> 1) | (k << K);
     output[framebits] = k;
   }
 }
 
-void ViterbiSpiral::calculate_BER(const i16 * const input, u8 *punctureTable, u8 const *output, int &bits, int &errors)
+void ViterbiSpiral::calculate_BER(const i16 * const input, u8 *punctureTable, u8 const *output, i32 &bits, i32 &errors)
 {
-  int i;
-  int sr = 0;
-  const int polys[RATE] = {109, 79, 83, 109};
+  i32 i;
+  i32 sr = 0;
+  const i32 polys[RATE] = {109, 79, 83, 109};
 
   for(i=0; i<mFrameBits; i++)
   {
     sr = ((sr << 1) | output[i]) & 0xff;
-    for(int j=0; j<RATE; j++)
+    for(i32 j=0; j<RATE; j++)
     {
       u8 b = parity(sr & polys[j]);
       if (punctureTable[i*RATE+j])
@@ -148,7 +148,7 @@ void ViterbiSpiral::calculate_BER(const i16 * const input, u8 *punctureTable, u8
   for(i=mFrameBits; i<mFrameBits+6; i++)
   {
     sr = (sr << 1) & 0xff;
-    for(int j=0; j<RATE; j++)
+    for(i32 j=0; j<RATE; j++)
     {
       u8 b = parity(sr & polys[j]);
       if (punctureTable[i*RATE+j])

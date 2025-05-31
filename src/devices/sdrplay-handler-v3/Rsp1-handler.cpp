@@ -23,10 +23,10 @@
 #include	"sdrplay-handler-v3.h"
 
 Rsp1_handler::Rsp1_handler(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice,
-						   int freq, bool agcMode, int lnaState, int GRdB, f64 ppm)
+						   i32 freq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppm)
   : Rsp_device(parent, chosenDevice, freq, agcMode, lnaState, GRdB, ppm)
 {
-  int mLna_upperBound = lnaStates(freq) -1;
+  i32 mLna_upperBound = lnaStates(freq) -1;
   if (lnaState > mLna_upperBound)
     this->mLnaState = mLna_upperBound;
 
@@ -36,13 +36,13 @@ Rsp1_handler::Rsp1_handler(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chose
 }
 
 
-int Rsp1_handler::lnaStates (int freq)
+i32 Rsp1_handler::lnaStates (i32 freq)
 {
   (void)freq;
   return 4;
 }
 
-bool Rsp1_handler::restart(int freq)
+bool Rsp1_handler::restart(i32 freq)
 {
   sdrplay_api_ErrT err;
 
@@ -63,7 +63,7 @@ bool Rsp1_handler::restart(int freq)
   return true;
 }
 
-bool Rsp1_handler::set_lna(int lnaState)
+bool Rsp1_handler::set_lna(i32 lnaState)
 {
   sdrplay_api_ErrT err;
 

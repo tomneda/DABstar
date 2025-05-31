@@ -38,15 +38,15 @@ class DabRadio;
 
 typedef struct
 {
-  int rfa;
-  int dacRate;
-  int sbrFlag;
-  int psFlag;
-  int aacChannelMode;
-  int mpegSurround;
-  int CoreChConfig;
-  int CoreSrIndex;
-  int ExtensionSrIndex;
+  i32 rfa;
+  i32 dacRate;
+  i32 sbrFlag;
+  i32 psFlag;
+  i32 aacChannelMode;
+  i32 mpegSurround;
+  i32 CoreChConfig;
+  i32 CoreSrIndex;
+  i32 ExtensionSrIndex;
 } stream_parms;
 
 
@@ -72,7 +72,7 @@ private:
   RingBuffer<i16> * audioBuffer;
 
 signals:
-  void signal_new_audio(int, unsigned int, unsigned int);
+  void signal_new_audio(i32, u32, u32);
 };
 
 #endif

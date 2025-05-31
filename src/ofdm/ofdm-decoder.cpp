@@ -82,11 +82,11 @@ cf32 OfdmDecoder::cmplx_from_phase2(f32 d)
   const f64 PI4_A = 0.7853981554508209228515625;
   const f64 PI4_B = 0.794662735614792836713604629039764404296875e-8;
   const f64 PI4_C = 0.306161699786838294306516483068750264552437361480769e-16;
-  const int N = 3; // order of argument reduction
+  const i32 N = 3; // order of argument reduction
 
   f64 s = abs(d);
-  int q = (int)(s * M_4_PI);
-  int r = q + (q & 1);
+  i32 q = (i32)(s * M_4_PI);
+  i32 r = q + (q & 1);
   s -= r * PI4_A;
   s -= r * PI4_B;
   s -= r * PI4_C;
@@ -94,7 +94,7 @@ cf32 OfdmDecoder::cmplx_from_phase2(f32 d)
   s = s * 0.125; // 2^-N
   s = s * s; // Evaluating Taylor series
   s = ((((s / 1814400. - 1.0 / 20160.0) * s + 1.0 / 360.0) * s - 1.0 / 12.0) * s + 1.0) * s;
-  for (int i = 0; i < N; i++) // Applying f64 angle formula
+  for (i32 i = 0; i < N; i++) // Applying f64 angle formula
   {
     s = (4.0 - s) * s;
   }

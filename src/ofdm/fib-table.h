@@ -32,7 +32,7 @@
  */
 // Tabelle ETSI EN 300 401 Page 50
 // Table is copied from the work of Michael Hoehn
-   const int ProtLevel[64][3]   = {{16,5,32},	// Index 0
+   const i32 ProtLevel[64][3]   = {{16,5,32},	// Index 0
 	                           {21,4,32},
 	                           {24,3,32},
 	                           {29,2,32},

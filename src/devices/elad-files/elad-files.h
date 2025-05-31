@@ -58,15 +58,15 @@ private:
 	eladReader	*readerTask;
 	std::atomic<bool>	running;
 
-	int             iqSize;
+	i32             iqSize;
         cf32 convBuffer  [ELAD_RATE / 1000 + 1];
-        int             mapTable_int    [DAB_RATE / 1000];
+        i32             mapTable_int    [DAB_RATE / 1000];
         f32           mapTable_float  [DAB_RATE / 1000];
-        int             convIndex;
+        i32             convIndex;
 	std::atomic<bool> iqSwitch;
 
 public slots:
-	void		setProgress	(int);
+	void		setProgress	(i32);
 	void		handle_iqButton	();
 };
 

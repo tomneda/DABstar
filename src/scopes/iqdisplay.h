@@ -83,10 +83,10 @@ private:
   std::vector<f64> mPlotDataBackgroundBuffer;
   std::vector<f64> mPlotDataDrawBuffer;
 
-  void set_point(int, int, int);
+  void set_point(i32, i32, i32);
   void clean_screen_from_old_data_points();
   void draw_cross();
-  void draw_circle(f32 ref, int val);
+  void draw_circle(f32 ref, i32 val);
   void repaint_circle(f32 size);
 
   static SCustPlot _get_plot_type_data(const EIqPlotType iPlotType);

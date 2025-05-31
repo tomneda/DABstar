@@ -49,7 +49,7 @@
   #include  "halfbandfilter.h"
 #endif
 
-using hackrf_sample_block_cb_fn = int (*)(hackrf_transfer * transfer);
+using hackrf_sample_block_cb_fn = i32 (*)(hackrf_transfer * transfer);
 
 #ifdef __MINGW32__
 #define GETPROCADDRESS  GetProcAddress
@@ -59,28 +59,28 @@ using hackrf_sample_block_cb_fn = int (*)(hackrf_transfer * transfer);
 
 class XmlFileWriter;
 
-using pfn_hackrf_init = int (*)();
-using pfn_hackrf_open = int (*)(hackrf_device ** device);
-using pfn_hackrf_close = int (*)(hackrf_device * device);
-using pfn_hackrf_exit = int (*)();
-using pfn_hackrf_start_rx = int (*)(hackrf_device *, hackrf_sample_block_cb_fn, void *);
-using pfn_hackrf_stop_rx = int (*)(hackrf_device *);
+using pfn_hackrf_init = i32 (*)();
+using pfn_hackrf_open = i32 (*)(hackrf_device ** device);
+using pfn_hackrf_close = i32 (*)(hackrf_device * device);
+using pfn_hackrf_exit = i32 (*)();
+using pfn_hackrf_start_rx = i32 (*)(hackrf_device *, hackrf_sample_block_cb_fn, void *);
+using pfn_hackrf_stop_rx = i32 (*)(hackrf_device *);
 using pfn_hackrf_device_list = hackrf_device_list_t * (*)();
-using pfn_hackrf_set_baseband_filter_bandwidth = int (*)(hackrf_device *, const u32 bandwidth_hz);
-using pfn_hackrf_set_lna_gain = int (*)(hackrf_device *, u32);
-using pfn_hackrf_set_vga_gain = int (*)(hackrf_device *, u32);
-using pfn_hackrf_set_freq = int (*)(hackrf_device *, const u64);
-using pfn_hackrf_set_sample_rate = int (*)(hackrf_device *, const f64 freq_hz);
-using pfn_hackrf_is_streaming = int (*)(hackrf_device *);
+using pfn_hackrf_set_baseband_filter_bandwidth = i32 (*)(hackrf_device *, const u32 bandwidth_hz);
+using pfn_hackrf_set_lna_gain = i32 (*)(hackrf_device *, u32);
+using pfn_hackrf_set_vga_gain = i32 (*)(hackrf_device *, u32);
+using pfn_hackrf_set_freq = i32 (*)(hackrf_device *, const u64);
+using pfn_hackrf_set_sample_rate = i32 (*)(hackrf_device *, const f64 freq_hz);
+using pfn_hackrf_is_streaming = i32 (*)(hackrf_device *);
 using pfn_hackrf_error_name = const char * (*)(enum hackrf_error errcode);
 using pfn_hackrf_usb_board_id_name = const char * (*)(enum hackrf_usb_board_id);
-using pfn_hackrf_set_antenna_enable = int (*)(hackrf_device *, const u8);
-using pfn_hackrf_set_amp_enable = int (*)(hackrf_device *, const u8);
-using pfn_hackrf_si5351c_read = int (*)(hackrf_device *, const u16, u16 *);
-using pfn_hackrf_si5351c_write = int (*)(hackrf_device *, const u16, const u16);
-using pfn_hackrf_board_rev_read = int (*)(hackrf_device* device, u8* value);
+using pfn_hackrf_set_antenna_enable = i32 (*)(hackrf_device *, const u8);
+using pfn_hackrf_set_amp_enable = i32 (*)(hackrf_device *, const u8);
+using pfn_hackrf_si5351c_read = i32 (*)(hackrf_device *, const u16, u16 *);
+using pfn_hackrf_si5351c_write = i32 (*)(hackrf_device *, const u16, const u16);
+using pfn_hackrf_board_rev_read = i32 (*)(hackrf_device* device, u8* value);
 using pfn_hackrf_board_rev_name = const char* (*)(enum hackrf_board_rev board_rev);
-using pfn_version_string_read = int (*)(hackrf_device *, const char *, u8);
+using pfn_version_string_read = i32 (*)(hackrf_device *, const char *, u8);
 using pfn_hackrf_library_version = const char* (*)();
 using pfn_hackrf_library_release = const char* (*)();
 
@@ -167,8 +167,8 @@ private:
   bool load_hackrf_functions();
   bool setup_xml_dump();
   void close_xml_dump();
-  void record_gain_settings(int);
-  void update_gain_settings(int);
+  void record_gain_settings(i32);
+  void update_gain_settings(i32);
   void check_err_throw(i32 iResult) const;
   bool check_err(i32 iResult, const char * iFncName, u32 iLine) const;
   template<typename T> bool load_method(T *& oMethodPtr, const char * iName, u32 iLine) const;
@@ -176,15 +176,15 @@ private:
 signals:
   void signal_new_ant_enable(bool);
   void signal_new_amp_enable(bool);
-  void signal_new_vga_value(int);
-  void signal_new_lna_value(int);
+  void signal_new_vga_value(i32);
+  void signal_new_lna_value(i32);
 
 private slots:
-  void slot_set_lna_gain(int);
-  void slot_set_vga_gain(int);
-  void slot_enable_bias_t(int);
-  void slot_enable_amp(int);
-  void slot_set_ppm_correction(int);
+  void slot_set_lna_gain(i32);
+  void slot_set_vga_gain(i32);
+  void slot_enable_bias_t(i32);
+  void slot_enable_amp(i32);
+  void slot_set_ppm_correction(i32);
   void slot_xml_dump();
 };
 

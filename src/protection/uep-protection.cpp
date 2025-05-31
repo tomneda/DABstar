@@ -131,7 +131,7 @@ struct protectionProfile
 static i16 findIndex(i16 bitRate, i16 protLevel)
 {
 
-  for (int i = 0; profileTable[i].bitRate != 0; i++)
+  for (i32 i = 0; profileTable[i].bitRate != 0; i++)
   {
     if ((profileTable[i].bitRate == bitRate) && (profileTable[i].protLevel == protLevel))
     {
@@ -194,9 +194,9 @@ UepProtection::UepProtection(i16 bitRate, i16 protLevel) :
   //
   //	We prepare a mapping table with the given punctures
   memset(indexTable.data(), 0, (4 * outSize + 24) * sizeof(u8));
-  for (int i = 0; i < L1; i++)
+  for (i32 i = 0; i < L1; i++)
   {
-    for (int j = 0; j < 128; j++)
+    for (i32 j = 0; j < 128; j++)
     {
       if (PI1[j % 32] != 0)
       {
@@ -206,9 +206,9 @@ UepProtection::UepProtection(i16 bitRate, i16 protLevel) :
     }
   }
 
-  for (int i = 0; i < L2; i++)
+  for (i32 i = 0; i < L2; i++)
   {
-    for (int j = 0; j < 128; j++)
+    for (i32 j = 0; j < 128; j++)
     {
       if (PI2[j % 32] != 0)
       {
@@ -218,9 +218,9 @@ UepProtection::UepProtection(i16 bitRate, i16 protLevel) :
     }
   }
 
-  for (int i = 0; i < L3; i++)
+  for (i32 i = 0; i < L3; i++)
   {
-    for (int j = 0; j < 128; j++)
+    for (i32 j = 0; j < 128; j++)
     {
       if (PI3[j % 32] != 0)
       {
@@ -232,9 +232,9 @@ UepProtection::UepProtection(i16 bitRate, i16 protLevel) :
 
   if (PI4 != nullptr)
   {
-    for (int i = 0; i < L4; i++)
+    for (i32 i = 0; i < L4; i++)
     {
-      for (int j = 0; j < 128; j++)
+      for (i32 j = 0; j < 128; j++)
       {
         if (PI4[j % 32] != 0)
         {
@@ -249,7 +249,7 @@ UepProtection::UepProtection(i16 bitRate, i16 protLevel) :
     *	we have a final block of 24 bits  with puncturing according to PI_X
     *	This block constitues the 6 * 4 bits of the register itself.
     */
-  for (int i = 0; i < 24; i++)
+  for (i32 i = 0; i < 24; i++)
   {
     if (PI_X[i] != 0)
     {
