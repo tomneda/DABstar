@@ -124,6 +124,18 @@ CATEGORY_BEGIN(SdrPlayV3)
   DEFINE_WIDGET(SdrPlayV3, cmbAntenna)
 CATEGORY_END(SdrPlayV3)
 
+CATEGORY_BEGIN(FileReaderXml)
+  DEFINE_POS_SIZE(FileReaderXml)
+CATEGORY_END(FileReaderXml)
+
+CATEGORY_BEGIN(FileReaderRaw)
+  DEFINE_POS_SIZE(FileReaderRaw)
+CATEGORY_END(FileReaderRaw)
+
+CATEGORY_BEGIN(FileReaderWav)
+  DEFINE_POS_SIZE(FileReaderWav)
+CATEGORY_END(FileReaderWav)
+
 
 /********************************
  *  DO NOT EDIT BELOW THIS LINE *

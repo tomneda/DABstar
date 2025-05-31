@@ -35,6 +35,7 @@
 #include  "rawfiles.h"
 #include  "raw-reader.h"
 #include  "openfiledialog.h"
+#include  "setting-helper.h"
 #include  <cstdio>
 #include  <cstdlib>
 #include  <fcntl.h>
@@ -53,7 +54,11 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
   , _I_Buffer(INPUT_FRAMEBUFFERSIZE)
 {
   fileName = iFilename;
+
   setupUi(&myFrame);
+
+  Settings::FileReaderRaw::posAndSize.read_widget_geometry(&myFrame);
+
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
   filePointer = OpenFileDialog::open_file(iFilename, "rb");
@@ -89,6 +94,7 @@ RawFileHandler::~RawFileHandler()
   {
     fclose(filePointer);
   }
+  Settings::FileReaderRaw::posAndSize.write_widget_geometry(&myFrame);
 }
 
 bool RawFileHandler::restartReader(i32 freq)

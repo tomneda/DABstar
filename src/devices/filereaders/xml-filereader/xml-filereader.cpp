@@ -31,6 +31,8 @@
 
 #include  "xml-filereader.h"
 #include  "openfiledialog.h"
+#include  "setting-helper.h"
+
 #include  <cstdio>
 #include  <cstdlib>
 #include  <fcntl.h>
@@ -56,6 +58,8 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   fileName = iFilename;
 
   setupUi(&myFrame);
+
+  Settings::FileReaderXml::posAndSize.read_widget_geometry(&myFrame);
 
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
@@ -117,6 +121,8 @@ XmlFileReader::~XmlFileReader()
   }
 
   delete theDescriptor;
+
+  Settings::FileReaderXml::posAndSize.write_widget_geometry(&myFrame);
 }
 
 bool XmlFileReader::restartReader(i32 freq)

@@ -30,6 +30,7 @@
  */
 #include  "wavfiles.h"
 #include  "openfiledialog.h"
+#include  "setting-helper.h"
 #include  <cstdio>
 #include  <cstdlib>
 #include  <fcntl.h>
@@ -55,6 +56,9 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
 
   fileName = iFilename;
   setupUi(&myFrame);
+
+  Settings::FileReaderWav::posAndSize.read_widget_geometry(&myFrame);
+
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
@@ -99,6 +103,7 @@ WavFileHandler::~WavFileHandler()
   {
     sf_close(filePointer);
   }
+  Settings::FileReaderWav::posAndSize.write_widget_geometry(&myFrame);
 }
 
 bool WavFileHandler::restartReader(i32 freq)

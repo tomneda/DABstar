@@ -25,7 +25,6 @@
 #include <QSlider>
 #include <QTimer>
 
-// #define USE_RESTORE_GEOMETRY  // with this switch the ini file is not so well readable
 
 namespace Settings
 {
@@ -239,45 +238,23 @@ PosAndSize::PosAndSize(const QString & iCat)
 : mKey(iCat + "/posAndSize")
 {}
 
-void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef, const i32 iHeightDef, const bool iIsFixedSized) const
+void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef /*= -1*/, const i32 iHeightDef /*= -1*/, const bool iIsFixedSized /*= false*/) const
 {
-#ifdef USE_RESTORE_GEOMETRY
-  const QVariant var = Storage::instance().value(mKey, QVariant());
-
-  if (!var.canConvert<QByteArray>())
-  {
-    if (iIsFixedSized)
-    {
-      iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
-    }
-    else
-    {
-      iopWidget->resize(QSize(iWidthDef, iHeightDef));
-    }
-    return;
-  }
-
-  if (!iopWidget->restoreGeometry(var.toByteArray()))
-  {
-    qWarning("restoreGeometry() returns false");
-  }
-#else
   const i32 x = Storage::instance().value(mKey + "-x", -1).toInt();
   const i32 y = Storage::instance().value(mKey + "-y", -1).toInt();
   const i32 w = Storage::instance().value(mKey + "-w", iWidthDef).toInt();
   const i32 h = Storage::instance().value(mKey + "-h", iHeightDef).toInt();
 
-  if (x >= 0 && y >= 0 && h > 0 && w > 0) // entries valid?
+  if (x >= 0 && y >= 0) // entries valid?
   {
     iopWidget->move(QPoint(x, y));
-    iopWidget->resize(QSize(w, h));
-  }
-  else // only set width and height proposals
-  {
-    iopWidget->resize(QSize(iWidthDef, iHeightDef));
   }
 
-#endif
+  if (w > 0 && h > 0) // entries valid?
+  {
+    iopWidget->resize(QSize(w, h));
+  }
+
   if (iIsFixedSized) // overwrite read settings if fixed-sized in width and height, take only over the position
   {
     iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
@@ -286,15 +263,10 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidt
 
 void PosAndSize::write_widget_geometry(const QWidget * const ipWidget) const
 {
-#ifdef USE_RESTORE_GEOMETRY
-  const QByteArray var = ipWidget->saveGeometry();
-  Storage::instance().setValue(mKey, var);
-#else
   Storage::instance().setValue(mKey + "-x", ipWidget->pos().x());
   Storage::instance().setValue(mKey + "-y", ipWidget->pos().y());
   Storage::instance().setValue(mKey + "-w", ipWidget->width());
   Storage::instance().setValue(mKey + "-h", ipWidget->height());
-#endif
 }
 
 } // namespace Settings
