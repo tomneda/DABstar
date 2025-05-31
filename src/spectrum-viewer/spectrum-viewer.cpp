@@ -86,7 +86,7 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
 #endif
 
   Settings::SpectrumViewer::sliderRfScopeZoom.register_widget_and_update_ui_from_setting(sliderRfScopeZoom, 0);
-  Settings::SpectrumViewer::sliderIqScopeZoom.register_widget_and_update_ui_from_setting(sliderIqScopeZoom, 50);
+  Settings::SpectrumViewer::sliderIqScopeZoomExp.register_widget_and_update_ui_from_setting(sliderIqScopeZoom, 40); // 36.949 -> 0.5 after 10^(2*x-1)
 }
 
 SpectrumViewer::~SpectrumViewer()
