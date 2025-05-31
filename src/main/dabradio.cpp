@@ -815,8 +815,9 @@ void DabRadio::save_MOT_object(const QByteArray & result, const QString & name)
 
 QString DabRadio::generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData, const bool iStoreAsDir) const
 {
-  const QString hashStr = QCryptographicHash::hash(iData, QCryptographicHash::Sha1).toHex().left(8);
-  return generate_file_path(iBasePath, hashStr + iFileExt, iStoreAsDir);
+  QString filename = QCryptographicHash::hash(iData, QCryptographicHash::Sha1).toHex().left(8);
+  if (!iFileExt.isEmpty()) filename += "." + iFileExt;
+  return generate_file_path(iBasePath, filename, iStoreAsDir);
 }
 
 QString DabRadio::generate_file_path(const QString & iBasePath, const QString & iFileName, const bool iStoreAsDir) const
