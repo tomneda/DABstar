@@ -425,7 +425,12 @@ void DabRadio::_slot_new_device(const QString & deviceName)
   }
 
   LOG("selecting ", deviceName);
-  mDeviceSelector.reset_file_input_last_file(deviceName); // this allows new file name selection for "file input"
+
+  if (mDeviceSelector.reset_file_input_last_file(deviceName)) // this allows new file name selection for "file input"
+  {
+    _set_device_to_file_mode(true); // deletes service list after pressing the Eject button
+  }
+
   mpInputDevice = mDeviceSelector.create_device(deviceName, mChannel.realChannel);
 
   if (mpInputDevice == nullptr)

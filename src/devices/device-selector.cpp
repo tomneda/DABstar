@@ -313,11 +313,13 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   return inputDevice;
 }
 
-void DeviceSelector::reset_file_input_last_file(const QString & iDeviceName)
+bool DeviceSelector::reset_file_input_last_file(const QString & iDeviceName)
 {
   if (iDeviceName == DN_FILE_INP)
   {
     Settings::Main::varDeviceFile.write("");
+    return true;
   }
+  return false;
 }
 
