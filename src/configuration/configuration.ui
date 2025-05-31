@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>637</width>
+    <width>671</width>
     <height>337</height>
    </rect>
   </property>
@@ -242,7 +242,7 @@
        <item>
         <widget class="QComboBox" name="cmbMotObjectSaving">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether MOT objects (such slices/images) should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;You can choose whether the files should be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;p&gt;The base folder is &lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;$(HOME)/DABstar/PIC/&lt;/span&gt; or&lt;span style=&quot; font-weight:700;&quot;&gt;&lt;br/&gt;$(HOME)/DABstar/MOT/&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether MOT objects (such slices/images) should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;You can choose whether the files should be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;p&gt;The base folder is &lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;$(HOME)/DABstar/PIC/&lt;/span&gt; or&lt;span style=&quot; font-weight:700;&quot;&gt;&lt;br/&gt;$(HOME)/DABstar/MOT/&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <item>
           <property name="text">
@@ -264,7 +264,7 @@
        <item>
         <widget class="QComboBox" name="cmbEpgObjectSaving">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether EPG data should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;You can choose whether the files should be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;p&gt;The base folder is &lt;span style=&quot; font-weight:700;&quot;&gt;$(HOME)/DABstar/EPG/&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether EPG data should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;You can choose whether the files should be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;p&gt;The base folder is&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;$(HOME)/DABstar/EPG/&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <item>
           <property name="text">
