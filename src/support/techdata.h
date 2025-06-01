@@ -24,7 +24,7 @@
 #ifndef  TECH_DATA_H
 #define  TECH_DATA_H
 
-#include  "ui_technical_data.h"
+#include  "ui_techdata.h"
 #include  "dab-constants.h"
 #include  "audio-display.h"
 #include  "ringbuffer.h"
