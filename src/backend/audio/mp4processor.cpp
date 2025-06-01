@@ -173,13 +173,7 @@ void Mp4Processor::add_to_frame(const std::vector<u8> & iV)
   }
 }
 
-/**
-  *	\brief processSuperframe
-  *
-  *	First, we know the firecode checker gave green light
-  *	We correct the errors using RS
-  */
-bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
+bool Mp4Processor::_process_reed_solomon_frame(const u8 * const ipFrameBytes, const i16 iBase)
 {
   /**
     *	apply reed-solomon error repair
@@ -230,6 +224,18 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
       mOutVec[j + k * mRsDims] = rsOut[k];
     }
   }
+  return true;
+}
+
+/**
+  *	\brief processSuperframe
+  *
+  *	First, we know the firecode checker gave green light
+  *	We correct the errors using RS
+  */
+bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
+{
+  if (!_process_reed_solomon_frame(ipFrameBytes, iBase)) return false; // fills mOutVec
 
   // bits 0 .. 15 is firecode
   // bit 16 is unused

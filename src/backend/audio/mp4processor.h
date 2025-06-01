@@ -63,7 +63,7 @@ public:
   ~Mp4Processor() override;
 
   void add_to_frame(const std::vector<u8> &) override;
-  
+
 private:
   DabRadio * const mpRadioInterface;
   PadHandler mPadhandler;
@@ -101,6 +101,7 @@ private:
   faadDecoder * aacDecoder;
 #endif
 
+  bool _process_reed_solomon_frame(const u8 * ipFrameBytes, i16 iBase);
   bool _process_super_frame(u8 [], i16);
   i32 _build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer);
 
