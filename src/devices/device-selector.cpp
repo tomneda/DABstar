@@ -301,9 +301,17 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 
   Settings::Main::varSdrDevice.write(iDeviceName);
 
+  /*
+   * Per default the device widget should be shown after creation.
+   * If we want it switched off: Sometimes it has problems to be switched off too fast again (a frame remains on the screen).
+   * With this delay the problem can be workaround but causes a more viewable flickering of the device widget.
+   * For case of symmetry, we do this also with show() the widget (again) after creation.
+   */
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
   if (Settings::Main::varDeviceUiVisible.read().toBool())
   {
-    inputDevice->show();
+    inputDevice->show(); // should not be necessary as the device widget is shown by default
   }
   else
   {
