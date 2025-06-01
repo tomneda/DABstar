@@ -186,7 +186,8 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
 ///////////////////////////////////////////////////////////////////////
 //
 //	Here we end up when F_PAD type = 00 and X-PAD Ind = 02
-static constexpr i16 lengthTable[] = { 4, 6, 8, 12, 16, 24, 32, 48 };
+static constexpr std::array<i16, 8> lengthTable = { 4, 6, 8, 12, 16, 24, 32, 48 };
+
 
 //	Since the data is reversed, we pass on the vector address
 //	and the offset of the last element in the vector,

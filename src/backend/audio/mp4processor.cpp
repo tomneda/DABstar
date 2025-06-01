@@ -293,50 +293,42 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
     *	extract the AU's, and prepare a buffer,  with the sufficient
     *	lengthy for conversion to PCM samples
     */
-  for (i16 i = 0; i < numAUs; i++)
+  for (i16 auIdx = 0; auIdx < numAUs; ++auIdx)
   {
-    ///	sanity check 1
-    if (mAuStartArr[i + 1] < mAuStartArr[i])
-    {
-      fprintf(stderr, "error: invalid AU address sequence: mAuStartArr[i] %d, mAuStartArr[i + 1] %d, i %d, numAUs %d\n", mAuStartArr[i], mAuStartArr[i + 1], i, numAUs);
-      //	should not happen, all errors were corrected
-      return false;
-    }
-
-    const i16 aacFrameLen = mAuStartArr[i + 1] - mAuStartArr[i] - 2;
+    const i32 aacFrameLen = mAuStartArr[auIdx + 1] - mAuStartArr[auIdx] - 2;
 
     //	just a sanity check
-    if ((aacFrameLen >= 960) || (aacFrameLen < 0))
+    if (aacFrameLen > 960 || aacFrameLen < 0) // TODO: are 960 the max, not only 959?
     {
-      fprintf(stderr, "error: invalid aac_frame_length = %d\n", aacFrameLen);
+      fprintf(stderr, "error: invalid aacFrameLen = %d\n", aacFrameLen);
       return false;
     }
 
     //	but first the crc check
-    if (check_crc_bytes(&mOutVec[mAuStartArr[i]], aacFrameLen))
+    if (check_crc_bytes(&mOutVec[mAuStartArr[auIdx]], aacFrameLen))
     {
       //	first prepare dumping
-      std::vector<u8> fileBuffer;
-      const i32 segmentSize = _build_aac_file(aacFrameLen, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
+      std::vector<u8> aacStreamBuffer;
+      const i32 segmentSize = _build_aac_stream(aacFrameLen, &streamParameters, &(mOutVec[mAuStartArr[auIdx]]), aacStreamBuffer);
 
       if (mpDumpFile == nullptr)
       {
-        mpFrameBuffer->put_data_into_ring_buffer(fileBuffer.data(), segmentSize);
+        mpFrameBuffer->put_data_into_ring_buffer(aacStreamBuffer.data(), segmentSize); // TODO: is used by the "ACC dump button" in the TechData widget, very seldom used!?
         emit signal_new_frame(segmentSize);
       }
       else
       {
-        fwrite(fileBuffer.data(), 1, segmentSize, mpDumpFile);
+        fwrite(aacStreamBuffer.data(), 1, segmentSize, mpDumpFile);
       }
 
       //	first handle the pad data if any
       if (mpDumpFile == nullptr)
       {
-        if (((mOutVec[mAuStartArr[i + 0]] >> 5) & 07) == 4)
+        if (((mOutVec[mAuStartArr[auIdx + 0]] >> 5) & 07) == 4)
         {
-          const i16 count = mOutVec[mAuStartArr[i] + 1];
+          const i16 count = mOutVec[mAuStartArr[auIdx] + 1];
           auto * const buffer = make_vla(u8, count);
-          memcpy(buffer, &mOutVec[mAuStartArr[i] + 2], count);
+          memcpy(buffer, &mOutVec[mAuStartArr[auIdx] + 2], count);
           const u8 L0 = buffer[count - 1];
           const u8 L1 = buffer[count - 2];
           mPadhandler.process_PAD(buffer, count - 3, L1, L0);
@@ -344,14 +336,14 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 
         //	then handle the audio
 #ifdef  __WITH_FDK_AAC__
-        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, fileBuffer.data(), segmentSize);
+        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, aacStreamBuffer.data(), segmentSize);
 #else
-        u8 theAudioUnit[2 * 960 + 10];  // sure, large enough
-
-        memcpy(theAudioUnit, &mOutVec[mAuStartArr[i]], aacFrameLen);
+        std::array<u8, 960 + 10> theAudioUnit;  // max size is ensured above but for what are the +10?
+        assert(aacFrameLen <= 960);
+        memcpy(theAudioUnit.data(), &mOutVec[mAuStartArr[auIdx]], aacFrameLen);
         memset(&theAudioUnit[aacFrameLen], 0, 10);
 
-        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aacFrameLen);
+        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit.data(), aacFrameLen);
 #endif
         emit signal_is_stereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
 
@@ -381,7 +373,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
   return true;
 }
 
-i32 Mp4Processor::_build_aac_file(const i16 iAacFrameLen, const SStreamParms * const iSp, const u8 * const iData, std::vector<u8> & oFileBuffer) const
+i32 Mp4Processor::_build_aac_stream(const i16 iAacFrameLen, const SStreamParms * const iSp, const u8 * const iData, std::vector<u8> & oFileBuffer) const
 {
   BitWriter au_bw(oFileBuffer); // fileBuffer will filled up in BitWriter
 
