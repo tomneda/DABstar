@@ -41,7 +41,7 @@
 #include  "ringbuffer.h"
 
 
-typedef struct
+struct SStreamParms
 {
   i32 rfa;
   i32 dacRate;
@@ -52,7 +52,7 @@ typedef struct
   i32 CoreChConfig;
   i32 CoreSrIndex;
   i32 ExtensionSrIndex;
-} stream_parms;
+};
 
 class DabRadio;
 
@@ -64,7 +64,7 @@ public:
   FdkAAC(DabRadio * mr, RingBuffer<i16> * iipBuffer);
   ~FdkAAC() override;
 
-  i16 convert_mp4_to_pcm(const stream_parms * iSP, const u8 * ipBuffer, i16 iPacketLength);
+  i16 convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * ipBuffer, i16 iPacketLength);
 
 private:
   RingBuffer<i16> * const mpAudioBuffer;

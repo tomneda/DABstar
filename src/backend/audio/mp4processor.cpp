@@ -239,16 +239,16 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 
   // bits 0 .. 15 is firecode
   // bit 16 is unused
-  stream_parms streamParameters;
-  streamParameters.dacRate = (mOutVec[2] >> 6) & 01;  // bit 17
-  streamParameters.sbrFlag = (mOutVec[2] >> 5) & 01;  // bit 18
+  SStreamParms streamParameters;
+  streamParameters.dacRate        = (mOutVec[2] >> 6) & 01;  // bit 17
+  streamParameters.sbrFlag        = (mOutVec[2] >> 5) & 01;  // bit 18
   streamParameters.aacChannelMode = (mOutVec[2] >> 4) & 01;  // bit 19, 0:mono, 1:stereo
-  streamParameters.psFlag = (mOutVec[2] >> 3) & 01;   // bit 20
-  streamParameters.mpegSurround = (mOutVec[2] & 07);  // bits 21 .. 23
+  streamParameters.psFlag         = (mOutVec[2] >> 3) & 01;  // bit 20
+  streamParameters.mpegSurround   = (mOutVec[2] >> 0) & 07;  // bits 21 .. 23
 
   // added for the aac file writer
-  streamParameters.CoreSrIndex = streamParameters.dacRate ? (streamParameters.sbrFlag ? 6 : 3) : (streamParameters.sbrFlag ? 8 : 5);
-  streamParameters.CoreChConfig = streamParameters.aacChannelMode ? 2 : 1;
+  streamParameters.CoreSrIndex    = streamParameters.dacRate ? (streamParameters.sbrFlag ? 6 : 3) : (streamParameters.sbrFlag ? 8 : 5);
+  streamParameters.CoreChConfig   = streamParameters.aacChannelMode ? 2 : 1;
 
   streamParameters.ExtensionSrIndex = streamParameters.dacRate ? 3 : 5;
 
@@ -380,7 +380,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
   return true;
 }
 
-i32 Mp4Processor::_build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer)
+i32 Mp4Processor::_build_aac_file(i16 aac_frame_len, SStreamParms * sp, u8 * data, std::vector<u8> & fileBuffer)
 {
   BitWriter au_bw(fileBuffer); // fileBuffer will filled up in BitWriter
 

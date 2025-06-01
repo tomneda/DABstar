@@ -63,7 +63,7 @@ i32 get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
   }
 }
 
-bool faadDecoder::initialize(const stream_parms * iSP)
+bool faadDecoder::initialize(const SStreamParms * iSP)
 {
   u64 sample_rate;
   u8 channels;
@@ -106,7 +106,7 @@ bool faadDecoder::initialize(const stream_parms * iSP)
   return true;
 }
 
-i16 faadDecoder::convert_mp4_to_pcm(const stream_parms * const iSP, const u8 * const ipBuffer, const i16 iBufferLength)
+i16 faadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * const ipBuffer, const i16 iBufferLength)
 {
   NeAACDecFrameInfo hInfo;
 

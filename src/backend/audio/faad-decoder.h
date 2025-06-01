@@ -36,7 +36,7 @@
 
 class DabRadio;
 
-typedef struct
+struct SStreamParms
 {
   i32 rfa;
   i32 dacRate;
@@ -47,7 +47,7 @@ typedef struct
   i32 CoreChConfig;
   i32 CoreSrIndex;
   i32 ExtensionSrIndex;
-} stream_parms;
+};
 
 
 class faadDecoder : public QObject
@@ -57,10 +57,10 @@ public:
   faadDecoder(DabRadio * mr, RingBuffer<i16> * buffer);
   ~faadDecoder();
 
-  i16 convert_mp4_to_pcm(const stream_parms * iSP, const u8 * ipBuffer, i16 iBufferLength);
+  i16 convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * ipBuffer, i16 iBufferLength);
 
 private:
-  bool initialize(const stream_parms *);
+  bool initialize(const SStreamParms *);
 
   bool processorOK;
   bool aacInitialized;

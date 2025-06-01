@@ -64,7 +64,7 @@ FdkAAC::~FdkAAC()
   }
 }
 
-i16 FdkAAC::convert_mp4_to_pcm(const stream_parms * iSP, const u8 * const ipBuffer, const i16 iPacketLength)
+i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuffer, const i16 iPacketLength)
 {
   static_assert(sizeof(i16) == sizeof(INT_PCM));
   INT_PCM decode_buf[8 * sizeof(INT_PCM) * 2048];
