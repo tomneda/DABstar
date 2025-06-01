@@ -43,7 +43,6 @@
 
 struct SStreamParms
 {
-  i32 rfa;
   i32 dacRate;
   i32 sbrFlag;
   i32 psFlag;

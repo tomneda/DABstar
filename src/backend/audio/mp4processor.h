@@ -94,7 +94,7 @@ private:
   std::vector<u8> mFrameByteVec;
   std::vector<u8> mOutVec;
   std::array<i16, 10> mAuStartArr;
-  FirecodeChecker fc;
+  FirecodeChecker mFireCode;
 #ifdef  __WITH_FDK_AAC__
   FdkAAC		*aacDecoder;
 #else
@@ -103,7 +103,7 @@ private:
 
   bool _process_reed_solomon_frame(const u8 * ipFrameBytes, i16 iBase);
   bool _process_super_frame(u8 [], i16);
-  i32 _build_aac_file(i16 aac_frame_len, SStreamParms * sp, u8 * data, std::vector<u8> & fileBuffer);
+  i32 _build_aac_file(i16 iAacFrameLen, const SStreamParms * iSp, const u8 * iData, std::vector<u8> & oFileBuffer) const;
 
 signals:
   void signal_show_frame_errors(i32);

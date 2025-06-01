@@ -123,7 +123,7 @@ void Mp4Processor::add_to_frame(const std::vector<u8> & iV)
       */
     if (mSuperFrameSync == 0)
     {
-      if (fc.check(&mFrameByteVec[mBlockFillIndex * numBytes]))
+      if (mFireCode.check(&mFrameByteVec[mBlockFillIndex * numBytes]))
       {
         mSuperFrameSync = 4;
       }
@@ -199,7 +199,7 @@ bool Mp4Processor::_process_reed_solomon_frame(const u8 * const ipFrameBytes, co
       mRsErrors++;
       mSumRsErrors ++;
       //fprintf (stderr, "RS failure %d\n", mRsErrors);
-      if (!fc.check(&ipFrameBytes[iBase]) && j == 0)
+      if (!mFireCode.check(&ipFrameBytes[iBase]) && j == 0)
       {
         //fprintf (stderr, "Firecode after RS failure\n");
         return false;
@@ -303,20 +303,21 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
       return false;
     }
 
-    const i16 aac_frame_length = mAuStartArr[i + 1] - mAuStartArr[i] - 2;
+    const i16 aacFrameLen = mAuStartArr[i + 1] - mAuStartArr[i] - 2;
+
     //	just a sanity check
-    if ((aac_frame_length >= 960) || (aac_frame_length < 0))
+    if ((aacFrameLen >= 960) || (aacFrameLen < 0))
     {
-      fprintf(stderr, "error: invalid aac_frame_length = %d\n", aac_frame_length);
+      fprintf(stderr, "error: invalid aac_frame_length = %d\n", aacFrameLen);
       return false;
     }
 
     //	but first the crc check
-    if (check_crc_bytes(&mOutVec[mAuStartArr[i]], aac_frame_length))
+    if (check_crc_bytes(&mOutVec[mAuStartArr[i]], aacFrameLen))
     {
       //	first prepare dumping
       std::vector<u8> fileBuffer;
-      const i32 segmentSize = _build_aac_file(aac_frame_length, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
+      const i32 segmentSize = _build_aac_file(aacFrameLen, &streamParameters, &(mOutVec[mAuStartArr[i]]), fileBuffer);
 
       if (mpDumpFile == nullptr)
       {
@@ -347,10 +348,10 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 #else
         u8 theAudioUnit[2 * 960 + 10];  // sure, large enough
 
-        memcpy(theAudioUnit, &mOutVec[mAuStartArr[i]], aac_frame_length);
-        memset(&theAudioUnit[aac_frame_length], 0, 10);
+        memcpy(theAudioUnit, &mOutVec[mAuStartArr[i]], aacFrameLen);
+        memset(&theAudioUnit[aacFrameLen], 0, 10);
 
-        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aac_frame_length);
+        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit, aacFrameLen);
 #endif
         emit signal_is_stereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
 
@@ -380,9 +381,9 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
   return true;
 }
 
-i32 Mp4Processor::_build_aac_file(i16 aac_frame_len, SStreamParms * sp, u8 * data, std::vector<u8> & fileBuffer)
+i32 Mp4Processor::_build_aac_file(const i16 iAacFrameLen, const SStreamParms * const iSp, const u8 * const iData, std::vector<u8> & oFileBuffer) const
 {
-  BitWriter au_bw(fileBuffer); // fileBuffer will filled up in BitWriter
+  BitWriter au_bw(oFileBuffer); // fileBuffer will filled up in BitWriter
 
   au_bw.AddBits(0x2B7, 11);  // syncword
   au_bw.AddBits(0, 13);  // audioMuxLengthBytes - written later
@@ -397,20 +398,20 @@ i32 Mp4Processor::_build_aac_file(i16 aac_frame_len, SStreamParms * sp, u8 * dat
   au_bw.AddBits(0, 4);  // numProgram
   au_bw.AddBits(0, 3);  // numLayer
 
-  if (sp->sbrFlag)
+  if (iSp->sbrFlag)
   {
     au_bw.AddBits(0b00101, 5); // SBR
-    au_bw.AddBits(sp->CoreSrIndex, 4); // samplingFrequencyIndex
-    au_bw.AddBits(sp->CoreChConfig, 4); // channelConfiguration
-    au_bw.AddBits(sp->ExtensionSrIndex, 4);  // extensionSamplingFrequencyIndex
+    au_bw.AddBits(iSp->CoreSrIndex, 4); // samplingFrequencyIndex
+    au_bw.AddBits(iSp->CoreChConfig, 4); // channelConfiguration
+    au_bw.AddBits(iSp->ExtensionSrIndex, 4);  // extensionSamplingFrequencyIndex
     au_bw.AddBits(0b00010, 5);    // AAC LC
     au_bw.AddBits(0b100, 3);              // GASpecificConfig() with 960 transform
   }
   else
   {
     au_bw.AddBits(0b00010, 5); // AAC LC
-    au_bw.AddBits(sp->CoreSrIndex, 4); // samplingFrequencyIndex
-    au_bw.AddBits(sp->CoreChConfig, 4); // channelConfiguration
+    au_bw.AddBits(iSp->CoreSrIndex, 4); // samplingFrequencyIndex
+    au_bw.AddBits(iSp->CoreChConfig, 4); // channelConfiguration
     au_bw.AddBits(0b100, 3);              // GASpecificConfig() with 960 transform
   }
 
@@ -420,14 +421,14 @@ i32 Mp4Processor::_build_aac_file(i16 aac_frame_len, SStreamParms * sp, u8 * dat
   au_bw.AddBits(0, 1);  // crcCheckPresent
 
   //	PayloadLengthInfo()
-  for (size_t i = 0; i < (size_t)(aac_frame_len / 255); i++)
+  for (size_t i = 0; i < (size_t)(iAacFrameLen / 255); i++)
   {
     au_bw.AddBits(0xFF, 8);
   }
-  au_bw.AddBits(aac_frame_len % 255, 8);
+  au_bw.AddBits(iAacFrameLen % 255, 8);
 
-  au_bw.AddBytes(data, aac_frame_len);
+  au_bw.AddBytes(iData, iAacFrameLen);
   au_bw.WriteAudioMuxLengthBytes();
 
-  return fileBuffer.size();
+  return oFileBuffer.size();
 }
