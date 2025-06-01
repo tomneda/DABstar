@@ -43,6 +43,7 @@
 
 class DabRadio;
 
+
 class PhaseReference : public QObject, public PhaseTable
 {
 Q_OBJECT
@@ -59,6 +60,14 @@ public:
 
 private:
   static constexpr i16 SEARCHRANGE = (2 * 35);
+  static constexpr i16 CORRELATION_LENGTH = 48;
+  static constexpr i16 DIFFLENGTH = 128;
+  std::array<f32, SEARCHRANGE + DIFFLENGTH + 1> mComputedDiffs{};
+  std::array<f32, DIFFLENGTH> mPhaseDifferences;
+  void CalculateRelativePhase(const cf32 *fft_in, TArrayTu & arg_out);
+  void CalculateMagnitude(const TArrayTu & fft_buf, f32 *mag_buf);
+  std::vector<cf32> refArg;
+  std::vector<f32> mRefArg;
 
   const i32 mFramesPerSecond;
   i32 mDisplayCounter = 0;
@@ -73,7 +82,6 @@ private:
   std::vector<f32> mCorrPeakValues;
   std::vector<f32> mMeanCorrPeakValues;
   std::vector<f32> mCorrelationVector;
-  std::vector<f32> mRefArg;
 
 signals:
   void signal_show_correlation(f32, const QVector<i32> &);

@@ -44,7 +44,7 @@
   *	The class inherits from the phaseTable.
   */
 
-#define CORRELATION_LENGTH  48
+#define COARSE_FRQUENCY_CORRECTION 3
 
 PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessParams * const ipParam)
   : PhaseTable()
@@ -61,12 +61,27 @@ PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessPara
   // Prepare a table for the coarse frequency synchronization.
   // We collect data of SEARCHRANGE/2 bins at the end of the FFT buffer and wrap to the begin and check SEARCHRANGE/2 elements further.
   // This is equal to check +/- SEARCHRANGE/2 bins (== (35) kHz in DabMode 1) around the DC
+#if COARSE_FRQUENCY_CORRECTION == 0 // Old code from Qt-Dab
+  for (i32 i = 1; i <= DIFFLENGTH; i++)
+  {
+    mPhaseDifferences[i - 1] = abs(arg(mRefTable[(cTu + i + 0) % cTu] * conj(mRefTable[(cTu + i + 1) % cTu])));
+  }
+#elif COARSE_FRQUENCY_CORRECTION == 1 // From Welle.io
   mRefArg.resize(CORRELATION_LENGTH);
   for (i32 i = 0; i < CORRELATION_LENGTH; i++)
   {
     mRefArg[i] = arg(mRefTable[(cTu + i) % cTu] * conj(mRefTable[(cTu + i + 1) % cTu]));
   }
   mCorrelationVector.resize(SEARCHRANGE + CORRELATION_LENGTH);
+#elif COARSE_FRQUENCY_CORRECTION == 3 // Code from DAB-Radio
+  refArg.resize(cTu);
+  CalculateRelativePhase(mRefTable.data(), mFftInBuffer);
+  fftwf_execute(mFftPlanBwd);
+  for (i32 i = 0; i < cTu; i++)
+  {
+    refArg[i] = std::conj(mFftOutBuffer[i]);
+  }
+#endif
 
   connect(this, &PhaseReference::signal_show_correlation, ipRadio, &DabRadio::slot_show_correlation);
 }
@@ -79,7 +94,7 @@ PhaseReference::~PhaseReference()
 
 /**
   *	\brief findIndex
-  *	the vector v contains "T_u" samples that are believed to
+  *	the vector v contains "cTu" samples that are believed to
   *	belong to the first non-null block of a DAB frame.
   *	We correlate the data in this vector with the predefined
   *	data, and if the maximum exceeds a threshold value,
@@ -204,32 +219,156 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
 //	an approach that works fine is to correlate the phase differences between subsequent carriers
 i16 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV)
 {
+
+#if COARSE_FRQUENCY_CORRECTION == 0 // Old code from Qt-Dab
+
+  const i16 idxStart = cTu - SEARCHRANGE / 2;
+  const i16 idxStop  = cTu + SEARCHRANGE / 2;
+  f32 mmin =  1000.0;
+  f32 mmax = -1000.0;
+  i16 idxMin = IDX_NOT_FOUND;
+  i16 idxMax = IDX_NOT_FOUND;
+
+  // We collect data of SEARCHRANGE/2 bins at the end of the FFT buffer and wrap to the begin and check SEARCHRANGE/2 elements further.
+  // This is equal to check +/- SEARCHRANGE/2 bins (== kHz in DabMode 1) around the DC
+  for (i16 i = idxStart; i < idxStop + DIFFLENGTH; i++)
+  {
+    mComputedDiffs[i - idxStart] = std::abs(arg(iV[(i + 0) % cTu] * conj(iV[(i + 1) % cTu])));
+  }
+  for (i16 i = idxStart; i < idxStop; i++)
+  {
+    f32 sumMinValues = 0;
+    f32 sumMaxValues = 0;
+
+    // do a minimalistic correlation using only the 0deg and 180deg values from mPhaseDifferences
+    for (i16 j = 1; j < DIFFLENGTH; j++)
+    {
+      if (mPhaseDifferences[j - 1] < 0.1f)
+      {
+        sumMinValues += mComputedDiffs[i - idxStart + j];
+      }
+      else if (mPhaseDifferences[j - 1] > F_M_PI - 0.1f)
+      {
+        sumMaxValues += mComputedDiffs[i - idxStart + j];
+      }
+    }
+    if (sumMinValues < mmin)
+    {
+      mmin = sumMinValues;
+      idxMin = i;
+    }
+    if (sumMaxValues > mmax)
+    {
+      mmax = sumMaxValues;
+      idxMax = i;
+    }
+  }
+  if (idxMin != idxMax)
+  {
+    return IDX_NOT_FOUND;
+  }
+  return idxMin - cTu;  // return the offset around cTu
+
+#elif COARSE_FRQUENCY_CORRECTION == 1 // CorrelatePRS from Welle.io
+
+  //  The "best" approach for computing the coarse frequency offset is to
+  //  look at the spectrum of symbol 0 and relate that with the spectrum as
+  //  it should be, i.e. the refTable.
+  //  However, since there might be a pretty large phase offset between the
+  //  incoming data and the reference table data, we correlate the phase
+  //  differences between the subsequent carriers rather than the values in
+  //  the segments themselves. It seems to work pretty well.
   //  The phase differences are computed once
   for (i16 i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
   {
     const i16 baseIndex = cTu - SEARCHRANGE / 2 + i;
     mCorrelationVector[i] = arg(iV[baseIndex % cTu] * conj(iV[(baseIndex + 1) % cTu]));
   }
-
   i16 index = IDX_NOT_FOUND;
-  f32 MMax = 0;
-
+  f32 max = 0;
   for (i16 i = 0; i < SEARCHRANGE; i++)
   {
     f32 sum = 0;
     for (i16 j = 0; j < CORRELATION_LENGTH; ++j)
     {
       sum += abs(mRefArg[j] * mCorrelationVector[i + j]);
-      if (sum > MMax)
+      if (sum > max)
       {
-        MMax = sum;
+        max = sum;
         index = i;
       }
     }
   }
-
-  //  Now map the index back to the right carrier
+  // Now map the index back to the right carrier
   return index - SEARCHRANGE / 2;
+
+#elif COARSE_FRQUENCY_CORRECTION == 2 // PatternOfZeros from Welle.io
+
+  // An alternative way is to look at a special pattern consisting
+  // of zeros in the row of args between successive carriers.
+  f32 min   = 1000;
+  i16 index = IDX_NOT_FOUND;
+  for (i16 i = cTu - SEARCHRANGE / 2; i < cTu + SEARCHRANGE / 2; i ++)
+  {
+    f32 a1 = abs(abs(arg(iV[(i + 1) % cTu] * conj(iV[(i + 2) % cTu])) / M_PI) - 1);
+    f32 a2 = abs(abs(arg(iV[(i + 2) % cTu] * conj(iV[(i + 3) % cTu])) / M_PI) - 1);
+    f32 a3 = abs(arg(iV[(i + 3) % cTu] * conj(iV[(i + 4) % cTu])));
+    f32 a4 = abs(arg(iV[(i + 4) % cTu] * conj(iV [(i + 5) % cTu])));
+    f32 a5 = abs(arg(iV[(i + 5) % cTu] * conj(iV[(i + 6) % cTu])));
+    f32 b1 = abs(abs(arg(iV[(i + 16 + 1) % cTu] * conj(iV[(i + 16 + 3) % cTu])) / M_PI) - 1);
+    f32 b2 = abs(arg(iV[(i + 16 + 3) % cTu] * conj(iV[(i + 16 + 4) % cTu])));
+    f32 b3 = abs(arg(iV[(i + 16 + 4) % cTu] * conj(iV[(i + 16 + 5) % cTu])));
+    f32 b4 = abs(arg(iV[(i + 16 + 5) % cTu] * conj(iV[(i + 16 + 6) % cTu])));
+    f32 sum = a1 + a2 + a3 + a4 + a5 + b1 + b2 + b3 + b4;
+    if (sum < min)
+    {
+      min = sum;
+      index = i;
+    }
+  }
+  return index - cTu;
+
+#elif COARSE_FRQUENCY_CORRECTION == 3 // Code from DAB-Radio
+
+  i16 index = IDX_NOT_FOUND;
+  f32 correlationVector[cTu];
+  f32 max_value = 0;
+
+  // Step 2: Get complex difference between consecutive bins
+  CalculateRelativePhase(iV.data(), mFftInBuffer);
+
+  // Step 3: Get IFFT so we can do correlation in frequency domain via product in time domain
+  fftwf_execute(mFftPlanBwd);
+
+  // Step 4: Conjugate product in time domain
+  //         NOTE: refArg is already the conjugate
+  for (i32 i = 0; i < cTu; i++)
+  {
+    mFftInBuffer[i] = mFftOutBuffer[i] *= refArg[i];
+  }
+
+  // Step 5: Get FFT to get correlation in frequency domain
+  fftwf_execute(mFftPlanFwd);
+
+  // Step 6: Get magnitude spectrum so we can find the correlation peak
+  CalculateMagnitude(mFftOutBuffer, correlationVector);
+
+  // Step 7: Find the peak in our maximum coarse frequency error window
+  //         NOTE: A zero frequency error corresponds to a peak at cTu/2
+  for (i32 i = -SEARCHRANGE/2; i <= SEARCHRANGE/2; i++)
+  {
+    const i32 fft_index = cTu/2 + i;
+    if (fft_index == cTu) continue;
+    const f32 value = correlationVector[fft_index];
+    if (value > max_value)
+    {
+      max_value = value;
+      index = i;
+    }
+  }
+  return index;
+
+#endif
 }
 
 /*static*/
@@ -248,4 +387,23 @@ f32 PhaseReference::phase(const std::vector<cf32> & iV, const i32 iTs)
 void PhaseReference::set_sync_on_strongest_peak(bool sync)
 {
   mSyncOnStrongestPeak = sync;
+}
+
+void PhaseReference::CalculateRelativePhase(const cf32 *fft_in, TArrayTu & arg_out)
+{
+  for (i32 i = 0; i < cTu-1; i++)
+  {
+    arg_out[i] = std::conj(fft_in[i]) * fft_in[i+1];
+  }
+  arg_out[cTu-1] = {0,0};
+}
+
+void PhaseReference::CalculateMagnitude(const TArrayTu & fft_buf, f32 *mag_buf)
+{
+  const size_t M = cTu/2;
+  for (size_t i = 0; i < cTu; i++)
+  {
+    const size_t j = (i+M) % cTu;
+    mag_buf[i] = std::abs(fft_buf[j]);
+  }
 }
