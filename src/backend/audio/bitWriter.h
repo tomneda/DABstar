@@ -21,20 +21,22 @@
 #include "glob_data_types.h"
 #include <vector>
 
-class BitWriter {
-private:
-        std::vector<u8> data;
-        size_t byte_bits;
+class BitWriter
+{
 public:
-        BitWriter() {Reset();}
+  explicit BitWriter(std::vector<u8> & oData)
+    : data(oData)
+  {
+    Reset();
+  }
 
-        void Reset();
-        void AddBits(i32 data_new, size_t count);
-        void AddBytes(const u8 *data, size_t len);
-        const std::vector<u8> GetData() {
-	   return data;
-	}
+  void Reset();
+  void AddBits(i32 data_new, size_t count);
+  void AddBytes(const u8 * data, size_t len);
 
-        void WriteAudioMuxLengthBytes();        // needed for LATM
+  void WriteAudioMuxLengthBytes();        // needed for LATM
+
+private:
+  std::vector<u8> & data; // use a reference to avoid copying outside of this class
+  size_t byte_bits;
 };
-

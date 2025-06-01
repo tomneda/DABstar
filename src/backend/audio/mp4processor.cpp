@@ -376,7 +376,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 
 i32 Mp4Processor::_build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * data, std::vector<u8> & fileBuffer)
 {
-  BitWriter au_bw;
+  BitWriter au_bw(fileBuffer); // fileBuffer will filled up in BitWriter
 
   au_bw.AddBits(0x2B7, 11);  // syncword
   au_bw.AddBits(0, 13);  // audioMuxLengthBytes - written later
@@ -422,6 +422,6 @@ i32 Mp4Processor::_build_aac_file(i16 aac_frame_len, stream_parms * sp, u8 * dat
 
   au_bw.AddBytes(data, aac_frame_len);
   au_bw.WriteAudioMuxLengthBytes();
-  fileBuffer = au_bw.GetData();
+
   return fileBuffer.size();
 }
