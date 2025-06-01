@@ -299,7 +299,7 @@ void HttpHandler::run()
     terminating();
     return;
   }
-  u32 mode = 1;
+  unsigned long mode = 1;
   ioctlsocket(ListenSocket, FIONBIO, &mode);
 
   // Setup the TCP listening socket

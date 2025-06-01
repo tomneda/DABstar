@@ -65,8 +65,6 @@ i32 get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
 
 bool faadDecoder::initialize(const SStreamParms * iSP)
 {
-  u64 sample_rate;
-  u8 channels;
   /* AudioSpecificConfig structure (the only way to select 960 transform here!)
    *
    *  00010 = AudioObjectType 2 (AAC LC)
@@ -95,7 +93,10 @@ bool faadDecoder::initialize(const SStreamParms * iSP)
   u8 asc[2];
   asc[0] = 0b00010 << 3 | core_sr_index >> 1;
   asc[1] = (core_sr_index & 0x01) << 7 | core_ch_config << 3 | 0b100;
+  long unsigned int sample_rate;  // keep this as Type "long" seems to be 32bit on Win, but 64bit on Linux
+  u8 channels;
   const i32 init_result = NeAACDecInit2(aacHandle, asc, sizeof(asc), &sample_rate, &channels);
+
   if (init_result != 0)
   {
     /*      If some error initializing occured, skip the file */
