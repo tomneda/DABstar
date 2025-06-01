@@ -41,7 +41,7 @@
 #include <QMediaDevices>
 
 // Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtDebugMsg)
-Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtInfoMsg)
+Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtWarningMsg)
 
 AudioOutputQt::AudioOutputQt(DabRadio * const ipRI, QObject * parent)
 {
@@ -73,7 +73,8 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
 
   if (!mCurrentAudioDevice.isFormatSupported(mAudioFormat))
   {
-    qWarning(sLogAudioOutput) << "QAudioDevice thinks that the needed audio format is not supported, hope we have luck nevertheless (otherwise use Qt <= 6.8.1)";
+    qWarning(sLogAudioOutput) << "QAudioDevice thinks that the needed audio format is not supported, ...";
+    qWarning(sLogAudioOutput) << "... hope we have luck nevertheless (otherwise use Qt <= 6.8.1)";
     qCInfo(sLogAudioOutput) << "Needed audio format:" << mAudioFormat;
     _print_audio_device_formats(mCurrentAudioDevice);
   }

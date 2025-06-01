@@ -67,7 +67,7 @@
 #endif
 
 // Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
-Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
+Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtInfoMsg)
 
 
 DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const i32 iDataPort, QWidget * iParent)
@@ -867,7 +867,7 @@ void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, co
     const bool saveToDir = mConfig.cmbMotObjectSaving->currentIndex() == 2;
     QString pict = generate_unique_file_path_from_hash(mPicturesPath, type, data, saveToDir);
     pict = QDir::toNativeSeparators(pict);
-    qInfo() << "filepath:" << pict << "(pictureName:" << pictureName << ")";
+    // qInfo() << "filepath:" << pict << "(pictureName:" << pictureName << ")";
 
     if (!QFile::exists(pict))
     {
@@ -878,7 +878,7 @@ void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, co
       }
       else
       {
-        qCDebug(sLogRadioInterface(), "show_MOT_image(): going to write picture file %s", pict.toUtf8().data());
+        qCInfo(sLogRadioInterface(), "Write picture to %s", pict.toUtf8().data());
         file.write(data);
       }
     }

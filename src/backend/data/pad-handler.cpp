@@ -35,7 +35,8 @@
 #include "data_manip_and_checks.h"
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
+// Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
+Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtWarningMsg)
 
 PadHandler::PadHandler(DabRadio * mr)
   : mpRadioInterface(mr)
