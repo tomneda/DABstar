@@ -57,6 +57,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
+#include <thread>
 
 static const char DN_FILE_INP[] = "File input";
 static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
