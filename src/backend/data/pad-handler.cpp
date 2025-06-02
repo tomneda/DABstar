@@ -360,10 +360,22 @@ void PadHandler::_dynamic_label(const u8 * data, i16 length, u8 CI)
 
     if (Cflag) // special dynamic label command
     {
-      // TODO: the only specified command is to clear the display
-      mDynamicLabelTextUnConverted.clear();
-      _reset_charset_change();
-      mSegmentNo = -1;
+      u16 Command = (prefix >> 8) & 0x0f;
+      if (Command == 1)
+      {
+        // clear the display
+        mDynamicLabelTextUnConverted.clear();
+        _reset_charset_change();
+        mSegmentNo = -1;
+      }
+      /*else if (Command == 2)
+      {
+        fprintf(stdout, "DL Plus command\n");
+      }
+      else
+      {
+        fprintf(stdout, "Unknown command\n");
+      }*/
     }
     else
     {
@@ -559,12 +571,12 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     }*/
     index += (lengthIndicator - 2);
   }
+  // qWarning() << "build_MSC_segment() transportId is " << transportId << "segmentNumber is " << segmentNumber;
 
-  if (transportId == 0)
+  /*if (transportId == 0)
   {
     qWarning() << "build_MSC_segment() transportId is 0";
-    // return; // should this be handled?
-  }
+  }*/
 
   const u32 segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1];
 
