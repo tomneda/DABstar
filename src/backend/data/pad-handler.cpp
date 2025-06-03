@@ -41,6 +41,8 @@ Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtWarningMsg)
 PadHandler::PadHandler(DabRadio * mr)
   : mpRadioInterface(mr)
 {
+  mpMotObject.reset(new MotObject(mr, false));
+
   connect(this, &PadHandler::signal_show_label, mr, &DabRadio::slot_show_label);
   connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_show_mot_handling);
 
@@ -554,6 +556,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   }
 
   u16 transportId = 0;   // default
+  bool transportIdSet = false;
 
   //	if the user access flag is on there is a user accessfield
   if ((iData[0] & 0x10) != 0)
@@ -562,6 +565,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     if ((iData[index] & 0x10) != 0)
     {
       transportId = iData[index + 1] << 8 | iData[index + 2];
+      transportIdSet = true;
       // qCDebug(sLogPadHandler) << "transportId" << transportId;
       index += 3;
     }
@@ -573,10 +577,11 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   }
   // qWarning() << "build_MSC_segment() transportId is " << transportId << "segmentNumber is " << segmentNumber;
 
-  /*if (transportId == 0)
+  if (!transportIdSet)
   {
-    qWarning() << "build_MSC_segment() transportId is 0";
-  }*/
+    qCritical() << "build_MSC_segment() transportId not set";
+    return;
+  }
 
   const u32 segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1];
 
@@ -584,24 +589,11 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   switch (groupType)
   {
   case 3:
-    if (mpMotObject == nullptr || mpMotObject->get_transport_id() != transportId)
-    {
-      qCDebug(sLogPadHandler) << "Creating MotObject with transportId" << transportId << "old transportId" << (mpMotObject != nullptr ? mpMotObject->get_transport_id() : -1);
-      mpMotObject.reset(new MotObject(mpRadioInterface, false, transportId, &iData[index + 2], segmentSize, lastFlag));
-    }
+    mpMotObject->set_header(&iData[index + 2], segmentSize, lastFlag, transportId);
     break;
 
   case 4:
-    if (mpMotObject == nullptr)
-    {
-      return;
-    }
-
-    if (mpMotObject->get_transport_id() == transportId)
-    {
-      //fprintf (stdout, "add segment %d size %d of %d\n", segmentNumber, segmentSize, transportId);
-      mpMotObject->add_body_segment(&iData[index + 2], segmentNumber, segmentSize, lastFlag);
-    }
+    mpMotObject->add_body_segment(&iData[index + 2], segmentNumber, segmentSize, lastFlag, transportId);
     break;
 
   default:    // cannot happen

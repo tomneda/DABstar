@@ -49,16 +49,21 @@ class MotObject : public QObject
 {
 Q_OBJECT
 public:
+  MotObject(DabRadio * mr, bool dirElement);
   MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag);
   ~MotObject() override = default;
 
-  void add_body_segment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag);
-  u16 get_transport_id();
+  void set_header(const u8 * segment, i32 segmentSize, bool lastFlag, i32 transportId);
+  void add_body_segment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag, i32 transportId);
+  //bool check_and_set_transport_id(u16 transportId);
+  //u16 get_transport_id();
   int get_header_size();
+  void reset();
 
 private:
-  const u16 mTransportId;
+  DabRadio * const mpDR;
   const bool mDirElement;
+  i32 mTransportId = -1; // -1 = not yet set
   QString mPicturePath;
   i16 mNumOfSegments = -1;
   i32 mSegmentSize = -1;
@@ -67,7 +72,9 @@ private:
   MOTContentType mContentType = (MOTContentType)0;
   QString mName;
   std::map<int, QByteArray> mMotMap;
+  bool mHeaderDataSet = false;
 
+  bool _check_if_complete();
   void _handle_complete();
   void _process_parameter_id(const u8 * ipSegment, i32 & ioPointer, u8 iParamId, u16 iLength);
 
