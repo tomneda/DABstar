@@ -211,7 +211,7 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
 
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
-      mFreqOffsSyncSymb += (f32)correction * (f32)cCarrDiff;
+      mFreqOffsSyncSymb += (f32)correction;
 
       if (std::abs(mFreqOffsSyncSymb) > kHz(35))
       {

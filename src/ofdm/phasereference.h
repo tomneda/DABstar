@@ -52,22 +52,27 @@ public:
   ~PhaseReference() override;
 
   [[nodiscard]] i32 correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const f32 iThreshold);
-  [[nodiscard]] i16 estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV);
+  [[nodiscard]] i32 estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV);
   [[nodiscard]] static f32 phase(const std::vector<cf32> & iV, i32 iTs);
   void set_sync_on_strongest_peak(bool sync);
 
   static constexpr i16 IDX_NOT_FOUND = 10000;
 
 private:
-  static constexpr i16 SEARCHRANGE = (2 * 35);
-  static constexpr i16 CORRELATION_LENGTH = 48;
-  static constexpr i16 DIFFLENGTH = 128;
-  std::array<f32, SEARCHRANGE + DIFFLENGTH + 1> mComputedDiffs{};
+  static constexpr i16 SEARCHRANGE = (2 * 36);
+
+  // COARSE_FRQUENCY_CORRECTION 0
+  static constexpr int16_t DIFFLENGTH = 128;
   std::array<f32, DIFFLENGTH> mPhaseDifferences;
+
+  // COARSE_FRQUENCY_CORRECTION 1
+  static constexpr i16 CORRELATION_LENGTH = 48;
+  std::vector<f32> mRefArg;
+
+  // COARSE_FRQUENCY_CORRECTION 2
   void CalculateRelativePhase(const cf32 *fft_in, TArrayTu & arg_out);
   void CalculateMagnitude(const TArrayTu & fft_buf, f32 *mag_buf);
   std::vector<cf32> refArg;
-  std::vector<f32> mRefArg;
 
   const i32 mFramesPerSecond;
   i32 mDisplayCounter = 0;
@@ -81,7 +86,6 @@ private:
   RingBuffer<f32> * const mpResponse;
   std::vector<f32> mCorrPeakValues;
   std::vector<f32> mMeanCorrPeakValues;
-  std::vector<f32> mCorrelationVector;
 
 signals:
   void signal_show_correlation(f32, const QVector<i32> &);
