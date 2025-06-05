@@ -72,7 +72,6 @@ private:
   MOTContentType mContentType = (MOTContentType)0;
   QString mName;
   std::map<int, QByteArray> mMotMap;
-  bool mHeaderDataSet = false;
 
   bool _check_if_complete();
   void _handle_complete();

@@ -47,9 +47,11 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 *
   (void)segmentSize;
   (void)lastFlag;
 
+  qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << dirElement << "and transportId" << transportId << "and segmentSize" << segmentSize << "and lastFlag" << lastFlag;
+
   connect(this, &MotObject::signal_new_MOT_object, mr, &DabRadio::slot_handle_mot_object);
 
-  reset();
+  //reset();
 
   set_header(segment, segmentSize, lastFlag, transportId);
 }
@@ -58,9 +60,11 @@ MotObject::MotObject(DabRadio * mr, bool dirElement)
   : mpDR(mr)
   , mDirElement(dirElement)
 {
+  qCDebug(sLogMotObject()) << "Init MotObject() (2) with dirElement" << dirElement;
+
   connect(this, &MotObject::signal_new_MOT_object, mr, &DabRadio::slot_handle_mot_object);
 
-  reset();
+  //reset();
 }
 
 
@@ -68,16 +72,16 @@ void MotObject::set_header(const u8 * segment, i32 segmentSize, bool lastFlag, i
 {
   qCDebug(sLogMotObject) << "set_header()" << "segmentSize" << segmentSize << "lastFlag" << lastFlag << "transportId" << transportId;
 
-  if (mTransportId != transportId) // transportId is set, but different from the one we are looking for
+  if (mTransportId != transportId) // if transportId changes here this is a new series of segments
   {
-    if (_check_if_complete()) // hopefully we collected all segments already
-    {
-      _handle_complete();
-    }
     reset();
   }
 
-  mHeaderDataSet = true;
+  // if (lastFlag) // now we know how many segments there are
+  // {
+  //   mNumOfSegments = segmentNumber + 1;
+  // }
+
   mTransportId = transportId;
   mSegmentSize = segmentSize;
   mHeaderSize = /*((segment [3] & 0x0F) << 9) |*/ (segment[4] << 1) | ((segment[5] >> 7) & 0x01);
@@ -118,11 +122,14 @@ void MotObject::set_header(const u8 * segment, i32 segmentSize, bool lastFlag, i
       }
       qCDebug(sLogMotObject()) << "Process parameter id with length" << length << "at pointer" << pointer << "for paramId" << paramId;
       _process_parameter_id(segment, pointer, paramId, length);
-    default:; // never happend as we have only 2 bits to process
+    default:; // never happened as we have only 2 bits to process
     }
   }
 
-  //	fprintf (stdout, "creating mot object %x\n", transportId);
+  if (_check_if_complete()) // maybe only the header was missed finally
+  {
+    _handle_complete();
+  }
 }
 
 
@@ -175,22 +182,16 @@ void MotObject::add_body_segment(const u8 * bodySegment, i16 segmentNumber, i32 
     return;
   }
 
-  // Note that the last segment may have a different size
+  // Note that the last segment may have a different size (but what happens if there is only one (last) segment?!)
   if (!lastFlag && (mSegmentSize == -1))
   {
     mSegmentSize = segmentSize;
   }
 
-  if (transportId >= 0)
+  if (mTransportId != transportId)
   {
-    if (mTransportId != transportId) // transportId is set, but different from the one we are looking for
-    {
-      if (_check_if_complete()) // hopefully we collected all segments already
-      {
-        _handle_complete();
-      }
-      reset();
-    }
+    reset();
+    qCDebug(sLogMotObject) << "TransportId changed from" << mTransportId << "to" << transportId;
     mTransportId = transportId;
   }
 
@@ -213,73 +214,19 @@ void MotObject::add_body_segment(const u8 * bodySegment, i16 segmentNumber, i32 
     return;
   }
 
-  // // Note that the last segment may have a different size
-  // if (!lastFlag && (mSegmentSize == -1))
-  // {
-  //   mSegmentSize = segmentSize;
-  // }
-
-  // QByteArray segment;
-  // segment.resize(segmentSize);
-  //
-  // for (i32 i = 0; i < segmentSize; i++)
-  // {
-  //   segment[i] = bodySegment[i];
-  // }
-  //
-  // qCDebug(sLogMotObject) << "Adding segment" << segmentNumber << "to motMap with size" << segmentSize << "- lastFlag" << lastFlag << "- transportId" << mTransportId;
-  // mMotMap.insert(std::make_pair(segmentNumber, segment));
-
-  if (lastFlag)
+  if (lastFlag) // now we know how many segments there are
   {
     mNumOfSegments = segmentNumber + 1;
   }
 
-  // if (mNumOfSegments == -1)
-  // {
-  //   return;
-  // }
-  //
-  // // shortcut map search if we have more segments than collected so far
-  // if (mNumOfSegments > (signed)mMotMap.size())
-  // {
-  //   qCDebug(sLogMotObject) << "MOT object" << mTransportId << "with mNumOfSegments" << mNumOfSegments << "is larger than collected" << mMotMap.size();
-  //   return;
-  // }
-  //
-  // //	once we know how many segments there are/should be, we check for completeness
-  // bool missed = false;
-  // for (i32 i = 0; i < mNumOfSegments; i++)
-  // {
-  //   if (mMotMap.find(i) == mMotMap.end())
-  //   {
-  //     qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing segment" << i;
-  //     missed = true;
-  //   }
-  // }
-  //
-  // if (missed)
-  // {
-  //   qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing at least one element";
-  //   return;
-  // }
-
   if (_check_if_complete()) // hopefully we collected all segments already
   {
-    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "complete with mNumOfSegments" << mNumOfSegments << "and" << mMotMap.size() << "segments in motMap";
-    //	The motObject is (seems to be) complete
     _handle_complete();
   }
 }
 
 bool MotObject::_check_if_complete()
 {
-  if (!mHeaderDataSet)
-  {
-    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing header";
-    return false;
-  }
-
   if (mSegmentSize < 0)
   {
     qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing segment size";
@@ -321,6 +268,8 @@ bool MotObject::_check_if_complete()
 
 void MotObject::_handle_complete()
 {
+  qCDebug(sLogMotObject) << "MOT object" << mTransportId << "complete with mNumOfSegments" << mNumOfSegments << "and" << mMotMap.size() << "segments in motMap";
+
   QByteArray result;
   for (const auto & it : mMotMap)
   {
@@ -329,9 +278,11 @@ void MotObject::_handle_complete()
 
   if (mName.isEmpty())
   {
+    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has no name, using trid_" << mTransportId;
     mName = QString("trid_") + QString::number(mTransportId);
   }
 
+  qCDebug(sLogMotObject) << "emit signaL_new_MOT_object" << mTransportId << "with name" << mName << "and content type" << (int)mContentType << "and dirElement" << mDirElement;
   emit signal_new_MOT_object(result, mName, (int)mContentType, mDirElement);
 
   reset();
@@ -345,7 +296,7 @@ int MotObject::get_header_size()
 void MotObject::reset()
 {
   qCDebug(sLogMotObject) << "reset()";
-  mTransportId = -1; // -1 = not yet set
+  // mTransportId = -1; // -1 = not yet set
   mNumOfSegments = -1;
   mSegmentSize = -1;
   mHeaderSize = 0;
@@ -353,5 +304,4 @@ void MotObject::reset()
   mContentType = (MOTContentType)0;
   mName.clear();
   mMotMap.clear();
-  mHeaderDataSet = false;
 }
