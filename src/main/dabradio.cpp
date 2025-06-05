@@ -884,7 +884,7 @@ void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, co
     }
     else
     {
-      qCDebug(sLogRadioInterface(), "show_MOT_image(): file %s already exists", pict.toUtf8().data());
+      qCInfo(sLogRadioInterface(), "show_MOT_image(): file %s already exists", pict.toUtf8().data());
     }
   }
 

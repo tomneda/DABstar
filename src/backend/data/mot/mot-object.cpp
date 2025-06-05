@@ -138,9 +138,10 @@ void MotObject::_process_parameter_id(const u8 * const ipSegment, i32 & ioPointe
   switch (iParamId)
   {
   case 0x0C:
+    mName.clear();
     for (u16 i = 0; i < iLength - 1; i++)
     {
-      mName.append((QChar)ipSegment[ioPointer + i + 1]);
+      mName.append((QChar)ipSegment[ioPointer + i + 1]); // TODO: when delete name if the object is repeated called?
     }
     qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has name" << mName;
     ioPointer += iLength;
