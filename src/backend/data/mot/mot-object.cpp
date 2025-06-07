@@ -45,7 +45,8 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 *
   , mDirElement(dirElement)
 {
   qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << dirElement << "and transportId" << transportId << "and segmentSize" << segmentSize << "and lastFlag" << lastFlag;
-
+  qCWarning(sLogMotObject()) << "This is not working well yet";
+  
   connect(this, &MotObject::signal_new_MOT_object, mr, &DabRadio::slot_handle_mot_object);
 
   set_header(segment, segmentSize, lastFlag, transportId);
@@ -67,6 +68,7 @@ void MotObject::set_header(const u8 * const iSegment, const i32 iSegmentSize, co
 
   if (mTransportId != iTransportId) // if transportId changes here this is a new series of segments
   {
+    qCDebug(sLogMotObject) << "TransportId changed from" << mTransportId << "to" << iTransportId;
     reset();
   }
 
@@ -255,7 +257,7 @@ void MotObject::_handle_complete()
     mName = QString("trid_") + QString::number(mTransportId);
   }
 
-  qCDebug(sLogMotObject) << "emit signaL_new_MOT_object" << mTransportId << "with name" << mName << "and content type" << (int)mContentType << "and dirElement" << mDirElement;
+  qCDebug(sLogMotObject) << "emit signal_new_MOT_object" << mTransportId << "with name" << mName << "and content type" << (int)mContentType << "and dirElement" << mDirElement;
   emit signal_new_MOT_object(result, mName, (int)mContentType, mDirElement);
 
   reset();
