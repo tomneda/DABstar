@@ -14,6 +14,7 @@
 #ifndef TIME_MEAS_H
 #define TIME_MEAS_H
 
+#include "glob_data_types.h"
 #include <iostream>
 #include <chrono>
 #include <assert.h>

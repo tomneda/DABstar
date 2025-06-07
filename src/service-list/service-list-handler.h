@@ -14,9 +14,10 @@
 #ifndef DABSTAR_SERVICELISTHANDLER_H
 #define DABSTAR_SERVICELISTHANDLER_H
 
+#include "glob_data_types.h"
+#include "service-db.h"
 #include <QObject>
 #include <QStyledItemDelegate>
-#include "service-db.h"
 
 class DabRadio;
 class QTableView;
