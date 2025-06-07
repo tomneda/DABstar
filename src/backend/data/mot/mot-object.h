@@ -35,7 +35,6 @@
 #include  "dab-constants.h"
 #include  "mot-content-types.h"
 #include  <QObject>
-#include  <QImage>
 #include  <QLabel>
 #include  <QByteArray>
 #include  <QString>
@@ -53,10 +52,8 @@ public:
   MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag);
   ~MotObject() override = default;
 
-  void set_header(const u8 * segment, i32 segmentSize, bool lastFlag, i32 transportId);
-  void add_body_segment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag, i32 transportId);
-  //bool check_and_set_transport_id(u16 transportId);
-  //u16 get_transport_id();
+  void set_header(const u8 * iSegment, i32 iSegmentSize, bool iLastFlag, i32 iTransportId);
+  void add_body_segment(const u8 * iBodySegment, i16 iSegmentNumber, i32 iSegmentSize, bool iLastFlag, i32 iTransportId);
   int get_header_size();
   void reset();
 

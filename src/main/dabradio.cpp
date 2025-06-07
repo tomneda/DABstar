@@ -874,7 +874,7 @@ void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, co
       QFile file(pict);
       if (!file.open(QIODevice::WriteOnly))
       {
-        qCCritical(sLogRadioInterface(), "show_MOT_image(): cannot write file %s", pict.toUtf8().data());
+        qCCritical(sLogRadioInterface(), "Cannot write file %s", pict.toUtf8().data());
       }
       else
       {
@@ -884,7 +884,7 @@ void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, co
     }
     else
     {
-      qCInfo(sLogRadioInterface(), "show_MOT_image(): file %s already exists", pict.toUtf8().data());
+      qCInfo(sLogRadioInterface(), "File %s already exists", pict.toUtf8().data());
     }
   }
 

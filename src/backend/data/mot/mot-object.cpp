@@ -44,14 +44,9 @@ MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 *
   : mpDR(mr)
   , mDirElement(dirElement)
 {
-  (void)segmentSize;
-  (void)lastFlag;
-
   qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << dirElement << "and transportId" << transportId << "and segmentSize" << segmentSize << "and lastFlag" << lastFlag;
 
   connect(this, &MotObject::signal_new_MOT_object, mr, &DabRadio::slot_handle_mot_object);
-
-  //reset();
 
   set_header(segment, segmentSize, lastFlag, transportId);
 }
@@ -63,46 +58,33 @@ MotObject::MotObject(DabRadio * mr, bool dirElement)
   qCDebug(sLogMotObject()) << "Init MotObject() (2) with dirElement" << dirElement;
 
   connect(this, &MotObject::signal_new_MOT_object, mr, &DabRadio::slot_handle_mot_object);
-
-  //reset();
 }
 
 
-void MotObject::set_header(const u8 * segment, i32 segmentSize, bool lastFlag, i32 transportId)
+void MotObject::set_header(const u8 * const iSegment, const i32 iSegmentSize, const bool iLastFlag, const i32 iTransportId)
 {
-  qCDebug(sLogMotObject) << "set_header()" << "segmentSize" << segmentSize << "lastFlag" << lastFlag << "transportId" << transportId;
+  qCDebug(sLogMotObject) << "SegmentSize" << iSegmentSize << "LastFlag" << iLastFlag << "TransportId" << iTransportId;
 
-  if (mTransportId != transportId) // if transportId changes here this is a new series of segments
+  if (mTransportId != iTransportId) // if transportId changes here this is a new series of segments
   {
     reset();
   }
 
-  // if (lastFlag) // now we know how many segments there are
-  // {
-  //   mNumOfSegments = segmentNumber + 1;
-  // }
+  mTransportId = iTransportId;
+  mSegmentSize = iSegmentSize;
+  mHeaderSize = /*((segment [3] & 0x0F) << 9) |*/ (iSegment[4] << 1) | ((iSegment[5] >> 7) & 0x01);
+  mBodySize = (iSegment[0] << 20) | (iSegment[1] << 12) | (iSegment[2] << 4) | ((iSegment[3] & 0xF0) >> 4);
+  mContentType = static_cast<MOTContentType>((((iSegment[5] >> 1) & 0x3F) << 8) | ((iSegment[5] & 0x01) << 8) | iSegment[6]);
 
-  mTransportId = transportId;
-  mSegmentSize = segmentSize;
-  mHeaderSize = /*((segment [3] & 0x0F) << 9) |*/ (segment[4] << 1) | ((segment[5] >> 7) & 0x01);
-  mBodySize = (segment[0] << 20) | (segment[1] << 12) | (segment[2] << 4) | ((segment[3] & 0xF0) >> 4);
-
-  // Extract the content type
-  //	int b	= (segment [5] >> 1) & 0x3F;
-  u16 rawContentType = 0;
-  rawContentType |= ((segment[5] >> 1) & 0x3F) << 8;
-  rawContentType |= ((segment[5] & 0x01) << 8) | segment[6];
-  mContentType = static_cast<MOTContentType>(rawContentType);
+  qCDebug(sLogMotObject) << "HeaderSize" << mHeaderSize << "BodySize" << mBodySize << "ContentType" << (int)mContentType;
 
   i32 pointer = 7;
 
   while ((u16)pointer < mHeaderSize)
   {
-    const u8 PLI = (segment[pointer] & 0xC0) >> 6;
-    const u8 paramId = (segment[pointer] & 0x3F);
+    const u8 PLI = (iSegment[pointer] & 0xC0) >> 6;
+    const u8 paramId = (iSegment[pointer] & 0x3F);
     u16 length = 0;
-
-    // qCDebug(sLogMotObject) << "Process PLI" << PLI << "at pointer" << pointer;
 
     switch (PLI)
     {
@@ -110,18 +92,18 @@ void MotObject::set_header(const u8 * segment, i32 segmentSize, bool lastFlag, i
     case 0x1: pointer += 2; break;
     case 0x2: pointer += 5; break;
     case 0x3:
-      if ((segment[pointer + 1] & 0x80) != 0)
+      if ((iSegment[pointer + 1] & 0x80) != 0)
       {
-        length = (segment[pointer + 1] & 0x7F) << 8 | segment[pointer + 2];
+        length = (iSegment[pointer + 1] & 0x7F) << 8 | iSegment[pointer + 2];
         pointer += 3;
       }
       else
       {
-        length = segment[pointer + 1] & 0x7F;
+        length = iSegment[pointer + 1] & 0x7F;
         pointer += 2;
       }
       qCDebug(sLogMotObject()) << "Process parameter id with length" << length << "at pointer" << pointer << "for paramId" << paramId;
-      _process_parameter_id(segment, pointer, paramId, length);
+      _process_parameter_id(iSegment, pointer, paramId, length);
     default:; // never happened as we have only 2 bits to process
     }
   }
@@ -132,6 +114,56 @@ void MotObject::set_header(const u8 * segment, i32 segmentSize, bool lastFlag, i
   }
 }
 
+void MotObject::add_body_segment(const u8 * const iBodySegment, const i16 iSegmentNumber, const i32 iSegmentSize, const bool iLastFlag, const i32 iTransportId)
+{
+  if (iSegmentNumber < 0 || iSegmentNumber >= 8192)
+  {
+    qCCritical(sLogMotObject)  << "Invalid segment number" << iSegmentNumber;
+    return;
+  }
+
+  // Note that the last segment may have a different size
+  if ((!iLastFlag || iSegmentNumber == 0) && mSegmentSize == -1)
+  {
+    mSegmentSize = iSegmentSize;
+  }
+
+  if (mTransportId != iTransportId)
+  {
+    reset();
+    qCDebug(sLogMotObject) << "TransportId changed from" << mTransportId << "to" << iTransportId;
+    mTransportId = iTransportId;
+  }
+
+  if (mMotMap.find(iSegmentNumber) == mMotMap.end())
+  {
+    qCDebug(sLogMotObject) << "Adding segment" << iSegmentNumber << "to motMap with size" << iSegmentSize << "- lastFlag" << iLastFlag << "- transportId" << mTransportId;
+    QByteArray segment;
+    segment.resize(iSegmentSize);
+
+    for (i32 i = 0; i < iSegmentSize; i++)
+    {
+      segment[i] = iBodySegment[i]; // TODO: check if there is a way without the copy
+    }
+
+    mMotMap.insert(std::make_pair(iSegmentNumber, segment));
+  }
+  else
+  {
+    qCDebug(sLogMotObject) << "Duplicate segment" << iSegmentNumber << "to motMap with size" << iSegmentSize << "- lastFlag" << iLastFlag << "- transportId" << mTransportId;
+    return;
+  }
+
+  if (iLastFlag) // now we know how many segments there are
+  {
+    mNumOfSegments = iSegmentNumber + 1;
+  }
+
+  if (_check_if_complete()) // hopefully we collected all segments already
+  {
+    _handle_complete();
+  }
+}
 
 void MotObject::_process_parameter_id(const u8 * const ipSegment, i32 & ioPointer, const u8 iParamId, const u16 iLength)
 {
@@ -141,7 +173,7 @@ void MotObject::_process_parameter_id(const u8 * const ipSegment, i32 & ioPointe
     mName.clear();
     for (u16 i = 0; i < iLength - 1; i++)
     {
-      mName.append((QChar)ipSegment[ioPointer + i + 1]); // TODO: when delete name if the object is repeated called?
+      mName.append((QChar)ipSegment[ioPointer + i + 1]);
     }
     qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has name" << mName;
     ioPointer += iLength;
@@ -165,66 +197,6 @@ void MotObject::_process_parameter_id(const u8 * const ipSegment, i32 & ioPointe
   }
 }
 
-// u16 MotObject::get_transport_id()
-// {
-//   return mTransportId;
-// }
-
-//      type 4 is a segment.
-//	The pad/dir software will only call this whenever it has
-//	established that the current slide has the right transportId
-//
-//	Note that segments do not need to come in in the right order
-void MotObject::add_body_segment(const u8 * bodySegment, i16 segmentNumber, i32 segmentSize, bool lastFlag, i32 transportId)
-{
-  if (segmentNumber < 0 || segmentNumber >= 8192)
-  {
-    qCCritical(sLogMotObject)  << "Invalid segment number" << segmentNumber;
-    return;
-  }
-
-  // Note that the last segment may have a different size (but what happens if there is only one (last) segment?!)
-  if (!lastFlag && (mSegmentSize == -1))
-  {
-    mSegmentSize = segmentSize;
-  }
-
-  if (mTransportId != transportId)
-  {
-    reset();
-    qCDebug(sLogMotObject) << "TransportId changed from" << mTransportId << "to" << transportId;
-    mTransportId = transportId;
-  }
-
-  if (mMotMap.find(segmentNumber) == mMotMap.end())
-  {
-    qCDebug(sLogMotObject) << "Adding segment" << segmentNumber << "to motMap with size" << segmentSize << "- lastFlag" << lastFlag << "- transportId" << mTransportId;
-    QByteArray segment;
-    segment.resize(segmentSize);
-
-    for (i32 i = 0; i < segmentSize; i++)
-    {
-      segment[i] = bodySegment[i]; // TODO: check if there is a way without the copy
-    }
-
-    mMotMap.insert(std::make_pair(segmentNumber, segment));
-  }
-  else
-  {
-    qCDebug(sLogMotObject) << "Duplicate segment" << segmentNumber << "to motMap with size" << segmentSize << "- lastFlag" << lastFlag << "- transportId" << mTransportId;
-    return;
-  }
-
-  if (lastFlag) // now we know how many segments there are
-  {
-    mNumOfSegments = segmentNumber + 1;
-  }
-
-  if (_check_if_complete()) // hopefully we collected all segments already
-  {
-    _handle_complete();
-  }
-}
 
 bool MotObject::_check_if_complete()
 {
@@ -252,14 +224,14 @@ bool MotObject::_check_if_complete()
   {
     if (mMotMap.find(i) == mMotMap.end())
     {
-      qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing segment" << i;
+      qCWarning(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing segment" << i;
       missed = true; // show all possible missing segments
     }
   }
 
   if (missed)
   {
-    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing at least one element";
+    qCWarning(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing at least one element";
     return false;
   }
 
@@ -297,7 +269,6 @@ int MotObject::get_header_size()
 void MotObject::reset()
 {
   qCDebug(sLogMotObject) << "reset()";
-  // mTransportId = -1; // -1 = not yet set
   mNumOfSegments = -1;
   mSegmentSize = -1;
   mHeaderSize = 0;
