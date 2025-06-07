@@ -76,14 +76,18 @@ i32 main(i32 argc, char ** argv)
 
   // qSetMessagePattern("[%{time yyyy-MM-dd hh:mm:ss.zzz}] %{message}");
   // qSetMessagePattern("[%{time hh:mm:ss.zzz}] [%{type}] [%{function}]: %{message}");
-  qSetMessagePattern("\033[94m[%{time hh:mm:ss.zzz}] [%{type}] [%{function}]: \033[0m" // Blue prefix
+#ifdef NDEBUG
+  qSetMessagePattern("\033[94m[%{time hh:mm:ss.zzz}] \033[0m" // Blue prefix
+#else
+  qSetMessagePattern("\033[94m[%{time hh:mm:ss.zzz}] [%{type}] [%{function}] \033[0m" // Blue prefix
+#endif
                      "%{if-debug}\033[97m%{endif}"       // White for debug
                      "%{if-info}\033[96m%{endif}"        // Cyan for info
                      "%{if-warning}\033[93m%{endif}"     // Yellow for warning
                      "%{if-critical}\033[91m%{endif}"    // Red for critical
                      "%{if-fatal}\033[91;1m%{endif}"     // Bright red for fatal
                      "%{message}\033[0m");               // Reset color at end
-
+                     
   // qDebug() << "This is a debug message";
   // qInfo() << "This is an info message";
   // qWarning() << "This is a warning message";
