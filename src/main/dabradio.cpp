@@ -2369,7 +2369,6 @@ void DabRadio::start_service(SDabService & s)
   ui->serviceLabel->setFont(font);
   ui->serviceLabel->setText(serviceName);
   ui->lblDynLabel->setText("");
-  //lblDynLabel->setOpenExternalLinks(true); // TODO: make this work (Bayern1 sent link)
 
   Audiodata ad;
   mpDabProcessor->get_data_for_audio_service(serviceName, &ad);
@@ -2402,7 +2401,10 @@ void DabRadio::start_service(SDabService & s)
     mChannel.currentService.valid = true;
     mChannel.currentService.is_audio = false;
     mChannel.currentService.subChId = pd.subchId;
+
     start_packet_service(serviceName);
+    const QString csn = mChannel.channelName + ":" + serviceName;
+    Settings::Main::varPresetName.write(csn);
   }
   else
   {
