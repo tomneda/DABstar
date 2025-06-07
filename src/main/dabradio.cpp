@@ -719,7 +719,7 @@ QString DabRadio::check_and_create_dir(const QString & s) const
 
 void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString & objectName, i32 contentType, bool dirElement)
 {
-  qCInfo(sLogRadioInterface()) << "ObjectName" << objectName << "ContentType" << contentType;
+  qCDebug(sLogRadioInterface()) << "ObjectName" << objectName << "ContentType" << contentType;
 
   QString realName;
 
