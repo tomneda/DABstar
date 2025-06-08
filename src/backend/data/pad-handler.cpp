@@ -43,12 +43,11 @@ class ContInd // Contents Indicator
 public:
   void set_val(const u8 iVal) { mVal = iVal; }
   u8 get_length() const { return cLengthTable[mVal >> 5]; }
-  u8 get_appl_type() const { return (mVal & 0x1f); }
+  u8 get_appl_type() const { return (mVal & 0x1F); }
 private:
   u8 mVal = 0;
   static constexpr std::array<i16, 8> cLengthTable = { 4, 6, 8, 12, 16, 24, 32, 48 };
 };
-
 
 PadHandler::PadHandler(DabRadio * mr)
   : mpRadioInterface(mr)
@@ -243,6 +242,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
         if (mMscGroupElement)
           _add_MSC_element(data);
         break;
+      default: ;
       }
     }
     return;
@@ -282,15 +282,6 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
     const u8 appType = CI_table[ciIdx].get_appl_type();
     const i16 length = CI_table[ciIdx].get_length();
 
-    //fprintf(stderr, "appType(%d) = %d, length=%d\n", i, appType, length);
-    if (appType == 1)
-    {
-      mDataGroupLength = ((iBuffer[base] & 0x3F) << 8) | iBuffer[base - 1];
-      base -= 4;
-      mLastAppType = 1;
-      continue;
-    }
-
     //	collect data, reverse the reversed bytes
     data.resize(length);
     for (i16 j = 0; j < length; j++)
@@ -300,8 +291,17 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
 
     switch (appType)
     {
-    default: return; // sorry, we do not handle this
-
+    case 1:
+      if (length == 4 && check_crc_bytes(data.data(), 2)) // the CRC is expected behind the length of 2!
+      {
+        mDataGroupLength = ((data[0] & 0x3F) << 8) | data[1];
+      }
+      else
+      {
+        qCWarning(sLogPadHandler) << "dataGroupLengthField fails on CRC check" << "length=" << length;;
+      }
+      break;
+      
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
       // qCDebug(sLogPadHandler) << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
@@ -317,14 +317,16 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
       // qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
       _add_MSC_element(data);
       break;
+
+    default: return; // sorry, we do not handle this
     }
 
     mLastAppType = appType;
     base -= length;
 
-    if (base < 0 && ciIdx < numCI - 1)
+    if (base < -1) // base == 0 would be still the last readable element, so -1 is normal
     {
-      qCWarning(sLogPadHandler) << "base < 0, ciIdx=" << ciIdx << ", numCI=" << numCI;
+      qCWarning(sLogPadHandler) << "base < 0, ciIdx=" << ciIdx << ", numCI=" << numCI << "base" << base << "length" << length;
       return;
     }
   }
@@ -497,6 +499,7 @@ void PadHandler::_add_MSC_element(const std::vector<u8> & data)
   //	data of "13" appType elements is not endlessly collected.
   if (currentLength == 0)
   {
+    // qCWarning(sLogPadHandler) << "MSC element without AppType 12 element";
     return;
   }
 
@@ -537,7 +540,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
       qCWarning(sLogPadHandler) << "Fails on CRC check -> stop decoding MSC segment";
       return;
     }
-    qCDebug(sLogPadHandler) << "CRC check ok";
+    // qCDebug(sLogPadHandler) << "CRC check ok";
   }
 
   i16 segmentNumber = -1; // default

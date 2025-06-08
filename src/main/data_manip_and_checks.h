@@ -186,6 +186,7 @@ static inline bool check_CRC_bits(const u8 * const iIn, const i32 iSize)
   return Sum == 0;
 }
 
+// the CRC is expected behind the msg pointer + len with length 2 bytes
 static inline bool check_crc_bytes(const u8 * const msg, const i32 len)
 {
   u16 accumulator = 0xFFFF;

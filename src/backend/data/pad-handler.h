@@ -86,7 +86,7 @@ private:
 
 signals:
   void signal_show_label(const QString &);
-  void signal_show_mot_handling();
+  void signal_show_mot_handling();  // triggers MOT indicator to "green" for a while
 };
 
 #endif
