@@ -58,6 +58,7 @@ PadHandler::PadHandler(DabRadio * mr)
   connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_show_mot_handling);
 
   mMscDataGroupBuffer.reserve(1024); // try to avoid future memory swapping
+  mDataBuffer.reserve(1024); // try to avoid future memory swapping
 }
 
 //	Data is stored reverse, we pass the vector and the index of the
@@ -146,7 +147,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
         _reset_charset_change();
       }
       mStillToGo = iBuffer[iLast - 1] & 0x0F;
-      mShortPadData.resize(0);
+      mShortPadData.clear();
       mShortPadData.push_back(iBuffer[iLast - 3]);
       break;
 
@@ -161,7 +162,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
       {
         mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data(), (int)mShortPadData.size());
         _check_charset_change();
-        mShortPadData.resize(0);
+        mShortPadData.clear();
       }
       break;
     }
@@ -181,7 +182,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
       //	just to avoid doubling by unsollicited shortpads
       mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data());
       _check_charset_change();
-      mShortPadData.resize(0);
+      mShortPadData.clear();
       //	if we are at the end of the last segment (and the text is not empty)
       //	then show it.
       if (!mFirstSegment && mLastSegment)
@@ -207,7 +208,6 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
 void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast, const bool iCiFlag)
 {
   i16 base = iLast;
-  std::vector<u8> data;    // for the local addition
 
   //	If an xpadfield shows with a CI_flag == 0, and if we are
   //	dealing with an msc field, the size to be taken is
@@ -224,23 +224,23 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
         return;
       }
 
-      data.resize(mXPadLength);
+      mDataBuffer.resize(mXPadLength);
       for (i16 j = 0; j < mXPadLength; j++)
       {
-        data[j] = iBuffer[iLast - j];
+        mDataBuffer[j] = iBuffer[iLast - j];
       }
 
       switch (mLastAppType)
       {
       case 2:   // Dynamic label segment, start of X-PAD data group
       case 3:   // Dynamic label segment, continuation of X-PAD data group
-        _dynamic_label(data, 3);
+        _dynamic_label(mDataBuffer, 3);
         break;
 
       case 12:   // MOT, start of X-PAD data group
       case 13:   // MOT, continuation of X-PAD data group
         if (mMscGroupElement)
-          _add_MSC_element(data);
+          _add_MSC_element(mDataBuffer);
         break;
       default: ;
       }
@@ -283,18 +283,18 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
     const i16 length = CI_table[ciIdx].get_length();
 
     //	collect data, reverse the reversed bytes
-    data.resize(length);
+    mDataBuffer.resize(length);
     for (i16 j = 0; j < length; j++)
     {
-      data[j] = iBuffer[base - j];
+      mDataBuffer[j] = iBuffer[base - j];
     }
 
     switch (appType)
     {
     case 1:
-      if (length == 4 && check_crc_bytes(data.data(), 2)) // the CRC is expected behind the length of 2!
+      if (length == 4 && check_crc_bytes(mDataBuffer.data(), 2)) // the CRC is expected behind the length of 2!
       {
-        mDataGroupLength = ((data[0] & 0x3F) << 8) | data[1];
+        mDataGroupLength = ((mDataBuffer[0] & 0x3F) << 8) | mDataBuffer[1];
       }
       else
       {
@@ -305,17 +305,17 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
       // qCDebug(sLogPadHandler) << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
-      _dynamic_label(data, appType);
+      _dynamic_label(mDataBuffer, appType);
       break;
 
     case 12:   // MOT, start of X-PAD data group
       // qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
-      _new_MSC_element(data);
+      _new_MSC_element(mDataBuffer);
       break;
 
     case 13:   // MOT, continuation of X-PAD data group
       // qCDebug(sLogPadHandler) << "MOT, start of X-PAD data group, size " << data.size() << "appType=" << appType;
-      _add_MSC_element(data);
+      _add_MSC_element(mDataBuffer);
       break;
 
     default: return; // sorry, we do not handle this
@@ -525,7 +525,7 @@ void PadHandler::_add_MSC_element(const std::vector<u8> & data)
 void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 {
   // we have a MOT segment, let us look what is in it according to DAB 300 401 (page 37) the header (MSC data group)
-  const i32 size = iData.size() < (u32)mDataGroupLength ? iData.size() : mDataGroupLength;
+  const i32 size = std::min((i32)iData.size(), mDataGroupLength);
 
   if (size < 2)
   {
@@ -535,7 +535,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 
   if ((iData[0] & 0x40) != 0)
   {
-    if (!check_crc_bytes(iData.data(), size - 2))
+    if (!check_crc_bytes(iData.data(), size - 2)) // the last 2 bytes contains the CRC syndrome
     {
       qCWarning(sLogPadHandler) << "Fails on CRC check -> stop decoding MSC segment";
       return;

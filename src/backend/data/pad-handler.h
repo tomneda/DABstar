@@ -79,6 +79,7 @@ private:
   i16 mSegmentNumber = -1;
   i32 mDataGroupLength = 0; // mDataGroupLength is set when having processed an appType 1
   std::vector<u8> mMscDataGroupBuffer; // The msc_dataGroupBuffer is used for assembling the msc_data group.
+  std::vector<u8> mDataBuffer; // data buffer to revert the input data
   i32 mSegmentNo = -1;
   i16 mRemainDataLength = 0;
   bool mIsLastSegment = false;
