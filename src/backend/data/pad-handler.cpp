@@ -38,6 +38,18 @@
 // Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtWarningMsg)
 
+class ContInd // Contents Indicator
+{
+public:
+  void set_val(const u8 iVal) { mVal = iVal; }
+  u8 get_length() const { return cLengthTable[mVal >> 5]; }
+  u8 get_appl_type() const { return (mVal & 0x1f); }
+private:
+  u8 mVal = 0;
+  static constexpr std::array<i16, 8> cLengthTable = { 4, 6, 8, 12, 16, 24, 32, 48 };
+};
+
+
 PadHandler::PadHandler(DabRadio * mr)
   : mpRadioInterface(mr)
 {
@@ -58,7 +70,7 @@ void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8
 
   if (fpadType != 0x0)
   {
-    qWarning() << "fpadType" << fpadType << "not supported";
+    qWarning() << "F-PAD-type" << fpadType << "not supported";
     return;
   }
 
@@ -103,24 +115,25 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
   if (iCIFlag)
   {
     // has a CI flag
-    u8 CI = iBuffer[iLast];
+    ContInd CI;
+    CI.set_val(iBuffer[iLast]); // Content Indicator
     mFirstSegment = (iBuffer[iLast - 1] & 0x40) != 0;
-    mLastSegment = (iBuffer[iLast - 1] & 0x20) != 0;
+    mLastSegment  = (iBuffer[iLast - 1] & 0x20) != 0;
     mCharSet = iBuffer[iLast - 2] & 0x0F;
-    u8 AcTy = CI & 037;  // application type
 
     if (mFirstSegment)
     {
       mDynamicLabelTextUnConverted.clear();
       _reset_charset_change();
     }
-    switch (AcTy)
+
+    switch (CI.get_appl_type())
     {
     default: break;
 
     case 0:  // end marker
       break;
-      //
+
     case 2:  // start of fragment, extract the length
       if (mFirstSegment && !mLastSegment)
       {
@@ -189,9 +202,6 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
 ///////////////////////////////////////////////////////////////////////
 //
 //	Here we end up when F_PAD type = 00 and X-PAD Ind = 02
-static constexpr std::array<i16, 8> lengthTable = { 4, 6, 8, 12, 16, 24, 32, 48 };
-
-
 //	Since the data is reversed, we pass on the vector address
 //	and the offset of the last element in the vector,
 //	i.e. we start (downwards)  beginning at b [last];
@@ -225,7 +235,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
       {
       case 2:   // Dynamic label segment, start of X-PAD data group
       case 3:   // Dynamic label segment, continuation of X-PAD data group
-        _dynamic_label((u8 *)(data.data()), mXPadLength, 3);
+        _dynamic_label(data, 3);
         break;
 
       case 12:   // MOT, start of X-PAD data group
@@ -241,43 +251,41 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
   //	The CI flag in the F_PAD data is set, so we have local CI's
   //	7.4.2.2: Contents indicators are one byte long
 
-  i16 CI_Index = 0;
-  std::array<u8, 4> CI_table;
+  i16 numCI = 0;
+  std::array<ContInd, 4> CI_table;
 
-  while (((iBuffer[base] & 037) != 0) && (CI_Index < 4))
+  do
   {
-    CI_table[CI_Index++] = iBuffer[base--];
+    CI_table[numCI].set_val(iBuffer[base--]);
+    // the AppTy == 0 signals that there is no more Contents Indication message -> jump out
+    // the base pointer is already decremented above
+    if (CI_table[numCI].get_appl_type() == 0) break;
+    numCI++;
   }
-
-  if (CI_Index < 4)
-  {
-    // we have a "0" indicator, adjust base
-    base -= 1;
-  }
+  while (numCI < 4);
 
   //	The space for the CI's does belong to the Cpadfield, so
   //	but do not forget to take into account the '0'field if CI_Index < 4
   //if (mscGroupElement)
   {
     mXPadLength = 0;
-    for (i16 i = 0; i < CI_Index; i++)
+    for (i16 i = 0; i < numCI; i++)
     {
-      mXPadLength += lengthTable[CI_table[i] >> 5];
+      mXPadLength += CI_table[i].get_length();
     }
-    mXPadLength += CI_Index == 4 ? 4 : CI_Index + 1;
-    //	   fprintf (stdout, "xpadLength set to %d\n", xpadLength);
+    mXPadLength += numCI == 4 ? 4 : numCI + 1;
   }
 
   //	Handle the contents
-  for (i16 i = 0; i < CI_Index; i++)
+  for (i16 ciIdx = 0; ciIdx < numCI; ciIdx++)
   {
-    u8 appType = CI_table[i] & 037;
-    i16 length = lengthTable[CI_table[i] >> 5];
+    const u8 appType = CI_table[ciIdx].get_appl_type();
+    const i16 length = CI_table[ciIdx].get_length();
 
     //fprintf(stderr, "appType(%d) = %d, length=%d\n", i, appType, length);
     if (appType == 1)
     {
-      mDataGroupLength = ((iBuffer[base] & 077) << 8) | iBuffer[base - 1];
+      mDataGroupLength = ((iBuffer[base] & 0x3F) << 8) | iBuffer[base - 1];
       base -= 4;
       mLastAppType = 1;
       continue;
@@ -297,7 +305,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
       // qCDebug(sLogPadHandler) << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;
-      _dynamic_label((u8 *)(data.data()), data.size(), CI_table[i]);
+      _dynamic_label(data, appType);
       break;
 
     case 12:   // MOT, start of X-PAD data group
@@ -314,9 +322,9 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
     mLastAppType = appType;
     base -= length;
 
-    if (base < 0 && i < CI_Index - 1)
+    if (base < 0 && ciIdx < numCI - 1)
     {
-      // fprintf (stdout, "Hier gaat het fout, base = %d\n", base);
+      qCWarning(sLogPadHandler) << "base < 0, ciIdx=" << ciIdx << ", numCI=" << numCI;
       return;
     }
   }
@@ -325,19 +333,20 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
 //
 //	A dynamic label is created from a sequence of (dynamic) xpad
 //	fields, starting with CI = 2, continuing with CI = 3
-void PadHandler::_dynamic_label(const u8 * data, i16 length, u8 CI)
+void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
 {
   i16 dataLength = 0;
 
-  if ((CI & 037) == 02)
+  if (iApplType == 2)
   {
     // start of segment
     const u16 prefix = (data[0] << 8) | data[1];
     const u8 field_1 = (prefix >> 8) & 017;
-    const u8 Cflag = (prefix >> 12) & 01;
-    const u8 first = (prefix >> 14) & 01;
-    const u8 last = (prefix >> 13) & 01;
-    dataLength = length - 2; // The length with header removed
+    const u8 Cflag   = (prefix >> 12) & 01;
+    const u8 first   = (prefix >> 14) & 01;
+    const u8 last    = (prefix >> 13) & 01;
+
+    dataLength = data.size() - 2; // The length with header removed
 
     if (first)
     {
@@ -362,15 +371,16 @@ void PadHandler::_dynamic_label(const u8 * data, i16 length, u8 CI)
 
     if (Cflag) // special dynamic label command
     {
-      u16 Command = (prefix >> 8) & 0x0f;
-      if (Command == 1)
+      const u16 command = (prefix >> 8) & 0x0f;
+
+      if (command == 1)
       {
         // clear the display
         mDynamicLabelTextUnConverted.clear();
         _reset_charset_change();
         mSegmentNo = -1;
       }
-      /*else if (Command == 2)
+      /*else if (command == 2)
       {
         fprintf(stdout, "DL Plus command\n");
       }
@@ -384,9 +394,9 @@ void PadHandler::_dynamic_label(const u8 * data, i16 length, u8 CI)
       // Dynamic text length
       const i16 totalDataLength = field_1 + 1;
 
-      if (length - 2 < totalDataLength)
+      if ((i16)data.size() - 2 < totalDataLength)
       {
-        dataLength = length - 2; // the length is shortened by header
+        dataLength = (i16)(data.size() - 2); // the length is shortened by header
         mMoreXPad = true;
       }
       else
@@ -421,12 +431,12 @@ void PadHandler::_dynamic_label(const u8 * data, i16 length, u8 CI)
       mRemainDataLength = totalDataLength - dataLength;
     }
   }
-  else if (((CI & 037) == 03) && mMoreXPad)
+  else if (iApplType == 03 && mMoreXPad)
   {
-    if (mRemainDataLength > length)
+    if (mRemainDataLength > (i16)data.size())
     {
-      dataLength = length;
-      mRemainDataLength -= length;
+      dataLength = data.size();
+      mRemainDataLength -= data.size();
     }
     else
     {
@@ -434,7 +444,7 @@ void PadHandler::_dynamic_label(const u8 * data, i16 length, u8 CI)
       mMoreXPad = false;
     }
 
-    mDynamicLabelTextUnConverted.append((const char *)data, dataLength);
+    mDynamicLabelTextUnConverted.append((const char *)data.data(), dataLength);
     _check_charset_change();
 
     if (!mMoreXPad && mIsLastSegment)
@@ -524,10 +534,10 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   {
     if (!check_crc_bytes(iData.data(), size - 2))
     {
-      qCWarning(sLogPadHandler) << "build_MSC_segment() fails on crc check";
+      qCWarning(sLogPadHandler) << "Fails on CRC check -> stop decoding MSC segment";
       return;
     }
-    // qCDebug(sLogPadHandler) << "build_MSC_segment() crc check ok";
+    qCDebug(sLogPadHandler) << "CRC check ok";
   }
 
   i16 segmentNumber = -1; // default
@@ -579,7 +589,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 
   if (!transportIdSet)
   {
-    qCritical() << "build_MSC_segment() transportId not set";
+    qCritical() << "TransportId not set";
     return;
   }
 

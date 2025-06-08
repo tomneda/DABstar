@@ -107,7 +107,7 @@ void tdc_dataHandler::add_mscDatagroup(const std::vector<u8> & m)
     checkVector[5 + size + 1] = getBits(data, offset + 5 * 8, 8);
     if (!check_crc_bytes(checkVector, 5 + size))
     {
-      fprintf(stderr, "crc failed\n");
+      qWarning("CRC failed");
       return;
     }
 

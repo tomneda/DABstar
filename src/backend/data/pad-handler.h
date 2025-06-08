@@ -44,7 +44,8 @@ class MotObject;
 
 class PadHandler : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
+
 public:
   explicit PadHandler(DabRadio *);
   ~PadHandler() override = default;
@@ -55,13 +56,14 @@ private:
   DabRadio * const mpRadioInterface;
   void _handle_variable_PAD(const u8 * iBuffer, i16 iLast, bool iCiFlag);
   void _handle_short_PAD(const u8 * iBuffer, i16 iLast, bool iCIFlag);
-  void _dynamic_label(const u8 *, i16, u8);
+  void _dynamic_label(const std::vector<u8> &, u8 iApplType);
   void _new_MSC_element(const std::vector<u8> &);
   void _add_MSC_element(const std::vector<u8> &);
   void _build_MSC_segment(const std::vector<u8> &);
   bool _pad_crc(const u8 *, i16);
   void _reset_charset_change();
   void _check_charset_change();
+
 
   QByteArray mDynamicLabelTextUnConverted;
   i16 mCharSet = 0;
