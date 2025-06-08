@@ -166,16 +166,16 @@ static const char quant_lut_step4[6][16] = {{ 0, 1, 2, 17 },
                                             { 0, 1, 2, 3, 4, 5, 6, 7, 8,  9,  10, 11, 12, 13, 14, 15 }};
 
 // quantizer table
-static struct quantizer_spec quantizer_table[17] = {{ 3,     1, 5 },  //  1
-                                                    { 5,     1, 7 },  //  2
-                                                    { 7,     0, 3 },  //  3
+static struct SQuantizerSpec quantizer_table[17] = {{ 3,     1,  5 },  //  1
+                                                    { 5,     1,  7 },  //  2
+                                                    { 7,     0,  3 },  //  3
                                                     { 9,     1, 10 },  //  4
-                                                    { 15,    0, 4 },  //  5
-                                                    { 31,    0, 5 },  //  6
-                                                    { 63,    0, 6 },  //  7
-                                                    { 127,   0, 7 },  //  8
-                                                    { 255,   0, 8 },  //  9
-                                                    { 511,   0, 9 },  // 10
+                                                    { 15,    0,  4 },  //  5
+                                                    { 31,    0,  5 },  //  6
+                                                    { 63,    0,  6 },  //  7
+                                                    { 127,   0,  7 },  //  8
+                                                    { 255,   0,  8 },  //  9
+                                                    { 511,   0,  9 },  // 10
                                                     { 1023,  0, 10 },  // 11
                                                     { 2047,  0, 11 },  // 12
                                                     { 4095,  0, 12 },  // 13
@@ -241,7 +241,7 @@ Mp2Processor::~Mp2Processor()
 
 #define  valid(x)  ((x == 48000) || (x == 24000))
 
-void Mp2Processor::setSamplerate(i32 rate)
+void Mp2Processor::_set_sample_rate(i32 rate)
 {
   if (baudRate == rate)
   {
@@ -260,20 +260,20 @@ void Mp2Processor::setSamplerate(i32 rate)
 // //
 ////////////////////////////////////////////////////////////////////////////////
 
-i32 Mp2Processor::mp2sampleRate(u8 * frame)
+i32 Mp2Processor::_get_mp2_sample_rate(const u8 * const iFrame)
 {
-  if (!frame)
+  if (!iFrame)
   {
     return 0;
   }
-  if ((frame[0] != 0xFF)   // no valid syncword?
-      || ((frame[1] & 0xF6) != 0xF4)   // no MPEG-1/2 Audio Layer II?
-      || ((frame[2] - 0x10) >= 0xE0))
+  if ((iFrame[0] != 0xFF)   // no valid syncword?
+      || ((iFrame[1] & 0xF6) != 0xF4)   // no MPEG-1/2 Audio Layer II?
+      || ((iFrame[2] - 0x10) >= 0xE0))
   {  // invalid bitrate?
     return 0;
   }
-  return sample_rates[(((frame[1] & 0x08) >> 1) ^ 4)  // MPEG-1/2 switch
-                      + ((frame[2] >> 2) & 3)];         // actual rate
+  return sample_rates[(((iFrame[1] & 0x08) >> 1) ^ 4)  // MPEG-1/2 switch
+                      + ((iFrame[2] >> 2) & 3)];         // actual rate
 }
 
 
@@ -281,51 +281,50 @@ i32 Mp2Processor::mp2sampleRate(u8 * frame)
 // DECODE HELPER FUNCTIONS                                                    //
 ////////////////////////////////////////////////////////////////////////////////
 
-struct quantizer_spec * Mp2Processor::read_allocation(i32 sb, i32 b2_table)
+SQuantizerSpec * Mp2Processor::_read_allocation(i32 sb, i32 b2_table)
 {
   i32 table_idx = quant_lut_step3[b2_table][sb];
-  table_idx = quant_lut_step4[table_idx & 15][get_bits(table_idx >> 4)];
+  table_idx = quant_lut_step4[table_idx & 15][_get_bits(table_idx >> 4)];
   return table_idx ? (&quantizer_table[table_idx - 1]) : nullptr;
 }
 
-void Mp2Processor::read_samples(struct quantizer_spec * q, i32 scalefactor, i32 * sample)
+void Mp2Processor::_read_samples(SQuantizerSpec * opQuantSpec, i32 iScalefactor, i32 * const opSamples)
 {
   i32 idx, adj, scale;
-  i32 val;
 
-  if (!q)
+  if (!opQuantSpec)
   {
     // no bits allocated for this subband
-    sample[0] = sample[1] = sample[2] = 0;
+    opSamples[0] = opSamples[1] = opSamples[2] = 0;
     return;
   }
 
   // resolve scalefactor
-  if (scalefactor == 63)
+  if (iScalefactor == 63)
   {
-    scalefactor = 0;
+    iScalefactor = 0;
   }
   else
   {
-    adj = scalefactor / 3;
-    scalefactor = (scf_base[scalefactor % 3] + ((1 << adj) >> 1)) >> adj;
+    adj = iScalefactor / 3;
+    iScalefactor = (scf_base[iScalefactor % 3] + ((1 << adj) >> 1)) >> adj;
   }
 
   // decode samples
-  adj = q->nlevels;
-  if (q->grouping)
+  adj = opQuantSpec->nlevels;
+  if (opQuantSpec->grouping)
   { // decode grouped samples
-    val = get_bits(q->cw_bits);
-    sample[0] = val % adj;
+    i32 val = _get_bits(opQuantSpec->cw_bits);
+    opSamples[0] = val % adj;
     val /= adj;
-    sample[1] = val % adj;
-    sample[2] = val / adj;
+    opSamples[1] = val % adj;
+    opSamples[2] = val / adj;
   }
   else
   { // decode direct samples
     for (idx = 0; idx < 3; ++idx)
     {
-      sample[idx] = get_bits(q->cw_bits);
+      opSamples[idx] = _get_bits(opQuantSpec->cw_bits);
     }
   }
 
@@ -335,24 +334,24 @@ void Mp2Processor::read_samples(struct quantizer_spec * q, i32 scalefactor, i32 
   for (idx = 0; idx < 3; ++idx)
   {
     // step 1: renormalization to [-1..1]
-    val = (adj - sample[idx]) * scale;
+    const i32 val = (adj - opSamples[idx]) * scale;
     // step 2: apply scalefactor
-    sample[idx] = (val * (scalefactor >> 12)                  // upper part
-                   + ((val * (scalefactor & 4095) + 2048) >> 12)) // lower part
-      >> 12;  // scale adjust
+    opSamples[idx] = (val * (iScalefactor >> 12)                  // upper part
+                   + ((val * (iScalefactor & 4095) + 2048) >> 12)) // lower part
+                     >> 12;  // scale adjust
   }
 }
 
 
 #define show_bits(bit_count) (bit_window >> (24 - (bit_count)))
 
-i32 Mp2Processor::get_bits(i32 bit_count)
+i32 Mp2Processor::_get_bits(const i32 iBitCount)
 {
   //i32 result = show_bits (bit_count);
-  i32 result = bit_window >> (24 - bit_count);
+  i32 result = bit_window >> (24 - iBitCount);
 
-  bit_window = (bit_window << bit_count) & 0xFFFFFF;
-  bits_in_window -= bit_count;
+  bit_window = (bit_window << iBitCount) & 0xFFFFFF;
+  bits_in_window -= iBitCount;
   while (bits_in_window < 16)
   {
     bit_window |= (*frame_pos++) << (16 - bits_in_window);
@@ -366,7 +365,7 @@ i32 Mp2Processor::get_bits(i32 bit_count)
 // FRAME DECODE FUNCTION                                                      //
 ////////////////////////////////////////////////////////////////////////////////
 
-i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
+i32 Mp2Processor::_mp2_decode_frame(const u8 * const ipFrame, i16 * opPcm)
 {
   u32 bit_rate_index_minus1;
   u32 sampling_frequency;
@@ -386,9 +385,9 @@ i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
   }
 
   // check for valid header: syncword OK, MPEG-Audio Layer 2
-  if ((frame[0] != 0xFF)   // no valid syncword?
-      || ((frame[1] & 0xF6) != 0xF4)   // no MPEG-1/2 Audio Layer II?
-      || ((frame[2] - 0x10) >= 0xE0))
+  if ((ipFrame[0] != 0xFF)   // no valid syncword?
+      || ((ipFrame[1] & 0xF6) != 0xF4)   // no MPEG-1/2 Audio Layer II?
+      || ((ipFrame[2] - 0x10) >= 0xE0))
   { // invalid bitrate?
     errorFrames++;
     return 0;
@@ -396,56 +395,56 @@ i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
 
 
   // set up the bitstream reader
-  bit_window = frame[2] << 16;
+  bit_window = ipFrame[2] << 16;
   bits_in_window = 8;
-  frame_pos = &frame[3];
+  frame_pos = &ipFrame[3];
 
   // read the rest of the header
-  bit_rate_index_minus1 = get_bits(4) - 1;
+  bit_rate_index_minus1 = _get_bits(4) - 1;
   if (bit_rate_index_minus1 > 13)
   {
     return 0;
   }  // invalid bit rate or 'free format'
 
-  sampling_frequency = get_bits(2);
+  sampling_frequency = _get_bits(2);
   if (sampling_frequency == 3)
   {
     return 0;
   }
 
-  if ((frame[1] & 0x08) == 0)
+  if ((ipFrame[1] & 0x08) == 0)
   {  // MPEG-2
     sampling_frequency += 4;
     bit_rate_index_minus1 += 14;
   }
 
-  padding_bit = get_bits(1);
-  get_bits(1);  // discard private_bit
-  mode = get_bits(2);
+  padding_bit = _get_bits(1);
+  _get_bits(1);  // discard private_bit
+  mode = _get_bits(2);
 
   // parse the mode_extension, set up the stereo bound
   if (mode == JOINT_STEREO)
   {
-    bound = (get_bits(2) + 1) << 2;
+    bound = (_get_bits(2) + 1) << 2;
   }
   else
   {
-    get_bits(2);
+    _get_bits(2);
     bound = (mode == MONO) ? 0 : 32;
   }
   emit signal_is_stereo((mode == JOINT_STEREO) || (mode == STEREO));
 
   // discard the last 4 bits of the header and the CRC value, if present
-  get_bits(4);
-  if ((frame[1] & 1) == 0)
+  _get_bits(4);
+  if ((ipFrame[1] & 1) == 0)
   {
-    get_bits(16);
+    _get_bits(16);
   }
 
   // compute the frame size
   frame_size = (144000 * bitrates[bit_rate_index_minus1] / sample_rates[sampling_frequency]) + padding_bit;
 
-  if (!pcm)
+  if (!opPcm)
   {
     return frame_size;
   }  // no decoding
@@ -473,10 +472,10 @@ i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
   // read the allocation information
   for (sb = 0; sb < bound; ++sb)
     for (ch = 0; ch < 2; ++ch)
-      allocation[ch][sb] = read_allocation(sb, table_idx);
+      allocation[ch][sb] = _read_allocation(sb, table_idx);
 
   for (sb = bound; sb < sblimit; ++sb)
-    allocation[0][sb] = allocation[1][sb] = read_allocation(sb, table_idx);
+    allocation[0][sb] = allocation[1][sb] = _read_allocation(sb, table_idx);
 
   // read scale factor selector information
   nch = (mode == MONO) ? 1 : 2;
@@ -484,7 +483,7 @@ i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
   {
     for (ch = 0; ch < nch; ++ch)
       if (allocation[ch][sb])
-        scfsi[ch][sb] = get_bits(2);
+        scfsi[ch][sb] = _get_bits(2);
 
     if (mode == MONO)
       scfsi[1][sb] = scfsi[0][sb];
@@ -499,17 +498,17 @@ i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
       {
         switch (scfsi[ch][sb])
         {
-        case 0: scalefactor[ch][sb][0] = get_bits(6);
-          scalefactor[ch][sb][1] = get_bits(6);
-          scalefactor[ch][sb][2] = get_bits(6);
+        case 0: scalefactor[ch][sb][0] = _get_bits(6);
+          scalefactor[ch][sb][1] = _get_bits(6);
+          scalefactor[ch][sb][2] = _get_bits(6);
           break;
-        case 1: scalefactor[ch][sb][0] = scalefactor[ch][sb][1] = get_bits(6);
-          scalefactor[ch][sb][2] = get_bits(6);
+        case 1: scalefactor[ch][sb][0] = scalefactor[ch][sb][1] = _get_bits(6);
+          scalefactor[ch][sb][2] = _get_bits(6);
           break;
-        case 2: scalefactor[ch][sb][0] = scalefactor[ch][sb][1] = scalefactor[ch][sb][2] = get_bits(6);
+        case 2: scalefactor[ch][sb][0] = scalefactor[ch][sb][1] = scalefactor[ch][sb][2] = _get_bits(6);
           break;
-        case 3: scalefactor[ch][sb][0] = get_bits(6);
-          scalefactor[ch][sb][1] = scalefactor[ch][sb][2] = get_bits(6);
+        case 3: scalefactor[ch][sb][0] = _get_bits(6);
+          scalefactor[ch][sb][1] = scalefactor[ch][sb][2] = _get_bits(6);
           break;
         }
       }
@@ -527,10 +526,10 @@ i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
       // read the samples
       for (sb = 0; sb < bound; ++sb)
         for (ch = 0; ch < 2; ++ch)
-          read_samples(allocation[ch][sb], scalefactor[ch][sb][part], &sample[ch][sb][0]);
+          _read_samples(allocation[ch][sb], scalefactor[ch][sb][part], &sample[ch][sb][0]);
       for (sb = bound; sb < sblimit; ++sb)
       {
-        read_samples(allocation[0][sb], scalefactor[0][sb][part], &sample[0][sb][0]);
+        _read_samples(allocation[0][sb], scalefactor[0][sb][part], &sample[0][sb][0]);
         for (idx = 0; idx < 3; ++idx)
           sample[1][sb][idx] = sample[0][sb][idx];
       }
@@ -582,54 +581,57 @@ i32 Mp2Processor::mp2decodeFrame(u8 * frame, i16 * pcm)
               sum = -32768;
             if (sum > 32767)
               sum = 32767;
-            pcm[(idx << 6) | (j << 1) | ch] = (u16)sum;
+            opPcm[(idx << 6) | (j << 1) | ch] = (u16)sum;
           }
         } // end of synthesis channel loop
       } // end of synthesis sub-block loop
       // adjust PCM output pointer: decoded 3 * 32 = 96 stereo samples
-      pcm += 192;
+      opPcm += 192;
     } // decoding of the granule finished
   }
   return frame_size;
+}
+
+void Mp2Processor::_process_pad_data(const std::vector<u8> & v)
+{
+  i16 vLength = 24 * bitRate / 8;
+  auto * const pPadData = make_vla(u8, vLength);
+
+  // convert one-bit-per-byte to a byte value stream
+  for (i16 i = 0; i < vLength; i++)
+  {
+    pPadData[i] = 0;
+    for (i16 j = 0; j < 8; j++)
+    {
+      pPadData[i] <<= 1;
+      pPadData[i] |= v[8 * i + j] & 01;
+    }
+  }
+
+  const u8 L0 = pPadData[vLength - 1];
+  const u8 L1 = pPadData[vLength - 2];
+  const i16 down = bitRate * 1000 >= 56000 ? 4 : 2;
+  my_padhandler.process_PAD(pPadData, vLength - 3 - down, L1, L0);
 }
 
 //
 //	bits to MP2 frames, amount is amount of bits
 void Mp2Processor::add_to_frame(const std::vector<u8> & v)
 {
-  i16 i, j;
-  i16 lf = baudRate == 48000 ? MP2framesize : 2 * MP2framesize;
-  i16 amount = MP2framesize;
-  i16 vLength = 24 * bitRate / 8;
-  auto * const help = make_vla(u8, vLength);
+  const i16 lf = baudRate == 48000 ? MP2framesize : 2 * MP2framesize;
+  const i16 amount = MP2framesize;
 
-  //fprintf(stderr, "baudrate = %d, inputsize = %d\n", baudRate, v.size());
-  //fprintf(stderr, "\n");
-  for (i = 0; i < vLength; i++)
-  {
-    help[i] = 0;
-    for (j = 0; j < 8; j++)
-    {
-      help[i] <<= 1;
-      help[i] |= v[8 * i + j] & 01;
-    }
-  }
-  {
-    u8 L0 = help[vLength - 1];
-    u8 L1 = help[vLength - 2];
-    i16 down = bitRate * 1000 >= 56000 ? 4 : 2;
-    my_padhandler.process_PAD(help, vLength - 3 - down, L1, L0);
-  }
+  _process_pad_data(v);
 
-  for (i = 0; i < amount; i++)
+  for (i16 i = 0; i < amount; i++)
   {
     if (MP2Header_OK == 2)
     {
-      addbittoMP2(MP2frame, v[i], MP2bitCount++);
+      _add_bit_to_mp2(MP2frame, v[i], MP2bitCount++);
       if (MP2bitCount >= lf)
       {
         i16 sample_buf[KJMP2_SAMPLES_PER_FRAME * 2];
-        if (mp2decodeFrame(MP2frame, sample_buf))
+        if (_mp2_decode_frame(MP2frame, sample_buf))
         {
           buffer->put_data_into_ring_buffer(sample_buf, 2 * (i32)KJMP2_SAMPLES_PER_FRAME);
           if (buffer->get_ring_buffer_read_available() > baudRate / 8)
@@ -651,9 +653,9 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & v)
         if (++MP2headerCount == 12)
         {
           MP2bitCount = 0;
-          for (j = 0; j < 12; j++)
+          for (i16 j = 0; j < 12; j++)
           {
-            addbittoMP2(MP2frame, 1, MP2bitCount++);
+            _add_bit_to_mp2(MP2frame, 1, MP2bitCount++);
           }
           MP2Header_OK = 1;
         }
@@ -665,10 +667,10 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & v)
     }
     else if (MP2Header_OK == 1)
     {
-      addbittoMP2(MP2frame, v[i], MP2bitCount++);
+      _add_bit_to_mp2(MP2frame, v[i], MP2bitCount++);
       if (MP2bitCount == 24)
       {
-        setSamplerate(mp2sampleRate(MP2frame));
+        _set_sample_rate(_get_mp2_sample_rate(MP2frame));
         MP2Header_OK = 2;
       }
     }
@@ -676,20 +678,20 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & v)
 
 }
 
-void Mp2Processor::addbittoMP2(u8 * v, u8 b, i16 nm)
+void Mp2Processor::_add_bit_to_mp2(u8 * iopV, u8 ib, i16 iNm)
 {
-  u8 byte = v[nm / 8];
-  i16 bitnr = 7 - (nm & 7);
-  u8 newbyte = (01 << bitnr);
+  u8 byte = iopV[iNm / 8];
+  const i16 bitnr = 7 - (iNm & 7);
+  const u8 newByte = (1 << bitnr);
 
-  if (b == 0)
+  if (ib == 0)
   {
-    byte &= ~newbyte;
+    byte &= ~newByte;
   }
   else
   {
-    byte |= newbyte;
+    byte |= newByte;
   }
-  v[nm / 8] = byte;
+  iopV[iNm / 8] = byte;
 }
 

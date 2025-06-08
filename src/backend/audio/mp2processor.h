@@ -51,7 +51,7 @@
 #define KJMP2_SAMPLES_PER_FRAME 1152  // the number of samples per frame
 
 // quantizer specification structure
-struct quantizer_spec
+struct SQuantizerSpec
 {
   i32 nlevels;
   u8 grouping;
@@ -72,18 +72,12 @@ private:
   DabRadio * myRadioInterface;
   i16 bitRate;
   PadHandler my_padhandler;
-  i32 mp2sampleRate(u8 *);
-  i32 mp2decodeFrame(u8 *, i16 *);
   RingBuffer<i16> * buffer;
   i32 baudRate;
-  void setSamplerate(i32);
-  struct quantizer_spec * read_allocation(i32, i32);
-  void read_samples(struct quantizer_spec *, i32, i32 *);
-  i32 get_bits(i32);
   i16 V[2][1024];
   i16 Voffs;
   i16 N[64][32];
-  struct quantizer_spec * allocation[2][32];
+  SQuantizerSpec * allocation[2][32];
   i32 scfsi[2][32];
   i32 scalefactor[2][32][3];
   i32 sample[2][32][3];
@@ -91,17 +85,25 @@ private:
 
   i32 bit_window;
   i32 bits_in_window;
-  u8 * frame_pos;
+  const u8 * frame_pos;
   u8 * MP2frame;
 
   i16 MP2framesize;
   i16 MP2Header_OK;
   i16 MP2headerCount;
   i16 MP2bitCount;
-  void addbittoMP2(u8 *, u8, i16);
   i16 numberofFrames;
   i16 errorFrames;
-  
+
+  i32 _get_mp2_sample_rate(const u8 * iFrame);
+  i32 _mp2_decode_frame(const u8 * ipFrame, i16 *);
+  void _set_sample_rate(i32);
+  SQuantizerSpec * _read_allocation(i32, i32);
+  void _read_samples(SQuantizerSpec *, i32 iScalefactor, i32 * opSamples);
+  i32 _get_bits(i32);
+  void _add_bit_to_mp2(u8 *, u8, i16);
+  void _process_pad_data(const std::vector<u8> & v);
+
 signals:
   void signal_show_frameErrors(i32);
   void signal_new_audio(i32, u32, u32);
