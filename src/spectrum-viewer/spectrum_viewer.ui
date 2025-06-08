@@ -151,7 +151,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom in/out&lt;/p&gt;&lt;p&gt;The zoom works exponential [0%..100%] -&amp;gt; factor [0.1..10]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom in/out&lt;/p&gt;&lt;p&gt;The zoom works exponentially&lt;br/&gt;[0%..100%] -&amp;gt; factor [0.1..10]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
