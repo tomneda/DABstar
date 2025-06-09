@@ -524,6 +524,9 @@ void PadHandler::_add_MSC_element(const std::vector<u8> & data)
 
 void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 {
+  struct SDataGrpHeader0 { u8 DataGroupType : 4;  u8 UserAccessFlag : 1; u8 SegmentFlag : 1;  u8 CrcFlag : 1; u8 ExtensionFlag : 1; };
+  struct SDataGrpHeader1 { u8 RepetitionIdx : 4; u8 ContinuityIdx : 4; };
+
   // we have a MOT segment, let us look what is in it according to DAB 300 401 (page 37) the header (MSC data group)
   const i32 size = std::min((i32)iData.size(), mDataGroupLength);
 
@@ -533,7 +536,10 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     return;
   }
 
-  if ((iData[0] & 0x40) != 0)
+  SDataGrpHeader0 dataGrpHeader0 = reinterpret_cast<const SDataGrpHeader0 &>(iData[0]);
+  // SDataGrpHeader1 dataGrpHeader1 = reinterpret_cast<const SDataGrpHeader1 &>(iData[1]);
+
+  if (dataGrpHeader0.CrcFlag != 0)
   {
     if (!check_crc_bytes(iData.data(), size - 2)) // the last 2 bytes contains the CRC syndrome
     {
@@ -544,10 +550,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   }
 
   i16 segmentNumber = -1; // default
-  bool lastFlag = false;      // default
-  const u8 groupType = iData[0] & 0xF;
-  // const u8 continuityIndex = (data [1] & 0xF0) >> 4;
-  // const u8 repetitionIndex =  data [1] & 0xF;
+  const u8 groupType = dataGrpHeader0.DataGroupType;
 
   if ((groupType != 3) && (groupType != 4))
   {
@@ -556,15 +559,14 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 
   // If the segmentflag is on, then a lastflag and segmentnumber are available, i.e. 2 bytes more.
   // Theoretically, the segment number can be as large as 16384
-  bool extensionFlag = (iData[0] & 0x80) != 0;
-  u16 index = extensionFlag ? 4 : 2;
-  const bool segmentFlag = (iData[0] & 0x20) != 0;
+  u16 index = dataGrpHeader0.ExtensionFlag ? 4 : 2;
+  bool lastFlag = false;      // default
 
-  if (segmentFlag)
+  if (dataGrpHeader0.SegmentFlag != 0)
   {
     lastFlag = iData[index] & 0x80;
     segmentNumber = ((iData[index] & 0x7F) << 8) | iData[index + 1];
-    // qCDebug(sLogPadHandler) << "segmentNumber" << segmentNumber << "- lastFlag" << lastFlag << "- extensionFlag" << extensionFlag;
+    // qCDebug(sLogPadHandler) << "segmentNumber" << segmentNumber << "- lastFlag" << lastFlag << "- extensionFlag" << dataGrpHeader.ExtensionFlag;
     index += 2;
   }
 
@@ -572,7 +574,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   bool transportIdSet = false;
 
   //	if the user access flag is on there is a user accessfield
-  if ((iData[0] & 0x10) != 0)
+  if (dataGrpHeader0.UserAccessFlag != 0)
   {
     const i16 lengthIndicator = iData[index] & 0x0F;
     if ((iData[index] & 0x10) != 0)
