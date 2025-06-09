@@ -59,10 +59,10 @@ public:
   static constexpr i16 IDX_NOT_FOUND = 10000;
 
 private:
-  static constexpr i16 SEARCHRANGE = (2 * 36);
+  static constexpr i16 SEARCHRANGE = (2 * 35);
 
   // COARSE_FRQUENCY_CORRECTION 0
-  static constexpr int16_t DIFFLENGTH = 128;
+  static constexpr i16 DIFFLENGTH = 128;
   std::array<f32, DIFFLENGTH> mPhaseDifferences;
 
   // COARSE_FRQUENCY_CORRECTION 1
@@ -71,8 +71,7 @@ private:
 
   // COARSE_FRQUENCY_CORRECTION 2
   void CalculateRelativePhase(const cf32 *fft_in, TArrayTu & arg_out);
-  void CalculateMagnitude(const TArrayTu & fft_buf, f32 *mag_buf);
-  std::vector<cf32> refArg;
+  std::vector<cf32> cRefArg;
 
   const i32 mFramesPerSecond;
   i32 mDisplayCounter = 0;

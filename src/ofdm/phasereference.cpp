@@ -71,12 +71,12 @@ PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessPara
     mRefArg[i] = arg(mRefTable[(cTu + i) % cTu] * conj(mRefTable[(cTu + i + 1) % cTu]));
   }
 #elif COARSE_FRQUENCY_CORRECTION == 2 // Code from DAB-Radio
-  refArg.resize(cTu);
+  cRefArg.resize(cTu);
   CalculateRelativePhase(mRefTable.data(), mFftInBuffer);
   fftwf_execute(mFftPlanBwd);
   for (i32 i = 0; i < cTu; i++)
   {
-    refArg[i] = std::conj(mFftOutBuffer[i]);
+    cRefArg[i] = std::conj(mFftOutBuffer[i]);
   }
 #endif
 
@@ -213,7 +213,14 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   }
 }
 
-//	an approach that works fine is to correlate the phase differences between subsequent carriers
+//  The "best" approach for computing the coarse frequency offset is to
+//  look at the spectrum of symbol 0 and relate that with the spectrum as
+//  it should be, i.e. the refTable.
+//  However, since there might be a pretty large phase offset between the
+//  incoming data and the reference table data, we correlate the phase
+//  differences between the subsequent carriers rather than the values in
+//  the segments themselves. It seems to work pretty well.
+//  The phase differences are computed once
 i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV)
 {
 
@@ -270,27 +277,19 @@ i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & 
   //fprintf(stderr, "min=%.0f, max=%.0f, offset=%d\n", min, max, offset);
   return offset * cCarrDiff;
 
-#elif COARSE_FRQUENCY_CORRECTION == 1 // modified Code
+#elif COARSE_FRQUENCY_CORRECTION == 1 // alternative Code
 
-  //  The "best" approach for computing the coarse frequency offset is to
-  //  look at the spectrum of symbol 0 and relate that with the spectrum as
-  //  it should be, i.e. the refTable.
-  //  However, since there might be a pretty large phase offset between the
-  //  incoming data and the reference table data, we correlate the phase
-  //  differences between the subsequent carriers rather than the values in
-  //  the segments themselves. It seems to work pretty well.
-  //  The phase differences are computed once
-  f32 correlationVector[SEARCHRANGE + CORRELATION_LENGTH];
+  f32 correlationVector[SEARCHRANGE + CORRELATION_LENGTH + 1];
   i16 index = IDX_NOT_FOUND;
   f32 min = 1000;
 
-  for (i16 i = 0; i < SEARCHRANGE + CORRELATION_LENGTH; ++i)
+  for (i16 i = 0; i <= SEARCHRANGE + CORRELATION_LENGTH; ++i)
   {
     const i16 baseIndex = cTu - SEARCHRANGE / 2 + i;
     correlationVector[i] = arg(iV[baseIndex % cTu] * conj(iV[(baseIndex + 1) % cTu]));
   }
   //fprintf(stderr, "Sum = ");
-  for (i16 i = 0; i < SEARCHRANGE; i++)
+  for (i16 i = 0; i <= SEARCHRANGE; i++)
   {
     f32 sum = 0;
     for (i16 j = 0; j < CORRELATION_LENGTH; ++j)
@@ -314,60 +313,60 @@ i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & 
   //fprintf(stderr, "min=%.0f, offset=%d\n", min, offset);
   return offset * cCarrDiff;
 
-#elif COARSE_FRQUENCY_CORRECTION == 2 // Code from DAB-Radio
+#elif COARSE_FRQUENCY_CORRECTION == 2 // Modified code from DAB-Radio
 
-  f32 correlationVector[cTu];
   i16 index = IDX_NOT_FOUND;
   f32 max = 0;
+  f32 avg = 0;
 
-  // Step 2: Get complex difference between consecutive bins
+  // Step 1: Get complex difference between consecutive bins
   CalculateRelativePhase(iV.data(), mFftInBuffer);
 
-  // Step 3: Get IFFT so we can do correlation in frequency domain via product in time domain
+  // Step 2: Get IFFT so we can do correlation in frequency domain via product in time domain
   fftwf_execute(mFftPlanBwd);
 
-  // Step 4: Conjugate product in time domain
-  //         NOTE: refArg is already the conjugate
+  // Step 3: Conjugate product in time domain
+  //         NOTE: cRefArg is already the conjugate
   for (i32 i = 0; i < cTu; i++)
   {
-    mFftInBuffer[i] = mFftOutBuffer[i] * refArg[i];
+    mFftInBuffer[i] = mFftOutBuffer[i] * cRefArg[i];
   }
 
-  // Step 5: Get FFT to get correlation in frequency domain
+  // Step 4: Get FFT to get correlation in frequency domain
   fftwf_execute(mFftPlanFwd);
 
-  // Step 6: Get magnitude spectrum so we can find the correlation peak
-  CalculateMagnitude(mFftOutBuffer, correlationVector);
-
-  // Step 7: Find the peak in our maximum coarse frequency error window
-  //         NOTE: A zero frequency error corresponds to a peak at cTu/2
+  // Step 5: Find the peak in our maximum coarse frequency error window
   //fprintf(stderr, "Sum = ");
   for (i32 i = -SEARCHRANGE/2; i <= SEARCHRANGE/2; i++)
   {
-    const i32 fft_index = cTu/2 + i;
-    const f32 value = correlationVector[fft_index];
+    const f32 value = std::abs(mFftOutBuffer[(cTu + i) % cTu]);
     if (value > max)
     {
       max = value;
       index = i;
     }
+    avg += value;
     //fprintf(stderr, "%.0f ", value/10000000);
   }
   //fprintf(stderr, "\n");
+  avg /= SEARCHRANGE;
 
-  // Step 8: Determine the coarse frequency offset
+  // Step 6: Return if peak is too small
+  if(max < avg * 5)
+    return IDX_NOT_FOUND;
+
+  // Step 7: Determine the coarse frequency offset
   // We get the frequency offset in terms of FFT bins which we convert to normalised Hz
   // Interpolate peak between neighbouring fft bins based on magnitude for more accurate estimate
   f32 peak[3];
   f32 peak_sum = 0.0f;
   for(int i = 0; i<3; i++)
   {
-    const i32 fft_index = cTu/2 + i + index - 1;
-    peak[i] = correlationVector[fft_index];
+    peak[i] = std::abs(mFftOutBuffer[(cTu + index + i - 1) % cTu]);
     peak_sum += peak[i];
   }
   const f32 offset = index + (peak[2] - peak[0]) / peak_sum;
-  //fprintf(stderr, "max=%.0f, offset=%f\n", max/10000000, offset);
+  //fprintf(stderr, "max=%.0f, average=%.0f, offset=%f\n", max/10000000, avg/10000000, offset);
   return (int32_t)(offset * cCarrDiff);
 #endif
 }
@@ -397,14 +396,4 @@ void PhaseReference::CalculateRelativePhase(const cf32 *fft_in, TArrayTu & arg_o
     arg_out[i] = std::conj(fft_in[i]) * fft_in[i+1];
   }
   arg_out[cTu-1] = {0,0};
-}
-
-void PhaseReference::CalculateMagnitude(const TArrayTu & fft_buf, f32 *mag_buf)
-{
-  const size_t M = cTu/2;
-  for (size_t i = 0; i < cTu; i++)
-  {
-    const size_t j = (i+M) % cTu;
-    mag_buf[i] = std::abs(fft_buf[j]);
-  }
 }
