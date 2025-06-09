@@ -38,10 +38,21 @@
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
-//#include <unistd.h>
+//#ifdef _WIN32
+//  #include <windows.h>
+//#endif
 
 i32 main(i32 argc, char ** argv)
 {
+// #ifdef _WIN32
+//   // Enable ANSI escape codes for Windows console
+//   HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+//   DWORD dwMode = 0;
+//   GetConsoleMode(hOut, &dwMode);
+//   dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+//   SetConsoleMode(hOut, dwMode);
+// #endif
+
   qRegisterMetaType<QVector<i32>>("QVector<i32>");  // windows needs that...
 
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
