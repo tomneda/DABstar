@@ -38,20 +38,19 @@
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
-//#ifdef _WIN32
-//  #include <windows.h>
-//#endif
+#ifdef _WIN32
+  #include <windows.h>
+#endif
 
 i32 main(i32 argc, char ** argv)
 {
-// #ifdef _WIN32
-//   // Enable ANSI escape codes for Windows console
-//   HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-//   DWORD dwMode = 0;
-//   GetConsoleMode(hOut, &dwMode);
-//   dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-//   SetConsoleMode(hOut, dwMode);
-// #endif
+  // Enable ANSI escape codes for Windows console
+#ifdef _WIN32
+  HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+  DWORD dwMode = 0;
+  GetConsoleMode(hOut, &dwMode);
+  SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+#endif
 
   qRegisterMetaType<QVector<i32>>("QVector<i32>");  // windows needs that...
 
