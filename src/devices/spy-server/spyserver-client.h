@@ -50,21 +50,32 @@
 #include	"spy-handler.h"
 
 
-class spyServer_client_8 : public QObject,
-  /*public deviceHandler,*/ Ui_spyServer_widget_8
+class spyServer_client_8 : public QObject, public IDeviceHandler, private Ui_spyServer_widget_8
 {
   Q_OBJECT
 
 public:
   spyServer_client_8(QSettings *);
-  ~spyServer_client_8();
-  int32_t getRate();
-  bool restartReader(int32_t, int skipped = 0);
-  void stopReader();
-  int32_t getSamples(std::complex<float> * V, int32_t size);
-  int32_t Samples();
-  int16_t bitDepth();
+  ~spyServer_client_8() override;
+
+  bool restartReader(int32_t) override;
+  void stopReader() override;
+  int32_t getSamples(std::complex<float> * V, int32_t size) override;
+  int32_t Samples() override;
+  int16_t bitDepth() override;
+
+  void setVFOFrequency(int32_t) override;
+  int32_t getVFOFrequency() override;
+  void resetBuffer() override;
+  void show() override;
+  void hide() override;
+  bool isHidden() override;
+  QString deviceName() override;
+  bool isFileInput() override;
+
   void connect_on();
+  int32_t getRate();
+
 
   struct
   {

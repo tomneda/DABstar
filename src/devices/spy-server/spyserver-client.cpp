@@ -305,7 +305,7 @@ int32_t spyServer_client_8::getRate()
   return INPUT_RATE;
 }
 
-bool spyServer_client_8::restartReader(int32_t freq, int skipped)
+bool spyServer_client_8::restartReader(int32_t freq)
 {
   if (!connected)
   {
@@ -480,4 +480,42 @@ void spyServer_client_8::set_portNumber(int v)
 {
   settings.basePort = v;
   // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-port", v); // TODO: tomneda
+}
+
+void spyServer_client_8::show()
+{
+  myFrame.show();
+}
+
+void spyServer_client_8::hide()
+{
+  myFrame.hide();
+}
+
+bool spyServer_client_8::isHidden()
+{
+  return myFrame.isHidden();
+}
+
+bool spyServer_client_8::isFileInput()
+{
+  return false;
+}
+
+void spyServer_client_8::setVFOFrequency(i32)
+{
+}
+
+i32 spyServer_client_8::getVFOFrequency()
+{
+  return 0;
+}
+
+void spyServer_client_8::resetBuffer()
+{
+}
+
+QString spyServer_client_8::deviceName()
+{
+  return "SpyServer_NW"; // NW == network;
 }

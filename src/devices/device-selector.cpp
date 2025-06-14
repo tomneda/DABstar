@@ -28,6 +28,10 @@
 #ifdef  HAVE_AIRSPY
   #include "airspy-handler.h"
 #endif
+#ifdef  HAVE_SPYSERVER
+  #include "spyserver-client.h"
+  // #include "spy-handler.h"
+#endif
 #ifdef  HAVE_HACKRF
   #include "hackrf-handler.h"
 #endif
@@ -59,20 +63,21 @@
 #include <QSettings>
 #include <thread>
 
-static const char DN_FILE_INP[] = "File input";
+static const char DN_FILE_INP[]   = "File input";
 static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
 static const char DN_SDRPLAY_V2[] = "SDR-Play V2";
-static const char DN_RTLTCP[] = "RTL-TCP";
-static const char DN_RTLSDR[] = "RTL-SDR";
-static const char DN_AIRSPY[] = "Airspy";
-static const char DN_HACKRF[] = "HackRf";
-static const char DN_LIMESDR[] = "LimeSDR";
+static const char DN_RTLTCP[]     = "RTL-TCP";
+static const char DN_RTLSDR[]     = "RTL-SDR";
+static const char DN_AIRSPY[]     = "Airspy";
+static const char DN_SPYSERVER[]  = "SpyServer NW";
+static const char DN_HACKRF[]     = "HackRf";
+static const char DN_LIMESDR[]    = "LimeSDR";
 static const char DN_PLUTO_RXTX[] = "Pluto-RxTx";
-static const char DN_PLUTO[] = "Pluto";
-static const char DN_SOAPY[] = "Soapy";
-static const char DN_EXTIO[] = "ExtIO";
-static const char DN_ELAD[] = "Elad-S1";
-static const char DN_UHD[] = "UHD/USRP";
+static const char DN_PLUTO[]      = "Pluto";
+static const char DN_SOAPY[]      = "Soapy";
+static const char DN_EXTIO[]      = "ExtIO";
+static const char DN_ELAD[]       = "Elad-S1";
+static const char DN_UHD[]        = "UHD/USRP";
 
 
 DeviceSelector::DeviceSelector(QSettings * ipSettings) :
@@ -100,6 +105,9 @@ QStringList DeviceSelector::get_device_name_list() const
 #endif
 #ifdef  HAVE_AIRSPY
   sl << DN_AIRSPY;
+#endif
+#ifdef  HAVE_SPYSERVER
+  sl << DN_SPYSERVER;
 #endif
 #ifdef  HAVE_HACKRF
   sl << DN_HACKRF;
@@ -185,6 +193,13 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   if (iDeviceName == DN_AIRSPY)
   {
     inputDevice = std::make_unique<AirspyHandler>(mpSettings, mVersionStr);
+  }
+  else
+#endif
+#ifdef  HAVE_SPYSERVER
+  if (iDeviceName == DN_SPYSERVER)
+  {
+    inputDevice = std::make_unique<spyServer_client_8>(mpSettings);
   }
   else
 #endif

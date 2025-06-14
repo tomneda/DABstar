@@ -88,7 +88,7 @@ using pfn_hackrf_library_release = const char* (*)();
 
 
 ///////////////////////////////////////////////////////////////////////////
-class HackRfHandler final : public QObject, public IDeviceHandler, public Ui_hackrfWidget
+class HackRfHandler final : public QObject, public IDeviceHandler, private Ui_hackrfWidget
 {
 Q_OBJECT
 public:
