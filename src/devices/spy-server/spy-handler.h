@@ -104,12 +104,12 @@ private:
 
 
   const uint32_t ProtocolVersion = SPYSERVER_PROTOCOL_VERSION;
-  const std::string SoftwareID = std::string("gr-osmosdr");
-  const std::string NameNoDevice = std::string("SpyServer - No Device");
+  const std::string SoftwareID    = std::string("gr-osmosdr");
+  const std::string NameNoDevice  = std::string("SpyServer - No Device");
   const std::string NameAirspyOne = std::string("SpyServer - Airspy One");
-  const std::string NameAirspyHF = std::string("SpyServer - Airspy HF+");
-  const std::string NameRTLSDR = std::string("SpyServer - RTLSDR");
-  const std::string NameUnknown = std::string("SpyServer - Unknown Device");
+  const std::string NameAirspyHF  = std::string("SpyServer - Airspy HF+");
+  const std::string NameRTLSDR    = std::string("SpyServer - RTLSDR");
+  const std::string NameUnknown   = std::string("SpyServer - Unknown Device");
 
 signals:
   void call_parent();

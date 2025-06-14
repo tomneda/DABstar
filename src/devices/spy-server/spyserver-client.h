@@ -80,7 +80,8 @@ public:
   struct
   {
     int gain;
-    qint64 basePort;
+    int basePort;
+    QString ipAddress;
     uint32_t sample_rate;
     float resample_ratio;
     int desired_decim_stage;
@@ -96,7 +97,6 @@ private slots:
   void setGain(int);
   void handle_autogain(int);
   void handle_checkTimer();
-  void set_portNumber(int);
 
 public slots:
   void data_ready();
@@ -107,7 +107,7 @@ private:
   RingBuffer<uint8_t> tmpBuffer;
   QTimer checkTimer;
   spyHandler_8 * theServer;
-  QLineEdit * hostLineEdit;
+  // QLineEdit * hostLineEdit;
   bool isvalidRate(int32_t);
   QSettings * spyServer_settings;
   int32_t theRate;
@@ -118,7 +118,7 @@ private:
   bool dumping;
   FILE * dumpfilePointer;
   std::atomic<bool> onConnect;
-  bool timedOut;
+  std::atomic<bool> timedOut;
 
   int16_t convBufferSize;
   int16_t convIndex;
@@ -126,4 +126,6 @@ private:
   int16_t mapTable_int[4 * 512];
   float mapTable_float[4 * 512];
   int selectedRate;
+
+  bool _check_and_cleanup_ip_address();
 };

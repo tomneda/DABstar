@@ -68,9 +68,10 @@ spyServer_client_8::spyServer_client_8(QSettings * s)
   // settings.basePort = value_i(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer+port", 5555);
   settings.gain = 20;
   settings.auto_gain = 0;
-  settings.basePort = 5555;
+  settings.basePort = 33334;
 
-  portNumber->setValue(settings.basePort);
+
+  // portNumber->setValue(settings.basePort);
   if (settings.auto_gain != 0)
   {
     autogain_selector->setChecked(true);
@@ -80,24 +81,21 @@ spyServer_client_8::spyServer_client_8(QSettings * s)
   // lastFrequency = DEFAULT_FREQUENCY; // TODO: tomneda
   connected = false;
   theServer = nullptr;
-  hostLineEdit = new QLineEdit(nullptr);
+  // hostLineEdit = new QLineEdit(nullptr);
   dumping = false;
   settings.resample_quality = 2;
   settings.batchSize = 4096;
   settings.sample_bits = 16;
 //
-  connect(spyServer_connect, &QPushButton::clicked,
-          this, &spyServer_client_8::wantConnect);
+  connect(btnConnect, &QPushButton::clicked, this, &spyServer_client_8::wantConnect);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 2)
-  connect(autogain_selector, &QCheckBox::checkStateChanged,
+  connect(autogain_selector, &QCheckBox::checkStateChanged, this, &spyServer_client_8::handle_autogain);
 #else
-        connect (autogain_selector, &QCheckBox::stateChanged,
+  connect (autogain_selector, &QCheckBox::stateChanged, this, &spyServer_client_8::handle_autogain);
 #endif
-          this, &spyServer_client_8::handle_autogain);
-  connect(spyServer_gain, qOverload<int>(&QSpinBox::valueChanged),
-          this, &spyServer_client_8::setGain);
-  connect(portNumber, qOverload<int>(&QSpinBox::valueChanged),
-          this, &spyServer_client_8::set_portNumber);
+  connect(spyServer_gain, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::setGain);
+  // connect(portNumber, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
+  // connect(editIpAddress, &QLineEdit::textChanged, this, &spyServer_client_8::_check_and_cleanup_ip_address);
   theState->setText("waiting to start");
 }
 
@@ -110,42 +108,50 @@ spyServer_client_8::~spyServer_client_8()
   }
   // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer_client-gain", settings.gain);  // TODO: tomneda
   delete theServer;
-  delete hostLineEdit;
+  // delete hostLineEdit;
 }
 
 //
 void spyServer_client_8::wantConnect()
 {
-  QString ipAddress;
-  int16_t i;
-  QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
-
   if (connected)
+  {
     return;
-  // use the first non-localhost IPv4 address
-  for (i = 0; i < ipAddressesList.size(); ++i)
-  {
-    if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
-        ipAddressesList.at(i).toIPv4Address())
-    {
-      ipAddress = ipAddressesList.at(i).toString();
-      break;
-    }
   }
-  // if we did not find one, use IPv4 localhost
-  if (ipAddress.isEmpty())
-  {
-    ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
-  }
-  // ipAddress = value_s(spyServer_settings, SPY_SERVER_8_SETTINGS, "remote-server", ipAddress);  // TODO: tomneda
-  ipAddress = ipAddress;
-  hostLineEdit->setText(ipAddress);
 
-  hostLineEdit->setInputMask("000.000.000.000");
+  if (_check_and_cleanup_ip_address())
+  {
+    setConnection();
+  }
+
+  // QString ipAddress;
+  // QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
+  //
+  // // use the first non-localhost IPv4 address
+  // for (int16_t i = 0; i < ipAddressesList.size(); ++i)
+  // {
+  //   if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
+  //       ipAddressesList.at(i).toIPv4Address())
+  //   {
+  //     ipAddress = ipAddressesList.at(i).toString();
+  //     break;
+  //   }
+  // }
+  //
+  // // if we did not find one, use IPv4 localhost
+  // if (ipAddress.isEmpty())
+  // {
+  //   ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
+  // }
+
+  // ipAddress = value_s(spyServer_settings, SPY_SERVER_8_SETTINGS, "remote-server", ipAddress);  // TODO: tomneda
+  // hostLineEdit->setText(ipAddress);
+
+  // hostLineEdit->setInputMask("000.000.000.000");
 //	Setting default IP address
-  hostLineEdit->show();
-  theState->setText("Enter IP address, \nthen press return");
-  connect(hostLineEdit, &QLineEdit::returnPressed, this, &spyServer_client_8::setConnection);
+  // hostLineEdit->show();
+  // theState->setText("Enter IP address, \nthen press return");
+  // connect(hostLineEdit, &QLineEdit::returnPressed, this, &spyServer_client_8::setConnection);
 }
 
 //	if/when a return is pressed in the line edit,
@@ -154,46 +160,48 @@ void spyServer_client_8::wantConnect()
 //	Using this text, we try to connect,
 void spyServer_client_8::setConnection()
 {
-  QString s = hostLineEdit->text();
-  QString theAddress = QHostAddress(s).toString();
+  // QString s = hostLineEdit->text();
+  // QString theAddress = QHostAddress(s).toString();
   onConnect.store(false);
   theServer = nullptr;
-  settings.basePort = portNumber->value();
+  // settings.basePort = portNumber->value();
   try
   {
-    theServer = new spyHandler_8(this, theAddress,
-                                 (int)settings.basePort,
-                                 &tmpBuffer);
+    theServer = new spyHandler_8(this, settings.ipAddress, (int)settings.basePort, &tmpBuffer);
   }
   catch (...)
   {
-    QMessageBox::warning(nullptr, tr("Warning"),
-                         tr("Connection failed"));
-    return;
-  }
-  if (theServer == nullptr)
-  {
-    fprintf(stderr, "Connecting failed\n");
+    QMessageBox::warning(nullptr, tr("Warning"), tr("Connection failed (1)"));
     return;
   }
 
-  connect(&checkTimer, &QTimer::timeout,
-          this, &spyServer_client_8::handle_checkTimer);
+  if (theServer == nullptr)
+  {
+    fprintf(stderr, "Connecting failed (2)\n");
+    return;
+  }
+
+  connect(&checkTimer, &QTimer::timeout, this, &spyServer_client_8::handle_checkTimer);
+
   checkTimer.start(2000);
   timedOut = false;
+
   while (!onConnect.load() && !timedOut)
+  {
     usleep(1000);
+  }
+
   if (timedOut)
   {
-    QMessageBox::warning(nullptr, tr("Warning"),
-                         tr("no answers, fatal"));
+    QMessageBox::warning(nullptr, tr("Warning"), tr("no answers, fatal"));
     delete theServer;
     connected = false;
     return;
   }
+
   checkTimer.stop();
-  disconnect(&checkTimer, &QTimer::timeout,
-             this, &spyServer_client_8::handle_checkTimer);
+  disconnect(&checkTimer, &QTimer::timeout, this, &spyServer_client_8::handle_checkTimer);
+
 //	fprintf (stderr, "We kunnen echt beginnen\n");
   theServer->connection_set();
 
@@ -266,20 +274,16 @@ void spyServer_client_8::setConnection()
   settings.resample_ratio = resample_ratio;
   settings.desired_decim_stage = desired_decim_stage;
   connected = true;
-  fprintf(stderr, "going to set samplerate stage %d\n",
-          desired_decim_stage);
-  if (!theServer->set_sample_rate_by_decim_stage(
-                                                 desired_decim_stage))
+  fprintf(stderr, "going to set samplerate stage %d\n", desired_decim_stage);
+
+  if (!theServer->set_sample_rate_by_decim_stage(desired_decim_stage))
   {
-    std::cerr << "Failed to set sample rate " <<
-      desired_decim_stage << "\n";
+    std::cerr << "Failed to set sample rate " << desired_decim_stage << "\n";
     return;
   }
 
-  disconnect(spyServer_connect, &QPushButton::clicked,
-             this, &spyServer_client_8::wantConnect);
-  fprintf(stderr, "The samplerate = %f\n",
-          (float)(theServer->get_sample_rate()));
+  disconnect(btnConnect, &QPushButton::clicked, this, &spyServer_client_8::wantConnect);
+  fprintf(stderr, "The samplerate = %f\n", (float)(theServer->get_sample_rate()));
   theState->setText("connected");
 //	start ();		// start the reader
 
@@ -476,9 +480,19 @@ void spyServer_client_8::handle_checkTimer()
   timedOut = true;
 }
 
-void spyServer_client_8::set_portNumber(int v)
+bool spyServer_client_8::_check_and_cleanup_ip_address()
 {
-  settings.basePort = v;
+  QString addr = editIpAddress->text();
+  addr.remove("sdr://");
+
+  const QStringList parts = addr.split(":");
+  settings.ipAddress = parts[0];
+  settings.basePort = parts.size() > 1 ? parts[1].toInt() : 5555;
+
+  editIpAddress->setText("sdr://" + settings.ipAddress + ":" + QString::number(settings.basePort));
+
+  return true; // TODO: check address
+  // settings.basePort = v;
   // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-port", v); // TODO: tomneda
 }
 
