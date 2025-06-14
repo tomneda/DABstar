@@ -50,9 +50,7 @@ class SpyServerHandler : public QThread
   Q_OBJECT
 
 public:
-  SpyServerHandler(SpyServerClient *,
-               const QString &, int,
-               RingBuffer<uint8_t> * outB);
+  SpyServerHandler(SpyServerClient *, const QString &, int, RingBuffer<uint8_t> * outB);
   ~SpyServerHandler();
 
   bool get_deviceInfo(struct DeviceInfo & theDevice);

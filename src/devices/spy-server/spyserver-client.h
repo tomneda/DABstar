@@ -73,7 +73,7 @@ public:
   QString deviceName() override;
   bool isFileInput() override;
 
-  void connect_on();
+  // void connect_on();
   int32_t getRate();
 
 
@@ -105,7 +105,7 @@ private:
   QFrame myFrame;
   RingBuffer<std::complex<float>> _I_Buffer{32 * 32768};
   RingBuffer<uint8_t> tmpBuffer{32 * 32768};
-  QTimer checkTimer;
+  // QTimer checkTimer;
   std::unique_ptr<SpyServerHandler> theServer;
   // QLineEdit * hostLineEdit;
   bool isvalidRate(int32_t);
@@ -115,8 +115,8 @@ private:
   qint64 basePort;
   std::atomic<bool> running = false;
   std::atomic<bool> connected = false;
-  std::atomic<bool> onConnect = false;
-  std::atomic<bool> timedOut = false;
+  // std::atomic<bool> onConnect = false;
+  // std::atomic<bool> timedOut = false;
 
   int16_t convBufferSize;
   int16_t convIndex = 0;

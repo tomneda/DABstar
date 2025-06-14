@@ -33,12 +33,13 @@
 #include "spyserver-handler.h"
 #include <chrono>
 #include <iostream>
+#include <qloggingcategory.h>
 #include <thread>
+#include <QLoggingCategory>
 
-SpyServerHandler::SpyServerHandler(SpyServerClient * parent,
-                           const QString & ipAddress,
-                           int port,
-                           RingBuffer<uint8_t> * outB)
+Q_LOGGING_CATEGORY(sLogSpyServerHandler, "SpyServerHandler", QtDebugMsg)
+
+SpyServerHandler::SpyServerHandler(SpyServerClient * parent, const QString & ipAddress, int port, RingBuffer<uint8_t> * outB)
   : inBuffer(64 * 32768)
   , tcpHandler(ipAddress, port, &inBuffer)
 {
@@ -84,7 +85,7 @@ void SpyServerHandler::_slot_no_device_info()
 void SpyServerHandler::run()
 {
   MessageHeader theHeader;
-  uint64_t volgNummer = 0;
+  uint32_t sequenceNumberLast = 0;
   static std::vector<uint8_t> buffer(64 * 1024);
   running.store(true);
 
@@ -92,13 +93,12 @@ void SpyServerHandler::run()
   {
     readHeader(theHeader);
 
-    if (theHeader.SequenceNumber != volgNummer + 1)
+    if (theHeader.SequenceNumber != sequenceNumberLast + 1)
     {
-      fprintf(stderr, "%d %ld\n", (int)theHeader.SequenceNumber, volgNummer);
-	    // fprintf (stderr, "Buffer space = %d\n", inBuffer. GetRingBufferReadAvailable());
+      qCWarning(sLogSpyServerHandler) << "Sequence packet missing, current:" << theHeader.SequenceNumber << ", last:" << sequenceNumberLast + 1;
     }
 
-    volgNummer = theHeader.SequenceNumber;
+    sequenceNumberLast = theHeader.SequenceNumber;
 
     if (theHeader.BodySize > buffer.size())
     {
@@ -110,8 +110,7 @@ void SpyServerHandler::run()
     switch (theHeader.MessageType)
     {
     case MSG_TYPE_DEVICE_INFO:
-      got_device_info = process_device_info(buffer.data(),
-                                            deviceInfo);
+      got_device_info = process_device_info(buffer.data(), deviceInfo);
       break;
     case MSG_TYPE_UINT8_IQ:
       process_data(buffer.data(), theHeader.BodySize);
@@ -259,8 +258,7 @@ bool SpyServerHandler::process_device_info(uint8_t * buffer,
   return true;
 }
 
-bool SpyServerHandler::process_client_sync(uint8_t * buffer,
-                                       ClientSync & client_sync)
+bool SpyServerHandler::process_client_sync(uint8_t * buffer, ClientSync & client_sync)
 {
   std::memcpy((void *)(&client_sync), buffer, sizeof(ClientSync));
   std::memcpy((void *)(&m_curr_client_sync), buffer, sizeof(ClientSync));
@@ -279,9 +277,10 @@ bool SpyServerHandler::process_client_sync(uint8_t * buffer,
     << "\n   min_fft_ctr: " << m_curr_client_sync.MinimumFFTCenterFrequency
     << "\n   max_fft_ctr: " << m_curr_client_sync.MaximumFFTCenterFrequency
     << std::endl;
-//	emit call_parent ();
-  parent->connect_on();
-  fprintf(stderr, "calling the parent to set up connection\n");
+
+  emit signal_call_parent();
+  // parent->connect_on();
+  qCInfo(sLogSpyServerHandler) << "Calling the parent to set up connection";
   got_sync_info = true;
   return true;
 }
@@ -355,7 +354,7 @@ void SpyServerHandler::start_running()
   std::vector<uint32_t> p(1);
   if (!streaming.load())
   {
-    std::cerr << "spyHandler: Starting Streaming" << std::endl;
+    qCInfo(sLogSpyServerHandler) << "Starting Streaming";
     streaming.store(true);
     p[0] = 1;
     set_setting(SETTING_STREAMING_ENABLED, p);

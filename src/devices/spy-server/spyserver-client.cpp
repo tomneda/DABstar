@@ -42,9 +42,6 @@
 #include "device-exceptions.h"
 #include "setting-helper.h"
 #include "spyserver-client.h"
-// #include <QtNetwork>
-// #include <QSettings>
-// #include <QLabel>
 #include <QMessageBox>
 #include <QTimer>
 #include <QLoggingCategory>
@@ -165,9 +162,9 @@ void SpyServerClient::_slot_set_connection()
 {
   // QString s = hostLineEdit->text();
   // QString theAddress = QHostAddress(s).toString();
-  onConnect.store(false);
+  //onConnect.store(false);
   theServer.reset();
-  // settings.basePort = portNumber->value();
+
   try
   {
     theServer = std::make_unique<SpyServerHandler>(this, settings.ipAddress, (int)settings.basePort, &tmpBuffer);
@@ -184,15 +181,20 @@ void SpyServerClient::_slot_set_connection()
     return;
   }
 
-  connect(&checkTimer, &QTimer::timeout, this, &SpyServerClient::_slot_handle_checkTimer);
+  QEventLoop eventLoop;
+  QTimer checkTimer;
+  checkTimer.setSingleShot(true);
 
+  // Tomneda: changed this to a QEvenLoop as the QTimer never timed-out within this thread
+  // could be a bit tricky because SpyServerHandler::signal_call_parent could be called before the connection is done -> false timeout will occur
+  bool timedOut = false;
+  const auto timerConn = connect(&checkTimer, &QTimer::timeout, [&]() { timedOut = true; eventLoop.quit(); });
+  const auto eventConn = connect(theServer.get(), &SpyServerHandler::signal_call_parent, &eventLoop, &QEventLoop::quit);
   checkTimer.start(2000);
-  timedOut = false;
-
-  while (!onConnect.load() && !timedOut)
-  {
-    usleep(1000);
-  }
+  eventLoop.exec(); // waits until QEventLoop::quit() was called
+  checkTimer.stop();
+  disconnect(timerConn);
+  disconnect(eventConn);
 
   if (timedOut)
   {
@@ -203,10 +205,8 @@ void SpyServerClient::_slot_set_connection()
     return;
   }
 
-  checkTimer.stop();
-  disconnect(&checkTimer, &QTimer::timeout, this, &SpyServerClient::_slot_handle_checkTimer);
 
-//	fprintf (stderr, "We kunnen echt beginnen\n");
+
   theServer->connection_set();
 
 //	fprintf (stderr, "going to ask for device info\n");
@@ -402,10 +402,10 @@ void SpyServerClient::_slot_handle_autogain(int d)
   }
 }
 
-void SpyServerClient::connect_on()
-{
-  onConnect.store(true);
-}
+// void SpyServerClient::connect_on()
+// {
+//   onConnect.store(true);
+// }
 
 static constexpr float convTable[] =
 {
@@ -482,7 +482,7 @@ void SpyServerClient::slot_data_ready()
 
 void SpyServerClient::_slot_handle_checkTimer()
 {
-  timedOut = true;
+  // timedOut = true;
 }
 
 bool SpyServerClient::_check_and_cleanup_ip_address()
