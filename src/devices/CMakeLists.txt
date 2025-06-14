@@ -87,6 +87,35 @@ if (AIRSPY)
     add_definitions(-DHAVE_AIRSPY)
 endif (AIRSPY)
 
+if (SPYSERVER)
+    # find_package(LibAIRSPY)
+    # if (NOT LIBAIRSPY_FOUND)
+    #   message(FATAL_ERROR "please install airspy library")
+    # endif ()
+    # ## include_directories (${AIRSPYLIB_INCLUDE_DIR})
+
+    include_directories(
+            spy-server
+    )
+
+    set($(devicesLibName)_HDRS
+            ${${devicesLibName}_HDRS}
+            spy-server/spy-handler.h
+            spy-server/spyserver-client.h
+            spy-server/spyserver-protocol.h
+            spy-server/tcp-client.h
+    )
+
+    set(${devicesLibName}_SRCS
+            ${${devicesLibName}_SRCS}
+            spy-server/spy-handler.cpp
+            spy-server/spyserver-client.cpp
+            spy-server/tcp-client.cpp
+    )
+
+    add_definitions(-DHAVE_SPYSERVER)
+endif (SPYSERVER)
+
 if (HACKRF)
     include_directories(
             hackrf-handler
