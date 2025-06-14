@@ -206,29 +206,32 @@ void SpyServerClient::_slot_set_connection()
     return;
   }
 
-
+  editIpAddress->setEnabled(false); // TODO: when to enable again?
 
   theServer->connection_set();
 
-//	fprintf (stderr, "going to ask for device info\n");
   struct DeviceInfo theDevice;
   theServer->get_deviceInfo(theDevice);
+
   bool validDevice = false;
   lblDeviceName->setStyleSheet("color: #FFBB00;");
 
-  if (theDevice.DeviceType == DEVICE_AIRSPY_ONE)
+  switch (theDevice.DeviceType)
   {
-    lblDeviceName->setText("Airspy One");
+  case DEVICE_AIRSPY_ONE:
+    lblDeviceName->setText("AIRSPY One");
     validDevice = true;
-  }
-  else if (theDevice.DeviceType == DEVICE_RTLSDR)
-  {
+    break;
+  case DEVICE_AIRSPY_HF:
+    lblDeviceName->setText("AIRSPY HF");
+    break;
+  case DEVICE_RTLSDR:
     lblDeviceName->setText("RTLSDR");
     validDevice = true;
-  }
-  else if (theDevice.DeviceType == DEVICE_AIRSPY_HF)
-  {
-    lblDeviceName->setText("RTLSDR HF");
+    break;
+  default:
+    lblDeviceName->setText("Invalid device");
+    break;
   }
 
   if (!validDevice)
