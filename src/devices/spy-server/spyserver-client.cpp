@@ -62,20 +62,22 @@ spyServer_client_8::spyServer_client_8(QSettings * s)
   myFrame.show();
 
   //	setting the defaults and constants
-  settings.gain = value_i(spyServer_settings,
-                          SPY_SERVER_8_SETTINGS,
-                          "spyServer-gain", 20);
-  settings.auto_gain = value_i(spyServer_settings,
-                               SPY_SERVER_8_SETTINGS,
-                               "spyServer-auto_gain", 0);
-  settings.basePort = value_i(spyServer_settings,
-                              SPY_SERVER_8_SETTINGS,
-                              "spyServer+port", 5555);
+  // TODO: tomneda
+  // settings.gain = value_i(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-gain", 20);
+  // settings.auto_gain = value_i(spyServer_settings,  SPY_SERVER_8_SETTINGS, "spyServer-auto_gain", 0);
+  // settings.basePort = value_i(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer+port", 5555);
+  settings.gain = 20;
+  settings.auto_gain = 0;
+  settings.basePort = 5555;
+
   portNumber->setValue(settings.basePort);
   if (settings.auto_gain != 0)
+  {
     autogain_selector->setChecked(true);
-  spyServer_gain->setValue(theGain);
-  lastFrequency = DEFAULT_FREQUENCY;
+  }
+
+  // spyServer_gain->setValue(theGain); // TODO: tomneda
+  // lastFrequency = DEFAULT_FREQUENCY; // TODO: tomneda
   connected = false;
   theServer = nullptr;
   hostLineEdit = new QLineEdit(nullptr);
@@ -106,10 +108,8 @@ spyServer_client_8::~spyServer_client_8()
     stopReader();
     connected = false;
   }
-  store(spyServer_settings, SPY_SERVER_8_SETTINGS,
-        "spyServer_client-gain", settings.gain);
-  if (theServer != nullptr)
-    delete theServer;
+  // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer_client-gain", settings.gain);  // TODO: tomneda
+  delete theServer;
   delete hostLineEdit;
 }
 
@@ -134,18 +134,18 @@ void spyServer_client_8::wantConnect()
   }
   // if we did not find one, use IPv4 localhost
   if (ipAddress.isEmpty())
+  {
     ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
-  ipAddress = value_s(spyServer_settings,
-                      SPY_SERVER_8_SETTINGS,
-                      "remote-server", ipAddress);
+  }
+  // ipAddress = value_s(spyServer_settings, SPY_SERVER_8_SETTINGS, "remote-server", ipAddress);  // TODO: tomneda
+  ipAddress = ipAddress;
   hostLineEdit->setText(ipAddress);
 
   hostLineEdit->setInputMask("000.000.000.000");
 //	Setting default IP address
   hostLineEdit->show();
   theState->setText("Enter IP address, \nthen press return");
-  connect(hostLineEdit, &QLineEdit::returnPressed,
-          this, &spyServer_client_8::setConnection);
+  connect(hostLineEdit, &QLineEdit::returnPressed, this, &spyServer_client_8::setConnection);
 }
 
 //	if/when a return is pressed in the line edit,
@@ -308,20 +308,26 @@ int32_t spyServer_client_8::getRate()
 bool spyServer_client_8::restartReader(int32_t freq, int skipped)
 {
   if (!connected)
+  {
     return false;
-  std::cerr << "spy-handler: setting center_freq to " <<
-    freq << std::endl;
+  }
+
+  std::cerr << "spy-handler: setting center_freq to " << freq << std::endl;
+
   if (!theServer->set_iq_center_freq(freq))
   {
     std::cerr << "Failed to set freq\n";
     return false;
   }
+
   if (!theServer->set_gain(settings.gain))
   {
     std::cerr << "Failed to set gain\n";
     return false;
   }
-  toSkip = skipped;
+
+  // toSkip = skipped;
+
   theServer->start_running();
   running = true;
   return true;
@@ -332,10 +338,13 @@ void spyServer_client_8::stopReader()
   fprintf(stderr, "stopReader is called\n");
   if (theServer == nullptr)
     return;
+
   if (!connected || !running)	// seems double???
     return;
+
   if (!theServer->is_streaming())
     return;
+
   theServer->stop_running();
   running = false;
 }
@@ -345,13 +354,13 @@ void spyServer_client_8::stopReader()
 int32_t spyServer_client_8::getSamples(std::complex<float> * V, int32_t size)
 {
   int amount = 0;
-  amount = _I_Buffer.getDataFromBuffer(V, size);
+  amount = _I_Buffer.get_data_from_ring_buffer(V, size);
   return amount;
 }
 
 int32_t spyServer_client_8::Samples()
 {
-  return _I_Buffer.GetRingBufferReadAvailable();
+  return _I_Buffer.get_ring_buffer_read_available();
 }
 
 int16_t spyServer_client_8::bitDepth()
@@ -367,8 +376,8 @@ void spyServer_client_8::setGain(int gain)
     std::cerr << "Failed to set gain\n";
     return;
   }
-  store(spyServer_settings, SPY_SERVER_8_SETTINGS,
-        "spyServer_client-gain", settings.gain);
+
+  // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer_client-gain", settings.gain); // TODO: tomneda
 }
 
 void spyServer_client_8::handle_autogain(int d)
@@ -376,10 +385,12 @@ void spyServer_client_8::handle_autogain(int d)
   (void)d;
   int x = autogain_selector->isChecked();
   settings.auto_gain = x != 0;
-  store(spyServer_settings, SPY_SERVER_8_SETTINGS,
-        "spyServer-auto_gain", x ? 1 : 0);
+  // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-auto_gain", x ? 1 : 0); // TODO: tomneda
+
   if (connected)
+  {
     theServer->set_gain_mode(d != x, 0);
+  }
 }
 
 void spyServer_client_8::connect_on()
@@ -387,8 +398,8 @@ void spyServer_client_8::connect_on()
   onConnect.store(true);
 }
 
-static
-float convTable[] = {
+static constexpr float convTable[] =
+{
   -128 / 128.0, -127 / 128.0, -126 / 128.0, -125 / 128.0, -124 / 128.0, -123 / 128.0, -122 / 128.0, -121 / 128.0, -120 / 128.0, -119 / 128.0, -118 / 128.0, -117 / 128.0, -116 / 128.0, -115 / 128.0, -114 / 128.0, -113 / 128.0, -112 / 128.0,
   -111 / 128.0, -110 / 128.0, -109 / 128.0, -108 / 128.0, -107 / 128.0, -106 / 128.0, -105 / 128.0, -104 / 128.0, -103 / 128.0, -102 / 128.0, -101 / 128.0, -100 / 128.0, -99 / 128.0, -98 / 128.0, -97 / 128.0, -96 / 128.0, -95 / 128.0,
   -94 / 128.0, -93 / 128.0, -92 / 128.0, -91 / 128.0, -90 / 128.0, -89 / 128.0, -88 / 128.0, -87 / 128.0, -86 / 128.0, -85 / 128.0, -84 / 128.0, -83 / 128.0, -82 / 128.0, -81 / 128.0, -80 / 128.0, -79 / 128.0, -78 / 128.0, -77 / 128.0,
@@ -410,23 +421,22 @@ void spyServer_client_8::data_ready()
   uint8_t buffer_8[settings.batchSize * 2];
 //static int fillP	= 0;
   while (connected &&
-         (tmpBuffer.GetRingBufferReadAvailable() > 2 * settings.batchSize))
+         (tmpBuffer.get_ring_buffer_read_available() > 2 * settings.batchSize))
   {
-    uint32_t samps =
-      tmpBuffer.getDataFromBuffer(buffer_8,
-                                  2 * settings.batchSize) / 2;
+    uint32_t samps = tmpBuffer.get_data_from_ring_buffer(buffer_8, 2 * settings.batchSize) / 2;
+
     if (!running)
+    {
       continue;
+    }
 
     if (settings.resample_ratio != 1)
     {
       std::complex<float> temp[2048];
+
       for (uint32_t i = 0; i < samps; i++)
       {
-        convBuffer[convIndex++] =
-          std::complex<float>(
-                              convTable[buffer_8[2 * i]],
-                              convTable[buffer_8[2 * i + 1]]);
+        convBuffer[convIndex++] = std::complex<float>(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
 
         if (convIndex > convBufferSize)
         {
@@ -437,10 +447,11 @@ void spyServer_client_8::data_ready()
             temp[j] = convBuffer[inpBase + 1] * inpRatio +
                       convBuffer[inpBase] * (1 - inpRatio);
           }
-          if (toSkip > 0)
-            toSkip -= 2048;
-          else
-            _I_Buffer.putDataIntoBuffer(temp, 2048);
+          // if (toSkip > 0)
+          //   toSkip -= 2048;
+          // else
+          //   _I_Buffer.putDataIntoBuffer(temp, 2048);
+          _I_Buffer.put_data_into_ring_buffer(temp, 2048);
           convBuffer[0] = convBuffer[convBufferSize];
           convIndex = 1;
         }
@@ -449,11 +460,13 @@ void spyServer_client_8::data_ready()
     else
     {	// no resmpling
       std::complex<float> outB[samps];
+
       for (uint32_t i = 0; i < samps; i++)
-        outB[i] = std::complex<float>(
-                                      convTable[buffer_8[2 * i]],
-                                      convTable[buffer_8[2 * i + 1]]);
-      _I_Buffer.putDataIntoBuffer(outB, samps);
+      {
+        outB[i] = std::complex<float>(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
+      }
+      
+      _I_Buffer.put_data_into_ring_buffer(outB, samps);
     }
   }
 }
@@ -466,6 +479,5 @@ void spyServer_client_8::handle_checkTimer()
 void spyServer_client_8::set_portNumber(int v)
 {
   settings.basePort = v;
-  store(spyServer_settings, SPY_SERVER_8_SETTINGS,
-        "spyServer-port", v);
+  // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-port", v); // TODO: tomneda
 }

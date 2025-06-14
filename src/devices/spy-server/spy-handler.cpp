@@ -29,11 +29,11 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include	"spyserver-client.h"
-#include	"spy-handler.h"
-#include	<chrono>
-#include	<iostream>
-#include	<thread>
+#include "spyserver-client.h"
+#include "spy-handler.h"
+#include <chrono>
+#include <iostream>
+#include <thread>
 
 spyHandler_8::spyHandler_8(spyServer_client_8 * parent,
                            const QString & ipAddress,
@@ -43,25 +43,27 @@ spyHandler_8::spyHandler_8(spyServer_client_8 * parent,
   , tcpHandler(ipAddress, port, &inBuffer)
 {
   if (!tcpHandler.is_connected())
-    throw std::runtime_error(std::string(__FUNCTION__) + " " +
-                             "Failed to connect!");
+  {
+    throw std::runtime_error(std::string(__FUNCTION__) + " " + "Failed to connect!");
+  }
 
   this->parent = parent;
   this->outB = outB;
   streamingMode = STREAM_TYPE_IQ;
   streaming.store(false);
   running.store(false);
+
   bool success = show_attendance();
   if (!success)
-    throw std::runtime_error(std::string(__FUNCTION__) + " " +
-                             "Failed to establish connection!");
+  {
+    throw std::runtime_error(std::string(__FUNCTION__) + " " + "Failed to establish connection!");
+  }
+
   is_connected.store(true);
   cleanRecords();
   testTimer = new QTimer();
-  connect(testTimer, &QTimer::timeout,
-          this, &spyHandler_8::no_deviceInfo);
-  connect(this, &spyHandler_8::data_ready,
-          parent, &spyServer_client_8::data_ready);
+  connect(testTimer, &QTimer::timeout, this, &spyHandler_8::no_deviceInfo);
+  connect(this, &spyHandler_8::data_ready, parent, &spyServer_client_8::data_ready);
   start();
   testTimer->start(10000);
 }
@@ -81,25 +83,30 @@ void spyHandler_8::no_deviceInfo()
 
 void spyHandler_8::run()
 {
-  struct MessageHeader theHeader;
+  MessageHeader theHeader;
   uint64_t volgNummer = 0;
   static std::vector<uint8_t> buffer(64 * 1024);
   running.store(true);
+
   while (running.load())
   {
     readHeader(theHeader);
+
     if (theHeader.SequenceNumber != volgNummer + 1)
     {
-      fprintf(stderr, "%d %ld\n",
-              (int)theHeader.SequenceNumber, volgNummer);
-//	      fprintf (stderr, "Buffer space = %d\n",
-//	               inBuffer. GetRingBufferReadAvailable ());
+      fprintf(stderr, "%d %ld\n", (int)theHeader.SequenceNumber, volgNummer);
+	    // fprintf (stderr, "Buffer space = %d\n", inBuffer. GetRingBufferReadAvailable());
     }
 
     volgNummer = theHeader.SequenceNumber;
+
     if (theHeader.BodySize > buffer.size())
+    {
       buffer.resize(theHeader.BodySize);
+    }
+
     readBody(buffer.data(), theHeader.BodySize);
+
     switch (theHeader.MessageType)
     {
     case MSG_TYPE_DEVICE_INFO:
@@ -118,14 +125,17 @@ void spyHandler_8::run()
 
 bool spyHandler_8::readHeader(struct MessageHeader & header)
 {
-  while (running.load() &&
-         (inBuffer.GetRingBufferReadAvailable() <
-          (int)sizeof(struct MessageHeader)))
+  while (running.load() && (inBuffer.get_ring_buffer_read_available() < (int)sizeof(struct MessageHeader)))
+  {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+
   if (!running.load())
+  {
     return false;
-  inBuffer.getDataFromBuffer((uint8_t *)(&header),
-                             sizeof(struct MessageHeader));
+  }
+
+  inBuffer.get_data_from_ring_buffer((uint8_t *)(&header), sizeof(struct MessageHeader));
   return true;
 }
 
@@ -134,34 +144,38 @@ bool spyHandler_8::readBody(uint8_t * buffer, int size)
   int filler = 0;
   while (running.load())
   {
-    if (inBuffer.GetRingBufferReadAvailable() > size / 2)
+    if (inBuffer.get_ring_buffer_read_available() > size / 2)
     {
-      filler += inBuffer.getDataFromBuffer(buffer, size - filler);
+      filler += inBuffer.get_data_from_ring_buffer(buffer, size - filler);
+
       if (filler >= size)
+      {
         return true;
+      }
+
       if (!running.load())
+      {
         return false;
+      }
     }
     else
+    {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
   }
   return false;
 }
 
 bool spyHandler_8::show_attendance()
 {
-  const uint8_t * protocolVersionBytes =
-    (const uint8_t *)&ProtocolVersion;
-  const uint8_t * softwareVersionBytes =
-    (const uint8_t *)SoftwareID.c_str();
-  std::vector<uint8_t> args =
-    std::vector<uint8_t>(sizeof(ProtocolVersion) +
-                         SoftwareID.size());
+  const uint8_t * protocolVersionBytes = (const uint8_t *)&ProtocolVersion;
+  const uint8_t * softwareVersionBytes = (const uint8_t *)SoftwareID.c_str();
+  std::vector<uint8_t> args = std::vector<uint8_t>(sizeof(ProtocolVersion) + SoftwareID.size());
 
   std::memcpy(&args[0], protocolVersionBytes, sizeof(ProtocolVersion));
-  std::memcpy(&args[0] + sizeof(ProtocolVersion),
-              softwareVersionBytes, SoftwareID.size());
+  std::memcpy(&args[0] + sizeof(ProtocolVersion), softwareVersionBytes, SoftwareID.size());
   bool res = send_command(CMD_HELLO, args);
+
   return res;
 }
 
@@ -387,7 +401,7 @@ bool spyHandler_8::set_setting(uint32_t settingType,
 
 void spyHandler_8::process_data(uint8_t * theBody, int length)
 {
-  outB->putDataIntoBuffer(theBody, length);
+  outB->put_data_into_ring_buffer(theBody, length);
   emit data_ready();
 }
 

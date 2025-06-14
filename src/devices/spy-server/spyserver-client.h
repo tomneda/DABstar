@@ -39,6 +39,7 @@
 #include	<QMessageBox>
 #include	<QLineEdit>
 #include	<QHostAddress>
+#include	<QFrame>
 #include	<QByteArray>
 #include	<cstdio>
 #include	"dab-constants.h"
@@ -49,7 +50,7 @@
 #include	"spy-handler.h"
 
 
-class spyServer_client_8 : //public QObject,
+class spyServer_client_8 : public QObject,
   /*public deviceHandler,*/ Ui_spyServer_widget_8
 {
   Q_OBJECT
@@ -90,6 +91,7 @@ public slots:
   void data_ready();
 
 private:
+  QFrame myFrame;
   RingBuffer<std::complex<float>> _I_Buffer;
   RingBuffer<uint8_t> tmpBuffer;
   QTimer checkTimer;

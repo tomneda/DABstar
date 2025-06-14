@@ -134,7 +134,7 @@ void tcp_client_8::close_conn()
 
 void tcp_client_8::send_data(uint8_t * data, int length)
 {
-  outBuffer.putDataIntoBuffer(data, length);
+  outBuffer.put_data_into_ring_buffer(data, length);
 }
 
 char tempBuffer_8[1000000];
@@ -161,10 +161,10 @@ void tcp_client_8::run()
     }
     if (m_receivingStatus == 0)
     {
-      int amount = outBuffer.GetRingBufferReadAvailable();
+      int amount = outBuffer.get_ring_buffer_read_available();
       if (amount > 0)
       {
-        (void)outBuffer.getDataFromBuffer(tempBuffer_8, amount);
+        (void)outBuffer.get_data_from_ring_buffer(tempBuffer_8, amount);
         send(SendingSocket, (char *)tempBuffer_8, amount, MSG_NOSIGNAL);
       }
     }
@@ -181,7 +181,7 @@ void tcp_client_8::run()
       (void)ret;
       received = recvfrom(SendingSocket, (char *)tempBuffer_8,
                           bytesAvailable, 0, &t, &tt);
-      inBuffer->putDataIntoBuffer(tempBuffer_8, received);
+      inBuffer->put_data_into_ring_buffer(tempBuffer_8, received);
     }
   }
 }
