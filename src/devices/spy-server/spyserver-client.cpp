@@ -64,7 +64,7 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   lblHelp->setText(htmlLink);
   lblHelp->setOpenExternalLinks(true);
 
-  Settings::SpyServer::posAndSize.read_widget_geometry(&myFrame);
+  Settings::SpyServer::posAndSize.read_widget_geometry(&myFrame, 220, 220, true);
   Settings::SpyServer::sbGain.register_widget_and_update_ui_from_setting(sbGain, 20);
   Settings::SpyServer::cbAutoGain.register_widget_and_update_ui_from_setting(cbAutoGain, 2); // 2 = checked
 
@@ -280,7 +280,6 @@ void SpyServerClient::_slot_set_connection()
   settings.desired_decim_stage = desired_decim_stage;
   connected = true;
 
-  qCInfo(sLogSpyServerClient()) << "Going to set samplerate stage" << settings.sample_rate << "Sps";
   if (!theServer->set_sample_rate_by_decim_stage(desired_decim_stage))
   {
     qCCritical(sLogSpyServerClient()) << "Failed to set sample rate " << desired_decim_stage;

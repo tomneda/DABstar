@@ -85,7 +85,7 @@ void SpyServerHandler::_slot_no_device_info()
 void SpyServerHandler::run()
 {
   MessageHeader theHeader;
-  uint32_t sequenceNumberLast = 0;
+  uint32_t sequenceNumberLast = (uint32_t)(-1);
   static std::vector<uint8_t> buffer(64 * 1024);
   running.store(true);
 
@@ -93,9 +93,10 @@ void SpyServerHandler::run()
   {
     readHeader(theHeader);
 
-    if (theHeader.SequenceNumber != sequenceNumberLast + 1)
+    if (theHeader.SequenceNumber != sequenceNumberLast + 1 && theHeader.SequenceNumber > 0)
     {
-      qCWarning(sLogSpyServerHandler) << "Sequence packet missing, current:" << theHeader.SequenceNumber << ", last:" << sequenceNumberLast + 1;
+      qCWarning(sLogSpyServerHandler) << (theHeader.SequenceNumber - (sequenceNumberLast + 1)) << "packets missing, current:"
+                                      << theHeader.SequenceNumber << ", expected:" << sequenceNumberLast + 1;
     }
 
     sequenceNumberLast = theHeader.SequenceNumber;
@@ -280,7 +281,7 @@ bool SpyServerHandler::process_client_sync(uint8_t * buffer, ClientSync & client
 
   emit signal_call_parent();
   // parent->connect_on();
-  qCInfo(sLogSpyServerHandler) << "Calling the parent to set up connection";
+  qCDebug(sLogSpyServerHandler) << "Calling the parent to set up connection";
   got_sync_info = true;
   return true;
 }

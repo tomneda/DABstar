@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>239</width>
-    <height>279</height>
+    <width>220</width>
+    <height>220</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Spy Server Network</string>
+   <string>SpyServer Client</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -33,30 +33,61 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Address</string>
+        <string>URL:</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="1">
       <widget class="QLineEdit" name="editIpAddress"/>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Gain</string>
-         </property>
-        </widget>
-       </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>State:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="theState">
+       <property name="text">
+        <string>---</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Device:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="nameOfDevice">
+       <property name="text">
+        <string>---</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Num::</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="deviceNumber">
+       <property name="text">
+        <string>---</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QSpinBox" name="sbGain">
          <property name="maximum">
@@ -64,44 +95,23 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="cbAutoGain">
+         <property name="text">
+          <string>Autogain</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
-     <item>
-      <widget class="QCheckBox" name="cbAutoGain">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Autogain</string>
+        <string>Gain:</string>
        </property>
       </widget>
      </item>
     </layout>
-   </item>
-   <item>
-    <widget class="QLabel" name="theState">
-     <property name="text">
-      <string>state</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="nameOfDevice">
-     <property name="text">
-      <string>TextLabel</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="deviceNumber">
-     <property name="text">
-      <string>TextLabel</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>spy-server 8 bits  (rtlsdr format)</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
