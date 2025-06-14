@@ -199,7 +199,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 #ifdef  HAVE_SPYSERVER
   if (iDeviceName == DN_SPYSERVER)
   {
-    inputDevice = std::make_unique<spyServer_client_8>(mpSettings);
+    inputDevice = std::make_unique<SpyServerClient>(mpSettings);
   }
   else
 #endif

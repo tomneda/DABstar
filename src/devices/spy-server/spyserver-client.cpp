@@ -53,7 +53,7 @@
 #define	DEFAULT_FREQUENCY	(Khz (227360))
 #define	SPY_SERVER_8_SETTINGS	"SPY_SERVER_8_SETTINGS"
 
-spyServer_client_8::spyServer_client_8(QSettings * s)
+SpyServerClient::SpyServerClient(QSettings * s)
   : _I_Buffer(32 * 32768)
   , tmpBuffer(32 * 32768)
 {
@@ -87,19 +87,19 @@ spyServer_client_8::spyServer_client_8(QSettings * s)
   settings.batchSize = 4096;
   settings.sample_bits = 16;
 //
-  connect(btnConnect, &QPushButton::clicked, this, &spyServer_client_8::wantConnect);
+  connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::wantConnect);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 2)
-  connect(autogain_selector, &QCheckBox::checkStateChanged, this, &spyServer_client_8::handle_autogain);
+  connect(autogain_selector, &QCheckBox::checkStateChanged, this, &SpyServerClient::handle_autogain);
 #else
   connect (autogain_selector, &QCheckBox::stateChanged, this, &spyServer_client_8::handle_autogain);
 #endif
-  connect(spyServer_gain, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::setGain);
+  connect(spyServer_gain, qOverload<int>(&QSpinBox::valueChanged), this, &SpyServerClient::setGain);
   // connect(portNumber, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
   // connect(editIpAddress, &QLineEdit::textChanged, this, &spyServer_client_8::_check_and_cleanup_ip_address);
   theState->setText("waiting to start");
 }
 
-spyServer_client_8::~spyServer_client_8()
+SpyServerClient::~SpyServerClient()
 {
   if (connected)
   {		// close previous connection
@@ -112,7 +112,7 @@ spyServer_client_8::~spyServer_client_8()
 }
 
 //
-void spyServer_client_8::wantConnect()
+void SpyServerClient::wantConnect()
 {
   if (connected)
   {
@@ -158,7 +158,7 @@ void spyServer_client_8::wantConnect()
 //	a signal appears and we are able to collect the
 //	inserted text. The format is the IP-V4 format.
 //	Using this text, we try to connect,
-void spyServer_client_8::setConnection()
+void SpyServerClient::setConnection()
 {
   // QString s = hostLineEdit->text();
   // QString theAddress = QHostAddress(s).toString();
@@ -167,7 +167,7 @@ void spyServer_client_8::setConnection()
   // settings.basePort = portNumber->value();
   try
   {
-    theServer = new spyHandler_8(this, settings.ipAddress, (int)settings.basePort, &tmpBuffer);
+    theServer = new SpyServerHandler(this, settings.ipAddress, (int)settings.basePort, &tmpBuffer);
   }
   catch (...)
   {
@@ -181,7 +181,7 @@ void spyServer_client_8::setConnection()
     return;
   }
 
-  connect(&checkTimer, &QTimer::timeout, this, &spyServer_client_8::handle_checkTimer);
+  connect(&checkTimer, &QTimer::timeout, this, &SpyServerClient::handle_checkTimer);
 
   checkTimer.start(2000);
   timedOut = false;
@@ -200,7 +200,7 @@ void spyServer_client_8::setConnection()
   }
 
   checkTimer.stop();
-  disconnect(&checkTimer, &QTimer::timeout, this, &spyServer_client_8::handle_checkTimer);
+  disconnect(&checkTimer, &QTimer::timeout, this, &SpyServerClient::handle_checkTimer);
 
 //	fprintf (stderr, "We kunnen echt beginnen\n");
   theServer->connection_set();
@@ -282,7 +282,7 @@ void spyServer_client_8::setConnection()
     return;
   }
 
-  disconnect(btnConnect, &QPushButton::clicked, this, &spyServer_client_8::wantConnect);
+  disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::wantConnect);
   fprintf(stderr, "The samplerate = %f\n", (float)(theServer->get_sample_rate()));
   theState->setText("connected");
 //	start ();		// start the reader
@@ -304,12 +304,12 @@ void spyServer_client_8::setConnection()
   }
 }
 
-int32_t spyServer_client_8::getRate()
+int32_t SpyServerClient::getRate()
 {
   return INPUT_RATE;
 }
 
-bool spyServer_client_8::restartReader(int32_t freq)
+bool SpyServerClient::restartReader(int32_t freq)
 {
   if (!connected)
   {
@@ -337,7 +337,7 @@ bool spyServer_client_8::restartReader(int32_t freq)
   return true;
 }
 
-void spyServer_client_8::stopReader()
+void SpyServerClient::stopReader()
 {
   fprintf(stderr, "stopReader is called\n");
   if (theServer == nullptr)
@@ -355,24 +355,24 @@ void spyServer_client_8::stopReader()
 
 //
 //
-int32_t spyServer_client_8::getSamples(std::complex<float> * V, int32_t size)
+int32_t SpyServerClient::getSamples(std::complex<float> * V, int32_t size)
 {
   int amount = 0;
   amount = _I_Buffer.get_data_from_ring_buffer(V, size);
   return amount;
 }
 
-int32_t spyServer_client_8::Samples()
+int32_t SpyServerClient::Samples()
 {
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-int16_t spyServer_client_8::bitDepth()
+int16_t SpyServerClient::bitDepth()
 {
   return 8;
 }
 
-void spyServer_client_8::setGain(int gain)
+void SpyServerClient::setGain(int gain)
 {
   settings.gain = gain;
   if (!theServer->set_gain(settings.gain))
@@ -384,7 +384,7 @@ void spyServer_client_8::setGain(int gain)
   // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer_client-gain", settings.gain); // TODO: tomneda
 }
 
-void spyServer_client_8::handle_autogain(int d)
+void SpyServerClient::handle_autogain(int d)
 {
   (void)d;
   int x = autogain_selector->isChecked();
@@ -397,7 +397,7 @@ void spyServer_client_8::handle_autogain(int d)
   }
 }
 
-void spyServer_client_8::connect_on()
+void SpyServerClient::connect_on()
 {
   onConnect.store(true);
 }
@@ -420,7 +420,7 @@ static constexpr float convTable[] =
   111 / 128.0, 112 / 128.0, 113 / 128.0, 114 / 128.0, 115 / 128.0, 116 / 128.0, 117 / 128.0, 118 / 128.0, 119 / 128.0, 120 / 128.0, 121 / 128.0, 122 / 128.0, 123 / 128.0, 124 / 128.0, 125 / 128.0, 126 / 128.0, 127 / 128.0
 };
 
-void spyServer_client_8::data_ready()
+void SpyServerClient::data_ready()
 {
   uint8_t buffer_8[settings.batchSize * 2];
 //static int fillP	= 0;
@@ -475,12 +475,12 @@ void spyServer_client_8::data_ready()
   }
 }
 
-void spyServer_client_8::handle_checkTimer()
+void SpyServerClient::handle_checkTimer()
 {
   timedOut = true;
 }
 
-bool spyServer_client_8::_check_and_cleanup_ip_address()
+bool SpyServerClient::_check_and_cleanup_ip_address()
 {
   QString addr = editIpAddress->text();
   addr.remove("sdr://");
@@ -496,40 +496,40 @@ bool spyServer_client_8::_check_and_cleanup_ip_address()
   // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-port", v); // TODO: tomneda
 }
 
-void spyServer_client_8::show()
+void SpyServerClient::show()
 {
   myFrame.show();
 }
 
-void spyServer_client_8::hide()
+void SpyServerClient::hide()
 {
   myFrame.hide();
 }
 
-bool spyServer_client_8::isHidden()
+bool SpyServerClient::isHidden()
 {
   return myFrame.isHidden();
 }
 
-bool spyServer_client_8::isFileInput()
+bool SpyServerClient::isFileInput()
 {
   return false;
 }
 
-void spyServer_client_8::setVFOFrequency(i32)
+void SpyServerClient::setVFOFrequency(i32)
 {
 }
 
-i32 spyServer_client_8::getVFOFrequency()
+i32 SpyServerClient::getVFOFrequency()
 {
   return 0;
 }
 
-void spyServer_client_8::resetBuffer()
+void SpyServerClient::resetBuffer()
 {
 }
 
-QString spyServer_client_8::deviceName()
+QString SpyServerClient::deviceName()
 {
   return "SpyServer_NW"; // NW == network;
 }

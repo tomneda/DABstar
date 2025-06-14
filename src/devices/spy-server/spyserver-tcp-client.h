@@ -54,7 +54,7 @@
 #include <unistd.h>
 #endif
 
-class tcp_client_8 : public QThread
+class SpyServerTcpClient : public QThread
 {
   Q_OBJECT
 
@@ -71,9 +71,9 @@ private:
   std::atomic<bool> running;
 
 public:
-  tcp_client_8(const QString & addr, int port,
+  SpyServerTcpClient(const QString & addr, int port,
                RingBuffer<uint8_t> * inBuffer);
-  ~tcp_client_8();
+  ~SpyServerTcpClient();
 
   bool is_connected();
   void connect_conn();

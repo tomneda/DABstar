@@ -37,23 +37,23 @@
 #include	<QThread>
 #include	<QTimer>
 #include	<QString>
-#include	"tcp-client.h"
+#include	"spyserver-tcp-client.h"
 #include	"spyserver-protocol.h"
 
 #include	"device-handler.h"
 #include	"ringbuffer.h"
 
-class spyServer_client_8;
+class SpyServerClient;
 
-class spyHandler_8 : public QThread
+class SpyServerHandler : public QThread
 {
   Q_OBJECT
 
 public:
-  spyHandler_8(spyServer_client_8 *,
+  SpyServerHandler(SpyServerClient *,
                const QString &, int,
                RingBuffer<uint8_t> * outB);
-  ~spyHandler_8();
+  ~SpyServerHandler();
 
   bool get_deviceInfo(struct DeviceInfo & theDevice);
   bool set_sample_rate_by_decim_stage(const uint32_t decim_stage);
@@ -72,9 +72,9 @@ public:
 
 private:
   RingBuffer<uint8_t> inBuffer;
-  tcp_client_8 tcpHandler;
+  SpyServerTcpClient tcpHandler;
   RingBuffer<uint8_t> * outB;
-  spyServer_client_8 * parent;
+  SpyServerClient * parent;
   void run();
   bool process_device_info(uint8_t *, struct DeviceInfo &);
   bool process_client_sync(uint8_t *, ClientSync &);

@@ -47,16 +47,16 @@
 #include	"ringbuffer.h"
 #include	"ui_spyserver-client.h"
 
-#include	"spy-handler.h"
+#include	"spyserver-handler.h"
 
 
-class spyServer_client_8 : public QObject, public IDeviceHandler, private Ui_spyServer_widget_8
+class SpyServerClient : public QObject, public IDeviceHandler, private Ui_spyServer_widget_8
 {
   Q_OBJECT
 
 public:
-  spyServer_client_8(QSettings *);
-  ~spyServer_client_8() override;
+  SpyServerClient(QSettings *);
+  ~SpyServerClient() override;
 
   bool restartReader(int32_t) override;
   void stopReader() override;
@@ -106,7 +106,7 @@ private:
   RingBuffer<std::complex<float>> _I_Buffer;
   RingBuffer<uint8_t> tmpBuffer;
   QTimer checkTimer;
-  spyHandler_8 * theServer;
+  SpyServerHandler * theServer;
   // QLineEdit * hostLineEdit;
   bool isvalidRate(int32_t);
   QSettings * spyServer_settings;

@@ -30,12 +30,12 @@
  */
 
 #include "spyserver-client.h"
-#include "spy-handler.h"
+#include "spyserver-handler.h"
 #include <chrono>
 #include <iostream>
 #include <thread>
 
-spyHandler_8::spyHandler_8(spyServer_client_8 * parent,
+SpyServerHandler::SpyServerHandler(SpyServerClient * parent,
                            const QString & ipAddress,
                            int port,
                            RingBuffer<uint8_t> * outB)
@@ -62,26 +62,26 @@ spyHandler_8::spyHandler_8(spyServer_client_8 * parent,
   is_connected.store(true);
   cleanRecords();
   testTimer = new QTimer();
-  connect(testTimer, &QTimer::timeout, this, &spyHandler_8::no_deviceInfo);
-  connect(this, &spyHandler_8::data_ready, parent, &spyServer_client_8::data_ready);
+  connect(testTimer, &QTimer::timeout, this, &SpyServerHandler::no_deviceInfo);
+  connect(this, &SpyServerHandler::data_ready, parent, &SpyServerClient::data_ready);
   start();
   testTimer->start(10000);
 }
 
-spyHandler_8::~spyHandler_8()
+SpyServerHandler::~SpyServerHandler()
 {
   running.store(false);
   while (isRunning())
     usleep(1000);
 }
 
-void spyHandler_8::no_deviceInfo()
+void SpyServerHandler::no_deviceInfo()
 {
   if (!got_device_info)
     running.store(false);
 }
 
-void spyHandler_8::run()
+void SpyServerHandler::run()
 {
   MessageHeader theHeader;
   uint64_t volgNummer = 0;
@@ -123,7 +123,7 @@ void spyHandler_8::run()
   }
 }
 
-bool spyHandler_8::readHeader(struct MessageHeader & header)
+bool SpyServerHandler::readHeader(struct MessageHeader & header)
 {
   while (running.load() && (inBuffer.get_ring_buffer_read_available() < (int)sizeof(struct MessageHeader)))
   {
@@ -139,7 +139,7 @@ bool spyHandler_8::readHeader(struct MessageHeader & header)
   return true;
 }
 
-bool spyHandler_8::readBody(uint8_t * buffer, int size)
+bool SpyServerHandler::readBody(uint8_t * buffer, int size)
 {
   int filler = 0;
   while (running.load())
@@ -166,7 +166,7 @@ bool spyHandler_8::readBody(uint8_t * buffer, int size)
   return false;
 }
 
-bool spyHandler_8::show_attendance()
+bool SpyServerHandler::show_attendance()
 {
   const uint8_t * protocolVersionBytes = (const uint8_t *)&ProtocolVersion;
   const uint8_t * softwareVersionBytes = (const uint8_t *)SoftwareID.c_str();
@@ -179,7 +179,7 @@ bool spyHandler_8::show_attendance()
   return res;
 }
 
-void spyHandler_8::cleanRecords()
+void SpyServerHandler::cleanRecords()
 {
   deviceInfo.DeviceType = 0;
   deviceInfo.DeviceSerial = 0;
@@ -193,7 +193,7 @@ void spyHandler_8::cleanRecords()
   frameNumber = 0;
 }
 
-bool spyHandler_8::send_command(uint32_t cmd, std::vector<uint8_t> & args)
+bool SpyServerHandler::send_command(uint32_t cmd, std::vector<uint8_t> & args)
 {
   bool result;
   uint32_t headerLen = sizeof(CommandHeader);
@@ -238,7 +238,7 @@ bool spyHandler_8::send_command(uint32_t cmd, std::vector<uint8_t> & args)
   return result;
 }
 
-bool spyHandler_8::process_device_info(uint8_t * buffer,
+bool SpyServerHandler::process_device_info(uint8_t * buffer,
                                        DeviceInfo & deviceInfo)
 {
   std::memcpy(&deviceInfo, buffer, sizeof(DeviceInfo));
@@ -259,7 +259,7 @@ bool spyHandler_8::process_device_info(uint8_t * buffer,
   return true;
 }
 
-bool spyHandler_8::process_client_sync(uint8_t * buffer,
+bool SpyServerHandler::process_client_sync(uint8_t * buffer,
                                        ClientSync & client_sync)
 {
   std::memcpy((void *)(&client_sync), buffer, sizeof(ClientSync));
@@ -286,7 +286,7 @@ bool spyHandler_8::process_client_sync(uint8_t * buffer,
   return true;
 }
 
-bool spyHandler_8::get_deviceInfo(struct DeviceInfo & theDevice)
+bool SpyServerHandler::get_deviceInfo(struct DeviceInfo & theDevice)
 {
   if (!got_device_info)
     return false;
@@ -304,7 +304,7 @@ bool spyHandler_8::get_deviceInfo(struct DeviceInfo & theDevice)
   return true;
 }
 
-bool spyHandler_8::set_sample_rate_by_decim_stage(const uint32_t stage)
+bool SpyServerHandler::set_sample_rate_by_decim_stage(const uint32_t stage)
 {
   std::vector<uint32_t> p(1);
   std::vector<uint32_t> q(1);
@@ -315,12 +315,12 @@ bool spyHandler_8::set_sample_rate_by_decim_stage(const uint32_t stage)
   return true;
 }
 
-double spyHandler_8::get_sample_rate()
+double SpyServerHandler::get_sample_rate()
 {
   return 2500000;
 }
 
-bool spyHandler_8::set_iq_center_freq(double centerFrequency)
+bool SpyServerHandler::set_iq_center_freq(double centerFrequency)
 {
   std::vector<uint32_t> param(1);
   param[0] = centerFrequency;
@@ -330,14 +330,14 @@ bool spyHandler_8::set_iq_center_freq(double centerFrequency)
   return true;
 }
 
-bool spyHandler_8::set_gain_mode(bool automatic, size_t chan)
+bool SpyServerHandler::set_gain_mode(bool automatic, size_t chan)
 {
   (void)automatic;
   (void)chan;
   return 0;
 }
 
-bool spyHandler_8::set_gain(double gain)
+bool SpyServerHandler::set_gain(double gain)
 {
   std::vector<uint32_t> param(1);
   param[0] = (uint32_t)gain;
@@ -345,12 +345,12 @@ bool spyHandler_8::set_gain(double gain)
   return true;
 }
 
-bool spyHandler_8::is_streaming()
+bool SpyServerHandler::is_streaming()
 {
   return streaming.load();
 }
 
-void spyHandler_8::start_running()
+void SpyServerHandler::start_running()
 {
   std::vector<uint32_t> p(1);
   if (!streaming.load())
@@ -362,7 +362,7 @@ void spyHandler_8::start_running()
   }
 }
 
-void spyHandler_8::stop_running()
+void SpyServerHandler::stop_running()
 {
   std::vector<uint32_t> p;
   if (streaming.load())
@@ -373,7 +373,7 @@ void spyHandler_8::stop_running()
   }
 }
 
-bool spyHandler_8::set_setting(uint32_t settingType,
+bool SpyServerHandler::set_setting(uint32_t settingType,
                                std::vector<uint32_t> & params)
 {
   std::vector<uint8_t> argBytes;
@@ -399,13 +399,13 @@ bool spyHandler_8::set_setting(uint32_t settingType,
   return send_command(CMD_SET_SETTING, argBytes);
 }
 
-void spyHandler_8::process_data(uint8_t * theBody, int length)
+void SpyServerHandler::process_data(uint8_t * theBody, int length)
 {
   outB->put_data_into_ring_buffer(theBody, length);
   emit data_ready();
 }
 
-void spyHandler_8::connection_set()
+void SpyServerHandler::connection_set()
 {
   std::vector<uint32_t> p;
   p.push_back(streamingMode);
@@ -417,12 +417,12 @@ void spyHandler_8::connection_set()
 //	fprintf (stderr, "Connection is gezet, waar blijft de call?\n");
 }
 
-bool spyHandler_8::isFileInput()
+bool SpyServerHandler::isFileInput()
 {
   return true;
 }
 
-QString spyHandler_8::deviceName()
+QString SpyServerHandler::deviceName()
 {
   return "spy-server-8Bits :";
 }

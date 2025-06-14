@@ -29,7 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "tcp-client.h"
+#include "spyserver-tcp-client.h"
 
 /*
  *	Thanks to Youssef Touil (well know from Airspy and spyServer),
@@ -52,7 +52,7 @@
 #endif
 #endif
 
-tcp_client_8::tcp_client_8(const QString & addr, int port,
+SpyServerTcpClient::SpyServerTcpClient(const QString & addr, int port,
                            RingBuffer<uint8_t> * inBuffer)
   : outBuffer(32768)
 {
@@ -107,7 +107,7 @@ tcp_client_8::tcp_client_8(const QString & addr, int port,
   connected = true;
 }
 
-tcp_client_8::~tcp_client_8()
+SpyServerTcpClient::~SpyServerTcpClient()
 {
   if (isRunning())
   {
@@ -117,14 +117,14 @@ tcp_client_8::~tcp_client_8()
   }
 }
 
-bool tcp_client_8::is_connected()
+bool SpyServerTcpClient::is_connected()
 {
   return connected;
 }
 
-void tcp_client_8::connect_conn() {}
+void SpyServerTcpClient::connect_conn() {}
 
-void tcp_client_8::close_conn()
+void SpyServerTcpClient::close_conn()
 {
   if (SendingSocket > 0)
   {
@@ -132,14 +132,14 @@ void tcp_client_8::close_conn()
   }
 }
 
-void tcp_client_8::send_data(uint8_t * data, int length)
+void SpyServerTcpClient::send_data(uint8_t * data, int length)
 {
   outBuffer.put_data_into_ring_buffer(data, length);
 }
 
 char tempBuffer_8[1000000];
 
-void tcp_client_8::run()
+void SpyServerTcpClient::run()
 {
   int received = 0;
   struct timeval m_timeInterval;

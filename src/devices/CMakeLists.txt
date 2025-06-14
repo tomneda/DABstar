@@ -100,17 +100,17 @@ if (SPYSERVER)
 
     set($(devicesLibName)_HDRS
             ${${devicesLibName}_HDRS}
-            spy-server/spy-handler.h
+            spy-server/spyserver-handler.h
             spy-server/spyserver-client.h
             spy-server/spyserver-protocol.h
-            spy-server/tcp-client.h
+            spy-server/spyserver-tcp-client.h
     )
 
     set(${devicesLibName}_SRCS
             ${${devicesLibName}_SRCS}
-            spy-server/spy-handler.cpp
+            spy-server/spyserver-handler.cpp
             spy-server/spyserver-client.cpp
-            spy-server/tcp-client.cpp
+            spy-server/spyserver-tcp-client.cpp
     )
 
     add_definitions(-DHAVE_SPYSERVER)
