@@ -19,7 +19,7 @@
      <item>
       <widget class="QPushButton" name="btnConnect">
        <property name="text">
-        <string>connect</string>
+        <string>Connect</string>
        </property>
       </widget>
      </item>
@@ -46,12 +46,12 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string> gain</string>
+          <string>Gain</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="spyServer_gain">
+        <widget class="QSpinBox" name="sbGain">
          <property name="maximum">
           <number>999</number>
          </property>
@@ -60,9 +60,9 @@
       </layout>
      </item>
      <item>
-      <widget class="QCheckBox" name="autogain_selector">
+      <widget class="QCheckBox" name="cbAutoGain">
        <property name="text">
-        <string>autogain</string>
+        <string>Autogain</string>
        </property>
       </widget>
      </item>

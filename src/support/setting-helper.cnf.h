@@ -124,6 +124,12 @@ CATEGORY_BEGIN(SdrPlayV3)
   DEFINE_WIDGET(SdrPlayV3, cmbAntenna)
 CATEGORY_END(SdrPlayV3)
 
+CATEGORY_BEGIN(SpyServer)
+  DEFINE_WIDGET(SpyServer, sbGain)
+  DEFINE_WIDGET(SpyServer, cbAutoGain)
+  DEFINE_VARIANT(SpyServer, varIpAddress, "localhost")
+CATEGORY_END(SpyServer)
+
 CATEGORY_BEGIN(FileReaderXml)
   DEFINE_POS_SIZE(FileReaderXml)
 CATEGORY_END(FileReaderXml)

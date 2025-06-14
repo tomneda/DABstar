@@ -79,16 +79,16 @@ public:
 
   struct
   {
-    int gain;
-    int basePort;
+    int gain = 0;
+    int basePort = 0;
     QString ipAddress;
-    uint32_t sample_rate;
-    float resample_ratio;
-    int desired_decim_stage;
-    int resample_quality;
-    int batchSize;
-    int sample_bits;
-    int auto_gain;
+    uint32_t sample_rate = 0;
+    float resample_ratio = 0;
+    int desired_decim_stage = 0;
+    int resample_quality = 0;
+    int batchSize = 0;
+    int sample_bits = 0;
+    bool auto_gain = false;
   } settings;
 
 private slots:
@@ -106,16 +106,15 @@ private:
   RingBuffer<std::complex<float>> _I_Buffer;
   RingBuffer<uint8_t> tmpBuffer;
   QTimer checkTimer;
-  SpyServerHandler * theServer;
+  std::unique_ptr<SpyServerHandler> theServer;
   // QLineEdit * hostLineEdit;
   bool isvalidRate(int32_t);
-  QSettings * spyServer_settings;
+  // QSettings * spyServer_settings;
   int32_t theRate;
-  bool connected;
+  bool connected = false;
   bool running;
   QHostAddress serverAddress;
   qint64 basePort;
-  bool dumping;
   FILE * dumpfilePointer;
   std::atomic<bool> onConnect;
   std::atomic<bool> timedOut;

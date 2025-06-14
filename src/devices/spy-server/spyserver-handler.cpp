@@ -317,7 +317,7 @@ bool SpyServerHandler::set_sample_rate_by_decim_stage(const uint32_t stage)
 
 double SpyServerHandler::get_sample_rate()
 {
-  return 2500000;
+  return 2500000; // TODO: why fix?
 }
 
 bool SpyServerHandler::set_iq_center_freq(double centerFrequency)
@@ -373,23 +373,21 @@ void SpyServerHandler::stop_running()
   }
 }
 
-bool SpyServerHandler::set_setting(uint32_t settingType,
-                               std::vector<uint32_t> & params)
+bool SpyServerHandler::set_setting(uint32_t settingType, std::vector<uint32_t> & params)
 {
   std::vector<uint8_t> argBytes;
 
   if (params.size() > 0)
   {
-    argBytes = std::vector<uint8_t>(sizeof(SettingType) +
-                                    params.size() * sizeof(uint32_t));
+    argBytes = std::vector<uint8_t>(sizeof(SettingType) + params.size() * sizeof(uint32_t));
     uint8_t * settingBytes = (uint8_t *)&settingType;
+
     for (uint32_t i = 0; i < sizeof(uint32_t); i++)
     {
       argBytes[i] = settingBytes[i];
     }
 
-    std::memcpy(&argBytes[0] + sizeof(uint32_t),
-                &params[0], sizeof(uint32_t) * params.size());
+    std::memcpy(&argBytes[0] + sizeof(uint32_t), &params[0], sizeof(uint32_t) * params.size());
   }
   else
   {

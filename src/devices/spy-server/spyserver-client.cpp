@@ -38,62 +38,60 @@
  *	copyrights are gratefully acknowledged
  */
 
-#include	<QtNetwork>
-#include	<QSettings>
-#include	<QLabel>
-#include	<QMessageBox>
-#include	<QTcpSocket>
-#include	<QDir>
-#include	"dab-constants.h"
-#include	"device-exceptions.h"
-#include	"spyserver-client.h"
+#include "dab-constants.h"
+#include "device-exceptions.h"
+#include "setting-helper.h"
+#include "spyserver-client.h"
+// #include <QtNetwork>
+// #include <QSettings>
+// #include <QLabel>
+#include <QMessageBox>
+#include <QTimer>
+#include <QLoggingCategory>
 
-// #include	"settings-handler.h"
+Q_LOGGING_CATEGORY(sLogSpyServerClient, "SpyServerClient", QtDebugMsg)
 
 #define	DEFAULT_FREQUENCY	(Khz (227360))
 #define	SPY_SERVER_8_SETTINGS	"SPY_SERVER_8_SETTINGS"
 
-SpyServerClient::SpyServerClient(QSettings * s)
+SpyServerClient::SpyServerClient(QSettings * /*s*/)
   : _I_Buffer(32 * 32768)
   , tmpBuffer(32 * 32768)
 {
-  spyServer_settings = s;
+  // spyServer_settings = s;
   setupUi(&myFrame);
   myFrame.show();
 
-  //	setting the defaults and constants
-  // TODO: tomneda
-  // settings.gain = value_i(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-gain", 20);
-  // settings.auto_gain = value_i(spyServer_settings,  SPY_SERVER_8_SETTINGS, "spyServer-auto_gain", 0);
-  // settings.basePort = value_i(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer+port", 5555);
-  settings.gain = 20;
-  settings.auto_gain = 0;
-  settings.basePort = 33334;
+  Settings::SpyServer::sbGain.register_widget_and_update_ui_from_setting(sbGain, 20);
+  Settings::SpyServer::cbAutoGain.register_widget_and_update_ui_from_setting(cbAutoGain, 2); // 2 = checked
 
+  editIpAddress->setText(Settings::SpyServer::varIpAddress.read().toString());
+
+  settings.gain = sbGain->value();
+  settings.auto_gain = cbAutoGain->isChecked();
+  // settings.basePort = 5555;
 
   // portNumber->setValue(settings.basePort);
-  if (settings.auto_gain != 0)
-  {
-    autogain_selector->setChecked(true);
-  }
+  // if (settings.auto_gain2)
+  // {
+  //   autogain_selector->setChecked(true);
+  // }
 
   // spyServer_gain->setValue(theGain); // TODO: tomneda
   // lastFrequency = DEFAULT_FREQUENCY; // TODO: tomneda
-  connected = false;
-  theServer = nullptr;
+  // theServer = nullptr;
   // hostLineEdit = new QLineEdit(nullptr);
-  dumping = false;
   settings.resample_quality = 2;
   settings.batchSize = 4096;
   settings.sample_bits = 16;
 //
   connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::wantConnect);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 2)
-  connect(autogain_selector, &QCheckBox::checkStateChanged, this, &SpyServerClient::handle_autogain);
+  connect(cbAutoGain, &QCheckBox::checkStateChanged, this, &SpyServerClient::handle_autogain);
 #else
   connect (autogain_selector, &QCheckBox::stateChanged, this, &spyServer_client_8::handle_autogain);
 #endif
-  connect(spyServer_gain, qOverload<int>(&QSpinBox::valueChanged), this, &SpyServerClient::setGain);
+  connect(sbGain, qOverload<int>(&QSpinBox::valueChanged), this, &SpyServerClient::setGain);
   // connect(portNumber, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
   // connect(editIpAddress, &QLineEdit::textChanged, this, &spyServer_client_8::_check_and_cleanup_ip_address);
   theState->setText("waiting to start");
@@ -107,7 +105,6 @@ SpyServerClient::~SpyServerClient()
     connected = false;
   }
   // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer_client-gain", settings.gain);  // TODO: tomneda
-  delete theServer;
   // delete hostLineEdit;
 }
 
@@ -167,7 +164,7 @@ void SpyServerClient::setConnection()
   // settings.basePort = portNumber->value();
   try
   {
-    theServer = new SpyServerHandler(this, settings.ipAddress, (int)settings.basePort, &tmpBuffer);
+    theServer = std::make_unique<SpyServerHandler>(this, settings.ipAddress, (int)settings.basePort, &tmpBuffer);
   }
   catch (...)
   {
@@ -193,8 +190,9 @@ void SpyServerClient::setConnection()
 
   if (timedOut)
   {
+    qCCritical(sLogSpyServerClient()) << "Connection timed out";
     QMessageBox::warning(nullptr, tr("Warning"), tr("no answers, fatal"));
-    delete theServer;
+    theServer.reset();
     connected = false;
     return;
   }
@@ -224,74 +222,78 @@ void SpyServerClient::setConnection()
   }
 
   this->deviceNumber->setText(QString::number(theDevice.DeviceSerial));
-  uint32_t max_samp_rate = theDevice.MaximumSampleRate;
-  uint32_t decim_stages = theDevice.DecimationStageCount;
+  const uint32_t max_samp_rate = theDevice.MaximumSampleRate;
+  const uint32_t decim_stages = theDevice.DecimationStageCount;
   int desired_decim_stage = -1;
   double resample_ratio = 1.0;
 
   if (max_samp_rate == 0)
   {
-    delete theServer;
-    theServer = nullptr;
+    qCCritical(sLogSpyServerClient()) << "Device does not support sampling";
+    theServer.reset();
     return;
   }
+
+  if (max_samp_rate < INPUT_RATE)
+  {
+    qCCritical(sLogSpyServerClient()) << "Device does not support sampling at" << INPUT_RATE << "Sps";
+    theServer.reset();
+    return;
+  }
+
   for (uint16_t i = 0; i < decim_stages; ++i)
   {
-    int targetRate = (uint32_t)(max_samp_rate / (1 << i));
+    const int targetRate = (uint32_t)(max_samp_rate / (1 << i));
+
     if (targetRate == INPUT_RATE)
     {
       desired_decim_stage = i;
       resample_ratio = 1;
+      qCInfo(sLogSpyServerClient()) << "Device supports exact sampling at" << targetRate << "Sps";
       break;
     }
     else if (targetRate > INPUT_RATE)
     {
-//	remember the next-largest rate that is available
+      // remember the next-largest rate that is available
       desired_decim_stage = i;
       resample_ratio = INPUT_RATE / (double)targetRate;
       settings.sample_rate = targetRate;
+      qCInfo(sLogSpyServerClient()) << "Device supports sampling at" << targetRate << "Sps" << " (resampling_ratio" << resample_ratio << ")";
+    }
+    else
+    {
+      qCCritical(sLogSpyServerClient()) << "Device does not support sampling at" << targetRate << "Sps"; // should not happen with the check above
+      break;
     }
 
-    if (desired_decim_stage < 0)
-    {
-      delete theServer;
-      theServer = nullptr;
-      return;
-    }
-/*
-	   std::cerr << "Desired decimation stage: " <<
-	                 desired_decim_stage <<
-	                 " (" << max_samp_rate << " / " <<
-	                 (1 << desired_decim_stage) <<
-	                 " = " << max_samp_rate / (1 <<
-	                 desired_decim_stage) << ") resample ratio: " <<
-	                 resample_ratio << std::endl;
- */
+    std::cerr << "Desired decimation stage: " << desired_decim_stage <<" (" << max_samp_rate << " / " <<(1 << desired_decim_stage) << " = " << max_samp_rate / (1 << desired_decim_stage) << ") resample ratio: " << resample_ratio << std::endl;
   }
 
-  int maxGain = theDevice.MaximumGainIndex;
-  spyServer_gain->setMaximum(maxGain);
+  const int maxGain = theDevice.MaximumGainIndex;
+  sbGain->setMaximum(maxGain);
   settings.resample_ratio = resample_ratio;
   settings.desired_decim_stage = desired_decim_stage;
   connected = true;
-  fprintf(stderr, "going to set samplerate stage %d\n", desired_decim_stage);
 
+  qCInfo(sLogSpyServerClient()) << "Going to set samplerate stage" << settings.sample_rate << "Sps";
   if (!theServer->set_sample_rate_by_decim_stage(desired_decim_stage))
   {
-    std::cerr << "Failed to set sample rate " << desired_decim_stage << "\n";
+    qCCritical(sLogSpyServerClient()) << "Failed to set sample rate " << desired_decim_stage;
     return;
   }
 
   disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::wantConnect);
-  fprintf(stderr, "The samplerate = %f\n", (float)(theServer->get_sample_rate()));
+
+  // fprintf(stderr, "The samplerate = %f\n", (float)(theServer->get_sample_rate()));
   theState->setText("connected");
 //	start ();		// start the reader
 
 //	Since we are down sampling, creating an outputbuffer with the
 //	same size as the input buffer is OK
+
   if (settings.resample_ratio != 1.0)
   {
-//	we process chunks of 1 msec
+    // we process chunks of 1 msec
     convBufferSize = settings.sample_rate / 1000;
     convBuffer.resize(convBufferSize + 1);
     for (int i = 0; i < 2048; i++)
@@ -375,25 +377,23 @@ int16_t SpyServerClient::bitDepth()
 void SpyServerClient::setGain(int gain)
 {
   settings.gain = gain;
-  if (!theServer->set_gain(settings.gain))
+
+  if (theServer != nullptr && !theServer->set_gain(settings.gain))
   {
     std::cerr << "Failed to set gain\n";
     return;
   }
-
-  // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer_client-gain", settings.gain); // TODO: tomneda
 }
 
 void SpyServerClient::handle_autogain(int d)
 {
   (void)d;
-  int x = autogain_selector->isChecked();
-  settings.auto_gain = x != 0;
-  // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-auto_gain", x ? 1 : 0); // TODO: tomneda
+  const bool x = cbAutoGain->isChecked();
+  settings.auto_gain = x;
 
-  if (connected)
+  if (connected && theServer != nullptr)
   {
-    theServer->set_gain_mode(d != x, 0);
+    theServer->set_gain_mode((bool)d != x, 0);
   }
 }
 
@@ -469,7 +469,7 @@ void SpyServerClient::data_ready()
       {
         outB[i] = std::complex<float>(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
       }
-      
+
       _I_Buffer.put_data_into_ring_buffer(outB, samps);
     }
   }
