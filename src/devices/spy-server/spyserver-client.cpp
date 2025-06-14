@@ -64,7 +64,7 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   lblHelp->setText(htmlLink);
   lblHelp->setOpenExternalLinks(true);
 
-  Settings::SpyServer::posAndSize.read_widget_geometry(&myFrame, 220, 220, true);
+  Settings::SpyServer::posAndSize.read_widget_geometry(&myFrame, 240, 220, true);
   Settings::SpyServer::sbGain.register_widget_and_update_ui_from_setting(sbGain, 20);
   Settings::SpyServer::cbAutoGain.register_widget_and_update_ui_from_setting(cbAutoGain, 2); // 2 = checked
 
@@ -97,7 +97,8 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   connect(sbGain, qOverload<int>(&QSpinBox::valueChanged), this, &SpyServerClient::_slot_handle_gain);
   // connect(portNumber, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
   // connect(editIpAddress, &QLineEdit::textChanged, this, &spyServer_client_8::_check_and_cleanup_ip_address);
-  theState->setText("waiting to start");
+  lblState->setStyleSheet("color: #8888FF;");
+  lblState->setText("waiting to start");
 }
 
 SpyServerClient::~SpyServerClient()
@@ -212,22 +213,33 @@ void SpyServerClient::_slot_set_connection()
 //	fprintf (stderr, "going to ask for device info\n");
   struct DeviceInfo theDevice;
   theServer->get_deviceInfo(theDevice);
+  bool validDevice = false;
+  lblDeviceName->setStyleSheet("color: #FFBB00;");
 
   if (theDevice.DeviceType == DEVICE_AIRSPY_ONE)
   {
-    nameOfDevice->setText("Airspy One");
+    lblDeviceName->setText("Airspy One");
+    validDevice = true;
   }
   else if (theDevice.DeviceType == DEVICE_RTLSDR)
   {
-    nameOfDevice->setText("RTLSDR");
+    lblDeviceName->setText("RTLSDR");
+    validDevice = true;
   }
-  else
+  else if (theDevice.DeviceType == DEVICE_AIRSPY_HF)
   {
-    theState->setText("Invalid device");
+    lblDeviceName->setText("RTLSDR HF");
+  }
+
+  if (!validDevice)
+  {
+    lblState->setStyleSheet("color: #FF8888;");
+    lblState->setText("Invalid device");
     return;
   }
 
-  this->deviceNumber->setText(QString::number(theDevice.DeviceSerial));
+  lblDeviceNumber->setStyleSheet("color: #FF8800;");
+  lblDeviceNumber->setText(QString::number(theDevice.DeviceSerial));
   const uint32_t max_samp_rate = theDevice.MaximumSampleRate;
   const uint32_t decim_stages = theDevice.DecimationStageCount;
   int desired_decim_stage = -1;
@@ -289,7 +301,8 @@ void SpyServerClient::_slot_set_connection()
   disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_connect);
 
   // fprintf(stderr, "The samplerate = %f\n", (float)(theServer->get_sample_rate()));
-  theState->setText("connected");
+  lblState->setStyleSheet("color: #88FF88;");
+  lblState->setText("connected");
 //	start ();		// start the reader
 
 //	Since we are down sampling, creating an outputbuffer with the
