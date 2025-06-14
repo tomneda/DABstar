@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2016 .. 2023
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -46,28 +54,29 @@
 #include <unistd.h>
 #endif
 
-class tcp_client_8: public QThread {
-Q_OBJECT
+class tcp_client_8 : public QThread
+{
+  Q_OBJECT
+
 private:
-	QString		tcpAddress;
-	int		tcpPort;
-	RingBuffer<uint8_t> *inBuffer;
-	RingBuffer<uint8_t> outBuffer;
-	std::mutex	locker;
-	bool		connected;
-	int		SendingSocket;
-	struct sockaddr_in      ServerAddr;
-	void		run		();
-	std::atomic<bool>	running;
+  QString tcpAddress;
+  int tcpPort;
+  RingBuffer<uint8_t> * inBuffer;
+  RingBuffer<uint8_t> outBuffer;
+  std::mutex locker;
+  bool connected;
+  int SendingSocket;
+  struct sockaddr_in ServerAddr;
+  void run();
+  std::atomic<bool> running;
 
 public:
-		tcp_client_8	(const QString & addr, int port,
-	                                RingBuffer<uint8_t> *inBuffer);
-		~tcp_client_8	();
+  tcp_client_8(const QString & addr, int port,
+               RingBuffer<uint8_t> * inBuffer);
+  ~tcp_client_8();
 
-	bool	is_connected	();
-	void	connect_conn	();	
-	void	close_conn	();
-	void	send_data	(uint8_t *data, int length);
+  bool is_connected();
+  void connect_conn();
+  void close_conn();
+  void send_data(uint8_t * data, int length);
 };
-
