@@ -73,7 +73,6 @@ Widget::~Widget()
 
 void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue)
 {
-  assert(mpWidget == nullptr); // only one-time registration necessary
   mpWidget = ipWidget;
   mDefaultValue = iDefaultValue;
   _update_ui_state_from_setting();
