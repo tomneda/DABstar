@@ -125,6 +125,7 @@ CATEGORY_BEGIN(SdrPlayV3)
 CATEGORY_END(SdrPlayV3)
 
 CATEGORY_BEGIN(SpyServer)
+  DEFINE_POS_SIZE(SpyServer)
   DEFINE_WIDGET(SpyServer, sbGain)
   DEFINE_WIDGET(SpyServer, cbAutoGain)
   DEFINE_VARIANT(SpyServer, varIpAddress, "localhost")

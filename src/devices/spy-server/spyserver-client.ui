@@ -26,6 +26,13 @@
     </layout>
    </item>
    <item>
+    <widget class="QLabel" name="lblHelp">
+     <property name="text">
+      <string>Help</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_3">

@@ -55,13 +55,19 @@ Q_LOGGING_CATEGORY(sLogSpyServerClient, "SpyServerClient", QtDebugMsg)
 #define	SPY_SERVER_8_SETTINGS	"SPY_SERVER_8_SETTINGS"
 
 SpyServerClient::SpyServerClient(QSettings * /*s*/)
-  : _I_Buffer(32 * 32768)
-  , tmpBuffer(32 * 32768)
 {
   // spyServer_settings = s;
   setupUi(&myFrame);
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
+  const QString url = "https://airspy.com/directory/";
+  const QString style = "style='color: lightblue;'";
+  const QString htmlLink = "Get public URLs on e.g.:<br><a " + style + " href='" + url + "'>" + url + "</a>";
+  lblHelp->setText(htmlLink);
+  lblHelp->setOpenExternalLinks(true);
+
+  Settings::SpyServer::posAndSize.read_widget_geometry(&myFrame);
   Settings::SpyServer::sbGain.register_widget_and_update_ui_from_setting(sbGain, 20);
   Settings::SpyServer::cbAutoGain.register_widget_and_update_ui_from_setting(cbAutoGain, 2); // 2 = checked
 
@@ -85,13 +91,13 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   settings.batchSize = 4096;
   settings.sample_bits = 16;
 //
-  connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::wantConnect);
+  connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_connect);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 2)
-  connect(cbAutoGain, &QCheckBox::checkStateChanged, this, &SpyServerClient::handle_autogain);
+  connect(cbAutoGain, &QCheckBox::checkStateChanged, this, &SpyServerClient::_slot_handle_autogain);
 #else
   connect (autogain_selector, &QCheckBox::stateChanged, this, &spyServer_client_8::handle_autogain);
 #endif
-  connect(sbGain, qOverload<int>(&QSpinBox::valueChanged), this, &SpyServerClient::setGain);
+  connect(sbGain, qOverload<int>(&QSpinBox::valueChanged), this, &SpyServerClient::_slot_handle_gain);
   // connect(portNumber, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
   // connect(editIpAddress, &QLineEdit::textChanged, this, &spyServer_client_8::_check_and_cleanup_ip_address);
   theState->setText("waiting to start");
@@ -104,12 +110,12 @@ SpyServerClient::~SpyServerClient()
     stopReader();
     connected = false;
   }
-  // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer_client-gain", settings.gain);  // TODO: tomneda
-  // delete hostLineEdit;
+
+  Settings::SpyServer::posAndSize.write_widget_geometry(&myFrame);
 }
 
 //
-void SpyServerClient::wantConnect()
+void SpyServerClient::_slot_connect()
 {
   if (connected)
   {
@@ -118,7 +124,7 @@ void SpyServerClient::wantConnect()
 
   if (_check_and_cleanup_ip_address())
   {
-    setConnection();
+    _slot_set_connection();
   }
 
   // QString ipAddress;
@@ -155,12 +161,12 @@ void SpyServerClient::wantConnect()
 //	a signal appears and we are able to collect the
 //	inserted text. The format is the IP-V4 format.
 //	Using this text, we try to connect,
-void SpyServerClient::setConnection()
+void SpyServerClient::_slot_set_connection()
 {
   // QString s = hostLineEdit->text();
   // QString theAddress = QHostAddress(s).toString();
   onConnect.store(false);
-  theServer = nullptr;
+  theServer.reset();
   // settings.basePort = portNumber->value();
   try
   {
@@ -178,7 +184,7 @@ void SpyServerClient::setConnection()
     return;
   }
 
-  connect(&checkTimer, &QTimer::timeout, this, &SpyServerClient::handle_checkTimer);
+  connect(&checkTimer, &QTimer::timeout, this, &SpyServerClient::_slot_handle_checkTimer);
 
   checkTimer.start(2000);
   timedOut = false;
@@ -198,7 +204,7 @@ void SpyServerClient::setConnection()
   }
 
   checkTimer.stop();
-  disconnect(&checkTimer, &QTimer::timeout, this, &SpyServerClient::handle_checkTimer);
+  disconnect(&checkTimer, &QTimer::timeout, this, &SpyServerClient::_slot_handle_checkTimer);
 
 //	fprintf (stderr, "We kunnen echt beginnen\n");
   theServer->connection_set();
@@ -234,13 +240,6 @@ void SpyServerClient::setConnection()
     return;
   }
 
-  if (max_samp_rate < INPUT_RATE)
-  {
-    qCCritical(sLogSpyServerClient()) << "Device does not support sampling at" << INPUT_RATE << "Sps";
-    theServer.reset();
-    return;
-  }
-
   for (uint16_t i = 0; i < decim_stages; ++i)
   {
     const int targetRate = (uint32_t)(max_samp_rate / (1 << i));
@@ -249,25 +248,31 @@ void SpyServerClient::setConnection()
     {
       desired_decim_stage = i;
       resample_ratio = 1;
-      qCInfo(sLogSpyServerClient()) << "Device supports exact sampling at" << targetRate << "Sps";
-      break;
+      settings.sample_rate = targetRate;
+      break; // we can stop here
     }
-    else if (targetRate > INPUT_RATE)
+    else if (targetRate > INPUT_RATE) // would include also the "==" case but maybe we have rounding errors to exactly 1 when calculating the resample_ratio
     {
       // remember the next-largest rate that is available
       desired_decim_stage = i;
       resample_ratio = INPUT_RATE / (double)targetRate;
       settings.sample_rate = targetRate;
-      qCInfo(sLogSpyServerClient()) << "Device supports sampling at" << targetRate << "Sps" << " (resampling_ratio" << resample_ratio << ")";
     }
     else
     {
-      qCCritical(sLogSpyServerClient()) << "Device does not support sampling at" << targetRate << "Sps"; // should not happen with the check above
-      break;
+      break; // no lower valid sample rates found
     }
-
-    std::cerr << "Desired decimation stage: " << desired_decim_stage <<" (" << max_samp_rate << " / " <<(1 << desired_decim_stage) << " = " << max_samp_rate / (1 << desired_decim_stage) << ") resample ratio: " << resample_ratio << std::endl;
+    // std::cerr << "Desired decimation stage: " << desired_decim_stage <<" (" << max_samp_rate << " / " <<(1 << desired_decim_stage) << " = " << max_samp_rate / (1 << desired_decim_stage) << ") resample ratio: " << resample_ratio << std::endl;
   }
+
+  if (desired_decim_stage < 0)
+  {
+    qCCritical(sLogSpyServerClient()) << "Device does not support sampling at" << INPUT_RATE << "Sps" << " (max_samp_rate" << max_samp_rate << ")";
+    theServer.reset();
+    return;
+  }
+
+  qCInfo(sLogSpyServerClient()) << "Device supports sampling at" << settings.sample_rate << "Sps" << " (resampling_ratio" << resample_ratio << ")";
 
   const int maxGain = theDevice.MaximumGainIndex;
   sbGain->setMaximum(maxGain);
@@ -282,7 +287,7 @@ void SpyServerClient::setConnection()
     return;
   }
 
-  disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::wantConnect);
+  disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_connect);
 
   // fprintf(stderr, "The samplerate = %f\n", (float)(theServer->get_sample_rate()));
   theState->setText("connected");
@@ -374,7 +379,7 @@ int16_t SpyServerClient::bitDepth()
   return 8;
 }
 
-void SpyServerClient::setGain(int gain)
+void SpyServerClient::_slot_handle_gain(int gain)
 {
   settings.gain = gain;
 
@@ -385,7 +390,7 @@ void SpyServerClient::setGain(int gain)
   }
 }
 
-void SpyServerClient::handle_autogain(int d)
+void SpyServerClient::_slot_handle_autogain(int d)
 {
   (void)d;
   const bool x = cbAutoGain->isChecked();
@@ -420,7 +425,7 @@ static constexpr float convTable[] =
   111 / 128.0, 112 / 128.0, 113 / 128.0, 114 / 128.0, 115 / 128.0, 116 / 128.0, 117 / 128.0, 118 / 128.0, 119 / 128.0, 120 / 128.0, 121 / 128.0, 122 / 128.0, 123 / 128.0, 124 / 128.0, 125 / 128.0, 126 / 128.0, 127 / 128.0
 };
 
-void SpyServerClient::data_ready()
+void SpyServerClient::slot_data_ready()
 {
   uint8_t buffer_8[settings.batchSize * 2];
 //static int fillP	= 0;
@@ -475,7 +480,7 @@ void SpyServerClient::data_ready()
   }
 }
 
-void SpyServerClient::handle_checkTimer()
+void SpyServerClient::_slot_handle_checkTimer()
 {
   timedOut = true;
 }
@@ -483,17 +488,22 @@ void SpyServerClient::handle_checkTimer()
 bool SpyServerClient::_check_and_cleanup_ip_address()
 {
   QString addr = editIpAddress->text();
-  addr.remove("sdr://");
+
+  // remove "sdr://" or similar from the front
+  const int pos = addr.indexOf("://");
+  if (pos >= 0)
+  {
+    addr = addr.mid(pos + 3);
+  }
 
   const QStringList parts = addr.split(":");
   settings.ipAddress = parts[0];
   settings.basePort = parts.size() > 1 ? parts[1].toInt() : 5555;
-
-  editIpAddress->setText("sdr://" + settings.ipAddress + ":" + QString::number(settings.basePort));
+  const QString addrStr = settings.ipAddress + ":" + QString::number(settings.basePort);
+  editIpAddress->setText(addrStr);
+  Settings::SpyServer::varIpAddress.write(addrStr);
 
   return true; // TODO: check address
-  // settings.basePort = v;
-  // store(spyServer_settings, SPY_SERVER_8_SETTINGS, "spyServer-port", v); // TODO: tomneda
 }
 
 void SpyServerClient::show()

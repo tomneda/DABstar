@@ -62,8 +62,8 @@ SpyServerHandler::SpyServerHandler(SpyServerClient * parent,
   is_connected.store(true);
   cleanRecords();
   testTimer = new QTimer();
-  connect(testTimer, &QTimer::timeout, this, &SpyServerHandler::no_deviceInfo);
-  connect(this, &SpyServerHandler::data_ready, parent, &SpyServerClient::data_ready);
+  connect(testTimer, &QTimer::timeout, this, &SpyServerHandler::_slot_no_device_info);
+  connect(this, &SpyServerHandler::signal_data_ready, parent, &SpyServerClient::slot_data_ready);
   start();
   testTimer->start(10000);
 }
@@ -75,7 +75,7 @@ SpyServerHandler::~SpyServerHandler()
     usleep(1000);
 }
 
-void SpyServerHandler::no_deviceInfo()
+void SpyServerHandler::_slot_no_device_info()
 {
   if (!got_device_info)
     running.store(false);
@@ -400,7 +400,7 @@ bool SpyServerHandler::set_setting(uint32_t settingType, std::vector<uint32_t> &
 void SpyServerHandler::process_data(uint8_t * theBody, int length)
 {
   outB->put_data_into_ring_buffer(theBody, length);
-  emit data_ready();
+  emit signal_data_ready();
 }
 
 void SpyServerHandler::connection_set()

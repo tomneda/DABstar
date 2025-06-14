@@ -112,9 +112,9 @@ private:
   const std::string NameUnknown   = std::string("SpyServer - Unknown Device");
 
 signals:
-  void call_parent();
-  void data_ready();
+  void signal_call_parent();
+  void signal_data_ready();
 
 private slots:
-  void no_deviceInfo();
+  void _slot_no_device_info();
 };

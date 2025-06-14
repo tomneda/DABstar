@@ -92,35 +92,34 @@ public:
   } settings;
 
 private slots:
-  void setConnection();
-  void wantConnect();
-  void setGain(int);
-  void handle_autogain(int);
-  void handle_checkTimer();
+  void _slot_set_connection();
+  void _slot_connect();
+  void _slot_handle_gain(int);
+  void _slot_handle_autogain(int);
+  void _slot_handle_checkTimer();
 
 public slots:
-  void data_ready();
+  void slot_data_ready();
 
 private:
   QFrame myFrame;
-  RingBuffer<std::complex<float>> _I_Buffer;
-  RingBuffer<uint8_t> tmpBuffer;
+  RingBuffer<std::complex<float>> _I_Buffer{32 * 32768};
+  RingBuffer<uint8_t> tmpBuffer{32 * 32768};
   QTimer checkTimer;
   std::unique_ptr<SpyServerHandler> theServer;
   // QLineEdit * hostLineEdit;
   bool isvalidRate(int32_t);
   // QSettings * spyServer_settings;
   int32_t theRate;
-  bool connected = false;
-  bool running;
   QHostAddress serverAddress;
   qint64 basePort;
-  FILE * dumpfilePointer;
-  std::atomic<bool> onConnect;
-  std::atomic<bool> timedOut;
+  std::atomic<bool> running = false;
+  std::atomic<bool> connected = false;
+  std::atomic<bool> onConnect = false;
+  std::atomic<bool> timedOut = false;
 
   int16_t convBufferSize;
-  int16_t convIndex;
+  int16_t convIndex = 0;
   std::vector<std::complex<float>> convBuffer;
   int16_t mapTable_int[4 * 512];
   float mapTable_float[4 * 512];
