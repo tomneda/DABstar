@@ -135,18 +135,18 @@ struct MessageHeader
 
 struct DeviceInfo
 {
-  uint32_t DeviceType;
-  uint32_t DeviceSerial;
-  uint32_t MaximumSampleRate;
-  uint32_t MaximumBandwidth;
-  uint32_t DecimationStageCount;
-  uint32_t GainStageCount;
-  uint32_t MaximumGainIndex;
-  uint32_t MinimumFrequency;
-  uint32_t MaximumFrequency;
-  uint32_t Resolution;
-  uint32_t MinimumIQDecimation;
-  uint32_t ForcedIQFormat;
+  uint32_t DeviceType = 0;
+  uint32_t DeviceSerial = 0;
+  uint32_t MaximumSampleRate = 0;
+  uint32_t MaximumBandwidth = 0;
+  uint32_t DecimationStageCount = 0;
+  uint32_t GainStageCount = 0;
+  uint32_t MaximumGainIndex = 0;
+  uint32_t MinimumFrequency = 0;
+  uint32_t MaximumFrequency = 0;
+  uint32_t Resolution = 0;
+  uint32_t MinimumIQDecimation = 0;
+  uint32_t ForcedIQFormat = 0;
 };
 
 struct ClientSync

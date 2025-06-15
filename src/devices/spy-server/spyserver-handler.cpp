@@ -181,15 +181,7 @@ bool SpyServerHandler::show_attendance()
 
 void SpyServerHandler::cleanRecords()
 {
-  deviceInfo.DeviceType = 0;
-  deviceInfo.DeviceSerial = 0;
-  deviceInfo.DecimationStageCount = 0;
-  deviceInfo.GainStageCount = 0;
-  deviceInfo.MaximumSampleRate = 0;
-  deviceInfo.MaximumBandwidth = 0;
-  deviceInfo.MaximumGainIndex = 0;
-  deviceInfo.MinimumFrequency = 0;
-  deviceInfo.MaximumFrequency = 0;
+  deviceInfo = {};
   frameNumber = 0;
 }
 
