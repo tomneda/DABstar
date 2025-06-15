@@ -87,8 +87,8 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   settings.resample_quality = 2;
   settings.batchSize = 4096;
   settings.sample_bits = 16;
-//
-  connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_connect);
+
+  connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_handle_connect_button);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 2)
   connect(cbAutoGain, &QCheckBox::checkStateChanged, this, &SpyServerClient::_slot_handle_autogain);
 #else
@@ -97,8 +97,9 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   connect(sbGain, qOverload<int>(&QSpinBox::valueChanged), this, &SpyServerClient::_slot_handle_gain);
   // connect(portNumber, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
   // connect(editIpAddress, &QLineEdit::textChanged, this, &spyServer_client_8::_check_and_cleanup_ip_address);
+  btnConnect->setStyleSheet("background-color: #668888FF;");
   lblState->setStyleSheet("color: #8888FF;");
-  lblState->setText("waiting to start");
+  lblState->setText("Disconnected");
 }
 
 SpyServerClient::~SpyServerClient()
@@ -113,16 +114,35 @@ SpyServerClient::~SpyServerClient()
 }
 
 //
-void SpyServerClient::_slot_connect()
+void SpyServerClient::_slot_handle_connect_button()
 {
   if (connected)
+  {
+    stopReader();
+    connected = false;
+    theServer.reset();
+    settings = {};
+    btnConnect->setStyleSheet("background-color: #668888FF;");
+    btnConnect->setText("Connect");
+    lblState->setStyleSheet("color: #8888FF;");
+    lblState->setText("Disconnected");
+    editIpAddress->setEnabled(true);
+    return;
+  }
+
+  if (!_check_and_cleanup_ip_address())
   {
     return;
   }
 
-  if (_check_and_cleanup_ip_address())
+  if (_setup_connection())
   {
-    _slot_set_connection();
+    editIpAddress->setEnabled(false); // TODO: when to enable again?
+    btnConnect->setStyleSheet("background-color: #6688FF88;");
+    btnConnect->setText("Disconnect");
+    lblState->setStyleSheet("color: #88FF88;");
+    lblState->setText("Connected");
+    connected = true;
   }
 
   // QString ipAddress;
@@ -159,7 +179,7 @@ void SpyServerClient::_slot_connect()
 //	a signal appears and we are able to collect the
 //	inserted text. The format is the IP-V4 format.
 //	Using this text, we try to connect,
-void SpyServerClient::_slot_set_connection()
+bool SpyServerClient::_setup_connection()
 {
   // QString s = hostLineEdit->text();
   // QString theAddress = QHostAddress(s).toString();
@@ -172,21 +192,22 @@ void SpyServerClient::_slot_set_connection()
   }
   catch (...)
   {
-    QMessageBox::warning(nullptr, tr("Warning"), tr("Connection failed (1)"));
-    return;
+    theServer.reset(); // not sure if the object is already destroyed here (or not created)
+    QMessageBox::warning(nullptr, "Warning", "Connection failed");
+    return false;
   }
 
   if (theServer == nullptr)
   {
-    fprintf(stderr, "Connecting failed (2)\n");
-    return;
+    qCCritical(sLogSpyServerClient) << "Failed to create SpyServerHandler";
+    return false;
   }
 
   QEventLoop eventLoop;
   QTimer checkTimer;
   checkTimer.setSingleShot(true);
 
-  // Tomneda: changed this to a QEvenLoop as the QTimer never timed-out within this thread
+  // Tomneda: changed this to a QEventLoop as the QTimer never timed-out within this thread
   // could be a bit tricky because SpyServerHandler::signal_call_parent could be called before the connection is done -> false timeout will occur
   bool timedOut = false;
   const auto timerConn = connect(&checkTimer, &QTimer::timeout, [&]() { timedOut = true; eventLoop.quit(); });
@@ -200,13 +221,10 @@ void SpyServerClient::_slot_set_connection()
   if (timedOut)
   {
     qCCritical(sLogSpyServerClient()) << "Connection timed out";
-    QMessageBox::warning(nullptr, tr("Warning"), tr("no answers, fatal"));
+    QMessageBox::warning(nullptr, "Warning", "Timeout while waiting for an answer from the server");
     theServer.reset();
-    connected = false;
-    return;
+    return false;
   }
-
-  editIpAddress->setEnabled(false); // TODO: when to enable again?
 
   theServer->connection_set();
 
@@ -231,14 +249,13 @@ void SpyServerClient::_slot_set_connection()
     break;
   default:
     lblDeviceName->setText("Invalid device");
-    break;
   }
 
   if (!validDevice)
   {
     lblState->setStyleSheet("color: #FF8888;");
     lblState->setText("Invalid device");
-    return;
+    return false;
   }
 
   lblDeviceNumber->setStyleSheet("color: #FF8800;");
@@ -252,7 +269,7 @@ void SpyServerClient::_slot_set_connection()
   {
     qCCritical(sLogSpyServerClient()) << "Device does not support sampling";
     theServer.reset();
-    return;
+    return false;
   }
 
   for (uint16_t i = 0; i < decim_stages; ++i)
@@ -284,7 +301,7 @@ void SpyServerClient::_slot_set_connection()
   {
     qCCritical(sLogSpyServerClient()) << "Device does not support sampling at" << INPUT_RATE << "Sps" << " (max_samp_rate" << max_samp_rate << ")";
     theServer.reset();
-    return;
+    return false;
   }
 
   qCInfo(sLogSpyServerClient()) << "Device supports sampling at" << settings.sample_rate << "Sps" << " (resampling_ratio" << resample_ratio << ")";
@@ -293,19 +310,16 @@ void SpyServerClient::_slot_set_connection()
   sbGain->setMaximum(maxGain);
   settings.resample_ratio = resample_ratio;
   settings.desired_decim_stage = desired_decim_stage;
-  connected = true;
 
   if (!theServer->set_sample_rate_by_decim_stage(desired_decim_stage))
   {
     qCCritical(sLogSpyServerClient()) << "Failed to set sample rate " << desired_decim_stage;
-    return;
+    return false;
   }
 
-  disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_connect);
+  // disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_connect);
 
   // fprintf(stderr, "The samplerate = %f\n", (float)(theServer->get_sample_rate()));
-  lblState->setStyleSheet("color: #88FF88;");
-  lblState->setText("connected");
 //	start ();		// start the reader
 
 //	Since we are down sampling, creating an outputbuffer with the
@@ -324,6 +338,8 @@ void SpyServerClient::_slot_set_connection()
     }
     convIndex = 0;
   }
+
+  return true;
 }
 
 int32_t SpyServerClient::getRate()

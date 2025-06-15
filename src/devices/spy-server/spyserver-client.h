@@ -92,8 +92,7 @@ public:
   } settings;
 
 private slots:
-  void _slot_set_connection();
-  void _slot_connect();
+  void _slot_handle_connect_button();
   void _slot_handle_gain(int);
   void _slot_handle_autogain(int);
   void _slot_handle_checkTimer();
@@ -105,11 +104,7 @@ private:
   QFrame myFrame;
   RingBuffer<std::complex<float>> _I_Buffer{32 * 32768};
   RingBuffer<uint8_t> tmpBuffer{32 * 32768};
-  // QTimer checkTimer;
   std::unique_ptr<SpyServerHandler> theServer;
-  // QLineEdit * hostLineEdit;
-  bool isvalidRate(int32_t);
-  // QSettings * spyServer_settings;
   int32_t theRate;
   QHostAddress serverAddress;
   qint64 basePort;
@@ -125,5 +120,6 @@ private:
   float mapTable_float[4 * 512];
   int selectedRate;
 
+  bool _setup_connection();
   bool _check_and_cleanup_ip_address();
 };
