@@ -108,70 +108,70 @@ enum MessageType
 
 struct ClientHandshake
 {
-  uint32_t ProtocolVersion;
-  uint32_t ClientNameLength;
+  u32 ProtocolVersion;
+  u32 ClientNameLength;
 };
 
 struct CommandHeader
 {
-  uint32_t CommandType;
-  uint32_t BodySize;
+  u32 CommandType;
+  u32 BodySize;
 };
 
 struct SettingTarget
 {
-  uint32_t StreamType;
-  uint32_t SettingType;
+  u32 StreamType;
+  u32 SettingType;
 };
 
 struct MessageHeader
 {
-  uint32_t ProtocolID;
-  uint32_t MessageType;
-  uint32_t StreamType;
-  uint32_t SequenceNumber;
-  uint32_t BodySize;
+  u32 ProtocolID;
+  u32 MessageType;
+  u32 StreamType;
+  u32 SequenceNumber;
+  u32 BodySize;
 };
 
 struct DeviceInfo
 {
-  uint32_t DeviceType = 0;
-  uint32_t DeviceSerial = 0;
-  uint32_t MaximumSampleRate = 0;
-  uint32_t MaximumBandwidth = 0;
-  uint32_t DecimationStageCount = 0;
-  uint32_t GainStageCount = 0;
-  uint32_t MaximumGainIndex = 0;
-  uint32_t MinimumFrequency = 0;
-  uint32_t MaximumFrequency = 0;
-  uint32_t Resolution = 0;
-  uint32_t MinimumIQDecimation = 0;
-  uint32_t ForcedIQFormat = 0;
+  u32 DeviceType = 0;
+  u32 DeviceSerial = 0;
+  u32 MaximumSampleRate = 0;
+  u32 MaximumBandwidth = 0;
+  u32 DecimationStageCount = 0;
+  u32 GainStageCount = 0;
+  u32 MaximumGainIndex = 0;
+  u32 MinimumFrequency = 0;
+  u32 MaximumFrequency = 0;
+  u32 Resolution = 0;
+  u32 MinimumIQDecimation = 0;
+  u32 ForcedIQFormat = 0;
 };
 
 struct ClientSync
 {
-  uint32_t CanControl;
-  uint32_t Gain;
-  uint32_t DeviceCenterFrequency;
-  uint32_t IQCenterFrequency;
-  uint32_t FFTCenterFrequency;
-  uint32_t MinimumIQCenterFrequency;
-  uint32_t MaximumIQCenterFrequency;
-  uint32_t MinimumFFTCenterFrequency;
-  uint32_t MaximumFFTCenterFrequency;
+  u32 CanControl;
+  u32 Gain;
+  u32 DeviceCenterFrequency;
+  u32 IQCenterFrequency;
+  u32 FFTCenterFrequency;
+  u32 MinimumIQCenterFrequency;
+  u32 MaximumIQCenterFrequency;
+  u32 MinimumFFTCenterFrequency;
+  u32 MaximumFFTCenterFrequency;
 };
 
 struct ComplexInt16
 {
-  int16_t real;
-  int16_t imag;
+  i16 real;
+  i16 imag;
 };
 
 struct ComplexUInt8
 {
-  uint8_t real;
-  uint8_t imag;
+  u8 real;
+  u8 imag;
 };
 
 enum ParserPhase {

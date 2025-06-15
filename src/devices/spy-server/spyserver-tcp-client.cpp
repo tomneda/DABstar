@@ -52,11 +52,11 @@
 #endif
 #endif
 
-SpyServerTcpClient::SpyServerTcpClient(const QString & addr, int port,
-                           RingBuffer<uint8_t> * inBuffer)
+SpyServerTcpClient::SpyServerTcpClient(const QString & addr, i32 port,
+                           RingBuffer<u8> * inBuffer)
   : outBuffer(32768)
 {
-  int RetCode;
+  i32 RetCode;
   this->tcpAddress = addr;
   this->tcpPort = port;
   this->inBuffer = inBuffer;
@@ -76,7 +76,7 @@ SpyServerTcpClient::SpyServerTcpClient(const QString & addr, int port,
 	   return;
 	}
 #endif
-  int bufSize = 8 * 32768;
+  i32 bufSize = 8 * 32768;
   setsockopt(SendingSocket, SOL_SOCKET, SO_RCVBUF,
              (char *)&bufSize, sizeof(bufSize));
   ServerAddr.sin_family = AF_INET;
@@ -132,7 +132,7 @@ void SpyServerTcpClient::close_conn()
   }
 }
 
-void SpyServerTcpClient::send_data(uint8_t * data, int length)
+void SpyServerTcpClient::send_data(u8 * data, i32 length)
 {
   outBuffer.put_data_into_ring_buffer(data, length);
 }
@@ -141,7 +141,7 @@ char tempBuffer_8[1000000];
 
 void SpyServerTcpClient::run()
 {
-  int received = 0;
+  i32 received = 0;
   struct timeval m_timeInterval;
   fd_set m_readFds;
 
@@ -152,7 +152,7 @@ void SpyServerTcpClient::run()
     FD_SET(SendingSocket, &m_readFds);
     m_timeInterval.tv_usec = 100;
     m_timeInterval.tv_sec = 0;
-    int m_receivingStatus = select(SendingSocket + 1, &m_readFds,
+    i32 m_receivingStatus = select(SendingSocket + 1, &m_readFds,
                                    nullptr, nullptr, &m_timeInterval);
 
     if (m_receivingStatus < 0)
@@ -161,7 +161,7 @@ void SpyServerTcpClient::run()
     }
     if (m_receivingStatus == 0)
     {
-      int amount = outBuffer.get_ring_buffer_read_available();
+      i32 amount = outBuffer.get_ring_buffer_read_available();
       if (amount > 0)
       {
         (void)outBuffer.get_data_from_ring_buffer(tempBuffer_8, amount);
@@ -172,12 +172,12 @@ void SpyServerTcpClient::run()
     {
       sockaddr t;
 #ifndef	__MINGW32__
-      uint32_t tt = 10;
+      u32 tt = 10;
 #else
-	      int	tt = 10;
+	      i32	tt = 10;
 #endif
       unsigned long bytesAvailable = 0;
-      int ret = ioctlsocket(SendingSocket, FIONREAD, &bytesAvailable);
+      i32 ret = ioctlsocket(SendingSocket, FIONREAD, &bytesAvailable);
       (void)ret;
       received = recvfrom(SendingSocket, (char *)tempBuffer_8,
                           bytesAvailable, 0, &t, &tt);

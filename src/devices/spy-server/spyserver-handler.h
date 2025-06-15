@@ -50,15 +50,15 @@ class SpyServerHandler : public QThread
   Q_OBJECT
 
 public:
-  SpyServerHandler(SpyServerClient *, const QString &, int, RingBuffer<uint8_t> * outB);
+  SpyServerHandler(SpyServerClient *, const QString &, i32, RingBuffer<u8> * outB);
   ~SpyServerHandler();
 
   bool get_deviceInfo(struct DeviceInfo & theDevice);
-  bool set_sample_rate_by_decim_stage(const uint32_t decim_stage);
-  double get_sample_rate();
-  bool set_iq_center_freq(double freq);
+  bool set_sample_rate_by_decim_stage(const u32 decim_stage);
+  f64 get_sample_rate();
+  bool set_iq_center_freq(f64 freq);
   bool set_gain_mode(bool automatic, size_t chan = 0);
-  bool set_gain(double gain);
+  bool set_gain(f64 gain);
   bool is_streaming();
   void start_running();
   void stop_running();
@@ -69,23 +69,23 @@ public:
   QString deviceName();
 
 private:
-  RingBuffer<uint8_t> inBuffer;
+  RingBuffer<u8> inBuffer;
   SpyServerTcpClient tcpHandler;
-  RingBuffer<uint8_t> * outB;
+  RingBuffer<u8> * outB;
   SpyServerClient * parent;
   void run();
-  bool process_device_info(uint8_t *, struct DeviceInfo &);
-  bool process_client_sync(uint8_t *, ClientSync &);
+  bool process_device_info(u8 *, struct DeviceInfo &);
+  bool process_client_sync(u8 *, ClientSync &);
   void cleanRecords();
   bool show_attendance();
   bool readHeader(struct MessageHeader &);
-  bool readBody(uint8_t *, int);
-  void process_data(uint8_t *, int);
-  bool send_command(uint32_t, std::vector<uint8_t> &);
-  bool set_setting(uint32_t, std::vector<uint32_t> &);
+  bool readBody(u8 *, i32);
+  void process_data(u8 *, i32);
+  bool send_command(u32, std::vector<u8> &);
+  bool set_setting(u32, std::vector<u32> &);
 
   QTimer * testTimer;
-  int streamingMode;
+  i32 streamingMode;
   std::atomic<bool> is_connected;
   std::atomic<bool> streaming;
   std::atomic<bool> running;
@@ -95,13 +95,13 @@ private:
   DeviceInfo deviceInfo;
   ClientSync m_curr_client_sync;
   MessageHeader header;
-  uint64_t frameNumber;
+  u64 frameNumber;
 
-  double _center_freq;
-  double _gain;
+  f64 _center_freq;
+  f64 _gain;
 
 
-  const uint32_t ProtocolVersion = SPYSERVER_PROTOCOL_VERSION;
+  const u32 ProtocolVersion = SPYSERVER_PROTOCOL_VERSION;
   const std::string SoftwareID    = std::string("gr-osmosdr");
   const std::string NameNoDevice  = std::string("SpyServer - No Device");
   const std::string NameAirspyOne = std::string("SpyServer - Airspy One");

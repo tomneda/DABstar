@@ -58,14 +58,14 @@ public:
   SpyServerClient(QSettings *);
   ~SpyServerClient() override;
 
-  bool restartReader(int32_t) override;
+  bool restartReader(i32) override;
   void stopReader() override;
-  int32_t getSamples(std::complex<float> * V, int32_t size) override;
-  int32_t Samples() override;
-  int16_t bitDepth() override;
+  i32 getSamples(cf32 * V, i32 size) override;
+  i32 Samples() override;
+  i16 bitDepth() override;
 
-  void setVFOFrequency(int32_t) override;
-  int32_t getVFOFrequency() override;
+  void setVFOFrequency(i32) override;
+  i32 getVFOFrequency() override;
   void resetBuffer() override;
   void show() override;
   void hide() override;
@@ -74,27 +74,27 @@ public:
   bool isFileInput() override;
 
   // void connect_on();
-  int32_t getRate();
+  i32 getRate();
 
 
   struct
   {
-    int gain = 0;
-    int basePort = 0;
+    i32 gain = 0;
+    i32 basePort = 0;
     QString ipAddress;
-    uint32_t sample_rate = 0;
-    float resample_ratio = 0;
-    int desired_decim_stage = 0;
-    int resample_quality = 0;
-    int batchSize = 0;
-    int sample_bits = 0;
+    u32 sample_rate = 0;
+    f32 resample_ratio = 0;
+    i32 desired_decim_stage = 0;
+    i32 resample_quality = 0;
+    i32 batchSize = 0;
+    i32 sample_bits = 0;
     bool auto_gain = false;
   } settings;
 
 private slots:
   void _slot_handle_connect_button();
-  void _slot_handle_gain(int);
-  void _slot_handle_autogain(int);
+  void _slot_handle_gain(i32);
+  void _slot_handle_autogain(i32);
   void _slot_handle_checkTimer();
 
 public slots:
@@ -102,23 +102,23 @@ public slots:
 
 private:
   QFrame myFrame;
-  RingBuffer<std::complex<float>> _I_Buffer{32 * 32768};
-  RingBuffer<uint8_t> tmpBuffer{32 * 32768};
+  RingBuffer<cf32> _I_Buffer{32 * 32768};
+  RingBuffer<u8> tmpBuffer{32 * 32768};
   std::unique_ptr<SpyServerHandler> theServer;
-  int32_t theRate;
+  i32 theRate;
   QHostAddress serverAddress;
-  qint64 basePort;
+  i64 basePort;
   std::atomic<bool> running = false;
   std::atomic<bool> connected = false;
   // std::atomic<bool> onConnect = false;
   // std::atomic<bool> timedOut = false;
 
-  int16_t convBufferSize;
-  int16_t convIndex = 0;
-  std::vector<std::complex<float>> convBuffer;
-  int16_t mapTable_int[4 * 512];
-  float mapTable_float[4 * 512];
-  int selectedRate;
+  i16 convBufferSize;
+  i16 convIndex = 0;
+  std::vector<cf32> convBuffer;
+  i16 mapTable_int[4 * 512];
+  f32 mapTable_float[4 * 512];
+  i32 selectedRate;
 
   bool _setup_connection();
   bool _check_and_cleanup_ip_address();

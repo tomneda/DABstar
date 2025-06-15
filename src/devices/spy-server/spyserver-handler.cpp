@@ -39,7 +39,7 @@
 
 Q_LOGGING_CATEGORY(sLogSpyServerHandler, "SpyServerHandler", QtDebugMsg)
 
-SpyServerHandler::SpyServerHandler(SpyServerClient * parent, const QString & ipAddress, int port, RingBuffer<uint8_t> * outB)
+SpyServerHandler::SpyServerHandler(SpyServerClient * parent, const QString & ipAddress, i32 port, RingBuffer<u8> * outB)
   : inBuffer(64 * 32768)
   , tcpHandler(ipAddress, port, &inBuffer)
 {
@@ -85,8 +85,8 @@ void SpyServerHandler::_slot_no_device_info()
 void SpyServerHandler::run()
 {
   MessageHeader theHeader;
-  uint32_t sequenceNumberLast = (uint32_t)(-1);
-  static std::vector<uint8_t> buffer(64 * 1024);
+  u32 sequenceNumberLast = (u32)(-1);
+  static std::vector<u8> buffer(64 * 1024);
   running.store(true);
 
   while (running.load())
@@ -125,7 +125,7 @@ void SpyServerHandler::run()
 
 bool SpyServerHandler::readHeader(struct MessageHeader & header)
 {
-  while (running.load() && (inBuffer.get_ring_buffer_read_available() < (int)sizeof(struct MessageHeader)))
+  while (running.load() && (inBuffer.get_ring_buffer_read_available() < (i32)sizeof(struct MessageHeader)))
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
@@ -135,13 +135,13 @@ bool SpyServerHandler::readHeader(struct MessageHeader & header)
     return false;
   }
 
-  inBuffer.get_data_from_ring_buffer((uint8_t *)(&header), sizeof(struct MessageHeader));
+  inBuffer.get_data_from_ring_buffer((u8 *)(&header), sizeof(struct MessageHeader));
   return true;
 }
 
-bool SpyServerHandler::readBody(uint8_t * buffer, int size)
+bool SpyServerHandler::readBody(u8 * buffer, i32 size)
 {
-  int filler = 0;
+  i32 filler = 0;
   while (running.load())
   {
     if (inBuffer.get_ring_buffer_read_available() > size / 2)
@@ -168,9 +168,9 @@ bool SpyServerHandler::readBody(uint8_t * buffer, int size)
 
 bool SpyServerHandler::show_attendance()
 {
-  const uint8_t * protocolVersionBytes = (const uint8_t *)&ProtocolVersion;
-  const uint8_t * softwareVersionBytes = (const uint8_t *)SoftwareID.c_str();
-  std::vector<uint8_t> args = std::vector<uint8_t>(sizeof(ProtocolVersion) + SoftwareID.size());
+  const u8 * protocolVersionBytes = (const u8 *)&ProtocolVersion;
+  const u8 * softwareVersionBytes = (const u8 *)SoftwareID.c_str();
+  std::vector<u8> args = std::vector<u8>(sizeof(ProtocolVersion) + SoftwareID.size());
 
   std::memcpy(&args[0], protocolVersionBytes, sizeof(ProtocolVersion));
   std::memcpy(&args[0] + sizeof(ProtocolVersion), softwareVersionBytes, SoftwareID.size());
@@ -185,32 +185,32 @@ void SpyServerHandler::cleanRecords()
   frameNumber = 0;
 }
 
-bool SpyServerHandler::send_command(uint32_t cmd, std::vector<uint8_t> & args)
+bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
 {
   bool result;
-  uint32_t headerLen = sizeof(CommandHeader);
-  uint16_t argLen = args.size();
-  uint8_t buffer[headerLen + argLen];
+  u32 headerLen = sizeof(CommandHeader);
+  u16 argLen = args.size();
+  u8 buffer[headerLen + argLen];
   CommandHeader header;
 
 //	if (!is_connected) {
 //	   return false;
 //	}
 
-//	for (int i = 0; i < args. size (); i ++)
+//	for (i32 i = 0; i < args. size (); i ++)
 //	   fprintf (stderr, "%x ", args [i]);
 //	fprintf (stderr, "\n");
   header.CommandType = cmd;
   header.BodySize = argLen;
 
-  for (uint32_t i = 0; i < sizeof(CommandHeader); i++)
+  for (u32 i = 0; i < sizeof(CommandHeader); i++)
   {
-    buffer[i] = ((uint8_t *)(&header))[i];
+    buffer[i] = ((u8 *)(&header))[i];
   }
 
   if (argLen > 0)
   {
-    for (uint16_t i = 0; i < argLen; i++)
+    for (u16 i = 0; i < argLen; i++)
     {
       buffer[headerLen + i] = args[i];
     }
@@ -230,7 +230,7 @@ bool SpyServerHandler::send_command(uint32_t cmd, std::vector<uint8_t> & args)
   return result;
 }
 
-bool SpyServerHandler::process_device_info(uint8_t * buffer,
+bool SpyServerHandler::process_device_info(u8 * buffer,
                                        DeviceInfo & deviceInfo)
 {
   std::memcpy(&deviceInfo, buffer, sizeof(DeviceInfo));
@@ -251,12 +251,12 @@ bool SpyServerHandler::process_device_info(uint8_t * buffer,
   return true;
 }
 
-bool SpyServerHandler::process_client_sync(uint8_t * buffer, ClientSync & client_sync)
+bool SpyServerHandler::process_client_sync(u8 * buffer, ClientSync & client_sync)
 {
   std::memcpy((void *)(&client_sync), buffer, sizeof(ClientSync));
   std::memcpy((void *)(&m_curr_client_sync), buffer, sizeof(ClientSync));
-  _gain = (double)m_curr_client_sync.Gain;
-  _center_freq = (double)m_curr_client_sync.IQCenterFrequency;
+  _gain = (f64)m_curr_client_sync.Gain;
+  _center_freq = (f64)m_curr_client_sync.IQCenterFrequency;
   std::cerr << "\n**********\nClient sync:"
     << std::dec
     << "\n   Control:     " << (m_curr_client_sync.CanControl == 1 ? "Yes" : "No")
@@ -296,10 +296,10 @@ bool SpyServerHandler::get_deviceInfo(struct DeviceInfo & theDevice)
   return true;
 }
 
-bool SpyServerHandler::set_sample_rate_by_decim_stage(const uint32_t stage)
+bool SpyServerHandler::set_sample_rate_by_decim_stage(const u32 stage)
 {
-  std::vector<uint32_t> p(1);
-  std::vector<uint32_t> q(1);
+  std::vector<u32> p(1);
+  std::vector<u32> q(1);
   p[0] = stage;
   set_setting(SETTING_IQ_DECIMATION, p);
   q[0] = STREAM_FORMAT_UINT8;
@@ -307,14 +307,14 @@ bool SpyServerHandler::set_sample_rate_by_decim_stage(const uint32_t stage)
   return true;
 }
 
-double SpyServerHandler::get_sample_rate()
+f64 SpyServerHandler::get_sample_rate()
 {
   return 2500000; // TODO: why fix?
 }
 
-bool SpyServerHandler::set_iq_center_freq(double centerFrequency)
+bool SpyServerHandler::set_iq_center_freq(f64 centerFrequency)
 {
-  std::vector<uint32_t> param(1);
+  std::vector<u32> param(1);
   param[0] = centerFrequency;
   set_setting(SETTING_IQ_FREQUENCY, param);
   param[0] = STREAM_FORMAT_UINT8;
@@ -329,10 +329,10 @@ bool SpyServerHandler::set_gain_mode(bool automatic, size_t chan)
   return 0;
 }
 
-bool SpyServerHandler::set_gain(double gain)
+bool SpyServerHandler::set_gain(f64 gain)
 {
-  std::vector<uint32_t> param(1);
-  param[0] = (uint32_t)gain;
+  std::vector<u32> param(1);
+  param[0] = (u32)gain;
   set_setting(SETTING_GAIN, param);
   return true;
 }
@@ -344,7 +344,7 @@ bool SpyServerHandler::is_streaming()
 
 void SpyServerHandler::start_running()
 {
-  std::vector<uint32_t> p(1);
+  std::vector<u32> p(1);
   if (!streaming.load())
   {
     qCInfo(sLogSpyServerHandler) << "Starting Streaming";
@@ -356,7 +356,7 @@ void SpyServerHandler::start_running()
 
 void SpyServerHandler::stop_running()
 {
-  std::vector<uint32_t> p;
+  std::vector<u32> p;
   if (streaming.load())
   {
     streaming.store(false);
@@ -365,31 +365,31 @@ void SpyServerHandler::stop_running()
   }
 }
 
-bool SpyServerHandler::set_setting(uint32_t settingType, std::vector<uint32_t> & params)
+bool SpyServerHandler::set_setting(u32 settingType, std::vector<u32> & params)
 {
-  std::vector<uint8_t> argBytes;
+  std::vector<u8> argBytes;
 
   if (params.size() > 0)
   {
-    argBytes = std::vector<uint8_t>(sizeof(SettingType) + params.size() * sizeof(uint32_t));
-    uint8_t * settingBytes = (uint8_t *)&settingType;
+    argBytes = std::vector<u8>(sizeof(SettingType) + params.size() * sizeof(u32));
+    u8 * settingBytes = (u8 *)&settingType;
 
-    for (uint32_t i = 0; i < sizeof(uint32_t); i++)
+    for (u32 i = 0; i < sizeof(u32); i++)
     {
       argBytes[i] = settingBytes[i];
     }
 
-    std::memcpy(&argBytes[0] + sizeof(uint32_t), &params[0], sizeof(uint32_t) * params.size());
+    std::memcpy(&argBytes[0] + sizeof(u32), &params[0], sizeof(u32) * params.size());
   }
   else
   {
-    argBytes = std::vector<uint8_t>();
+    argBytes = std::vector<u8>();
   }
 
   return send_command(CMD_SET_SETTING, argBytes);
 }
 
-void SpyServerHandler::process_data(uint8_t * theBody, int length)
+void SpyServerHandler::process_data(u8 * theBody, i32 length)
 {
   outB->put_data_into_ring_buffer(theBody, length);
   emit signal_data_ready();
@@ -397,7 +397,7 @@ void SpyServerHandler::process_data(uint8_t * theBody, int length)
 
 void SpyServerHandler::connection_set()
 {
-  std::vector<uint32_t> p;
+  std::vector<u32> p;
   p.push_back(streamingMode);
   set_setting(SETTING_STREAMING_MODE, p);
   p[0] = 0x0;

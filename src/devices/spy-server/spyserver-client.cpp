@@ -94,8 +94,8 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
 #else
   connect (autogain_selector, &QCheckBox::stateChanged, this, &spyServer_client_8::handle_autogain);
 #endif
-  connect(sbGain, qOverload<int>(&QSpinBox::valueChanged), this, &SpyServerClient::_slot_handle_gain);
-  // connect(portNumber, qOverload<int>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
+  connect(sbGain, qOverload<i32>(&QSpinBox::valueChanged), this, &SpyServerClient::_slot_handle_gain);
+  // connect(portNumber, qOverload<i32>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
   // connect(editIpAddress, &QLineEdit::textChanged, this, &spyServer_client_8::_check_and_cleanup_ip_address);
   btnConnect->setStyleSheet("background-color: #668888FF;");
   lblState->setStyleSheet("color: #8888FF;");
@@ -149,7 +149,7 @@ void SpyServerClient::_slot_handle_connect_button()
   // QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
   //
   // // use the first non-localhost IPv4 address
-  // for (int16_t i = 0; i < ipAddressesList.size(); ++i)
+  // for (i16 i = 0; i < ipAddressesList.size(); ++i)
   // {
   //   if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
   //       ipAddressesList.at(i).toIPv4Address())
@@ -188,7 +188,7 @@ bool SpyServerClient::_setup_connection()
 
   try
   {
-    theServer = std::make_unique<SpyServerHandler>(this, settings.ipAddress, (int)settings.basePort, &tmpBuffer);
+    theServer = std::make_unique<SpyServerHandler>(this, settings.ipAddress, (i32)settings.basePort, &tmpBuffer);
   }
   catch (...)
   {
@@ -260,10 +260,10 @@ bool SpyServerClient::_setup_connection()
 
   lblDeviceNumber->setStyleSheet("color: #FF8800;");
   lblDeviceNumber->setText(QString::number(theDevice.DeviceSerial));
-  const uint32_t max_samp_rate = theDevice.MaximumSampleRate;
-  const uint32_t decim_stages = theDevice.DecimationStageCount;
-  int desired_decim_stage = -1;
-  double resample_ratio = 1.0;
+  const u32 max_samp_rate = theDevice.MaximumSampleRate;
+  const u32 decim_stages = theDevice.DecimationStageCount;
+  i32 desired_decim_stage = -1;
+  f64 resample_ratio = 1.0;
 
   if (max_samp_rate == 0)
   {
@@ -272,9 +272,9 @@ bool SpyServerClient::_setup_connection()
     return false;
   }
 
-  for (uint16_t i = 0; i < decim_stages; ++i)
+  for (u16 i = 0; i < decim_stages; ++i)
   {
-    const int targetRate = (uint32_t)(max_samp_rate / (1 << i));
+    const i32 targetRate = (u32)(max_samp_rate / (1 << i));
 
     if (targetRate == INPUT_RATE)
     {
@@ -287,7 +287,7 @@ bool SpyServerClient::_setup_connection()
     {
       // remember the next-largest rate that is available
       desired_decim_stage = i;
-      resample_ratio = INPUT_RATE / (double)targetRate;
+      resample_ratio = INPUT_RATE / (f64)targetRate;
       settings.sample_rate = targetRate;
     }
     else
@@ -306,7 +306,7 @@ bool SpyServerClient::_setup_connection()
 
   qCInfo(sLogSpyServerClient()) << "Device supports sampling at" << settings.sample_rate << "Sps" << " (resampling_ratio" << resample_ratio << ")";
 
-  const int maxGain = theDevice.MaximumGainIndex;
+  const i32 maxGain = theDevice.MaximumGainIndex;
   sbGain->setMaximum(maxGain);
   settings.resample_ratio = resample_ratio;
   settings.desired_decim_stage = desired_decim_stage;
@@ -319,7 +319,7 @@ bool SpyServerClient::_setup_connection()
 
   // disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_connect);
 
-  // fprintf(stderr, "The samplerate = %f\n", (float)(theServer->get_sample_rate()));
+  // fprintf(stderr, "The samplerate = %f\n", (f32)(theServer->get_sample_rate()));
 //	start ();		// start the reader
 
 //	Since we are down sampling, creating an outputbuffer with the
@@ -330,10 +330,10 @@ bool SpyServerClient::_setup_connection()
     // we process chunks of 1 msec
     convBufferSize = settings.sample_rate / 1000;
     convBuffer.resize(convBufferSize + 1);
-    for (int i = 0; i < 2048; i++)
+    for (i32 i = 0; i < 2048; i++)
     {
-      float inVal = float(settings.sample_rate / 1000);
-      mapTable_int[i] = int(floor(i * (inVal / 2048.0)));
+      f32 inVal = f32(settings.sample_rate / 1000);
+      mapTable_int[i] = i32(floor(i * (inVal / 2048.0)));
       mapTable_float[i] = i * (inVal / 2048.0) - mapTable_int[i];
     }
     convIndex = 0;
@@ -342,12 +342,12 @@ bool SpyServerClient::_setup_connection()
   return true;
 }
 
-int32_t SpyServerClient::getRate()
+i32 SpyServerClient::getRate()
 {
   return INPUT_RATE;
 }
 
-bool SpyServerClient::restartReader(int32_t freq)
+bool SpyServerClient::restartReader(i32 freq)
 {
   if (!connected)
   {
@@ -393,24 +393,24 @@ void SpyServerClient::stopReader()
 
 //
 //
-int32_t SpyServerClient::getSamples(std::complex<float> * V, int32_t size)
+i32 SpyServerClient::getSamples(cf32 * V, i32 size)
 {
-  int amount = 0;
+  i32 amount = 0;
   amount = _I_Buffer.get_data_from_ring_buffer(V, size);
   return amount;
 }
 
-int32_t SpyServerClient::Samples()
+i32 SpyServerClient::Samples()
 {
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-int16_t SpyServerClient::bitDepth()
+i16 SpyServerClient::bitDepth()
 {
   return 8;
 }
 
-void SpyServerClient::_slot_handle_gain(int gain)
+void SpyServerClient::_slot_handle_gain(i32 gain)
 {
   settings.gain = gain;
 
@@ -421,7 +421,7 @@ void SpyServerClient::_slot_handle_gain(int gain)
   }
 }
 
-void SpyServerClient::_slot_handle_autogain(int d)
+void SpyServerClient::_slot_handle_autogain(i32 d)
 {
   (void)d;
   const bool x = cbAutoGain->isChecked();
@@ -438,7 +438,7 @@ void SpyServerClient::_slot_handle_autogain(int d)
 //   onConnect.store(true);
 // }
 
-static constexpr float convTable[] =
+static constexpr f32 convTable[] =
 {
   -128 / 128.0, -127 / 128.0, -126 / 128.0, -125 / 128.0, -124 / 128.0, -123 / 128.0, -122 / 128.0, -121 / 128.0, -120 / 128.0, -119 / 128.0, -118 / 128.0, -117 / 128.0, -116 / 128.0, -115 / 128.0, -114 / 128.0, -113 / 128.0, -112 / 128.0,
   -111 / 128.0, -110 / 128.0, -109 / 128.0, -108 / 128.0, -107 / 128.0, -106 / 128.0, -105 / 128.0, -104 / 128.0, -103 / 128.0, -102 / 128.0, -101 / 128.0, -100 / 128.0, -99 / 128.0, -98 / 128.0, -97 / 128.0, -96 / 128.0, -95 / 128.0,
@@ -458,12 +458,12 @@ static constexpr float convTable[] =
 
 void SpyServerClient::slot_data_ready()
 {
-  uint8_t buffer_8[settings.batchSize * 2];
-//static int fillP	= 0;
+  u8 buffer_8[settings.batchSize * 2];
+//static i32 fillP	= 0;
   while (connected &&
          (tmpBuffer.get_ring_buffer_read_available() > 2 * settings.batchSize))
   {
-    uint32_t samps = tmpBuffer.get_data_from_ring_buffer(buffer_8, 2 * settings.batchSize) / 2;
+    const u32 samps = tmpBuffer.get_data_from_ring_buffer(buffer_8, 2 * settings.batchSize) / 2;
 
     if (!running)
     {
@@ -472,20 +472,19 @@ void SpyServerClient::slot_data_ready()
 
     if (settings.resample_ratio != 1)
     {
-      std::complex<float> temp[2048];
+      cf32 temp[2048];
 
-      for (uint32_t i = 0; i < samps; i++)
+      for (u32 i = 0; i < samps; i++)
       {
-        convBuffer[convIndex++] = std::complex<float>(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
+        convBuffer[convIndex++] = cf32(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
 
         if (convIndex > convBufferSize)
         {
-          for (int j = 0; j < 2048; j++)
+          for (i32 j = 0; j < 2048; j++)
           {
-            int16_t inpBase = mapTable_int[j];
-            float inpRatio = mapTable_float[j];
-            temp[j] = convBuffer[inpBase + 1] * inpRatio +
-                      convBuffer[inpBase] * (1 - inpRatio);
+            i16 inpBase = mapTable_int[j];
+            f32 inpRatio = mapTable_float[j];
+            temp[j] = convBuffer[inpBase + 1] * inpRatio + convBuffer[inpBase] * (1 - inpRatio);
           }
           // if (toSkip > 0)
           //   toSkip -= 2048;
@@ -499,11 +498,11 @@ void SpyServerClient::slot_data_ready()
     }
     else
     {	// no resmpling
-      std::complex<float> outB[samps];
+      cf32 outB[samps];
 
-      for (uint32_t i = 0; i < samps; i++)
+      for (u32 i = 0; i < samps; i++)
       {
-        outB[i] = std::complex<float>(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
+        outB[i] = cf32(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
       }
 
       _I_Buffer.put_data_into_ring_buffer(outB, samps);
@@ -521,7 +520,7 @@ bool SpyServerClient::_check_and_cleanup_ip_address()
   QString addr = editIpAddress->text();
 
   // remove "sdr://" or similar from the front
-  const int pos = addr.indexOf("://");
+  const i32 pos = addr.indexOf("://");
   if (pos >= 0)
   {
     addr = addr.mid(pos + 3);

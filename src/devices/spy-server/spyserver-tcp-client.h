@@ -60,23 +60,23 @@ class SpyServerTcpClient : public QThread
 
 private:
   QString tcpAddress;
-  int tcpPort;
-  RingBuffer<uint8_t> * inBuffer;
-  RingBuffer<uint8_t> outBuffer;
+  i32 tcpPort;
+  RingBuffer<u8> * inBuffer;
+  RingBuffer<u8> outBuffer;
   std::mutex locker;
   bool connected;
-  int SendingSocket;
+  i32 SendingSocket;
   struct sockaddr_in ServerAddr;
   void run();
   std::atomic<bool> running;
 
 public:
-  SpyServerTcpClient(const QString & addr, int port,
-               RingBuffer<uint8_t> * inBuffer);
+  SpyServerTcpClient(const QString & addr, i32 port,
+               RingBuffer<u8> * inBuffer);
   ~SpyServerTcpClient();
 
   bool is_connected();
   void connect_conn();
   void close_conn();
-  void send_data(uint8_t * data, int length);
+  void send_data(u8 * data, i32 length);
 };
