@@ -40,6 +40,7 @@ TiiListDisplay::TiiListDisplay()
                                                          << "Distance" << "Dir" << "Power" << "Altitude" << "Height");
 
   mpWidget.reset(new QScrollArea(nullptr));
+  mpWidget->setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mpWidget->setWidgetResizable(true);
   mpWidget->setWindowTitle("TII list");
   mpWidget->setWidget(mpTableWidget.get());
