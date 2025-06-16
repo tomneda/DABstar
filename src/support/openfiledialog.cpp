@@ -233,7 +233,7 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) 
   fileName = QFileDialog::getOpenFileName(nullptr,
                                           "Open file ...",
                                           storedDir.path(),
-                                          "Sample data (*.uff *.sdr *.raw *.iq)",
+                                          "Sample data (*.uff *.sdr *.wav *.raw *.iq)",
                                           &selectedFilter,
                                           useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
@@ -251,7 +251,8 @@ OpenFileDialog::EType OpenFileDialog::get_file_type(const QString & fileName) co
   EType fileType = EType::UNDEF;
 
   if      (fileName.endsWith(".uff", Qt::CaseInsensitive)) fileType = EType::XML;
-  else if (fileName.endsWith(".sdr", Qt::CaseInsensitive)) fileType = EType::SDR;
+  else if (fileName.endsWith(".sdr", Qt::CaseInsensitive) ||
+           fileName.endsWith(".wav", Qt::CaseInsensitive)) fileType = EType::SDR; // SDR == WAV
   else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) fileType = EType::RAW;
   else if (fileName.endsWith(".iq",  Qt::CaseInsensitive)) fileType = EType::IQ;
   else qDebug() << "Unknown file type in: " << fileName;
