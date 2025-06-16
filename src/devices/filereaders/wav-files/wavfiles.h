@@ -31,17 +31,17 @@
 #ifndef  WAV_FILES_H
 #define  WAV_FILES_H
 
+#include  "dab-constants.h"
+#include  "device-handler.h"
+#include  "ringbuffer.h"
+#include  "filereader-widget.h"
+#include  "wav-reader.h"
+#include  <memory>
 #include  <QObject>
 #include  <QString>
 #include  <QFrame>
 #include  <sndfile.h>
 #include  <atomic>
-#include  "dab-constants.h"
-#include  "device-handler.h"
-#include  "ringbuffer.h"
-
-#include  "filereader-widget.h"
-#include  "wav-reader.h"
 
 class WavFileHandler final : public QObject, public IDeviceHandler, public FileReaderWidget
 {
@@ -70,11 +70,11 @@ private:
   RingBuffer<cf32> _I_Buffer;
   i32 bufferSize = 0;
   SNDFILE * filePointer = nullptr;
-  WavReader * readerTask = nullptr;
+  std::unique_ptr<WavReader> pWavReader;
   std::atomic<bool> running = false;
 
 public slots:
-  void setProgress(i32, f32);
+  void slot_set_progress(i32, f32);
   void slot_handle_cb_loop_file(const bool iChecked);
 };
 

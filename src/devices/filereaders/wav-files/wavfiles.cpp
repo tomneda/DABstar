@@ -94,12 +94,11 @@ WavFileHandler::~WavFileHandler()
 {
   if (running.load())
   {
-    readerTask->stopReader();
-    while (readerTask->isRunning())
+    pWavReader->stop_reader();
+    while (pWavReader->isRunning())
     {
       usleep(500);
     }
-    delete readerTask;
   }
   if (filePointer != nullptr)
   {
@@ -115,7 +114,7 @@ bool WavFileHandler::restartReader(i32 freq)
   {
     return true;
   }
-  readerTask = new WavReader(this, filePointer, &_I_Buffer);
+  pWavReader = std::make_unique<WavReader>(this, filePointer, &_I_Buffer);
   running.store(true);
   return true;
 }
@@ -124,12 +123,12 @@ void WavFileHandler::stopReader()
 {
   if (running.load())
   {
-    readerTask->stopReader();
-    while (readerTask->isRunning())
+    pWavReader->stop_reader();
+    while (pWavReader->isRunning())
     {
       usleep(100);
     }
-    delete readerTask;
+    pWavReader.reset();
   }
   running.store(false);
 }
@@ -159,7 +158,7 @@ i32 WavFileHandler::Samples()
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-void WavFileHandler::setProgress(i32 progress, f32 timelength)
+void WavFileHandler::slot_set_progress(i32 progress, f32 timelength)
 {
   fileProgress->setValue(progress);
   currentTime->display(QString("%1").arg(timelength, 0, 'f', 1));
@@ -215,5 +214,5 @@ void WavFileHandler::slot_handle_cb_loop_file(const bool iChecked)
     return;
   }
 
-  cbLoopFile->setChecked(readerTask->handle_continuousButton());
+  cbLoopFile->setChecked(pWavReader->handle_continuous_button());
 }

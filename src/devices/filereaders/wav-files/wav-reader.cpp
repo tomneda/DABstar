@@ -45,30 +45,29 @@ static inline i64 getMyTime()
 }
 
 WavReader::WavReader(WavFileHandler * mr, SNDFILE * filePointer, RingBuffer<cf32> * theBuffer)
+  : mpFilePointer(filePointer)
+  , mpBuffer(theBuffer)
+  , mpParent(mr)
 {
-  this->parent = mr;
-  this->filePointer = filePointer;
-  this->theBuffer = theBuffer;
-  fileLength = sf_seek(filePointer, 0, SEEK_END);
-  fprintf(stderr, "fileLength = %d\n", (i32)fileLength);
+  mFileLength = sf_seek(filePointer, 0, SEEK_END);
   sf_seek(filePointer, 0, SEEK_SET);
-  period = (32768 * 1000) / (2048);  // full IQś read
-  fprintf(stderr, "Period = %" PRIu64 "\n", period);
-  running.store(false);
-  continuous.store(mr->cbLoopFile->isChecked());
+  mPeriod = (32768 * 1000) / (2048);  // full IQs read
+  qInfo() << "FileLength =" << mFileLength << ", period =" << mPeriod;
+  mRunning.store(false);
+  mContinuous.store(mr->cbLoopFile->isChecked());
   start();
 }
 
 WavReader::~WavReader()
 {
-  stopReader();
+  stop_reader();
 }
 
-void WavReader::stopReader()
+void WavReader::stop_reader()
 {
-  if (running.load())
+  if (mRunning.load())
   {
-    running.store(false);
+    mRunning.store(false);
     while (isRunning())
     {
       usleep(200);
@@ -78,52 +77,58 @@ void WavReader::stopReader()
 
 void WavReader::run()
 {
-  i32 bufferSize = 32768;
-  i64 nextStop;
-  i32 teller = 0;
-  auto * const bi  = make_vla(cf32, bufferSize);
+  constexpr i32 bufferSize = 32768;
+  auto * const bi = make_vla(cf32, bufferSize);
 
-  connect(this, SIGNAL (setProgress(int, float)), parent, SLOT (setProgress(int, float)));
-  sf_seek(filePointer, 0, SEEK_SET);
+  connect(this, &WavReader::signal_set_progress, mpParent, &WavFileHandler::slot_set_progress);
+  
+  sf_seek(mpFilePointer, 0, SEEK_SET);
 
-  running.store(true);
+  mRunning.store(true);
 
-  nextStop = getMyTime();
+  i32 cnt = 0;
+  i64 nextStop = getMyTime();
+
   try
   {
-    while (running.load())
+    while (mRunning.load())
     {
-      while (theBuffer->get_ring_buffer_write_available() < bufferSize)
+      while (mpBuffer->get_ring_buffer_write_available() < bufferSize)
       {
-        if (!running.load())
+        if (!mRunning.load())
         {
           throw (33);
         }
         usleep(100);
       }
 
-      if (++teller >= 20)
+      if (++cnt >= 20)
       {
-        i32 xx = sf_seek(filePointer, 0, SEEK_CUR);
-        f32 progress = (f32)xx / fileLength;
-        setProgress((i32)(progress * 100), (f32)xx / 2048000);
-        teller = 0;
+        const i32 xx = sf_seek(mpFilePointer, 0, SEEK_CUR);
+        const f32 progress = (f32)xx / (f32)mFileLength;
+        signal_set_progress((i32)(progress * 100), (f32)xx / 2048000);
+        cnt = 0;
       }
 
-      nextStop += period;
-      i32 n = sf_readf_float(filePointer, (f32 *)bi, bufferSize);
+      nextStop += mPeriod;
+
+      const i32 n = (i32)sf_readf_float(mpFilePointer, (f32 *)bi, bufferSize);
+
       if (n < bufferSize)
       {
-        fprintf(stderr, "End of file reached\n");
-        sf_seek(filePointer, 0, SEEK_SET);
+        qInfo("End of file reached");
+
+        sf_seek(mpFilePointer, 0, SEEK_SET);
         for (i32 i = n; i < bufferSize; i++)
         {
           bi[i] = std::complex<f32>(0, 0);
         }
-        if (!continuous.load())
+        if (!mContinuous.load())
 	      break;
       }
-      theBuffer->put_data_into_ring_buffer(bi, bufferSize);
+
+      mpBuffer->put_data_into_ring_buffer(bi, bufferSize);
+
       if (nextStop - getMyTime() > 0)
       {
         usleep(nextStop - getMyTime());
@@ -133,13 +138,13 @@ void WavReader::run()
   catch (i32 e)
   {
   }
-  fprintf(stderr, "taak voor replay eindigt hier\n");
-  fflush(stderr);
+
+  qInfo("Task for replay ended");
 }
 
-bool WavReader::handle_continuousButton()
+bool WavReader::handle_continuous_button()
 {
-  continuous.store(!continuous.load());
-  return continuous.load();
+  mContinuous.store(!mContinuous.load());
+  return mContinuous.load();
 }
 

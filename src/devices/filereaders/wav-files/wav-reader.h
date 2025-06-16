@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -29,29 +37,32 @@
 #include	"ringbuffer.h"
 #include	<atomic>
 
-class	WavFileHandler;
+class WavFileHandler;
 
-class	WavReader: public QThread {
-Q_OBJECT
+class WavReader : public QThread
+{
+  Q_OBJECT
+
 public:
-	WavReader(WavFileHandler *, SNDFILE *, RingBuffer<cf32> *);
-	~WavReader();
-	void startReader();
-	void stopReader();
-	bool handle_continuousButton();
+  WavReader(WavFileHandler *, SNDFILE *, RingBuffer<cf32> *);
+  ~WavReader();
+
+  void start_reader();
+  void stop_reader();
+  bool handle_continuous_button();
 
 private:
-	virtual void run();
-	SNDFILE	*filePointer;
-	RingBuffer<cf32> *theBuffer;
-	u64 period;
-	std::atomic<bool> running;
-	std::atomic<bool> continuous;
-	WavFileHandler *parent;
-	i64	fileLength;
+  virtual void run();
+  SNDFILE * const mpFilePointer;
+  RingBuffer<cf32> * const mpBuffer;
+  WavFileHandler * const mpParent;
+  u64 mPeriod = 0;
+  std::atomic<bool> mRunning = false;
+  std::atomic<bool> mContinuous = false;
+  i64 mFileLength = 0;
+
 signals:
-	void setProgress(i32, f32);
+  void signal_set_progress(i32, f32);
 };
 
 #endif
-
