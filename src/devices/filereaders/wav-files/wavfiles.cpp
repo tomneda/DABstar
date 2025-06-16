@@ -52,7 +52,6 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   : myFrame(nullptr)
   , _I_Buffer(__BUFFERSIZE__)
 {
-  SF_INFO * sf_info;
 
   fileName = iFilename;
   setupUi(&myFrame);
@@ -62,25 +61,28 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
-  sf_info = (SF_INFO *)alloca (sizeof(SF_INFO));
-  sf_info->format = 0;
-  filePointer = OpenFileDialog::open_snd_file(iFilename.toUtf8().data(), SFM_READ, sf_info);
+  SF_INFO sf_info;
+  sf_info.format = 0;
+  filePointer = OpenFileDialog::open_snd_file(iFilename.toUtf8().data(), SFM_READ, &sf_info);
+
   if (filePointer == nullptr)
   {
     const QString val = QString("File '%1' is no valid sound file").arg(iFilename);
     throw std::runtime_error(val.toUtf8().data());
   }
-  if ((sf_info->samplerate != 2048000) || (sf_info->channels != 2))
+
+  if (sf_info.samplerate != INPUT_RATE || sf_info.channels != 2)
   {
     sf_close(filePointer);
     const QString val = QString("Sample rate or channel number does not fit");
     throw std::runtime_error(val.toUtf8().data());
   }
+
   nameofFile->setText(iFilename);
   fileProgress->setValue(0);
   currentTime->display(0);
   i64 fileLength = sf_seek(filePointer, 0, SEEK_END);
-  totalTime->display(QString("%1").arg((f32)fileLength / 2048000, 0, 'f', 1));
+  totalTime->display(QString("%1").arg((f32)fileLength / (f32)sf_info.samplerate, 0, 'f', 1));
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &WavFileHandler::slot_handle_cb_loop_file);
   running.store(false);

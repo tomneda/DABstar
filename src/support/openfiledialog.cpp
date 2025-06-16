@@ -55,12 +55,12 @@ FILE * OpenFileDialog::open_file(const QString & iFileName, const QString & iFil
   return pF;
 }
 
-SNDFILE * OpenFileDialog::open_snd_file(const QString & iFileName, i32 iMode, SF_INFO * ipSfInfo)
+SNDFILE * OpenFileDialog::open_snd_file(const QString & iFileName, i32 iMode, SF_INFO * opSfInfo)
 {
-  SNDFILE * pSf = sf_open(iFileName.toUtf8().data(), iMode, ipSfInfo);
+  SNDFILE * pSf = sf_open(iFileName.toUtf8().data(), iMode, opSfInfo);
   if (pSf == nullptr)
   {
-    pSf = sf_open(iFileName.toLatin1().data(), iMode, ipSfInfo); // "umlauts" in Windows need that
+    pSf = sf_open(iFileName.toLatin1().data(), iMode, opSfInfo); // "umlauts" in Windows need that
   }
   return pSf;
 }
