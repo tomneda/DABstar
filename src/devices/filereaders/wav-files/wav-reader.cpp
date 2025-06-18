@@ -38,29 +38,48 @@
 
 static inline i64 getMyTime()
 {
-  struct timeval tv;
-
+  timeval tv;
   gettimeofday(&tv, nullptr);
   return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
 }
 
-WavReader::WavReader(WavFileHandler * mr, SNDFILE * filePointer, RingBuffer<cf32> * theBuffer)
-  : mpFilePointer(filePointer)
-  , mpBuffer(theBuffer)
-  , mpParent(mr)
+WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32> * ipRingBuffer, const i32 iSampleRate)
+  : mpFile(ipFile)
+  , mpBuffer(ipRingBuffer)
+  , mpParent(ipWavFH)
+  , mSampleRate(iSampleRate)
 {
-  mFileLength = sf_seek(filePointer, 0, SEEK_END);
-  sf_seek(filePointer, 0, SEEK_SET);
-  mPeriod = (32768 * 1000) / (2048);  // full IQs read
-  qInfo() << "FileLength =" << mFileLength << ", period =" << mPeriod;
-  mRunning.store(false);
-  mContinuous.store(mr->cbLoopFile->isChecked());
-  start();
+  mFileLength = sf_seek(ipFile, 0, SEEK_END);
+  sf_seek(ipFile, 0, SEEK_SET);
+  mContinuous.store(ipWavFH->cbLoopFile->isChecked());
+
+  if (mSampleRate != INPUT_RATE)
+  {
+    // we process chunks of 1 msec
+    mConvBufferSize = mSampleRate / 1000;
+    mConvBuffer.resize(mConvBufferSize + 1);
+    for (i32 i = 0; i < 2048; i++)
+    {
+      const f32 inVal = f32(iSampleRate) / 1000.0f;
+      mMapTable_int[i] = (i16)(std::floor((f32)i * (inVal / 2048.0f)));
+      mMapTable_float[i] = (f32)i * (inVal / 2048.0f) - (f32)mMapTable_int[i];
+      //qDebug() << i << mMapTable_int[i] << mMapTable_float[i];
+    }
+    mConvIndex = 0;
+  }
+
+  mPeriod_us = 32768LL * 1'000'000LL/*us*/ / mSampleRate;  // full IQs read
+  qInfo() << "FileLength =" << mFileLength / 1024 << "kB, Period =" << mPeriod_us << "us, SampleRate =" << mSampleRate / 1e3 << "kSps";
 }
 
 WavReader::~WavReader()
 {
   stop_reader();
+}
+
+void WavReader::start_reader()
+{
+  QThread::start();
 }
 
 void WavReader::stop_reader()
@@ -78,11 +97,11 @@ void WavReader::stop_reader()
 void WavReader::run()
 {
   constexpr i32 bufferSize = 32768;
-  auto * const bi = make_vla(cf32, bufferSize);
+  std::array<cf32, bufferSize> bi;
 
   connect(this, &WavReader::signal_set_progress, mpParent, &WavFileHandler::slot_set_progress);
   
-  sf_seek(mpFilePointer, 0, SEEK_SET);
+  sf_seek(mpFile, 0, SEEK_SET);
 
   mRunning.store(true);
 
@@ -102,23 +121,23 @@ void WavReader::run()
         usleep(100);
       }
 
-      if (++cnt >= 20)
+      if (++cnt >= 20)  // about 3 times in a second
       {
-        const i32 xx = sf_seek(mpFilePointer, 0, SEEK_CUR);
+        const i32 xx = (i32)sf_seek(mpFile, 0, SEEK_CUR);
         const f32 progress = (f32)xx / (f32)mFileLength;
-        signal_set_progress((i32)(progress * 100), (f32)xx / 2048000);
+        signal_set_progress((i32)(progress * 100), (f32)xx / 2500000.0f);
         cnt = 0;
       }
 
-      nextStop += mPeriod;
+      nextStop += mPeriod_us;
 
-      const i32 n = (i32)sf_readf_float(mpFilePointer, (f32 *)bi, bufferSize);
+      const i32 n = (i32)sf_readf_float(mpFile, (f32 *)bi.data(), bufferSize);
 
       if (n < bufferSize)
       {
-        qInfo("End of file reached");
+        // qInfo("End of file reached");
 
-        sf_seek(mpFilePointer, 0, SEEK_SET);
+        sf_seek(mpFile, 0, SEEK_SET);
         for (i32 i = n; i < bufferSize; i++)
         {
           bi[i] = std::complex<f32>(0, 0);
@@ -127,7 +146,32 @@ void WavReader::run()
 	      break;
       }
 
-      mpBuffer->put_data_into_ring_buffer(bi, bufferSize);
+      if (mSampleRate != INPUT_RATE)
+      {
+        std::array<cf32, 2048> temp;
+
+        for (u32 i = 0; i < bufferSize; ++i)
+        {
+          mConvBuffer[mConvIndex++] = bi[i];
+
+          if (mConvIndex > mConvBufferSize)
+          {
+            for (i32 j = 0; j < 2048; j++)
+            {
+              const i16 inpBase = mMapTable_int[j];
+              const f32 inpRatio = mMapTable_float[j];
+              temp[j] = mConvBuffer[inpBase + 1] * inpRatio + mConvBuffer[inpBase] * (1 - inpRatio);
+            }
+            mpBuffer->put_data_into_ring_buffer(temp.data(), 2048);
+            mConvBuffer[0] = mConvBuffer[mConvBufferSize];
+            mConvIndex = 1;
+          }
+        }
+      }
+      else
+      {
+        mpBuffer->put_data_into_ring_buffer(bi.data(), bufferSize);
+      }
 
       if (nextStop - getMyTime() > 0)
       {

@@ -44,7 +44,7 @@ class WavReader : public QThread
   Q_OBJECT
 
 public:
-  WavReader(WavFileHandler *, SNDFILE *, RingBuffer<cf32> *);
+  WavReader(WavFileHandler *, SNDFILE *, RingBuffer<cf32> *, i32 iSampleRate);
   ~WavReader();
 
   void start_reader();
@@ -52,14 +52,22 @@ public:
   bool handle_continuous_button();
 
 private:
-  virtual void run();
-  SNDFILE * const mpFilePointer;
+  SNDFILE * const mpFile;
   RingBuffer<cf32> * const mpBuffer;
   WavFileHandler * const mpParent;
-  u64 mPeriod = 0;
+  const i32 mSampleRate;
   std::atomic<bool> mRunning = false;
   std::atomic<bool> mContinuous = false;
   i64 mFileLength = 0;
+  i64 mPeriod_us = 0;
+
+  i16 mConvBufferSize;
+  i16 mConvIndex = 0;
+  std::vector<cf32> mConvBuffer;
+  std::array<i16, 2048> mMapTable_int;
+  std::array<f32, 2048> mMapTable_float;
+
+  void run() override;
 
 signals:
   void signal_set_progress(i32, f32);

@@ -50,30 +50,33 @@
 #define  INPUT_FRAMEBUFFERSIZE  8 * 32768
 
 RawFileHandler::RawFileHandler(const QString & iFilename)
-  : myFrame(nullptr)
-  , _I_Buffer(INPUT_FRAMEBUFFERSIZE)
+  : mFrame(nullptr)
+  , mRingBuffer(INPUT_FRAMEBUFFERSIZE)
 {
-  fileName = iFilename;
+  mFileName = iFilename;
 
-  setupUi(&myFrame);
+  setupUi(&mFrame);
 
-  Settings::FileReaderRaw::posAndSize.read_widget_geometry(&myFrame);
+  Settings::FileReaderRaw::posAndSize.read_widget_geometry(&mFrame);
 
-  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.show();
-  filePointer = OpenFileDialog::open_file(iFilename, "rb");
-  if (filePointer == nullptr)
+  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  mFrame.show();
+
+  mpFile = OpenFileDialog::open_file(iFilename, "rb");
+
+  if (mpFile == nullptr)
   {
     const QString val = QString("Cannot open file '%1'").arg(iFilename);
     throw std::runtime_error(val.toUtf8().data());
   }
-  nameofFile->setText(iFilename);
-  fseek(filePointer, 0, SEEK_END);
-  i64 fileLength = ftell(filePointer);
-  totalTime->display(QString("%1").arg((f32)fileLength / (2048000 * 2), 0, 'f', 1));
-  fseek(filePointer, 0, SEEK_SET);
-  fileProgress->setValue(0);
-  currentTime->display(0);
+
+  lblFileName->setText(iFilename);
+  fseek(mpFile, 0, SEEK_END);
+  const i64 fileLength = ftell(mpFile);
+  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (2048000 * 2), 0, 'f', 1));
+  fseek(mpFile, 0, SEEK_SET);
+  progressFile->setValue(0);
+  lcdCurrTime->display(0);
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &RawFileHandler::slot_handle_cb_loop_file);
   running.store(false);
@@ -90,11 +93,11 @@ RawFileHandler::~RawFileHandler()
     }
     delete readerTask;
   }
-  if (filePointer != nullptr)
+  if (mpFile != nullptr)
   {
-    fclose(filePointer);
+    fclose(mpFile);
   }
-  Settings::FileReaderRaw::posAndSize.write_widget_geometry(&myFrame);
+  Settings::FileReaderRaw::posAndSize.write_widget_geometry(&mFrame);
 }
 
 bool RawFileHandler::restartReader(i32 freq)
@@ -104,7 +107,7 @@ bool RawFileHandler::restartReader(i32 freq)
   {
     return true;
   }
-  readerTask = new RawReader(this, filePointer, &_I_Buffer);
+  readerTask = new RawReader(this, mpFile, &mRingBuffer);
   running.store(true);
   return true;
 }
@@ -128,44 +131,44 @@ i32 RawFileHandler::getSamples(cf32 * V, i32 size)
 {
   i32 amount;
 
-  if (filePointer == nullptr)
+  if (mpFile == nullptr)
   {
     return 0;
   }
 
-  while ((i32)(_I_Buffer.get_ring_buffer_read_available()) < size)
+  while ((i32)(mRingBuffer.get_ring_buffer_read_available()) < size)
   {
     usleep(500);
   }
 
-  amount = _I_Buffer.get_data_from_ring_buffer(V, size);
+  amount = mRingBuffer.get_data_from_ring_buffer(V, size);
   return amount;
 }
 
 i32 RawFileHandler::Samples()
 {
-  return _I_Buffer.get_ring_buffer_read_available();
+  return mRingBuffer.get_ring_buffer_read_available();
 }
 
 void RawFileHandler::setProgress(i32 progress, f32 timelength)
 {
-  fileProgress->setValue(progress);
-  currentTime->display(QString("%1").arg(timelength, 0, 'f', 1));
+  progressFile->setValue(progress);
+  lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
 }
 
 void RawFileHandler::show()
 {
-  myFrame.show();
+  mFrame.show();
 }
 
 void RawFileHandler::hide()
 {
-  myFrame.hide();
+  mFrame.hide();
 }
 
 bool RawFileHandler::isHidden()
 {
-  return myFrame.isHidden();
+  return mFrame.isHidden();
 }
 
 bool RawFileHandler::isFileInput()
@@ -198,7 +201,7 @@ QString RawFileHandler::deviceName()
 
 void RawFileHandler::slot_handle_cb_loop_file(const bool iChecked)
 {
-  if (filePointer == nullptr)
+  if (mpFile == nullptr)
   {
     return;
   }

@@ -65,13 +65,14 @@ public:
   QString deviceName() override;
 
 private:
-  QFrame myFrame;
-  QString fileName;
-  RingBuffer<cf32> _I_Buffer;
-  i32 bufferSize = 0;
-  SNDFILE * filePointer = nullptr;
-  std::unique_ptr<WavReader> pWavReader;
-  std::atomic<bool> running = false;
+  QFrame mFrame;
+  QString mFileName;
+  RingBuffer<cf32> mRingBuffer;
+  i32 mBufferSize = 0;
+  i32 mSampleRate = 0;
+  SNDFILE * mpFile = nullptr;
+  std::unique_ptr<WavReader> mpWavReader;
+  std::atomic<bool> mIsRunning = false;
 
 public slots:
   void slot_set_progress(i32, f32);

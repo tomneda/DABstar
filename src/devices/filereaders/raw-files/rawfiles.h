@@ -67,10 +67,10 @@ public:
   QString deviceName() override;
 
 private:
-  QFrame myFrame;
-  QString fileName;
-  RingBuffer<cf32> _I_Buffer;
-  FILE * filePointer = nullptr;
+  QFrame mFrame;
+  QString mFileName;
+  RingBuffer<cf32> mRingBuffer;
+  FILE * mpFile = nullptr;
   RawReader * readerTask = nullptr;
   std::atomic<bool> running = false;
 

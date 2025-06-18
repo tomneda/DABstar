@@ -46,91 +46,93 @@
 #endif
 
 
-#define  __BUFFERSIZE__  8 * 32768
+constexpr i32 cBufferSize = 8 * 32768;
 
 WavFileHandler::WavFileHandler(const QString & iFilename)
-  : myFrame(nullptr)
-  , _I_Buffer(__BUFFERSIZE__)
+  : mFrame(nullptr)
+  , mRingBuffer(cBufferSize)
 {
+  mFileName = iFilename;
+  setupUi(&mFrame);
 
-  fileName = iFilename;
-  setupUi(&myFrame);
+  Settings::FileReaderWav::posAndSize.read_widget_geometry(&mFrame);
 
-  Settings::FileReaderWav::posAndSize.read_widget_geometry(&myFrame);
-
-  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.show();
+  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  mFrame.show();
 
   SF_INFO sf_info;
   sf_info.format = 0;
-  filePointer = OpenFileDialog::open_snd_file(iFilename.toUtf8().data(), SFM_READ, &sf_info);
+  mpFile = OpenFileDialog::open_snd_file(iFilename.toUtf8().data(), SFM_READ, &sf_info);
 
-  if (filePointer == nullptr)
+  if (mpFile == nullptr)
   {
     const QString val = QString("File '%1' is no valid sound file").arg(iFilename);
     throw std::runtime_error(val.toUtf8().data());
   }
 
-  if (sf_info.samplerate != INPUT_RATE || sf_info.channels != 2)
+  mSampleRate = sf_info.samplerate;
+
+  if (mSampleRate < 1'700'000 || mSampleRate > 2'500'000 || sf_info.channels != 2) // only SR 2048 Sps and 2500 Sps are tested
   {
-    sf_close(filePointer);
-    const QString val = QString("Sample rate or channel number does not fit");
+    sf_close(mpFile);
+    const QString val = QString("Sample rate %1 (SR=[1700..2500]) kSps or channel number %2 (ChNo=2) does not fit").arg(mSampleRate/1000).arg(sf_info.channels);
     throw std::runtime_error(val.toUtf8().data());
   }
 
-  nameofFile->setText(iFilename);
-  fileProgress->setValue(0);
-  currentTime->display(0);
-  i64 fileLength = sf_seek(filePointer, 0, SEEK_END);
-  totalTime->display(QString("%1").arg((f32)fileLength / (f32)sf_info.samplerate, 0, 'f', 1));
+  lblFileName->setText(iFilename);
+  progressFile->setValue(0);
+  lcdCurrTime->display(0);
+  i64 fileLength = sf_seek(mpFile, 0, SEEK_END);
+  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (f32)sf_info.samplerate, 0, 'f', 1));
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &WavFileHandler::slot_handle_cb_loop_file);
-  running.store(false);
+  mIsRunning.store(false);
 }
 //
 //	Note that running == true <==> readerTask has value assigned
 
 WavFileHandler::~WavFileHandler()
 {
-  if (running.load())
+  if (mIsRunning.load())
   {
-    pWavReader->stop_reader();
-    while (pWavReader->isRunning())
+    mpWavReader->stop_reader();
+    while (mpWavReader->isRunning())
     {
       usleep(500);
     }
   }
-  if (filePointer != nullptr)
+  if (mpFile != nullptr)
   {
-    sf_close(filePointer);
+    sf_close(mpFile);
   }
-  Settings::FileReaderWav::posAndSize.write_widget_geometry(&myFrame);
+  Settings::FileReaderWav::posAndSize.write_widget_geometry(&mFrame);
 }
 
 bool WavFileHandler::restartReader(i32 freq)
 {
   (void)freq;
-  if (running.load())
+  if (mIsRunning.load())
   {
     return true;
   }
-  pWavReader = std::make_unique<WavReader>(this, filePointer, &_I_Buffer);
-  running.store(true);
+  mpWavReader = std::make_unique<WavReader>(this, mpFile, &mRingBuffer, mSampleRate);
+  mpWavReader->start_reader();
+  mIsRunning.store(true);
   return true;
 }
 
 void WavFileHandler::stopReader()
 {
-  if (running.load())
+  if (mIsRunning.load())
   {
-    pWavReader->stop_reader();
-    while (pWavReader->isRunning())
+    mpWavReader->stop_reader();
+    while (mpWavReader->isRunning())
     {
       usleep(100);
     }
-    pWavReader.reset();
+    mpWavReader.reset();
   }
-  running.store(false);
+  mIsRunning.store(false);
 }
 
 //	size is in I/Q pairs
@@ -138,45 +140,45 @@ i32 WavFileHandler::getSamples(cf32 * V, i32 size)
 {
   i32 amount;
 
-  if (filePointer == nullptr)
+  if (mpFile == nullptr)
   {
     return 0;
   }
 
-  while (_I_Buffer.get_ring_buffer_read_available() < size)
+  while (mRingBuffer.get_ring_buffer_read_available() < size)
   {
     usleep(100);
   }
 
-  amount = _I_Buffer.get_data_from_ring_buffer(V, size);
+  amount = mRingBuffer.get_data_from_ring_buffer(V, size);
 
   return amount;
 }
 
 i32 WavFileHandler::Samples()
 {
-  return _I_Buffer.get_ring_buffer_read_available();
+  return mRingBuffer.get_ring_buffer_read_available();
 }
 
 void WavFileHandler::slot_set_progress(i32 progress, f32 timelength)
 {
-  fileProgress->setValue(progress);
-  currentTime->display(QString("%1").arg(timelength, 0, 'f', 1));
+  progressFile->setValue(progress);
+  lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
 }
 
 void WavFileHandler::show()
 {
-  myFrame.show();
+  mFrame.show();
 }
 
 void WavFileHandler::hide()
 {
-  myFrame.hide();
+  mFrame.hide();
 }
 
 bool WavFileHandler::isHidden()
 {
-  return myFrame.isHidden();
+  return mFrame.isHidden();
 }
 
 bool WavFileHandler::isFileInput()
@@ -209,10 +211,10 @@ QString WavFileHandler::deviceName()
 
 void WavFileHandler::slot_handle_cb_loop_file(const bool iChecked)
 {
-  if (filePointer == nullptr)
+  if (mpFile == nullptr)
   {
     return;
   }
 
-  cbLoopFile->setChecked(pWavReader->handle_continuous_button());
+  cbLoopFile->setChecked(mpWavReader->handle_continuous_button());
 }

@@ -12,50 +12,50 @@
 class FileReaderWidget
 {
 public:
-  QLabel * titleLabel{};
-  QLabel * nameofFile{};
-  QProgressBar * fileProgress{};
-  QLCDNumber * currentTime{};
-  QLabel * seconds{};
-  QLCDNumber * totalTime{};
-  QCheckBox *cbLoopFile;
-  QSpacerItem *horizontalSpacer;
+  QLabel * lblTitle = nullptr;
+  QLabel * lblFileName = nullptr;
+  QProgressBar * progressFile = nullptr;
+  QLCDNumber * lcdCurrTime = nullptr;
+  QLabel * lblSeconds = nullptr;
+  QLCDNumber * lcdTotalTime = nullptr;
+  QCheckBox * cbLoopFile = nullptr;
+  QSpacerItem * spacerHorizontal = nullptr ;
 
   FileReaderWidget() = default;
   ~FileReaderWidget() = default;
 
   void setupUi(QWidget * qw)
   {
-    titleLabel = new QLabel("Playing pre-recorded file");
-    nameofFile = new QLabel();
-    fileProgress = new QProgressBar();
+    lblTitle = new QLabel("Playing pre-recorded file");
+    lblFileName = new QLabel();
+    progressFile = new QProgressBar();
 
-    currentTime = new QLCDNumber();
-    currentTime->setFrameShape(QFrame::NoFrame);
-    currentTime->setSegmentStyle(QLCDNumber::Flat);
+    lcdCurrTime = new QLCDNumber();
+    lcdCurrTime->setFrameShape(QFrame::NoFrame);
+    lcdCurrTime->setSegmentStyle(QLCDNumber::Flat);
 
-    seconds = new QLabel("seconds of");
-    seconds->setAlignment(Qt::AlignCenter);
+    lblSeconds = new QLabel("seconds of");
+    lblSeconds->setAlignment(Qt::AlignCenter);
 
-    totalTime = new QLCDNumber();
-    totalTime->setFrameShape(QFrame::NoFrame);
-    totalTime->setSegmentStyle(QLCDNumber::Flat);
+    lcdTotalTime = new QLCDNumber();
+    lcdTotalTime->setFrameShape(QFrame::NoFrame);
+    lcdTotalTime->setSegmentStyle(QLCDNumber::Flat);
 
-    horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+    spacerHorizontal = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
     cbLoopFile = new QCheckBox("Loop");
     cbLoopFile->setChecked(true);
 
     QHBoxLayout * bottom = new QHBoxLayout();
-    bottom->addWidget(currentTime);
-    bottom->addWidget(seconds);
-    bottom->addWidget(totalTime);
-    bottom->addItem(horizontalSpacer);
+    bottom->addWidget(lcdCurrTime);
+    bottom->addWidget(lblSeconds);
+    bottom->addWidget(lcdTotalTime);
+    bottom->addItem(spacerHorizontal);
     bottom->addWidget(cbLoopFile);
 
     QVBoxLayout * base = new QVBoxLayout();
-    base->addWidget(titleLabel);
-    base->addWidget(nameofFile);
-    base->addWidget(fileProgress);
+    base->addWidget(lblTitle);
+    base->addWidget(lblFileName);
+    base->addWidget(progressFile);
     base->addItem(bottom);
 
     qw->setLayout(base);
