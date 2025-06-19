@@ -56,11 +56,15 @@ WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32
   if (mSampleRate != INPUT_RATE)
   {
     // we process chunks of 1 msec
-    mConvBufferSize = mSampleRate / 1000;
+    mConvBufferSize = (i16)(mSampleRate / 1000);
     mConvBuffer.resize(mConvBufferSize + 1);
+    mResampBuffer.resize(2048);
+    mMapTable_int.resize(2048);
+    mMapTable_float.resize(2048);
+
     for (i32 i = 0; i < 2048; i++)
     {
-      const f32 inVal = f32(iSampleRate) / 1000.0f;
+      const f32 inVal = (f32)mSampleRate / 1000.0f;
       mMapTable_int[i] = (i16)(std::floor((f32)i * (inVal / 2048.0f)));
       mMapTable_float[i] = (f32)i * (inVal / 2048.0f) - (f32)mMapTable_int[i];
       //qDebug() << i << mMapTable_int[i] << mMapTable_float[i];
@@ -123,9 +127,8 @@ void WavReader::run()
 
       if (++cnt >= 20)  // about 3 times in a second
       {
-        const i32 xx = (i32)sf_seek(mpFile, 0, SEEK_CUR);
-        const f32 progress = (f32)xx / (f32)mFileLength;
-        signal_set_progress((i32)(progress * 100), (f32)xx / 2500000.0f);
+        const i64 filePos = sf_seek(mpFile, 0, SEEK_CUR);
+        emit signal_set_progress((i32)(100 * filePos / mFileLength), (f32)filePos / (f32)mSampleRate);
         cnt = 0;
       }
 
@@ -148,8 +151,6 @@ void WavReader::run()
 
       if (mSampleRate != INPUT_RATE)
       {
-        std::array<cf32, 2048> temp;
-
         for (u32 i = 0; i < bufferSize; ++i)
         {
           mConvBuffer[mConvIndex++] = bi[i];
@@ -160,9 +161,9 @@ void WavReader::run()
             {
               const i16 inpBase = mMapTable_int[j];
               const f32 inpRatio = mMapTable_float[j];
-              temp[j] = mConvBuffer[inpBase + 1] * inpRatio + mConvBuffer[inpBase] * (1 - inpRatio);
+              mResampBuffer[j] = mConvBuffer[inpBase + 1] * inpRatio + mConvBuffer[inpBase] * (1 - inpRatio);
             }
-            mpBuffer->put_data_into_ring_buffer(temp.data(), 2048);
+            mpBuffer->put_data_into_ring_buffer(mResampBuffer.data(), 2048);
             mConvBuffer[0] = mConvBuffer[mConvBufferSize];
             mConvIndex = 1;
           }

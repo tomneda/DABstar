@@ -47,11 +47,11 @@
   #include  <sys/time.h>
 #endif
 
-#define  INPUT_FRAMEBUFFERSIZE  8 * 32768
+constexpr u32 cInputFrameBufferSize = 8 * 32768;
 
 RawFileHandler::RawFileHandler(const QString & iFilename)
   : mFrame(nullptr)
-  , mRingBuffer(INPUT_FRAMEBUFFERSIZE)
+  , mRingBuffer(cInputFrameBufferSize)
 {
   mFileName = iFilename;
 

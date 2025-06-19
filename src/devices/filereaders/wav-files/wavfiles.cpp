@@ -84,7 +84,7 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   progressFile->setValue(0);
   lcdCurrTime->display(0);
   i64 fileLength = sf_seek(mpFile, 0, SEEK_END);
-  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (f32)sf_info.samplerate, 0, 'f', 1));
+  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (f32)mSampleRate, 0, 'f', 1));
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &WavFileHandler::slot_handle_cb_loop_file);
   mIsRunning.store(false);

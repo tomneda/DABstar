@@ -64,8 +64,10 @@ private:
   i16 mConvBufferSize;
   i16 mConvIndex = 0;
   std::vector<cf32> mConvBuffer;
-  std::array<i16, 2048> mMapTable_int;
-  std::array<f32, 2048> mMapTable_float;
+  std::vector<cf32> mResampBuffer;
+  std::vector<i16> mMapTable_int;
+  std::vector<f32> mMapTable_float;
+
 
   void run() override;
 

@@ -49,11 +49,11 @@
 #include  "xml-descriptor.h"
 #include  "xml-reader.h"
 
-constexpr u32 INPUT_FRAMEBUFFERSIZE = 8 * 32768;
+constexpr u32 cInputFrameBufferSize = 8 * 32768;
 
 XmlFileReader::XmlFileReader(const QString & iFilename)
   : Ui_xmlfile_widget(), myFrame(nullptr)
-  , _I_Buffer(INPUT_FRAMEBUFFERSIZE)
+  , _I_Buffer(cInputFrameBufferSize)
 {
   fileName = iFilename;
 
