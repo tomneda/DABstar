@@ -72,10 +72,10 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
 
   mSampleRate = sf_info.samplerate;
 
-  if (mSampleRate < 1'700'000 || mSampleRate > 2'500'000 || sf_info.channels != 2) // only SR 2048 Sps and 2500 Sps are tested
+  if (mSampleRate < 1'536'000 || mSampleRate > 2'500'000 || sf_info.channels != 2) // SR 1536/1792/2000/2048/2500 Sps are tested (even 1536 kSps worked somehow fine)
   {
     sf_close(mpFile);
-    const QString val = QString("Sample rate %1 (SR=[1700..2500]) kSps or channel number %2 (ChNo=2) does not fit").arg(mSampleRate/1000).arg(sf_info.channels);
+    const QString val = QString("Sample rate %1 (SR=[1536..2500]) kSps or channel number %2 (ChNo=2) does not fit").arg(mSampleRate/1000).arg(sf_info.channels);
     throw std::runtime_error(val.toUtf8().data());
   }
 
