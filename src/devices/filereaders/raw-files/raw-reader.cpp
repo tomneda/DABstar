@@ -44,7 +44,7 @@ Q_LOGGING_CATEGORY(sLogRawReader, "RawReader", QtInfoMsg)
 
 static inline i64 get_cur_time_in_us()
 {
-  struct timeval tv;
+  timeval tv;
   gettimeofday(&tv, nullptr);
   return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
 }
@@ -115,62 +115,52 @@ void RawReader::run()
   i32 cnt = 0;
   i64 nextStop_us = get_cur_time_in_us();
 
-  try
+  while (mRunning.load())
   {
-    while (mRunning.load())
+    while (mRunning.load() && mpRingBuffer->get_ring_buffer_write_available() < cBufferSize + 10) // why that 10
     {
-      while (mpRingBuffer->get_ring_buffer_write_available() < cBufferSize + 10)
+      usleep(100);
+    }
+
+    if (mSetNewFilePos >= 0)
+    {
+      fseek(mpFile, mSetNewFilePos, SEEK_SET);
+      mSetNewFilePos = -1 ;
+      cnt = 10; // retrigger emit below
+    }
+
+    if (++cnt >= 10)
+    {
+      const i64 filePos = ftell(mpFile);
+      emit signal_set_progress((i32)(1000 * filePos / mFileLength), (f32)filePos / (2 * 2048000.0f));
+      cnt = 0;
+    }
+
+    const i32 n = (i32)fread(mByteBuffer.data(), sizeof(u8), cBufferSize, mpFile);
+
+    if (n < cBufferSize)
+    {
+      // qCInfo(sLogRawReader) << "Restart file";
+      fseek(mpFile, 0, SEEK_SET);
+      if (!continuous.load())
       {
-        if (!mRunning.load())
-        {
-          throw (32);
-        }
-        usleep(100);
-      }
-
-      if (mSetNewFilePos >= 0)
-      {
-        fseek(mpFile, mSetNewFilePos, SEEK_SET);
-        mSetNewFilePos = -1 ;
-        cnt = 10; // retrigger emit below
-      }
-
-      if (++cnt >= 10)
-      {
-        const i64 filePos = ftell(mpFile);
-        emit signal_set_progress((i32)(1000 * filePos / mFileLength), (f32)filePos / (2 * 2048000.0f));
-        cnt = 0;
-      }
-
-      const i32 n = (i32)fread(mByteBuffer.data(), sizeof(u8), cBufferSize, mpFile);
-
-      if (n < cBufferSize)
-      {
-        // qCInfo(sLogRawReader) << "Restart file";
-        fseek(mpFile, 0, SEEK_SET);
-        if (!continuous.load())
-        {
-          break;
-        }
-      }
-
-      nextStop_us += (n * 1000) / (2 * 2048); // add runtime in us for n numbers of entries
-
-      for (i32 i = 0; i < n / 2; i++)
-      {
-        mCmplxBuffer[i] = cf32(mMapTable[mByteBuffer[2 * i + 0]], mMapTable[mByteBuffer[2 * i + 1]]);
-      }
-
-      mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), n / 2);
-
-      if (nextStop_us - get_cur_time_in_us() > 0)
-      {
-        usleep(nextStop_us - get_cur_time_in_us());
+        break;
       }
     }
-  }
-  catch (i32 e)
-  {
+
+    nextStop_us += (n * 1000) / (2 * 2048); // add runtime in us for n numbers of entries
+
+    for (i32 i = 0; i < n / 2; i++)
+    {
+      mCmplxBuffer[i] = cf32(mMapTable[mByteBuffer[2 * i + 0]], mMapTable[mByteBuffer[2 * i + 1]]);
+    }
+
+    mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), n / 2);
+
+    if (nextStop_us - get_cur_time_in_us() > 0)
+    {
+      usleep(nextStop_us - get_cur_time_in_us());
+    }
   }
 
   qCInfo(sLogRawReader) << "Playing RAW file stopped";

@@ -118,85 +118,75 @@ void WavReader::run()
   i32 cnt = 0;
   i64 nextStop_us = getMyTime();
 
-  try
+  while (mRunning.load())
   {
-    while (mRunning.load())
+    while (mRunning.load() && mpRingBuffer->get_ring_buffer_write_available() < cBufferSize)
     {
-      while (mpRingBuffer->get_ring_buffer_write_available() < cBufferSize)
+      usleep(100);
+    }
+
+    if (mSetNewFilePos >= 0)
+    {
+      sf_seek(mpFile, mSetNewFilePos, SEEK_SET);
+      mSetNewFilePos = -1;
+      cnt = 10; // retrigger emit below
+    }
+
+    if (++cnt >= 10)  // about 6 times in a second
+    {
+      const i64 filePos = sf_seek(mpFile, 0, SEEK_CUR);
+      emit signal_set_progress((i32)(1000 * filePos / mFileLength), (f32)filePos / (f32)mSampleRate);
+      cnt = 0;
+    }
+
+    nextStop_us += mPeriod_us;
+
+    const i32 n = (i32)sf_readf_float(mpFile, (f32 *)mCmplxBuffer.data(), cBufferSize);
+
+    if (n < cBufferSize)
+    {
+      // qInfo("End of file reached");
+
+      sf_seek(mpFile, 0, SEEK_SET);
+      for (i32 i = n; i < cBufferSize; i++)
       {
-        if (!mRunning.load())
-        {
-          throw (33);
-        }
-        usleep(100);
+        mCmplxBuffer[i] = std::complex<f32>(0, 0);
       }
-
-      if (mSetNewFilePos >= 0)
+      if (!mContinuous.load())
       {
-        sf_seek(mpFile, mSetNewFilePos, SEEK_SET);
-        mSetNewFilePos = -1;
-        cnt = 10; // retrigger emit below
-      }
-
-      if (++cnt >= 10)  // about 6 times in a second
-      {
-        const i64 filePos = sf_seek(mpFile, 0, SEEK_CUR);
-        emit signal_set_progress((i32)(1000 * filePos / mFileLength), (f32)filePos / (f32)mSampleRate);
-        cnt = 0;
-      }
-
-      nextStop_us += mPeriod_us;
-
-      const i32 n = (i32)sf_readf_float(mpFile, (f32 *)mCmplxBuffer.data(), cBufferSize);
-
-      if (n < cBufferSize)
-      {
-        // qInfo("End of file reached");
-
-        sf_seek(mpFile, 0, SEEK_SET);
-        for (i32 i = n; i < cBufferSize; i++)
-        {
-          mCmplxBuffer[i] = std::complex<f32>(0, 0);
-        }
-        if (!mContinuous.load())
-        {
-          break;
-        }
-      }
-
-      if (mSampleRate != INPUT_RATE)
-      {
-        for (u32 i = 0; i < cBufferSize; ++i)
-        {
-          mConvBuffer[mConvIndex++] = mCmplxBuffer[i];
-
-          if (mConvIndex > mConvBufferSize)
-          {
-            for (i32 j = 0; j < 2048; j++)
-            {
-              const i16 inpBase = mMapTable_int[j];
-              const f32 inpRatio = mMapTable_float[j];
-              mResampBuffer[j] = mConvBuffer[inpBase + 1] * inpRatio + mConvBuffer[inpBase] * (1 - inpRatio);
-            }
-            mpRingBuffer->put_data_into_ring_buffer(mResampBuffer.data(), 2048);
-            mConvBuffer[0] = mConvBuffer[mConvBufferSize];
-            mConvIndex = 1;
-          }
-        }
-      }
-      else
-      {
-        mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), cBufferSize);
-      }
-
-      if (nextStop_us - getMyTime() > 0)
-      {
-        usleep(nextStop_us - getMyTime());
+        break;
       }
     }
-  }
-  catch (i32 e)
-  {
+
+    if (mSampleRate != INPUT_RATE)
+    {
+      for (u32 i = 0; i < cBufferSize; ++i)
+      {
+        mConvBuffer[mConvIndex++] = mCmplxBuffer[i];
+
+        if (mConvIndex > mConvBufferSize)
+        {
+          for (i32 j = 0; j < 2048; j++)
+          {
+            const i16 inpBase = mMapTable_int[j];
+            const f32 inpRatio = mMapTable_float[j];
+            mResampBuffer[j] = mConvBuffer[inpBase + 1] * inpRatio + mConvBuffer[inpBase] * (1 - inpRatio);
+          }
+          mpRingBuffer->put_data_into_ring_buffer(mResampBuffer.data(), 2048);
+          mConvBuffer[0] = mConvBuffer[mConvBufferSize];
+          mConvIndex = 1;
+        }
+      }
+    }
+    else
+    {
+      mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), cBufferSize);
+    }
+
+    if (nextStop_us - getMyTime() > 0)
+    {
+      usleep(nextStop_us - getMyTime());
+    }
   }
 
   qInfo("Task for replay ended");
