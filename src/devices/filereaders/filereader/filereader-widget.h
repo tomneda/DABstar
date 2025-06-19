@@ -18,8 +18,11 @@ public:
   QLCDNumber * lcdCurrTime = nullptr;
   QLabel * lblSeconds = nullptr;
   QLCDNumber * lcdTotalTime = nullptr;
+  QSpacerItem * spacerHorizontal1 = nullptr ;
+  QLabel * lblSampleRate = nullptr;
+  QLCDNumber * lcdSampleRate = nullptr;
+  QSpacerItem * spacerHorizontal2 = nullptr ;
   QCheckBox * cbLoopFile = nullptr;
-  QSpacerItem * spacerHorizontal = nullptr ;
 
   FileReaderWidget() = default;
   ~FileReaderWidget() = default;
@@ -41,7 +44,14 @@ public:
     lcdTotalTime->setFrameShape(QFrame::NoFrame);
     lcdTotalTime->setSegmentStyle(QLCDNumber::Flat);
 
-    spacerHorizontal = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+    spacerHorizontal1 = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+    lblSampleRate = new QLabel("Source sample rate [Sps]: ");
+    lcdSampleRate = new QLCDNumber();
+    lcdSampleRate->setFrameShape(QFrame::NoFrame);
+    lcdSampleRate->setSegmentStyle(QLCDNumber::Flat);
+    lcdSampleRate->setDigitCount(7);
+    lcdSampleRate->display(0);
+    spacerHorizontal2 = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
     cbLoopFile = new QCheckBox("Loop");
     cbLoopFile->setChecked(true);
 
@@ -49,7 +59,10 @@ public:
     bottom->addWidget(lcdCurrTime);
     bottom->addWidget(lblSeconds);
     bottom->addWidget(lcdTotalTime);
-    bottom->addItem(spacerHorizontal);
+    bottom->addItem(spacerHorizontal1);
+    bottom->addWidget(lblSampleRate);
+    bottom->addWidget(lcdSampleRate);
+    bottom->addItem(spacerHorizontal2);
     bottom->addWidget(cbLoopFile);
 
     QVBoxLayout * base = new QVBoxLayout();

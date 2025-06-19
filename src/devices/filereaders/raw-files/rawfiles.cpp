@@ -70,10 +70,11 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
     throw std::runtime_error(val.toUtf8().data());
   }
 
+  lcdSampleRate->display(INPUT_RATE);
   lblFileName->setText(iFilename);
   fseek(mpFile, 0, SEEK_END);
   const i64 fileLength = ftell(mpFile);
-  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (2048000 * 2), 0, 'f', 1));
+  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (INPUT_RATE * 2), 0, 'f', 1));
   fseek(mpFile, 0, SEEK_SET);
   progressFile->setValue(0);
   lcdCurrTime->display(0);
