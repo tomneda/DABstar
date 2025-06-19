@@ -46,23 +46,27 @@ public:
   RawReader(RawFileHandler *, FILE *, RingBuffer<cf32> *);
   ~RawReader();
 
-  void stopReader();
-  bool handle_continuousButton();
+  void start_reader();
+  void stop_reader();
+  void jump_to_relative_position_per_mill(i32 iPerMill);
+  bool handle_continuous_button();
 
 private:
-  static constexpr i32 BUFFERSIZE = 32768;
+  static constexpr i32 cBufferSize = 32768;
 
   virtual void run();
 
-  RawFileHandler * const mParent;
   FILE * const mpFile;
   RingBuffer<cf32> * const mpRingBuffer;
-  std::atomic<bool> mRunning;
-  std::atomic<bool> continuous;
+  RawFileHandler * const mParent;
+  std::atomic<bool> mRunning = false;
+  std::atomic<bool> continuous = false;
+  std::atomic<i64> mSetNewFilePos = -1;
+  i64 mFileLength = 0;
+
+  std::array<f32, 256> mMapTable;
   std::vector<u8> mByteBuffer;
   std::vector<cf32> mCmplxBuffer;
-  i64 mFileLength;
-  std::array<f32, 256> mMapTable;
 
 signals:
   void signal_set_progress(i32, f32);

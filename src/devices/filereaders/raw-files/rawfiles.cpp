@@ -40,6 +40,7 @@
 #include  <cstdlib>
 #include  <fcntl.h>
 #include  <ctime>
+#include  <QString>
 
 #ifdef _WIN32
 #else
@@ -72,27 +73,30 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
 
   lcdSampleRate->display(INPUT_RATE);
   lblFileName->setText(iFilename);
-  fseek(mpFile, 0, SEEK_END);
-  const i64 fileLength = ftell(mpFile);
-  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (INPUT_RATE * 2), 0, 'f', 1));
-  fseek(mpFile, 0, SEEK_SET);
   sliderFilePos->setValue(0);
   lcdCurrTime->display(0);
+  fseek(mpFile, 0, SEEK_END);
+  const i64 fileLength = ftell(mpFile); // 2 * 1Byte per sample
+  fseek(mpFile, 0, SEEK_SET);
+  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (INPUT_RATE * 2), 0, 'f', 1));
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &RawFileHandler::slot_handle_cb_loop_file);
-  running.store(false);
+  connect(sliderFilePos, &QSlider::sliderPressed, this, &RawFileHandler::slot_slider_pressed);
+  connect(sliderFilePos, &QSlider::sliderReleased, this, &RawFileHandler::slot_slider_released);
+  connect(sliderFilePos, &QSlider::sliderMoved, this, &RawFileHandler::slot_slider_moved);
+
+  mIsRunning.store(false);
 }
 
 RawFileHandler::~RawFileHandler()
 {
-  if (running.load())
+  if (mIsRunning.load())
   {
-    readerTask->stopReader();
-    while (readerTask->isRunning())
+    mpRawReader->stop_reader();
+    while (mpRawReader->isRunning())
     {
       usleep(100);
     }
-    delete readerTask;
   }
   if (mpFile != nullptr)
   {
@@ -101,37 +105,36 @@ RawFileHandler::~RawFileHandler()
   Settings::FileReaderRaw::posAndSize.write_widget_geometry(&mFrame);
 }
 
-bool RawFileHandler::restartReader(i32 freq)
+bool RawFileHandler::restartReader(const i32 freq)
 {
   (void)freq;
-  if (running.load())
+  if (mIsRunning.load())
   {
     return true;
   }
-  readerTask = new RawReader(this, mpFile, &mRingBuffer);
-  running.store(true);
+  mpRawReader = std::make_unique<RawReader>(this, mpFile, &mRingBuffer);
+  mpRawReader->start_reader();
+  mIsRunning.store(true);
   return true;
 }
 
 void RawFileHandler::stopReader()
 {
-  if (running.load())
+  if (mIsRunning.load())
   {
-    readerTask->stopReader();
-    while (readerTask->isRunning())
+    mpRawReader->stop_reader();
+    while (mpRawReader->isRunning())
     {
       usleep(100);
     }
-    delete readerTask;
+    mpRawReader.reset();
   }
-  running.store(false);
+  mIsRunning.store(false);
 }
 
 //	size is in I/Q pairs, file contains 8 bits values
-i32 RawFileHandler::getSamples(cf32 * V, i32 size)
+i32 RawFileHandler::getSamples(cf32 * V, const i32 size)
 {
-  i32 amount;
-
   if (mpFile == nullptr)
   {
     return 0;
@@ -139,22 +142,15 @@ i32 RawFileHandler::getSamples(cf32 * V, i32 size)
 
   while ((i32)(mRingBuffer.get_ring_buffer_read_available()) < size)
   {
-    usleep(500);
+    usleep(100);
   }
 
-  amount = mRingBuffer.get_data_from_ring_buffer(V, size);
-  return amount;
+  return mRingBuffer.get_data_from_ring_buffer(V, size);
 }
 
 i32 RawFileHandler::Samples()
 {
   return mRingBuffer.get_ring_buffer_read_available();
-}
-
-void RawFileHandler::setProgress(i32 progress, f32 timelength)
-{
-  sliderFilePos->setValue(progress);
-  lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
 }
 
 void RawFileHandler::show()
@@ -207,6 +203,35 @@ void RawFileHandler::slot_handle_cb_loop_file(const bool iChecked)
     return;
   }
 
-  cbLoopFile->setChecked(readerTask->handle_continuousButton());
+  cbLoopFile->setChecked(mpRawReader->handle_continuous_button());
+}
+
+void RawFileHandler::slot_set_progress(const i32 progress, const f32 timelength)
+{
+  if (mSliderMovementPos < 0) // suppress slider update while mouse move on slider
+  {
+    sliderFilePos->setValue(progress);
+  }
+  lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
+}
+
+void RawFileHandler::slot_slider_pressed()
+{
+  mSliderMovementPos = sliderFilePos->value();
+}
+
+void RawFileHandler::slot_slider_released()
+{
+  if (mSliderMovementPos >= 0)
+  {
+    // mpRawReader->jump_to_relative_position_per_mill(mSliderMovementPos); // restart from current mouse release position
+    mSliderMovementPos = -1;
+  }
+}
+
+void RawFileHandler::slot_slider_moved(const i32 iPos)
+{
+  mSliderMovementPos = iPos; // iPos = [0; 1000]
+  mpRawReader->jump_to_relative_position_per_mill(iPos);
 }
 

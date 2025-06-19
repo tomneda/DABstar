@@ -36,13 +36,10 @@
 #include  <fcntl.h>
 #include  <ctime>
 #include  <QString>
-
 #ifdef _WIN32
 #else
-
   #include  <unistd.h>
   #include  <sys/time.h>
-
 #endif
 
 
@@ -84,6 +81,7 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   sliderFilePos->setValue(0);
   lcdCurrTime->display(0);
   const i64 fileLength = sf_seek(mpFile, 0, SEEK_END);
+  sf_seek(mpFile, 0, SEEK_SET);
   lcdTotalTime->display(QString("%1").arg((f32)fileLength / (f32)mSampleRate, 0, 'f', 1));
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &WavFileHandler::slot_handle_cb_loop_file);
@@ -93,8 +91,6 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
 
   mIsRunning.store(false);
 }
-//
-//	Note that running == true <==> readerTask has value assigned
 
 WavFileHandler::~WavFileHandler()
 {
@@ -113,7 +109,7 @@ WavFileHandler::~WavFileHandler()
   Settings::FileReaderWav::posAndSize.write_widget_geometry(&mFrame);
 }
 
-bool WavFileHandler::restartReader(i32 freq)
+bool WavFileHandler::restartReader(const i32 freq)
 {
   (void)freq;
   if (mIsRunning.load())
@@ -141,10 +137,8 @@ void WavFileHandler::stopReader()
 }
 
 //	size is in I/Q pairs
-i32 WavFileHandler::getSamples(cf32 * V, i32 size)
+i32 WavFileHandler::getSamples(cf32 * V, const i32 size)
 {
-  i32 amount;
-
   if (mpFile == nullptr)
   {
     return 0;
@@ -155,9 +149,7 @@ i32 WavFileHandler::getSamples(cf32 * V, i32 size)
     usleep(100);
   }
 
-  amount = mRingBuffer.get_data_from_ring_buffer(V, size);
-
-  return amount;
+  return mRingBuffer.get_data_from_ring_buffer(V, size);
 }
 
 i32 WavFileHandler::Samples()

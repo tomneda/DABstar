@@ -50,36 +50,40 @@ static inline i64 get_cur_time_in_us()
 }
 
 RawReader::RawReader(RawFileHandler * ipRFH, FILE * ipFile, RingBuffer<cf32> * ipRingBuffer)
-  : mParent(ipRFH)
-  , mpFile(ipFile)
+  : mpFile(ipFile)
   , mpRingBuffer(ipRingBuffer)
+  , mParent(ipRFH)
 {
-  mByteBuffer.resize(BUFFERSIZE);
-  mCmplxBuffer.resize(BUFFERSIZE / 2);
+  fseek(ipFile, 0, SEEK_END);
+  mFileLength = ftell(ipFile);
+  qCInfo(sLogRawReader) << "RAW file length:" << mFileLength;
+  fseek(ipFile, 0, SEEK_SET);
+  continuous.store(ipRFH->cbLoopFile->isChecked());
+
+  mByteBuffer.resize(cBufferSize);
+  mCmplxBuffer.resize(cBufferSize / 2);
 
   for(i32 i = 0; i < 256; i++)
   {
     // the offset 127.38f is due to the input data comes usually from a SDR stick which has its DC offset a bit shifted from ideal (from old-dab)
     mMapTable[i] = ((f32)i - 127.38f) / 128.0f;
   }
-
-  fseek(ipFile, 0, SEEK_END);
-  mFileLength = ftell(ipFile);
-  qCInfo(sLogRawReader) << "RAW file length:" << mFileLength;
-  fseek(ipFile, 0, SEEK_SET);
-  mRunning.store(false);
-  continuous.store(ipRFH->cbLoopFile->isChecked());
-  start();
 }
 
 RawReader::~RawReader()
 {
-  stopReader();
+  stop_reader();
 }
 
-void RawReader::stopReader()
+void RawReader::start_reader()
 {
-  if (mRunning)
+  mSetNewFilePos = -1;
+  QThread::start();
+}
+
+void RawReader::stop_reader()
+{
+  if (mRunning.load())
   {
     mRunning = false;
     while (isRunning())
@@ -87,25 +91,35 @@ void RawReader::stopReader()
       usleep(200);
     }
   }
+  mSetNewFilePos = -1;
+}
+
+void RawReader::jump_to_relative_position_per_mill(i32 iPerMill)
+{
+  if (mRunning.load())
+  {
+    mSetNewFilePos = (i64)(mFileLength * iPerMill / 1000LL) & ~1LL; // ensure even value to maintain I/Q position
+  }
 }
 
 void RawReader::run()
 {
-  connect(this, &RawReader::signal_set_progress, mParent, &RawFileHandler::setProgress);
+  connect(this, &RawReader::signal_set_progress, mParent, &RawFileHandler::slot_set_progress);
 
   fseek(mpFile, 0, SEEK_SET);
+
   mRunning.store(true);
 
   qCInfo(sLogRawReader) << "Start playing RAW file";
 
   i32 cnt = 0;
-  i64 nextStopus = get_cur_time_in_us();
+  i64 nextStop_us = get_cur_time_in_us();
 
   try
   {
     while (mRunning.load())
     {
-      while (mpRingBuffer->get_ring_buffer_write_available() < BUFFERSIZE + 10)
+      while (mpRingBuffer->get_ring_buffer_write_available() < cBufferSize + 10)
       {
         if (!mRunning.load())
         {
@@ -114,25 +128,33 @@ void RawReader::run()
         usleep(100);
       }
 
-      if (++cnt >= 20)
+      if (mSetNewFilePos >= 0)
       {
-        i32 xx = ftell(mpFile);
-        f32 progress = (f32)xx / mFileLength;
-        signal_set_progress((i32)(progress * 100), (f32)xx / (2 * 2048000));
+        fseek(mpFile, mSetNewFilePos, SEEK_SET);
+        mSetNewFilePos = -1 ;
+        cnt = 10; // retrigger emit below
+      }
+
+      if (++cnt >= 10)
+      {
+        const i64 filePos = ftell(mpFile);
+        emit signal_set_progress((i32)(1000 * filePos / mFileLength), (f32)filePos / (2 * 2048000.0f));
         cnt = 0;
       }
 
-      i32 n = fread(mByteBuffer.data(), sizeof(u8), BUFFERSIZE, mpFile);
+      const i32 n = (i32)fread(mByteBuffer.data(), sizeof(u8), cBufferSize, mpFile);
 
-      if (n < BUFFERSIZE)
+      if (n < cBufferSize)
       {
-        qCInfo(sLogRawReader) << "Restart file";
+        // qCInfo(sLogRawReader) << "Restart file";
         fseek(mpFile, 0, SEEK_SET);
         if (!continuous.load())
-	      break;
+        {
+          break;
+        }
       }
 
-      nextStopus += (n * 1000) / (2 * 2048); // add runtime in us for n numbers of entries
+      nextStop_us += (n * 1000) / (2 * 2048); // add runtime in us for n numbers of entries
 
       for (i32 i = 0; i < n / 2; i++)
       {
@@ -141,9 +163,9 @@ void RawReader::run()
 
       mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), n / 2);
 
-      if (nextStopus - get_cur_time_in_us() > 0)
+      if (nextStop_us - get_cur_time_in_us() > 0)
       {
-        usleep(nextStopus - get_cur_time_in_us());
+        usleep(nextStop_us - get_cur_time_in_us());
       }
     }
   }
@@ -154,7 +176,7 @@ void RawReader::run()
   qCInfo(sLogRawReader) << "Playing RAW file stopped";
 }
 
-bool RawReader::handle_continuousButton()
+bool RawReader::handle_continuous_button()
 {
   continuous.store(!continuous.load());
   return continuous.load();

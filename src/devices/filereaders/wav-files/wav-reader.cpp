@@ -43,13 +43,14 @@ static inline i64 getMyTime()
 
 WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32> * ipRingBuffer, const i32 iSampleRate)
   : mpFile(ipFile)
-  , mpBuffer(ipRingBuffer)
+  , mpRingBuffer(ipRingBuffer)
   , mpParent(ipWavFH)
   , mSampleRate(iSampleRate)
 {
   mFileLength = sf_seek(ipFile, 0, SEEK_END);
   sf_seek(ipFile, 0, SEEK_SET);
   mContinuous.store(ipWavFH->cbLoopFile->isChecked());
+  mCmplxBuffer.resize(cBufferSize);
 
   if (mSampleRate != INPUT_RATE)
   {
@@ -81,7 +82,7 @@ WavReader::~WavReader()
 
 void WavReader::start_reader()
 {
-  mSetNewFilePos = 0;
+  mSetNewFilePos = -1;
   QThread::start();
 }
 
@@ -95,7 +96,7 @@ void WavReader::stop_reader()
       usleep(200);
     }
   }
-  mSetNewFilePos = 0;
+  mSetNewFilePos = -1;
 }
 
 void WavReader::jump_to_relative_position_per_mill(i32 iPerMill)
@@ -108,9 +109,6 @@ void WavReader::jump_to_relative_position_per_mill(i32 iPerMill)
 
 void WavReader::run()
 {
-  constexpr i32 bufferSize = 32768;
-  std::array<cf32, bufferSize> bi;
-
   connect(this, &WavReader::signal_set_progress, mpParent, &WavFileHandler::slot_set_progress);
 
   sf_seek(mpFile, 0, SEEK_SET);
@@ -118,13 +116,13 @@ void WavReader::run()
   mRunning.store(true);
 
   i32 cnt = 0;
-  i64 nextStop = getMyTime();
+  i64 nextStop_us = getMyTime();
 
   try
   {
     while (mRunning.load())
     {
-      while (mpBuffer->get_ring_buffer_write_available() < bufferSize)
+      while (mpRingBuffer->get_ring_buffer_write_available() < cBufferSize)
       {
         if (!mRunning.load())
         {
@@ -133,10 +131,10 @@ void WavReader::run()
         usleep(100);
       }
 
-      if (mSetNewFilePos > 0)
+      if (mSetNewFilePos >= 0)
       {
         sf_seek(mpFile, mSetNewFilePos, SEEK_SET);
-        mSetNewFilePos = 0;
+        mSetNewFilePos = -1;
         cnt = 10; // retrigger emit below
       }
 
@@ -147,28 +145,30 @@ void WavReader::run()
         cnt = 0;
       }
 
-      nextStop += mPeriod_us;
+      nextStop_us += mPeriod_us;
 
-      const i32 n = (i32)sf_readf_float(mpFile, (f32 *)bi.data(), bufferSize);
+      const i32 n = (i32)sf_readf_float(mpFile, (f32 *)mCmplxBuffer.data(), cBufferSize);
 
-      if (n < bufferSize)
+      if (n < cBufferSize)
       {
         // qInfo("End of file reached");
 
         sf_seek(mpFile, 0, SEEK_SET);
-        for (i32 i = n; i < bufferSize; i++)
+        for (i32 i = n; i < cBufferSize; i++)
         {
-          bi[i] = std::complex<f32>(0, 0);
+          mCmplxBuffer[i] = std::complex<f32>(0, 0);
         }
         if (!mContinuous.load())
-	      break;
+        {
+          break;
+        }
       }
 
       if (mSampleRate != INPUT_RATE)
       {
-        for (u32 i = 0; i < bufferSize; ++i)
+        for (u32 i = 0; i < cBufferSize; ++i)
         {
-          mConvBuffer[mConvIndex++] = bi[i];
+          mConvBuffer[mConvIndex++] = mCmplxBuffer[i];
 
           if (mConvIndex > mConvBufferSize)
           {
@@ -178,7 +178,7 @@ void WavReader::run()
               const f32 inpRatio = mMapTable_float[j];
               mResampBuffer[j] = mConvBuffer[inpBase + 1] * inpRatio + mConvBuffer[inpBase] * (1 - inpRatio);
             }
-            mpBuffer->put_data_into_ring_buffer(mResampBuffer.data(), 2048);
+            mpRingBuffer->put_data_into_ring_buffer(mResampBuffer.data(), 2048);
             mConvBuffer[0] = mConvBuffer[mConvBufferSize];
             mConvIndex = 1;
           }
@@ -186,12 +186,12 @@ void WavReader::run()
       }
       else
       {
-        mpBuffer->put_data_into_ring_buffer(bi.data(), bufferSize);
+        mpRingBuffer->put_data_into_ring_buffer(mCmplxBuffer.data(), cBufferSize);
       }
 
-      if (nextStop - getMyTime() > 0)
+      if (nextStop_us - getMyTime() > 0)
       {
-        usleep(nextStop - getMyTime());
+        usleep(nextStop_us - getMyTime());
       }
     }
   }

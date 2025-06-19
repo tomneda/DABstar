@@ -53,18 +53,21 @@ public:
   bool handle_continuous_button();
 
 private:
+  static constexpr i32 cBufferSize = 32768;
+
   SNDFILE * const mpFile;
-  RingBuffer<cf32> * const mpBuffer;
+  RingBuffer<cf32> * const mpRingBuffer;
   WavFileHandler * const mpParent;
   const i32 mSampleRate;
   std::atomic<bool> mRunning = false;
   std::atomic<bool> mContinuous = false;
+  std::atomic<i64> mSetNewFilePos = -1;
   i64 mFileLength = 0;
-  i64 mSetNewFilePos = 0;
   i64 mPeriod_us = 0;
 
   i16 mConvBufferSize;
   i16 mConvIndex = 0;
+  std::vector<cf32> mCmplxBuffer;
   std::vector<cf32> mConvBuffer;
   std::vector<cf32> mResampBuffer;
   std::vector<i16> mMapTable_int;
