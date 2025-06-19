@@ -76,7 +76,7 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
   const i64 fileLength = ftell(mpFile);
   lcdTotalTime->display(QString("%1").arg((f32)fileLength / (INPUT_RATE * 2), 0, 'f', 1));
   fseek(mpFile, 0, SEEK_SET);
-  progressFile->setValue(0);
+  sliderFilePos->setValue(0);
   lcdCurrTime->display(0);
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &RawFileHandler::slot_handle_cb_loop_file);
@@ -153,7 +153,7 @@ i32 RawFileHandler::Samples()
 
 void RawFileHandler::setProgress(i32 progress, f32 timelength)
 {
-  progressFile->setValue(progress);
+  sliderFilePos->setValue(progress);
   lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
 }
 

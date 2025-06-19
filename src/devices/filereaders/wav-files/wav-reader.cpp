@@ -34,13 +34,11 @@
 #include  <sys/time.h>
 #include  <cinttypes>
 
-#define  BUFFERSIZE  32768
-
 static inline i64 getMyTime()
 {
   timeval tv;
   gettimeofday(&tv, nullptr);
-  return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
+  return ((i64)tv.tv_sec * 1000000LL + (i64)tv.tv_usec);
 }
 
 WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32> * ipRingBuffer, const i32 iSampleRate)
@@ -83,6 +81,7 @@ WavReader::~WavReader()
 
 void WavReader::start_reader()
 {
+  mSetNewFilePos = 0;
   QThread::start();
 }
 
@@ -96,6 +95,15 @@ void WavReader::stop_reader()
       usleep(200);
     }
   }
+  mSetNewFilePos = 0;
+}
+
+void WavReader::jump_to_relative_position_per_mill(i32 iPerMill)
+{
+  if (mRunning.load())
+  {
+    mSetNewFilePos = (i64)(mFileLength * iPerMill / 1000LL);
+  }
 }
 
 void WavReader::run()
@@ -104,7 +112,7 @@ void WavReader::run()
   std::array<cf32, bufferSize> bi;
 
   connect(this, &WavReader::signal_set_progress, mpParent, &WavFileHandler::slot_set_progress);
-  
+
   sf_seek(mpFile, 0, SEEK_SET);
 
   mRunning.store(true);
@@ -125,10 +133,17 @@ void WavReader::run()
         usleep(100);
       }
 
-      if (++cnt >= 20)  // about 3 times in a second
+      if (mSetNewFilePos > 0)
+      {
+        sf_seek(mpFile, mSetNewFilePos, SEEK_SET);
+        mSetNewFilePos = 0;
+        cnt = 10; // retrigger emit below
+      }
+
+      if (++cnt >= 10)  // about 6 times in a second
       {
         const i64 filePos = sf_seek(mpFile, 0, SEEK_CUR);
-        emit signal_set_progress((i32)(100 * filePos / mFileLength), (f32)filePos / (f32)mSampleRate);
+        emit signal_set_progress((i32)(1000 * filePos / mFileLength), (f32)filePos / (f32)mSampleRate);
         cnt = 0;
       }
 

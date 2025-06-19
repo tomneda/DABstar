@@ -73,10 +73,14 @@ private:
   SNDFILE * mpFile = nullptr;
   std::unique_ptr<WavReader> mpWavReader;
   std::atomic<bool> mIsRunning = false;
+  i32 mSliderMovementPos = -1;
 
 public slots:
-  void slot_set_progress(i32, f32);
-  void slot_handle_cb_loop_file(const bool iChecked);
+  void slot_set_progress(i32, f32) const;
+  void slot_handle_cb_loop_file(bool iChecked);
+  void slot_slider_pressed();
+  void slot_slider_released();
+  void slot_slider_moved(i32);
 };
 
 #endif

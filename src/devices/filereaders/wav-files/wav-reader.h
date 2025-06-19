@@ -49,6 +49,7 @@ public:
 
   void start_reader();
   void stop_reader();
+  void jump_to_relative_position_per_mill(i32 iPerMill);
   bool handle_continuous_button();
 
 private:
@@ -59,6 +60,7 @@ private:
   std::atomic<bool> mRunning = false;
   std::atomic<bool> mContinuous = false;
   i64 mFileLength = 0;
+  i64 mSetNewFilePos = 0;
   i64 mPeriod_us = 0;
 
   i16 mConvBufferSize;

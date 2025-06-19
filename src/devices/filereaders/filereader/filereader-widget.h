@@ -2,11 +2,11 @@
 #define  __FILEREADER_WIDGET__
 
 #include  <QLabel>
-#include  <QProgressBar>
 #include  <QLCDNumber>
 #include  <QHBoxLayout>
 #include  <QVBoxLayout>
 #include  <QCheckBox>
+#include  <QSlider>
 #include  <QSpacerItem>
 
 class FileReaderWidget
@@ -14,7 +14,7 @@ class FileReaderWidget
 public:
   QLabel * lblTitle = nullptr;
   QLabel * lblFileName = nullptr;
-  QProgressBar * progressFile = nullptr;
+  QSlider * sliderFilePos = nullptr;
   QLCDNumber * lcdCurrTime = nullptr;
   QLabel * lblSeconds = nullptr;
   QLCDNumber * lcdTotalTime = nullptr;
@@ -31,7 +31,9 @@ public:
   {
     lblTitle = new QLabel("Playing pre-recorded file");
     lblFileName = new QLabel();
-    progressFile = new QProgressBar();
+    sliderFilePos = new QSlider();
+    sliderFilePos->setOrientation(Qt::Orientation::Horizontal);
+    sliderFilePos->setRange(0, 1000);
 
     lcdCurrTime = new QLCDNumber();
     lcdCurrTime->setFrameShape(QFrame::NoFrame);
@@ -68,7 +70,7 @@ public:
     QVBoxLayout * base = new QVBoxLayout();
     base->addWidget(lblTitle);
     base->addWidget(lblFileName);
-    base->addWidget(progressFile);
+    base->addWidget(sliderFilePos);
     base->addItem(bottom);
 
     qw->setLayout(base);

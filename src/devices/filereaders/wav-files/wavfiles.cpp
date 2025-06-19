@@ -81,12 +81,16 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
 
   lcdSampleRate->display(mSampleRate);
   lblFileName->setText(iFilename);
-  progressFile->setValue(0);
+  sliderFilePos->setValue(0);
   lcdCurrTime->display(0);
-  i64 fileLength = sf_seek(mpFile, 0, SEEK_END);
+  const i64 fileLength = sf_seek(mpFile, 0, SEEK_END);
   lcdTotalTime->display(QString("%1").arg((f32)fileLength / (f32)mSampleRate, 0, 'f', 1));
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &WavFileHandler::slot_handle_cb_loop_file);
+  connect(sliderFilePos, &QSlider::sliderPressed, this, &WavFileHandler::slot_slider_pressed);
+  connect(sliderFilePos, &QSlider::sliderReleased, this, &WavFileHandler::slot_slider_released);
+  connect(sliderFilePos, &QSlider::sliderMoved, this, &WavFileHandler::slot_slider_moved);
+
   mIsRunning.store(false);
 }
 //
@@ -161,12 +165,6 @@ i32 WavFileHandler::Samples()
   return mRingBuffer.get_ring_buffer_read_available();
 }
 
-void WavFileHandler::slot_set_progress(i32 progress, f32 timelength)
-{
-  progressFile->setValue(progress);
-  lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
-}
-
 void WavFileHandler::show()
 {
   mFrame.show();
@@ -218,4 +216,33 @@ void WavFileHandler::slot_handle_cb_loop_file(const bool iChecked)
   }
 
   cbLoopFile->setChecked(mpWavReader->handle_continuous_button());
+}
+
+void WavFileHandler::slot_set_progress(const i32 progress, const f32 timelength) const
+{
+  if (mSliderMovementPos < 0) // suppress slider update while mouse move on slider
+  {
+    sliderFilePos->setValue(progress);
+  }
+  lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
+}
+
+void WavFileHandler::slot_slider_pressed()
+{
+  mSliderMovementPos = sliderFilePos->value();
+}
+
+void WavFileHandler::slot_slider_released()
+{
+  if (mSliderMovementPos >= 0)
+  {
+    // mpWavReader->jump_to_relative_position_per_mill(mSliderMovementPos); // restart from current mouse release position
+    mSliderMovementPos = -1;
+  }
+}
+
+void WavFileHandler::slot_slider_moved(const i32 iPos)
+{
+  mSliderMovementPos = iPos; // iPos = [0; 1000]
+  mpWavReader->jump_to_relative_position_per_mill(iPos);
 }
