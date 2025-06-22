@@ -37,6 +37,12 @@
 #include	"ringbuffer.h"
 #include	<atomic>
 
+#define USE_LIQUID_RESAMPLER
+
+#ifdef USE_LIQUID_RESAMPLER
+  #include  <liquid/liquid.h>
+#endif
+
 class WavFileHandler;
 
 class WavReader : public QThread
@@ -64,15 +70,18 @@ private:
   std::atomic<i64> mSetNewFilePos = -1;
   i64 mFileLength = 0;
   i64 mPeriod_us = 0;
-
-  i16 mConvBufferSize;
-  i16 mConvIndex = 0;
   std::vector<cf32> mCmplxBuffer;
   std::vector<cf32> mConvBuffer;
+
+#ifdef USE_LIQUID_RESAMPLER
+  resamp_crcf mLiquidResampler;
+#else
+  i16 mConvBufferSize;
+  i16 mConvIndex = 0;
   std::vector<cf32> mResampBuffer;
   std::vector<i16> mMapTable_int;
   std::vector<f32> mMapTable_float;
-
+#endif
 
   void run() override;
 

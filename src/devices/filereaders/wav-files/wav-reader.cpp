@@ -54,6 +54,20 @@ WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32
 
   if (mSampleRate != INPUT_RATE)
   {
+#ifdef USE_LIQUID_RESAMPLER
+
+    unsigned int h_len = 13;    // filter semi-length (filter delay)
+    const float r = (float)INPUT_RATE / (float)mSampleRate;               // resampling rate (output/input)
+    const float bw = 0.4f;              // resampling filter bandwidth
+    const float slsl = 60.0f;          // resampling filter sidelobe suppression level
+    const unsigned int npfb = 32;       // number of filters in bank (timing resolution)
+
+    mConvBuffer.resize(mCmplxBuffer.size() * r + 10);
+
+    // create resampler
+    mLiquidResampler = resamp_crcf_create(r, h_len, bw, slsl, npfb);
+    resamp_crcf_print(mLiquidResampler);
+#else
     // we process chunks of 1 msec
     mConvBufferSize = (i16)(mSampleRate / 1000);
     mConvBuffer.resize(mConvBufferSize + 1);
@@ -69,6 +83,8 @@ WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32
       //qDebug() << i << mMapTable_int[i] << mMapTable_float[i];
     }
     mConvIndex = 0;
+#endif
+
   }
 
   mPeriod_us = 32768LL * 1'000'000LL/*us*/ / mSampleRate;  // full IQs read
@@ -78,6 +94,12 @@ WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32
 WavReader::~WavReader()
 {
   stop_reader();
+#ifdef USE_LIQUID_RESAMPLER
+  if (mSampleRate != INPUT_RATE)
+  {
+    resamp_crcf_destroy(mLiquidResampler);
+  }
+#endif
 }
 
 void WavReader::start_reader()
@@ -160,6 +182,13 @@ void WavReader::run()
 
     if (mSampleRate != INPUT_RATE)
     {
+#ifdef USE_LIQUID_RESAMPLER
+      u32 usedResultSamples = 0;
+      resamp_crcf_execute_block(mLiquidResampler, mCmplxBuffer.data(), mCmplxBuffer.size(), mConvBuffer.data(), &usedResultSamples);
+      assert(usedResultSamples <= mConvBuffer.size());
+      mpRingBuffer->put_data_into_ring_buffer(mConvBuffer.data(), usedResultSamples);
+
+#else
       for (u32 i = 0; i < cBufferSize; ++i)
       {
         mConvBuffer[mConvIndex++] = mCmplxBuffer[i];
@@ -177,6 +206,7 @@ void WavReader::run()
           mConvIndex = 1;
         }
       }
+#endif
     }
     else
     {
