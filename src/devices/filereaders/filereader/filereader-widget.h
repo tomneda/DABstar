@@ -34,6 +34,9 @@ public:
     sliderFilePos = new QSlider();
     sliderFilePos->setOrientation(Qt::Orientation::Horizontal);
     sliderFilePos->setRange(0, 1000);
+    sliderFilePos->setFixedHeight(31);
+    sliderFilePos->setToolTip("Grab the handle and slide to move through the file.");
+    sliderFilePos->setStyleSheet("QSlider::handle:horizontal { width:  16px; margin-top: -9px;  margin-bottom: -9px; border-radius: 5px; }");
 
     lcdCurrTime = new QLCDNumber();
     lcdCurrTime->setFrameShape(QFrame::NoFrame);
