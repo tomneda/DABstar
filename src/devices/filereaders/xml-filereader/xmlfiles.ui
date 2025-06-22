@@ -22,9 +22,9 @@
     </widget>
    </item>
    <item>
-    <widget class="QProgressBar" name="fileProgress">
-     <property name="value">
-      <number>24</number>
+    <widget class="QSlider" name="sliderFilePos">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>

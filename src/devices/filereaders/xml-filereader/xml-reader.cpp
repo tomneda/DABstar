@@ -50,14 +50,9 @@ static i32 shift(i32 a)
   return r;
 }
 
-static inline cf32 compmul(cf32 a, f32 b)
-{
-  return cf32(real(a) * b, imag(a) * b);
-}
-
 static inline u64 currentTime()
 {
-  struct timeval tv;
+  timeval tv;
 
   gettimeofday(&tv, nullptr);
   return (u64)(tv.tv_sec * 1000000 + (u64)tv.tv_usec);
@@ -131,6 +126,7 @@ void XmlReader::run()
   running.store(true);
   fseek(file, filePointer, SEEK_SET);
   nextStop = currentTime();
+
   for (i32 blocks = 0; blocks < fd->nrBlocks; blocks++)
   {
     samplesToRead = compute_nrSamples(file, blocks);
@@ -158,7 +154,16 @@ void XmlReader::run()
           samplesRead += readSamples(file, &XmlReader::readElements_Q);
         }
 
-        if (++cycleCount >= 200)
+        if (mSetRelFilePos >= 0)
+        {
+          i64 filePosStart = ftell(file);
+
+          fseek(file, mSetRelFilePos, SEEK_SET);
+          mSetRelFilePos = -1;
+          cycleCount = 100; // retrigger emit below
+        }
+
+        if (++cycleCount >= 100)
         {
           emit signal_set_progress(samplesRead, samplesToRead);
           cycleCount = 0;
@@ -217,11 +222,12 @@ i32 XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, c
   cf32 temp[2048];
 
   (*this.*r)(theFile, &convBuffer[1], convBufferSize);
+
   for (i32 i = 0; i < 2048; i++)
   {
-    i16 inpBase = mapTable_int[i];
-    f32 inpRatio = mapTable_float[i];
-    temp[i] = compmul(convBuffer[inpBase + 1], inpRatio) + compmul(convBuffer[inpBase], 1 - inpRatio);
+    const i16 inpBase = mapTable_int[i];
+    const f32 inpRatio = mapTable_float[i];
+    temp[i] = convBuffer[inpBase + 1] * inpRatio + convBuffer[inpBase] * (1 - inpRatio);
   }
   convBuffer[0] = convBuffer[convBufferSize];
   convIndex = 1;

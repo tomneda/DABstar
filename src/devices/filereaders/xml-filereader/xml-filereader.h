@@ -31,6 +31,7 @@
 #ifndef  XML_FILEREADER_H
 #define  XML_FILEREADER_H
 
+#include  <memory>
 #include  <QObject>
 #include  <QString>
 #include  <QFrame>
@@ -72,12 +73,18 @@ private:
   RingBuffer<cf32> _I_Buffer;
   FILE * theFile = nullptr;
   u32 filePointer = 0;
-  XmlDescriptor * theDescriptor = nullptr;
-  XmlReader * theReader = nullptr;
+  std::unique_ptr<XmlDescriptor> theDescriptor;
+  std::unique_ptr<XmlReader> theReader;
+  i32 mSliderMovementPos = -1;
   
 public slots:
   void slot_set_progress(i32, i32);
+
+private slots:
   void slot_handle_cb_loop_file(const bool iChecked);
+  void slot_slider_pressed();
+  void slot_slider_released();
+  void slot_slider_moved(i32);
 };
 
 #endif

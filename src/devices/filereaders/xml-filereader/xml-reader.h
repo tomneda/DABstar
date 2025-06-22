@@ -57,7 +57,7 @@ private:
   union UCnv // to avoid warnings "dereferencing type-punned pointer will break strict-aliasing rules"
   {
     i32 int32Data;
-    f32   floatData;
+    f32 floatData;
   };
 
   std::atomic<bool> continuous;
@@ -66,9 +66,10 @@ private:
   u32 filePointer;
   RingBuffer<cf32> * sampleBuffer;
   XmlFileReader * parent;
-  i32 nrElements;
-  i32 samplesToRead;
-  std::atomic<bool> running;
+  i32 nrElements = 0;
+  i32 samplesToRead = 0;
+  std::atomic<bool> running = false;
+  std::atomic<i64> mSetRelFilePos = -1; // can be 0..1000
   void run();
   i32 compute_nrSamples(FILE * f, i32 blockNumber);
   i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, i32));
@@ -76,8 +77,8 @@ private:
   void readElements_QI(FILE * f, cf32 *, i32 amount);
   void readElements_I(FILE * f, cf32 *, i32 amount);
   void readElements_Q(FILE * f, cf32 *, i32 amount);
-  //
-  //	for the conversion - if any
+
+  // for sample rate conversion - if any
   i16 convBufferSize;
   i16 convIndex;
   std::vector<cf32> convBuffer;

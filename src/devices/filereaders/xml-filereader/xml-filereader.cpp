@@ -73,14 +73,14 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
 
   bool ok = false;
   filenameLabel->setText(iFilename);
-  theDescriptor = new XmlDescriptor(theFile, &ok);
+  theDescriptor = std::make_unique<XmlDescriptor>(theFile, &ok);
   if (!ok)
   {
     const QString val = QString("'%1' is probably not a xml file").arg(iFilename);
     throw std::runtime_error(val.toUtf8().data());
   }
 
-  fileProgress->setValue(0);
+  sliderFilePos->setValue(0);
   currentTime->display(0);
   samplerateDisplay->display(theDescriptor->sampleRate);
   nrBitsDisplay->display(theDescriptor->bitsperChannel);
@@ -99,8 +99,12 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
 
   nrElementsDisplay->display(theDescriptor->blockList[0].nrElements);
   fprintf(stderr, "nrElements = %d\n", theDescriptor->blockList[0].nrElements);
-  //connect(continuousButton, SIGNAL (clicked()), this, SLOT (slot_handle_cb_loop_file(0)));
+
   connect(cbLoopFile, &QCheckBox::clicked, this, &XmlFileReader::slot_handle_cb_loop_file);
+  connect(sliderFilePos, &QSlider::sliderPressed, this, &XmlFileReader::slot_slider_pressed);
+  connect(sliderFilePos, &QSlider::sliderReleased, this, &XmlFileReader::slot_slider_released);
+  connect(sliderFilePos, &QSlider::sliderMoved, this, &XmlFileReader::slot_slider_moved);
+
   running.store(false);
 }
 
@@ -113,26 +117,23 @@ XmlFileReader::~XmlFileReader()
     {
       usleep(100);
     }
-    delete theReader;
   }
   if (theFile != nullptr)
   {
     fclose(theFile);
   }
 
-  delete theDescriptor;
-
   Settings::FileReaderXml::posAndSize.write_widget_geometry(&myFrame);
 }
 
-bool XmlFileReader::restartReader(i32 freq)
+bool XmlFileReader::restartReader(const i32 freq)
 {
   (void)freq;
   if (running.load())
   {
     return true;
   }
-  theReader = new XmlReader(this, theFile, theDescriptor, 5000, &_I_Buffer);
+  theReader = std::make_unique<XmlReader>(this, theFile, theDescriptor.get(), 5000, &_I_Buffer);
   running.store(true);
   return true;
 }
@@ -146,8 +147,7 @@ void XmlFileReader::stopReader()
     {
       usleep(100);
     }
-    delete theReader;
-    theReader = nullptr;
+    theReader.reset();
   }
   running.store(false);
 }
@@ -176,13 +176,6 @@ i32 XmlFileReader::Samples()
     return 0;
   }
   return _I_Buffer.get_ring_buffer_read_available();
-}
-
-void XmlFileReader::slot_set_progress(i32 samplesRead, i32 samplesToRead)
-{
-  fileProgress->setValue((f32)samplesRead / samplesToRead * 100);
-  currentTime->display(QString("%1").arg(samplesRead / 2048000.0, 0, 'f', 1));
-  totalTime->display(QString("%1").arg(samplesToRead / 2048000.0, 0, 'f', 1));
 }
 
 i32 XmlFileReader::getVFOFrequency()
@@ -238,3 +231,33 @@ QString XmlFileReader::deviceName()
   return "XmlFile";
 }
 
+void XmlFileReader::slot_set_progress(i32 samplesRead, i32 samplesToRead)
+{
+  if (mSliderMovementPos < 0) // suppress slider update while mouse move on slider
+  {
+    // fileProgress->setValue((f32)samplesRead / samplesToRead * 100);
+    sliderFilePos->setValue((f32)samplesRead / samplesToRead * 100);
+  }
+  currentTime->display(QString("%1").arg(samplesRead / 2048000.0, 0, 'f', 1));
+  totalTime->display(QString("%1").arg(samplesToRead / 2048000.0, 0, 'f', 1));
+}
+
+void XmlFileReader::slot_slider_pressed()
+{
+  mSliderMovementPos = sliderFilePos->value();
+}
+
+void XmlFileReader::slot_slider_released()
+{
+  if (mSliderMovementPos >= 0)
+  {
+    // mpRawReader->jump_to_relative_position_per_mill(mSliderMovementPos); // restart from current mouse release position
+    mSliderMovementPos = -1;
+  }
+}
+
+void XmlFileReader::slot_slider_moved(const i32 iPos)
+{
+  mSliderMovementPos = iPos; // iPos = [0; 1000]
+  // theReader->jump_to_relative_position_per_mill(iPos);
+}
