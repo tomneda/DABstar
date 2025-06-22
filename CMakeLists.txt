@@ -111,7 +111,7 @@ option(UHD        "Use UHD"        OFF)
 option(RTLSDR     "Use RtlSdr"      ON)
 
 # additional options
-option(USE_HBF       "Use oversampling with half band filter" OFF)  # this needs LiquidDsp (https://github.com/jgaeddert/liquid-dsp)
+option(USE_LIQUID    "Use LiquidDsp for HBF and Resampler"    OFF)  # this needs LiquidDsp (https://github.com/jgaeddert/liquid-dsp)
 option(DATA_STREAMER "Use DataStreamer"                       OFF)  # untested
 option(FDK_AAC       "Use FDK-AAC instead of FAAD"             ON)
 
@@ -130,7 +130,7 @@ option(SSE_OR_AVX    "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  #
 #add_definitions (-D__EPG_TRACE__)
 
 ########################################################################
-if (USE_HBF)
+if (USE_LIQUID)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/support/halfbandfilter.h
@@ -143,7 +143,7 @@ if (USE_HBF)
 
     list(APPEND extraLibs liquid)
 
-    add_definitions(-DHAVE_HBF)
+    add_definitions(-DHAVE_LIQUID)
 endif ()
 
 find_package(PkgConfig) # imports pkg_check_modules() macros

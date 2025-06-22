@@ -262,7 +262,7 @@ static i32 callback(hackrf_transfer * transfer)
   {
     const cf32 x = cf32(p[2 * i + 0], p[2 * i + 1]);
     cf32 y;
-#ifdef HAVE_HBF
+#ifdef HAVE_LIQUID
     if (!ctx->mHbf.decimate(x, y))
     {
       continue;

@@ -45,7 +45,7 @@
 #include  "ui_hackrf-widget.h"
 #include  <libhackrf/hackrf.h>
 #include  <QLibrary>
-#ifdef HAVE_HBF
+#ifdef HAVE_LIQUID
   #include  "halfbandfilter.h"
 #endif
 
@@ -113,7 +113,7 @@ public:
 
   using TRingBuffer = RingBuffer<std::complex<i8> >;
   TRingBuffer mRingBuffer{ 4 * 1024 * 1024 }; // The buffer should be visible by the callback function
-#ifdef HAVE_HBF
+#ifdef HAVE_LIQUID
   static constexpr i32 OVERSAMPLING = 4; // The value should be visible by the callback function
   HalfBandFilter mHbf{ 2 };
 #else
