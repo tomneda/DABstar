@@ -36,10 +36,7 @@
 #include	"dab-constants.h"
 #include	"ringbuffer.h"
 #include	<atomic>
-
-#define USE_LIQUID_RESAMPLER
-
-#ifdef USE_LIQUID_RESAMPLER
+#ifdef HAVE_LIQUID
   #include  <liquid/liquid.h>
 #endif
 
@@ -71,14 +68,14 @@ private:
   i64 mFileLength = 0;
   i64 mPeriod_us = 0;
   std::vector<cf32> mCmplxBuffer;
-  std::vector<cf32> mConvBuffer;
+  std::vector<cf32> mResampBuffer;
 
-#ifdef USE_LIQUID_RESAMPLER
-  resamp_crcf mLiquidResampler;
+#ifdef HAVE_LIQUID
+  resamp_crcf mLiquidResampler = nullptr;
 #else
   i16 mConvBufferSize;
   i16 mConvIndex = 0;
-  std::vector<cf32> mResampBuffer;
+  std::vector<cf32> mConvBuffer;
   std::vector<i16> mMapTable_int;
   std::vector<f32> mMapTable_float;
 #endif
