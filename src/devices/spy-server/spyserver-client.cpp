@@ -54,9 +54,9 @@ Q_LOGGING_CATEGORY(sLogSpyServerClient, "SpyServerClient", QtDebugMsg)
 SpyServerClient::SpyServerClient(QSettings * /*s*/)
 {
   // spyServer_settings = s;
-  setupUi(&myFrame);
-  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.show();
+  setupUi(&mFrame);
+  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  mFrame.show();
 
   const QString url = "https://airspy.com/directory/";
   const QString style = "style='color: lightblue;'";
@@ -64,14 +64,14 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   lblHelp->setText(htmlLink);
   lblHelp->setOpenExternalLinks(true);
 
-  Settings::SpyServer::posAndSize.read_widget_geometry(&myFrame, 240, 220, true);
+  Settings::SpyServer::posAndSize.read_widget_geometry(&mFrame, 240, 220, true);
   Settings::SpyServer::sbGain.register_widget_and_update_ui_from_setting(sbGain, 20);
   Settings::SpyServer::cbAutoGain.register_widget_and_update_ui_from_setting(cbAutoGain, 2); // 2 = checked
 
   editIpAddress->setText(Settings::SpyServer::varIpAddress.read().toString());
 
-  settings.gain = sbGain->value();
-  settings.auto_gain = cbAutoGain->isChecked();
+  mSettings.gain = sbGain->value();
+  mSettings.auto_gain = cbAutoGain->isChecked();
   // settings.basePort = 5555;
 
   // portNumber->setValue(settings.basePort);
@@ -84,9 +84,11 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   // lastFrequency = DEFAULT_FREQUENCY; // TODO: tomneda
   // theServer = nullptr;
   // hostLineEdit = new QLineEdit(nullptr);
-  settings.resample_quality = 2;
-  settings.batchSize = 4096;
-  settings.sample_bits = 16;
+  mSettings.resample_quality = 2;
+  mSettings.batchSize = 4096;
+  mSettings.sample_bits = 16;
+
+  mByteBuffer.resize(mSettings.batchSize * 2);
 
   connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_handle_connect_button);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 2)
@@ -104,24 +106,31 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
 
 SpyServerClient::~SpyServerClient()
 {
-  if (connected)
+  if (mIsConnected)
   {		// close previous connection
     stopReader();
-    connected = false;
+    mIsConnected = false;
   }
 
-  Settings::SpyServer::posAndSize.write_widget_geometry(&myFrame);
+#ifdef HAVE_LIQUID
+  if (mLiquidResampler != nullptr)
+  {
+    resamp_crcf_destroy(mLiquidResampler);
+  }
+#endif
+
+  Settings::SpyServer::posAndSize.write_widget_geometry(&mFrame);
 }
 
 //
 void SpyServerClient::_slot_handle_connect_button()
 {
-  if (connected)
+  if (mIsConnected)
   {
     stopReader();
-    connected = false;
-    theServer.reset();
-    settings = {};
+    mIsConnected = false;
+    mSpyServerHandler.reset();
+    mSettings = {};
     btnConnect->setStyleSheet("background-color: #668888FF;");
     btnConnect->setText("Connect");
     lblState->setStyleSheet("color: #8888FF;");
@@ -142,7 +151,7 @@ void SpyServerClient::_slot_handle_connect_button()
     btnConnect->setText("Disconnect");
     lblState->setStyleSheet("color: #88FF88;");
     lblState->setText("Connected");
-    connected = true;
+    mIsConnected = true;
   }
 
   // QString ipAddress;
@@ -184,20 +193,20 @@ bool SpyServerClient::_setup_connection()
   // QString s = hostLineEdit->text();
   // QString theAddress = QHostAddress(s).toString();
   //onConnect.store(false);
-  theServer.reset();
+  mSpyServerHandler.reset();
 
   try
   {
-    theServer = std::make_unique<SpyServerHandler>(this, settings.ipAddress, (i32)settings.basePort, &tmpBuffer);
+    mSpyServerHandler = std::make_unique<SpyServerHandler>(this, mSettings.ipAddress, (i32)mSettings.basePort, &mRingBuffer1);
   }
   catch (...)
   {
-    theServer.reset(); // not sure if the object is already destroyed here (or not created)
+    mSpyServerHandler.reset(); // not sure if the object is already destroyed here (or not created)
     QMessageBox::warning(nullptr, "Warning", "Connection failed");
     return false;
   }
 
-  if (theServer == nullptr)
+  if (mSpyServerHandler == nullptr)
   {
     qCCritical(sLogSpyServerClient) << "Failed to create SpyServerHandler";
     return false;
@@ -211,7 +220,7 @@ bool SpyServerClient::_setup_connection()
   // could be a bit tricky because SpyServerHandler::signal_call_parent could be called before the connection is done -> false timeout will occur
   bool timedOut = false;
   const auto timerConn = connect(&checkTimer, &QTimer::timeout, [&]() { timedOut = true; eventLoop.quit(); });
-  const auto eventConn = connect(theServer.get(), &SpyServerHandler::signal_call_parent, &eventLoop, &QEventLoop::quit);
+  const auto eventConn = connect(mSpyServerHandler.get(), &SpyServerHandler::signal_call_parent, &eventLoop, &QEventLoop::quit);
   checkTimer.start(2000);
   eventLoop.exec(); // waits until QEventLoop::quit() was called
   checkTimer.stop();
@@ -222,14 +231,14 @@ bool SpyServerClient::_setup_connection()
   {
     qCCritical(sLogSpyServerClient()) << "Connection timed out";
     QMessageBox::warning(nullptr, "Warning", "Timeout while waiting for an answer from the server");
-    theServer.reset();
+    mSpyServerHandler.reset();
     return false;
   }
 
-  theServer->connection_set();
+  mSpyServerHandler->connection_set();
 
-  struct DeviceInfo theDevice;
-  theServer->get_deviceInfo(theDevice);
+  DeviceInfo theDevice;
+  mSpyServerHandler->get_deviceInfo(theDevice);
 
   bool validDevice = false;
   lblDeviceName->setStyleSheet("color: #FFBB00;");
@@ -268,7 +277,7 @@ bool SpyServerClient::_setup_connection()
   if (max_samp_rate == 0)
   {
     qCCritical(sLogSpyServerClient()) << "Device does not support sampling";
-    theServer.reset();
+    mSpyServerHandler.reset();
     return false;
   }
 
@@ -280,7 +289,7 @@ bool SpyServerClient::_setup_connection()
     {
       desired_decim_stage = i;
       resample_ratio = 1;
-      settings.sample_rate = targetRate;
+      mSettings.sample_rate = targetRate;
       break; // we can stop here
     }
     else if (targetRate > INPUT_RATE) // would include also the "==" case but maybe we have rounding errors to exactly 1 when calculating the resample_ratio
@@ -288,7 +297,7 @@ bool SpyServerClient::_setup_connection()
       // remember the next-largest rate that is available
       desired_decim_stage = i;
       resample_ratio = INPUT_RATE / (f64)targetRate;
-      settings.sample_rate = targetRate;
+      mSettings.sample_rate = targetRate;
     }
     else
     {
@@ -300,18 +309,18 @@ bool SpyServerClient::_setup_connection()
   if (desired_decim_stage < 0)
   {
     qCCritical(sLogSpyServerClient()) << "Device does not support sampling at" << INPUT_RATE << "Sps" << " (max_samp_rate" << max_samp_rate << ")";
-    theServer.reset();
+    mSpyServerHandler.reset();
     return false;
   }
 
-  qCInfo(sLogSpyServerClient()) << "Device supports sampling at" << settings.sample_rate << "Sps" << " (resampling_ratio" << resample_ratio << ")";
+  qCInfo(sLogSpyServerClient()) << "Device supports sampling at" << mSettings.sample_rate << "Sps" << " (resampling_ratio" << resample_ratio << ")";
 
   const i32 maxGain = theDevice.MaximumGainIndex;
   sbGain->setMaximum(maxGain);
-  settings.resample_ratio = resample_ratio;
-  settings.desired_decim_stage = desired_decim_stage;
+  mSettings.resample_ratio = resample_ratio;
+  mSettings.desired_decim_stage = desired_decim_stage;
 
-  if (!theServer->set_sample_rate_by_decim_stage(desired_decim_stage))
+  if (!mSpyServerHandler->set_sample_rate_by_decim_stage(desired_decim_stage))
   {
     qCCritical(sLogSpyServerClient()) << "Failed to set sample rate " << desired_decim_stage;
     return false;
@@ -325,18 +334,33 @@ bool SpyServerClient::_setup_connection()
 //	Since we are down sampling, creating an outputbuffer with the
 //	same size as the input buffer is OK
 
-  if (settings.resample_ratio != 1.0)
+  if (mSettings.resample_ratio != 1.0)
   {
+#ifdef HAVE_LIQUID
+    constexpr u32 filterLen = 13;
+    constexpr float resampBw = 0.5f * (float)(cK * cCarrDiff + 2*35000) / (float)INPUT_RATE;
+    constexpr float sideLopeSuppr = 40.0f;
+    constexpr u32 numFiltersInBank = 32;
+    mLiquidResampler = resamp_crcf_create(mSettings.resample_ratio, filterLen, resampBw, sideLopeSuppr, numFiltersInBank);
+    resamp_crcf_print(mLiquidResampler);
+    mResampBuffer.resize(2048 + 10); // add some exaggerated samples
+#else
     // we process chunks of 1 msec
-    convBufferSize = settings.sample_rate / 1000;
-    convBuffer.resize(convBufferSize + 1);
+    mMapTable_int.resize(2048);
+    mMapTable_float.resize(2048);
+
     for (i32 i = 0; i < 2048; i++)
     {
-      f32 inVal = f32(settings.sample_rate / 1000);
-      mapTable_int[i] = i32(floor(i * (inVal / 2048.0)));
-      mapTable_float[i] = i * (inVal / 2048.0) - mapTable_int[i];
+      const f32 inVal = (f32)mSettings.sample_rate / 1000.0f;
+      mMapTable_int[i] = (i16)std::floor((f32)i * (inVal / 2048.0f));
+      mMapTable_float[i] = (f32)i * (inVal / 2048.0f) - (f32)mMapTable_int[i];
     }
-    convIndex = 0;
+    mConvIndex = 0;
+    mResampBuffer.resize(2048);
+#endif
+
+    mConvBufferSize = mSettings.sample_rate / 1000;
+    mConvBuffer.resize(std::max(mConvBufferSize + 1, mSettings.batchSize));
   }
 
   return true;
@@ -349,20 +373,20 @@ i32 SpyServerClient::getRate()
 
 bool SpyServerClient::restartReader(i32 freq)
 {
-  if (!connected)
+  if (!mIsConnected)
   {
     return false;
   }
 
   std::cerr << "spy-handler: setting center_freq to " << freq << std::endl;
 
-  if (!theServer->set_iq_center_freq(freq))
+  if (!mSpyServerHandler->set_iq_center_freq(freq))
   {
     std::cerr << "Failed to set freq\n";
     return false;
   }
 
-  if (!theServer->set_gain(settings.gain))
+  if (!mSpyServerHandler->set_gain(mSettings.gain))
   {
     std::cerr << "Failed to set gain\n";
     return false;
@@ -370,25 +394,25 @@ bool SpyServerClient::restartReader(i32 freq)
 
   // toSkip = skipped;
 
-  theServer->start_running();
-  running = true;
+  mSpyServerHandler->start_running();
+  mIsRunning = true;
   return true;
 }
 
 void SpyServerClient::stopReader()
 {
   fprintf(stderr, "stopReader is called\n");
-  if (theServer == nullptr)
+  if (mSpyServerHandler == nullptr)
     return;
 
-  if (!connected || !running)	// seems double???
+  if (!mIsConnected || !mIsRunning)	// seems double???
     return;
 
-  if (!theServer->is_streaming())
+  if (!mSpyServerHandler->is_streaming())
     return;
 
-  theServer->stop_running();
-  running = false;
+  mSpyServerHandler->stop_running();
+  mIsRunning = false;
 }
 
 //
@@ -396,13 +420,13 @@ void SpyServerClient::stopReader()
 i32 SpyServerClient::getSamples(cf32 * V, i32 size)
 {
   i32 amount = 0;
-  amount = _I_Buffer.get_data_from_ring_buffer(V, size);
+  amount = mRingBuffer2.get_data_from_ring_buffer(V, size);
   return amount;
 }
 
 i32 SpyServerClient::Samples()
 {
-  return _I_Buffer.get_ring_buffer_read_available();
+  return mRingBuffer2.get_ring_buffer_read_available();
 }
 
 i16 SpyServerClient::bitDepth()
@@ -412,9 +436,9 @@ i16 SpyServerClient::bitDepth()
 
 void SpyServerClient::_slot_handle_gain(i32 gain)
 {
-  settings.gain = gain;
+  mSettings.gain = gain;
 
-  if (theServer != nullptr && !theServer->set_gain(settings.gain))
+  if (mSpyServerHandler != nullptr && !mSpyServerHandler->set_gain(mSettings.gain))
   {
     std::cerr << "Failed to set gain\n";
     return;
@@ -425,11 +449,11 @@ void SpyServerClient::_slot_handle_autogain(i32 d)
 {
   (void)d;
   const bool x = cbAutoGain->isChecked();
-  settings.auto_gain = x;
+  mSettings.auto_gain = x;
 
-  if (connected && theServer != nullptr)
+  if (mIsConnected && mSpyServerHandler != nullptr)
   {
-    theServer->set_gain_mode((bool)d != x, 0);
+    mSpyServerHandler->set_gain_mode((bool)d != x, 0);
   }
 }
 
@@ -438,7 +462,7 @@ void SpyServerClient::_slot_handle_autogain(i32 d)
 //   onConnect.store(true);
 // }
 
-static constexpr f32 convTable[] =
+static constexpr std::array<const f32, 256> cConvTable =
 {
   -128 / 128.0, -127 / 128.0, -126 / 128.0, -125 / 128.0, -124 / 128.0, -123 / 128.0, -122 / 128.0, -121 / 128.0, -120 / 128.0, -119 / 128.0, -118 / 128.0, -117 / 128.0, -116 / 128.0, -115 / 128.0, -114 / 128.0, -113 / 128.0, -112 / 128.0,
   -111 / 128.0, -110 / 128.0, -109 / 128.0, -108 / 128.0, -107 / 128.0, -106 / 128.0, -105 / 128.0, -104 / 128.0, -103 / 128.0, -102 / 128.0, -101 / 128.0, -100 / 128.0, -99 / 128.0, -98 / 128.0, -97 / 128.0, -96 / 128.0, -95 / 128.0,
@@ -458,54 +482,55 @@ static constexpr f32 convTable[] =
 
 void SpyServerClient::slot_data_ready()
 {
-  u8 buffer_8[settings.batchSize * 2];
-//static i32 fillP	= 0;
-  while (connected &&
-         (tmpBuffer.get_ring_buffer_read_available() > 2 * settings.batchSize))
+  while (mIsConnected && mRingBuffer1.get_ring_buffer_read_available() > 2 * mSettings.batchSize)
   {
-    const u32 samps = tmpBuffer.get_data_from_ring_buffer(buffer_8, 2 * settings.batchSize) / 2;
+    i32 numSamples = mRingBuffer1.get_data_from_ring_buffer(mByteBuffer.data(), 2 * mSettings.batchSize);
+    assert(numSamples == 2 * mSettings.batchSize);
+    numSamples /= 2;
 
-    if (!running)
+    if (!mIsRunning)
     {
       continue;
     }
 
-    if (settings.resample_ratio != 1)
+    if (mSettings.resample_ratio != 1)
     {
-      cf32 temp[2048];
-
-      for (u32 i = 0; i < samps; i++)
+      for (i32 i = 0; i < numSamples; i++)
       {
-        convBuffer[convIndex++] = cf32(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
+        mConvBuffer[mConvIndex++] = cf32(cConvTable[mByteBuffer[2 * i + 0]], cConvTable[mByteBuffer[2 * i + 1]]);
 
-        if (convIndex > convBufferSize)
+        if (mConvIndex > mConvBufferSize)
         {
+#ifdef HAVE_LIQUID
+          u32 usedResultSamples = 0;
+          resamp_crcf_execute_block(mLiquidResampler, mConvBuffer.data(), mConvBufferSize, mResampBuffer.data(), &usedResultSamples);
+          assert(usedResultSamples <= mResampBuffer.size());
+          mRingBuffer2.put_data_into_ring_buffer(mResampBuffer.data(), (i32)usedResultSamples);
+#else
           for (i32 j = 0; j < 2048; j++)
           {
-            i16 inpBase = mapTable_int[j];
-            f32 inpRatio = mapTable_float[j];
-            temp[j] = convBuffer[inpBase + 1] * inpRatio + convBuffer[inpBase] * (1 - inpRatio);
+            const i16 inpBase = mMapTable_int[j];
+            const f32 inpRatio = mMapTable_float[j];
+            mResampBuffer[j] = mConvBuffer[inpBase + 1] * inpRatio + mConvBuffer[inpBase] * (1 - inpRatio);
           }
-          // if (toSkip > 0)
-          //   toSkip -= 2048;
-          // else
-          //   _I_Buffer.putDataIntoBuffer(temp, 2048);
-          _I_Buffer.put_data_into_ring_buffer(temp, 2048);
-          convBuffer[0] = convBuffer[convBufferSize];
-          convIndex = 1;
+          mRingBuffer2.put_data_into_ring_buffer(mResampBuffer.data(), 2048);
+#endif
+          mConvBuffer[0] = mConvBuffer[mConvBufferSize];
+          mConvIndex = 1;
         }
       }
     }
     else
-    {	// no resmpling
-      cf32 outB[samps];
+    {
+      // no resampling necessary
+      assert((i32)mConvBuffer.size() >= numSamples);
 
-      for (u32 i = 0; i < samps; i++)
+      for (i32 i = 0; i < numSamples; i++)
       {
-        outB[i] = cf32(convTable[buffer_8[2 * i + 0]], convTable[buffer_8[2 * i + 1]]);
+        mConvBuffer[i] = cf32(cConvTable[mByteBuffer[2 * i + 0]], cConvTable[mByteBuffer[2 * i + 1]]);
       }
 
-      _I_Buffer.put_data_into_ring_buffer(outB, samps);
+      mRingBuffer2.put_data_into_ring_buffer(mConvBuffer.data(), numSamples);
     }
   }
 }
@@ -527,9 +552,9 @@ bool SpyServerClient::_check_and_cleanup_ip_address()
   }
 
   const QStringList parts = addr.split(":");
-  settings.ipAddress = parts[0];
-  settings.basePort = parts.size() > 1 ? parts[1].toInt() : 5555;
-  const QString addrStr = settings.ipAddress + ":" + QString::number(settings.basePort);
+  mSettings.ipAddress = parts[0];
+  mSettings.basePort = parts.size() > 1 ? parts[1].toInt() : 5555;
+  const QString addrStr = mSettings.ipAddress + ":" + QString::number(mSettings.basePort);
   editIpAddress->setText(addrStr);
   Settings::SpyServer::varIpAddress.write(addrStr);
 
@@ -538,17 +563,17 @@ bool SpyServerClient::_check_and_cleanup_ip_address()
 
 void SpyServerClient::show()
 {
-  myFrame.show();
+  mFrame.show();
 }
 
 void SpyServerClient::hide()
 {
-  myFrame.hide();
+  mFrame.hide();
 }
 
 bool SpyServerClient::isHidden()
 {
-  return myFrame.isHidden();
+  return mFrame.isHidden();
 }
 
 bool SpyServerClient::isFileInput()

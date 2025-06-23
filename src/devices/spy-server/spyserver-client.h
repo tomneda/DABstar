@@ -46,8 +46,10 @@
 #include	"device-handler.h"
 #include	"ringbuffer.h"
 #include	"ui_spyserver-client.h"
-
 #include	"spyserver-handler.h"
+#ifdef HAVE_LIQUID
+  #include  <liquid/liquid.h>
+#endif
 
 
 class SpyServerClient : public QObject, public IDeviceHandler, private Ui_spyServer_widget_8
@@ -77,7 +79,7 @@ public:
   i32 getRate();
 
 
-  struct
+  struct SSetting
   {
     i32 gain = 0;
     i32 basePort = 0;
@@ -89,7 +91,9 @@ public:
     i32 batchSize = 0;
     i32 sample_bits = 0;
     bool auto_gain = false;
-  } settings;
+  };
+
+  SSetting mSettings;
 
 private slots:
   void _slot_handle_connect_button();
@@ -101,24 +105,27 @@ public slots:
   void slot_data_ready();
 
 private:
-  QFrame myFrame;
-  RingBuffer<cf32> _I_Buffer{32 * 32768};
-  RingBuffer<u8> tmpBuffer{32 * 32768};
-  std::unique_ptr<SpyServerHandler> theServer;
-  i32 theRate;
-  QHostAddress serverAddress;
-  i64 basePort;
-  std::atomic<bool> running = false;
-  std::atomic<bool> connected = false;
-  // std::atomic<bool> onConnect = false;
-  // std::atomic<bool> timedOut = false;
+  QFrame mFrame;
+  RingBuffer<cf32> mRingBuffer2{32 * 32768};
+  RingBuffer<u8> mRingBuffer1{32 * 32768};
+  std::vector<u8> mByteBuffer;
+  std::vector<cf32> mResampBuffer;
+  std::unique_ptr<SpyServerHandler> mSpyServerHandler;
+  QHostAddress mServerAddress;
+  i64 mBasePort = 0;
+  std::atomic<bool> mIsRunning = false;
+  std::atomic<bool> mIsConnected = false;
+  std::vector<cf32> mConvBuffer;
+  i16 mConvIndex = 0;
+  i16 mConvBufferSize = 0;
 
-  i16 convBufferSize;
-  i16 convIndex = 0;
-  std::vector<cf32> convBuffer;
-  i16 mapTable_int[4 * 512];
-  f32 mapTable_float[4 * 512];
-  i32 selectedRate;
+#ifdef HAVE_LIQUID
+  resamp_crcf mLiquidResampler = nullptr;
+#else
+  std::vector<i16> mMapTable_int;
+  std::vector<f32> mMapTable_float;
+  i32 selectedRate = 0;
+#endif
 
   bool _setup_connection();
   bool _check_and_cleanup_ip_address();
