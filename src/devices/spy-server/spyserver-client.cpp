@@ -178,7 +178,7 @@ void SpyServerClient::_slot_handle_connect_button()
   // hostLineEdit->setText(ipAddress);
 
   // hostLineEdit->setInputMask("000.000.000.000");
-//	Setting default IP address
+  //Setting default IP address
   // hostLineEdit->show();
   // theState->setText("Enter IP address, \nthen press return");
   // connect(hostLineEdit, &QLineEdit::returnPressed, this, &spyServer_client_8::setConnection);
@@ -267,6 +267,17 @@ bool SpyServerClient::_setup_connection()
     return false;
   }
 
+  if (theDevice.MinimumFrequency > 174'928'000 ||  // DAB frequency range
+      theDevice.MaximumFrequency < 239'200'000)
+  {
+    lblState->setStyleSheet("color: #FF8888;");
+    lblState->setText("Invalid frequency range");
+    // lblState->setText("Device works out of necessary frequency range");
+    return false;
+  }
+
+
+
   lblDeviceNumber->setStyleSheet("color: #FF8800;");
   lblDeviceNumber->setText(QString::number(theDevice.DeviceSerial));
   const u32 max_samp_rate = theDevice.MaximumSampleRate;
@@ -281,9 +292,9 @@ bool SpyServerClient::_setup_connection()
     return false;
   }
 
-  for (u16 i = 0; i < decim_stages; ++i)
+  for (u32 i = 0; i < decim_stages; ++i)
   {
-    const i32 targetRate = (u32)(max_samp_rate / (1 << i));
+    const i32 targetRate = (i32)(max_samp_rate / (1 << i));
 
     if (targetRate == INPUT_RATE)
     {

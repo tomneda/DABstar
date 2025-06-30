@@ -285,8 +285,7 @@ bool SpyServerHandler::get_deviceInfo(struct DeviceInfo & theDevice)
 
   theDevice.DeviceType = deviceInfo.DeviceType;
   theDevice.DeviceSerial = deviceInfo.DeviceSerial;
-  theDevice.DecimationStageCount =
-    deviceInfo.DecimationStageCount;
+  theDevice.DecimationStageCount = deviceInfo.DecimationStageCount;
   theDevice.GainStageCount = deviceInfo.GainStageCount;
   theDevice.MaximumSampleRate = deviceInfo.MaximumSampleRate;
   theDevice.MaximumBandwidth = deviceInfo.MaximumBandwidth;
