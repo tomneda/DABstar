@@ -12,7 +12,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -253,7 +253,7 @@ OpenFileDialog::EType OpenFileDialog::get_file_type(const QString & fileName) co
   if      (fileName.endsWith(".uff", Qt::CaseInsensitive)) fileType = EType::XML;
   else if (fileName.endsWith(".sdr", Qt::CaseInsensitive) ||
            fileName.endsWith(".wav", Qt::CaseInsensitive)) fileType = EType::SDR; // SDR == WAV
-  else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) fileType = EType::RAW;
+  else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) fileType = EType::RAWFILE;
   else if (fileName.endsWith(".iq",  Qt::CaseInsensitive)) fileType = EType::IQ;
   else qDebug() << "Unknown file type in: " << fileName;
 

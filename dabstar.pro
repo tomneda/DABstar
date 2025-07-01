@@ -46,8 +46,7 @@ isEmpty(GITHASHSTRING) {
 #DESTDIR 	= ../../DABstar-Qt6.8.3
 LIBS		+= -L../../dabstar-libs/lib
 CONFIG		+= airspy
-#CONFIG		+= spyServer-16
-#CONFIG		+= spyServer-8
+CONFIG		+= spyServer
 CONFIG		+= rtl_tcp
 CONFIG		+= dabstick
 #CONFIG		+= sdrplay-v2
@@ -59,12 +58,13 @@ CONFIG		+= sse2
 #CONFIG		+= avx2
 #CONFIG		+= fdk-aac
 CONFIG		+= volk
-LIBS		+= -lsndfile-1
+#CONFIG		+= liquid
+LIBS		+= -lsndfile.dll
 LIBS		+= -lwinpthread
 LIBS		+= -lws2_32
 #LIBS		+= -lusb-1.0
-LIBS		+= -lzlib
-LIBS		+= -lfftw3f-3
+LIBS		+= -lzlib.dll
+LIBS		+= -lfftw3f.dll
 LIBS		+= -lqwt
 
 # very experimental, simple server for connecting to a tdc handler
@@ -100,7 +100,7 @@ DEPENDPATH += src \
     src/devices/dummy-handler
 	  
 INCLUDEPATH += \
-    ../dabstar-libs/include\qwt \
+    ../dabstar-libs/include/qwt \
     ../dabstar-libs/include + $${DEPENDPATH}
 
 HEADERS += \
@@ -314,7 +314,7 @@ FORMS += \
     src/main/dabradio.ui \
     src/spectrum-viewer/spectrum_viewer.ui \
     src/spectrum-viewer/cir-widget.ui \
-    src/support/technical_data.ui \
+    src/support/techdata.ui \
     src/configuration/configuration.ui \
     src/devices/filereaders/xml-filereader/xmlfiles.ui
 
@@ -354,7 +354,7 @@ sdrplay-v3 {
 	DEFINES		+= HAVE_SDRPLAY_V3
 	DEPENDPATH	+= src/devices/sdrplay-handler-v3
 	INCLUDEPATH	+= src/devices/sdrplay-handler-v3 \
-			   ../dabstar-libs/include\sdrplay
+			   ../dabstar-libs/include/sdrplay
         HEADERS         += src/devices/sdrplay-handler-v3/sdrplay-handler-v3.h \
                            src/devices/sdrplay-handler-v3/sdrplay-commands.h \
 	                   src/devices/sdrplay-handler-v3/Rsp-device.h \
@@ -498,32 +498,18 @@ elad-device	{
 	FORMS		+= src/devices/elad-s1-handler/elad-widget.ui
 }
 
-spyServer-8  {
-	DEFINES		+= HAVE_SPYSERVER_8
-	DEPENDPATH	+= src/devices/spy-server-8
-	INCLUDEPATH	+= src/devices/spy-server-8
-	HEADERS		+= src/devices/spy-server-8/spyserver-protocol.h 
-	HEADERS		+= src/devices/spy-server-8/tcp-client-8.h 
-	HEADERS		+= src/devices/spy-server-8/spy-handler-8.h 
-	HEADERS		+= src/devices/spy-server-8/spyserver-client-8.h
-	SOURCES		+= src/devices/spy-server-8/tcp-client-8.cpp 
-	SOURCES		+= src/devices/spy-server-8/spy-handler-8.cpp 
-	SOURCES		+= src/devices/spy-server-8/spyserver-client-8.cpp 
-	FORMS		+= src/devices/spy-server-8/spyserver-widget-8.ui
-}
-	
-spyServer-16  {
-	DEFINES		+= HAVE_SPYSERVER_16
-	DEPENDPATH	+= src/devices/spy-server-16
-	INCLUDEPATH	+= src/devices/spy-server-16
-	HEADERS		+= src/devices/spy-server-16/spyserver-protocol.h 
-	HEADERS		+= src/devices/spy-server-16/tcp-client.h 
-	HEADERS		+= src/devices/spy-server-16/spy-handler.h 
-	HEADERS		+= src/devices/spy-server-16/spyserver-client.h
-	SOURCES		+= src/devices/spy-server-16/tcp-client.cpp 
-	SOURCES		+= src/devices/spy-server-16/spy-handler.cpp 
-	SOURCES		+= src/devices/spy-server-16/spyserver-client.cpp 
-	FORMS		+= src/devices/spy-server-16/spyserver-widget.ui
+spyServer  {
+	DEFINES		+= HAVE_SPYSERVER
+	DEPENDPATH	+= src/devices/spy-server
+	INCLUDEPATH	+= src/devices/spy-server
+	HEADERS		+= src/devices/spy-server/spyserver-protocol.h \
+			   src/devices/spy-server/spyserver-tcp-client.h \
+			   src/devices/spy-server/spyserver-handler.h \
+			   src/devices/spy-server/spyserver-client.h
+	SOURCES		+= src/devices/spy-server/spyserver-tcp-client.cpp \
+			   src/devices/spy-server/spyserver-handler.cpp \
+			   src/devices/spy-server/spyserver-client.cpp
+	FORMS		+= src/devices/spy-server/spyserver-client.ui
 }
 	
 uhd	{
@@ -570,14 +556,14 @@ avx2	{
 
 fdk-aac {
         DEFINES         += __WITH_FDK_AAC__
-        INCLUDEPATH     += ../dabstar-libs/include\fdk-aac
+        INCLUDEPATH     += ../dabstar-libs/include/fdk-aac
         HEADERS         += src/backend/audio/fdk-aac.h
         SOURCES         += src/backend/audio/fdk-aac.cpp
 	LIBS		+= -lfdk-aac.dll
 }else	{
 	HEADERS		+= src/backend/audio/faad-decoder.h
 	SOURCES		+= src/backend/audio/faad-decoder.cpp
-	LIBS		+= -lfaad-2
+	LIBS		+= -lfaad.dll
 }
 
 volk	{
@@ -589,4 +575,11 @@ volk	{
 }else	{
         HEADERS         += src/ofdm/ofdm-decoder.h
         SOURCES         += src/ofdm/ofdm-decoder.cpp
+}
+
+liquid	{
+        DEFINES		+= HAVE_LIQUID
+	HEADERS		+= src/support/halfbandfilter.h
+        SOURCES         += src/support/halfbandfilter.cpp
+	LIBS		+= -lliquid.dll
 }

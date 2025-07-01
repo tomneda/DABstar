@@ -303,7 +303,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
     {
     case OpenFileDialog::EType::XML: inputDevice = std::make_unique<XmlFileReader>(file); break;
     case OpenFileDialog::EType::SDR: inputDevice = std::make_unique<WavFileHandler>(file); break;
-    case OpenFileDialog::EType::RAW:
+    case OpenFileDialog::EType::RAWFILE:
     case OpenFileDialog::EType::IQ:  inputDevice = std::make_unique<RawFileHandler>(file);break;
     default: return nullptr;
     }

@@ -177,7 +177,6 @@ endif ()
 
 search_for_library(ZLIB zlib)
 search_for_library(LIBSNDFILE sndfile)
-search_for_library(LIBSAMPLERATE samplerate)
 
 if (SSE_OR_AVX)
     set($(objectName)_HDRS
@@ -454,7 +453,7 @@ if (FDK_AAC)
     if (NOT LIBFDK_AAC_FOUND)
         message(FATAL_ERROR, "Please install libfdk-aac")
     endif ()
-    include_directories(src/specials/fdk-aac)
+    include_directories(${FDK_AAC_INCLUDE_DIR}/fdk-aac)
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
             src/backend/audio/fdk-aac.h

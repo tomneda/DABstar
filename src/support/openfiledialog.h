@@ -12,7 +12,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ public:
   QString get_maps_file_name();
   QString get_eti_file_name(const QString &, const QString &);
 
-  enum class EType { UNDEF, XML, SDR, IQ, RAW };
+  enum class EType { UNDEF, XML, SDR, IQ, RAWFILE };
   QString open_sample_data_file_dialog_for_reading(EType & oType) const;
   EType get_file_type(const QString & iFileName) const;
 
