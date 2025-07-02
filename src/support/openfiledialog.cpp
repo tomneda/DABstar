@@ -222,7 +222,7 @@ QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const
   return QDir::toNativeSeparators(fileName);
 }
 
-QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) const
+QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EFileType & oType) const
 {
   const bool useNativeFileDialog = Settings::Config::cbUseNativeFileDialog.read().toBool();
   const QDir storedDir = mpSettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
@@ -246,15 +246,15 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EType & oType) 
   return fileName;
 }
 
-OpenFileDialog::EType OpenFileDialog::get_file_type(const QString & fileName) const
+OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString & fileName) const
 {
-  EType fileType = EType::UNDEF;
+  EFileType fileType = EFileType::FT_UNDEF;
 
-  if      (fileName.endsWith(".uff", Qt::CaseInsensitive)) fileType = EType::XML;
+  if      (fileName.endsWith(".uff", Qt::CaseInsensitive)) fileType = EFileType::FT_UFF_XML;
   else if (fileName.endsWith(".sdr", Qt::CaseInsensitive) ||
-           fileName.endsWith(".wav", Qt::CaseInsensitive)) fileType = EType::SDR; // SDR == WAV
-  else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) fileType = EType::RAWFILE;
-  else if (fileName.endsWith(".iq",  Qt::CaseInsensitive)) fileType = EType::IQ;
+           fileName.endsWith(".wav", Qt::CaseInsensitive)) fileType = EFileType::FT_SDR_WAV;
+  else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) fileType = EFileType::FT_RAW;
+  else if (fileName.endsWith(".iq",  Qt::CaseInsensitive)) fileType = EFileType::FT_IQ;
   else qDebug() << "Unknown file type in: " << fileName;
 
   return fileType;

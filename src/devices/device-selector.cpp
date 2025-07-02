@@ -272,7 +272,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   if (iDeviceName == DN_FILE_INP)
   {
     oRealDevice = false;
-    OpenFileDialog::EType type = OpenFileDialog::EType::UNDEF;
+    OpenFileDialog::EFileType type = OpenFileDialog::EFileType::FT_UNDEF;
     QString file;
 
     // check if last played file is still valid
@@ -280,15 +280,15 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 
     if (!lastFileName.isEmpty() && QFile::exists(lastFileName))
     {
-      OpenFileDialog::EType typeLoc = mOpenFileDialog.get_file_type(lastFileName);
-      if (typeLoc != OpenFileDialog::EType::UNDEF)
+      OpenFileDialog::EFileType typeLoc = mOpenFileDialog.get_file_type(lastFileName);
+      if (typeLoc != OpenFileDialog::EFileType::FT_UNDEF)
       {
         type = typeLoc;
         file = lastFileName;
       }
     }
 
-    if (type == OpenFileDialog::EType::UNDEF)
+    if (type == OpenFileDialog::EFileType::FT_UNDEF)
     {
       file = mOpenFileDialog.open_sample_data_file_dialog_for_reading(type);
 
@@ -301,10 +301,10 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 
     switch (type)
     {
-    case OpenFileDialog::EType::XML: inputDevice = std::make_unique<XmlFileReader>(file); break;
-    case OpenFileDialog::EType::SDR: inputDevice = std::make_unique<WavFileHandler>(file); break;
-    case OpenFileDialog::EType::RAWFILE:
-    case OpenFileDialog::EType::IQ:  inputDevice = std::make_unique<RawFileHandler>(file);break;
+    case OpenFileDialog::EFileType::FT_UFF_XML: inputDevice = std::make_unique<XmlFileReader>(file); break;
+    case OpenFileDialog::EFileType::FT_SDR_WAV: inputDevice = std::make_unique<WavFileHandler>(file); break;
+    case OpenFileDialog::EFileType::FT_RAW:
+    case OpenFileDialog::EFileType::FT_IQ:  inputDevice = std::make_unique<RawFileHandler>(file);break;
     default: return nullptr;
     }
 

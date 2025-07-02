@@ -57,9 +57,9 @@ public:
   QString get_maps_file_name();
   QString get_eti_file_name(const QString &, const QString &);
 
-  enum class EType { UNDEF, XML, SDR, IQ, RAWFILE };
-  QString open_sample_data_file_dialog_for_reading(EType & oType) const;
-  EType get_file_type(const QString & iFileName) const;
+  enum class EFileType { FT_UNDEF, FT_UFF_XML, FT_SDR_WAV, FT_IQ, FT_RAW }; // do not use "RAW" as it seems to be used as macro
+  QString open_sample_data_file_dialog_for_reading(EFileType & oType) const;
+  EFileType get_file_type(const QString & iFileName) const;
 
 private:
   QSettings * const mpSettings;
