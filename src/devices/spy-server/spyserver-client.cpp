@@ -29,7 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  *    A simple client for spyServer
- *	
+ *
  *	Inspired by the spyserver client from Mike Weber
  *	and some functions are copied.
  *	The code is simplified since Qt-DAB functions best with
@@ -91,10 +91,10 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   mByteBuffer.resize(mSettings.batchSize * 2);
 
   connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_handle_connect_button);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 2)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
   connect(cbAutoGain, &QCheckBox::checkStateChanged, this, &SpyServerClient::_slot_handle_autogain);
 #else
-  connect (autogain_selector, &QCheckBox::stateChanged, this, &spyServer_client_8::handle_autogain);
+  connect (cbAutoGain, &QCheckBox::stateChanged, this, &SpyServerClient::_slot_handle_autogain);
 #endif
   connect(sbGain, qOverload<i32>(&QSpinBox::valueChanged), this, &SpyServerClient::_slot_handle_gain);
   // connect(portNumber, qOverload<i32>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);

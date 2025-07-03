@@ -82,7 +82,7 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
     connect(pD, &QCheckBox::checkStateChanged, [this](i32 iState){ _update_ui_state_to_setting(); });
 #else
-    connect(pD, &QCheckBox::stateChanged, [this](i32 iState){ update_ui_state_to_setting(); });
+    connect(pD, &QCheckBox::stateChanged, [this](i32 iState){ _update_ui_state_to_setting(); });
 #endif
     return;
   }
