@@ -35,21 +35,9 @@
 #include  "dab-constants.h"
 #include  <vector>
 #include  <qwt.h>
-#include  <qwt_slider.h>
 #include  <qwt_plot.h>
 #include  <qwt_plot_curve.h>
-#include  <qwt_plot_marker.h>
-#include  <qwt_plot_grid.h>
-#include  <qwt_dial.h>
-#include  <qwt_dial_needle.h>
 #include  <qwt_plot_spectrogram.h>
-#include  <qwt_color_map.h>
-#include  <qwt_plot_spectrogram.h>
-#include  <qwt_scale_widget.h>
-#include  <qwt_scale_draw.h>
-#include  <qwt_plot_zoomer.h>
-#include  <qwt_plot_panner.h>
-#include  <qwt_plot_layout.h>
 
 class SpectrogramData;
 
@@ -57,7 +45,7 @@ class IQDisplay : public QObject, public QwtPlotSpectrogram
 {
 Q_OBJECT
 public:
-  IQDisplay(QwtPlot * plot);
+  IQDisplay(QwtPlot * ipPlot);
   ~IQDisplay() override;
 
   struct SCustPlot
@@ -67,17 +55,20 @@ public:
     const char * ToolTip;
   };
 
-  void display_iq(const std::vector<cf32> & z, f32 iScale);
+  void display_iq(const std::vector<cf32> & iIQ, f32 iScale);
   void customize_plot(const SCustPlot & iCustPlot);
   void select_plot_type(const EIqPlotType iPlotType);
+  void set_map_1st_quad(bool iMap1stQuad);
   static QStringList get_plot_type_names();
 
 private:
-  static constexpr i32 RADIUS = 100;
+  static constexpr i32 cRadius = 100;
 
   f32 mLastCircleSize = 0;
   QwtPlot * mPlotgrid = nullptr;
-  SpectrogramData * mIQData = nullptr;
+  SpectrogramData * mpIQData = nullptr;
+  bool mMap1stQuad = false;
+  f32 mRadius = (f32)cRadius;
 
   std::vector<std::complex<i32>> mPoints;
   std::vector<f64> mPlotDataBackgroundBuffer;
@@ -86,8 +77,8 @@ private:
   void set_point(i32, i32, i32);
   void clean_screen_from_old_data_points();
   void draw_cross();
-  void draw_circle(f32 ref, i32 val);
-  void repaint_circle(f32 size);
+  void draw_circle(f32 ref, i32 iVal);
+  void repaint_circle(f32 iSize);
 
   static SCustPlot _get_plot_type_data(const EIqPlotType iPlotType);
 };

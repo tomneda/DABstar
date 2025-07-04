@@ -537,6 +537,16 @@
            </property>
           </widget>
          </item>
+         <item row="13" column="1">
+          <widget class="QCheckBox" name="cbMap1stQuad">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Map 2nd to 4th quadrant to 1st quadrant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Map 1st quad</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>

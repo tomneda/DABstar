@@ -28,24 +28,25 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include  "iqdisplay.h"
-#include  "spectrogramdata.h"
+#include "iqdisplay.h"
+#include "spectrogramdata.h"
+#include <QwtLinearColorMap>
 
-IQDisplay::IQDisplay(QwtPlot * plot)
+IQDisplay::IQDisplay(QwtPlot * const ipPlot)
   : QwtPlotSpectrogram()
 {
   auto * const colorMap = new QwtLinearColorMap(QColor(0, 0, 255, 20), QColor(255, 255, 178, 255));
 
   setRenderThreadCount(1);
-  mPlotgrid = plot;
+  mPlotgrid = ipPlot;
   setColorMap(colorMap);
-  mPlotDataBackgroundBuffer.resize(2 * RADIUS * 2 * RADIUS, 0.0);
-  mPlotDataDrawBuffer.resize(2 * RADIUS * 2 * RADIUS, 0.0);
-  mIQData = new SpectrogramData(mPlotDataDrawBuffer.data(), 0, 2 * RADIUS, 2 * RADIUS, 2 * RADIUS);
-  mIQData->set_min_max_z_value(0.0, 50.0);
-  setData(mIQData);
-  plot->enableAxis(QwtPlot::xBottom, false);
-  plot->enableAxis(QwtPlot::yLeft, false);
+  mPlotDataBackgroundBuffer.resize(2 * cRadius * 2 * cRadius, 0.0);
+  mPlotDataDrawBuffer.resize(2 * cRadius * 2 * cRadius, 0.0);
+  mpIQData = new SpectrogramData(mPlotDataDrawBuffer.data(), 0, 2 * cRadius, 2 * cRadius, 2 * cRadius);
+  mpIQData->set_min_max_z_value(0.0, 50.0);
+  setData(mpIQData);
+  ipPlot->enableAxis(QwtPlot::xBottom, false);
+  ipPlot->enableAxis(QwtPlot::yLeft, false);
   setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
 
   select_plot_type(EIqPlotType::DEFAULT);
@@ -57,42 +58,68 @@ IQDisplay::IQDisplay(QwtPlot * plot)
 IQDisplay::~IQDisplay()
 {
   detach();
-  // delete mIQData;
+  // delete mIQData; // delete here will cause an exception
 }
 
-inline void IQDisplay::set_point(i32 x, i32 y, i32 val)
+inline void IQDisplay::set_point(const i32 iX, const i32 iY, i32 iVal)
 {
-  mPlotDataBackgroundBuffer[(y + RADIUS - 1) * 2 * RADIUS + x + RADIUS - 1] = val;
-}
+  i32 x, y;
 
-void IQDisplay::display_iq(const std::vector<cf32> & z, const f32 iScale)
-{
-  if (z.size() != mPoints.size())
+  if (mMap1stQuad)
   {
-    mPoints.resize(z.size(), { 0, 0 });
+    if (iX < 0)
+    {
+      if (iY < 0) { x = -iX; y = -iY; }
+      else        { x =  iY; y = -iX; }
+    }
+    else // ix >= 0
+    {
+      if (iY < 0) { x = -iY; y = iX; }
+      else        { x =  iX; y = iY; }
+    }
+
+    limit_symmetrically(x, 2 * cRadius - 1);
+    limit_symmetrically(y, 2 * cRadius - 1);
+
+    mPlotDataBackgroundBuffer[y * 2 * cRadius + x] = iVal;
+  }
+  else
+  {
+    x = iX;
+    y = iY;
+
+    limit_symmetrically(x, cRadius - 1);
+    limit_symmetrically(y, cRadius - 1);
+
+    mPlotDataBackgroundBuffer[(y + cRadius - 1) * 2 * cRadius + x + cRadius - 1] = iVal;
+  }
+}
+
+void IQDisplay::display_iq(const std::vector<cf32> & iIQ, const f32 iScale)
+{
+  if (iIQ.size() != mPoints.size())
+  {
+    mPoints.resize(iIQ.size(), { 0, 0 });
   }
 
   const f32 scale = std::pow(10.0f, 2.0f * iScale - 1.0f); // scale [0.0..1.0] to [0.1..10.0]
-  const f32 scaleNormed = scale * RADIUS;
+  const f32 scaleNormed = scale * mRadius;
 
   clean_screen_from_old_data_points();
   draw_cross();
   repaint_circle(scale);
 
-  for (u32 i = 0; i < z.size(); i++)
+  for (u32 i = 0; i < iIQ.size(); i++)
   {
-    auto x = (i32)(scaleNormed * real(z[i]));
-    auto y = (i32)(scaleNormed * imag(z[i]));
-
-    limit_symmetrically(x, RADIUS - 1);
-    limit_symmetrically(y, RADIUS - 1);
+    auto x = (i32)(scaleNormed * real(iIQ[i]));
+    auto y = (i32)(scaleNormed * imag(iIQ[i]));
 
     mPoints[i] = std::complex<i32>(x, y);
     set_point(x, y, 100);
   }
 
   constexpr i32 elemSize = sizeof(decltype(mPlotDataBackgroundBuffer.back()));
-  memcpy(mPlotDataDrawBuffer.data(), mPlotDataBackgroundBuffer.data(), 2 * 2 * RADIUS * RADIUS * elemSize);
+  memcpy(mPlotDataDrawBuffer.data(), mPlotDataBackgroundBuffer.data(), 2 * 2 * cRadius * cRadius * elemSize);
 
   mPlotgrid->replot();
 }
@@ -107,48 +134,66 @@ void IQDisplay::clean_screen_from_old_data_points()
 
 void IQDisplay::draw_cross()
 {
-  for (i32 i = -(RADIUS - 1); i < RADIUS; i++)
+  if (mMap1stQuad)
   {
-    set_point(0, i, 20); // vertical line
-    set_point(i, 0, 20); // horizontal line
+    for (i32 i = 0; i < 2 * cRadius; i++)
+    {
+      set_point(0, i, 20); // vertical line
+      set_point(i, 0, 20); // horizontal line
+    }
+  }
+  else
+  {
+    for (i32 i = -(cRadius - 1); i < cRadius; i++)
+    {
+      set_point(0, i, 20); // vertical line
+      set_point(i, 0, 20); // horizontal line
+    }
   }
 }
 
-void IQDisplay::draw_circle(f32 scale, i32 val)
+void IQDisplay::draw_circle(const f32 iScale, const i32 iVal)
 {
-  const i32 MAX_CIRCLE_POINTS = static_cast<i32>(180 * scale); // per quarter
+  const i32 MAX_CIRCLE_POINTS = static_cast<i32>(180 * iScale); // per quarter
 
   for (i32 i = 0; i < MAX_CIRCLE_POINTS; ++i)
   {
     const f32 phase = 0.5f * (f32)M_PI * (f32)i / MAX_CIRCLE_POINTS;
 
-    auto h = (i32)(RADIUS * scale * cosf(phase));
-    auto v = (i32)(RADIUS * scale * sinf(phase));
-
-    limit_symmetrically(h, RADIUS - 1);
-    limit_symmetrically(v, RADIUS - 1);
+    auto h = (i32)(mRadius * iScale * std::cos(phase));
+    auto v = (i32)(mRadius * iScale * std::sin(phase));
 
     // as h and v covers only the top right segment, fill also other segments
-    set_point(-h, -v, val);
-    set_point(-h, +v, val);
-    set_point(+h, -v, val);
-    set_point(+h, +v, val);
+    if (!mMap1stQuad)
+    {
+      set_point(-h, -v, iVal);
+      set_point(-h, +v, iVal);
+      set_point(+h, -v, iVal);
+    }
+    set_point(+h, +v, iVal);
   }
 }
 
-void IQDisplay::repaint_circle(f32 size)
+void IQDisplay::repaint_circle(const f32 iSize)
 {
-  if (size != mLastCircleSize)
+  if (iSize != mLastCircleSize)
   {
     draw_circle(mLastCircleSize, 0); // clear old circle
-    mLastCircleSize = size;
+    mLastCircleSize = iSize;
   }
-  draw_circle(size, 20);
+  draw_circle(iSize, 20);
 }
 
 void IQDisplay::select_plot_type(const EIqPlotType iPlotType)
 {
   customize_plot(_get_plot_type_data(iPlotType));
+}
+
+void IQDisplay::set_map_1st_quad(bool iMap1stQuad)
+{
+  mMap1stQuad = iMap1stQuad;
+  mRadius = (f32)cRadius * (iMap1stQuad ? 2.0f : 1.0f);
+  std::fill(mPlotDataBackgroundBuffer.begin(), mPlotDataBackgroundBuffer.end(), 0.0);
 }
 
 void IQDisplay::customize_plot(const SCustPlot & iCustPlot)

@@ -81,12 +81,16 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
   connect(cmbIqScope, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
   connect(cbNomChIdx, &QCheckBox::checkStateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
+  connect(cbMap1stQuad, &QCheckBox::checkStateChanged, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
 #else
   connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
+  connect(cbMap1stQuad, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
 #endif
 
+  // register after connect() calls the suitable slots
   Settings::SpectrumViewer::sliderRfScopeZoom.register_widget_and_update_ui_from_setting(sliderRfScopeZoom, 0);
   Settings::SpectrumViewer::sliderIqScopeZoomExp.register_widget_and_update_ui_from_setting(sliderIqScopeZoom, 40); // 36.949 -> 0.5 after 10^(2*x-1)
+  Settings::SpectrumViewer::cbMap1stQuad.register_widget_and_update_ui_from_setting(cbMap1stQuad, 0);
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -338,6 +342,11 @@ void SpectrumViewer::_slot_handle_cmb_iqscope(i32 iSel)
 void SpectrumViewer::_slot_handle_cb_nom_carrier(i32 iSel)
 {
   emit signal_cb_nom_carrier_changed(iSel != 0);
+}
+
+void SpectrumViewer::_slot_handle_cb_map_1st_quad(i32 iSel)
+{
+  mpIQDisplay->set_map_1st_quad(iSel != 0);
 }
 
 void SpectrumViewer::slot_update_settings()
