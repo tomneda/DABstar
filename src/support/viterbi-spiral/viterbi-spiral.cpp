@@ -25,15 +25,16 @@
 #define RATE     4
 #define ALIGN(a) __attribute__ ((aligned(a)))
 
-ALIGN(32) static const COMPUTETYPE Branchtable[RATE*NUMSTATES/2]{
-    0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0,//0
-    255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255,//1
-    0, 255, 255, 0, 255, 0, 0, 255, 0, 255, 255, 0, 255, 0, 0, 255,//2
-    0, 255, 255, 0, 255, 0, 0, 255, 0, 255, 255, 0, 255, 0, 0, 255,//2
-    0, 255, 0, 255, 0, 255, 0, 255, 255, 0, 255, 0, 255, 0, 255, 0,//3
-    0, 255, 0, 255, 0, 255, 0, 255, 255, 0, 255, 0, 255, 0, 255, 0,//3
-    0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0,//0
-    255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255 //1
+ALIGN(32) static const COMPUTETYPE Branchtable[RATE * NUMSTATES / 2]
+{
+  0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, // 0
+  255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, // 1
+  0, 255, 255, 0, 255, 0, 0, 255, 0, 255, 255, 0, 255, 0, 0, 255, // 2
+  0, 255, 255, 0, 255, 0, 0, 255, 0, 255, 255, 0, 255, 0, 0, 255, // 2
+  0, 255, 0, 255, 0, 255, 0, 255, 255, 0, 255, 0, 255, 0, 255, 0, // 3
+  0, 255, 0, 255, 0, 255, 0, 255, 255, 0, 255, 0, 255, 0, 255, 0, // 3
+  0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, // 0
+  255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255  // 1
 };
 
 
@@ -52,9 +53,9 @@ static const u8 PARTAB[256] =
 };
 
 
-ViterbiSpiral::ViterbiSpiral(const i16 iWordlength, const bool iSpiralMode) :
-  mFrameBits(iWordlength),
-  mSpiral(iSpiralMode)
+ViterbiSpiral::ViterbiSpiral(const i16 iWordlength, const bool iSpiralMode)
+  : mFrameBits(iWordlength)
+  , mSpiral(iSpiralMode)
 {
 #if defined(HAVE_VITERBI_AVX2)
   qInfo("Using AVX2 for Viterbi spiral decoder");
@@ -94,7 +95,7 @@ return (0x6996 >> v) & 1;*/
 void ViterbiSpiral::deconvolve(const i16 * const input, u8 * const output)
 {
   /* Initialize Viterbi decoder for start of new frame */
-  for (i32 i = 0; i<NUMSTATES; i++)
+  for (i32 i = 0; i < NUMSTATES; i++)
     metrics1[i] = 1000;
 
   metrics1[0] = 0; /* Bias known start state */
@@ -112,52 +113,51 @@ void ViterbiSpiral::deconvolve(const i16 * const input, u8 * const output)
   /* Do Viterbi chainback */
   u32 endstate = 0; /* Terminal encoder state */
   u32 framebits = mFrameBits;
-  decision_t *dec = decisions;
+  decision_t * dec = decisions;
 
   dec += (K - 1); /* Look past tail */
   while (framebits--)
   {
-	i32 k = (dec[framebits].w[(endstate >> 2) / 32] >> ((endstate >> 2) % 32)) & 1;
-	endstate = (endstate >> 1) | (k << K);
+    i32 k = (dec[framebits].w[(endstate >> 2) / 32] >> ((endstate >> 2) % 32)) & 1;
+    endstate = (endstate >> 1) | (k << K);
     output[framebits] = k;
   }
 }
 
-void ViterbiSpiral::calculate_BER(const i16 * const input, u8 *punctureTable, u8 const *output, i32 &bits, i32 &errors)
+void ViterbiSpiral::calculate_BER(const i16 * const input, u8 * punctureTable, u8 const * output, i32 & bits, i32 & errors)
 {
   i32 i;
   i32 sr = 0;
-  const i32 polys[RATE] = {109, 79, 83, 109};
+  const i32 polys[RATE] = { 109, 79, 83, 109 };
 
-  for(i=0; i<mFrameBits; i++)
+  for (i = 0; i < mFrameBits; i++)
   {
     sr = ((sr << 1) | output[i]) & 0xff;
-    for(i32 j=0; j<RATE; j++)
+    for (i32 j = 0; j < RATE; j++)
     {
       u8 b = parity(sr & polys[j]);
-      if (punctureTable[i*RATE+j])
+      if (punctureTable[i * RATE + j])
       {
         bits++;
-        if ((input[i*RATE+j] > 0) != b)
+        if ((input[i * RATE + j] > 0) != b)
           errors++;
       }
     }
   }
 
   //Now the residue bits. Empty the registers by shifting in zeros
-  for(i=mFrameBits; i<mFrameBits+6; i++)
+  for (i = mFrameBits; i < mFrameBits + 6; i++)
   {
     sr = (sr << 1) & 0xff;
-    for(i32 j=0; j<RATE; j++)
+    for (i32 j = 0; j < RATE; j++)
     {
       u8 b = parity(sr & polys[j]);
-      if (punctureTable[i*RATE+j])
+      if (punctureTable[i * RATE + j])
       {
         bits++;
-        if ((input[i*RATE+j] > 0) != b)
+        if ((input[i * RATE + j] > 0) != b)
           errors++;
       }
     }
   }
 }
-

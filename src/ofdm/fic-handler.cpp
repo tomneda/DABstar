@@ -58,18 +58,16 @@ FicHandler::FicHandler(DabRadio * const iMr)
   std::array<std::byte, 9> shiftRegister;
   std::fill(shiftRegister.begin(), shiftRegister.end(), static_cast<std::byte>(1));
 
-  BitsperBlock = 2 * cK;
-
   for (i16 i = 0; i < 768; i++)
   {
-    PRBS[i] = shiftRegister[8] ^ shiftRegister[4];
+    mPRBS[i] = shiftRegister[8] ^ shiftRegister[4];
 
     for (i16 j = 8; j > 0; j--)
     {
       shiftRegister[j] = shiftRegister[j - 1];
     }
 
-    shiftRegister[0] = PRBS[i];
+    shiftRegister[0] = mPRBS[i];
   }
 
   //	Since the depuncturing is the same throughout all calls
@@ -84,7 +82,7 @@ FicHandler::FicHandler(DabRadio * const iMr)
     {
       if (get_PCodes(16 - 1)[k % 32] != 0)
       {
-        punctureTable[local] = true;
+        mPunctureTable[local] = true;
       }
       local++;
     }
@@ -101,7 +99,7 @@ FicHandler::FicHandler(DabRadio * const iMr)
     {
       if (get_PCodes(15 - 1)[k % 32] != 0)
       {
-        punctureTable[local] = true;
+        mPunctureTable[local] = true;
       }
       local++;
     }
@@ -115,7 +113,7 @@ FicHandler::FicHandler(DabRadio * const iMr)
   {
     if (get_PCodes(8 - 1)[k] != 0)
     {
-      punctureTable[local] = true;
+      mPunctureTable[local] = true;
     }
     local++;
   }
@@ -142,22 +140,22 @@ void FicHandler::process_block(const std::vector<i16> & iData, const i32 iBlkNo)
 {
   if (iBlkNo == 1)
   {
-    index = 0;
-    ficno = 0;
+    mIndex = 0;
+    mFicNo = 0;
   }
-  //
-  if ((1 <= iBlkNo) && (iBlkNo <= 3))
-  {
-    for (i32 i = 0; i < BitsperBlock; i++)
-    {
-      ofdm_input[index] = iData[i];
-      ++index;
 
-      if (index >= 2304)
+  if (1 <= iBlkNo && iBlkNo <= 3)
+  {
+    for (i32 i = 0; i < 2 * cK; i++)
+    {
+      mOfdmInput[mIndex] = iData[i];
+      ++mIndex;
+
+      if (mIndex >= 2304)
       {
-        _process_fic_input(ficno, &ficValid[ficno]);
-        index = 0;
-        ficno++;
+        _process_fic_input(mFicNo, &mFicValid[mFicNo]);
+        mIndex = 0;
+        mFicNo++;
       }
     }
   }
@@ -183,7 +181,7 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
   std::array<i16, 3072 + 24> viterbiBlock;
   i16 inputCount = 0;
 
-  if (!running.load())
+  if (!mIsRunning.load())
   {
     return;
   }
@@ -191,31 +189,32 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
 
   for (i16 i = 0; i < 3072 + 24; i++)
   {
-    if (punctureTable[i])
+    if (mPunctureTable[i])
     {
-      viterbiBlock[i] = ofdm_input[inputCount];
+      viterbiBlock[i] = mOfdmInput[inputCount];
       ++inputCount;
     }
     else
     {
-      viterbiBlock[i] = 0; // TODO: this was missing, is it not necessary to set this to zero?
+      viterbiBlock[i] = 0;
     }
   }
   /**
     *	Now we have the full word ready for deconvolution
     *	deconvolution is according to DAB standard section 11.2
     */
-  myViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<u8 *>(bitBuffer_out.data()));
-  myViterbi.calculate_BER(viterbiBlock.data(), punctureTable.data(),
-  						  reinterpret_cast<u8 *>(bitBuffer_out.data()), fic_bits, fic_errors);
-  fic_block++;
-  if(fic_block == 40) // 4 blocks per frame, 10 frames per sec
+  mViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<u8 *>(mBitBufferOut.data()));
+  mViterbi.calculate_BER(viterbiBlock.data(), mPunctureTable.data(), reinterpret_cast<u8 *>(mBitBufferOut.data()), mFicBits, mFicErrors);
+
+  mFicBlock++;
+
+  if(mFicBlock == 40) // 4 blocks per frame, 10 frames per sec
   {
-    emit show_fic_BER((f32)fic_errors / fic_bits);
+    emit show_fic_BER((f32)mFicErrors / (f32)mFicBits);
     //printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, fic_bits, fic_errors, (f32)fic_errors/fic_bits);
-    fic_block = 0;
-    fic_errors /= 2;
-    fic_bits /= 2;
+    mFicBlock = 0;
+    mFicErrors /= 2;
+    mFicBits /= 2;
   }
 
   /**
@@ -227,12 +226,12 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
     */
   for (i16 i = 0; i < 768; i++)
   {
-    bitBuffer_out[i] ^= PRBS[i];
+    mBitBufferOut[i] ^= mPRBS[i];
   }
 
   for (i16 i = 0; i < 768; i++)
   {
-    fibBits[iFicNo * 768 + i] = bitBuffer_out[i];
+    mFibBits[iFicNo * 768 + i] = mBitBufferOut[i];
   }
   /**
     *	each of the fib blocks is protected by a crc
@@ -246,43 +245,43 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
   *oValid = true;
   for (i16 i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
   {
-    const std::byte * const p = &bitBuffer_out[(i % 3) * 256];
+    const std::byte * const p = &mBitBufferOut[(i % 3) * 256];
 
     if (!check_CRC_bits(reinterpret_cast<const u8 *>(p), 256))
     {
       *oValid = false;
       emit show_fic_success(false);
-      if (fic_decode_success_ratio > 0)
+      if (mFicDecodeSuccessRatio > 0)
       {
-        fic_decode_success_ratio--;
+        mFicDecodeSuccessRatio--;
       }
       continue;
     }
 
     for (i32 j = 0; j < 32; j++)
     {
-      ficBuffer[j] = static_cast<std::byte>(0);
+      mFicBuffer[j] = static_cast<std::byte>(0);
       for (i32 k = 0; k < 8; k++)
       {
-        ficBuffer[j] <<= 1;
-        ficBuffer[j] &= static_cast<std::byte>(0xFE);
-        ficBuffer[j] |= p[8 * j + k];
+        mFicBuffer[j] <<= 1;
+        mFicBuffer[j] &= static_cast<std::byte>(0xFE);
+        mFicBuffer[j] |= p[8 * j + k];
       }
     }
 
-    ficLocker.lock();
-    if (ficDumpPointer != nullptr)
+    mFicMutex.lock();
+    if (mpFicDump != nullptr)
     {
-      fwrite(ficBuffer.data(), 1, 32, ficDumpPointer);
+      fwrite(mFicBuffer.data(), 1, 32, mpFicDump);
     }
-    ficLocker.unlock();
+    mFicMutex.unlock();
 
     emit show_fic_success(true);
     FibDecoder::process_FIB(reinterpret_cast<const u8 *>(p), iFicNo);
 
-    if (fic_decode_success_ratio < 10)
+    if (mFicDecodeSuccessRatio < 10)
     {
-      fic_decode_success_ratio++;
+      mFicDecodeSuccessRatio++;
     }
   }
 }
@@ -291,31 +290,31 @@ void FicHandler::stop()
 {
   disconnect_channel();
   //	clearEnsemble	();
-  running.store(false);
+  mIsRunning.store(false);
 }
 
 void FicHandler::restart()
 {
   //	clearEnsemble	();
-  fic_decode_success_ratio = 0;
+  mFicDecodeSuccessRatio = 0;
   connect_channel();
-  running.store(true);
+  mIsRunning.store(true);
 }
 
 void FicHandler::start_fic_dump(FILE * f)
 {
-  if (ficDumpPointer != nullptr)
+  if (mpFicDump != nullptr)
   {
     return;
   }
-  ficDumpPointer = f;
+  mpFicDump = f;
 }
 
 void FicHandler::stop_fic_dump()
 {
-  ficLocker.lock();
-  ficDumpPointer = nullptr;
-  ficLocker.unlock();
+  mFicMutex.lock();
+  mpFicDump = nullptr;
+  mFicMutex.unlock();
 }
 
 
@@ -323,17 +322,17 @@ void FicHandler::get_fib_bits(u8 * v, bool * b)
 {
   for (i32 i = 0; i < 4 * 768; i++)
   {
-    v[i] = static_cast<u8>(fibBits[i]);
+    v[i] = static_cast<u8>(mFibBits[i]);
   }
 
   for (i32 i = 0; i < 4; i++)
   {
-    b[i] = ficValid[i];
+    b[i] = mFicValid[i];
   }
 }
 
 i32 FicHandler::get_fic_decode_ratio_percent()
 {
-    return fic_decode_success_ratio * 10;
+    return mFicDecodeSuccessRatio * 10;
 }
 

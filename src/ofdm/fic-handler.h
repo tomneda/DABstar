@@ -35,24 +35,23 @@
 #ifndef  FIC_HANDLER_H
 #define  FIC_HANDLER_H
 
-#include  <QObject>
-#include  <QMutex>
-#include  <cstdio>
-#include  <cstdint>
-#include  <vector>
-#include  <atomic>
 #include  "viterbi-spiral.h"
 #include  "fib-decoder.h"
+#include  <QObject>
+#include  <QMutex>
+#include  <vector>
+#include  <atomic>
+#include  <cstdio>
+#include  <cstdint>
 
 class DabRadio;
-
 class DabParams;
 
 class FicHandler : public FibDecoder
 {
 Q_OBJECT
 public:
-  FicHandler(DabRadio * const iMr);
+  FicHandler(DabRadio * iMr);
   ~FicHandler() override = default;
 
   void process_block(const std::vector<i16> & iData, const i32 iBlkNo);
@@ -62,31 +61,28 @@ public:
   void stop_fic_dump();
   void get_fib_bits(u8 *, bool *);
   i32  get_fic_decode_ratio_percent();
-  void reset_fic_decode_success_ratio() { fic_decode_success_ratio = 0; };
+  void reset_fic_decode_success_ratio() { mFicDecodeSuccessRatio = 0; };
 
 private:
-  ViterbiSpiral myViterbi{ 768, true };
-  std::array<std::byte, 768> bitBuffer_out;
-  std::array<std::byte, 4 * 768> fibBits;
-  std::array<std::byte, 768> PRBS;
-  std::array<std::byte, 256> ficBuffer;
-  std::array<i16, 2304> ofdm_input;
-  std::array<u8, 3072 + 24> punctureTable{};
-  std::array<bool, 4> ficValid{ false };
-  i16 index = 0;
-  i16 BitsperBlock = 0;
-  i16 ficno = 0;
-  FILE * ficDumpPointer = nullptr;
-  QMutex ficLocker;
-  i32 fic_block = 0;
-  i32 fic_errors = 0;
-  i32 fic_bits = 0;
-  std::atomic<bool> running;
-  void _process_fic_input(i16 iFicNo, bool * oValid);
+  ViterbiSpiral mViterbi{ 768, true };
+  std::array<std::byte, 768> mBitBufferOut;
+  std::array<std::byte, 4 * 768> mFibBits;
+  std::array<std::byte, 768> mPRBS;
+  std::array<std::byte, 256> mFicBuffer;
+  std::array<i16, 2304> mOfdmInput;
+  std::array<u8, 3072 + 24> mPunctureTable{};
+  std::array<bool, 4> mFicValid{ false };
+  i16 mIndex = 0;
+  i16 mFicNo = 0;
+  FILE * mpFicDump = nullptr;
+  QMutex mFicMutex;
+  i32 mFicBlock = 0;
+  i32 mFicErrors = 0;
+  i32 mFicBits = 0;
+  i32 mFicDecodeSuccessRatio = 0;   // Saturating up/down-counter in range [0, 10] corresponding to the number of FICs with correct CRC
+  std::atomic<bool> mIsRunning;
 
-  // Saturating up/down-counter in range [0, 10] corresponding
-  // to the number of FICs with correct CRC
-  i32 fic_decode_success_ratio = 0;
+  void _process_fic_input(i16 iFicNo, bool * oValid);
 
 signals:
   void show_fic_success(bool);
