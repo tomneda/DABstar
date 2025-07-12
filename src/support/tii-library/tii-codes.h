@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2022
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -46,6 +55,16 @@ struct SCacheElem
   QString polarization;
   f32 frequency;
   QString direction;
+
+
+  void patch_channel_name() { if (channel.length() < 3) channel = "0" + channel; } // patch as channel input data are now with leading zeros also
+  u64 make_key() const
+  {
+    return ((u64)(channel.at(0).toLatin1()) << 48) |
+           ((u64)(channel.at(1).toLatin1()) << 40) |
+           ((u64)(channel.at(2).toLatin1()) << 32) |
+           ((u64)Eid << 16) | ((u64)mainId << 8) | (u64)subId;
+  }
 };
 
 struct SBlackListElem
@@ -68,16 +87,18 @@ public:
 
   bool fill_cache_from_tii_file(const QString &);
   const SCacheElem * get_transmitter_name(const QString &, u16, u8, u8);
-  void get_coordinates(f32 *, f32 *, f32 *, const QString &, const QString &);
+  // void get_coordinates(f32 *, f32 *, f32 *, const QString &, const QString &);
   [[nodiscard]] f32 distance(f32, f32, f32, f32) const;
   f32 corner(f32, f32, f32, f32) const;
   bool is_black(u16, u8, u8);
-  void set_black(u16, u8, u8);
+  // void set_black(u16, u8, u8);
   bool is_valid() const;
   void loadTable(const QString & iTiiFileName);
 
 private:
-  std::vector<SBlackListElem> mBlackListVec;
+  // std::vector<SBlackListElem> mBlackListVec;
+  using TTiiCacheMap = std::map<u64, SCacheElem>;
+  TTiiCacheMap mContentCacheMap;
   std::vector<SCacheElem> mContentCacheVec;
   u8 mShift = 0;
   QString mTiiFileName;
@@ -87,7 +108,7 @@ private:
   TpFn_close_tii mpFn_close_tii = nullptr;
   TpFn_loadTable mpFn_loadTable = nullptr;
 
-  bool load_library();
+  bool _load_library();
   f32 _convert(const QString & s) const;
   u16 _get_E_id(const QString & s) const;
   u8 _get_main_id(const QString & s) const;

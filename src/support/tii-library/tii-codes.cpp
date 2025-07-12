@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2014 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -59,7 +68,7 @@ TiiHandler::~TiiHandler()
   }
 }
 
-bool TiiHandler::load_library()
+bool TiiHandler::_load_library()
 {
   mpFn_init_tii = nullptr;
   mpFn_close_tii = nullptr;
@@ -106,7 +115,7 @@ void TiiHandler::loadTable(const QString & iTiiFileName)
 {
   if (!is_valid())
   {
-    load_library();
+    _load_library();
   }
 
   if (mpFn_loadTable != nullptr)
@@ -118,12 +127,15 @@ void TiiHandler::loadTable(const QString & iTiiFileName)
 bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
 {
   bool dataLoaded = false;
+
   if (iTiiFileName.isEmpty())
   {
     return false;
   }
-  mBlackListVec.resize(0);
-  mContentCacheVec.resize(0);
+
+  // mBlackListVec.clear();
+  mContentCacheVec.clear();
+  mContentCacheMap.clear();
 
   QFile fp(iTiiFileName);
 
@@ -157,21 +169,21 @@ const SCacheElem * TiiHandler::get_transmitter_name(const QString & channel,
   return nullptr;
 }
 
-void TiiHandler::get_coordinates(f32 * latitude, f32 * longitude, f32 * power, const QString & channel, const QString & transmitter)
-{
-  for (const auto & i : mContentCacheVec)
-  {
-    if (((channel == "any") || (channel == i.channel)) && (i.transmitterName == transmitter))
-    {
-      *latitude = i.latitude;
-      *longitude = i.longitude;
-      *power = i.power;
-      return;
-    }
-  }
-  *latitude = 0;
-  *longitude = 0;
-}
+// void TiiHandler::get_coordinates(f32 * latitude, f32 * longitude, f32 * power, const QString & channel, const QString & transmitter)
+// {
+//   for (const auto & i : mContentCacheVec)
+//   {
+//     if (((channel == "any") || (channel == i.channel)) && (i.transmitterName == transmitter))
+//     {
+//       *latitude = i.latitude;
+//       *longitude = i.longitude;
+//       *power = i.power;
+//       return;
+//     }
+//   }
+//   *latitude = 0;
+//   *longitude = 0;
+// }
 
 //	Great circle distance https://towardsdatascience.com/calculating-the-distance-between-two-locations-using-geocodes-1136d810e517 and
 //	https://www.movable-type.co.uk/scripts/latlong.html
@@ -246,26 +258,26 @@ f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitu
   return ((3 * F_M_PI_2 + azimuth) / F_M_PI * 180);
 }
 
-bool TiiHandler::is_black(u16 Eid, u8 mainId, u8 subId)
-{
-  for (auto & i : mBlackListVec)
-  {
-    if ((i.Eid == Eid) && (i.mainId == mainId) && (i.subId == subId))
-    {
-      return true;
-    }
-  }
-  return false;
-}
+// bool TiiHandler::is_black(u16 Eid, u8 mainId, u8 subId)
+// {
+//   for (auto & i : mBlackListVec)
+//   {
+//     if ((i.Eid == Eid) && (i.mainId == mainId) && (i.subId == subId))
+//     {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
 
-void TiiHandler::set_black(u16 Eid, u8 mainId, u8 subId)
-{
-  SBlackListElem element;
-  element.Eid = Eid;
-  element.mainId = mainId;
-  element.subId = subId;
-  mBlackListVec.push_back(element);
-}
+// void TiiHandler::set_black(u16 Eid, u8 mainId, u8 subId)
+// {
+//   SBlackListElem element;
+//   element.Eid = Eid;
+//   element.mainId = mainId;
+//   element.subId = subId;
+//   mBlackListVec.push_back(element);
+// }
 
 f32 TiiHandler::_convert(const QString & s) const
 {
@@ -318,6 +330,7 @@ u8 TiiHandler::_get_sub_id(const QString & s) const
 void TiiHandler::_read_file(QFile & fp)
 {
   u32 count = 0;
+  u32 countDuplicates = 0;
   std::array<char, 1024> buffer;
   std::vector<QString> columnVector;
 
@@ -342,7 +355,7 @@ void TiiHandler::_read_file(QFile & fp)
     ed.mainId = _get_main_id(columnVector[TII]);
     ed.subId = _get_sub_id(columnVector[TII]);
     ed.channel = columnVector[CHANNEL].trimmed();
-    if (ed.channel.length() < 3) ed.channel = "0" + ed.channel;  // patch as channel input data are now with leading zeros also
+    ed.patch_channel_name();
     ed.ensemble = columnVector[LABEL].trimmed();
     ed.transmitterName = columnVector[LOCATION];
     ed.latitude = _convert(columnVector[LATITUDE]);
@@ -353,14 +366,40 @@ void TiiHandler::_read_file(QFile & fp)
     ed.polarization = columnVector[POLARIZATION].trimmed();
     ed.frequency = _convert(columnVector[FREQUENCY]);
     ed.direction = columnVector[DIRECTION].trimmed();
+
+    // TODO: "tunnel" or 0-0 filtern?
+    const u64 key = ed.make_key();
+
+    if (mContentCacheMap.find(key) == mContentCacheMap.end())
+    {
+      qInfo() << QString::number(key, 16) << " : channel" << ed.channel << "Eid" << QString::number(ed.Eid, 16) << "TII" << ed.mainId << ed.subId;
+
+      if (!ed.transmitterName.contains("tunnel", Qt::CaseInsensitive))
+      {
+        mContentCacheMap.insert(std::make_pair(key, ed));
+      }
+      else
+      {
+        // qWarning() << "tunnel found" << ed.transmitterName;
+      }
+    }
+    else
+    {
+      countDuplicates++;
+      // qWarning() << "duplicate found" << ed.transmitterName;
+    }
+
     if (count >= mContentCacheVec.size())
     {
+      // qInfo() << count << mContentCacheVec.size();
       mContentCacheVec.resize(mContentCacheVec.size() + 500);
+      // qInfo() << count << mContentCacheVec.size();
     }
     mContentCacheVec.at(count) = ed;
     count++;
   }
   mContentCacheVec.resize(count);
+  qInfo() << "Read" << mContentCacheMap.size() << count << "transmitters from database with" << countDuplicates << "duplicates";
 }
 
 i32 TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, i32 N) const
