@@ -58,13 +58,29 @@ struct SCacheElem
 
 
   void patch_channel_name() { if (channel.length() < 3) channel = "0" + channel; } // patch as channel input data are now with leading zeros also
-  u64 make_key() const
+  static u32 make_key_base(const u16 iEid, const u8 iMainId, const u8 iSubId)
   {
-    return ((u64)(channel.at(0).toLatin1()) << 48) |
-           ((u64)(channel.at(1).toLatin1()) << 40) |
-           ((u64)(channel.at(2).toLatin1()) << 32) |
-           ((u64)Eid << 16) | ((u64)mainId << 8) | (u64)subId;
+    return ((u32)iEid << 16) | ((u32)iMainId << 8) | (u32)iSubId;
   }
+  u32 make_key_base() const
+  {
+    return ((u32)Eid << 16) | ((u32)mainId << 8) | (u32)subId;
+  }
+  // static u64 make_key_ch(const QString & iCh, const u16 iEid, const u8 iMainId, const u8 iSubId)
+  // {
+  //   Q_ASSERT(iCh.size() == 3);
+  //   return ((u64)(iCh.at(0).toLatin1()) << 48) |
+  //          ((u64)(iCh.at(1).toLatin1()) << 40) |
+  //          ((u64)(iCh.at(2).toLatin1()) << 32) |
+  //          make_key_base(iEid, iMainId, iSubId);
+  // }
+  // u64 make_key_ch() const
+  // {
+  //   return ((u64)(channel.at(0).toLatin1()) << 48) |
+  //          ((u64)(channel.at(1).toLatin1()) << 40) |
+  //          ((u64)(channel.at(2).toLatin1()) << 32) |
+  //          make_key_base();
+  // }
 };
 
 struct SBlackListElem
@@ -97,7 +113,8 @@ public:
 
 private:
   // std::vector<SBlackListElem> mBlackListVec;
-  using TTiiCacheMap = std::map<u64, SCacheElem>;
+  // using TTiiCacheMap = std::map<u64, SCacheElem>;
+  using TTiiCacheMap = std::map<u32, SCacheElem>;
   TTiiCacheMap mContentCacheMap;
   std::vector<SCacheElem> mContentCacheVec;
   u8 mShift = 0;

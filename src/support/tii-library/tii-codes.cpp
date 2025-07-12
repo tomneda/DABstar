@@ -154,18 +154,31 @@ const SCacheElem * TiiHandler::get_transmitter_name(const QString & channel,
                                                     u16 Eid, u8 mainId, u8 subId)
 {
   //fprintf(stdout, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
+  const u64 key = SCacheElem::make_key_base(Eid, mainId, subId);
 
-  for (const auto & i : mContentCacheVec)
+  const auto it = mContentCacheMap.find(key);
+
+  if (it != mContentCacheMap.end())
   {
-    if ((channel == "any" || channel == i.channel) &&
-        i.Eid == Eid &&
-        i.mainId == mainId &&
-        i.subId == subId &&
-        !(i.transmitterName.contains("tunnel", Qt::CaseInsensitive)))
+    const SCacheElem & ce = it->second;
+    if (channel != "any" && ce.channel != channel)
     {
-      return &i;
+      qWarning() << "TII database channel mismatch" << ce.channel << channel << "for EId/TII" << Eid << mainId << subId;
     }
+    return &ce;
   }
+
+  // for (const auto & i : mContentCacheVec)
+  // {
+  //   if ((channel == "any" || channel == i.channel) &&
+  //       i.Eid == Eid &&
+  //       i.mainId == mainId &&
+  //       i.subId == subId &&
+  //       !(i.transmitterName.contains("tunnel", Qt::CaseInsensitive)))
+  //   {
+  //     return &i;
+  //   }
+  // }
   return nullptr;
 }
 
@@ -282,8 +295,7 @@ f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitu
 f32 TiiHandler::_convert(const QString & s) const
 {
   bool flag;
-  f32 v;
-  v = s.trimmed().toFloat(&flag);
+  f32 v = s.trimmed().toFloat(&flag);
   if (!flag)
   {
     v = 0;
@@ -294,8 +306,7 @@ f32 TiiHandler::_convert(const QString & s) const
 u16 TiiHandler::_get_E_id(const QString & s) const
 {
   bool flag;
-  u16 res;
-  res = s.trimmed().toInt(&flag, 16);
+  u16 res = s.trimmed().toInt(&flag, 16);
   if (!flag)
   {
     res = 0;
@@ -306,8 +317,7 @@ u16 TiiHandler::_get_E_id(const QString & s) const
 u8 TiiHandler::_get_main_id(const QString & s) const
 {
   bool flag;
-  u16 res;
-  res = s.trimmed().toInt(&flag);
+  u16 res = s.trimmed().toInt(&flag);
   if (!flag)
   {
     res = 0;
@@ -318,8 +328,7 @@ u8 TiiHandler::_get_main_id(const QString & s) const
 u8 TiiHandler::_get_sub_id(const QString & s) const
 {
   bool flag;
-  u16 res;
-  res = s.trimmed().toInt(&flag);
+  u16 res = s.trimmed().toInt(&flag);
   if (!flag)
   {
     res = 0;
@@ -368,7 +377,7 @@ void TiiHandler::_read_file(QFile & fp)
     ed.direction = columnVector[DIRECTION].trimmed();
 
     // TODO: "tunnel" or 0-0 filtern?
-    const u64 key = ed.make_key();
+    const u32 key = ed.make_key_base();
 
     if (mContentCacheMap.find(key) == mContentCacheMap.end())
     {
