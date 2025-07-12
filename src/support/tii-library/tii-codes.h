@@ -56,7 +56,6 @@ struct SCacheElem
   f32 frequency;
   QString direction;
 
-
   void patch_channel_name() { if (channel.length() < 3) channel = "0" + channel; } // patch as channel input data are now with leading zeros also
   static u32 make_key_base(const u16 iEid, const u8 iMainId, const u8 iSubId)
   {
@@ -66,28 +65,6 @@ struct SCacheElem
   {
     return ((u32)Eid << 16) | ((u32)mainId << 8) | (u32)subId;
   }
-  // static u64 make_key_ch(const QString & iCh, const u16 iEid, const u8 iMainId, const u8 iSubId)
-  // {
-  //   Q_ASSERT(iCh.size() == 3);
-  //   return ((u64)(iCh.at(0).toLatin1()) << 48) |
-  //          ((u64)(iCh.at(1).toLatin1()) << 40) |
-  //          ((u64)(iCh.at(2).toLatin1()) << 32) |
-  //          make_key_base(iEid, iMainId, iSubId);
-  // }
-  // u64 make_key_ch() const
-  // {
-  //   return ((u64)(channel.at(0).toLatin1()) << 48) |
-  //          ((u64)(channel.at(1).toLatin1()) << 40) |
-  //          ((u64)(channel.at(2).toLatin1()) << 32) |
-  //          make_key_base();
-  // }
-};
-
-struct SBlackListElem
-{
-  u16 Eid;
-  u8 mainId;
-  u8 subId;
 };
 
 // DLL and ".so" function prototypes
@@ -103,20 +80,14 @@ public:
 
   bool fill_cache_from_tii_file(const QString &);
   const SCacheElem * get_transmitter_name(const QString &, u16, u8, u8);
-  // void get_coordinates(f32 *, f32 *, f32 *, const QString &, const QString &);
   [[nodiscard]] f32 distance(f32, f32, f32, f32) const;
   f32 corner(f32, f32, f32, f32) const;
   bool is_black(u16, u8, u8);
-  // void set_black(u16, u8, u8);
   bool is_valid() const;
   void loadTable(const QString & iTiiFileName);
 
 private:
-  // std::vector<SBlackListElem> mBlackListVec;
-  // using TTiiCacheMap = std::map<u64, SCacheElem>;
-  using TTiiCacheMap = std::map<u32, SCacheElem>;
-  TTiiCacheMap mContentCacheMap;
-  std::vector<SCacheElem> mContentCacheVec;
+  std::map<u32, SCacheElem> mContentCacheMap;
   u8 mShift = 0;
   QString mTiiFileName;
   void * mpTiiLibHandler = nullptr;

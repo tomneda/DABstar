@@ -133,8 +133,6 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
     return false;
   }
 
-  // mBlackListVec.clear();
-  mContentCacheVec.clear();
   mContentCacheMap.clear();
 
   QFile fp(iTiiFileName);
@@ -168,67 +166,40 @@ const SCacheElem * TiiHandler::get_transmitter_name(const QString & channel,
     return &ce;
   }
 
-  // for (const auto & i : mContentCacheVec)
-  // {
-  //   if ((channel == "any" || channel == i.channel) &&
-  //       i.Eid == Eid &&
-  //       i.mainId == mainId &&
-  //       i.subId == subId &&
-  //       !(i.transmitterName.contains("tunnel", Qt::CaseInsensitive)))
-  //   {
-  //     return &i;
-  //   }
-  // }
   return nullptr;
 }
-
-// void TiiHandler::get_coordinates(f32 * latitude, f32 * longitude, f32 * power, const QString & channel, const QString & transmitter)
-// {
-//   for (const auto & i : mContentCacheVec)
-//   {
-//     if (((channel == "any") || (channel == i.channel)) && (i.transmitterName == transmitter))
-//     {
-//       *latitude = i.latitude;
-//       *longitude = i.longitude;
-//       *power = i.power;
-//       return;
-//     }
-//   }
-//   *latitude = 0;
-//   *longitude = 0;
-// }
 
 //	Great circle distance https://towardsdatascience.com/calculating-the-distance-between-two-locations-using-geocodes-1136d810e517 and
 //	https://www.movable-type.co.uk/scripts/latlong.html
 //	Haversine formula applied
 f64 TiiHandler::_distance_2(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitude2) const
 {
-  f64 R = 6371;
-  f64 Phi1 = latitude1 * M_PI / 180;
-  f64 Phi2 = latitude2 * M_PI / 180;
-  //f64	dPhi	= (latitude2 - latitude1) * M_PI / 180;
-  f64 dDelta = (longitude2 - longitude1) * M_PI / 180;
+  const f64 R = 6371;
+  const f64 Phi1 = latitude1 * M_PI / 180;
+  const f64 Phi2 = latitude2 * M_PI / 180;
+  // const f64	dPhi	= (latitude2 - latitude1) * M_PI / 180;
+  const f64 dDelta = (longitude2 - longitude1) * M_PI / 180;
 
   if ((latitude2 == 0) || (longitude2 == 0))
   {
     return -32768;
   }
-  //f64 a = sin(dPhi / 2) * sin(dPhi / 2) + cos(Phi1) * cos(Phi2) * sin(dDelta / 2) * sin(dDelta / 2);
-  //f64 c = 2 * atan2(sqrt(a), sqrt(1 - a));
+  // const f64 a = sin(dPhi / 2) * sin(dPhi / 2) + cos(Phi1) * cos(Phi2) * sin(dDelta / 2) * sin(dDelta / 2);
+  // const f64 c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-  f64 x = dDelta * cos((Phi1 + Phi2) / 2);
-  f64 y = (Phi2 - Phi1);
-  f64 d = sqrt(x * x + y * y);
+  const f64 x = dDelta * cos((Phi1 + Phi2) / 2);
+  const f64 y = (Phi2 - Phi1);
+  const f64 d = sqrt(x * x + y * y);
 
-  //return (i32)(R * c + 0.5);
   return (R * d + 0.5);
 }
 
 f32 TiiHandler::distance(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitude2) const
 {
-  bool dy_sign = latitude1 > latitude2;
+  const bool dy_sign = latitude1 > latitude2;
   f64 dx;
-  f64 dy = _distance_2(latitude1, longitude2, latitude2, longitude2);
+  const f64 dy = _distance_2(latitude1, longitude2, latitude2, longitude2);
+
   if (dy_sign)
   {    // lat1 is "higher" than lat2
     dx = _distance_2(latitude1, longitude1, latitude1, longitude2);
@@ -237,15 +208,17 @@ f32 TiiHandler::distance(f32 latitude1, f32 longitude1, f32 latitude2, f32 longi
   {
     dx = _distance_2(latitude2, longitude1, latitude2, longitude2);
   }
+
   return (f32) sqrt(dx * dx + dy * dy);
 }
 
 f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitude2) const
 {
-  bool dx_sign = longitude1 - longitude2 > 0;
-  bool dy_sign = latitude1 - latitude2 > 0;
+  const bool dx_sign = longitude1 - longitude2 > 0;
+  const bool dy_sign = latitude1 - latitude2 > 0;
   f32 dx;
-  f32 dy = distance(latitude1, longitude2, latitude2, longitude2);
+  const f32 dy = distance(latitude1, longitude2, latitude2, longitude2);
+
   if (dy_sign)
   {    // lat1 is "higher" than lat2
     dx = distance(latitude1, longitude1, latitude1, longitude2);
@@ -254,6 +227,7 @@ f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitu
   {
     dx = distance(latitude2, longitude1, latitude2, longitude2);
   }
+
   const f32 azimuth = std::atan2(dy, dx);
 
   if (dx_sign && dy_sign)
@@ -268,29 +242,9 @@ f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitu
   {  // third quadrant
     return ((3 * F_M_PI_2 - azimuth) / F_M_PI * 180);
   }
+
   return ((3 * F_M_PI_2 + azimuth) / F_M_PI * 180);
 }
-
-// bool TiiHandler::is_black(u16 Eid, u8 mainId, u8 subId)
-// {
-//   for (auto & i : mBlackListVec)
-//   {
-//     if ((i.Eid == Eid) && (i.mainId == mainId) && (i.subId == subId))
-//     {
-//       return true;
-//     }
-//   }
-//   return false;
-// }
-
-// void TiiHandler::set_black(u16 Eid, u8 mainId, u8 subId)
-// {
-//   SBlackListElem element;
-//   element.Eid = Eid;
-//   element.mainId = mainId;
-//   element.subId = subId;
-//   mBlackListVec.push_back(element);
-// }
 
 f32 TiiHandler::_convert(const QString & s) const
 {
@@ -376,12 +330,11 @@ void TiiHandler::_read_file(QFile & fp)
     ed.frequency = _convert(columnVector[FREQUENCY]);
     ed.direction = columnVector[DIRECTION].trimmed();
 
-    // TODO: "tunnel" or 0-0 filtern?
     const u32 key = ed.make_key_base();
 
     if (mContentCacheMap.find(key) == mContentCacheMap.end())
     {
-      qInfo() << QString::number(key, 16) << " : channel" << ed.channel << "Eid" << QString::number(ed.Eid, 16) << "TII" << ed.mainId << ed.subId;
+      // qInfo() << QString::number(key, 16) << " : channel" << ed.channel << "Eid" << QString::number(ed.Eid, 16) << "TII" << ed.mainId << ed.subId;
 
       if (!ed.transmitterName.contains("tunnel", Qt::CaseInsensitive))
       {
@@ -398,17 +351,10 @@ void TiiHandler::_read_file(QFile & fp)
       // qWarning() << "duplicate found" << ed.transmitterName;
     }
 
-    if (count >= mContentCacheVec.size())
-    {
-      // qInfo() << count << mContentCacheVec.size();
-      mContentCacheVec.resize(mContentCacheVec.size() + 500);
-      // qInfo() << count << mContentCacheVec.size();
-    }
-    mContentCacheVec.at(count) = ed;
     count++;
   }
-  mContentCacheVec.resize(count);
-  qInfo() << "Read" << mContentCacheMap.size() << count << "transmitters from database with" << countDuplicates << "duplicates";
+
+  qInfo() << "Read" << mContentCacheMap.size() << "valid entries from" << count << "entries from database with" << countDuplicates << "duplicates";
 }
 
 i32 TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, i32 N) const
