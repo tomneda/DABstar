@@ -166,8 +166,8 @@ void Mp4Processor::add_to_frame(const std::vector<u8> & iV)
   if (mSumCorrections > displayedErrors)
   {
 #ifdef SHOW_ERROR_STATISTICS
-    fprintf(stderr, "Frames=%d, Frame Errors=%d, RS Errors=%d, RS Corrections=%d, CRC Errors=%d\n",
-            mSumFrameCount * mRsDims / 5, mSumFrameErrors, mSumRsErrors, mSumCorrections, mSumCrcErrors);
+    fprintf(stderr, "Frames=%d, Frame Resyncs=%d, FC Errors=%d, FC Corrections=%d, RS Errors=%d, RS Corrections=%d, CRC Errors=%d\n",
+            mSumFrameCount * mRsDims / 5, mSumFrameErrors, mSumFcErrors, mSumFcCorrections, mSumRsErrors, mSumCorrections, mSumCrcErrors);
 #endif
     displayedErrors = mSumCorrections;
   }
@@ -198,12 +198,6 @@ bool Mp4Processor::_process_reed_solomon_frame(const u8 * const ipFrameBytes, co
     {
       mRsErrors++;
       mSumRsErrors ++;
-      //fprintf (stderr, "RS failure %d\n", mRsErrors);
-      if (!mFireCode.check(&ipFrameBytes[iBase]) && j == 0)
-      {
-        //fprintf (stderr, "Firecode after RS failure\n");
-        return false;
-      }
     }
     else
     {
@@ -223,6 +217,16 @@ bool Mp4Processor::_process_reed_solomon_frame(const u8 * const ipFrameBytes, co
     {
       mOutVec[j + k * mRsDims] = rsOut[k];
     }
+  }
+  if (mFireCode.check(mOutVec.data()))
+  {
+    if(memcmp(mOutVec.data(), &ipFrameBytes[iBase], 11))
+      mSumFcCorrections++;
+  }
+  else
+  {
+    mSumFcErrors++;
+    return false;
   }
   return true;
 }

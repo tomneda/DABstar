@@ -88,6 +88,8 @@ private:
   i32 mTotalCorrections = 0;
   i32 mSumFrameCount = 0;
   i32 mSumFrameErrors = 0;
+  i32 mSumFcErrors = 0;
+  i32 mSumFcCorrections = 0;
   i32 mSumRsErrors = 0;
   i32 mSumCorrections = 0;
   i32 mSumCrcErrors = 0;
@@ -96,7 +98,7 @@ private:
   std::array<i16, 10> mAuStartArr;
   FirecodeChecker mFireCode;
 #ifdef  __WITH_FDK_AAC__
-  FdkAAC		*aacDecoder;
+  FdkAAC *aacDecoder;
 #else
   faadDecoder * aacDecoder;
 #endif
