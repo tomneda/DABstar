@@ -30,7 +30,7 @@
  */
 #include "iqdisplay.h"
 #include "spectrogramdata.h"
-#include <QwtLinearColorMap>
+#include <qwt_color_map.h>
 
 IQDisplay::IQDisplay(QwtPlot * const ipPlot)
   : QwtPlotSpectrogram()
