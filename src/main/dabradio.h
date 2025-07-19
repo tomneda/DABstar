@@ -120,7 +120,7 @@ struct SChannelDescriptor
   SDabService currentService{};
   SDabService nextService{};
   u32 Eid = 0;
-  bool has_ecc = false;
+  bool ecc_checked = false;
   u8 ecc_byte = 0;
   bool tiiFile = false;
   QString transmitterName;
@@ -155,7 +155,7 @@ struct SChannelDescriptor
     mainId = 0;
     subId = 0;
     Eid = 0;
-    has_ecc = false;
+    ecc_checked = false;
     snr = 0;
     transmitters.clear();
     currentService.frameDumper = nullptr;

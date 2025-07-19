@@ -1539,16 +1539,13 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   if (!mIsRunning.load())
     return;
 
-  if (mpDabProcessor->get_ecc() == 0)
-    return;
-
   QString country;
 
-  if (!mChannel.has_ecc)
+  if (!mChannel.ecc_checked)
   {
+    mChannel.ecc_checked = true;
     mChannel.ecc_byte = mpDabProcessor->get_ecc();
     country = find_ITU_code(mChannel.ecc_byte, (mChannel.Eid >> 12) & 0xF);
-    mChannel.has_ecc = true;
     mChannel.transmitterName = "";
 
     if (country != mChannel.countryName)
@@ -1637,27 +1634,39 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
       mTiiListDisplay.add_row(*pTr, bd);
     }
 
-    if (!isDropDownVisible && dataValid)
+    if (!isDropDownVisible)
     {
-      if (ownCoordinatesSet)
+      if (dataValid)
       {
-        ui->cmbTiiList->addItem(QString("%1/%2: %3  %4km  %5  %6m + %7m")
-                              .arg(index + 1)
-                              .arg(mTransmitterIds.size())
-                              .arg(pTr->transmitterName)
-                              .arg(bd.distance_km, 0, 'f', 1)
-                              .arg(CompassDirection::get_compass_direction(bd.corner_deg).c_str())
-                              .arg(pTr->altitude)
-                              .arg(pTr->height));
+        if (ownCoordinatesSet)
+        {
+          ui->cmbTiiList->addItem(QString("%1/%2: %3  %4km  %5  %6m + %7m")
+                                  .arg(index + 1)
+                                  .arg(mTransmitterIds.size())
+                                  .arg(pTr->transmitterName)
+                                  .arg(bd.distance_km, 0, 'f', 1)
+                                  .arg(CompassDirection::get_compass_direction(bd.corner_deg).c_str())
+                                  .arg(pTr->altitude)
+                                  .arg(pTr->height));
+        }
+        else
+        {
+          ui->cmbTiiList->addItem(QString("%1/%2: %3 (set map coord. for dist./dir.) %4m + %5m")
+                                  .arg(index + 1)
+                                  .arg(mTransmitterIds.size())
+                                  .arg(pTr->transmitterName)
+                                  .arg(pTr->altitude)
+                                  .arg(pTr->height));
+
+        }
       }
       else
       {
-        ui->cmbTiiList->addItem(QString("%1/%2: %3 (set map coord. for dist./dir.) %4m + %5m")
-                              .arg(index + 1)
-                              .arg(mTransmitterIds.size())
-                              .arg(pTr->transmitterName)
-                              .arg(pTr->altitude)
-                              .arg(pTr->height));
+        ui->cmbTiiList->addItem(QString("%1/%2: No database entry found for TII %3-%4")
+                                .arg(index + 1)
+                                .arg(mTransmitterIds.size())
+                                .arg(tiiNumber(tii.mainId))
+                                .arg(tiiNumber(tii.subId)));
 
       }
     }
