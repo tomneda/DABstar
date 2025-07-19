@@ -80,21 +80,19 @@ u16 FirecodeChecker::_run8(u8 regs[])
   return v;
 }
 
-bool FirecodeChecker::check(const u8 * x)
+bool FirecodeChecker::check(const u8 * const x)
 {
-  i16 i;
   u16 state = (x[2] << 8) | x[3];
-  u16 istate;
 
-  for (i = 4; i < 11; i++)
+  for (i16 i = 4; i < 11; i++)
   {
-    istate = tab[state >> 8];
+    const u16 istate = tab[state >> 8];
     state = ((istate & 0x00ff) ^ x[i]) | ((istate ^ state << 8) & 0xff00);
   }
 
-  for (i = 0; i < 2; i++)
+  for (i16 i = 0; i < 2; i++)
   {
-    istate = tab[state >> 8];
+    const u16 istate = tab[state >> 8];
     state = ((istate & 0x00ff) ^ x[i]) | ((istate ^ state << 8) & 0xff00);
   }
 
