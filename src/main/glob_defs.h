@@ -48,6 +48,11 @@ constexpr auto cTu       =   2048;  // useful part, FFT length
 constexpr auto cTg       =    504;  // guard length (T_s - T_u)
 constexpr auto cCarrDiff =   1000;  // freq. dist. between each OFDM Bin in Hz
 
+constexpr auto cBitsPerSymb = 2;
+constexpr auto cFibSize = cK * cBitsPerSymb / 4; // =  768 Bits
+constexpr auto cFibSegmSize = cFibSize / 3;      // =  256 Bits
+constexpr auto cFicSize = cFibSize * 3;          // = 2304 Bits
+
 using cf32 = std::complex<f32>;
 using ci16 = std::complex<i16>;
 using TArrayTu = std::array<cf32, cTu>;

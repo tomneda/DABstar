@@ -33,6 +33,7 @@
 #include  "dabradio.h"
 #include  "protTables.h"
 #include  "data_manip_and_checks.h"
+#include  <cassert>
 
 //	The 3072 bits of the serial motherword shall be split into
 //	24 blocks of 128 bits each.
@@ -151,9 +152,9 @@ void FicHandler::process_block(const std::vector<i16> & iData, const i32 iBlkNo)
       mOfdmInput[mIndex] = iData[i];
       ++mIndex;
 
-      if (mIndex >= 2304)
+      if (mIndex >= cFicSize)
       {
-        _process_fic_input(mFicNo, &mFicValid[mFicNo]);
+        _process_fic_input(mFicNo, mFicValid[mFicNo]);
         mIndex = 0;
         mFicNo++;
       }
@@ -176,8 +177,10 @@ void FicHandler::process_block(const std::vector<i16> & iData, const i32 iBlkNo)
   *	In the next coding step, we will combine this function with the
   *	one above
   */
-void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
+void FicHandler::_process_fic_input(const i16 iFicNo, bool & oValid)
 {
+  assert(iFicNo >= 0 && iFicNo < 4 && "Invalid FIC number");
+
   std::array<i16, 3072 + 24> viterbiBlock;
   i16 inputCount = 0;
 
@@ -185,7 +188,6 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
   {
     return;
   }
-  //	memset (viterbiBlock, 0, (3072 + 24) * sizeof (i16));
 
   for (i16 i = 0; i < 3072 + 24; i++)
   {
@@ -242,15 +244,17 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
     *	was lost.
     */
 
-  *oValid = true;
+  oValid = true;
+
   for (i16 i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
   {
     const std::byte * const p = &mBitBufferOut[(i % 3) * 256];
 
     if (!check_CRC_bits(reinterpret_cast<const u8 *>(p), 256))
     {
-      *oValid = false;
+      oValid = false;
       emit show_fic_success(false);
+
       if (mFicDecodeSuccessRatio > 0)
       {
         mFicDecodeSuccessRatio--;
@@ -261,6 +265,7 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
     for (i32 j = 0; j < 32; j++)
     {
       mFicBuffer[j] = static_cast<std::byte>(0);
+
       for (i32 k = 0; k < 8; k++)
       {
         mFicBuffer[j] <<= 1;
@@ -277,6 +282,7 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool * oValid)
     mFicMutex.unlock();
 
     emit show_fic_success(true);
+
     FibDecoder::process_FIB(reinterpret_cast<const u8 *>(p), iFicNo);
 
     if (mFicDecodeSuccessRatio < 10)

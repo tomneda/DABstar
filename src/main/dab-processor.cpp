@@ -522,7 +522,7 @@ QStringList DabProcessor::basicPrint()
 
 i32 DabProcessor::scan_width()
 {
-  return mFicHandler.scan_width();
+  return mFicHandler.get_scan_width();
 }
 
 //	for the mscHandler:

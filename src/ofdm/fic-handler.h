@@ -69,7 +69,7 @@ private:
   std::array<std::byte, 4 * 768> mFibBits;
   std::array<std::byte, 768> mPRBS;
   std::array<std::byte, 256> mFicBuffer;
-  std::array<i16, 2304> mOfdmInput;
+  std::array<i16, cFicSize> mOfdmInput;
   std::array<u8, 3072 + 24> mPunctureTable{};
   std::array<bool, 4> mFicValid{ false };
   i16 mIndex = 0;
@@ -82,7 +82,7 @@ private:
   i32 mFicDecodeSuccessRatio = 0;   // Saturating up/down-counter in range [0, 10] corresponding to the number of FICs with correct CRC
   std::atomic<bool> mIsRunning;
 
-  void _process_fic_input(i16 iFicNo, bool * oValid);
+  void _process_fic_input(i16 iFicNo, bool & oValid);
 
 signals:
   void show_fic_success(bool);
