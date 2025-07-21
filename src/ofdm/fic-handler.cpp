@@ -137,35 +137,30 @@ FicHandler::FicHandler(DabRadio * const iMr)
   *	The function is called with a blkno. This should be 1, 2 or 3
   *	for each time 2304 bits are in, we call process_ficInput
   */
-void FicHandler::process_block(const std::vector<i16> & iData, const i32 iBlkNo)
+void FicHandler::process_block(const std::vector<i16> & iData, const i32 iSymbIdx)
 {
-  if (iBlkNo == 1)
+  assert(iData.size() == cK * cBitsPerSymb);
+  assert(1 <= iSymbIdx && iSymbIdx <= 3); // iSymbIdx begins with zero
+
+  if (iSymbIdx == 1) // next symbol after sync symbol
   {
     mIndex = 0;
-    mFicNo = 0;
+    mFicIdx = 0;
   }
 
-  if (1 <= iBlkNo && iBlkNo <= 3)
+  for (i32 i = 0; i < c2K; i++)
   {
-    for (i32 i = 0; i < 2 * cK; i++)
-    {
-      mOfdmInput[mIndex] = iData[i];
-      ++mIndex;
+    mOfdmInput[mIndex] = iData[i];
+    ++mIndex;
 
-      if (mIndex >= cFicSize)
-      {
-        _process_fic_input(mFicNo, mFicValid[mFicNo]);
-        mIndex = 0;
-        mFicNo++;
-      }
+    if (mIndex >= cFicSizeVitIn)
+    {
+      _process_fic_input(mFicIdx, mFicValid[mFicIdx]); // for each 2304 bits
+
+      mIndex = 0;
+      mFicIdx++;
     }
   }
-  else
-  {
-    fprintf(stderr, "You should not call ficBlock here\n");
-  }
-  //	we are pretty sure now that after block 4, we end up
-  //	with index = 0
 }
 
 /**
@@ -177,24 +172,25 @@ void FicHandler::process_block(const std::vector<i16> & iData, const i32 iBlkNo)
   *	In the next coding step, we will combine this function with the
   *	one above
   */
-void FicHandler::_process_fic_input(const i16 iFicNo, bool & oValid)
+void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oValid)
 {
-  assert(iFicNo >= 0 && iFicNo < 4 && "Invalid FIC number");
+  assert(iFicIdx >= 0 && iFicIdx < 4);
 
-  std::array<i16, 3072 + 24> viterbiBlock;
-  i16 inputCount = 0;
+  std::array<i16, cViterbiBlockSize> viterbiBlock;
+  i16 ficReadIdx = 0;
 
   if (!mIsRunning.load())
   {
     return;
   }
 
-  for (i16 i = 0; i < 3072 + 24; i++)
+  for (i16 i = 0; i < cViterbiBlockSize; i++)
   {
     if (mPunctureTable[i])
     {
-      viterbiBlock[i] = mOfdmInput[inputCount];
-      ++inputCount;
+      assert(ficReadIdx < cFicSizeVitIn);
+      viterbiBlock[i] = mOfdmInput[ficReadIdx];
+      ++ficReadIdx;
     }
     else
     {
@@ -213,7 +209,7 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool & oValid)
   if(mFicBlock == 40) // 4 blocks per frame, 10 frames per sec
   {
     emit show_fic_BER((f32)mFicErrors / (f32)mFicBits);
-    //printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, fic_bits, fic_errors, (f32)fic_errors/fic_bits);
+    // printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, mFicBits, mFicErrors, (f32)mFicErrors/mFicBits);
     mFicBlock = 0;
     mFicErrors /= 2;
     mFicBits /= 2;
@@ -226,14 +222,14 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool & oValid)
     *	first step: energy dispersal according to the DAB standard
     *	We use a predefined vector PRBS
     */
-  for (i16 i = 0; i < 768; i++)
+  for (i16 i = 0; i < cFicSizeVitOut; i++)
   {
     mBitBufferOut[i] ^= mPRBS[i];
   }
 
-  for (i16 i = 0; i < 768; i++)
+  for (i16 i = 0; i < cFicSizeVitOut; i++)
   {
-    mFibBits[iFicNo * 768 + i] = mBitBufferOut[i];
+    mFibBits[iFicIdx * cFicSizeVitOut + i] = mBitBufferOut[i];
   }
   /**
     *	each of the fib blocks is protected by a crc
@@ -246,7 +242,7 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool & oValid)
 
   oValid = true;
 
-  for (i16 i = iFicNo * 3; i < iFicNo * 3 + 3; i++)
+  for (i16 i = iFicIdx * 3; i < iFicIdx * 3 + 3; i++)
   {
     const std::byte * const p = &mBitBufferOut[(i % 3) * 256];
 
@@ -283,7 +279,7 @@ void FicHandler::_process_fic_input(const i16 iFicNo, bool & oValid)
 
     emit show_fic_success(true);
 
-    FibDecoder::process_FIB(reinterpret_cast<const u8 *>(p), iFicNo);
+    FibDecoder::process_FIB(reinterpret_cast<const u8 *>(p), iFicIdx);
 
     if (mFicDecodeSuccessRatio < 10)
     {

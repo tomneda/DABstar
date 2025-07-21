@@ -48,10 +48,13 @@ constexpr auto cTu       =   2048;  // useful part, FFT length
 constexpr auto cTg       =    504;  // guard length (T_s - T_u)
 constexpr auto cCarrDiff =   1000;  // freq. dist. between each OFDM Bin in Hz
 
-constexpr auto cBitsPerSymb = 2;
-constexpr auto cFibSize = cK * cBitsPerSymb / 4; // =  768 Bits
-constexpr auto cFibSegmSize = cFibSize / 3;      // =  256 Bits
-constexpr auto cFicSize = cFibSize * 3;          // = 2304 Bits
+constexpr auto cBitsPerSymb       = 2;
+constexpr auto cFicPerFrame       = 4;
+constexpr auto cFibPerFic         = 3;
+constexpr auto c2K            = cK * cBitsPerSymb;           // = 3072 Bits per symbol
+constexpr auto cFicSizeVitIn  = c2K * 3 / 4;                 // = 2304 Bits (FIC size before Viterbi)
+constexpr auto cFicSizeVitOut     = 768;                         // =  768 Bits (FIC size after Viterbi)
+constexpr auto cFibSizeVitOut = cFicSizeVitOut / cFibPerFic; // =  256 Bits (FIB size after Viterbi)
 
 using cf32 = std::complex<f32>;
 using ci16 = std::complex<i16>;

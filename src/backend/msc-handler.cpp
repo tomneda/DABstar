@@ -47,7 +47,7 @@ MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<u8> * const ipFrameBuffe
   , mpFrameBuffer(ipFrameBuffer)
 {
   mCifVector.resize(55296);
-  mBitsPerBlock = 2 * cK;
+  mBitsPerBlock = c2K;
   mNumberOfBlocksPerCif = cifTable[0]; // first entry is for DAB-Mode 1
 }
 

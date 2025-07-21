@@ -63,7 +63,7 @@ DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevi
   connect(this, &DabProcessor::signal_show_freq_corr_bb_Hz, mpRadioInterface, &DabRadio::slot_show_freq_corr_bb_Hz);
   connect(this, &DabProcessor::signal_linear_peak_level, mpRadioInterface, &DabRadio::slot_show_digital_peak_level);
 
-  mBits.resize(2 * cK);
+  mBits.resize(c2K);
   mTiiDetector.reset();
   mTiiCounter = 0;
 }

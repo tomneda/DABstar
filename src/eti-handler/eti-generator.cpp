@@ -88,7 +88,7 @@ etiGenerator::etiGenerator(FicHandler * my_ficHandler)
   this->my_ficHandler = my_ficHandler;
 
   index_Out = 0;
-  BitsperBlock = 2 * cK;
+  BitsperBlock = c2K;
   numberofblocksperCIF = 18;  // mode I
   amount = 0;
   CIFCount_hi = -1;
@@ -126,7 +126,7 @@ void etiGenerator::reset()
     descrambler[i] = nullptr;
   }
   index_Out = 0;
-  BitsperBlock = 2 * cK;
+  BitsperBlock = c2K;
   numberofblocksperCIF = 18;  // mode I
   amount = 0;
   CIFCount_hi = -1;

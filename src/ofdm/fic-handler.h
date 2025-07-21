@@ -54,7 +54,7 @@ public:
   FicHandler(DabRadio * iMr);
   ~FicHandler() override = default;
 
-  void process_block(const std::vector<i16> & iData, const i32 iBlkNo);
+  void process_block(const std::vector<i16> & iData, const i32 iSymbIdx);
   void stop();
   void restart();
   void start_fic_dump(FILE *);
@@ -64,16 +64,17 @@ public:
   void reset_fic_decode_success_ratio() { mFicDecodeSuccessRatio = 0; };
 
 private:
-  ViterbiSpiral mViterbi{ 768, true };
-  std::array<std::byte, 768> mBitBufferOut;
-  std::array<std::byte, 4 * 768> mFibBits;
-  std::array<std::byte, 768> mPRBS;
+  static constexpr i32 cViterbiBlockSize = 3072 + 24; // with punctation data
+  ViterbiSpiral mViterbi{ cFicSizeVitOut, true };
+  std::array<std::byte, cFicSizeVitOut> mBitBufferOut;
+  std::array<std::byte, cFicPerFrame * cFicSizeVitOut> mFibBits;
+  std::array<std::byte, cFicSizeVitOut> mPRBS;
   std::array<std::byte, 256> mFicBuffer;
-  std::array<i16, cFicSize> mOfdmInput;
-  std::array<u8, 3072 + 24> mPunctureTable{};
+  std::array<i16, cFicSizeVitIn> mOfdmInput;
+  std::array<u8, cViterbiBlockSize> mPunctureTable{false};
   std::array<bool, 4> mFicValid{ false };
   i16 mIndex = 0;
-  i16 mFicNo = 0;
+  i16 mFicIdx = 0;
   FILE * mpFicDump = nullptr;
   QMutex mFicMutex;
   i32 mFicBlock = 0;
@@ -82,7 +83,7 @@ private:
   i32 mFicDecodeSuccessRatio = 0;   // Saturating up/down-counter in range [0, 10] corresponding to the number of FICs with correct CRC
   std::atomic<bool> mIsRunning;
 
-  void _process_fic_input(i16 iFicNo, bool & oValid);
+  void _process_fic_input(i16 iFicIdx, bool & oValid);
 
 signals:
   void show_fic_success(bool);
