@@ -80,7 +80,7 @@ private:
   std::atomic<bool> mIsRunning;
   std::atomic<FILE *> mpFicDump {nullptr};
 
-  void _process_fic_input(i16 iFicIdx, bool & oValid);
+  void _process_fic_input(i16 iFicIdx, bool & oFicValid);
 
 signals:
   void show_fic_success(bool);

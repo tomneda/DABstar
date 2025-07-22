@@ -172,7 +172,7 @@ void FicHandler::process_block(const std::vector<i16> & iOfdmSoftBits, const i32
   *	In the next coding step, we will combine this function with the
   *	one above
   */
-void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oValid)
+void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 {
   assert(iFicIdx >= 0 && iFicIdx < 4);
 
@@ -237,36 +237,38 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oValid)
     *	One issue is what to do when we really believe the synchronization
     *	was lost.
     */
-  oValid = true;
+  oFicValid = true;
 
   for (i16 fibIdx = 0; fibIdx < cFibPerFic; fibIdx++)
   {
     const std::byte * const pOneFib = &pFibBitsOf3Fibs[fibIdx * cFibSizeVitOut];
 
-    if (!check_CRC_bits(reinterpret_cast<const u8 *>(pOneFib), cFibSizeVitOut))
+    if (check_CRC_bits(reinterpret_cast<const u8 *>(pOneFib), cFibSizeVitOut))
     {
-      oValid = false;
+      if (mpFicDump != nullptr)
+      {
+        dump_fib_to_file(pOneFib);
+      }
+
+      FibDecoder::process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
+
+      emit show_fic_success(true);
+
+      if (mFicDecodeSuccessRatio < 10)
+      {
+        mFicDecodeSuccessRatio++;
+      }
+    }
+    else
+    {
+      oFicValid = false;
+
       emit show_fic_success(false);
 
       if (mFicDecodeSuccessRatio > 0)
       {
         mFicDecodeSuccessRatio--;
       }
-      continue;
-    }
-
-    if (mpFicDump != nullptr)
-    {
-      dump_fib_to_file(pOneFib);
-    }
-
-    emit show_fic_success(true);
-
-    FibDecoder::process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
-
-    if (mFicDecodeSuccessRatio < 10)
-    {
-      mFicDecodeSuccessRatio++;
     }
   }
 }
