@@ -137,9 +137,9 @@ FicHandler::FicHandler(DabRadio * const iMr)
   *	The function is called with a blkno. This should be 1, 2 or 3
   *	for each time 2304 bits are in, we call process_ficInput
   */
-void FicHandler::process_block(const std::vector<i16> & iData, const i32 iSymbIdx)
+void FicHandler::process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iSymbIdx)
 {
-  assert(iData.size() == cK * cBitsPerSymb);
+  assert(iOfdmSoftBits.size() == c2K);
   assert(1 <= iSymbIdx && iSymbIdx <= 3); // iSymbIdx begins with zero
 
   if (iSymbIdx == 1) // next symbol after sync symbol
@@ -150,10 +150,10 @@ void FicHandler::process_block(const std::vector<i16> & iData, const i32 iSymbId
 
   for (i32 i = 0; i < c2K; i++)
   {
-    mOfdmInput[mIndex] = iData[i];
+    mFicViterbiSoftInput[mIndex] = iOfdmSoftBits[i];
     ++mIndex;
 
-    if (mIndex >= cFicSizeVitIn)
+    if (mIndex >= cFicSizeVitIn) // collect 1 FIC or 3 FIBs (3/4 of an OFDM symbol bits)
     {
       _process_fic_input(mFicIdx, mFicValid[mFicIdx]); // for each 2304 bits
 
@@ -176,7 +176,7 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oValid)
 {
   assert(iFicIdx >= 0 && iFicIdx < 4);
 
-  std::array<i16, cViterbiBlockSize> viterbiBlock;
+  std::array<i16, cViterbiBlockSize> viterbiBlock; // Viterbi input buffer with punctuation
   i16 ficReadIdx = 0;
 
   if (!mIsRunning.load())
@@ -189,7 +189,7 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oValid)
     if (mPunctureTable[i])
     {
       assert(ficReadIdx < cFicSizeVitIn);
-      viterbiBlock[i] = mOfdmInput[ficReadIdx];
+      viterbiBlock[i] = mFicViterbiSoftInput[ficReadIdx];
       ++ficReadIdx;
     }
     else
@@ -201,12 +201,14 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oValid)
     *	Now we have the full word ready for deconvolution
     *	deconvolution is according to DAB standard section 11.2
     */
-  mViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<u8 *>(mBitBufferOut.data()));
-  mViterbi.calculate_BER(viterbiBlock.data(), mPunctureTable.data(), reinterpret_cast<u8 *>(mBitBufferOut.data()), mFicBits, mFicErrors);
+
+  std::byte * const pFibBitsOf3Fibs = &mFibBitsEntireFrame[iFicIdx * cFicSizeVitOut]; // 3 FIBs or 1 FIC
+  mViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<u8 *>(pFibBitsOf3Fibs));
+  mViterbi.calculate_BER(viterbiBlock.data(), mPunctureTable.data(), reinterpret_cast<u8 *>(pFibBitsOf3Fibs), mFicBits, mFicErrors);
 
   mFicBlock++;
 
-  if(mFicBlock == 40) // 4 blocks per frame, 10 frames per sec
+  if (mFicBlock == 40) // 4 blocks per frame, 10 frames per sec
   {
     emit show_fic_BER((f32)mFicErrors / (f32)mFicBits);
     // printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, mFicBits, mFicErrors, (f32)mFicErrors/mFicBits);
@@ -224,29 +226,24 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oValid)
     */
   for (i16 i = 0; i < cFicSizeVitOut; i++)
   {
-    mBitBufferOut[i] ^= mPRBS[i];
+    pFibBitsOf3Fibs[i] ^= mPRBS[i];
   }
 
-  for (i16 i = 0; i < cFicSizeVitOut; i++)
-  {
-    mFibBits[iFicIdx * cFicSizeVitOut + i] = mBitBufferOut[i];
-  }
   /**
     *	each of the fib blocks is protected by a crc
     *	(we know that there are three fib blocks each time we are here)
-    *	we keep track of the successrate
+    *	we keep track of the success rate
     *	and show that per 100 fic blocks
     *	One issue is what to do when we really believe the synchronization
     *	was lost.
     */
-
   oValid = true;
 
-  for (i16 i = iFicIdx * 3; i < iFicIdx * 3 + 3; i++)
+  for (i16 fibIdx = 0; fibIdx < cFibPerFic; fibIdx++)
   {
-    const std::byte * const p = &mBitBufferOut[(i % 3) * 256];
+    const std::byte * const pOneFib = &pFibBitsOf3Fibs[fibIdx * cFibSizeVitOut];
 
-    if (!check_CRC_bits(reinterpret_cast<const u8 *>(p), 256))
+    if (!check_CRC_bits(reinterpret_cast<const u8 *>(pOneFib), cFibSizeVitOut))
     {
       oValid = false;
       emit show_fic_success(false);
@@ -258,28 +255,14 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oValid)
       continue;
     }
 
-    for (i32 j = 0; j < 32; j++)
-    {
-      mFicBuffer[j] = static_cast<std::byte>(0);
-
-      for (i32 k = 0; k < 8; k++)
-      {
-        mFicBuffer[j] <<= 1;
-        mFicBuffer[j] &= static_cast<std::byte>(0xFE);
-        mFicBuffer[j] |= p[8 * j + k];
-      }
-    }
-
-    mFicMutex.lock();
     if (mpFicDump != nullptr)
     {
-      fwrite(mFicBuffer.data(), 1, 32, mpFicDump);
+      dump_fib_to_file(pOneFib);
     }
-    mFicMutex.unlock();
 
     emit show_fic_success(true);
 
-    FibDecoder::process_FIB(reinterpret_cast<const u8 *>(p), iFicIdx);
+    FibDecoder::process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
 
     if (mFicDecodeSuccessRatio < 10)
     {
@@ -314,20 +297,36 @@ void FicHandler::start_fic_dump(FILE * f)
 
 void FicHandler::stop_fic_dump()
 {
-  mFicMutex.lock();
   mpFicDump = nullptr;
-  mFicMutex.unlock();
 }
 
+void FicHandler::dump_fib_to_file(const std::byte * const ipOneFibBits)
+{
+  std::array<std::byte, cFibSizeVitOut / 8> fibByteBuffer; // FIB bits in a byte vector
+
+  for (i32 j = 0; j < (i32)fibByteBuffer.size(); j++)
+  {
+    fibByteBuffer[j] = static_cast<std::byte>(0);
+
+    for (i32 k = 0; k < 8; k++)
+    {
+      fibByteBuffer[j] <<= 1;
+      fibByteBuffer[j] &= static_cast<std::byte>(0xFE);
+      fibByteBuffer[j] |= ipOneFibBits[8 * j + k];
+    }
+  }
+
+  fwrite(fibByteBuffer.data(), 1, fibByteBuffer.size(), mpFicDump);
+}
 
 void FicHandler::get_fib_bits(u8 * v, bool * b)
 {
-  for (i32 i = 0; i < 4 * 768; i++)
+  for (i32 i = 0; i < (i32)mFibBitsEntireFrame.size(); i++)
   {
-    v[i] = static_cast<u8>(mFibBits[i]);
+    v[i] = static_cast<u8>(mFibBitsEntireFrame[i]);
   }
 
-  for (i32 i = 0; i < 4; i++)
+  for (i32 i = 0; i < (i32)mFicValid.size(); i++)
   {
     b[i] = mFicValid[i];
   }
@@ -335,6 +334,5 @@ void FicHandler::get_fib_bits(u8 * v, bool * b)
 
 i32 FicHandler::get_fic_decode_ratio_percent()
 {
-    return mFicDecodeSuccessRatio * 10;
+  return mFicDecodeSuccessRatio * 10;
 }
-
