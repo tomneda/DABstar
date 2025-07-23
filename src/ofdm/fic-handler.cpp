@@ -246,7 +246,7 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
     {
       if (mpFicDump != nullptr)
       {
-        dump_fib_to_file(pOneFib);
+        _dump_fib_to_file(pOneFib);
       }
 
       FibDecoder::process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
@@ -271,13 +271,11 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 void FicHandler::stop()
 {
   disconnect_channel();
-  //	clearEnsemble	();
   mIsRunning.store(false);
 }
 
 void FicHandler::restart()
 {
-  //	clearEnsemble	();
   mFicDecodeSuccessRatio = 0;
   connect_channel();
   mIsRunning.store(true);
@@ -297,7 +295,7 @@ void FicHandler::stop_fic_dump()
   mpFicDump = nullptr;
 }
 
-void FicHandler::dump_fib_to_file(const std::byte * const ipOneFibBits)
+void FicHandler::_dump_fib_to_file(const std::byte * const ipOneFibBits)
 {
   std::array<std::byte, cFibSizeVitOut / 8> fibByteBuffer; // FIB bits in a byte vector
 

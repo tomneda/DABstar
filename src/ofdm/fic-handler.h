@@ -61,7 +61,6 @@ public:
   void reset_fic_decode_success_ratio() { mFicDecodeSuccessRatio = 0; };
   void start_fic_dump(FILE *);
   void stop_fic_dump();
-  void dump_fib_to_file(const std::byte * ipOneFibBits);
 
 private:
   static constexpr i32 cViterbiBlockSize = 3072 + 24; // with punctation data
@@ -70,17 +69,18 @@ private:
   std::array<std::byte, cFicSizeVitOut> mPRBS;
   std::array<i16, cFicSizeVitIn> mFicViterbiSoftInput;
   std::array<u8, cViterbiBlockSize> mPunctureTable{false};
-  std::array<bool, 4> mFicValid{ false };
+  std::array<bool, 4> mFicValid{false};
   i16 mIndex = 0;
   i16 mFicIdx = 0;
   i32 mFicBlock = 0;
   i32 mFicErrors = 0;
   i32 mFicBits = 0;
   i32 mFicDecodeSuccessRatio = 0;   // Saturating up/down-counter in range [0, 10] corresponding to the number of FICs with correct CRC
-  std::atomic<bool> mIsRunning;
-  std::atomic<FILE *> mpFicDump {nullptr};
+  std::atomic<bool> mIsRunning{false};
+  std::atomic<FILE *> mpFicDump{nullptr};
 
   void _process_fic_input(i16 iFicIdx, bool & oFicValid);
+  void _dump_fib_to_file(const std::byte * ipOneFibBits);
 
 signals:
   void signal_fic_status(i32, f32);
