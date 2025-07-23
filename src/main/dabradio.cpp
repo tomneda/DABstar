@@ -1434,43 +1434,31 @@ void DabRadio::slot_show_aac_errors(i32 s)
 
 //
 //	called from the ficHandler
-void DabRadio::slot_show_fic_success(bool b)
+void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
 {
   if (!mIsRunning.load())
   {
     return;
   }
 
-  if (b)
+  if (ui->progBarFicError->value() != iSuccessPercent)
   {
-    mFicSuccess++;
-  }
-
-  if (++mFicBlocks >= 100)
-  {
-    QPalette p = ui->progBarFicError->palette();
-    if (mFicSuccess < 85)
+    if (iSuccessPercent < 85)
     {
-      p.setColor(QPalette::Highlight, Qt::red);
+      ui->progBarFicError->setStyleSheet("QProgressBar::chunk { background-color: red; }");
     }
     else
     {
-      p.setColor(QPalette::Highlight, 0xE6E600);
+      ui->progBarFicError->setStyleSheet("QProgressBar::chunk { background-color: #E6E600; }");
     }
 
-    ui->progBarFicError->setPalette(p);
-    ui->progBarFicError->setValue(mFicSuccess);
-    mFicSuccess = 0;
-    mFicBlocks = 0;
+    ui->progBarFicError->setValue(iSuccessPercent);
   }
-}
 
-void DabRadio::slot_show_fic_ber(f32 ber)
-{
-  if (!mIsRunning.load())
-    return;
   if (!mSpectrumViewer.is_hidden())
-    mSpectrumViewer.show_fic_ber(ber);
+  {
+    mSpectrumViewer.show_fic_ber(iBER);
+  }
 }
 
 // called from the PAD handler

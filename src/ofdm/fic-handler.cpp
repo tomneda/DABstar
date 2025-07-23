@@ -119,8 +119,7 @@ FicHandler::FicHandler(DabRadio * const iMr)
     local++;
   }
 
-  connect(this, &FicHandler::show_fic_success, iMr, &DabRadio::slot_show_fic_success);
-  connect(this, &FicHandler::show_fic_BER, iMr, &DabRadio::slot_show_fic_ber);
+  connect(this, &FicHandler::signal_fic_status, iMr, &DabRadio::slot_show_fic_status);
 }
 
 /**
@@ -210,7 +209,7 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 
   if (mFicBlock == 40) // 4 blocks per frame, 10 frames per sec
   {
-    emit show_fic_BER((f32)mFicErrors / (f32)mFicBits);
+    emit signal_fic_status(mFicDecodeSuccessRatio * 10, (f32)mFicErrors / (f32)mFicBits);
     // printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, mFicBits, mFicErrors, (f32)mFicErrors/mFicBits);
     mFicBlock = 0;
     mFicErrors /= 2;
@@ -252,18 +251,14 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 
       FibDecoder::process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
 
-      emit show_fic_success(true);
-
       if (mFicDecodeSuccessRatio < 10)
       {
-        mFicDecodeSuccessRatio++;
+        mFicDecodeSuccessRatio++; // this is increased with each correct FIB
       }
     }
     else
     {
       oFicValid = false;
-
-      emit show_fic_success(false);
 
       if (mFicDecodeSuccessRatio > 0)
       {

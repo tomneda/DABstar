@@ -296,8 +296,6 @@ private:
   u32 mTiiIndex = 0;
   bool mShowTiiListWindow = false;
   bool mMutingActive = false;
-  i16 mFicBlocks = 0;
-  i16 mFicSuccess = 0;
   STheTime mLocalTime{};
   STheTime mUTC{};
   timeTableHandler * mpTimeTable = nullptr;
@@ -400,8 +398,7 @@ public slots:
   void slot_show_frame_errors(i32);
   void slot_show_rs_errors(i32);
   void slot_show_aac_errors(i32);
-  void slot_show_fic_success(bool);
-  void slot_show_fic_ber(f32);
+  void slot_show_fic_status(i32 iSuccessPercent, f32 iBER);
   void slot_show_label(const QString &);
   void slot_handle_mot_object(const QByteArray &, const QString &, i32, bool);
   void slot_send_datagram(i32);

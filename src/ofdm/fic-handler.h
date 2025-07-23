@@ -83,8 +83,7 @@ private:
   void _process_fic_input(i16 iFicIdx, bool & oFicValid);
 
 signals:
-  void show_fic_success(bool);
-  void show_fic_BER(f32);
+  void signal_fic_status(i32, f32);
 };
 
 #endif
