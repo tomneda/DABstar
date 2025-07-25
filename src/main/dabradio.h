@@ -435,7 +435,6 @@ public slots:
   void slot_handle_logger_button(i32);
   void slot_handle_port_selector();
   void slot_handle_set_coordinates_button();
-  void slot_handle_eti_active_selector(i32);
   void slot_use_strongest_peak(bool);
   void slot_handle_dc_avoidance_algorithm(bool);
   void slot_handle_dc_removal(bool);
@@ -452,7 +451,7 @@ private slots:
   void _slot_handle_tech_detail_button();
   void _slot_handle_reset_button();
   void _slot_handle_scan_button();
-  void _slot_handle_eti_handler();
+  void _slot_handle_eti_button();
   void _slot_handle_spectrum_button();
   void _slot_handle_cir_button();
   void _slot_handle_device_widget_button();

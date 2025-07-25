@@ -84,11 +84,9 @@ Configuration::Configuration(DabRadio * ipRI) :
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
   connect(cbUseStrongestPeak, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_use_strongest_peak);
   connect(cbActivateLogger, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_handle_logger_button);
-  connect(cbActivateEti, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_handle_eti_active_selector);
 #else
   connect(cbUseStrongestPeak, &QCheckBox::stateChanged, mpRadioInterface, &DabRadio::slot_use_strongest_peak);
   connect(cbActivateLogger, &QCheckBox::stateChanged, mpRadioInterface, &DabRadio::slot_handle_logger_button);
-  connect(cbActivateEti, &QCheckBox::stateChanged, mpRadioInterface, &DabRadio::slot_handle_eti_active_selector);
 #endif
 }
 

@@ -1839,7 +1839,7 @@ void DabRadio::_show_hide_buttons(const bool iShow)
 #if 1
   if (iShow)
   {
-    mConfig.dumpButton->show();
+    //mConfig.dumpButton->show();
     ui->btnScanning->show();
     ui->cmbChannelSelector->show();
     ui->btnToggleFavorite->show();
@@ -1847,7 +1847,7 @@ void DabRadio::_show_hide_buttons(const bool iShow)
   }
   else
   {
-    mConfig.dumpButton->hide();
+    //mConfig.dumpButton->hide();
     ui->btnScanning->hide();
     ui->cmbChannelSelector->hide();
     ui->btnToggleFavorite->hide();
@@ -1873,6 +1873,7 @@ void DabRadio::_slot_handle_reset_button()
   stop_channel();
   start_channel(channelName);
 }
+
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -2109,6 +2110,7 @@ void DabRadio::connect_gui()
   connect(ui->btnSpectrumScope, &QPushButton::clicked, this, &DabRadio::_slot_handle_spectrum_button);
   connect(ui->btnDeviceWidget, &QPushButton::clicked, this, &DabRadio::_slot_handle_device_widget_button);
   connect(mConfig.dumpButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_source_dump_button);
+  connect(mConfig.etiButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_eti_button);
   connect(ui->btnPrevService, &QPushButton::clicked, this, &DabRadio::_slot_handle_prev_service_button);
   connect(ui->btnNextService, &QPushButton::clicked, this, &DabRadio::_slot_handle_next_service_button);
   connect(ui->btnTargetService, &QPushButton::clicked, this, &DabRadio::_slot_handle_target_service_button);
@@ -2134,6 +2136,7 @@ void DabRadio::disconnect_gui()
   disconnect(ui->btnSpectrumScope, &QPushButton::clicked, this, &DabRadio::_slot_handle_spectrum_button);
   disconnect(ui->btnDeviceWidget, &QPushButton::clicked, this, &DabRadio::_slot_handle_device_widget_button);
   disconnect(mConfig.dumpButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_source_dump_button);
+  disconnect(mConfig.etiButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_eti_button);
   disconnect(ui->btnPrevService, &QPushButton::clicked, this, &DabRadio::_slot_handle_prev_service_button);
   disconnect(ui->btnNextService, &QPushButton::clicked, this, &DabRadio::_slot_handle_next_service_button);
   disconnect(ui->btnTargetService, &QPushButton::clicked, this, &DabRadio::_slot_handle_target_service_button);
@@ -2935,6 +2938,7 @@ std::vector<SServiceId> DabRadio::insert_sorted(const std::vector<SServiceId> & 
 void DabRadio::enable_ui_elements_for_safety(const bool iEnable)
 {
   mConfig.dumpButton->setEnabled(iEnable);
+  mConfig.etiButton->setEnabled(iEnable);
   ui->btnToggleFavorite->setEnabled(iEnable);
   ui->btnPrevService->setEnabled(iEnable);
   ui->btnNextService->setEnabled(iEnable);
@@ -3352,8 +3356,12 @@ void DabRadio::slot_handle_port_selector()
 //
 /////////////////////////////////////////////////////////////////////////
 
-void DabRadio::_slot_handle_eti_handler()
+void DabRadio::_slot_handle_eti_button()
 {
+  if (!mIsRunning.load() || mIsScanning.load())
+  {
+    return;
+  }
   if (mpDabProcessor == nullptr)
   {  // should not happen
     return;
@@ -3378,7 +3386,10 @@ void DabRadio::stop_etiHandler()
 
   mpDabProcessor->stop_eti_generator();
   mChannel.etiActive = false;
-  ui->btnScanning->setText("ETI");
+
+  LOG("etiHandler stopped", "");
+  setButtonFont(mConfig.etiButton, "ETI dump", 10);
+
 }
 
 void DabRadio::start_etiHandler()
@@ -3397,40 +3408,7 @@ void DabRadio::start_etiHandler()
   mChannel.etiActive = mpDabProcessor->start_eti_generator(etiFile);
   if (mChannel.etiActive)
   {
-    ui->btnScanning->setText("eti runs");
-  }
-}
-
-void DabRadio::slot_handle_eti_active_selector(i32 /*k*/)
-{
-  if (mpInputDevice == nullptr)
-  {
-    return;
-  }
-
-  if (mConfig.cbActivateEti->isChecked())
-  {
-    stop_scanning();
-    disconnect(ui->btnScanning, &QPushButton::clicked, this, &DabRadio::_slot_handle_scan_button);
-    connect(ui->btnScanning, &QPushButton::clicked, this, &DabRadio::_slot_handle_eti_handler);
-    ui->btnScanning->setText("ETI");
-
-    if (mpInputDevice->isFileInput()) // restore the button's visibility
-    {
-      ui->btnScanning->show();
-    }
-
-    return;
-  }
-  //	otherwise, disconnect the eti handling and reconnect scan
-  //	be careful, an ETI session may be going on
-  stop_etiHandler();    // just in case
-  disconnect(ui->btnScanning, &QPushButton::clicked, this, &DabRadio::_slot_handle_eti_handler);
-  connect(ui->btnScanning, &QPushButton::clicked, this, &DabRadio::_slot_handle_scan_button);
-  ui->btnScanning->setText("Scan");
-  if (mpInputDevice->isFileInput())
-  {  // hide the button now
-    ui->btnScanning->hide();
+    setButtonFont(mConfig.etiButton, "eti runs", 10);
   }
 }
 

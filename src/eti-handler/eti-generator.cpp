@@ -465,7 +465,7 @@ void etiGenerator::postProcess(const u8 * /*theVector*/, i32 /*offset*/)
 bool etiGenerator::start_eti_generator(const QString & f)
 {
   reset();
-  etiFile = fopen(f.toUtf8().data(), "w");
+  etiFile = fopen(f.toUtf8().data(), "wb");
   return etiFile != nullptr;
 }
 
