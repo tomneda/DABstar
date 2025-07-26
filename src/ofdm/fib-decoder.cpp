@@ -1229,6 +1229,12 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i
     }
   }
 
+  if (firstFree < 0)
+  {
+    qCritical("FibDecoder::bind_audio_service: no free slots");
+    return;
+  }
+
   const QString dataName = ensemble->services[serviceIndex].serviceLabel;
 
   //  if (ensemble->services[serviceIndex].is_shown)
@@ -1237,20 +1243,19 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i
   //  }
 
   // store data into first free slot
-  if (!ioDabConfig->serviceComps[firstFree].inUse)
-  {
-    ioDabConfig->serviceComps[firstFree].SId = SId;
-    ioDabConfig->serviceComps[firstFree].SCIds = 0;
-    ioDabConfig->serviceComps[firstFree].TMid = TMid;
-    ioDabConfig->serviceComps[firstFree].componentNr = compnr;
-    ioDabConfig->serviceComps[firstFree].subChannelId = subChId;
-    ioDabConfig->serviceComps[firstFree].PsFlag = ps_flag;
-    ioDabConfig->serviceComps[firstFree].ASCTy = ASCTy;
-    ioDabConfig->serviceComps[firstFree].inUse = true;
-    ensemble->services[serviceIndex].SCIds = 0;
+  assert(!ioDabConfig->serviceComps[firstFree].inUse);
 
-    emit signal_add_to_ensemble(dataName, SId);
-  }
+  ioDabConfig->serviceComps[firstFree].SId = SId;
+  ioDabConfig->serviceComps[firstFree].SCIds = 0;
+  ioDabConfig->serviceComps[firstFree].TMid = TMid;
+  ioDabConfig->serviceComps[firstFree].componentNr = compnr;
+  ioDabConfig->serviceComps[firstFree].subChannelId = subChId;
+  ioDabConfig->serviceComps[firstFree].PsFlag = ps_flag;
+  ioDabConfig->serviceComps[firstFree].ASCTy = ASCTy;
+  ioDabConfig->serviceComps[firstFree].inUse = true;
+  ensemble->services[serviceIndex].SCIds = 0;
+
+  emit signal_add_to_ensemble(dataName, SId);
   ensemble->services[serviceIndex].is_shown = true;
 }
 
@@ -1330,14 +1335,19 @@ i32 FibDecoder::find_service(const QString & s)
 
 i32 FibDecoder::find_service_index_from_SId(u32 SId)
 {
+  bool unusedFound = false;
+  // TODO: make it faster with a map?
   for (i32 i = 0; i < 64; i++)
   {
-    if (!ensemble->services[i].inUse)
+    unusedFound |= !ensemble->services[i].inUse;
+
+    if (ensemble->services[i].inUse &&
+        ensemble->services[i].SId == SId)
     {
-      return -1;
-    }
-    if (ensemble->services[i].SId == SId)
-    {
+      if (unusedFound)
+      {
+        qWarning() << "Unused service entry found in find_service_index_from_SId() while search";
+      }
       return i;
     }
   }
@@ -1347,10 +1357,19 @@ i32 FibDecoder::find_service_index_from_SId(u32 SId)
 //	find data component using the SCId
 i32 FibDecoder::find_service_component(DabConfig * db, i16 SCId)
 {
+  bool unusedFound = false;
+
   for (i32 i = 0; i < 64; i++)
   {
-    if (db->serviceComps[i].inUse && (db->serviceComps[i].SCId == SCId))
+    unusedFound |= !db->serviceComps[i].inUse;
+
+    if (db->serviceComps[i].inUse &&
+        db->serviceComps[i].SCId == SCId)
     {
+      if (unusedFound)
+      {
+        qWarning() << "Unused service entry found in find_service_component() while search (1)";
+      }
       return i;
     }
   }
@@ -1361,7 +1380,6 @@ i32 FibDecoder::find_service_component(DabConfig * db, i16 SCId)
 //	find serviceComponent using the SId and the SCIds
 i32 FibDecoder::find_service_component(DabConfig * db, u32 SId, u8 SCIds)
 {
-
   const i32 serviceIndex = find_service_index_from_SId(SId);
 
   if (serviceIndex == -1)
@@ -1369,14 +1387,20 @@ i32 FibDecoder::find_service_component(DabConfig * db, u32 SId, u8 SCIds)
     return -1;
   }
 
+  bool unusedFound = false;
+
   for (i32 i = 0; i < 64; i++)
   {
-    if (!db->serviceComps[i].inUse)
+    unusedFound |= !db->serviceComps[i].inUse;
+
+    if (db->serviceComps[i].inUse &&
+        db->serviceComps[i].SCIds == SCIds &&
+        db->serviceComps[i].SId == SId)
     {
-      return -1;
-    }
-    if ((db->serviceComps[i].SCIds == SCIds) && (db->serviceComps[i].SId == SId))
-    {
+      if (unusedFound)
+      {
+        qWarning() << "Unused service entry found in find_service_component() while search (2)";
+      }
       return i;
     }
   }
@@ -1386,15 +1410,20 @@ i32 FibDecoder::find_service_component(DabConfig * db, u32 SId, u8 SCIds)
 //	find serviceComponent using the SId and the subchannelId
 i32 FibDecoder::find_component(DabConfig * db, u32 SId, i16 subChId)
 {
+  bool unusedFound = false;
+
   for (i32 i = 0; i < 64; i++)
   {
-    if (!db->serviceComps[i].inUse)
-    {
-      return -1;
-    }
+    unusedFound |= !db->serviceComps[i].inUse;
 
-    if (db->serviceComps[i].SId == SId && db->serviceComps[i].subChannelId == subChId)
+    if (db->serviceComps[i].inUse &&
+        db->serviceComps[i].SId == SId &&
+        db->serviceComps[i].subChannelId == subChId)
     {
+      if (unusedFound)
+      {
+        qWarning() << "Unused service entry found in find_component() while search";
+      }
       return i;
     }
   }
@@ -1403,6 +1432,7 @@ i32 FibDecoder::find_component(DabConfig * db, u32 SId, i16 subChId)
 
 void FibDecoder::create_service(QString name, u32 SId, i32 SCIds)
 {
+  // this would fill the next free (not inUse) entry
   for (i32 i = 0; i < 64; i++)
   {
     if (ensemble->services[i].inUse)
@@ -1424,17 +1454,18 @@ void FibDecoder::create_service(QString name, u32 SId, i32 SCIds)
 //
 void FibDecoder::cleanup_service_list()
 {
+  // but this could make a non-used component within
   for (i32 i = 0; i < 64; i++)
   {
-    if (!ensemble->services[i].inUse)
+    if (ensemble->services[i].inUse)
     {
-      continue;
-    }
-    u32 SId = ensemble->services[i].SId;
-    i32 SCIds = ensemble->services[i].SCIds;
-    if (find_service_component(currentConfig, SId, SCIds) == -1)
-    {
-      ensemble->services[i].inUse = false;
+      u32 SId = ensemble->services[i].SId;
+      i32 SCIds = ensemble->services[i].SCIds;
+
+      if (find_service_component(currentConfig, SId, SCIds) == -1)
+      {
+        ensemble->services[i].inUse = false;
+      }
     }
   }
 }
@@ -1443,23 +1474,15 @@ QString FibDecoder::get_announcement_type_str(u16 a)
 {
   switch (a)
   {
-  case 0:
-  default: return QString("Alarm");
-
-  case 1: return QString("Road Traffic Flash");
-
-  case 2: return QString("Traffic Flash");
-
-  case 4: return QString("Warning/Service");
-
-  case 8: return QString("News Flash");
-
-  case 16: return QString("Area Weather flash");
-
-  case 32: return QString("Event announcement");
-
-  case 64: return QString("Special Event");
-
+  case   0:
+  default:  return QString("Alarm");
+  case   1: return QString("Road Traffic Flash");
+  case   2: return QString("Traffic Flash");
+  case   4: return QString("Warning/Service");
+  case   8: return QString("News Flash");
+  case  16: return QString("Area Weather flash");
+  case  32: return QString("Event announcement");
+  case  64: return QString("Special Event");
   case 128: return QString("Programme Information");
   }
 }
