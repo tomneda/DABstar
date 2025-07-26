@@ -328,6 +328,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
 
   mShowTiiListWindow = Settings::TiiViewer::varUiVisible.read().toBool();
 
+  _check_coordinates(); // highlight coordinates button if no coordinates are given
+
   // if a device was selected, we just start, otherwise we wait until one is selected
   if (mpInputDevice != nullptr)
   {
@@ -3240,6 +3242,7 @@ void DabRadio::slot_handle_set_coordinates_button()
   const f32 local_lat = Settings::Config::varLatitude.read().toFloat();
   const f32 local_lon = Settings::Config::varLongitude.read().toFloat();
   mChannel.localPos = cf32(local_lat, local_lon);
+  _check_coordinates();
 }
 
 void DabRadio::slot_load_table()
@@ -3270,7 +3273,7 @@ void DabRadio::slot_load_table()
 //	ensure that we only get a handler if we have a start location
 void DabRadio::_slot_handle_http_button()
 {
-  if (real(mChannel.localPos) == 0)
+  if (real(mChannel.localPos) == 0 || imag(mChannel.localPos) == 0)
   {
     QMessageBox::information(this, "Data missing", "Provide your coordinates first on the configuration window!");
     return;
@@ -3741,5 +3744,12 @@ QString DabRadio::_convert_links_to_clickable(const QString & iText) const
 
   // qDebug() << "result:" << result << result.length();
   return result;
+}
+
+void DabRadio::_check_coordinates() const
+{
+  const f32 local_lat = Settings::Config::varLatitude.read().toFloat();
+  const f32 local_lon = Settings::Config::varLongitude.read().toFloat();
+  emphasize_pushbutton(mConfig.set_coordinatesButton, local_lat == 0 || local_lon == 0); // it is very unlikely that an exact zero is a valid coordinate
 }
 

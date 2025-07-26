@@ -379,6 +379,7 @@ private:
   void _setup_audio_output(u32 iSampleRate);
   QString _get_scan_message(bool iEndMsg) const;
   QString _convert_links_to_clickable(const QString& iText) const;
+  void _check_coordinates() const;
 
 signals:
   void signal_set_new_channel(i32);
