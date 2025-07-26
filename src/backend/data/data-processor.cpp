@@ -38,7 +38,7 @@
 #include  "data_manip_and_checks.h"
 
 //	\class DataProcessor
-//	The main function of this class is to assemble the 
+//	The main function of this class is to assemble the
 //	MSCdatagroups and dispatch to the appropriate handler
 //
 //	fragmentsize == Length * CUSize
@@ -59,16 +59,46 @@ DataProcessor::DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<u8
     my_dataHandler = new virtual_dataHandler();
     break;
 
-  case 5: my_dataHandler = new tdc_dataHandler(mr, dataBuffer, appType);
+  case 5:
+    if (appType == 0x44a)
+    {
+      fprintf(stderr, "journaline data\n");
+      my_dataHandler = new journaline_dataHandler();
+      break;
+    }
+    else if (appType == 1500)
+    {
+      fprintf(stderr, "adv data\n");
+      //my_dataHandler = new adv_dataHandler(mr, dataBuffer, appType);
+      my_dataHandler = new virtual_dataHandler();
+      break;
+    }
+    else if (appType == 4)
+    {
+      fprintf(stderr, "tdc data\n");
+      my_dataHandler = new tdc_dataHandler(mr, dataBuffer, appType);
+      break;
+    }
+    else
+    {
+      fprintf (stderr, "DSCTy 5 with appType %d not supported\n", appType);
+      my_dataHandler = new virtual_dataHandler();
+    }
     break;
 
-  case 44: my_dataHandler = new journaline_dataHandler();
+  case 44:
+    fprintf(stderr, "journaline data\n");
+    my_dataHandler = new journaline_dataHandler();
     break;
 
-  case 59: my_dataHandler = new ip_dataHandler(mr, dataBuffer);
+  case 59:
+    fprintf(stderr, "ip data\n");
+    my_dataHandler = new ip_dataHandler(mr, dataBuffer);
     break;
 
-  case 60: my_dataHandler = new MotHandler(mr);
+  case 60:
+    fprintf(stderr, "mot data\n");
+    my_dataHandler = new MotHandler(mr);
     break;
 
   }

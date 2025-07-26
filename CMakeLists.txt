@@ -294,6 +294,7 @@ set(${objectName}_HDRS
         src/backend/data/ip-datahandler.h
         src/backend/data/tdc-datahandler.h
         src/backend/data/journaline-datahandler.h
+        src/backend/data/journaline-screen.h
         src/backend/data/journaline/dabdatagroupdecoder.h
         src/backend/data/journaline/crc_8_16.h
         src/backend/data/journaline/log.h
@@ -388,6 +389,7 @@ set(${objectName}_SRCS
         src/backend/audio/mp2processor.cpp
         src/backend/data/ip-datahandler.cpp
         src/backend/data/journaline-datahandler.cpp
+        src/backend/data/journaline-screen.cpp
         src/backend/data/journaline/crc_8_16.c
         src/backend/data/journaline/log.c
         src/backend/data/journaline/newssvcdec_impl.cpp

@@ -34,21 +34,33 @@
 #include  "dab-constants.h"
 #include  "virtual-datahandler.h"
 #include  "dabdatagroupdecoder.h"
-#include  <QByteArray>
+#include  "journaline-screen.h"
+#include  "NML.h"
+#include  <vector>
+#include  <QObject>
 
 
 class journaline_dataHandler : public virtual_dataHandler
 {
+Q_OBJECT
 public:
   journaline_dataHandler();
   ~journaline_dataHandler();
 
   void add_mscDatagroup(const std::vector<u8> &);
-  //void	add_mscDatagroup	(QByteArray &);
+  void	add_to_dataBase(NML *);
 
 private:
+  journalineScreen theScreen;
   DAB_DATAGROUP_DECODER_t theDecoder;
   DAB_DATAGROUP_DECODER_data myCallBack;
+  void	init_dataBase();
+  void	destroy_dataBase();
+  int	findIndex(int);
+  std::vector<tableElement> table;
+
+signals:
+  void	start(int);
 };
 
 #endif

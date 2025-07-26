@@ -364,11 +364,11 @@ public:
     NML *CreateErrorDump(NML::NewsObjectId_t oid,
                          const NML::RawNewsObject_t & rno,
                          const char *error_msg);
+    NMLFactory();
+    ~NMLFactory();
 
 private:
     static NMLFactory *_instance;
-    NMLFactory();
-    ~NMLFactory();
     NMLFactory & operator=(const NMLFactory &);
     NMLFactory(const NMLFactory &);
     unsigned char* getNextSection( const unsigned char*& p, unsigned short& plen, unsigned short& reslen );
