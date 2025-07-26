@@ -133,7 +133,7 @@ private:
   PhaseReference mPhaseReference;
   TiiDetector mTiiDetector{};
   OfdmDecoder mOfdmDecoder;
-  etiGenerator mEtiGenerator;
+  EtiGenerator mEtiGenerator;
   TimeSyncer mTimeSyncer;
   const f32 mcThreshold;
   const i16 mcTiiFramesToCount;

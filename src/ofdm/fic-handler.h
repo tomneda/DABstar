@@ -53,7 +53,7 @@ public:
   FicHandler(DabRadio * iMr);
   ~FicHandler() override = default;
 
-  void process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iSymbIdx);
+  void process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iOfdmSymbIdx);
   void stop();
   void restart();
   void get_fib_bits(u8 *, bool *);

@@ -136,12 +136,12 @@ FicHandler::FicHandler(DabRadio * const iMr)
   *	The function is called with a blkno. This should be 1, 2 or 3
   *	for each time 2304 bits are in, we call process_ficInput
   */
-void FicHandler::process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iSymbIdx)
+void FicHandler::process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iOfdmSymbIdx)
 {
   assert(iOfdmSoftBits.size() == c2K);
-  assert(1 <= iSymbIdx && iSymbIdx <= 3); // iSymbIdx begins with zero
+  assert(1 <= iOfdmSymbIdx && iOfdmSymbIdx <= 3); // iSymbIdx begins with zero
 
-  if (iSymbIdx == 1) // next symbol after sync symbol
+  if (iOfdmSymbIdx == 1) // next symbol after sync symbol
   {
     mIndex = 0;
     mFicIdx = 0;

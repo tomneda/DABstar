@@ -83,7 +83,7 @@ u8 theVector[6144];
 //	amount of cycles, the eti-generation is done in a different thread
 //	Note CIF counts from 0 .. 3
 //
-etiGenerator::etiGenerator(FicHandler * my_ficHandler)
+EtiGenerator::EtiGenerator(FicHandler * my_ficHandler)
 {
   this->my_ficHandler = my_ficHandler;
 
@@ -97,7 +97,7 @@ etiGenerator::etiGenerator(FicHandler * my_ficHandler)
   Minor = 0;
 }
 
-etiGenerator::~etiGenerator()
+EtiGenerator::~EtiGenerator()
 {
   reset();
   if (etiFile != nullptr)
@@ -109,7 +109,7 @@ etiGenerator::~etiGenerator()
 //
 //	we probably need "reset" when handling a change in configuration
 //
-void etiGenerator::reset()
+void EtiGenerator::reset()
 {
   for (i32 i = 0; i < 64; i++)
   {
@@ -135,18 +135,10 @@ void etiGenerator::reset()
   running = false;
 }
 
-void etiGenerator::newFrame()
+void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbIdx)
 {
-}
-
-//
-//
-//	we ensure that when starting, we start with a
-//	block 1
-void etiGenerator::process_block(const std::vector<i16> & ibits, i32 blkno)
-{
-
-  if (!running && (etiFile != nullptr) && (blkno == 1))
+  // we ensure that when starting, we start with a block 1
+  if (!running && etiFile != nullptr && iOfdmSymbIdx == 1)
   {
     running = true;
   }
@@ -156,12 +148,13 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, i32 blkno)
     return;
   }
 
-  if (blkno < 4)
+  // wait until CIF/FIB data are collected "outside"
+  if (iOfdmSymbIdx < 4)
   {
     return;
   }
 
-  if (blkno == 4)
+  if (iOfdmSymbIdx == 4)
   {
     // import fibBits
     bool ficValid[4];
@@ -185,9 +178,8 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, i32 blkno)
     my_ficHandler->get_cif_count(&CIFCount_hi, &CIFCount_lo);
   }
 
-  //	adding the MSC blocks. Blocks 5 .. 76 are "transformed"
-  //	into the "soft" bits arrays
-  i32 CIF_index = (blkno - 4) % numberofblocksperCIF;
+  // adding the MSC blocks. Blocks 5 .. 76 are "transformed" into the "soft" bits arrays
+  i32 CIF_index = (iOfdmSymbIdx - 4) % numberofblocksperCIF;
   memcpy(&cif_In[CIF_index * BitsperBlock], ibits.data(), BitsperBlock * sizeof(i16));
   if (CIF_index == numberofblocksperCIF - 1)
   {
@@ -202,14 +194,13 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, i32 blkno)
     {
       amount++;
       index_Out = (index_Out + 1) & 017;
-      //	Minor is introduced to inform the init_eti function
-      //	anout the CIF number in the dab frame, it runs from 0 .. 3
+      // Minor is introduced to inform the init_eti function about the CIF number in the dab frame, it runs from 0 .. 3
       Minor = 0;
       return;    // wait until next time
     }
     //
     //	Otherwise, it becomes serious
-    if ((CIFCount_hi < 0) || (CIFCount_lo < 0))
+    if (CIFCount_hi < 0 || CIFCount_lo < 0)
     {
       return;
     }
@@ -254,7 +245,7 @@ void etiGenerator::process_block(const std::vector<i16> & ibits, i32 blkno)
 }
 
 //	Copied  from dabtools:
-i32 etiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
+i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
 {
   i32 fillPointer = 0;
   ChannelData data;
@@ -373,7 +364,7 @@ public:
   u8 * output;
 };
 
-i32 etiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
+i32 EtiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
 {
   u8 shiftRegister[9];
   std::vector<parameter *> theParameters;
@@ -427,7 +418,7 @@ i32 etiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
   return offset;
 }
 
-void etiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * prot, u8 * desc)
+void EtiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * prot, u8 * desc)
 {
   std::unique_ptr<u8[]> outVector{ new u8[24 * p->bitRate] };
   if (!outVector)
@@ -458,18 +449,14 @@ void etiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * 
 
 }
 
-void etiGenerator::postProcess(const u8 * /*theVector*/, i32 /*offset*/)
-{
-}
-
-bool etiGenerator::start_eti_generator(const QString & f)
+bool EtiGenerator::start_eti_generator(const QString & f)
 {
   reset();
   etiFile = fopen(f.toUtf8().data(), "wb");
   return etiFile != nullptr;
 }
 
-void etiGenerator::stop_eti_generator()
+void EtiGenerator::stop_eti_generator()
 {
   if (etiFile != nullptr)
   {

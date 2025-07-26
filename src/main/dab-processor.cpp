@@ -308,7 +308,7 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
   */
   cf32 freqCorr = cf32(0, 0);
 
-  for (i16 ofdmSymbCntIdx = 1; ofdmSymbCntIdx < cL; ofdmSymbCntIdx++)
+  for (i16 ofdmSymbIdx = 1; ofdmSymbIdx < cL; ofdmSymbIdx++)
   {
     mSampleReader.getSamples(mOfdmBuffer, 0, cTs, mFreqOffsBBHz, true);
     ioSampleCount += cTs;
@@ -324,24 +324,24 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_begin();
 #endif
-    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbCntIdx, mPhaseOffsetCyclPrefRad, mBits);
+    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbIdx, mPhaseOffsetCyclPrefRad, mBits);
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_end();
 #endif
 
-    if (ofdmSymbCntIdx <= 3)
+    if (ofdmSymbIdx <= 3)
     {
-      mFicHandler.process_block(mBits, ofdmSymbCntIdx);
+      mFicHandler.process_block(mBits, ofdmSymbIdx);
     }
 
     if (mEti_on)
     {
-      mEtiGenerator.process_block(mBits, ofdmSymbCntIdx);
+      mEtiGenerator.process_block(mBits, ofdmSymbIdx);
     }
 
-    if (ofdmSymbCntIdx > 3 && !mScanMode)
+    if (ofdmSymbIdx > 3 && !mScanMode)
     {
-      mMscHandler.process_block(mBits, ofdmSymbCntIdx);
+      mMscHandler.process_block(mBits, ofdmSymbIdx);
     }
   }
 #ifdef DO_TIME_MEAS

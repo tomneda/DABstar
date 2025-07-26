@@ -71,14 +71,13 @@ typedef struct
   Protection * theDeconvolver;
 } protDesc;
 
-class etiGenerator
+class EtiGenerator
 {
 public:
-  etiGenerator(FicHandler * my_ficHandler);
-  ~etiGenerator();
+  EtiGenerator(FicHandler * my_ficHandler);
+  ~EtiGenerator();
 
-  void newFrame();
-  void process_block(const std::vector<i16> & fbits, i32 blkno);
+  void process_block(const std::vector<i16> & fbits, i32 iOfdmSymbIdx);
   void reset();
   bool start_eti_generator(const QString &);
   void stop_eti_generator();
@@ -99,8 +98,6 @@ private:
   i32 _init_eti(u8 *, i16, i16, i16);
   i32 _process_cif(const i16 *, u8 *, i32);
   void _process_sub_channel(i32, parameter *, Protection * prot, u8 *);
-
-  void postProcess(const u8 *, i32);
 };
 
 #endif
