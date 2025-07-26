@@ -42,16 +42,14 @@
 #include "device-handler.h"
 #include "ringbuffer.h"
 #include "tii-detector.h"
-#include "eti-generator.h"
 #include "timesyncer.h"
 #include <fftw3.h>
 #include <QThread>
 #include <QObject>
-#include <QByteArray>
 #include <QStringList>
 #include <vector>
 #include <cstdint>
-#include <sndfile.h>
+#include <memory>
 
 #ifdef HAVE_SSE_OR_AVX
   #include "ofdm-decoder-simd.h"
@@ -69,6 +67,7 @@
 class DabRadio;
 class DabParams;
 class ProcessParams;
+class EtiGenerator;
 
 class DabProcessor : public QThread
 {
@@ -133,14 +132,14 @@ private:
   PhaseReference mPhaseReference;
   TiiDetector mTiiDetector{};
   OfdmDecoder mOfdmDecoder;
-  EtiGenerator mEtiGenerator;
+  std::unique_ptr<EtiGenerator> mpEtiGenerator; // seldom needed and takes more memory, instance it only on dememand
+  std::atomic<bool> mEtiOn{false};
   TimeSyncer mTimeSyncer;
   const f32 mcThreshold;
   const i16 mcTiiFramesToCount;
   u8 mTiiThreshold;
   bool mScanMode = false;
   i16 mTiiCounter = 0;
-  bool mEti_on = false;
   bool mEnableTii = false;
   bool mCorrectionNeeded = true;
   f32 mPhaseOffsetCyclPrefRad = 0.0f;
@@ -155,6 +154,7 @@ private:
   bool mRfFreqShiftUsed = false;
   bool mAllowRfFreqShift = false;
   bool mInputOverdrivenShown = false;
+
   RingBuffer<cf32> * mpCirBuffer = nullptr;
 
   alignas(64) TArrayTn mOfdmBuffer;

@@ -111,6 +111,7 @@ EtiGenerator::~EtiGenerator()
 //
 void EtiGenerator::reset()
 {
+  std::lock_guard lock(mMutex);
   for (i32 i = 0; i < 64; i++)
   {
     if (descrambler[i] != nullptr)
@@ -137,6 +138,8 @@ void EtiGenerator::reset()
 
 void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbIdx)
 {
+  std::lock_guard lock(mMutex);
+
   // we ensure that when starting, we start with a block 1
   if (!running && etiFile != nullptr && iOfdmSymbIdx == 1)
   {
@@ -452,12 +455,14 @@ void EtiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * 
 bool EtiGenerator::start_eti_generator(const QString & f)
 {
   reset();
+  std::lock_guard lock(mMutex);
   etiFile = fopen(f.toUtf8().data(), "wb");
   return etiFile != nullptr;
 }
 
 void EtiGenerator::stop_eti_generator()
 {
+  std::lock_guard lock(mMutex);
   if (etiFile != nullptr)
   {
     fclose(etiFile);

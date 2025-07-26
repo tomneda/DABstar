@@ -32,6 +32,7 @@
 #include "msc-handler.h"
 #include "dabradio.h"
 #include "process-params.h"
+#include "eti-generator.h"
 
 /**
   *	\brief DabProcessor
@@ -48,7 +49,6 @@ DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevi
   , mMscHandler(mr, p->frameBuffer)
   , mPhaseReference(mr, p)
   , mOfdmDecoder(mr, p->iqBuffer, p->carrBuffer)
-  , mEtiGenerator(&mFicHandler)
   , mTimeSyncer(&mSampleReader)
   , mcThreshold(p->threshold)
   , mcTiiFramesToCount(p->tiiFramesToCount)
@@ -334,9 +334,9 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
       mFicHandler.process_block(mBits, ofdmSymbIdx);
     }
 
-    if (mEti_on)
+    if (mEtiOn)
     {
-      mEtiGenerator.process_block(mBits, ofdmSymbIdx);
+      mpEtiGenerator->process_block(mBits, ofdmSymbIdx);
     }
 
     if (ofdmSymbIdx > 3 && !mScanMode)
@@ -602,22 +602,43 @@ u32 DabProcessor::get_julian_date()
 
 bool DabProcessor::start_eti_generator(const QString & s)
 {
-  if (mEtiGenerator.start_eti_generator(s))
+  if (mEtiOn)
   {
-    mEti_on = true;
+    return true;
   }
-  return mEti_on;
+
+  mpEtiGenerator = std::make_unique<EtiGenerator>(&mFicHandler);
+
+  if (mpEtiGenerator == nullptr || !mpEtiGenerator->start_eti_generator(s))
+  {
+    mpEtiGenerator.reset();
+    return false;
+  }
+
+  mEtiOn = true; // do this at last at it is asked for in a different thread
+  return true;
 }
 
 void DabProcessor::stop_eti_generator()
 {
-  mEtiGenerator.stop_eti_generator();
-  mEti_on = false;
+  if (!mEtiOn)
+  {
+    return;
+  }
+
+  mEtiOn = false;
+  mpEtiGenerator->stop_eti_generator(); // this would hang short time if process thread is still running
+  mpEtiGenerator.reset();
 }
 
 void DabProcessor::reset_eti_generator()
 {
-  mEtiGenerator.reset();
+  if (!mEtiOn)
+  {
+    return;
+  }
+
+  mpEtiGenerator->reset();
 }
 
 void DabProcessor::slot_select_carrier_plot_type(ECarrierPlotType iPlotType)
