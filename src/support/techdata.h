@@ -81,9 +81,6 @@ public slots:
   void slot_show_missed(i32);
   void slot_audio_data_available(i32, i32);
 
-  void slot_frame_dump_button_text(const QString & s, i32);
-  void slot_audio_dump_button_text(const QString & s, i32);
-
 private slots:
   void _slot_show_motHandling(bool);
 

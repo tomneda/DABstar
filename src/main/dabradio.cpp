@@ -1881,13 +1881,9 @@ void DabRadio::_slot_handle_reset_button()
 //
 /////////////////////////////////////////////////////////////////////////
 
-void setButtonFont(QPushButton * b, const QString& text, i32 size)
+static void emphasize_pushbutton(QPushButton * const ipPB, const bool iEmphasize)
 {
-  QFont font = b->font();
-  font.setPointSize(size);
-  b->setFont(font);
-  b->setText(text);
-  b->update();
+  ipPB->setStyleSheet(iEmphasize ? "background-color: #AE2B05; color: #FFD08A; font-weight: bold;" : "");
 }
 
 void DabRadio::stop_source_dumping()
@@ -1901,7 +1897,7 @@ void DabRadio::stop_source_dumping()
   mpDabProcessor->stop_dumping();
   sf_close(mpRawDumper);
   mpRawDumper = nullptr;
-  setButtonFont(mConfig.dumpButton, "Raw dump", 10);
+  emphasize_pushbutton(mConfig.dumpButton, false);
 }
 
 //
@@ -1922,7 +1918,7 @@ void DabRadio::start_source_dumping()
   }
 
   LOG("source dump starts ", channelName);
-  setButtonFont(mConfig.dumpButton, "writing", 12);
+  emphasize_pushbutton(mConfig.dumpButton, true);
   mpDabProcessor->startDumping(mpRawDumper);
 }
 
@@ -1972,7 +1968,7 @@ void DabRadio::stop_audio_dumping()
   LOG("Audio dump stops", "");
   mAudioDumpState = EAudioDumpState::Stopped;
   mWavWriter.close();
-  mpTechDataWidget->slot_audio_dump_button_text("Dump WAV", 10);
+  emphasize_pushbutton(mpTechDataWidget->audiodumpButton, false);
 }
 
 void DabRadio::start_audio_dumping()
@@ -1988,7 +1984,7 @@ void DabRadio::start_audio_dumping()
     return;
   }
   LOG("Audio dump starts ", ui->serviceLabel->text());
-  mpTechDataWidget->slot_audio_dump_button_text("Recording", 12);
+  emphasize_pushbutton(mpTechDataWidget->audiodumpButton, true);
   mAudioDumpState = EAudioDumpState::WaitForInit;
 }
 
@@ -2017,7 +2013,7 @@ void DabRadio::stop_frame_dumping()
   }
 
   fclose(mChannel.currentService.frameDumper);
-  mpTechDataWidget->slot_frame_dump_button_text("Dump AAC", 10);
+  emphasize_pushbutton(mpTechDataWidget->framedumpButton, false);
   mChannel.currentService.frameDumper = nullptr;
 }
 
@@ -2031,7 +2027,7 @@ void DabRadio::start_frame_dumping()
     return;
   }
 
-  mpTechDataWidget->slot_frame_dump_button_text("Recording", 12);
+  emphasize_pushbutton(mpTechDataWidget->framedumpButton, true);
 }
 
 //	called from the mp4 handler, using a signal
@@ -3388,7 +3384,7 @@ void DabRadio::stop_etiHandler()
   mChannel.etiActive = false;
 
   LOG("etiHandler stopped", "");
-  setButtonFont(mConfig.etiButton, "ETI dump", 10);
+  emphasize_pushbutton(mConfig.etiButton, false);
 
 }
 
@@ -3408,7 +3404,7 @@ void DabRadio::start_etiHandler()
   mChannel.etiActive = mpDabProcessor->start_eti_generator(etiFile);
   if (mChannel.etiActive)
   {
-    setButtonFont(mConfig.etiButton, "eti runs", 10);
+    emphasize_pushbutton(mConfig.etiButton, true);
   }
 }
 

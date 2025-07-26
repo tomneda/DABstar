@@ -101,7 +101,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Push this button to save the raw input. Pushing will cause a menu to appear where a filename can be selected. Please note the big filesizes!&lt;/p&gt;&lt;p&gt;Push again to stop recording. You can reload it by using the file input (*.sdr) option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Raw dump</string>
+            <string>Dump RAW</string>
            </property>
           </widget>
          </item>
@@ -114,10 +114,10 @@
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate ETI files. &lt;/p&gt;&lt;p&gt;Note that building up an ETI file requires quite some resources.&lt;/p&gt;&lt;p&gt;Touching that button shows a fileselection menu, after selecting a file the content of the ensemble is sent in ETi format to the file. The eti session stops when the eti button is touched again, or switching to another channel.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate ETI files. &lt;/p&gt;&lt;p&gt;Note that building up an ETI file requires quite some resources.&lt;/p&gt;&lt;p&gt;Touching that button shows a fileselection menu, after selecting a file the content of the ensemble is sent in ETI format to the file. The eti session stops when the eti button is touched again, or switching to another channel.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>ETI dump</string>
+            <string>Dump ETI</string>
            </property>
           </widget>
          </item>

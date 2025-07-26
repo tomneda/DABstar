@@ -314,24 +314,6 @@ void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate)
   mpAudioBuffer->flush_ring_buffer();
 }
 
-void TechData::slot_frame_dump_button_text(const QString & text, i32 size)
-{
-  QFont font = framedumpButton->font();
-  font.setPointSize(size);
-  framedumpButton->setFont(font);
-  framedumpButton->setText(text);
-  framedumpButton->update();
-}
-
-void TechData::slot_audio_dump_button_text(const QString & text, i32 size)
-{
-  QFont font = audiodumpButton->font();
-  font.setPointSize(size);
-  audiodumpButton->setFont(font);
-  audiodumpButton->setText(text);
-  audiodumpButton->update();
-}
-
 void TechData::slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed)
 {
   audioRate->display(iSampleRate);
