@@ -485,7 +485,7 @@ u8 DabProcessor::get_ecc()
   return mFicHandler.get_ecc();
 }
 
-[[maybe_unused]] u16 DabProcessor::get_country_name()
+u16 DabProcessor::get_country_name()
 {
   return mFicHandler.get_country_name();
 }
@@ -495,7 +495,7 @@ i32 DabProcessor::get_ensemble_id()
   return mFicHandler.get_ensembleId();
 }
 
-[[maybe_unused]] QString DabProcessor::get_ensemble_name()
+QString DabProcessor::get_ensemble_name()
 {
   return mFicHandler.get_ensemble_name();
 }
@@ -526,7 +526,7 @@ i32 DabProcessor::scan_width()
 }
 
 //	for the mscHandler:
-[[maybe_unused]] void DabProcessor::reset_services()
+void DabProcessor::reset_services()
 {
   if (!mScanMode)
   {
@@ -534,7 +534,7 @@ i32 DabProcessor::scan_width()
   }
 }
 
-[[maybe_unused]] void DabProcessor::stop_service(DescriptorType * d, i32 flag)
+void DabProcessor::stop_service(DescriptorType * d, i32 flag)
 {
   fprintf(stderr, "function obsolete\n");
   if (!mScanMode)
@@ -609,13 +609,13 @@ bool DabProcessor::start_eti_generator(const QString & s)
   return mEti_on;
 }
 
-[[maybe_unused]] void DabProcessor::stop_eti_generator()
+void DabProcessor::stop_eti_generator()
 {
   mEtiGenerator.stop_eti_generator();
   mEti_on = false;
 }
 
-[[maybe_unused]] void DabProcessor::reset_eti_generator()
+void DabProcessor::reset_eti_generator()
 {
   mEtiGenerator.reset();
 }
