@@ -264,7 +264,7 @@ void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
   ioSampleCount += cTn;
 
   // is this null symbol with TII?
-  const bool isTiiNullSegment = ((mFicHandler.get_cif_count() & 0x7) >= 4);
+  const bool isTiiNullSegment = ((mFicHandler.getCIFcount() & 0x7) >= 4);
   memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cf32));
   fftwf_execute(mFftPlan);
 

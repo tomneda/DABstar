@@ -181,7 +181,7 @@ public:
   i16 language;
   i16 programType;
   i16 compnr;
-  std::vector<int> fmFrequencies;
+  std::vector<i32> fmFrequencies;
 
   Audiodata()
   {

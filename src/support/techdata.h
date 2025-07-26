@@ -74,7 +74,7 @@ public slots:
   void slot_show_ASCTy(i32);
   void slot_show_uep(i32, i32);
   void slot_show_codeRate(i32, i32);
-  void slot_show_fm(i32);
+  void slot_show_fm(const std::vector<int> & v);
   void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed);
 
   void slot_hide_missed();

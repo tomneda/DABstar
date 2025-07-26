@@ -100,7 +100,7 @@ void TechData::show_serviceData(const Audiodata * ad)
   slot_show_ASCTy(ad->ASCTy);
   slot_show_codeRate(ad->shortForm, ad->protLevel);
   slot_show_language(ad->language);
-  slot_show_fm(ad->fmFrequency);
+  slot_show_fm(ad->fmFrequencies);
 }
 
 void TechData::show()
@@ -278,9 +278,9 @@ void TechData::slot_show_codeRate(i32 shortForm, i32 protLevel)
   codeRate->setText(getCodeRate(shortForm, protLevel));
 }
 
-void TechData::slot_show_fm(i32 freq)
+void TechData::slot_show_fm(const std::vector<int> & v)
 {
-  if (freq == -1)
+  if (v.size() == 0)
   {
     fmFrequency->hide();
     fmLabel->hide();
@@ -289,7 +289,15 @@ void TechData::slot_show_fm(i32 freq)
   {
     fmLabel->show();
     fmFrequency->show();
-    QString f = QString::number(freq);
+    QString f;
+    int teller = 0;
+    //	for now there is room for up to 2 freqyencies
+    for (auto freq : v)
+    {
+      if (++teller > 2)
+        break;			// for now
+      f.append(QString::number(freq) + " ");
+    }
     f.append(" Khz");
     fmFrequency->setText(f);
   }

@@ -39,6 +39,10 @@
 #ifndef  FIB_CONFIG_H
 #define  FIB_CONFIG_H
 
+#include "glob_data_types.h"
+#include "dab-constants.h"
+#include <QString>
+
 class Service
 {
 public:

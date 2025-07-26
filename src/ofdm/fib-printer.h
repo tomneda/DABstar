@@ -22,11 +22,10 @@
  */
 
 #pragma once
-// #include	"ensemble.h"
-#include	"dab-config.h"
-
-#include	<QString>
-#include	<QStringList>
+#include "ensemble.h"
+#include "fib-config.h"
+#include <QString>
+#include <QStringList>
 
 class	fibPrinter {
 fibConfig	*currentConfig;

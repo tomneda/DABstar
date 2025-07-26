@@ -68,7 +68,7 @@ public:
   int freeSpace();
 
 protected:
-  void processFIB(uint8_t *, uint16_t);
+  void processFIB(const uint8_t *, uint16_t);
 
 private:
   std::vector<serviceId> insert(std::vector<serviceId> & l, serviceId n, int order);

@@ -249,7 +249,7 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
         _dump_fib_to_file(pOneFib);
       }
 
-      FibDecoder::process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
+      FibDecoder::processFIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
 
       if (mFicDecodeSuccessRatio < 10)
       {
@@ -270,14 +270,14 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 
 void FicHandler::stop()
 {
-  disconnect_channel();
+  disconnectChannel();
   mIsRunning.store(false);
 }
 
 void FicHandler::restart()
 {
   mFicDecodeSuccessRatio = 0;
-  connect_channel();
+  connectChannel();
   mIsRunning.store(true);
 }
 
