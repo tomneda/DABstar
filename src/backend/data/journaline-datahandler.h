@@ -52,16 +52,16 @@ public:
   void add_to_dataBase(NML *);
 
 private:
+  std::vector<tableElement> table;
   journalineScreen theScreen;
   DAB_DATAGROUP_DECODER_t theDecoder;
   DAB_DATAGROUP_DECODER_data myCallBack;
   void init_dataBase();
   void destroy_dataBase();
   int findIndex(int);
-  std::vector<tableElement> table;
 
 signals:
-  void start(int);
+  void signal_start(int);
 };
 
 #endif

@@ -44,6 +44,7 @@ class journalineScreen : public QObject
 public:
   journalineScreen(std::vector<tableElement> & table);
   ~journalineScreen();
+
   void displayElement(NML::News_t & element);
   void display_Menu(NML::News_t & element);
   void display_Plain(NML::News_t & element);
@@ -64,7 +65,7 @@ private:
   int findIndex(int);
 
 public slots:
-  void start(int);
+  void slot_start(int);
 
 private slots:
   void handle_resetButton();

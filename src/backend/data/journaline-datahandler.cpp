@@ -54,8 +54,7 @@ journaline_dataHandler::journaline_dataHandler()
 {
   theDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
   init_dataBase();
-  connect(this, &journaline_dataHandler::start,
-          &theScreen, &journalineScreen::start);
+  connect(this, &journaline_dataHandler::signal_start, &theScreen, &journalineScreen::slot_start);
   //fprintf(stderr, "journaline len=%ld\n", len);
 }
 
@@ -132,7 +131,7 @@ void journaline_dataHandler::add_to_dataBase(NML * NMLelement)
     if (x->object_id == 0)
     {
 //	         theScreen.displayElement(*x);
-      start(table.size() - 1);
+      emit signal_start(table.size() - 1);
     }
   }
   break;

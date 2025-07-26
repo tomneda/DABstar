@@ -182,7 +182,7 @@ int journalineScreen::findIndex(int key)
   return -1;
 }
 
-void journalineScreen::start(int index)
+void journalineScreen::slot_start(int index)
 {
   fprintf(stderr, "we zijn in start\n");
   pathVector.push_back(0);
