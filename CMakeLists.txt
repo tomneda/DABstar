@@ -270,6 +270,7 @@ set(${objectName}_HDRS
         src/ofdm/phasetable.h
         src/ofdm/freq-interleaver.h
         src/ofdm/fib-decoder.h
+        src/ofdm/fib-printer.h
         src/ofdm/dab-config.h
         src/ofdm/fib-table.h
         src/ofdm/fic-handler.h
@@ -369,6 +370,7 @@ set(${objectName}_SRCS
         src/ofdm/phasetable.cpp
         src/ofdm/freq-interleaver.cpp
         src/ofdm/fib-decoder.cpp
+        src/ofdm/fib-printer.cpp
         src/ofdm/fic-handler.cpp
         src/ofdm/tii-detector.cpp
         src/ofdm/timesyncer.cpp

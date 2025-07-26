@@ -115,6 +115,21 @@ constexpr u8 A_BAND   = 0102;
 constexpr i32 FORE_GROUND = 0000;
 constexpr i32 BACK_GROUND = 0100;
 
+class serviceId
+{
+public:
+  bool		defined;
+  bool		selected;
+  QString		name;
+  uint32_t	SId;
+  uint16_t	subChId;
+  int		nrComps;
+  bool		isAudio;
+  int16_t		programType;
+  QString		channel;        // just for presets
+  int16_t		FEC_scheme;
+};
+
 class DescriptorType
 {
 public:
