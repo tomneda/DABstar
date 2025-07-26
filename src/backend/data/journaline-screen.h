@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2017 .. 2024
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -32,39 +31,43 @@
 #include	<QModelIndex>
 #include	<QStandardItemModel>
 
-typedef struct {
-	int key;
-	NML::News_t *element;
+typedef struct
+{
+  int key;
+  NML::News_t * element;
 } tableElement;
 
-class	journalineScreen: public QObject {
-Q_OBJECT
+class journalineScreen : public QObject
+{
+  Q_OBJECT
+
 public:
-		journalineScreen	(std::vector<tableElement> &table);
-		~journalineScreen	();
-	void	displayElement		(NML::News_t &element);
-	void	display_Menu		(NML::News_t &element);
-	void	display_Plain		(NML::News_t &element);
-	void	display_List		(NML::News_t &element);
+  journalineScreen(std::vector<tableElement> & table);
+  ~journalineScreen();
+  void displayElement(NML::News_t & element);
+  void display_Menu(NML::News_t & element);
+  void display_Plain(NML::News_t & element);
+  void display_List(NML::News_t & element);
 
 private:
-	std::vector<tableElement> *table;
-	tableElement		currentElement;
-	std::vector<int>	pathVector;
+  std::vector<tableElement> * table;
+  tableElement currentElement;
+  std::vector<int> pathVector;
 
-	QFrame		myFrame;
-	QPushButton	*resetButton;
-	QPushButton	*upButton;
-	QLabel		*mainText;
-	QListView	*subContent;
-	QStandardItemModel      model;
+  QFrame myFrame;
+  QPushButton * resetButton;
+  QPushButton * upButton;
+  QLabel * mainText;
+  QListView * subContent;
+  QStandardItemModel model;
 
-	int		findIndex	(int);
+  int findIndex(int);
+
 public slots:
-	void		start		(int);
-private slots:
-	void	handle_resetButton	();
-	void	handle_upButton		();
-	void	select_sub		(QModelIndex ind);
-};
+  void start(int);
 
+private slots:
+  void handle_resetButton();
+  void handle_upButton();
+  void select_sub(QModelIndex ind);
+};

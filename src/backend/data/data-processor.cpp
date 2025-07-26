@@ -81,7 +81,7 @@ DataProcessor::DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<u8
     }
     else
     {
-      fprintf (stderr, "DSCTy 5 with appType %d not supported\n", appType);
+      fprintf(stderr, "DSCTy 5 with appType %d not supported\n", appType);
       my_dataHandler = new virtual_dataHandler();
     }
     break;
@@ -100,7 +100,6 @@ DataProcessor::DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<u8
     fprintf(stderr, "mot data\n");
     my_dataHandler = new MotHandler(mr);
     break;
-
   }
 
   packetState = 0;
@@ -281,4 +280,5 @@ void DataProcessor::handleTDCAsyncstream(const u8 * data, i32 length)
     return;
   }
 }
+
 //

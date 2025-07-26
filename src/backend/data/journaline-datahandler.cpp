@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2015 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -27,37 +26,37 @@
 #include  "newsobject.h"
 #include  <sys/time.h>
 
-static
-void my_callBack (const DAB_DATAGROUP_DECODER_msc_datagroup_header_t *header,
-    const unsigned long len, const unsigned char *buf, void *arg)
+static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header,
+                        const unsigned long len, const unsigned char * buf, void * arg)
 {
-	struct timeval theTime;
-	gettimeofday(&theTime, NULL);
-	(void)header;
-	unsigned char buffer[4096];
-	(void)arg;
-	long unsigned int nmlSize = 0;
-	NML::RawNewsObject_t theBuffer;
-	NewsObject hetNieuws(len, buf, &theTime);
-	hetNieuws.copyNml(&nmlSize, buffer);
-	theBuffer.nml_len = nmlSize;
-	theBuffer.extended_header_len = 0;
-	for (uint16_t i = 0; i < len; i ++)
-	   theBuffer.nml[i] = buffer[i];
-	RemoveNMLEscapeSequences theRemover;
-	NMLFactory xxx;
-	NML *ttt = xxx.CreateNML(theBuffer, &theRemover);
-	static_cast <journaline_dataHandler *>(arg)->add_to_dataBase(ttt);
-	delete ttt;
+  struct timeval theTime;
+  gettimeofday(&theTime, NULL);
+  (void)header;
+  unsigned char buffer[4096];
+  (void)arg;
+  long unsigned int nmlSize = 0;
+  NML::RawNewsObject_t theBuffer;
+  NewsObject hetNieuws(len, buf, &theTime);
+  hetNieuws.copyNml(&nmlSize, buffer);
+  theBuffer.nml_len = nmlSize;
+  theBuffer.extended_header_len = 0;
+  for (uint16_t i = 0; i < len; i++)
+    theBuffer.nml[i] = buffer[i];
+  RemoveNMLEscapeSequences theRemover;
+  NMLFactory xxx;
+  NML * ttt = xxx.CreateNML(theBuffer, &theRemover);
+  static_cast<journaline_dataHandler *>(arg)->add_to_dataBase(ttt);
+  delete ttt;
 }
 
-journaline_dataHandler::journaline_dataHandler():theScreen(table)
+journaline_dataHandler::journaline_dataHandler()
+  : theScreen(table)
 {
-	theDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
-	init_dataBase();
-	connect(this, &journaline_dataHandler::start,
-	         &theScreen, &journalineScreen::start);
-    //fprintf(stderr, "journaline len=%ld\n", len);
+  theDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
+  init_dataBase();
+  connect(this, &journaline_dataHandler::start,
+          &theScreen, &journalineScreen::start);
+  //fprintf(stderr, "journaline len=%ld\n", len);
 }
 
 journaline_dataHandler::~journaline_dataHandler()
@@ -72,7 +71,7 @@ void journaline_dataHandler::add_mscDatagroup(const std::vector<u8> & msc)
   i16 len = msc.size();
   u8 * data = (u8 *)(msc.data());
   //auto * const buffer = make_vla(u8, len / 8);
-  uint8_t *buffer = (uint8_t *)alloca(len / 8 * sizeof(uint8_t));
+  uint8_t * buffer = (uint8_t *)alloca(len / 8 * sizeof(uint8_t));
   i16 i;
   i32 res;
   for (i = 0; i < len / 8; i++)
@@ -90,65 +89,64 @@ void journaline_dataHandler::add_mscDatagroup(const std::vector<u8> & msc)
 
 void journaline_dataHandler::init_dataBase()
 {
-	destroy_dataBase();
-	table.resize(0);
+  destroy_dataBase();
+  table.resize(0);
 }
 
 void journaline_dataHandler::destroy_dataBase()
 {
-	for (uint16_t i = 0; i < table. size(); i ++)
-	   delete table[i].element;
+  for (uint16_t i = 0; i < table.size(); i++)
+    delete table[i].element;
 }
 
-void journaline_dataHandler::add_to_dataBase (NML * NMLelement)
+void journaline_dataHandler::add_to_dataBase(NML * NMLelement)
 {
-	switch (NMLelement ->GetObjectType())
-	{
-	   case NML::INVALID:
-	      return;
-	   case NML::MENU:
-	   {
-	   case NML::PLAIN:
-	   case NML::LIST:
-	      NML::News_t *x = new NML::News_t;
-	      x->object_id = NMLelement->GetObjectId();
-	      x->object_type = NMLelement->GetObjectType();
-	      x->static_flag = NMLelement->isStatic();
-	      x->revision_index = NMLelement->GetRevisionIndex();
-	      x->extended_header = NMLelement->GetExtendedHeader();
-	      x->title = NMLelement->GetTitle();
-	      x->item = NMLelement->GetItems();
-	      int index_oldElement = findIndex (x->object_id);
-	      if (index_oldElement >= 0)
-	      {
-	         NML::News_t *p = table[index_oldElement].element;
-	         delete p;
-	         table[index_oldElement].element = x;
-	         break;
-	      }
-	      tableElement temp;
-	      temp.key = x->object_id;
-	      temp.element = x;
-	      table.push_back(temp);
-	      if (x -> object_id == 0)
-	      {
+  switch (NMLelement->GetObjectType())
+  {
+  case NML::INVALID:
+    return;
+  case NML::MENU:
+  {
+  case NML::PLAIN:
+  case NML::LIST:
+    NML::News_t * x = new NML::News_t;
+    x->object_id = NMLelement->GetObjectId();
+    x->object_type = NMLelement->GetObjectType();
+    x->static_flag = NMLelement->isStatic();
+    x->revision_index = NMLelement->GetRevisionIndex();
+    x->extended_header = NMLelement->GetExtendedHeader();
+    x->title = NMLelement->GetTitle();
+    x->item = NMLelement->GetItems();
+    int index_oldElement = findIndex(x->object_id);
+    if (index_oldElement >= 0)
+    {
+      NML::News_t * p = table[index_oldElement].element;
+      delete p;
+      table[index_oldElement].element = x;
+      break;
+    }
+    tableElement temp;
+    temp.key = x->object_id;
+    temp.element = x;
+    table.push_back(temp);
+    if (x->object_id == 0)
+    {
 //	         theScreen.displayElement(*x);
-	         start(table.size() - 1);
-	      }
-	   }
-	   break;
+      start(table.size() - 1);
+    }
+  }
+  break;
 
-	   default:
-	      fprintf(stderr, "SOMETHING ELSE\n");
-	      break;
-	}
+  default:
+    fprintf(stderr, "SOMETHING ELSE\n");
+    break;
+  }
 }
 
-int	journaline_dataHandler::findIndex(int key)
+int journaline_dataHandler::findIndex(int key)
 {
-	for (uint16_t i = 0; i < table.size(); i ++)
-	   if (table[i].key == key)
-	      return i;
-	return -1;
+  for (uint16_t i = 0; i < table.size(); i++)
+    if (table[i].key == key)
+      return i;
+  return -1;
 }
-
