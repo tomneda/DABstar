@@ -271,6 +271,8 @@ set(${objectName}_HDRS
         src/ofdm/freq-interleaver.h
         src/ofdm/fib-decoder.h
         src/ofdm/fib-printer.h
+        src/ofdm/fib-config.h
+        src/ofdm/ensemble.h
         src/ofdm/dab-config.h
         src/ofdm/fib-table.h
         src/ofdm/fic-handler.h
@@ -342,6 +344,7 @@ set(${objectName}_HDRS
         src/support/compass_direction.h
         src/support/time_meas.h
         src/support/copyright_info.h
+        src/support/time-converter.h
         src/scopes/iqdisplay.h
         src/scopes/carrier-display.h
         src/scopes/audio-display.h
@@ -371,6 +374,8 @@ set(${objectName}_SRCS
         src/ofdm/freq-interleaver.cpp
         src/ofdm/fib-decoder.cpp
         src/ofdm/fib-printer.cpp
+        src/ofdm/fib-config.cpp
+        src/ofdm/ensemble.cpp
         src/ofdm/fic-handler.cpp
         src/ofdm/tii-detector.cpp
         src/ofdm/timesyncer.cpp
@@ -434,6 +439,7 @@ set(${objectName}_SRCS
         src/support/wav_writer.cpp
         src/support/compass_direction.cpp
         src/support/copyright_info.cpp
+        src/support/time-converter.cpp
         src/scopes/iqdisplay.cpp
         src/scopes/carrier-display.cpp
         src/scopes/audio-display.cpp

@@ -31,11 +31,12 @@
 #include	"data_manip_and_checks.h"
 // #include	"bit-extractors.h"
 #include	"dab-config.h"
-// #include	"ensemble.h"
+#include	"ensemble.h"
 #include	"fib-table.h"
 #include	<QStringList>
 #include	"dab-tables.h"
 #include	"fib-printer.h"
+#include	"fib-config.h"
 #include	"time-converter.h"
 //
 //
@@ -46,24 +47,18 @@
 //	where the FIG's are stored in a (kind of) database
 //	maintained in a class fibConfig
 
-FibDecoder::FibDecoder(RadioInterface * mr)
+FibDecoder::FibDecoder(DabRadio * mr)
 {
   myRadioInterface = mr;
 
-  connect(this, &FibDecoder::ensembleName,
-          myRadioInterface, &RadioInterface::ensembleName);
-  connect(this, &FibDecoder::clockTime,
-          myRadioInterface, &RadioInterface::clockTime);
-  connect(this, &FibDecoder::changeinConfiguration,
-          myRadioInterface, &RadioInterface::changeinConfiguration);
-  connect(this, &FibDecoder::announcement,
-          myRadioInterface, &RadioInterface::announcement);
-  connect(this, &FibDecoder::nrServices,
-          myRadioInterface, &RadioInterface::nrServices);
-  connect(this, &FibDecoder::lto_ecc,
-          myRadioInterface, &RadioInterface::lto_ecc);
-  connect(this, &FibDecoder::setFreqList,
-          myRadioInterface, &RadioInterface::setFreqList);
+  // TODO:
+  // connect(this, &FibDecoder::ensembleName, myRadioInterface, &DabRadio::ensembleName);
+  // connect(this, &FibDecoder::clockTime, myRadioInterface, &DabRadio::clockTime);
+  // connect(this, &FibDecoder::changeinConfiguration, myRadioInterface, &DabRadio::changeinConfiguration);
+  // connect(this, &FibDecoder::announcement, myRadioInterface, &DabRadio::announcement);
+  // connect(this, &FibDecoder::nrServices, myRadioInterface, &DabRadio::nrServices);
+  // connect(this, &FibDecoder::lto_ecc, myRadioInterface, &DabRadio::lto_ecc);
+  // connect(this, &FibDecoder::setFreqList, myRadioInterface, &DabRadio::setFreqList);
 //
 //	Note that they may change "roles",
   currentConfig = new fibConfig();
@@ -1381,15 +1376,14 @@ void FibDecoder::connectChannel()
   currentConfig->reset();
   nextConfig->reset();
   theEnsemble->reset();
-  connect(this, &FibDecoder::addToEnsemble, myRadioInterface, &RadioInterface::addToEnsemble);
+  // connect(this, &FibDecoder::addToEnsemble, myRadioInterface, &DabRadio::addToEnsemble); // TODO:
   fibLocker.unlock();
 }
 
 void FibDecoder::disconnectChannel()
 {
   fibLocker.lock();
-  disconnect(this, &FibDecoder::addToEnsemble,
-             myRadioInterface, &RadioInterface::addToEnsemble);
+  // disconnect(this, &FibDecoder::addToEnsemble, myRadioInterface, &DabRadio::addToEnsemble); // TODO:
   currentConfig->reset();
   nextConfig->reset();
   theEnsemble->reset();
@@ -1579,7 +1573,7 @@ int FibDecoder::nrChannels()
 
 //
 //	needed for generating eti files
-void FibDecoder::getChannelInfo(channel_data * d, const int n)
+void FibDecoder::getChannelInfo(ChannelData * d, const int n)
 {
   d->in_use = true;
   d->id = currentConfig->subChannel_table[n].subChId;

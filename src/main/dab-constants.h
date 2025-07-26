@@ -136,6 +136,7 @@ public:
   EServiceType type;
   bool defined;
   QString serviceName;
+  QString shortName;
   i32 SId;
   i32 SCIds;
   i16 subchId;
@@ -180,12 +181,11 @@ public:
   i16 language;
   i16 programType;
   i16 compnr;
-  i32 fmFrequency;
+  std::vector<int> fmFrequencies;
 
   Audiodata()
   {
     type = EServiceType::AUDIO;
-    fmFrequency = -1;
   }
 };
 

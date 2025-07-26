@@ -29,7 +29,7 @@
 #include	"msc-handler.h"
 #include	<QMutex>
 
-class RadioInterface;
+class DabRadio;
 class ensemble;
 class fibConfig;
 
@@ -38,7 +38,7 @@ class FibDecoder : public QObject
   Q_OBJECT
 
 public:
-  FibDecoder(RadioInterface *);
+  FibDecoder(DabRadio *);
   ~FibDecoder();
 
   void clearEnsemble();
@@ -72,7 +72,7 @@ protected:
 
 private:
   std::vector<serviceId> insert(std::vector<serviceId> & l, serviceId n, int order);
-  RadioInterface * myRadioInterface;
+  DabRadio * myRadioInterface;
   fibConfig * currentConfig;
   fibConfig * nextConfig;
   ensemble * theEnsemble;
