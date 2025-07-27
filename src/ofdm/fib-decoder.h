@@ -108,46 +108,14 @@ private:
 //	void		FIG0Extension25		(uint8_t *);
 //	void		FIG0Extension26		(uint8_t *);
 
-  int16_t HandleFIG0Extension1(uint8_t *,
-                               int16_t,
-                               const uint8_t,
-                               const uint8_t,
-                               const uint8_t);
-  int16_t HandleFIG0Extension2(uint8_t *,
-                               int16_t,
-                               const uint8_t,
-                               const uint8_t,
-                               const uint8_t);
-  int16_t HandleFIG0Extension3(uint8_t *,
-                               int16_t,
-                               const uint8_t,
-                               const uint8_t,
-                               const uint8_t);
-  int16_t HandleFIG0Extension5(uint8_t *,
-                               uint16_t,
-                               const uint8_t,
-                               const uint8_t,
-                               const uint8_t);
-  int16_t HandleFIG0Extension8(uint8_t *,
-                               int16_t,
-                               const uint8_t,
-                               const uint8_t,
-                               const uint8_t);
-  int16_t HandleFIG0Extension13(uint8_t *,
-                                int16_t,
-                                const uint8_t,
-                                const uint8_t,
-                                const uint8_t);
-  int16_t HandleFIG0Extension20(uint8_t *,
-                                uint16_t,
-                                const uint8_t,
-                                const uint8_t,
-                                const uint8_t);
-  int16_t HandleFIG0Extension21(uint8_t *,
-                                uint16_t,
-                                const uint8_t,
-                                const uint8_t,
-                                const uint8_t);
+  int16_t HandleFIG0Extension1(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension2(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension3(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension5(uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension8(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension13(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension20(uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension21(uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
 
   void FIG1Extension0(uint8_t *);
   void FIG1Extension1(uint8_t *);
