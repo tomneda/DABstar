@@ -115,6 +115,9 @@ constexpr u8 A_BAND   = 0102;
 constexpr i32 FORE_GROUND = 0000;
 constexpr i32 BACK_GROUND = 0100;
 
+constexpr i32 AUDIO_SERVICE =	0;
+constexpr i32 PACKET_SERVICE = 3;
+
 class serviceId
 {
 public:

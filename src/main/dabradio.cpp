@@ -555,7 +555,7 @@ void DabRadio::_slot_channel_timeout()
 ///////////////////////////////////////////////////////////////////////////
 //
 //	a slot, called by the fic/fib handlers
-void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId)
+void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId, const i32 iSubChId)
 {
   if (!mIsRunning.load())
   {
@@ -569,9 +569,9 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
 
   qCDebug(sLogRadioInterface()) << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
 
-  const i32 subChId = mpDabProcessor->get_sub_channel_id(iServiceName, iSId);
+  // const i32 subChId = mpDabProcessor->get_sub_channel_id(iServiceName, iSId);
 
-  if (subChId < 0)
+  if (iSubChId < 0)
   {
     return;
   }
@@ -586,7 +586,9 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
     return; // service already in service list
   }
 
-  const bool isAudioService = mpDabProcessor->is_audio_service(iServiceName);
+  const i32 index = mpDabProcessor->getFibDecoder().getServiceComp(iServiceName);
+  const bool isAudioService = mpDabProcessor->getFibDecoder().serviceType(index) == AUDIO_SERVICE;
+
   const i32 scanFilter = mConfig.cmbScanServiceListFilter->currentIndex();
 
   if (scanFilter == 2 ||
@@ -661,7 +663,7 @@ void DabRadio::slot_name_of_ensemble(i32 id, const QString & v)
 
 void DabRadio::_slot_handle_content_button()
 {
-  const QStringList s = mpDabProcessor->basicPrint();
+  const QStringList s = mpDabProcessor->getFibDecoder().basicPrint();
 
   if (mpContentTable != nullptr)
   {
@@ -687,7 +689,7 @@ void DabRadio::_slot_handle_content_button()
                    + hex_to_str(mChannel.Eid) + " " + ";" + ui->transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
                    + QString::number(mServiceList.size()) + ";" + convLocation + "\n";
 
-  mpContentTable = new ContentTable(this, &Settings::Storage::instance(), mChannel.channelName, mpDabProcessor->scan_width());
+  mpContentTable = new ContentTable(this, &Settings::Storage::instance(), mChannel.channelName, mpDabProcessor->getFibDecoder().scanWidth());
   connect(mpContentTable, &ContentTable::signal_go_service, this, &DabRadio::slot_handle_content_selector);
 
   mpContentTable->addLine(header);
@@ -747,9 +749,10 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
   }
 
   std::vector<u8> epgData(result.begin(), result.end());
-  const u32 ensembleId = mpDabProcessor->get_ensemble_id();
+  // const u32 ensembleId = mpDabProcessor->get_ensemble_id();
+  const u32 ensembleId = 0; // TODO:
   const u32 currentSId = extract_epg(objectName, mServiceList, ensembleId);
-  const u32 julianDate = mpDabProcessor->get_julian_date();
+  const u32 julianDate = mpDabProcessor->getFibDecoder().julianDate();
   const i32 subType = getContentSubType((MOTContentType)contentType);
   mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
 
