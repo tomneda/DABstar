@@ -46,6 +46,7 @@ DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevi
   : mpRadioInterface(mr)
   , mSampleReader(mr, inputDevice, p->spectrumBuffer)
   , mFicHandler(mr)
+  , mFibDecoder(mFicHandler.get_fib_decoder())
   , mMscHandler(mr, p->frameBuffer)
   , mPhaseReference(mr, p)
   , mOfdmDecoder(mr, p->iqBuffer, p->carrBuffer)
@@ -264,7 +265,7 @@ void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
   ioSampleCount += cTn;
 
   // is this null symbol with TII?
-  const bool isTiiNullSegment = ((mFicHandler.getCIFcount() & 0x7) >= 4);
+  const bool isTiiNullSegment = ((mFibDecoder.getCIFcount() & 0x7) >= 4);
   memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cf32));
   fftwf_execute(mFftPlan);
 
@@ -436,94 +437,94 @@ void DabProcessor::activate_cir_viewer(bool iActivate)
   mSampleReader.set_cir_buffer(iActivate ? mpCirBuffer : nullptr);
 }
 
-QString DabProcessor::find_service(u32 SId, i32 SCIds)
-{
-  return mFicHandler.find_service(SId, SCIds);
-}
+// QString DabProcessor::find_service(u32 SId, i32 SCIds)
+// {
+//   return mFicHandler.find_service(SId, SCIds);
+// }
 
-void DabProcessor::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIds)
-{
-  mFicHandler.get_parameters(s, p_SId, p_SCIds);
-}
+// void DabProcessor::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIds)
+// {
+//   mFicHandler.get_parameters(s, p_SId, p_SCIds);
+// }
 
-std::vector<SServiceId> DabProcessor::get_services()
-{
-  return mFicHandler.get_services();
-}
+// std::vector<SServiceId> DabProcessor::get_services()
+// {
+//   return mFicHandler.get_services();
+// }
 
-i32 DabProcessor::get_sub_channel_id(const QString & s, u32 SId)
-{
-  return mFicHandler.get_sub_channel_id(s, SId);
-}
+// i32 DabProcessor::get_sub_channel_id(const QString & s, u32 SId)
+// {
+//   return mFicHandler.get_sub_channel_id(s, SId);
+// }
 
-bool DabProcessor::is_audio_service(const QString & s)
-{
-  Audiodata ad;
-  mFicHandler.get_data_for_audio_service(s, &ad);
-  return ad.defined;
-}
+// bool DabProcessor::is_audio_service(const QString & s)
+// {
+//   Audiodata ad;
+//   mFicHandler.get_data_for_audio_service(s, &ad);
+//   return ad.defined;
+// }
 
-bool DabProcessor::is_packet_service(const QString & s)
-{
-  Packetdata pd;
-  mFicHandler.get_data_for_packet_service(s, &pd, 0);
-  return pd.defined;
-}
+// bool DabProcessor::is_packet_service(const QString & s)
+// {
+//   Packetdata pd;
+//   mFicHandler.get_data_for_packet_service(s, &pd, 0);
+//   return pd.defined;
+// }
 
-void DabProcessor::get_data_for_audio_service(const QString & iS, Audiodata * opAD)
-{
-  mFicHandler.get_data_for_audio_service(iS, opAD);
-}
+// void DabProcessor::get_data_for_audio_service(const QString & iS, Audiodata * opAD)
+// {
+//   mFicHandler.get_data_for_audio_service(iS, opAD);
+// }
 
-void DabProcessor::get_data_for_packet_service(const QString & iS, Packetdata * opPD, i16 iCompNr)
-{
-  mFicHandler.get_data_for_packet_service(iS, opPD, iCompNr);
-}
+// void DabProcessor::get_data_for_packet_service(const QString & iS, Packetdata * opPD, i16 iCompNr)
+// {
+//   mFicHandler.get_data_for_packet_service(iS, opPD, iCompNr);
+// }
 
-u8 DabProcessor::get_ecc()
-{
-  return mFicHandler.get_ecc();
-}
+// u8 DabProcessor::get_ecc()
+// {
+//   return mFicHandler.get_ecc();
+// }
 
-u16 DabProcessor::get_country_name()
-{
-  return mFicHandler.get_country_name();
-}
+// u16 DabProcessor::get_country_name()
+// {
+//   return mFicHandler.get_country_name();
+// }
 
-i32 DabProcessor::get_ensemble_id()
-{
-  return mFicHandler.get_ensembleId();
-}
+// i32 DabProcessor::get_ensemble_id()
+// {
+//   return mFicHandler.get_ensembleId();
+// }
 
-QString DabProcessor::get_ensemble_name()
-{
-  return mFicHandler.get_ensemble_name();
-}
+// QString DabProcessor::get_ensemble_name()
+// {
+//   return mFicHandler.get_ensemble_name();
+// }
 
-void DabProcessor::set_epg_data(i32 SId, i32 theTime, const QString & s, const QString & d)
-{
-  mFicHandler.set_epg_data(SId, theTime, s, d);
-}
+// void DabProcessor::set_epg_data(i32 SId, i32 theTime, const QString & s, const QString & d)
+// {
+//   mFicHandler.set_epg_data(SId, theTime, s, d);
+// }
 
-bool DabProcessor::has_time_table(u32 SId)
-{
-  return mFicHandler.has_time_table(SId);
-}
+// bool DabProcessor::has_time_table(u32 SId)
+// {
+//   return mFicHandler.has_time_table(SId);
+// }
 
-std::vector<SEpgElement> DabProcessor::find_epg_data(u32 SId)
-{
-  return mFicHandler.find_epg_data(SId);
-}
+// std::vector<SEpgElement> DabProcessor::find_epg_data(u32 SId)
+// {
+//   return mFicHandler.find_epg_data(SId);
+// }
 
-QStringList DabProcessor::basicPrint()
-{
-  return mFicHandler.basic_print();
-}
+// QStringList DabProcessor::basicPrint()
+// {
+//   return mFicHandler.basic_print();
+// }
 
-i32 DabProcessor::scan_width()
-{
-  return mFicHandler.get_scan_width();
-}
+// i32 DabProcessor::scan_width()
+// {
+//   return mFicHandler.get_scan_width();
+// }
 
 //	for the mscHandler:
 void DabProcessor::reset_services()
@@ -595,10 +596,10 @@ void DabProcessor::stop_fic_dump()
   mFicHandler.stop_fic_dump();
 }
 
-u32 DabProcessor::get_julian_date()
-{
-  return mFicHandler.get_julian_date();
-}
+// u32 DabProcessor::get_julian_date()
+// {
+//   return mFicHandler.get_julian_date();
+// }
 
 bool DabProcessor::start_eti_generator(const QString & s)
 {

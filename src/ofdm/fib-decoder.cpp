@@ -81,7 +81,7 @@ FibDecoder::~FibDecoder()
 void FibDecoder::processFIB(const uint8_t * p, uint16_t fib)
 {
   int8_t processedBytes = 0;
-  uint8_t * d = p;
+  const uint8_t * d = p;
 
   fibLocker.lock();
   (void)fib;
@@ -123,7 +123,7 @@ void FibDecoder::processFIB(const uint8_t * p, uint16_t fib)
 
 //
 //
-void FibDecoder::process_FIG0(uint8_t * d)
+void FibDecoder::process_FIG0(const uint8_t * d)
 {
   uint8_t extension = getBits_5(d, 8 + 3);
 
@@ -243,7 +243,7 @@ void FibDecoder::process_FIG0(uint8_t * d)
 //	Ensemble information, 6.4.1
 //	FIG0/0 indicated a change in channel organization
 //	The info is MCI
-void FibDecoder::FIG0Extension0(uint8_t * d)
+void FibDecoder::FIG0Extension0(const uint8_t * d)
 {
   uint16_t EId;
   uint8_t changeFlag;
@@ -287,7 +287,7 @@ void FibDecoder::FIG0Extension0(uint8_t * d)
 //	FIG0 extension 1 creates a mapping between the
 //	sub channel identifications and the positions in the
 //	relevant CIF.
-void FibDecoder::FIG0Extension1(uint8_t * d)
+void FibDecoder::FIG0Extension1(const uint8_t * d)
 {
   int16_t used = 2;		// offset in bytes
   int16_t Length = getBits_5(d, 3);
@@ -301,7 +301,7 @@ void FibDecoder::FIG0Extension1(uint8_t * d)
 
 //
 //	defining the channels
-int16_t FibDecoder::HandleFIG0Extension1(uint8_t * d, int16_t offset,
+int16_t FibDecoder::HandleFIG0Extension1(const uint8_t * d, int16_t offset,
                                          const uint8_t CN_bit,
                                          const uint8_t OE_bit,
                                          const uint8_t PD_bit)
@@ -369,7 +369,7 @@ int16_t FibDecoder::HandleFIG0Extension1(uint8_t * d, int16_t offset,
 //
 //	Service organization, 6.3.1
 //	bind channels to SIds
-void FibDecoder::FIG0Extension2(uint8_t * d)
+void FibDecoder::FIG0Extension2(const uint8_t * d)
 {
   int16_t used = 2;		// offset in bytes
   int16_t Length = getBits_5(d, 3);
@@ -385,7 +385,7 @@ void FibDecoder::FIG0Extension2(uint8_t * d)
 
 //
 //
-int16_t FibDecoder::HandleFIG0Extension2(uint8_t * d,
+int16_t FibDecoder::HandleFIG0Extension2(const uint8_t * d,
                                          int16_t offset,
                                          const uint8_t CN_bit,
                                          const uint8_t OE_bit,
@@ -467,7 +467,7 @@ int16_t FibDecoder::HandleFIG0Extension2(uint8_t * d,
 }
 
 //	Service component in packet mode 6.3.2
-void FibDecoder::FIG0Extension3(uint8_t * d)
+void FibDecoder::FIG0Extension3(const uint8_t * d)
 {
   int16_t used = 2;            // offset in bytes
   int16_t Length = getBits_5(d, 3);
@@ -482,7 +482,7 @@ void FibDecoder::FIG0Extension3(uint8_t * d)
 //
 //	Note that the SCId (Service Component Identifier) is
 //	a unique 12 bit number in the ensemble
-int16_t FibDecoder::HandleFIG0Extension3(uint8_t * d,
+int16_t FibDecoder::HandleFIG0Extension3(const uint8_t * d,
                                          int16_t used,
                                          const uint8_t CN_bit,
                                          const uint8_t OE_bit,
@@ -522,7 +522,7 @@ int16_t FibDecoder::HandleFIG0Extension3(uint8_t * d,
 }
 
 //	Service component language 8.1.2
-void FibDecoder::FIG0Extension5(uint8_t * d)
+void FibDecoder::FIG0Extension5(const uint8_t * d)
 {
   int16_t used = 2;		// offset in bytes
   int16_t Length = getBits_5(d, 3);
@@ -536,7 +536,7 @@ void FibDecoder::FIG0Extension5(uint8_t * d)
   }
 }
 
-int16_t FibDecoder::HandleFIG0Extension5(uint8_t * d,
+int16_t FibDecoder::HandleFIG0Extension5(const uint8_t * d,
                                          uint16_t offset,
                                          const uint8_t CN_bit,
                                          const uint8_t OE_bit,
@@ -600,7 +600,7 @@ int16_t FibDecoder::HandleFIG0Extension5(uint8_t * d,
 
 //
 // FIG0/7: Configuration linking information 6.4.2,
-void FibDecoder::FIG0Extension7(uint8_t * d)
+void FibDecoder::FIG0Extension7(const uint8_t * d)
 {
   int16_t used = 2;            // offset in bytes
   int16_t Length = getBits_5(d, 3);
@@ -622,7 +622,7 @@ void FibDecoder::FIG0Extension7(uint8_t * d)
 }
 
 // FIG0/8:  Service Component Global Definition (6.3.5)
-void FibDecoder::FIG0Extension8(uint8_t * d)
+void FibDecoder::FIG0Extension8(const uint8_t * d)
 {
   int16_t used = 2;		// offset in bytes
   int16_t Length = getBits_5(d, 3);
@@ -636,7 +636,7 @@ void FibDecoder::FIG0Extension8(uint8_t * d)
   }
 }
 
-int16_t FibDecoder::HandleFIG0Extension8(uint8_t * d,
+int16_t FibDecoder::HandleFIG0Extension8(const uint8_t * d,
                                          int16_t used,
                                          const uint8_t CN_bit,
                                          const uint8_t OE_bit,
@@ -682,7 +682,7 @@ int16_t FibDecoder::HandleFIG0Extension8(uint8_t * d,
 }
 
 //	FIG0/9 Country, LTO and International table, clause 8.1.3.2;
-void FibDecoder::FIG0Extension9(uint8_t * d)
+void FibDecoder::FIG0Extension9(const uint8_t * d)
 {
   int16_t used = 2;		// offset in bytes
 //int16_t	Length		= getBits_5 (d, 3);
@@ -776,7 +776,7 @@ void FibDecoder::adjustTime(int32_t * dateTime)
 }
 
 //	8.1.3.1 Date and time (d&t)
-void FibDecoder::FIG0Extension10(uint8_t * dd)
+void FibDecoder::FIG0Extension10(const uint8_t * dd)
 {
   int16_t offset = 16;
   this->mjd = getLBits(dd, offset + 1, 17);
@@ -825,7 +825,7 @@ void FibDecoder::FIG0Extension10(uint8_t * dd)
 
 //
 //	User Application Information 6.3.6
-void FibDecoder::FIG0Extension13(uint8_t * d)
+void FibDecoder::FIG0Extension13(const uint8_t * d)
 {
   int16_t used = 2;		// offset in bytes
   int16_t Length = getBits_5(d, 3);
@@ -839,7 +839,7 @@ void FibDecoder::FIG0Extension13(uint8_t * d)
 
 //
 //	section 6.3.6 User application Data
-int16_t FibDecoder::HandleFIG0Extension13(uint8_t * d,
+int16_t FibDecoder::HandleFIG0Extension13(const uint8_t * d,
                                           int16_t used,
                                           const uint8_t CN_bit,
                                           const uint8_t OE_bit,
@@ -877,7 +877,7 @@ int16_t FibDecoder::HandleFIG0Extension13(uint8_t * d,
 }
 
 //	FEC sub-channel organization 6.2.2
-void FibDecoder::FIG0Extension14(uint8_t * d)
+void FibDecoder::FIG0Extension14(const uint8_t * d)
 {
   int16_t Length = getBits_5(d, 3);	// in Bytes
   const uint8_t CN_bit = getBits_1(d, 8 + 0);
@@ -901,7 +901,7 @@ void FibDecoder::FIG0Extension14(uint8_t * d)
 
 //
 //	program type 8.1.5
-void FibDecoder::FIG0Extension17(uint8_t * d)
+void FibDecoder::FIG0Extension17(const uint8_t * d)
 {
   int16_t length = getBits_5(d, 3);
   int16_t offset = 16;
@@ -924,7 +924,7 @@ void FibDecoder::FIG0Extension17(uint8_t * d)
 
 //
 //	Announcement support 8.1.6.1
-void FibDecoder::FIG0Extension18(uint8_t * d)
+void FibDecoder::FIG0Extension18(const uint8_t * d)
 {
   int16_t Length = getBits_5(d, 3);	// in Bytes
   const uint8_t CN_bit = getBits_1(d, 8 + 0);
@@ -975,7 +975,7 @@ void FibDecoder::FIG0Extension18(uint8_t * d)
 }
 
 //	Announcement switching 8.1.6.2
-void FibDecoder::FIG0Extension19(uint8_t * d)
+void FibDecoder::FIG0Extension19(const uint8_t * d)
 {
   int16_t Length = getBits_5(d, 3);	// in Bytes
   const uint8_t CN_bit = getBits_1(d, 8 + 0);
@@ -1012,7 +1012,7 @@ void FibDecoder::FIG0Extension19(uint8_t * d)
 
 //
 //	Service Component Information
-void FibDecoder::FIG0Extension20(uint8_t * d)
+void FibDecoder::FIG0Extension20(const uint8_t * d)
 {
   int16_t used = 2;		// offset in bytes
   const int16_t Length = getBits_5(d, 3);
@@ -1025,7 +1025,7 @@ void FibDecoder::FIG0Extension20(uint8_t * d)
     used = HandleFIG0Extension21(d, used, CN_bit, OE_bit, PD_bit);
 }
 
-int16_t FibDecoder::HandleFIG0Extension20(uint8_t * d,
+int16_t FibDecoder::HandleFIG0Extension20(const uint8_t * d,
                                           uint16_t offset,
                                           const uint8_t CN_bit,
                                           const uint8_t OE_bit,
@@ -1066,7 +1066,7 @@ int16_t FibDecoder::HandleFIG0Extension20(uint8_t * d,
 }
 
 //	Frequency information (FI) 8.1.8
-void FibDecoder::FIG0Extension21(uint8_t * d)
+void FibDecoder::FIG0Extension21(const uint8_t * d)
 {
   int16_t used = 2;		// offset in bytes
   const int16_t Length = getBits_5(d, 3);
@@ -1078,7 +1078,7 @@ void FibDecoder::FIG0Extension21(uint8_t * d)
     used = HandleFIG0Extension21(d, used, CN_bit, OE_bit, PD_bit);
 }
 
-int16_t FibDecoder::HandleFIG0Extension21(uint8_t * d,
+int16_t FibDecoder::HandleFIG0Extension21(const uint8_t * d,
                                           uint16_t offset,
                                           const uint8_t CN_bit,
                                           const uint8_t OE_bit,
@@ -1137,7 +1137,7 @@ int16_t FibDecoder::HandleFIG0Extension21(uint8_t * d,
 
 //
 //	FIG 1 - Cover the different possible labels, section 5.2
-void FibDecoder::process_FIG1(uint8_t * d)
+void FibDecoder::process_FIG1(const uint8_t * d)
 {
   uint8_t extension = getBits_3(d, 8 + 5);
 
@@ -1175,7 +1175,7 @@ void FibDecoder::process_FIG1(uint8_t * d)
 
 //	Name of the ensemble
 //
-void FibDecoder::FIG1Extension0(uint8_t * d)
+void FibDecoder::FIG1Extension0(const uint8_t * d)
 {
   int16_t offset = 0;
   char label[17];
@@ -1213,7 +1213,7 @@ void FibDecoder::FIG1Extension0(uint8_t * d)
 
 //
 //	Name of service
-void FibDecoder::FIG1Extension1(uint8_t * d)
+void FibDecoder::FIG1Extension1(const uint8_t * d)
 {
   int16_t offset = 32;
   char label[17];
@@ -1267,7 +1267,7 @@ void FibDecoder::FIG1Extension1(uint8_t * d)
 }
 
 //	service component label - 32 bits 8.1.14.3
-void FibDecoder::FIG1Extension4(uint8_t * d)
+void FibDecoder::FIG1Extension4(const uint8_t * d)
 {
   char label[17];
   int bitOffset = 16;
@@ -1324,7 +1324,7 @@ void FibDecoder::FIG1Extension4(uint8_t * d)
 }
 
 //	Data service label - 32 bits 8.1.14.2
-void FibDecoder::FIG1Extension5(uint8_t * d)
+void FibDecoder::FIG1Extension5(const uint8_t * d)
 {
   char label[17];
 

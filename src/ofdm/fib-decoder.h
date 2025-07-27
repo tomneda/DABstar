@@ -66,8 +66,6 @@ public:
   QStringList basicPrint();
   int scanWidth();
   int freeSpace();
-
-protected:
   void processFIB(const uint8_t *, uint16_t);
 
 private:
@@ -78,52 +76,52 @@ private:
   ensemble * theEnsemble;
   void adjustTime(int32_t * dateTime);
 
-  void process_FIG0(uint8_t *);
-  void process_FIG1(uint8_t *);
-  void FIG0Extension0(uint8_t *);
-  void FIG0Extension1(uint8_t *);
-  void FIG0Extension2(uint8_t *);
-  void FIG0Extension3(uint8_t *);
+  void process_FIG0(const uint8_t *);
+  void process_FIG1(const uint8_t *);
+  void FIG0Extension0(const uint8_t *);
+  void FIG0Extension1(const uint8_t *);
+  void FIG0Extension2(const uint8_t *);
+  void FIG0Extension3(const uint8_t *);
 //	void		FIG0Extension4		(uint8_t *);
-  void FIG0Extension5(uint8_t *);
+  void FIG0Extension5(const uint8_t *);
 //	void		FIG0Extension6		(uint8_t *);
-  void FIG0Extension7(uint8_t *);
-  void FIG0Extension8(uint8_t *);
-  void FIG0Extension9(uint8_t *);
-  void FIG0Extension10(uint8_t *);
+  void FIG0Extension7(const uint8_t *);
+  void FIG0Extension8(const uint8_t *);
+  void FIG0Extension9(const uint8_t *);
+  void FIG0Extension10(const uint8_t *);
 //	void		FIG0Extension11		(uint8_t *);
 //	void		FIG0Extension12		(uint8_t *);
-  void FIG0Extension13(uint8_t *);
-  void FIG0Extension14(uint8_t *);
+  void FIG0Extension13(const uint8_t *);
+  void FIG0Extension14(const uint8_t *);
 //	void		FIG0Extension15		(uint8_t *);
 //	void		FIG0Extension16		(uint8_t *);
-  void FIG0Extension17(uint8_t *);
-  void FIG0Extension18(uint8_t *);
-  void FIG0Extension19(uint8_t *);
-  void FIG0Extension20(uint8_t *);
-  void FIG0Extension21(uint8_t *);
+  void FIG0Extension17(const uint8_t *);
+  void FIG0Extension18(const uint8_t *);
+  void FIG0Extension19(const uint8_t *);
+  void FIG0Extension20(const uint8_t *);
+  void FIG0Extension21(const uint8_t *);
 //	void		FIG0Extension22		(uint8_t *);
 //	void		FIG0Extension23		(uint8_t *);
 //	void		FIG0Extension24		(uint8_t *);
 //	void		FIG0Extension25		(uint8_t *);
 //	void		FIG0Extension26		(uint8_t *);
 
-  int16_t HandleFIG0Extension1(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension2(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension3(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension5(uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension8(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension13(uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension20(uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
-  int16_t HandleFIG0Extension21(uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension1(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension2(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension3(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension5(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension8(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension13(const uint8_t *, int16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension20(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
+  int16_t HandleFIG0Extension21(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
 
-  void FIG1Extension0(uint8_t *);
-  void FIG1Extension1(uint8_t *);
+  void FIG1Extension0(const uint8_t *);
+  void FIG1Extension1(const uint8_t *);
 //	void		FIG1Extension2		(uint8_t *);
 //	void		FIG1Extension3		(uint8_t *);
-  void FIG1Extension4(uint8_t *);
-  void FIG1Extension5(uint8_t *);
-  void FIG1Extension6(uint8_t *);
+  void FIG1Extension4(const uint8_t *);
+  void FIG1Extension5(const uint8_t *);
+  void FIG1Extension6(const uint8_t *);
 
   QMutex fibLocker;
   int CIFcount;
@@ -131,14 +129,12 @@ private:
   int16_t CIFcount_lo;
   uint32_t mjd;			// julianDate
 
-  void handleAnnouncement(uint16_t SId,
-                          uint16_t flags,
-                          uint8_t SubChId);
+  void handleAnnouncement(uint16_t SId, uint16_t flags, uint8_t SubChId);
+
 signals:
   void addToEnsemble(const QString &, int, int);
   void ensembleName(int, const QString &);
-  void clockTime(int, int, int, int, int,
-                 int, int, int, int);
+  void clockTime(int, int, int, int, int, int, int, int, int);
   void changeinConfiguration();
   void announcement(int, int);
   void nrServices(int);

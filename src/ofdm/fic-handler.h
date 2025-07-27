@@ -46,12 +46,14 @@
 class DabRadio;
 class DabParams;
 
-class FicHandler : public FibDecoder
+class FicHandler : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  FicHandler(DabRadio * iMr);
+  explicit FicHandler(DabRadio * iMr);
   ~FicHandler() override = default;
+
+  FibDecoder & get_fib_decoder() { return mFibDecoder; };
 
   void process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iOfdmSymbIdx);
   void stop();
@@ -64,6 +66,7 @@ public:
 
 private:
   static constexpr i32 cViterbiBlockSize = 3072 + 24; // with punctation data
+  FibDecoder mFibDecoder;
   ViterbiSpiral mViterbi{ cFicSizeVitOut, true };
   std::array<std::byte, cFicPerFrame * cFicSizeVitOut> mFibBitsEntireFrame;
   std::array<std::byte, cFicSizeVitOut> mPRBS;
