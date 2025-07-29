@@ -307,6 +307,8 @@ private:
   bool mClockActiveStyle = true;
   std::mutex mMutex;
   std::vector<STiiResult> mTransmitterIds;
+  enum class EAudioFrameType { None, MP2, AAC };
+  EAudioFrameType mAudioFrameType = EAudioFrameType::None;
 
   static QStringList get_soft_bit_gen_names();
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> &, const SServiceId &);

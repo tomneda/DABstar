@@ -47,7 +47,7 @@ public:
   static SNDFILE * open_snd_file(const QString & iFileName, i32 iMode, SF_INFO * opSfInfo); // independent from Windows / Linux
 
   FILE * open_content_dump_file_ptr(const QString & iChannelName);
-  FILE * open_frame_dump_file_ptr(const QString & iServiceName);
+  FILE * open_frame_dump_file_ptr(const QString & iServiceName, bool iIsAAC);
   FILE * open_log_file_ptr();
   SNDFILE * open_audio_dump_sndfile_ptr(const QString & iServiceName);
   SNDFILE * open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName);

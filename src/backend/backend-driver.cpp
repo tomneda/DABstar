@@ -32,7 +32,7 @@ BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer
   {
     if (((Audiodata *)d)->ASCTy != 077)
     {
-      theProcessor = new Mp2Processor(mr, d->bitRate, audioBuffer);
+      theProcessor = new Mp2Processor(mr, d->bitRate, audioBuffer, frameBuffer);
     }
     else if (((Audiodata *)d)->ASCTy == 077)
     {

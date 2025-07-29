@@ -1975,12 +1975,14 @@ void DabRadio::stop_audio_dumping()
 
 void DabRadio::start_audio_dumping()
 {
-  if (mAudioDumpState != EAudioDumpState::Stopped)
+  if (mAudioFrameType == EAudioFrameType::None ||
+      mAudioDumpState != EAudioDumpState::Stopped)
   {
     return;
   }
 
   mAudioWavDumpFileName = mOpenFileDialog.get_audio_dump_file_name(mChannel.currentService.serviceName);
+
   if (mAudioWavDumpFileName.isEmpty())
   {
     return;
@@ -2021,8 +2023,12 @@ void DabRadio::stop_frame_dumping()
 
 void DabRadio::start_frame_dumping()
 {
-  // TODO: what is with MP2 data streams? here only AAC is considered as filename
-  mChannel.currentService.frameDumper = mOpenFileDialog.open_frame_dump_file_ptr(mChannel.currentService.serviceName);
+  if (mAudioFrameType == EAudioFrameType::None)
+  {
+    return;
+  }
+
+  mChannel.currentService.frameDumper = mOpenFileDialog.open_frame_dump_file_ptr(mChannel.currentService.serviceName, mAudioFrameType == EAudioFrameType::AAC);
 
   if (mChannel.currentService.frameDumper == nullptr)
   {
@@ -2043,7 +2049,7 @@ void DabRadio::slot_new_frame(i32 amount)
 
   if (mChannel.currentService.frameDumper == nullptr)
   {
-    mpFrameBuffer->flush_ring_buffer();
+    mpFrameBuffer->flush_ring_buffer(); // we do not need the collected AAC or MP2 streams
   }
   else
   {
@@ -2307,7 +2313,6 @@ void DabRadio::stop_service(SDabService & ioDabService)
   if (mChannel.currentService.frameDumper != nullptr)
   {
     stop_frame_dumping();
-    mChannel.currentService.frameDumper = nullptr;
   }
 
   if (mAudioDumpState != EAudioDumpState::Stopped)
@@ -2340,6 +2345,7 @@ void DabRadio::stop_service(SDabService & ioDabService)
       }
     }
 
+    mAudioFrameType = EAudioFrameType::None;
     ioDabService.valid = false;
   }
 
@@ -2370,6 +2376,7 @@ void DabRadio::start_service(SDabService & s)
 
   Audiodata ad;
   mpDabProcessor->get_data_for_audio_service(serviceName, &ad);
+  mAudioFrameType = EAudioFrameType::None;
 
   if (ad.defined)
   {
@@ -2434,6 +2441,7 @@ void DabRadio::start_audio_service(const Audiodata * const ipAD)
   ui->programTypeLabel->setText(getProgramType(ipAD->programType));
   //	show service related data
   mpTechDataWidget->show_serviceData(ipAD);
+  mAudioFrameType = (ipAD->ASCTy == 077 ? EAudioFrameType::AAC : EAudioFrameType::MP2);
   _set_status_info_status(mStatusInfo.InpBitRate, (i32)(ipAD->bitRate));
 }
 

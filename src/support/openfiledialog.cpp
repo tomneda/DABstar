@@ -84,9 +84,9 @@ FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
   return fileP;
 }
 
-FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName)
+FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName, const bool iIsAAC)
 {
-  const QString fileName = _open_file_dialog(iServiceName, sSettingAudioStorageDir, "AAC data", ".aac");
+  const QString fileName = _open_file_dialog(iServiceName, sSettingAudioStorageDir, iIsAAC ? "AAC stream" : "MP2 stream", iIsAAC ? ".aac" : ".mp2");
 
   if (fileName.isEmpty())
   {
@@ -97,7 +97,7 @@ FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName)
 
   if (theFile == nullptr)
   {
-    qDebug() << "Cannot open ACC file " << fileName;
+    qDebug() << (iIsAAC ? "Cannot open ACC file " : "Cannot open MP2 file ") << fileName;
   }
 
   return theFile;

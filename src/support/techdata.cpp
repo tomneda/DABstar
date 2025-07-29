@@ -75,6 +75,8 @@ void TechData::cleanUp()
   ASCTy->setText(es);
   language->setText(es);
   lblSbrUsed->setText(es);
+  framedumpButton->setEnabled(false);
+  audiodumpButton->setEnabled(false);
   slot_show_rs_corrections(0, 0); // call via this method to consider color change
   frameError_display->setValue(0);
   rsError_display->setValue(0);
@@ -101,6 +103,8 @@ void TechData::show_serviceData(const Audiodata * ad)
   slot_show_codeRate(ad->shortForm, ad->protLevel);
   slot_show_language(ad->language);
   slot_show_fm(ad->fmFrequency);
+  framedumpButton->setEnabled(true);
+  audiodumpButton->setEnabled(true);
 }
 
 void TechData::show()
@@ -205,18 +209,6 @@ void TechData::slot_show_timetableButton(bool b)
   }
 }
 
-void TechData::slot_show_frameDumpButton(bool b)
-{
-  if (b)
-  {
-    framedumpButton->show();
-  }
-  else
-  {
-    framedumpButton->hide();
-  }
-}
-
 void TechData::slot_show_serviceName(const QString & s)
 {
   programName->setText(s);
@@ -259,11 +251,13 @@ void TechData::slot_show_ASCTy(i32 a)
   {
     rsError_display->show();
     aacError_display->show();
+    framedumpButton->setText("Dump AAC");
   }
   else
   {
     rsError_display->hide();
     aacError_display->hide();
+    framedumpButton->setText("Dump MP2");
   }
 }
 

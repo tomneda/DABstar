@@ -64,7 +64,7 @@ class Mp2Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  Mp2Processor(DabRadio *, i16, RingBuffer<i16> *);
+  Mp2Processor(DabRadio *, i16, RingBuffer<i16> *, RingBuffer<u8> *);
   ~Mp2Processor() override;
   void add_to_frame(const std::vector<u8> &) override;
 
@@ -72,7 +72,8 @@ private:
   DabRadio * myRadioInterface;
   i16 bitRate;
   PadHandler my_padhandler;
-  RingBuffer<i16> * buffer;
+  RingBuffer<i16> * const audioBuffer;
+  RingBuffer<u8> * const frameBuffer;
   i32 baudRate;
   i16 V[2][1024];
   i16 Voffs;
@@ -86,7 +87,7 @@ private:
   i32 bit_window;
   i32 bits_in_window;
   const u8 * frame_pos;
-  u8 * MP2frame;
+  std::vector<u8> MP2frame;
 
   i16 MP2framesize;
   i16 MP2Header_OK;
@@ -95,18 +96,19 @@ private:
   i16 numberofFrames;
   i16 errorFrames;
 
-  i32 _get_mp2_sample_rate(const u8 * iFrame);
-  i32 _mp2_decode_frame(const u8 * ipFrame, i16 *);
+  i32 _get_mp2_sample_rate(const std::vector<u8> & iFrame);
+  i32 _mp2_decode_frame(const std::vector<u8> & iFrame, i16 *);
   void _set_sample_rate(i32);
   SQuantizerSpec * _read_allocation(i32, i32);
   void _read_samples(SQuantizerSpec *, i32 iScalefactor, i32 * opSamples);
   i32 _get_bits(i32);
-  void _add_bit_to_mp2(u8 *, u8, i16);
+  void _add_bit_to_mp2(std::vector<u8> &, u8, i16);
   void _process_pad_data(const std::vector<u8> & v);
 
 signals:
   void signal_show_frameErrors(i32);
   void signal_new_audio(i32, u32, u32);
+  void signal_new_frame(i32);
   void signal_is_stereo(bool);
 };
 

@@ -140,22 +140,23 @@ static u8 quant_lut_step3[3][32] = {
   // low-rate table (3-B.2c and 3-B.2d)
   {
     0x44, 0x44,                                                   // SB  0 -  1
-                0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34            // SB  2 - 12
+    0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34    // SB  2 - 12
   },
   // high-rate table (3-B.2a and 3-B.2b)
   {
-    0x43, 0x43, 0x43,                                              // SB  0 -  2
-                      0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,                     // SB  3 - 10
-                                                                      0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, // SB 11 - 22
-                                                                                                                                              0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20                           // SB 23 - 29
+    0x43, 0x43, 0x43,                                                       // SB  0 -  2
+    0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,                         // SB  3 - 10
+    0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, // SB 11 - 22
+    0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20                                // SB 23 - 29
   },
   // MPEG-2 LSR table (B.2 in ISO 13818-3)
   {
-    0x45, 0x45, 0x45, 0x45,                                         // SB  0 -  3
-                            0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34,                          // SB  4 - 10
-                                                                      0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24,           // SB 11 -
-                                                                                                                                  0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24  //       - 29
-  }};
+    0x45, 0x45, 0x45, 0x45,                                      // SB  0 -  3
+    0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34,                    // SB  4 - 10
+    0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24,  // SB 11 -
+    0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x24         //       - 29
+  }
+};
 
 // quantizer lookup, step 4: table row, allocation[] value -> quant table index
 static const char quant_lut_step4[6][16] = {{ 0, 1, 2, 17 },
@@ -191,8 +192,10 @@ static struct SQuantizerSpec quantizer_table[17] = {{ 3,     1,  5 },  //  1
 //	(J van Katwijk)
 ////////////////////////////////////////////////////////////////////////////////
 
-Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * buffer) :
-  my_padhandler(mr)
+Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * const iopAudioBuffer, RingBuffer<u8> * const iopFrameBuffer)
+  : my_padhandler(mr)
+  , audioBuffer(iopAudioBuffer)
+  , frameBuffer(iopFrameBuffer)
 {
   i16 i, j;
   i16 * nPtr = &N[0][0];
@@ -216,16 +219,17 @@ Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * buffer)
   }
 
   myRadioInterface = mr;
-  this->buffer = buffer;
   this->bitRate = bitRate;
+
   connect(this, &Mp2Processor::signal_show_frameErrors, mr, &DabRadio::slot_show_frame_errors);
   connect(this, &Mp2Processor::signal_new_audio, mr, &DabRadio::slot_new_audio);
+  connect(this, &Mp2Processor::signal_new_frame, mr, &DabRadio::slot_new_frame);
   connect(this, &Mp2Processor::signal_is_stereo, mr, &DabRadio::slot_set_stereo);
 
   Voffs = 0;
   baudRate = 48000;  // default for DAB
   MP2framesize = 24 * bitRate;  // may be changed
-  MP2frame = new u8[2 * MP2framesize];
+  MP2frame.resize(2 * MP2framesize);
   MP2Header_OK = 0;
   MP2headerCount = 0;
   MP2bitCount = 0;
@@ -235,9 +239,7 @@ Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * buffer)
 
 Mp2Processor::~Mp2Processor()
 {
-  delete[] MP2frame;
 }
-//
 
 #define  valid(x)  ((x == 48000) || (x == 24000))
 
@@ -260,20 +262,20 @@ void Mp2Processor::_set_sample_rate(i32 rate)
 // //
 ////////////////////////////////////////////////////////////////////////////////
 
-i32 Mp2Processor::_get_mp2_sample_rate(const u8 * const iFrame)
+i32 Mp2Processor::_get_mp2_sample_rate(const std::vector<u8> & iFrame)
 {
-  if (!iFrame)
+  if (iFrame.empty())
   {
     return 0;
   }
-  if ((iFrame[0] != 0xFF)   // no valid syncword?
-      || ((iFrame[1] & 0xF6) != 0xF4)   // no MPEG-1/2 Audio Layer II?
-      || ((iFrame[2] - 0x10) >= 0xE0))
+  if ((iFrame[0] != 0xFF) ||          // no valid syncword?
+     ((iFrame[1] & 0xF6) != 0xF4) ||  // no MPEG-1/2 Audio Layer II?
+     ((iFrame[2] - 0x10) >= 0xE0))
   {  // invalid bitrate?
     return 0;
   }
   return sample_rates[(((iFrame[1] & 0x08) >> 1) ^ 4)  // MPEG-1/2 switch
-                      + ((iFrame[2] >> 2) & 3)];         // actual rate
+                     + ((iFrame[2] >> 2) & 3)];        // actual rate
 }
 
 
@@ -365,7 +367,7 @@ i32 Mp2Processor::_get_bits(const i32 iBitCount)
 // FRAME DECODE FUNCTION                                                      //
 ////////////////////////////////////////////////////////////////////////////////
 
-i32 Mp2Processor::_mp2_decode_frame(const u8 * const ipFrame, i16 * opPcm)
+i32 Mp2Processor::_mp2_decode_frame(const std::vector<u8> & iFrame, i16 * opPcm)
 {
   u32 bit_rate_index_minus1;
   u32 sampling_frequency;
@@ -385,19 +387,18 @@ i32 Mp2Processor::_mp2_decode_frame(const u8 * const ipFrame, i16 * opPcm)
   }
 
   // check for valid header: syncword OK, MPEG-Audio Layer 2
-  if ((ipFrame[0] != 0xFF)   // no valid syncword?
-      || ((ipFrame[1] & 0xF6) != 0xF4)   // no MPEG-1/2 Audio Layer II?
-      || ((ipFrame[2] - 0x10) >= 0xE0))
+  if ((iFrame[0] != 0xFF) ||          // no valid syncword?
+     ((iFrame[1] & 0xF6) != 0xF4) ||  // no MPEG-1/2 Audio Layer II?
+     ((iFrame[2] - 0x10) >= 0xE0))
   { // invalid bitrate?
     errorFrames++;
     return 0;
   }
 
-
   // set up the bitstream reader
-  bit_window = ipFrame[2] << 16;
+  bit_window = iFrame[2] << 16;
   bits_in_window = 8;
-  frame_pos = &ipFrame[3];
+  frame_pos = &iFrame[3];
 
   // read the rest of the header
   bit_rate_index_minus1 = _get_bits(4) - 1;
@@ -412,7 +413,7 @@ i32 Mp2Processor::_mp2_decode_frame(const u8 * const ipFrame, i16 * opPcm)
     return 0;
   }
 
-  if ((ipFrame[1] & 0x08) == 0)
+  if ((iFrame[1] & 0x08) == 0)
   {  // MPEG-2
     sampling_frequency += 4;
     bit_rate_index_minus1 += 14;
@@ -436,7 +437,7 @@ i32 Mp2Processor::_mp2_decode_frame(const u8 * const ipFrame, i16 * opPcm)
 
   // discard the last 4 bits of the header and the CRC value, if present
   _get_bits(4);
-  if ((ipFrame[1] & 1) == 0)
+  if ((iFrame[1] & 1) == 0)
   {
     _get_bits(16);
   }
@@ -631,10 +632,14 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & v)
       if (MP2bitCount >= lf)
       {
         i16 sample_buf[KJMP2_SAMPLES_PER_FRAME * 2];
-        if (_mp2_decode_frame(MP2frame, sample_buf))
+        const i32 frameSize = _mp2_decode_frame(MP2frame, sample_buf);
+        if (frameSize > 0)
         {
-          buffer->put_data_into_ring_buffer(sample_buf, 2 * (i32)KJMP2_SAMPLES_PER_FRAME);
-          if (buffer->get_ring_buffer_read_available() > baudRate / 8)
+          frameBuffer->put_data_into_ring_buffer(MP2frame.data(), frameSize); // TODO: is used by the "ACC dump button" in the TechData widget, very seldom used!?
+          emit signal_new_frame(frameSize);
+
+          audioBuffer->put_data_into_ring_buffer(sample_buf, 2 * (i32)KJMP2_SAMPLES_PER_FRAME);
+          if (audioBuffer->get_ring_buffer_read_available() > baudRate / 8)
           {
             emit signal_new_audio(2 * (i32)KJMP2_SAMPLES_PER_FRAME, baudRate, 0);
           }
@@ -678,9 +683,9 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & v)
 
 }
 
-void Mp2Processor::_add_bit_to_mp2(u8 * iopV, u8 ib, i16 iNm)
+void Mp2Processor::_add_bit_to_mp2(std::vector<u8> & ioV, u8 ib, i16 iNm)
 {
-  u8 byte = iopV[iNm / 8];
+  u8 byte = ioV[iNm / 8];
   const i16 bitnr = 7 - (iNm & 7);
   const u8 newByte = (1 << bitnr);
 
@@ -692,6 +697,6 @@ void Mp2Processor::_add_bit_to_mp2(u8 * iopV, u8 ib, i16 iNm)
   {
     byte |= newByte;
   }
-  iopV[iNm / 8] = byte;
+  ioV[iNm / 8] = byte;
 }
 

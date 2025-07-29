@@ -63,7 +63,6 @@ public slots:
   void slot_show_rs_error_bar(i32);
   void slot_show_rs_corrections(i32, i32);
   void slot_show_timetableButton(bool);
-  void slot_show_frameDumpButton(bool);
   void slot_show_serviceName(const QString &);
   void slot_show_serviceId(i32);
   void slot_show_bitRate(i32);
