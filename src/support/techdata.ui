@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>technical_data</class>
  <widget class="QWidget" name="technical_data">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>334</width>
+    <height>700</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Technical Details</string>
   </property>
@@ -30,7 +38,7 @@
           <string>-</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -87,13 +95,13 @@
      <item row="0" column="1">
       <widget class="QLCDNumber" name="serviceIdDisplay">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="mode">
-        <enum>QLCDNumber::Hex</enum>
+        <enum>QLCDNumber::Mode::Hex</enum>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -107,10 +115,10 @@
      <item row="1" column="1">
       <widget class="QLCDNumber" name="startAddressDisplay">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -124,10 +132,10 @@
      <item row="2" column="1">
       <widget class="QLCDNumber" name="lengthDisplay">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -141,10 +149,10 @@
      <item row="3" column="1">
       <widget class="QLCDNumber" name="subChIdDisplay">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -161,10 +169,30 @@
         <string>The number of corrections made by the reed-solomon algorithm over 10 DAB+ frames (so the number does not relate to the classic DAB/MP2 frames)</string>
        </property>
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>EC errors </string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLCDNumber" name="ecCorrections">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RS decoding/recovery uses parity bits. If, however, a parity bit is faulty, recovery of errors may lead to introducing errors. The crc check following the recovery should reveal that.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Shape::NoFrame</enum>
+       </property>
+       <property name="segmentStyle">
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -181,10 +209,10 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The bitrate of the encoding of the AAC datastream is shown here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -201,50 +229,10 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The audible audio runs at 48000 Ss. Some services deliver lower samplerates, these samplerates - shown here - are transformed into 48000 &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="0">
-      <widget class="QLabel" name="missedLabel">
-       <property name="text">
-        <string>Audio % OK</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1">
-      <widget class="QLCDNumber" name="missedSamples">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The audiohandler runs with its own clock. If less than the requested number of&lt;/p&gt;&lt;p&gt;audiosamples is passed on, the percentage = shown here - will drop accordingly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLCDNumber" name="ecCorrections">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RS decoding/recovery uses parity bits. If, however, a parity bit is faulty, recovery of errors may lead to introducing errors. The crc check following the recovery should reveal that.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>EC errors </string>
+        <enum>QLCDNumber::SegmentStyle::Flat</enum>
        </property>
       </widget>
      </item>
@@ -487,7 +475,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ffffff;&quot;&gt;MOT&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignCenter</set>
+        <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
       </widget>
      </item>

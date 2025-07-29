@@ -76,8 +76,6 @@ public slots:
   void slot_show_fm(i32);
   void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed);
 
-  void slot_hide_missed();
-  void slot_show_missed(i32);
   void slot_audio_data_available(i32, i32);
 
 private slots:

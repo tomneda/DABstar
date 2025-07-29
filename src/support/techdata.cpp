@@ -37,7 +37,7 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
 
   setupUi(&mFrame);
 
-  Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame, 310, 670, true);
+  Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame, 310, 640, true);
 
   formLayout->setLabelAlignment(Qt::AlignLeft);
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
@@ -246,19 +246,13 @@ void TechData::slot_show_language(i32 l)
 
 void TechData::slot_show_ASCTy(i32 a)
 {
-  ASCTy->setText(a == 077 ? "DAB+" : "DAB");
-  if (a == 077)
-  {
-    rsError_display->show();
-    aacError_display->show();
-    framedumpButton->setText("Dump AAC");
-  }
-  else
-  {
-    rsError_display->hide();
-    aacError_display->hide();
-    framedumpButton->setText("Dump MP2");
-  }
+  const bool isDabPlus = (a == 077);
+  ASCTy->setText(isDabPlus ? "DAB+" : "DAB");
+  framedumpButton->setText(isDabPlus ? "Dump AAC" : "Dump MP2");
+  rsError_display->setEnabled(isDabPlus);
+  aacError_display->setEnabled(isDabPlus);
+  aacErrorLabel->setEnabled(isDabPlus);
+  rsErrorLabel->setEnabled(isDabPlus);
 }
 
 void TechData::slot_show_uep(i32 shortForm, i32 protLevel)
@@ -317,13 +311,3 @@ void TechData::slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrU
   lblSbrUsed->setText(afs);
 }
 
-void TechData::slot_show_missed(i32 missed)
-{
-  missedSamples->display(missed);
-}
-
-void TechData::slot_hide_missed()
-{
-  missedLabel->hide();
-  missedSamples->hide();
-}
