@@ -22,14 +22,14 @@
  */
 #pragma once
 
-#include	<QObject>
-#include	<QFrame>
-#include	<QPushButton>
-#include	<QLabel>
-#include	<QListView>
-#include	"NML.h"
-#include	<QModelIndex>
-#include	<QStandardItemModel>
+#include "NML.h"
+#include <QObject>
+#include <QFrame>
+#include <QPushButton>
+#include <QLabel>
+#include <QListView>
+#include <QModelIndex>
+#include <QStandardItemModel>
 
 typedef struct
 {
@@ -62,13 +62,13 @@ private:
   QListView * subContent;
   QStandardItemModel model;
 
-  int findIndex(int);
+  int _findIndex(int);
 
 public slots:
   void slot_start(int);
 
 private slots:
-  void handle_resetButton();
-  void handle_upButton();
-  void select_sub(QModelIndex ind);
+  void _slot_handle_resetButton();
+  void _slot_handle_upButton();
+  void _slot_select_sub(const QModelIndex & ind);
 };

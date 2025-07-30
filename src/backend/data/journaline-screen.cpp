@@ -34,8 +34,9 @@ journalineScreen::journalineScreen(std::vector<tableElement> & table)
   upButton = new QPushButton("up");
   mainText = new QLabel("");
   subContent = new QListView();
-  subContent->setToolTip("Features NewsService Journaline(R) decoder technology by\n * Fraunhofer IIS, Erlangen, Germany.\n * For more information visit http://www.iis.fhg.de/dab"
-                        );
+  subContent->setToolTip("Features NewsService Journaline(R) decoder technology by\n"
+                         " * Fraunhofer IIS, Erlangen, Germany.\n"
+                         " * For more information visit http://www.iis.fhg.de/dab");
   QHBoxLayout * LH = new QHBoxLayout();
   QVBoxLayout * LV = new QVBoxLayout();
 
@@ -44,18 +45,15 @@ journalineScreen::journalineScreen(std::vector<tableElement> & table)
   LV->addLayout(LH);
   LV->addWidget(mainText);
   LV->addWidget(subContent);
+
   myFrame.setWindowTitle("Journaline");
   myFrame.setLayout(LV);
 
-  connect(resetButton, &QPushButton::clicked,
-          this, &journalineScreen::handle_resetButton);
-  connect(upButton, &QPushButton::clicked,
-          this, &journalineScreen::handle_upButton);
-  connect(subContent, &QListView::clicked,
-          this, &journalineScreen::select_sub);
-//#ifdef	__USE_JOURNALINE__
+  connect(resetButton, &QPushButton::clicked, this, &journalineScreen::_slot_handle_resetButton);
+  connect(upButton, &QPushButton::clicked, this, &journalineScreen::_slot_handle_upButton);
+  connect(subContent, &QListView::clicked, this, &journalineScreen::_slot_select_sub);
+
   myFrame.show();
-//#endif
 }
 
 journalineScreen::~journalineScreen()
@@ -63,7 +61,7 @@ journalineScreen::~journalineScreen()
   myFrame.hide();
 }
 
-void journalineScreen::handle_resetButton()
+void journalineScreen::_slot_handle_resetButton()
 {
   pathVector.resize(0);
   for (int i = 0; i < (int)((*table).size()); i++)
@@ -77,23 +75,23 @@ void journalineScreen::handle_resetButton()
   }
 }
 
-void journalineScreen::handle_upButton()
+void journalineScreen::_slot_handle_upButton()
 {
   if (pathVector.size() < 2)
     return;
   pathVector.pop_back();
-  int index = findIndex(pathVector.back());
+  int index = _findIndex(pathVector.back());
   if (index < 0)
     return;
   displayElement(*((*table)[index].element));
 }
 
-void journalineScreen::select_sub(QModelIndex ind)
+void journalineScreen::_slot_select_sub(const QModelIndex & ind)
 {
 //
 //	first, identify the current element
   int t = pathVector.back();
-  int currentIndex = findIndex(t);
+  int currentIndex = _findIndex(t);
   if (currentIndex < 0)
   {
     return;
@@ -107,7 +105,7 @@ void journalineScreen::select_sub(QModelIndex ind)
   if (true)
   {
 //	if (item. link_id_available) {
-    int ind = findIndex(item.link_id);
+    int ind = _findIndex(item.link_id);
     if (ind < 0)
     {
 //	      fprintf (stderr, "Link %d not found\n", item. link_id);
@@ -174,7 +172,7 @@ void journalineScreen::display_List(NML::News_t & element)
   subContent->setModel(&model);
 }
 
-int journalineScreen::findIndex(int key)
+int journalineScreen::_findIndex(int key)
 {
   for (uint16_t i = 0; i < table->size(); i++)
     if ((*table)[i].key == key)
