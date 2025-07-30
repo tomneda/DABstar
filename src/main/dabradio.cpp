@@ -1885,7 +1885,7 @@ void DabRadio::_slot_handle_reset_button()
 
 static void emphasize_pushbutton(QPushButton * const ipPB, const bool iEmphasize)
 {
-  ipPB->setStyleSheet(iEmphasize ? "background-color: #AE2B05; color: #FFD08A; font-weight: bold;" : "");
+  ipPB->setStyleSheet(iEmphasize ? "background-color: #AE2B05; color: #EEEE00; font-weight: bold;" : "");
 }
 
 void DabRadio::stop_source_dumping()
