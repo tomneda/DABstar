@@ -309,6 +309,7 @@ private:
   std::vector<STiiResult> mTransmitterIds;
   enum class EAudioFrameType { None, MP2, AAC };
   EAudioFrameType mAudioFrameType = EAudioFrameType::None;
+  std::vector<QMetaObject::Connection> mGuiConnections;
 
   static QStringList get_soft_bit_gen_names();
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> &, const SServiceId &);
