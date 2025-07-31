@@ -44,7 +44,7 @@
 
 class DabRadio;
 class QSettings;
-class Audiodata;
+class AudioData;
 
 class ContentTable : public QObject
 {

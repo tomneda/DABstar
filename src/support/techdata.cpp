@@ -90,7 +90,7 @@ void TechData::cleanUp()
   audioRate->display(0);
 }
 
-void TechData::show_serviceData(const Audiodata * ad)
+void TechData::show_serviceData(const AudioData * ad)
 {
   slot_show_serviceName(ad->serviceName);
   slot_show_serviceId(ad->SId);

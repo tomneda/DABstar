@@ -30,28 +30,23 @@ BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer
 {
   if (d->type == EServiceType::AUDIO)
   {
-    if (((Audiodata *)d)->ASCTy != 077)
+    if (((AudioData *)d)->ASCTy != 077)
     {
-      theProcessor = new Mp2Processor(mr, d->bitRate, audioBuffer, frameBuffer);
+      theProcessor.reset(new Mp2Processor(mr, d->bitRate, audioBuffer, frameBuffer));
     }
-    else if (((Audiodata *)d)->ASCTy == 077)
+    else if (((AudioData *)d)->ASCTy == 077)
     {
-      theProcessor = new Mp4Processor(mr, d->bitRate, audioBuffer, frameBuffer, dump);
+      theProcessor.reset(new Mp4Processor(mr, d->bitRate, audioBuffer, frameBuffer, dump));
     }
   }
   else if (d->type == EServiceType::PACKET)
   {
-    theProcessor = new DataProcessor(mr, (Packetdata *)d, dataBuffer);
+    theProcessor.reset(new DataProcessor(mr, (PacketData *)d, dataBuffer));
   }
   else
   {
-    theProcessor = new FrameProcessor();
-  }  // should not happen
-}
-
-BackendDriver::~BackendDriver()
-{
-  delete theProcessor;
+    theProcessor.reset(new FrameProcessor());
+  }
 }
 
 

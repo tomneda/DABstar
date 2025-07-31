@@ -42,7 +42,7 @@
 //	MSCdatagroups and dispatch to the appropriate handler
 //
 //	fragmentsize == Length * CUSize
-DataProcessor::DataProcessor(DabRadio * mr, const Packetdata * pd, RingBuffer<u8> * dataBuffer)
+DataProcessor::DataProcessor(DabRadio * mr, const PacketData * pd, RingBuffer<u8> * dataBuffer)
 {
   this->myRadioInterface = mr;
   this->bitRate = pd->bitRate;

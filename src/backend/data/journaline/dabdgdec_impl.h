@@ -73,20 +73,14 @@ extern int showDdDabDgDecErr;
 
 typedef struct
 {
-    unsigned long               magicId;
-    DAB_DATAGROUP_DECODER_data  *cb;
-    void                        *arg;
+  unsigned long magicId;
+  DAB_DATAGROUP_DECODER_data * cb;
+  void * arg;
 } DAB_DGDEC_IMPL_t;
 
-int DAB_DGDEC_IMPL_extractMscDatagroupHeader(
-    unsigned long len,
-    const unsigned char *buf,
-    DAB_DATAGROUP_DECODER_msc_datagroup_header_t *header);
-void DAB_DGDEC_IMPL_showMscDatagroupHeader(
-    DAB_DATAGROUP_DECODER_msc_datagroup_header_t *header);
-
-int DAB_DGDEC_IMPL_checkCrc(const unsigned char *buf,
-                            unsigned long len, unsigned short crc_field);
+int DAB_DGDEC_IMPL_extractMscDatagroupHeader(unsigned long len, const unsigned char * buf, DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header);
+void DAB_DGDEC_IMPL_showMscDatagroupHeader(DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header);
+int DAB_DGDEC_IMPL_checkCrc(const unsigned char * buf, unsigned long len, unsigned short crc_field);
 
 #ifdef __cplusplus
 }

@@ -1061,7 +1061,7 @@ void DabRadio::slot_change_in_configuration()
     {
       if (mpDabProcessor->is_audio_service(ss))
       {
-        Audiodata ad;
+        AudioData ad;
         FILE * f = mChannel.backgroundServices.at(i).fd;
         mpDabProcessor->get_data_for_audio_service(ss, &ad);
         mpDabProcessor->set_audio_channel(&ad, mpAudioBufferFromDecoder, f, BACK_GROUND);
@@ -1069,7 +1069,7 @@ void DabRadio::slot_change_in_configuration()
       }
       else
       {
-        Packetdata pd;
+        PacketData pd;
         mpDabProcessor->get_data_for_packet_service(ss, &pd, 0);
         mpDabProcessor->set_data_channel(&pd, mpDataBuffer, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = pd.subchId;
@@ -2325,7 +2325,7 @@ void DabRadio::stop_service(SDabService & ioDabService)
 
       for (i32 i = 0; i < 5; ++i) // TODO: from where the 5?
       {
-        Packetdata pd;
+        PacketData pd;
         mpDabProcessor->get_data_for_packet_service(ioDabService.serviceName, &pd, i);
 
         if (pd.defined)
@@ -2365,7 +2365,7 @@ void DabRadio::start_service(SDabService & s)
   ui->serviceLabel->setText(serviceName);
   ui->lblDynLabel->setText("");
 
-  Audiodata ad;
+  AudioData ad;
   mpDabProcessor->get_data_for_audio_service(serviceName, &ad);
   mAudioFrameType = EAudioFrameType::None;
 
@@ -2392,7 +2392,7 @@ void DabRadio::start_service(SDabService & s)
   }
   else if (mpDabProcessor->is_packet_service(serviceName))
   {
-    Packetdata pd;
+    PacketData pd;
     mpDabProcessor->get_data_for_packet_service(serviceName, &pd, 0);
     mChannel.currentService.valid = true;
     mChannel.currentService.is_audio = false;
@@ -2409,7 +2409,7 @@ void DabRadio::start_service(SDabService & s)
   }
 }
 
-void DabRadio::start_audio_service(const Audiodata * const ipAD)
+void DabRadio::start_audio_service(const AudioData * const ipAD)
 {
   mChannel.currentService.valid = true;
 
@@ -2417,7 +2417,7 @@ void DabRadio::start_audio_service(const Audiodata * const ipAD)
 
   for (i32 i = 1; i < 10; i++)
   {
-    Packetdata pd;
+    PacketData pd;
     mpDabProcessor->get_data_for_packet_service(ipAD->serviceName, &pd, i);
     if (pd.defined)
     {
@@ -2438,7 +2438,7 @@ void DabRadio::start_audio_service(const Audiodata * const ipAD)
 
 void DabRadio::start_packet_service(const QString & iS)
 {
-  Packetdata pd;
+  PacketData pd;
   mpDabProcessor->get_data_for_packet_service(iS, &pd, 0);
 
   if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
@@ -3013,7 +3013,7 @@ void DabRadio::slot_epg_timer_timeout()
         serv.name.contains("EPG_", Qt::CaseInsensitive) ||
         serv.name.startsWith("EPG ", Qt::CaseInsensitive))
     {
-      Packetdata pd;
+      PacketData pd;
       mpDabProcessor->get_data_for_packet_service(serv.name, &pd, 0);
 
       if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))

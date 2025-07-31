@@ -94,8 +94,8 @@ public:
   std::vector<SServiceId> get_services();
   bool is_audio_service(const QString & s);
   bool is_packet_service(const QString & s);
-  void get_data_for_audio_service(const QString &, Audiodata *);
-  void get_data_for_packet_service(const QString &, Packetdata *, i16);
+  void get_data_for_audio_service(const QString &, AudioData *);
+  void get_data_for_packet_service(const QString &, PacketData *, i16);
   i32 get_sub_channel_id(const QString &, u32);
   u8 get_ecc();
   i32 get_ensemble_id();
@@ -114,8 +114,8 @@ public:
   void reset_services();
   void stop_service(DescriptorType *, i32);
   void stop_service(i32, i32);
-  bool set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, FILE * dump, i32 flag);
-  bool set_data_channel(Packetdata *, RingBuffer<u8> *, i32);
+  bool set_audio_channel(const AudioData * d, RingBuffer<i16> * b, FILE * dump, i32 flag);
+  bool set_data_channel(PacketData *, RingBuffer<u8> *, i32);
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);

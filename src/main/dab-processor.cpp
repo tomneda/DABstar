@@ -458,24 +458,24 @@ i32 DabProcessor::get_sub_channel_id(const QString & s, u32 SId)
 
 bool DabProcessor::is_audio_service(const QString & s)
 {
-  Audiodata ad;
+  AudioData ad;
   mFicHandler.get_data_for_audio_service(s, &ad);
   return ad.defined;
 }
 
 bool DabProcessor::is_packet_service(const QString & s)
 {
-  Packetdata pd;
+  PacketData pd;
   mFicHandler.get_data_for_packet_service(s, &pd, 0);
   return pd.defined;
 }
 
-void DabProcessor::get_data_for_audio_service(const QString & iS, Audiodata * opAD)
+void DabProcessor::get_data_for_audio_service(const QString & iS, AudioData * opAD)
 {
   mFicHandler.get_data_for_audio_service(iS, opAD);
 }
 
-void DabProcessor::get_data_for_packet_service(const QString & iS, Packetdata * opPD, i16 iCompNr)
+void DabProcessor::get_data_for_packet_service(const QString & iS, PacketData * opPD, i16 iCompNr)
 {
   mFicHandler.get_data_for_packet_service(iS, opPD, iCompNr);
 }
@@ -551,7 +551,7 @@ void DabProcessor::stop_service(i32 subChId, i32 flag)
   }
 }
 
-bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, FILE * dump, i32 flag)
+bool DabProcessor::set_audio_channel(const AudioData * d, RingBuffer<i16> * b, FILE * dump, i32 flag)
 {
   if (!mScanMode)
   {
@@ -563,7 +563,7 @@ bool DabProcessor::set_audio_channel(const Audiodata * d, RingBuffer<i16> * b, F
   }
 }
 
-bool DabProcessor::set_data_channel(Packetdata * d, RingBuffer<u8> * b, i32 flag)
+bool DabProcessor::set_data_channel(PacketData * d, RingBuffer<u8> * b, i32 flag)
 {
   if (!mScanMode)
   {

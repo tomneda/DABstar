@@ -1599,7 +1599,7 @@ i32 FibDecoder::get_sub_channel_id(const QString & s, u32 dummy_SId)
   return subChId;
 }
 
-void FibDecoder::get_data_for_audio_service(const QString & iS, Audiodata * opAD)
+void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD)
 {
   i32 serviceIndex;
 
@@ -1653,7 +1653,7 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, Audiodata * opAD
   fibLocker.unlock();
 }
 
-void FibDecoder::get_data_for_packet_service(const QString & iS, Packetdata * opPD, i16 iSCIds)
+void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * opPD, i16 iSCIds)
 {
   i32 serviceIndex;
 

@@ -57,14 +57,8 @@
 #define  kHz(x)    (x * 1000)
 #define  MHz(x)    (kHz (x) * 1000)
 
-#define    INPUT_RATE  2048000
-#define    BANDWIDTH  1536000
-#define    LIGHT_SPEED_MPS  299792458
-
-#define    MAP_RESET  0
-#define    MAP_FRAME  1
-#define    MAP_MAX_TRANS  2
-#define    MAP_NORM_TRANS  4
+constexpr i32 INPUT_RATE = 2048000;
+constexpr i32 LIGHT_SPEED_MPS = 299792458;
 
 constexpr f32 F_2_M_PI = (f32)(2 * M_PI);
 constexpr f32 F_M_PI   = (f32)M_PI;
@@ -76,14 +70,25 @@ constexpr f32 F_DEG_PER_RAD = (f32)(180.0 / M_PI);
 constexpr i16 VITERBI_SOFT_BIT_VALUE_MAX = 127;
 constexpr f32 F_VITERBI_SOFT_BIT_VALUE_MAX = (f32)VITERBI_SOFT_BIT_VALUE_MAX;
 
+constexpr u8 BAND_III = 0100;
+constexpr u8 L_BAND   = 0101;
+constexpr u8 A_BAND   = 0102;
+
+constexpr i32 FORE_GROUND = 0000;
+constexpr i32 BACK_GROUND = 0100;
+
 constexpr char sSettingSampleStorageDir[]  = "saveDirSampleDump";
 constexpr char sSettingAudioStorageDir[]   = "saveDirAudioDump";
 constexpr char sSettingContentStorageDir[] = "saveDirContent";
 
-enum class EServiceType
+enum class EServiceType { AUDIO, PACKET };
+
+enum EMapType
 {
-  AUDIO = 0101,
-  PACKET = 0102
+  MAP_RESET      = 0,
+  MAP_FRAME      = 1,
+  MAP_MAX_TRANS  = 2,
+  MAP_NORM_TRANS = 4
 };
 
 template<typename T>
@@ -108,18 +113,10 @@ struct SServiceId
   u32 SId;
 };
 
-constexpr u8 BAND_III = 0100;
-constexpr u8 L_BAND   = 0101;
-constexpr u8 A_BAND   = 0102;
-
-constexpr i32 FORE_GROUND = 0000;
-constexpr i32 BACK_GROUND = 0100;
-
-class DescriptorType
+struct DescriptorType
 {
-public:
   EServiceType type;
-  bool defined;
+  bool defined = false;
   QString serviceName;
   i32 SId;
   i32 SCIds;
@@ -129,49 +126,30 @@ public:
   i16 protLevel;
   i16 length;
   i16 bitRate;
-  QString channel;  // just for presets
-
-public:
-  DescriptorType()
-  {
-    defined = false;
-    serviceName = "";
-  }
-
-  virtual ~DescriptorType() = default;
+  QString channel;
 };
 
 //	for service handling we define
-class Packetdata : public DescriptorType
+struct PacketData : DescriptorType
 {
-public:
   i16 DSCTy;
   i16 FEC_scheme;
   i16 DGflag;
   i16 appType;
   i16 compnr;
   i16 packetAddress;
-
-  Packetdata()
-  {
-    type = EServiceType::PACKET;
-  }
+  PacketData() { type = EServiceType::PACKET; }
 };
 
-class Audiodata : public DescriptorType
+struct AudioData : DescriptorType
 {
 public:
   i16 ASCTy;
   i16 language;
   i16 programType;
   i16 compnr;
-  i32 fmFrequency;
-
-  Audiodata()
-  {
-    type = EServiceType::AUDIO;
-    fmFrequency = -1;
-  }
+  i32 fmFrequency = -1;
+  AudioData() { type = EServiceType::AUDIO; }
 };
 
 struct ChannelData

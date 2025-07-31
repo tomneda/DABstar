@@ -56,9 +56,10 @@ private:
   journalineScreen theScreen;
   DAB_DATAGROUP_DECODER_t theDecoder;
   DAB_DATAGROUP_DECODER_data myCallBack;
-  void init_dataBase();
-  void destroy_dataBase();
-  int findIndex(int);
+
+  void _init_dataBase();
+  void _destroy_dataBase();
+  int _findIndex(int);
 
 signals:
   void signal_start(int);

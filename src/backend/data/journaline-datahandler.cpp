@@ -53,7 +53,7 @@ journaline_dataHandler::journaline_dataHandler()
   : theScreen(table)
 {
   theDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
-  init_dataBase();
+  _init_dataBase();
   connect(this, &journaline_dataHandler::signal_start, &theScreen, &journalineScreen::slot_start);
   //fprintf(stderr, "journaline len=%ld\n", len);
 }
@@ -61,7 +61,7 @@ journaline_dataHandler::journaline_dataHandler()
 journaline_dataHandler::~journaline_dataHandler()
 {
   DAB_DATAGROUP_DECODER_deleteDec(theDecoder);
-  destroy_dataBase();
+  _destroy_dataBase();
 }
 
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
@@ -86,13 +86,13 @@ void journaline_dataHandler::add_mscDatagroup(const std::vector<u8> & msc)
   }
 }
 
-void journaline_dataHandler::init_dataBase()
+void journaline_dataHandler::_init_dataBase()
 {
-  destroy_dataBase();
+  _destroy_dataBase();
   table.resize(0);
 }
 
-void journaline_dataHandler::destroy_dataBase()
+void journaline_dataHandler::_destroy_dataBase()
 {
   for (uint16_t i = 0; i < table.size(); i++)
     delete table[i].element;
@@ -116,7 +116,7 @@ void journaline_dataHandler::add_to_dataBase(NML * NMLelement)
     x->extended_header = NMLelement->GetExtendedHeader();
     x->title = NMLelement->GetTitle();
     x->item = NMLelement->GetItems();
-    int index_oldElement = findIndex(x->object_id);
+    int index_oldElement = _findIndex(x->object_id);
     if (index_oldElement >= 0)
     {
       NML::News_t * p = table[index_oldElement].element;
@@ -130,7 +130,7 @@ void journaline_dataHandler::add_to_dataBase(NML * NMLelement)
     table.push_back(temp);
     if (x->object_id == 0)
     {
-//	         theScreen.displayElement(*x);
+      // theScreen.displayElement(*x);
       emit signal_start(table.size() - 1);
     }
   }
@@ -142,7 +142,7 @@ void journaline_dataHandler::add_to_dataBase(NML * NMLelement)
   }
 }
 
-int journaline_dataHandler::findIndex(int key)
+int journaline_dataHandler::_findIndex(int key)
 {
   for (uint16_t i = 0; i < table.size(); i++)
     if (table[i].key == key)

@@ -56,8 +56,8 @@ public:
   void connect_channel();
   void disconnect_channel();
   bool sync_reached();
-  void get_data_for_audio_service(const QString &, Audiodata *);
-  void get_data_for_packet_service(const QString &, Packetdata *, i16);
+  void get_data_for_audio_service(const QString &, AudioData *);
+  void get_data_for_packet_service(const QString &, PacketData *, i16);
   i32 get_sub_channel_id(const QString &, u32);
   std::vector<SServiceId> get_services();
 
