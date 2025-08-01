@@ -128,6 +128,7 @@ private:
   DabRadio * const mpRadioInterface;
   SampleReader mSampleReader;
   FicHandler mFicHandler;
+  FibDecoder & mFibDecoder;
   MscHandler mMscHandler;
   PhaseReference mPhaseReference;
   TiiDetector mTiiDetector{};

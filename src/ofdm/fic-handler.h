@@ -46,9 +46,9 @@
 class DabRadio;
 class DabParams;
 
-class FicHandler : public FibDecoder
+class FicHandler : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   FicHandler(DabRadio * iMr);
   ~FicHandler() override = default;
@@ -61,6 +61,8 @@ public:
   void reset_fic_decode_success_ratio() { mFicDecodeSuccessRatio = 0; };
   void start_fic_dump(FILE *);
   void stop_fic_dump();
+
+  FibDecoder & get_fib_decoder() { return mFibDecoder; };
 
 private:
   static constexpr i32 cViterbiBlockSize = 3072 + 24; // with punctation data
@@ -78,6 +80,7 @@ private:
   i32 mFicDecodeSuccessRatio = 0;   // Saturating up/down-counter in range [0, 10] corresponding to the number of FICs with correct CRC
   std::atomic<bool> mIsRunning{false};
   std::atomic<FILE *> mpFicDump{nullptr};
+  FibDecoder mFibDecoder;
 
   void _process_fic_input(i16 iFicIdx, bool & oFicValid);
   void _dump_fib_to_file(const std::byte * ipOneFibBits);

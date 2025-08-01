@@ -44,6 +44,7 @@
 
 DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
   : mpRadioInterface(mr)
+  , mFibDecoder(mFicHandler.get_fib_decoder())
   , mSampleReader(mr, inputDevice, p->spectrumBuffer)
   , mFicHandler(mr)
   , mMscHandler(mr, p->frameBuffer)
@@ -264,7 +265,7 @@ void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
   ioSampleCount += cTn;
 
   // is this null symbol with TII?
-  const bool isTiiNullSegment = ((mFicHandler.get_cif_count() & 0x7) >= 4);
+  const bool isTiiNullSegment = ((mFibDecoder.get_cif_count() & 0x7) >= 4);
   memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cf32));
   fftwf_execute(mFftPlan);
 
@@ -438,91 +439,91 @@ void DabProcessor::activate_cir_viewer(bool iActivate)
 
 QString DabProcessor::find_service(u32 SId, i32 SCIds)
 {
-  return mFicHandler.find_service(SId, SCIds);
+  return mFibDecoder.find_service(SId, SCIds);
 }
 
 void DabProcessor::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIds)
 {
-  mFicHandler.get_parameters(s, p_SId, p_SCIds);
+  mFibDecoder.get_parameters(s, p_SId, p_SCIds);
 }
 
 std::vector<SServiceId> DabProcessor::get_services()
 {
-  return mFicHandler.get_services();
+  return mFibDecoder.get_services();
 }
 
 i32 DabProcessor::get_sub_channel_id(const QString & s, u32 SId)
 {
-  return mFicHandler.get_sub_channel_id(s, SId);
+  return mFibDecoder.get_sub_channel_id(s, SId);
 }
 
 bool DabProcessor::is_audio_service(const QString & s)
 {
   AudioData ad;
-  mFicHandler.get_data_for_audio_service(s, &ad);
+  mFibDecoder.get_data_for_audio_service(s, &ad);
   return ad.defined;
 }
 
 bool DabProcessor::is_packet_service(const QString & s)
 {
   PacketData pd;
-  mFicHandler.get_data_for_packet_service(s, &pd, 0);
+  mFibDecoder.get_data_for_packet_service(s, &pd, 0);
   return pd.defined;
 }
 
 void DabProcessor::get_data_for_audio_service(const QString & iS, AudioData * opAD)
 {
-  mFicHandler.get_data_for_audio_service(iS, opAD);
+  mFibDecoder.get_data_for_audio_service(iS, opAD);
 }
 
 void DabProcessor::get_data_for_packet_service(const QString & iS, PacketData * opPD, i16 iCompNr)
 {
-  mFicHandler.get_data_for_packet_service(iS, opPD, iCompNr);
+  mFibDecoder.get_data_for_packet_service(iS, opPD, iCompNr);
 }
 
 u8 DabProcessor::get_ecc()
 {
-  return mFicHandler.get_ecc();
+  return mFibDecoder.get_ecc();
 }
 
 u16 DabProcessor::get_country_name()
 {
-  return mFicHandler.get_country_name();
+  return mFibDecoder.get_country_name();
 }
 
 i32 DabProcessor::get_ensemble_id()
 {
-  return mFicHandler.get_ensembleId();
+  return mFibDecoder.get_ensembleId();
 }
 
 QString DabProcessor::get_ensemble_name()
 {
-  return mFicHandler.get_ensemble_name();
+  return mFibDecoder.get_ensemble_name();
 }
 
 void DabProcessor::set_epg_data(i32 SId, i32 theTime, const QString & s, const QString & d)
 {
-  mFicHandler.set_epg_data(SId, theTime, s, d);
+  mFibDecoder.set_epg_data(SId, theTime, s, d);
 }
 
 bool DabProcessor::has_time_table(u32 SId)
 {
-  return mFicHandler.has_time_table(SId);
+  return mFibDecoder.has_time_table(SId);
 }
 
 std::vector<SEpgElement> DabProcessor::find_epg_data(u32 SId)
 {
-  return mFicHandler.find_epg_data(SId);
+  return mFibDecoder.find_epg_data(SId);
 }
 
 QStringList DabProcessor::basicPrint()
 {
-  return mFicHandler.basic_print();
+  return mFibDecoder.basic_print();
 }
 
 i32 DabProcessor::scan_width()
 {
-  return mFicHandler.get_scan_width();
+  return mFibDecoder.get_scan_width();
 }
 
 //	for the mscHandler:
@@ -597,7 +598,7 @@ void DabProcessor::stop_fic_dump()
 
 u32 DabProcessor::get_julian_date()
 {
-  return mFicHandler.get_julian_date();
+  return mFibDecoder.get_julian_date();
 }
 
 bool DabProcessor::start_eti_generator(const QString & s)

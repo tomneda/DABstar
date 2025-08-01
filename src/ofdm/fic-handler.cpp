@@ -54,7 +54,7 @@
   */
 
 FicHandler::FicHandler(DabRadio * const iMr)
-  : FibDecoder(iMr)
+  : mFibDecoder(iMr)
 {
   std::array<std::byte, 9> shiftRegister;
   std::fill(shiftRegister.begin(), shiftRegister.end(), static_cast<std::byte>(1));
@@ -249,7 +249,7 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
         _dump_fib_to_file(pOneFib);
       }
 
-      FibDecoder::process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
+      mFibDecoder.process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
 
       if (mFicDecodeSuccessRatio < 10)
       {
@@ -270,14 +270,14 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 
 void FicHandler::stop()
 {
-  disconnect_channel();
+  mFibDecoder.disconnect_channel();
   mIsRunning.store(false);
 }
 
 void FicHandler::restart()
 {
   mFicDecodeSuccessRatio = 0;
-  connect_channel();
+  mFibDecoder.connect_channel();
   mIsRunning.store(true);
 }
 

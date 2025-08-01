@@ -59,7 +59,6 @@
 #include  "protection.h"
 
 class DabRadio;
-
 class parameter;
 
 //	to build a simple cache for the protection handlers
@@ -96,6 +95,7 @@ private:
   i16 numberofblocksperCIF;
   u8 fibBits[4 * 768];
   std::mutex mMutex;
+  FibDecoder & mFibDecoder;
 
   i32 _init_eti(u8 *, i16, i16, i16);
   i32 _process_cif(const i16 *, u8 *, i32);

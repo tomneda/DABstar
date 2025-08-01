@@ -79,8 +79,6 @@ public:
   std::vector<SEpgElement> find_epg_data(u32);
   QStringList basic_print();
   i32 get_scan_width();
-
-protected:
   void process_FIB(const u8 *, u16);
 
 private:

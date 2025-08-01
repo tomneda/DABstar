@@ -84,9 +84,9 @@ u8 theVector[6144];
 //	Note CIF counts from 0 .. 3
 //
 EtiGenerator::EtiGenerator(FicHandler * my_ficHandler)
+  : my_ficHandler(my_ficHandler)
+  , mFibDecoder(my_ficHandler->get_fib_decoder())
 {
-  this->my_ficHandler = my_ficHandler;
-
   index_Out = 0;
   BitsperBlock = c2K;
   numberofblocksperCIF = 18;  // mode I
@@ -178,7 +178,7 @@ void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbId
       }
     }
     Minor = 0;
-    my_ficHandler->get_cif_count(&CIFCount_hi, &CIFCount_lo);
+    mFibDecoder.get_cif_count(&CIFCount_hi, &CIFCount_lo);
   }
 
   // adding the MSC blocks. Blocks 5 .. 76 are "transformed" into the "soft" bits arrays
@@ -291,7 +291,8 @@ i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
   i32 FL = 0;      // Frame Length
   for (i32 j = 0; j < 64; j++)
   {
-    my_ficHandler->get_channel_info(&data, j);
+    mFibDecoder.get_channel_info(&data, j);
+
     if (data.in_use)
     {
       NST++;
@@ -313,7 +314,7 @@ i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
   //	STC ()
   for (i32 j = 0; j < 64; j++)
   {
-    my_ficHandler->get_channel_info(&data, j);
+    mFibDecoder.get_channel_info(&data, j);
     if (data.in_use)
     {
       i32 SCID = data.id;
@@ -375,7 +376,7 @@ i32 EtiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
   for (i32 i = 0; i < 64; i++)
   {
     ChannelData data;
-    my_ficHandler->get_channel_info(&data, i);
+    mFibDecoder.get_channel_info(&data, i);
     if (data.in_use)
     {
       parameter * t = new parameter;
