@@ -76,6 +76,8 @@ public:
   DabProcessor(DabRadio * mr, IDeviceHandler * inputDevice, ProcessParams * p);
   ~DabProcessor() override;
 
+  inline FibDecoder & get_fib_decoder() { return mFibDecoder; };
+
   void start();
   void stop();
   void startDumping(SNDFILE *);
@@ -87,27 +89,7 @@ public:
   void add_bb_freq(i32 iFreqOffHz);
   void activate_cir_viewer(bool iActivate);
 
-  //	inheriting from our delegates
-  //	for the FicHandler:
-  QString find_service(u32, i32);
-  void get_parameters(const QString &, u32 *, i32 *);
-  std::vector<SServiceId> get_services();
-  bool is_audio_service(const QString & s);
-  bool is_packet_service(const QString & s);
-  void get_data_for_audio_service(const QString &, AudioData *);
-  void get_data_for_packet_service(const QString &, PacketData *, i16);
-  i32 get_sub_channel_id(const QString &, u32);
-  u8 get_ecc();
-  i32 get_ensemble_id();
-  QString get_ensemble_name();
-  u16 get_country_name();
-  void set_epg_data(i32, i32, const QString &, const QString &);
-  bool has_time_table(u32);
-  std::vector<SEpgElement> find_epg_data(u32);
-  u32 get_julian_date();
-  QStringList basicPrint();
-  i32 scan_width();
-  void start_ficDump(FILE *);
+  void start_fic_dump(FILE *);
   void stop_fic_dump();
 
   //	for the mscHandler

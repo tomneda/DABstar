@@ -44,9 +44,9 @@
 
 DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
   : mpRadioInterface(mr)
-  , mFibDecoder(mFicHandler.get_fib_decoder())
   , mSampleReader(mr, inputDevice, p->spectrumBuffer)
   , mFicHandler(mr)
+  , mFibDecoder(mFicHandler.get_fib_decoder())
   , mMscHandler(mr, p->frameBuffer)
   , mPhaseReference(mr, p)
   , mOfdmDecoder(mr, p->iqBuffer, p->carrBuffer)
@@ -437,95 +437,6 @@ void DabProcessor::activate_cir_viewer(bool iActivate)
   mSampleReader.set_cir_buffer(iActivate ? mpCirBuffer : nullptr);
 }
 
-QString DabProcessor::find_service(u32 SId, i32 SCIds)
-{
-  return mFibDecoder.find_service(SId, SCIds);
-}
-
-void DabProcessor::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIds)
-{
-  mFibDecoder.get_parameters(s, p_SId, p_SCIds);
-}
-
-std::vector<SServiceId> DabProcessor::get_services()
-{
-  return mFibDecoder.get_services();
-}
-
-i32 DabProcessor::get_sub_channel_id(const QString & s, u32 SId)
-{
-  return mFibDecoder.get_sub_channel_id(s, SId);
-}
-
-bool DabProcessor::is_audio_service(const QString & s)
-{
-  AudioData ad;
-  mFibDecoder.get_data_for_audio_service(s, &ad);
-  return ad.defined;
-}
-
-bool DabProcessor::is_packet_service(const QString & s)
-{
-  PacketData pd;
-  mFibDecoder.get_data_for_packet_service(s, &pd, 0);
-  return pd.defined;
-}
-
-void DabProcessor::get_data_for_audio_service(const QString & iS, AudioData * opAD)
-{
-  mFibDecoder.get_data_for_audio_service(iS, opAD);
-}
-
-void DabProcessor::get_data_for_packet_service(const QString & iS, PacketData * opPD, i16 iCompNr)
-{
-  mFibDecoder.get_data_for_packet_service(iS, opPD, iCompNr);
-}
-
-u8 DabProcessor::get_ecc()
-{
-  return mFibDecoder.get_ecc();
-}
-
-u16 DabProcessor::get_country_name()
-{
-  return mFibDecoder.get_country_name();
-}
-
-i32 DabProcessor::get_ensemble_id()
-{
-  return mFibDecoder.get_ensembleId();
-}
-
-QString DabProcessor::get_ensemble_name()
-{
-  return mFibDecoder.get_ensemble_name();
-}
-
-void DabProcessor::set_epg_data(i32 SId, i32 theTime, const QString & s, const QString & d)
-{
-  mFibDecoder.set_epg_data(SId, theTime, s, d);
-}
-
-bool DabProcessor::has_time_table(u32 SId)
-{
-  return mFibDecoder.has_time_table(SId);
-}
-
-std::vector<SEpgElement> DabProcessor::find_epg_data(u32 SId)
-{
-  return mFibDecoder.find_epg_data(SId);
-}
-
-QStringList DabProcessor::basicPrint()
-{
-  return mFibDecoder.basic_print();
-}
-
-i32 DabProcessor::scan_width()
-{
-  return mFibDecoder.get_scan_width();
-}
-
 //	for the mscHandler:
 void DabProcessor::reset_services()
 {
@@ -586,7 +497,7 @@ void DabProcessor::stop_dumping()
   mSampleReader.stop_dumping();
 }
 
-void DabProcessor::start_ficDump(FILE * f)
+void DabProcessor::start_fic_dump(FILE * f)
 {
   mFicHandler.start_fic_dump(f);
 }
@@ -594,11 +505,6 @@ void DabProcessor::start_ficDump(FILE * f)
 void DabProcessor::stop_fic_dump()
 {
   mFicHandler.stop_fic_dump();
-}
-
-u32 DabProcessor::get_julian_date()
-{
-  return mFibDecoder.get_julian_date();
 }
 
 bool DabProcessor::start_eti_generator(const QString & s)

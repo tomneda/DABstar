@@ -569,7 +569,7 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
 
   qCDebug(sLogRadioInterface()) << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
 
-  const i32 subChId = mpDabProcessor->get_sub_channel_id(iServiceName, iSId);
+  const i32 subChId = mpDabProcessor->get_fib_decoder().get_sub_channel_id(iServiceName, iSId);
 
   if (subChId < 0)
   {
@@ -586,7 +586,7 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
     return; // service already in service list
   }
 
-  const bool isAudioService = mpDabProcessor->is_audio_service(iServiceName);
+  const bool isAudioService = _is_audio_service(iServiceName);
   const i32 scanFilter = mConfig.cmbScanServiceListFilter->currentIndex();
 
   if (scanFilter == 2 ||
@@ -661,7 +661,7 @@ void DabRadio::slot_name_of_ensemble(i32 id, const QString & v)
 
 void DabRadio::_slot_handle_content_button()
 {
-  const QStringList s = mpDabProcessor->basicPrint();
+  const QStringList s = mpDabProcessor->get_fib_decoder().basic_print();
 
   if (mpContentTable != nullptr)
   {
@@ -687,7 +687,7 @@ void DabRadio::_slot_handle_content_button()
                    + hex_to_str(mChannel.Eid) + " " + ";" + ui->transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
                    + QString::number(mServiceList.size()) + ";" + convLocation + "\n";
 
-  mpContentTable = new ContentTable(this, &Settings::Storage::instance(), mChannel.channelName, mpDabProcessor->scan_width());
+  mpContentTable = new ContentTable(this, &Settings::Storage::instance(), mChannel.channelName, mpDabProcessor->get_fib_decoder().get_scan_width());
   connect(mpContentTable, &ContentTable::signal_go_service, this, &DabRadio::slot_handle_content_selector);
 
   mpContentTable->addLine(header);
@@ -747,9 +747,9 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
   }
 
   std::vector<u8> epgData(result.begin(), result.end());
-  const u32 ensembleId = mpDabProcessor->get_ensemble_id();
+  const u32 ensembleId = mpDabProcessor->get_fib_decoder().get_ensembleId();
   const u32 currentSId = extract_epg(objectName, mServiceList, ensembleId);
-  const u32 julianDate = mpDabProcessor->get_julian_date();
+  const u32 julianDate = mpDabProcessor->get_fib_decoder().get_julian_date();
   const i32 subType = getContentSubType((MOTContentType)contentType);
   mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
 
@@ -1018,7 +1018,7 @@ void DabRadio::slot_change_in_configuration()
   fprintf(stdout, "configuration change will be effected\n");
 
   //	we rebuild the services list from the fib and	then we (try to) restart the service
-  mServiceList = mpDabProcessor->get_services();
+  mServiceList = mpDabProcessor->get_fib_decoder().get_services();
 
   if (mChannel.etiActive)
   {
@@ -1028,7 +1028,7 @@ void DabRadio::slot_change_in_configuration()
   //	Of course, it may be disappeared
   if (s.valid)
   {
-    if (const QString ss = mpDabProcessor->find_service(s.SId, s.SCIds);
+    if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIds);
         ss != "")
     {
       start_service(s);
@@ -1037,7 +1037,7 @@ void DabRadio::slot_change_in_configuration()
 
     //	The service is gone, it may be the subservice of another one
     s.SCIds = 0;
-    s.serviceName = mpDabProcessor->find_service(s.SId, s.SCIds);
+    s.serviceName = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIds);
 
     if (s.serviceName != "")
     {
@@ -1048,7 +1048,7 @@ void DabRadio::slot_change_in_configuration()
   //	we also have to restart all background services,
   for (u16 i = 0; i < mChannel.backgroundServices.size(); ++i)
   {
-    if (const QString ss = mpDabProcessor->find_service(s.SId, s.SCIds);
+    if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIds);
         ss == "") // it is gone, close the file if any
     {
       if (mChannel.backgroundServices.at(i).fd != nullptr)
@@ -1059,18 +1059,18 @@ void DabRadio::slot_change_in_configuration()
     }
     else // (re)start the service
     {
-      if (mpDabProcessor->is_audio_service(ss))
+      if (_is_audio_service(ss))
       {
         AudioData ad;
         FILE * f = mChannel.backgroundServices.at(i).fd;
-        mpDabProcessor->get_data_for_audio_service(ss, &ad);
+        mpDabProcessor->get_fib_decoder().get_data_for_audio_service(ss, &ad);
         mpDabProcessor->set_audio_channel(&ad, mpAudioBufferFromDecoder, f, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = ad.subchId;
       }
       else
       {
         PacketData pd;
-        mpDabProcessor->get_data_for_packet_service(ss, &pd, 0);
+        mpDabProcessor->get_fib_decoder().get_data_for_packet_service(ss, &pd, 0);
         mpDabProcessor->set_data_channel(&pd, mpDataBuffer, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = pd.subchId;
       }
@@ -1534,7 +1534,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   if (!mChannel.ecc_checked)
   {
     mChannel.ecc_checked = true;
-    mChannel.ecc_byte = mpDabProcessor->get_ecc();
+    mChannel.ecc_byte = mpDabProcessor->get_fib_decoder().get_ecc();
     country = find_ITU_code(mChannel.ecc_byte, (mChannel.Eid >> 12) & 0xF);
     mChannel.transmitterName = "";
 
@@ -2248,7 +2248,7 @@ void DabRadio::local_select(const QString & iChannel, const QString & iService)
   {
     mChannel.currentService.valid = false;
     SDabService s;
-    mpDabProcessor->get_parameters(serviceName, &s.SId, &s.SCIds);
+    mpDabProcessor->get_fib_decoder().get_parameters(serviceName, &s.SId, &s.SCIds);
     if (s.SId == 0)
     {
       write_warning_message("Insufficient data for this program (1)");
@@ -2326,7 +2326,7 @@ void DabRadio::stop_service(SDabService & ioDabService)
       for (i32 i = 0; i < 5; ++i) // TODO: from where the 5?
       {
         PacketData pd;
-        mpDabProcessor->get_data_for_packet_service(ioDabService.serviceName, &pd, i);
+        mpDabProcessor->get_fib_decoder().get_data_for_packet_service(ioDabService.serviceName, &pd, i);
 
         if (pd.defined)
         {
@@ -2366,7 +2366,7 @@ void DabRadio::start_service(SDabService & s)
   ui->lblDynLabel->setText("");
 
   AudioData ad;
-  mpDabProcessor->get_data_for_audio_service(serviceName, &ad);
+  mpDabProcessor->get_fib_decoder().get_data_for_audio_service(serviceName, &ad);
   mAudioFrameType = EAudioFrameType::None;
 
   if (ad.defined)
@@ -2374,7 +2374,7 @@ void DabRadio::start_service(SDabService & s)
     mChannel.currentService.valid = true;
     mChannel.currentService.is_audio = true;
     mChannel.currentService.subChId = ad.subchId;
-    if (mpDabProcessor->has_time_table(ad.SId))
+    if (mpDabProcessor->get_fib_decoder().has_time_table(ad.SId))
     {
       mpTechDataWidget->slot_show_timetableButton(true);
     }
@@ -2390,10 +2390,10 @@ void DabRadio::start_service(SDabService & s)
     }
 #endif
   }
-  else if (mpDabProcessor->is_packet_service(serviceName))
+  else if (_is_packet_service(serviceName))
   {
     PacketData pd;
-    mpDabProcessor->get_data_for_packet_service(serviceName, &pd, 0);
+    mpDabProcessor->get_fib_decoder().get_data_for_packet_service(serviceName, &pd, 0);
     mChannel.currentService.valid = true;
     mChannel.currentService.is_audio = false;
     mChannel.currentService.subChId = pd.subchId;
@@ -2418,7 +2418,7 @@ void DabRadio::start_audio_service(const AudioData * const ipAD)
   for (i32 i = 1; i < 10; i++)
   {
     PacketData pd;
-    mpDabProcessor->get_data_for_packet_service(ipAD->serviceName, &pd, i);
+    mpDabProcessor->get_fib_decoder().get_data_for_packet_service(ipAD->serviceName, &pd, i);
     if (pd.defined)
     {
       mpDabProcessor->set_data_channel(&pd, mpDataBuffer, FORE_GROUND);
@@ -2439,7 +2439,7 @@ void DabRadio::start_audio_service(const AudioData * const ipAD)
 void DabRadio::start_packet_service(const QString & iS)
 {
   PacketData pd;
-  mpDabProcessor->get_data_for_packet_service(iS, &pd, 0);
+  mpDabProcessor->get_fib_decoder().get_data_for_packet_service(iS, &pd, 0);
 
   if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
   {
@@ -2559,7 +2559,7 @@ void DabRadio::_slot_preset_timeout()
 
   SDabService s;
   s.serviceName = presetName;
-  mpDabProcessor->get_parameters(presetName, &s.SId, &s.SCIds);
+  mpDabProcessor->get_fib_decoder().get_parameters(presetName, &s.SId, &s.SCIds);
 
   if (s.SId == 0)
   {
@@ -3014,7 +3014,7 @@ void DabRadio::slot_epg_timer_timeout()
         serv.name.startsWith("EPG ", Qt::CaseInsensitive))
     {
       PacketData pd;
-      mpDabProcessor->get_data_for_packet_service(serv.name, &pd, 0);
+      mpDabProcessor->get_fib_decoder().get_data_for_packet_service(serv.name, &pd, 0);
 
       if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
       {
@@ -3083,7 +3083,7 @@ void DabRadio::slot_set_epg_data(i32 SId, i32 theTime, const QString & theText, 
 {
   if (mpDabProcessor != nullptr)
   {
-    mpDabProcessor->set_epg_data(SId, theTime, theText, theDescr);
+    mpDabProcessor->get_fib_decoder().set_epg_data(SId, theTime, theText, theDescr);
   }
 }
 
@@ -3101,7 +3101,7 @@ void DabRadio::_slot_handle_time_table()
   {
     epgWidth = 50;
   }
-  std::vector<SEpgElement> res = mpDabProcessor->find_epg_data(mChannel.currentService.SId);
+  std::vector<SEpgElement> res = mpDabProcessor->get_fib_decoder().find_epg_data(mChannel.currentService.SId);
   for (const auto & element: res)
   {
     mpTimeTable->addElement(element.theTime, epgWidth, element.theText, element.theDescr);
@@ -3752,3 +3752,16 @@ void DabRadio::_check_coordinates() const
   emphasize_pushbutton(mConfig.set_coordinatesButton, local_lat == 0 || local_lon == 0); // it is very unlikely that an exact zero is a valid coordinate
 }
 
+bool DabRadio::_is_audio_service(const QString & s) const
+{
+  AudioData ad;
+  mpDabProcessor->get_fib_decoder().get_data_for_audio_service(s, &ad);
+  return ad.defined;
+}
+
+bool DabRadio::_is_packet_service(const QString & s) const
+{
+  PacketData pd;
+  mpDabProcessor->get_fib_decoder().get_data_for_packet_service(s, &pd, 0);
+  return pd.defined;
+}
