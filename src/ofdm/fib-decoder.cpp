@@ -359,10 +359,10 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
 void FibDecoder::FIG0Extension2(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  i16 Length = getBits_5(d, 3);
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 OE_bit = getBits_1(d, 8 + 1);
-  u8 PD_bit = getBits_1(d, 8 + 2);
+  const i16 Length = getBits_5(d, 3);
+  const u8 CN_bit = getBits_1(d, 8 + 0);
+  const u8 OE_bit = getBits_1(d, 8 + 1);
+  const u8 PD_bit = getBits_1(d, 8 + 2);
 
   while (used < Length)
   {
@@ -373,8 +373,6 @@ void FibDecoder::FIG0Extension2(const u8 * d)
 i16 FibDecoder::HandleFIG0Extension2(const u8 * d, i16 offset, u8 CN_bit, u8 OE_bit, u8 PD_bit)
 {
   i16 bitOffset = 8 * offset;
-  i16 i;
-  u8 ecc = 0;
   u8 cId;
   u32 SId;
   i16 numberofComponents;
@@ -383,7 +381,7 @@ i16 FibDecoder::HandleFIG0Extension2(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
 
   if (PD_bit == 1)
   {    // long Sid, data
-    ecc = getBits_8(d, bitOffset);
+    const u8 ecc = getBits_8(d, bitOffset);
     (void)ecc;
     cId = getBits_4(d, bitOffset + 4);
     SId = getLBits(d, bitOffset, 32);
@@ -392,7 +390,6 @@ i16 FibDecoder::HandleFIG0Extension2(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   else
   {
     cId = getBits_4(d, bitOffset);
-    (void)cId;
     SId = getBits(d, bitOffset, 16);
     bitOffset += 16;
   }
@@ -401,7 +398,7 @@ i16 FibDecoder::HandleFIG0Extension2(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   numberofComponents = getBits_4(d, bitOffset + 4);
   bitOffset += 8;
 
-  for (i = 0; i < numberofComponents; i++)
+  for (i16 i = 0; i < numberofComponents; i++)
   {
     u8 TMid = getBits_2(d, bitOffset);
     if (TMid == 00)
@@ -609,20 +606,17 @@ void FibDecoder::FIG0Extension8(const u8 * d)
 i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, u8 CN_bit, u8 OE_bit, u8 PD_bit)
 {
   i16 bitOffset = used * 8;
-  u32 SId = getLBits(d, bitOffset, PD_bit == 1 ? 32 : 16);
-  u8 lsFlag;
-  u16 SCIds;
-  u8 extensionFlag;
+  const u32 SId = getLBits(d, bitOffset, PD_bit == 1 ? 32 : 16);
   DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   (void)OE_bit;
   bitOffset += PD_bit == 1 ? 32 : 16;
-  extensionFlag = getBits_1(d, bitOffset);
-  SCIds = getBits_4(d, bitOffset + 4);
+  const u8 extensionFlag = getBits_1(d, bitOffset);
+  const u16 SCIds = getBits_4(d, bitOffset + 4);
 
   //	i32 serviceIndex = findService (SId);
   bitOffset += 8;
-  lsFlag = getBits_1(d, bitOffset);
+  const u8 lsFlag = getBits_1(d, bitOffset);
 
   if (lsFlag == 0)
   {  // short form
@@ -633,7 +627,7 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
       compIndex = find_component(localBase, SId, subChId);
       if (compIndex != -1)
       {
-        localBase->serviceComps[compIndex].SCIds = SCIds;
+        localBase->serviceComps[compIndex].SCIdS = SCIds;
       }
     }
     bitOffset += 8;
@@ -644,7 +638,7 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
     i16 compIndex = find_service_component(localBase, SCId);
     if (compIndex != -1)
     {
-      localBase->serviceComps[compIndex].SCIds = SCIds;
+      localBase->serviceComps[compIndex].SCIdS = SCIds;
     }
     bitOffset += 8;
   }
@@ -1060,7 +1054,7 @@ void FibDecoder::FIG1Extension1(const u8 * d)
   }
   else
   {
-    ensemble->services[serviceIndex].SCIds = 0;
+    ensemble->services[serviceIndex].SCIdS = 0;
     ensemble->services[serviceIndex].hasName = true;
   }
 }
@@ -1242,18 +1236,21 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i
   //    showFlag = false;
   //  }
 
-  // store data into first free slot
-  assert(!ioDabConfig->serviceComps[firstFree].inUse);
+  ServiceComponentDescriptor & scd = ioDabConfig->serviceComps[firstFree];
 
-  ioDabConfig->serviceComps[firstFree].SId = SId;
-  ioDabConfig->serviceComps[firstFree].SCIds = 0;
-  ioDabConfig->serviceComps[firstFree].TMid = TMid;
-  ioDabConfig->serviceComps[firstFree].componentNr = compnr;
-  ioDabConfig->serviceComps[firstFree].subChannelId = subChId;
-  ioDabConfig->serviceComps[firstFree].PsFlag = ps_flag;
-  ioDabConfig->serviceComps[firstFree].ASCTy = ASCTy;
-  ioDabConfig->serviceComps[firstFree].inUse = true;
-  ensemble->services[serviceIndex].SCIds = 0;
+  // store data into first free slot
+  assert(!scd.inUse);
+
+  scd.SId = SId;
+  scd.SCIdS = 0;
+  scd.TMid = TMid;
+  scd.componentNr = compnr;
+  scd.subChannelId = subChId;
+  scd.PsFlag = ps_flag;
+  scd.ASCTy = ASCTy;
+  scd.inUse = true;
+
+  ensemble->services[serviceIndex].SCIdS = 0;
 
   emit signal_add_to_ensemble(dataName, SId);
   ensemble->services[serviceIndex].is_shown = true;
@@ -1264,7 +1261,8 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i
 //	So, here we create a service component. Note however,
 //	that FIG0/3 provides additional data, after that we
 //	decide whether it should be visible or not
-void FibDecoder::bind_packet_service(DabConfig * base, const i8 iTMid, const u32 iSId, const i16 iCompNr, const i16 iSCId, const i16 iPsFlag, const i16 iCaFlag)
+void FibDecoder::bind_packet_service(DabConfig * base, const i8 iTMid, const u32 iSId, const i16 iCompNr,
+                                     const i16 iSCId, const i16 iPsFlag, const i16 iCaFlag)
 {
   i32 firstFree = -1;
 
@@ -1301,11 +1299,11 @@ void FibDecoder::bind_packet_service(DabConfig * base, const i8 iTMid, const u32
 
     if (iCompNr == 0)
     {
-      base->serviceComps[firstFree].SCIds = 0;
+      base->serviceComps[firstFree].SCIdS = 0;
     }
     else
     {
-      base->serviceComps[firstFree].SCIds = -1;
+      base->serviceComps[firstFree].SCIdS = -1;
     }
 
     base->serviceComps[firstFree].SCId = iSCId;
@@ -1378,9 +1376,9 @@ i32 FibDecoder::find_service_component(DabConfig * db, i16 SCId)
 
 //
 //	find serviceComponent using the SId and the SCIds
-i32 FibDecoder::find_service_component(DabConfig * db, u32 SId, u8 SCIds)
+i32 FibDecoder::find_service_component(const DabConfig * ipDabConfig, u32 iSId, u8 iSCIdS)
 {
-  const i32 serviceIndex = find_service_index_from_SId(SId);
+  const i32 serviceIndex = find_service_index_from_SId(iSId);
 
   if (serviceIndex == -1)
   {
@@ -1391,16 +1389,22 @@ i32 FibDecoder::find_service_component(DabConfig * db, u32 SId, u8 SCIds)
 
   for (i32 i = 0; i < 64; i++)
   {
-    unusedFound |= !db->serviceComps[i].inUse;
+    unusedFound |= !ipDabConfig->serviceComps[i].inUse;
 
-    if (db->serviceComps[i].inUse &&
-        db->serviceComps[i].SCIds == SCIds &&
-        db->serviceComps[i].SId == SId)
+    // const auto & a = ipDabConfig->serviceComps[i];
+
+    // if (ipDabConfig->serviceComps[i].inUse)
+    //   qInfo() << "SCIds: " << iSCIdS << ", a.SCIds: " << a.SCIdS;
+
+    if (ipDabConfig->serviceComps[i].inUse &&
+        ipDabConfig->serviceComps[i].SCIdS == iSCIdS &&
+        ipDabConfig->serviceComps[i].SId == iSId)
     {
       if (unusedFound)
       {
         qWarning() << "Unused service entry found in find_service_component() while search (2)";
       }
+      // qInfo() << "Found service component" << i;
       return i;
     }
   }
@@ -1430,20 +1434,25 @@ i32 FibDecoder::find_component(DabConfig * db, u32 SId, i16 subChId)
   return -1;
 }
 
-void FibDecoder::create_service(QString name, u32 SId, i32 SCIds)
+void FibDecoder::create_service(QString iServiceName, u32 iSId, i32 iSCIdS)
 {
   // this would fill the next free (not inUse) entry
   for (i32 i = 0; i < 64; i++)
   {
+    auto & v = ensemble->services[i];
+
     if (ensemble->services[i].inUse)
     {
       continue;
     }
-    ensemble->services[i].inUse = true;
-    ensemble->services[i].hasName = true;
-    ensemble->services[i].serviceLabel = name;
-    ensemble->services[i].SId = SId;
-    ensemble->services[i].SCIds = SCIds;
+
+    v.inUse = true;
+    v.hasName = true;
+    v.serviceLabel = iServiceName;
+    v.SId = iSId;
+    v.SCIdS = iSCIdS;
+
+    qInfo() << "Created service" << i << ", inUse:" << v.inUse << ", ServiceLabel:" << v.serviceLabel << ", SId:" << v.SId << ", SCIds:" << v.SCIdS;
     return;
   }
 }
@@ -1454,17 +1463,19 @@ void FibDecoder::create_service(QString name, u32 SId, i32 SCIds)
 //
 void FibDecoder::cleanup_service_list()
 {
-  // but this could make a non-used component within
+  // ... but this could make a non-used component within
   for (i32 i = 0; i < 64; i++)
   {
-    if (ensemble->services[i].inUse)
-    {
-      u32 SId = ensemble->services[i].SId;
-      i32 SCIds = ensemble->services[i].SCIds;
+    Service & service = ensemble->services[i];
 
-      if (find_service_component(currentConfig, SId, SCIds) == -1)
+    if (service.inUse)
+    {
+      const u32 SId = service.SId;
+      const i32 SCIdS = service.SCIdS;
+
+      if (find_service_component(currentConfig, SId, SCIdS) == -1)
       {
-        ensemble->services[i].inUse = false;
+        service.inUse = false;
       }
     }
   }
@@ -1584,10 +1595,11 @@ i32 FibDecoder::get_sub_channel_id(const QString & s, u32 dummy_SId)
   (void)dummy_SId;
   fibLocker.lock();
 
-  i32 SId = ensemble->services[serviceIndex].SId;
-  i32 SCIds = ensemble->services[serviceIndex].SCIds;
+  const i32 SId = ensemble->services[serviceIndex].SId;
+  const i32 SCIds = ensemble->services[serviceIndex].SCIdS;
 
-  i32 compIndex = find_service_component(currentConfig, SId, SCIds);
+  const i32 compIndex = find_service_component(currentConfig, SId, SCIds);
+
   if (compIndex == -1)
   {
     fibLocker.unlock();
@@ -1601,10 +1613,10 @@ i32 FibDecoder::get_sub_channel_id(const QString & s, u32 dummy_SId)
 
 void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD)
 {
-  i32 serviceIndex;
+  opAD->defined = false;
 
-  opAD->defined = false;  // default
-  serviceIndex = find_service(iS);
+  const i32 serviceIndex = find_service(iS);
+
   if (serviceIndex == -1)
   {
     return;
@@ -1612,10 +1624,11 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
 
   fibLocker.lock();
 
-  i32 SId = ensemble->services[serviceIndex].SId;
-  i32 SCIds = ensemble->services[serviceIndex].SCIds;
+  const i32 SId = ensemble->services[serviceIndex].SId;
+  const i32 SCIds = ensemble->services[serviceIndex].SCIdS;
 
-  i32 compIndex = find_service_component(currentConfig, SId, SCIds);
+  const i32 compIndex = find_service_component(currentConfig, SId, SCIds);
+
   if (compIndex == -1)
   {
     fibLocker.unlock();
@@ -1653,7 +1666,7 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
   fibLocker.unlock();
 }
 
-void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * opPD, i16 iSCIds)
+void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * opPD, i16 iSCIdS)
 {
   i32 serviceIndex;
 
@@ -1668,7 +1681,7 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
 
   i32 SId = ensemble->services[serviceIndex].SId;
 
-  i32 compIndex = find_service_component(currentConfig, SId, iSCIds);
+  i32 compIndex = find_service_component(currentConfig, SId, iSCIdS);
 
   if ((compIndex == -1) || (currentConfig->serviceComps[compIndex].TMid != 3))
   {
@@ -1685,7 +1698,7 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
 
   opPD->serviceName = iS;
   opPD->SId = SId;
-  opPD->SCIds = iSCIds;
+  opPD->SCIds = iSCIdS;
   opPD->subchId = subChId;
   opPD->startAddr = currentConfig->subChannels[subChId].startAddr;
   opPD->shortForm = currentConfig->subChannels[subChId].shortForm;
@@ -1748,11 +1761,13 @@ std::vector<SServiceId> FibDecoder::insert_sorted(const std::vector<SServiceId> 
   return k;
 }
 
-QString FibDecoder::find_service(u32 SId, i32 SCIds)
+QString FibDecoder::find_service(u32 SId, i32 SCIds) const
 {
   for (auto & service : ensemble->services)
   {
-    if (service.inUse && (service.SId == SId) && (service.SCIds == SCIds))
+    if (service.inUse &&
+        service.SId == SId &&
+        service.SCIdS == SCIds)
     {
       return service.serviceLabel;
     }
@@ -1762,7 +1777,8 @@ QString FibDecoder::find_service(u32 SId, i32 SCIds)
 
 void FibDecoder::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIds)
 {
-  i32 serviceIndex = find_service(s);
+  const i32 serviceIndex = find_service(s);
+
   if (serviceIndex == -1)
   {
     *p_SId = 0;
@@ -1771,7 +1787,7 @@ void FibDecoder::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIds)
   else
   {
     *p_SId = ensemble->services[serviceIndex].SId;
-    *p_SCIds = ensemble->services[serviceIndex].SCIds;
+    *p_SCIds = ensemble->services[serviceIndex].SCIdS;
   }
 }
 
@@ -1835,20 +1851,22 @@ u8 FibDecoder::get_countryId()
 //	Country, LTO & international table 8.1.3.2
 void FibDecoder::FIG0Extension9(const u8 * d)
 {
-  i16 offset = 16;
-  u8 ecc;
-  //
-  //	6 indicates the number of hours
+  const i16 offset = 16;
+
+  // 6 indicates the number of hours
   i32 signbit = getBits_1(d, offset + 2);
   dateTime[6] = (signbit == 1) ? -1 * getBits_4(d, offset + 3) : getBits_4(d, offset + 3);
-  //
-  //	7 indicates a possible remaining half our
+
+  // 7 indicates a possible remaining half hour
   dateTime[7] = (getBits_1(d, offset + 7) == 1) ? 30 : 0;
+
   if (signbit == 1)
   {
     dateTime[7] = -dateTime[7];
   }
-  ecc = getBits(d, offset + 8, 8);
+
+  const u8 ecc = getBits(d, offset + 8, 8);
+
   if (!ensemble->ecc_Present)
   {
     ensemble->ecc_byte = ecc;
@@ -1928,58 +1946,30 @@ void adjustTime(i32 * ioDateTime)
   }
 }
 
-//QString	mapTime (i32 *dateTime) {
-//QString result	= QString::number (dateTime [0]);
-//	result. append ("-");
-//	result. append (monthTable [dateTime [1] - 1]);
-//	result. append ("-");
-//
-//	QString day	= QString ("%1").
-//	                      arg (dateTime [2], 2, 10, QChar ('0'));
-//	result. append (day);
-//	result. append (" ");
-//	i32 hours	= dateTime [3];
-//	if (hours < 0)	hours += 24;
-//	if (hours >= 24) hours -= 24;
-//
-//	dateTime [3] = hours;
-//	QString hoursasString
-//		= QString ("%1"). arg (hours, 2, 10, QChar ('0'));
-//	result. append (hoursasString);
-//	result. append (":");
-//	QString minutesasString =
-//	              QString ("%1"). arg (dateTime [4], 2, 10, QChar ('0'));
-//	result. append (minutesasString);
-//	return result;
-//}
-//
-//	Date and Time
-//	FIG0/10 are copied from the work of
-//	Michael Hoehn
 void FibDecoder::FIG0Extension10(const u8 * dd)
 {
   i16 offset = 16;
   this->mjd = getLBits(dd, offset + 1, 17);
 
   //	Modified Julian Date (recompute according to wikipedia)
-  i32 J = mjd + 2400001;
-  i32 j = J + 32044;
-  i32 g = j / 146097;
-  i32 dg = j % 146097;
-  i32 c = ((dg / 36524) + 1) * 3 / 4;
-  i32 dc = dg - c * 36524;
-  i32 b = dc / 1461;
-  i32 db = dc % 1461;
-  i32 a = ((db / 365) + 1) * 3 / 4;
-  i32 da = db - a * 365;
-  i32 y = g * 400 + c * 100 + b * 4 + a;
-  i32 m = ((da * 5 + 308) / 153) - 2;
-  i32 d = da - ((m + 4) * 153 / 5) + 122;
-  i32 Y = y - 4800 + ((m + 2) / 12);
-  i32 M = ((m + 2) % 12) + 1;
-  i32 D = d + 1;
-  i32 theTime[6];
+  const i32 J = mjd + 2400001;
+  const i32 j = J + 32044;
+  const i32 g = j / 146097;
+  const i32 dg = j % 146097;
+  const i32 c = ((dg / 36524) + 1) * 3 / 4;
+  const i32 dc = dg - c * 36524;
+  const i32 b = dc / 1461;
+  const i32 db = dc % 1461;
+  const i32 a = ((db / 365) + 1) * 3 / 4;
+  const i32 da = db - a * 365;
+  const i32 y = g * 400 + c * 100 + b * 4 + a;
+  const i32 m = ((da * 5 + 308) / 153) - 2;
+  const i32 d = da - ((m + 4) * 153 / 5) + 122;
+  const i32 Y = y - 4800 + ((m + 2) / 12);
+  const i32 M = ((m + 2) % 12) + 1;
+  const i32 D = d + 1;
 
+  i32 theTime[6];
   theTime[0] = Y;  // Year
   theTime[1] = M;  // Month
   theTime[2] = D;  // Day
@@ -1989,15 +1979,16 @@ void FibDecoder::FIG0Extension10(const u8 * dd)
   if (getBits_6(dd, offset + 26) != dateTime[4])
   {
     theTime[5] = 0;
-  }  // Seconds (Ubergang abfangen)
+  }  // Seconds (Uebergang abfangen)
 
   if (dd[offset + 20] == 1)
   {
     theTime[5] = getBits_6(dd, offset + 32);
   }  // Seconds
-  //
+
   //	take care of different time zones
   bool change = false;
+
   for (i32 i = 0; i < 6; i++)
   {
     if (theTime[i] != dateTime[i])
@@ -2014,7 +2005,7 @@ void FibDecoder::FIG0Extension10(const u8 * dd)
     i32 utc_minute = dateTime[4];
     i32 utc_seconds = dateTime[5];
     adjustTime(dateTime.data());
-    emit  signal_clock_time(dateTime[0], dateTime[1], dateTime[2], dateTime[3], dateTime[4], utc_day, utc_hour, utc_minute, utc_seconds);
+    emit signal_clock_time(dateTime[0], dateTime[1], dateTime[2], dateTime[3], dateTime[4], utc_day, utc_hour, utc_minute, utc_seconds);
   }
 }
 

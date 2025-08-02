@@ -53,7 +53,7 @@ public:
   {
     inUse = false;
     SId = 0;
-    SCIds = 0;
+    SCIdS = 0;
     hasName = false;
     serviceLabel = "";
     language = 0;
@@ -65,7 +65,7 @@ public:
 
   bool inUse;
   u32 SId;
-  i32 SCIds;
+  i32 SCIdS;
   bool hasName;
   QString serviceLabel;
   i32 language;
@@ -154,28 +154,28 @@ public:
   {
     inUse = false;
     isMadePublic = false;
-    SCIds = -1;
+    SCIdS = -1;
     componentNr = -1;
     SCId = -1;
     subChannelId = -1;
   }
 
-  bool inUse;            // field in use
+  bool inUse;        // field in use
   i8 TMid;           // the transport mode
   u32 SId;
-  i16 SCIds;         // component within service
+  i16 SCIdS;         // component within service
   i16 subChannelId;  // used in both audio and packet
   i16 componentNr;   // component
   i16 ASCTy;         // used for audio
   i16 DSCTy;         // used in packet
   i16 PsFlag;        // use for both audio and packet
-  u16 SCId;         // Component Id (12 bit, unique)
-  u8 CaFlag;        // used in packet (or not at all)
-  u8 DgFlag;        // used for TDC
+  u16 SCId;          // Component Id (12 bit, unique)
+  u8 CaFlag;         // used in packet (or not at all)
+  u8 DgFlag;         // used for TDC
   i16 packetAddress; // used in packet
   i16 appType;       // used in packet and Xpad
   i16 language;
-  bool isMadePublic;     // used to make service visible
+  bool isMadePublic; // used to make service visible
 };
 
 //

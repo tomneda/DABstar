@@ -61,7 +61,7 @@ public:
   i32 get_sub_channel_id(const QString &, u32);
   std::vector<SServiceId> get_services();
 
-  QString find_service(u32, i32);
+  QString find_service(u32, i32) const;
   void get_parameters(const QString &, u32 *, i32 *);
   u8 get_ecc();
   u16 get_country_name();
@@ -129,10 +129,10 @@ private:
   i32 find_service(const QString &);
   i32 find_service_index_from_SId(u32);
   void cleanup_service_list();
-  void create_service(QString name, u32 SId, i32 SCIds);
+  void create_service(QString iServiceName, u32 iSId, i32 iSCIdS);
   i32 find_service_component(DabConfig *, i16);
   i32 find_component(DabConfig * db, u32 SId, i16 subChId);
-  i32 find_service_component(DabConfig *, u32, u8);
+  i32 find_service_component(const DabConfig *, u32, u8);
   void bind_audio_service(DabConfig *, i8, u32, i16, i16, i16, i16);
   void bind_packet_service(DabConfig *, i8, u32, i16, i16, i16, i16);
 

@@ -463,11 +463,11 @@ void DabProcessor::stop_service(i32 subChId, i32 flag)
   }
 }
 
-bool DabProcessor::set_audio_channel(const AudioData * d, RingBuffer<i16> * b, FILE * dump, i32 flag)
+bool DabProcessor::set_audio_channel(const AudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, FILE * dump, i32 flag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(d, b, (RingBuffer<u8>*)nullptr, dump, flag);
+    return mMscHandler.set_channel(ipAudioData, ipoAudioBuffer, (RingBuffer<u8>*)nullptr, dump, flag);
   }
   else
   {
@@ -475,11 +475,11 @@ bool DabProcessor::set_audio_channel(const AudioData * d, RingBuffer<i16> * b, F
   }
 }
 
-bool DabProcessor::set_data_channel(PacketData * d, RingBuffer<u8> * b, i32 flag)
+bool DabProcessor::set_data_channel(PacketData * ipPacketData, RingBuffer<u8> * ipoDataBuffer, i32 flag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(d, (RingBuffer<i16>*)nullptr, b, nullptr, flag);
+    return mMscHandler.set_channel(ipPacketData, (RingBuffer<i16>*)nullptr, ipoDataBuffer, nullptr, flag);
   }
   else
   {
