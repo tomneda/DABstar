@@ -31,14 +31,10 @@
 #ifndef  FIB_DECODER_H
 #define  FIB_DECODER_H
 
-//
-#include  <cstdint>
-#include  <cstdio>
-#include  <QObject>
-#include  <QByteArray>
-#include  "msc-handler.h"
-#include  <QMutex>
 #include  "dab-config.h"
+#include  "msc-handler.h"
+#include  <QObject>
+#include  <QMutex>
 
 class DabRadio;
 class EnsembleDescriptor;
@@ -52,34 +48,35 @@ public:
   explicit FibDecoder(DabRadio *);
   ~FibDecoder();
 
+  void process_FIB(const u8 *, u16);
+
   void clearEnsemble();
   void connect_channel();
   void disconnect_channel();
-  bool sync_reached();
-  void get_data_for_audio_service(const QString &, AudioData *);
-  void get_data_for_packet_service(const QString &, PacketData *, i16);
-  i32 get_sub_channel_id(const QString &, u32);
+  bool sync_reached() const;
+  void get_data_for_audio_service(const QString &, AudioData *) const;
+  void get_data_for_packet_service(const QString &, PacketData *, i16) const;
+  i32 get_sub_channel_id(const QString &, u32) const;
   std::vector<SServiceId> get_services();
 
   QString find_service(u32, i32) const;
-  void get_parameters(const QString &, u32 *, i32 *);
-  u8 get_ecc();
-  u16 get_country_name();
-  u8 get_countryId();
-  i32 get_ensembleId();
-  QString get_ensemble_name();
-  void get_channel_info(ChannelData *, i32);
-  i32 get_cif_count();
-  void get_cif_count(i16 *, i16 *);
-  u32 get_julian_date();
-  void set_epg_data(u32, i32, const QString &, const QString &);
-  std::vector<SEpgElement> get_timeTable(u32);
-  std::vector<SEpgElement> get_timeTable(const QString &);
-  bool has_time_table(u32 SId);
-  std::vector<SEpgElement> find_epg_data(u32);
-  QStringList basic_print();
-  i32 get_scan_width();
-  void process_FIB(const u8 *, u16);
+  void get_parameters(const QString &, u32 *, i32 *) const;
+  u8 get_ecc() const;
+  u16 get_country_name() const;
+  u8 get_countryId() const;
+  i32 get_ensembleId() const;
+  QString get_ensemble_name() const;
+  void get_channel_info(ChannelData *, i32) const;
+  i32 get_cif_count() const;
+  void get_cif_count(i16 *, i16 *) const;
+  u32 get_julian_date() const;
+  void set_epg_data(u32, i32, const QString &, const QString &) const;
+  std::vector<SEpgElement> get_timeTable(u32) const;
+  std::vector<SEpgElement> get_timeTable(const QString &) const;
+  bool has_time_table(u32 SId) const;
+  std::vector<SEpgElement> find_epg_data(u32) const;
+  QStringList basic_print() const;
+  i32 get_scan_width() const;
 
 private:
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & l, SServiceId n);
@@ -88,11 +85,11 @@ private:
   DabConfig * nextConfig = nullptr;
   EnsembleDescriptor * ensemble = nullptr;
   std::array<i32, 8> dateTime{};
-  QMutex fibLocker;
   i32 CIFcount = 0;
   i16 CIFcount_hi = 0;
   i16 CIFcount_lo = 0;
   u32 mjd = 0;      // julianDate
+  mutable QMutex fibLocker;
 
   void process_FIG0(const u8 *);
   void process_FIG1(const u8 *);
@@ -126,13 +123,15 @@ private:
   void FIG1Extension5(const u8 *);
   void FIG1Extension6(const u8 *);
 
-  i32 find_service(const QString &);
-  i32 find_service_index_from_SId(u32);
   void cleanup_service_list();
   void create_service(QString iServiceName, u32 iSId, i32 iSCIdS);
-  i32 find_service_component(DabConfig *, i16);
-  i32 find_component(DabConfig * db, u32 SId, i16 subChId);
-  i32 find_service_component(const DabConfig *, u32, u8);
+
+  i32 find_service(const QString &) const;
+  i32 find_service_index_from_SId(u32) const;
+  i32 find_service_component(DabConfig *, i16) const;
+  i32 find_component(DabConfig * db, u32 SId, i16 subChId) const;
+  i32 find_service_component(const DabConfig *, u32, u8) const;
+
   void bind_audio_service(DabConfig *, i8, u32, i16, i16, i16, i16);
   void bind_packet_service(DabConfig *, i8, u32, i16, i16, i16, i16);
 
@@ -141,27 +140,26 @@ private:
   void set_cluster(DabConfig *, i32, i16, u16);
   Cluster * get_cluster(DabConfig *, i16);
 
-  QString get_service_name(i32 index);
-  QString get_service_id_of(i32 index);
-  QString get_sub_channel_of(i32 index);
-  QString get_start_address_of(i32 index);
-  QString get_length_of(i32 index);
-  QString get_prot_level_of(i32 index);
-  QString get_code_rate_of(i32 index);
-  QString get_bit_rate_of(i32 index);
-  QString get_dab_type(i32 index);
-  QString get_language_of(i32 index);
-  QString get_program_type_of(i32 index);
-  QString get_fm_freq_of(i32 index);
-  QString get_app_type_of(i32 index);
-  QString get_FEC_scheme(i32 index);
-  QString get_packet_address(i32 index);
-  QString get_DSCTy(i32 index);
-
-  QString get_audio_header();
-  QString get_packet_header();
-  QString get_audio_data(i32 index);
-  QString get_packet_data(i32 index);
+  QString get_service_name(i32 index) const;
+  QString get_service_id_of(i32 index) const;
+  QString get_sub_channel_of(i32 index) const;
+  QString get_start_address_of(i32 index) const;
+  QString get_length_of(i32 index) const;
+  QString get_prot_level_of(i32 index) const;
+  QString get_code_rate_of(i32 index) const;
+  QString get_bit_rate_of(i32 index) const;
+  QString get_dab_type(i32 index) const;
+  QString get_language_of(i32 index) const;
+  QString get_program_type_of(i32 index) const;
+  QString get_fm_freq_of(i32 index) const;
+  QString get_app_type_of(i32 index) const;
+  QString get_FEC_scheme(i32 index) const;
+  QString get_packet_address(i32 index) const;
+  QString get_DSCTy(i32 index) const;
+  QString get_audio_header() const;
+  QString get_packet_header() const;
+  QString get_audio_data(i32 index) const;
+  QString get_packet_data(i32 index) const;
 
 signals:
   void signal_add_to_ensemble(const QString &, u32);

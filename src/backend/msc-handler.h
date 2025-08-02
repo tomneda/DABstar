@@ -25,16 +25,12 @@
 #ifndef  __MSC_HANDLER__
 #define  __MSC_HANDLER__
 
-#include <QMutex>
-#include <atomic>
-#include <cstdio>
-#include <cstdint>
-#include <cstdio>
-#include <vector>
 #include "dab-constants.h"
 #include "ringbuffer.h"
-#include "phasetable.h"
-#include "freq-interleaver.h"
+#include <QVector>
+#include <QSharedPointer>
+#include <QMutex>
+#include <vector>
 
 class DabRadio;
 class Backend;
