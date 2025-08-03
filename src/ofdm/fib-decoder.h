@@ -132,8 +132,8 @@ private:
   i32 find_component(DabConfig * db, u32 SId, i16 subChId) const;
   i32 find_service_component(const DabConfig *, u32, u8) const;
 
-  void bind_audio_service(DabConfig *, i8, u32, i16, i16, i16, i16);
-  void bind_packet_service(DabConfig *, i8, u32, i16, i16, i16, i16);
+  void bind_audio_service(DabConfig *, ETMId, u32, i16, i16, i16, i16);
+  void bind_packet_service(DabConfig *, ETMId, u32, i16, i16, i16, i16);
 
   QString get_announcement_type_str(u16);
 

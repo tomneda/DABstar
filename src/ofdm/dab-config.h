@@ -166,7 +166,7 @@ public:
   }
 
   bool inUse;        // field in use
-  i8 TMid;           // the transport mode
+  ETMId TMid;        // the transport mode
   u32 SId;
   i16 SCIdS;         // component within service
   i16 subChannelId;  // used in both audio and packet

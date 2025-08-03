@@ -28,7 +28,7 @@
 
 BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer, FILE * dump)
 {
-  if (d->type == EServiceType::AUDIO)
+  if (d->TMId == ETMId::StreamModeAudio)
   {
     if (((AudioData *)d)->ASCTy != 077)
     {
@@ -39,7 +39,7 @@ BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer
       theProcessor.reset(new Mp4Processor(mr, d->bitRate, audioBuffer, frameBuffer, dump));
     }
   }
-  else if (d->type == EServiceType::PACKET)
+  else if (d->TMId == ETMId::PacketModeData)
   {
     theProcessor.reset(new DataProcessor(mr, (PacketData *)d, dataBuffer));
   }

@@ -375,7 +375,6 @@ i16 FibDecoder::HandleFIG0Extension2(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   i16 bitOffset = 8 * offset;
   u8 cId;
   u32 SId;
-  i16 numberofComponents;
 
   (void)OE_bit;
 
@@ -395,25 +394,28 @@ i16 FibDecoder::HandleFIG0Extension2(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   }
 
   ensemble->countryId = cId;
-  numberofComponents = getBits_4(d, bitOffset + 4);
+  const i16 numberofComponents = getBits_4(d, bitOffset + 4);
   bitOffset += 8;
 
   for (i16 i = 0; i < numberofComponents; i++)
   {
-    u8 TMid = getBits_2(d, bitOffset);
-    if (TMid == 00)
+    ETMId TMid = (ETMId)getBits_2(d, bitOffset);
+
+    DabConfig * const pDabConfig = (CN_bit == 0) ? currentConfig : nextConfig;
+
+    if (TMid == ETMId::StreamModeAudio)
     {  // Audio
       u8 ASCTy = getBits_6(d, bitOffset + 2);
       u8 SubChId = getBits_6(d, bitOffset + 8);
       u8 PS_flag = getBits_1(d, bitOffset + 14);
-      bind_audio_service(CN_bit == 0 ? currentConfig : nextConfig, TMid, SId, i, SubChId, PS_flag, ASCTy);
+      bind_audio_service(pDabConfig, TMid, SId, i, SubChId, PS_flag, ASCTy);
     }
-    else if (TMid == 3)
+    else if (TMid == ETMId::PacketModeData)
     { // MSC packet data
       i16 SCId = getBits(d, bitOffset + 2, 12);
       u8 PS_flag = getBits_1(d, bitOffset + 14);
       u8 CA_flag = getBits_1(d, bitOffset + 15);
-      bind_packet_service(CN_bit == 0 ? currentConfig : nextConfig, TMid, SId, i, SCId, PS_flag, CA_flag);
+      bind_packet_service(pDabConfig, TMid, SId, i, SCId, PS_flag, CA_flag);
     }
     else
     {
@@ -700,7 +702,7 @@ i16 FibDecoder::HandleFIG0Extension13(const u8 * d, i16 used, u8 CN_bit, u8 OE_b
     i32 compIndex = find_service_component(localBase, SId, SCIdS);
     if (compIndex != -1)
     {
-      if (localBase->serviceComps[compIndex].TMid == 3)
+      if (localBase->serviceComps[compIndex].TMid == ETMId::PacketModeData)
       {
         localBase->serviceComps[compIndex].appType = appType;
       }
@@ -1098,7 +1100,7 @@ void FibDecoder::FIG1Extension4(const u8 * d)
   {
     if (find_service(dataName) == -1)
     {
-      if (currentConfig->serviceComps[compIndex].TMid == 0)
+      if (currentConfig->serviceComps[compIndex].TMid == ETMId::StreamModeAudio)
       {
         create_service(dataName, SId, SCIdS);
         emit signal_add_to_ensemble(dataName, SId);
@@ -1188,9 +1190,9 @@ void FibDecoder::FIG1Extension6(const u8 * d)
 //	bind_audioService is the main processor for - what the name suggests -
 //	connecting the description of audioservices to a SID
 //	by creating a service Component
-void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i16 compnr, i16 subChId, i16 ps_flag, i16 ASCTy)
+void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, ETMId iTMid, u32 iSId, i16 iCompNr, i16 iSubChId, i16 iPsFlag, i16 iASCTy)
 {
-  const i32 serviceIndex = find_service_index_from_SId(SId);
+  const i32 serviceIndex = find_service_index_from_SId(iSId);
 
   if (serviceIndex == -1)
   {
@@ -1199,7 +1201,7 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i
 
   //	if (ensemble -> services [serviceIndex]. programType == 0)
   //	   return;
-  if (!ioDabConfig->subChannels[subChId].inUse)
+  if (!ioDabConfig->subChannels[iSubChId].inUse)
   {
     return;
   }
@@ -1217,7 +1219,7 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i
       break;
     }
 
-    if (ioDabConfig->serviceComps[i].SId == SId && ioDabConfig->serviceComps[i].componentNr == compnr)
+    if (ioDabConfig->serviceComps[i].SId == iSId && ioDabConfig->serviceComps[i].componentNr == iCompNr)
     {
       return;
     }
@@ -1241,18 +1243,18 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i
   // store data into first free slot
   assert(!scd.inUse);
 
-  scd.SId = SId;
+  scd.SId = iSId;
   scd.SCIdS = 0;
-  scd.TMid = TMid;
-  scd.componentNr = compnr;
-  scd.subChannelId = subChId;
-  scd.PsFlag = ps_flag;
-  scd.ASCTy = ASCTy;
+  scd.TMid = iTMid;
+  scd.componentNr = iCompNr;
+  scd.subChannelId = iSubChId;
+  scd.PsFlag = iPsFlag;
+  scd.ASCTy = iASCTy;
   scd.inUse = true;
 
   ensemble->services[serviceIndex].SCIdS = 0;
 
-  emit signal_add_to_ensemble(dataName, SId);
+  emit signal_add_to_ensemble(dataName, iSId);
   ensemble->services[serviceIndex].is_shown = true;
 }
 
@@ -1261,7 +1263,7 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, i8 TMid, u32 SId, i
 //	So, here we create a service component. Note however,
 //	that FIG0/3 provides additional data, after that we
 //	decide whether it should be visible or not
-void FibDecoder::bind_packet_service(DabConfig * base, const i8 iTMid, const u32 iSId, const i16 iCompNr,
+void FibDecoder::bind_packet_service(DabConfig * base, const ETMId iTMId, const u32 iSId, const i16 iCompNr,
                                      const i16 iSCId, const i16 iPsFlag, const i16 iCaFlag)
 {
   i32 firstFree = -1;
@@ -1292,26 +1294,28 @@ void FibDecoder::bind_packet_service(DabConfig * base, const i8 iTMid, const u32
     }
   }
 
-  if (!base->serviceComps[firstFree].inUse)
+  ServiceComponentDescriptor & scd = base->serviceComps[firstFree];
+
+  if (!scd.inUse)
   {
-    base->serviceComps[firstFree].inUse = true;
-    base->serviceComps[firstFree].SId = iSId;
+    scd.inUse = true;
+    scd.SId = iSId;
 
     if (iCompNr == 0)
     {
-      base->serviceComps[firstFree].SCIdS = 0;
+      scd.SCIdS = 0;
     }
     else
     {
-      base->serviceComps[firstFree].SCIdS = -1;
+      scd.SCIdS = -1;
     }
 
-    base->serviceComps[firstFree].SCId = iSCId;
-    base->serviceComps[firstFree].TMid = iTMid;
-    base->serviceComps[firstFree].componentNr = iCompNr;
-    base->serviceComps[firstFree].PsFlag = iPsFlag;
-    base->serviceComps[firstFree].CaFlag = iCaFlag;
-    base->serviceComps[firstFree].isMadePublic = false;
+    scd.SCId = iSCId;
+    scd.TMid = iTMId;
+    scd.componentNr = iCompNr;
+    scd.PsFlag = iPsFlag;
+    scd.CaFlag = iCaFlag;
+    scd.isMadePublic = false;
   }
 }
 
@@ -1637,7 +1641,7 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
     return;
   }
 
-  if (currentConfig->serviceComps[compIndex].TMid != 0)
+  if (currentConfig->serviceComps[compIndex].TMid != ETMId::StreamModeAudio)
   {
     fibLocker.unlock();
     return;
@@ -1685,7 +1689,7 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
 
   i32 compIndex = find_service_component(currentConfig, SId, iSCIdS);
 
-  if ((compIndex == -1) || (currentConfig->serviceComps[compIndex].TMid != 3))
+  if ((compIndex == -1) || (currentConfig->serviceComps[compIndex].TMid != ETMId::PacketModeData))
   {
     fibLocker.unlock();
     return;
@@ -2136,7 +2140,7 @@ QStringList FibDecoder::basic_print() const
   {
     if (currentConfig->serviceComps[i].inUse)
     {
-      if (currentConfig->serviceComps[i].TMid != 0)
+      if (currentConfig->serviceComps[i].TMid != ETMId::StreamModeAudio)
       { // audio
         continue;
       }
@@ -2153,7 +2157,7 @@ QStringList FibDecoder::basic_print() const
   {
     if (currentConfig->serviceComps[i].inUse)
     {
-      if (currentConfig->serviceComps[i].TMid != 3)
+      if (currentConfig->serviceComps[i].TMid != ETMId::PacketModeData)
       { // packet
         continue;
       }
@@ -2348,12 +2352,13 @@ u32 FibDecoder::get_julian_date() const
 
 void FibDecoder::get_channel_info(ChannelData * d, i32 n) const
 {
-  d->in_use = currentConfig->subChannels[n].inUse;
-  d->id = currentConfig->subChannels[n].SubChId;
-  d->start_cu = currentConfig->subChannels[n].startAddr;
-  d->protlev = currentConfig->subChannels[n].protLevel;
-  d->size = currentConfig->subChannels[n].Length;
-  d->bitrate = currentConfig->subChannels[n].bitRate;
-  d->uepFlag = currentConfig->subChannels[n].shortForm;
+  const SubChannelDescriptor & scd = currentConfig->subChannels[n];
+  d->in_use = scd.inUse;
+  d->id = scd.SubChId;
+  d->start_cu = scd.startAddr;
+  d->protlev = scd.protLevel;
+  d->size = scd.Length;
+  d->bitrate = scd.bitRate;
+  d->uepFlag = scd.shortForm;
 }
 

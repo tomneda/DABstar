@@ -35,11 +35,6 @@
 #include "glob_defs.h"
 #include  <QString>
 #include  <cmath>
-#include  <cstdlib>
-#include  <cstdio>
-#include  <complex>
-#include  <limits>
-#include  <cstring>
 #include  <unistd.h>
 
 #if defined(__MINGW32__) || defined(_WIN32)
@@ -81,7 +76,13 @@ constexpr char sSettingSampleStorageDir[]  = "saveDirSampleDump";
 constexpr char sSettingAudioStorageDir[]   = "saveDirAudioDump";
 constexpr char sSettingContentStorageDir[] = "saveDirContent";
 
-enum class EServiceType { AUDIO, PACKET };
+enum class ETMId : u8 // TransportMechanismMode
+{
+  StreamModeAudio = 0x0,
+  // StreamModeData  = 0x1,
+  // Reserved        = 0x2,
+  PacketModeData  = 0x3
+};
 
 enum EMapType
 {
@@ -115,7 +116,7 @@ struct SServiceId
 
 struct DescriptorType
 {
-  EServiceType type;
+  ETMId TMId;
   bool defined = false;
   QString serviceName;
   i32 SId;
@@ -138,7 +139,7 @@ struct PacketData : DescriptorType
   i16 appType;
   i16 compnr;
   i16 packetAddress;
-  PacketData() { type = EServiceType::PACKET; }
+  PacketData() { TMId = ETMId::PacketModeData; }
 };
 
 struct AudioData : DescriptorType
@@ -149,7 +150,7 @@ public:
   i16 programType;
   i16 compnr;
   i32 fmFrequency = -1;
-  AudioData() { type = EServiceType::AUDIO; }
+  AudioData() { TMId = ETMId::StreamModeAudio; }
 };
 
 struct ChannelData
