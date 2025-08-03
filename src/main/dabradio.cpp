@@ -164,7 +164,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
     }
 
     mChannel.nextService.SId = 0;
-    mChannel.nextService.SCIds = 0;
+    mChannel.nextService.SCIdS = 0;
     mChannel.nextService.valid = true;
   }
 
@@ -1028,7 +1028,7 @@ void DabRadio::slot_change_in_configuration()
   //	Of course, it may be disappeared
   if (s.valid)
   {
-    if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIds);
+    if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIdS);
         ss != "")
     {
       start_service(s);
@@ -1036,8 +1036,8 @@ void DabRadio::slot_change_in_configuration()
     }
 
     //	The service is gone, it may be the subservice of another one
-    s.SCIds = 0;
-    s.serviceName = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIds);
+    s.SCIdS = 0;
+    s.serviceName = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIdS);
 
     if (s.serviceName != "")
     {
@@ -1048,7 +1048,7 @@ void DabRadio::slot_change_in_configuration()
   //	we also have to restart all background services,
   for (u16 i = 0; i < mChannel.backgroundServices.size(); ++i)
   {
-    if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIds);
+    if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIdS);
         ss == "") // it is gone, close the file if any
     {
       if (mChannel.backgroundServices.at(i).fd != nullptr)
@@ -2248,7 +2248,7 @@ void DabRadio::local_select(const QString & iChannel, const QString & iService)
   {
     mChannel.currentService.valid = false;
     SDabService s;
-    mpDabProcessor->get_fib_decoder().get_parameters(serviceName, &s.SId, &s.SCIds);
+    mpDabProcessor->get_fib_decoder().get_parameters(serviceName, &s.SId, &s.SCIdS);
     if (s.SId == 0)
     {
       write_warning_message("Insufficient data for this program (1)");
@@ -2278,7 +2278,7 @@ void DabRadio::local_select(const QString & iChannel, const QString & iService)
   mChannel.nextService.channel = iChannel;
   mChannel.nextService.serviceName = serviceName;
   mChannel.nextService.SId = 0;
-  mChannel.nextService.SCIds = 0;
+  mChannel.nextService.SCIdS = 0;
 
   // mPresetTimer.start(cPresetTimeoutMs);
 
@@ -2415,10 +2415,10 @@ void DabRadio::start_audio_service(const AudioData * const ipAD)
 
   (void)mpDabProcessor->set_audio_channel(ipAD, mpAudioBufferFromDecoder, nullptr, FORE_GROUND);
 
-  for (i32 i = 1; i < 10; i++)
+  for (i16 SCIdS = 1; SCIdS < 0xF; SCIdS++) // TODO: 10 or 15
   {
     PacketData pd;
-    mpDabProcessor->get_fib_decoder().get_data_for_packet_service(ipAD->serviceName, &pd, i);
+    mpDabProcessor->get_fib_decoder().get_data_for_packet_service(ipAD->serviceName, &pd, SCIdS);
     if (pd.defined)
     {
       mpDabProcessor->set_data_channel(&pd, mpDataBuffer, FORE_GROUND);
@@ -2559,7 +2559,7 @@ void DabRadio::_slot_preset_timeout()
 
   SDabService s;
   s.serviceName = presetName;
-  mpDabProcessor->get_fib_decoder().get_parameters(presetName, &s.SId, &s.SCIds);
+  mpDabProcessor->get_fib_decoder().get_parameters(presetName, &s.SId, &s.SCIdS);
 
   if (s.SId == 0)
   {
@@ -3031,7 +3031,7 @@ void DabRadio::slot_epg_timer_timeout()
         s.channel = pd.channel;
         s.serviceName = pd.serviceName;
         s.SId = pd.SId;
-        s.SCIds = pd.SCIds;
+        s.SCIdS = pd.SCIdS;
         s.subChId = pd.subchId;
         s.fd = nullptr;
         mChannel.backgroundServices.push_back(s);
@@ -3052,7 +3052,7 @@ void DabRadio::slot_epg_timer_timeout()
         s.channel = channel.channelName;
         s.serviceName = pd.serviceName;
         s.SId = pd.SId;
-        s.SCIds = pd.SCIds;
+        s.SCIdS = pd.SCIdS;
         s.subChId = pd.subchId;
         s.fd = nullptr;
         channel.backgroundServices.push_back(s);

@@ -88,7 +88,7 @@ struct SDabService
   QString channel;
   QString serviceName;
   u32 SId = 0;
-  i32 SCIds = 0;
+  i32 SCIdS = 0;
   i32 subChId = 0;
   bool valid = false;
   bool is_audio = false;

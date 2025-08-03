@@ -119,7 +119,7 @@ struct DescriptorType
   bool defined = false;
   QString serviceName;
   i32 SId;
-  i32 SCIds;
+  i32 SCIdS;
   i16 subchId;
   i16 startAddr;
   bool shortForm;

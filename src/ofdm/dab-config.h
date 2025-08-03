@@ -127,7 +127,7 @@ public:
     inUse = false;
     language = 0;
     FEC_scheme = 0;
-    SCIds = 0;
+    SCIdS = 0;
   }
 
   bool inUse = false;
@@ -139,7 +139,7 @@ public:
   i32 bitRate = 0;
   i16 language = 0;
   i16 FEC_scheme = 0;
-  i16 SCIds = 0;    // for audio channels
+  i16 SCIdS = 0;    // for audio channels
 };
 
 //      The service component describes the actual service

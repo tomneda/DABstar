@@ -57,7 +57,7 @@ public:
   void get_data_for_audio_service(const QString &, AudioData *) const;
   void get_data_for_packet_service(const QString &, PacketData *, i16) const;
   i32 get_sub_channel_id(const QString &, u32) const;
-  std::vector<SServiceId> get_services();
+  std::vector<SServiceId> get_services() const;
 
   QString find_service(u32, i32) const;
   void get_parameters(const QString &, u32 *, i32 *) const;
@@ -79,7 +79,6 @@ public:
   i32 get_scan_width() const;
 
 private:
-  std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & l, SServiceId n);
   DabRadio * myRadioInterface = nullptr;
   DabConfig * currentConfig = nullptr;
   DabConfig * nextConfig = nullptr;
@@ -126,6 +125,7 @@ private:
   void cleanup_service_list();
   void create_service(QString iServiceName, u32 iSId, i32 iSCIdS);
 
+  std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & iServiceIdList, const SServiceId & iServiceId) const;
   i32 find_service(const QString &) const;
   i32 find_service_index_from_SId(u32) const;
   i32 find_service_component(DabConfig *, i16) const;
