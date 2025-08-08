@@ -334,21 +334,22 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
     }
     bitOffset += 32;
   }
-  //
-  //	in case the subchannel data was already computed
-  //	we merely compute the offset
-  if (localBase->subChannels[subChId].inUse)
+
+  SubChannelDescriptor & scd = localBase->subChannels[subChId];
+
+  // in case the subchannel data was already computed we merely compute the offset
+  if (scd.inUse)
   {
     return bitOffset / 8;
   }
   //	and here we fill in the structure
-  localBase->subChannels[subChId].SubChId = subChId;
-  localBase->subChannels[subChId].inUse = true;
-  localBase->subChannels[subChId].startAddr = subChannel.startAddr;
-  localBase->subChannels[subChId].Length = subChannel.Length;
-  localBase->subChannels[subChId].shortForm = subChannel.shortForm;
-  localBase->subChannels[subChId].protLevel = subChannel.protLevel;
-  localBase->subChannels[subChId].bitRate = subChannel.bitRate;
+  scd.SubChId = subChId;
+  scd.inUse = true;
+  scd.startAddr = subChannel.startAddr;
+  scd.Length = subChannel.Length;
+  scd.shortForm = subChannel.shortForm;
+  scd.protLevel = subChannel.protLevel;
+  scd.bitRate = subChannel.bitRate;
 
   return bitOffset / 8;  // we return bytes
 }

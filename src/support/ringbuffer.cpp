@@ -236,8 +236,8 @@ void RingBufferFactory<cf32>::print_status(const bool iResetMinMax /*= false*/) 
 
 
 // instantiation
-RingBufferFactory<u8> sRingBufferFactoryUInt8;
-RingBufferFactory<i16> sRingBufferFactoryInt16;
+RingBufferFactory<u8>   sRingBufferFactoryUInt8;
+RingBufferFactory<i16>  sRingBufferFactoryInt16;
 RingBufferFactory<ci16> sRingBufferFactoryCmplx16;
-RingBufferFactory<f32>   sRingBufferFactoryFloat;
-RingBufferFactory<cf32>   sRingBufferFactoryCmplx;
+RingBufferFactory<f32>  sRingBufferFactoryFloat;
+RingBufferFactory<cf32> sRingBufferFactoryCmplx;
