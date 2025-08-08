@@ -35,7 +35,7 @@
 #include "data_manip_and_checks.h"
 #include <QLoggingCategory>
 
-// Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
+//Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtWarningMsg)
 
 class ContInd // Contents Indicator
@@ -59,6 +59,7 @@ PadHandler::PadHandler(DabRadio * mr)
 
   mMscDataGroupBuffer.reserve(1024); // try to avoid future memory swapping
   mDataBuffer.reserve(1024); // try to avoid future memory swapping
+  mShortPadData.reserve(16); // try to avoid future memory swapping
 }
 
 //	Data is stored reverse, we pass the vector and the index of the
@@ -70,7 +71,7 @@ void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8
 
   if (fpadType != 0x0)
   {
-    qWarning() << "F-PAD-type" << fpadType << "not supported";
+    // qDebug() << "F-PAD-type" << fpadType << "not supported";
     return;
   }
 
@@ -180,7 +181,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
     if ((mStillToGo <= 0) && (mShortPadData.size() > 0))
     {
       //	just to avoid doubling by unsollicited shortpads
-      mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data());
+      mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data(), (qsizetype)mShortPadData.size());
       _check_charset_change();
       mShortPadData.clear();
       //	if we are at the end of the last segment (and the text is not empty)
