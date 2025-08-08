@@ -32,12 +32,13 @@
 #ifndef  PAD_HANDLER_H
 #define  PAD_HANDLER_H
 
-#include  "mot-object.h"
-#include  <cstring>
-#include  <cstdint>
-#include  <vector>
-#include  <QObject>
-#include  <QScopedPointer>
+#include "mot-object.h"
+#include "charsets.h"
+#include <cstring>
+#include <cstdint>
+#include <vector>
+#include <QObject>
+#include <QScopedPointer>
 
 class DabRadio;
 class MotObject;
@@ -66,8 +67,8 @@ private:
 
 
   QByteArray mDynamicLabelTextUnConverted;
-  i16 mCharSet = 0;
-  i16 mLastConvCharSet = -1;
+  ECharacterSet mCharSet = ECharacterSet::EbuLatin;
+  ECharacterSet mLastConvCharSet = ECharacterSet::Invalid;
   QScopedPointer<MotObject> mpMotObject;
   u8 mLastAppType = 0;
   bool mMscGroupElement = false;

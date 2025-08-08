@@ -31,11 +31,13 @@
  * Codes assigned to character sets, as defined
  * in ETSI TS 101 756 v1.6.1, section 5.2.
  */
-typedef enum {
-    EbuLatin = 0x00, // Complete EBU Latin based repertoire - see annex C
-    UnicodeUcs2 = 0x06,
-    UnicodeUtf8 = 0x0F
-} CharacterSet;
+enum class ECharacterSet
+{
+  Invalid     =   -1,
+  EbuLatin    = 0x00, // Complete EBU Latin based repertoire - see annex C
+  UnicodeUcs2 = 0x06,
+  UnicodeUtf8 = 0x0F
+};
 
 /**
  * Converts the null-terminated character string to QString, using a given character set.
@@ -44,8 +46,7 @@ typedef enum {
  * @param charset   character set used in buffer
  * @return converted QString
  */
-QString toQStringUsingCharset(const QByteArray & iByteArray, CharacterSet iCharset);
-QString toQStringUsingCharset(const char* buffer, CharacterSet charset, i32 size = -1);
+QString toQStringUsingCharset(const QByteArray & iByteArray, ECharacterSet iCharset);
+QString toQStringUsingCharset(const char * ipBuffer, ECharacterSet iCharset, i32 size = -1);
 
 #endif // CHARSETS_H
-
