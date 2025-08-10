@@ -51,7 +51,7 @@
      <item>
       <widget class="QPushButton" name="framedumpButton">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DAB+ audio services are encoded in an AAC format. &lt;/p&gt;&lt;p&gt;Touching this button will show a menu to store the AAC frames into a file.&lt;/p&gt;&lt;p&gt;As usual, touching the button again will close the output file. Programs like VLC can handle such files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio services are encoded in a MP2 or an AAC format. &lt;/p&gt;&lt;p&gt;Touching this button will show a menu to store the audio frames into a file.&lt;/p&gt;&lt;p&gt;Touching the button again will close the output file. Programs like VLC can handle such files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Dump AAC</string>
