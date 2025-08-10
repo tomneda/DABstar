@@ -88,9 +88,10 @@ private:
   i32 bits_in_window;
   const u8 * frame_pos;
   std::vector<u8> MP2frame;
+  enum class ESyncState { SearchingForSync, GetSampleRate, GetData };
 
+  ESyncState MP2SyncState = ESyncState::SearchingForSync;
   i16 MP2framesize;
-  i16 MP2Header_OK;
   i16 MP2headerCount;
   i16 MP2bitCount;
   i16 numberofFrames;

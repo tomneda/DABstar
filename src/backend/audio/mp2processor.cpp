@@ -231,7 +231,7 @@ Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * const i
   baudRate = 48000;  // default for DAB
   MP2framesize = 24 * bitRate;  // may be changed
   MP2frame.resize(2 * MP2framesize);
-  MP2Header_OK = 0;
+  MP2SyncState = ESyncState::SearchingForSync;
   MP2headerCount = 0;
   MP2bitCount = 0;
   numberofFrames = 0;
@@ -616,7 +616,7 @@ void Mp2Processor::_process_pad_data(const std::vector<u8> & iBits)
 
   if (fPadType != 0x0)
   {
-    qDebug() << "F-PAD-type" << fPadType << "not supported";
+    // qDebug() << "F-PAD-type" << fPadType << "not supported";
     return;
   }
 
@@ -672,7 +672,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
 
   for (i16 i = 0; i < amount; i++)
   {
-    if (MP2Header_OK == 2)
+    if (MP2SyncState == ESyncState::GetData)
     {
       _add_bit_to_mp2(MP2frame, iBits[i], MP2bitCount++);
 
@@ -692,12 +692,12 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
           }
         }
 
-        MP2Header_OK = 0;
+        MP2SyncState = ESyncState::SearchingForSync;
         MP2headerCount = 0;
         MP2bitCount = 0;
       }
     }
-    else if (MP2Header_OK == 0)
+    else if (MP2SyncState == ESyncState::SearchingForSync)
     {
       //	apparently , we are not in sync yet
       if (iBits[i] == 01)
@@ -709,7 +709,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
           {
             _add_bit_to_mp2(MP2frame, 1, MP2bitCount++);
           }
-          MP2Header_OK = 1;
+          MP2SyncState = ESyncState::GetSampleRate;
         }
       }
       else
@@ -717,13 +717,13 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
         MP2headerCount = 0;
       }
     }
-    else if (MP2Header_OK == 1)
+    else if (MP2SyncState == ESyncState::GetSampleRate)
     {
       _add_bit_to_mp2(MP2frame, iBits[i], MP2bitCount++);
       if (MP2bitCount == 24)
       {
         _set_sample_rate(_get_mp2_sample_rate(MP2frame));
-        MP2Header_OK = 2;
+        MP2SyncState = ESyncState::GetData;
       }
     }
   }
