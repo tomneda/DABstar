@@ -35,9 +35,10 @@
 //	- it is made into a class for use within the framework
 //	of the sdr-j DAB/DAB+ software
 //
-#include  "mp2processor.h"
-#include  "dabradio.h"
-#include  "pad-handler.h"
+#include "mp2processor.h"
+#include "dabradio.h"
+#include "data_manip_and_checks.h"
+#include "pad-handler.h"
 
 #ifdef _MSC_VER
   #define FASTCALL __fastcall
@@ -241,20 +242,22 @@ Mp2Processor::~Mp2Processor()
 {
 }
 
-#define  valid(x)  ((x == 48000) || (x == 24000))
 
-void Mp2Processor::_set_sample_rate(i32 rate)
+void Mp2Processor::_set_sample_rate(const i32 iSampleRate)
 {
-  if (baudRate == rate)
+  if (baudRate == iSampleRate)
   {
     return;
   }
-  if (!valid (rate))
+
+  if (iSampleRate != 48000 && iSampleRate != 24000)
   {
+    qCritical() << "Unsupported sample rate" << iSampleRate;
     return;
   }
+
   //	ourSink		-> setMode (0, rate);
-  baudRate = rate;
+  baudRate = iSampleRate;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -593,42 +596,86 @@ i32 Mp2Processor::_mp2_decode_frame(const std::vector<u8> & iFrame, i16 * opPcm)
   return frame_size;
 }
 
-void Mp2Processor::_process_pad_data(const std::vector<u8> & v)
+void Mp2Processor::_process_pad_data(const std::vector<u8> & iBits)
 {
-  i16 vLength = 24 * bitRate / 8;
-  auto * const pPadData = make_vla(u8, vLength);
+  i16 vLengthBytes = 24 * bitRate / 8;
+
+  if (vLengthBytes * 8 != (i16)iBits.size())
+  {
+    qCritical() << "MP2: pad data length mismatch" << vLengthBytes << iBits.size();
+  }
+
+  const i16 scfCrcSize = bitRate * 1000 >= 56000 ? 4 : 2;
+  vLengthBytes -= scfCrcSize + 2; // remove CRC bytes and L0, L1
+
+  const u8 L0 = getBits_8(iBits.data(), iBits.size() - 1 * 8);
+  const u8 L1 = getBits_8(iBits.data(), iBits.size() - 2 * 8);
+
+  const u8 fPadType = (L1 >> 6) & 0x3;
+  const u8 xPadInd  = (L1 >> 4) & 0x3;
+
+  if (fPadType != 0x0)
+  {
+    qDebug() << "F-PAD-type" << fPadType << "not supported";
+    return;
+  }
+
+  if (xPadInd == 0x0) // no X-PAD, stop further processing
+  {
+    qDebug() << "no X-PAD";
+    return;
+  }
+
+  if (xPadInd == 0x3)
+  {
+    qWarning() << "X-PAD-type" << xPadInd << "not supported (reserved for future use)";
+    return;
+  }
+
+  const u8 * pBits;
+
+  if (xPadInd == 0x1) // short X-PAD
+  {
+    pBits = iBits.data() + 8 * (vLengthBytes - 4); // only 4 bytes for short X-PAD is needed
+    vLengthBytes = 4;
+  }
+  else // variable size X-PAD
+  {
+    pBits = iBits.data(); // assume full vector is PAD
+  }
+
+
+  auto * const pPadData = make_vla(u8, vLengthBytes);
 
   // convert one-bit-per-byte to a byte value stream
-  for (i16 i = 0; i < vLength; i++)
+  for (i16 i = 0; i < vLengthBytes; i++)
   {
     pPadData[i] = 0;
     for (i16 j = 0; j < 8; j++)
     {
       pPadData[i] <<= 1;
-      pPadData[i] |= v[8 * i + j] & 01;
+      pPadData[i] |= pBits[8 * i + j] & 01;
     }
   }
 
-  const u8 L0 = pPadData[vLength - 1];
-  const u8 L1 = pPadData[vLength - 2];
-  const i16 down = bitRate * 1000 >= 56000 ? 4 : 2;
-  my_padhandler.process_PAD(pPadData, vLength - 3 - down, L1, L0);
+  my_padhandler.process_PAD(pPadData, vLengthBytes - 1, L1, L0);
 }
 
 //
 //	bits to MP2 frames, amount is amount of bits
-void Mp2Processor::add_to_frame(const std::vector<u8> & v)
+void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
 {
+  _process_pad_data(iBits);
+
   const i16 lf = baudRate == 48000 ? MP2framesize : 2 * MP2framesize;
   const i16 amount = MP2framesize;
-
-  _process_pad_data(v);
 
   for (i16 i = 0; i < amount; i++)
   {
     if (MP2Header_OK == 2)
     {
-      _add_bit_to_mp2(MP2frame, v[i], MP2bitCount++);
+      _add_bit_to_mp2(MP2frame, iBits[i], MP2bitCount++);
+
       if (MP2bitCount >= lf)
       {
         i16 sample_buf[KJMP2_SAMPLES_PER_FRAME * 2];
@@ -653,7 +700,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & v)
     else if (MP2Header_OK == 0)
     {
       //	apparently , we are not in sync yet
-      if (v[i] == 01)
+      if (iBits[i] == 01)
       {
         if (++MP2headerCount == 12)
         {
@@ -672,7 +719,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & v)
     }
     else if (MP2Header_OK == 1)
     {
-      _add_bit_to_mp2(MP2frame, v[i], MP2bitCount++);
+      _add_bit_to_mp2(MP2frame, iBits[i], MP2bitCount++);
       if (MP2bitCount == 24)
       {
         _set_sample_rate(_get_mp2_sample_rate(MP2frame));
@@ -685,18 +732,17 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & v)
 
 void Mp2Processor::_add_bit_to_mp2(std::vector<u8> & ioV, u8 ib, i16 iNm)
 {
-  u8 byte = ioV[iNm / 8];
+  u8 & outByteRef = ioV[iNm / 8];
   const i16 bitnr = 7 - (iNm & 7);
   const u8 newByte = (1 << bitnr);
 
   if (ib == 0)
   {
-    byte &= ~newByte;
+    outByteRef &= ~newByte;
   }
   else
   {
-    byte |= newByte;
+    outByteRef |= newByte;
   }
-  ioV[iNm / 8] = byte;
 }
 

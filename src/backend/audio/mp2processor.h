@@ -103,7 +103,7 @@ private:
   void _read_samples(SQuantizerSpec *, i32 iScalefactor, i32 * opSamples);
   i32 _get_bits(i32);
   void _add_bit_to_mp2(std::vector<u8> &, u8, i16);
-  void _process_pad_data(const std::vector<u8> & v);
+  void _process_pad_data(const std::vector<u8> & iBits);
 
 signals:
   void signal_show_frameErrors(i32);
