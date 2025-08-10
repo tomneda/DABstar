@@ -66,25 +66,25 @@ static const u16 ebuLatinToUcs2[] = {
 /* 0xf8 - 0xff */   0xfe,  0x14b,  0x155,  0x107,  0x15b,  0x17a,  0x165,  0x127
 };
 
-QString toQStringUsingCharset(const QByteArray & iByteArray, const CharacterSet iCharset)
+QString toQStringUsingCharset(const QByteArray & iByteArray, const ECharacterSet iCharset)
 {
   return toQStringUsingCharset(iByteArray.data(), iCharset, iByteArray.size());
 }
 
-QString toQStringUsingCharset(const char * buffer, CharacterSet charset, i32 size)
+QString toQStringUsingCharset(const char * const ipBuffer, const ECharacterSet iCharset, const i32 size /*= -1*/)
 {
-  const u16 length = (size == -1 ? strlen(buffer) : size);
+  const u16 length = (size == -1 ? strlen(ipBuffer) : size);
 
-  switch (charset)
+  switch (iCharset)
   {
-  case UnicodeUcs2: return QString::fromUtf16(reinterpret_cast<const char16_t*>(buffer), length);
-  case UnicodeUtf8: return QString::fromUtf8(buffer, length);
-  case EbuLatin:
+  case ECharacterSet::UnicodeUcs2: return QString::fromUtf16(reinterpret_cast<const char16_t*>(ipBuffer), length);
+  case ECharacterSet::UnicodeUtf8: return QString::fromUtf8(ipBuffer, length);
+  case ECharacterSet::EbuLatin:
   default:
     QString s;
     for (u16 i = 0; i < length; ++i)
     {
-      s.append(QChar(ebuLatinToUcs2[((u8 *)buffer)[i]]));
+      s.append(QChar(ebuLatinToUcs2[((u8 *)ipBuffer)[i]]));
     }
     return s;
   }

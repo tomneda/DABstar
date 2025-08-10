@@ -31,11 +31,10 @@
 
 #include "pad-handler.h"
 #include "dabradio.h"
-#include "charsets.h"
 #include "data_manip_and_checks.h"
 #include <QLoggingCategory>
 
-// Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
+//Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtWarningMsg)
 
 class ContInd // Contents Indicator
@@ -59,6 +58,7 @@ PadHandler::PadHandler(DabRadio * mr)
 
   mMscDataGroupBuffer.reserve(1024); // try to avoid future memory swapping
   mDataBuffer.reserve(1024); // try to avoid future memory swapping
+  mShortPadData.reserve(16); // try to avoid future memory swapping
 }
 
 //	Data is stored reverse, we pass the vector and the index of the
@@ -70,7 +70,7 @@ void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8
 
   if (fpadType != 0x0)
   {
-    qWarning() << "F-PAD-type" << fpadType << "not supported";
+    // qDebug() << "F-PAD-type" << fpadType << "not supported";
     return;
   }
 
@@ -119,7 +119,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
     CI.set_val(iBuffer[iLast]); // Content Indicator
     mFirstSegment = (iBuffer[iLast - 1] & 0x40) != 0;
     mLastSegment  = (iBuffer[iLast - 1] & 0x20) != 0;
-    mCharSet = iBuffer[iLast - 2] & 0x0F;
+    mCharSet = (ECharacterSet)(iBuffer[iLast - 2] & 0x0F);
 
     if (mFirstSegment)
     {
@@ -140,7 +140,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
         mSegmentNumber = iBuffer[iLast - 2] >> 4;
         if (!mDynamicLabelTextUnConverted.isEmpty())
         {
-          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (ECharacterSet)mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
         }
         mDynamicLabelTextUnConverted.clear();
@@ -160,7 +160,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
 
       if ((mStillToGo <= 0) && (mShortPadData.size() > 1))
       {
-        mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data(), (int)mShortPadData.size());
+        mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data(), (qsizetype)mShortPadData.size());
         _check_charset_change();
         mShortPadData.clear();
       }
@@ -180,7 +180,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
     if ((mStillToGo <= 0) && (mShortPadData.size() > 0))
     {
       //	just to avoid doubling by unsollicited shortpads
-      mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data());
+      mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data(), (qsizetype)mShortPadData.size());
       _check_charset_change();
       mShortPadData.clear();
       //	if we are at the end of the last segment (and the text is not empty)
@@ -189,7 +189,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
       {
         if (!mDynamicLabelTextUnConverted.isEmpty())
         {
-          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (ECharacterSet)mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
         }
         mDynamicLabelTextUnConverted.clear();
@@ -353,7 +353,7 @@ void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
     if (first)
     {
       mSegmentNo = 1;
-      mCharSet = (prefix >> 4) & 017;
+      mCharSet = (ECharacterSet)((prefix >> 4) & 017);
       mDynamicLabelTextUnConverted.clear();
       _reset_charset_change();
     }
@@ -415,7 +415,7 @@ void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
       {
         if (!mMoreXPad)
         {
-          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
           //	            fprintf (stderr, "last segment encountered\n");
           mSegmentNo = -1;
@@ -451,7 +451,7 @@ void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
 
     if (!mMoreXPad && mIsLastSegment)
     {
-      const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (CharacterSet)mCharSet);
+      const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, mCharSet);
       emit signal_show_label(dynamicLabelTextConverted);
     }
   }
@@ -618,7 +618,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 
 void PadHandler::_reset_charset_change()
 {
-  mLastConvCharSet = -1;
+  mLastConvCharSet = ECharacterSet::Invalid;
 }
 
 void PadHandler::_check_charset_change()
@@ -631,7 +631,7 @@ void PadHandler::_check_charset_change()
    *  (with two inversed "??" instead) while a segmented UTF8 transmission.
    */
 
-  if (mLastConvCharSet < 0) // first call after reset? only store current value
+  if (mLastConvCharSet == ECharacterSet::Invalid) // first call after reset? only store current value
   {
     mLastConvCharSet = mCharSet;
   }
@@ -639,7 +639,7 @@ void PadHandler::_check_charset_change()
   {
     if (mLastConvCharSet != mCharSet) // has value change? show this with an error
     {
-      qCritical("charSet changed from %d to %d", mLastConvCharSet, mCharSet);
+      qCritical("CharSet changed from %d to %d", (int)mLastConvCharSet, (int)mCharSet);
     }
   }
 }

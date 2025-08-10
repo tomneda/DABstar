@@ -88,9 +88,10 @@ private:
   i32 bits_in_window;
   const u8 * frame_pos;
   std::vector<u8> MP2frame;
+  enum class ESyncState { SearchingForSync, GetSampleRate, GetData };
 
+  ESyncState MP2SyncState = ESyncState::SearchingForSync;
   i16 MP2framesize;
-  i16 MP2Header_OK;
   i16 MP2headerCount;
   i16 MP2bitCount;
   i16 numberofFrames;
@@ -103,7 +104,7 @@ private:
   void _read_samples(SQuantizerSpec *, i32 iScalefactor, i32 * opSamples);
   i32 _get_bits(i32);
   void _add_bit_to_mp2(std::vector<u8> &, u8, i16);
-  void _process_pad_data(const std::vector<u8> & v);
+  void _process_pad_data(const std::vector<u8> & iBits);
 
 signals:
   void signal_show_frameErrors(i32);

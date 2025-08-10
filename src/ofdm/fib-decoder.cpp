@@ -1004,7 +1004,7 @@ void FibDecoder::FIG1Extension0(const u8 * d)
     label[16] = 0x00;
 
     // fprintf (stdout, "Ensemblename: %16s\n", label);
-    const QString name = toQStringUsingCharset((const char *)label, (CharacterSet)charSet);
+    const QString name = toQStringUsingCharset((const char *)label, (ECharacterSet)charSet);
 
     if (!ensemble->namePresent)
     {
@@ -1045,7 +1045,7 @@ void FibDecoder::FIG1Extension1(const u8 * d)
   {
     label[i] = getBits_8(d, offset + 8 * i);
   }
-  QString dataName = toQStringUsingCharset((const char *)label, (CharacterSet)charSet);
+  QString dataName = toQStringUsingCharset((const char *)label, (ECharacterSet)charSet);
   for (i32 i = dataName.length(); i < 16; i++)
   {
     dataName.append(' ');
@@ -1094,8 +1094,8 @@ void FibDecoder::FIG1Extension4(const u8 * d)
     label[i] = getBits_8(d, offset + 8 * i);
   }
 
-  i32 charSet = getBits_4(d, 8);
-  QString dataName = toQStringUsingCharset((const char *)label, (CharacterSet)charSet);
+  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
+  QString dataName = toQStringUsingCharset((const char *)label, charSet);
   i16 compIndex = find_service_component(currentConfig, SId, SCIdS);
   if (compIndex > 0)
   {
@@ -1113,7 +1113,7 @@ void FibDecoder::FIG1Extension4(const u8 * d)
 //	Data service label - 32 bits 8.1.14.2
 void FibDecoder::FIG1Extension5(const u8 * d)
 {
-  u8 charSet, extension;
+  u8 extension;
   u8 Rfu;
   i32 serviceIndex;
   i16 i;
@@ -1123,7 +1123,7 @@ void FibDecoder::FIG1Extension5(const u8 * d)
   i16 offset = 48;
 
   //      from byte 1 we deduce:
-  charSet = getBits_4(d, 8);
+  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
   Rfu = getBits_1(d, 8 + 4);
   extension = getBits_3(d, 8 + 5);
   label[16] = 0x00;
@@ -1137,7 +1137,7 @@ void FibDecoder::FIG1Extension5(const u8 * d)
     return;
   }
 
-  if (charSet > 16)
+  if (charSet > (ECharacterSet)16)
   {
     return;
   }  // something wrong
@@ -1147,7 +1147,7 @@ void FibDecoder::FIG1Extension5(const u8 * d)
     label[i] = getBits_8(d, offset + 8 * i);
   }
 
-  QString serviceName = toQStringUsingCharset((const char *)label, (CharacterSet)charSet);
+  QString serviceName = toQStringUsingCharset((const char *)label, charSet);
   create_service(serviceName, SId, 0);
 }
 
