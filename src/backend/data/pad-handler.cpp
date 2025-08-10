@@ -140,7 +140,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
         mSegmentNumber = iBuffer[iLast - 2] >> 4;
         if (!mDynamicLabelTextUnConverted.isEmpty())
         {
-          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (ECharacterSet)mCharSet);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
         }
         mDynamicLabelTextUnConverted.clear();
@@ -189,7 +189,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
       {
         if (!mDynamicLabelTextUnConverted.isEmpty())
         {
-          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, (ECharacterSet)mCharSet);
+          const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
         }
         mDynamicLabelTextUnConverted.clear();
@@ -417,7 +417,7 @@ void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
         {
           const QString dynamicLabelTextConverted = toQStringUsingCharset(mDynamicLabelTextUnConverted, mCharSet);
           emit signal_show_label(dynamicLabelTextConverted);
-          //	            fprintf (stderr, "last segment encountered\n");
+
           mSegmentNo = -1;
         }
         else

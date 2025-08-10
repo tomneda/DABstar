@@ -987,13 +987,13 @@ void FibDecoder::FIG1Extension0(const u8 * d)
 {
 
   // from byte 1 we deduce:
-  const u8 charSet = getBits_4(d, 8);
+  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
   [[maybe_unused]] const u8 Rfu = getBits_1(d, 8 + 4);
   [[maybe_unused]] const u8 extension = getBits_3(d, 8 + 5);
 
   const u32 EId = getBits(d, 16, 16);
 
-  if (charSet <= 16) // EBU Latin based repertoire
+  if (charSet <= (ECharacterSet)16) // EBU Latin based repertoire
   {
     char label[17];
     for (i32 i = 0; i < 16; i++)
@@ -1003,8 +1003,7 @@ void FibDecoder::FIG1Extension0(const u8 * d)
     }
     label[16] = 0x00;
 
-    // fprintf (stdout, "Ensemblename: %16s\n", label);
-    const QString name = toQStringUsingCharset((const char *)label, (ECharacterSet)charSet);
+    const QString name = toQStringUsingCharset(label, charSet);
 
     if (!ensemble->namePresent)
     {
@@ -1022,21 +1021,18 @@ void FibDecoder::FIG1Extension0(const u8 * d)
 //	Name of service
 void FibDecoder::FIG1Extension1(const u8 * d)
 {
-  u8 charSet, extension;
-  u8 Rfu;
-  i32 SId = getBits(d, 16, 16);
-  i16 offset = 32;
-  i32 serviceIndex;
+  const i32 SId = getBits(d, 16, 16);
+  const i16 offset = 32;
   char label[17];
 
   //      from byte 1 we deduce:
-  charSet = getBits_4(d, 8);
-  Rfu = getBits_1(d, 8 + 4);
-  extension = getBits_3(d, 8 + 5);
+  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
+  const u8 Rfu = getBits_1(d, 8 + 4);
+  const u8 extension = getBits_3(d, 8 + 5);
   label[16] = 0x00;
   (void)Rfu;
   (void)extension;
-  if (charSet > 16)
+  if (charSet > (ECharacterSet)16)
   {  // does not seem right
     return;
   }
@@ -1045,12 +1041,14 @@ void FibDecoder::FIG1Extension1(const u8 * d)
   {
     label[i] = getBits_8(d, offset + 8 * i);
   }
-  QString dataName = toQStringUsingCharset((const char *)label, (ECharacterSet)charSet);
+  QString dataName = toQStringUsingCharset(label, charSet);
   for (i32 i = dataName.length(); i < 16; i++)
   {
     dataName.append(' ');
   }
-  serviceIndex = find_service(dataName);
+
+  const i32 serviceIndex = find_service(dataName);
+
   if (serviceIndex == -1)
   {
     create_service(dataName, SId, 0);
@@ -1095,7 +1093,7 @@ void FibDecoder::FIG1Extension4(const u8 * d)
   }
 
   const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
-  QString dataName = toQStringUsingCharset((const char *)label, charSet);
+  QString dataName = toQStringUsingCharset(label, charSet);
   i16 compIndex = find_service_component(currentConfig, SId, SCIdS);
   if (compIndex > 0)
   {
@@ -1147,7 +1145,7 @@ void FibDecoder::FIG1Extension5(const u8 * d)
     label[i] = getBits_8(d, offset + 8 * i);
   }
 
-  QString serviceName = toQStringUsingCharset((const char *)label, charSet);
+  QString serviceName = toQStringUsingCharset(label, charSet);
   create_service(serviceName, SId, 0);
 }
 
