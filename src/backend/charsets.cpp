@@ -66,12 +66,12 @@ static const u16 ebuLatinToUcs2[] = {
 /* 0xf8 - 0xff */   0xfe,  0x14b,  0x155,  0x107,  0x15b,  0x17a,  0x165,  0x127
 };
 
-QString toQStringUsingCharset(const QByteArray & iByteArray, const ECharacterSet iCharset)
+QString to_QString_using_charset(const QByteArray & iByteArray, const ECharacterSet iCharset)
 {
-  return toQStringUsingCharset(iByteArray.data(), iCharset, iByteArray.size());
+  return to_QString_using_charset(iByteArray.data(), iCharset, iByteArray.size());
 }
 
-QString toQStringUsingCharset(const char * const ipBuffer, const ECharacterSet iCharset, const i32 size /*= -1*/)
+QString to_QString_using_charset(const char * const ipBuffer, const ECharacterSet iCharset, const i32 size /*= -1*/)
 {
   const u16 length = (size == -1 ? strlen(ipBuffer) : size);
 

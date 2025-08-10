@@ -39,6 +39,13 @@ enum class ECharacterSet
   UnicodeUtf8 = 0x0F
 };
 
+inline bool is_charset_valid(ECharacterSet iCharset)
+{
+  return (iCharset == ECharacterSet::EbuLatin ||
+          iCharset == ECharacterSet::UnicodeUcs2 ||
+          iCharset == ECharacterSet::UnicodeUtf8);
+}
+
 /**
  * Converts the null-terminated character string to QString, using a given character set.
  *
@@ -46,7 +53,7 @@ enum class ECharacterSet
  * @param charset   character set used in buffer
  * @return converted QString
  */
-QString toQStringUsingCharset(const QByteArray & iByteArray, ECharacterSet iCharset);
-QString toQStringUsingCharset(const char * ipBuffer, ECharacterSet iCharset, i32 size = -1);
+QString to_QString_using_charset(const QByteArray & iByteArray, ECharacterSet iCharset);
+QString to_QString_using_charset(const char * ipBuffer, ECharacterSet iCharset, i32 size = -1);
 
 #endif // CHARSETS_H

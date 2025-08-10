@@ -897,10 +897,10 @@ void FibDecoder::FIG0Extension19(const u8 * d)
 void FibDecoder::FIG0Extension21(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  i16 Length = getBits_5(d, 3);
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 OE_bit = getBits_1(d, 8 + 1);
-  u8 PD_bit = getBits_1(d, 8 + 2);
+  const i16 Length = getBits_5(d, 3);
+  const u8 CN_bit = getBits_1(d, 8 + 0);
+  const u8 OE_bit = getBits_1(d, 8 + 1);
+  const u8 PD_bit = getBits_1(d, 8 + 2);
 
   while (used < Length)
   {
@@ -910,26 +910,28 @@ void FibDecoder::FIG0Extension21(const u8 * d)
 
 i16 FibDecoder::HandleFIG0Extension21(const u8 * d, u8 CN_bit, u8 OE_bit, u8 PD_bit, i16 offset)
 {
-  i16 l_offset = offset * 8;
-  i16 l = getBits_5(d, l_offset + 11);
-  i16 upperLimit = l_offset + 16 + l * 8;
+  const i16 l_offset = offset * 8;
+  const i16 l = getBits_5(d, l_offset + 11);
+  const i16 upperLimit = l_offset + 16 + l * 8;
   i16 base = l_offset + 16;
 
   (void)CN_bit;
-  (void)OE_bit, (void)PD_bit;
+  (void)OE_bit;
+  (void)PD_bit;
 
   while (base < upperLimit)
   {
-    u16 idField = getBits(d, base, 16);
-    u8 RandM = getBits_4(d, base + 16);
-    u8 continuity = getBits_1(d, base + 20);
+    const u16 idField = getBits(d, base, 16);
+    const u8 RandM = getBits_4(d, base + 16);
+    const u8 continuity = getBits_1(d, base + 20);
     (void)continuity;
-    u8 length = getBits_3(d, base + 21);
+    const u8 length = getBits_3(d, base + 21);
+
     if (RandM == 0x08)
     {
-      u16 fmFrequency_key = getBits(d, base + 24, 8);
-      i32 fmFrequency = 87500 + fmFrequency_key * 100;
-      i16 serviceIndex = find_service_index_from_SId(idField);
+      const u16 fmFrequency_key = getBits(d, base + 24, 8);
+      const i32 fmFrequency = 87500 + fmFrequency_key * 100;
+      const i16 serviceIndex = find_service_index_from_SId(idField);
       if (serviceIndex != -1)
       {
         if ((ensemble->services[serviceIndex].hasName) && (ensemble->services[serviceIndex].fmFrequency == -1))
@@ -947,7 +949,7 @@ i16 FibDecoder::HandleFIG0Extension21(const u8 * d, u8 CN_bit, u8 OE_bit, u8 PD_
 //	FIG 1 - Cover the different possible labels, section 5.2
 void FibDecoder::process_FIG1(const u8 * d)
 {
-  u8 extension = getBits_3(d, 8 + 5);
+  const u8 extension = getBits_3(d, 8 + 5);
 
   switch (extension)
   {
@@ -988,12 +990,13 @@ void FibDecoder::FIG1Extension0(const u8 * d)
 
   // from byte 1 we deduce:
   const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
-  [[maybe_unused]] const u8 Rfu = getBits_1(d, 8 + 4);
-  [[maybe_unused]] const u8 extension = getBits_3(d, 8 + 5);
-
+  const u8 Rfu = getBits_1(d, 8 + 4);
+  const u8 extension = getBits_3(d, 8 + 5);
+  (void)Rfu;
+  (void)extension;
   const u32 EId = getBits(d, 16, 16);
 
-  if (charSet <= (ECharacterSet)16) // EBU Latin based repertoire
+  if (is_charset_valid(charSet))
   {
     char label[17];
     for (i32 i = 0; i < 16; i++)
@@ -1003,7 +1006,7 @@ void FibDecoder::FIG1Extension0(const u8 * d)
     }
     label[16] = 0x00;
 
-    const QString name = toQStringUsingCharset(label, charSet);
+    const QString name = to_QString_using_charset(label, charSet);
 
     if (!ensemble->namePresent)
     {
@@ -1032,8 +1035,9 @@ void FibDecoder::FIG1Extension1(const u8 * d)
   label[16] = 0x00;
   (void)Rfu;
   (void)extension;
-  if (charSet > (ECharacterSet)16)
-  {  // does not seem right
+
+  if (!is_charset_valid(charSet))
+  {
     return;
   }
 
@@ -1041,7 +1045,7 @@ void FibDecoder::FIG1Extension1(const u8 * d)
   {
     label[i] = getBits_8(d, offset + 8 * i);
   }
-  QString dataName = toQStringUsingCharset(label, charSet);
+  QString dataName = to_QString_using_charset(label, charSet);
   for (i32 i = dataName.length(); i < 16; i++)
   {
     dataName.append(' ');
@@ -1063,38 +1067,26 @@ void FibDecoder::FIG1Extension1(const u8 * d)
 // service component label 8.1.14.3
 void FibDecoder::FIG1Extension4(const u8 * d)
 {
-  u8 PD_bit;
-  u8 SCIdS;
-  u8 Rfu;
-  u32 SId;
-  i16 offset;
-
-  PD_bit = getBits_1(d, 16);
-  Rfu = getBits_3(d, 17);
+  const u8 PD_bit = getBits_1(d, 16);
+  const u8 Rfu = getBits_3(d, 17);
   (void)Rfu;
-  SCIdS = getBits_4(d, 20);
+  const u8 SCIdS = getBits_4(d, 20);
 
-  if (PD_bit)
-  {  // 32 bit identifier field for data components
-    SId = getLBits(d, 24, 32);
-    offset = 56;
-  }
-  else
-  {  // 16 bit identifier field for program components
-    SId = getLBits(d, 24, 16);
-    offset = 40;
-  }
+  const u32 SId = PD_bit ? getLBits(d, 24, 32) : getLBits(d, 24, 16);
+  const i16 offset = PD_bit ? 56 : 40;
 
   char label[17];
   label[16] = 0;
+
   for (i32 i = 0; i < 16; i++)
   {
     label[i] = getBits_8(d, offset + 8 * i);
   }
 
   const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
-  QString dataName = toQStringUsingCharset(label, charSet);
-  i16 compIndex = find_service_component(currentConfig, SId, SCIdS);
+  const QString dataName = to_QString_using_charset(label, charSet);
+  const i16 compIndex = find_service_component(currentConfig, SId, SCIdS);
+
   if (compIndex > 0)
   {
     if (find_service(dataName) == -1)
@@ -1111,58 +1103,51 @@ void FibDecoder::FIG1Extension4(const u8 * d)
 //	Data service label - 32 bits 8.1.14.2
 void FibDecoder::FIG1Extension5(const u8 * d)
 {
-  u8 extension;
-  u8 Rfu;
-  i32 serviceIndex;
-  i16 i;
-  char label[17];
-
   u32 SId = getLBits(d, 16, 32);
   i16 offset = 48;
 
   //      from byte 1 we deduce:
   const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
-  Rfu = getBits_1(d, 8 + 4);
-  extension = getBits_3(d, 8 + 5);
-  label[16] = 0x00;
+  const u8 Rfu = getBits_1(d, 8 + 4);
+  const u8 extension = getBits_3(d, 8 + 5);
   (void)Rfu;
   (void)extension;
+  char label[17];
+  label[16] = 0x00;
 
+  const i32 serviceIndex = find_service_index_from_SId(SId);
 
-  serviceIndex = find_service_index_from_SId(SId);
   if (serviceIndex != -1)
   {
     return;
   }
 
-  if (charSet > (ECharacterSet)16)
+  if (!is_charset_valid(charSet))
   {
     return;
-  }  // something wrong
+  }  
 
-  for (i = 0; i < 16; i++)
+  for (i16 i = 0; i < 16; i++)
   {
     label[i] = getBits_8(d, offset + 8 * i);
   }
 
-  QString serviceName = toQStringUsingCharset(label, charSet);
+  QString serviceName = to_QString_using_charset(label, charSet);
   create_service(serviceName, SId, 0);
 }
 
 //	XPAD label - 8.1.14.4
 void FibDecoder::FIG1Extension6(const u8 * d)
 {
+  const u8 PD_bit = getBits_1(d, 16);
+  const u8 Rfu = getBits_3(d, 17);
+  (void)Rfu;
+  const u8 SCIdS = getBits_4(d, 20);
+
   u32 SId = 0;
-  u8 Rfu;
   i16 offset = 0;
-  u8 PD_bit;
-  u8 SCIdS;
   u8 XPAD_apptype;
 
-  PD_bit = getBits_1(d, 16);
-  Rfu = getBits_3(d, 17);
-  (void)Rfu;
-  SCIdS = getBits_4(d, 20);
   if (PD_bit)
   {  // 32 bits identifier for XPAD label
     SId = getLBits(d, 24, 32);
