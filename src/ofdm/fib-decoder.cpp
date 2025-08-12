@@ -1542,17 +1542,6 @@ Cluster * FibDecoder::get_cluster(DabConfig * localBase, i16 clusterId)
   return &(localBase->clusterTable[0]);  // cannot happen
 }
 
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-//
-//	Implementation of API functions
-//
-void FibDecoder::clearEnsemble()
-{
-
-  fibLocker.lock();
-}
-
 void FibDecoder::connect_channel()
 {
   fibLocker.lock();

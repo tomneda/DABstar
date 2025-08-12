@@ -50,7 +50,6 @@ public:
 
   void process_FIB(const u8 *, u16);
 
-  void clearEnsemble();
   void connect_channel();
   void disconnect_channel();
   bool sync_reached() const;
