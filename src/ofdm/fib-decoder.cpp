@@ -1439,7 +1439,7 @@ void FibDecoder::create_service(QString iServiceName, u32 iSId, i32 iSCIdS)
     service.SId = iSId;
     service.SCIdS = iSCIdS;
 
-    qInfo() << "Created service" << i << ", inUse:" << service.inUse << ", ServiceLabel:" << service.serviceLabel << ", SId:" << service.SId << ", SCIdS:" << service.SCIdS;
+    // qDebug() << "Created service" << i << ", inUse:" << service.inUse << ", ServiceLabel:" << service.serviceLabel << ", SId:" << service.SId << ", SCIdS:" << service.SCIdS;
     return;
   }
 }
