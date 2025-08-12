@@ -1,4 +1,14 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ * and improved by old-dab (https://github.com/old-dab)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  * Copyright 2004,2010 Free Software Foundation, Inc.
  *
  * This file is part of GNU Radio
@@ -64,32 +74,32 @@ void FirecodeChecker::fill_syndrome_table()
   // 0 bit schifted
   for (i = 0; i < 11; i++)
   {
-	for(j = 0; j < 124; j++)
-	{
-	  bit = i * 8;
+  for(j = 0; j < 124; j++)
+  {
+    bit = i * 8;
       error[i] = pattern[j];
       u16 syndrome = crc16(error);
       if(syndrome_table[syndrome] == 0)
         syndrome_table[syndrome] = (bit << 8) + pattern[j];
-	  //else
-	  //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x\n", syndrome, pattern[j]);
+    //else
+    //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x\n", syndrome, pattern[j]);
       error[i] = 0;
     }
   }
   // 4 bits schifted
   for (i = 0; i < 10; i++)
   {
-	for(j = 0; j < 45; j++)
-	{
-	  bit = i * 8 + 4;
+  for(j = 0; j < 45; j++)
+  {
+    bit = i * 8 + 4;
       error[i]   = pattern[j] >> 4;
       error[i+1] = pattern[j] << 4;
       u16 syndrome = crc16(error);
       if(syndrome_table[syndrome] == 0)
         syndrome_table[syndrome] = (bit << 8) + pattern[j];
       //else
-	  //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
-	  //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
+    //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
+    //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
       error[i]   = 0;
       error[i+1] = 0;
     }
@@ -97,17 +107,17 @@ void FirecodeChecker::fill_syndrome_table()
   // 2 bits schifted
   for (i = 0; i < 10; i++)
   {
-	for(j = 45; j < 75; j++)
-	{
-	  bit = i * 8 + 2;
+  for(j = 45; j < 75; j++)
+  {
+    bit = i * 8 + 2;
       error[i]   = pattern[j] >> 2;
       error[i+1] = pattern[j] << 6;
       u16 syndrome = crc16(error);
       if(syndrome_table[syndrome] == 0)
         syndrome_table[syndrome] = (bit << 8) + pattern[j];
       //else
-	  //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
-	  //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
+    //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
+    //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
       error[i]   = 0;
       error[i+1] = 0;
     }
@@ -115,17 +125,17 @@ void FirecodeChecker::fill_syndrome_table()
   // 6 bits schifted
   for (int i = 0; i < 10; i++)
   {
-	for(int j = 60; j < 90; j++)
-	{
-	  int bit = i * 8 + 6;
+  for(int j = 60; j < 90; j++)
+  {
+    int bit = i * 8 + 6;
       error[i]   = pattern[j] >> 6;
       error[i+1] = pattern[j] << 2;
       u16 syndrome = crc16(error);
       if(syndrome_table[syndrome] == 0)
         syndrome_table[syndrome] = (bit << 8) + pattern[j];
       //else
-	  //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
-	  //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
+    //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
+    //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
       error[i]   = 0;
       error[i+1] = 0;
     }

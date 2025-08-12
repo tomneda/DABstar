@@ -1,4 +1,14 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ * and improved by old-dab (https://github.com/old-dab)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2013
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -32,7 +42,7 @@
 #include "dabradio.h"
 #include <cstring>
 #include "pad-handler.h"
-#include  "crc.h"
+#include "crc.h"
 
 // #define SHOW_ERROR_STATISTICS
 
