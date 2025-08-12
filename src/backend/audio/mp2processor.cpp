@@ -228,7 +228,7 @@ Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * const i
   connect(this, &Mp2Processor::signal_is_stereo, mr, &DabRadio::slot_set_stereo);
 
   Voffs = 0;
-  baudRate = 48000;  // default for DAB
+  sampleRate = 48000;  // default for DAB
   MP2framesize = 24 * bitRate;  // may be changed
   MP2frame.resize(2 * MP2framesize);
   MP2SyncState = ESyncState::SearchingForSync;
@@ -245,7 +245,7 @@ Mp2Processor::~Mp2Processor()
 
 void Mp2Processor::_set_sample_rate(const i32 iSampleRate)
 {
-  if (baudRate == iSampleRate)
+  if (sampleRate == iSampleRate)
   {
     return;
   }
@@ -256,8 +256,7 @@ void Mp2Processor::_set_sample_rate(const i32 iSampleRate)
     return;
   }
 
-  //	ourSink		-> setMode (0, rate);
-  baudRate = iSampleRate;
+  sampleRate = iSampleRate;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -352,16 +351,17 @@ void Mp2Processor::_read_samples(SQuantizerSpec * opQuantSpec, i32 iScalefactor,
 
 i32 Mp2Processor::_get_bits(const i32 iBitCount)
 {
-  //i32 result = show_bits (bit_count);
-  i32 result = bit_window >> (24 - iBitCount);
+  const i32 result = bit_window >> (24 - iBitCount);
 
   bit_window = (bit_window << iBitCount) & 0xFFFFFF;
   bits_in_window -= iBitCount;
+
   while (bits_in_window < 16)
   {
     bit_window |= (*frame_pos++) << (16 - bits_in_window);
     bits_in_window += 8;
   }
+
   return result;
 }
 
@@ -665,10 +665,17 @@ void Mp2Processor::_process_pad_data(const std::vector<u8> & iBits)
 //	bits to MP2 frames, amount is amount of bits
 void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
 {
-  _process_pad_data(iBits);
+  frame_count++;
 
-  const i16 lf = baudRate == 48000 ? MP2framesize : 2 * MP2framesize;
+  // with sampleRate == 24000 only the second frame have the valid PAD data
+  if (sampleRate == 48000 || frame_count == 2)
+  {
+    _process_pad_data(iBits);
+  }
+
+  i16 lf = sampleRate == 48000 ? MP2framesize : 2 * MP2framesize;
   const i16 amount = MP2framesize;
+  assert(amount == (i16)iBits.size());
 
   for (i16 i = 0; i < amount; i++)
   {
@@ -679,22 +686,25 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
       if (MP2bitCount >= lf)
       {
         i16 sample_buf[KJMP2_SAMPLES_PER_FRAME * 2];
-        const i32 frameSize = _mp2_decode_frame(MP2frame, sample_buf);
-        if (frameSize > 0)
+
+        const i32 frameBitSize = _mp2_decode_frame(MP2frame, sample_buf);
+
+        if (frameBitSize > 0)
         {
-          frameBuffer->put_data_into_ring_buffer(MP2frame.data(), frameSize); // TODO: is used by the "ACC dump button" in the TechData widget, very seldom used!?
-          emit signal_new_frame(frameSize);
+          frameBuffer->put_data_into_ring_buffer(MP2frame.data(), frameBitSize); // TODO: is used by the "ACC dump button" in the TechData widget, very seldom used!?
+          emit signal_new_frame(frameBitSize); // TODO: seltener senden?
 
           audioBuffer->put_data_into_ring_buffer(sample_buf, 2 * (i32)KJMP2_SAMPLES_PER_FRAME);
-          if (audioBuffer->get_ring_buffer_read_available() > baudRate / 8)
+          if (audioBuffer->get_ring_buffer_read_available() > sampleRate / 8)
           {
-            emit signal_new_audio(2 * (i32)KJMP2_SAMPLES_PER_FRAME, baudRate, 0);
+            emit signal_new_audio(2 * (i32)KJMP2_SAMPLES_PER_FRAME, sampleRate, 0);
           }
         }
 
         MP2SyncState = ESyncState::SearchingForSync;
         MP2headerCount = 0;
         MP2bitCount = 0;
+        frame_count = 0;
       }
     }
     else if (MP2SyncState == ESyncState::SearchingForSync)
@@ -705,7 +715,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
         if (++MP2headerCount == 12)
         {
           MP2bitCount = 0;
-          for (i16 j = 0; j < 12; j++)
+          while (MP2bitCount < 12)
           {
             _add_bit_to_mp2(MP2frame, 1, MP2bitCount++);
           }
