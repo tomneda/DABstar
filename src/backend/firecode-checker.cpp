@@ -1,4 +1,3 @@
-/* -*- c++ -*- */
 /*
  * Copyright 2004,2010 Free Software Foundation, Inc.
  *
@@ -28,74 +27,148 @@
 #include <cstring>
 
 //	g(x)=(x^11+1)(x^5+x^3+x^2+x+1)=1+x+x^2+x^3+x^5+x^11+x^12+x^13+x^14+x^16
-const u8 FirecodeChecker::g[16] = { 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0 };
 
 FirecodeChecker::FirecodeChecker()
 {
+  fill_crc_table(crc_table, polynom);
+  fill_syndrome_table();
+}
+
+void FirecodeChecker::fill_crc_table(u16 *crc_table, const u16 poly)
+{
   // prepare the table
-  u8 regs[16];
-  i16 i, j;
-  u16 itab[8];
-
-  for (i = 0; i < 8; i++)
+  for (int i = 0; i < 256; i++)
   {
-    memset(regs, 0, 16);
-    regs[8 + i] = 1;
-    itab[i] = _run8(regs);
-  }
-  for (i = 0; i < 256; i++)
-  {
-    tab[i] = 0;
-    for (j = 0; j < 8; j++)
+    u16 crc = i << 8;
+    for (int j = 0; j < 8; j++)
     {
-      if (i & (1 << j))
+      if (crc & 0x8000)
       {
-        tab[i] = tab[i] ^ itab[j];
+        crc <<= 1;
+        crc ^= poly;
       }
+      else
+        crc <<= 1;
+    }
+    crc_table[i] = crc;
+  }
+}
+
+void FirecodeChecker::fill_syndrome_table()
+{
+  u8 error[11];
+  int i, j, bit;
+
+  memset(error, 0, 11);
+  memset(syndrome_table, 0, 65536 * sizeof(syndrome_table[0]));
+  // 0 bit schifted
+  for (i = 0; i < 11; i++)
+  {
+	for(j = 0; j < 124; j++)
+	{
+	  bit = i * 8;
+      error[i] = pattern[j];
+      u16 syndrome = crc16(error);
+      if(syndrome_table[syndrome] == 0)
+        syndrome_table[syndrome] = (bit << 8) + pattern[j];
+	  //else
+	  //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x\n", syndrome, pattern[j]);
+      error[i] = 0;
+    }
+  }
+  // 4 bits schifted
+  for (i = 0; i < 10; i++)
+  {
+	for(j = 0; j < 45; j++)
+	{
+	  bit = i * 8 + 4;
+      error[i]   = pattern[j] >> 4;
+      error[i+1] = pattern[j] << 4;
+      u16 syndrome = crc16(error);
+      if(syndrome_table[syndrome] == 0)
+        syndrome_table[syndrome] = (bit << 8) + pattern[j];
+      //else
+	  //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
+	  //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
+      error[i]   = 0;
+      error[i+1] = 0;
+    }
+  }
+  // 2 bits schifted
+  for (i = 0; i < 10; i++)
+  {
+	for(j = 45; j < 75; j++)
+	{
+	  bit = i * 8 + 2;
+      error[i]   = pattern[j] >> 2;
+      error[i+1] = pattern[j] << 6;
+      u16 syndrome = crc16(error);
+      if(syndrome_table[syndrome] == 0)
+        syndrome_table[syndrome] = (bit << 8) + pattern[j];
+      //else
+	  //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
+	  //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
+      error[i]   = 0;
+      error[i+1] = 0;
+    }
+  }
+  // 6 bits schifted
+  for (int i = 0; i < 10; i++)
+  {
+	for(int j = 60; j < 90; j++)
+	{
+	  int bit = i * 8 + 6;
+      error[i]   = pattern[j] >> 6;
+      error[i+1] = pattern[j] << 2;
+      u16 syndrome = crc16(error);
+      if(syndrome_table[syndrome] == 0)
+        syndrome_table[syndrome] = (bit << 8) + pattern[j];
+      //else
+	  //  fprintf(stderr, "syndrome 0x%04x already there! pattern=%02x, bit=%d, pattern=%02x, bit=%d\n",
+	  //          syndrome, syndrome_table[syndrome] & 0xff, syndrome_table[syndrome] >> 8, pattern[j], bit);
+      error[i]   = 0;
+      error[i+1] = 0;
     }
   }
 }
 
-u16 FirecodeChecker::_run8(u8 regs[])
+// x[0-1] contains parity, x[2-10] contains data
+u16 FirecodeChecker::crc16(const u8 * x)
 {
-  i16 i, j;
-  u16 z;
-  u16 v = 0;
-
-  for (i = 0; i < 8; i++)
+  u16 crc = 0;
+  for (int i = 2; i < 11; i++)
   {
-    z = regs[15];
-    for (j = 15; j > 0; j--)
-    {
-      regs[j] = regs[j - 1] ^ (z & g[j]);
-    }
-    regs[0] = z;
+    const int pos = (crc >> 8) ^ x[i];
+    crc = (crc << 8) ^ crc_table[pos];
   }
-
-  for (i = 15; i >= 0; i--)
+  for (int i = 0; i < 2; i++)
   {
-    v = (v << 1) | regs[i];
+    const int pos = (crc >> 8) ^ x[i];
+    crc = (crc << 8) ^ crc_table[pos];
   }
-
-  return v;
+  return crc;
 }
 
-bool FirecodeChecker::check(const u8 * const x)
+// return true if firecode check is passed
+bool FirecodeChecker::check(const u8 * x)
 {
-  u16 state = (x[2] << 8) | x[3];
-
-  for (i16 i = 4; i < 11; i++)
-  {
-    const u16 istate = tab[state >> 8];
-    state = ((istate & 0x00ff) ^ x[i]) | ((istate ^ state << 8) & 0xff00);
-  }
-
-  for (i16 i = 0; i < 2; i++)
-  {
-    const u16 istate = tab[state >> 8];
-    state = ((istate & 0x00ff) ^ x[i]) | ((istate ^ state << 8) & 0xff00);
-  }
-
-  return state == 0;
+  return crc16(x) == 0;
 }
 
+// return true if firecode check is passed or a error burst up to 6 bits was corrected
+bool FirecodeChecker::check_and_correct_6bits(u8 * x)
+{
+  u16 syndrome = crc16(x);
+  if (syndrome == 0) // no error
+    return true;
+
+  u8 error = syndrome_table[syndrome] & 0xff;
+  if(error)
+  {
+    int bit = syndrome_table[syndrome] >> 8;
+    x[bit/8]   ^= error >> (bit % 8);
+    x[bit/8+1] ^= error << (8 - (bit % 8));
+    return true;
+  }
+  return false;
+}

@@ -14,10 +14,8 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DATA_MANIP_AND_CHECKS_H
-#define DATA_MANIP_AND_CHECKS_H
-
-#include <cinttypes>
+#ifndef BIT_EXTRAKTORS_H
+#define BIT_EXTRAKTORS_H
 
 //	generic, up to 16 bits
 static inline u16 getBits(const u8 * d, i32 offset, i16 size)
@@ -136,7 +134,6 @@ static inline u16 getBits_8(const u8 * d, i32 offset)
   return res;
 }
 
-
 static inline u32 getLBits(const u8 * d, i32 offset, i16 amount)
 {
   u32 res = 0;
@@ -150,67 +147,4 @@ static inline u32 getLBits(const u8 * d, i32 offset, i16 amount)
   return res;
 }
 
-static inline bool check_CRC_bits(const u8 * const iIn, const i32 iSize)
-{
-  static const u8 crcPolynome[] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 };  // MSB .. LSB
-  i32 f;
-  u8 b[16];
-  i16 Sum = 0;
-
-  memset(b, 1, 16);
-
-  for (i32 i = 0; i < iSize; i++)
-  {
-    const u8 invBit = (i >= iSize - 16 ? 1 : 0);
-
-    if ((b[0] ^ (iIn[i] ^ invBit)) == 1)
-    {
-      for (f = 0; f < 15; f++)
-      {
-        b[f] = crcPolynome[f] ^ b[f + 1];
-      }
-      b[15] = 1;
-    }
-    else
-    {
-      memmove(&b[0], &b[1], sizeof(u8) * 15); // Shift
-      b[15] = 0;
-    }
-  }
-
-  for (i32 i = 0; i < 16; i++)
-  {
-    Sum += b[i];
-  }
-
-  return Sum == 0;
-}
-
-// the CRC is expected behind the msg pointer + len with length 2 bytes
-static inline bool check_crc_bytes(const u8 * const msg, const i32 len)
-{
-  u16 accumulator = 0xFFFF;
-
-  for (i32 i = 0; i < len; i++)
-  {
-    u16 data = (u16)(msg[i]) << 8;
-    for (i32 j = 8; j > 0; j--)
-    {
-      if ((data ^ accumulator) & 0x8000)
-      {
-        constexpr u16 genpoly = 0x1021;
-        accumulator = ((accumulator << 1) ^ genpoly) & 0xFFFF;
-      }
-      else
-      {
-        accumulator = (accumulator << 1) & 0xFFFF;
-      }
-      data = (data << 1) & 0xFFFF;
-    }
-  }
-  //	ok, now check with the crc that is contained in the au
-  const u16 crc = ~((msg[len] << 8) | msg[len + 1]) & 0xFFFF;
-  return (crc ^ accumulator) == 0;
-}
-
-#endif // DATA_MANIP_AND_CHECKS_H
+#endif // BIT_EXTRAKTORS_H

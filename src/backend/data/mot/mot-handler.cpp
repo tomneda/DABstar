@@ -33,7 +33,8 @@
 #include  "mot-object.h"
 #include  "mot-dir.h"
 #include  "dabradio.h"
-#include  "data_manip_and_checks.h"
+#include  "bit-extractors.h"
+#include  "crc.h"
 
 MotHandler::MotHandler(DabRadio * mr)
   : mpRadioInterface(mr)

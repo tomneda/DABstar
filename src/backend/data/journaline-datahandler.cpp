@@ -21,7 +21,7 @@
  */
 #include  "journaline-datahandler.h"
 #include  "dabdatagroupdecoder.h"
-#include  "data_manip_and_checks.h"
+#include  "bit-extractors.h"
 #include  "journaline-screen.h"
 #include  "newsobject.h"
 #include  <sys/time.h>

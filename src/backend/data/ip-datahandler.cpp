@@ -31,7 +31,8 @@
 
 #include  "ip-datahandler.h"
 #include  "dabradio.h"
-#include  "data_manip_and_checks.h"
+#include  "bit-extractors.h"
+#include  "crc.h"
 
 ip_dataHandler::ip_dataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer)
 {

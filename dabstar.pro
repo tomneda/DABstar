@@ -111,7 +111,7 @@ HEADERS += \
     src/main/dab-constants.h \
     src/main/mot-content-types.h \
     src/eti-handler/eti-generator.h \
-    src/main/data_manip_and_checks.h \
+    src/main/bit-extractors.h \
     src/ofdm/sample-reader.h \
     src/ofdm/phasereference.h \
     src/ofdm/phasetable.h \
@@ -127,6 +127,7 @@ HEADERS += \
     src/protection/uep-protection.h \
     src/protection/eep-protection.h \
     src/backend/firecode-checker.h \
+    src/backend/crc.h \
     src/backend/frame-processor.h \
     src/backend/charsets.h \
     src/backend/galois.h \
@@ -234,6 +235,7 @@ SOURCES += \
     src/protection/eep-protection.cpp \
     src/protection/uep-protection.cpp \
     src/backend/firecode-checker.cpp \
+    src/backend/crc.cpp \
     src/backend/charsets.cpp \
     src/backend/galois.cpp \
     src/backend/reed-solomon.cpp \

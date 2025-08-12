@@ -92,6 +92,7 @@ private:
   i32 mSumRsErrors = 0;
   i32 mSumCorrections = 0;
   i32 mSumCrcErrors = 0;
+  i32 mSum_good_crcs = 0;
   std::vector<u8> mFrameByteVec;
   std::vector<u8> mOutVec;
   std::array<i16, 10> mAuStartArr;
