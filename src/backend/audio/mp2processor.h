@@ -74,7 +74,7 @@ private:
   PadHandler my_padhandler;
   RingBuffer<i16> * const audioBuffer;
   RingBuffer<u8> * const frameBuffer;
-  i32 baudRate;
+  i32 sampleRate;
   i16 V[2][1024];
   i16 Voffs;
   i16 N[64][32];
@@ -84,6 +84,7 @@ private:
   i32 sample[2][32][3];
   i32 U[512];
 
+  i32 frame_count = 0;
   i32 bit_window;
   i32 bits_in_window;
   const u8 * frame_pos;
