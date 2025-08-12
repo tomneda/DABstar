@@ -733,6 +733,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
       if (MP2bitCount == 24)
       {
         _set_sample_rate(_get_mp2_sample_rate(MP2frame));
+        lf = sampleRate == 48000 ? MP2framesize : 2 * MP2framesize;
         MP2SyncState = ESyncState::GetData;
       }
     }
