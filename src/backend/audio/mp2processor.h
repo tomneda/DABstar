@@ -84,7 +84,6 @@ private:
   i32 sample[2][32][3];
   i32 U[512];
 
-  i32 frame_count = 0;
   i32 bit_window;
   i32 bits_in_window;
   const u8 * frame_pos;

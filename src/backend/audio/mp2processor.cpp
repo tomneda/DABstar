@@ -672,14 +672,6 @@ void Mp2Processor::_process_pad_data(const std::vector<u8> & iBits)
 //	bits to MP2 frames, amount is amount of bits
 void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
 {
-  frame_count++;
-
-  // with sampleRate == 24'000 only the second frame has the valid PAD data
-  // if (sampleRate == 48000 || frame_count == 2)
-  // {
-  //   _process_pad_data(iBits);
-  // }
-
   i16 lf = sampleRate == 48000 ? MP2framesize : 2 * MP2framesize;
   const i16 amount = MP2framesize;
   assert(amount == (i16)iBits.size());
@@ -712,7 +704,6 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
         MP2SyncState = ESyncState::SearchingForSync;
         MP2headerCount = 0;
         MP2bitCount = 0;
-        frame_count = 0;
       }
     }
     else if (MP2SyncState == ESyncState::SearchingForSync)
@@ -741,6 +732,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
       if (MP2bitCount == 24)
       {
         _set_sample_rate(_get_mp2_sample_rate(MP2frame));
+        lf = sampleRate == 48000 ? MP2framesize : 2 * MP2framesize;
         MP2SyncState = ESyncState::GetData;
       }
     }
