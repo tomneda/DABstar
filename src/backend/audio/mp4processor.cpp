@@ -28,13 +28,11 @@
  *	his as well. Chapeau!
  ************************************************************************
  */
-#include  "mp4processor.h"
-#include  "dabradio.h"
-#include  <cstring>
-#include  "charsets.h"
-#include  "pad-handler.h"
-#include  "bitWriter.h"
-#include  "data_manip_and_checks.h"
+#include "mp4processor.h"
+#include "dabradio.h"
+#include <cstring>
+#include "pad-handler.h"
+#include "data_manip_and_checks.h"
 
 // #define SHOW_ERROR_STATISTICS
 
@@ -43,10 +41,9 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> * const iopAudioBuffer, RingBuffer<u8> * const iopFrameBuffer, FILE * const ipDumpFile)
+Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> * const iopAudioBuffer, RingBuffer<u8> * const iopFrameBuffer)
   : mpRadioInterface(iRI)
   , mPadhandler(iRI)
-  , mpDumpFile(ipDumpFile)
   , mBitRate(iBitRate)
   , mpFrameBuffer(iopFrameBuffer)  // input rate
   , mRsDims(iBitRate / 8)
@@ -315,54 +312,44 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
       std::vector<u8> aacStreamBuffer;
       const i32 segmentSize = _build_aac_stream(aacFrameLen, &streamParameters, &(mOutVec[mAuStartArr[auIdx]]), aacStreamBuffer);
 
-      if (mpDumpFile == nullptr)
+      mpFrameBuffer->put_data_into_ring_buffer(aacStreamBuffer.data(), segmentSize); // This is used by the "ACC dump button" in the TechData widget
+      emit signal_new_frame();
+
+      // first handle the pad data if any
+      if (((mOutVec[mAuStartArr[auIdx + 0]] >> 5) & 07) == 4)
       {
-        mpFrameBuffer->put_data_into_ring_buffer(aacStreamBuffer.data(), segmentSize); // TODO: is used by the "ACC dump button" in the TechData widget, very seldom used!?
-        emit signal_new_frame(segmentSize);
-      }
-      else
-      {
-        fwrite(aacStreamBuffer.data(), 1, segmentSize, mpDumpFile);
+        const i16 count = mOutVec[mAuStartArr[auIdx] + 1];
+        auto * const buffer = make_vla(u8, count);
+        memcpy(buffer, &mOutVec[mAuStartArr[auIdx] + 2], count);
+        const u8 L0 = buffer[count - 1];
+        const u8 L1 = buffer[count - 2];
+        mPadhandler.process_PAD(buffer, count - 3, L1, L0);
       }
 
-      //	first handle the pad data if any
-      if (mpDumpFile == nullptr)
-      {
-        if (((mOutVec[mAuStartArr[auIdx + 0]] >> 5) & 07) == 4)
-        {
-          const i16 count = mOutVec[mAuStartArr[auIdx] + 1];
-          auto * const buffer = make_vla(u8, count);
-          memcpy(buffer, &mOutVec[mAuStartArr[auIdx] + 2], count);
-          const u8 L0 = buffer[count - 1];
-          const u8 L1 = buffer[count - 2];
-          mPadhandler.process_PAD(buffer, count - 3, L1, L0);
-        }
-
-        //	then handle the audio
+      //	then handle the audio
 #ifdef  __WITH_FDK_AAC__
-        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, aacStreamBuffer.data(), segmentSize);
+      const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, aacStreamBuffer.data(), segmentSize);
 #else
-        std::array<u8, 960 + 10> theAudioUnit;  // max size is ensured above but for what are the +10?
-        assert(aacFrameLen <= 960);
-        memcpy(theAudioUnit.data(), &mOutVec[mAuStartArr[auIdx]], aacFrameLen);
-        memset(&theAudioUnit[aacFrameLen], 0, 10);
+      std::array<u8, 960 + 10> theAudioUnit;  // max size is ensured above but for what are the +10?
+      assert(aacFrameLen <= 960);
+      memcpy(theAudioUnit.data(), &mOutVec[mAuStartArr[auIdx]], aacFrameLen);
+      memset(&theAudioUnit[aacFrameLen], 0, 10);
 
-        const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit.data(), aacFrameLen);
+      const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit.data(), aacFrameLen);
 #endif
-        emit signal_is_stereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
+      emit signal_is_stereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
 
-        if (tmp <= 0)
-        {
-          fprintf(stderr, "MP4 decoding error: %d\n", tmp);
-          mAacErrors++;
-        }
+      if (tmp <= 0)
+      {
+        fprintf(stderr, "MP4 decoding error: %d\n", tmp);
+        mAacErrors++;
+      }
 
-        if (++mAacFrames > 25)
-        {
-          emit signal_show_aac_errors(mAacErrors);
-          mAacErrors = 0;
-          mAacFrames = 0;
-        }
+      if (++mAacFrames > 25)
+      {
+        emit signal_show_aac_errors(mAacErrors);
+        mAacErrors = 0;
+        mAacFrames = 0;
       }
     }
     else

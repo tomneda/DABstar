@@ -1051,10 +1051,10 @@ void DabRadio::slot_change_in_configuration()
     if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIdS);
         ss == "") // it is gone, close the file if any
     {
-      if (mChannel.backgroundServices.at(i).fd != nullptr)
-      {
-        fclose(mChannel.backgroundServices.at(i).fd);
-      }
+      // if (mChannel.backgroundServices.at(i).fd != nullptr)
+      // {
+      //   fclose(mChannel.backgroundServices.at(i).fd);
+      // }
       mChannel.backgroundServices.erase(mChannel.backgroundServices.begin() + i);
     }
     else // (re)start the service
@@ -1062,9 +1062,9 @@ void DabRadio::slot_change_in_configuration()
       if (_is_audio_service(ss))
       {
         AudioData ad;
-        FILE * f = mChannel.backgroundServices.at(i).fd;
+        // FILE * f = mChannel.backgroundServices.at(i).fd;
         mpDabProcessor->get_fib_decoder().get_data_for_audio_service(ss, &ad);
-        mpDabProcessor->set_audio_channel(&ad, mpAudioBufferFromDecoder, f, BACK_GROUND);
+        mpDabProcessor->set_audio_channel(&ad, mpAudioBufferFromDecoder, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = ad.subchId;
       }
       else
@@ -2039,9 +2039,11 @@ void DabRadio::start_frame_dumping()
 }
 
 //	called from the mp4 handler, using a signal
-void DabRadio::slot_new_frame(i32 amount)
+void DabRadio::slot_new_frame()
 {
-  auto * const buffer = make_vla(u8, amount);
+  // auto * const buffer = make_vla(u8, amount);
+  std::array<u8, 4096> buffer;
+
   if (!mIsRunning.load())
   {
     return;
@@ -2053,12 +2055,18 @@ void DabRadio::slot_new_frame(i32 amount)
   }
   else
   {
-    while (mpFrameBuffer->get_ring_buffer_read_available() >= amount)
+    i32 dataAvail = mpFrameBuffer->get_ring_buffer_read_available();
+
+    while (dataAvail > 0)
     {
-      mpFrameBuffer->get_data_from_ring_buffer(buffer, amount);
+      const i32 dataSizeRead = std::min(dataAvail, (i32)buffer.size());
+      dataAvail -= dataSizeRead;
+
+      mpFrameBuffer->get_data_from_ring_buffer(buffer.data(), dataSizeRead);
+
       if (mChannel.currentService.frameDumper != nullptr)
       {
-        fwrite(buffer, amount, 1, mChannel.currentService.frameDumper);
+        fwrite(buffer.data(), dataSizeRead, 1, mChannel.currentService.frameDumper);
       }
     }
   }
@@ -2413,7 +2421,7 @@ void DabRadio::start_audio_service(const AudioData * const ipAD)
 {
   mChannel.currentService.valid = true;
 
-  (void)mpDabProcessor->set_audio_channel(ipAD, mpAudioBufferFromDecoder, nullptr, FORE_GROUND);
+  (void)mpDabProcessor->set_audio_channel(ipAD, mpAudioBufferFromDecoder, FORE_GROUND);
 
   for (i16 SCIdS = 1; SCIdS < 0xF; SCIdS++) // TODO: 10 or 15
   {
@@ -2639,10 +2647,10 @@ void DabRadio::stop_channel()
   for (const auto & bgs : mChannel.backgroundServices)
   {
     mpDabProcessor->stop_service(bgs.subChId, BACK_GROUND);
-    if (bgs.fd != nullptr)
-    {
-      fclose(bgs.fd);
-    }
+    // if (bgs.fd != nullptr)
+    // {
+    //   fclose(bgs.fd);
+    // }
   }
   mChannel.backgroundServices.clear();
 
@@ -3033,7 +3041,7 @@ void DabRadio::slot_epg_timer_timeout()
         s.SId = pd.SId;
         s.SCIdS = pd.SCIdS;
         s.subChId = pd.subchId;
-        s.fd = nullptr;
+        // s.fd = nullptr;
         mChannel.backgroundServices.push_back(s);
       }
     }

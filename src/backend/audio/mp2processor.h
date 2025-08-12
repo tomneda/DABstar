@@ -110,7 +110,7 @@ private:
 signals:
   void signal_show_frameErrors(i32);
   void signal_new_audio(i32, u32, u32);
-  void signal_new_frame(i32);
+  void signal_new_frame();
   void signal_is_stereo(bool);
 };
 

@@ -92,7 +92,7 @@ struct SDabService
   i32 subChId = 0;
   bool valid = false;
   bool is_audio = false;
-  FILE * fd = nullptr;
+  // FILE * fd = nullptr;
   FILE * frameDumper = nullptr;
 };
 
@@ -427,7 +427,7 @@ public slots:
   void slot_clock_time(i32, i32, i32, i32, i32, i32, i32, i32, i32);
   void slot_start_announcement(const QString &, i32);
   void slot_stop_announcement(const QString &, i32);
-  void slot_new_frame(i32);
+  void slot_new_frame();
   void slot_show_clock_error(f32 e);
   void slot_set_epg_data(i32, i32, const QString &, const QString &);
   void slot_epg_timer_timeout();

@@ -502,24 +502,31 @@ i32 Mp2Processor::_mp2_decode_frame(const std::vector<u8> & iFrame, i16 * opPcm)
       {
         switch (scfsi[ch][sb])
         {
-        case 0: scalefactor[ch][sb][0] = _get_bits(6);
+        case 0:
+          scalefactor[ch][sb][0] = _get_bits(6);
           scalefactor[ch][sb][1] = _get_bits(6);
           scalefactor[ch][sb][2] = _get_bits(6);
           break;
-        case 1: scalefactor[ch][sb][0] = scalefactor[ch][sb][1] = _get_bits(6);
+        case 1:
+          scalefactor[ch][sb][0] = scalefactor[ch][sb][1] = _get_bits(6);
           scalefactor[ch][sb][2] = _get_bits(6);
           break;
-        case 2: scalefactor[ch][sb][0] = scalefactor[ch][sb][1] = scalefactor[ch][sb][2] = _get_bits(6);
+        case 2:
+          scalefactor[ch][sb][0] = scalefactor[ch][sb][1] = scalefactor[ch][sb][2] = _get_bits(6);
           break;
-        case 3: scalefactor[ch][sb][0] = _get_bits(6);
+        case 3:
+          scalefactor[ch][sb][0] = _get_bits(6);
           scalefactor[ch][sb][1] = scalefactor[ch][sb][2] = _get_bits(6);
           break;
         }
       }
     }
+
     if (mode == MONO)
+    {
       for (part = 0; part < 3; ++part)
         scalefactor[1][sb][part] = scalefactor[0][sb][part];
+    }
   }
 
   // coefficient input and reconstruction
@@ -667,11 +674,11 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
 {
   frame_count++;
 
-  // with sampleRate == 24000 only the second frame have the valid PAD data
-  if (sampleRate == 48000 || frame_count == 2)
-  {
-    _process_pad_data(iBits);
-  }
+  // with sampleRate == 24'000 only the second frame has the valid PAD data
+  // if (sampleRate == 48000 || frame_count == 2)
+  // {
+  //   _process_pad_data(iBits);
+  // }
 
   i16 lf = sampleRate == 48000 ? MP2framesize : 2 * MP2framesize;
   const i16 amount = MP2framesize;
@@ -687,16 +694,17 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
       {
         i16 sample_buf[KJMP2_SAMPLES_PER_FRAME * 2];
 
-        const i32 frameBitSize = _mp2_decode_frame(MP2frame, sample_buf);
+        _process_pad_data(iBits);  // only the last frame contains the PAD data
+        const i32 frameSize = _mp2_decode_frame(MP2frame, sample_buf);
 
-        if (frameBitSize > 0)
+        if (frameSize > 0)
         {
-          frameBuffer->put_data_into_ring_buffer(MP2frame.data(), frameBitSize); // TODO: is used by the "ACC dump button" in the TechData widget, very seldom used!?
-          emit signal_new_frame(frameBitSize); // TODO: seltener senden?
-
+          frameBuffer->put_data_into_ring_buffer(MP2frame.data(), frameSize); // this is used by the "MP2 dump button" in the TechData widget
           audioBuffer->put_data_into_ring_buffer(sample_buf, 2 * (i32)KJMP2_SAMPLES_PER_FRAME);
+
           if (audioBuffer->get_ring_buffer_read_available() > sampleRate / 8)
           {
+            emit signal_new_frame();
             emit signal_new_audio(2 * (i32)KJMP2_SAMPLES_PER_FRAME, sampleRate, 0);
           }
         }

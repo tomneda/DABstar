@@ -35,15 +35,15 @@
  * 	frames into the ffmpeg or faad decoding library
  */
 
-#include  "dab-constants.h"
-#include  <cstdio>
-#include  <cstdint>
-#include  <vector>
-#include  "frame-processor.h"
-#include  "firecode-checker.h"
-#include  "reed-solomon.h"
-#include  <QObject>
-#include  "pad-handler.h"
+#include "dab-constants.h"
+#include "frame-processor.h"
+#include "firecode-checker.h"
+#include "reed-solomon.h"
+#include "pad-handler.h"
+#include "bitWriter.h"
+#include <QObject>
+#include <cstdint>
+#include <vector>
 
 #ifdef  __WITH_FDK_AAC__
 #include	"fdk-aac.h"
@@ -59,7 +59,7 @@ class Mp4Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  Mp4Processor(DabRadio *, i16, RingBuffer<i16> *, RingBuffer<u8> *, FILE *);
+  Mp4Processor(DabRadio *, i16, RingBuffer<i16> *, RingBuffer<u8> *);
   ~Mp4Processor() override;
 
   void add_to_frame(const std::vector<u8> &) override;
@@ -67,7 +67,6 @@ public:
 private:
   DabRadio * const mpRadioInterface;
   PadHandler mPadhandler;
-  FILE * const mpDumpFile;
   i16 const mBitRate;
   RingBuffer<u8> * const mpFrameBuffer;
   const i16 mRsDims;
@@ -112,7 +111,7 @@ signals:
   void signal_show_rs_errors(i32);
   void signal_show_aac_errors(i32);
   void signal_is_stereo(bool);
-  void signal_new_frame(i32);
+  void signal_new_frame();
   void signal_show_rs_corrections(i32, i32);
 };
 

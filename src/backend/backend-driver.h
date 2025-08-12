@@ -33,7 +33,7 @@
 class BackendDriver
 {
 public:
-  BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer, FILE * dump);
+  BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer);
   ~BackendDriver() = default;
 
   void addtoFrame(const std::vector<u8> & outData);

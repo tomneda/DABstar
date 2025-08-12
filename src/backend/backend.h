@@ -60,7 +60,7 @@ class Backend
 #endif
 
 public:
-  Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, FILE * dump, i32 flag);
+  Backend(DabRadio * ipRI, const DescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, i32 flag);
   ~Backend();
 
   i32 process(const i16 * iV, i16 cnt);
@@ -76,7 +76,6 @@ public:
   i16 subChId;
   QString serviceName;
   i32 borf;
-  FILE * dump;
 
 private:
   BackendDeconvolver deconvolver;

@@ -17,8 +17,8 @@
 template <>
 RingBufferFactory<u8>::RingBufferFactory()
 {
-  create_ringbuffer(EId::FrameBuffer, "FrameBuffer", 2 * 32768);
-  create_ringbuffer(EId::DataBuffer,  "DataBuffer",      32768);
+  create_ringbuffer(EId::FrameBuffer, "FrameBuffer",  8192);
+  create_ringbuffer(EId::DataBuffer,  "DataBuffer",  32768);
 }
 
 template <>
