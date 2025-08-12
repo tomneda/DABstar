@@ -40,8 +40,7 @@
 #include  "dab-config.h"
 #include  "fib-table.h"
 #include  <QStringList>
-#include  "data_manip_and_checks.h"
-//#include	"text-mapper.h"
+#include  "bit-extractors.h"
 #include  "dab-tables.h"
 
 

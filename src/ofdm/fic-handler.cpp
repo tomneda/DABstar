@@ -32,7 +32,7 @@
 #include  "fic-handler.h"
 #include  "dabradio.h"
 #include  "protTables.h"
-#include  "data_manip_and_checks.h"
+#include  "crc.h"
 #include  <cassert>
 
 //	The 3072 bits of the serial motherword shall be split into

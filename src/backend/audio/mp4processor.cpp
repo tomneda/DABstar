@@ -34,7 +34,7 @@
 #include  "charsets.h"
 #include  "pad-handler.h"
 #include  "bitWriter.h"
-#include  "data_manip_and_checks.h"
+#include  "crc.h"
 
 // #define SHOW_ERROR_STATISTICS
 
@@ -166,8 +166,8 @@ void Mp4Processor::add_to_frame(const std::vector<u8> & iV)
   if (mSumCorrections > displayedErrors)
   {
 #ifdef SHOW_ERROR_STATISTICS
-    fprintf(stderr, "Frames=%d, Frame Resyncs=%d, FC Errors=%d, FC Corrections=%d, RS Errors=%d, RS Corrections=%d, CRC Errors=%d\n",
-            mSumFrameCount * mRsDims / 5, mSumFrameErrors, mSumFcErrors, mSumFcCorrections, mSumRsErrors, mSumCorrections, mSumCrcErrors);
+    fprintf(stderr, "Frames=%d, Frame Resyncs=%d, FC Errors=%d, FC Corr=%d, RS Errors=%d, RS Corr=%d, CRC Errors=%d, CRC ok=%d\n",
+            mSumFrameCount * mRsDims / 5, mSumFrameErrors, mSumFcErrors, mSumFcCorrections, mSumRsErrors, mSumCorrections, mSumCrcErrors, mSum_good_crcs);
 #endif
     displayedErrors = mSumCorrections;
   }
@@ -218,7 +218,8 @@ bool Mp4Processor::_process_reed_solomon_frame(const u8 * const ipFrameBytes, co
       mOutVec[j + k * mRsDims] = rsOut[k];
     }
   }
-  if (mFireCode.check(mOutVec.data()))
+  //if (mFireCode.check(mOutVec.data()))
+  if (mFireCode.check_and_correct_6bits(mOutVec.data()))
   {
     if(memcmp(mOutVec.data(), &ipFrameBytes[iBase], 11))
       mSumFcCorrections++;
@@ -315,6 +316,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
       std::vector<u8> aacStreamBuffer;
       const i32 segmentSize = _build_aac_stream(aacFrameLen, &streamParameters, &(mOutVec[mAuStartArr[auIdx]]), aacStreamBuffer);
 
+      mSum_good_crcs++;
       if (mpDumpFile == nullptr)
       {
         mpFrameBuffer->put_data_into_ring_buffer(aacStreamBuffer.data(), segmentSize); // TODO: is used by the "ACC dump button" in the TechData widget, very seldom used!?

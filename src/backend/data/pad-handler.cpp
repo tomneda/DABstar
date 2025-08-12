@@ -31,7 +31,7 @@
 
 #include "pad-handler.h"
 #include "dabradio.h"
-#include "data_manip_and_checks.h"
+#include "crc.h"
 #include <QLoggingCategory>
 
 //Q_LOGGING_CATEGORY(sLogPadHandler, "PadHandler", QtDebugMsg)
@@ -301,7 +301,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
         qCWarning(sLogPadHandler) << "dataGroupLengthField fails on CRC check" << "length=" << length;;
       }
       break;
-      
+
     case 2:   // Dynamic label segment, start of X-PAD data group
     case 3:   // Dynamic label segment, continuation of X-PAD data group
       // qCDebug(sLogPadHandler) << "DL, start of X-PAD data group, size " << data.size() << "appType=" << appType;

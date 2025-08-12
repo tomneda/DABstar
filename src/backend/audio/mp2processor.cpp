@@ -37,7 +37,7 @@
 //
 #include "mp2processor.h"
 #include "dabradio.h"
-#include "data_manip_and_checks.h"
+#include "bit-extractors.h"
 #include "pad-handler.h"
 
 #ifdef _MSC_VER
