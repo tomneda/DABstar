@@ -70,11 +70,11 @@ FibDecoder::~FibDecoder()
 //	FIB's are segments of 256 bits. When here, we already
 //	passed the crc and we start unpacking into FIGs
 //	This is merely a dispatcher
-void FibDecoder::process_FIB(const u8 * const p, u16 const iFicNo)
+void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibBits, u16 const iFicNo)
 {
   (void)iFicNo;
   i8 processedBytes = 0;
-  const u8 * d = p;
+  const u8 * d = reinterpret_cast<const u8 *>(iFibBits.data());
 
   fibLocker.lock();
   while (processedBytes < 30)
@@ -103,7 +103,7 @@ void FibDecoder::process_FIB(const u8 * const p, u16 const iFicNo)
     default: break;
     }
     processedBytes += getBits_5(d, 3) + 1;
-    d = p + processedBytes * 8;
+    d = reinterpret_cast<const u8 *>(iFibBits.data()) + processedBytes * 8;
   }
   fibLocker.unlock();
 }

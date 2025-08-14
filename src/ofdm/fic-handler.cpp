@@ -196,14 +196,12 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
       viterbiBlock[i] = 0;
     }
   }
-  /**
-    *	Now we have the full word ready for deconvolution
-    *	deconvolution is according to DAB standard section 11.2
-    */
 
-  std::byte * const pFibBitsOf3Fibs = &mFibBitsEntireFrame[iFicIdx * cFicSizeVitOut]; // 3 FIBs or 1 FIC
-  mViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<u8 *>(pFibBitsOf3Fibs));
-  mViterbi.calculate_BER(viterbiBlock.data(), mPunctureTable.data(), reinterpret_cast<u8 *>(pFibBitsOf3Fibs), mFicBits, mFicErrors);
+  // Now we have the full word ready for deconvolution. Deconvolution is according to DAB standard section 11.2.
+  auto & fibBitsOf3Fibs = *reinterpret_cast<std::array<std::byte, cFicSizeVitOut> *>(&mFibBitsEntireFrame[iFicIdx * cFicSizeVitOut]); // 3 FIBs or 1 FIC
+
+  mViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<u8 *>(fibBitsOf3Fibs.data()));
+  mViterbi.calculate_BER(viterbiBlock.data(), mPunctureTable.data(), reinterpret_cast<u8 *>(fibBitsOf3Fibs.data()), mFicBits, mFicErrors);
 
   mFicBlock++;
 
@@ -225,7 +223,7 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
     */
   for (i16 i = 0; i < cFicSizeVitOut; i++)
   {
-    pFibBitsOf3Fibs[i] ^= mPRBS[i];
+    fibBitsOf3Fibs[i] ^= mPRBS[i];
   }
 
   /**
@@ -240,16 +238,16 @@ void FicHandler::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 
   for (i16 fibIdx = 0; fibIdx < cFibPerFic; fibIdx++)
   {
-    const std::byte * const pOneFib = &pFibBitsOf3Fibs[fibIdx * cFibSizeVitOut];
+    const auto & oneFib = *reinterpret_cast<std::array<std::byte, cFibSizeVitOut> *>(&fibBitsOf3Fibs[fibIdx * cFibSizeVitOut]);
 
-    if (check_CRC_bits(reinterpret_cast<const u8 *>(pOneFib), cFibSizeVitOut))
+    if (check_CRC_bits(reinterpret_cast<const u8 *>(oneFib.data()), cFibSizeVitOut))
     {
       if (mpFicDump != nullptr)
       {
-        _dump_fib_to_file(pOneFib);
+        _dump_fib_to_file(oneFib.data());
       }
 
-      mFibDecoder.process_FIB(reinterpret_cast<const u8 *>(pOneFib), iFicIdx);
+      mFibDecoder.process_FIB(oneFib, iFicIdx);
 
       if (mFicDecodeSuccessRatio < 10)
       {

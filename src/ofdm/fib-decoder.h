@@ -48,7 +48,7 @@ public:
   explicit FibDecoder(DabRadio *);
   ~FibDecoder();
 
-  void process_FIB(const u8 *, u16);
+  void process_FIB(const std::array<std::byte, cFibSizeVitOut> &, u16);
 
   void connect_channel();
   void disconnect_channel();
