@@ -370,6 +370,7 @@ set(${objectName}_SRCS
         src/ofdm/phasetable.cpp
         src/ofdm/freq-interleaver.cpp
         src/ofdm/fib-decoder.cpp
+        src/ofdm/fib-decoder-string-getter.cpp
         src/ofdm/fic-handler.cpp
         src/ofdm/tii-detector.cpp
         src/ofdm/timesyncer.cpp
