@@ -42,6 +42,7 @@
 #include "glob_data_types.h"
 #include "dab-constants.h"
 #include <vector>
+#include <map>
 #include <QString>
 
 class Service
@@ -112,25 +113,8 @@ public:
   Service services[64];
 };
 
-class SubChannelDescriptor
+struct SSubChannelDescriptor
 {
-public:
-  SubChannelDescriptor()
-  {
-    reset();
-  }
-
-  ~SubChannelDescriptor() = default;
-
-  void reset()
-  {
-    inUse = false;
-    language = 0;
-    FEC_scheme = 0;
-    // SCIdS = 0;
-  }
-
-  bool inUse = false;
   i32 SubChId  = 0;       // FIG0/1
   i32 startAddr = 0;      // FIG0/1, CU start address
   i32 Length = 0;         // FIG0/1, number of CUs
@@ -139,7 +123,6 @@ public:
   i32 bitRate = 0;        // FIG0/1
   i16 language = 0;       // FIG0/5
   i16 FEC_scheme = 0;     // FIG0/14
-  // i16 SCIdS = 0;    // for audio channels
 };
 
 //      The service component describes the actual service
@@ -225,10 +208,7 @@ public:
 
   void reset()
   {
-    for (auto & subChannel : subChannels)
-    {
-      subChannel.reset();
-    }
+    subChDescMap.clear();
 
     for (auto & serviceComp : serviceComps)
     {
@@ -236,7 +216,9 @@ public:
     }
   }
 
-  SubChannelDescriptor subChannels[64];
+  using TMapSubChDesc = std::map<i32, SSubChannelDescriptor>; // key is <subChId>
+  TMapSubChDesc subChDescMap;
+
   ServiceComponentDescriptor serviceComps[64];
   Cluster clusterTable[128];
 };
