@@ -68,12 +68,29 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   }
 
   mSampleRate = sf_info.samplerate;
-
   if (mSampleRate < 1'536'000 || mSampleRate > 2'500'000 || sf_info.channels != 2) // SR 1536/1792/2000/2048/2500 Sps are tested (even 1536 kSps worked somehow fine)
   {
     sf_close(mpFile);
     const QString val = QString("Sample rate %1 (SR=[1536..2500]) kSps or channel number %2 (ChNo=2) is not supported").arg(mSampleRate/1000).arg(sf_info.channels);
     throw std::runtime_error(val.toUtf8().data());
+  }
+
+  switch(sf_info.format & 0xffff)
+  {
+	case SF_FORMAT_PCM_S8:
+      lblFormat->setText("i8"); break;
+	case SF_FORMAT_PCM_16:
+      lblFormat->setText("i16"); break;
+	case SF_FORMAT_PCM_24:
+      lblFormat->setText("i24"); break;
+	case SF_FORMAT_PCM_32:
+      lblFormat->setText("i32"); break;
+	case SF_FORMAT_PCM_U8:
+      lblFormat->setText("u8"); break;
+    default:
+      sf_close(mpFile);
+      const QString val = QString("Format %x is not supported").arg(sf_info.format & 0xffff);
+      throw std::runtime_error(val.toUtf8().data());
   }
 
   lcdSampleRate->display(mSampleRate);
@@ -202,6 +219,7 @@ QString WavFileHandler::deviceName()
 
 void WavFileHandler::slot_handle_cb_loop_file(const bool iChecked)
 {
+  (void)iChecked;
   if (mpFile == nullptr)
   {
     return;

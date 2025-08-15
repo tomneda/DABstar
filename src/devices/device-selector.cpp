@@ -299,14 +299,31 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
       }
     }
 
-    switch (type)
+    // Open the selected file and read the first 5 bytes to determine the file
+    // type. Then close the file.
+    u8 mByteBuffer[5];
+    FILE *mpFile = OpenFileDialog::open_file(file, "rb");
+    if (mpFile == nullptr)
+      return nullptr;
+    if (fread(mByteBuffer, sizeof(u8), 5, mpFile) < 5)
+      return nullptr;
+    if (memcmp(mByteBuffer, "<?xml", 5) == 0)
+      inputDevice = std::make_unique<XmlFileReader>(file);
+    else if (memcmp(mByteBuffer, "RIFF", 4) == 0)
+      inputDevice = std::make_unique<WavFileHandler>(file);
+    else
+      inputDevice = std::make_unique<RawFileHandler>(file);
+    if (mpFile != nullptr)
+      fclose(mpFile);
+
+    /*switch (type)
     {
     case OpenFileDialog::EFileType::FT_UFF_XML: inputDevice = std::make_unique<XmlFileReader>(file); break;
     case OpenFileDialog::EFileType::FT_SDR_WAV: inputDevice = std::make_unique<WavFileHandler>(file); break;
     case OpenFileDialog::EFileType::FT_RAW:
     case OpenFileDialog::EFileType::FT_IQ:  inputDevice = std::make_unique<RawFileHandler>(file);break;
     default: return nullptr;
-    }
+    }*/
 
     Settings::Main::varDeviceFile.write(file);
   }

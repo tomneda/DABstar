@@ -260,7 +260,6 @@ include_directories(
 set($(devicesLibName)_HDRS
         ${${devicesLibName}_HDRS}
         device-selector.h
-        filereaders/xml-filereader/element-reader.h
         filereaders/xml-filereader/xml-filereader.h
         filereaders/xml-filereader/xml-reader.h
         filereaders/xml-filereader/xml-descriptor.h

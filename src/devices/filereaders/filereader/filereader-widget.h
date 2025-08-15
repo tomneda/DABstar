@@ -23,6 +23,8 @@ public:
   QLCDNumber * lcdSampleRate = nullptr;
   QSpacerItem * spacerHorizontal2 = nullptr ;
   QCheckBox * cbLoopFile = nullptr;
+  QLabel * lblFormatText = nullptr;
+  QLabel * lblFormat = nullptr;
 
   FileReaderWidget() = default;
   ~FileReaderWidget() = default;
@@ -59,21 +61,28 @@ public:
     spacerHorizontal2 = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
     cbLoopFile = new QCheckBox("Loop");
     cbLoopFile->setChecked(true);
+    lblFormatText = new QLabel("Format: ");
+    lblFormat = new QLabel();
+
+    QHBoxLayout * timebar = new QHBoxLayout();
+    timebar->addWidget(lcdCurrTime);
+    timebar->addWidget(lblSeconds);
+    timebar->addWidget(lcdTotalTime);
+    timebar->addItem(spacerHorizontal1);
+    timebar->addWidget(cbLoopFile);
 
     QHBoxLayout * bottom = new QHBoxLayout();
-    bottom->addWidget(lcdCurrTime);
-    bottom->addWidget(lblSeconds);
-    bottom->addWidget(lcdTotalTime);
-    bottom->addItem(spacerHorizontal1);
     bottom->addWidget(lblSampleRate);
     bottom->addWidget(lcdSampleRate);
     bottom->addItem(spacerHorizontal2);
-    bottom->addWidget(cbLoopFile);
+    bottom->addWidget(lblFormatText);
+    bottom->addWidget(lblFormat);
 
     QVBoxLayout * base = new QVBoxLayout();
     base->addWidget(lblTitle);
     base->addWidget(lblFileName);
     base->addWidget(sliderFilePos);
+    base->addItem(timebar);
     base->addItem(bottom);
 
     qw->setLayout(base);
