@@ -2108,12 +2108,14 @@ u32 FibDecoder::get_julian_date() const
 
 void FibDecoder::get_channel_info(ChannelData * d, i32 iSubChId) const
 {
-  static SSubChannelDescFig0_1 subChannel{};
+  static constexpr SSubChannelDescFig0_1 subChannel{};
 
   const auto it = currentConfig->subChDescMapFig0_1.find(iSubChId);
-  const auto & scd = it != currentConfig->subChDescMapFig0_1.end() ? it->second : subChannel;
 
-  d->in_use = true;
+  d->in_use = it != currentConfig->subChDescMapFig0_1.end();
+
+  const auto & scd = d->in_use ? it->second : subChannel;
+
   d->id = scd.SubChId;
   d->start_cu = scd.startAddr;
   d->protlev = scd.protLevel;
