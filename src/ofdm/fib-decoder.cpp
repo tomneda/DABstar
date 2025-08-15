@@ -293,7 +293,7 @@ void FibDecoder::FIG0Extension1(const u8 * d)
   }
 }
 
-//	defining the channels
+// Basic Sub Channels Organization 6.2.1
 i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_bit, u8 PD_bit)
 {
   (void)OE_bit;
@@ -313,9 +313,9 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
     subChannel.shortForm = true;    // short form
 
     const i16 tableIndex = getBits_6(d, bitOffset + 18);
-    subChannel.Length = ProtLevel[tableIndex].Length;
-    subChannel.protLevel = ProtLevel[tableIndex].ProtLevel;
-    subChannel.bitRate = ProtLevel[tableIndex].BitRate;
+    subChannel.Length = cProtLevelTable[tableIndex].Length;
+    subChannel.protLevel = cProtLevelTable[tableIndex].ProtLevel;
+    subChannel.bitRate = cProtLevelTable[tableIndex].BitRate;
 
     bitOffset += 24;
 
@@ -330,8 +330,9 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
     const i16 option = getBits_3(d, bitOffset + 17);
 
     if (option == 0x0)
-    {    // A Level protection
-      static const i32 table_1[] = { 12, 8, 6, 4 };
+    {
+      // A-Level protection
+      static constexpr i32 table_1[] = { 12, 8, 6, 4 };
 
       const i16 protLevel = getBits_2(d, bitOffset + 20);
       subChannel.protLevel = protLevel;
@@ -341,8 +342,9 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
       subChannel.bitRate = subChanSize / table_1[protLevel] * 8;
     }
     else if (option == 0x1)
-    {    // B Level protection
-      static const i32 table_2[] = { 27, 21, 18, 15 };
+    {
+      // B-Level protection
+      static constexpr i32 table_2[] = { 27, 21, 18, 15 };
 
       const i16 protLevel = getBits_2(d, bitOffset + 20);
       subChannel.protLevel = protLevel + (1 << 2);
@@ -385,8 +387,7 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
 }
 
 //
-//	Service organization, 6.3.1
-//	bind channels to SIds
+// Service organization, 6.3.1. Bind channels to SIds.
 void FibDecoder::FIG0Extension2(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
@@ -2359,6 +2360,7 @@ u32 FibDecoder::get_julian_date() const
 void FibDecoder::get_channel_info(ChannelData * d, i32 n) const
 {
   const SubChannelDescriptor & scd = currentConfig->subChannels[n];
+  assert(scd.SubChId == n);
   d->in_use = scd.inUse;
   d->id = scd.SubChId;
   d->start_cu = scd.startAddr;

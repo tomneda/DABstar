@@ -39,7 +39,7 @@
    	 i16 BitRate;
    };
 
-   const SProtLevel ProtLevel[64] = {
+   const SProtLevel cProtLevelTable[64] = {
      {16,5,32},	// Index 0
      {21,4,32},
      {24,3,32},
