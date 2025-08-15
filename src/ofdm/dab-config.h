@@ -113,7 +113,7 @@ public:
   Service services[64];
 };
 
-struct SSubChannelDescriptor
+struct SSubChannelDescFig0_1
 {
   i32 SubChId  = 0;       // FIG0/1
   i32 startAddr = 0;      // FIG0/1, CU start address
@@ -121,7 +121,15 @@ struct SSubChannelDescriptor
   bool shortForm = false; // FIG0/1
   i32 protLevel = 0;      // FIG0/1
   i32 bitRate = 0;        // FIG0/1
+};
+
+struct SSubChannelDescFig0_5
+{
   i16 language = 0;       // FIG0/5
+};
+
+struct SSubChannelDescFig0_14
+{
   i16 FEC_scheme = 0;     // FIG0/14
 };
 
@@ -208,7 +216,9 @@ public:
 
   void reset()
   {
-    subChDescMap.clear();
+    subChDescMapFig0_1.clear();
+    subChDescMapFig0_5.clear();
+    subChDescMapFig0_14.clear();
 
     for (auto & serviceComp : serviceComps)
     {
@@ -216,8 +226,13 @@ public:
     }
   }
 
-  using TMapSubChDesc = std::map<i32, SSubChannelDescriptor>; // key is <subChId>
-  TMapSubChDesc subChDescMap;
+  using TMapSubChDescFig0_1  = std::map<i32, SSubChannelDescFig0_1>;  // key is <SubChId>
+  using TMapSubChDescFig0_5  = std::map<i32, SSubChannelDescFig0_5>;  // key is <SubChId>
+  using TMapSubChDescFig0_14 = std::map<i32, SSubChannelDescFig0_14>; // key is <SubChId>
+
+  TMapSubChDescFig0_1  subChDescMapFig0_1;
+  TMapSubChDescFig0_5  subChDescMapFig0_5;
+  TMapSubChDescFig0_14 subChDescMapFig0_14;
 
   ServiceComponentDescriptor serviceComps[64];
   Cluster clusterTable[128];

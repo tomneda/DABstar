@@ -303,7 +303,7 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   const i16 subChId = getBits_6(d, bitOffset);
   const i16 startAdr = getBits(d, bitOffset + 6, 10);
 
-  SSubChannelDescriptor subChannel;
+  SSubChannelDescFig0_1 subChannel;
   subChannel.startAddr = startAdr;
   // subChannel.inUse = true;
 
@@ -366,30 +366,7 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   }
 
   DabConfig * const localBase = CN_bit == 0 ? currentConfig : nextConfig;
-  // SubChannelDescriptor & scd = localBase->subChannels[subChId];
-  auto & scd = localBase->subChDescMap;
-  //
-  // // in case the subchannel data was already computed we merely compute the offset
-  // if (scd.inUse)  // TODO: useful regarding program logic or only for saving copy time below?
-  // {
-  //   return (i16)(bitOffset / 8);
-  // }
-
-  if (scd.find(subChId) != scd.end()) // already existing?
-  {
-    return (i16)(bitOffset / 8);  // we return bytes
-  }
-
-  scd.insert(std::pair(subChId, subChannel));
-
-  // not all parts of the SubChannelDescriptor are written here, so do not a structure copy here!
-  // scd.inUse = true;
-  // scd.SubChId = subChId;
-  // scd.startAddr = subChannel.startAddr;
-  // scd.Length = subChannel.Length;
-  // scd.shortForm = subChannel.shortForm;
-  // scd.protLevel = subChannel.protLevel;
-  // scd.bitRate = subChannel.bitRate;
+  localBase->subChDescMapFig0_1.try_emplace(subChId, subChannel);
 
   return (i16)(bitOffset / 8);  // we return bytes
 }
@@ -516,7 +493,7 @@ i16 FibDecoder::HandleFIG0Extension3(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
   }
 
   //	We want to have the subchannel OK
-  if (localBase->subChDescMap.find(SubChId) == localBase->subChDescMap.end())
+  if (localBase->subChDescMapFig0_1.find(SubChId) == localBase->subChDescMapFig0_1.end()) // TODO: why necessary?
   {
     return used;
   }
@@ -582,13 +559,10 @@ i16 FibDecoder::HandleFIG0Extension5(const u8 * d, u8 CN_bit, u8 OE_bit, u8 PD_b
   {  // short form
     if (getBits_1(d, bitOffset + 1) == 0)
     {
+      SSubChannelDescFig0_5 subChannel;
       i16 subChId = getBits_6(d, bitOffset + 2);
-      language = getBits_8(d, bitOffset + 8);
-      auto it = localBase->subChDescMap.find(subChId);
-      if (it != localBase->subChDescMap.end())
-      {
-        it->second.language = language;
-      }
+      subChannel.language = getBits_8(d, bitOffset + 8);
+      localBase->subChDescMapFig0_5.try_emplace(subChId, subChannel);
     }
     bitOffset += 16;
   }
@@ -665,12 +639,13 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
   const u8 lsFlag = getBits_1(d, bitOffset);
 
   if (lsFlag == 0)
-  {  // short form
-    i16 compIndex;
-    i16 subChId = getBits_6(d, bitOffset + 2);
-    if (localBase->subChDescMap.find(subChId) != localBase->subChDescMap.end())
+  {
+    // short form
+    const i16 subChId = getBits_6(d, bitOffset + 2);
+
+    if (localBase->subChDescMapFig0_1.find(subChId) != localBase->subChDescMapFig0_1.end()) // TODO: why necessary?
     {
-      compIndex = find_component(localBase, SId, subChId);
+      const i16 compIndex = find_component(localBase, SId, subChId);
       if (compIndex != -1)
       {
         localBase->serviceComps[compIndex].SCIdS = SCIdS;
@@ -774,12 +749,9 @@ void FibDecoder::FIG0Extension14(const u8 * d)
     const u8 FEC_scheme = getBits_2(d, used * 8 + 6);
     used = used + 1;
 
-    auto it = localBase->subChDescMap.find(subChId);
-
-    if (it != localBase->subChDescMap.end())
-    {
-      it->second.FEC_scheme = FEC_scheme;
-    }
+    SSubChannelDescFig0_14 subChannel;
+    subChannel.FEC_scheme = FEC_scheme;
+    localBase->subChDescMapFig0_14.try_emplace(subChId, subChannel);
   }
 }
 
@@ -1232,7 +1204,7 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, ETMId iTMid, u32 iS
   //	if (ensemble -> services [serviceIndex]. programType == 0)
   //	   return;
 
-  if (ioDabConfig->subChDescMap.find(iSubChId) == ioDabConfig->subChDescMap.end())
+  if (ioDabConfig->subChDescMapFig0_1.find(iSubChId) == ioDabConfig->subChDescMapFig0_1.end()) // TODO: why necessary
   {
     return;
   }
@@ -1673,9 +1645,9 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
 
   i32 subChId = currentConfig->serviceComps[compIndex].subChannelId;
 
-  auto it = currentConfig->subChDescMap.find(subChId);
+  const auto it = currentConfig->subChDescMapFig0_1.find(subChId);
 
-  if (it == currentConfig->subChDescMap.end())
+  if (it == currentConfig->subChDescMapFig0_1.end())
   {
     fibLocker.unlock();
     return;
@@ -1723,9 +1695,10 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
 
   i32 subChId = currentConfig->serviceComps[compIndex].subChannelId;
 
-  auto it = currentConfig->subChDescMap.find(subChId);
+  const auto itFig0_1  = currentConfig->subChDescMapFig0_1.find(subChId);
+  const auto itFig0_14 = currentConfig->subChDescMapFig0_14.find(subChId);
 
-  if (it == currentConfig->subChDescMap.end())
+  if (itFig0_1 == currentConfig->subChDescMapFig0_1.end())
   {
     fibLocker.unlock();
     return;
@@ -1735,12 +1708,12 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
   opPD->SId = SId;
   opPD->SCIdS = iSCIdS;
   opPD->subchId = subChId;
-  opPD->startAddr = it->second.startAddr;
-  opPD->shortForm = it->second.shortForm;
-  opPD->protLevel = it->second.protLevel;
-  opPD->length = it->second.Length;
-  opPD->bitRate = it->second.bitRate;
-  opPD->FEC_scheme = it->second.FEC_scheme;
+  opPD->startAddr = itFig0_1->second.startAddr;
+  opPD->shortForm = itFig0_1->second.shortForm;
+  opPD->protLevel = itFig0_1->second.protLevel;
+  opPD->length = itFig0_1->second.Length;
+  opPD->bitRate = itFig0_1->second.bitRate;
+  opPD->FEC_scheme = itFig0_14 != currentConfig->subChDescMapFig0_14.end() ? itFig0_14->second.FEC_scheme : 0;
   opPD->DSCTy = currentConfig->serviceComps[compIndex].DSCTy;
   opPD->DGflag = currentConfig->serviceComps[compIndex].DgFlag;
   opPD->packetAddress = currentConfig->serviceComps[compIndex].packetAddress;
@@ -2210,8 +2183,8 @@ QStringList FibDecoder::basic_print() const
 //
 QString FibDecoder::get_service_name(i32 index) const
 {
-  i32 sid = currentConfig->serviceComps[index].SId;
-  i32 serviceIndex = find_service_index_from_SId(sid);
+  const i32 sid = currentConfig->serviceComps[index].SId;
+  const i32 serviceIndex = find_service_index_from_SId(sid);
   if (serviceIndex != -1)
   {
     return ensemble->services[serviceIndex].serviceLabel;
@@ -2226,7 +2199,7 @@ QString FibDecoder::get_service_id_of(i32 index) const
 
 QString FibDecoder::get_sub_channel_of(i32 index) const
 {
-  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  const i32 subChannel = currentConfig->serviceComps[index].subChannelId;
   if (subChannel < 0)
   {
     return "";
@@ -2236,98 +2209,108 @@ QString FibDecoder::get_sub_channel_of(i32 index) const
 
 QString FibDecoder::get_start_address_of(i32 index) const
 {
-  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
-  auto it = currentConfig->subChDescMap.find(subChannel);
-  i32 startAddr = it != currentConfig->subChDescMap.end() ? it->second.startAddr : 0;
+  const i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  const auto it = currentConfig->subChDescMapFig0_1.find(subChannel);
+  i32 startAddr = it != currentConfig->subChDescMapFig0_1.end() ? it->second.startAddr : 0;
   return QString::number(startAddr);
 }
 
 QString FibDecoder::get_length_of(i32 index) const
 {
-  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
-  auto it = currentConfig->subChDescMap.find(subChannel);
-  i32 Length = it != currentConfig->subChDescMap.end() ? it->second.Length : 0;
+  const i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  const auto it = currentConfig->subChDescMapFig0_1.find(subChannel);
+  i32 Length = it != currentConfig->subChDescMapFig0_1.end() ? it->second.Length : 0;
   return QString::number(Length);
 }
 
 QString FibDecoder::get_prot_level_of(i32 index) const
 {
-  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
-  auto it = currentConfig->subChDescMap.find(subChannel);
-  bool shortForm = it != currentConfig->subChDescMap.end() ? it->second.shortForm : false;
-  i32 protLevel = it != currentConfig->subChDescMap.end() ? it->second.protLevel : 0;
-  return getProtectionLevel(shortForm, protLevel);
+  const i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  const auto it = currentConfig->subChDescMapFig0_1.find(subChannel);
+  if (it != currentConfig->subChDescMapFig0_1.end())
+  {
+    return getProtectionLevel(it->second.shortForm, it->second.protLevel);
+  }
+  else
+  {
+    return getProtectionLevel(false, 0);
+  }
 }
 
 QString FibDecoder::get_code_rate_of(i32 index) const
 {
-  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
-  auto it = currentConfig->subChDescMap.find(subChannel);
-  bool shortForm = it != currentConfig->subChDescMap.end() ? it->second.shortForm : false;
-  i32 protLevel = it != currentConfig->subChDescMap.end() ? it->second.protLevel : 0;
-  return getCodeRate(shortForm, protLevel);
+  const i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  const auto it = currentConfig->subChDescMapFig0_1.find(subChannel);
+  if (it != currentConfig->subChDescMapFig0_1.end())
+  {
+    return getCodeRate(it->second.shortForm, it->second.protLevel);
+  }
+  else
+  {
+    return getCodeRate(false, 0);
+  }
 }
 
 QString FibDecoder::get_bit_rate_of(i32 index) const
 {
-  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
-  auto it = currentConfig->subChDescMap.find(subChannel);
-  i32 bitRate = it != currentConfig->subChDescMap.end() ? it->second.bitRate : 0;
+  const i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  const auto it = currentConfig->subChDescMapFig0_1.find(subChannel);
+  i32 bitRate = it != currentConfig->subChDescMapFig0_1.end() ? it->second.bitRate : 0;
   return QString::number(bitRate);
 }
 
 QString FibDecoder::get_dab_type(i32 index) const
 {
-  i32 dabType = currentConfig->serviceComps[index].ASCTy;
+  const i32 dabType = currentConfig->serviceComps[index].ASCTy;
   return dabType == 077 ? "DAB+" : "DAB";
 }
 
 QString FibDecoder::get_language_of(i32 index) const
 {
-  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
-  auto it = currentConfig->subChDescMap.find(subChannel);
-  i32 language = it != currentConfig->subChDescMap.end() ? it->second.language : 0;
+  const i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  const auto it = currentConfig->subChDescMapFig0_5.find(subChannel);
+  const i32 language = it != currentConfig->subChDescMapFig0_5.end() ? it->second.language : 0;
   return getLanguage(language);
 }
 
 QString FibDecoder::get_program_type_of(i32 index) const
 {
-  i32 sid = currentConfig->serviceComps[index].SId;
-  i32 serviceIndex = find_service_index_from_SId(sid);
-  i32 programType = ensemble->services[serviceIndex].programType;
+  const i32 sid = currentConfig->serviceComps[index].SId;
+  const i32 serviceIndex = find_service_index_from_SId(sid);
+  const i32 programType = ensemble->services[serviceIndex].programType;
   return getProgramType(programType);
 }
 
 QString FibDecoder::get_fm_freq_of(i32 index) const
 {
-  i32 sid = currentConfig->serviceComps[index].SId;
-  i32 serviceIndex = find_service_index_from_SId(sid);
+  const i32 sid = currentConfig->serviceComps[index].SId;
+  const i32 serviceIndex = find_service_index_from_SId(sid);
   return ensemble->services[serviceIndex].fmFrequency != -1 ? QString::number(ensemble->services[serviceIndex].fmFrequency) : "    ";
 }
 
 QString FibDecoder::get_app_type_of(i32 index) const
 {
-  i32 appType = currentConfig->serviceComps[index].appType;
+  const i32 appType = currentConfig->serviceComps[index].appType;
   return QString::number(appType);
 }
 
 QString FibDecoder::get_FEC_scheme(i32 index) const
 {
-  i32 subChannel = currentConfig->serviceComps[index].subChannelId;
-  auto it = currentConfig->subChDescMap.find(subChannel);
-  i32 FEC_scheme = it != currentConfig->subChDescMap.end() ? it->second.FEC_scheme : 0;
+  const i32 subChannel = currentConfig->serviceComps[index].subChannelId;
+  const auto it = currentConfig->subChDescMapFig0_14.find(subChannel);
+  const i32 FEC_scheme = it != currentConfig->subChDescMapFig0_14.end() ? it->second.FEC_scheme : 0;
   return QString::number(FEC_scheme);
 }
 
 QString FibDecoder::get_packet_address(i32 index) const
 {
-  i32 packetAddr = currentConfig->serviceComps[index].packetAddress;
+  const i32 packetAddr = currentConfig->serviceComps[index].packetAddress;
   return QString::number(packetAddr);
 }
 
 QString FibDecoder::get_DSCTy(i32 index) const
 {
-  i32 DSCTy = currentConfig->serviceComps[index].DSCTy;
+  const i32 DSCTy = currentConfig->serviceComps[index].DSCTy;
   switch (DSCTy)
   {
   case 60 : return "mot data";
@@ -2341,26 +2324,31 @@ QString FibDecoder::get_DSCTy(i32 index) const
 //
 QString FibDecoder::get_audio_header() const
 {
-  return QString("serviceName") + ";" + "serviceId" + ";" + "subChannel" + ";" + "start address (CU's)" + ";" + "length (CU's)" + ";" + "protection" + ";" + "code rate" + ";" + "bitrate" + ";" + "dab type" + ";" + "language" + ";" + "program type" + ";" + "fm freq" + ";";
+  return QString("serviceName") + ";" + "serviceId" + ";" + "subChannel" + ";" + "start address (CU's)"+ ";"
+               + "length (CU's)" + ";" + "protection" + ";" + "code rate" + ";" + "bitrate"
+               + ";" + "dab type" + ";" + "language" + ";" + "program type" + ";" + "fm freq" + ";";
 }
 
 QString FibDecoder::get_audio_data(i32 index) const
 {
-  return QString(get_service_name(index)) + ";" + get_service_id_of(index) + ";" + get_sub_channel_of(index) + ";" + get_start_address_of(index) + ";" + get_length_of(
-    index) + ";" + get_prot_level_of(index) + ";" + get_code_rate_of(index) + ";" + get_bit_rate_of(index) + ";" + get_dab_type(index) + ";" + get_language_of(index) + ";" + get_program_type_of(
-    index) + ";" + get_fm_freq_of(index) + ";";
+  return get_service_name(index) + ";" + get_service_id_of(index) + ";" + get_sub_channel_of(index) + ";" + get_start_address_of(index) + ";"
+       + get_length_of(index) + ";" + get_prot_level_of(index) + ";" + get_code_rate_of(index) + ";" + get_bit_rate_of(index) + ";"
+       + get_dab_type(index) + ";" + get_language_of(index) + ";" + get_program_type_of(index) + ";" + get_fm_freq_of(index) + ";";
 }
 
 //
 QString FibDecoder::get_packet_header() const
 {
-  return QString("serviceName") + ";" + "serviceId" + ";" + "subChannel" + ";" + "start address" + ";" + "length" + ";" + "protection" + ";" + "code rate" + ";" + "appType" + ";" + "FEC_scheme" + ";" + "packetAddress" + ";" + "DSCTy" + ";";
+  return QString("serviceName") + ";" + "serviceId" + ";" + "subChannel" + ";" + "start address" + ";"
+               + "length" + ";" + "protection" + ";" + "code rate" + ";" + "appType" + ";"
+               + "FEC_scheme" + ";" + "packetAddress" + ";" + "DSCTy" + ";";
 }
 
 QString FibDecoder::get_packet_data(i32 index) const
 {
-  return get_service_name(index) + ";" + get_service_id_of(index) + ";" + get_sub_channel_of(index) + ";" + get_start_address_of(index) + ";" + get_length_of(index) + ";" + get_prot_level_of(
-    index) + ";" + get_code_rate_of(index) + ";" + get_app_type_of(index) + ";" + get_FEC_scheme(index) + ";" + get_packet_address(index) + ";" + get_DSCTy(index) + ";";
+  return get_service_name(index) + ";" + get_service_id_of(index) + ";" + get_sub_channel_of(index) + ";" + get_start_address_of(index) + ";"
+       + get_length_of(index) + ";" + get_prot_level_of(index) + ";" + get_code_rate_of(index) + ";" + get_app_type_of(index) + ";"
+       + get_FEC_scheme(index) + ";" + get_packet_address(index) + ";" + get_DSCTy(index) + ";";
 }
 
 //
@@ -2382,21 +2370,17 @@ u32 FibDecoder::get_julian_date() const
 
 void FibDecoder::get_channel_info(ChannelData * d, i32 iSubChId) const
 {
-  auto it = currentConfig->subChDescMap.find(iSubChId);
-  if (it != currentConfig->subChDescMap.end())
-  {
-    const auto & scd = it->second;
-    d->in_use = true;
-    d->id = scd.SubChId;
-    d->start_cu = scd.startAddr;
-    d->protlev = scd.protLevel;
-    d->size = scd.Length;
-    d->bitrate = scd.bitRate;
-    d->uepFlag = scd.shortForm;
-  }
-  else
-  {
-    d = {};
-  }
+  static SSubChannelDescFig0_1 subChannel{};
+
+  const auto it = currentConfig->subChDescMapFig0_1.find(iSubChId);
+  const auto & scd = it != currentConfig->subChDescMapFig0_1.end() ? it->second : subChannel;
+
+  d->in_use = true;
+  d->id = scd.SubChId;
+  d->start_cu = scd.startAddr;
+  d->protlev = scd.protLevel;
+  d->size = scd.Length;
+  d->bitrate = scd.bitRate;
+  d->uepFlag = scd.shortForm;
 }
 
