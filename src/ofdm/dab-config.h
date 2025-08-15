@@ -127,19 +127,19 @@ public:
     inUse = false;
     language = 0;
     FEC_scheme = 0;
-    SCIdS = 0;
+    // SCIdS = 0;
   }
 
   bool inUse = false;
-  i32 SubChId  = 0;
-  i32 startAddr = 0;
-  i32 Length = 0;
-  bool shortForm = false;
-  i32 protLevel = 0;
-  i32 bitRate = 0;
-  i16 language = 0;
-  i16 FEC_scheme = 0;
-  i16 SCIdS = 0;    // for audio channels
+  i32 SubChId  = 0;       // FIG0/1
+  i32 startAddr = 0;      // FIG0/1, CU start address
+  i32 Length = 0;         // FIG0/1, number of CUs
+  bool shortForm = false; // FIG0/1
+  i32 protLevel = 0;      // FIG0/1
+  i32 bitRate = 0;        // FIG0/1
+  i16 language = 0;       // FIG0/5
+  i16 FEC_scheme = 0;     // FIG0/14
+  // i16 SCIdS = 0;    // for audio channels
 };
 
 //      The service component describes the actual service

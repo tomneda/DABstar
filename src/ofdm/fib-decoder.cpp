@@ -282,10 +282,10 @@ void FibDecoder::FIG0Extension0(const u8 * d)
 void FibDecoder::FIG0Extension1(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  i16 Length = getBits_5(d, 3);
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 OE_bit = getBits_1(d, 8 + 1);
-  u8 PD_bit = getBits_1(d, 8 + 2);
+  const i16 Length = getBits_5(d, 3);
+  const u8 CN_bit = getBits_1(d, 8 + 0);
+  const u8 OE_bit = getBits_1(d, 8 + 1);
+  const u8 PD_bit = getBits_1(d, 8 + 2);
 
   while (used < Length - 1) // TODO: -1 is a bug?
   {
@@ -763,6 +763,7 @@ void FibDecoder::FIG0Extension14(const u8 * d)
     used = used + 1;
     if (localBase->subChannels[subChId].inUse)
     {
+      if (subChId != localBase->subChannels[subChId].SubChId) qCritical() << "subChId mismatch (1)";
       localBase->subChannels[subChId].FEC_scheme = FEC_scheme;
     }
   }
@@ -1387,7 +1388,7 @@ i32 FibDecoder::find_service_component(DabConfig * db, i16 SCId) const
       {
         qWarning() << "Unused service entry found in find_service_component() while search (1)";
       }
-      return i;
+      return i;  // == subChId
     }
   }
   return -1;
@@ -2360,7 +2361,7 @@ u32 FibDecoder::get_julian_date() const
 void FibDecoder::get_channel_info(ChannelData * d, i32 n) const
 {
   const SubChannelDescriptor & scd = currentConfig->subChannels[n];
-  assert(scd.SubChId == n);
+  if (scd.inUse && scd.SubChId != n) qCritical() << "subChId mismatch (2)";
   d->in_use = scd.inUse;
   d->id = scd.SubChId;
   d->start_cu = scd.startAddr;
