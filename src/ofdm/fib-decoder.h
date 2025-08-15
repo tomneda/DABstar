@@ -88,7 +88,19 @@ private:
   i16 CIFcount_lo = 0;
   u32 mjd = 0;      // julianDate
   mutable QMutex fibLocker;
+  u8 prevChangeFlag = 0;
 
+
+  struct SFigHeader
+  {
+    u8 Length;
+    u8 CN_bit;
+    u8 OE_bit;
+    u8 PD_bit;
+  };
+
+
+  SFigHeader get_fig_header(const u8 *);
   void process_FIG0(const u8 *);
   void process_FIG1(const u8 *);
   void FIG0Extension0(const u8 *);

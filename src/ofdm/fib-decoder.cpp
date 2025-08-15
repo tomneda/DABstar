@@ -116,8 +116,16 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
   }
 }
 
-//
-//
+FibDecoder::SFigHeader FibDecoder::get_fig_header(const u8 * const d)
+{
+  SFigHeader header;
+  header.Length = getBits_5(d, 3);
+  header.CN_bit = getBits_1(d, 8 + 0);
+  header.OE_bit = getBits_1(d, 8 + 1);
+  header.PD_bit = getBits_1(d, 8 + 2);
+  return header; // should be "moved"
+}
+
 void FibDecoder::process_FIG0(const u8 * d)
 {
   const u8 extension = getBits_5(d, 8 + 3);
@@ -235,24 +243,19 @@ void FibDecoder::process_FIG0(const u8 * d)
 //	The info is MCI
 void FibDecoder::FIG0Extension0(const u8 * d)
 {
-  u16 EId;
-  u8 changeFlag;
-  u16 highpart, lowpart;
-  i16 occurrenceChange;
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 alarmFlag;
-  static u8 prevChangeFlag = 0;
+  const u8 CN_bit = getBits_1(d, 8 + 0);
+  const u16 EId = getBits(d, 16, 16);
+  const u8 changeFlag = getBits_2(d, 16 + 16);
+  const u8 alarmFlag = getBits_1(d, 16 + 16 + 2);
+  const u16 highpart = getBits_5(d, 16 + 19);
+  const u16 lowpart = getBits_8(d, 16 + 24);
+  const i16 occurrenceChange = getBits_8(d, 16 + 32);
 
   (void)CN_bit;
-  EId = getBits(d, 16, 16);
   (void)EId;
-  changeFlag = getBits_2(d, 16 + 16);
-  alarmFlag = getBits_1(d, 16 + 16 + 2);
-  highpart = getBits_5(d, 16 + 19);
-  lowpart = getBits_8(d, 16 + 24);
   (void)alarmFlag;
-  occurrenceChange = getBits_8(d, 16 + 32);
   (void)occurrenceChange;
+
   CIFcount_hi = highpart;
   CIFcount_lo = lowpart;
   CIFcount = highpart * 250 + lowpart;
@@ -280,14 +283,11 @@ void FibDecoder::FIG0Extension0(const u8 * d)
 void FibDecoder::FIG0Extension1(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  const i16 Length = getBits_5(d, 3);
-  const u8 CN_bit = getBits_1(d, 8 + 0);
-  const u8 OE_bit = getBits_1(d, 8 + 1);
-  const u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
 
-  while (used < Length - 1) // TODO: -1 is a bug?
+  while (used < fh.Length /*- 1*/) // TODO: -1 is a bug?
   {
-    used = HandleFIG0Extension1(d, used, CN_bit, OE_bit, PD_bit);
+    used = HandleFIG0Extension1(d, used, fh.CN_bit, fh.OE_bit, fh.PD_bit);
   }
 }
 
@@ -374,14 +374,11 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
 void FibDecoder::FIG0Extension2(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  const i16 Length = getBits_5(d, 3);
-  const u8 CN_bit = getBits_1(d, 8 + 0);
-  const u8 OE_bit = getBits_1(d, 8 + 1);
-  const u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
 
-  while (used < Length)
+  while (used < fh.Length)
   {
-    used = HandleFIG0Extension2(d, used, CN_bit, OE_bit, PD_bit);
+    used = HandleFIG0Extension2(d, used, fh.CN_bit, fh.OE_bit, fh.PD_bit);
   }
 }
 
@@ -446,15 +443,11 @@ i16 FibDecoder::HandleFIG0Extension2(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
 void FibDecoder::FIG0Extension3(const u8 * d)
 {
   i16 used = 2;            // offset in bytes
-  i16 Length = getBits_5(d, 3);
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 OE_bit = getBits_1(d, 8 + 1);
-  u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
 
-
-  while (used < Length)
+  while (used < fh.Length)
   {
-    used = HandleFIG0Extension3(d, used, CN_bit, OE_bit, PD_bit);
+    used = HandleFIG0Extension3(d, used, fh.CN_bit, fh.OE_bit, fh.PD_bit);
   }
 }
 
@@ -533,14 +526,11 @@ i16 FibDecoder::HandleFIG0Extension3(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
 void FibDecoder::FIG0Extension5(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  i16 Length = getBits_5(d, 3);
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 OE_bit = getBits_1(d, 8 + 1);
-  u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
 
-  while (used < Length)
+  while (used < fh.Length)
   {
-    used = HandleFIG0Extension5(d, CN_bit, OE_bit, PD_bit, used);
+    used = HandleFIG0Extension5(d, fh.CN_bit, fh.OE_bit, fh.PD_bit, used);
   }
 }
 
@@ -585,24 +575,16 @@ i16 FibDecoder::HandleFIG0Extension5(const u8 * d, u8 CN_bit, u8 OE_bit, u8 PD_b
 void FibDecoder::FIG0Extension7(const u8 * d)
 {
   i16 used = 2;            // offset in bytes
-  i16 Length = getBits_5(d, 3);
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 OE_bit = getBits_1(d, 8 + 1);
-  u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
 
-  i32 serviceCount = getBits_6(d, used * 8);
-  i32 counter = getBits(d, used * 8 + 6, 10);
+  const i32 serviceCount = getBits_6(d, used * 8);
+  const i32 counter = getBits(d, used * 8 + 6, 10);
+  (void)counter;
 
-  (void)Length;
-  (void)CN_bit;
-  (void)OE_bit;
-  (void)PD_bit;
-  //	fprintf (stdout, "services : %d\n", serviceCount);
-  if (CN_bit == 0)
+  if (fh.CN_bit == 0)
   {  // only current configuration for now
     emit signal_nr_services(serviceCount);
   }
-  (void)counter;
 }
 
 // FIG0/8:  Service Component Global Definition (6.3.5)
@@ -610,14 +592,11 @@ void FibDecoder::FIG0Extension7(const u8 * d)
 void FibDecoder::FIG0Extension8(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  i16 Length = getBits_5(d, 3);
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 OE_bit = getBits_1(d, 8 + 1);
-  u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
 
-  while (used < Length)
+  while (used < fh.Length)
   {
-    used = HandleFIG0Extension8(d, used, CN_bit, OE_bit, PD_bit);
+    used = HandleFIG0Extension8(d, used, fh.CN_bit, fh.OE_bit, fh.PD_bit);
   }
 }
 
@@ -672,14 +651,11 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, u8 CN_bit, u8 OE_bi
 void FibDecoder::FIG0Extension13(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  i16 Length = getBits_5(d, 3);
-  u8 CN_bit = getBits_1(d, 8 + 0);
-  u8 OE_bit = getBits_1(d, 8 + 1);
-  u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
 
-  while (used < Length)
+  while (used < fh.Length)
   {
-    used = HandleFIG0Extension13(d, used, CN_bit, OE_bit, PD_bit);
+    used = HandleFIG0Extension13(d, used, fh.CN_bit, fh.OE_bit, fh.PD_bit);
   }
 }
 
@@ -732,20 +708,16 @@ i16 FibDecoder::HandleFIG0Extension13(const u8 * d, i16 used, u8 CN_bit, u8 OE_b
 //	FEC sub-channel organization 6.2.2
 void FibDecoder::FIG0Extension14(const u8 * d)
 {
-  const i16 Length = getBits_5(d, 3);  // in Bytes
-  const u8 CN_bit = getBits_1(d, 8 + 0);
-  const u8 OE_bit = getBits_1(d, 8 + 1);
-  const u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
   i16 used = 2;      // in Bytes
-  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
-  (void)OE_bit;
-  (void)PD_bit;
-  while (used < Length)
+  DabConfig * localBase = fh.CN_bit == 0 ? currentConfig : nextConfig;
+
+  while (used < fh.Length)
   {
     const i16 subChId = getBits_6(d, used * 8);
     const u8 FEC_scheme = getBits_2(d, used * 8 + 6);
-    used = used + 1;
+    used += 1;
 
     SSubChannelDescFig0_14 subChannel;
     subChannel.FEC_scheme = FEC_scheme;
@@ -755,25 +727,25 @@ void FibDecoder::FIG0Extension14(const u8 * d)
 
 void FibDecoder::FIG0Extension17(const u8 * d)
 {
-  i16 length = getBits_5(d, 3);
+  const i16 length = getBits_5(d, 3);
   i16 offset = 16;
-  i32 serviceIndex;
 
   while (offset < length * 8)
   {
-    u16 SId = getBits(d, offset, 16);
-    bool L_flag = getBits_1(d, offset + 18);
-    bool CC_flag = getBits_1(d, offset + 19);
-    i16 type;
+    const u16 SId = getBits(d, offset, 16);
+    const bool L_flag = getBits_1(d, offset + 18);
+    const bool CC_flag = getBits_1(d, offset + 19);
     i16 Language = 0x00;  // init with unknown language
-    serviceIndex = find_service_index_from_SId(SId);
+    const i32 serviceIndex = find_service_index_from_SId(SId);
+
     if (L_flag)
-    {    // language field present
+    {
+      // language field present
       Language = getBits_8(d, offset + 24);
       offset += 8;
     }
 
-    type = getBits_5(d, offset + 27);
+    const i16 type = getBits_5(d, offset + 27);
     if (CC_flag)
     {      // cc flag
       offset += 40;
@@ -782,6 +754,7 @@ void FibDecoder::FIG0Extension17(const u8 * d)
     {
       offset += 32;
     }
+
     if (serviceIndex != -1)
     {
       ensemble->services[serviceIndex].language = Language;
@@ -794,18 +767,12 @@ void FibDecoder::FIG0Extension17(const u8 * d)
 //	Announcement support 8.1.6.1
 void FibDecoder::FIG0Extension18(const u8 * d)
 {
-  const u16 Length = getBits_5(d, 3);  // in Bytes
-  const u8 CN_bit = getBits_1(d, 8 + 0);
-  const u8 OE_bit = getBits_1(d, 8 + 1);
-  const u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
   constexpr i16 used = 2;      // in Bytes
   i16 bitOffset = used * 8;
-  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+  DabConfig * localBase = fh.CN_bit == 0 ? currentConfig : nextConfig;
 
-  (void)OE_bit;
-  (void)PD_bit;
-
-  while (bitOffset < Length * 8)
+  while (bitOffset < fh.Length * 8)
   {
     const u16 SId = getBits(d, bitOffset, 16);
     const i16 serviceIndex = find_service_index_from_SId(SId);
@@ -913,14 +880,11 @@ void FibDecoder::FIG0Extension19(const u8 * d)
 void FibDecoder::FIG0Extension21(const u8 * d)
 {
   i16 used = 2;    // offset in bytes
-  const i16 Length = getBits_5(d, 3);
-  const u8 CN_bit = getBits_1(d, 8 + 0);
-  const u8 OE_bit = getBits_1(d, 8 + 1);
-  const u8 PD_bit = getBits_1(d, 8 + 2);
+  const SFigHeader fh = get_fig_header(d);
 
-  while (used < Length)
+  while (used < fh.Length)
   {
-    used = HandleFIG0Extension21(d, CN_bit, OE_bit, PD_bit, used);
+    used = HandleFIG0Extension21(d, fh.CN_bit, fh.OE_bit, fh.PD_bit, used);
   }
 }
 
