@@ -119,13 +119,13 @@ private:
   void FIG0Extension19(const u8 *);
   void FIG0Extension21(const u8 *);
 
-  i16 HandleFIG0Extension1(const u8 *, i16, u8, u8, u8);
-  i16 HandleFIG0Extension2(const u8 *, i16, u8, u8, u8);
-  i16 HandleFIG0Extension3(const u8 *, i16, u8, u8, u8);
-  i16 HandleFIG0Extension5(const u8 *, u8, u8, u8, i16);
-  i16 HandleFIG0Extension8(const u8 *, i16, u8, u8, u8);
-  i16 HandleFIG0Extension13(const u8 *, i16, u8, u8, u8);
-  i16 HandleFIG0Extension21(const u8 *, u8, u8, u8, i16);
+  i16 HandleFIG0Extension1(const u8 *, i16, const SFigHeader &);
+  i16 HandleFIG0Extension2(const u8 *, i16, const SFigHeader &);
+  i16 HandleFIG0Extension3(const u8 *, i16, const SFigHeader &);
+  i16 HandleFIG0Extension5(const u8 *, i16, const SFigHeader &);
+  i16 HandleFIG0Extension8(const u8 *, i16, const SFigHeader &);
+  i16 HandleFIG0Extension13(const u8 *, i16, const SFigHeader &);
+  i16 HandleFIG0Extension21(const u8 *, i16, const SFigHeader &);
 
   void FIG1Extension0(const u8 *);
   void FIG1Extension1(const u8 *);
