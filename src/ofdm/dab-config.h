@@ -174,7 +174,7 @@ public:
   i16 ASCTy;         // used for audio
   i16 DSCTy;         // used in packet
   i16 PsFlag;        // use for both audio and packet
-  u16 SCId;          // Component Id (12 bit, unique)
+  i16 SCId;          // Component Id (12 bit, unique)
   u8 CaFlag;         // used in packet (or not at all)
   u8 DgFlag;         // used for TDC
   i16 packetAddress; // used in packet

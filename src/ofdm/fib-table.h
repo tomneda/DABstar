@@ -34,9 +34,9 @@
 // Table is copied from the work of Michael Hoehn
    struct SProtLevel
    {
-	   i32 Length;
-   	 i32 ProtLevel;
-   	 i32 BitRate;
+	   i16 Length;
+   	 i16 ProtLevel;
+   	 i16 BitRate;
    };
 
    const SProtLevel ProtLevel[64] = {

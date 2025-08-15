@@ -14,8 +14,8 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef BIT_EXTRAKTORS_H
-#define BIT_EXTRAKTORS_H
+#ifndef BIT_EXTRACTORS_H
+#define BIT_EXTRACTORS_H
 
 //	generic, up to 16 bits
 static inline u16 getBits(const u8 * d, i32 offset, i16 size)
@@ -137,9 +137,8 @@ static inline u16 getBits_8(const u8 * d, i32 offset)
 static inline u32 getLBits(const u8 * d, i32 offset, i16 amount)
 {
   u32 res = 0;
-  i16 i;
 
-  for (i = 0; i < amount; i++)
+  for (i16 i = 0; i < amount; i++)
   {
     res <<= 1;
     res |= (d[offset + i] & 01);
@@ -147,4 +146,4 @@ static inline u32 getLBits(const u8 * d, i32 offset, i16 amount)
   return res;
 }
 
-#endif // BIT_EXTRAKTORS_H
+#endif // BIT_EXTRACTORS_H

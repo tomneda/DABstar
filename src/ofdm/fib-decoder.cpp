@@ -302,7 +302,6 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   i16 bitOffset = offset * 8;
   const i16 subChId = getBits_6(d, bitOffset);
   const i16 startAdr = getBits(d, bitOffset + 6, 10);
-  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
 
   SubChannelDescriptor subChannel;
   subChannel.startAddr = startAdr;
@@ -312,11 +311,16 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
   {
     // short form
     subChannel.shortForm = true;    // short form
+
     const i16 tableIndex = getBits_6(d, bitOffset + 18);
     subChannel.Length = ProtLevel[tableIndex].Length;
     subChannel.protLevel = ProtLevel[tableIndex].ProtLevel;
     subChannel.bitRate = ProtLevel[tableIndex].BitRate;
+
     bitOffset += 24;
+
+    // qDebug() << "FIG 0/1 short form" << "subChId" << subChId << "startAdr" << startAdr
+    //          << "length" << subChannel.Length << "protLevel" << subChannel.protLevel << "bitRate" << subChannel.bitRate;
   }
   else
   {
@@ -325,18 +329,18 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
 
     const i16 option = getBits_3(d, bitOffset + 17);
 
-    if (option == 0)
+    if (option == 0x0)
     {    // A Level protection
       static const i32 table_1[] = { 12, 8, 6, 4 };
 
-      const i16 protLevel = getBits(d, bitOffset + 20, 2);
+      const i16 protLevel = getBits_2(d, bitOffset + 20);
       subChannel.protLevel = protLevel;
 
       const i16 subChanSize = getBits(d, bitOffset + 22, 10);
       subChannel.Length = subChanSize;
       subChannel.bitRate = subChanSize / table_1[protLevel] * 8;
     }
-    else if (option == 001)
+    else if (option == 0x1)
     {    // B Level protection
       static const i32 table_2[] = { 27, 21, 18, 15 };
 
@@ -347,26 +351,37 @@ i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_
       subChannel.Length = subChanSize;
       subChannel.bitRate = subChanSize / table_2[protLevel] * 32;
     }
+    else
+    {
+      qCritical() << "Unknown option in FIG 0/1" << option;
+      return (i16)((bitOffset + 32) / 8); // as this is a unknown path this is only an assumption to go on further
+    }
+
     bitOffset += 32;
+
+    // qDebug() << "FIG 0/1 long form, option" << option << "subChId" << subChId << "startAdr" << startAdr
+    //          << "length" << subChannel.Length << "protLevel" << subChannel.protLevel << "bitRate" << subChannel.bitRate;
   }
 
+  DabConfig * const localBase = CN_bit == 0 ? currentConfig : nextConfig;
   SubChannelDescriptor & scd = localBase->subChannels[subChId];
 
   // in case the subchannel data was already computed we merely compute the offset
-  if (scd.inUse)
+  if (scd.inUse)  // TODO: useful regarding program logic or only for saving copy time below?
   {
-    return bitOffset / 8;
+    return (i16)(bitOffset / 8);
   }
-  //	and here we fill in the structure
-  scd.SubChId = subChId;
+
+  // not all parts of the SubChannelDescriptor are written here, so do not a structure copy here!
   scd.inUse = true;
+  scd.SubChId = subChId;
   scd.startAddr = subChannel.startAddr;
   scd.Length = subChannel.Length;
   scd.shortForm = subChannel.shortForm;
   scd.protLevel = subChannel.protLevel;
   scd.bitRate = subChannel.bitRate;
 
-  return bitOffset / 8;  // we return bytes
+  return (i16)(bitOffset / 8);  // we return bytes
 }
 
 //
