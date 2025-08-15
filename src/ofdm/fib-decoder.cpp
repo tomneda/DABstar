@@ -32,16 +32,17 @@
  *	one preparing the FIC blocks for processing, and the mainthread
  *	from which calls are coming on selecting a program
  */
-#include  "fib-decoder.h"
-#include  <cstring>
-#include  <vector>
-#include  "dabradio.h"
-#include  "charsets.h"
-#include  "dab-config.h"
-#include  "fib-table.h"
-#include  <QStringList>
-#include  "bit-extractors.h"
-#include  "dab-tables.h"
+#include "fib-decoder.h"
+#include <cstring>
+#include <vector>
+#include "dabradio.h"
+#include "charsets.h"
+#include "dab-config.h"
+#include "fib-table.h"
+#include <QStringList>
+#include "bit-extractors.h"
+#include "dab-tables.h"
+#include "crc.h"
 
 
 FibDecoder::FibDecoder(DabRadio * mr) :
@@ -72,47 +73,56 @@ FibDecoder::~FibDecoder()
 //	This is merely a dispatcher
 void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibBits, u16 const iFicNo)
 {
+  // iFibBits: 30 Bytes Data * 8  + 16 Bit CRC = 32 Byte / 256 bits
   (void)iFicNo;
   i8 processedBytes = 0;
-  const u8 * d = reinterpret_cast<const u8 *>(iFibBits.data());
+
+  if (!check_CRC_bits((const u8 *)iFibBits.data(), cFibSizeVitOut))
+  {
+    qWarning() << "CRC error in FIB";
+    return;
+  }
 
   fibLocker.lock();
   while (processedBytes < 30)
   {
+    const u8 * const d = reinterpret_cast<const u8 *>(iFibBits.data()) + processedBytes * 8;
+
     const u8 FIGtype = getBits_3(d, 0);
     const u8 FIGlength = getBits_5(d, 3);
 
-    if (FIGtype == 0x07 && FIGlength == 0x3F)
+    if (FIGtype == 0x07 && FIGlength == 0x1F) // end marker
     {
-      return;
+      break;
     }
 
     switch (FIGtype)
     {
-    case 0: process_FIG0(d);
+    case 0:
+      process_FIG0(d);
       break;
 
-    case 1: process_FIG1(d);
+    case 1:
+      process_FIG1(d);
       break;
-
-    case 2:    // not yet implemented
-      break;
-
-    case 7: break;
 
     default: break;
     }
-    processedBytes += getBits_5(d, 3) + 1;
-    d = reinterpret_cast<const u8 *>(iFibBits.data()) + processedBytes * 8;
+    processedBytes += FIGlength + 1; // data length plus header length
   }
   fibLocker.unlock();
+
+  if (processedBytes > 30)
+  {
+    qCritical() << "FIG package length error" << processedBytes;
+  }
 }
 
 //
 //
 void FibDecoder::process_FIG0(const u8 * d)
 {
-  u8 extension = getBits_5(d, 8 + 3);
+  const u8 extension = getBits_5(d, 8 + 3);
 
   switch (extension)
   {
@@ -277,7 +287,7 @@ void FibDecoder::FIG0Extension1(const u8 * d)
   u8 OE_bit = getBits_1(d, 8 + 1);
   u8 PD_bit = getBits_1(d, 8 + 2);
 
-  while (used < Length - 1)
+  while (used < Length - 1) // TODO: -1 is a bug?
   {
     used = HandleFIG0Extension1(d, used, CN_bit, OE_bit, PD_bit);
   }
@@ -286,48 +296,54 @@ void FibDecoder::FIG0Extension1(const u8 * d)
 //	defining the channels
 i16 FibDecoder::HandleFIG0Extension1(const u8 * d, i16 offset, u8 CN_bit, u8 OE_bit, u8 PD_bit)
 {
-
-  i16 bitOffset = offset * 8;
-  i16 subChId = getBits_6(d, bitOffset);
-  i16 startAdr = getBits(d, bitOffset + 6, 10);
-  i16 tabelIndex;
-  i16 option, protLevel, subChanSize;
-  SubChannelDescriptor subChannel;
-  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
-  static i32 table_1[] = { 12, 8, 6, 4 };
-  static i32 table_2[] = { 27, 21, 18, 15 };
-
   (void)OE_bit;
   (void)PD_bit;
+
+  i16 bitOffset = offset * 8;
+  const i16 subChId = getBits_6(d, bitOffset);
+  const i16 startAdr = getBits(d, bitOffset + 6, 10);
+  DabConfig * localBase = CN_bit == 0 ? currentConfig : nextConfig;
+
+  SubChannelDescriptor subChannel;
   subChannel.startAddr = startAdr;
   subChannel.inUse = true;
 
   if (getBits_1(d, bitOffset + 16) == 0)
-  {  // short form
-    tabelIndex = getBits_6(d, bitOffset + 18);
-    subChannel.Length = ProtLevel[tabelIndex][0];
+  {
+    // short form
     subChannel.shortForm = true;    // short form
-    subChannel.protLevel = ProtLevel[tabelIndex][1];
-    subChannel.bitRate = ProtLevel[tabelIndex][2];
+    const i16 tableIndex = getBits_6(d, bitOffset + 18);
+    subChannel.Length = ProtLevel[tableIndex].Length;
+    subChannel.protLevel = ProtLevel[tableIndex].ProtLevel;
+    subChannel.bitRate = ProtLevel[tableIndex].BitRate;
     bitOffset += 24;
   }
   else
-  {  // EEP long form
+  {
+    // EEP long form
     subChannel.shortForm = false;
-    option = getBits_3(d, bitOffset + 17);
+
+    const i16 option = getBits_3(d, bitOffset + 17);
+
     if (option == 0)
     {    // A Level protection
-      protLevel = getBits(d, bitOffset + 20, 2);
+      static const i32 table_1[] = { 12, 8, 6, 4 };
+
+      const i16 protLevel = getBits(d, bitOffset + 20, 2);
       subChannel.protLevel = protLevel;
-      subChanSize = getBits(d, bitOffset + 22, 10);
+
+      const i16 subChanSize = getBits(d, bitOffset + 22, 10);
       subChannel.Length = subChanSize;
       subChannel.bitRate = subChanSize / table_1[protLevel] * 8;
     }
     else if (option == 001)
     {    // B Level protection
-      protLevel = getBits_2(d, bitOffset + 20);
+      static const i32 table_2[] = { 27, 21, 18, 15 };
+
+      const i16 protLevel = getBits_2(d, bitOffset + 20);
       subChannel.protLevel = protLevel + (1 << 2);
-      subChanSize = getBits(d, bitOffset + 22, 10);
+
+      const i16 subChanSize = getBits(d, bitOffset + 22, 10);
       subChannel.Length = subChanSize;
       subChannel.bitRate = subChanSize / table_2[protLevel] * 32;
     }
@@ -1372,16 +1388,20 @@ i32 FibDecoder::find_service_component(const DabConfig * ipDabConfig, u32 iSId, 
     return -1;
   }
 
+  // for (i32 i = 0; i < 64; i++)
+  // {
+  //   const ServiceComponentDescriptor & a = ipDabConfig->serviceComps[i];
+  //   // if (a.SCIdS >= 1)
+  //   if (a.inUse)
+  //     qInfo() << "i:" << i << "SId" << iSId << a.SId << "SCIdS: " << iSCIdS << a.SCIdS;
+  // }
+
+
   bool unusedFound = false;
 
   for (i32 i = 0; i < 64; i++)
   {
     unusedFound |= !ipDabConfig->serviceComps[i].inUse;
-
-    // const auto & a = ipDabConfig->serviceComps[i];
-
-    // if (ipDabConfig->serviceComps[i].inUse)
-    //   qInfo() << "SCIdS: " << iSCIdS << ", a.SCIdS: " << a.SCIdS;
 
     if (ipDabConfig->serviceComps[i].inUse &&
         ipDabConfig->serviceComps[i].SCIdS == iSCIdS &&
@@ -1657,9 +1677,8 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
 
   fibLocker.lock();
 
-  i32 SId = ensemble->services[serviceIndex].SId;
-
-  i32 compIndex = find_service_component(currentConfig, SId, iSCIdS);
+  const i32 SId = ensemble->services[serviceIndex].SId;
+  const i32 compIndex = find_service_component(currentConfig, SId, iSCIdS);
 
   if ((compIndex == -1) || (currentConfig->serviceComps[compIndex].TMid != ETMId::PacketModeData))
   {

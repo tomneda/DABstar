@@ -2041,9 +2041,6 @@ void DabRadio::start_frame_dumping()
 //	called from the mp4 handler, using a signal
 void DabRadio::slot_new_frame()
 {
-  // auto * const buffer = make_vla(u8, amount);
-  std::array<u8, 4096> buffer;
-
   if (!mIsRunning.load())
   {
     return;
@@ -2055,6 +2052,8 @@ void DabRadio::slot_new_frame()
   }
   else
   {
+    std::array<u8, 4096> buffer;
+
     i32 dataAvail = mpFrameBuffer->get_ring_buffer_read_available();
 
     while (dataAvail > 0)
@@ -2434,11 +2433,11 @@ void DabRadio::start_audio_service(const AudioData * const ipAD)
       break;
     }
   }
-  //	activate sound
+
   mpCurAudioFifo = nullptr; // trigger possible new sample rate setting
-  //mpSoundOut->restart();
   ui->programTypeLabel->setText(getProgramType(ipAD->programType));
-  //	show service related data
+
+  // show service related data
   mpTechDataWidget->show_serviceData(ipAD);
   mAudioFrameType = (ipAD->ASCTy == 077 ? EAudioFrameType::AAC : EAudioFrameType::MP2);
   _set_status_info_status(mStatusInfo.InpBitRate, (i32)(ipAD->bitRate));
