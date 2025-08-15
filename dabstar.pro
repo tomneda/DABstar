@@ -207,7 +207,6 @@ HEADERS += \
     src/devices/device-handler.h \
     src/devices/device-exceptions.h \
     src/devices/device-selector.h \
-    src/devices/filereaders/xml-filereader/element-reader.h \
     src/devices/filereaders/xml-filereader/xml-filereader.h \
     src/devices/filereaders/xml-filereader/xml-reader.h \
     src/devices/filereaders/xml-filereader/xml-descriptor.h \

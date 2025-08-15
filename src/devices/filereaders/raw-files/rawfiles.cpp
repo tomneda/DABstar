@@ -79,6 +79,7 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
   const i64 fileLength = ftell(mpFile); // 2 * 1Byte per sample
   fseek(mpFile, 0, SEEK_SET);
   lcdTotalTime->display(QString("%1").arg((f32)fileLength / (INPUT_RATE * 2), 0, 'f', 1));
+  lblFormat->setText("u8");
 
   connect(cbLoopFile, &QCheckBox::clicked, this, &RawFileHandler::slot_handle_cb_loop_file);
   connect(sliderFilePos, &QSlider::sliderPressed, this, &RawFileHandler::slot_slider_pressed);
@@ -198,6 +199,7 @@ QString RawFileHandler::deviceName()
 
 void RawFileHandler::slot_handle_cb_loop_file(const bool iChecked)
 {
+  (void)iChecked;
   if (mpFile == nullptr)
   {
     return;
