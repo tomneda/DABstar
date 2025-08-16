@@ -2023,7 +2023,7 @@ void FibDecoder::get_channel_info(ChannelData * d, i32 iSubChId) const
   d->uepFlag = scd.shortForm;
 }
 
-bool FibDecoder::extract_character_set_label(QString & oDataName, const u8 * const d, const i16 iLabelOffs)
+bool FibDecoder::extract_character_set_label(QString & oName, const u8 * const d, const i16 iLabelOffs)
 {
   const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
 
@@ -2041,11 +2041,11 @@ bool FibDecoder::extract_character_set_label(QString & oDataName, const u8 * con
     label[i] = getBits_8(d, iLabelOffs + 8 * i);
   }
 
-  oDataName = to_QString_using_charset(label, charSet);
+  oName = to_QString_using_charset(label, charSet);
 
-  for (i32 i = (i32)oDataName.length(); i < 16; i++)
+  for (i32 i = (i32)oName.length(); i < 16; i++)
   {
-    oDataName.append(' ');
+    oName.append(' ');
   }
 
   return true;

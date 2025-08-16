@@ -172,7 +172,7 @@ private:
   QString get_audio_data(i32 index) const;
   QString get_packet_data(i32 index) const;
 
-  bool extract_character_set_label(QString & oDataName, const u8 * d, i16 iLabelOffs);
+  bool extract_character_set_label(QString & oName, const u8 * d, i16 iLabelOffs);
 
 signals:
   void signal_add_to_ensemble(const QString &, u32);
