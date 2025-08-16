@@ -17,20 +17,6 @@
 #ifndef BIT_EXTRACTORS_H
 #define BIT_EXTRACTORS_H
 
-//	generic, up to 16 bits
-static inline u16 getBits(const u8 * d, i32 offset, i16 size)
-{
-  i16 i;
-  u16 res = 0;
-
-  for (i = 0; i < size; i++)
-  {
-    res <<= 1;
-    res |= (d[offset + i]) & 01;
-  }
-  return res;
-}
-
 static inline u16 getBits_1(const u8 * d, i32 offset)
 {
   return (d[offset] & 0x01);
@@ -134,14 +120,30 @@ static inline u16 getBits_8(const u8 * d, i32 offset)
   return res;
 }
 
+// generic, up to 16 bits
+static inline u16 getBits(const u8 * d, i32 offset, i16 size)
+{
+  assert(size <= 16);
+  u16 res = 0;
+
+  for (i16 i = 0; i < size; i++)
+  {
+    res <<= 1;
+    res |= (d[offset + i]) /*& 01*/; // we rely that only the LSBit is defined
+  }
+  return res;
+}
+
+// generic, up to 32 bits
 static inline u32 getLBits(const u8 * d, i32 offset, i16 amount)
 {
+  assert(amount <= 32);
   u32 res = 0;
 
   for (i16 i = 0; i < amount; i++)
   {
     res <<= 1;
-    res |= (d[offset + i] & 01);
+    res |= (d[offset + i] /*& 01*/); // we rely that only the LSBit is defined
   }
   return res;
 }

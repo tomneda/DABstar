@@ -43,8 +43,9 @@
 #include "crc.h"
 
 
-FibDecoder::FibDecoder(DabRadio * mr) :
-  myRadioInterface(mr)
+FibDecoder::FibDecoder(DabRadio * mr)
+  : myRadioInterface(mr)
+  , ensemble(new EnsembleDescriptor)
 {
   //connect(this, &FibDecoder::addtoEnsemble, myRadioInterface, &RadioInterface::slot_add_to_ensemble);
   connect(this, &FibDecoder::signal_name_of_ensemble, myRadioInterface, &DabRadio::slot_name_of_ensemble);
@@ -56,7 +57,6 @@ FibDecoder::FibDecoder(DabRadio * mr) :
 
   currentConfig = new DabConfig();
   nextConfig = new DabConfig();
-  ensemble = new EnsembleDescriptor();
 }
 
 FibDecoder::~FibDecoder()
@@ -66,20 +66,11 @@ FibDecoder::~FibDecoder()
   delete ensemble;
 }
 
-//	FIB's are segments of 256 bits. When here, we already
-//	passed the crc and we start unpacking into FIGs
-//	This is merely a dispatcher
 void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibBits, u16 const iFicNo)
 {
   // iFibBits: 30 Bytes Data * 8  + 16 Bit CRC = 32 Byte / 256 bits
-  (void)iFicNo;
-  i8 processedBytes = 0;
-
-  if (!check_CRC_bits((const u8 *)iFibBits.data(), cFibSizeVitOut))
-  {
-    qWarning() << "CRC error in FIB";
-    return;
-  }
+  // The caller already does CRC16 check.
+  i32 processedBytes = 0;
 
   fibLocker.lock();
   while (processedBytes < 30)
@@ -126,9 +117,9 @@ FibDecoder::SFigHeader FibDecoder::get_fig_header(const u8 * const d)
   return header; // should be "moved"
 }
 
-void FibDecoder::process_FIG0(const u8 * d)
+void FibDecoder::process_FIG0(const u8 * const d)
 {
-  const u8 extension = getBits_5(d, 8 + 3);
+  const u8 extension = getBits_5(d, 8 + 3);  // skip C/N, OE and P/D flags
 
   switch (extension)
   {
@@ -382,53 +373,54 @@ void FibDecoder::FIG0Extension2(const u8 * d)
 i16 FibDecoder::HandleFIG0Extension2(const u8 * d, i16 offset, const SFigHeader & iFH)
 {
   i16 bitOffset = 8 * offset;
-  u8 cId;
+  u8 CountryId;
   u32 SId;
 
   if (iFH.PD_bit == 1)
   {    // long Sid, data
     const u8 ecc = getBits_8(d, bitOffset);
     (void)ecc;
-    cId = getBits_4(d, bitOffset + 4);
-    SId = getLBits(d, bitOffset, 32);
+    CountryId = getBits_4(d, bitOffset + 4);
+    SId = getLBits(d, bitOffset, 32); // SId overlaps ecc and CountryId
     bitOffset += 32;
   }
   else
   {
-    cId = getBits_4(d, bitOffset);
-    SId = getBits(d, bitOffset, 16);
+    CountryId = getBits_4(d, bitOffset);
+    SId = getBits(d, bitOffset, 16);  // SId overlaps CountryId
     bitOffset += 16;
   }
 
-  ensemble->countryId = cId;
-  const i16 numberofComponents = getBits_4(d, bitOffset + 4);
+  ensemble->countryId = CountryId;
+
+  const i16 numOfServComp = getBits_4(d, bitOffset + 4);
   bitOffset += 8;
 
-  for (i16 i = 0; i < numberofComponents; i++)
+  DabConfig * const pDabConfig = (iFH.CN_bit == 0) ? currentConfig : nextConfig;
+
+  for (i16 i = 0; i < numOfServComp; i++)
   {
-    const ETMId TMid = (ETMId)getBits_2(d, bitOffset);
+    const ETMId TMId = (ETMId)getBits_2(d, bitOffset);
 
-    DabConfig * const pDabConfig = (iFH.CN_bit == 0) ? currentConfig : nextConfig;
-
-    if (TMid == ETMId::StreamModeAudio)
+    if (TMId == ETMId::StreamModeAudio)
     {
       // Audio
       const u8 ASCTy = getBits_6(d, bitOffset + 2);
       const u8 SubChId = getBits_6(d, bitOffset + 8);
       const u8 PS_flag = getBits_1(d, bitOffset + 14);
-      bind_audio_service(pDabConfig, TMid, SId, i, SubChId, PS_flag, ASCTy);
+      bind_audio_service(pDabConfig, TMId, SId, i, SubChId, PS_flag, ASCTy);
     }
-    else if (TMid == ETMId::PacketModeData)
+    else if (TMId == ETMId::PacketModeData)
     {
       // MSC packet data
       const i16 SCId = getBits(d, bitOffset + 2, 12);
       const u8 PS_flag = getBits_1(d, bitOffset + 14);
       const u8 CA_flag = getBits_1(d, bitOffset + 15);
-      bind_packet_service(pDabConfig, TMid, SId, i, SCId, PS_flag, CA_flag);
+      bind_packet_service(pDabConfig, TMId, SId, i, SCId, PS_flag, CA_flag);
     }
     else
     {
-      // nothing to do
+      qWarning() << "TIMid not supported" << (int)TMId;
     }
     bitOffset += 16;
   }
@@ -590,18 +582,19 @@ void FibDecoder::FIG0Extension8(const u8 * d)
   }
 }
 
-i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, const SFigHeader & iFH)
+i16 FibDecoder::HandleFIG0Extension8(const u8 * const d, const i16 used, const SFigHeader & iFH)
 {
   i16 bitOffset = used * 8;
+
   const u32 SId = getLBits(d, bitOffset, iFH.PD_bit == 1 ? 32 : 16);
-  DabConfig * localBase = iFH.CN_bit == 0 ? currentConfig : nextConfig;
-
   bitOffset += iFH.PD_bit == 1 ? 32 : 16;
-  const u8 extensionFlag = getBits_1(d, bitOffset);
-  const u16 SCIdS = getBits_4(d, bitOffset + 4);
 
-  //	i32 serviceIndex = findService (SId);
+  DabConfig * const localBase = iFH.CN_bit == 0 ? currentConfig : nextConfig;
+
+  const u8 extFlag = getBits_1(d, bitOffset);
+  const u16 SCIdS = getBits_4(d, bitOffset + 4);
   bitOffset += 8;
+
   const u8 lsFlag = getBits_1(d, bitOffset);
 
   if (lsFlag == 0)
@@ -620,19 +613,21 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * d, i16 used, const SFigHeader & 
     bitOffset += 8;
   }
   else
-  {      // long form
-    i32 SCId = getBits(d, bitOffset + 4, 12);
-    i16 compIndex = find_service_component(localBase, SCId);
+  {
+    // long form
+    const i32 SCId = getBits(d, bitOffset + 4, 12);
+    const i16 compIndex = find_service_component(localBase, SCId);
     if (compIndex != -1)
     {
       localBase->serviceComps[compIndex].SCIdS = SCIdS;
     }
-    bitOffset += 8;
+    bitOffset += 16;  // TODO: was 8 before, is a bug?
   }
-  if (extensionFlag)
+
+  if (extFlag)
   {
-    bitOffset += 8;
-  }  // skip Rfa
+    bitOffset += 8; // skip Rfa
+  }
   return bitOffset / 8;
 }
 
@@ -907,7 +902,7 @@ i16 FibDecoder::HandleFIG0Extension21(const u8 * d, i16 offset, const SFigHeader
 }
 
 //	FIG 1 - Cover the different possible labels, section 5.2
-void FibDecoder::process_FIG1(const u8 * d)
+void FibDecoder::process_FIG1(const u8 * const d)
 {
   const u8 extension = getBits_3(d, 8 + 5);
 
@@ -1063,10 +1058,8 @@ void FibDecoder::FIG1Extension4(const u8 * d)
 //	Data service label - 32 bits 8.1.14.2
 void FibDecoder::FIG1Extension5(const u8 * d)
 {
-  u32 SId = getLBits(d, 16, 32);
-  i16 offset = 48;
-
-  //      from byte 1 we deduce:
+  const i16 offset = 48;
+  const u32 SId = getLBits(d, 16, 32);
   const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
   const u8 Rfu = getBits_1(d, 8 + 4);
   const u8 extension = getBits_3(d, 8 + 5);
@@ -1084,6 +1077,7 @@ void FibDecoder::FIG1Extension5(const u8 * d)
 
   if (!is_charset_valid(charSet))
   {
+    qWarning() << "invalid character set" << (int)charSet;
     return;
   }  
 
@@ -1134,7 +1128,7 @@ void FibDecoder::FIG1Extension6(const u8 * d)
 //	bind_audioService is the main processor for - what the name suggests -
 //	connecting the description of audioservices to a SID
 //	by creating a service Component
-void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, ETMId iTMid, u32 iSId, i16 iCompNr, i16 iSubChId, i16 iPsFlag, i16 iASCTy)
+void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, const ETMId iTMid, const u32 iSId, const i16 iCompNr, const i16 iSubChId, const i16 iPsFlag, const i16 iASCTy)
 {
   const i32 serviceIndex = find_service_index_from_SId(iSId);
 
@@ -1280,7 +1274,7 @@ i32 FibDecoder::find_service(const QString & s) const
   return -1;
 }
 
-i32 FibDecoder::find_service_index_from_SId(u32 SId) const
+i32 FibDecoder::find_service_index_from_SId(const u32 iSId) const
 {
   bool unusedFound = false;
   // TODO: make it faster with a map?
@@ -1289,7 +1283,7 @@ i32 FibDecoder::find_service_index_from_SId(u32 SId) const
     unusedFound |= !ensemble->services[i].inUse;
 
     if (ensemble->services[i].inUse &&
-        ensemble->services[i].SId == SId)
+        ensemble->services[i].SId == iSId)
     {
       if (unusedFound)
       {

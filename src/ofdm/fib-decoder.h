@@ -78,10 +78,10 @@ public:
   i32 get_scan_width() const;
 
 private:
-  DabRadio * myRadioInterface = nullptr;
+  DabRadio * const myRadioInterface = nullptr;
+  EnsembleDescriptor * const ensemble = nullptr;
   DabConfig * currentConfig = nullptr;
   DabConfig * nextConfig = nullptr;
-  EnsembleDescriptor * ensemble = nullptr;
   std::array<i32, 8> dateTime{};
   i32 CIFcount = 0;
   i16 CIFcount_hi = 0;
