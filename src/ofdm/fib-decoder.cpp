@@ -944,35 +944,26 @@ void FibDecoder::FIG1Extension0(const u8 * d)
 {
 
   // from byte 1 we deduce:
-  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
-  const u8 Rfu = getBits_1(d, 8 + 4);
   const u8 extension = getBits_3(d, 8 + 5);
-  (void)Rfu;
   (void)extension;
   const u32 EId = getBits(d, 16, 16);
 
-  if (is_charset_valid(charSet))
+  QString name;
+  if (!extract_character_set_label(name, d, 32))
   {
-    char label[17];
-    for (i32 i = 0; i < 16; i++)
-    {
-      constexpr i32 offset = 32;
-      label[i] = getBits_8(d, offset + 8 * i);
-    }
-    label[16] = 0x00;
-
-    const QString name = to_QString_using_charset(label, charSet);
-
-    if (!ensemble->namePresent)
-    {
-      ensemble->ensembleName = name;
-      ensemble->ensembleId = EId;
-      ensemble->namePresent = true;
-
-      emit signal_name_of_ensemble(EId, name);
-    }
-    ensemble->isSynced = true;
+    return;
   }
+
+  if (!ensemble->namePresent)
+  {
+    ensemble->ensembleName = name;
+    ensemble->ensembleId = EId;
+    ensemble->namePresent = true;
+
+    emit signal_name_of_ensemble(EId, name);
+  }
+
+  ensemble->isSynced = true;
 }
 
 //
@@ -981,32 +972,16 @@ void FibDecoder::FIG1Extension1(const u8 * d)
 {
   const i32 SId = getBits(d, 16, 16);
   const i16 offset = 32;
-  char label[17];
-
-  //      from byte 1 we deduce:
-  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
-  const u8 Rfu = getBits_1(d, 8 + 4);
   const u8 extension = getBits_3(d, 8 + 5);
-  label[16] = 0x00;
-  (void)Rfu;
   (void)extension;
 
-  if (!is_charset_valid(charSet))
+  QString dataName;
+  if (!extract_character_set_label(dataName, d, offset))
   {
     return;
   }
 
-  for (i16 i = 0; i < 16; i++)
-  {
-    label[i] = getBits_8(d, offset + 8 * i);
-  }
-  QString dataName = to_QString_using_charset(label, charSet);
-  for (i32 i = dataName.length(); i < 16; i++)
-  {
-    dataName.append(' ');
-  }
-
-  const i32 serviceIndex = find_service(dataName);
+  const i32 serviceIndex = find_service_from_service_name(dataName);
 
   if (serviceIndex == -1)
   {
@@ -1030,21 +1005,17 @@ void FibDecoder::FIG1Extension4(const u8 * d)
   const u32 SId = PD_bit ? getLBits(d, 24, 32) : getLBits(d, 24, 16);
   const i16 offset = PD_bit ? 56 : 40;
 
-  char label[17];
-  label[16] = 0;
-
-  for (i32 i = 0; i < 16; i++)
+  QString dataName;
+  if (!extract_character_set_label(dataName, d, offset))
   {
-    label[i] = getBits_8(d, offset + 8 * i);
+    return;
   }
 
-  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
-  const QString dataName = to_QString_using_charset(label, charSet);
   const i16 compIndex = find_service_component(currentConfig, SId, SCIdS);
 
-  if (compIndex > 0)
+  if (compIndex >= 0) // TODO: bug? was > 0?
   {
-    if (find_service(dataName) == -1)
+    if (find_service_from_service_name(dataName) == -1)
     {
       if (currentConfig->serviceComps[compIndex].TMid == ETMId::StreamModeAudio)
       {
@@ -1059,14 +1030,9 @@ void FibDecoder::FIG1Extension4(const u8 * d)
 void FibDecoder::FIG1Extension5(const u8 * d)
 {
   const i16 offset = 48;
-  const u32 SId = getLBits(d, 16, 32);
-  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
-  const u8 Rfu = getBits_1(d, 8 + 4);
   const u8 extension = getBits_3(d, 8 + 5);
-  (void)Rfu;
+  const u32 SId = getLBits(d, 16, 32);
   (void)extension;
-  char label[17];
-  label[16] = 0x00;
 
   const i32 serviceIndex = find_service_index_from_SId(SId);
 
@@ -1075,18 +1041,12 @@ void FibDecoder::FIG1Extension5(const u8 * d)
     return;
   }
 
-  if (!is_charset_valid(charSet))
+  QString serviceName;
+  if (!extract_character_set_label(serviceName, d, offset))
   {
-    qWarning() << "invalid character set" << (int)charSet;
     return;
-  }  
-
-  for (i16 i = 0; i < 16; i++)
-  {
-    label[i] = getBits_8(d, offset + 8 * i);
   }
 
-  QString serviceName = to_QString_using_charset(label, charSet);
   create_service(serviceName, SId, 0);
 }
 
@@ -1258,7 +1218,7 @@ void FibDecoder::bind_packet_service(DabConfig * base, const ETMId iTMId, const 
   }
 }
 
-i32 FibDecoder::find_service(const QString & s) const
+i32 FibDecoder::find_service_from_service_name(const QString & s) const
 {
   for (i32 i = 0; i < 64; i++)
   {
@@ -1381,6 +1341,7 @@ i32 FibDecoder::find_component(DabConfig * db, u32 SId, i16 subChId) const
   return -1;
 }
 
+// called via FIG 1/1, FIG 1/4, FIG 1/5
 void FibDecoder::create_service(QString iServiceName, u32 iSId, i32 iSCIdS)
 {
   // this would fill the next free (not inUse) entry
@@ -1528,7 +1489,7 @@ bool FibDecoder::sync_reached() const
 
 i32 FibDecoder::get_sub_channel_id(const QString & s, u32 dummy_SId) const
 {
-  i32 serviceIndex = find_service(s);
+  i32 serviceIndex = find_service_from_service_name(s);
 
   (void)dummy_SId;
   fibLocker.lock();
@@ -1553,7 +1514,7 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
 {
   opAD->defined = false;
 
-  const i32 serviceIndex = find_service(iS);
+  const i32 serviceIndex = find_service_from_service_name(iS);
 
   if (serviceIndex == -1)
   {
@@ -1612,7 +1573,7 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
   i32 serviceIndex;
 
   opPD->defined = false;
-  serviceIndex = find_service(iS);
+  serviceIndex = find_service_from_service_name(iS);
   if (serviceIndex == -1)
   {
     return;
@@ -1730,7 +1691,7 @@ QString FibDecoder::find_service(u32 SId, i32 SCIdS) const
 
 void FibDecoder::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIdS) const
 {
-  const i32 serviceIndex = find_service(s);
+  const i32 serviceIndex = find_service_from_service_name(s);
 
   if (serviceIndex == -1)
   {
@@ -2003,7 +1964,7 @@ std::vector<SEpgElement> FibDecoder::get_timeTable(u32 SId) const
 std::vector<SEpgElement> FibDecoder::get_timeTable(const QString & service) const
 {
   std::vector<SEpgElement> res;
-  i32 index = find_service(service);
+  i32 index = find_service_from_service_name(service);
   if (index == -1)
   {
     return res;
@@ -2060,5 +2021,33 @@ void FibDecoder::get_channel_info(ChannelData * d, i32 iSubChId) const
   d->size = scd.Length;
   d->bitrate = scd.bitRate;
   d->uepFlag = scd.shortForm;
+}
+
+bool FibDecoder::extract_character_set_label(QString & oDataName, const u8 * const d, const i16 iLabelOffs)
+{
+  const ECharacterSet charSet = (ECharacterSet)getBits_4(d, 8);
+
+  if (!is_charset_valid(charSet))
+  {
+    qWarning() << "invalid character set" << (int)charSet;
+    return false;
+  }
+
+  char label[17];
+  label[16] = 0;
+
+  for (i32 i = 0; i < 16; i++)
+  {
+    label[i] = getBits_8(d, iLabelOffs + 8 * i);
+  }
+
+  oDataName = to_QString_using_charset(label, charSet);
+
+  for (i32 i = (i32)oDataName.length(); i < 16; i++)
+  {
+    oDataName.append(' ');
+  }
+
+  return true;
 }
 

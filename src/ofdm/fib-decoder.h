@@ -137,7 +137,7 @@ private:
   void create_service(QString iServiceName, u32 iSId, i32 iSCIdS);
 
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & iServiceIdList, const SServiceId & iServiceId) const;
-  i32 find_service(const QString &) const;
+  i32 find_service_from_service_name(const QString &) const;
   i32 find_service_index_from_SId(u32) const;
   i32 find_service_component(DabConfig *, i16) const;
   i32 find_component(DabConfig * db, u32 SId, i16 subChId) const;
@@ -171,6 +171,8 @@ private:
   QString get_packet_header() const;
   QString get_audio_data(i32 index) const;
   QString get_packet_data(i32 index) const;
+
+  bool extract_character_set_label(QString & oDataName, const u8 * d, i16 iLabelOffs);
 
 signals:
   void signal_add_to_ensemble(const QString &, u32);
