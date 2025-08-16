@@ -77,16 +77,18 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
 
   switch(sf_info.format & 0xffff)
   {
-	case SF_FORMAT_PCM_S8:
+    case SF_FORMAT_PCM_S8:
       lblFormat->setText("i8"); break;
-	case SF_FORMAT_PCM_16:
+    case SF_FORMAT_PCM_16:
       lblFormat->setText("i16"); break;
-	case SF_FORMAT_PCM_24:
+    case SF_FORMAT_PCM_24:
       lblFormat->setText("i24"); break;
-	case SF_FORMAT_PCM_32:
+    case SF_FORMAT_PCM_32:
       lblFormat->setText("i32"); break;
-	case SF_FORMAT_PCM_U8:
+    case SF_FORMAT_PCM_U8:
       lblFormat->setText("u8"); break;
+    case SF_FORMAT_FLOAT:
+      lblFormat->setText("f32"); break;
     default:
       sf_close(mpFile);
       const QString val = QString("Format %x is not supported").arg(sf_info.format & 0xffff);
