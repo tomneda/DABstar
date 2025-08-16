@@ -309,7 +309,8 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
       return nullptr;
     if (memcmp(mByteBuffer, "<?xml", 5) == 0)
       inputDevice = std::make_unique<XmlFileReader>(file);
-    else if (memcmp(mByteBuffer, "RIFF", 4) == 0)
+    else if ((memcmp(mByteBuffer, "RIFF", 4) == 0) ||
+             (memcmp(mByteBuffer, "RF64", 4) == 0))
       inputDevice = std::make_unique<WavFileHandler>(file);
     else
       inputDevice = std::make_unique<RawFileHandler>(file);
