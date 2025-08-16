@@ -60,10 +60,11 @@ QStringList FibDecoder::basic_print() const
 QString FibDecoder::get_service_name(i32 index) const
 {
   const i32 sid = currentConfig->serviceComps[index].SId;
-  const i32 serviceIndex = find_service_index_from_SId(sid);
-  if (serviceIndex != -1)
+  const auto it = ensemble->servicesMap.find(sid);
+
+  if (it != ensemble->servicesMap.end())
   {
-    return ensemble->services[serviceIndex].serviceLabel;
+    return it->second.serviceLabel;
   }
   return "";
 }
@@ -152,16 +153,26 @@ QString FibDecoder::get_language_of(i32 index) const
 QString FibDecoder::get_program_type_of(i32 index) const
 {
   const i32 sid = currentConfig->serviceComps[index].SId;
-  const i32 serviceIndex = find_service_index_from_SId(sid);
-  const i32 programType = ensemble->services[serviceIndex].programType;
-  return getProgramType(programType);
+  const auto it = ensemble->servicesMap.find(sid);
+
+  if (it != ensemble->servicesMap.end())
+  {
+    const i32 programType = it->second.programType;
+    return getProgramType(programType);
+  }
+  return "";
 }
 
 QString FibDecoder::get_fm_freq_of(i32 index) const
 {
   const i32 sid = currentConfig->serviceComps[index].SId;
-  const i32 serviceIndex = find_service_index_from_SId(sid);
-  return ensemble->services[serviceIndex].fmFrequency != -1 ? QString::number(ensemble->services[serviceIndex].fmFrequency) : "    ";
+  const auto it = ensemble->servicesMap.find(sid);
+
+  if (it != ensemble->servicesMap.end())
+  {
+    return it->second.fmFrequency != -1 ? QString::number(it->second.fmFrequency) : "    ";
+  }
+  return "";
 }
 
 QString FibDecoder::get_app_type_of(i32 index) const

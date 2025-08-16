@@ -27,15 +27,8 @@
  *    You should have received a copy of the GNU General Public License
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * 	fib decoder. Functionality is shared between fic handler, i.e. the
- *	one preparing the FIC blocks for processing, and the mainthread
- *	from which calls are coming on selecting a program
- *
- *
- *	Definition of the "configuration" as maintained during reception of
- *	a channel
  */
+
 #ifndef  FIB_CONFIG_H
 #define  FIB_CONFIG_H
 
@@ -45,31 +38,8 @@
 #include <map>
 #include <QString>
 
-class Service
+struct Service
 {
-public:
-  Service()
-  {
-    reset();
-  }
-
-  ~Service() = default;
-
-  void reset()
-  {
-    inUse = false;
-    SId = 0;
-    SCIdS = 0;
-    hasName = false;
-    serviceLabel = "";
-    language = 0;
-    programType = 0;
-    is_shown = false;
-    fmFrequency = -1;
-    epgData.resize(0);
-  }
-
-  bool inUse;
   u32 SId;
   i32 SCIdS;
   bool hasName;
@@ -97,10 +67,7 @@ public:
     ecc_Present = false;
     countryId = 0;
     isSynced = false;
-    for (auto & service : services)
-    {
-      service.reset();
-    }
+    servicesMap.clear();
   }
 
   QString ensembleName;
@@ -110,27 +77,29 @@ public:
   u8 ecc_byte;
   u8 countryId;
   bool isSynced;
-  Service services[64];
+
+  using TMapService = std::map<u32, Service>;
+  TMapService servicesMap;
 };
 
 struct SSubChannelDescFig0_1
 {
-  i32 SubChId  = 0;       // FIG0/1
-  i32 startAddr = 0;      // FIG0/1, CU start address
-  i32 Length = 0;         // FIG0/1, number of CUs
-  bool shortForm = false; // FIG0/1
-  i32 protLevel = 0;      // FIG0/1
-  i32 bitRate = 0;        // FIG0/1
+  i32 SubChId  = 0;
+  i32 startAddr = 0;
+  i32 Length = 0;
+  bool shortForm = false;
+  i32 protLevel = 0;
+  i32 bitRate = 0;
 };
 
 struct SSubChannelDescFig0_5
 {
-  i16 language = 0;       // FIG0/5
+  i16 language = 0;
 };
 
 struct SSubChannelDescFig0_14
 {
-  i16 FEC_scheme = 0;     // FIG0/14
+  i16 FEC_scheme = 0;
 };
 
 //      The service component describes the actual service
@@ -175,33 +144,14 @@ public:
 };
 
 //
-//	cluster is for announcement handling
-class Cluster
+// cluster is for announcement handling
+struct Cluster
 {
-public:
-  u16 flags;
-  std::vector<u16> services;
-  bool inUse;
-  i32 announcing;
-  i32 clusterId;
-
-  Cluster()
-  {
-    flags = 0;
-    services.resize(0);
-    inUse = false;
-    announcing = 0;
-    clusterId = -1;
-  }
-
-  ~Cluster()
-  {
-    flags = 0;
-    services.resize(0);
-    inUse = false;
-    announcing = 0;
-    clusterId = -1;
-  }
+  u16 flags = 0;
+  bool inUse = false;
+  i32 announcing = 0;
+  i32 clusterId = -1;
+  std::vector<u32> servicesSIDs;
 };
 
 class DabConfig

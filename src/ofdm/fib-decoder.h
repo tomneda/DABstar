@@ -137,8 +137,7 @@ private:
   void create_service(QString iServiceName, u32 iSId, i32 iSCIdS);
 
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & iServiceIdList, const SServiceId & iServiceId) const;
-  i32 find_service_from_service_name(const QString &) const;
-  i32 find_service_index_from_SId(u32) const;
+  EnsembleDescriptor::TMapService::iterator find_service_from_service_name(const QString &) const;
   i32 find_service_component(DabConfig *, i16) const;
   i32 find_component(DabConfig * db, u32 SId, i16 subChId) const;
   i32 find_service_component(const DabConfig *, u32, u8) const;
@@ -148,7 +147,7 @@ private:
 
   QString get_announcement_type_str(u16);
 
-  void set_cluster(DabConfig *, i32, i16, u16);
+  void set_cluster(DabConfig *, i32, u32 iSId, u16);
   Cluster * get_cluster(DabConfig *, i16);
 
   QString get_service_name(i32 index) const;

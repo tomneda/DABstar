@@ -473,8 +473,10 @@ i16 FibDecoder::HandleFIG0Extension3(const u8 * d, i16 used, const SFigHeader & 
     return used;
   }
 
+  ServiceComponentDescriptor & scd = localBase->serviceComps[serviceCompIndex];
+
   // If the component exists, we first look whether is was already handled
-  if (localBase->serviceComps[serviceCompIndex].isMadePublic)
+  if (scd.isMadePublic)
   {
     return used;
   }
@@ -485,24 +487,26 @@ i16 FibDecoder::HandleFIG0Extension3(const u8 * d, i16 used, const SFigHeader & 
     return used;
   }
 
-  const i32 serviceIndex = find_service_index_from_SId(localBase->serviceComps[serviceCompIndex].SId);
-  if (serviceIndex == -1)
+  const auto it = ensemble->servicesMap.find(scd.SId);
+
+  if (it == ensemble->servicesMap.end())
   {
     return used;
   }
 
-  QString serviceName = ensemble->services[serviceIndex].serviceLabel;
+  const QString serviceName = it->second.serviceLabel;
 
-  if (!ensemble->services[serviceIndex].is_shown)
+  if (!it->second.is_shown)
   {
-    emit signal_add_to_ensemble(serviceName, ensemble->services[serviceIndex].SId);
+    emit signal_add_to_ensemble(serviceName, it->second.SId);
   }
-  ensemble->services[serviceIndex].is_shown = true;
-  localBase->serviceComps[serviceCompIndex].isMadePublic = true;
-  localBase->serviceComps[serviceCompIndex].subChannelId = SubChId;
-  localBase->serviceComps[serviceCompIndex].DSCTy = DSCTy;
-  localBase->serviceComps[serviceCompIndex].DgFlag = DGflag;
-  localBase->serviceComps[serviceCompIndex].packetAddress = packetAddress;
+
+  it->second.is_shown = true;
+  scd.isMadePublic = true;
+  scd.subChannelId = SubChId;
+  scd.DSCTy = DSCTy;
+  scd.DgFlag = DGflag;
+  scd.packetAddress = packetAddress;
   return used;
 }
 
@@ -648,8 +652,6 @@ void FibDecoder::FIG0Extension13(const u8 * d)
 i16 FibDecoder::HandleFIG0Extension13(const u8 * d, i16 used, const SFigHeader & iFH)
 {
   i16 bitOffset = used * 8;
-  //	fprintf (stdout, "FIG13: pdBit = %d, bitOffset = %d\n",
-  //	                     pdBit, bitOffset);
   const u32 SId = getLBits(d, bitOffset, iFH.PD_bit == 1 ? 32 : 16);
   DabConfig * localBase = iFH.CN_bit == 0 ? currentConfig : nextConfig;
 
@@ -658,7 +660,7 @@ i16 FibDecoder::HandleFIG0Extension13(const u8 * d, i16 used, const SFigHeader &
   const i16 NoApplications = getBits_4(d, bitOffset + 4);
   bitOffset += 8;
 
-  const i32 serviceIndex = find_service_index_from_SId(SId);
+  const auto it = ensemble->servicesMap.find(SId);
 
   for (i16 i = 0; i < NoApplications; i++)
   {
@@ -666,9 +668,9 @@ i16 FibDecoder::HandleFIG0Extension13(const u8 * d, i16 used, const SFigHeader &
     const i16 length = getBits_5(d, bitOffset + 11);
     bitOffset += (11 + 5 + 8 * length);
 
-    if (serviceIndex == -1)
+    if (it == ensemble->servicesMap.end())
     {
-      continue;
+      continue; // only to count up the bitOffset
     }
 
     i32 compIndex = find_service_component(localBase, SId, SCIdS);
@@ -715,7 +717,6 @@ void FibDecoder::FIG0Extension17(const u8 * d)
     const bool L_flag = getBits_1(d, offset + 18);
     const bool CC_flag = getBits_1(d, offset + 19);
     i16 Language = 0x00;  // init with unknown language
-    const i32 serviceIndex = find_service_index_from_SId(SId);
 
     if (L_flag)
     {
@@ -734,10 +735,12 @@ void FibDecoder::FIG0Extension17(const u8 * d)
       offset += 32;
     }
 
-    if (serviceIndex != -1)
+    const auto it = ensemble->servicesMap.find(SId);
+
+    if (it != ensemble->servicesMap.end())
     {
-      ensemble->services[serviceIndex].language = Language;
-      ensemble->services[serviceIndex].programType = type;
+      it->second.language = Language;
+      it->second.programType = type;
     }
   }
 }
@@ -754,7 +757,8 @@ void FibDecoder::FIG0Extension18(const u8 * d)
   while (bitOffset < fh.Length * 8)
   {
     const u16 SId = getBits(d, bitOffset, 16);
-    const i16 serviceIndex = find_service_index_from_SId(SId);
+    const auto it = ensemble->servicesMap.find(SId);
+
     bitOffset += 16;
     const u16 asuFlags = getBits(d, bitOffset, 16);
     (void)asuFlags;
@@ -771,9 +775,9 @@ void FibDecoder::FIG0Extension18(const u8 * d)
         continue;
       }
 
-      if ((serviceIndex != -1) && (ensemble->services[serviceIndex].hasName))
+      if (it != ensemble->servicesMap.end() && it->second.hasName)
       {
-        set_cluster(localBase, getBits(d, bitOffset + 8 * i, 8), serviceIndex, asuFlags);
+        set_cluster(localBase, getBits(d, bitOffset + 8 * i, 8), SId, asuFlags);
       }
     }
     bitOffset += nrClusters * 8;
@@ -832,9 +836,17 @@ void FibDecoder::FIG0Extension19(const u8 * d)
       myCluster->announcing++;
       if (myCluster->announcing == 5)
       {
-        for (u16 i = 0; i < myCluster->services.size(); i++)
+        for (u16 i = 0; i < myCluster->servicesSIDs.size(); i++)
         {
-          const QString name = ensemble->services[myCluster->services[i]].serviceLabel;
+          //const QString name = ensemble->services[myCluster->services[i]].serviceLabel;
+          const u32 SId = myCluster->servicesSIDs[i];
+          const auto it = ensemble->servicesMap.find(SId);
+          if (it == ensemble->servicesMap.end())
+          {
+            qCritical() << "service not found" << SId; // should not happen
+            return;
+          }
+          const QString name = it->second.serviceLabel;
           emit signal_start_announcement(name, subChId);
         }
       }
@@ -844,9 +856,16 @@ void FibDecoder::FIG0Extension19(const u8 * d)
       if (myCluster->announcing > 0)
       {
         myCluster->announcing = 0;
-        for (u16 i = 0; i < myCluster->services.size(); i++)
+        for (u16 i = 0; i < myCluster->servicesSIDs.size(); i++)
         {
-          const QString name = ensemble->services[myCluster->services[i]].serviceLabel;
+          const u32 SId = myCluster->servicesSIDs[i];
+          const auto it = ensemble->servicesMap.find(SId);
+          if (it == ensemble->servicesMap.end())
+          {
+            qCritical() << "service not found" << SId; // should not happen
+            return;
+          }
+          const QString name = it->second.serviceLabel;
           emit signal_stop_announcement(name, subChId);
         }
       }
@@ -886,12 +905,14 @@ i16 FibDecoder::HandleFIG0Extension21(const u8 * d, i16 offset, const SFigHeader
     {
       const u16 fmFrequency_key = getBits(d, base + 24, 8);
       const i32 fmFrequency = 87500 + fmFrequency_key * 100;
-      const i16 serviceIndex = find_service_index_from_SId(idField);
-      if (serviceIndex != -1)
+
+      const auto it = ensemble->servicesMap.find(idField);
+
+      if (it != ensemble->servicesMap.end())
       {
-        if ((ensemble->services[serviceIndex].hasName) && (ensemble->services[serviceIndex].fmFrequency == -1))
+        if ((it->second.hasName) && (it->second.fmFrequency == -1))
         {
-          ensemble->services[serviceIndex].fmFrequency = fmFrequency;
+          it->second.fmFrequency = fmFrequency;
         }
       }
     }
@@ -981,16 +1002,16 @@ void FibDecoder::FIG1Extension1(const u8 * d)
     return;
   }
 
-  const i32 serviceIndex = find_service_from_service_name(dataName);
+  const auto it = find_service_from_service_name(dataName);
 
-  if (serviceIndex == -1)
+  if (it == ensemble->servicesMap.end())
   {
     create_service(dataName, SId, 0);
   }
   else
   {
-    ensemble->services[serviceIndex].SCIdS = 0;
-    ensemble->services[serviceIndex].hasName = true;
+    it->second.SCIdS = 0;
+    it->second.hasName = true;
   }
 }
 
@@ -1015,7 +1036,7 @@ void FibDecoder::FIG1Extension4(const u8 * d)
 
   if (compIndex >= 0) // TODO: bug? was > 0?
   {
-    if (find_service_from_service_name(dataName) == -1)
+    if (find_service_from_service_name(dataName) == ensemble->servicesMap.end())
     {
       if (currentConfig->serviceComps[compIndex].TMid == ETMId::StreamModeAudio)
       {
@@ -1034,11 +1055,11 @@ void FibDecoder::FIG1Extension5(const u8 * d)
   const u32 SId = getLBits(d, 16, 32);
   (void)extension;
 
-  const i32 serviceIndex = find_service_index_from_SId(SId);
+  const auto it = ensemble->servicesMap.find(SId);
 
-  if (serviceIndex != -1)
+  if (it != ensemble->servicesMap.end())
   {
-    return;
+    return;  // entry already existing
   }
 
   QString serviceName;
@@ -1090,9 +1111,9 @@ void FibDecoder::FIG1Extension6(const u8 * d)
 //	by creating a service Component
 void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, const ETMId iTMid, const u32 iSId, const i16 iCompNr, const i16 iSubChId, const i16 iPsFlag, const i16 iASCTy)
 {
-  const i32 serviceIndex = find_service_index_from_SId(iSId);
+  const auto it = ensemble->servicesMap.find(iSId);
 
-  if (serviceIndex == -1)
+  if (it == ensemble->servicesMap.end())
   {
     return;
   }
@@ -1130,12 +1151,7 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, const ETMId iTMid, 
     return;
   }
 
-  const QString dataName = ensemble->services[serviceIndex].serviceLabel;
-
-  //  if (ensemble->services[serviceIndex].is_shown)
-  //  {
-  //    showFlag = false;
-  //  }
+  const QString dataName = it->second.serviceLabel;
 
   ServiceComponentDescriptor & scd = ioDabConfig->serviceComps[firstFree];
 
@@ -1151,10 +1167,10 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, const ETMId iTMid, 
   scd.ASCTy = iASCTy;
   scd.inUse = true;
 
-  ensemble->services[serviceIndex].SCIdS = 0;
+  it->second.SCIdS = 0;
 
   emit signal_add_to_ensemble(dataName, iSId);
-  ensemble->services[serviceIndex].is_shown = true;
+  it->second.is_shown = true;
 }
 
 //      bind_packetService is the main processor for - what the name suggests -
@@ -1167,9 +1183,9 @@ void FibDecoder::bind_packet_service(DabConfig * base, const ETMId iTMId, const 
 {
   i32 firstFree = -1;
 
-  const i32 serviceIndex = find_service_index_from_SId(iSId);
+  const auto it = ensemble->servicesMap.find(iSId);
 
-  if (serviceIndex == -1)
+  if (it == ensemble->servicesMap.end())
   {
     return;
   }
@@ -1218,42 +1234,40 @@ void FibDecoder::bind_packet_service(DabConfig * base, const ETMId iTMId, const 
   }
 }
 
-i32 FibDecoder::find_service_from_service_name(const QString & s) const
+EnsembleDescriptor::TMapService::iterator FibDecoder::find_service_from_service_name(const QString & s) const
 {
-  for (i32 i = 0; i < 64; i++)
+  // TODO: extra map for this search?
+  for (auto it = ensemble->servicesMap.begin(); it != ensemble->servicesMap.end(); ++it)
   {
-    if (!ensemble->services[i].inUse)
+    if (it->second.serviceLabel == s)
     {
-      continue;
-    }
-    if (s == ensemble->services[i].serviceLabel)
-    {
-      return i;
+      return it;
     }
   }
-  return -1;
+
+  return ensemble->servicesMap.end();
 }
 
-i32 FibDecoder::find_service_index_from_SId(const u32 iSId) const
-{
-  bool unusedFound = false;
-  // TODO: make it faster with a map?
-  for (i32 i = 0; i < 64; i++)
-  {
-    unusedFound |= !ensemble->services[i].inUse;
-
-    if (ensemble->services[i].inUse &&
-        ensemble->services[i].SId == iSId)
-    {
-      if (unusedFound)
-      {
-        qWarning() << "Unused service entry found in find_service_index_from_SId() while search";
-      }
-      return i;
-    }
-  }
-  return -1;
-}
+// i32 FibDecoder::find_service_index_from_SId(const u32 iSId) const
+// {
+//   bool unusedFound = false;
+//   // TODO: make it faster with a map?
+//   for (i32 i = 0; i < 64; i++)
+//   {
+//     unusedFound |= !ensemble->services[i].inUse;
+//
+//     if (ensemble->services[i].inUse &&
+//         ensemble->services[i].SId == iSId)
+//     {
+//       if (unusedFound)
+//       {
+//         qWarning() << "Unused service entry found in find_service_index_from_SId() while search";
+//       }
+//       return i;
+//     }
+//   }
+//   return -1;
+// }
 
 //	find data component using the SCId
 i32 FibDecoder::find_service_component(DabConfig * db, i16 SCId) const
@@ -1281,9 +1295,9 @@ i32 FibDecoder::find_service_component(DabConfig * db, i16 SCId) const
 //	find serviceComponent using the SId and the SCIdS
 i32 FibDecoder::find_service_component(const DabConfig * ipDabConfig, u32 iSId, u8 iSCIdS) const
 {
-  const i32 serviceIndex = find_service_index_from_SId(iSId);
+  const auto it = ensemble->servicesMap.find(iSId);
 
-  if (serviceIndex == -1)
+  if (it == ensemble->servicesMap.end())
   {
     return -1;
   }
@@ -1344,25 +1358,23 @@ i32 FibDecoder::find_component(DabConfig * db, u32 SId, i16 subChId) const
 // called via FIG 1/1, FIG 1/4, FIG 1/5
 void FibDecoder::create_service(QString iServiceName, u32 iSId, i32 iSCIdS)
 {
-  // this would fill the next free (not inUse) entry
-  for (i32 i = 0; i < 64; i++)
+  const auto it = ensemble->servicesMap.find(iSId);
+
+  if (it != ensemble->servicesMap.end())  // check, should not happen
   {
-    auto & service = ensemble->services[i];
-
-    if (ensemble->services[i].inUse)
-    {
-      continue;
-    }
-
-    service.inUse = true;
-    service.hasName = true;
-    service.serviceLabel = iServiceName;
-    service.SId = iSId;
-    service.SCIdS = iSCIdS;
-
-    // qDebug() << "Created service" << i << ", inUse:" << service.inUse << ", ServiceLabel:" << service.serviceLabel << ", SId:" << service.SId << ", SCIdS:" << service.SCIdS;
-    return;
+    qWarning() << "Service already exists";
   }
+
+  Service service;
+
+  service.hasName = true;
+  service.serviceLabel = iServiceName;
+  service.SId = iSId;
+  service.SCIdS = iSCIdS;
+
+  ensemble->servicesMap.try_emplace(iSId, service);
+
+  // qDebug() << "Created service" << i << ", inUse:" << service.inUse << ", ServiceLabel:" << service.serviceLabel << ", SId:" << service.SId << ", SCIdS:" << service.SCIdS;
 }
 
 //
@@ -1371,22 +1383,15 @@ void FibDecoder::create_service(QString iServiceName, u32 iSId, i32 iSCIdS)
 //
 void FibDecoder::cleanup_service_list()
 {
-  qDebug() << "cleanup_service_list()";
-
-  // ... but this could make a non-used component within
-  for (i32 i = 0; i < 64; i++)
+  for (auto it = ensemble->servicesMap.begin(); it != ensemble->servicesMap.end(); ++it)
   {
-    Service & service = ensemble->services[i];
+    const u32 SId = it->second.SId;
+    const i32 SCIdS = it->second.SCIdS;
 
-    if (service.inUse)
+    if (find_service_component(currentConfig, SId, SCIdS) == -1)
     {
-      const u32 SId = service.SId;
-      const i32 SCIdS = service.SCIdS;
-
-      if (find_service_component(currentConfig, SId, SCIdS) == -1)
-      {
-        service.inUse = false;
-      }
+      qDebug() << "clean up service ID" << SId << "SCIdS" << SCIdS;
+      it = ensemble->servicesMap.erase(it);
     }
   }
 }
@@ -1408,7 +1413,7 @@ QString FibDecoder::get_announcement_type_str(u16 a)
   }
 }
 
-void FibDecoder::set_cluster(DabConfig * localBase, i32 clusterId, i16 serviceIndex, u16 asuFlags)
+void FibDecoder::set_cluster(DabConfig * localBase, i32 clusterId, u32 iSId, u16 asuFlags)
 {
 
   if (!sync_reached())
@@ -1430,14 +1435,14 @@ void FibDecoder::set_cluster(DabConfig * localBase, i32 clusterId, i16 serviceIn
     myCluster->flags = asuFlags;
   }
 
-  for (u16 service : myCluster->services)
+  for (auto SId : myCluster->servicesSIDs)
   {
-    if (service == serviceIndex)
+    if (SId == iSId)
     {
       return;
     }
   }
-  myCluster->services.push_back(serviceIndex);
+  myCluster->servicesSIDs.push_back(iSId);
 }
 
 Cluster * FibDecoder::get_cluster(DabConfig * localBase, i16 clusterId)
@@ -1489,13 +1494,19 @@ bool FibDecoder::sync_reached() const
 
 i32 FibDecoder::get_sub_channel_id(const QString & s, u32 dummy_SId) const
 {
-  i32 serviceIndex = find_service_from_service_name(s);
+  const auto itService = find_service_from_service_name(s);
+
+  if (itService == ensemble->servicesMap.end())  // this test was missed before so it should happen
+  {
+    qWarning() << "Service not found";
+    return -1;
+  }
 
   (void)dummy_SId;
   fibLocker.lock();
 
-  const i32 SId = ensemble->services[serviceIndex].SId;
-  const i32 SCIdS = ensemble->services[serviceIndex].SCIdS;
+  const i32 SId = itService->second.SId;
+  const i32 SCIdS = itService->second.SCIdS;
 
   const i32 compIndex = find_service_component(currentConfig, SId, SCIdS);
 
@@ -1514,17 +1525,17 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
 {
   opAD->defined = false;
 
-  const i32 serviceIndex = find_service_from_service_name(iS);
+  const auto itService = find_service_from_service_name(iS);
 
-  if (serviceIndex == -1)
+  if (itService == ensemble->servicesMap.end())
   {
     return;
   }
 
   fibLocker.lock();
 
-  const i32 SId = ensemble->services[serviceIndex].SId;
-  const i32 SCIdS = ensemble->services[serviceIndex].SCIdS;
+  const i32 SId = itService->second.SId;
+  const i32 SCIdS = itService->second.SCIdS;
 
   const i32 compIndex = find_service_component(currentConfig, SId, SCIdS);
 
@@ -1560,9 +1571,9 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
   opAD->length = it->second.Length;
   opAD->bitRate = it->second.bitRate;
   opAD->ASCTy = currentConfig->serviceComps[compIndex].ASCTy;
-  opAD->language = ensemble->services[serviceIndex].language;
-  opAD->programType = ensemble->services[serviceIndex].programType;
-  opAD->fmFrequency = ensemble->services[serviceIndex].fmFrequency;
+  opAD->language = itService->second.language;
+  opAD->programType = itService->second.programType;
+  opAD->fmFrequency = itService->second.fmFrequency;
   opAD->defined = true;
 
   fibLocker.unlock();
@@ -1570,18 +1581,17 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
 
 void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * opPD, i16 iSCIdS) const
 {
-  i32 serviceIndex;
-
   opPD->defined = false;
-  serviceIndex = find_service_from_service_name(iS);
-  if (serviceIndex == -1)
+  const auto itService = find_service_from_service_name(iS);
+
+  if (itService == ensemble->servicesMap.end())
   {
     return;
   }
 
   fibLocker.lock();
 
-  const i32 SId = ensemble->services[serviceIndex].SId;
+  const i32 SId = itService->second.SId;
   const i32 compIndex = find_service_component(currentConfig, SId, iSCIdS);
 
   if ((compIndex == -1) || (currentConfig->serviceComps[compIndex].TMid != ETMId::PacketModeData))
@@ -1625,20 +1635,18 @@ std::vector<SServiceId> FibDecoder::get_services() const
 {
   std::vector<SServiceId> services;
 
-  for (i32 i = 0; i < 64; i++)
+  for (const auto & [_, serviceEntry] : ensemble->servicesMap)
   {
-    Service & service = ensemble->services[i];
-
-    if (service.inUse &&
-        service.hasName)
+    if (serviceEntry.hasName)
     {
       SServiceId ed;
-      ed.name = service.serviceLabel;
-      ed.SId = service.SId;
+      ed.name = serviceEntry.serviceLabel;
+      ed.SId = serviceEntry.SId;
 
       services = insert_sorted(services, ed);
     }
   }
+
   return services;
 }
 
@@ -1675,33 +1683,43 @@ std::vector<SServiceId> FibDecoder::insert_sorted(const std::vector<SServiceId> 
   return k;
 }
 
-QString FibDecoder::find_service(u32 SId, i32 SCIdS) const
+QString FibDecoder::find_service(u32 iSId, i32 iSCIdS) const
 {
-  for (auto & service : ensemble->services)
+  // TODO: can there more than one SId with different iSCIdS?
+  const auto it = ensemble->servicesMap.find(iSId);
+
+  if (it != ensemble->servicesMap.end())
   {
-    if (service.inUse &&
-        service.SId == SId &&
-        service.SCIdS == SCIdS)
-    {
-      return service.serviceLabel;
-    }
+    return "";
   }
+
+  if (it->second.SId != iSId) qCritical() << "SId mismatch";
+
+  if (it->second.SCIdS == iSCIdS)
+  {
+    return it->second.serviceLabel;
+  }
+  else
+  {
+    qDebug() << "SCIdS mismatch. Expect" << iSCIdS << "got" << it->second.SCIdS;
+  }
+
   return "";
 }
 
 void FibDecoder::get_parameters(const QString & s, u32 * p_SId, i32 * p_SCIdS) const
 {
-  const i32 serviceIndex = find_service_from_service_name(s);
+  const auto itService = find_service_from_service_name(s);
 
-  if (serviceIndex == -1)
+  if (itService == ensemble->servicesMap.end())
   {
     *p_SId = 0;
     *p_SCIdS = 0;
   }
   else
   {
-    *p_SId = ensemble->services[serviceIndex].SId;
-    *p_SCIdS = ensemble->services[serviceIndex].SCIdS;
+    *p_SId = itService->second.SId;
+    *p_SCIdS = itService->second.SCIdS;
   }
 }
 
@@ -1923,80 +1941,85 @@ void FibDecoder::FIG0Extension10(const u8 * dd)
   }
 }
 
-void FibDecoder::set_epg_data(u32 SId, i32 theTime, const QString & theText, const QString & theDescr) const
+void FibDecoder::set_epg_data(u32 iSId, i32 iTheTime, const QString & iTheText, const QString & iTheDescr) const
 {
-  for (i32 i = 0; i < 64; i++)
-  {
-    if (ensemble->services[i].inUse && ensemble->services[i].SId == SId)
-    {
+  const auto it = ensemble->servicesMap.find(iSId);
 
-      Service * S = &(ensemble->services[i]);
-      for (u16 j = 0; j < S->epgData.size(); j++)
-      {
-        if (S->epgData.at(j).theTime == theTime)
-        {
-          S->epgData.at(j).theText = theText;
-          S->epgData.at(j).theDescr = theDescr;
-          return;
-        }
-      }
-      SEpgElement ep;
-      ep.theTime = theTime;
-      ep.theText = theText;
-      ep.theDescr = theDescr;
-      S->epgData.push_back(ep);
+  if (it == ensemble->servicesMap.end())
+  {
+    return;
+  }
+
+  Service * S = &(it->second);
+  for (u16 j = 0; j < S->epgData.size(); j++)
+  {
+    if (S->epgData.at(j).theTime == iTheTime)
+    {
+      S->epgData.at(j).theText = iTheText;
+      S->epgData.at(j).theDescr = iTheDescr;
       return;
     }
   }
+
+  SEpgElement ep;
+  ep.theTime = iTheTime;
+  ep.theText = iTheText;
+  ep.theDescr = iTheDescr;
+  S->epgData.push_back(ep);
 }
 
 std::vector<SEpgElement> FibDecoder::get_timeTable(u32 SId) const
 {
   std::vector<SEpgElement> res;
-  i32 index = find_service_index_from_SId(SId);
-  if (index == -1)
+
+  const auto it = ensemble->servicesMap.find(SId);
+
+  if (it == ensemble->servicesMap.end())
   {
     return res;
   }
-  return ensemble->services[index].epgData;
+
+  return it->second.epgData;
 }
 
 std::vector<SEpgElement> FibDecoder::get_timeTable(const QString & service) const
 {
   std::vector<SEpgElement> res;
-  i32 index = find_service_from_service_name(service);
-  if (index == -1)
+
+  const auto it = find_service_from_service_name(service);
+
+  if (it == ensemble->servicesMap.end())
   {
     return res;
   }
-  return ensemble->services[index].epgData;
+
+  return it->second.epgData;
 }
 
 bool FibDecoder::has_time_table(u32 SId) const
 {
-  i32 index = find_service_index_from_SId(SId);
-  std::vector<SEpgElement> t;
-  if (index == -1)
+  const auto it = ensemble->servicesMap.find(SId);
+
+  if (it == ensemble->servicesMap.end())
   {
     return false;
   }
-  t = ensemble->services[index].epgData;
-  return t.size() > 2;
+
+  return it->second.epgData.size() > 2;
 }
 
 std::vector<SEpgElement> FibDecoder::find_epg_data(u32 SId) const
 {
-  i32 index = find_service_index_from_SId(SId);
+  const auto it = ensemble->servicesMap.find(SId);
+
   std::vector<SEpgElement> res;
 
-  if (index == -1)
+  if (it == ensemble->servicesMap.end())
   {
     return res;
   }
 
-  Service * s = &(ensemble->services[index]);
-
-  res = s->epgData;
+  res = it->second.epgData;
   return res;
 }
 
