@@ -59,7 +59,7 @@ public:
   std::vector<SServiceId> get_services() const;
 
   QString find_service(u32, i32) const;
-  void get_parameters(const QString &, u32 *, i32 *) const;
+  void get_parameters(const QString & iServiceName, u32 & oSId, i32 & oSCIdS) const;
   u8 get_ecc() const;
   u16 get_country_name() const;
   u8 get_countryId() const;

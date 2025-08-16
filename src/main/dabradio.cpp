@@ -2255,7 +2255,7 @@ void DabRadio::local_select(const QString & iChannel, const QString & iService)
   {
     mChannel.currentService.valid = false;
     SDabService s;
-    mpDabProcessor->get_fib_decoder().get_parameters(serviceName, &s.SId, &s.SCIdS);
+    mpDabProcessor->get_fib_decoder().get_parameters(serviceName, s.SId, s.SCIdS);
     if (s.SId == 0)
     {
       write_warning_message("Insufficient data for this program (1)");
@@ -2566,7 +2566,7 @@ void DabRadio::_slot_preset_timeout()
 
   SDabService s;
   s.serviceName = presetName;
-  mpDabProcessor->get_fib_decoder().get_parameters(presetName, &s.SId, &s.SCIdS);
+  mpDabProcessor->get_fib_decoder().get_parameters(presetName, s.SId, s.SCIdS);
 
   if (s.SId == 0)
   {
