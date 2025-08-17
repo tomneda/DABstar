@@ -1454,15 +1454,15 @@ i32 FibDecoder::get_sub_channel_id(const QString & s, u32 dummy_SId) const
   const i32 SId = itService->second.SId;
   const i32 SCIdS = itService->second.SCIdS;
 
-  const i32 compIndex = find_service_component(currentConfig, SId, SCIdS);
+  const auto pScd = find_service_component(currentConfig, SId, SCIdS);
 
-  if (compIndex == -1)
+  if (pScd == nullptr)
   {
     fibLocker.unlock();
     return -1;
   }
 
-  i32 subChId = currentConfig->serviceComps[compIndex].subChannelId;
+  i32 subChId = pScd->subChannelId;
   fibLocker.unlock();
   return subChId;
 }
@@ -1483,21 +1483,21 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
   const i32 SId = itService->second.SId;
   const i32 SCIdS = itService->second.SCIdS;
 
-  const i32 compIndex = find_service_component(currentConfig, SId, SCIdS);
+  const auto pScd = find_service_component(currentConfig, SId, SCIdS);
 
-  if (compIndex == -1)
+  if (pScd == nullptr)
   {
     fibLocker.unlock();
     return;
   }
 
-  if (currentConfig->serviceComps[compIndex].TMid != ETMId::StreamModeAudio)
+  if (pScd->TMid != ETMId::StreamModeAudio)
   {
     fibLocker.unlock();
     return;
   }
 
-  i32 subChId = currentConfig->serviceComps[compIndex].subChannelId;
+  const i32 subChId = pScd->subChannelId;
 
   const auto it = currentConfig->subChDescMapFig0_1.find(subChId);
 
@@ -1516,7 +1516,7 @@ void FibDecoder::get_data_for_audio_service(const QString & iS, AudioData * opAD
   opAD->protLevel = it->second.protLevel;
   opAD->length = it->second.Length;
   opAD->bitRate = it->second.bitRate;
-  opAD->ASCTy = currentConfig->serviceComps[compIndex].ASCTy;
+  opAD->ASCTy = pScd->ASCTy;
   opAD->language = itService->second.language;
   opAD->programType = itService->second.programType;
   opAD->fmFrequency = itService->second.fmFrequency;
@@ -1538,15 +1538,15 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
   fibLocker.lock();
 
   const i32 SId = itService->second.SId;
-  const i32 compIndex = find_service_component(currentConfig, SId, iSCIdS);
+  const auto pScd = find_service_component(currentConfig, SId, iSCIdS);
 
-  if ((compIndex == -1) || (currentConfig->serviceComps[compIndex].TMid != ETMId::PacketModeData))
+  if (pScd == nullptr || pScd->TMid != ETMId::PacketModeData)
   {
     fibLocker.unlock();
     return;
   }
 
-  i32 subChId = currentConfig->serviceComps[compIndex].subChannelId;
+  const i32 subChId = pScd->subChannelId;
 
   const auto itFig0_1  = currentConfig->subChDescMapFig0_1.find(subChId);
   const auto itFig0_14 = currentConfig->subChDescMapFig0_14.find(subChId);
@@ -1567,11 +1567,11 @@ void FibDecoder::get_data_for_packet_service(const QString & iS, PacketData * op
   opPD->length = itFig0_1->second.Length;
   opPD->bitRate = itFig0_1->second.bitRate;
   opPD->FEC_scheme = itFig0_14 != currentConfig->subChDescMapFig0_14.end() ? itFig0_14->second.FEC_scheme : 0;
-  opPD->DSCTy = currentConfig->serviceComps[compIndex].DSCTy;
-  opPD->DGflag = currentConfig->serviceComps[compIndex].DgFlag;
-  opPD->packetAddress = currentConfig->serviceComps[compIndex].packetAddress;
-  opPD->compnr = currentConfig->serviceComps[compIndex].componentNr;
-  opPD->appType = currentConfig->serviceComps[compIndex].appType;
+  opPD->DSCTy = pScd->DSCTy;
+  opPD->DGflag = pScd->DgFlag;
+  opPD->packetAddress = pScd->packetAddress;
+  opPD->compnr = pScd->componentNr;
+  opPD->appType = pScd->appType;
   opPD->defined = true;
 
   fibLocker.unlock();
