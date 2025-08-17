@@ -138,38 +138,39 @@ private:
 
   std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> & iServiceIdList, const SServiceId & iServiceId) const;
   EnsembleDescriptor::TMapService::iterator find_service_from_service_name(const QString &) const;
-  i32 find_service_component(DabConfig *, i16) const;
-  i32 find_component(DabConfig * db, u32 SId, i16 subChId) const;
-  i32 find_service_component(const DabConfig *, u32, u8) const;
+  DabConfig::TSPServiceCompDesc find_service_component(DabConfig *, i16) const;
+  DabConfig::TSPServiceCompDesc find_component(DabConfig * ipDabConfig, u32 iSId, i16 iSubChId) const;
+  DabConfig::TSPServiceCompDesc find_service_component(DabConfig *, u32, u8) const;
 
   void bind_audio_service(DabConfig *, ETMId, u32, i16, i16, i16, i16);
   void bind_packet_service(DabConfig *, ETMId, u32, i16, i16, i16, i16);
+  void register_service_comp_to_maps(const DabConfig::TSPServiceCompDesc & ipScp);
 
   QString get_announcement_type_str(u16);
 
   void set_cluster(DabConfig *, i32, u32 iSId, u16);
   Cluster * get_cluster(DabConfig *, i16);
 
-  QString get_service_name(i32 index) const;
-  QString get_service_id_of(i32 index) const;
-  QString get_sub_channel_of(i32 index) const;
-  QString get_start_address_of(i32 index) const;
-  QString get_length_of(i32 index) const;
-  QString get_prot_level_of(i32 index) const;
-  QString get_code_rate_of(i32 index) const;
-  QString get_bit_rate_of(i32 index) const;
-  QString get_dab_type(i32 index) const;
-  QString get_language_of(i32 index) const;
-  QString get_program_type_of(i32 index) const;
-  QString get_fm_freq_of(i32 index) const;
-  QString get_app_type_of(i32 index) const;
-  QString get_FEC_scheme(i32 index) const;
-  QString get_packet_address(i32 index) const;
-  QString get_DSCTy(i32 index) const;
+  QString get_service_name(const ServiceComponentDescriptor & iScd) const;
+  QString get_service_id_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_sub_channel_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_start_address_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_length_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_prot_level_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_code_rate_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_bit_rate_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_dab_type(const ServiceComponentDescriptor & iScd) const;
+  QString get_language_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_program_type_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_fm_freq_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_app_type_of(const ServiceComponentDescriptor & iScd) const;
+  QString get_FEC_scheme(const ServiceComponentDescriptor & iScd) const;
+  QString get_packet_address(const ServiceComponentDescriptor & iScd) const;
+  QString get_DSCTy(const ServiceComponentDescriptor & iScd) const;
   QString get_audio_header() const;
   QString get_packet_header() const;
-  QString get_audio_data(i32 index) const;
-  QString get_packet_data(i32 index) const;
+  QString get_audio_data(const ServiceComponentDescriptor & iScd) const;
+  QString get_packet_data(const ServiceComponentDescriptor & iScd) const;
 
   bool extract_character_set_label(QString & oName, const u8 * d, i16 iLabelOffs);
 

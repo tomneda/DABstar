@@ -442,40 +442,39 @@ void FibDecoder::FIG0Extension3(const u8 * const d)
 // Note that the SCId (Service Component Identifier) is	a unique 12 bit number in the ensemble
 i16 FibDecoder::HandleFIG0Extension3(const u8 * const d, i16 used, const SFigHeader & iFH)
 {
-  i16 SCId = getBits(d, used * 8, 12);
-  i16 CAOrgflag = getBits_1(d, used * 8 + 15);
-  i16 DGflag = getBits_1(d, used * 8 + 16);
-  i16 DSCTy = getBits_6(d, used * 8 + 18);
-  i16 SubChId = getBits_6(d, used * 8 + 24);
-  i16 packetAddress = getBits(d, used * 8 + 30, 10);
-  u16 CAOrg = 0;
+  const i16 SCId = getBits(d, used * 8, 12);
+  const i16 CAOrgflag = getBits_1(d, used * 8 + 15);
+  const i16 DGflag = getBits_1(d, used * 8 + 16);
+  const i16 DSCTy = getBits_6(d, used * 8 + 18);
+  const i16 SubChId = getBits_6(d, used * 8 + 24);
+  const i16 packetAddress = getBits(d, used * 8 + 30, 10);
 
   DabConfig * localBase = iFH.CN_bit == 0 ? currentConfig : nextConfig;
 
   if (CAOrgflag == 1)
   {
-    CAOrg = getBits(d, used * 8 + 40, 16);
+    const u16 CAOrg = getBits(d, used * 8 + 40, 16);
+    (void)CAOrg;
     used += 16 / 8;
   }
-  (void)CAOrg;
   used += 40 / 8;
 
-  const i32 serviceCompIndex = find_service_component(localBase, SCId);
-  if (serviceCompIndex == -1)
+  // const auto itScd = localBase->serviceCompDescMap.find(SCId);
+  const auto pScd = find_service_component(localBase, SCId);
+
+  if (pScd == nullptr)
   {
     return used;
   }
 
-  //	We want to have the subchannel OK
+  // We want to have the subchannel OK
   if (localBase->subChDescMapFig0_1.find(SubChId) == localBase->subChDescMapFig0_1.end()) // TODO: why necessary?
   {
     return used;
   }
 
-  ServiceComponentDescriptor & scd = localBase->serviceComps[serviceCompIndex];
-
   // If the component exists, we first look whether is was already handled
-  if (scd.isMadePublic)
+  if (pScd->isMadePublic)
   {
     return used;
   }
@@ -486,26 +485,26 @@ i16 FibDecoder::HandleFIG0Extension3(const u8 * const d, i16 used, const SFigHea
     return used;
   }
 
-  const auto it = ensemble->servicesMap.find(scd.SId);
+  const auto itServ = ensemble->servicesMap.find(pScd->SId);
 
-  if (it == ensemble->servicesMap.end())
+  if (itServ == ensemble->servicesMap.end())
   {
     return used;
   }
 
-  const QString serviceName = it->second.serviceLabel;
+  const QString serviceName = itServ->second.serviceLabel;
 
-  if (!it->second.is_shown)
+  if (!itServ->second.is_shown)
   {
-    emit signal_add_to_ensemble(serviceName, it->second.SId);
+    emit signal_add_to_ensemble(serviceName, pScd->SId);
   }
 
-  it->second.is_shown = true;
-  scd.isMadePublic = true;
-  scd.subChannelId = SubChId;
-  scd.DSCTy = DSCTy;
-  scd.DgFlag = DGflag;
-  scd.packetAddress = packetAddress;
+  itServ->second.is_shown = true;
+  pScd->isMadePublic = true;
+  pScd->subChannelId = SubChId;
+  pScd->DSCTy = DSCTy;
+  pScd->DgFlag = DGflag;
+  pScd->packetAddress = packetAddress;
   return used;
 }
 
@@ -529,7 +528,8 @@ i16 FibDecoder::HandleFIG0Extension5(const u8 * const d, i16 offset, const SFigH
   DabConfig * localBase = iFH.CN_bit == 0 ? currentConfig : nextConfig;
 
   if (lsFlag == 0)
-  {  // short form
+  {
+    // short form
     if (getBits_1(d, bitOffset + 1) == 0)
     {
       SSubChannelDescFig0_5 subChannel;
@@ -540,14 +540,17 @@ i16 FibDecoder::HandleFIG0Extension5(const u8 * const d, i16 offset, const SFigH
     bitOffset += 16;
   }
   else
-  {      // long form
+  {
+    // long form
     i16 SCId = getBits(d, bitOffset + 4, 12);
     language = getBits_8(d, bitOffset + 16);
-    i32 compIndex = find_service_component(localBase, SCId);
 
-    if (compIndex != -1)
+    //const auto itScd = localBase->serviceCompDescMap.find(SCId);
+    const auto pScd = find_service_component(localBase, SCId);
+
+    if (pScd != nullptr)
     {
-      localBase->serviceComps[compIndex].language = language;
+      pScd->language = language;
     }
     bitOffset += 24;
   }
@@ -607,10 +610,11 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * const d, const i16 used, const S
 
     if (localBase->subChDescMapFig0_1.find(subChId) != localBase->subChDescMapFig0_1.end()) // TODO: why necessary?
     {
-      const i16 compIndex = find_component(localBase, SId, subChId);
-      if (compIndex != -1)
+      const auto pScd = find_component(localBase, SId, subChId);
+
+      if (pScd != nullptr)
       {
-        localBase->serviceComps[compIndex].SCIdS = SCIdS;
+        pScd->SCIdS = SCIdS;
       }
     }
     bitOffset += 8;
@@ -619,10 +623,11 @@ i16 FibDecoder::HandleFIG0Extension8(const u8 * const d, const i16 used, const S
   {
     // long form
     const i32 SCId = getBits(d, bitOffset + 4, 12);
-    const i16 compIndex = find_service_component(localBase, SCId);
-    if (compIndex != -1)
+    const auto pScd = find_service_component(localBase, SCId);
+
+    if (pScd != nullptr)
     {
-      localBase->serviceComps[compIndex].SCIdS = SCIdS;
+      pScd->SCIdS = SCIdS;
     }
     bitOffset += 16;  // TODO: was 8 before, is a bug?
   }
@@ -672,14 +677,14 @@ i16 FibDecoder::HandleFIG0Extension13(const u8 * const d, i16 used, const SFigHe
       continue; // only to count up the bitOffset
     }
 
-    i32 compIndex = find_service_component(localBase, SId, SCIdS);
-    if (compIndex != -1)
-    {
-      if (localBase->serviceComps[compIndex].TMid == ETMId::PacketModeData)
-      {
-        localBase->serviceComps[compIndex].appType = appType;
-      }
+    auto pScd = find_service_component(localBase, SId, SCIdS);
 
+    if (pScd != nullptr)
+    {
+      if (pScd->TMid == ETMId::PacketModeData)
+      {
+        pScd->appType = appType;
+      }
     }
   }
   return bitOffset / 8;
@@ -1018,16 +1023,15 @@ void FibDecoder::FIG1Extension1(const u8 * const d)
 void FibDecoder::FIG1Extension4(const u8 * const d)
 {
   const u8 PD_bit = getBits_1(d, 16);
-  const u8 Rfu = getBits_3(d, 17);
-  (void)Rfu;
+  // const u8 Rfa = getBits_3(d, 17);
   const u8 SCIdS = getBits_4(d, 20);
 
   const u32 SId = PD_bit ? getLBits(d, 24, 32) : getLBits(d, 24, 16);
   const i16 offset = PD_bit ? 56 : 40;
 
-  const i16 compIndex = find_service_component(currentConfig, SId, SCIdS);
+  const auto pScd = find_service_component(currentConfig, SId, SCIdS);
 
-  if (compIndex >= 0) // TODO: bug? was > 0?
+  if (pScd != nullptr) // TODO: bug? was > 0?
   {
     QString dataName;
     if (!extract_character_set_label(dataName, d, offset))
@@ -1037,7 +1041,7 @@ void FibDecoder::FIG1Extension4(const u8 * const d)
 
     if (find_service_from_service_name(dataName) == ensemble->servicesMap.end())
     {
-      if (currentConfig->serviceComps[compIndex].TMid == ETMId::StreamModeAudio)
+      if (pScd->TMid == ETMId::StreamModeAudio)
       {
         create_service(dataName, SId, SCIdS);
         emit signal_add_to_ensemble(dataName, SId);
@@ -1108,11 +1112,12 @@ void FibDecoder::FIG1Extension6(const u8 * const d)
 //	bind_audioService is the main processor for - what the name suggests -
 //	connecting the description of audioservices to a SID
 //	by creating a service Component
-void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, const ETMId iTMid, const u32 iSId, const i16 iCompNr, const i16 iSubChId, const i16 iPsFlag, const i16 iASCTy)
+void FibDecoder::bind_audio_service(DabConfig * iopDabConfig, const ETMId iTMid, const u32 iSId, const i16 iCompNr,
+                                                             const i16 iSubChId, const i16 iPsFlag, const i16 iASCTy)
 {
-  const auto it = ensemble->servicesMap.find(iSId);
+  const auto itServ = ensemble->servicesMap.find(iSId);
 
-  if (it == ensemble->servicesMap.end())
+  if (itServ == ensemble->servicesMap.end())
   {
     return;
   }
@@ -1120,56 +1125,48 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, const ETMId iTMid, 
   //	if (ensemble -> services [serviceIndex]. programType == 0)
   //	   return;
 
-  if (ioDabConfig->subChDescMapFig0_1.find(iSubChId) == ioDabConfig->subChDescMapFig0_1.end()) // TODO: why necessary
+  if (iopDabConfig->subChDescMapFig0_1.find(iSubChId) == iopDabConfig->subChDescMapFig0_1.end()) // TODO: why necessary
   {
     return;
   }
 
-  i16 firstFree = -1;
-
-  for (i16 i = 0; i < 64; i++)
+  if (iopDabConfig->mapServiceCompDesc_SId_CompNr.find({iSId, iCompNr}) != iopDabConfig->mapServiceCompDesc_SId_CompNr.end())
   {
-    if (!ioDabConfig->serviceComps[i].inUse)
-    {
-      if (firstFree == -1)
-      {
-        firstFree = i;
-      }
-      break;
-    }
-
-    if (ioDabConfig->serviceComps[i].SId == iSId && ioDabConfig->serviceComps[i].componentNr == iCompNr)
-    {
-      return;
-    }
+    return; // already bound
   }
 
-  if (firstFree < 0)
+  if (currentConfig->serviceCompPtrStorage.size() >= 64)
   {
-    qCritical("FibDecoder::bind_audio_service: no free slots");
+    qCritical("No free slots");
     return;
   }
 
-  const QString dataName = it->second.serviceLabel;
+  const auto pScd = std::make_shared<ServiceComponentDescriptor>();
 
-  ServiceComponentDescriptor & scd = ioDabConfig->serviceComps[firstFree];
+  pScd->SId = iSId;
+  pScd->SCIdS = 0;
+  pScd->TMid = iTMid;
+  pScd->componentNr = iCompNr;
+  pScd->subChannelId = iSubChId;
+  pScd->PsFlag = iPsFlag;
+  pScd->ASCTy = iASCTy;
+  itServ->second.SCIdS = 0;
 
-  // store data into first free slot
-  assert(!scd.inUse);
+  currentConfig->serviceCompPtrStorage.emplace_back(pScd);
 
-  scd.SId = iSId;
-  scd.SCIdS = 0;
-  scd.TMid = iTMid;
-  scd.componentNr = iCompNr;
-  scd.subChannelId = iSubChId;
-  scd.PsFlag = iPsFlag;
-  scd.ASCTy = iASCTy;
-  scd.inUse = true;
+  // currentConfig->mapServiceCompDesc_SCId.try_emplace(iSCId, pScd); // TODO
+  currentConfig->mapServiceCompDesc_SId.try_emplace(iSId, pScd);
+  currentConfig->mapServiceCompDesc_SId_SubChId.try_emplace({iSId, iSubChId}, pScd);
+  currentConfig->mapServiceCompDesc_SId_CompNr.try_emplace({iSId, iCompNr}, pScd);
+  currentConfig->mapServiceCompDesc_SId_SCIdS.try_emplace({iSId, pScd->SCIdS}, pScd);
 
-  it->second.SCIdS = 0;
+  register_service_comp_to_maps(pScd);
+
+  const QString dataName = itServ->second.serviceLabel;
 
   emit signal_add_to_ensemble(dataName, iSId);
-  it->second.is_shown = true;
+
+  itServ->second.is_shown = true;
 }
 
 //      bind_packetService is the main processor for - what the name suggests -
@@ -1177,60 +1174,61 @@ void FibDecoder::bind_audio_service(DabConfig * ioDabConfig, const ETMId iTMid, 
 //	So, here we create a service component. Note however,
 //	that FIG0/3 provides additional data, after that we
 //	decide whether it should be visible or not
-void FibDecoder::bind_packet_service(DabConfig * base, const ETMId iTMId, const u32 iSId, const i16 iCompNr,
+void FibDecoder::bind_packet_service(DabConfig * iopDabConfig, const ETMId iTMId, const u32 iSId, const i16 iCompNr,
                                      const i16 iSCId, const i16 iPsFlag, const i16 iCaFlag)
 {
-  i32 firstFree = -1;
+  const auto itServ = ensemble->servicesMap.find(iSId);
 
-  const auto it = ensemble->servicesMap.find(iSId);
-
-  if (it == ensemble->servicesMap.end())
+  if (itServ == ensemble->servicesMap.end())
   {
     return;
   }
 
-  // QString serviceName = ensemble->services[serviceIndex].serviceLabel;
-
-  for (i16 i = 0; i < 64; i++)
+  if (iopDabConfig->mapServiceCompDesc_SId_CompNr.find({iSId, iCompNr}) != iopDabConfig->mapServiceCompDesc_SId_CompNr.end())
   {
-    if (!base->serviceComps[i].inUse)
-    {
-      if (firstFree == -1)
-      {
-        firstFree = i;
-      }
-      break;
-    }
-
-    if ((base->serviceComps[i].SId == iSId) && (base->serviceComps[i].componentNr == iCompNr))
-    {
-      return;
-    }
+    return; // already bound
   }
 
-  ServiceComponentDescriptor & scd = base->serviceComps[firstFree];
-
-  if (!scd.inUse)
+  if (currentConfig->serviceCompPtrStorage.size() >= 64)
   {
-    scd.inUse = true;
-    scd.SId = iSId;
-
-    if (iCompNr == 0)
-    {
-      scd.SCIdS = 0;
-    }
-    else
-    {
-      scd.SCIdS = -1;
-    }
-
-    scd.SCId = iSCId;
-    scd.TMid = iTMId;
-    scd.componentNr = iCompNr;
-    scd.PsFlag = iPsFlag;
-    scd.CaFlag = iCaFlag;
-    scd.isMadePublic = false;
+    qCritical("No free slots");
+    return;
   }
+
+  const auto pScd = std::make_shared<ServiceComponentDescriptor>();
+
+  pScd->SId = iSId;
+
+  if (iCompNr == 0) // TODO: stimmt das so?!
+  {
+    pScd->SCIdS = 0;
+  }
+  else
+  {
+    pScd->SCIdS = -1;
+  }
+
+  pScd->SCId = iSCId;
+  pScd->TMid = iTMId;
+  pScd->componentNr = iCompNr;
+  pScd->PsFlag = iPsFlag;
+  pScd->CaFlag = iCaFlag;
+  pScd->isMadePublic = false;
+
+  currentConfig->serviceCompPtrStorage.emplace_back(pScd);
+
+  currentConfig->mapServiceCompDesc_SCId.try_emplace(iSCId, pScd);
+  currentConfig->mapServiceCompDesc_SId.try_emplace(iSId, pScd);
+  // currentConfig->mapServiceCompDesc_SId_SubChId.try_emplace({iSId, 0}, pScd); // TODO:
+  currentConfig->mapServiceCompDesc_SId_CompNr.try_emplace({iSId, iCompNr}, pScd);
+  currentConfig->mapServiceCompDesc_SId_SCIdS.try_emplace({iSId, pScd->SCIdS}, pScd);
+
+  register_service_comp_to_maps(pScd);
+}
+
+void FibDecoder::register_service_comp_to_maps(const DabConfig::TSPServiceCompDesc & ipScp)
+{
+
 }
 
 EnsembleDescriptor::TMapService::iterator FibDecoder::find_service_from_service_name(const QString & s) const
@@ -1269,89 +1267,38 @@ EnsembleDescriptor::TMapService::iterator FibDecoder::find_service_from_service_
 // }
 
 //	find data component using the SCId
-i32 FibDecoder::find_service_component(DabConfig * db, i16 SCId) const
+DabConfig::TSPServiceCompDesc FibDecoder::find_service_component(DabConfig * db, i16 SCId) const
 {
-  bool unusedFound = false;
+  const auto it = db->mapServiceCompDesc_SCId.find(SCId);
 
-  for (i32 i = 0; i < 64; i++)
+  if (it == db->mapServiceCompDesc_SCId.end())
   {
-    unusedFound |= !db->serviceComps[i].inUse;
-
-    if (db->serviceComps[i].inUse &&
-        db->serviceComps[i].SCId == SCId)
-    {
-      if (unusedFound)
-      {
-        qWarning() << "Unused service entry found in find_service_component() while search (1)";
-      }
-      return i;  // == subChId
-    }
+    return nullptr;
   }
-  return -1;
+
+  return it->second;
 }
 
 //
 //	find serviceComponent using the SId and the SCIdS
-i32 FibDecoder::find_service_component(const DabConfig * ipDabConfig, u32 iSId, u8 iSCIdS) const
+DabConfig::TSPServiceCompDesc FibDecoder::find_service_component(DabConfig * ipDabConfig, u32 iSId, u8 iSCIdS) const
 {
-  const auto it = ensemble->servicesMap.find(iSId);
+  const auto itServ = ensemble->servicesMap.find(iSId); // TODO: is that necessary?
 
-  if (it == ensemble->servicesMap.end())
+  if (itServ == ensemble->servicesMap.end())
   {
-    return -1;
+    return nullptr;
   }
 
-  // for (i32 i = 0; i < 64; i++)
-  // {
-  //   const ServiceComponentDescriptor & a = ipDabConfig->serviceComps[i];
-  //   // if (a.SCIdS >= 1)
-  //   if (a.inUse)
-  //     qInfo() << "i:" << i << "SId" << iSId << a.SId << "SCIdS: " << iSCIdS << a.SCIdS;
-  // }
-
-
-  bool unusedFound = false;
-
-  for (i32 i = 0; i < 64; i++)
-  {
-    unusedFound |= !ipDabConfig->serviceComps[i].inUse;
-
-    if (ipDabConfig->serviceComps[i].inUse &&
-        ipDabConfig->serviceComps[i].SCIdS == iSCIdS &&
-        ipDabConfig->serviceComps[i].SId == iSId)
-    {
-      if (unusedFound)
-      {
-        qWarning() << "Unused service entry found in find_service_component() while search (2)";
-      }
-      // qInfo() << "Found service component" << i;
-      return i;
-    }
-  }
-  return -1;
+  const auto itScd = ipDabConfig->mapServiceCompDesc_SId_SCIdS.find({iSId, iSCIdS});
+  return (itScd != ipDabConfig->mapServiceCompDesc_SId_SCIdS.end() ? itScd->second : nullptr);
 }
 
 //	find serviceComponent using the SId and the subchannelId
-i32 FibDecoder::find_component(DabConfig * db, u32 SId, i16 subChId) const
+DabConfig::TSPServiceCompDesc FibDecoder::find_component(DabConfig * ipDabConfig, u32 iSId, i16 iSubChId) const
 {
-  bool unusedFound = false;
-
-  for (i32 i = 0; i < 64; i++)
-  {
-    unusedFound |= !db->serviceComps[i].inUse;
-
-    if (db->serviceComps[i].inUse &&
-        db->serviceComps[i].SId == SId &&
-        db->serviceComps[i].subChannelId == subChId)
-    {
-      if (unusedFound)
-      {
-        qWarning() << "Unused service entry found in find_component() while search";
-      }
-      return i;
-    }
-  }
-  return -1;
+  const auto it = ipDabConfig->mapServiceCompDesc_SId_SubChId.find({iSId, iSubChId});
+  return (it != ipDabConfig->mapServiceCompDesc_SId_SubChId.end() ? it->second : nullptr);
 }
 
 // called via FIG 1/1, FIG 1/4, FIG 1/5
@@ -1387,7 +1334,7 @@ void FibDecoder::cleanup_service_list()
     const u32 SId = it->second.SId;
     const i32 SCIdS = it->second.SCIdS;
 
-    if (find_service_component(currentConfig, SId, SCIdS) == -1)
+    if (find_service_component(currentConfig, SId, SCIdS) == nullptr)
     {
       qDebug() << "clean up service ID" << SId << "SCIdS" << SCIdS;
       it = ensemble->servicesMap.erase(it);
@@ -2051,7 +1998,7 @@ bool FibDecoder::extract_character_set_label(QString & oName, const u8 * const d
 
   if (!is_charset_valid(charSet))
   {
-    qWarning() << "invalid character set" << (int)charSet;
+    qCritical() << "invalid character set" << (int)charSet;
     return false;
   }
 

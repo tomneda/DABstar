@@ -105,42 +105,42 @@ struct SSubChannelDescFig0_14
 //      The service component describes the actual service
 //      It really should be a union, the component data for
 //      audio and data are quite different
-class ServiceComponentDescriptor
+struct ServiceComponentDescriptor
 {
-public:
-  ServiceComponentDescriptor()
-  {
-    reset();
-  }
-
-  ~ServiceComponentDescriptor() = default;
-
-  void reset()
-  {
-    inUse = false;
-    isMadePublic = false;
-    SCIdS = -1;
-    componentNr = -1;
-    SCId = -1;
-    subChannelId = -1;
-  }
-
-  bool inUse;        // field in use
-  ETMId TMid;        // the transport mode
-  u32 SId;
-  i16 SCIdS;         // component within service
-  i16 subChannelId;  // used in both audio and packet
-  i16 componentNr;   // component
-  i16 ASCTy;         // used for audio
-  i16 DSCTy;         // used in packet
-  i16 PsFlag;        // use for both audio and packet
-  i16 SCId;          // Component Id (12 bit, unique)
-  u8 CaFlag;         // used in packet (or not at all)
-  u8 DgFlag;         // used for TDC
-  i16 packetAddress; // used in packet
-  i16 appType;       // used in packet and Xpad
-  i16 language;
-  bool isMadePublic; // used to make service visible
+// public:
+//   ServiceComponentDescriptor()
+//   {
+//     reset();
+//   }
+//
+//   ~ServiceComponentDescriptor() = default;
+//
+//   void reset()
+//   {
+//     inUse = false;
+//     isMadePublic = false;
+//     SCIdS = -1;
+//     componentNr = -1;
+//     SCId = -1;
+//     subChannelId = -1;
+//   }
+//
+//   bool inUse = false;        // field in use
+  ETMId TMid = (ETMId)(-1);  // the transport mode
+  u32 SId = 0;               
+  i16 SCIdS = -1;            // component within service
+  i16 subChannelId = -1;     // used in both audio and packet
+  i16 componentNr = -1;      // component
+  i16 ASCTy = -1;            // used for audio
+  i16 DSCTy = -1;            // used in packet
+  i16 PsFlag = 0;            // use for both audio and packet
+  i16 SCId = -1;             // Component Id (12 bit, unique)
+  u8 CaFlag = 0;             // used in packet (or not at all)
+  u8 DgFlag = 0;             // used for TDC
+  i16 packetAddress = -1;    // used in packet
+  i16 appType = -1;          // used in packet and Xpad
+  i16 language = -1;
+  bool isMadePublic = false; // used to make service visible
 };
 
 //
@@ -169,22 +169,37 @@ public:
     subChDescMapFig0_1.clear();
     subChDescMapFig0_5.clear();
     subChDescMapFig0_14.clear();
-
-    for (auto & serviceComp : serviceComps)
-    {
-      serviceComp.reset();
-    }
+    mapServiceCompDesc_SCId.clear();
+    mapServiceCompDesc_SId.clear();
+    mapServiceCompDesc_SId_SubChId.clear();
+    mapServiceCompDesc_SId_SCIdS.clear();
+    mapServiceCompDesc_SId_CompNr.clear();
+    serviceCompPtrStorage.clear();
+    
+    // for (auto & serviceComp : serviceComps)
+    // {
+    //   serviceComp.reset();
+    // }
   }
 
-  using TMapSubChDescFig0_1  = std::map<i32, SSubChannelDescFig0_1>;  // key is <SubChId>
-  using TMapSubChDescFig0_5  = std::map<i32, SSubChannelDescFig0_5>;  // key is <SubChId>
-  using TMapSubChDescFig0_14 = std::map<i32, SSubChannelDescFig0_14>; // key is <SubChId>
+  using TMapSubChDescFig0_1  = std::map<i32, SSubChannelDescFig0_1>;  // key is SubChId
+  using TMapSubChDescFig0_5  = std::map<i32, SSubChannelDescFig0_5>;  // key is SubChId
+  using TMapSubChDescFig0_14 = std::map<i32, SSubChannelDescFig0_14>; // key is SubChId
 
   TMapSubChDescFig0_1  subChDescMapFig0_1;
   TMapSubChDescFig0_5  subChDescMapFig0_5;
   TMapSubChDescFig0_14 subChDescMapFig0_14;
 
-  ServiceComponentDescriptor serviceComps[64];
+  using TSPServiceCompDesc = std::shared_ptr<ServiceComponentDescriptor>;
+
+  std::vector<TSPServiceCompDesc> serviceCompPtrStorage;
+  std::map<u32, TSPServiceCompDesc> mapServiceCompDesc_SCId; // key is SCId
+  std::map<u32, TSPServiceCompDesc> mapServiceCompDesc_SId;  // key is SId
+  std::map<std::pair<u32 /*SId*/, i16 /*SubChId*/>, TSPServiceCompDesc> mapServiceCompDesc_SId_SubChId;
+  std::map<std::pair<u32 /*SId*/, u8 /*SCIdS*/>, TSPServiceCompDesc> mapServiceCompDesc_SId_SCIdS;
+  std::map<std::pair<u32 /*SId*/, i16 /*CompNr*/>, TSPServiceCompDesc> mapServiceCompDesc_SId_CompNr;
+  //TMapServiceCompDesc serviceCompDescMap;
+  // ServiceComponentDescriptor serviceComps[64];
   Cluster clusterTable[128];
 };
 
