@@ -97,8 +97,8 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   recorderVersion->setText(theDescriptor->recorderVersion);
   recordingTime->setText(theDescriptor->recordingTime);
 
-  nrElementsDisplay->display(theDescriptor->blockList[0].nrElements);
-  fprintf(stderr, "nrElements = %d\n", theDescriptor->blockList[0].nrElements);
+  nrElementsDisplay->display((double)theDescriptor->blockList[0].nrElements);
+  fprintf(stderr, "nrElements = %lld\n", theDescriptor->blockList[0].nrElements);
   //connect(continuousButton, SIGNAL (clicked()), this, SLOT (slot_handle_cb_loop_file(0)));
   connect(cbLoopFile, &QCheckBox::clicked, this, &XmlFileReader::slot_handle_cb_loop_file);
   running.store(false);
@@ -178,9 +178,9 @@ i32 XmlFileReader::Samples()
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-void XmlFileReader::slot_set_progress(i32 samplesRead, i32 samplesToRead)
+void XmlFileReader::slot_set_progress(i64 samplesRead, i64 samplesToRead)
 {
-  fileProgress->setValue((f32)samplesRead / samplesToRead * 100);
+  fileProgress->setValue((f32)samplesRead / (f32)samplesToRead * 100);
   currentTime->display(QString("%1").arg(samplesRead / 2048000.0, 0, 'f', 1));
   totalTime->display(QString("%1").arg(samplesToRead / 2048000.0, 0, 'f', 1));
 }

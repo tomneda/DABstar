@@ -3,7 +3,7 @@
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB 
+ *    This file is part of the Qt-DAB
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ public:
   ~Blocks() = default;
 
   i32 blockNumber = 0;
-  i32 nrElements = 0;
+  i64 nrElements = 0;
   QString typeofUnit;
   i32 frequency = 0;
   QString modType;
@@ -66,7 +66,7 @@ public:
   void setSamplerate(i32 sr);
   void setChannels(i32 nrChannels, i32 bitsperChannel, QString ct, QString byteOrder);
   void addChannelOrder(i32 channelOrder, QString Value);
-  void add_dataBlock(i32 currBlock, i32 Count, i32 blockNumber, QString Unit);
+  void add_dataBlock(i32 currBlock, i64 Count, i32 blockNumber, QString Unit);
   void add_freqtoBlock(i32 blockno, i32 freq);
   void add_modtoBlock(i32 blockno, QString modType);
 };

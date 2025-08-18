@@ -36,7 +36,7 @@ void XmlDescriptor::printDescriptor()
   for (i32 i = 0; i < (i32)blockList.size(); i++)
   {
     fprintf(stderr,
-            ">>>   %d %d %s %d %s\n",
+            ">>>   %d %lld %s %d %s\n",
             blockList.at(i).blockNumber,
             blockList.at(i).nrElements,
             blockList.at(i).typeofUnit.toLatin1().data(),
@@ -78,7 +78,7 @@ void XmlDescriptor::addChannelOrder(i32 channelOrder, QString Value)
   }
 }
 
-void XmlDescriptor::add_dataBlock(i32 /*currBlock*/, i32 Count, i32 blockNumber, QString Unit)
+void XmlDescriptor::add_dataBlock(i32 /*currBlock*/, i64 Count, i32 blockNumber, QString Unit)
 {
   Blocks b;
   b.blockNumber = blockNumber;
@@ -195,7 +195,7 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
     }
     if (component.tagName() == "Datablocks")
     {
-      //	      QString Count = component.attribute ("Count", "3");
+      // QString Count = component.attribute ("Count", "3");
       this->nrBlocks = 0;
       i32 currBlock = 0;
       QDomNodeList nodes = component.childNodes();
@@ -210,7 +210,7 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
         if (Child.tagName() == "Datablock")
         {
           //fprintf(stderr, "weer een block\n");
-          i32 Count = (Child.attribute("Count", "100")).toInt();
+          i64 Count = (Child.attribute("Count", "100")).toLongLong();
           i32 Number = (Child.attribute("Number", "10")).toInt();
           QString Unit = Child.attribute("Channel", "Channel");
           add_dataBlock(currBlock, Count, Number, Unit);

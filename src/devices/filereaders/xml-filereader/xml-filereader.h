@@ -74,9 +74,9 @@ private:
   u32 filePointer = 0;
   XmlDescriptor * theDescriptor = nullptr;
   XmlReader * theReader = nullptr;
-  
+
 public slots:
-  void slot_set_progress(i32, i32);
+  void slot_set_progress(i64, i64);
   void slot_handle_cb_loop_file(const bool iChecked);
 };
 

@@ -124,7 +124,7 @@ static i32 cycleCount = 0;
 
 void XmlReader::run()
 {
-  i32 samplesRead = 0;
+  i64 samplesRead = 0;
   u64 nextStop;
   i32 startPoint = filePointer;
 
@@ -134,7 +134,7 @@ void XmlReader::run()
   for (i32 blocks = 0; blocks < fd->nrBlocks; blocks++)
   {
     samplesToRead = compute_nrSamples(file, blocks);
-    fprintf(stderr, "samples to read %d\n", samplesToRead);
+    fprintf(stderr, "samples to read %lld\n", samplesToRead);
     samplesRead = 0;
     do
     {
@@ -186,10 +186,10 @@ bool XmlReader::handle_continuousButton()
   return continuous.load();
 }
 
-i32 XmlReader::compute_nrSamples(FILE * f, i32 blockNumber)
+i64 XmlReader::compute_nrSamples(FILE * f, i32 blockNumber)
 {
-  i32 nrElements = fd->blockList.at(blockNumber).nrElements;
-  i32 samplesToRead = 0;
+  i64 nrElements = fd->blockList.at(blockNumber).nrElements;
+  i64 samplesToRead = 0;
 
   (void)f;
   if (fd->blockList.at(blockNumber).typeofUnit == "Channel")
@@ -208,7 +208,7 @@ i32 XmlReader::compute_nrSamples(FILE * f, i32 blockNumber)
     samplesToRead = nrElements;
   }
 
-  fprintf(stderr, "%d samples have to be read, order is %s\n", samplesToRead, fd->iqOrder.toLatin1().data());
+  fprintf(stderr, "%lld samples have to be read, order is %s\n", samplesToRead, fd->iqOrder.toLatin1().data());
   return samplesToRead;
 }
 
