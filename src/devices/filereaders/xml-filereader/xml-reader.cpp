@@ -134,7 +134,7 @@ void XmlReader::run()
   for (i32 blocks = 0; blocks < fd->nrBlocks; blocks++)
   {
     samplesToRead = compute_nrSamples(file, blocks);
-    fprintf(stderr, "samples to read %lld\n", samplesToRead);
+    qDebug() << "samples to read" << samplesToRead;
     samplesRead = 0;
     do
     {
@@ -208,7 +208,7 @@ i64 XmlReader::compute_nrSamples(FILE * f, i32 blockNumber)
     samplesToRead = nrElements;
   }
 
-  fprintf(stderr, "%lld samples have to be read, order is %s\n", samplesToRead, fd->iqOrder.toLatin1().data());
+  qDebug() << samplesToRead << "samples to read, order is" << fd->iqOrder.toLatin1();
   return samplesToRead;
 }
 
