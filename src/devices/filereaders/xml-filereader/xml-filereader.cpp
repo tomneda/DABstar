@@ -98,7 +98,7 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   recordingTime->setText(theDescriptor->recordingTime);
 
   nrElementsDisplay->display((double)theDescriptor->blockList[0].nrElements);
-  fprintf(stderr, "nrElements = %lld\n", theDescriptor->blockList[0].nrElements);
+  qDebug() << "nrElements = " << theDescriptor->blockList[0].nrElements;
   //connect(continuousButton, SIGNAL (clicked()), this, SLOT (slot_handle_cb_loop_file(0)));
   connect(cbLoopFile, &QCheckBox::clicked, this, &XmlFileReader::slot_handle_cb_loop_file);
   running.store(false);

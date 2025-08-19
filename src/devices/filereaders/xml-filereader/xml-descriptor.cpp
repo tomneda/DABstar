@@ -26,22 +26,17 @@
 
 void XmlDescriptor::printDescriptor()
 {
-  fprintf(stderr, "sampleRate =	%d\n", sampleRate);
-  fprintf(stderr, "nrChannels	= %d\n", nrChannels);
-  fprintf(stderr, "bitsperChannel = %d\n", bitsperChannel);
-  fprintf(stderr, "container	= %s\n", container.toLatin1().data());
-  fprintf(stderr, "byteOrder	= %s\n", byteOrder.toLatin1().data());
-  fprintf(stderr, "iqOrder	= %s\n", iqOrder.toLatin1().data());
-  fprintf(stderr, "nrBlocks	= %d (%d)\n", nrBlocks, (i32)(blockList.size()));
-  for (i32 i = 0; i < (i32)blockList.size(); i++)
+  qDebug() << "sampleRate =" << sampleRate;
+  qDebug() << "nrChannels =" << nrChannels;
+  qDebug() << "bitsperChannel =" << bitsperChannel;
+  qDebug() << "container =" << container;
+  qDebug() << "byteOrder =" << byteOrder;
+  qDebug() << "iqOrder =" << iqOrder;
+  qDebug() << "nrBlocks =" << nrBlocks << "(" << (i32)(blockList.size()) << ")";
+
+  for (auto & i : blockList)
   {
-    fprintf(stderr,
-            ">>>   %d %lld %s %d %s\n",
-            blockList.at(i).blockNumber,
-            blockList.at(i).nrElements,
-            blockList.at(i).typeofUnit.toLatin1().data(),
-            blockList.at(i).frequency,
-            blockList.at(i).modType.toLatin1().data());
+    qDebug() << ">>>" << i.blockNumber << i.nrElements << i.typeofUnit << i.frequency << i.modType;
   }
 }
 
