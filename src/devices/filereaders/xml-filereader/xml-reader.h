@@ -67,10 +67,10 @@ private:
   RingBuffer<cf32> * sampleBuffer;
   XmlFileReader * parent;
   i32 nrElements;
-  i32 samplesToRead;
+  i64 samplesToRead;
   std::atomic<bool> running;
   void run();
-  i32 compute_nrSamples(FILE * f, i32 blockNumber);
+  i64 compute_nrSamples(FILE * f, i32 blockNumber);
   i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, i32));
   void readElements_IQ(FILE * f, cf32 *, i32 amount);
   void readElements_QI(FILE * f, cf32 *, i32 amount);
@@ -86,7 +86,7 @@ private:
   f32 mapTable[256];
 
 signals:
-  void signal_set_progress(i32, i32);
+  void signal_set_progress(i64, i64);
 };
 
 #endif

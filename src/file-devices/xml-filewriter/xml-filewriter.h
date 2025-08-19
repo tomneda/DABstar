@@ -34,45 +34,44 @@
 #include <complex>
 #include <QtXml>
 
-class Blocks	{
+class Blocks {
 public:
-			Blocks		() {}
-			~Blocks		() {}
-	i32		blockNumber;
-	i32		nrElements;
-	QString		typeofUnit;
-	i32		frequency;
-	QString		modType;
+  Blocks() {}
+  ~Blocks() {}
+  i32 blockNumber;
+  i32 nrElements;
+  QString typeofUnit;
+  i32 frequency;
+  QString modType;
 };
 
 class XmlFileWriter {
 public:
-		XmlFileWriter	(FILE *,
-                    i32,
-                    QString,
-                    i32,
-                    i32,
-                    QString,
-                    QString,
-                    QString);
-	                         
-			~XmlFileWriter		();
-	void		add			(std::complex<i16> *, i32);
-	void		add			(std::complex<u8> *, i32);
-	void		add			(std::complex<i8> *, i32);
-	void		computeHeader		();
+  XmlFileWriter(FILE *,
+                i32,
+                QString,
+                i32,
+                i32,
+                QString,
+                QString,
+                QString);
+  ~XmlFileWriter();
+  void add(std::complex<i16> *, i32);
+  void add(std::complex<u8> *, i32);
+  void add(std::complex<i8> *, i32);
+  void computeHeader();
 private:
-	i32		nrBits;
-	QString		container;
-	i32		sampleRate;
-	i32		frequency;
-	QString		deviceName;
-	QString		deviceModel;
-	QString		recorderVersion;
-	QString		create_xmltree		();
-	FILE		*xmlFile;
-	QString		byteOrder;
-	i32		nrElements;
+  i32 nrBits;
+  QString container;
+  i32 sampleRate;
+  i32 frequency;
+  QString deviceName;
+  QString deviceModel;
+  QString recorderVersion;
+  QString create_xmltree();
+  FILE *xmlFile;
+  QString byteOrder;
+  i64 nrElements;
 };
 
 #endif
