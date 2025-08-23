@@ -23,6 +23,7 @@
 #include	"airspyselect.h"
 #include	"xml-filewriter.h"
 #include	"device-exceptions.h"
+#include	"openfiledialog.h"
 
 static
 const	i32	EXTIO_NS = 8192;
@@ -711,52 +712,26 @@ void	AirspyHandler::set_xmlDump()
 	}
 }
 
-static inline bool	isValid (QChar c)
+bool AirspyHandler::setup_xmlDump()
 {
-	return c.isLetterOrNumber () || (c == '-');
-}
+  OpenFileDialog filenameFinder(airspySettings);
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr("AIRspy");
+  if (xmlDumper == nullptr)
+  {
+    return false;
+  }
 
-bool	AirspyHandler::setup_xmlDump ()
-{
-	QTime	theTime;
-	QDate	theDate;
-	QString saveDir = airspySettings->value (sSettingSampleStorageDir,
-                                           QDir::homePath ()).toString ();
-    if ((saveDir != "") && (!saveDir.endsWith ("/")))
-       saveDir += "/";
-	QString channel	= airspySettings->value("channel", "xx").toString();
-    QString timeString = theDate.currentDate().toString() + "-" +
-	                     theTime.currentTime().toString();
-	for (i32 i = 0; i < timeString.length (); i ++)
-	   if (!isValid (timeString.at (i)))
-	      timeString.replace (i, 1, "-");
-    QString suggestedFileName =
-                saveDir + "AIRspy" + "-" + channel + "-" + timeString;
-	QString fileName =
-	           QFileDialog::getSaveFileName (nullptr,
-	                                         tr ("Save file ..."),
-	                                         suggestedFileName + ".uff",
-	                                         tr ("Xml (*.uff)"));
-    fileName        = QDir::toNativeSeparators (fileName);
-    xmlDumper	= fopen (fileName.toUtf8().data(), "w");
-	if (xmlDumper == nullptr)
-	   return false;
+  xmlWriter = new XmlFileWriter(xmlDumper,
+                                12,
+                                "int16",
+                                selectedRate,
+                                getVFOFrequency(),
+                                "AIRspy",
+                                "I",
+                                recorderVersion);
+  dumping.store(true);
 
-	xmlWriter = new XmlFileWriter(xmlDumper,
-                                  12,
-                                  "int16",
-                                  selectedRate,
-                                  getVFOFrequency (),
-                                  "AIRspy",
-                                  "I",
-                                  recorderVersion);
-	dumping.store (true);
-
-	QString dumper	= QDir::fromNativeSeparators (fileName);
-	i32 x		= dumper.lastIndexOf ("/");
-    saveDir		= dumper.remove (x, dumper.size () - x);
-    airspySettings	->setValue (sSettingSampleStorageDir, saveDir);
-	return true;
+  return true;
 }
 
 void	AirspyHandler::close_xmlDump ()

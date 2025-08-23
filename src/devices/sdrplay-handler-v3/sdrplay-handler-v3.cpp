@@ -46,6 +46,7 @@
 #include  "RspDx-handler.h"
 
 #include  "device-exceptions.h"
+#include  "openfiledialog.h"
 #include  <chrono>
 #include  <thread>
 
@@ -378,50 +379,17 @@ void SdrPlayHandler_v3::set_antennaSelect(i32 n)
   set_selectAntenna(antennaSelector->currentText());
 }
 
-static inline bool isValid(QChar c)
-{
-  return c.isLetterOrNumber() || (c == '-');
-}
-
 bool SdrPlayHandler_v3::setup_xmlDump()
 {
-  QTime theTime;
-  QDate theDate;
   QSettings * const sdrplaySettings = &Settings::Storage::instance();
-  QString saveDir = sdrplaySettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
-  if ((saveDir != "") && (!saveDir.endsWith("/")))
-  {
-    saveDir += "/";
-  }
-
-  QString channel = sdrplaySettings->value("channel", "xx").toString();
-  QString timeString = theDate.currentDate().toString() + "-" + theTime.currentTime().toString();
-  for (i32 i = 0; i < timeString.length(); i++)
-  {
-    if (!isValid(timeString.at(i)))
-    {
-      timeString.replace(i, 1, "-");
-    }
-  }
-
-  const bool useNativeFileDialog = Settings::Config::cbUseNativeFileDialog.read().toBool();
-  QString suggestedFileName = saveDir + deviceModel + "-" + channel + "-" + timeString;
-  QString fileName = QFileDialog::getSaveFileName(nullptr, tr("Save file ..."), suggestedFileName + ".uff", tr("Xml (*.uff)"), nullptr,
-                                                  (useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog));
-  fileName = QDir::toNativeSeparators(fileName);
-  xmlDumper = fopen(fileName.toUtf8().data(), "wb");
+  OpenFileDialog filenameFinder(sdrplaySettings);
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr(deviceModel);
   if (xmlDumper == nullptr)
-  {
     return false;
-  }
 
   xmlWriter = new XmlFileWriter(xmlDumper, nrBits, "int16", 2048000, vfoFrequency, "SDRplay", deviceModel, recorderVersion);
   dumping.store(true);
 
-  QString dumper = QDir::fromNativeSeparators(fileName);
-  i32 x = dumper.lastIndexOf("/");
-  saveDir = dumper.remove(x, dumper.size() - x);
-  sdrplaySettings->setValue(sSettingSampleStorageDir, saveDir);
   return true;
 }
 

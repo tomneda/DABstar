@@ -41,6 +41,7 @@
 #include "hackrf-handler.h"
 #include "xml-filewriter.h"
 #include "device-exceptions.h"
+#include "openfiledialog.h"
 #include <string.h>
 
 #define CHECK_ERR_RETURN(x_)              if (!check_err(x_, __FUNCTION__, __LINE__)) return
@@ -408,35 +409,10 @@ void HackRfHandler::slot_xml_dump()
   }
 }
 
-static inline bool isValid(QChar c)
-{
-  return c.isLetterOrNumber() || (c == '-');
-}
-
 bool HackRfHandler::setup_xml_dump()
 {
-  QString saveDir = mpHackrfSettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
-
-  if ((saveDir != "") && (!saveDir.endsWith("/")))
-  {
-    saveDir += "/";
-  }
-
-  QString channel = mpHackrfSettings->value("channel", "xx").toString();
-  QString timeString = QDate::currentDate().toString() + "-" + QTime::currentTime().toString();
-
-  for (i32 i = 0; i < timeString.length(); i++)
-  {
-    if (!isValid(timeString.at(i)))
-    {
-      timeString.replace(i, 1, '-');
-    }
-  }
-
-  QString suggestedFileName = saveDir + "hackrf" + "-" + channel + "-" + timeString;
-  QString fileName = QFileDialog::getSaveFileName(nullptr, tr("Save file ..."), suggestedFileName + ".uff", tr("Xml (*.uff)"));
-  fileName = QDir::toNativeSeparators(fileName);
-  mpXmlDumper = fopen(fileName.toUtf8().data(), "w");
+  OpenFileDialog filenameFinder(mpHackrfSettings);
+  mpXmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr("hackrf");
   if (mpXmlDumper == nullptr)
   {
     return false;
@@ -444,11 +420,6 @@ bool HackRfHandler::setup_xml_dump()
 
   mpXmlWriter = new XmlFileWriter(mpXmlDumper, 8, "int8", 2048000, getVFOFrequency(), "Hackrf", "--", mRecorderVersion);
   mDumping.store(true);
-
-  QString dumper = QDir::fromNativeSeparators(fileName);
-  i32 x = dumper.lastIndexOf("/");
-  saveDir = dumper.remove(x, dumper.size() - x);
-  mpHackrfSettings->setValue(sSettingSampleStorageDir, saveDir);
 
   return true;
 }

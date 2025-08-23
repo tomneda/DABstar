@@ -49,6 +49,7 @@ public:
   FILE * open_content_dump_file_ptr(const QString & iChannelName);
   FILE * open_frame_dump_file_ptr(const QString & iServiceName, bool iIsAAC);
   FILE * open_log_file_ptr();
+  FILE * open_raw_dump_xmlfile_ptr(const QString & iDeviceName);
   SNDFILE * open_audio_dump_sndfile_ptr(const QString & iServiceName);
   SNDFILE * open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName);
   QString get_audio_dump_file_name(const QString & iServiceName);

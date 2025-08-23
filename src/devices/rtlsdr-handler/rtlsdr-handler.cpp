@@ -35,6 +35,7 @@
 #include	"rtl-sdr.h"
 #include	"xml-filewriter.h"
 #include	"device-exceptions.h"
+#include	"openfiledialog.h"
 
 #define	DEFAULT_FREQUENCY (kHz (220000))
 
@@ -756,67 +757,29 @@ void RtlSdrHandler::set_xmlDump()
 	}
 }
 
-static inline bool isValid(QChar c)
-{
-	return c.isLetterOrNumber() || (c == '-');
-}
-
 bool RtlSdrHandler::setup_xmlDump()
 {
-    QTime	theTime;
-    QDate	theDate;
-    QString saveDir = rtlsdrSettings->value("saveDir_xmlDump",
-	                                   QDir::homePath()).toString();
+  OpenFileDialog filenameFinder(rtlsdrSettings);
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr(deviceModel);
+  if (xmlDumper == nullptr)
+    return false;
 
-	if (xml_dumping.load())
-	    return false;
+  xmlWriter = new XmlFileWriter(xmlDumper,
+                                8,
+                                "uint8",
+                                INPUT_RATE,
+                                getVFOFrequency(),
+                                "rtlsdr",
+                                deviceModel,
+                                recorderVersion);
+  xml_dumping.store(true);
 
-	if ((saveDir != "") && (!saveDir.endsWith("/")))
-	    saveDir += "/";
-
-	QString channel	= rtlsdrSettings->value("channel", "xx").toString();
-	QString timeString = theDate.currentDate().toString() + "-" +
-	                     theTime.currentTime().toString();
-	for (i32 i = 0; i < timeString.length(); i ++)
-	    if (!isValid(timeString.at(i)))
-	        timeString.replace(i, 1, '-');
-	QString suggestedFileName =
-	            saveDir + deviceModel + "-" + channel + "-" + timeString;
-	QString fileName =
-	           QFileDialog::getSaveFileName(nullptr,
-	                                        tr("Save file ..."),
-	                                        suggestedFileName + ".uff",
-	                                        tr("Xml (*.uff)"),
-	                                        nullptr,
-                                            QFileDialog::DontUseNativeDialog);
-	fileName = QDir::toNativeSeparators(fileName);
-	xmlDumper = fopen(fileName.toUtf8().data(), "wb");
-	if (xmlDumper == nullptr)
-	    return false;
-
-	xmlWriter = new XmlFileWriter(xmlDumper,
-	                               8,
-	                               "uint8",
-	                               INPUT_RATE,
-	                               getVFOFrequency(),
-	                               "rtlsdr",
-	                               deviceModel,
-	                               recorderVersion);
-	xml_dumping.store(true);
-
-	QString	dumper = QDir::fromNativeSeparators(fileName);
-	i32 x = dumper.lastIndexOf("/");
-	saveDir	= dumper.remove(x, dumper.length() - x);
-	rtlsdrSettings->setValue("saveDir_xmlDump", saveDir);
-
-	return true;
+  return true;
 }
 
 void RtlSdrHandler::close_xmlDump()
 {
-	if (!xml_dumping.load())
-	    return;
-	if (xmlDumper == nullptr)	// cannot happen
+	if (xmlDumper == nullptr)	// this can happen !!
 	    return;
 	xml_dumping.store(false);
 	usleep(1000);

@@ -276,3 +276,20 @@ void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const
   }
 }
 
+FILE * OpenFileDialog::open_raw_dump_xmlfile_ptr(const QString & iDeviceName)
+{
+  QString channel = Settings::Main::varChannel.read().toString();
+  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + channel.trimmed(), sSettingSampleStorageDir, "Xml", ".uff");
+  if (fileName.isEmpty())
+  {
+    return nullptr;
+  }
+
+  FILE * theFile = open_file(fileName, "wb");
+  if (theFile == nullptr)
+  {
+    qDebug() << "Cannot open Xml file " << fileName;
+  }
+
+  return theFile;
+}
