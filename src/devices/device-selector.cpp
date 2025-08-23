@@ -236,7 +236,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 #ifdef HAVE_RTL_TCP
   if (iDeviceName == DN_RTLTCP)
   {
-    inputDevice = std::make_unique<RtlTcpClient>(mpSettings);
+    inputDevice = std::make_unique<RtlTcpClient>(mpSettings, mVersionStr);
   }
   else
 #endif

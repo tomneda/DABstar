@@ -23,35 +23,37 @@
  *    A simple client for rtl_tcp
  */
 
-#include	<QSettings>
-#include	<QLabel>
-#include	<QMessageBox>
-#include	<QHostAddress>
-#include	<QTcpSocket>
-#include	<QFileDialog>
-#include	<QDir>
-#include	"rtl_tcp_client.h"
-#include	"rtl-sdr.h"
-#include	"device-exceptions.h"
+#include    <QSettings>
+#include    <QLabel>
+#include    <QMessageBox>
+#include    <QHostAddress>
+#include    <QTcpSocket>
+#include    <QDir>
+#include    "rtl_tcp_client.h"
+#include    "rtl-sdr.h"
+#include    "xml-filewriter.h"
+#include    "device-exceptions.h"
+#include    "openfiledialog.h"
 
 #if !defined(__MINGW32__) && !defined(_WIN32)
   #include <netinet/in.h>  // for macro htonl
 #endif
 
 
-#define	DEFAULT_FREQUENCY (kHz(220000))
+#define DEFAULT_FREQUENCY (kHz(220000))
 
 typedef struct { /* structure size must be multiple of 2 bytes */
-	char magic[4];
-	u32 tuner_type;
-	u32 tuner_gain_count;
+    char magic[4];
+    u32 tuner_type;
+    u32 tuner_gain_count;
 } dongle_info_t;
 
-RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
+RtlTcpClient::RtlTcpClient(QSettings *s, const QString &recorderVersion):myFrame(nullptr)
 {
   for(i32 i = 0; i < 256; i++)
-	mapTable[i] = ((f32)i - 127.38) / 128.0;
+    mapTable[i] = ((f32)i - 127.38) / 128.0;
   remoteSettings = s;
+  this->recorderVersion = recorderVersion;
   remoteSettings->beginGroup("RtlTcpClient");
   i32 x = remoteSettings->value("position-x", 100).toInt();
   i32 y = remoteSettings->value("position-y", 100).toInt();
@@ -93,7 +95,11 @@ RtlTcpClient::RtlTcpClient(QSettings *s):myFrame(nullptr)
   connect(tcp_bandwidth, SIGNAL(valueChanged(int)), this, SLOT(setBandwidth(int)));
   connect(tcp_port, SIGNAL(valueChanged(int)), this, SLOT(setPort(int)));
   connect(tcp_address, SIGNAL(returnPressed()), this, SLOT(setAddress()));
+  connect(xml_dumpButton, SIGNAL(clicked()), this, SLOT(set_xmlDump()));
   theState->setText("waiting to start");
+
+  xmlDumper = nullptr;
+  xml_dumping.store(false);
 }
 
 RtlTcpClient::~RtlTcpClient()
@@ -101,9 +107,9 @@ RtlTcpClient::~RtlTcpClient()
   remoteSettings->beginGroup("RtlTcpClient");
   if (connected) // close previous connection
   {
-	stopReader();
+    stopReader();
     remoteSettings->setValue("remote-server", toServer.peerAddress().toString());
-	remoteSettings->setValue("RtlTcpClient_port", basePort);
+    remoteSettings->setValue("RtlTcpClient_port", basePort);
   }
   remoteSettings->setValue("position-x", myFrame.pos().x());
   remoteSettings->setValue("position-y", myFrame.pos().y());
@@ -122,15 +128,15 @@ void RtlTcpClient::wantConnect()
 {
 
   if (connected)
-	return;
+    return;
 
   QString s = ipAddress;
   qDebug().noquote().nospace() << "Connect to " << s << ":" << basePort;
   toServer.connectToHost(QHostAddress(s), basePort);
   if (!toServer.waitForConnected(2000))
   {
-	QMessageBox::warning(&myFrame, tr("sdr"), tr("connection failed\n"));
-	return;
+    QMessageBox::warning(&myFrame, tr("sdr"), tr("connection failed\n"));
+    return;
   }
   connected = true;
   theState->setText("connected");
@@ -143,21 +149,21 @@ void RtlTcpClient::wantConnect()
   dongle_info_received = false;
 }
 
-i32	RtlTcpClient::defaultFrequency()
+i32 RtlTcpClient::defaultFrequency()
 {
-  return DEFAULT_FREQUENCY;	// choose any legal frequency here
+  return DEFAULT_FREQUENCY; // choose any legal frequency here
 }
 
 void RtlTcpClient::setVFOFrequency(i32 newFrequency)
 {
   if (!connected)
-	return;
+    return;
   vfoFrequency = newFrequency;
   // here the command to set the frequency
   sendVFO(newFrequency);
 }
 
-i32	RtlTcpClient::getVFOFrequency()
+i32 RtlTcpClient::getVFOFrequency()
 {
   return vfoFrequency;
 }
@@ -165,7 +171,7 @@ i32	RtlTcpClient::getVFOFrequency()
 bool RtlTcpClient::restartReader(i32 freq)
 {
   if (!connected)
-	return true;
+    return true;
   vfoFrequency = freq;
   // here the command to set the frequency
   sendVFO(freq);
@@ -176,32 +182,33 @@ bool RtlTcpClient::restartReader(i32 freq)
 void RtlTcpClient::stopReader()
 {
   if (!connected)
-	return;
+    return;
   disconnect(&toServer, SIGNAL(readyRead(void)), this, SLOT(readData(void)));
+  close_xmlDump();
 }
 
 //
-//	The brave old getSamples.For the dab stick, we get
-//	size: still in I/Q pairs, but we have to convert the data from
-//	u8 to DSPCOMPLEX *
-i32	RtlTcpClient::getSamples(cf32 *V, i32 size)
+//  The brave old getSamples.For the dab stick, we get
+//  size: still in I/Q pairs, but we have to convert the data from
+//  u8 to DSPCOMPLEX *
+i32 RtlTcpClient::getSamples(cf32 *V, i32 size)
 {
   i32 amount = 0;
   amount = _I_Buffer->get_data_from_ring_buffer(V, size);
   return amount;
 }
 
-i32	RtlTcpClient::Samples()
+i32 RtlTcpClient::Samples()
 {
   return _I_Buffer->get_ring_buffer_read_available();
 }
 
-i16	RtlTcpClient::bitDepth()
+i16 RtlTcpClient::bitDepth()
 {
   return 8;
 }
 
-//	These functions are typical for network use
+//  These functions are typical for network use
 void RtlTcpClient::readData()
 {
   if(!dongle_info_received)
@@ -210,33 +217,34 @@ void RtlTcpClient::readData()
     if (toServer.bytesAvailable() >= (qint64)sizeof(dongle_info))
     {
       toServer.read((char *)&dongle_info, sizeof(dongle_info));
-	  dongle_info_received = true;
-	  if(memcmp(dongle_info.magic, "RTL0", 4) == 0)
-	  {
-	    switch(htonl(dongle_info.tuner_type))
-	    {
-		  case RTLSDR_TUNER_E4000:
-			tuner_type->setText("E4000");
-			break;
-		  case RTLSDR_TUNER_FC0012:
-			tuner_type->setText("FC0012");
-			break;
-		  case RTLSDR_TUNER_FC0013:
-			tuner_type->setText("FC0013");
-			break;
-		  case RTLSDR_TUNER_FC2580:
-			tuner_type->setText("FC2580");
-			break;
-		  case RTLSDR_TUNER_R820T:
-			tuner_type->setText("R820T");
-			break;
-		  case RTLSDR_TUNER_R828D:
-			tuner_type->setText("R828D");
-			break;
-  		  default:
-			tuner_type->setText("unknown");
-		}
-	  }
+      dongle_info_received = true;
+      if(memcmp(dongle_info.magic, "RTL0", 4) == 0)
+      {
+        switch(htonl(dongle_info.tuner_type))
+        {
+          case RTLSDR_TUNER_E4000:
+            tuner_text = "E4000";
+            break;
+          case RTLSDR_TUNER_FC0012:
+            tuner_text = "FC0012";
+            break;
+          case RTLSDR_TUNER_FC0013:
+            tuner_text = "FC0013";
+            break;
+          case RTLSDR_TUNER_FC2580:
+            tuner_text = "FC2580";
+            break;
+          case RTLSDR_TUNER_R820T:
+            tuner_text = "R820T";
+            break;
+          case RTLSDR_TUNER_R828D:
+            tuner_text = "R828D";
+            break;
+          default:
+            tuner_text = "unknown";
+        }
+        tuner_type->setText(tuner_text);
+      }
     }
   }
   if(dongle_info_received)
@@ -247,35 +255,37 @@ void RtlTcpClient::readData()
     while (toServer.bytesAvailable() > 8192)
     {
       toServer.read((char *)buffer, 8192);
-	  for (i32 i = 0; i < 4096; i ++)
- 	    localBuffer[i] = cf32(mapTable[buffer[2 * i]], mapTable[buffer[2 * i + 1]]);
+      for (i32 i = 0; i < 4096; i ++)
+        localBuffer[i] = cf32(mapTable[buffer[2 * i]], mapTable[buffer[2 * i + 1]]);
       _I_Buffer->put_data_into_ring_buffer(localBuffer, 4096);
+      if (xml_dumping.load())
+        xmlWriter->add((std::complex<uint8_t> *)buffer, 4096);
     }
   }
 }
 
-//	commands are packed in 5 bytes, one "command byte"
-//	and an integer parameter
+//  commands are packed in 5 bytes, one "command byte"
+//  and an integer parameter
 struct command {
   u8 cmd;
   u32 param;
 }__attribute__((packed));
 
-#define	ONE_BYTE	8
+#define ONE_BYTE    8
 
 void RtlTcpClient::sendCommand(u8 cmd, i32 param)
 {
   if(connected)
   {
-	QByteArray datagram;
+    QByteArray datagram;
 
-	datagram.resize(5);
-	datagram[0] = cmd;		// command to set rate
-	datagram[4] = param & 0xFF;  //lsb last
-	datagram[3] = (param >> ONE_BYTE) & 0xFF;
-	datagram[2] = (param >> (2 * ONE_BYTE)) & 0xFF;
-	datagram[1] = (param >> (3 * ONE_BYTE)) & 0xFF;
-	toServer.write(datagram.data(), datagram.size());
+    datagram.resize(5);
+    datagram[0] = cmd;      // command to set rate
+    datagram[4] = param & 0xFF;  //lsb last
+    datagram[3] = (param >> ONE_BYTE) & 0xFF;
+    datagram[2] = (param >> (2 * ONE_BYTE)) & 0xFF;
+    datagram[1] = (param >> (3 * ONE_BYTE)) & 0xFF;
+    toServer.write(datagram.data(), datagram.size());
   }
 }
 
@@ -296,7 +306,7 @@ void RtlTcpClient::sendGain(i32 gain)
   sendCommand(0x04, 10 * gain);
 }
 
-//	correction is in ppm
+//  correction is in ppm
 void RtlTcpClient::set_fCorrection(f64 ppm)
 {
   Ppm = ppm;
@@ -308,15 +318,15 @@ void RtlTcpClient::setAgcMode(i32 agc)
 {
   AgcMode = agc;
   if(agc == 0)
-	hw_agc->setChecked(true);
+    hw_agc->setChecked(true);
   else if(agc == 1)
-	manual->setChecked(true);
+    manual->setChecked(true);
   else
-	sw_agc->setChecked(true);
+    sw_agc->setChecked(true);
   sendCommand(0x08, agc == 0);
   sendCommand(0x03, agc);
   if(agc == 1)
-  	sendGain(Gain);
+    sendGain(Gain);
   tcp_gain->setEnabled(agc == 1);
   gainLabel->setEnabled(agc == 1);
 }
@@ -348,17 +358,17 @@ void RtlTcpClient::setDisconnect()
 {
   if (connected) // close previous connection
   {
-	stopReader();
-	remoteSettings->beginGroup("RtlTcpClient");
+    stopReader();
+    remoteSettings->beginGroup("RtlTcpClient");
     remoteSettings->setValue("remote-server", toServer.peerAddress().toString());
-	remoteSettings->setValue("RtlTcpClient_port", basePort);
-	remoteSettings->setValue("RtlTcpClient-gain", Gain);
-	remoteSettings->setValue("RtlTcpClient-ppm", Ppm);
-	remoteSettings->setValue("RtlTcpClient-agc", AgcMode);
+    remoteSettings->setValue("RtlTcpClient_port", basePort);
+    remoteSettings->setValue("RtlTcpClient-gain", Gain);
+    remoteSettings->setValue("RtlTcpClient-ppm", Ppm);
+    remoteSettings->setValue("RtlTcpClient-agc", AgcMode);
     remoteSettings->setValue("RtlTcpClient-biast", BiasT);
     remoteSettings->setValue("RtlTcpClient-bw", Bandwidth);
-	remoteSettings->endGroup();
-	toServer.close();
+    remoteSettings->endGroup();
+    toServer.close();
   }
   connected = false;
   theState->setText("disconnected");
@@ -406,5 +416,47 @@ void RtlTcpClient::handle_sw_agc()
 void RtlTcpClient::handle_manual()
 {
   setAgcMode(1);
+}
+
+void RtlTcpClient::set_xmlDump()
+{
+  if (!xml_dumping.load())
+  {
+    if (setup_xmlDump())
+    {
+      xml_dumpButton->setText("writing xml file");
+    }
+  }
+  else
+  {
+    close_xmlDump();
+    xml_dumpButton->setText("Dump to xml");
+  }
+}
+
+bool RtlTcpClient::setup_xmlDump()
+{
+  OpenFileDialog filenameFinder(remoteSettings);
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr(tuner_text);
+  if (xmlDumper == nullptr)
+    return false;
+
+  xmlWriter = new XmlFileWriter(xmlDumper, 8, "uint8", INPUT_RATE,
+                                getVFOFrequency(), deviceName(),
+                                tuner_text, recorderVersion);
+  xml_dumping.store(true);
+  return true;
+}
+
+void RtlTcpClient::close_xmlDump()
+{
+  if (xmlDumper == nullptr)
+    return;
+  xml_dumping.store(false);
+  usleep(1000);
+  xmlWriter->computeHeader();
+  delete xmlWriter;
+  fclose(xmlDumper);
+  xmlDumper = nullptr;
 }
 

@@ -48,11 +48,13 @@
 #include  "ringbuffer.h"
 #include  "ui_rtl_tcp-widget.h"
 
+class XmlFileWriter;
+
 class RtlTcpClient final : public QObject, public IDeviceHandler, Ui_rtl_tcp_widget
 {
 Q_OBJECT
 public:
-  explicit RtlTcpClient(QSettings *);
+  explicit RtlTcpClient(QSettings *, const QString & recorderVersion);
   ~RtlTcpClient() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
@@ -92,10 +94,16 @@ private:
   QTcpSocket toServer;
   qint64 basePort;
   i32 vfoOffset = 0;
-  bool dumping;
   FILE * dumpfilePointer;
   f32 mapTable[256];
   bool dongle_info_received = false;
+  QString recorderVersion;
+  QString tuner_text;
+  FILE * xmlDumper;
+  XmlFileWriter * xmlWriter;
+  std::atomic<bool> xml_dumping;
+  bool setup_xmlDump();
+  void close_xmlDump();
 
 private slots:
   void sendGain(i32);
@@ -110,6 +118,7 @@ private slots:
   void handle_hw_agc();
   void handle_sw_agc();
   void handle_manual();
+  void set_xmlDump();
 };
 
 #endif
