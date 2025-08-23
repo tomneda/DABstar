@@ -35,6 +35,7 @@
 #include  <QThread>
 #include  <QFrame>
 #include  <QSettings>
+#include  <QLibrary>
 #include  <atomic>
 #include  <vector>
 #include  "dab-constants.h"
@@ -44,15 +45,9 @@
 #include  "lime-widget.h"
 #include  "fir-filters.h"
 
-#ifdef __MINGW32__
-#define GETPROCADDRESS  GetProcAddress
-#else
-#define GETPROCADDRESS  dlsym
-#endif
-
 class XmlFileWriter;
 
-//	DLL and ".so" function prototypes
+//  DLL and ".so" function prototypes
 typedef i32  (* pfn_LMS_GetDeviceList)(lms_info_str_t * dev_list);
 typedef i32  (* pfn_LMS_Open)(lms_device_t ** device, const lms_info_str_t info, void * args);
 typedef i32  (* pfn_LMS_Close)(lms_device_t *);
@@ -112,8 +107,8 @@ private:
   lms_device_t * theDevice;
   lms_name_t antennas[10];
   bool load_limeFunctions();
-  HINSTANCE Handle;
-  bool libraryLoaded;
+  QLibrary * phandle;
+  bool libraryLoaded = false;
   lms_stream_meta_t meta;
   lms_stream_t stream;
   void run();
@@ -130,8 +125,7 @@ private:
   bool filtering;
   LowPassFIR theFilter;
   i32 currentDepth;
-  //	imported functions
-public:
+  //    imported functions
   pfn_LMS_GetDeviceList LMS_GetDeviceList;
   pfn_LMS_Open LMS_Open;
   pfn_LMS_Close LMS_Close;
