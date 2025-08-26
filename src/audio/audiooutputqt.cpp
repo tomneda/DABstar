@@ -73,9 +73,9 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
 
   if (!mCurrentAudioDevice.isFormatSupported(mAudioFormat))
   {
-    qWarning(sLogAudioOutput) << "QAudioDevice thinks that the needed audio format is not supported, ...";
-    qWarning(sLogAudioOutput) << "... hope we have luck nevertheless (otherwise use Qt <= 6.8.1)";
-    qCInfo(sLogAudioOutput) << "Needed audio format:" << mAudioFormat;
+    qCDebug(sLogAudioOutput) << "QAudioDevice thinks that the needed audio format is not supported, ...";
+    qCDebug(sLogAudioOutput) << "... hope we have luck nevertheless (otherwise use Qt <= 6.8.1)";
+    qCDebug(sLogAudioOutput) << "Needed audio format:" << mAudioFormat;
     _print_audio_device_formats(mCurrentAudioDevice);
   }
 
