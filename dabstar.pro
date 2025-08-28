@@ -50,10 +50,11 @@ CONFIG		+= spyServer
 CONFIG		+= rtl_tcp
 CONFIG		+= dabstick
 #CONFIG		+= sdrplay-v2
-#CONFIG		+= pluto
+CONFIG		+= pluto
 CONFIG		+= sdrplay-v3
 CONFIG		+= hackrf
-#CONFIG		+= lime
+CONFIG		+= lime
+#CONFIG		+= soapy
 CONFIG		+= sse2
 #CONFIG		+= avx2
 #CONFIG		+= fdk-aac
@@ -455,37 +456,27 @@ soapy {
 	DEPENDPATH	+= src/devices/soapy
 	INCLUDEPATH     += src/devices/soapy
         HEADERS         += src/devices/soapy/soapy-handler.h \
-	                   src/devices/soapy/soapy-converter.h
+	                   src/devices/soapy/soapy-worker.h \
+	                   src/devices/soapy/soapy_CS8.h \
+	                   src/devices/soapy/soapy_CS16.h \
+	                   src/devices/soapy/soapy_CF32.h
         SOURCES         += src/devices/soapy/soapy-handler.cpp \
-	                   src/devices/soapy/soapy-converter.cpp
+	                   src/devices/soapy/soapy-worker.cpp \
+	                   src/devices/soapy/soapy_CS8.cpp \
+	                   src/devices/soapy/soapy_CS16.cpp \
+	                   src/devices/soapy/soapy_CF32.cpp
         FORMS           += src/devices/soapy/soapy-widget.ui
 	LIBS		+= -lSoapySDR -lm
-}
-
-pluto-rxtx	{
-	DEFINES		+= HAVE_PLUTO_RXTX
-	QT		+= network
-	INCLUDEPATH	+= src/devices/pluto-rxtx
-	INCLUDEPATH	+= src/devices/pluto-rxtx/dab-streamer
-	HEADERS		+= src/devices/pluto-rxtx/dabFilter.h
-	HEADERS		+= src/devices/pluto-rxtx/pluto-rxtx-handler.h 
-	HEADERS		+= src/devices/pluto-rxtx/dab-streamer/dab-streamer.h 
-	HEADERS		+= src/devices/pluto-rxtx/dab-streamer/up-filter.h
-	SOURCES		+= src/devices/pluto-rxtx/pluto-rxtx-handler.cpp 
-	SOURCES		+= src/devices/pluto-rxtx/dab-streamer/dab-streamer.cpp
-	SOURCES		+= src/devices/pluto-rxtx/dab-streamer/up-filter.cpp
-	FORMS		+= src/devices/pluto-rxtx/pluto-rxtx-widget.ui
-	LIBS		+= -liio -lad9361
 }
 
 pluto	{
 	DEFINES		+= HAVE_PLUTO
 	QT		+= network
-	INCLUDEPATH	+= src/devices/pluto-handler
-	HEADERS		+= src/devices/pluto-handler/dabFilter.h
-	HEADERS		+= src/devices/pluto-handler/pluto-handler.h
-	SOURCES		+= src/devices/pluto-handler/pluto-handler.cpp
-	FORMS		+= src/devices/pluto-handler/pluto-widget.ui
+	INCLUDEPATH	+= src/devices/pluto-handler-2
+	HEADERS		+= src/devices/pluto-handler-2/dabFilter.h
+	HEADERS		+= src/devices/pluto-handler-2/pluto-handler.h
+	SOURCES		+= src/devices/pluto-handler-2/pluto-handler.cpp
+	FORMS		+= src/devices/pluto-handler-2/pluto-widget.ui
 }
 
 elad-device	{

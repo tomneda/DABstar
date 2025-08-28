@@ -18,7 +18,7 @@
   #include  "sdrplay-handler-v3.h"
 #endif
 #ifdef  __MINGW32__
-#ifdef	HAVE_EXTIO
+#ifdef  HAVE_EXTIO
   #include  "extio-handler.h"
 #endif
 #endif
@@ -38,17 +38,14 @@
 #ifdef  HAVE_LIME
   #include  "lime-handler.h"
 #endif
-#ifdef  HAVE_PLUTO_2
-  #include  "pluto-handler-2.h"
-#elif  HAVE_PLUTO_RXTX
-  #include  "pluto-rxtx-handler.h"
-  #include  "dab-streamer.h"
+#ifdef  HAVE_PLUTO
+  #include  "pluto-handler.h"
 #endif
 #ifdef  HAVE_SOAPY
-  #include	"soapy-handler.h"
+  #include  "soapy-handler.h"
 #endif
 #ifdef  HAVE_ELAD
-  #include	"elad-handler.h"
+  #include  "elad-handler.h"
 #endif
 #ifdef  HAVE_UHD
   #include  "uhd-handler.h"
@@ -72,7 +69,6 @@ static const char DN_AIRSPY[]     = "Airspy";
 static const char DN_SPYSERVER[]  = "SpyServer (experimental)";
 static const char DN_HACKRF[]     = "HackRf";
 static const char DN_LIMESDR[]    = "LimeSDR";
-static const char DN_PLUTO_RXTX[] = "Pluto-RxTx";
 static const char DN_PLUTO[]      = "Pluto";
 static const char DN_SOAPY[]      = "Soapy";
 static const char DN_EXTIO[]      = "ExtIO";
@@ -115,9 +111,7 @@ QStringList DeviceSelector::get_device_name_list() const
 #ifdef  HAVE_LIME
   sl << DN_LIMESDR;
 #endif
-#ifdef  HAVE_PLUTO_RXTX
-  sl << DN_PLUTO_RXTX;
-#elif  HAVE_PLUTO_2
+#ifdef  HAVE_PLUTO
   sl << DN_PLUTO;
 #endif
 #ifdef  HAVE_SOAPY
@@ -217,19 +211,10 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   }
   else
 #endif
-#ifdef  HAVE_PLUTO_2
-  if (s == DN_PLUTO)
+#ifdef  HAVE_PLUTO
+  if (iDeviceName == DN_PLUTO)
   {
-    inputDevice = std::make_unique<plutoHandler>(mpSettings, version);
-  }
-  else
-#endif
-#ifdef  HAVE_PLUTO_RXTX
-  if (s == DN_PLUTO_RXTX)
-  {
-    inputDevice = std::make_unique<plutoHandler>(mpSettings, version, fmFrequency);
-    streamerOut = new dabStreamer(48000, 192000, (plutoHandler *)inputDevice);
-    ((plutoHandler *)inputDevice)->startTransmitter(fmFrequency);
+    inputDevice = std::make_unique<PlutoHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
@@ -241,7 +226,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   else
 #endif
 #ifdef  HAVE_ELAD
-  if (s == DN_ELAD)
+  if (iDeviceName == DN_ELAD)
   {
     inputDevice = std::make_unique<eladHandler>(mpSettings);
   }
@@ -255,7 +240,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   else
 #endif
 #ifdef  HAVE_SOAPY
-  if (s == DN_SOAPY)
+  if (iDeviceName == DN_SOAPY)
   {
     inputDevice = std::make_unique<soapyHandler>(mpSettings);
   }
@@ -263,7 +248,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 #endif
 #ifdef  HAVE_EXTIO
   // extio is - in its current settings - for Windows, it is a wrap around the dll
-  if (s == DN_EXTIO)
+  if (iDeviceName == DN_EXTIO)
   {
     inputDevice = std::make_unique<extioHandler>(mpSettings);
   }
@@ -364,4 +349,3 @@ bool DeviceSelector::reset_file_input_last_file(const QString & iDeviceName)
   }
   return false;
 }
-
