@@ -29,7 +29,7 @@ tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer, i16
   myRadioInterface = mr;
   this->dataBuffer = dataBuffer;
   //	for the moment we assume appType 4
-  connect(this, &tdc_dataHandler::bytesOut, myRadioInterface,  &DabRadio::slot_handle_tdc_data);
+  connect(this, &tdc_dataHandler::signal_bytes_out, myRadioInterface,  &DabRadio::slot_handle_tdc_data);
 }
 
 #define  swap(a)  (((a) << 8) | ((a) >> 8))
@@ -146,7 +146,7 @@ i32 tdc_dataHandler::handleFrame_type_0(u8 * data, i32 offset, i32 length)
                     buffer [0], buffer [1], buffer [2], buffer [3]);
 #endif
   dataBuffer->put_data_into_ring_buffer(buffer, length);
-  bytesOut(0, length);
+  emit signal_bytes_out(0, length);
   return offset + length * 8;
 }
 
@@ -188,7 +188,7 @@ i32 tdc_dataHandler::handleFrame_type_1(u8 * data, i32 offset, i32 length)
     }
     while (llengths > 10);
   }
-  bytesOut(1, length);
+  emit signal_bytes_out(1, length);
   return offset + length * 8;
 }
 

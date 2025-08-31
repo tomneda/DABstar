@@ -65,7 +65,7 @@ MscHandler::~MscHandler()
 
 void MscHandler::reset_channel()
 {
-  fprintf(stdout, "channel reset: all services will be stopped\n");
+  qDebug() << "Channel reset: all services will be stopped";
   mMutex.lock();
   for (auto & b: mBackendList)
   {
@@ -119,7 +119,7 @@ void MscHandler::stop_service(const i32 iSubChId, const i32 iFlag)
 
 bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, i32 flag)
 {
-  fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
+  // fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
   // locker.lock();
   // for (i32 i = 0; i < theBackends.size(); i++)
   // {
@@ -135,7 +135,8 @@ bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<i16> * ipoAudi
   const QSharedPointer<Backend> backend(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, flag));
   mBackendList.append(backend);
   //mBackendList.append(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, dump, flag));
-  fprintf(stdout, "we have now %d backends running\n", (i32)mBackendList.size());
+  qInfo() << "Backend" << mBackendList.size() << "for service" << d->serviceName.trimmed() << "created";
+  // fprintf(stdout, "we have now %d backends running\n", (i32)mBackendList.size());
   return true;
 }
 

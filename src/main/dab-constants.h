@@ -76,7 +76,7 @@ constexpr char sSettingSampleStorageDir[]  = "saveDirSampleDump";
 constexpr char sSettingAudioStorageDir[]   = "saveDirAudioDump";
 constexpr char sSettingContentStorageDir[] = "saveDirContent";
 
-enum class ETMId : u8 // TransportMechanismMode
+enum ETMId // TransportMechanismMode
 {
   StreamModeAudio = 0x0,
   // StreamModeData  = 0x1,
@@ -119,7 +119,7 @@ struct DescriptorType
   ETMId TMId;
   bool defined = false;
   QString serviceName;
-  i32 SId;
+  u32 SId;
   i32 SCIdS;
   i16 subchId;
   i16 startAddr;
@@ -137,7 +137,7 @@ struct PacketData : DescriptorType
   i16 FEC_scheme;
   i16 DGflag;
   i16 appType;
-  i16 compnr;
+  // i16 compnr;
   i16 packetAddress;
   PacketData() { TMId = ETMId::PacketModeData; }
 };

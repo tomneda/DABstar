@@ -67,7 +67,7 @@ public:
   void stopRunning();
 
   // we need sometimes to access the key parameters for decoding
-  i32 serviceId;
+  u32 serviceId;
   i32 startAddr;
   i32 Length;
   bool shortForm;

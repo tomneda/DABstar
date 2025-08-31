@@ -54,52 +54,54 @@ DataProcessor::DataProcessor(DabRadio * mr, const PacketData * pd, RingBuffer<u8
   this->FEC_scheme = pd->FEC_scheme;
   this->dataBuffer = dataBuffer;
   this->expectedIndex = 0;
+
   switch (DSCTy)
   {
-  default: fprintf(stderr, "DSCTy %d not supported\n", DSCTy);
-    my_dataHandler = new virtual_dataHandler();
-    break;
-
   case 5:
     if (appType == 0x44a)
     {
-      fprintf(stderr, "journaline data\n");
+      qInfo() << "Create Journaline (DSCTy 5, AppType 0x44a) data handler";
       my_dataHandler = new journaline_dataHandler();
       break;
     }
     else if (appType == 1500)
     {
-      fprintf(stderr, "adv data\n");
+      qInfo() << "Create ADV (DSCTy 5, AppType 1500) data handler (not implemented)";
       //my_dataHandler = new adv_dataHandler(mr, dataBuffer, appType);
       my_dataHandler = new virtual_dataHandler();
       break;
     }
     else if (appType == 4)
     {
-      fprintf(stderr, "tdc data\n");
+      qInfo() << "Create TDC (DSCTy 5, AppType 4) data handler";
       my_dataHandler = new tdc_dataHandler(mr, dataBuffer, appType);
       break;
     }
     else
     {
-      fprintf(stderr, "DSCTy 5 with appType %d not supported\n", appType);
+      qWarning() << "DSCTy 5 with AppType" << appType << "not supported";
       my_dataHandler = new virtual_dataHandler();
     }
     break;
 
   case 44:
-    fprintf(stderr, "journaline data\n");
+    qInfo() << "Create Journaline (DSCTy 44) data handler";
     my_dataHandler = new journaline_dataHandler();
     break;
 
   case 59:
-    fprintf(stderr, "ip data\n");
+    qInfo() << "Create IP (DSCTy 59) data handler";
     my_dataHandler = new ip_dataHandler(mr, dataBuffer);
     break;
 
   case 60:
-    fprintf(stderr, "mot data\n");
+    qInfo() << "Create MOT (DSCTy 60) data handler";
     my_dataHandler = new MotHandler(mr);
+    break;
+
+  default:
+    qWarning() << "DSCTy " << DSCTy << " not supported";
+    my_dataHandler = new virtual_dataHandler();
     break;
   }
 

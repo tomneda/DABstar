@@ -233,6 +233,7 @@ include_directories(
         src
         src/main
         src/ofdm
+        src/decoder
         src/protection
         src/backend
         src/backend/audio
@@ -269,10 +270,11 @@ set(${objectName}_HDRS
         src/ofdm/phasereference.h
         src/ofdm/phasetable.h
         src/ofdm/freq-interleaver.h
-        src/ofdm/fib-decoder.h
-        src/ofdm/dab-config.h
-        src/ofdm/fib-table.h
-        src/ofdm/fic-handler.h
+        src/decoder/fib-decoder_if.h
+        src/decoder/fib-decoder.h
+        src/decoder/fib-config.cpp
+        src/decoder/fib-table.h
+        src/decoder/fic-decoder.h
         src/ofdm/tii-detector.h
         src/ofdm/timesyncer.h
         src/protection/protTables.h
@@ -369,8 +371,12 @@ set(${objectName}_SRCS
         src/ofdm/phasereference.cpp
         src/ofdm/phasetable.cpp
         src/ofdm/freq-interleaver.cpp
-        src/ofdm/fib-decoder.cpp
-        src/ofdm/fic-handler.cpp
+        src/decoder/fib-config.cpp
+        src/decoder/fib-decoder.cpp
+        src/decoder/fib-decoder-fig0.cpp
+        src/decoder/fib-decoder-fig1.cpp
+        src/decoder/fib-decoder-string-getter.cpp
+        src/decoder/fic-decoder.cpp
         src/ofdm/tii-detector.cpp
         src/ofdm/timesyncer.cpp
         src/protection/protTables.cpp

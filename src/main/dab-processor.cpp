@@ -46,7 +46,7 @@ DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevi
   : mpRadioInterface(mr)
   , mSampleReader(mr, inputDevice, p->spectrumBuffer)
   , mFicHandler(mr)
-  , mFibDecoder(mFicHandler.get_fib_decoder())
+  , mpFibDecoder(mFicHandler.get_fib_decoder())
   , mMscHandler(mr, p->frameBuffer)
   , mPhaseReference(mr, p)
   , mOfdmDecoder(mr, p->iqBuffer, p->carrBuffer)
@@ -265,7 +265,7 @@ void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
   ioSampleCount += cTn;
 
   // is this null symbol with TII?
-  const bool isTiiNullSegment = ((mFibDecoder.get_cif_count() & 0x7) >= 4);
+  const bool isTiiNullSegment = ((mpFibDecoder->get_cif_count() & 0x7) >= 4);
   memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cf32));
   fftwf_execute(mFftPlan);
 
@@ -430,7 +430,7 @@ void DabProcessor::set_scan_mode(bool b)
 }
 
 //	just convenience functions
-//	FicHandler abstracts channel data
+//	FicDecoder abstracts channel data
 
 void DabProcessor::activate_cir_viewer(bool iActivate)
 {
@@ -475,7 +475,7 @@ bool DabProcessor::set_audio_channel(const AudioData * ipAudioData, RingBuffer<i
   }
 }
 
-bool DabProcessor::set_data_channel(PacketData * ipPacketData, RingBuffer<u8> * ipoDataBuffer, i32 flag)
+bool DabProcessor::set_data_channel(const PacketData * ipPacketData, RingBuffer<u8> * ipoDataBuffer, i32 flag)
 {
   if (!mScanMode)
   {

@@ -55,7 +55,7 @@
 #include  <atomic>
 #include  "dab-constants.h"
 #include  "ringbuffer.h"
-#include  "fic-handler.h"
+#include  "fic-decoder.h"
 #include  "protection.h"
 
 class DabRadio;
@@ -74,7 +74,7 @@ typedef struct
 class EtiGenerator
 {
 public:
-  EtiGenerator(FicHandler * my_ficHandler);
+  EtiGenerator(FicDecoder * my_ficHandler);
   ~EtiGenerator();
 
   void process_block(const std::vector<i16> & fbits, i32 iOfdmSymbIdx);
@@ -83,7 +83,8 @@ public:
   void stop_eti_generator();
 
 private:
-  FicHandler * my_ficHandler;
+  FicDecoder * const my_ficHandler;
+  IFibDecoder * const mpFibDecoder;
   FILE * etiFile;
   bool running;
   i16 index_Out;
@@ -95,7 +96,6 @@ private:
   i16 numberofblocksperCIF;
   u8 fibBits[4 * 768];
   std::mutex mMutex;
-  FibDecoder & mFibDecoder;
 
   i32 _init_eti(u8 *, i16, i16, i16);
   i32 _process_cif(const i16 *, u8 *, i32);

@@ -155,7 +155,8 @@ void Backend::processSegment(const i16 * iData)
   }
 
   deconvolver.deconvolve(tempX.data(), fragmentSize, outV.data());
-  //	and the energy dispersal
+
+  // Reverse the energy dispersal
   for (i16 i = 0; i < bitRate * 24; i++)
   {
     outV[i] ^= disperseVector[i];

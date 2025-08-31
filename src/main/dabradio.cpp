@@ -569,7 +569,7 @@ void DabRadio::slot_add_to_ensemble(const QString & iServiceName, const u32 iSId
 
   qCDebug(sLogRadioInterface()) << Q_FUNC_INFO << iServiceName << QString::number(iSId, 16);
 
-  const i32 subChId = mpDabProcessor->get_fib_decoder().get_sub_channel_id(iServiceName, iSId);
+  const i32 subChId = mpDabProcessor->get_fib_decoder()->get_sub_channel_id(iServiceName, iSId);
 
   if (subChId < 0)
   {
@@ -661,7 +661,7 @@ void DabRadio::slot_name_of_ensemble(i32 id, const QString & v)
 
 void DabRadio::_slot_handle_content_button()
 {
-  const QStringList s = mpDabProcessor->get_fib_decoder().basic_print();
+  const QStringList s = mpDabProcessor->get_fib_decoder()->basic_print();
 
   if (mpContentTable != nullptr)
   {
@@ -687,7 +687,7 @@ void DabRadio::_slot_handle_content_button()
                    + hex_to_str(mChannel.Eid) + " " + ";" + ui->transmitter_coordinates->text() + " " + ";" + theTime + ";" + SNR + ";"
                    + QString::number(mServiceList.size()) + ";" + convLocation + "\n";
 
-  mpContentTable = new ContentTable(this, &Settings::Storage::instance(), mChannel.channelName, mpDabProcessor->get_fib_decoder().get_scan_width());
+  mpContentTable = new ContentTable(this, &Settings::Storage::instance(), mChannel.channelName, mpDabProcessor->get_fib_decoder()->get_scan_width());
   connect(mpContentTable, &ContentTable::signal_go_service, this, &DabRadio::slot_handle_content_selector);
 
   mpContentTable->addLine(header);
@@ -747,9 +747,9 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
   }
 
   std::vector<u8> epgData(result.begin(), result.end());
-  const u32 ensembleId = mpDabProcessor->get_fib_decoder().get_ensembleId();
+  const u32 ensembleId = mpDabProcessor->get_fib_decoder()->get_ensembleId();
   const u32 currentSId = extract_epg(objectName, mServiceList, ensembleId);
-  const u32 julianDate = mpDabProcessor->get_fib_decoder().get_julian_date();
+  const u32 julianDate = mpDabProcessor->get_fib_decoder()->get_julian_date();
   const i32 subType = getContentSubType((MOTContentType)contentType);
   mEpgProcessor.process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
 
@@ -1018,7 +1018,7 @@ void DabRadio::slot_change_in_configuration()
   fprintf(stdout, "configuration change will be effected\n");
 
   //	we rebuild the services list from the fib and	then we (try to) restart the service
-  mServiceList = mpDabProcessor->get_fib_decoder().get_services();
+  mServiceList = mpDabProcessor->get_fib_decoder()->get_services();
 
   if (mChannel.etiActive)
   {
@@ -1028,7 +1028,7 @@ void DabRadio::slot_change_in_configuration()
   //	Of course, it may be disappeared
   if (s.valid)
   {
-    if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIdS);
+    if (const QString ss = mpDabProcessor->get_fib_decoder()->find_service(s.SId, s.SCIdS);
         ss != "")
     {
       start_service(s);
@@ -1037,7 +1037,7 @@ void DabRadio::slot_change_in_configuration()
 
     //	The service is gone, it may be the subservice of another one
     s.SCIdS = 0;
-    s.serviceName = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIdS);
+    s.serviceName = mpDabProcessor->get_fib_decoder()->find_service(s.SId, s.SCIdS);
 
     if (s.serviceName != "")
     {
@@ -1048,7 +1048,7 @@ void DabRadio::slot_change_in_configuration()
   //	we also have to restart all background services,
   for (u16 i = 0; i < mChannel.backgroundServices.size(); ++i)
   {
-    if (const QString ss = mpDabProcessor->get_fib_decoder().find_service(s.SId, s.SCIdS);
+    if (const QString ss = mpDabProcessor->get_fib_decoder()->find_service(s.SId, s.SCIdS);
         ss == "") // it is gone, close the file if any
     {
       // if (mChannel.backgroundServices.at(i).fd != nullptr)
@@ -1063,16 +1063,24 @@ void DabRadio::slot_change_in_configuration()
       {
         AudioData ad;
         // FILE * f = mChannel.backgroundServices.at(i).fd;
-        mpDabProcessor->get_fib_decoder().get_data_for_audio_service(ss, &ad);
+        mpDabProcessor->get_fib_decoder()->get_data_for_audio_service(ss, &ad);
         mpDabProcessor->set_audio_channel(&ad, mpAudioBufferFromDecoder, BACK_GROUND);
         mChannel.backgroundServices.at(i).subChId = ad.subchId;
       }
       else
       {
-        PacketData pd;
-        mpDabProcessor->get_fib_decoder().get_data_for_packet_service(ss, &pd, 0);
-        mpDabProcessor->set_data_channel(&pd, mpDataBuffer, BACK_GROUND);
-        mChannel.backgroundServices.at(i).subChId = pd.subchId;
+        std::vector<PacketData> pdVec;
+        mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(ss, pdVec);
+        if (!pdVec.empty())
+        {
+          mpDabProcessor->set_data_channel(&pdVec[0], mpDataBuffer, BACK_GROUND);
+          mChannel.backgroundServices.at(i).subChId = pdVec[0].subchId;
+          // TODO: considering further data packages?
+          if (pdVec.size() > 1)
+          {
+            qCWarning(sLogRadioInterface()) << "Warning: more than one data packet for service, but ignored (1)";
+          }
+        }
       }
     }
   }
@@ -1534,7 +1542,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   if (!mChannel.ecc_checked)
   {
     mChannel.ecc_checked = true;
-    mChannel.ecc_byte = mpDabProcessor->get_fib_decoder().get_ecc();
+    mChannel.ecc_byte = mpDabProcessor->get_fib_decoder()->get_ecc();
     country = find_ITU_code(mChannel.ecc_byte, (mChannel.Eid >> 12) & 0xF);
     mChannel.transmitterName = "";
 
@@ -2041,9 +2049,6 @@ void DabRadio::start_frame_dumping()
 //	called from the mp4 handler, using a signal
 void DabRadio::slot_new_frame()
 {
-  // auto * const buffer = make_vla(u8, amount);
-  std::array<u8, 4096> buffer;
-
   if (!mIsRunning.load())
   {
     return;
@@ -2055,6 +2060,8 @@ void DabRadio::slot_new_frame()
   }
   else
   {
+    std::array<u8, 4096> buffer;
+
     i32 dataAvail = mpFrameBuffer->get_ring_buffer_read_available();
 
     while (dataAvail > 0)
@@ -2256,7 +2263,7 @@ void DabRadio::local_select(const QString & iChannel, const QString & iService)
   {
     mChannel.currentService.valid = false;
     SDabService s;
-    mpDabProcessor->get_fib_decoder().get_parameters(serviceName, &s.SId, &s.SCIdS);
+    mpDabProcessor->get_fib_decoder()->get_parameters(serviceName, s.SId, s.SCIdS);
     if (s.SId == 0)
     {
       write_warning_message("Insufficient data for this program (1)");
@@ -2331,16 +2338,12 @@ void DabRadio::stop_service(SDabService & ioDabService)
     {
       emit signal_stop_audio();
 
-      for (i32 i = 0; i < 5; ++i) // TODO: from where the 5?
-      {
-        PacketData pd;
-        mpDabProcessor->get_fib_decoder().get_data_for_packet_service(ioDabService.serviceName, &pd, i);
+      std::vector<PacketData> pdVec;
+      mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(ioDabService.serviceName, pdVec);
 
-        if (pd.defined)
-        {
-          mpDabProcessor->stop_service(pd.subchId, FORE_GROUND);
-          break;
-        }
+      for (const auto & pd : pdVec)
+      {
+        mpDabProcessor->stop_service(pd.subchId, FORE_GROUND); // TODO: is that correct?
       }
     }
 
@@ -2374,7 +2377,7 @@ void DabRadio::start_service(SDabService & s)
   ui->lblDynLabel->setText("");
 
   AudioData ad;
-  mpDabProcessor->get_fib_decoder().get_data_for_audio_service(serviceName, &ad);
+  mpDabProcessor->get_fib_decoder()->get_data_for_audio_service(serviceName, &ad);
   mAudioFrameType = EAudioFrameType::None;
 
   if (ad.defined)
@@ -2382,7 +2385,7 @@ void DabRadio::start_service(SDabService & s)
     mChannel.currentService.valid = true;
     mChannel.currentService.is_audio = true;
     mChannel.currentService.subChId = ad.subchId;
-    if (mpDabProcessor->get_fib_decoder().has_time_table(ad.SId))
+    if (mpDabProcessor->get_fib_decoder()->has_time_table(ad.SId))
     {
       mpTechDataWidget->slot_show_timetableButton(true);
     }
@@ -2398,22 +2401,32 @@ void DabRadio::start_service(SDabService & s)
     }
 #endif
   }
-  else if (_is_packet_service(serviceName))
+  else // if (_is_packet_service(serviceName)) // TODO: why alternative to audio?
   {
-    PacketData pd;
-    mpDabProcessor->get_fib_decoder().get_data_for_packet_service(serviceName, &pd, 0);
-    mChannel.currentService.valid = true;
-    mChannel.currentService.is_audio = false;
-    mChannel.currentService.subChId = pd.subchId;
+    std::vector<PacketData> pdVec;
+    mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(serviceName, pdVec);
 
-    start_packet_service(serviceName);
-    const QString csn = mChannel.channelName + ":" + serviceName;
-    Settings::Main::varPresetName.write(csn);
-  }
-  else
-  {
-    write_warning_message("Insufficient data for this program (2)");
-    Settings::Main::varPresetName.write("");
+    if (!pdVec.empty())
+    {
+      mChannel.currentService.valid = true;
+      mChannel.currentService.is_audio = false;
+      mChannel.currentService.subChId = pdVec[0].subchId;
+
+      // TODO: considering further data packages?
+      if (pdVec.size() > 1)
+      {
+        qCWarning(sLogRadioInterface()) << "Warning: more than one data packet for service, but ignored (2)";
+      }
+
+      start_packet_service(serviceName);
+      const QString csn = mChannel.channelName + ":" + serviceName;
+      Settings::Main::varPresetName.write(csn);
+    }
+    else
+    {
+      write_warning_message("Insufficient data for this program (2)");
+      Settings::Main::varPresetName.write("");
+    }
   }
 }
 
@@ -2423,22 +2436,24 @@ void DabRadio::start_audio_service(const AudioData * const ipAD)
 
   (void)mpDabProcessor->set_audio_channel(ipAD, mpAudioBufferFromDecoder, FORE_GROUND);
 
-  for (i16 SCIdS = 1; SCIdS < 0xF; SCIdS++) // TODO: 10 or 15
+  std::vector<PacketData> pdVec;
+  mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(ipAD->serviceName, pdVec);
+
+  if (!pdVec.empty())
   {
-    PacketData pd;
-    mpDabProcessor->get_fib_decoder().get_data_for_packet_service(ipAD->serviceName, &pd, SCIdS);
-    if (pd.defined)
+    mpDabProcessor->set_data_channel(&pdVec[0], mpDataBuffer, FORE_GROUND);
+    qInfo().nospace() << "Adding " << pdVec[0].serviceName.trimmed() << " (SubChId " << pdVec[0].subchId << ") as subservice";
+    // TODO: considering further data packages?
+    if (pdVec.size() > 1)
     {
-      mpDabProcessor->set_data_channel(&pd, mpDataBuffer, FORE_GROUND);
-      fprintf(stdout, "adding %s (%d) as subservice\n", pd.serviceName.toUtf8().data(), pd.subchId);
-      break;
+      qCWarning(sLogRadioInterface()) << "Warning: more than one data packet for service, but ignored (3)";
     }
   }
-  //	activate sound
+
   mpCurAudioFifo = nullptr; // trigger possible new sample rate setting
-  //mpSoundOut->restart();
   ui->programTypeLabel->setText(getProgramType(ipAD->programType));
-  //	show service related data
+
+  // show service related data
   mpTechDataWidget->show_serviceData(ipAD);
   mAudioFrameType = (ipAD->ASCTy == 077 ? EAudioFrameType::AAC : EAudioFrameType::MP2);
   _set_status_info_status(mStatusInfo.InpBitRate, (i32)(ipAD->bitRate));
@@ -2446,8 +2461,16 @@ void DabRadio::start_audio_service(const AudioData * const ipAD)
 
 void DabRadio::start_packet_service(const QString & iS)
 {
-  PacketData pd;
-  mpDabProcessor->get_fib_decoder().get_data_for_packet_service(iS, &pd, 0);
+  std::vector<PacketData> pdVec;
+  mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(iS, pdVec);
+
+  if (pdVec.empty())
+  {
+    qCCritical(sLogRadioInterface) << "No packet data found";;
+    return;
+  }
+
+  const PacketData & pd = pdVec[0];
 
   if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
   {
@@ -2567,7 +2590,7 @@ void DabRadio::_slot_preset_timeout()
 
   SDabService s;
   s.serviceName = presetName;
-  mpDabProcessor->get_fib_decoder().get_parameters(presetName, &s.SId, &s.SCIdS);
+  mpDabProcessor->get_fib_decoder()->get_parameters(presetName, s.SId, s.SCIdS);
 
   if (s.SId == 0)
   {
@@ -3021,8 +3044,15 @@ void DabRadio::slot_epg_timer_timeout()
         serv.name.contains("EPG_", Qt::CaseInsensitive) ||
         serv.name.startsWith("EPG ", Qt::CaseInsensitive))
     {
-      PacketData pd;
-      mpDabProcessor->get_fib_decoder().get_data_for_packet_service(serv.name, &pd, 0);
+      std::vector<PacketData> pdVec;
+      mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(serv.name, pdVec);
+
+      if (pdVec.empty())
+      {
+        continue;
+      }
+
+      const PacketData & pd = pdVec[0];
 
       if ((!pd.defined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
       {
@@ -3091,7 +3121,7 @@ void DabRadio::slot_set_epg_data(i32 SId, i32 theTime, const QString & theText, 
 {
   if (mpDabProcessor != nullptr)
   {
-    mpDabProcessor->get_fib_decoder().set_epg_data(SId, theTime, theText, theDescr);
+    mpDabProcessor->get_fib_decoder()->set_epg_data(SId, theTime, theText, theDescr);
   }
 }
 
@@ -3109,7 +3139,7 @@ void DabRadio::_slot_handle_time_table()
   {
     epgWidth = 50;
   }
-  std::vector<SEpgElement> res = mpDabProcessor->get_fib_decoder().find_epg_data(mChannel.currentService.SId);
+  std::vector<SEpgElement> res = mpDabProcessor->get_fib_decoder()->find_epg_data(mChannel.currentService.SId);
   for (const auto & element: res)
   {
     mpTimeTable->addElement(element.theTime, epgWidth, element.theText, element.theDescr);
@@ -3763,13 +3793,13 @@ void DabRadio::_check_coordinates() const
 bool DabRadio::_is_audio_service(const QString & s) const
 {
   AudioData ad;
-  mpDabProcessor->get_fib_decoder().get_data_for_audio_service(s, &ad);
+  mpDabProcessor->get_fib_decoder()->get_data_for_audio_service(s, &ad);
   return ad.defined;
 }
 
-bool DabRadio::_is_packet_service(const QString & s) const
-{
-  PacketData pd;
-  mpDabProcessor->get_fib_decoder().get_data_for_packet_service(s, &pd, 0);
-  return pd.defined;
-}
+// bool DabRadio::_is_packet_service(const QString & s) const
+// {
+//   std::vector<PacketData> pdVec;
+//   mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(s, pdVec);
+//   return !pdVec.empty();
+// }

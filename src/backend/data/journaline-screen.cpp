@@ -182,7 +182,7 @@ int journalineScreen::_findIndex(int key)
 
 void journalineScreen::slot_start(int index)
 {
-  fprintf(stderr, "we zijn in start\n");
+  // fprintf(stderr, "we zijn in start\n");
   pathVector.push_back(0);
   displayElement(*(*table)[index].element);
 }

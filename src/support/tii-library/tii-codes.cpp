@@ -139,7 +139,7 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
 
   if (fp.open(QIODevice::ReadOnly))
   {
-    fprintf(stdout, "TiiFile is %s\n", iTiiFileName.toUtf8().data());
+    qInfo() << "Reading TII file" << iTiiFileName;
     dataLoaded = true;
     _read_file(fp);
     fp.close();

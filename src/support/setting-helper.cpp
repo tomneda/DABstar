@@ -225,7 +225,7 @@ void Widget::_update_ui_state_to_setting_deferred()
 {
   if (mpDeferTimer == nullptr)
   {
-    mpDeferTimer = new QTimer;
+    mpDeferTimer = new QTimer(this);
     mpDeferTimer->setSingleShot(true);
     mpDeferTimer->setInterval(500);
     connect(mpDeferTimer, &QTimer::timeout, [this](){ _update_ui_state_to_setting(); });

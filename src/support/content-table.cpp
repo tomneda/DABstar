@@ -50,6 +50,8 @@ ContentTable::ContentTable(DabRadio * theRadio, QSettings * s, const QString & c
   i32 wi = dabSettings->value("table-width", 200).toInt();
   i32 hi = dabSettings->value("table-height", 200).toInt();
   myWidget = new QScrollArea(nullptr);
+  myWidget->setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  myWidget->setWindowTitle("FIB content of current ensemble");
   myWidget->resize(wi, hi);
   myWidget->setWidgetResizable(true);
   myWidget->move(x, y);
@@ -59,7 +61,6 @@ ContentTable::ContentTable(DabRadio * theRadio, QSettings * s, const QString & c
   contentWidget->setColumnWidth(0, 150);
   contentWidget->setColumnWidth(4, 150);
   myWidget->setWidget(contentWidget);
-  contentWidget->setHorizontalHeaderLabels(QStringList() << tr("current ensemble"));
 
   connect(contentWidget, &QTableWidget::cellClicked, this, &ContentTable::_slot_select_service);
   connect(contentWidget, &QTableWidget::cellDoubleClicked, this, &ContentTable::_slot_dump);

@@ -46,7 +46,7 @@ private:
   bool serviceComponentFrameheaderCRC(const u8 *, i16, i16);
 
 signals:
-  void bytesOut(int, int);
+  void signal_bytes_out(int, int);
 };
 
 #endif

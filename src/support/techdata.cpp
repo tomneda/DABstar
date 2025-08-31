@@ -214,9 +214,13 @@ void TechData::slot_show_serviceName(const QString & s)
   programName->setText(s);
 }
 
-void TechData::slot_show_serviceId(i32 SId)
+void TechData::slot_show_serviceId(u32 iSId)
 {
-  serviceIdDisplay->display(SId);
+  serviceIdDisplay->display((i32)iSId);
+  if ((iSId & 0x8000'0000) != 0) // display only knows negative numbers but not u32, should this ever happen?
+  {
+    qWarning() << "Service ID can not displayed correctly";
+  }
 }
 
 void TechData::slot_show_bitRate(i32 br)

@@ -117,12 +117,12 @@ HEADERS += \
     src/ofdm/phasereference.h \
     src/ofdm/phasetable.h \
     src/ofdm/freq-interleaver.h \
-    src/ofdm/fib-decoder.h \
-    src/ofdm/dab-config.h \
-    src/ofdm/fib-table.h \
-    src/ofdm/fic-handler.h \
     src/ofdm/tii-detector.h \
     src/ofdm/timesyncer.h \
+    src/decoder/fib-decoder.h \
+    src/decoder/fib-config.h \
+    src/decoder/fib-table.h \
+    src/decoder/fic-decoder.h \
     src/protection/protTables.h \
     src/protection/protection.h \
     src/protection/uep-protection.h \
@@ -226,10 +226,13 @@ SOURCES += \
     src/ofdm/phasereference.cpp \
     src/ofdm/phasetable.cpp \
     src/ofdm/freq-interleaver.cpp \
-    src/ofdm/fib-decoder.cpp \
-    src/ofdm/fic-handler.cpp \
     src/ofdm/tii-detector.cpp \
     src/ofdm/timesyncer.cpp \
+    src/decoder/fib-decoder.cpp \
+    src/decoder/fib-decoder-fig0.cpp \
+    src/decoder/fib-decoder-fig1.cpp \
+    src/decoder/fib-decoder-string-getter.cpp \
+    src/decoder/fic-handler.cpp \
     src/protection/protTables.cpp \
     src/protection/protection.cpp \
     src/protection/eep-protection.cpp \

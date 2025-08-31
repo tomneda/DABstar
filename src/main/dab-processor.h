@@ -37,7 +37,7 @@
 #include "dab-constants.h"
 #include "sample-reader.h"
 #include "phasereference.h"
-#include "fic-handler.h"
+#include "fic-decoder.h"
 #include "msc-handler.h"
 #include "device-handler.h"
 #include "ringbuffer.h"
@@ -76,7 +76,7 @@ public:
   DabProcessor(DabRadio * mr, IDeviceHandler * inputDevice, ProcessParams * p);
   ~DabProcessor() override;
 
-  inline FibDecoder & get_fib_decoder() { return mFibDecoder; };
+  inline IFibDecoder * get_fib_decoder() const { return mpFibDecoder; };
 
   void start();
   void stop();
@@ -97,7 +97,7 @@ public:
   void stop_service(DescriptorType *, i32);
   void stop_service(i32, i32);
   bool set_audio_channel(const AudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, i32 flag);
-  bool set_data_channel(PacketData *, RingBuffer<u8> *, i32);
+  bool set_data_channel(const PacketData *, RingBuffer<u8> *, i32);
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);
@@ -109,8 +109,8 @@ public:
 private:
   DabRadio * const mpRadioInterface;
   SampleReader mSampleReader;
-  FicHandler mFicHandler;
-  FibDecoder & mFibDecoder;
+  FicDecoder mFicHandler;
+  IFibDecoder * const mpFibDecoder;
   MscHandler mMscHandler;
   PhaseReference mPhaseReference;
   TiiDetector mTiiDetector{};
