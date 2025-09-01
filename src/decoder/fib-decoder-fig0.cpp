@@ -672,21 +672,28 @@ i16 FibDecoder::HandleFIG0Extension13(const u8 * const d, i16 used, const SFigHe
       fig0s13.NumUserApps = getBits_4(d, bitOffset + 4);
       bitOffset += 8;
 
-      for (i16 i = 0; i < std::min(fig0s13.NumUserApps, (i16)fig0s13.UserAppVec.size()); i++)
+      if (fig0s13.NumUserApps > (i16)fig0s13.UserAppVec.size())
+      {
+        qCritical() << "Error: NumUserApps > UserAppVec.size()";
+        fig0s13.NumUserApps = fig0s13.UserAppVec.size();
+      }
+
+      for (i16 i = 0; i < fig0s13.NumUserApps; ++i)
       {
         FibConfig::SFig0s13_UserApplicationInformation::SUserApp & userApp = fig0s13.UserAppVec[i];
         userApp.UserAppType = getBits(d, bitOffset, 11);
         userApp.UserAppDataLength = getBits_5(d, bitOffset + 11); // in bytes
         bitOffset += (11 + 5 + 8 * userApp.UserAppDataLength);
       }
-      fig0s13.SizeBits = bitOffset;
+
+      fig0s13.SizeBits = bitOffset - used * 8; // only store netto size
       auto * const pConfig = get_config_ptr(iFH.CN_Flag);
       pConfig->Fig0s13_UserApplicationInformationVec.emplace_back(fig0s13);
       retrigger_timer_data_loaded();
     }
     else
     {
-      bitOffset = pFig0s13->SizeBits;
+      bitOffset = pFig0s13->SizeBits + used * 8;
     }
   }
   assert(bitOffset == bitOffset2);
