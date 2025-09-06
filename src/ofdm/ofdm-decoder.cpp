@@ -28,10 +28,10 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *	Once the bits are "in", interpretation and manipulation
- *	should reconstruct the data blocks.
- *	Ofdm_decoder is called for Block_0 and the FIC blocks,
- *	its invocation results in 2 * Tu bits
+ *    Once the bits are "in", interpretation and manipulation
+ *    should reconstruct the data blocks.
+ *    Ofdm_decoder is called for Block_0 and the FIC blocks,
+ *    its invocation results in 2 * Tu bits
  */
 #include "ofdm-decoder.h"
 #include "phasetable.h"
@@ -53,7 +53,6 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuf
   mIntegAbsPhaseVector.resize(cK);
   mMeanPhaseVector.resize(cK);
   mMeanPowerVector.resize(cK);
-  mMeanLevelVector.resize(cK);
   mMeanSigmaSqVector.resize(cK);
 
 #ifdef USE_PHASE_CORR_LUT
@@ -120,7 +119,6 @@ void OfdmDecoder::reset()
   std::fill(mIntegAbsPhaseVector.begin(), mIntegAbsPhaseVector.end(), 0.0f);
   std::fill(mMeanPhaseVector.begin(), mMeanPhaseVector.end(), 0.0f);
   std::fill(mMeanPowerVector.begin(), mMeanPowerVector.end(), 0.0f);
-  std::fill(mMeanLevelVector.begin(), mMeanLevelVector.end(), 0.0f);
   std::fill(mMeanSigmaSqVector.begin(), mMeanSigmaSqVector.end(), 0.0f);
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
 
@@ -207,8 +205,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
 
     f32 & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
 
-    //fftBin *= rotator; // Fine correction of phase which can't be done in the time domain (not more necessary as it is done below other way).
-
 #ifdef USE_PHASE_CORR_LUT
     // do phase correction via LUT
     const i32 phaseIdx = (i32)std::lround(integAbsPhasePerBinRef * cLutFact);
@@ -236,17 +232,13 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     stdDevSqOvrAll += stdDevSqRef;
 
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
-    // Simplification: The IQ plot would need only the level, not power, so the root of the power is used (below)..
-    const f32 fftBinAbsLevel = std::abs(fftBin);
-    const f32 fftBinPower = fftBinAbsLevel * fftBinAbsLevel;
-
-    f32 & meanLevelPerBinRef = mMeanLevelVector[nomCarrIdx];
+    const f32 fftBinPower = std::norm(fftBin);
     f32 & meanPowerPerBinRef = mMeanPowerVector[nomCarrIdx];
-    mean_filter(meanLevelPerBinRef, fftBinAbsLevel, ALPHA);
     mean_filter(meanPowerPerBinRef, fftBinPower, ALPHA);
     mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (f32)cK);
 
     // Collect data for "Log Likelihood Ratio"
+    const float meanLevelPerBinRef = std::sqrt(meanPowerPerBinRef);
     const f32 meanLevelAtAxisPerBin = meanLevelPerBinRef * F_SQRT1_2;
     const f32 realLevelDistPerBin = (std::abs(real(fftBin)) - meanLevelAtAxisPerBin); // x-distance to reference point
     const f32 imagLevelDistPerBin = (std::abs(imag(fftBin)) - meanLevelAtAxisPerBin); // y-distance to reference point
@@ -258,25 +250,13 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     if (signalPower <= 0.0f) signalPower = 0.1f;
 
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
-    f32 w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+    f32 w1 = (mSoftBitType == ESoftBitType::SOFTDEC3 ?
+              meanPowerPerBinRef : meanLevelPerBinRef) / meanSigmaSqPerBinRef; // 1/variance
     w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) +
           (mSoftBitType == ESoftBitType::SOFTDEC1 ? 1.0f : 2.0f); // 1/SNR + (1 or 2)
-
-    cf32 r1;
-    f32 w2;
-
-    if (mSoftBitType == ESoftBitType::SOFTDEC3)
-    {
-      w1 *= std::abs(mPhaseReference[fftIdx]);
-      r1 = fftBin * w1; // input power over current and last OFDM symbol
-      w2 = -140 / mMeanValue;
-    }
-    else // SOFTDEC1 and SOFTDEC2, log likelihood ratio
-    {
-      w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
-      r1 = norm_to_length_one(fftBin) * w1;
-      w2 = -100 / mMeanValue;
-    }
+    w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
+    const cf32 r1 = norm_to_length_one(fftBin) * w1;
+    f32 w2 = -100 / mMeanValue;
 
     // split the real and the imaginary part and scale it
     oBits[0  + nomCarrIdx] = (i16)(real(r1) * w2);
@@ -287,7 +267,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     {
       switch (mIqPlotType)
       {
-      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(meanPowerPerBinRef); break;
+      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / meanLevelPerBinRef; break;
       case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(mMeanPowerOvrAll); break;
       case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / std::sqrt(mMeanPowerOvrAll); break;
       case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (f32)cTu * _interpolate_2d_plane(mPhaseReference[0], iV[0], (f32)nomCarrIdx / ((f32)mIqVector.size() - 1)); break;
@@ -303,7 +283,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
         mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * w2;
         break;
       case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
-      case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 20.0f * std::log10(std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef); break;
+      case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanSigmaSqPerBinRef / meanPowerPerBinRef); break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
       case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(integAbsPhasePerBinRef); break;
       case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
@@ -325,7 +305,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     mean_filter(mMeanSigmaSqFreqCorr, FreqCorr * FreqCorr, 0.2f);
   }
 
-  //	From time to time we show the constellation of the current symbol
+  //    From time to time we show the constellation of the current symbol
   if (showScopeData)
   {
     mpIqBuffer->put_data_into_ring_buffer(mIqVector.data(), cK);
