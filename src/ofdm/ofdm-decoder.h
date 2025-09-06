@@ -97,7 +97,6 @@ private:
   std::vector<f32> mStdDevSqPhaseVector;
   std::vector<f32> mIntegAbsPhaseVector;
   std::vector<f32> mMeanPhaseVector;
-  std::vector<f32> mMeanLevelVector;
   std::vector<f32> mMeanSigmaSqVector;
   std::vector<f32> mMeanPowerVector;
   std::vector<f32> mMeanNullLevel;
