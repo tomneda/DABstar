@@ -233,7 +233,7 @@ private:
   TiiHandler mTiiHandler{};
   TiiListDisplay mTiiListDisplay{};
   OpenFileDialog mOpenFileDialog;
-  HttpHandler * mpHttpHandler = nullptr;
+  QScopedPointer<HttpHandler> mpHttpHandler;
   ProcessParams mProcessParams;
   const QString mVersionStr{PRJ_VERS};
   QScopedPointer<ContentTable> mpContentTable;
@@ -301,7 +301,6 @@ private:
   QScopedPointer<ServiceListHandler> mpServiceListHandler;
   bool mCurFavoriteState = false;
   bool mClockActiveStyle = true;
-  std::mutex mMutex;
   std::vector<STiiResult> mTransmitterIds;
   enum class EAudioFrameType { None, MP2, AAC };
   EAudioFrameType mAudioFrameType = EAudioFrameType::None;
@@ -443,7 +442,7 @@ public slots:
   void slot_set_epg_data(i32, i32, const QString &, const QString &);
   void slot_epg_timer_timeout();
   void slot_nr_services(i32);
-  void slot_handle_content_selector(const QString &);
+  void slot_handle_fib_content_selector(const QString &);
   void slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF);
   void slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB);
   void slot_test_slider(i32);
@@ -460,6 +459,7 @@ public slots:
   void slot_handle_tii_collisions(bool);
   void slot_handle_tii_threshold(i32);
   void slot_handle_tii_subid(i32);
+  void slot_http_terminate();
 
   void closeEvent(QCloseEvent * event) override;
 
@@ -492,6 +492,7 @@ private slots:
   void _slot_handle_favorite_button(bool iClicked);
   void _slot_set_static_button_style();
   void _slot_fib_data_loaded();
+  void _slot_scan_filter_changed(i32 idx);
   void _slot_handle_mute_button();
   void _slot_update_mute_state(const bool iMute);
   void _slot_handle_config_button();

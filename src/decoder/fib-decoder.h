@@ -75,6 +75,7 @@ private:
   };
 
   void _reset();
+
   FibConfigFig0 * _get_config_ptr(const u8 iCN_Bit) const { return iCN_Bit == 0 ? mpFibConfigFig0Curr.get() : mpFibConfigFig0Next.get(); }
   SFigHeader _get_fig_header(const u8 *) const;
 
@@ -95,7 +96,7 @@ private:
   void _process_Fig0s17(const u8 *);
   void _process_Fig0s18(const u8 *);
   void _process_Fig0s19(const u8 *);
-  // void _process_Fig0s21(const u8 *) const;
+  void _process_Fig0s21(const u8 *) const;
 
   i16 _subprocess_Fig0s1(const u8 *, i16, const SFigHeader &);
   i16 _subprocess_Fig0s2(const u8 *, i16, const SFigHeader &);
@@ -103,7 +104,7 @@ private:
   i16 _subprocess_Fig0s5(const u8 *, i16);
   i16 _subprocess_Fig0s8(const u8 *, i16, const SFigHeader &);
   i16 _subprocess_Fig0s13(const u8 *, i16, const SFigHeader &);
-  // i16 _subprocess_Fig0s21(const u8 *, i16, const SFigHeader &) const;
+  i16 _subprocess_Fig0s21(const u8 *, i16, const SFigHeader &) const;
 
   void _process_Fig1s0(const u8 *);
   void _process_Fig1s1(const u8 *);
@@ -124,6 +125,8 @@ private:
 
   bool _extract_character_set_label(FibConfigFig1::SFig1_DataField & oFig1DF, const u8 * d, i16 iLabelOffs) const;
   void _retrigger_timer_data_loaded(const char * iCallerName);
+
+  template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
 
 private slots:
   void _slot_timer_data_loaded();

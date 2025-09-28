@@ -58,7 +58,7 @@ public:
   };
 
   void set_window_title(const QString &);
-  void add_row(const SCacheElem & iTr, const SDerivedData & iDD);
+  void add_row(const STiiDataEntry & iTr, const SDerivedData & iDD);
   void start_adding();
   void show();
   void hide();

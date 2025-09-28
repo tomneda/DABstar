@@ -64,8 +64,10 @@ HttpHandler::HttpHandler(DabRadio * parent, const QString & mapPort, const QStri
 #endif
   this->running.store(false);
 
-  connect(this, SIGNAL(terminating()), parent, SLOT(http_terminate()));
+  connect(this, &HttpHandler::signal_terminating, parent, &DabRadio::slot_http_terminate);
+
   saveFile = fopen(saveName.toUtf8().data(), "w");
+
   if (saveFile != nullptr)
   {
     fprintf(saveFile, "Home location; %f; %f\n\n", real(homeAddress), imag(homeAddress));
@@ -130,7 +132,7 @@ void HttpHandler::run()
   if (ListenSocket < 0)
   {
     running.store(false);
-    terminating();
+    signal_terminating();
     return;
   }
 
@@ -145,7 +147,7 @@ void HttpHandler::run()
   {
     close(ListenSocket);
     running.store(false);
-    terminating();
+    signal_terminating();
     return;
   }
 
@@ -247,7 +249,7 @@ void HttpHandler::run()
   {
     close(ClientSocket);
   }
-  emit terminating();
+  emit signal_terminating();
 }
 
 #else
@@ -271,7 +273,7 @@ void HttpHandler::run()
 
   if (WSAStartup(MAKEWORD (2, 2), &wsa) != 0)
   {
-    terminating();
+    signal_terminating();
     return;
   }
 
@@ -286,7 +288,7 @@ void HttpHandler::run()
   if (iResult != 0)
   {
     WSACleanup();
-    terminating();
+    signal_terminating();
     return;
   }
 
@@ -296,7 +298,7 @@ void HttpHandler::run()
   {
     freeaddrinfo(result);
     WSACleanup();
-    terminating();
+    signal_terminating();
     return;
   }
   unsigned long mode = 1;
@@ -309,7 +311,7 @@ void HttpHandler::run()
     freeaddrinfo(result);
     closesocket(ListenSocket);
     WSACleanup();
-    terminating();
+    signal_terminating();
     return;
   }
 
@@ -341,7 +343,7 @@ L1:
           closesocket(ListenSocket);
           WSACleanup();
           running.store(false);
-          terminating();
+          signal_terminating();
           return;
         }
         break;
@@ -353,7 +355,7 @@ L1:
           closesocket(ClientSocket);
           closesocket(ListenSocket);
           WSACleanup();
-          terminating();
+          signal_terminating();
           return;
         }
         Sleep(1);
@@ -562,7 +564,7 @@ std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
   return Jsontxt.toStdString();
 }
 
-void HttpHandler::putData(u8 type, const SCacheElem * tr, const QString & dateTime,
+void HttpHandler::putData(u8 type, const STiiDataEntry * tr, const QString & dateTime,
                           f32 strength, i32 distance, i32 azimuth, bool non_etsi)
 {
   cf32 target = cf32(tr->latitude, tr->longitude);

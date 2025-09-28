@@ -115,7 +115,6 @@ group Parse FIB payload
       alt Ext 1 (Service label)
         FD -> FD: FIG1Extension1(d)
         FD -> ENS: set service label(s)
-        FD -> UI: signal_add_to_ensemble(serviceLabel, SId)
       end
 
       alt Ext 4 (Component label)

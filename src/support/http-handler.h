@@ -77,7 +77,7 @@ public:
   void start();
   void stop();
   void run();
-  void putData(u8 type, const SCacheElem * tr, const QString & dateTime,
+  void putData(u8 type, const STiiDataEntry * tr, const QString & dateTime,
                f32 strength, i32 distance, i32 azimuth, bool non_etsi);
 
 private:
@@ -100,8 +100,9 @@ private:
   std::vector<httpData> transmitterList;
   std::mutex locker;
   bool autoBrowser_off;
+
 signals:
-  void terminating();
+  void signal_terminating();
 };
 
 #endif

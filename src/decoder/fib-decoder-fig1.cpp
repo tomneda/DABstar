@@ -10,17 +10,27 @@ void FibDecoder::_process_Fig1(const u8 * const d)
 {
   const u8 extension = getBits_3(d, 8 + 5);  // FIG Header + Charset + Rfu
 
+  /* RepTy: Repetition Type:
+    A) 10 times per second;
+    B) once per second;
+    C) once every 10 seconds;
+    D) less frequently than every 10 seconds;
+    E) all information within 2 minutes.
+    F) all information within 1 minutes.
+  */
+
   switch (extension)
   {
-  case 0: _process_Fig1s0(d); break;  // ensemble name
-  case 1: _process_Fig1s1(d); break;  // service name
-  case 4: _process_Fig1s4(d); break;  // Service Component Label
-  case 5: _process_Fig1s5(d); break;  // Data service label
-  // case 6: _process_Fig1s6(d); break;  // XPAD label - 8.1.14.4
+  case 0: _process_Fig1s0(d); break;  // RepTyB, ensemble name
+  case 1: _process_Fig1s1(d); break;  // RepTyB, service name
+  case 4: _process_Fig1s4(d); break;  // RepTyB, service component label
+  case 5: _process_Fig1s5(d); break;  // RepTyB, data service label
+//case 6: _process_Fig1s6(d); break;  // RepTyB, XPAD label - 8.1.14.4
   default:
     if (mUnhandledFig1Set.find(extension) == mUnhandledFig1Set.end()) // print message only once
     {
-      if (mFibDataLoaded) qDebug() << QString("FIG 1/%1 not handled").arg(extension); // print only if the summarized print was already done
+      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
+      if (mFibDataLoaded) qDebug().noquote() << QString("FIG 1/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig1Set.emplace(extension);
     }
   }

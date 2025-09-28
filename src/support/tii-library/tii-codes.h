@@ -37,7 +37,7 @@
 #include <QFile>
 #include "dab-constants.h"
 
-struct SCacheElem
+struct STiiDataEntry
 {
   i32 id;
   QString country;
@@ -79,7 +79,7 @@ public:
   ~TiiHandler();
 
   bool fill_cache_from_tii_file(const QString &);
-  const SCacheElem * get_transmitter_name(const QString &, u16, u8, u8);
+  const STiiDataEntry * get_transmitter_name(const QString &, u16, u8, u8);
   [[nodiscard]] f32 distance(f32, f32, f32, f32) const;
   f32 corner(f32, f32, f32, f32) const;
   bool is_black(u16, u8, u8);
@@ -87,7 +87,7 @@ public:
   void loadTable(const QString & iTiiFileName);
 
 private:
-  std::map<u32, SCacheElem> mContentCacheMap;
+  std::map<u32, STiiDataEntry> mContentCacheMap;
   u8 mShift = 0;
   QString mTiiFileName;
   void * mpTiiLibHandler = nullptr;

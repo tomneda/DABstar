@@ -689,12 +689,12 @@ void FibDecoder::_slot_timer_data_loaded()
   // show not handled FIGs
   for (const auto & extension: mUnhandledFig0Set)
   {
-    qDebug() << QString("FIG 0/%1 not handled").arg(extension);
+    qDebug().noquote() << QString("FIG 0/%1 not handled").arg(extension);
   }
 
   for (const auto & extension: mUnhandledFig1Set)
   {
-    qDebug() << QString("FIG 1/%1 not handled").arg(extension);
+    qDebug().noquote() << QString("FIG 1/%1 not handled").arg(extension);
   }
 #endif
 

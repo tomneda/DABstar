@@ -16,31 +16,43 @@ void FibDecoder::_process_Fig0(const u8 * const d)
   {
   // MCI: Multiplex Configuration Information
   // SI:  Service Information
-  case  0: _process_Fig0s0(d);  break;  // MCI, ensemble information (6.4.1)
-  case  1: _process_Fig0s1(d);  break;  // MCI, sub-channel organization (6.2.1)
-  case  2: _process_Fig0s2(d);  break;  // MCI, service organization (6.3.1)
-  case  3: _process_Fig0s3(d);  break;  // MCI, service component in packet mode (6.3.2)
-  // case  4:                     break;  // MCI, service component with CA (6.3.3)
-  case  5: _process_Fig0s5(d);  break;  // SI,  service component language (8.1.2)
-  // case  6:                     break;  // SI,  service linking information (8.1.15)
-  case  7: _process_Fig0s7(d);  break;  // MCI, configuration information (6.4.2)
-  case  8: _process_Fig0s8(d);  break;  // MCI, service component global definition (6.3.5)
-  case  9: _process_Fig0s9(d);  break;  // SI,  country, LTO & international table (8.1.3.2)
-  case 10: _process_Fig0s10(d); break;  // SI,  date and time (8.1.3.1)
-  case 13: _process_Fig0s13(d); break;  // MCI, user application information (6.3.6)
-  case 14: _process_Fig0s14(d); break;  // MCI, FEC subchannel organization (6.2.2)
-  case 17: _process_Fig0s17(d); break;  // SI,  Program type (8.1.5)
-  case 18: _process_Fig0s18(d); break;  // SI,  announcement support (8.1.6.1)
-  case 19: _process_Fig0s19(d); break;  // SI,  announcement switching (8.1.6.2)
-  // case 20:                     break;  // SI,  service component information (8.1.4)
-  // case 21: FIG0Extension21(d); break;  // SI,  frequency information (8.1.8)
-  // case 24:                     break;  // SI,  OE services (8.1.10)
-  // case 25:                     break;  // SI,  OE announcement support (8.1.6.3)
-  // case 26:                     break;  // SI,  OE announcement switching (8.1.6.4)
+
+  /* RepTy: Repetition Type:
+    A) 10 times per second;
+    B) once per second;
+    C) once every 10 seconds;
+    D) less frequently than every 10 seconds;
+    E) all information within 2 minutes.
+    F) all information within 1 minutes.
+    ?) no information/sporadic occurrence
+  */
+
+  case  0: _process_Fig0s0(d);  break;  // MCI, RepTyA,   ensemble information (6.4.1)
+  case  1: _process_Fig0s1(d);  break;  // MCI, RepTyA,   sub-channel organization (6.2.1)
+  case  2: _process_Fig0s2(d);  break;  // MCI, RepTyA,   service organization (6.3.1)
+  case  3: _process_Fig0s3(d);  break;  // MCI, RepTyA,   service component in packet mode (6.3.2)
+//case  4:                      break;  // MCI, RepTy?,   service component with CA (6.3.3)
+  case  5: _process_Fig0s5(d);  break;  // SI,  RepTyA/B, service component language (8.1.2)
+//case  6:                      break;  // SI,  RepTyC,   service linking information (8.1.15)
+  case  7: _process_Fig0s7(d);  break;  // MCI, RepTyB,   configuration information (6.4.2)
+  case  8: _process_Fig0s8(d);  break;  // MCI, RepTyB,   service component global definition (6.3.5)
+  case  9: _process_Fig0s9(d);  break;  // SI,  RepTyB/C, country, LTO & international table (8.1.3.2)
+  case 10: _process_Fig0s10(d); break;  // SI,  RepTyB/C, date and time (8.1.3.1)
+  case 13: _process_Fig0s13(d); break;  // MCI, RepTyB,   user application information (6.3.6)
+  case 14: _process_Fig0s14(d); break;  // MCI, RepTyB?,  FEC subchannel organization (6.2.2)
+  case 17: _process_Fig0s17(d); break;  // SI,  RepTyA/B, programme type (8.1.5)
+  case 18: _process_Fig0s18(d); break;  // SI,  RepTyB,   announcement support (8.1.6.1)
+  case 19: _process_Fig0s19(d); break;  // SI,  RepTyA/B, announcement switching (8.1.6.2)
+//case 20:                      break;  // SI,  RepTyE,   service component information (8.1.4)
+//case 21: _process_Fig0s21(d); break;  // SI,  RepTyE,   frequency information (8.1.8)
+//case 24:                      break;  // SI,  RepTy?,   OE services (8.1.10)
+//case 25:                      break;  // SI,  RepTyB,   OE announcement support (8.1.6.3)
+//case 26:                      break;  // SI,  RepTyA/B, OE announcement switching (8.1.6.4)
   default:
     if (mUnhandledFig0Set.find(extension) == mUnhandledFig0Set.end()) // print message only once
     {
-      if (mFibDataLoaded) qDebug() << QString("FIG 0/%1 not handled").arg(extension); // print only if the summarized print was already done
+      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
+      if (mFibDataLoaded) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig0Set.emplace(extension);
     }
   }
@@ -256,7 +268,6 @@ i16 FibDecoder::_subprocess_Fig0s3(const u8 * const d, const i16 used, const SFi
 
     pConfig->Fig0s3_ServiceComponentPacketModeVec.emplace_back(fig0s3);
     _retrigger_timer_data_loaded("Fig0s3");
-    // emit signal_add_to_ensemble(serviceName, SId);
   }
   else
   {
@@ -410,18 +421,6 @@ void FibDecoder::_process_Fig0s9(const u8 * const d)
   _retrigger_timer_data_loaded("Fig0s9");
 }
 
-// User Application Information 6.3.6
-void FibDecoder::_process_Fig0s13(const u8 * const d)
-{
-  i16 used = 2;    // offset in bytes
-  const SFigHeader fh = _get_fig_header(d);
-
-  while (used < fh.Length)
-  {
-    used = _subprocess_Fig0s13(d, used, fh);
-  }
-}
-
 void FibDecoder::_process_Fig0s10(const u8 * dd)
 {
   constexpr i16 offset = 16;
@@ -454,6 +453,18 @@ void FibDecoder::_process_Fig0s10(const u8 * dd)
   {
     mUtcTimeSet.LTO_Minutes = pFig0s9->LTO_minutes;
     emit signal_fib_time_info(mUtcTimeSet);
+  }
+}
+
+// User Application Information 6.3.6
+void FibDecoder::_process_Fig0s13(const u8 * const d)
+{
+  i16 used = 2;    // offset in bytes
+  const SFigHeader fh = _get_fig_header(d);
+
+  while (used < fh.Length)
+  {
+    used = _subprocess_Fig0s13(d, used, fh);
   }
 }
 
@@ -655,53 +666,102 @@ void FibDecoder::_process_Fig0s19(const u8 * const d)
   }
 }
 
-#if 0
-//	Frequency information (FI) 8.1.8
-void FibDecoder::FIG0Extension21(const u8 * const d) const
+// Frequency information (FI) 8.1.8
+void FibDecoder::_process_Fig0s21(const u8 * const d) const
 {
-  i16 used = 2;    // offset in bytes
+  i16 used = 2;  // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
 
   while (used < fh.Length)
   {
-    used = HandleFIG0Extension21(d, used, fh);
+    used = _subprocess_Fig0s21(d, used, fh);
   }
 }
 
-i16 FibDecoder::HandleFIG0Extension21(const u8 * const d, i16 offset, const SFigHeader & iFH) const
+i16 FibDecoder::_subprocess_Fig0s21(const u8 * const d, const i16 used, const SFigHeader & iFH) const
 {
-  const i16 l_offset = offset * 8;
-  const i16 l = getBits_5(d, l_offset + 11);
-  const i16 upperLimit = l_offset + 16 + l * 8;
-  i16 base = l_offset + 16;
+  const i16 offset = used * 8;
+  const i16 LengthFiList = getBits_5(d, offset + 11);
+  i16 startOffset = offset + 16;
+  const i16 upperOffset = startOffset + LengthFiList * 8;
 
-  while (base < upperLimit)
+  while (startOffset < upperOffset)
   {
-    const u16 idField = getBits(d, base, 16);
-    const u8 RandM = getBits_4(d, base + 16);
-    const u8 continuity = getBits_1(d, base + 20);
-    (void)continuity;
-    const u8 length = getBits_3(d, base + 21);
+    const u16 IdField = getBits(d, startOffset, 16);
+    const u8  RandM = getBits_4(d, startOffset + 16);
+    const u8  ContFlag = getBits_1(d, startOffset + 20);
+    const u8  LengthFreqList = getBits_3(d, startOffset + 21);
+    startOffset += 24; // Header
 
-    if (RandM == 0x08)
+    QString str;
+    QTextStream ts(&str);
+
+    ts << "SIV " << iFH.CN_Flag << " OE " << iFH.OE_Flag << " RdM " << RandM << " CF " << ContFlag << " LFL " << LengthFreqList;
+    //sl << QString("SIV %1 OE %2 R&M %3 ContFlag %4 Lenght %5 FreqList %6").arg(iFH.CN_Flag).arg(iFH.OE_Flag).arg(RandM).arg(ContFlag).arg(LengthFreqList);
+
+    // TODO: LengthFreqList in length in bytes NOT numbers of frequency elements
+
+    switch (RandM)
     {
-      const u16 fmFrequency_key = getBits(d, base + 24, 8);
-      const i32 fmFrequency = 87500 + fmFrequency_key * 100;
+    case 0b0000:
+      ts << " 'DAB-Ens' EId " << hex_str(IdField);
+      for (u8 idx = 0; idx < LengthFreqList; idx++)
+      {
+        const u16 ControlField = getBits_5(d, startOffset);
+        const u32 Freq_kHz = 16 * getLBits(d, startOffset + 5, 19);
+        ts << " [ CF " << hex_str(ControlField) << " Freq " << Freq_kHz << " kHz ]";
+        startOffset += 24;
+      }
+      break;
 
-      // TODO:
-      // const auto it = ensemble->servicesMap.find(idField);
-      //
-      // if (it != ensemble->servicesMap.end())
-      // {
-      //   if ((it->second.hasName) && (it->second.fmFrequency == -1))
-      //   {
-      //     it->second.fmFrequency = fmFrequency;
-      //   }
-      // }
+    case 0b0110:
+      ts << " 'DRM' ServId " << hex_str(IdField);
+      for (u8 idx = 0; idx < LengthFreqList; idx++)
+      {
+        if (idx == 0)
+        {
+          const u8 IdField2 = getBits_8(d, startOffset);
+          ts << " ID2 " << hex_str(IdField2);
+          startOffset += 8;
+        }
+        const u8 multBit = getBits_1(d, startOffset);
+        const u32 Freq_kHz = (multBit == 1 ? 10 : 1) * getLBits(d, startOffset + 1, 15);
+        ts << " [ MB " << multBit << " Freq " << Freq_kHz << " kHz ]";
+        startOffset += 16;
+      }
+      break;
+
+    case 0b1000:
+      for (u8 idx = 0; idx < LengthFreqList; idx++)
+      {
+        const u16 fmFreq_key = getBits_8(d, startOffset + 24 + idx * 8);
+        const i32 fmFreq_kHz = 87500 + fmFreq_key * 100;
+        qDebug() << "  FM with RDS b" << (idx+1) << "Frequency [kHz]" << fmFreq_kHz << "PI-Code" << IdField;
+        startOffset += 8;
+      }
+      break;
+
+    case 0b1110:
+      ts << " 'AMSS' ServId " << hex_str(IdField);
+      for (u8 idx = 0; idx < LengthFreqList; idx++)
+      {
+        const u8 IdField2 = getBits_8(d, startOffset);
+        const u8 multBit = getBits_1(d, startOffset + 8);
+        const u32 Freq_kHz = (multBit == 1 ? 10 : 1) * getLBits(d, startOffset + 8 + 1, 15);
+        ts << " [ ID2 " << hex_str(IdField2) << " MB " << multBit << " Freq " << Freq_kHz << " kHz ]";
+        startOffset += 24;
+      }
+      break;
+
+    default:
+      qWarning() << "  Invalid RandM field";
+      startOffset += 24 /*Header*/ + LengthFreqList * 8;
     }
-    base += 24 + length * 8;
+
+    //startOffset += 24 /*Header*/ + LengthFreqList * 8;
+    qDebug().noquote() << str;
   }
-  assert(upperLimit % 8 == 0); // only full bytes should occur
-  return upperLimit / 8;
+
+  assert(upperOffset % 8 == 0); // only full bytes should occur
+  return upperOffset / 8;
 }
-#endif

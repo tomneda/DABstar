@@ -86,7 +86,7 @@ void TiiListDisplay::hide()
   mpWidget->hide();
 }
 
-void TiiListDisplay::add_row(const SCacheElem & iTr, const SDerivedData & iDD)
+void TiiListDisplay::add_row(const STiiDataEntry & iTr, const SDerivedData & iDD)
 {
   i16 row = mpTableWidget->rowCount();
   mpTableWidget->insertRow(row);
