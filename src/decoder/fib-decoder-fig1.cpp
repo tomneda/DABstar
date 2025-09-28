@@ -5,160 +5,136 @@
 #include "bit-extractors.h"
 #include <QDebug>
 
-//	FIG 1 - Cover the different possible labels, section 5.2
-void FibDecoder::process_FIG1(const u8 * const d)
+// Cover the different possible labels, section 5.2
+void FibDecoder::_process_Fig1(const u8 * const d)
 {
-  const u8 extension = getBits_3(d, 8 + 5);
+  const u8 extension = getBits_3(d, 8 + 5);  // FIG Header + Charset + Rfu
 
   switch (extension)
   {
-  case 0: FIG1Extension0(d); break;  // ensemble name
-  case 1: FIG1Extension1(d); break;  // service name
-  case 4: FIG1Extension4(d); break;  // Service Component Label
-  case 5: FIG1Extension5(d); break;  // Data service label
-  case 6: FIG1Extension6(d); break;  // XPAD label - 8.1.14.4
-  default:;
+  case 0: _process_Fig1s0(d); break;  // ensemble name
+  case 1: _process_Fig1s1(d); break;  // service name
+  case 4: _process_Fig1s4(d); break;  // Service Component Label
+  case 5: _process_Fig1s5(d); break;  // Data service label
+  // case 6: _process_Fig1s6(d); break;  // XPAD label - 8.1.14.4
+  default:
+    if (mUnhandledFig1Set.find(extension) == mUnhandledFig1Set.end()) // print message only once
+    {
+      if (mFibDataLoaded) qDebug() << QString("FIG 1/%1 not handled").arg(extension); // print only if the summarized print was already done
+      mUnhandledFig1Set.emplace(extension);
+    }
   }
 }
 
-//	Name of the ensemble
-//
-void FibDecoder::FIG1Extension0(const u8 * const d)
+// Name of the ensemble
+void FibDecoder::_process_Fig1s0(const u8 * const d)
 {
+  FibConfigFig1::SFig1s0_EnsembleLabel fig1s0;
+  fig1s0.EId = getBits(d, 16, 16);
 
-  // from byte 1 we deduce:
-  const u8 extension = getBits_3(d, 8 + 5);
-  (void)extension;
-  const u32 EId = getBits(d, 16, 16);
-
-  QString name;
-  if (!extract_character_set_label(name, d, 32))
+  if (!_extract_character_set_label(fig1s0, d, 32))
   {
     return;
   }
 
-  if (!ensemble->namePresent)
+  if (mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty())
   {
-    ensemble->ensembleName = name;
-    ensemble->ensembleId = EId;
-    ensemble->namePresent = true;
-
-    emit signal_name_of_ensemble(EId, name);
+    mpFibConfigFig1->Fig1s0_EnsembleLabelVec.emplace_back(fig1s0);
+    _retrigger_timer_data_loaded("Fig1s0");
+    emit signal_name_of_ensemble(fig1s0.EId, fig1s0.Name, fig1s0.NameShort);
   }
-
-  ensemble->isSynced = true;
 }
 
-//
-//	Name of service
-void FibDecoder::FIG1Extension1(const u8 * const d)
+// Name of service
+void FibDecoder::_process_Fig1s1(const u8 * const d)
 {
-  const i32 SId = getBits(d, 16, 16);
-  const i16 offset = 32;
-  const u8 extension = getBits_3(d, 8 + 5);
-  (void)extension;
+  FibConfigFig1::SFig1s1_ProgrammeServiceLabel fig1s1;
+  fig1s1.SId = getBits(d, 16, 16);
 
-  QString dataName;
-  if (!extract_character_set_label(dataName, d, offset))
+  if (!_extract_character_set_label(fig1s1, d, 16 + 16))
   {
     return;
   }
 
-  const auto it = find_service_from_service_name(dataName);
-
-  if (it == ensemble->servicesMap.end())
+  if (mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(fig1s1.SId) == nullptr)
   {
-    create_service(dataName, SId, 0);
-  }
-  else
-  {
-    it->second.SCIdS = 0;
-    it->second.hasName = true;
+    mpFibConfigFig1->Fig1s1_ProgrammeServiceLabelVec.emplace_back(fig1s1);
+    FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s1.SId, -1}; // -1 comes from FIG1/5 and unspecified
+    mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s1.Name, SId_SCIdS);
+    _retrigger_timer_data_loaded("Fig1s1");
   }
 }
 
-// service component label 8.1.14.3
-void FibDecoder::FIG1Extension4(const u8 * const d)
+// Service component label 8.1.14.3
+void FibDecoder::_process_Fig1s4(const u8 * const d)
 {
-  const u8 PD_bit = getBits_1(d, 16);
-  // const u8 Rfa = getBits_3(d, 17);
-  const u8 SCIdS = getBits_4(d, 20);
+  FibConfigFig1::SFig1s4_ServiceComponentLabel fig1s4;
+  fig1s4.PD_Flag = getBits_1(d, 16);
+  fig1s4.SCIdS = getBits_4(d, 20);
+  fig1s4.SId = (fig1s4.PD_Flag ? getLBits(d, 24, 32) : getLBits(d, 24, 16));
+  const i16 offset = fig1s4.PD_Flag ? 56 : 40;
 
-  const u32 SId = PD_bit ? getLBits(d, 24, 32) : getLBits(d, 24, 16);
-  const i16 offset = PD_bit ? 56 : 40;
-
-  const auto pScd = find_service_component(currentConfig.get(), SId, SCIdS);  // TODO: why only current config
-
-  if (pScd != nullptr) // TODO: bug? was > 0?
+  if (const auto * const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(fig1s4.SId, fig1s4.SCIdS);
+      pFig1s4 == nullptr)
   {
-    QString dataName;
-    if (!extract_character_set_label(dataName, d, offset))
+    if (!_extract_character_set_label(fig1s4, d, offset))
     {
       return;
     }
 
-    if (find_service_from_service_name(dataName) == ensemble->servicesMap.end())
-    {
-      if (pScd->TMid == ETMId::StreamModeAudio)
-      {
-        create_service(dataName, SId, SCIdS);
-        emit signal_add_to_ensemble(dataName, SId);
-      }
-    }
+    mpFibConfigFig1->Fig1s4_ServiceComponentLabelVec.emplace_back(fig1s4);
+    FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s4.SId, fig1s4.SCIdS};
+    mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s4.Name, SId_SCIdS);
+    _retrigger_timer_data_loaded("Fig1s4");
   }
 }
 
-//	Data service label - 32 bits 8.1.14.2
-void FibDecoder::FIG1Extension5(const u8 * const d)
+// Data service label 8.1.14.2
+void FibDecoder::_process_Fig1s5(const u8 * const d)
 {
+  FibConfigFig1::SFig1s5_DataServiceLabel fig1s5;
   constexpr i16 offset = 48;
-  const u8 extension = getBits_3(d, 8 + 5);
-  const u32 SId = getLBits(d, 16, 32);
-  (void)extension;
+  fig1s5.SId = getLBits(d, 16, 32);
+  const auto * const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(fig1s5.SId);
 
-  const auto it = ensemble->servicesMap.find(SId);
-
-  if (it != ensemble->servicesMap.end())
+  if (pFig1s5 == nullptr)
   {
-    return;  // entry already existing
+    if (!_extract_character_set_label(fig1s5, d, offset))
+    {
+      return;
+    }
+    mpFibConfigFig1->Fig1s5_DataServiceLabelVec.emplace_back(fig1s5);
+    FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s5.SId, -5}; // -5 comes from FIG1/5 and unspecified
+    mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s5.Name, SId_SCIdS);
+    _retrigger_timer_data_loaded("Fig1s5");
   }
-
-  QString serviceName;
-  if (!extract_character_set_label(serviceName, d, offset))
-  {
-    return;
-  }
-
-  create_service(serviceName, SId, 0);
 }
 
-//	XPAD label - 8.1.14.4
-void FibDecoder::FIG1Extension6(const u8 * const d)
-{
-  const u8 PD_bit = getBits_1(d, 16);
-  const u8 Rfu = getBits_3(d, 17);
-  (void)Rfu;
-  const u8 SCIdS = getBits_4(d, 20);
-
-  u32 SId = 0;
-  i16 offset = 0;
-  u8 XPAD_apptype;
-
-  if (PD_bit)
-  {  // 32 bits identifier for XPAD label
-    SId = getLBits(d, 24, 32);
-    XPAD_apptype = getBits_5(d, 59);
-    offset = 64;
-  }
-  else
-  {  // 16 bit identifier for XPAD label
-    SId = getLBits(d, 24, 16);
-    XPAD_apptype = getBits_5(d, 43);
-    offset = 48;
-  }
-
-  (void)SId;
-  (void)SCIdS;
-  (void)XPAD_apptype;
-  (void)offset;
-}
+// XPAD label - 8.1.14.4
+// void FibDecoder::_process_Fig1s6(const u8 * const d) const
+// {
+//   const u8 PD_bit = getBits_1(d, 16);
+//   const u8 SCIdS = getBits_4(d, 20);
+//
+//   u32 SId = 0;
+//   i16 offset = 0;
+//   u8 XPAD_apptype;
+//
+//   if (PD_bit)
+//   {  // 32 bits identifier for XPAD label
+//     SId = getLBits(d, 24, 32);
+//     XPAD_apptype = getBits_5(d, 59);
+//     offset = 64;
+//   }
+//   else
+//   {  // 16 bit identifier for XPAD label
+//     SId = getLBits(d, 24, 16);
+//     XPAD_apptype = getBits_5(d, 43);
+//     offset = 48;
+//   }
+//
+//   (void)SId;
+//   (void)SCIdS;
+//   (void)XPAD_apptype;
+//   (void)offset;
+// }

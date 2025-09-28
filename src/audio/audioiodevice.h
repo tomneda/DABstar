@@ -17,7 +17,7 @@ class AudioIODevice final : public QIODevice
 {
   Q_OBJECT
 public:
-  explicit AudioIODevice(DabRadio * ipRI, QObject * iParent = nullptr);
+  explicit AudioIODevice(QObject * iParent = nullptr);
 
   void start();
   void stop();

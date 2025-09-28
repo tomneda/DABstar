@@ -42,9 +42,9 @@ public:
   ~MscHandler();
 
   void process_block(const std::vector<i16> & iSoftBits, i16 iBlockNr);
-  bool set_channel(const DescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, i32 flag);
+  bool set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, i32 flag);
   void reset_channel();
-  void stop_service(const DescriptorType *, i32);
+  void stop_service(const SDescriptorType *, i32);
   void stop_service(i32, i32);
 
 private:

@@ -32,11 +32,9 @@
 #define  CONTENT_TABLE_H
 
 #include "glob_data_types.h"
-#include <QWidget>
 #include <QObject>
 #include <QScrollArea>
 #include <QTableWidget>
-#include <QStringList>
 #include <QTableWidgetItem>
 #include <QObject>
 #include <QString>
@@ -44,7 +42,7 @@
 
 class DabRadio;
 class QSettings;
-class AudioData;
+class SAudioData;
 
 class ContentTable : public QObject
 {
@@ -56,7 +54,7 @@ public:
   void show();
   void hide();
   bool isVisible();
-  void clearTable();
+  // void clearTable();
   void addLine(const QString &);
   void dump(FILE *);
 
@@ -64,9 +62,8 @@ private:
   QString channel;
   i32 columns;
   DabRadio * theRadio;
-  QSettings * dabSettings;
-  QScrollArea * myWidget;
-  QTableWidget * contentWidget;
+  QScopedPointer<QScrollArea> myWidget;
+  QScopedPointer<QTableWidget> contentWidget;
   bool is_clear;
 
   i16 addRow();

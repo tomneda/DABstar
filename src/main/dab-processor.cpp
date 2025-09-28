@@ -446,7 +446,7 @@ void DabProcessor::reset_services()
   }
 }
 
-void DabProcessor::stop_service(DescriptorType * d, i32 flag)
+void DabProcessor::stop_service(SDescriptorType * d, i32 flag)
 {
   fprintf(stderr, "function obsolete\n");
   if (!mScanMode)
@@ -463,7 +463,7 @@ void DabProcessor::stop_service(i32 subChId, i32 flag)
   }
 }
 
-bool DabProcessor::set_audio_channel(const AudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, i32 flag)
+bool DabProcessor::set_audio_channel(const SAudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, i32 flag)
 {
   if (!mScanMode)
   {
@@ -475,7 +475,7 @@ bool DabProcessor::set_audio_channel(const AudioData * ipAudioData, RingBuffer<i
   }
 }
 
-bool DabProcessor::set_data_channel(const PacketData * ipPacketData, RingBuffer<u8> * ipoDataBuffer, i32 flag)
+bool DabProcessor::set_data_channel(const SPacketData * ipPacketData, RingBuffer<u8> * ipoDataBuffer, i32 flag)
 {
   if (!mScanMode)
   {

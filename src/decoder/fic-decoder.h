@@ -50,14 +50,14 @@ class FicDecoder : public QObject
 {
   Q_OBJECT
 public:
-  FicDecoder(DabRadio * iMr);
+  explicit FicDecoder(DabRadio * iMr);
   ~FicDecoder() override = default;
 
   void process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iOfdmSymbIdx);
   void stop();
   void restart();
   void get_fib_bits(u8 *, bool *);
-  i32  get_fic_decode_ratio_percent();
+  i32  get_fic_decode_ratio_percent() const;
   void reset_fic_decode_success_ratio() { mFicDecodeSuccessRatio = 0; };
   void start_fic_dump(FILE *);
   void stop_fic_dump();
@@ -83,7 +83,7 @@ private:
   std::atomic<FILE *> mpFicDump{nullptr};
 
   void _process_fic_input(i16 iFicIdx, bool & oFicValid);
-  void _dump_fib_to_file(const std::byte * ipOneFibBits);
+  void _dump_fib_to_file(const std::byte * ipOneFibBits) const;
 
 signals:
   void signal_fic_status(i32, f32);

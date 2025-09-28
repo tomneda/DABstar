@@ -26,11 +26,11 @@
 
 //	Driver program for the selected backend. Embodying that in a separate class makes the "Backend" class simpler.
 
-BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer)
+BackendDriver::BackendDriver(DabRadio * mr, const SDescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer)
 {
   if (d->TMId == ETMId::StreamModeAudio)
   {
-    if (((AudioData *)d)->ASCTy != 077)
+    if (((SAudioData *)d)->ASCTy != 077)
     {
       theProcessor.reset(new Mp2Processor(mr, d->bitRate, audioBuffer, frameBuffer));
     }
@@ -41,7 +41,7 @@ BackendDriver::BackendDriver(DabRadio * mr, const DescriptorType * d, RingBuffer
   }
   else if (d->TMId == ETMId::PacketModeData)
   {
-    theProcessor.reset(new DataProcessor(mr, (PacketData *)d, dataBuffer));
+    theProcessor.reset(new DataProcessor(mr, (SPacketData *)d, dataBuffer));
   }
   else
   {

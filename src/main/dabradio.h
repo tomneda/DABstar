@@ -45,8 +45,6 @@
 #include	"tcp-server.h"
 #endif
 
-#include "epgdec.h"
-#include "epg-decoder.h"
 #include "spectrum-viewer.h"
 #include "cir-viewer.h"
 #include "openfiledialog.h"
@@ -59,11 +57,8 @@
 #include <set>
 #include <memory>
 #include <mutex>
-#include <QMainWindow>
 #include <QStringList>
-#include <QStandardItemModel>
 #include <QVector>
-#include <QComboBox>
 #include <QByteArray>
 #include <QLabel>
 #include <QTimer>
@@ -72,7 +67,7 @@
 
 class QSettings;
 class Qt_Audio;
-class timeTableHandler;
+class TimeTableHandler;
 class ServiceListHandler;
 class IAudioOutput;
 
@@ -82,6 +77,8 @@ class	dabStreamer;
 #endif
 
 class TechData;
+class CEPGDecoder;
+class EpgDecoder;
 
 struct SDabService
 {
@@ -103,7 +100,7 @@ struct STheTime
   i32 day;
   i32 hour;
   i32 minute;
-  i32 second;
+  i32 second; // == -1: no seconds known
 };
 
 struct SChannelDescriptor
@@ -111,9 +108,10 @@ struct SChannelDescriptor
   QString channelName;
   bool realChannel = false;
   bool etiActive = false;
-  i32 serviceCount = 0;
+  i32 serviceCount = -1;
   i32 nominalFreqHz = 0;
   QString ensembleName;
+  QString ensembleNameShort;
   u8 mainId = 0;
   u8 subId = 0;
   std::vector<SDabService> backgroundServices;
@@ -207,7 +205,6 @@ private:
   static constexpr i32 cDisplayTimeoutMs     = 1000;
   static constexpr i32 cChannelTimeoutMs     = 5000;
   static constexpr i32 cEpgTimeoutMs         = 3000;
-  static constexpr i32 cPresetTimeoutMs      =  500;
   static constexpr i32 cClockResetTimeoutMs  = 5000;
   static constexpr i32 cTiiIndexCntTimeoutMs = 2000;
 
@@ -239,7 +236,7 @@ private:
   HttpHandler * mpHttpHandler = nullptr;
   ProcessParams mProcessParams;
   const QString mVersionStr{PRJ_VERS};
-  ContentTable * mpContentTable = nullptr;
+  QScopedPointer<ContentTable> mpContentTable;
   FILE * mpLogFile = nullptr;
   SChannelDescriptor mChannel{};
   i32 mMaxDistance = -1;
@@ -275,8 +272,8 @@ private:
 #ifdef  DATA_STREAMER
   tcpServer * dataStreamer = nullptr;
 #endif
-  CEPGDecoder mEpgHandler;
-  EpgDecoder mEpgProcessor;
+  QScopedPointer<CEPGDecoder> mpEpgHandler;
+  QScopedPointer<EpgDecoder> mpEpgProcessor;
   QString mEpgPath;
   QTimer mEpgTimer;
   QString mPicturesPath;
@@ -290,7 +287,6 @@ private:
 
   QTimer mDisplayTimer;
   QTimer mChannelTimer;
-  QTimer mPresetTimer;
   QTimer mClockResetTimer;
   QTimer mTiiIndexCntTimer;
   u32 mTiiIndex = 0;
@@ -298,7 +294,7 @@ private:
   bool mMutingActive = false;
   STheTime mLocalTime{};
   STheTime mUTC{};
-  timeTableHandler * mpTimeTable = nullptr;
+  QScopedPointer<TimeTableHandler> mpTimeTable;
   FILE * mpFicDumpPointer = nullptr;
   size_t mPreviousIdleTime = 0;
   size_t mPreviousTotalTime = 0;
@@ -309,17 +305,18 @@ private:
   std::vector<STiiResult> mTransmitterIds;
   enum class EAudioFrameType { None, MP2, AAC };
   EAudioFrameType mAudioFrameType = EAudioFrameType::None;
-  std::vector<QMetaObject::Connection> mGuiConnections;
+  std::vector<QMetaObject::Connection> mSignalSlotConn;
 
-  static QStringList get_soft_bit_gen_names();
-  std::vector<SServiceId> insert_sorted(const std::vector<SServiceId> &, const SServiceId &);
   void LOG(const QString &, const QString &);
-  u32 extract_epg(const QString&, const std::vector<SServiceId> & iServiceList, u32);
-  void show_pause_slide();
-  void connect_dab_processor();
-  void connect_gui();
-  void disconnect_gui();
-  static QString convertTime(i32, i32, i32, i32, i32, i32 = -1);
+  QStringList _get_soft_bit_gen_names() const;
+  u32 _extract_epg(const QString&, const std::vector<SServiceId> & iServiceList, u32);
+  void _show_pause_slide();
+  void _connect_dab_processor();
+  void _connect_dab_processor_signals();
+  void _disconnect_dab_processor_signals();
+  void _get_YMD_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const;
+  i32 _get_local_time(i32 & oLocalHour, i32 & oLocalMinute, i32 iUtcHour, i32 iUtcMinute, i32 iLtoMinutes) const;
+  QString _conv_to_time_str(i32, i32, i32, i32, i32, i32 = -1) const;
   void clean_screen();
   void _show_hide_buttons(const bool iShow);
 
@@ -327,7 +324,7 @@ private:
   void stop_etiHandler();
   QString check_and_create_dir(const QString &) const;
 
-  void start_audio_service(const AudioData * const ipAD);
+  void start_audio_service(const SAudioData * const ipAD);
   void start_packet_service(const QString &);
   void start_scanning();
   void stop_scanning();
@@ -342,7 +339,7 @@ private:
   void stop_channel();
   void clean_up();
   void stop_service(SDabService &);
-  void start_service(SDabService &);
+  void start_service(const SDabService &);
   //void colorService(QModelIndex ind, QColor c, i32 pt, bool italic = false);
   void local_select(const QString &, const QString &);
   // void showServices() const;
@@ -367,25 +364,40 @@ private:
   void write_picture(const QPixmap & iPixMap) const;
 
   static QString get_bg_style_sheet(const QColor & iBgBaseColor, const char * const ipWidgetType = nullptr);
-  void setup_ui_colors();
   void set_favorite_button_style();
   void _update_channel_selector(i32);
   void _show_epg_label(const bool iShowLabel);
   void _set_http_server_button(const bool iActive);
   void _set_clock_text(const QString & iText = QString());
-  void _create_status_info();
   template<typename T> void _add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip);
   template<typename T> void _set_status_info_status(StatusInfoElem<T> & iElem, const T iValue);
   void _reset_status_info();
-  void _update_channel_selector();
+  void _update_channel_selector(const QString & iChannel) const;
   void _set_device_to_file_mode(const bool iDataFromFile);
   void _setup_audio_output(u32 iSampleRate);
   QString _get_scan_message(bool iEndMsg) const;
   QString _convert_links_to_clickable(const QString& iText) const;
   void _check_coordinates() const;
   bool _is_audio_service(const QString & s) const;
-  // bool _is_packet_service(const QString & s) const;
+  void _get_last_service_from_config(SDabService & ioDabService) const;
+  void _get_local_position_from_config(cf32 & oLocalPos) const;
 
+  void _initialize_ui_buttons();
+  void _initialize_status_info();
+  void _initialize_dynamic_label();
+  void _initialize_thermo_peak_levels();
+  void _initialize_audio_output();
+  void _initialize_paths();
+  void _initialize_epg();
+  void _initialize_time_table();
+  void _initialize_tii_file();
+  void _initialize_version_and_copyright_info();
+  void _initialize_band_handler();
+  void _initialize_and_start_timers();
+  void _initialize_device_selector();
+
+  void _show_or_hide_windows_from_config();
+  // bool _is_packet_service(const QString & s) const;
 
 signals:
   void signal_set_new_channel(i32);
@@ -400,8 +412,7 @@ signals:
   void signal_audio_buffer_filled_state(i32);
 
 public slots:
-  void slot_add_to_ensemble(const QString &, u32);
-  void slot_name_of_ensemble(i32, const QString &);
+  void slot_name_of_ensemble(i32 iEId, const QString &iEnsName, const QString & iEnsNameShort);
   void slot_show_frame_errors(i32);
   void slot_show_rs_errors(i32);
   void slot_show_aac_errors(i32);
@@ -424,7 +435,7 @@ public slots:
   void slot_show_digital_peak_level(f32 iPeakLevel);
   void slot_show_rs_corrections(i32, i32);
   void slot_show_tii(const std::vector<STiiResult> & iTr);
-  void slot_clock_time(i32, i32, i32, i32, i32, i32, i32, i32, i32);
+  void slot_fib_time(const IFibDecoder::SUtcTimeSet & fibTimeInfo);
   void slot_start_announcement(const QString &, i32);
   void slot_stop_announcement(const QString &, i32);
   void slot_new_frame();
@@ -480,7 +491,7 @@ private slots:
   void _slot_favorite_changed(const bool iIsFav);
   void _slot_handle_favorite_button(bool iClicked);
   void _slot_set_static_button_style();
-  void _slot_preset_timeout();
+  void _slot_fib_data_loaded();
   void _slot_handle_mute_button();
   void _slot_update_mute_state(const bool iMute);
   void _slot_handle_config_button();

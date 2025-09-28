@@ -17,22 +17,22 @@
 #ifndef BIT_EXTRACTORS_H
 #define BIT_EXTRACTORS_H
 
-static inline u16 getBits_1(const u8 * d, i32 offset)
+static inline u8 getBits_1(const u8 * d, i32 offset)
 {
-  return (d[offset] & 0x01);
+  return (d[offset]);
 }
 
-static inline u16 getBits_2(const u8 * d, i32 offset)
+static inline u8 getBits_2(const u8 * d, i32 offset)
 {
-  u16 res = d[offset];
+  u8 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   return res;
 }
 
-static inline u16 getBits_3(const u8 * d, i32 offset)
+static inline u8 getBits_3(const u8 * d, i32 offset)
 {
-  u16 res = d[offset];
+  u8 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -40,9 +40,9 @@ static inline u16 getBits_3(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u16 getBits_4(const u8 * d, i32 offset)
+static inline u8 getBits_4(const u8 * d, i32 offset)
 {
-  u16 res = d[offset];
+  u8 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -52,9 +52,9 @@ static inline u16 getBits_4(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u16 getBits_5(const u8 * d, i32 offset)
+static inline u8 getBits_5(const u8 * d, i32 offset)
 {
-  u16 res = d[offset];
+  u8 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -66,9 +66,9 @@ static inline u16 getBits_5(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u16 getBits_6(const u8 * d, i32 offset)
+static inline u8 getBits_6(const u8 * d, i32 offset)
 {
-  u16 res = d[offset];
+  u8 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -82,9 +82,9 @@ static inline u16 getBits_6(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u16 getBits_7(const u8 * d, i32 offset)
+static inline u8 getBits_7(const u8 * d, i32 offset)
 {
-  u16 res = d[offset];
+  u8 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;
@@ -100,9 +100,9 @@ static inline u16 getBits_7(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u16 getBits_8(const u8 * d, i32 offset)
+static inline u8 getBits_8(const u8 * d, i32 offset)
 {
-  u16 res = d[offset];
+  u8 res = d[offset];
   res <<= 1;
   res |= d[offset + 1];
   res <<= 1;

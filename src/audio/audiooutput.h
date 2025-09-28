@@ -37,6 +37,8 @@
 #include <QAudioDevice>
 #include "audiofifo.h"
 
+class AudioIODevice;
+
 class IAudioOutput : public QObject
 {
   Q_OBJECT
@@ -44,6 +46,7 @@ class IAudioOutput : public QObject
 public:
   ~IAudioOutput() override = default;
 
+  virtual const AudioIODevice * get_audio_io_device() const = 0;
   virtual QList<QAudioDevice> get_audio_device_list() const = 0;
 
 public slots:

@@ -79,7 +79,7 @@ constexpr char sSettingContentStorageDir[] = "saveDirContent";
 enum ETMId // TransportMechanismMode
 {
   StreamModeAudio = 0x0,
-  // StreamModeData  = 0x1,
+  StreamModeData  = 0x1,
   // Reserved        = 0x2,
   PacketModeData  = 0x3
 };
@@ -112,13 +112,16 @@ struct SServiceId
 {
   QString name;
   u32 SId;
+  bool isAudioChannel;
+  bool hasSpiEpgData;  
 };
 
-struct DescriptorType
+struct SDescriptorType
 {
   ETMId TMId;
   bool defined = false;
   QString serviceName;
+  QString serviceNameShort;
   u32 SId;
   i32 SCIdS;
   i16 subchId;
@@ -131,18 +134,18 @@ struct DescriptorType
 };
 
 //	for service handling we define
-struct PacketData : DescriptorType
+struct SPacketData : SDescriptorType
 {
   i16 DSCTy;
   i16 FEC_scheme;
   i16 DGflag;
-  i16 appType;
+  std::vector<i16> appTypeVec;
   // i16 compnr;
   i16 packetAddress;
-  PacketData() { TMId = ETMId::PacketModeData; }
+  SPacketData() { TMId = ETMId::PacketModeData; }
 };
 
-struct AudioData : DescriptorType
+struct SAudioData : SDescriptorType
 {
 public:
   i16 ASCTy;
@@ -150,10 +153,10 @@ public:
   i16 programType;
   i16 compnr;
   i32 fmFrequency = -1;
-  AudioData() { TMId = ETMId::StreamModeAudio; }
+  SAudioData() { TMId = ETMId::StreamModeAudio; }
 };
 
-struct ChannelData
+struct SChannelData
 {
   bool in_use;
   i16 id;

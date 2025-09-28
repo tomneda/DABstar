@@ -76,7 +76,7 @@ void MscHandler::reset_channel()
   mMutex.unlock();
 }
 
-void MscHandler::stop_service(const DescriptorType * const iDescType, const i32 iFlag)
+void MscHandler::stop_service(const SDescriptorType * const iDescType, const i32 iFlag)
 {
   fprintf(stderr, "obsolete function stopService\n");
   mMutex.lock();
@@ -117,7 +117,7 @@ void MscHandler::stop_service(const i32 iSubChId, const i32 iFlag)
   mMutex.unlock();
 }
 
-bool MscHandler::set_channel(const DescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, i32 flag)
+bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, i32 flag)
 {
   // fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
   // locker.lock();

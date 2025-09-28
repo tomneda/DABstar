@@ -202,7 +202,7 @@ void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbId
 i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
 {
   i32 fillPointer = 0;
-  ChannelData data;
+  SChannelData data;
 
   CIFCount_lo += minor;
   if (CIFCount_lo >= 250)
@@ -325,7 +325,7 @@ i32 EtiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
 
   for (i32 i = 0; i < 64; i++)
   {
-    ChannelData data;
+    SChannelData data;
     mpFibDecoder->get_channel_info(&data, i);
     if (data.in_use)
     {

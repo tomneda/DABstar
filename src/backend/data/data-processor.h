@@ -41,13 +41,13 @@
 
 class DabRadio;
 class virtual_dataHandler;
-class PacketData;
+class SPacketData;
 
 class DataProcessor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  DataProcessor(DabRadio * mr, const PacketData * pd, RingBuffer<u8> * dataBuffer);
+  DataProcessor(DabRadio * mr, const SPacketData * pd, RingBuffer<u8> * dataBuffer);
   ~DataProcessor() override;
 
   void add_to_frame(const std::vector<u8> &) override;

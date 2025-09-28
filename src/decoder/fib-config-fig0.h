@@ -1,86 +1,12 @@
-/*
- * This file is adapted by Thomas Neder (https://github.com/tomneda)
- *
- * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
- * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
- *
- * The original copyright information is preserved below and is acknowledged.
- */
-
-/*
- *    Copyright (C) 2018, 2019, 2020
- *    Jan van Katwijk (J.vanKatwijk@gmail.com)
- *    Lazy Chair Computing
- *
- *    This file is part of the Qt-DAB program              
- *
- *    Qt-DAB is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    Qt-DAB is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with Qt-DAB; if not, write to the Free Software
- *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
-#ifndef  FIB_CONFIG_H
-#define  FIB_CONFIG_H
+//
+// Created by tomneda on 2025-09-15.
+//
+#ifndef  FIB_CONFIG_FIG0_H
+#define  FIB_CONFIG_FIG0_H
 
 #include "glob_data_types.h"
-#include "dab-constants.h"
 #include <vector>
-#include <map>
 #include <QString>
-
-struct Service
-{
-  u32 SId = -1;
-  i32 SCIdS = -1;
-  bool hasName = false;
-  QString serviceLabel;
-  i32 language = -1;
-  i32 programType = -1;
-  bool is_shown = false;
-  i32 fmFrequency = -1;
-  std::vector<SEpgElement> epgData;
-};
-
-class EnsembleDescriptor
-{
-public:
-  EnsembleDescriptor()
-  {
-    reset();
-  }
-
-  ~EnsembleDescriptor() = default;
-
-  void reset()
-  {
-    namePresent = false;
-    ecc_Present = false;
-    countryId = 0;
-    isSynced = false;
-    servicesMap.clear();
-  }
-
-  QString ensembleName;
-  i32 ensembleId;
-  bool namePresent;
-  bool ecc_Present;
-  u8 ecc_byte;
-  u8 countryId;
-  bool isSynced;
-
-  using TMapService = std::map<u32, Service>; // Key is SId
-  TMapService servicesMap;
-};
 
 struct SFig0s0_EnsembleInformation
 {
@@ -96,59 +22,11 @@ struct SFig0s0_EnsembleInformation
   u8 OccurrenceChange = - 1;
 };
 
-
-struct SSubChannelDescFig0_5
-{
-  i16 language = 0;
-};
-
 struct SSubChannelDescFig0_14
 {
   i16 FEC_scheme = 0;
 };
 
-//      The service component describes the actual service
-//      It really should be a union, the component data for
-//      audio and data are quite different
-struct ServiceComponentDescriptor
-{
-// public:
-//   ServiceComponentDescriptor()
-//   {
-//     reset();
-//   }
-//
-//   ~ServiceComponentDescriptor() = default;
-//
-//   void reset()
-//   {
-//     inUse = false;
-//     isMadePublic = false;
-//     SCIdS = -1;
-//     componentNr = -1;
-//     SCId = -1;
-//     subChannelId = -1;
-//   }
-//
-//   bool inUse = false;        // field in use
-  ETMId TMid = (ETMId)(-1);  // the transport mode
-  u32 SId = 0;               
-  i16 SCIdS = -1;            // component within service
-  i16 subChannelId = -1;     // used in both audio and packet
-  i16 componentNr = -1;      // component
-  i16 ASCTy = -1;            // used for audio
-  i16 DSCTy = -1;            // used in packet
-  i16 PsFlag = 0;            // use for both audio and packet
-  i16 SCId = -1;             // Component Id (12 bit, unique)
-  u8 CaFlag = 0;             // used in packet (or not at all)
-  u8 DgFlag = 0;             // used for TDC
-  i16 packetAddress = -1;    // used in packet
-  i16 appType = -1;          // used in packet and Xpad
-  i16 language = -1;
-  bool isMadePublic = false; // used to make service visible
-};
-
-//
 // cluster is for announcement handling
 struct Cluster
 {
@@ -159,11 +37,11 @@ struct Cluster
   std::vector<u32> servicesSIDs;
 };
 
-class FibConfig
+class FibConfigFig0
 {
 public:
-  FibConfig();
-  ~FibConfig() = default;
+  FibConfigFig0();
+  ~FibConfigFig0() = default;
 
   void reset();
 
@@ -203,7 +81,9 @@ public:
 
   struct SFig0s2_BasicService_ServiceComponentDefinition
   {
-    u8 PD_Flag = -1;  // to select one of the both unions PD0 or PD1 below
+    constexpr static i8 cNumServiceCompMax = 12;
+    u32 get_SId() const { return PD_Flag == 0 ? PD0.SId : PD1.SId; }
+    i8 PD_Flag = -1;  // to select one of the both unions PD0 or PD1 below (programme or data service)
     // SId (Service Identifier): this 16-bit or 32-bit field shall identify the service.
     // Country Id (Identification): this 4-bit field shall be as defined in ETSI TS 101 756 [3], tables 3 to 7.
     // ECC (Extended Country Code): this 8-bit field shall be as defined in ETSI TS 101 756 [3], tables 3 to 7.
@@ -227,9 +107,21 @@ public:
     u16 CAOrg = -1;         // this 16-bit field shall contain information about the applied Conditional Access Systems and mode (see ETSI TS 102 367 [4]).
   };
 
+  struct SFig0s5_ServiceComponentLanguage
+  {
+    i8  LS_Flag = -1;  // this 1-bit flag shall indicate whether the service component identifier takes the short or the long form, as follows: 0: short form; 1: long form.
+    u8  Language = -1; // this 8-bit field shall indicate the language of the audio or data service component. It shall be coded according to ETSI TS 101 756 [3], tables 9 and 10.
+
+    // LS_Flag == 0: short form for SubChId
+    i8  SubChId = -1;  // (Sub-channel Identifier): this 6-bit field shall identify the sub-channel in which the service component is carried.
+
+    // LS_Flag == 1: long form for SCId
+    i16 SCId = -1;     // this 12-bit field shall identify the service component (see clause 6.3.1).
+  };
+
   struct SFig0s8_ServiceComponentGlobalDefinition
   {
-    u8  PD_Flag = -1;
+    i8  PD_Flag = -1;  // programme or data service
     u32 SId = -1;      // (Service Identifier): this 16-bit or 32-bit field shall identify the service. The length of the SId shall be signalled by the P/D flag, see clause 5.2.2.1.
     i8  Ext_Flag = -1; // (Extension) flag: this 1-bit flag shall indicate whether or not the 8-bit Rfa field is present, as follows: 0: Rfa field absent; 1: Rfa field present.
     i8  SCIdS = -1;    // (Service Component Identifier within the Service): this 4-bit field shall identify the service component within the service. The primary service component shall use the value 0. Each secondary service component of the service shall use a different SCIdS value other than 0.
@@ -242,9 +134,39 @@ public:
     i16 SCId = -1;     // this 12-bit field shall identify the service component (see clause 6.3.1).
   };
 
+  struct SFig0s9_CountryLtoInterTab
+  {
+    i8  Ext_Flag = -1;      // this 1-bit flag shall indicate whether the Extended field is present or not, as follows: 0: extended field absent; 1: extended field present.
+    i8  Ensemble_LTO = -1;  // (Local Time Offset): this 6-bit field shall give the Local Time Offset (LTO) for the ensemble. It is expressed in multiples of half hours in the range -15,5 hours to +15,5 hours.
+                            // Bit b5 shall give the sense of the LTO, as follows: 0: positive offset; 1: negative offset.
+    u8  Ensemble_ECC = -1;  // (Extended Country Code): this 8-bit field shall make the Ensemble Id unique worldwide. The ECC shall be as defined in ETSI TS 101 756 [3], tables 3 to 7
+    u8  InterTableId = -1;  // this 8-bit field shall be used to select an international table. The interpretation of this field shall be as defined in ETSI TS 101 756 [3], table 11.
+    // std::array<u8, 25> Extended_Field{};  // this n × 8-bit field shall contain one or more sub-fields, which define those services for which their ECC differs from that of the ensemble. The maximum length of the extended field is 25 bytes.
+
+    // derived
+    i16 LTO_minutes = 0;    // offset of local time to UTC time in minutes
+  };
+
+  struct SFig0s10_DateAndTime
+  {
+    u32 MJD = -1;       // (Modified Julian Date): this 17-bit binary number shall define the current date according to the Modified Julian
+                        // coding strategy. This number increments daily at 0000 Co-ordinated Universal Time (UTC) and extends over the range
+                        // 0 to 99 999, where MJD 0 is 1858-11-17. As an example, MJD 58 000 corresponds to 2017-09-04.
+    u8  LSI = -1;       // (Leap Second Indicator): this 1-bit flag shall be set to "1" for the period of one hour before the occurrence of a leap second.
+    u8  UTC_Flag = -1;  // this 1-bit field shall indicate whether the UTC (see below) takes the short form or the long form, as follows: 0: UTC short form (legacy support only); 1: UTC long form.
+
+    union
+    {
+      u32 UTC = -1;
+      // u32 UTCx = (1 << 22) | (2 << 16) | (3 << 10) | (4 << 0);
+      struct {                                         u32 Minutes : 6; u32 Hours : 5;  u32 dummy : 21; } UTC0; // short form
+      struct { u32 MilliSeconds : 10; u32 Seconds : 6; u32 Minutes : 6; u32 Hours : 5;  u32 dummy :  5; } UTC1; // long form
+    };
+  };
+
   struct SFig0s13_UserApplicationInformation
   {
-    i8  PD_Flag = -1;
+    i8  PD_Flag = -1;    // programme or data service
     u32 SId = -1;        // (Service Identifier): this 16-bit or 32-bit field shall identify the service (see clause 6.3.1) and the length of the SId shall be signalled by the P/D flag (see clause 5.2.2.1).
     i8  SCIdS = -1;      // (Service Component Identifier within the Service): this 4-bit field shall identify the service component within the service. The combination of the SId and the SCIdS provides a globally valid identifier for a service component.
     i16 NumUserApps = 0; // his 4-bit field, expressed as an unsigned binary number, shall indicate the number of user applications (in the range 1 to 6) contained in the subsequent list.
@@ -265,7 +187,7 @@ public:
       // SXPadData XPadData;
       // i16 UserAppData[16];
     };
-    std::array<SUserApp, 24> UserAppVec;
+    std::array<SUserApp, 6> UserAppVec;
     u16 SizeBits = 0;          // Helper which stores the entire size of the dataset if avoid repeated read-outs of the FIB data
   };
 
@@ -275,61 +197,52 @@ public:
     i16 FEC_scheme = -1;  // this 2-bit field shall indicate the Forward Error Correction scheme in use, as follows: 0 = no FEC, 1 = FEC scheme applied.
   };
 
-  // struct SId_struct // TODO: refactor SId_struct
-  // {
-  //   u32 SId;
-  //   std::vector<i32> comps;
-  //   u16 announcing;
-  // };
-  //
-  // std::vector<SId_struct> SId_table;
+  struct SFig0s17_ProgrammeType
+  {
+    u16 SId = 0;      // this 16-bit field shall identify the service (see clause 6.3.1).
+    i8  SD_Flag = -1; // this 1-bit flag shall indicate that the Programme Type code signalled in the programme type field, represents the current programme contents, as follows:
+                      //     0: Programme Type code may not represent the current programme contents; 1: Programme Type code represents the current programme contents.
+    i8  IntCode = -1; // this 5-bit field shall specify the basic Programme Type (PTy) category. This code is chosen from an international table (see clause 8.1.3.2).
+  };
 
   std::vector<SFig0s1_BasicSubChannelOrganization> Fig0s1_BasicSubChannelOrganizationVec;
-  std::vector<SFig0s2_BasicService_ServiceComponentDefinition> Fig0s2_BasicService_ServiceComponentDefinitionVec;  // TODO: serviceComp_C
+  std::vector<SFig0s2_BasicService_ServiceComponentDefinition> Fig0s2_BasicService_ServiceComponentDefinitionVec;
   std::vector<SFig0s3_ServiceComponentPacketMode> Fig0s3_ServiceComponentPacketModeVec;
+  std::vector<SFig0s5_ServiceComponentLanguage> Fig0s5_ServiceComponentLanguageVec;
   std::vector<SFig0s8_ServiceComponentGlobalDefinition> Fig0s8_ServiceComponentGlobalDefinitionVec;
+  std::vector<SFig0s9_CountryLtoInterTab> Fig0s9_CountryLtoInterTabVec;
   std::vector<SFig0s13_UserApplicationInformation> Fig0s13_UserApplicationInformationVec;
   std::vector<SFig0s14_SubChannelOrganization> Fig0s14_SubChannelOrganizationVec;
+  std::vector<SFig0s17_ProgrammeType> Fig0s17_ProgrammeTypeVec;
 
+  const SFig0s1_BasicSubChannelOrganization             * get_Fig0s1_BasicSubChannelOrganization_of_SubChId(i32 iSubChId) const;
+  const SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_TMId(u32 iSId, u8 iTMId) const;
+  const SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId(u32 iSId) const;
+  const SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_ScIdx(u32 iSId, i32 iScIdx) const;
+  const SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SCId(i16 SCId) const;
+  const SFig0s3_ServiceComponentPacketMode              * get_Fig0s3_ServiceComponentPacketMode_of_SCId(i32 iSCId) const;
+  const SFig0s5_ServiceComponentLanguage                * get_Fig0s5_ServiceComponentLanguage_of_SubChId(u8 iSubChId) const;
+  const SFig0s5_ServiceComponentLanguage                * get_Fig0s5_ServiceComponentLanguage_of_SCId(u8 iSCId) const;
+  const SFig0s8_ServiceComponentGlobalDefinition        * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(u32 iSId) const;
+  const SFig0s8_ServiceComponentGlobalDefinition        * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
+  const SFig0s9_CountryLtoInterTab                      * get_Fig0s9_CountryLtoInterTab() const;
+  const SFig0s13_UserApplicationInformation             * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;
+  const SFig0s14_SubChannelOrganization                 * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
+  const SFig0s17_ProgrammeType                          * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
 
-  SFig0s1_BasicSubChannelOrganization * get_Fig0s1_BasicSubChannelOrganization_of_SubChId(i32 iSubChId);
-  SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId(u32 iSId);
-  SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_ScIdx(const u32 iSId, i32 iScIdx);
-  SFig0s3_ServiceComponentPacketMode * get_Fig0s3_ServiceComponentPacketMode_of_SCId(i32 iSCId);
-  SFig0s8_ServiceComponentGlobalDefinition * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(const u32 iSId);
-  SFig0s13_UserApplicationInformation * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(const u32 iSId, const i32 iSCIdS);
-  SFig0s14_SubChannelOrganization * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId);
-  // SId_struct * get_SIdTable_of_SId(const u32 iSId); // TODO: refactor SId_struct
+  void print_Fig0s1_BasicSubChannelOrganization() const;
+  void print_Fig0s2_BasicService_ServiceComponentDefinition() const;
+  void print_Fig0s3_ServiceComponentPacketMode() const;
+  void print_Fig0s5_ServiceComponentLanguage() const;
+  void print_Fig0s8_ServiceComponentGlobalDefinition() const;
+  void print_Fig0s9_CountryLtoInterTab() const;
+  void print_Fig0s13_UserApplicationInformation() const;
+  void print_Fig0s14_SubChannelOrganization() const;
+  void print_Fig0s17_ProgrammeType() const;
 
-  
-  void print_Fig0s1_BasicSubChannelOrganization();
-  void print_Fig0s2_BasicService_ServiceComponentDefinition();
-  void print_Fig0s3_ServiceComponentPacketMode();
-  void print_Fig0s8_ServiceComponentGlobalDefinition();
-  void print_Fig0s13_UserApplicationInformation();
-  void print_Fig0s14_SubChannelOrganization();
-  void print_SIdTable_of_SId(); // TODO: refactor SId_struct
+  template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
 
-
-
-  // older style
-  using TMapSubChDescFig0_5  = std::map<i32, SSubChannelDescFig0_5>;  // key is SubChId
-  using TMapSubChDescFig0_14 = std::map<i32, SSubChannelDescFig0_14>; // key is SubChId
-
-  TMapSubChDescFig0_5  subChDescMapFig0_5;
-  TMapSubChDescFig0_14 subChDescMapFig0_14;
-
-  using TSPServiceCompDesc = std::shared_ptr<ServiceComponentDescriptor>;
-
-  std::vector<TSPServiceCompDesc> serviceCompPtrStorage;
-  std::map<u32, TSPServiceCompDesc> mapServiceCompDesc_SCId; // key is SCId
-  std::map<u32, TSPServiceCompDesc> mapServiceCompDesc_SId;  // key is SId
-  std::map<std::pair<u32 /*SId*/, i16 /*SubChId*/>, TSPServiceCompDesc> mapServiceCompDesc_SId_SubChId;
-  std::map<std::pair<u32 /*SId*/, u8 /*SCIdS*/>, TSPServiceCompDesc> mapServiceCompDesc_SId_SCIdS;
-  std::map<std::pair<u32 /*SId*/, i16 /*CompNr*/>, TSPServiceCompDesc> mapServiceCompDesc_SId_CompNr;
-  //TMapServiceCompDesc serviceCompDescMap;
-  // ServiceComponentDescriptor serviceComps[64];
-  Cluster clusterTable[128];
+  Cluster mClusterTable[128];
 };
 
 #endif

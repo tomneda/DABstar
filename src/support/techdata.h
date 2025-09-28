@@ -43,7 +43,7 @@ public:
   TechData(DabRadio *, RingBuffer<i16> * ipAudioBuffer);
   ~TechData() override;
 
-  void show_serviceData(const AudioData * ad);
+  void show_serviceData(const SAudioData * ad);
   void cleanUp();
   void show();
   void hide();

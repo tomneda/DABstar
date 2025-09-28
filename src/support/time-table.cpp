@@ -24,8 +24,8 @@
 #include  "time-table.h"
 #include  "dabradio.h"
 
-timeTableHandler::timeTableHandler(DabRadio * radio) :
-                                                     QListView(nullptr)
+TimeTableHandler::TimeTableHandler(DabRadio * radio)
+  : QListView(nullptr)
 {
   this->radio = radio;
   //
@@ -35,11 +35,9 @@ timeTableHandler::timeTableHandler(DabRadio * radio) :
   this->setModel(&displayList);
 }
 
-timeTableHandler::~timeTableHandler()
-{
-}
+TimeTableHandler::~TimeTableHandler() {}
 
-void timeTableHandler::addElement(i32 theTime, i32 epgWidth, const QString & theText, const QString & theDescr)
+void TimeTableHandler::addElement(i32 theTime, i32 epgWidth, const QString & theText, const QString & theDescr)
 {
   //i32	hours	= theTime / 60;
   //i32	minutes	= theTime % 60;
@@ -94,10 +92,9 @@ void timeTableHandler::addElement(i32 theTime, i32 epgWidth, const QString & the
   this->setModel(&displayList);
 }
 
-void timeTableHandler::clear()
+void TimeTableHandler::clear()
 {
   timeTableList.clear();
   displayList.setStringList(timeTableList);
   this->setModel(&displayList);
 }
-

@@ -144,6 +144,9 @@ CATEGORY_BEGIN(FileReaderWav)
   DEFINE_POS_SIZE(FileReaderWav)
 CATEGORY_END(FileReaderWav)
 
+CATEGORY_BEGIN(FibContentViewer)
+  DEFINE_POS_SIZE(FibContentViewer)
+CATEGORY_END(FibContentViewer)
 
 /********************************
  *  DO NOT EDIT BELOW THIS LINE *

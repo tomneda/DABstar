@@ -4,5 +4,5 @@ Exec=dabstar
 Icon=dabstar
 Type=Application
 Categories=AudioVideo;
-Comment=Maybe a rising star among the DAB/DAB+ receivers
+Comment=DAB/DAB+ receiver
 X-AppImage-Version=@PROJECT_VERSION@

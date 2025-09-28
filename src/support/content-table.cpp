@@ -31,69 +31,53 @@
 #include  <QDataStream>
 #include  <QSettings>
 #include  "content-table.h"
-#include  "dabradio.h"
 #include  "openfiledialog.h"
+#include  "setting-helper.h"
 
 //static const char *uep_rates  [] = {nullptr, "7/20", "2/5", "1/2", "3/5", "3/4"};
 //static const char *eep_Arates [] = {nullptr, "1/4",  "3/8", "1/2", "3/4"};
 //static const char *eep_Brates [] = {nullptr, "4/9",  "4/7", "4/6", "4/5"};
 
-ContentTable::ContentTable(DabRadio * theRadio, QSettings * s, const QString & channel, i32 cols)
+ContentTable::ContentTable(DabRadio * theRadio, QSettings * /*s*/, const QString & channel, i32 cols)
 {
   this->theRadio = theRadio;
-  this->dabSettings = s;
   this->channel = channel;
   this->columns = cols;
-  dabSettings->beginGroup("contentTable");
-  i32 x = dabSettings->value("position-x", 200).toInt();
-  i32 y = dabSettings->value("position-y", 200).toInt();
-  i32 wi = dabSettings->value("table-width", 200).toInt();
-  i32 hi = dabSettings->value("table-height", 200).toInt();
-  myWidget = new QScrollArea(nullptr);
+  myWidget.reset(new QScrollArea(nullptr));
+  Settings::FibContentViewer::posAndSize.read_widget_geometry(myWidget.get(), 400, 400);;
   myWidget->setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myWidget->setWindowTitle("FIB content of current ensemble");
-  myWidget->resize(wi, hi);
   myWidget->setWidgetResizable(true);
-  myWidget->move(x, y);
-  dabSettings->endGroup();
 
-  contentWidget = new QTableWidget(0, cols);
+  contentWidget.reset(new QTableWidget(0, cols));
   contentWidget->setColumnWidth(0, 150);
   contentWidget->setColumnWidth(4, 150);
-  myWidget->setWidget(contentWidget);
+  myWidget->setWidget(contentWidget.get());
 
-  connect(contentWidget, &QTableWidget::cellClicked, this, &ContentTable::_slot_select_service);
-  connect(contentWidget, &QTableWidget::cellDoubleClicked, this, &ContentTable::_slot_dump);
+  connect(contentWidget.get(), &QTableWidget::cellClicked, this, &ContentTable::_slot_select_service);
+  connect(contentWidget.get(), &QTableWidget::cellDoubleClicked, this, &ContentTable::_slot_dump);
   //connect(this, &ContentTable::signal_go_service, theRadio, &RadioInterface::slot_handle_content_selector);
-
-  addRow();  // for the ensemble name
 }
 
 ContentTable::~ContentTable()
 {
-  dabSettings->beginGroup("contentTable");
-  dabSettings->setValue("position-x", myWidget->pos().x());
-  dabSettings->setValue("position-y", myWidget->pos().y());
-  dabSettings->setValue("table-width", myWidget->width());
-  dabSettings->setValue("table-height", myWidget->height());
-  dabSettings->endGroup();
-  clearTable();
-  delete contentWidget;
-  delete myWidget;
+  Settings::FibContentViewer::posAndSize.write_widget_geometry(myWidget.get());;
+  // clearTable();
 }
 
-void ContentTable::clearTable()
-{
-  i32 rows = contentWidget->rowCount();
-  for (i32 i = rows; i > 0; i--)
-  {
-    contentWidget->removeRow(i - 1);
-  }
-  addRow();  // for the ensemble name
-}
+// void ContentTable::clearTable()
+// {
+//   i32 rows = contentWidget->rowCount();
+//   for (i32 i = rows; i > 0; i--)
+//   {
+//     contentWidget->removeRow(i - 1);
+//   }
+//   addRow();  // for the ensemble name
+// }
 
 void ContentTable::show()
 {
+  contentWidget->resizeColumnsToContents();
   myWidget->show();
 }
 
@@ -116,14 +100,14 @@ void ContentTable::_slot_select_service(i32 row, i32 column)
     return;
   }
   (void)column;
-  QString theService = theItem->text();
-  fprintf(stderr, "selecting %s\n", theService.toUtf8().data());
+  const QString theService = theItem->text();
+  qInfo() << "Selecting" << theService;
   emit signal_go_service(theService);
 }
 
 void ContentTable::_slot_dump(i32 /*row*/, i32 /*column*/)
 {
-  OpenFileDialog filenameFinder(dabSettings);
+  OpenFileDialog filenameFinder(&Settings::Storage::instance());
   FILE * dumpFile = filenameFinder.open_content_dump_file_ptr(channel);
 
   if (dumpFile == nullptr)
@@ -168,9 +152,9 @@ i16 ContentTable::addRow()
 
   for (i32 i = 0; i < columns; i++)
   {
-    QTableWidgetItem * item0 = new QTableWidgetItem;
-    item0->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    contentWidget->setItem(row, i, item0);
+    QTableWidgetItem * item = new QTableWidgetItem;
+    item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    contentWidget->setItem(row, i, item);
   }
   return row;
 }
@@ -180,11 +164,38 @@ void ContentTable::addLine(const QString & s)
   i32 row = addRow();
   QStringList h = s.split(";");
 
-  for (i32 i = 0; i < h.size(); i++)
+  if (h.empty() || h.at(0).isEmpty())
   {
-    if (i < columns)
-    {    // just for safety
-      contentWidget->item(row, i)->setText(h.at(i));
+    return;
+  }
+
+  QColor fg, bg;
+
+  switch (h.at(0).front().toLatin1())
+  {
+    case 'E': fg = Qt::black;  bg = Qt::black; break; // Empty line
+    case 'C': fg = Qt::yellow; bg = Qt::white; break; // Caption
+    case 'H': fg = 0xFF8800;   bg = Qt::white; break; // Header
+    case 'D': fg = Qt::cyan;   bg = Qt::white; break; // Data
+    default:
+      qWarning() << "Unknown line type" << h.at(0).at(0);
+      return;
+  }
+
+  for (i32 i = 1; i < h.size(); i++)
+  {
+    if (i <= columns)
+    {
+      auto * item = contentWidget->item(row, i - 1);
+      QFont font = item->font();
+      font.setBold(true);
+      item->setFont(font);
+      // if (bg != Qt::black || fg != Qt::black)
+      {
+        // item->setBackground(bg);
+        item->setForeground(fg);
+      }
+      item->setText(h.at(i));
     }
   }
 }

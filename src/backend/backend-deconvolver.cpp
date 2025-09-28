@@ -33,7 +33,7 @@
 #include  "uep-protection.h"
 
 
-BackendDeconvolver::BackendDeconvolver(const DescriptorType * d)
+BackendDeconvolver::BackendDeconvolver(const SDescriptorType * d)
 {
   if (d->shortForm)
   {

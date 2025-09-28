@@ -51,9 +51,10 @@ class AudioOutputQt final : public IAudioOutput
   Q_OBJECT
 
 public:
-  explicit AudioOutputQt(DabRadio * ipRI, QObject * parent = nullptr);
+  explicit AudioOutputQt();
   ~AudioOutputQt() override;
 
+  const AudioIODevice * get_audio_io_device() const  override { return mpIoDevice.get(); }
   QList<QAudioDevice> get_audio_device_list() const override;
 
 private:

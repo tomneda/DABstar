@@ -161,7 +161,7 @@ const SCacheElem * TiiHandler::get_transmitter_name(const QString & channel,
     const SCacheElem & ce = it->second;
     if (channel != "any" && ce.channel != channel)
     {
-      qWarning() << "TII database channel mismatch" << ce.channel << channel << "for EId/TII" << Eid << mainId << subId;
+      qWarning() << "TII database channel mismatch" << ce.channel << channel << "for EId/TII" << Eid << mainId << subId << "- Transmittername" << ce.transmitterName;
     }
     return &ce;
   }

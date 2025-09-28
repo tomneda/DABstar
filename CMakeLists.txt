@@ -272,7 +272,8 @@ set(${objectName}_HDRS
         src/ofdm/freq-interleaver.h
         src/decoder/fib-decoder_if.h
         src/decoder/fib-decoder.h
-        src/decoder/fib-config.cpp
+        src/decoder/fib-config-fig0.h
+        src/decoder/fib-config-fig1.h
         src/decoder/fib-table.h
         src/decoder/fic-decoder.h
         src/ofdm/tii-detector.h
@@ -371,7 +372,8 @@ set(${objectName}_SRCS
         src/ofdm/phasereference.cpp
         src/ofdm/phasetable.cpp
         src/ofdm/freq-interleaver.cpp
-        src/decoder/fib-config.cpp
+        src/decoder/fib-config-fig0.cpp
+        src/decoder/fib-config-fig1.cpp
         src/decoder/fib-decoder.cpp
         src/decoder/fib-decoder-fig0.cpp
         src/decoder/fib-decoder-fig1.cpp

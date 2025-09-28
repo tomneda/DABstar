@@ -31,7 +31,6 @@
  */
 
 #include "audiooutputqt.h"
-#include "dabradio.h"
 #include "audioiodevice.h"
 #include <QDebug>
 #include <QLoggingCategory>
@@ -43,10 +42,10 @@
 // Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtWarningMsg)
 
-AudioOutputQt::AudioOutputQt(DabRadio * const ipRI, QObject * parent)
+AudioOutputQt::AudioOutputQt()
 {
-  mpIoDevice.reset(new AudioIODevice(ipRI));
-  mpMediaDevices.reset(new QMediaDevices(this));
+  mpIoDevice.reset(new AudioIODevice());
+  mpMediaDevices.reset(new QMediaDevices());
   connect(mpMediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &AudioOutputQt::_slot_update_audio_devices);
 }
 
@@ -79,7 +78,7 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
     _print_audio_device_formats(mCurrentAudioDevice);
   }
 
-  mpAudioSink.reset(new QAudioSink(mCurrentAudioDevice, mAudioFormat, this));
+  mpAudioSink.reset(new QAudioSink(mCurrentAudioDevice, mAudioFormat));
 
   connect(mpAudioSink.get(), &QAudioSink::stateChanged, this, &AudioOutputQt::_slot_state_changed);
 

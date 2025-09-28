@@ -293,7 +293,7 @@ void FicDecoder::stop_fic_dump()
   mpFicDump = nullptr;
 }
 
-void FicDecoder::_dump_fib_to_file(const std::byte * const ipOneFibBits)
+void FicDecoder::_dump_fib_to_file(const std::byte * const ipOneFibBits) const
 {
   std::array<std::byte, cFibSizeVitOut / 8> fibByteBuffer; // FIB bits in a byte vector
 
@@ -325,7 +325,7 @@ void FicDecoder::get_fib_bits(u8 * v, bool * b)
   }
 }
 
-i32 FicDecoder::get_fic_decode_ratio_percent()
+i32 FicDecoder::get_fic_decode_ratio_percent() const
 {
   return mFicDecodeSuccessRatio * 10;
 }

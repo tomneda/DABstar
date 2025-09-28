@@ -94,10 +94,10 @@ public:
 
   //	for the mscHandler
   void reset_services();
-  void stop_service(DescriptorType *, i32);
+  void stop_service(SDescriptorType *, i32);
   void stop_service(i32, i32);
-  bool set_audio_channel(const AudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, i32 flag);
-  bool set_data_channel(const PacketData *, RingBuffer<u8> *, i32);
+  bool set_audio_channel(const SAudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, i32 flag);
+  bool set_data_channel(const SPacketData *, RingBuffer<u8> *, i32);
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
   void set_dc_removal(bool iRemoveDC);

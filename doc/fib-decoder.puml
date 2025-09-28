@@ -1,0 +1,139 @@
+@startuml
+title Qt-DAB FIB processing and FIG-driven message transport
+
+actor "RadioInterface" as RI
+participant "fibDecoder" as FD
+participant "ensemble" as ENS
+participant "currentConfig" as CC
+participant "nextConfig" as NC
+participant "UI/Consumers" as UI
+
+== Entry ==
+RI -> FD: processFIB(p, fib)
+
+group Parse FIB payload
+  loop For each FIG in FIB
+    alt FIG type == 0
+      FD -> FD: process_FIG0(d)
+
+      alt Ext 0 (Ensemble params / CIF count etc.)
+        FD -> ENS: update ensemble parameters
+        FD -> UI: signal_change_in_configuration()
+      end
+
+      alt Ext 1 (Service list)
+        FD -> FD: FIG0Extension1(d)\nHandleFIG0Extension1(...)
+        FD -> ENS: insert/update Programme services
+        FD -> UI: signal_nr_services(count)
+      end
+
+      alt Ext 2 (Service components)
+        FD -> FD: FIG0Extension2(d)\nHandleFIG0Extension2(...)
+        FD -> ENS: bind service components (audio/packet)
+      end
+
+      alt Ext 3 (Service linking / hard link info)
+        FD -> FD: FIG0Extension3(d)\nHandleFIG0Extension3(...)
+        FD -> ENS: update linking sets
+      end
+
+      alt Ext 5 (FIC subchannel org / protection)
+        FD -> FD: FIG0Extension5(d)\nHandleFIG0Extension5(...)
+        FD -> CC: apply/update current subchannel mapping
+        FD -> NC: stage next mapping if CN/OE/PD indicate change
+        FD -> UI: signal_change_in_configuration()
+      end
+
+      alt Ext 7 (User application types)
+        FD -> FD: FIG0Extension7(d)
+        FD -> ENS: tag components with UA type
+      end
+
+      alt Ext 8 (Frequency Info / Frequency lists)
+        FD -> FD: FIG0Extension8(d)\nHandleFIG0Extension8(...)
+        FD -> ENS: update frequency list(s)
+        FD -> UI: setFreqList()
+      end
+
+      alt Ext 9 (Country/coverage info)
+        FD -> FD: FIG0Extension9(d)
+        FD -> ENS: update region coverage metadata
+      end
+
+      alt Ext 10 (Date/Time)
+        FD -> FD: FIG0Extension10(d)
+        FD -> FD: adjustTime(mjd/dateTime)
+        FD -> UI: signal_fib_time_info(fibTimeInfo)
+      end
+
+      alt Ext 13 (LTO/ECC)
+        FD -> FD: FIG0Extension13(d)\nHandleFIG0Extension13(...)
+        FD -> UI: lto_ecc(LTO, ECC)
+      end
+
+      alt Ext 14 (Service following parameters)
+        FD -> FD: FIG0Extension14(d)
+        FD -> ENS: update service following info
+      end
+
+      alt Ext 17 (Data service org)
+        FD -> FD: FIG0Extension17(d)
+        FD -> ENS: update data components
+      end
+
+      alt Ext 18 (Conditional access / CA org)
+        FD -> FD: FIG0Extension18(d)
+        FD -> ENS: update CA descriptors
+      end
+
+      alt Ext 19 (Announcements support)
+        FD -> FD: FIG0Extension19(d)
+        FD -> FD: handleAnnouncement(SId, flags, subChId)
+        FD -> UI: signal_start_announcement(...)/signal_stop_announcement(...)
+      end
+
+      alt Ext 20 (Service component global defs)
+        FD -> FD: FIG0Extension20(d)\nHandleFIG0Extension20(...)
+        FD -> ENS: update SCId/SId associations
+      end
+
+      alt Ext 21 (Subchannel org continuation)
+        FD -> FD: FIG0Extension21(d)\nHandleFIG0Extension21(...)
+        FD -> CC: refine mapping
+        FD -> UI: signal_change_in_configuration()
+      end
+
+    else FIG type == 1
+      FD -> FD: process_FIG1(d)
+
+      alt Ext 0 (Ensemble label)
+        FD -> FD: FIG1Extension0(d)
+        FD -> ENS: set ensemble label
+        FD -> UI: signal_name_of_ensemble(EId, ensName, ensNameShort)
+      end
+
+      alt Ext 1 (Service label)
+        FD -> FD: FIG1Extension1(d)
+        FD -> ENS: set service label(s)
+        FD -> UI: signal_add_to_ensemble(serviceLabel, SId)
+      end
+
+      alt Ext 4 (Component label)
+        FD -> FD: FIG1Extension4(d)
+        FD -> ENS: set component label(s)
+      end
+
+      alt Ext 5 (Short label mask)
+        FD -> FD: FIG1Extension5(d)
+        FD -> ENS: apply short label masks
+      end
+    end
+  end
+end
+
+== Post-processing ==
+FD -> FD: update CIFcount_hi/lo if present
+FD -> UI: signal_fib_data_loaded()
+FD --> RI: return
+
+@enduml
