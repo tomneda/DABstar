@@ -47,7 +47,7 @@ public:
   // std::vector<SEpgElement> find_epg_data(u32) const override;
 
 private:
-  static constexpr i32 cMaxFibLoadingTime_ms = 600;
+  static constexpr i32 cMaxFibLoadingTime_ms = 3000;
   DabRadio * const mpRadioInterface = nullptr;
   std::unique_ptr<FibConfigFig1> mpFibConfigFig1;
   std::unique_ptr<FibConfigFig0> mpFibConfigFig0Curr;
