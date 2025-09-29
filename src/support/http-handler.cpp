@@ -434,7 +434,7 @@ L1:
   closesocket(ListenSocket);
   WSACleanup();
   running.store(false);
-  emit  terminating();
+  emit  signal_terminating();
 }
 
 #endif
