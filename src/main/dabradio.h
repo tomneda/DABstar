@@ -338,8 +338,7 @@ private:
   void stop_channel();
   void clean_up();
   void stop_service(SDabService &);
-  void start_service(const SDabService &);
-  //void colorService(QModelIndex ind, QColor c, i32 pt, bool italic = false);
+  void start_service(const SDabService &iDabService, bool iUpdateUiOnly = false);
   void local_select(const QString &, const QString &);
   // void showServices() const;
 
@@ -354,11 +353,8 @@ private:
   QString generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData, const bool iStoreAsDir) const;
   QString generate_file_path(const QString & iBasePath, const QString & iFileName, bool iStoreAsDir) const;
 
-  //enum direction { FORWARD, BACKWARDS };
-  //void handle_serviceButton(direction);
   void enable_ui_elements_for_safety(bool iEnable);
 
-  //void colorServiceName(const QString & s, QColor color, i32 fS, bool);
   void write_warning_message(const QString & iMsg);
   void write_picture(const QPixmap & iPixMap) const;
 
@@ -377,9 +373,10 @@ private:
   QString _get_scan_message(bool iEndMsg) const;
   QString _convert_links_to_clickable(const QString& iText) const;
   void _check_coordinates() const;
-  bool _is_audio_service(const QString & s) const;
   void _get_last_service_from_config(SDabService & ioDabService) const;
   void _get_local_position_from_config(cf32 & oLocalPos) const;
+  void _display_service_label(const QString & iServiceLabel);
+  void _update_audio_data_addon(const QString & iServiceLabel) const;
 
   void _initialize_ui_buttons();
   void _initialize_status_info();
@@ -491,7 +488,7 @@ private slots:
   void _slot_favorite_changed(const bool iIsFav);
   void _slot_handle_favorite_button(bool iClicked);
   void _slot_set_static_button_style();
-  void _slot_fib_data_loaded();
+  void _slot_fib_data_loaded(bool iSlowFibs);
   void _slot_scan_filter_changed(i32 idx);
   void _slot_handle_mute_button();
   void _slot_update_mute_state(const bool iMute);

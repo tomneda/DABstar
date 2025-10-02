@@ -42,16 +42,16 @@ public:
   ~MscHandler();
 
   void process_block(const std::vector<i16> & iSoftBits, i16 iBlockNr);
-  bool set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, i32 flag);
+  bool set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, EProcessFlag iProcessFlag);
   void reset_channel();
-  void stop_service(const SDescriptorType *, i32);
-  void stop_service(i32, i32);
+  void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);
+  bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag) const;
 
 private:
   DabRadio * const mpRadioInterface;
   RingBuffer<u8> * const mpFrameBuffer;
 
-  QMutex mMutex;
+  mutable QMutex mMutex;
   QVector<QSharedPointer<Backend>> mBackendList;
   std::vector<i16> mCifVector;
   i16 mCifCount = 0;

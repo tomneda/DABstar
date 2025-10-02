@@ -40,7 +40,7 @@
 #define CUSize  (4 * 16)
 
 //	fragmentsize == Length * CUSize
-Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, i32 flag)
+Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag)
   : deconvolver(ipDescType)
   , outV(ipDescType->bitRate * 24)
   , driver(ipRI, ipDescType, ipoAudiobuffer, ipoDatabuffer, frameBuffer)
@@ -59,7 +59,7 @@ Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer
   this->shortForm = ipDescType->shortForm;
   this->protLevel = ipDescType->protLevel;
   this->subChId = ipDescType->subchId;
-  this->borf = flag;
+  this->processFlag = iProcessFlag;
 
   //fprintf(stdout, "starting a backend for %s (%X) %d\n", serviceName.toUtf8().data(), serviceId, startAddr);
   interleaveData.resize(16);

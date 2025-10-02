@@ -26,6 +26,7 @@ public:
   void disconnect_channel() override;
 
   void get_data_for_audio_service(const QString &, SAudioData *) const override;
+  void get_data_for_audio_service_addon(const QString &, SAudioDataAddOns * opADAO) const override;
   void get_data_for_packet_service(const QString &, std::vector<SPacketData> & oPDVec) const override;
   std::vector<SServiceId> get_service_list() const override;
 
@@ -47,7 +48,8 @@ public:
   // std::vector<SEpgElement> find_epg_data(u32) const override;
 
 private:
-  static constexpr i32 cMaxFibLoadingTime_ms = 3000;
+  static constexpr i32 cMaxFibLoadingTimeFast_ms =  750;
+  static constexpr i32 cMaxFibLoadingTimeSlow_ms = 3000;
   DabRadio * const mpRadioInterface = nullptr;
   std::unique_ptr<FibConfigFig1> mpFibConfigFig1;
   std::unique_ptr<FibConfigFig0> mpFibConfigFig0Curr;
@@ -58,13 +60,17 @@ private:
   i32 mModJulianDate = 0;
   mutable QMutex mMutex;
   u8 mPrevChangeFlag = 0;
-  QTimer * mpTimerDataLoaded = nullptr;
-  bool mFibDataLoaded = false;
+  QTimer * mpTimerDataLoadedFast = nullptr;
+  QTimer * mpTimerDataLoadedSlow = nullptr;
+  bool mFibDataLoadedFast = false;
+  bool mFibDataLoadedSlow = false;
   SUtcTimeSet mUtcTimeSet{};
   std::set<u8> mUnhandledFig0Set;
   std::set<u8> mUnhandledFig1Set;
-  std::chrono::milliseconds mDiffMax{};
-  std::chrono::time_point<std::chrono::system_clock> mLastTimePoint{};
+  std::chrono::milliseconds mDiffMaxFast{};
+  std::chrono::milliseconds mDiffMaxSlow{};
+  std::chrono::time_point<std::chrono::system_clock> mLastTimePointFast{};
+  std::chrono::time_point<std::chrono::system_clock> mLastTimePointSlow{};
 
   struct SFigHeader // plus flags
   {
@@ -118,18 +124,21 @@ private:
   Cluster * _get_cluster(FibConfigFig0 *, i16);
 
   bool _get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, SAudioData * opAD) const;
+  bool _get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, SAudioDataAddOns * opADAO) const;
   bool _get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, i16 iCompIdx, SPacketData * opPD) const;
 
   QString _get_audio_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2) const;
   QString _get_packet_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2) const;
 
   bool _extract_character_set_label(FibConfigFig1::SFig1_DataField & oFig1DF, const u8 * d, i16 iLabelOffs) const;
-  void _retrigger_timer_data_loaded(const char * iCallerName);
+  void _retrigger_timer_data_loaded_fast(const char * iCallerName);
+  void _retrigger_timer_data_loaded_slow(const char * iCallerName);
 
   template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
 
 private slots:
-  void _slot_timer_data_loaded();
+  void _slot_timer_data_loaded_fast();
+  void _slot_timer_data_loaded_slow();
 };
 
 #endif

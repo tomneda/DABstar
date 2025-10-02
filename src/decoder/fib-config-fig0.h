@@ -7,6 +7,7 @@
 #include "glob_data_types.h"
 #include <vector>
 #include <QString>
+#include <chrono>
 
 struct SFig0s0_EnsembleInformation
 {
@@ -45,7 +46,13 @@ public:
 
   void reset();
 
-  struct SFig0s1_BasicSubChannelOrganization
+  struct SFigBase
+  {
+    std::chrono::time_point<std::chrono::system_clock> SysTime;
+    void set_current_time() { SysTime = std::chrono::system_clock::now(); }
+  };
+
+  struct SFig0s1_BasicSubChannelOrganization : SFigBase
   {
     i8  SubChId = -1;          // this 6-bit field, coded as an unsigned binary number, shall identify a sub-channel.
     i16 StartAddr = -1;        // this 10-bit field, coded as an unsigned binary number (in the range 0 to 863), shall address the first Capacity Unit (CU) of the sub-channel.
@@ -79,7 +86,7 @@ public:
     i8 CA_Flag = -1;  // CA flag: this 1-bit field flag shall indicate whether access control applies to the service component
   };
 
-  struct SFig0s2_BasicService_ServiceComponentDefinition
+  struct SFig0s2_BasicService_ServiceComponentDefinition : SFigBase
   {
     constexpr static i8 cNumServiceCompMax = 12;
     u32 get_SId() const { return PD_Flag == 0 ? PD0.SId : PD1.SId; }
@@ -96,7 +103,7 @@ public:
     // std::array<SFig0s2_ServiceComponentDefinition, 16> ServiceCompVec{}; // 16-bit field
   };
 
-  struct SFig0s3_ServiceComponentPacketMode
+  struct SFig0s3_ServiceComponentPacketMode : SFigBase
   {
     i16 SCId = -1;          // (Service Component Identifier): see clause 6.3.1 (FIG 0/2).
     i8  CAOrg_Flag = -1;    // this 1-bit flag shall indicate whether the Conditional Access Organization (CAOrg) field is present (CAOrg_Flag == 1), or not (CAOrg_Flag == 0).
@@ -107,7 +114,7 @@ public:
     u16 CAOrg = -1;         // this 16-bit field shall contain information about the applied Conditional Access Systems and mode (see ETSI TS 102 367 [4]).
   };
 
-  struct SFig0s5_ServiceComponentLanguage
+  struct SFig0s5_ServiceComponentLanguage : SFigBase
   {
     i8  LS_Flag = -1;  // this 1-bit flag shall indicate whether the service component identifier takes the short or the long form, as follows: 0: short form; 1: long form.
     u8  Language = -1; // this 8-bit field shall indicate the language of the audio or data service component. It shall be coded according to ETSI TS 101 756 [3], tables 9 and 10.
@@ -119,7 +126,7 @@ public:
     i16 SCId = -1;     // this 12-bit field shall identify the service component (see clause 6.3.1).
   };
 
-  struct SFig0s8_ServiceComponentGlobalDefinition
+  struct SFig0s8_ServiceComponentGlobalDefinition : SFigBase
   {
     i8  PD_Flag = -1;  // programme or data service
     u32 SId = -1;      // (Service Identifier): this 16-bit or 32-bit field shall identify the service. The length of the SId shall be signalled by the P/D flag, see clause 5.2.2.1.
@@ -134,7 +141,7 @@ public:
     i16 SCId = -1;     // this 12-bit field shall identify the service component (see clause 6.3.1).
   };
 
-  struct SFig0s9_CountryLtoInterTab
+  struct SFig0s9_CountryLtoInterTab : SFigBase
   {
     i8  Ext_Flag = -1;      // this 1-bit flag shall indicate whether the Extended field is present or not, as follows: 0: extended field absent; 1: extended field present.
     i8  Ensemble_LTO = -1;  // (Local Time Offset): this 6-bit field shall give the Local Time Offset (LTO) for the ensemble. It is expressed in multiples of half hours in the range -15,5 hours to +15,5 hours.
@@ -147,7 +154,7 @@ public:
     i16 LTO_minutes = 0;    // offset of local time to UTC time in minutes
   };
 
-  struct SFig0s10_DateAndTime
+  struct SFig0s10_DateAndTime : SFigBase
   {
     u32 MJD = -1;       // (Modified Julian Date): this 17-bit binary number shall define the current date according to the Modified Julian
                         // coding strategy. This number increments daily at 0000 Co-ordinated Universal Time (UTC) and extends over the range
@@ -164,7 +171,7 @@ public:
     };
   };
 
-  struct SFig0s13_UserApplicationInformation
+  struct SFig0s13_UserApplicationInformation : SFigBase
   {
     i8  PD_Flag = -1;    // programme or data service
     u32 SId = -1;        // (Service Identifier): this 16-bit or 32-bit field shall identify the service (see clause 6.3.1) and the length of the SId shall be signalled by the P/D flag (see clause 5.2.2.1).
@@ -191,13 +198,13 @@ public:
     u16 SizeBits = 0;          // Helper which stores the entire size of the dataset if avoid repeated read-outs of the FIB data
   };
 
-  struct SFig0s14_SubChannelOrganization
+  struct SFig0s14_SubChannelOrganization : SFigBase
   {
     i8  SubChId = -1;     // this 6-bit field, coded as an unsigned binary number, shall identify a sub-channel.
     i16 FEC_scheme = -1;  // this 2-bit field shall indicate the Forward Error Correction scheme in use, as follows: 0 = no FEC, 1 = FEC scheme applied.
   };
 
-  struct SFig0s17_ProgrammeType
+  struct SFig0s17_ProgrammeType : SFigBase
   {
     u16 SId = 0;      // this 16-bit field shall identify the service (see clause 6.3.1).
     i8  SD_Flag = -1; // this 1-bit flag shall indicate that the Programme Type code signalled in the programme type field, represents the current programme contents, as follows:
@@ -229,6 +236,8 @@ public:
   const SFig0s13_UserApplicationInformation             * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;
   const SFig0s14_SubChannelOrganization                 * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
   const SFig0s17_ProgrammeType                          * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
+
+  QString format_time(const std::chrono::time_point<std::chrono::system_clock> & tp) const;
 
   void print_Fig0s1_BasicSubChannelOrganization() const;
   void print_Fig0s2_BasicService_ServiceComponentDefinition() const;

@@ -446,28 +446,34 @@ void DabProcessor::reset_services()
   }
 }
 
-void DabProcessor::stop_service(SDescriptorType * d, i32 flag)
+bool DabProcessor::is_service_running(const SDescriptorType * d, EProcessFlag iProcessFlag)
+{
+  assert(!mScanMode);
+  return mMscHandler.is_service_running(d->subchId, iProcessFlag);
+}
+
+void DabProcessor::stop_service(const SDescriptorType * d, const EProcessFlag iProcessFlag)
 {
   fprintf(stderr, "function obsolete\n");
   if (!mScanMode)
   {
-    mMscHandler.stop_service(d->subchId, flag);
+    mMscHandler.stop_service(d->subchId, iProcessFlag);
   }
 }
 
-void DabProcessor::stop_service(i32 subChId, i32 flag)
+void DabProcessor::stop_service(const i32 iSubChId, const EProcessFlag iProcessFlag)
 {
   if (!mScanMode)
   {
-    mMscHandler.stop_service(subChId, flag);
+    mMscHandler.stop_service(iSubChId, iProcessFlag);
   }
 }
 
-bool DabProcessor::set_audio_channel(const SAudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, i32 flag)
+bool DabProcessor::set_audio_channel(const SAudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, const EProcessFlag iProcessFlag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(ipAudioData, ipoAudioBuffer, (RingBuffer<u8>*)nullptr, flag);
+    return mMscHandler.set_channel(ipAudioData, ipoAudioBuffer, (RingBuffer<u8>*)nullptr, iProcessFlag);
   }
   else
   {
@@ -475,11 +481,11 @@ bool DabProcessor::set_audio_channel(const SAudioData * ipAudioData, RingBuffer<
   }
 }
 
-bool DabProcessor::set_data_channel(const SPacketData * ipPacketData, RingBuffer<u8> * ipoDataBuffer, i32 flag)
+bool DabProcessor::set_data_channel(const SPacketData * ipPacketData, RingBuffer<u8> * ipoDataBuffer, const EProcessFlag iProcessFlag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(ipPacketData, (RingBuffer<i16>*)nullptr, ipoDataBuffer, flag);
+    return mMscHandler.set_channel(ipPacketData, (RingBuffer<i16>*)nullptr, ipoDataBuffer, iProcessFlag);
   }
   else
   {

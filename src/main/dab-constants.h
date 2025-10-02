@@ -69,12 +69,15 @@ constexpr u8 BAND_III = 0100;
 constexpr u8 L_BAND   = 0101;
 constexpr u8 A_BAND   = 0102;
 
-constexpr i32 FORE_GROUND = 0000;
-constexpr i32 BACK_GROUND = 0100;
-
 constexpr char sSettingSampleStorageDir[]  = "saveDirSampleDump";
 constexpr char sSettingAudioStorageDir[]   = "saveDirAudioDump";
 constexpr char sSettingContentStorageDir[] = "saveDirContent";
+
+enum class EProcessFlag
+{
+  Foreground,
+  Background
+};
 
 enum ETMId // TransportMechanismMode
 {
@@ -118,8 +121,8 @@ struct SServiceId
 
 struct SDescriptorType
 {
+  bool isDefined = false;
   ETMId TMId;
-  bool defined = false;
   QString serviceName;
   QString serviceNameShort;
   u32 SId;
@@ -147,13 +150,19 @@ struct SPacketData : SDescriptorType
 
 struct SAudioData : SDescriptorType
 {
-public:
   i16 ASCTy;
-  i16 language;
-  i16 programType;
-  i16 compnr;
-  i32 fmFrequency = -1;
+  // i16 language;
+  // i16 programType;
+  // i16 compnr;
+  // i32 fmFrequency = -1;
   SAudioData() { TMId = ETMId::StreamModeAudio; }
+};
+
+struct SAudioDataAddOns // "slower" addons
+{
+  std::optional<i16> language = std::nullopt;
+  std::optional<i16> programType = std::nullopt;;
+  // i32 fmFrequency = -1;
 };
 
 struct SChannelData

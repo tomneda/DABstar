@@ -11,8 +11,8 @@ void FibDecoder::_process_Fig1(const u8 * const d)
   const u8 extension = getBits_3(d, 8 + 5);  // FIG Header + Charset + Rfu
 
   /* RepTy: Repetition Type:
-    A) 10 times per second;
-    B) once per second;
+    A) 10 times per second; -> fast
+    B) once per second;     -> fast
     C) once every 10 seconds;
     D) less frequently than every 10 seconds;
     E) all information within 2 minutes.
@@ -29,8 +29,8 @@ void FibDecoder::_process_Fig1(const u8 * const d)
   default:
     if (mUnhandledFig1Set.find(extension) == mUnhandledFig1Set.end()) // print message only once
     {
-      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
-      if (mFibDataLoaded) qDebug().noquote() << QString("FIG 1/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
+      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePointSlow);
+      if (mFibDataLoadedSlow) qDebug().noquote() << QString("FIG 1/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig1Set.emplace(extension);
     }
   }
@@ -50,7 +50,7 @@ void FibDecoder::_process_Fig1s0(const u8 * const d)
   if (mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty())
   {
     mpFibConfigFig1->Fig1s0_EnsembleLabelVec.emplace_back(fig1s0);
-    _retrigger_timer_data_loaded("Fig1s0");
+    _retrigger_timer_data_loaded_fast("Fig1s0");
     emit signal_name_of_ensemble(fig1s0.EId, fig1s0.Name, fig1s0.NameShort);
   }
 }
@@ -71,7 +71,7 @@ void FibDecoder::_process_Fig1s1(const u8 * const d)
     mpFibConfigFig1->Fig1s1_ProgrammeServiceLabelVec.emplace_back(fig1s1);
     FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s1.SId, -1}; // -1 comes from FIG1/5 and unspecified
     mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s1.Name, SId_SCIdS);
-    _retrigger_timer_data_loaded("Fig1s1");
+    _retrigger_timer_data_loaded_fast("Fig1s1");
   }
 }
 
@@ -95,7 +95,7 @@ void FibDecoder::_process_Fig1s4(const u8 * const d)
     mpFibConfigFig1->Fig1s4_ServiceComponentLabelVec.emplace_back(fig1s4);
     FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s4.SId, fig1s4.SCIdS};
     mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s4.Name, SId_SCIdS);
-    _retrigger_timer_data_loaded("Fig1s4");
+    _retrigger_timer_data_loaded_slow("Fig1s4");
   }
 }
 
@@ -116,7 +116,7 @@ void FibDecoder::_process_Fig1s5(const u8 * const d)
     mpFibConfigFig1->Fig1s5_DataServiceLabelVec.emplace_back(fig1s5);
     FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s5.SId, -5}; // -5 comes from FIG1/5 and unspecified
     mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s5.Name, SId_SCIdS);
-    _retrigger_timer_data_loaded("Fig1s5");
+    _retrigger_timer_data_loaded_slow("Fig1s5");
   }
 }
 

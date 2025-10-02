@@ -51,8 +51,8 @@ void FibDecoder::_process_Fig0(const u8 * const d)
   default:
     if (mUnhandledFig0Set.find(extension) == mUnhandledFig0Set.end()) // print message only once
     {
-      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
-      if (mFibDataLoaded) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
+      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePointSlow);
+      if (mFibDataLoadedSlow) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig0Set.emplace(extension);
     }
   }
@@ -147,9 +147,9 @@ i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, i16 offset, const SFigHea
       else qWarning() << "Option" << fig0s1.Option << "not supported";
       bitOffset += 32;
     }
-
+    fig0s1.set_current_time();
     pConfig->Fig0s1_BasicSubChannelOrganizationVec.emplace_back(fig0s1);
-    _retrigger_timer_data_loaded("Fig0s1");
+    _retrigger_timer_data_loaded_fast("Fig0s1");
   }
   else
   {
@@ -218,8 +218,9 @@ i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, i16 offset, const SFigHea
       fig0s2_scd.CA_Flag = getBits_1(d, bitOffset + 15);
 
       // SId_element.comps.push_back(pConfig->Fig0s2_BasicService_ServiceComponentDefinitionVec.size());
+      fig0s2.set_current_time();
       pConfig->Fig0s2_BasicService_ServiceComponentDefinitionVec.emplace_back(fig0s2);
-      _retrigger_timer_data_loaded("Fig0s2");
+      _retrigger_timer_data_loaded_fast("Fig0s2");
     }
     bitOffset += 16;
   }
@@ -265,9 +266,9 @@ i16 FibDecoder::_subprocess_Fig0s3(const u8 * const d, const i16 used, const SFi
       fig0s3.CAOrg = getBits(d, bitOffset + 40, 16);
       bitOffset += 16;
     }
-
+    fig0s3.set_current_time();
     pConfig->Fig0s3_ServiceComponentPacketModeVec.emplace_back(fig0s3);
-    _retrigger_timer_data_loaded("Fig0s3");
+    _retrigger_timer_data_loaded_slow("Fig0s3");
   }
   else
   {
@@ -306,8 +307,9 @@ i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, i16 offset)
 
     if (pFig0s5 == nullptr)
     {
+      fig0s5.set_current_time();
       mpFibConfigFig0Curr->Fig0s5_ServiceComponentLanguageVec.emplace_back(fig0s5); // TODO: really only currentConfig? (see 8.1.2)
-      _retrigger_timer_data_loaded("Fig0s5a");
+      _retrigger_timer_data_loaded_slow("Fig0s5a");
     }
 
     bitOffset += 16;
@@ -321,8 +323,9 @@ i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, i16 offset)
 
     if (pFig0s5 == nullptr)
     {
+      fig0s5.set_current_time();
       mpFibConfigFig0Curr->Fig0s5_ServiceComponentLanguageVec.emplace_back(fig0s5); // TODO: really only currentConfig? (see 8.1.2)
-      _retrigger_timer_data_loaded("Fig0s5b");
+      _retrigger_timer_data_loaded_slow("Fig0s5b");
     }
 
     bitOffset += 24;
@@ -390,8 +393,9 @@ i16 FibDecoder::_subprocess_Fig0s8(const u8 * const d, const i16 used, const SFi
   if (const auto * const pData = pConfig->get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(fig0s8.SId);
       pData == nullptr)
   {
+    fig0s8.set_current_time();
     pConfig->Fig0s8_ServiceComponentGlobalDefinitionVec.emplace_back(fig0s8);
-    _retrigger_timer_data_loaded("Fig0s8");
+    _retrigger_timer_data_loaded_slow("Fig0s8");
   }
 
   assert(bitOffset % 8 == 0); // only full bytes should occur
@@ -417,8 +421,9 @@ void FibDecoder::_process_Fig0s9(const u8 * const d)
   fig0s9.Ensemble_ECC = getBits_8(d, offset + 8);
   fig0s9.InterTableId = getBits_8(d, offset + 16);
 
+  fig0s9.set_current_time();
   mpFibConfigFig0Curr->Fig0s9_CountryLtoInterTabVec.emplace_back(fig0s9);
-  _retrigger_timer_data_loaded("Fig0s9");
+  _retrigger_timer_data_loaded_slow("Fig0s9");
 }
 
 void FibDecoder::_process_Fig0s10(const u8 * dd)
@@ -500,8 +505,9 @@ i16 FibDecoder::_subprocess_Fig0s13(const u8 * const d, i16 used, const SFigHead
 
     fig0s13.SizeBits = bitOffset - used * 8; // only store netto size
     auto * const pConfig = _get_config_ptr(iFH.CN_Flag);
+    fig0s13.set_current_time();
     pConfig->Fig0s13_UserApplicationInformationVec.emplace_back(fig0s13);
-    _retrigger_timer_data_loaded("Fig0s13");
+    _retrigger_timer_data_loaded_slow("Fig0s13");
   }
   else
   {
@@ -528,8 +534,9 @@ void FibDecoder::_process_Fig0s14(const u8 * const d)
     if (pConfig->get_Fig0s14_SubChannelOrganization_of_SubChId(fig0s14.SubChId) == nullptr)
     {
       fig0s14.FEC_scheme = getBits_2(d, used * 8 + 6);
+      fig0s14.set_current_time();
       pConfig->Fig0s14_SubChannelOrganizationVec.emplace_back(fig0s14);
-      _retrigger_timer_data_loaded("Fig0s14");
+      _retrigger_timer_data_loaded_slow("Fig0s14");
     }
 
     used += 1;
@@ -551,8 +558,10 @@ void FibDecoder::_process_Fig0s17(const u8 * const d)
     {
       fig0s17.SD_Flag = getBits_1(d, offset + 16);
       fig0s17.IntCode = getBits_5(d, offset + 16 + 11);
+      fig0s17.set_current_time();
       mpFibConfigFig0Curr->Fig0s17_ProgrammeTypeVec.emplace_back(fig0s17);
-      _retrigger_timer_data_loaded("Fig0s17");
+      // qDebug() << "Fig0s17: SId" << fig0s17.SId << "IntCode" << fig0s17.IntCode;
+      _retrigger_timer_data_loaded_slow("Fig0s17");
     }
 
     offset += 32;

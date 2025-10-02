@@ -30,7 +30,6 @@
 #include  "ringbuffer.h"
 #include  "custom_frame.h"
 #include  <QObject>
-#include  <QFrame>
 #include  <QTimer>
 
 class DabRadio;
@@ -43,11 +42,12 @@ public:
   TechData(DabRadio *, RingBuffer<i16> * ipAudioBuffer);
   ~TechData() override;
 
-  void show_serviceData(const SAudioData * ad);
+  void show_service_data(const SAudioData * ad) const;
+  void show_service_data_addon(const SAudioDataAddOns * adon) const;
   void cleanUp();
   void show();
   void hide();
-  bool isHidden();
+  bool isHidden() const;
 
 private:
   DabRadio * const mpRadioInterface;
@@ -58,28 +58,28 @@ private:
 
 public slots:
   void slot_trigger_motHandling();
-  void slot_show_frame_error_bar(i32);
-  void slot_show_aac_error_bar(i32);
-  void slot_show_rs_error_bar(i32);
-  void slot_show_rs_corrections(i32, i32);
-  void slot_show_timetableButton(bool);
-  void slot_show_serviceName(const QString &);
-  void slot_show_serviceId(u32);
-  void slot_show_bitRate(i32);
-  void slot_show_subChId(i32);
-  void slot_show_startAddress(i32);
-  void slot_show_length(i32);
-  void slot_show_language(i32);
-  void slot_show_ASCTy(i32);
-  void slot_show_uep(i32, i32);
-  void slot_show_codeRate(i32, i32);
-  void slot_show_fm(i32);
-  void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed);
+  void slot_show_frame_error_bar(i32) const;
+  void slot_show_aac_error_bar(i32) const;
+  void slot_show_rs_error_bar(i32) const;
+  void slot_show_rs_corrections(i32, i32) const;
+  void slot_show_timetableButton(bool) const;
+  void slot_show_serviceName(const QString &) const;
+  void slot_show_serviceId(u32) const;
+  void slot_show_bitRate(i32) const;
+  void slot_show_subChId(i32) const;
+  void slot_show_startAddress(i32) const;
+  void slot_show_length(i32) const;
+  void slot_show_language(i32) const;
+  void slot_show_ASCTy(i32) const;
+  void slot_show_uep(i32, i32) const;
+  void slot_show_codeRate(i32, i32) const;
+  void slot_show_fm(i32) const;
+  void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed) const;
 
-  void slot_audio_data_available(i32, i32);
+  void slot_audio_data_available(i32, i32) const;
 
 private slots:
-  void _slot_show_motHandling(bool);
+  void _slot_show_motHandling(bool) const;
 
 signals:
   void signal_handle_timeTable();

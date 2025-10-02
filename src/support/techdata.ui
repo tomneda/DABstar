@@ -159,7 +159,7 @@
      <item row="4" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>RS corrections/100</string>
+        <string>RS corrections [%]</string>
        </property>
       </widget>
      </item>
@@ -199,7 +199,7 @@
      <item row="6" column="0">
       <widget class="QLabel" name="l6">
        <property name="text">
-        <string>Bitrate in kBit/s</string>
+        <string>Bitrate [kbps]</string>
        </property>
       </widget>
      </item>
@@ -219,14 +219,14 @@
      <item row="7" column="0">
       <widget class="QLabel" name="label_10">
        <property name="text">
-        <string>Audiorate</string>
+        <string>Audiorate [kSps]</string>
        </property>
       </widget>
      </item>
      <item row="7" column="1">
       <widget class="QLCDNumber" name="audioRate">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The audible audio runs at 48000 Ss. Some services deliver lower samplerates, these samplerates - shown here - are transformed into 48000 &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The audio sample rate in kilo samples per second [kSps]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>

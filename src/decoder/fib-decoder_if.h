@@ -35,6 +35,7 @@ public:
   virtual void connect_channel() = 0;
   virtual void disconnect_channel() = 0;
   virtual void get_data_for_audio_service(const QString &, SAudioData *) const = 0;
+  virtual void get_data_for_audio_service_addon(const QString &, SAudioDataAddOns * opADAO) const = 0;
   virtual void get_data_for_packet_service(const QString &, std::vector<SPacketData> & oPDVec) const = 0;
   virtual std::vector<SServiceId> get_service_list() const = 0;
 
@@ -63,7 +64,7 @@ signals:
   void signal_stop_announcement(const QString &, i32);
   void signal_nr_services(i32);
   void signal_fib_time_info(const SUtcTimeSet & fibTimeInfo);
-  void signal_fib_data_loaded();
+  void signal_fib_data_loaded(bool);
 };
 
 class FibDecoderFactory

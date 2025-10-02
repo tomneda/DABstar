@@ -67,9 +67,10 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
 QString FibDecoder::_get_audio_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2) const
 {
   SAudioData ad;
-  if (!_get_data_for_audio_service(iFig0s2, &ad))
+  SAudioDataAddOns adao;
+  if (!_get_data_for_audio_service(iFig0s2, &ad) || !_get_data_for_audio_service_addon(iFig0s2, &adao))
   {
-    return "-;-;-;-;-;-;-;-;-;-;-;-;";
+    return "-;-;-;-;-;-;-;-;-;-;-;-";
   }
 
   QString str;
@@ -85,8 +86,8 @@ QString FibDecoder::_get_audio_data_str(const FibConfigFig0::SFig0s2_BasicServic
   ts << getCodeRate(ad.shortForm, ad.protLevel) << ";";
   ts << ad.bitRate << ";";
   ts << dec_hex_str(ad.ASCTy) << (ad.ASCTy == 0x3F ? " (DAB+);" : " (DAB);");
-  ts << (ad.language == 0 ? "-" : getLanguage(ad.language)) << ";";
-  ts << ad.programType << " (" << (ad.programType == 0 ? "-" : getProgramType(ad.programType)) << ")";
+  ts << (adao.language.has_value() ?getLanguage(adao.language.value()) : "-") << ";";
+  ts << (adao.programType.has_value() ? QString::number(adao.programType.value()) + " (" + getProgramType(adao.programType.value()) + ")" : "-");
   // ts << "-"; // TODO: FM frequencies
 
   return str;

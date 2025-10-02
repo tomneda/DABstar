@@ -76,35 +76,14 @@ void MscHandler::reset_channel()
   mMutex.unlock();
 }
 
-void MscHandler::stop_service(const SDescriptorType * const iDescType, const i32 iFlag)
-{
-  fprintf(stderr, "obsolete function stopService\n");
-  mMutex.lock();
-
-  for (qsizetype i = 0; i < mBackendList.size(); i++)
-  {
-    if (auto & b = mBackendList[i];
-        b->subChId == iDescType->subchId && b->borf == iFlag)
-    {
-      fprintf(stdout, "stopping (sub)service at subchannel %d\n", iDescType->subchId);
-      b->stopRunning();
-      b.reset();
-      mBackendList.removeAt(i);
-      --i; // we removed one element
-    }
-  }
-
-  mMutex.unlock();
-}
-
-void MscHandler::stop_service(const i32 iSubChId, const i32 iFlag)
+void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFlag)
 {
   mMutex.lock();
 
   for (qsizetype i = 0; i < mBackendList.size(); i++)
   {
     if (auto & b = mBackendList[i];
-        b->subChId == iSubChId && b->borf == iFlag)
+        b->subChId == iSubChId && b->processFlag == iProcessFlag)
     {
       fprintf(stdout, "stopping subchannel %d\n", iSubChId);
       b->stopRunning();
@@ -117,7 +96,25 @@ void MscHandler::stop_service(const i32 iSubChId, const i32 iFlag)
   mMutex.unlock();
 }
 
-bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, i32 flag)
+bool MscHandler::is_service_running(const i32 iSubChId, const EProcessFlag iProcessFlag) const
+{
+  mMutex.lock();
+
+  for (qsizetype i = 0; i < mBackendList.size(); i++)
+  {
+    if (const auto & b = mBackendList[i];
+        b->subChId == iSubChId && b->processFlag == iProcessFlag)
+    {
+      mMutex.unlock();
+      return true;
+    }
+  }
+
+  mMutex.unlock();
+  return false;
+}
+
+bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, const EProcessFlag iProcessFlag)
 {
   // fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
   // locker.lock();
@@ -132,7 +129,7 @@ bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAud
   //   }
   // }
   // locker.unlock();
-  const QSharedPointer<Backend> backend(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, flag));
+  const QSharedPointer<Backend> backend(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, iProcessFlag));
   mBackendList.append(backend);
   //mBackendList.append(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, dump, flag));
   qInfo() << "Backend" << mBackendList.size() << "for service" << d->serviceName.trimmed() << "created";

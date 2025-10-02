@@ -90,7 +90,7 @@ void TechData::cleanUp()
   audioRate->display(0);
 }
 
-void TechData::show_serviceData(const SAudioData * ad)
+void TechData::show_service_data(const SAudioData * ad) const
 {
   slot_show_serviceName(ad->serviceName);
   slot_show_serviceId(ad->SId);
@@ -101,10 +101,15 @@ void TechData::show_serviceData(const SAudioData * ad)
   slot_show_uep(ad->shortForm, ad->protLevel);
   slot_show_ASCTy(ad->ASCTy);
   slot_show_codeRate(ad->shortForm, ad->protLevel);
-  slot_show_language(ad->language);
-  slot_show_fm(ad->fmFrequency);
   framedumpButton->setEnabled(true);
   audiodumpButton->setEnabled(true);
+}
+
+void TechData::show_service_data_addon(const SAudioDataAddOns * adon) const
+{
+  slot_show_language(adon->language.value_or(0));
+  slot_show_fm(-1);  // TODO: switched off
+  // slot_show_fm(ad->fmFrequency);
 }
 
 void TechData::show()
@@ -117,12 +122,12 @@ void TechData::hide()
   mFrame.hide();
 }
 
-bool TechData::isHidden()
+bool TechData::isHidden() const
 {
   return mFrame.isHidden();
 }
 
-void TechData::slot_show_frame_error_bar(i32 e)
+void TechData::slot_show_frame_error_bar(i32 e) const
 {
   QPalette p = frameError_display->palette();
   if (100 - 4 * e < 80)
@@ -138,7 +143,7 @@ void TechData::slot_show_frame_error_bar(i32 e)
   frameError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_aac_error_bar(i32 e)
+void TechData::slot_show_aac_error_bar(i32 e) const
 {
   QPalette p = aacError_display->palette();
   if (100 - 4 * e < 80)  // e is error out of 25 frames so times 4
@@ -153,7 +158,7 @@ void TechData::slot_show_aac_error_bar(i32 e)
   aacError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_rs_error_bar(i32 e)
+void TechData::slot_show_rs_error_bar(i32 e) const
 {
   QPalette p = rsError_display->palette();
   if (100 - 4 * e < 80)
@@ -168,7 +173,7 @@ void TechData::slot_show_rs_error_bar(i32 e)
   rsError_display->setValue(100 - 4 * e);
 }
 
-void TechData::slot_show_rs_corrections(i32 c, i32 ec)
+void TechData::slot_show_rs_corrections(i32 c, i32 ec) const
 {
   // highlight non-zero values with color
   auto set_val_with_col = [](QLCDNumber * ipLCD, i32 iVal)
@@ -192,12 +197,12 @@ void TechData::slot_trigger_motHandling()
   mTimerMotReceived.start();
 }
 
-void TechData::_slot_show_motHandling(bool b)
+void TechData::_slot_show_motHandling(bool b) const
 {
   motAvailable->setStyleSheet(b ? "QLabel {background-color : green; color: white}" : "QLabel {background-color : #444444; color : white}");
 }
 
-void TechData::slot_show_timetableButton(bool b)
+void TechData::slot_show_timetableButton(bool b) const
 {
   if (b)
   {
@@ -209,12 +214,12 @@ void TechData::slot_show_timetableButton(bool b)
   }
 }
 
-void TechData::slot_show_serviceName(const QString & s)
+void TechData::slot_show_serviceName(const QString & s) const
 {
   programName->setText(s);
 }
 
-void TechData::slot_show_serviceId(u32 iSId)
+void TechData::slot_show_serviceId(u32 iSId) const
 {
   serviceIdDisplay->display((i32)iSId);
   if ((iSId & 0x8000'0000) != 0) // display only knows negative numbers but not u32, should this ever happen?
@@ -223,32 +228,32 @@ void TechData::slot_show_serviceId(u32 iSId)
   }
 }
 
-void TechData::slot_show_bitRate(i32 br)
+void TechData::slot_show_bitRate(i32 br) const
 {
   bitrateDisplay->display(br);
 }
 
-void TechData::slot_show_startAddress(i32 sa)
+void TechData::slot_show_startAddress(i32 sa) const
 {
   startAddressDisplay->display(sa);
 }
 
-void TechData::slot_show_length(i32 l)
+void TechData::slot_show_length(i32 l) const
 {
   lengthDisplay->display(l);
 }
 
-void TechData::slot_show_subChId(i32 subChId)
+void TechData::slot_show_subChId(i32 subChId) const
 {
   subChIdDisplay->display(subChId);
 }
 
-void TechData::slot_show_language(i32 l)
+void TechData::slot_show_language(i32 l) const
 {
   language->setText(getLanguage(l));
 }
 
-void TechData::slot_show_ASCTy(i32 a)
+void TechData::slot_show_ASCTy(i32 a) const
 {
   const bool isDabPlus = (a == 077);
   ASCTy->setText(isDabPlus ? "DAB+" : "DAB");
@@ -259,18 +264,18 @@ void TechData::slot_show_ASCTy(i32 a)
   rsErrorLabel->setEnabled(isDabPlus);
 }
 
-void TechData::slot_show_uep(i32 shortForm, i32 protLevel)
+void TechData::slot_show_uep(i32 shortForm, i32 protLevel) const
 {
   QString protL = getProtectionLevel(shortForm, protLevel);
   uepField->setText(protL);
 }
 
-void TechData::slot_show_codeRate(i32 shortForm, i32 protLevel)
+void TechData::slot_show_codeRate(i32 shortForm, i32 protLevel) const
 {
   codeRate->setText(getCodeRate(shortForm, protLevel));
 }
 
-void TechData::slot_show_fm(i32 freq)
+void TechData::slot_show_fm(i32 freq) const
 {
   if (freq == -1)
   {
@@ -287,7 +292,7 @@ void TechData::slot_show_fm(i32 freq)
   }
 }
 
-void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate)
+void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate) const
 {
   constexpr i32 cNumNeededSample = 1024;
 
@@ -306,9 +311,9 @@ void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate)
   mpAudioBuffer->flush_ring_buffer();
 }
 
-void TechData::slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed)
+void TechData::slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed) const
 {
-  audioRate->display(iSampleRate);
+  audioRate->display(iSampleRate / 1000);
   QString afs;
   afs += (iSbrUsed ? "YES / " : "NO / ");
   afs += (iPsUsed ? "YES" : "NO");
