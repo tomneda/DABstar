@@ -30,8 +30,8 @@ public:
   void get_data_for_packet_service(const QString &, std::vector<SPacketData> & oPDVec) const override;
   std::vector<SServiceId> get_service_list() const override;
 
-  const QString & find_service(u32, i32) const override;
-  void get_parameters(const QString & iServiceLabel, u32 & oSId, i32 & oSCIdS) const override;
+  const QString & get_service_label_from_SId_SCIdS(u32, i32) const override;
+  void get_SId_SCIdS_from_service_label(const QString & iServiceLabel, u32 & oSId, i32 & oSCIdS) const override;
   u8 get_ecc() const override;
   i32 get_ensembleId() const override;
   QString get_ensemble_name() const override;

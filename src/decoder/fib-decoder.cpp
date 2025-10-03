@@ -424,7 +424,7 @@ std::vector<SServiceId> FibDecoder::get_service_list() const
   return services;
 }
 
-const QString & FibDecoder::find_service(const u32 iSId, const i32 iSCIdS) const
+const QString & FibDecoder::get_service_label_from_SId_SCIdS(const u32 iSId, const i32 iSCIdS) const
 {
   QMutexLocker lock(&mMutex);
   static const QString emptyString;
@@ -440,7 +440,7 @@ const QString & FibDecoder::find_service(const u32 iSId, const i32 iSCIdS) const
   return pFig1s4->Name;
 }
 
-void FibDecoder::get_parameters(const QString & iServiceLabel, u32 & oSId, i32 & oSCIdS) const
+void FibDecoder::get_SId_SCIdS_from_service_label(const QString & iServiceLabel, u32 & oSId, i32 & oSCIdS) const
 {
   QMutexLocker lock(&mMutex);
   const FibConfigFig1::SSId_SCIdS * pSId_SCIdS = mpFibConfigFig1->get_SId_SCIdS_from_service_label(iServiceLabel);

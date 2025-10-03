@@ -39,8 +39,8 @@ public:
   virtual void get_data_for_packet_service(const QString &, std::vector<SPacketData> & oPDVec) const = 0;
   virtual std::vector<SServiceId> get_service_list() const = 0;
 
-  virtual const QString & find_service(u32, i32) const = 0;
-  virtual void get_parameters(const QString & iServiceName, u32 & oSId, i32 & oSCIdS) const = 0;
+  virtual const QString & get_service_label_from_SId_SCIdS(u32 iSId, i32 iSCIdS) const = 0;
+  virtual void get_SId_SCIdS_from_service_label(const QString & iServiceLabel, u32 & oSId, i32 & oSCIdS) const = 0;
   virtual u8 get_ecc() const = 0;
   // virtual u16 get_country_name() const = 0;
   // virtual u8 get_countryId() const = 0;

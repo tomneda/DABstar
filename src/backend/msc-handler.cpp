@@ -32,10 +32,9 @@
 #include  "dabradio.h"
 #include  "msc-handler.h"
 #include  "backend.h"
-//
-//	Interface program for processing the MSC.
-//	The DabProcessor assumes the existence of an msc-handler, whether
-//	a service is selected or not. 
+
+// Interface program for processing the MSC.
+// The DabProcessor assumes the existence of an msc-handler, whether a service is selected or not.
 
 constexpr u32 CUSize = 4 * 16;
 static constexpr i16 cifTable[] = { 18, 72, 0, 36 }; // for each DAB-Mode
@@ -85,7 +84,7 @@ void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFla
     if (auto & b = mBackendList[i];
         b->subChId == iSubChId && b->processFlag == iProcessFlag)
     {
-      fprintf(stdout, "stopping subchannel %d\n", iSubChId);
+      qDebug() << "Stopping subchannel" << iSubChId;
       b->stopRunning();
       b.reset();
       mBackendList.removeAt(i);
@@ -137,14 +136,9 @@ bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAud
   return true;
 }
 
-//
-//	add blocks. First is (should be) block 4, last is (should be) 
-//	nrBlocks -1.
-//	Note that this method is called from within the ofdm-processor thread
-//	while the set_xxx methods are called from within the 
-//	gui thread, so some locking is added
-//
-
+// Add blocks. First is (should be) block 4, last is (should be) nrBlocks -1.
+// Note that this method is called from within the ofdm-processor thread while the set_xxx methods
+// are called from within the gui thread, so some locking is added.
 void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i16 iBlockNr)
 {
   const i16 curBlockIdx = (i16)((iBlockNr - 4) % mNumberOfBlocksPerCif);

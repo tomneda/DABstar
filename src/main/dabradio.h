@@ -82,13 +82,13 @@ class EpgDecoder;
 
 struct SDabService
 {
+  bool dataSetIsValid = false;
   QString channel;
   QString serviceName;
   u32 SId = 0;
   i32 SCIdS = 0;
-  i32 subChId = 0;
-  bool valid = false;
-  bool is_audio = false;
+  i32 SubChId = 0;
+  bool isAudio = false;
   // FILE * fd = nullptr;
   FILE * frameDumper = nullptr;
 };
@@ -377,6 +377,7 @@ private:
   void _get_local_position_from_config(cf32 & oLocalPos) const;
   void _display_service_label(const QString & iServiceLabel);
   void _update_audio_data_addon(const QString & iServiceLabel) const;
+  void _show_or_hide_windows_from_config();
 
   void _initialize_ui_buttons();
   void _initialize_status_info();
@@ -391,9 +392,6 @@ private:
   void _initialize_band_handler();
   void _initialize_and_start_timers();
   void _initialize_device_selector();
-
-  void _show_or_hide_windows_from_config();
-  // bool _is_packet_service(const QString & s) const;
 
 signals:
   void signal_set_new_channel(i32);
