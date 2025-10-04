@@ -48,8 +48,11 @@ public:
 
   struct SFigBase
   {
-    std::chrono::time_point<std::chrono::system_clock> SysTime;
+    using TTP = std::chrono::time_point<std::chrono::system_clock>;
+    TTP SysTime{};
+    TTP SysTime2ndCall{};
     void set_current_time() { SysTime = std::chrono::system_clock::now(); }
+    void set_current_time_2nd_call() { if (SysTime2ndCall ==  TTP()) SysTime2ndCall = std::chrono::system_clock::now(); }
   };
 
   struct SFig0s1_BasicSubChannelOrganization : SFigBase
@@ -237,7 +240,7 @@ public:
   const SFig0s14_SubChannelOrganization                 * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
   const SFig0s17_ProgrammeType                          * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
 
-  QString format_time(const std::chrono::time_point<std::chrono::system_clock> & tp) const;
+  QString format_time(const SFigBase & iFigBase) const;
 
   void print_Fig0s1_BasicSubChannelOrganization() const;
   void print_Fig0s2_BasicService_ServiceComponentDefinition() const;

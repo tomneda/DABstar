@@ -105,9 +105,9 @@ i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, i16 offset, const SFigHea
   fig0s1.SubChId = getBits_6(d, bitOffset);
 
   FibConfigFig0 * const pConfig = _get_config_ptr(iFH.CN_Flag);
-  const auto * const pData = pConfig->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(fig0s1.SubChId);
 
-  if (pData == nullptr)
+  if (const auto * const pFig0s1 = pConfig->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(fig0s1.SubChId);
+      pFig0s1 == nullptr)
   {
     fig0s1.StartAddr = getBits(d, bitOffset + 6, 10);
     fig0s1.ShortForm = getBits_1(d, bitOffset + 16) == 0;
@@ -153,7 +153,8 @@ i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, i16 offset, const SFigHea
   }
   else
   {
-    bitOffset += pData->ShortForm ? 24 : 32;
+    bitOffset += pFig0s1->ShortForm ? 24 : 32;
+    const_cast<FibConfigFig0::SFig0s1_BasicSubChannelOrganization *>(pFig0s1)->set_current_time_2nd_call();
   }
   return (i16)(bitOffset / 8);  // we return bytes
 }
@@ -187,7 +188,8 @@ i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, i16 offset, const SFigHea
 
   for (i16 servCombIdx = 0; servCombIdx < fig0s2.NumServiceComp; servCombIdx++)
   {
-    if (pConfig->get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_ScIdx(SId, servCombIdx) == nullptr) // is SID on same index already known?
+    if (const auto * pFig0s2 = pConfig->get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_ScIdx(SId, servCombIdx);
+        pFig0s2 == nullptr) // is SID on same index already known?
     {
       FibConfigFig0::SFig0s2_ServiceComponentDefinition & fig0s2_scd = fig0s2.ServiceComp_C;
       fig0s2.ServiceComp_C_index = servCombIdx;
@@ -222,6 +224,10 @@ i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, i16 offset, const SFigHea
       pConfig->Fig0s2_BasicService_ServiceComponentDefinitionVec.emplace_back(fig0s2);
       _retrigger_timer_data_loaded_fast("Fig0s2");
     }
+    else
+    {
+      const_cast<FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition *>(pFig0s2)->set_current_time_2nd_call();
+    }
     bitOffset += 16;
   }
   assert(bitOffset % 8 == 0); // only full bytes should occur
@@ -250,9 +256,8 @@ i16 FibDecoder::_subprocess_Fig0s3(const u8 * const d, const i16 used, const SFi
   fig0s3.SCId = getBits(d, bitOffset, 12);
 
   auto * const pConfig = _get_config_ptr(iFH.CN_Flag);
-  const auto * const pData = pConfig->get_Fig0s3_ServiceComponentPacketMode_of_SCId(fig0s3.SCId);
-
-  if (pData == nullptr)
+  if (const auto * const pFig0s3 = pConfig->get_Fig0s3_ServiceComponentPacketMode_of_SCId(fig0s3.SCId);
+      pFig0s3 == nullptr)
   {
     fig0s3.CAOrg_Flag = getBits_1(d, bitOffset + 15);
     fig0s3.DG_Flag = getBits_1(d, bitOffset + 16);
@@ -272,7 +277,8 @@ i16 FibDecoder::_subprocess_Fig0s3(const u8 * const d, const i16 used, const SFi
   }
   else
   {
-    bitOffset += 40 + (pData->CAOrg_Flag != 0 ? 16 : 0);
+    bitOffset += 40 + (pFig0s3->CAOrg_Flag != 0 ? 16 : 0);
+    const_cast<FibConfigFig0::SFig0s3_ServiceComponentPacketMode *>(pFig0s3)->set_current_time_2nd_call();
   }
 
   assert(bitOffset % 8 == 0); // only full bytes should occur
@@ -303,13 +309,17 @@ i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, i16 offset)
     // short form
     fig0s5.SubChId = getBits_6(d, bitOffset + 2);
     fig0s5.Language = getBits_8(d, bitOffset + 8);
-    const auto * const pFig0s5 = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SubChId(fig0s5.SubChId);
 
-    if (pFig0s5 == nullptr)
+    if (const auto * const pFig0s5 = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SubChId(fig0s5.SubChId);
+        pFig0s5 == nullptr)
     {
       fig0s5.set_current_time();
       mpFibConfigFig0Curr->Fig0s5_ServiceComponentLanguageVec.emplace_back(fig0s5); // TODO: really only currentConfig? (see 8.1.2)
       _retrigger_timer_data_loaded_slow("Fig0s5a");
+    }
+    else
+    {
+      const_cast<FibConfigFig0::SFig0s5_ServiceComponentLanguage *>(pFig0s5)->set_current_time_2nd_call();
     }
 
     bitOffset += 16;
@@ -319,13 +329,17 @@ i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, i16 offset)
     // long form
     fig0s5.SCId = getBits(d, bitOffset + 4, 12);
     fig0s5.Language = getBits_8(d, bitOffset + 16);
-    const auto * const pFig0s5 = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SCId(fig0s5.SCId);
 
-    if (pFig0s5 == nullptr)
+    if (const auto * const pFig0s5 = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SCId(fig0s5.SCId);
+        pFig0s5 == nullptr)
     {
       fig0s5.set_current_time();
       mpFibConfigFig0Curr->Fig0s5_ServiceComponentLanguageVec.emplace_back(fig0s5); // TODO: really only currentConfig? (see 8.1.2)
       _retrigger_timer_data_loaded_slow("Fig0s5b");
+    }
+    else
+    {
+      const_cast<FibConfigFig0::SFig0s5_ServiceComponentLanguage *>(pFig0s5)->set_current_time_2nd_call();
     }
 
     bitOffset += 24;
@@ -390,12 +404,16 @@ i16 FibDecoder::_subprocess_Fig0s8(const u8 * const d, const i16 used, const SFi
     bitOffset += (fig0s8.Ext_Flag != 0 ? 24 + 8 : 24); // skip Rfa
   }
 
-  if (const auto * const pData = pConfig->get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(fig0s8.SId);
-      pData == nullptr)
+  if (const auto * const pFig0s8 = pConfig->get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(fig0s8.SId);
+      pFig0s8 == nullptr)
   {
     fig0s8.set_current_time();
     pConfig->Fig0s8_ServiceComponentGlobalDefinitionVec.emplace_back(fig0s8);
     _retrigger_timer_data_loaded_slow("Fig0s8");
+  }
+  else
+  {
+    const_cast<FibConfigFig0::SFig0s8_ServiceComponentGlobalDefinition *>(pFig0s8)->set_current_time_2nd_call();
   }
 
   assert(bitOffset % 8 == 0); // only full bytes should occur
@@ -409,6 +427,7 @@ void FibDecoder::_process_Fig0s9(const u8 * const d)
 
   if (!mpFibConfigFig0Curr->Fig0s9_CountryLtoInterTabVec.empty()) // TODO: considering some change triggers?
   {
+    mpFibConfigFig0Curr->Fig0s9_CountryLtoInterTabVec[0].set_current_time_2nd_call();
     return;
   }
 
@@ -512,6 +531,7 @@ i16 FibDecoder::_subprocess_Fig0s13(const u8 * const d, i16 used, const SFigHead
   else
   {
     bitOffset = pFig0s13->SizeBits + used * 8;
+    const_cast<FibConfigFig0::SFig0s13_UserApplicationInformation *>(pFig0s13)->set_current_time_2nd_call();
   }
 
   assert(bitOffset % 8 == 0); // only full bytes should occur
@@ -531,12 +551,17 @@ void FibDecoder::_process_Fig0s14(const u8 * const d)
     FibConfigFig0::SFig0s14_SubChannelOrganization fig0s14;
     fig0s14.SubChId = getBits_6(d, used * 8);
 
-    if (pConfig->get_Fig0s14_SubChannelOrganization_of_SubChId(fig0s14.SubChId) == nullptr)
+    if (const auto * const pFig0s14 = pConfig->get_Fig0s14_SubChannelOrganization_of_SubChId(fig0s14.SubChId);
+        pFig0s14 == nullptr)
     {
       fig0s14.FEC_scheme = getBits_2(d, used * 8 + 6);
       fig0s14.set_current_time();
       pConfig->Fig0s14_SubChannelOrganizationVec.emplace_back(fig0s14);
       _retrigger_timer_data_loaded_slow("Fig0s14");
+    }
+    else
+    {
+      const_cast<FibConfigFig0::SFig0s14_SubChannelOrganization *>(pFig0s14)->set_current_time_2nd_call();
     }
 
     used += 1;
@@ -554,7 +579,8 @@ void FibDecoder::_process_Fig0s17(const u8 * const d)
     fig0s17.SId = getBits(d, offset, 16);
 
     // TODO: needs special handling for SD_Flag == 1?
-    if (mpFibConfigFig0Curr->get_Fig0s17_ProgrammeType_of_SId(fig0s17.SId) == nullptr)
+    if (const auto * const pFig0s17 = mpFibConfigFig0Curr->get_Fig0s17_ProgrammeType_of_SId(fig0s17.SId);
+        pFig0s17 == nullptr)
     {
       fig0s17.SD_Flag = getBits_1(d, offset + 16);
       fig0s17.IntCode = getBits_5(d, offset + 16 + 11);
@@ -562,6 +588,10 @@ void FibDecoder::_process_Fig0s17(const u8 * const d)
       mpFibConfigFig0Curr->Fig0s17_ProgrammeTypeVec.emplace_back(fig0s17);
       // qDebug() << "Fig0s17: SId" << fig0s17.SId << "IntCode" << fig0s17.IntCode;
       _retrigger_timer_data_loaded_slow("Fig0s17");
+    }
+    else
+    {
+      const_cast<FibConfigFig0::SFig0s17_ProgrammeType *>(pFig0s17)->set_current_time_2nd_call();
     }
 
     offset += 32;
@@ -664,6 +694,7 @@ void FibDecoder::_process_Fig0s19(const u8 * const d)
       if (myCluster->announcing > 0)
       {
         myCluster->announcing = 0;
+
         for (u16 i = 0; i < myCluster->servicesSIDs.size(); i++)
         {
           const u32 SId = myCluster->servicesSIDs[i];

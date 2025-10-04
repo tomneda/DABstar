@@ -49,9 +49,14 @@ void FibDecoder::_process_Fig1s0(const u8 * const d)
 
   if (mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty())
   {
+    fig1s0.set_current_time();
     mpFibConfigFig1->Fig1s0_EnsembleLabelVec.emplace_back(fig1s0);
     _retrigger_timer_data_loaded_fast("Fig1s0");
     emit signal_name_of_ensemble(fig1s0.EId, fig1s0.Name, fig1s0.NameShort);
+  }
+  else
+  {
+    mpFibConfigFig1->Fig1s0_EnsembleLabelVec[0].set_current_time_2nd_call();
   }
 }
 
@@ -66,12 +71,18 @@ void FibDecoder::_process_Fig1s1(const u8 * const d)
     return;
   }
 
-  if (mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(fig1s1.SId) == nullptr)
+  if (const auto * const pFig1s1 = mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(fig1s1.SId);
+      pFig1s1 == nullptr)
   {
+    fig1s1.set_current_time();
     mpFibConfigFig1->Fig1s1_ProgrammeServiceLabelVec.emplace_back(fig1s1);
     FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s1.SId, -1}; // -1 comes from FIG1/5 and unspecified
     mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s1.Name, SId_SCIdS);
     _retrigger_timer_data_loaded_fast("Fig1s1");
+  }
+  else
+  {
+    const_cast<FibConfigFig1::SFig1s1_ProgrammeServiceLabel *>(pFig1s1)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
   }
 }
 
@@ -92,10 +103,15 @@ void FibDecoder::_process_Fig1s4(const u8 * const d)
       return;
     }
 
+    fig1s4.set_current_time();
     mpFibConfigFig1->Fig1s4_ServiceComponentLabelVec.emplace_back(fig1s4);
     FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s4.SId, fig1s4.SCIdS};
     mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s4.Name, SId_SCIdS);
     _retrigger_timer_data_loaded_slow("Fig1s4");
+  }
+  else
+  {
+    const_cast<FibConfigFig1::SFig1s4_ServiceComponentLabel *>(pFig1s4)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
   }
 }
 
@@ -105,18 +121,24 @@ void FibDecoder::_process_Fig1s5(const u8 * const d)
   FibConfigFig1::SFig1s5_DataServiceLabel fig1s5;
   constexpr i16 offset = 48;
   fig1s5.SId = getLBits(d, 16, 32);
-  const auto * const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(fig1s5.SId);
 
-  if (pFig1s5 == nullptr)
+  if (const auto * const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(fig1s5.SId);
+      pFig1s5 == nullptr)
   {
     if (!_extract_character_set_label(fig1s5, d, offset))
     {
       return;
     }
+
+    fig1s5.set_current_time();
     mpFibConfigFig1->Fig1s5_DataServiceLabelVec.emplace_back(fig1s5);
     FibConfigFig1::SSId_SCIdS SId_SCIdS{fig1s5.SId, -5}; // -5 comes from FIG1/5 and unspecified
     mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.try_emplace(fig1s5.Name, SId_SCIdS);
     _retrigger_timer_data_loaded_slow("Fig1s5");
+  }
+  else
+  {
+    const_cast<FibConfigFig1::SFig1s5_DataServiceLabel *>(pFig1s5)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
   }
 }
 

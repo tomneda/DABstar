@@ -8,6 +8,7 @@
 #include "dab-constants.h"
 #include <vector>
 #include <map>
+#include <chrono>
 #include <QString>
 
 class FibConfigFig1
@@ -30,6 +31,15 @@ public:
     serviceLabel_To_SId_SCIdS_Map.clear();
   }
 
+  struct SFigBase
+  {
+    using TTP = std::chrono::time_point<std::chrono::system_clock>;
+    TTP SysTime{};
+    TTP SysTime2ndCall{};
+    void set_current_time() { SysTime = std::chrono::system_clock::now(); }
+    void set_current_time_2nd_call() { if (SysTime2ndCall ==  TTP()) SysTime2ndCall = std::chrono::system_clock::now(); }
+  };
+
   struct SFig1_DataField
   {
     i8  Charset = -1; // this 4-bit field shall identify a character set to qualify the character information contained in the FIG type 1 field. The interpretation of this field shall be as defined in ETSI TS 101 756 [3], table 1.
@@ -44,17 +54,17 @@ public:
     u16 CharFlagField = 0;  // this 16-bit flag field shall indicate which of the characters of the character field are to be displayed in an abbreviated form of the label.
   };
 
-  struct SFig1s0_EnsembleLabel : SFig1_DataField
+  struct SFig1s0_EnsembleLabel : SFig1_DataField, SFigBase
   {
     u16 EId = -1; // (Ensemble Identifier) (EId): this 16-bit field shall identify the ensemble. The coding details are given in clause 6.4.
   };
 
-  struct SFig1s1_ProgrammeServiceLabel : SFig1_DataField
+  struct SFig1s1_ProgrammeServiceLabel : SFig1_DataField, SFigBase
   {
     u16 SId = -1; // this 16-bit field shall identify the service (see clause 6.3.1).
   };
 
-  struct SFig1s4_ServiceComponentLabel : SFig1_DataField
+  struct SFig1s4_ServiceComponentLabel : SFig1_DataField, SFigBase
   {
     /*
      * PD_Flag: this 1-bit flag shall indicate whether the Service Identifier (SId) field is used for Programme services or Data services, as follows:
@@ -66,7 +76,7 @@ public:
     u32 SId = -1;   // (Service Identifier): this 16-bit or 32-bit field shall identify the service. The length of the SId shall be signalled by the P/D flag, see clause 5.2.2.1.
   };
 
-  struct SFig1s5_DataServiceLabel : SFig1_DataField
+  struct SFig1s5_DataServiceLabel : SFig1_DataField, SFigBase
   {
     u32 SId = -1; // this 32-bit field shall identify the service (see clause 6.3.1).
   };
@@ -92,6 +102,8 @@ public:
   const SFig1s5_DataServiceLabel      * get_Fig1s5_DataServiceLabel_of_SId(u32 SId) const;
   const QString                       & get_service_label_of_SId_from_all_Fig1(u32 iSId) const;
   const SSId_SCIdS                    * get_SId_SCIdS_from_service_label(const QString & s) const;
+
+  QString format_time(const SFigBase & iFigBase) const;
 
   void print_Fig1s0_EnsembleLabel();
   void print_Fig1s1_ProgrammeServiceLabelVec();
