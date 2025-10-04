@@ -94,7 +94,7 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 fileP
 
   connect(this, &XmlReader::signal_set_progress, parent, &XmlFileReader::slot_set_progress);
 
-  fprintf(stderr, "reader task wordt gestart\n");
+  // fprintf(stderr, "reader task wordt gestart\n");
   start();
 }
 

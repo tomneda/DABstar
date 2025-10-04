@@ -717,7 +717,7 @@ void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerNam
 
   if (mFibDataLoadedFast) // mFibDataLoaded gets true if the timer runs out the time cMaxFibLoadingTime_ms
   {
-    qWarning() << "Fast FIB data collection were already finished for" << iCallerName << ", Max needed time [ms]" << mDiffMaxFast.count();
+    qWarning() << "Fast FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffMaxFast.count();
     return;
   }
 
@@ -738,7 +738,7 @@ void FibDecoder::_retrigger_timer_data_loaded_slow(const char * const iCallerNam
 
   if (mFibDataLoadedSlow) // mFibDataLoaded gets true if the timer runs out the time cMaxFibLoadingTime_ms
   {
-    qWarning() << "Slow FIB data collection were already finished for" << iCallerName << ", Max needed time [ms]" << mDiffMaxSlow.count();
+    qWarning() << "Slow FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffMaxSlow.count();
     return;
   }
 

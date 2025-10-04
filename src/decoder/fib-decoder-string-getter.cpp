@@ -19,7 +19,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
    */
   QStringList out;
 
-  out << "H;EnsembleName;ShEnsName;EId";
+  out << "H;EnsembleLabel;ShortEnsLabel;EId";
   for (const auto & fig1s0 : mpFibConfigFig1->Fig1s0_EnsembleLabelVec) // should only have one element
   {
     out << "D;" + fig1s0.Name + ";" + fig1s0.NameShort + ";" + dec_hex_str(fig1s0.EId);
@@ -27,7 +27,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
 
   out << "E"; // empty line
   out << "C;Audio services:";
-  out << "H;ServiceName;ShServName;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;BitRate [kbps];DabType;Language;ProgramType";
+  out << "H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;BitRate [kbps];DabType;Language;ProgramType";
 
   for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceComponentDefinitionVec)
   {
@@ -39,7 +39,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
 
   out << "E"; // empty line
   out << "C;Primary data services:";
-  out << "H;ServiceName;ShServName;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy";
+  out << "H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy";
 
   for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceComponentDefinitionVec)
   {
@@ -51,7 +51,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
 
   out << "E"; // empty line
   out << "C;Secondary data services:";
-  out << "H;ServiceName;ShServName;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy";
+  out << "H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy";
 
   for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceComponentDefinitionVec)
   {
@@ -78,7 +78,7 @@ QString FibDecoder::_get_audio_data_str(const FibConfigFig0::SFig0s2_BasicServic
 
   ts << ad.serviceName << ";";
   ts << ad.serviceNameShort << ";";
-  ts << dec_hex_str(ad.SId) << ";";
+  ts << hex_str(ad.SId) << ";";
   ts << ad.subchId << ";";
   ts << ad.startAddr << ";";
   ts << ad.length << ";";
@@ -106,7 +106,7 @@ QString FibDecoder::_get_packet_data_str(const FibConfigFig0::SFig0s2_BasicServi
 
   ts << pd.serviceName << ";";
   ts << pd.serviceNameShort << ";";
-  ts << dec_hex_str(pd.SId) << ";";
+  ts << hex_str(pd.SId) << ";";
   ts << pd.subchId << ";";
   ts << pd.startAddr << ";";
   ts << pd.length << ";";

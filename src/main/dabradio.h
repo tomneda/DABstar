@@ -84,7 +84,7 @@ struct SDabService
 {
   bool dataSetIsValid = false;
   QString channel;
-  QString serviceName;
+  QString serviceLabel;
   u32 SId = 0;
   i32 SCIdS = 0;
   i32 SubChId = 0;
@@ -323,8 +323,10 @@ private:
   void stop_etiHandler();
   QString check_and_create_dir(const QString &) const;
 
-  void start_audio_service(const SAudioData * const ipAD);
-  void start_packet_service(const QString &);
+  bool _start_primary_audio_service(const SAudioData * const ipAD);
+  bool _start_primary_packet_service(const std::vector<SPacketData> & iPdVec);
+  bool _start_secondary_data_service(const std::vector<SPacketData> & iPdVec);
+
   void start_scanning();
   void stop_scanning();
   void start_audio_dumping();

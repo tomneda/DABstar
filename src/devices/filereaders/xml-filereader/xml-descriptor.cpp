@@ -129,7 +129,7 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
   QDomElement root = xmlDoc.documentElement();
   QDomNodeList nodes = root.childNodes();
 
-  fprintf(stderr, "document has %d topnodes\n", nodes.count());
+  //fprintf(stderr, "document has %d topnodes\n", nodes.count());
   for (i32 i = 0; i < nodes.count(); i++)
   {
     if (nodes.at(i).isComment())
@@ -200,7 +200,7 @@ XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
         {
           continue;
         }
-        fprintf(stderr, "Datablocks has %d siblings\n", nodes.count());
+        //fprintf(stderr, "Datablocks has %d siblings\n", nodes.count());
         QDomElement Child = nodes.at(j).toElement();
         if (Child.tagName() == "Datablock")
         {

@@ -550,7 +550,7 @@ QString DabRadio::generate_file_path(const QString & iBasePath, const QString & 
 {
   static const QRegularExpression regex(R"([<>:\"/\\|?*\s])"); // remove invalid file path characters
   const QString pathEnsemble = mChannel.channelName + "-" + mChannel.ensembleName.trimmed().replace(regex, "-");
-  const QString pathService = mChannel.currentService.serviceName.trimmed().replace(regex, "-");
+  const QString pathService = mChannel.currentService.serviceLabel.trimmed().replace(regex, "-");
   const QString filename = pathEnsemble + "_" + pathService + "_" + iFileName;
   const QString filepath = pathEnsemble + "/" + pathService + "/";
   QString path = iBasePath;
@@ -758,9 +758,9 @@ void DabRadio::slot_change_in_configuration()
 
     // The service is gone, it may be the subservice of another one
     s.SCIdS = 0;
-    s.serviceName = sl;
+    s.serviceLabel = sl;
 
-    if (s.serviceName != "")
+    if (!s.serviceLabel.isEmpty())
     {
       start_service(s);
     }
@@ -1299,7 +1299,7 @@ void DabRadio::slot_show_label(const QString & s)
   fprintf(mDlTextFile,
           "%s.%s %4d-%02d-%02d %02d:%02d:%02d  %s\n",
           currentChannel.toUtf8().data(),
-          mChannel.currentService.serviceName.toUtf8().data(),
+          mChannel.currentService.serviceLabel.toUtf8().data(),
           mLocalTime.year,
           mLocalTime.month,
           mLocalTime.day,
@@ -1780,7 +1780,7 @@ void DabRadio::start_audio_dumping()
     return;
   }
 
-  mAudioWavDumpFileName = mOpenFileDialog.get_audio_dump_file_name(mChannel.currentService.serviceName);
+  mAudioWavDumpFileName = mOpenFileDialog.get_audio_dump_file_name(mChannel.currentService.serviceLabel);
 
   if (mAudioWavDumpFileName.isEmpty())
   {
@@ -1827,7 +1827,7 @@ void DabRadio::start_frame_dumping()
     return;
   }
 
-  mChannel.currentService.frameDumper = mOpenFileDialog.open_frame_dump_file_ptr(mChannel.currentService.serviceName, mAudioFrameType == EAudioFrameType::AAC);
+  mChannel.currentService.frameDumper = mOpenFileDialog.open_frame_dump_file_ptr(mChannel.currentService.serviceLabel, mAudioFrameType == EAudioFrameType::AAC);
 
   if (mChannel.currentService.frameDumper == nullptr)
   {
@@ -1981,8 +1981,7 @@ void DabRadio::slot_start_announcement(const QString & name, i32 subChId)
   if (name == ui->serviceLabel->text())
   {
     _set_status_info_status(mStatusInfo.Announce, true);
-    //serviceLabel->setStyleSheet("color : yellow");
-    fprintf(stdout, "Announcement for %s (%d) starts\n", name.toUtf8().data(), subChId);
+    qCInfo(sLogRadioInterface()) << "Announcement starts for service " << ui->serviceLabel->text() << "subchannel " << subChId;
   }
 }
 
@@ -1996,7 +1995,7 @@ void DabRadio::slot_stop_announcement(const QString & name, i32 subChId)
   if (name == ui->serviceLabel->text())
   {
     _set_status_info_status(mStatusInfo.Announce, false);
-    fprintf(stdout, "Announcement for %s (%d) stops\n", name.toUtf8().data(), subChId);
+    qCInfo(sLogRadioInterface()) << "Announcement stops for service " << ui->serviceLabel->text() << "subchannel " << subChId;
   }
 }
 
@@ -2054,7 +2053,7 @@ void DabRadio::local_select(const QString & iChannel, const QString & iServiceNa
       return;
     }
 
-    s.serviceName = iServiceName;
+    s.serviceLabel = iServiceName;
     start_service(s);
     return;
   }
@@ -2075,7 +2074,7 @@ void DabRadio::local_select(const QString & iChannel, const QString & iServiceNa
   // Prepare the service, start the new channel and wait
   mChannel.nextService.dataSetIsValid = true;
   mChannel.nextService.channel = iChannel;
-  mChannel.nextService.serviceName = iServiceName;
+  mChannel.nextService.serviceLabel = iServiceName;
   mChannel.nextService.SId = 0;
   mChannel.nextService.SCIdS = 0;
 
@@ -2122,7 +2121,7 @@ void DabRadio::stop_service(SDabService & ioDabService)
       emit signal_stop_audio();
 
       std::vector<SPacketData> pdVec;
-      mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(ioDabService.serviceName, pdVec);
+      mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(ioDabService.serviceLabel, pdVec);
 
       for (const auto & pd : pdVec)
       {
@@ -2150,11 +2149,10 @@ void DabRadio::_display_service_label(const QString & iServiceLabel)
 
 void DabRadio::start_service(const SDabService & iDabService, const bool iUpdateUiOnly /*= false*/)
 {
-  const QString & serviceName = iDabService.serviceName;
-
   mChannel.currentService = iDabService;
   mChannel.currentService.frameDumper = nullptr;
   mChannel.currentService.dataSetIsValid = false;
+  const QString & serviceName = mChannel.currentService.serviceLabel;
 
   LOG("start service ", serviceName.toUtf8().data());
   LOG("service has SNR ", QString::number(mChannel.snr));
@@ -2172,7 +2170,6 @@ void DabRadio::start_service(const SDabService & iDabService, const bool iUpdate
 
   if (ad.isDefined)
   {
-    mChannel.currentService.dataSetIsValid = true;
     mChannel.currentService.isAudio = true;
     mChannel.currentService.SubChId = ad.subchId;
 
@@ -2185,9 +2182,12 @@ void DabRadio::start_service(const SDabService & iDabService, const bool iUpdate
     mpTechDataWidget->show_service_data(&ad);
     _set_status_info_status(mStatusInfo.InpBitRate, (i32)(ad.bitRate));
 
-    start_audio_service(&ad);
-    const QString csn = mChannel.channelName + ":" + serviceName;
-    Settings::Main::varPresetName.write(csn);
+    if (_start_primary_audio_service(&ad))
+    {
+      const QString csn = mChannel.channelName + ":" + serviceName;
+      Settings::Main::varPresetName.write(csn);
+      mChannel.currentService.dataSetIsValid = true;
+    }
 
 #ifdef HAVE_PLUTO_RXTX
     if (streamerOut != nullptr)
@@ -2196,14 +2196,13 @@ void DabRadio::start_service(const SDabService & iDabService, const bool iUpdate
     }
 #endif
   }
-  else // if (_is_packet_service(serviceName)) // TODO: why alternative to audio?
+  else // alternative to audio it could be a data service
   {
     std::vector<SPacketData> pdVec;
     mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(serviceName, pdVec);
 
     if (!pdVec.empty())
     {
-      mChannel.currentService.dataSetIsValid = true;
       mChannel.currentService.isAudio = false;
       mChannel.currentService.SubChId = pdVec[0].subchId;
 
@@ -2213,19 +2212,23 @@ void DabRadio::start_service(const SDabService & iDabService, const bool iUpdate
         qCWarning(sLogRadioInterface()) << "Warning: more than one data packet for service, but ignored (2)";
       }
 
-      start_packet_service(serviceName);
-      const QString csn = mChannel.channelName + ":" + serviceName;
-      Settings::Main::varPresetName.write(csn);
+      if (_start_primary_packet_service(pdVec))
+      {
+        const QString csn = mChannel.channelName + ":" + serviceName;
+        Settings::Main::varPresetName.write(csn);
+        mChannel.currentService.dataSetIsValid = true;
+      }
     }
-    else
-    {
-      write_warning_message("Insufficient data for this program (2)");
-      Settings::Main::varPresetName.write("");
-    }
+  }
+
+  if (!mChannel.currentService.dataSetIsValid)
+  {
+    write_warning_message("Insufficient data for this program (2)");
+    Settings::Main::varPresetName.write("");
   }
 }
 
-void DabRadio::start_audio_service(const SAudioData * const ipAD)
+bool DabRadio::_start_primary_audio_service(const SAudioData * const ipAD)
 {
   mChannel.currentService.dataSetIsValid = true;
   mpDabProcessor->set_audio_channel(ipAD, mpAudioBufferFromDecoder, EProcessFlag::Foreground);
@@ -2235,51 +2238,37 @@ void DabRadio::start_audio_service(const SAudioData * const ipAD)
   std::vector<SPacketData> pdVec;
   mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(ipAD->serviceName, pdVec);
 
-  if (!pdVec.empty())
-  {
-    const SPacketData & pd = pdVec[0];
-
-    mpDabProcessor->set_data_channel(&pd, mpDataBuffer, EProcessFlag::Foreground);
-    qInfo().nospace() << "Adding " << pd.serviceName.trimmed() << " (SubChId " << pd.subchId << ") as sub-service";
-
-    // TODO: considering further data packages?
-    if (pdVec.size() > 1)
-    {
-      qCWarning(sLogRadioInterface()) << "Warning: more than one data packet for service, but ignored (3)";
-    }
-  }
+  return _start_secondary_data_service(pdVec);
 }
 
 // Start primary packet service
-void DabRadio::start_packet_service(const QString & iS)
+bool DabRadio::_start_primary_packet_service(const std::vector<SPacketData> & iPdVec)
 {
-  std::vector<SPacketData> pdVec;
-  mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(iS, pdVec);
-
-  if (pdVec.empty())
+  if (iPdVec.empty())
   {
     qCCritical(sLogRadioInterface) << "No packet data found";;
-    return;
+    return false;
   }
 
-  const SPacketData & pd = pdVec[0];
+  const SPacketData & pd = iPdVec[0];
 
-  if ((!pd.isDefined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
+  if (!pd.isDefined || pd.DSCTy == 0 || pd.bitRate == 0)
   {
     write_warning_message("Insufficient data for this program (3)");
-    return;
+    return false;
   }
 
   if (!mpDabProcessor->set_data_channel(&pd, mpDataBuffer, EProcessFlag::Foreground))
   {
-    QMessageBox::warning(this, tr("sdr"), tr("could not start this service\n"));
-    return;
+    write_warning_message("Could not start this service");
+    return false;
   }
 
+  // Unfortunately, we can not do many primary data services yet, but the work will go on...
   switch (pd.DSCTy)
   {
   case 5:
-    fprintf(stdout, "selected apptype %d\n", pd.appTypeVec[0]);
+    qCDebug(sLogRadioInterface()) << "Selected AppType" << pd.appTypeVec[0];
     write_warning_message("Transport channel not implemented");
     break;
   case 60:
@@ -2294,6 +2283,25 @@ void DabRadio::start_packet_service(const QString & iS)
   default:
     write_warning_message("Unimplemented protocol");
   }
+  return true;
+}
+
+bool DabRadio::_start_secondary_data_service(const std::vector<SPacketData> & iPdVec)
+{
+  if (!iPdVec.empty())
+  {
+    const SPacketData & pd = iPdVec[0];
+
+    mpDabProcessor->set_data_channel(&pd, mpDataBuffer, EProcessFlag::Foreground);
+    qInfo().nospace() << "Adding " << pd.serviceName.trimmed() << " (SubChId " << pd.subchId << ") as sub-service";
+
+    // TODO: considering further data packages?
+    if (iPdVec.size() > 1)
+    {
+      qCWarning(sLogRadioInterface()) << "Warning: more than one data packet for service, but ignored (3)";
+    }
+  }
+  return true;
 }
 
 //	This function is only used in the Gui to clear
@@ -2393,7 +2401,7 @@ void DabRadio::_slot_fib_data_loaded(const bool iSlowFibs)
   {
     if (mChannel.currentService.dataSetIsValid && mChannel.currentService.isAudio) // the first call seems to a primary data channel
     {
-      _update_audio_data_addon(mChannel.currentService.serviceName);
+      _update_audio_data_addon(mChannel.currentService.serviceLabel);
       return;
     }
     mChannel.nextService.dataSetIsValid = false;
@@ -2406,10 +2414,10 @@ void DabRadio::_slot_fib_data_loaded(const bool iSlowFibs)
 
     if (mChannel.nextService.dataSetIsValid)
     {
-      const QString & serviceName = mChannel.nextService.serviceName;
+      const QString & serviceName = mChannel.nextService.serviceLabel;
 
       SDabService s;
-      s.serviceName = serviceName;
+      s.serviceLabel = serviceName;
       mpDabProcessor->get_fib_decoder()->get_SId_SCIdS_from_service_label(serviceName, s.SId, s.SCIdS);
 
       if (s.SId == 0) // current service name not found
@@ -2838,7 +2846,7 @@ void DabRadio::slot_epg_timer_timeout()
         mpDabProcessor->set_data_channel(&pd, mpDataBuffer, EProcessFlag::Background);
         SDabService s;
         s.channel = pd.channel;
-        s.serviceName = pd.serviceName;
+        s.serviceLabel = pd.serviceName;
         s.SId = pd.SId;
         s.SCIdS = pd.SCIdS;
         s.SubChId = pd.subchId;
@@ -3523,12 +3531,12 @@ void DabRadio::_get_last_service_from_config(SDabService & ioDabService) const
     if (ss.size() == 2)
     {
       ioDabService.channel = ss.at(0);
-      ioDabService.serviceName = ss.at(1);
+      ioDabService.serviceLabel = ss.at(1);
     }
     else
     {
       ioDabService.channel = "";
-      ioDabService.serviceName = presetName;
+      ioDabService.serviceLabel = presetName;
     }
 
     ioDabService.SId = 0;
