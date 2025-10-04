@@ -758,19 +758,53 @@ void FibDecoder::_slot_timer_data_loaded_slow()
   QMutexLocker lock(&mMutex);
 
 #ifndef NDEBUG
-  mpFibConfigFig0Curr->print_Fig0s1_BasicSubChannelOrganization();
-  mpFibConfigFig0Curr->print_Fig0s2_BasicService_ServiceCompDef();
-  mpFibConfigFig0Curr->print_Fig0s3_ServiceComponentPacketMode();
-  mpFibConfigFig0Curr->print_Fig0s5_ServiceComponentLanguage();
-  mpFibConfigFig0Curr->print_Fig0s8_ServiceCompGlobalDef();
-  mpFibConfigFig0Curr->print_Fig0s9_CountryLtoInterTab();
-  mpFibConfigFig0Curr->print_Fig0s13_UserApplicationInformation();
-  mpFibConfigFig0Curr->print_Fig0s14_SubChannelOrganization();
-  mpFibConfigFig0Curr->print_Fig0s17_ProgrammeType();
-  mpFibConfigFig1->print_Fig1s0_EnsembleLabel();
-  mpFibConfigFig1->print_Fig1s1_ProgrammeServiceLabelVec();
-  mpFibConfigFig1->print_Fig1s4_ServiceComponentLabel();
-  mpFibConfigFig1->print_Fig1s5_DataServiceLabel();
+  SStatistic statFig0s1{};
+  SStatistic statFig0s2{};
+  SStatistic statFig0s3{};
+  SStatistic statFig0s5{};
+  SStatistic statFig0s8{};
+  SStatistic statFig0s9{};
+  SStatistic statFig0s13{};
+  SStatistic statFig0s14{};
+  SStatistic statFig0s17{};
+  SStatistic statFig1s0{};
+  SStatistic statFig1s1{};
+  SStatistic statFig1s4{};
+  SStatistic statFig1s5{};
+
+  mpFibConfigFig0Curr->print_Fig0s1_BasicSubChannelOrganization(statFig0s1);
+  mpFibConfigFig0Curr->print_Fig0s2_BasicService_ServiceCompDef(statFig0s2);
+  mpFibConfigFig0Curr->print_Fig0s3_ServiceComponentPacketMode(statFig0s3);
+  mpFibConfigFig0Curr->print_Fig0s5_ServiceComponentLanguage(statFig0s5);
+  mpFibConfigFig0Curr->print_Fig0s8_ServiceCompGlobalDef(statFig0s8);
+  mpFibConfigFig0Curr->print_Fig0s9_CountryLtoInterTab(statFig0s9);
+  mpFibConfigFig0Curr->print_Fig0s13_UserApplicationInformation(statFig0s13);
+  mpFibConfigFig0Curr->print_Fig0s14_SubChannelOrganization(statFig0s14);
+  mpFibConfigFig0Curr->print_Fig0s17_ProgrammeType(statFig0s17);
+  mpFibConfigFig1->print_Fig1s0_EnsembleLabel(statFig1s0);
+  mpFibConfigFig1->print_Fig1s1_ProgrammeServiceLabelVec(statFig1s1);
+  mpFibConfigFig1->print_Fig1s4_ServiceComponentLabel(statFig1s4);
+  mpFibConfigFig1->print_Fig1s5_DataServiceLabel(statFig1s5);
+
+  qInfo();
+  qInfo().noquote() << "----- FIG storage time statistic -----";
+  qInfo().noquote() << print_statistic_header();
+  if (!mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty())
+    qInfo() << "Ensemble:" << mpFibConfigFig1->Fig1s0_EnsembleLabelVec[0].Name.trimmed();
+  qInfo().noquote() << "Fig0/ 1:" << print_statistic(statFig0s1);
+  qInfo().noquote() << "Fig0/ 2:" << print_statistic(statFig0s2);
+  qInfo().noquote() << "Fig0/ 3:" << print_statistic(statFig0s3);
+  qInfo().noquote() << "Fig0/ 5:" << print_statistic(statFig0s5);
+  qInfo().noquote() << "Fig0/ 8:" << print_statistic(statFig0s8);
+  qInfo().noquote() << "Fig0/ 9:" << print_statistic(statFig0s9);
+  qInfo().noquote() << "Fig0/13:" << print_statistic(statFig0s13);
+  qInfo().noquote() << "Fig0/14:" << print_statistic(statFig0s14);
+  qInfo().noquote() << "Fig0/17:" << print_statistic(statFig0s17);
+  qInfo().noquote() << "Fig1/ 0:" << print_statistic(statFig1s0);
+  qInfo().noquote() << "Fig1/ 1:" << print_statistic(statFig1s1);
+  qInfo().noquote() << "Fig1/ 4:" << print_statistic(statFig1s4);
+  qInfo().noquote() << "Fig1/ 5:" << print_statistic(statFig1s5);
+
 
   // show not handled FIGs
   for (const auto & extension: mUnhandledFig0Set)

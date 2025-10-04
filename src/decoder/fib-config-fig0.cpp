@@ -203,13 +203,13 @@ const FibConfigFig0::SFig0s17_ProgrammeType * FibConfigFig0::get_Fig0s17_Program
   return nullptr;
 }
 
-void FibConfigFig0::print_Fig0s1_BasicSubChannelOrganization() const
+void FibConfigFig0::print_Fig0s1_BasicSubChannelOrganization(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s1_BasicSubChannelOrganization ---  Size" << Fig0s1_BasicSubChannelOrganizationVec.size() << " Capacity" << Fig0s1_BasicSubChannelOrganizationVec.capacity();
   for (auto & e : Fig0s1_BasicSubChannelOrganizationVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "SubChId" << e.SubChId
             << "StartAddr" << e.StartAddr
             << "ProtLevel" << e.ProtectionLevel
@@ -222,14 +222,14 @@ void FibConfigFig0::print_Fig0s1_BasicSubChannelOrganization() const
   }
 }
 
-void FibConfigFig0::print_Fig0s2_BasicService_ServiceCompDef() const
+void FibConfigFig0::print_Fig0s2_BasicService_ServiceCompDef(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s2_BasicService_ServiceCompDef ---  Size" << Fig0s2_BasicService_ServiceCompDefVec.size() << " Capacity" << Fig0s2_BasicService_ServiceCompDefVec.capacity();
   for (const auto & e : Fig0s2_BasicService_ServiceCompDefVec)
   {
     QStringList l;
-    l << format_time(e);
+    l << print_duration_and_get_statistics(e, ioS);
     l << QString("PD_Flag %1").arg(e.PD_Flag);
 
     if (e.PD_Flag == 0)
@@ -271,13 +271,13 @@ void FibConfigFig0::print_Fig0s2_BasicService_ServiceCompDef() const
   }
 }
 
-void FibConfigFig0::print_Fig0s3_ServiceComponentPacketMode() const
+void FibConfigFig0::print_Fig0s3_ServiceComponentPacketMode(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s3_ServiceComponentPacketMode ---  Size" << Fig0s3_ServiceComponentPacketModeVec.size() << " Capacity" << Fig0s3_ServiceComponentPacketModeVec.capacity();
   for (auto & e : Fig0s3_ServiceComponentPacketModeVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "SCId" << e.SCId
             << "CAOrg_Flag" << e.CAOrg_Flag
             << "DG_Flag" << e.DG_Flag
@@ -288,13 +288,13 @@ void FibConfigFig0::print_Fig0s3_ServiceComponentPacketMode() const
   }
 }
 
-void FibConfigFig0::print_Fig0s5_ServiceComponentLanguage() const
+void FibConfigFig0::print_Fig0s5_ServiceComponentLanguage(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s5_ServiceComponentLanguage ---  Size" << Fig0s5_ServiceComponentLanguageVec.size() << " Capacity" << Fig0s5_ServiceComponentLanguageVec.capacity();
   for (auto & e : Fig0s5_ServiceComponentLanguageVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "LS_Flag" << e.LS_Flag
             << "SubChId" << e.SubChId
             << "SCId" << e.SCId
@@ -302,14 +302,14 @@ void FibConfigFig0::print_Fig0s5_ServiceComponentLanguage() const
   }
 }
 
-void FibConfigFig0::print_Fig0s8_ServiceCompGlobalDef() const
+void FibConfigFig0::print_Fig0s8_ServiceCompGlobalDef(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s8_ServiceCompGlobalDef ---  Size" << Fig0s8_ServiceCompGlobalDefVec.size() << " Capacity" << Fig0s8_ServiceCompGlobalDefVec.capacity();
   for (const auto & e : Fig0s8_ServiceCompGlobalDefVec)
   {
     QStringList l;
-    l << format_time(e);
+    l << print_duration_and_get_statistics(e, ioS);
     l << QString("PD_Flag %1").arg(e.PD_Flag);
     l << "SId " + hex_str(e.SId);
     l << QString("Ext_Flag %1").arg(e.Ext_Flag);
@@ -329,13 +329,13 @@ void FibConfigFig0::print_Fig0s8_ServiceCompGlobalDef() const
   }
 }
 
-void FibConfigFig0::print_Fig0s9_CountryLtoInterTab() const
+void FibConfigFig0::print_Fig0s9_CountryLtoInterTab(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s9_CountryLtoInterTab ---  Size" << Fig0s9_CountryLtoInterTabVec.size() << " Capacity" << Fig0s9_CountryLtoInterTabVec.capacity();
   for (auto & e : Fig0s9_CountryLtoInterTabVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "Ext_Flag" << e.Ext_Flag
             << "Ensemble_LTO" << e.Ensemble_LTO
             << "Ensemble_ECC" << e.Ensemble_ECC
@@ -344,14 +344,14 @@ void FibConfigFig0::print_Fig0s9_CountryLtoInterTab() const
   }
 }
 
-void FibConfigFig0::print_Fig0s13_UserApplicationInformation() const
+void FibConfigFig0::print_Fig0s13_UserApplicationInformation(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s13_UserApplicationInformation ---  Size" << Fig0s13_UserApplicationInformationVec.size() << " Capacity" << Fig0s13_UserApplicationInformationVec.capacity();
   for (auto & e : Fig0s13_UserApplicationInformationVec)
   {
     QStringList l;
-    l << format_time(e);
+    l << print_duration_and_get_statistics(e, ioS);
     l << QString("PD_Flag %1").arg(e.PD_Flag);
     l << "SId " + hex_str(e.SId);
     l << QString("SCIdS %1").arg(e.SCIdS);
@@ -368,25 +368,25 @@ void FibConfigFig0::print_Fig0s13_UserApplicationInformation() const
   }
 }
 
-void FibConfigFig0::print_Fig0s14_SubChannelOrganization() const
+void FibConfigFig0::print_Fig0s14_SubChannelOrganization(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s14_SubChannelOrganizationVec ---  Size" << Fig0s14_SubChannelOrganizationVec.size() << " Capacity" << Fig0s14_SubChannelOrganizationVec.capacity();
   for (auto & e : Fig0s14_SubChannelOrganizationVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "SubChId" << e.SubChId
             << "FEC_scheme" <<  e.FEC_scheme;
   }
 }
 
-void FibConfigFig0::print_Fig0s17_ProgrammeType() const
+void FibConfigFig0::print_Fig0s17_ProgrammeType(SStatistic & ioS) const
 {
   qInfo();
   qInfo() << "--- Fig0s17_ProgrammeType ---  Size" << Fig0s17_ProgrammeTypeVec.size() << " Capacity" << Fig0s17_ProgrammeTypeVec.capacity();
   for (const auto & e : Fig0s17_ProgrammeTypeVec)
   {
-    qInfo().noquote() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo().noquote() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
                       << "SId" << hex_str(e.SId)
                       << "SD_Flag" << e.SD_Flag
                       << "IntCode" << e.IntCode;

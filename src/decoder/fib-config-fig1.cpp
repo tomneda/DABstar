@@ -77,28 +77,30 @@ const FibConfigFig1::SSId_SCIdS * FibConfigFig1::get_SId_SCIdS_from_service_labe
   return nullptr;
 }
 
-void FibConfigFig1::print_Fig1s0_EnsembleLabel()
+void FibConfigFig1::print_Fig1s0_EnsembleLabel(SStatistic & ioS)
 {
+  SStatistic s{};
   qInfo();
   qInfo() << "--- Fig1s0_EnsembleLabel ---  Size" << Fig1s0_EnsembleLabelVec.size() << " Capacity" << Fig1s0_EnsembleLabelVec.capacity();
   for (const auto & e : Fig1s0_EnsembleLabelVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "Name" << e.Name
             << "NameShort" << e.NameShort
             << "EId" << hex_str(e.EId).toStdString().c_str() // C-string gets now quotes in output
             << "Charset" << e.Charset
             << "CharFlagField" << e.CharFlagField;
   }
+  qInfo().noquote() << print_statistic(s);
 }
 
-void FibConfigFig1::print_Fig1s1_ProgrammeServiceLabelVec()
+void FibConfigFig1::print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS)
 {
   qInfo();
   qInfo() << "--- Fig1s1_ProgrammeServiceLabel ---  Size" << Fig1s1_ProgrammeServiceLabelVec.size() << " Capacity" << Fig1s1_ProgrammeServiceLabelVec.capacity();
   for (const auto & e : Fig1s1_ProgrammeServiceLabelVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "Name" << e.Name
             << "NameShort" << e.NameShort
             << "SId" << hex_str(e.SId).toStdString().c_str() // C-string gets now quotes in output
@@ -107,13 +109,13 @@ void FibConfigFig1::print_Fig1s1_ProgrammeServiceLabelVec()
   }
 }
 
-void FibConfigFig1::print_Fig1s4_ServiceComponentLabel()
+void FibConfigFig1::print_Fig1s4_ServiceComponentLabel(SStatistic & ioS)
 {
   qInfo();
   qInfo() << "--- Fig1s4_ServiceComponentLabel ---  Size" << Fig1s4_ServiceComponentLabelVec.size() << " Capacity" << Fig1s4_ServiceComponentLabelVec.capacity();
   for (const auto & e : Fig1s4_ServiceComponentLabelVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "Name" << e.Name
             << "NameShort" << e.NameShort
             << "SId" << hex_str(e.SId).toStdString().c_str() // C-string gets now quotes in output
@@ -124,13 +126,13 @@ void FibConfigFig1::print_Fig1s4_ServiceComponentLabel()
   }
 }
 
-void FibConfigFig1::print_Fig1s5_DataServiceLabel()
+void FibConfigFig1::print_Fig1s5_DataServiceLabel(SStatistic & ioS)
 {
   qInfo();
   qInfo() << "--- Fig1s5_DataServiceLabel ---  Size" << Fig1s5_DataServiceLabelVec.size() << " Capacity" << Fig1s5_DataServiceLabelVec.capacity();
   for (const auto & e : Fig1s5_DataServiceLabelVec)
   {
-    qInfo() << format_time(e).toStdString().c_str() // this way the quotes are omitted
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
             << "Name" << e.Name
             << "NameShort" << e.NameShort
             << "SId" << hex_str(e.SId).toStdString().c_str() // C-string gets now quotes in output

@@ -14,7 +14,7 @@
 class DabRadio;
 class QTimer;
 
-class FibDecoder final : public IFibDecoder
+class FibDecoder final : public IFibDecoder, public FibHelper
 {
 public:
   explicit FibDecoder(DabRadio *);
@@ -48,7 +48,7 @@ public:
   // std::vector<SEpgElement> find_epg_data(u32) const override;
 
 private:
-  static constexpr i32 cMaxFibLoadingTimeFast_ms =  750;
+  static constexpr i32 cMaxFibLoadingTimeFast_ms =  2200;
   static constexpr i32 cMaxFibLoadingTimeSlow_ms = 10000;
   DabRadio * const mpRadioInterface = nullptr;
   std::unique_ptr<FibConfigFig1> mpFibConfigFig1;

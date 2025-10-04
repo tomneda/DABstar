@@ -232,15 +232,15 @@ public:
   const SFig0s14_SubChannelOrganization     * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
   const SFig0s17_ProgrammeType              * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
 
-  void print_Fig0s1_BasicSubChannelOrganization() const;
-  void print_Fig0s2_BasicService_ServiceCompDef() const;
-  void print_Fig0s3_ServiceComponentPacketMode() const;
-  void print_Fig0s5_ServiceComponentLanguage() const;
-  void print_Fig0s8_ServiceCompGlobalDef() const;
-  void print_Fig0s9_CountryLtoInterTab() const;
-  void print_Fig0s13_UserApplicationInformation() const;
-  void print_Fig0s14_SubChannelOrganization() const;
-  void print_Fig0s17_ProgrammeType() const;
+  void print_Fig0s1_BasicSubChannelOrganization(SStatistic & ioS) const;
+  void print_Fig0s2_BasicService_ServiceCompDef(SStatistic & ioS) const;
+  void print_Fig0s3_ServiceComponentPacketMode(SStatistic & ioS) const;
+  void print_Fig0s5_ServiceComponentLanguage(SStatistic & ioS) const;
+  void print_Fig0s8_ServiceCompGlobalDef(SStatistic & ioS) const;
+  void print_Fig0s9_CountryLtoInterTab(SStatistic & ioS) const;
+  void print_Fig0s13_UserApplicationInformation(SStatistic & ioS) const;
+  void print_Fig0s14_SubChannelOrganization(SStatistic & ioS) const;
+  void print_Fig0s17_ProgrammeType(SStatistic & ioS) const;
 
   template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
 

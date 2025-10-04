@@ -95,10 +95,10 @@ public:
   const QString                       & get_service_label_of_SId_from_all_Fig1(u32 iSId) const;
   const SSId_SCIdS                    * get_SId_SCIdS_from_service_label(const QString & s) const;
 
-  void print_Fig1s0_EnsembleLabel();
-  void print_Fig1s1_ProgrammeServiceLabelVec();
-  void print_Fig1s4_ServiceComponentLabel();
-  void print_Fig1s5_DataServiceLabel();
+  void print_Fig1s0_EnsembleLabel(SStatistic & ioS);
+  void print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS);
+  void print_Fig1s4_ServiceComponentLabel(SStatistic & ioS);
+  void print_Fig1s5_DataServiceLabel(SStatistic & ioS);
 };
 
 #endif
