@@ -89,7 +89,7 @@ public:
     i8 CA_Flag = -1;  // CA flag: this 1-bit field flag shall indicate whether access control applies to the service component
   };
 
-  struct SFig0s2_BasicService_ServiceComponentDefinition : SFigBase
+  struct SFig0s2_BasicService_ServiceCompDef : SFigBase
   {
     constexpr static i8 cNumServiceCompMax = 12;
     u32 get_SId() const { return PD_Flag == 0 ? PD0.SId : PD1.SId; }
@@ -216,7 +216,7 @@ public:
   };
 
   std::vector<SFig0s1_BasicSubChannelOrganization> Fig0s1_BasicSubChannelOrganizationVec;
-  std::vector<SFig0s2_BasicService_ServiceComponentDefinition> Fig0s2_BasicService_ServiceComponentDefinitionVec;
+  std::vector<SFig0s2_BasicService_ServiceCompDef> Fig0s2_BasicService_ServiceCompDefVec;
   std::vector<SFig0s3_ServiceComponentPacketMode> Fig0s3_ServiceComponentPacketModeVec;
   std::vector<SFig0s5_ServiceComponentLanguage> Fig0s5_ServiceComponentLanguageVec;
   std::vector<SFig0s8_ServiceComponentGlobalDefinition> Fig0s8_ServiceComponentGlobalDefinitionVec;
@@ -225,25 +225,25 @@ public:
   std::vector<SFig0s14_SubChannelOrganization> Fig0s14_SubChannelOrganizationVec;
   std::vector<SFig0s17_ProgrammeType> Fig0s17_ProgrammeTypeVec;
 
-  const SFig0s1_BasicSubChannelOrganization             * get_Fig0s1_BasicSubChannelOrganization_of_SubChId(i32 iSubChId) const;
-  const SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_TMId(u32 iSId, u8 iTMId) const;
-  const SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId(u32 iSId) const;
-  const SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_ScIdx(u32 iSId, i32 iScIdx) const;
-  const SFig0s2_BasicService_ServiceComponentDefinition * get_Fig0s2_BasicService_ServiceComponentDefinition_of_SCId(i16 SCId) const;
-  const SFig0s3_ServiceComponentPacketMode              * get_Fig0s3_ServiceComponentPacketMode_of_SCId(i32 iSCId) const;
-  const SFig0s5_ServiceComponentLanguage                * get_Fig0s5_ServiceComponentLanguage_of_SubChId(u8 iSubChId) const;
-  const SFig0s5_ServiceComponentLanguage                * get_Fig0s5_ServiceComponentLanguage_of_SCId(u8 iSCId) const;
-  const SFig0s8_ServiceComponentGlobalDefinition        * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(u32 iSId) const;
-  const SFig0s8_ServiceComponentGlobalDefinition        * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
-  const SFig0s9_CountryLtoInterTab                      * get_Fig0s9_CountryLtoInterTab() const;
-  const SFig0s13_UserApplicationInformation             * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;
-  const SFig0s14_SubChannelOrganization                 * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
-  const SFig0s17_ProgrammeType                          * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
+  const SFig0s1_BasicSubChannelOrganization      * get_Fig0s1_BasicSubChannelOrganization_of_SubChId(i32 iSubChId) const;
+  const SFig0s2_BasicService_ServiceCompDef      *   get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(u32 iSId, u8 iTMId) const;
+  const SFig0s2_BasicService_ServiceCompDef      * get_Fig0s2_BasicService_ServiceCompDef_of_SId(u32 iSId) const;
+  const SFig0s2_BasicService_ServiceCompDef      * get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(u32 iSId, i32 iScIdx) const;
+  const SFig0s2_BasicService_ServiceCompDef      * get_Fig0s2_BasicService_ServiceCompDef_of_SCId(i16 SCId) const;
+  const SFig0s3_ServiceComponentPacketMode       * get_Fig0s3_ServiceComponentPacketMode_of_SCId(i32 iSCId) const;
+  const SFig0s5_ServiceComponentLanguage         * get_Fig0s5_ServiceComponentLanguage_of_SubChId(u8 iSubChId) const;
+  const SFig0s5_ServiceComponentLanguage         * get_Fig0s5_ServiceComponentLanguage_of_SCId(u8 iSCId) const;
+  const SFig0s8_ServiceComponentGlobalDefinition * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(u32 iSId) const;
+  const SFig0s8_ServiceComponentGlobalDefinition * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
+  const SFig0s9_CountryLtoInterTab               * get_Fig0s9_CountryLtoInterTab() const;
+  const SFig0s13_UserApplicationInformation      * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;
+  const SFig0s14_SubChannelOrganization          * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
+  const SFig0s17_ProgrammeType                   * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
 
   QString format_time(const SFigBase & iFigBase) const;
 
   void print_Fig0s1_BasicSubChannelOrganization() const;
-  void print_Fig0s2_BasicService_ServiceComponentDefinition() const;
+  void print_Fig0s2_BasicService_ServiceCompDef() const;
   void print_Fig0s3_ServiceComponentPacketMode() const;
   void print_Fig0s5_ServiceComponentLanguage() const;
   void print_Fig0s8_ServiceComponentGlobalDefinition() const;

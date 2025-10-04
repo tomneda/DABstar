@@ -13,7 +13,7 @@ FibConfigFig0::FibConfigFig0()
   // TODO: evaluate reasonable sizes to reserve
   // avoids memory reallocation that references are usable
   Fig0s1_BasicSubChannelOrganizationVec.reserve(64);
-  Fig0s2_BasicService_ServiceComponentDefinitionVec.reserve(32);
+  Fig0s2_BasicService_ServiceCompDefVec.reserve(32);
   Fig0s3_ServiceComponentPacketModeVec.reserve(16);
   Fig0s5_ServiceComponentLanguageVec.reserve(8);
   Fig0s8_ServiceComponentGlobalDefinitionVec.reserve(32);
@@ -26,7 +26,7 @@ FibConfigFig0::FibConfigFig0()
 void FibConfigFig0::reset()
 {
   Fig0s1_BasicSubChannelOrganizationVec.clear();
-  Fig0s2_BasicService_ServiceComponentDefinitionVec.clear();
+  Fig0s2_BasicService_ServiceCompDefVec.clear();
   Fig0s3_ServiceComponentPacketModeVec.clear();
   Fig0s5_ServiceComponentLanguageVec.clear();
   Fig0s8_ServiceComponentGlobalDefinitionVec.clear();
@@ -48,9 +48,9 @@ const FibConfigFig0::SFig0s1_BasicSubChannelOrganization * FibConfigFig0::get_Fi
   return nullptr;
 }
 
-const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition * FibConfigFig0::get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId(const u32 iSId) const
+const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fig0s2_BasicService_ServiceCompDef_of_SId(const u32 iSId) const
 {
-  for (auto & elem : Fig0s2_BasicService_ServiceComponentDefinitionVec)
+  for (auto & elem : Fig0s2_BasicService_ServiceCompDefVec)
   {
     const u32 SId = (elem.PD_Flag == 0 ? elem.PD0.SId : elem.PD1.SId);
     if (SId == iSId)
@@ -61,9 +61,9 @@ const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition * FibConfig
   return nullptr;
 }
 
-const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition * FibConfigFig0::get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_ScIdx(const u32 iSId, const i32 iScIdx) const
+const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(const u32 iSId, const i32 iScIdx) const
 {
-  for (auto & elem : Fig0s2_BasicService_ServiceComponentDefinitionVec)
+  for (auto & elem : Fig0s2_BasicService_ServiceCompDefVec)
   {
     const u32 SId = elem.get_SId();
     if (SId == iSId && elem.ServiceComp_C_index == iScIdx)
@@ -74,9 +74,9 @@ const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition * FibConfig
   return nullptr;
 }
 
-const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition * FibConfigFig0::get_Fig0s2_BasicService_ServiceComponentDefinition_of_SCId(i16 SCId) const
+const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fig0s2_BasicService_ServiceCompDef_of_SCId(i16 SCId) const
 {
-  for (auto & fig0s2 : Fig0s2_BasicService_ServiceComponentDefinitionVec)
+  for (auto & fig0s2 : Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::PacketModeData && fig0s2.ServiceComp_C.TMId11.SCId == SCId)
     {
@@ -86,9 +86,9 @@ const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition * FibConfig
   return nullptr;
 }
 
-const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition * FibConfigFig0::get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_TMId(u32 iSId, u8 iTMId) const
+const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(u32 iSId, u8 iTMId) const
 {
-  for (auto & fig0s2 : Fig0s2_BasicService_ServiceComponentDefinitionVec)
+  for (auto & fig0s2 : Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.get_SId() == iSId && fig0s2.ServiceComp_C.TMId == iTMId)
     {
@@ -230,11 +230,11 @@ void FibConfigFig0::print_Fig0s1_BasicSubChannelOrganization() const
   }
 }
 
-void FibConfigFig0::print_Fig0s2_BasicService_ServiceComponentDefinition() const
+void FibConfigFig0::print_Fig0s2_BasicService_ServiceCompDef() const
 {
   qInfo();
-  qInfo() << "--- Fig0s2_BasicService_ServiceComponentDefinition ---  Size" << Fig0s2_BasicService_ServiceComponentDefinitionVec.size() << " Capacity" << Fig0s2_BasicService_ServiceComponentDefinitionVec.capacity();
-  for (const auto & e : Fig0s2_BasicService_ServiceComponentDefinitionVec)
+  qInfo() << "--- Fig0s2_BasicService_ServiceCompDef ---  Size" << Fig0s2_BasicService_ServiceCompDefVec.size() << " Capacity" << Fig0s2_BasicService_ServiceCompDefVec.capacity();
+  for (const auto & e : Fig0s2_BasicService_ServiceCompDefVec)
   {
     QStringList l;
     l << format_time(e);

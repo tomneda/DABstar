@@ -130,7 +130,7 @@ void FibDecoder::get_data_for_audio_service(const QString & iServiceLabel, SAudi
     return;
   }
 
-  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_TMId(pSId_SCIdS->SId, ETMId::StreamModeAudio);
+  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(pSId_SCIdS->SId, ETMId::StreamModeAudio);
 
   if (pFig0s2 == nullptr)
   {
@@ -161,7 +161,7 @@ void FibDecoder::get_data_for_audio_service_addon(const QString & iServiceLabel,
     return;
   }
 
-  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_TMId(pSId_SCIdS->SId, ETMId::StreamModeAudio);
+  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(pSId_SCIdS->SId, ETMId::StreamModeAudio);
 
   if (pFig0s2 == nullptr)
   {
@@ -175,7 +175,7 @@ void FibDecoder::get_data_for_audio_service_addon(const QString & iServiceLabel,
   }
 }
 
-bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, SAudioData * opAD) const
+bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioData * opAD) const
 {
   opAD->isDefined = false;
 
@@ -212,7 +212,7 @@ bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicS
   return true;
 }
 
-bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, SAudioDataAddOns * opADAO) const
+bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioDataAddOns * opADAO) const
 {
   if (iFig0s2.ServiceComp_C.PS_Flag != 1) qWarning() << "This should be only a primary service";
   if (iFig0s2.PD_Flag != 0)
@@ -253,14 +253,14 @@ void FibDecoder::get_data_for_packet_service(const QString & iServiceLabel, std:
 
   i16 numComp = 0;
 
-  for (i16 compIdx = 0; compIdx < FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition::cNumServiceCompMax; ++compIdx)
+  for (i16 compIdx = 0; compIdx < FibConfigFig0::SFig0s2_BasicService_ServiceCompDef::cNumServiceCompMax; ++compIdx)
   {
     if (numComp > 0 && compIdx >= numComp)
     {
       break;  // quit for loop
     }
 
-    const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_ScIdx(pSId_SCIdS->SId, compIdx);
+    const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(pSId_SCIdS->SId, compIdx);
 
     if (pFig0s2 == nullptr || pFig0s2->ServiceComp_C.TMId != ETMId::PacketModeData)
     {
@@ -299,11 +299,11 @@ void FibDecoder::get_data_for_packet_service(const QString & iServiceLabel, std:
   // }
 }
 
-bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, const i16 iCompIdx, SPacketData * opPD) const
+bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, const i16 iCompIdx, SPacketData * opPD) const
 {
   opPD->isDefined = false;
 
-  if (iCompIdx >= FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition::cNumServiceCompMax)
+  if (iCompIdx >= FibConfigFig0::SFig0s2_BasicService_ServiceCompDef::cNumServiceCompMax)
   {
     return false;
   }
@@ -406,7 +406,7 @@ std::vector<SServiceId> FibDecoder::get_service_list() const
     {
       if (SId_SCIdS.SCIdS <= 0) // avoid using listing secondary subservices (negative SCIdS means "not specified")
       {
-        const auto * pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_TMId(SId_SCIdS.SId, ETMId::StreamModeAudio);
+        const auto * pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(SId_SCIdS.SId, ETMId::StreamModeAudio);
         SServiceId ed;
         ed.isAudioChannel = pFig0s2 != nullptr; // else is a primary data service
         ed.hasSpiEpgData = false; // TODO: fill out
@@ -759,7 +759,7 @@ void FibDecoder::_slot_timer_data_loaded_slow()
 
 #ifndef NDEBUG
   mpFibConfigFig0Curr->print_Fig0s1_BasicSubChannelOrganization();
-  mpFibConfigFig0Curr->print_Fig0s2_BasicService_ServiceComponentDefinition();
+  mpFibConfigFig0Curr->print_Fig0s2_BasicService_ServiceCompDef();
   mpFibConfigFig0Curr->print_Fig0s3_ServiceComponentPacketMode();
   mpFibConfigFig0Curr->print_Fig0s5_ServiceComponentLanguage();
   mpFibConfigFig0Curr->print_Fig0s8_ServiceComponentGlobalDefinition();

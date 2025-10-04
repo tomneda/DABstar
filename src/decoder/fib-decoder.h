@@ -49,7 +49,7 @@ public:
 
 private:
   static constexpr i32 cMaxFibLoadingTimeFast_ms =  750;
-  static constexpr i32 cMaxFibLoadingTimeSlow_ms = 3000;
+  static constexpr i32 cMaxFibLoadingTimeSlow_ms = 10000;
   DabRadio * const mpRadioInterface = nullptr;
   std::unique_ptr<FibConfigFig1> mpFibConfigFig1;
   std::unique_ptr<FibConfigFig0> mpFibConfigFig0Curr;
@@ -123,12 +123,12 @@ private:
   void _set_cluster(FibConfigFig0 *, i32, u32 iSId, u16);
   Cluster * _get_cluster(FibConfigFig0 *, i16);
 
-  bool _get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, SAudioData * opAD) const;
-  bool _get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, SAudioDataAddOns * opADAO) const;
-  bool _get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2, i16 iCompIdx, SPacketData * opPD) const;
+  bool _get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioData * opAD) const;
+  bool _get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioDataAddOns * opADAO) const;
+  bool _get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, i16 iCompIdx, SPacketData * opPD) const;
 
-  QString _get_audio_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2) const;
-  QString _get_packet_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition & iFig0s2) const;
+  QString _get_audio_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2) const;
+  QString _get_packet_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2) const;
 
   bool _extract_character_set_label(FibConfigFig1::SFig1_DataField & oFig1DF, const u8 * d, i16 iLabelOffs) const;
   void _retrigger_timer_data_loaded_fast(const char * iCallerName);

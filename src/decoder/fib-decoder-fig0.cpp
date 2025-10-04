@@ -174,7 +174,7 @@ void FibDecoder::_process_Fig0s2(const u8 * const d)
 i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, i16 offset, const SFigHeader & iFH)
 {
   i16 bitOffset = 8 * offset;
-  FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition fig0s2;
+  FibConfigFig0::SFig0s2_BasicService_ServiceCompDef fig0s2;
 
   fig0s2.PD_Flag = iFH.PD_Flag;
   const u32 SId = (iFH.PD_Flag == 1 ? fig0s2.PD1.SId = getLBits(d, bitOffset, 32) // SId overlaps ecc and CountryId
@@ -188,7 +188,7 @@ i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, i16 offset, const SFigHea
 
   for (i16 servCombIdx = 0; servCombIdx < fig0s2.NumServiceComp; servCombIdx++)
   {
-    if (const auto * pFig0s2 = pConfig->get_Fig0s2_BasicService_ServiceComponentDefinition_of_SId_ScIdx(SId, servCombIdx);
+    if (const auto * pFig0s2 = pConfig->get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(SId, servCombIdx);
         pFig0s2 == nullptr) // is SID on same index already known?
     {
       FibConfigFig0::SFig0s2_ServiceComponentDefinition & fig0s2_scd = fig0s2.ServiceComp_C;
@@ -219,14 +219,14 @@ i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, i16 offset, const SFigHea
       fig0s2_scd.PS_Flag = getBits_1(d, bitOffset + 14);
       fig0s2_scd.CA_Flag = getBits_1(d, bitOffset + 15);
 
-      // SId_element.comps.push_back(pConfig->Fig0s2_BasicService_ServiceComponentDefinitionVec.size());
+      // SId_element.comps.push_back(pConfig->Fig0s2_BasicService_ServiceCompDefVec.size());
       fig0s2.set_current_time();
-      pConfig->Fig0s2_BasicService_ServiceComponentDefinitionVec.emplace_back(fig0s2);
+      pConfig->Fig0s2_BasicService_ServiceCompDefVec.emplace_back(fig0s2);
       _retrigger_timer_data_loaded_fast("Fig0s2");
     }
     else
     {
-      const_cast<FibConfigFig0::SFig0s2_BasicService_ServiceComponentDefinition *>(pFig0s2)->set_current_time_2nd_call();
+      const_cast<FibConfigFig0::SFig0s2_BasicService_ServiceCompDef *>(pFig0s2)->set_current_time_2nd_call();
     }
     bitOffset += 16;
   }
