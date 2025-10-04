@@ -6,12 +6,13 @@
 
 #include "glob_data_types.h"
 #include "dab-constants.h"
+#include "fib_helper.h"
 #include <vector>
 #include <map>
 #include <chrono>
 #include <QString>
 
-class FibConfigFig1
+class FibConfigFig1 : public FibHelper
 {
 public:
   FibConfigFig1()
@@ -30,15 +31,6 @@ public:
 
     serviceLabel_To_SId_SCIdS_Map.clear();
   }
-
-  struct SFigBase
-  {
-    using TTP = std::chrono::time_point<std::chrono::steady_clock>;
-    TTP TimePoint{};
-    TTP TimePoint2ndCall{};
-    void set_current_time() { TimePoint = std::chrono::steady_clock::now(); }
-    void set_current_time_2nd_call() { if (TimePoint2ndCall ==  TTP()) TimePoint2ndCall = std::chrono::steady_clock::now(); }
-  };
 
   struct SFig1_DataField
   {
@@ -102,8 +94,6 @@ public:
   const SFig1s5_DataServiceLabel      * get_Fig1s5_DataServiceLabel_of_SId(u32 SId) const;
   const QString                       & get_service_label_of_SId_from_all_Fig1(u32 iSId) const;
   const SSId_SCIdS                    * get_SId_SCIdS_from_service_label(const QString & s) const;
-
-  QString format_time(const SFigBase & iFigBase) const;
 
   void print_Fig1s0_EnsembleLabel();
   void print_Fig1s1_ProgrammeServiceLabelVec();

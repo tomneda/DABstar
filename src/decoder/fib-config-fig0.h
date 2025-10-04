@@ -5,6 +5,7 @@
 #define  FIB_CONFIG_FIG0_H
 
 #include "glob_data_types.h"
+#include "fib_helper.h"
 #include <vector>
 #include <QString>
 #include <chrono>
@@ -38,22 +39,13 @@ struct Cluster
   std::vector<u32> servicesSIDs;
 };
 
-class FibConfigFig0
+class FibConfigFig0 : public FibHelper
 {
 public:
   FibConfigFig0();
   ~FibConfigFig0() = default;
 
   void reset();
-
-  struct SFigBase
-  {
-    using TTP = std::chrono::time_point<std::chrono::steady_clock>;
-    TTP TimePoint{};
-    TTP TimePoint2ndCall{};
-    void set_current_time() { TimePoint = std::chrono::steady_clock::now(); }
-    void set_current_time_2nd_call() { if (TimePoint2ndCall ==  TTP()) TimePoint2ndCall = std::chrono::steady_clock::now(); }
-  };
 
   struct SFig0s1_BasicSubChannelOrganization : SFigBase
   {
@@ -225,22 +217,20 @@ public:
   std::vector<SFig0s14_SubChannelOrganization> Fig0s14_SubChannelOrganizationVec;
   std::vector<SFig0s17_ProgrammeType> Fig0s17_ProgrammeTypeVec;
 
-  const SFig0s1_BasicSubChannelOrganization      * get_Fig0s1_BasicSubChannelOrganization_of_SubChId(i32 iSubChId) const;
-  const SFig0s2_BasicService_ServiceCompDef      *   get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(u32 iSId, u8 iTMId) const;
-  const SFig0s2_BasicService_ServiceCompDef      * get_Fig0s2_BasicService_ServiceCompDef_of_SId(u32 iSId) const;
-  const SFig0s2_BasicService_ServiceCompDef      * get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(u32 iSId, i32 iScIdx) const;
-  const SFig0s2_BasicService_ServiceCompDef      * get_Fig0s2_BasicService_ServiceCompDef_of_SCId(i16 SCId) const;
-  const SFig0s3_ServiceComponentPacketMode       * get_Fig0s3_ServiceComponentPacketMode_of_SCId(i32 iSCId) const;
-  const SFig0s5_ServiceComponentLanguage         * get_Fig0s5_ServiceComponentLanguage_of_SubChId(u8 iSubChId) const;
-  const SFig0s5_ServiceComponentLanguage         * get_Fig0s5_ServiceComponentLanguage_of_SCId(u8 iSCId) const;
-  const SFig0s8_ServiceCompGlobalDef * get_Fig0s8_ServiceCompGlobalDef_of_SId(u32 iSId) const;
-  const SFig0s8_ServiceCompGlobalDef * get_Fig0s8_ServiceCompGlobalDef_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
-  const SFig0s9_CountryLtoInterTab               * get_Fig0s9_CountryLtoInterTab() const;
-  const SFig0s13_UserApplicationInformation      * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;
-  const SFig0s14_SubChannelOrganization          * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
-  const SFig0s17_ProgrammeType                   * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
-
-  QString format_time(const SFigBase & iFigBase) const;
+  const SFig0s1_BasicSubChannelOrganization * get_Fig0s1_BasicSubChannelOrganization_of_SubChId(i32 iSubChId) const;
+  const SFig0s2_BasicService_ServiceCompDef *   get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(u32 iSId, u8 iTMId) const;
+  const SFig0s2_BasicService_ServiceCompDef * get_Fig0s2_BasicService_ServiceCompDef_of_SId(u32 iSId) const;
+  const SFig0s2_BasicService_ServiceCompDef * get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(u32 iSId, i32 iScIdx) const;
+  const SFig0s2_BasicService_ServiceCompDef * get_Fig0s2_BasicService_ServiceCompDef_of_SCId(i16 SCId) const;
+  const SFig0s3_ServiceComponentPacketMode  * get_Fig0s3_ServiceComponentPacketMode_of_SCId(i32 iSCId) const;
+  const SFig0s5_ServiceComponentLanguage    * get_Fig0s5_ServiceComponentLanguage_of_SubChId(u8 iSubChId) const;
+  const SFig0s5_ServiceComponentLanguage    * get_Fig0s5_ServiceComponentLanguage_of_SCId(u8 iSCId) const;
+  const SFig0s8_ServiceCompGlobalDef        * get_Fig0s8_ServiceCompGlobalDef_of_SId(u32 iSId) const;
+  const SFig0s8_ServiceCompGlobalDef        * get_Fig0s8_ServiceCompGlobalDef_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
+  const SFig0s9_CountryLtoInterTab          * get_Fig0s9_CountryLtoInterTab() const;
+  const SFig0s13_UserApplicationInformation * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;
+  const SFig0s14_SubChannelOrganization     * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
+  const SFig0s17_ProgrammeType              * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
 
   void print_Fig0s1_BasicSubChannelOrganization() const;
   void print_Fig0s2_BasicService_ServiceCompDef() const;
