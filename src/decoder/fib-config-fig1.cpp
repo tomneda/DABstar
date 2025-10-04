@@ -79,7 +79,6 @@ const FibConfigFig1::SSId_SCIdS * FibConfigFig1::get_SId_SCIdS_from_service_labe
 
 void FibConfigFig1::print_Fig1s0_EnsembleLabel(SStatistic & ioS)
 {
-  SStatistic s{};
   qInfo();
   qInfo() << "--- Fig1s0_EnsembleLabel ---  Size" << Fig1s0_EnsembleLabelVec.size() << " Capacity" << Fig1s0_EnsembleLabelVec.capacity();
   for (const auto & e : Fig1s0_EnsembleLabelVec)
@@ -91,7 +90,6 @@ void FibConfigFig1::print_Fig1s0_EnsembleLabel(SStatistic & ioS)
             << "Charset" << e.Charset
             << "CharFlagField" << e.CharFlagField;
   }
-  qInfo().noquote() << print_statistic(s);
 }
 
 void FibConfigFig1::print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS)

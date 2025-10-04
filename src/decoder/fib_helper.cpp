@@ -6,15 +6,10 @@
 
 QString FibHelper::print_duration_and_get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic) const
 {
-  const auto curTimePoint = std::chrono::steady_clock::now();
-  const auto duration1 = std::chrono::duration_cast<std::chrono::milliseconds>(curTimePoint - iFigBase.TimePoint);
+  const auto duration1 = std::chrono::duration_cast<std::chrono::milliseconds>(iFigBase.TimePoint - ioStatistic.TimePointRef);
   const auto duration2 = std::chrono::duration_cast<std::chrono::milliseconds>(iFigBase.TimePoint2ndCall - iFigBase.TimePoint);
 
   ioStatistic.Count++;
-  // if (iFigBase.TimePoint < ioStatistic.TimePointMin) ioStatistic.TimePointMin = iFigBase.TimePoint;
-  // if (iFigBase.TimePoint > ioStatistic.TimePointMax) ioStatistic.TimePointMax = iFigBase.TimePoint;
-  // if (iFigBase.TimePoint2ndCall < ioStatistic.TimePoint2ndCallMin) ioStatistic.TimePoint2ndCallMin = iFigBase.TimePoint2ndCall;
-  // if (iFigBase.TimePoint2ndCall > ioStatistic.TimePoint2ndCallMax) ioStatistic.TimePoint2ndCallMax = iFigBase.TimePoint2ndCall;
   if (duration1 < ioStatistic.DurationMin) ioStatistic.DurationMin = duration1;
   if (duration1 > ioStatistic.DurationMax) ioStatistic.DurationMax = duration1;
   if (duration2 < ioStatistic.Duration2ndCallMin) ioStatistic.Duration2ndCallMin = duration2;

@@ -7,6 +7,7 @@
 #include "fib-decoder_if.h"
 #include "fib-config-fig0.h"
 #include "fib-config-fig1.h"
+#include "fib_helper.h"
 #include <QMutex>
 #include <set>
 #include <chrono>
@@ -48,8 +49,8 @@ public:
   // std::vector<SEpgElement> find_epg_data(u32) const override;
 
 private:
-  static constexpr i32 cMaxFibLoadingTimeFast_ms =  2200;
-  static constexpr i32 cMaxFibLoadingTimeSlow_ms = 10000;
+  static constexpr i32 cMaxFibLoadingTimeFast_ms = 2500;
+  static constexpr i32 cMaxFibLoadingTimeSlow_ms =  300 + cMaxFibLoadingTimeFast_ms;
   DabRadio * const mpRadioInterface = nullptr;
   std::unique_ptr<FibConfigFig1> mpFibConfigFig1;
   std::unique_ptr<FibConfigFig0> mpFibConfigFig0Curr;
@@ -71,6 +72,7 @@ private:
   std::chrono::milliseconds mDiffMaxSlow{};
   std::chrono::time_point<std::chrono::system_clock> mLastTimePointFast{};
   std::chrono::time_point<std::chrono::system_clock> mLastTimePointSlow{};
+  FibHelper::TTP mFirstFigTimePoint{};
 
   struct SFigHeader // plus flags
   {

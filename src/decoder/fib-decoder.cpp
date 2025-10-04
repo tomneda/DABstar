@@ -40,6 +40,11 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
 {
   QMutexLocker lock(&mMutex); // TODO: maybe shift to emplace_back() place?
 
+  if (mFirstFigTimePoint == FibHelper::TTP())
+  {
+    mFirstFigTimePoint = TCT::now();
+  }
+
   // iFibBits: 30 Bytes Data * 8  + 16 Bit CRC = 32 Byte / 256 bits
   // The caller already does CRC16 check.
   i32 processedBytes = 0;
@@ -758,19 +763,21 @@ void FibDecoder::_slot_timer_data_loaded_slow()
   QMutexLocker lock(&mMutex);
 
 #ifndef NDEBUG
-  SStatistic statFig0s1{};
-  SStatistic statFig0s2{};
-  SStatistic statFig0s3{};
-  SStatistic statFig0s5{};
-  SStatistic statFig0s8{};
-  SStatistic statFig0s9{};
-  SStatistic statFig0s13{};
-  SStatistic statFig0s14{};
-  SStatistic statFig0s17{};
-  SStatistic statFig1s0{};
-  SStatistic statFig1s1{};
-  SStatistic statFig1s4{};
-  SStatistic statFig1s5{};
+  const FibHelper::TTP & ctp = mFirstFigTimePoint;
+  const FibHelper::TTP ctpNow = TCT::now();
+  SStatistic statFig0s1(ctp);
+  SStatistic statFig0s2(ctp);
+  SStatistic statFig0s3(ctp);
+  SStatistic statFig0s5(ctp);
+  SStatistic statFig0s8(ctp);
+  SStatistic statFig0s9(ctp);
+  SStatistic statFig0s13(ctp);
+  SStatistic statFig0s14(ctp);
+  SStatistic statFig0s17(ctp);
+  SStatistic statFig1s0(ctp);
+  SStatistic statFig1s1(ctp);
+  SStatistic statFig1s4(ctp);
+  SStatistic statFig1s5(ctp);
 
   mpFibConfigFig0Curr->print_Fig0s1_BasicSubChannelOrganization(statFig0s1);
   mpFibConfigFig0Curr->print_Fig0s2_BasicService_ServiceCompDef(statFig0s2);
@@ -791,6 +798,7 @@ void FibDecoder::_slot_timer_data_loaded_slow()
   qInfo().noquote() << print_statistic_header();
   if (!mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty())
     qInfo() << "Ensemble:" << mpFibConfigFig1->Fig1s0_EnsembleLabelVec[0].Name.trimmed();
+  qInfo() << "Runtime since first FIB processed:" << std::chrono::duration_cast<std::chrono::milliseconds>(ctpNow - ctp).count() << "ms";
   qInfo().noquote() << "Fig0/ 1:" << print_statistic(statFig0s1);
   qInfo().noquote() << "Fig0/ 2:" << print_statistic(statFig0s2);
   qInfo().noquote() << "Fig0/ 3:" << print_statistic(statFig0s3);

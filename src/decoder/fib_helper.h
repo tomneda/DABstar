@@ -13,7 +13,8 @@
 class FibHelper
 {
 public:
-  using TTP = std::chrono::time_point<std::chrono::steady_clock>;
+  using TCT = std::chrono::steady_clock;
+  using TTP = std::chrono::time_point<TCT>;
   using TT  = std::chrono::milliseconds;
 
   struct SFigBase
@@ -26,14 +27,12 @@ public:
 
   struct SStatistic
   {
-    // TTP TimePointMin = TTP::max();
-    // TTP TimePointMax = TTP::min();
-    // TTP TimePoint2ndCallMin = TTP::max();
-    // TTP TimePoint2ndCallMax = TTP::min();
-    TT DurationMin = TT::max();
-    TT DurationMax = TT::min();
-    TT Duration2ndCallMin = TT::max();
-    TT Duration2ndCallMax = TT::min();
+    SStatistic(TTP iTimePointRef) : TimePointRef(iTimePointRef) {}
+    const TTP TimePointRef;
+    TT  DurationMin = TT::max();
+    TT  DurationMax = TT::min();
+    TT  Duration2ndCallMin = TT::max();
+    TT  Duration2ndCallMax = TT::min();
     u32 Count = 0;
   };
 
