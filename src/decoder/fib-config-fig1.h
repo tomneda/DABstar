@@ -33,11 +33,11 @@ public:
 
   struct SFigBase
   {
-    using TTP = std::chrono::time_point<std::chrono::system_clock>;
-    TTP SysTime{};
-    TTP SysTime2ndCall{};
-    void set_current_time() { SysTime = std::chrono::system_clock::now(); }
-    void set_current_time_2nd_call() { if (SysTime2ndCall ==  TTP()) SysTime2ndCall = std::chrono::system_clock::now(); }
+    using TTP = std::chrono::time_point<std::chrono::steady_clock>;
+    TTP TimePoint{};
+    TTP TimePoint2ndCall{};
+    void set_current_time() { TimePoint = std::chrono::steady_clock::now(); }
+    void set_current_time_2nd_call() { if (TimePoint2ndCall ==  TTP()) TimePoint2ndCall = std::chrono::steady_clock::now(); }
   };
 
   struct SFig1_DataField

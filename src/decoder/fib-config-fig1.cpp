@@ -79,12 +79,10 @@ const FibConfigFig1::SSId_SCIdS * FibConfigFig1::get_SId_SCIdS_from_service_labe
 
 QString FibConfigFig1::format_time(const SFigBase & iFigBase) const
 {
-  const std::time_t time = std::chrono::system_clock::to_time_t(iFigBase.SysTime);
-  const QDateTime dateTime = QDateTime::fromSecsSinceEpoch(time);
-  const auto duration = iFigBase.SysTime.time_since_epoch();
-  const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration) % 1000;
-  const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(iFigBase.SysTime2ndCall - iFigBase.SysTime);
-  return "[" + dateTime.toString("HH:mm:ss") + QString(".%1]").arg(ms.count(), 3, 10, QChar('0')) + QString("[%1 ms]").arg(diff.count(), 5, 10);
+  const auto curTimePoint = std::chrono::steady_clock::now();
+  const auto duration1 = std::chrono::duration_cast<std::chrono::milliseconds>(curTimePoint - iFigBase.TimePoint);
+  const auto duration2 = std::chrono::duration_cast<std::chrono::milliseconds>(iFigBase.TimePoint2ndCall - iFigBase.TimePoint);
+  return QString("[%1 ms][%2 ms]").arg(duration1.count(), 5, 10).arg(duration2.count(), 5, 10);
 }
 
 void FibConfigFig1::print_Fig1s0_EnsembleLabel()
