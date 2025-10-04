@@ -129,7 +129,7 @@ public:
     i16 SCId = -1;     // this 12-bit field shall identify the service component (see clause 6.3.1).
   };
 
-  struct SFig0s8_ServiceComponentGlobalDefinition : SFigBase
+  struct SFig0s8_ServiceCompGlobalDef : SFigBase
   {
     i8  PD_Flag = -1;  // programme or data service
     u32 SId = -1;      // (Service Identifier): this 16-bit or 32-bit field shall identify the service. The length of the SId shall be signalled by the P/D flag, see clause 5.2.2.1.
@@ -219,7 +219,7 @@ public:
   std::vector<SFig0s2_BasicService_ServiceCompDef> Fig0s2_BasicService_ServiceCompDefVec;
   std::vector<SFig0s3_ServiceComponentPacketMode> Fig0s3_ServiceComponentPacketModeVec;
   std::vector<SFig0s5_ServiceComponentLanguage> Fig0s5_ServiceComponentLanguageVec;
-  std::vector<SFig0s8_ServiceComponentGlobalDefinition> Fig0s8_ServiceComponentGlobalDefinitionVec;
+  std::vector<SFig0s8_ServiceCompGlobalDef> Fig0s8_ServiceCompGlobalDefVec;
   std::vector<SFig0s9_CountryLtoInterTab> Fig0s9_CountryLtoInterTabVec;
   std::vector<SFig0s13_UserApplicationInformation> Fig0s13_UserApplicationInformationVec;
   std::vector<SFig0s14_SubChannelOrganization> Fig0s14_SubChannelOrganizationVec;
@@ -233,8 +233,8 @@ public:
   const SFig0s3_ServiceComponentPacketMode       * get_Fig0s3_ServiceComponentPacketMode_of_SCId(i32 iSCId) const;
   const SFig0s5_ServiceComponentLanguage         * get_Fig0s5_ServiceComponentLanguage_of_SubChId(u8 iSubChId) const;
   const SFig0s5_ServiceComponentLanguage         * get_Fig0s5_ServiceComponentLanguage_of_SCId(u8 iSCId) const;
-  const SFig0s8_ServiceComponentGlobalDefinition * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(u32 iSId) const;
-  const SFig0s8_ServiceComponentGlobalDefinition * get_Fig0s8_ServiceComponentGlobalDefinition_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
+  const SFig0s8_ServiceCompGlobalDef * get_Fig0s8_ServiceCompGlobalDef_of_SId(u32 iSId) const;
+  const SFig0s8_ServiceCompGlobalDef * get_Fig0s8_ServiceCompGlobalDef_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
   const SFig0s9_CountryLtoInterTab               * get_Fig0s9_CountryLtoInterTab() const;
   const SFig0s13_UserApplicationInformation      * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;
   const SFig0s14_SubChannelOrganization          * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
@@ -246,7 +246,7 @@ public:
   void print_Fig0s2_BasicService_ServiceCompDef() const;
   void print_Fig0s3_ServiceComponentPacketMode() const;
   void print_Fig0s5_ServiceComponentLanguage() const;
-  void print_Fig0s8_ServiceComponentGlobalDefinition() const;
+  void print_Fig0s8_ServiceCompGlobalDef() const;
   void print_Fig0s9_CountryLtoInterTab() const;
   void print_Fig0s13_UserApplicationInformation() const;
   void print_Fig0s14_SubChannelOrganization() const;

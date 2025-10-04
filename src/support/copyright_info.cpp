@@ -22,7 +22,7 @@
 #ifdef __WITH_FDK_AAC__
   #include <aacdecoder_lib.h>
 #else
-  #include <faad.h>
+  #include <faad.h> // faad2
 #endif
 #ifdef HAVE_LIQUID
   #include <liquid/liquid.h>

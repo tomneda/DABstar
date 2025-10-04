@@ -386,7 +386,7 @@ i16 FibDecoder::_subprocess_Fig0s8(const u8 * const d, const i16 used, const SFi
   const u8 LS_Flag = getBits_1(d, bitOffset + 8);
   auto * const pConfig = _get_config_ptr(iFH.CN_Flag);
 
-  FibConfigFig0::SFig0s8_ServiceComponentGlobalDefinition fig0s8;
+  FibConfigFig0::SFig0s8_ServiceCompGlobalDef fig0s8;
   fig0s8.SId = SId;
   fig0s8.PD_Flag = iFH.PD_Flag;
   fig0s8.LS_Flag = LS_Flag;
@@ -404,16 +404,16 @@ i16 FibDecoder::_subprocess_Fig0s8(const u8 * const d, const i16 used, const SFi
     bitOffset += (fig0s8.Ext_Flag != 0 ? 24 + 8 : 24); // skip Rfa
   }
 
-  if (const auto * const pFig0s8 = pConfig->get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(fig0s8.SId);
+  if (const auto * const pFig0s8 = pConfig->get_Fig0s8_ServiceCompGlobalDef_of_SId(fig0s8.SId);
       pFig0s8 == nullptr)
   {
     fig0s8.set_current_time();
-    pConfig->Fig0s8_ServiceComponentGlobalDefinitionVec.emplace_back(fig0s8);
+    pConfig->Fig0s8_ServiceCompGlobalDefVec.emplace_back(fig0s8);
     _retrigger_timer_data_loaded_slow("Fig0s8");
   }
   else
   {
-    const_cast<FibConfigFig0::SFig0s8_ServiceComponentGlobalDefinition *>(pFig0s8)->set_current_time_2nd_call();
+    const_cast<FibConfigFig0::SFig0s8_ServiceCompGlobalDef *>(pFig0s8)->set_current_time_2nd_call();
   }
 
   assert(bitOffset % 8 == 0); // only full bytes should occur

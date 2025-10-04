@@ -16,7 +16,7 @@ FibConfigFig0::FibConfigFig0()
   Fig0s2_BasicService_ServiceCompDefVec.reserve(32);
   Fig0s3_ServiceComponentPacketModeVec.reserve(16);
   Fig0s5_ServiceComponentLanguageVec.reserve(8);
-  Fig0s8_ServiceComponentGlobalDefinitionVec.reserve(32);
+  Fig0s8_ServiceCompGlobalDefVec.reserve(32);
   Fig0s9_CountryLtoInterTabVec.reserve(1);
   Fig0s13_UserApplicationInformationVec.reserve(16);
   Fig0s14_SubChannelOrganizationVec.reserve(8);
@@ -29,7 +29,7 @@ void FibConfigFig0::reset()
   Fig0s2_BasicService_ServiceCompDefVec.clear();
   Fig0s3_ServiceComponentPacketModeVec.clear();
   Fig0s5_ServiceComponentLanguageVec.clear();
-  Fig0s8_ServiceComponentGlobalDefinitionVec.clear();
+  Fig0s8_ServiceCompGlobalDefVec.clear();
   Fig0s9_CountryLtoInterTabVec.clear();
   Fig0s13_UserApplicationInformationVec.clear();
   Fig0s14_SubChannelOrganizationVec.clear();
@@ -134,9 +134,9 @@ const FibConfigFig0::SFig0s5_ServiceComponentLanguage * FibConfigFig0::get_Fig0s
   return nullptr;
 }
 
-const FibConfigFig0::SFig0s8_ServiceComponentGlobalDefinition * FibConfigFig0::get_Fig0s8_ServiceComponentGlobalDefinition_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const
+const FibConfigFig0::SFig0s8_ServiceCompGlobalDef * FibConfigFig0::get_Fig0s8_ServiceCompGlobalDef_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const
 {
-  for (auto & fig0s8 : Fig0s8_ServiceComponentGlobalDefinitionVec)
+  for (auto & fig0s8 : Fig0s8_ServiceCompGlobalDefVec)
   {
     if (fig0s8.SId == iSId && fig0s8.SCIdS == iSCIdS)
     {
@@ -146,9 +146,9 @@ const FibConfigFig0::SFig0s8_ServiceComponentGlobalDefinition * FibConfigFig0::g
   return nullptr;
 }
 
-const FibConfigFig0::SFig0s8_ServiceComponentGlobalDefinition * FibConfigFig0::get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(const u32 iSId) const
+const FibConfigFig0::SFig0s8_ServiceCompGlobalDef * FibConfigFig0::get_Fig0s8_ServiceCompGlobalDef_of_SId(const u32 iSId) const
 {
-  for (auto & elem : Fig0s8_ServiceComponentGlobalDefinitionVec)
+  for (auto & elem : Fig0s8_ServiceCompGlobalDefVec)
   {
     if (elem.SId == iSId)
     {
@@ -310,11 +310,11 @@ void FibConfigFig0::print_Fig0s5_ServiceComponentLanguage() const
   }
 }
 
-void FibConfigFig0::print_Fig0s8_ServiceComponentGlobalDefinition() const
+void FibConfigFig0::print_Fig0s8_ServiceCompGlobalDef() const
 {
   qInfo();
-  qInfo() << "--- Fig0s8_ServiceComponentGlobalDefinition ---  Size" << Fig0s8_ServiceComponentGlobalDefinitionVec.size() << " Capacity" << Fig0s8_ServiceComponentGlobalDefinitionVec.capacity();
-  for (const auto & e : Fig0s8_ServiceComponentGlobalDefinitionVec)
+  qInfo() << "--- Fig0s8_ServiceCompGlobalDef ---  Size" << Fig0s8_ServiceCompGlobalDefVec.size() << " Capacity" << Fig0s8_ServiceCompGlobalDefVec.capacity();
+  for (const auto & e : Fig0s8_ServiceCompGlobalDefVec)
   {
     QStringList l;
     l << format_time(e);

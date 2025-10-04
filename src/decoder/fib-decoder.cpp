@@ -328,7 +328,7 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
   }
 
   const u32 SId = iFig0s2.get_SId();
-  const auto * const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceComponentGlobalDefinition_of_SId(SId); // TODO: only for long form valid (with SCId)?
+  const auto * const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceCompGlobalDef_of_SId(SId); // TODO: only for long form valid (with SCId)?
 
   if (pFig0s8 == nullptr)
   {
@@ -762,7 +762,7 @@ void FibDecoder::_slot_timer_data_loaded_slow()
   mpFibConfigFig0Curr->print_Fig0s2_BasicService_ServiceCompDef();
   mpFibConfigFig0Curr->print_Fig0s3_ServiceComponentPacketMode();
   mpFibConfigFig0Curr->print_Fig0s5_ServiceComponentLanguage();
-  mpFibConfigFig0Curr->print_Fig0s8_ServiceComponentGlobalDefinition();
+  mpFibConfigFig0Curr->print_Fig0s8_ServiceCompGlobalDef();
   mpFibConfigFig0Curr->print_Fig0s9_CountryLtoInterTab();
   mpFibConfigFig0Curr->print_Fig0s13_UserApplicationInformation();
   mpFibConfigFig0Curr->print_Fig0s14_SubChannelOrganization();
