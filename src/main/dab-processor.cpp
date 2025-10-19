@@ -446,18 +446,24 @@ void DabProcessor::reset_services()
   }
 }
 
-bool DabProcessor::is_service_running(const SDescriptorType * d, EProcessFlag iProcessFlag)
+bool DabProcessor::is_service_running(const SDescriptorType & iDT, EProcessFlag iProcessFlag)
 {
   assert(!mScanMode);
-  return mMscHandler.is_service_running(d->subchId, iProcessFlag);
+  return mMscHandler.is_service_running(iDT.SubChId, iProcessFlag);
 }
 
-void DabProcessor::stop_service(const SDescriptorType * d, const EProcessFlag iProcessFlag)
+bool DabProcessor::is_service_running(const i32 iSubChId, EProcessFlag iProcessFlag)
+{
+  assert(!mScanMode);
+  return mMscHandler.is_service_running(iSubChId, iProcessFlag);
+}
+
+void DabProcessor::stop_service(const SDescriptorType & iDT, const EProcessFlag iProcessFlag)
 {
   fprintf(stderr, "function obsolete\n");
   if (!mScanMode)
   {
-    mMscHandler.stop_service(d->subchId, iProcessFlag);
+    mMscHandler.stop_service(iDT.SubChId, iProcessFlag);
   }
 }
 
@@ -469,11 +475,19 @@ void DabProcessor::stop_service(const i32 iSubChId, const EProcessFlag iProcessF
   }
 }
 
-bool DabProcessor::set_audio_channel(const SAudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, const EProcessFlag iProcessFlag)
+void DabProcessor::stop_all_services()
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(ipAudioData, ipoAudioBuffer, (RingBuffer<u8>*)nullptr, iProcessFlag);
+    mMscHandler.stop_all_services();
+  }
+}
+
+bool DabProcessor::set_audio_channel(const SAudioData & iAD, RingBuffer<i16> * ipoAudioBuffer, const EProcessFlag iProcessFlag)
+{
+  if (!mScanMode)
+  {
+    return mMscHandler.set_channel(&iAD, ipoAudioBuffer, (RingBuffer<u8>*)nullptr, iProcessFlag);
   }
   else
   {
@@ -481,11 +495,11 @@ bool DabProcessor::set_audio_channel(const SAudioData * ipAudioData, RingBuffer<
   }
 }
 
-bool DabProcessor::set_data_channel(const SPacketData * ipPacketData, RingBuffer<u8> * ipoDataBuffer, const EProcessFlag iProcessFlag)
+bool DabProcessor::set_data_channel(const SPacketData & iPD, RingBuffer<u8> * ipoDataBuffer, const EProcessFlag iProcessFlag)
 {
   if (!mScanMode)
   {
-    return mMscHandler.set_channel(ipPacketData, (RingBuffer<i16>*)nullptr, ipoDataBuffer, iProcessFlag);
+    return mMscHandler.set_channel(&iPD, (RingBuffer<i16>*)nullptr, ipoDataBuffer, iProcessFlag);
   }
   else
   {

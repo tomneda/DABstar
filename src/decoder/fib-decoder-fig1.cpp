@@ -29,8 +29,8 @@ void FibDecoder::_process_Fig1(const u8 * const d)
   default:
     if (mUnhandledFig1Set.find(extension) == mUnhandledFig1Set.end()) // print message only once
     {
-      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePointSlow);
-      if (mFibDataLoadedSlow) qDebug().noquote() << QString("FIG 1/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
+      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
+      if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded) qDebug().noquote() << QString("FIG 1/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig1Set.emplace(extension);
     }
   }
@@ -51,7 +51,7 @@ void FibDecoder::_process_Fig1s0(const u8 * const d)
   {
     fig1s0.set_current_time();
     mpFibConfigFig1->Fig1s0_EnsembleLabelVec.emplace_back(fig1s0);
-    _retrigger_timer_data_loaded_fast("Fig1s0");
+    // _retrigger_timer_data_loaded_fast("Fig1s0");
     emit signal_name_of_ensemble(fig1s0.EId, fig1s0.Name, fig1s0.NameShort);
   }
   else

@@ -4,7 +4,7 @@
 
 #include "fib_helper.h"
 
-QString FibHelper::print_duration_and_get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic) const
+void FibHelper::get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic, std::chrono::milliseconds * opDuration1 /*= nullptr*/, std::chrono::milliseconds * opDuration2 /*= nullptr*/) const
 {
   const auto duration1 = std::chrono::duration_cast<std::chrono::milliseconds>(iFigBase.TimePoint - ioStatistic.TimePointRef);
   const auto duration2 = std::chrono::duration_cast<std::chrono::milliseconds>(iFigBase.TimePoint2ndCall - iFigBase.TimePoint);
@@ -14,6 +14,15 @@ QString FibHelper::print_duration_and_get_statistics(const SFigBase & iFigBase, 
   if (duration1 > ioStatistic.DurationMax) ioStatistic.DurationMax = duration1;
   if (duration2 < ioStatistic.Duration2ndCallMin) ioStatistic.Duration2ndCallMin = duration2;
   if (duration2 > ioStatistic.Duration2ndCallMax) ioStatistic.Duration2ndCallMax = duration2;
+
+  if (opDuration1) *opDuration1 = duration1;
+  if (opDuration2) *opDuration2 = duration2;
+}
+
+QString FibHelper::print_duration_and_get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic) const
+{
+  std::chrono::milliseconds duration1, duration2;
+  get_statistics(iFigBase, ioStatistic, &duration1, &duration2);
 
   return QString("[%1 ms][%2 ms]").arg(duration1.count(), 5, 10).arg(duration2.count(), 5, 10);
 }

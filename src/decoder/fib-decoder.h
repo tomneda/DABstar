@@ -26,9 +26,11 @@ public:
   void connect_channel() override;
   void disconnect_channel() override;
 
-  void get_data_for_audio_service(const QString &, SAudioData *) const override;
-  void get_data_for_audio_service_addon(const QString &, SAudioDataAddOns * opADAO) const override;
-  void get_data_for_packet_service(const QString &, std::vector<SPacketData> & oPDVec) const override;
+  void set_SId_for_fast_audio_selection(u32 iSId) override;
+
+  void get_data_for_audio_service(u32 iSId, SAudioData & oAD) const override;
+  void get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns & oADAO) const override;
+  void get_data_for_packet_service(u32 iSId, std::vector<SPacketData> & oPDVec) const override;
   std::vector<SServiceId> get_service_list() const override;
 
   const QString & get_service_label_from_SId_SCIdS(u32, i32) const override;
@@ -49,8 +51,6 @@ public:
   // std::vector<SEpgElement> find_epg_data(u32) const override;
 
 private:
-  static constexpr i32 cMaxFibLoadingTimeFast_ms = 2500;
-  static constexpr i32 cMaxFibLoadingTimeSlow_ms =  300 + cMaxFibLoadingTimeFast_ms;
   DabRadio * const mpRadioInterface = nullptr;
   std::unique_ptr<FibConfigFig1> mpFibConfigFig1;
   std::unique_ptr<FibConfigFig0> mpFibConfigFig0Curr;
@@ -59,19 +59,17 @@ private:
   i16 mCifCount_hi = 0;
   i16 mCifCount_lo = 0;
   i32 mModJulianDate = 0;
+  u32 mSIdForFastAudioSelection = 0;
   mutable QMutex mMutex;
   u8 mPrevChangeFlag = 0;
-  QTimer * mpTimerDataLoadedFast = nullptr;
-  QTimer * mpTimerDataLoadedSlow = nullptr;
-  bool mFibDataLoadedFast = false;
-  bool mFibDataLoadedSlow = false;
+  QTimer * mpTimerDataConsistencyCheck = nullptr;
+  QTimer * mpTimerPrintFigStatistic = nullptr;
+  EFibLoadingState mFibLoadingState = EFibLoadingState::S0_Init;
   SUtcTimeSet mUtcTimeSet{};
   std::set<u8> mUnhandledFig0Set;
   std::set<u8> mUnhandledFig1Set;
-  std::chrono::milliseconds mDiffMaxFast{};
-  std::chrono::milliseconds mDiffMaxSlow{};
-  std::chrono::time_point<std::chrono::system_clock> mLastTimePointFast{};
-  std::chrono::time_point<std::chrono::system_clock> mLastTimePointSlow{};
+  std::chrono::milliseconds mDiffTimeMax{};
+  std::chrono::time_point<std::chrono::system_clock> mLastTimePoint{};
   FibHelper::TTP mFirstFigTimePoint{};
 
   struct SFigHeader // plus flags
@@ -120,8 +118,6 @@ private:
   void _process_Fig1s5(const u8 *);
   // void _process_Fig1s6(const u8 *) const;
 
-  bool _are_fib_data_loaded() const;
-
   void _set_cluster(FibConfigFig0 *, i32, u32 iSId, u16);
   Cluster * _get_cluster(FibConfigFig0 *, i16);
 
@@ -135,12 +131,15 @@ private:
   bool _extract_character_set_label(FibConfigFig1::SFig1_DataField & oFig1DF, const u8 * d, i16 iLabelOffs) const;
   void _retrigger_timer_data_loaded_fast(const char * iCallerName);
   void _retrigger_timer_data_loaded_slow(const char * iCallerName);
+  void _process_fast_audio_selection();
+  bool _check_audio_data_completenes() const; // FIG 0/1, FIG 0/2 and FIG 1/1 are loaded
+  bool _check_packet_data_completenes() const;
 
   template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
 
 private slots:
-  void _slot_timer_data_loaded_fast();
-  void _slot_timer_data_loaded_slow();
+  void _slot_timer_data_consitency_check();
+  void _slot_timer_print_FIGs_and_time_statistics() const;
 };
 
 #endif

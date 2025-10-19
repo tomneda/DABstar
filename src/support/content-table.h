@@ -51,29 +51,28 @@ public:
   ContentTable(DabRadio *, QSettings *, const QString &, i32);
   ~ContentTable();
 
-  void show();
-  void hide();
-  bool isVisible();
-  // void clearTable();
-  void addLine(const QString &);
-  void dump(FILE *);
+  void show() const;
+  void hide() const;
+  bool is_visible() const;
+  void add_line(const QString &);
+  void dump(FILE *) const;
 
 private:
-  QString channel;
-  i32 columns;
-  DabRadio * theRadio;
-  QScopedPointer<QScrollArea> myWidget;
-  QScopedPointer<QTableWidget> contentWidget;
-  bool is_clear;
+  const QString mChannel;
+  const i32 mNumColumns = 0;
+  DabRadio * const mpDabRadio;
+  QScopedPointer<QScrollArea> mpScrollArea;
+  QScopedPointer<QTableWidget> mpTableWidget;
 
-  i16 addRow();
+  i16 _add_row() const;
+  u32 _hex_to_u32(const std::string & iHexString) const;
 
 private slots:
   void _slot_select_service(i32, i32);
   void _slot_dump(i32, i32);
 
 signals:
-  void signal_go_service(const QString &);
+  void signal_go_service_id(u32);
 };
 
 #endif

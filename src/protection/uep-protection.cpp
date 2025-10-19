@@ -30,9 +30,10 @@
  *
  * 	The deconvolution for uep
  */
-#include  "dab-constants.h"
-#include  "uep-protection.h"
-#include  "protTables.h"
+#include "dab-constants.h"
+#include "uep-protection.h"
+#include "protTables.h"
+#include <QDebug>
 
 struct protectionProfile
 {
@@ -130,7 +131,6 @@ struct protectionProfile
 
 static i16 findIndex(i16 bitRate, i16 protLevel)
 {
-
   for (i32 i = 0; profileTable[i].bitRate != 0; i++)
   {
     if ((profileTable[i].bitRate == bitRate) && (profileTable[i].protLevel == protLevel))
@@ -165,11 +165,10 @@ UepProtection::UepProtection(i16 bitRate, i16 protLevel) :
   const i8 * PI4;
   const i8 * PI_X;
 
-  fprintf(stderr, "protLevel %d, bitRate %d outSize = %d\n", protLevel, bitRate, outSize);
   index = findIndex(bitRate, protLevel);
   if (index == -1)
   {
-    fprintf(stderr, "%d (%d) has a problem\n", bitRate, protLevel);
+    qCritical() << "BitRate" << bitRate << "ProtLevel" << protLevel << "not found in table";
     index = 1;
   }
 

@@ -38,12 +38,12 @@
 
 class DabRadio;
 
-class ip_dataHandler : public virtual_dataHandler
+class IpDataHandler : public VirtualDataHandler
 {
 Q_OBJECT
 public:
-  ip_dataHandler(DabRadio *, RingBuffer<u8> *);
-  ~ip_dataHandler() override = default;
+  IpDataHandler(DabRadio *, RingBuffer<u8> *);
+  ~IpDataHandler() override = default;
 
   void add_mscDatagroup(const std::vector<u8> &) override ;
 
@@ -55,7 +55,7 @@ private:
   RingBuffer<u8> * dataBuffer;
 
 signals:
-  void writeDatagram(int);
+  void signal_write_datagramm(int);
 };
 
 #endif

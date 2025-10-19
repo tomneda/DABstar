@@ -40,38 +40,39 @@
 #include  "ringbuffer.h"
 
 class DabRadio;
-class virtual_dataHandler;
+class VirtualDataHandler;
 class SPacketData;
 
 class DataProcessor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  DataProcessor(DabRadio * mr, const SPacketData * pd, RingBuffer<u8> * dataBuffer);
+  DataProcessor(DabRadio * mr, const SPacketData * ipPD, RingBuffer<u8> * ipDataBuffer);
   ~DataProcessor() override;
 
   void add_to_frame(const std::vector<u8> &) override;
 
 private:
-  DabRadio * myRadioInterface;
-  i16 bitRate;
-  u8 DSCTy;
-  i16 appType;
-  i16 packetAddress;
-  u8 DGflag;
-  i16 FEC_scheme;
-  RingBuffer<u8> * dataBuffer;
-  i16 expectedIndex;
-  std::vector<u8> series;
-  u8 packetState;
-  i32 streamAddress;    // int since we init with -1
+  DabRadio * const mpDabRadio;
+  const i16 mBitRate;
+  const u8 mDSCTy;
+  const i16 mAppType;
+  const i16 mPacketAddress;
+  const u8 mDGflag;
+  const i16 mFEC_scheme;
+  RingBuffer<u8> * const mpDataBuffer;
+  VirtualDataHandler * my_dataHandler;
+
+  i16 mExpectedIndex = 0;
+  std::vector<u8> mSeriesVec;
+  u8 mPacketState;
+  i32 mStreamAddress;    // int since we init with -1
 
   //	result handlers
   void handleTDCAsyncstream(const u8 *, i32);
   void handlePackets(const u8 *, i32);
   void handlePacket(const u8 *);
-  virtual_dataHandler * my_dataHandler;
-  
+
 signals:
   void show_mscErrors(int);
 };

@@ -92,15 +92,15 @@ void TechData::cleanUp()
 
 void TechData::show_service_data(const SAudioData * ad) const
 {
-  slot_show_serviceName(ad->serviceName);
-  slot_show_serviceId(ad->SId);
-  slot_show_bitRate(ad->bitRate);
-  slot_show_startAddress(ad->startAddr);
-  slot_show_length(ad->length);
-  slot_show_subChId(ad->subchId);
+  slot_show_service_label(ad->serviceLabel);
+  slot_show_SId(ad->SId);
+  slot_show_bitrate(ad->bitRate);
+  slot_show_CU_start_address(ad->CuStartAddr);
+  slot_show_CU_size(ad->CuSize);
+  slot_show_subChId(ad->SubChId);
   slot_show_uep(ad->shortForm, ad->protLevel);
   slot_show_ASCTy(ad->ASCTy);
-  slot_show_codeRate(ad->shortForm, ad->protLevel);
+  slot_show_coderate(ad->shortForm, ad->protLevel);
   framedumpButton->setEnabled(true);
   audiodumpButton->setEnabled(true);
 }
@@ -214,12 +214,12 @@ void TechData::slot_show_timetableButton(bool b) const
   }
 }
 
-void TechData::slot_show_serviceName(const QString & s) const
+void TechData::slot_show_service_label(const QString & s) const
 {
   programName->setText(s);
 }
 
-void TechData::slot_show_serviceId(u32 iSId) const
+void TechData::slot_show_SId(u32 iSId) const
 {
   serviceIdDisplay->display((i32)iSId);
   if ((iSId & 0x8000'0000) != 0) // display only knows negative numbers but not u32, should this ever happen?
@@ -228,17 +228,17 @@ void TechData::slot_show_serviceId(u32 iSId) const
   }
 }
 
-void TechData::slot_show_bitRate(i32 br) const
+void TechData::slot_show_bitrate(i32 br) const
 {
   bitrateDisplay->display(br);
 }
 
-void TechData::slot_show_startAddress(i32 sa) const
+void TechData::slot_show_CU_start_address(i32 sa) const
 {
   startAddressDisplay->display(sa);
 }
 
-void TechData::slot_show_length(i32 l) const
+void TechData::slot_show_CU_size(i32 l) const
 {
   lengthDisplay->display(l);
 }
@@ -270,7 +270,7 @@ void TechData::slot_show_uep(i32 shortForm, i32 protLevel) const
   uepField->setText(protL);
 }
 
-void TechData::slot_show_codeRate(i32 shortForm, i32 protLevel) const
+void TechData::slot_show_coderate(i32 shortForm, i32 protLevel) const
 {
   codeRate->setText(getCodeRate(shortForm, protLevel));
 }

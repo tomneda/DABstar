@@ -36,6 +36,7 @@ public:
     u32 Count = 0;
   };
 
+  void get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic, std::chrono::milliseconds * opDuration1 = nullptr, std::chrono::milliseconds * opDuration2 = nullptr) const;
   QString print_duration_and_get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic) const;
   QString print_statistic_header() const;
   QString print_statistic(const SStatistic & iStatistic) const;

@@ -51,8 +51,8 @@ void FibDecoder::_process_Fig0(const u8 * const d)
   default:
     if (mUnhandledFig0Set.find(extension) == mUnhandledFig0Set.end()) // print message only once
     {
-      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePointSlow);
-      if (mFibDataLoadedSlow) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
+      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
+      if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig0Set.emplace(extension);
     }
   }
@@ -94,6 +94,11 @@ void FibDecoder::_process_Fig0s1(const u8 * const d)
   while (used < fh.Length)
   {
     used = _subprocess_Fig0s1(d, used, fh);
+  }
+
+  if (mSIdForFastAudioSelection > 0)
+  {
+    _process_fast_audio_selection();
   }
 }
 
@@ -168,6 +173,11 @@ void FibDecoder::_process_Fig0s2(const u8 * const d)
   while (used < fh.Length)
   {
     used = _subprocess_Fig0s2(d, used, fh);
+  }
+
+  if (mSIdForFastAudioSelection > 0)
+  {
+    _process_fast_audio_selection();
   }
 }
 
@@ -349,20 +359,26 @@ i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, i16 offset)
   return bitOffset / 8;
 }
 
-// Configuration linking information 6.4.2
+// Configuration information 6.4.2
 void FibDecoder::_process_Fig0s7(const u8 * const d)
 {
-  // TODO: Check how to use this
   i16 used = 2; // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
+  auto * const pConfig = _get_config_ptr(fh.CN_Flag);
 
-  const i32 serviceCount = getBits_6(d, used * 8);
-  const i32 counter = getBits(d, used * 8 + 6, 10);
-  (void)counter;
-
-  if (fh.CN_Flag == 0)
-  {  // only current configuration for now
-    emit signal_nr_services(serviceCount);
+  if (const auto * const pFig0s7 = pConfig->get_Fig0s7_ConfigurationInformation();
+      pFig0s7 == nullptr)
+  {
+    FibConfigFig0::SFig0s7_ConfigurationInformation fig0s7;
+    fig0s7.NumServices = getBits_6(d, used * 8);
+    fig0s7.Count = getBits(d, used * 8 + 6, 10);
+    fig0s7.set_current_time();
+    pConfig->Fig0s7_ConfigurationInformationVec.emplace_back(fig0s7);
+    _retrigger_timer_data_loaded_fast("Fig0s7");
+  }
+  else
+  {
+    const_cast<FibConfigFig0::SFig0s7_ConfigurationInformation *>(pFig0s7)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
   }
 }
 
@@ -663,7 +679,7 @@ void FibDecoder::_process_Fig0s19(const u8 * const d)
       (void)regionId;
     }
 
-    if (!_are_fib_data_loaded())
+    if (mFibLoadingState < EFibLoadingState::S4_FullyPacketDataLoaded)
     {
       return;
     }

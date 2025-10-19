@@ -34,14 +34,14 @@
 #include  "bit-extractors.h"
 #include  "crc.h"
 
-ip_dataHandler::ip_dataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer)
+IpDataHandler::IpDataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer)
 {
   this->dataBuffer = dataBuffer;
   this->handledPackets = 0;
-  connect(this, &ip_dataHandler::writeDatagram, mr,  &DabRadio::slot_send_datagram);
+  connect(this, &IpDataHandler::signal_write_datagramm, mr,  &DabRadio::slot_send_datagram);
 }
 
-void ip_dataHandler::add_mscDatagroup(const std::vector<u8> & msc)
+void IpDataHandler::add_mscDatagroup(const std::vector<u8> & msc)
 {
   u8 * data = (u8 *)(msc.data());
   bool extensionFlag = getBits_1(data, 0) != 0;
@@ -108,7 +108,7 @@ void ip_dataHandler::add_mscDatagroup(const std::vector<u8> & msc)
   }
 }
 
-void ip_dataHandler::process_ipVector(const std::vector<u8> & v)
+void IpDataHandler::process_ipVector(const std::vector<u8> & v)
 {
   u8 * data = (u8 *)(v.data());
   i16 headerSize = data[0] & 0x0F;  // in 32 bits words
@@ -140,10 +140,10 @@ void ip_dataHandler::process_ipVector(const std::vector<u8> & v)
 //
 //	We keep it simple now, just hand over the data from the
 //	udp packet to port 8888
-void ip_dataHandler::process_udpVector(const u8 * data, i16 length)
+void IpDataHandler::process_udpVector(const u8 * data, i16 length)
 {
   char * message = (char *)(&(data[8]));
   dataBuffer->put_data_into_ring_buffer((u8 *)message, length - 8);
-  writeDatagram(length - 8);
+  signal_write_datagramm(length - 8);
 }
 

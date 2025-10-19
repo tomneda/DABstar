@@ -28,7 +28,7 @@
 
 class DabRadio;
 
-class tdc_dataHandler : public virtual_dataHandler
+class tdc_dataHandler : public VirtualDataHandler
 {
 Q_OBJECT
 public:

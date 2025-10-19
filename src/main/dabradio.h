@@ -70,27 +70,21 @@ class Qt_Audio;
 class TimeTableHandler;
 class ServiceListHandler;
 class IAudioOutput;
-
-
-#ifdef  HAVE_PLUTO_RXTX
-class	dabStreamer;
-#endif
-
 class TechData;
 class CEPGDecoder;
 class EpgDecoder;
 
 struct SDabService
 {
-  bool dataSetIsValid = false;
-  QString channel;
-  QString serviceLabel;
+  // Basic data (enough for audio playback)
   u32 SId = 0;
-  i32 SCIdS = 0;
   i32 SubChId = 0;
   bool isAudio = false;
-  // FILE * fd = nullptr;
-  FILE * frameDumper = nullptr;
+
+  // Extended data (needs more data from the FIB which could take a bit longer to be received)
+  i32 SCIdS = 0;
+  // QString channel;
+  QString serviceLabel;
 };
 
 struct STheTime
@@ -108,15 +102,14 @@ struct SChannelDescriptor
   QString channelName;
   bool realChannel = false;
   bool etiActive = false;
-  i32 serviceCount = -1;
   i32 nominalFreqHz = 0;
   QString ensembleName;
   QString ensembleNameShort;
   u8 mainId = 0;
   u8 subId = 0;
-  std::vector<SDabService> backgroundServices;
-  SDabService currentService{};
-  SDabService nextService{};
+  SDabService curPrimaryService{};
+  std::vector<SDabService> curSecondaryServiceVec;
+  u32 SId_next = 0;
   u32 Eid = 0;
   bool ecc_checked = false;
   u8 ecc_byte = 0;
@@ -126,7 +119,6 @@ struct SChannelDescriptor
   i32 nrTransmitters = 0;
   cf32 localPos{};
   cf32 targetPos{};
-  i32 snr = 0;
   std::set<u16> transmitters;
 
   union UTiiId
@@ -144,20 +136,14 @@ struct SChannelDescriptor
 
   void clean_channel()
   {
-    serviceCount = -1;
     nominalFreqHz = -1;
     ensembleName = "";
     nrTransmitters = 0;
     countryName = "";
     targetPos = cf32(0, 0);
-    mainId = 0;
-    subId = 0;
     Eid = 0;
     ecc_checked = false;
-    snr = 0;
     transmitters.clear();
-    currentService.frameDumper = nullptr;
-    nextService.frameDumper = nullptr;
   }
 };
 
@@ -191,15 +177,15 @@ private:
 
   struct StatusInfo
   {
-    StatusInfoElem<bool>     Stereo;
-    StatusInfoElem<bool>     EPG;
-    StatusInfoElem<bool>     SBR;
-    StatusInfoElem<bool>     PS;
-    StatusInfoElem<bool>     Announce;
-    StatusInfoElem<bool>     RsError;
-    StatusInfoElem<bool>     CrcError;
+    StatusInfoElem<bool> Stereo;
+    StatusInfoElem<bool> EPG;
+    StatusInfoElem<bool> SBR;
+    StatusInfoElem<bool> PS;
+    StatusInfoElem<bool> Announce;
+    StatusInfoElem<bool> RsError;
+    StatusInfoElem<bool> CrcError;
     StatusInfoElem<i32>  InpBitRate;  // tricky: bit rates must be of type i32
-    StatusInfoElem<u32> OutSampRate; // tricky: sample rates must be of type u32
+    StatusInfoElem<u32>  OutSampRate; // tricky: sample rates must be of type u32
   };
 
   static constexpr i32 cDisplayTimeoutMs     = 1000;
@@ -254,9 +240,6 @@ private:
     QString LastChannel;
   };
   SScanResult mScanResult{};
-#ifdef  HAVE_PLUTO_RXTX
-  dabStreamer * streamerOut = nullptr;
-#endif
   QScopedPointer<DabProcessor> mpDabProcessor;
   IAudioOutput * mpAudioOutput; // normal pointer as it is controlled by mAudioOutputThread
   QThread * mAudioOutputThread = nullptr;
@@ -282,6 +265,7 @@ private:
   WavWriter mWavWriter;
   enum class EAudioDumpState { Stopped, WaitForInit, Running };
   EAudioDumpState mAudioDumpState = EAudioDumpState::Stopped;
+  FILE * mpAudioFrameDumper = nullptr;
   QString mAudioWavDumpFileName;
   std::vector<SServiceId> mServiceList;
 
@@ -305,6 +289,7 @@ private:
   enum class EAudioFrameType { None, MP2, AAC };
   EAudioFrameType mAudioFrameType = EAudioFrameType::None;
   std::vector<QMetaObject::Connection> mSignalSlotConn;
+  QString mMotPicPathLast;
 
   void LOG(const QString &, const QString &);
   QStringList _get_soft_bit_gen_names() const;
@@ -320,12 +305,12 @@ private:
   void _show_hide_buttons(const bool iShow);
 
   void start_etiHandler();
-  void stop_etiHandler();
+  void stop_ETI_handler();
   QString check_and_create_dir(const QString &) const;
 
-  bool _start_primary_audio_service(const SAudioData * const ipAD);
-  bool _start_primary_packet_service(const std::vector<SPacketData> & iPdVec);
-  bool _start_secondary_data_service(const std::vector<SPacketData> & iPdVec);
+  bool _create_primary_backend_audio_service(const SAudioData & iAD);
+  bool _create_primary_backend_packet_service(const SPacketData & iPD);
+  bool _create_secondary_backend_packet_service(const SPacketData & iPD);
 
   void start_scanning();
   void stop_scanning();
@@ -334,17 +319,15 @@ private:
 
   void start_source_dumping();
   void stop_source_dumping();
-  void start_frame_dumping();
-  void stop_frame_dumping();
-  void start_channel(const QString &);
+  void start_audio_frame_dumping();
+  void stop_audio_frame_dumping();
+  void start_channel(const QString &, u32 iFastSelectSId = 0);
   void stop_channel();
   void clean_up();
-  void stop_service(SDabService &);
-  void start_service(const SDabService &iDabService, bool iUpdateUiOnly = false);
-  void local_select(const QString &, const QString &);
-  // void showServices() const;
-
-  bool do_start();
+  void stop_services(bool iStopAlsoGlobServices);
+  bool start_primary_and_secondary_service(u32 iSId, bool iStartPrimaryAudioOnly);
+  void local_select(const QString &, u32 iSId);
+  void do_start();
 
   bool save_MOT_EPG_data(const QByteArray & result, const QString & objectName, i32 contentType);
   void save_MOT_object(const QByteArray &, const QString &);
@@ -357,7 +340,7 @@ private:
 
   void enable_ui_elements_for_safety(bool iEnable);
 
-  void write_warning_message(const QString & iMsg);
+  void write_warning_message(const QString & iMsg) const;
   void write_picture(const QPixmap & iPixMap) const;
 
   static QString get_bg_style_sheet(const QColor & iBgBaseColor, const char * const ipWidgetType = nullptr);
@@ -375,10 +358,11 @@ private:
   QString _get_scan_message(bool iEndMsg) const;
   QString _convert_links_to_clickable(const QString& iText) const;
   void _check_coordinates() const;
-  void _get_last_service_from_config(SDabService & ioDabService) const;
+  void _get_last_service_from_config();
   void _get_local_position_from_config(cf32 & oLocalPos) const;
   void _display_service_label(const QString & iServiceLabel);
-  void _update_audio_data_addon(const QString & iServiceLabel) const;
+  void _update_audio_data_addon(u32 iSId) const;
+  void _update_scan_statistics(const SServiceId & sl);
   void _show_or_hide_windows_from_config();
 
   void _initialize_ui_buttons();
@@ -438,13 +422,11 @@ public slots:
   void slot_show_clock_error(f32 e);
   void slot_set_epg_data(i32, i32, const QString &, const QString &);
   void slot_epg_timer_timeout();
-  void slot_nr_services(i32);
-  void slot_handle_fib_content_selector(const QString &);
+  void slot_handle_fib_content_selector(u32 iSId);
   void slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF);
   void slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB);
   void slot_test_slider(i32);
   void slot_load_table();
-  //void slot_handle_transmitter_tags(i32);
   void slot_handle_dl_text_button();
   void slot_handle_logger_button(i32);
   void slot_handle_port_selector();
@@ -483,15 +465,13 @@ private slots:
   void _slot_terminate_process();
   void _slot_update_time_display();
   void _slot_channel_timeout();
-  void _slot_select_service(QModelIndex);
-  void _slot_service_changed(const QString & iChannel, const QString & iService);
-  void _slot_favorite_changed(const bool iIsFav);
+  void _slot_service_changed(const QString & iChannel, const QString & iService, u32 iSId);
+  void _slot_favorite_changed(bool iIsFav);
   void _slot_handle_favorite_button(bool iClicked);
   void _slot_set_static_button_style();
-  void _slot_fib_data_loaded(bool iSlowFibs);
-  void _slot_scan_filter_changed(i32 idx);
+  void _slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingState);
   void _slot_handle_mute_button();
-  void _slot_update_mute_state(const bool iMute);
+  void _slot_update_mute_state(bool iMute);
   void _slot_handle_config_button();
   void _slot_handle_http_button();
   void _slot_handle_skip_list_button();

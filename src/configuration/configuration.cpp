@@ -42,7 +42,6 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::cbManualBrowserStart.register_widget_and_update_ui_from_setting(cbManualBrowserStart, 0);
   Settings::Config::cmbMotObjectSaving.register_widget_and_update_ui_from_setting(cmbMotObjectSaving, "");
   Settings::Config::cmbEpgObjectSaving.register_widget_and_update_ui_from_setting(cmbEpgObjectSaving, "");
-  Settings::Config::cmbScanServiceListFilter.register_widget_and_update_ui_from_setting(cmbScanServiceListFilter, "");
   Settings::Config::cbSaveTransToCsv.register_widget_and_update_ui_from_setting(cbSaveTransToCsv, 0);
   Settings::Config::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
   Settings::Config::cbUseDcRemoval.register_widget_and_update_ui_from_setting(cbUseDcRemoval, 0);

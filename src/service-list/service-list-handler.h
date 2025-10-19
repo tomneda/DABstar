@@ -28,7 +28,7 @@ class CustomItemDelegate : public QStyledItemDelegate
   using QStyledItemDelegate::QStyledItemDelegate;
   Q_OBJECT
 public:
-  inline void set_current_service(const QString & iChannel, const QString & iService) { mCurChannel = iChannel; mCurService = iService; }
+  void set_current_service(const QString & iChannel, u32 iSId) { mCurChannel = iChannel; mCurSId = iSId; }
 
 protected:
   void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
@@ -38,10 +38,10 @@ private:
   const QPixmap mStarEmptyPixmap{":res/icons/starempty16.png"};   // draw a empty star icon for favorites
   const QPixmap mStarFilledPixmap{":res/icons/starfilled16.png"}; // draw a filled star icon for favorites
   QString mCurChannel;
-  QString mCurService;
+  u32 mCurSId = 0;
 
 signals:
-  void signal_selection_changed_with_fav(const QString & oChannel, const QString & oService, const bool oIsFav);
+  void signal_selection_changed_with_fav(const QString & oChannel, const QString & oService, u32 oSId, bool oIsFav);
 };
 
 class ServiceListHandler : public QObject
@@ -52,35 +52,36 @@ public:
   ~ServiceListHandler() override = default;
 
   using EDataMode = ServiceDB::EDataMode;
+  using TSIdList = QList<u32>;
 
   void set_data_mode(EDataMode iDataMode);
   void delete_table(const bool iDeleteFavorites);
   void create_new_table();
-  void add_entry(const QString & iChannel, const QString & iService);
-  void delete_not_existing_services_at_channel(const QString & iChannel, const QStringList & iServiceList);
-  void set_selector(const QString & iChannel, const QString & iService);
+  void add_entry(const QString & iChannel, const QString & iServiceLabel, u32 iSId);
+  void delete_not_existing_SId_at_channel(const QString & iChannel, const TSIdList & iSIdList);
+  void set_selector(const QString & iChannel, u32 iSId);
   void set_selector_channel_only(const QString & iChannel);
   void set_favorite_state(const bool iIsFavorite);
   void restore_favorites();
   void jump_entries(i32 iSteps); // typ -1/+1, with wrap around
-  QStringList get_list_of_services_in_channel(const QString & iChannel) const;
+  TSIdList get_list_of_SId_in_channel(const QString & iChannel) const;
 
 private:
   QTableView * const mpTableView;
   ServiceDB mServiceDB;
   CustomItemDelegate mCustomItemDelegate;
   QString mChannelLast;
-  QString mServiceLast;
+  u32 mServiceIdLast = 0;
 
   void _fill_table_view_from_db();
   void _jump_to_list_entry_and_emit_fav_status(const i32 iSkipOffset = 0, const bool iCenterContent = false);
 
 private slots:
-  void _slot_selection_changed_with_fav(const QString & iChannel, const QString & iService, const bool iIsFav);
+  void _slot_selection_changed_with_fav(const QString & iChannel, const QString & iServiceLabel, u32 iSId, const bool iIsFav);
   void _slot_header_clicked(i32 iIndex);
 
 signals:
-  void signal_selection_changed(const QString & oChannel, const QString & oService);
+  void signal_selection_changed(const QString & oChannel, const QString & oService, const u32 oSId);
   void signal_favorite_status(const bool oIsFav);
 };
 

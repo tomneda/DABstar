@@ -10,17 +10,17 @@ FibConfigFig0::FibConfigFig0()
 {
   reset();
 
-  // TODO: evaluate reasonable sizes to reserve
   // avoids memory reallocation that references are usable
   Fig0s1_BasicSubChannelOrganizationVec.reserve(64);
-  Fig0s2_BasicService_ServiceCompDefVec.reserve(32);
-  Fig0s3_ServiceComponentPacketModeVec.reserve(16);
-  Fig0s5_ServiceComponentLanguageVec.reserve(8);
-  Fig0s8_ServiceCompGlobalDefVec.reserve(32);
+  Fig0s2_BasicService_ServiceCompDefVec.reserve(64);
+  Fig0s3_ServiceComponentPacketModeVec.reserve(64);
+  Fig0s5_ServiceComponentLanguageVec.reserve(64);
+  Fig0s7_ConfigurationInformationVec.reserve(1);
+  Fig0s8_ServiceCompGlobalDefVec.reserve(64);
   Fig0s9_CountryLtoInterTabVec.reserve(1);
-  Fig0s13_UserApplicationInformationVec.reserve(16);
-  Fig0s14_SubChannelOrganizationVec.reserve(8);
-  Fig0s17_ProgrammeTypeVec.reserve(8);
+  Fig0s13_UserApplicationInformationVec.reserve(64);
+  Fig0s14_SubChannelOrganizationVec.reserve(64);
+  Fig0s17_ProgrammeTypeVec.reserve(64);
 }
 
 void FibConfigFig0::reset()
@@ -29,6 +29,7 @@ void FibConfigFig0::reset()
   Fig0s2_BasicService_ServiceCompDefVec.clear();
   Fig0s3_ServiceComponentPacketModeVec.clear();
   Fig0s5_ServiceComponentLanguageVec.clear();
+  Fig0s7_ConfigurationInformationVec.clear();
   Fig0s8_ServiceCompGlobalDefVec.clear();
   Fig0s9_CountryLtoInterTabVec.clear();
   Fig0s13_UserApplicationInformationVec.clear();
@@ -50,7 +51,7 @@ const FibConfigFig0::SFig0s1_BasicSubChannelOrganization * FibConfigFig0::get_Fi
 
 const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fig0s2_BasicService_ServiceCompDef_of_SId(const u32 iSId) const
 {
-  for (auto & elem : Fig0s2_BasicService_ServiceCompDefVec)
+  for (const auto & elem : Fig0s2_BasicService_ServiceCompDefVec)
   {
     const u32 SId = (elem.PD_Flag == 0 ? elem.PD0.SId : elem.PD1.SId);
     if (SId == iSId)
@@ -134,6 +135,15 @@ const FibConfigFig0::SFig0s5_ServiceComponentLanguage * FibConfigFig0::get_Fig0s
   return nullptr;
 }
 
+const FibConfigFig0::SFig0s7_ConfigurationInformation * FibConfigFig0::get_Fig0s7_ConfigurationInformation() const
+{
+  if (!Fig0s7_ConfigurationInformationVec.empty())
+  {
+    return &Fig0s7_ConfigurationInformationVec[0];
+  }
+  return nullptr;
+}
+
 const FibConfigFig0::SFig0s8_ServiceCompGlobalDef * FibConfigFig0::get_Fig0s8_ServiceCompGlobalDef_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const
 {
   for (auto & fig0s8 : Fig0s8_ServiceCompGlobalDefVec)
@@ -203,8 +213,17 @@ const FibConfigFig0::SFig0s17_ProgrammeType * FibConfigFig0::get_Fig0s17_Program
   return nullptr;
 }
 
-void FibConfigFig0::print_Fig0s1_BasicSubChannelOrganization(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s1_BasicSubChannelOrganization(SStatistic & ioS, const bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (auto & e : Fig0s1_BasicSubChannelOrganizationVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s1_BasicSubChannelOrganization ---  Size" << Fig0s1_BasicSubChannelOrganizationVec.size() << " Capacity" << Fig0s1_BasicSubChannelOrganizationVec.capacity();
   for (auto & e : Fig0s1_BasicSubChannelOrganizationVec)
@@ -222,8 +241,17 @@ void FibConfigFig0::print_Fig0s1_BasicSubChannelOrganization(SStatistic & ioS) c
   }
 }
 
-void FibConfigFig0::print_Fig0s2_BasicService_ServiceCompDef(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s2_BasicService_ServiceCompDef(SStatistic & ioS, const bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (const auto & e : Fig0s2_BasicService_ServiceCompDefVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s2_BasicService_ServiceCompDef ---  Size" << Fig0s2_BasicService_ServiceCompDefVec.size() << " Capacity" << Fig0s2_BasicService_ServiceCompDefVec.capacity();
   for (const auto & e : Fig0s2_BasicService_ServiceCompDefVec)
@@ -271,8 +299,17 @@ void FibConfigFig0::print_Fig0s2_BasicService_ServiceCompDef(SStatistic & ioS) c
   }
 }
 
-void FibConfigFig0::print_Fig0s3_ServiceComponentPacketMode(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s3_ServiceComponentPacketMode(SStatistic & ioS, const bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (auto & e : Fig0s3_ServiceComponentPacketModeVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s3_ServiceComponentPacketMode ---  Size" << Fig0s3_ServiceComponentPacketModeVec.size() << " Capacity" << Fig0s3_ServiceComponentPacketModeVec.capacity();
   for (auto & e : Fig0s3_ServiceComponentPacketModeVec)
@@ -288,8 +325,17 @@ void FibConfigFig0::print_Fig0s3_ServiceComponentPacketMode(SStatistic & ioS) co
   }
 }
 
-void FibConfigFig0::print_Fig0s5_ServiceComponentLanguage(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s5_ServiceComponentLanguage(SStatistic & ioS, const bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (auto & e : Fig0s5_ServiceComponentLanguageVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s5_ServiceComponentLanguage ---  Size" << Fig0s5_ServiceComponentLanguageVec.size() << " Capacity" << Fig0s5_ServiceComponentLanguageVec.capacity();
   for (auto & e : Fig0s5_ServiceComponentLanguageVec)
@@ -302,8 +348,38 @@ void FibConfigFig0::print_Fig0s5_ServiceComponentLanguage(SStatistic & ioS) cons
   }
 }
 
-void FibConfigFig0::print_Fig0s8_ServiceCompGlobalDef(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s7_ConfigurationInformation(SStatistic & ioS, bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (auto & e : Fig0s7_ConfigurationInformationVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
+  qInfo();
+  qInfo() << "--- Fig0s7_ConfigurationInformation ---  Size" << Fig0s7_ConfigurationInformationVec.size() << " Capacity" << Fig0s7_ConfigurationInformationVec.capacity();
+  for (auto & e : Fig0s7_ConfigurationInformationVec)
+  {
+    qInfo() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
+            << "NumServices" << e.NumServices
+            << "Count" << e.Count;
+  }
+}
+
+void FibConfigFig0::print_Fig0s8_ServiceCompGlobalDef(SStatistic & ioS, const bool iCollectStatisticsOnly) const
+{
+  if (iCollectStatisticsOnly)
+  {
+    for (const auto & e : Fig0s8_ServiceCompGlobalDefVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s8_ServiceCompGlobalDef ---  Size" << Fig0s8_ServiceCompGlobalDefVec.size() << " Capacity" << Fig0s8_ServiceCompGlobalDefVec.capacity();
   for (const auto & e : Fig0s8_ServiceCompGlobalDefVec)
@@ -329,8 +405,17 @@ void FibConfigFig0::print_Fig0s8_ServiceCompGlobalDef(SStatistic & ioS) const
   }
 }
 
-void FibConfigFig0::print_Fig0s9_CountryLtoInterTab(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s9_CountryLtoInterTab(SStatistic & ioS, const bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (auto & e : Fig0s9_CountryLtoInterTabVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s9_CountryLtoInterTab ---  Size" << Fig0s9_CountryLtoInterTabVec.size() << " Capacity" << Fig0s9_CountryLtoInterTabVec.capacity();
   for (auto & e : Fig0s9_CountryLtoInterTabVec)
@@ -344,8 +429,17 @@ void FibConfigFig0::print_Fig0s9_CountryLtoInterTab(SStatistic & ioS) const
   }
 }
 
-void FibConfigFig0::print_Fig0s13_UserApplicationInformation(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s13_UserApplicationInformation(SStatistic & ioS, const bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (auto & e : Fig0s13_UserApplicationInformationVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s13_UserApplicationInformation ---  Size" << Fig0s13_UserApplicationInformationVec.size() << " Capacity" << Fig0s13_UserApplicationInformationVec.capacity();
   for (auto & e : Fig0s13_UserApplicationInformationVec)
@@ -368,8 +462,17 @@ void FibConfigFig0::print_Fig0s13_UserApplicationInformation(SStatistic & ioS) c
   }
 }
 
-void FibConfigFig0::print_Fig0s14_SubChannelOrganization(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s14_SubChannelOrganization(SStatistic & ioS, const bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (auto & e : Fig0s14_SubChannelOrganizationVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s14_SubChannelOrganizationVec ---  Size" << Fig0s14_SubChannelOrganizationVec.size() << " Capacity" << Fig0s14_SubChannelOrganizationVec.capacity();
   for (auto & e : Fig0s14_SubChannelOrganizationVec)
@@ -380,8 +483,17 @@ void FibConfigFig0::print_Fig0s14_SubChannelOrganization(SStatistic & ioS) const
   }
 }
 
-void FibConfigFig0::print_Fig0s17_ProgrammeType(SStatistic & ioS) const
+void FibConfigFig0::print_Fig0s17_ProgrammeType(SStatistic & ioS, const bool iCollectStatisticsOnly) const
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (const auto & e : Fig0s17_ProgrammeTypeVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig0s17_ProgrammeType ---  Size" << Fig0s17_ProgrammeTypeVec.size() << " Capacity" << Fig0s17_ProgrammeTypeVec.capacity();
   for (const auto & e : Fig0s17_ProgrammeTypeVec)

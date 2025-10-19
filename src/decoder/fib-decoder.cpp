@@ -8,6 +8,17 @@
 #include <cstring>
 #include <vector>
 
+#ifdef NDEBUG // for release-version
+  static constexpr bool cShowFigDataOverview = false;
+  static constexpr bool cShowFigDataStatistics = false;
+#else
+  static constexpr bool cShowFigDataOverview = true;
+  static constexpr bool cShowFigDataStatistics = true;
+#endif
+
+static constexpr i32 cFibConsistencyCheckTime_ms = 300; // max time necessary to collect new FIG 0/1 and FIG 0/2 data (measured 191 ms)
+static constexpr i32 cPrintFigStatisticsWaitingTime_ms = 10000; // because repetition statistic are still collected we have to wait a while
+
 /*static*/ std::unique_ptr<IFibDecoder> FibDecoderFactory::create(DabRadio* radio)
 {
   return std::make_unique<FibDecoder>(radio);
@@ -24,16 +35,16 @@ FibDecoder::FibDecoder(DabRadio * mr)
   connect(this, &IFibDecoder::signal_change_in_configuration, mpRadioInterface, &DabRadio::slot_change_in_configuration);
   connect(this, &IFibDecoder::signal_start_announcement, mpRadioInterface, &DabRadio::slot_start_announcement);
   connect(this, &IFibDecoder::signal_stop_announcement, mpRadioInterface, &DabRadio::slot_stop_announcement);
-  connect(this, &IFibDecoder::signal_nr_services, mpRadioInterface, &DabRadio::slot_nr_services);
 
-  mpTimerDataLoadedFast = new QTimer(this);
-  mpTimerDataLoadedSlow = new QTimer(this);
-  connect(mpTimerDataLoadedFast, &QTimer::timeout, this, &FibDecoder::_slot_timer_data_loaded_fast);
-  connect(mpTimerDataLoadedSlow, &QTimer::timeout, this, &FibDecoder::_slot_timer_data_loaded_slow);
-  mpTimerDataLoadedFast->setInterval(cMaxFibLoadingTimeFast_ms);
-  mpTimerDataLoadedSlow->setInterval(cMaxFibLoadingTimeSlow_ms);
-  mpTimerDataLoadedFast->setSingleShot(true);
-  mpTimerDataLoadedSlow->setSingleShot(true);
+  mpTimerDataConsistencyCheck = new QTimer(this);
+  mpTimerDataConsistencyCheck->setSingleShot(true);
+  mpTimerDataConsistencyCheck->setInterval(cFibConsistencyCheckTime_ms);
+  connect(mpTimerDataConsistencyCheck, &QTimer::timeout, this, &FibDecoder::_slot_timer_data_consitency_check);
+
+  mpTimerPrintFigStatistic = new QTimer(this);
+  mpTimerPrintFigStatistic->setInterval(cPrintFigStatisticsWaitingTime_ms);
+  mpTimerPrintFigStatistic->setSingleShot(true);
+  connect(mpTimerPrintFigStatistic, &QTimer::timeout, this, &FibDecoder::_slot_timer_print_FIGs_and_time_statistics);
 }
 
 void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibBits, u16 const iFicNo)
@@ -80,14 +91,14 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
 
 void FibDecoder::_reset()
 {
-  mpTimerDataLoadedFast->stop();
-  mpTimerDataLoadedSlow->stop();
-  mFibDataLoadedFast = false;
-  mFibDataLoadedSlow = false;
-  mDiffMaxFast = {};
-  mDiffMaxSlow = {};
-  mLastTimePointFast = {};
-  mLastTimePointSlow = {};
+  mpTimerDataConsistencyCheck->stop();
+  mpTimerPrintFigStatistic->stop();
+  mFibLoadingState = EFibLoadingState::S0_Init;
+  mDiffTimeMax = {};
+  // mDiffMaxSlow = {};
+  mLastTimePoint = {};
+  // mLastTimePointSlow = {};
+  mFirstFigTimePoint = {};
 
   mCifCount = 0;
   mCifCount_hi = 0;
@@ -116,65 +127,60 @@ void FibDecoder::disconnect_channel()
   mpFibConfigFig1->reset();
 }
 
-void FibDecoder::get_data_for_audio_service(const QString & iServiceLabel, SAudioData * opAD) const
+void FibDecoder::set_SId_for_fast_audio_selection(u32 iSId)
 {
+  if (mFibLoadingState >= EFibLoadingState::S3_FullyAudioDataLoaded)
+  {
+    qDebug() << "SId" << iSId << "set for fast audio but ignored because necessary FIB data already loaded";
+    mSIdForFastAudioSelection = 0; // feature not more necessary if FIB data fully collected
+  }
+  else
+  {
+    qDebug() << "SId" << iSId << "set for fast audio";
+    mSIdForFastAudioSelection = iSId;
+  }
+}
+
+void FibDecoder::get_data_for_audio_service(const u32 iSId, SAudioData & oAD) const
+{
+  // only FIG 0/1 and FIG 0/2 must be used here (other data could still not be available)
   QMutexLocker lock(&mMutex);
 
-  opAD->isDefined = false;
+  oAD.isDefined = false;
 
-  if (!mFibDataLoadedFast)
+  if (mFibLoadingState < EFibLoadingState::S1_FastAudioDataLoaded)
   {
-    qWarning() << "Fast data not loaded";
+    qCritical() << "Audio relevant FIB data not loaded yet";
     return;
   }
 
-  const FibConfigFig1::SSId_SCIdS * const pSId_SCIdS = mpFibConfigFig1->get_SId_SCIdS_from_service_label(iServiceLabel);
-
-  if (pSId_SCIdS == nullptr)
-  {
-    return;
-  }
-
-  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(pSId_SCIdS->SId, ETMId::StreamModeAudio);
+  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
 
   if (pFig0s2 == nullptr)
   {
-    qWarning() << "SId" << pSId_SCIdS->SId << "for programme service label" << iServiceLabel.trimmed() << "in FIG 0/2 not found";
+    qWarning() << "SId" << iSId << "in FIG 0/2 not found (1)";
     return;
   }
 
-  if (!_get_data_for_audio_service(*pFig0s2, opAD))
+  if (!_get_data_for_audio_service(*pFig0s2, &oAD))
   {
     return;
   }
 }
 
-void FibDecoder::get_data_for_audio_service_addon(const QString & iServiceLabel, SAudioDataAddOns * opADAO) const
+void FibDecoder::get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns & oADAO) const
 {
   QMutexLocker lock(&mMutex);
 
-  if (!mFibDataLoadedSlow)
-  {
-    qWarning() << "Slow data not loaded";
-    return;
-  }
-
-  const FibConfigFig1::SSId_SCIdS * const pSId_SCIdS = mpFibConfigFig1->get_SId_SCIdS_from_service_label(iServiceLabel);
-
-  if (pSId_SCIdS == nullptr)
-  {
-    return;
-  }
-
-  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(pSId_SCIdS->SId, ETMId::StreamModeAudio);
+  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
 
   if (pFig0s2 == nullptr)
   {
-    qWarning() << "SId" << pSId_SCIdS->SId << "for programme service label" << iServiceLabel.trimmed() << "in FIG 0/2 not found";
+    qWarning() << "SId" << iSId << "in FIG 0/2 not found (2)";
     return;
   }
 
-  if (!_get_data_for_audio_service_addon(*pFig0s2, opADAO))
+  if (!_get_data_for_audio_service_addon(*pFig0s2, &oADAO))
   {
     return;
   }
@@ -182,7 +188,7 @@ void FibDecoder::get_data_for_audio_service_addon(const QString & iServiceLabel,
 
 bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioData * opAD) const
 {
-  opAD->isDefined = false;
+  if (opAD != nullptr) opAD->isDefined = false;
 
   if (iFig0s2.ServiceComp_C.PS_Flag != 1) qWarning() << "This should be only a primary service";
   if (iFig0s2.PD_Flag != 0)
@@ -193,22 +199,36 @@ bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicS
   assert(iFig0s2.ServiceComp_C.TMId == ETMId::StreamModeAudio); // only audio elements
   const u8 SubChId = iFig0s2.ServiceComp_C.TMId00.SubChId;
   const u16 SId = iFig0s2.get_SId();
-  if ((SId & 0xFFFF0000) != 0) qWarning() << "Unexpected big ";
+  if ((SId & 0xFFFF0000) != 0) qWarning() << "Unexpected primary service SId" << SId;
 
-  const auto * const pFig0s1  = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(SubChId);
-  const auto * const pFig1s1  = mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(SId);
+  const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(SubChId);
 
-  if (pFig0s1 != nullptr && pFig1s1 != nullptr)
+  if (pFig0s1 == nullptr)
   {
-    opAD->serviceName = pFig1s1->Name;
-    opAD->serviceNameShort = pFig1s1->NameShort;
+    return false;
+  }
+
+  const auto * const pFig1s1 = mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(SId);
+
+  if (pFig1s1 == nullptr && opAD == nullptr)
+  {
+    return false; // for _check_packet_data_completenes() only
+  }
+
+  if (opAD != nullptr && pFig1s1 != nullptr) // pFig0s1 == nullptr could be the case for first audio startup
+  {
+    opAD->serviceLabel = pFig1s1->Name;
+    opAD->serviceLabelShort = pFig1s1->NameShort;
+  }
+
+  if (opAD != nullptr)
+  {
     opAD->SId = SId;
-    opAD->SCIdS = 0;
-    opAD->subchId = SubChId;
-    opAD->startAddr = pFig0s1->StartAddr;
+    opAD->SubChId = SubChId;
+    opAD->CuStartAddr = pFig0s1->StartAddr;
     opAD->shortForm = pFig0s1->ShortForm;
     opAD->protLevel = pFig0s1->ProtectionLevel;
-    opAD->length = pFig0s1->SubChannelSize;
+    opAD->CuSize = pFig0s1->SubChannelSize;
     opAD->bitRate = pFig0s1->BitRate;
     opAD->ASCTy = iFig0s2.ServiceComp_C.TMId00.ASCTy;
     opAD->isDefined = true;
@@ -227,7 +247,7 @@ bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_
   }
   assert(iFig0s2.ServiceComp_C.TMId == ETMId::StreamModeAudio); // only audio elements
   const u8 SubChId = iFig0s2.ServiceComp_C.TMId00.SubChId;
-  const u16 SId = iFig0s2.get_SId();
+  const u32 SId = iFig0s2.get_SId();
   if ((SId & 0xFFFF0000) != 0) qWarning() << "Unexpected big ";
 
   const auto * const pFig0s5  = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SubChId(SubChId);
@@ -240,19 +260,13 @@ bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_
   return true;
 }
 
-void FibDecoder::get_data_for_packet_service(const QString & iServiceLabel, std::vector<SPacketData> & oPDVec) const
+void FibDecoder::get_data_for_packet_service(const u32 iSId, std::vector<SPacketData> & oPDVec) const
 {
   QMutexLocker lock(&mMutex);
 
-  if (!mFibDataLoadedSlow)
+  if (mFibLoadingState < EFibLoadingState::S4_FullyPacketDataLoaded)
   {
-    return;
-  }
-
-  const FibConfigFig1::SSId_SCIdS * const pSId_SCIdS = mpFibConfigFig1->get_SId_SCIdS_from_service_label(iServiceLabel);
-
-  if (pSId_SCIdS == nullptr || pSId_SCIdS->SId == 0) // SId not found  TODO: assuming SId == 0 is not allowed
-  {
+    qCritical() << "Data packet relevant FIB data not loaded yet";
     return;
   }
 
@@ -265,7 +279,7 @@ void FibDecoder::get_data_for_packet_service(const QString & iServiceLabel, std:
       break;  // quit for loop
     }
 
-    const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(pSId_SCIdS->SId, compIdx);
+    const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(iSId, compIdx);
 
     if (pFig0s2 == nullptr || pFig0s2->ServiceComp_C.TMId != ETMId::PacketModeData)
     {
@@ -306,7 +320,7 @@ void FibDecoder::get_data_for_packet_service(const QString & iServiceLabel, std:
 
 bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, const i16 iCompIdx, SPacketData * opPD) const
 {
-  opPD->isDefined = false;
+  if (opPD != nullptr) opPD->isDefined = false;
 
   if (iCompIdx >= FibConfigFig0::SFig0s2_BasicService_ServiceCompDef::cNumServiceCompMax)
   {
@@ -352,10 +366,10 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
 
   const auto * const pFig0s14 = mpFibConfigFig0Curr->get_Fig0s14_SubChannelOrganization_of_SubChId(subChId);
 
-  if (pFig0s14 == nullptr)
-  {
-    // qDebug() << "SubChId" << subChId << "in FIG 0/14 not found -> no FEC scheme for packet data";
-  }
+  // if (pFig0s14 == nullptr)
+  // {
+  //   qDebug() << "SubChId" << subChId << "in FIG 0/14 not found -> no FEC scheme for packet data";
+  // }
 
   const auto * const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(SId, pFig0s8->SCIdS);
   const auto * const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(SId);
@@ -366,35 +380,44 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
     {
       return false;
     }
-    opPD->serviceName = pFig1s4->Name;
-    opPD->serviceNameShort = pFig1s4->NameShort;
+    if (opPD != nullptr)
+    {
+      opPD->serviceLabel = pFig1s4->Name;
+      opPD->serviceLabelShort = pFig1s4->NameShort;
+    }
   }
   else
   {
-    opPD->serviceName = pFig1s5->Name;
-    opPD->serviceNameShort = pFig1s5->NameShort;
+    if (opPD != nullptr)
+    {
+      opPD->serviceLabel = pFig1s5->Name;
+      opPD->serviceLabelShort = pFig1s5->NameShort;
+    }
   }
 
-  opPD->SId = SId;
-  opPD->SCIdS = iCompIdx; // TODO: is this correct?
-  opPD->subchId = subChId;
-  opPD->startAddr = pFig0s1->StartAddr;
-  opPD->shortForm = pFig0s1->ShortForm;
-  opPD->protLevel = pFig0s1->ProtectionLevel;
-  opPD->length = pFig0s1->SubChannelSize;
-  opPD->bitRate = pFig0s1->BitRate;
-  opPD->FEC_scheme = pFig0s14 != nullptr ? pFig0s14->FEC_scheme : 0;
-  opPD->DSCTy = pFig0s3->DSCTy;
-  opPD->DGflag = pFig0s3->DG_Flag;
-  opPD->packetAddress = pFig0s3->PacketAddress;
-  const i16 numUserApps = std::min(pFig0s13->NumUserApps, (i16)pFig0s13->UserAppVec.size());
-  opPD->appTypeVec.resize(numUserApps);
-  for (i16 i = 0; i < numUserApps; ++i)
+  if (opPD != nullptr)
   {
-    opPD->appTypeVec[i] = pFig0s13->UserAppVec[i].UserAppType;
+    opPD->SId = SId;
+    opPD->SCIdS = SCIdS;
+    opPD->SubChId = subChId;
+    opPD->CuStartAddr = pFig0s1->StartAddr;
+    opPD->shortForm = pFig0s1->ShortForm;
+    opPD->protLevel = pFig0s1->ProtectionLevel;
+    opPD->CuSize = pFig0s1->SubChannelSize;
+    opPD->bitRate = pFig0s1->BitRate;
+    opPD->FEC_scheme = pFig0s14 != nullptr ? pFig0s14->FEC_scheme : 0;
+    opPD->DSCTy = pFig0s3->DSCTy;
+    opPD->DGflag = pFig0s3->DG_Flag;
+    opPD->PacketAddress = pFig0s3->PacketAddress;
+    const i16 numUserApps = std::min(pFig0s13->NumUserApps, (i16)pFig0s13->UserAppVec.size());
+    opPD->appTypeVec.resize(numUserApps);
+    for (i16 i = 0; i < numUserApps; ++i)
+    {
+      opPD->appTypeVec[i] = pFig0s13->UserAppVec[i].UserAppType;
+    }
+    if (opPD->appTypeVec.empty()) opPD->appTypeVec.emplace_back(-1); // ensure at least one element
+    opPD->isDefined = true; // TODO: obsolete, as vector element would not be existing else
   }
-  if (opPD->appTypeVec.empty()) opPD->appTypeVec.emplace_back(-1); // ensure at least one element
-  opPD->isDefined = true; // TODO: obsolete
 
   return true;
 }
@@ -415,7 +438,7 @@ std::vector<SServiceId> FibDecoder::get_service_list() const
         SServiceId ed;
         ed.isAudioChannel = pFig0s2 != nullptr; // else is a primary data service
         ed.hasSpiEpgData = false; // TODO: fill out
-        ed.name = serviceLabel;
+        ed.serviceLabel = serviceLabel;
         ed.SId = SId_SCIdS.SId;
         services.emplace_back(ed);
       }
@@ -618,14 +641,9 @@ void FibDecoder::get_channel_info(SChannelData * d, const i32 iSubChId) const
   d->uepFlag = scd.ShortForm;
 }
 
-bool FibDecoder::_are_fib_data_loaded() const
-{
-  return mFibDataLoadedFast && mFibDataLoadedSlow && !mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty();
-}
-
 void FibDecoder::_set_cluster(FibConfigFig0 * localBase, i32 clusterId, u32 iSId, u16 asuFlags)
 {
-  if (!_are_fib_data_loaded())
+  if (mFibLoadingState < EFibLoadingState::S4_FullyPacketDataLoaded)
   {
     return;
   }
@@ -714,125 +732,247 @@ void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerNam
 {
   // evaluate maximum time difference between calls to check whether the empiric time cMaxFibLoadingTimeFast_ms is high enough
   std::chrono::time_point currTimePoint = std::chrono::high_resolution_clock::now();
-  const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(currTimePoint - mLastTimePointFast);
+  const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(currTimePoint - mLastTimePoint);
   constexpr std::chrono::time_point<std::chrono::system_clock> cBaseVal{};
-  if (mLastTimePointFast > cBaseVal && diff > mDiffMaxFast) mDiffMaxFast = diff;
-  mLastTimePointFast = currTimePoint;
+  if (mLastTimePoint > cBaseVal && diff > mDiffTimeMax) mDiffTimeMax = diff;
+  mLastTimePoint = currTimePoint;
   // qInfo() << "Fast caller" << iCallerName << "Time elapsed [ms]" << diff.count() << "Diff Max" << mDiffMaxFast.count();
 
-  if (mFibDataLoadedFast) // mFibDataLoaded gets true if the timer runs out the time cMaxFibLoadingTime_ms
+  if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded)
   {
-    qWarning() << "Fast FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffMaxFast.count();
+    qWarning() << "Fast FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffTimeMax.count();
     return;
   }
 
   // mpTimerDataLoaded->start() must be called that way as it is a different thread without event-loop which is calling
-  QMetaObject::invokeMethod(mpTimerDataLoadedFast, "start", Qt::QueuedConnection);
-  QMetaObject::invokeMethod(mpTimerDataLoadedSlow, "start", Qt::QueuedConnection); // retrigger also slow timer as it must always come at last
+  QMetaObject::invokeMethod(mpTimerDataConsistencyCheck, "start", Qt::QueuedConnection);
+  // QMetaObject::invokeMethod(mpTimerDataLoadedSlow, "start", Qt::QueuedConnection); // retrigger also slow timer as it must always come at last
 }
 
 void FibDecoder::_retrigger_timer_data_loaded_slow(const char * const iCallerName)
 {
-  // evaluate maximum time difference between calls to check whether the empiric time cMaxFibLoadingTimeSlow_ms is high enough
-  std::chrono::time_point currTimePoint = std::chrono::high_resolution_clock::now();
-  const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(currTimePoint - mLastTimePointSlow);
-  constexpr std::chrono::time_point<std::chrono::system_clock> cBaseVal{};
-  if (mLastTimePointSlow > cBaseVal && diff > mDiffMaxSlow) mDiffMaxSlow = diff;
-  mLastTimePointSlow = currTimePoint;
-  // qInfo() << "Slow caller" << iCallerName << "Time elapsed [ms]" << diff.count() << "Diff Max" << mDiffMaxSlow.count();
+  _retrigger_timer_data_loaded_fast(iCallerName);
 
-  if (mFibDataLoadedSlow) // mFibDataLoaded gets true if the timer runs out the time cMaxFibLoadingTime_ms
-  {
-    qWarning() << "Slow FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffMaxSlow.count();
-    return;
-  }
-
-  // mpTimerDataLoaded->start() must be called that way as it is a different thread without event-loop which is calling
-  QMetaObject::invokeMethod(mpTimerDataLoadedSlow, "start", Qt::QueuedConnection);
+  // // Evaluate maximum time difference between calls to check whether the empiric time cMaxFibLoadingTimeSlow_ms is high enough
+  // std::chrono::time_point currTimePoint = std::chrono::high_resolution_clock::now();
+  // const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(currTimePoint - mLastTimePointSlow);
+  // constexpr std::chrono::time_point<std::chrono::system_clock> cBaseVal{};
+  // if (mLastTimePointSlow > cBaseVal && diff > mDiffMaxSlow) mDiffMaxSlow = diff;
+  // mLastTimePointSlow = currTimePoint;
+  // // qInfo() << "Slow caller" << iCallerName << "Time elapsed [ms]" << diff.count() << "Diff Max" << mDiffMaxSlow.count();
+  //
+  // if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded)
+  // {
+  //   qWarning() << "Slow FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffMaxSlow.count();
+  //   mFibLoadingState = EFibLoadingState::S5_MinorDeferredDataLoaded;
+  //   emit signal_fib_loaded_state(EFibLoadingState::S5_MinorDeferredDataLoaded);
+  //   return;
+  // }
+  //
+  // // mpTimerDataLoaded->start() must be called that way as it is a different thread without event-loop which is calling
+  // QMetaObject::invokeMethod(mpTimerDataLoadedSlow, "start", Qt::QueuedConnection);
 }
 
-void FibDecoder::_slot_timer_data_loaded_fast()
+void FibDecoder::_process_fast_audio_selection()
 {
-  QMutexLocker lock(&mMutex);
-  mFibDataLoadedFast = true;
-  emit signal_fib_data_loaded(false);
+  assert(mSIdForFastAudioSelection > 0);
+  if (const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(mSIdForFastAudioSelection, ETMId::StreamModeAudio);
+      pFig0s2 != nullptr)
+  {
+    if (const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(pFig0s2->ServiceComp_C.TMId00.SubChId);
+        pFig0s1 != nullptr)
+    {
+      qDebug() << "Fast audio selection for SId" << mSIdForFastAudioSelection << "successful";
+      mSIdForFastAudioSelection = 0;
+
+      if (mFibLoadingState < EFibLoadingState::S1_FastAudioDataLoaded) // emit only a higher state as before except of the deferred data
+      {
+        mFibLoadingState = EFibLoadingState::S1_FastAudioDataLoaded;
+        emit signal_fib_loaded_state(EFibLoadingState::S1_FastAudioDataLoaded);
+      }
+    }
+  }
 }
 
-void FibDecoder::_slot_timer_data_loaded_slow()
+bool FibDecoder::_check_audio_data_completenes() const
 {
+  qDebug() << "Check audio data completeness";
+
+  if (mFibLoadingState != EFibLoadingState::S2_PrimaryBaseDataLoaded)
+  {
+    qCritical() << "Wrong expected state for audio data:" << (int)mFibLoadingState;
+    return false;
+  }
+
+  // In the case, not all FIG0/2 where loaded a wrong decision could be made here.
+  // The information form FIG 0/7 would help here but they are seldom transferred.
+  for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
+  {
+    if (fig0s2.ServiceComp_C.TMId == ETMId::StreamModeAudio) // maybe flag also already made positive checks
+    {
+      if (!_get_data_for_audio_service(fig0s2, nullptr))
+      {
+        qDebug() << "Some audio FIG data for SId" << fig0s2.get_SId() << "missing";
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+bool FibDecoder::_check_packet_data_completenes() const
+{
+  qDebug() << "Check packet data completeness";
+
+  if (mFibLoadingState != EFibLoadingState::S3_FullyAudioDataLoaded)
+  {
+    qCritical() << "Wrong expected state for packet data:" << (int)mFibLoadingState;
+    return false;
+  }
+
+  // In the case, not all FIG0/2 where loaded a wrong decision could be made here.
+  // The information form FIG 0/7 would help here but they are seldom transferred.
+  for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
+  {
+    if (fig0s2.ServiceComp_C.TMId == ETMId::PacketModeData) // maybe flag also already made positive checks
+    {
+      for (i16 compIdx = 0; compIdx < fig0s2.NumServiceComp; ++compIdx)
+      {
+        if (!_get_data_for_packet_service(fig0s2, compIdx, nullptr))
+        {
+          qDebug() << "Some packet FIG data for SId" << fig0s2.get_SId() << "and compIdx" << compIdx << "missing";
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+void FibDecoder::_slot_timer_data_consitency_check()
+{
+  // Triggering this methode means only that FIG 0/1 and FIG 0/2 data are (very likely) fully loaded
+  // This timer timeout happens again as still data loaded by FIG 1/1 until state >= S3_FullyAudioDataLoaded is reached
   QMutexLocker lock(&mMutex);
 
-#ifndef NDEBUG
-  const FibHelper::TTP & ctp = mFirstFigTimePoint;
-  const FibHelper::TTP ctpNow = TCT::now();
-  SStatistic statFig0s1(ctp);
-  SStatistic statFig0s2(ctp);
-  SStatistic statFig0s3(ctp);
-  SStatistic statFig0s5(ctp);
-  SStatistic statFig0s8(ctp);
-  SStatistic statFig0s9(ctp);
-  SStatistic statFig0s13(ctp);
-  SStatistic statFig0s14(ctp);
-  SStatistic statFig0s17(ctp);
-  SStatistic statFig1s0(ctp);
-  SStatistic statFig1s1(ctp);
-  SStatistic statFig1s4(ctp);
-  SStatistic statFig1s5(ctp);
-
-  mpFibConfigFig0Curr->print_Fig0s1_BasicSubChannelOrganization(statFig0s1);
-  mpFibConfigFig0Curr->print_Fig0s2_BasicService_ServiceCompDef(statFig0s2);
-  mpFibConfigFig0Curr->print_Fig0s3_ServiceComponentPacketMode(statFig0s3);
-  mpFibConfigFig0Curr->print_Fig0s5_ServiceComponentLanguage(statFig0s5);
-  mpFibConfigFig0Curr->print_Fig0s8_ServiceCompGlobalDef(statFig0s8);
-  mpFibConfigFig0Curr->print_Fig0s9_CountryLtoInterTab(statFig0s9);
-  mpFibConfigFig0Curr->print_Fig0s13_UserApplicationInformation(statFig0s13);
-  mpFibConfigFig0Curr->print_Fig0s14_SubChannelOrganization(statFig0s14);
-  mpFibConfigFig0Curr->print_Fig0s17_ProgrammeType(statFig0s17);
-  mpFibConfigFig1->print_Fig1s0_EnsembleLabel(statFig1s0);
-  mpFibConfigFig1->print_Fig1s1_ProgrammeServiceLabelVec(statFig1s1);
-  mpFibConfigFig1->print_Fig1s4_ServiceComponentLabel(statFig1s4);
-  mpFibConfigFig1->print_Fig1s5_DataServiceLabel(statFig1s5);
-
-  qInfo();
-  qInfo().noquote() << "----- FIG storage time statistic -----";
-  qInfo().noquote() << print_statistic_header();
-  if (!mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty())
-    qInfo() << "Ensemble:" << mpFibConfigFig1->Fig1s0_EnsembleLabelVec[0].Name.trimmed();
-  qInfo() << "Runtime since first FIB processed:" << std::chrono::duration_cast<std::chrono::milliseconds>(ctpNow - ctp).count() << "ms";
-  qInfo().noquote() << "Fig0/ 1:" << print_statistic(statFig0s1);
-  qInfo().noquote() << "Fig0/ 2:" << print_statistic(statFig0s2);
-  qInfo().noquote() << "Fig0/ 3:" << print_statistic(statFig0s3);
-  qInfo().noquote() << "Fig0/ 5:" << print_statistic(statFig0s5);
-  qInfo().noquote() << "Fig0/ 8:" << print_statistic(statFig0s8);
-  qInfo().noquote() << "Fig0/ 9:" << print_statistic(statFig0s9);
-  qInfo().noquote() << "Fig0/13:" << print_statistic(statFig0s13);
-  qInfo().noquote() << "Fig0/14:" << print_statistic(statFig0s14);
-  qInfo().noquote() << "Fig0/17:" << print_statistic(statFig0s17);
-  qInfo().noquote() << "Fig1/ 0:" << print_statistic(statFig1s0);
-  qInfo().noquote() << "Fig1/ 1:" << print_statistic(statFig1s1);
-  qInfo().noquote() << "Fig1/ 4:" << print_statistic(statFig1s4);
-  qInfo().noquote() << "Fig1/ 5:" << print_statistic(statFig1s5);
-
-
-  // show not handled FIGs
-  for (const auto & extension: mUnhandledFig0Set)
+  if (mFibLoadingState <= EFibLoadingState::S2_PrimaryBaseDataLoaded) // == repeated calls must be possible
   {
-    qDebug().noquote() << QString("FIG 0/%1 not handled").arg(extension);
+    // Change the internal state to signal the loaded FIG 0/1 and FIG 0/2 data
+    mFibLoadingState = EFibLoadingState::S2_PrimaryBaseDataLoaded;
+
+    // ... but only trigger the next state via callback if FIG 1/1 data are loaded
+    if (_check_audio_data_completenes())
+    {
+      mFibLoadingState = EFibLoadingState::S3_FullyAudioDataLoaded;
+      emit signal_fib_loaded_state(EFibLoadingState::S3_FullyAudioDataLoaded);
+    }
   }
 
-  for (const auto & extension: mUnhandledFig1Set)
+  if (mFibLoadingState == EFibLoadingState::S3_FullyAudioDataLoaded) // == repeated calls must be possible
   {
-    qDebug().noquote() << QString("FIG 1/%1 not handled").arg(extension);
-  }
-#endif
+    // FIG 0/1 and FIG 0/2 data should be surely loaded here
+    if (_check_packet_data_completenes())
+    {
+      mFibLoadingState = EFibLoadingState::S4_FullyPacketDataLoaded;
 
-  if (!mFibDataLoadedFast)
+      // There is no more data expected, so print FIG content and statistics
+      if constexpr (cShowFigDataOverview || cShowFigDataStatistics)
+      {
+        qInfo() << "Printing FIG data overview and statistics in" << cPrintFigStatisticsWaitingTime_ms << "ms";
+        mpTimerPrintFigStatistic->start(); // must be shown deferred because still repetition data are collected
+      }
+      emit signal_fib_loaded_state(EFibLoadingState::S4_FullyPacketDataLoaded);
+    }
+  }
+}
+
+void FibDecoder::_slot_timer_print_FIGs_and_time_statistics() const
+{
+  if constexpr (cShowFigDataOverview || cShowFigDataStatistics)
+  {
+    constexpr bool cCollectStatisticsOnly = !cShowFigDataOverview;
+
+    const FibHelper::TTP & ctp = mFirstFigTimePoint;
+    const FibHelper::TTP ctpNow = TCT::now();
+    SStatistic statFig0s1(ctp);
+    SStatistic statFig0s2(ctp);
+    SStatistic statFig0s3(ctp);
+    SStatistic statFig0s5(ctp);
+    SStatistic statFig0s7(ctp);
+    SStatistic statFig0s8(ctp);
+    SStatistic statFig0s9(ctp);
+    SStatistic statFig0s13(ctp);
+    SStatistic statFig0s14(ctp);
+    SStatistic statFig0s17(ctp);
+    SStatistic statFig1s0(ctp);
+    SStatistic statFig1s1(ctp);
+    SStatistic statFig1s4(ctp);
+    SStatistic statFig1s5(ctp);
+
+    qInfo();
+    qInfo() << "----- FIG contents" << (mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty() ? " (no ensemble label loaded)" : mpFibConfigFig1->Fig1s0_EnsembleLabelVec[0].Name.trimmed()) << "-----";
+
+    mpFibConfigFig0Curr->print_Fig0s1_BasicSubChannelOrganization(statFig0s1, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s2_BasicService_ServiceCompDef(statFig0s2, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s3_ServiceComponentPacketMode(statFig0s3, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s5_ServiceComponentLanguage(statFig0s5, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s7_ConfigurationInformation(statFig0s7, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s8_ServiceCompGlobalDef(statFig0s8, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s9_CountryLtoInterTab(statFig0s9, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s13_UserApplicationInformation(statFig0s13, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s14_SubChannelOrganization(statFig0s14, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s17_ProgrammeType(statFig0s17, cCollectStatisticsOnly);
+    mpFibConfigFig1->print_Fig1s0_EnsembleLabel(statFig1s0, cCollectStatisticsOnly);
+    mpFibConfigFig1->print_Fig1s1_ProgrammeServiceLabelVec(statFig1s1, cCollectStatisticsOnly);
+    mpFibConfigFig1->print_Fig1s4_ServiceComponentLabel(statFig1s4, cCollectStatisticsOnly);
+    mpFibConfigFig1->print_Fig1s5_DataServiceLabel(statFig1s5, cCollectStatisticsOnly);
+
+    if constexpr (cShowFigDataStatistics)
+    {
+      qInfo();
+      qInfo().noquote() << "----- FIG storage time statistic -----";
+      qInfo().noquote() << print_statistic_header();
+      qInfo() << "Runtime since first FIB processed:" << std::chrono::duration_cast<std::chrono::milliseconds>(ctpNow - ctp).count() << "ms";
+      qInfo().noquote() << "Fig0/ 1:" << print_statistic(statFig0s1);
+      qInfo().noquote() << "Fig0/ 2:" << print_statistic(statFig0s2);
+      qInfo().noquote() << "Fig0/ 3:" << print_statistic(statFig0s3);
+      qInfo().noquote() << "Fig0/ 5:" << print_statistic(statFig0s5);
+      qInfo().noquote() << "Fig0/ 7:" << print_statistic(statFig0s7);
+      qInfo().noquote() << "Fig0/ 8:" << print_statistic(statFig0s8);
+      qInfo().noquote() << "Fig0/ 9:" << print_statistic(statFig0s9);
+      qInfo().noquote() << "Fig0/13:" << print_statistic(statFig0s13);
+      qInfo().noquote() << "Fig0/14:" << print_statistic(statFig0s14);
+      qInfo().noquote() << "Fig0/17:" << print_statistic(statFig0s17);
+      qInfo().noquote() << "Fig1/ 0:" << print_statistic(statFig1s0);
+      qInfo().noquote() << "Fig1/ 1:" << print_statistic(statFig1s1);
+      qInfo().noquote() << "Fig1/ 4:" << print_statistic(statFig1s4);
+      qInfo().noquote() << "Fig1/ 5:" << print_statistic(statFig1s5);
+    }
+
+    // show not handled FIGs
+    for (const auto & extension: mUnhandledFig0Set)
+    {
+      qDebug().noquote() << QString("FIG 0/%1 not handled").arg(extension);
+    }
+
+    for (const auto & extension: mUnhandledFig1Set)
+    {
+      qDebug().noquote() << QString("FIG 1/%1 not handled").arg(extension);
+    }
+  }
+
+  if (mFibLoadingState < EFibLoadingState::S3_FullyAudioDataLoaded)
   {
     qCritical() << "Fast FIB data must be ready before this slow FIB is signaled";
   }
 
-  mFibDataLoadedSlow = true;
-  emit signal_fib_data_loaded(true);
+  // if (mFibLoadingState < EFibLoadingState::S4_MajorPacketDataLoaded) // emit only a higher state as before except of the deferred data
+  // {
+  //   mFibLoadingState = EFibLoadingState::S4_MajorPacketDataLoaded;
+  //   emit signal_fib_loaded_state(EFibLoadingState::S4_MajorPacketDataLoaded);
+  // }
 }
 
 FibDecoder::SFigHeader FibDecoder::_get_fig_header(const u8 * const d) const

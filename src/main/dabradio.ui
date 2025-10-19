@@ -54,7 +54,7 @@
        <item>
         <widget class="QLabel" name="lblLocalTime">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Date and time, taken from DAB data stream.&lt;/p&gt;&lt;p&gt;Due to technical reasons the seconds may jump in 2 seconds steps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Date and time, taken from DAB data stream.&lt;/p&gt;&lt;p&gt;Due to technical reasons the seconds may jump in bigger steps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::Shape::WinPanel</enum>

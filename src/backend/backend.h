@@ -63,18 +63,18 @@ public:
   Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag);
   ~Backend();
 
-  i32 process(const i16 * iV, i16 cnt);
+  i32 process(const i16 * iV, i32 cnt);
   void stopRunning();
 
   // we need sometimes to access the key parameters for decoding
   u32 serviceId;
-  i32 startAddr;
-  i32 Length;
+  i32 CuStartAddr;
+  i32 CuSize;
   bool shortForm;
   i32 protLevel;
   i16 bitRate;
   i16 subChId;
-  QString serviceName;
+  // QString serviceName;
   EProcessFlag processFlag;
 
 private:

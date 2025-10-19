@@ -143,7 +143,7 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * /*s*/, const QString & recorder
     throw std_exception_string(errorMessage(errorCode));
   }
 
-  fprintf(stderr, "setup sdrplay v3 seems successfull\n");
+  qDebug() << "Setup SdrPlay v3 successfully";
 }
 
 SdrPlayHandler_v3::~SdrPlayHandler_v3()
@@ -519,7 +519,8 @@ void SdrPlayHandler_v3::run()
     errorCode = 2;
     return;
   }
-  fprintf(stdout, "SDRPLAY functions loaded\n");
+
+  qDebug() << "SDRPLAY functions loaded";
 
   //	try to open the API
   err = sdrplay_api_Open();
@@ -531,7 +532,7 @@ void SdrPlayHandler_v3::run()
     return;
   }
 
-  fprintf(stderr, "api opened\n");
+  // fprintf(stderr, "api opened\n");
 
   //	Check API versions match
   err = sdrplay_api_ApiVersion(&apiVersion);
@@ -544,15 +545,14 @@ void SdrPlayHandler_v3::run()
 
   if (apiVersion < 3.05)
   {
-    //	if (apiVersion < (SDRPLAY_API_VERSION - 0.01)) {
     fprintf(stderr, "API versions don't match (local=%.2f dll=%.2f)\n", SDRPLAY_API_VERSION, apiVersion);
     errorCode = 5;
     goto closeAPI;
   }
 
-  fprintf(stderr, "api version %f detected\n", apiVersion);
-  //
-  //	lock API while device selection is performed
+  qInfo() << "SDRPlay API version" << apiVersion;
+
+  // Lock API while device selection is performed
   sdrplay_api_LockDeviceApi();
   do
   {
@@ -580,15 +580,17 @@ void SdrPlayHandler_v3::run()
         fprintf(stderr, "no valid device found, give up\n");
         goto unlockDevice_closeAPI;
       }
-      fprintf(stderr, "no valid device found, try again (%d tries left)\n", startupCnt);
+      qWarning().nospace() << "No valid SDRPlay device found, try again (" << startupCnt << " tries left)";
       std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   }
   while (ndev == 0);
 
-  fprintf(stderr, "%d devices detected\n", ndev);
+  qDebug() << "Found" << ndev << "devices";
+
   chosenDevice = &devs[0];
   err = sdrplay_api_SelectDevice(chosenDevice);
+
   if (err != sdrplay_api_Success)
   {
     fprintf(stderr, "sdrplay_api_SelectDevice failed %s\n", sdrplay_api_GetErrorString(err));

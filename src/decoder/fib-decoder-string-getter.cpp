@@ -16,6 +16,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
    * H: Header
    * E: Empty Line
    * D: Data
+   * I: Information
    */
   QStringList out;
 
@@ -76,12 +77,12 @@ QString FibDecoder::_get_audio_data_str(const FibConfigFig0::SFig0s2_BasicServic
   QString str;
   QTextStream ts(&str);
 
-  ts << ad.serviceName << ";";
-  ts << ad.serviceNameShort << ";";
+  ts << ad.serviceLabel << ";";
+  ts << ad.serviceLabelShort << ";";
   ts << hex_str(ad.SId) << ";";
-  ts << ad.subchId << ";";
-  ts << ad.startAddr << ";";
-  ts << ad.length << ";";
+  ts << ad.SubChId << ";";
+  ts << ad.CuStartAddr << ";";
+  ts << ad.CuSize << ";";
   ts << getProtectionLevel(ad.shortForm, ad.protLevel) << ";";
   ts << getCodeRate(ad.shortForm, ad.protLevel) << ";";
   ts << ad.bitRate << ";";
@@ -104,12 +105,12 @@ QString FibDecoder::_get_packet_data_str(const FibConfigFig0::SFig0s2_BasicServi
   QString str;
   QTextStream ts(&str);
 
-  ts << pd.serviceName << ";";
-  ts << pd.serviceNameShort << ";";
+  ts << pd.serviceLabel << ";";
+  ts << pd.serviceLabelShort << ";";
   ts << hex_str(pd.SId) << ";";
-  ts << pd.subchId << ";";
-  ts << pd.startAddr << ";";
-  ts << pd.length << ";";
+  ts << pd.SubChId << ";";
+  ts << pd.CuStartAddr << ";";
+  ts << pd.CuSize << ";";
   ts << getProtectionLevel(pd.shortForm, pd.protLevel) << ";";
   ts << getCodeRate(pd.shortForm, pd.protLevel) << ";";
   ts << QString::number(pd.FEC_scheme) << ";";
@@ -121,7 +122,7 @@ QString FibDecoder::_get_packet_data_str(const FibConfigFig0::SFig0s2_BasicServi
     ts << (i < (i16)pd.appTypeVec.size() - 1 ? "," : ";");
   }
 
-  ts << pd.packetAddress << ";";
+  ts << pd.PacketAddress << ";";
   ts << pd.DSCTy << " (" << get_DSCTy_AppType(pd.DSCTy, pd.appTypeVec[0]) << ")";
 
   return str;

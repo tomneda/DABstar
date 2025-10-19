@@ -57,7 +57,7 @@ i32 main(i32 argc, char ** argv)
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
   const QString initFileName02 = QDir::toNativeSeparators(configPath +  "settings02.ini");
   const QString initFileName03 = QDir::toNativeSeparators(configPath +  "settings03.ini");
-  const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist02.db");
+  const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist03.db");
 
   // Default values
   i32 dataPort = 8888;

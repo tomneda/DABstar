@@ -36,49 +36,43 @@
 // Interface program for processing the MSC.
 // The DabProcessor assumes the existence of an msc-handler, whether a service is selected or not.
 
-constexpr u32 CUSize = 4 * 16;
-static constexpr i16 cifTable[] = { 18, 72, 0, 36 }; // for each DAB-Mode
+constexpr i32 cCUSize = 64;
+constexpr i32 cCifSize = 55296;
 
-//	Note CIF counts from 0 .. 3
-//
+// Note: CIF counts from 0 .. 3
 MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<u8> * const ipFrameBuffer)
   : mpRadioInterface(iRI)
   , mpFrameBuffer(ipFrameBuffer)
 {
-  mCifVector.resize(55296);
-  mBitsPerBlock = c2K;
-  mNumberOfBlocksPerCif = cifTable[0]; // first entry is for DAB-Mode 1
+  mCifVector.resize(cCifSize);
 }
 
 MscHandler::~MscHandler()
 {
-  mMutex.lock();
+  QMutexLocker lock(&mMutex);
   for (auto & b: mBackendList)
   {
     b->stopRunning();
     b.reset();
   }
-  mBackendList.resize(0);
-  mMutex.unlock();
+  mBackendList.clear();
 }
 
 void MscHandler::reset_channel()
 {
   qDebug() << "Channel reset: all services will be stopped";
-  mMutex.lock();
+  QMutexLocker lock(&mMutex);
   for (auto & b: mBackendList)
   {
     b->stopRunning();
     b.reset();
   }
-  mBackendList.resize(0);
-  mMutex.unlock();
+  mBackendList.clear();
 }
 
 void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFlag)
 {
-  mMutex.lock();
-
+  QMutexLocker lock(&mMutex);
   for (qsizetype i = 0; i < mBackendList.size(); i++)
   {
     if (auto & b = mBackendList[i];
@@ -91,76 +85,67 @@ void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFla
       --i; // we removed one element
     }
   }
+}
 
-  mMutex.unlock();
+void MscHandler::stop_all_services()
+{
+  QMutexLocker lock(&mMutex);
+  for (auto & b: mBackendList)
+  {
+    qDebug() << "Stopping SId" << b->serviceId << "Subchannel" << b->subChId << "ProcessFlag" << (b->processFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
+    b->stopRunning();
+    b.reset();
+  }
+  mBackendList.resize(0);
 }
 
 bool MscHandler::is_service_running(const i32 iSubChId, const EProcessFlag iProcessFlag) const
 {
-  mMutex.lock();
-
-  for (qsizetype i = 0; i < mBackendList.size(); i++)
+  QMutexLocker lock(&mMutex);
+  for (const auto & b : mBackendList)
   {
-    if (const auto & b = mBackendList[i];
-        b->subChId == iSubChId && b->processFlag == iProcessFlag)
+    if (b->subChId == iSubChId && b->processFlag == iProcessFlag)
     {
-      mMutex.unlock();
       return true;
     }
   }
-
-  mMutex.unlock();
   return false;
 }
 
 bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, const EProcessFlag iProcessFlag)
 {
-  // fprintf(stdout, "going to open %s\n", d->serviceName.toLatin1().data());
-  // locker.lock();
-  // for (i32 i = 0; i < theBackends.size(); i++)
-  // {
-  //   if (d->subchId == theBackends.at(i)->subChId)
-  //   {
-  //     fprintf(stdout, "The service is already running\n");
-  //     theBackends.at(i)->stopRunning();
-  //     delete theBackends.at(i);
-  //     theBackends.erase(theBackends.begin() + i);
-  //   }
-  // }
-  // locker.unlock();
+  qInfo() << "Create backend" << mBackendList.size() + 1 << "for SId" << d->SId
+          << "and ServiceLabel" << (d->serviceLabel.isEmpty() ? "(Unknown yet)" : d->serviceLabel.trimmed())
+          << "Audio" << (ipoAudioBuffer != nullptr) << "Data" << (ipoDataBuffer != nullptr)
+          << "ProcessFlag" << (iProcessFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
+
+  QMutexLocker lock(&mMutex);
   const QSharedPointer<Backend> backend(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, iProcessFlag));
   mBackendList.append(backend);
-  //mBackendList.append(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, dump, flag));
-  qInfo() << "Backend" << mBackendList.size() << "for service" << d->serviceName.trimmed() << "created";
-  // fprintf(stdout, "we have now %d backends running\n", (i32)mBackendList.size());
   return true;
 }
 
 // Add blocks. First is (should be) block 4, last is (should be) nrBlocks -1.
 // Note that this method is called from within the ofdm-processor thread while the set_xxx methods
 // are called from within the gui thread, so some locking is added.
-void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i16 iBlockNr)
+void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i32 iBlockNr)
 {
-  const i16 curBlockIdx = (i16)((iBlockNr - 4) % mNumberOfBlocksPerCif);
-  //	and the normal operation is:
-  memcpy(&mCifVector[curBlockIdx * mBitsPerBlock], iSoftBits.data(), mBitsPerBlock * sizeof(i16));
+  assert(iBlockNr >= 4);
+  assert(iSoftBits.size() == c2K);
 
-  if (curBlockIdx < mNumberOfBlocksPerCif - 1)
+  const i32 curBlockIdx = (iBlockNr - 4) % cNumberOfBlocksPerCif;
+  memcpy(&mCifVector[curBlockIdx * c2K], iSoftBits.data(), c2K * sizeof(i16));
+
+  if (curBlockIdx < cNumberOfBlocksPerCif - 1)
   {
     return;
   }
 
   // OK, now we have a full CIF and it seems there is some work to be done.
   // We assume that the backend itself does the work in a separate thread.
-  mMutex.lock();
+  QMutexLocker lock(&mMutex);
   for (const auto & b: mBackendList)
   {
-    const i16 startAddr = b->startAddr;
-    const i16 length = b->Length;
-    if (length > 0) // Length = 0? should not happen
-    {
-      b->process(&mCifVector[startAddr * CUSize], length * CUSize);
-    }
+    b->process(&mCifVector[b->CuStartAddr * cCUSize], b->CuSize * cCUSize);
   }
-  mMutex.unlock();
 }

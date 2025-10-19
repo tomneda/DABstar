@@ -12,7 +12,7 @@ i16 cifVector[16][55296];
 u8 fibVector[16][96];
 bool fibValid[16];
 
-#define  CUSize  (4 * 16)
+#define  cCuSizeBytes  (4 * 16)
 //
 //	For each subchannel we create a
 //	deconvoluter and a descramble table up front
@@ -383,7 +383,7 @@ void EtiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * 
 
   memset(outVector.get(), 0, sizeof(u8) * 24 * p->bitRate);
 
-  prot->deconvolve(&p->input[p->start_cu * CUSize], p->size * CUSize, outVector.get());
+  prot->deconvolve(&p->input[p->start_cu * cCuSizeBytes], p->size * cCuSizeBytes, outVector.get());
   //
   for (i32 j = 0; j < 24 * p->bitRate; j++)
   {

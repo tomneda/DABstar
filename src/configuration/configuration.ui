@@ -283,28 +283,6 @@
          </item>
         </widget>
        </item>
-       <item>
-        <widget class="QComboBox" name="cmbScanServiceListFilter">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select which kind of services are searched for while scanning&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are two major kinds of services: &lt;span style=&quot; font-style:italic;&quot;&gt;audio&lt;/span&gt; and &lt;span style=&quot; font-style:italic;&quot;&gt;non-audio&lt;/span&gt; (SPI, EPG, MOT, etc.).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <item>
-          <property name="text">
-           <string>Scan audio services only</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Scan non-audio services only</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Scan all services</string>
-          </property>
-         </item>
-        </widget>
-       </item>
       </layout>
      </item>
      <item>

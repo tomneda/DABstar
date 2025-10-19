@@ -23,16 +23,35 @@
 // Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtWarningMsg)
 
+static constexpr bool cShowSIdInServiceList = true;
+
 void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
   const QAbstractItemModel * pModel = index.model();
   const QModelIndex modIdxChannel = pModel->index(index.row(), ServiceDB::CI_Channel);
-  const QModelIndex modIdxService = pModel->index(index.row(), ServiceDB::CI_Service);
+  const QModelIndex modIdxServiceId = pModel->index(index.row(), ServiceDB::CI_SId);
   const bool isLiveChannel = (pModel->data(modIdxChannel).toString() == mCurChannel);
-  const bool isLiveService = (pModel->data(modIdxService).toString() == mCurService);
+  const bool isLiveService = (pModel->data(modIdxServiceId).toUInt() == mCurSId);
 
   // see: https://colorpicker.me
   painter->fillRect(option.rect, (isLiveChannel ? (isLiveService ? 0x864e1a : 0x483421) : 0x423e3a)); // background color
+
+  if constexpr (cShowSIdInServiceList)
+  {
+    if (index.column() == ServiceDB::CI_SId)
+    {
+      const u32 serviceId = index.data().toUInt();
+      const QString hexText = QString("0x%1").arg(serviceId, 4, 16, QChar('0'));
+
+      QStyleOptionViewItem opt = option;
+      initStyleOption(&opt, index);
+
+      painter->setPen(opt.palette.color(QPalette::Text));
+      painter->drawText(opt.rect, opt.displayAlignment, hexText);
+
+      return;
+    }
+  }
 
   if (index.column() == ServiceDB::CI_Fav)
   {
@@ -55,9 +74,10 @@ bool CustomItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model,
   {
     const QString channel = model->data(model->index(index.row(), ServiceDB::CI_Channel)).toString();
     const QString service = model->data(model->index(index.row(), ServiceDB::CI_Service)).toString();
+    const u32     SId     = model->data(model->index(index.row(), ServiceDB::CI_SId)).toUInt();
     const bool    isFav   = model->data(model->index(index.row(), ServiceDB::CI_Fav)).toBool();
 
-    emit signal_selection_changed_with_fav(channel, service, isFav);
+    emit signal_selection_changed_with_fav(channel, service, SId, isFav);
 
     //qDebug() << "Mouse click on cell: " << channel << ", " << service << ", " << isFav << " at " << index.row() << ", " << index.column();
 
@@ -103,29 +123,29 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   connect(&mCustomItemDelegate, &CustomItemDelegate::signal_selection_changed_with_fav, this, &ServiceListHandler::_slot_selection_changed_with_fav);
 }
 
-void ServiceListHandler::add_entry(const QString & iChannel, const QString & iService)
+void ServiceListHandler::add_entry(const QString & iChannel, const QString & iServiceLabel, const u32 iSId)
 {
-  if (mServiceDB.add_entry(iChannel, iService)) // true if new entry was added
+  if (mServiceDB.add_entry(iChannel, iServiceLabel, iSId)) // true if new entry was added
   {
-    qCDebug(sLogServiceListHandler) << "Added to database: service" << iService << "at channel" << iChannel;
+    qCDebug(sLogServiceListHandler) << "Added to database: service" << iServiceLabel << "with SId" << iSId << "at channel" << iChannel;
     _fill_table_view_from_db();
     _jump_to_list_entry_and_emit_fav_status();
   }
 }
 
-void ServiceListHandler::delete_not_existing_services_at_channel(const QString & iChannel, const QStringList & iServiceList)
+void ServiceListHandler::delete_not_existing_SId_at_channel(const QString & iChannel, const TSIdList & iSIdList)
 {
   bool contentChanged = false;
 
   // delete entries from database which are not more in iServiceList
-  const QStringList curServiceList = get_list_of_services_in_channel(iChannel);
+  const TSIdList curSIdList = get_list_of_SId_in_channel(iChannel);
 
-  for (const auto & curService : curServiceList)
+  for (const auto & curSId : curSIdList)
   {
     bool found = false;
-    for (const auto & newService : iServiceList)
+    for (const auto & newSId : iSIdList)
     {
-      if (curService == newService)
+      if (curSId == newSId)
       {
         found = true;
         break;
@@ -134,9 +154,9 @@ void ServiceListHandler::delete_not_existing_services_at_channel(const QString &
 
     if (!found)
     {
-      if (mServiceDB.delete_entry(iChannel, curService)) // true if entry was deleted (must always be true here)
+      if (mServiceDB.delete_entry(iChannel, curSId)) // true if entry was deleted (must always be true here)
       {
-        qCDebug(sLogServiceListHandler) << "Deleted in database: service" << curService << "at channel" << iChannel;
+        qCDebug(sLogServiceListHandler) << "Deleted in database: service" << curSId << "at channel" << iChannel;
         contentChanged = true;
       }
     }
@@ -153,8 +173,8 @@ void ServiceListHandler::delete_table(const bool iDeleteFavorites)
 {
   // avoid coloring list while scan
   mChannelLast.clear();
-  mServiceLast.clear();
-  mCustomItemDelegate.set_current_service(mChannelLast, mServiceLast);
+  mServiceIdLast = 0;
+  mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
 
   mServiceDB.delete_table(iDeleteFavorites);
 }
@@ -165,21 +185,21 @@ void ServiceListHandler::create_new_table()
   _fill_table_view_from_db();
 }
 
-void ServiceListHandler::set_selector(const QString & iChannel, const QString & iService)
+void ServiceListHandler::set_selector(const QString & iChannel, const u32 iSId)
 {
-  if (iChannel.isEmpty() || iService.isEmpty())
+  if (iChannel.isEmpty() || iSId == 0)
   {
     return;
   }
 
-  if (mChannelLast == iChannel && mServiceLast == iService)
+  if (mChannelLast == iChannel && mServiceIdLast == iSId)
   {
     return;
   }
 
   mChannelLast = iChannel;
-  mServiceLast = iService;
-  mCustomItemDelegate.set_current_service(mChannelLast, mServiceLast);
+  mServiceIdLast = iSId;
+  mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
 
   _jump_to_list_entry_and_emit_fav_status();
 }
@@ -187,13 +207,13 @@ void ServiceListHandler::set_selector(const QString & iChannel, const QString & 
 // this allows selecting the whole channel group when the channel selector was used
 void ServiceListHandler::set_selector_channel_only(const QString & iChannel)
 {
-  set_selector(iChannel, "?");
+  set_selector(iChannel, /*"?"*/0); // TODO:
   mpTableView->update();
 }
 
 void ServiceListHandler::set_favorite_state(const bool iIsFavorite)
 {
-  mServiceDB.set_favorite(mChannelLast, mServiceLast, iIsFavorite);
+  mServiceDB.set_favorite(mChannelLast, mServiceIdLast, iIsFavorite);
   _fill_table_view_from_db();
   _jump_to_list_entry_and_emit_fav_status();
 }
@@ -208,6 +228,10 @@ void ServiceListHandler::restore_favorites()
 void ServiceListHandler::_fill_table_view_from_db()
 {
   mpTableView->setModel(mServiceDB.create_model());
+  if constexpr (!cShowSIdInServiceList)
+  {
+    mpTableView->hideColumn(ServiceDB::CI_SId);
+  }
   mpTableView->resizeColumnsToContents();
   mpTableView->setFixedWidth(mpTableView->sizeHint().width()); // strange, only this works more reliable
 }
@@ -217,9 +241,9 @@ void ServiceListHandler::jump_entries(i32 iSteps)
   _jump_to_list_entry_and_emit_fav_status(iSteps, true);
 }
 
-QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & iChannel) const
+ServiceListHandler::TSIdList ServiceListHandler::get_list_of_SId_in_channel(const QString & iChannel) const
 {
-  QStringList sl;
+  TSIdList sl;
 
   if (iChannel.isEmpty())
   {
@@ -232,11 +256,11 @@ QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & 
   for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
   {
     QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
-    QModelIndex modIdxService = pModel->index(rowIdx, ServiceDB::CI_Service);
+    QModelIndex modIdxServiceId = pModel->index(rowIdx, ServiceDB::CI_SId);
 
-    if (pModel->data(modIdxChannel).toString() == mChannelLast)
+    if (pModel->data(modIdxChannel).toString() == iChannel)
     {
-      sl << pModel->data(modIdxService).toString();
+      sl << pModel->data(modIdxServiceId).toUInt();
     }
   }
 
@@ -245,7 +269,7 @@ QStringList ServiceListHandler::get_list_of_services_in_channel(const QString & 
 
 void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkipOffset /*= 0*/, const bool iCenterContent /*= false*/)
 {
-  if (mChannelLast.isEmpty() || mServiceLast.isEmpty())
+  if (mChannelLast.isEmpty() || mServiceIdLast == 0)
   {
     return;
   }
@@ -258,9 +282,9 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkip
   for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
   {
     QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
-    QModelIndex modIdxService = pModel->index(rowIdx, ServiceDB::CI_Service);
+    QModelIndex modIdxServiceId = pModel->index(rowIdx, ServiceDB::CI_SId);
 
-    if (pModel->data(modIdxService).toString() == mServiceLast &&
+    if (pModel->data(modIdxServiceId).toUInt() == mServiceIdLast &&
         pModel->data(modIdxChannel).toString() == mChannelLast)
     {
       rowIdxFound = rowIdx;
@@ -278,10 +302,11 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkip
     if (iSkipOffset != 0) // only trigger new status to the radio frontend if it was changed by a skip
     {
       mChannelLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Channel)).toString();
-      mServiceLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Service)).toString();
-      mCustomItemDelegate.set_current_service(mChannelLast, mServiceLast);
+      const QString serviceLabel = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Service)).toString();
+      mServiceIdLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_SId)).toUInt();
+      mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
 
-      emit signal_selection_changed(mChannelLast, mServiceLast);
+      emit signal_selection_changed(mChannelLast, serviceLabel, mServiceIdLast);
     }
 
     const bool isFav = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Fav)).toBool();
@@ -293,14 +318,14 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkip
   }
 }
 
-void ServiceListHandler::_slot_selection_changed_with_fav(const QString & iChannel, const QString & iService, const bool iIsFav)
+void ServiceListHandler::_slot_selection_changed_with_fav(const QString & iChannel, const QString & iServiceLabel, const u32 iSId, const bool iIsFav)
 {
   mChannelLast = iChannel;
-  mServiceLast = iService;
-  mCustomItemDelegate.set_current_service(mChannelLast, mServiceLast);
+  mServiceIdLast = iSId;
+  mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
   mpTableView->update();
   
-  emit signal_selection_changed(mChannelLast, mServiceLast);  // triggers an service change in radio.h
+  emit signal_selection_changed(iChannel, iServiceLabel, iSId);  // triggers an service change in radio.h
   emit signal_favorite_status(iIsFav); // this emit speeds up the FavButton setting, the other one is more important
 }
 

@@ -40,7 +40,7 @@
 #include  <QObject>
 
 
-class journaline_dataHandler : public virtual_dataHandler
+class journaline_dataHandler : public VirtualDataHandler
 {
   Q_OBJECT
 

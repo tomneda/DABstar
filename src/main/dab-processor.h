@@ -94,11 +94,13 @@ public:
 
   // for the MscHandler
   void reset_services();
-  bool is_service_running(const SDescriptorType * d, EProcessFlag iProcessFlag);
-  void stop_service(const SDescriptorType *, EProcessFlag iProcessFlag);
+  bool is_service_running(const SDescriptorType & iDT, EProcessFlag iProcessFlag);
+  bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag);
+  void stop_service(const SDescriptorType & iDT, EProcessFlag iProcessFlag);
   void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);
-  bool set_audio_channel(const SAudioData * ipAudioData, RingBuffer<i16> * ipoAudioBuffer, EProcessFlag iProcessFlag);
-  bool set_data_channel(const SPacketData *, RingBuffer<u8> *, EProcessFlag iProcessFlag);
+  void stop_all_services();
+  bool set_audio_channel(const SAudioData & iAD, RingBuffer<i16> * ipoAudioBuffer, EProcessFlag iProcessFlag);
+  bool set_data_channel(const SPacketData & iPD, RingBuffer<u8> *, EProcessFlag iProcessFlag);
 
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);

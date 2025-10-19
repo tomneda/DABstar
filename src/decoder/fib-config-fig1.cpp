@@ -5,6 +5,26 @@
 #include <QDateTime>
 #include <QDebug>
 
+FibConfigFig1::FibConfigFig1()
+{
+  reset();
+
+  Fig1s0_EnsembleLabelVec.reserve(1);
+  Fig1s1_ProgrammeServiceLabelVec.reserve(64);
+  Fig1s4_ServiceComponentLabelVec.reserve(64);
+  Fig1s5_DataServiceLabelVec.reserve(64);
+}
+
+void FibConfigFig1::reset()
+{
+  Fig1s0_EnsembleLabelVec.clear();
+  Fig1s1_ProgrammeServiceLabelVec.clear();
+  Fig1s4_ServiceComponentLabelVec.clear();
+  Fig1s5_DataServiceLabelVec.clear();
+
+  serviceLabel_To_SId_SCIdS_Map.clear();
+}
+
 const FibConfigFig1::SFig1s1_ProgrammeServiceLabel * FibConfigFig1::get_Fig1s1_ProgrammeServiceLabel_of_SId(const u32 SId) const
 {
   for (auto & elem : Fig1s1_ProgrammeServiceLabelVec)
@@ -77,8 +97,17 @@ const FibConfigFig1::SSId_SCIdS * FibConfigFig1::get_SId_SCIdS_from_service_labe
   return nullptr;
 }
 
-void FibConfigFig1::print_Fig1s0_EnsembleLabel(SStatistic & ioS)
+void FibConfigFig1::print_Fig1s0_EnsembleLabel(SStatistic & ioS, const bool iCollectStatisticsOnly)
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (const auto & e : Fig1s0_EnsembleLabelVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig1s0_EnsembleLabel ---  Size" << Fig1s0_EnsembleLabelVec.size() << " Capacity" << Fig1s0_EnsembleLabelVec.capacity();
   for (const auto & e : Fig1s0_EnsembleLabelVec)
@@ -92,8 +121,17 @@ void FibConfigFig1::print_Fig1s0_EnsembleLabel(SStatistic & ioS)
   }
 }
 
-void FibConfigFig1::print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS)
+void FibConfigFig1::print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS, const bool iCollectStatisticsOnly)
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (const auto & e : Fig1s1_ProgrammeServiceLabelVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig1s1_ProgrammeServiceLabel ---  Size" << Fig1s1_ProgrammeServiceLabelVec.size() << " Capacity" << Fig1s1_ProgrammeServiceLabelVec.capacity();
   for (const auto & e : Fig1s1_ProgrammeServiceLabelVec)
@@ -107,8 +145,17 @@ void FibConfigFig1::print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS)
   }
 }
 
-void FibConfigFig1::print_Fig1s4_ServiceComponentLabel(SStatistic & ioS)
+void FibConfigFig1::print_Fig1s4_ServiceComponentLabel(SStatistic & ioS, const bool iCollectStatisticsOnly)
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (const auto & e : Fig1s4_ServiceComponentLabelVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig1s4_ServiceComponentLabel ---  Size" << Fig1s4_ServiceComponentLabelVec.size() << " Capacity" << Fig1s4_ServiceComponentLabelVec.capacity();
   for (const auto & e : Fig1s4_ServiceComponentLabelVec)
@@ -124,8 +171,17 @@ void FibConfigFig1::print_Fig1s4_ServiceComponentLabel(SStatistic & ioS)
   }
 }
 
-void FibConfigFig1::print_Fig1s5_DataServiceLabel(SStatistic & ioS)
+void FibConfigFig1::print_Fig1s5_DataServiceLabel(SStatistic & ioS, const bool iCollectStatisticsOnly)
 {
+  if (iCollectStatisticsOnly)
+  {
+    for (const auto & e : Fig1s5_DataServiceLabelVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
   qInfo();
   qInfo() << "--- Fig1s5_DataServiceLabel ---  Size" << Fig1s5_DataServiceLabelVec.size() << " Capacity" << Fig1s5_DataServiceLabelVec.capacity();
   for (const auto & e : Fig1s5_DataServiceLabelVec)

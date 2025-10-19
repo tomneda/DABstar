@@ -39,7 +39,7 @@ class DabRadio;
 class MotObject;
 class MotDirectory;
 
-class MotHandler : public virtual_dataHandler
+class MotHandler : public VirtualDataHandler
 {
 public:
   explicit MotHandler(DabRadio *);

@@ -8,7 +8,6 @@
 #include "fib_helper.h"
 #include <vector>
 #include <QString>
-#include <chrono>
 
 struct SFig0s0_EnsembleInformation
 {
@@ -89,9 +88,9 @@ public:
     // SId (Service Identifier): this 16-bit or 32-bit field shall identify the service.
     // Country Id (Identification): this 4-bit field shall be as defined in ETSI TS 101 756 [3], tables 3 to 7.
     // ECC (Extended Country Code): this 8-bit field shall be as defined in ETSI TS 101 756 [3], tables 3 to 7.
-    union { u16 SId = 0; struct { u16 ServiceReference: 12; u16 CountryId: 4; }; } PD0;
+    union { u16 SId = 0; struct { u16 ServiceReference: 12; u16 CountryId: 4; };             } PD0;
     union { u32 SId = 0; struct { u32 ServiceReference: 20; u32 CountryId: 4; u32 EEC: 8; }; } PD1;
-    // i8  CAId = -1;           // this 3-bit field shall identify the Access Control System (ACS) used for the service. The definition is given in ETSI TS 102 367 [4].
+    // i8  CAId = -1; // this 3-bit field shall identify the Access Control System (ACS) used for the service. The definition is given in ETSI TS 102 367 [4].
     i8  NumServiceComp = -1; // this 4-bit field, coded as an unsigned binary number, shall indicate the number of service components (maximum 12 for 16-bit SIds and maximum 11 for 32-bit SIds), associated with the service. Each component shall be coded, according to the transport mechanism used.
     i32 ServiceComp_C_index = -1; // index of the ServiceComp_C in the ServiceCompVec
     SFig0s2_ServiceComponentDefinition ServiceComp_C{};
@@ -119,6 +118,12 @@ public:
 
     // LS_Flag == 1: long form for SCId
     i16 SCId = -1;     // this 12-bit field shall identify the service component (see clause 6.3.1).
+  };
+
+  struct SFig0s7_ConfigurationInformation : SFigBase
+  {
+    u8  NumServices; // this 6-bit field, coded as an unsigned binary number, contains the total number of services in the configuration.
+    u16 Count;       // this 10-bit modulo-1024 binary counter increments by one for every multiplex reconfiguration.
   };
 
   struct SFig0s8_ServiceCompGlobalDef : SFigBase
@@ -209,22 +214,24 @@ public:
 
   std::vector<SFig0s1_BasicSubChannelOrganization> Fig0s1_BasicSubChannelOrganizationVec;
   std::vector<SFig0s2_BasicService_ServiceCompDef> Fig0s2_BasicService_ServiceCompDefVec;
-  std::vector<SFig0s3_ServiceComponentPacketMode> Fig0s3_ServiceComponentPacketModeVec;
-  std::vector<SFig0s5_ServiceComponentLanguage> Fig0s5_ServiceComponentLanguageVec;
-  std::vector<SFig0s8_ServiceCompGlobalDef> Fig0s8_ServiceCompGlobalDefVec;
-  std::vector<SFig0s9_CountryLtoInterTab> Fig0s9_CountryLtoInterTabVec;
+  std::vector<SFig0s3_ServiceComponentPacketMode>  Fig0s3_ServiceComponentPacketModeVec;
+  std::vector<SFig0s5_ServiceComponentLanguage>    Fig0s5_ServiceComponentLanguageVec;
+  std::vector<SFig0s7_ConfigurationInformation>    Fig0s7_ConfigurationInformationVec; // there is only a vector length of one possible
+  std::vector<SFig0s8_ServiceCompGlobalDef>        Fig0s8_ServiceCompGlobalDefVec;
+  std::vector<SFig0s9_CountryLtoInterTab>          Fig0s9_CountryLtoInterTabVec;
   std::vector<SFig0s13_UserApplicationInformation> Fig0s13_UserApplicationInformationVec;
-  std::vector<SFig0s14_SubChannelOrganization> Fig0s14_SubChannelOrganizationVec;
-  std::vector<SFig0s17_ProgrammeType> Fig0s17_ProgrammeTypeVec;
+  std::vector<SFig0s14_SubChannelOrganization>     Fig0s14_SubChannelOrganizationVec;
+  std::vector<SFig0s17_ProgrammeType>              Fig0s17_ProgrammeTypeVec;
 
   const SFig0s1_BasicSubChannelOrganization * get_Fig0s1_BasicSubChannelOrganization_of_SubChId(i32 iSubChId) const;
-  const SFig0s2_BasicService_ServiceCompDef *   get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(u32 iSId, u8 iTMId) const;
+  const SFig0s2_BasicService_ServiceCompDef * get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(u32 iSId, u8 iTMId) const;
   const SFig0s2_BasicService_ServiceCompDef * get_Fig0s2_BasicService_ServiceCompDef_of_SId(u32 iSId) const;
   const SFig0s2_BasicService_ServiceCompDef * get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(u32 iSId, i32 iScIdx) const;
   const SFig0s2_BasicService_ServiceCompDef * get_Fig0s2_BasicService_ServiceCompDef_of_SCId(i16 SCId) const;
   const SFig0s3_ServiceComponentPacketMode  * get_Fig0s3_ServiceComponentPacketMode_of_SCId(i32 iSCId) const;
   const SFig0s5_ServiceComponentLanguage    * get_Fig0s5_ServiceComponentLanguage_of_SubChId(u8 iSubChId) const;
   const SFig0s5_ServiceComponentLanguage    * get_Fig0s5_ServiceComponentLanguage_of_SCId(u8 iSCId) const;
+  const SFig0s7_ConfigurationInformation    * get_Fig0s7_ConfigurationInformation() const;
   const SFig0s8_ServiceCompGlobalDef        * get_Fig0s8_ServiceCompGlobalDef_of_SId(u32 iSId) const;
   const SFig0s8_ServiceCompGlobalDef        * get_Fig0s8_ServiceCompGlobalDef_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
   const SFig0s9_CountryLtoInterTab          * get_Fig0s9_CountryLtoInterTab() const;
@@ -232,15 +239,16 @@ public:
   const SFig0s14_SubChannelOrganization     * get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
   const SFig0s17_ProgrammeType              * get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
 
-  void print_Fig0s1_BasicSubChannelOrganization(SStatistic & ioS) const;
-  void print_Fig0s2_BasicService_ServiceCompDef(SStatistic & ioS) const;
-  void print_Fig0s3_ServiceComponentPacketMode(SStatistic & ioS) const;
-  void print_Fig0s5_ServiceComponentLanguage(SStatistic & ioS) const;
-  void print_Fig0s8_ServiceCompGlobalDef(SStatistic & ioS) const;
-  void print_Fig0s9_CountryLtoInterTab(SStatistic & ioS) const;
-  void print_Fig0s13_UserApplicationInformation(SStatistic & ioS) const;
-  void print_Fig0s14_SubChannelOrganization(SStatistic & ioS) const;
-  void print_Fig0s17_ProgrammeType(SStatistic & ioS) const;
+  void print_Fig0s1_BasicSubChannelOrganization(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s2_BasicService_ServiceCompDef(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s3_ServiceComponentPacketMode(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s5_ServiceComponentLanguage(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s7_ConfigurationInformation(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s8_ServiceCompGlobalDef(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s9_CountryLtoInterTab(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s13_UserApplicationInformation(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s14_SubChannelOrganization(SStatistic & ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s17_ProgrammeType(SStatistic & ioS, bool iCollectStatisticsOnly) const;
 
   template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
 

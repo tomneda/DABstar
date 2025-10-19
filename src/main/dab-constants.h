@@ -75,8 +75,8 @@ constexpr char sSettingContentStorageDir[] = "saveDirContent";
 
 enum class EProcessFlag
 {
-  Foreground,
-  Background
+  Primary,
+  Secondary
 };
 
 enum ETMId // TransportMechanismMode
@@ -113,27 +113,28 @@ struct SEpgElement
 
 struct SServiceId
 {
-  QString name;
+  QString serviceLabel;
   u32 SId;
   bool isAudioChannel;
-  bool hasSpiEpgData;  
+  bool hasSpiEpgData;
 };
 
 struct SDescriptorType
 {
   bool isDefined = false;
   ETMId TMId;
-  QString serviceName;
-  QString serviceNameShort;
   u32 SId;
-  i32 SCIdS;
-  i16 subchId;
-  i16 startAddr;
+  i16 SubChId;
+  i16 CuStartAddr;
+  i16 CuSize;
   bool shortForm;
   i16 protLevel;
-  i16 length;
   i16 bitRate;
-  QString channel;
+
+  // these could be initialized later when FIG 1/x data are loaded (slower)
+  // QString channel;
+  QString serviceLabel;
+  QString serviceLabelShort;
 };
 
 //	for service handling we define
@@ -143,8 +144,8 @@ struct SPacketData : SDescriptorType
   i16 FEC_scheme;
   i16 DGflag;
   std::vector<i16> appTypeVec;
-  // i16 compnr;
-  i16 packetAddress;
+  i16 PacketAddress;
+  i32 SCIdS;
   SPacketData() { TMId = ETMId::PacketModeData; }
 };
 

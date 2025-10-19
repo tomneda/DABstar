@@ -5,32 +5,18 @@
 #define  FIB_CONFIG_FIG1_H
 
 #include "glob_data_types.h"
-#include "dab-constants.h"
 #include "fib_helper.h"
 #include <vector>
 #include <map>
-#include <chrono>
 #include <QString>
 
 class FibConfigFig1 : public FibHelper
 {
 public:
-  FibConfigFig1()
-  {
-    reset();
-  }
-
+  FibConfigFig1();
   ~FibConfigFig1() = default;
 
-  void reset()
-  {
-    Fig1s0_EnsembleLabelVec.clear();
-    Fig1s1_ProgrammeServiceLabelVec.clear();
-    Fig1s4_ServiceComponentLabelVec.clear();
-    Fig1s5_DataServiceLabelVec.clear();
-
-    serviceLabel_To_SId_SCIdS_Map.clear();
-  }
+  void reset();
 
   struct SFig1_DataField
   {
@@ -73,10 +59,10 @@ public:
     u32 SId = -1; // this 32-bit field shall identify the service (see clause 6.3.1).
   };
 
-  std::vector<SFig1s0_EnsembleLabel> Fig1s0_EnsembleLabelVec; // vector can only have one element!
+  std::vector<SFig1s0_EnsembleLabel>         Fig1s0_EnsembleLabelVec; // vector can only have one element!
   std::vector<SFig1s1_ProgrammeServiceLabel> Fig1s1_ProgrammeServiceLabelVec;
   std::vector<SFig1s4_ServiceComponentLabel> Fig1s4_ServiceComponentLabelVec;
-  std::vector<SFig1s5_DataServiceLabel> Fig1s5_DataServiceLabelVec;
+  std::vector<SFig1s5_DataServiceLabel>      Fig1s5_DataServiceLabelVec;
 
   struct SSId_SCIdS
   {
@@ -95,10 +81,10 @@ public:
   const QString                       & get_service_label_of_SId_from_all_Fig1(u32 iSId) const;
   const SSId_SCIdS                    * get_SId_SCIdS_from_service_label(const QString & s) const;
 
-  void print_Fig1s0_EnsembleLabel(SStatistic & ioS);
-  void print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS);
-  void print_Fig1s4_ServiceComponentLabel(SStatistic & ioS);
-  void print_Fig1s5_DataServiceLabel(SStatistic & ioS);
+  void print_Fig1s0_EnsembleLabel(SStatistic & ioS, bool iCollectStatisticsOnly);
+  void print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS, bool iCollectStatisticsOnly);
+  void print_Fig1s4_ServiceComponentLabel(SStatistic & ioS, bool iCollectStatisticsOnly);
+  void print_Fig1s5_DataServiceLabel(SStatistic & ioS, bool iCollectStatisticsOnly);
 };
 
 #endif

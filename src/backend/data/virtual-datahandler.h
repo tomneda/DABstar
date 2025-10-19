@@ -36,11 +36,11 @@
 #include  <vector>
 
 
-class virtual_dataHandler : public QObject
+class VirtualDataHandler : public QObject
 {
 public:
-  virtual_dataHandler() = default;
-  virtual ~virtual_dataHandler() = default;
+  VirtualDataHandler() = default;
+  virtual ~VirtualDataHandler() = default;
 
   virtual void add_mscDatagroup(const std::vector<u8> &)  {}
 };

@@ -14,6 +14,7 @@
 #ifndef DABSTAR_SERVICE_DB_H
 #define DABSTAR_SERVICE_DB_H
 
+#include "glob_data_types.h"
 #include <QtSql/QSqlDatabase>
 
 class QTableView;
@@ -36,7 +37,7 @@ public:
     CI_Fav,     // = 0
     CI_Service, // = 1
     CI_Channel, // = 2
-    //CI_Id,      // = 3
+    CI_SId,     // = 3
     CI_MAX 
   };
 
@@ -44,11 +45,11 @@ public:
   void open_db();
   void create_table();
   void delete_table(const bool iDeleteFavorites);
-  bool add_entry(const QString & iChannel, const QString & iService);
-  bool delete_entry(const QString & iChannel, const QString & iService);
-  void sort_column(const EColIdx iColIdx, const bool iForceSortAsc);
+  bool add_entry(const QString & iChannel, const QString & iServiceLabel, u32 iSId);
+  bool delete_entry(const QString & iChannel, u32 iSId);
+  void sort_column(EColIdx iColIdx, bool iForceSortAsc);
   bool is_sort_desc() const;
-  void set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite) const;
+  void set_favorite(const QString & iChannel, u32 iSId, bool iIsFavorite) const;
   void retrieve_favorites_from_backup_table();
   QAbstractItemModel * create_model();
 
@@ -63,9 +64,9 @@ private:
   void _delete_db_file();
   bool _open_db();
   void _exec_simple_query(const QString & iQuery);
-  bool _check_if_entry_exists(const QString & iTableName, const QString & iChannel, const QString & iService);
-  void _set_favorite(const QString & iChannel, const QString & iService, const bool iIsFavorite, const bool iStoreInFavTable) const;
-  const QString & _cur_tab_name() const;
+  bool _check_if_entry_exists(const QString & iTableName, const QString & iChannel, u32 iSId);
+  void _set_favorite(const QString & iChannel, u32 iSId, bool iIsFavorite, bool iStoreInFavTable) const;
+  [[nodiscard]] const QString & _cur_tab_name() const;
 };
 
 #endif

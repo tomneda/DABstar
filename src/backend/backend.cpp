@@ -34,10 +34,9 @@
 #include  "dab-constants.h"
 #include  "dabradio.h"
 #include  "backend.h"
-//
-//	Interleaving is - for reasons of simplicity - done
-//	inline rather than through a special class-object
-#define CUSize  (4 * 16)
+
+// Interleaving is - for reasons of simplicity - done inline rather than through a special class-object
+constexpr i16 cCuSizeBytes = 64;
 
 //	fragmentsize == Length * CUSize
 Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag)
@@ -48,22 +47,21 @@ Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer
   , freeSlots(NUMBER_SLOTS)
 #endif
 {
-  i32 i, j;
   this->radioInterface = ipRI;
-  this->startAddr = ipDescType->startAddr;
-  this->Length = ipDescType->length;
-  this->fragmentSize = ipDescType->length * CUSize;
+  this->CuStartAddr = ipDescType->CuStartAddr;
+  this->CuSize = ipDescType->CuSize;
+  this->fragmentSize = ipDescType->CuSize * cCuSizeBytes;
   this->bitRate = ipDescType->bitRate;
   this->serviceId = ipDescType->SId;
-  this->serviceName = ipDescType->serviceName;
+  // this->serviceName = ipDescType->serviceName;
   this->shortForm = ipDescType->shortForm;
   this->protLevel = ipDescType->protLevel;
-  this->subChId = ipDescType->subchId;
+  this->subChId = ipDescType->SubChId;
   this->processFlag = iProcessFlag;
 
   //fprintf(stdout, "starting a backend for %s (%X) %d\n", serviceName.toUtf8().data(), serviceId, startAddr);
   interleaveData.resize(16);
-  for (i = 0; i < 16; i++)
+  for (i32 i = 0; i < 16; i++)
   {
     interleaveData[i].resize(fragmentSize);
     memset(interleaveData[i].data(), 0, fragmentSize * sizeof(i16));
@@ -77,10 +75,10 @@ Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer
   u8 shiftRegister[9];
   disperseVector.resize(24 * bitRate);
   memset(shiftRegister, 1, 9);
-  for (i = 0; i < bitRate * 24; i++)
+  for (i32 i = 0; i < bitRate * 24; i++)
   {
     u8 b = shiftRegister[8] ^ shiftRegister[4];
-    for (j = 8; j > 0; j--)
+    for (i32 j = 8; j > 0; j--)
     {
       shiftRegister[j] = shiftRegister[j - 1];
     }
@@ -111,7 +109,7 @@ Backend::~Backend()
 #endif
 }
 
-i32 Backend::process(const i16 * iV, i16 cnt)
+i32 Backend::process(const i16 * const iV, const i32 cnt)
 {
   (void)cnt;
 #ifdef  __THREADED_BACKEND__

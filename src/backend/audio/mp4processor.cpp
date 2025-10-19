@@ -301,18 +301,18 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
   default: assert(false);
   }
   /**
-    *	OK, the result is N * 110 * 8 bits (still single bit per byte!!!)
-    *	extract the AU's, and prepare a buffer,  with the sufficient
-    *	lengthy for conversion to PCM samples
+    * OK, the result is N * 110 * 8 bits (still single bit per byte!!!)
+    * extract the AU's, and prepare a buffer,  with the sufficient
+    * lengthy for conversion to PCM samples
     */
   for (i16 auIdx = 0; auIdx < numAUs; ++auIdx)
   {
     const i32 aacFrameLen = mAuStartArr[auIdx + 1] - mAuStartArr[auIdx] - 2;
 
-    //	just a sanity check
+    // Just a sanity check
     if (aacFrameLen > 960 || aacFrameLen < 0) // TODO: are 960 the max, not only 959?
     {
-      fprintf(stderr, "error: invalid aacFrameLen = %d\n", aacFrameLen);
+      qWarning() << "Invalid aacFrameLen =" << aacFrameLen;
       return false;
     }
 
@@ -353,7 +353,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 
       if (tmp <= 0)
       {
-        fprintf(stderr, "MP4 decoding error: %d\n", tmp);
+        qWarning() << "AAC decoding error: " << tmp;
         mAacErrors++;
       }
 
