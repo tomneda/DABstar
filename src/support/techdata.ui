@@ -159,14 +159,14 @@
      <item row="4" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>RS corrections [%]</string>
+        <string>RS corrections</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
       <widget class="QLCDNumber" name="rsCorrections">
        <property name="toolTip">
-        <string>The number of corrections made by the reed-solomon algorithm over 10 DAB+ frames (so the number does not relate to the classic DAB/MP2 frames)</string>
+        <string>The number of corrections made by the reed-solomon algorithm over 100 DAB+ frames (so the number does not relate to the classic DAB/MP2 frames)</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>

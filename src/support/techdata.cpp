@@ -258,9 +258,9 @@ void TechData::slot_show_ASCTy(i32 a) const
   const bool isDabPlus = (a == 077);
   ASCTy->setText(isDabPlus ? "DAB+" : "DAB");
   framedumpButton->setText(isDabPlus ? "Dump AAC" : "Dump MP2");
-  rsError_display->setEnabled(isDabPlus);
   aacError_display->setEnabled(isDabPlus);
   aacErrorLabel->setEnabled(isDabPlus);
+  rsError_display->setEnabled(isDabPlus);
   rsErrorLabel->setEnabled(isDabPlus);
 }
 
