@@ -2331,6 +2331,8 @@ void DabRadio::_update_scan_statistics(const SServiceId & sl)
 
 void DabRadio::_slot_fib_loaded_state(const IFibDecoder::EFibLoadingState iFibLoadingState)
 {
+  qDebug() << "FIB data for _slot_fib_data_loaded() loaded to state" << (i32)iFibLoadingState;
+
   assert(iFibLoadingState >= IFibDecoder::EFibLoadingState::S1_FastAudioDataLoaded &&
          iFibLoadingState <= IFibDecoder::EFibLoadingState::S5_DeferredDataLoaded);
 
@@ -2347,19 +2349,17 @@ void DabRadio::_slot_fib_loaded_state(const IFibDecoder::EFibLoadingState iFibLo
 
   if (iFibLoadingState == IFibDecoder::EFibLoadingState::S1_FastAudioDataLoaded)
   {
-    qDebug() << "Fast audio select triggered -> necessary data for audio start available (except service label)";
-
     if (mChannel.SId_next == 0)
     {
       qCCritical(sLogRadioInterface()) << "Fast audio select triggered, but no SId_next set";
       return;
     }
 
+    qDebug() << "Fast audio select triggered -> necessary data for audio start available (except service label)";
+
     start_primary_and_secondary_service(mChannel.SId_next, true);
     return;
   }
-
-  qDebug() << "FIB data for _slot_fib_data_loaded() loaded to state" << (i32)iFibLoadingState;
 
   mServiceList = mpDabProcessor->get_fib_decoder()->get_service_list();
 

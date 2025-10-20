@@ -55,7 +55,7 @@ public:
     S0_Init,
     S1_FastAudioDataLoaded,    // special SId in FIG 0/1 and 0/2 loaded -> start fast audio selection (needs valid set_SId_for_fast_audio_selection() setting first)
     S2_PrimaryBaseDataLoaded,  // FIG 0/1 and 0/2 are fully loaded -> not callback-ed
-    S3_FullyAudioDataLoaded,   // FIG 0/1 and 0/2 and FIG 1/1 fully loaded for audio service label -> service list can be updated (for scan), took some 100ms
+    S3_FullyAudioDataLoaded,   // FIG 0/1 and 0/2 and FIG 1/1 fully loaded for audio service label -> service list can be updated (for scan)
     S4_FullyPacketDataLoaded,  // major FIGs are loaded -> start primary and/or secondary packet services
     S5_DeferredDataLoaded      // (hopefully only) minor important FIGs are loaded, like some FIG 0/17 for displaying the programme type
   };
