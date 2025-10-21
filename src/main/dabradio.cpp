@@ -111,8 +111,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   ui->setupUi(this);
 
   setWindowTitle(PRJ_NAME);
-  // Settings::Main::posAndSize.read_widget_geometry(this, 720, 540, false);
-  Settings::Main::posAndSize.read_widget_geometry(this, 832, 540, true);
+
+  Settings::Main::posAndSize.read_widget_geometry(this, (cShowSIdInServiceList ? 40 : 0) + 730, 540, true);
 
   mpServiceListHandler.reset(new ServiceListHandler(iFileNameDb, ui->tblServiceList));
   mpTechDataWidget.reset(new TechData(this, mpTechDataBuffer));

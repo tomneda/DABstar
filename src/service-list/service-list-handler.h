@@ -19,6 +19,8 @@
 #include <QObject>
 #include <QStyledItemDelegate>
 
+static constexpr bool cShowSIdInServiceList = false;
+
 class DabRadio;
 class QTableView;
 class QSettings;

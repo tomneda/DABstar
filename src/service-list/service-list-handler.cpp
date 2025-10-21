@@ -23,8 +23,6 @@
 // Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtWarningMsg)
 
-static constexpr bool cShowSIdInServiceList = true;
-
 void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
   const QAbstractItemModel * pModel = index.model();
