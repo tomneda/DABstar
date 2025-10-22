@@ -16,8 +16,8 @@
   static constexpr bool cShowFigDataStatistics = true;
 #endif
 
-static constexpr i32 cFibConsistencyCheckTime_ms = 300; // max time necessary to collect new FIG 0/1 and FIG 0/2 data (measured 191 ms)
-static constexpr i32 cPrintFigStatisticsWaitingTime_ms = 10000; // because repetition statistic are still collected we have to wait a while
+static constexpr i32 cFibConsistencyCheckTime_ms =  300;  // max time necessary to collect new FIG 0/1 and FIG 0/2 data (measured 191 ms)
+static constexpr i32 cCheckStateAndPrintFigs_ms = 10000;  // check last state sanity and print FIG statistic
 
 /*static*/ std::unique_ptr<IFibDecoder> FibDecoderFactory::create(DabRadio* radio)
 {
@@ -41,10 +41,10 @@ FibDecoder::FibDecoder(DabRadio * mr)
   mpTimerDataConsistencyCheck->setInterval(cFibConsistencyCheckTime_ms);
   connect(mpTimerDataConsistencyCheck, &QTimer::timeout, this, &FibDecoder::_slot_timer_data_consitency_check);
 
-  mpTimerPrintFigStatistic = new QTimer(this);
-  mpTimerPrintFigStatistic->setInterval(cPrintFigStatisticsWaitingTime_ms);
-  mpTimerPrintFigStatistic->setSingleShot(true);
-  connect(mpTimerPrintFigStatistic, &QTimer::timeout, this, &FibDecoder::_slot_timer_print_FIGs_and_time_statistics);
+  mpTimerCheckStateAndPrintFigs = new QTimer(this);
+  mpTimerCheckStateAndPrintFigs->setInterval(cCheckStateAndPrintFigs_ms);
+  mpTimerCheckStateAndPrintFigs->setSingleShot(true);
+  connect(mpTimerCheckStateAndPrintFigs, &QTimer::timeout, this, &FibDecoder::_slot_timer_check_state_and_print_FIGs);
 }
 
 void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibBits, u16 const iFicNo)
@@ -92,12 +92,10 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
 void FibDecoder::_reset()
 {
   mpTimerDataConsistencyCheck->stop();
-  mpTimerPrintFigStatistic->stop();
+  mpTimerCheckStateAndPrintFigs->stop();
   mFibLoadingState = EFibLoadingState::S0_Init;
   mDiffTimeMax = {};
-  // mDiffMaxSlow = {};
   mLastTimePoint = {};
-  // mLastTimePointSlow = {};
   mFirstFigTimePoint = {};
 
   mCifCount = 0;
@@ -741,36 +739,19 @@ void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerNam
   if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded)
   {
     qWarning() << "Fast FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffTimeMax.count();
+    mFibLoadingState = EFibLoadingState::S5_DeferredDataLoaded;
+    emit signal_fib_loaded_state(EFibLoadingState::S5_DeferredDataLoaded);
     return;
   }
 
   // mpTimerDataLoaded->start() must be called that way as it is a different thread without event-loop which is calling
   QMetaObject::invokeMethod(mpTimerDataConsistencyCheck, "start", Qt::QueuedConnection);
-  // QMetaObject::invokeMethod(mpTimerDataLoadedSlow, "start", Qt::QueuedConnection); // retrigger also slow timer as it must always come at last
+  QMetaObject::invokeMethod(mpTimerCheckStateAndPrintFigs, "start", Qt::QueuedConnection); // retrigger also slow timer as it must always come at last
 }
 
 void FibDecoder::_retrigger_timer_data_loaded_slow(const char * const iCallerName)
 {
   _retrigger_timer_data_loaded_fast(iCallerName);
-
-  // // Evaluate maximum time difference between calls to check whether the empiric time cMaxFibLoadingTimeSlow_ms is high enough
-  // std::chrono::time_point currTimePoint = std::chrono::high_resolution_clock::now();
-  // const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(currTimePoint - mLastTimePointSlow);
-  // constexpr std::chrono::time_point<std::chrono::system_clock> cBaseVal{};
-  // if (mLastTimePointSlow > cBaseVal && diff > mDiffMaxSlow) mDiffMaxSlow = diff;
-  // mLastTimePointSlow = currTimePoint;
-  // // qInfo() << "Slow caller" << iCallerName << "Time elapsed [ms]" << diff.count() << "Diff Max" << mDiffMaxSlow.count();
-  //
-  // if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded)
-  // {
-  //   qWarning() << "Slow FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffMaxSlow.count();
-  //   mFibLoadingState = EFibLoadingState::S5_MinorDeferredDataLoaded;
-  //   emit signal_fib_loaded_state(EFibLoadingState::S5_MinorDeferredDataLoaded);
-  //   return;
-  // }
-  //
-  // // mpTimerDataLoaded->start() must be called that way as it is a different thread without event-loop which is calling
-  // QMetaObject::invokeMethod(mpTimerDataLoadedSlow, "start", Qt::QueuedConnection);
 }
 
 void FibDecoder::_process_fast_audio_selection()
@@ -812,12 +793,12 @@ bool FibDecoder::_check_audio_data_completenes() const
     {
       if (!_get_data_for_audio_service(fig0s2, nullptr))
       {
-        qDebug() << "Some audio FIG data for SId" << fig0s2.get_SId() << "missing";
+        qDebug().noquote() << " --> Some audio FIG data for SId" << hex_str(fig0s2.get_SId()) << "missing";
         return false;
       }
     }
   }
-
+  qDebug() << " --> Audio data complete";
   return true;
 }
 
@@ -841,13 +822,13 @@ bool FibDecoder::_check_packet_data_completenes() const
       {
         if (!_get_data_for_packet_service(fig0s2, compIdx, nullptr))
         {
-          qDebug() << "Some packet FIG data for SId" << fig0s2.get_SId() << "and compIdx" << compIdx << "missing";
+          qDebug().noquote() << " --> Some packet FIG data for SId" << hex_str(fig0s2.get_SId()) << "and compIdx" << compIdx << "missing";
           return false;
         }
       }
     }
   }
-
+  qDebug() << " --> Packet data complete";
   return true;
 }
 
@@ -880,15 +861,15 @@ void FibDecoder::_slot_timer_data_consitency_check()
       // There is no more data expected, so print FIG content and statistics
       if constexpr (cShowFigDataOverview || cShowFigDataStatistics)
       {
-        qInfo() << "Printing FIG data overview and statistics in" << cPrintFigStatisticsWaitingTime_ms << "ms";
-        mpTimerPrintFigStatistic->start(); // must be shown deferred because still repetition data are collected
+        qInfo() << "Printing FIG data overview and statistics in" << cCheckStateAndPrintFigs_ms << "ms";
+        mpTimerCheckStateAndPrintFigs->start(); // must be shown deferred because still repetition data are collected
       }
       emit signal_fib_loaded_state(EFibLoadingState::S4_FullyPacketDataLoaded);
     }
   }
 }
 
-void FibDecoder::_slot_timer_print_FIGs_and_time_statistics() const
+void FibDecoder::_slot_timer_check_state_and_print_FIGs()
 {
   if constexpr (cShowFigDataOverview || cShowFigDataStatistics)
   {
@@ -965,14 +946,17 @@ void FibDecoder::_slot_timer_print_FIGs_and_time_statistics() const
 
   if (mFibLoadingState < EFibLoadingState::S3_FullyAudioDataLoaded)
   {
-    qCritical() << "Fast FIB data must be ready before this slow FIB is signaled";
+    qWarning() << "Audi FIG data seems inconsistent or not complete. Trying to activate at least the remaining audio services...";
+    mFibLoadingState = EFibLoadingState::S3_FullyAudioDataLoaded;
+    emit signal_fib_loaded_state(EFibLoadingState::S3_FullyAudioDataLoaded);
   }
 
-  // if (mFibLoadingState < EFibLoadingState::S4_MajorPacketDataLoaded) // emit only a higher state as before except of the deferred data
-  // {
-  //   mFibLoadingState = EFibLoadingState::S4_MajorPacketDataLoaded;
-  //   emit signal_fib_loaded_state(EFibLoadingState::S4_MajorPacketDataLoaded);
-  // }
+  if (mFibLoadingState < EFibLoadingState::S4_FullyPacketDataLoaded)
+  {
+    qWarning() << "Packet FIG data seems inconsistent or not complete. Trying to activate the remaining packet services...";
+    mFibLoadingState = EFibLoadingState::S4_FullyPacketDataLoaded;
+    emit signal_fib_loaded_state(EFibLoadingState::S4_FullyPacketDataLoaded);
+  }
 }
 
 FibDecoder::SFigHeader FibDecoder::_get_fig_header(const u8 * const d) const

@@ -266,6 +266,7 @@ i16 FibDecoder::_subprocess_Fig0s3(const u8 * const d, const i16 used, const SFi
   fig0s3.SCId = getBits(d, bitOffset, 12);
 
   auto * const pConfig = _get_config_ptr(iFH.CN_Flag);
+
   if (const auto * const pFig0s3 = pConfig->get_Fig0s3_ServiceComponentPacketMode_of_SCId(fig0s3.SCId);
       pFig0s3 == nullptr)
   {
@@ -399,17 +400,15 @@ i16 FibDecoder::_subprocess_Fig0s8(const u8 * const d, const i16 used, const SFi
   i16 bitOffset = used * 8;
   const u32 SId = getLBits(d, bitOffset, iFH.PD_Flag == 1 ? 32 : 16);
   bitOffset += iFH.PD_Flag == 1 ? 32 : 16;
-  const u8 LS_Flag = getBits_1(d, bitOffset + 8);
-  auto * const pConfig = _get_config_ptr(iFH.CN_Flag);
 
   FibConfigFig0::SFig0s8_ServiceCompGlobalDef fig0s8;
   fig0s8.SId = SId;
   fig0s8.PD_Flag = iFH.PD_Flag;
-  fig0s8.LS_Flag = LS_Flag;
+  fig0s8.LS_Flag = getBits_1(d, bitOffset + 8);
   fig0s8.Ext_Flag = getBits_1(d, bitOffset);
   fig0s8.SCIdS = getBits_4(d, bitOffset + 4);
 
-  if (LS_Flag == 0) // short form
+  if (fig0s8.LS_Flag == 0) // short form
   {
     fig0s8.SubChId = getBits_6(d, bitOffset + 4 + 4 + 2);
     bitOffset += (fig0s8.Ext_Flag != 0 ? 16 + 8 : 16); // skip Rfa
@@ -419,6 +418,8 @@ i16 FibDecoder::_subprocess_Fig0s8(const u8 * const d, const i16 used, const SFi
     fig0s8.SCId = getBits(d, bitOffset + 4 + 4 + 1 + 3, 12);
     bitOffset += (fig0s8.Ext_Flag != 0 ? 24 + 8 : 24); // skip Rfa
   }
+
+  auto * const pConfig = _get_config_ptr(iFH.CN_Flag);
 
   if (const auto * const pFig0s8 = pConfig->get_Fig0s8_ServiceCompGlobalDef_of_SId(fig0s8.SId);
       pFig0s8 == nullptr)

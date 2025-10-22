@@ -63,7 +63,7 @@ private:
   mutable QMutex mMutex;
   u8 mPrevChangeFlag = 0;
   QTimer * mpTimerDataConsistencyCheck = nullptr;
-  QTimer * mpTimerPrintFigStatistic = nullptr;
+  QTimer * mpTimerCheckStateAndPrintFigs = nullptr;
   EFibLoadingState mFibLoadingState = EFibLoadingState::S0_Init;
   SUtcTimeSet mUtcTimeSet{};
   std::set<u8> mUnhandledFig0Set;
@@ -139,7 +139,7 @@ private:
 
 private slots:
   void _slot_timer_data_consitency_check();
-  void _slot_timer_print_FIGs_and_time_statistics() const;
+  void _slot_timer_check_state_and_print_FIGs();
 };
 
 #endif
