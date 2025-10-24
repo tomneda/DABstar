@@ -272,7 +272,7 @@ QString DabRadio::_get_scan_message(const bool iEndMsg) const
   s += (iEndMsg ? "Scan ended - Select a service on the left" : "Scanning channel: " + ui->cmbChannelSelector->currentText()) + "</span>";
   s += "<br><span style='color:lightblue; font-size:small;'>Found DAB channels: " + QString::number(mScanResult.NrChannels) + "</span>";
   s += "<br><span style='color:lightblue; font-size:small;'>Found audio services: " + QString::number(mScanResult.NrAudioServices) + "</span>";
-  s += "<br><span style='color:lightblue; font-size:small;'>Found non-audio services: " + QString::number(mScanResult.NrNonAudioServices) + "</span>";
+  s += "<br><span style='color:lightblue; font-size:small;'>Found packet services: " + QString::number(mScanResult.NrNonAudioServices) + "</span>";
   return s;
 }
 
@@ -701,7 +701,7 @@ void DabRadio::slot_handle_tdc_data(i32 frametype, i32 length)
   */
 void DabRadio::slot_change_in_configuration()
 {
-  qCWarning(sLogRadioInterface()) << "Configuration change is not supported yet";
+  qCWarning(sLogRadioInterface()) << "Configuration change is not supported yet -> Consider providing sample data where such a configuration change happens";
 
   //   if (!mIsRunning.load() || mpDabProcessor == nullptr)
 //   {
@@ -2090,7 +2090,7 @@ bool DabRadio::start_primary_and_secondary_service(const u32 iSId, const bool iS
   /*
    * This method can be called twice after all services are terminated and a new service is selected:
    * For a faster audio startup where only FIG 0/1 and FIG 0/2 are needed, iStartPrimaryAudioOnly == true.
-   * In this case the packet data are not retrieved. This happens afterwards with a second call to this method
+   * In this case the packet data are not retrieved. This happens afterward with a second call to this method
    * with iStartPrimaryAudioOnly == false where all necessary FIB data are given.
    * Calling this with iStartPrimaryAudioOnly == true is not mandatory.
    */
@@ -2361,30 +2361,38 @@ void DabRadio::_slot_fib_loaded_state(const IFibDecoder::EFibLoadingState iFibLo
     return;
   }
 
+  // mServiceList is mainly filled for audio in state S3_FullyAudioDataLoaded but for primary data services, also S4_FullyPacketDataLoaded should be evaluated
   mServiceList = mpDabProcessor->get_fib_decoder()->get_service_list();
 
-  ServiceListHandler::TSIdList SIdList;
-
-  // Fill service list with wanted (via filter) content
-  for (const auto & sl : mServiceList)
+  // In the service list we only collected audio services. But while scanning we run here also for packet data to update the scan statistics
+  if (mIsScanning || iFibLoadingState == IFibDecoder::EFibLoadingState::S3_FullyAudioDataLoaded)
   {
-    if (sl.isAudioChannel)
+    ServiceListHandler::TSIdList SIdList;
+
+    // Fill service list with wanted (via filter) content
+    for (const auto & sl : mServiceList)
     {
-      SIdList << sl.SId;
-      mpServiceListHandler->add_entry(mChannel.channelName, sl.serviceLabel, sl.SId);
+      if (sl.isAudioChannel) // some kind obsolete but to get sure
+      {
+        SIdList << sl.SId;
+        mpServiceListHandler->add_entry(mChannel.channelName, sl.serviceLabel, sl.SId);
+      }
+
+      if (mIsScanning)
+      {
+        _update_scan_statistics(sl); // collect statistics while scanning for audio and packet data
+      }
     }
 
+    // Crosscheck service list if a not more existing service is stored there (while scan the list was already cleaned up before)
     if (mIsScanning)
     {
-      _update_scan_statistics(sl); // collect statistics while scanning
+      mpServiceListHandler->delete_not_existing_SId_at_channel(mChannel.channelName, SIdList);
     }
   }
 
-  if (!mIsScanning) // mChannel.nextService is invalid while scanning
+  if (!mIsScanning) // mChannel.SId_next is invalid while scanning
   {
-    // Crosscheck service list if a not more existing service is stored there (while scan the list was already cleaned up before)
-    mpServiceListHandler->delete_not_existing_SId_at_channel(mChannel.channelName, SIdList);
-
     if (iFibLoadingState >= IFibDecoder::EFibLoadingState::S4_FullyPacketDataLoaded && mChannel.SId_next > 0)
     {
       start_primary_and_secondary_service(mChannel.SId_next, false);
