@@ -30,7 +30,7 @@ void FibDecoder::_process_Fig1(const u8 * const d)
     if (mUnhandledFig1Set.find(extension) == mUnhandledFig1Set.end()) // print message only once
     {
       const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
-      if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded) qDebug().noquote() << QString("FIG 1/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
+      if (mFibLoadingState >= EFibLoadingState::S5_DeferredDataLoaded) qDebug().noquote() << QString("FIG 1/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig1Set.emplace(extension);
     }
   }

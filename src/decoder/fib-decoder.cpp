@@ -12,8 +12,8 @@
   static constexpr bool cShowFigDataOverview = false;
   static constexpr bool cShowFigDataStatistics = false;
 #else
-  static constexpr bool cShowFigDataOverview = true;
-  static constexpr bool cShowFigDataStatistics = true;
+  static constexpr bool cShowFigDataOverview = false;
+  static constexpr bool cShowFigDataStatistics = false;
 #endif
 
 static constexpr i32 cFibConsistencyCheckTime_ms =  300;  // max time necessary to collect new FIG 0/1 and FIG 0/2 data (measured 191 ms)
@@ -335,17 +335,16 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
     return false;
   }
 
-  const i8 subChId = pFig0s3->SubChId;
-  const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(subChId);
+  const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(pFig0s3->SubChId);
 
   if (pFig0s1 == nullptr)
   {
-    qWarning() << "SubChId" << subChId << "in FIG 0/1 not found";
+    qWarning() << "SubChId" << pFig0s3->SubChId << "in FIG 0/1 not found";
     return false;
   }
 
   const u32 SId = iFig0s2.get_SId();
-  const auto * const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceCompGlobalDef_of_SId(SId); // TODO: only for long form valid (with SCId)?
+  const auto * const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SCId(SId); // TODO: only for long form valid (with SCId)?
 
   if (pFig0s8 == nullptr)
   {
@@ -353,51 +352,22 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
     return false;
   }
 
-  const auto SCIdS = pFig0s8->SCIdS;
-  const auto pFig0s13 = mpFibConfigFig0Curr->get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(SId, SCIdS);
+  const auto pFig0s13 = mpFibConfigFig0Curr->get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(SId, pFig0s8->SCIdS);
 
   if (pFig0s13 == nullptr || pFig0s13->NumUserApps < 1)
   {
-    qWarning() << "SId" << SId << "and SCIdS" << SCIdS << "in FIG 0/13 not found";
+    qWarning() << "SId" << SId << "and SCIdS" << pFig0s8->SCIdS << "in FIG 0/13 not found";
     return false;
   }
 
-  const auto * const pFig0s14 = mpFibConfigFig0Curr->get_Fig0s14_SubChannelOrganization_of_SubChId(subChId);
-
-  // if (pFig0s14 == nullptr)
-  // {
-  //   qDebug() << "SubChId" << subChId << "in FIG 0/14 not found -> no FEC scheme for packet data";
-  // }
-
-  const auto * const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(SId, pFig0s8->SCIdS);
-  const auto * const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(SId);
-
-  if (pFig1s5 == nullptr)
-  {
-    if (pFig1s4 == nullptr)
-    {
-      return false;
-    }
-    if (opPD != nullptr)
-    {
-      opPD->serviceLabel = pFig1s4->Name;
-      opPD->serviceLabelShort = pFig1s4->NameShort;
-    }
-  }
-  else
-  {
-    if (opPD != nullptr)
-    {
-      opPD->serviceLabel = pFig1s5->Name;
-      opPD->serviceLabelShort = pFig1s5->NameShort;
-    }
-  }
+  const auto * const pFig0s14 = mpFibConfigFig0Curr->get_Fig0s14_SubChannelOrganization_of_SubChId(pFig0s3->SubChId);
+  const auto * const pFig0s5 = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SCId(iFig0s2.ServiceComp_C.TMId11.SCId);
 
   if (opPD != nullptr)
   {
     opPD->SId = SId;
-    opPD->SCIdS = SCIdS;
-    opPD->SubChId = subChId;
+    opPD->SCIdS = pFig0s8->SCIdS;
+    opPD->SubChId = pFig0s3->SubChId;
     opPD->CuStartAddr = pFig0s1->StartAddr;
     opPD->shortForm = pFig0s1->ShortForm;
     opPD->protLevel = pFig0s1->ProtectionLevel;
@@ -414,7 +384,44 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
       opPD->appTypeVec[i] = pFig0s13->UserAppVec[i].UserAppType;
     }
     if (opPD->appTypeVec.empty()) opPD->appTypeVec.emplace_back(-1); // ensure at least one element
+    if (pFig0s5 != nullptr) opPD->language = pFig0s5->Language; else opPD->language = std::nullopt;
     opPD->isDefined = true; // TODO: obsolete, as vector element would not be existing else
+  }
+
+  // get service labels
+  if (iFig0s2.ServiceComp_C.PS_Flag == 0) // is secondary
+  {
+    const auto * const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(SId, pFig0s8->SCIdS);
+
+    if (pFig1s4 != nullptr)
+    {
+      if (opPD != nullptr)
+      {
+        opPD->serviceLabel = pFig1s4->Name;
+        opPD->serviceLabelShort = pFig1s4->NameShort;
+      }
+    }
+    else
+    {
+      return false;
+    }
+  }
+  else // is primary (PS_Flag == 1)
+  {
+    const auto * const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(SId);
+
+    if (pFig1s5 != nullptr)
+    {
+      if (opPD != nullptr)
+      {
+        opPD->serviceLabel = pFig1s5->Name;
+        opPD->serviceLabelShort = pFig1s5->NameShort;
+      }
+    }
+    else
+    {
+      return false;
+    }
   }
 
   return true;
@@ -738,7 +745,7 @@ void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerNam
 
   if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded)
   {
-    qWarning() << "Fast FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffTimeMax.count();
+    qInfo() << "FIB data collection were already finished for" << iCallerName << ", diff time to last [ms]" << diff.count() << ", max needed time [ms]" << mDiffTimeMax.count() << "-> reload data";
     mFibLoadingState = EFibLoadingState::S5_DeferredDataLoaded;
     emit signal_fib_loaded_state(EFibLoadingState::S5_DeferredDataLoaded);
     return;

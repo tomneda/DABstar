@@ -52,7 +52,7 @@ void FibDecoder::_process_Fig0(const u8 * const d)
     if (mUnhandledFig0Set.find(extension) == mUnhandledFig0Set.end()) // print message only once
     {
       const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
-      if (mFibLoadingState >= EFibLoadingState::S4_FullyPacketDataLoaded) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
+      if (mFibLoadingState >= EFibLoadingState::S5_DeferredDataLoaded) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig0Set.emplace(extension);
     }
   }
@@ -421,7 +421,7 @@ i16 FibDecoder::_subprocess_Fig0s8(const u8 * const d, const i16 used, const SFi
 
   auto * const pConfig = _get_config_ptr(iFH.CN_Flag);
 
-  if (const auto * const pFig0s8 = pConfig->get_Fig0s8_ServiceCompGlobalDef_of_SId(fig0s8.SId);
+  if (const auto * const pFig0s8 = pConfig->get_Fig0s8_ServiceCompGlobalDef_of_SId_SCIdS(fig0s8.SId, fig0s8.SCIdS);
       pFig0s8 == nullptr)
   {
     fig0s8.set_current_time();

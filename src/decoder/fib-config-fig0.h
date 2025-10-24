@@ -232,7 +232,8 @@ public:
   const SFig0s5_ServiceComponentLanguage    * get_Fig0s5_ServiceComponentLanguage_of_SubChId(u8 iSubChId) const;
   const SFig0s5_ServiceComponentLanguage    * get_Fig0s5_ServiceComponentLanguage_of_SCId(u8 iSCId) const;
   const SFig0s7_ConfigurationInformation    * get_Fig0s7_ConfigurationInformation() const;
-  const SFig0s8_ServiceCompGlobalDef        * get_Fig0s8_ServiceCompGlobalDef_of_SId(u32 iSId) const;
+  const SFig0s8_ServiceCompGlobalDef        * get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SubChId(u32 iSId) const;
+  const SFig0s8_ServiceCompGlobalDef        * get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SCId(u32 iSId) const;
   const SFig0s8_ServiceCompGlobalDef        * get_Fig0s8_ServiceCompGlobalDef_of_SId_SCIdS(u32 iSId, u8 iSCIdS) const;
   const SFig0s9_CountryLtoInterTab          * get_Fig0s9_CountryLtoInterTab() const;
   const SFig0s13_UserApplicationInformation * get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;

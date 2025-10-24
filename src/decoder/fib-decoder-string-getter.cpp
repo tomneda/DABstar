@@ -99,7 +99,8 @@ QString FibDecoder::_get_packet_data_str(const FibConfigFig0::SFig0s2_BasicServi
   SPacketData pd;
   if (!_get_data_for_packet_service(iFig0s2, 0, &pd))
   {
-    return "-;-;-;-;-;-;-;-;-;-;-;-;";
+    return "Inconsistent data;-;" + hex_str(iFig0s2.get_SId()) + ";-;-;-;-;-;-;-;-;-;";
+    // return "-;-;-;-;-;-;-;-;-;-;-;-;";
   }
 
   QString str;

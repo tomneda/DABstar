@@ -39,11 +39,11 @@ void FibConfigFig0::reset()
 
 const FibConfigFig0::SFig0s1_BasicSubChannelOrganization * FibConfigFig0::get_Fig0s1_BasicSubChannelOrganization_of_SubChId(const i32 iSubChId) const
 {
-  for (auto & elem : Fig0s1_BasicSubChannelOrganizationVec)
+  for (auto & fig0s1 : Fig0s1_BasicSubChannelOrganizationVec)
   {
-    if (elem.SubChId == iSubChId)
+    if (fig0s1.SubChId == iSubChId)
     {
-      return &elem;
+      return &fig0s1;
     }
   }
   return nullptr;
@@ -51,12 +51,12 @@ const FibConfigFig0::SFig0s1_BasicSubChannelOrganization * FibConfigFig0::get_Fi
 
 const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fig0s2_BasicService_ServiceCompDef_of_SId(const u32 iSId) const
 {
-  for (const auto & elem : Fig0s2_BasicService_ServiceCompDefVec)
+  for (const auto & fig0s2 : Fig0s2_BasicService_ServiceCompDefVec)
   {
-    const u32 SId = (elem.PD_Flag == 0 ? elem.PD0.SId : elem.PD1.SId);
+    const u32 SId = (fig0s2.PD_Flag == 0 ? fig0s2.PD0.SId : fig0s2.PD1.SId);
     if (SId == iSId)
     {
-      return &elem;
+      return &fig0s2;
     }
   }
   return nullptr;
@@ -64,12 +64,12 @@ const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fi
 
 const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(const u32 iSId, const i32 iScIdx) const
 {
-  for (auto & elem : Fig0s2_BasicService_ServiceCompDefVec)
+  for (auto & fig0s2 : Fig0s2_BasicService_ServiceCompDefVec)
   {
-    const u32 SId = elem.get_SId();
-    if (SId == iSId && elem.ServiceComp_C_index == iScIdx)
+    const u32 SId = fig0s2.get_SId();
+    if (SId == iSId && fig0s2.ServiceComp_C_index == iScIdx)
     {
-      return &elem;
+      return &fig0s2;
     }
   }
   return nullptr;
@@ -101,11 +101,11 @@ const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef * FibConfigFig0::get_Fi
 
 const FibConfigFig0::SFig0s3_ServiceComponentPacketMode * FibConfigFig0::get_Fig0s3_ServiceComponentPacketMode_of_SCId(const i32 iSCId) const
 {
-  for (auto & elem : Fig0s3_ServiceComponentPacketModeVec)
+  for (auto & fig0s3 : Fig0s3_ServiceComponentPacketModeVec)
   {
-    if (elem.SCId == iSCId)
+    if (fig0s3.SCId == iSCId)
     {
-      return &elem;
+      return &fig0s3;
     }
   }
   return nullptr;
@@ -156,13 +156,25 @@ const FibConfigFig0::SFig0s8_ServiceCompGlobalDef * FibConfigFig0::get_Fig0s8_Se
   return nullptr;
 }
 
-const FibConfigFig0::SFig0s8_ServiceCompGlobalDef * FibConfigFig0::get_Fig0s8_ServiceCompGlobalDef_of_SId(const u32 iSId) const
+const FibConfigFig0::SFig0s8_ServiceCompGlobalDef * FibConfigFig0::get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SubChId(const u32 iSId) const
 {
-  for (auto & elem : Fig0s8_ServiceCompGlobalDefVec)
+  for (auto & fig0s8 : Fig0s8_ServiceCompGlobalDefVec)
   {
-    if (elem.SId == iSId)
+    if (fig0s8.LS_Flag == 0 && fig0s8.SId == iSId) // only entries with SubChId
     {
-      return &elem;
+      return &fig0s8;
+    }
+  }
+  return nullptr;
+}
+
+const FibConfigFig0::SFig0s8_ServiceCompGlobalDef * FibConfigFig0::get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SCId(const u32 iSId) const
+{
+  for (auto & fig0s8 : Fig0s8_ServiceCompGlobalDefVec)
+  {
+    if (fig0s8.LS_Flag == 1 && fig0s8.SId == iSId) // only entries with SCId
+    {
+      return &fig0s8;
     }
   }
   return nullptr;
@@ -179,11 +191,11 @@ const FibConfigFig0::SFig0s9_CountryLtoInterTab * FibConfigFig0::get_Fig0s9_Coun
 
 const FibConfigFig0::SFig0s13_UserApplicationInformation * FibConfigFig0::get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(const u32 iSId, const i32 iSCIdS) const
 {
-  for (auto & elem : Fig0s13_UserApplicationInformationVec)
+  for (auto & fig0s13 : Fig0s13_UserApplicationInformationVec)
   {
-    if (elem.SId == iSId && elem.SCIdS == iSCIdS)
+    if (fig0s13.SId == iSId && fig0s13.SCIdS == iSCIdS)
     {
-      return &elem;
+      return &fig0s13;
     }
   }
   return nullptr;
@@ -191,11 +203,11 @@ const FibConfigFig0::SFig0s13_UserApplicationInformation * FibConfigFig0::get_Fi
 
 const FibConfigFig0::SFig0s14_SubChannelOrganization * FibConfigFig0::get_Fig0s14_SubChannelOrganization_of_SubChId(const i32 iSubChId) const
 {
-  for (auto & elem : Fig0s14_SubChannelOrganizationVec)
+  for (auto & fig0s14 : Fig0s14_SubChannelOrganizationVec)
   {
-    if (elem.SubChId == iSubChId)
+    if (fig0s14.SubChId == iSubChId)
     {
-      return &elem;
+      return &fig0s14;
     }
   }
   return nullptr;

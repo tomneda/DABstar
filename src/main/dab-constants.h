@@ -146,13 +146,13 @@ struct SPacketData : SDescriptorType
   std::vector<i16> appTypeVec;
   i16 PacketAddress;
   i32 SCIdS;
+  std::optional<i16> language = std::nullopt;;
   SPacketData() { TMId = ETMId::PacketModeData; }
 };
 
 struct SAudioData : SDescriptorType
 {
   i16 ASCTy;
-  // i16 language;
   // i16 programType;
   // i16 compnr;
   // i32 fmFrequency = -1;
