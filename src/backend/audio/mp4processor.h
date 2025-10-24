@@ -112,7 +112,7 @@ signals:
   void signal_show_rs_errors(i32);
   void signal_show_aac_errors(i32);
   void signal_is_stereo(bool);
-  void signal_new_frame();
+  void signal_new_aac_frame();
   void signal_show_rs_corrections(i32, i32);
 };
 

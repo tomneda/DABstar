@@ -366,6 +366,8 @@ set(${objectName}_SRCS
         ${${objectName}_SRCS}
         src/main/main.cpp
         src/main/dabradio.cpp
+        src/main/dabradio_ui.cpp
+        src/main/dabradio_audio.cpp
         src/main/dab-processor.cpp
         src/support/techdata.cpp
         src/eti-handler/eti-generator.cpp

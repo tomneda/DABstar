@@ -63,7 +63,7 @@ Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> *
   connect(this, &Mp4Processor::signal_show_rs_errors, iRI, &DabRadio::slot_show_rs_errors);
   connect(this, &Mp4Processor::signal_show_aac_errors, iRI, &DabRadio::slot_show_aac_errors);
   connect(this, &Mp4Processor::signal_is_stereo, iRI, &DabRadio::slot_set_stereo);
-  connect(this, &Mp4Processor::signal_new_frame, iRI, &DabRadio::slot_new_frame);
+  connect(this, &Mp4Processor::signal_new_aac_frame, iRI, &DabRadio::slot_new_aac_mp2_frame);
   connect(this, &Mp4Processor::signal_show_rs_corrections, iRI, &DabRadio::slot_show_rs_corrections);
 
 #ifdef  __WITH_FDK_AAC__
@@ -325,7 +325,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 
       mSum_good_crcs++;
       mpFrameBuffer->put_data_into_ring_buffer(aacStreamBuffer.data(), segmentSize); // This is used by the "ACC dump button" in the TechData widget
-      emit signal_new_frame();
+      emit signal_new_aac_frame();
 
       // first handle the pad data if any
       if (((mOutVec[mAuStartArr[auIdx + 0]] >> 5) & 07) == 4)

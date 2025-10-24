@@ -224,7 +224,7 @@ Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * const i
 
   connect(this, &Mp2Processor::signal_show_frameErrors, mr, &DabRadio::slot_show_frame_errors);
   connect(this, &Mp2Processor::signal_new_audio, mr, &DabRadio::slot_new_audio);
-  connect(this, &Mp2Processor::signal_new_frame, mr, &DabRadio::slot_new_frame);
+  connect(this, &Mp2Processor::signal_new_mp2_frame, mr, &DabRadio::slot_new_aac_mp2_frame);
   connect(this, &Mp2Processor::signal_is_stereo, mr, &DabRadio::slot_set_stereo);
 
   Voffs = 0;
@@ -696,7 +696,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
 
           if (audioBuffer->get_ring_buffer_read_available() > sampleRate / 8)
           {
-            emit signal_new_frame();
+            emit signal_new_mp2_frame();
             emit signal_new_audio(2 * (i32)KJMP2_SAMPLES_PER_FRAME, sampleRate, 0);
           }
         }

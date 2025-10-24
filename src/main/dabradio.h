@@ -323,7 +323,7 @@ private:
   void stop_audio_frame_dumping();
   void start_channel(const QString &, u32 iFastSelectSId = 0);
   void stop_channel();
-  void clean_up();
+  void cleanup_ui();
   void stop_services(bool iStopAlsoGlobServices);
   bool start_primary_and_secondary_service(u32 iSId, bool iStartPrimaryAudioOnly);
   void local_select(const QString &, u32 iSId);
@@ -364,6 +364,8 @@ private:
   void _update_audio_data_addon(u32 iSId) const;
   void _update_scan_statistics(const SServiceId & sl);
   void _show_or_hide_windows_from_config();
+
+  void _emphasize_pushbutton(QPushButton * ipPB, bool iEmphasize) const;
 
   void _initialize_ui_buttons();
   void _initialize_status_info();
@@ -418,7 +420,7 @@ public slots:
   void slot_fib_time(const IFibDecoder::SUtcTimeSet & fibTimeInfo);
   void slot_start_announcement(const QString &, i32);
   void slot_stop_announcement(const QString &, i32);
-  void slot_new_frame();
+  void slot_new_aac_mp2_frame();
   void slot_show_clock_error(f32 e);
   void slot_set_epg_data(i32, i32, const QString &, const QString &);
   void slot_epg_timer_timeout();
