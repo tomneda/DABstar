@@ -33,6 +33,46 @@
 #include  "openfiledialog.h"
 #include  "setting-helper.h"
 
+bool SegmentedTableWidgetItem::operator<(const QTableWidgetItem & iOther) const
+{
+  // returning true then current and another element are swapped
+  const QVariant currData = data(Qt::UserRole);
+  const QVariant otherData = iOther.data(Qt::UserRole);
+
+  if (currData.isNull() || otherData.isNull())
+  {
+    return false;
+  }
+
+  const QList<QVariant> currList = currData.toList();
+  const QList<QVariant> otherList = otherData.toList();
+
+  const i32 currSegmentId = currList.first().toInt();
+  const i32 otherSegmentId = otherList.first().toInt();
+
+  const char currRowType = currList.last().toChar().toLatin1();
+  const char otherRowType = otherList.last().toChar().toLatin1();
+
+  if (currRowType == 'D' && otherRowType == 'D' && currSegmentId == otherSegmentId) // look only to data rows from same segment
+  {
+    // try to interpret data first as a (positive) number
+    bool currOk = false;
+    const u32 currVal = text().toUInt(&currOk);
+    bool otherOk = false;
+    const u32 otherVal = iOther.text().toUInt(&otherOk);
+
+    if (currOk && otherOk)
+    {
+      return currVal < otherVal;
+    }
+
+    return text().toUpper() < iOther.text().toUpper();
+  }
+
+  return false;
+}
+
+
 ContentTable::ContentTable(DabRadio * ipDabRadio, QSettings * /*s*/, const QString & iChannel, i32 iNumCols)
   : mChannel(iChannel)
   , mNumColumns(iNumCols)
@@ -47,8 +87,6 @@ ContentTable::ContentTable(DabRadio * ipDabRadio, QSettings * /*s*/, const QStri
   mpTableWidget.reset(new QTableWidget(0, iNumCols));
   mpTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
   mpTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-  mpTableWidget->setColumnWidth(0, 150);
-  mpTableWidget->setColumnWidth(4, 150);
   mpScrollArea->setWidget(mpTableWidget.get());
 
   connect(mpTableWidget.get(), &QTableWidget::cellClicked, this, &ContentTable::_slot_select_service);
@@ -64,6 +102,8 @@ void ContentTable::show() const
 {
   mpTableWidget->resizeColumnsToContents();
   mpScrollArea->show();
+  mpTableWidget->setSortingEnabled(true);
+  mpTableWidget->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void ContentTable::hide() const
@@ -86,25 +126,17 @@ void ContentTable::add_line(const QString & s)
     return;
   }
 
-  QColor fg, bg;
+  QColor fg;
 
-  switch (h.at(0).front().toLatin1())
+  const char lineType = h.at(0).front().toLatin1();
+
+  switch (lineType)
   {
-  case 'E': fg = Qt::black;
-    bg = Qt::black;
-    break; // Empty line
-  case 'C': fg = Qt::yellow;
-    bg = Qt::white;
-    break; // Caption
-  case 'H': fg = 0xFF8800;
-    bg = Qt::white;
-    break; // Header
-  case 'D': fg = Qt::cyan;
-    bg = Qt::white;
-    break; // Data
-  case 'I': fg = Qt::gray;
-    bg = Qt::white;
-    break; // Data
+  case 'E': fg = Qt::black;  mSegmentId++; break; // Empty line
+  case 'C': fg = Qt::yellow; mSegmentId++; break; // Caption
+  case 'H': fg = 0xFF8800;   mSegmentId++; break; // Header
+  case 'D': fg = Qt::cyan;                 break; // Data, keep segment number
+  case 'I': fg = Qt::gray;   mSegmentId++; break; // Comment
   default:
     qWarning() << "Unknown line type" << h.at(0).at(0);
     return;
@@ -115,14 +147,16 @@ void ContentTable::add_line(const QString & s)
     if (i <= mNumColumns)
     {
       auto * item = mpTableWidget->item(row, i - 1);
+
+      QList<QVariant> itemData;
+      itemData.append(mSegmentId);
+      itemData.append(QChar(lineType));
+      item->setData(Qt::UserRole, itemData);
+
       QFont font = item->font();
       font.setBold(true);
       item->setFont(font);
-      // if (bg != Qt::black || fg != Qt::black)
-      {
-        // item->setBackground(bg);
-        item->setForeground(fg);
-      }
+      item->setForeground(fg);
       item->setText(h.at(i));
     }
   }
@@ -152,7 +186,7 @@ i16 ContentTable::_add_row() const
 
   for (i32 i = 0; i < mNumColumns; i++)
   {
-    QTableWidgetItem * item = new QTableWidgetItem; // there is no memory leakage here
+    QTableWidgetItem * item = new SegmentedTableWidgetItem; // there is no memory leakage here
     item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     mpTableWidget->setItem(row, i, item);
   }

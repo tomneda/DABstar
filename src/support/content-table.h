@@ -38,18 +38,22 @@
 #include <QTableWidgetItem>
 #include <QObject>
 #include <QString>
-#include <QByteArray>
 
 class DabRadio;
 class QSettings;
-class SAudioData;
+
+class SegmentedTableWidgetItem : public QTableWidgetItem
+{
+public:
+  bool operator<(const QTableWidgetItem & iOther) const override;
+};
 
 class ContentTable : public QObject
 {
 Q_OBJECT
 public:
-  ContentTable(DabRadio *, QSettings *, const QString &, i32);
-  ~ContentTable();
+  ContentTable(DabRadio * ipDabRadio, QSettings * s, const QString & iChannel, i32 iNumCols);
+  ~ContentTable() override;
 
   void show() const;
   void hide() const;
@@ -59,10 +63,11 @@ public:
 
 private:
   const QString mChannel;
-  const i32 mNumColumns = 0;
+  const i32 mNumColumns;
   DabRadio * const mpDabRadio;
   QScopedPointer<QScrollArea> mpScrollArea;
   QScopedPointer<QTableWidget> mpTableWidget;
+  i32 mSegmentId = 0;
 
   i16 _add_row() const;
   u32 _hex_to_u32(const std::string & iHexString) const;
