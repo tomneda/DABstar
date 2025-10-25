@@ -48,12 +48,12 @@ public:
   bool operator<(const QTableWidgetItem & iOther) const override;
 };
 
-class ContentTable : public QObject
+class FibContentTable : public QObject
 {
 Q_OBJECT
 public:
-  ContentTable(DabRadio * ipDabRadio, QSettings * s, const QString & iChannel, i32 iNumCols);
-  ~ContentTable() override;
+  FibContentTable(DabRadio * ipDabRadio, QSettings * s, const QString & iChannel, i32 iNumCols);
+  ~FibContentTable() override;
 
   void show() const;
   void hide() const;

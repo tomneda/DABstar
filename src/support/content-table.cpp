@@ -73,7 +73,7 @@ bool SegmentedTableWidgetItem::operator<(const QTableWidgetItem & iOther) const
 }
 
 
-ContentTable::ContentTable(DabRadio * ipDabRadio, QSettings * /*s*/, const QString & iChannel, i32 iNumCols)
+FibContentTable::FibContentTable(DabRadio * ipDabRadio, QSettings * /*s*/, const QString & iChannel, i32 iNumCols)
   : mChannel(iChannel)
   , mNumColumns(iNumCols)
   , mpDabRadio(ipDabRadio)
@@ -89,16 +89,16 @@ ContentTable::ContentTable(DabRadio * ipDabRadio, QSettings * /*s*/, const QStri
   mpTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
   mpScrollArea->setWidget(mpTableWidget.get());
 
-  connect(mpTableWidget.get(), &QTableWidget::cellClicked, this, &ContentTable::_slot_select_service);
-  connect(mpTableWidget.get(), &QTableWidget::cellDoubleClicked, this, &ContentTable::_slot_dump);
+  connect(mpTableWidget.get(), &QTableWidget::cellClicked, this, &FibContentTable::_slot_select_service);
+  connect(mpTableWidget.get(), &QTableWidget::cellDoubleClicked, this, &FibContentTable::_slot_dump);
 }
 
-ContentTable::~ContentTable()
+FibContentTable::~FibContentTable()
 {
   Settings::FibContentViewer::posAndSize.write_widget_geometry(mpScrollArea.get());;
 }
 
-void ContentTable::show() const
+void FibContentTable::show() const
 {
   mpTableWidget->resizeColumnsToContents();
   mpScrollArea->show();
@@ -106,17 +106,17 @@ void ContentTable::show() const
   mpTableWidget->sortByColumn(0, Qt::AscendingOrder);
 }
 
-void ContentTable::hide() const
+void FibContentTable::hide() const
 {
   mpScrollArea->hide();
 }
 
-bool ContentTable::is_visible() const
+bool FibContentTable::is_visible() const
 {
   return !mpScrollArea->isHidden();
 }
 
-void ContentTable::add_line(const QString & s)
+void FibContentTable::add_line(const QString & s)
 {
   i32 row = _add_row();
   QStringList h = s.split(";");
@@ -162,7 +162,7 @@ void ContentTable::add_line(const QString & s)
   }
 }
 
-void ContentTable::dump(FILE * dumpFilePointer) const
+void FibContentTable::dump(FILE * dumpFilePointer) const
 {
   if (dumpFilePointer == nullptr)
   {
@@ -179,7 +179,7 @@ void ContentTable::dump(FILE * dumpFilePointer) const
   }
 }
 
-i16 ContentTable::_add_row() const
+i16 FibContentTable::_add_row() const
 {
   const i16 row = mpTableWidget->rowCount();
   mpTableWidget->insertRow(row);
@@ -193,7 +193,7 @@ i16 ContentTable::_add_row() const
   return row;
 }
 
-uint32_t ContentTable::_hex_to_u32(const std::string & iHexString) const
+uint32_t FibContentTable::_hex_to_u32(const std::string & iHexString) const
 {
   try
   {
@@ -211,7 +211,7 @@ uint32_t ContentTable::_hex_to_u32(const std::string & iHexString) const
   }
 }
 
-void ContentTable::_slot_select_service(const i32 iRowIdx, const i32 /*iColIdx*/)
+void FibContentTable::_slot_select_service(const i32 iRowIdx, const i32 /*iColIdx*/)
 {
   QTableWidgetItem * theItem = mpTableWidget->item(iRowIdx, 2);
 
@@ -226,7 +226,7 @@ void ContentTable::_slot_select_service(const i32 iRowIdx, const i32 /*iColIdx*/
   emit signal_go_service_id(serviceId);
 }
 
-void ContentTable::_slot_dump(i32 /*row*/, i32 /*column*/)
+void FibContentTable::_slot_dump(i32 /*row*/, i32 /*column*/)
 {
   OpenFileDialog filenameFinder(&Settings::Storage::instance());
   FILE * dumpFile = filenameFinder.open_content_dump_file_ptr(mChannel);

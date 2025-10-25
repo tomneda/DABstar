@@ -943,24 +943,24 @@ void DabRadio::slot_name_of_ensemble(const i32 iEId, const QString & iEnsName, c
 
 void DabRadio::_slot_handle_content_button()
 {
-  if (mpContentTable != nullptr)
+  if (mpFibContentTable != nullptr)
   {
-    const bool isShown = mpContentTable->is_visible();
-    mpContentTable->hide();
-    mpContentTable.reset();
+    const bool isShown = mpFibContentTable->is_visible();
+    mpFibContentTable->hide();
+    mpFibContentTable.reset();
     if (isShown) return;
   }
 
   i32 numCols = 0;
   const QStringList s = mpDabProcessor->get_fib_decoder()->get_fib_content_str_list(numCols); // every list entry is one line
-  mpContentTable.reset(new ContentTable(this, &Settings::Storage::instance(), mChannel.channelName, numCols));
-  connect(mpContentTable.get(), &ContentTable::signal_go_service_id, this, &DabRadio::slot_handle_fib_content_selector);
+  mpFibContentTable.reset(new FibContentTable(this, &Settings::Storage::instance(), mChannel.channelName, numCols));
+  connect(mpFibContentTable.get(), &FibContentTable::signal_go_service_id, this, &DabRadio::slot_handle_fib_content_selector);
 
   for (const auto & sl : s)
   {
-    mpContentTable->add_line(sl);
+    mpFibContentTable->add_line(sl);
   }
-  mpContentTable->show();
+  mpFibContentTable->show();
 }
 
 void DabRadio::_slot_handle_prev_service_button()

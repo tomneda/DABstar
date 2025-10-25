@@ -222,7 +222,7 @@ private:
   QScopedPointer<HttpHandler> mpHttpHandler;
   ProcessParams mProcessParams;
   const QString mVersionStr{PRJ_VERS};
-  QScopedPointer<ContentTable> mpContentTable;
+  QScopedPointer<FibContentTable> mpFibContentTable;
   FILE * mpLogFile = nullptr;
   SChannelDescriptor mChannel{};
   i32 mMaxDistance = -1;

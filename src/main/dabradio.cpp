@@ -725,11 +725,11 @@ void DabRadio::_slot_terminate_process()
 
   mpTechDataWidget->hide();
 
-  if (mpContentTable != nullptr)
+  if (mpFibContentTable != nullptr)
   {
     // mpContentTable->clearTable();
-    mpContentTable->hide();
-    mpContentTable.reset();
+    mpFibContentTable->hide();
+    mpFibContentTable.reset();
   }
 
   mBandHandler.saveSettings();
@@ -1596,10 +1596,10 @@ void DabRadio::stop_channel()
 
   emit signal_stop_audio();
 
-  if (mpContentTable != nullptr)
+  if (mpFibContentTable != nullptr)
   {
-    mpContentTable->hide();
-    mpContentTable.reset();
+    mpFibContentTable->hide();
+    mpFibContentTable.reset();
   }
 
   // note framedumping - if any - was already stopped
