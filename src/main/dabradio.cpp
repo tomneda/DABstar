@@ -1777,69 +1777,6 @@ void DabRadio::_go_to_next_channel_while_scanning()
   }
 }
 
-// In those case we are sure not to have an operating dabProcessor, we hide some buttons
-void DabRadio::enable_ui_elements_for_safety(const bool iEnable)
-{
-  mConfig.dumpButton->setEnabled(iEnable);
-  mConfig.etiButton->setEnabled(iEnable);
-  ui->btnToggleFavorite->setEnabled(iEnable);
-  ui->btnPrevService->setEnabled(iEnable);
-  ui->btnNextService->setEnabled(iEnable);
-  ui->cmbChannelSelector->setEnabled(iEnable);
-  ui->btnFib->setEnabled(iEnable);
-}
-
-void DabRadio::_slot_handle_mute_button()
-{
-  _slot_update_mute_state(!mMutingActive);
-}
-
-void DabRadio::_slot_update_mute_state(const bool iMute)
-{
-  mMutingActive = iMute;
-  ui->btnMuteAudio->setIcon(QIcon(mMutingActive ? ":res/icons/muted24.png" : ":res/icons/unmuted24.png"));
-  ui->btnMuteAudio->setIconSize(QSize(24, 24));
-  ui->btnMuteAudio->setFixedSize(QSize(32, 32));
-  signal_audio_mute(mMutingActive);
-}
-
-void DabRadio::_update_channel_selector(const QString & iChannel) const
-{
-  if (iChannel != "")
-  {
-    i32 k = ui->cmbChannelSelector->findText(iChannel);
-    if (k != -1)
-    {
-      ui->cmbChannelSelector->setCurrentIndex(k);
-    }
-  }
-  else
-  {
-    ui->cmbChannelSelector->setCurrentIndex(0);
-  }
-}
-
-void DabRadio::_update_channel_selector(i32 index)
-{
-  if (ui->cmbChannelSelector->currentIndex() == index)
-  {
-    return;
-  }
-
-  // TODO: why is that so complicated?
-  disconnect(ui->cmbChannelSelector, &QComboBox::textActivated, this, &DabRadio::_slot_handle_channel_selector);
-  ui->cmbChannelSelector->blockSignals(true);
-  emit signal_set_new_channel(index);
-
-  while (ui->cmbChannelSelector->currentIndex() != index)
-  {
-    usleep(2000);
-  }
-  ui->cmbChannelSelector->blockSignals(false);
-  connect(ui->cmbChannelSelector, &QComboBox::textActivated, this, &DabRadio::_slot_handle_channel_selector);
-}
-
-
 /////////////////////////////////////////////////////////////////////////
 // External configuration items				//////
 
@@ -1867,14 +1804,6 @@ void DabRadio::slot_epg_timer_timeout()
   // TODO: make this EPG true!
   for (const auto & serv: mServiceList)
   {
-    // if (serv.name.contains("-EPG ", Qt::CaseInsensitive) ||
-    //     serv.name.contains(" EPG   ", Qt::CaseInsensitive) ||
-    //     serv.name.contains("Spored", Qt::CaseInsensitive) ||
-    //     serv.name.contains("NivaaEPG", Qt::CaseInsensitive) ||
-    //     serv.name.contains("SPI", Qt::CaseSensitive) ||
-    //     serv.name.contains("BBC Guide", Qt::CaseInsensitive) ||
-    //     serv.name.contains("EPG_", Qt::CaseInsensitive) ||
-    //     serv.name.startsWith("EPG ", Qt::CaseInsensitive))
     if (serv.hasSpiEpgData)
     {
       std::vector<SPacketData> pdVec;

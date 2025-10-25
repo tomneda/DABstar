@@ -338,7 +338,7 @@ private:
   QString generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData, const bool iStoreAsDir) const;
   QString generate_file_path(const QString & iBasePath, const QString & iFileName, bool iStoreAsDir) const;
 
-  void enable_ui_elements_for_safety(bool iEnable);
+  void enable_ui_elements_for_safety(bool iEnable) const;
 
   void write_warning_message(const QString & iMsg) const;
   void write_picture(const QPixmap & iPixMap) const;
