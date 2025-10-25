@@ -55,58 +55,52 @@ DataProcessor::DataProcessor(DabRadio * mr, const SPacketData * const ipPD, Ring
     if (mAppType == 0x44a)
     {
       qInfo() << "Create Journaline (DSCTy 5, AppType 0x44a) data handler";
-      my_dataHandler = new journaline_dataHandler();
+      mpDataHandler.reset(new JournalineDataHandler);
       break;
     }
     else if (mAppType == 1500)
     {
       qInfo() << "Create ADV (DSCTy 5, AppType 1500) data handler (not implemented)";
       //my_dataHandler = new adv_dataHandler(mr, dataBuffer, appType);
-      my_dataHandler = new VirtualDataHandler();
+      mpDataHandler.reset(new VirtualDataHandler);
       break;
     }
     else if (mAppType == 4)
     {
       qInfo() << "Create TDC (DSCTy 5, AppType 4) data handler";
-      my_dataHandler = new tdc_dataHandler(mr, mpDataBuffer, mAppType);
+      mpDataHandler.reset(new tdc_dataHandler(mr, mpDataBuffer, mAppType));
       break;
     }
     else
     {
       qWarning() << "DSCTy 5 with AppType" << mAppType << "not supported";
-      my_dataHandler = new VirtualDataHandler();
+      mpDataHandler.reset(new VirtualDataHandler);
     }
     break;
 
   case 44:
     qInfo() << "Create Journaline (DSCTy 44) data handler";
-    my_dataHandler = new journaline_dataHandler();
+    mpDataHandler.reset(new JournalineDataHandler);
     break;
 
   case 59:
     qInfo() << "Create IP (DSCTy 59) data handler";
-    my_dataHandler = new IpDataHandler(mr, mpDataBuffer);
+    mpDataHandler.reset(new IpDataHandler(mr, mpDataBuffer));
     break;
 
   case 60:
     qInfo() << "Create MOT (DSCTy 60) data handler";
-    my_dataHandler = new MotHandler(mr);
+    mpDataHandler.reset(new MotHandler(mr));
     break;
 
   default:
     qWarning() << "DSCTy " << mDSCTy << " not supported";
-    my_dataHandler = new VirtualDataHandler();
+    mpDataHandler.reset(new VirtualDataHandler);
     break;
   }
 
   mPacketState = 0;
 }
-
-DataProcessor::~DataProcessor()
-{
-  delete my_dataHandler;
-}
-
 
 void DataProcessor::add_to_frame(const std::vector<u8> & outV)
 {
@@ -207,7 +201,7 @@ void DataProcessor::handlePacket(const u8 * data)
       {
         mSeriesVec[i] = data[24 + i];
       }
-      my_dataHandler->add_mscDatagroup(mSeriesVec);
+      mpDataHandler->add_mscDatagroup(mSeriesVec);
     }
     else
     {
@@ -234,7 +228,7 @@ void DataProcessor::handlePacket(const u8 * data)
         mSeriesVec[currentLength + i] = data[24 + i];
       }
 
-      my_dataHandler->add_mscDatagroup(mSeriesVec);
+      mpDataHandler->add_mscDatagroup(mSeriesVec);
       mPacketState = 0;
     }
     else if (firstLast == 02)

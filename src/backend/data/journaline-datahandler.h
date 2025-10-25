@@ -40,13 +40,13 @@
 #include  <QObject>
 
 
-class journaline_dataHandler : public VirtualDataHandler
+class JournalineDataHandler : public VirtualDataHandler
 {
   Q_OBJECT
 
 public:
-  journaline_dataHandler();
-  ~journaline_dataHandler();
+  JournalineDataHandler();
+  ~JournalineDataHandler();
 
   void add_mscDatagroup(const std::vector<u8> &);
   void add_to_dataBase(NML *);

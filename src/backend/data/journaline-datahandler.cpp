@@ -45,27 +45,27 @@ static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * hea
   RemoveNMLEscapeSequences theRemover;
   NMLFactory xxx;
   NML * ttt = xxx.CreateNML(theBuffer, &theRemover);
-  static_cast<journaline_dataHandler *>(arg)->add_to_dataBase(ttt);
+  static_cast<JournalineDataHandler *>(arg)->add_to_dataBase(ttt);
   delete ttt;
 }
 
-journaline_dataHandler::journaline_dataHandler()
+JournalineDataHandler::JournalineDataHandler()
   : theScreen(table)
 {
   theDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
   _init_dataBase();
-  connect(this, &journaline_dataHandler::signal_start, &theScreen, &journalineScreen::slot_start);
+  connect(this, &JournalineDataHandler::signal_start, &theScreen, &journalineScreen::slot_start);
   //fprintf(stderr, "journaline len=%ld\n", len);
 }
 
-journaline_dataHandler::~journaline_dataHandler()
+JournalineDataHandler::~JournalineDataHandler()
 {
   DAB_DATAGROUP_DECODER_deleteDec(theDecoder);
   _destroy_dataBase();
 }
 
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
-void journaline_dataHandler::add_mscDatagroup(const std::vector<u8> & msc)
+void JournalineDataHandler::add_mscDatagroup(const std::vector<u8> & msc)
 {
   i16 len = msc.size();
   u8 * data = (u8 *)(msc.data());
@@ -86,19 +86,19 @@ void journaline_dataHandler::add_mscDatagroup(const std::vector<u8> & msc)
   }
 }
 
-void journaline_dataHandler::_init_dataBase()
+void JournalineDataHandler::_init_dataBase()
 {
   _destroy_dataBase();
   table.resize(0);
 }
 
-void journaline_dataHandler::_destroy_dataBase()
+void JournalineDataHandler::_destroy_dataBase()
 {
   for (uint16_t i = 0; i < table.size(); i++)
     delete table[i].element;
 }
 
-void journaline_dataHandler::add_to_dataBase(NML * NMLelement)
+void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
 {
   switch (NMLelement->GetObjectType())
   {
@@ -142,7 +142,7 @@ void journaline_dataHandler::add_to_dataBase(NML * NMLelement)
   }
 }
 
-int journaline_dataHandler::_findIndex(int key)
+int JournalineDataHandler::_findIndex(int key)
 {
   for (uint16_t i = 0; i < table.size(); i++)
     if (table[i].key == key)

@@ -48,7 +48,7 @@ class DataProcessor : public QObject, public FrameProcessor
 Q_OBJECT
 public:
   DataProcessor(DabRadio * mr, const SPacketData * ipPD, RingBuffer<u8> * ipDataBuffer);
-  ~DataProcessor() override;
+  ~DataProcessor() override = default;
 
   void add_to_frame(const std::vector<u8> &) override;
 
@@ -61,7 +61,7 @@ private:
   const u8 mDGflag;
   const i16 mFEC_scheme;
   RingBuffer<u8> * const mpDataBuffer;
-  VirtualDataHandler * my_dataHandler;
+  QScopedPointer<VirtualDataHandler> mpDataHandler;
 
   i16 mExpectedIndex = 0;
   std::vector<u8> mSeriesVec;
@@ -74,7 +74,7 @@ private:
   void handlePacket(const u8 *);
 
 signals:
-  void show_mscErrors(int);
+  void signal_show_MSC_errors(int);
 };
 
 #endif
