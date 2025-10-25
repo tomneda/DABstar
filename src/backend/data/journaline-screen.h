@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2017 .. 2024
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -43,11 +52,11 @@ class JournalineScreen : public QObject
   Q_OBJECT
 
 public:
-  JournalineScreen(std::vector<STableElement> & table);
+  JournalineScreen(const std::vector<STableElement> & iTableVec);
   ~JournalineScreen() override;
 
 private:
-  std::vector<STableElement> & mTableVec;
+  const std::vector<STableElement> & mTableVec;
   STableElement mCurrTableElement;
   std::vector<i32> mPathVec;
 
@@ -63,7 +72,7 @@ private:
   void _display_plain(const NML::News_t & element);
   void _display_list(const NML::News_t & element);
 
-  int _find_index(i32) const;
+  i32 _find_index(i32) const;
 
 public slots:
   void slot_start(i32);

@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2017 .. 2024
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -26,35 +35,31 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-JournalineScreen::JournalineScreen(std::vector<STableElement> & table)
-  : mTableVec(table)
+JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
+  : mTableVec(iTableVec)
 {
   Settings::Journaline::posAndSize.read_widget_geometry(&mFrame);
-
-  mPathVec.resize(0);
 
   // Create UI elements (need no delete)
   mpBtnReset = new QPushButton("Reset", &mFrame);
   mpBtnUp = new QPushButton("Up", &mFrame);
   mpLblMainText = new QLabel("", &mFrame);
   mpListView = new QListView(&mFrame);
-
-  mpListView->setToolTip("Features NewsService Journaline(R) decoder technology by\n"
-                         " * Fraunhofer IIS, Erlangen, Germany.\n"
-                         " * For more information visit http://www.iis.fhg.de/dab");
-
   QHBoxLayout * LH = new QHBoxLayout();
   QVBoxLayout * LV = new QVBoxLayout(&mFrame);
 
   LH->addWidget(mpBtnReset);
   LH->addWidget(mpBtnUp);
   LV->addLayout(LH);
-
   LV->addWidget(mpLblMainText);
   LV->addWidget(mpListView);
+  mFrame.setLayout(LV);
 
   mFrame.setWindowTitle("Journaline");
-  mFrame.setLayout(LV);
+
+  mpListView->setToolTip("Features NewsService Journaline(R) decoder technology by\n"
+                         "Fraunhofer IIS, Erlangen, Germany.\n"
+                         "For more information visit http://www.iis.fhg.de/dab");
 
   connect(mpBtnReset, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_reset_button);
   connect(mpBtnUp, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_up_button);
@@ -71,8 +76,8 @@ JournalineScreen::~JournalineScreen()
 
 void JournalineScreen::_slot_handle_reset_button()
 {
-  mPathVec.resize(0);
-  for (i32 i = 0; i < (i32)(mTableVec.size()); i++)
+  mPathVec.clear();
+  for (u32 i = 0; i < mTableVec.size(); i++)
   {
     if (mTableVec[i].key == 0)
     {
@@ -88,7 +93,7 @@ void JournalineScreen::_slot_handle_up_button()
   if (mPathVec.size() < 2)
     return;
   mPathVec.pop_back();
-  int index = _find_index(mPathVec.back());
+  i32 index = _find_index(mPathVec.back());
   if (index < 0)
     return;
   _display_element(*(mTableVec[index].element));
@@ -96,35 +101,38 @@ void JournalineScreen::_slot_handle_up_button()
 
 void JournalineScreen::_slot_select_sub(const QModelIndex & ind)
 {
-//
-//	first, identify the current element
-  int t = mPathVec.back();
-  int currentIndex = _find_index(t);
+  // first, identify the current element
+  const i32 t = mPathVec.back();
+  const i32 currentIndex = _find_index(t);
+
   if (currentIndex < 0)
   {
     return;
   }
+
   const NML::News_t * const currentElement = mTableVec[currentIndex].element;
-//
-//	for sure, the PLAIN element does not have siblings
+
+  // for sure, the PLAIN element does not have siblings
   if (currentElement->object_type == NML::PLAIN)
+  {
     return;
-  NML::Item_t item = currentElement->item[ind.row()];
+  }
+
+  const NML::Item_t & item = currentElement->item[ind.row()];
+
   if (true)
   {
-//	if (item. link_id_available) {
-    int ind = _find_index(item.link_id);
-    if (ind < 0)
+    // if (item.link_id_available)
+    const i32 idx = _find_index(item.link_id);
+    if (idx < 0)
     {
-//	      fprintf (stderr, "Link %d not found\n", item. link_id);
+      fprintf (stderr, "Link %d not found\n", item. link_id);
       return;
     }
-    const NML::News_t * const target = mTableVec[ind].element;
+    const NML::News_t * const target = mTableVec[idx].element;
     _display_element(*target);
     mPathVec.push_back(item.link_id);
   }
-//	else
-//	   fprintf (stderr, "No element for this link\n");
 }
 
 void JournalineScreen::_display_element(const NML::News_t & element)
@@ -141,48 +149,53 @@ void JournalineScreen::_display_element(const NML::News_t & element)
     _display_list(element);
     break;
   default:
+    qDebug() << "Unknown object type" << element.object_type;
     break;
   }
 }
 
 void JournalineScreen::_display_menu(const NML::News_t & element)
 {
-  std::string t = element.title;
+  const std::string t = element.title;
   mpLblMainText->setText(QString::fromStdString(t));
   mModel.clear();
-  for (int i = 0; i < (int)(element.item.size()); i++)
+
+  for (u32 i = 0; i < element.item.size(); i++)
   {
-    const NML::Item_t * const item = &(element.item[i]);
-    mModel.appendRow(new QStandardItem(QString::fromStdString(item->text)));
+    const NML::Item_t & item = element.item[i];
+    mModel.appendRow(new QStandardItem(QString::fromStdString(item.text)));
   }
+
   mpListView->setModel(&mModel);
 }
 
 void JournalineScreen::_display_plain(const NML::News_t & element)
 {
-  std::string t = element.title;
+  const std::string t = element.title;
   mpLblMainText->setText(QString::fromStdString(t));
   mModel.clear();
-  const NML::Item_t * const item = &(element.item[0]);
-  mModel.appendRow(new QStandardItem(QString::fromStdString(item->text)));
+  const NML::Item_t & item = element.item[0];
+  mModel.appendRow(new QStandardItem(QString::fromStdString(item.text)));
 }
 
 void JournalineScreen::_display_list(const NML::News_t & element)
 {
-  std::string t = element.title;
+  const std::string t = element.title;
   mpLblMainText->setText(QString::fromStdString(t));
   mModel.clear();
-  for (int i = 0; i < (int)(element.item.size()); i++)
+
+  for (u32 i = 0; i < element.item.size(); i++)
   {
     const NML::Item_t * const item = &(element.item[i]);
     mModel.appendRow(new QStandardItem(QString::fromStdString(item->text)));
   }
+
   mpListView->setModel(&mModel);
 }
 
-int JournalineScreen::_find_index(const int key) const
+i32 JournalineScreen::_find_index(const i32 key) const
 {
-  for (u16 i = 0; i < mTableVec.size(); i++)
+  for (u32 i = 0; i < mTableVec.size(); i++)
   {
     if (mTableVec[i].key == key)
     {
@@ -192,7 +205,7 @@ int JournalineScreen::_find_index(const int key) const
   return -1;
 }
 
-void JournalineScreen::slot_start(const int index)
+void JournalineScreen::slot_start(const i32 index)
 {
   mPathVec.push_back(0);
   _display_element(*(mTableVec[index].element));
