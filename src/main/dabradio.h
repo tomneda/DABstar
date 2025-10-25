@@ -188,11 +188,11 @@ private:
     StatusInfoElem<u32>  OutSampRate; // tricky: sample rates must be of type u32
   };
 
-  static constexpr i32 cDisplayTimeoutMs     = 1000;
-  static constexpr i32 cChannelTimeoutMs     = 5000;
-  static constexpr i32 cEpgTimeoutMs         = 3000;
-  static constexpr i32 cClockResetTimeoutMs  = 5000;
-  static constexpr i32 cTiiIndexCntTimeoutMs = 2000;
+  static constexpr i32 cDisplayTimeoutMs     =  1000;
+  static constexpr i32 cScanningTimeoutMs    = 12000; // max. waiting time for signal and FIB audio data while scanning (should be > cCheckStateAndPrintFigs_ms)
+  static constexpr i32 cEpgTimeoutMs         =  3000;
+  static constexpr i32 cClockResetTimeoutMs  =  5000;
+  static constexpr i32 cTiiIndexCntTimeoutMs =  2000;
 
   Ui_DabRadio * const ui;
 
@@ -270,7 +270,7 @@ private:
   std::vector<SServiceId> mServiceList;
 
   QTimer mDisplayTimer;
-  QTimer mChannelTimer;
+  QTimer mScanningTimer;
   QTimer mClockResetTimer;
   QTimer mTiiIndexCntTimer;
   u32 mTiiIndex = 0;
@@ -364,6 +364,7 @@ private:
   void _update_audio_data_addon(u32 iSId) const;
   void _update_scan_statistics(const SServiceId & sl);
   void _show_or_hide_windows_from_config();
+  void _go_to_next_channel_while_scanning();
 
   void _emphasize_pushbutton(QPushButton * ipPB, bool iEmphasize) const;
 
@@ -407,7 +408,6 @@ public slots:
   void slot_new_audio(i32, u32, u32);
   void slot_set_stereo(bool);
   void slot_set_stream_selector(i32);
-  void slot_no_signal_found();
   void slot_show_mot_handling();
   void slot_show_correlation(f32, const QVector<i32> & v);
   void slot_show_spectrum(i32);
@@ -466,7 +466,8 @@ private slots:
   void _slot_handle_channel_selector(const QString &);
   void _slot_terminate_process();
   void _slot_update_time_display();
-  void _slot_channel_timeout();
+  void _slot_scanning_security_timeout();
+  void _slot_scanning_no_signal_timeout();
   void _slot_service_changed(const QString & iChannel, const QString & iService, u32 iSId);
   void _slot_favorite_changed(bool iIsFav);
   void _slot_handle_favorite_button(bool iClicked);

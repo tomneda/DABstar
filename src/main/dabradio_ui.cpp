@@ -67,6 +67,10 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue
   }
 }
 
+template void DabRadio::_set_status_info_status<bool>(StatusInfoElem<bool> &, bool);
+template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32> &, u32);
+template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32> &, i32);
+
 void DabRadio::_emphasize_pushbutton(QPushButton * const ipPB, const bool iEmphasize) const
 {
   ipPB->setStyleSheet(iEmphasize ? "background-color: #AE2B05; color: #EEEE00; font-weight: bold;" : "");
@@ -508,9 +512,8 @@ QString DabRadio::_conv_to_time_str(i32 year, i32 month, i32 day, i32 hours, i32
 
 void DabRadio::clean_screen()
 {
+  if (!mIsScanning) ui->lblDynLabel->setText("");
   ui->serviceLabel->setText("");
-  ui->lblDynLabel->setText("");
-  mpTechDataWidget->cleanUp();
   ui->programTypeLabel->setText("");
   mpTechDataWidget->cleanUp();
   _reset_status_info();

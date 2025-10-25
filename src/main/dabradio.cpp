@@ -271,11 +271,18 @@ void DabRadio::do_start()
   mIsRunning.store(true);
 }
 
-// might be called when scanning only
-void DabRadio::_slot_channel_timeout()
+// might be called when scanning only from DAB processor and security timer
+void DabRadio::_slot_scanning_no_signal_timeout()
 {
   qCDebug(sLogRadioInterface()) << Q_FUNC_INFO;
-  slot_no_signal_found();
+  _go_to_next_channel_while_scanning();
+}
+
+// triggers when the scurity timer timedout to ensure a stable behaviour
+void DabRadio::_slot_scanning_security_timeout()
+{
+  qCWarning(sLogRadioInterface()).noquote() << "Scanning security timeout triggered for channel" << mChannel.channelName << "(too weak signal received)";
+  _go_to_next_channel_while_scanning();
 }
 
 // The ensembleId is written as hexadecimal, however, the
@@ -427,7 +434,7 @@ QString DabRadio::generate_file_path(const QString & iBasePath, const QString & 
 void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, const QString & pictureName, const i32 dirs)
 {
   const char * type;
-  if (!mIsRunning.load() || pictureName.isEmpty())
+  if (!mIsRunning || pictureName.isEmpty())
   {
     return;
   }
@@ -537,7 +544,7 @@ void DabRadio::slot_handle_tdc_data(i32 frametype, i32 length)
   auto * const localBuffer = make_vla(u8, length + 8);
 #endif
   (void)frametype;
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -560,7 +567,7 @@ void DabRadio::slot_handle_tdc_data(i32 frametype, i32 length)
   localBuffer[5] = length & 0xFF;
   localBuffer[6] = 0x00;
   localBuffer[7] = frametype == 0 ? 0 : 0xFF;
-  if (mIsRunning.load())
+  if (mIsRunning)
   {
     dataStreamer->sendData(localBuffer, length + 8);
   }
@@ -580,7 +587,7 @@ void DabRadio::slot_change_in_configuration()
 {
   qCWarning(sLogRadioInterface()) << "Configuration change is not supported yet -> Consider providing sample data where such a configuration change happens";
 
-  //   if (!mIsRunning.load() || mpDabProcessor == nullptr)
+  //   if (!mIsRunning || mpDabProcessor == nullptr)
 //   {
 //     return;
 //   }
@@ -678,7 +685,7 @@ void DabRadio::slot_change_in_configuration()
 
 void DabRadio::_slot_terminate_process()
 {
-  if (mIsScanning.load())
+  if (mIsScanning)
   {
     stop_scanning();
   }
@@ -701,7 +708,7 @@ void DabRadio::_slot_terminate_process()
   }
 
   mDisplayTimer.stop();
-  mChannelTimer.stop();
+  mScanningTimer.stop();
   mEpgTimer.stop();
 
   emit signal_stop_audio();
@@ -751,7 +758,7 @@ void DabRadio::_slot_terminate_process()
 
 void DabRadio::_slot_update_time_display()
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -872,7 +879,7 @@ void DabRadio::slot_fib_time(const IFibDecoder::SUtcTimeSet & iFibTimeInfo)
 
 void DabRadio::slot_set_stream_selector(i32 k)
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -882,7 +889,7 @@ void DabRadio::slot_set_stream_selector(i32 k)
 
 void DabRadio::_slot_handle_tech_detail_button()
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -900,7 +907,7 @@ void DabRadio::_slot_handle_tech_detail_button()
 
 void DabRadio::_slot_handle_cir_button()
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
     return;
 
   if (mCirViewer.is_hidden())
@@ -919,7 +926,7 @@ void DabRadio::_slot_handle_cir_button()
 
 void DabRadio::_slot_handle_reset_button()
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -941,7 +948,7 @@ void DabRadio::start_source_dumping()
   QString deviceName = mpInputDevice->deviceName();
   QString channelName = mChannel.channelName;
 
-  if (mIsScanning.load())
+  if (mIsScanning)
   {
     return;
   }
@@ -973,7 +980,7 @@ void DabRadio::stop_source_dumping()
 
 void DabRadio::_slot_handle_source_dump_button()
 {
-  if (!mIsRunning.load() || mIsScanning.load())
+  if (!mIsRunning || mIsScanning)
   {
     return;
   }
@@ -990,7 +997,7 @@ void DabRadio::_slot_handle_source_dump_button()
 
 void DabRadio::_slot_handle_spectrum_button()
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -1089,7 +1096,7 @@ void DabRadio::closeEvent(QCloseEvent * event)
 
 void DabRadio::slot_start_announcement(const QString & name, i32 subChId)
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -1103,7 +1110,7 @@ void DabRadio::slot_start_announcement(const QString & name, i32 subChId)
 
 void DabRadio::slot_stop_announcement(const QString & name, i32 subChId)
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -1181,7 +1188,7 @@ void DabRadio::local_select(const QString & iChannel, const u32 iSId)
 
 void DabRadio::stop_services(const bool iStopAlsoGlobServices)
 {
-  mChannelTimer.stop();
+  mScanningTimer.stop();
 
   if (mpDabProcessor == nullptr)
   {
@@ -1444,12 +1451,12 @@ void DabRadio::_update_scan_statistics(const SServiceId & sl)
 
 void DabRadio::_slot_fib_loaded_state(const IFibDecoder::EFibLoadingState iFibLoadingState)
 {
-  qDebug() << "FIB data for _slot_fib_data_loaded() loaded to state" << (i32)iFibLoadingState;
+  qDebug() << "FIB data loading state" << (i32)iFibLoadingState;
 
   assert(iFibLoadingState >= IFibDecoder::EFibLoadingState::S1_FastAudioDataLoaded &&
          iFibLoadingState <= IFibDecoder::EFibLoadingState::S5_DeferredDataLoaded);
 
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -1515,6 +1522,7 @@ void DabRadio::_slot_fib_loaded_state(const IFibDecoder::EFibLoadingState iFibLo
   else
   {
     ui->lblDynLabel->setText(_get_scan_message(false));
+    _go_to_next_channel_while_scanning();
   }
 }
 
@@ -1588,8 +1596,6 @@ void DabRadio::stop_channel()
 
   emit signal_stop_audio();
 
-  _show_epg_label(false);
-
   if (mpContentTable != nullptr)
   {
     mpContentTable->hide();
@@ -1612,7 +1618,7 @@ void DabRadio::stop_channel()
 
   _show_pause_slide();
 
-  mChannelTimer.stop();
+  mScanningTimer.stop();
   mChannel.clean_channel();
   mChannel.targetPos = cf32(0, 0);
   mChannel.SId_next = 0;
@@ -1633,8 +1639,6 @@ void DabRadio::stop_channel()
 
   // no processing left at this time
   usleep(1000);    // may be handling pending signals?
-  // mChannel.curPrimaryService.ServiceStarted = false;
-  // mChannel.nextService.dataSetIsValid = false;
 
   // all stopped, now look at the GUI elements
   ui->progBarFicError->setValue(0);
@@ -1644,7 +1648,6 @@ void DabRadio::stop_channel()
 
   mServiceList.clear();
   clean_screen();
-  _show_epg_label(false);
   ui->cmbTiiList->clear();
   mTiiIndex = 0;
 }
@@ -1657,7 +1660,7 @@ void DabRadio::stop_channel()
 
 void DabRadio::_slot_handle_channel_selector(const QString & channel)
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
@@ -1675,11 +1678,11 @@ void DabRadio::_slot_handle_channel_selector(const QString & channel)
 
 void DabRadio::_slot_handle_scan_button()
 {
-  if (!mIsRunning.load())
+  if (!mIsRunning)
   {
     return;
   }
-  if (mIsScanning.load())
+  if (mIsScanning)
   {
     stop_scanning();
   }
@@ -1691,9 +1694,9 @@ void DabRadio::_slot_handle_scan_button()
 
 void DabRadio::start_scanning()
 {
-  mChannelTimer.stop();
+  mScanningTimer.stop();
   mEpgTimer.stop();
-  connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &DabRadio::slot_no_signal_found);
+  connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &DabRadio::_slot_scanning_no_signal_timeout);
   stop_channel();
 
   mScanResult = {};
@@ -1711,7 +1714,7 @@ void DabRadio::start_scanning()
   _update_channel_selector(cc);
   ui->lblDynLabel->setText(_get_scan_message(false));
   ui->btnScanning->start_animation();
-  mChannelTimer.start(cChannelTimeoutMs);
+  mScanningTimer.start();
 
   start_channel(ui->cmbChannelSelector->currentText());
 }
@@ -1723,15 +1726,15 @@ void DabRadio::start_scanning()
 // 4. on handling a reset
 void DabRadio::stop_scanning()
 {
-  disconnect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &DabRadio::slot_no_signal_found);
+  disconnect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &DabRadio::_slot_scanning_no_signal_timeout);
 
-  if (mIsScanning.load())
+  if (mIsScanning)
   {
     ui->btnScanning->stop_animation();
     LOG("scanning stops ", "");
     mpDabProcessor->set_scan_mode(false);
     ui->lblDynLabel->setText(_get_scan_message(true));
-    mChannelTimer.stop();
+    mScanningTimer.stop();
     enable_ui_elements_for_safety(true);
     mChannel.channelName = ""; // trigger restart of channel after next service list click
     mIsScanning.store(false);
@@ -1742,19 +1745,17 @@ void DabRadio::stop_scanning()
 // If the ofdm processor has waited - without success - for a period of N frames to get a start of a synchronization,
 // it sends a signal to the GUI handler If "scanning" is "on" we hop to the next frequency on the list.
 // Also called as a result of timeout on channelTimer.
-void DabRadio::slot_no_signal_found()
+void DabRadio::_go_to_next_channel_while_scanning()
 {
-  mChannelTimer.stop();
+  mScanningTimer.stop();
 
-  if (mIsRunning.load() && mIsScanning.load())
+  if (mIsRunning && mIsScanning)
   {
     i32 cc = ui->cmbChannelSelector->currentIndex();
 
     stop_channel();
 
     cc = mBandHandler.nextChannel(cc);
-
-    // qInfo() << "going to channel" << cc;
 
     if (cc >= ui->cmbChannelSelector->count())
     {
@@ -1766,11 +1767,11 @@ void DabRadio::slot_no_signal_found()
       _update_channel_selector(cc);
 
       ui->lblDynLabel->setText(_get_scan_message(false));
-      mChannelTimer.start(cChannelTimeoutMs);
+      mScanningTimer.start();
       start_channel(ui->cmbChannelSelector->currentText());
     }
   }
-  else if (mIsScanning.load())
+  else if (mIsScanning)
   {
     stop_scanning();
   }
@@ -1858,7 +1859,7 @@ void DabRadio::slot_epg_timer_timeout()
     return;
   }
 
-  if (mIsScanning.load())
+  if (mIsScanning)
   {
     return;
   }
@@ -2133,7 +2134,7 @@ void DabRadio::slot_handle_port_selector()
 
 void DabRadio::_slot_handle_eti_button()
 {
-  if (!mIsRunning.load() || mIsScanning.load())
+  if (!mIsRunning || mIsScanning)
   {
     return;
   }
@@ -2389,9 +2390,9 @@ void DabRadio::_initialize_and_start_timers()
   mDisplayTimer.start(cDisplayTimeoutMs);
 
   // timer for scanning
-  mChannelTimer.setSingleShot(true);
-  mChannelTimer.setInterval(cChannelTimeoutMs);
-  connect(&mChannelTimer, &QTimer::timeout, this, &DabRadio::_slot_channel_timeout);
+  mScanningTimer.setSingleShot(true);
+  mScanningTimer.setInterval(cScanningTimeoutMs);
+  connect(&mScanningTimer, &QTimer::timeout, this, &DabRadio::_slot_scanning_security_timeout);
 
   mClockResetTimer.setSingleShot(true);
   connect(&mClockResetTimer, &QTimer::timeout, [this](){ _set_clock_text(); });
