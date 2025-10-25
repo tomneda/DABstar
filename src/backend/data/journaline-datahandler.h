@@ -52,13 +52,12 @@ public:
   void add_to_dataBase(NML *);
 
 private:
-  std::vector<STableElement> mTableElemVec;
+  std::vector<JournalineScreen::STableElement> mTableElemVec;
   JournalineScreen mJournalineScreen;
   DAB_DATAGROUP_DECODER_t mDataGroupDecoder;
   DAB_DATAGROUP_DECODER_data mDataGroupCallBack;
 
-  void _init_dataBase();
-  void _destroy_dataBase();
+  void _destroy_dataBase() const;
   int _findIndex(int);
 
 signals:

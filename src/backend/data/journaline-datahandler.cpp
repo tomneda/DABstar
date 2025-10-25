@@ -53,9 +53,9 @@ JournalineDataHandler::JournalineDataHandler()
   : mJournalineScreen(mTableElemVec)
 {
   mDataGroupDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
-  _init_dataBase();
+  mTableElemVec.reserve(64);
+
   connect(this, &JournalineDataHandler::signal_start, &mJournalineScreen, &JournalineScreen::slot_start);
-  //fprintf(stderr, "journaline len=%ld\n", len);
 }
 
 JournalineDataHandler::~JournalineDataHandler()
@@ -67,36 +67,27 @@ JournalineDataHandler::~JournalineDataHandler()
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
 void JournalineDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
 {
-  i16 len = msc.size();
-  u8 * data = (u8 *)(msc.data());
-  //auto * const buffer = make_vla(u8, len / 8);
-  uint8_t * buffer = (uint8_t *)alloca(len / 8 * sizeof(uint8_t));
-  i16 i;
-  i32 res;
-  for (i = 0; i < len / 8; i++)
+  const i16 len = msc.size();
+  auto * const buffer = make_vla(u8, len / 8);
+
+  for (i16 i = 0; i < len / 8; i++)
   {
-    buffer[i] = getBits(data, 8 * i, 8);
+    buffer[i] = getBits(msc.data(), 8 * i, 8);
   }
 
-  res = DAB_DATAGROUP_DECODER_putData(mDataGroupDecoder, len / 8, buffer);
+  const u32 res = DAB_DATAGROUP_DECODER_putData(mDataGroupDecoder, len / 8, buffer);
 
-  if (res < 0)
+  if (res == 0) // TODO: error happens too often?!
   {
-    return;
+    // qCritical() << "Error in DAB_DATAGROUP_DECODER_putData" << res;
   }
 }
 
-void JournalineDataHandler::_init_dataBase()
+void JournalineDataHandler::_destroy_dataBase() const
 {
-  _destroy_dataBase();
-  mTableElemVec.clear();
-}
-
-void JournalineDataHandler::_destroy_dataBase()
-{
-  for (uint16_t i = 0; i < mTableElemVec.size(); i++)
+  for (auto i : mTableElemVec)
   {
-    delete mTableElemVec[i].element;
+    delete i.element;
   }
 }
 
@@ -107,10 +98,11 @@ void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
   case NML::INVALID:
     return;
   case NML::MENU:
-  {
   case NML::PLAIN:
   case NML::LIST:
-    NML::News_t * x = new NML::News_t;
+  {
+    NML::News_t * const x = new NML::News_t;
+
     x->object_id = NMLelement->GetObjectId();
     x->object_type = NMLelement->GetObjectType();
     x->static_flag = NMLelement->isStatic();
@@ -118,28 +110,33 @@ void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
     x->extended_header = NMLelement->GetExtendedHeader();
     x->title = NMLelement->GetTitle();
     x->item = NMLelement->GetItems();
-    int index_oldElement = _findIndex(x->object_id);
+
+    const i32 index_oldElement = _findIndex(x->object_id);
+
     if (index_oldElement >= 0)
     {
-      NML::News_t * p = mTableElemVec[index_oldElement].element;
+      NML::News_t * const p = mTableElemVec[index_oldElement].element;
       delete p;
       mTableElemVec[index_oldElement].element = x;
-      break;
     }
-    STableElement temp;
-    temp.key = x->object_id;
-    temp.element = x;
-    mTableElemVec.push_back(temp);
-    if (x->object_id == 0)
+    else
     {
-      // theScreen.displayElement(*x);
-      emit signal_start(mTableElemVec.size() - 1);
+      JournalineScreen::STableElement temp;
+      temp.key = x->object_id;
+      temp.element = x;
+
+      mTableElemVec.push_back(temp);
+
+      if (x->object_id == 0)
+      {
+        emit signal_start(mTableElemVec.size() - 1);
+      }
     }
   }
   break;
 
   default:
-    fprintf(stderr, "SOMETHING ELSE\n");
+    qCritical() << "Unknown object type" << NMLelement->GetObjectType();
     break;
   }
 }
