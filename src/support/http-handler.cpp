@@ -73,7 +73,7 @@ HttpHandler::HttpHandler(DabRadio * parent, const QString & mapPort, const QStri
     fprintf(saveFile, "Home location; %f; %f\n\n", real(homeAddress), imag(homeAddress));
     fprintf(saveFile, "channel; latitude; longitude;transmitter;date and time; mainId; subId; distance; azimuth; power\n\n");
   }
-  transmitterVector.resize(0);
+  transmitterVector.clear();
   start();
 }
 

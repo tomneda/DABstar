@@ -306,7 +306,7 @@ void TiiHandler::_read_file(QFile & fp)
     {
       break;
     }
-    columnVector.resize(0);
+    columnVector.clear();
     i32 columns = _read_columns(columnVector, buffer.data(), NR_COLUMNS);
     if (columns < NR_COLUMNS)
     {
@@ -362,7 +362,7 @@ i32 TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, i32 N) 
   i32 charp = 0;
   std::array<char, 256> tb;
   i32 elementCount = 0;
-  oV.resize(0);
+  oV.clear();
   while ((*b != 0) && (*b != '\n'))
   {
     if (*b == SEPARATOR)

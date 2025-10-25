@@ -89,13 +89,15 @@ void JournalineDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
 void JournalineDataHandler::_init_dataBase()
 {
   _destroy_dataBase();
-  mTableElemVec.resize(0);
+  mTableElemVec.clear();
 }
 
 void JournalineDataHandler::_destroy_dataBase()
 {
   for (uint16_t i = 0; i < mTableElemVec.size(); i++)
+  {
     delete mTableElemVec[i].element;
+  }
 }
 
 void JournalineDataHandler::add_to_dataBase(NML * NMLelement)

@@ -96,7 +96,7 @@ void MscHandler::stop_all_services()
     b->stopRunning();
     b.reset();
   }
-  mBackendList.resize(0);
+  mBackendList.clear();
 }
 
 bool MscHandler::is_service_running(const i32 iSubChId, const EProcessFlag iProcessFlag) const

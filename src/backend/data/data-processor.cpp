@@ -201,7 +201,7 @@ void DataProcessor::_handle_packet(const u8 * data)
     }
     else
     {
-      mSeriesVec.resize(0);
+      mSeriesVec.clear();
     }  // packetState remains 0
   }
   else if (mPacketState == 01)
@@ -239,7 +239,7 @@ void DataProcessor::_handle_packet(const u8 * data)
     else
     {
       mPacketState = 0;
-      mSeriesVec.resize(0);
+      mSeriesVec.clear();
     }
   }
 }
