@@ -48,14 +48,14 @@ public:
   JournalineDataHandler();
   ~JournalineDataHandler();
 
-  void add_mscDatagroup(const std::vector<u8> &);
+  void add_MSC_data_group(const std::vector<u8> &);
   void add_to_dataBase(NML *);
 
 private:
-  std::vector<tableElement> table;
-  journalineScreen theScreen;
-  DAB_DATAGROUP_DECODER_t theDecoder;
-  DAB_DATAGROUP_DECODER_data myCallBack;
+  std::vector<STableElement> mTableElemVec;
+  JournalineScreen mJournalineScreen;
+  DAB_DATAGROUP_DECODER_t mDataGroupDecoder;
+  DAB_DATAGROUP_DECODER_data mDataGroupCallBack;
 
   void _init_dataBase();
   void _destroy_dataBase();

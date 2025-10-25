@@ -49,7 +49,7 @@ u16 usCalculCRC(u8 * buf, int lg)
   return ((u16)(crc ^ 0xFFFF));
 }
 
-void tdc_dataHandler::add_mscDatagroup(const std::vector<u8> & m)
+void tdc_dataHandler::add_MSC_data_group(const std::vector<u8> & m)
 {
   i32 offset = 0;
   u8 * data = (u8 *)(m.data());

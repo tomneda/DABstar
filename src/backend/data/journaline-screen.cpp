@@ -25,78 +25,82 @@
 #include	<QHBoxLayout>
 #include	<QVBoxLayout>
 
-journalineScreen::journalineScreen(std::vector<tableElement> & table)
-  : myFrame(nullptr)
+JournalineScreen::JournalineScreen(std::vector<STableElement> & table)
+  : mTableVec(table)
 {
-  this->table = &table;
-  pathVector.resize(0);
-  resetButton = new QPushButton("reset");
-  upButton = new QPushButton("up");
-  mainText = new QLabel("");
-  subContent = new QListView();
-  subContent->setToolTip("Features NewsService Journaline(R) decoder technology by\n"
+  mPathVec.resize(0);
+
+  // Create UI elements (need no delete)
+  mpBtnReset = new QPushButton("Reset", &mFrame);
+  mpBtnUp = new QPushButton("Up", &mFrame);
+  mpLblMainText = new QLabel("", &mFrame);
+  mpListView = new QListView(&mFrame);
+
+  mpListView->setToolTip("Features NewsService Journaline(R) decoder technology by\n"
                          " * Fraunhofer IIS, Erlangen, Germany.\n"
                          " * For more information visit http://www.iis.fhg.de/dab");
+
   QHBoxLayout * LH = new QHBoxLayout();
-  QVBoxLayout * LV = new QVBoxLayout();
+  QVBoxLayout * LV = new QVBoxLayout(&mFrame);
 
-  LH->addWidget(resetButton);
-  LH->addWidget(upButton);
+  LH->addWidget(mpBtnReset);
+  LH->addWidget(mpBtnUp);
   LV->addLayout(LH);
-  LV->addWidget(mainText);
-  LV->addWidget(subContent);
 
-  myFrame.setWindowTitle("Journaline");
-  myFrame.setLayout(LV);
+  LV->addWidget(mpLblMainText);
+  LV->addWidget(mpListView);
 
-  connect(resetButton, &QPushButton::clicked, this, &journalineScreen::_slot_handle_resetButton);
-  connect(upButton, &QPushButton::clicked, this, &journalineScreen::_slot_handle_upButton);
-  connect(subContent, &QListView::clicked, this, &journalineScreen::_slot_select_sub);
+  mFrame.setWindowTitle("Journaline");
+  mFrame.setLayout(LV);
 
-  myFrame.show();
+  connect(mpBtnReset, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_reset_button);
+  connect(mpBtnUp, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_up_button);
+  connect(mpListView, &QListView::clicked, this, &JournalineScreen::_slot_select_sub);
+
+  mFrame.show();
 }
 
-journalineScreen::~journalineScreen()
+JournalineScreen::~JournalineScreen()
 {
-  myFrame.hide();
+  mFrame.hide();
 }
 
-void journalineScreen::_slot_handle_resetButton()
+void JournalineScreen::_slot_handle_reset_button()
 {
-  pathVector.resize(0);
-  for (int i = 0; i < (int)((*table).size()); i++)
+  mPathVec.resize(0);
+  for (i32 i = 0; i < (i32)(mTableVec.size()); i++)
   {
-    if ((*table)[i].key == 0)
+    if (mTableVec[i].key == 0)
     {
-      displayElement(*((*table)[i].element));
-      pathVector.push_back(0);
+      _display_element(*(mTableVec[i].element));
+      mPathVec.push_back(0);
       return;
     }
   }
 }
 
-void journalineScreen::_slot_handle_upButton()
+void JournalineScreen::_slot_handle_up_button()
 {
-  if (pathVector.size() < 2)
+  if (mPathVec.size() < 2)
     return;
-  pathVector.pop_back();
-  int index = _findIndex(pathVector.back());
+  mPathVec.pop_back();
+  int index = _find_index(mPathVec.back());
   if (index < 0)
     return;
-  displayElement(*((*table)[index].element));
+  _display_element(*(mTableVec[index].element));
 }
 
-void journalineScreen::_slot_select_sub(const QModelIndex & ind)
+void JournalineScreen::_slot_select_sub(const QModelIndex & ind)
 {
 //
 //	first, identify the current element
-  int t = pathVector.back();
-  int currentIndex = _findIndex(t);
+  int t = mPathVec.back();
+  int currentIndex = _find_index(t);
   if (currentIndex < 0)
   {
     return;
   }
-  NML::News_t * currentElement = (*table)[currentIndex].element;
+  const NML::News_t * const currentElement = mTableVec[currentIndex].element;
 //
 //	for sure, the PLAIN element does not have siblings
   if (currentElement->object_type == NML::PLAIN)
@@ -105,84 +109,87 @@ void journalineScreen::_slot_select_sub(const QModelIndex & ind)
   if (true)
   {
 //	if (item. link_id_available) {
-    int ind = _findIndex(item.link_id);
+    int ind = _find_index(item.link_id);
     if (ind < 0)
     {
 //	      fprintf (stderr, "Link %d not found\n", item. link_id);
       return;
     }
-    NML::News_t * target = (*table)[ind].element;
-    displayElement(*target);
-    pathVector.push_back(item.link_id);
+    const NML::News_t * const target = mTableVec[ind].element;
+    _display_element(*target);
+    mPathVec.push_back(item.link_id);
   }
 //	else
 //	   fprintf (stderr, "No element for this link\n");
 }
 
-void journalineScreen::displayElement(NML::News_t & element)
+void JournalineScreen::_display_element(const NML::News_t & element)
 {
   switch (element.object_type)
   {
   case NML::MENU:
-    display_Menu(element);
+    _display_menu(element);
     break;
   case NML::PLAIN:
-    display_Plain(element);
+    _display_plain(element);
     break;
   case NML::LIST:
-    display_List(element);
+    _display_list(element);
     break;
   default:
     break;
   }
 }
 
-void journalineScreen::display_Menu(NML::News_t & element)
+void JournalineScreen::_display_menu(const NML::News_t & element)
 {
   std::string t = element.title;
-  mainText->setText(QString::fromStdString(t));
-  model.clear();
+  mpLblMainText->setText(QString::fromStdString(t));
+  mModel.clear();
   for (int i = 0; i < (int)(element.item.size()); i++)
   {
-    NML::Item_t * item = &(element.item[i]);
-    model.appendRow(new QStandardItem(QString::fromStdString(item->text)));
+    const NML::Item_t * const item = &(element.item[i]);
+    mModel.appendRow(new QStandardItem(QString::fromStdString(item->text)));
   }
-  subContent->setModel(&model);
+  mpListView->setModel(&mModel);
 }
 
-void journalineScreen::display_Plain(NML::News_t & element)
+void JournalineScreen::_display_plain(const NML::News_t & element)
 {
   std::string t = element.title;
-  mainText->setText(QString::fromStdString(t));
-  model.clear();
-  NML::Item_t * item = &(element.item[0]);
-  model.appendRow(new QStandardItem(QString::fromStdString(item->text)));
+  mpLblMainText->setText(QString::fromStdString(t));
+  mModel.clear();
+  const NML::Item_t * const item = &(element.item[0]);
+  mModel.appendRow(new QStandardItem(QString::fromStdString(item->text)));
 }
 
-void journalineScreen::display_List(NML::News_t & element)
+void JournalineScreen::_display_list(const NML::News_t & element)
 {
   std::string t = element.title;
-  mainText->setText(QString::fromStdString(t));
-  model.clear();
+  mpLblMainText->setText(QString::fromStdString(t));
+  mModel.clear();
   for (int i = 0; i < (int)(element.item.size()); i++)
   {
-    NML::Item_t * item = &(element.item[i]);
-    model.appendRow(new QStandardItem(QString::fromStdString(item->text)));
+    const NML::Item_t * const item = &(element.item[i]);
+    mModel.appendRow(new QStandardItem(QString::fromStdString(item->text)));
   }
-  subContent->setModel(&model);
+  mpListView->setModel(&mModel);
 }
 
-int journalineScreen::_findIndex(int key)
+int JournalineScreen::_find_index(const int key) const
 {
-  for (uint16_t i = 0; i < table->size(); i++)
-    if ((*table)[i].key == key)
+  for (u16 i = 0; i < mTableVec.size(); i++)
+  {
+    if (mTableVec[i].key == key)
+    {
       return i;
+    }
+  }
   return -1;
 }
 
-void journalineScreen::slot_start(int index)
+void JournalineScreen::slot_start(const int index)
 {
-  // fprintf(stderr, "we zijn in start\n");
-  pathVector.push_back(0);
-  displayElement(*(*table)[index].element);
+  mPathVec.push_back(0);
+  _display_element(*(mTableVec[index].element));
 }

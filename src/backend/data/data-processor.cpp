@@ -109,18 +109,17 @@ void DataProcessor::add_to_frame(const std::vector<u8> & outV)
 
   if ((this->mDSCTy == 5) && (this->mDGflag))
   {  // no datagroups
-    handleTDCAsyncstream(outV.data(), 24 * mBitRate);
+    _handle_TDC_async_stream(outV.data(), 24 * mBitRate);
   }
   else
   {
-    handlePackets(outV.data(), 24 * mBitRate);
+    _handle_packets(outV.data(), 24 * mBitRate);
   }
 }
 
-//
-//	While for a full mix data and audio there will be a single packet in a
-//	data compartment, for an empty mix, there may be many more
-void DataProcessor::handlePackets(const u8 * data, i32 length)
+// While for a full mix data and audio there will be a single packet in a
+// data compartment, for an empty mix, there may be many more
+void DataProcessor::_handle_packets(const u8 * data, i32 length)
 {
   while (true)
   {
@@ -129,7 +128,7 @@ void DataProcessor::handlePackets(const u8 * data, i32 length)
     {  // be on the safe side
       return;
     }
-    handlePacket(data);
+    _handle_packet(data);
     length -= pLength;
     if (length < 2)
     {
@@ -139,13 +138,10 @@ void DataProcessor::handlePackets(const u8 * data, i32 length)
   }
 }
 
-//
-//	Handle a single DAB packet:
-//	Note, although not yet encountered, the standard says that
-//	there may be multiple streams, to be identified by
-//	the address. For the time being we only handle a single
-//	stream!!!!
-void DataProcessor::handlePacket(const u8 * data)
+// Handle a single DAB packet:
+// Note, although not yet encountered, the standard says that there may be multiple streams, to be identified by the address.
+// For the time being we only handle a single stream!!!!
+void DataProcessor::_handle_packet(const u8 * data)
 {
   i32 packetLength = (getBits_2(data, 0) + 1) * 24;
   i16 continuityIndex = getBits_2(data, 2);
@@ -201,7 +197,7 @@ void DataProcessor::handlePacket(const u8 * data)
       {
         mSeriesVec[i] = data[24 + i];
       }
-      mpDataHandler->add_mscDatagroup(mSeriesVec);
+      mpDataHandler->add_MSC_data_group(mSeriesVec);
     }
     else
     {
@@ -228,7 +224,7 @@ void DataProcessor::handlePacket(const u8 * data)
         mSeriesVec[currentLength + i] = data[24 + i];
       }
 
-      mpDataHandler->add_mscDatagroup(mSeriesVec);
+      mpDataHandler->add_MSC_data_group(mSeriesVec);
       mPacketState = 0;
     }
     else if (firstLast == 02)
@@ -249,7 +245,7 @@ void DataProcessor::handlePacket(const u8 * data)
 }
 
 //	Really no idea what to do here
-void DataProcessor::handleTDCAsyncstream(const u8 * data, i32 length)
+void DataProcessor::_handle_TDC_async_stream(const u8 * data, i32 length)
 {
   i16 packetLength = (getBits_2(data, 0) + 1) * 24;
   i16 continuityIndex = getBits_2(data, 2);

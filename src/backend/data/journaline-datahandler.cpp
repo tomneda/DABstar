@@ -50,22 +50,22 @@ static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * hea
 }
 
 JournalineDataHandler::JournalineDataHandler()
-  : theScreen(table)
+  : mJournalineScreen(mTableElemVec)
 {
-  theDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
+  mDataGroupDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
   _init_dataBase();
-  connect(this, &JournalineDataHandler::signal_start, &theScreen, &journalineScreen::slot_start);
+  connect(this, &JournalineDataHandler::signal_start, &mJournalineScreen, &JournalineScreen::slot_start);
   //fprintf(stderr, "journaline len=%ld\n", len);
 }
 
 JournalineDataHandler::~JournalineDataHandler()
 {
-  DAB_DATAGROUP_DECODER_deleteDec(theDecoder);
+  DAB_DATAGROUP_DECODER_deleteDec(mDataGroupDecoder);
   _destroy_dataBase();
 }
 
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
-void JournalineDataHandler::add_mscDatagroup(const std::vector<u8> & msc)
+void JournalineDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
 {
   i16 len = msc.size();
   u8 * data = (u8 *)(msc.data());
@@ -78,7 +78,7 @@ void JournalineDataHandler::add_mscDatagroup(const std::vector<u8> & msc)
     buffer[i] = getBits(data, 8 * i, 8);
   }
 
-  res = DAB_DATAGROUP_DECODER_putData(theDecoder, len / 8, buffer);
+  res = DAB_DATAGROUP_DECODER_putData(mDataGroupDecoder, len / 8, buffer);
 
   if (res < 0)
   {
@@ -89,13 +89,13 @@ void JournalineDataHandler::add_mscDatagroup(const std::vector<u8> & msc)
 void JournalineDataHandler::_init_dataBase()
 {
   _destroy_dataBase();
-  table.resize(0);
+  mTableElemVec.resize(0);
 }
 
 void JournalineDataHandler::_destroy_dataBase()
 {
-  for (uint16_t i = 0; i < table.size(); i++)
-    delete table[i].element;
+  for (uint16_t i = 0; i < mTableElemVec.size(); i++)
+    delete mTableElemVec[i].element;
 }
 
 void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
@@ -119,19 +119,19 @@ void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
     int index_oldElement = _findIndex(x->object_id);
     if (index_oldElement >= 0)
     {
-      NML::News_t * p = table[index_oldElement].element;
+      NML::News_t * p = mTableElemVec[index_oldElement].element;
       delete p;
-      table[index_oldElement].element = x;
+      mTableElemVec[index_oldElement].element = x;
       break;
     }
-    tableElement temp;
+    STableElement temp;
     temp.key = x->object_id;
     temp.element = x;
-    table.push_back(temp);
+    mTableElemVec.push_back(temp);
     if (x->object_id == 0)
     {
       // theScreen.displayElement(*x);
-      emit signal_start(table.size() - 1);
+      emit signal_start(mTableElemVec.size() - 1);
     }
   }
   break;
@@ -144,8 +144,12 @@ void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
 
 int JournalineDataHandler::_findIndex(int key)
 {
-  for (uint16_t i = 0; i < table.size(); i++)
-    if (table[i].key == key)
+  for (uint16_t i = 0; i < mTableElemVec.size(); i++)
+  {
+    if (mTableElemVec[i].key == key)
+    {
       return i;
+    }
+  }
   return -1;
 }

@@ -23,6 +23,7 @@
 #pragma once
 
 #include "NML.h"
+#include "glob_data_types.h"
 #include <QObject>
 #include <QFrame>
 #include <QPushButton>
@@ -31,44 +32,44 @@
 #include <QModelIndex>
 #include <QStandardItemModel>
 
-typedef struct
+struct STableElement
 {
-  int key;
+  i32 key;
   NML::News_t * element;
-} tableElement;
+};
 
-class journalineScreen : public QObject
+class JournalineScreen : public QObject
 {
   Q_OBJECT
 
 public:
-  journalineScreen(std::vector<tableElement> & table);
-  ~journalineScreen();
-
-  void displayElement(NML::News_t & element);
-  void display_Menu(NML::News_t & element);
-  void display_Plain(NML::News_t & element);
-  void display_List(NML::News_t & element);
+  JournalineScreen(std::vector<STableElement> & table);
+  ~JournalineScreen() override;
 
 private:
-  std::vector<tableElement> * table;
-  tableElement currentElement;
-  std::vector<int> pathVector;
+  std::vector<STableElement> & mTableVec;
+  STableElement mCurrTableElement;
+  std::vector<i32> mPathVec;
 
-  QFrame myFrame;
-  QPushButton * resetButton;
-  QPushButton * upButton;
-  QLabel * mainText;
-  QListView * subContent;
-  QStandardItemModel model;
+  QFrame mFrame;
+  QPushButton * mpBtnReset;
+  QPushButton * mpBtnUp;
+  QLabel * mpLblMainText;
+  QListView * mpListView;
+  QStandardItemModel mModel;
 
-  int _findIndex(int);
+  void _display_element(const NML::News_t & element);
+  void _display_menu(const NML::News_t & element);
+  void _display_plain(const NML::News_t & element);
+  void _display_list(const NML::News_t & element);
+
+  int _find_index(i32) const;
 
 public slots:
-  void slot_start(int);
+  void slot_start(i32);
 
 private slots:
-  void _slot_handle_resetButton();
-  void _slot_handle_upButton();
+  void _slot_handle_reset_button();
+  void _slot_handle_up_button();
   void _slot_select_sub(const QModelIndex & ind);
 };

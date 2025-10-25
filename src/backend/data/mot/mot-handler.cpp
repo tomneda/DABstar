@@ -66,7 +66,7 @@ MotHandler::~MotHandler()
   }
 }
 
-void MotHandler::add_mscDatagroup(const std::vector<u8> & msc)
+void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
 {
   u8 * data = (u8 *)(msc.data());
   bool extensionFlag = getBits_1(data, 0) != 0;

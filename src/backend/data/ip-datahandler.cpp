@@ -41,7 +41,7 @@ IpDataHandler::IpDataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer)
   connect(this, &IpDataHandler::signal_write_datagramm, mr,  &DabRadio::slot_send_datagram);
 }
 
-void IpDataHandler::add_mscDatagroup(const std::vector<u8> & msc)
+void IpDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
 {
   u8 * data = (u8 *)(msc.data());
   bool extensionFlag = getBits_1(data, 0) != 0;

@@ -45,7 +45,7 @@ public:
   IpDataHandler(DabRadio *, RingBuffer<u8> *);
   ~IpDataHandler() override = default;
 
-  void add_mscDatagroup(const std::vector<u8> &) override ;
+  void add_MSC_data_group(const std::vector<u8> &) override ;
 
 private:
   void process_ipVector(const std::vector<u8> &);

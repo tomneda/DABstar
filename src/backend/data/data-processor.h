@@ -68,10 +68,10 @@ private:
   u8 mPacketState;
   i32 mStreamAddress;    // int since we init with -1
 
-  //	result handlers
-  void handleTDCAsyncstream(const u8 *, i32);
-  void handlePackets(const u8 *, i32);
-  void handlePacket(const u8 *);
+  // result handlers
+  void _handle_TDC_async_stream(const u8 *, i32);
+  void _handle_packets(const u8 *, i32);
+  void _handle_packet(const u8 *);
 
 signals:
   void signal_show_MSC_errors(int);

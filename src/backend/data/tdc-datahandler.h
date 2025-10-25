@@ -35,7 +35,7 @@ public:
   tdc_dataHandler(DabRadio *, RingBuffer<u8> *, i16);
   ~tdc_dataHandler() override = default;
 
-  void add_mscDatagroup(const std::vector<u8> &) override;
+  void add_MSC_data_group(const std::vector<u8> &) override;
 
 private:
   DabRadio * myRadioInterface;

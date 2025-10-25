@@ -45,7 +45,7 @@ public:
   explicit MotHandler(DabRadio *);
   ~MotHandler() override;
 
-  void add_mscDatagroup(const std::vector<u8> &);
+  void add_MSC_data_group(const std::vector<u8> &);
 private:
   // we "cache" the most recent single motSlides (not those in a directory)
   struct SMotTable
