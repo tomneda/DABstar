@@ -29,6 +29,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+// #define ADD_DAB_CABLE_CHANNELS
+
 #include  "band-handler.h"
 #include  "dab-constants.h"
 #include  <QHeaderView>
@@ -82,7 +84,17 @@ static SDabFrequencies frequencies_1[] =
   {"13D", 235776, false},
   {"13E", 237488, false},
   {"13F", 239200, false},
-  {nullptr, 0, false}
+#ifdef ADD_DAB_CABLE_CHANNELS
+  {"16A", 251936, false},
+  {"16B", 253648, false},
+  {"16C", 255360, false},
+  {"16D", 257072, false},
+  {"17A", 258928, false},
+  {"17B", 260640, false},
+  {"17C", 262352, false},
+  {"17D", 264064, false},
+#endif
+    {nullptr, 0, false}
 };
 
 static SDabFrequencies frequencies_2[] =
