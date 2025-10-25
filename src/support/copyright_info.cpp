@@ -28,6 +28,13 @@
   #include <liquid/liquid.h>
 #endif
 
+template <typename T>
+QString hyperlink(const T & iUrl, const bool iIsMail = false)
+{
+  if (iIsMail) return QStringLiteral("<a href=\"mailto:%1\">%1</a>").arg(iUrl);
+  else         return QStringLiteral("<a href=\"%1\">%1</a>").arg(iUrl);
+}
+
 QString get_copyright_text()
 {
 #ifdef HAVE_SSE_OR_AVX
@@ -67,12 +74,14 @@ QString get_copyright_text()
   versionText += "<p><b>Built on " + QString(__DATE__) + "&nbsp;&nbsp;" + QString(__TIME__) + QString("<br/>Commit ") + QString(GITHASH) + "</b></p>"; // __TIMESTAMP__ seems to use the file date not the compile date
   versionText += "<p><b>Used libs: Qt " QT_VERSION_STR ", Qwt " QWT_VERSION_STR + volkVers + ", " + fftwf_version + faadVers + fdkVers + ", " + sf_version_string() + liquidVers + ", zlib " + ZLIB_VERSION + "</b></p>";
   versionText += "<p>Forked from Qt-DAB, partly extensive changed, extended, some things also removed, by Thomas Neder "
-                 "(<a href=\"https://github.com/tomneda/DABstar\">https://github.com/tomneda/DABstar</a>).<br/>"
-                 "For Qt-DAB see <a href=\"https://github.com/JvanKatwijk/qt-dab\">https://github.com/JvanKatwijk/qt-dab</a> by Jan van Katwijk<br/>"
-                 "(<a href=\"mailto:J.vanKatwijk@gmail.com\">J.vanKatwijk@gmail.com</a>).</p>";
+                 "(" + hyperlink("https://github.com/tomneda/DABstar") + ").<br/>"
+                 "For Qt-DAB see " + hyperlink("https://github.com/JvanKatwijk/qt-dab") + " by Jan van Katwijk<br/>"
+                 "(" + hyperlink("J.vanKatwijk@gmail.com", true) + ").</p>";
   versionText += "<p>Rights of Qt, Qwt, FFTW" + usedDecoder + useVolk + useLiquid + ", libsndfile and zlib gratefully acknowledged.<br/>"
                  "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.<br/>"
                  "Rights of other contributors gratefully acknowledged.</p>";
+  versionText += "Features NewsService Journaline(R) decoder technology by Fraunhofer IIS, Erlangen, Germany. For more information visit "
+                 + hyperlink("http://www.iis.fhg.de/dab");
   versionText += "</p></body></html>";
   return versionText;
 }
