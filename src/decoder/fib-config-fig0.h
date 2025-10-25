@@ -5,7 +5,7 @@
 #define  FIB_CONFIG_FIG0_H
 
 #include "glob_data_types.h"
-#include "fib_helper.h"
+#include "fib-helper.h"
 #include <vector>
 #include <QString>
 

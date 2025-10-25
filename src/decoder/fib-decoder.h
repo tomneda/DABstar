@@ -7,7 +7,7 @@
 #include "fib-decoder_if.h"
 #include "fib-config-fig0.h"
 #include "fib-config-fig1.h"
-#include "fib_helper.h"
+#include "fib-helper.h"
 #include <QMutex>
 #include <set>
 #include <chrono>

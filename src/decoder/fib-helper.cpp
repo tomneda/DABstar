@@ -2,7 +2,7 @@
 // Created by work on 2025-10-04.
 //
 
-#include "fib_helper.h"
+#include "fib-helper.h"
 
 void FibHelper::get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic, std::chrono::milliseconds * opDuration1 /*= nullptr*/, std::chrono::milliseconds * opDuration2 /*= nullptr*/) const
 {

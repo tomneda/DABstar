@@ -276,7 +276,7 @@ set(${objectName}_HDRS
         src/decoder/fib-config-fig1.h
         src/decoder/fib-table.h
         src/decoder/fic-decoder.h
-        src/decoder/fib_helper.h
+        src/decoder/fib-helper.h
         src/ofdm/tii-detector.h
         src/ofdm/timesyncer.h
         src/protection/protTables.h
@@ -382,7 +382,7 @@ set(${objectName}_SRCS
         src/decoder/fib-decoder-fig1.cpp
         src/decoder/fib-decoder-string-getter.cpp
         src/decoder/fic-decoder.cpp
-        src/decoder/fib_helper.cpp
+        src/decoder/fib-helper.cpp
         src/ofdm/tii-detector.cpp
         src/ofdm/timesyncer.cpp
         src/protection/protTables.cpp
