@@ -21,13 +21,16 @@
  *
  */
 
-#include	"journaline-screen.h"
-#include	<QHBoxLayout>
-#include	<QVBoxLayout>
+#include "journaline-screen.h"
+#include "setting-helper.h"
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 JournalineScreen::JournalineScreen(std::vector<STableElement> & table)
   : mTableVec(table)
 {
+  Settings::Journaline::posAndSize.read_widget_geometry(&mFrame);
+
   mPathVec.resize(0);
 
   // Create UI elements (need no delete)
@@ -62,6 +65,7 @@ JournalineScreen::JournalineScreen(std::vector<STableElement> & table)
 
 JournalineScreen::~JournalineScreen()
 {
+  Settings::Journaline::posAndSize.write_widget_geometry(&mFrame);
   mFrame.hide();
 }
 

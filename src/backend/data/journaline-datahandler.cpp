@@ -19,12 +19,12 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include  "journaline-datahandler.h"
-#include  "dabdatagroupdecoder.h"
-#include  "bit-extractors.h"
-#include  "journaline-screen.h"
-#include  "newsobject.h"
-#include  <sys/time.h>
+#include "journaline-datahandler.h"
+#include "dabdatagroupdecoder.h"
+#include "bit-extractors.h"
+#include "journaline-screen.h"
+#include "newsobject.h"
+#include <sys/time.h>
 
 static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header,
                         const unsigned long len, const unsigned char * buf, void * arg)

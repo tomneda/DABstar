@@ -148,6 +148,11 @@ CATEGORY_BEGIN(FibContentViewer)
   DEFINE_POS_SIZE(FibContentViewer)
 CATEGORY_END(FibContentViewer)
 
+CATEGORY_BEGIN(Journaline)
+  DEFINE_POS_SIZE(Journaline)
+CATEGORY_END(Journaline)
+
+
 /********************************
  *  DO NOT EDIT BELOW THIS LINE *
  ********************************/
