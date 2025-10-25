@@ -45,6 +45,8 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   mpBtnUp = new QPushButton("Up", &mFrame);
   mpLblMainText = new QLabel("", &mFrame);
   mpListView = new QListView(&mFrame);
+  mpLblHtml = new QLabel(&mFrame);
+
   QHBoxLayout * LH = new QHBoxLayout();
   QVBoxLayout * LV = new QVBoxLayout(&mFrame);
 
@@ -53,6 +55,7 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   LV->addLayout(LH);
   LV->addWidget(mpLblMainText);
   LV->addWidget(mpListView);
+  LV->addWidget(mpLblHtml);
   mFrame.setLayout(LV);
 
   mFrame.setWindowTitle("Journaline");
@@ -60,6 +63,12 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   mpListView->setToolTip("Features NewsService Journaline(R) decoder technology by\n"
                          "Fraunhofer IIS, Erlangen, Germany.\n"
                          "For more information visit http://www.iis.fhg.de/dab");
+
+  mpLblHtml->setTextInteractionFlags(Qt::TextSelectableByMouse);
+  mpLblHtml->setTextInteractionFlags(Qt::TextSelectableByKeyboard);
+  mpLblHtml->setOpenExternalLinks(true);
+  mpLblHtml->setText("Demotext");
+
 
   connect(mpBtnReset, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_reset_button);
   connect(mpBtnUp, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_up_button);
@@ -76,6 +85,15 @@ JournalineScreen::~JournalineScreen()
 
 void JournalineScreen::_slot_handle_reset_button()
 {
+
+  for (int32_t i = 0; i < 5; i++) qDebug();
+  const i32 startIdx = _find_index(0);
+  assert(startIdx >= 0);
+  _print_element(*(mTableVec[startIdx].element), 0);
+  mpLblHtml->setText(_get_journaline_as_HTML());
+
+
+
   mPathVec.clear();
   for (u32 i = 0; i < mTableVec.size(); i++)
   {
@@ -99,26 +117,29 @@ void JournalineScreen::_slot_handle_up_button()
   _display_element(*(mTableVec[index].element));
 }
 
-void JournalineScreen::_slot_select_sub(const QModelIndex & ind)
+void JournalineScreen::_slot_select_sub(const QModelIndex & iModIdx)
 {
   // first, identify the current element
-  const i32 t = mPathVec.back();
-  const i32 currentIndex = _find_index(t);
+  const i32 key = mPathVec.back();
+  const i32 currIdx = _find_index(key);
 
-  if (currentIndex < 0)
+  if (currIdx < 0)
   {
     return;
   }
 
-  const NML::News_t * const currentElement = mTableVec[currentIndex].element;
+  _print_debug_data("_slot_select_sub");
+  qDebug() << "Key" << key << "CurrIdx" << currIdx;
+
+  const NML::News_t * const pCurrElem = mTableVec[currIdx].element;
 
   // for sure, the PLAIN element does not have siblings
-  if (currentElement->object_type == NML::PLAIN)
+  if (pCurrElem->object_type == NML::PLAIN)
   {
     return;
   }
 
-  const NML::Item_t & item = currentElement->item[ind.row()];
+  const NML::Item_t & item = pCurrElem->item[iModIdx.row()];
 
   if (true)
   {
@@ -140,12 +161,15 @@ void JournalineScreen::_display_element(const NML::News_t & element)
   switch (element.object_type)
   {
   case NML::MENU:
+    // qDebug() << "Display menu";
     _display_menu(element);
     break;
   case NML::PLAIN:
+    // qDebug() << "Display plain";
     _display_plain(element);
     break;
   case NML::LIST:
+    // qDebug() << "Display list";
     _display_list(element);
     break;
   default:
@@ -156,6 +180,7 @@ void JournalineScreen::_display_element(const NML::News_t & element)
 
 void JournalineScreen::_display_menu(const NML::News_t & element)
 {
+  // _print_debug_data("_display_menu");
   const std::string t = element.title;
   mpLblMainText->setText(QString::fromStdString(t));
   mModel.clear();
@@ -163,34 +188,160 @@ void JournalineScreen::_display_menu(const NML::News_t & element)
   for (u32 i = 0; i < element.item.size(); i++)
   {
     const NML::Item_t & item = element.item[i];
+    qDebug() << "Display menu item" << i << item.text << item.link_id_available << item.link_id;
     mModel.appendRow(new QStandardItem(QString::fromStdString(item.text)));
   }
-
   mpListView->setModel(&mModel);
 }
 
 void JournalineScreen::_display_plain(const NML::News_t & element)
 {
+  // _print_debug_data("_display_plain");
   const std::string t = element.title;
   mpLblMainText->setText(QString::fromStdString(t));
   mModel.clear();
   const NML::Item_t & item = element.item[0];
+  qDebug() << "Display plain item" << item.text << item.link_id_available << item.link_id;
   mModel.appendRow(new QStandardItem(QString::fromStdString(item.text)));
+  mpListView->setModel(&mModel);
 }
 
 void JournalineScreen::_display_list(const NML::News_t & element)
 {
+  // _print_debug_data("_display_list");
   const std::string t = element.title;
   mpLblMainText->setText(QString::fromStdString(t));
   mModel.clear();
 
   for (u32 i = 0; i < element.item.size(); i++)
   {
-    const NML::Item_t * const item = &(element.item[i]);
-    mModel.appendRow(new QStandardItem(QString::fromStdString(item->text)));
+    const NML::Item_t & item = element.item[i];
+    qDebug() << "Display list item" << i << item.text << item.link_id_available << item.link_id;
+    mModel.appendRow(new QStandardItem(QString::fromStdString(item.text)));
+  }
+  mpListView->setModel(&mModel);
+}
+
+QString JournalineScreen::_ident_str(const u32 iLevel) const
+{
+  if (iLevel == 0) return "";
+
+  QString s("|-");
+  s.reserve(iLevel * 4);
+  for (u32 i = 0; i < iLevel-1; i++) s += "----";
+  return s + "->";
+}
+
+void JournalineScreen::_print_element(const NML::News_t & element, const u32 iLevel) const
+{
+  if (iLevel == 0)
+  {
+    qDebug() << "Title:" << element.title;
   }
 
-  mpListView->setModel(&mModel);
+  switch (element.object_type)
+  {
+  case NML::MENU:
+    _print_menu(element, iLevel);
+    break;
+  case NML::PLAIN:
+    _print_plain(element, iLevel);
+    break;
+  case NML::LIST:
+    _print_list(element, iLevel);
+    break;
+  default:
+    qDebug() << "Unknown object type" << element.object_type;
+    break;
+  }
+}
+
+
+void JournalineScreen::_print_menu(const NML::News_t & element, const u32 iLevel) const
+{
+  const QString ident = _ident_str(iLevel);
+  for (u32 i = 0; i < element.item.size(); i++)
+  {
+    const NML::Item_t & item = element.item[i];
+    qDebug() << ident.toStdString().c_str() << "MenuItem" << i << QString::fromUtf8(item.text);
+    const i32 subMenuIdx = _find_index(item.link_id);
+    if (subMenuIdx >= 0)
+    {
+      _print_element(*mTableVec[subMenuIdx].element, iLevel + 1);
+    }
+  }
+}
+
+void JournalineScreen::_print_plain(const NML::News_t & element, const u32 iLevel) const
+{
+  const QString ident = _ident_str(iLevel);
+  const NML::Item_t & item = element.item[0];
+  qDebug() << ident.toStdString().c_str() << "PlainItem" << QString::fromUtf8(item.text);
+}
+
+void JournalineScreen::_print_list(const NML::News_t & element, const u32 iLevel) const
+{
+  const QString ident = _ident_str(iLevel);
+  for (u32 i = 0; i < element.item.size(); i++)
+  {
+    const NML::Item_t & item = element.item[i];
+    qDebug() << ident.toStdString().c_str() << "ListItem" << i << QString::fromUtf8(item.text);
+  }
+}
+
+void JournalineScreen::_build_html_tree_recursive(const NML::News_t & element, QString & html) const
+{
+  html += "<b>" + QString::fromUtf8(element.title) + "</b>";
+
+  switch (element.object_type)
+  {
+  case NML::MENU:
+    html += "<ul>";
+    for (const auto & item : element.item)
+    {
+      html += "<li>" + QString::fromUtf8(item.text);
+      const i32 subMenuIdx = _find_index(item.link_id);
+      if (subMenuIdx >= 0)
+      {
+        html += "<ul><li>";
+        _build_html_tree_recursive(*mTableVec[subMenuIdx].element, html);
+        html += "</li></ul>";
+      }
+      html += "</li>";
+    }
+    html += "</ul>";
+    break;
+  case NML::PLAIN:
+    if (!element.item.empty())
+    {
+      html += "<p>" + QString::fromUtf8(element.item[0].text) + "</p>";
+    }
+    break;
+  case NML::LIST:
+    html += "<ul>";
+    for (const auto & item : element.item)
+    {
+      html += "<li>" + QString::fromUtf8(item.text) + "</li>";
+    }
+    html += "</ul>";
+    break;
+  default:
+    break;
+  }
+}
+
+QString JournalineScreen::_get_journaline_as_HTML() const
+{
+  const i32 startIdx = _find_index(0);
+  if (startIdx < 0)
+  {
+    return "";
+  }
+
+  QString html = "<html><body>";
+  _build_html_tree_recursive(*(mTableVec[startIdx].element), html);
+  html += "</body></html>";
+  return html;
 }
 
 i32 JournalineScreen::_find_index(const i32 key) const
@@ -205,8 +356,52 @@ i32 JournalineScreen::_find_index(const i32 key) const
   return -1;
 }
 
+
+
+
 void JournalineScreen::slot_start(const i32 index)
 {
   mPathVec.push_back(0);
+  qDebug() << "Start" << index;
   _display_element(*(mTableVec[index].element));
+  _print_element(*(mTableVec[index].element), 0);
 }
+
+void JournalineScreen::_print_debug_data(const QString & iTitle)
+{
+  // qInfo() << "Title" << iTitle << "PathVec size" << mPathVec.size() << "Content" << mPathVec;
+  //
+  // std::vector<i32> keys;
+  // keys.reserve(mTableVec.size());
+  // for (auto & [key,  pElem]: mTableVec)
+  // {
+  //   keys.push_back(key);
+  // }
+  // qDebug() << "TableVec size" << mTableVec.size() << "keys" << keys;
+  //
+  // // for (auto & [key,  pElem]: mTableVec)
+  // // {
+  // //   qDebug() << "key" << key << "ObjType" << pElem->object_type << "title" << pElem->title << "itemsize" << pElem->item.size();
+  // //   for (i32 elemIdx = 0; elemIdx < std::min((i32)pElem->item.size(), 2) ; elemIdx++)
+  // //   {
+  // //     const NML::Item_t & item = pElem->item[elemIdx];
+  // //     qDebug() << "  --> elemIdx" << elemIdx << "text" << item.text << item.link_id_available << item.link_id;
+  // //   }
+  // // }
+  //
+  // const i32 startIdx = _find_index(0);
+  // if (startIdx < 0)
+  // {
+  //   qDebug() << "StartIdx not found";
+  //   return;
+  // }
+  // const NML::News_t * const pStartElem = mTableVec[startIdx].element;
+  // qDebug() << "StartIdx" << startIdx << "ObjType" << pStartElem->object_type << "title" << pStartElem->title << "itemsize" << pStartElem->item.size();
+  //
+  //
+  // for (i32 elemIdx = 0; elemIdx < std::min((i32)pStartElem->item.size(), 2) ; elemIdx++)
+  // {
+  //   const NML::Item_t & item = pStartElem->item[elemIdx];
+  // }
+}
+

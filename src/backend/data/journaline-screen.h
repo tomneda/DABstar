@@ -41,17 +41,17 @@
 #include <QModelIndex>
 #include <QStandardItemModel>
 
-struct STableElement
-{
-  i32 key;
-  NML::News_t * element;
-};
-
 class JournalineScreen : public QObject
 {
   Q_OBJECT
 
 public:
+  struct STableElement
+  {
+    i32 key;
+    NML::News_t * element;
+  };
+
   JournalineScreen(const std::vector<STableElement> & iTableVec);
   ~JournalineScreen() override;
 
@@ -65,12 +65,23 @@ private:
   QPushButton * mpBtnUp;
   QLabel * mpLblMainText;
   QListView * mpListView;
+  QLabel * mpLblHtml;
   QStandardItemModel mModel;
+
+
+  QString _get_journaline_as_HTML() const;
+  void _build_html_tree_recursive(const NML::News_t & element, QString & html) const;
 
   void _display_element(const NML::News_t & element);
   void _display_menu(const NML::News_t & element);
   void _display_plain(const NML::News_t & element);
   void _display_list(const NML::News_t & element);
+
+  QString _ident_str(u32 iLevel) const;
+  void _print_element(const NML::News_t & element, u32 iLevel) const;
+  void _print_menu(const NML::News_t & element, u32 iLevel) const;
+  void _print_plain(const NML::News_t & element, u32 iLevel) const;
+  void _print_list(const NML::News_t & element, u32 iLevel) const;
 
   i32 _find_index(i32) const;
 
@@ -80,5 +91,7 @@ public slots:
 private slots:
   void _slot_handle_reset_button();
   void _slot_handle_up_button();
-  void _slot_select_sub(const QModelIndex & ind);
+  void _slot_select_sub(const QModelIndex & iModIdx);
+
+  void _print_debug_data(const QString & iTitle);
 };
