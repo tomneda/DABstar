@@ -37,6 +37,7 @@
 #include <QFrame>
 #include <QPushButton>
 #include <QLabel>
+#include <QScrollArea>
 #include <QListView>
 #include <QModelIndex>
 #include <QStandardItemModel>
@@ -65,6 +66,7 @@ private:
   QPushButton * mpBtnUp;
   QLabel * mpLblMainText;
   QListView * mpListView;
+  QScrollArea * mpScrollArea;
   QLabel * mpLblHtml;
   QStandardItemModel mModel;
 

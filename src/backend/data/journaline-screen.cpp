@@ -41,11 +41,15 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   Settings::Journaline::posAndSize.read_widget_geometry(&mFrame);
 
   // Create UI elements (need no delete)
-  mpBtnReset = new QPushButton("Reset", &mFrame);
+  mpBtnReset = new QPushButton("Reset / Reload", &mFrame);
   mpBtnUp = new QPushButton("Up", &mFrame);
   mpLblMainText = new QLabel("", &mFrame);
-  mpListView = new QListView(&mFrame);
   mpLblHtml = new QLabel(&mFrame);
+  mpLblHtml->setWordWrap(true);
+  mpScrollArea = new QScrollArea(&mFrame);
+  mpScrollArea->setWidget(mpLblHtml);
+  mpScrollArea->setWidgetResizable(true); // Very important!
+  mpListView = new QListView(&mFrame);
 
   QHBoxLayout * LH = new QHBoxLayout();
   QVBoxLayout * LV = new QVBoxLayout(&mFrame);
@@ -55,7 +59,7 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   LV->addLayout(LH);
   LV->addWidget(mpLblMainText);
   LV->addWidget(mpListView);
-  LV->addWidget(mpLblHtml);
+  LV->addWidget(mpScrollArea);
   mFrame.setLayout(LV);
 
   mFrame.setWindowTitle("Journaline");
@@ -67,8 +71,6 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   mpLblHtml->setTextInteractionFlags(Qt::TextSelectableByMouse);
   mpLblHtml->setTextInteractionFlags(Qt::TextSelectableByKeyboard);
   mpLblHtml->setOpenExternalLinks(true);
-  mpLblHtml->setText("Demotext");
-
 
   connect(mpBtnReset, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_reset_button);
   connect(mpBtnUp, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_up_button);
@@ -89,8 +91,10 @@ void JournalineScreen::_slot_handle_reset_button()
   for (int32_t i = 0; i < 5; i++) qDebug();
   const i32 startIdx = _find_index(0);
   assert(startIdx >= 0);
-  _print_element(*(mTableVec[startIdx].element), 0);
-  mpLblHtml->setText(_get_journaline_as_HTML());
+  // _print_element(*(mTableVec[startIdx].element), 0);
+  const QString html = _get_journaline_as_HTML();
+  mpLblHtml->setText(html);
+  qDebug() << html;
 
 
 
@@ -364,7 +368,7 @@ void JournalineScreen::slot_start(const i32 index)
   mPathVec.push_back(0);
   qDebug() << "Start" << index;
   _display_element(*(mTableVec[index].element));
-  _print_element(*(mTableVec[index].element), 0);
+  // _print_element(*(mTableVec[index].element), 0);
 }
 
 void JournalineScreen::_print_debug_data(const QString & iTitle)
