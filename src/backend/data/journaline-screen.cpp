@@ -298,8 +298,11 @@ void JournalineScreen::_print_list(const NML::News_t & element, const u32 iLevel
 
 void JournalineScreen::_build_html_tree_recursive(const NML::News_t & iElement, QString & ioHtml, const i32 iLevel) const
 {
-  const QString captionTag = "h" + QString::number(std::min(iLevel + 1, 6));
-  ioHtml += "<" + captionTag  + ">" + QString::fromUtf8(iElement.title) + "</"  + captionTag + ">";
+  static const QString colorList[6] = { "#E0E0E0", "#87CEFA ", "#90EE90", "#FFD700", "#F08080", "#B0C4DE" };
+  const i32 captionIdx = std::min(iLevel + 1, 6);
+  const QString capTagBeg = "<h" + QString::number(captionIdx) + " style=\"color: " + colorList[captionIdx - 1] + ";\">";
+  const QString capTagEnd = "</h" + QString::number(captionIdx) + ">";
+  ioHtml += capTagBeg + QString::fromUtf8(iElement.title) + capTagEnd;
 
   switch (iElement.object_type)
   {
@@ -345,6 +348,7 @@ QString JournalineScreen::_get_journaline_as_HTML() const
   {
     return "";
   }
+
 
   QString html = "<html><body>";
   _build_html_tree_recursive(*(mTableVec[startIdx].element), html, 0);
