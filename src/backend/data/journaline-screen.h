@@ -64,6 +64,7 @@ private:
   QFrame mFrame;
   QPushButton * mpBtnReset;
   QPushButton * mpBtnUp;
+  QPushButton * mpBtnReload;
   QLabel * mpLblMainText;
   QListView * mpListView;
   QScrollArea * mpScrollArea;
@@ -93,6 +94,7 @@ public slots:
 private slots:
   void _slot_handle_reset_button();
   void _slot_handle_up_button();
+  void _slot_handle_reload_button();
   void _slot_select_sub(const QModelIndex & iModIdx);
 
   void _print_debug_data(const QString & iTitle);

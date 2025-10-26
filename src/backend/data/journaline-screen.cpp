@@ -41,8 +41,9 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   Settings::Journaline::posAndSize.read_widget_geometry(&mFrame);
 
   // Create UI elements (need no delete)
-  mpBtnReset = new QPushButton("Reset / Reload", &mFrame);
+  mpBtnReset = new QPushButton("Reset", &mFrame);
   mpBtnUp = new QPushButton("Up", &mFrame);
+  mpBtnReload = new QPushButton("Reload", &mFrame);
   mpLblMainText = new QLabel("", &mFrame);
   mpLblHtml = new QLabel(&mFrame);
   mpLblHtml->setWordWrap(true);
@@ -56,10 +57,11 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
 
   LH->addWidget(mpBtnReset);
   LH->addWidget(mpBtnUp);
-  LV->addLayout(LH);
-  LV->addWidget(mpLblMainText);
-  LV->addWidget(mpListView);
-  LV->addWidget(mpScrollArea);
+  LH->addWidget(mpBtnReload);
+  LV->addWidget(mpLblMainText, 0);
+  LV->addWidget(mpListView, 0);
+  LV->addLayout(LH, 0);
+  LV->addWidget(mpScrollArea, 2);
   mFrame.setLayout(LV);
 
   mFrame.setWindowTitle("Journaline");
@@ -74,6 +76,7 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
 
   connect(mpBtnReset, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_reset_button);
   connect(mpBtnUp, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_up_button);
+  connect(mpBtnReload, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_reload_button);
   connect(mpListView, &QListView::clicked, this, &JournalineScreen::_slot_select_sub);
 
   mFrame.show();
@@ -87,20 +90,6 @@ JournalineScreen::~JournalineScreen()
 
 void JournalineScreen::_slot_handle_reset_button()
 {
-
-  const i32 startIdx = _find_index(0);
-  if (startIdx >= 0)
-  {
-    for (int32_t i = 0; i < 5; i++) qDebug();
-    assert(startIdx >= 0);
-    // _print_element(*(mTableVec[startIdx].element), 0);
-    const QString html = _get_journaline_as_HTML();
-    mpLblHtml->setText(html);
-    qDebug() << html;
-  }
-
-
-
   mPathVec.clear();
   for (u32 i = 0; i < mTableVec.size(); i++)
   {
@@ -122,6 +111,18 @@ void JournalineScreen::_slot_handle_up_button()
   if (index < 0)
     return;
   _display_element(*(mTableVec[index].element));
+}
+
+void JournalineScreen::_slot_handle_reload_button()
+{
+  const i32 startIdx = _find_index(0);
+  if (startIdx >= 0)
+  {
+    for (int32_t i = 0; i < 5; i++) qDebug();
+    assert(startIdx >= 0);
+    // _print_element(*(mTableVec[startIdx].element), 0);
+    mpLblHtml->setText(_get_journaline_as_HTML());
+  }
 }
 
 void JournalineScreen::_slot_select_sub(const QModelIndex & iModIdx)
@@ -377,6 +378,7 @@ void JournalineScreen::slot_start(const i32 index)
   qDebug() << "Start" << index;
   _display_element(*(mTableVec[index].element));
   // _print_element(*(mTableVec[index].element), 0);
+  _slot_handle_reload_button();
 }
 
 void JournalineScreen::_print_debug_data(const QString & iTitle)
