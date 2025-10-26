@@ -88,13 +88,16 @@ JournalineScreen::~JournalineScreen()
 void JournalineScreen::_slot_handle_reset_button()
 {
 
-  for (int32_t i = 0; i < 5; i++) qDebug();
   const i32 startIdx = _find_index(0);
-  assert(startIdx >= 0);
-  // _print_element(*(mTableVec[startIdx].element), 0);
-  const QString html = _get_journaline_as_HTML();
-  mpLblHtml->setText(html);
-  qDebug() << html;
+  if (startIdx >= 0)
+  {
+    for (int32_t i = 0; i < 5; i++) qDebug();
+    assert(startIdx >= 0);
+    // _print_element(*(mTableVec[startIdx].element), 0);
+    const QString html = _get_journaline_as_HTML();
+    mpLblHtml->setText(html);
+    qDebug() << html;
+  }
 
 
 
@@ -293,41 +296,42 @@ void JournalineScreen::_print_list(const NML::News_t & element, const u32 iLevel
   }
 }
 
-void JournalineScreen::_build_html_tree_recursive(const NML::News_t & element, QString & html) const
+void JournalineScreen::_build_html_tree_recursive(const NML::News_t & iElement, QString & ioHtml, const i32 iLevel) const
 {
-  html += "<b>" + QString::fromUtf8(element.title) + "</b>";
+  const QString captionTag = "h" + QString::number(std::min(iLevel + 1, 6));
+  ioHtml += "<" + captionTag  + ">" + QString::fromUtf8(iElement.title) + "</"  + captionTag + ">";
 
-  switch (element.object_type)
+  switch (iElement.object_type)
   {
   case NML::MENU:
-    html += "<ul>";
-    for (const auto & item : element.item)
+    ioHtml += "<ul>";
+    for (const auto & item : iElement.item)
     {
-      html += "<li>" + QString::fromUtf8(item.text);
+      ioHtml += "<li>" + QString::fromUtf8(item.text);
       const i32 subMenuIdx = _find_index(item.link_id);
       if (subMenuIdx >= 0)
       {
-        html += "<ul><li>";
-        _build_html_tree_recursive(*mTableVec[subMenuIdx].element, html);
-        html += "</li></ul>";
+        ioHtml += "<ul><li>";
+        _build_html_tree_recursive(*mTableVec[subMenuIdx].element, ioHtml, iLevel + 1);
+        ioHtml += "</li></ul>";
       }
-      html += "</li>";
+      ioHtml += "</li>";
     }
-    html += "</ul>";
+    ioHtml += "</ul>";
     break;
   case NML::PLAIN:
-    if (!element.item.empty())
+    if (!iElement.item.empty())
     {
-      html += "<p>" + QString::fromUtf8(element.item[0].text) + "</p>";
+      ioHtml += "<p>" + QString::fromUtf8(iElement.item[0].text) + "</p>";
     }
     break;
   case NML::LIST:
-    html += "<ul>";
-    for (const auto & item : element.item)
+    ioHtml += "<ul>";
+    for (const auto & item : iElement.item)
     {
-      html += "<li>" + QString::fromUtf8(item.text) + "</li>";
+      ioHtml += "<li>" + QString::fromUtf8(item.text) + "</li>";
     }
-    html += "</ul>";
+    ioHtml += "</ul>";
     break;
   default:
     break;
@@ -343,7 +347,7 @@ QString JournalineScreen::_get_journaline_as_HTML() const
   }
 
   QString html = "<html><body>";
-  _build_html_tree_recursive(*(mTableVec[startIdx].element), html);
+  _build_html_tree_recursive(*(mTableVec[startIdx].element), html, 0);
   html += "</body></html>";
   return html;
 }

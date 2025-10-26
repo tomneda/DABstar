@@ -72,7 +72,7 @@ private:
 
 
   QString _get_journaline_as_HTML() const;
-  void _build_html_tree_recursive(const NML::News_t & element, QString & html) const;
+  void _build_html_tree_recursive(const NML::News_t & iElement, QString & ioHtml, i32 iLevel) const;
 
   void _display_element(const NML::News_t & element);
   void _display_menu(const NML::News_t & element);
