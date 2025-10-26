@@ -62,6 +62,7 @@ private:
 
 signals:
   void signal_start(int);
+  void signal_new_data();
 };
 
 #endif

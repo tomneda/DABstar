@@ -34,16 +34,24 @@
 #include "setting-helper.h"
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QTimer>
 
 JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   : mTableVec(iTableVec)
 {
   Settings::Journaline::posAndSize.read_widget_geometry(&mFrame);
+  // mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon, but has also no minimize button then, bad for such big window
+
+  mpTimerRecMarker = new QTimer(this);
+  mpTimerRecMarker->setSingleShot(true);
+  mpTimerRecMarker->setInterval(100);
 
   // Create UI elements (need no delete)
-  mpBtnReset = new QPushButton("Reset", &mFrame);
+  mpBtnHome = new QPushButton("Home", &mFrame);
   mpBtnUp = new QPushButton("Up", &mFrame);
   mpBtnReload = new QPushButton("Reload", &mFrame);
+  mpLblDataReceiving = new QLabel("  Data receiving  ", &mFrame);
+  mpLblDataReceiving->setAlignment(Qt::AlignCenter);
   mpLblMainText = new QLabel("", &mFrame);
   mpLblHtml = new QLabel(&mFrame);
   mpLblHtml->setWordWrap(true);
@@ -55,8 +63,11 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   QHBoxLayout * LH = new QHBoxLayout();
   QVBoxLayout * LV = new QVBoxLayout(&mFrame);
 
-  LH->addWidget(mpBtnReset);
+  LH->addWidget(mpBtnHome);
   LH->addWidget(mpBtnUp);
+  LH->addStretch();
+  LH->addWidget(mpLblDataReceiving); 
+  LH->addStretch();
   LH->addWidget(mpBtnReload);
   LV->addWidget(mpLblMainText, 0);
   LV->addWidget(mpListView, 0);
@@ -64,20 +75,25 @@ JournalineScreen::JournalineScreen(const std::vector<STableElement> & iTableVec)
   LV->addWidget(mpScrollArea, 2);
   mFrame.setLayout(LV);
 
+  mpBtnHome->setEnabled(false);
+  mpBtnUp->setEnabled(false);
+  mpBtnReload->setEnabled(false);
+  _set_receiver_marker_color(false);
+
   mFrame.setWindowTitle("Journaline");
 
   mpListView->setToolTip("Features NewsService Journaline(R) decoder technology by\n"
                          "Fraunhofer IIS, Erlangen, Germany.\n"
                          "For more information visit http://www.iis.fhg.de/dab");
 
-  mpLblHtml->setTextInteractionFlags(Qt::TextSelectableByMouse);
-  mpLblHtml->setTextInteractionFlags(Qt::TextSelectableByKeyboard);
+  mpLblHtml->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextBrowserInteraction | Qt::TextBrowserInteraction);
   mpLblHtml->setOpenExternalLinks(true);
 
-  connect(mpBtnReset, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_reset_button);
+  connect(mpBtnHome, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_home_button);
   connect(mpBtnUp, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_up_button);
   connect(mpBtnReload, &QPushButton::clicked, this, &JournalineScreen::_slot_handle_reload_button);
   connect(mpListView, &QListView::clicked, this, &JournalineScreen::_slot_select_sub);
+  connect(mpTimerRecMarker, &QTimer::timeout, this, &JournalineScreen::_slot_colorize_receive_marker_timeout);
 
   mFrame.show();
 }
@@ -88,7 +104,29 @@ JournalineScreen::~JournalineScreen()
   mFrame.hide();
 }
 
-void JournalineScreen::_slot_handle_reset_button()
+void JournalineScreen::slot_start(const i32 index)
+{
+  mPathVec.push_back(0);
+  _display_element(*(mTableVec[index].element));
+  _slot_handle_reload_button(); // loads the first data elements to screen
+  mDataTransferStarted = true;
+
+  mpBtnHome->setEnabled(true);
+  mpBtnUp->setEnabled(true);
+  mpBtnReload->setEnabled(true);
+}
+
+void JournalineScreen::slot_new_data()
+{
+  _set_receiver_marker_color(true);
+  mpTimerRecMarker->start();
+  if (mDataTransferStarted)
+  {
+    mpBtnReload->setEnabled(true);
+  }
+}
+
+void JournalineScreen::_slot_handle_home_button()
 {
   mPathVec.clear();
   for (u32 i = 0; i < mTableVec.size(); i++)
@@ -115,12 +153,11 @@ void JournalineScreen::_slot_handle_up_button()
 
 void JournalineScreen::_slot_handle_reload_button()
 {
+  mpBtnReload->setEnabled(false);
+
   const i32 startIdx = _find_index(0);
   if (startIdx >= 0)
   {
-    for (int32_t i = 0; i < 5; i++) qDebug();
-    assert(startIdx >= 0);
-    // _print_element(*(mTableVec[startIdx].element), 0);
     mpLblHtml->setText(_get_journaline_as_HTML());
   }
 }
@@ -135,9 +172,6 @@ void JournalineScreen::_slot_select_sub(const QModelIndex & iModIdx)
   {
     return;
   }
-
-  _print_debug_data("_slot_select_sub");
-  qDebug() << "Key" << key << "CurrIdx" << currIdx;
 
   const NML::News_t * const pCurrElem = mTableVec[currIdx].element;
 
@@ -164,24 +198,26 @@ void JournalineScreen::_slot_select_sub(const QModelIndex & iModIdx)
   }
 }
 
+void JournalineScreen::_slot_colorize_receive_marker_timeout() const
+{
+  _set_receiver_marker_color(false);
+}
+
 void JournalineScreen::_display_element(const NML::News_t & element)
 {
   switch (element.object_type)
   {
   case NML::MENU:
-    // qDebug() << "Display menu";
     _display_menu(element);
     break;
   case NML::PLAIN:
-    // qDebug() << "Display plain";
     _display_plain(element);
     break;
   case NML::LIST:
-    // qDebug() << "Display list";
     _display_list(element);
     break;
   default:
-    qDebug() << "Unknown object type" << element.object_type;
+    qWarning() << "Unhandled object type" << element.object_type;
     break;
   }
 }
@@ -196,7 +232,6 @@ void JournalineScreen::_display_menu(const NML::News_t & element)
   for (u32 i = 0; i < element.item.size(); i++)
   {
     const NML::Item_t & item = element.item[i];
-    qDebug() << "Display menu item" << i << item.text << item.link_id_available << item.link_id;
     mModel.appendRow(new QStandardItem(QString::fromStdString(item.text)));
   }
   mpListView->setModel(&mModel);
@@ -209,7 +244,6 @@ void JournalineScreen::_display_plain(const NML::News_t & element)
   mpLblMainText->setText(QString::fromStdString(t));
   mModel.clear();
   const NML::Item_t & item = element.item[0];
-  qDebug() << "Display plain item" << item.text << item.link_id_available << item.link_id;
   mModel.appendRow(new QStandardItem(QString::fromStdString(item.text)));
   mpListView->setModel(&mModel);
 }
@@ -224,77 +258,9 @@ void JournalineScreen::_display_list(const NML::News_t & element)
   for (u32 i = 0; i < element.item.size(); i++)
   {
     const NML::Item_t & item = element.item[i];
-    qDebug() << "Display list item" << i << item.text << item.link_id_available << item.link_id;
     mModel.appendRow(new QStandardItem(QString::fromStdString(item.text)));
   }
   mpListView->setModel(&mModel);
-}
-
-QString JournalineScreen::_ident_str(const u32 iLevel) const
-{
-  if (iLevel == 0) return "";
-
-  QString s("|-");
-  s.reserve(iLevel * 4);
-  for (u32 i = 0; i < iLevel-1; i++) s += "----";
-  return s + "->";
-}
-
-void JournalineScreen::_print_element(const NML::News_t & element, const u32 iLevel) const
-{
-  if (iLevel == 0)
-  {
-    qDebug() << "Title:" << element.title;
-  }
-
-  switch (element.object_type)
-  {
-  case NML::MENU:
-    _print_menu(element, iLevel);
-    break;
-  case NML::PLAIN:
-    _print_plain(element, iLevel);
-    break;
-  case NML::LIST:
-    _print_list(element, iLevel);
-    break;
-  default:
-    qDebug() << "Unknown object type" << element.object_type;
-    break;
-  }
-}
-
-
-void JournalineScreen::_print_menu(const NML::News_t & element, const u32 iLevel) const
-{
-  const QString ident = _ident_str(iLevel);
-  for (u32 i = 0; i < element.item.size(); i++)
-  {
-    const NML::Item_t & item = element.item[i];
-    qDebug() << ident.toStdString().c_str() << "MenuItem" << i << QString::fromUtf8(item.text);
-    const i32 subMenuIdx = _find_index(item.link_id);
-    if (subMenuIdx >= 0)
-    {
-      _print_element(*mTableVec[subMenuIdx].element, iLevel + 1);
-    }
-  }
-}
-
-void JournalineScreen::_print_plain(const NML::News_t & element, const u32 iLevel) const
-{
-  const QString ident = _ident_str(iLevel);
-  const NML::Item_t & item = element.item[0];
-  qDebug() << ident.toStdString().c_str() << "PlainItem" << QString::fromUtf8(item.text);
-}
-
-void JournalineScreen::_print_list(const NML::News_t & element, const u32 iLevel) const
-{
-  const QString ident = _ident_str(iLevel);
-  for (u32 i = 0; i < element.item.size(); i++)
-  {
-    const NML::Item_t & item = element.item[i];
-    qDebug() << ident.toStdString().c_str() << "ListItem" << i << QString::fromUtf8(item.text);
-  }
 }
 
 void JournalineScreen::_build_html_tree_recursive(const NML::News_t & iElement, QString & ioHtml, const i32 iLevel) const
@@ -345,11 +311,11 @@ void JournalineScreen::_build_html_tree_recursive(const NML::News_t & iElement, 
 QString JournalineScreen::_get_journaline_as_HTML() const
 {
   const i32 startIdx = _find_index(0);
+
   if (startIdx < 0)
   {
     return "";
   }
-
 
   QString html = "<html><body>";
   _build_html_tree_recursive(*(mTableVec[startIdx].element), html, 0);
@@ -369,53 +335,14 @@ i32 JournalineScreen::_find_index(const i32 key) const
   return -1;
 }
 
-
-
-
-void JournalineScreen::slot_start(const i32 index)
+void JournalineScreen::_set_receiver_marker_color(bool iReceivingData) const
 {
-  mPathVec.push_back(0);
-  qDebug() << "Start" << index;
-  _display_element(*(mTableVec[index].element));
-  // _print_element(*(mTableVec[index].element), 0);
-  _slot_handle_reload_button();
+  if (iReceivingData)
+  {
+    mpLblDataReceiving->setStyleSheet("background-color: #C85C3C; color: white;");
+  }
+  else
+  {
+    mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray;");
+  }
 }
-
-void JournalineScreen::_print_debug_data(const QString & iTitle)
-{
-  // qInfo() << "Title" << iTitle << "PathVec size" << mPathVec.size() << "Content" << mPathVec;
-  //
-  // std::vector<i32> keys;
-  // keys.reserve(mTableVec.size());
-  // for (auto & [key,  pElem]: mTableVec)
-  // {
-  //   keys.push_back(key);
-  // }
-  // qDebug() << "TableVec size" << mTableVec.size() << "keys" << keys;
-  //
-  // // for (auto & [key,  pElem]: mTableVec)
-  // // {
-  // //   qDebug() << "key" << key << "ObjType" << pElem->object_type << "title" << pElem->title << "itemsize" << pElem->item.size();
-  // //   for (i32 elemIdx = 0; elemIdx < std::min((i32)pElem->item.size(), 2) ; elemIdx++)
-  // //   {
-  // //     const NML::Item_t & item = pElem->item[elemIdx];
-  // //     qDebug() << "  --> elemIdx" << elemIdx << "text" << item.text << item.link_id_available << item.link_id;
-  // //   }
-  // // }
-  //
-  // const i32 startIdx = _find_index(0);
-  // if (startIdx < 0)
-  // {
-  //   qDebug() << "StartIdx not found";
-  //   return;
-  // }
-  // const NML::News_t * const pStartElem = mTableVec[startIdx].element;
-  // qDebug() << "StartIdx" << startIdx << "ObjType" << pStartElem->object_type << "title" << pStartElem->title << "itemsize" << pStartElem->item.size();
-  //
-  //
-  // for (i32 elemIdx = 0; elemIdx < std::min((i32)pStartElem->item.size(), 2) ; elemIdx++)
-  // {
-  //   const NML::Item_t & item = pStartElem->item[elemIdx];
-  // }
-}
-

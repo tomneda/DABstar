@@ -60,17 +60,20 @@ private:
   const std::vector<STableElement> & mTableVec;
   STableElement mCurrTableElement;
   std::vector<i32> mPathVec;
+  QTimer * mpTimerRecMarker;
+  bool mDataTransferStarted = false;
 
+  // UI elements
   QFrame mFrame;
-  QPushButton * mpBtnReset;
+  QPushButton * mpBtnHome;
   QPushButton * mpBtnUp;
   QPushButton * mpBtnReload;
+  QLabel * mpLblDataReceiving;
   QLabel * mpLblMainText;
   QListView * mpListView;
   QScrollArea * mpScrollArea;
   QLabel * mpLblHtml;
   QStandardItemModel mModel;
-
 
   QString _get_journaline_as_HTML() const;
   void _build_html_tree_recursive(const NML::News_t & iElement, QString & ioHtml, i32 iLevel) const;
@@ -80,22 +83,17 @@ private:
   void _display_plain(const NML::News_t & element);
   void _display_list(const NML::News_t & element);
 
-  QString _ident_str(u32 iLevel) const;
-  void _print_element(const NML::News_t & element, u32 iLevel) const;
-  void _print_menu(const NML::News_t & element, u32 iLevel) const;
-  void _print_plain(const NML::News_t & element, u32 iLevel) const;
-  void _print_list(const NML::News_t & element, u32 iLevel) const;
-
   i32 _find_index(i32) const;
+  void _set_receiver_marker_color(bool iReceivingData) const;
 
 public slots:
   void slot_start(i32);
+  void slot_new_data();
 
 private slots:
-  void _slot_handle_reset_button();
+  void _slot_handle_home_button();
   void _slot_handle_up_button();
   void _slot_handle_reload_button();
   void _slot_select_sub(const QModelIndex & iModIdx);
-
-  void _print_debug_data(const QString & iTitle);
+  void _slot_colorize_receive_marker_timeout() const;
 };

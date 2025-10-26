@@ -56,6 +56,7 @@ JournalineDataHandler::JournalineDataHandler()
   mTableElemVec.reserve(64);
 
   connect(this, &JournalineDataHandler::signal_start, &mJournalineScreen, &JournalineScreen::slot_start);
+  connect(this, &JournalineDataHandler::signal_new_data, &mJournalineScreen, &JournalineScreen::slot_new_data);
 }
 
 JournalineDataHandler::~JournalineDataHandler()
@@ -132,6 +133,7 @@ void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
         emit signal_start(mTableElemVec.size() - 1);
       }
     }
+    emit signal_new_data();
   }
   break;
 
