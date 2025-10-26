@@ -406,7 +406,7 @@
          <item>
           <widget class="QPushButton" name="btnFib">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the FIB content list&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the FIB content list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;- Click to the top of each column to change sorting.&lt;br/&gt;- Single click on a row starts the service.&lt;br/&gt;- Double click allows storing the table in a CSV file.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
             <iconset resource="../../resources.qrc">
