@@ -38,10 +38,11 @@
  *	copyrights are gratefully acknowledged
  */
 
+#include "spyserver-client.h"
 #include "dab-constants.h"
 #include "device-exceptions.h"
 #include "setting-helper.h"
-#include "spyserver-client.h"
+#include <iostream>
 #include <QMessageBox>
 #include <QTimer>
 #include <QLoggingCategory>

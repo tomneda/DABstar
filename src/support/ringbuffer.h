@@ -78,7 +78,6 @@
 
 #include "glob_defs.h"
 #include <array>
-#include <cstdint>
 #include <atomic>
 #include <vector>
 #include <cstring>

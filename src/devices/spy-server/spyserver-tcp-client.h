@@ -31,28 +31,22 @@
 
 #pragma once
 
-#include	<atomic>
-#include	<chrono>
-#include	<QThread>
-#include	"ringbuffer.h"
-#include	<cstdint>
-#include	<stdint.h>
-#include	<sstream>
-#include	<iostream>
-#include	<mutex>
-
 #ifdef __MINGW32__
-#include	<winsock2.h>
-#include	<windows.h>
-#include	<ws2tcpip.h>
+  #include <winsock2.h>
+  #include <windows.h>
+  #include <ws2tcpip.h>
 #else
-#include	<sys/socket.h>
-#include	<netinet/in.h>
+  #include <sys/socket.h>
+  #include <netinet/in.h>
 #endif
-
 #if defined(__GNUC__) || defined(__MINGW32__)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
+#include "ringbuffer.h"
+#include <atomic>
+#include <mutex>
+#include <QThread>
+
 
 class SpyServerTcpClient : public QThread
 {

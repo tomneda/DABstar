@@ -80,9 +80,9 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
   if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
   {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-    connect(pD, &QCheckBox::checkStateChanged, [this](i32 iState){ _update_ui_state_to_setting(); });
+    connect(pD, &QCheckBox::checkStateChanged, [this](i32 /*iState*/){ _update_ui_state_to_setting(); });
 #else
-    connect(pD, &QCheckBox::stateChanged, [this](i32 iState){ _update_ui_state_to_setting(); });
+    connect(pD, &QCheckBox::stateChanged, [this](i32 /*iState*/){ _update_ui_state_to_setting(); });
 #endif
     return;
   }
@@ -96,19 +96,19 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
 
   if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
   {
-    connect(pD, &QSpinBox::valueChanged, [this](i32 iValue){ _update_ui_state_to_setting(); });
+    connect(pD, &QSpinBox::valueChanged, [this](i32 /*iValue*/){ _update_ui_state_to_setting(); });
     return;
   }
 
   if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
   {
-    connect(pD, &QDoubleSpinBox::valueChanged, [this](f64 iValue){ _update_ui_state_to_setting(); });
+    connect(pD, &QDoubleSpinBox::valueChanged, [this](f64 /*iValue*/){ _update_ui_state_to_setting(); });
     return;
   }
 
   if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
   {
-    connect(pD, &QSlider::valueChanged, [this](i32 iValue){ _update_ui_state_to_setting_deferred(); });
+    connect(pD, &QSlider::valueChanged, [this](i32 /*iValue*/){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 

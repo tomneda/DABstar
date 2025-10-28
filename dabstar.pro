@@ -30,7 +30,7 @@ DEFINES		+= PRJ_VERS=\\\"3.11.0\\\"
 DEFINES		+= __BITS64__
 
 # For showing trace output
-#DEFINES	+= __EPG_TRACE__  
+#DEFINES	+= __EPG_TRACE__
 
 exists (".git") {
    GITHASHSTRING = $$system(git rev-parse --short HEAD)
@@ -44,7 +44,7 @@ isEmpty(GITHASHSTRING) {
 }
 
 #DESTDIR 	= ../../DABstar-Qt6.8.3
-LIBS		+= -L../../dabstar-libs/lib
+LIBS      += -L../dabstar-libs/lib
 CONFIG		+= airspy
 CONFIG		+= spyServer
 CONFIG		+= rtl_tcp
@@ -74,6 +74,7 @@ LIBS		+= -lqwt
 DEPENDPATH += src \
     src/main \
     src/ofdm \
+    src/decoder \
     src/protection \
     src/backend \
     src/backend/audio \
@@ -99,7 +100,7 @@ DEPENDPATH += src \
     src/devices/filereaders/raw-files \
     src/devices/filereaders/wav-files \
     src/devices/dummy-handler
-	  
+
 INCLUDEPATH += \
     ../dabstar-libs/include/qwt \
     ../dabstar-libs/include + $${DEPENDPATH}
@@ -119,9 +120,12 @@ HEADERS += \
     src/ofdm/freq-interleaver.h \
     src/ofdm/tii-detector.h \
     src/ofdm/timesyncer.h \
+    src/decoder/fib-decoder_if.h \
     src/decoder/fib-decoder.h \
-    src/decoder/fib-config.h \
+    src/decoder/fib-config-fig0.h \
+    src/decoder/fib-config-fig1.h \
     src/decoder/fib-table.h \
+    src/decoder/fib-helper.h \
     src/decoder/fic-decoder.h \
     src/protection/protTables.h \
     src/protection/protection.h \
@@ -219,6 +223,8 @@ HEADERS += \
 SOURCES += \
     src/main/main.cpp \
     src/main/dabradio.cpp \
+    src/main/dabradio_ui.cpp \
+    src/main/dabradio_audio.cpp \
     src/main/dab-processor.cpp \
     src/support/techdata.cpp \
     src/eti-handler/eti-generator.cpp \
@@ -228,11 +234,14 @@ SOURCES += \
     src/ofdm/freq-interleaver.cpp \
     src/ofdm/tii-detector.cpp \
     src/ofdm/timesyncer.cpp \
+    src/decoder/fib-config-fig0.cpp \
+    src/decoder/fib-config-fig1.cpp \
     src/decoder/fib-decoder.cpp \
     src/decoder/fib-decoder-fig0.cpp \
     src/decoder/fib-decoder-fig1.cpp \
     src/decoder/fib-decoder-string-getter.cpp \
-    src/decoder/fic-handler.cpp \
+    src/decoder/fib-helper.cpp \
+    src/decoder/fic-decoder.cpp \
     src/protection/protTables.cpp \
     src/protection/protection.cpp \
     src/protection/eep-protection.cpp \
@@ -330,224 +339,224 @@ FORMS += \
 #	Note: the windows version is bound to the dll, the
 #	linux version loads the function from the so
 dabstick {
-	DEFINES		+= HAVE_RTLSDR
-	DEPENDPATH	+= src/devices/rtlsdr-handler
-	INCLUDEPATH	+= src/devices/rtlsdr-handler
-	HEADERS		+= src/devices/rtlsdr-handler/rtlsdr-handler.h \
-	                   src/devices/rtlsdr-handler/rtl-dongleselect.h
-	SOURCES		+= src/devices/rtlsdr-handler/rtlsdr-handler.cpp \
-	                   src/devices/rtlsdr-handler/rtl-dongleselect.cpp 
-	FORMS		+= src/devices/rtlsdr-handler/rtlsdr-widget.ui
+  DEFINES		+= HAVE_RTLSDR
+  DEPENDPATH	+= src/devices/rtlsdr-handler
+  INCLUDEPATH	+= src/devices/rtlsdr-handler
+  HEADERS		+= src/devices/rtlsdr-handler/rtlsdr-handler.h \
+                     src/devices/rtlsdr-handler/rtl-dongleselect.h
+  SOURCES		+= src/devices/rtlsdr-handler/rtlsdr-handler.cpp \
+                     src/devices/rtlsdr-handler/rtl-dongleselect.cpp
+  FORMS		+= src/devices/rtlsdr-handler/rtlsdr-widget.ui
 }
 
 #
 #	the SDRplay
 #
 sdrplay-v2 {
-	DEFINES		+= HAVE_SDRPLAY_V2
-	DEPENDPATH	+= src/devices/sdrplay-handler-v2
-	INCLUDEPATH	+= src/devices/sdrplay-handler-v2
-	HEADERS		+= src/devices/sdrplay-handler-v2/sdrplay-handler-v2.h \
-	                   src/devices/sdrplay-handler-v2/sdrplayselect.h 
-	SOURCES		+= src/devices/sdrplay-handler-v2/sdrplay-handler-v2.cpp \
-	                   src/devices/sdrplay-handler-v2/sdrplayselect.cpp 
-	FORMS		+= src/devices/sdrplay-handler-v2/sdrplay-widget-v2.ui
+  DEFINES		+= HAVE_SDRPLAY_V2
+  DEPENDPATH	+= src/devices/sdrplay-handler-v2
+  INCLUDEPATH	+= src/devices/sdrplay-handler-v2
+  HEADERS		+= src/devices/sdrplay-handler-v2/sdrplay-handler-v2.h \
+                     src/devices/sdrplay-handler-v2/sdrplayselect.h
+  SOURCES		+= src/devices/sdrplay-handler-v2/sdrplay-handler-v2.cpp \
+                     src/devices/sdrplay-handler-v2/sdrplayselect.cpp
+  FORMS		+= src/devices/sdrplay-handler-v2/sdrplay-widget-v2.ui
 }
 
 #
 #	the SDRplay
 #
 sdrplay-v3 {
-	DEFINES		+= HAVE_SDRPLAY_V3
-	DEPENDPATH	+= src/devices/sdrplay-handler-v3
-	INCLUDEPATH	+= src/devices/sdrplay-handler-v3 \
-			   ../dabstar-libs/include/sdrplay
+  DEFINES		+= HAVE_SDRPLAY_V3
+  DEPENDPATH	+= src/devices/sdrplay-handler-v3
+  INCLUDEPATH	+= src/devices/sdrplay-handler-v3 \
+         ../dabstar-libs/include/sdrplay
         HEADERS         += src/devices/sdrplay-handler-v3/sdrplay-handler-v3.h \
                            src/devices/sdrplay-handler-v3/sdrplay-commands.h \
-	                   src/devices/sdrplay-handler-v3/Rsp-device.h \
-	                   src/devices/sdrplay-handler-v3/Rsp1-handler.h \
-	                   src/devices/sdrplay-handler-v3/Rsp1A-handler.h \
-	                   src/devices/sdrplay-handler-v3/Rsp2-handler.h \
-	                   src/devices/sdrplay-handler-v3/RspDuo-handler.h \
-	                   src/devices/sdrplay-handler-v3/RspDx-handler.h
+                     src/devices/sdrplay-handler-v3/Rsp-device.h \
+                     src/devices/sdrplay-handler-v3/Rsp1-handler.h \
+                     src/devices/sdrplay-handler-v3/Rsp1A-handler.h \
+                     src/devices/sdrplay-handler-v3/Rsp2-handler.h \
+                     src/devices/sdrplay-handler-v3/RspDuo-handler.h \
+                     src/devices/sdrplay-handler-v3/RspDx-handler.h
         SOURCES         += src/devices/sdrplay-handler-v3/Rsp-device.cpp \
-	                   src/devices/sdrplay-handler-v3/sdrplay-handler-v3.cpp \
-	                   src/devices/sdrplay-handler-v3/Rsp1-handler.cpp \
-	                   src/devices/sdrplay-handler-v3/Rsp1A-handler.cpp \
-	                   src/devices/sdrplay-handler-v3/Rsp2-handler.cpp \
-	                   src/devices/sdrplay-handler-v3/RspDuo-handler.cpp \
-	                   src/devices/sdrplay-handler-v3/RspDx-handler.cpp 
-	FORMS		+= src/devices/sdrplay-handler-v3/sdrplay-widget-v3.ui
+                     src/devices/sdrplay-handler-v3/sdrplay-handler-v3.cpp \
+                     src/devices/sdrplay-handler-v3/Rsp1-handler.cpp \
+                     src/devices/sdrplay-handler-v3/Rsp1A-handler.cpp \
+                     src/devices/sdrplay-handler-v3/Rsp2-handler.cpp \
+                     src/devices/sdrplay-handler-v3/RspDuo-handler.cpp \
+                     src/devices/sdrplay-handler-v3/RspDx-handler.cpp
+  FORMS		+= src/devices/sdrplay-handler-v3/sdrplay-widget-v3.ui
 }
 
 #
 #	limeSDR
 #
 lime  {
-	DEFINES		+= HAVE_LIME
-	INCLUDEPATH	+= src/devices/lime-handler
-	DEPENDPATH	+= src/devices/lime-handler
-        HEADERS         += src/devices/lime-handler/lime-handler.h \	
-	                   src/devices/lime-handler/lime-widget.h
-        SOURCES         += src/devices/lime-handler/lime-handler.cpp 
+  DEFINES		+= HAVE_LIME
+  INCLUDEPATH	+= src/devices/lime-handler
+  DEPENDPATH	+= src/devices/lime-handler
+        HEADERS         += src/devices/lime-handler/lime-handler.h \
+                     src/devices/lime-handler/lime-widget.h
+        SOURCES         += src/devices/lime-handler/lime-handler.cpp
 }
 
 #
 #	the hackrf
 #
 hackrf {
-	DEFINES		+= HAVE_HACKRF
-	DEPENDPATH	+= src/devices/hackrf-handler 
-	INCLUDEPATH	+= src/devices/hackrf-handler 
-	HEADERS		+= src/devices/hackrf-handler/hackrf-handler.h 
-	SOURCES		+= src/devices/hackrf-handler/hackrf-handler.cpp 
-	FORMS		+= src/devices/hackrf-handler/hackrf-widget.ui
+  DEFINES		+= HAVE_HACKRF
+  DEPENDPATH	+= src/devices/hackrf-handler
+  INCLUDEPATH	+= src/devices/hackrf-handler
+  HEADERS		+= src/devices/hackrf-handler/hackrf-handler.h
+  SOURCES		+= src/devices/hackrf-handler/hackrf-handler.cpp
+  FORMS		+= src/devices/hackrf-handler/hackrf-widget.ui
 }
 
 #
 # airspy support
 #
 airspy {
-	DEFINES		+= HAVE_AIRSPY
-	DEPENDPATH	+= src/devices/airspy 
-	INCLUDEPATH	+= src/devices/airspy-handler
-	HEADERS		+= src/devices/airspy-handler/airspy-handler.h \
-	                   src/devices/airspy-handler/airspyselect.h
-	SOURCES		+= src/devices/airspy-handler/airspy-handler.cpp \
-	                   src/devices/airspy-handler/airspyselect.cpp
-	FORMS		+= src/devices/airspy-handler/airspy-widget.ui
+  DEFINES		+= HAVE_AIRSPY
+  DEPENDPATH	+= src/devices/airspy
+  INCLUDEPATH	+= src/devices/airspy-handler
+  HEADERS		+= src/devices/airspy-handler/airspy-handler.h \
+                     src/devices/airspy-handler/airspyselect.h
+  SOURCES		+= src/devices/airspy-handler/airspy-handler.cpp \
+                     src/devices/airspy-handler/airspyselect.cpp
+  FORMS		+= src/devices/airspy-handler/airspy-widget.ui
 }
 
 airspy-2 {
-	DEFINES		+= HAVE_AIRSPY_2
-	DEPENDPATH	+= src/devices/airspy-2 
-	INCLUDEPATH	+= src/devices/airspy-2 \
-	                   src/devices/airspy-2/libairspy
-	HEADERS		+= src/devices/airspy-2/airspy-2.h \
-	                   src/devices/airspy-2/airspyselect.h \
-	                   src/devices/airspy-2/libairspy/airspy.h
-	SOURCES		+= src/devices/airspy-2/airspy-2.cpp \
-	                   src/devices/airspy-2/airspyselect.cpp
-	FORMS		+= src/devices/airspy-2/airspy-widget.ui
+  DEFINES		+= HAVE_AIRSPY_2
+  DEPENDPATH	+= src/devices/airspy-2
+  INCLUDEPATH	+= src/devices/airspy-2 \
+                     src/devices/airspy-2/libairspy
+  HEADERS		+= src/devices/airspy-2/airspy-2.h \
+                     src/devices/airspy-2/airspyselect.h \
+                     src/devices/airspy-2/libairspy/airspy.h
+  SOURCES		+= src/devices/airspy-2/airspy-2.cpp \
+                     src/devices/airspy-2/airspyselect.cpp
+  FORMS		+= src/devices/airspy-2/airspy-widget.ui
 }
 
 #	extio dependencies, windows only
 #
 extio {
-	DEFINES		+= HAVE_EXTIO
-	INCLUDEPATH	+= src/devices/extio-handler
-	HEADERS		+= src/devices/extio-handler/extio-handler.h \
-	                   src/devices/extio-handler/common-readers.h \
-	                   src/devices/extio-handler/virtual-reader.h
-	SOURCES		+= src/devices/extio-handler/extio-handler.cpp \
-	                   src/devices/extio-handler/common-readers.cpp \
-	                   src/devices/extio-handler/virtual-reader.cpp
+  DEFINES		+= HAVE_EXTIO
+  INCLUDEPATH	+= src/devices/extio-handler
+  HEADERS		+= src/devices/extio-handler/extio-handler.h \
+                     src/devices/extio-handler/common-readers.h \
+                     src/devices/extio-handler/virtual-reader.h
+  SOURCES		+= src/devices/extio-handler/extio-handler.cpp \
+                     src/devices/extio-handler/common-readers.cpp \
+                     src/devices/extio-handler/virtual-reader.cpp
 }
 
 #
 rtl_tcp {
-	DEFINES		+= HAVE_RTL_TCP
-	QT		+= network
-	INCLUDEPATH	+= src/devices/rtl_tcp
-	HEADERS		+= src/devices/rtl_tcp/rtl_tcp_client.h
-	SOURCES		+= src/devices/rtl_tcp/rtl_tcp_client.cpp
-	FORMS		+= src/devices/rtl_tcp/rtl_tcp-widget.ui
+  DEFINES		+= HAVE_RTL_TCP
+  QT		+= network
+  INCLUDEPATH	+= src/devices/rtl_tcp
+  HEADERS		+= src/devices/rtl_tcp/rtl_tcp_client.h
+  SOURCES		+= src/devices/rtl_tcp/rtl_tcp_client.cpp
+  FORMS		+= src/devices/rtl_tcp/rtl_tcp-widget.ui
 }
 
 soapy {
-	DEFINES		+= HAVE_SOAPY
-	DEPENDPATH	+= src/devices/soapy
-	INCLUDEPATH     += src/devices/soapy
+  DEFINES		+= HAVE_SOAPY
+  DEPENDPATH	+= src/devices/soapy
+  INCLUDEPATH     += src/devices/soapy
         HEADERS         += src/devices/soapy/soapy-handler.h \
-	                   src/devices/soapy/soapy-worker.h \
-	                   src/devices/soapy/soapy_CS8.h \
-	                   src/devices/soapy/soapy_CS16.h \
-	                   src/devices/soapy/soapy_CF32.h
+                     src/devices/soapy/soapy-worker.h \
+                     src/devices/soapy/soapy_CS8.h \
+                     src/devices/soapy/soapy_CS16.h \
+                     src/devices/soapy/soapy_CF32.h
         SOURCES         += src/devices/soapy/soapy-handler.cpp \
-	                   src/devices/soapy/soapy-worker.cpp \
-	                   src/devices/soapy/soapy_CS8.cpp \
-	                   src/devices/soapy/soapy_CS16.cpp \
-	                   src/devices/soapy/soapy_CF32.cpp
+                     src/devices/soapy/soapy-worker.cpp \
+                     src/devices/soapy/soapy_CS8.cpp \
+                     src/devices/soapy/soapy_CS16.cpp \
+                     src/devices/soapy/soapy_CF32.cpp
         FORMS           += src/devices/soapy/soapy-widget.ui
-	LIBS		+= -lSoapySDR -lm
+  LIBS		+= -lSoapySDR -lm
 }
 
 pluto	{
-	DEFINES		+= HAVE_PLUTO
-	QT		+= network
-	INCLUDEPATH	+= src/devices/pluto-handler-2
-	HEADERS		+= src/devices/pluto-handler-2/dabFilter.h
-	HEADERS		+= src/devices/pluto-handler-2/pluto-handler.h
-	SOURCES		+= src/devices/pluto-handler-2/pluto-handler.cpp
-	FORMS		+= src/devices/pluto-handler-2/pluto-widget.ui
+  DEFINES		+= HAVE_PLUTO
+  QT		+= network
+  INCLUDEPATH	+= src/devices/pluto-handler-2
+  HEADERS		+= src/devices/pluto-handler-2/dabFilter.h
+  HEADERS		+= src/devices/pluto-handler-2/pluto-handler.h
+  SOURCES		+= src/devices/pluto-handler-2/pluto-handler.cpp
+  FORMS		+= src/devices/pluto-handler-2/pluto-widget.ui
 }
 
 elad-device	{
-	DEFINES		+= HAVE_ELAD
-	DEPENDPATH	+= src/devices/elad-s1-handler
-	INCLUDEPATH	+= src/devices/elad-s1-handler
-	HEADERS		+= src/devices/elad-s1-handler/elad-handler.h
-	HEADERS		+= src/devices/elad-s1-handler/elad-loader.h
-	HEADERS		+= src/devices/elad-s1-handler/elad-worker.h
-	SOURCES		+= src/devices/elad-s1-handler/elad-handler.cpp
-	SOURCES		+= src/devices/elad-s1-handler/elad-loader.cpp
-	SOURCES		+= src/devices/elad-s1-handler/elad-worker.cpp
-	FORMS		+= src/devices/elad-s1-handler/elad-widget.ui
+  DEFINES		+= HAVE_ELAD
+  DEPENDPATH	+= src/devices/elad-s1-handler
+  INCLUDEPATH	+= src/devices/elad-s1-handler
+  HEADERS		+= src/devices/elad-s1-handler/elad-handler.h
+  HEADERS		+= src/devices/elad-s1-handler/elad-loader.h
+  HEADERS		+= src/devices/elad-s1-handler/elad-worker.h
+  SOURCES		+= src/devices/elad-s1-handler/elad-handler.cpp
+  SOURCES		+= src/devices/elad-s1-handler/elad-loader.cpp
+  SOURCES		+= src/devices/elad-s1-handler/elad-worker.cpp
+  FORMS		+= src/devices/elad-s1-handler/elad-widget.ui
 }
 
 spyServer  {
-	DEFINES		+= HAVE_SPYSERVER
-	DEPENDPATH	+= src/devices/spy-server
-	INCLUDEPATH	+= src/devices/spy-server
-	HEADERS		+= src/devices/spy-server/spyserver-protocol.h \
-			   src/devices/spy-server/spyserver-tcp-client.h \
-			   src/devices/spy-server/spyserver-handler.h \
-			   src/devices/spy-server/spyserver-client.h
-	SOURCES		+= src/devices/spy-server/spyserver-tcp-client.cpp \
-			   src/devices/spy-server/spyserver-handler.cpp \
-			   src/devices/spy-server/spyserver-client.cpp
-	FORMS		+= src/devices/spy-server/spyserver-client.ui
+  DEFINES		+= HAVE_SPYSERVER
+  DEPENDPATH	+= src/devices/spy-server
+  INCLUDEPATH	+= src/devices/spy-server
+  HEADERS		+= src/devices/spy-server/spyserver-protocol.h \
+         src/devices/spy-server/spyserver-tcp-client.h \
+         src/devices/spy-server/spyserver-handler.h \
+         src/devices/spy-server/spyserver-client.h
+  SOURCES		+= src/devices/spy-server/spyserver-tcp-client.cpp \
+         src/devices/spy-server/spyserver-handler.cpp \
+         src/devices/spy-server/spyserver-client.cpp
+  FORMS		+= src/devices/spy-server/spyserver-client.ui
 }
-	
+
 uhd	{
-	DEFINES		+= HAVE_UHD
-	DEPENDPATH	+= src/devices/uhd
-	INCLUDEPATH	+= src/devices/uhd
-	HEADERS		+= src/devices/uhd/uhd-handler.h
-	SOURCES		+= src/devices/uhd/uhd-handler.cpp
-	FORMS		+= src/devices/uhd/uhd-widget.ui
-	LIBS		+= -luhd
+  DEFINES		+= HAVE_UHD
+  DEPENDPATH	+= src/devices/uhd
+  INCLUDEPATH	+= src/devices/uhd
+  HEADERS		+= src/devices/uhd/uhd-handler.h
+  SOURCES		+= src/devices/uhd/uhd-handler.cpp
+  FORMS		+= src/devices/uhd/uhd-widget.ui
+  LIBS		+= -luhd
 }
 
 colibri	{
-	DEFINES		+= HAVE_COLIBRI
-	DEPENDPATH	+= src/devices/colibri-handler
-	INCLUDEPATH	+= src/devices/colibri-handler
-	HEADERS		+= src/devices/colibri-handler/common.h
-	HEADERS		+= src/devices/colibri-handler/LibLoader.h
-	HEADERS		+= src/devices/colibri-handler/colibri-handler.h
-	SOURCES		+= src/devices/colibri-handler/LibLoader.cpp
-	SOURCES		+= src/devices/colibri-handler/colibri-handler.cpp
-	FORMS		+= src/devices/colibri-handler/colibri-widget.ui
+  DEFINES		+= HAVE_COLIBRI
+  DEPENDPATH	+= src/devices/colibri-handler
+  INCLUDEPATH	+= src/devices/colibri-handler
+  HEADERS		+= src/devices/colibri-handler/common.h
+  HEADERS		+= src/devices/colibri-handler/LibLoader.h
+  HEADERS		+= src/devices/colibri-handler/colibri-handler.h
+  SOURCES		+= src/devices/colibri-handler/LibLoader.cpp
+  SOURCES		+= src/devices/colibri-handler/colibri-handler.cpp
+  FORMS		+= src/devices/colibri-handler/colibri-widget.ui
 }
-	
+
 datastreamer	{
-	DEFINES		+= DATA_STREAMER
-	DEFINES		+= CLOCK_STREAMER
-	INCLUDEPATH	+= src/server-thread
-	HEADERS		+= src/server-thread/tcp-server.h
-	SOURCES		+= src/server-thread/tcp-server.cpp
+  DEFINES		+= DATA_STREAMER
+  DEFINES		+= CLOCK_STREAMER
+  INCLUDEPATH	+= src/server-thread
+  HEADERS		+= src/server-thread/tcp-server.h
+  SOURCES		+= src/server-thread/tcp-server.cpp
 }
 
 avx2	{
-	QMAKE_CXXFLAGS	+= -mavx2
-	DEFINES		+= HAVE_VITERBI_AVX2
-	HEADERS		+= src/support/viterbi-spiral/viterbi_16way.h
+  QMAKE_CXXFLAGS	+= -mavx2
+  DEFINES		+= HAVE_VITERBI_AVX2
+  HEADERS		+= src/support/viterbi-spiral/viterbi_16way.h
 }else:sse2	{
-	DEFINES		+= HAVE_VITERBI_SSE2
-	HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
+  DEFINES		+= HAVE_VITERBI_SSE2
+  HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
 }else	{
-	HEADERS		+= src/support/viterbi-spiral/viterbi_scalar.h
+  HEADERS		+= src/support/viterbi-spiral/viterbi_scalar.h
 }
 
 
@@ -556,19 +565,19 @@ fdk-aac {
         INCLUDEPATH     += ../dabstar-libs/include/fdk-aac
         HEADERS         += src/backend/audio/fdk-aac.h
         SOURCES         += src/backend/audio/fdk-aac.cpp
-	LIBS		+= -lfdk-aac.dll
+  LIBS		+= -lfdk-aac.dll
 }else	{
-	HEADERS		+= src/backend/audio/faad-decoder.h
-	SOURCES		+= src/backend/audio/faad-decoder.cpp
-	LIBS		+= -lfaad.dll
+  HEADERS		+= src/backend/audio/faad-decoder.h
+  SOURCES		+= src/backend/audio/faad-decoder.cpp
+  LIBS		+= -lfaad.dll
 }
 
 volk	{
         DEFINES		+= HAVE_SSE_OR_AVX
         HEADERS		+= src/support/simd_extensions.h \
-        		   src/ofdm/ofdm-decoder-simd.h
+               src/ofdm/ofdm-decoder-simd.h
         SOURCES         += src/ofdm/ofdm-decoder-simd.cpp
-	LIBS		+= -lvolk.dll
+  LIBS		+= -lvolk.dll
 }else	{
         HEADERS         += src/ofdm/ofdm-decoder.h
         SOURCES         += src/ofdm/ofdm-decoder.cpp
@@ -576,7 +585,7 @@ volk	{
 
 liquid	{
         DEFINES		+= HAVE_LIQUID
-	HEADERS		+= src/support/halfbandfilter.h
+  HEADERS		+= src/support/halfbandfilter.h
         SOURCES         += src/support/halfbandfilter.cpp
-	LIBS		+= -lliquid.dll
+  LIBS		+= -lliquid.dll
 }

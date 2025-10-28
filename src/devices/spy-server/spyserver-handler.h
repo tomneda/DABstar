@@ -28,20 +28,16 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-
 #pragma once
-#include	<stdexcept>
-#include	<atomic>
-#include	<chrono>
-#include	<QThread>
-#include	<QTimer>
-#include	<QString>
-#include	"spyserver-tcp-client.h"
-#include	"spyserver-protocol.h"
 
-#include	"device-handler.h"
-#include	"ringbuffer.h"
+#include "spyserver-tcp-client.h"
+#include "spyserver-protocol.h"
+#include "device-handler.h"
+#include "ringbuffer.h"
+#include <atomic>
+#include <QThread>
+#include <QTimer>
+#include <QString>
 
 class SpyServerClient;
 

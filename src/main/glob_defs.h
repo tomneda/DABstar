@@ -20,7 +20,6 @@
 #define GLOB_DEFS_H
 
 #include "glob_data_types.h"
-#include <cstdint>
 #include <complex>
 #include <cassert>
 #include <cmath>
@@ -106,11 +105,6 @@ template<typename T> static inline T fixround(f32 v)
 static inline bool is_indeterminate(f32 x)
 {
   return x != x;
-}
-
-static inline bool is_infinite(f32 x)
-{
-  return x == std::numeric_limits<f32>::infinity();
 }
 
 static inline f32 fast_abs_with_clip_det(cf32 z, bool & oClipped, f32 iClipLimit)

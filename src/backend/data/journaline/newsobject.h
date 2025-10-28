@@ -61,11 +61,11 @@
 ***
 **/
 #ifdef _MSC_VER
-# ifndef _WINSOCKAPI_
-#  include <winsock2.h>
-# endif
+#ifndef _WINSOCKAPI_
+  #include <winsock2.h>
+#endif
 #else
-# include <sys/time.h>
+  #include <sys/time.h>
 #endif
 
 class NewsObject

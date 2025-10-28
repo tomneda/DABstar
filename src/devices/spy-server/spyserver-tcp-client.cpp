@@ -30,6 +30,7 @@
  */
 
 #include "spyserver-tcp-client.h"
+#include <iostream>
 
 /*
  *	Thanks to Youssef Touil (well know from Airspy and spyServer),
@@ -37,19 +38,20 @@
  *	of a C# fragment that he is using
  */
 #ifdef __MINGW32__
-#pragma comment(lib, "ws2_32.lib")
+// #pragma comment(lib, "ws2_32.lib")
 #else
-# include <arpa/inet.h>
-# include <sys/resource.h>
-# include <sys/select.h>
-# include <sys/ioctl.h>
-# include <netdb.h>
-# define ioctlsocket ioctl
+  #include <arpa/inet.h>
+  #include <sys/resource.h>
+  #include <sys/select.h>
+  #include <sys/ioctl.h>
+  #include <netdb.h>
+  #define ioctlsocket ioctl
 #endif
+
 #if defined(__MINGW32__) || defined(__APPLE__)
-#ifndef MSG_NOSIGNAL
-        #define MSG_NOSIGNAL 0
-#endif
+  #ifndef MSG_NOSIGNAL
+    #define MSG_NOSIGNAL 0
+  #endif
 #endif
 
 SpyServerTcpClient::SpyServerTcpClient(const QString & addr, i32 port,
@@ -63,18 +65,18 @@ SpyServerTcpClient::SpyServerTcpClient(const QString & addr, i32 port,
   connected = false;
 
 #ifdef	__MINGW32__
-	WSAData wsaData;
-	WSAStartup (MAKEWORD (2, 2), &wsaData);
-	fprintf (stderr, "Client: Winsock DLL is %s\n",
-	                                 wsaData. szSystemStatus);
+    WSAData wsaData;
+    WSAStartup (MAKEWORD (2, 2), &wsaData);
+    fprintf (stderr, "Client: Winsock DLL is %s\n",
+                                     wsaData. szSystemStatus);
 #endif
   SendingSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 #ifdef	__MINGW32__
-	if (SendingSocket == INVALID_SOCKET) {
-	   fprintf (stderr, "Client: socket failed: Error code: %ld\n", WSAGetLastError());
-	   WSACleanup ();
-	   return;
-	}
+    if (SendingSocket == (i32)INVALID_SOCKET) {
+       fprintf (stderr, "Client: socket failed: Error code: %d\n", WSAGetLastError());
+       WSACleanup ();
+       return;
+    }
 #endif
   i32 bufSize = 8 * 32768;
   setsockopt(SendingSocket, SOL_SOCKET, SO_RCVBUF,
@@ -89,12 +91,13 @@ SpyServerTcpClient::SpyServerTcpClient(const QString & addr, i32 port,
   if (RetCode != 0)
   {
 #ifdef	__MINGW32__
-	   printf ("Client: connect() failed! Error code: %ld\n",
-	                                             WSAGetLastError());
+       printf ("Client: connect() failed! Error code: %d\n", WSAGetLastError());
 #endif
+
     close(SendingSocket);
+
 #ifdef	__MINGW32__
-	   WSACleanup();
+       WSACleanup();
 #endif
     return;
   }
@@ -174,7 +177,7 @@ void SpyServerTcpClient::run()
 #ifndef	__MINGW32__
       u32 tt = 10;
 #else
-	      i32	tt = 10;
+          i32	tt = 10;
 #endif
       unsigned long bytesAvailable = 0;
       i32 ret = ioctlsocket(SendingSocket, FIONREAD, &bytesAvailable);

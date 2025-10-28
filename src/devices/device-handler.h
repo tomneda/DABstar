@@ -35,9 +35,9 @@
 #ifndef  DEVICE_HANDLER_H
 #define  DEVICE_HANDLER_H
 
+#include "glob_defs.h"
 #include <cstdint>
 #include <QString>
-#include "glob_defs.h"
 
 class IDeviceHandler
 {

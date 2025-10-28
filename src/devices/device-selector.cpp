@@ -8,6 +8,10 @@
  * The original copyright information is acknowledged.
  */
 
+#ifdef  HAVE_SPYSERVER
+  #include "spyserver-client.h"
+// #include "spy-handler.h"
+#endif
 #ifdef  HAVE_RTLSDR
   #include  "rtlsdr-handler.h"
 #endif
@@ -27,10 +31,6 @@
 #endif
 #ifdef  HAVE_AIRSPY
   #include "airspy-handler.h"
-#endif
-#ifdef  HAVE_SPYSERVER
-  #include "spyserver-client.h"
-  // #include "spy-handler.h"
 #endif
 #ifdef  HAVE_HACKRF
   #include "hackrf-handler.h"
@@ -60,21 +60,20 @@
 #include <QSettings>
 #include <thread>
 
-static const char DN_FILE_INP[]   = "File input";
-static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
-static const char DN_SDRPLAY_V2[] = "SDR-Play V2";
-static const char DN_RTLTCP[]     = "RTL-TCP";
-static const char DN_RTLSDR[]     = "RTL-SDR";
-static const char DN_AIRSPY[]     = "Airspy";
-static const char DN_SPYSERVER[]  = "SpyServer (experimental)";
-static const char DN_HACKRF[]     = "HackRf";
-static const char DN_LIMESDR[]    = "LimeSDR";
-static const char DN_PLUTO[]      = "Pluto";
-static const char DN_SOAPY[]      = "Soapy";
-static const char DN_EXTIO[]      = "ExtIO";
-static const char DN_ELAD[]       = "Elad-S1";
-static const char DN_UHD[]        = "UHD/USRP";
-
+[[maybe_unused]] static const char DN_FILE_INP[]   = "File input";
+[[maybe_unused]] static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
+[[maybe_unused]] static const char DN_SDRPLAY_V2[] = "SDR-Play V2";
+[[maybe_unused]] static const char DN_RTLTCP[]     = "RTL-TCP";
+[[maybe_unused]] static const char DN_RTLSDR[]     = "RTL-SDR";
+[[maybe_unused]] static const char DN_AIRSPY[]     = "Airspy";
+[[maybe_unused]] static const char DN_SPYSERVER[]  = "SpyServer (experimental)";
+[[maybe_unused]] static const char DN_HACKRF[]     = "HackRf";
+[[maybe_unused]] static const char DN_LIMESDR[]    = "LimeSDR";
+[[maybe_unused]] static const char DN_PLUTO[]      = "Pluto";
+[[maybe_unused]] static const char DN_SOAPY[]      = "Soapy";
+[[maybe_unused]] static const char DN_EXTIO[]      = "ExtIO";
+[[maybe_unused]] static const char DN_ELAD[]       = "Elad-S1";
+[[maybe_unused]] static const char DN_UHD[]        = "UHD/USRP";
 
 DeviceSelector::DeviceSelector(QSettings * ipSettings) :
   mpSettings(ipSettings),

@@ -47,7 +47,7 @@ FibDecoder::FibDecoder(DabRadio * mr)
   connect(mpTimerCheckStateAndPrintFigs, &QTimer::timeout, this, &FibDecoder::_slot_timer_check_state_and_print_FIGs);
 }
 
-void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibBits, u16 const iFicNo)
+void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibBits, u16 const /*iFicNo*/)
 {
   QMutexLocker lock(&mMutex); // TODO: maybe shift to emplace_back() place?
 

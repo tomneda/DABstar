@@ -356,7 +356,7 @@ bool DabRadio::save_MOT_EPG_data(const QByteArray & result, const QString & obje
   return true;
 }
 
-void DabRadio::save_MOT_text(const QByteArray & result, i32 contentType, const QString & name)
+void DabRadio::save_MOT_text(const QByteArray & result, i32 contentType, const QString & /*name*/)
 {
   (void)contentType;
   if (mMotPath == "")
@@ -1879,7 +1879,7 @@ u32 DabRadio::_extract_epg(const QString& iName, const std::vector<SServiceId> &
   return 0;
 }
 
-void DabRadio::slot_set_epg_data(i32 SId, i32 theTime, const QString & theText, const QString & theDescr)
+void DabRadio::slot_set_epg_data(i32 /*SId*/, i32 /*theTime*/, const QString & /*theText*/, const QString & /*theDescr*/)
 {
   if (mpDabProcessor != nullptr)
   {

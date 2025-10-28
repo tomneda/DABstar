@@ -168,7 +168,7 @@ if (WIN32)
     # set(Qt6Qwt6_DIR "C:/Qwt-6.3.0/")
     find_package(Qwt REQUIRED) # environment variable QWT_ROOT has to be defined!
     include_directories(${QWT_INCLUDE_DIRS})
-    include_directories(./dabstar-libs/include)
+    include_directories(../dabstar-libs/include)
     list(APPEND extraLibs ${QWT_LIBRARIES})
 else ()
     set(ENV{PKG_CONFIG_PATH} "/usr/local/qwt-6.3.0/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")

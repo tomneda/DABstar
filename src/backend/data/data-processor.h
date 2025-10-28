@@ -31,17 +31,15 @@
 #ifndef  DATA_PROCESSOR_H
 #define  DATA_PROCESSOR_H
 
-#include  <vector>
-#include  <cstdio>
-#include  <cstring>
-#include  <QObject>
-
-#include  "frame-processor.h"
-#include  "ringbuffer.h"
+#include "frame-processor.h"
+#include "ringbuffer.h"
+#include "virtual-datahandler.h"
+#include <vector>
+#include <cstdio>
+#include <cstring>
+#include <QObject>
 
 class DabRadio;
-class VirtualDataHandler;
-class SPacketData;
 
 class DataProcessor : public QObject, public FrameProcessor
 {

@@ -31,24 +31,23 @@
 
 #pragma once
 
-#include	<QObject>
-#include	<QSettings>
-#include	<QTimer>
-#include	<atomic>
-#include	<QLabel>
-#include	<QMessageBox>
-#include	<QLineEdit>
-#include	<QHostAddress>
-#include	<QFrame>
-#include	<QByteArray>
-#include	<cstdio>
-#include	"dab-constants.h"
-#include	"device-handler.h"
-#include	"ringbuffer.h"
-#include	"ui_spyserver-client.h"
-#include	"spyserver-handler.h"
+#include "spyserver-handler.h"
+#include "device-handler.h"
+#include "ringbuffer.h"
+#include "ui_spyserver-client.h"
+#include <QObject>
+#include <QSettings>
+#include <QTimer>
+#include <atomic>
+#include <QLabel>
+#include <QMessageBox>
+#include <QLineEdit>
+#include <QHostAddress>
+#include <QFrame>
+#include <QByteArray>
+#include <cstdio>
 #ifdef HAVE_LIQUID
-  #include  <liquid/liquid.h>
+  #include <liquid/liquid.h>
 #endif
 
 
