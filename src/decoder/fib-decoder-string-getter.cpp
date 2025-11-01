@@ -23,7 +23,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
   out << "H;EnsembleLabel;ShortEnsLabel;EId";
   for (const auto & fig1s0 : mpFibConfigFig1->Fig1s0_EnsembleLabelVec) // should only have one element
   {
-    out << "D;" + fig1s0.Name + ";" + fig1s0.NameShort + ";" + dec_hex_str(fig1s0.EId);
+    out << "D;" + fig1s0.Name + ";" + fig1s0.NameShort + ";" + hex_str(fig1s0.EId);
   }
 
   out << "E"; // empty line

@@ -215,7 +215,7 @@ void FibContentTable::_slot_select_service(const i32 iRowIdx, const i32 /*iColId
 {
   QTableWidgetItem * theItem = mpTableWidget->item(iRowIdx, 2);
 
-  if (iRowIdx < 2)
+  if (iRowIdx < 2) // skip possible misinterpretation of the EId
   {
     return;
   }
