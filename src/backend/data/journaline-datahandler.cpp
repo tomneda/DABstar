@@ -22,7 +22,7 @@
 #include "journaline-datahandler.h"
 #include "dabdatagroupdecoder.h"
 #include "bit-extractors.h"
-#include "journaline-screen.h"
+#include "journaline-viewer.h"
 #include "newsobject.h"
 #include <sys/time.h>
 
@@ -50,13 +50,11 @@ static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * hea
 }
 
 JournalineDataHandler::JournalineDataHandler()
-  : mJournalineScreen(mTableElemVec)
+  : mJournalineScreen(mDataMap)
 {
   mDataGroupDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
-  mTableElemVec.reserve(64);
 
-  connect(this, &JournalineDataHandler::signal_start, &mJournalineScreen, &JournalineScreen::slot_start);
-  connect(this, &JournalineDataHandler::signal_new_data, &mJournalineScreen, &JournalineScreen::slot_new_data);
+  connect(this, &JournalineDataHandler::signal_new_data, &mJournalineScreen, &JournalineViewer::slot_new_data);
 }
 
 JournalineDataHandler::~JournalineDataHandler()
@@ -86,7 +84,7 @@ void JournalineDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
 
 void JournalineDataHandler::_destroy_dataBase() const
 {
-  for (auto i : mTableElemVec)
+  for (auto i : mDataMap)
   {
     delete i.element;
   }
@@ -112,26 +110,20 @@ void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
     x->title = NMLelement->GetTitle();
     x->item = NMLelement->GetItems();
 
-    const i32 index_oldElement = _findIndex(x->object_id);
+    const auto it = mDataMap.find(x->object_id);
 
-    if (index_oldElement >= 0)
+    if (it != mDataMap.end())
     {
-      NML::News_t * const p = mTableElemVec[index_oldElement].element;
+      NML::News_t * const p = it.value().element;
       delete p;
-      mTableElemVec[index_oldElement].element = x;
+      it.value().element = x;
     }
     else
     {
-      JournalineScreen::STableElement temp;
-      temp.key = x->object_id;
+      JournalineViewer::STableElement temp{};
       temp.element = x;
 
-      mTableElemVec.push_back(temp);
-
-      if (x->object_id == 0)
-      {
-        emit signal_start(mTableElemVec.size() - 1);
-      }
+      mDataMap.insert(x->object_id, temp);
     }
     emit signal_new_data();
   }
@@ -143,14 +135,3 @@ void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
   }
 }
 
-int JournalineDataHandler::_findIndex(int key)
-{
-  for (uint16_t i = 0; i < mTableElemVec.size(); i++)
-  {
-    if (mTableElemVec[i].key == key)
-    {
-      return i;
-    }
-  }
-  return -1;
-}

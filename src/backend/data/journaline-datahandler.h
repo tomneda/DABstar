@@ -34,7 +34,7 @@
 #include  "dab-constants.h"
 #include  "virtual-datahandler.h"
 #include  "dabdatagroupdecoder.h"
-#include  "journaline-screen.h"
+#include  "journaline-viewer.h"
 #include  "NML.h"
 #include  <vector>
 #include  <QObject>
@@ -52,16 +52,14 @@ public:
   void add_to_dataBase(NML *);
 
 private:
-  std::vector<JournalineScreen::STableElement> mTableElemVec;
-  JournalineScreen mJournalineScreen;
+  JournalineViewer::TMapData mDataMap;
+  JournalineViewer mJournalineScreen;
   DAB_DATAGROUP_DECODER_t mDataGroupDecoder;
   DAB_DATAGROUP_DECODER_data mDataGroupCallBack;
 
   void _destroy_dataBase() const;
-  int _findIndex(int);
 
 signals:
-  void signal_start(int);
   void signal_new_data();
 };
 
