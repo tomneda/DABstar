@@ -20,16 +20,16 @@ FibConfigFig0::FibConfigFig0()
   reset();
 
   // avoids memory reallocation that references are usable
-  Fig0s1_BasicSubChannelOrganizationVec.reserve(64);
-  Fig0s2_BasicService_ServiceCompDefVec.reserve(64);
-  Fig0s3_ServiceComponentPacketModeVec.reserve(64);
-  Fig0s5_ServiceComponentLanguageVec.reserve(64);
+  Fig0s1_BasicSubChannelOrganizationVec.reserve(32);
+  Fig0s2_BasicService_ServiceCompDefVec.reserve(32);
+  Fig0s3_ServiceComponentPacketModeVec.reserve(32);
+  Fig0s5_ServiceComponentLanguageVec.reserve(32);
   Fig0s7_ConfigurationInformationVec.reserve(1);
-  Fig0s8_ServiceCompGlobalDefVec.reserve(64);
+  Fig0s8_ServiceCompGlobalDefVec.reserve(32);
   Fig0s9_CountryLtoInterTabVec.reserve(1);
-  Fig0s13_UserApplicationInformationVec.reserve(64);
-  Fig0s14_SubChannelOrganizationVec.reserve(64);
-  Fig0s17_ProgrammeTypeVec.reserve(64);
+  Fig0s13_UserApplicationInformationVec.reserve(32);
+  Fig0s14_SubChannelOrganizationVec.reserve(32);
+  Fig0s17_ProgrammeTypeVec.reserve(32);
 }
 
 void FibConfigFig0::reset()

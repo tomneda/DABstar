@@ -19,9 +19,9 @@ FibConfigFig1::FibConfigFig1()
   reset();
 
   Fig1s0_EnsembleLabelVec.reserve(1);
-  Fig1s1_ProgrammeServiceLabelVec.reserve(64);
-  Fig1s4_ServiceComponentLabelVec.reserve(64);
-  Fig1s5_DataServiceLabelVec.reserve(64);
+  Fig1s1_ProgrammeServiceLabelVec.reserve(32);
+  Fig1s4_ServiceComponentLabelVec.reserve(32);
+  Fig1s5_DataServiceLabelVec.reserve(32);
 }
 
 void FibConfigFig1::reset()
