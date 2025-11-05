@@ -16,6 +16,12 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>779</width>
+    <height>528</height>
+   </size>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,0,0">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -42,6 +48,9 @@
         <spacer name="horizontalSpacer_7">
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Preferred</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -127,6 +136,9 @@
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Maximum</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>0</width>
@@ -198,6 +210,9 @@
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Maximum</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>0</width>
@@ -239,6 +254,9 @@
         <spacer name="horizontalSpacer_3">
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Maximum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -309,14 +327,20 @@
     </layout>
    </item>
    <item>
-    <widget class="Line" name="line">
-     <property name="styleSheet">
-      <string notr="true">background-color: transparent;</string>
-     </property>
+    <spacer name="horizontalSpacer_8">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-    </widget>
+     <property name="sizeType">
+      <enum>QSizePolicy::Policy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -526,9 +550,12 @@
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Policy::Fixed</enum>
+             </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>20</width>
+               <width>5</width>
                <height>20</height>
               </size>
              </property>
@@ -579,9 +606,12 @@
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Policy::Fixed</enum>
+             </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>20</width>
+               <width>5</width>
                <height>20</height>
               </size>
              </property>
