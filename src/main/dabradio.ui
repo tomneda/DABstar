@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>779</width>
+    <width>832</width>
     <height>528</height>
    </rect>
   </property>
@@ -29,6 +29,24 @@
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QLabel" name="lblCopyrightIcon">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -137,11 +155,11 @@
           <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeType">
-          <enum>QSizePolicy::Policy::Maximum</enum>
+          <enum>QSizePolicy::Policy::Minimum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>0</width>
+           <width>15</width>
            <height>0</height>
           </size>
          </property>
@@ -211,11 +229,11 @@
           <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeType">
-          <enum>QSizePolicy::Policy::Maximum</enum>
+          <enum>QSizePolicy::Policy::Minimum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>0</width>
+           <width>15</width>
            <height>0</height>
           </size>
          </property>
@@ -256,11 +274,11 @@
           <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeType">
-          <enum>QSizePolicy::Policy::Maximum</enum>
+          <enum>QSizePolicy::Policy::Minimum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>0</width>
+           <width>15</width>
            <height>0</height>
           </size>
          </property>
@@ -379,11 +397,8 @@
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Preferred</enum>
          </property>
         </spacer>
        </item>
@@ -546,22 +561,6 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>5</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
             <widget class="QLabel" name="pictureLabel">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -600,22 +599,6 @@
               <string>No Slide</string>
              </property>
             </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>5</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
            </item>
           </layout>
          </item>
@@ -904,6 +887,7 @@
  </customwidgets>
  <resources>
   <include location="../../resources.qrc"/>
+  <include location="../../../../../../../../home/work/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
