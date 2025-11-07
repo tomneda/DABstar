@@ -1067,7 +1067,6 @@
  </customwidgets>
  <resources>
   <include location="../../resources.qrc"/>
-  <include location="../../../../../../../../home/work/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
