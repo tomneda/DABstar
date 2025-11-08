@@ -1059,7 +1059,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Peak level in dBFS&lt;/p&gt;&lt;p&gt;- Top: left channel&lt;br/&gt;- Button: right channel&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Peak level in dBFS&lt;/p&gt;&lt;p&gt;- Top: left channel&lt;br/&gt;- Bottom: right channel&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound">
             <double>-22.000000000000000</double>
