@@ -142,24 +142,21 @@ void DabRadio::_initialize_dynamic_label()
 
 void DabRadio::_initialize_thermo_peak_levels()
 {
-  ui->thermoPeakLevelLeft->setValue(-40.0);
-  ui->thermoPeakLevelRight->setValue(-40.0);
-  ui->thermoPeakLevelLeft->setFillBrush(QColor(0x6F70EF));
-  ui->thermoPeakLevelRight->setFillBrush(QColor(0x6F70EF));
-  ui->thermoPeakLevelLeft->setBorderWidth(0);
-  ui->thermoPeakLevelRight->setBorderWidth(0);
-
-  auto create_color_map = []() -> QwtLinearColorMap*
+  auto setup_thermo_peak_level_widget = [](QwtThermo * ipThermo)
   {
+    ipThermo->setValue(-40.0);
+    ipThermo->setBorderWidth(0);
+    ipThermo->setStyleSheet("background-color: black;");
+
     QwtLinearColorMap * pColorMap = new QwtLinearColorMap();
     pColorMap->setColorInterval(QColor(0, 100, 200), QColor(255, 0, 0));
-    pColorMap->addColorStop(0.73, QColor(255, 200, 0));
-    pColorMap->addColorStop(0.4, QColor(0, 255, 0));
-    return pColorMap;
+    pColorMap->addColorStop(0.72727273, QColor(200, 200, 0)); // -6dBFS
+    pColorMap->addColorStop(0.45454545, QColor(0, 200, 0));   // -12dBFS
+    ipThermo->setColorMap(pColorMap);
   };
 
-  ui->thermoPeakLevelLeft->setColorMap(create_color_map());
-  ui->thermoPeakLevelRight->setColorMap(create_color_map());
+  setup_thermo_peak_level_widget(ui->thermoPeakLevelLeft);
+  setup_thermo_peak_level_widget(ui->thermoPeakLevelRight);
 }
 
 void DabRadio::_initialize_device_selector()
