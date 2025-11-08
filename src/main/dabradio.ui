@@ -400,6 +400,12 @@
          <property name="sizeType">
           <enum>QSizePolicy::Policy::Preferred</enum>
          </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
         </spacer>
        </item>
        <item>
@@ -770,7 +776,7 @@
          <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
           <widget class="QSlider" name="sliderVolume">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio volume&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio volume&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Set this typically to maximum position and use your volume control of the OS. You can reduce the level here to control the relative audio level to other audio applications.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="maximum">
             <number>100</number>
@@ -916,123 +922,178 @@
       </widget>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="0">
-        <widget class="QwtThermo" name="thermoPeakLevelLeft">
-         <property name="font">
-          <font>
-           <pointsize>6</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Left audio channel peak level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="lowerBound">
-          <double>-22.000000000000000</double>
-         </property>
-         <property name="upperBound">
-          <double>0.000000000000000</double>
-         </property>
-         <property name="scaleMaxMajor">
-          <number>9</number>
-         </property>
-         <property name="scaleMaxMinor">
-          <number>3</number>
-         </property>
-         <property name="scaleStepSize">
-          <double>3.000000000000000</double>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="scalePosition">
-          <enum>QwtThermo::ScalePosition::TrailingScale</enum>
-         </property>
-         <property name="borderWidth">
-          <number>0</number>
-         </property>
-        </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QProgressBar" name="progBarAudioBuffer">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QProgressBar::chunk { background: #EF8B2A; }</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QProgressBar" name="progBarFicError">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC processing. &lt;/p&gt;&lt;p&gt;FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
-       <item row="1" column="1">
-        <widget class="QwtThermo" name="thermoPeakLevelRight">
-         <property name="font">
-          <font>
-           <pointsize>6</pointsize>
-          </font>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <property name="spacing">
+          <number>1</number>
          </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Right audio channel peak level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="lowerBound">
-          <double>-22.000000000000000</double>
-         </property>
-         <property name="upperBound">
-          <double>0.000000000000000</double>
-         </property>
-         <property name="scaleMaxMajor">
-          <number>9</number>
-         </property>
-         <property name="scaleMaxMinor">
-          <number>3</number>
-         </property>
-         <property name="scaleStepSize">
-          <double>3.000000000000000</double>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="scalePosition">
-          <enum>QwtThermo::ScalePosition::TrailingScale</enum>
-         </property>
-         <property name="borderWidth">
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QProgressBar" name="progBarAudioBuffer">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>8</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QProgressBar::chunk { background: #EF8B2A; }</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QProgressBar" name="progBarFicError">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>8</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC processing. &lt;/p&gt;&lt;p&gt;FIC data defined kind of directory structure for the data in the MSC. Usually, if FIC is not 100% decoding is not possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
-         </property>
-        </widget>
+         <item>
+          <widget class="QwtThermo" name="thermoPeakLevelLeft">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="lowerBound">
+            <double>-22.000000000000000</double>
+           </property>
+           <property name="upperBound">
+            <double>0.000000000000000</double>
+           </property>
+           <property name="scaleMaxMajor">
+            <number>9</number>
+           </property>
+           <property name="scaleMaxMinor">
+            <number>3</number>
+           </property>
+           <property name="scaleStepSize">
+            <double>3.000000000000000</double>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="scalePosition">
+            <enum>QwtThermo::ScalePosition::NoScale</enum>
+           </property>
+           <property name="borderWidth">
+            <number>0</number>
+           </property>
+           <property name="pipeWidth">
+            <number>8</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QwtThermo" name="thermoPeakLevelRight">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="lowerBound">
+            <double>-22.000000000000000</double>
+           </property>
+           <property name="upperBound">
+            <double>0.000000000000000</double>
+           </property>
+           <property name="scaleMaxMajor">
+            <number>9</number>
+           </property>
+           <property name="scaleMaxMinor">
+            <number>3</number>
+           </property>
+           <property name="scaleStepSize">
+            <double>3.000000000000000</double>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="scalePosition">
+            <enum>QwtThermo::ScalePosition::NoScale</enum>
+           </property>
+           <property name="borderWidth">
+            <number>0</number>
+           </property>
+           <property name="pipeWidth">
+            <number>8</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QwtThermo" name="thermoPeakScale">
+           <property name="font">
+            <font>
+             <pointsize>6</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Peak level in dBFS&lt;/p&gt;&lt;p&gt;- Top: left channel&lt;br/&gt;- Button: right channel&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="lowerBound">
+            <double>-22.000000000000000</double>
+           </property>
+           <property name="upperBound">
+            <double>0.000000000000000</double>
+           </property>
+           <property name="scaleMaxMajor">
+            <number>9</number>
+           </property>
+           <property name="scaleMaxMinor">
+            <number>3</number>
+           </property>
+           <property name="scaleStepSize">
+            <double>3.000000000000000</double>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="scalePosition">
+            <enum>QwtThermo::ScalePosition::LeadingScale</enum>
+           </property>
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="borderWidth">
+            <number>0</number>
+           </property>
+           <property name="pipeWidth">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
