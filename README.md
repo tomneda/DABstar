@@ -2,11 +2,11 @@
 
 ## Table of Content
 <!-- TOC -->
-* [DABstar](#dabstar)
-  * [Table of Content](#table-of-content)
-  * [Pictures from version V3.10.0](#pictures-from-version-v3100)
+  * [Pictures from version V4.0.0](#pictures-from-version-v400-)
     * [Main window](#main-window-)
     * [Scope Spectrum Correlation Statistic window](#scope-spectrum-correlation-statistic-window)
+    * [FIB content window](#fib-content-window)
+    * [Journaline window](#journaline-window)
     * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
     * [Map view of received transmitters](#map-view-of-received-transmitters)
     * [Technical details window of the selected service](#technical-details-window-of-the-selected-service)
@@ -36,10 +36,11 @@
     * [Installing USRP UHD](#installing-usrp-uhd)
     * [Installing AirSpy](#installing-airspy)
   * [Licences](#licences)
+    * [Journaline](#journaline)
 <!-- TOC -->
 
 ---
-## Pictures from version V3.10.0
+## Pictures from version V4.0.0 
 
 ### Main window                                 
 
@@ -48,6 +49,14 @@
 ### Scope Spectrum Correlation Statistic window
 
 ![](res/for_readme/scope-spec-corr.png)
+
+### FIB content window
+
+![](res/for_readme/fib-content.png)
+
+### Journaline window
+
+![](res/for_readme/journaline.png)
 
 ### TII-list window which shows received transmitter details
 
