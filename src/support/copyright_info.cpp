@@ -38,12 +38,13 @@ QString hyperlink(const T & iUrl, const bool iIsMail = false)
 QString get_copyright_text()
 {
 #ifdef HAVE_SSE_OR_AVX
-  QString volkVers = QString(", Volk %1.%2.%3").arg(VOLK_VERSION_MAJOR).arg(VOLK_VERSION_MINOR).arg(VOLK_VERSION_MAINT);
+  QString volkVers = QString("Volk %1.%2.%3").arg(VOLK_VERSION_MAJOR).arg(VOLK_VERSION_MINOR).arg(VOLK_VERSION_MAINT) + "<br>";
   QString useVolk = ", Volk";
 #else
   QString volkVers;
   QString useVolk;
 #endif
+
 #ifdef __WITH_FDK_AAC__
   int i;
   QString usedDecoder = ", FDK-AAC";
@@ -54,15 +55,17 @@ QString get_copyright_text()
   {
     if (libInfo[i].module_id == FDK_AACDEC) break;
   }
-  QString fdkVers = ", " + QString(libInfo[i].title) + " " + QString(libInfo[i].versionStr);
+  // QString fdkVers = QString(libInfo[i].title) + " " + QString(libInfo[i].versionStr) + "<br>";
+  QString fdkVers = "FDK-AAC " + QString(libInfo[i].versionStr) + "<br>";
   QString faadVers;
 #else
   QString usedDecoder = ", libfaad";
-  QString faadVers = ", Faad " + QString(FAAD2_VERSION);
+  QString faadVers = "Faad " + QString(FAAD2_VERSION) + "<br>";
   QString fdkVers;
 #endif
+
 #ifdef HAVE_LIQUID
-  QString liquidVers = ", liquid " + QString(LIQUID_VERSION);
+  QString liquidVers = "liquid-dsp " + QString(LIQUID_VERSION) + "<br>";
   QString useLiquid = ", liquid-DSP";
 #else
   QString liquidVers;
@@ -72,7 +75,17 @@ QString get_copyright_text()
   QString versionText = "<html><head/><body><p>";
   versionText = "<h3>" + QString(PRJ_NAME) + " " + PRJ_VERS + "</h3>";
   versionText += "<p><b>Built on " + QString(__DATE__) + "&nbsp;&nbsp;" + QString(__TIME__) + QString("<br/>Commit ") + QString(GITHASH) + "</b></p>"; // __TIMESTAMP__ seems to use the file date not the compile date
-  versionText += "<p><b>Used libs: Qt " QT_VERSION_STR ", Qwt " QWT_VERSION_STR + volkVers + ", " + fftwf_version + faadVers + fdkVers + ", " + sf_version_string() + liquidVers + ", zlib " + ZLIB_VERSION + "</b></p>";
+  versionText += "<p><b>Used libs with version:</b><br>"
+                 "Qt " QT_VERSION_STR "<br>"
+                 "Qwt " QWT_VERSION_STR "<br>" +
+                 volkVers +
+                 fftwf_version  + "<br>" +
+                 faadVers +
+                 fdkVers +
+                 sf_version_string() + "<br>" +
+                 liquidVers +
+                 "zlib " + ZLIB_VERSION +
+                 "</p>";
   versionText += "<p>Forked from Qt-DAB, partly extensive changed, extended, some things also removed, by Thomas Neder "
                  "(" + hyperlink("https://github.com/tomneda/DABstar") + ").<br/>"
                  "For Qt-DAB see " + hyperlink("https://github.com/JvanKatwijk/qt-dab") + " by Jan van Katwijk<br/>"
