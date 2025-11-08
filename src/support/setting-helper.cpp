@@ -254,6 +254,7 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidt
     iopWidget->resize(QSize(w, h));
   }
 
+  // switch fix-size currently off as the final size fits not always on different platforms (Windows, XFCE, Gnome, ...), so better let Qt decside.
   // if (iIsFixedSized) // overwrite read settings if fixed-sized in width and height, take only over the position
   // {
   //   iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));

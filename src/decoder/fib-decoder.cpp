@@ -495,7 +495,7 @@ void FibDecoder::get_SId_SCIdS_from_service_label(const QString & iServiceLabel,
   else
   {
     oSId = pSId_SCIdS->SId;
-    oSCIdS = pSId_SCIdS->SCIdS;  // TODO: SCIdS may be negative, check if this works
+    oSCIdS = pSId_SCIdS->SCIdS;  // SCIdS may be negative, check if this works
   }
 }
 
