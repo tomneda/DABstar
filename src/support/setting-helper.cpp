@@ -237,7 +237,7 @@ PosAndSize::PosAndSize(const QString & iCat)
 : mKey(iCat + "/posAndSize")
 {}
 
-void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef /*= -1*/, const i32 iHeightDef /*= -1*/, const bool /*iIsFixedSized*/ /*= false*/) const
+void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef /*= -1*/, const i32 iHeightDef /*= -1*/, const bool iIsFixedSized /*= false*/) const
 {
   const i32 x = Storage::instance().value(mKey + "-x", -1).toInt();
   const i32 y = Storage::instance().value(mKey + "-y", -1).toInt();
@@ -254,11 +254,12 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidt
     iopWidget->resize(QSize(w, h));
   }
 
-  // switch fix-size currently off as the final size fits not always on different platforms (Windows, XFCE, Gnome, ...), so better let Qt decside.
-  // if (iIsFixedSized) // overwrite read settings if fixed-sized in width and height, take only over the position
-  // {
-  //   iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
-  // }
+  if (iIsFixedSized) // overwrite read settings if fixed-sized in width and height, take only over the position
+  {
+    // switch-off fix-size-width as the final width fits not always on different platforms (Windows, XFCE, Gnome, ...), so better let Qt decide.
+    // iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
+    iopWidget->setFixedHeight(iHeightDef);
+  }
 }
 
 void PosAndSize::write_widget_geometry(const QWidget * const ipWidget) const
