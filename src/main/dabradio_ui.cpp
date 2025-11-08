@@ -148,6 +148,18 @@ void DabRadio::_initialize_thermo_peak_levels()
   ui->thermoPeakLevelRight->setFillBrush(QColor(0x6F70EF));
   ui->thermoPeakLevelLeft->setBorderWidth(0);
   ui->thermoPeakLevelRight->setBorderWidth(0);
+
+  auto create_color_map = []() -> QwtLinearColorMap*
+  {
+    QwtLinearColorMap * pColorMap = new QwtLinearColorMap();
+    pColorMap->setColorInterval(QColor(0, 100, 200), QColor(255, 0, 0));
+    pColorMap->addColorStop(0.73, QColor(255, 200, 0));
+    pColorMap->addColorStop(0.4, QColor(0, 255, 0));
+    return pColorMap;
+  };
+
+  ui->thermoPeakLevelLeft->setColorMap(create_color_map());
+  ui->thermoPeakLevelRight->setColorMap(create_color_map());
 }
 
 void DabRadio::_initialize_device_selector()
