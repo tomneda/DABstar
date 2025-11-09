@@ -39,14 +39,15 @@
 #include "crc.h"
 
 // The main function of this class is to assemble the MSCdatagroups and dispatch to the appropriate handler
-DataProcessor::DataProcessor(DabRadio * mr, const SPacketData * const ipPD, RingBuffer<u8> * const ipDataBuffer)
-  : mpDabRadio(mr)
+DataProcessor::DataProcessor(DabRadio * ipDR, const SPacketData * const ipPD, RingBuffer<u8> * const ipDataBuffer)
+  : mpDabRadio(ipDR)
   , mBitRate(ipPD->bitRate)
   , mDSCTy(ipPD->DSCTy)
   , mAppType(ipPD->appTypeVec[0]) // TODO: only first element
   , mPacketAddress(ipPD->PacketAddress)
   , mDGflag(ipPD->DGflag)
   , mFEC_scheme(ipPD->FEC_scheme)
+  , mSubChannel(ipPD->SubChId)
   , mpDataBuffer(ipDataBuffer)
 {
   switch (mDSCTy)
@@ -55,20 +56,20 @@ DataProcessor::DataProcessor(DabRadio * mr, const SPacketData * const ipPD, Ring
     if (mAppType == 0x44a)
     {
       qInfo() << "Create Journaline (DSCTy 5, AppType 0x44a) data handler";
-      mpDataHandler.reset(new JournalineDataHandler);
+      mpDataHandler.reset(new JournalineDataHandler(ipDR, mSubChannel));
       break;
     }
     else if (mAppType == 1500)
     {
       qInfo() << "Create ADV (DSCTy 5, AppType 1500) data handler (not implemented)";
-      //my_dataHandler = new adv_dataHandler(mr, dataBuffer, appType);
+      //my_dataHandler = new adv_dataHandler(ipDR, dataBuffer, appType);
       mpDataHandler.reset(new VirtualDataHandler);
       break;
     }
     else if (mAppType == 4)
     {
       qInfo() << "Create TDC (DSCTy 5, AppType 4) data handler";
-      mpDataHandler.reset(new tdc_dataHandler(mr, mpDataBuffer, mAppType));
+      mpDataHandler.reset(new tdc_dataHandler(ipDR, mpDataBuffer, mAppType));
       break;
     }
     else
@@ -80,17 +81,17 @@ DataProcessor::DataProcessor(DabRadio * mr, const SPacketData * const ipPD, Ring
 
   case 44:
     qInfo() << "Create Journaline (DSCTy 44) data handler";
-    mpDataHandler.reset(new JournalineDataHandler);
+    mpDataHandler.reset(new JournalineDataHandler(ipDR, mSubChannel));
     break;
 
   case 59:
     qInfo() << "Create IP (DSCTy 59) data handler";
-    mpDataHandler.reset(new IpDataHandler(mr, mpDataBuffer));
+    mpDataHandler.reset(new IpDataHandler(ipDR, mpDataBuffer));
     break;
 
   case 60:
     qInfo() << "Create MOT (DSCTy 60) data handler";
-    mpDataHandler.reset(new MotHandler(mr));
+    mpDataHandler.reset(new MotHandler(ipDR));
     break;
 
   default:

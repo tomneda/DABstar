@@ -14,6 +14,7 @@
 
 #include "NML.h"
 #include "glob_data_types.h"
+#include "custom_frame.h"
 #include <QObject>
 #include <QFrame>
 #include <QLabel>
@@ -34,17 +35,18 @@ public:
 
   using TMapData = QMap<i32, STableElement>;
 
-  JournalineViewer(TMapData & ioTableVec);
+  JournalineViewer(TMapData & ioTableVec, i32 iSubChannel);
   ~JournalineViewer() override;
 
 private:
   TMapData & mDataMap;
+  const i32 mSubChannel;
   STableElement mCurrTableElement;
   QTimer * mpTimerRecMarker;
   QTimer * mpTimerHtmlRebuild;
 
   // UI elements
-  QFrame mFrame;
+  CustomFrame mFrame;
   QLabel * mpLblTitle;
   QLabel * mpLblHtml;
   QLabel * mpLblCopyRight;
@@ -64,4 +66,7 @@ private slots:
   void _slot_colorize_receive_marker_timeout() const;
   void _slot_html_rebuild_timeout() const;
   void _slot_html_link_activated(const QString & iLink);
+
+signals:
+  void signal_window_closed(i32 oSubChannel);
 };

@@ -333,6 +333,15 @@ void DabRadio::slot_handle_set_coordinates_button()
   _check_coordinates();
 }
 
+void DabRadio::slot_handle_journaline_viewer_closed(i32 iSubChannel)
+{
+  if (mpDabProcessor)
+  {
+    mpDabProcessor->stop_service(iSubChannel, EProcessFlag::Primary);
+    mpDabProcessor->stop_service(iSubChannel, EProcessFlag::Secondary);
+  }
+}
+
 void DabRadio::_slot_handle_favorite_button(bool /*iClicked*/)
 {
   mCurFavoriteState = !mCurFavoriteState;

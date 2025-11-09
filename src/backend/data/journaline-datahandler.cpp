@@ -26,6 +26,8 @@
 #include "newsobject.h"
 #include <sys/time.h>
 
+#include "dabradio.h"
+
 static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header,
                         const unsigned long len, const unsigned char * buf, void * arg)
 {
@@ -49,12 +51,13 @@ static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * hea
   delete ttt;
 }
 
-JournalineDataHandler::JournalineDataHandler()
-  : mJournalineScreen(mDataMap)
+JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR, const i32 iSubChannel)
+  : mJournalineViewer(mDataMap, iSubChannel)
 {
   mDataGroupDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
 
-  connect(this, &JournalineDataHandler::signal_new_data, &mJournalineScreen, &JournalineViewer::slot_new_data);
+  connect(this, &JournalineDataHandler::signal_new_data, &mJournalineViewer, &JournalineViewer::slot_new_data);
+  connect(&mJournalineViewer, &JournalineViewer::signal_window_closed, ipDR, &DabRadio::slot_handle_journaline_viewer_closed);
 }
 
 JournalineDataHandler::~JournalineDataHandler()

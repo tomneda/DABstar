@@ -1104,7 +1104,7 @@ void DabRadio::slot_start_announcement(const QString & name, i32 subChId)
   if (name == ui->serviceLabel->text())
   {
     _set_status_info_status(mStatusInfo.Announce, true);
-    qCInfo(sLogRadioInterface()) << "Announcement starts for service " << ui->serviceLabel->text() << "subchannel " << subChId;
+    qCInfo(sLogRadioInterface()) << "Announcement starts for service " << ui->serviceLabel->text() << "SubChannel " << subChId;
   }
 }
 
@@ -1118,7 +1118,7 @@ void DabRadio::slot_stop_announcement(const QString & name, i32 subChId)
   if (name == ui->serviceLabel->text())
   {
     _set_status_info_status(mStatusInfo.Announce, false);
-    qCInfo(sLogRadioInterface()) << "Announcement stops for service " << ui->serviceLabel->text() << "subchannel " << subChId;
+    qCInfo(sLogRadioInterface()) << "Announcement stops for service " << ui->serviceLabel->text() << "SubChannel " << subChId;
   }
 }
 

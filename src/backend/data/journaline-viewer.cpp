@@ -16,15 +16,16 @@
 #include <QVBoxLayout>
 #include <QTimer>
 
-static const QString cColorHeader =    "#87CEFA";  // header elements
+static const QString cColorHeader    = "#87CEFA";  // header elements
 static const QString cColorNotLoaded = "#909090";  // data not loaded yet
 static const QString cColorNotOpened = "#80FF80";  // loaded but not opened
 static const QString cColorVisiting  = "#FFFF00";  // opened and actual visiting
 static const QString cColorVisited   = "#FF6060";  // closed but visited before
 static const QString cColorText      = "#FFFFFF";  // information text
 
-JournalineViewer::JournalineViewer(TMapData & ioTableVec)
+JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
   : mDataMap(ioTableVec)
+  , mSubChannel(iSubChannel)
 {
   Settings::Journaline::posAndSize.read_widget_geometry(&mFrame);
 
@@ -104,6 +105,7 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec)
   connect(mpLblHtml, &QLabel::linkActivated, this, &JournalineViewer::_slot_html_link_activated);
   connect(mpTimerRecMarker, &QTimer::timeout, this, &JournalineViewer::_slot_colorize_receive_marker_timeout);
   connect(mpTimerHtmlRebuild, &QTimer::timeout, this, &JournalineViewer::_slot_html_rebuild_timeout);
+  connect(&mFrame, &CustomFrame::signal_frame_closed, [this](){ JournalineViewer::signal_window_closed(mSubChannel); });
 
   mFrame.show();
 }

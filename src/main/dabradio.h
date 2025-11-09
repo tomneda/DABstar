@@ -433,6 +433,7 @@ public slots:
   void slot_handle_logger_button(i32);
   void slot_handle_port_selector();
   void slot_handle_set_coordinates_button();
+  void slot_handle_journaline_viewer_closed(i32 iSubChannel);
   void slot_use_strongest_peak(bool);
   void slot_handle_dc_avoidance_algorithm(bool);
   void slot_handle_dc_removal(bool);

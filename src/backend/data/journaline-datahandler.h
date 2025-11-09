@@ -39,13 +39,14 @@
 #include  <vector>
 #include  <QObject>
 
+class DabRadio;
 
 class JournalineDataHandler : public VirtualDataHandler
 {
   Q_OBJECT
 
 public:
-  JournalineDataHandler();
+  JournalineDataHandler(DabRadio * ipDR, i32 iSubChannel);
   ~JournalineDataHandler();
 
   void add_MSC_data_group(const std::vector<u8> &);
@@ -53,7 +54,7 @@ public:
 
 private:
   JournalineViewer::TMapData mDataMap;
-  JournalineViewer mJournalineScreen;
+  JournalineViewer mJournalineViewer;
   DAB_DATAGROUP_DECODER_t mDataGroupDecoder;
   DAB_DATAGROUP_DECODER_data mDataGroupCallBack;
 
