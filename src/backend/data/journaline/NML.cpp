@@ -634,7 +634,9 @@ void NML::SetErrorDump(NewsObjectId_t oid,
                        const RawNewsObject_t & rno,
                        const char *error)
 {
+    #ifndef NDEBUG
     log_err << "NML::SetErrorDump: " << error << endmsg;
+    #endif
 
     _news.object_type = NML::PLAIN;
     _news.object_id = oid;
