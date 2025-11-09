@@ -1505,7 +1505,7 @@ void DabRadio::_slot_fib_loaded_state(const IFibDecoder::EFibLoadingState iFibLo
     }
 
     // Crosscheck service list if a not more existing service is stored there (while scan the list was already cleaned up before)
-    if (mIsScanning)
+    if (!mIsScanning)
     {
       mpServiceListHandler->delete_not_existing_SId_at_channel(mChannel.channelName, SIdList);
     }
