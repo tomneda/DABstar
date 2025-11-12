@@ -404,9 +404,11 @@ void RtlSdrHandler::set_biasControl(i32 bias)
 //	correction is in ppm
 void RtlSdrHandler::set_ppmCorrection(f64 ppm)
 {
-	i32 corr = ppm*1000;
-	this->rtlsdr_set_freq_correction_ppb(theDevice, corr);
-	//fprintf(stderr,"ppm=%d\n",corr);
+	i32 corr = ppm * 1000;
+	if (rtlsdr_set_freq_correction_ppb != nullptr)
+	  this->rtlsdr_set_freq_correction_ppb(theDevice, corr);
+	else
+	  this->rtlsdr_set_freq_correction(theDevice, (i32)round(ppm));
 }
 
 i32	RtlSdrHandler::getSamples(cf32 *V, i32 size)
@@ -500,7 +502,6 @@ bool RtlSdrHandler::load_rtlFunctions()
 	if (rtlsdr_get_sample_rate == nullptr)
     {
 	    fprintf(stderr, "Could not find rtlsdr_get_sample_rate\n");
-	    return false;
 	}
 
 	rtlsdr_get_tuner_gains	= (pfnrtlsdr_get_tuner_gains)
@@ -596,7 +597,6 @@ bool RtlSdrHandler::load_rtlFunctions()
 	if (rtlsdr_set_direct_sampling == nullptr)
     {
 	    fprintf(stderr, "Could not find rtlsdr_set_direct_sampling\n");
-	    return false;
 	}
 
 	rtlsdr_set_freq_correction = (pfnrtlsdr_set_freq_correction)
@@ -611,8 +611,7 @@ bool RtlSdrHandler::load_rtlFunctions()
 	               phandle->resolve("rtlsdr_set_freq_correction_ppb");
 	if (rtlsdr_set_freq_correction_ppb == nullptr)
     {
-	    fprintf(stderr, "Could not find rtlsdr_set_freq_correction_ppb\n");
-	    return false;
+	    fprintf(stderr, "rtlsdr_set_freq_correction_ppb will not work\n");
 	}
 
 	rtlsdr_get_device_name = (pfnrtlsdr_get_device_name)
@@ -652,7 +651,8 @@ bool RtlSdrHandler::load_rtlFunctions()
 	if (rtlsdr_get_tuner_type == nullptr)
     {
 	    // nullpointer - if function is not available - is handled
-	    fprintf(stderr, "rtlsdr_get_tuner_type will not work\n");
+	    fprintf(stderr, "Could not find rtlsdr_get_tuner_type\n");
+	    return false;
 	}
 
 	fprintf(stderr, "RTLSDR functions loaded\n");
@@ -848,19 +848,22 @@ void RtlSdrHandler::slot_timer(i32 overload)
     	old_overload = overload;
   	}
 
-  	result = rtlsdr_get_tuner_i2c_register(theDevice, data, &reg_len, &tuner_gain);
-  	if (result == 0)
-  	{
-		tuner_gain = (tuner_gain + 5) / 10;
-		if(old_gain != tuner_gain)
-		{
-			if(agcControl)
-				tunerGain->setText(QString::number(tuner_gain) + " dB");
-			else
-				tunerGain->setText("unknown");
-			old_gain = tuner_gain;
+	if (rtlsdr_get_tuner_i2c_register != nullptr)
+	{
+  		result = rtlsdr_get_tuner_i2c_register(theDevice, data, &reg_len, &tuner_gain);
+  		if (result == 0)
+  		{
+			tuner_gain = (tuner_gain + 5) / 10;
+			if(old_gain != tuner_gain)
+			{
+				if(agcControl)
+					tunerGain->setText(QString::number(tuner_gain) + " dB");
+				else
+					tunerGain->setText("unknown");
+				old_gain = tuner_gain;
+			}
 		}
+		else
+			fprintf(stderr, "rtlsdr_get_tuner_i2c_register failed\n");
   	}
-	else
-		fprintf(stderr, "rtlsdr_get_tuner_i2c_register failed\n");
 }
