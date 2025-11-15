@@ -2328,6 +2328,11 @@ void DabRadio::_initialize_and_start_timers()
 
   mTiiIndexCntTimer.setSingleShot(true);
   mTiiIndexCntTimer.setInterval(cTiiIndexCntTimeoutMs);
+
+  mAudioLevelDecayTimer.setInterval(50);
+  mAudioLevelDecayTimer.setSingleShot(false);
+  connect(&mAudioLevelDecayTimer, &QTimer::timeout, this, &DabRadio::_slot_audio_level_decay_timeout);
+  mAudioLevelDecayTimer.start();
 }
 
 

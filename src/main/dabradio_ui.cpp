@@ -230,9 +230,6 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
 
 void DabRadio::cleanup_ui()
 {
-  // TODO: resetting peak meters is not working well after service change
-  mPeakLeftDamped = mPeakRightDamped = -40.0f;
-  slot_show_audio_peak_level(-40.0f, -40.0);
   ui->progBarFicError->setValue(0);
   ui->progBarAudioBuffer->setValue(0);
 }

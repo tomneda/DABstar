@@ -258,7 +258,6 @@ private:
   QScopedPointer<CEPGDecoder> mpEpgHandler;
   QScopedPointer<EpgDecoder> mpEpgProcessor;
   QString mEpgPath;
-  QTimer mEpgTimer;
   QString mPicturesPath;
   QString mMotPath;
   SNDFILE * mpRawDumper = nullptr;
@@ -269,6 +268,8 @@ private:
   QString mAudioWavDumpFileName;
   std::vector<SServiceId> mServiceList;
 
+  QTimer mEpgTimer;
+  QTimer mAudioLevelDecayTimer;
   QTimer mDisplayTimer;
   QTimer mScanningTimer;
   QTimer mClockResetTimer;
@@ -467,6 +468,7 @@ private slots:
   void _slot_handle_channel_selector(const QString &);
   void _slot_terminate_process();
   void _slot_update_time_display();
+  void _slot_audio_level_decay_timeout();
   void _slot_scanning_security_timeout();
   void _slot_scanning_no_signal_timeout();
   void _slot_service_changed(const QString & iChannel, const QString & iService, u32 iSId);

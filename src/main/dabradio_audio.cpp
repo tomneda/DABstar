@@ -47,16 +47,20 @@ void DabRadio::_initialize_audio_output()
 
 void DabRadio::slot_show_audio_peak_level(const f32 iPeakLeft, const f32 iPeakRight)
 {
-  auto decay = [](f32 iPeak, f32 & ioPeakAvr) -> void
-  {
-    ioPeakAvr = (iPeak >= ioPeakAvr ? iPeak : ioPeakAvr - 0.5f /*decay*/);
-  };
+  if (iPeakLeft  >= mPeakLeftDamped)  mPeakLeftDamped  = iPeakLeft;
+  if (iPeakRight >= mPeakRightDamped) mPeakRightDamped = iPeakRight;
+}
 
-  decay(iPeakLeft, mPeakLeftDamped);
-  decay(iPeakRight, mPeakRightDamped);
-
+void DabRadio::_slot_audio_level_decay_timeout()
+{
   ui->thermoPeakLevelLeft->setValue(mPeakLeftDamped);
   ui->thermoPeakLevelRight->setValue(mPeakRightDamped);
+
+  mPeakLeftDamped  -= 0.5f;
+  mPeakRightDamped -= 0.5f;
+
+  if (mPeakLeftDamped  < -40.0f) mPeakLeftDamped  = -40.0f;
+  if (mPeakRightDamped < -40.0f) mPeakRightDamped = -40.0f;
 }
 
 void DabRadio::_setup_audio_output(const u32 iSampleRate)
