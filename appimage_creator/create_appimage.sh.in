@@ -9,6 +9,7 @@ DST=~/DABstarAppImage
 mkdir -p $DST
 
 mkdir -p $DST/appdir/usr/bin
+mkdir -p $DST/appdir/usr/lib
 mkdir -p $DST/appdir/usr/share/applications
 mkdir -p $DST/appdir/usr/share/icons/hicolor/256x256/apps/
 #mkdir -p $DST/appdir/usr/share/icons/hicolor/scalable/apps/
@@ -18,6 +19,7 @@ cp dabstar.desktop              $DST/appdir/usr/share/applications
 cp ../res/logo/dabstar.png      $DST/appdir/usr/share/icons/hicolor/256x256/apps/
 #cp ../res/logo/dabstar.svg     $DST/appdir/
 #cp ../res/logo/dabstar.svg     $DST/appdir/usr/share/icons/hicolor/scalable/apps/
+cp /usr/local/lib/librtlsdr.so  $DST/appdir/usr/lib/
 
 cd $DST || exit
 
