@@ -29,6 +29,7 @@
     * [Some help for scanning](#some-help-for-scanning)
   * [How to apply TII info](#how-to-apply-tii-info)
   * [Installing on Linux from current mainline](#installing-on-linux-from-current-mainline)
+    * [RTL-SDR installation](#rtl-sdr-installation)
     * [QWT installation / building](#qwt-installation--building)
       * [Original description](#original-description)
       * [QWT short build description](#qwt-short-build-description)
@@ -247,6 +248,7 @@ sudo apt-get install libsndfile1-dev
 sudo apt-get install libfftw3-dev
 sudo apt-get install zlib1g-dev
 sudo apt-get install libsamplerate0-dev
+sudo apt-get install libusb-dev
 sudo apt-get install libusb-1.0-0-dev
 sudo apt-get install qt6-base-dev
 sudo apt-get install qt6-multimedia-dev
@@ -271,6 +273,28 @@ make
 sudo make install
 ```
 
+### RTL-SDR driver installation
+
+It is recommended to build the RTL-SDR library from source from the repository of old-dab. See https://github.com/old-dab/rtlsdr.
+
+It is also recommended then to remove the default driver, if installed.
+ 
+If you are using the default driver while running DABStar you will get a message box hinting on that but DABstar will somehow work with that also. 
+
+The driver from old-dab should still be compatible with other applications using this driver.
+
+Remove the default driver with:
+```
+sudo apt remove rtl-sdr librtlsdr-dev
+sudo ldconfig
+```
+
+
+If you nevertheless  want to use the default version from Ubuntu (but this is not recommended as the driver from old-dab has some improvements):
+```
+sudo apt install rtl-sdr librtlsdr-dev
+sudo ldconfig
+```
 
 ### QWT installation / building
 
