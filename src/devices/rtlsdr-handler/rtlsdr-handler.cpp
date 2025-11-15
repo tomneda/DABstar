@@ -107,7 +107,7 @@ private:
 
 //
 //	Our wrapper is a simple classs
-RtlSdrHandler::RtlSdrHandler(QSettings * s,
+RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
                              const QString & recorderVersion)
   : _I_Buffer(8 * 1024 * 1024)
   , myFrame(nullptr)
@@ -123,7 +123,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * s,
 
   for (i = 0; i < 256; i++)
     mapTable[i] = ((f32)i - 127.38) / 128.0;
-  rtlsdrSettings = s;
+  rtlsdrSettings = ipSettings;
   this->recorderVersion = recorderVersion;
   rtlsdrSettings->beginGroup("rtlsdrSettings");
   i32 x = rtlsdrSettings->value("position-x", 100).toInt();
@@ -154,14 +154,32 @@ RtlSdrHandler::RtlSdrHandler(QSettings * s,
   phandle = new QLibrary(libraryString);
   phandle->load();
 
+  static constexpr char cRecommText[] =
+    R"(<p>For improved reception quality and usability, the RtlSdr driver from old&#8209;dab is recommended.</p>)"
+    R"(<p>See <a href="https://github.com/old-dab/rtlsdr" style="color: lightblue;">https://github.com/old-dab/rtlsdr</a> for download and installation instructions.</p>)"
+    R"(<p>This driver is also compatible with other applications that access the RtlSdr stick through this type of library.</p>)";
+  
   if (!phandle->isLoaded())
-    throw(std_exception_string(std::string("failed to open ") + std::string(libraryString)));
+  {
+    std::string s = R"(<html><body><font color="orange"><h2>Failed to open )" + std::string(libraryString) + R"(</h2></font>)";
+    s += cRecommText;
+    s += "</body></html>";
+
+    throw(std_exception_string(s));
+  }
 
   bool hasNewInterface = false;
+
+
   if (!load_rtlFunctions(hasNewInterface))
   {
     delete(phandle);
-    throw(std_exception_string("could not load one or more library functions"));
+
+    std::string s = "<html><body><font color=\"orange\"><h2>No necessary RtlSdr API methods found</h2></font><br><br>";
+    s += cRecommText;
+    s += "</body></html>";
+
+    throw(std_exception_string(s));
   }
 
   //	Ok, from here we have the library functions accessible
@@ -169,7 +187,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * s,
   if (deviceCount == 0)
   {
     delete(phandle);
-    throw(std_exception_string("No rtlsdr device found"));
+    throw(std_exception_string("No RtlSdr device found"));
   }
 
   deviceIndex = 0;	// default
