@@ -25,17 +25,16 @@
  * 	are greatly acknowledged
  */
 
-#include	<QThread>
-#include	<QFileDialog>
-#include	<QTime>
-#include	<QDate>
-#include	<QDir>
-#include	"rtlsdr-handler.h"
-#include	"rtl-dongleselect.h"
-#include	"rtl-sdr.h"
-#include	"xml-filewriter.h"
-#include	"device-exceptions.h"
-#include	"openfiledialog.h"
+#include "rtlsdr-handler.h"
+#include "rtl-dongleselect.h"
+#include "rtl-sdr.h"
+#include "xml-filewriter.h"
+#include "device-exceptions.h"
+#include "openfiledialog.h"
+#include <QThread>
+#include <QFileDialog>
+#include <QDir>
+#include <QMessageBox>
 
 #define	DEFAULT_FREQUENCY (kHz (220000))
 
@@ -168,18 +167,24 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
     throw(std_exception_string(s));
   }
 
-  bool hasNewInterface = false;
-
-
+  bool hasNewInterface;
   if (!load_rtlFunctions(hasNewInterface))
   {
     delete(phandle);
 
-    std::string s = "<html><body><font color=\"orange\"><h2>No necessary RtlSdr API methods found</h2></font><br><br>";
+    std::string s = "<html><body><font color=\"orange\"><h2>No necessary RtlSdr API methods found</h2></font>";
     s += cRecommText;
     s += "</body></html>";
 
     throw(std_exception_string(s));
+  }
+
+  if (!hasNewInterface)
+  {
+    QString s = "<html><body><font color=\"orange\"><h2>RtlSdr driver found but not the recommended one</h2></font>";
+    s += cRecommText;
+    s += "</body></html>";
+    QMessageBox::critical(nullptr, "RtlSdr driver", s);
   }
 
   //	Ok, from here we have the library functions accessible
