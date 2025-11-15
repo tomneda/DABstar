@@ -146,7 +146,7 @@ private:
   i32 old_gain = 0;
 
   //	here we need to load functions from the dll
-  bool load_rtlFunctions();
+  bool load_rtlFunctions(bool & oHasNewInterface);
   pfnrtlsdr_open rtlsdr_open;
   pfnrtlsdr_close rtlsdr_close;
   pfnrtlsdr_get_usb_strings rtlsdr_get_usb_strings;
