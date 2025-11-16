@@ -50,7 +50,7 @@ public:
   ~JournalineDataHandler();
 
   void add_MSC_data_group(const std::vector<u8> &);
-  void add_to_dataBase(NML *);
+  void add_to_dataBase(const NML * ipNmlElement);
 
 private:
   JournalineViewer::TMapData mDataMap;
@@ -58,7 +58,7 @@ private:
   DAB_DATAGROUP_DECODER_t mDataGroupDecoder;
   DAB_DATAGROUP_DECODER_data mDataGroupCallBack;
 
-  void _destroy_dataBase() const;
+  void _destroy_database();
 
 signals:
   void signal_new_data();

@@ -169,7 +169,7 @@ void JournalineViewer::_slot_html_link_activated(const QString & iLink)
 
 void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iItElem, QString & ioHtml, const i32 iLevel, const bool iSuppressTitle) const
 {
-  const auto pElem = iItElem.value().element;
+  const auto & pElem = iItElem.value().pElement;
   const i32 captionIdx = std::min(iLevel + 1, 6);
   const QString capTagBeg = "<h" + QString::number(captionIdx) + " style=\"color: " + cColorHeader + "; margin-left: -20px;\">";
   const QString capTagEnd = "</h" + QString::number(captionIdx) + ">";
@@ -195,13 +195,19 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
       const bool isOpened = itSubMenu.value().isOpened;
       const bool wasVisited = itSubMenu.value().wasVisited;
 
-      const QString & color = (isLoaded ? (wasVisited ? (isOpened ? cColorVisiting : cColorVisited) : cColorNotOpened) : cColorNotLoaded);
-
-      ioHtml += "<li><a href=\"open:" + QString::number(linkId) + "\" style=\"color: " + color + "; text-decoration:none;\">" + QString::fromUtf8(item.text) + "</a>";
+      if (isLoaded)
+      {
+        const QString & color = wasVisited ? (isOpened ? cColorVisiting : cColorVisited) : cColorNotOpened;
+        ioHtml += "<li><a href=\"open:" + QString::number(linkId) + "\" style=\"color: " + color + "; text-decoration:none;\">" + QString::fromUtf8(item.text) + "</a>";
+      }
+      else
+      {
+        ioHtml += "<li><span style=\"color: " + cColorNotLoaded + "; text-decoration:none;\">" + QString::fromUtf8(item.text) + "</span>";
+      }
 
       if (isLoaded && isOpened)
       {
-        const bool isMenuTextSameLikeTitle = (item.text == itSubMenu->element->title);
+        const bool isMenuTextSameLikeTitle = (item.text == itSubMenu->pElement->title);
         ioHtml += "<ul style=\"list-style-type: none; margin-left: -20px;\"><li>";
         _build_html_tree_recursive(itSubMenu, ioHtml, iLevel + 1, isMenuTextSameLikeTitle);
         ioHtml += "</li></ul>";

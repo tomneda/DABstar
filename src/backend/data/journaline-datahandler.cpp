@@ -28,8 +28,8 @@
 
 #include "dabradio.h"
 
-static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header,
-                        const unsigned long len, const unsigned char * buf, void * arg)
+static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header,
+                          const unsigned long len, const unsigned char * buf, void * arg)
 {
   struct timeval theTime;
   gettimeofday(&theTime, NULL);
@@ -37,24 +37,29 @@ static void my_callBack(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * hea
   unsigned char buffer[4096];
   (void)arg;
   long unsigned int nmlSize = 0;
-  NML::RawNewsObject_t theBuffer;
   NewsObject hetNieuws(len, buf, &theTime);
   hetNieuws.copyNml(&nmlSize, buffer);
+
+  NML::RawNewsObject_t theBuffer;
   theBuffer.nml_len = nmlSize;
   theBuffer.extended_header_len = 0;
+
   for (uint16_t i = 0; i < len; i++)
+  {
     theBuffer.nml[i] = buffer[i];
+  }
+
   RemoveNMLEscapeSequences theRemover;
-  NMLFactory xxx;
-  NML * ttt = xxx.CreateNML(theBuffer, &theRemover);
-  static_cast<JournalineDataHandler *>(arg)->add_to_dataBase(ttt);
-  delete ttt;
+  NMLFactory nmlFact;
+  NML * pNml = nmlFact.CreateNML(theBuffer, &theRemover);
+  static_cast<JournalineDataHandler *>(arg)->add_to_dataBase(pNml);
+  delete pNml;
 }
 
 JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR, const i32 iSubChannel)
   : mJournalineViewer(mDataMap, iSubChannel)
 {
-  mDataGroupDecoder = DAB_DATAGROUP_DECODER_createDec(my_callBack, this);
+  mDataGroupDecoder = DAB_DATAGROUP_DECODER_createDec(callback_func, this);
 
   connect(this, &JournalineDataHandler::signal_new_data, &mJournalineViewer, &JournalineViewer::slot_new_data);
   connect(&mJournalineViewer, &JournalineViewer::signal_window_closed, ipDR, &DabRadio::slot_handle_journaline_viewer_closed);
@@ -63,7 +68,7 @@ JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR, const i32 iS
 JournalineDataHandler::~JournalineDataHandler()
 {
   DAB_DATAGROUP_DECODER_deleteDec(mDataGroupDecoder);
-  _destroy_dataBase();
+  _destroy_database();
 }
 
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
@@ -85,56 +90,52 @@ void JournalineDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
   }
 }
 
-void JournalineDataHandler::_destroy_dataBase() const
+void JournalineDataHandler::_destroy_database()
 {
   for (auto i : mDataMap)
   {
-    delete i.element;
+    i.pElement.reset(); // not really necessary
   }
+  mDataMap.clear();
 }
 
-void JournalineDataHandler::add_to_dataBase(NML * NMLelement)
+void JournalineDataHandler::add_to_dataBase(const NML * const ipNmlElement)
 {
-  switch (NMLelement->GetObjectType())
+  switch (ipNmlElement->GetObjectType())
   {
   case NML::INVALID:
+  case NML::TITLE: // this is implicitly handled with the List, Plain text or Menu
     return;
+
   case NML::MENU:
   case NML::PLAIN:
   case NML::LIST:
   {
-    NML::News_t * const x = new NML::News_t;
+    const auto objId = ipNmlElement->GetObjectId();
+    const auto it = mDataMap.find(objId);
+    const auto pElem = it != mDataMap.end() ? it.value().pElement : std::make_shared<NML::News_t>();
 
-    x->object_id = NMLelement->GetObjectId();
-    x->object_type = NMLelement->GetObjectType();
-    x->static_flag = NMLelement->isStatic();
-    x->revision_index = NMLelement->GetRevisionIndex();
-    x->extended_header = NMLelement->GetExtendedHeader();
-    x->title = NMLelement->GetTitle();
-    x->item = NMLelement->GetItems();
+    pElem->object_id = objId;
+    pElem->object_type = ipNmlElement->GetObjectType();
+    pElem->static_flag = ipNmlElement->isStatic();
+    pElem->revision_index = ipNmlElement->GetRevisionIndex();
+    pElem->extended_header = ipNmlElement->GetExtendedHeader();
+    pElem->title = ipNmlElement->GetTitle();
+    pElem->item = ipNmlElement->GetItems();
 
-    const auto it = mDataMap.find(x->object_id);
-
-    if (it != mDataMap.end())
-    {
-      NML::News_t * const p = it.value().element;
-      delete p;
-      it.value().element = x;
-    }
-    else
+    if (it == mDataMap.end()) // we created a new element, so insert it in the map
     {
       JournalineViewer::STableElement temp{};
-      temp.element = x;
-
-      mDataMap.insert(x->object_id, temp);
+      temp.pElement = pElem;
+      mDataMap.insert(pElem->object_id, temp);
     }
+
     emit signal_new_data();
   }
   break;
 
   default:
-    qCritical() << "Unknown object type" << NMLelement->GetObjectType();
-    break;
+    qCritical() << "Unknown object type" << ipNmlElement->GetObjectType();
   }
 }
 

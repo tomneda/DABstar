@@ -15,6 +15,7 @@
 #include "NML.h"
 #include "glob_data_types.h"
 #include "custom_frame.h"
+#include <memory>
 #include <QObject>
 #include <QFrame>
 #include <QLabel>
@@ -28,7 +29,7 @@ class JournalineViewer : public QObject
 public:
   struct STableElement
   {
-    NML::News_t * element = nullptr;
+    std::shared_ptr<NML::News_t> pElement;
     bool isOpened = false;
     bool wasVisited = false;
   };
