@@ -48,7 +48,7 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
                             "<td><span style=\"color: " + cColorNotOpened + ";\">&nbsp;Data loaded but element not opened yet&nbsp;</span></td>"
                             "</tr>"
                             "<tr>"
-                            "<td><span style=\"color: " + cColorVisiting  + ";\">&nbsp;Element opened&nbsp;</span></td>"
+                            "<td><span style=\"color: " + cColorVisiting  + ";\">&nbsp;Element is open&nbsp;</span></td>"
                             "<td><span style=\"color: " + cColorVisited   + ";\">&nbsp;Element closed but visited before&nbsp;</span></td>"
                             "</tr>"
                             "</table>";
