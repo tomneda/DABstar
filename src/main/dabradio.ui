@@ -1010,7 +1010,7 @@
             <number>0</number>
            </property>
            <property name="pipeWidth">
-            <number>8</number>
+            <number>7</number>
            </property>
           </widget>
          </item>
@@ -1047,7 +1047,7 @@
             <number>0</number>
            </property>
            <property name="pipeWidth">
-            <number>8</number>
+            <number>7</number>
            </property>
           </widget>
          </item>
