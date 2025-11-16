@@ -248,6 +248,7 @@ i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
 
   for (const auto subChId : mSubChIdList)
   {
+    assert(subChId < 64);
     mpFibDecoder->get_sub_channel_info(&data, subChId);
 
     assert(data.in_use);
@@ -270,6 +271,7 @@ i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
 
   for (const auto subChId : mSubChIdList)
   {
+    assert(subChId < 64);
     mpFibDecoder->get_sub_channel_info(&data, subChId);
 
     assert(data.in_use);
@@ -332,6 +334,7 @@ i32 EtiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
 
   for (const auto subChId : mSubChIdList)
   {
+    assert(subChId < 64);
     SChannelData data;
     mpFibDecoder->get_sub_channel_info(&data, subChId);
 

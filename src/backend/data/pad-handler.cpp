@@ -536,7 +536,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     return;
   }
 
-  SDataGrpHeader0 dataGrpHeader0 = reinterpret_cast<const SDataGrpHeader0 &>(iData[0]);
+  const SDataGrpHeader0 & dataGrpHeader0 = reinterpret_cast<const SDataGrpHeader0 &>(iData[0]);
   // SDataGrpHeader1 dataGrpHeader1 = reinterpret_cast<const SDataGrpHeader1 &>(iData[1]);
 
   if (dataGrpHeader0.CrcFlag != 0)
