@@ -3,6 +3,7 @@
 QT_VERSION=6.8.3
 export PATH=/home/workvm/fs_Qt/$QT_VERSION/gcc_64/bin/:$PATH
 export LD_LIBRARY_PATH=/home/workvm/fs_Qt/$QT_VERSION/gcc_64/lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/workvm/fs_DABstar/appimage_creator/stublibs/:$LD_LIBRARY_PATH
 
 DST=~/DABstarAppImage
 
