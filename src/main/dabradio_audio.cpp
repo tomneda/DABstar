@@ -56,11 +56,14 @@ void DabRadio::_slot_audio_level_decay_timeout()
   ui->thermoPeakLevelLeft->setValue(mPeakLeftDamped);
   ui->thermoPeakLevelRight->setValue(mPeakRightDamped);
 
-  mPeakLeftDamped  -= 0.5f;
-  mPeakRightDamped -= 0.5f;
+  constexpr float cMinPeakLevelValue   = -23.0f;
+  constexpr float cPeakLevelDecayValue =   0.5f;
 
-  if (mPeakLeftDamped  < -40.0f) mPeakLeftDamped  = -40.0f;
-  if (mPeakRightDamped < -40.0f) mPeakRightDamped = -40.0f;
+  mPeakLeftDamped  -= cPeakLevelDecayValue;
+  mPeakRightDamped -= cPeakLevelDecayValue;
+
+  if (mPeakLeftDamped  < cMinPeakLevelValue) mPeakLeftDamped  = cMinPeakLevelValue;
+  if (mPeakRightDamped < cMinPeakLevelValue) mPeakRightDamped = cMinPeakLevelValue;
 }
 
 void DabRadio::_setup_audio_output(const u32 iSampleRate)
