@@ -1,4 +1,3 @@
-
 #include	<iostream>
 #include	"eti-generator.h"
 #include	"eep-protection.h"
@@ -46,7 +45,7 @@ EtiGenerator::EtiGenerator(FicDecoder * my_ficHandler)
   CIFCount_hi = -1;
   CIFCount_lo = -1;
   etiFile = nullptr;
-  Minor = 0;
+  Minor = -1;
 }
 
 EtiGenerator::~EtiGenerator()
@@ -84,7 +83,7 @@ void EtiGenerator::reset()
   amount = 0;
   CIFCount_hi = -1;
   CIFCount_lo = -1;
-  Minor = 0;
+  Minor = -1;
   running = false;
 }
 
@@ -150,16 +149,21 @@ void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbId
       amount++;
       index_Out = (index_Out + 1) & 017;
       // Minor is introduced to inform the init_eti function about the CIF number in the dab frame, it runs from 0 .. 3
-      Minor = 0;
+      Minor = -1;
       return;    // wait until next time
     }
     //
     //	Otherwise, it becomes serious
     if (CIFCount_hi < 0 || CIFCount_lo < 0)
     {
+      Minor = -1;
       return;
     }
     //
+    if (Minor < 0)
+    {
+      return;
+    }
     //	3 steps, init the vector, add the fib and add the CIF content
     i32 offset = _init_eti(theVector, CIFCount_hi, CIFCount_lo, Minor);
     i32 base = offset;
@@ -400,7 +404,6 @@ void EtiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * 
     }
     p->output[j] = temp;
   }
-
 }
 
 bool EtiGenerator::start_eti_generator(const QString & f)
@@ -421,4 +424,3 @@ void EtiGenerator::stop_eti_generator()
   etiFile = nullptr;
   running = false;
 }
-
