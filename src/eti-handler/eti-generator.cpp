@@ -130,6 +130,7 @@ void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbId
     }
     Minor = 0;
     mpFibDecoder->get_cif_count(&CIFCount_hi, &CIFCount_lo);
+    mSubChIdList = mpFibDecoder->get_sub_channel_id_list();
   }
 
   // adding the MSC blocks. Blocks 5 .. 76 are "transformed" into the "soft" bits arrays
@@ -244,20 +245,19 @@ i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
   i32 FICF = 1;      // FIC present in MST
   i32 NST = 0;      // number of streams
   i32 FL = 0;      // Frame Length
-  for (i32 j = 0; j < 64; j++)
-  {
-    mpFibDecoder->get_channel_info(&data, j);
 
-    if (data.in_use)
-    {
-      NST++;
-      FL += (data.bitrate * 3) / 4;    // words remember
-    }
+  for (const auto subChId : mSubChIdList)
+  {
+    mpFibDecoder->get_sub_channel_info(&data, subChId);
+
+    assert(data.in_use);
+    NST++;
+    FL += (data.bitrate * 3) / 4;    // words remember
   }
-  //
+
   FL += NST + 1 + 24; // STC + EOH + MST (FIC data, Mode 1!)
   oEti[fillPointer++] = (FICF << 7) | NST;
-  //
+
   //	The FP is computed as remainder of the total CIFCount,
   u8 FP = ((CIFCount_hi * 250) + CIFCount_lo) % 8;
   //
@@ -267,29 +267,32 @@ i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
   //	Now for each of the streams in the FIC we add information
   //	on how to get it
   //	STC ()
-  for (i32 j = 0; j < 64; j++)
+
+  for (const auto subChId : mSubChIdList)
   {
-    mpFibDecoder->get_channel_info(&data, j);
-    if (data.in_use)
+    mpFibDecoder->get_sub_channel_info(&data, subChId);
+
+    assert(data.in_use);
+    i32 SCID = data.id;
+    i32 SAD = data.start_cu;
+    i32 TPL;
+
+    if (data.uepFlag)
     {
-      i32 SCID = data.id;
-      i32 SAD = data.start_cu;
-      i32 TPL;
-      if (data.uepFlag)
-      {
-        TPL = 0x10 | (data.protlev - 1);
-      }
-      else
-      {
-        TPL = 0x20 | data.protlev;
-      }
-      i32 STL = data.bitrate * 3 / 8;
-      oEti[fillPointer++] = (SCID << 2) | ((SAD & 0x300) >> 8);
-      oEti[fillPointer++] = SAD & 0xFF;
-      oEti[fillPointer++] = (TPL << 2) | ((STL & 0x300) >> 8);
-      oEti[fillPointer++] = STL & 0xFF;
+      TPL = 0x10 | (data.protlev - 1);
     }
+    else
+    {
+      TPL = 0x20 | data.protlev;
+    }
+
+    i32 STL = data.bitrate * 3 / 8;
+    oEti[fillPointer++] = (SCID << 2) | ((SAD & 0x300) >> 8);
+    oEti[fillPointer++] = SAD & 0xFF;
+    oEti[fillPointer++] = (TPL << 2) | ((STL & 0x300) >> 8);
+    oEti[fillPointer++] = STL & 0xFF;
   }
+
   //	EOH ()
   //	MNSC
   oEti[fillPointer++] = 0xFF;
@@ -327,51 +330,50 @@ i32 EtiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
   u8 shiftRegister[9];
   std::vector<parameter *> theParameters;
 
-  for (i32 i = 0; i < 64; i++)
+  for (const auto subChId : mSubChIdList)
   {
     SChannelData data;
-    mpFibDecoder->get_channel_info(&data, i);
-    if (data.in_use)
+    mpFibDecoder->get_sub_channel_info(&data, subChId);
+
+    assert(data.in_use);
+    parameter * t = new parameter;
+    t->input = input;
+    t->uepFlag = data.uepFlag;
+    t->bitRate = data.bitrate;
+    t->protLevel = data.protlev;
+    t->start_cu = data.start_cu;
+    t->size = data.size;
+    t->output = &output[offset];
+    offset += data.bitrate * 24 / 8;
+
+    if (protTable[subChId] == nullptr)
     {
-      parameter * t = new parameter;
-      t->input = input;
-      t->uepFlag = data.uepFlag;
-      t->bitRate = data.bitrate;
-      t->protLevel = data.protlev;
-      t->start_cu = data.start_cu;
-      t->size = data.size;
-      t->output = &output[offset];
-      offset += data.bitrate * 24 / 8;
-
-      if (protTable[i] == nullptr)
+      if (t->uepFlag)
       {
-        if (t->uepFlag)
-        {
-          protTable[i] = new UepProtection(t->bitRate, t->protLevel);
-        }
-        else
-        {
-          protTable[i] = new EepProtection(t->bitRate, t->protLevel);
-        }
-
-        memset(shiftRegister, 1, 9);
-        descrambler[i] = new u8[24 * t->bitRate];
-
-        for (i32 j = 0; j < 24 * t->bitRate; j++)
-        {
-          u8 b = shiftRegister[8] ^ shiftRegister[4];
-          for (i32 k = 8; k > 0; k--)
-          {
-            shiftRegister[k] = shiftRegister[k - 1];
-          }
-          shiftRegister[0] = b;
-          descrambler[i][j] = b;
-        }
+        protTable[subChId] = new UepProtection(t->bitRate, t->protLevel);
       }
-      //	we need to save a reference to the parameters
-      //	since we have to delete the instance later on
-      _process_sub_channel(i, t, protTable[i], descrambler[i]);
+      else
+      {
+        protTable[subChId] = new EepProtection(t->bitRate, t->protLevel);
+      }
+
+      memset(shiftRegister, 1, 9);
+      descrambler[subChId] = new u8[24 * t->bitRate];
+
+      for (i32 j = 0; j < 24 * t->bitRate; j++)
+      {
+        u8 b = shiftRegister[8] ^ shiftRegister[4];
+        for (i32 k = 8; k > 0; k--)
+        {
+          shiftRegister[k] = shiftRegister[k - 1];
+        }
+        shiftRegister[0] = b;
+        descrambler[subChId][j] = b;
+      }
     }
+    //	we need to save a reference to the parameters
+    //	since we have to delete the instance later on
+    _process_sub_channel(subChId, t, protTable[subChId], descrambler[subChId]);
   }
   return offset;
 }

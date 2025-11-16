@@ -96,6 +96,7 @@ private:
   i16 numberofblocksperCIF;
   u8 fibBits[4 * 768];
   std::mutex mMutex;
+  std::vector<i8> mSubChIdList;
 
   i32 _init_eti(u8 *, i16, i16, i16);
   i32 _process_cif(const i16 *, u8 *, i32);

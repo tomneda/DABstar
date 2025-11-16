@@ -47,7 +47,8 @@ public:
   u8 get_ecc() const override;
   i32 get_ensembleId() const override;
   QString get_ensemble_name() const override;
-  void get_channel_info(SChannelData *, i32) const override;
+  std::vector<i8> get_sub_channel_id_list() const override;
+  void get_sub_channel_info(SChannelData *, i32) const override;
   i32 get_cif_count() const override;
   void get_cif_count(i16 *, i16 *) const override;
   u32 get_mod_julian_date() const override;

@@ -521,6 +521,18 @@ QString FibDecoder::get_ensemble_name() const
   return " ";
 }
 
+std::vector<i8> FibDecoder::get_sub_channel_id_list() const
+{
+  std::vector<i8> subChannels(mpFibConfigFig0Curr->Fig0s1_BasicSubChannelOrganizationVec.size());
+
+  for (size_t i = 0; i < mpFibConfigFig0Curr->Fig0s1_BasicSubChannelOrganizationVec.size(); ++i)
+  {
+    subChannels[i] = mpFibConfigFig0Curr->Fig0s1_BasicSubChannelOrganizationVec[i].SubChId;
+  }
+
+  return subChannels;
+}
+
 i32 FibDecoder::get_cif_count() const
 {
   QMutexLocker lock(&mMutex);
@@ -635,7 +647,7 @@ u32 FibDecoder::get_mod_julian_date() const
   return mModJulianDate;
 }
 
-void FibDecoder::get_channel_info(SChannelData * d, const i32 iSubChId) const
+void FibDecoder::get_sub_channel_info(SChannelData * d, const i32 iSubChId) const
 {
   QMutexLocker lock(&mMutex);
 

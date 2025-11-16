@@ -99,7 +99,8 @@ public:
   virtual i32 get_ensembleId() const = 0;
   virtual QString get_ensemble_name() const = 0;
 
-  virtual void get_channel_info(SChannelData *, i32) const = 0;
+  virtual std::vector<i8> get_sub_channel_id_list() const = 0;
+  virtual void get_sub_channel_info(SChannelData *, i32) const = 0;
 
   virtual i32 get_cif_count() const = 0;
   virtual void get_cif_count(i16 *, i16 *) const = 0;
