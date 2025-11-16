@@ -433,16 +433,17 @@ NML* NMLFactory::CreateNML( const NML::RawNewsObject_t& rno, const NMLEscapeCode
     // to the current position in order to ignore it
     while((*p == 0x1a) || (*p == 0x1b))
     {
-        int dslen = p[1] + 1;
-        len = len - dslen - 2;
-        p += dslen + 2;
-        if (len < 2)
+        int dsLen = p[1] + 1;
+        int remLen = len - dsLen - 2; // negative values should be possible
+        if (remLen < 2)
         {
-           sprintf( error, "Error: Datasection too long" );
+           sprintf( error, "Error: Data section too long" );
            n->SetErrorDump( n->_news.object_id, uncompressed, error );
            return n;
-	    }
-	}
+        }
+        p += dsLen + 2;
+        len = remLen;
+    }
 
     // check for title section
     if( *p != 0x01 )
