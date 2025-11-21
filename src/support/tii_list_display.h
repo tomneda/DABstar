@@ -34,13 +34,23 @@
 #include <QWidget>
 #include <QScrollArea>
 #include <QTableWidget>
-#include <QTableWidgetItem>
 #include <QObject>
-#include <QSettings>
 #include <QScopedPointer>
 
+class CustomScrollArea : public QScrollArea
+{
+  using QScrollArea::QScrollArea;
+  Q_OBJECT
 
-class TiiListDisplay : public QFrame
+protected:
+  void closeEvent(QCloseEvent *event) override;
+
+signals:
+  void signal_frame_closed();
+};
+
+
+class TiiListDisplay : public QObject
 {
   Q_OBJECT
 
@@ -67,6 +77,9 @@ public:
 
 private:
   static constexpr i32 cColNr = 10;
-  QScopedPointer<QScrollArea> mpWidget;
+  QScopedPointer<CustomScrollArea> mpWidget;
   QScopedPointer<QTableWidget> mpTableWidget;
+
+signals:
+  void signal_frame_closed();
 };

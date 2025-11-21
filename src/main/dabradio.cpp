@@ -131,6 +131,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
   connect(mpTechDataWidget.get(), &TechData::signal_window_closed, this, &DabRadio::_slot_handle_tech_detail_button);
   connect(ui->btnEject, &QPushButton::clicked, this, [this](bool){ _slot_new_device(mDeviceSelector.get_device_name()); });
   connect(ui->configButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_config_button);
+  connect(&mTiiListDisplay, &TiiListDisplay::signal_frame_closed, this, &DabRadio::slot_handle_tii_viewer_closed);
 
   _initialize_and_start_timers();
 

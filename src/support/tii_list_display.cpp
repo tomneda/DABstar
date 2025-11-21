@@ -29,8 +29,14 @@
  */
 #include "tii_list_display.h"
 #include "dabradio.h"
-#include <QHeaderView>
 #include "setting-helper.h"
+
+
+void CustomScrollArea::closeEvent(QCloseEvent *event)
+{
+  emit signal_frame_closed();
+  QScrollArea::closeEvent(event);
+}
 
 
 TiiListDisplay::TiiListDisplay()
@@ -39,13 +45,15 @@ TiiListDisplay::TiiListDisplay()
   mpTableWidget->setHorizontalHeaderLabels(QStringList() << "Main" << "Sub" << "Level" << "Phase" << "Transmitter"
                                                          << "Distance" << "Dir" << "Power" << "Altitude" << "Height");
 
-  mpWidget.reset(new QScrollArea(nullptr));
+  mpWidget.reset(new CustomScrollArea(nullptr));
   mpWidget->setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mpWidget->setWidgetResizable(true);
   mpWidget->setWindowTitle("TII list");
   mpWidget->setWidget(mpTableWidget.get());
 
   Settings::TiiViewer::posAndSize.read_widget_geometry(mpWidget.get(), 660, 250, false);
+
+  connect(mpWidget.get(), &CustomScrollArea::signal_frame_closed, this, &TiiListDisplay::signal_frame_closed);
 }
 
 TiiListDisplay::~TiiListDisplay()
@@ -78,7 +86,6 @@ i32 TiiListDisplay::get_nr_rows()
 void TiiListDisplay::show()
 {
   mpWidget->show();
-  setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 }
 
 void TiiListDisplay::hide()

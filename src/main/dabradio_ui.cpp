@@ -339,6 +339,14 @@ void DabRadio::slot_handle_journaline_viewer_closed(i32 iSubChannel)
   }
 }
 
+void DabRadio::slot_handle_tii_viewer_closed()
+{
+  if (mShowTiiListWindow)  // should be always true in this situation
+  {
+    _slot_handle_tii_button();
+  }
+}
+
 void DabRadio::_slot_handle_favorite_button(bool /*iClicked*/)
 {
   mCurFavoriteState = !mCurFavoriteState;
