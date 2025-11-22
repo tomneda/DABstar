@@ -69,8 +69,6 @@
 
 #ifndef _NML_H_
 #define _NML_H_
-#include <QString>
-
 
 #ifdef _MSC_VER
 #pragma warning(push,3)
@@ -182,6 +180,7 @@ public:
     unsigned char revision_index; ///< revision index
     std::string extended_header;  ///< extended header bytes (unparsed)
     std::string title;            ///< parsed title string
+    std::string html;             ///< parsed html string
     std::vector<Item_t> item;     ///< items of list or menu object
   } News_t;
 
@@ -273,6 +272,12 @@ public:
   inline std::string GetTitle(void) const
   {
     return _news.title;
+  }
+
+  /// interpreted HTML content of NML object
+  inline std::string GetHtml(void) const
+  {
+    return _news.html;
   }
 
   /// number of items contained in NML object
@@ -371,7 +376,7 @@ private:
   NMLFactory(const NMLFactory &);
 
   unsigned char * getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen);
-  void append_link_data_from_raw_news_object(QString & ioLinkData, const unsigned char * ipInData, int iDsLen) const;
+  void append_link_data_from_raw_news_object(std::string & ioLinkData, const unsigned char * ipInData, int iDsLen) const;
 };
 
 

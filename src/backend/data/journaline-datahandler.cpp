@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C) 2015 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -23,36 +32,29 @@
 #include "dabdatagroupdecoder.h"
 #include "bit-extractors.h"
 #include "journaline-viewer.h"
-#include "newsobject.h"
 #include <sys/time.h>
-
 #include "dabradio.h"
 
-static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header,
-                          const unsigned long len, const unsigned char * buf, void * arg)
+static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * const pHeader,
+                          const unsigned long iLen, const unsigned char * ipBuffer, void * pArg)
 {
-  struct timeval theTime;
-  gettimeofday(&theTime, NULL);
-  (void)header;
-  unsigned char buffer[4096];
-  (void)arg;
-  long unsigned int nmlSize = 0;
-  NewsObject hetNieuws(len, buf, &theTime);
-  hetNieuws.copyNml(&nmlSize, buffer);
+  (void)pHeader;
+  JournalineDataHandler * const pDataHandler = static_cast<JournalineDataHandler *>(pArg);
+  assert(pDataHandler != nullptr);
 
   NML::RawNewsObject_t theBuffer;
-  theBuffer.nml_len = nmlSize;
+  theBuffer.nml_len = iLen;
   theBuffer.extended_header_len = 0;
 
-  for (uint16_t i = 0; i < len; i++)
+  for (uint16_t i = 0; i < iLen; i++)
   {
-    theBuffer.nml[i] = buffer[i];
+    theBuffer.nml[i] = ipBuffer[i];
   }
 
   RemoveNMLEscapeSequences theRemover;
   NMLFactory nmlFact;
   NML * pNml = nmlFact.CreateNML(theBuffer, &theRemover);
-  static_cast<JournalineDataHandler *>(arg)->add_to_dataBase(pNml);
+  pDataHandler->add_to_dataBase(pNml);
   delete pNml;
 }
 
@@ -121,6 +123,7 @@ void JournalineDataHandler::add_to_dataBase(const NML * const ipNmlElement)
     pElem->revision_index = ipNmlElement->GetRevisionIndex();
     pElem->extended_header = ipNmlElement->GetExtendedHeader();
     pElem->title = ipNmlElement->GetTitle();
+    pElem->html = ipNmlElement->GetHtml();
     pElem->item = ipNmlElement->GetItems();
 
     if (it == mDataMap.end()) // we created a new element, so insert it in the map

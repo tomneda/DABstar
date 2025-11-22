@@ -15,6 +15,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QTimer>
+#include <QDesktopServices>
 
 static const QString cColorHeader    = "#87CEFA";  // header elements
 static const QString cColorNotLoaded = "#909090";  // data not loaded yet
@@ -145,7 +146,14 @@ void JournalineViewer::_slot_html_link_activated(const QString & iLink)
   // Expecting links like "open:<id>"
   if (!iLink.startsWith("open:"))
   {
-    qCritical() << "Unexpected link" << iLink;
+    if (iLink.startsWith("http"))
+    {
+      QDesktopServices::openUrl(QUrl(iLink));
+    }
+    else
+    {
+      qCritical() << "Unexpected link" << iLink;
+    }
     return;
   }
 
@@ -181,6 +189,11 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
   else if (!iSuppressTitle)
   {
     ioHtml += capTagBeg + QString::fromUtf8(pElem->title) + capTagEnd;
+  }
+
+  if (!pElem->html.empty())
+  {
+    ioHtml += "<a style=\"color: lightcoral;\" href=\"" + pElem->html + "\">" + pElem->html + "</a>";
   }
 
   switch (pElem->object_type)

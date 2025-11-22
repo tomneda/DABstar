@@ -73,7 +73,6 @@
 #include "NML.h"
 #include "Splitter.h"
 #include "cpplog.h"
-#include <QByteArray>
 #include <QDebug>
 
 static int Inflate(unsigned char * dest,
@@ -303,10 +302,10 @@ unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned sh
   return res;
 }
 
-void NMLFactory::append_link_data_from_raw_news_object(QString & ioLinkData, const unsigned char * ipInData, int iDsLen) const
+void NMLFactory::append_link_data_from_raw_news_object(std::string & ioLinkData, const unsigned char * ipInData, int iDsLen) const
 {
-  if (iDsLen > 4 && ((ipInData[0] == 0x1a && ipInData[2] == 0x03 && ipInData[3] == 0x02) ||
-                     (ipInData[0] == 0x1b && !ioLinkData.isEmpty())))
+  if (iDsLen > 4 && ((ipInData[0] == 0x1a && ipInData[2] == 0x03 && ipInData[3] == 0x02 && ioLinkData.empty()) ||
+                     (ipInData[0] == 0x1b && !ioLinkData.empty())))
   {
     ioLinkData.append(reinterpret_cast<const char *>(ipInData + 4));
     // ioLinkData.append(reinterpret_cast<const char *>(ipInData + 4), iDsLen - 4);
@@ -435,7 +434,7 @@ NML * NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCod
   // we take the length of the datasection and add it
   // to the current position in order to ignore it
 
-  QString linkData;
+  std::string linkData;
   while (*p == 0x1a || *p == 0x1b)
   {
     int dsLen = p[1] + 1;
@@ -452,9 +451,10 @@ NML * NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCod
     len = remLen;
   }
 
-  if (!linkData.isEmpty())
+  if (!linkData.empty())
   {
-    qDebug() << "Linkdata" << linkData.toStdString();
+    qDebug().noquote() << "Linkdata:" << linkData;
+    n->_news.html = std::move(linkData);
   }
 
   // check for title section
@@ -821,6 +821,7 @@ bool RemoveNMLEscapeSequences::Convert(std::string & dest,
                                        const std::string & src) const
 {
   dest = "";
+  dest.reserve(src.length());
 
   for (unsigned int i = 0; i < src.length(); i++)
   {
