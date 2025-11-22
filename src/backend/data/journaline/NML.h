@@ -69,6 +69,7 @@
 
 #ifndef _NML_H_
 #define _NML_H_
+#include <QString>
 
 
 #ifdef _MSC_VER
@@ -368,7 +369,9 @@ private:
   static NMLFactory * _instance;
   NMLFactory & operator=(const NMLFactory &);
   NMLFactory(const NMLFactory &);
+
   unsigned char * getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen);
+  void append_link_data_from_raw_news_object(QString & ioLinkData, const unsigned char * ipInData, int iDsLen) const;
 };
 
 

@@ -73,6 +73,8 @@
 #include "NML.h"
 #include "Splitter.h"
 #include "cpplog.h"
+#include <QByteArray>
+#include <QDebug>
 
 static int Inflate(unsigned char * dest,
                    unsigned long * destLen,
@@ -301,6 +303,16 @@ unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned sh
   return res;
 }
 
+void NMLFactory::append_link_data_from_raw_news_object(QString & ioLinkData, const unsigned char * ipInData, int iDsLen) const
+{
+  if (iDsLen > 4 && ((ipInData[0] == 0x1a && ipInData[2] == 0x03 && ipInData[3] == 0x02) ||
+                     (ipInData[0] == 0x1b && !ioLinkData.isEmpty())))
+  {
+    ioLinkData.append(reinterpret_cast<const char *>(ipInData + 4));
+    // ioLinkData.append(reinterpret_cast<const char *>(ipInData + 4), iDsLen - 4);
+  }
+}
+
 /// @brief create an NML object from raw NML
 /// An NML object will be created from the specified raw news object,
 /// even if the raw news object is invalid. In this case, an error
@@ -422,18 +434,27 @@ NML * NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCod
 
   // we take the length of the datasection and add it
   // to the current position in order to ignore it
-  while ((*p == 0x1a) || (*p == 0x1b))
+
+  QString linkData;
+  while (*p == 0x1a || *p == 0x1b)
   {
     int dsLen = p[1] + 1;
     int remLen = len - dsLen - 2; // negative values should be possible
+
     if (remLen < 2)
     {
       sprintf(error, "Error: Data section too long");
       n->SetErrorDump(n->_news.object_id, uncompressed, error);
       return n;
     }
+    append_link_data_from_raw_news_object(linkData, p, dsLen);
     p += dsLen + 2;
     len = remLen;
+  }
+
+  if (!linkData.isEmpty())
+  {
+    qDebug() << "Linkdata" << linkData.toStdString();
   }
 
   // check for title section
