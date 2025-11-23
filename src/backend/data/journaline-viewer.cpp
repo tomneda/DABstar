@@ -101,7 +101,7 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
 
   mFrame.setLayout(pVBoxLayout);
 
-  _set_receiver_marker_color(false);
+  _set_receiver_marker_color(EMarkerState::Idle);
 
   connect(mpLblHtml, &QLabel::linkActivated, this, &JournalineViewer::_slot_html_link_activated);
   connect(mpTimerRecMarker, &QTimer::timeout, this, &JournalineViewer::_slot_colorize_receive_marker_timeout);
@@ -119,7 +119,7 @@ JournalineViewer::~JournalineViewer()
 
 void JournalineViewer::slot_new_data()
 {
-  _set_receiver_marker_color(true);
+  _set_receiver_marker_color(EMarkerState::NewData);
   mpTimerRecMarker->start();
 
   if (!mpTimerHtmlRebuild->isActive()) // only restart time if it was not running yet
@@ -130,13 +130,14 @@ void JournalineViewer::slot_new_data()
 
 void JournalineViewer::_slot_colorize_receive_marker_timeout() const
 {
-  _set_receiver_marker_color(false);
+  _set_receiver_marker_color(EMarkerState::Idle);
 }
 
 void JournalineViewer::_slot_html_rebuild_timeout() const
 {
   if (mDataMap.contains(0))
   {
+    _set_receiver_marker_color(EMarkerState::UpdatedData);
     mpLblHtml->setText(_get_journaline_as_HTML());
   }
 }
@@ -266,15 +267,21 @@ QString JournalineViewer::_get_journaline_as_HTML() const
   return html;
 }
 
-void JournalineViewer::_set_receiver_marker_color(bool iReceivingData) const
+void JournalineViewer::_set_receiver_marker_color(const EMarkerState iMarkerState) const
 {
-  if (iReceivingData)
+  switch (iMarkerState)
   {
-    mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;Receiving data&nbsp;&nbsp;<br>&nbsp;&nbsp;" + QString::number(mDataMap.size()) + " elements&nbsp;&nbsp;</span>");
-    mpLblDataReceiving->setStyleSheet("background-color: #C85C3C; color: yellow; border-radius: 12px;");
-  }
-  else
-  {
-    mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray; border-radius: 12px;");
+    case EMarkerState::Idle:
+      mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray; border-radius: 12px;");
+      break;
+    case EMarkerState::NewData:
+      mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;&nbsp;Receiving data&nbsp;&nbsp;&nbsp;<br>" + QString::number(mDataMap.size()) + " elements<br>new data</span>");
+      // mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;Receiving data&nbsp;&nbsp;<br>&nbsp;&nbsp;" + QString::number(mDataMap.size()) + " elements&nbsp;&nbsp;</span>");
+      mpLblDataReceiving->setStyleSheet("background-color: #C85C3C; color: yellow; border-radius: 12px;");
+      break;
+    case EMarkerState::UpdatedData:
+      mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;&nbsp;Receiving data&nbsp;&nbsp;&nbsp;<br>" + QString::number(mDataMap.size()) + " elements<br>updated data</span>");
+      mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray; border-radius: 12px;");
+      break;
   }
 }

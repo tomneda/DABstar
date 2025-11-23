@@ -58,7 +58,8 @@ private:
   QString _get_journaline_as_HTML() const;
   void _build_html_tree_recursive(const TMapData::iterator & iItElem, QString & ioHtml, i32 iLevel, bool iSuppressTitle) const;
 
-  void _set_receiver_marker_color(bool iReceivingData) const;
+  enum class EMarkerState { Idle, NewData, UpdatedData };
+  void _set_receiver_marker_color(EMarkerState iMarkerState) const;
 
 public slots:
   void slot_new_data();

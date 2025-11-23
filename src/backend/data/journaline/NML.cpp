@@ -458,7 +458,7 @@ NML * NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCod
     // workaround as some links seems corrupt
     if (linkData.find("https://", 8) != std::string::npos) // this cannot be found in a normal link text
     {
-      qWarning() << "Link data contains faulty http link (ignored):" << linkData;
+      qDebug() << "Link data contains faulty http link (ignored):" << linkData;
       linkData.clear(); // we will delete the full link string to get sure not misusing it
     }
     n->_news.html = std::move(linkData);
