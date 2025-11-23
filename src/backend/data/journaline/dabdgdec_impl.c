@@ -74,13 +74,13 @@
 extern "C"
 #endif
 
-int showDdDabDgDecInfo;
-int showDdDabDgDecErr;
+int showDdDabDgDecInfo = 0;
+int showDdDabDgDecErr = 1;
 
 DAB_DATAGROUP_DECODER_t DAB_DATAGROUP_DECODER_createDec(DAB_DATAGROUP_DECODER_data * data, void * arg)
 {
-  DAB_DGDEC_IMPL_t * dec = (DAB_DGDEC_IMPL_t *)malloc(
-                                                      sizeof(DAB_DGDEC_IMPL_t));
+  DAB_DGDEC_IMPL_t * dec = (DAB_DGDEC_IMPL_t *)malloc(sizeof(DAB_DGDEC_IMPL_t));
+
   if (dec == 0)
   {
     if (showDdDabDgDecErr)
@@ -100,8 +100,7 @@ DAB_DATAGROUP_DECODER_t DAB_DATAGROUP_DECODER_createDec(DAB_DATAGROUP_DECODER_da
 #ifdef __cplusplus
 extern "C"
 #endif
-void DAB_DATAGROUP_DECODER_deleteDec
-(const DAB_DATAGROUP_DECODER_t decoder)
+void DAB_DATAGROUP_DECODER_deleteDec(const DAB_DATAGROUP_DECODER_t decoder)
 {
   DAB_DGDEC_IMPL_t * dec = (DAB_DGDEC_IMPL_t *)decoder;
   if (dec == 0)
@@ -142,7 +141,7 @@ unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decode
 
 
 #if 0
-	logit(LOG_ERR_DUMP, "data:", buf, len);
+  logit(LOG_ERR_DUMP, "data:", buf, len);
 #endif
 
   if (dec->magicId != DAB_DGDEC_MAGIC_ID)

@@ -280,7 +280,7 @@ void JournalineViewer::_set_receiver_marker_color(const EMarkerState iMarkerStat
       mpLblDataReceiving->setStyleSheet("background-color: #C85C3C; color: yellow; border-radius: 12px;");
       break;
     case EMarkerState::UpdatedData:
-      mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;&nbsp;Receiving data&nbsp;&nbsp;&nbsp;<br>" + QString::number(mDataMap.size()) + " elements<br>updated data</span>");
+      mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;&nbsp;Receiving data&nbsp;&nbsp;&nbsp;<br>" + QString::number(mDataMap.size()) + " elements<br>data updated</span>");
       mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray; border-radius: 12px;");
       break;
   }

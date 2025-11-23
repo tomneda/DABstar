@@ -45,11 +45,7 @@ static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * c
   NML::RawNewsObject_t theBuffer;
   theBuffer.nml_len = iLen;
   theBuffer.extended_header_len = 0;
-
-  for (uint16_t i = 0; i < iLen; i++)
-  {
-    theBuffer.nml[i] = ipBuffer[i];
-  }
+  memcpy(theBuffer.nml, ipBuffer, iLen);
 
   RemoveNMLEscapeSequences theRemover;
   NMLFactory nmlFact;
