@@ -233,7 +233,7 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
   case NML::PLAIN:
     if (!pElem->item.empty())
     {
-      ioHtml += "<p style=\"color: " + cColorText + "; margin-left: -10px;\">" + QString::fromUtf8(pElem->item[0].text) + "</p>";
+      ioHtml += "<p style=\"color: " + cColorText + ";\">" + QString::fromUtf8(pElem->item[0].text) + "</p>";
     }
     break;
 
