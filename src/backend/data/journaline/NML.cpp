@@ -827,18 +827,26 @@ RemoveNMLEscapeSequences::~RemoveNMLEscapeSequences() {}
 bool RemoveNMLEscapeSequences::Convert(std::string & dest,
                                        const std::string & src) const
 {
-  dest = "";
+  dest.clear();
   dest.reserve(src.length());
 
   for (unsigned int i = 0; i < src.length(); i++)
   {
     switch (src[i])
     {
-    case 0x10: // replace preferred line break with LF
-      dest += 0x0a;
+    case 0x10: // preferred line break
+      dest += "<br>";
       break;
-    case 0x12: // highlight begin -> ignore
-    case 0x13: // highlight end -> ignore
+    case 0x11: // preferred word break
+      dest += "&shy;";
+      break;
+    case 0x12:// highlight begin
+      dest += "<b>";
+      break;
+    case 0x13: // highlight end
+      dest += "</b>";
+      break;
+    case 0x14: // end of introductory section
       break;
     case 0x1A: // data section begin -> read over next bytes
     case 0x1B: // data section continuation -> read over next bytes
@@ -847,7 +855,7 @@ bool RemoveNMLEscapeSequences::Convert(std::string & dest,
       break;
     case 0x1C: // extended code begin -> ignore next byte
     case 0x1D: // extended code end -> ignore next byte
-      i++;
+      ++i;
       break;
     default:
       dest += src[i];
