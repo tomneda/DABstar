@@ -114,13 +114,39 @@ void JournalineDataHandler::add_to_dataBase(const NML * const ipNmlElement)
   case NML::LIST:
   {
     const auto objId = ipNmlElement->GetObjectId();
+    const auto revIdx = ipNmlElement->GetRevisionIndex();
     const auto it = mDataMap.find(objId);
-    const auto pElem = it != mDataMap.end() ? it.value().pElement : std::make_shared<NML::News_t>();
+    const auto pElem = (it != mDataMap.end()) ? it.value().pElement : std::make_shared<NML::News_t>();
+    const bool triggerUpdate = (it == mDataMap.end() || pElem->revision_index != revIdx);
+
+#if 0
+    if (it != mDataMap.end() && triggerUpdate) // show only changed elements
+    {
+      qDebug() << "==================================";
+      qDebug() << "Revision index changed for object:" << objId;
+      qDebug() << "New revision index:" << revIdx << "old revision index:" << (it == mDataMap.end() ? -1 : pElem->revision_index);
+      qDebug() << "New object type:" << ipNmlElement->GetObjectType() << "old object type:" << pElem->object_type;
+      qDebug() << "New extended header:" << ipNmlElement->GetExtendedHeader() << "old extended header:" << pElem->extended_header;
+      qDebug() << "New title:" << QString::fromUtf8(ipNmlElement->GetTitle()) << "old title:" << QString::fromUtf8(pElem->title);
+      qDebug() << "New html:" << QString::fromUtf8(ipNmlElement->GetHtml()) << "old html:" << QString::fromUtf8(pElem->html);
+      qDebug() << "Mew static flag:" << ipNmlElement->isStatic() << "old static flag:" << pElem->static_flag;
+      qDebug() << "New items count:" << ipNmlElement->GetItems().size() << "old items count:" << pElem->item.size();
+      for (const auto & item : ipNmlElement->GetItems())
+      {
+        qDebug() << "New Item text" << QString::fromUtf8(item.text) << "link_id" << item.link_id << "link_id_available" << item.link_id_available;
+      }
+      for (const auto & item : pElem->item)
+      {
+        qDebug() << "Old Item text" << QString::fromUtf8(item.text) << "link_id" << item.link_id << "link_id_available" << item.link_id_available;
+      }
+      qDebug() << "==================================";
+    }
+#endif
 
     pElem->object_id = objId;
     pElem->object_type = ipNmlElement->GetObjectType();
     pElem->static_flag = ipNmlElement->isStatic();
-    pElem->revision_index = ipNmlElement->GetRevisionIndex();
+    pElem->revision_index = revIdx;
     pElem->extended_header = ipNmlElement->GetExtendedHeader();
     pElem->title = ipNmlElement->GetTitle();
     pElem->html = ipNmlElement->GetHtml();
@@ -133,7 +159,10 @@ void JournalineDataHandler::add_to_dataBase(const NML * const ipNmlElement)
       mDataMap.insert(pElem->object_id, temp);
     }
 
-    emit signal_new_data();
+    if (triggerUpdate)
+    {
+      emit signal_new_data();
+    }
   }
   break;
 

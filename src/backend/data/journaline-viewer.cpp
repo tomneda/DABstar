@@ -193,7 +193,8 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
 
   if (!pElem->html.empty())
   {
-    ioHtml += "<a style=\"color: lightcoral;\" href=\"" + pElem->html + "\">" + pElem->html + "</a>";
+    const QString htmlDec = QString::fromUtf8(pElem->html); // not sure how it is really sent but "umlauts" are allowed since some time in an URL
+    ioHtml += "<a style=\"color: lightcoral;\" href=\"" + htmlDec + "\">" + htmlDec + "</a>";
   }
 
   switch (pElem->object_type)
