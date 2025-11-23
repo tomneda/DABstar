@@ -120,42 +120,56 @@ void DataProcessor::add_to_frame(const std::vector<u8> & outV)
 
 // While for a full mix data and audio there will be a single packet in a
 // data compartment, for an empty mix, there may be many more
-void DataProcessor::_handle_packets(const u8 * data, i32 length)
+void DataProcessor::_handle_packets(const u8 * data, i32 lengthBits)
 {
   while (true)
   {
-    i32 pLength = (getBits_2(data, 0) + 1) * 24 * 8;
-    if (length < pLength)
+    const i32 pLengthBits = (getBits_2(data, 0) + 1) * 24 * 8;
+
+    if (lengthBits < pLengthBits)
     {  // be on the safe side
+      qWarning() << "Packet lengthBits too short" << lengthBits << "bits" << pLengthBits << "needed";
       return;
     }
+
     _handle_packet(data);
-    length -= pLength;
-    if (length < 2)
+
+    lengthBits -= pLengthBits;
+
+    if (lengthBits < 2)
     {
+      if (lengthBits != 0)
+      {
+        qWarning() << "Packet lengthBits not zero with" << lengthBits << "bits";
+      }
       return;
     }
-    data = &(data[pLength]);
+
+    data = &(data[pLengthBits]);
   }
 }
 
 // Handle a single DAB packet:
 // Note, although not yet encountered, the standard says that there may be multiple streams, to be identified by the address.
 // For the time being we only handle a single stream!!!!
-void DataProcessor::_handle_packet(const u8 * data)
+void DataProcessor::_handle_packet(const u8 * const data)
 {
-  i32 packetLength = (getBits_2(data, 0) + 1) * 24;
-  i16 continuityIndex = getBits_2(data, 2);
-  i16 firstLast = getBits_2(data, 4);
-  i16 address = getBits(data, 6, 10);
-  u16 command = getBits_1(data, 16);
-  i32 usefulLength = getBits_7(data, 17);
-  //	if (usefulLength > 0)
-  //	   fprintf (stdout, "CI = %d, address = %d, usefulLength = %d\n",
-  //	                       continuityIndex, address, usefulLength);
+  // see TS 300 401 5.3.2.0
+  const i32 packetLengthBytes = (getBits_2(data, 0) + 1) * 24;
+  const i16 continuityIndex = getBits_2(data, 2);
+  const i16 firstLast = getBits_2(data, 4);
+  const i16 address = getBits(data, 6, 10);
+  const u16 command = getBits_1(data, 16);
+  const i32 usefulLength = getBits_7(data, 17);
 
-  if (continuityIndex != mExpectedIndex)
+  if (mPacketAddress != address)
   {
+    return;
+  }
+
+  if (continuityIndex != mExpectedIndex) // the continuityIndex is dependent on the address, so do it after address filtering
+  {
+    qDebug() << "Continuity index mismatch" << continuityIndex << "!=" << mExpectedIndex << "address" << address;
     mExpectedIndex = 0;
     return;
   }
@@ -163,18 +177,8 @@ void DataProcessor::_handle_packet(const u8 * data)
   mExpectedIndex = (mExpectedIndex + 1) % 4;
   (void)command;
 
-  if (!check_CRC_bits(data, packetLength * 8))
+  if (!check_CRC_bits(data, packetLengthBytes * 8))
   {
-    return;
-  }
-
-  if (address == 0)
-  {
-    return;
-  }    // padding packet
-  //
-  if (mPacketAddress != address)
-  {  // sorry
     return;
   }
 

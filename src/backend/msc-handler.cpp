@@ -36,15 +36,16 @@
 // Interface program for processing the MSC.
 // The DabProcessor assumes the existence of an msc-handler, whether a service is selected or not.
 
-constexpr i32 cCUSize = 64;
-constexpr i32 cCifSize = 55296;
+constexpr i32 cCUSizeBits = 64;
+constexpr i32 cCifSizeBits = 55296; // bits for one CIF (== 864 CUs with a 64 bits), there are 4 CIFs per Frame, need 4 * 18 = 72 symbols
+constexpr i32 cNumberOfBlocksPerCif = 18; // 18, 72, 0(?), 36 for DAB-Mode 1..4
 
 // Note: CIF counts from 0 .. 3
 MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<u8> * const ipFrameBuffer)
   : mpRadioInterface(iRI)
   , mpFrameBuffer(ipFrameBuffer)
 {
-  mCifVector.resize(cCifSize);
+  mCifVector.resize(cCifSizeBits);
 }
 
 MscHandler::~MscHandler()
@@ -146,6 +147,6 @@ void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i32 iBl
   QMutexLocker lock(&mMutex);
   for (const auto & b: mBackendList)
   {
-    b->process(&mCifVector[b->CuStartAddr * cCUSize], b->CuSize * cCUSize);
+    b->process(&mCifVector[b->CuStartAddr * cCUSizeBits], b->CuSize * cCUSizeBits);
   }
 }

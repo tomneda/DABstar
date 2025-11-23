@@ -36,7 +36,7 @@
 #include  "backend.h"
 
 // Interleaving is - for reasons of simplicity - done inline rather than through a special class-object
-constexpr i16 cCuSizeBytes = 64;
+constexpr i16 cCuSizeBits = 64;
 
 //	fragmentsize == Length * CUSize
 Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag)
@@ -50,7 +50,7 @@ Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer
   this->radioInterface = ipRI;
   this->CuStartAddr = ipDescType->CuStartAddr;
   this->CuSize = ipDescType->CuSize;
-  this->fragmentSize = ipDescType->CuSize * cCuSizeBytes;
+  this->fragmentSize = ipDescType->CuSize * cCuSizeBits;
   this->bitRate = ipDescType->bitRate;
   this->serviceId = ipDescType->SId;
   // this->serviceName = ipDescType->serviceName;

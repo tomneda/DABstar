@@ -48,8 +48,6 @@ public:
   bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag) const;
 
 private:
-  static constexpr i16 cNumberOfBlocksPerCif = 18; // 18, 72, 0, 36 for DAB-Mode 1..4
-
   DabRadio * const mpRadioInterface;
   RingBuffer<u8> * const mpFrameBuffer;
 

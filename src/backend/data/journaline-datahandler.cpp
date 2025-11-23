@@ -72,19 +72,21 @@ JournalineDataHandler::~JournalineDataHandler()
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
 void JournalineDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
 {
-  const i16 len = msc.size();
-  auto * const buffer = make_vla(u8, len / 8);
+  const i32 len = (i32)msc.size();
+  assert(len % 8 == 0);
+  const i32 lenBytes = len / 8;
+  auto * const buffer = make_vla(u8, lenBytes);
 
-  for (i16 i = 0; i < len / 8; i++)
+  for (i32 i = 0; i < lenBytes; i++)
   {
-    buffer[i] = getBits(msc.data(), 8 * i, 8);
+    buffer[i] = getBits_8(msc.data(), i << 3);
   }
 
   const u32 res = DAB_DATAGROUP_DECODER_putData(mDataGroupDecoder, len / 8, buffer);
 
-  if (res == 0) // TODO: error happens too often?!
+  if (res != 0)
   {
-    // qCritical() << "Error in DAB_DATAGROUP_DECODER_putData" << res;
+    qWarning() << "Error in DAB_DATAGROUP_DECODER_putData" << res;
   }
 }
 

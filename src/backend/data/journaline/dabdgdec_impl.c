@@ -129,7 +129,7 @@ extern "C"
 #endif
 unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decoder, const unsigned long len, const unsigned char * buf)
 {
-  DAB_DGDEC_IMPL_t * dec = (DAB_DGDEC_IMPL_t *)decoder;
+  DAB_DGDEC_IMPL_t * const dec = (DAB_DGDEC_IMPL_t *)decoder;
 
   DAB_DATAGROUP_DECODER_msc_datagroup_header_t header;
   unsigned long session_header_len = 0;	/* we expect segment flag to be 0 */
@@ -150,7 +150,7 @@ unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decode
     {
       logit(LOG_ERR, "invalid parameter: not a datagroup decoder");
     }
-    return 0;
+    return 1;
   }
 
   if (!DAB_DGDEC_IMPL_extractMscDatagroupHeader(len, buf, &header))
@@ -159,7 +159,7 @@ unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decode
     {
       logit(LOG_ERR, "invalid datagroup header");
     }
-    return 0;
+    return 2;
   }
 
   if (showDdDabDgDecInfo)
@@ -173,7 +173,7 @@ unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decode
     {
       logit(LOG_ERR, "decoder does not work with segement_flag");
     }
-    return 0;
+    return 3;
   }
 
   header_len = 2 + header.extension_flag * 2 + session_header_len;
@@ -186,7 +186,7 @@ unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decode
     {
       logit(LOG_ERR, "length of datafield is zero!!!");
     }
-    return 0;
+    return 4;
   }
 
   if (header.crc_flag)
@@ -197,7 +197,7 @@ unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decode
       {
         logit(LOG_ERR, "length of datafield is wrong!!!");
       }
-      return 0;
+      return 5;
     }
     data_len -= 2;
 
@@ -205,27 +205,39 @@ unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decode
     crc_field = (unsigned short)(c << 8);
     c = buf[len - 1];
     crc_field = (unsigned short)(crc_field + c);
+
     if (!DAB_DGDEC_IMPL_checkCrc(buf, len - 2, crc_field))
     {
       if (showDdDabDgDecErr)
       {
         logit(LOG_ERR, "crc error");
       }
-      return 0;
-    }
-
-    if (header.datagroup_type != 0)
-    {
-      if (showDdDabDgDecInfo)
-      {
-        logit(LOG_INFO, "unexpected type %d", header.datagroup_type);
-      }
-      return 0;
+      return 6;
     }
   }
+  else
+  {
+    if (showDdDabDgDecErr)
+    {
+      logit(LOG_ERR, "crc check is mandatory but not set");
+    }
+    return 7;
+  }
 
+  if (header.datagroup_type != 0) // TODO: sometimes it is 4 or 6?!
+  {
+    // if (showDdDabDgDecErr)
+    // {
+    //   logit(LOG_ERR, "unexpected type %d", header.datagroup_type);
+    // }
+    // return 8;
+    return 0; // say, no error
+  }
+
+  // call callback function callback_func()
   dec->cb(&header, data_len, data_field, dec->arg);
-  return 1;
+
+  return 0;
 }
 
 int DAB_DGDEC_IMPL_checkCrc(const unsigned char * buf, unsigned long len, unsigned short crc_field)
@@ -233,7 +245,7 @@ int DAB_DGDEC_IMPL_checkCrc(const unsigned char * buf, unsigned long len, unsign
   return CRC_Check_16(buf, len, crc_field);
 }
 
-int DAB_DGDEC_IMPL_extractMscDatagroupHeader(unsigned long len, const unsigned char * buf, DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header)
+int DAB_DGDEC_IMPL_extractMscDatagroupHeader(const unsigned long len, const unsigned char * const buf, DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header)
 {
   unsigned char c;
   if (len < 2)
