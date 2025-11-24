@@ -39,7 +39,7 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
                                "For more information visit "
                                "<a href=\"http://www.iis.fhg.de/dab\" style=\"color: #87CEFA;\">http://www.iis.fhg.de/dab</a>"
                                "</span>";
-  
+
   const QString legendStr = "<table style=\"border-collapse: collapse; font-size: small;\">"
                             "<tr>"
                             "<td colspan=\"2\" style=\"padding-bottom: 5px;\"><span style=\"color: lightgray;\">Menu legend:</span></td>"
@@ -53,7 +53,7 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
                             "<td><span style=\"color: " + cColorVisited   + ";\">&nbsp;Element closed but visited before&nbsp;</span></td>"
                             "</tr>"
                             "</table>";
-  
+
   mpTimerRecMarker = new QTimer(this);
   mpTimerRecMarker->setSingleShot(true);
   mpTimerRecMarker->setInterval(100);
@@ -168,7 +168,7 @@ void JournalineViewer::_slot_html_link_activated(const QString & iLink)
     it.value().isOpened = !it.value().isOpened;
     it.value().wasVisited = true;
   }
-  
+
   // Refresh HTML view
   if (mDataMap.contains(0))
   {
@@ -190,12 +190,6 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
   else if (!iSuppressTitle)
   {
     ioHtml += capTagBeg + QString::fromUtf8(pElem->title) + capTagEnd;
-  }
-
-  if (!pElem->html.empty())
-  {
-    const QString htmlDec = QString::fromUtf8(pElem->html); // not sure how it is really sent but "umlauts" are allowed since some time in an URL
-    ioHtml += "<a style=\"color: lightcoral;\" href=\"" + htmlDec + "\">" + htmlDec + "</a>";
   }
 
   switch (pElem->object_type)
@@ -249,6 +243,37 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
     break;
   default:
     break;
+  }
+  if (!pElem->html.empty())
+  {
+    const QString htmlDec = QString::fromUtf8(pElem->html); // not sure how it is really sent but "umlauts" are allowed since some time in an URL
+    const int len = htmlDec.size();
+    int pos = 0;
+    int i;
+    ioHtml += "<p>";
+    while(pos < len)
+    {
+      QString url;
+      for(i=0; i<len; i++)
+      {
+        if (htmlDec[pos] == 0)
+          break;
+        url += htmlDec[pos];
+        pos++;
+	  }
+      pos++;
+      QString text;
+      for(i=0; i<len; i++)
+      {
+        if (htmlDec[pos] == 0)
+          break;
+        text += htmlDec[pos];
+        pos++;
+      }
+      pos++;
+      ioHtml += "<a style=\"color: lightcoral;\" href=\"" + url + "\">" + text + "</a><br>";
+    }
+    ioHtml += "</p>";
   }
 }
 

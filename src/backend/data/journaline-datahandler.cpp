@@ -104,9 +104,9 @@ void JournalineDataHandler::add_to_dataBase(const NML * const ipNmlElement)
   switch (ipNmlElement->GetObjectType())
   {
   case NML::INVALID:
-  case NML::TITLE: // this is implicitly handled with the List, Plain text or Menu
     return;
 
+  case NML::TITLE: // this is implicitly handled with the List, Plain text or Menu
   case NML::MENU:
   case NML::PLAIN:
   case NML::LIST:

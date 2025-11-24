@@ -304,11 +304,11 @@ unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned sh
 
 void NMLFactory::append_link_data_from_raw_news_object(std::string & ioLinkData, const unsigned char * ipInData, int iDsLen) const
 {
-  if (iDsLen > 4 && ((ipInData[0] == 0x1a && ipInData[2] == 0x03 && ipInData[3] == 0x02 && ioLinkData.empty()) ||
-                     (ipInData[0] == 0x1b && !ioLinkData.empty())))
+  if (iDsLen > 4 && ((ipInData[0] == 0x1a && ipInData[2] == 0x03 && ipInData[3] == 0x02) || (ipInData[0] == 0x1b)))
   {
-    ioLinkData.append(reinterpret_cast<const char *>(ipInData + 4));
-    // ioLinkData.append(reinterpret_cast<const char *>(ipInData + 4), iDsLen - 4);
+    if (ipInData[0] == 0x1a && !ioLinkData.empty())
+      ioLinkData += char(0);
+    ioLinkData.append(reinterpret_cast<const char *>(ipInData + 4), iDsLen - 2);
   }
 }
 
@@ -454,13 +454,6 @@ NML * NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCod
   if (!linkData.empty())
   {
     // qDebug().noquote() << "Linkdata:" << linkData;
-
-    // workaround as some links seems corrupt
-    if (linkData.find("https://", 8) != std::string::npos) // this cannot be found in a normal link text
-    {
-      qDebug() << "Link data contains faulty http link (ignored):" << linkData;
-      linkData.clear(); // we will delete the full link string to get sure not misusing it
-    }
     n->_news.html = std::move(linkData);
   }
 
