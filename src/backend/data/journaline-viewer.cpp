@@ -34,11 +34,11 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
   mFrame.setWindowIcon(QIcon(":res/logo/dabstar_j.png"));
 
   const QString copyRightStr = "<span style=\"color: #FFD700; font-size: small;\">"
-                               "Features NewsService Journaline(R) decoder technology by<br>"
-                               "Fraunhofer IIS, Erlangen, Germany.<br>"
-                               "For more information visit "
-                               "<a href=\"http://www.iis.fhg.de/dab\" style=\"color: #87CEFA;\">http://www.iis.fhg.de/dab</a>"
-                               "</span>";
+    "Features NewsService Journaline(R) decoder technology by<br>"
+    "Fraunhofer IIS, Erlangen, Germany.<br>"
+    "For more information visit "
+    "<a href=\"http://www.iis.fhg.de/dab\" style=\"color: #87CEFA;\">http://www.iis.fhg.de/dab</a>"
+    "</span>";
 
   const QString legendStr = "<table style=\"border-collapse: collapse; font-size: small;\">"
                             "<tr>"
@@ -244,32 +244,37 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
   default:
     break;
   }
+
   if (!pElem->html.empty())
   {
-    const QString htmlDec = QString::fromUtf8(pElem->html); // not sure how it is really sent but "umlauts" are allowed since some time in an URL
-    const int len = htmlDec.size();
+    const QString htmlDec = QString::fromUtf8(pElem->html); // not sure how it is really sent because "umlauts" are allowed since some time in an URL
+    const i32 len = (i32)htmlDec.size();
     int pos = 0;
-    int i;
     ioHtml += "<p>";
-    while(pos < len)
+
+    while (pos < len)
     {
       QString url;
-      for(i=0; i<len; i++)
+
+      while (pos < len)
       {
-        if (htmlDec[pos] == 0)
+        if (htmlDec[pos] == QChar::Null)
           break;
         url += htmlDec[pos];
         pos++;
-	  }
+      }
+
       pos++;
       QString text;
-      for(i=0; i<len; i++)
+
+      while (pos < len)
       {
-        if (htmlDec[pos] == 0)
+        if (htmlDec[pos] == QChar::Null)
           break;
         text += htmlDec[pos];
         pos++;
       }
+
       pos++;
       ioHtml += "<a style=\"color: lightcoral;\" href=\"" + url + "\">" + text + "</a><br>";
     }
@@ -296,17 +301,17 @@ void JournalineViewer::_set_receiver_marker_color(const EMarkerState iMarkerStat
 {
   switch (iMarkerState)
   {
-    case EMarkerState::Idle:
-      mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray; border-radius: 12px;");
-      break;
-    case EMarkerState::NewData:
-      mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;&nbsp;Receiving data&nbsp;&nbsp;&nbsp;<br>" + QString::number(mDataMap.size()) + " elements<br>new data</span>");
-      // mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;Receiving data&nbsp;&nbsp;<br>&nbsp;&nbsp;" + QString::number(mDataMap.size()) + " elements&nbsp;&nbsp;</span>");
-      mpLblDataReceiving->setStyleSheet("background-color: #C85C3C; color: yellow; border-radius: 12px;");
-      break;
-    case EMarkerState::UpdatedData:
-      mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;&nbsp;Receiving data&nbsp;&nbsp;&nbsp;<br>" + QString::number(mDataMap.size()) + " elements<br>data updated</span>");
-      mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray; border-radius: 12px;");
-      break;
+  case EMarkerState::Idle:
+    mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray; border-radius: 12px;");
+    break;
+  case EMarkerState::NewData:
+    mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;&nbsp;Receiving data&nbsp;&nbsp;&nbsp;<br>" + QString::number(mDataMap.size()) + " elements<br>new data</span>");
+    // mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;Receiving data&nbsp;&nbsp;<br>&nbsp;&nbsp;" + QString::number(mDataMap.size()) + " elements&nbsp;&nbsp;</span>");
+    mpLblDataReceiving->setStyleSheet("background-color: #C85C3C; color: yellow; border-radius: 12px;");
+    break;
+  case EMarkerState::UpdatedData:
+    mpLblDataReceiving->setText("<span style=\"font-size: small;\">&nbsp;&nbsp;&nbsp;Receiving data&nbsp;&nbsp;&nbsp;<br>" + QString::number(mDataMap.size()) + " elements<br>data updated</span>");
+    mpLblDataReceiving->setStyleSheet("background-color: #222222; color: darkgray; border-radius: 12px;");
+    break;
   }
 }
