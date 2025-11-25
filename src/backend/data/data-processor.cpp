@@ -169,10 +169,14 @@ void DataProcessor::_handle_packet(const u8 * const data)
 
   if (continuityIndex != mExpectedIndex) // the continuityIndex is dependent on the address, so do it after address filtering
   {
-    qDebug() << "Continuity index mismatch" << continuityIndex << "!=" << mExpectedIndex << "address" << address;
+    if (!mFirstPacket) // at first packet suppress warning
+    {
+      qDebug() << "Continuity index mismatch" << continuityIndex << "!=" << mExpectedIndex << "address" << address;
+    }
     mExpectedIndex = 0;
     return;
   }
+  mFirstPacket = false;
 
   mExpectedIndex = (mExpectedIndex + 1) % 4;
   (void)command;

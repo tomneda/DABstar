@@ -63,6 +63,7 @@ private:
   QScopedPointer<VirtualDataHandler> mpDataHandler;
 
   i16 mExpectedIndex = 0;
+  bool mFirstPacket = true; // only to suppress message while startup
   std::vector<u8> mSeriesVec;
   u8 mPacketState;
   i32 mStreamAddress;    // int since we init with -1
