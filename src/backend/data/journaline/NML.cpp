@@ -284,26 +284,46 @@ unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned sh
   return res;
 }
 
-void NMLFactory::extract_link_data(std::vector<NML::SLinkData> & oLinkData, const unsigned char * const p, const int dsLen) const
+void NMLFactory::extract_link_data(std::vector<NML::SLinkData> & oLinkData, const unsigned char * const ip) const
 {
+  std::string ds;
+  int segLen = ip[1] + 1;
+  const unsigned char * pData = ip + 2; // real data start of (first) segment (link target marker is included)
+
+  do
+  {
+    ds += std::string(reinterpret_cast<const char *>(pData), segLen);
+    if (segLen != 256 || pData[segLen] != 0x1B)
+    {
+      break; // no further segment existing
+    }
+    pData += segLen + 2;    // new data start pointer of next segement
+    segLen = pData[-1] + 1; // new len of next segment
+  }
+  while (true);
+
+  if (ds.size() < 6) //  avoid too short unplausible length
+  {
+    return;
+  }
+
   NML::SLinkData linkData;
 
-  if (dsLen > 4 && ((p[0] == 0x1a && p[2] == 0x03 && p[3] == 0x02) || p[0] == 0x1b))
+  // with missing link text, also the zero marker is not existing, see 5.3.2.3
+  const size_t zeroPos = ds.find('\0');
+
+  if (zeroPos != std::string::npos)
   {
-    linkData.urlStr = reinterpret_cast<const char *>(p + 4); // the link string is null-terminated
-
-    const int urlLen = (int)linkData.urlStr.size();
-
-    if (urlLen < dsLen - 2)
-    {
-      linkData.textStr = std::string(reinterpret_cast<const char *>(p + urlLen + 4), dsLen - 2 - urlLen);
-    }
+    linkData.urlStr = ds.substr(2, zeroPos - 2); // skip link target marker
+    linkData.textStr = ds.substr(zeroPos + 1, ds.size() - zeroPos - 1);
+  }
+  else
+  {
+    linkData.urlStr = ds.substr(2, ds.size() - 2); // skip link target marker
+    linkData.textStr.clear();
   }
 
-  if (!linkData.urlStr.empty())
-  {
-    oLinkData.emplace_back(linkData);
-  }
+  oLinkData.emplace_back(std::move(linkData));
 }
 
 /// @brief create an NML object from raw NML
@@ -440,7 +460,10 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       return n;
     }
 
-    extract_link_data(n->_pNews->linkVec, p, dsLen);
+    if (dsLen > 4 && p[0] == 0x1a && p[2] == 0x03 && p[3] == 0x02) // is it a valid URL link target header?
+    {
+      extract_link_data(n->_pNews->linkVec, p);
+    }
 
     p += dsLen + 2;
     len = remLen;
@@ -471,6 +494,11 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
   free(pure_text);
   // report title to codehandler
   EscapeCodeHandler->Convert(n->_pNews->title, tmp_string);
+
+  if (tmp_string.find("Black") == 0)
+  {
+    int a = 3;
+  }
 
   n->_pNews->item.clear();
 

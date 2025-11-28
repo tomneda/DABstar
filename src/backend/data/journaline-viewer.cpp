@@ -250,7 +250,7 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
     ioHtml += "<p>";
     for (const auto & link : pElem->linkVec)
     {
-      ioHtml += R"(<a style="color: lightcoral;" href=")" + link.urlStr + "\">" + (!link.textStr.empty() ? link.textStr : link.urlStr) + "</a><br>";
+      ioHtml += R"(<a style="color: lightcoral;" href=")" + QString::fromUtf8(link.urlStr) + "\">" + QString::fromUtf8(!link.textStr.empty() ? link.textStr : link.urlStr) + "</a><br>";
     }
     ioHtml += "</p>";
   }

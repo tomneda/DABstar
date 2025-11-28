@@ -391,7 +391,7 @@ private:
   NMLFactory(const NMLFactory &);
 
   unsigned char * getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen) const;
-  void extract_link_data(std::vector<NML::SLinkData> & oLinkData, const unsigned char * p, int dsLen) const;
+  void extract_link_data(std::vector<NML::SLinkData> & oLinkData, const unsigned char * p) const;
 };
 
 
