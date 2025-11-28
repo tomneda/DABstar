@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *
  * This file is part of the 'NewsService Journaline(R) Decoder'
  *
@@ -81,6 +90,7 @@
 #include <string>
 #include <vector>
 #include <ios>
+#include <memory>
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -171,17 +181,23 @@ public:
     bool link_id_available; ///< only used for Menus
   } Item_t;
 
+  struct SLinkData
+  {
+    std::string urlStr;
+    std::string textStr;
+  };
+
   /// parsed NML news object
   typedef struct
   {
-    NewsObjectId_t object_id;     ///< NML object id
-    object_type_t object_type;    ///< NML object type
-    bool static_flag;             ///< static flag
-    unsigned char revision_index; ///< revision index
-    std::string extended_header;  ///< extended header bytes (unparsed)
-    std::string title;            ///< parsed title string
-    std::string html;             ///< parsed html string
-    std::vector<Item_t> item;     ///< items of list or menu object
+    NewsObjectId_t object_id;        ///< NML object id
+    object_type_t object_type;       ///< NML object type
+    bool static_flag;                ///< static flag
+    unsigned char revision_index;    ///< revision index
+    std::string extended_header;     ///< extended header bytes (unparsed)
+    std::string title;               ///< parsed title string
+    std::vector<Item_t> item;        ///< items of list or menu object
+    std::vector<SLinkData> linkVec;  ///< html link + text
   } News_t;
 
   //-------------------- lifetime --------------------
@@ -195,46 +211,46 @@ public:
   std::ostream & operator<<(std::ostream & os) const;
 
   //-------------------- inquiry methods --------------
-  std::string Dump(void) const;
+  std::string Dump() const;
 
   /// check whether NML object is valid
   /// @retval false iff fake news object (error message)
-  inline bool isValid(void) const
+  inline bool isValid() const
   {
     return _valid;
   }
 
   /// check whether NML object is the root object
   /// @retval true if object is the root object
-  inline bool isRootObject(void) const
+  inline bool isRootObject() const
   {
     return (GetObjectId() == ROOT_OBJECT_ID);
   }
 
   /// check whether NML object is a menu
   /// @retval true if object is a menu object
-  inline bool isMenu(void) const
+  inline bool isMenu() const
   {
     return (GetObjectType() == MENU);
   }
 
   /// check whether NML object is static
   /// @retval true if object is static
-  inline bool isStatic(void) const
+  inline bool isStatic() const
   {
     return _news.static_flag;
   }
 
   /// NML object type
   /// @return object type
-  inline object_type_t GetObjectType(void) const
+  inline object_type_t GetObjectType() const
   {
     return _news.object_type;
   }
 
   /// NML object type string
   /// @return object type as string
-  inline const char * GetObjectTypeString(void) const
+  inline const char * GetObjectTypeString() const
   {
     if (_news.object_type <= LIST)
     {
@@ -248,48 +264,48 @@ public:
 
   /// NML object id
   /// @return object id
-  inline NewsObjectId_t GetObjectId(void) const
+  inline NewsObjectId_t GetObjectId() const
   {
     return _news.object_id;
   }
 
   /// NML revision index
   /// @return revision index
-  inline unsigned char GetRevisionIndex(void) const
+  inline unsigned char GetRevisionIndex() const
   {
     return _news.revision_index;
   }
 
   /// NML extended header
   /// @return extended header as string
-  inline std::string GetExtendedHeader(void) const
+  inline std::string GetExtendedHeader() const
   {
     return _news.extended_header;
   }
 
   /// title of NML object
   /// @return title in UTF8-Coding
-  inline std::string GetTitle(void) const
+  inline std::string GetTitle() const
   {
     return _news.title;
   }
 
   /// interpreted HTML content of NML object
-  inline std::string GetHtml(void) const
+  inline const std::vector<SLinkData> & GetLinkUrlData() const
   {
-    return _news.html;
+    return _news.linkVec;
   }
 
   /// number of items contained in NML object
   /// @return number of items for lists and menus, 0 otherwise
-  inline unsigned int GetNrOfItems(void) const
+  inline unsigned int GetNrOfItems() const
   {
     return _news.item.size();
   }
 
   /// vector of items contained in NML object
   /// @return items for lists and menus, empty otherwise
-  inline const std::vector<Item_t> & GetItems(void) const
+  inline const std::vector<Item_t> & GetItems() const
   {
     return _news.item;
   }
@@ -357,26 +373,23 @@ std::string DumpRaw(const NML::RawNewsObject_t & rno);
 class NMLFactory
 {
 public:
-  static NMLFactory * Instance(void);
-  static void ExitInstance(void);
+  // static NMLFactory * Instance();
+  // static void ExitInstance();
 
-  NML * CreateNML(const NML::RawNewsObject_t & rno,
-                  const NMLEscapeCodeHandler * EscapeCodeHandler);
-  NML * CreateError(NML::NewsObjectId_t oid,
-                    const char * title);
-  NML * CreateErrorDump(NML::NewsObjectId_t oid,
-                        const NML::RawNewsObject_t & rno,
-                        const char * error_msg);
-  NMLFactory();
-  ~NMLFactory();
+  std::shared_ptr<NML> CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCodeHandler * EscapeCodeHandler);
+  std::shared_ptr<NML> CreateError(NML::NewsObjectId_t oid, const char * title);
+  std::shared_ptr<NML> CreateErrorDump(NML::NewsObjectId_t oid, const NML::RawNewsObject_t & rno, const char * error_msg);
+
+  NMLFactory() = default;
+  ~NMLFactory() = default;
 
 private:
-  static NMLFactory * _instance;
+  // static NMLFactory * _instance;
   NMLFactory & operator=(const NMLFactory &);
   NMLFactory(const NMLFactory &);
 
   unsigned char * getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen);
-  void append_link_data_from_raw_news_object(std::string & ioLinkData, const unsigned char * ipInData, int iDsLen) const;
+  // void append_link_data_from_raw_news_object(NML::News_t::SLinkData & ioLinkData, const unsigned char * ipInData, int iDsLen) const;
 };
 
 

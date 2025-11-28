@@ -42,16 +42,15 @@ static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * c
   JournalineDataHandler * const pDataHandler = static_cast<JournalineDataHandler *>(pArg);
   assert(pDataHandler != nullptr);
 
-  NML::RawNewsObject_t theBuffer;
-  theBuffer.nml_len = iLen;
-  theBuffer.extended_header_len = 0;
-  memcpy(theBuffer.nml, ipBuffer, iLen);
+  NML::RawNewsObject_t rawNewsObj;
+  rawNewsObj.nml_len = iLen;
+  rawNewsObj.extended_header_len = 0;
+  memcpy(rawNewsObj.nml, ipBuffer, iLen);
 
-  RemoveNMLEscapeSequences theRemover;
+  RemoveNMLEscapeSequences escapeCodeHandler;
   NMLFactory nmlFact;
-  NML * pNml = nmlFact.CreateNML(theBuffer, &theRemover);
+  std::shared_ptr<NML> pNml = nmlFact.CreateNML(rawNewsObj, &escapeCodeHandler);
   pDataHandler->add_to_dataBase(pNml);
-  delete pNml;
 }
 
 JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR, const i32 iSubChannel)
@@ -99,7 +98,7 @@ void JournalineDataHandler::_destroy_database()
   mDataMap.clear();
 }
 
-void JournalineDataHandler::add_to_dataBase(const NML * const ipNmlElement)
+void JournalineDataHandler::add_to_dataBase(const std::shared_ptr<NML> & ipNmlElement)
 {
   switch (ipNmlElement->GetObjectType())
   {
@@ -126,7 +125,7 @@ void JournalineDataHandler::add_to_dataBase(const NML * const ipNmlElement)
       qDebug() << "New object type:" << ipNmlElement->GetObjectType() << "old object type:" << pElem->object_type;
       qDebug() << "New extended header:" << ipNmlElement->GetExtendedHeader() << "old extended header:" << pElem->extended_header;
       qDebug() << "New title:" << QString::fromUtf8(ipNmlElement->GetTitle()) << "old title:" << QString::fromUtf8(pElem->title);
-      qDebug() << "New html:" << QString::fromUtf8(ipNmlElement->GetHtml()) << "old html:" << QString::fromUtf8(pElem->html);
+      qDebug() << "New html:" << QString::fromUtf8(ipNmlElement->GetLinkUrlData()) << "old html:" << QString::fromUtf8(pElem->html);
       qDebug() << "Mew static flag:" << ipNmlElement->isStatic() << "old static flag:" << pElem->static_flag;
       qDebug() << "New items count:" << ipNmlElement->GetItems().size() << "old items count:" << pElem->item.size();
       for (const auto & item : ipNmlElement->GetItems())
@@ -147,7 +146,7 @@ void JournalineDataHandler::add_to_dataBase(const NML * const ipNmlElement)
     pElem->revision_index = revIdx;
     pElem->extended_header = ipNmlElement->GetExtendedHeader();
     pElem->title = ipNmlElement->GetTitle();
-    pElem->html = ipNmlElement->GetHtml();
+    pElem->linkVec = ipNmlElement->GetLinkUrlData();
     pElem->item = ipNmlElement->GetItems();
 
     if (it == mDataMap.end()) // we created a new element, so insert it in the map

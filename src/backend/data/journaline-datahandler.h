@@ -50,7 +50,7 @@ public:
   ~JournalineDataHandler();
 
   void add_MSC_data_group(const std::vector<u8> &);
-  void add_to_dataBase(const NML * ipNmlElement);
+  void add_to_dataBase(const std::shared_ptr<NML> & ipNmlElement);
 
 private:
   JournalineViewer::TMapData mDataMap;

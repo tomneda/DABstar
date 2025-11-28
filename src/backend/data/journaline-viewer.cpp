@@ -245,38 +245,12 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
     break;
   }
 
-  if (!pElem->html.empty())
+  if (!pElem->linkVec.empty())
   {
-    const QString htmlDec = QString::fromUtf8(pElem->html); // not sure how it is really sent because "umlauts" are allowed since some time in an URL
-    const i32 len = (i32)htmlDec.size();
-    int pos = 0;
     ioHtml += "<p>";
-
-    while (pos < len)
+    for (const auto & link : pElem->linkVec)
     {
-      QString url;
-
-      while (pos < len)
-      {
-        if (htmlDec[pos] == QChar::Null)
-          break;
-        url += htmlDec[pos];
-        pos++;
-      }
-
-      pos++;
-      QString text;
-
-      while (pos < len)
-      {
-        if (htmlDec[pos] == QChar::Null)
-          break;
-        text += htmlDec[pos];
-        pos++;
-      }
-
-      pos++;
-      ioHtml += "<a style=\"color: lightcoral;\" href=\"" + url + "\">" + text + "</a><br>";
+      ioHtml += R"(<a style="color: lightcoral;" href=")" + link.urlStr + "\">" + (!link.textStr.empty() ? link.textStr : link.urlStr) + "</a><br>";
     }
     ioHtml += "</p>";
   }

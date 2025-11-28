@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *
  * This file is part of the 'NewsService Journaline(R) Decoder'
  *
@@ -106,28 +115,28 @@ const char * NML::ObjectTypeString[] =
   { "illegal", "menu", "plain", "title", "list" };
 
 
-NMLFactory * NMLFactory::_instance = 0;
+// NMLFactory * NMLFactory::_instance = 0;
 
-NMLFactory::NMLFactory() {}
-
-NMLFactory::~NMLFactory() {}
-
-
-/// NMLFactory Singleton Instance
-/// @return The (only) instance of NMLFactory
-NMLFactory * NMLFactory::Instance(void)
-{
-  if (!_instance) _instance = new NMLFactory;
-  return _instance;
-}
+// NMLFactory::NMLFactory() {}
+//
+// NMLFactory::~NMLFactory() {}
 
 
-/// NMLFactory Singleton ExitInstance
-/// destroys the (only) instance of NMLFactory)
-void NMLFactory::ExitInstance(void)
-{
-  delete _instance;
-}
+// /// NMLFactory Singleton Instance
+// /// @return The (only) instance of NMLFactory
+// NMLFactory * NMLFactory::Instance(void)
+// {
+//   if (!_instance) _instance = new NMLFactory;
+//   return _instance;
+// }
+//
+//
+// /// NMLFactory Singleton ExitInstance
+// /// destroys the (only) instance of NMLFactory)
+// void NMLFactory::ExitInstance(void)
+// {
+//   delete _instance;
+// }
 
 
 /// generate an NML Error object from a raw news object
@@ -139,13 +148,11 @@ void NMLFactory::ExitInstance(void)
 /// @param rno        raw NML object
 /// @param error_msg  error message
 /// @return  pointer to created NML errordump object (delete after use!)
-NML * NMLFactory::CreateErrorDump(NML::NewsObjectId_t oid,
-                                  const NML::RawNewsObject_t & rno,
-                                  const char * error_msg)
+std::shared_ptr<NML> NMLFactory::CreateErrorDump(NML::NewsObjectId_t oid, const NML::RawNewsObject_t & rno, const char * error_msg)
 {
   log_err << "CreateErrorDump" << endmsg;
 
-  NML * n = CreateError(oid, error_msg);
+  std::shared_ptr<NML> n = CreateError(oid, error_msg);
   n->SetErrorDump(oid, rno, error_msg);
   return n;
 }
@@ -158,12 +165,11 @@ NML * NMLFactory::CreateErrorDump(NML::NewsObjectId_t oid,
 /// @param oid    NML object id
 /// @param title  title error message
 /// @return  pointer to error object (delete after use!)
-NML * NMLFactory::CreateError(NML::NewsObjectId_t oid,
-                              const char * title)
+std::shared_ptr<NML> NMLFactory::CreateError(NML::NewsObjectId_t oid, const char * title)
 {
   log_err << "CreateError" << endmsg;
 
-  NML * n = new NML();
+  std::shared_ptr<NML> n = std::make_shared<NML>();
   n->_valid = false;
   n->_news.object_id = oid;
   n->_news.title = title;
@@ -302,15 +308,23 @@ unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned sh
   return res;
 }
 
-void NMLFactory::append_link_data_from_raw_news_object(std::string & ioLinkData, const unsigned char * ipInData, int iDsLen) const
-{
-  if (iDsLen > 4 && ((ipInData[0] == 0x1a && ipInData[2] == 0x03 && ipInData[3] == 0x02) || (ipInData[0] == 0x1b)))
-  {
-    if (ipInData[0] == 0x1a && !ioLinkData.empty())
-      ioLinkData += char(0);
-    ioLinkData.append(reinterpret_cast<const char *>(ipInData + 4), iDsLen - 2);
-  }
-}
+// void NMLFactory::append_link_data_from_raw_news_object(NML::News_t::SLinkData & ioLinkData, const unsigned char * ipInData, const int iDsLen) const
+// {
+//   if (iDsLen > 4 && ((ipInData[0] == 0x1a && ipInData[2] == 0x03 && ipInData[3] == 0x02) ||
+//                       ipInData[0] == 0x1b))
+//   {
+//     // if (ipInData[0] == 0x1a && !ioLinkData.empty())
+//     // {
+//     //   ioLinkData += char(0);
+//     // }
+//     ioLinkData.urlStr = reinterpret_cast<const char *>(ipInData + 4);
+//     const int textSize = (int)ioLinkData.urlStr.size();
+//     if (textSize < iDsLen - 2)
+//     {
+//       ioLinkData.textStr = std::string(reinterpret_cast<const char *>(ipInData + textSize + 4), iDsLen - 2 - textSize);
+//     }
+//   }
+// }
 
 /// @brief create an NML object from raw NML
 /// An NML object will be created from the specified raw news object,
@@ -323,9 +337,9 @@ void NMLFactory::append_link_data_from_raw_news_object(std::string & ioLinkData,
 /// @param rno                 raw NML object
 /// @param EscapeCodeHandler   handler for NML escape codes
 /// @return  pointer to created NML news object (delete after use!)
-NML * NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCodeHandler * EscapeCodeHandler)
+std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCodeHandler * EscapeCodeHandler)
 {
-  NML * n = new NML();
+  std::shared_ptr<NML> n = std::make_shared<NML>();
   char buf[256];
   char * error = &buf[0];
   std::string tmp_string;
@@ -434,11 +448,10 @@ NML * NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCod
   // we take the length of the datasection and add it
   // to the current position in order to ignore it
 
-  std::string linkData;
   while (*p == 0x1a || *p == 0x1b)
   {
-    int dsLen = p[1] + 1;
-    int remLen = len - dsLen - 2; // negative values should be possible
+    const int dsLen = p[1] + 1;
+    const int remLen = len - dsLen - 2;
 
     if (remLen < 2)
     {
@@ -446,16 +459,33 @@ NML * NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCod
       n->SetErrorDump(n->_news.object_id, uncompressed, error);
       return n;
     }
-    append_link_data_from_raw_news_object(linkData, p, dsLen);
+    // NML::News_t::SLinkData linkData;
+    // append_link_data_from_raw_news_object(linkData, p, dsLen);
+
+    // if (dsLen > 4 && ((p[0] == 0x1a && p[2] == 0x03 && p[3] == 0x02) || p[0] == 0x1b))
+    // {
+    //   linkData.urlStr = reinterpret_cast<const char *>(p + 4);
+    //
+    //   const int textSize = (int)linkData.urlStr.size();
+    //
+    //   if (textSize < dsLen - 2)
+    //   {
+    //     linkData.textStr = std::string(reinterpret_cast<const char *>(p + textSize + 4), dsLen - 2 - textSize);
+    //   }
+    // }
+
+
+
+    // if (!linkData.urlStr.empty())
+    // {
+    //   n->_news.linkVec.emplace_back(linkData);
+    //   // qDebug().noquote() << "Linkdata:" << linkData;
+    //   n->_news.html = std::move(linkData);
+    // }
     p += dsLen + 2;
     len = remLen;
   }
 
-  if (!linkData.empty())
-  {
-    // qDebug().noquote() << "Linkdata:" << linkData;
-    n->_news.html = std::move(linkData);
-  }
 
   // check for title section
   if (*p != 0x01)
