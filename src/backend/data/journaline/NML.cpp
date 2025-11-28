@@ -115,30 +115,6 @@ const char * NML::ObjectTypeString[] =
   { "illegal", "menu", "plain", "title", "list" };
 
 
-// NMLFactory * NMLFactory::_instance = 0;
-
-// NMLFactory::NMLFactory() {}
-//
-// NMLFactory::~NMLFactory() {}
-
-
-// /// NMLFactory Singleton Instance
-// /// @return The (only) instance of NMLFactory
-// NMLFactory * NMLFactory::Instance(void)
-// {
-//   if (!_instance) _instance = new NMLFactory;
-//   return _instance;
-// }
-//
-//
-// /// NMLFactory Singleton ExitInstance
-// /// destroys the (only) instance of NMLFactory)
-// void NMLFactory::ExitInstance(void)
-// {
-//   delete _instance;
-// }
-
-
 /// generate an NML Error object from a raw news object
 /// generates a fake NML object containing an error message.
 /// The title of the error message will be error_msg, and the
@@ -171,11 +147,11 @@ std::shared_ptr<NML> NMLFactory::CreateError(NML::NewsObjectId_t oid, const char
 
   std::shared_ptr<NML> n = std::make_shared<NML>();
   n->_valid = false;
-  n->_news.object_id = oid;
-  n->_news.title = title;
-  n->_news.object_type = NML::TITLE;
-  n->_news.static_flag = false;
-  n->_news.revision_index = 0x00;
+  n->_pNews->object_id = oid;
+  n->_pNews->title = title;
+  n->_pNews->object_type = NML::TITLE;
+  n->_pNews->static_flag = false;
+  n->_pNews->revision_index = 0x00;
   return n;
 }
 
@@ -232,18 +208,18 @@ std::string NML::Dump(void) const
           GetObjectType(),
           isStatic(),
           GetRevisionIndex(),
-          (int)_news.extended_header.size(),
+          (int)_pNews->extended_header.size(),
           nr_of_items);
   std::string s = buf;
-  if (_news.extended_header.size())
+  if (_pNews->extended_header.size())
   {
     s += "\nextended header: ";
-    s += HexDump(_news.extended_header.c_str(),
-                 _news.extended_header.size());
+    s += HexDump(_pNews->extended_header.c_str(),
+                 _pNews->extended_header.size());
   }
   s += "\ntitle=\n";
-  s += HexDump(_news.title.c_str(),
-               _news.title.size());
+  s += HexDump(_pNews->title.c_str(),
+               _pNews->title.size());
   s += "\nitems:\n";
   s += items;
   return s;
@@ -354,28 +330,28 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
   }
 
   // extract object id
-  n->_news.object_id = static_cast<unsigned short>((rno.nml[0] << 8) + rno.nml[1]);
+  n->_pNews->object_id = static_cast<unsigned short>((rno.nml[0] << 8) + rno.nml[1]);
 
   // check for reserved object types
   if (((rno.nml[2] >> 5) == 0) || ((rno.nml[2] >> 5) > NML::LIST))
   {
     sprintf(error, "Error: NML has illegal object type 0x%02x", rno.nml[2] >> 5);
-    n->SetErrorDump(n->_news.object_id, rno, error);
+    n->SetErrorDump(n->_pNews->object_id, rno, error);
     return n;
   }
 
   // extract further header data: object_id, static, compressed, revision
-  n->_news.object_type = static_cast<NML::object_type_t>(rno.nml[2] >> 5);
-  n->_news.static_flag = (rno.nml[2] & 0x10) != 0;
+  n->_pNews->object_type = static_cast<NML::object_type_t>(rno.nml[2] >> 5);
+  n->_pNews->static_flag = (rno.nml[2] & 0x10) != 0;
   bool compressed_flag = (rno.nml[2] & 0x08) != 0;
-  n->_news.revision_index = static_cast<unsigned char>(rno.nml[2] & 0x07);
+  n->_pNews->revision_index = static_cast<unsigned char>(rno.nml[2] & 0x07);
   unsigned short len = rno.nml_len - NML::NML_NR_OF_HEADER_BYTES;
 
   // extended header checks
   if (rno.extended_header_len > len)
   {
     sprintf(error, "Error: NML extended header too big (%u>%u)", rno.extended_header_len, len);
-    n->SetErrorDump(n->_news.object_id, rno, error);
+    n->SetErrorDump(n->_pNews->object_id, rno, error);
     return n;
   }
   len -= rno.extended_header_len;
@@ -393,7 +369,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       // unknown (not libz) compression
       sprintf(error, "Error: NML with unknown compression 0x%02x", *p);
       log_err << error << endmsg;
-      n->SetErrorDump(n->_news.object_id, rno, error);
+      n->SetErrorDump(n->_pNews->object_id, rno, error);
       return n;
     }
     p++;
@@ -407,7 +383,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
     if (!rv)
     {
       sprintf(error, "Error: could not uncompress NML body (%d)", rv);
-      n->SetErrorDump(n->_news.object_id, rno, error);
+      n->SetErrorDump(n->_pNews->object_id, rno, error);
       return n;
     }
 
@@ -422,7 +398,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
     {
       sprintf(error, "Error: uncompressed NML body too big (%lu bytes)",
               ulen + NML::NML_NR_OF_HEADER_BYTES + rno.extended_header_len);
-      n->SetErrorDump(n->_news.object_id, rno, error);
+      n->SetErrorDump(n->_pNews->object_id, rno, error);
       return n;
     }
 
@@ -456,7 +432,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
     if (remLen < 2)
     {
       sprintf(error, "Error: Data section too long");
-      n->SetErrorDump(n->_news.object_id, uncompressed, error);
+      n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
       return n;
     }
     // NML::News_t::SLinkData linkData;
@@ -478,9 +454,9 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
 
     // if (!linkData.urlStr.empty())
     // {
-    //   n->_news.linkVec.emplace_back(linkData);
+    //   n->_pNews->linkVec.emplace_back(linkData);
     //   // qDebug().noquote() << "Linkdata:" << linkData;
-    //   n->_news.html = std::move(linkData);
+    //   n->_pNews->html = std::move(linkData);
     // }
     p += dsLen + 2;
     len = remLen;
@@ -491,7 +467,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
   if (*p != 0x01)
   {
     sprintf(error, "Error: expected NML Code 0x01, got 0x%02x", *p);
-    n->SetErrorDump(n->_news.object_id, uncompressed, error);
+    n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
     return n;
   }
   len--;
@@ -504,27 +480,27 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
   if (!pure_text)
   {
     sprintf(error, "Error: ignoreDataSections() returned illegal data section");
-    n->SetErrorDump(n->_news.object_id, uncompressed, error);
+    n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
     return n;
   }
   tmp_string.assign(reinterpret_cast<const char *>(pure_text), pure_txt_len);
   free(pure_text);
   // report title to codehandler
-  EscapeCodeHandler->Convert(n->_news.title, tmp_string);
+  EscapeCodeHandler->Convert(n->_pNews->title, tmp_string);
 
-  n->_news.item.clear();
+  n->_pNews->item.clear();
 
   // title object only needs title..
-  if (n->_news.object_type == NML::TITLE)
+  if (n->_pNews->object_type == NML::TITLE)
     return n;
 
   // plain text message will need a text message as well
-  if (n->_news.object_type == NML::PLAIN)
+  if (n->_pNews->object_type == NML::PLAIN)
   {
     if (*p != 0x03)
     {
       sprintf(error, "Error: expected NML Code 0x03, got 0x%02x", *p);
-      n->SetErrorDump(n->_news.object_id, uncompressed, error);
+      n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
       return n;
     }
     len--;
@@ -533,25 +509,25 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
     if (!pure_text)
     {
       sprintf(error, "Error: ignoreDataSections() returned illegal data section");
-      n->SetErrorDump(n->_news.object_id, uncompressed, error);
+      n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
       return n;
     }
     tmp_string.assign((const char *)(pure_text), pure_txt_len);
     free(pure_text);
     NML::Item_t item;
     EscapeCodeHandler->Convert(item.text, tmp_string);
-    n->_news.item.push_back(item);
+    n->_pNews->item.push_back(item);
     return n;
   }
   // menu object will need link items
-  else if (n->_news.object_type == NML::MENU)
+  else if (n->_pNews->object_type == NML::MENU)
   {
     while (len > NML::NML_MIN_NR_OF_ITEM_BYTES)
     {
       if (*p != 0x02)
       {
         sprintf(error, "Error: expected NML Code 0x02, got 0x%02x", *p);
-        n->SetErrorDump(n->_news.object_id, uncompressed, error);
+        n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
         return n;
       }
       len--;
@@ -567,18 +543,18 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       if (!pure_text)
       {
         sprintf(error, "Error: ignoreDataSections() returned illegal data section");
-        n->SetErrorDump(n->_news.object_id, uncompressed, error);
+        n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
         return n;
       }
       tmp_string.assign(reinterpret_cast<const char *>(pure_text), pure_txt_len);
       free(pure_text);
       EscapeCodeHandler->Convert(item.text, tmp_string);
 
-      n->_news.item.push_back(item);
+      n->_pNews->item.push_back(item);
     }
   }
   // list item will need list items
-  else if (n->_news.object_type == NML::LIST)
+  else if (n->_pNews->object_type == NML::LIST)
   {
     NML::Item_t item;
     while (len > NML::NML_MIN_NR_OF_ITEM_BYTES)
@@ -586,7 +562,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       if (*p != 0x04 && *p != 0x05)
       {
         sprintf(error, "Error: expected NML Code 0x04 or 0x05, got 0x%02x", *p);
-        n->SetErrorDump(n->_news.object_id, uncompressed, error);
+        n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
         return n;
       }
 //          bool newRow = (*p == 0x04);
@@ -597,14 +573,14 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       if (!pure_text)
       {
         sprintf(error, "Error: ignoreDataSections() returned illegal data section");
-        n->SetErrorDump(n->_news.object_id, uncompressed, error);
+        n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
         return n;
       }
       tmp_string.assign(reinterpret_cast<const char *>(pure_text), pure_txt_len);
       free(pure_text);
       EscapeCodeHandler->Convert(item.text, tmp_string);
 
-      n->_news.item.push_back(item);
+      n->_pNews->item.push_back(item);
     }
   }
 
@@ -617,49 +593,29 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
 /// default NML constructor
 NML::NML()
 {
+  _pNews = std::make_shared<NML::News_t>();
   _valid = false;
-  _news.object_type = NML::TITLE;
-  _news.object_id = 0x0815;
-  _news.title = "uninit. NML";
+  _pNews->object_type = NML::TITLE;
+  _pNews->object_id = 0x0815;
+  _pNews->title = "uninit. NML";
 }
-
-
-/// copy NML constructor
-/// @param prototype  NML object to clone
-NML::NML(const NML & prototype)
-{
-  *this = prototype;
-}
-
-
-/// NML assignment operator
-/// @param prototype  NML object to clone
-/// @return reference to cloned object
-const NML & NML::operator=(const NML & prototype)
-{
-  _valid = prototype._valid;
-  _news = prototype._news;
-  _EscapeCodeHandler = prototype._EscapeCodeHandler;
-  return *this;
-}
-
 
 /// NML comparison operator
 /// @param prototype  NML object to compare this with
 /// @retval true  NML objects are equal
 bool NML::operator==(const NML & prototype) const
 {
-  if (_news.item.size() != prototype._news.item.size()) return false;
-  for (unsigned int i = 0; i < _news.item.size(); i++)
+  if (_pNews->item.size() != prototype._pNews->item.size()) return false;
+  for (unsigned int i = 0; i < _pNews->item.size(); i++)
   {
-    if (!(_news.item[i] == prototype._news.item[i])) return false;
+    if (!(_pNews->item[i] == prototype._pNews->item[i])) return false;
   }
   return (_valid != prototype._valid)
-         && (_news.object_id != prototype._news.object_id)
-         && (_news.static_flag == prototype._news.static_flag)
-         && (_news.revision_index == prototype._news.revision_index)
-         && (_news.extended_header == prototype._news.extended_header)
-         && (_news.title == prototype._news.title);
+         && (_pNews->object_id != prototype._pNews->object_id)
+         && (_pNews->static_flag == prototype._pNews->static_flag)
+         && (_pNews->revision_index == prototype._pNews->revision_index)
+         && (_pNews->extended_header == prototype._pNews->extended_header)
+         && (_pNews->title == prototype._pNews->title);
 }
 
 
@@ -671,10 +627,6 @@ bool operator==(const NML::Item_t & lhs, const NML::Item_t & rhs)
 {
   return (lhs.text == rhs.text);
 }
-
-
-/// destructor
-NML::~NML() {}
 
 
 /// set NML to an error object
@@ -693,23 +645,23 @@ void NML::SetErrorDump(NewsObjectId_t oid,
   log_err << "NML::SetErrorDump: " << error << endmsg;
 #endif
 
-  _news.object_type = NML::PLAIN;
-  _news.object_id = oid;
-  _news.static_flag = false;
-  _news.revision_index = 0;
-  _news.title = error;
+  _pNews->object_type = NML::PLAIN;
+  _pNews->object_id = oid;
+  _pNews->static_flag = false;
+  _pNews->revision_index = 0;
+  _pNews->title = error;
 
   Splitter s;
   std::vector<std::string> lines;
   std::vector<std::string>::const_iterator lines_i;
   s.Split(lines, DumpRaw(rno));
 
-  _news.item.clear();
+  _pNews->item.clear();
   for (lines_i = lines.begin(); lines_i != lines.end(); lines_i++)
   {
     NML::Item_t item;
     item.text = *lines_i;
-    _news.item.push_back(item);
+    _pNews->item.push_back(item);
   }
 }
 
