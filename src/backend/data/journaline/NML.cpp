@@ -230,7 +230,7 @@ std::string NML::Dump(void) const
 //reslen is an out parameter returning the size of the buffer
 //returns a newly created buffer containing pure nml data on success
 //returns 0 on error
-unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen)
+unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen) const
 {
   int i = 0;
   int j = 0;
@@ -284,6 +284,27 @@ unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned sh
   return res;
 }
 
+void NMLFactory::extract_link_data(std::vector<NML::SLinkData> & oLinkData, const unsigned char * const p, const int dsLen) const
+{
+  NML::SLinkData linkData;
+
+  if (dsLen > 4 && ((p[0] == 0x1a && p[2] == 0x03 && p[3] == 0x02) || p[0] == 0x1b))
+  {
+    linkData.urlStr = reinterpret_cast<const char *>(p + 4); // the link string is null-terminated
+
+    const int urlLen = (int)linkData.urlStr.size();
+
+    if (urlLen < dsLen - 2)
+    {
+      linkData.textStr = std::string(reinterpret_cast<const char *>(p + urlLen + 4), dsLen - 2 - urlLen);
+    }
+  }
+
+  if (!linkData.urlStr.empty())
+  {
+    oLinkData.emplace_back(linkData);
+  }
+}
 
 /// @brief create an NML object from raw NML
 /// An NML object will be created from the specified raw news object,
@@ -419,24 +440,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       return n;
     }
 
-    NML::SLinkData linkData;
-
-    if (dsLen > 4 && ((p[0] == 0x1a && p[2] == 0x03 && p[3] == 0x02) || p[0] == 0x1b))
-    {
-      linkData.urlStr = reinterpret_cast<const char *>(p + 4); // the link string is null-terminated
-
-      const int urlLen = (int)linkData.urlStr.size();
-
-      if (urlLen < dsLen - 2)
-      {
-        linkData.textStr = std::string(reinterpret_cast<const char *>(p + urlLen + 4), dsLen - 2 - urlLen);
-      }
-    }
-
-    if (!linkData.urlStr.empty())
-    {
-      n->_pNews->linkVec.emplace_back(linkData);
-    }
+    extract_link_data(n->_pNews->linkVec, p, dsLen);
 
     p += dsLen + 2;
     len = remLen;
