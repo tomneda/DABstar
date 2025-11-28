@@ -115,12 +115,12 @@ void JournalineDataHandler::add_to_dataBase(const std::shared_ptr<NML> & ipNmlEl
     const auto revIdxNew = ipNmlElement->GetRevisionIndex();
     const auto revIdxMap = (it != mDataMap.end()) ? it.value().pElement->revision_index : ~revIdxNew; // invert id if it is a new object to trigger the signal
 
-    JournalineViewer::STableElement & tblElem = mDataMap[objId]; // a not existing map element will be created and initialized here
-    tblElem.pElement = ipNmlElement->get_news_ptr();
-    mDataMap.insert(objId, tblElem);
-
     if (revIdxNew != revIdxMap)
     {
+      JournalineViewer::STableElement & tblElem = mDataMap[objId]; // a not existing map element will be created and initialized here
+      tblElem.pElement = ipNmlElement->get_news_ptr();
+      mDataMap.insert(objId, tblElem);
+
       emit signal_new_data();
     }
   }
