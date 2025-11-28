@@ -284,23 +284,6 @@ unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned sh
   return res;
 }
 
-// void NMLFactory::append_link_data_from_raw_news_object(NML::News_t::SLinkData & ioLinkData, const unsigned char * ipInData, const int iDsLen) const
-// {
-//   if (iDsLen > 4 && ((ipInData[0] == 0x1a && ipInData[2] == 0x03 && ipInData[3] == 0x02) ||
-//                       ipInData[0] == 0x1b))
-//   {
-//     // if (ipInData[0] == 0x1a && !ioLinkData.empty())
-//     // {
-//     //   ioLinkData += char(0);
-//     // }
-//     ioLinkData.urlStr = reinterpret_cast<const char *>(ipInData + 4);
-//     const int textSize = (int)ioLinkData.urlStr.size();
-//     if (textSize < iDsLen - 2)
-//     {
-//       ioLinkData.textStr = std::string(reinterpret_cast<const char *>(ipInData + textSize + 4), iDsLen - 2 - textSize);
-//     }
-//   }
-// }
 
 /// @brief create an NML object from raw NML
 /// An NML object will be created from the specified raw news object,
@@ -435,29 +418,26 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       n->SetErrorDump(n->_pNews->object_id, uncompressed, error);
       return n;
     }
-    // NML::News_t::SLinkData linkData;
-    // append_link_data_from_raw_news_object(linkData, p, dsLen);
 
-    // if (dsLen > 4 && ((p[0] == 0x1a && p[2] == 0x03 && p[3] == 0x02) || p[0] == 0x1b))
-    // {
-    //   linkData.urlStr = reinterpret_cast<const char *>(p + 4);
-    //
-    //   const int textSize = (int)linkData.urlStr.size();
-    //
-    //   if (textSize < dsLen - 2)
-    //   {
-    //     linkData.textStr = std::string(reinterpret_cast<const char *>(p + textSize + 4), dsLen - 2 - textSize);
-    //   }
-    // }
+    NML::SLinkData linkData;
 
+    if (dsLen > 4 && ((p[0] == 0x1a && p[2] == 0x03 && p[3] == 0x02) || p[0] == 0x1b))
+    {
+      linkData.urlStr = reinterpret_cast<const char *>(p + 4); // the link string is null-terminated
 
+      const int urlLen = (int)linkData.urlStr.size();
 
-    // if (!linkData.urlStr.empty())
-    // {
-    //   n->_pNews->linkVec.emplace_back(linkData);
-    //   // qDebug().noquote() << "Linkdata:" << linkData;
-    //   n->_pNews->html = std::move(linkData);
-    // }
+      if (urlLen < dsLen - 2)
+      {
+        linkData.textStr = std::string(reinterpret_cast<const char *>(p + urlLen + 4), dsLen - 2 - urlLen);
+      }
+    }
+
+    if (!linkData.urlStr.empty())
+    {
+      n->_pNews->linkVec.emplace_back(linkData);
+    }
+
     p += dsLen + 2;
     len = remLen;
   }

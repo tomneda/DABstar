@@ -391,7 +391,6 @@ private:
   NMLFactory(const NMLFactory &);
 
   unsigned char * getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen);
-  // void append_link_data_from_raw_news_object(NML::News_t::SLinkData & ioLinkData, const unsigned char * ipInData, int iDsLen) const;
 };
 
 
