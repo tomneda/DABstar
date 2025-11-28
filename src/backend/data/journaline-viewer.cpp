@@ -34,11 +34,11 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
   mFrame.setWindowIcon(QIcon(":res/logo/dabstar_j.png"));
 
   const QString copyRightStr = "<span style=\"color: #FFD700; font-size: small;\">"
-    "Features NewsService Journaline(R) decoder technology by<br>"
-    "Fraunhofer IIS, Erlangen, Germany.<br>"
-    "For more information visit "
-    "<a href=\"http://www.iis.fhg.de/dab\" style=\"color: #87CEFA;\">http://www.iis.fhg.de/dab</a>"
-    "</span>";
+                               "Features NewsService Journaline(R) decoder technology by<br>"
+                               "Fraunhofer IIS, Erlangen, Germany.<br>"
+                               "For more information visit "
+                               "<a href=\"http://www.iis.fhg.de/dab\" style=\"color: #87CEFA;\">http://www.iis.fhg.de/dab</a>"
+                               "</span>";
 
   const QString legendStr = "<table style=\"border-collapse: collapse; font-size: small;\">"
                             "<tr>"
@@ -149,11 +149,14 @@ void JournalineViewer::_slot_html_link_activated(const QString & iLink)
   {
     if (iLink.startsWith("http"))
     {
-      QDesktopServices::openUrl(QUrl(iLink));
+      if (!QDesktopServices::openUrl(QUrl(iLink)))
+      {
+        qCritical() << "Failed to open URL:" << iLink;
+      }
     }
     else
     {
-      qCritical() << "Unexpected link" << iLink;
+      qCritical() << "Unexpected link:" << iLink;
     }
     return;
   }
