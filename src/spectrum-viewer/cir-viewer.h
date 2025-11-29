@@ -4,16 +4,16 @@
 #ifndef  CIR_VIEWER_H
 #define  CIR_VIEWER_H
 
-#include <QFrame>
-#include <QObject>
+#include "ui_cir-widget.h"
+#include "ringbuffer.h"
+#include "phasetable.h"
+#include "custom_frame.h"
+#include <fftw3.h>
 #include <qwt.h>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_curve.h>
-#include "ui_cir-widget.h"
-#include "ringbuffer.h"
-#include "phasetable.h"
-#include <fftw3.h>
+#include <QObject>
 
 constexpr i32 CIR_SPECTRUMSIZE = 2048*97;
 
@@ -33,7 +33,7 @@ public:
   bool is_hidden();
 
 private:
-  QFrame mFrame;
+  CustomFrame mFrame;
   RingBuffer<cf32> * const mpCirBuffer;
   QwtPlotCurve mCurve;
   QwtPlotGrid mGrid;
@@ -41,6 +41,9 @@ private:
   alignas(64) TArrayTu mFftOutBuffer;
   fftwf_plan mFftPlanFwd;
   fftwf_plan mFftPlanBwd;
+
+signals:
+  void signal_frame_closed();
 };
 
 #endif

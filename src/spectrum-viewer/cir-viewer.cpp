@@ -43,6 +43,8 @@ CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
 
   cirPlot->setAxisScale(QwtPlot::xBottom, 0, 96);
   cirPlot->enableAxis(QwtPlot::xBottom);
+
+  connect(&mFrame, &CustomFrame::signal_frame_closed, this, &CirViewer::signal_frame_closed);
 }
 
 CirViewer::~CirViewer()
