@@ -61,6 +61,7 @@
       var homeLongitude = $;
       var Transmitters = {};
       var transmitterIndex = 0;
+      var transmitterIndexMaxForZoom = 0;
       var suppressAutoFrame = false;
       var isAutoFramingNow = false;
 
@@ -163,6 +164,7 @@
             {
               let zz = document.getElementById('selected');
               zz.innerHTML = '';
+              transmitterIndexMaxForZoom = 0;
               suppressAutoFrame = false;
             }
             else if (target.type == MAP_NORM_TRANS)
@@ -171,7 +173,7 @@
             }
           }
 
-          if (!suppressAutoFrame && transmitterIndex > 0)
+          if (!suppressAutoFrame && transmitterIndex > 0 && transmitterIndexMaxForZoom < transmitterIndex)
           {
             var bounds = L.latLngBounds([]);
             var minDistKm = Infinity;
@@ -187,6 +189,7 @@
             }
             if (bounds.isValid())
             {
+              transmitterIndexMaxForZoom = transmitterIndex
               isAutoFramingNow = true;
               Map.once('moveend', function(){ isAutoFramingNow = false; });
               Map.fitBounds(bounds, {padding: [20, 20]});
