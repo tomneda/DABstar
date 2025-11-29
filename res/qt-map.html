@@ -171,12 +171,19 @@
             }
           }
 
-          if (!suppressAutoFrame && transmitterIndex > 0 /*&& transmitterIndexMaxForZoom < transmitterIndex*/)
+          if (!suppressAutoFrame && transmitterIndex > 0)
           {
             var bounds = L.latLngBounds([]);
+            var minDistKm = Infinity;
             for (var i = 0; i < transmitterIndex; i++)
             {
               bounds.extend([Transmitters[i].lat, Transmitters[i].lon]);
+              var d = parseFloat(Transmitters[i].dist);
+              if (isFinite(d) && d < minDistKm) minDistKm = d;
+            }
+            if (isFinite(minDistKm) && minDistKm < 200) // add home to zoom range if below 200km
+            {
+              bounds.extend([homeLatitude, homeLongitude]);
             }
             if (bounds.isValid())
             {
