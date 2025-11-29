@@ -691,6 +691,9 @@ void DabRadio::_slot_terminate_process()
   {
     stop_scanning();
   }
+
+  slot_http_terminate();
+
   mIsRunning.store(false);
   _show_hide_buttons(false);
   mTiiListDisplay.hide();
@@ -1554,9 +1557,9 @@ void DabRadio::start_channel(const QString & iChannel, const u32 iFastSelectSId 
 
   mpServiceListHandler->set_selector_channel_only(mChannel.channelName);
 
-  STiiDataEntry theTransmitter;
   if (mpHttpHandler != nullptr)
   {
+    STiiDataEntry theTransmitter;
     theTransmitter.latitude = 0;
     theTransmitter.longitude = 0;
     mpHttpHandler->put_data(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
@@ -2040,8 +2043,17 @@ void DabRadio::_slot_handle_http_button()
 
 void DabRadio::slot_http_terminate()
 {
-  mpHttpHandler.reset();
   _set_http_server_button(false);
+
+  if (mpHttpHandler != nullptr)
+  {
+    STiiDataEntry theTransmitter;
+    theTransmitter.latitude = 0;
+    theTransmitter.longitude = 0;
+    mpHttpHandler->put_data(MAP_CLOSE, &theTransmitter, "", 0, 0, 0, false);
+    usleep(250000);
+    mpHttpHandler.reset();
+  }
 }
 
 void DabRadio::_show_pause_slide()

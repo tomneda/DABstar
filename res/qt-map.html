@@ -64,11 +64,15 @@
       var transmitterIndexMaxForZoom = 0;
       var suppressAutoFrame = false;
       var isAutoFramingNow = false;
+      var pollTimerId = null;
+      var consecutivePollErrors = 0;
+      var MAX_POLL_ERRORS = 3;
 
       const MAP_RESET = 0;
       const MAP_FRAME = 1;
       const MAP_MAX_TRANS = 2;
       const MAP_NORM_TRANS = 4;
+      const MAP_CLOSE = 5;
 
       function getIconForHome()
       {
@@ -152,10 +156,32 @@
                        'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br></p>'
       }
 
+      function attemptClose(reason)
+      {
+        try { if (pollTimerId) { window.clearInterval(pollTimerId); } } catch(e) {}
+        // Best-effort close (works for Qt WebEngine or when window was script-opened)
+        try { window.close(); } catch(e) {}
+        try { self.close(); } catch(e) {}
+        // If still not closed (e.g., in a regular browser tab), replace UI with a notice
+        setTimeout(function(){
+          try {
+            document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-family:Helvetica,Arial,sans-serif;">' +
+              '<div style="text-align:center">' +
+              '<h2 style="margin:0 0 8px 0;">Server not available</h2>' +
+              '<p style="margin:0;color:#555">' + (reason ? reason : 'The DABstar server appears to be closed.') + '</p>' +
+              '<p style="margin-top:12px;color:#777">You can close this window.</p>' +
+              '</div>' +
+            '</div>';
+          } catch(e) {}
+        }, 50);
+      }
+
       function fetchData()
       {
-        $.getJSON('/data.json', function(data)
+        $.getJSON('/data.json')
+        .done(function(data)
         {
+          consecutivePollErrors = 0;
           handle_map_reset();
           for (var t = 0; t < data.length; t ++)
           {
@@ -167,7 +193,13 @@
               transmitterIndexMaxForZoom = 0;
               suppressAutoFrame = false;
             }
-            else if (target.type == MAP_NORM_TRANS)
+            else if (target.type === MAP_CLOSE)
+            {
+              // Immediate close requested by backend
+              attemptClose('Server requested to close the map window.');
+              return; // stop processing
+            }
+            else if (target.type === MAP_NORM_TRANS)
             {
               addTransmitter(target);
             }
@@ -195,6 +227,15 @@
               Map.fitBounds(bounds, {padding: [20, 20]});
             }
           }
+        })
+        .fail(function(jqXHR, textStatus, errorThrown)
+        {
+          consecutivePollErrors++;
+          if (consecutivePollErrors >= MAX_POLL_ERRORS)
+          {
+            // as the server may hang after closing the client to fast, we omit this timeout first
+            // attemptClose('Lost connection to server.');
+          }
         });
       }
 
@@ -217,7 +258,7 @@
         var homeMarker = L.marker([homeLatitude, homeLongitude], {icon: icon}).addTo(Map);
 
         // Setup our timer to poll from the server.
-        window.setInterval(function()
+        pollTimerId = window.setInterval(function()
         {
           fetchData();
         }, 2000);
