@@ -118,7 +118,7 @@ void JournalineDataHandler::add_to_dataBase(const std::shared_ptr<NML> & ipNmlEl
     if (revIdxNew != revIdxMap)
     {
       JournalineViewer::STableElement & tblElem = mDataMap[objId]; // a not existing map element will be created and initialized here
-      tblElem.pElement = ipNmlElement->get_news_ptr();
+      tblElem.pElement = ipNmlElement->get_news_ptr(); // get data ownership here
       mDataMap.insert(objId, tblElem);
 
       emit signal_new_data();

@@ -46,6 +46,8 @@ private:
   QTimer * mpTimerRecMarker;
   QTimer * mpTimerHtmlRebuild;
 
+  static constexpr bool cSubMenusClosedAfterMenuOpen = true; // true: submenus always closed if a menu is opened
+
   // UI elements
   CustomFrame mFrame;
   QLabel * mpLblTitle;

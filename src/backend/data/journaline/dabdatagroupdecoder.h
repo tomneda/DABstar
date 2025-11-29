@@ -110,7 +110,7 @@ typedef struct
     unsigned char  user_access_flag;  /*!< user access flag (1 bit) */
     unsigned char  datagroup_type;    /*!< data group type (4 bit) */
     unsigned char  continuity_index;  /*!< continuity index (4 bit) */
-    unsigned char  repetition_index;  /*!< repitition index (4 bit) */
+    unsigned char  repetition_index;  /*!< repetition index (4 bit) */
     unsigned short extension_field;   /*!< extension field (16 bit), only
                                          present when extension flag is 1 */
 } DAB_DATAGROUP_DECODER_msc_datagroup_header_t;

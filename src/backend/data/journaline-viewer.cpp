@@ -170,6 +170,18 @@ void JournalineViewer::_slot_html_link_activated(const QString & iLink)
   {
     it.value().isOpened = !it.value().isOpened;
     it.value().wasVisited = true;
+
+    if (cSubMenusClosedAfterMenuOpen && it.value().isOpened)
+    {
+      for (auto & elem : it.value().pElement->item)
+      {
+        const auto it = mDataMap.find(elem.link_id);
+        if (it != mDataMap.end())
+        {
+          it.value().isOpened = false;
+        }
+      }
+    }
   }
 
   // Refresh HTML view

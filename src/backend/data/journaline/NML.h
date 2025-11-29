@@ -375,9 +375,6 @@ std::string DumpRaw(const NML::RawNewsObject_t & rno);
 class NMLFactory
 {
 public:
-  // static NMLFactory * Instance();
-  // static void ExitInstance();
-
   std::shared_ptr<NML> CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCodeHandler * EscapeCodeHandler);
   std::shared_ptr<NML> CreateError(NML::NewsObjectId_t oid, const char * title);
   std::shared_ptr<NML> CreateErrorDump(NML::NewsObjectId_t oid, const NML::RawNewsObject_t & rno, const char * error_msg);
