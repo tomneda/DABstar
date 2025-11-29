@@ -297,7 +297,7 @@ void NMLFactory::extract_link_data(std::vector<NML::SLinkData> & oLinkData, cons
     {
       break; // no further segment existing
     }
-    pData += segLen + 2;    // new data start pointer of next segement
+    pData += segLen + 2;    // new data start pointer of next segment
     segLen = pData[-1] + 1; // new len of next segment
   }
   while (true);
@@ -494,11 +494,6 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
   free(pure_text);
   // report title to codehandler
   EscapeCodeHandler->Convert(n->_pNews->title, tmp_string);
-
-  if (tmp_string.find("Black") == 0)
-  {
-    int a = 3;
-  }
 
   n->_pNews->item.clear();
 
