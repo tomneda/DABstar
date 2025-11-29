@@ -44,7 +44,7 @@
 
 class DabRadio;
 
-typedef struct
+struct SHttpData
 {
   u8 type;
   cf32 coords;
@@ -65,7 +65,7 @@ typedef struct
   i32 altitude;
   i32 height;
   bool non_etsi;
-} httpData;
+};
 
 class HttpHandler : public QObject
 {
@@ -73,11 +73,12 @@ class HttpHandler : public QObject
 
 public:
   HttpHandler(DabRadio *, const QString & mapPort, const QString & browserAddress, cf32 address, const QString & saveName, bool autoBrowse);
-  ~HttpHandler();
+  ~HttpHandler() override;
+
   void start();
   void stop();
   void run();
-  void putData(u8 type, const STiiDataEntry * tr, const QString & dateTime,
+  void put_data(u8 type, const STiiDataEntry * tr, const QString & dateTime,
                f32 strength, i32 distance, i32 azimuth, bool non_etsi);
 
 private:
@@ -86,7 +87,7 @@ private:
   DabRadio * parent;
   QString mapPort;
   cf32 homeAddress;
-  std::vector<httpData> transmitterVector;
+  std::vector<SHttpData> alreadyLoggedTransmitters;
 
 #if defined(__MINGW32__) || defined(_WIN32)
   std::wstring	browserAddress;
@@ -95,9 +96,9 @@ private:
 #endif
   std::atomic<bool> running;
   std::thread threadHandle;
-  std::string theMap(cf32 address);
-  std::string coordinatesToJson(const std::vector<httpData> & t);
-  std::vector<httpData> transmitterList;
+  std::string theMap(cf32 address) const;
+  std::string coordinatesToJson(const std::vector<SHttpData> & t);
+  std::vector<SHttpData> transmitterList;
   std::mutex locker;
   bool autoBrowser_off;
 

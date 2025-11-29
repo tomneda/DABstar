@@ -811,7 +811,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     if (mpHttpHandler && dataValid)
     {
       const QDateTime theTime = (Settings::Config::cbUseUtcTime.read().toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
-      mpHttpHandler->putData(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
+      mpHttpHandler->put_data(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
                              bd.strength_dB, (i32)bd.distance_km, (i32)bd.corner_deg, bd.isNonEtsiPhase);
     }
   }

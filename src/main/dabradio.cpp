@@ -1559,7 +1559,7 @@ void DabRadio::start_channel(const QString & iChannel, const u32 iFastSelectSId 
   {
     theTransmitter.latitude = 0;
     theTransmitter.longitude = 0;
-    mpHttpHandler->putData(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
+    mpHttpHandler->put_data(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
   }
   mTransmitterIds.clear();
 
@@ -1630,7 +1630,7 @@ void DabRadio::stop_channel()
     STiiDataEntry theTransmitter;
     theTransmitter.latitude = 0;
     theTransmitter.longitude = 0;
-    mpHttpHandler->putData(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
+    mpHttpHandler->put_data(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
   }
 
   ui->transmitter_country->setText("");

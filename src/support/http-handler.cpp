@@ -41,6 +41,7 @@
 #include  <netinet/in.h>
 #include  <netdb.h>
 #include  <arpa/inet.h>
+#include  <QDesktopServices>
 #else
   #include  <winsock2.h>
   #include  <windows.h>
@@ -73,7 +74,7 @@ HttpHandler::HttpHandler(DabRadio * parent, const QString & mapPort, const QStri
     fprintf(saveFile, "Home location; %f; %f\n\n", real(homeAddress), imag(homeAddress));
     fprintf(saveFile, "channel; latitude; longitude;transmitter;date and time; mainId; subId; distance; azimuth; power\n\n");
   }
-  transmitterVector.clear();
+  alreadyLoggedTransmitters.clear();
   start();
 }
 
@@ -93,17 +94,16 @@ HttpHandler::~HttpHandler()
 void HttpHandler::start()
 {
   threadHandle = std::thread(&HttpHandler::run, this);
+
   if (autoBrowser_off)
   {
     return;
   }
-#if defined(__MINGW32__) || defined(_WIN32)
-  ShellExecute(nullptr, L"open", browserAddress.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-#else
-  std::string x = "xdg-open " + browserAddress;
-  const i32 result = system(x.c_str());
-  (void)result;
-#endif
+
+  if (!QDesktopServices::openUrl(QUrl(browserAddress.c_str())))
+  {
+    qCritical() << "Failed to open URL:" << browserAddress;
+  }
 }
 
 void HttpHandler::stop()
@@ -439,14 +439,13 @@ L1:
 
 #endif
 
-std::string HttpHandler::theMap(cf32 homeAddress)
+std::string HttpHandler::theMap(cf32 homeAddress) const
 {
   std::string res;
   i32 bodySize;
   char * body;
-  std::string latitude = std::to_string(real(homeAddress));
-  std::string longitude = std::to_string(imag(homeAddress));
-  i32 cc;
+  const std::string latitude = std::to_string(real(homeAddress));
+  const std::string longitude = std::to_string(imag(homeAddress));
   i32 teller = 0;
   i32 params = 0;
 
@@ -461,7 +460,7 @@ std::string HttpHandler::theMap(cf32 homeAddress)
     while (!in.atEnd())
     {
       in.readRawData(record_data.data(), 1);
-      cc = (*record_data.constData());
+      const i32 cc = (*record_data.constData());
       if (cc == '$')
       {
         if (params == 0)
@@ -523,7 +522,7 @@ std::string dotNumber(f32 f)
 }
 
 //
-std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
+std::string HttpHandler::coordinatesToJson(const std::vector<SHttpData> & t)
 {
   char buf[512];
   QString Jsontxt;
@@ -564,17 +563,18 @@ std::string HttpHandler::coordinatesToJson(const std::vector<httpData> & t)
   return Jsontxt.toStdString();
 }
 
-void HttpHandler::putData(u8 type, const STiiDataEntry * tr, const QString & dateTime,
-                          f32 strength, i32 distance, i32 azimuth, bool non_etsi)
+void HttpHandler::put_data(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
+                           const f32 strength, const i32 distance, const i32 azimuth, const bool non_etsi)
 {
-  cf32 target = cf32(tr->latitude, tr->longitude);
+  const cf32 target = cf32(tr->latitude, tr->longitude);
+
   for (u32 i = 0; i < transmitterList.size(); i++)
   {
     if (transmitterList[i].coords == target)
       return;
   }
 
-  httpData t;
+  SHttpData t;
   t.type = type;
   t.ensemble = tr->ensemble;
   t.Eid = tr->Eid;
@@ -598,10 +598,11 @@ void HttpHandler::putData(u8 type, const STiiDataEntry * tr, const QString & dat
   transmitterList.push_back(t);
   locker.unlock();
 
-  for (u32 i = 0; i < transmitterVector.size(); i++)
+  // log transmitter data to CSV file but ignore already set transmitters
+  for (u32 i = 0; i < alreadyLoggedTransmitters.size(); i++)
   {
-    if ((transmitterVector.at(i).transmitterName == tr->transmitterName) &&
-        (transmitterVector.at(i).channelName == tr->channel))
+    if ((alreadyLoggedTransmitters.at(i).transmitterName == tr->transmitterName) &&
+        (alreadyLoggedTransmitters.at(i).channelName == tr->channel))
       return;
   }
 
@@ -622,6 +623,6 @@ void HttpHandler::putData(u8 type, const STiiDataEntry * tr, const QString & dat
             tr->power,
             tr->altitude,
             tr->height);
-    transmitterVector.push_back(t);
+    alreadyLoggedTransmitters.push_back(t);
   }
 }
