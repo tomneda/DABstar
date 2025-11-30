@@ -693,7 +693,7 @@ void DabRadio::_slot_terminate_process()
     stop_scanning();
   }
 
-  _slot_http_terminate();
+  slot_http_terminate();
 
   mIsRunning.store(false);
   _show_hide_buttons(false);
@@ -2038,11 +2038,11 @@ void DabRadio::_slot_handle_http_button()
   }
   else
   {
-    _slot_http_terminate();
+    slot_http_terminate();
   }
 }
 
-void DabRadio::_slot_http_terminate()
+void DabRadio::slot_http_terminate()
 {
   _set_http_server_button(false);
 

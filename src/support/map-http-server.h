@@ -15,7 +15,6 @@
 #include "dab-constants.h"
 #include "tii-codes.h"
 #include <QObject>
-#include <string>
 #include <vector>
 #include <mutex>
 #include <QString>
@@ -72,8 +71,8 @@ private:
   std::vector<SHttpData> mTransmitters;
   mutable std::mutex mMutex; // guards the list of mTransmitters
 
-  std::string _gen_html_code(cf32 address) const;
-  std::string _conv_transmitter_list_to_json();
+  QString _gen_html_code(cf32 address) const;
+  QString _move_transmitter_list_to_json(); // mTransmitters is empty after call
 
 private slots:
   void _slot_new_connection();

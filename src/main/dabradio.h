@@ -443,7 +443,7 @@ public slots:
   void slot_handle_tii_collisions(bool);
   void slot_handle_tii_threshold(i32);
   void slot_handle_tii_subid(i32);
-  void _slot_http_terminate();
+  void slot_http_terminate();
 
   void closeEvent(QCloseEvent * event) override;
 
