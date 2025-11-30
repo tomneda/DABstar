@@ -10,7 +10,7 @@
 #include "compass_direction.h"
 #include "ITU_Region_1.h"
 #include "copyright_info.h"
-#include "http-handler.h"
+#include "map-http-server.h"
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
@@ -812,7 +812,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     if (mpHttpHandler && dataValid)
     {
       const QDateTime theTime = (Settings::Config::cbUseUtcTime.read().toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
-      mpHttpHandler->put_data(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
+      mpHttpHandler->add_location_entry(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
                              bd.strength_dB, (i32)bd.distance_km, (i32)bd.corner_deg, bd.isNonEtsiPhase);
     }
   }

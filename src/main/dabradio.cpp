@@ -40,7 +40,7 @@
 #include "time-table.h"
 #include "epgdec.h"
 #include "epg-decoder.h"
-#include "http-handler.h"
+#include "map-http-server.h"
 #include <QMessageBox>
 
 #if defined(__MINGW32__) || defined(_WIN32)
@@ -1563,7 +1563,7 @@ void DabRadio::start_channel(const QString & iChannel, const u32 iFastSelectSId 
     STiiDataEntry theTransmitter;
     theTransmitter.latitude = 0;
     theTransmitter.longitude = 0;
-    mpHttpHandler->put_data(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
+    mpHttpHandler->add_location_entry(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
   }
   mTransmitterIds.clear();
 
@@ -1634,7 +1634,7 @@ void DabRadio::stop_channel()
     STiiDataEntry theTransmitter;
     theTransmitter.latitude = 0;
     theTransmitter.longitude = 0;
-    mpHttpHandler->put_data(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
+    mpHttpHandler->add_location_entry(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
   }
 
   ui->transmitter_country->setText("");
@@ -2051,7 +2051,7 @@ void DabRadio::_slot_http_terminate()
     STiiDataEntry theTransmitter;
     theTransmitter.latitude = 0;
     theTransmitter.longitude = 0;
-    mpHttpHandler->put_data(MAP_CLOSE, &theTransmitter, "", 0, 0, 0, false);
+    mpHttpHandler->add_location_entry(MAP_CLOSE, &theTransmitter, "", 0, 0, 0, false);
     usleep(250000);
     mpHttpHandler.reset();
   }

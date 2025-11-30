@@ -1,61 +1,27 @@
 /*
- * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ * Copyright (c) 2025 by Thomas Neder (https://github.com/tomneda)
  *
- * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
- * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2 of the License, or any later version.
  *
- * The original copyright information is preserved below and is acknowledged.
+ * DABstar is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
+ * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- *    Copyright (C) 2022
- *    Jan van Katwijk (J.vanKatwijk@gmail.com)
- *    Lazy Chair Computing
- *
- *    This file is part of Qt-DAB
- *
- *    Qt-DAB is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    Qt-DAB is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with Qt-DAB; if not, write to the Free Software
- *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
-#include  <cstdio>
-#include  <cstdlib>
-#include  <cstring>
-#include  <QDesktopServices>
-#include  <QUrl>
-#include  <QFile>
-#include  <QByteArray>
-#include  <QDataStream>
-
-#include  "http-handler.h"
-#include  "dabradio.h"
-
-// #if !defined(__MINGW32__) && !defined(_WIN32)
-// #include  <unistd.h>
-// #include  <sys/socket.h>
-// #include  <fcntl.h>
-// #include  <netinet/in.h>
-// #include  <netdb.h>
-// #include  <arpa/inet.h>
-// #else
-//   #include  <winsock2.h>
-//   #include  <windows.h>
-//   #include  <ws2tcpip.h>
-// #endif
-
-#include  "http-handler.h"
-#include  "dabradio.h"
+#include "map-http-server.h"
+#include "dabradio.h"
+#include <string>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QByteArray>
+#include <QDataStream>
 
 MapHttpServer::MapHttpServer(DabRadio * parent, const QString & mapPort, const QString & browserAddress, cf32 homeAddress, const QString & saveName, bool autoBrowser_off)
   : parent(parent)
@@ -604,50 +570,41 @@ std::string dotNumber(f32 f)
 std::string MapHttpServer::_conv_transmitter_list_to_json()
 {
   std::lock_guard<std::mutex> lock(mMutex);
-
-  std::array<char, 512> buf;
-
   if (mTransmitters.empty())
     return "";
 
-  QString jsonTxt = "[\n";
+  QJsonArray jsonArray;
 
-  for (u32 i = 0; i < mTransmitters.size(); i++)
+  for (const auto & t : mTransmitters)
   {
-    if (i > 0)
-    {
-      jsonTxt += ",\n";
-    }
+    QJsonObject jsonObj;
+    jsonObj["type"] = t.type;
+    jsonObj["lat"] = real(t.coords);
+    jsonObj["lon"] = imag(t.coords);
+    jsonObj["name"] = t.transmitterName;
+    jsonObj["channel"] = t.channelName;
+    jsonObj["mainId"] = t.mainId;
+    jsonObj["subId"] = t.subId;
+    jsonObj["strength"] = (int)(t.strength * 10);
+    jsonObj["dist"] = t.distance;
+    jsonObj["azimuth"] = t.azimuth;
+    jsonObj["power"] = (int)(t.power * 100);
+    jsonObj["altitude"] = t.altitude;
+    jsonObj["height"] = t.height;
+    jsonObj["dir"] = t.direction;
+    jsonObj["pol"] = t.polarization;
+    jsonObj["nonetsi"] = (t.non_etsi ? ", non-ETSI phases" : "");
 
-    const SHttpData & t = mTransmitters[i];
-    snprintf(buf.data(),
-             buf.size(),
-             "{\"type\":%d, \"lat\":%s, \"lon\":%s, \"name\":\"%s\", \"channel\":\"%s\", \"mainId\":%d, \"subId\":%d, \"strength\":%d, \"dist\":%d, \"azimuth\":%d, \"power\":%d, \"altitude\":%d, \"height\":%d, \"dir\":\"%s\", \"pol\":\"%s\", \"nonetsi\":\"%s\"}",
-             t.type,
-             dotNumber(real(t.coords)).c_str(),
-             dotNumber(imag(t.coords)).c_str(),
-             t.transmitterName.toUtf8().data(),
-             t.channelName.toUtf8().data(),
-             t.mainId,
-             t.subId,
-             (i32)(t.strength * 10),
-             t.distance,
-             t.azimuth,
-             (i32)(t.power * 100),
-             t.altitude,
-             t.height,
-             t.direction.toUtf8().data(),
-             t.polarization.toUtf8().data(),
-             t.non_etsi ? ", non-ETSI phases" : "");
-    jsonTxt += QString(buf.data());
+    jsonArray.append(jsonObj);
   }
 
   mTransmitters.clear();
-  jsonTxt += "\n]\n";
-  return jsonTxt.toStdString();
+
+  QJsonDocument doc(jsonArray);
+  return doc.toJson(QJsonDocument::Indented).toStdString();
 }
 
-void MapHttpServer::put_data(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
+void MapHttpServer::add_location_entry(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
                              const f32 strength, const i32 distance, const i32 azimuth, const bool non_etsi)
 {
   const cf32 target = cf32(tr->latitude, tr->longitude);
