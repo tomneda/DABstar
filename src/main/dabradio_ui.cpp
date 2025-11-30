@@ -10,6 +10,7 @@
 #include "compass_direction.h"
 #include "ITU_Region_1.h"
 #include "copyright_info.h"
+#include "http-handler.h"
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)

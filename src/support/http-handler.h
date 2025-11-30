@@ -34,73 +34,70 @@
 
 #include "dab-constants.h"
 #include "tii-codes.h"
-#include  <QObject>
-#include  <thread>
-#include  <atomic>
-#include  <string>
-#include  <vector>
-#include  <mutex>
-#include  <QString>
+#include <QObject>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <string>
+#include <vector>
+#include <mutex>
+#include <QString>
 
 class DabRadio;
 
-struct SHttpData
-{
-  u8 type;
-  cf32 coords;
-  QString transmitterName;
-  QString channelName;
-  QString dateTime;
-  QString ensemble;
-  QString polarization;
-  QString direction;
-  u16 Eid;
-  u8 mainId;
-  u8 subId;
-  f32 strength;
-  i32 distance;
-  i32 azimuth;
-  f32 power;
-  f32 frequency;
-  i32 altitude;
-  i32 height;
-  bool non_etsi;
-};
-
-class HttpHandler : public QObject
+class MapHttpServer : public QObject
 {
   Q_OBJECT
 
 public:
-  HttpHandler(DabRadio *, const QString & mapPort, const QString & browserAddress, cf32 address, const QString & saveName, bool autoBrowse);
-  ~HttpHandler() override;
+  MapHttpServer(DabRadio *, const QString & mapPort, const QString & browserAddress, cf32 address, const QString & saveName, bool autoBrowse);
+  ~MapHttpServer() override;
 
   void start();
   void stop();
-  void run();
-  void put_data(u8 type, const STiiDataEntry * tr, const QString & dateTime,
-               f32 strength, i32 distance, i32 azimuth, bool non_etsi);
+  void put_data(u8 type, const STiiDataEntry * tr, const QString & dateTime, f32 strength, i32 distance, i32 azimuth, bool non_etsi);
 
 private:
-  FILE * saveFile;
-  QString * saveName;
-  DabRadio * parent;
-  QString mapPort;
-  cf32 homeAddress;
-  std::vector<SHttpData> alreadyLoggedTransmitters;
+  struct SHttpData
+  {
+    u8 type;
+    cf32 coords;
+    QString transmitterName;
+    QString channelName;
+    QString dateTime;
+    QString ensemble;
+    QString polarization;
+    QString direction;
+    u16 Eid;
+    u8 mainId;
+    u8 subId;
+    f32 strength;
+    i32 distance;
+    i32 azimuth;
+    f32 power;
+    f32 frequency;
+    i32 altitude;
+    i32 height;
+    bool non_etsi;
+  };
 
-#if defined(__MINGW32__) || defined(_WIN32)
-  std::wstring	browserAddress;
-#else
-  std::string browserAddress;
-#endif
-  std::atomic<bool> running;
-  std::thread threadHandle;
-  std::string theMap(cf32 address) const;
-  std::string coordinatesToJson(const std::vector<SHttpData> & t);
-  std::vector<SHttpData> transmitterList;
-  std::mutex locker;
-  bool autoBrowser_off;
+  const DabRadio * parent;
+  const QString mHttpAddress;
+  const QString mHttpPort;
+  const bool mAutoBrowserOff;
+  const cf32 mHomeLocation;
+
+  FILE * mpCsvFP = nullptr;
+  std::vector<SHttpData> mAlreadyLoggedTransmitters;
+  QTcpServer * mTcpServer;
+  std::vector<SHttpData> mTransmitters;
+  mutable std::mutex mMutex; // guards the list of mTransmitters
+
+  std::string _gen_html_code(cf32 address) const;
+  std::string _conv_transmitter_list_to_json();
+
+private slots:
+  void _slot_new_connection();
+  void _slot_ready_read();
 
 signals:
   void signal_terminating();

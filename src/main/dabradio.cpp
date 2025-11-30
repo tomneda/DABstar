@@ -40,6 +40,7 @@
 #include "time-table.h"
 #include "epgdec.h"
 #include "epg-decoder.h"
+#include "http-handler.h"
 #include <QMessageBox>
 
 #if defined(__MINGW32__) || defined(_WIN32)
@@ -692,7 +693,7 @@ void DabRadio::_slot_terminate_process()
     stop_scanning();
   }
 
-  slot_http_terminate();
+  _slot_http_terminate();
 
   mIsRunning.store(false);
   _show_hide_buttons(false);
@@ -2027,7 +2028,7 @@ void DabRadio::_slot_handle_http_button()
     {
       mapFile = "";
     }
-    mpHttpHandler.reset(new HttpHandler(this, mapPort, browserAddress, mChannel.localPos, mapFile, Settings::Config::cbManualBrowserStart.read().toBool()));
+    mpHttpHandler.reset(new MapHttpServer(this, mapPort, browserAddress, mChannel.localPos, mapFile, Settings::Config::cbManualBrowserStart.read().toBool()));
     mMaxDistance = -1;
 
     if (mpHttpHandler != nullptr)
@@ -2037,11 +2038,11 @@ void DabRadio::_slot_handle_http_button()
   }
   else
   {
-    slot_http_terminate();
+    _slot_http_terminate();
   }
 }
 
-void DabRadio::slot_http_terminate()
+void DabRadio::_slot_http_terminate()
 {
   _set_http_server_button(false);
 

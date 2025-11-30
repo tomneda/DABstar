@@ -48,7 +48,6 @@
 #include "spectrum-viewer.h"
 #include "cir-viewer.h"
 #include "openfiledialog.h"
-#include "http-handler.h"
 #include "device-selector.h"
 #include "configuration.h"
 #include "wav_writer.h"
@@ -73,6 +72,7 @@ class IAudioOutput;
 class TechData;
 class CEPGDecoder;
 class EpgDecoder;
+class MapHttpServer;
 
 struct SDabService
 {
@@ -219,7 +219,7 @@ private:
   TiiHandler mTiiHandler{};
   TiiListDisplay mTiiListDisplay;
   OpenFileDialog mOpenFileDialog;
-  QScopedPointer<HttpHandler> mpHttpHandler;
+  QScopedPointer<MapHttpServer> mpHttpHandler;
   ProcessParams mProcessParams;
   const QString mVersionStr{PRJ_VERS};
   QScopedPointer<FibContentTable> mpFibContentTable;
@@ -443,7 +443,7 @@ public slots:
   void slot_handle_tii_collisions(bool);
   void slot_handle_tii_threshold(i32);
   void slot_handle_tii_subid(i32);
-  void slot_http_terminate();
+  void _slot_http_terminate();
 
   void closeEvent(QCloseEvent * event) override;
 

@@ -32,95 +32,168 @@
 #include  <cstdio>
 #include  <cstdlib>
 #include  <cstring>
-#include  <sys/types.h>
 #include  <QDesktopServices>
-
-#if !defined(__MINGW32__) && !defined(_WIN32)
-#include  <unistd.h>
-#include  <sys/socket.h>
-#include  <fcntl.h>
-#include  <netinet/in.h>
-#include  <netdb.h>
-#include  <arpa/inet.h>
-#else
-  #include  <winsock2.h>
-  #include  <windows.h>
-  #include  <ws2tcpip.h>
-#endif
+#include  <QUrl>
+#include  <QFile>
+#include  <QByteArray>
+#include  <QDataStream>
 
 #include  "http-handler.h"
 #include  "dabradio.h"
 
-HttpHandler::HttpHandler(DabRadio * parent, const QString & mapPort, const QString & browserAddress, cf32 homeAddress, const QString & saveName, bool autoBrowser_off)
+// #if !defined(__MINGW32__) && !defined(_WIN32)
+// #include  <unistd.h>
+// #include  <sys/socket.h>
+// #include  <fcntl.h>
+// #include  <netinet/in.h>
+// #include  <netdb.h>
+// #include  <arpa/inet.h>
+// #else
+//   #include  <winsock2.h>
+//   #include  <windows.h>
+//   #include  <ws2tcpip.h>
+// #endif
+
+#include  "http-handler.h"
+#include  "dabradio.h"
+
+MapHttpServer::MapHttpServer(DabRadio * parent, const QString & mapPort, const QString & browserAddress, cf32 homeAddress, const QString & saveName, bool autoBrowser_off)
+  : parent(parent)
+  , mHttpAddress(browserAddress + ":" + mapPort)
+  , mHttpPort(mapPort)
+  , mAutoBrowserOff(autoBrowser_off)
+  , mHomeLocation(homeAddress)
 {
-  this->parent = parent;
-  this->mapPort = mapPort;
-  QString temp = browserAddress + ":" + mapPort;
-  this->homeAddress = homeAddress;
-  this->autoBrowser_off = autoBrowser_off;
-#if defined(__MINGW32__) || defined(_WIN32)
-  this->browserAddress = temp.toStdWString();
-#else
-  this->browserAddress = temp.toStdString();
-#endif
-  this->running.store(false);
+  mTcpServer = new QTcpServer(this);
 
-  connect(this, &HttpHandler::signal_terminating, parent, &DabRadio::slot_http_terminate);
+  connect(mTcpServer, &QTcpServer::newConnection, this, &MapHttpServer::_slot_new_connection);
+  connect(this, &MapHttpServer::signal_terminating, parent, &DabRadio::_slot_http_terminate);
 
-  saveFile = fopen(saveName.toUtf8().data(), "w");
+  mpCsvFP = fopen(saveName.toUtf8().data(), "w");
 
-  if (saveFile != nullptr)
+  if (mpCsvFP != nullptr)
   {
-    fprintf(saveFile, "Home location; %f; %f\n\n", real(homeAddress), imag(homeAddress));
-    fprintf(saveFile, "channel; latitude; longitude;transmitter;date and time; mainId; subId; distance; azimuth; power\n\n");
+    fprintf(mpCsvFP, "Home location; %f; %f\n\n", real(homeAddress), imag(homeAddress));
+    fprintf(mpCsvFP, "channel; latitude; longitude;transmitter;date and time; mainId; subId; distance; azimuth; power\n\n");
   }
-  alreadyLoggedTransmitters.clear();
+  mAlreadyLoggedTransmitters.clear();
   start();
 }
 
-HttpHandler::~HttpHandler()
+MapHttpServer::~MapHttpServer()
 {
-  if (running.load())
+  stop();
+
+  if (mpCsvFP != nullptr)
   {
-    running.store(false);
-    threadHandle.join();
-  }
-  if (saveFile != nullptr)
-  {
-    fclose(saveFile);
+    fclose(mpCsvFP);
   }
 }
 
-void HttpHandler::start()
+void MapHttpServer::start()
 {
-  threadHandle = std::thread(&HttpHandler::run, this);
-
-  if (autoBrowser_off)
+  if (!mTcpServer->listen(QHostAddress::Any, mHttpPort.toInt()))
   {
+    qCritical() << "HttpHandler: Failed to listen on port" << mHttpPort;
+    emit signal_terminating();
     return;
   }
 
-#if !defined(__MINGW32__) && !defined(_WIN32)
-  if (!QDesktopServices::openUrl(QUrl(QString::fromStdString((browserAddress)))))
-#else
-  if (!QDesktopServices::openUrl(QUrl(QString::fromStdWString((browserAddress)))))
-#endif
+  if (!mAutoBrowserOff && !QDesktopServices::openUrl(QUrl(mHttpAddress)))
   {
-    qCritical() << "Failed to open URL:" << browserAddress;
+    qCritical() << "Failed to open URL:" << mHttpAddress;
   }
 }
 
-void HttpHandler::stop()
+void MapHttpServer::stop()
 {
-  if (running.load())
+  if (mTcpServer->isListening())
   {
-    running.store(false);
-    threadHandle.join();
+    mTcpServer->close();
   }
 }
 
+void MapHttpServer::_slot_new_connection()
+{
+  while (mTcpServer->hasPendingConnections())
+  {
+    const QTcpSocket * socket = mTcpServer->nextPendingConnection();
+    connect(socket, &QTcpSocket::readyRead, this, &MapHttpServer::_slot_ready_read);
+    connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
+  }
+}
+
+void MapHttpServer::_slot_ready_read()
+{
+  QTcpSocket * socket = qobject_cast<QTcpSocket*>(sender());
+  if (!socket) return;
+
+  // Read available data (up to 4096 as in original logic)
+  QByteArray buffer = socket->read(4096);
+  if (buffer.isEmpty()) return;
+
+  bool keepalive;
+  int httpver = (buffer.contains("HTTP/1.1")) ? 11 : 10;
+  if (httpver == 11)
+  {
+    // HTTP 1.1 defaults to keep-alive, unless close is specified.
+    keepalive = !buffer.contains("Connection: close");
+  }
+  else
+  {
+    // httpver == 10
+    keepalive = buffer.contains("Connection: keep-alive");
+  }
+
+  /* Identify the URL. */
+  int firstSpace = buffer.indexOf(' ');
+  if (firstSpace == -1) return;
+  int secondSpace = buffer.indexOf(' ', firstSpace + 1);
+  if (secondSpace == -1) return;
+
+  QByteArray url = buffer.mid(firstSpace + 1, secondSpace - firstSpace - 1);
+
+  std::string content;
+  std::string ctype;
+
+  //	 "/" -> Our google map application.
+  //	 "/data.json" -> Our ajax request to update planes. */
+  if (url.contains("/data.json"))
+  {
+    content = _conv_transmitter_list_to_json();
+    if (!content.empty())
+    {
+      ctype = "application/json;charset=utf-8";
+    }
+  }
+  else
+  {
+    content = _gen_html_code(mHomeLocation);
+    ctype = "text/html;charset=utf-8";
+  }
+
+  //	Create the header
+  char hdr[2048];
+  sprintf(hdr, "HTTP/1.1 200 OK\r\n"
+          "Server: DABstar\r\n"
+          "Content-Type: %s\r\n"
+          "Connection: %s\r\n"
+          "Content-Length: %d\r\n"
+          "\r\n", ctype.c_str(), keepalive ? "keep-alive" : "close", (i32)content.length());
+
+  socket->write(hdr, strlen(hdr));
+  socket->write(content.c_str(), content.length());
+
+  if (!keepalive)
+  {
+    socket->disconnectFromHost();
+  }
+}
+
+
+
 #if !defined(__MINGW32__) && !defined(_WIN32)
-void HttpHandler::run()
+void MapHttpServer::run()
 {
   char buffer[4096];
   bool keepalive;
@@ -145,7 +218,7 @@ void HttpHandler::run()
   setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(i32));
   svr_addr.sin_family = AF_INET;
   svr_addr.sin_addr.s_addr = INADDR_ANY;
-  svr_addr.sin_port = htons(mapPort.toInt());
+  svr_addr.sin_port = htons(mHttpPort.toInt());
 
   if (::bind(ListenSocket, (struct sockaddr*)&svr_addr, sizeof(svr_addr)) == -1)
   {
@@ -208,8 +281,8 @@ void HttpHandler::run()
       bool jsonUpdate = false;
       if (strstr(url, "/data.json"))
       {
-        content = coordinatesToJson(transmitterList);
-        transmitterList.clear();
+        content = coordinatesToJson(mTransmitters);
+        mTransmitters.clear();
 
         if (content != "")
         {
@@ -219,7 +292,7 @@ void HttpHandler::run()
       }
       else
       {
-        content = theMap(homeAddress);
+        content = _gen_html_code(mHomeLocation);
         ctype = "text/html;charset=utf-8";
       }
 
@@ -261,7 +334,8 @@ void HttpHandler::run()
 //
 //	windows version
 //
-void HttpHandler::run()
+#if 0
+void MapHttpServer::run()
 {
   char buffer[4096];
   bool keepalive;
@@ -288,7 +362,7 @@ void HttpHandler::run()
   hints.ai_flags = AI_PASSIVE;
 
   //	Resolve the server address and port
-  iResult = getaddrinfo(nullptr, mapPort.toLatin1().data(), &hints, &result);
+  iResult = getaddrinfo(nullptr, mHttpPort.toLatin1().data(), &hints, &result);
   if (iResult != 0)
   {
     WSACleanup();
@@ -397,8 +471,8 @@ L1:
       //bool jsonUpdate = false;
       if (strstr(url, "/data.json"))
       {
-        content = coordinatesToJson(transmitterList);
-        transmitterList.clear();
+        content = coordinatesToJson(mTransmitters);
+        mTransmitters.clear();
         if (content != "")
         {
           ctype = "application/json;charset=utf-8";
@@ -408,7 +482,7 @@ L1:
       }
       else
       {
-        content = theMap(homeAddress);
+        content = _gen_html_code(mHomeLocation);
         ctype = "text/html;charset=utf-8";
       }
       //	Create the header
@@ -440,16 +514,17 @@ L1:
   running.store(false);
   emit  signal_terminating();
 }
+#endif
 
 #endif
 
-std::string HttpHandler::theMap(cf32 homeAddress) const
+std::string MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
 {
   std::string res;
   i32 bodySize;
   char * body;
-  const std::string latitude = std::to_string(real(homeAddress));
-  const std::string longitude = std::to_string(imag(homeAddress));
+  const std::string latitude = std::to_string(real(iHomeLocator));
+  const std::string longitude = std::to_string(imag(iHomeLocator));
   i32 teller = 0;
   i32 params = 0;
 
@@ -526,55 +601,60 @@ std::string dotNumber(f32 f)
 }
 
 //
-std::string HttpHandler::coordinatesToJson(const std::vector<SHttpData> & t)
+std::string MapHttpServer::_conv_transmitter_list_to_json()
 {
-  char buf[512];
-  QString Jsontxt;
+  std::lock_guard<std::mutex> lock(mMutex);
 
-  if (t.size() == 0)
+  std::array<char, 512> buf;
+
+  if (mTransmitters.empty())
     return "";
-  Jsontxt += "[\n";
-  locker.lock();
-  // the Target
-  for (u32 i = 0; i < t.size(); i++)
+
+  QString jsonTxt = "[\n";
+
+  for (u32 i = 0; i < mTransmitters.size(); i++)
   {
     if (i > 0)
-      Jsontxt += ",\n";
-    snprintf(buf,
-             512,
+    {
+      jsonTxt += ",\n";
+    }
+
+    const SHttpData & t = mTransmitters[i];
+    snprintf(buf.data(),
+             buf.size(),
              "{\"type\":%d, \"lat\":%s, \"lon\":%s, \"name\":\"%s\", \"channel\":\"%s\", \"mainId\":%d, \"subId\":%d, \"strength\":%d, \"dist\":%d, \"azimuth\":%d, \"power\":%d, \"altitude\":%d, \"height\":%d, \"dir\":\"%s\", \"pol\":\"%s\", \"nonetsi\":\"%s\"}",
-             t[i].type,
-             dotNumber(real(t[i].coords)).c_str(),
-             dotNumber(imag(t[i].coords)).c_str(),
-             t[i].transmitterName.toUtf8().data(),
-             t[i].channelName.toUtf8().data(),
-             t[i].mainId,
-             t[i].subId,
-             (i32)(t[i].strength * 10),
-             t[i].distance,
-             t[i].azimuth,
-             (i32)(t[i].power * 100),
-             t[i].altitude,
-             t[i].height,
-             t[i].direction.toUtf8().data(),
-             t[i].polarization.toUtf8().data(),
-             t[i].non_etsi ? ", non-ETSI phases" : "");
-    Jsontxt += QString(buf);
+             t.type,
+             dotNumber(real(t.coords)).c_str(),
+             dotNumber(imag(t.coords)).c_str(),
+             t.transmitterName.toUtf8().data(),
+             t.channelName.toUtf8().data(),
+             t.mainId,
+             t.subId,
+             (i32)(t.strength * 10),
+             t.distance,
+             t.azimuth,
+             (i32)(t.power * 100),
+             t.altitude,
+             t.height,
+             t.direction.toUtf8().data(),
+             t.polarization.toUtf8().data(),
+             t.non_etsi ? ", non-ETSI phases" : "");
+    jsonTxt += QString(buf.data());
   }
-  locker.unlock();
-  Jsontxt += "\n]\n";
-  //fprintf(stderr, "Json = %s\n", Jsontxt.toLatin1().data());
-  return Jsontxt.toStdString();
+
+  mTransmitters.clear();
+  jsonTxt += "\n]\n";
+  return jsonTxt.toStdString();
 }
 
-void HttpHandler::put_data(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
-                           const f32 strength, const i32 distance, const i32 azimuth, const bool non_etsi)
+void MapHttpServer::put_data(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
+                             const f32 strength, const i32 distance, const i32 azimuth, const bool non_etsi)
 {
   const cf32 target = cf32(tr->latitude, tr->longitude);
 
-  for (u32 i = 0; i < transmitterList.size(); i++)
+  for (u32 i = 0; i < mTransmitters.size(); i++)
   {
-    if (transmitterList[i].coords == target)
+    if (mTransmitters[i].coords == target)
       return;
   }
 
@@ -598,21 +678,21 @@ void HttpHandler::put_data(const u8 type, const STiiDataEntry * const tr, const 
   t.frequency = tr->frequency;
   t.direction = tr->direction;
   t.non_etsi = non_etsi;
-  locker.lock();
-  transmitterList.push_back(t);
-  locker.unlock();
+  mMutex.lock();
+  mTransmitters.push_back(t);
+  mMutex.unlock();
 
   // log transmitter data to CSV file but ignore already set transmitters
-  for (u32 i = 0; i < alreadyLoggedTransmitters.size(); i++)
+  for (u32 i = 0; i < mAlreadyLoggedTransmitters.size(); i++)
   {
-    if ((alreadyLoggedTransmitters.at(i).transmitterName == tr->transmitterName) &&
-        (alreadyLoggedTransmitters.at(i).channelName == tr->channel))
+    if ((mAlreadyLoggedTransmitters.at(i).transmitterName == tr->transmitterName) &&
+        (mAlreadyLoggedTransmitters.at(i).channelName == tr->channel))
       return;
   }
 
-  if ((saveFile != nullptr) && ((type != MAP_RESET) && (type != MAP_FRAME)))
+  if ((mpCsvFP != nullptr) && ((type != MAP_RESET) && (type != MAP_FRAME)))
   {
-    fprintf(saveFile,
+    fprintf(mpCsvFP,
             "%s; %f; %f; %s; %s; %d; %d; %f; %d; %d; %f; %d; %d\n",
             tr->channel.toUtf8().data(),
             real(target),
@@ -627,6 +707,6 @@ void HttpHandler::put_data(const u8 type, const STiiDataEntry * const tr, const 
             tr->power,
             tr->altitude,
             tr->height);
-    alreadyLoggedTransmitters.push_back(t);
+    mAlreadyLoggedTransmitters.push_back(t);
   }
 }
