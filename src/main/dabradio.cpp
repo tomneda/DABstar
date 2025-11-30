@@ -1560,10 +1560,7 @@ void DabRadio::start_channel(const QString & iChannel, const u32 iFastSelectSId 
 
   if (mpHttpHandler != nullptr)
   {
-    STiiDataEntry theTransmitter;
-    theTransmitter.latitude = 0;
-    theTransmitter.longitude = 0;
-    mpHttpHandler->add_location_entry(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
+    mpHttpHandler->add_transmitter_location_entry(MAP_RESET, nullptr, "", 0, 0, 0, false);
   }
   mTransmitterIds.clear();
 
@@ -1631,10 +1628,7 @@ void DabRadio::stop_channel()
 
   if (mpHttpHandler != nullptr)
   {
-    STiiDataEntry theTransmitter;
-    theTransmitter.latitude = 0;
-    theTransmitter.longitude = 0;
-    mpHttpHandler->add_location_entry(MAP_RESET, &theTransmitter, "", 0, 0, 0, false);
+    mpHttpHandler->add_transmitter_location_entry(MAP_RESET, nullptr, "", 0, 0, 0, false);
   }
 
   ui->transmitter_country->setText("");
@@ -2048,10 +2042,7 @@ void DabRadio::slot_http_terminate()
 
   if (mpHttpHandler != nullptr)
   {
-    STiiDataEntry theTransmitter;
-    theTransmitter.latitude = 0;
-    theTransmitter.longitude = 0;
-    mpHttpHandler->add_location_entry(MAP_CLOSE, &theTransmitter, "", 0, 0, 0, false);
+    mpHttpHandler->add_transmitter_location_entry(MAP_CLOSE, nullptr, "", 0, 0, 0, false);
     usleep(250000);
     mpHttpHandler.reset();
   }

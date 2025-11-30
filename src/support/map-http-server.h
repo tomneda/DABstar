@@ -33,7 +33,7 @@ public:
   void start();
   void stop();
 
-  void add_location_entry(u8 type, const STiiDataEntry * tr, const QString & dateTime, f32 strength, i32 distance, i32 azimuth, bool non_etsi);
+  void add_transmitter_location_entry(u8 type, const STiiDataEntry * tr, const QString & dateTime, f32 strength, i32 distance, i32 azimuth, bool non_etsi);
 
 private:
   struct SHttpData

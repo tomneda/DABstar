@@ -91,26 +91,26 @@ void MapHttpServer::_slot_new_connection()
 
 void MapHttpServer::_slot_ready_read()
 {
-  QTcpSocket * socket = qobject_cast<QTcpSocket*>(sender());
+  QTcpSocket * const socket = qobject_cast<QTcpSocket*>(sender());
   if (!socket) return;
 
   // Read available data (up to 4096 as in original logic)
   const QByteArray buffer = socket->read(4096);
   if (buffer.isEmpty()) return;
 
-  bool keepalive;
+  bool keepAlive;
 
   const int httpVer = (buffer.contains("HTTP/1.1")) ? 11 : 10;
 
   if (httpVer == 11)
   {
     // HTTP 1.1 defaults to keep-alive, unless close is specified.
-    keepalive = !buffer.contains("Connection: close");
+    keepAlive = !buffer.contains("Connection: close");
   }
   else
   {
     // httpver == 10
-    keepalive = buffer.contains("Connection: keep-alive");
+    keepAlive = buffer.contains("Connection: keep-alive");
   }
 
   /* Identify the URL. */
@@ -119,16 +119,15 @@ void MapHttpServer::_slot_ready_read()
   int secondSpace = buffer.indexOf(' ', firstSpace + 1);
   if (secondSpace == -1) return;
 
-  QByteArray url = buffer.mid(firstSpace + 1, secondSpace - firstSpace - 1);
+  const QByteArray url = buffer.mid(firstSpace + 1, secondSpace - firstSpace - 1);
 
   QString content;
   QString ctype;
 
-  //	 "/" -> Our google map application.
-  //	 "/data.json" -> Our ajax request to update planes. */
-  if (url.contains("/data.json"))
+  if (url.contains("/data.json")) // ajax request
   {
     content = _move_transmitter_list_to_json();
+
     if (!content.isEmpty())
     {
       ctype = "application/json;charset=utf-8";
@@ -140,22 +139,18 @@ void MapHttpServer::_slot_ready_read()
     ctype = "text/html;charset=utf-8";
   }
 
-  //	Create the header
-  std::array<char, 2048> header;
+  const QString header = QString("HTTP/1.1 200 OK\r\n"
+                                 "Server: DABstar\r\n"
+                                 "Content-Type: %1\r\n"
+                                 "Connection: %2\r\n"
+                                 "Content-Length: %3\r\n"
+                                 "\r\n"
+                                ).arg(ctype).arg(keepAlive ? "keep-alive" : "close").arg(content.length());
 
-  snprintf(header.data(),
-           header.size(),
-           "HTTP/1.1 200 OK\r\n"
-           "Server: DABstar\r\n"
-           "Content-Type: %s\r\n"
-           "Connection: %s\r\n"
-           "Content-Length: %d\r\n"
-           "\r\n", ctype.toStdString().c_str(), keepalive ? "keep-alive" : "close", (i32)content.length());
+  socket->write(header.toLatin1());
+  socket->write(content.toUtf8());
 
-  socket->write(header.data(), strlen(header.data()));
-  socket->write(content.toStdString().c_str(), content.length());
-
-  if (!keepalive)
+  if (!keepAlive)
   {
     socket->disconnectFromHost();
   }
@@ -167,66 +162,62 @@ QString MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
   const std::string longitude = std::to_string(imag(iHomeLocator));
   i32 idx = 0;
   i32 paramPatchCnt = 0;
-  QByteArray body;
 
-  // read map file from resource file
   QFile file(":res/map-viewer.html");
 
-  if (file.open(QFile::ReadOnly))
-  {
-    QByteArray record_data(1, 0);
-    QDataStream in(&file);
-    const i32 bodySize = file.size();
-    body.resize(bodySize + 40 /*place for inserted location data*/);
-
-    while (!in.atEnd())
-    {
-      in.readRawData(record_data.data(), 1);
-
-      const i32 cc = (*record_data.constData());
-
-      if (cc == '$')
-      {
-        if (paramPatchCnt == 0)
-        {
-          for (i32 i = 0; latitude.c_str()[i] != 0; i++)
-          {
-            if (latitude.c_str()[i] == ',')
-              body[idx++] = '.';
-            else
-              body[idx++] = latitude.c_str()[i];
-          }
-          paramPatchCnt++;
-        }
-        else if (paramPatchCnt == 1)
-        {
-          for (i32 i = 0; longitude.c_str()[i] != 0; i++)
-          {
-            if (longitude.c_str()[i] == ',')
-              body[idx++] = '.';
-            else
-              body[idx++] = longitude.c_str()[i];
-          }
-          paramPatchCnt++;
-        }
-        else
-          body[idx++] = (char)cc;
-      }
-      else
-        body[idx++] = (char)cc;
-    }
-  }
-  else
+  if (!file.open(QFile::ReadOnly))
   {
     qCritical() << "Failed to open map file:" << file.fileName();
     return "";
   }
 
-  body[idx++] = 0;
+  QByteArray record_data(1, 0);
+  QDataStream in(&file);
+  const i32 bodySize = file.size();
+  QByteArray body(bodySize + 40 /*place for inserted location data*/, Qt::Uninitialized);
 
-  const QString res = std::move(body);
+  while (!in.atEnd())
+  {
+    in.readRawData(record_data.data(), 1);
+
+    const char cc = *record_data.constData();
+
+    if (cc == '$')
+    {
+      if (paramPatchCnt == 0)
+      {
+        for (i32 i = 0; latitude.c_str()[i] != 0; i++)
+        {
+          if (latitude.c_str()[i] == ',')
+            body[idx++] = '.';
+          else
+            body[idx++] = latitude.c_str()[i];
+        }
+        paramPatchCnt++;
+      }
+      else if (paramPatchCnt == 1)
+      {
+        for (i32 i = 0; longitude.c_str()[i] != 0; i++)
+        {
+          if (longitude.c_str()[i] == ',')
+            body[idx++] = '.';
+          else
+            body[idx++] = longitude.c_str()[i];
+        }
+        paramPatchCnt++;
+      }
+      else
+        body[idx++] = cc;
+    }
+    else
+      body[idx++] = cc;
+  }
+
+  body[idx++] = 0;
+  assert(idx <= body.size());
+
   file.close();
-  return res;
+  return std::move(body);
 }
 
 QString MapHttpServer::_move_transmitter_list_to_json()
@@ -269,9 +260,21 @@ QString MapHttpServer::_move_transmitter_list_to_json()
   return QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
 }
 
-void MapHttpServer::add_location_entry(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
-                                       const f32 strength, const i32 distance, const i32 azimuth, const bool non_etsi)
+void MapHttpServer::add_transmitter_location_entry(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
+                                                   const f32 strength, const i32 distance, const i32 azimuth, const bool non_etsi)
 {
+  // we only want to set a MAP_RESET or MAP_CLOSE?
+  if (type != MAP_NORM_TRANS)
+  {
+    SHttpData t{};
+    t.type = type;
+    mMutex.lock();
+    mTransmitters.clear();
+    mTransmitters.push_back(t);
+    mMutex.unlock();
+    return;
+  }
+
   const cf32 target = cf32(tr->latitude, tr->longitude);
 
   for (u32 i = 0; i < mTransmitters.size(); i++)
@@ -312,7 +315,7 @@ void MapHttpServer::add_location_entry(const u8 type, const STiiDataEntry * cons
       return;
   }
 
-  if (mpCsvFP != nullptr && type == MAP_NORM_TRANS)
+  if (mpCsvFP != nullptr)
   {
     fprintf(mpCsvFP,
             "%s; %f; %f; %s; %s; %d; %d; %f; %d; %d; %f; %d; %d\n",
