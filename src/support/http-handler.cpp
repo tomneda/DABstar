@@ -33,6 +33,7 @@
 #include  <cstdlib>
 #include  <cstring>
 #include  <sys/types.h>
+#include  <QDesktopServices>
 
 #if !defined(__MINGW32__) && !defined(_WIN32)
 #include  <unistd.h>
@@ -41,7 +42,6 @@
 #include  <netinet/in.h>
 #include  <netdb.h>
 #include  <arpa/inet.h>
-#include  <QDesktopServices>
 #else
   #include  <winsock2.h>
   #include  <windows.h>
@@ -100,7 +100,11 @@ void HttpHandler::start()
     return;
   }
 
-  if (!QDesktopServices::openUrl(QUrl(browserAddress.c_str())))
+#if !defined(__MINGW32__) && !defined(_WIN32)
+  if (!QDesktopServices::openUrl(QUrl(QString::fromStdString((browserAddress)))))
+#else
+  if (!QDesktopServices::openUrl(QUrl(QString::fromStdWString((browserAddress)))))
+#endif
   {
     qCritical() << "Failed to open URL:" << browserAddress;
   }

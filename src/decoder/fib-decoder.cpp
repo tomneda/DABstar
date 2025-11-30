@@ -974,7 +974,7 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
 
   if (mFibLoadingState < EFibLoadingState::S3_FullyAudioDataLoaded)
   {
-    qWarning() << "Audi FIG data seems inconsistent or not complete. Trying to activate at least the remaining audio services...";
+    qWarning() << "Audio FIG data seems inconsistent or not complete. Trying to activate at least the remaining audio services...";
     mFibLoadingState = EFibLoadingState::S3_FullyAudioDataLoaded;
     emit signal_fib_loaded_state(EFibLoadingState::S3_FullyAudioDataLoaded);
   }
