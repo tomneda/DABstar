@@ -33,7 +33,7 @@ MapHttpServer::MapHttpServer(DabRadio * parent, const QString & mapPort, const Q
   mTcpServer = new QTcpServer(this);
 
   connect(mTcpServer, &QTcpServer::newConnection, this, &MapHttpServer::_slot_new_connection);
-  // connect(this, &MapHttpServer::signal_terminating, parent, &DabRadio::_slot_http_terminate);
+  // connect(this, &MapHttpServer::signal_terminating, parent, &DabRadio::slot_http_terminate);
 
   mpCsvFP = fopen(saveName.toUtf8().data(), "w");
 
@@ -84,6 +84,7 @@ void MapHttpServer::_slot_new_connection()
   while (mTcpServer->hasPendingConnections())
   {
     const QTcpSocket * socket = mTcpServer->nextPendingConnection();
+    qDebug() << "New connection from" << socket->peerAddress();
     connect(socket, &QTcpSocket::readyRead, this, &MapHttpServer::_slot_ready_read);
     connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
   }
@@ -121,7 +122,7 @@ void MapHttpServer::_slot_ready_read()
 
   const QByteArray url = buffer.mid(firstSpace + 1, secondSpace - firstSpace - 1);
 
-  QString content;
+  QByteArray content;
   QString ctype;
 
   if (url.contains("/data.json")) // ajax request
@@ -139,24 +140,27 @@ void MapHttpServer::_slot_ready_read()
     ctype = "text/html;charset=utf-8";
   }
 
-  const QString header = QString("HTTP/1.1 200 OK\r\n"
-                                 "Server: DABstar\r\n"
-                                 "Content-Type: %1\r\n"
-                                 "Connection: %2\r\n"
-                                 "Content-Length: %3\r\n"
-                                 "\r\n"
-                                ).arg(ctype).arg(keepAlive ? "keep-alive" : "close").arg(content.length());
+  const QByteArray header = QString("HTTP/1.1 200 OK\r\n"
+                                    "Server: DABstar\r\n"
+                                    "Content-Type: %1\r\n"
+                                    "Connection: %2\r\n"
+                                    "Content-Length: %3\r\n"
+                                    "\r\n"
+                                   ).arg(ctype)
+                                    .arg(keepAlive ? "keep-alive" : "close")
+                                    .arg(content.size()).toLatin1();
 
-  socket->write(header.toLatin1());
-  socket->write(content.toUtf8());
+  socket->write(header);
+  socket->write(content);
 
   if (!keepAlive)
   {
     socket->disconnectFromHost();
+    qDebug() << "Closing socket";
   }
 }
 
-QString MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
+QByteArray MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
 {
   const std::string latitude = std::to_string(real(iHomeLocator));
   const std::string longitude = std::to_string(imag(iHomeLocator));
@@ -213,14 +217,16 @@ QString MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
       body[idx++] = cc;
   }
 
+  file.close();
+
   body[idx++] = 0;
   assert(idx <= body.size());
+  body.resize(idx); // TODO: use insert
 
-  file.close();
-  return std::move(body);
+  return body;
 }
 
-QString MapHttpServer::_move_transmitter_list_to_json()
+QByteArray MapHttpServer::_move_transmitter_list_to_json()
 {
   std::lock_guard<std::mutex> lock(mMutex);
 
@@ -235,8 +241,8 @@ QString MapHttpServer::_move_transmitter_list_to_json()
   {
     QJsonObject jsonObj;
     jsonObj["type"] = t.type;
-    jsonObj["lat"] = real(t.coords);
-    jsonObj["lon"] = imag(t.coords);
+    jsonObj["lat"] = QString::number(t.latitude,  'f', 6).toDouble();  // TODO: this is a trick to represent only the float precision in the JSON
+    jsonObj["lon"] = QString::number(t.longitude, 'f', 6).toDouble();  // -"-
     jsonObj["name"] = t.transmitterName;
     jsonObj["channel"] = t.channelName;
     jsonObj["mainId"] = t.mainId;
@@ -257,7 +263,7 @@ QString MapHttpServer::_move_transmitter_list_to_json()
   mTransmitters.clear();
 
   const QJsonDocument doc(jsonArray);
-  return QString::fromUtf8(doc.toJson(QJsonDocument::Indented));
+  return doc.toJson(QJsonDocument::Compact);
 }
 
 void MapHttpServer::add_transmitter_location_entry(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
@@ -275,11 +281,9 @@ void MapHttpServer::add_transmitter_location_entry(const u8 type, const STiiData
     return;
   }
 
-  const cf32 target = cf32(tr->latitude, tr->longitude);
-
-  for (u32 i = 0; i < mTransmitters.size(); i++)
+  for (const auto & t : mTransmitters)
   {
-    if (mTransmitters[i].coords == target)
+    if (t.latitude == tr->latitude && t.longitude == tr->longitude && t.transmitterName == tr->transmitterName)
       return;
   }
 
@@ -287,7 +291,8 @@ void MapHttpServer::add_transmitter_location_entry(const u8 type, const STiiData
   t.type = type;
   t.ensemble = tr->ensemble;
   t.Eid = tr->Eid;
-  t.coords = target;
+  t.latitude = tr->latitude;
+  t.longitude = tr->longitude;
   t.transmitterName = tr->transmitterName;
   t.channelName = tr->channel;
   t.dateTime = dateTime;
@@ -320,8 +325,8 @@ void MapHttpServer::add_transmitter_location_entry(const u8 type, const STiiData
     fprintf(mpCsvFP,
             "%s; %f; %f; %s; %s; %d; %d; %f; %d; %d; %f; %d; %d\n",
             tr->channel.toUtf8().data(),
-            real(target),
-            imag(target),
+            tr->latitude,
+            tr->longitude,
             tr->transmitterName.toUtf8().data(),
             t.dateTime.toUtf8().data(),
             tr->mainId,

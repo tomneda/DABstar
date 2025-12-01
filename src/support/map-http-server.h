@@ -39,7 +39,8 @@ private:
   struct SHttpData
   {
     u8 type;
-    cf32 coords;
+    f32 latitude;
+    f32 longitude;
     QString transmitterName;
     QString channelName;
     QString dateTime;
@@ -71,8 +72,8 @@ private:
   std::vector<SHttpData> mTransmitters;
   mutable std::mutex mMutex; // guards the list of mTransmitters
 
-  QString _gen_html_code(cf32 address) const;
-  QString _move_transmitter_list_to_json(); // mTransmitters is empty after call
+  QByteArray _gen_html_code(cf32 address) const;
+  QByteArray _move_transmitter_list_to_json(); // mTransmitters is empty after call
 
 private slots:
   void _slot_new_connection();
