@@ -34,7 +34,7 @@ public:
   void start();
   void stop();
 
-  void add_transmitter_location_entry(u8 iType, const STiiDataEntry * ipTiiDataEntry, const QString & iDateTime, f32 iStrength, i32 iDistance, i32 iAzimuth, bool iNonEtsi);
+  void add_transmitter_location_entry(u8 iType, const STiiDataEntry * ipTiiDataEntry, const QString & iDateTime, f32 iStrength, f32 iDistance, f32 iAzimuth, bool iNonEtsi);
 
 private:
   struct SHttpData
@@ -52,8 +52,8 @@ private:
     u8 mainId;
     u8 subId;
     f32 strength;
-    i32 distance;
-    i32 azimuth;
+    f32 distance;
+    f32 azimuth;
     f32 power;
     f32 frequency;
     i32 altitude;

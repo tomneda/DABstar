@@ -310,7 +310,7 @@
        <item>
         <widget class="QCheckBox" name="cbSaveTransToCsv">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this is set, the transmitter descriptions visible on the map are also stored in a &amp;quot;.csv&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the httpHandler, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;While the HTTP map is shown, the transmitter descriptions are also stored in a &amp;quot;.csv&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the map HTTP server, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Save transmitters to CSV</string>

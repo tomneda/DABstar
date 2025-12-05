@@ -181,7 +181,7 @@ FILE * OpenFileDialog::open_log_file_ptr()
 
 QString OpenFileDialog::get_maps_file_name()
 {
-  return _open_file_dialog(PRJ_NAME "-Transmitters", sSettingContentStorageDir, "Text", ".txt");
+  return _open_file_dialog(PRJ_NAME "-Transmitters", sSettingContentStorageDir, "CSV", ".csv");
 }
 
 QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName)

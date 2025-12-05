@@ -813,7 +813,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
     {
       const QDateTime theTime = (Settings::Config::cbUseUtcTime.read().toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
       mpHttpHandler->add_transmitter_location_entry(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
-                                                    bd.strength_dB, (i32)bd.distance_km, (i32)bd.corner_deg, bd.isNonEtsiPhase);
+                                                    bd.strength_dB, bd.distance_km, bd.corner_deg, bd.isNonEtsiPhase);
     }
   }
 

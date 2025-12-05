@@ -44,8 +44,8 @@ MapHttpServer::MapHttpServer(DabRadio * ipDabRadio, const QString & iHttpPort, c
 
   if (mpCsvFP != nullptr)
   {
-    fprintf(mpCsvFP, "Home location; %f; %f\n\n", real(iHomeLocation), imag(iHomeLocation));
-    fprintf(mpCsvFP, "channel; latitude; longitude;transmitter;date and time; mainId; subId; distance; azimuth; power\n\n");
+    // fprintf(mpCsvFP, "Home location; %f; %f\n\n", real(iHomeLocation), imag(iHomeLocation));
+    fprintf(mpCsvFP, "Channel; Latitude; Longitude; Transmitter; Altitude; Height; Date and time; MainId; SubId; Strength; Distance; Azimuth; Power\n");
   }
 
   start();
@@ -272,7 +272,7 @@ QByteArray MapHttpServer::_move_transmitter_list_to_json()
 }
 
 void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDataEntry * const ipTiiDataEntry, const QString & iDateTime,
-                                                   const f32 iStrength, const i32 iDistance, const i32 iAzimuth, const bool iNonEtsi)
+                                                   const f32 iStrength, f32 iDistance, f32 iAzimuth, const bool iNonEtsi)
 {
   // we only want to set a MAP_RESET or MAP_CLOSE?
   if (iType != MAP_NORM_TRANS)
@@ -316,7 +316,7 @@ void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDat
   t.height = ipTiiDataEntry->height;
   t.polarization = ipTiiDataEntry->polarization;
   t.frequency = ipTiiDataEntry->frequency;
-  t.direction = ipTiiDataEntry->direction;
+  t.direction = (ipTiiDataEntry->direction.isEmpty() ? "undefined" : ipTiiDataEntry->direction);
   t.non_etsi = iNonEtsi;
 
   mMutex.lock();
@@ -336,20 +336,20 @@ void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDat
   if (mpCsvFP != nullptr)
   {
     fprintf(mpCsvFP,
-            "%s; %f; %f; %s; %s; %d; %d; %f; %d; %d; %f; %d; %d\n",
+            "%s; %f; %f; %s; %d; %d; %s; %d; %d; %.1f; %.1f; %.1f; %.3f\n",
             ipTiiDataEntry->channel.toUtf8().data(),
             ipTiiDataEntry->latitude,
             ipTiiDataEntry->longitude,
             ipTiiDataEntry->transmitterName.toUtf8().data(),
+            ipTiiDataEntry->altitude,
+            ipTiiDataEntry->height,
             t.dateTime.toUtf8().data(),
             ipTiiDataEntry->mainId,
             ipTiiDataEntry->subId,
             iStrength,
             iDistance,
             iAzimuth,
-            ipTiiDataEntry->power,
-            ipTiiDataEntry->altitude,
-            ipTiiDataEntry->height);
+            ipTiiDataEntry->power);
 
     mAlreadyLoggedTransmitters.push_back(t);
   }

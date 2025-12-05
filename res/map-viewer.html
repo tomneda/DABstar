@@ -123,7 +123,7 @@
                         'Polarization ' + target.pol.toUpperCase() + ', Direction ' + target.dir + '<br>' +
                         'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
                         ', Level ' + target.strength.toFixed(1) + 'dB' + '<br>' +
-                        'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br><br>';
+                        'Distance from home ' + target.dist.toFixed(1) + 'km ' + target.azimuth.toFixed(1) + '&#xb0' + '<br><br>';
 
         let yy = document.getElementById('selCount');
         yy.innerHTML = '<span style=\"font-weight:bold;">' + 'Number of transmitters: ' + transmitterIndex + '<br>' +
@@ -151,7 +151,7 @@
                        'Latitude ' + target.lat.toFixed(4) + '&#xb0' + ', Longitude ' + target.lon.toFixed(4) + '&#xb0' + '<br>' +
                        'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
                        ', Level ' + target.strength.toFixed(1) + 'dB' + '<br>' +
-                       'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br></p>'
+                       'Distance from home ' + target.dist.toFixed(1) + 'km ' + target.azimuth.toFixed(1) + '&#xb0' + '<br></p>'
       }
 
       function attemptClose(reason)
