@@ -730,7 +730,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
       ui->transmitter_coordinates->setText(a);
     }
 
-    const STiiDataEntry * pTr = mTiiHandler.get_transmitter_name((mChannel.realChannel ? mChannel.channelName : "any"), mChannel.Eid, tii.mainId, tii.subId);
+    const STiiDataEntry * pTr = mTiiHandler.get_transmitter_data((mChannel.realChannel ? mChannel.channelName : "any"), mChannel.Eid, tii.mainId, tii.subId);
     const bool dataValid = (pTr != nullptr);
 
     if (!dataValid)

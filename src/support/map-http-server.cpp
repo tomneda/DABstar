@@ -267,7 +267,7 @@ void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDat
     t.type = iType;
     mMutex.lock();
     mTransmitters.clear();
-    mTransmitters.push_back(t);
+    mTransmitters.emplace_back(t);
     mMutex.unlock();
     return;
   }

@@ -79,7 +79,7 @@ public:
   ~TiiHandler();
 
   bool fill_cache_from_tii_file(const QString &);
-  const STiiDataEntry * get_transmitter_name(const QString &, u16, u8, u8);
+  const STiiDataEntry * get_transmitter_data(const QString &iChannel, u16 iEid, u8 iMainId, u8 iSubId);
   [[nodiscard]] f32 distance(f32, f32, f32, f32) const;
   f32 corner(f32, f32, f32, f32) const;
   bool is_black(u16, u8, u8);

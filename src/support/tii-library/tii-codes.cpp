@@ -148,20 +148,17 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
   return dataLoaded;
 }
 
-const STiiDataEntry * TiiHandler::get_transmitter_name(const QString & channel,
-                                                    u16 Eid, u8 mainId, u8 subId)
+const STiiDataEntry * TiiHandler::get_transmitter_data(const QString & iChannel, const u16 iEid, const u8 iMainId, const u8 iSubId)
 {
-  //fprintf(stdout, "looking for %s %X %d %d\n", channel.toLatin1().data(), / Eid, mainId, subId);
-  const u64 key = STiiDataEntry::make_key_base(Eid, mainId, subId);
-
+  const u64 key = STiiDataEntry::make_key_base(iEid, iMainId, iSubId);
   const auto it = mContentCacheMap.find(key);
 
   if (it != mContentCacheMap.end())
   {
     const STiiDataEntry & ce = it->second;
-    if (channel != "any" && ce.channel != channel)
+    if (iChannel != "any" && ce.channel != iChannel)
     {
-      qWarning() << "TII database channel mismatch" << ce.channel << channel << "for EId/TII" << Eid << mainId << subId << "- Transmittername" << ce.transmitterName;
+      qWarning() << "TII database channel mismatch" << ce.channel << iChannel << "for EId/TII" << iEid << iMainId << iSubId << "- Transmitter name" << ce.transmitterName;
     }
     return &ce;
   }
