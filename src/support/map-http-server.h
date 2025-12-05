@@ -27,13 +27,13 @@ class MapHttpServer : public QObject
   Q_OBJECT
 
 public:
-  MapHttpServer(DabRadio *, const QString & mapPort, const QString & browserAddress, cf32 address, const QString & saveName, bool autoBrowse);
+  MapHttpServer(DabRadio *, const QString & iHttpPort, const QString & iHttpAddress, cf32 address, const QString & iCsvDumpName, bool autoBrowse);
   ~MapHttpServer() override;
 
   void start();
   void stop();
 
-  void add_transmitter_location_entry(u8 type, const STiiDataEntry * tr, const QString & dateTime, f32 strength, i32 distance, i32 azimuth, bool non_etsi);
+  void add_transmitter_location_entry(u8 iType, const STiiDataEntry * ipTiiDataEntry, const QString & iDateTime, f32 iStrength, i32 iDistance, i32 iAzimuth, bool iNonEtsi);
 
 private:
   struct SHttpData
@@ -60,7 +60,7 @@ private:
     bool non_etsi;
   };
 
-  const DabRadio * parent;
+  const DabRadio * mpDabRadio;
   const QString mHttpAddress;
   const QString mHttpPort;
   const bool mAutoBrowserOff;
@@ -72,7 +72,7 @@ private:
   std::vector<SHttpData> mTransmitters;
   mutable std::mutex mMutex; // guards the list of mTransmitters
 
-  QByteArray _gen_html_code(cf32 address) const;
+  QByteArray _gen_html_code() const;
   QByteArray _move_transmitter_list_to_json(); // mTransmitters is empty after call
 
 private slots:

@@ -23,26 +23,26 @@
 #include <QByteArray>
 #include <QDataStream>
 
-MapHttpServer::MapHttpServer(DabRadio * parent, const QString & mapPort, const QString & browserAddress, cf32 homeAddress, const QString & saveName, bool autoBrowser_off)
-  : parent(parent)
-  , mHttpAddress(browserAddress + ":" + mapPort)
-  , mHttpPort(mapPort)
-  , mAutoBrowserOff(autoBrowser_off)
-  , mHomeLocation(homeAddress)
+MapHttpServer::MapHttpServer(DabRadio * ipDabRadio, const QString & iHttpPort, const QString & iHttpAddress, cf32 iHomeLocation, const QString & iCsvDumpName, bool iAutoBrowserOff)
+  : mpDabRadio(ipDabRadio)
+  , mHttpAddress(iHttpAddress + ":" + iHttpPort)
+  , mHttpPort(iHttpPort)
+  , mAutoBrowserOff(iAutoBrowserOff)
+  , mHomeLocation(iHomeLocation)
 {
   mTcpServer = new QTcpServer(this);
 
   connect(mTcpServer, &QTcpServer::newConnection, this, &MapHttpServer::_slot_new_connection);
-  // connect(this, &MapHttpServer::signal_terminating, parent, &DabRadio::slot_http_terminate);
+  connect(this, &MapHttpServer::signal_terminating, mpDabRadio, &DabRadio::slot_http_terminate);
 
-  mpCsvFP = fopen(saveName.toUtf8().data(), "w");
+  mpCsvFP = fopen(iCsvDumpName.toUtf8().data(), "w");
 
   if (mpCsvFP != nullptr)
   {
-    fprintf(mpCsvFP, "Home location; %f; %f\n\n", real(homeAddress), imag(homeAddress));
+    fprintf(mpCsvFP, "Home location; %f; %f\n\n", real(iHomeLocation), imag(iHomeLocation));
     fprintf(mpCsvFP, "channel; latitude; longitude;transmitter;date and time; mainId; subId; distance; azimuth; power\n\n");
   }
-  mAlreadyLoggedTransmitters.clear();
+
   start();
 }
 
@@ -99,27 +99,15 @@ void MapHttpServer::_slot_ready_read()
   const QByteArray buffer = socket->read(4096);
   if (buffer.isEmpty()) return;
 
-  bool keepAlive;
 
   const int httpVer = (buffer.contains("HTTP/1.1")) ? 11 : 10;
-
-  if (httpVer == 11)
-  {
-    // HTTP 1.1 defaults to keep-alive, unless close is specified.
-    keepAlive = !buffer.contains("Connection: close");
-  }
-  else
-  {
-    // httpver == 10
-    keepAlive = buffer.contains("Connection: keep-alive");
-  }
+  const bool keepAlive = (httpVer == 11) ? !buffer.contains("Connection: close") : buffer.contains("Connection: keep-alive");
 
   /* Identify the URL. */
-  int firstSpace = buffer.indexOf(' ');
+  const int firstSpace = buffer.indexOf(' ');
   if (firstSpace == -1) return;
-  int secondSpace = buffer.indexOf(' ', firstSpace + 1);
+  const int secondSpace = buffer.indexOf(' ', firstSpace + 1);
   if (secondSpace == -1) return;
-
   const QByteArray url = buffer.mid(firstSpace + 1, secondSpace - firstSpace - 1);
 
   QByteArray content;
@@ -136,7 +124,7 @@ void MapHttpServer::_slot_ready_read()
   }
   else
   {
-    content = _gen_html_code(mHomeLocation);
+    content = _gen_html_code();
     ctype = "text/html;charset=utf-8";
   }
 
@@ -160,12 +148,10 @@ void MapHttpServer::_slot_ready_read()
   }
 }
 
-QByteArray MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
+QByteArray MapHttpServer::_gen_html_code() const
 {
-  const std::string latitude = std::to_string(real(iHomeLocator));
-  const std::string longitude = std::to_string(imag(iHomeLocator));
-  i32 idx = 0;
-  i32 paramPatchCnt = 0;
+  const std::string latitude  = std::to_string(real(mHomeLocation));
+  const std::string longitude = std::to_string(imag(mHomeLocation));
 
   QFile file(":res/map-viewer.html");
 
@@ -175,16 +161,17 @@ QByteArray MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
     return "";
   }
 
-  QByteArray record_data(1, 0);
   QDataStream in(&file);
-  const i32 bodySize = file.size();
-  QByteArray body(bodySize + 40 /*place for inserted location data*/, Qt::Uninitialized);
+  QByteArray body(file.size() + 40 /*place for inserted location data*/, Qt::Uninitialized);
+
+  QByteArray record_data(1, Qt::Uninitialized);
+  i32 idx = 0;
+  i32 paramPatchCnt = 0;
 
   while (!in.atEnd())
   {
-    in.readRawData(record_data.data(), 1);
-
-    const char cc = *record_data.constData();
+    char cc;
+    in.readRawData(&cc, 1);
 
     if (cc == '$')
     {
@@ -211,10 +198,14 @@ QByteArray MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
         paramPatchCnt++;
       }
       else
+      {
         body[idx++] = cc;
+      }
     }
     else
+    {
       body[idx++] = cc;
+    }
   }
 
   file.close();
@@ -228,7 +219,7 @@ QByteArray MapHttpServer::_gen_html_code(const cf32 iHomeLocator) const
 
 QByteArray MapHttpServer::_move_transmitter_list_to_json()
 {
-  std::lock_guard<std::mutex> lock(mMutex);
+  std::lock_guard lock(mMutex);
 
   if (mTransmitters.empty())
   {
@@ -266,14 +257,14 @@ QByteArray MapHttpServer::_move_transmitter_list_to_json()
   return doc.toJson(QJsonDocument::Compact);
 }
 
-void MapHttpServer::add_transmitter_location_entry(const u8 type, const STiiDataEntry * const tr, const QString & dateTime,
-                                                   const f32 strength, const i32 distance, const i32 azimuth, const bool non_etsi)
+void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDataEntry * const ipTiiDataEntry, const QString & iDateTime,
+                                                   const f32 iStrength, const i32 iDistance, const i32 iAzimuth, const bool iNonEtsi)
 {
   // we only want to set a MAP_RESET or MAP_CLOSE?
-  if (type != MAP_NORM_TRANS)
+  if (iType != MAP_NORM_TRANS)
   {
     SHttpData t{};
-    t.type = type;
+    t.type = iType;
     mMutex.lock();
     mTransmitters.clear();
     mTransmitters.push_back(t);
@@ -281,62 +272,71 @@ void MapHttpServer::add_transmitter_location_entry(const u8 type, const STiiData
     return;
   }
 
+  // check if entry was already added to transmitter list
   for (const auto & t : mTransmitters)
   {
-    if (t.latitude == tr->latitude && t.longitude == tr->longitude && t.transmitterName == tr->transmitterName)
+    if (t.latitude  == ipTiiDataEntry->latitude &&
+        t.longitude == ipTiiDataEntry->longitude &&
+        t.transmitterName == ipTiiDataEntry->transmitterName)
+    {
       return;
+    }
   }
 
   SHttpData t;
-  t.type = type;
-  t.ensemble = tr->ensemble;
-  t.Eid = tr->Eid;
-  t.latitude = tr->latitude;
-  t.longitude = tr->longitude;
-  t.transmitterName = tr->transmitterName;
-  t.channelName = tr->channel;
-  t.dateTime = dateTime;
-  t.mainId = tr->mainId;
-  t.subId = tr->subId;
-  t.strength = strength,
-  t.distance = distance;
-  t.azimuth = azimuth;
-  t.power = tr->power;
-  t.altitude = tr->altitude;
-  t.height = tr->height;
-  t.polarization = tr->polarization;
-  t.frequency = tr->frequency;
-  t.direction = tr->direction;
-  t.non_etsi = non_etsi;
+  t.type = iType;
+  t.ensemble = ipTiiDataEntry->ensemble;
+  t.Eid = ipTiiDataEntry->Eid;
+  t.latitude = ipTiiDataEntry->latitude;
+  t.longitude = ipTiiDataEntry->longitude;
+  t.transmitterName = ipTiiDataEntry->transmitterName;
+  t.channelName = ipTiiDataEntry->channel;
+  t.dateTime = iDateTime;
+  t.mainId = ipTiiDataEntry->mainId;
+  t.subId = ipTiiDataEntry->subId;
+  t.strength = iStrength,
+  t.distance = iDistance;
+  t.azimuth = iAzimuth;
+  t.power = ipTiiDataEntry->power;
+  t.altitude = ipTiiDataEntry->altitude;
+  t.height = ipTiiDataEntry->height;
+  t.polarization = ipTiiDataEntry->polarization;
+  t.frequency = ipTiiDataEntry->frequency;
+  t.direction = ipTiiDataEntry->direction;
+  t.non_etsi = iNonEtsi;
+
   mMutex.lock();
-  mTransmitters.push_back(t);
+  mTransmitters.emplace_back(t);
   mMutex.unlock();
 
-  // log transmitter data to CSV file but ignore already set transmitters
-  for (u32 i = 0; i < mAlreadyLoggedTransmitters.size(); i++)
+  // Log transmitter data to CSV file but ignore already set transmitters
+  for (auto & t : mAlreadyLoggedTransmitters)
   {
-    if ((mAlreadyLoggedTransmitters.at(i).transmitterName == tr->transmitterName) &&
-        (mAlreadyLoggedTransmitters.at(i).channelName == tr->channel))
+    if ((t.transmitterName == ipTiiDataEntry->transmitterName) &&
+        (t.channelName == ipTiiDataEntry->channel))
+    {
       return;
+    }
   }
 
   if (mpCsvFP != nullptr)
   {
     fprintf(mpCsvFP,
             "%s; %f; %f; %s; %s; %d; %d; %f; %d; %d; %f; %d; %d\n",
-            tr->channel.toUtf8().data(),
-            tr->latitude,
-            tr->longitude,
-            tr->transmitterName.toUtf8().data(),
+            ipTiiDataEntry->channel.toUtf8().data(),
+            ipTiiDataEntry->latitude,
+            ipTiiDataEntry->longitude,
+            ipTiiDataEntry->transmitterName.toUtf8().data(),
             t.dateTime.toUtf8().data(),
-            tr->mainId,
-            tr->subId,
-            strength,
-            distance,
-            azimuth,
-            tr->power,
-            tr->altitude,
-            tr->height);
+            ipTiiDataEntry->mainId,
+            ipTiiDataEntry->subId,
+            iStrength,
+            iDistance,
+            iAzimuth,
+            ipTiiDataEntry->power,
+            ipTiiDataEntry->altitude,
+            ipTiiDataEntry->height);
+
     mAlreadyLoggedTransmitters.push_back(t);
   }
 }
