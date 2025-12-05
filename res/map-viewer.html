@@ -56,17 +56,17 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script type="text/javascript">
-      Map = null;
-      var homeLatitude = $;
-      var homeLongitude = $;
-      var Transmitters = {};
-      var transmitterIndex = 0;
-      var transmitterIndexMaxForZoom = 0;
-      var suppressAutoFrame = false;
-      var isAutoFramingNow = false;
-      var pollTimerId = null;
-      var consecutivePollErrors = 0;
-      var MAX_POLL_ERRORS = 3;
+      let Map = null;
+      let homeLatitude = $;
+      let homeLongitude = $;
+      let Transmitters = {};
+      let transmitterIndex = 0;
+      let transmitterIndexMaxForZoom = 0;
+      let suppressAutoFrame = false;
+      let isAutoFramingNow = false;
+      let pollTimerId = null;
+      let consecutivePollErrors = 0;
+      let MAX_POLL_ERRORS = 3;
 
       const MAP_RESET = 0;
       const MAP_FRAME = 1;
@@ -76,17 +76,17 @@
 
       function getIconForHome()
       {
-        var he = document.createElement("P");
+        let he = document.createElement("P");
         he.innerHTML = '*';
         he = '<div style="font-size:1rem">&#x2B55</div>';
-        var icon = L.divIcon({html: he, className: 'home-icon'});
+        let icon = L.divIcon({html: he, className: 'home-icon'});
         return icon;
       }
 
       function getIconForTransmitter(target)
       {
-        var he;
-        var tii = target.mainId + '-' + target.subId;
+        let he;
+        let tii = target.mainId + '-' + target.subId;
         if (target.strength > -60)
           //he = '<div style="background:rgba(255,0,1.0);color:yellow;">';
           he = '<div style="background:rgba(255,0,0,1.0);">';
@@ -97,13 +97,13 @@
         else
           he = '<div style="background:rgba(255,0,0,0.25);">';
         he += '<b>' + tii + '</b>' + '</div>';
-        var icon = L.divIcon({iconSize:[tii.length*6.5,18], html: he, className: 'transmitter-icon'});
+        let icon = L.divIcon({iconSize:[tii.length*6.5,18], html: he, className: 'transmitter-icon'});
         return icon;
       }
 
       function handle_map_reset()
       {
-        for (var i = 0; i < transmitterIndex; i ++)
+        for (let i = 0; i < transmitterIndex; i ++)
         {
           Map.removeLayer(Transmitters[i].marker);
           delete Transmitters[i];
@@ -135,7 +135,7 @@
       function addTransmitter(target)
       {
         let icon = getIconForTransmitter(target);
-        var tooltip = target.name + ' ' + target.dist + 'km'
+        let tooltip = target.name + ' ' + target.dist + 'km'
         let marker = L.marker([target.lat, target.lon], {icon: icon, title: tooltip}).addTo(Map);
         target.marker = marker;
         target.marker.addEventListener('click', function() { selectTransmitterCallback(target);});
@@ -183,7 +183,7 @@
         {
           consecutivePollErrors = 0;
           handle_map_reset();
-          for (var t = 0; t < data.length; t ++)
+          for (let t = 0; t < data.length; t ++)
           {
             let target = data[t];
             if (target.type == MAP_RESET)
@@ -207,12 +207,12 @@
 
           if (!suppressAutoFrame && transmitterIndex > 0 && transmitterIndexMaxForZoom < transmitterIndex)
           {
-            var bounds = L.latLngBounds([]);
-            var minDistKm = Infinity;
-            for (var i = 0; i < transmitterIndex; i++)
+            let bounds = L.latLngBounds([]);
+            let minDistKm = Infinity;
+            for (let i = 0; i < transmitterIndex; i++)
             {
               bounds.extend([Transmitters[i].lat, Transmitters[i].lon]);
-              var d = parseFloat(Transmitters[i].dist);
+              let d = parseFloat(Transmitters[i].dist);
               if (isFinite(d) && d < minDistKm) minDistKm = d;
             }
             if (isFinite(minDistKm) && minDistKm < 200) // add home to zoom range if below 200km
@@ -254,8 +254,8 @@
           accessToken: 'your.mapbox.access.token'
         }).addTo(Map);
 
-        var icon = getIconForHome();
-        var homeMarker = L.marker([homeLatitude, homeLongitude], {icon: icon}).addTo(Map);
+        let icon = getIconForHome();
+        let homeMarker = L.marker([homeLatitude, homeLongitude], {icon: icon}).addTo(Map);
 
         // Setup our timer to poll from the server.
         pollTimerId = window.setInterval(function()
