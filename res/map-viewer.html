@@ -232,7 +232,7 @@
           consecutivePollErrors++;
           if (consecutivePollErrors >= MAX_POLL_ERRORS)
           {
-            // attemptClose('Lost connection to server.');
+            attemptClose('Lost connection to server.');
           }
         });
       }

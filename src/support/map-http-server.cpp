@@ -34,7 +34,6 @@ MapHttpServer::MapHttpServer(DabRadio * ipDabRadio, const QString & iHttpPort, c
   mTcpServer = new QTcpServer(this);
 
   mpAjaxRequestTimer = new QTimer(this);
-  mpAjaxRequestTimer->setInterval(2000 + 1000); // must be longer than the repetition time from the web client (2000ms there)
   mpAjaxRequestTimer->setSingleShot(true);
 
   connect(mTcpServer, &QTcpServer::newConnection, this, &MapHttpServer::_slot_new_connection);
@@ -76,7 +75,7 @@ void MapHttpServer::start()
     return;
   }
 
-  mpAjaxRequestTimer->start(); // will close the server after the timeout
+  mpAjaxRequestTimer->start(8000); // give a bit more time after browser start
 }
 
 void MapHttpServer::stop()
@@ -101,12 +100,11 @@ void MapHttpServer::_slot_new_connection()
 void MapHttpServer::_slot_ready_read()
 {
   QTcpSocket * const socket = qobject_cast<QTcpSocket*>(sender());
-  if (!socket) return;
+  if (socket == nullptr) return;
 
   // Read available data (up to 4096 as in original logic)
   const QByteArray buffer = socket->read(4096);
   if (buffer.isEmpty()) return;
-
 
   const int httpVer = (buffer.contains("HTTP/1.1")) ? 11 : 10;
   const bool keepAlive = (httpVer == 11) ? !buffer.contains("Connection: close") : buffer.contains("Connection: keep-alive");
@@ -120,12 +118,11 @@ void MapHttpServer::_slot_ready_read()
 
   QByteArray content;
   QString ctype;
-  mpAjaxRequestTimer->start();
+
+  mpAjaxRequestTimer->start(2000 + 1000); // must be longer than the repetition request time from the web client (2000ms there)
 
   if (url.contains("/data.json")) // ajax request
   {
-    qDebug() << "Received ajax request";
-
     content = _move_transmitter_list_to_json();
 
     if (!content.isEmpty())
