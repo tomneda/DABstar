@@ -113,21 +113,32 @@
         let yy = document.getElementById('selCount');
         yy.innerHTML = '';
       }
+       function getSideBarTransmitterString(target)
+      {
+         return target.name + ' (' + target.power.toFixed(2) + ' kW)' + '<br>' +
+                'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
+                'Latitude ' + target.lat.toFixed(4) + '&#xb0' + ', Longitude ' + target.lon.toFixed(4) + '&#xb0' + '<br>' +
+                'Polarization ' + target.pol.toUpperCase() + ', Direction ' + target.dir + '<br>' +
+                'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
+                ', Level ' + target.strength.toFixed(1) + 'dB' + '<br>' +
+                'Distance from home ' + target.dist.toFixed(1) + 'km ' + target.azimuth.toFixed(1) + '&#xb0';
+      }
 
       function showTransmitterAtSideBar(target)
       {
         let xx = document.getElementById('selinfo');
-        xx.innerHTML += target.name + ' (' + target.power.toFixed(2) + ' kW)' + '<br>' +
-                        'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
-                        'Latitude ' + target.lat.toFixed(4) + '&#xb0' + ', Longitude ' + target.lon.toFixed(4) + '&#xb0' + '<br>' +
-                        'Polarization ' + target.pol.toUpperCase() + ', Direction ' + target.dir + '<br>' +
-                        'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
-                        ', Level ' + target.strength.toFixed(1) + 'dB' + '<br>' +
-                        'Distance from home ' + target.dist.toFixed(1) + 'km ' + target.azimuth.toFixed(1) + '&#xb0' + '<br><br>';
+        xx.innerHTML += getSideBarTransmitterString(target) + '<br><br>';
 
         let yy = document.getElementById('selCount');
         yy.innerHTML = '<span style=\"font-weight:bold;">' + 'Number of transmitters: ' + transmitterIndex + '<br>' +
                        'Channel: ' + target.channel + '<br>' + '</span>';
+      }
+
+      function selectTransmitterCallback(target)
+      {
+        let zz = document.getElementById('selected');
+        zz.innerHTML = '<p style=\"padding: 10px; border:2px solid black;\">' + 'Selected:  ' + '<br>' +
+                       getSideBarTransmitterString(target) + '<br></p>'
       }
 
       function addTransmitter(target)
@@ -140,18 +151,6 @@
         Transmitters[transmitterIndex] = target;
         transmitterIndex++;
         showTransmitterAtSideBar(target);
-      }
-
-      function selectTransmitterCallback(target)
-      {
-        let zz = document.getElementById('selected');
-        zz.innerHTML = '<p style=\"padding: 10px; border:2px solid black;\">' + 'Selected:  ' + '<br>' +
-                       target.name + ' (' + target.power.toFixed(2) + ' kW)' + '<br>' +
-                       'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
-                       'Latitude ' + target.lat.toFixed(4) + '&#xb0' + ', Longitude ' + target.lon.toFixed(4) + '&#xb0' + '<br>' +
-                       'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
-                       ', Level ' + target.strength.toFixed(1) + 'dB' + '<br>' +
-                       'Distance from home ' + target.dist.toFixed(1) + 'km ' + target.azimuth.toFixed(1) + '&#xb0' + '<br></p>'
       }
 
       function attemptClose(reason)
