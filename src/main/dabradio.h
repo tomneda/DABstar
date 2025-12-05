@@ -348,7 +348,8 @@ private:
   void set_favorite_button_style();
   void _update_channel_selector(i32);
   void _show_epg_label(const bool iShowLabel);
-  void _set_http_server_button(const bool iActive);
+  enum class EHttpButtonState { Off, On, Waiting };
+  void _set_http_server_button(EHttpButtonState iHttpServerState);
   void _set_clock_text(const QString & iText = QString());
   template<typename T> void _add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip);
   template<typename T> void _set_status_info_status(StatusInfoElem<T> & iElem, const T iValue);

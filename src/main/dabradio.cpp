@@ -2027,25 +2027,20 @@ void DabRadio::_slot_handle_http_button()
 
     if (mpHttpHandler != nullptr)
     {
-      _set_http_server_button(true);
+      _set_http_server_button(EHttpButtonState::On);
     }
   }
   else
   {
-    slot_http_terminate();
+    _set_http_server_button(EHttpButtonState::Waiting); // closing browser could be take some seconds
+    mpHttpHandler->add_transmitter_location_entry(MAP_CLOSE, nullptr, "", 0, 0, 0, false);
   }
 }
 
 void DabRadio::slot_http_terminate()
 {
-  _set_http_server_button(false);
-
-  if (mpHttpHandler != nullptr)
-  {
-    mpHttpHandler->add_transmitter_location_entry(MAP_CLOSE, nullptr, "", 0, 0, 0, false);
-    usleep(250000);
-    mpHttpHandler.reset();
-  }
+  mpHttpHandler.reset();
+  _set_http_server_button(EHttpButtonState::Off);
 }
 
 void DabRadio::_show_pause_slide()
@@ -2126,12 +2121,6 @@ void DabRadio::stop_ETI_handler()
 void DabRadio::slot_test_slider(i32 iVal) // iVal 0..1000
 {
   emit signal_test_slider_changed(iVal);
-}
-
-void DabRadio::_set_http_server_button(const bool iActive)
-{
-  ui->btnHttpServer->setStyleSheet(get_bg_style_sheet((iActive ? 0xf97903 : 0x45bb24)));
-  ui->btnHttpServer->setFixedSize(QSize(32, 32));
 }
 
 void DabRadio::_set_device_to_file_mode(const bool iDataFromFile)

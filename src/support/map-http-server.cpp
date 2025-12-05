@@ -22,6 +22,7 @@
 #include <QJsonObject>
 #include <QByteArray>
 #include <QDataStream>
+#include <QTimer>
 
 MapHttpServer::MapHttpServer(DabRadio * ipDabRadio, const QString & iHttpPort, const QString & iHttpAddress, cf32 iHomeLocation, const QString & iCsvDumpName, bool iAutoBrowserOff)
   : mpDabRadio(ipDabRadio)
@@ -32,8 +33,13 @@ MapHttpServer::MapHttpServer(DabRadio * ipDabRadio, const QString & iHttpPort, c
 {
   mTcpServer = new QTcpServer(this);
 
+  mpAjaxRequestTimer = new QTimer(this);
+  mpAjaxRequestTimer->setInterval(2000 + 1000); // must be longer than the repetition time from the web client (2000ms there)
+  mpAjaxRequestTimer->setSingleShot(true);
+
   connect(mTcpServer, &QTcpServer::newConnection, this, &MapHttpServer::_slot_new_connection);
   connect(this, &MapHttpServer::signal_terminating, mpDabRadio, &DabRadio::slot_http_terminate);
+  connect(mpAjaxRequestTimer, &QTimer::timeout, this, &MapHttpServer::_slot_ajax_request_timeout);
 
   mpCsvFP = fopen(iCsvDumpName.toUtf8().data(), "w");
 
@@ -61,14 +67,16 @@ void MapHttpServer::start()
   if (!mTcpServer->listen(QHostAddress::Any, mHttpPort.toInt()))
   {
     qCritical() << "HttpHandler: Failed to listen on port" << mHttpPort;
-    emit signal_terminating();
     return;
   }
 
   if (!mAutoBrowserOff && !QDesktopServices::openUrl(QUrl(mHttpAddress)))
   {
     qCritical() << "Failed to open URL:" << mHttpAddress;
+    return;
   }
+
+  mpAjaxRequestTimer->start(); // will close the server after the timeout
 }
 
 void MapHttpServer::stop()
@@ -112,9 +120,12 @@ void MapHttpServer::_slot_ready_read()
 
   QByteArray content;
   QString ctype;
+  mpAjaxRequestTimer->start();
 
   if (url.contains("/data.json")) // ajax request
   {
+    qDebug() << "Received ajax request";
+
     content = _move_transmitter_list_to_json();
 
     if (!content.isEmpty())
@@ -146,6 +157,12 @@ void MapHttpServer::_slot_ready_read()
     socket->disconnectFromHost();
     qDebug() << "Closing socket";
   }
+}
+
+void MapHttpServer::_slot_ajax_request_timeout()
+{
+  qDebug() << "Ajax request timeout";
+  emit signal_terminating();
 }
 
 QByteArray MapHttpServer::_gen_html_code() const

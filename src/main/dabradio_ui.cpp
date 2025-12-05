@@ -107,7 +107,7 @@ void DabRadio::_initialize_ui_buttons()
   ui->btnTii->setStyleSheet(get_bg_style_sheet({ 255, 100, 0 }));
   ui->btnCir->setStyleSheet(get_bg_style_sheet({ 220, 37, 192 }));
 
-  _set_http_server_button(false);
+  _set_http_server_button(EHttpButtonState::Off);
 
   // only the queued call will consider the button size
   QMetaObject::invokeMethod(this, "_slot_update_mute_state", Qt::QueuedConnection, Q_ARG(bool, false));
@@ -1065,4 +1065,25 @@ void DabRadio::_update_channel_selector(i32 index)
   }
   ui->cmbChannelSelector->blockSignals(false);
   connect(ui->cmbChannelSelector, &QComboBox::textActivated, this, &DabRadio::_slot_handle_channel_selector);
+}
+
+void DabRadio::_set_http_server_button(const EHttpButtonState iHttpServerState)
+{
+  switch (iHttpServerState)
+  {
+  case EHttpButtonState::Off:
+    ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0x45bb24));
+    ui->btnHttpServer->setEnabled(true);
+    break;
+  case EHttpButtonState::On:
+    ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0xf97903));
+    ui->btnHttpServer->setEnabled(true);
+    break;
+  case EHttpButtonState::Waiting:
+    // ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0x777777));
+    ui->btnHttpServer->setEnabled(false);
+    break;
+  }
+
+  ui->btnHttpServer->setFixedSize(QSize(32, 32));
 }

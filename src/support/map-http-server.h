@@ -21,6 +21,7 @@
 
 class DabRadio;
 class QTcpServer;
+class QTimer;
 
 class MapHttpServer : public QObject
 {
@@ -70,6 +71,7 @@ private:
   QTcpServer * mTcpServer = nullptr;
   std::vector<SHttpData> mAlreadyLoggedTransmitters;
   std::vector<SHttpData> mTransmitters;
+  QTimer * mpAjaxRequestTimer = nullptr;
   mutable std::mutex mMutex; // guards the list of mTransmitters
 
   QByteArray _gen_html_code() const;
@@ -78,6 +80,7 @@ private:
 private slots:
   void _slot_new_connection();
   void _slot_ready_read();
+  void _slot_ajax_request_timeout();
 
 signals:
   void signal_terminating();
