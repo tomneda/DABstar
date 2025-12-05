@@ -238,10 +238,10 @@ QByteArray MapHttpServer::_move_transmitter_list_to_json()
     jsonObj["channel"] = t.channelName;
     jsonObj["mainId"] = t.mainId;
     jsonObj["subId"] = t.subId;
-    jsonObj["strength"] = (int)(t.strength * 10);
+    jsonObj["strength"] = t.strength;
     jsonObj["dist"] = t.distance;
     jsonObj["azimuth"] = t.azimuth;
-    jsonObj["power"] = (int)(t.power * 100);
+    jsonObj["power"] = t.power;
     jsonObj["altitude"] = t.altitude;
     jsonObj["height"] = t.height;
     jsonObj["dir"] = t.direction;

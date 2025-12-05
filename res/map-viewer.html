@@ -85,20 +85,18 @@
 
       function getIconForTransmitter(target)
       {
-        let he;
         let tii = target.mainId + '-' + target.subId;
-        if (target.strength > -60)
-          //he = '<div style="background:rgba(255,0,1.0);color:yellow;">';
-          he = '<div style="background:rgba(255,0,0,1.0);">';
-        else if (target.strength > -120)
-          he = '<div style="background:rgba(255,0,0,0.75);">';
-        else if (target.strength > -200)
-          he = '<div style="background:rgba(255,0,0,0.5);">';
-        else
-          he = '<div style="background:rgba(255,0,0,0.25);">';
+
+        // Linear interpolation: alpha = 1.0 at -6, 0.20 at -30
+        // Formula: alpha = 1.0 - (strength - (-6)) * (1.0 - 0.20) / (-30 - (-6))
+        let alpha = 1.0 - (target.strength - (-6.0)) * 0.80 / (-24.0);
+
+        if (alpha > 1.0) alpha = 1.0;
+        if (alpha < 0.2) alpha = 0.2;
+
+        let he = '<div style="background:rgba(255,0,0,' + alpha.toFixed(2) + ');">';
         he += '<b>' + tii + '</b>' + '</div>';
-        let icon = L.divIcon({iconSize:[tii.length*6.5,18], html: he, className: 'transmitter-icon'});
-        return icon;
+        return L.divIcon({iconSize: [tii.length * 6.5, 18], html: he, className: 'transmitter-icon'});
       }
 
       function handle_map_reset()
@@ -119,12 +117,12 @@
       function showTransmitterAtSideBar(target)
       {
         let xx = document.getElementById('selinfo');
-        xx.innerHTML += target.name + ' (' + (target.power/ 100.0).toFixed(2) + ' kW)' + '<br>' +
+        xx.innerHTML += target.name + ' (' + target.power.toFixed(2) + ' kW)' + '<br>' +
                         'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
                         'Latitude ' + target.lat.toFixed(4) + '&#xb0' + ', Longitude ' + target.lon.toFixed(4) + '&#xb0' + '<br>' +
                         'Polarization ' + target.pol.toUpperCase() + ', Direction ' + target.dir + '<br>' +
                         'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
-                        ', Level ' + target.strength / 10 + 'dB' + '<br>' +
+                        ', Level ' + target.strength.toFixed(1) + 'dB' + '<br>' +
                         'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br><br>';
 
         let yy = document.getElementById('selCount');
@@ -148,11 +146,11 @@
       {
         let zz = document.getElementById('selected');
         zz.innerHTML = '<p style=\"padding: 10px; border:2px solid black;\">' + 'Selected:  ' + '<br>' +
-                       target.name + ' (' + (target.power / 100.0).toFixed(2) + ' kW)' + '<br>' +
+                       target.name + ' (' + target.power.toFixed(2) + ' kW)' + '<br>' +
                        'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
                        'Latitude ' + target.lat.toFixed(4) + '&#xb0' + ', Longitude ' + target.lon.toFixed(4) + '&#xb0' + '<br>' +
                        'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
-                       ', Level ' + target.strength / 10 + 'dB' + '<br>' +
+                       ', Level ' + target.strength.toFixed(1) + 'dB' + '<br>' +
                        'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br></p>'
       }
 
