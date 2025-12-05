@@ -186,7 +186,12 @@
           for (let t = 0; t < data.length; t ++)
           {
             let target = data[t];
-            if (target.type == MAP_RESET)
+
+            if (target.type === MAP_NORM_TRANS)
+            {
+              addTransmitter(target);
+            }
+            else if (target.type === MAP_RESET)
             {
               let zz = document.getElementById('selected');
               zz.innerHTML = '';
@@ -198,10 +203,6 @@
               // Immediate close requested by backend
               attemptClose('Server requested to close the map window.');
               return; // stop processing
-            }
-            else if (target.type === MAP_NORM_TRANS)
-            {
-              addTransmitter(target);
             }
           }
 
@@ -249,9 +250,7 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
           attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 18,
-          id: 'mapbox/streets-v11',
-          accessToken: 'your.mapbox.access.token'
+          maxZoom: 18
         }).addTo(Map);
 
         let icon = getIconForHome();
