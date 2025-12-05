@@ -232,8 +232,8 @@ QByteArray MapHttpServer::_move_transmitter_list_to_json()
   {
     QJsonObject jsonObj;
     jsonObj["type"] = t.type;
-    jsonObj["lat"] = QString::number(t.latitude,  'f', 6).toDouble();  // TODO: this is a trick to represent only the float precision in the JSON
-    jsonObj["lon"] = QString::number(t.longitude, 'f', 6).toDouble();  // -"-
+    jsonObj["lat"] = t.latitude;
+    jsonObj["lon"] = t.longitude;
     jsonObj["name"] = t.transmitterName;
     jsonObj["channel"] = t.channelName;
     jsonObj["mainId"] = t.mainId;

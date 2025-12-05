@@ -121,7 +121,7 @@
         let xx = document.getElementById('selinfo');
         xx.innerHTML += target.name + ' (' + (target.power/ 100.0).toFixed(2) + ' kW)' + '<br>' +
                         'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
-                        'Latitude ' + target.lat + '&#xb0' + ', Longitude ' + target.lon + '&#xb0' + '<br>' +
+                        'Latitude ' + target.lat.toFixed(4) + '&#xb0' + ', Longitude ' + target.lon.toFixed(4) + '&#xb0' + '<br>' +
                         'Polarization ' + target.pol.toUpperCase() + ', Direction ' + target.dir + '<br>' +
                         'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
                         ', Level ' + target.strength / 10 + 'dB' + '<br>' +
@@ -150,7 +150,7 @@
         zz.innerHTML = '<p style=\"padding: 10px; border:2px solid black;\">' + 'Selected:  ' + '<br>' +
                        target.name + ' (' + (target.power / 100.0).toFixed(2) + ' kW)' + '<br>' +
                        'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
-                       'Latitude ' + target.lat + '&#xb0' + ', Longitude ' + target.lon + '&#xb0' + '<br>' +
+                       'Latitude ' + target.lat.toFixed(4) + '&#xb0' + ', Longitude ' + target.lon.toFixed(4) + '&#xb0' + '<br>' +
                        'TII ' + target.mainId + '-' + target.subId + target.nonetsi +
                        ', Level ' + target.strength / 10 + 'dB' + '<br>' +
                        'Distance from home ' + target.dist + 'km ' + target.azimuth + '&#xb0' + '<br></p>'
@@ -234,7 +234,6 @@
           consecutivePollErrors++;
           if (consecutivePollErrors >= MAX_POLL_ERRORS)
           {
-            // as the server may hang after closing the client to fast, we omit this timeout first
             // attemptClose('Lost connection to server.');
           }
         });
