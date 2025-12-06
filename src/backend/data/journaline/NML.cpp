@@ -230,7 +230,7 @@ std::string NML::Dump(void) const
 //reslen is an out parameter returning the size of the buffer
 //returns a newly created buffer containing pure nml data on success
 //returns 0 on error
-unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen) const
+unsigned char * NMLFactory::getNextSection(std::vector<NML::SLinkData> & oLinkData, const unsigned char *& p, unsigned short & plen, unsigned short & reslen) const
 {
   int i = 0;
   int j = 0;
@@ -247,6 +247,20 @@ unsigned char * NMLFactory::getNextSection(const unsigned char *& p, unsigned sh
       // we take the length of the datasection and add it
       // to the current position in order to ignore it
       dslen = p[i + 1] + 1;
+
+      if (dslen > 4 && p[i] == 0x1a && p[i+2] == 0x03 && p[i+3] == 0x02) // is it a valid URL link target header?
+      {
+        extract_link_data(oLinkData, p+i);
+      }
+      else if(dslen > 4 && p[i] == 0x1a && p[i+2] == 0xc0) // Picture
+      {
+        NML::SLinkData linkData;
+
+        linkData.urlStr = std::string(reinterpret_cast<const char *>(p+6), dslen-5);
+        linkData.textStr = "Bild";
+        oLinkData.emplace_back(std::move(linkData));
+      }
+
       // make a safety check for that the length is still in bounds
       if (dslen > (plen - i))
       {
@@ -483,7 +497,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
   unsigned short pure_txt_len = 0;
 
   // extract title
-  pure_text = getNextSection(p, len, pure_txt_len);
+  pure_text = getNextSection(n->_pNews->linkVec, p, len, pure_txt_len);
   if (!pure_text)
   {
     sprintf(error, "Error: ignoreDataSections() returned illegal data section");
@@ -512,7 +526,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
     }
     len--;
     p++;
-    pure_text = getNextSection(p, len, pure_txt_len);
+    pure_text = getNextSection(n->_pNews->linkVec, p, len, pure_txt_len);
     if (!pure_text)
     {
       sprintf(error, "Error: ignoreDataSections() returned illegal data section");
@@ -546,7 +560,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       len -= 2;
       p += 2;
 
-      pure_text = getNextSection(p, len, pure_txt_len);
+      pure_text = getNextSection(n->_pNews->linkVec, p, len, pure_txt_len);
       if (!pure_text)
       {
         sprintf(error, "Error: ignoreDataSections() returned illegal data section");
@@ -576,7 +590,7 @@ std::shared_ptr<NML> NMLFactory::CreateNML(const NML::RawNewsObject_t & rno, con
       len--;
       p++;
 
-      pure_text = getNextSection(p, len, pure_txt_len);
+      pure_text = getNextSection(n->_pNews->linkVec, p, len, pure_txt_len);
       if (!pure_text)
       {
         sprintf(error, "Error: ignoreDataSections() returned illegal data section");
