@@ -157,13 +157,10 @@ private:
   pfnrtlsdr_set_tuner_gain_mode rtlsdr_set_tuner_gain_mode;
   pfnrtlsdr_set_agc_mode rtlsdr_set_agc_mode;
   pfnrtlsdr_set_sample_rate rtlsdr_set_sample_rate;
-  pfnrtlsdr_get_sample_rate rtlsdr_get_sample_rate;
   pfnrtlsdr_set_tuner_gain rtlsdr_set_tuner_gain;
-  pfnrtlsdr_get_tuner_gain rtlsdr_get_tuner_gain;
   pfnrtlsdr_reset_buffer rtlsdr_reset_buffer;
   pfnrtlsdr_cancel_async rtlsdr_cancel_async;
   pfnrtlsdr_set_bias_tee rtlsdr_set_bias_tee;
-  pfnrtlsdr_set_direct_sampling rtlsdr_set_direct_sampling;
   pfnrtlsdr_get_device_count rtlsdr_get_device_count;
   pfnrtlsdr_set_freq_correction rtlsdr_set_freq_correction;
   pfnrtlsdr_set_freq_correction_ppb rtlsdr_set_freq_correction_ppb;

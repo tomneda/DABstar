@@ -157,7 +157,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
     R"(<p>For improved reception quality and usability, the RtlSdr driver from old&#8209;dab is recommended.</p>)"
     R"(<p>See <a href="https://github.com/old-dab/rtlsdr" style="color: lightblue;">https://github.com/old-dab/rtlsdr</a> for download and installation instructions.</p>)"
     R"(<p>This driver is also compatible with other applications that access the RtlSdr stick through this type of library.</p>)";
-  
+
   if (!phandle->isLoaded())
   {
     std::string s = R"(<html><body><font color="orange"><h2>Failed to open )" + std::string(libraryString) + R"(</h2></font>)";
@@ -518,13 +518,6 @@ bool RtlSdrHandler::load_rtlFunctions(bool & oHasNewInterface)
     return false;
   }
 
-  rtlsdr_get_sample_rate = (pfnrtlsdr_get_sample_rate)phandle->resolve("rtlsdr_get_sample_rate");
-  if (rtlsdr_get_sample_rate == nullptr)
-  {
-    fprintf(stderr, "Could not find rtlsdr_get_sample_rate\n");
-    oHasNewInterface = false;
-  }
-
   rtlsdr_get_tuner_gains = (pfnrtlsdr_get_tuner_gains)phandle->resolve("rtlsdr_get_tuner_gains");
   if (rtlsdr_get_tuner_gains == nullptr)
   {
@@ -550,13 +543,6 @@ bool RtlSdrHandler::load_rtlFunctions(bool & oHasNewInterface)
   if (rtlsdr_set_tuner_gain == nullptr)
   {
     fprintf(stderr, "Cound not find rtlsdr_set_tuner_gain\n");
-    return false;
-  }
-
-  rtlsdr_get_tuner_gain = (pfnrtlsdr_get_tuner_gain)phandle->resolve("rtlsdr_get_tuner_gain");
-  if (rtlsdr_get_tuner_gain == nullptr)
-  {
-    fprintf(stderr, "Could not find rtlsdr_get_tuner_gain\n");
     return false;
   }
 
@@ -600,13 +586,6 @@ bool RtlSdrHandler::load_rtlFunctions(bool & oHasNewInterface)
   {
     fprintf(stderr, "Could not find rtlsdr_cancel_async\n");
     return false;
-  }
-
-  rtlsdr_set_direct_sampling = (pfnrtlsdr_set_direct_sampling)phandle->resolve("rtlsdr_set_direct_sampling");
-  if (rtlsdr_set_direct_sampling == nullptr)
-  {
-    fprintf(stderr, "Could not find rtlsdr_set_direct_sampling\n");
-    oHasNewInterface = false;
   }
 
   rtlsdr_set_freq_correction = (pfnrtlsdr_set_freq_correction)phandle->resolve("rtlsdr_set_freq_correction");
