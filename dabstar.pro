@@ -24,7 +24,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"4.1.0\\\"
+DEFINES		+= PRJ_VERS=\\\"4.5.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -187,7 +187,7 @@ HEADERS += \
     src/support/ITU_Region_1.h \
     src/support/coordinates.h \
     src/support/mapport.h \
-    src/support/http-handler.h \
+    src/support/map-http-server.h \
     src/support/tii-library/tii-codes.h \
     src/support/buttons/newpushbutton.h \
     src/support/buttons/normalpushbutton.h \
@@ -298,7 +298,7 @@ SOURCES += \
     src/support/ITU_Region_1.cpp \
     src/support/coordinates.cpp \
     src/support/mapport.cpp \
-    src/support/http-handler.cpp \
+    src/support/map-http-server.cpp \
     src/support/tii_list_display.cpp \
     src/support/tii-library/tii-codes.cpp \
     src/support/custom_frame.cpp \
