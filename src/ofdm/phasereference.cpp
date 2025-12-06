@@ -44,8 +44,6 @@
   *	The class inherits from the phaseTable.
   */
 
-#define COARSE_FRQUENCY_CORRECTION 2
-
 PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessParams * const ipParam)
   : PhaseTable()
   , mFramesPerSecond(INPUT_RATE / cTF)
@@ -59,18 +57,6 @@ PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessPara
   std::fill(mMeanCorrPeakValues.begin(), mMeanCorrPeakValues.end(), 0.0f);
 
   // Prepare a table for the coarse frequency synchronization.
-#if COARSE_FRQUENCY_CORRECTION == 0 // Old code from Qt-Dab
-  for (i32 i = 1; i <= DIFFLENGTH; i++)
-  {
-    mPhaseDifferences[i - 1] = abs(arg(mRefTable[(cTu + i) % cTu] * conj(mRefTable[(cTu + i + 1) % cTu])));
-  }
-#elif COARSE_FRQUENCY_CORRECTION == 1
-  mRefArg.resize(CORRELATION_LENGTH);
-  for (i32 i = 0; i < CORRELATION_LENGTH; i++)
-  {
-    mRefArg[i] = arg(mRefTable[(cTu + i) % cTu] * conj(mRefTable[(cTu + i + 1) % cTu]));
-  }
-#elif COARSE_FRQUENCY_CORRECTION == 2 // Code from DAB-Radio
   cRefArg.resize(cTu);
   CalculateRelativePhase(mRefTable.data(), mFftInBuffer);
   fftwf_execute(mFftPlanBwd);
@@ -78,7 +64,6 @@ PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessPara
   {
     cRefArg[i] = std::conj(mFftOutBuffer[i]);
   }
-#endif
 
   connect(this, &PhaseReference::signal_show_correlation, ipRadio, &DabRadio::slot_show_correlation);
 }
@@ -223,98 +208,6 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
 //  The phase differences are computed once
 i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV)
 {
-
-#if COARSE_FRQUENCY_CORRECTION == 0 // Old code from Qt-Dab
-
-  std::array<f32, SEARCHRANGE + DIFFLENGTH + 1> computedDiffs{};
-  const i16 idxStart = cTu - SEARCHRANGE / 2;
-  const i16 idxStop  = cTu + SEARCHRANGE / 2;
-  f32 min = 1000;
-  f32 max = 0;
-  i16 idxMin = IDX_NOT_FOUND;
-  i16 idxMax = IDX_NOT_FOUND;
-
-  // We collect data of SEARCHRANGE/2 bins at the end of the FFT buffer and wrap to the
-  // begin and check SEARCHRANGE/2 elements further.
-  // This is equal to check +/- SEARCHRANGE/2 bins (== kHz in DabMode 1) around the DC.
-  for (i16 i = idxStart; i < idxStop + DIFFLENGTH; i++)
-  {
-    computedDiffs[i - idxStart] = abs(arg(iV[i % cTu] * conj(iV[(i + 1) % cTu])));
-  }
-  for (i16 i = idxStart; i < idxStop; i++)
-  {
-    f32 sumMinValues = 0;
-    f32 sumMaxValues = 0;
-
-    // do a minimalistic correlation using only the 0deg and 180deg values from mPhaseDifferences
-    for (i16 j = 1; j < DIFFLENGTH; j++)
-    {
-      if (mPhaseDifferences[j - 1] < 0.1f)
-      {
-        sumMinValues += computedDiffs[i - idxStart + j];
-      }
-      else if (mPhaseDifferences[j - 1] > F_M_PI - 0.1f)
-      {
-        sumMaxValues += computedDiffs[i - idxStart + j];
-      }
-    }
-    if (sumMinValues < min)
-    {
-      min = sumMinValues;
-      idxMin = i;
-    }
-    if (sumMaxValues > max)
-    {
-      max = sumMaxValues;
-      idxMax = i;
-    }
-  }
-  if (idxMin != idxMax)
-  {
-    return IDX_NOT_FOUND;
-  }
-  const i32 offset = idxMin - cTu; // return the offset around cTu
-  //fprintf(stderr, "min=%.0f, max=%.0f, offset=%d\n", min, max, offset);
-  return offset * cCarrDiff;
-
-#elif COARSE_FRQUENCY_CORRECTION == 1 // alternative Code
-
-  f32 correlationVector[SEARCHRANGE + CORRELATION_LENGTH + 1];
-  i16 index = IDX_NOT_FOUND;
-  f32 min = 1000;
-
-  for (i16 i = 0; i <= SEARCHRANGE + CORRELATION_LENGTH; ++i)
-  {
-    const i16 baseIndex = cTu - SEARCHRANGE / 2 + i;
-    correlationVector[i] = arg(iV[baseIndex % cTu] * conj(iV[(baseIndex + 1) % cTu]));
-  }
-  //fprintf(stderr, "Sum = ");
-  for (i16 i = 0; i <= SEARCHRANGE; i++)
-  {
-    f32 sum = 0;
-    for (i16 j = 0; j < CORRELATION_LENGTH; ++j)
-    {
-      f32 value = abs(mRefArg[j] - correlationVector[i + j]);
-      if (value > F_M_PI) value = abs(value - F_2_M_PI);
-      if (j == 0) value = 0;  // Carrier 0 doesn't exist
-      sum += value;
-    }
-    if (sum < min)
-    {
-      min = sum;
-      index = i;
-    }
-    //fprintf(stderr, "%.0f ", sum);
-  }
-  //fprintf(stderr, "\n");
-
-  // Now map the index back to the right carrier
-  const i32 offset = index - SEARCHRANGE / 2;
-  //fprintf(stderr, "min=%.0f, offset=%d\n", min, offset);
-  return offset * cCarrDiff;
-
-#elif COARSE_FRQUENCY_CORRECTION == 2 // Modified code from DAB-Radio
-
   i16 index = IDX_NOT_FOUND;
   f32 max = 0;
   f32 avg = 0;
@@ -368,7 +261,6 @@ i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & 
   const f32 offset = index + (peak[2] - peak[0]) / peak_sum;
   //fprintf(stderr, "max=%.0f, average=%.0f, offset=%f\n", max/10000000, avg/10000000, offset);
   return (int32_t)(offset * cCarrDiff);
-#endif
 }
 
 /*static*/
