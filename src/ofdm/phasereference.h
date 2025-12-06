@@ -61,15 +61,6 @@ public:
 private:
   static constexpr i16 SEARCHRANGE = (2 * 35);
 
-  // COARSE_FRQUENCY_CORRECTION 0
-  static constexpr i16 DIFFLENGTH = 128;
-  std::array<f32, DIFFLENGTH> mPhaseDifferences;
-
-  // COARSE_FRQUENCY_CORRECTION 1
-  static constexpr i16 CORRELATION_LENGTH = 48;
-  std::vector<f32> mRefArg;
-
-  // COARSE_FRQUENCY_CORRECTION 2
   void CalculateRelativePhase(const cf32 *fft_in, TArrayTu & arg_out);
   std::vector<cf32> cRefArg;
 

@@ -387,7 +387,7 @@ private:
   NMLFactory & operator=(const NMLFactory &);
   NMLFactory(const NMLFactory &);
 
-  unsigned char * getNextSection(const unsigned char *& p, unsigned short & plen, unsigned short & reslen) const;
+  unsigned char * getNextSection(std::vector<NML::SLinkData> & oLinkData, const unsigned char *& p, unsigned short & plen, unsigned short & reslen) const;
   void extract_link_data(std::vector<NML::SLinkData> & oLinkData, const unsigned char * p) const;
 };
 
