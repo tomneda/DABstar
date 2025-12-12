@@ -178,11 +178,17 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
   mSimdVecMeanNettoPower.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
   mSimdVecMeanNettoPower.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f);
   mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecMeanNettoPower);  // T2 = 1/SNR
-  mSimdVecTemp2Float.modify_add_scalar_each_element(mSoftBitType == ESoftBitType::SOFTDEC1 ? 1.0f : 2.0f); // T2 += (1 or 2)
+  mSimdVecTemp2Float.modify_add_scalar_each_element(mSoftBitType == ESoftBitType::SOFTDEC3 ? 2.0f : 1.0f); // T2 += (1 or 2)
 
   // -------------------------------
   if (mSoftBitType == ESoftBitType::SOFTDEC3)
     mSimdVecWeightPerBin.set_divide_each_element(mSimdVecMeanPower, mSimdVecMeanSigmaSq);  // w1 = meanPowerPerBinRef / meanSigmaSqPerBinRef;
+  else if (mSoftBitType == ESoftBitType::SOFTDEC2)
+  {
+    mSimdVecTemp1Float.set_sqrt_each_element(mSimdVecMeanLevel);                           // T1 = sqrt(meanLevelPerBinRef)
+    mSimdVecTemp1Float.modify_multiply_each_element(mSimdVecMeanLevel);                    // T1 *= meanLevelPerBinRef
+    mSimdVecWeightPerBin.set_divide_each_element(mSimdVecTemp1Float, mSimdVecMeanSigmaSq); // w1 = T1 / meanSigmaSqPerBinRef;
+  }
   else
     mSimdVecWeightPerBin.set_divide_each_element(mSimdVecMeanLevel, mSimdVecMeanSigmaSq);  // w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
   mSimdVecWeightPerBin.set_divide_each_element(mSimdVecWeightPerBin, mSimdVecTemp2Float);  // w1 /= T2

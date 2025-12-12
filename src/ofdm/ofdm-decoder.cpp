@@ -238,7 +238,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (f32)cK);
 
     // Collect data for "Log Likelihood Ratio"
-    const float meanLevelPerBinRef = std::sqrt(meanPowerPerBinRef);
+    const f32 meanLevelPerBinRef = std::sqrt(meanPowerPerBinRef);
     const f32 meanLevelAtAxisPerBin = meanLevelPerBinRef * F_SQRT1_2;
     const f32 realLevelDistPerBin = (std::abs(real(fftBin)) - meanLevelAtAxisPerBin); // x-distance to reference point
     const f32 imagLevelDistPerBin = (std::abs(imag(fftBin)) - meanLevelAtAxisPerBin); // y-distance to reference point
@@ -250,11 +250,16 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     if (signalPower <= 0.0f) signalPower = 0.1f;
 
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
-    f32 w1 = (mSoftBitType == ESoftBitType::SOFTDEC3 ?
-              meanPowerPerBinRef : meanLevelPerBinRef) / meanSigmaSqPerBinRef; // 1/variance
+    f32 w1 = std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
+    if(mSoftBitType == ESoftBitType::SOFTDEC3)
+      w1 *= meanPowerPerBinRef;
+    else if(mSoftBitType == ESoftBitType::SOFTDEC2)
+      w1 *= std::sqrt(meanLevelPerBinRef) * meanLevelPerBinRef;
+    else
+      w1 *= meanLevelPerBinRef;
+    w1 /= meanSigmaSqPerBinRef;
     w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) +
-          (mSoftBitType == ESoftBitType::SOFTDEC1 ? 1.0f : 2.0f); // 1/SNR + (1 or 2)
-    w1 *= std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
+          (mSoftBitType == ESoftBitType::SOFTDEC3 ? 2.0f : 1.0f); // 1/SNR + (1 or 2)
     const cf32 r1 = norm_to_length_one(fftBin) * w1;
     f32 w2 = -100 / mMeanValue;
 
