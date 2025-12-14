@@ -80,7 +80,7 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
     throw std::runtime_error(val.toUtf8().data());
   }
 
-  fileProgress->setValue(0);
+  sliderFilePos->setValue(0);
   currentTime->display(0);
   samplerateDisplay->display(theDescriptor->sampleRate);
   nrBitsDisplay->display(theDescriptor->bitsperChannel);
@@ -99,8 +99,11 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
 
   nrElementsDisplay->display((double)theDescriptor->blockList[0].nrElements);
   qDebug() << "nrElements = " << theDescriptor->blockList[0].nrElements;
-  //connect(continuousButton, SIGNAL (clicked()), this, SLOT (slot_handle_cb_loop_file(0)));
   connect(cbLoopFile, &QCheckBox::clicked, this, &XmlFileReader::slot_handle_cb_loop_file);
+  connect(sliderFilePos, &QSlider::sliderPressed, this, &XmlFileReader::slot_slider_pressed);
+  connect(sliderFilePos, &QSlider::sliderReleased, this, &XmlFileReader::slot_slider_released);
+  connect(sliderFilePos, &QSlider::sliderMoved, this, &XmlFileReader::slot_slider_moved);
+
   running.store(false);
 }
 
@@ -180,7 +183,7 @@ i32 XmlFileReader::Samples()
 
 void XmlFileReader::slot_set_progress(i64 samplesRead, i64 samplesToRead)
 {
-  fileProgress->setValue((f32)samplesRead / (f32)samplesToRead * 100);
+  sliderFilePos->setValue((f32)samplesRead / (f32)samplesToRead * 100);
   currentTime->display(QString("%1").arg(samplesRead / 2048000.0, 0, 'f', 1));
   totalTime->display(QString("%1").arg(samplesToRead / 2048000.0, 0, 'f', 1));
 }
@@ -236,5 +239,24 @@ i16 XmlFileReader::bitDepth()
 QString XmlFileReader::deviceName()
 {
   return "XmlFile";
+}
+
+void XmlFileReader::slot_slider_pressed()
+{
+  mSliderMovementPos = sliderFilePos->value();
+}
+
+void XmlFileReader::slot_slider_released()
+{
+  if (mSliderMovementPos >= 0)
+  {
+    mSliderMovementPos = -1;
+  }
+}
+
+void XmlFileReader::slot_slider_moved(const i32 iPos)
+{
+  mSliderMovementPos = iPos; // iPos = [0; 100]
+  theReader->jump_to_relative_position(iPos);
 }
 

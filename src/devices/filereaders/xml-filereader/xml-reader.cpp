@@ -95,6 +95,11 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 fileP
   connect(this, &XmlReader::signal_set_progress, parent, &XmlFileReader::slot_set_progress);
 
   // fprintf(stderr, "reader task wordt gestart\n");
+  mSetNewFilePos = -1;
+  fseek(f, 0, SEEK_END);
+  mFileLength = ftell(f);
+  fseek(f, 0, SEEK_SET);
+
   start();
 }
 
@@ -105,6 +110,7 @@ XmlReader::~XmlReader()
   {
     usleep(1000);
   }
+  mSetNewFilePos = -1;
 }
 
 void XmlReader::stopReader()
@@ -121,6 +127,14 @@ void XmlReader::stopReader()
 }
 
 static i32 cycleCount = 0;
+
+void XmlReader::jump_to_relative_position(i32 iPercent)
+{
+  if (running.load())
+  {
+    mSetNewFilePos = samplesToRead * iPercent / 100LL;
+  }
+}
 
 void XmlReader::run()
 {
@@ -156,6 +170,16 @@ void XmlReader::run()
         else
         {
           samplesRead += readSamples(file, &XmlReader::readElements_Q);
+        }
+
+        if (mSetNewFilePos >= 0)
+        {
+          // ensure begin of I/Q position
+          i64 pos = startPoint + (((mFileLength - startPoint) * mSetNewFilePos / samplesToRead) & ~3LL);
+          fseek(file, pos, SEEK_SET);
+          samplesRead = mSetNewFilePos;
+          mSetNewFilePos = -1 ;
+          cycleCount = 200; // retrigger emit below
         }
 
         if (++cycleCount >= 200)

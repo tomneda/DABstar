@@ -22,9 +22,15 @@
     </widget>
    </item>
    <item>
-    <widget class="QProgressBar" name="fileProgress">
-     <property name="value">
-      <number>24</number>
+    <widget class="QSlider" name="sliderFilePos">
+     <property name="maximum">
+      <number>100</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="toolTip">
+      <string>Grab the handle and slide to move through the file.</string>
      </property>
     </widget>
    </item>

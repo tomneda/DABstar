@@ -51,6 +51,7 @@ public:
   XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 filePointer, RingBuffer<cf32> * b);
   ~XmlReader() override;
   void stopReader();
+  void jump_to_relative_position(i32 pos);
   bool handle_continuousButton();
 
 private:
@@ -69,6 +70,8 @@ private:
   i32 nrElements;
   i64 samplesToRead;
   std::atomic<bool> running;
+  std::atomic<i64> mSetNewFilePos = -1;
+  i64 mFileLength = 0;
   void run();
   i64 compute_nrSamples(FILE * f, i32 blockNumber);
   i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, i32));

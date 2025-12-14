@@ -74,10 +74,14 @@ private:
   u32 filePointer = 0;
   XmlDescriptor * theDescriptor = nullptr;
   XmlReader * theReader = nullptr;
+  i32 mSliderMovementPos = -1;
 
 public slots:
   void slot_set_progress(i64, i64);
   void slot_handle_cb_loop_file(const bool iChecked);
+  void slot_slider_pressed();
+  void slot_slider_released();
+  void slot_slider_moved(i32);
 };
 
 #endif
