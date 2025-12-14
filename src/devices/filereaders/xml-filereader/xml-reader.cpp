@@ -149,10 +149,10 @@ void XmlReader::run()
     samplesToRead = compute_nrSamples(file, blocks);
     qDebug() << "samples to read" << samplesToRead;
     samplesRead = 0;
-    samplesReadToUpdate = 0;
 
     do
     {
+      samplesReadToUpdate = 0;
       while ((samplesRead <= samplesToRead) && running.load())
       {
 
@@ -181,7 +181,7 @@ void XmlReader::run()
           fseek(file, pos, SEEK_SET);
           samplesRead = mSetNewFilePos;
           mSetNewFilePos = -1 ;
-          samplesReadToUpdate = samplesRead; // retrigger emit below
+          samplesReadToUpdate = 0; // retrigger emit below
         }
 
         if (samplesRead >= samplesReadToUpdate)
