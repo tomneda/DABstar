@@ -182,10 +182,14 @@ void DabRadio::_initialize_device_selector()
 
 void DabRadio::_initialize_version_and_copyright_info()
 {
+  const QString crt = get_copyright_text();
   ui->lblVersion->setText(QString("V" + mVersionStr));
-  ui->lblCopyrightIcon->setToolTip(get_copyright_text());
+  ui->lblVersion->setToolTip(crt);
+  ui->lblVersion->setCursor(Qt::WaitCursor);
+  ui->lblCopyrightIcon->setToolTip(crt);
   ui->lblCopyrightIcon->setTextInteractionFlags(Qt::TextBrowserInteraction);
   ui->lblCopyrightIcon->setOpenExternalLinks(true);
+  ui->lblCopyrightIcon->setCursor(Qt::WaitCursor);
 }
 
 QString DabRadio::get_bg_style_sheet(const QColor & iBgBaseColor, const char * const iWidgetType /*= nullptr*/)
