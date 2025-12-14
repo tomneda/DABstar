@@ -186,7 +186,10 @@ i32 XmlFileReader::Samples()
 
 void XmlFileReader::slot_set_progress(i64 samplesRead, i64 samplesToRead)
 {
-  sliderFilePos->setValue((f32)samplesRead / (f32)samplesToRead * 100);
+  if (mSliderMovementPos < 0) // suppress slider update while mouse move on slider
+  {
+    sliderFilePos->setValue((f32)samplesRead / (f32)samplesToRead * 1000.0f);
+  }
   currentTime->display(QString("%1").arg(samplesRead / 2048000.0, 0, 'f', 1));
   totalTime->display(QString("%1").arg(samplesToRead / 2048000.0, 0, 'f', 1));
 }
@@ -259,7 +262,7 @@ void XmlFileReader::slot_slider_released()
 
 void XmlFileReader::slot_slider_moved(const i32 iPos)
 {
-  mSliderMovementPos = iPos; // iPos = [0; 100]
+  mSliderMovementPos = iPos; // iPos = [0; 1000]
   theReader->jump_to_relative_position(iPos);
 }
 

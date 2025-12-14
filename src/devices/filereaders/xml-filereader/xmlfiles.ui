@@ -23,14 +23,14 @@
    </item>
    <item>
     <widget class="QSlider" name="sliderFilePos">
-     <property name="maximum">
-      <number>100</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
      <property name="toolTip">
       <string>Grab the handle and slide to move through the file.</string>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>

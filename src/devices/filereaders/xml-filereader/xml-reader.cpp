@@ -126,19 +126,18 @@ void XmlReader::stopReader()
   }
 }
 
-static i32 cycleCount = 0;
-
-void XmlReader::jump_to_relative_position(i32 iPercent)
+void XmlReader::jump_to_relative_position(i32 iPerMill)
 {
   if (running.load())
   {
-    mSetNewFilePos = samplesToRead * iPercent / 100LL;
+    mSetNewFilePos = samplesToRead * iPerMill / 1000LL;
   }
 }
 
 void XmlReader::run()
 {
   i64 samplesRead = 0;
+  i64 samplesReadToUpdate = 0;
   u64 nextStop;
   i32 startPoint = filePointer;
 
@@ -150,6 +149,8 @@ void XmlReader::run()
     samplesToRead = compute_nrSamples(file, blocks);
     qDebug() << "samples to read" << samplesToRead;
     samplesRead = 0;
+    samplesReadToUpdate = 0;
+
     do
     {
       while ((samplesRead <= samplesToRead) && running.load())
@@ -175,17 +176,18 @@ void XmlReader::run()
         if (mSetNewFilePos >= 0)
         {
           // ensure begin of I/Q position
-          i64 pos = startPoint + (((mFileLength - startPoint) * mSetNewFilePos / samplesToRead) & ~3LL);
+          i64 pos = startPoint + (((mFileLength - startPoint) * mSetNewFilePos / samplesToRead));
+          pos = (pos - (pos % 192)); // assume also 24 and 32-bit format files
           fseek(file, pos, SEEK_SET);
           samplesRead = mSetNewFilePos;
           mSetNewFilePos = -1 ;
-          cycleCount = 200; // retrigger emit below
+          samplesReadToUpdate = samplesRead; // retrigger emit below
         }
 
-        if (++cycleCount >= 200)
+        if (samplesRead >= samplesReadToUpdate)
         {
           emit signal_set_progress(samplesRead, samplesToRead);
-          cycleCount = 0;
+          samplesReadToUpdate = samplesRead + fd->sampleRate / 6; // for updating 6 times per second (similar to WAV and RAW files)
         }
 
         // the readSamples function returns 1 msec of data, we assume taking this data does not take time
