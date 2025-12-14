@@ -177,7 +177,7 @@ void XmlReader::run()
         {
           // ensure begin of I/Q position
           i64 pos = startPoint + (((mFileLength - startPoint) * mSetNewFilePos / samplesToRead));
-          pos = (pos - (pos % 192)); // assume also 24 and 32-bit format files
+          pos = (pos - (pos % 24)); // assume also 24bit (2*3Bytes) and 32-bit (2*4Bytes) format files (LCM of 6 and 8 = 24)
           fseek(file, pos, SEEK_SET);
           samplesRead = mSetNewFilePos;
           mSetNewFilePos = -1 ;
