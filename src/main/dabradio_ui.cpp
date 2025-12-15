@@ -106,8 +106,10 @@ void DabRadio::_initialize_ui_buttons()
   ui->btnFib->setStyleSheet(get_bg_style_sheet({ 220, 100, 152 }));
   ui->btnTii->setStyleSheet(get_bg_style_sheet({ 255, 100, 0 }));
   ui->btnCir->setStyleSheet(get_bg_style_sheet({ 220, 37, 192 }));
+  ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet({ 220, 180, 45 }));
 
   _set_http_server_button(EHttpButtonState::Off);
+  slot_handle_mot_saving_selector(mConfig.cmbMotObjectSaving->currentIndex());
 
   // only the queued call will consider the button size
   QMetaObject::invokeMethod(this, "_slot_update_mute_state", Qt::QueuedConnection, Q_ARG(bool, false));
@@ -385,6 +387,8 @@ void DabRadio::_slot_set_static_button_style()
   ui->btnTii->setFixedSize(QSize(32, 32));
   ui->btnCir->setIconSize(QSize(24, 24));
   ui->btnCir->setFixedSize(QSize(32, 32));
+  ui->btnOpenPicFolder->setIconSize(QSize(24, 24));
+  ui->btnOpenPicFolder->setFixedSize(QSize(32, 32));
   ui->btnScanning->setIconSize(QSize(24, 24));
   ui->btnScanning->setFixedSize(QSize(32, 32));
   ui->btnScanning->init(":res/icons/scan24.png", 3, 1);

@@ -410,6 +410,7 @@ public slots:
   void slot_new_audio(i32, u32, u32);
   void slot_set_stereo(bool);
   void slot_set_stream_selector(i32);
+  void slot_handle_mot_saving_selector(i32);
   void slot_show_mot_handling();
   void slot_show_correlation(f32, const QVector<i32> & v);
   void slot_show_spectrum(i32);
@@ -457,6 +458,7 @@ private slots:
   void _slot_handle_eti_button();
   void _slot_handle_spectrum_button();
   void _slot_handle_cir_button();
+  void _slot_handle_open_pic_folder_button();
   void _slot_handle_device_widget_button();
   void _slot_do_start(const QString &);
   void _slot_new_device(const QString &);

@@ -42,6 +42,7 @@
 #include "epg-decoder.h"
 #include "map-http-server.h"
 #include <QMessageBox>
+#include <QDesktopServices>
 
 #if defined(__MINGW32__) || defined(_WIN32)
   #include <windows.h>
@@ -893,6 +894,11 @@ void DabRadio::slot_set_stream_selector(i32 k)
   emit signal_set_audio_device(mConfig.cmbSoundOutput->itemData(k).toByteArray());
 }
 
+void DabRadio::slot_handle_mot_saving_selector(i32 iIdx)
+{
+  ui->btnOpenPicFolder->setEnabled(iIdx > 0);
+}
+
 void DabRadio::_slot_handle_tech_detail_button()
 {
   if (!mIsRunning)
@@ -927,6 +933,16 @@ void DabRadio::_slot_handle_cir_button()
     mCirViewer.hide();
   }
   Settings::CirViewer::varUiVisible.write(!mCirViewer.is_hidden());
+}
+
+void DabRadio::_slot_handle_open_pic_folder_button()
+{
+  const QString picFolder = (mMotPicPathLast.isEmpty() ? mPicturesPath : QFileInfo(mMotPicPathLast).absolutePath());
+  
+  if (QDir(picFolder).exists())
+  {
+    QDesktopServices::openUrl(QUrl::fromLocalFile(picFolder));
+  }
 }
 
 
@@ -1065,6 +1081,7 @@ void DabRadio::_connect_dab_processor_signals()
     connect(ui->btnToggleFavorite, &QPushButton::clicked, this, &DabRadio::_slot_handle_favorite_button),
     connect(ui->btnTii, &QPushButton::clicked, this, &DabRadio::_slot_handle_tii_button),
     connect(ui->btnCir, &QPushButton::clicked, this, &DabRadio::_slot_handle_cir_button),
+    connect(ui->btnOpenPicFolder, &QPushButton::clicked, this, &DabRadio::_slot_handle_open_pic_folder_button),
     connect(mpDabProcessor->get_fib_decoder(), &IFibDecoder::signal_fib_loaded_state, this, &DabRadio::_slot_fib_loaded_state, Qt::QueuedConnection),
   };
 }
@@ -1224,6 +1241,7 @@ void DabRadio::stop_services(const bool iStopAlsoGlobServices)
 
   mChannel.curSecondaryServiceVec.clear();
   mAudioFrameType = EAudioFrameType::None;
+  mMotPicPathLast.clear();
 
   _show_pause_slide();
   clean_screen();
