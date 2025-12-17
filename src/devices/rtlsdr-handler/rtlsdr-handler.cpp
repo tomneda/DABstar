@@ -381,6 +381,7 @@ void RtlSdrHandler::stopReader()
     delete workerHandle;
     workerHandle = nullptr;
   }
+  close_iqDump();
   close_xmlDump();
 }
 
@@ -691,8 +692,6 @@ void RtlSdrHandler::set_iqDump()
   else
   {
     close_iqDump();
-    iq_dumpButton->setText("Dump to raw");
-    xml_dumpButton->show();
   }
 }
 
@@ -715,6 +714,8 @@ bool RtlSdrHandler::setup_iqDump()
 
 void RtlSdrHandler::close_iqDump()
 {
+  iq_dumpButton->setText("Dump to raw");
+  xml_dumpButton->show();
   if (iqDumper == nullptr)	// this can happen !!
     return;
   iq_dumping.store(false);
@@ -735,8 +736,6 @@ void RtlSdrHandler::set_xmlDump()
   else
   {
     close_xmlDump();
-    xml_dumpButton->setText("Dump to xml");
-    iq_dumpButton->show();
   }
 }
 
@@ -762,6 +761,8 @@ bool RtlSdrHandler::setup_xmlDump()
 
 void RtlSdrHandler::close_xmlDump()
 {
+  xml_dumpButton->setText("Dump to xml");
+  iq_dumpButton->show();
   if (xmlDumper == nullptr)	// this can happen !!
     return;
   xml_dumping.store(false);

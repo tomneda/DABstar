@@ -81,7 +81,7 @@ mir_sdr_DeviceT devDesc [4];
 	this	-> inputRate	= kHz (2048);
 
 	bool success	= fetchLibrary ();
-	if (!success) 
+	if (!success)
 	   throw (std_exception_string ("mir_sdr_api could not be found"));
 	success = loadFunctions();
 	if (!success) {
@@ -189,23 +189,23 @@ mir_sdr_DeviceT devDesc [4];
 	      denominator	= 8192;
 	      antennaSelector -> show();
 	      my_mir_sdr_RSPII_RfNotchEnable (1);
-	      if (err != mir_sdr_Success) 
+	      if (err != mir_sdr_Success)
 	         fprintf (stderr, "error %d in setting rfNotch\n", err);
 	      err = my_mir_sdr_RSPII_AntennaControl (mir_sdr_RSPII_ANTENNA_A);
-	      if (err != mir_sdr_Success) 
+	      if (err != mir_sdr_Success)
 	         fprintf (stderr, "error %d in setting antenna\n", err);
 	      connect (antennaSelector, SIGNAL (textActivated (const QString &)),
 	            this, SLOT (set_antennaSelect (const QString &)));
 	      lnaMax		= 8;
 	      break;
-	   case 3:	
+	   case 3:
 	      lnaGainSetting	-> setRange (0, 9);
 	      deviceModel	= "RSP-DUO";
 	      nrBits		= 14;
 	      denominator	= 8192;
 	      tunerSelector	-> show();
 	      err	= my_mir_sdr_rspDuo_TunerSel (mir_sdr_rspDuo_Tuner_1);
-	      if (err != mir_sdr_Success) 
+	      if (err != mir_sdr_Success)
 	         fprintf (stderr, "error %d in setting of rspDuo\n", err);
 	      connect (tunerSelector, SIGNAL (textActivated (const QString &)),
 	               this, SLOT (set_tunerSelect (const QString &)));
@@ -365,7 +365,7 @@ void	SdrPlayHandler_v2::adjustFreq	(i32 offset) {
 //	vfoFrequency	+= offset;
 //	my_mir_sdr_SetRf ((f64)(vfoFrequency), 1, 0);
 }
-	
+
 bool	SdrPlayHandler_v2::restartReader	(i32 freq) {
 i32	gRdBSystem;
 i32	samplesPerPacket;
@@ -405,10 +405,10 @@ i32	agc		= agcControl	-> isChecked () ? 1 : 0;
 	                errorCodes (err). toLatin1(). data());
 	   return false;
 	}
-	if (err != mir_sdr_Success) 
+	if (err != mir_sdr_Success)
 	   fprintf (stderr, "setting gain failed (plaats 2)\n");
 	err	= my_mir_sdr_SetPpm (f64 (ppmControl -> value()));
-	if (err != mir_sdr_Success) 
+	if (err != mir_sdr_Success)
 	   fprintf (stderr, "error = %s\n",
 	                errorCodes (err). toLatin1(). data());
 
@@ -423,7 +423,7 @@ i32	agc		= agcControl	-> isChecked () ? 1 : 0;
 	   GRdBSelector		-> show ();
 	   gainsliderLabel	-> show ();
 	}
-	
+
 
 	err		= my_mir_sdr_SetDcMode (4, 1);
 	if (err != mir_sdr_Success)
@@ -458,7 +458,7 @@ mir_sdr_ErrT err;
 
 	if (!running. load())
 	   return;
-	
+
 	disconnect (GRdBSelector, SIGNAL (valueChanged (int)),
 	            this, SLOT (set_ifgainReduction (int)));
 	disconnect (this, SLOT (set_ifgainReduction (int)));
@@ -485,10 +485,10 @@ i32	SdrPlayHandler_v2::getSamples (cf32 *V, i32 size) {
 std::complex<i16> temp [size];
 i32 i;
 	i32 amount	= _I_Buffer. get_data_from_ring_buffer (temp, size);
-	for (i = 0; i < amount; i ++) 
+	for (i = 0; i < amount; i ++)
 	   V [i] = cf32 (real (temp [i]) / (f32) denominator,
 	                                imag (temp [i]) / (f32) denominator);
-	if (dumping. load ()) 
+	if (dumping. load ())
 	   xmlWriter -> add (temp, amount);
 	return amount;
 }
@@ -523,7 +523,7 @@ bool agcMode	= agcControl -> isChecked();
 	   mir_sdr_ErrT err =  my_mir_sdr_RSP_SetGr (GRdBSelector -> value (),
 	                                             lnaGainSetting -> value (),
 	                                             1, 0);
-	   if (err != mir_sdr_Success) 
+	   if (err != mir_sdr_Success)
 	      fprintf (stderr, "fout by agcControl\n");
 	}
 	else {
@@ -562,12 +562,12 @@ mir_sdr_ErrT err;
 
 	if (hwVersion != 3)	// should not happen
 	   return;
-	if (s == "Tuner 1") 
+	if (s == "Tuner 1")
 	   err	= my_mir_sdr_rspDuo_TunerSel (mir_sdr_rspDuo_Tuner_1);
 	else
 	   err	= my_mir_sdr_rspDuo_TunerSel (mir_sdr_rspDuo_Tuner_2);
 
-	if (err != mir_sdr_Success) 
+	if (err != mir_sdr_Success)
 	   fprintf (stderr, "error %d in selecting  rspDuo\n", err);
 }
 
@@ -926,7 +926,6 @@ void	SdrPlayHandler_v2::set_xmlDump () {
 	}
 	else {
 	   close_xmlDump ();
-	   dumpButton	-> setText ("Dump");
 	}
 }
 
@@ -950,7 +949,7 @@ QString	saveDir	= sdrplaySettings -> value (sSettingSampleStorageDir,
 	for (i32 i = 0; i < timeString. length (); i ++)
            if (!isValid (timeString. at (i)))
               timeString. replace (i, 1, '-');
-	
+
         QString suggestedFileName =
                     saveDir + deviceModel + "-" + channel + "-" + timeString;
 
@@ -962,7 +961,7 @@ QString	saveDir	= sdrplaySettings -> value (sSettingSampleStorageDir,
         xmlDumper	= fopen (fileName. toUtf8(). data(), "w");
 	if (xmlDumper == nullptr)
 	   return false;
-	
+
 	xmlWriter	= new XmlFileWriter (xmlDumper,
                                   nrBits,
                                   "int16",
@@ -981,6 +980,7 @@ QString	saveDir	= sdrplaySettings -> value (sSettingSampleStorageDir,
 }
 
 void	SdrPlayHandler_v2::close_xmlDump () {
+    dumpButton	-> setText ("Dump");
 	if (xmlDumper == nullptr)	// this can happen !!
 	   return;
 	dumping. store (false);

@@ -257,9 +257,9 @@ bool LimeHandler::restartReader(i32 freq)
 
 void LimeHandler::stopReader()
 {
-  close_xmlDump();
   if (!isRunning())
     return;
+  close_xmlDump();
   if (save_gainSettings)
     record_gainSettings(vfoFrequency);
 
@@ -542,7 +542,6 @@ void LimeHandler::set_xmlDump()
   else
   {
     close_xmlDump();
-    dumpButton->setText("Dump");
   }
 }
 
@@ -568,6 +567,7 @@ bool LimeHandler::setup_xmlDump()
 
 void LimeHandler::close_xmlDump()
 {
+  dumpButton->setText("Dump");
   if (xmlDumper == nullptr)   // this can happen !!
     return;
   dumping.store(false);

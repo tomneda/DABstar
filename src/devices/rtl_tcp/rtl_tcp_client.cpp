@@ -430,7 +430,6 @@ void RtlTcpClient::set_xmlDump()
   else
   {
     close_xmlDump();
-    xml_dumpButton->setText("Dump to xml");
   }
 }
 
@@ -450,6 +449,7 @@ bool RtlTcpClient::setup_xmlDump()
 
 void RtlTcpClient::close_xmlDump()
 {
+  xml_dumpButton->setText("Dump to xml");
   if (xmlDumper == nullptr)
     return;
   xml_dumping.store(false);
@@ -459,4 +459,3 @@ void RtlTcpClient::close_xmlDump()
   fclose(xmlDumper);
   xmlDumper = nullptr;
 }
-

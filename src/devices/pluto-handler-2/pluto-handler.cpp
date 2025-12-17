@@ -722,7 +722,6 @@ void    PlutoHandler::set_xmlDump ()
     else
     {
        close_xmlDump ();
-       dumpButton   -> setText ("Dump");
     }
 }
 
@@ -748,6 +747,7 @@ bool PlutoHandler::setup_xmlDump()
 
 void    PlutoHandler::close_xmlDump ()
 {
+    dumpButton   -> setText ("Dump");
     if (xmlDumper == nullptr)   // this can happen !!
        return;
     dumping. store (false);

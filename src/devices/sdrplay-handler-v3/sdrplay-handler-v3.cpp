@@ -351,7 +351,6 @@ void SdrPlayHandler_v3::set_xmlDump()
   else
   {
     close_xmlDump();
-    dumpButton->setText("Dump");
   }
 }
 
@@ -395,6 +394,7 @@ bool SdrPlayHandler_v3::setup_xmlDump()
 
 void SdrPlayHandler_v3::close_xmlDump()
 {
+  dumpButton->setText("Dump");
   if (xmlDumper == nullptr)
   {  // this can happen !!
     return;

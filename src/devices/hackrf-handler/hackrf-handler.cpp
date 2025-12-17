@@ -405,7 +405,6 @@ void HackRfHandler::slot_xml_dump()
   else
   {
     close_xml_dump();
-    dumpButton->setText("Dump");
   }
 }
 
@@ -426,6 +425,7 @@ bool HackRfHandler::setup_xml_dump()
 
 void HackRfHandler::close_xml_dump()
 {
+  dumpButton->setText("Dump");
   if (mpXmlDumper == nullptr)
   {  // this can happen !!
     return;

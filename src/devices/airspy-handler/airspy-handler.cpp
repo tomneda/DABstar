@@ -708,7 +708,6 @@ void	AirspyHandler::set_xmlDump()
 	else
 	{
 	   close_xmlDump ();
-	   dumpButton	->setText ("Dump");
 	}
 }
 
@@ -736,6 +735,7 @@ bool AirspyHandler::setup_xmlDump()
 
 void	AirspyHandler::close_xmlDump ()
 {
+    dumpButton	->setText ("Dump");
 	if (xmlDumper == nullptr)	// this can happen !!
 	   return;
 	dumping.store (false);
