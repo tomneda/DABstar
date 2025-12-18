@@ -13,7 +13,7 @@ try_find_vcpkg_toolset_path()
 print(CMAKE_TOOLCHAIN_FILE)
 
 ##############################
-project(DABstar VERSION 4.5.0)
+project(DABstar VERSION 4.5.1)
 ##############################
 
 set(objectName "dabstar")
@@ -253,6 +253,7 @@ include_directories(
         src/eti-handler
         src/service-list
         src/configuration
+        src/update
         #/usr/include/
 )
 
@@ -360,6 +361,8 @@ set(${objectName}_HDRS
         src/service-list/service-list-handler.h
         src/service-list/service-db.h
         src/configuration/configuration.h
+        src/update/updatechecker.h
+        src/update/updatedialog.h
 )
 
 set(${objectName}_SRCS
@@ -460,6 +463,8 @@ set(${objectName}_SRCS
         src/service-list/service-list-handler.cpp
         src/service-list/service-db.cpp
         src/configuration/configuration.cpp
+        src/update/updatechecker.cpp
+        src/update/updatedialog.cpp
 )
 
 #########################################################################
