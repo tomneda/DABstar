@@ -41,7 +41,7 @@
 <!-- TOC -->
 
 ---
-## Pictures from version V4.0.0 
+## Pictures from version V4.0.0 to V4.6.0 
 
 ### Main window                                 
 
@@ -66,6 +66,12 @@
 ### Map view of received transmitters
 
 ![](res/for_readme/map.png)
+
+### DABstar version update dialog
+
+![](res/for_readme/update.png)
+
+(unfortunately, the link coloring could not be made better readable, looks better in Windows)
 
 ### Technical details window of the selected service
 
