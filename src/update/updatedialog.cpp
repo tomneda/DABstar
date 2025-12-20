@@ -38,34 +38,43 @@
 // #include "setting-helper.h"
 #include "ui_updatedialog.h"
 
-UpdateDialog::UpdateDialog(const QString &version, const QString &releaseNotes, Qt::WindowFlags f, QWidget *parent)
-    : QDialog(parent, f), ui(new Ui::UpdateDialog)
+UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, QWidget * parent)
+  : QDialog(parent, f)
+  , ui(new Ui::UpdateDialog)
 {
-    ui->setupUi(this);
+  ui->setupUi(this);
 #ifdef Q_OS_MAC
-    ui->dialogLayout->setContentsMargins(12, 12, 12, 12);
+  ui->dialogLayout->setContentsMargins(12, 12, 12, 12);
 #endif
-    setModal(true);
-    setWindowTitle(tr("Application update"));
-    ui->title->setText(tr("DABstar update available"));
-    ui->currentLabel->setText(tr("Current version: %1").arg(PRJ_VERS));
-    ui->availableLabel->setText(tr("Available version: %1").arg(version));
+  setModal(true);
+  setWindowTitle(tr("Application update"));
+  ui->title->setText(tr("DABstar update available"));
+  ui->currentLabel->setText(tr("Current version: %1").arg(PRJ_VERS));
+  ui->availableLabel->setText(tr("Available version: %1").arg(version.mid(1)));
 
-    auto font = ui->title->font();
-    font.setPointSize(font.pointSize() + 2);
-    ui->title->setFont(font);
-    ui->releaseNotes->setReadOnly(true);
-    ui->releaseNotes->setMarkdown("**Changelog:**\n\n" + releaseNotes);
-    ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Do not show again"));
-    auto goTo = new QPushButton(tr("Go to release page"), this);
-    connect(goTo, &QPushButton::clicked, this, [this, version]()
-            { QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/tomneda/DABstar/releases/tag/%1").arg(version))); });
-    ui->buttonBox->addButton(goTo, QDialogButtonBox::ActionRole);
+  auto font = ui->title->font();
+  font.setPointSize(font.pointSize() + 2);
+  ui->title->setFont(font);
+  ui->releaseNotes->setReadOnly(true);
+  ui->releaseNotes->setMarkdown("**Changelog:**\n\n" + releaseNotes);
+  ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Do not show again"));
+  auto goTo = new QPushButton(tr("Go to release page"), this);
 
-    setFixedSize(size());
+  connect(goTo, &QPushButton::clicked, this, [this, version]()
+  {
+#ifdef _WIN32
+    QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/old-dab/DABstar/releases/tag/%1").arg(version)));
+#else
+    QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/tomneda/DABstar/releases/tag/%1").arg(version)));
+#endif
+  });
+
+  ui->buttonBox->addButton(goTo, QDialogButtonBox::ActionRole);
+
+  setFixedSize(size());
 }
 
 UpdateDialog::~UpdateDialog()
 {
-    delete ui;
+  delete ui;
 }

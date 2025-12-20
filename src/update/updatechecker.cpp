@@ -37,114 +37,117 @@
 #include <QJsonObject>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(updater, "UpdateCheck", QtWarningMsg)
+Q_LOGGING_CATEGORY(sLogUpdateChecker, "UpdateCheck", QtWarningMsg)
 
-UpdateChecker::UpdateChecker(QObject *parent) : QObject{parent}
-{}
+UpdateChecker::UpdateChecker(QObject * parent)
+  : QObject(parent)
+{
+}
 
 UpdateChecker::~UpdateChecker()
 {
-    if (m_netAccessManager != nullptr)
-    {
-        m_netAccessManager->deleteLater();
-    }
+  if (m_netAccessManager != nullptr)
+  {
+    m_netAccessManager->deleteLater();
+  }
 }
 
 void UpdateChecker::check()
 {
-    if (m_netAccessManager == nullptr)
-    {
-        m_netAccessManager = new QNetworkAccessManager();
+  if (m_netAccessManager == nullptr)
+  {
+    m_netAccessManager = new QNetworkAccessManager();
 #ifdef QT_DEBUG
-        connect(m_netAccessManager, &QNetworkAccessManager::sslErrors, this,
-                [this](QNetworkReply *reply, const QList<QSslError> &errors)
-                {
-                    for (const auto &e : errors)
-                    {
-                        qDebug() << e;
-                    }
-                });
+    connect(m_netAccessManager, &QNetworkAccessManager::sslErrors, this,
+            [this](QNetworkReply * reply, const QList<QSslError> & errors)
+            {
+              for (const auto & e : errors)
+              {
+                qDebug() << e;
+              }
+            });
 #endif
-        connect(m_netAccessManager, &QNetworkAccessManager::finished, this, &UpdateChecker::onFileDownloaded);
-        connect(m_netAccessManager, &QNetworkAccessManager::destroyed, this, [this]() { m_netAccessManager = nullptr; });
 
-        QNetworkRequest request;
+    connect(m_netAccessManager, &QNetworkAccessManager::finished, this, &UpdateChecker::onFileDownloaded);
+    connect(m_netAccessManager, &QNetworkAccessManager::destroyed, this, [this]() { m_netAccessManager = nullptr; });
+
+    QNetworkRequest request;
 #ifdef _WIN32
-        request.setUrl(QUrl("https://api.github.com/repos/old-dab/DABstar/releases/latest"));
+    request.setUrl(QUrl("https://api.github.com/repos/old-dab/DABstar/releases/latest"));
 #else
-        request.setUrl(QUrl("https://api.github.com/repos/tomneda/DABstar/releases/latest"));
+    request.setUrl(QUrl("https://api.github.com/repos/tomneda/DABstar/releases/latest"));
 #endif
 
-        QSslConfiguration sslConfiguration = QSslConfiguration::defaultConfiguration();
-        sslConfiguration.setCaCertificates(QSslConfiguration::systemCaCertificates());
-        sslConfiguration.setProtocol(QSsl::AnyProtocol);
-        request.setSslConfiguration(sslConfiguration);
-        request.setTransferTimeout(10 * 1000);
-        m_netAccessManager->get(request);
-    }
+    QSslConfiguration sslConfiguration = QSslConfiguration::defaultConfiguration();
+    sslConfiguration.setCaCertificates(QSslConfiguration::systemCaCertificates());
+    sslConfiguration.setProtocol(QSsl::AnyProtocol);
+    request.setSslConfiguration(sslConfiguration);
+    request.setTransferTimeout(10 * 1000);
+    m_netAccessManager->get(request);
+  }
 }
 
 QString UpdateChecker::version() const
 {
-    return m_version;
+  return m_version;
 }
 
 bool UpdateChecker::isPreRelease() const
 {
-    return m_isPreRelease;
+  return m_isPreRelease;
 }
 
 QString UpdateChecker::releaseNotes() const
 {
-    return m_releaseNotes;
+  return m_releaseNotes;
 }
 
-void UpdateChecker::onFileDownloaded(QNetworkReply *reply)
+void UpdateChecker::onFileDownloaded(QNetworkReply * reply)
 {
-    bool result = false;
-    if (reply->error() == QNetworkReply::NoError)
+  bool result = false;
+  if (reply->error() == QNetworkReply::NoError)
+  {
+    QByteArray data = reply->readAll();
+    if (!data.isEmpty())
     {
-        QByteArray data = reply->readAll();
-        if (!data.isEmpty())
-        {
-            result = parseResponse(data);
-        }
+      result = parseResponse(data);
     }
-    else
-    {
-        qCWarning(updater) << reply->errorString();
-    }
-    reply->deleteLater();
-    m_netAccessManager->deleteLater();
+  }
+  else
+  {
+    qCWarning(sLogUpdateChecker) << reply->errorString();
+  }
+  reply->deleteLater();
+  m_netAccessManager->deleteLater();
 
-    emit finished(result);
+  emit finished(result);
 }
 
-bool UpdateChecker::parseResponse(const QByteArray &data)
+bool UpdateChecker::parseResponse(const QByteArray & data)
 {
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
-    if (!jsonDoc.isNull() && jsonDoc.isObject())
+  QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+  if (!jsonDoc.isNull() && jsonDoc.isObject())
+  {
+    auto value = jsonDoc.object().value("tag_name");
+    if (!value.isUndefined())
     {
-        auto value = jsonDoc.object().value("tag_name");
-        if (!value.isUndefined())
-        {
-            m_version = value.toString("");
-        }
-
-        value = jsonDoc.object().value("prerelease");
-        if (!value.isUndefined())
-        {
-            m_isPreRelease = value.toBool(false);
-        }
-
-        value = jsonDoc.object().value("body");
-        if (!value.isUndefined())
-        {
-            m_releaseNotes = value.toString("");
-        }
-
-        return true;
+      m_version = value.toString("");
     }
-    qCWarning(updater) << "Failed to parse server response";
-    return false;
+
+    value = jsonDoc.object().value("prerelease");
+    if (!value.isUndefined())
+    {
+      m_isPreRelease = value.toBool(false);
+    }
+
+    value = jsonDoc.object().value("body");
+    if (!value.isUndefined())
+    {
+      m_releaseNotes = value.toString("");
+    }
+
+    return true;
+  }
+  qCWarning(sLogUpdateChecker) << "Failed to parse server response";
+  return false;
 }

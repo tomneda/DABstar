@@ -39,26 +39,27 @@
 
 class UpdateChecker : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
+
 public:
-    explicit UpdateChecker(QObject *parent = nullptr);
-    ~UpdateChecker();
-    void check();
-    QString version() const;
-    bool isPreRelease() const;
-    QString releaseNotes() const;
+  explicit UpdateChecker(QObject * parent = nullptr);
+  ~UpdateChecker() override;
+  void check();
+  QString version() const;
+  bool isPreRelease() const;
+  QString releaseNotes() const;
 
 signals:
-    void finished(bool result);
+  void finished(bool result);
 
 private:
-    QNetworkAccessManager *m_netAccessManager = nullptr;
-    QString m_version;
-    bool m_isPreRelease;
-    QString m_releaseNotes;
+  QNetworkAccessManager * m_netAccessManager = nullptr;
+  QString m_version;
+  bool m_isPreRelease = false;
+  QString m_releaseNotes;
 
-    void onFileDownloaded(QNetworkReply *reply);
-    bool parseResponse(const QByteArray &data);
+  void onFileDownloaded(QNetworkReply * reply);
+  bool parseResponse(const QByteArray & data);
 };
 
 #endif  // UPDATECHECKER_H

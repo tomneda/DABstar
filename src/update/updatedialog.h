@@ -42,14 +42,14 @@ class UpdateDialog;
 
 class UpdateDialog : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit UpdateDialog(const QString &version, const QString &releaseNotes, Qt::WindowFlags f, QWidget *parent = nullptr);
-    ~UpdateDialog();
+  explicit UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, QWidget * parent = nullptr);
+  ~UpdateDialog() override;
 
 private:
-    Ui::UpdateDialog *ui;
+  Ui::UpdateDialog * ui;
 };
 
 #endif  // UPDATEDIALOG_H
