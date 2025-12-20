@@ -2421,9 +2421,9 @@ void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
         }
         else
         {
-          const QString text = "A latest application version was found, but version assignment is implausible. New: " + verNew.toString() + ", current: " + verCur.toString();
-          if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
+          const QString text = "The latest version on GitHub is " + verNew.toString() + ", but current version assignment is " + verCur.toString() + "! -> skip update";
           qCWarning(sLogDabRadio) << text;
+          if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
         }
       }
     }
