@@ -2385,7 +2385,7 @@ void DabRadio::_slot_check_for_update()
 
       if (!verCur.isValid())
       {
-        qWarning(sLogDabRadio) << "Current application version assignment is invalid";
+        qCritical(sLogDabRadio) << "Current application version assignment is invalid";
         return;
       }
 
@@ -2405,11 +2405,11 @@ void DabRadio::_slot_check_for_update()
         }
         else if (verNew == verCur)
         {
-          qCInfo(sLogDabRadio, "Current application version is up to date");
+          qCInfo(sLogDabRadio, "The current application version is up to date");
         }
         else
         {
-          qWarning(sLogDabRadio) << "New application version found, but version assignment is implausible. New:" << verNew.toString() << ", current:" << verCur.toString();
+          qWarning(sLogDabRadio) << "A new application version was found, but version assignment is implausible. New:" << verNew.toString() << ", current:" << verCur.toString();
         }
       }
     }
