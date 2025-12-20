@@ -53,8 +53,8 @@
   #include <unistd.h>
 #endif
 
-// Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtDebugMsg)
-Q_LOGGING_CATEGORY(sLogRadioInterface, "RadioInterface", QtInfoMsg)
+// Q_LOGGING_CATEGORY(sLogDabRadio, "DabRadio", QtDebugMsg)
+Q_LOGGING_CATEGORY(sLogDabRadio, "DabRadio", QtInfoMsg)
 
 DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, const QString & iFileNameAltFreqList, const i32 iDataPort, QWidget * iParent)
   : QWidget(iParent)
@@ -170,7 +170,7 @@ DabRadio::~DabRadio()
 
   delete ui;
 
-  qCInfo(sLogRadioInterface) << "RadioInterface is deleted";
+  qCInfo(sLogDabRadio) << "RadioInterface is deleted";
 }
 
 // _slot_do_start(QString) is called when - on startup - NO device was registered to be used,
@@ -201,7 +201,7 @@ void DabRadio::_slot_new_device(const QString & deviceName)
 
   if (mpInputDevice != nullptr)
   {
-    qCDebug(sLogRadioInterface()) << "Device is deleted";
+    qCDebug(sLogDabRadio()) << "Device is deleted";
     mpInputDevice.reset();
   }
 
@@ -283,14 +283,14 @@ void DabRadio::do_start()
 // might be called when scanning only from DAB processor and security timer
 void DabRadio::_slot_scanning_no_signal_timeout()
 {
-  qCDebug(sLogRadioInterface()) << Q_FUNC_INFO;
+  qCDebug(sLogDabRadio()) << Q_FUNC_INFO;
   _go_to_next_channel_while_scanning();
 }
 
 // triggers when the scurity timer timedout to ensure a stable behaviour
 void DabRadio::_slot_scanning_security_timeout()
 {
-  qCWarning(sLogRadioInterface()).noquote() << "Scanning security timeout triggered for channel" << mChannel.channelName << "(too weak signal received)";
+  qCWarning(sLogDabRadio()).noquote() << "Scanning security timeout triggered for channel" << mChannel.channelName << "(too weak signal received)";
   _go_to_next_channel_while_scanning();
 }
 
@@ -317,7 +317,7 @@ QString DabRadio::check_and_create_dir(const QString & s) const
 
 void DabRadio::slot_handle_mot_object(const QByteArray & result, const QString & objectName, i32 contentType, bool dirElement)
 {
-  qCDebug(sLogRadioInterface()) << "ObjectName" << objectName << "ContentType" << contentType;
+  qCDebug(sLogDabRadio()) << "ObjectName" << objectName << "ContentType" << contentType;
 
   QString realName;
 
@@ -383,17 +383,17 @@ void DabRadio::save_MOT_text(const QByteArray & result, i32 contentType, const Q
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly))
     {
-      qCCritical(sLogRadioInterface(), "save_MOT_text(): cannot write file %s", path.toUtf8().data());
+      qCCritical(sLogDabRadio(), "save_MOT_text(): cannot write file %s", path.toUtf8().data());
     }
     else
     {
-      qCDebug(sLogRadioInterface(), "save_MOT_text(): going to write MOT file %s", path.toUtf8().data());
+      qCDebug(sLogDabRadio(), "save_MOT_text(): going to write MOT file %s", path.toUtf8().data());
       file.write(result);
     }
   }
   else
   {
-    qCDebug(sLogRadioInterface(), "save_MOT_text(): file %s already exists", path.toUtf8().data());
+    qCDebug(sLogDabRadio(), "save_MOT_text(): file %s already exists", path.toUtf8().data());
   }
 }
 
@@ -457,7 +457,7 @@ void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, co
   default: return;
   }
 
-  qCDebug(sLogRadioInterface(), "show_MOTlabel %s, contentType 0x%x, dirs %d, type %s",
+  qCDebug(sLogDabRadio(), "show_MOTlabel %s, contentType 0x%x, dirs %d, type %s",
           pictureName.toLocal8Bit().constData(), contentType, dirs, type);
 
   const bool saveMotObject = mConfig.cmbMotObjectSaving->currentIndex() > 0;
@@ -474,17 +474,17 @@ void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, co
       QFile file(pict);
       if (!file.open(QIODevice::WriteOnly))
       {
-        qCCritical(sLogRadioInterface()) << "Cannot write file" << pict;
+        qCCritical(sLogDabRadio()) << "Cannot write file" << pict;
       }
       else
       {
-        qCInfo(sLogRadioInterface()) << "Write picture to" << pict;
+        qCInfo(sLogDabRadio()) << "Write picture to" << pict;
         file.write(data);
       }
     }
     else if (pict != mMotPicPathLast) // show this message only once because some services transfers only one picture all day long
     {
-      qCInfo(sLogRadioInterface()) << "File" << pict << "already exists";
+      qCInfo(sLogDabRadio()) << "File" << pict << "already exists";
     }
     mMotPicPathLast = pict;
   }
@@ -548,7 +548,7 @@ void DabRadio::slot_send_datagram(i32 length)
 // tdcData is triggered by the backend.
 void DabRadio::slot_handle_tdc_data(i32 frametype, i32 length)
 {
-  qCDebug(sLogRadioInterface) << Q_FUNC_INFO << frametype << length;
+  qCDebug(sLogDabRadio) << Q_FUNC_INFO << frametype << length;
 #ifdef DATA_STREAMER
   auto * const localBuffer = make_vla(u8, length + 8);
 #endif
@@ -594,7 +594,7 @@ void DabRadio::slot_handle_tdc_data(i32 frametype, i32 length)
   */
 void DabRadio::slot_change_in_configuration()
 {
-  qCWarning(sLogRadioInterface()) << "Configuration change is not supported yet -> Consider providing sample data where such a configuration change happens";
+  qCWarning(sLogDabRadio()) << "Configuration change is not supported yet -> Consider providing sample data where such a configuration change happens";
 
   //   if (!mIsRunning || mpDabProcessor == nullptr)
 //   {
@@ -1132,7 +1132,7 @@ void DabRadio::slot_start_announcement(const QString & name, i32 subChId)
   if (name == ui->serviceLabel->text())
   {
     _set_status_info_status(mStatusInfo.Announce, true);
-    qCInfo(sLogRadioInterface()) << "Announcement starts for service " << ui->serviceLabel->text() << "SubChannel " << subChId;
+    qCInfo(sLogDabRadio()) << "Announcement starts for service " << ui->serviceLabel->text() << "SubChannel " << subChId;
   }
 }
 
@@ -1146,7 +1146,7 @@ void DabRadio::slot_stop_announcement(const QString & name, i32 subChId)
   if (name == ui->serviceLabel->text())
   {
     _set_status_info_status(mStatusInfo.Announce, false);
-    qCInfo(sLogRadioInterface()) << "Announcement stops for service " << ui->serviceLabel->text() << "SubChannel " << subChId;
+    qCInfo(sLogDabRadio()) << "Announcement stops for service " << ui->serviceLabel->text() << "SubChannel " << subChId;
   }
 }
 
@@ -1302,7 +1302,7 @@ bool DabRadio::start_primary_and_secondary_service(const u32 iSId, const bool iS
 
     if (!_create_primary_backend_audio_service(ad) && iStartPrimaryAudioOnly)
     {
-      qCCritical(sLogRadioInterface()) << "Could not create primary audio service";
+      qCCritical(sLogDabRadio()) << "Could not create primary audio service";
       return false;
     }
 
@@ -1317,7 +1317,7 @@ bool DabRadio::start_primary_and_secondary_service(const u32 iSId, const bool iS
         // TODO: considering further data packages?
         if (pdVec.size() > 1)
         {
-          qCWarning(sLogRadioInterface()) << "More than one data packet for service, but ignored (1)";
+          qCWarning(sLogDabRadio()) << "More than one data packet for service, but ignored (1)";
         }
 
         const SPacketData & pd = pdVec[0];
@@ -1331,7 +1331,7 @@ bool DabRadio::start_primary_and_secondary_service(const u32 iSId, const bool iS
 
         if (!_create_secondary_backend_packet_service(pd))
         {
-          qCCritical(sLogRadioInterface()) << "Could not create a secondary packet service";
+          qCCritical(sLogDabRadio()) << "Could not create a secondary packet service";
           return false;
         }
 
@@ -1355,12 +1355,12 @@ bool DabRadio::start_primary_and_secondary_service(const u32 iSId, const bool iS
       // TODO: considering further data packages?
       if (pdVec.size() > 1)
       {
-        qCWarning(sLogRadioInterface()) << "More than one data packet for service, but ignored (2)";
+        qCWarning(sLogDabRadio()) << "More than one data packet for service, but ignored (2)";
       }
 
       if (!_create_primary_backend_packet_service(pd))
       {
-        qCCritical(sLogRadioInterface()) << "Could not create primary packet service";
+        qCCritical(sLogDabRadio()) << "Could not create primary packet service";
         return false;
       }
     }
@@ -1428,7 +1428,7 @@ bool DabRadio::_create_primary_backend_packet_service(const SPacketData & iPD)
     switch (iPD.DSCTy)
     {
     case 5:
-      qCDebug(sLogRadioInterface()) << "Selected AppType" << iPD.appTypeVec[0];
+      qCDebug(sLogDabRadio()) << "Selected AppType" << iPD.appTypeVec[0];
       write_warning_message("Primary 'Transparent Data Channel' (TCD) not supported");
       break;
     case 24:
@@ -1500,7 +1500,7 @@ void DabRadio::_slot_fib_loaded_state(const IFibDecoder::EFibLoadingState iFibLo
   {
     if (mChannel.SId_next == 0)
     {
-      qCCritical(sLogRadioInterface()) << "Fast audio select triggered, but no SId_next set";
+      qCCritical(sLogDabRadio()) << "Fast audio select triggered, but no SId_next set";
       return;
     }
 
@@ -1848,7 +1848,7 @@ void DabRadio::slot_epg_timer_timeout()
       {
         LOG("hidden service started ", serv.serviceLabel);
         _show_epg_label(true);
-        qCDebug(sLogRadioInterface()) << "Starting hidden service " << serv.serviceLabel;
+        qCDebug(sLogDabRadio()) << "Starting hidden service " << serv.serviceLabel;
         mpDabProcessor->set_data_channel(pd, mpDataBuffer, EProcessFlag::Primary);  // which ProcessFlag?
         SDabService s;
         // s.channel = pd.channel;
@@ -2357,7 +2357,7 @@ void DabRadio::_slot_check_for_update()
 {
   if (!Settings::Config::cbCheckForUpdates.read().toBool())
   {
-    qDebug() << "Update check is switched off";
+    qDebug(sLogDabRadio) << "Update check is switched off";
     return;
   }
 
@@ -2369,7 +2369,7 @@ void DabRadio::_slot_check_for_update()
     const auto diffDaysWanted = Settings::Config::sbUpdateCheckDays.read().toInt();
     if (diffDaysToLastCheck < diffDaysWanted)
     {
-      qDebug(sLogRadioInterface) << "Checking for update remaining days:" << diffDaysWanted - diffDaysToLastCheck;
+      qDebug(sLogDabRadio) << "Checking for update remaining days:" << diffDaysWanted - diffDaysToLastCheck;
       return;
     }
   }
@@ -2385,7 +2385,7 @@ void DabRadio::_slot_check_for_update()
 
       if (!verCur.isValid())
       {
-        qWarning(sLogRadioInterface) << "Current application version assignment is invalid";
+        qWarning(sLogDabRadio) << "Current application version assignment is invalid";
         return;
       }
 
@@ -2395,7 +2395,7 @@ void DabRadio::_slot_check_for_update()
 
         if (verNew > verCur)
         {
-          qCInfo(sLogRadioInterface, "New application version found: %s", updateChecker->version().toUtf8().data());
+          qCInfo(sLogDabRadio, "New application version found: %s", updateChecker->version().toUtf8().data());
 
           const auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
                                          Qt::WindowTitleHint | Qt::WindowCloseButtonHint, this);
@@ -2405,17 +2405,17 @@ void DabRadio::_slot_check_for_update()
         }
         else if (verNew == verCur)
         {
-          qCInfo(sLogRadioInterface, "Current application version is up to date");
+          qCInfo(sLogDabRadio, "Current application version is up to date");
         }
         else
         {
-          qWarning(sLogRadioInterface) << "New application version found, but version assignment is implausible. New:" << verNew.toString() << ", current:" << verCur.toString();
+          qWarning(sLogDabRadio) << "New application version found, but version assignment is implausible. New:" << verNew.toString() << ", current:" << verCur.toString();
         }
       }
     }
     else
     {
-      qCWarning(sLogRadioInterface) << "Update check failed";
+      qCWarning(sLogDabRadio) << "Update check failed";
     }
 
     updateChecker->deleteLater();
