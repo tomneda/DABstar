@@ -1,5 +1,5 @@
 /*
- * The idea of this file original taken from AbracaDABra and is adapted by Thomas Neder
+ * The idea of This file was original taken from AbracaDABra and is adapted by Thomas Neder
  * (https://github.com/tomneda)
  * The original copyright information is preserved below and is acknowledged.
  */
