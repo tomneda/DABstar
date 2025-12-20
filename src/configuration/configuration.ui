@@ -374,9 +374,6 @@
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of days when the next update check is made.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
            <property name="maximum">
             <number>30</number>
            </property>

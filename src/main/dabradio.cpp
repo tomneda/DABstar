@@ -2362,11 +2362,11 @@ void DabRadio::_slot_check_for_update()
   }
 
   const QDateTime lastUpdateCheckDate = Settings::Main::varUpdateCheckTime.read().toDateTime();
+  const i32 diffDaysWanted = Settings::Config::sbUpdateCheckDays.read().toInt();
 
   if (lastUpdateCheckDate.isValid()) // if no entry is set in the settings this would be invalid
   {
-    const auto diffDaysToLastCheck = lastUpdateCheckDate.daysTo(QDateTime::currentDateTime());
-    const auto diffDaysWanted = Settings::Config::sbUpdateCheckDays.read().toInt();
+    const i32 diffDaysToLastCheck = lastUpdateCheckDate.daysTo(QDateTime::currentDateTime());
     if (diffDaysToLastCheck < diffDaysWanted)
     {
       qDebug(sLogDabRadio) << "Checking for update remaining days:" << diffDaysWanted - diffDaysToLastCheck;
@@ -2376,7 +2376,7 @@ void DabRadio::_slot_check_for_update()
 
   UpdateChecker * updateChecker = new UpdateChecker(this);
 
-  auto update_checker = [this, updateChecker](const bool result)
+  auto update_checker = [this, updateChecker, diffDaysWanted](const bool result)
   {
     if (result)
     {
@@ -2385,7 +2385,7 @@ void DabRadio::_slot_check_for_update()
 
       if (!verCur.isValid())
       {
-        qCritical(sLogDabRadio) << "Current application version assignment is invalid";
+        qCritical(sLogDabRadio) << "The current application version assignment is invalid";
         return;
       }
 
@@ -2398,8 +2398,7 @@ void DabRadio::_slot_check_for_update()
           qCInfo(sLogDabRadio, "New application version found: %s", updateChecker->version().toUtf8().data());
 
           const auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
-                                         Qt::WindowTitleHint | Qt::WindowCloseButtonHint, this);
-          // connect(dialog, &UpdateDialog::rejected, this, [this]() { m_setupDialog->setCheckUpdatesEna(false); });
+                                               Qt::WindowTitleHint | Qt::WindowCloseButtonHint, diffDaysWanted, this);
           connect(dialog, &UpdateDialog::finished, dialog, &QObject::deleteLater);
           dialog->open();
         }

@@ -64,6 +64,7 @@ public:
   }
 
   bool operator==(const AppVersion & other) const { return toUInt64() == other.toUInt64(); }
+  bool operator!=(const AppVersion & other) const { return toUInt64() != other.toUInt64(); }
   bool operator>(const AppVersion & other) const { return toUInt64() > other.toUInt64(); }
   bool operator>=(const AppVersion & other) const { return toUInt64() >= other.toUInt64(); }
   bool operator<(const AppVersion & other) const { return !(*this >= other); }

@@ -45,7 +45,7 @@ class UpdateDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, QWidget * parent = nullptr);
+  explicit UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, int32_t updateIntervalDays, QWidget * parent = nullptr);
   ~UpdateDialog() override;
 
 private:

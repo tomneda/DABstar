@@ -36,7 +36,7 @@
 #include <QPushButton>
 
 
-UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, QWidget * parent)
+UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, int32_t updateIntervalDays, QWidget * parent)
   : QDialog(parent, f)
   , ui(new Ui::UpdateDialog)
 {
@@ -66,12 +66,12 @@ UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes
   ui->releaseNotes->setOpenExternalLinks(true);
   ui->releaseNotes->moveCursor(QTextCursor::Start);
 
-  ui->buttonBox->button(QDialogButtonBox::Cancel)->setText("Do not show again");
+  ui->btnDeferToNextUpdate->setText("Remember again in " + QString::number(updateIntervalDays) + (updateIntervalDays == 1 ? " day" : " days"));
+  ui->btnOpenReleaseSite->setText("Go to release page for download");
 
-  const auto goTo = new QPushButton("Go to release page", this);
-  ui->buttonBox->addButton(goTo, QDialogButtonBox::ActionRole);
-
-  connect(goTo, &QPushButton::clicked, this, [this, version]()
+  connect(ui->btnOpenReleaseSite, &QPushButton::clicked, this, &QDialog::accept);
+  connect(ui->btnDeferToNextUpdate, &QPushButton::clicked, this, &QDialog::reject);
+  connect(ui->btnOpenReleaseSite, &QPushButton::clicked, this, [this, version]()
   {
 #ifdef _WIN32
     QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/old-dab/DABstar/releases/tag/%1").arg(version)));
