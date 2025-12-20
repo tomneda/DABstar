@@ -47,31 +47,12 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QLabel" name="title">
-         <property name="font">
-          <font>
-           <bold>true</bold>
-          </font>
-         </property>
+        <widget class="QLabel" name="versionLabel">
          <property name="text">
-          <string notr="true">DABstar update available</string>
+          <string notr="true">Version information</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="currentLabel">
-         <property name="text">
-          <string notr="true">Current version:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="availableLabel">
-         <property name="text">
-          <string notr="true">Available version:</string>
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
          </property>
         </widget>
        </item>
@@ -80,7 +61,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTextEdit" name="releaseNotes"/>
+    <widget class="QTextBrowser" name="releaseNotes"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

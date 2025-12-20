@@ -31,34 +31,45 @@
  */
 
 #include "updatedialog.h"
-
+#include "ui_updatedialog.h"
 #include <QDesktopServices>
 #include <QPushButton>
 
-// #include "setting-helper.h"
-#include "ui_updatedialog.h"
 
 UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, QWidget * parent)
   : QDialog(parent, f)
   , ui(new Ui::UpdateDialog)
 {
   ui->setupUi(this);
-#ifdef Q_OS_MAC
-  ui->dialogLayout->setContentsMargins(12, 12, 12, 12);
-#endif
+  
   setModal(true);
-  setWindowTitle(tr("Application update"));
-  ui->title->setText(tr("DABstar update available"));
-  ui->currentLabel->setText(tr("Current version: %1").arg(PRJ_VERS));
-  ui->availableLabel->setText(tr("Available version: %1").arg(version.mid(1)));
+  setWindowTitle("Application update");
 
-  auto font = ui->title->font();
-  font.setPointSize(font.pointSize() + 2);
-  ui->title->setFont(font);
-  ui->releaseNotes->setReadOnly(true);
-  ui->releaseNotes->setMarkdown("**Changelog:**\n\n" + releaseNotes);
-  ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Do not show again"));
-  auto goTo = new QPushButton(tr("Go to release page"), this);
+  const QString tableHtml = QString(
+    "<style>"
+    "  td { padding-right: 10px; }"
+    "  .version { color: #FFD666; }"
+    "  h2 { color: #00B753; }"
+    "</style>"
+    "<h2>DABstar update available</h2>"
+    "<table>"
+    "  <tr><td><b>Current version:</b></td><td class='version'><b>V%1</b></td></tr>"
+    "  <tr><td><b>Available version:</b></td><td class='version'><b>V%2</b></td></tr>"
+    "</table>"
+  ).arg(PRJ_VERS).arg(version.mid(1));
+
+  ui->versionLabel->setTextFormat(Qt::RichText);
+  ui->versionLabel->setText(tableHtml);
+
+  ui->releaseNotes->document()->setDefaultStyleSheet("a { color: lightblue; }"); // TODO: this way or other ways do not work changing the link color
+  ui->releaseNotes->document()->setMarkdown(releaseNotes, QTextDocument::MarkdownDialectGitHub);
+  ui->releaseNotes->setOpenExternalLinks(true);
+  ui->releaseNotes->moveCursor(QTextCursor::Start);
+
+  ui->buttonBox->button(QDialogButtonBox::Cancel)->setText("Do not show again");
+
+  const auto goTo = new QPushButton("Go to release page", this);
+  ui->buttonBox->addButton(goTo, QDialogButtonBox::ActionRole);
 
   connect(goTo, &QPushButton::clicked, this, [this, version]()
   {
@@ -68,8 +79,6 @@ UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes
     QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/tomneda/DABstar/releases/tag/%1").arg(version)));
 #endif
   });
-
-  ui->buttonBox->addButton(goTo, QDialogButtonBox::ActionRole);
 
   setFixedSize(size());
 }
