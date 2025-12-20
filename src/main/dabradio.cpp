@@ -2353,7 +2353,6 @@ void DabRadio::_initialize_and_start_timers()
   mAudioLevelDecayTimer.start();
 }
 
-
 void DabRadio::_slot_check_for_update()
 {
   if (1 /*|| m_settings->updateCheckEna && m_settings->updateCheckTime.daysTo(QDateTime::currentDateTime()) >= 1*/)
@@ -2363,20 +2362,35 @@ void DabRadio::_slot_check_for_update()
             [this, updateChecker](bool result)
             {
               if (result)
-              {  // success
-                AppVersion ver(updateChecker->version());
-                if (ver.isValid())
+              {
+                const AppVersion verNew(updateChecker->version());
+                const AppVersion verCur(PRJ_VERS);
+                if (!verCur.isValid())
+                {
+                  qWarning(sLogRadioInterface) << "Current application version assignment is invalid";
+                  return;
+                }
+
+                if (verNew.isValid())
                 {
                   // m_settings->updateCheckTime = QDateTime::currentDateTime();
-                  if (1 || ver > AppVersion(PRJ_VERS))
+                  if (verNew > verCur)
                   {
                     qCInfo(sLogRadioInterface, "New application version found: %s", updateChecker->version().toUtf8().data());
 
-                    auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
+                    const auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
                                                    Qt::WindowTitleHint | Qt::WindowCloseButtonHint, this);
                     // connect(dialog, &UpdateDialog::rejected, this, [this]() { m_setupDialog->setCheckUpdatesEna(false); });
                     connect(dialog, &UpdateDialog::finished, dialog, &QObject::deleteLater);
                     dialog->open();
+                  }
+                  else if (verNew == verCur)
+                  {
+                    qCInfo(sLogRadioInterface, "Current application version is up to date");
+                  }
+                  else
+                  {
+                    qWarning(sLogRadioInterface) << "New application version found, but version assignment is implausible. New:" << verNew.toString() << ", current:" << verCur.toString();
                   }
                 }
               }

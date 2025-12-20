@@ -44,7 +44,7 @@ public:
 
   AppVersion(const QString & verString)
   {
-    static const QRegularExpression verRe("[vV](\\d+)\\.(\\d+)\\.(\\d+)(-(\\d+))?");
+    static const QRegularExpression verRe("[vV]?(\\d+)\\.(\\d+)\\.(\\d+)(-(\\d+))?");
     QRegularExpressionMatch verMatch = verRe.match(verString);
     if (verMatch.hasMatch())
     {
@@ -55,6 +55,10 @@ public:
       {
         m_git = verMatch.captured(5).toUInt();
       }
+      if (m_major >= 1024 || m_minor >= 1024 || m_patch >= 1024 || m_git >= 1024) // must be within 10 bits
+      {
+        qFatal() << "Version number too large!" << m_major << m_minor << m_patch << m_git;
+      }
       // qDebug() << m_major << m_minor << m_patch << m_git;
     }
   }
@@ -64,7 +68,9 @@ public:
   bool operator>=(const AppVersion & other) const { return toUInt64() >= other.toUInt64(); }
   bool operator<(const AppVersion & other) const { return !(*this >= other); }
   bool operator<=(const AppVersion & other) const { return !(*this > other); }
+
   [[nodiscard]] bool isValid() const { return m_major != 0; }
+  [[nodiscard]] QString toString() const { return QString("V%1.%2.%3").arg(m_major).arg(m_minor).arg(m_patch); }
 
 private:
   uint m_major = 0;
