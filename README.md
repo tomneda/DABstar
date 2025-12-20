@@ -2,13 +2,14 @@
 
 ## Table of Content
 <!-- TOC -->
-  * [Pictures from version V4.0.0](#pictures-from-version-v400-)
+  * [Pictures from version V4.0.0 to V4.6.0](#pictures-from-version-v400-to-v460-)
     * [Main window](#main-window-)
     * [Scope Spectrum Correlation Statistic window](#scope-spectrum-correlation-statistic-window)
     * [FIB content window](#fib-content-window)
     * [Journaline window](#journaline-window)
     * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
     * [Map view of received transmitters](#map-view-of-received-transmitters)
+    * [DABstar version update dialog](#dabstar-version-update-dialog)
     * [Technical details window of the selected service](#technical-details-window-of-the-selected-service)
     * [The PRS correlation window of a whole DAB frame (CIR)](#the-prs-correlation-window-of-a-whole-dab-frame-cir)
     * [Configuration window](#configuration-window)
