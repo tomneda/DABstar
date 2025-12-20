@@ -51,6 +51,7 @@ CATEGORY_BEGIN(Main)
   DEFINE_VARIANT(Main, varPresetChannel, "")
   DEFINE_VARIANT(Main, varPresetSId, 0)
   DEFINE_VARIANT(Main, varChannel, "")
+  DEFINE_VARIANT(Main, varUpdateCheckTime, QDateTime())
   DEFINE_WIDGET(Main, sliderVolume)
 CATEGORY_END(Main)
 
@@ -82,6 +83,8 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_WIDGET(Config, cbUrlClickable)
   DEFINE_WIDGET(Config, cbAutoIterTiiEntries)
   DEFINE_WIDGET(Config, cmbSoundOutput)
+  DEFINE_WIDGET(Config, cbCheckForUpdates)
+  DEFINE_WIDGET(Config, sbUpdateCheckDays)
 CATEGORY_END(Config)
 
 CATEGORY_BEGIN(SpectrumViewer)

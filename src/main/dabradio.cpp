@@ -2355,52 +2355,73 @@ void DabRadio::_initialize_and_start_timers()
 
 void DabRadio::_slot_check_for_update()
 {
-  if (1 /*|| m_settings->updateCheckEna && m_settings->updateCheckTime.daysTo(QDateTime::currentDateTime()) >= 1*/)
+  if (!Settings::Config::cbCheckForUpdates.read().toBool())
   {
-    UpdateChecker * updateChecker = new UpdateChecker(this);
-    connect(updateChecker, &UpdateChecker::finished, this,
-            [this, updateChecker](bool result)
-            {
-              if (result)
-              {
-                const AppVersion verNew(updateChecker->version());
-                const AppVersion verCur(PRJ_VERS);
-                if (!verCur.isValid())
-                {
-                  qWarning(sLogRadioInterface) << "Current application version assignment is invalid";
-                  return;
-                }
-
-                if (verNew.isValid())
-                {
-                  // m_settings->updateCheckTime = QDateTime::currentDateTime();
-                  if (verNew > verCur)
-                  {
-                    qCInfo(sLogRadioInterface, "New application version found: %s", updateChecker->version().toUtf8().data());
-
-                    const auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
-                                                   Qt::WindowTitleHint | Qt::WindowCloseButtonHint, this);
-                    // connect(dialog, &UpdateDialog::rejected, this, [this]() { m_setupDialog->setCheckUpdatesEna(false); });
-                    connect(dialog, &UpdateDialog::finished, dialog, &QObject::deleteLater);
-                    dialog->open();
-                  }
-                  else if (verNew == verCur)
-                  {
-                    qCInfo(sLogRadioInterface, "Current application version is up to date");
-                  }
-                  else
-                  {
-                    qWarning(sLogRadioInterface) << "New application version found, but version assignment is implausible. New:" << verNew.toString() << ", current:" << verCur.toString();
-                  }
-                }
-              }
-              else
-              {
-                qCWarning(sLogRadioInterface) << "Update check failed";
-              }
-
-              updateChecker->deleteLater();
-            });
-    updateChecker->check();
+    qDebug() << "Update check is switched off";
+    return;
   }
+
+  const QDateTime lastUpdateCheckDate = Settings::Main::varUpdateCheckTime.read().toDateTime();
+
+  if (lastUpdateCheckDate.isValid()) // if no entry is set in the settings this would be invalid
+  {
+    const auto diffDaysToLastCheck = lastUpdateCheckDate.daysTo(QDateTime::currentDateTime());
+    const auto diffDaysWanted = Settings::Config::sbUpdateCheckDays.read().toInt();
+    if (diffDaysToLastCheck < diffDaysWanted)
+    {
+      qDebug(sLogRadioInterface) << "Checking for update remaining days:" << diffDaysWanted - diffDaysToLastCheck;
+      return;
+    }
+  }
+
+  UpdateChecker * updateChecker = new UpdateChecker(this);
+
+  auto update_checker = [this, updateChecker](const bool result)
+  {
+    if (result)
+    {
+      const AppVersion verNew(updateChecker->version());
+      const AppVersion verCur(PRJ_VERS);
+
+      if (!verCur.isValid())
+      {
+        qWarning(sLogRadioInterface) << "Current application version assignment is invalid";
+        return;
+      }
+
+      if (verNew.isValid())
+      {
+        Settings::Main::varUpdateCheckTime.write(QDateTime::currentDateTime());
+
+        if (verNew > verCur)
+        {
+          qCInfo(sLogRadioInterface, "New application version found: %s", updateChecker->version().toUtf8().data());
+
+          const auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
+                                         Qt::WindowTitleHint | Qt::WindowCloseButtonHint, this);
+          // connect(dialog, &UpdateDialog::rejected, this, [this]() { m_setupDialog->setCheckUpdatesEna(false); });
+          connect(dialog, &UpdateDialog::finished, dialog, &QObject::deleteLater);
+          dialog->open();
+        }
+        else if (verNew == verCur)
+        {
+          qCInfo(sLogRadioInterface, "Current application version is up to date");
+        }
+        else
+        {
+          qWarning(sLogRadioInterface) << "New application version found, but version assignment is implausible. New:" << verNew.toString() << ", current:" << verCur.toString();
+        }
+      }
+    }
+    else
+    {
+      qCWarning(sLogRadioInterface) << "Update check failed";
+    }
+
+    updateChecker->deleteLater();
+  };
+
+  connect(updateChecker, &UpdateChecker::finished, this, update_checker);
+
+  updateChecker->check();
 }

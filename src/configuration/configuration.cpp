@@ -49,6 +49,8 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::cbUrlClickable.register_widget_and_update_ui_from_setting(cbUrlClickable, 2);
   Settings::Config::cbAutoIterTiiEntries.register_widget_and_update_ui_from_setting(cbAutoIterTiiEntries, 2);
   Settings::Config::cmbSoundOutput.register_widget_and_update_ui_from_setting(cmbSoundOutput, "default");
+  Settings::Config::cbCheckForUpdates.register_widget_and_update_ui_from_setting(cbCheckForUpdates, 2);
+  Settings::Config::sbUpdateCheckDays.register_widget_and_update_ui_from_setting(sbUpdateCheckDays, 1);
 
   // QDir tempPath = QDir::tempPath();
   QDir tempPath = QDir::homePath();

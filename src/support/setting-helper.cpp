@@ -24,6 +24,7 @@
 #include <QComboBox>
 #include <QSlider>
 #include <QTimer>
+#include <QDateTime>
 
 
 namespace Settings
