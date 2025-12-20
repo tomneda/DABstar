@@ -2415,14 +2415,14 @@ void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
         }
         else if (verNew == verCur)
         {
-          const QString text = "The DABstar version is up to date";
-          qCInfo(sLogDabRadio) << text;
+          const QString text = "This DABstar version " + verCur.toString() + " is up to date";
+          qCInfo(sLogDabRadio).noquote() << text;
           if (iShowMessageBox) QMessageBox::information(this, "Update", text);
         }
         else
         {
-          const QString text = "The latest version on GitHub is " + verNew.toString() + ", but current version assignment is " + verCur.toString() + "! -> skip update";
-          qCWarning(sLogDabRadio) << text;
+          const QString text = "The latest version on GitHub is " + verNew.toString() + ", but this version is assigned as " + verCur.toString() + "! -> skip update";
+          qCWarning(sLogDabRadio).noquote() << text;
           if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
         }
       }
@@ -2430,7 +2430,7 @@ void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
     else
     {
       const QString text = "Update check failed! Maybe a network issue to Github?";
-      qCWarning(sLogDabRadio) << text;
+      qCWarning(sLogDabRadio).noquote() << text;
       if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
     }
     updateChecker->deleteLater();

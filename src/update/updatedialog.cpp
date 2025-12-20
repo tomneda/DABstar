@@ -66,7 +66,7 @@ UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes
   ui->releaseNotes->setOpenExternalLinks(true);
   ui->releaseNotes->moveCursor(QTextCursor::Start);
 
-  ui->btnDeferToNextUpdate->setText("Remember again in " + QString::number(updateIntervalDays) + (updateIntervalDays == 1 ? " day" : " days"));
+  ui->btnDeferToNextUpdate->setText("Check again in " + QString::number(updateIntervalDays) + (updateIntervalDays == 1 ? " day" : " days"));
   ui->btnOpenReleaseSite->setText("Go to release page for download");
 
   connect(ui->btnOpenReleaseSite, &QPushButton::clicked, this, &QDialog::accept);
