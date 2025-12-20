@@ -467,7 +467,6 @@ void DabRadio::show_MOT_image(const QByteArray & data, const i32 contentType, co
     const bool saveToDir = mConfig.cmbMotObjectSaving->currentIndex() == 2;
     QString pict = generate_unique_file_path_from_hash(mPicturesPath, type, data, saveToDir);
     pict = QDir::toNativeSeparators(pict);
-    // qInfo() << "filepath:" << pict << "(pictureName:" << pictureName << ")";
 
     if (!QFile::exists(pict))
     {
@@ -2362,7 +2361,7 @@ void DabRadio::_slot_check_for_update()
 {
   if (!Settings::Config::cbCheckForUpdates.read().toBool())
   {
-    qDebug(sLogDabRadio) << "Update check is switched off";
+    qCDebug(sLogDabRadio) << "Update check is switched off";
     return;
   }
 
@@ -2375,7 +2374,7 @@ void DabRadio::_slot_check_for_update()
 
     if (diffDaysToLastCheck < diffDaysWanted)
     {
-      qDebug(sLogDabRadio) << "Checking for update remaining days:" << diffDaysWanted - diffDaysToLastCheck;
+      qCDebug(sLogDabRadio) << "Checking for update remaining days:" << diffDaysWanted - diffDaysToLastCheck;
       return;
     }
   }
@@ -2396,7 +2395,7 @@ void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
 
       if (!verCur.isValid())
       {
-        qCritical(sLogDabRadio) << "The current application version assignment is invalid";
+        qCCritical(sLogDabRadio) << "The current application version assignment is invalid";
         return;
       }
 
@@ -2424,7 +2423,7 @@ void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
         {
           const QString text = "A latest application version was found, but version assignment is implausible. New: " + verNew.toString() + ", current: " + verCur.toString();
           if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
-          qWarning(sLogDabRadio) << text;
+          qCWarning(sLogDabRadio) << text;
         }
       }
     }
