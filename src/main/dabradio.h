@@ -367,7 +367,7 @@ private:
   void _update_scan_statistics(const SServiceId & sl);
   void _show_or_hide_windows_from_config();
   void _go_to_next_channel_while_scanning();
-
+  void _check_on_github_for_update(bool iShowMessageBox);
   void _emphasize_pushbutton(QPushButton * ipPB, bool iEmphasize) const;
 
   void _initialize_ui_buttons();
@@ -446,6 +446,7 @@ public slots:
   void slot_handle_tii_threshold(i32);
   void slot_handle_tii_subid(i32);
   void slot_http_terminate();
+  void slot_check_for_update();
 
   void closeEvent(QCloseEvent * event) override;
 

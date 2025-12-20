@@ -83,6 +83,7 @@ Configuration::Configuration(DabRadio * ipRI) :
   connect(cbTiiCollisions, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_tii_collisions);
   connect(sbTiiSubId, &QSpinBox::valueChanged, mpRadioInterface, &DabRadio::slot_handle_tii_subid);
   connect(cmbMotObjectSaving, qOverload<i32>(&QComboBox::activated), mpRadioInterface, &DabRadio::slot_handle_mot_saving_selector);
+  connect(btnCheckForUpdate, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_check_for_update);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
   connect(cbUseStrongestPeak, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_use_strongest_peak);
   connect(cbActivateLogger, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_handle_logger_button);

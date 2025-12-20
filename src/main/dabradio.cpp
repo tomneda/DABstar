@@ -2353,6 +2353,11 @@ void DabRadio::_initialize_and_start_timers()
   mAudioLevelDecayTimer.start();
 }
 
+void DabRadio::slot_check_for_update()
+{
+  _check_on_github_for_update(true);
+}
+
 void DabRadio::_slot_check_for_update()
 {
   if (!Settings::Config::cbCheckForUpdates.read().toBool())
@@ -2362,11 +2367,12 @@ void DabRadio::_slot_check_for_update()
   }
 
   const QDateTime lastUpdateCheckDate = Settings::Main::varUpdateCheckTime.read().toDateTime();
-  const i32 diffDaysWanted = Settings::Config::sbUpdateCheckDays.read().toInt();
 
   if (lastUpdateCheckDate.isValid()) // if no entry is set in the settings this would be invalid
   {
     const i32 diffDaysToLastCheck = lastUpdateCheckDate.daysTo(QDateTime::currentDateTime());
+    const i32 diffDaysWanted = Settings::Config::sbUpdateCheckDays.read().toInt();
+
     if (diffDaysToLastCheck < diffDaysWanted)
     {
       qDebug(sLogDabRadio) << "Checking for update remaining days:" << diffDaysWanted - diffDaysToLastCheck;
@@ -2374,9 +2380,14 @@ void DabRadio::_slot_check_for_update()
     }
   }
 
+  _check_on_github_for_update(false);
+}
+
+void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
+{
   UpdateChecker * updateChecker = new UpdateChecker(this);
 
-  auto update_checker = [this, updateChecker, diffDaysWanted](const bool result)
+  auto update_checker = [this, updateChecker, iShowMessageBox](const bool result)
   {
     if (result)
     {
@@ -2397,6 +2408,7 @@ void DabRadio::_slot_check_for_update()
         {
           qCInfo(sLogDabRadio, "New application version found: %s", updateChecker->version().toUtf8().data());
 
+          const i32 diffDaysWanted = Settings::Config::sbUpdateCheckDays.read().toInt();
           const auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
                                                Qt::WindowTitleHint | Qt::WindowCloseButtonHint, diffDaysWanted, this);
           connect(dialog, &UpdateDialog::finished, dialog, &QObject::deleteLater);
@@ -2404,19 +2416,24 @@ void DabRadio::_slot_check_for_update()
         }
         else if (verNew == verCur)
         {
-          qCInfo(sLogDabRadio, "The current application version is up to date");
+          const QString text = "The DABstar version is up to date";
+          qCInfo(sLogDabRadio) << text;
+          if (iShowMessageBox) QMessageBox::information(this, "Update", text);
         }
         else
         {
-          qWarning(sLogDabRadio) << "A new application version was found, but version assignment is implausible. New:" << verNew.toString() << ", current:" << verCur.toString();
+          const QString text = "A latest application version was found, but version assignment is implausible. New: " + verNew.toString() + ", current: " + verCur.toString();
+          if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
+          qWarning(sLogDabRadio) << text;
         }
       }
     }
     else
     {
-      qCWarning(sLogDabRadio) << "Update check failed";
+      const QString text = "Update check failed! Maybe a network issue to Github?";
+      qCWarning(sLogDabRadio) << text;
+      if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
     }
-
     updateChecker->deleteLater();
   };
 
