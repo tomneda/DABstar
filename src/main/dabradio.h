@@ -488,6 +488,7 @@ private slots:
   void _slot_handle_skip_file_button();
   void _slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
   void _slot_handle_volume_slider(i32);
+  void _slot_check_for_update();
 };
 
 #endif

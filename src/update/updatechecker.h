@@ -1,4 +1,10 @@
 /*
+ * This file original taken from AbracaDABra and is adapted by Thomas Neder
+ * (https://github.com/tomneda)
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  * This file is part of the AbracaDABra project
  *
  * MIT License

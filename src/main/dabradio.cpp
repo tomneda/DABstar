@@ -41,6 +41,9 @@
 #include "epgdec.h"
 #include "epg-decoder.h"
 #include "map-http-server.h"
+#include "updatechecker.h"
+#include "updatedialog.h"
+#include "appversion.h"
 #include <QMessageBox>
 #include <QDesktopServices>
 
@@ -152,6 +155,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iFileNameDb, co
     mConfig.show(); // show configuration windows that the user selects a (valid) device
     connect(mConfig.deviceSelector, &QComboBox::textActivated, this, &DabRadio::_slot_do_start);
   }
+
+  QTimer::singleShot(5000, this, &DabRadio::_slot_check_for_update);
 }
 
 DabRadio::~DabRadio()
@@ -938,7 +943,7 @@ void DabRadio::_slot_handle_cir_button()
 void DabRadio::_slot_handle_open_pic_folder_button()
 {
   const QString picFolder = (mMotPicPathLast.isEmpty() ? mPicturesPath : QFileInfo(mMotPicPathLast).absolutePath());
-  
+
   if (QDir(picFolder).exists())
   {
     QDesktopServices::openUrl(QUrl::fromLocalFile(picFolder));
@@ -2349,3 +2354,39 @@ void DabRadio::_initialize_and_start_timers()
 }
 
 
+void DabRadio::_slot_check_for_update()
+{
+  if (1 /*|| m_settings->updateCheckEna && m_settings->updateCheckTime.daysTo(QDateTime::currentDateTime()) >= 1*/)
+  {
+    UpdateChecker * updateChecker = new UpdateChecker(this);
+    connect(updateChecker, &UpdateChecker::finished, this,
+            [this, updateChecker](bool result)
+            {
+              if (result)
+              {  // success
+                AppVersion ver(updateChecker->version());
+                if (ver.isValid())
+                {
+                  // m_settings->updateCheckTime = QDateTime::currentDateTime();
+                  if (1 || ver > AppVersion(PRJ_VERS))
+                  {
+                    qCInfo(sLogRadioInterface, "New application version found: %s", updateChecker->version().toUtf8().data());
+
+                    auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
+                                                   Qt::WindowTitleHint | Qt::WindowCloseButtonHint, this);
+                    // connect(dialog, &UpdateDialog::rejected, this, [this]() { m_setupDialog->setCheckUpdatesEna(false); });
+                    connect(dialog, &UpdateDialog::finished, dialog, &QObject::deleteLater);
+                    dialog->open();
+                  }
+                }
+              }
+              else
+              {
+                qCWarning(sLogRadioInterface) << "Update check failed";
+              }
+
+              updateChecker->deleteLater();
+            });
+    updateChecker->check();
+  }
+}

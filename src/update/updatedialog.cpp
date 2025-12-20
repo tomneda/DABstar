@@ -1,4 +1,10 @@
 /*
+ * This file original taken from AbracaDABra and is adapted by Thomas Neder
+ * (https://github.com/tomneda)
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  * This file is part of the AbracaDABra project
  *
  * MIT License
@@ -29,8 +35,7 @@
 #include <QDesktopServices>
 #include <QPushButton>
 
-// #include "config.h"
-#include "setting-helper.h"
+// #include "setting-helper.h"
 #include "ui_updatedialog.h"
 
 UpdateDialog::UpdateDialog(const QString &version, const QString &releaseNotes, Qt::WindowFlags f, QWidget *parent)
@@ -42,7 +47,7 @@ UpdateDialog::UpdateDialog(const QString &version, const QString &releaseNotes, 
 #endif
     setModal(true);
     setWindowTitle(tr("Application update"));
-    ui->title->setText(tr("AbracaDABra update available"));
+    ui->title->setText(tr("DABstar update available"));
     ui->currentLabel->setText(tr("Current version: %1").arg(PRJ_VERS));
     ui->availableLabel->setText(tr("Available version: %1").arg(version));
 
@@ -54,7 +59,7 @@ UpdateDialog::UpdateDialog(const QString &version, const QString &releaseNotes, 
     ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Do not show again"));
     auto goTo = new QPushButton(tr("Go to release page"), this);
     connect(goTo, &QPushButton::clicked, this, [this, version]()
-            { QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/KejPi/AbracaDABra/releases/tag/%1").arg(version))); });
+            { QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/tomneda/DABstar/releases/tag/%1").arg(version))); });
     ui->buttonBox->addButton(goTo, QDialogButtonBox::ActionRole);
 
     setFixedSize(size());

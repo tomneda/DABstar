@@ -1,4 +1,10 @@
 /*
+ * This file original taken from AbracaDABra and is adapted by Thomas Neder
+ * (https://github.com/tomneda)
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  * This file is part of the AbracaDABra project
  *
  * MIT License
@@ -63,7 +69,11 @@ void UpdateChecker::check()
         connect(m_netAccessManager, &QNetworkAccessManager::destroyed, this, [this]() { m_netAccessManager = nullptr; });
 
         QNetworkRequest request;
-        request.setUrl(QUrl("https://api.github.com/repos/kejpi/AbracaDABra/releases/latest"));
+#ifdef _WIN32
+        request.setUrl(QUrl("https://api.github.com/repos/old-dab/DABstar/releases/latest"));
+#else
+        request.setUrl(QUrl("https://api.github.com/repos/tomneda/DABstar/releases/latest"));
+#endif
 
         QSslConfiguration sslConfiguration = QSslConfiguration::defaultConfiguration();
         sslConfiguration.setCaCertificates(QSslConfiguration::systemCaCertificates());
