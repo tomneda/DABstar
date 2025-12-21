@@ -24,7 +24,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"4.5.0\\\"
+DEFINES		+= PRJ_VERS=\\\"4.6.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -97,6 +97,7 @@ DEPENDPATH += src \
     src/eti-handler \
     src/service-list \
     src/configuration \
+    src/update \
     src/devices \
     src/devices/filereaders/filereader \
     src/devices/filereaders/xml-filereader \
@@ -212,6 +213,8 @@ HEADERS += \
     src/service-list/service-list-handler.h \
     src/service-list/service-db.h \
     src/configuration/configuration.h \
+    src/update/updatechecker.h \
+    src/update/updatedialog.h \
     src/devices/device-handler.h \
     src/devices/device-exceptions.h \
     src/devices/device-selector.h \
@@ -320,6 +323,8 @@ SOURCES += \
     src/service-list/service-list-handler.cpp \
     src/service-list/service-db.cpp \
     src/configuration/configuration.cpp \
+    src/update/updatechecker.cpp \
+    src/update/updatedialog.cpp \
     src/devices/device-selector.cpp \
     src/devices/filereaders/xml-filereader/xml-filereader.cpp \
     src/devices/filereaders/xml-filereader/xml-reader.cpp \
@@ -335,6 +340,7 @@ FORMS += \
     src/spectrum-viewer/cir-widget.ui \
     src/support/techdata.ui \
     src/configuration/configuration.ui \
+    src/update/updatedialog.ui \
     src/devices/filereaders/xml-filereader/xmlfiles.ui
 
 
