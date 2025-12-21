@@ -75,7 +75,7 @@ void MapHttpServer::start()
     return;
   }
 
-  mpAjaxRequestTimer->start(8000); // give a bit more time after browser start
+  mpAjaxRequestTimer->start(12000); // give a bit more time after browser start
 }
 
 void MapHttpServer::stop()
