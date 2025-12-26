@@ -46,10 +46,9 @@ Protection::Protection(i16 iBitRate) :
 bool Protection::deconvolve(const i16 * iV, i32 /*size*/, u8 * outBuffer)
 {
   i16 inputCounter = 0;
-  //	clear the bits in the viterbiBlock,
-  //	only the non-punctured ones are set
+  // Clear the bits in the viterbiBlock, only the non-punctured ones are set
   memset(viterbiBlock.data(), 0, (outSize * 4 + 24) * sizeof(i16));
-  //	The actual deconvolution is done by the viterbi decoder
+  // The actual deconvolution is done by the viterbi decoder
 
   for (i32 i = 0; i < outSize * 4 + 24; i++)
   {

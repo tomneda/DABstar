@@ -27,13 +27,10 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  UEP_PROTECTION_H
-#define  UEP_PROTECTION_H
+#pragma once
 
-#include  <vector>
-#include  <cstdio>
-#include  <cstdint>
-#include  "protection.h"
+#include "protection.h"
+#include "glob_data_types.h"
 
 class UepProtection : public Protection
 {
@@ -41,6 +38,4 @@ public:
   UepProtection(i16, i16);
   ~UepProtection() override = default;
 };
-
-#endif
 

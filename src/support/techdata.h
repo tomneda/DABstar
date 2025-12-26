@@ -56,6 +56,16 @@ private:
   AudioDisplay * mpAudioDisplay = nullptr;
   QTimer mTimerMotReceived; // avoid fast flickering of the MOT indicator
 
+  void _show_service_label(const QString &) const;
+  void _show_SId(u32) const;
+  void _show_bitrate(i32) const;
+  void _show_subChId(i32) const;
+  void _show_CU_start_address(i32) const;
+  void _show_CU_size(i32) const;
+  void _show_ASCTy(i32) const;
+  void _show_uep_eep(i32, i32) const;
+  void _show_coderate(i32, i32) const;
+
 public slots:
   void slot_trigger_motHandling();
   void slot_show_frame_error_bar(i32) const;
@@ -63,16 +73,7 @@ public slots:
   void slot_show_rs_error_bar(i32) const;
   void slot_show_rs_corrections(i32, i32) const;
   void slot_show_timetableButton(bool) const;
-  void slot_show_service_label(const QString &) const;
-  void slot_show_SId(u32) const;
-  void slot_show_bitrate(i32) const;
-  void slot_show_subChId(i32) const;
-  void slot_show_CU_start_address(i32) const;
-  void slot_show_CU_size(i32) const;
   void slot_show_language(i32) const;
-  void slot_show_ASCTy(i32) const;
-  void slot_show_uep(i32, i32) const;
-  void slot_show_coderate(i32, i32) const;
   void slot_show_fm(i32) const;
   void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed) const;
 

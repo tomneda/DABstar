@@ -186,6 +186,7 @@ private:
     StatusInfoElem<bool> CrcError;
     StatusInfoElem<i32>  InpBitRate;  // tricky: bit rates must be of type i32
     StatusInfoElem<u32>  OutSampRate; // tricky: sample rates must be of type u32
+    StatusInfoElem<const char *> ProtLevel;
   };
 
   static constexpr i32 cDisplayTimeoutMs     =  1000;

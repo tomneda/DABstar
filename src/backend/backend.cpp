@@ -77,7 +77,7 @@ Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer
   memset(shiftRegister, 1, 9);
   for (i32 i = 0; i < bitRate * 24; i++)
   {
-    u8 b = shiftRegister[8] ^ shiftRegister[4];
+    const u8 b = shiftRegister[8] ^ shiftRegister[4];
     for (i32 j = 8; j > 0; j--)
     {
       shiftRegister[j] = shiftRegister[j - 1];

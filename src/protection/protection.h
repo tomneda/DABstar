@@ -29,20 +29,17 @@
  *
  *	Simple base class for combining uep and eep deconvolvers
  */
-#ifndef  PROTECTION_H
-#define  PROTECTION_H
+#pragma once
 
-#include  <cstdint>
-#include  <vector>
-#include  "viterbi-spiral.h"
-
-//extern u8 PI_X[];
+#include "viterbi-spiral.h"
+#include "glob_data_types.h"
+#include <vector>
 
 class Protection : public ViterbiSpiral
 {
 public:
   explicit Protection(i16);
-  virtual ~Protection() = default;
+  ~Protection() override = default;
 
   virtual bool deconvolve(const i16 *, i32, u8 *);
   
@@ -52,6 +49,4 @@ protected:
   std::vector<u8> indexTable;
   std::vector<i16> viterbiBlock;
 };
-
-#endif
 

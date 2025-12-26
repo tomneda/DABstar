@@ -17,12 +17,17 @@ void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iCol
 {
   ioElem.colorOn = iColor;
   ioElem.colorOff = 0x444444;
-  ioElem.value = !T(); // invalidate cache
+
+  // invalidate cache
+  if constexpr (std::is_same_v<T, const char *>)
+    ioElem.value = nullptr;
+  else
+    ioElem.value = !T();
 
   ioElem.pLbl = new QLabel(this);
 
   ioElem.pLbl->setObjectName("lbl" + iName);
-  ioElem.pLbl->setText(iName);
+  ioElem.pLbl->setText(iName); // important for bool elements
   ioElem.pLbl->setToolTip(iToolTip);
 
   QFont font = ioElem.pLbl->font();
@@ -36,14 +41,27 @@ void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iCol
 template<typename T>
 void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue)
 {
-  if (iElem.value != iValue)
+  if constexpr (std::is_same_v<T, const char *>)
+  {
+    if (iValue == nullptr)
+    {
+      iElem.pLbl->setStyleSheet("QLabel { color: " + iElem.colorOff.name() + " }");
+      iElem.pLbl->setText("--- --- ---"); // only for protection level used currently
+    }
+    else
+    {
+      iElem.pLbl->setStyleSheet("QLabel { color: " + iElem.colorOn.name() + " }");
+      iElem.pLbl->setText(iValue);
+    }
+  }
+  else if (iElem.value != iValue)
   {
     iElem.value = iValue;
     iElem.pLbl->setStyleSheet(iElem.value ? "QLabel { color: " + iElem.colorOn.name() + " }"
                                           : "QLabel { color: " + iElem.colorOff.name() + " }");
 
     // trick a bit: i32 are bit rates, u32 are sample rates
-    if (std::is_same<T, i32>::value)
+    if constexpr (std::is_same_v<T, i32>)
     {
       if (iElem.value == 0)
       {
@@ -54,7 +72,7 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue
         iElem.pLbl->setText(QString::number(iValue) + " kbps"); // not clean to place the unit here but it is the only one yet
       }
     }
-    else if (std::is_same<T, u32>::value)
+    else if constexpr (std::is_same_v<T, u32>)
     {
       if (iElem.value == 0)
       {
@@ -71,6 +89,7 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue
 template void DabRadio::_set_status_info_status<bool>(StatusInfoElem<bool> &, bool);
 template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32> &, u32);
 template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32> &, i32);
+template void DabRadio::_set_status_info_status<const char *>(StatusInfoElem<const char *> &, const char *);
 
 void DabRadio::_emphasize_pushbutton(QPushButton * const ipPB, const bool iEmphasize) const
 {
@@ -80,6 +99,7 @@ void DabRadio::_emphasize_pushbutton(QPushButton * const ipPB, const bool iEmpha
 void DabRadio::_reset_status_info()
 {
   _set_status_info_status(mStatusInfo.InpBitRate, (i32)0);
+  _set_status_info_status(mStatusInfo.ProtLevel, (const char *)nullptr);
   _set_status_info_status(mStatusInfo.OutSampRate, (u32)0);
   _set_status_info_status(mStatusInfo.Stereo, false);
   _set_status_info_status(mStatusInfo.EPG, false);
@@ -121,15 +141,16 @@ void DabRadio::_initialize_status_info()
 {
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-  _add_status_label_elem(mStatusInfo.InpBitRate,  0x40c6db, "-- kbps",  "Input bit-rate of the audio decoder");
-  _add_status_label_elem(mStatusInfo.OutSampRate, 0xDE9769, "-- kSps",  "Output sample-rate of the audio decoder");
-  _add_status_label_elem(mStatusInfo.Stereo,      0xf2c629, "Stereo",   "Stereo");
-  _add_status_label_elem(mStatusInfo.PS,          0xf2c629, "PS",       "Parametric Stereo");
-  _add_status_label_elem(mStatusInfo.SBR,         0xf2c629, "SBR",      "Spectral Band Replication");
-  _add_status_label_elem(mStatusInfo.EPG,         0xf2c629, "EPG",      "Electronic Program Guide");
-  _add_status_label_elem(mStatusInfo.Announce,    0xf2c629, "Ann",      "Announcement");
-  _add_status_label_elem(mStatusInfo.RsError,     0xFF2E18, "RS",       "Reed Solomon Error occurred");
-  _add_status_label_elem(mStatusInfo.CrcError,    0xFF2E18, "CRC",      "CRC Error occurred");
+  _add_status_label_elem(mStatusInfo.ProtLevel,   0x6AB45B, "ProtLevel",   "Protection level and Viterbi code rate");
+  _add_status_label_elem(mStatusInfo.InpBitRate,  0x40c6db, "InpBitRate",  "Input bit-rate of the audio decoder");
+  _add_status_label_elem(mStatusInfo.OutSampRate, 0xDE9769, "OutSampRate", "Output sample-rate of the audio decoder");
+  _add_status_label_elem(mStatusInfo.Stereo,      0xf2c629, "Stereo",      "Stereo");
+  _add_status_label_elem(mStatusInfo.PS,          0xf2c629, "PS",          "Parametric Stereo");
+  _add_status_label_elem(mStatusInfo.SBR,         0xf2c629, "SBR",         "Spectral Band Replication");
+  _add_status_label_elem(mStatusInfo.EPG,         0xf2c629, "EPG",         "Electronic Program Guide");
+  _add_status_label_elem(mStatusInfo.Announce,    0xf2c629, "Ann",         "Announcement");
+  _add_status_label_elem(mStatusInfo.RsError,     0xFF5749, "RS",          "Reed Solomon Error occurred");
+  _add_status_label_elem(mStatusInfo.CrcError,    0xFF5749, "CRC",         "CRC Error occurred");
 
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
@@ -665,7 +686,7 @@ void DabRadio::slot_show_label(const QString & s)
           s.toUtf8().data());
 }
 
-void DabRadio::slot_set_stereo(bool b)
+void DabRadio::slot_set_stereo(const bool b)
 {
   _set_status_info_status(mStatusInfo.Stereo, b);
 }

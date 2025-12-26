@@ -92,15 +92,15 @@ void TechData::cleanUp()
 
 void TechData::show_service_data(const SAudioData * ad) const
 {
-  slot_show_service_label(ad->serviceLabel);
-  slot_show_SId(ad->SId);
-  slot_show_bitrate(ad->bitRate);
-  slot_show_CU_start_address(ad->CuStartAddr);
-  slot_show_CU_size(ad->CuSize);
-  slot_show_subChId(ad->SubChId);
-  slot_show_uep(ad->shortForm, ad->protLevel);
-  slot_show_ASCTy(ad->ASCTy);
-  slot_show_coderate(ad->shortForm, ad->protLevel);
+  _show_service_label(ad->serviceLabel);
+  _show_SId(ad->SId);
+  _show_bitrate(ad->bitRate);
+  _show_CU_start_address(ad->CuStartAddr);
+  _show_CU_size(ad->CuSize);
+  _show_subChId(ad->SubChId);
+  _show_uep_eep(ad->shortForm, ad->protLevel);
+  _show_ASCTy(ad->ASCTy);
+  _show_coderate(ad->shortForm, ad->protLevel);
   framedumpButton->setEnabled(true);
   audiodumpButton->setEnabled(true);
 }
@@ -214,12 +214,12 @@ void TechData::slot_show_timetableButton(bool b) const
   }
 }
 
-void TechData::slot_show_service_label(const QString & s) const
+void TechData::_show_service_label(const QString & s) const
 {
   programName->setText(s);
 }
 
-void TechData::slot_show_SId(u32 iSId) const
+void TechData::_show_SId(u32 iSId) const
 {
   serviceIdDisplay->display((i32)iSId);
   if ((iSId & 0x8000'0000) != 0) // display only knows negative numbers but not u32, should this ever happen?
@@ -228,22 +228,22 @@ void TechData::slot_show_SId(u32 iSId) const
   }
 }
 
-void TechData::slot_show_bitrate(i32 br) const
+void TechData::_show_bitrate(i32 br) const
 {
   bitrateDisplay->display(br);
 }
 
-void TechData::slot_show_CU_start_address(i32 sa) const
+void TechData::_show_CU_start_address(i32 sa) const
 {
   startAddressDisplay->display(sa);
 }
 
-void TechData::slot_show_CU_size(i32 l) const
+void TechData::_show_CU_size(i32 l) const
 {
   lengthDisplay->display(l);
 }
 
-void TechData::slot_show_subChId(i32 subChId) const
+void TechData::_show_subChId(i32 subChId) const
 {
   subChIdDisplay->display(subChId);
 }
@@ -253,7 +253,7 @@ void TechData::slot_show_language(i32 l) const
   language->setText(getLanguage(l));
 }
 
-void TechData::slot_show_ASCTy(i32 a) const
+void TechData::_show_ASCTy(i32 a) const
 {
   const bool isDabPlus = (a == 077);
   ASCTy->setText(isDabPlus ? "DAB+" : "DAB");
@@ -264,13 +264,13 @@ void TechData::slot_show_ASCTy(i32 a) const
   rsErrorLabel->setEnabled(isDabPlus);
 }
 
-void TechData::slot_show_uep(i32 shortForm, i32 protLevel) const
+void TechData::_show_uep_eep(i32 shortForm, i32 protLevel) const
 {
   QString protL = getProtectionLevel(shortForm, protLevel);
   uepField->setText(protL);
 }
 
-void TechData::slot_show_coderate(i32 shortForm, i32 protLevel) const
+void TechData::_show_coderate(i32 shortForm, i32 protLevel) const
 {
   codeRate->setText(getCodeRate(shortForm, protLevel));
 }

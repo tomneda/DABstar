@@ -1299,6 +1299,9 @@ bool DabRadio::start_primary_and_secondary_service(const u32 iSId, const bool iS
     mpTechDataWidget->show_service_data(&ad); // may not show all data with iStartPrimaryAudioOnly == true
     _set_status_info_status(mStatusInfo.InpBitRate, (i32)ad.bitRate); // the (i32) is important for the template deduction
 
+    const std::string protLevelStr = std::string(getProtectionLevel(ad.shortForm, ad.protLevel)) + " " + std::string(getCodeRate(ad.shortForm, ad.protLevel));
+    _set_status_info_status(mStatusInfo.ProtLevel, protLevelStr.c_str());
+
     if (!_create_primary_backend_audio_service(ad) && iStartPrimaryAudioOnly)
     {
       qCCritical(sLogDabRadio()) << "Could not create primary audio service";

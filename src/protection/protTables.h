@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2013
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,15 +19,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#
-
-#ifndef  PROTTABLES_H
-#define  PROTTABLES_H
+#pragma once
 
 #include "glob_data_types.h"
-#include  <cstdint>
 
 const i8 * get_PCodes(i16);
-
-#endif
 

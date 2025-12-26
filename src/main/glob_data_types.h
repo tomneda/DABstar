@@ -1,5 +1,4 @@
-#ifndef GLOB_DATA_TYPES_H
-#define GLOB_DATA_TYPES_H
+#pragma once
 
 #include <cstdint>
 
@@ -19,5 +18,3 @@ using f64 = double;
 
 using isize = std::ptrdiff_t;
 using usize = std::size_t;
-
-#endif // GLOB_DATA_TYPES_H
