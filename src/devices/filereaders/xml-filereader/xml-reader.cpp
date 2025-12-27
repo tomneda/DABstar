@@ -50,11 +50,6 @@ static i32 shift(i32 a)
   return r;
 }
 
-static inline cf32 compmul(cf32 a, f32 b)
-{
-  return cf32(real(a) * b, imag(a) * b);
-}
-
 static inline u64 currentTime()
 {
   struct timeval tv;
@@ -70,35 +65,40 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 fileP
   this->fd = fd;
   this->filePointer = filePointer;
   sampleBuffer = b;
-  //
-  //	convBufferSize is a little confusing since the actual
-  //	buffer is one larger
-  convBufferSize = fd->sampleRate / 1000;
   continuous.store(mr->cbLoopFile->isChecked());
 
-  for (i32 i = 0; i < 2048; i++)
+  if (fd->sampleRate != INPUT_RATE)
   {
-    const f32 inVal = f32(fd->sampleRate / 1000);
-    mapTable_int[i] = (i16)(floor(i * (inVal / 2048.0)));
-    mapTable_float[i] = i * (inVal / 2048.0f) - mapTable_int[i];
+#ifdef HAVE_LIQUID
+    const float resampRatio = (float)INPUT_RATE / (float)fd->sampleRate;
+    constexpr u32 filterLen = 13;
+    constexpr float resampBw = 0.5f * (float)(cK * cCarrDiff + 2*35000) / (float)INPUT_RATE;
+    constexpr float sideLopeSuppr = 40.0f;
+    constexpr u32 numFiltersInBank = 32;
+    mLiquidResampler = resamp_crcf_create(resampRatio, filterLen, resampBw, sideLopeSuppr, numFiltersInBank);
+    resamp_crcf_print(mLiquidResampler);
+#else
+    for (i32 i = 0; i < 2048; i++)
+    {
+      const f32 inVal = f32(fd->sampleRate / 1000);
+      mapTable_int[i] = (i16)(floor(i * (inVal / 2048.0)));
+      mapTable_float[i] = i * (inVal / 2048.0f) - mapTable_int[i];
+    }
+#endif
   }
+  // convBufferSize is a little confusing since the actual buffer is one larger
+  convBufferSize = fd->sampleRate / 1000;
+  convBuffer.resize(convBufferSize + 1);
 
   for(i32 i = 0; i < 256; i++)
   {
     mapTable[i] = ((f32)i - 127.38f) / 128.0f;
   }
 
-  convIndex = 0;
-  convBuffer.resize(convBufferSize + 1);
-  nrElements = fd->blockList[0].nrElements;
-
   connect(this, &XmlReader::signal_set_progress, parent, &XmlFileReader::slot_set_progress);
 
   // fprintf(stderr, "reader task wordt gestart\n");
   mSetNewFilePos = -1;
-  fseek(f, 0, SEEK_END);
-  mFileLength = ftell(f);
-  fseek(f, 0, SEEK_SET);
 
   start();
 }
@@ -111,6 +111,12 @@ XmlReader::~XmlReader()
     usleep(1000);
   }
   mSetNewFilePos = -1;
+#ifdef HAVE_LIQUID
+  if (fd->sampleRate != INPUT_RATE)
+  {
+    resamp_crcf_destroy(mLiquidResampler);
+  }
+#endif
 }
 
 void XmlReader::stopReader()
@@ -130,80 +136,74 @@ void XmlReader::jump_to_relative_position(i32 iPerMill)
 {
   if (running.load())
   {
-    mSetNewFilePos = samplesToRead * iPerMill / 1000LL;
+    mSetNewFilePos = parent->samplesToRead * iPerMill / 1000LL;
   }
 }
 
 void XmlReader::run()
 {
-  i64 samplesRead = 0;
-  i64 samplesReadToUpdate = 0;
+  i64 samplesRead;
+  i64 samplesReadToUpdate;
   u64 nextStop;
   i32 startPoint = filePointer;
 
   running.store(true);
   fseek(file, filePointer, SEEK_SET);
   nextStop = currentTime();
-  for (i32 blocks = 0; blocks < fd->nrBlocks; blocks++)
+  qDebug() << "samples to read" << parent->samplesToRead;
+  do
   {
-    samplesToRead = compute_nrSamples(file, blocks);
-    qDebug() << "samples to read" << samplesToRead;
     samplesRead = 0;
-
-    do
+    samplesReadToUpdate = 0;
+    while ((samplesRead <= parent->samplesToRead) && running.load())
     {
-      samplesReadToUpdate = 0;
-      while ((samplesRead <= samplesToRead) && running.load())
+
+      if (fd->iqOrder == "IQ")
       {
-
-        if (fd->iqOrder == "IQ")
-        {
-          samplesRead += readSamples(file, &XmlReader::readElements_IQ);
-        }
-        else if (fd->iqOrder == "QI")
-        {
-          samplesRead += readSamples(file, &XmlReader::readElements_QI);
-        }
-        else if (fd->iqOrder == "I_Only")
-        {
-          samplesRead += readSamples(file, &XmlReader::readElements_I);
-        }
-        else
-        {
-          samplesRead += readSamples(file, &XmlReader::readElements_Q);
-        }
-
-        if (mSetNewFilePos >= 0)
-        {
-          // ensure begin of I/Q position
-          i64 pos = startPoint + (((mFileLength - startPoint) * mSetNewFilePos / samplesToRead));
-          pos = (pos - (pos % 24)); // assume also 24bit (2*3Bytes) and 32-bit (2*4Bytes) format files (LCM of 6 and 8 = 24)
-          fseek(file, pos, SEEK_SET);
-          samplesRead = mSetNewFilePos;
-          mSetNewFilePos = -1 ;
-          samplesReadToUpdate = 0; // retrigger emit below
-        }
-
-        if (samplesRead >= samplesReadToUpdate)
-        {
-          emit signal_set_progress(samplesRead, samplesToRead);
-          samplesReadToUpdate = samplesRead + fd->sampleRate / 6; // for updating 6 times per second (similar to WAV and RAW files)
-        }
-
-        // the readSamples function returns 1 msec of data, we assume taking this data does not take time
-        nextStop = nextStop + (u64)1000;
-        if (nextStop > currentTime())
-        {
-          usleep(nextStop - currentTime());
-        }
+        samplesRead += readSamples(file, &XmlReader::readElements_IQ);
       }
-      emit signal_set_progress(0, samplesToRead);
-      filePointer = startPoint;
-      fseek(file, filePointer, SEEK_SET);
-      samplesRead = 0;
+      else if (fd->iqOrder == "QI")
+      {
+        samplesRead += readSamples(file, &XmlReader::readElements_QI);
+      }
+      else if (fd->iqOrder == "I_Only")
+      {
+        samplesRead += readSamples(file, &XmlReader::readElements_I);
+      }
+      else
+      {
+        samplesRead += readSamples(file, &XmlReader::readElements_Q);
+      }
+
+      if (mSetNewFilePos >= 0)
+      {
+        // ensure begin of I/Q position
+        i64 pos = startPoint + (((parent->mFileLength - startPoint) * mSetNewFilePos / parent->samplesToRead));
+        pos = (pos - (pos % 24)); // assume also 24bit (2*3Bytes) and 32-bit (2*4Bytes) format files (LCM of 6 and 8 = 24)
+        fseek(file, pos, SEEK_SET);
+        samplesRead = mSetNewFilePos;
+        mSetNewFilePos = -1 ;
+        samplesReadToUpdate = 0; // retrigger emit below
+      }
+
+      if (samplesRead >= samplesReadToUpdate)
+      {
+        emit signal_set_progress(samplesRead, parent->samplesToRead);
+        samplesReadToUpdate = samplesRead + fd->sampleRate / 6; // for updating 6 times per second (similar to WAV and RAW files)
+      }
+
+      // the readSamples function returns 1 msec of data, we assume taking this data does not take time
+      nextStop = nextStop + (u64)1000;
+      if (nextStop > currentTime())
+      {
+        usleep(nextStop - currentTime());
+      }
     }
-    while (running.load() && continuous.load());
+    emit signal_set_progress(0, parent->samplesToRead);
+    filePointer = startPoint;
+    fseek(file, filePointer, SEEK_SET);
   }
+  while (running.load() && continuous.load());
 }
 
 bool XmlReader::handle_continuousButton()
@@ -212,50 +212,40 @@ bool XmlReader::handle_continuousButton()
   return continuous.load();
 }
 
-i64 XmlReader::compute_nrSamples(FILE * f, i32 blockNumber)
-{
-  i64 nrElements = fd->blockList.at(blockNumber).nrElements;
-  i64 samplesToRead = 0;
-
-  (void)f;
-  if (fd->blockList.at(blockNumber).typeofUnit == "Channel")
-  {
-    if ((fd->iqOrder == "IQ") || (fd->iqOrder == "QI"))
-    {
-      samplesToRead = nrElements / 2;
-    }
-    else
-    {
-      samplesToRead = nrElements;
-    }
-  }
-  else
-  {  // typeofUnit = "sample"
-    samplesToRead = nrElements;
-  }
-
-  qDebug() << samplesToRead << "samples to read, order is" << fd->iqOrder.toLatin1();
-  return samplesToRead;
-}
-
 i32 XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, cf32 *, i32))
 {
-  cf32 temp[2048];
-
   (*this.*r)(theFile, &convBuffer[1], convBufferSize);
-  for (i32 i = 0; i < 2048; i++)
+  if (fd->sampleRate != INPUT_RATE)
   {
-    i16 inpBase = mapTable_int[i];
-    f32 inpRatio = mapTable_float[i];
-    temp[i] = compmul(convBuffer[inpBase + 1], inpRatio) + compmul(convBuffer[inpBase], 1 - inpRatio);
+    std::array<cf32, 2048+10> ResampBuffer; // add some exaggerated samples
+#ifdef HAVE_LIQUID
+    u32 usedResultSamples = 0;
+    resamp_crcf_execute_block(mLiquidResampler, &convBuffer[1], convBufferSize, ResampBuffer.data(), &usedResultSamples);
+    if(usedResultSamples != 2048)
+    {
+      //fprintf(stderr, "convBufferSize=%d, usedResultSamples=%d\n", convBufferSize, usedResultSamples);
+      assert(usedResultSamples <= ResampBuffer.size());
+    }
+    sampleBuffer->put_data_into_ring_buffer(ResampBuffer.data(), usedResultSamples);
+#else
+    for (i32 i = 0; i < 2048; i++)
+    {
+      i16 inpBase = mapTable_int[i];
+      f32 inpRatio = mapTable_float[i];
+      ResampBuffer[i] = convBuffer[inpBase + 1] * inpRatio + convBuffer[inpBase] * (1.0f - inpRatio);
+    }
+    convBuffer[0] = convBuffer[convBufferSize];
+    sampleBuffer->put_data_into_ring_buffer(ResampBuffer.data(), 2048);
+#endif
   }
-  convBuffer[0] = convBuffer[convBufferSize];
-  convIndex = 1;
-  sampleBuffer->put_data_into_ring_buffer(temp, 2048);
-  return 2048;
+  else
+  {
+    sampleBuffer->put_data_into_ring_buffer(&convBuffer[1], 2048);
+  }
+  return convBufferSize;
 }
 
-//	the readers
+//  the readers
 void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, i32 amount)
 {
   i32 nrBits = fd->bitsperChannel;

@@ -64,6 +64,8 @@ public:
   void resetBuffer() override;
   i16 bitDepth() override;
   QString deviceName() override;
+  i64 samplesToRead = 0;
+  i64 mFileLength = 0;
 
 private:
   QFrame myFrame;
@@ -75,6 +77,8 @@ private:
   XmlDescriptor * theDescriptor = nullptr;
   XmlReader * theReader = nullptr;
   i32 mSliderMovementPos = -1;
+  i64 compute_nrSamples(XmlDescriptor *f, i32 blockNumber);
+  i32 startPoint;
 
 public slots:
   void slot_set_progress(i64, i64);

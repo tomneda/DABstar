@@ -100,8 +100,32 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   recorderVersion->setText(theDescriptor->recorderVersion);
   recordingTime->setText(theDescriptor->recordingTime);
 
-  nrElementsDisplay->display((double)theDescriptor->blockList[0].nrElements);
-  qDebug() << "nrElements = " << theDescriptor->blockList[0].nrElements;
+  i64 nrElements = 0;
+  samplesToRead = 0;
+  for (i32 blocks = 0; blocks < theDescriptor->nrBlocks; blocks++)
+  {
+    samplesToRead += compute_nrSamples(theDescriptor, blocks);
+    nrElements += theDescriptor->blockList[blocks].nrElements;
+  }
+  nrElementsDisplay->display((double)nrElements);
+  totalTime->display(QString("%1").arg((float)samplesToRead / theDescriptor->sampleRate, 0, 'f', 1));
+
+  fseek(theFile, 0, SEEK_END);
+  mFileLength = ftell(theFile);
+  i32 bytecount = 0;
+  if (theDescriptor->container == "int8" || theDescriptor->container == "uint8")
+    bytecount = 1;
+  else if (theDescriptor->container == "int16")
+    bytecount = 2;
+  else if (theDescriptor->container == "int24")
+    bytecount = 3;
+  else if (theDescriptor->container == "float32" || theDescriptor->container == "int32")
+    bytecount = 4;
+  startPoint = mFileLength - (nrElements * bytecount);
+  if(startPoint < 2048 || startPoint > 1000000)
+    startPoint = 2048;
+  qDebug() << "startPoint =" << startPoint;
+
   connect(cbLoopFile, &QCheckBox::clicked, this, &XmlFileReader::slot_handle_cb_loop_file);
   connect(sliderFilePos, &QSlider::sliderPressed, this, &XmlFileReader::slot_slider_pressed);
   connect(sliderFilePos, &QSlider::sliderReleased, this, &XmlFileReader::slot_slider_released);
@@ -138,7 +162,7 @@ bool XmlFileReader::restartReader(i32 freq)
   {
     return true;
   }
-  theReader = new XmlReader(this, theFile, theDescriptor, 5000, &_I_Buffer);
+  theReader = new XmlReader(this, theFile, theDescriptor, startPoint, &_I_Buffer);
   running.store(true);
   return true;
 }
@@ -158,7 +182,7 @@ void XmlFileReader::stopReader()
   running.store(false);
 }
 
-//	size is in "samples"
+//  size is in "samples"
 i32 XmlFileReader::getSamples(cf32 * V, i32 size)
 {
 
@@ -190,8 +214,7 @@ void XmlFileReader::slot_set_progress(i64 samplesRead, i64 samplesToRead)
   {
     sliderFilePos->setValue((f32)samplesRead / (f32)samplesToRead * 1000.0f);
   }
-  currentTime->display(QString("%1").arg(samplesRead / 2048000.0, 0, 'f', 1));
-  totalTime->display(QString("%1").arg(samplesToRead / 2048000.0, 0, 'f', 1));
+  currentTime->display(QString("%1").arg((float)samplesRead / theDescriptor->sampleRate, 0, 'f', 1));
 }
 
 i32 XmlFileReader::getVFOFrequency()
@@ -262,7 +285,33 @@ void XmlFileReader::slot_slider_released()
 
 void XmlFileReader::slot_slider_moved(const i32 iPos)
 {
+  if (theReader == nullptr)
+    return;
   mSliderMovementPos = iPos; // iPos = [0; 1000]
   theReader->jump_to_relative_position(iPos);
 }
 
+i64 XmlFileReader::compute_nrSamples(XmlDescriptor *fd, i32 blockNumber)
+{
+  i64 nrElements = fd->blockList.at(blockNumber).nrElements;
+  i64 samplesToRead = 0;
+
+  if (fd->blockList.at(blockNumber).typeofUnit == "Channel")
+  {
+    if ((fd->iqOrder == "IQ") || (fd->iqOrder == "QI"))
+    {
+      samplesToRead = nrElements / 2;
+    }
+    else
+    {
+      samplesToRead = nrElements;
+    }
+  }
+  else
+  {  // typeofUnit = "sample"
+    samplesToRead = nrElements;
+  }
+
+  qDebug() << samplesToRead << "samples to read, order is" << fd->iqOrder.toLatin1();
+  return samplesToRead;
+}

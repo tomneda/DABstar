@@ -40,6 +40,9 @@
 #include  <stdint.h>
 #include  <vector>
 #include  <atomic>
+#ifdef HAVE_LIQUID
+  #include <liquid/liquid.h>
+#endif
 
 class XmlFileReader;
 class XmlDescriptor;
@@ -58,7 +61,7 @@ private:
   union UCnv // to avoid warnings "dereferencing type-punned pointer will break strict-aliasing rules"
   {
     i32 int32Data;
-    f32   floatData;
+    f32 floatData;
   };
 
   std::atomic<bool> continuous;
@@ -67,26 +70,25 @@ private:
   u32 filePointer;
   RingBuffer<cf32> * sampleBuffer;
   XmlFileReader * parent;
-  i32 nrElements;
-  i64 samplesToRead;
   std::atomic<bool> running;
   std::atomic<i64> mSetNewFilePos = -1;
-  i64 mFileLength = 0;
   void run();
-  i64 compute_nrSamples(FILE * f, i32 blockNumber);
   i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, i32));
   void readElements_IQ(FILE * f, cf32 *, i32 amount);
   void readElements_QI(FILE * f, cf32 *, i32 amount);
   void readElements_I(FILE * f, cf32 *, i32 amount);
   void readElements_Q(FILE * f, cf32 *, i32 amount);
-  //
-  //	for the conversion - if any
-  i16 convBufferSize;
-  i16 convIndex;
-  std::vector<cf32> convBuffer;
+  f32 mapTable[256];
+
+// for the conversion - if any
+#ifdef HAVE_LIQUID
+  resamp_crcf mLiquidResampler = nullptr;
+#else
   i16 mapTable_int[2048];
   f32 mapTable_float[2048];
-  f32 mapTable[256];
+#endif
+  i16 convBufferSize;
+  std::vector<cf32> convBuffer;
 
 signals:
   void signal_set_progress(i64, i64);
