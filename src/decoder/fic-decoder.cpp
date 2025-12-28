@@ -81,7 +81,7 @@ FicDecoder::FicDecoder(DabRadio * const iMr)
   {
     for (i16 k = 0; k < 32 * 4; k++)
     {
-      if (get_PCodes(16 - 1)[k % 32] != 0)
+      if (get_PI_codes(16)[k % 32] != 0)
       {
         mPunctureTable[local] = true;
       }
@@ -98,7 +98,7 @@ FicDecoder::FicDecoder(DabRadio * const iMr)
   {
     for (i16 k = 0; k < 32 * 4; k++)
     {
-      if (get_PCodes(15 - 1)[k % 32] != 0)
+      if (get_PI_codes(15)[k % 32] != 0)
       {
         mPunctureTable[local] = true;
       }
@@ -112,7 +112,7 @@ FicDecoder::FicDecoder(DabRadio * const iMr)
     */
   for (i16 k = 0; k < 24; k++)
   {
-    if (get_PCodes(8 - 1)[k] != 0)
+    if (get_PI_codes(8)[k] != 0)
     {
       mPunctureTable[local] = true;
     }

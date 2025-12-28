@@ -40,9 +40,10 @@
  */
 #include "mp4processor.h"
 #include "dabradio.h"
-#include <cstring>
 #include "pad-handler.h"
 #include "crc.h"
+#include "bit-writer.h"
+#include <cstring>
 
 // #define SHOW_ERROR_STATISTICS
 

@@ -28,23 +28,17 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-
-#ifndef  BACKEND_H
-#define  BACKEND_H
-
-#include  <QSemaphore>
-#include  <vector>
-
-#ifdef  __THREADED_BACKEND__
-#include	<QThread>
-#include	<atomic>
-#endif
+#pragma once
 
 #include  "ringbuffer.h"
-#include  <cstdio>
 #include  "backend-driver.h"
 #include  "backend-deconvolver.h"
+#include <vector>
+#ifdef  __THREADED_BACKEND__
+  #include <QSemaphore>
+  #include <QThread>
+  #include <atomic>
+#endif
 
 #define  NUMBER_SLOTS  25
 
@@ -64,7 +58,7 @@ public:
   ~Backend();
 
   i32 process(const i16 * iV, i32 cnt);
-  void stopRunning();
+  void stop_running();
 
   // we need sometimes to access the key parameters for decoding
   u32 serviceId;
@@ -90,7 +84,7 @@ private:
   i16 nextIn;
   i16 nextOut;
 #endif
-  void processSegment(const i16 * iData);
+  void _process_segment(const i16 * iData);
   DabRadio * radioInterface;
 
   i16 fragmentSize;
@@ -100,5 +94,3 @@ private:
   i16 interleaverIndex;
   std::vector<u8> disperseVector;
 };
-
-#endif

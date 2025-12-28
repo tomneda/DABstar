@@ -19,28 +19,25 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#pragma once
 
-#ifndef  __BACKEND_DRIVER__
-#define  __BACKEND_DRIVER__
+#include "dab-constants.h"
+#include "frame-processor.h"
+#include "ringbuffer.h"
+#include <vector>
+#include <memory>
 
-#include  <vector>
-#include  <utility>
-#include  "dab-constants.h"
-#include  "frame-processor.h"
-#include  "dabradio.h"
-
+class DabRadio;
 
 class BackendDriver
 {
 public:
-  BackendDriver(DabRadio * mr, const SDescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer);
+  BackendDriver(DabRadio * ipDR, const SDescriptorType * ipDT, RingBuffer<i16> * ipAudioBuffer, RingBuffer<u8> * ipDataBuffer, RingBuffer<u8> * ipFrameBuffer);
   ~BackendDriver() = default;
 
-  void addtoFrame(const std::vector<u8> & outData);
+  void add_to_frame(const std::vector<u8> & outData) const;
 
 private:
-  QScopedPointer<FrameProcessor> theProcessor;
+  std::unique_ptr<FrameProcessor> mpFrameProcessor;
 };
-
-#endif
 

@@ -28,9 +28,6 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-
-
 #include  "dab-constants.h"
 #include  "dabradio.h"
 #include  "backend.h"
@@ -124,14 +121,14 @@ i32 Backend::process(const i16 * const iV, const i32 cnt)
   nextIn = (nextIn + 1) % NUMBER_SLOTS;
   usedSlots.release(1);
 #else
-  processSegment(iV);
+  _process_segment(iV);
 #endif
   return 1;
 }
 
 const i16 interleaveMap[] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
-void Backend::processSegment(const i16 * iData)
+void Backend::_process_segment(const i16 * iData)
 {
   for (i16 i = 0; i < fragmentSize; i++)
   {
@@ -145,7 +142,7 @@ void Backend::processSegment(const i16 * iData)
   freeSlots.release(1);
 #endif
 
-  //	only continue when de-interleaver is filled
+  // only continue when de-interleaver is filled
   if (countforInterleaver <= 15)
   {
     countforInterleaver++;
@@ -160,7 +157,7 @@ void Backend::processSegment(const i16 * iData)
     outV[i] ^= disperseVector[i];
   }
 
-  driver.addtoFrame(outV);
+  driver.add_to_frame(outV);
 }
 
 #ifdef  __THREADED_BACKEND__
@@ -176,14 +173,14 @@ void Backend::run()
         return;
       }
     }
-    processSegment(theData[nextOut].data());
+    _process_segment(theData[nextOut].data());
   }
 }
 
 #endif
 
 //	It might take a msec for the task to stop
-void Backend::stopRunning()
+void Backend::stop_running()
 {
 #ifdef  __THREADED_BACKEND__
   running = false;

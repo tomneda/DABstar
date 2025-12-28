@@ -30,12 +30,14 @@
 #pragma once
 
 #include "protection.h"
-#include "glob_data_types.h"
 
 class UepProtection : public Protection
 {
 public:
   UepProtection(i16, i16);
   ~UepProtection() override = default;
+
+private:
+  void _extract_viterbi_block_addresses(i16 & ioViterbiCounter, i16 iLx, const i8 * ipPIx);
 };
 

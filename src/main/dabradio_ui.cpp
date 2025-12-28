@@ -139,9 +139,32 @@ void DabRadio::_initialize_ui_buttons()
 
 void DabRadio::_initialize_status_info()
 {
+  const char * const protLevToolTip =
+    R"(Protection level and the (roughly)<br>associated Viterbi code rate<br>)"
+    R"(<table>)"
+    R"( <thead>)"
+    R"(  <tr><th>ProtLevel</th><th>CodeRate</th></tr>)"
+    R"( </thead>)"
+    R"( <tbody>)"
+    R"(  <tr><td>EEP 1-A</td><td>1/4 (= 2/8)</td></tr>)"
+    R"(  <tr><td>EEP 2-A</td><td>3/8 (= 3/8)</td></tr>)"
+    R"(  <tr><td>EEP 3-A</td><td>1/2 (= 4/8)</td></tr>)"
+    R"(  <tr><td>EEP 4-A</td><td>3/4 (= 6/8)</td></tr>)"
+    R"(  <tr><td>EEP 1-B</td><td>4/9 (~ 7/16)</td></tr>)"
+    R"(  <tr><td>EEP 2-B</td><td>4/7 (~ 9/16)</td></tr>)"
+    R"(  <tr><td>EEP 3-B</td><td>4/6 (~ 11/16)</td></tr>)"
+    R"(  <tr><td>EEP 4-B</td><td>4/5 (~ 13/16)</td></tr>)"
+    R"(  <tr><td>UEP 1</td><td>1/3 (~ 5/15)</td></tr>)"
+    R"(  <tr><td>UEP 2</td><td>2/5 (~ 6/15)</td></tr>)"
+    R"(  <tr><td>UEP 3</td><td>1/2 (~ 8/15)</td></tr>)"
+    R"(  <tr><td>UEP 4</td><td>3/5 (~ 9/15)</td></tr>)"
+    R"(  <tr><td>UEP 5</td><td>3/4 (~ 11/15)</td></tr>)"
+    R"( </tbody>)"
+    R"(</table>)";
+
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-  _add_status_label_elem(mStatusInfo.ProtLevel,   0x6AB45B, "ProtLevel",   "Protection level and Viterbi code rate");
+  _add_status_label_elem(mStatusInfo.ProtLevel,   0x6AB45B, "ProtLevel",   protLevToolTip);
   _add_status_label_elem(mStatusInfo.InpBitRate,  0x40c6db, "InpBitRate",  "Input bit-rate of the audio decoder");
   _add_status_label_elem(mStatusInfo.OutSampRate, 0xDE9769, "OutSampRate", "Output sample-rate of the audio decoder");
   _add_status_label_elem(mStatusInfo.Stereo,      0xf2c629, "Stereo",      "Stereo");

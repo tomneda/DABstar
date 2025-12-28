@@ -61,7 +61,7 @@ public:
     i16 StartAddr = -1;        // this 10-bit field, coded as an unsigned binary number (in the range 0 to 863), shall address the first Capacity Unit (CU) of the sub-channel.
 
     // short form (ShortLongForm == 0)
-    i8  TableSwitch = -1;      // this 1-bit flag shall indicate whether table 8 is signalled or there is some other use of the table index field
+    i8  TableSwitch = -1;      // this 1-bit flag shall indicate whether table 8 is signaled or there is some other use of the table index field
     i8  TableIndex = -1;       // his 6-bit field, coded as an unsigned binary number, contains an index which shall identify one of the 64 options available for the sub-channel size and protection level.
 
     // long form (ShortLongForm == 1)

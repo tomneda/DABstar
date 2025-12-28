@@ -48,7 +48,7 @@ FibDecoder::FibDecoder(DabRadio * mr)
   mpTimerDataConsistencyCheck = new QTimer(this);
   mpTimerDataConsistencyCheck->setSingleShot(true);
   mpTimerDataConsistencyCheck->setInterval(cFibConsistencyCheckTime_ms);
-  connect(mpTimerDataConsistencyCheck, &QTimer::timeout, this, &FibDecoder::_slot_timer_data_consitency_check);
+  connect(mpTimerDataConsistencyCheck, &QTimer::timeout, this, &FibDecoder::_slot_timer_data_consistency_check);
 
   mpTimerCheckStateAndPrintFigs = new QTimer(this);
   mpTimerCheckStateAndPrintFigs->setInterval(cCheckStateAndPrintFigs_ms);
@@ -219,7 +219,7 @@ bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicS
 
   if (pFig1s1 == nullptr && opAD == nullptr)
   {
-    return false; // for _check_packet_data_completenes() only
+    return false; // for _check_packet_data_completeness() only
   }
 
   if (opAD != nullptr && pFig1s1 != nullptr) // pFig0s1 == nullptr could be the case for first audio startup
@@ -757,7 +757,7 @@ bool FibDecoder::_extract_character_set_label(FibConfigFig1::SFig1_DataField & o
 void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerName)
 {
   // evaluate maximum time difference between calls to check whether the empiric time cMaxFibLoadingTimeFast_ms is high enough
-  std::chrono::time_point currTimePoint = std::chrono::high_resolution_clock::now();
+  const std::chrono::time_point currTimePoint = std::chrono::high_resolution_clock::now();
   const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(currTimePoint - mLastTimePoint);
   constexpr std::chrono::time_point<std::chrono::system_clock> cBaseVal{};
   if (mLastTimePoint > cBaseVal && diff > mDiffTimeMax) mDiffTimeMax = diff;
@@ -803,7 +803,7 @@ void FibDecoder::_process_fast_audio_selection()
   }
 }
 
-bool FibDecoder::_check_audio_data_completenes() const
+bool FibDecoder::_check_audio_data_completeness() const
 {
   qDebug() << "Check audio data completeness";
 
@@ -830,7 +830,7 @@ bool FibDecoder::_check_audio_data_completenes() const
   return true;
 }
 
-bool FibDecoder::_check_packet_data_completenes() const
+bool FibDecoder::_check_packet_data_completeness() const
 {
   qDebug() << "Check packet data completeness";
 
@@ -860,7 +860,7 @@ bool FibDecoder::_check_packet_data_completenes() const
   return true;
 }
 
-void FibDecoder::_slot_timer_data_consitency_check()
+void FibDecoder::_slot_timer_data_consistency_check()
 {
   // Triggering this methode means only that FIG 0/1 and FIG 0/2 data are (very likely) fully loaded
   // This timer timeout happens again as still data loaded by FIG 1/1 until state >= S3_FullyAudioDataLoaded is reached
@@ -872,7 +872,7 @@ void FibDecoder::_slot_timer_data_consitency_check()
     mFibLoadingState = EFibLoadingState::S2_PrimaryBaseDataLoaded;
 
     // ... but only trigger the next state via callback if FIG 1/1 data are loaded
-    if (_check_audio_data_completenes())
+    if (_check_audio_data_completeness())
     {
       mFibLoadingState = EFibLoadingState::S3_FullyAudioDataLoaded;
       emit signal_fib_loaded_state(EFibLoadingState::S3_FullyAudioDataLoaded);
@@ -882,7 +882,7 @@ void FibDecoder::_slot_timer_data_consitency_check()
   if (mFibLoadingState == EFibLoadingState::S3_FullyAudioDataLoaded) // == repeated calls must be possible
   {
     // FIG 0/1 and FIG 0/2 data should be surely loaded here
-    if (_check_packet_data_completenes())
+    if (_check_packet_data_completeness())
     {
       mFibLoadingState = EFibLoadingState::S4_FullyPacketDataLoaded;
 

@@ -17,6 +17,7 @@
  */
 
 // --- BitWriter ------------------------------------------------------------
+#pragma once
 
 #include "glob_data_types.h"
 #include <vector>

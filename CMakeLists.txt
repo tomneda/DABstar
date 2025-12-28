@@ -295,7 +295,7 @@ set(${objectName}_HDRS
         src/backend/backend-deconvolver.h
         src/backend/backend-driver.h
         src/backend/audio/mp4processor.h
-        src/backend/audio/bitWriter.h
+        src/backend/audio/bit-writer.h
         src/backend/audio/mp2processor.h
         src/backend/data/ip-datahandler.h
         src/backend/data/tdc-datahandler.h
@@ -402,7 +402,7 @@ set(${objectName}_SRCS
         src/backend/backend-deconvolver.cpp
         src/backend/backend-driver.cpp
         src/backend/audio/mp4processor.cpp
-        src/backend/audio/bitWriter.cpp
+        src/backend/audio/bit-writer.cpp
         src/backend/audio/mp2processor.cpp
         src/backend/data/ip-datahandler.cpp
         src/backend/data/journaline-datahandler.cpp

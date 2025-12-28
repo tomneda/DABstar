@@ -49,7 +49,7 @@ struct SProtectionProfile
   i16 PI4;
 };
 
-static const SProtectionProfile profileTable[] =
+static constexpr SProtectionProfile cProfileTable[] =
 {
   { 32,  5,  3,  4,  17,  0,  5,  3,  2,  -1 },
   { 32,  4,  3,  3,  18,  0,  11, 6,  5,  -1 },
@@ -131,11 +131,11 @@ static const SProtectionProfile profileTable[] =
   { 0,   -1, -1, -1, -1,  -1, -1, -1, -1, -1 }
 };
 
-static i16 findIndex(const i16 bitRate, const i16 protLevel)
+static i16 find_index(const i16 bitRate, const i16 protLevel)
 {
-  for (i32 i = 0; profileTable[i].bitRate != 0; i++)
+  for (i32 i = 0; cProfileTable[i].bitRate != 0; i++)
   {
-    if ((profileTable[i].bitRate == bitRate) && (profileTable[i].protLevel == protLevel))
+    if ((cProfileTable[i].bitRate == bitRate) && (cProfileTable[i].protLevel == protLevel))
     {
       return i;
     }
@@ -149,97 +149,36 @@ static i16 findIndex(const i16 bitRate, const i16 protLevel)
   *
   *	\brief uep_deconvolve
   *
-  *	The bitRate and the protectionLevel determine the 
+  *	The bitRate and the protectionLevel determine the
   *	depuncturing scheme.
   */
-UepProtection::UepProtection(const i16 bitRate, const i16 protLevel) :
-  Protection(bitRate)
+UepProtection::UepProtection(const i16 bitRate, const i16 protLevel)
+  : Protection(bitRate)
 {
   i16 viterbiCounter = 0;
 
-  i16 index = findIndex(bitRate, protLevel);
+  i16 index = find_index(bitRate, protLevel);
 
   if (index == -1)
   {
-    qCritical() << "BitRate" << bitRate << "ProtLevel" << protLevel << "not found in table";
+    qCritical() << "BitRate" << bitRate << "ProtLevel" << protLevel << "not found in cProfileTable";
     index = 1;
   }
 
-  const i16 L1 = profileTable[index].L1;
-  const i16 L2 = profileTable[index].L2;
-  const i16 L3 = profileTable[index].L3;
-  const i16 L4 = profileTable[index].L4;
+  const SProtectionProfile & pp = cProfileTable[index];
 
-  const i8 * const PI1 = get_PCodes(profileTable[index].PI1 - 1);
-  const i8 * const PI2 = get_PCodes(profileTable[index].PI2 - 1);
-  const i8 * const PI3 = get_PCodes(profileTable[index].PI3 - 1);
+  const i8 * const PI1 = get_PI_codes(pp.PI1);
+  const i8 * const PI2 = get_PI_codes(pp.PI2);
+  const i8 * const PI3 = get_PI_codes(pp.PI3);
+  const i8 * const PI4 = (pp.PI4 != -1 ? get_PI_codes(pp.PI4) : nullptr);
 
-  const i8 * PI4;
-
-  if ((profileTable[index].PI4 - 1) != -1)
-  {
-    PI4 = get_PCodes(profileTable[index].PI4 - 1);
-  }
-  else
-  {
-    PI4 = nullptr;
-  }
-
-  const i8 * PI_X = get_PCodes(8 - 1);
+  const i8 * const PI_X = get_PI_codes(8);
 
   // We prepare a mapping table with the given punctures
-  memset(indexTable.data(), 0, (4 * outSize + 24) * sizeof(u8));
-
-  for (i32 i = 0; i < L1; i++)
-  {
-    for (i32 j = 0; j < 128; j++)
-    {
-      if (PI1[j % 32] != 0)
-      {
-        indexTable[viterbiCounter] = true;
-      }
-      viterbiCounter++;
-    }
-  }
-
-  for (i32 i = 0; i < L2; i++)
-  {
-    for (i32 j = 0; j < 128; j++)
-    {
-      if (PI2[j % 32] != 0)
-      {
-        indexTable[viterbiCounter] = true;
-      }
-      viterbiCounter++;
-    }
-  }
-
-  for (i32 i = 0; i < L3; i++)
-  {
-    for (i32 j = 0; j < 128; j++)
-    {
-      if (PI3[j % 32] != 0)
-      {
-        indexTable[viterbiCounter] = true;
-      }
-      viterbiCounter++;
-    }
-  }
-
-  if (PI4 != nullptr)
-  {
-    for (i32 i = 0; i < L4; i++)
-    {
-      for (i32 j = 0; j < 128; j++)
-      {
-        if (PI4[j % 32] != 0)
-        {
-          indexTable[viterbiCounter] = true;
-        }
-        viterbiCounter++;
-      }
-    }
-  }
+  _extract_viterbi_block_addresses(viterbiCounter, pp.L1, PI1);
+  _extract_viterbi_block_addresses(viterbiCounter, pp.L2, PI2);
+  _extract_viterbi_block_addresses(viterbiCounter, pp.L3, PI3);
+  _extract_viterbi_block_addresses(viterbiCounter, pp.L4, PI4); // L4 is 0 if PI4 is -1, so calling this is safe
 
   /**
     *	we have a final block of 24 bits  with puncturing according to PI_X
@@ -249,8 +188,25 @@ UepProtection::UepProtection(const i16 bitRate, const i16 protLevel) :
   {
     if (PI_X[i] != 0)
     {
-      indexTable[viterbiCounter] = true;
+      assert(viterbiCounter < (signed)viterbiBlock.size());
+      viterbiBlockAddresses.emplace_back(&viterbiBlock[viterbiCounter]);
     }
     viterbiCounter++;
+  }
+}
+
+void UepProtection::_extract_viterbi_block_addresses(i16 & ioViterbiCounter, const i16 iLx, const i8 * const ipPIx)
+{
+  for (i32 i = 0; i < iLx; i++)
+  {
+    for (i32 j = 0; j < 128; j++)
+    {
+      if (ipPIx[j % 32] != 0)
+      {
+        assert(ioViterbiCounter < (signed)viterbiBlock.size());
+        viterbiBlockAddresses.emplace_back(&viterbiBlock[ioViterbiCounter]);
+      }
+      ioViterbiCounter++;
+    }
   }
 }

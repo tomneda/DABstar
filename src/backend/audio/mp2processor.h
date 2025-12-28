@@ -28,21 +28,15 @@
 **   3. This notice may not be removed or altered from any source            **
 **      distribution.                                                        **
 ******************************************************************************/
-//
-//	This software is a rewrite of the original kjmp2 software,
-//	Rewriting in the form of a class
-//	for use in the sdr-j DAB/DAB+ receiver
-//	all rights remain where they belong
 
-#ifndef MP2PROCESSOR_H
-#define MP2PROCESSOR_H
+/*
+ * This software is a rewrite of the original kjmp2 software,
+ * Rewriting in the form of a class for use in the sdr-j DAB/DAB+ receiver
+ * all rights remain where they belong
+ */
 
-#include  <utility>
-#include  <cstdio>
-#include  <cstdint>
-#include  <cmath>
-#include  <QObject>
-#include  <cstdio>
+#pragma once
+
 #include  "frame-processor.h"
 #include  "ringbuffer.h"
 #include  "pad-handler.h"
@@ -112,6 +106,4 @@ signals:
   void signal_new_mp2_frame();
   void signal_is_stereo(bool);
 };
-
-#endif
 

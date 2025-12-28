@@ -27,31 +27,21 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  FRAME_PROCESSOR_H
-#define  FRAME_PROCESSOR_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <vector>
 #include <cstdio>
 
-//
-//	virtual class, just for providing a common base
-//	for the real decoder classes
-
+// Virtual class, just for providing a common base for the real decoder classes
 class FrameProcessor
 {
 public:
-  FrameProcessor()
-  {}
-
-  virtual ~FrameProcessor()
-  {}
+  FrameProcessor() = default;
+  virtual ~FrameProcessor() = default;
 
   virtual void add_to_frame(const std::vector<u8> &)
   {
-    fprintf(stderr, "missing overridden method in frameprocessor\n");
+    fprintf(stderr, "missing overridden method in FrameProcessor\n");
   }
 };
-
-#endif
-

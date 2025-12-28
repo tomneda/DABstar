@@ -53,7 +53,7 @@ MscHandler::~MscHandler()
   QMutexLocker lock(&mMutex);
   for (auto & b: mBackendList)
   {
-    b->stopRunning();
+    b->stop_running();
     b.reset();
   }
   mBackendList.clear();
@@ -65,7 +65,7 @@ void MscHandler::reset_channel()
   QMutexLocker lock(&mMutex);
   for (auto & b: mBackendList)
   {
-    b->stopRunning();
+    b->stop_running();
     b.reset();
   }
   mBackendList.clear();
@@ -80,7 +80,7 @@ void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFla
         b->subChId == iSubChId && b->processFlag == iProcessFlag)
     {
       qDebug() << "Stopping SubChannel" << iSubChId;
-      b->stopRunning();
+      b->stop_running();
       b.reset();
       mBackendList.removeAt(i);
       --i; // we removed one element
@@ -94,7 +94,7 @@ void MscHandler::stop_all_services()
   for (auto & b: mBackendList)
   {
     qDebug() << "Stopping SId" << b->serviceId << "SubChannel" << b->subChId << "ProcessFlag" << (b->processFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
-    b->stopRunning();
+    b->stop_running();
     b.reset();
   }
   mBackendList.clear();

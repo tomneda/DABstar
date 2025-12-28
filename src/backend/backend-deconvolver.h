@@ -27,10 +27,10 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  BACKEND_DECONVOLVER_H
-#define  BACKEND_DECONVOLVER_H
+#pragma once
 
-#include  "dab-constants.h"
+#include "dab-constants.h"
+#include <memory>
 
 class Protection;
 
@@ -40,11 +40,8 @@ public:
   explicit BackendDeconvolver(const SDescriptorType * d);
   ~BackendDeconvolver();
 
-  void deconvolve(const i16 * rawBits_in, i32 length, u8 * outData);
+  void deconvolve(const i16 * rawBits_in, i32 length, u8 * outData) const;
   
 private:
-  Protection * protectionHandler;
+  std::unique_ptr<Protection> mpProtectionHandler;
 };
-
-#endif
-

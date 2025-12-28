@@ -46,7 +46,7 @@ public:
 protected:
   i16 bitRate;
   i32 outSize;
-  std::vector<u8> indexTable;
   std::vector<i16> viterbiBlock;
+  std::vector<i16 *> viterbiBlockAddresses; // addresses of non-punctured bits
 };
 

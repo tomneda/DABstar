@@ -32,26 +32,22 @@
 #include  "eep-protection.h"
 #include  "uep-protection.h"
 
-
 BackendDeconvolver::BackendDeconvolver(const SDescriptorType * d)
 {
   if (d->shortForm)
   {
-    protectionHandler = new UepProtection(d->bitRate, d->protLevel);
+    mpProtectionHandler = std::make_unique<UepProtection>(d->bitRate, d->protLevel);
   }
   else
   {
-    protectionHandler = new EepProtection(d->bitRate, d->protLevel);
+    mpProtectionHandler = std::make_unique<EepProtection>(d->bitRate, d->protLevel);
   }
 }
 
-BackendDeconvolver::~BackendDeconvolver()
-{
-  delete protectionHandler;
-}
+BackendDeconvolver::~BackendDeconvolver() = default; // keep it in the cpp file as unique_ptr() will not compile else
 
-void BackendDeconvolver::deconvolve(const i16 * rawBits_in, i32 length, u8 * outData)
+void BackendDeconvolver::deconvolve(const i16 * rawBits_in, i32 length, u8 * outData) const
 {
-  protectionHandler->deconvolve(rawBits_in, length, outData);
+  mpProtectionHandler->deconvolve(rawBits_in, length, outData);
 }
 

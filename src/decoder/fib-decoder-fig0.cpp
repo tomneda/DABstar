@@ -111,7 +111,7 @@ void FibDecoder::_process_Fig0s1(const u8 * const d)
   }
 }
 
-i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, i16 offset, const SFigHeader & iFH)
+i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, const i16 offset, const SFigHeader & iFH)
 {
   i16 bitOffset = offset * 8;
   FibConfigFig0::SFig0s1_BasicSubChannelOrganization fig0s1;
@@ -150,11 +150,19 @@ i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, i16 offset, const SFigHea
       if (fig0s1.Option == 0x0)
       {
         static constexpr i32 table[] = { 12, 8, 6, 4 };
+        if (fig0s1.SubChannelSize % table[fig0s1.ProtectionLevel] != 0)
+        {
+          qWarning() << "SubChannelSize" << fig0s1.SubChannelSize << "not divisible by" << table[fig0s1.ProtectionLevel];
+        }
         fig0s1.BitRate = fig0s1.SubChannelSize / table[fig0s1.ProtectionLevel] * 8;
       }
       else if (fig0s1.Option == 0x1)
       {
         static constexpr i32 table[] = { 27, 21, 18, 15 };
+        if (fig0s1.SubChannelSize % table[fig0s1.ProtectionLevel] != 0)
+        {
+          qWarning() << "SubChannelSize" << fig0s1.SubChannelSize << "not divisible by" << table[fig0s1.ProtectionLevel];
+        }
         fig0s1.BitRate = fig0s1.SubChannelSize / table[fig0s1.ProtectionLevel] * 32;
         fig0s1.ProtectionLevel += (1 << 2); // TODO: (1 << 2) this is used to retrieve the option state in later stages, make this nicer
       }
@@ -190,7 +198,7 @@ void FibDecoder::_process_Fig0s2(const u8 * const d)
   }
 }
 
-i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, i16 offset, const SFigHeader & iFH)
+i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, const i16 offset, const SFigHeader & iFH)
 {
   i16 bitOffset = 8 * offset;
   FibConfigFig0::SFig0s2_BasicService_ServiceCompDef fig0s2;
@@ -317,7 +325,7 @@ void FibDecoder::_process_Fig0s5(const u8 * const d)
   }
 }
 
-i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, i16 offset)
+i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, const i16 offset)
 {
   i16 bitOffset = offset * 8;
 

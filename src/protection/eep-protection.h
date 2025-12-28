@@ -27,12 +27,8 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  EEP_PROTECTION_H
-#define  EEP_PROTECTION_H
+#pragma once
 
-#include  <vector>
-#include  <cstdio>
-#include  <cstdint>
 #include  "protection.h"
 
 class EepProtection : public Protection
@@ -40,7 +36,8 @@ class EepProtection : public Protection
 public:
   EepProtection(i16, i16);
   ~EepProtection() override = default;
-};
 
-#endif
+private:
+  void _extract_viterbi_block_addresses(i16 & ioViterbiCounter, i16 iLx, const i8 * ipPIx);
+};
 

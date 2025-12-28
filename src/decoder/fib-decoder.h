@@ -142,13 +142,13 @@ private:
   void _retrigger_timer_data_loaded_fast(const char * iCallerName);
   void _retrigger_timer_data_loaded_slow(const char * iCallerName);
   void _process_fast_audio_selection();
-  bool _check_audio_data_completenes() const; // FIG 0/1, FIG 0/2 and FIG 1/1 are loaded
-  bool _check_packet_data_completenes() const;
+  bool _check_audio_data_completeness() const; // FIG 0/1, FIG 0/2 and FIG 1/1 are loaded
+  bool _check_packet_data_completeness() const;
 
   template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
 
 private slots:
-  void _slot_timer_data_consitency_check();
+  void _slot_timer_data_consistency_check();
   void _slot_timer_check_state_and_print_FIGs();
 };
 

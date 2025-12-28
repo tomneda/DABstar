@@ -24,34 +24,33 @@
 #include  "mp4processor.h"
 #include  "data-processor.h"
 
-//	Driver program for the selected backend. Embodying that in a separate class makes the "Backend" class simpler.
+// Driver program for the selected backend. Embodying that in a separate class simplifies the "Backend" class.
 
-BackendDriver::BackendDriver(DabRadio * mr, const SDescriptorType * d, RingBuffer<i16> * audioBuffer, RingBuffer<u8> * dataBuffer, RingBuffer<u8> * frameBuffer)
+BackendDriver::BackendDriver(DabRadio * ipDR, const SDescriptorType * ipDT, RingBuffer<i16> * const ipAudioBuffer, RingBuffer<u8> * const ipDataBuffer, RingBuffer<u8> * const ipFrameBuffer)
 {
-  if (d->TMId == ETMId::StreamModeAudio)
+  if (ipDT->TMId == ETMId::StreamModeAudio)
   {
-    if (((SAudioData *)d)->ASCTy != 077)
+    if (((SAudioData *)ipDT)->ASCTy != 077)
     {
-      theProcessor.reset(new Mp2Processor(mr, d->bitRate, audioBuffer, frameBuffer));
+      mpFrameProcessor = std::make_unique<Mp2Processor>(ipDR, ipDT->bitRate, ipAudioBuffer, ipFrameBuffer);
     }
     else // if (((AudioData *)d)->ASCTy == 077)
     {
-      theProcessor.reset(new Mp4Processor(mr, d->bitRate, audioBuffer, frameBuffer));
+      mpFrameProcessor = std::make_unique<Mp4Processor>(ipDR, ipDT->bitRate, ipAudioBuffer, ipFrameBuffer);
     }
   }
-  else if (d->TMId == ETMId::PacketModeData)
+  else if (ipDT->TMId == ETMId::PacketModeData)
   {
-    theProcessor.reset(new DataProcessor(mr, (SPacketData *)d, dataBuffer));
+    mpFrameProcessor = std::make_unique<DataProcessor>(ipDR, static_cast<const SPacketData *>(ipDT), ipDataBuffer);
   }
   else
   {
-    theProcessor.reset(new FrameProcessor());
+    mpFrameProcessor = std::make_unique<FrameProcessor>();
   }
 }
 
-
-void BackendDriver::addtoFrame(const std::vector<u8> & theData)
+void BackendDriver::add_to_frame(const std::vector<u8> & iData) const
 {
-  theProcessor->add_to_frame(theData);
+  mpFrameProcessor->add_to_frame(iData);
 }
 

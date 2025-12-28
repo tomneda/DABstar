@@ -28,21 +28,16 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  MP4PROCESSOR_H
-#define  MP4PROCESSOR_H
-/*
- * 	Handling superframes for DAB+ and delivering
- * 	frames into the ffmpeg or faad decoding library
- */
+#pragma once
+
+// Handling superframes for DAB+ and delivering frames into the ffmpeg or faad decoding library
 
 #include "dab-constants.h"
 #include "frame-processor.h"
 #include "firecode-checker.h"
 #include "reed-solomon.h"
 #include "pad-handler.h"
-#include "bitWriter.h"
 #include <QObject>
-#include <cstdint>
 #include <vector>
 
 #ifdef  __WITH_FDK_AAC__
@@ -115,7 +110,5 @@ signals:
   void signal_new_aac_frame();
   void signal_show_rs_corrections(i32, i32);
 };
-
-#endif
 
 
