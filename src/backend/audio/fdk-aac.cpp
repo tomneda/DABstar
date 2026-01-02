@@ -28,7 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *	Use the fdk-aac library.
+ *  Use the fdk-aac library.
  */
 #include  "mp4processor.h"
 #include  "dabradio.h"
@@ -37,9 +37,9 @@
 #include  "fdk-aac.h"
 
 /**
-  *	\class mp4Processor is the main handler for the aac frames
-  *	the class proper processes input and extracts the aac frames
-  *	that are processed by the "faadDecoder" class
+  * \class mp4Processor is the main handler for the aac frames
+  * the class proper processes input and extracts the aac frames
+  * that are processed by the "faadDecoder" class
   */
 FdkAAC::FdkAAC(DabRadio * mr, RingBuffer<i16> * iipBuffer)
   : mpAudioBuffer(iipBuffer)
@@ -119,7 +119,7 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
     mpAudioBuffer->put_data_into_ring_buffer(bufp, info->frameSize * 2);
     if (mpAudioBuffer->get_ring_buffer_read_available() > (i32)info->sampleRate / 8)
     {
-      emit signal_new_audio(info->frameSize, info->sampleRate,  (iSP->psFlag ? DabRadio::AFL_PS_USED : 0) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : 0));
+      emit signal_new_audio(info->frameSize, info->sampleRate,  (iSP->psFlag ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
     }
   }
   else if (info->numChannels == 1)
@@ -133,7 +133,7 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
     mpAudioBuffer->put_data_into_ring_buffer(buffer, info->frameSize * 2);
     if (mpAudioBuffer->get_ring_buffer_read_available() > info->sampleRate / 8)
     {
-      emit signal_new_audio(info->frameSize, info->sampleRate, (iSP->psFlag ? DabRadio::AFL_PS_USED : 0) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : 0));
+      emit signal_new_audio(info->frameSize, info->sampleRate, (iSP->psFlag ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
     }
   }
   else

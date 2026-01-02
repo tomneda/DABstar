@@ -223,7 +223,7 @@ PlutoHandler::PlutoHandler(QSettings *s,
     dumping. store  (false);
     xmlDumper   = nullptr;
     running. store (false);
-    i32 enabled;
+    i32 enabled = 0;
 //
 //  go for the filter
     ad9361_get_trx_fir_enable (get_ad9361_phy (ctx), &enabled);
