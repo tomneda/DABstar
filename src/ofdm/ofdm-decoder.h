@@ -41,8 +41,6 @@
 #include <cstdint>
 #include <vector>
 
-#define USE_PHASE_CORR_LUT
-
 class DabRadio;
 
 class OfdmDecoder : public QObject
@@ -108,14 +106,6 @@ private:
   f32 mMeanSigmaSqFreqCorr = 0.0f;
   cf32 mDcAdc{ 0.0f, 0.0f };
 
-  // phase correction LUT to speed up process (there are no (good) SIMD commands for that)
-  static constexpr f32 cPhaseShiftLimit = 20.0f;
-#ifdef USE_PHASE_CORR_LUT
-  static constexpr i32 cLutLen2 = 127; // -> 255 values in LUT
-  static constexpr f32 cLutFact = cLutLen2 / (F_RAD_PER_DEG * cPhaseShiftLimit);
-  std::array<cf32, cLutLen2 * 2 + 1> mLutPhase2Cmplx;
-#endif
-
   // mLcdData has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SLcdData mLcdData{};
@@ -123,9 +113,7 @@ private:
   [[nodiscard]] f32 _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const TArrayTu &);
   void _reset_null_symbol_statistics();
-#ifndef USE_PHASE_CORR_LUT
   cf32 cmplx_from_phase2(const f32 iPhase);
-#endif
 
   static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
 

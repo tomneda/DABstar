@@ -55,15 +55,6 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuf
   mMeanPowerVector.resize(cK);
   mMeanSigmaSqVector.resize(cK);
 
-#ifdef USE_PHASE_CORR_LUT
-  // create phase -> cf32 LUT
-  for (i32 phaseIdx = -cLutLen2; phaseIdx <= cLutLen2; ++phaseIdx)
-  {
-    const f32 phase = (f32)phaseIdx / cLutFact;
-    mLutPhase2Cmplx[phaseIdx + cLutLen2] = cf32(std::cos(phase), std::sin(phase));
-  }
-#endif
-
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &DabRadio::slot_show_iq);
   connect(this, &OfdmDecoder::signal_show_lcd_data, mpRadioInterface, &DabRadio::slot_show_lcd_data);
 
@@ -74,44 +65,25 @@ OfdmDecoder::~OfdmDecoder()
 {
 }
 
-#ifndef USE_PHASE_CORR_LUT
-cf32 OfdmDecoder::cmplx_from_phase2(f32 d)
+cf32 OfdmDecoder::cmplx_from_phase2(f32 x)
 {
-  const f64 M_4_PI = 1.273239544735162542821171882678754627704620361328125;
-  const f64 PI4_A = 0.7853981554508209228515625;
-  const f64 PI4_B = 0.794662735614792836713604629039764404296875e-8;
-  const f64 PI4_C = 0.306161699786838294306516483068750264552437361480769e-16;
-  const i32 N = 3; // order of argument reduction
+  /*
+   * Minimax polynomial for sin(x) and cos(x) on [-pi/4, pi/4]
+   * Coefficients via Remez algorithm (Sollya)
+   * Max |error| < 1.5e-4 for sinus, < 6e-4 for cosinus
+   */
+  const f32 x2 = x * x;
+  const f32 s1 =  0.99903142452239990234375f;
+  const f32 s2 = -0.16034401953220367431640625;
+  const f32 sine = x * (x2 * s2 + s1);
 
-  f64 s = abs(d);
-  i32 q = (i32)(s * M_4_PI);
-  i32 r = q + (q & 1);
-  s -= r * PI4_A;
-  s -= r * PI4_B;
-  s -= r * PI4_C;
+  const f32 c1 =  0.9994032382965087890625f;
+  const f32 c2 = -0.495580852031707763671875;
+  const f32 c3 =  3.679168224334716796875e-2;
+  const f32 cosine = c1 + x2 * (x2 * c3 + c2);
 
-  s = s * 0.125; // 2^-N
-  s = s * s; // Evaluating Taylor series
-  s = ((((s / 1814400. - 1.0 / 20160.0) * s + 1.0 / 360.0) * s - 1.0 / 12.0) * s + 1.0) * s;
-  for (i32 i = 0; i < N; i++) // Applying f64 angle formula
-  {
-    s = (4.0 - s) * s;
-  }
-  s = s / 2.0;
-  f32 sine = sqrt((2.0 - s) * s);
-  f32 cosine = 1.0 - s;
-
-  if (((q + 1) & 2) != 0)
-  {
-    s = cosine;
-    cosine = sine;
-    sine = s;
-  }
-  if (((q & 4) != 0) != (d < 0.0)) sine = -sine;
-  if (((q + 2) & 4) != 0) cosine = -cosine;
   return cf32(cosine, sine);
 }
-#endif
 
 void OfdmDecoder::reset()
 {
@@ -205,16 +177,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
 
     f32 & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
 
-#ifdef USE_PHASE_CORR_LUT
-    // do phase correction via LUT
-    const i32 phaseIdx = (i32)std::lround(integAbsPhasePerBinRef * cLutFact);
-    assert(phaseIdx >= -cLutLen2 && phaseIdx <= cLutLen2 );  // the limitation is done below already
-    const cf32 phase = mLutPhase2Cmplx[cLutLen2 - phaseIdx]; // the phase is used inverse here
-    const cf32 fftBin = fftBinRaw * phase;
-#else
     const cf32 fftBin = fftBinRaw * cmplx_from_phase2(-integAbsPhasePerBinRef);
-    // const cf32 fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
-#endif
+    //const cf32 fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
 
     // Get phase and absolute phase for each bin.
     const f32 fftBinPhase = std::arg(fftBin);
