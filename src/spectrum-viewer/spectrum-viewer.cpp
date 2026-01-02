@@ -164,7 +164,7 @@ void SpectrumViewer::show_spectrum(i32 vfoFrequency)
     }
   }
 
-  //	and window it
+  //    and window it
   for (i32 i = 0; i < SP_SPECTRUMSIZE; i++)
   {
     mFftInBuffer[i] *= mWindowVec[i];
@@ -205,7 +205,7 @@ void SpectrumViewer::show_spectrum(i32 vfoFrequency)
   {
     const f64 val = 20.0 * std::log10(mYValVec[i] / (f64)SP_DISPLAYSIZE + 1.0e-6);
     f64 & valdBMean = mDisplayBuffer[i];
-    mean_filter(valdBMean, val, 1.0 / averageCount);
+    mean_filter(valdBMean, val, (double)1.0 / averageCount);
 
     if (valdBMean > valdBGlobMax) valdBGlobMax = valdBMean;
     if (valdBMean < valdBGlobMin) valdBGlobMin = valdBMean;

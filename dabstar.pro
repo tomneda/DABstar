@@ -7,16 +7,23 @@ TARGET		= dabstar
 TEMPLATE	= app
 QT		+= widgets xml sql multimedia
 CONFIG		+= console
-CONFIG		+= release
 #CONFIG		+= debug
 QMAKE_CXXFLAGS	+= -std=c++17
 
-release	{
+# switch off to save compile/link time while development
+CONFIG		+= use_lto 
+
+use_lto	{
 	DEFINES		+= QT_NO_DEBUG_OUTPUT
-	QMAKE_CFLAGS	+= -ffast-math -flto
-	QMAKE_CXXFLAGS	+= -ffast-math -flto
-	QMAKE_LFLAGS	+= -ffast-math -flto
+	QMAKE_CFLAGS	+= -flto
+	QMAKE_CXXFLAGS	+= -flto
+	QMAKE_LFLAGS	+= -flto
 }
+
+# math optimizations
+QMAKE_CFLAGS	+= -ffast-math
+QMAKE_CXXFLAGS	+= -ffast-math -fsingle-precision-constant
+QMAKE_LFLAGS	+= -ffast-math
 
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]
 RC_ICONS	=  res/logo/dabstar.ico
@@ -29,8 +36,6 @@ DEFINES		+= PRJ_VERS=\\\"4.6.0\\\"
 # For more parallel processing, uncomment the following
 # defines
 #DEFINES	+=  __THREADED_BACKEND
-
-DEFINES		+= __BITS64__
 
 # For showing trace output
 #DEFINES	+= __EPG_TRACE__
@@ -66,7 +71,6 @@ CONFIG		+= volk
 LIBS		+= -lsndfile.dll
 LIBS		+= -lwinpthread
 LIBS		+= -lws2_32
-#LIBS		+= -lusb-1.0
 LIBS		+= -lzlib.dll
 LIBS		+= -lfftw3f.dll
 LIBS		+= -lqwt
@@ -146,7 +150,7 @@ HEADERS += \
     src/backend/backend-deconvolver.h \
     src/backend/backend-driver.h \
     src/backend/audio/mp4processor.h \
-    src/backend/audio/bitWriter.h \
+    src/backend/audio/bit-writer.h \
     src/backend/audio/mp2processor.h \
     src/backend/data/ip-datahandler.h \
     src/backend/data/tdc-datahandler.h \
@@ -262,7 +266,7 @@ SOURCES += \
     src/backend/backend-deconvolver.cpp \
     src/backend/backend-driver.cpp \
     src/backend/audio/mp4processor.cpp \
-    src/backend/audio/bitWriter.cpp \
+    src/backend/audio/bit-writer.cpp \
     src/backend/audio/mp2processor.cpp \
     src/backend/data/ip-datahandler.cpp \
     src/backend/data/journaline-datahandler.cpp \
@@ -434,19 +438,6 @@ airspy {
 	SOURCES		+= src/devices/airspy-handler/airspy-handler.cpp \
 			   src/devices/airspy-handler/airspyselect.cpp
 	FORMS		+= src/devices/airspy-handler/airspy-widget.ui
-}
-
-airspy-2 {
-	DEFINES		+= HAVE_AIRSPY_2
-	DEPENDPATH	+= src/devices/airspy-2 
-	INCLUDEPATH	+= src/devices/airspy-2 \
-			   src/devices/airspy-2/libairspy
-	HEADERS		+= src/devices/airspy-2/airspy-2.h \
-			   src/devices/airspy-2/airspyselect.h \
-			   src/devices/airspy-2/libairspy/airspy.h
-	SOURCES		+= src/devices/airspy-2/airspy-2.cpp \
-			   src/devices/airspy-2/airspyselect.cpp
-	FORMS		+= src/devices/airspy-2/airspy-widget.ui
 }
 
 #	extio dependencies, windows only
