@@ -35,11 +35,11 @@
 #include "eti-generator.h"
 
 /**
-  *	\brief DabProcessor
-  *	The DabProcessor class is the driver of the processing
-  *	of the samplestream.
-  *	It is the main interface to the qt-dab program,
-  *	local are classes OfdmDecoder, FicHandler and mschandler.
+  * \brief DabProcessor
+  * The DabProcessor class is the driver of the processing
+  * of the samplestream.
+  * It is the main interface to the qt-dab program,
+  * local are classes OfdmDecoder, FicHandler and mschandler.
   */
 
 DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
@@ -107,12 +107,12 @@ void DabProcessor::stop()
 }
 
 /***
-   *	\brief run
-   *	The main thread, reading samples,
-   *	time synchronization and frequency synchronization
-   *	Identifying blocks in the DAB frame
-   *	and sending them to the OfdmDecoder who will transfer the results
-   *	Finally, estimating the small freqency error
+   *    \brief run
+   *    The main thread, reading samples,
+   *    time synchronization and frequency synchronization
+   *    Identifying blocks in the DAB frame
+   *    and sending them to the OfdmDecoder who will transfer the results
+   *    Finally, estimating the small freqency error
    */
 void DabProcessor::run()  // run QThread
 {
@@ -158,6 +158,7 @@ void DabProcessor::run()  // run QThread
         mClockOffsetFrameCount = mClockOffsetTotalSamples = 0;
         const bool ok = _state_wait_for_time_sync_marker();
         state = (ok ? EState::EVAL_SYNC_SYMBOL : EState::WAIT_FOR_TIME_SYNC_MARKER);
+        clockErrHz = 0.0f;
         break;
       }
 
@@ -248,7 +249,7 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
 
   if (++mClockOffsetFrameCount > 10) // about each second
   {
-    const f32 clockErrHz = INPUT_RATE * ((f32)mClockOffsetTotalSamples / ((f32)mClockOffsetFrameCount * (f32)cTF) - 1.0f);
+    clockErrHz = INPUT_RATE * ((f32)mClockOffsetTotalSamples / ((f32)mClockOffsetFrameCount * (f32)cTF) - 1.0f);
     emit signal_show_clock_err(clockErrHz);
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
@@ -277,7 +278,7 @@ void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
   {
     mOfdmDecoder.store_null_symbol_with_tii(mFftOutBuffer); // for displaying TII
 
-    // The TII data is encoded in the null period of the	odd frames
+    // The TII data is encoded in the null period of the odd frames
     mTiiDetector.add_to_tii_buffer(mFftOutBuffer);
     if (++mTiiCounter >= mcTiiFramesToCount)
     {
@@ -305,7 +306,7 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
   * in a different thread.
   * We immediately start with building up an average of
   * the phase difference between the samples in the cyclic prefix
-  * and the	corresponding samples in the datapart.
+  * and the corresponding samples in the datapart.
   */
   cf32 freqCorr = cf32(0, 0);
 
@@ -325,7 +326,7 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_begin();
 #endif
-    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbIdx, mPhaseOffsetCyclPrefRad, mBits);
+    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbIdx, mPhaseOffsetCyclPrefRad, clockErrHz, mBits);
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_end();
 #endif
@@ -429,15 +430,15 @@ void DabProcessor::set_scan_mode(bool b)
   mScanMode = b;
 }
 
-//	just convenience functions
-//	FicDecoder abstracts channel data
+//  just convenience functions
+//  FicDecoder abstracts channel data
 
 void DabProcessor::activate_cir_viewer(bool iActivate)
 {
   mSampleReader.set_cir_buffer(iActivate ? mpCirBuffer : nullptr);
 }
 
-//	for the mscHandler:
+//  for the mscHandler:
 void DabProcessor::reset_services()
 {
   if (!mScanMode)

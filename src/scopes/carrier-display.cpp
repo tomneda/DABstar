@@ -241,10 +241,8 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.ToolTip = "Shows the corrected phase error in degree of each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::LINES;
     cp.Name = "Corr. Phase Error";
-    cp.YTopValue = 20.0;
-    cp.YTopValueRangeExt = 25.0;
-    cp.YBottomValue = -20.0;
-    cp.YBottomValueRangeExt = -25.0;
+    cp.YTopValue = 60.0;
+    cp.YBottomValue = -60.0;
     break;
 
   case ECarrierPlotType::FOUR_QUAD_PHASE:

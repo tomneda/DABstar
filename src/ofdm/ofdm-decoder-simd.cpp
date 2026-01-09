@@ -98,11 +98,10 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iFftBuffer)
   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
     const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
-    mSimdVecTemp1Float[nomCarrIdx] = std::abs(iFftBuffer[fftIdx]); // level
+    mSimdVecTemp1Float[nomCarrIdx] = std::norm(iFftBuffer[fftIdx]); // noise power
   }
 
   constexpr f32 cAlpha = 0.1f;
-  mSimdVecTemp1Float.set_square_each_element(mSimdVecTemp1Float); // noise power
   mSimdVecMeanNullPowerWithoutTII.modify_mean_filter_each_element(mSimdVecTemp1Float, cAlpha);
 }
 
@@ -118,7 +117,7 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
   }
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, std::vector<i16> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 clock_err, std::vector<i16> & oBits)
 {
   // current runtime on i7-6700K: avr: 57us, min: 19us
   // mTimeMeas.trigger_begin();
@@ -133,12 +132,18 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
     mSimdVecNomCarrier[nomCarrIdx] = iFftBuffer[fftIdx];
   }
 
+  for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
+  {
+    mSimdVecPhaseErr[nomCarrIdx] = clock_err / 1024.0f * M_PI * (cK / 2 - mMapNomToRealCarrIdx[nomCarrIdx]) / (cK / 2);
+  }
+
   // -------------------------------
   mSimdVecPhaseReferenceNormed.set_normalize_each_element(mSimdVecPhaseReference);
   mSimdVecFftBinRaw.set_multiply_conj_each_element(mSimdVecNomCarrier, mSimdVecPhaseReferenceNormed);  // PI/4-DQPSK demodulation
 
   // -------------------------------
-  mSimdVecFftBinPhaseCorr.set_back_rotate_phase_each_element(mSimdVecFftBinRaw, mSimdVecIntegAbsPhase);
+  mSimdVecPhaseErr.modify_accumulate_each_element(mSimdVecIntegAbsPhase);
+  mSimdVecFftBinPhaseCorr.set_back_rotate_phase_each_element(mSimdVecFftBinRaw, mSimdVecPhaseErr);
 
   // -------------------------------
   mSimdVecFftBinPhaseCorrArg.set_arg_each_element(mSimdVecFftBinPhaseCorr);
@@ -166,7 +171,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
   // -------------------------------
   mSimdVecMeanLevel.modify_mean_filter_each_element(mSimdVecFftBinLevel, cAlpha);
   mSimdVecMeanPower.modify_mean_filter_each_element(mSimdVecFftBinPower, cAlpha);
-  mMeanPowerOvrAll = mSimdVecFftBinPower.get_mean_filter_sum_of_elements(mMeanPowerOvrAll, cAlpha);
 
   // -------------------------------
   mSimdVecFftBinPhaseCorr.store_to_real_and_imag_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecFftBinPhaseCorrImag);
@@ -236,6 +240,9 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
   ++mShowCntStatistics;
   const bool showScopeData = (mShowCntIqScope > cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
   const bool showStatisticData = (mShowCntStatistics > 5 * cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
+
+  if (showScopeData || showStatisticData)
+    mMeanPowerOvrAll = mSimdVecMeanPower.get_sum_of_elements() / cK;
 
   if (showScopeData)
   {
@@ -389,7 +396,7 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(mSimdVecMeanSigmaSq[nomCarrIdx]) / mSimdVecMeanLevel[nomCarrIdx]; break;
     case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanSigmaSq[nomCarrIdx] / mSimdVecMeanPower[nomCarrIdx]); break;
     case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(mSimdVecStdDevSqPhaseVec[nomCarrIdx])); break;
-    case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(mSimdVecIntegAbsPhase[nomCarrIdx]); break;
+    case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(mSimdVecPhaseErr[nomCarrIdx]); break;
     case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(mSimdVecFftBinPhaseCorr[nomCarrIdx])); break;
     case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mMeanPowerOvrAll); break;
     case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mSimdVecMeanNullPowerWithoutTII[nomCarrIdx]); break;

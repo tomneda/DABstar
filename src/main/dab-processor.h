@@ -31,8 +31,8 @@
 #ifndef  DAB_PROCESSOR_H
 #define  DAB_PROCESSOR_H
 /*
- *	DabProcessor is the embodying of all functionality related
- *	to the actual DAB processing.
+ *  DabProcessor is the embodying of all functionality related
+ *  to the actual DAB processing.
  */
 #include "dab-constants.h"
 #include "sample-reader.h"
@@ -58,7 +58,7 @@
 #endif
 
 
-// #define DO_TIME_MEAS
+//#define DO_TIME_MEAS
 
 #ifdef DO_TIME_MEAS
   #include "time_meas.h"
@@ -141,6 +141,7 @@ private:
   bool mRfFreqShiftUsed = false;
   bool mAllowRfFreqShift = false;
   bool mInputOverdrivenShown = false;
+  f32 clockErrHz = 0.0f;
 
   RingBuffer<cf32> * mpCirBuffer = nullptr;
 

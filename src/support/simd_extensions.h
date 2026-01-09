@@ -369,17 +369,6 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, f32>, f32>
-  inline get_mean_filter_sum_of_elements(const f32 iLastMeanVal, const f32 iAlpha) const
-  {
-    assert(mVolkTempFloat1Vec != nullptr);
-
-    volk_32f_s32f_add_32f_a(mVolkTempFloat1Vec, mVolkVec, -iLastMeanVal, cK);   // temp = (mVolkVec - iLastMeanVal) -> iLastMeanVal is normally the last returned sum value
-    volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkTempFloat1Vec, cK);      // this sums all temp vector elements to the first element
-    return iAlpha * mVolkSingleFloat[0] / (f32)cK + iLastMeanVal;             // new mean value over all vector elements
-  }
-
-  template <typename U = T>
-  typename std::enable_if_t<std::is_same_v<U, f32>, f32>
   inline get_sum_of_elements() const
   {
     volk_32f_accumulator_s32f_a(mVolkSingleFloat, mVolkVec, cK);  // this sums all vector elements to the first element
@@ -390,11 +379,7 @@ public:
   typename std::enable_if_t<std::is_same_v<U, f32>, void>
   inline modify_limit_symmetrically_each_element(const f32 iLimit)
   {
-    // TODO: check for SIMD
-    for (u32 idx = 0; idx < cK; ++idx)
-    {
-      ::limit_symmetrically(mVolkVec[idx], iLimit);
-    }
+    volk_32f_s32f_x2_clamp_32f_a(mVolkVec, mVolkVec, -iLimit, iLimit, cK);
   }
 
   template <typename U = T>
@@ -402,14 +387,15 @@ public:
   inline modify_check_negative_or_zero_values_and_fallback_each_element(const f32 iFallbackLimit)
   {
     // TODO: check for SIMD
-    for (u32 idx = 0; idx < cK; ++idx)
+    /*for (u32 idx = 0; idx < cK; ++idx)
     {
       if (mVolkVec[idx] <= 0)
       {
         // fprintf(stderr, "Change idx %d from %f to fallback value %f\n", idx, mVolkVec[idx], iFallbackLimit);
         mVolkVec[idx] = iFallbackLimit;
       }
-    }
+    }*/
+    volk_32f_s32f_x2_clamp_32f_a(mVolkVec, mVolkVec, iFallbackLimit, 1e6f, cK);
   }
 
   template <typename U = T>
