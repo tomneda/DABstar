@@ -141,7 +141,7 @@ private:
   bool mRfFreqShiftUsed = false;
   bool mAllowRfFreqShift = false;
   bool mInputOverdrivenShown = false;
-  f32 clockErrHz = 0.0f;
+  f32 mClockErrHz = 0.0f;
 
   RingBuffer<cf32> * mpCirBuffer = nullptr;
 

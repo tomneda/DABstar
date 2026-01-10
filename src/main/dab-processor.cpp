@@ -158,7 +158,7 @@ void DabProcessor::run()  // run QThread
         mClockOffsetFrameCount = mClockOffsetTotalSamples = 0;
         const bool ok = _state_wait_for_time_sync_marker();
         state = (ok ? EState::EVAL_SYNC_SYMBOL : EState::WAIT_FOR_TIME_SYNC_MARKER);
-        clockErrHz = 0.0f;
+        mClockErrHz = 0.0f;
         break;
       }
 
@@ -249,8 +249,8 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
 
   if (++mClockOffsetFrameCount > 10) // about each second
   {
-    clockErrHz = INPUT_RATE * ((f32)mClockOffsetTotalSamples / ((f32)mClockOffsetFrameCount * (f32)cTF) - 1.0f);
-    emit signal_show_clock_err(clockErrHz);
+    mClockErrHz = INPUT_RATE * ((f32)mClockOffsetTotalSamples / ((f32)mClockOffsetFrameCount * (f32)cTF) - 1.0f);
+    emit signal_show_clock_err(mClockErrHz);
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
 
@@ -326,7 +326,7 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_begin();
 #endif
-    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbIdx, mPhaseOffsetCyclPrefRad, clockErrHz, mBits);
+    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbIdx, mPhaseOffsetCyclPrefRad, mClockErrHz, mBits);
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_end();
 #endif

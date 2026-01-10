@@ -135,7 +135,7 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iBuffer)
   memcpy(mPhaseReference.data(), iBuffer.data(), cTu * sizeof(cf32));
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 clock_err, std::vector<i16> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits)
 {
   // current runtime on i7-6700K:
   // phase correction via:
@@ -174,9 +174,9 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     const cf32 fftBinRaw = iV[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
 
     f32 & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
-    const float phase_err = clock_err / 1024.0f * M_PI * (cK / 2 - realCarrRelIdx) / (cK / 2) + integAbsPhasePerBinRef;
+    const f32 phaseErr = iClockErr / 1024.0f * M_PI * (cK / 2 - realCarrRelIdx) / (cK / 2) + integAbsPhasePerBinRef;
 
-    const cf32 fftBin = fftBinRaw * cmplx_from_phase2(-phase_err);
+    const cf32 fftBin = fftBinRaw * cmplx_from_phase2(-phaseErr);
     //const cf32 fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
 
     // Get phase and absolute phase for each bin.
@@ -252,7 +252,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
       case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
       case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanSigmaSqPerBinRef / meanPowerPerBinRef); break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
-      case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(phase_err); break;
+      case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(phaseErr); break;
       case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
       case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
       case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
@@ -286,10 +286,14 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     const f32 noisePow = _compute_noise_Power();
     f32 snr = (mMeanPowerOvrAll - noisePow) / noisePow;
     if (snr <= 0.0f) snr = 0.1f;
+
     f32 stdDevSqOvrAll = 0.0f;
     for (int32_t idx = 0; idx < cK; idx++)
+    {
       stdDevSqOvrAll += mStdDevSqPhaseVector[idx];
-    stdDevSqOvrAll /= (float)cK;
+    }
+
+    stdDevSqOvrAll /= (f32)cK;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 / stdDevSqOvrAll);
     //mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);

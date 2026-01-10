@@ -50,7 +50,7 @@ public:
   void store_null_symbol_with_tii(const TArrayTu & iV);
   void store_null_symbol_without_tii(const TArrayTu & iV);
   void store_reference_symbol_0(const TArrayTu & iFftBuffer);
-  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 clock_err, std::vector<i16> & oBits);
+  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);

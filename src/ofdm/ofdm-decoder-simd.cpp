@@ -117,7 +117,7 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
   }
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 clock_err, std::vector<i16> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits)
 {
   // current runtime on i7-6700K: avr: 57us, min: 19us
   // mTimeMeas.trigger_begin();
@@ -134,7 +134,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
 
   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
-    mSimdVecPhaseErr[nomCarrIdx] = clock_err / 1024.0f * M_PI * (cK / 2 - mMapNomToRealCarrIdx[nomCarrIdx]) / (cK / 2);
+    mSimdVecPhaseErr[nomCarrIdx] = iClockErr / 1024.0f * M_PI * (cK / 2 - mMapNomToRealCarrIdx[nomCarrIdx]) / (cK / 2);
   }
 
   // -------------------------------
@@ -186,7 +186,9 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
 
   // -------------------------------
   if (mSoftBitType == ESoftBitType::SOFTDEC3)
+  {
     mSimdVecWeightPerBin.set_divide_each_element(mSimdVecMeanPower, mSimdVecMeanSigmaSq);  // w1 = meanPowerPerBinRef / meanSigmaSqPerBinRef;
+  }
   else if (mSoftBitType == ESoftBitType::SOFTDEC2)
   {
     mSimdVecTemp1Float.set_sqrt_each_element(mSimdVecMeanLevel);                           // T1 = sqrt(meanLevelPerBinRef)
@@ -194,7 +196,9 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
     mSimdVecWeightPerBin.set_divide_each_element(mSimdVecTemp1Float, mSimdVecMeanSigmaSq); // w1 = T1 / meanSigmaSqPerBinRef;
   }
   else
+  {
     mSimdVecWeightPerBin.set_divide_each_element(mSimdVecMeanLevel, mSimdVecMeanSigmaSq);  // w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+  }
   mSimdVecWeightPerBin.set_divide_each_element(mSimdVecWeightPerBin, mSimdVecTemp2Float);  // w1 /= T2
 
   // -------------------------------
@@ -242,7 +246,9 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
   const bool showStatisticData = (mShowCntStatistics > 5 * cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
 
   if (showScopeData || showStatisticData)
+  {
     mMeanPowerOvrAll = mSimdVecMeanPower.get_sum_of_elements() / cK;
+  }
 
   if (showScopeData)
   {
