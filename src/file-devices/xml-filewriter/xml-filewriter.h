@@ -24,8 +24,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__XML_FILEWRITER__
-#define	__XML_FILEWRITER__
+#ifndef __XML_FILEWRITER__
+#define __XML_FILEWRITER__
 
 #include "glob_data_types.h"
 #include <QString>
@@ -72,6 +72,7 @@ private:
   FILE *xmlFile;
   QString byteOrder;
   i64 nrElements;
+  QString timeString;
 };
 
 #endif

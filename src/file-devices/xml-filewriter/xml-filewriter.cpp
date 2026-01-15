@@ -20,9 +20,9 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include	"xml-filewriter.h"
-#include	<cstdio>
-#include	<time.h>
+#include    "xml-filewriter.h"
+#include    <cstdio>
+#include    <time.h>
 
 struct kort_woord {
   u8 byte_1;
@@ -38,8 +38,8 @@ XmlFileWriter::XmlFileWriter(FILE *f,
                              QString deviceModel,
                              QString recorderVersion)
 {
-  u8 t	= 0;
-  xmlFile	= f;
+  u8 t = 0;
+  xmlFile = f;
   this->nrBits = nrBits;
   this->container = container;
   this->sampleRate = sampleRate;
@@ -48,7 +48,7 @@ XmlFileWriter::XmlFileWriter(FILE *f,
   this->deviceModel = deviceModel;
   this->recorderVersion = recorderVersion;
 
-  for (i32 i = 0; i < 2048; i ++)
+  for (i32 i = 0; i < 2048; i++)
     fwrite(&t, 1, 1, f);
   i16 testWord = 0xFF;
 
@@ -58,6 +58,7 @@ XmlFileWriter::XmlFileWriter(FILE *f,
   else
     byteOrder = "MSB";
   nrElements = 0;
+  timeString = QDateTime::currentDateTimeUtc().toString("yyyy-MM-dd hh:mm:ss");
 }
 
 XmlFileWriter::~XmlFileWriter()
@@ -67,7 +68,7 @@ XmlFileWriter::~XmlFileWriter()
 void XmlFileWriter::computeHeader()
 {
   QString s;
-  QString	topLine = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+  QString topLine = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
   if (xmlFile == nullptr)
     return;
   s = create_xmltree();
@@ -78,68 +79,64 @@ void XmlFileWriter::computeHeader()
   fwrite (cs, 1, len, xmlFile);
 }
 
-#define	BLOCK_SIZE	8192
+#define BLOCK_SIZE 8192
 static i16 buffer_int16[BLOCK_SIZE];
 static i32 bufferP_int16 = 0;
 void XmlFileWriter::add(std::complex<i16> * data, i32 count)
 {
-  nrElements	+= 2 * count;
-  for (i32 i = 0; i < count; i ++)
+  for (i32 i = 0; i < count; i++)
   {
-    buffer_int16 [bufferP_int16 ++] = real (data [i]);
-    buffer_int16 [bufferP_int16 ++] = imag (data [i]);
+    buffer_int16[bufferP_int16++] = real(data [i]);
+    buffer_int16[bufferP_int16++] = imag(data [i]);
     if (bufferP_int16 >= BLOCK_SIZE)
     {
-      fwrite (buffer_int16, sizeof (i16), BLOCK_SIZE, xmlFile);
+      fwrite(buffer_int16, sizeof(i16), BLOCK_SIZE, xmlFile);
       bufferP_int16 = 0;
+      nrElements += BLOCK_SIZE;
     }
   }
 }
 
 static u8 buffer_uint8[BLOCK_SIZE];
-static i32 bufferP_uint8	= 0;
+static i32 bufferP_uint8 = 0;
 void XmlFileWriter::add(std::complex<u8> * data, i32 count)
 {
-  nrElements	+= 2 * count;
-  for (i32 i = 0; i < count; i ++)
+  for (i32 i = 0; i < count; i++)
   {
-    buffer_uint8[bufferP_uint8 ++] = real(data[i]);
-    buffer_uint8[bufferP_uint8 ++] = imag(data[i]);
+    buffer_uint8[bufferP_uint8++] = real(data[i]);
+    buffer_uint8[bufferP_uint8++] = imag(data[i]);
     if (bufferP_uint8 >= BLOCK_SIZE)
     {
-      fwrite(buffer_uint8, sizeof (u8), BLOCK_SIZE, xmlFile);
+      fwrite(buffer_uint8, sizeof(u8), BLOCK_SIZE, xmlFile);
       bufferP_uint8 = 0;
+      nrElements += BLOCK_SIZE;
     }
   }
 }
 
 static i8 buffer_int8[BLOCK_SIZE];
-static i32 bufferP_int8	= 0;
+static i32 bufferP_int8 = 0;
 void XmlFileWriter::add(std::complex<i8> * data, i32 count)
 {
-  nrElements	+= 2 * count;
-  for (i32 i = 0; i < count; i ++)
+  for (i32 i = 0; i < count; i++)
   {
-    buffer_int8[bufferP_int8 ++] = real(data[i]);
-    buffer_int8[bufferP_int8 ++] = imag(data[i]);
-    if (bufferP_int8 >= BLOCK_SIZE) {
+    buffer_int8[bufferP_int8++] = real(data[i]);
+    buffer_int8[bufferP_int8++] = imag(data[i]);
+    if (bufferP_int8 >= BLOCK_SIZE)
+    {
       fwrite (buffer_int8, sizeof (i8), BLOCK_SIZE, xmlFile);
       bufferP_int8 = 0;
+      nrElements += BLOCK_SIZE;
     }
   }
 }
 
-QString	XmlFileWriter::create_xmltree()
+QString XmlFileWriter::create_xmltree()
 {
   QDomDocument theTree;
   QDomElement root = theTree.createElement("SDR");
 
-  time_t rawtime;
-  struct tm *timeinfo;
-  time (&rawtime);
-  timeinfo = localtime(&rawtime);
-
-  theTree. appendChild(root);
+  theTree.appendChild(root);
   QDomElement theRecorder = theTree.createElement("Recorder");
   theRecorder.setAttribute("Name", PRJ_NAME);
   theRecorder.setAttribute("Version", recorderVersion);
@@ -148,23 +145,20 @@ QString	XmlFileWriter::create_xmltree()
   theDevice.setAttribute("Name", deviceName);
   theDevice.setAttribute("Model", deviceModel);
   root.appendChild(theDevice);
-  QDomElement theTime = theTree. createElement("Time");
+  QDomElement theTime = theTree.createElement("Time");
   theTime.setAttribute("Unit", "UTC");
-  char help[256];
-  strcpy(help, asctime (timeinfo));
-  help[strlen(help)] = 0;	// get rid of \n
-  theTime.setAttribute("Value", QDateTime::currentDateTimeUtc().toString("yyyy-MM-dd hh:mm:ss"));
-  root. appendChild(theTime);
+  theTime.setAttribute("Value", timeString);
+  root.appendChild(theTime);
   QDomElement theSample = theTree.createElement("Sample");
   QDomElement theRate = theTree.createElement("Samplerate");
   theRate.setAttribute("Unit", "Hz");
   theRate.setAttribute("Value", QString::number (sampleRate));
   theSample.appendChild (theRate);
-  QDomElement theChannels = theTree. createElement("Channels");
+  QDomElement theChannels = theTree.createElement("Channels");
   theChannels.setAttribute("Bits", QString::number(nrBits));
   theChannels.setAttribute("Container", container);
   theChannels.setAttribute("Ordering", byteOrder);
-  QDomElement I_Channel = theTree. createElement ("Channel");
+  QDomElement I_Channel = theTree.createElement ("Channel");
   I_Channel.setAttribute("Value", "I");
   theChannels.appendChild(I_Channel);
   QDomElement Q_Channel = theTree.createElement ("Channel");
@@ -173,8 +167,8 @@ QString	XmlFileWriter::create_xmltree()
   theSample.appendChild(theChannels);
   root.appendChild(theSample);
 
-  QDomElement theDataBlocks = theTree. createElement("Datablocks");
-  QDomElement theDataBlock = theTree. createElement("Datablock");
+  QDomElement theDataBlocks = theTree.createElement("Datablocks");
+  QDomElement theDataBlock = theTree.createElement("Datablock");
   theDataBlock.setAttribute("Count", QString::number(nrElements));
   theDataBlock.setAttribute("Number", "1");
   theDataBlock.setAttribute("Unit",  "Channel");
@@ -182,11 +176,11 @@ QString	XmlFileWriter::create_xmltree()
   theFrequency.setAttribute("Value", QString::number(frequency / 1000));
   theFrequency.setAttribute("Unit", "kHz");
   theDataBlock.appendChild(theFrequency);
-  QDomElement theModulation = theTree. createElement("Modulation");
+  QDomElement theModulation = theTree.createElement("Modulation");
   theModulation.setAttribute("Value", "DAB");
   theDataBlock.appendChild(theModulation);
   theDataBlocks.appendChild(theDataBlock);
-  root. appendChild(theDataBlocks);
+  root.appendChild(theDataBlocks);
 
   return theTree.toString();
 }
