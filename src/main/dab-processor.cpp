@@ -131,7 +131,6 @@ void DabProcessor::run()  // run QThread
   _set_rf_freq_offs_Hz(0.0f);
   _set_bb_freq_offs_Hz(0.0f);
 
-  mCorrectionNeeded = true;
   mFicHandler.reset_fic_decode_success_ratio(); // mCorrectionNeeded will be true next call to getFicDecodeRatioPercent()
   mFreqOffsCylcPrefHz = 0.0f;
   mFreqOffsSyncSymb = 0.0f;
@@ -204,12 +203,11 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
   fftwf_execute(mFftPlan);
   mOfdmDecoder.store_reference_symbol_0(mFftOutBuffer);
 
-  // Here we look only at the symbol 0 when we need a coarse frequency synchronization.
-  mCorrectionNeeded = mFicHandler.get_fic_decode_ratio_percent() < 50;
-
-  if (mCorrectionNeeded)
+  i32 correction = 0;
+  if (mFicHandler.get_fic_decode_ratio_percent() < 50) // Correction needed ?
   {
-    const i32 correction = mPhaseReference.estimate_carrier_offset_from_sync_symbol_0(mFftOutBuffer);
+    // Here we look only at the symbol 0 when we need a coarse frequency synchronization.
+    correction = mPhaseReference.estimate_carrier_offset_from_sync_symbol_0(mFftOutBuffer);
 
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
@@ -219,6 +217,10 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
       {
         mFreqOffsSyncSymb = 0.0f;
       }
+    }
+    if (correction != 0)
+    {
+      mClockErrHz = 0.0f;
     }
 
     _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
@@ -245,12 +247,17 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
 
   _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
 
+  if (correction == 0)
+  {
+    f32 clockErrHz = INPUT_RATE * ((f32)ioSampleCount / (f32)cTF - 1.0f);
+    limit_symmetrically(clockErrHz, 307.2f); // = 150 ppm
+    mean_filter(mClockErrHz, clockErrHz, 0.1f);
+  }
   mClockOffsetTotalSamples += ioSampleCount;
-
   if (++mClockOffsetFrameCount > 10) // about each second
   {
-    mClockErrHz = INPUT_RATE * ((f32)mClockOffsetTotalSamples / ((f32)mClockOffsetFrameCount * (f32)cTF) - 1.0f);
-    emit signal_show_clock_err(mClockErrHz);
+    const f32 clockErrHz = INPUT_RATE * ((f32)mClockOffsetTotalSamples / ((f32)mClockOffsetFrameCount * (f32)cTF) - 1.0f);
+    emit signal_show_clock_err(clockErrHz);
     mClockOffsetTotalSamples = 0;
     mClockOffsetFrameCount = 0;
 

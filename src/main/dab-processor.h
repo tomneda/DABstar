@@ -128,7 +128,6 @@ private:
   bool mScanMode = false;
   i16 mTiiCounter = 0;
   bool mEnableTii = false;
-  bool mCorrectionNeeded = true;
   f32 mPhaseOffsetCyclPrefRad = 0.0f;
   f32 mFreqOffsCylcPrefHz = 0.0f;
   f32 mFreqOffsSyncSymb = 0.0f;
