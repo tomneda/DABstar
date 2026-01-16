@@ -107,6 +107,7 @@ private:
   SimdVec<f32> mSimdVecMeanNullLevel{0};
   SimdVec<f32> mSimdVecIntegAbsPhase{0};
   SimdVec<f32> mSimdVecPhaseErr{0};
+  SimdVec<f32> mSimdVecPhaseConst{0};
 
   f32 mMeanPowerOvrAll = 1.0f;
   f32 mAbsNullLevelMin = 0.0f;

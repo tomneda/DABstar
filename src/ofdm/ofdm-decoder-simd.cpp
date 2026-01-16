@@ -53,6 +53,8 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuf
     assert(fftIdx < cTu);
     mMapNomToRealCarrIdx[nomCarrIdx] = realCarrRelIdx;
     mMapNomToFftIdx[nomCarrIdx] = fftIdx;
+    mSimdVecPhaseConst[nomCarrIdx] = F_M_PI / 1024.0f * (cK / 2 - realCarrRelIdx) / (cK / 2);
+
   }
 
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &DabRadio::slot_show_iq);
@@ -132,10 +134,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
     mSimdVecNomCarrier[nomCarrIdx] = iFftBuffer[fftIdx];
   }
 
-  for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
-  {
-    mSimdVecPhaseErr[nomCarrIdx] = iClockErr / 1024.0f * M_PI * (cK / 2 - mMapNomToRealCarrIdx[nomCarrIdx]) / (cK / 2);
-  }
+  mSimdVecPhaseErr.set_multiply_vector_and_scalar_each_element(mSimdVecPhaseConst, iClockErr);
 
   // -------------------------------
   mSimdVecPhaseReferenceNormed.set_normalize_each_element(mSimdVecPhaseReference);
