@@ -90,7 +90,7 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   containerLabel->setText(theDescriptor->container);
   iqOrderLabel->setText(theDescriptor->iqOrder);
   byteOrderLabel->setText(theDescriptor->byteOrder);
-  frequencyDisplay->display(theDescriptor->blockList[0].frequency / 1000.0);
+  frequencyDisplay->display(theDescriptor->blockList[0].frequency / (double)1000.0);
   typeofUnitLabel->setText(theDescriptor->blockList[0].typeofUnit);
   modulationtypeLabel->setText(theDescriptor->blockList[0].modType);
 
