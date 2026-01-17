@@ -10,7 +10,11 @@
     <link rel="icon" href="data:,">
     <style type="text/css">
       html { height: 100% }
-      body { height: 100%; margin: 0; padding: 0 }
+      body { height: 100%;
+             margin: 0;
+             padding: 0;
+             overflow: hidden; /* new for only vertical scrolling of TII-Info at right side */
+      }
       .transmitter-icon
       {
         padding:0px;
@@ -23,6 +27,7 @@
       #info
       {
         position:absolute;
+        overflow-y:auto; /* new for only vertical scrolling of TII-Info at right side */
         width:20%;
         height:100%;
         bottom:0px;
@@ -113,7 +118,7 @@
         let yy = document.getElementById('selCount');
         yy.innerHTML = '';
       }
-       function getSideBarTransmitterString(target)
+      function getSideBarTransmitterString(target)
       {
          return target.name + ' (' + target.power.toFixed(2) + ' kW)' + '<br>' +
                 'Altitude ' + target.altitude + 'm, Height ' + target.height + 'm' + '<br>' +
@@ -144,7 +149,7 @@
       function addTransmitter(target)
       {
         let icon = getIconForTransmitter(target);
-        let tooltip = target.name + ' ' + target.dist + 'km'
+        let tooltip = target.name + ' ' + target.dist.toFixed(1) + 'km'
         let marker = L.marker([target.lat, target.lon], {icon: icon, title: tooltip}).addTo(Map);
         target.marker = marker;
         target.marker.addEventListener('click', function() { selectTransmitterCallback(target);});
