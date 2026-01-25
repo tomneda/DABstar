@@ -129,9 +129,7 @@ private:
   i16 mTiiCounter = 0;
   bool mEnableTii = false;
   f32 mPhaseOffsetCyclPrefRad = 0.0f;
-  f32 mFreqOffsCylcPrefHz = 0.0f;
   f32 mFreqOffsSyncSymb = 0.0f;
-  i32 mFreqOffsBBAddedHz = 0;
   i32 mFreqOffsBBHz = 0;
   i32 mFreqOffsRFHz = 0;
   i32 mTimeSyncAttemptCount = 0;
@@ -139,7 +137,6 @@ private:
   i32 mClockOffsetFrameCount = 0;
   bool mRfFreqShiftUsed = false;
   bool mAllowRfFreqShift = false;
-  bool mInputOverdrivenShown = false;
   f32 mClockErrHz = 0.0f;
 
   RingBuffer<cf32> * mpCirBuffer = nullptr;

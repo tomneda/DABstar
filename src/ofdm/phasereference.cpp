@@ -37,11 +37,11 @@
 #endif
 
 /**
-  *	\class PhaseReference
-  *	Implements the correlation that is used to identify
-  *	the "first" element (following the cyclic prefix) of
-  *	the first non-null block of a frame
-  *	The class inherits from the phaseTable.
+  * \class PhaseReference
+  * Implements the correlation that is used to identify
+  * the "first" element (following the cyclic prefix) of
+  * the first non-null block of a frame
+  * The class inherits from the phaseTable.
   */
 
 PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessParams * const ipParam)
@@ -75,13 +75,13 @@ PhaseReference::~PhaseReference()
 }
 
 /**
-  *	\brief findIndex
-  *	the vector v contains "cTu" samples that are believed to
-  *	belong to the first non-null block of a DAB frame.
-  *	We correlate the data in this vector with the predefined
-  *	data, and if the maximum exceeds a threshold value,
-  *	we believe that that indicates the first sample we were
-  *	looking for.
+  * \brief findIndex
+  * the vector v contains "cTu" samples that are believed to
+  * belong to the first non-null block of a DAB frame.
+  * We correlate the data in this vector with the predefined
+  * data, and if the maximum exceeds a threshold value,
+  * we believe that that indicates the first sample we were
+  * looking for.
   */
 
 i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const f32 iThreshold)
@@ -91,7 +91,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
 
   fftwf_execute(mFftPlanFwd);
 
-  //	into the frequency domain, now correlate
+  //    into the frequency domain, now correlate
 #ifdef HAVE_SSE_OR_AVX
   volk_32fc_x2_multiply_conjugate_32fc_a(mFftInBuffer.data(), mFftOutBuffer.data(), mRefTable.data(), cTu);
 #else
@@ -101,11 +101,11 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   }
 #endif
 
-  //	and, again, back into the time domain
+  //    and, again, back into the time domain
   fftwf_execute(mFftPlanBwd);
 
   /**
-    *	We compute the average and the max signal values
+    *   We compute the average and the max signal values
     */
   f32 sum = 0;
 
@@ -118,13 +118,16 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   }
 
   sum /= (f32)(cTu);
+  if (sum == 0)
+    return -1; // avoid zero divide in case signal iV is 0
+
   QVector<i32> indices;
   i32 maxIndex = -1;
   f32 maxL = -1000;
   constexpr i16 GAP_SEARCH_WIDTH = 10;
   constexpr i16 EXTENDED_SEARCH_REGION = 250;
   const i16 idxStart = cTg - EXTENDED_SEARCH_REGION;
-  const i16 idxStop  = cTg + EXTENDED_SEARCH_REGION;
+  const i16 idxStop  = cTg + 2 * EXTENDED_SEARCH_REGION;
   assert(idxStart >= 0);
   assert(idxStop <= (signed)mCorrPeakValues.size());
 
@@ -159,7 +162,6 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   if (maxL / sum < iThreshold)
   {
     return -1; // no (relevant) peak found
-    //return (i32)(-abs(maxL / sum) - 1);
   }
 
   // display correlation spectrum
@@ -208,7 +210,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
 //  The phase differences are computed once
 i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV)
 {
-  i16 index = IDX_NOT_FOUND;
+  i32 index = IDX_NOT_FOUND;
   f32 max = 0;
   f32 avg = 0;
 
@@ -229,7 +231,6 @@ i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & 
   fftwf_execute(mFftPlanFwd);
 
   // Step 5: Find the peak in our maximum coarse frequency error window
-  //fprintf(stderr, "Sum = ");
   for (i32 i = -SEARCHRANGE/2; i <= SEARCHRANGE/2; i++)
   {
     const f32 value = std::abs(mFftOutBuffer[(cTu + i) % cTu]);
@@ -239,10 +240,8 @@ i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & 
       index = i;
     }
     avg += value;
-    //fprintf(stderr, "%.0f ", value/10000000);
   }
-  //fprintf(stderr, "\n");
-  avg /= SEARCHRANGE;
+  avg /= (SEARCHRANGE + 1);
 
   // Step 6: Return if peak is too small
   if(max < avg * 5)
@@ -259,21 +258,7 @@ i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & 
     peak_sum += peak[i];
   }
   const f32 offset = index + (peak[2] - peak[0]) / peak_sum;
-  //fprintf(stderr, "max=%.0f, average=%.0f, offset=%f\n", max/10000000, avg/10000000, offset);
   return (int32_t)(offset * cCarrDiff);
-}
-
-/*static*/
-f32 PhaseReference::phase(const std::vector<cf32> & iV, const i32 iTs)
-{
-  cf32 sum = cf32(0, 0);
-
-  for (i32 i = 0; i < iTs; i++)
-  {
-    sum += iV[i];
-  }
-
-  return arg(sum);
 }
 
 void PhaseReference::set_sync_on_strongest_peak(bool sync)

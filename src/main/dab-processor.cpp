@@ -84,7 +84,6 @@ DabProcessor::~DabProcessor()
   }
 }
 
-
 void DabProcessor::start()
 {
   mFicHandler.restart();
@@ -132,7 +131,6 @@ void DabProcessor::run()  // run QThread
   _set_bb_freq_offs_Hz(0.0f);
 
   mFicHandler.reset_fic_decode_success_ratio(); // mCorrectionNeeded will be true next call to getFicDecodeRatioPercent()
-  mFreqOffsCylcPrefHz = 0.0f;
   mFreqOffsSyncSymb = 0.0f;
   mTimeSyncAttemptCount = 0;
 
@@ -177,7 +175,7 @@ void DabProcessor::run()  // run QThread
       {
         _state_process_rest_of_frame(sampleCount);
         state = EState::EVAL_SYNC_SYMBOL;
-        syncThreshold = 3 * mcThreshold; // threshold is less sensitive while startup
+        syncThreshold = 2 * mcThreshold; // threshold is less sensitive while startup
         break;
       }
       } // switch
@@ -204,11 +202,10 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
   mOfdmDecoder.store_reference_symbol_0(mFftOutBuffer);
 
   i32 correction = 0;
-  if (mFicHandler.get_fic_decode_ratio_percent() < 50) // Correction needed ?
+  if (mFicHandler.get_fic_decode_ratio_percent() < 30) // Correction needed ?
   {
     // Here we look only at the symbol 0 when we need a coarse frequency synchronization.
     correction = mPhaseReference.estimate_carrier_offset_from_sync_symbol_0(mFftOutBuffer);
-
     if (correction != PhaseReference::IDX_NOT_FOUND)
     {
       mFreqOffsSyncSymb += (f32)correction;
@@ -223,16 +220,16 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
       mClockErrHz = 0.0f;
     }
 
-    _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+    _set_bb_freq_offs_Hz(mFreqOffsSyncSymb);
   }
   else
   {
     if (!mRfFreqShiftUsed && mAllowRfFreqShift)
     {
       mRfFreqShiftUsed = true;
-      _set_rf_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz); // takeover BB shift to RF
+      _set_rf_freq_offs_Hz(mFreqOffsSyncSymb); // takeover BB shift to RF
       _set_bb_freq_offs_Hz(0.0f); // no, no BB shift should be necessary
-      mFreqOffsSyncSymb = mFreqOffsCylcPrefHz = 0.0f; // allow collect new remaining freq. shift
+      mFreqOffsSyncSymb = 0.0f; // allow collect new remaining freq. shift
     }
   }
 
@@ -243,9 +240,9 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
   // The first sample to be found for the next frame should be T_g samples ahead. Before going for the next frame, we just check the fineCorrector
   // We integrate the newly found frequency error with the existing frequency error.
   limit_symmetrically(mPhaseOffsetCyclPrefRad, 20.0f * F_RAD_PER_DEG);
-  mFreqOffsCylcPrefHz += mPhaseOffsetCyclPrefRad / F_2_M_PI * (f32)cCarrDiff; // formerly 0.05
+  mFreqOffsSyncSymb += mPhaseOffsetCyclPrefRad / F_2_M_PI * (f32)cCarrDiff; // formerly 0.05
 
-  _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+  _set_bb_freq_offs_Hz(mFreqOffsSyncSymb);
 
   if (correction == 0)
   {
@@ -601,7 +598,7 @@ void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
   if (!iUseDcAvoidanceAlgorithm)
   {
     mFreqOffsSyncSymb += (f32)mFreqOffsRFHz;  // take RF offset to BB
-    _set_bb_freq_offs_Hz(mFreqOffsSyncSymb + mFreqOffsCylcPrefHz);
+    _set_bb_freq_offs_Hz(mFreqOffsSyncSymb);
     _set_rf_freq_offs_Hz(0.0f); // reset RF shift, sets mFreqOffsRFHz = 0
   }
 

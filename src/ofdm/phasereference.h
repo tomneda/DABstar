@@ -56,10 +56,10 @@ public:
   [[nodiscard]] static f32 phase(const std::vector<cf32> & iV, i32 iTs);
   void set_sync_on_strongest_peak(bool sync);
 
-  static constexpr i16 IDX_NOT_FOUND = 10000;
+  static constexpr i32 IDX_NOT_FOUND = 100000;
 
 private:
-  static constexpr i16 SEARCHRANGE = (2 * 35);
+  static constexpr i16 SEARCHRANGE = (2 * 70);
 
   void CalculateRelativePhase(const cf32 *fft_in, TArrayTu & arg_out);
   std::vector<cf32> cRefArg;
@@ -82,4 +82,3 @@ signals:
 };
 
 #endif
-
