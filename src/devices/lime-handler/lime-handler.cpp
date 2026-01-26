@@ -51,7 +51,7 @@ LimeHandler::LimeHandler(QSettings *s,
   theFilter.resize(currentDepth);
 #ifdef  __MINGW32__
   const char *libraryString = "LimeSuite.dll";
-#elif  __clang__
+#elif __APPLE__
   const char *libraryString = "/opt/local/lib/libLimeSuite.dylib";
 #else
   const char *libraryString = "libLimeSuite.so";

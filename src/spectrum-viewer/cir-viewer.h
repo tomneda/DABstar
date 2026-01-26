@@ -1,5 +1,5 @@
 //
-//	Simple viewer for correlation of a whole frame
+//  Simple viewer for correlation of a whole frame
 //
 #ifndef  CIR_VIEWER_H
 #define  CIR_VIEWER_H
@@ -41,6 +41,7 @@ private:
   alignas(64) TArrayTu mFftOutBuffer;
   fftwf_plan mFftPlanFwd;
   fftwf_plan mFftPlanBwd;
+  cf32 cirbuffer[CIR_SPECTRUMSIZE];
 
 signals:
   void signal_frame_closed();

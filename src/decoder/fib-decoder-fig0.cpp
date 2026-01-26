@@ -60,7 +60,11 @@ void FibDecoder::_process_Fig0(const u8 * const d)
   default:
     if (mUnhandledFig0Set.find(extension) == mUnhandledFig0Set.end()) // print message only once
     {
+#ifdef __clang__
+      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - mLastTimePoint); // see issue https://github.com/tomneda/DABstar/issues/99
+#else
       const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
+#endif
       if (mFibLoadingState >= EFibLoadingState::S5_DeferredDataLoaded) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig0Set.emplace(extension);
     }
@@ -85,7 +89,7 @@ void FibDecoder::_process_Fig0s0(const u8 * const d)
   if (fig0s0.ChangeFlags == 0 && mPrevChangeFlag == 3)
   {
     qDebug() << "Change FIB configuration";
-    std::swap(mpFibConfigFig0Curr, mpFibConfigFig0Next);                                          
+    std::swap(mpFibConfigFig0Curr, mpFibConfigFig0Next);
     mpFibConfigFig0Next->reset();
     // _reset(); // TODO: what has to be reset here
     emit signal_change_in_configuration();
@@ -274,7 +278,7 @@ void FibDecoder::_process_Fig0s3(const u8 * const d)
   }
 }
 
-// Note that the SCId (Service Component Identifier) is	a unique 12 bit number in the ensemble
+// Note that the SCId (Service Component Identifier) is a unique 12 bit number in the ensemble
 i16 FibDecoder::_subprocess_Fig0s3(const u8 * const d, const i16 used, const SFigHeader & iFH)
 {
   i16 bitOffset = used * 8;

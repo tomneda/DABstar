@@ -757,7 +757,11 @@ bool FibDecoder::_extract_character_set_label(FibConfigFig1::SFig1_DataField & o
 void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerName)
 {
   // evaluate maximum time difference between calls to check whether the empiric time cMaxFibLoadingTimeFast_ms is high enough
+#ifdef __clang__
+  const std::chrono::time_point currTimePoint = std::chrono::system_clock::now(); // see issue https://github.com/tomneda/DABstar/issues/99
+#else
   const std::chrono::time_point currTimePoint = std::chrono::high_resolution_clock::now();
+#endif
   const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(currTimePoint - mLastTimePoint);
   constexpr std::chrono::time_point<std::chrono::system_clock> cBaseVal{};
   if (mLastTimePoint > cBaseVal && diff > mDiffTimeMax) mDiffTimeMax = diff;

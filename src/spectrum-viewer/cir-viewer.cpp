@@ -58,7 +58,6 @@ CirViewer::~CirViewer()
 
 void CirViewer::show_cir()
 {
-  cf32 cirbuffer[CIR_SPECTRUMSIZE];
   constexpr i32 sPlotLength = 385;
   std::array<f32, sPlotLength> X_axis;
   std::array<f32, sPlotLength> Y_value;
