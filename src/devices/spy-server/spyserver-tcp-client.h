@@ -59,7 +59,11 @@ private:
   RingBuffer<u8> outBuffer;
   std::mutex locker;
   bool connected;
+#ifdef __clang__
   SOCKET SendingSocket;
+#else
+  int SendingSocket;
+#endif
   struct sockaddr_in ServerAddr;
   void run();
   std::atomic<bool> running;
