@@ -253,11 +253,7 @@ void AudioIODevice::_eval_peak_audio_level(const i16 * const ipData, const i32 i
 
     if (mPeakLevelCurSampleCnt > mPeakLevelSampleCntBothChannels) // collect much enough samples? (also over more blocks)
     {
-#ifdef __clang__
-      constexpr f32 cOffs_dB = 90.308734f; // see issue https://github.com/tomneda/DABstar/issues/99
-#else
-      constexpr f32 cOffs_dB = 20 * std::log10((f32) INT16_MAX);
-#endif
+      static const f32 cOffs_dB = 20 * std::log10((f32)std::numeric_limits<i16>::max()); // do not use constexpr as it is not supported by all compilers for std::log10()
       const f32 left_dB =  (mAbsPeakLeft >  0 ? 20.0f * std::log10((f32) mAbsPeakLeft)  - cOffs_dB : -40.0f);
       const f32 right_dB = (mAbsPeakRight > 0 ? 20.0f * std::log10((f32) mAbsPeakRight) - cOffs_dB : -40.0f);
 

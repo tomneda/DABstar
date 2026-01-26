@@ -60,11 +60,7 @@ void FibDecoder::_process_Fig0(const u8 * const d)
   default:
     if (mUnhandledFig0Set.find(extension) == mUnhandledFig0Set.end()) // print message only once
     {
-#ifdef __clang__
       const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - mLastTimePoint); // see issue https://github.com/tomneda/DABstar/issues/99
-#else
-      const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - mLastTimePoint);
-#endif
       if (mFibLoadingState >= EFibLoadingState::S5_DeferredDataLoaded) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig0Set.emplace(extension);
     }

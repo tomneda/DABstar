@@ -34,11 +34,7 @@ public:
 private:
   static constexpr f32 cFadeTimeMs =  60.0f;
   static constexpr f32 cFadeMinDb  = -40.0f;
-#ifdef __clang__
-  static constexpr f32 cFadeMinLin =  0.01f; // see issue https://github.com/tomneda/DABstar/issues/99
-#else
-  static constexpr f32 cFadeMinLin = std::pow(10.0f, cFadeMinDb / 20.0f);
-#endif
+  const            f32 cFadeMinLin = std::pow(10.0f, cFadeMinDb / 20.0f); // do not use constexpr as it is not supported by all compilers for std::pow()
   static constexpr i32 cNumPeakLevelPerSecond = 20;
 
   enum class EPlaybackState { Muted = 0, Playing = 1 };
