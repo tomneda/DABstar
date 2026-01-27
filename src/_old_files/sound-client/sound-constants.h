@@ -37,7 +37,7 @@
 
 #include	<malloc.h>
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include	"windows.h"
 #else
 #include	"alloca.h"

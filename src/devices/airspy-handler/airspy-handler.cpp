@@ -58,7 +58,7 @@ AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
     device          = nullptr;
     serialNumber        = 0;
 
-#ifdef  __MINGW32__
+#ifdef  _WIN32
     const char *libraryString = "airspy.dll";
 #else
     const char *libraryString = "libairspy";

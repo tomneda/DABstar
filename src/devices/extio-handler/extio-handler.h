@@ -34,7 +34,7 @@
 class		QSettings;
 class		virtualReader;
 //	create type defs for the functions
-#ifdef	__MINGW32__
+#ifdef	_WIN32
 #define	STDCALL	__stdcall
 #else
 #define	STDCALL 

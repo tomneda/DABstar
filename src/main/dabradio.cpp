@@ -47,7 +47,7 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 
-#if defined(__MINGW32__) || defined(_WIN32)
+#if defined(_WIN32)
   #include <windows.h>
 #else
   #include <unistd.h>

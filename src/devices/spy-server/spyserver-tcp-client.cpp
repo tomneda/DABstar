@@ -37,7 +37,7 @@
  *  the structure of this program part is an adapted C++ translation
  *  of a C# fragment that he is using
  */
-#ifdef __MINGW32__
+#ifdef _WIN32
 // #pragma comment(lib, "ws2_32.lib")
 #else
   #include <arpa/inet.h>
@@ -48,7 +48,7 @@
   #define ioctlsocket ioctl
 #endif
 
-#if defined(__MINGW32__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__)
   #ifndef MSG_NOSIGNAL
     #define MSG_NOSIGNAL 0
   #endif
@@ -64,14 +64,14 @@ SpyServerTcpClient::SpyServerTcpClient(const QString & addr, i32 port,
   this->inBuffer = inBuffer;
   connected = false;
 
-#ifdef  __MINGW32__
+#ifdef  _WIN32
     WSAData wsaData;
     WSAStartup (MAKEWORD (2, 2), &wsaData);
     fprintf (stderr, "Client: Winsock DLL is %s\n",
                                      wsaData. szSystemStatus);
 #endif
   SendingSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-#ifdef  __MINGW32__
+#ifdef  _WIN32
     if (SendingSocket == INVALID_SOCKET) {
        fprintf (stderr, "Client: socket failed: Error code: %d\n", WSAGetLastError());
        WSACleanup ();
@@ -90,13 +90,13 @@ SpyServerTcpClient::SpyServerTcpClient(const QString & addr, i32 port,
                       (struct sockaddr *)&ServerAddr, sizeof(ServerAddr));
   if (RetCode != 0)
   {
-#ifdef  __MINGW32__
+#ifdef  _WIN32
        printf ("Client: connect() failed! Error code: %d\n", WSAGetLastError());
 #endif
 
     close(SendingSocket);
 
-#ifdef  __MINGW32__
+#ifdef  _WIN32
        WSACleanup();
 #endif
     return;
@@ -174,7 +174,7 @@ void SpyServerTcpClient::run()
     else
     {
       sockaddr t;
-#ifndef __MINGW32__
+#ifndef _WIN32
       u32 tt = 10;
 #else
           i32   tt = 10;

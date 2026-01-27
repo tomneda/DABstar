@@ -67,7 +67,7 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
 
-#ifdef  __MINGW32__
+#ifdef  _WIN32
   const char *libraryString = "libhackrf.dll";
 #elif __linux__
   const char * libraryString = "libhackrf.so";

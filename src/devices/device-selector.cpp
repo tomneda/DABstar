@@ -21,10 +21,10 @@
 #ifdef  HAVE_SDRPLAY_V3
   #include  "sdrplay-handler-v3.h"
 #endif
-#ifdef  __MINGW32__
-#ifdef  HAVE_EXTIO
-  #include  "extio-handler.h"
-#endif
+#ifdef  _WIN32
+  #ifdef  HAVE_EXTIO
+    #include  "extio-handler.h"
+  #endif
 #endif
 #ifdef  HAVE_RTL_TCP
   #include  "rtl_tcp_client.h"
@@ -160,7 +160,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 #ifdef  HAVE_SDRPLAY_V2
   if (iDeviceName == DN_SDRPLAY_V2)
   {
-#ifdef  __MINGW32__
+#ifdef  _WIN32
     QMessageBox::warning (this, tr ("Warning"), tr ("If SDRuno is installed with drivers 3.10,\nV2.13 drivers will not work anymore, choose \"sdrplay\" instead\n"));
     return nullptr;
 #endif

@@ -145,7 +145,7 @@ mir_sdr_DeviceT devDesc [4];
 	if (numofDevs > 1) {
            sdrplaySelect sdrplaySelector;
            for (deviceIndex = 0; deviceIndex < (i32)numofDevs; deviceIndex ++) {
-#ifndef	__MINGW32__
+#ifndef	_WIN32
               sdrplaySelector.
                    addtoList (devDesc [deviceIndex]. DevNm);
 #else
@@ -808,7 +808,7 @@ bool	SdrPlayHandler_v2::loadFunctions () {
 }
 
 bool	SdrPlayHandler_v2::fetchLibrary	() {
-#ifdef  __MINGW32__
+#ifdef  _WIN32
 HKEY APIkey;
 wchar_t APIkeyValue [256];
 ULONG APIkeyValue_length = 255;
@@ -862,7 +862,7 @@ ULONG APIkeyValue_length = 255;
 }
 
 void	SdrPlayHandler_v2::releaseLibrary	() {
-#ifdef __MINGW32__
+#ifdef _WIN32
         FreeLibrary (Handle);
 #else
         dlclose (Handle);

@@ -225,7 +225,7 @@ i32	ret;
         myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
         myFrame. show ();
 
-#ifdef	__MINGW32__
+#ifdef	_WIN32
 	wchar_t *libname = (wchar_t *)L"libiio.dll";
         Handle  = LoadLibrary (libname);
 	if (Handle == NULL) {
@@ -240,7 +240,7 @@ i32	ret;
 
 	bool success			= loadFunctions ();
 	if (!success) {
-#ifdef __MINGW32__
+#ifdef _WIN32
            FreeLibrary (Handle);
 #else
            dlclose (Handle);

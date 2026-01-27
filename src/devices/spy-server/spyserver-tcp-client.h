@@ -31,7 +31,7 @@
 
 #pragma once
 
-#ifdef __MINGW32__
+#ifdef _WIN32
   #include <winsock2.h>
   #include <windows.h>
   #include <ws2tcpip.h>
@@ -39,7 +39,7 @@
   #include <sys/socket.h>
   #include <netinet/in.h>
 #endif
-#if defined(__GNUC__) || defined(__MINGW32__)
+#if defined(__GNUC__) || defined(_WIN32)
   #include <unistd.h>
 #endif
 #include "ringbuffer.h"

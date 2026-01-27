@@ -37,7 +37,7 @@
 #include  <cmath>
 #include  <unistd.h>
 
-#if defined(__MINGW32__) || defined(_WIN32)
+#if defined(_WIN32)
   #include	"windows.h"
 #else
   #include  "dlfcn.h"

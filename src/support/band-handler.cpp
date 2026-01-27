@@ -134,7 +134,7 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s)
   theTable.setHorizontalHeaderLabels(header);
   theTable.verticalHeader()->hide();
   theTable.setShowGrid(true);
-#if !defined(__MINGW32__) && !defined(_WIN32)
+#if !defined(_WIN32)
   if (a_band == QString(""))
   {
     return;

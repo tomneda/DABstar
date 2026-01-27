@@ -32,7 +32,7 @@
 #define	DEFAULT_INI	".sound-client.ini"
 
 QSettings	*ISettings;
-#ifdef	__MINGW32__
+#ifdef	_WIN32
 #include	"windows.h"
 #endif
 

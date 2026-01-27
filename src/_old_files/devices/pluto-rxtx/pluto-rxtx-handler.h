@@ -50,7 +50,7 @@
 #include        <qwt_scale_widget.h>
 
 #include	"up-filter.h"
-#ifdef __MINGW32__
+#ifdef _WIN32
 #define GETPROCADDRESS  GetProcAddress
 #else
 #define GETPROCADDRESS  dlsym

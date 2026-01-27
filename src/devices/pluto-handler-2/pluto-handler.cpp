@@ -50,7 +50,7 @@ PlutoHandler::PlutoHandler(QSettings *s,
     setupUi(&myFrame);
     myFrame.show();
 
-#ifdef  __MINGW32__
+#ifdef  _WIN32
     const char * libName = "libiio.dll";
 #else
     const char * libName= "libiio.so";

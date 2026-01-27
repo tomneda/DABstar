@@ -49,7 +49,7 @@ LimeHandler::LimeHandler(QSettings *s,
   limeSettings->endGroup();
   filterDepth->setValue(currentDepth);
   theFilter.resize(currentDepth);
-#ifdef  __MINGW32__
+#ifdef  _WIN32
   const char *libraryString = "LimeSuite.dll";
 #elif __APPLE__
   const char *libraryString = "/opt/local/lib/libLimeSuite.dylib";

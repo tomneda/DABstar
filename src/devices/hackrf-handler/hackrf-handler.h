@@ -51,7 +51,7 @@
 
 using hackrf_sample_block_cb_fn = i32 (*)(hackrf_transfer * transfer);
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #define GETPROCADDRESS  GetProcAddress
 #else
 #define GETPROCADDRESS  dlsym

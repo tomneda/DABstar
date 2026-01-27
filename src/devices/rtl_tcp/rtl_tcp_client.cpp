@@ -35,7 +35,7 @@
 #include    "device-exceptions.h"
 #include    "openfiledialog.h"
 
-#if !defined(__MINGW32__) && !defined(_WIN32)
+#if !defined(_WIN32)
   #include <netinet/in.h>  // for macro htonl
 #endif
 

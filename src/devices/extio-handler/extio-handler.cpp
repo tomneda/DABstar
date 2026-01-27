@@ -27,11 +27,11 @@
 #include	"virtual-reader.h"
 #include	"common-readers.h"
 
-#if !defined(__MINGW32__) && !defined(_WIN32)
+#if !defined(_WIN32)
   #include	"dlfcn.h"
 #endif
 
-#if defined(__MINGW32__) || defined(_WIN32)
+#if defined(_WIN32)
   #define	GETPROCADDRESS	GetProcAddress
   #define	FREELIBRARY	FreeLibrary
 #else
@@ -100,7 +100,7 @@ i32	extioCallback (i32 cnt, i32 status, f32 IQoffs, void *IQData) {
 //	are dealt with by the producer of the extio, so here 
 //	no frame whatsoever.
 	extioHandler::extioHandler (QSettings *s) {
-#ifdef	__MINGW32__
+#ifdef	_WIN32
 char	temp [256];
 wchar_t	*windowsName;
 i16	wchars_num;
@@ -121,7 +121,7 @@ i32	inputRate	= 0;
 	           getOpenFileName (NULL,
 	                            tr ("load file .."),
 	                            QDir::currentPath(),
-#ifdef	__MINGW32__
+#ifdef	_WIN32
 	                            tr ("libs (Extio*.dll)"));
 #else
 	                            tr ("libs (*.so)"));
@@ -133,7 +133,7 @@ i32	inputRate	= 0;
 	   throw (20);
 	}
 
-#ifdef	__MINGW32__
+#ifdef	_WIN32
 	wchars_num = MultiByteToWideChar (CP_UTF8, 0,
 	                              dll_file. toLatin1(). data(),
 	                              -1, NULL, 0);

@@ -47,7 +47,7 @@
 typedef void (* mir_sdr_StreamCallback_t)(i16 * xi, i16 * xq, u32 firstSampleNum, i32 grChanged, i32 rfChanged, i32 fsChanged, u32 numSamples, u32 reset, u32 hwRemoved, void * cbContext);
 typedef void (* mir_sdr_GainChangeCallback_t)(u32 gRdB, u32 lnaGRdB, void * cbContext);
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #define	GETPROCADDRESS	GetProcAddress
 #else
 #define  GETPROCADDRESS  dlsym
