@@ -59,7 +59,7 @@ private:
   RingBuffer<u8> outBuffer;
   std::mutex locker;
   bool connected;
-#ifdef __clang__
+#ifdef _WIN32
   SOCKET SendingSocket;
 #else
   int SendingSocket;
