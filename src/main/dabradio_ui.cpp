@@ -39,7 +39,7 @@ void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iCol
 }
 
 template<typename T>
-void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue)
+void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, T const iValue)
 {
   if constexpr (std::is_same_v<T, const char *>)
   {
@@ -89,7 +89,7 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, const T iValue
 template void DabRadio::_set_status_info_status<bool>(StatusInfoElem<bool> &, bool);
 template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32> &, u32);
 template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32> &, i32);
-template void DabRadio::_set_status_info_status<const char *>(StatusInfoElem<const char *> &, const char *);
+template void DabRadio::_set_status_info_status<const char *>(StatusInfoElem<const char *> &, const char * const);
 
 void DabRadio::_emphasize_pushbutton(QPushButton * const ipPB, const bool iEmphasize) const
 {
