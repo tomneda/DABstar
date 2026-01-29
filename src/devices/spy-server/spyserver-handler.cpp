@@ -190,7 +190,7 @@ bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
   bool result;
   u32 headerLen = sizeof(CommandHeader);
   u16 argLen = args.size();
-  u8 buffer[headerLen + argLen];
+  u8 *buffer = make_vla(u8, headerLen + argLen);
   CommandHeader header;
 
 //	if (!is_connected) {

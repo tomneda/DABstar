@@ -10,7 +10,7 @@
 	BandPassFIR::BandPassFIR (i16 filterSize,
 	                          i32 low, i32 high,
 	                          i32 sampleRate) {
-f32	tmp [filterSize];
+f32	*tmp	= make_vla(f32, filterSize);
 f32	lo	= (f32) ((high - low) / 2) / sampleRate;
 f32	shift	= (f32) ((high + low) / 2) / sampleRate;
 f32	sum	= 0.0;

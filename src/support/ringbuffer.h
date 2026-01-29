@@ -134,8 +134,6 @@ OSMemoryBarrier();
 #   endif
 #else
 #   ifdef ALLOW_SMP_DANGERS
-#      warning Memory barriers not defined on this system or system unknown
-#      warning For SMP safety, you should fix this.
 #      define PaUtil_FullMemoryBarrier()
 #      define PaUtil_ReadMemoryBarrier()
 #      define PaUtil_WriteMemoryBarrier()

@@ -16,7 +16,7 @@ using u64 = std::uint64_t;
 using f32 = float;
 using f64 = double;
 
-#ifdef __clang__ // see issue https://github.com/tomneda/DABstar/issues/99
+#ifdef _WIN32 // see issue https://github.com/tomneda/DABstar/issues/99
 using isize = ptrdiff_t;
 using usize = size_t;
 #else

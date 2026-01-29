@@ -272,7 +272,7 @@ void LimeHandler::stopReader()
 
 i32 LimeHandler::getSamples(cf32 *V, i32 size)
 {
-  std::complex<i16> temp[size];
+  std::complex<i16> *temp = make_vla(std::complex<i16>, size);
 
   i32 amount = _I_Buffer. get_data_from_ring_buffer(temp, size);
   if (filtering)

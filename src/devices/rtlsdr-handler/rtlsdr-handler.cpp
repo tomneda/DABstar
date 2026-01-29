@@ -227,7 +227,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   gainsCount = rtlsdr_get_tuner_gains(theDevice, nullptr);
   fprintf(stdout, "Supported gain values (%d): ", gainsCount);
   {
-    i32 gains[gainsCount];
+    i32 *gains = make_vla(i32, gainsCount);
     gainsCount = rtlsdr_get_tuner_gains(theDevice, gains);
     for (i = gainsCount; i > 0; i--)
     {
@@ -435,7 +435,7 @@ void RtlSdrHandler::set_ppmCorrection(f64 ppm)
 
 i32 RtlSdrHandler::getSamples(cf32 * V, i32 size)
 {
-  std::complex<u8> temp[size];
+  std::complex<u8> *temp = make_vla(std::complex<u8>, size);
   i32 amount;
   static u8 dumpBuffer[4096];
   static i32 iqTeller = 0;

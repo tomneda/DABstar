@@ -23,7 +23,12 @@
 
 #define K        7
 #define RATE     4
-#define ALIGN(a) __attribute__ ((aligned(a)))
+
+#if defined(_MSC_VER)
+  #define ALIGN(a)  _VCRT_ALIGN(a)
+#else
+  #define ALIGN(a) __attribute__ ((aligned(a)))
+#endif
 
 ALIGN(32) static const COMPUTETYPE Branchtable[RATE * NUMSTATES / 2]
 {
