@@ -71,8 +71,8 @@ private:
   std::array<f32, cDisplaySize>  mYDispBuffer{};
   std::array<f32, cSpectrumSize> mWindow;
 
-  std::array<f32, cSpectrumSize> mFftInBuffer;
-  std::array<cf32, cSpectrumSize> mFftOutBuffer;
+  alignas(64) std::array<f32,  cSpectrumSize> mFftInBuffer;
+  alignas(64) std::array<cf32, cSpectrumSize> mFftOutBuffer;
   fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex *)mFftOutBuffer.data(), FFTW_ESTIMATE)};
 
   QColor GridColor;
