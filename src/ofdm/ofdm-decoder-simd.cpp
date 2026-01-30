@@ -321,9 +321,11 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
       if (meanNullLevelRef < min) min = meanNullLevelRef;
       if (meanNullLevelRef > max) max = meanNullLevelRef;
     }
-    assert(max > min);
-    mAbsNullLevelMin = min;
-    mAbsNullLevelGain = 100.0f / (max - min);
+    if(max > min) // there are artificial sample files which have really zero-valued samples in the null symbol, so min = max  = 0
+    {
+      mAbsNullLevelMin = min;
+      mAbsNullLevelGain = 100.0f / (max - min);
+    }
   }
 }
 
