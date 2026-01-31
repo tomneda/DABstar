@@ -299,7 +299,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
     for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
       const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
-      const f32 level = log10_times_20(std::abs(iFftBuffer[fftIdx]));
+      const f32 level = log10_times_10(std::norm(iFftBuffer[fftIdx]));
       f32 & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, cAlpha);
 

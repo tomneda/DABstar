@@ -122,7 +122,7 @@ void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const i32 iNu
   for (i32 i = 0; i < cDisplaySize; i++)
   {
     static const f32 fftOffset = 20.0f * std::log10(cSpectrumSize / 4); // do not use constexpr as it is not supported by all compilers for std::log10()
-    const f32 yVal = log10_times_20(std::abs(mFftOutBuffer[i])) - fftOffset;
+    const f32 yVal = log10_times_10(std::norm(mFftOutBuffer[i])) - fftOffset;
     mYDispBuffer[i] = (f32)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
   }
 
