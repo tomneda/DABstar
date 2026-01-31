@@ -125,6 +125,7 @@ void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const i32 iNu
     const f32 yVal = log10_times_10(std::norm(mFftOutBuffer[i])) - fftOffset;
     mYDispBuffer[i] = (f32)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
   }
+  mYDispBuffer[0] -= 3.01; // compensate for the DC bin offset
 
   mSpectrumCurve.setSamples(mXDispBuffer.data(), mYDispBuffer.data(), cDisplaySize);
   pPlotGrid->replot();
