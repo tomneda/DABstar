@@ -24,13 +24,7 @@
 #define K        7
 #define RATE     4
 
-#if defined(_MSC_VER)
-  #define ALIGN(a)  _VCRT_ALIGN(a)
-#else
-  #define ALIGN(a) __attribute__ ((aligned(a)))
-#endif
-
-ALIGN(32) static const COMPUTETYPE Branchtable[RATE * NUMSTATES / 2]
+alignas(64) static const COMPUTETYPE Branchtable[RATE * NUMSTATES / 2]
 {
   0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, // 0
   255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, // 1
@@ -43,7 +37,7 @@ ALIGN(32) static const COMPUTETYPE Branchtable[RATE * NUMSTATES / 2]
 };
 
 
-ALIGN(32) static COMPUTETYPE metrics1[NUMSTATES], metrics2[NUMSTATES];
+alignas(64) static COMPUTETYPE metrics1[NUMSTATES], metrics2[NUMSTATES];
 
 static const u8 PARTAB[256] =
 {
