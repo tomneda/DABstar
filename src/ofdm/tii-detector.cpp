@@ -131,6 +131,7 @@ inline std::byte rev_bit_val(const u32 iBitPos)
 
 TiiDetector::TiiDetector()
 {
+  mTiiResults.reserve(cGroupSize24);
   reset();
 }
 
@@ -183,7 +184,7 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
   // set noise level to lowest found noise over each subId
   const f32 noise = _calculate_average_noise(etsiFloatTable);
 
-  std::vector<STiiResult> theResult; // results
+  mTiiResults.clear();
 
   for (i32 subId = 0; subId < cGroupSize24; subId++)
   {
@@ -222,12 +223,12 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
       element.strength = abs(sum) / max / 4;
       element.phaseDeg = arg(sum) * F_DEG_PER_RAD;
       element.isNonEtsiPhase = isNonEtsiPhase;
-      theResult.push_back(element);
+      mTiiResults.push_back(element);
     }
 
     if (count > 4 && mShowTiiCollisions)
     {
-      _find_collisions(theResult, mainId, subId, pattern, max, thresholdLevel, count, isNonEtsiPhase, cmplxTable, floatTable);
+      _find_collisions(mTiiResults, mainId, subId, pattern, max, thresholdLevel, count, isNonEtsiPhase, cmplxTable, floatTable);
     }
   }
 
@@ -240,9 +241,9 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
   _reset_null_symbol_buffer();
 
   // Sort the elements according to their strength
-  std::sort(theResult.begin(), theResult.end(), [](const STiiResult & a, const STiiResult & b) { return a.strength > b.strength; });
+  std::sort(mTiiResults.begin(), mTiiResults.end(), [](const STiiResult & a, const STiiResult & b) { return a.strength > b.strength; });
 
-  return theResult;
+  return mTiiResults;
 }
 
 void TiiDetector::_reset_null_symbol_buffer()

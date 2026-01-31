@@ -47,6 +47,7 @@ private:
   u8 mSubIdCollSearch = 0;
   TBufferArr768 mDecodedBufferArr;
   TArrayTu mNullSymbolBufferVec;
+  std::vector<STiiResult> mTiiResults;
 
   f32 _calculate_average_noise(const TFloatTable192 & iFloatTable) const;
   void _get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, f32 & ioMax, const TCmplxTable192 & iCmplxTable) const;
