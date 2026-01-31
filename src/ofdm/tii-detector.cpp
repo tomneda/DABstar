@@ -9,6 +9,7 @@
 
 
 #include "tii-detector.h"
+#include <algorithm>
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY(sLogTiiDetector, "TiiDetector", QtWarningMsg)
@@ -128,18 +129,6 @@ inline std::byte rev_bit_val(const u32 iBitPos)
   return static_cast<std::byte>(0x80 >> iBitPos);
 }
 
-// Sort the elements according to their strength
-static i32 fcmp(const void * a, const void * b)
-{
-  const auto * element1 = (const STiiResult *)a;
-  const auto * element2 = (const STiiResult *)b;
-
-  if (element1->strength > element2->strength) return -1;
-  if (element1->strength < element2->strength) return  1;
-
-  return 0;
-}
-
 TiiDetector::TiiDetector()
 {
   reset();
@@ -250,7 +239,8 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
 
   _reset_null_symbol_buffer();
 
-  qsort(theResult.data(), theResult.size(), sizeof(STiiResult), &fcmp); // sort data due to its strength (high to low)
+  // Sort the elements according to their strength
+  std::sort(theResult.begin(), theResult.end(), [](const STiiResult & a, const STiiResult & b) { return a.strength > b.strength; });
 
   return theResult;
 }
