@@ -24,7 +24,7 @@
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Formats.hpp>
-#include        <SoapySDR/Errors.hpp>
+#include <SoapySDR/Errors.hpp>
 #include <cstdio> //printf
 #include <stdlib.h> //free
 #include <complex.h>
@@ -32,19 +32,20 @@
 #include	"soapy-worker.h"
 
 
-class	soapy_CS16: public soapyWorker {
+class soapy_CS16 : public soapyWorker
+{
 public:
-	soapy_CS16	(SoapySDR::Device *);
-	~soapy_CS16	(void);
-i32	Samples		(void);
-i32	getSamples	(cf32 *, i32);
-void	run		(void);
+  soapy_CS16(SoapySDR::Device *);
+  ~soapy_CS16(void);
+  i32 Samples(void);
+  i32 getSamples(cf32 *, i32);
+  void run(void);
+
 private:
-SoapySDR::Device	*theDevice;
-SoapySDR::Stream	*stream;
-RingBuffer<i16>	theBuffer;
-bool	running;
+  SoapySDR::Device * theDevice;
+  SoapySDR::Stream * stream;
+  RingBuffer<i16> theBuffer;
+  bool running;
 };
 
 #endif
-

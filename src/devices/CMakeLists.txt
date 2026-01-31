@@ -238,6 +238,39 @@ if (RTL_TCP)
   add_definitions(-DHAVE_RTL_TCP)
 endif (RTL_TCP)
 
+if (SOAPY)
+  set(${devicesLibName}_UIS
+          ${${devicesLibName}_UIS}
+          ./soapy/soapy-widget.ui
+  )
+
+  set(${devicesLibName}_MOCS
+          ${${devicesLibName}_MOCS}
+          ./soapy/soapy-handler.h
+          ./soapy/soapy-converter.h
+  )
+
+  include_directories(
+          ./soapy/
+  )
+
+  set(${devicesLibName}_HDRS
+          ${${devicesLibName}_HDRS}
+          ./soapy/soapy-handler.h
+          ./soapy/soapy-converter.h
+  )
+
+  set(${devicesLibName}_SRCS
+          ${${devicesLibName}_SRCS}
+          ./soapy/soapy-handler.cpp
+          ./soapy/soapy-converter.cpp
+  )
+
+  set(LIBSOAPY "-lSoapy -lm")
+  list(APPEND extraLibs ${LIBSOAPY})
+  add_definitions(-DHAVE_SOAPY)
+endif ()
+
 #---------------------------------------------------
 
 include_directories(

@@ -1,10 +1,14 @@
 #
 /*
- *    Copyright (C) 2014 .. 2017
+ *    Copyright (C) 2014 .. 2023
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB program
+ *    This file is part of the Qt-DAB
+ *
+ *    Many of the ideas as implemented in Qt-DAB are derived from
+ *    other work, made available through the GNU general Public License. 
+ *    All copyrights of the original authors are recognized.
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -19,58 +23,65 @@
  *    You should have received a copy of the GNU General Public License
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
-
-#ifndef __SOAPY_HANDLER__
-#define	__SOAPY_HANDLER__
+#pragma once
 
 #include	<QObject>
-#include	<QFrame>
-#include	<QSettings>
-#include	<QLineEdit>
 #include	<atomic>
-#include	"dab-constants.h"
-#include	"ringbuffer.h"
-#include	<SoapySDR/Device.hpp>
-#include	<SoapySDR/Formats.hpp>
-#include        <SoapySDR/Errors.hpp>
+#include	<thread>
 #include	"device-handler.h"
+#include	"ringbuffer.h"
+#include	<SoapySDR/Device.h>
+#include	"soapy-converter.h"
 #include	"ui_soapy-widget.h"
-#include	"soapy-worker.h"
 
-class	soapyHandler: public QObject, public deviceHandler, public Ui_soapyWidget {
+class SoapySdr_Thread;
+class	QSettings;
+
+
+class soapyHandler : //public QObject,
+	              public deviceHandler, public Ui_soapyWidget {
 Q_OBJECT
 public:
-			soapyHandler		(QSettings *);
-			~soapyHandler		(void);
-	void		setVFOFrequency		(i32);
-	i32		getVFOFrequency		(void);
-	i32		defaultFrequency	(void);
+		soapyHandler	(QSettings *);
+		~soapyHandler	();
+	
+	bool	restartReader	(int, int skipped = 0);
+	void	stopReader	();
+	void	reset		();
+	int32_t getSamples	(std::complex<float> * Buffer, int32_t Size);
+	int32_t	Samples		();
+	float	getGain		() const;
+	int32_t	getGainCount	();
+	bool	isFileInput	();
 
-	bool		restartReader		(i32);
-	void		stopReader		(void);
-	i32		getSamples		(cf32 *,
-	                                                          i32);
-	i32		Samples			(void);
-	void		resetBuffer		(void);
-	void		show			();
-	void		hide			();
-	bool		isHidden		();
-	i16		bitDepth		(void);
 private:
-	QFrame			myFrame;
-	SoapySDR::Device	*device;
-	SoapySDR::Stream	*stream;
-	QSettings		*soapySettings;
-	QLineEdit		*deviceLineEdit;
-	std::vector<std::string> gains;
-	soapyWorker		*worker;
+	RingBuffer<std::complex<float>> m_sampleBuffer;
+	soapyConverter	theConverter;
+	SoapySDRStream	*rxStream;
+	void	setAntenna	(const std::string& antenna);
+	void	decreaseGain	();
+	void	increaseGain	();
+
+	void	createDevice	(const QString &);
+	int m_freq = 0;
+	std::string m_driver_args;
+	std::string m_antenna;
+	SoapySDRDevice *m_device = nullptr;
+	std::atomic<bool> m_running;
+	std::atomic<bool> deviceReady;
+	bool m_sw_agc = false;
+	bool	hasAgc;
+	std::vector<double> m_gains;
+
+	std::thread m_thread;
+	void workerthread(void);
+	void process(SoapySDRStream *stream);
+
+	int	findDesiredRange (SoapySDRRange * theRanges, int length);
 private slots:
-	void		createDevice		(void);
-	void		handle_spinBox_1	(i32);
-	void		handle_spinBox_2	(i32);
-	void		set_agcControl		(i32);
-	void		handleAntenna		(const QString &);
+	void	setAgc		(int);
+	void	setGain		(int);
 };
-#endif
 

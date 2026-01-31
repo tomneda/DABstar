@@ -116,6 +116,8 @@ option(RTL_TCP    "Use RtlTcp"     OFF)
 option(PLUTO      "Use Pluto"      OFF)  # untested
 option(UHD        "Use UHD"        OFF)
 option(RTLSDR     "Use RtlSdr"      ON)
+option(SOAPY      "Use Soapy"      OFF)  # untested
+
 
 # additional options
 option(USE_LIQUID    "Use LiquidDsp for HBF and Resampler"    OFF)  # this needs LiquidDsp (https://github.com/jgaeddert/liquid-dsp)
