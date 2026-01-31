@@ -20,6 +20,13 @@ set(objectName "dabstar")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(USE_SANITIZERS "Enable address/undefined sanitizers in Debug builds" OFF)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND USE_SANITIZERS)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
 option(USE_LTO "Set -flto flag" OFF)  # switch off to save compile/link time while development
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
