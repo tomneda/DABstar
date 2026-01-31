@@ -37,7 +37,8 @@ alignas(64) static const COMPUTETYPE Branchtable[RATE * NUMSTATES / 2]
 };
 
 
-alignas(64) static COMPUTETYPE metrics1[NUMSTATES], metrics2[NUMSTATES];
+alignas(64) static COMPUTETYPE metrics1[NUMSTATES];
+alignas(64) static COMPUTETYPE metrics2[NUMSTATES];
 
 static const u8 PARTAB[256] =
 {
