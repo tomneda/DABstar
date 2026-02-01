@@ -14,7 +14,7 @@ if (SDRPLAY_V2)
           sdrplay-handler-v2
   )
 
-  set($(devicesLibName)_HDRS
+  set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           sdrplay-handler-v2/sdrplay-handler-v2.h
           sdrplay-handler-v2/sdrplayselect.h
@@ -35,14 +35,14 @@ if (SDRPLAY_V3)
           sdrplay-handler-v3
   )
 
-  set($(devicesLibName)_HDRS
+  set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           sdrplay-handler-v3/sdrplay-handler-v3.h
           sdrplay-handler-v3/sdrplay-commands.h
           sdrplay-handler-v3/Rsp-device.h
           sdrplay-handler-v3/Rsp1-handler.h
           sdrplay-handler-v3/Rsp1A-handler.h
-          sdrplay-handler-v3/RspII-handler.h
+          sdrplay-handler-v3/Rsp2-handler.h
           sdrplay-handler-v3/RspDuo-handler.h
           sdrplay-handler-v3/RspDx-handler.h
   )
@@ -72,7 +72,7 @@ if (AIRSPY)
           airspy-handler
   )
 
-  set($(devicesLibName)_HDRS
+  set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           airspy-handler/airspy-handler.h
           airspy-handler/airspyselect.h
@@ -98,7 +98,7 @@ if (SPYSERVER)
           spy-server
   )
 
-  set($(devicesLibName)_HDRS
+  set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           spy-server/spyserver-handler.h
           spy-server/spyserver-client.h
@@ -224,7 +224,7 @@ if (RTL_TCP)
           ${Qt6Network_INCLUDE_DIRS}
   )
 
-  set($(devicesLibName)_HDRS
+  set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           rtl_tcp/rtl_tcp_client.h
   )
@@ -239,17 +239,7 @@ if (RTL_TCP)
 endif (RTL_TCP)
 
 if (SOAPY)
-  set(${devicesLibName}_UIS
-          ${${devicesLibName}_UIS}
-          ./soapy/soapy-widget.ui
-  )
-
-  set(${devicesLibName}_MOCS
-          ${${devicesLibName}_MOCS}
-          ./soapy/soapy-handler.h
-          ./soapy/soapy-converter.h
-  )
-
+  find_package(SoapySDR REQUIRED)
   include_directories(
           ./soapy/
   )
@@ -290,7 +280,7 @@ include_directories(
 )
 
 
-set($(devicesLibName)_HDRS
+set(${devicesLibName}_HDRS
         ${${devicesLibName}_HDRS}
         device-selector.h
         filereaders/xml-filereader/xml-filereader.h

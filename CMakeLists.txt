@@ -511,14 +511,14 @@ elseif (NOT FDK_AAC)
 endif (FDK_AAC)
 
 if (VITERBI_AVX2)
-    set($(objectName)_HDRS
+    set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/viterbi_16way.h
     )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
     add_definitions(-DHAVE_VITERBI_AVX2)
 elseif (VITERBI_SSE2)
-    set($(objectName)_HDRS
+    set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/viterbi_8way.h
     )
@@ -530,7 +530,7 @@ elseif (VITERBI_NEON)
     )
     add_definitions(-DHAVE_VITERBI_NEON)
 else ()
-    set($(objectName)_HDRS
+    set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/support/viterbi-spiral/viterbi_scalar.h
     )
@@ -541,7 +541,7 @@ if (DATA_STREAMER)
             src/server-thread
     )
 
-    set($(objectName)_HDRS
+    set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/server-thread/tcp-server.h
     )
@@ -576,11 +576,9 @@ add_executable(${objectName}
 target_link_libraries(${objectName}
         PRIVATE
         Qt6::Widgets
-        Qt6::Network
         Qt6::Xml
         Qt6::Sql
         Qt6::Multimedia
-        ${RTLTCP_lib}
         ${extraLibs}
         ${FAAD_LIBRARIES}
         ${CMAKE_DL_LIBS}
