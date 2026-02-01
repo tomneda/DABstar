@@ -11,6 +11,9 @@
 #include "ITU_Region_1.h"
 #include "copyright_info.h"
 #include "map-http-server.h"
+#include "spectrum-viewer.h"
+#include "cir-viewer.h"
+#include "configuration.h"
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
@@ -129,7 +132,7 @@ void DabRadio::_initialize_ui_buttons()
   ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet({ 220, 180, 45 }));
 
   _set_http_server_button(EHttpButtonState::Off);
-  slot_handle_mot_saving_selector(mConfig.cmbMotObjectSaving->currentIndex());
+  slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving->currentIndex());
 
   // only the queued call will consider the button size
   QMetaObject::invokeMethod(this, "_slot_update_mute_state", Qt::QueuedConnection, Q_ARG(bool, false));
@@ -208,16 +211,16 @@ void DabRadio::_initialize_thermo_peak_levels()
 
 void DabRadio::_initialize_device_selector()
 {
-  mConfig.deviceSelector->addItems(mDeviceSelector.get_device_name_list());
+  mpConfig->deviceSelector->addItems(mDeviceSelector.get_device_name_list());
 
   const QString h = Settings::Main::varSdrDevice.read().toString();
-  const i32 k = mConfig.deviceSelector->findText(h);
+  const i32 k = mpConfig->deviceSelector->findText(h);
 
   if (k != -1)
   {
-    mConfig.deviceSelector->setCurrentIndex(k);
+    mpConfig->deviceSelector->setCurrentIndex(k);
 
-    mpInputDevice = mDeviceSelector.create_device(mConfig.deviceSelector->currentText(), mChannel.realChannel);
+    mpInputDevice = mDeviceSelector.create_device(mpConfig->deviceSelector->currentText(), mChannel.realChannel);
 
     if (mpInputDevice != nullptr)
     {
@@ -322,7 +325,7 @@ void DabRadio::_show_hide_buttons(const bool iShow)
 #if 1
   if (iShow)
   {
-    //mConfig.dumpButton->show();
+    //mpConfig->dumpButton->show();
     ui->btnScanning->show();
     ui->cmbChannelSelector->show();
     ui->btnToggleFavorite->show();
@@ -330,15 +333,15 @@ void DabRadio::_show_hide_buttons(const bool iShow)
   }
   else
   {
-    //mConfig.dumpButton->hide();
+    //mpConfig->dumpButton->hide();
     ui->btnScanning->hide();
     ui->cmbChannelSelector->hide();
     ui->btnToggleFavorite->hide();
     ui->btnEject->show();
   }
 #else
-  mConfig.dumpButton->setEnabled(iShow);
-  mConfig.frequencyDisplay->setEnabled(iShow);
+  mpConfig->dumpButton->setEnabled(iShow);
+  mpConfig->frequencyDisplay->setEnabled(iShow);
   btnScanning->setEnabled(iShow);
   channelSelector->setEnabled(iShow);
   btnToggleFavorite->setEnabled(iShow);
@@ -347,7 +350,7 @@ void DabRadio::_show_hide_buttons(const bool iShow)
 
 void DabRadio::slot_handle_logger_button(i32)
 {
-  if (mConfig.cbActivateLogger->isChecked())
+  if (mpConfig->cbActivateLogger->isChecked())
   {
     if (mpLogFile != nullptr)
     {
@@ -361,7 +364,7 @@ void DabRadio::slot_handle_logger_button(i32)
     }
     else
     {
-      mConfig.cbActivateLogger->setCheckState(Qt::Unchecked); // "cancel" was chosen in file dialog
+      mpConfig->cbActivateLogger->setCheckState(Qt::Unchecked); // "cancel" was chosen in file dialog
     }
   }
   else if (mpLogFile != nullptr)
@@ -442,7 +445,7 @@ void DabRadio::_show_or_hide_windows_from_config()
 {
   if (Settings::SpectrumViewer::varUiVisible.read().toBool())
   {
-    mSpectrumViewer.show();
+    mpSpectrumViewer->show();
   }
 
   if (Settings::TechDataViewer::varUiVisible.read().toBool())
@@ -459,7 +462,7 @@ void DabRadio::slot_handle_dl_text_button()
   {
     fclose(mDlTextFile);
     mDlTextFile = nullptr;
-    mConfig.dlTextButton->setText("dlText");
+    mpConfig->dlTextButton->setText("dlText");
     return;
   }
 
@@ -469,18 +472,18 @@ void DabRadio::slot_handle_dl_text_button()
   {
     return;
   }
-  mConfig.dlTextButton->setText("writing");
+  mpConfig->dlTextButton->setText("writing");
 }
 
 void DabRadio::_slot_handle_config_button()
 {
-  if (!mConfig.isHidden())
+  if (!mpConfig->isHidden())
   {
-    mConfig.hide();
+    mpConfig->hide();
   }
   else
   {
-    mConfig.show();
+    mpConfig->show();
   }
 }
 
@@ -491,12 +494,12 @@ void DabRadio::slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF)
     mpInputDevice->setVFOFrequency(mChannel.nominalFreqHz + iFreqCorrRF);
   }
 
-  mSpectrumViewer.show_freq_corr_rf_Hz(iFreqCorrRF);
+  mpSpectrumViewer->show_freq_corr_rf_Hz(iFreqCorrRF);
 }
 
 void DabRadio::slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB)
 {
-  mSpectrumViewer.show_freq_corr_bb_Hz(iFreqCorrBB);
+  mpSpectrumViewer->show_freq_corr_bb_Hz(iFreqCorrBB);
 }
 
 void DabRadio::_get_YMD_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const
@@ -662,9 +665,9 @@ void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
     ui->progBarFicError->setValue(iSuccessPercent);
   }
 
-  if (!mSpectrumViewer.is_hidden())
+  if (!mpSpectrumViewer->is_hidden())
   {
-    mSpectrumViewer.show_fic_ber(iBER);
+    mpSpectrumViewer->show_fic_ber(iBER);
   }
 }
 
@@ -870,7 +873,7 @@ void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
   }
 
   // iterate over combobox entries, if activated
-  if (mConfig.cbAutoIterTiiEntries->isChecked() && ui->cmbTiiList->count() > 0 && !isDropDownVisible)
+  if (mpConfig->cbAutoIterTiiEntries->isChecked() && ui->cmbTiiList->count() > 0 && !isDropDownVisible)
   {
     ui->cmbTiiList->setCurrentIndex((i32)mTiiIndex % ui->cmbTiiList->count());
 
@@ -894,17 +897,17 @@ void DabRadio::slot_show_spectrum(i32 /*amount*/)
     return;
   }
 
-  mSpectrumViewer.show_spectrum(mpInputDevice->getVFOFrequency());
+  mpSpectrumViewer->show_spectrum(mpInputDevice->getVFOFrequency());
 }
 
 void DabRadio::slot_show_cir()
 {
-  if (!mIsRunning.load() || mCirViewer.is_hidden())
+  if (!mIsRunning.load() || mpCirViewer->is_hidden())
   {
     return;
   }
 
-  mCirViewer.show_cir();
+  mpCirViewer->show_cir();
 }
 
 void DabRadio::slot_show_iq(i32 iAmount, f32 iAvg)
@@ -914,7 +917,7 @@ void DabRadio::slot_show_iq(i32 iAmount, f32 iAvg)
     return;
   }
 
-  mSpectrumViewer.show_iq(iAmount, iAvg);
+  mpSpectrumViewer->show_iq(iAmount, iAvg);
 }
 
 void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData * pQD)
@@ -924,9 +927,9 @@ void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData * pQD)
     return;
   }
 
-  if (!mSpectrumViewer.is_hidden())
+  if (!mpSpectrumViewer->is_hidden())
   {
-    mSpectrumViewer.show_lcd_data(pQD->CurOfdmSymbolNo, pQD->ModQuality, pQD->TestData1, pQD->TestData2, pQD->MeanSigmaSqFreqCorr, pQD->SNR);
+    mpSpectrumViewer->show_lcd_data(pQD->CurOfdmSymbolNo, pQD->ModQuality, pQD->TestData1, pQD->TestData2, pQD->MeanSigmaSqFreqCorr, pQD->SNR);
   }
 }
 
@@ -937,7 +940,7 @@ void DabRadio::slot_show_digital_peak_level(f32 iPeakLevel)
     return;
   }
 
-  mSpectrumViewer.show_digital_peak_level(iPeakLevel);
+  mpSpectrumViewer->show_digital_peak_level(iPeakLevel);
 }
 
 // called from the MP4 decoder
@@ -965,9 +968,9 @@ void DabRadio::slot_show_clock_error(f32 e)
   {
     return;
   }
-  if (!mSpectrumViewer.is_hidden())
+  if (!mpSpectrumViewer->is_hidden())
   {
-    mSpectrumViewer.show_clock_error(e);
+    mpSpectrumViewer->show_clock_error(e);
   }
 }
 
@@ -980,7 +983,7 @@ void DabRadio::slot_show_correlation(f32 threshold, const QVector<i32> & v)
     return;
   }
 
-  mSpectrumViewer.show_correlation(threshold, v, mTransmitterIds);
+  mpSpectrumViewer->show_correlation(threshold, v, mTransmitterIds);
   mChannel.nrTransmitters = v.size();
 }
 
@@ -1060,8 +1063,8 @@ void DabRadio::_slot_handle_target_service_button()
 // In those case we are sure not to have an operating dabProcessor, we hide some buttons
 void DabRadio::enable_ui_elements_for_safety(const bool iEnable) const
 {
-  mConfig.dumpButton->setEnabled(iEnable);
-  mConfig.etiButton->setEnabled(iEnable);
+  mpConfig->dumpButton->setEnabled(iEnable);
+  mpConfig->etiButton->setEnabled(iEnable);
   ui->btnToggleFavorite->setEnabled(iEnable);
   ui->btnPrevService->setEnabled(iEnable);
   ui->btnNextService->setEnabled(iEnable);

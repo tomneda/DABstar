@@ -7,6 +7,7 @@
 #include "setting-helper.h"
 #include "audiooutputqt.h"
 #include "audioiodevice.h"
+#include "configuration.h"
 
 void DabRadio::_initialize_audio_output()
 {
@@ -31,13 +32,13 @@ void DabRadio::_initialize_audio_output()
   mAudioOutputThread->start();
 
   _slot_load_audio_device_list(mpAudioOutput->get_audio_device_list());
-  mConfig.cmbSoundOutput->show();
+  mpConfig->cmbSoundOutput->show();
 
   if (const i32 k = Settings::Config::cmbSoundOutput.get_combobox_index();
       k != -1)
   {
-    mConfig.cmbSoundOutput->setCurrentIndex(k);
-    emit signal_set_audio_device(mConfig.cmbSoundOutput->itemData(k).toByteArray());
+    mpConfig->cmbSoundOutput->setCurrentIndex(k);
+    emit signal_set_audio_device(mpConfig->cmbSoundOutput->itemData(k).toByteArray());
   }
   else
   {
@@ -90,12 +91,12 @@ void DabRadio::_setup_audio_output(const u32 iSampleRate)
 
 void DabRadio::_slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const
 {
-  const QSignalBlocker blocker(mConfig.cmbSoundOutput); // block signals as the settings would be updated always with the first written entry
+  const QSignalBlocker blocker(mpConfig->cmbSoundOutput); // block signals as the settings would be updated always with the first written entry
 
-  mConfig.cmbSoundOutput->clear();
+  mpConfig->cmbSoundOutput->clear();
   for (const QAudioDevice &device : iDeviceList)
   {
-    mConfig.cmbSoundOutput->addItem(device.description(), QVariant::fromValue(device.id()));
+    mpConfig->cmbSoundOutput->addItem(device.description(), QVariant::fromValue(device.id()));
   }
 }
 

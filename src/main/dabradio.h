@@ -28,11 +28,9 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef DABRADIO_H
-#define DABRADIO_H
+#pragma once
 
 #include  "dab-constants.h"
-#include  "dabradio.h"
 #include  "dab-processor.h"
 #include  "ringbuffer.h"
 #include  "band-handler.h"
@@ -45,25 +43,26 @@
 #include	"tcp-server.h"
 #endif
 
-#include "spectrum-viewer.h"
-#include "cir-viewer.h"
 #include "openfiledialog.h"
 #include "device-selector.h"
-#include "configuration.h"
 #include "wav_writer.h"
 #include "audiofifo.h"
 #include "tii_list_display.h"
 #include <set>
 #include <memory>
-#include <mutex>
 #include <QStringList>
 #include <QVector>
 #include <QByteArray>
+#include <QPushButton>
 #include <QLabel>
 #include <QTimer>
 #include <QAudioDevice>
 #include <sndfile.h>
 
+class Ui_DabRadio;
+class SpectrumViewer;
+class CirViewer;
+class Configuration;
 class QSettings;
 class Qt_Audio;
 class TimeTableHandler;
@@ -147,8 +146,6 @@ struct SChannelDescriptor
   }
 };
 
-class Ui_DabRadio;
-
 class DabRadio : public QWidget
 {
 Q_OBJECT
@@ -213,8 +210,8 @@ private:
   RingBuffer<cf32> * const mpCirBuffer;
   u32 mResetRingBufferCnt = 0;
   std::vector<i16> mAudioTempBuffer;
-  SpectrumViewer mSpectrumViewer;
-  CirViewer mCirViewer;
+  QScopedPointer<SpectrumViewer> mpSpectrumViewer;
+  QScopedPointer<CirViewer> mpCirViewer;
   BandHandler mBandHandler;
   DynLinkCache mDynLabelCache{10};
   TiiHandler mTiiHandler{};
@@ -228,7 +225,7 @@ private:
   SChannelDescriptor mChannel{};
   i32 mMaxDistance = -1;
   QScopedPointer<TechData> mpTechDataWidget;
-  Configuration mConfig;
+  QScopedPointer<Configuration> mpConfig;
   std::atomic<bool> mIsRunning{false};
   std::atomic<bool> mIsScanning{false};
   std::unique_ptr<IDeviceHandler> mpInputDevice;
@@ -492,5 +489,3 @@ private slots:
   void _slot_handle_volume_slider(i32);
   void _slot_check_for_update();
 };
-
-#endif
