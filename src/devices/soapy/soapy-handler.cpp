@@ -23,18 +23,15 @@
 #include	<vector>
 #include	<SoapySDR/Device.h>
 #include	<SoapySDR/Formats.h>
-
 #include	"soapy-handler.h"
 #include	"soapy-converter.h"
 #include	"dab-constants.h"
 #include	"unistd.h"
-
 #include	"device-exceptions.h"
-#include	"radio.h"
 
 using namespace std;
 
-soapyHandler::soapyHandler(QSettings * s)
+SoapyHandler::SoapyHandler(QSettings * s)
   : m_sampleBuffer(8 * 1024 * 1024)
   , theConverter(&m_sampleBuffer)
 {
@@ -71,7 +68,7 @@ soapyHandler::soapyHandler(QSettings * s)
 
   SoapySDRKwargsList_clear(results, length);
   if (length == 0)
-    throw device_exception("No devices found\n");
+    throw (std_exception_string("No devices found"));
   deviceReady.store(false);
   m_running.store(false);
   deviceNameLabel->setText(deviceString);
@@ -79,7 +76,7 @@ soapyHandler::soapyHandler(QSettings * s)
   createDevice(deviceString);
 }
 
-soapyHandler::~soapyHandler()
+SoapyHandler::~SoapyHandler()
 {
   m_running.store(false);
   if (m_thread.joinable())
@@ -94,7 +91,7 @@ soapyHandler::~soapyHandler()
   }
 }
 
-void soapyHandler::createDevice(const QString & deviceString)
+void SoapyHandler::createDevice(const QString & deviceString)
 {
   fprintf(stderr, "going to use %s\n",
           deviceString.toLatin1().data());
@@ -108,7 +105,7 @@ void soapyHandler::createDevice(const QString & deviceString)
   {
     std::string ss = std::string("SoapySDRDevice_make fail: ") +
                      SoapySDRDevice_lastError();
-    throw device_exception(ss);
+    throw std_exception_string(ss);
   }
 //	query device info
   size_t length;
@@ -139,7 +136,7 @@ void soapyHandler::createDevice(const QString & deviceString)
   }
   gainSelector->setValue((int)currentGain);
   connect(gainSelector, qOverload<int>(&QSpinBox::valueChanged),
-          this, &soapyHandler::setGain);
+          this, &SoapyHandler::setGain);
 
   hasAgc = SoapySDRDevice_hasGainMode(m_device, SOAPY_SDR_RX, 0);
   if (hasAgc)
@@ -149,7 +146,7 @@ void soapyHandler::createDevice(const QString & deviceString)
 #else
           connect(agcControl, &QCheckBox::stateChanged,
 #endif
-          this, &soapyHandler::setAgc);
+          this, &SoapyHandler::setAgc);
 
 
   SoapySDRRange * ranges =
@@ -166,7 +163,7 @@ void soapyHandler::createDevice(const QString & deviceString)
                                       0, &length);
   int resultRate = findDesiredRange(sampleRange, length);
   if (resultRate < 0)
-    throw (device_exception("no suitable samplerate found"));
+    throw (std_exception_string("no suitable samplerate found"));
 
   samplerateLabel->setText(QString::number(resultRate));
   fprintf(stderr, "resultRate = %d\n", resultRate);
@@ -177,7 +174,7 @@ void soapyHandler::createDevice(const QString & deviceString)
     fprintf(stderr, "setSampleRate fail: %s\n",
             SoapySDRDevice_lastError());
   }
-  const bool automatic = true;
+  // const bool automatic = true;
   SoapySDRDevice_setFrequency(m_device, SOAPY_SDR_RX, 0,
                               220000000, NULL);
 
@@ -185,50 +182,50 @@ void soapyHandler::createDevice(const QString & deviceString)
     SoapySDRDevice_setupStream(m_device, SOAPY_SDR_RX,
                                SOAPY_SDR_CF32, NULL, 0, NULL);
   if (rxStream == nullptr)
-    throw (device_exception("cannot open stream"));
+    throw (std_exception_string("cannot open stream"));
 
   int xx = SoapySDRDevice_activateStream(m_device, rxStream, 0, 0, 0);
   if (xx != 0)
-    throw (device_exception("cannot activate stream"));
+    throw (std_exception_string("cannot activate stream"));
 
   m_running.store(true);
   m_sw_agc = true;
   deviceReady = true;
   statusLabel->setText("running");
-  m_thread = std::thread(&soapyHandler::workerthread, this);
+  m_thread = std::thread(&SoapyHandler::workerthread, this);
 }
 
-bool soapyHandler::restartReader(int frequency, int skipped)
+bool SoapyHandler::restartReader(int frequency)
 {
   if (!deviceReady)
     return false;
-  m_sampleBuffer.FlushRingBuffer();
+  m_sampleBuffer.flush_ring_buffer();
   m_freq = frequency;
-  toSkip = skipped;
+  // toSkip = skipped;
   SoapySDRDevice_setFrequency(m_device, SOAPY_SDR_RX,
                               0, frequency, NULL);
   return true;
 }
 
-void soapyHandler::stopReader() {}
+void SoapyHandler::stopReader() {}
 
-void soapyHandler::reset()
+void SoapyHandler::resetBuffer()
 {
-  m_sampleBuffer.FlushRingBuffer();
+  m_sampleBuffer.flush_ring_buffer();
 }
 
-int32_t soapyHandler::getSamples(std::complex<float> * Buffer, int32_t Size)
+int32_t SoapyHandler::getSamples(std::complex<float> * Buffer, int32_t Size)
 {
-  int32_t amount = m_sampleBuffer.getDataFromBuffer(Buffer, Size);
+  int32_t amount = m_sampleBuffer.get_data_from_ring_buffer(Buffer, Size);
   return amount;
 }
 
-int32_t soapyHandler::Samples()
+int32_t SoapyHandler::Samples()
 {
-  return m_sampleBuffer.GetRingBufferReadAvailable();
+  return m_sampleBuffer.get_ring_buffer_read_available();
 }
 
-void soapyHandler::setGain(int32_t gainValue)
+void SoapyHandler::setGain(int32_t gainValue)
 {
   if ((m_device != nullptr) && (!agcControl->isChecked()))
   {
@@ -243,12 +240,12 @@ void soapyHandler::setGain(int32_t gainValue)
   }
 }
 
-bool soapyHandler::isFileInput()
+bool SoapyHandler::isFileInput()
 {
-  return true;
+  return false;
 }
 
-void soapyHandler::setAntenna(const std::string & antenna)
+void SoapyHandler::setAntenna(const std::string & antenna)
 {
 //        try {
 //            SoapySDRDevice_setAntenna (m_device, SOAPY_SDR_RX, 0, antenna);
@@ -260,7 +257,7 @@ void soapyHandler::setAntenna(const std::string & antenna)
 //        }
 }
 
-void soapyHandler::increaseGain()
+void SoapyHandler::increaseGain()
 {
   if (m_device != nullptr)
   {
@@ -276,7 +273,7 @@ void soapyHandler::increaseGain()
   }
 }
 
-void soapyHandler::decreaseGain()
+void SoapyHandler::decreaseGain()
 {
   if (m_device != nullptr)
   {
@@ -292,12 +289,12 @@ void soapyHandler::decreaseGain()
   }
 }
 
-int32_t soapyHandler::getGainCount()
+int32_t SoapyHandler::getGainCount()
 {
   return m_gains.size();
 }
 
-void soapyHandler::setAgc(int status)
+void SoapyHandler::setAgc(int status)
 {
   bool b = agcControl->isChecked();
   if (hasAgc)
@@ -309,7 +306,7 @@ void soapyHandler::setAgc(int status)
     m_sw_agc = b;
 }
 
-void soapyHandler::workerthread()
+void SoapyHandler::workerthread()
 {
   std::vector<size_t> channels;
   channels.push_back(0);
@@ -320,7 +317,7 @@ void soapyHandler::workerthread()
   std::vector<std::complex<float>> buf(samplesToRead);
 
   int frames = 0;
-  int amount = 0;
+  // int amount = 0;
   while (m_running.load())
   {
     void * buffs[1];
@@ -365,17 +362,17 @@ void soapyHandler::workerthread()
   m_running.store(false);
 }
 
-int soapyHandler::findDesiredRange(SoapySDRRange * theRanges,
+int SoapyHandler::findDesiredRange(SoapySDRRange * theRanges,
                                    int length)
 {
-  int resultrate = -1;
+  // int resultrate = -1;
   for (int i = 0; i < length; i++)
   {
     if ((theRanges[i].minimum <= 2048000) &&
         (2048000 <= theRanges[i].maximum))
       return 2048000;
   }
-//	No exact match, do try something
+  // No exact match, do try something
   for (int i = 0; i < length; i++)
     if ((2048000 < theRanges[i].minimum) &&
         (theRanges[i].minimum - 2048000 < 5000000))

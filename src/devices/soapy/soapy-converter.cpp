@@ -22,20 +22,20 @@
 
 #include	"soapy-converter.h"
 
-static int qualityTable[] = {
-  SRC_SINC_BEST_QUALITY, SRC_SINC_MEDIUM_QUALITY,
-  SRC_SINC_FASTEST, SRC_ZERO_ORDER_HOLD, SRC_LINEAR
-};
+// static int qualityTable[] = {
+//   SRC_SINC_BEST_QUALITY, SRC_SINC_MEDIUM_QUALITY,
+//   SRC_SINC_FASTEST, SRC_ZERO_ORDER_HOLD, SRC_LINEAR
+// };
 
-soapyConverter::soapyConverter
+SoapyConverter::SoapyConverter
 (RingBuffer<std::complex<float>> * outBuffer)
 {
   this->outBuffer = outBuffer;
 }
 
-soapyConverter::~soapyConverter() {}
+SoapyConverter::~SoapyConverter() {}
 
-void soapyConverter::setup(int inputRate, int targetRate)
+void SoapyConverter::setup(int inputRate, int targetRate)
 {
   double ratio = (double)2048000 / inputRate;
   inputLimit = 4096;
@@ -51,13 +51,13 @@ void soapyConverter::setup(int inputRate, int targetRate)
   inp = 0;
 }
 
-void soapyConverter::add(std::complex<float> * inBuf, int nSamples)
+void SoapyConverter::add(std::complex<float> * inBuf, int nSamples)
 {
   std::complex<float> temp[targetRate / 1000];
 
   if (inputRate == targetRate)
   {
-    outBuffer->putDataIntoBuffer(inBuf, nSamples);
+    outBuffer->put_data_into_ring_buffer(inBuf, nSamples);
     return;
   }
 //
@@ -84,6 +84,6 @@ void soapyConverter::add(std::complex<float> * inBuf, int nSamples)
     for (int i = 0; i < framesOut; i++)
       temp[i] = std::complex<float>(uitBuffer[2 * i],
                                     uitBuffer[2 * i + 1]);
-    outBuffer->putDataIntoBuffer(temp, framesOut);
+    outBuffer->put_data_into_ring_buffer(temp, framesOut);
   }
 }

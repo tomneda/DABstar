@@ -31,36 +31,61 @@
 #include	<thread>
 #include	"device-handler.h"
 #include	"ringbuffer.h"
-#include	<SoapySDR/Device.h>
 #include	"soapy-converter.h"
-#include	"ui_soapy-widget.h"
+#include	"ui_soapy-handler.h"
+#include	<SoapySDR/Device.h>
 
 class SoapySdr_Thread;
 class QSettings;
 
 
-class soapyHandler : //public QObject,
-  public deviceHandler, public Ui_soapyWidget
+class SoapyHandler : public QObject, public IDeviceHandler, public Ui_soapyWidget
 {
   Q_OBJECT
 
 public:
-  soapyHandler(QSettings *);
-  ~soapyHandler();
+  SoapyHandler(QSettings *);
+  ~SoapyHandler();
 
-  bool restartReader(int, int skipped = 0);
-  void stopReader();
-  void reset();
-  int32_t getSamples(std::complex<float> * Buffer, int32_t Size);
-  int32_t Samples();
+  /*
+  virtual bool restartReader(i32 freq) = 0;
+  virtual void stopReader() = 0;
+  virtual void setVFOFrequency(i32) = 0;
+  virtual i32 getVFOFrequency() = 0;
+  virtual i32 getSamples(cf32 *, i32) = 0;
+  virtual i32 Samples() = 0;
+  virtual void resetBuffer() = 0;
+  virtual i16 bitDepth() = 0;
+  virtual void hide() = 0;
+  virtual void show() = 0;
+  virtual bool isHidden() = 0;
+  virtual QString deviceName() = 0;
+  virtual bool isFileInput() = 0;
+   */
+
+  bool restartReader(int) override;
+  void stopReader() override;
+  void setVFOFrequency(i32) override { throw std::runtime_error("Soapy does not support VFO frequency setting"); }
+  i32 getVFOFrequency() override { return m_freq; }
+  i16 bitDepth() override { return 32; }
+  void hide() override { myFrame.hide(); }
+  void show() override { myFrame.show(); }
+  bool isHidden() override { return myFrame.isHidden(); }
+  QString deviceName() override { return "SoapySDR"; };
+  void resetBuffer() override;
+  int32_t getSamples(std::complex<float> * Buffer, int32_t Size) override;
+  int32_t Samples() override;
+  bool isFileInput() override;
+
   float getGain() const;
   int32_t getGainCount();
-  bool isFileInput();
 
 private:
   RingBuffer<std::complex<float>> m_sampleBuffer;
-  soapyConverter theConverter;
+  SoapyConverter theConverter;
   SoapySDRStream * rxStream;
+  QFrame myFrame;
+
   void setAntenna(const std::string & antenna);
   void decreaseGain();
   void increaseGain();

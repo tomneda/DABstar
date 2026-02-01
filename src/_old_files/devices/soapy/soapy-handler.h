@@ -32,9 +32,9 @@
 #include	"ringbuffer.h"
 #include	<SoapySDR/Device.hpp>
 #include	<SoapySDR/Formats.hpp>
-#include        <SoapySDR/Errors.hpp>
+#include  <SoapySDR/Errors.hpp>
 #include	"device-handler.h"
-#include	"ui_soapy-widget.h"
+#include	"ui_soapy-handler.h"
 #include	"soapy-worker.h"
 
 class soapyHandler : public QObject, public deviceHandler, public Ui_soapyWidget

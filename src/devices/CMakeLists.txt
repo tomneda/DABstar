@@ -241,22 +241,22 @@ endif (RTL_TCP)
 if (SOAPY)
   find_package(SoapySDR REQUIRED)
   include_directories(
-          ./soapy/
+          soapy/
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          ./soapy/soapy-handler.h
-          ./soapy/soapy-converter.h
+          soapy/soapy-handler.h
+          soapy/soapy-converter.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          ./soapy/soapy-handler.cpp
-          ./soapy/soapy-converter.cpp
+          soapy/soapy-handler.cpp
+          soapy/soapy-converter.cpp
   )
 
-  set(LIBSOAPY "-lSoapy -lm")
+  set(LIBSOAPY "-lSoapySDR -lsamplerate -lm")
   list(APPEND extraLibs ${LIBSOAPY})
   add_definitions(-DHAVE_SOAPY)
 endif ()

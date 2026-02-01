@@ -70,7 +70,7 @@
 [[maybe_unused]] static const char DN_HACKRF[]     = "HackRf";
 [[maybe_unused]] static const char DN_LIMESDR[]    = "LimeSDR";
 [[maybe_unused]] static const char DN_PLUTO[]      = "Pluto";
-[[maybe_unused]] static const char DN_SOAPY[]      = "Soapy";
+[[maybe_unused]] static const char DN_SOAPY[]      = "SoapySDR (not working)";
 [[maybe_unused]] static const char DN_EXTIO[]      = "ExtIO";
 [[maybe_unused]] static const char DN_ELAD[]       = "Elad-S1";
 [[maybe_unused]] static const char DN_UHD[]        = "UHD/USRP";
@@ -241,7 +241,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 #ifdef  HAVE_SOAPY
   if (iDeviceName == DN_SOAPY)
   {
-    inputDevice = std::make_unique<soapyHandler>(mpSettings);
+    inputDevice = std::make_unique<SoapyHandler>(mpSettings);
   }
   else
 #endif

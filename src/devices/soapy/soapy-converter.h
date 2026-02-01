@@ -26,11 +26,11 @@
 #include	<vector>
 #include	<samplerate.h>
 
-class soapyConverter
+class SoapyConverter
 {
 public:
-  soapyConverter(RingBuffer<std::complex<float>> * outBuffer);
-  ~soapyConverter();
+  SoapyConverter(RingBuffer<std::complex<float>> * outBuffer);
+  ~SoapyConverter();
   void setup(int, int);
   void add(std::complex<float> *, int size);
 
