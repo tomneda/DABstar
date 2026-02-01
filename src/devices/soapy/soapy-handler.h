@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014 .. 2023
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -37,51 +36,53 @@
 #include	"ui_soapy-widget.h"
 
 class SoapySdr_Thread;
-class	QSettings;
+class QSettings;
 
 
 class soapyHandler : //public QObject,
-	              public deviceHandler, public Ui_soapyWidget {
-Q_OBJECT
+  public deviceHandler, public Ui_soapyWidget
+{
+  Q_OBJECT
+
 public:
-		soapyHandler	(QSettings *);
-		~soapyHandler	();
-	
-	bool	restartReader	(int, int skipped = 0);
-	void	stopReader	();
-	void	reset		();
-	int32_t getSamples	(std::complex<float> * Buffer, int32_t Size);
-	int32_t	Samples		();
-	float	getGain		() const;
-	int32_t	getGainCount	();
-	bool	isFileInput	();
+  soapyHandler(QSettings *);
+  ~soapyHandler();
+
+  bool restartReader(int, int skipped = 0);
+  void stopReader();
+  void reset();
+  int32_t getSamples(std::complex<float> * Buffer, int32_t Size);
+  int32_t Samples();
+  float getGain() const;
+  int32_t getGainCount();
+  bool isFileInput();
 
 private:
-	RingBuffer<std::complex<float>> m_sampleBuffer;
-	soapyConverter	theConverter;
-	SoapySDRStream	*rxStream;
-	void	setAntenna	(const std::string& antenna);
-	void	decreaseGain	();
-	void	increaseGain	();
+  RingBuffer<std::complex<float>> m_sampleBuffer;
+  soapyConverter theConverter;
+  SoapySDRStream * rxStream;
+  void setAntenna(const std::string & antenna);
+  void decreaseGain();
+  void increaseGain();
 
-	void	createDevice	(const QString &);
-	int m_freq = 0;
-	std::string m_driver_args;
-	std::string m_antenna;
-	SoapySDRDevice *m_device = nullptr;
-	std::atomic<bool> m_running;
-	std::atomic<bool> deviceReady;
-	bool m_sw_agc = false;
-	bool	hasAgc;
-	std::vector<double> m_gains;
+  void createDevice(const QString &);
+  int m_freq = 0;
+  std::string m_driver_args;
+  std::string m_antenna;
+  SoapySDRDevice * m_device = nullptr;
+  std::atomic<bool> m_running;
+  std::atomic<bool> deviceReady;
+  bool m_sw_agc = false;
+  bool hasAgc;
+  std::vector<double> m_gains;
 
-	std::thread m_thread;
-	void workerthread(void);
-	void process(SoapySDRStream *stream);
+  std::thread m_thread;
+  void workerthread(void);
+  void process(SoapySDRStream * stream);
 
-	int	findDesiredRange (SoapySDRRange * theRanges, int length);
+  int findDesiredRange(SoapySDRRange * theRanges, int length);
+
 private slots:
-	void	setAgc		(int);
-	void	setGain		(int);
+  void setAgc(int);
+  void setGain(int);
 };
-
