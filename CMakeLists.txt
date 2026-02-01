@@ -116,7 +116,7 @@ option(RTL_TCP    "Use RtlTcp"     OFF)
 option(PLUTO      "Use Pluto"      OFF)  # untested
 option(UHD        "Use UHD"        OFF)
 option(RTLSDR     "Use RtlSdr"      ON)
-option(SOAPY      "Use Soapy"      OFF)  # untested
+option(SOAPY      "Use SoapySdr"   OFF)  # builds and links but is not working (yet)
 
 
 # additional options
