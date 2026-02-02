@@ -52,7 +52,7 @@ i32	soapy_CS8::Samples	(void) {
 }
 
 i32	soapy_CS8::getSamples	(cf32 *v, i32 amount) {
-i8 temp [amount * 2];
+auto * const temp = make_vla(i8, amount * 2);
 i32	realAmount;
 	realAmount	= theBuffer. getDataFromBuffer (temp, amount * 2);
 	for (i32 i = 0; i < realAmount / 2; i ++)
@@ -73,4 +73,3 @@ void *const buffs [] = {buffer};
 	}
 	theDevice	-> deactivateStream (stream);
 }
-

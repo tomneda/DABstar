@@ -106,7 +106,7 @@ void Qt_Audio::audioOutput(float * fragment, int32_t size)
   mAudioBuffer.put_data_into_ring_buffer(fragment, aa);
 
   constexpr int32_t periodSize = 4096;
-  char buffer[periodSize];
+  auto * const buffer = make_vla(char, periodSize);
   // auto * const buffer = make_vla(char, periodSize);
 
   while ((mpAudioSink->bytesFree() >= periodSize) &&

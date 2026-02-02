@@ -68,7 +68,7 @@ void	tcpStreamer::audioOutput (float *b, int32_t amount) {
 
 void	tcpStreamer::processSamples (void) {
 QByteArray	datagram;
-float		localBuffer [bufferSize];
+auto * const localBuffer = make_vla(float, bufferSize);
 int16_t	i;
 int32_t		amount;
 	if (!connected) {
@@ -102,5 +102,4 @@ int32_t		amount;
 	   streamerAddress -> write (datagram. data(), datagram. size());
 	}
 }
-
 

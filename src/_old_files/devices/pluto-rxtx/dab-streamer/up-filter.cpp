@@ -29,7 +29,7 @@
 	upFilter::upFilter (i32 bufferSize, i32  inRate, i32 outRate):
 	                                    kernel (bufferSize * (outRate / inRate)),
 	                                    buffer (bufferSize) {
-f32	 tmp [bufferSize * (outRate / inRate)];
+auto * const tmp = make_vla(f32, bufferSize * (outRate / inRate));
 f32	f	= (f32)(inRate / 2) / outRate;
 f32	sum	= 0;
 
@@ -77,4 +77,3 @@ void	upFilter::Filter (cf32 in, cf32 *res) {
 	}
 	ip = (ip + 1) % bufferSize;
 }
-

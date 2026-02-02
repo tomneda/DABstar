@@ -110,7 +110,7 @@ void	dumpViewer::handle_compressor	(i32 h) {
 void	dumpViewer::show_segment (i32 pos, i32 compression) {
 f64	X_axis [512];
 f64	Y_Values [512];
-f32	temp [512 * compression];
+	auto * const temp = make_vla (f32, 512 * compression);
 i32	lengthF	=  fileLength / sizeof (f32);
 i32	p	= pos * lengthF / 100;
 	for (i32 i = 0; i < 512; i ++)
@@ -133,4 +133,3 @@ i32	p	= pos * lengthF / 100;
         spectrumCurve   -> setSamples (X_axis, Y_Values, 512);
         plotgrid        -> replot();
 }
-

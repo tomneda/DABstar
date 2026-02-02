@@ -330,7 +330,7 @@ void myStreamCallback (i16		*xi,
 	               void		*cbContext) {
 i16	i;
 SdrPlayHandler_v2	*p	= static_cast<SdrPlayHandler_v2 *> (cbContext);
-std::complex<i16> localBuf [numSamples];
+	auto * const localBuf = make_vla (std::complex<i16>, numSamples);
 
 	if (hwRemoved)
 	   fprintf (stderr, "Hardware removed\n");
@@ -482,7 +482,7 @@ mir_sdr_ErrT err;
 //	The brave old getSamples. For the sdrplay, we get
 //	size still in I/Q pairs
 i32	SdrPlayHandler_v2::getSamples (cf32 *V, i32 size) {
-std::complex<i16> temp [size];
+auto * const temp = make_vla (std::complex<i16>, size);
 i32 i;
 	i32 amount	= _I_Buffer. get_data_from_ring_buffer (temp, size);
 	for (i = 0; i < amount; i ++)
@@ -1090,4 +1090,3 @@ bool SdrPlayHandler_v2::isFileInput()
 {
   return false;
 }
-

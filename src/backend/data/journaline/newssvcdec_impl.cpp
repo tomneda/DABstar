@@ -78,6 +78,7 @@
 
 #include "cpplog.h"
 #include "newssvcdec_impl.h"
+#include "glob_defs.h"
 
 using std::find;
 
@@ -298,7 +299,7 @@ unsigned long NEWS_SVC_DEC_putData(
         if(find(l.begin(), l.end(), object_id)!=l.end())
         {
             const unsigned long no_of_elem=1;
-            NEWS_SVC_DEC_obj_availability_t chg_list[no_of_elem];
+            auto * const chg_list = make_vla(NEWS_SVC_DEC_obj_availability_t, no_of_elem);
             chg_list[0].object_id=static_cast<unsigned short>(object_id);
             if(obj->isUpdated())
             {
@@ -376,7 +377,7 @@ int NEWS_SVC_DEC_IMPL_garbage_collection(NEWS_SVC_DEC_IMPL_t *dec,
             if(find(l.begin(), l.end(), obj_id)!=l.end())
             {
                 const unsigned long no_of_elem=1;
-                NEWS_SVC_DEC_obj_availability_t chg_list[no_of_elem];
+                auto * const chg_list = make_vla(NEWS_SVC_DEC_obj_availability_t, no_of_elem);
                 chg_list[0].object_id=static_cast<unsigned short>(obj_id);
                 chg_list[0].status=NEWS_SVC_DEC_OBJ_REMOVED;
 

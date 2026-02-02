@@ -191,7 +191,7 @@ void	colibriHandler::stopReader() {
 
 i32	colibriHandler::getSamples (cf32 *V, i32 size) {
 	if (iqSwitcher) {
-	   cf32 xx [size];
+	   auto * const xx = make_vla (cf32, size);
 	   _I_Buffer. getDataFromBuffer (xx, size);
 	   for (i32 i = 0; i < size; i ++)
 	      V[i] = cf32 (imag (xx [i]), real (xx [i]));
@@ -248,5 +248,4 @@ void    colibriHandler::hide    () {
 bool    colibriHandler::isHidden        () {
         return myFrame. isHidden ();
 }
-
 

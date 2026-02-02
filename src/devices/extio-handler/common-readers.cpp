@@ -41,7 +41,7 @@
 //	apparently bytes are read in from low byte to high byte
 void	reader_16::processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
-cf32 IQData [blockSize];
+	auto * const IQData = make_vla (cf32, blockSize);
 u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	(void)cnt;
@@ -77,7 +77,7 @@ i16 reader_16::bitDepth	(void) {
 
 void	reader_24::processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
-cf32	IQData [blockSize];
+	auto * const IQData = make_vla (cf32, blockSize);
 u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	(void)cnt;
@@ -115,7 +115,7 @@ i16 reader_24::bitDepth	(void) {
 
 void	reader_32::processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i;
-cf32 IQData [blockSize];
+	auto * const IQData = make_vla (cf32, blockSize);
 u8	*p	= (u8 *)data;
 	(void)IQoffs;
 	(void)cnt;
@@ -157,7 +157,7 @@ i16	i;
 //
 void	reader_float::processData	(f32 IQoffs, void *data, i32 cnt) {
 i32	i, j;
-cf32 IQData [blockSize];
+	auto * const IQData = make_vla (cf32, blockSize);
 f32	*p	= (f32 *)data;
 	(void)IQoffs;
 	(void)cnt;
@@ -171,4 +171,3 @@ f32	*p	= (f32 *)data;
 i16 reader_float::bitDepth	(void) {
 	return 24;
 }
-

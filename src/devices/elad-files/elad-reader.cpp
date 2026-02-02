@@ -65,7 +65,7 @@ void	eladReader::run	() {
 i32	bufferSize	= 3072 * 8;
 i64	nextStop;
 i32	teller		= 0;
-u8 lBuffer [bufferSize];
+	auto * const lBuffer = make_vla (u8, bufferSize);
 
 	fseek (filePointer, 0, SEEK_SET);
 	running. store (true);
@@ -96,4 +96,3 @@ u8 lBuffer [bufferSize];
 	} catch (i32 e) {}
 	fprintf (stderr, "taak voor replay eindigt hier\n"); fflush (stderr);
 }
-

@@ -166,7 +166,7 @@ void	soundClient::toBuffer (QByteArray d) {
 int32_t	i;
 int32_t j;
 int32_t	length	= d. size ();
-DSPCOMPLEX buffer [length / 4 ];
+auto * const buffer = make_vla(DSPCOMPLEX, length / 4);
 int	size	= 0;
 
 	for (i = 0; i < length / 4; i++) {

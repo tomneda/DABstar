@@ -115,7 +115,7 @@ void dabStreamer::stop(void)
 
 void dabStreamer::audioOutput(f32 * v, i32 amount)
 {
-  f32 lBuffer[2 * amount];
+  auto * const lBuffer = make_vla(f32, 2 * amount);
 
   while (pcmBuffer.GetRingBufferWriteAvailable() < 2 * amount)
   {
@@ -165,7 +165,7 @@ void dabStreamer::run()
 
   running.store(true);
 
-  f32 lBuf[inRate / 5];
+  auto * const lBuf = make_vla(f32, inRate / 5);
   while (running.load())
   {
     i32 readCount;
@@ -175,7 +175,7 @@ void dabStreamer::run()
     i32 rdsCount = rdsBuffer.GetRingBufferReadAvailable();
     if ((rdsCount >= 10) && (rt_pos == 0))
     {
-      char rds[rdsCount];
+      auto * const rds = make_vla(char, rdsCount);
       rdsBuffer.getDataFromBuffer(rds, rdsCount);
       messageIn.store(false);
       for (i32 i = 0; i < rdsCount; i++)
@@ -203,7 +203,7 @@ void dabStreamer::run()
     for (i32 i = 0; i < readCount / 2; i++)
     {
       cf32 v = cf32(4 * lBuf[2 * i], 4 * lBuf[2 * i + 1]);
-      cf32 lbuf[outRate / inRate];
+      auto * const lbuf = make_vla(cf32, outRate / inRate);
       theFilter.Filter(v, lbuf);
       modulateData((f32 *)lbuf, outRate / inRate, 2);
     }
@@ -535,4 +535,3 @@ struct rds_group_s * dabStreamer::rds_group_schedule(void)
   ps = (ps + 1) % 4;
   return group;
 }
-

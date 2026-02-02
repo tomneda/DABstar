@@ -32,7 +32,7 @@
 	                            buffer_re (firSize),
 	                            buffer_im (firSize),
 	                            kernel (firSize) {
-f32	tmp [firSize];
+	auto * const tmp = make_vla (f32, firSize);
 f32	lo	= (f32)(cutoffFreq) / sampleRate;
 f32	sum	= 0.0;
 i16	i;
@@ -83,4 +83,3 @@ f32	tmp_2	= 0;
         ip = (ip + 1) % firSize;
         return cf32 (tmp_1, tmp_2);;
 }
-

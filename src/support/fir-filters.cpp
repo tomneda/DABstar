@@ -68,7 +68,7 @@ i32	LowPassFIR::theSize	() {
 }
 
 void	LowPassFIR::resize (i32 newSize) {
-f32	*temp 	= (f32 *)alloca (newSize * sizeof (f32));
+auto * const temp = make_vla(f32, newSize);
 f32	sum = 0;
 
 	filterSize	= newSize;

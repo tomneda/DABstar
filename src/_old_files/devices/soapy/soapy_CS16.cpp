@@ -58,7 +58,7 @@ i32 soapy_CS16::Samples(void)
 
 i32 soapy_CS16::getSamples(cf32 * v, i32 amount)
 {
-  i16 temp[amount * 2];
+  auto * const temp = make_vla(i16, amount * 2);
   i32 realAmount;
   realAmount = theBuffer.getDataFromBuffer(temp, amount * 2);
   for (i32 i = 0; i < realAmount / 2; i++)

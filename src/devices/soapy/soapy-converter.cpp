@@ -53,7 +53,7 @@ void SoapyConverter::setup(int inputRate, int targetRate)
 
 void SoapyConverter::add(std::complex<float> * inBuf, int nSamples)
 {
-  std::complex<float> temp[targetRate / 1000];
+  auto * const temp = make_vla(std::complex<float>, targetRate / 1000);
 
   if (inputRate == targetRate)
   {
