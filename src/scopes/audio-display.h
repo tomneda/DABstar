@@ -28,9 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-#ifndef    AUDIO_DISPLAY_H
-#define    AUDIO_DISPLAY_H
+#pragma once
 
 #include  "dab-constants.h"
 #include  <array>
@@ -43,6 +41,8 @@
 #include  <qwt_color_map.h>
 #include  <qwt_scale_widget.h>
 #include  <fftw3.h>
+
+#define USE_C2C_FFT
 
 class DabRadio;
 
@@ -71,9 +71,17 @@ private:
   std::array<f32, cDisplaySize>  mYDispBuffer{};
   std::array<f32, cSpectrumSize> mWindow;
 
-  alignas(64) std::array<f32,  cSpectrumSize> mFftInBuffer;
+  static_assert(sizeof(fftwf_complex) == sizeof(cf32));
+
+#ifdef USE_C2C_FFT
+  alignas(64) std::array<cf32, cSpectrumSize> mFftInBuffer;
   alignas(64) std::array<cf32, cSpectrumSize> mFftOutBuffer;
+  fftwf_plan mFftPlan{fftwf_plan_dft_1d(cSpectrumSize, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE)};
+#else
+  alignas(64) std::array<f32,  cSpectrumSize> mFftInBuffer;
+  alignas(64) std::array<cf32, cSpectrumSize/2 + 1> mFftOutBuffer;
   fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex *)mFftOutBuffer.data(), FFTW_ESTIMATE)};
+#endif
 
   QColor GridColor;
   QColor mCurveColor;
@@ -82,6 +90,3 @@ private:
 private slots:
   void _slot_rightMouseClick(const QPointF &);
 };
-
-#endif
-

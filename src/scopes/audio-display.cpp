@@ -94,8 +94,8 @@ void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const i32 iNu
 
   for (i32 i = 0; i < numStereoSamples; i++)
   {
-    // mSpectrumBuffer[i] = std::cos(F_2_M_PI * 12000.0f * (f32)i / (f32)iSampleRate);
     mFftInBuffer[i] = ((f32)ipSampleData[2 * i + 0] + (f32)ipSampleData[2 * i + 1]) / (2.0f * (f32)INT16_MAX);
+    // mFftInBuffer[i] = 0.01f * std::cos(F_2_M_PI * 12000.0f * (f32)i / (f32)iSampleRate);
   }
 
   // and window it
