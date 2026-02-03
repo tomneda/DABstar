@@ -84,25 +84,28 @@ i32 main(i32 argc, char ** argv)
 
   QApplication a(argc, argv);
 
-  // qSetMessagePattern("[%{time yyyy-MM-dd hh:mm:ss.zzz}] %{message}");
-  // qSetMessagePattern("[%{time hh:mm:ss.zzz}] [%{type}] [%{function}]: %{message}");
+  if (qgetenv("QT_MESSAGE_PATTERN").isNull())
+  {
+    // qSetMessagePattern("[%{time yyyy-MM-dd hh:mm:ss.zzz}] %{message}");
+    // qSetMessagePattern("[%{time hh:mm:ss.zzz}] [%{type}] [%{function}]: %{message}");
 #ifdef NDEBUG
-  qSetMessagePattern("\033[94m[%{time hh:mm:ss.zzz}] \033[0m" // Blue prefix
+    qSetMessagePattern("\033[94m[%{time hh:mm:ss.zzz}] \033[0m" // Blue prefix
 #else
-  qSetMessagePattern("\033[94m[%{time hh:mm:ss.zzz}] [%{type}] [%{function}] \033[0m" // Blue prefix
+    qSetMessagePattern("\033[94m[%{time hh:mm:ss.zzz}] [%{type}] [%{function}] \033[0m" // Blue prefix
 #endif
-                     "%{if-debug}\033[97m%{endif}"       // White for debug
-                     "%{if-info}\033[96m%{endif}"        // Cyan for info
-                     "%{if-warning}\033[93m%{endif}"     // Yellow for warning
-                     "%{if-critical}\033[91m%{endif}"    // Red for critical
-                     "%{if-fatal}\033[91;1m%{endif}"     // Bright red for fatal
-                     "%{message}\033[0m");               // Reset color at end
-                     
-  // qDebug() << "This is a debug message";
-  // qInfo() << "This is an info message";
-  // qWarning() << "This is a warning message";
-  // qCritical() << "This is a critical message";
-  // qFatal() << "This is a fatal message";
+      "%{if-debug}\033[97m%{endif}"       // White for debug
+      "%{if-info}\033[96m%{endif}"        // Cyan for info
+      "%{if-warning}\033[93m%{endif}"     // Yellow for warning
+      "%{if-critical}\033[91m%{endif}"    // Red for critical
+      "%{if-fatal}\033[91;1m%{endif}"     // Bright red for fatal
+      "%{message}\033[0m");               // Reset color at end
+
+    // qDebug() << "This is a debug message";
+    // qInfo() << "This is an info message";
+    // qWarning() << "This is a warning message";
+    // qCritical() << "This is a critical message";
+    // qFatal() << "This is a fatal message";
+  }
 
   // read stylesheet from resource file
   if (QFile file(":res/globstyle.qss");
@@ -122,8 +125,8 @@ i32 main(i32 argc, char ** argv)
   if (!QFile::exists(initFileName03) && QFile::exists(initFileName02)) // no new file yet but had already the former file?
   {
     QMessageBox::warning(nullptr, "Warning", "The setting configurations have changed. "
-                                             "Therefore, some settings need to be re-entered, "
-                                             "such as the map coordinates.");
+                         "Therefore, some settings need to be re-entered, "
+                         "such as the map coordinates.");
   }
 
   const auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbFileName, altFreqList, dataPort, nullptr));
