@@ -266,10 +266,13 @@ void RtlTcpClient::readData()
 
 //  commands are packed in 5 bytes, one "command byte"
 //  and an integer parameter
-struct command {
+#pragma pack(push, 1)
+struct command
+{
   u8 cmd;
   u32 param;
-}__attribute__((packed));
+};
+#pragma pack(pop)
 
 #define ONE_BYTE    8
 
