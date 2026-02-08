@@ -8,7 +8,6 @@ TEMPLATE	= app
 QT		+= widgets xml sql multimedia
 CONFIG		+= console
 #CONFIG		+= debug
-QMAKE_CXXFLAGS	+= -std=c++17
 
 # switch off to save compile/link time while development
 CONFIG		+= use_lto 
@@ -58,11 +57,11 @@ CONFIG		+= spyServer
 CONFIG		+= rtl_tcp
 CONFIG		+= dabstick
 #CONFIG		+= sdrplay-v2
-CONFIG		+= pluto
 CONFIG		+= sdrplay-v3
+CONFIG		+= pluto
 CONFIG		+= hackrf
 CONFIG		+= lime
-#CONFIG		+= soapy
+CONFIG		+= soapy
 CONFIG		+= sse2
 #CONFIG		+= avx2
 #CONFIG		+= fdk-aac
@@ -469,16 +468,14 @@ soapy {
 	INCLUDEPATH	+= src/devices/soapy
 	HEADERS		+= src/devices/soapy/soapy-handler.h \
 			   src/devices/soapy/soapy-worker.h \
-			   src/devices/soapy/soapy_CS8.h \
-			   src/devices/soapy/soapy_CS16.h \
-			   src/devices/soapy/soapy_CF32.h
+			   src/devices/soapy/soapy-converter.h \
+			   src/devices/soapy/soapy-deviceselect.h
 	SOURCES		+= src/devices/soapy/soapy-handler.cpp \
 			   src/devices/soapy/soapy-worker.cpp \
-			   src/devices/soapy/soapy_CS8.cpp \
-			   src/devices/soapy/soapy_CS16.cpp \
-			   src/devices/soapy/soapy_CF32.cpp
-	FORMS		+= src/devices/soapy/soapy-widget.ui
-	LIBS		+= -lSoapySDR -lm
+			   src/devices/soapy/soapy-converter.cpp \
+			   src/devices/soapy/soapy-deviceselect.cpp
+	FORMS		+= src/devices/soapy/soapy-handler.ui
+	LIBS		+= -lSoapySDR
 }
 
 pluto	{

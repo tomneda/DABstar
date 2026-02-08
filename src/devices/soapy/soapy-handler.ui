@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>200</width>
-    <height>277</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -75,16 +75,33 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QSpinBox" name="gainSelector"/>
+      <widget class="QSpinBox" name="spinBox_1"/>
      </item>
      <item>
       <widget class="QLabel" name="labelSpinbox_1">
        <property name="text">
-        <string>gains</string>
+        <string>TextLabel</string>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QSpinBox" name="spinBox_2"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelSpinbox_2">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QComboBox" name="comboBox_1"/>
    </item>
    <item>
     <widget class="QLabel" name="statusLabel">

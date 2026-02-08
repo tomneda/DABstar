@@ -247,16 +247,20 @@ if (SOAPY)
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           soapy/soapy-handler.h
+          soapy/soapy-worker.h
           soapy/soapy-converter.h
+          soapy/soapy-deviceselect.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
           soapy/soapy-handler.cpp
+          soapy/soapy-worker.cpp
           soapy/soapy-converter.cpp
+          soapy/soapy-deviceselect.cpp
   )
 
-  set(LIBSOAPY "-lSoapySDR -lsamplerate -lm")
+  set(LIBSOAPY "-lSoapySDR")
   list(APPEND extraLibs ${LIBSOAPY})
   add_definitions(-DHAVE_SOAPY)
 endif ()

@@ -19,38 +19,21 @@
  *    along with Qt-DAB if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#pragma once
+#ifndef __SOAPY_WORKER__
+#define __SOAPY_WORKER__
+#include <QThread>
+#include <complex>
+#include <glob_defs.h>
 
-#include <SoapySDR/Device.hpp>
-#include "soapy-worker.h"
-#ifdef HAVE_LIQUID
-  #include <liquid/liquid.h>
-#endif
-
-class SoapyConverter: public soapyWorker
+class   soapyWorker: public QThread
 {
-public:
-  SoapyConverter (SoapySDR::Device *, const int sampleRate);
-  ~SoapyConverter(void);
-  i32 Samples    (void);
-  i32 getSamples (cf32 *, i32);
-  void run       (void);
-private:
-  SoapySDR::Device *theDevice;
-  SoapySDR::Stream *stream;
-  RingBuffer<cf32> theBuffer;
-  bool running;
-  int sampleRate;
-
-  // for the conversion - if any
-  std::vector<cf32> mConvBuffer;
-  i16 mConvIndex = 0;
-  i16 mConvBufferSize = 0;
-  std::vector<cf32> mResampBuffer;
-#ifdef HAVE_LIQUID
-  resamp_crcf mLiquidResampler = nullptr;
-#else
-  std::vector<i16> mMapTable_int;
-  std::vector<f32> mMapTable_float;
-#endif
+  public:
+    soapyWorker (void);
+    virtual ~soapyWorker  (void);
+    virtual i32 Samples   (void);
+    virtual i32 getSamples(cf32 *, i32);
 };
+
+#endif
+
+
