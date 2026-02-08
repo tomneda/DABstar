@@ -66,6 +66,10 @@ i32 main(i32 argc, char ** argv)
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
 
+#if defined(HAVE_SOAPY) && defined(_WIN32)
+   qputenv("SOAPY_SDR_PLUGIN_PATH", ".");
+#endif
+
   i32 opt;
   while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:")) != -1)
   {
