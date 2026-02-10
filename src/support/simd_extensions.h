@@ -222,8 +222,12 @@ public:
     assert(mVolkTempFloat2Vec != nullptr);
     assert(mVolkTempCmplx1Vec != nullptr);
 
+#if (VOLK_VERSION >= 30300)
+    volk_32f_sincos_32f_x2(mVolkTempFloat2Vec, mVolkTempFloat1Vec, iPhaseVec, cK);
+#else
     volk_32f_cos_32f(mVolkTempFloat1Vec, iPhaseVec, cK);
     volk_32f_sin_32f(mVolkTempFloat2Vec, iPhaseVec, cK);
+#endif
     volk_32f_x2_interleave_32fc(mVolkTempCmplx1Vec, mVolkTempFloat1Vec, mVolkTempFloat2Vec, cK);
     volk_32fc_x2_multiply_conjugate_32fc(mVolkVec, iVec, mVolkTempCmplx1Vec, cK);
   }
