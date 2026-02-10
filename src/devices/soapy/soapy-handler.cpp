@@ -29,16 +29,32 @@ SoapyHandler::SoapyHandler(QSettings * soapySettings)
   : myFrame(nullptr)
 {
   int deviceIndex = 0;
-  QString deviceString[10];
-  QString serialString[10];
-  QString labelString[10];
+  std::vector<QString> deviceString;
+  std::vector<QString> serialString;
+  std::vector<QString> labelString;
 
   this->soapySettings = soapySettings;
+  soapySettings->beginGroup("soapySettings");
+  i32 x = soapySettings->value("position-x", 100).toInt();
+  i32 y = soapySettings->value("position-y", 100).toInt();
+  soapySettings->endGroup();
   setupUi(&myFrame);
+  myFrame.move(QPoint(x, y));
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   myFrame.show();
   const auto results = SoapySDR::Device::enumerate();
-  for (size_t i = 0; i < results.size(); i++)
+  u32 length = (u32)results.size();
+
+  if (length == 0)
+  {
+    throw (std_exception_string("Could not find soapy support"));
+    return;
+  }
+
+  deviceString.resize(length);
+  serialString.resize(length);
+  labelString.resize(length);
+  for (u32 i = 0; i < length; i++)
   {
     fprintf(stderr, "Found device #%d:\n", (int)i);
     for (const auto &it : results[i])
@@ -60,19 +76,14 @@ SoapyHandler::SoapyHandler(QSettings * soapySettings)
     fprintf(stderr, "\n");
   }
 
-  if (results.size() > 1)
+  if (length > 1)
   {
     soapy_deviceSelect deviceSelector;
-    for (size_t i = 0; i < results.size(); i++)
+    for (u32 i = 0; i < length; i++)
     {
       deviceSelector.addtoDeviceList(labelString[i].toStdString().c_str());
     }
     deviceIndex = deviceSelector.QDialog::exec();
-  }
-  if (results.empty())
-  {
-    throw (std_exception_string("Could not find soapy support"));
-    return;
   }
 
   worker = nullptr;
@@ -90,6 +101,11 @@ SoapyHandler::SoapyHandler(QSettings * soapySettings)
 
 SoapyHandler::~SoapyHandler(void)
 {
+  soapySettings->beginGroup("soapySettings");
+  soapySettings->setValue("position-x", myFrame.pos().x());
+  soapySettings->setValue("position-y", myFrame.pos().y());
+  soapySettings->endGroup();
+  myFrame.hide();
   if (worker != nullptr)
     delete worker;
   if (device != nullptr)
@@ -123,15 +139,15 @@ std::string toString(const SoapySDR::Range &range)
 
 std::string toString(const SoapySDR::RangeList &range, const double scale)
 {
-    const size_t MAXRLEN = 10; //for abbreviating long lists
+    //const size_t MAXRLEN = 10; //for abbreviating long lists
     std::stringstream ss;
     for (size_t i = 0; i < range.size(); i++)
     {
-        if (range.size() >= MAXRLEN && i >= MAXRLEN/2 && i < (range.size()-MAXRLEN/2))
+        /*if (range.size() >= MAXRLEN && i >= MAXRLEN/2 && i < (range.size()-MAXRLEN/2))
         {
             if (i == MAXRLEN) ss << ", ...";
             continue;
-        }
+        }*/
         if (!ss.str().empty()) ss << ", ";
         if (range[i].minimum() == range[i].maximum()) ss << (range[i].minimum()/scale);
         else ss << "[" << (range[i].minimum()/scale) << ", " << (range[i].maximum()/scale) << "]";
@@ -174,8 +190,10 @@ void SoapyHandler::createDevice(QString driver, QString serial)
   ss << "  Supports AGC: " << (device->hasGainMode(dir, chan)?"YES":"NO") << std::endl;
   if (device->hasGainMode(dir, chan))
   {
-    connect(agcControl, SIGNAL(stateChanged(int)), this, SLOT(set_agcControl(int)));
     agcControl->show();
+    if (device->getGainMode(dir, chan))
+      agcControl->setChecked(true);
+    connect(agcControl, SIGNAL(stateChanged(int)), this, SLOT(set_agcControl(int)));
   }
   else
     agcControl->hide();
@@ -246,9 +264,6 @@ void SoapyHandler::createDevice(QString driver, QString serial)
   SoapySDR::RangeList rangelist = device->getSampleRateRange(dir, chan);
   ss << "  Sample rates: " << toString(rangelist, 1e6) << " MSps" << std::endl;
   int selectedRate = findDesiredRange(rangelist);
-  //selectedRate = 2400000;
-  samplerateLabel->setText(QString::number(selectedRate));
-  device->setSampleRate(dir, chan, selectedRate);
 
    //bandwidths
   const auto bws = device->getBandwidthRange(dir, chan);
@@ -266,12 +281,24 @@ void SoapyHandler::createDevice(QString driver, QString serial)
         selectedWidth = bandwidths[i];
       }
     }
-    ss << "  Selected bandwidth: " <<  selectedWidth << " Hz" << std::endl;
     device->setBandwidth(dir, chan, selectedWidth);
   }
-  ss << "  Selected samplerate: " <<  selectedRate << " Sps" << std::endl;
 
+  if (driver == "uhd")
+  {
+    selectedRate = 2048000;
+    selectedWidth = 1536000;
+  }
+  if(selectedWidth > 0)
+  {
+    device->setBandwidth(dir, chan, selectedWidth);
+    ss << "  Selected bandwidth: " <<  selectedWidth << " Hz" << std::endl;
+  }
+  samplerateLabel->setText(QString::number(selectedRate));
+  device->setSampleRate(dir, chan, selectedRate);
+  ss << "  Selected samplerate: " <<  selectedRate << " Sps" << std::endl;
   std::cout << ss.str();
+
   device->setFrequency(dir, chan, 220000000.0);
   worker = new SoapyConverter(device, selectedRate);
   statusLabel->setText("running");
