@@ -22,7 +22,6 @@
 #ifndef __SOAPY_WORKER__
 #define __SOAPY_WORKER__
 #include <QThread>
-#include <complex>
 #include <glob_defs.h>
 
 class   soapyWorker: public QThread

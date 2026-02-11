@@ -63,8 +63,8 @@ private:
   std::vector<std::string> gainsList;
   soapyWorker * worker;
   void createDevice(const QString d, const QString s);
-  int findDesiredRange(const SoapySDR::RangeList &theRanges);
-  //SoapyConverter theConverter;
+  int findDesiredSamplerate(const SoapySDR::RangeList &theRanges);
+  int findDesiredBandwidth(const SoapySDR::RangeList &theRanges);
 
 private slots:
   void handle_spinBox_1(i32);

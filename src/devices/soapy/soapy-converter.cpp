@@ -23,13 +23,13 @@
 #include "soapy-converter.h"
 #include "dab-constants.h"
 
-SoapyConverter::SoapyConverter(SoapySDR::Device * device, const int sampleRate)
+SoapyConverter::SoapyConverter(SoapySDR::Device * device, SoapySDR::Stream *stream, const int sampleRate)
   : theBuffer(16 * 32768)
 {
   this->theDevice = device;
-  std::vector<size_t> xxx;
-  stream = device->setupStream(SOAPY_SDR_RX, "CF32", xxx, SoapySDR::Kwargs());
+  this->stream = stream;
   this->sampleRate = sampleRate;
+
   if (sampleRate != INPUT_RATE)
   {
 #ifdef HAVE_LIQUID
@@ -69,6 +69,7 @@ SoapyConverter::~SoapyConverter(void)
     usleep(1000);
   }
   theDevice->deactivateStream(stream);
+  theDevice->closeStream(stream);
 #ifdef HAVE_LIQUID
   if (sampleRate != INPUT_RATE)
   {
