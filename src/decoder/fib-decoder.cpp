@@ -73,23 +73,23 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
   {
     const u8 * const d = reinterpret_cast<const u8 *>(iFibBits.data()) + processedBytes * 8;
 
-    const u8 FIGtype = getBits_3(d, 0);
-    const u8 FIGlength = getBits_5(d, 3);
+    const u8 figType = getBits_3(d, 0);
+    const u8 figLength = getBits_5(d, 3);
 
-    if (FIGtype == 0x07 && FIGlength == 0x1F) // end marker
+    if (figType == 0x07 && figLength == 0x1F) // end marker
     {
       break;
     }
 
-    switch (FIGtype)
+    switch (figType)
     {
     case 0: _process_Fig0(d); break;
     case 1: _process_Fig1(d); break;
     default:
-      qDebug() << QString("Fig type %1 not handled").arg(FIGtype);
+      qDebug() << QString("Fig type %1 not handled").arg(figType);
     }
 
-    processedBytes += FIGlength + 1; // data length plus header length
+    processedBytes += figLength + 1; // data length plus header length
   }
 
   if (processedBytes > 30)
@@ -990,7 +990,7 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
 FibDecoder::SFigHeader FibDecoder::_get_fig_header(const u8 * const d) const
 {
   SFigHeader header;
-  header.Length  = getBits_5(d,  3); // FIG header length in bytes
+  header.Length  = getBits_5(d,  3); // FIG header length in bytes, the flags below are already included in the header length
 
   header.CN_Flag = getBits_1(d,  8); // (Current/Next) this 1-bit flag shall indicate one of two situations, according to the Extension, as follows:
                                      //     a) MCI - the type 0 field applies to the current or the next version of the multiplex configuration, as follows:

@@ -21,8 +21,6 @@ void FibDecoder::_process_Fig0(const u8 * const d)
 {
   const u8 extension = getBits_5(d, 8 + 3);  // skip FIG header, C/N, OE and P/D flags
 
-  switch (extension)
-  {
   // MCI: Multiplex Configuration Information
   // SI:  Service Information
 
@@ -36,6 +34,8 @@ void FibDecoder::_process_Fig0(const u8 * const d)
     ?) no information/sporadic occurrence
   */
 
+  switch (extension)
+  {
   case  0: _process_Fig0s0(d);  break;  // MCI, RepTyA,   ensemble information (6.4.1)
   case  1: _process_Fig0s1(d);  break;  // MCI, RepTyA,   sub-channel organization (6.2.1)
   case  2: _process_Fig0s2(d);  break;  // MCI, RepTyA,   service organization (6.3.1)
@@ -100,7 +100,7 @@ void FibDecoder::_process_Fig0s1(const u8 * const d)
   i16 used = 2;    // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
 
-  while (used < fh.Length)
+  while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     used = _subprocess_Fig0s1(d, used, fh);
   }
@@ -187,7 +187,7 @@ void FibDecoder::_process_Fig0s2(const u8 * const d)
   i16 used = 2;  // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
 
-  while (used < fh.Length)
+  while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     used = _subprocess_Fig0s2(d, used, fh);
   }
@@ -268,7 +268,7 @@ void FibDecoder::_process_Fig0s3(const u8 * const d)
   i16 used = 2; // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
 
-  while (used < fh.Length)
+  while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     used = _subprocess_Fig0s3(d, used, fh);
   }
@@ -319,7 +319,7 @@ void FibDecoder::_process_Fig0s5(const u8 * const d)
   i16 used = 2;  // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
 
-  while (used < fh.Length)
+  while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     used = _subprocess_Fig0s5(d, used);
   }
@@ -406,7 +406,7 @@ void FibDecoder::_process_Fig0s8(const u8 * const d)
   i16 used = 2;    // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
 
-  while (used < fh.Length)
+  while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     used = _subprocess_Fig0s8(d, used, fh);
   }
@@ -520,7 +520,7 @@ void FibDecoder::_process_Fig0s13(const u8 * const d)
   i16 used = 2;    // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
 
-  while (used < fh.Length)
+  while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     used = _subprocess_Fig0s13(d, used, fh);
   }
@@ -580,7 +580,7 @@ void FibDecoder::_process_Fig0s14(const u8 * const d)
 
   FibConfigFig0 * const pConfig = _get_config_ptr(fh.CN_Flag);
 
-  while (used < fh.Length)
+  while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     FibConfigFig0::SFig0s14_SubChannelOrganization fig0s14;
     fig0s14.SubChId = getBits_6(d, used * 8);
@@ -641,7 +641,7 @@ void FibDecoder::_process_Fig0s18(const u8 * const d)
 
   FibConfigFig0 * const localBase = _get_config_ptr(fh.CN_Flag);
 
-  while (bitOffset < fh.Length * 8)
+  while (bitOffset <= fh.Length * 8) // one byte in "used" is already included in the length
   {
     const u16 SId = getBits(d, bitOffset, 16);
     bitOffset += 16;
@@ -676,7 +676,7 @@ void FibDecoder::_process_Fig0s19(const u8 * const d)
 
   FibConfigFig0 * const localBase = _get_config_ptr(fh.CN_Flag);
 
-  while (bitOffset < fh.Length * 8)
+  while (bitOffset <= fh.Length * 8) // one byte in "used" is already included in the length
   {
     const u8 clusterId = getBits(d, bitOffset, 8);
     bitOffset += 8;
@@ -746,7 +746,7 @@ void FibDecoder::_process_Fig0s21(const u8 * const d) const
   i16 used = 2;  // offset in bytes
   const SFigHeader fh = _get_fig_header(d);
 
-  while (used < fh.Length)
+  while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     used = _subprocess_Fig0s21(d, used, fh);
   }
