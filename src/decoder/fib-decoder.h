@@ -98,28 +98,22 @@ private:
   void _process_Fig0(const u8 *);
   void _process_Fig1(const u8 *);
 
-  void _process_Fig0s0(const u8 *);
-  void _process_Fig0s1(const u8 *);
-  void _process_Fig0s2(const u8 *);
-  void _process_Fig0s3(const u8 *);
-  void _process_Fig0s5(const u8 *);
-  void _process_Fig0s7(const u8 *);
-  void _process_Fig0s8(const u8 *);
-  void _process_Fig0s9(const u8 *);
-  void _process_Fig0s10(const u8 *);
-  void _process_Fig0s13(const u8 *);
-  void _process_Fig0s14(const u8 *);
-  void _process_Fig0s17(const u8 *);
-  void _process_Fig0s18(const u8 *);
-  void _process_Fig0s19(const u8 *);
-  void _process_Fig0s21(const u8 *) const;
+  i16 _process_fig0_loop(const u8 *, const SFigHeader &, i16 (FibDecoder::*)(const u8 *, i16, const SFigHeader &));
 
+  void _process_Fig0s0(const u8 *);
   i16 _subprocess_Fig0s1(const u8 *, i16, const SFigHeader &);
   i16 _subprocess_Fig0s2(const u8 *, i16, const SFigHeader &);
   i16 _subprocess_Fig0s3(const u8 *, i16, const SFigHeader &);
-  i16 _subprocess_Fig0s5(const u8 *, i16);
+  i16 _subprocess_Fig0s5(const u8 *, i16, const SFigHeader &);
+  void _process_Fig0s7(const u8 *);
   i16 _subprocess_Fig0s8(const u8 *, i16, const SFigHeader &);
+  void _process_Fig0s9(const u8 *);
+  void _process_Fig0s10(const u8 *);
   i16 _subprocess_Fig0s13(const u8 *, i16, const SFigHeader &);
+  i16 _subprocess_Fig0s14(const u8 *, i16, const SFigHeader &);
+  void _process_Fig0s17(const u8 *);
+  void _process_Fig0s18(const u8 *);
+  void _process_Fig0s19(const u8 *);
   i16 _subprocess_Fig0s21(const u8 *, i16, const SFigHeader &) const;
 
   void _process_Fig1s0(const u8 *);
@@ -153,4 +147,3 @@ private slots:
 };
 
 #endif
-

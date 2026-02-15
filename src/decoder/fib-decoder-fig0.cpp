@@ -19,6 +19,7 @@
 
 void FibDecoder::_process_Fig0(const u8 * const d)
 {
+  const SFigHeader & fh = _get_fig_header(d);
   const u8 extension = getBits_5(d, 8 + 3);  // skip FIG header, C/N, OE and P/D flags
 
   // MCI: Multiplex Configuration Information
@@ -37,18 +38,18 @@ void FibDecoder::_process_Fig0(const u8 * const d)
   switch (extension)
   {
   case  0: _process_Fig0s0(d);  break;  // MCI, RepTyA,   ensemble information (6.4.1)
-  case  1: _process_Fig0s1(d);  break;  // MCI, RepTyA,   sub-channel organization (6.2.1)
-  case  2: _process_Fig0s2(d);  break;  // MCI, RepTyA,   service organization (6.3.1)
-  case  3: _process_Fig0s3(d);  break;  // MCI, RepTyA,   service component in packet mode (6.3.2)
+  case  1: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s1); break;  // MCI, RepTyA,   sub-channel organization (6.2.1)
+  case  2: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s2);  break;  // MCI, RepTyA,   service organization (6.3.1)
+  case  3: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s3);  break;  // MCI, RepTyA,   service component in packet mode (6.3.2)
 //case  4:                      break;  // MCI, RepTy?,   service component with CA (6.3.3)
-  case  5: _process_Fig0s5(d);  break;  // SI,  RepTyA/B, service component language (8.1.2)
+  case  5: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s5);  break;  // SI,  RepTyA/B, service component language (8.1.2)
 //case  6:                      break;  // SI,  RepTyC,   service linking information (8.1.15)
   case  7: _process_Fig0s7(d);  break;  // MCI, RepTyB,   configuration information (6.4.2)
-  case  8: _process_Fig0s8(d);  break;  // MCI, RepTyB,   service component global definition (6.3.5)
+  case  8: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s8);  break;  // MCI, RepTyB,   service component global definition (6.3.5)
   case  9: _process_Fig0s9(d);  break;  // SI,  RepTyB/C, country, LTO & international table (8.1.3.2)
   case 10: _process_Fig0s10(d); break;  // SI,  RepTyB/C, date and time (8.1.3.1)
-  case 13: _process_Fig0s13(d); break;  // MCI, RepTyB,   user application information (6.3.6)
-  case 14: _process_Fig0s14(d); break;  // MCI, RepTyB?,  FEC subchannel organization (6.2.2)
+  case 13: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s13); break;  // MCI, RepTyB,   user application information (6.3.6)
+  case 14: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s14); break;  // MCI, RepTyB?,  FEC subchannel organization (6.2.2)
   case 17: _process_Fig0s17(d); break;  // SI,  RepTyA/B, programme type (8.1.5)
   case 18: _process_Fig0s18(d); break;  // SI,  RepTyB,   announcement support (8.1.6.1)
   case 19: _process_Fig0s19(d); break;  // SI,  RepTyA/B, announcement switching (8.1.6.2)
@@ -64,6 +65,11 @@ void FibDecoder::_process_Fig0(const u8 * const d)
       if (mFibLoadingState >= EFibLoadingState::S5_DeferredDataLoaded) qDebug().noquote() << QString("FIG 0/%1 not handled (received after %2 ms after service start trigger)").arg(extension).arg(diff.count()); // print only if the summarized print was already done
       mUnhandledFig0Set.emplace(extension);
     }
+  }
+
+  if (mSIdForFastAudioSelection > 0 && (extension == 1 || extension == 2))
+  {
+    _process_fast_audio_selection();
   }
 }
 
@@ -94,23 +100,17 @@ void FibDecoder::_process_Fig0s0(const u8 * const d)
   mPrevChangeFlag = fig0s0.ChangeFlags;
 }
 
-// Basic Sub Channels Organization 6.2.1
-void FibDecoder::_process_Fig0s1(const u8 * const d)
+i16 FibDecoder::_process_fig0_loop(const u8 * const d, const SFigHeader & iFH, i16 (FibDecoder::*fn)(const u8 *, i16, const SFigHeader &))
 {
-  i16 used = 2;    // offset in bytes
-  const SFigHeader fh = _get_fig_header(d);
-
-  while (used <= fh.Length) // one byte in "used" is already included in the length
+  i16 used = 2;
+  while (used <= iFH.Length) // one byte in "used" is already included in the length
   {
-    used = _subprocess_Fig0s1(d, used, fh);
+    used = (this->*fn)(d, used, iFH);
   }
-
-  if (mSIdForFastAudioSelection > 0)
-  {
-    _process_fast_audio_selection();
-  }
+  return used;
 }
 
+// Basic Sub Channels Organization 6.2.1
 i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, const i16 offset, const SFigHeader & iFH)
 {
   i16 bitOffset = offset * 8;
@@ -182,22 +182,6 @@ i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, const i16 offset, const S
 }
 
 // Service organization, 6.3.1. Bind channels to SIds.
-void FibDecoder::_process_Fig0s2(const u8 * const d)
-{
-  i16 used = 2;  // offset in bytes
-  const SFigHeader fh = _get_fig_header(d);
-
-  while (used <= fh.Length) // one byte in "used" is already included in the length
-  {
-    used = _subprocess_Fig0s2(d, used, fh);
-  }
-
-  if (mSIdForFastAudioSelection > 0)
-  {
-    _process_fast_audio_selection();
-  }
-}
-
 i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, const i16 offset, const SFigHeader & iFH)
 {
   i16 bitOffset = 8 * offset;
@@ -262,19 +246,6 @@ i16 FibDecoder::_subprocess_Fig0s2(const u8 * const d, const i16 offset, const S
 }
 
 // Service component in packet mode 6.3.2.
-// The Extension 3 of FIG type 0 (FIG 0/3) gives additional information about the service component description in packet mode.
-void FibDecoder::_process_Fig0s3(const u8 * const d)
-{
-  i16 used = 2; // offset in bytes
-  const SFigHeader fh = _get_fig_header(d);
-
-  while (used <= fh.Length) // one byte in "used" is already included in the length
-  {
-    used = _subprocess_Fig0s3(d, used, fh);
-  }
-}
-
-// Note that the SCId (Service Component Identifier) is a unique 12 bit number in the ensemble
 i16 FibDecoder::_subprocess_Fig0s3(const u8 * const d, const i16 used, const SFigHeader & iFH)
 {
   i16 bitOffset = used * 8;
@@ -314,18 +285,7 @@ i16 FibDecoder::_subprocess_Fig0s3(const u8 * const d, const i16 used, const SFi
 }
 
 // Service component language 8.1.2
-void FibDecoder::_process_Fig0s5(const u8 * const d)
-{
-  i16 used = 2;  // offset in bytes
-  const SFigHeader fh = _get_fig_header(d);
-
-  while (used <= fh.Length) // one byte in "used" is already included in the length
-  {
-    used = _subprocess_Fig0s5(d, used);
-  }
-}
-
-i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, const i16 offset)
+i16 FibDecoder::_subprocess_Fig0s5(const u8 * const d, const i16 offset, const SFigHeader & /*iFH*/)
 {
   i16 bitOffset = offset * 8;
 
@@ -401,17 +361,6 @@ void FibDecoder::_process_Fig0s7(const u8 * const d)
 }
 
 // Service Component Global Definition 6.3.5
-void FibDecoder::_process_Fig0s8(const u8 * const d)
-{
-  i16 used = 2;    // offset in bytes
-  const SFigHeader fh = _get_fig_header(d);
-
-  while (used <= fh.Length) // one byte in "used" is already included in the length
-  {
-    used = _subprocess_Fig0s8(d, used, fh);
-  }
-}
-
 i16 FibDecoder::_subprocess_Fig0s8(const u8 * const d, const i16 used, const SFigHeader & iFH)
 {
   i16 bitOffset = used * 8;
@@ -515,18 +464,6 @@ void FibDecoder::_process_Fig0s10(const u8 * dd)
 }
 
 // User Application Information 6.3.6
-void FibDecoder::_process_Fig0s13(const u8 * const d)
-{
-  i16 used = 2;    // offset in bytes
-  const SFigHeader fh = _get_fig_header(d);
-
-  while (used <= fh.Length) // one byte in "used" is already included in the length
-  {
-    used = _subprocess_Fig0s13(d, used, fh);
-  }
-}
-
-// User application Data 6.3.6
 i16 FibDecoder::_subprocess_Fig0s13(const u8 * const d, i16 used, const SFigHeader & iFH)
 {
   i16 bitOffset = used * 8;
@@ -573,33 +510,26 @@ i16 FibDecoder::_subprocess_Fig0s13(const u8 * const d, i16 used, const SFigHead
 }
 
 // FEC sub-channel organization 6.2.2
-void FibDecoder::_process_Fig0s14(const u8 * const d)
+i16 FibDecoder::_subprocess_Fig0s14(const u8 * const d, const i16 used, const SFigHeader & fh)
 {
-  const SFigHeader fh = _get_fig_header(d);
-  i16 used = 2;  // in Bytes
-
   FibConfigFig0 * const pConfig = _get_config_ptr(fh.CN_Flag);
+  FibConfigFig0::SFig0s14_SubChannelOrganization fig0s14;
+  fig0s14.SubChId = getBits_6(d, used * 8);
 
-  while (used <= fh.Length) // one byte in "used" is already included in the length
+  if (const auto * const pFig0s14 = pConfig->get_Fig0s14_SubChannelOrganization_of_SubChId(fig0s14.SubChId);
+      pFig0s14 == nullptr)
   {
-    FibConfigFig0::SFig0s14_SubChannelOrganization fig0s14;
-    fig0s14.SubChId = getBits_6(d, used * 8);
-
-    if (const auto * const pFig0s14 = pConfig->get_Fig0s14_SubChannelOrganization_of_SubChId(fig0s14.SubChId);
-        pFig0s14 == nullptr)
-    {
-      fig0s14.FEC_scheme = getBits_2(d, used * 8 + 6);
-      fig0s14.set_current_time();
-      pConfig->Fig0s14_SubChannelOrganizationVec.emplace_back(fig0s14);
-      _retrigger_timer_data_loaded_slow("Fig0s14");
-    }
-    else
-    {
-      const_cast<FibConfigFig0::SFig0s14_SubChannelOrganization *>(pFig0s14)->set_current_time_2nd_call();
-    }
-
-    used += 1;
+    fig0s14.FEC_scheme = getBits_2(d, used * 8 + 6);
+    fig0s14.set_current_time();
+    pConfig->Fig0s14_SubChannelOrganizationVec.emplace_back(fig0s14);
+    _retrigger_timer_data_loaded_slow("Fig0s14");
   }
+  else
+  {
+    const_cast<FibConfigFig0::SFig0s14_SubChannelOrganization *>(pFig0s14)->set_current_time_2nd_call();
+  }
+
+  return used + 1;
 }
 
 void FibDecoder::_process_Fig0s17(const u8 * const d)
@@ -665,7 +595,6 @@ void FibDecoder::_process_Fig0s18(const u8 * const d)
     bitOffset += nrClusters * 8;
   }
 }
-
 
 // Announcement switching 8.1.6.2
 void FibDecoder::_process_Fig0s19(const u8 * const d)
@@ -741,17 +670,6 @@ void FibDecoder::_process_Fig0s19(const u8 * const d)
 }
 
 // Frequency information (FI) 8.1.8
-void FibDecoder::_process_Fig0s21(const u8 * const d) const
-{
-  i16 used = 2;  // offset in bytes
-  const SFigHeader fh = _get_fig_header(d);
-
-  while (used <= fh.Length) // one byte in "used" is already included in the length
-  {
-    used = _subprocess_Fig0s21(d, used, fh);
-  }
-}
-
 i16 FibDecoder::_subprocess_Fig0s21(const u8 * const d, const i16 used, const SFigHeader & iFH) const
 {
   const i16 offset = used * 8;
