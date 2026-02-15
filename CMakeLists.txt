@@ -31,7 +31,7 @@ option(USE_LTO "Set -flto flag" OFF)  # switch off to save compile/link time whi
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC OFF)
 set(CMAKE_AUTORCC ON)
 
 # special release version flags
@@ -167,6 +167,16 @@ find_package(Qt6Network REQUIRED)
 find_package(Qt6Xml REQUIRED)
 find_package(Qt6Sql REQUIRED)
 find_package(Qt6Multimedia REQUIRED)
+
+set(main_ui
+        forms/cir-widget.ui
+        forms/configuration.ui
+        forms/dabradio.ui
+        forms/dumpwidget.ui
+        forms/spectrum_viewer.ui
+        forms/techdata.ui
+        forms/updatedialog.ui
+)
 
 find_package(FFTW3f)
 if (NOT FFTW3F_FOUND)
@@ -565,6 +575,15 @@ include_directories(
         ${QT_QTGUI_INCLUDE_DIR}
         ${FAAD_INCLUDE_DIRS}
         ${SNDFILES_INCLUDE_DIRS}
+)
+
+qt6_wrap_ui(${objectName}_UI_HDRS
+        ${main_ui}
+)
+
+set(${objectName}_HDRS
+        ${${objectName}_HDRS}
+        ${${objectName}_UI_HDRS}
 )
 
 add_executable(${objectName}
