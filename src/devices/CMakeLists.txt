@@ -3,11 +3,20 @@ set(devicesLibName ${objectName}_devices)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC OFF)
 
 find_package(Qt6Core REQUIRED)
 find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Xml REQUIRED)
+
+# UI files with no filtered preselection
+set(devices_ui
+        forms/colibri-widget.ui
+        forms/elad-files.ui
+        forms/elad-widget.ui
+        forms/extio-widget.ui
+        forms/xmlfiles.ui
+)
 
 if (SDRPLAY_V2)
   include_directories(
@@ -27,6 +36,7 @@ if (SDRPLAY_V2)
           sdrplay-handler-v2/sdrplayselect.cpp
   )
 
+  list(APPEND devices_ui forms/sdrplay-widget-v2.ui)
   add_definitions(-DHAVE_SDRPLAY_V2)
 endif (SDRPLAY_V2)
 
@@ -58,6 +68,7 @@ if (SDRPLAY_V3)
           sdrplay-handler-v3/RspDx-handler.cpp
   )
 
+  list(APPEND devices_ui forms/sdrplay-widget-v3.ui)
   add_definitions(-DHAVE_SDRPLAY_V3)
 endif (SDRPLAY_V3)
 
@@ -84,6 +95,7 @@ if (AIRSPY)
           airspy-handler/airspyselect.cpp
   )
 
+  list(APPEND devices_ui forms/airspy-widget.ui)
   add_definitions(-DHAVE_AIRSPY)
 endif (AIRSPY)
 
@@ -113,6 +125,7 @@ if (SPYSERVER)
           spy-server/spyserver-tcp-client.cpp
   )
 
+  list(APPEND devices_ui forms/spyserver-client.ui)
   add_definitions(-DHAVE_SPYSERVER)
 endif (SPYSERVER)
 
@@ -131,6 +144,7 @@ if (HACKRF)
           hackrf-handler/hackrf-handler.cpp
   )
 
+  list(APPEND devices_ui forms/hackrf-widget.ui)
   add_definitions(-DHAVE_HACKRF)
 endif (HACKRF)
 
@@ -149,6 +163,7 @@ if (PLUTO)
           pluto-handler-2/pluto-handler.cpp
   )
 
+  list(APPEND devices_ui forms/pluto-widget.ui)
   add_definitions(-DHAVE_PLUTO)
 endif (PLUTO)
 
@@ -190,6 +205,7 @@ if (RTLSDR)
           rtlsdr-handler/rtl-dongleselect.cpp
   )
 
+  list(APPEND devices_ui forms/rtlsdr-widget.ui)
   add_definitions(-DHAVE_RTLSDR)
 endif ()
 
@@ -214,6 +230,7 @@ if (UHD)
           uhd/uhd-handler.cpp
   )
 
+  list(APPEND devices_ui forms/uhd-widget.ui)
   add_definitions(-DHAVE_UHD)
 endif ()
 
@@ -234,6 +251,7 @@ if (RTL_TCP)
           rtl_tcp/rtl_tcp_client.cpp
   )
 
+  list(APPEND devices_ui forms/rtl_tcp-widget.ui)
   set(RTLTCP_lib Qt6::Network)
   add_definitions(-DHAVE_RTL_TCP)
 endif (RTL_TCP)
@@ -260,6 +278,7 @@ if (SOAPY)
           soapy/soapy-deviceselect.cpp
   )
 
+  list(APPEND devices_ui forms/soapy-handler.ui)
   set(LIBSOAPY "-lSoapySDR")
   list(APPEND extraLibs ${LIBSOAPY})
   add_definitions(-DHAVE_SOAPY)
@@ -306,6 +325,15 @@ set(${devicesLibName}_SRCS
         filereaders/raw-files/raw-reader.cpp
         filereaders/wav-files/wavfiles.cpp
         filereaders/wav-files/wav-reader.cpp
+)
+
+qt6_wrap_ui(${devicesLibName}_UI_HDRS
+        ${devices_ui}
+)
+
+set(${devicesLibName}_HDRS
+        ${${devicesLibName}_HDRS}
+        ${${devicesLibName}_UI_HDRS}
 )
 
 add_library(${devicesLibName} STATIC ${${devicesLibName}_SRCS} ${${devicesLibName}_HDRS})

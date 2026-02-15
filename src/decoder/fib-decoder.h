@@ -123,7 +123,7 @@ private:
   // void _process_Fig1s6(const u8 *) const;
 
   void _set_cluster(FibConfigFig0 *, i32, u32 iSId, u16);
-  Cluster * _get_cluster(FibConfigFig0 *, i16);
+  Cluster * _get_cluster(FibConfigFig0 *, i16) const;
 
   bool _get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioData * opAD) const;
   bool _get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioDataAddOns * opADAO) const;

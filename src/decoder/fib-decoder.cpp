@@ -696,7 +696,7 @@ void FibDecoder::_set_cluster(FibConfigFig0 * localBase, i32 clusterId, u32 iSId
   myCluster->servicesSIDs.push_back(iSId);
 }
 
-Cluster * FibDecoder::_get_cluster(FibConfigFig0 * localBase, i16 clusterId)
+Cluster * FibDecoder::_get_cluster(FibConfigFig0 * localBase, i16 clusterId) const
 {
   for (i32 i = 0; i < 64; i++)
   {
