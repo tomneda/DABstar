@@ -20,6 +20,7 @@
 #pragma once
 
 #include "glob_data_types.h"
+#include <cstddef>
 #include <vector>
 
 class BitWriter

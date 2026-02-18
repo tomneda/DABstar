@@ -1,4 +1,3 @@
-#
 /*
     DABlin - capital DAB experience
     Copyright (C) 2015-2019 Stefan Pöschel
