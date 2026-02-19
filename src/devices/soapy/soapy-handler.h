@@ -67,9 +67,11 @@ private:
   int findDesiredBandwidth(const SoapySDR::RangeList &theRanges);
 
 private slots:
+  void handle_spinBox_0(i32);
   void handle_spinBox_1(i32);
   void handle_spinBox_2(i32);
   void set_agcControl(i32);
   void handleAntenna(const QString &);
+  void set_ppmCorrection(double);
 };
 #endif

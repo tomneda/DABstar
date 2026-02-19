@@ -81,18 +81,22 @@ SoapyHandler::SoapyHandler(QSettings * soapySettings)
     dongleSelect deviceSelector;
     for (u32 i = 0; i < length; i++)
     {
-      deviceSelector.addtoDongleList(labelString[i].toStdString().c_str());
+      deviceSelector.addtoDongleList(labelString[i]);
     }
     deviceIndex = deviceSelector.QDialog::exec();
   }
 
   worker = nullptr;
   comboBox_1->hide();
+  spinBox_0->hide();
   spinBox_1->hide();
   spinBox_2->hide();
+  labelSpinbox_0->hide();
   labelSpinbox_1->hide();
   labelSpinbox_2->hide();
   agcControl->hide();
+  ppm_correction->hide();
+  labelCorr->hide();
   deviceLabel->setText(deviceString[deviceIndex]);
   serialNumber->setText(serialString[deviceIndex]);
 
@@ -221,11 +225,6 @@ void SoapyHandler::createDevice(QString driver, QString serial)
   }
 
   //gains
-  spinBox_1->hide();
-  labelSpinbox_1->hide();
-  spinBox_2->hide();
-  labelSpinbox_2->hide();
-
   gainsList = device->listGains(dir, chan);
   for (size_t i = 0; i < gainsList.size(); i++)
   {
@@ -236,20 +235,31 @@ void SoapyHandler::createDevice(QString driver, QString serial)
   if (gainsList.size() > 0)
   {
     SoapySDR::Range r = device->getGainRange(dir, chan, gainsList[0]);
-    spinBox_1->setMinimum(r.minimum());
-    spinBox_1->setMaximum(r.maximum());
-    labelSpinbox_1->setText(QString(gainsList[0].c_str()));
-    spinBox_1->show();
-    labelSpinbox_1->show();
-    connect(spinBox_1, qOverload<int>(&QSpinBox::valueChanged), this, &SoapyHandler::handle_spinBox_1);
+    spinBox_0->setMinimum(r.minimum());
+    spinBox_0->setMaximum(r.maximum());
+    labelSpinbox_0->setText(QString(gainsList[0].c_str()));
+    spinBox_0->show();
+    labelSpinbox_0->show();
+    connect(spinBox_0, qOverload<int>(&QSpinBox::valueChanged), this, &SoapyHandler::handle_spinBox_0);
   }
 
   if (gainsList.size() > 1)
   {
     SoapySDR::Range r = device->getGainRange(dir, chan, gainsList[1]);
+    spinBox_1->setMinimum(r.minimum());
+    spinBox_1->setMaximum(r.maximum());
+    labelSpinbox_1->setText(QString(gainsList[1].c_str()));
+    spinBox_1->show();
+    labelSpinbox_1->show();
+    connect(spinBox_1, qOverload<int>(&QSpinBox::valueChanged), this, &SoapyHandler::handle_spinBox_1);
+  }
+
+  if (gainsList.size() > 2)
+  {
+    SoapySDR::Range r = device->getGainRange(dir, chan, gainsList[2]);
     spinBox_2->setMinimum(r.minimum());
     spinBox_2->setMaximum(r.maximum());
-    labelSpinbox_2->setText(QString(gainsList[1].c_str()));
+    labelSpinbox_2->setText(QString(gainsList[2].c_str()));
     spinBox_2->show();
     labelSpinbox_2->show();
     connect(spinBox_2, qOverload<int>(&QSpinBox::valueChanged), this, &SoapyHandler::handle_spinBox_2);
@@ -257,8 +267,17 @@ void SoapyHandler::createDevice(QString driver, QString serial)
 
   //frequencies
   std::vector<std::string> freqsList = device->listFrequencies(dir, chan);
-  const std::string name = freqsList[0];
-  ss << "  " << name << " freq range: " << toString(device->getFrequencyRange(dir, chan, name), 1e6) << " MHz" << std::endl;
+  for (u32 i = 0; i < freqsList.size(); i++)
+  {
+    const std::string name = freqsList[i];
+    ss << "  " << name << " freq range: " << toString(device->getFrequencyRange(dir, chan, name), 1e6) << " MHz" << std::endl;
+  }
+  if (device->hasFrequencyCorrection(dir, chan))
+  {
+    ppm_correction->show();
+    labelCorr->show();
+    connect(ppm_correction, &QDoubleSpinBox::valueChanged, this, &SoapyHandler::set_ppmCorrection);
+  }
 
   //rates
   SoapySDR::RangeList rangelist = device->getSampleRateRange(dir, chan);
@@ -302,13 +321,15 @@ void SoapyHandler::createDevice(QString driver, QString serial)
 
 void SoapyHandler::setVFOFrequency(i32 f)
 {
-  if (worker == nullptr)
+  if (device == nullptr)
     return;
   device->setFrequency(SOAPY_SDR_RX, 0, f);
 }
 
 i32 SoapyHandler::getVFOFrequency(void)
 {
+  if (device == nullptr)
+    return 0;
   return device->getFrequency(SOAPY_SDR_RX, 0);
 }
 
@@ -338,26 +359,39 @@ void SoapyHandler::resetBuffer(void) {}
 
 i16 SoapyHandler::bitDepth(void) { return 12; }
 
+void SoapyHandler::handle_spinBox_0(i32 v)
+{
+  if (device == nullptr)
+    return;
+  device->setGain(SOAPY_SDR_RX, 0, gainsList[0], (f32)v);
+}
+
 void SoapyHandler::handle_spinBox_1(i32 v)
 {
-  device->setGain(SOAPY_SDR_RX, 0, gainsList[0], (f32)v);
+  if (device == nullptr)
+    return;
+  device->setGain(SOAPY_SDR_RX, 0, gainsList[1], (f32)v);
 }
 
 void SoapyHandler::handle_spinBox_2(i32 v)
 {
-  device->setGain(SOAPY_SDR_RX, 0, gainsList[1], (f32)v);
+  if (device == nullptr)
+    return;
+  device->setGain(SOAPY_SDR_RX, 0, gainsList[2], (f32)v);
 }
 
 void SoapyHandler::set_agcControl(i32 status)
 {
   (void)status;
+  if (device == nullptr)
+    return;
   bool b = agcControl->isChecked();
   device->setGainMode(SOAPY_SDR_RX, 0, b);
 }
 
 void SoapyHandler::handleAntenna(const QString & s)
 {
-  if (worker == nullptr)
+  if (device == nullptr)
     return;
   device->setAntenna(SOAPY_SDR_RX, 0, s.toLatin1().data());
 }
@@ -412,4 +446,11 @@ i32 SoapyHandler::findDesiredBandwidth(const SoapySDR::RangeList &range)
     if (range[i].minimum() >= 1500000)
       return range[i].minimum();
   return -1;
+}
+
+void SoapyHandler::set_ppmCorrection(double ppm)
+{
+  if (device == nullptr)
+    return;
+  device->setFrequencyCorrection(SOAPY_SDR_RX, 0, ppm);
 }

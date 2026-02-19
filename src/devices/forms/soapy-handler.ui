@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_1">
      <item>
       <widget class="QLabel" name="deviceLabel">
        <property name="text">
@@ -75,12 +75,25 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QSpinBox" name="spinBox_1"/>
+      <widget class="QDoubleSpinBox" name="ppm_correction">
+       <property name="suffix">
+        <string> ppm</string>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the offset (in ppm) of the observed oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="minimum">
+        <double>-150.0</double>
+       </property>
+       <property name="maximum">
+        <double>150.0</double>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QLabel" name="labelSpinbox_1">
+      <widget class="QLabel" name="labelCorr">
        <property name="text">
-        <string>TextLabel</string>
+        <string>CORR</string>
        </property>
       </widget>
      </item>
@@ -89,12 +102,40 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
+      <widget class="QSpinBox" name="spinBox_0"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelSpinbox_0">
+       <property name="text">
+        <string>Gain0</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QSpinBox" name="spinBox_1"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelSpinbox_1">
+       <property name="text">
+        <string>Gain1</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
       <widget class="QSpinBox" name="spinBox_2"/>
      </item>
      <item>
       <widget class="QLabel" name="labelSpinbox_2">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Gain2</string>
        </property>
       </widget>
      </item>
