@@ -100,7 +100,7 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
 
   while (running.load() && theRig->Samples() < iNoSamples)
   {
-    usleep(10);
+    usleep(1000);
   }
 
   if (!running.load()) throw 20; // stops the DAB processor
@@ -112,13 +112,13 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
     _dump_samples_to_file(buffer, iNoSamples);
   }
 
-  //	OK, we have samples!!
-  //	First: adjust frequency. We need Hz accuracy
+  // OK, we have samples!!
+  // First: adjust frequency. We need Hz accuracy
   for (i32 i = 0; i < iNoSamples; i++)
   {
     currentPhase -= iFreqOffsetBBHz;
 
-    //	Note that "phase" itself might be negative
+    // Note that "phase" itself might be negative
     currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
     assert(currentPhase >= 0);  // could happen with currentPhase < -INPUT_RATE
 
