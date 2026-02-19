@@ -20,7 +20,7 @@
 #include    <QTime>
 #include    <QDate>
 #include    "airspy-handler.h"
-#include    "airspyselect.h"
+#include    "dongleselect.h"
 #include    "xml-filewriter.h"
 #include    "device-exceptions.h"
 #include    "openfiledialog.h"
@@ -96,10 +96,10 @@ AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
 
     if (numofDevs > 1)
     {
-        airspySelect deviceSelector;
+        dongleSelect deviceSelector;
         for (deviceIndex = 0; deviceIndex < (i32)numofDevs; deviceIndex ++)
         {
-            deviceSelector.addtoList(QString::number(deviceList[deviceIndex]));
+            deviceSelector.addtoDongleList(QString::number(deviceList[deviceIndex]));
         }
         deviceIndex = deviceSelector.QDialog::exec();
     }

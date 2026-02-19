@@ -19,14 +19,14 @@
  *    along with Qt-SDR; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * 	This particular driver is a very simple wrapper around the
- * 	librtlsdr. In order to keep things simple, we dynamically
- * 	load the dll (or .so).The librtlsdr is osmocom software and all rights
- * 	are greatly acknowledged
+ *  This particular driver is a very simple wrapper around the
+ *  librtlsdr. In order to keep things simple, we dynamically
+ *  load the dll (or .so).The librtlsdr is osmocom software and all rights
+ *  are greatly acknowledged
  */
 
 #include "rtlsdr-handler.h"
-#include "rtl-dongleselect.h"
+#include "dongleselect.h"
 #include "rtl-sdr.h"
 #include "xml-filewriter.h"
 #include "device-exceptions.h"
@@ -36,17 +36,17 @@
 #include <QDir>
 #include <QMessageBox>
 
-#define	DEFAULT_FREQUENCY (kHz (220000))
+#define DEFAULT_FREQUENCY (kHz (220000))
 
-#define	READLEN_DEFAULT	(4 * 8192)
+#define READLEN_DEFAULT (4 * 8192)
 
 static clock_t time1 = 0;
 
-//	For the callback, we do need some environment which
-//	is passed through the ctx parameter
+//  For the callback, we do need some environment which
+//  is passed through the ctx parameter
 //
-//	This is the user-side call back function
-//	ctx is the calling task
+//  This is the user-side call back function
+//  ctx is the calling task
 static void RTLSDRCallBack(u8 * buf, u32 len, void * ctx)
 {
   clock_t time2;
@@ -76,9 +76,9 @@ static void RTLSDRCallBack(u8 * buf, u32 len, void * ctx)
   }
 }
 
-//	for handling the events in libusb, we need a controlthread
-//	whose sole purpose is to process the rtlsdr_read_async function
-//	from the lib.
+//  for handling the events in libusb, we need a controlthread
+//  whose sole purpose is to process the rtlsdr_read_async function
+//  from the lib.
 class dll_driver : public QThread
 {
 private:
@@ -105,7 +105,7 @@ private:
 };
 
 //
-//	Our wrapper is a simple classs
+//  Our wrapper is a simple classs
 RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
                              const QString & recorderVersion)
   : _I_Buffer(8 * 1024 * 1024)
@@ -143,7 +143,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   inputRate = INPUT_RATE;
   workerHandle = nullptr;
   isActive.store(false);
-#ifdef	_WIN32
+#ifdef  _WIN32
   const char * libraryString = "librtlsdr.dll";
 #elif __linux__
   const char * libraryString = "librtlsdr.so";
@@ -187,7 +187,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
     QMessageBox::critical(nullptr, "RtlSdr driver", s);
   }
 
-  //	Ok, from here we have the library functions accessible
+  //    Ok, from here we have the library functions accessible
   deviceCount = this->rtlsdr_get_device_count();
   if (deviceCount == 0)
   {
@@ -195,10 +195,10 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
     throw(std_exception_string("No RtlSdr device found"));
   }
 
-  deviceIndex = 0;	// default
+  deviceIndex = 0;  // default
   if (deviceCount > 1)
   {
-    rtl_dongleSelect dongleSelector;
+    dongleSelect dongleSelector;
     for (deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++)
     {
       dongleSelector.addtoDongleList(rtlsdr_get_device_name(deviceIndex));
@@ -206,7 +206,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
     deviceIndex = dongleSelector.QDialog::exec();
   }
 
-  //	OK, now open the hardware
+  //    OK, now open the hardware
   r = this->rtlsdr_open(&theDevice, deviceIndex);
   if (r < 0)
   {
@@ -262,7 +262,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
     tunerType->setText("unknown");
   }
 
-  //	See what the saved values are and restore the GUI settings
+  //    See what the saved values are and restore the GUI settings
   rtlsdrSettings->beginGroup("rtlsdrSettings");
   temp = rtlsdrSettings->value("externalGain", "10").toString();
   k = gainControl->findText(temp);
@@ -279,7 +279,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   fprintf(stdout, "%s %s %s\n", manufac, product, serial);
   product_display->setText(product);
 
-  //	all values are set to previous values, now do the settings
+  //    all values are set to previous values, now do the settings
   set_ExternalGain(gainControl->currentIndex());
   set_autogain(agcControl);
   set_ppmCorrection(ppm_correction->value());
@@ -287,7 +287,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   set_biasControl(biasControl->isChecked());
   enable_gainControl(agcControl);
 
-  //	and attach the buttons/sliders to the actions
+  //    and attach the buttons/sliders to the actions
   connect(ppm_correction, SIGNAL(valueChanged(double)),
           this, SLOT(set_ppmCorrection(double)));
   connect(gainControl, SIGNAL(activated(int)),
@@ -385,7 +385,7 @@ void RtlSdrHandler::stopReader()
   close_xmlDump();
 }
 
-//	when selecting the gain from a table, use the table value
+//  when selecting the gain from a table, use the table value
 void RtlSdrHandler::set_ExternalGain(i32 /*gain_index*/)
 {
   const QString gain = gainControl->currentText();
@@ -423,7 +423,7 @@ void RtlSdrHandler::set_biasControl(i32 bias)
     rtlsdr_set_bias_tee(theDevice, bias ? 1 : 0);
 }
 
-//	correction is in ppm
+//  correction is in ppm
 void RtlSdrHandler::set_ppmCorrection(f64 ppm)
 {
   i32 corr = ppm * 1000;
@@ -716,7 +716,7 @@ void RtlSdrHandler::close_iqDump()
 {
   iq_dumpButton->setText("Dump to raw");
   xml_dumpButton->show();
-  if (iqDumper == nullptr)	// this can happen !!
+  if (iqDumper == nullptr)  // this can happen !!
     return;
   iq_dumping.store(false);
   fclose(iqDumper);
@@ -763,7 +763,7 @@ void RtlSdrHandler::close_xmlDump()
 {
   xml_dumpButton->setText("Dump to xml");
   iq_dumpButton->show();
-  if (xmlDumper == nullptr)	// this can happen !!
+  if (xmlDumper == nullptr) // this can happen !!
     return;
   xml_dumping.store(false);
   usleep(1000);

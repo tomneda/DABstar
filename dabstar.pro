@@ -221,6 +221,7 @@ HEADERS += \
     src/devices/device-handler.h \
     src/devices/device-exceptions.h \
     src/devices/device-selector.h \
+    src/devices/dongleselect.h \
     src/devices/filereaders/xml-filereader/xml-filereader.h \
     src/devices/filereaders/xml-filereader/xml-reader.h \
     src/devices/filereaders/xml-filereader/xml-descriptor.h \
@@ -329,6 +330,7 @@ SOURCES += \
     src/update/updatechecker.cpp \
     src/update/updatedialog.cpp \
     src/devices/device-selector.cpp \
+    src/devices/dongleselect.cpp \
     src/devices/filereaders/xml-filereader/xml-filereader.cpp \
     src/devices/filereaders/xml-filereader/xml-reader.cpp \
     src/devices/filereaders/xml-filereader/xml-descriptor.cpp \
@@ -341,7 +343,6 @@ FORMS += \
     forms/cir-widget.ui \
     forms/configuration.ui \
     forms/dabradio.ui \
-    forms/dumpwidget.ui \
     forms/spectrum_viewer.ui \
     forms/techdata.ui \
     forms/updatedialog.ui \
@@ -353,10 +354,8 @@ FORMS += \
 dabstick {
 	DEFINES		+= HAVE_RTLSDR
 	INCLUDEPATH	+= src/devices/rtlsdr-handler
-	HEADERS		+= src/devices/rtlsdr-handler/rtlsdr-handler.h \
-			   src/devices/rtlsdr-handler/rtl-dongleselect.h
-	SOURCES		+= src/devices/rtlsdr-handler/rtlsdr-handler.cpp \
-			   src/devices/rtlsdr-handler/rtl-dongleselect.cpp 
+	HEADERS		+= src/devices/rtlsdr-handler/rtlsdr-handler.h
+	SOURCES		+= src/devices/rtlsdr-handler/rtlsdr-handler.cpp
 	FORMS		+= src/devices/forms/rtlsdr-widget.ui
 }
 
@@ -426,10 +425,8 @@ hackrf {
 airspy {
 	DEFINES		+= HAVE_AIRSPY
 	INCLUDEPATH	+= src/devices/airspy-handler
-	HEADERS		+= src/devices/airspy-handler/airspy-handler.h \
-			   src/devices/airspy-handler/airspyselect.h
-	SOURCES		+= src/devices/airspy-handler/airspy-handler.cpp \
-			   src/devices/airspy-handler/airspyselect.cpp
+	HEADERS		+= src/devices/airspy-handler/airspy-handler.h
+	SOURCES		+= src/devices/airspy-handler/airspy-handler.cpp
 	FORMS		+= src/devices/forms/airspy-widget.ui
 }
 
@@ -461,12 +458,10 @@ soapy {
 	INCLUDEPATH	+= src/devices/soapy
 	HEADERS		+= src/devices/soapy/soapy-handler.h \
 			   src/devices/soapy/soapy-worker.h \
-			   src/devices/soapy/soapy-converter.h \
-			   src/devices/soapy/soapy-deviceselect.h
+			   src/devices/soapy/soapy-converter.h
 	SOURCES		+= src/devices/soapy/soapy-handler.cpp \
 			   src/devices/soapy/soapy-worker.cpp \
-			   src/devices/soapy/soapy-converter.cpp \
-			   src/devices/soapy/soapy-deviceselect.cpp
+			   src/devices/soapy/soapy-converter.cpp
 	FORMS		+= src/devices/forms/soapy-handler.ui
 	LIBS		+= -lSoapySDR
 }

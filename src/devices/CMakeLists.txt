@@ -86,13 +86,11 @@ if (AIRSPY)
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           airspy-handler/airspy-handler.h
-          airspy-handler/airspyselect.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
           airspy-handler/airspy-handler.cpp
-          airspy-handler/airspyselect.cpp
   )
 
   list(APPEND devices_ui forms/airspy-widget.ui)
@@ -196,13 +194,11 @@ if (RTLSDR)
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           rtlsdr-handler/rtlsdr-handler.h
-          rtlsdr-handler/rtl-dongleselect.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
           rtlsdr-handler/rtlsdr-handler.cpp
-          rtlsdr-handler/rtl-dongleselect.cpp
   )
 
   list(APPEND devices_ui forms/rtlsdr-widget.ui)
@@ -267,7 +263,6 @@ if (SOAPY)
           soapy/soapy-handler.h
           soapy/soapy-worker.h
           soapy/soapy-converter.h
-          soapy/soapy-deviceselect.h
   )
 
   set(${devicesLibName}_SRCS
@@ -275,7 +270,6 @@ if (SOAPY)
           soapy/soapy-handler.cpp
           soapy/soapy-worker.cpp
           soapy/soapy-converter.cpp
-          soapy/soapy-deviceselect.cpp
   )
 
   list(APPEND devices_ui forms/soapy-handler.ui)
@@ -306,6 +300,7 @@ include_directories(
 set(${devicesLibName}_HDRS
         ${${devicesLibName}_HDRS}
         device-selector.h
+        dongleselect.h
         filereaders/xml-filereader/xml-filereader.h
         filereaders/xml-filereader/xml-reader.h
         filereaders/xml-filereader/xml-descriptor.h
@@ -318,6 +313,7 @@ set(${devicesLibName}_HDRS
 set(${devicesLibName}_SRCS
         ${${devicesLibName}_SRCS}
         device-selector.cpp
+        dongleselect.cpp
         filereaders/xml-filereader/xml-filereader.cpp
         filereaders/xml-filereader/xml-reader.cpp
         filereaders/xml-filereader/xml-descriptor.cpp

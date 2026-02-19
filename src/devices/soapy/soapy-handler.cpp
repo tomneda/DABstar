@@ -22,7 +22,7 @@
 #include  <iostream>
 #include  "soapy-handler.h"
 #include  "soapy-converter.h"
-#include  "soapy-deviceselect.h"
+#include  "dongleselect.h"
 #include  "device-exceptions.h"
 
 SoapyHandler::SoapyHandler(QSettings * soapySettings)
@@ -41,7 +41,7 @@ SoapyHandler::SoapyHandler(QSettings * soapySettings)
   setupUi(&myFrame);
   myFrame.move(QPoint(x, y));
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.show();
+  //myFrame.show();
   const auto results = SoapySDR::Device::enumerate();
   u32 length = (u32)results.size();
 
@@ -78,10 +78,10 @@ SoapyHandler::SoapyHandler(QSettings * soapySettings)
 
   if (length > 1)
   {
-    soapy_deviceSelect deviceSelector;
+    dongleSelect deviceSelector;
     for (u32 i = 0; i < length; i++)
     {
-      deviceSelector.addtoDeviceList(labelString[i].toStdString().c_str());
+      deviceSelector.addtoDongleList(labelString[i].toStdString().c_str());
     }
     deviceIndex = deviceSelector.QDialog::exec();
   }

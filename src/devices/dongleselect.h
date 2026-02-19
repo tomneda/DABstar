@@ -1,6 +1,5 @@
-#
 /*
- *    Copyright (C) 2014 .. 2017
+ *    Copyright (C) 2013 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
@@ -20,32 +19,32 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-#ifndef	__AIRSPY_SELECT__
-#define	__AIRSPY_SELECT__
 
+#ifndef __DONGLE_SELECT__
+#define __DONGLE_SELECT__
+
+#include <QDialog>
+#include <QLabel>
+#include <QListView>
+#include <QStringListModel>
+#include <QStringList>
 #include "glob_data_types.h"
-#include	<QDialog>
-#include	<QLabel>
-#include	<QListView>
-#include	<QStringListModel>
-#include	<QStringList>
 
-class	airspySelect: public QDialog {
+class   dongleSelect: public QDialog
+{
 Q_OBJECT
 public:
-			airspySelect	();
-			~airspySelect	();
-	void		addtoList	(const QString &);
+  dongleSelect();
+  ~dongleSelect();
+  void addtoDongleList(const QString &s);
 private:
-	QLabel		*toptext;
-	QListView	*selectorDisplay;
-	QStringListModel deviceList;
-	QStringList	Devices;
-	i16		selectedItem;
+  QLabel *toptext;
+  QListView *selectorDisplay;
+  QStringListModel dongleList;
+  QStringList Dongles;
+  i16 selectedItem;
 private slots:
-void	select_airspy	(QModelIndex);
+  void selectDongle(QModelIndex);
 };
 
 #endif
-
