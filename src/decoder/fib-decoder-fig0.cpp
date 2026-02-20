@@ -80,6 +80,8 @@ void FibDecoder::_process_fig0_loop(const u8 * const d, const TFnFibProc fn)
   {
     used = (this->*fn)(d, used, fh);
   }
+
+  if (used != fh.Length + 1) qWarning() << "FIG-used" << used << "FIG-length" << fh.Length;
 }
 
 // Ensemble information, 6.4.1.
