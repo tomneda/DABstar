@@ -98,7 +98,8 @@ private:
   void _process_Fig0(const u8 *);
   void _process_Fig1(const u8 *);
 
-  i16 _process_fig0_loop(const u8 *, const SFigHeader &, i16 (FibDecoder::*)(const u8 *, i16, const SFigHeader &));
+  using TFnFibProc = i16 (FibDecoder::*)(const u8 *, i16, const SFigHeader &);
+  void _process_fig0_loop(const u8 *, TFnFibProc);
 
   void _process_Fig0s0(const u8 *);
   i16 _subprocess_Fig0s1(const u8 *, i16, const SFigHeader &);

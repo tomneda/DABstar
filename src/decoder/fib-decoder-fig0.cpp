@@ -19,7 +19,6 @@
 
 void FibDecoder::_process_Fig0(const u8 * const d)
 {
-  const SFigHeader & fh = _get_fig_header(d);
   const u8 extension = getBits_5(d, 8 + 3);  // skip FIG header, C/N, OE and P/D flags
 
   // MCI: Multiplex Configuration Information
@@ -37,27 +36,27 @@ void FibDecoder::_process_Fig0(const u8 * const d)
 
   switch (extension)
   {
-  case  0: _process_Fig0s0(d);  break;  // MCI, RepTyA,   ensemble information (6.4.1)
-  case  1: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s1); break;  // MCI, RepTyA,   sub-channel organization (6.2.1)
-  case  2: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s2);  break;  // MCI, RepTyA,   service organization (6.3.1)
-  case  3: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s3);  break;  // MCI, RepTyA,   service component in packet mode (6.3.2)
-//case  4:                      break;  // MCI, RepTy?,   service component with CA (6.3.3)
-  case  5: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s5);  break;  // SI,  RepTyA/B, service component language (8.1.2)
-//case  6:                      break;  // SI,  RepTyC,   service linking information (8.1.15)
-  case  7: _process_Fig0s7(d);  break;  // MCI, RepTyB,   configuration information (6.4.2)
-  case  8: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s8);  break;  // MCI, RepTyB,   service component global definition (6.3.5)
-  case  9: _process_Fig0s9(d);  break;  // SI,  RepTyB/C, country, LTO & international table (8.1.3.2)
-  case 10: _process_Fig0s10(d); break;  // SI,  RepTyB/C, date and time (8.1.3.1)
-  case 13: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s13); break;  // MCI, RepTyB,   user application information (6.3.6)
-  case 14: _process_fig0_loop(d, fh, &FibDecoder::_subprocess_Fig0s14); break;  // MCI, RepTyB?,  FEC subchannel organization (6.2.2)
-  case 17: _process_Fig0s17(d); break;  // SI,  RepTyA/B, programme type (8.1.5)
-  case 18: _process_Fig0s18(d); break;  // SI,  RepTyB,   announcement support (8.1.6.1)
-  case 19: _process_Fig0s19(d); break;  // SI,  RepTyA/B, announcement switching (8.1.6.2)
-//case 20:                      break;  // SI,  RepTyE,   service component information (8.1.4)
-//case 21: _process_Fig0s21(d); break;  // SI,  RepTyE,   frequency information (8.1.8)
-//case 24:                      break;  // SI,  RepTy?,   OE services (8.1.10)
-//case 25:                      break;  // SI,  RepTyB,   OE announcement support (8.1.6.3)
-//case 26:                      break;  // SI,  RepTyA/B, OE announcement switching (8.1.6.4)
+  case  0: _process_Fig0s0(d);  break;                                      // MCI, RepTyA,   ensemble information (6.4.1)
+  case  1: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s1);  break;  // MCI, RepTyA,   sub-channel organization (6.2.1)
+  case  2: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s2);  break;  // MCI, RepTyA,   service organization (6.3.1)
+  case  3: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s3);  break;  // MCI, RepTyA,   service component in packet mode (6.3.2)
+//case  4:                      break;                                      // MCI, RepTy?,   service component with CA (6.3.3)
+  case  5: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s5);  break;  // SI,  RepTyA/B, service component language (8.1.2)
+//case  6:                      break;                                      // SI,  RepTyC,   service linking information (8.1.15)
+  case  7: _process_Fig0s7(d);  break;                                      // MCI, RepTyB,   configuration information (6.4.2)
+  case  8: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s8);  break;  // MCI, RepTyB,   service component global definition (6.3.5)
+  case  9: _process_Fig0s9(d);  break;                                      // SI,  RepTyB/C, country, LTO & international table (8.1.3.2)
+  case 10: _process_Fig0s10(d); break;                                      // SI,  RepTyB/C, date and time (8.1.3.1)
+  case 13: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s13); break;  // MCI, RepTyB,   user application information (6.3.6)
+  case 14: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s14); break;  // MCI, RepTyB?,  FEC subchannel organization (6.2.2)
+  case 17: _process_Fig0s17(d); break;                                      // SI,  RepTyA/B, programme type (8.1.5)
+  case 18: _process_Fig0s18(d); break;                                      // SI,  RepTyB,   announcement support (8.1.6.1)
+  case 19: _process_Fig0s19(d); break;                                      // SI,  RepTyA/B, announcement switching (8.1.6.2)
+//case 20:                      break;                                      // SI,  RepTyE,   service component information (8.1.4)
+//case 21: _process_Fig0s21(d); break;                                      // SI,  RepTyE,   frequency information (8.1.8)
+//case 24:                      break;                                      // SI,  RepTy?,   OE services (8.1.10)
+//case 25:                      break;                                      // SI,  RepTyB,   OE announcement support (8.1.6.3)
+//case 26:                      break;                                      // SI,  RepTyA/B, OE announcement switching (8.1.6.4)
   default:
     if (mUnhandledFig0Set.find(extension) == mUnhandledFig0Set.end()) // print message only once
     {
@@ -70,6 +69,16 @@ void FibDecoder::_process_Fig0(const u8 * const d)
   if (mSIdForFastAudioSelection > 0 && (extension == 1 || extension == 2))
   {
     _process_fast_audio_selection();
+  }
+}
+
+void FibDecoder::_process_fig0_loop(const u8 * const d, const TFnFibProc fn)
+{
+  i16 used = 2;
+  const SFigHeader & fh = _get_fig_header(d);
+  while (used <= fh.Length) // one byte in "used" is already included in the length
+  {
+    used = (this->*fn)(d, used, fh);
   }
 }
 
@@ -98,16 +107,6 @@ void FibDecoder::_process_Fig0s0(const u8 * const d)
   }
 
   mPrevChangeFlag = fig0s0.ChangeFlags;
-}
-
-i16 FibDecoder::_process_fig0_loop(const u8 * const d, const SFigHeader & iFH, i16 (FibDecoder::*fn)(const u8 *, i16, const SFigHeader &))
-{
-  i16 used = 2;
-  while (used <= iFH.Length) // one byte in "used" is already included in the length
-  {
-    used = (this->*fn)(d, used, iFH);
-  }
-  return used;
 }
 
 // Basic Sub Channels Organization 6.2.1
