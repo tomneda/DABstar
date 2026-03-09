@@ -1,3 +1,4 @@
+
 /*
  * This file is adapted by Thomas Neder (https://github.com/tomneda)
  *
@@ -42,8 +43,11 @@
 #include "ringbuffer.h"
 #include <random>
 
+#ifdef HAVE_SSE_OR_AVX
+  #include <volk/volk.h>
+#endif
 
-// #define USE_IQ_COMPENSATION  // not well tested
+#define USE_IQ_COMPENSATION  // not well tested
 
 class DabRadio;
 
@@ -76,11 +80,18 @@ private:
   RingBuffer<cf32> * spectrumBuffer;
   RingBuffer<cf32> * cirBuffer = nullptr;
   std::array<cf32, SPEC_BUFF_SIZE> specBuff;
-  std::array<cf32, INPUT_RATE> oscillatorTable{};
   TArrayTn mSampleBuffer;
-
-  i32 specBuffIdx = 0;
+#ifdef HAVE_SSE_OR_AVX
+  alignas(64) f32 mVolkFloat1[cTn];
+  alignas(64) f32 mVolkFloat2[cTn];
+  alignas(64) f32 mVolkFloat3[cTn];
+  alignas(64) f32 mVolkFloat4[cTn];
+  cf32 phase = {1.0f, 0.0f};
+#else
+  std::array<cf32, INPUT_RATE> oscillatorTable{};
   i32 currentPhase = 0;
+#endif
+  i32 specBuffIdx = 0;
   std::atomic<bool> running;
   f32 sLevel = 0.0f;
   i32 sampleCount = 0;
@@ -100,7 +111,7 @@ private:
   bool dcRemovalActive = false;
   i32 mWholeFrameIndex = 0;
   i32 mWholeFrameCount = 0;
-  cf32	mWholeFrameBuff[CIR_BUFF_SIZE];
+  cf32  mWholeFrameBuff[CIR_BUFF_SIZE];
 
   void _dump_samples_to_file(const cf32 * const ipV, const i32 iNoSamples);
 

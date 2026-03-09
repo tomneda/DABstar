@@ -52,11 +52,13 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
   dumpScale = value_for_bit_pos(theRig->bitDepth());
   running.store(true);
 
+#ifndef HAVE_SSE_OR_AVX
   for (i32 i = 0; i < INPUT_RATE; i++)
   {
     oscillatorTable[i] = cf32((f32)cos(2.0 * M_PI * i / INPUT_RATE),
                               (f32)sin(2.0 * M_PI * i / INPUT_RATE));
   }
+#endif
 
   connect(this, &SampleReader::signal_show_spectrum, mr, &DabRadio::slot_show_spectrum);
   connect(this, &SampleReader::signal_show_cir     , mr, &DabRadio::slot_show_cir);
@@ -113,17 +115,83 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
   }
 
   // OK, we have samples!!
-  // First: adjust frequency. We need Hz accuracy
+#ifdef HAVE_SSE_OR_AVX
+  f32 SingleFloat;
+  u32 index;
+
+  // Perform DC removal if wanted
+  if (dcRemovalActive)
+  {
+    constexpr f32 ALPHA = 1.0f / INPUT_RATE;
+    volk_32fc_deinterleave_32f_x2_u(mVolkFloat1, mVolkFloat2, buffer, iNoSamples);
+    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat1, iNoSamples);
+    mean_filter(meanI, SingleFloat / iNoSamples, ALPHA * iNoSamples);
+    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat2, iNoSamples);
+    mean_filter(meanQ, SingleFloat / iNoSamples, ALPHA * iNoSamples);
+    volk_32f_s32f_add_32f_a(mVolkFloat1, mVolkFloat1, -meanI, iNoSamples); // v_i - meanI
+    volk_32f_s32f_add_32f_a(mVolkFloat2, mVolkFloat2, -meanQ, iNoSamples); // v_q - meanQ
+#ifdef USE_IQ_COMPENSATION
+    volk_32f_x2_multiply_32f_a(mVolkFloat3, mVolkFloat1, mVolkFloat1, iNoSamples); // x_i * x_i
+    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat3, iNoSamples);
+    mean_filter(meanII, SingleFloat / iNoSamples, ALPHA * iNoSamples);
+    volk_32f_x2_multiply_32f_a(mVolkFloat3, mVolkFloat1, mVolkFloat2, iNoSamples); // x_i * x_q
+    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat3, iNoSamples);
+    mean_filter(meanIQ, SingleFloat / iNoSamples, ALPHA * iNoSamples);
+    const f32 phi = meanIQ / meanII;
+    volk_32f_s32f_multiply_32f_a(mVolkFloat3, mVolkFloat1, -phi, iNoSamples); // -phi * x_i
+    volk_32f_x2_add_32f_a(mVolkFloat3, mVolkFloat3, mVolkFloat2, iNoSamples); // x_q_corr
+    volk_32f_x2_multiply_32f_a(mVolkFloat4, mVolkFloat3, mVolkFloat3, iNoSamples); // x_q_corr * x_q_corr
+    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat4, iNoSamples);
+    mean_filter(meanQQ, SingleFloat / iNoSamples, ALPHA * iNoSamples);
+    const f32 gainQ = std::sqrt(meanII / meanQQ);
+    volk_32f_s32f_multiply_32f_a(mVolkFloat2, mVolkFloat3, gainQ, iNoSamples); // x_q_corr * gainQ
+#endif
+    volk_32f_x2_interleave_32fc_u(buffer, mVolkFloat1, mVolkFloat2, iNoSamples);
+  }
+  // The mixing has no effect on the absolute level detection, so do it beforehand
+  volk_32fc_magnitude_32f_u(mVolkFloat1, buffer, iNoSamples); // v_abs = std::abs(v);
+  volk_32f_index_max_32u_a(&index, mVolkFloat1, iNoSamples); // index of peak
+  if (mVolkFloat1[index] > peakLevel) peakLevel = mVolkFloat1[index]; // if (v_abs > peakLevel) peakLevel = v_abs;
+  volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat1, iNoSamples);
+  mean_filter(sLevel, SingleFloat / iNoSamples, 0.00001f * iNoSamples);
+
+
+  // use the non-frequency corrected sample data for CIR analyzer
+  if (cirBuffer != nullptr)
+  {
+    for (i32 i = 0; i < iNoSamples; i++)
+    {
+      if(mWholeFrameIndex < CIR_BUFF_SIZE)
+      {
+        mWholeFrameBuff[mWholeFrameIndex++] = buffer[i];
+      }
+      mWholeFrameCount += 1;
+      if ((mWholeFrameCount >= (2048*96*6)) && (mWholeFrameIndex >= CIR_BUFF_SIZE)) // 6 frames
+      {
+        cirBuffer->put_data_into_ring_buffer(mWholeFrameBuff, CIR_BUFF_SIZE);
+        emit signal_show_cir(CIR_BUFF_SIZE);
+        mWholeFrameIndex = 0;
+        mWholeFrameCount = 0;
+      }
+    }
+  }
+  // use the non-frequency corrected sample data for the spectrum as it could jump widely with +/-35 kHz with weak signals
+  if (specBuffIdx < SPEC_BUFF_SIZE)
+  {
+    for (i32 i = 0; i < iNoSamples; i++)
+    {
+      specBuff[specBuffIdx] = buffer[i];
+      ++specBuffIdx;
+    }
+  }
+  // adjust frequency. We need Hz accuracy
+  const cf32 phase_inc = cmplx_from_phase(F_2_M_PI * -iFreqOffsetBBHz / INPUT_RATE);
+  volk_32fc_s32fc_x2_rotator2_32fc_u(buffer, buffer, &phase_inc, &phase, iNoSamples);
+
+#else
   for (i32 i = 0; i < iNoSamples; i++)
   {
-    currentPhase -= iFreqOffsetBBHz;
-
-    // Note that "phase" itself might be negative
-    currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
-    assert(currentPhase >= 0);  // could happen with currentPhase < -INPUT_RATE
-
     cf32 v = buffer[i];
-
     // Perform DC removal if wanted
     if (dcRemovalActive)
     {
@@ -176,9 +244,16 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
       ++specBuffIdx;
     }
 
+    // adjust frequency. We need Hz accuracy
+    // Note that "phase" itself might be negative
+    currentPhase -= iFreqOffsetBBHz;
+    currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
+    assert(currentPhase >= 0);  // could happen with currentPhase < -INPUT_RATE
+
     // we mix after the IQ/DC compensation as these effects are only related to the ADC properties
     buffer[i] = v * oscillatorTable[currentPhase];
   }
+#endif
 
   sampleCount += iNoSamples;
 
@@ -239,4 +314,3 @@ void SampleReader::set_cir_buffer(RingBuffer<cf32> * iCirBuffer)
 {
   cirBuffer = iCirBuffer;
 }
-
