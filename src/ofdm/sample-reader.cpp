@@ -178,12 +178,12 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
   // use the non-frequency corrected sample data for the spectrum as it could jump widely with +/-35 kHz with weak signals
   if (specBuffIdx < SPEC_BUFF_SIZE)
   {
-    for (i32 i = 0; i < iNoSamples; i++)
-    {
-      specBuff[specBuffIdx] = buffer[i];
-      ++specBuffIdx;
-    }
+    i32 count = SPEC_BUFF_SIZE - specBuffIdx;
+    if (count > iNoSamples) count = iNoSamples;
+    memcpy(&specBuff[specBuffIdx], buffer, count * sizeof(cf32));
+    specBuffIdx += count;
   }
+
   // adjust frequency. We need Hz accuracy
   const cf32 phase_inc = cmplx_from_phase(F_2_M_PI * -iFreqOffsetBBHz / INPUT_RATE);
   volk_32fc_s32fc_x2_rotator2_32fc_u(buffer, buffer, &phase_inc, &phase, iNoSamples);
