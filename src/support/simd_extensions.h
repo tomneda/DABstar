@@ -38,9 +38,9 @@ inline void simd_abs(f32 * opOut, const f32 * ipInp, const size_t iN)
 
   for (size_t i = 0; i < iN; i += 4, pInp += 4, pOut += 4)
   {
-    __m128 data = _mm_loadu_ps(pInp);
+    __m128 data = _mm_load_ps(pInp);
     __m128 result = _mm_and_ps(data, mask);
-    _mm_storeu_ps(pOut, result);
+    _mm_store_ps(pOut, result);
   }
 }
 
@@ -54,7 +54,7 @@ inline void simd_normalize(cf32 * opOut, const cf32 * ipInp, const size_t iN)
   for (size_t i = 0; i < iN; i += 2, pInp += 4, pOut += 4)
   {
     // Load 4 floats: [real1, imag1, real2, imag2]
-    __m128 v = _mm_loadu_ps(pInp);
+    __m128 v = _mm_load_ps(pInp);
 
     // Square: [real1^2, imag1^2, real2^2, imag2^2]
     __m128 squared = _mm_mul_ps(v, v);
@@ -64,58 +64,15 @@ inline void simd_normalize(cf32 * opOut, const cf32 * ipInp, const size_t iN)
     __m128 magnitudeSquared = _mm_add_ps(squared, shuffled);
 
     // Compute the reciprocal square root (1 / sqrt(real^2 + imag^2))
-    __m128 invMagnitude = _mm_rsqrt_ps(magnitudeSquared);
+    __m128 invMagnitude = _mm_rsqrt_ps(magnitudeSquared); // no element of magnitudeSquared may be 0
 
     // Normalize: Multiply original vector `v` with the reciprocal magnitude
     __m128 normalized = _mm_mul_ps(v, invMagnitude);
 
     // Store the normalized values to the output array
-    _mm_storeu_ps(pOut, normalized);
+    _mm_store_ps(pOut, normalized);
   }
 }
-
-#if 0
-// Alternative to implement _mm_atan2_ps if unavailable
-static inline __m128 _mm_atan2_ps(__m128 y, __m128 x)
-{
-  __attribute__((aligned(16))) f32 yArray[4], xArray[4], result[4];
-  _mm_storeu_ps(yArray, y);
-  _mm_storeu_ps(xArray, x);
-
-  for (i32 i = 0; i < 4; i++)
-  {
-    result[i] = atan2f(yArray[i], xArray[i]);
-  }
-
-  return _mm_loadu_ps(result);
-}
-
-// get the phase, works but is slow related to VOLK, do not use this! (_mm_atan2_ps)
-inline void simd_phase(f32 * opOut, const cf32 * ipInp, size_t size)
-{
-  assert(size % 4 == 0);
-
-  const f32 * pInp = reinterpret_cast<const f32 *>(ipInp);
-  f32 * pOut = opOut;
-
-  for (size_t i = 0; i < size; i += 4, pInp += 8, pOut += 4)
-  {
-    // Extract real parts: [real1, real2, real3, real4]
-    __m128 real = _mm_set_ps(pInp[6], pInp[4], pInp[2], pInp[0]);
-
-    // Extract imaginary parts: [imag1, imag2, imag3, imag4]
-    __m128 imag = _mm_set_ps(pInp[7], pInp[5], pInp[3], pInp[1]);
-
-    // Calculate the phase using atan2
-    __m128 phase = _mm_atan2_ps(imag, real); // Compute phase for 4 elements
-
-    // Store the result in the output array
-    _mm_storeu_ps(pOut, phase);
-  }
-}
-#endif
-
-
 
 template<typename T>
 class SimdVec
@@ -223,13 +180,13 @@ public:
     assert(mVolkTempCmplx1Vec != nullptr);
 
 #if (VOLK_VERSION >= 30300)
-    volk_32f_sincos_32f_x2(mVolkTempFloat2Vec, mVolkTempFloat1Vec, iPhaseVec, cK);
+    volk_32f_sincos_32f_x2_a(mVolkTempFloat2Vec, mVolkTempFloat1Vec, iPhaseVec, cK);
 #else
-    volk_32f_cos_32f(mVolkTempFloat1Vec, iPhaseVec, cK);
-    volk_32f_sin_32f(mVolkTempFloat2Vec, iPhaseVec, cK);
+    volk_32f_cos_32f_a(mVolkTempFloat1Vec, iPhaseVec, cK);
+    volk_32f_sin_32f_a(mVolkTempFloat2Vec, iPhaseVec, cK);
 #endif
-    volk_32f_x2_interleave_32fc(mVolkTempCmplx1Vec, mVolkTempFloat1Vec, mVolkTempFloat2Vec, cK);
-    volk_32fc_x2_multiply_conjugate_32fc(mVolkVec, iVec, mVolkTempCmplx1Vec, cK);
+    volk_32f_x2_interleave_32fc_a(mVolkTempCmplx1Vec, mVolkTempFloat1Vec, mVolkTempFloat2Vec, cK);
+    volk_32fc_x2_multiply_conjugate_32fc_a(mVolkVec, iVec, mVolkTempCmplx1Vec, cK);
   }
 
   template <typename U = T>

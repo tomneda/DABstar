@@ -36,7 +36,6 @@
 #include "ofdm-decoder.h"
 #include "phasetable.h"
 #include "dabradio.h"
-#include <vector>
 
 OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer) :
   mpRadioInterface(ipMr),
@@ -51,7 +50,6 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuf
   mCarrVector.resize(cK);
   mStdDevSqPhaseVector.resize(cK);
   mIntegAbsPhaseVector.resize(cK);
-  mMeanPhaseVector.resize(cK);
   mMeanPowerVector.resize(cK);
   mMeanSigmaSqVector.resize(cK);
 
@@ -90,7 +88,6 @@ void OfdmDecoder::reset()
 {
   std::fill(mStdDevSqPhaseVector.begin(), mStdDevSqPhaseVector.end(), 0.0f);
   std::fill(mIntegAbsPhaseVector.begin(), mIntegAbsPhaseVector.end(), 0.0f);
-  std::fill(mMeanPhaseVector.begin(), mMeanPhaseVector.end(), 0.0f);
   std::fill(mMeanPowerVector.begin(), mMeanPowerVector.end(), 0.0f);
   std::fill(mMeanSigmaSqVector.begin(), mMeanSigmaSqVector.end(), 0.0f);
   std::fill(mMeanNullPowerWithoutTII.begin(), mMeanNullPowerWithoutTII.end(), 0.0f);
@@ -177,7 +174,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     const f32 phaseErr = iClockErr / 1024.0f * M_PI * (cK / 2 - realCarrRelIdx) / (cK / 2) + integAbsPhasePerBinRef;
 
     const cf32 fftBin = fftBinRaw * cmplx_from_phase2(-phaseErr);
-    //const cf32 fftBin = fftBinRaw * cmplx_from_phase(-integAbsPhasePerBinRef);
 
     // Get phase and absolute phase for each bin.
     const f32 fftBinPhase = std::arg(fftBin);

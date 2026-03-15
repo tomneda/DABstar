@@ -12,9 +12,7 @@
  */
 #include "phasetable.h"
 #include "dabradio.h"
-#include "simd_extensions.h"
 #include "ofdm-decoder-simd.h"
-#include <vector>
 #include <volk/volk.h>
 
 // shortcut syntax to get better overview
@@ -136,7 +134,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
 
   mSimdVecPhaseErr.set_multiply_vector_and_scalar_each_element(mSimdVecPhaseConst, iClockErr);
 
-  // -------------------------------
+  // No element of mSimdVecPhaseReference may be zero
   mSimdVecPhaseReferenceNormed.set_normalize_each_element(mSimdVecPhaseReference);
   mSimdVecFftBinRaw.set_multiply_conj_each_element(mSimdVecNomCarrier, mSimdVecPhaseReferenceNormed);  // PI/4-DQPSK demodulation
 
@@ -205,10 +203,11 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
   mSimdVecTemp1Float.modify_multiply_each_element(mSimdVecFftBinLevel);  // T1 *= abs(fftBin)
   mSimdVecTemp1Float.modify_sqrt_each_element();                         // T1 = sqrt(T1)
   mSimdVecWeightPerBin.modify_multiply_each_element(mSimdVecTemp1Float); // w1 *= T1
-  mSimdVecTempCmplx.set_normalize_each_element(mSimdVecFftBinPhaseCorr); // T = normalize(fftBin)
-  mSimdVecTempCmplx.store_to_real_and_imag_each_element(mSimdVecDecodingReal, mSimdVecDecodingImag);
-  mSimdVecDecodingReal.modify_multiply_each_element(mSimdVecWeightPerBin);  // real *= w1
-  mSimdVecDecodingImag.modify_multiply_each_element(mSimdVecWeightPerBin);  // imag *= w1
+
+  // No element of mSimdVecFftBinLevel may be zero
+  mSimdVecWeightPerBin.set_divide_each_element(mSimdVecWeightPerBin, mSimdVecFftBinLevel); // w /= abs(fftBin)
+  mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin); // real *= w1
+  mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin); // imag *= w1
 
   // -------------------------------
   mSimdVecTemp1Float.set_squared_magnitude_of_elements(mSimdVecDecodingReal, mSimdVecDecodingImag);
@@ -267,7 +266,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / mSimdVecStdDevSqPhaseVec.get_sum_of_elements());
-    //mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.MeanSigmaSqFreqCorr = sqrt(mMeanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
@@ -400,7 +398,7 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
       mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * val;  // show it in percent of the maximum Viterbi input
       break;
     }
-    case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(mSimdVecMeanSigmaSq[nomCarrIdx]) / mSimdVecMeanLevel[nomCarrIdx]; break;
+    case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * mSimdVecMeanSigmaSq[nomCarrIdx] / mSimdVecMeanPower[nomCarrIdx]; break;
     case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanSigmaSq[nomCarrIdx] / mSimdVecMeanPower[nomCarrIdx]); break;
     case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(mSimdVecStdDevSqPhaseVec[nomCarrIdx])); break;
     case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(mSimdVecPhaseErr[nomCarrIdx]); break;

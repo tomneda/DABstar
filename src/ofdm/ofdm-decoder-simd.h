@@ -22,9 +22,7 @@
 #include "ringbuffer.h"
 #include "simd_extensions.h"
 #include <QObject>
-#include <cstdint>
 #include <vector>
-#include <volk/volk.h>
 
 class DabRadio;
 
@@ -85,7 +83,6 @@ private:
   SimdVec<cf32> mSimdVecPhaseReferenceNormed{0};
   SimdVec<cf32> mSimdVecNomCarrier{0};
   SimdVec<cf32> mSimdVecPhaseReference{0};
-  SimdVec<cf32> mSimdVecTempCmplx{0};
   SimdVec<f32> mSimdVecWeightPerBin{0};
   SimdVec<f32> mSimdVecFftBinWrapped{0};
   SimdVec<f32> mSimdVecFftBinPhaseCorrArg{0};
@@ -131,8 +128,6 @@ private:
   void _eval_null_symbol_statistics(const TArrayTu & iV);
   void _reset_null_symbol_statistics();
   void _display_iq_and_carr_vectors();
-  // void _volk_mean_filter(f32 * ioValVec, const f32 * iValVec, const f32 iAlpha) const;
-  void _volk_mean_filter_sum(f32 & ioValSum, const f32 * iValVec, const f32 iAlpha) const;
 
   static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
 
