@@ -57,7 +57,8 @@ public:
       }
       if (m_major >= 1024 || m_minor >= 1024 || m_patch >= 1024 || m_git >= 1024) // must be within 10 bits
       {
-        qFatal() << "Version number too large!" << m_major << m_minor << m_patch << m_git;
+        qCritical() << "Version number too large!" << m_major << m_minor << m_patch << m_git;
+        exit(EXIT_FAILURE);
       }
       // qDebug() << m_major << m_minor << m_patch << m_git;
     }
