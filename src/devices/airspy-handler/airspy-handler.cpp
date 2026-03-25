@@ -15,10 +15,6 @@
  *  Lazy Chair Computing
  */
 
-#include    <QPoint>
-#include    <QFileDialog>
-#include    <QTime>
-#include    <QDate>
 #include    "airspy-handler.h"
 #include    "dongleselect.h"
 #include    "xml-filewriter.h"
@@ -182,8 +178,6 @@ AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
              this, SLOT (set_rf_bias (int)));
     connect (tabWidget, SIGNAL (currentChanged (int)),
              this, SLOT (switch_tab (int)));
-    connect (dumpButton, SIGNAL (clicked ()),
-             this, SLOT (set_xmlDump ()));
     connect (filterSelector, SIGNAL (stateChanged (int)),
              this, SLOT (set_filter (int)));
     connect (this, SIGNAL (new_tabSetting (int)),
@@ -287,7 +281,6 @@ bool    AirspyHandler::restartReader    (i32 freq)
     }
     _I_Buffer.flush_ring_buffer();
     result = my_airspy_set_sample_type (device, AIRSPY_SAMPLE_INT16_IQ);
-//  result = my_airspy_set_sample_type (device, AIRSPY_SAMPLE_FLOAT32_IQ);
     if (result != AIRSPY_SUCCESS)
     {
        printf ("my_airspy_set_sample_type() failed: %s (%d)\n",
@@ -319,7 +312,7 @@ void    AirspyHandler::stopReader()
     if (!running.load())
        return;
 
-    close_xmlDump ();
+    stopDumping();
     airspySettings->beginGroup ("airspySettings");
     QString key = "tabSettings-" +
                 QString::number (getVFOFrequency () / MHz (1));
@@ -469,11 +462,6 @@ i32 AirspyHandler::open()
 void    AirspyHandler::resetBuffer  ()
 {
     _I_Buffer.flush_ring_buffer ();
-}
-
-i16 AirspyHandler::bitDepth     ()
-{
-    return 13;
 }
 
 i32 AirspyHandler::getSamples (cf32 *v, i32 size)
@@ -692,23 +680,22 @@ QString AirspyHandler::deviceName()
     return "AIRspy";
 }
 
-void    AirspyHandler::set_xmlDump()
+bool AirspyHandler::startDumping()
 {
-    if (xmlDumper == nullptr)
-    {
-      if (setup_xmlDump ())
-          dumpButton->setText("writing");
-    }
-    else
-    {
-       close_xmlDump ();
-    }
+  bool result = false;
+  if (!dumping.load())
+  {
+    result = setup_xmlDump();
+  }
+  else
+    stopDumping();
+  return result;
 }
 
 bool AirspyHandler::setup_xmlDump()
 {
   OpenFileDialog filenameFinder(airspySettings);
-  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr("AIRspy");
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr();
   if (xmlDumper == nullptr)
   {
     return false;
@@ -727,17 +714,16 @@ bool AirspyHandler::setup_xmlDump()
   return true;
 }
 
-void    AirspyHandler::close_xmlDump ()
+void AirspyHandler::stopDumping()
 {
-    dumpButton  ->setText ("Dump");
-    if (xmlDumper == nullptr)   // this can happen !!
-       return;
-    dumping.store (false);
-    usleep (1000);
-    xmlWriter   ->computeHeader ();
-    delete xmlWriter;
-    fclose (xmlDumper);
-    xmlDumper   = nullptr;
+  if (xmlDumper == nullptr) // this can happen !!
+    return;
+  dumping.store(false);
+  usleep(1000);
+  xmlWriter->computeHeader();
+  delete xmlWriter;
+  fclose(xmlDumper);
+  xmlDumper = nullptr;
 }
 
 void    AirspyHandler::show ()
@@ -1061,8 +1047,7 @@ void    AirspyHandler::set_rf_bias (i32 dummy)
     }
 }
 
-bool AirspyHandler::isFileInput()
+bool AirspyHandler::hasDump()
 {
-  return false;
+  return true;
 }
-

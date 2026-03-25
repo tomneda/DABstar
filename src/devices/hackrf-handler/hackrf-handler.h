@@ -103,12 +103,13 @@ public:
   i32 getSamples(cf32 *, i32) override;
   i32 Samples() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
-  bool isFileInput() override;
+  bool hasDump() override;
+  bool startDumping() override;
+  void stopDumping() override;
 
 
   using TRingBuffer = RingBuffer<std::complex<i8> >;
@@ -166,7 +167,6 @@ private:
 
   bool load_hackrf_functions();
   bool setup_xml_dump();
-  void close_xml_dump();
   void record_gain_settings(i32);
   void update_gain_settings(i32);
   void check_err_throw(i32 iResult) const;
@@ -185,7 +185,6 @@ private slots:
   void slot_enable_bias_t(i32);
   void slot_enable_amp(i32);
   void slot_set_ppm_correction(i32);
-  void slot_xml_dump();
 };
 
 #endif

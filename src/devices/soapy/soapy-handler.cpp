@@ -362,8 +362,6 @@ i32 SoapyHandler::Samples(void)
 
 void SoapyHandler::resetBuffer(void) {}
 
-i16 SoapyHandler::bitDepth(void) { return 12; }
-
 void SoapyHandler::handle_spinBox_0(i32 v)
 {
   if (device == nullptr)
@@ -414,11 +412,6 @@ void SoapyHandler::hide()
 bool SoapyHandler::isHidden()
 {
   return myFrame.isHidden();
-}
-
-bool SoapyHandler::isFileInput()
-{
-  return false;
 }
 
 i32 SoapyHandler::findDesiredSamplerate(const SoapySDR::RangeList &range)

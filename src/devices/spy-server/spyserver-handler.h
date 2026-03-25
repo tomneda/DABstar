@@ -60,7 +60,6 @@ public:
   void stop_running();
 
   void connection_set();
-  bool isFileInput();
 
   QString deviceName();
 

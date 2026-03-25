@@ -28,16 +28,13 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  <QSettings>
-#include  <QTime>
 #include  <QLabel>
-#include  <QFileDialog>
 #include  "sdrplay-handler-v3.h"
 #include  "sdrplay-commands.h"
 #include  "xml-filewriter.h"
 #include  "setting-helper.h"
 
-//	The Rsp's
+//  The Rsp's
 #include  "Rsp-device.h"
 #include  "Rsp1-handler.h"
 #include  "Rsp1A-handler.h"
@@ -109,11 +106,10 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * /*s*/, const QString & recorder
     gainsliderLabel->setEnabled(false);
   }
 
-  //	and be prepared for future changes in the settings
+  //    and be prepared for future changes in the settings
   connect(GRdBSelector, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_ifgainReduction);
   connect(lnaGainSetting, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_lnagainReduction);
   connect(ppmControl, SIGNAL(valueChanged(double)), this, SLOT(set_ppmControl(double)));
-  connect(dumpButton, &QPushButton::clicked, this, &SdrPlayHandler_v3::set_xmlDump);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
   connect(agcControl, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_agcControl);
   connect(biasT_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_biasT);
@@ -155,19 +151,15 @@ SdrPlayHandler_v3::~SdrPlayHandler_v3()
   {
     usleep(1000);
   }
-  //	thread should be stopped by now
+  //    thread should be stopped by now
   myFrame.hide();
 
   Settings::SdrPlayV3::posAndSize.write_widget_geometry(&myFrame);
 }
 
 /////////////////////////////////////////////////////////////////////////
-//	Implementing the interface
+//  Implementing the interface
 /////////////////////////////////////////////////////////////////////////
-
-//i32	sdrplayHandler_v3::defaultFrequency	() {
-//	return MHz (220);
-//}
 
 i32 SdrPlayHandler_v3::getVFOFrequency()
 {
@@ -189,7 +181,7 @@ bool SdrPlayHandler_v3::restartReader(i32 newFreq)
 void SdrPlayHandler_v3::stopReader()
 {
   stopRequest r;
-  close_xmlDump();
+  stopDumping();
   if (!receiverRuns.load())
   {
     return;
@@ -229,23 +221,18 @@ void SdrPlayHandler_v3::resetBuffer()
   p_I_Buffer->flush_ring_buffer();
 }
 
-i16 SdrPlayHandler_v3::bitDepth()
-{
-  return nrBits;
-}
-
 QString SdrPlayHandler_v3::deviceName()
 {
   return deviceModel;
 }
 
 ///////////////////////////////////////////////////////////////////////////
-//	Handling the GUI
+//  Handling the GUI
 //////////////////////////////////////////////////////////////////////
 //
-//	Since the daemon is not threadproof, we have to package the
-//	actual interface into its own thread.
-//	Communication with that thread is synchronous!
+//  Since the daemon is not threadproof, we have to package the
+//  actual interface into its own thread.
+//  Communication with that thread is synchronous!
 //
 
 void SdrPlayHandler_v3::set_lnabounds(i32 low, i32 high)
@@ -339,24 +326,9 @@ void SdrPlayHandler_v3::set_selectAntenna(const QString & s)
   messageHandler(new antennaRequest(s == "Antenna A" ? 'A' : s == "Antenna B" ? 'B' : 'C'));
 }
 
-void SdrPlayHandler_v3::set_xmlDump()
-{
-  if (xmlDumper == nullptr)
-  {
-    if (setup_xmlDump())
-    {
-      dumpButton->setText("writing");
-    }
-  }
-  else
-  {
-    close_xmlDump();
-  }
-}
-
 //
 ////////////////////////////////////////////////////////////////////////
-//	showing data
+//  showing data
 ////////////////////////////////////////////////////////////////////////
 void SdrPlayHandler_v3::set_antennaSelect(i32 n)
 {
@@ -378,11 +350,21 @@ void SdrPlayHandler_v3::set_antennaSelect(i32 n)
   set_selectAntenna(antennaSelector->currentText());
 }
 
+bool SdrPlayHandler_v3::startDumping()
+{
+  bool result = false;
+  if (!dumping.load())
+    result = setup_xmlDump();
+  else
+    stopDumping();
+  return result;
+}
+
 bool SdrPlayHandler_v3::setup_xmlDump()
 {
   QSettings * const sdrplaySettings = &Settings::Storage::instance();
   OpenFileDialog filenameFinder(sdrplaySettings);
-  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr(deviceModel);
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr();
   if (xmlDumper == nullptr)
     return false;
 
@@ -392,9 +374,8 @@ bool SdrPlayHandler_v3::setup_xmlDump()
   return true;
 }
 
-void SdrPlayHandler_v3::close_xmlDump()
+void SdrPlayHandler_v3::stopDumping()
 {
-  dumpButton->setText("Dump");
   if (xmlDumper == nullptr)
   {  // this can happen !!
     return;
@@ -406,9 +387,9 @@ void SdrPlayHandler_v3::close_xmlDump()
   fclose(xmlDumper);
   xmlDumper = nullptr;
 }
-//
+
 ///////////////////////////////////////////////////////////////////////
-//	the real controller starts here
+//  the real controller starts here
 ///////////////////////////////////////////////////////////////////////
 
 bool SdrPlayHandler_v3::messageHandler(generalCommand * r)
@@ -512,7 +493,7 @@ void SdrPlayHandler_v3::run()
     errorCode = 1;
     return;
   }
-  //	load the functions
+  //    load the functions
   if (!loadFunctions())
   {
     failFlag.store(true);
@@ -522,7 +503,7 @@ void SdrPlayHandler_v3::run()
 
   qDebug() << "SDRPLAY functions loaded";
 
-  //	try to open the API
+  //    try to open the API
   err = sdrplay_api_Open();
   if (err != sdrplay_api_Success)
   {
@@ -534,7 +515,7 @@ void SdrPlayHandler_v3::run()
 
   // fprintf(stderr, "api opened\n");
 
-  //	Check API versions match
+  //    Check API versions match
   err = sdrplay_api_ApiVersion(&apiVersion);
   if (err != sdrplay_api_Success)
   {
@@ -598,12 +579,12 @@ void SdrPlayHandler_v3::run()
     goto unlockDevice_closeAPI;
   }
   //
-  //	assign callback functions
+  //    assign callback functions
   cbFns.StreamACbFn = StreamACallback;
   cbFns.StreamBCbFn = StreamBCallback;
   cbFns.EventCbFn = EventCallback;
 
-  //	we have a device, unlock
+  //    we have a device, unlock
   sdrplay_api_UnlockDeviceApi();
   //
   hwVersion = devs[0].hwVer;
@@ -616,38 +597,38 @@ void SdrPlayHandler_v3::run()
     {
       case SDRPLAY_RSP1_ID:
 
-	    set_deviceName("RSP1");
+        set_deviceName("RSP1");
         biasT_selector->setEnabled (false);
         notch_selector->setEnabled (false);
-        theRsp	= new Rsp1_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, ppmValue);
-	    break;
+        theRsp  = new Rsp1_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, ppmValue);
+        break;
       case SDRPLAY_RSP1A_ID:
-	    set_deviceName("RSP1A");
-	    theRsp = new Rsp1A_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
-	    break;
+        set_deviceName("RSP1A");
+        theRsp = new Rsp1A_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
+        break;
       case SDRPLAY_RSP1B_ID:
-	    set_deviceName("RSP1B");
-	    theRsp = new Rsp1A_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
-	    break;
+        set_deviceName("RSP1B");
+        theRsp = new Rsp1A_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
+        break;
       case SDRPLAY_RSP2_ID:
-	    set_deviceName("RSP2");
-    	theRsp = new Rsp2_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
-    	break;
+        set_deviceName("RSP2");
+        theRsp = new Rsp2_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
+        break;
       case SDRPLAY_RSPdx_ID:
-	    set_deviceName("RSPdx");
-    	theRsp = new RspDx_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
-    	break;
+        set_deviceName("RSPdx");
+        theRsp = new RspDx_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
+        break;
       case SDRPLAY_RSPdxR2_ID:
-	    set_deviceName("RSPdxR2");
-    	theRsp = new RspDx_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
-    	break;
+        set_deviceName("RSPdxR2");
+        theRsp = new RspDx_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
+        break;
       case SDRPLAY_RSPduo_ID:
-	    set_deviceName("RSPduo");
-    	theRsp = new RspDuo_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
-    	break;
+        set_deviceName("RSPduo");
+        theRsp = new RspDuo_handler(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, biasT, notch, ppmValue);
+        break;
       default:
-    	theRsp = new Rsp_device(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, ppmValue);
-    	break;
+        theRsp = new Rsp_device(this, chosenDevice, MHz (174), agcMode, lnaState, GRdBValue, ppmValue);
+        break;
     }
   }
   catch (i32 e)
@@ -667,9 +648,9 @@ void SdrPlayHandler_v3::run()
       }
     }
 
-    //	here we could assert that the server_queue is not empty
-    //	Note that we emulate synchronous calling, so
-    //	we signal the caller when we are done
+    //  here we could assert that the server_queue is not empty
+    //  Note that we emulate synchronous calling, so
+    //  we signal the caller when we are done
     switch (server_queue.front()->cmd)
     {
     case RESTART_REQUEST:
@@ -774,7 +755,7 @@ normal_exit:
     fprintf(stderr, "sdrplay_api_ReleaseDevice failed %s\n", sdrplay_api_GetErrorString(err));
   }
 
-  //	sdrplay_api_UnlockDeviceApi	(); ??
+  //    sdrplay_api_UnlockDeviceApi (); ??
   sdrplay_api_Close();
   if (err != sdrplay_api_Success)
   {
@@ -797,7 +778,7 @@ closeAPI:
 }
 
 /////////////////////////////////////////////////////////////////////////////
-//	handling the library
+//  handling the library
 /////////////////////////////////////////////////////////////////////////////
 bool SdrPlayHandler_v3::loadFunctions()
 {
@@ -909,8 +890,8 @@ bool SdrPlayHandler_v3::loadFunctions()
   sdrplay_api_SwapRspDuoActiveTuner = (sdrplay_api_SwapRspDuoActiveTuner_t)phandle->resolve("sdrplay_api_SwapRspDuoActiveTuner");
   if (sdrplay_api_SwapRspDuoActiveTuner == nullptr)
   {
-	fprintf (stderr, "could not find sdrplay_api_SwapRspDuoActiveTuner\n");
-	return false;
+    fprintf (stderr, "could not find sdrplay_api_SwapRspDuoActiveTuner\n");
+    return false;
   }
 
   return true;
@@ -936,11 +917,6 @@ void SdrPlayHandler_v3::setVFOFrequency(i32 iFreq)
   restartReader(iFreq);
 }
 
-bool SdrPlayHandler_v3::isFileInput()
-{
-  return false;
-}
-
 void SdrPlayHandler_v3::slot_overload_detected(bool iOvlDetected)
 {
   if (iOvlDetected)
@@ -959,3 +935,7 @@ void SdrPlayHandler_v3::slot_tuner_gain(f64 gain, i32 g)
   lnaGRdBDisplay->display(g);
 }
 
+bool SdrPlayHandler_v3::hasDump()
+{
+  return true;
+}

@@ -97,7 +97,6 @@ private:
   i32 sampleCount = 0;
   bool dumping;
   i16 dumpIndex = 0;
-  i16 dumpScale;
   std::array<i16, DUMP_SIZE> dumpBuffer{};
   std::atomic<SNDFILE *> dumpfilePointer;
   f32 peakLevel = -1.0e6;

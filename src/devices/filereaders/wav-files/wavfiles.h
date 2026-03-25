@@ -61,7 +61,6 @@ public:
   bool isHidden() override;
   bool isFileInput() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   QString deviceName() override;
 
 private:

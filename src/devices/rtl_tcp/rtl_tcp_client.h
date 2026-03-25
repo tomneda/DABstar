@@ -32,17 +32,9 @@
 #ifndef  RTL_TCP_CLIENT_H
 #define  RTL_TCP_CLIENT_H
 
-#include  <QtNetwork>
 #include  <QSettings>
-#include  <QLabel>
-#include  <QMessageBox>
 #include  <QLineEdit>
-#include  <QHostAddress>
-#include  <QByteArray>
 #include  <QTcpSocket>
-#include  <QTimer>
-#include  <QComboBox>
-#include  <cstdio>
 #include  "dab-constants.h"
 #include  "device-handler.h"
 #include  "ringbuffer.h"
@@ -65,12 +57,13 @@ public:
   void show() override;
   void hide() override;
   bool isHidden() override;
-  i16 bitDepth() override;
   QString deviceName() override;
-  bool isFileInput() override;
   void resetBuffer() override;
   i32 getRate();
   i32 defaultFrequency();
+  bool hasDump() override;
+  bool startDumping() override;
+  void stopDumping() override;
 
 private:
   QFrame myFrame;
@@ -103,7 +96,6 @@ private:
   XmlFileWriter * xmlWriter;
   std::atomic<bool> xml_dumping;
   bool setup_xmlDump();
-  void close_xmlDump();
 
 private slots:
   void sendGain(i32);
@@ -118,7 +110,6 @@ private slots:
   void handle_hw_agc();
   void handle_sw_agc();
   void handle_manual();
-  void set_xmlDump();
 };
 
 #endif

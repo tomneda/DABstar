@@ -63,8 +63,6 @@ public:
   void stopReader() override;
   i32 getSamples(cf32 * V, i32 size) override;
   i32 Samples() override;
-  i16 bitDepth() override;
-
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
   void resetBuffer() override;
@@ -72,7 +70,6 @@ public:
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
-  bool isFileInput() override;
 
   // void connect_on();
   i32 getRate();

@@ -586,13 +586,13 @@ void DabRadio::slot_handle_tdc_data(i32 frametype, i32 length)
 }
 
 /**
-  *	If a change is detected, we have to restart the selected
-  *	service - if any. If the service is a secondary service,
-  *	it might be the case that we have to start the main service
-  *	how do we find that?
+  * If a change is detected, we have to restart the selected
+  * service - if any. If the service is a secondary service,
+  * it might be the case that we have to start the main service
+  * how do we find that?
   *
-  *	Response to a signal, so we presume that the signaling body exists
-  *	signal may be pending though
+  * Response to a signal, so we presume that the signaling body exists
+  * signal may be pending though
   */
 void DabRadio::slot_change_in_configuration()
 {
@@ -713,7 +713,7 @@ void DabRadio::_slot_terminate_process()
 
 #ifdef  DATA_STREAMER
   fprintf (stdout, "going to close the dataStreamer\n");
-  delete		dataStreamer;
+  delete        dataStreamer;
 #endif
 
   if (mpHttpHandler != nullptr)
@@ -770,6 +770,14 @@ void DabRadio::_slot_terminate_process()
   fprintf(stdout, ".. end the radio silences\n");
 }
 
+void DabRadio::_seconds_to_timestring(char *text, const uint32_t timer)
+{
+  const int sec = timer % 60;
+  const int min = (timer / 60) % 60;
+  const int hour = timer / 3600;
+  sprintf(text, "%d:%02d:%02d", hour, min, sec);
+}
+
 void DabRadio::_slot_update_time_display()
 {
   if (!mIsRunning)
@@ -798,6 +806,30 @@ void DabRadio::_slot_update_time_display()
     ++mResetRingBufferCnt;
   }
 #endif
+  if(mRawDumper)
+  {
+    char text[10];
+    _seconds_to_timestring(text, mRawDumpTimer++);
+    mpConfig->dumpButton->setText(text);
+  }
+  if (mChannel.etiActive)
+  {
+    char text[10];
+    _seconds_to_timestring(text, mEtiDumpTimer++);
+    mpConfig->etiButton->setText(text);
+  }
+  if (mpAudioFrameDumper)
+  {
+    char text[10];
+    _seconds_to_timestring(text, mFrameDumpTimer++);
+    mpTechDataWidget->framedumpButton->setText(text);
+  }
+  if (mAudioDumpState == EAudioDumpState::Running)
+  {
+    char text[10];
+    _seconds_to_timestring(text, mAudioDumpTimer++);
+    mpTechDataWidget->audiodumpButton->setText(text);
+  }
 }
 
 void DabRadio::_slot_handle_device_widget_button()
@@ -982,29 +1014,48 @@ void DabRadio::start_source_dumping()
     return;
   }
 
-  mpRawDumper = mOpenFileDialog.open_raw_dump_sndfile_ptr(deviceName, channelName);
-  if (mpRawDumper == nullptr)
+  const bool useNativeIqFormat = Settings::Config::cbUseNativeIqFormat.read().toBool();
+  if (mpInputDevice->hasDump() && useNativeIqFormat)
   {
-    return;
+    mRawDumper = mpInputDevice->startDumping();
+    if (!mRawDumper)
+    {
+      return;
+    }
   }
-
+  else
+  {
+    mpRawDumper = mOpenFileDialog.open_raw_dump_sndfile_ptr(channelName);
+    if (mpRawDumper == nullptr)
+    {
+      return;
+    }
+    mpDabProcessor->startDumping(mpRawDumper);
+  }
+  mRawDumper = true;
+  mRawDumpTimer = 0;
   LOG("source dump starts ", channelName);
   _emphasize_pushbutton(mpConfig->dumpButton, true);
-  mpDabProcessor->startDumping(mpRawDumper);
 }
 
 void DabRadio::stop_source_dumping()
 {
-  if (mpRawDumper == nullptr)
+  if (!mRawDumper)
   {
     return;
   }
 
   LOG("source dump stops ", "");
-  mpDabProcessor->stop_dumping();
-  sf_close(mpRawDumper);
+  mpInputDevice->stopDumping();
+  if (mpRawDumper)
+  {
+    mpDabProcessor->stop_dumping();
+    sf_close(mpRawDumper);
+  }
+  mRawDumper = false;
   mpRawDumper = nullptr;
   _emphasize_pushbutton(mpConfig->dumpButton, false);
+  mpConfig->dumpButton->setText("Dump RAW");
 }
 
 void DabRadio::_slot_handle_source_dump_button()
@@ -1014,7 +1065,7 @@ void DabRadio::_slot_handle_source_dump_button()
     return;
   }
 
-  if (mpRawDumper != nullptr)
+  if (mRawDumper)
   {
     stop_source_dumping();
   }
@@ -1806,7 +1857,7 @@ void DabRadio::_go_to_next_channel_while_scanning()
 }
 
 /////////////////////////////////////////////////////////////////////////
-// External configuration items				//////
+// External configuration items             //////
 
 //-------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -2128,6 +2179,7 @@ void DabRadio::start_etiHandler()
   if (mChannel.etiActive)
   {
     _emphasize_pushbutton(mpConfig->etiButton, true);
+    mEtiDumpTimer = 0;
   }
 }
 
@@ -2143,7 +2195,7 @@ void DabRadio::stop_ETI_handler()
 
   LOG("etiHandler stopped", "");
   _emphasize_pushbutton(mpConfig->etiButton, false);
-
+  mpConfig->etiButton->setText("Dump ETI");
 }
 
 void DabRadio::slot_test_slider(i32 iVal) // iVal 0..1000

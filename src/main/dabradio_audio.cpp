@@ -235,6 +235,7 @@ void DabRadio::start_audio_dumping()
   LOG("Audio dump starts ", ui->serviceLabel->text());
   _emphasize_pushbutton(mpTechDataWidget->audiodumpButton, true);
   mAudioDumpState = EAudioDumpState::WaitForInit;
+  mAudioDumpTimer = 0;
 }
 
 void DabRadio::stop_audio_dumping()
@@ -248,6 +249,7 @@ void DabRadio::stop_audio_dumping()
   mAudioDumpState = EAudioDumpState::Stopped;
   mWavWriter.close();
   _emphasize_pushbutton(mpTechDataWidget->audiodumpButton, false);
+  mpTechDataWidget->audiodumpButton->setText("Dump WAV");
 }
 
 void DabRadio::_slot_handle_frame_dump_button()
@@ -282,6 +284,7 @@ void DabRadio::start_audio_frame_dumping()
   }
 
   _emphasize_pushbutton(mpTechDataWidget->framedumpButton, true);
+  mFrameDumpTimer = 0;
 }
 
 void DabRadio::stop_audio_frame_dumping()
@@ -294,6 +297,10 @@ void DabRadio::stop_audio_frame_dumping()
   fclose(mpAudioFrameDumper);
   _emphasize_pushbutton(mpTechDataWidget->framedumpButton, false);
   mpAudioFrameDumper = nullptr;
+  if (mAudioFrameType == EAudioFrameType::AAC)
+    mpTechDataWidget->framedumpButton->setText("Dump AAC");
+  else
+    mpTechDataWidget->framedumpButton->setText("Dump MP2");
 }
 
 void DabRadio::slot_new_aac_mp2_frame()

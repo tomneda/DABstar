@@ -32,24 +32,12 @@
 #include  "dabradio.h"
 #include  <ctime>
 
-static inline i16 value_for_bit_pos(i16 b)
-{
-  assert(b > 0);
-  i16 res = 1;
-  while (--b > 0)
-  {
-    res <<= 1;
-  }
-  return res;
-}
-
 SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer)
   : myRadioInterface(mr)
   , theRig(iTheRig)
   , spectrumBuffer(iSpectrumBuffer)
 {
   dumpfilePointer.store(nullptr);
-  dumpScale = value_for_bit_pos(theRig->bitDepth());
   running.store(true);
 
 #ifndef HAVE_SSE_OR_AVX

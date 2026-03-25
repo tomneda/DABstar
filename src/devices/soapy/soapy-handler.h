@@ -45,7 +45,6 @@ public:
   void stopReader() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency(void) override;
-  i16 bitDepth(void) override;
   void show() override;
   void hide() override;
   bool isHidden() override;
@@ -53,7 +52,6 @@ public:
   void resetBuffer(void) override;
   i32 getSamples(cf32 *, i32) override;
   i32 Samples() override;
-  bool isFileInput() override;
 
 private:
   QFrame myFrame;

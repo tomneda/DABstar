@@ -62,7 +62,6 @@ public:
   bool isHidden() override;
   bool isFileInput() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   QString deviceName() override;
   i64 samplesToRead = 0;
   i64 mFileLength = 0;

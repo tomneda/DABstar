@@ -28,9 +28,9 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *	We have to create a simple virtual class here, since we
- *	want the interface with different devices (including  filehandling)
- *	to be transparent
+ *  We have to create a simple virtual class here, since we
+ *  want the interface with different devices (including  filehandling)
+ *  to be transparent
  */
 #ifndef  DEVICE_HANDLER_H
 #define  DEVICE_HANDLER_H
@@ -51,12 +51,14 @@ public:
   virtual i32 getSamples(cf32 *, i32) = 0;
   virtual i32 Samples() = 0;
   virtual void resetBuffer() = 0;
-  virtual i16 bitDepth() = 0;
   virtual void hide() = 0;
   virtual void show() = 0;
   virtual bool isHidden() = 0;
   virtual QString deviceName() = 0;
-  virtual bool isFileInput() = 0;
+  virtual bool isFileInput() {return false;};
+  virtual bool hasDump() {return false;};
+  virtual bool startDumping() {return false;};
+  virtual void stopDumping() {};
 };
 
 #endif

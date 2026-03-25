@@ -50,11 +50,7 @@ PlutoHandler::PlutoHandler(QSettings *s,
     setupUi(&myFrame);
     myFrame.show();
 
-#ifdef  _WIN32
-    const char * libName = "libiio.dll";
-#else
-    const char * libName= "libiio.so";
-#endif
+    const char * libName= "libiio";
 
     pHandle = new QLibrary(libName);
     if (pHandle == nullptr)
@@ -202,8 +198,6 @@ PlutoHandler::PlutoHandler(QSettings *s,
              this, SLOT (set_agcControl (i32)));
     connect (debugButton, SIGNAL (clicked ()),
              this, SLOT (toggle_debugButton ()));
-    connect (dumpButton, SIGNAL (clicked ()),
-             this, SLOT (set_xmlDump ()));
     connect (filterButton, SIGNAL (clicked ()),
              this, SLOT (set_filter ()));
 
@@ -594,7 +588,7 @@ void    PlutoHandler::stopReader()
 {
     if (!running. load())
        return;
-    close_xmlDump   ();
+    stopDumping();
     if (save_gainSettings)
        record_gainSettings (rx_cfg. lo_hz/ MHz (1));
     running. store (false);
@@ -681,11 +675,6 @@ void    PlutoHandler::resetBuffer()
     _I_Buffer. flush_ring_buffer();
 }
 
-i16 PlutoHandler::bitDepth ()
-{
-    return 12;
-}
-
 QString PlutoHandler::deviceName()
 {
     return "ADALM PLUTO";
@@ -712,23 +701,22 @@ void    PlutoHandler::toggle_debugButton()
     debugButton -> setText (debugFlag ? "debug on" : "debug off");
 }
 
-void    PlutoHandler::set_xmlDump ()
+bool PlutoHandler::startDumping()
 {
-    if (xmlDumper == nullptr)
-    {
-      if (setup_xmlDump ())
-          dumpButton    -> setText ("writing");
-    }
-    else
-    {
-       close_xmlDump ();
-    }
+  bool result = false;
+  if (xmlDumper == nullptr)
+  {
+    result = setup_xmlDump();
+  }
+  else
+    stopDumping();
+  return result;
 }
 
 bool PlutoHandler::setup_xmlDump()
 {
     OpenFileDialog filenameFinder(plutoSettings);
-    xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr("pluto");
+    xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr();
     if (xmlDumper == nullptr)
       return false;
 
@@ -740,14 +728,13 @@ bool PlutoHandler::setup_xmlDump()
                                    "pluto",
                                    "I",
                                    recorderVersion);
-    dumping. store (true);
+    dumping.store(true);
 
     return true;
 }
 
-void    PlutoHandler::close_xmlDump ()
+void    PlutoHandler::stopDumping()
 {
-    dumpButton   -> setText ("Dump");
     if (xmlDumper == nullptr)   // this can happen !!
        return;
     dumping. store (false);
@@ -999,7 +986,7 @@ bool    PlutoHandler::loadFunctions ()
     return true;
 }
 
-bool PlutoHandler::isFileInput()
+bool PlutoHandler::hasDump()
 {
-  return false;
+  return true;
 }

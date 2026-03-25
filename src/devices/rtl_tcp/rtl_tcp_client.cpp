@@ -23,12 +23,9 @@
  *    A simple client for rtl_tcp
  */
 
-#include    <QSettings>
 #include    <QLabel>
 #include    <QMessageBox>
 #include    <QHostAddress>
-#include    <QTcpSocket>
-#include    <QDir>
 #include    "rtl_tcp_client.h"
 #include    "rtl-sdr.h"
 #include    "xml-filewriter.h"
@@ -95,7 +92,6 @@ RtlTcpClient::RtlTcpClient(QSettings *s, const QString &recorderVersion):myFrame
   connect(tcp_bandwidth, SIGNAL(valueChanged(int)), this, SLOT(setBandwidth(int)));
   connect(tcp_port, SIGNAL(valueChanged(int)), this, SLOT(setPort(int)));
   connect(tcp_address, SIGNAL(returnPressed()), this, SLOT(setAddress()));
-  connect(xml_dumpButton, SIGNAL(clicked()), this, SLOT(set_xmlDump()));
   theState->setText("waiting to start");
 
   xmlDumper = nullptr;
@@ -183,8 +179,8 @@ void RtlTcpClient::stopReader()
 {
   if (!connected)
     return;
+  stopDumping();
   disconnect(&toServer, SIGNAL(readyRead(void)), this, SLOT(readData(void)));
-  close_xmlDump();
 }
 
 //
@@ -201,11 +197,6 @@ i32 RtlTcpClient::getSamples(cf32 *V, i32 size)
 i32 RtlTcpClient::Samples()
 {
   return _I_Buffer->get_ring_buffer_read_available();
-}
-
-i16 RtlTcpClient::bitDepth()
-{
-  return 8;
 }
 
 //  These functions are typical for network use
@@ -392,11 +383,6 @@ bool RtlTcpClient::isHidden()
   return myFrame.isHidden();
 }
 
-bool RtlTcpClient::isFileInput()
-{
-  return false;
-}
-
 void RtlTcpClient::resetBuffer()
 {
 }
@@ -421,25 +407,22 @@ void RtlTcpClient::handle_manual()
   setAgcMode(1);
 }
 
-void RtlTcpClient::set_xmlDump()
+bool RtlTcpClient::startDumping()
 {
+  bool result = false;
+  if (!connected)
+    return result;
   if (!xml_dumping.load())
-  {
-    if (setup_xmlDump())
-    {
-      xml_dumpButton->setText("writing xml file");
-    }
-  }
+    result = setup_xmlDump();
   else
-  {
-    close_xmlDump();
-  }
+    stopDumping();
+  return result;
 }
 
 bool RtlTcpClient::setup_xmlDump()
 {
   OpenFileDialog filenameFinder(remoteSettings);
-  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr(tuner_text);
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr();
   if (xmlDumper == nullptr)
     return false;
 
@@ -450,9 +433,8 @@ bool RtlTcpClient::setup_xmlDump()
   return true;
 }
 
-void RtlTcpClient::close_xmlDump()
+void RtlTcpClient::stopDumping()
 {
-  xml_dumpButton->setText("Dump to xml");
   if (xmlDumper == nullptr)
     return;
   xml_dumping.store(false);
@@ -461,4 +443,9 @@ void RtlTcpClient::close_xmlDump()
   delete xmlWriter;
   fclose(xmlDumper);
   xmlDumper = nullptr;
+}
+
+bool RtlTcpClient::hasDump()
+{
+  return true;
 }

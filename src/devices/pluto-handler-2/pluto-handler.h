@@ -127,12 +127,13 @@ public:
     i32     getSamples      (cf32 *, i32)  override;
     i32     Samples         ()  override;
     void    resetBuffer     ()  override;
-    i16     bitDepth        ()  override;
     void    show            ()  override;
     void    hide            ()  override;
     bool    isHidden        ()  override;
     QString deviceName      ()  override;
-    bool isFileInput() override;
+    bool hasDump() override;
+    bool startDumping() override;
+    void stopDumping() override;
 
 private:
     bool            loadFunctions   ();
@@ -142,9 +143,8 @@ private:
     QSettings       *plutoSettings;
     QString         recorderVersion;
     FILE            *xmlDumper;
-    XmlFileWriter       *xmlWriter;
+    XmlFileWriter   *xmlWriter;
     bool            setup_xmlDump   ();
-    void            close_xmlDump   ();
     std::atomic<bool>   dumping;
     bool            filterOn;
     void            run     ();
@@ -225,7 +225,6 @@ private slots:
     void        set_agcControl      (i32);
     void        toggle_debugButton  ();
     void        set_filter      ();
-    void        set_xmlDump     ();
 };
 #endif
 

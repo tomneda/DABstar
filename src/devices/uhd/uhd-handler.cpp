@@ -61,7 +61,7 @@ void uhd_streamer::run()
 {
   while (!m_stop_signal_called)
   {
-    //	get write position, ignore data2 and size2
+    //  get write position, ignore data2 and size2
     i32 size;
     void * data;
     m_theStick->theBuffer->get_writable_ring_buffer_segment(10000, &data, &size);
@@ -90,10 +90,10 @@ void uhd_streamer::run()
       continue;
     }
 
-    //	   if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
-    //	      std::cerr << boost::format("Receiver error: %s") % md.strerror() << std::endl;
-    //	      continue;
-    //	   }
+    //     if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
+    //        std::cerr << boost::format("Receiver error: %s") % md.strerror() << std::endl;
+    //        continue;
+    //     }
   }
 }
 
@@ -130,12 +130,12 @@ UhdHandler::UhdHandler(QSettings * s) :
     }
 
     std::cout << boost::format("Using Device: %s") % m_usrp->get_pp_string() << std::endl;
-    //	set sample rate
+    //  set sample rate
     m_usrp->set_rx_rate(inputRate);
     inputRate = (i32)std::round(m_usrp->get_rx_rate());
     std::cout << boost::format("Actual RX Rate: %f Msps...") % (inputRate / 1e6) << std::endl << std::endl;
 
-    //	allocate the rx buffer
+    //  allocate the rx buffer
     theBuffer = new RingBuffer<cf32>(ringbufferSize * 1024);
   }
   catch (...)
@@ -143,7 +143,7 @@ UhdHandler::UhdHandler(QSettings * s) :
     qWarning("No luck with UHD\n");
     throw (std_exception_string("No luck with UHD"));
   }
-  //	some housekeeping for the local frame
+  //    some housekeeping for the local frame
   externalGain->setMaximum(_maxGain());
   uhdSettings->beginGroup(SETTING_GROUP_NAME);
   externalGain->setValue(uhdSettings->value("externalGain", 40).toInt());
@@ -236,11 +236,6 @@ void UhdHandler::resetBuffer()
   theBuffer->flush_ring_buffer();
 }
 
-i16 UhdHandler::bitDepth()
-{
-  return 12;
-}
-
 void UhdHandler::show()
 {
   myFrame.show();
@@ -315,9 +310,4 @@ void UhdHandler::_load_save_combobox_settings(QComboBox * ipCmb, const QString &
     }
   }
   uhdSettings->endGroup();
-}
-
-bool UhdHandler::isFileInput()
-{
-  return false;
 }

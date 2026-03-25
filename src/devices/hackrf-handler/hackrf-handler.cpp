@@ -150,8 +150,6 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   connect(btnAmpEnable, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_amp);
 #endif
   connect(ppm_correction, qOverload<i32>(&QSpinBox::valueChanged), this, &HackRfHandler::slot_set_ppm_correction);
-  connect(dumpButton, &QPushButton::clicked, this, &HackRfHandler::slot_xml_dump);
-
   connect(this, &HackRfHandler::signal_new_ant_enable, btnBiasTEnable, &QCheckBox::setChecked);
   connect(this, &HackRfHandler::signal_new_amp_enable, btnAmpEnable, &QCheckBox::setChecked);
   connect(this, &HackRfHandler::signal_new_vga_value, sliderVgaGain, &QSlider::setValue);
@@ -304,6 +302,7 @@ void HackRfHandler::stopReader()
     return;
   }
 
+  stopDumping();
   CHECK_ERR_RETURN(mHackrf.stop_rx(theDevice));
 
   if (save_gain_settings)
@@ -344,11 +343,6 @@ void HackRfHandler::resetBuffer()
   mRingBuffer.flush_ring_buffer();
 }
 
-i16 HackRfHandler::bitDepth()
-{
-  return 8;
-}
-
 QString HackRfHandler::deviceName()
 {
   return "hackRF";
@@ -386,25 +380,24 @@ bool HackRfHandler::load_hackrf_functions()
 }
 
 
-void HackRfHandler::slot_xml_dump()
+bool HackRfHandler::startDumping()
 {
+  bool result = false;
   if (mpXmlDumper == nullptr)
   {
-    if (setup_xml_dump())
-    {
-      dumpButton->setText("writing");
-    }
+    result = setup_xml_dump();
   }
   else
   {
-    close_xml_dump();
+    stopDumping();
   }
+  return result;
 }
 
 bool HackRfHandler::setup_xml_dump()
 {
   OpenFileDialog filenameFinder(mpHackrfSettings);
-  mpXmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr("hackrf");
+  mpXmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr();
   if (mpXmlDumper == nullptr)
   {
     return false;
@@ -416,13 +409,10 @@ bool HackRfHandler::setup_xml_dump()
   return true;
 }
 
-void HackRfHandler::close_xml_dump()
+void HackRfHandler::stopDumping()
 {
-  dumpButton->setText("Dump");
-  if (mpXmlDumper == nullptr)
-  {  // this can happen !!
+  if (mpXmlDumper == nullptr) // this can happen !!
     return;
-  }
   mDumping.store(false);
   usleep(1000);
   mpXmlWriter->computeHeader();
@@ -536,11 +526,6 @@ bool HackRfHandler::check_err(i32 iResult, const char * const iFncName, u32 iLin
   return true;
 }
 
-bool HackRfHandler::isFileInput()
-{
-  return false;
-}
-
 template<typename T> bool HackRfHandler::load_method(T *& oMethodPtr, const char * iName, u32 iLine) const
 {
   oMethodPtr = reinterpret_cast<T*>(mpHandle->resolve(iName));
@@ -550,5 +535,10 @@ template<typename T> bool HackRfHandler::load_method(T *& oMethodPtr, const char
     qCritical("Could not find '%s' at %s:%u\n", iName, (strrchr("/" __FILE__, '/') + 1), iLine);
     return false;
   }
+  return true;
+}
+
+bool HackRfHandler::hasDump()
+{
   return true;
 }

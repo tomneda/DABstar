@@ -40,9 +40,7 @@
 #include  <QObject>
 #include  <QSettings>
 #include  <QString>
-#include  <cstdio>
 #include  <atomic>
-#include  <QComboBox>
 #include  "dab-constants.h"
 #include  "fir-filters.h"
 #include  "device-handler.h"
@@ -53,7 +51,7 @@
 class dll_driver;
 class XmlFileWriter;
 
-//	create typedefs for the library functions
+//  create typedefs for the library functions
 typedef struct rtlsdr_dev rtlsdr_dev_t;
 
 extern "C" {
@@ -84,9 +82,9 @@ typedef i32 (* pfnrtlsdr_get_tuner_i2c_register)(rtlsdr_dev_t *dev, u8* data, i3
 typedef i32 (* pfnrtlsdr_get_tuner_type)(rtlsdr_dev_t *dev);
 }
 
-//	This class is a simple wrapper around the
-//	rtlsdr library that is read in  as dll (or .so file in linux)
-//	It does not do any processing
+//  This class is a simple wrapper around the
+//  rtlsdr library that is read in  as dll (or .so file in linux)
+//  It does not do any processing
 class RtlSdrHandler final : public QObject, public IDeviceHandler, public Ui_dabstickWidget
 {
 Q_OBJECT
@@ -100,16 +98,16 @@ public:
   i32 getSamples(cf32 *, i32) override;
   i32 Samples() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   QString deviceName() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
-  bool isFileInput() override;
-  i16 maxGain();
+  bool hasDump() override;
+  bool startDumping() override;
+  void stopDumping() override;
   bool detect_overload(u8 *buf, i32 len);
 
-  //	These need to be visible for the separate usb handling thread
+  //    These need to be visible for the separate usb handling thread
   RingBuffer<std::complex<u8>> _I_Buffer;
   pfnrtlsdr_read_async rtlsdr_read_async;
   struct rtlsdr_dev * theDevice;
@@ -129,12 +127,7 @@ private:
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
-  void close_xmlDump();
   std::atomic<bool> xml_dumping;
-  FILE * iqDumper;
-  bool setup_iqDump();
-  void close_iqDump();
-  std::atomic<bool> iq_dumping;
   f32 mapTable[256];
   bool filtering;
   LowPassFIR theFilter;
@@ -142,10 +135,11 @@ private:
   i32 agcControl;
   void set_autogain(i32);
   void enable_gainControl(i32);
+  i16 maxGain();
   i32 old_overload = 2;
   i32 old_gain = 0;
 
-  //	here we need to load functions from the dll
+  //    here we need to load functions from the dll
   bool load_rtlFunctions(bool & oHasNewInterface);
   pfnrtlsdr_open rtlsdr_open;
   pfnrtlsdr_close rtlsdr_close;
@@ -172,8 +166,6 @@ private slots:
   void set_ExternalGain(i32);
   void set_ppmCorrection(f64);
   void set_bandwidth(i32);
-  void set_xmlDump();
-  void set_iqDump();
   void set_filter(i32);
   void set_biasControl(i32);
   void handle_hw_agc();

@@ -98,7 +98,7 @@
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Push this button to save the raw input. Pushing will cause a menu to appear where a filename can be selected. Please note the big filesizes!&lt;/p&gt;&lt;p&gt;Push again to stop recording. You can reload it by using the file input (*.sdr) option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Push this button to save the raw input. Pushing will cause a menu to appear where a filename can be selected. Please note the big filesizes!&lt;/p&gt;&lt;p&gt;Push again to stop recording. You can reload it by using the file input (*.sdr or *.uff) option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Dump RAW</string>
@@ -226,6 +226,17 @@
         <widget class="QCheckBox" name="cbUseNativeFileDialog">
          <property name="text">
           <string>Use native file dialogs</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbUseNativeIqFormat">
+         <property name="text">
+          <string>Use native IQ format</string>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use native IQ format of most input devices in 'Dump RAW' if selected. Not available for Soapy, UHD, Spyserver and file device.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+            &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If not selected, 'Dump RAW' writes WAV files with 16 bits and 2048000 samples/s.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -368,30 +379,30 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="3,1">
          <item>
-          <widget class="QCheckBox" name="cbCheckForUpdates">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check for a new update of DABstar after startup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
+          <widget class="QLabel" name="label_6">
            <property name="text">
-            <string>Check for updates days</string>
+            <string>TII threshold</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="sbUpdateCheckDays">
+          <widget class="QSpinBox" name="sbTiiThreshold">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of days when the next update check is made.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>Threshold above noise level</string>
+           </property>
+           <property name="suffix">
+            <string> dB</string>
            </property>
            <property name="minimum">
-            <number>1</number>
+            <number>3</number>
            </property>
            <property name="maximum">
-            <number>30</number>
+            <number>9</number>
            </property>
            <property name="value">
-            <number>1</number>
+            <number>6</number>
            </property>
           </widget>
          </item>
@@ -425,30 +436,30 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="3,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,1">
          <item>
-          <widget class="QLabel" name="label_6">
+          <widget class="QCheckBox" name="cbCheckForUpdates">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check for a new update of DABstar after startup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
-            <string>TII threshold</string>
+            <string>Check for updates days</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="sbTiiThreshold">
+          <widget class="QSpinBox" name="sbUpdateCheckDays">
            <property name="toolTip">
-            <string>Threshold above noise level</string>
-           </property>
-           <property name="suffix">
-            <string> dB</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of days when the next update check is made.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
-            <number>3</number>
+            <number>1</number>
            </property>
            <property name="maximum">
-            <number>9</number>
+            <number>30</number>
            </property>
            <property name="value">
-            <number>6</number>
+            <number>1</number>
            </property>
           </widget>
          </item>

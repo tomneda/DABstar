@@ -64,12 +64,10 @@ public:
   i32 getSamples(cf32 *, i32 size) override;
   i32 Samples() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
-  bool isFileInput() override;
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "uhdSettings";

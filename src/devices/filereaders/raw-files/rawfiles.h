@@ -64,7 +64,6 @@ public:
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   QString deviceName() override;
 
 private:

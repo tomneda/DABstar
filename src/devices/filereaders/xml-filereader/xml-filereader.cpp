@@ -260,11 +260,6 @@ void XmlFileReader::resetBuffer()
 {
 }
 
-i16 XmlFileReader::bitDepth()
-{
-  return static_cast<i16>(theDescriptor->bitsperChannel);
-}
-
 QString XmlFileReader::deviceName()
 {
   return "XmlFile";

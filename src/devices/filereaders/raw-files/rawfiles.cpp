@@ -28,9 +28,9 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * 	File reader:
- *	For the (former) files with 8 bit raw data from the
- *	dabsticks
+ *  File reader:
+ *  For the (former) files with 8 bit raw data from the
+ *  dabsticks
  */
 #include  "rawfiles.h"
 #include  "raw-reader.h"
@@ -133,7 +133,7 @@ void RawFileHandler::stopReader()
   mIsRunning.store(false);
 }
 
-//	size is in I/Q pairs, file contains 8 bits values
+//  size is in I/Q pairs, file contains 8 bits values
 i32 RawFileHandler::getSamples(cf32 * V, const i32 size)
 {
   if (mpFile == nullptr)
@@ -185,11 +185,6 @@ i32 RawFileHandler::getVFOFrequency()
 
 void RawFileHandler::resetBuffer()
 {
-}
-
-i16 RawFileHandler::bitDepth()
-{
-  return 10; // TODO: taken from former default interface, is it correct?
 }
 
 QString RawFileHandler::deviceName()

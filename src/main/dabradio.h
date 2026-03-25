@@ -40,7 +40,7 @@
 #include  "content-table.h"
 
 #ifdef  DATA_STREAMER
-#include	"tcp-server.h"
+#include    "tcp-server.h"
 #endif
 
 #include "openfiledialog.h"
@@ -284,6 +284,11 @@ private:
   QScopedPointer<ServiceListHandler> mpServiceListHandler;
   bool mCurFavoriteState = false;
   bool mClockActiveStyle = true;
+  bool mRawDumper = false;
+  uint32_t mRawDumpTimer = 0;
+  uint32_t mEtiDumpTimer = 0;
+  uint32_t mFrameDumpTimer = 0;
+  uint32_t mAudioDumpTimer = 0;
   std::vector<STiiResult> mTransmitterIds;
   enum class EAudioFrameType { None, MP2, AAC };
   EAudioFrameType mAudioFrameType = EAudioFrameType::None;
@@ -367,6 +372,7 @@ private:
   void _go_to_next_channel_while_scanning();
   void _check_on_github_for_update(bool iShowMessageBox);
   void _emphasize_pushbutton(QPushButton * ipPB, bool iEmphasize) const;
+  void _seconds_to_timestring(char * text, const uint32_t timer);
 
   void _initialize_ui_buttons();
   void _initialize_status_info();

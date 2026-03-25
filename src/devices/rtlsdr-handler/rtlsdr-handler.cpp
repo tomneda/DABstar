@@ -31,9 +31,6 @@
 #include "xml-filewriter.h"
 #include "device-exceptions.h"
 #include "openfiledialog.h"
-#include <QThread>
-#include <QFileDialog>
-#include <QDir>
 #include <QMessageBox>
 
 #define DEFAULT_FREQUENCY (kHz (220000))
@@ -134,7 +131,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   setupUi(&myFrame);
   myFrame.move(QPoint(x, y));
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.show();
+  //myFrame.show();
 
   filterDepth->setValue(currentDepth);
   theFilter.resize(currentDepth);
@@ -295,14 +292,10 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
           this, SLOT(set_filter(int)));
   connect(bandwidth, SIGNAL(valueChanged(int)),
           this, SLOT(set_bandwidth(int)));
-  connect(xml_dumpButton, SIGNAL(clicked()), this, SLOT(set_xmlDump()));
-  connect(iq_dumpButton, SIGNAL(clicked()), this, SLOT(set_iqDump()));
   connect(this, &RtlSdrHandler::signal_timer,
           this, &RtlSdrHandler::slot_timer);
 
   xmlDumper = nullptr;
-  iqDumper = nullptr;
-  iq_dumping.store(false);
   xml_dumping.store(false);
 }
 
@@ -365,6 +358,7 @@ void RtlSdrHandler::stopReader()
   if (workerHandle == nullptr)
     return;
   isActive.store(false);
+  stopDumping();
   this->rtlsdr_cancel_async(theDevice);
   this->rtlsdr_reset_buffer(theDevice);
   if (workerHandle != nullptr)
@@ -375,8 +369,6 @@ void RtlSdrHandler::stopReader()
     delete workerHandle;
     workerHandle = nullptr;
   }
-  close_iqDump();
-  close_xmlDump();
 }
 
 //  when selecting the gain from a table, use the table value
@@ -431,8 +423,6 @@ i32 RtlSdrHandler::getSamples(cf32 * V, i32 size)
 {
   std::complex<u8> *temp = make_vla(std::complex<u8>, size);
   i32 amount;
-  static u8 dumpBuffer[4096];
-  static i32 iqTeller = 0;
 
   if (!isActive.load())
     return 0;
@@ -456,20 +446,6 @@ i32 RtlSdrHandler::getSamples(cf32 * V, i32 size)
                   mapTable[imag(temp[i]) & 0xFF]);
   if (xml_dumping.load())
     xmlWriter->add(temp, amount);
-  else if (iq_dumping.load())
-  {
-    for (i32 i = 0; i < size; i++)
-    {
-      dumpBuffer[iqTeller] = real(temp[i]);
-      dumpBuffer[iqTeller + 1] = imag(temp[i]);
-      iqTeller += 2;
-      if (iqTeller >= 4096)
-      {
-        fwrite(dumpBuffer, 1, 4096, iqDumper);
-        iqTeller = 0;
-      }
-    }
-  }
   return amount;
 }
 
@@ -647,11 +623,6 @@ i16 RtlSdrHandler::maxGain()
   return gainsCount;
 }
 
-i16 RtlSdrHandler::bitDepth()
-{
-  return 8;
-}
-
 QString RtlSdrHandler::deviceName()
 {
   return deviceModel;
@@ -672,71 +643,10 @@ bool RtlSdrHandler::isHidden()
   return myFrame.isHidden();
 }
 
-void RtlSdrHandler::set_iqDump()
-{
-  if (!iq_dumping.load())
-  //if (iqDumper == nullptr)
-  {
-    if (setup_iqDump())
-    {
-      iq_dumpButton->setText("writing raw file");
-      xml_dumpButton->hide();
-    }
-  }
-  else
-  {
-    close_iqDump();
-  }
-}
-
-bool RtlSdrHandler::setup_iqDump()
-{
-  QString fileName = QFileDialog::getSaveFileName(nullptr,
-                                                  tr("Save file ..."),
-                                                  QDir::homePath(),
-                                                  tr("raw (*.raw)"),
-                                                  nullptr,
-                                                  QFileDialog::DontUseNativeDialog);
-  fileName = QDir::toNativeSeparators(fileName);
-  iqDumper = fopen(fileName.toUtf8().data(), "wb");
-  if (iqDumper == nullptr)
-    return false;
-
-  iq_dumping.store(true);
-  return true;
-}
-
-void RtlSdrHandler::close_iqDump()
-{
-  iq_dumpButton->setText("Dump to raw");
-  xml_dumpButton->show();
-  if (iqDumper == nullptr)  // this can happen !!
-    return;
-  iq_dumping.store(false);
-  fclose(iqDumper);
-  iqDumper = nullptr;
-}
-
-void RtlSdrHandler::set_xmlDump()
-{
-  if (!xml_dumping.load())
-  {
-    if (setup_xmlDump())
-    {
-      xml_dumpButton->setText("writing xml file");
-      iq_dumpButton->hide();
-    }
-  }
-  else
-  {
-    close_xmlDump();
-  }
-}
-
 bool RtlSdrHandler::setup_xmlDump()
 {
   OpenFileDialog filenameFinder(rtlsdrSettings);
-  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr(deviceModel);
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr();
   if (xmlDumper == nullptr)
     return false;
 
@@ -753,10 +663,20 @@ bool RtlSdrHandler::setup_xmlDump()
   return true;
 }
 
-void RtlSdrHandler::close_xmlDump()
+bool RtlSdrHandler::startDumping()
 {
-  xml_dumpButton->setText("Dump to xml");
-  iq_dumpButton->show();
+  bool result = false;
+  if (!xml_dumping.load())
+  {
+    result = setup_xmlDump();
+  }
+  else
+    stopDumping();
+  return result;
+}
+
+void RtlSdrHandler::stopDumping()
+{
   if (xmlDumper == nullptr) // this can happen !!
     return;
   xml_dumping.store(false);
@@ -765,11 +685,6 @@ void RtlSdrHandler::close_xmlDump()
   delete xmlWriter;
   fclose(xmlDumper);
   xmlDumper = nullptr;
-}
-
-bool RtlSdrHandler::isFileInput()
-{
-  return false;
 }
 
 void RtlSdrHandler::handle_hw_agc()
@@ -844,4 +759,9 @@ void RtlSdrHandler::slot_timer(i32 overload)
     else
       fprintf(stderr, "rtlsdr_get_tuner_i2c_register failed\n");
   }
+}
+
+bool RtlSdrHandler::hasDump()
+{
+  return true;
 }

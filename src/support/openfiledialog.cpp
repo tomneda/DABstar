@@ -128,9 +128,9 @@ SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceNa
 }
 
 
-SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName)
+SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iChannelName)
 {
-  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), sSettingSampleStorageDir, "RAW-WAV", ".sdr");
+  const QString fileName = _open_file_dialog(iChannelName.trimmed(), sSettingSampleStorageDir, "RAW-WAV", ".sdr");
 
   if (fileName.isEmpty())
   {
@@ -276,10 +276,10 @@ void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const
   }
 }
 
-FILE * OpenFileDialog::open_raw_dump_xmlfile_ptr(const QString & iDeviceName)
+FILE * OpenFileDialog::open_raw_dump_xmlfile_ptr()
 {
   QString channel = Settings::Main::varChannel.read().toString();
-  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + channel.trimmed(), sSettingSampleStorageDir, "Xml", ".uff");
+  const QString fileName = _open_file_dialog(channel.trimmed(), sSettingSampleStorageDir, "Xml", ".uff");
   if (fileName.isEmpty())
   {
     return nullptr;

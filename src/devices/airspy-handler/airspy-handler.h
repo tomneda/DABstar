@@ -17,10 +17,10 @@
  *
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
  *
- *	recoding and taking parts for the airspyRadio interface
- *	for the Qt-DAB program
- *	jan van Katwijk
- *	Lazy Chair Computing
+ *  recoding and taking parts for the airspyRadio interface
+ *  for the Qt-DAB program
+ *  jan van Katwijk
+ *  Lazy Chair Computing
  */
 #ifndef AIRSPY_HANDLER_H
 #define AIRSPY_HANDLER_H
@@ -82,12 +82,13 @@ public:
   i32 getSamples(cf32 * v, i32 size) override;
   i32 Samples() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
-  bool isFileInput() override;
+  bool hasDump() override;
+  bool startDumping() override;
+  void stopDumping() override;
 
   i32 defaultFrequency();
   i32 getBufferSpace();
@@ -102,7 +103,6 @@ private:
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
-  void close_xmlDump();
   std::atomic<bool> dumping;
   i32 vfoFrequency;
   void record_gainSettings(i32, i32);
@@ -121,13 +121,12 @@ private slots:
   void set_mixer_agc(i32);
   void set_rf_bias(i32);
   void switch_tab(i32);
-  void set_xmlDump();
   void set_filter(i32);
 signals:
   void new_tabSetting(i32);
 private:
   bool load_airspyFunctions();
-  //	The functions to be extracted from the dll/.so file
+  //    The functions to be extracted from the dll/.so file
   pfn_airspy_init my_airspy_init;
   pfn_airspy_exit my_airspy_exit;
   pfn_airspy_error_name my_airspy_error_name;

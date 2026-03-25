@@ -167,7 +167,6 @@ LimeHandler::LimeHandler(QSettings *s,
   gainSelector->setValue(k);
   setGain(k);
   connect(gainSelector, SIGNAL(valueChanged(int)), this, SLOT(setGain(int)));
-  connect(dumpButton, SIGNAL(clicked ()), this, SLOT(set_xmlDump()));
   connect(this, SIGNAL(new_gainValue(int)), gainSelector, SLOT(setValue(int)));
   connect(filterSelector, SIGNAL(stateChanged(int)), this, SLOT(set_filter(int)));
   xmlDumper = nullptr;
@@ -259,7 +258,7 @@ void LimeHandler::stopReader()
 {
   if (!isRunning())
     return;
-  close_xmlDump();
+  stopDumping();
   if (save_gainSettings)
     record_gainSettings(vfoFrequency);
 
@@ -302,11 +301,6 @@ i32 LimeHandler::Samples()
 void LimeHandler::resetBuffer()
 {
   _I_Buffer.flush_ring_buffer();
-}
-
-i16 LimeHandler::bitDepth()
-{
-  return 12;
 }
 
 QString LimeHandler::deviceName()
@@ -532,28 +526,29 @@ bool LimeHandler::load_limeFunctions()
   return true;
 }
 
-void LimeHandler::set_xmlDump()
+bool LimeHandler::startDumping()
 {
+  bool result = false;
   if (xmlDumper == nullptr)
   {
-    if(setup_xmlDump())
-      dumpButton->setText("writing");
+    result = setup_xmlDump();
   }
   else
   {
-    close_xmlDump();
+    stopDumping();
   }
+  return result;
 }
 
 bool LimeHandler::setup_xmlDump()
 {
   OpenFileDialog filenameFinder(limeSettings);
-  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr(deviceName());
+  xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr();
   if (xmlDumper == nullptr)
     return false;
 
   xmlWriter = new XmlFileWriter(xmlDumper,
-                                bitDepth(),
+                                12,
                                 "int16",
                                 2048000,
                                 getVFOFrequency(),
@@ -565,9 +560,8 @@ bool LimeHandler::setup_xmlDump()
     return true;
 }
 
-void LimeHandler::close_xmlDump()
+void LimeHandler::stopDumping()
 {
-  dumpButton->setText("Dump");
   if (xmlDumper == nullptr)   // this can happen !!
     return;
   dumping.store(false);
@@ -622,7 +616,7 @@ void LimeHandler::update_gainSettings(i32 key)
   gainSelector->blockSignals(false);
 }
 
-bool LimeHandler::isFileInput()
+bool LimeHandler::hasDump()
 {
-  return false;
+  return true;
 }

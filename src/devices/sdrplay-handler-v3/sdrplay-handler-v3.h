@@ -38,7 +38,6 @@
 #include  <QSemaphore>
 #include  <QLibrary>
 #include  <atomic>
-#include  <cstdio>
 #include  <queue>
 #include  "dab-constants.h"
 #include  "ringbuffer.h"
@@ -66,12 +65,13 @@ public:
   i32 getSamples(cf32 *, i32) override;
   i32 Samples() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
-  bool isFileInput() override;
+  bool hasDump() override;
+  bool startDumping() override;
+  void stopDumping() override;
   void update_PowerOverload(sdrplay_api_EventParamsT * params);
   RingBuffer<ci16> * const p_I_Buffer;
   std::atomic<bool> receiverRuns;
@@ -117,8 +117,6 @@ public:
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
   i32 startupCnt = 0;
-  bool setup_xmlDump();
-  void close_xmlDump();
   std::atomic<bool> dumping;
   std::queue<generalCommand *> server_queue;
   QSemaphore serverjobs;
@@ -135,6 +133,7 @@ private:
   void set_deviceName(const QString &);
   void set_serial(const QString &);
   void set_apiVersion(f32);
+  bool setup_xmlDump();
 
 private slots:
   void set_ifgainReduction(i32);
@@ -149,7 +148,6 @@ private slots:
 public slots:
   void set_lnabounds(i32, i32);
   void set_antennaSelect(i32);
-  void set_xmlDump();
   void show_lnaGain(i32);
 signals:
   void set_antennaSelect_signal(bool);

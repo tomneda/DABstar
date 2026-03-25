@@ -30,12 +30,12 @@
  *
  *    A simple client for spyServer
  *
- *	Inspired by the spyserver client from Mike Weber
- *	and some functions are copied.
- *	The code is simplified since Qt-DAB functions best with
- *	16 bit codes and a samplerate of 2048000 S/s
- *	for Functions copied (more or less) from Mike weber's version
- *	copyrights are gratefully acknowledged
+ *  Inspired by the spyserver client from Mike Weber
+ *  and some functions are copied.
+ *  The code is simplified since Qt-DAB functions best with
+ *  16 bit codes and a samplerate of 2048000 S/s
+ *  for Functions copied (more or less) from Mike weber's version
+ *  copyrights are gratefully acknowledged
  */
 
 #include "spyserver-client.h"
@@ -49,8 +49,8 @@
 
 Q_LOGGING_CATEGORY(sLogSpyServerClient, "SpyServerClient", QtDebugMsg)
 
-#define	DEFAULT_FREQUENCY	(Khz (227360))
-#define	SPY_SERVER_8_SETTINGS	"SPY_SERVER_8_SETTINGS"
+#define DEFAULT_FREQUENCY   (Khz (227360))
+#define SPY_SERVER_8_SETTINGS   "SPY_SERVER_8_SETTINGS"
 
 SpyServerClient::SpyServerClient(QSettings * /*s*/)
 {
@@ -108,7 +108,7 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
 SpyServerClient::~SpyServerClient()
 {
   if (mIsConnected)
-  {		// close previous connection
+  {     // close previous connection
     stopReader();
     mIsConnected = false;
   }
@@ -185,10 +185,10 @@ void SpyServerClient::_slot_handle_connect_button()
   // connect(hostLineEdit, &QLineEdit::returnPressed, this, &spyServer_client_8::setConnection);
 }
 
-//	if/when a return is pressed in the line edit,
-//	a signal appears and we are able to collect the
-//	inserted text. The format is the IP-V4 format.
-//	Using this text, we try to connect,
+//  if/when a return is pressed in the line edit,
+//  a signal appears and we are able to collect the
+//  inserted text. The format is the IP-V4 format.
+//  Using this text, we try to connect,
 bool SpyServerClient::_setup_connection()
 {
   // QString s = hostLineEdit->text();
@@ -341,10 +341,10 @@ bool SpyServerClient::_setup_connection()
   // disconnect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_connect);
 
   // fprintf(stderr, "The samplerate = %f\n", (f32)(theServer->get_sample_rate()));
-//	start ();		// start the reader
+//  start ();       // start the reader
 
-//	Since we are down sampling, creating an outputbuffer with the
-//	same size as the input buffer is OK
+//  Since we are down sampling, creating an outputbuffer with the
+//  same size as the input buffer is OK
 
   if (mSettings.resample_ratio != 1.0)
   {
@@ -417,7 +417,7 @@ void SpyServerClient::stopReader()
   if (mSpyServerHandler == nullptr)
     return;
 
-  if (!mIsConnected || !mIsRunning)	// seems double???
+  if (!mIsConnected || !mIsRunning) // seems double???
     return;
 
   if (!mSpyServerHandler->is_streaming())
@@ -439,11 +439,6 @@ i32 SpyServerClient::getSamples(cf32 * V, i32 size)
 i32 SpyServerClient::Samples()
 {
   return mRingBuffer2.get_ring_buffer_read_available();
-}
-
-i16 SpyServerClient::bitDepth()
-{
-  return 8;
 }
 
 void SpyServerClient::_slot_handle_gain(i32 gain)
@@ -586,11 +581,6 @@ void SpyServerClient::hide()
 bool SpyServerClient::isHidden()
 {
   return mFrame.isHidden();
-}
-
-bool SpyServerClient::isFileInput()
-{
-  return false;
 }
 
 void SpyServerClient::setVFOFrequency(i32)

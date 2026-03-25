@@ -89,12 +89,13 @@ public:
   i32 getSamples(cf32 *, i32) override;
   i32 Samples() override;
   void resetBuffer() override;
-  i16 bitDepth() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
   QString deviceName() override;
-  bool isFileInput() override;
+  bool hasDump() override;
+  bool startDumping() override;
+  void stopDumping() override;
 
 private:
   QFrame myFrame;
@@ -116,7 +117,6 @@ private:
   FILE * xmlDumper;
   XmlFileWriter * xmlWriter;
   bool setup_xmlDump();
-  void close_xmlDump();
   std::atomic<bool> dumping;
 
   void record_gainSettings(i32);
@@ -159,7 +159,6 @@ signals:
 private slots:
   void setGain(i32);
   void setAntenna(i32);
-  void set_xmlDump();
   void set_filter(i32);
 public slots:
   void showErrors(i32, i32);

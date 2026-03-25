@@ -193,13 +193,13 @@ bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
   u8 *buffer = make_vla(u8, headerLen + argLen);
   CommandHeader header;
 
-//	if (!is_connected) {
-//	   return false;
-//	}
+//  if (!is_connected) {
+//     return false;
+//  }
 
-//	for (i32 i = 0; i < args. size (); i ++)
-//	   fprintf (stderr, "%x ", args [i]);
-//	fprintf (stderr, "\n");
+//  for (i32 i = 0; i < args. size (); i ++)
+//     fprintf (stderr, "%x ", args [i]);
+//  fprintf (stderr, "\n");
   header.CommandType = cmd;
   header.BodySize = argLen;
 
@@ -403,12 +403,7 @@ void SpyServerHandler::connection_set()
   set_setting(SETTING_IQ_DIGITAL_GAIN, p);
   p[0] = STREAM_FORMAT_UINT8;
   set_setting(SETTING_IQ_FORMAT, p);
-//	fprintf (stderr, "Connection is gezet, waar blijft de call?\n");
-}
-
-bool SpyServerHandler::isFileInput()
-{
-  return true;
+//  fprintf (stderr, "Connection is gezet, waar blijft de call?\n");
 }
 
 QString SpyServerHandler::deviceName()
