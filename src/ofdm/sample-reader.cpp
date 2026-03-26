@@ -102,46 +102,52 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
     _dump_samples_to_file(buffer, iNoSamples);
   }
 
-  // OK, we have samples!!
+  assert(iNoSamples <= cTn);
+
 #ifdef HAVE_SSE_OR_AVX
-  f32 SingleFloat;
-  u32 index;
+  f32 singleFloat; // no special alignment and no initialization necessary
+  u32 index;       // --"--
 
   // Perform DC removal if wanted
-  if (dcRemovalActive)
+  if (mDoDcOrIqCorr)
   {
     constexpr f32 ALPHA = 1.0f / INPUT_RATE;
+    const f32 alphaN = ALPHA * iNoSamples;
     volk_32fc_deinterleave_32f_x2_u(mVolkFloat1, mVolkFloat2, buffer, iNoSamples);
-    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat1, iNoSamples);
-    mean_filter(meanI, SingleFloat / iNoSamples, ALPHA * iNoSamples);
-    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat2, iNoSamples);
-    mean_filter(meanQ, SingleFloat / iNoSamples, ALPHA * iNoSamples);
+    volk_32f_accumulator_s32f_a(&singleFloat, mVolkFloat1, iNoSamples);
+    mean_filter(meanI, singleFloat / iNoSamples, alphaN);
+    volk_32f_accumulator_s32f_a(&singleFloat, mVolkFloat2, iNoSamples);
+    mean_filter(meanQ, singleFloat / iNoSamples, alphaN);
     volk_32f_s32f_add_32f_a(mVolkFloat1, mVolkFloat1, -meanI, iNoSamples); // v_i - meanI
     volk_32f_s32f_add_32f_a(mVolkFloat2, mVolkFloat2, -meanQ, iNoSamples); // v_q - meanQ
-#ifdef USE_IQ_COMPENSATION
-    volk_32f_x2_multiply_32f_a(mVolkFloat3, mVolkFloat1, mVolkFloat1, iNoSamples); // x_i * x_i
-    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat3, iNoSamples);
-    mean_filter(meanII, SingleFloat / iNoSamples, ALPHA * iNoSamples);
-    volk_32f_x2_multiply_32f_a(mVolkFloat3, mVolkFloat1, mVolkFloat2, iNoSamples); // x_i * x_q
-    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat3, iNoSamples);
-    mean_filter(meanIQ, SingleFloat / iNoSamples, ALPHA * iNoSamples);
-    const f32 phi = meanIQ / meanII;
-    volk_32f_s32f_multiply_32f_a(mVolkFloat3, mVolkFloat1, -phi, iNoSamples); // -phi * x_i
-    volk_32f_x2_add_32f_a(mVolkFloat3, mVolkFloat3, mVolkFloat2, iNoSamples); // x_q_corr
-    volk_32f_x2_multiply_32f_a(mVolkFloat4, mVolkFloat3, mVolkFloat3, iNoSamples); // x_q_corr * x_q_corr
-    volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat4, iNoSamples);
-    mean_filter(meanQQ, SingleFloat / iNoSamples, ALPHA * iNoSamples);
-    const f32 gainQ = std::sqrt(meanII / meanQQ);
-    volk_32f_s32f_multiply_32f_a(mVolkFloat2, mVolkFloat3, gainQ, iNoSamples); // x_q_corr * gainQ
-#endif
+
+    if (mDoIqCorr)
+    {
+      volk_32f_x2_multiply_32f_a(mVolkFloat3, mVolkFloat1, mVolkFloat1, iNoSamples); // x_i * x_i
+      volk_32f_accumulator_s32f_a(&singleFloat, mVolkFloat3, iNoSamples);
+      mean_filter(meanII, singleFloat / iNoSamples, alphaN);
+      volk_32f_x2_multiply_32f_a(mVolkFloat3, mVolkFloat1, mVolkFloat2, iNoSamples); // x_i * x_q
+      volk_32f_accumulator_s32f_a(&singleFloat, mVolkFloat3, iNoSamples);
+      mean_filter(meanIQ, singleFloat / iNoSamples, alphaN);
+      const f32 phi = meanIQ / meanII;
+      volk_32f_s32f_multiply_32f_a(mVolkFloat3, mVolkFloat1, -phi, iNoSamples); // -phi * x_i
+      volk_32f_x2_add_32f_a(mVolkFloat3, mVolkFloat3, mVolkFloat2, iNoSamples); // x_q_corr
+      volk_32f_x2_multiply_32f_a(mVolkFloat4, mVolkFloat3, mVolkFloat3, iNoSamples); // x_q_corr * x_q_corr
+      volk_32f_accumulator_s32f_a(&singleFloat, mVolkFloat4, iNoSamples);
+      mean_filter(meanQQ, singleFloat / iNoSamples, alphaN);
+      const f32 gainQ = std::sqrt(meanII / meanQQ);
+      volk_32f_s32f_multiply_32f_a(mVolkFloat2, mVolkFloat3, gainQ, iNoSamples); // x_q_corr * gainQ
+      // qDebug() << "PhiFact" << phi << "gainQ" << gainQ; // << "meanII" << meanII << "meanQQ" << meanQQ << "meanIQ" << meanIQ << "iNoSamples" << iNoSamples;
+    }
+
     volk_32f_x2_interleave_32fc_u(buffer, mVolkFloat1, mVolkFloat2, iNoSamples);
   }
   // The mixing has no effect on the absolute level detection, so do it beforehand
   volk_32fc_magnitude_32f_u(mVolkFloat1, buffer, iNoSamples); // v_abs = std::abs(v);
   volk_32f_index_max_32u_a(&index, mVolkFloat1, iNoSamples); // index of peak
   if (mVolkFloat1[index] > peakLevel) peakLevel = mVolkFloat1[index]; // if (v_abs > peakLevel) peakLevel = v_abs;
-  volk_32f_accumulator_s32f_a(&SingleFloat, mVolkFloat1, iNoSamples);
-  mean_filter(sLevel, SingleFloat / iNoSamples, 0.00001f * iNoSamples);
+  volk_32f_accumulator_s32f_a(&singleFloat, mVolkFloat1, iNoSamples);
+  mean_filter(sLevel, singleFloat / iNoSamples, 0.00001f * iNoSamples);
 
 
   // use the non-frequency corrected sample data for CIR analyzer
@@ -181,26 +187,31 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
   {
     cf32 v = buffer[i];
     // Perform DC removal if wanted
-    if (dcRemovalActive)
+    if (mDoDcOrIqCorr)
     {
       const f32 v_i = real(v);
       const f32 v_q = imag(v);
       constexpr f32 ALPHA = 1.0f / INPUT_RATE / 1.00f /*s*/;
       mean_filter(meanI, v_i, ALPHA);
       mean_filter(meanQ, v_q, ALPHA);
-#ifdef USE_IQ_COMPENSATION
-      const f32 x_i = v_i - meanI;
-      const f32 x_q = v_q - meanQ;
-      mean_filter(meanII, x_i * x_i, ALPHA);
-      mean_filter(meanIQ, x_i * x_q, ALPHA);
-      const f32 phi = meanIQ / meanII;
-      const f32 x_q_corr = x_q - phi * x_i;
-      mean_filter(meanQQ, x_q_corr * x_q_corr, ALPHA);
-      const f32 gainQ = std::sqrt(meanII / meanQQ);
-      v = cf32(x_i, x_q_corr * gainQ);
-#else
-      v = cf32(v_i - meanI, v_q - meanQ);
-#endif
+
+      // Perform IQ correction if wanted
+      if (mDoIqCorr)
+      {
+        const f32 x_i = v_i - meanI;
+        const f32 x_q = v_q - meanQ;
+        mean_filter(meanII, x_i * x_i, ALPHA);
+        mean_filter(meanIQ, x_i * x_q, ALPHA);
+        const f32 phi = meanIQ / meanII;
+        const f32 x_q_corr = x_q - phi * x_i;
+        mean_filter(meanQQ, x_q_corr * x_q_corr, ALPHA);
+        const f32 gainQ = std::sqrt(meanII / meanQQ);
+        v = cf32(x_i, x_q_corr * gainQ);
+      }
+      else
+      {
+        v = cf32(v_i - meanI, v_q - meanQ);
+      }
     }
 
     // The mixing has no effect on the absolute level detection, so do it beforehand
@@ -292,10 +303,18 @@ f32 SampleReader::get_linear_peak_level_and_clear()
   return peakLevelTemp;
 }
 
-void SampleReader::set_dc_removal(bool iRemoveDC)
+void SampleReader::set_dc_and_iq_correction(const bool iDoDcCorr, const bool iDoIqCorr)
 {
-  meanI = meanQ = 0.0f;
-  dcRemovalActive = iRemoveDC;
+  if (!iDoDcCorr && !iDoIqCorr)
+  {
+    meanI = 0.0f;
+    meanQ = 0.0f;
+    meanII = 1.0f;
+    meanQQ = 1.0f;
+    meanIQ = 0.0f;
+  }
+  mDoDcOrIqCorr = iDoDcCorr | iDoIqCorr;
+  mDoIqCorr = iDoIqCorr;
 }
 
 void SampleReader::set_cir_buffer(RingBuffer<cf32> * iCirBuffer)

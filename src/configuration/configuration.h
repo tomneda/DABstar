@@ -32,6 +32,13 @@ public:
 
 private:
   DabRadio * const mpRadioInterface;
+
+private slots:
+  void _slot_handle_dc_corr(bool iChecked);
+  void _slot_handle_dc_and_iq_corr(bool iChecked);
+
+signals:
+  void signal_handle_dc_and_iq_corr(bool oDcCorr, bool oIqCorr);
 };
 
 

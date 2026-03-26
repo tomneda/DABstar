@@ -444,7 +444,7 @@ public slots:
   void slot_handle_tii_viewer_closed();
   void slot_use_strongest_peak(bool);
   void slot_handle_dc_avoidance_algorithm(bool);
-  void slot_handle_dc_removal(bool);
+  void slot_handle_dc_and_iq_corr(bool iDcCorr, bool iIqCorr);
   void slot_show_audio_peak_level(const f32 iPeakLeft, const f32 iPeakRight);
   void slot_handle_tii_collisions(bool);
   void slot_handle_tii_threshold(i32);

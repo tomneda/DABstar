@@ -256,12 +256,14 @@ void DabRadio::do_start()
 
   mpDabProcessor->set_sync_on_strongest_peak(Settings::Config::cbUseStrongestPeak.read().toBool());
   mpDabProcessor->set_dc_avoidance_algorithm(Settings::Config::cbUseDcAvoidance.read().toBool());
-  mpDabProcessor->set_dc_removal(Settings::Config::cbUseDcRemoval.read().toBool());
+  mpDabProcessor->set_dc_and_iq_correction(Settings::Config::cbDoDcCorrOnly.read().toBool() || Settings::Config::cbDoDcAndIqCorr.read().toBool(),
+                                           Settings::Config::cbDoDcAndIqCorr.read().toBool());
   mpDabProcessor->set_tii_collisions(Settings::Config::cbTiiCollisions.read().toBool());
   mpDabProcessor->set_tii_processing(true);
   mpDabProcessor->set_tii_threshold(Settings::Config::sbTiiThreshold.read().toInt());
   mpDabProcessor->set_tii_sub_id(Settings::Config::sbTiiSubId.read().toInt());
   mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)mpConfig->cmbSoftBitGen->currentIndex());
+
 
   if (Settings::CirViewer::varUiVisible.read().toBool())
   {
@@ -2021,10 +2023,10 @@ void DabRadio::slot_handle_dc_avoidance_algorithm(bool iIsChecked)
   mpDabProcessor->set_dc_avoidance_algorithm(iIsChecked);
 }
 
-void DabRadio::slot_handle_dc_removal(bool iIsChecked)
+void DabRadio::slot_handle_dc_and_iq_corr(const bool iDcCorr, const bool iIqCorr)
 {
   assert(mpDabProcessor != nullptr);
-  mpDabProcessor->set_dc_removal(iIsChecked);
+  mpDabProcessor->set_dc_and_iq_correction(iDcCorr, iIqCorr);
 }
 
 void DabRadio::slot_handle_tii_collisions(bool iIsChecked)

@@ -104,7 +104,7 @@ public:
 
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
-  void set_dc_removal(bool iRemoveDC);
+  void set_dc_and_iq_correction(bool iDoDcCorr, bool iDoIqCorr);
   void set_tii_processing(bool);
   void set_tii_threshold(u8);
   void set_tii_sub_id(u8);

@@ -47,8 +47,6 @@
   #include <volk/volk.h>
 #endif
 
-#define USE_IQ_COMPENSATION  // not well tested
-
 class DabRadio;
 
 class SampleReader : public QObject
@@ -65,7 +63,7 @@ public:
   void getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, bool iShowSpec);
   void startDumping(SNDFILE *);
   void stop_dumping();
-  void set_dc_removal(bool iRemoveDC);
+  void set_dc_and_iq_correction(bool iDoDcCorr, bool iDoIqCorr);
   void set_cir_buffer(RingBuffer<cf32> * iCirBuffer);
 
   [[nodiscard]] inline cf32 get_dc_offset() const { return { meanI, meanQ }; }
@@ -102,12 +100,11 @@ private:
   f32 peakLevel = -1.0e6;
   f32 meanI = 0.0f;
   f32 meanQ = 0.0f;
-#ifdef USE_IQ_COMPENSATION
   f32 meanII = 1.0f;
   f32 meanQQ = 1.0f;
   f32 meanIQ = 0.0f;
-#endif
-  bool dcRemovalActive = false;
+  bool mDoDcOrIqCorr = false;
+  bool mDoIqCorr = false;
   i32 mWholeFrameIndex = 0;
   i32 mWholeFrameCount = 0;
   cf32  mWholeFrameBuff[CIR_BUFF_SIZE];

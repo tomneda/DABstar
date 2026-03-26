@@ -45,7 +45,8 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::cmbEpgObjectSaving.register_widget_and_update_ui_from_setting(cmbEpgObjectSaving, "");
   Settings::Config::cbSaveTransToCsv.register_widget_and_update_ui_from_setting(cbSaveTransToCsv, 0);
   Settings::Config::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
-  Settings::Config::cbUseDcRemoval.register_widget_and_update_ui_from_setting(cbUseDcRemoval, 0);
+  Settings::Config::cbDoDcCorrOnly.register_widget_and_update_ui_from_setting(cbDoDcCorrOnly, 0);
+  Settings::Config::cbDoDcAndIqCorr.register_widget_and_update_ui_from_setting(cbDoDcAndIqCorr, 0);
   Settings::Config::cbTiiCollisions.register_widget_and_update_ui_from_setting(cbTiiCollisions, 0);
   Settings::Config::cbUrlClickable.register_widget_and_update_ui_from_setting(cbUrlClickable, 2);
   Settings::Config::cbAutoIterTiiEntries.register_widget_and_update_ui_from_setting(cbAutoIterTiiEntries, 2);
@@ -72,6 +73,7 @@ Configuration::Configuration(DabRadio * ipRI) :
   lcdPalette.setColor(QPalette::Base, Qt::black);
 #endif
 
+  connect(this, &Configuration::signal_handle_dc_and_iq_corr, mpRadioInterface, &DabRadio::slot_handle_dc_and_iq_corr);
   connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_load_table);
   connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &DabRadio::slot_test_slider);
   connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &DabRadio::slot_handle_dl_text_button);
@@ -79,7 +81,8 @@ Configuration::Configuration(DabRadio * ipRI) :
   connect(portSelector, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_handle_port_selector);
   connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_handle_set_coordinates_button);
   connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_dc_avoidance_algorithm);
-  connect(cbUseDcRemoval, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_dc_removal);
+  connect(cbDoDcCorrOnly, &QCheckBox::clicked, this, &Configuration::_slot_handle_dc_corr);
+  connect(cbDoDcAndIqCorr, &QCheckBox::clicked, this, &Configuration::_slot_handle_dc_and_iq_corr);
   connect(sbTiiThreshold, &QSpinBox::valueChanged, mpRadioInterface, &DabRadio::slot_handle_tii_threshold);
   connect(cbTiiCollisions, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_tii_collisions);
   connect(sbTiiSubId, &QSpinBox::valueChanged, mpRadioInterface, &DabRadio::slot_handle_tii_subid);
@@ -97,4 +100,22 @@ Configuration::Configuration(DabRadio * ipRI) :
 void Configuration::save_position_and_config()
 {
   Settings::Config::posAndSize.write_widget_geometry(this);
+}
+
+void Configuration::_slot_handle_dc_corr(const bool iChecked)
+{
+  if (iChecked)
+  {
+    cbDoDcAndIqCorr->setChecked(false);
+  }
+  emit signal_handle_dc_and_iq_corr(iChecked, false);
+}
+
+void Configuration::_slot_handle_dc_and_iq_corr(const bool iChecked)
+{
+  if (iChecked)
+  {
+    cbDoDcCorrOnly->setChecked(false);
+  }
+  emit signal_handle_dc_and_iq_corr(iChecked, iChecked);
 }

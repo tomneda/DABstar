@@ -610,9 +610,9 @@ void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
   mAllowRfFreqShift = iUseDcAvoidanceAlgorithm;
 }
 
-void DabProcessor::set_dc_removal(bool iRemoveDC)
+void DabProcessor::set_dc_and_iq_correction(const bool iDoDcCorr, const bool iDoIqCorr)
 {
-  mSampleReader.set_dc_removal(iRemoveDC);
+  mSampleReader.set_dc_and_iq_correction(iDoDcCorr, iDoIqCorr);
 }
 
 void DabProcessor::set_sync_on_strongest_peak(bool sync)
