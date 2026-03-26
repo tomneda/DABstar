@@ -231,12 +231,12 @@
        </item>
        <item>
         <widget class="QCheckBox" name="cbUseNativeIqFormat">
-         <property name="text">
-          <string>Use native IQ format</string>
-         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use native IQ format of most input devices in 'Dump RAW' if selected. Not available for Soapy, UHD, Spyserver and file device.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
             &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If not selected, 'Dump RAW' writes WAV files with 16 bits and 2048000 samples/s.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Use native IQ format</string>
          </property>
         </widget>
        </item>
@@ -349,12 +349,22 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbUseDcRemoval">
+        <widget class="QCheckBox" name="cbDoDcCorrOnly">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;DC removal filter&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal. &lt;/p&gt;&lt;p&gt;Together with the &lt;span style=&quot; font-style:italic;&quot;&gt;DC Avoidance Algrithm&lt;/span&gt; this should be of an advantage. But with not all situations and devices this will work well.&lt;/p&gt;&lt;p&gt;You would see the DC on the &amp;quot;needle&amp;quot; in the spectrum view (upper right corner).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Do DC correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal. &lt;/p&gt;&lt;p&gt;Together with the &lt;span style=&quot; font-style:italic;&quot;&gt;DC Avoidance Algrithm&lt;/span&gt; this should be of an advantage. But with not all situations and devices this will work well.&lt;/p&gt;&lt;p&gt;You would see the DC on the &amp;quot;needle&amp;quot; in the spectrum view (upper right corner).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Use DC removal filter</string>
+          <string>Do DC correction (without IQ)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbDoDcAndIqCorr">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Do DC and IQ correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;For the DC correction see the button above. &lt;br/&gt;This must be implicitly done with the IQ misalignment correction.&lt;/p&gt;&lt;p&gt;This removes also a possible IQ misalignment from the input signal. &lt;/p&gt;&lt;p&gt;This is quite seldom a problem with certain devices and take some CPU power.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Do DC and IQ correction</string>
          </property>
         </widget>
        </item>
