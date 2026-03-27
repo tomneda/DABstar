@@ -142,13 +142,13 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
 
     volk_32f_x2_interleave_32fc_u(buffer, mVolkFloat1, mVolkFloat2, iNoSamples);
   }
+
   // The mixing has no effect on the absolute level detection, so do it beforehand
   volk_32fc_magnitude_32f_u(mVolkFloat1, buffer, iNoSamples); // v_abs = std::abs(v);
   volk_32f_index_max_32u_a(&index, mVolkFloat1, iNoSamples); // index of peak
   if (mVolkFloat1[index] > peakLevel) peakLevel = mVolkFloat1[index]; // if (v_abs > peakLevel) peakLevel = v_abs;
   volk_32f_accumulator_s32f_a(&singleFloat, mVolkFloat1, iNoSamples);
   mean_filter(sLevel, singleFloat / iNoSamples, 0.00001f * iNoSamples);
-
 
   // use the non-frequency corrected sample data for CIR analyzer
   if (cirBuffer != nullptr)
@@ -169,6 +169,7 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
       }
     }
   }
+
   // use the non-frequency corrected sample data for the spectrum as it could jump widely with +/-35 kHz with weak signals
   if (specBuffIdx < SPEC_BUFF_SIZE)
   {
@@ -186,6 +187,7 @@ void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples
   for (i32 i = 0; i < iNoSamples; i++)
   {
     cf32 v = buffer[i];
+
     // Perform DC removal if wanted
     if (mDoDcOrIqCorr)
     {

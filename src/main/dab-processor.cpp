@@ -139,10 +139,6 @@ void DabProcessor::run()  // run QThread
   try
   {
     // To get some idea of the signal strength
-    /*for (i32 i = 0; i < cTF / 5; i++)
-    {
-      mSampleReader.getSample(0);
-    }*/
     for (int32_t i = 0; i < 20; i++)
     {
       mSampleReader.getSamples(mOfdmBuffer, 0, cTu, 0, false);
