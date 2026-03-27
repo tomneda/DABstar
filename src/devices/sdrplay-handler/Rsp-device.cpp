@@ -2,9 +2,9 @@
 
 #include  <stdint.h>
 #include  <sdrplay_api.h>
-#include  "sdrplay-handler-v3.h"
+#include  "sdrplay-handler.h"
 
-Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice, i32 startFreq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppmValue)
+Rsp_device::Rsp_device(SdrPlayHandler *parent, sdrplay_api_DeviceT *chosenDevice, i32 startFreq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppmValue)
 {
   i32 mGRdB = GRdB;
   sdrplay_api_ErrT err;
@@ -13,8 +13,8 @@ Rsp_device::Rsp_device(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDev
   mFreq = startFreq;
   mLnaState = lnaState;
 
-  connect(this, &Rsp_device::signal_set_lnabounds, parent, &SdrPlayHandler_v3::set_lnabounds);
-  connect(this, &Rsp_device::signal_set_antennaSelect, parent, &SdrPlayHandler_v3::set_antennaSelect);
+  connect(this, &Rsp_device::signal_set_lnabounds, parent, &SdrPlayHandler::set_lnabounds);
+  connect(this, &Rsp_device::signal_set_antennaSelect, parent, &SdrPlayHandler::set_antennaSelect);
 
   err = parent->sdrplay_api_GetDeviceParams(chosenDevice->dev, &mpDeviceParams);
 

@@ -20,10 +20,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include	"Rsp1-handler.h"
-#include	"sdrplay-handler-v3.h"
+#include	"sdrplay-handler.h"
 
-Rsp1_handler::Rsp1_handler(SdrPlayHandler_v3 *parent, sdrplay_api_DeviceT *chosenDevice,
-						   i32 freq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppm)
+Rsp1_handler::Rsp1_handler(SdrPlayHandler *parent, sdrplay_api_DeviceT *chosenDevice,
+                           i32 freq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppm)
   : Rsp_device(parent, chosenDevice, freq, agcMode, lnaState, GRdB, ppm)
 {
   i32 mLna_upperBound = lnaStates(freq) -1;

@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <sdrplay_api.h>
 
-class SdrPlayHandler_v3;
+class SdrPlayHandler;
 
 class Rsp_device : public QObject
 {
@@ -17,10 +17,10 @@ protected:
   i32 mLnaState;
   sdrplay_api_RxChannelParamsT * mpChParams;
   sdrplay_api_DeviceParamsT * mpDeviceParams;
-  SdrPlayHandler_v3 * mpParent;
+  SdrPlayHandler * mpParent;
 
 public:
-  Rsp_device(SdrPlayHandler_v3 * parent, sdrplay_api_DeviceT * chosenDevice,
+  Rsp_device(SdrPlayHandler * parent, sdrplay_api_DeviceT * chosenDevice,
              i32 startFrequency, bool agcMode, i32 lnaState, i32 GRdB, f64 ppmValue);
   ~Rsp_device() override;
 

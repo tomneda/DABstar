@@ -120,7 +120,7 @@ i16 faadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
     aacInitialized = true;
   }
 
-  const i16 * const outBuffer = (i16 *)NeAACDecDecode(aacHandle, &hInfo, const_cast<u8*>(ipBuffer), iBufferLength);
+  /*const*/ i16 * const outBuffer = (i16 *)NeAACDecDecode(aacHandle, &hInfo, const_cast<u8*>(ipBuffer), iBufferLength);
   const u64 sampleRate = hInfo.samplerate;
 
   const i16 samples = hInfo.samples;
@@ -142,6 +142,16 @@ i16 faadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
 
   if (channels == 2)
   {
+#if 0
+    // TODO: workaround, as one speaker is not working: make stereo stream to mono (inplace within outBuffer)
+    for (i16 i = 0; i < samples/2; i++)
+    {
+      const auto monoBuffer = (outBuffer[2 * i] + outBuffer[2 * i + 1]) / 2;
+      outBuffer[2 * i + 0] = monoBuffer;
+      outBuffer[2 * i + 1] = monoBuffer;
+    }
+#endif
+
     audioBuffer->put_data_into_ring_buffer(outBuffer, samples);
     if (audioBuffer->get_ring_buffer_read_available() > (i32)sampleRate / 10)
     {

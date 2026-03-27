@@ -15,11 +15,8 @@
 #ifdef  HAVE_RTLSDR
   #include  "rtlsdr-handler.h"
 #endif
-#ifdef  HAVE_SDRPLAY_V2
-  #include  "sdrplay-handler-v2.h"
-#endif
-#ifdef  HAVE_SDRPLAY_V3
-  #include  "sdrplay-handler-v3.h"
+#ifdef  HAVE_SDRPLAY
+  #include  "sdrplay-handler.h"
 #endif
 #ifdef  _WIN32
   #ifdef  HAVE_EXTIO
@@ -61,16 +58,15 @@
 #include <thread>
 
 [[maybe_unused]] static const char DN_FILE_INP[]   = "File input";
-[[maybe_unused]] static const char DN_SDRPLAY_V3[] = "SDR-Play V3";
-[[maybe_unused]] static const char DN_SDRPLAY_V2[] = "SDR-Play V2";
+[[maybe_unused]] static const char DN_SDRPLAY[]    = "SDR-Play";
 [[maybe_unused]] static const char DN_RTLTCP[]     = "RTL-TCP";
 [[maybe_unused]] static const char DN_RTLSDR[]     = "RTL-SDR";
 [[maybe_unused]] static const char DN_AIRSPY[]     = "Airspy";
-[[maybe_unused]] static const char DN_SPYSERVER[]  = "SpyServer (experimental)";
+[[maybe_unused]] static const char DN_SPYSERVER[]  = "SpyServer (exp)";
 [[maybe_unused]] static const char DN_HACKRF[]     = "HackRf";
 [[maybe_unused]] static const char DN_LIMESDR[]    = "LimeSDR";
 [[maybe_unused]] static const char DN_PLUTO[]      = "Pluto";
-[[maybe_unused]] static const char DN_SOAPY[]      = "SoapySDR (experimental)";
+[[maybe_unused]] static const char DN_SOAPY[]      = "SoapySDR (exp)";
 [[maybe_unused]] static const char DN_EXTIO[]      = "ExtIO";
 [[maybe_unused]] static const char DN_ELAD[]       = "Elad-S1";
 [[maybe_unused]] static const char DN_UHD[]        = "UHD/USRP";
@@ -86,11 +82,8 @@ QStringList DeviceSelector::get_device_name_list() const
   QStringList sl;
   sl << "select input";
   sl << DN_FILE_INP;
-#ifdef  HAVE_SDRPLAY_V3
-  sl << DN_SDRPLAY_V3;
-#endif
-#ifdef  HAVE_SDRPLAY_V2
-  sl << DN_SDRPLAY_V2;
+#ifdef  HAVE_SDRPLAY
+  sl << DN_SDRPLAY;
 #endif
 #ifdef  HAVE_RTL_TCP
   sl << DN_RTLTCP;
@@ -157,21 +150,10 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 
   oRealDevice = true; // until proven otherwise
 
-#ifdef  HAVE_SDRPLAY_V2
-  if (iDeviceName == DN_SDRPLAY_V2)
+#ifdef  HAVE_SDRPLAY
+  if (iDeviceName == DN_SDRPLAY)
   {
-#ifdef  _WIN32
-    QMessageBox::warning (this, tr ("Warning"), tr ("If SDRuno is installed with drivers 3.10,\nV2.13 drivers will not work anymore, choose \"sdrplay\" instead\n"));
-    return nullptr;
-#endif
-    inputDevice = std::make_unique<SdrPlayHandler_v2>(mpSettings, mVersionStr);
-  }
-  else
-#endif
-#ifdef  HAVE_SDRPLAY_V3
-  if (iDeviceName == DN_SDRPLAY_V3)
-  {
-    inputDevice = std::make_unique<SdrPlayHandler_v3>(mpSettings, mVersionStr);
+    inputDevice = std::make_unique<SdrPlayHandler>(mpSettings, mVersionStr);
   }
   else
 #endif

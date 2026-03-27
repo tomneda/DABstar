@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>sdrplayWidget_v3</class>
- <widget class="QWidget" name="sdrplayWidget_v3">
+ <class>sdrplayWidget</class>
+ <widget class="QWidget" name="sdrplayWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>SDRplay control-v3</string>
+   <string>SDRplay control</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>

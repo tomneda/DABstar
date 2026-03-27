@@ -29,8 +29,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef  SDRPLAY_HANDLER_V3_H
-#define  SDRPLAY_HANDLER_V3_H
+#ifndef  SDRPLAY_HANDLER_H
+#define  SDRPLAY_HANDLER_H
 
 #include  <QThread>
 #include  <QFrame>
@@ -42,21 +42,19 @@
 #include  "dab-constants.h"
 #include  "ringbuffer.h"
 #include  "device-handler.h"
-#include  "ui_sdrplay-widget-v3.h"
+#include  "ui_sdrplay-widget.h"
 #include  <sdrplay_api.h>
 
 class Rsp_device;
-
 class generalCommand;
-
 class XmlFileWriter;
 
-class SdrPlayHandler_v3 final : public QThread, public IDeviceHandler, public Ui_sdrplayWidget_v3
+class SdrPlayHandler final : public QThread, public IDeviceHandler, public Ui_sdrplayWidget
 {
 Q_OBJECT
 public:
-  SdrPlayHandler_v3(QSettings *, const QString &);
-  ~SdrPlayHandler_v3() override;
+  SdrPlayHandler(QSettings *, const QString &);
+  ~SdrPlayHandler() override;
 
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;

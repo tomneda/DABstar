@@ -58,8 +58,7 @@ CONFIG		+= airspy
 CONFIG		+= spyServer
 CONFIG		+= rtl_tcp
 CONFIG		+= dabstick
-#CONFIG		+= sdrplay-v2
-CONFIG		+= sdrplay-v3
+CONFIG		+= sdrplay
 CONFIG		+= pluto
 CONFIG		+= hackrf
 CONFIG		+= lime
@@ -362,39 +361,26 @@ dabstick {
 #
 #	the SDRplay
 #
-sdrplay-v2 {
-	DEFINES		+= HAVE_SDRPLAY_V2
-	INCLUDEPATH	+= src/devices/sdrplay-handler-v2
-	HEADERS		+= src/devices/sdrplay-handler-v2/sdrplay-handler-v2.h \
-			   src/devices/sdrplay-handler-v2/sdrplayselect.h 
-	SOURCES		+= src/devices/sdrplay-handler-v2/sdrplay-handler-v2.cpp \
-			   src/devices/sdrplay-handler-v2/sdrplayselect.cpp 
-	FORMS		+= src/devices/forms/sdrplay-widget-v2.ui
-}
-
-#
-#	the SDRplay
-#
-sdrplay-v3 {
-	DEFINES		+= HAVE_SDRPLAY_V3
-	INCLUDEPATH	+= src/devices/sdrplay-handler-v3 \
+sdrplay {
+	DEFINES		+= HAVE_SDRPLAY
+	INCLUDEPATH	+= src/devices/sdrplay-handler \
 			   ../dabstar-libs/include/sdrplay
-	HEADERS		+= src/devices/sdrplay-handler-v3/sdrplay-handler-v3.h \
-			   src/devices/sdrplay-handler-v3/sdrplay-commands.h \
-			   src/devices/sdrplay-handler-v3/Rsp-device.h \
-			   src/devices/sdrplay-handler-v3/Rsp1-handler.h \
-			   src/devices/sdrplay-handler-v3/Rsp1A-handler.h \
-			   src/devices/sdrplay-handler-v3/Rsp2-handler.h \
-			   src/devices/sdrplay-handler-v3/RspDuo-handler.h \
-			   src/devices/sdrplay-handler-v3/RspDx-handler.h
-	SOURCES		+= src/devices/sdrplay-handler-v3/Rsp-device.cpp \
-			   src/devices/sdrplay-handler-v3/sdrplay-handler-v3.cpp \
-			   src/devices/sdrplay-handler-v3/Rsp1-handler.cpp \
-			   src/devices/sdrplay-handler-v3/Rsp1A-handler.cpp \
-			   src/devices/sdrplay-handler-v3/Rsp2-handler.cpp \
-			   src/devices/sdrplay-handler-v3/RspDuo-handler.cpp \
-			   src/devices/sdrplay-handler-v3/RspDx-handler.cpp 
-	FORMS		+= src/devices/forms/sdrplay-widget-v3.ui
+	HEADERS		+= src/devices/sdrplay-handler/sdrplay-handler.h \
+			   src/devices/sdrplay-handler/sdrplay-commands.h \
+			   src/devices/sdrplay-handler/Rsp-device.h \
+			   src/devices/sdrplay-handler/Rsp1-handler.h \
+			   src/devices/sdrplay-handler/Rsp1A-handler.h \
+			   src/devices/sdrplay-handler/Rsp2-handler.h \
+			   src/devices/sdrplay-handler/RspDuo-handler.h \
+			   src/devices/sdrplay-handler/RspDx-handler.h
+	SOURCES		+= src/devices/sdrplay-handler/Rsp-device.cpp \
+			   src/devices/sdrplay-handler/sdrplay-handler.cpp \
+			   src/devices/sdrplay-handler/Rsp1-handler.cpp \
+			   src/devices/sdrplay-handler/Rsp1A-handler.cpp \
+			   src/devices/sdrplay-handler/Rsp2-handler.cpp \
+			   src/devices/sdrplay-handler/RspDuo-handler.cpp \
+			   src/devices/sdrplay-handler/RspDx-handler.cpp
+	FORMS		+= src/devices/forms/sdrplay-widget.ui
 }
 
 #

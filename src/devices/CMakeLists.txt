@@ -18,59 +18,37 @@ set(devices_ui
         forms/xmlfiles.ui
 )
 
-if (SDRPLAY_V2)
+if (SDRPLAY)
   include_directories(
-          sdrplay-handler-v2
+          sdrplay-handler
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          sdrplay-handler-v2/sdrplay-handler-v2.h
-          sdrplay-handler-v2/sdrplayselect.h
-          sdrplay-handler-v2/mirsdrapi-rsp.h
+          sdrplay-handler/sdrplay-handler.h
+          sdrplay-handler/sdrplay-commands.h
+          sdrplay-handler/Rsp-device.h
+          sdrplay-handler/Rsp1-handler.h
+          sdrplay-handler/Rsp1A-handler.h
+          sdrplay-handler/Rsp2-handler.h
+          sdrplay-handler/RspDuo-handler.h
+          sdrplay-handler/RspDx-handler.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          sdrplay-handler-v2/sdrplay-handler-v2.cpp
-          sdrplay-handler-v2/sdrplayselect.cpp
+          sdrplay-handler/sdrplay-handler.cpp
+          sdrplay-handler/Rsp-device.cpp
+          sdrplay-handler/Rsp1-handler.cpp
+          sdrplay-handler/Rsp1A-handler.cpp
+          sdrplay-handler/Rsp2-handler.cpp
+          sdrplay-handler/RspDuo-handler.cpp
+          sdrplay-handler/RspDx-handler.cpp
   )
 
-  list(APPEND devices_ui forms/sdrplay-widget-v2.ui)
-  add_definitions(-DHAVE_SDRPLAY_V2)
-endif (SDRPLAY_V2)
-
-if (SDRPLAY_V3)
-  include_directories(
-          sdrplay-handler-v3
-  )
-
-  set(${devicesLibName}_HDRS
-          ${${devicesLibName}_HDRS}
-          sdrplay-handler-v3/sdrplay-handler-v3.h
-          sdrplay-handler-v3/sdrplay-commands.h
-          sdrplay-handler-v3/Rsp-device.h
-          sdrplay-handler-v3/Rsp1-handler.h
-          sdrplay-handler-v3/Rsp1A-handler.h
-          sdrplay-handler-v3/Rsp2-handler.h
-          sdrplay-handler-v3/RspDuo-handler.h
-          sdrplay-handler-v3/RspDx-handler.h
-  )
-
-  set(${devicesLibName}_SRCS
-          ${${devicesLibName}_SRCS}
-          sdrplay-handler-v3/sdrplay-handler-v3.cpp
-          sdrplay-handler-v3/Rsp-device.cpp
-          sdrplay-handler-v3/Rsp1-handler.cpp
-          sdrplay-handler-v3/Rsp1A-handler.cpp
-          sdrplay-handler-v3/Rsp2-handler.cpp
-          sdrplay-handler-v3/RspDuo-handler.cpp
-          sdrplay-handler-v3/RspDx-handler.cpp
-  )
-
-  list(APPEND devices_ui forms/sdrplay-widget-v3.ui)
-  add_definitions(-DHAVE_SDRPLAY_V3)
-endif (SDRPLAY_V3)
+  list(APPEND devices_ui forms/sdrplay-widget.ui)
+  add_definitions(-DHAVE_SDRPLAY)
+endif (SDRPLAY)
 
 if (AIRSPY)
   # find_package(LibAIRSPY)

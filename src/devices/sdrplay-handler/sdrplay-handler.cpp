@@ -29,7 +29,7 @@
  */
 
 #include  <QLabel>
-#include  "sdrplay-handler-v3.h"
+#include  "sdrplay-handler.h"
 #include  "sdrplay-commands.h"
 #include  "xml-filewriter.h"
 #include  "setting-helper.h"
@@ -66,7 +66,7 @@ std::string errorMessage(i32 errorCode)
   return "";
 }
 
-SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * /*s*/, const QString & recorderVersion)
+SdrPlayHandler::SdrPlayHandler(QSettings * /*s*/, const QString & recorderVersion)
   : p_I_Buffer(sRingBufferFactoryCmplx16.get_ringbuffer(RingBufferFactory<ci16>::EId::DeviceSampleBuffer).get())
   , myFrame(nullptr)
 {
@@ -107,19 +107,19 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * /*s*/, const QString & recorder
   }
 
   //    and be prepared for future changes in the settings
-  connect(GRdBSelector, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_ifgainReduction);
-  connect(lnaGainSetting, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler_v3::set_lnagainReduction);
+  connect(GRdBSelector, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler::set_ifgainReduction);
+  connect(lnaGainSetting, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler::set_lnagainReduction);
   connect(ppmControl, SIGNAL(valueChanged(double)), this, SLOT(set_ppmControl(double)));
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(agcControl, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_agcControl);
-  connect(biasT_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_biasT);
-  connect(notch_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler_v3::set_notch);
+  connect(agcControl, &QCheckBox::checkStateChanged, this, &SdrPlayHandler::set_agcControl);
+  connect(biasT_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler::set_biasT);
+  connect(notch_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler::set_notch);
 #else
-  connect(agcControl, &QCheckBox::stateChanged, this, &SdrPlayHandler_v3::set_agcControl);
-  connect(biasT_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler_v3::set_biasT);
-  connect(notch_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler_v3::set_notch);
+  connect(agcControl, &QCheckBox::stateChanged, this, &SdrPlayHandler::set_agcControl);
+  connect(biasT_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler::set_biasT);
+  connect(notch_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler::set_notch);
 #endif
-  connect(antennaSelector, &QComboBox::textActivated, this, &SdrPlayHandler_v3::set_selectAntenna);
+  connect(antennaSelector, &QComboBox::textActivated, this, &SdrPlayHandler::set_selectAntenna);
 
   vfoFrequency = MHz (220);
   failFlag.store(false);
@@ -139,10 +139,10 @@ SdrPlayHandler_v3::SdrPlayHandler_v3(QSettings * /*s*/, const QString & recorder
     throw std_exception_string(errorMessage(errorCode));
   }
 
-  qDebug() << "Setup SdrPlay v3 successfully";
+  qDebug() << "Setup SdrPlay successfully";
 }
 
-SdrPlayHandler_v3::~SdrPlayHandler_v3()
+SdrPlayHandler::~SdrPlayHandler()
 {
   delete theRsp;
 
@@ -161,12 +161,12 @@ SdrPlayHandler_v3::~SdrPlayHandler_v3()
 //  Implementing the interface
 /////////////////////////////////////////////////////////////////////////
 
-i32 SdrPlayHandler_v3::getVFOFrequency()
+i32 SdrPlayHandler::getVFOFrequency()
 {
   return vfoFrequency;
 }
 
-bool SdrPlayHandler_v3::restartReader(i32 newFreq)
+bool SdrPlayHandler::restartReader(i32 newFreq)
 {
   restartRequest r(newFreq);
 
@@ -178,7 +178,7 @@ bool SdrPlayHandler_v3::restartReader(i32 newFreq)
   return messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::stopReader()
+void SdrPlayHandler::stopReader()
 {
   stopRequest r;
   stopDumping();
@@ -191,7 +191,7 @@ void SdrPlayHandler_v3::stopReader()
 }
 
 //
-i32 SdrPlayHandler_v3::getSamples(cf32 * V, i32 size)
+i32 SdrPlayHandler::getSamples(cf32 * V, i32 size)
 {
   static constexpr f32 denominator = (f32)(1 << (nrBits-1));
 
@@ -211,17 +211,17 @@ i32 SdrPlayHandler_v3::getSamples(cf32 * V, i32 size)
   return amount;
 }
 
-i32 SdrPlayHandler_v3::Samples()
+i32 SdrPlayHandler::Samples()
 {
   return p_I_Buffer->get_ring_buffer_read_available();
 }
 
-void SdrPlayHandler_v3::resetBuffer()
+void SdrPlayHandler::resetBuffer()
 {
   p_I_Buffer->flush_ring_buffer();
 }
 
-QString SdrPlayHandler_v3::deviceName()
+QString SdrPlayHandler::deviceName()
 {
   return deviceModel;
 }
@@ -235,34 +235,34 @@ QString SdrPlayHandler_v3::deviceName()
 //  Communication with that thread is synchronous!
 //
 
-void SdrPlayHandler_v3::set_lnabounds(i32 low, i32 high)
+void SdrPlayHandler::set_lnabounds(i32 low, i32 high)
 {
   lnaGainSetting->setRange(low, high);
 }
 
-void SdrPlayHandler_v3::set_deviceName(const QString & s)
+void SdrPlayHandler::set_deviceName(const QString & s)
 {
   deviceModel = s;
   deviceLabel->setText(s);
 }
 
-void SdrPlayHandler_v3::set_serial(const QString & s)
+void SdrPlayHandler::set_serial(const QString & s)
 {
   serialNumber->setText(s);
 }
 
-void SdrPlayHandler_v3::set_apiVersion(f32 version)
+void SdrPlayHandler::set_apiVersion(f32 version)
 {
   QString v = QString::number(version, 'r', 2);
   api_version->display(v);
 }
 
-void SdrPlayHandler_v3::show_lnaGain(i32 g)
+void SdrPlayHandler::show_lnaGain(i32 g)
 {
   lnaGRdBDisplay->display(g);
 }
 
-void SdrPlayHandler_v3::set_ifgainReduction(i32 GRdB)
+void SdrPlayHandler::set_ifgainReduction(i32 GRdB)
 {
   GRdBRequest r(GRdB);
 
@@ -273,7 +273,7 @@ void SdrPlayHandler_v3::set_ifgainReduction(i32 GRdB)
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_lnagainReduction(i32 lnaState)
+void SdrPlayHandler::set_lnagainReduction(i32 lnaState)
 {
   lnaRequest r(lnaState);
 
@@ -284,7 +284,7 @@ void SdrPlayHandler_v3::set_lnagainReduction(i32 lnaState)
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_agcControl(i32 dummy)
+void SdrPlayHandler::set_agcControl(i32 dummy)
 {
   bool agcMode = agcControl->isChecked();
   agcRequest r(agcMode, -20);
@@ -301,27 +301,27 @@ void SdrPlayHandler_v3::set_agcControl(i32 dummy)
   }
 }
 
-void SdrPlayHandler_v3::set_ppmControl(f64 ppm)
+void SdrPlayHandler::set_ppmControl(f64 ppm)
 {
   ppmRequest r(ppm);
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_biasT(i32 v)
+void SdrPlayHandler::set_biasT(i32 v)
 {
   (void)v;
   biasT_Request r(biasT_selector->isChecked() ? 1 : 0);
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_notch(i32 v)
+void SdrPlayHandler::set_notch(i32 v)
 {
   (void)v;
   notch_Request r(notch_selector->isChecked() ? 1 : 0);
   messageHandler(&r);
 }
 
-void SdrPlayHandler_v3::set_selectAntenna(const QString & s)
+void SdrPlayHandler::set_selectAntenna(const QString & s)
 {
   messageHandler(new antennaRequest(s == "Antenna A" ? 'A' : s == "Antenna B" ? 'B' : 'C'));
 }
@@ -330,7 +330,7 @@ void SdrPlayHandler_v3::set_selectAntenna(const QString & s)
 ////////////////////////////////////////////////////////////////////////
 //  showing data
 ////////////////////////////////////////////////////////////////////////
-void SdrPlayHandler_v3::set_antennaSelect(i32 n)
+void SdrPlayHandler::set_antennaSelect(i32 n)
 {
   if (n > 0)
   {
@@ -350,7 +350,7 @@ void SdrPlayHandler_v3::set_antennaSelect(i32 n)
   set_selectAntenna(antennaSelector->currentText());
 }
 
-bool SdrPlayHandler_v3::startDumping()
+bool SdrPlayHandler::startDumping()
 {
   bool result = false;
   if (!dumping.load())
@@ -360,7 +360,7 @@ bool SdrPlayHandler_v3::startDumping()
   return result;
 }
 
-bool SdrPlayHandler_v3::setup_xmlDump()
+bool SdrPlayHandler::setup_xmlDump()
 {
   QSettings * const sdrplaySettings = &Settings::Storage::instance();
   OpenFileDialog filenameFinder(sdrplaySettings);
@@ -374,7 +374,7 @@ bool SdrPlayHandler_v3::setup_xmlDump()
   return true;
 }
 
-void SdrPlayHandler_v3::stopDumping()
+void SdrPlayHandler::stopDumping()
 {
   if (xmlDumper == nullptr)
   {  // this can happen !!
@@ -392,7 +392,7 @@ void SdrPlayHandler_v3::stopDumping()
 //  the real controller starts here
 ///////////////////////////////////////////////////////////////////////
 
-bool SdrPlayHandler_v3::messageHandler(generalCommand * r)
+bool SdrPlayHandler::messageHandler(generalCommand * r)
 {
   server_queue.push(r);
   serverjobs.release(1);
@@ -408,7 +408,7 @@ bool SdrPlayHandler_v3::messageHandler(generalCommand * r)
 
 static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, u32 numSamples, u32 reset, void * cbContext)
 {
-  const SdrPlayHandler_v3 * const p = static_cast<SdrPlayHandler_v3 *>(cbContext);
+  const SdrPlayHandler * const p = static_cast<SdrPlayHandler *>(cbContext);
 
   (void)params;
   if (reset)
@@ -446,7 +446,7 @@ static void StreamBCallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT 
 
 static void EventCallback(sdrplay_api_EventT eventId, sdrplay_api_TunerSelectT tuner, sdrplay_api_EventParamsT * params, void * cbContext)
 {
-  SdrPlayHandler_v3 * p = static_cast<SdrPlayHandler_v3 *> (cbContext);
+  SdrPlayHandler * p = static_cast<SdrPlayHandler *> (cbContext);
   (void)tuner;
   switch (eventId)
   {
@@ -461,13 +461,13 @@ static void EventCallback(sdrplay_api_EventT eventId, sdrplay_api_TunerSelectT t
   }
 }
 
-void SdrPlayHandler_v3::update_PowerOverload(sdrplay_api_EventParamsT * params)
+void SdrPlayHandler::update_PowerOverload(sdrplay_api_EventParamsT * params)
 {
   sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_Ctrl_OverloadMsgAck, sdrplay_api_Update_Ext1_None);
   emit signal_overload_detected(params->powerOverloadParams.powerOverloadChangeType == sdrplay_api_Overload_Detected);
 }
 
-void SdrPlayHandler_v3::run()
+void SdrPlayHandler::run()
 {
   sdrplay_api_ErrT err;
   sdrplay_api_DeviceT devs[6];
@@ -479,8 +479,8 @@ void SdrPlayHandler_v3::run()
 
   chosenDevice = nullptr;
 
-  connect(this, &SdrPlayHandler_v3::signal_overload_detected, this, &SdrPlayHandler_v3::slot_overload_detected);
-  connect(this, &SdrPlayHandler_v3::signal_tuner_gain, this, &SdrPlayHandler_v3::slot_tuner_gain);
+  connect(this, &SdrPlayHandler::signal_overload_detected, this, &SdrPlayHandler::slot_overload_detected);
+  connect(this, &SdrPlayHandler::signal_tuner_gain, this, &SdrPlayHandler::slot_tuner_gain);
 
   const char *libraryString = "sdrplay_api";
   phandle = new QLibrary(libraryString);
@@ -780,7 +780,7 @@ closeAPI:
 /////////////////////////////////////////////////////////////////////////////
 //  handling the library
 /////////////////////////////////////////////////////////////////////////////
-bool SdrPlayHandler_v3::loadFunctions()
+bool SdrPlayHandler::loadFunctions()
 {
   sdrplay_api_Open = (sdrplay_api_Open_t)phandle->resolve("sdrplay_api_Open");
   if ((void *)sdrplay_api_Open == nullptr)
@@ -897,27 +897,27 @@ bool SdrPlayHandler_v3::loadFunctions()
   return true;
 }
 
-void SdrPlayHandler_v3::show()
+void SdrPlayHandler::show()
 {
   myFrame.show();
 }
 
-void SdrPlayHandler_v3::hide()
+void SdrPlayHandler::hide()
 {
   myFrame.hide();
 }
 
-bool SdrPlayHandler_v3::isHidden()
+bool SdrPlayHandler::isHidden()
 {
   return myFrame.isHidden();
 }
 
-void SdrPlayHandler_v3::setVFOFrequency(i32 iFreq)
+void SdrPlayHandler::setVFOFrequency(i32 iFreq)
 {
   restartReader(iFreq);
 }
 
-void SdrPlayHandler_v3::slot_overload_detected(bool iOvlDetected)
+void SdrPlayHandler::slot_overload_detected(bool iOvlDetected)
 {
   if (iOvlDetected)
   {
@@ -929,13 +929,13 @@ void SdrPlayHandler_v3::slot_overload_detected(bool iOvlDetected)
   }
 }
 
-void SdrPlayHandler_v3::slot_tuner_gain(f64 gain, i32 g)
+void SdrPlayHandler::slot_tuner_gain(f64 gain, i32 g)
 {
   tunerGain->setText(QString::number(gain, 'f', 0) + " dB");
   lnaGRdBDisplay->display(g);
 }
 
-bool SdrPlayHandler_v3::hasDump()
+bool SdrPlayHandler::hasDump()
 {
   return true;
 }

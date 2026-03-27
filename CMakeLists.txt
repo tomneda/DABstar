@@ -112,8 +112,7 @@ print(CMAKE_MODULE_PATH)
 # As I (tomneda) possess not all of these devices I place an "untested" behind. They may run, or not run.
 option(AIRSPY     "Use AirSpy"     OFF)  # untested
 option(SPYSERVER  "Use SpyServer"  OFF)  # untested
-option(SDRPLAY_V2 "Use SdrPlay V2" OFF)  # untested
-option(SDRPLAY_V3 "Use SdrPlay V3" OFF)
+option(SDRPLAY    "Use SdrPlay" OFF)
 option(HACKRF     "Use HackRf"     OFF)
 option(LIMESDR    "Use LimeSdr"    OFF)  # untested
 option(RTL_TCP    "Use RtlTcp"     OFF)
