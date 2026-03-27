@@ -570,6 +570,8 @@ void SdrPlayHandler::run()
   qDebug() << "Found" << ndev << "devices";
 
   chosenDevice = &devs[0];
+  chosenDevice->tuner = sdrplay_api_Tuner_A;
+  chosenDevice->rspDuoMode = sdrplay_api_RspDuoMode_Single_Tuner;
   err = sdrplay_api_SelectDevice(chosenDevice);
 
   if (err != sdrplay_api_Success)
