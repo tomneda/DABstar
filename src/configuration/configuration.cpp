@@ -37,7 +37,7 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::cbCloseDirect.register_widget_and_update_ui_from_setting(cbCloseDirect, 0);
   Settings::Config::cbUseStrongestPeak.register_widget_and_update_ui_from_setting(cbUseStrongestPeak, 0);
   Settings::Config::cbUseNativeFileDialog.register_widget_and_update_ui_from_setting(cbUseNativeFileDialog, 0);
-  Settings::Config::cbUseNativeIqFormat.register_widget_and_update_ui_from_setting(cbUseNativeIqFormat, 1);
+  Settings::Config::cbUseNativeIqFormat.register_widget_and_update_ui_from_setting(cbUseNativeIqFormat, 2);
   Settings::Config::cbUseUtcTime.register_widget_and_update_ui_from_setting(cbUseUtcTime, 0);
   Settings::Config::cbAlwaysOnTop.register_widget_and_update_ui_from_setting(cbAlwaysOnTop, 0);
   Settings::Config::cbManualBrowserStart.register_widget_and_update_ui_from_setting(cbManualBrowserStart, 0);
