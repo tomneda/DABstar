@@ -260,15 +260,16 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   //qDebug() << "gain =" << temp << ", index =" << k;
   gainControl->setCurrentIndex(k != -1 ? k : gainsCount / 2);
 
-  agcControl = rtlsdrSettings->value("autogain", 2).toInt();
-  biasControl->setChecked(rtlsdrSettings->value("biasControl", 0).toInt());
-  bandwidth->setValue(rtlsdrSettings->value("bandwidth", 1750).toInt());
-  ppm_correction->setValue(rtlsdrSettings->value("ppm_correction", 0.0).toDouble());
-  rtlsdrSettings->endGroup();
-
   rtlsdr_get_usb_strings(theDevice, manufac, product, serial);
   fprintf(stdout, "%s %s %s\n", manufac, product, serial);
   product_display->setText(product);
+
+  agcControl = rtlsdrSettings->value("autogain", 2).toInt();
+  biasControl->setChecked(rtlsdrSettings->value("biasControl", 0).toInt());
+  bandwidth->setValue(rtlsdrSettings->value("bandwidth", 1750).toInt());
+  ppmSerial = "ppmCorrection_" + QString(serial);
+  ppm_correction->setValue(rtlsdrSettings->value(ppmSerial, 0.0).toDouble());
+  rtlsdrSettings->endGroup();
 
   //    all values are set to previous values, now do the settings
   set_ExternalGain(gainControl->currentIndex());
@@ -309,7 +310,7 @@ RtlSdrHandler::~RtlSdrHandler()
   rtlsdrSettings->setValue("position-y", myFrame.pos().y());
   rtlsdrSettings->setValue("externalGain", gainControl->currentText());
   rtlsdrSettings->setValue("autogain", agcControl);
-  rtlsdrSettings->setValue("ppm_correction", ppm_correction->value());
+  rtlsdrSettings->setValue(ppmSerial, ppm_correction->value());
   rtlsdrSettings->setValue("bandwidth", bandwidth->value());
   rtlsdrSettings->setValue("biasControl", biasControl->isChecked() ? 1 : 0);
   rtlsdrSettings->setValue("filterSelector", filterSelector->isChecked() ? 1 : 0);

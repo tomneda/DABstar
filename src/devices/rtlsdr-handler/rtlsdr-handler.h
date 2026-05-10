@@ -138,6 +138,7 @@ private:
   i16 maxGain();
   i32 old_overload = 2;
   i32 old_gain = 0;
+  QString ppmSerial;
 
   //    here we need to load functions from the dll
   bool load_rtlFunctions(bool & oHasNewInterface);
