@@ -32,6 +32,11 @@
 #include "device-exceptions.h"
 #include "openfiledialog.h"
 #include <QMessageBox>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
 
 #define DEFAULT_FREQUENCY (kHz (220000))
 
@@ -280,21 +285,20 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   enable_gainControl(agcControl);
 
   //    and attach the buttons/sliders to the actions
-  connect(ppm_correction, SIGNAL(valueChanged(double)),
-          this, SLOT(set_ppmCorrection(double)));
-  connect(gainControl, SIGNAL(activated(int)),
-          this, SLOT(set_ExternalGain(int)));
-  connect(hw_agc, SIGNAL(clicked()), this, SLOT(handle_hw_agc()));
-  connect(sw_agc, SIGNAL(clicked()), this, SLOT(handle_sw_agc()));
-  connect(manual, SIGNAL(clicked()), this, SLOT(handle_manual()));
-  connect(biasControl, SIGNAL(stateChanged(int)),
-          this, SLOT(set_biasControl(int)));
-  connect(filterSelector, SIGNAL(stateChanged(int)),
-          this, SLOT(set_filter(int)));
-  connect(bandwidth, SIGNAL(valueChanged(int)),
-          this, SLOT(set_bandwidth(int)));
-  connect(this, &RtlSdrHandler::signal_timer,
-          this, &RtlSdrHandler::slot_timer);
+  connect(ppm_correction, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &RtlSdrHandler::set_ppmCorrection);
+  connect(gainControl, QOverload<int>::of(&QComboBox::activated), this, &RtlSdrHandler::set_ExternalGain);
+  connect(hw_agc, &QPushButton::clicked, this, &RtlSdrHandler::handle_hw_agc);
+  connect(sw_agc, &QPushButton::clicked, this, &RtlSdrHandler::handle_sw_agc);
+  connect(manual, &QPushButton::clicked, this, &RtlSdrHandler::handle_manual);
+  connect(bandwidth, QOverload<int>::of(&QSpinBox::valueChanged), this, &RtlSdrHandler::set_bandwidth);
+  connect(this, &RtlSdrHandler::signal_timer, this, &RtlSdrHandler::slot_timer);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+  connect(biasControl, &QCheckBox::checkStateChanged, this, &RtlSdrHandler::set_biasControl);
+  connect(filterSelector, &QCheckBox::checkStateChanged, this, &RtlSdrHandler::set_filter);
+#else
+  connect(biasControl, &QCheckBox::stateChanged, this, &RtlSdrHandler::set_biasControl);
+  connect(filterSelector, &QCheckBox::stateChanged, this, &RtlSdrHandler::set_filter);
+#endif
 
   xmlDumper = nullptr;
   xml_dumping.store(false);
