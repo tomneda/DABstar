@@ -10,8 +10,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  FIB_CONFIG_FIG0_H
-#define  FIB_CONFIG_FIG0_H
+#pragma once
 
 #include "glob_data_types.h"
 #include "fib-helper.h"
@@ -265,4 +264,3 @@ public:
   Cluster mClusterTable[128];
 };
 
-#endif

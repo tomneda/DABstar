@@ -20,8 +20,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__COLIBRI_HANDLER_H
-#define	__COLIBRI_HANDLER_H
+#pragma once
 #include	<QThread>
 #include	<QSettings>
 #include	<QFileDialog>
@@ -75,4 +74,3 @@ private slots:
 	void			set_gainControl	(i32);
 	void			handle_iqSwitcher	();
 };
-#endif

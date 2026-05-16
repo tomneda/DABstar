@@ -26,8 +26,7 @@
 
 //	special instantiation for pairs of i16
 //	to be used for the faad decoder
-#ifndef	__CONVERTER_2
-#define	__CONVERTER_2
+#pragma once
 //
 //	Very straightforward fractional resampler
 #include	"dab-constants.h"
@@ -151,5 +150,4 @@ i32	getOutputSize	(void) {
 }
 };
 
-#endif
 

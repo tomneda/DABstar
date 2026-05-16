@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  DAB_PARAMS_H
-#define  DAB_PARAMS_H
+#pragma once
 
 #include  <cstdint>
 #include  <array>
@@ -72,4 +71,3 @@ private:
   static const TArrDabPar msDabPar;
 };
 
-#endif

@@ -47,8 +47,7 @@
  *
  */
 
-#ifndef __NEWS_SVC_DEC__
-#define __NEWS_SVC_DEC__
+#pragma once
 
 /*!
  * @brief Journaline(R) news service decoder interface
@@ -349,4 +348,3 @@ int NEWS_SVC_DEC_keep_in_cache(
 }
 #endif
 
-#endif /* __NEWS_SVC_DEC__ */

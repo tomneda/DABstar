@@ -21,8 +21,7 @@
  *	This charset handling was kindly added by Przemyslaw Wegrzyn	
  *	all rights acknowledged
  */
-#ifndef CHARSETS_H
-#define CHARSETS_H
+#pragma once
 
 #include <QString>
 #include <QByteArray>
@@ -56,4 +55,3 @@ inline bool is_charset_valid(ECharacterSet iCharset)
 QString to_QString_using_charset(const QByteArray & iByteArray, ECharacterSet iCharset);
 QString to_QString_using_charset(const char * ipBuffer, ECharacterSet iCharset, i32 size = -1);
 
-#endif // CHARSETS_H

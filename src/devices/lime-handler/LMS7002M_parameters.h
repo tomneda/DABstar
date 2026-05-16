@@ -4,8 +4,7 @@
 @brief 	List of LMS7002M transceiver control parameters
 */
 
-#ifndef LMS7002M_PARAMETERS_H
-#define LMS7002M_PARAMETERS_H
+#pragma once
 #include <cstdint>
 
 #ifdef __cplusplus
@@ -758,4 +757,3 @@ static const struct LMS7Parameter LMS7_DCLOOP_STOP = { 0x040C, 8, 8, 0, "DCLOOP_
 }
 #endif
 
-#endif

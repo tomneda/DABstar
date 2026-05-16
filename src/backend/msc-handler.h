@@ -21,8 +21,7 @@
  */
 #
 
-#ifndef  __MSC_HANDLER__
-#define  __MSC_HANDLER__
+#pragma once
 
 #include "dab-constants.h"
 #include "ringbuffer.h"
@@ -61,6 +60,5 @@ private:
   void processMsc(i32 n);
 };
 
-#endif
 
 

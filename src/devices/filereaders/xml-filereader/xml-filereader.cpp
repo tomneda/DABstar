@@ -141,7 +141,7 @@ XmlFileReader::~XmlFileReader()
     theReader->stopReader();
     while (theReader->isRunning())
     {
-      usleep(100);
+      usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
     }
     delete theReader;
   }
@@ -174,7 +174,7 @@ void XmlFileReader::stopReader()
     theReader->stopReader();
     while (theReader->isRunning())
     {
-      usleep(100);
+      usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
     }
     delete theReader;
     theReader = nullptr;

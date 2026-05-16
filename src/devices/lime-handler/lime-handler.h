@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef LIME_HANDLER_H
-#define LIME_HANDLER_H
+#pragma once
 
 #include  <QThread>
 #include  <QFrame>
@@ -164,5 +163,4 @@ public slots:
   void showErrors(i32, i32);
 };
 
-#endif
 

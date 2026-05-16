@@ -128,9 +128,9 @@ SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceNa
 }
 
 
-SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iChannelName)
+SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName) const
 {
-  const QString fileName = _open_file_dialog(iChannelName.trimmed(), sSettingSampleStorageDir, "RAW-WAV", ".sdr");
+  const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), sSettingSampleStorageDir, "RAW-WAV", ".sdr");
 
   if (fileName.isEmpty())
   {
@@ -167,29 +167,17 @@ QString OpenFileDialog::get_dl_text_file_name()
   return _open_file_dialog(PRJ_NAME "-dlText", sSettingContentStorageDir, "Text", ".txt");
 }
 
-FILE * OpenFileDialog::open_log_file_ptr()
-{
-  QString fileName = _open_file_dialog(PRJ_NAME "-LOG", sSettingContentStorageDir, "Text", ".txt");
-
-  if (fileName.isEmpty())
-  {
-    return nullptr;
-  }
-
-  return open_file(fileName, "w");
-}
-
 QString OpenFileDialog::get_maps_file_name()
 {
   return _open_file_dialog(PRJ_NAME "-Transmitters", sSettingContentStorageDir, "CSV", ".csv");
 }
 
-QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName)
+QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName) const
 {
   return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), sSettingContentStorageDir, "ETI", ".eti");
 }
 
-QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt)
+QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt) const
 {
   const bool useNativeFileDialog = Settings::Config::cbUseNativeFileDialog.read().toBool();
 
@@ -222,7 +210,7 @@ QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const
   return QDir::toNativeSeparators(fileName);
 }
 
-QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EFileType & oType) const
+QString OpenFileDialog::open_sample_data_file_dialog_for_reading() const
 {
   const bool useNativeFileDialog = Settings::Config::cbUseNativeFileDialog.read().toBool();
   const QDir storedDir = mpSettings->value(sSettingSampleStorageDir, QDir::homePath()).toString();
@@ -239,23 +227,54 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading(EFileType & oTy
 
   if (!fileName.isEmpty())
   {
-    oType = get_file_type(fileName);
     mpSettings->setValue(sSettingSampleStorageDir, QFileInfo(fileName).path());
   }
 
   return fileName;
 }
 
-OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString & fileName) const
+OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString & iFileName) const
 {
-  EFileType fileType = EFileType::FT_UNDEF;
+  EFileType fileType = EFileType::UNDEF;
 
-  if      (fileName.endsWith(".uff", Qt::CaseInsensitive)) fileType = EFileType::FT_UFF_XML;
-  else if (fileName.endsWith(".sdr", Qt::CaseInsensitive) ||
-           fileName.endsWith(".wav", Qt::CaseInsensitive)) fileType = EFileType::FT_SDR_WAV;
-  else if (fileName.endsWith(".raw", Qt::CaseInsensitive)) fileType = EFileType::FT_RAW;
-  else if (fileName.endsWith(".iq",  Qt::CaseInsensitive)) fileType = EFileType::FT_IQ;
-  else qDebug() << "Unknown file type in: " << fileName;
+#if 0
+  if      (iFileName.endsWith(".uff", Qt::CaseInsensitive)) fileType = EFileType::UFF_XML;
+  else if (iFileName.endsWith(".sdr", Qt::CaseInsensitive) ||
+           iFileName.endsWith(".wav", Qt::CaseInsensitive)) fileType = EFileType::SDR_WAV;
+  else if (iFileName.endsWith(".raw", Qt::CaseInsensitive)) fileType = EFileType::FT_RAW;
+  else if (iFileName.endsWith(".iq",  Qt::CaseInsensitive)) fileType = EFileType::FT_IQ;
+  else qDebug() << "Unknown file type in: " << iFileName;
+#else
+  // Open the selected file and read the first 5 bytes to determine the file type. Then close the file.
+  u8 mByteBuffer[5];
+  FILE * pFile = open_file(iFileName, "rb");
+
+  if (pFile == nullptr)
+  {
+    return EFileType::UNDEF;
+  }
+
+  if (fread(mByteBuffer, sizeof(u8), 5, pFile) < 5)
+  {
+    fclose(pFile);
+    return EFileType::UNDEF;
+  }
+
+  fclose(pFile);
+
+  if (memcmp(mByteBuffer, "<?xml", 5) == 0)
+  {
+    return EFileType::UFF_XML;
+  }
+
+  if ((memcmp(mByteBuffer, "RIFF", 4) == 0) ||
+      (memcmp(mByteBuffer, "RF64", 4) == 0))
+  {
+    return EFileType::SDR_WAV;
+  }
+
+  return EFileType::RAW_IQ;
+#endif
 
   return fileType;
 }
@@ -278,7 +297,7 @@ void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const
 
 FILE * OpenFileDialog::open_raw_dump_xmlfile_ptr()
 {
-  QString channel = Settings::Main::varChannel.read().toString();
+  const QString channel = Settings::Main::varPresetCh.read().toString(); // valid also while file play as this method is only called in device mode
   const QString fileName = _open_file_dialog(channel.trimmed(), sSettingSampleStorageDir, "Xml", ".uff");
   if (fileName.isEmpty())
   {
@@ -292,4 +311,9 @@ FILE * OpenFileDialog::open_raw_dump_xmlfile_ptr()
   }
 
   return theFile;
+}
+
+FILE * OpenFileDialog::open_log_file_ptr()
+{
+  return nullptr;
 }

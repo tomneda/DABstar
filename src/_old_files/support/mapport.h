@@ -8,11 +8,11 @@
  */
 
 /*
- *    Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018, 2019
+ *    Copyright (C) 2013, 2014, 2015, 2016, 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB (formerly SDR-J, JSDR).
+ *    This file is part of the Qt-DAB .
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -28,23 +28,24 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  NORMAL_BUTTON_H
-#define  NORMAL_BUTTON_H
+#pragma once
 
-#include  <QPushButton>
-#include  <QSize>
+#include	<QDialog>
+#include	<QLabel>
+#include	<QLineEdit>
 
-//	just redefining sizeHint
-class normalPushButton : public QPushButton
+class MapPortHandler : public QDialog
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  explicit normalPushButton(QWidget *);
-  ~normalPushButton() override = default;
-  QSize sizeHint() const override;
-  void mousePressEvent(QMouseEvent * e) override;
-signals:
-  void rightClicked();
-};
+  MapPortHandler();
+  ~MapPortHandler();
 
-#endif
+private:
+  QLabel * mapPortText;
+  QLineEdit * mapPortSetting;
+  QPushButton * acceptButton;
+
+private slots:
+  void _slot_handle_accept_button();
+};

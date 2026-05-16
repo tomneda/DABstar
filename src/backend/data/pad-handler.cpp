@@ -54,7 +54,7 @@ PadHandler::PadHandler(DabRadio * mr)
   mpMotObject.reset(new MotObject(mr, false));
 
   connect(this, &PadHandler::signal_show_label, mr, &DabRadio::slot_show_label);
-  connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_show_mot_handling);
+  connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_trigger_mot_indicator);
 
   mMscDataGroupBuffer.reserve(1024); // try to avoid future memory swapping
   mDataBuffer.reserve(1024); // try to avoid future memory swapping
@@ -532,7 +532,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 
   if (size < 2)
   {
-    fprintf(stderr, "build_MSC_segment: data size < 2\n");
+    qWarning("Data size < 2");
     return;
   }
 

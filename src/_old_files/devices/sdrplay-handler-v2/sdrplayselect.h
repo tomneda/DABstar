@@ -21,8 +21,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #
-#ifndef	__SDRPLAY_SELECT__
-#define	__SDRPLAY_SELECT__
+#pragma once
 #
 #include "glob_data_types.h"
 #include <QDialog>
@@ -47,5 +46,4 @@ private slots:
 void	select_rsp	(QModelIndex);
 };
 
-#endif
 

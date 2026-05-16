@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef OFDM_DECODER_H
-#define OFDM_DECODER_H
+#pragma once
 
 #ifndef HAVE_SSE_OR_AVX
 
@@ -38,7 +37,6 @@
 #include "freq-interleaver.h"
 #include "ringbuffer.h"
 #include <QObject>
-#include <cstdint>
 #include <vector>
 
 class DabRadio;
@@ -55,7 +53,7 @@ public:
     i32 CurOfdmSymbolNo;
     f32 MeanSigmaSqFreqCorr;
     f32 SNR;
-    f32 ModQuality;
+    f32 MER;
     f32 TestData1;
     f32 TestData2;
   };
@@ -75,7 +73,7 @@ public:
 
 private:
   DabRadio * const mpRadioInterface;
-  FreqInterleaver mFreqInterleaver;
+  FreqInterleaver mFreqInterleaver{};
 
   RingBuffer<cf32> * const mpIqBuffer;
   RingBuffer<f32> * const mpCarrBuffer;
@@ -112,14 +110,15 @@ private:
   [[nodiscard]] f32 _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const TArrayTu &);
   void _reset_null_symbol_statistics();
-  cf32 cmplx_from_phase2(const f32 iPhase);
+  cf32 cmplx_from_phase2(const f32 iPhase) const;
 
   static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
 
 signals:
   void signal_slot_show_iq(i32, f32);
-  void signal_show_lcd_data(const SLcdData *);
+  void signal_show_lcd_data(const SLcdData &);
 };
 
+Q_DECLARE_METATYPE(OfdmDecoder::SLcdData)
+
 #endif // HAVE_SSE_OR_AVX
-#endif

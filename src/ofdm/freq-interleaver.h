@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  FREQ_INTERLEAVER_H
-#define  FREQ_INTERLEAVER_H
+#pragma once
 
 #include  <cstdint>
 #include  <vector>
@@ -56,5 +55,4 @@ private:
   void createMapper(const i16 iV1, const i16 iLwb, const i16 iUpb);
 };
 
-#endif
 

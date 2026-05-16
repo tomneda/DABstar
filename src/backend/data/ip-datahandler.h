@@ -28,8 +28,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef  IP_DATAHANDLER_H
-#define  IP_DATAHANDLER_H
+#pragma once
 
 #include  "dab-constants.h"
 #include  "virtual-datahandler.h"
@@ -58,7 +57,6 @@ signals:
   void signal_write_datagramm(int);
 };
 
-#endif
 
 
 

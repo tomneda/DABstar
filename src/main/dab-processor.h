@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  DAB_PROCESSOR_H
-#define  DAB_PROCESSOR_H
+#pragma once
 /*
  *  DabProcessor is the embodying of all functionality related
  *  to the actual DAB processing.
@@ -80,7 +79,7 @@ public:
 
   void start();
   void stop();
-  void startDumping(SNDFILE *);
+  void start_dumping(SNDFILE *);
   void stop_dumping();
   bool start_eti_generator(const QString &);
   void stop_eti_generator();
@@ -93,10 +92,8 @@ public:
   void stop_fic_dump();
 
   // for the MscHandler
-  void reset_services();
-  bool is_service_running(const SDescriptorType & iDT, EProcessFlag iProcessFlag);
-  bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag);
-  void stop_service(const SDescriptorType & iDT, EProcessFlag iProcessFlag);
+  bool is_service_running(const SDescriptorType & iDT, EProcessFlag iProcessFlag) const;
+  bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag) const;
   void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);
   void stop_all_services();
   bool set_audio_channel(const SAudioData & iAD, RingBuffer<i16> * ipoAudioBuffer, EProcessFlag iProcessFlag);
@@ -138,6 +135,7 @@ private:
   bool mRfFreqShiftUsed = false;
   bool mAllowRfFreqShift = false;
   f32 mClockErrHz = 0.0f;
+  TimeSyncer::EState mTimeSyncerStateLast = TimeSyncer::EState::IDLE;
 
   RingBuffer<cf32> * mpCirBuffer = nullptr;
 
@@ -177,4 +175,3 @@ signals:
   void signal_linear_peak_and_rms_level(f32, f32);
 };
 
-#endif

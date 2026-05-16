@@ -1,6 +1,7 @@
 #!/bin/bash
+set -euo pipefail
 
 DST=~/DABstarAppImage/build
-cd $DST || exit
+cd "$DST"
 
-cmake --build . -- -j6
+cmake --build . -- -j$(nproc)

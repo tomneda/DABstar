@@ -1,5 +1,4 @@
-#ifndef  VITERBI_SPIRAL_H
-#define  VITERBI_SPIRAL_H
+#pragma once
 /*
  * 	Viterbi.h according to the SPIRAL project
  */
@@ -29,4 +28,3 @@ private:
   decision_t * decisions = nullptr;
 };
 
-#endif

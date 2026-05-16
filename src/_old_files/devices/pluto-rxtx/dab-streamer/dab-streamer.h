@@ -23,8 +23,7 @@
  *	from Jan Roemisch (github.com/maxx23), all rights acknowledged
  */
 
-#ifndef __DAB_STREAMER_H
-#define __DAB_STREAMER_H
+#pragma once
 
 #include  <thread>
 #include  <stdint.h>
@@ -189,5 +188,4 @@ private:
   struct rds_group_s * rds_group_schedule(void);
 };
 
-#endif
 

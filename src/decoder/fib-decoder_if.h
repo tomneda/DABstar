@@ -10,8 +10,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef DABSTAR_IFC_FIB_DECODER_H
-#define DABSTAR_IFC_FIB_DECODER_H
+#pragma once
 
 #include "glob_defs.h"
 #include "dab-constants.h"
@@ -96,7 +95,7 @@ public:
   virtual u8 get_ecc() const = 0;
   // virtual u16 get_country_name() const = 0;
   // virtual u8 get_countryId() const = 0;
-  virtual i32 get_ensembleId() const = 0;
+  virtual i32 get_EId() const = 0;
   virtual QString get_ensemble_name() const = 0;
 
   virtual std::vector<i8> get_sub_channel_id_list() const = 0;
@@ -125,4 +124,3 @@ public:
   static std::unique_ptr<IFibDecoder> create(DabRadio * radio);
 };
 
-#endif // DABSTAR_IFC_FIB_DECODER_H

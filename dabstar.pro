@@ -32,7 +32,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"4.7.0\\\"
+DEFINES		+= PRJ_VERS=\\\"4.99.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -109,10 +109,12 @@ INCLUDEPATH += \
     src/devices/filereaders/xml-filereader \
     src/devices/filereaders/raw-files \
     src/devices/filereaders/wav-files \
-    src/devices/dummy-handler
+    src/devices/dummy-handler \
+    src/ensemble-list
 
 HEADERS += \
     src/main/dabradio.h \
+    src/main/dab_channel_desc.h \
     src/main/glob_defs.h \
     src/main/glob_enums.h \
     src/main/dab-processor.h \
@@ -187,15 +189,14 @@ HEADERS += \
     src/support/openfiledialog.h \
     src/support/content-table.h \
     src/support/dl-cache.h \
-    src/support/ITU_Region_1.h \
-    src/support/coordinates.h \
-    src/support/mapport.h \
+    src/support/itu-regions.h \
     src/support/map-http-server.h \
     src/support/tii-library/tii-codes.h \
-    src/support/buttons/newpushbutton.h \
-    src/support/buttons/normalpushbutton.h \
-    src/support/buttons/circlepushbutton.h \
+    #src/support/buttons/newpushbutton.h \
+    #src/support/buttons/normalpushbutton.h \
+    #src/support/buttons/circlepushbutton.h \
     src/support/custom_frame.h \
+    src/support/gui-helpers.h \
     src/support/setting-helper.h \
     src/support/wav_writer.h \
     src/support/compass_direction.h \
@@ -215,6 +216,9 @@ HEADERS += \
     src/service-list/service-list-handler.h \
     src/service-list/service-db.h \
     src/configuration/configuration.h \
+    src/ensemble-list/ensemble-list.h \
+    src/ensemble-list/ensemble-list-db.h \
+    src/ensemble-list/ensemble-list-db-handler.h \
     src/update/updatechecker.h \
     src/update/updatedialog.h \
     src/devices/device-handler.h \
@@ -234,6 +238,9 @@ SOURCES += \
     src/main/dabradio.cpp \
     src/main/dabradio_ui.cpp \
     src/main/dabradio_audio.cpp \
+    src/main/dabradio_el.cpp \
+    src/main/dabradio_ctrl.cpp \
+    src/main/dab_channel_desc.cpp \
     src/main/dab-processor.cpp \
     src/support/techdata.cpp \
     src/eti-handler/eti-generator.cpp \
@@ -292,22 +299,21 @@ SOURCES += \
     src/support/Xtan2.cpp \
     src/support/band-handler.cpp \
     src/support/dab-tables.cpp \
-    src/support/buttons/newpushbutton.cpp \
-    src/support/buttons/normalpushbutton.cpp \
-    src/support/buttons/circlepushbutton.cpp \
+    #src/support/buttons/newpushbutton.cpp \
+    #src/support/buttons/normalpushbutton.cpp \
+    #src/support/buttons/circlepushbutton.cpp \
     src/support/viterbi-spiral/viterbi-spiral.cpp \
     src/support/color-selector.cpp \
     src/support/time-table.cpp \
     src/support/openfiledialog.cpp \
     src/support/content-table.cpp \
     src/support/dl-cache.cpp \
-    src/support/ITU_Region_1.cpp \
-    src/support/coordinates.cpp \
-    src/support/mapport.cpp \
+    src/support/itu-regions.cpp \
     src/support/map-http-server.cpp \
     src/support/tii_list_display.cpp \
     src/support/tii-library/tii-codes.cpp \
     src/support/custom_frame.cpp \
+    src/support/gui-helpers.cpp \
     src/support/setting-helper.cpp \
     src/support/wav_writer.cpp \
     src/support/compass_direction.cpp \
@@ -326,6 +332,9 @@ SOURCES += \
     src/service-list/service-list-handler.cpp \
     src/service-list/service-db.cpp \
     src/configuration/configuration.cpp \
+    src/ensemble-list/ensemble-list.cpp \
+    src/ensemble-list/ensemble-list-db.cpp \
+    src/ensemble-list/ensemble-list-db-handler.cpp \
     src/update/updatechecker.cpp \
     src/update/updatedialog.cpp \
     src/devices/device-selector.cpp \
@@ -342,6 +351,8 @@ FORMS += \
     forms/cir-widget.ui \
     forms/configuration.ui \
     forms/dabradio.ui \
+    forms/dumpwidget.ui \
+    forms/ensemble-list.ui \
     forms/spectrum_viewer.ui \
     forms/techdata.ui \
     forms/updatedialog.ui \

@@ -16,7 +16,6 @@
 #include "service-list-handler.h"
 #include <QTableView>
 #include <QPainter>
-#include <QSettings>
 #include <QHeaderView>
 #include <QLoggingCategory>
 
@@ -39,7 +38,7 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
     if (index.column() == ServiceDB::CI_SId)
     {
       const u32 serviceId = index.data().toUInt();
-      const QString hexText = QString("0x%1").arg(serviceId, 4, 16, QChar('0'));
+      const QString hexText = QString("%1").arg(serviceId, 4, 16, QChar('0'));
 
       QStyleOptionViewItem opt = option;
       initStyleOption(&opt, index);
@@ -94,25 +93,26 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   mpTableView->setSelectionMode(QAbstractItemView::NoSelection);
   //mpTableView->verticalHeader()->hide(); // hide first column
   mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
+  mpTableView->setFocusPolicy(Qt::NoFocus);
 
   mServiceDB.open_db(); // program will exit if table could not be opened
 
-  mServiceDB.set_data_mode(ServiceDB::EDataMode::Temporary);
+  // mServiceDB.set_data_mode(ServiceDB::EDataMode::Temporary);
+  // //mServiceDB.delete_table();
+  // mServiceDB.create_table();
+
+  mServiceDB.set_data_mode(ServiceDB::EDataMode::DevicePlayer);
   //mServiceDB.delete_table();
   mServiceDB.create_table();
 
-  mServiceDB.set_data_mode(ServiceDB::EDataMode::Permanent);
+  mServiceDB.set_data_mode(ServiceDB::EDataMode::FilePlayer);
   //mServiceDB.delete_table();
   mServiceDB.create_table();
 
-    if (const auto sortColIdx = static_cast<ServiceDB::EColIdx>(Settings::ServiceList::varSortCol.read().toUInt());
-        sortColIdx < ServiceDB::CI_MAX)
+  if (const auto sortColIdx = static_cast<ServiceDB::EColIdx>(Settings::ServiceList::varSortCol.read().toUInt());
+      sortColIdx < ServiceDB::CI_MAX)
   {
-    mServiceDB.sort_column(sortColIdx, true); // first switch to ascending sorting
-    if (Settings::ServiceList::varSortDesc.read().toBool())
-    {
-      mServiceDB.sort_column(sortColIdx, false); // second call will change sorting direction
-    }
+    mServiceDB.sort_column(sortColIdx, (Settings::ServiceList::varSortDesc.read().toBool() ? ServiceDB::ESortDir::ForceSortDesc : ServiceDB::ESortDir::ForceSortAsc));
   }
 
   _fill_table_view_from_db();
@@ -167,6 +167,42 @@ void ServiceListHandler::delete_not_existing_SId_at_channel(const QString & iCha
   }
 }
 
+void ServiceListHandler::delete_not_existing_channel(const TChannelList & iChList)
+{
+  bool contentChanged = false;
+
+  // Get list of all unique channels currently in the database
+  const TChannelList curChList = mServiceDB.get_list_of_channels();
+
+  for (const auto & curCh : curChList)
+  {
+    bool found = false;
+    for (const auto & newCh : iChList)
+    {
+      if (curCh == newCh)
+      {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+    {
+      if (mServiceDB.delete_channel(curCh)) // true if channel entries were deleted
+      {
+        qCDebug(sLogServiceListHandler) << "Deleted in database: channel" << curCh;
+        contentChanged = true;
+      }
+    }
+  }
+
+  if (contentChanged) // true if any entry was deleted
+  {
+    _fill_table_view_from_db();
+    _jump_to_list_entry_and_emit_fav_status();
+  }
+}
+
 void ServiceListHandler::delete_table(const bool iDeleteFavorites)
 {
   // avoid coloring list while scan
@@ -185,27 +221,29 @@ void ServiceListHandler::create_new_table()
 
 void ServiceListHandler::set_selector(const QString & iChannel, const u32 iSId)
 {
-  if (iChannel.isEmpty() || iSId == 0)
+  if (iChannel.isEmpty()/* || iSId == 0*/)
   {
     return;
   }
 
-  if (mChannelLast == iChannel && mServiceIdLast == iSId)
-  {
-    return;
-  }
-
+  const bool chChanged = (mChannelLast != iChannel);
   mChannelLast = iChannel;
   mServiceIdLast = iSId;
+
   mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
 
+  // build database model if we must filter to the new FId or Channel
+  if (mShowOnlyCurrentFIdOrCh && chChanged)
+  {
+    _fill_table_view_from_db();
+  }
   _jump_to_list_entry_and_emit_fav_status();
 }
 
 // this allows selecting the whole channel group when the channel selector was used
 void ServiceListHandler::set_selector_channel_only(const QString & iChannel)
 {
-  set_selector(iChannel, /*"?"*/0); // TODO:
+  set_selector(iChannel, 0);
   mpTableView->update();
 }
 
@@ -225,13 +263,23 @@ void ServiceListHandler::restore_favorites()
 
 void ServiceListHandler::_fill_table_view_from_db()
 {
-  mpTableView->setModel(mServiceDB.create_model());
+  QAbstractItemModel * const oldModel = mpTableView->model();
+
+  mpTableView->setModel(mServiceDB.create_model((mShowOnlyCurrentFIdOrCh ? mChannelLast : QString())));
+
+  if (oldModel != nullptr)
+  {
+    oldModel->deleteLater(); // setModel() does not take the ownership, so delete old pointer here
+  }
+  
   if constexpr (!cShowSIdInServiceList)
   {
     mpTableView->hideColumn(ServiceDB::CI_SId);
   }
-  mpTableView->resizeColumnsToContents();
-  mpTableView->setFixedWidth(mpTableView->sizeHint().width()); // strange, only this works more reliable
+
+  QHeaderView * const header = mpTableView->horizontalHeader();
+  header->setSectionResizeMode(QHeaderView::ResizeToContents);
+  header->setStretchLastSection(true);
 }
 
 void ServiceListHandler::jump_entries(i32 iSteps)
@@ -267,7 +315,7 @@ ServiceListHandler::TSIdList ServiceListHandler::get_list_of_SId_in_channel(cons
 
 void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkipOffset /*= 0*/, const bool iCenterContent /*= false*/)
 {
-  if (mChannelLast.isEmpty() || mServiceIdLast == 0)
+  if (mChannelLast.isEmpty()/* || mServiceIdLast == 0*/)
   {
     return;
   }
@@ -277,42 +325,64 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkip
 
   i32 rowIdxFound = -1;
 
-  for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
+  if (mServiceIdLast == 0)
   {
-    QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
-    QModelIndex modIdxServiceId = pModel->index(rowIdx, ServiceDB::CI_SId);
-
-    if (pModel->data(modIdxServiceId).toUInt() == mServiceIdLast &&
-        pModel->data(modIdxChannel).toString() == mChannelLast)
+    for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
     {
-      rowIdxFound = rowIdx;
-      break;
+      QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
+
+      if (pModel->data(modIdxChannel).toString() == mChannelLast)
+      {
+        rowIdxFound = rowIdx;
+        break;
+      }
+    }
+
+    if (rowIdxFound >= 0)
+    {
+      mpTableView->scrollTo(pModel->index(rowIdxFound, ServiceDB::CI_Channel), QAbstractItemView::PositionAtTop);
+      mpTableView->update();
     }
   }
-
-  if (rowIdxFound >= 0)
+  else
   {
-    const i32 maxRows = pModel->rowCount();
-    rowIdxFound += iSkipOffset;
-    while (rowIdxFound < 0) rowIdxFound += maxRows;
-    while (rowIdxFound >= maxRows) rowIdxFound -= maxRows;
-
-    if (iSkipOffset != 0) // only trigger new status to the radio frontend if it was changed by a skip
+    for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
     {
-      mChannelLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Channel)).toString();
-      const QString serviceLabel = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Service)).toString();
-      mServiceIdLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_SId)).toUInt();
-      mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
+      QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
+      QModelIndex modIdxServiceId = pModel->index(rowIdx, ServiceDB::CI_SId);
 
-      emit signal_selection_changed(mChannelLast, serviceLabel, mServiceIdLast);
+      if (pModel->data(modIdxServiceId).toUInt() == mServiceIdLast &&
+          pModel->data(modIdxChannel).toString() == mChannelLast)
+      {
+        rowIdxFound = rowIdx;
+        break;
+      }
     }
 
-    const bool isFav = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Fav)).toBool();
-    mpTableView->scrollTo(pModel->index(rowIdxFound, ServiceDB::CI_Fav),
-                          (iCenterContent ? QAbstractItemView::PositionAtCenter : QAbstractItemView::EnsureVisible));
-    mpTableView->update();
+    if (rowIdxFound >= 0)
+    {
+      const i32 maxRows = pModel->rowCount();
+      rowIdxFound += iSkipOffset;
+      while (rowIdxFound < 0) rowIdxFound += maxRows;
+      while (rowIdxFound >= maxRows) rowIdxFound -= maxRows;
 
-    emit signal_favorite_status(isFav);
+      if (iSkipOffset != 0) // only trigger new status to the radio frontend if it was changed by a skip
+      {
+        mChannelLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Channel)).toString();
+        const QString serviceLabel = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Service)).toString();
+        mServiceIdLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_SId)).toUInt();
+        mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
+
+        emit signal_selection_changed(mChannelLast, serviceLabel, mServiceIdLast);
+      }
+
+      const bool isFav = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Fav)).toBool();
+      mpTableView->scrollTo(pModel->index(rowIdxFound, ServiceDB::CI_Fav),
+                            (iCenterContent ? QAbstractItemView::PositionAtCenter : QAbstractItemView::EnsureVisible));
+      mpTableView->update();
+
+      emit signal_favorite_status(isFav);
+    }
   }
 }
 
@@ -327,15 +397,20 @@ void ServiceListHandler::_slot_selection_changed_with_fav(const QString & iChann
   emit signal_favorite_status(iIsFav); // this emit speeds up the FavButton setting, the other one is more important
 }
 
-void ServiceListHandler::_slot_header_clicked(i32 iIndex)
+void ServiceListHandler::_sort_and_update_service_list(const i32 iIndex, const ServiceDB::ESortDir iSortDir)
 {
-  mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex), false);
+  mServiceDB.sort_column(static_cast<ServiceDB::EColIdx>(iIndex), iSortDir);
 
   Settings::ServiceList::varSortCol.write(iIndex);
-  Settings::ServiceList::varSortDesc.write((mServiceDB.is_sort_desc() ? 1 : 0));
+  Settings::ServiceList::varSortDesc.write(mServiceDB.is_sort_desc() ? 1 : 0);
 
   _fill_table_view_from_db();
   _jump_to_list_entry_and_emit_fav_status();
+}
+
+void ServiceListHandler::_slot_header_clicked(i32 iIndex)
+{
+  _sort_and_update_service_list(iIndex, ServiceDB::ESortDir::ChangeSortDirection);
 }
 
 void ServiceListHandler::set_data_mode(EDataMode iDataMode)
@@ -343,3 +418,11 @@ void ServiceListHandler::set_data_mode(EDataMode iDataMode)
   mServiceDB.set_data_mode(iDataMode);
   _fill_table_view_from_db();
 }
+
+void ServiceListHandler::set_sort_to_FId_Or_Ch(const bool iShowOnlyCurrentFIdOrCh)
+{
+  mShowOnlyCurrentFIdOrCh = iShowOnlyCurrentFIdOrCh;
+  _fill_table_view_from_db();
+  _jump_to_list_entry_and_emit_fav_status();
+}
+  

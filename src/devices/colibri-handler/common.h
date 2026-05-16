@@ -1,5 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
 #include <stdint.h>
 #include	<complex>
@@ -20,4 +19,3 @@ typedef enum {
 typedef bool (*pCallbackRx)(cf32 *, u32, bool, void *);
 
 
-#endif // COMMON_H

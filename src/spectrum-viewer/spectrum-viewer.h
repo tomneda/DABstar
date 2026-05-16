@@ -34,9 +34,7 @@
 //	Shows the spectrum of the incoming data stream 
 //	If made invisible, it is a "do nothing"
 //
-#ifndef    SPECTRUM_VIEWER_H
-#define    SPECTRUM_VIEWER_H
-
+#pragma once
 
 #include  "dab-constants.h"
 #include  "glob_enums.h"
@@ -45,20 +43,10 @@
 #include  "custom_frame.h"
 #include  "tii-detector.h"
 #include  <array>
-#include  <QFrame>
 #include  <QObject>
-#include  <QBrush>
 #include  <QTimer>
 #include  <qwt.h>
-#include  <qwt_plot.h>
-#include  <qwt_plot_marker.h>
-#include  <qwt_plot_grid.h>
 #include  <qwt_plot_curve.h>
-#include  <qwt_color_map.h>
-#include  <qwt_plot_zoomer.h>
-#include  <qwt_plot_textlabel.h>
-#include  <qwt_plot_panner.h>
-#include  <qwt_picker_machine.h>
 #include  <qwt_scale_widget.h>
 #include  <fftw3.h>
 
@@ -93,6 +81,7 @@ public:
   void show_clock_error(f32 e) const;
   void show();
   void hide();
+  void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool is_hidden() const;
   void show_digital_peak_and_rms_level(f32 iDigLevelPeak, f32 iDigLevelRms) const;
 
@@ -148,5 +137,3 @@ signals:
   void signal_cb_nom_carrier_changed(bool);
   void signal_window_closed();
 };
-
-#endif

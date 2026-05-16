@@ -1,7 +1,6 @@
 /*
  * The idea of This file was original taken from AbracaDABra and is adapted by Thomas Neder
  * (https://github.com/tomneda)
- * The original copyright information is preserved below and is acknowledged.
  */
 
 #include "audioiodevice.h"
@@ -27,6 +26,7 @@ void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
 
   mSampleRateKHz = iBuffer->sampleRate / 1000;
   mPeakLevelSampleCntBothChannels = iBuffer->sampleRate / cNumPeakLevelPerSecond; // 20 "peaks" per second
+  mTestTone.set_sample_rate(mSampleRateKHz);
 }
 
 void AudioIODevice::start()
@@ -131,7 +131,6 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
       }
 
       // at this point we have enough sample to unmute and there is no request => preparing data
-      //_extract_audio_data_from_fifo(opData, bytesToRead);
       rb->get_data_from_ring_buffer(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
 
       // unmute request
@@ -167,7 +166,6 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
         return iMaxWantedBytesBothChannels;
       }
 
-      //_extract_audio_data_from_fifo(opData, numSamplesAvailBothChannels);
       rb->get_data_from_ring_buffer(opDataSamplesBothChannels, availableSamplesBothChannels); // take what we have ...
       memset(opDataSamplesBothChannels + availableSamplesBothChannels, 0, maxWantedBytesBothChannels - (availableSamplesBothChannels * sizeof(i16))); // ... and set rest of the samples to be 0
 
@@ -180,11 +178,11 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
     {
       // enough sample available -> reading samples -> this is the normal running operation
       rb->get_data_from_ring_buffer(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
-      //_extract_audio_data_from_fifo(opData, bytesToRead);
 
       if (!muteRequest)
       {
         // done
+        mTestTone.process(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
         _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
         return iMaxWantedBytesBothChannels;
       }
@@ -206,6 +204,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
     // mute can be requested when there is not enough samples or from HMI
     _fade_out_audio_samples(opDataSamplesBothChannels, maxWantedSamplesStereoPairForFading);
     mPlaybackState = EPlaybackState::Muted; // muted
+    mDelayLine.reset();
   }
 
   _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
@@ -235,10 +234,20 @@ void AudioIODevice::set_mute_state(bool iMuteActive)
   mMuteFlag = iMuteActive;
 }
 
+void AudioIODevice::set_test_tone(const bool iActive)
+{
+  mTestTone.activate(iActive);
+}
+
+void AudioIODevice::set_peak_level_delay(const i32 iDelaySteps)
+{
+  mDelayLine.set_delay_steps(iDelaySteps);
+}
+
 void AudioIODevice::_eval_peak_audio_level(const i16 * const ipData, const i32 iNumSamples)
 {
   assert(iNumSamples % 2 == 0);
-  mpTechDataBuffer->put_data_into_ring_buffer(ipData, (i32)iNumSamples);
+  mpTechDataBuffer->put_data_into_ring_buffer(ipData, (i32)iNumSamples);  // for audio spectrum analyzer
   emit signal_audio_data_available((i32)iNumSamples, (i32)mSampleRateKHz * 1000);
 
   for (i32 idx = 0; idx < iNumSamples; idx+=2)
@@ -254,10 +263,12 @@ void AudioIODevice::_eval_peak_audio_level(const i16 * const ipData, const i32 i
     if (mPeakLevelCurSampleCnt > mPeakLevelSampleCntBothChannels) // collect many enough samples? (also over more blocks)
     {
       static const f32 cOffs_dB = 20 * std::log10((f32)std::numeric_limits<i16>::max()); // do not use constexpr as it is not supported by all compilers for std::log10()
-      const f32 left_dB  = (mAbsPeakLeft  > 0 ? 20.0f * std::log10((f32) mAbsPeakLeft)  - cOffs_dB : -40.0f);
-      const f32 right_dB = (mAbsPeakRight > 0 ? 20.0f * std::log10((f32) mAbsPeakRight) - cOffs_dB : -40.0f);
+      SStereoPeakLevel spl;
+      spl.left  = (mAbsPeakLeft  > 0 ? 20.0f * std::log10((f32) mAbsPeakLeft)  - cOffs_dB : -40.0f);
+      spl.right = (mAbsPeakRight > 0 ? 20.0f * std::log10((f32) mAbsPeakRight) - cOffs_dB : -40.0f);
 
-      emit signal_show_audio_peak_level(left_dB, right_dB);
+      const SStereoPeakLevel delayed = mDelayLine.get_set_value(spl);
+      emit signal_show_audio_peak_level(delayed.left, delayed.right);
 
       mPeakLevelCurSampleCnt = 0;
       mAbsPeakLeft = 0.0f;
@@ -267,30 +278,3 @@ void AudioIODevice::_eval_peak_audio_level(const i16 * const ipData, const i32 i
   }
 }
 
-// void AudioIODevice::insertTestTone(DSPCOMPLEX & ioS)
-// {
-//   f32 toneFreqHz = 1000.0f;
-//   f32 level = 0.9f;
-//
-//   if (!testTone.Enabled)
-//   {
-//     return;
-//   }
-//
-//   ioS *= (1.0f - level);
-//   if (testTone.NoSamplRemain > 0)
-//   {
-//     testTone.NoSamplRemain--;
-//     testTone.CurPhase += testTone.PhaseIncr;
-//     testTone.CurPhase = PI_Constrain(testTone.CurPhase);
-//     const f32 smpl = sin(testTone.CurPhase);
-//     ioS += level * DSPCOMPLEX(smpl, smpl);
-//   }
-//   else if (++testTone.TimePeriodCounter > workingRate * testTone.TimePeriod)
-//   {
-//     testTone.TimePeriodCounter = 0;
-//     testTone.NoSamplRemain = workingRate * testTone.SignalDuration;
-//     testTone.CurPhase = 0.0f;
-//     testTone.PhaseIncr = 2 * M_PI / workingRate * toneFreqHz;
-//   }
-// }

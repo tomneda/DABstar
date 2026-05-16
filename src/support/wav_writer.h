@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	WAV_WRITER_H
-#define	WAV_WRITER_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <mutex>
@@ -56,4 +55,3 @@ private:
   u32 mLocationCounter = 0;
 };
 
-#endif

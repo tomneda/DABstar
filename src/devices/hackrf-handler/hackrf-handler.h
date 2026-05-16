@@ -32,8 +32,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef HACKRF_HANDLER_H
-#define HACKRF_HANDLER_H
+#pragma once
 
 #include  <QObject>
 #include  <QFrame>
@@ -187,4 +186,3 @@ private slots:
   void slot_set_ppm_correction(i32);
 };
 
-#endif

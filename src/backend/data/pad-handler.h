@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef  PAD_HANDLER_H
-#define  PAD_HANDLER_H
+#pragma once
 
 #include "mot-object.h"
 #include "charsets.h"
@@ -91,4 +90,3 @@ signals:
   void signal_show_mot_handling();  // triggers MOT indicator to "green" for a while
 };
 
-#endif

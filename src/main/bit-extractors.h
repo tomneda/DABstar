@@ -14,8 +14,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef BIT_EXTRACTORS_H
-#define BIT_EXTRACTORS_H
+#pragma once
 
 static inline u8 getBits_1(const u8 * d, i32 offset)
 {
@@ -160,4 +159,3 @@ static inline bool check_get_bits(T & ioNewExpected, const u8 * const ipData, co
   return false;
 }
 
-#endif // BIT_EXTRACTORS_H

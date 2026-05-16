@@ -11,8 +11,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DABSTAR_CONFIGURATION_H
-#define DABSTAR_CONFIGURATION_H
+#pragma once
 
 #include "ui_configuration.h"
 #include <QWidget>
@@ -36,10 +35,14 @@ private:
 private slots:
   void _slot_handle_dc_corr(bool iChecked);
   void _slot_handle_dc_and_iq_corr(bool iChecked);
+  void _slot_coordinate_edited();
+  void _slot_map_port_edited();
+  void _slot_select_base_path();
 
 signals:
   void signal_handle_dc_and_iq_corr(bool oDcCorr, bool oIqCorr);
+  void signal_coordinates_changed();
+  void signal_data_base_path_changed();
 };
 
 
-#endif 

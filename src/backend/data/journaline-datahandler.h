@@ -28,8 +28,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef  JOURNALINE_DATAHANDLER_H
-#define  JOURNALINE_DATAHANDLER_H
+#pragma once
 
 #include  "dab-constants.h"
 #include  "virtual-datahandler.h"
@@ -64,4 +63,3 @@ signals:
   void signal_new_data();
 };
 
-#endif

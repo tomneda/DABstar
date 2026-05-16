@@ -255,7 +255,7 @@ void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, co
 {
   for (i32 k = -cK / 2, i = 0; k < cK / 2; k += 2, ++i)
   {
-    const i32 fftIdx = fft_shift_skip_dc(k, cTu);
+    const i32 fftIdx = fft_shift_skip_dc<cTu>(k);
     const cf32 prod = iVec[fftIdx] * conj(iVec[fftIdx + 1]); // TII carriers are given in pairs
     ioVec[i] += prod;
 

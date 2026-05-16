@@ -25,6 +25,7 @@
 #include <QSlider>
 #include <QTimer>
 #include <QDateTime>
+#include <QLineEdit>
 
 
 namespace Settings
@@ -78,7 +79,7 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
   mDefaultValue = iDefaultValue;
   _update_ui_state_from_setting();
 
-  if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+  if (const auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
   {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
     connect(pD, &QCheckBox::checkStateChanged, [this](i32 /*iState*/){ _update_ui_state_to_setting(); });
@@ -88,28 +89,33 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+  if (const auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
   {
-    // connect(pD, &QComboBox::currentTextChanged, [this](const QString &){ _update_ui_state_to_setting(); });
-    connect(pD, &QComboBox::currentIndexChanged, [this](i32){ _update_ui_state_to_setting(); });
+    connect(pD, &QComboBox::currentIndexChanged, [this](i32){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+  if (const auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
   {
-    connect(pD, &QSpinBox::valueChanged, [this](i32 /*iValue*/){ _update_ui_state_to_setting(); });
+    connect(pD, &QSpinBox::valueChanged, [this](i32 /*iValue*/){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
+  if (const auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
   {
-    connect(pD, &QDoubleSpinBox::valueChanged, [this](f64 /*iValue*/){ _update_ui_state_to_setting(); });
+    connect(pD, &QDoubleSpinBox::valueChanged, [this](f64 /*iValue*/){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
+  if (const auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
   {
     connect(pD, &QSlider::valueChanged, [this](i32 /*iValue*/){ _update_ui_state_to_setting_deferred(); });
+    return;
+  }
+
+  if (const auto * const pD = dynamic_cast<QLineEdit *>(mpWidget); pD != nullptr)
+  {
+    connect(pD, &QLineEdit::textChanged, [this](const QString & /*iValue*/){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
@@ -172,6 +178,13 @@ void Widget::_update_ui_state_from_setting()
     return;
   }
 
+  if (auto * const pD = dynamic_cast<QLineEdit *>(mpWidget); pD != nullptr)
+  {
+    const QString var = Storage::instance().value(mKey, mDefaultValue).toString();
+    pD->setText(var);
+    return;
+  }
+
   qFatal("Pointer to mpWidget not handled (2)");
 }
 
@@ -209,6 +222,12 @@ void Widget::_update_ui_state_to_setting() const
     return;
   }
 
+  if (auto * const pD = dynamic_cast<QLineEdit *>(mpWidget); pD != nullptr)
+  {
+    Storage::instance().setValue(mKey, pD->text());
+    return;
+  }
+
   qFatal("Pointer to pWidget not handled (3)");
 }
 
@@ -238,6 +257,10 @@ PosAndSize::PosAndSize(const QString & iCat)
 : mKey(iCat + "/posAndSize")
 {}
 
+PosAndSize::PosAndSize(const QString & iCat, const QString & iName)
+: mKey(iCat + "/" + iName)
+{}
+
 void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef /*= -1*/, const i32 iHeightDef /*= -1*/, const bool iIsFixedSized /*= false*/) const
 {
   const i32 x = Storage::instance().value(mKey + "-x", -1).toInt();
@@ -259,7 +282,15 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidt
   {
     // switch-off fix-size-width as the final width fits not always on different platforms (Windows, XFCE, Gnome, ...), so better let Qt decide.
     // iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
-    iopWidget->setFixedHeight(iHeightDef);
+    if (iHeightDef > 0)
+    {
+      iopWidget->setFixedHeight(iHeightDef);
+    }
+    else
+    {
+      const auto curHeight = iopWidget->height();
+      iopWidget->setFixedHeight(curHeight); // fix the current height
+    }
   }
 }
 

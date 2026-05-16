@@ -11,11 +11,9 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef COPYRIGHT_INFO_H
-#define COPYRIGHT_INFO_H
+#pragma once
 
 #include <QString>
 
 extern QString get_copyright_text();
 
-#endif //COPYRIGHT_INFO_H

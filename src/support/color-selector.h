@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef  COLOR_SELECTOR_H
-#define  COLOR_SELECTOR_H
+#pragma once
 
 //#include  <cstdint>
 
@@ -44,5 +43,4 @@ public:
   static bool show_dialog(QColor & ioColor, const QString & iTopText);
 };
 
-#endif
 

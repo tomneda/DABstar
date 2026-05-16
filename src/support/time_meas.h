@@ -11,8 +11,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TIME_MEAS_H
-#define TIME_MEAS_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <iostream>
@@ -174,4 +173,3 @@ private:
 #define time_meas_end_print_us(m_)    time_meas_end(m_); time_meas_print_us(m_)
 #define time_meas_end_print_ns(m_)    time_meas_end(m_); time_meas_print_ns(m_)
 
-#endif // TIME_MEAS_H

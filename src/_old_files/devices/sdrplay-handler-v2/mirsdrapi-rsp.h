@@ -11,8 +11,7 @@
 // Copyright (c) 2013 Mirics Ltd, All Rights Reserved
 //
 
-#ifndef MIR_SDR_H
-#define MIR_SDR_H
+#pragma once
 
 #ifndef _MIR_SDR_QUALIFIER
 #if !defined(STATIC_LIB) && (defined(_M_X64) || defined(_M_IX86)) 
@@ -360,4 +359,3 @@ extern "C"
 }
 #endif
 
-#endif //MIR_SDR_H

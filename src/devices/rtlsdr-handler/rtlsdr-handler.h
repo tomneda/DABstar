@@ -34,8 +34,7 @@
  *
  */
 
-#ifndef RTLSDR_HANDLER_H
-#define  RTLSDR_HANDLER_H
+#pragma once
 
 #include  <QObject>
 #include  <QSettings>
@@ -178,5 +177,4 @@ signals:
   void signal_timer(i32);
 };
 
-#endif
 

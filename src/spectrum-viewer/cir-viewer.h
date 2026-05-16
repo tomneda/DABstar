@@ -1,8 +1,7 @@
 //
 //  Simple viewer for correlation of a whole frame
 //
-#ifndef  CIR_VIEWER_H
-#define  CIR_VIEWER_H
+#pragma once
 
 #include "ui_cir-widget.h"
 #include "ringbuffer.h"
@@ -30,6 +29,7 @@ public:
   void show_cir();
   void show();
   void hide();
+  void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool is_hidden();
 
 private:
@@ -47,4 +47,3 @@ signals:
   void signal_frame_closed();
 };
 
-#endif

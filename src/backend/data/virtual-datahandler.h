@@ -28,8 +28,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef  VIRTUAL_DATAHANDLER_H
-#define  VIRTUAL_DATAHANDLER_H
+#pragma once
 
 #include  "dab-constants.h"
 #include  <QObject>
@@ -45,7 +44,6 @@ public:
   virtual void add_MSC_data_group(const std::vector<u8> &)  {}
 };
 
-#endif
 
 
 

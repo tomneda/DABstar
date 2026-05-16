@@ -10,9 +10,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef OFDM_DECODER_SIMD_H
-#define OFDM_DECODER_SIMD_H
-#include "time_meas.h"
+#pragma once
 
 #ifdef HAVE_SSE_OR_AVX
 
@@ -26,7 +24,6 @@
 
 class DabRadio;
 
-
 class OfdmDecoder : public QObject
 {
 Q_OBJECT
@@ -37,11 +34,11 @@ public:
   struct SLcdData
   {
     i32 CurOfdmSymbolNo;
-    f32 ModQuality;
+    f32 MER;
+    f32 SNR;
+    f32 MeanSigmaSqFreqCorr;
     f32 TestData1;
     f32 TestData2;
-    f32 MeanSigmaSqFreqCorr;
-    f32 SNR;
   };
 
   void reset();
@@ -59,7 +56,7 @@ public:
 private:
 
   DabRadio * const mpRadioInterface;
-  FreqInterleaver mFreqInterleaver;
+  FreqInterleaver mFreqInterleaver{};
 
   RingBuffer<cf32> * const mpIqBuffer;
   RingBuffer<f32> * const mpCarrBuffer;
@@ -118,13 +115,10 @@ private:
   // phase correction LUT to speed up process (there are no (good) SIMD commands for that)
   static constexpr f32 cPhaseShiftLimit = 20.0f;
 
-  TimeMeas mTimeMeas{"ofdm-decoder", 1000};
-
   // mLcdData has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
   SLcdData mLcdData{};
 
-  [[nodiscard]] f32 _compute_noise_Power() const;
   void _eval_null_symbol_statistics(const TArrayTu & iV);
   void _reset_null_symbol_statistics();
   void _display_iq_and_carr_vectors();
@@ -133,8 +127,10 @@ private:
 
 signals:
   void signal_slot_show_iq(i32, f32);
-  void signal_show_lcd_data(const SLcdData *);
+  void signal_show_lcd_data(const SLcdData &);
 };
 
+Q_DECLARE_METATYPE(OfdmDecoder::SLcdData)
+
 #endif // HAVE_SSE_OR_AVX
-#endif
+

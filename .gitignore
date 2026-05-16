@@ -11,3 +11,5 @@ build*/
 /dabstar.pro.user
 /CMakeSettings.json
 /.vscode/
+/*.7z
+/*.bundle

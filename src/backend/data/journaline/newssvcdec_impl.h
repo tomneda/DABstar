@@ -47,8 +47,7 @@
  *
  */
 
-#ifndef __NEWS_SVC_DEC_IMPL__
-#define __NEWS_SVC_DEC_IMPL__
+#pragma once
 /**
 ***             techidee GmbH
 *** Projekt:    NewsBox
@@ -134,4 +133,3 @@ private:
 };
 
 
-#endif /* __NEWS_SVC_DEC_IMPL */

@@ -29,11 +29,11 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "fic-decoder.h"
-#include  "dabradio.h"
-#include  "protTables.h"
-#include  "crc.h"
-#include  <cassert>
+#include "fic-decoder.h"
+#include "dabradio.h"
+#include "protTables.h"
+#include "crc.h"
+#include <cassert>
 
 //	The 3072 bits of the serial motherword shall be split into
 //	24 blocks of 128 bits each.
@@ -58,6 +58,7 @@ FicDecoder::FicDecoder(DabRadio * const iMr)
 {
   std::array<std::byte, 9> shiftRegister;
   std::fill(shiftRegister.begin(), shiftRegister.end(), static_cast<std::byte>(1));
+  mViterbiBlockAddresses.reserve(cViterbiBlockSize);
 
   for (i16 i = 0; i < 768; i++)
   {
@@ -84,6 +85,7 @@ FicDecoder::FicDecoder(DabRadio * const iMr)
       if (get_PI_codes(16)[k % 32] != 0)
       {
         mPunctureTable[local] = true;
+        mViterbiBlockAddresses.emplace_back(&mViterbiBlock[local]);
       }
       local++;
     }
@@ -101,6 +103,7 @@ FicDecoder::FicDecoder(DabRadio * const iMr)
       if (get_PI_codes(15)[k % 32] != 0)
       {
         mPunctureTable[local] = true;
+        mViterbiBlockAddresses.emplace_back(&mViterbiBlock[local]);
       }
       local++;
     }
@@ -115,6 +118,7 @@ FicDecoder::FicDecoder(DabRadio * const iMr)
     if (get_PI_codes(8)[k] != 0)
     {
       mPunctureTable[local] = true;
+      mViterbiBlockAddresses.emplace_back(&mViterbiBlock[local]);
     }
     local++;
   }
@@ -175,33 +179,24 @@ void FicDecoder::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 {
   assert(iFicIdx >= 0 && iFicIdx < 4);
 
-  std::array<i16, cViterbiBlockSize> viterbiBlock; // Viterbi input buffer with punctuation
-  i16 ficReadIdx = 0;
-
   if (!mIsRunning.load())
   {
     return;
   }
 
-  for (i16 i = 0; i < cViterbiBlockSize; i++)
+  // do de-puncturing
+  i16 ficReadIdx = 0;
+  for (i16 * const addr : mViterbiBlockAddresses)
   {
-    if (mPunctureTable[i])
-    {
-      assert(ficReadIdx < cFicSizeVitIn);
-      viterbiBlock[i] = mFicViterbiSoftInput[ficReadIdx];
-      ++ficReadIdx;
-    }
-    else
-    {
-      viterbiBlock[i] = 0;
-    }
+    *addr = mFicViterbiSoftInput[ficReadIdx++]; // writes implicitly to mViterbiBlock for non-punctured bits
   }
 
   // Now we have the full word ready for deconvolution. Deconvolution is according to DAB standard section 11.2.
   auto & fibBitsOf3Fibs = *reinterpret_cast<std::array<std::byte, cFicSizeVitOut> *>(&mFibBitsEntireFrame[iFicIdx * cFicSizeVitOut]); // 3 FIBs or 1 FIC
 
-  mViterbi.deconvolve(viterbiBlock.data(), reinterpret_cast<u8 *>(fibBitsOf3Fibs.data()));
-  mViterbi.calculate_BER(viterbiBlock.data(), mPunctureTable.data(), reinterpret_cast<u8 *>(fibBitsOf3Fibs.data()), mFicBits, mFicErrors);
+  mViterbi.deconvolve(mViterbiBlock.data(), reinterpret_cast<u8 *>(fibBitsOf3Fibs.data()));
+
+  mViterbi.calculate_BER(mViterbiBlock.data(), mPunctureTable.data(), reinterpret_cast<u8 *>(fibBitsOf3Fibs.data()), mFicBits, mFicErrors);
 
   mFicBlock++;
 

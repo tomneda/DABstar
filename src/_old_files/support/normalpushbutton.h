@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018, 2019
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,21 +28,21 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__NEW_BUTTON__
-#define	__NEW_BUTTON__
-#include	<QPushButton>
-#include	<QSize>
+#pragma once
 
-//
-//	just adding a right click
-class	newPushButton : public QPushButton {
+#include  <QPushButton>
+#include  <QSize>
+
+//	just redefining sizeHint
+class normalPushButton : public QPushButton
+{
 Q_OBJECT
 public:
-	newPushButton		(QWidget *);
-	~newPushButton	();
-void	mousePressEvent (QMouseEvent *e);
+  explicit normalPushButton(QWidget *);
+  ~normalPushButton() override = default;
+  QSize sizeHint() const override;
+  void mousePressEvent(QMouseEvent * e) override;
 signals:
-void	rightClicked		();
+  void rightClicked();
 };
-#endif
 

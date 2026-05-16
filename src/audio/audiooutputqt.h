@@ -75,8 +75,10 @@ public slots:
   void slot_start(SAudioFifo * iBuffer) override;
   void slot_restart(SAudioFifo * iBuffer) override;
   void slot_stop() override;
-  void slot_mute(bool iMuteActive) override;
-  void slot_setVolume(i32 iLogVolVal) override;
+  void slot_set_mute(bool iMuteActive) override;
+  void slot_set_peak_level_delay(i32 iDelaySteps) override;
+  void slot_set_test_tone(bool iActive) override;
+  void slot_set_volume(i32 iLogVolVal) override;
   void slot_set_audio_device(const QByteArray & iDeviceId) override;
 
 private slots:

@@ -21,8 +21,7 @@
  */
 
 
-#ifndef  TECH_DATA_H
-#define  TECH_DATA_H
+#pragma once
 
 #include  "ui_techdata.h"
 #include  "dab-constants.h"
@@ -47,6 +46,7 @@ public:
   void cleanUp();
   void show();
   void hide();
+  void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool isHidden() const;
 
 private:
@@ -54,7 +54,6 @@ private:
   RingBuffer<i16> * mpAudioBuffer;
   CustomFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;
-  QTimer mTimerMotReceived; // avoid fast flickering of the MOT indicator
 
   void _show_service_label(const QString &) const;
   void _show_SId(u32) const;
@@ -67,7 +66,6 @@ private:
   void _show_coderate(i32, i32) const;
 
 public slots:
-  void slot_trigger_motHandling();
   void slot_show_frame_error_bar(i32) const;
   void slot_show_aac_error_bar(i32) const;
   void slot_show_rs_error_bar(i32) const;
@@ -76,11 +74,7 @@ public slots:
   void slot_show_language(i32) const;
   void slot_show_fm(i32) const;
   void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed) const;
-
   void slot_audio_data_available(i32, i32) const;
-
-private slots:
-  void _slot_show_motHandling(bool) const;
 
 signals:
   void signal_handle_timeTable();
@@ -90,4 +84,3 @@ signals:
 };
 
 
-#endif

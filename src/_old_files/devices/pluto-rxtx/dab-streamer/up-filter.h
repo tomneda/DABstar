@@ -20,8 +20,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__UP_FILTER_H
-#define	__UP_FILTER_H
+#pragma once
 
 #include	<complex>
 #include	<vector>
@@ -40,5 +39,4 @@ public:
 	~upFilter	();
 void	Filter	(cf32, cf32 *);
 };
-#endif
 

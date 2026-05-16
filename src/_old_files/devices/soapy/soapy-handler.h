@@ -20,8 +20,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __SOAPY_HANDLER__
-#define	__SOAPY_HANDLER__
+#pragma once
 
 #include	<QObject>
 #include	<QFrame>
@@ -75,4 +74,3 @@ private slots:
   void set_agcControl(i32);
   void handleAntenna(const QString &);
 };
-#endif

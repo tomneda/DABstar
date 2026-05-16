@@ -71,17 +71,14 @@ DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevi
 
 DabProcessor::~DabProcessor()
 {
-  fftwf_destroy_plan(mFftPlan);
+  mSampleReader.setRunning(false);
+
   if (isRunning())
   {
-    mSampleReader.setRunning(false);
-    // exception to be raised through the getSample(s) functions.
-    msleep(100);
-    while (isRunning())
-    {
-      usleep(100);
-    }
+    wait(); // This blocks the destructor until run() actually returns
   }
+  fftwf_destroy_plan(mFftPlan);  // destroy this only after the accessing thread has really finished
+  qWarning() << "DabProcessor has stopped";
 }
 
 void DabProcessor::start()
@@ -105,14 +102,6 @@ void DabProcessor::stop()
   mFicHandler.stop();
 }
 
-/***
-   *    \brief run
-   *    The main thread, reading samples,
-   *    time synchronization and frequency synchronization
-   *    Identifying blocks in the DAB frame
-   *    and sending them to the OfdmDecoder who will transfer the results
-   *    Finally, estimating the small freqency error
-   */
 void DabProcessor::run()  // run QThread
 {
   // this method is called with each new set frequency
@@ -133,10 +122,11 @@ void DabProcessor::run()  // run QThread
   mFicHandler.reset_fic_decode_success_ratio(); // mCorrectionNeeded will be true next call to getFicDecodeRatioPercent()
   mFreqOffsSyncSymb = 0.0f;
   mTimeSyncAttemptCount = 0;
+  mTimeSyncerStateLast = TimeSyncer::EState::IDLE;
 
   EState state = EState::WAIT_FOR_TIME_SYNC_MARKER;
 
-  try
+  try // mSampleReader.getSample() can trigger an exception
   {
     // To get some idea of the signal strength
     for (int32_t i = 0; i < 20; i++)
@@ -187,7 +177,7 @@ void DabProcessor::run()  // run QThread
   catch (i32 e)
   {
     (void)e;
-    // qInfo() << "DabProcessor has stopped" << thread()->currentThreadId() << e;
+    if (e != 20) qWarning() << "DabProcessor has stopped via exception:" << e; // e == 20 is normal condition
   }
 }
 
@@ -289,6 +279,7 @@ void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
 
     // The TII data is encoded in the null period of the odd frames
     mTiiDetector.add_to_tii_buffer(mFftOutBuffer);
+
     if (++mTiiCounter >= mcTiiFramesToCount)
     {
       if (mEnableTii)
@@ -362,7 +353,7 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
   return arg(freqCorr);
 }
 
-void DabProcessor::_set_bb_freq_offs_Hz(f32 iFreqHz)
+void DabProcessor::_set_bb_freq_offs_Hz(const f32 iFreqHz)
 {
   const i32 iFreqHzInt = (i32)std::round(iFreqHz);
   if (mFreqOffsBBHz != iFreqHzInt)
@@ -372,7 +363,7 @@ void DabProcessor::_set_bb_freq_offs_Hz(f32 iFreqHz)
   }
 }
 
-void DabProcessor::_set_rf_freq_offs_Hz(f32 iFreqHz)
+void DabProcessor::_set_rf_freq_offs_Hz(const f32 iFreqHz)
 {
   const i32 iFreqHzInt = (i32)std::round(iFreqHz);
   if (mFreqOffsRFHz != iFreqHzInt)
@@ -411,25 +402,28 @@ bool DabProcessor::_state_eval_sync_symbol(i32 & oSampleCount, const f32 iThresh
 
 bool DabProcessor::_state_wait_for_time_sync_marker()
 {
-  switch (mTimeSyncer.read_samples_until_end_of_level_drop())
+  const TimeSyncer::EState timeSyncState = mTimeSyncer.read_samples_until_end_of_level_drop();
+  switch (timeSyncState)
   {
   case TimeSyncer::EState::TIMESYNC_ESTABLISHED:
-    // qDebug() << "Time sync established";
+    if (timeSyncState != mTimeSyncerStateLast)  qDebug() << "Time sync established";
     mTimeSyncAttemptCount = 0;
     return true;
   case TimeSyncer::EState::NO_DIP_FOUND:
     if (++mTimeSyncAttemptCount >= 8)
     {
-      emit signal_no_signal_found();
+      if (timeSyncState != mTimeSyncerStateLast) qWarning() << "No DIP found after" << mTimeSyncAttemptCount << "attempts";
       mTimeSyncAttemptCount = 0;
+      emit signal_no_signal_found();
     }
-    qWarning() << "No DIP found after " << mTimeSyncAttemptCount << " attempts";
     break;
   case TimeSyncer::EState::NO_END_OF_DIP_FOUND:
+    if (timeSyncState != mTimeSyncerStateLast) qWarning() << "No end of DIP found";
     mTimeSyncAttemptCount = 0;
-    qWarning() << "No end of DIP found";
     break;
+  default: qCritical() << "Unknown time syncer state";
   }
+  mTimeSyncerStateLast = timeSyncState;
   return false;
 }
 
@@ -446,34 +440,16 @@ void DabProcessor::activate_cir_viewer(bool iActivate)
   mSampleReader.set_cir_buffer(iActivate ? mpCirBuffer : nullptr);
 }
 
-//  for the mscHandler:
-void DabProcessor::reset_services()
-{
-  if (!mScanMode)
-  {
-    mMscHandler.reset_channel();
-  }
-}
-
-bool DabProcessor::is_service_running(const SDescriptorType & iDT, EProcessFlag iProcessFlag)
+bool DabProcessor::is_service_running(const SDescriptorType & iDT, const EProcessFlag iProcessFlag) const
 {
   assert(!mScanMode);
   return mMscHandler.is_service_running(iDT.SubChId, iProcessFlag);
 }
 
-bool DabProcessor::is_service_running(const i32 iSubChId, EProcessFlag iProcessFlag)
+bool DabProcessor::is_service_running(const i32 iSubChId, const EProcessFlag iProcessFlag) const
 {
   assert(!mScanMode);
   return mMscHandler.is_service_running(iSubChId, iProcessFlag);
-}
-
-void DabProcessor::stop_service(const SDescriptorType & iDT, const EProcessFlag iProcessFlag)
-{
-  fprintf(stderr, "function obsolete\n");
-  if (!mScanMode)
-  {
-    mMscHandler.stop_service(iDT.SubChId, iProcessFlag);
-  }
 }
 
 void DabProcessor::stop_service(const i32 iSubChId, const EProcessFlag iProcessFlag)
@@ -516,7 +492,7 @@ bool DabProcessor::set_data_channel(const SPacketData & iPD, RingBuffer<u8> * ip
   }
 }
 
-void DabProcessor::startDumping(SNDFILE * f)
+void DabProcessor::start_dumping(SNDFILE * f)
 {
   mSampleReader.startDumping(f);
 }

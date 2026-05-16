@@ -137,7 +137,7 @@ bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<f64>::SMaxMin 
   return limitChanged;
 }
 
-void SpectrumViewer::show_spectrum(i32 vfoFrequency)
+void SpectrumViewer::show_spectrum(const i32 vfoFrequency)
 {
   constexpr i32 averageCount = 5;
 
@@ -247,7 +247,7 @@ bool SpectrumViewer::is_hidden() const
   return myFrame.isHidden();
 }
 
-void SpectrumViewer::show_iq(i32 iAmount, f32 /*iAvg*/)
+void SpectrumViewer::show_iq(const i32 iAmount, const f32 /*iAvg*/)
 {
   if (mIqValuesVec.size() != (unsigned)iAmount)
   {
@@ -268,7 +268,7 @@ void SpectrumViewer::show_iq(i32 iAmount, f32 /*iAvg*/)
   mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
 }
 
-void SpectrumViewer::show_lcd_data(i32 /*iOfdmSymbNo*/, f32 iModQual, f32 iTestData1, f32 iTestData2, f32 iMeanSigmaSqFreqCorr, f32 iSNR) const
+void SpectrumViewer::show_lcd_data(const i32 /*iOfdmSymbNo*/, const f32 iModQual, const f32 iTestData1, const f32 iTestData2, const f32 iMeanSigmaSqFreqCorr, const f32 iSNR) const
 {
   if (myFrame.isHidden())
   {
@@ -292,7 +292,7 @@ void SpectrumViewer::show_lcd_data(i32 /*iOfdmSymbNo*/, f32 iModQual, f32 iTestD
   thermoModQual->setValue(iModQual);
 }
 
-void SpectrumViewer::show_fic_ber(f32 ber) const
+void SpectrumViewer::show_fic_ber(const f32 ber) const
 {
   if (!myFrame.isHidden())
   {
@@ -300,41 +300,41 @@ void SpectrumViewer::show_fic_ber(f32 ber) const
   }
 }
 
-void SpectrumViewer::show_nominal_frequency_MHz(f32 iFreqMHz) const
+void SpectrumViewer::show_nominal_frequency_MHz(const f32 iFreqMHz) const
 {
   lcdNomFrequency->display(QString("%1").arg(iFreqMHz, 0, 'f', 3));
 }
 
-void SpectrumViewer::show_freq_corr_rf_Hz(i32 iFreqCorrRF) const
+void SpectrumViewer::show_freq_corr_rf_Hz(const i32 iFreqCorrRF) const
 {
   lcdFreqCorrRF->display(iFreqCorrRF);
 }
 
-void SpectrumViewer::show_freq_corr_bb_Hz(i32 iFreqCorrBB) const
+void SpectrumViewer::show_freq_corr_bb_Hz(const i32 iFreqCorrBB) const
 {
   lcdFreqCorrBB->display(iFreqCorrBB);
 }
 
-void SpectrumViewer::show_clock_error(f32 iClockErr) const
+void SpectrumViewer::show_clock_error(const f32 iClockErr) const
 {
   lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
 }
 
-void SpectrumViewer::show_correlation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr) const
+void SpectrumViewer::show_correlation(const f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr) const
 {
   mpCorrelationViewer->showCorrelation(threshold, v, iTr);
 }
 
 void SpectrumViewer::_slot_handle_cmb_carrier(i32 iSel)
 {
-  auto pt = static_cast<ECarrierPlotType>(iSel);
+  const auto pt = static_cast<ECarrierPlotType>(iSel);
   mpCarrierDisp->select_plot_type(pt);
   emit signal_cmb_carrier_changed(pt);
 }
 
 void SpectrumViewer::_slot_handle_cmb_iqscope(i32 iSel)
 {
-  auto pt = static_cast<EIqPlotType>(iSel);
+  const auto pt = static_cast<EIqPlotType>(iSel);
   mpIQDisplay->select_plot_type(pt);
   emit signal_cmb_iqscope_changed(pt);
 }
@@ -352,8 +352,8 @@ void SpectrumViewer::_slot_handle_cb_map_1st_quad(i32 iSel)
 void SpectrumViewer::slot_update_settings()
 {
   // This is called when the DabProcessor has been started. Trigger resending UI state to DabProcessor.
-  emit _slot_handle_cmb_carrier(cmbCarrier->currentIndex());
-  emit _slot_handle_cmb_iqscope(cmbIqScope->currentIndex());
+  _slot_handle_cmb_carrier(cmbCarrier->currentIndex());
+  _slot_handle_cmb_iqscope(cmbIqScope->currentIndex());
 }
 
 void SpectrumViewer::show_digital_peak_and_rms_level(const f32 iDigLevelPeak, const f32 iDigLevelRms) const

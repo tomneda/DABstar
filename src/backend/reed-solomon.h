@@ -13,8 +13,7 @@
  * May be used under the terms of the GNU General Public License (GPL)
  */
 
-#ifndef  REED_SOLOMON_H
-#define  REED_SOLOMON_H
+#pragma once
 
 #include  <cstdint>
 #include  "galois.h"
@@ -48,4 +47,3 @@ private:
   i16 decode_rs(u8 * data);
 };
 
-#endif

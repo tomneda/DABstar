@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef  XML_READER_H
-#define  XML_READER_H
+#pragma once
 
 #include "dab-constants.h"
 #include  <QThread>
@@ -92,6 +91,6 @@ private:
 
 signals:
   void signal_set_progress(i64, i64);
+  void signal_file_looped();
 };
 
-#endif

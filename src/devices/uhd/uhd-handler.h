@@ -21,8 +21,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  UHD_INPUT_H
-#define  UHD_INPUT_H
+#pragma once
 
 
 #include  <QThread>
@@ -91,5 +90,4 @@ private slots:
   void _slot_handle_ant_selector(const QString &);
 };
 
-#endif
 

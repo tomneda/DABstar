@@ -32,8 +32,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef QT_AUDIO_H
-#define QT_AUDIO_H
+#pragma once
 
 
 #include	<stdio.h>
@@ -85,4 +84,3 @@ private:
   void _initializeAudio(const QAudioDevice & iAudioDevice);
 };
 
-#endif

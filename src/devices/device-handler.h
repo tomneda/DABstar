@@ -27,16 +27,10 @@
  *    You should have received a copy of the GNU General Public License
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- *  We have to create a simple virtual class here, since we
- *  want the interface with different devices (including  filehandling)
- *  to be transparent
  */
-#ifndef  DEVICE_HANDLER_H
-#define  DEVICE_HANDLER_H
+#pragma  once
 
 #include "glob_defs.h"
-#include <cstdint>
 #include <QString>
 
 class IDeviceHandler
@@ -53,6 +47,7 @@ public:
   virtual void resetBuffer() = 0;
   virtual void hide() = 0;
   virtual void show() = 0;
+  virtual void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   virtual bool isHidden() = 0;
   virtual QString deviceName() = 0;
   virtual bool isFileInput() {return false;};
@@ -60,5 +55,3 @@ public:
   virtual bool startDumping() {return false;};
   virtual void stopDumping() {};
 };
-
-#endif

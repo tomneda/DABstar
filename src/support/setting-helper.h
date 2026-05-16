@@ -13,9 +13,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-#ifndef SETTING_HELPER_H
-#define SETTING_HELPER_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <QSettings>
@@ -84,6 +82,7 @@ class PosAndSize
 {
 public:
   explicit PosAndSize(const QString & iCat);
+  PosAndSize(const QString & iCat, const QString & iName);
   void read_widget_geometry(QWidget * iopWidget, i32 iWidthDef = -1, i32 iHeightDef = -1, bool iIsFixedSized = false) const;
   void write_widget_geometry(const QWidget * ipWidget) const;
 
@@ -96,5 +95,3 @@ private:
 #include "setting-helper.cnf.h"
 #undef FILTER_DECLARATIONS
 } // namespace Settings
-
-#endif // SETTING_HELPER_H

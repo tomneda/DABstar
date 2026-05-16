@@ -19,8 +19,7 @@
  *    along with Qt-DAB if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	SOAPY_CF32
-#define	SOAPY_CF32
+#pragma once
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Formats.hpp>
@@ -46,5 +45,4 @@ RingBuffer<cf32> theBuffer;
 bool	running;
 };
 
-#endif
 

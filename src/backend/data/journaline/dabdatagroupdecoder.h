@@ -47,8 +47,7 @@
  *
  */
 
-#ifndef __DAB_DATAGROUP_DECODER__
-#define __DAB_DATAGROUP_DECODER__
+#pragma once
 
 /*!
  * @brief Journaline(R) news service DAB data group decoder interface
@@ -215,4 +214,3 @@ unsigned long DAB_DATAGROUP_DECODER_putData(
 }
 #endif
 
-#endif /* __DAB_DATAGROUP_DECODER__ */

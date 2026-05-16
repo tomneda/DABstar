@@ -47,8 +47,7 @@
  *
  */
 
-#ifndef __LOG__
-#define __LOG__
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,4 +77,3 @@ void logit(unsigned long level,
 }
 #endif
 
-#endif

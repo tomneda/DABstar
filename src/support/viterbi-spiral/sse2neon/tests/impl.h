@@ -1,5 +1,4 @@
-#ifndef SSE2NEONTEST_H
-#define SSE2NEONTEST_H
+#pragma once
 
 namespace SSE2NEON
 {
@@ -185,4 +184,3 @@ public:
 
 }  // namespace SSE2NEON
 
-#endif

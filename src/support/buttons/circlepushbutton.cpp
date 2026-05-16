@@ -33,7 +33,7 @@ void CirclePushButton::init(const QString & iImagePath, const f32 iRadiusPixels,
   mTimer->stop();
   mImagePath = iImagePath;
   mRadius = iRadiusPixels;
-  mTimerMs = i32(1000.0f * sDegPerStep / 360.0f * iSecPerRound);
+  mTimerMs = (i32)(1000.0f * sDegPerStep / 360.0f * iSecPerRound);
   setIcon(QIcon(mImagePath));
   update();
 }

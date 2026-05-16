@@ -30,8 +30,7 @@
  * SOFTWARE.
  */
 
-#ifndef UPDATECHECKER_H
-#define UPDATECHECKER_H
+#pragma once
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -62,4 +61,3 @@ private:
   bool parseResponse(const QByteArray & data);
 };
 
-#endif  // UPDATECHECKER_H

@@ -6,14 +6,14 @@
 #include "service-list-handler.h"
 #include "setting-helper.h"
 #include "techdata.h"
-#include "coordinates.h"
-#include "compass_direction.h"
-#include "ITU_Region_1.h"
+#include "itu-regions.h"
 #include "copyright_info.h"
 #include "map-http-server.h"
 #include "spectrum-viewer.h"
 #include "cir-viewer.h"
 #include "configuration.h"
+#include "gui-helpers.h"
+#include "audio_manager.h"
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
@@ -42,7 +42,7 @@ void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iCol
 }
 
 template<typename T>
-void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, T const iValue)
+void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, T const iValue) const
 {
   if constexpr (std::is_same_v<T, const char *>)
   {
@@ -89,50 +89,63 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, T const iValue
   }
 }
 
-template void DabRadio::_set_status_info_status<bool>(StatusInfoElem<bool> &, bool);
-template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32> &, u32);
-template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32> &, i32);
-template void DabRadio::_set_status_info_status<const char *>(StatusInfoElem<const char *> &, const char * const);
+template void DabRadio::_set_status_info_status<bool>(StatusInfoElem<bool> &, bool) const;
+template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32> &, u32) const;
+template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32> &, i32) const;
+template void DabRadio::_set_status_info_status<const char *>(StatusInfoElem<const char *> &, const char * const) const;
 
 void DabRadio::_emphasize_pushbutton(QPushButton * const ipPB, const bool iEmphasize) const
 {
   ipPB->setStyleSheet(iEmphasize ? "background-color: #AE2B05; color: #EEEE00; font-weight: bold;" : "");
 }
 
-void DabRadio::_reset_status_info()
+void DabRadio::_reset_status_info(StatusInfo & ioStatusInfo) const
 {
-  _set_status_info_status(mStatusInfo.InpBitRate, (i32)0);
-  _set_status_info_status(mStatusInfo.ProtLevel, (const char *)nullptr);
-  _set_status_info_status(mStatusInfo.OutSampRate, (u32)0);
-  _set_status_info_status(mStatusInfo.Stereo, false);
-  _set_status_info_status(mStatusInfo.EPG, false);
-  _set_status_info_status(mStatusInfo.SBR, false);
-  _set_status_info_status(mStatusInfo.PS, false);
-  _set_status_info_status(mStatusInfo.Announce, false);
-  _set_status_info_status(mStatusInfo.RsError, false);
-  _set_status_info_status(mStatusInfo.CrcError, false);
+  _set_status_info_status(ioStatusInfo.InpBitRate, (i32)0);
+  _set_status_info_status(ioStatusInfo.ProtLevel, (const char *)nullptr);
+  _set_status_info_status(ioStatusInfo.OutSampRate, (u32)0);
+  _set_status_info_status(ioStatusInfo.Stereo, false);
+  _set_status_info_status(ioStatusInfo.MOT, false);
+  _set_status_info_status(ioStatusInfo.EPG, false);
+  _set_status_info_status(ioStatusInfo.SBR, false);
+  _set_status_info_status(ioStatusInfo.PS, false);
+  _set_status_info_status(ioStatusInfo.Announce, false);
+  _set_status_info_status(ioStatusInfo.RsError, false);
+  _set_status_info_status(ioStatusInfo.CrcError, false);
 }
 
-void DabRadio::_initialize_ui_buttons()
+void DabRadio::_initialize_ui_elements()
 {
-  ui->btnMuteAudio->setStyleSheet(get_bg_style_sheet({ 255, 60, 60 }));
-  ui->btnScanning->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
-  ui->btnDeviceWidget->setStyleSheet(get_bg_style_sheet({ 87, 230, 236 }));
-  ui->configButton->setStyleSheet(get_bg_style_sheet({ 80, 155, 80 }));
-  ui->btnTechDetails->setStyleSheet(get_bg_style_sheet({ 255, 255, 100 }));
-  ui->btnSpectrumScope->setStyleSheet(get_bg_style_sheet({ 197, 69, 240 }));
-  ui->btnPrevService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
-  ui->btnNextService->setStyleSheet(get_bg_style_sheet({ 200, 97, 40 }));
-  ui->btnEject->setStyleSheet(get_bg_style_sheet({ 118, 60, 162 }));
-  ui->btnTargetService->setStyleSheet(get_bg_style_sheet({ 33, 106, 105 }));
-  ui->btnToggleFavorite->setStyleSheet(get_bg_style_sheet({ 100, 100, 255 }));
-  ui->btnFib->setStyleSheet(get_bg_style_sheet({ 220, 100, 152 }));
-  ui->btnTii->setStyleSheet(get_bg_style_sheet({ 255, 100, 0 }));
-  ui->btnCir->setStyleSheet(get_bg_style_sheet({ 220, 37, 192 }));
-  ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet({ 220, 180, 45 }));
+  // handle device/file player radio button
+  QButtonGroup * grpSLS = new QButtonGroup(this);
+  grpSLS->addButton(ui->rbDevicePlayer, (int)EServiceListSrc::DEVICE_PLAYER);
+  grpSLS->addButton(ui->rbFilePlayer, (int)EServiceListSrc::FILE_PLAYER);
+  grpSLS->setExclusive(true);
+
+  connect(grpSLS, &QButtonGroup::idClicked, this, &DabRadio::_slot_service_list_src_change);
+
+  const i32 deviceFilePlayerId = Settings::Main::varDeviceFilePlayerId.read().toInt();
+  ui->rbDevicePlayer->setChecked(deviceFilePlayerId == (int)EServiceListSrc::DEVICE_PLAYER);
+  ui->rbFilePlayer->setChecked(deviceFilePlayerId == (int)EServiceListSrc::FILE_PLAYER);
+
+  // setup styles and colors of controls
+  ui->btnMuteAudio->setStyleSheet(get_bg_style_sheet(0xFF3C3C));
+  ui->btnDeviceWidget->setStyleSheet(get_bg_style_sheet(0x57E6EC));
+  ui->configButton->setStyleSheet(get_bg_style_sheet(0x509B50));
+  ui->btnTechDetails->setStyleSheet(get_bg_style_sheet(0xFFFF64));
+  ui->btnSpectrumScope->setStyleSheet(get_bg_style_sheet(0xC545F0));
+  ui->btnPrevService->setStyleSheet(get_bg_style_sheet(0xC86128));
+  ui->btnNextService->setStyleSheet(get_bg_style_sheet(0xC86128));
+  ui->btnTargetService->setStyleSheet(get_bg_style_sheet(0x216A69));
+  ui->btnToggleFavorite->setStyleSheet(get_bg_style_sheet(0x6464FF));
+  ui->btnFib->setStyleSheet(get_bg_style_sheet(0xDC6498));
+  ui->btnTii->setStyleSheet(get_bg_style_sheet(0xFF6400));
+  ui->btnCir->setStyleSheet(get_bg_style_sheet(0xDC25C0));
+  ui->btnEnsembleList->setStyleSheet(get_bg_style_sheet(0x6464FF));
+  ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));
 
   _set_http_server_button(EHttpButtonState::Off);
-  slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving->currentIndex());
+  mpEpgMotHandler->slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving5->currentIndex());
 
   // only the queued call will consider the button size
   QMetaObject::invokeMethod(this, "_slot_update_mute_state", Qt::QueuedConnection, Q_ARG(bool, false));
@@ -143,7 +156,7 @@ void DabRadio::_initialize_ui_buttons()
 void DabRadio::_initialize_status_info()
 {
   const char * const protLevToolTip =
-    R"(Protection level and the (roughly)<br>associated Viterbi code rate<br>)"
+    R"(Protection level<br>)"
     R"(<table>)"
     R"( <thead>)"
     R"(  <tr><th>ProtLevel</th><th>CodeRate</th></tr>)"
@@ -173,17 +186,18 @@ void DabRadio::_initialize_status_info()
   _add_status_label_elem(mStatusInfo.Stereo,      0xf2c629, "Stereo",      "Stereo");
   _add_status_label_elem(mStatusInfo.PS,          0xf2c629, "PS",          "Parametric Stereo");
   _add_status_label_elem(mStatusInfo.SBR,         0xf2c629, "SBR",         "Spectral Band Replication");
+  _add_status_label_elem(mStatusInfo.MOT,         0x7F8CFF, "MOT",         "Multimedia Object Transfer<br>for slide show");
   _add_status_label_elem(mStatusInfo.EPG,         0xf2c629, "EPG",         "Electronic Program Guide");
-  _add_status_label_elem(mStatusInfo.Announce,    0xf2c629, "Ann",         "Announcement");
+  _add_status_label_elem(mStatusInfo.Announce,    0xf2c629, "ANN",         "Announcement");
   _add_status_label_elem(mStatusInfo.RsError,     0xFF5749, "RS",          "Reed Solomon Error occurred");
   _add_status_label_elem(mStatusInfo.CrcError,    0xFF5749, "CRC",         "CRC Error occurred");
 
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-  _reset_status_info();
+  _reset_status_info(mStatusInfo);
 }
 
-void DabRadio::_initialize_dynamic_label()
+void DabRadio::_initialize_dynamic_label() const
 {
   ui->lblDynLabel->setTextFormat(Qt::RichText);
   ui->lblDynLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
@@ -209,23 +223,17 @@ void DabRadio::_initialize_thermo_peak_levels()
   setup_thermo_peak_level_widget(ui->thermoPeakLevelRight);
 }
 
-void DabRadio::_initialize_device_selector()
+void DabRadio::_initialize_device_selector(SChannelDescriptor & ioChannelDesc) const
 {
-  mpConfig->deviceSelector->addItems(mDeviceSelector.get_device_name_list());
+  ui->cmbDeviceSelect->addItems(mDeviceSelector.get_device_name_list());
 
   const QString h = Settings::Main::varSdrDevice.read().toString();
-  const i32 k = mpConfig->deviceSelector->findText(h);
+  const i32 k = ui->cmbDeviceSelect->findText(h);
 
   if (k != -1)
   {
-    mpConfig->deviceSelector->setCurrentIndex(k);
-
-    mpInputDevice = mDeviceSelector.create_device(mpConfig->deviceSelector->currentText(), mChannel.realChannel);
-
-    if (mpInputDevice != nullptr)
-    {
-      _set_device_to_file_mode(!mChannel.realChannel);
-    }
+    ui->cmbDeviceSelect->setCurrentIndex(k);
+    ioChannelDesc.set_device_name(h);
   }
 }
 
@@ -241,30 +249,8 @@ void DabRadio::_initialize_version_and_copyright_info()
   ui->lblCopyrightIcon->setCursor(Qt::WaitCursor);
 }
 
-QString DabRadio::get_bg_style_sheet(const QColor & iBgBaseColor, const char * const iWidgetType /*= nullptr*/)
-{
-  const f32 fac = 0.6f;
-  const i32 r1 = iBgBaseColor.red();
-  const i32 g1 = iBgBaseColor.green();
-  const i32 b1 = iBgBaseColor.blue();
-  const i32 r2 = (i32)((f32)r1 * fac);
-  const i32 g2 = (i32)((f32)g1 * fac);
-  const i32 b2 = (i32)((f32)b1 * fac);
-  assert(r2 >= 0);
-  assert(g2 >= 0);
-  assert(b2 >= 0);
-  QColor BgBaseColor2(r2, g2, b2);
 
-  std::stringstream ts; // QTextStream did not work well here?!
-  const char * const widgetType = (iWidgetType == nullptr ? "QPushButton" : iWidgetType);
-  ts << widgetType << " { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
-     << ", stop:1 " << BgBaseColor2.name().toStdString() << "); }";
-  //fprintf(stdout, "*** Style sheet: %s\n", ts.str().c_str());
-
-  return { ts.str().c_str() };
-}
-
-void DabRadio::set_favorite_button_style()
+void DabRadio::_set_favorite_button_style()
 {
   ui->btnToggleFavorite->setIcon(QIcon(mCurFavoriteState ? ":res/icons/starfilled24.png" : ":res/icons/starempty24.png"));
   ui->btnToggleFavorite->setIconSize(QSize(24, 24));
@@ -282,10 +268,16 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
   return sl;
 }
 
-void DabRadio::cleanup_ui()
+void DabRadio::_cleanup_ui() const
 {
   ui->progBarFicError->setValue(0);
   ui->progBarAudioBuffer->setValue(0);
+}
+
+void DabRadio::_set_MOT_progress(const i32 iMotStart, const i32 iMotEnd) const
+{
+  ui->gapProgBarMot->setOrigin(iMotStart);
+  ui->gapProgBarMot->setValue(iMotEnd);
 }
 
 void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
@@ -296,20 +288,20 @@ void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
 
     if (!mClockActiveStyle)
     {
-      ui->lblLocalTime->setStyleSheet(get_bg_style_sheet({ 255, 60, 60 }, "QLabel") + " QLabel { color: white; }");
+      ui->lblDabTime->setStyleSheet(get_bg_style_sheet(0xff3c3c, 0xffffff));
       mClockActiveStyle = true;
     }
-    ui->lblLocalTime->setText(iText);
+    ui->lblDabTime->setText(iText);
   }
   else
   {
     if (mClockActiveStyle)
     {
-      ui->lblLocalTime->setStyleSheet(get_bg_style_sheet({ 57, 0, 0 }, "QLabel") + " QLabel { color: #333333; }");
+      ui->lblDabTime->setStyleSheet(get_bg_style_sheet(0x440000, 0x333333));
       mClockActiveStyle = false;
     }
     //ui->lblLocalTime->setText("YYYY-MM-DD hh:mm:ss");
-    ui->lblLocalTime->setText("0000-00-00 00:00:00");
+    ui->lblDabTime->setText("0000-00-00 00:00:00");
   }
 }
 
@@ -318,70 +310,17 @@ void DabRadio::_show_epg_label(const bool iShowLabel)
   _set_status_info_status(mStatusInfo.EPG, iShowLabel);
 }
 
-// Whenever the input device is a file, some functions, e.g. selecting a channel,
-// setting an alarm, are not meaningful
-void DabRadio::_show_hide_buttons(const bool iShow)
+void DabRadio::_adapt_gui_for_device_or_file_play(const bool iPlayingDevice) const
 {
 #if 1
-  if (iShow)
-  {
-    //mpConfig->dumpButton->show();
-    ui->btnScanning->show();
-    ui->cmbChannelSelector->show();
-    ui->btnToggleFavorite->show();
-    ui->btnEject->hide();
-  }
-  else
-  {
-    //mpConfig->dumpButton->hide();
-    ui->btnScanning->hide();
-    ui->cmbChannelSelector->hide();
-    ui->btnToggleFavorite->hide();
-    ui->btnEject->show();
-  }
+  ui->cmbDeviceSelect->setEnabled(iPlayingDevice);
+  ui->cbAutoNextService->setEnabled(!iPlayingDevice);
 #else
-  mpConfig->dumpButton->setEnabled(iShow);
-  mpConfig->frequencyDisplay->setEnabled(iShow);
-  btnScanning->setEnabled(iShow);
-  channelSelector->setEnabled(iShow);
-  btnToggleFavorite->setEnabled(iShow);
+  mpConfig->dumpButton->setEnabled(iPlayingDevice);
+  btnScanning->setEnabled(iPlayingDevice);
+  mpConfig->setEnabled(iPlayingDevice);
+  channelSelector->setEnabled(iPlayingDevice);
 #endif
-}
-
-void DabRadio::slot_handle_logger_button(i32)
-{
-  if (mpConfig->cbActivateLogger->isChecked())
-  {
-    if (mpLogFile != nullptr)
-    {
-      fprintf(stderr, "should not happen (logfile)\n");
-      return;
-    }
-    mpLogFile = mOpenFileDialog.open_log_file_ptr();
-    if (mpLogFile != nullptr)
-    {
-      LOG("Log started with ", mpInputDevice->deviceName());
-    }
-    else
-    {
-      mpConfig->cbActivateLogger->setCheckState(Qt::Unchecked); // "cancel" was chosen in file dialog
-    }
-  }
-  else if (mpLogFile != nullptr)
-  {
-    fclose(mpLogFile);
-    mpLogFile = nullptr;
-  }
-}
-
-void DabRadio::slot_handle_set_coordinates_button()
-{
-  Coordinates theCoordinator;
-  (void)theCoordinator.QDialog::exec();
-  const f32 local_lat = Settings::Config::varLatitude.read().toFloat();
-  const f32 local_lon = Settings::Config::varLongitude.read().toFloat();
-  mChannel.localPos = cf32(local_lat, local_lon);
-  _check_coordinates();
 }
 
 void DabRadio::slot_handle_journaline_viewer_closed(i32 iSubChannel)
@@ -393,18 +332,11 @@ void DabRadio::slot_handle_journaline_viewer_closed(i32 iSubChannel)
   }
 }
 
-void DabRadio::slot_handle_tii_viewer_closed()
-{
-  if (mShowTiiListWindow)  // should be always true in this situation
-  {
-    _slot_handle_tii_button();
-  }
-}
 
 void DabRadio::_slot_handle_favorite_button(bool /*iClicked*/)
 {
   mCurFavoriteState = !mCurFavoriteState;
-  set_favorite_button_style();
+  _set_favorite_button_style();
   mpServiceListHandler->set_favorite_state(mCurFavoriteState);
 }
 
@@ -414,8 +346,6 @@ void DabRadio::_slot_set_static_button_style()
   ui->btnPrevService->setFixedSize(QSize(32, 32));
   ui->btnNextService->setIconSize(QSize(24, 24));
   ui->btnNextService->setFixedSize(QSize(32, 32));
-  ui->btnEject->setIconSize(QSize(24, 24));
-  ui->btnEject->setFixedSize(QSize(32, 32));
   ui->btnTargetService->setIconSize(QSize(24, 24));
   ui->btnTargetService->setFixedSize(QSize(32, 32));
   ui->btnTechDetails->setIconSize(QSize(24, 24));
@@ -428,17 +358,12 @@ void DabRadio::_slot_set_static_button_style()
   ui->btnSpectrumScope->setFixedSize(QSize(32, 32));
   ui->configButton->setIconSize(QSize(24, 24));
   ui->configButton->setFixedSize(QSize(32, 32));
-  ui->btnFib->setIconSize(QSize(24, 24));
   ui->btnFib->setFixedSize(QSize(32, 32));
-  ui->btnTii->setIconSize(QSize(24, 24));
   ui->btnTii->setFixedSize(QSize(32, 32));
-  ui->btnCir->setIconSize(QSize(24, 24));
   ui->btnCir->setFixedSize(QSize(32, 32));
+  ui->btnEnsembleList->setFixedSize(QSize(32, 32));
   ui->btnOpenPicFolder->setIconSize(QSize(24, 24));
   ui->btnOpenPicFolder->setFixedSize(QSize(32, 32));
-  ui->btnScanning->setIconSize(QSize(24, 24));
-  ui->btnScanning->setFixedSize(QSize(32, 32));
-  ui->btnScanning->init(":res/icons/scan24.png", 3, 1);
 }
 
 void DabRadio::_show_or_hide_windows_from_config()
@@ -452,46 +377,18 @@ void DabRadio::_show_or_hide_windows_from_config()
   {
     mpTechDataWidget->show();
   }
-
-  mShowTiiListWindow = Settings::TiiViewer::varUiVisible.read().toBool();
-}
-
-void DabRadio::slot_handle_dl_text_button()
-{
-  if (mDlTextFile != nullptr)
-  {
-    fclose(mDlTextFile);
-    mDlTextFile = nullptr;
-    mpConfig->dlTextButton->setText("dlText");
-    return;
-  }
-
-  QString fileName = mOpenFileDialog.get_dl_text_file_name();
-  mDlTextFile = fopen(fileName.toUtf8().data(), "w+");
-  if (mDlTextFile == nullptr)
-  {
-    return;
-  }
-  mpConfig->dlTextButton->setText("writing");
 }
 
 void DabRadio::_slot_handle_config_button()
 {
-  if (!mpConfig->isHidden())
-  {
-    mpConfig->hide();
-  }
-  else
-  {
-    mpConfig->show();
-  }
+  mpConfig->setVisible(mpConfig->isHidden());
 }
 
 void DabRadio::slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF)
 {
-  if (mpInputDevice != nullptr && mChannel.nominalFreqHz > 0)
+  if (mpInputDevice != nullptr && mChannelDesc.deferredData.nomFreqkHz.has_value())
   {
-    mpInputDevice->setVFOFrequency(mChannel.nominalFreqHz + iFreqCorrRF);
+    mpInputDevice->setVFOFrequency(mChannelDesc.deferredData.nomFreqkHz.value() + iFreqCorrRF);
   }
 
   mpSpectrumViewer->show_freq_corr_rf_Hz(iFreqCorrRF);
@@ -499,6 +396,7 @@ void DabRadio::slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF)
 
 void DabRadio::slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB)
 {
+  mChannelDesc.deferredData.bbOffset = iFreqCorrBB;
   mpSpectrumViewer->show_freq_corr_bb_Hz(iFreqCorrBB);
 }
 
@@ -574,79 +472,107 @@ i32 DabRadio::_get_local_time(i32 & oLocalHour, i32 & oLocalMinute, const i32 iU
   return 0; // no day-shift needed
 }
 
-QString DabRadio::_conv_to_time_str(i32 year, i32 month, i32 day, i32 hours, i32 minutes, i32 seconds) const
+QString DabRadio::_conv_to_time_str(i32 iYear, i32 iMonth, i32 iDay, i32 iHours, i32 iMinutes, i32 iSeconds) const
 {
-  QString t = QString::number(year).rightJustified(4, '0') + "-" +
-              QString::number(month).rightJustified(2, '0') + "-" +
-              QString::number(day).rightJustified(2, '0') + "  " +
-              QString::number(hours).rightJustified(2, '0') + ":" +
-              QString::number(minutes).rightJustified(2, '0');
+  QString t = QString::number(iYear).rightJustified(4, '0') + "-" +
+              QString::number(iMonth).rightJustified(2, '0') + "-" +
+              QString::number(iDay).rightJustified(2, '0') + "  " +
+              QString::number(iHours).rightJustified(2, '0') + ":" +
+              QString::number(iMinutes).rightJustified(2, '0');
 
-  if (seconds >= 0)
+  if (iSeconds >= 0)
   {
-    t += ":" + QString::number(seconds).rightJustified(2, '0');
+    t += ":" + QString::number(iSeconds).rightJustified(2, '0');
   }
   return t;
 }
 
-void DabRadio::clean_screen()
+void DabRadio::slot_fib_time(const IFibDecoder::SUtcTimeSet & iFibTimeInfo)
 {
-  if (!mIsScanning) ui->lblDynLabel->setText("");
-  ui->serviceLabel->setText("");
-  ui->programTypeLabel->setText("");
-  mpTechDataWidget->cleanUp();
-  _reset_status_info();
+  // convert to local time and adapt date if needed
+  const i32 daysOffs = _get_local_time(mLocalTime.hour, mLocalTime.minute, iFibTimeInfo.Hour, iFibTimeInfo.Minute, iFibTimeInfo.LTO_Minutes);
+
+  mUTC.hour = iFibTimeInfo.Hour;
+  mUTC.minute = iFibTimeInfo.Minute;
+  mUTC.second = mLocalTime.second = iFibTimeInfo.Second;
+
+  _get_YMD_from_mod_julian_date(mUTC.year, mUTC.month, mUTC.day, iFibTimeInfo.ModJulianDate);
+
+  if (daysOffs != 0) // save a bit calculation time if local date is same than UTC date
+  {
+    _get_YMD_from_mod_julian_date(mLocalTime.year, mLocalTime.month, mLocalTime.day, iFibTimeInfo.ModJulianDate + daysOffs);
+  }
+  else
+  {
+    mLocalTime.year = mUTC.year;
+    mLocalTime.month = mUTC.month;
+    mLocalTime.day = mUTC.day;
+  }
+
+  if (Settings::Config::cbUseUtcTime.read().toBool())
+  {
+    _set_clock_text(_conv_to_time_str(mUTC.year, mUTC.month, mUTC.day, mUTC.hour, mUTC.minute, iFibTimeInfo.Second));
+  }
+  else
+  {
+    _set_clock_text(_conv_to_time_str(mLocalTime.year, mLocalTime.month, mLocalTime.day, mLocalTime.hour, mLocalTime.minute, iFibTimeInfo.Second));
+  }
 }
 
-//
-// called from the MP4 decoder
-void DabRadio::slot_show_frame_errors(i32 s)
+void DabRadio::_clean_screen(StatusInfo & ioStatusInfo) const
 {
-  if (!mIsRunning.load())
+  if (!mIsScanning) ui->lblDynLabel->setText("");
+  ui->lblServiceName->setText("");
+  ui->lblProgType->setText("");
+  mpTechDataWidget->cleanUp();
+  _reset_status_info(ioStatusInfo);
+}
+
+// called from the MP4 decoder
+void DabRadio::slot_show_frame_errors(i32 iFrameErrors)
+{
+  if (!mIsChannelRunning.load())
   {
     return;
   }
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_frame_error_bar(s);
+    mpTechDataWidget->slot_show_frame_error_bar(iFrameErrors);
   }
 }
 
-//
 // called from the MP4 decoder
-void DabRadio::slot_show_rs_errors(i32 s)
+void DabRadio::slot_show_rs_errors(i32 iRsErrors)
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {    // should not happen
     return;
   }
 
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_rs_error_bar(s);
+    mpTechDataWidget->slot_show_rs_error_bar(iRsErrors);
   }
 }
 
-//
 // called from the aac decoder
-void DabRadio::slot_show_aac_errors(i32 s)
+void DabRadio::slot_show_aac_errors(i32 iAacErrors)
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
 
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_aac_error_bar(s);
+    mpTechDataWidget->slot_show_aac_error_bar(iAacErrors);
   }
 }
 
-//
 // called from the ficHandler
 void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
@@ -655,11 +581,11 @@ void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
   {
     if (iSuccessPercent < 85)
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar::chunk { background-color: red; }");
+      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: red; }");
     }
     else
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar::chunk { background-color: #E6E600; }");
+      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #E6E600; }");
     }
 
     ui->progBarFicError->setValue(iSuccessPercent);
@@ -672,227 +598,48 @@ void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
 }
 
 // called from the PAD handler
-void DabRadio::slot_show_mot_handling()
+void DabRadio::slot_show_label(const QString & iLabel)
 {
-  if (!mIsRunning.load())
-  {
-    return;
-  }
-  mpTechDataWidget->slot_trigger_motHandling();
-}
-
-// called from the PAD handler
-
-void DabRadio::slot_show_label(const QString & s)
-{
-  if (mIsRunning.load())
+  if (mIsChannelRunning.load())
   {
     ui->lblDynLabel->setStyleSheet("color: white");
-    ui->lblDynLabel->setText(_convert_links_to_clickable(s));
+    ui->lblDynLabel->setText(_convert_links_to_clickable(iLabel));
   }
 
-  // if we dtText is ON, some work is still to be done
-  if ((mDlTextFile == nullptr) || (mDynLabelCache.add_if_new(s)))
+  // if DL text is ON, some work is still to be done
+  FILE * const pDlTextFile = mpEpgMotHandler->get_dl_text_file();
+  if ((pDlTextFile == nullptr) || (mDynLabelCache.add_if_new(iLabel)))
   {
     return;
   }
 
-  QString currentChannel = mChannel.channelName;
   QDateTime theDateTime = QDateTime::currentDateTime();
-  fprintf(mDlTextFile,
+  fprintf(pDlTextFile,
           "%s.%s %4d-%02d-%02d %02d:%02d:%02d  %s\n",
-          currentChannel.toUtf8().data(),
-          mChannel.curPrimaryService.serviceLabel.toUtf8().data(),
+          mChannelDesc.get_fId_or_ch().toUtf8().data(),
+          mCurPrimaryAudioService.serviceLabel.toUtf8().data(),
           mLocalTime.year,
           mLocalTime.month,
           mLocalTime.day,
           mLocalTime.hour,
           mLocalTime.minute,
           mLocalTime.second,
-          s.toUtf8().data());
+          iLabel.toUtf8().data());
 }
 
-void DabRadio::slot_set_stereo(const bool b)
+void DabRadio::slot_set_stereo(const bool iStereo)
 {
-  _set_status_info_status(mStatusInfo.Stereo, b);
-}
-
-static QString tiiNumber(i32 n)
-{
-  if (n >= 10)
-  {
-    return QString::number(n);
-  }
-  return QString("0") + QString::number(n);
+  _set_status_info_status(mStatusInfo.Stereo, iStereo);
 }
 
 void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
 {
-  if (!mIsRunning.load())
-    return;
-
-  QString country;
-
-  if (!mChannel.ecc_checked)
-  {
-    mChannel.ecc_checked = true;
-    mChannel.ecc_byte = mpDabProcessor->get_fib_decoder()->get_ecc();
-    country = find_ITU_code(mChannel.ecc_byte, (mChannel.Eid >> 12) & 0xF);
-    mChannel.transmitterName = "";
-
-    if (country != mChannel.countryName)
-    {
-      ui->transmitter_country->setText(country);
-      mChannel.countryName = country;
-    }
-  }
-
-  const bool isDropDownVisible = ui->cmbTiiList->view()->isVisible();
-  const f32 ownLatitude = real(mChannel.localPos);
-  const f32 ownLongitude = imag(mChannel.localPos);
-  const bool ownCoordinatesSet = (ownLatitude != 0.0f && ownLongitude != 0.0f);
-
-  if (mShowTiiListWindow)
-  {
-    mTiiListDisplay.start_adding();
-  }
-
-  if (!isDropDownVisible)
-  {
-    ui->cmbTiiList->clear();
-  }
-
-  if (mShowTiiListWindow)
-  {
-    mTiiListDisplay.show();
-    mTiiListDisplay.set_window_title("TII list of channel " + mChannel.channelName);
-  }
-
-  mTransmitterIds = iTiiList;
-  STiiDataEntry tr_fb; // fallback data storage, if no database entry was found
-
-  for (u32 index = 0; index < mTransmitterIds.size(); index++)
-  {
-    const STiiResult & tii = mTransmitterIds[index];
-
-    if (tii.mainId == 0xFF)	// shouldn't be
-      continue;
-
-    if (index == 0) // show only the "strongest" TII number
-    {
-      QString a = "TII: " + tiiNumber(tii.mainId) + "-" + tiiNumber(tii.subId);
-      ui->transmitter_coordinates->setAlignment(Qt::AlignRight);
-      ui->transmitter_coordinates->setText(a);
-    }
-
-    const STiiDataEntry * pTr = mTiiHandler.get_transmitter_data((mChannel.realChannel ? mChannel.channelName : "any"), mChannel.Eid, tii.mainId, tii.subId);
-    const bool dataValid = (pTr != nullptr);
-
-    if (!dataValid)
-    {
-      tr_fb = {};
-      tr_fb.mainId = tii.mainId;
-      tr_fb.subId = tii.subId;
-      tr_fb.country = country;
-      tr_fb.Eid = mChannel.Eid;
-      tr_fb.transmitterName = "(no database entry)";
-      pTr = &tr_fb;
-    }
-
-    TiiListDisplay::SDerivedData bd;
-
-    if (dataValid)
-    {
-      if (ownCoordinatesSet)
-      {
-        bd.distance_km = mTiiHandler.distance(pTr->latitude, pTr->longitude, ownLatitude, ownLongitude);
-        bd.corner_deg = mTiiHandler.corner(pTr->latitude, pTr->longitude, ownLatitude, ownLongitude);
-      }
-      else
-      {
-        bd.distance_km = bd.corner_deg = 0.0f;
-      }
-    }
-    else
-    {
-      bd = {};
-    }
-    bd.strength_dB = log10_times_10(tii.strength);
-    bd.phase_deg = tii.phaseDeg;
-    bd.isNonEtsiPhase = tii.isNonEtsiPhase;
-
-    if (mShowTiiListWindow)
-    {
-      mTiiListDisplay.add_row(*pTr, bd);
-    }
-
-    if (!isDropDownVisible)
-    {
-      if (dataValid)
-      {
-        if (ownCoordinatesSet)
-        {
-          ui->cmbTiiList->addItem(QString("%1/%2: %3  %4km  %5  %6m + %7m")
-                                  .arg(index + 1)
-                                  .arg(mTransmitterIds.size())
-                                  .arg(pTr->transmitterName)
-                                  .arg(bd.distance_km, 0, 'f', 1)
-                                  .arg(CompassDirection::get_compass_direction(bd.corner_deg).c_str())
-                                  .arg(pTr->altitude)
-                                  .arg(pTr->height));
-        }
-        else
-        {
-          ui->cmbTiiList->addItem(QString("%1/%2: %3 (set map coord. for dist./dir.) %4m + %5m")
-                                  .arg(index + 1)
-                                  .arg(mTransmitterIds.size())
-                                  .arg(pTr->transmitterName)
-                                  .arg(pTr->altitude)
-                                  .arg(pTr->height));
-
-        }
-      }
-      else
-      {
-        ui->cmbTiiList->addItem(QString("%1/%2: No database entry found for TII %3-%4")
-                                .arg(index + 1)
-                                .arg(mTransmitterIds.size())
-                                .arg(tiiNumber(tii.mainId))
-                                .arg(tiiNumber(tii.subId)));
-
-      }
-    }
-
-    // see if we have a map
-    if (mpHttpHandler && dataValid)
-    {
-      const QDateTime theTime = (Settings::Config::cbUseUtcTime.read().toBool() ? QDateTime::currentDateTimeUtc() : QDateTime::currentDateTime());
-      mpHttpHandler->add_transmitter_location_entry(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
-                                                    bd.strength_dB, bd.distance_km, bd.corner_deg, bd.isNonEtsiPhase);
-    }
-  }
-
-  // iterate over combobox entries, if activated
-  if (mpConfig->cbAutoIterTiiEntries->isChecked() && ui->cmbTiiList->count() > 0 && !isDropDownVisible)
-  {
-    ui->cmbTiiList->setCurrentIndex((i32)mTiiIndex % ui->cmbTiiList->count());
-
-    if (!mTiiIndexCntTimer.isActive())
-    {
-      mTiiIndex = (mTiiIndex + 1) % ui->cmbTiiList->count();
-      mTiiIndexCntTimer.start();
-    }
-  }
-
-  if (mShowTiiListWindow)
-  {
-    mTiiListDisplay.finish_adding();
-  }
+  mpTiiManager->show_tii(iTiiList);
 }
 
 void DabRadio::slot_show_spectrum(i32 /*amount*/) const
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
@@ -902,7 +649,7 @@ void DabRadio::slot_show_spectrum(i32 /*amount*/) const
 
 void DabRadio::slot_show_cir() const
 {
-  if (!mIsRunning.load() || mpCirViewer->is_hidden())
+  if (!mIsChannelRunning.load() || mpCirViewer->is_hidden())
   {
     return;
   }
@@ -912,7 +659,7 @@ void DabRadio::slot_show_cir() const
 
 void DabRadio::slot_show_iq(i32 iAmount, f32 iAvg) const
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
@@ -920,22 +667,36 @@ void DabRadio::slot_show_iq(i32 iAmount, f32 iAvg) const
   mpSpectrumViewer->show_iq(iAmount, iAvg);
 }
 
-void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData * pQD)
+void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData & iQD)
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
 
+  // The SNR/MER could swing-in for a while, so check if it's within a reasonable range
+  if (std::abs(iQD.SNR - mChannelDesc.snrLast) < 0.5f)
+  {
+    mChannelDesc.deferredData.snr = iQD.SNR;
+  }
+
+  if (std::abs(iQD.MER - mChannelDesc.merLast) < 0.5f)
+  {
+    mChannelDesc.deferredData.mer = iQD.MER;
+  }
+
+  mChannelDesc.snrLast = iQD.SNR;
+  mChannelDesc.merLast = iQD.MER;
+
   if (!mpSpectrumViewer->is_hidden())
   {
-    mpSpectrumViewer->show_lcd_data(pQD->CurOfdmSymbolNo, pQD->ModQuality, pQD->TestData1, pQD->TestData2, pQD->MeanSigmaSqFreqCorr, pQD->SNR);
+    mpSpectrumViewer->show_lcd_data(iQD.CurOfdmSymbolNo, iQD.MER, iQD.TestData1, iQD.TestData2, iQD.MeanSigmaSqFreqCorr, iQD.SNR);
   }
 }
 
 void DabRadio::slot_show_digital_peak_and_rms_level(const f32 iLevelPeak, const f32 iLevelRms) const
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
@@ -944,27 +705,26 @@ void DabRadio::slot_show_digital_peak_and_rms_level(const f32 iLevelPeak, const 
 }
 
 // called from the MP4 decoder
-void DabRadio::slot_show_rs_corrections(i32 c, i32 ec)
+void DabRadio::slot_show_rs_corrections(const i32 iC, const i32 iEc)
 {
-  if (!mIsRunning)
+  if (!mIsChannelRunning)
   {
     return;
   }
 
-  _set_status_info_status(mStatusInfo.RsError, c > 0);
-  _set_status_info_status(mStatusInfo.CrcError, ec > 0);
+  _set_status_info_status(mStatusInfo.RsError, iC > 0);
+  _set_status_info_status(mStatusInfo.CrcError, iEc > 0);
 
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_rs_corrections(c, ec);
+    mpTechDataWidget->slot_show_rs_corrections(iC, iEc);
   }
 }
 
-//
 // called from the DAB processor
-void DabRadio::slot_show_clock_error(f32 e)
+void DabRadio::slot_show_clock_error(const f32 e) const
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
@@ -974,20 +734,19 @@ void DabRadio::slot_show_clock_error(f32 e)
   }
 }
 
-//
 // called from the phasesynchronizer
-void DabRadio::slot_show_correlation(f32 threshold, const QVector<i32> & v)
+void DabRadio::slot_show_correlation(const f32 iThreshold, const QVector<i32> & iV)
 {
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
 
-  mpSpectrumViewer->show_correlation(threshold, v, mTransmitterIds);
-  mChannel.nrTransmitters = v.size();
+  mpSpectrumViewer->show_correlation(iThreshold, iV, mpTiiManager->get_transmitter_ids());
+  mChannelDesc.nrTransmitters = iV.size();
 }
 
-static QString hex_to_str(i32 v)
+[[maybe_unused]] static QString hex_to_str(i32 v)
 {
   QString res;
   for (i32 i = 0; i < 4; i++)
@@ -1005,19 +764,25 @@ void DabRadio::slot_name_of_ensemble(const i32 iEId, const QString & iEnsName, c
 {
   // qCDebug(sLogRadioInterface) << Q_FUNC_INFO << iEId << iEnsName << iEnsNameShort;
 
-  if (!mIsRunning.load())
+  if (!mIsChannelRunning.load())
   {
     return;
   }
 
-  QFont font = ui->ensembleId->font();
+  QFont font = ui->lblEnsName->font();
   font.setPointSize(14);
-  ui->ensembleId->setFont(font);
-  ui->ensembleId->setText(iEnsName + QString("(") + hex_to_str(iEId) + QString(")"));
+  ui->lblEnsName->setFont(font);
+  ui->lblEnsName->setText(iEnsName);
+  // ui->lblEnsName->setText(iEnsName + QString("(") + hex_to_str(iEId) + QString(")"));
 
-  mChannel.ensembleName = iEnsName;
-  mChannel.ensembleNameShort = iEnsNameShort;
-  mChannel.Eid = iEId;
+  mChannelDesc.ensembleName = iEnsName;
+  mChannelDesc.ensembleNameShort = iEnsNameShort;
+  mChannelDesc.Eid = iEId;
+  mpEpgMotHandler->set_channel_info(mChannelDesc.get_fId_or_ch_descr(), iEnsName);
+  mpTiiManager->set_channel_info(mChannelDesc.get_fId_or_ch(),
+                                 mChannelDesc.Eid,
+                                 mChannelDesc.deferredData.countryName.value_or(""),
+                                 mChannelDesc.get_type_info());
 }
 
 void DabRadio::_slot_handle_content_button()
@@ -1032,7 +797,7 @@ void DabRadio::_slot_handle_content_button()
 
   i32 numCols = 0;
   const QStringList s = mpDabProcessor->get_fib_decoder()->get_fib_content_str_list(numCols); // every list entry is one line
-  mpFibContentTable.reset(new FibContentTable(this, &Settings::Storage::instance(), mChannel.channelName, numCols));
+  mpFibContentTable.reset(new FibContentTable(this, &Settings::Storage::instance(), mChannelDesc.get_fId_or_ch_descr(), numCols));
   connect(mpFibContentTable.get(), &FibContentTable::signal_go_service_id, this, &DabRadio::slot_handle_fib_content_selector);
 
   for (const auto & sl : s)
@@ -1045,14 +810,19 @@ void DabRadio::_slot_handle_content_button()
 void DabRadio::_slot_handle_prev_service_button()
 {
   mpServiceListHandler->jump_entries(-1);
-  //  disconnect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
-  //  handle_serviceButton(BACKWARDS);
-  //  connect(btnPrevService, &QPushButton::clicked, this, &RadioInterface::_slot_handle_prev_service_button);
 }
 
 void DabRadio::_slot_handle_next_service_button()
 {
   mpServiceListHandler->jump_entries(+1);
+}
+
+void DabRadio::_slot_handle_file_looped()
+{
+  if (!mIsScanning && mIsFileMode && ui->cbAutoNextService->isChecked())
+  {
+    _slot_handle_next_service_button();
+  }
 }
 
 void DabRadio::_slot_handle_target_service_button()
@@ -1061,14 +831,13 @@ void DabRadio::_slot_handle_target_service_button()
 }
 
 // In those case we are sure not to have an operating dabProcessor, we hide some buttons
-void DabRadio::enable_ui_elements_for_safety(const bool iEnable) const
+void DabRadio::_enable_ui_elements_for_safety(const bool iEnable) const
 {
   mpConfig->dumpButton->setEnabled(iEnable);
   mpConfig->etiButton->setEnabled(iEnable);
   ui->btnToggleFavorite->setEnabled(iEnable);
   ui->btnPrevService->setEnabled(iEnable);
   ui->btnNextService->setEnabled(iEnable);
-  ui->cmbChannelSelector->setEnabled(iEnable);
   ui->btnFib->setEnabled(iEnable);
 }
 
@@ -1083,46 +852,10 @@ void DabRadio::_slot_update_mute_state(const bool iMute)
   ui->btnMuteAudio->setIcon(QIcon(mMutingActive ? ":res/icons/muted24.png" : ":res/icons/unmuted24.png"));
   ui->btnMuteAudio->setIconSize(QSize(24, 24));
   ui->btnMuteAudio->setFixedSize(QSize(32, 32));
-  signal_audio_mute(mMutingActive);
+  mpAudioManager->slot_set_mute(mMutingActive);
 }
 
-void DabRadio::_update_channel_selector(const QString & iChannel) const
-{
-  if (iChannel != "")
-  {
-    i32 k = ui->cmbChannelSelector->findText(iChannel);
-    if (k != -1)
-    {
-      ui->cmbChannelSelector->setCurrentIndex(k);
-    }
-  }
-  else
-  {
-    ui->cmbChannelSelector->setCurrentIndex(0);
-  }
-}
-
-void DabRadio::_update_channel_selector(i32 index)
-{
-  if (ui->cmbChannelSelector->currentIndex() == index)
-  {
-    return;
-  }
-
-  // TODO: why is that so complicated?
-  disconnect(ui->cmbChannelSelector, &QComboBox::textActivated, this, &DabRadio::_slot_handle_channel_selector);
-  ui->cmbChannelSelector->blockSignals(true);
-  emit signal_set_new_channel(index);
-
-  while (ui->cmbChannelSelector->currentIndex() != index)
-  {
-    usleep(2000);
-  }
-  ui->cmbChannelSelector->blockSignals(false);
-  connect(ui->cmbChannelSelector, &QComboBox::textActivated, this, &DabRadio::_slot_handle_channel_selector);
-}
-
-void DabRadio::_set_http_server_button(const EHttpButtonState iHttpServerState)
+void DabRadio::_set_http_server_button(const EHttpButtonState iHttpServerState) const
 {
   switch (iHttpServerState)
   {
@@ -1141,4 +874,15 @@ void DabRadio::_set_http_server_button(const EHttpButtonState iHttpServerState)
   }
 
   ui->btnHttpServer->setFixedSize(QSize(32, 32));
+}
+
+QString DabRadio::_get_scan_message(const bool iEndMsg) const
+{
+  QString s = "<span style='color:yellow;'>";
+  s += (iEndMsg ? "Scan ended - Select a service on the left" : "Scanning " + mChannelDesc.get_type_info());
+  s += "</span>";
+  s += "<br><span style='color:lightblue; font-size:small;'>Found DAB ensembles: " + QString::number(mScanResult.nrChannels) + "</span>";
+  s += "<br><span style='color:lightblue; font-size:small;'>Found audio services: " + QString::number(mScanResult.nrAudioServices) + "</span>";
+  s += "<br><span style='color:lightblue; font-size:small;'>Found packet services: " + QString::number(mScanResult.nrNonAudioServices) + "</span>";
+  return s;
 }

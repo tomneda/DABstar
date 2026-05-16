@@ -1,12 +1,21 @@
-//
-// Created by work on 2025-03-09.
-//
-
-#ifndef AUDIOIODEVICE_H
-#define AUDIOIODEVICE_H
+/*
+ * Copyright (c) 2026 by Thomas Neder (https://github.com/tomneda)
+ *
+ * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2 of the License, or any later version.
+ *
+ * DABstar is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
+ * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+#pragma once
 
 #include "glob_defs.h"
+#include "test_tone.h"
 #include "ringbuffer.h"
+#include "delay_line.h"
 #include <QTimer>
 #include <QIODevice>
 
@@ -16,6 +25,7 @@ struct SAudioFifo;
 class AudioIODevice final : public QIODevice
 {
   Q_OBJECT
+
 public:
   explicit AudioIODevice(QObject * iParent = nullptr);
 
@@ -23,13 +33,14 @@ public:
   void stop();
   void set_buffer(SAudioFifo * iBuffer);
   void set_mute_state(bool iMuteActive);
+  void set_test_tone(bool iActive);
+  void set_peak_level_delay(i32 iDelaySteps);
   bool is_muted() const { return mPlaybackState == EPlaybackState::Muted; }
 
   qint64 readData(char * opData, qint64 maxlen) override;
   qint64 writeData(const char * data, qint64 len) override;
   qint64 bytesAvailable() const override;
   qint64 size() const override;
-  // bool isSequential() const override { return true; }
 
 private:
   static constexpr f32 cFadeTimeMs =  60.0f;
@@ -49,15 +60,16 @@ private:
   std::atomic<bool> mStopFlag = false;
 
   // peak level meter
-  // DelayLine<cf32> delayLine{cf32(-40.0f, -40.0f)};
+  struct SStereoPeakLevel { f32 left = -40.0f, right = -40.0f; };
+  DelayLine<SStereoPeakLevel> mDelayLine{SStereoPeakLevel()};
   u32 mPeakLevelCurSampleCnt = 0;
   u32 mPeakLevelSampleCntBothChannels = 0;
   i16 mAbsPeakLeft = 0;
   i16 mAbsPeakRight = 0;
   QTimer mTimerPeakLevel;
-  // union SStereoPeakLevel { struct { f32 Left, Right; }; cf32 Cmplx; };
 
-  // void _extract_audio_data_from_fifo(char * opData, i64 iBytesToRead) const;
+  TestTone mTestTone{};
+
   void _fade(i32 iNumStereoSamples, f32 coe, f32 gain, i16 * dataPtr) const;
   void _fade_in_audio_samples(i16 * opData, i32 iNumStereoSamples) const;
   void _fade_out_audio_samples(i16 * opData, i32 iNumStereoSamples) const;
@@ -67,6 +79,3 @@ signals:
   void signal_show_audio_peak_level(f32, f32) const;
   void signal_audio_data_available(i32 iNumSamples, i32 iSampleRate);
 };
-
-
-#endif // AUDIOIODEVICE_H

@@ -40,25 +40,25 @@
 Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtWarningMsg)
 
 
-MotObject::MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag)
-  : mpDR(mr)
-  , mDirElement(dirElement)
+MotObject::MotObject(DabRadio * ipDR, bool iDirElement, u16 iTransportId, const u8 * ipSegment, i32 iSegmentSize, bool iLastFlag)
+  : mpDR(ipDR)
+  , mDirElement(iDirElement)
 {
-  qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << dirElement << "and transportId" << transportId << "and segmentSize" << segmentSize << "and lastFlag" << lastFlag;
+  qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << iDirElement << "and transportId" << iTransportId << "and segmentSize" << iSegmentSize << "and lastFlag" << iLastFlag;
   qCWarning(sLogMotObject()) << "This is not working well yet";
-  
-  connect(this, &MotObject::signal_new_MOT_object, mr, &DabRadio::slot_handle_mot_object);
 
-  set_header(segment, segmentSize, lastFlag, transportId);
+  connect(this, &MotObject::signal_new_MOT_object, ipDR, &DabRadio::slot_handle_mot_object);
+
+  set_header(ipSegment, iSegmentSize, iLastFlag, iTransportId);
 }
 
-MotObject::MotObject(DabRadio * mr, bool dirElement)
-  : mpDR(mr)
-  , mDirElement(dirElement)
+MotObject::MotObject(DabRadio * ipDR, bool iDirElement)
+  : mpDR(ipDR)
+  , mDirElement(iDirElement)
 {
-  qCDebug(sLogMotObject()) << "Init MotObject() (2) with dirElement" << dirElement;
+  qCDebug(sLogMotObject()) << "Init MotObject() (2) with dirElement" << iDirElement;
 
-  connect(this, &MotObject::signal_new_MOT_object, mr, &DabRadio::slot_handle_mot_object);
+  connect(this, &MotObject::signal_new_MOT_object, ipDR, &DabRadio::slot_handle_mot_object);
 }
 
 

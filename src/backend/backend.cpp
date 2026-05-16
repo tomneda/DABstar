@@ -38,7 +38,7 @@ constexpr i16 cCuSizeBits = 64;
 //	fragmentsize == Length * CUSize
 Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag)
   : deconvolver(ipDescType)
-  , outV(ipDescType->bitRate * 24)
+  , outV(ipDescType->bitRate /*kbit/s*/ * 24 /*ms*/)
   , driver(ipRI, ipDescType, ipoAudiobuffer, ipoDatabuffer, frameBuffer)
 #ifdef  __THREADED_BACKEND__
   , freeSlots(NUMBER_SLOTS)
@@ -126,7 +126,7 @@ i32 Backend::process(const i16 * const iV, const i32 cnt)
   return 1;
 }
 
-const i16 interleaveMap[] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
+static constexpr i16 interleaveMap[] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
 void Backend::_process_segment(const i16 * iData)
 {

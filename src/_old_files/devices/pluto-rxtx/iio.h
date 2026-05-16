@@ -19,8 +19,7 @@
 /** @file iio.h
  * @brief Public interface */
 
-#ifndef __IIO_H__
-#define __IIO_H__
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -1774,4 +1773,3 @@ __api i32 iio_device_reg_read(struct iio_device *dev,
 
 #undef __api
 
-#endif /* __IIO_H__ */

@@ -31,8 +31,7 @@
      <item row="0" column="1">
       <widget class="QLCDNumber" name="api_version">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Version of the SDRplay library detected.
-         &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Version of the detected SDRplay library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="lineWidth">
         <number>0</number>
@@ -84,9 +83,7 @@
      <item row="2" column="1">
       <widget class="QDoubleSpinBox" name="ppmControl">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the 
-          offset (in ppm) of the observed oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-        </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oscillator frequency correction in ppm. Enter the observed frequency offset of the device&apos;s oscillator.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="minimum">
         <double>-150.000000000000000</double>
@@ -146,9 +143,7 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setting the LNA state, determining the gain reduction 
-         applied in the LNA.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-        </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;LNA state setting, which determines the gain reduction applied in the LNA.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -170,8 +165,7 @@
        <item>
         <widget class="QLCDNumber" name="lnaGRdBDisplay">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The display shows the gain reduction in the LNA of the device.
-           &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Current gain reduction applied in the device&apos;s LNA, in dB.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="lineWidth">
           <number>0</number>
@@ -211,9 +205,7 @@
        <item>
         <widget class="QLabel" name="tunerGain">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Total tuner gain (LNA+Mixer+IF).
-           &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-          </string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Total tuner gain (LNA + Mixer + IF), in dB.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>unknown</string>
@@ -246,9 +238,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the ADC overload condition. Increase the attenuation to avoid
-         this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-        </string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ADC overload indicator. Increase attenuation to avoid this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Overload</string>
@@ -272,9 +262,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;5V supply for antenna amplifiers.
-         &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-        </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable 5 V Bias-T supply for antenna-mounted amplifiers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>biasT</string>
@@ -291,9 +279,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on automatic IF gain control.
-         &lt;/p&gt;&lt;p&gt;If switched on, the IF gain slider is disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-        </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable automatic IF gain control (AGC). When active, the IF gain control is disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>AGC</string>
@@ -308,9 +294,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on the notch filter.
-         &lt;/p&gt;&lt;p&gt;If switched on, it attenuates the AM and FM frequency ranges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-        </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable the notch filter to attenuate the AM and FM frequency ranges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Notch</string>
@@ -350,9 +334,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select an antenna (RSP2 and RSPdx).
-         &lt;br&gt;In RSPduo, the tuner is swapped.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-        </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select an antenna input (RSP2 and RSPdx). For the RSPduo, this switches the active tuner.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <item>
         <property name="text">

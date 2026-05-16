@@ -51,7 +51,7 @@
 /// different string splitting routines
 ///
 /// @file       Splitter.h
-/// @author     Michael Reichenbächer <rbr@iis.fraunhofer.de>
+/// @author     Michael Reichenbcher <rbr@iis.fraunhofer.de>
 ///
 /// $Id: Splitter.h,v 1.3 2008/12/26 20:04:53 jcable Exp $
 ///
@@ -64,8 +64,7 @@
 ///
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef SPLITTER_H_
-#define SPLITTER_H_
+#pragma once
 
 #ifdef _MSC_VER
 #pragma warning(push,3)
@@ -107,5 +106,4 @@ private:
 };
 
 
-#endif
 

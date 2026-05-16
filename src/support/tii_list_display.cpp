@@ -83,12 +83,12 @@ i32 TiiListDisplay::get_nr_rows()
   return mpTableWidget->rowCount();
 }
 
-void TiiListDisplay::show()
+void TiiListDisplay::show() const
 {
   mpWidget->show();
 }
 
-void TiiListDisplay::hide()
+void TiiListDisplay::hide() const
 {
   mpWidget->hide();
 }

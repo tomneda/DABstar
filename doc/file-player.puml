@@ -1,0 +1,50 @@
+@startuml
+title DABstar File-Player actions
+
+actor "User" as USER
+entity "Service List\nDatabase" as SL
+entity "File Collector\nDialog" as FC
+entity "File Collector\nDatabase" as FCDB
+database "File System\nSample data" as FS
+entity "File Player\nin DabRadio" as FP
+entity "DAB\nSub system" as SS
+'participant "UI/Consumers" as UI
+
+
+==Selecting a service in service list==
+USER -> SL: Clicks on service (FId)
+SL -> FCDB++: get filename from FId
+FCDB <--> FS: Check existence\nand hash(==FId)
+SL <-- FCDB--: Filename\nor empty if invalid
+SL -> FP++: Play file if filename not empty
+FP <--> FS: Get sample data
+FP <-> SS: exchange data\nto work
+USER <-- FP--: User enjoyed the service
+
+
+==Scan file system and add to service list==
+USER -> FC++: Choose folder/files\nand triggers a scan
+loop For each found file
+    FC <--> FS: Scan for (valid) folders and files
+    FC -> FP++: Plays file "silently"
+    FP -> SS++:
+    FP <--> FS: Get sample data
+    FP <-- SS--: Meta data
+    FP --> FC--:
+    FC -> FCDB++: store entry (FId)
+    FCDB --> FC--:
+    SL <- FC++: store collection per\nfile in service list
+    SL --> FC--
+end
+USER <-- FC--: all files processed
+
+
+legend left
+  |= Symbol |= Meaning |
+  | FId | "File Id" (32Bit hash of file) |
+  '| <back:lightgreen>   </back> | Service class |
+  '| <color:red>--></color> | Dependency |
+  '| <color:blue>--></color> | Association |
+endlegend
+
+@enduml

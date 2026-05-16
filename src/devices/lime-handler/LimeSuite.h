@@ -18,8 +18,7 @@
  * limitations under the License.
  */
 
-#ifndef LMS7_API_H
-#define LMS7_API_H
+#pragma once
 
 #include <cstdint>
 #include <cstdlib>
@@ -1335,4 +1334,3 @@ API_EXPORT void LMS_RegisterLogHandler(LMS_LogHandler handler);
 } //extern "C"
 #endif
 
-#endif //LMS_SDR_INTERFACE_H

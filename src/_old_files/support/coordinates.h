@@ -1,10 +1,18 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013, 2014, 2015, 2016, 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
  *
- *    This file is part of the Qt-DAB .
+ *    This file is part of the Qt-DAB (formerly SDR-J, JSDR).
  *
  *    Qt-DAB is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -20,28 +28,33 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	MAPPORT_HANDLER_H
-#define	MAPPORT_HANDLER_H
+#pragma once
 
-#include	<QDialog>
-#include	<QLabel>
-#include	<QLineEdit>
+#include  <QDialog>
+#include  <QLabel>
+#include  <QLineEdit>
+#include  <QPushButton>
 
-class MapPortHandler : public QDialog
+class QSettings;
+
+class Coordinates : public QDialog
 {
-  Q_OBJECT
-
+Q_OBJECT
 public:
-  MapPortHandler();
-  ~MapPortHandler();
+  Coordinates();
+  ~Coordinates() override;
 
 private:
-  QLabel * mapPortText;
-  QLineEdit * mapPortSetting;
-  QPushButton * acceptButton;
+  QLabel * mpLabelUrlHint;
+  QLabel * mpLabelLatitude;
+  QLineEdit * mpEditBoxLatitude;
+  QLabel * mpLabelLongitude;
+  QLineEdit * mpEditBoxLongitude;
+  QPushButton * mpBtnAccept;
 
 private slots:
-  void handle_acceptButton();
+  void slot_accept_button();
 };
 
-#endif
+
+

@@ -22,8 +22,7 @@
  *  jan van Katwijk
  *  Lazy Chair Computing
  */
-#ifndef AIRSPY_HANDLER_H
-#define AIRSPY_HANDLER_H
+#pragma once
 
 #include  <QObject>
 #include  <QSettings>
@@ -178,4 +177,3 @@ private:
   i32 open();
 };
 
-#endif

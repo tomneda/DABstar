@@ -52,24 +52,21 @@
 #include "wavfiles.h"
 #include "rawfiles.h"
 #include "setting-helper.h"
-#include <QFileDialog>
-#include <QMessageBox>
 #include <QSettings>
 #include <thread>
 
-[[maybe_unused]] static const char DN_FILE_INP[]   = "File input";
-[[maybe_unused]] static const char DN_SDRPLAY[]    = "SDR-Play";
-[[maybe_unused]] static const char DN_RTLTCP[]     = "RTL-TCP";
-[[maybe_unused]] static const char DN_RTLSDR[]     = "RTL-SDR";
-[[maybe_unused]] static const char DN_AIRSPY[]     = "Airspy";
-[[maybe_unused]] static const char DN_SPYSERVER[]  = "SpyServer (exp)";
-[[maybe_unused]] static const char DN_HACKRF[]     = "HackRf";
-[[maybe_unused]] static const char DN_LIMESDR[]    = "LimeSDR";
-[[maybe_unused]] static const char DN_PLUTO[]      = "Pluto";
-[[maybe_unused]] static const char DN_SOAPY[]      = "SoapySDR (exp)";
-[[maybe_unused]] static const char DN_EXTIO[]      = "ExtIO";
-[[maybe_unused]] static const char DN_ELAD[]       = "Elad-S1";
-[[maybe_unused]] static const char DN_UHD[]        = "UHD/USRP";
+[[maybe_unused]] static const char DN_SDRPLAY[]   = "SDRplay";
+[[maybe_unused]] static const char DN_RTLTCP[]    = "RTL-TCP";
+[[maybe_unused]] static const char DN_RTLSDR[]    = "RTL-SDR";
+[[maybe_unused]] static const char DN_AIRSPY[]    = "Airspy";
+[[maybe_unused]] static const char DN_SPYSERVER[] = "SpyServer (exp.)";
+[[maybe_unused]] static const char DN_HACKRF[]    = "HackRf";
+[[maybe_unused]] static const char DN_LIMESDR[]   = "LimeSDR";
+[[maybe_unused]] static const char DN_PLUTO[]     = "Pluto";
+[[maybe_unused]] static const char DN_SOAPY[]     = "SoapySDR (exp.)";
+[[maybe_unused]] static const char DN_EXTIO[]     = "ExtIO";
+[[maybe_unused]] static const char DN_ELAD[]      = "Elad-S1";
+[[maybe_unused]] static const char DN_UHD[]       = "UHD/USRP";
 
 DeviceSelector::DeviceSelector(QSettings * ipSettings) :
   mpSettings(ipSettings),
@@ -80,8 +77,7 @@ DeviceSelector::DeviceSelector(QSettings * ipSettings) :
 QStringList DeviceSelector::get_device_name_list() const
 {
   QStringList sl;
-  sl << "select input";
-  sl << DN_FILE_INP;
+  sl << "(no device)";
 #ifdef  HAVE_SDRPLAY
   sl << DN_SDRPLAY;
 #endif
@@ -122,106 +118,149 @@ QStringList DeviceSelector::get_device_name_list() const
   return sl;
 }
 
-std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iDeviceName, bool & oRealDevice)
+std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iDeviceNameOrFileName, const bool iIsFileDevice, const bool iSuppressWarnings)
 {
   std::unique_ptr<IDeviceHandler> inputDevice;
+  mMessage.clear();
+
+  if (iDeviceNameOrFileName.isEmpty())
+  {
+    mMessage = "No device or filename given";
+    return nullptr;
+  }
 
   try
   {
-    inputDevice = _create_device(iDeviceName, oRealDevice);
+    inputDevice = _create_device(iDeviceNameOrFileName, iIsFileDevice, iSuppressWarnings);
   }
   catch (const std::exception & e)
   {
-    QMessageBox::warning(this, "Warning", e.what());
-    inputDevice = nullptr;
+    if (!iSuppressWarnings)  // e.g., while scanning
+    {
+      mMessage = QString(e.what()) + " (" + iDeviceNameOrFileName + ")";
+    }
   }
   catch (...)
   {
-    QMessageBox::warning(this, "Warning", "Unknown exception happens in device handling");
-    inputDevice = nullptr;
+    if (!iSuppressWarnings)
+    {
+      mMessage = QString("Unknown exception happens in device handling (") + iDeviceNameOrFileName + ")";
+    }
   }
-  mCurDeviceName = iDeviceName;
+
   return inputDevice;
 }
 
-std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & iDeviceName, bool & oRealDevice)
+std::unique_ptr<IDeviceHandler> DeviceSelector::_open_input_file_device_from_file_type(const QString & iFilepath) const
+{
+  const OpenFileDialog::EFileType typeLoc = mOpenFileDialog.get_file_type(iFilepath);
+
+  switch (typeLoc)
+  {
+  case OpenFileDialog::EFileType::UNDEF:   return nullptr;
+  case OpenFileDialog::EFileType::UFF_XML: return std::make_unique<XmlFileReader>(iFilepath);
+  case OpenFileDialog::EFileType::SDR_WAV: return std::make_unique<WavFileHandler>(iFilepath);
+  case OpenFileDialog::EFileType::RAW_IQ:  return std::make_unique<RawFileHandler>(iFilepath);
+  }
+
+  return nullptr;
+}
+
+std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings) const
 {
   std::unique_ptr<IDeviceHandler> inputDevice;
 
-  oRealDevice = true; // until proven otherwise
-
+  if (iIsFileDevice)
+  {
+    if (!iDeviceNameOrFileName.isEmpty())
+    {
+      if (QFile::exists(iDeviceNameOrFileName))
+      {
+        inputDevice = _open_input_file_device_from_file_type(iDeviceNameOrFileName);
+      }
+      else
+      {
+        mMessage = QString("File does not exist: ") + iDeviceNameOrFileName;
+      }
+    }
+    else
+    {
+      mMessage = QString("No filename given to play");
+    }
+  }
+  else
 #ifdef  HAVE_SDRPLAY
-  if (iDeviceName == DN_SDRPLAY)
+  if (iDeviceNameOrFileName == DN_SDRPLAY)
   {
     inputDevice = std::make_unique<SdrPlayHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_RTLSDR
-  if (iDeviceName == DN_RTLSDR)
+  if (iDeviceNameOrFileName == DN_RTLSDR)
   {
     inputDevice = std::make_unique<RtlSdrHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_AIRSPY
-  if (iDeviceName == DN_AIRSPY)
+  if (iDeviceNameOrFileName == DN_AIRSPY)
   {
     inputDevice = std::make_unique<AirspyHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_SPYSERVER
-  if (iDeviceName == DN_SPYSERVER)
+  if (iDeviceNameOrFileName == DN_SPYSERVER)
   {
     inputDevice = std::make_unique<SpyServerClient>(mpSettings);
   }
   else
 #endif
 #ifdef  HAVE_HACKRF
-  if (iDeviceName == DN_HACKRF)
+  if (iDeviceNameOrFileName == DN_HACKRF)
   {
     inputDevice = std::make_unique<HackRfHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_LIME
-  if (iDeviceName == DN_LIMESDR)
+  if (iDeviceNameOrFileName == DN_LIMESDR)
   {
     inputDevice = std::make_unique<LimeHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_PLUTO
-  if (iDeviceName == DN_PLUTO)
+  if (iDeviceNameOrFileName == DN_PLUTO)
   {
     inputDevice = std::make_unique<PlutoHandler>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef HAVE_RTL_TCP
-  if (iDeviceName == DN_RTLTCP)
+  if (iDeviceNameOrFileName == DN_RTLTCP)
   {
     inputDevice = std::make_unique<RtlTcpClient>(mpSettings, mVersionStr);
   }
   else
 #endif
 #ifdef  HAVE_ELAD
-  if (iDeviceName == DN_ELAD)
+  if (iDeviceNameOrFileName == DN_ELAD)
   {
     inputDevice = std::make_unique<eladHandler>(mpSettings);
   }
   else
 #endif
 #ifdef  HAVE_UHD
-  if (iDeviceName == DN_UHD)
+  if (iDeviceNameOrFileName == DN_UHD)
   {
     inputDevice = std::make_unique<UhdHandler>(mpSettings);
   }
   else
 #endif
 #ifdef  HAVE_SOAPY
-  if (iDeviceName == DN_SOAPY)
+  if (iDeviceNameOrFileName == DN_SOAPY)
   {
     inputDevice = std::make_unique<SoapyHandler>(mpSettings);
   }
@@ -229,104 +268,35 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
 #endif
 #ifdef  HAVE_EXTIO
   // extio is - in its current settings - for Windows, it is a wrap around the dll
-  if (iDeviceName == DN_EXTIO)
+  if (iDeviceNameOrFileName == DN_EXTIO)
   {
     inputDevice = std::make_unique<extioHandler>(mpSettings);
   }
   else
 #endif
-  if (iDeviceName == DN_FILE_INP)
   {
-    oRealDevice = false;
-    OpenFileDialog::EFileType type = OpenFileDialog::EFileType::FT_UNDEF;
-    QString file;
+    mMessage = QString("Unknown device: ") + iDeviceNameOrFileName;
+  }
 
-    // check if last played file is still valid
-    const QString lastFileName = Settings::Main::varDeviceFile.read().toString();
+  if (inputDevice != nullptr)
+  {
+    /*
+     * Per default the device widget should be shown after creation.
+     * If we want it switched off: Sometimes it has problems to be switched off too fast again (a frame remains on the screen).
+     * With this delay the problem can be workaround but causes a more viewable flickering of the device widget.
+     * For case of symmetry, we do this also with show() the widget (again) after creation.
+     */
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    if (!lastFileName.isEmpty() && QFile::exists(lastFileName))
+    if (Settings::Main::varDeviceUiVisible.read().toBool())
     {
-      OpenFileDialog::EFileType typeLoc = mOpenFileDialog.get_file_type(lastFileName);
-      if (typeLoc != OpenFileDialog::EFileType::FT_UNDEF)
-      {
-        type = typeLoc;
-        file = lastFileName;
-      }
+      inputDevice->show(); // should not be necessary as the device widget is shown by default
     }
-
-    if (type == OpenFileDialog::EFileType::FT_UNDEF)
-    {
-      file = mOpenFileDialog.open_sample_data_file_dialog_for_reading(type);
-
-      if (file.isEmpty()) // dialog closed with cancel?
-      {
-        Settings::Main::varDeviceFile.write("");
-        return nullptr;
-      }
-    }
-
-    // Open the selected file and read the first 5 bytes to determine the file
-    // type. Then close the file.
-    u8 mByteBuffer[5];
-    FILE *mpFile = OpenFileDialog::open_file(file, "rb");
-    if (mpFile == nullptr)
-      return nullptr;
-    if (fread(mByteBuffer, sizeof(u8), 5, mpFile) < 5)
-      return nullptr;
-    if (memcmp(mByteBuffer, "<?xml", 5) == 0)
-      inputDevice = std::make_unique<XmlFileReader>(file);
-    else if ((memcmp(mByteBuffer, "RIFF", 4) == 0) ||
-             (memcmp(mByteBuffer, "RF64", 4) == 0))
-      inputDevice = std::make_unique<WavFileHandler>(file);
     else
-      inputDevice = std::make_unique<RawFileHandler>(file);
-    if (mpFile != nullptr)
-      fclose(mpFile);
-
-    /*switch (type)
     {
-    case OpenFileDialog::EFileType::FT_UFF_XML: inputDevice = std::make_unique<XmlFileReader>(file); break;
-    case OpenFileDialog::EFileType::FT_SDR_WAV: inputDevice = std::make_unique<WavFileHandler>(file); break;
-    case OpenFileDialog::EFileType::FT_RAW:
-    case OpenFileDialog::EFileType::FT_IQ:  inputDevice = std::make_unique<RawFileHandler>(file);break;
-    default: return nullptr;
-    }*/
-
-    Settings::Main::varDeviceFile.write(file);
-  }
-  else
-  {
-    return nullptr;
-  }
-
-  Settings::Main::varSdrDevice.write(iDeviceName);
-
-  /*
-   * Per default the device widget should be shown after creation.
-   * If we want it switched off: Sometimes it has problems to be switched off too fast again (a frame remains on the screen).
-   * With this delay the problem can be workaround but causes a more viewable flickering of the device widget.
-   * For case of symmetry, we do this also with show() the widget (again) after creation.
-   */
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-  if (Settings::Main::varDeviceUiVisible.read().toBool())
-  {
-    inputDevice->show(); // should not be necessary as the device widget is shown by default
-  }
-  else
-  {
-    inputDevice->hide();
+      inputDevice->hide();
+    }
   }
 
   return inputDevice;
-}
-
-bool DeviceSelector::reset_file_input_last_file(const QString & iDeviceName)
-{
-  if (iDeviceName == DN_FILE_INP)
-  {
-    Settings::Main::varDeviceFile.write("");
-    return true;
-  }
-  return false;
 }

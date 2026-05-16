@@ -44,8 +44,7 @@
  * 	eti generator
  */
 
-#ifndef  ETI_GENERATOR_H
-#define  ETI_GENERATOR_H
+#pragma once
 
 #include  <cstdio>
 #include  <stdint.h>
@@ -103,6 +102,5 @@ private:
   void _process_sub_channel(i32, parameter *, Protection * prot, u8 *);
 };
 
-#endif
 
 

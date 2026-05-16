@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>334</width>
-    <height>700</height>
+    <height>675</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,7 +51,7 @@
      <item>
       <widget class="QPushButton" name="framedumpButton">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio services are encoded in a MP2 or an AAC format. &lt;/p&gt;&lt;p&gt;Touching this button will show a menu to store the audio frames into a file.&lt;/p&gt;&lt;p&gt;Touching the button again will close the output file. Programs like VLC can handle such files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio services are encoded in MP2 or AAC format.&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the audio frames to a file.&lt;/p&gt;&lt;p&gt;Click again to close the output file. Programs such as VLC can play these files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Dump AAC</string>
@@ -61,7 +61,7 @@
      <item>
       <widget class="QPushButton" name="audiodumpButton">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The audio output can be saved as a file in uncompressed PCM format. &lt;/p&gt;&lt;p&gt;Touching this button will show a menu to save the PCM data into a file.&lt;/p&gt;&lt;p&gt;The output is a regular &amp;quot;.wav&amp;quot; file which can be handled by many other audio programs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the audio output as an uncompressed PCM file.&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the PCM data.&lt;/p&gt;&lt;p&gt;The output is a standard &amp;quot;.wav&amp;quot; file compatible with most audio programs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Dump WAV</string>
@@ -71,7 +71,7 @@
      <item>
       <widget class="QPushButton" name="timeTable_button">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If configured - opens a new windows with SPI (formerly called EPG) preview.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;Note that this is still work in progress.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If configured, opens a window with an SPI (formerly EPG) timetable preview.&lt;/p&gt;&lt;p&gt;Note: this feature is still a work in progress.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Time Table</string>
@@ -166,7 +166,7 @@
      <item row="4" column="1">
       <widget class="QLCDNumber" name="rsCorrections">
        <property name="toolTip">
-        <string>The number of corrections made by the reed-solomon algorithm over 100 DAB+ frames (so the number does not relate to the classic DAB/MP2 frames)</string>
+        <string>Number of corrections made by the Reed-Solomon algorithm over 100 DAB+ frames. This count does not relate to classic DAB/MP2 frames.</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
@@ -186,7 +186,7 @@
      <item row="5" column="1">
       <widget class="QLCDNumber" name="ecCorrections">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RS decoding/recovery uses parity bits. If, however, a parity bit is faulty, recovery of errors may lead to introducing errors. The crc check following the recovery should reveal that.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RS decoding uses parity bits to recover errors. If a parity bit itself is faulty, the recovery may introduce additional errors. The CRC check following recovery should detect this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
@@ -206,7 +206,7 @@
      <item row="6" column="1">
       <widget class="QLCDNumber" name="bitrateDisplay">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The bitrate of the encoding of the AAC datastream is shown here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bitrate of the AAC audio stream in kbps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
@@ -226,7 +226,7 @@
      <item row="7" column="1">
       <widget class="QLCDNumber" name="audioRate">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The audio sample rate in kilo samples per second [kSps]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio sample rate in kilo-samples per second (kSps).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
@@ -368,7 +368,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Indicator of the success rate of handling the AAC frames in the DAB+ transmissions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Success rate of AAC frame decoding in the DAB+ transmission. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
@@ -393,7 +393,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frame errors. Indication of the quality of the DAB+ frame detection. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DAB+ frame detection quality indicator. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
@@ -425,7 +425,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality of the DAB+ frames. &lt;/p&gt;&lt;p&gt;Indicator for the amount of times meaning the frames contain more errors than the Reed Solomon correction can correct. &lt;/p&gt;&lt;p&gt;100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DAB+ Reed-Solomon correction quality indicator.&lt;/p&gt;&lt;p&gt;Shows how often frames contain more errors than the Reed-Solomon decoder can correct. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
@@ -446,36 +446,6 @@
       <widget class="QLabel" name="aacErrorLabel">
        <property name="text">
         <string>AAC</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>MOT Decoding</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="motAvailable">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Slide show indicator&lt;/p&gt;&lt;p&gt;Green means MOT frames are received.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ffffff;&quot;&gt;MOT&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
       </widget>
      </item>

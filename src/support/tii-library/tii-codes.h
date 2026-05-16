@@ -27,8 +27,7 @@
  *    along with Qt-DAB if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  TII_HANDLER_H
-#define  TII_HANDLER_H
+#pragma once
 
 #include <QString>
 #include <QLibrary>
@@ -105,4 +104,3 @@ private:
   bool _load_dyn_library_functions();
 };
 
-#endif

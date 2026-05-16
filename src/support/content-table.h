@@ -28,8 +28,7 @@
  *    along with dab-scanner; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  CONTENT_TABLE_H
-#define  CONTENT_TABLE_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <QObject>
@@ -80,4 +79,3 @@ signals:
   void signal_go_service_id(u32);
 };
 
-#endif

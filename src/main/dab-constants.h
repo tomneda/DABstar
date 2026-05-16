@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef  DAB_CONSTANTS_H
-#define  DAB_CONSTANTS_H
+#pragma once
 
 #include "glob_defs.h"
 #include  <QString>
@@ -64,10 +63,6 @@ constexpr f32 F_RAD_PER_DEG = (f32)(M_PI / 180.0);
 constexpr f32 F_DEG_PER_RAD = (f32)(180.0 / M_PI);
 constexpr i16 VITERBI_SOFT_BIT_VALUE_MAX = 127;
 constexpr f32 F_VITERBI_SOFT_BIT_VALUE_MAX = (f32)VITERBI_SOFT_BIT_VALUE_MAX;
-
-constexpr u8 BAND_III = 0100;
-constexpr u8 L_BAND   = 0101;
-constexpr u8 A_BAND   = 0102;
 
 constexpr char sSettingSampleStorageDir[]  = "saveDirSampleDump";
 constexpr char sSettingAudioStorageDir[]   = "saveDirAudioDump";
@@ -179,4 +174,3 @@ struct SChannelData
   i16 ASCTy;
 };
 
-#endif

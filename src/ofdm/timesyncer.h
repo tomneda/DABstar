@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  TIMESYNCER_H
-#define  TIMESYNCER_H
+#pragma once
 
 #include  "dab-constants.h"
 
@@ -40,7 +39,7 @@ class TimeSyncer
 public:
   enum class EState
   {
-    TIMESYNC_ESTABLISHED, NO_DIP_FOUND, NO_END_OF_DIP_FOUND
+    IDLE, TIMESYNC_ESTABLISHED, NO_DIP_FOUND, NO_END_OF_DIP_FOUND
   };
 
   TimeSyncer(SampleReader * mr);
@@ -56,5 +55,4 @@ private:
   i32 mSyncBufferIndex = 0;
 };
 
-#endif
 

@@ -44,7 +44,7 @@ Q_LOGGING_CATEGORY(sLogAudioOutput, "AudioOutput", QtWarningMsg)
 
 AudioOutputQt::AudioOutputQt()
 {
-  mpIoDevice.reset(new AudioIODevice(this));      // this "this" solves issue https://github.com/tomneda/DABstar/issues/111
+  mpIoDevice.reset(new AudioIODevice(this));
   mpMediaDevices.reset(new QMediaDevices(this));
   connect(mpMediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &AudioOutputQt::_slot_update_audio_devices);
 }
@@ -119,12 +119,22 @@ void AudioOutputQt::slot_restart(SAudioFifo * iBuffer)
   }
 }
 
-void AudioOutputQt::slot_mute(bool iMuteActive)
+void AudioOutputQt::slot_set_mute(bool iMuteActive)
 {
   mpIoDevice->set_mute_state(iMuteActive);
 }
 
-void AudioOutputQt::slot_setVolume(const i32 iLogVolVal)
+void AudioOutputQt::slot_set_peak_level_delay(const i32 iDelaySteps)
+{
+  mpIoDevice->set_peak_level_delay(iDelaySteps);
+}
+
+void AudioOutputQt::slot_set_test_tone(bool iActive)
+{
+  mpIoDevice->set_test_tone(iActive);
+}
+
+void AudioOutputQt::slot_set_volume(const i32 iLogVolVal)
 {
   mLinearVolume = QAudio::convertVolume((f32)iLogVolVal / 100.0f, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
   if (mpAudioSink != nullptr)
@@ -150,7 +160,7 @@ void AudioOutputQt::slot_set_audio_device(const QByteArray & iDeviceId)
       {
         mCurrentAudioDevice = dev;
         emit signal_audio_device_changed(mCurrentAudioDevice.id());
-        // change output device to newly selected
+        // change output device to newly selected one
         slot_restart(mpCurrentFifo);
         return;
       }
@@ -250,11 +260,11 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
     {
       if (mpAudioSink->error() == QAudio::Error::NoError)
       {
-        qCWarning(sLogAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart...";
+        qWarning(sLogAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart...";
       }
       else
       {
-        qCWarning(sLogAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart, error code:" << mpAudioSink->error();
+        qWarning(sLogAudioOutput) << "Audio going to Idle state unexpectedly, trying to restart, error code:" << mpAudioSink->error();
       }
 
       if (!mRestartPending)

@@ -27,8 +27,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#ifndef FAAD_DECODER_H
-#define FAAD_DECODER_H
+#pragma once
 
 #include        <QObject>
 #include        "neaacdec.h"
@@ -74,4 +73,3 @@ signals:
   void signal_new_audio(i32, u32, u32);
 };
 
-#endif

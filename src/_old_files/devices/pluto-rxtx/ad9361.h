@@ -15,8 +15,7 @@
  /** @file ad9361.h
   * @brief Public interface */
 
-#ifndef __AD9361_H__
-#define __AD9361_H__
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -224,4 +223,3 @@ __api i32 ad9361_fmcomms5_phase_sync(struct iio_context *ctx, i64 lo);
 
 #undef __api
 
-#endif /* __AD9361_H__ */

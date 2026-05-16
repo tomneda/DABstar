@@ -23,13 +23,15 @@
 #include <QCoreApplication>
 #include <utility>
 
-static const QString sTabPermServList = "TabPermServList";
-static const QString sTabTempServList = "TabTempServList";
-static const QString sTabFavList      = "TabFavList";
-static const QString sTeServiceLabel  = "Service";
-static const QString sTeChannel       = "Channel";
-static const QString sTeServiceId     = "SId";
-static const QString sTeIsFav         = "IsFav";
+static const QString sTabDeviceList = "TabDeviceList";
+static const QString sTabFilesList  = "TabFilesList";
+// static const QString sTabTempServList   = "TabTempServList";
+static const QString sTabFavList     = "TabFavList";
+
+static const QString sTeServiceLabel = "Service";
+static const QString sTeFIdOrCh      = "Channel";
+static const QString sTeServiceId    = "SId";
+static const QString sTeIsFav        = "IsFav";
 
 #if 0
 class CustomSqlQueryModel : public QSqlQueryModel
@@ -66,7 +68,7 @@ ServiceDB::~ServiceDB()
 
 void ServiceDB::open_db()
 {
-  mDB = QSqlDatabase::addDatabase("QSQLITE");
+  mDB = QSqlDatabase::addDatabase("QSQLITE", "ServiceList");
 
   if (!_open_db())
   {
@@ -86,18 +88,18 @@ void ServiceDB::create_table()
 {
   const QString queryStr1 = "CREATE TABLE IF NOT EXISTS " + _cur_tab_name() + " ("
                             "Id                   INTEGER PRIMARY KEY,"
-                            + sTeChannel      + " TEXT NOT NULL,"
+                            + sTeFIdOrCh      + " TEXT NOT NULL,"
                             + sTeServiceId    + " INTEGER DEFAULT 0,"
                             + sTeServiceLabel + " TEXT NOT NULL,"
                             + sTeIsFav + " INTEGER DEFAULT 0,"
-                            "UNIQUE(" + sTeChannel + "," + sTeServiceId + ") ON CONFLICT IGNORE"
+                            "UNIQUE(" + sTeFIdOrCh + "," + sTeServiceId + ") ON CONFLICT IGNORE"
                             ");";
 
   const QString queryStr2 = "CREATE TABLE IF NOT EXISTS " + sTabFavList + " ("
                             "Id                 INTEGER PRIMARY KEY,"
-                            + sTeChannel    + " TEXT NOT NULL,"
+                            + sTeFIdOrCh    + " TEXT NOT NULL,"
                             + sTeServiceId  + " INTEGER DEFAULT 0,"
-                            "UNIQUE(" + sTeChannel + "," + sTeServiceId + ") ON CONFLICT IGNORE"
+                            "UNIQUE(" + sTeFIdOrCh + "," + sTeServiceId + ") ON CONFLICT IGNORE"
                             ");";
 
   _exec_simple_query(queryStr1);
@@ -124,8 +126,8 @@ bool ServiceDB::add_entry(const QString & iChannel, const QString & iServiceLabe
   }
 
   // add new entry
-  QSqlQuery queryAdd;
-  queryAdd.prepare("INSERT OR IGNORE INTO " + _cur_tab_name() + " (" + sTeChannel + "," + sTeServiceLabel + "," + sTeServiceId + ") VALUES (:channel, :service, :serviceId)");
+  QSqlQuery queryAdd(mDB);
+  queryAdd.prepare("INSERT OR IGNORE INTO " + _cur_tab_name() + " (" + sTeFIdOrCh + "," + sTeServiceLabel + "," + sTeServiceId + ") VALUES (:channel, :service, :serviceId)");
   queryAdd.bindValue(":channel", iChannel);
   queryAdd.bindValue(":service", iServiceLabel);
   queryAdd.bindValue(":serviceId", iSId);
@@ -149,8 +151,8 @@ bool ServiceDB::delete_entry(const QString & iChannel, const u32 iSId)
   }
 
   // add new entry
-  QSqlQuery queryDel;
-  queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeChannel + " = :channel AND " + sTeServiceId + " = :serviceId");
+  QSqlQuery queryDel(mDB);
+  queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
   queryDel.bindValue(":channel", iChannel);
   queryDel.bindValue(":serviceId", iSId);
 
@@ -165,10 +167,49 @@ bool ServiceDB::delete_entry(const QString & iChannel, const u32 iSId)
   return true;
 }
 
-QAbstractItemModel * ServiceDB::create_model()
+bool ServiceDB::delete_channel(const QString & iChannel)
 {
-  //CustomSqlQueryModel * model = new CustomSqlQueryModel;
-  auto * const model = new QSqlQueryModel;
+  QSqlQuery queryDel(mDB);
+  queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :channel");
+  queryDel.bindValue(":channel", iChannel);
+
+  if (!queryDel.exec())
+  {
+    const QString dbErr = _error_str(); // next command could destroy this information
+    _delete_db_file();
+    qCritical() << "Error: Unable delete channel entries: " << dbErr;
+    QCoreApplication::exit(1);
+  }
+
+  return (queryDel.numRowsAffected() > 0);
+}
+
+QList<QString> ServiceDB::get_list_of_channels() const
+{
+  QList<QString> channelList;
+  QSqlQuery query(mDB);
+
+  if (query.exec("SELECT DISTINCT " + sTeFIdOrCh + " FROM " + _cur_tab_name()))
+  {
+    while (query.next())
+    {
+      channelList.append(query.value(0).toString());
+    }
+  }
+  else
+  {
+    const QString dbErr = _error_str(); // next command could destroy this information
+    // do not delete database here, it could be a simple empty table or similar...
+    qCritical() << "Error: SELECT DISTINCT query: " << dbErr;
+  }
+
+  return channelList;
+}
+
+QAbstractItemModel * ServiceDB::create_model(const QString & iFilterToFIdOrCh)
+{
+  // CustomSqlQueryModel * model = new CustomSqlQueryModel(this);
+  auto * const model = new QSqlQueryModel(this);
 
   const QString sortDir = (mSortDesc ? " DESC" : " ASC");
   const QString sortSym = (mSortDesc ? "↑" : "↓");
@@ -176,7 +217,7 @@ QAbstractItemModel * ServiceDB::create_model()
   QString sortName;
   QString colNameIsFav   = sTeIsFav + " AS Fav";
   QString colNameService = sTeServiceLabel + " AS Service";
-  QString colNameChannel = sTeChannel + " AS Ch";
+  QString colNameChannel = sTeFIdOrCh + (mDataMode == EDataMode::DevicePlayer ? " AS Ch" : " AS FId");
   QString colNameServiceId = sTeServiceId + " AS SId";
 
   switch (mSortColIdx)
@@ -190,7 +231,7 @@ QAbstractItemModel * ServiceDB::create_model()
     colNameService += sortSym;
     break;
   case CI_Channel:
-    sortName = sTeChannel + sortDir + ", UPPER(" + sTeServiceLabel + ")" + sortDir;
+    sortName = sTeFIdOrCh + sortDir + ", UPPER(" + sTeServiceLabel + ")" + sortDir;
     colNameChannel += sortSym;
     break;
   case CI_SId:
@@ -200,12 +241,27 @@ QAbstractItemModel * ServiceDB::create_model()
   default: /*should never happen*/ ;
   }
 
-  QSqlQuery query;
-  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + "," + colNameServiceId + " FROM " + _cur_tab_name() + " ORDER BY " + sortName);
+  QSqlQuery query(mDB);
+
+  QString whereClause;
+  if (!iFilterToFIdOrCh.isEmpty())
+  {
+    whereClause = " WHERE " + sTeFIdOrCh + " = '" + iFilterToFIdOrCh + "'";
+  }
+
+  query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + "," + colNameServiceId +
+                " FROM " + _cur_tab_name() + whereClause + " ORDER BY " + sortName);
 
   if (query.exec())
   {
     model->setQuery(std::move(query));
+
+    // Force fetching of all rows to ensure rowCount() returns the correct value. This is necessary because QSqlQueryModel
+    // (and its SQLITE driver) usually fetches rows incrementally (e.g. only 256 rows at a time).
+    while (model->canFetchMore())
+    {
+      model->fetchMore();
+    }
   }
   else
   {
@@ -218,18 +274,23 @@ QAbstractItemModel * ServiceDB::create_model()
   return model;
 }
 
-void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx, const bool iForceSortAsc)
+void ServiceDB::sort_column(const ServiceDB::EColIdx iColIdx, const ESortDir iSortDir)
 {
-  if (iForceSortAsc)
+  switch (iSortDir)
   {
-    mSortDesc = false; // force to ascending sorting
+  case ESortDir::ChangeSortDirection: mSortDesc = (mSortColIdx == iColIdx && !mSortDesc); break; // change sorting direction only with choosing the same column again
+  case ESortDir::KeepSortDirection:   mSortDesc = (mSortColIdx != iColIdx ? false : mSortDesc);  break; // keep sorting-direction only if same column is chosen again, else it is forced to ascend sorting
+  case ESortDir::ForceSortAsc:        mSortDesc = false; break;
+  case ESortDir::ForceSortDesc:       mSortDesc = true; break;
   }
-  else
-  {
-    mSortDesc = (mSortColIdx == iColIdx && !mSortDesc); // change sorting direction with choosing the same column again or reset to asc sorting
-  }
+
   mSortColIdx = iColIdx;
 }
+
+// void ServiceDB::show_only_current_FId_or_Ch(const QString & iCurChannel)
+// {
+//   mCurChannel = iCurChannel;
+// }
 
 bool ServiceDB::is_sort_desc() const
 {
@@ -238,29 +299,29 @@ bool ServiceDB::is_sort_desc() const
 
 void ServiceDB::set_favorite(const QString & iChannel, const u32 iSId, const bool iIsFavorite) const
 {
-  if (mDataMode != EDataMode::Permanent)
-  {
-    return;
-  }
+  // if (mDataMode == EDataMode::Temporary)
+  // {
+  //   return;
+  // }
 
   _set_favorite(iChannel, iSId, iIsFavorite, true);
 }
 
 void ServiceDB::retrieve_favorites_from_backup_table()
 {
-  if (mDataMode != EDataMode::Permanent)
-  {
-    return;
-  }
+  // if (mDataMode == EDataMode::Temporary)
+  // {
+  //   return;
+  // }
 
-  QSqlQuery favQuery;
+  QSqlQuery favQuery(mDB);
 
-  if (favQuery.exec("SELECT * FROM " + sTabFavList))
+  if (favQuery.exec("SELECT " + sTeFIdOrCh + "," + sTeServiceId + " FROM " + sTabFavList))
   {
     while (favQuery.next())
     {
       // found entries are wanted favorites
-      const QString channel = favQuery.value(sTeChannel).toString();
+      const QString channel = favQuery.value(sTeFIdOrCh).toString();
       const u32 SId = favQuery.value(sTeServiceId).toUInt();
       _set_favorite(channel, SId, true, false);
     }
@@ -276,8 +337,8 @@ void ServiceDB::retrieve_favorites_from_backup_table()
 
 void ServiceDB::_set_favorite(const QString & iChannel, const u32 iSId, const bool iIsFavorite, const bool iStoreInFavTable /*= true*/) const
 {
-  QSqlQuery updateQuery;
-  updateQuery.prepare("UPDATE " + _cur_tab_name() + " SET " + sTeIsFav + " = :isFav WHERE " + sTeChannel + " = :channel AND " + sTeServiceId + " = :serviceId");
+  QSqlQuery updateQuery(mDB);
+  updateQuery.prepare("UPDATE " + _cur_tab_name() + " SET " + sTeIsFav + " = :isFav WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
   updateQuery.bindValue(":channel", iChannel);
   updateQuery.bindValue(":serviceId", iSId);
   updateQuery.bindValue(":isFav", (iIsFavorite ? 1 : 0));
@@ -289,15 +350,17 @@ void ServiceDB::_set_favorite(const QString & iChannel, const u32 iSId, const bo
 
   if (iStoreInFavTable)
   {
-    QSqlQuery addQuery;
+    QSqlQuery addQuery(mDB);
+
     if (iIsFavorite)
     {
-      addQuery.prepare("INSERT OR IGNORE INTO " + sTabFavList + " (" + sTeChannel + "," + sTeServiceId + ") VALUES (:channel, :serviceId)");
+      addQuery.prepare("INSERT OR IGNORE INTO " + sTabFavList + " (" + sTeFIdOrCh + "," + sTeServiceId + ") VALUES (:channel, :serviceId)");
     }
     else
     {
-      addQuery.prepare("DELETE FROM " + sTabFavList + " WHERE " + sTeChannel + " = :channel AND " + sTeServiceId + " = :serviceId");
+      addQuery.prepare("DELETE FROM " + sTabFavList + " WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
     }
+
     addQuery.bindValue(":channel", iChannel);
     addQuery.bindValue(":serviceId", iSId);
 
@@ -336,7 +399,7 @@ QString ServiceDB::_error_str() const
 
 void ServiceDB::_exec_simple_query(const QString & iQuery)
 {
-  QSqlQuery query;
+  QSqlQuery query(mDB);
 
   if (!query.exec(iQuery))
   {
@@ -350,8 +413,8 @@ void ServiceDB::_exec_simple_query(const QString & iQuery)
 bool ServiceDB::_check_if_entry_exists(const QString & iTableName, const QString & iChannel, const u32 iSId)
 {
   // first check if entry already exists, this avoid new table update afterward
-  QSqlQuery querySearch;
-  querySearch.prepare("SELECT * FROM " + iTableName + " WHERE " + sTeChannel + " = :channel AND " + sTeServiceId + " = :serviceId");
+  QSqlQuery querySearch(mDB);
+  querySearch.prepare("SELECT " + sTeFIdOrCh + " FROM " + iTableName + " WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
   querySearch.bindValue(":channel", iChannel);
   querySearch.bindValue(":serviceId", iSId);
 
@@ -374,10 +437,10 @@ bool ServiceDB::_check_if_entry_exists(const QString & iTableName, const QString
 
 const QString & ServiceDB::_cur_tab_name() const
 {
-  return (mDataMode == EDataMode::Permanent ? sTabPermServList : sTabTempServList);
+  return (mDataMode == EDataMode::DevicePlayer ? sTabDeviceList : sTabFilesList);
 }
 
-void ServiceDB::set_data_mode(ServiceDB::EDataMode iDataMode)
+void ServiceDB::set_data_mode(const ServiceDB::EDataMode iDataMode)
 {
   mDataMode = iDataMode;
 }

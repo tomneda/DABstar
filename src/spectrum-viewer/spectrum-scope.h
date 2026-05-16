@@ -1,5 +1,4 @@
-#ifndef  SPECTRUM_SCOPE_H
-#define  SPECTRUM_SCOPE_H
+#pragma once
 
 #include  "dab-constants.h"
 #include  <QObject>
@@ -26,9 +25,6 @@ private:
   QwtPlotCurve mSpectrumCurve;
   QSettings * const mpDabSettings;
   const i32 mDisplaySize;
-  QwtPlotPicker * mpLmPicker;
-  QColor mGridColor;
-  QColor mCurveColor;
   f64 mScale = 0.0;
 
   QwtPlot * mpPlotgrid = nullptr;
@@ -37,10 +33,6 @@ private:
   
 public slots:
   void slot_scaling_changed(i32);
-
-private slots:
-  void slot_right_mouse_click(const QPointF &);
 };
 
-#endif
 

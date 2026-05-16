@@ -21,8 +21,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __AIRSPY_FILTER__
-#define __AIRSPY_FILTER__
+#pragma once
 
 #include	<cstdlib>
 #include	<cmath>
@@ -41,4 +40,3 @@ public:
 	f32		kernel[];
 };
 
-#endif

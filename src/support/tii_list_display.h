@@ -70,8 +70,9 @@ public:
   void set_window_title(const QString &);
   void add_row(const STiiDataEntry & iTr, const SDerivedData & iDD);
   void start_adding();
-  void show();
-  void hide();
+  void show() const;
+  void hide() const;
+  void setVisible(bool iVisible) const { if (iVisible) show(); else hide(); }
   i32 get_nr_rows();
   void finish_adding();
 

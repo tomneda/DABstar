@@ -6,8 +6,7 @@
  *  See COPYING file for more information.
  */
 
-#ifndef KISS_FTR_H
-#define KISS_FTR_H
+#pragma once
 
 #include "kiss_fft.h"
 #ifdef __cplusplus
@@ -50,5 +49,4 @@ void kiss_fftri(kiss_fftr_cfg cfg,const kiss_fft_cpx *freqdata,kiss_fft_scalar *
 
 #ifdef __cplusplus
 }
-#endif
 #endif

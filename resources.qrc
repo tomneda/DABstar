@@ -15,16 +15,31 @@
     <file>res/icons/starfilled24.png</file>
     <file>res/icons/details24.png</file>
     <file>res/icons/maps24.png</file>
-    <file>res/icons/scan24.png</file>
     <file>res/icons/setting24.png</file>
     <file>res/icons/meas24.png</file>
     <file>res/icons/tower24.png</file>
-    <file>res/icons/fib24.png</file>
-    <file>res/icons/tii24.png</file>
-    <file>res/icons/cir24.png</file>
     <file>res/icons/targetwht24.png</file>
-    <file>res/icons/eject24.png</file>
     <file>res/icons/folder24.png</file>
+    <file>res/icons/cb_off.svg</file>
+    <file>res/icons/cb_on.svg</file>
+    <file>res/icons/cb_off_hover.svg</file>
+    <file>res/icons/cb_on_hover.svg</file>
+    <file>res/icons/cb_disabled_off.svg</file>
+    <file>res/icons/cb_disabled_on.svg</file>
+    <file>res/icons/rb_off.svg</file>
+    <file>res/icons/rb_on.svg</file>
+    <file>res/icons/rb_off_hover.svg</file>
+    <file>res/icons/rb_on_hover.svg</file>
+    <file>res/icons/rb_disabled_off.svg</file>
+    <file>res/icons/rb_disabled_on.svg</file>
+    <file>res/icons/fib32.svg</file>
+    <file>res/icons/cir32.svg</file>
+    <file>res/icons/tii32.svg</file>
+    <file>res/icons/el32.svg</file>
+    <file>res/icons/combo_arrow.svg</file>
+    <file>res/icons/combo_arrow_on.svg</file>
+    <file>res/icons/spin_up.svg</file>
+    <file>res/icons/spin_down.svg</file>
     <file>res/globstyle.qss</file>
     <file>res/map-viewer.html</file>
     <file>res/txdata.tii</file>

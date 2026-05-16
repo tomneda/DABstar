@@ -1,5 +1,4 @@
-#ifndef PROCESS_PARAMS_H
-#define PROCESS_PARAMS_H
+#pragma once
 
 #include  <stdint.h>
 #include  <complex>
@@ -18,5 +17,4 @@ public:
   RingBuffer<u8> * frameBuffer = nullptr;
 };
 
-#endif
 

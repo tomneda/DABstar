@@ -96,7 +96,7 @@ RawFileHandler::~RawFileHandler()
     mpRawReader->stop_reader();
     while (mpRawReader->isRunning())
     {
-      usleep(100);
+      usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
     }
   }
   if (mpFile != nullptr)
@@ -126,7 +126,7 @@ void RawFileHandler::stopReader()
     mpRawReader->stop_reader();
     while (mpRawReader->isRunning())
     {
-      usleep(100);
+      usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
     }
     mpRawReader.reset();
   }
@@ -143,7 +143,7 @@ i32 RawFileHandler::getSamples(cf32 * V, const i32 size)
 
   while ((i32)(mRingBuffer.get_ring_buffer_read_available()) < size)
   {
-    usleep(100);
+    usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
   }
 
   return mRingBuffer.get_data_from_ring_buffer(V, size);

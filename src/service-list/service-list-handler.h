@@ -10,9 +10,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-#ifndef DABSTAR_SERVICELISTHANDLER_H
-#define DABSTAR_SERVICELISTHANDLER_H
+#pragma once
 
 #include "glob_data_types.h"
 #include "service-db.h"
@@ -55,12 +53,15 @@ public:
 
   using EDataMode = ServiceDB::EDataMode;
   using TSIdList = QList<u32>;
+  using TChannelList = QList<QString>;
 
   void set_data_mode(EDataMode iDataMode);
+  void set_sort_to_FId_Or_Ch(bool iShowOnlyCurrentFIdOrCh);
   void delete_table(const bool iDeleteFavorites);
   void create_new_table();
   void add_entry(const QString & iChannel, const QString & iServiceLabel, u32 iSId);
   void delete_not_existing_SId_at_channel(const QString & iChannel, const TSIdList & iSIdList);
+  void delete_not_existing_channel(const TChannelList & iChList);
   void set_selector(const QString & iChannel, u32 iSId);
   void set_selector_channel_only(const QString & iChannel);
   void set_favorite_state(const bool iIsFavorite);
@@ -74,9 +75,11 @@ private:
   CustomItemDelegate mCustomItemDelegate;
   QString mChannelLast;
   u32 mServiceIdLast = 0;
+  bool mShowOnlyCurrentFIdOrCh = false;
 
   void _fill_table_view_from_db();
   void _jump_to_list_entry_and_emit_fav_status(const i32 iSkipOffset = 0, const bool iCenterContent = false);
+  void _sort_and_update_service_list(i32 iIndex, ServiceDB::ESortDir iSortDir);
 
 private slots:
   void _slot_selection_changed_with_fav(const QString & iChannel, const QString & iServiceLabel, u32 iSId, const bool iIsFav);
@@ -84,8 +87,5 @@ private slots:
 
 signals:
   void signal_selection_changed(const QString & oChannel, const QString & oService, const u32 oSId);
-  void signal_favorite_status(const bool oIsFav);
+  void signal_favorite_status(bool oIsFav);
 };
-
-
-#endif // DABSTAR_SERVICELISTHANDLER_H

@@ -48,6 +48,26 @@ MapHttpServer::MapHttpServer(DabRadio * ipDabRadio, const QString & iHttpPort, c
     fprintf(mpCsvFP, "Channel; Latitude; Longitude; Transmitter; Altitude; Height; Date and time; MainId; SubId; Strength; Distance; Azimuth; Power\n");
   }
 
+  QString kmlDumpName = iCsvDumpName;
+  kmlDumpName.replace(".csv", ".kml");
+  mpKmlFP = fopen(kmlDumpName.toUtf8().data(), "w");
+
+  if (mpKmlFP != nullptr)
+  {
+    fprintf(mpKmlFP, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    fprintf(mpKmlFP, "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n");
+    fprintf(mpKmlFP, "<Document>\n");
+    fprintf(mpKmlFP, "  <name>DAB Transmitters</name>\n");
+    fprintf(mpKmlFP, "  <description>DABstar transmitter locations</description>\n");
+    fprintf(mpKmlFP, "  <Style id=\"transmitterIcon\">\n");
+    fprintf(mpKmlFP, "    <IconStyle>\n");
+    fprintf(mpKmlFP, "      <Icon>\n");
+    fprintf(mpKmlFP, "        <href>http://maps.google.com/mapfiles/kml/shapes/donut.png</href>\n");
+    fprintf(mpKmlFP, "      </Icon>\n");
+    fprintf(mpKmlFP, "    </IconStyle>\n");
+    fprintf(mpKmlFP, "  </Style>\n");
+  }
+
   start();
 }
 
@@ -59,9 +79,16 @@ MapHttpServer::~MapHttpServer()
   {
     fclose(mpCsvFP);
   }
+
+  if (mpKmlFP != nullptr)
+  {
+    fprintf(mpKmlFP, "</Document>\n");
+    fprintf(mpKmlFP, "</kml>\n");
+    fclose(mpKmlFP);
+  }
 }
 
-void MapHttpServer::start()
+void MapHttpServer::start() const
 {
   if (!mTcpServer->listen(QHostAddress::Any, mHttpPort.toInt()))
   {
@@ -78,7 +105,7 @@ void MapHttpServer::start()
   mpAjaxRequestTimer->start(12000); // give a bit more time after browser start
 }
 
-void MapHttpServer::stop()
+void MapHttpServer::stop() const
 {
   if (mTcpServer->isListening())
   {
@@ -323,7 +350,7 @@ void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDat
   mTransmitters.emplace_back(t);
   mMutex.unlock();
 
-  // Log transmitter data to CSV file but ignore already set transmitters
+  // Log transmitter data to CSV and KML file but ignore already set transmitters
   for (auto & t : mAlreadyLoggedTransmitters)
   {
     if ((t.transmitterName == ipTiiDataEntry->transmitterName) &&
@@ -333,24 +360,60 @@ void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDat
     }
   }
 
+  mAlreadyLoggedTransmitters.push_back(t);
+
   if (mpCsvFP != nullptr)
   {
-    fprintf(mpCsvFP,
-            "%s; %f; %f; %s; %d; %d; %s; %d; %d; %.1f; %.1f; %.1f; %.3f\n",
-            ipTiiDataEntry->channel.toUtf8().data(),
-            ipTiiDataEntry->latitude,
-            ipTiiDataEntry->longitude,
-            ipTiiDataEntry->transmitterName.toUtf8().data(),
-            ipTiiDataEntry->altitude,
-            ipTiiDataEntry->height,
-            t.dateTime.toUtf8().data(),
-            ipTiiDataEntry->mainId,
-            ipTiiDataEntry->subId,
-            iStrength,
-            iDistance,
-            iAzimuth,
-            ipTiiDataEntry->power);
-
-    mAlreadyLoggedTransmitters.push_back(t);
+    _write_cvs_entry(ipTiiDataEntry, t.dateTime, iStrength, iDistance, iAzimuth);
   }
+
+  if (mpKmlFP != nullptr)
+  {
+    _write_kml_entry(ipTiiDataEntry, t.dateTime, iStrength, iDistance, iAzimuth);
+  }
+}
+
+void MapHttpServer::_write_cvs_entry(const STiiDataEntry * const ipTiiDataEntry, const QString & iDateTime, const f32 iStrength, f32 iDistance, f32 iAzimuth)
+{
+  fprintf(mpCsvFP,
+          "%s; %f; %f; %s; %d; %d; %s; %d; %d; %.1f; %.1f; %.1f; %.3f\n",
+          ipTiiDataEntry->channel.toUtf8().data(),
+          ipTiiDataEntry->latitude,
+          ipTiiDataEntry->longitude,
+          ipTiiDataEntry->transmitterName.toUtf8().data(),
+          ipTiiDataEntry->altitude,
+          ipTiiDataEntry->height,
+          iDateTime.toUtf8().data(),
+          ipTiiDataEntry->mainId,
+          ipTiiDataEntry->subId,
+          iStrength,
+          iDistance,
+          iAzimuth,
+          ipTiiDataEntry->power);
+  fflush(mpCsvFP);
+}
+
+void MapHttpServer::_write_kml_entry(const STiiDataEntry * const ipTiiDataEntry, const QString & iDateTime, const f32 iStrength, f32 iDistance, f32 iAzimuth)
+{
+  fprintf(mpKmlFP, "  <Placemark>\n");
+  fprintf(mpKmlFP, "    <name>%s</name>\n", ipTiiDataEntry->transmitterName.toUtf8().data());
+  fprintf(mpKmlFP, "    <description><![CDATA[\n");
+  fprintf(mpKmlFP, "      <b>Channel:</b> %s<br/>\n", ipTiiDataEntry->channel.toUtf8().data());
+  fprintf(mpKmlFP, "      <b>TII:</b> %02d-%02d<br/>\n", ipTiiDataEntry->mainId, ipTiiDataEntry->subId);
+  fprintf(mpKmlFP, "      <b>Strength:</b> %.1f dB<br/>\n", iStrength);
+  fprintf(mpKmlFP, "      <b>Distance:</b> %.1f km<br/>\n", iDistance);
+  fprintf(mpKmlFP, "      <b>Azimuth:</b> %.1f°<br/>\n", iAzimuth);
+  fprintf(mpKmlFP, "      <b>Power:</b> %.3f kW<br/>\n", ipTiiDataEntry->power);
+  fprintf(mpKmlFP, "      <b>Altitude:</b> %d m<br/>\n", ipTiiDataEntry->altitude);
+  fprintf(mpKmlFP, "      <b>Height:</b> %d m<br/>\n", ipTiiDataEntry->height);
+  fprintf(mpKmlFP, "      <b>Polarization:</b> %s<br/>\n", ipTiiDataEntry->polarization.toUtf8().data());
+  fprintf(mpKmlFP, "      <b>Direction:</b> %s<br/>\n", ipTiiDataEntry->direction.isEmpty() ? "undefined" : ipTiiDataEntry->direction.toUtf8().data());
+  fprintf(mpKmlFP, "      <b>Date/Time:</b> %s<br/>\n", iDateTime.toUtf8().data());
+  fprintf(mpKmlFP, "    ]]></description>\n");
+  fprintf(mpKmlFP, "    <styleUrl>#transmitterIcon</styleUrl>\n");
+  fprintf(mpKmlFP, "    <Point>\n");
+  fprintf(mpKmlFP, "      <coordinates>%f,%f,%d</coordinates>\n", ipTiiDataEntry->longitude, ipTiiDataEntry->latitude, ipTiiDataEntry->altitude);
+  fprintf(mpKmlFP, "    </Point>\n");
+  fprintf(mpKmlFP, "  </Placemark>\n");
+  fflush(mpKmlFP);
 }

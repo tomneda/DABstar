@@ -21,8 +21,7 @@
  *
  */
 
-#ifndef  XML_DESCRIPTOR_H
-#define  XML_DESCRIPTOR_H
+#pragma once
 
 #include <QtXml>
 #include <QString>
@@ -71,4 +70,3 @@ public:
   void add_modtoBlock(i32 blockno, QString modType);
 };
 
-#endif

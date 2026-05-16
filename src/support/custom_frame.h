@@ -11,8 +11,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DABSTAR_CUSTOM_FRAME_H
-#define DABSTAR_CUSTOM_FRAME_H
+#pragma once
 
 #include <QObject>
 #include <QCloseEvent>
@@ -30,4 +29,3 @@ signals:
   void signal_frame_closed();
 };
 
-#endif //DABSTAR_CUSTOM_FRAME_H

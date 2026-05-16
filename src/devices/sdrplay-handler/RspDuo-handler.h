@@ -1,5 +1,4 @@
-#ifndef  RSPDUO_HANDLER_H
-#define  RSPDUO_HANDLER_H
+#pragma once
 
 #include  "Rsp-device.h"
 
@@ -21,7 +20,6 @@ public:
   bool set_amPort(i32 amPort) override;
 };
 
-#endif
 
 
 

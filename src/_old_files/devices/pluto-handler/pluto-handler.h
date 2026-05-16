@@ -21,8 +21,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __PLUTO_HANDLER__
-#define	__PLUTO_HANDLER__
+#pragma once
 
 #include	<QtNetwork>
 #include        <QMessageBox>
@@ -117,5 +116,4 @@ private slots:
 	void		set_filter		();
 	void		set_xmlDump		();
 };
-#endif
 

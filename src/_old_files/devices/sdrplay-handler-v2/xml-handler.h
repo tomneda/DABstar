@@ -1,7 +1,6 @@
 
 
-#ifndef	__XML_HANDLER__
-#define	__XML_HANDLER__
+#pragma once
 
 #include <QtXml>
 
@@ -37,4 +36,3 @@ private:
 	i32		nrElements;
 };
 
-#endif

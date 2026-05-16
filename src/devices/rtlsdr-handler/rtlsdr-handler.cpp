@@ -365,15 +365,15 @@ void RtlSdrHandler::stopReader()
   isActive.store(false);
   stopDumping();
   this->rtlsdr_cancel_async(theDevice);
+  // Wait for the worker thread to fully stop before touching the device buffer.
+  // Calling rtlsdr_reset_buffer() while rtlsdr_read_async() is still running in
+  // the worker thread corrupts libusb's internal mutex state and causes a crash.
+  while (!workerHandle->isFinished())
+    usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
   this->rtlsdr_reset_buffer(theDevice);
-  if (workerHandle != nullptr)
-  {
-    while (!workerHandle->isFinished())
-      usleep(100);
-    _I_Buffer.flush_ring_buffer();
-    delete workerHandle;
-    workerHandle = nullptr;
-  }
+  _I_Buffer.flush_ring_buffer();
+  delete workerHandle;
+  workerHandle = nullptr;
 }
 
 //  when selecting the gain from a table, use the table value

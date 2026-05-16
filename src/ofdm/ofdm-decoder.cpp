@@ -37,11 +37,13 @@
 #include "phasetable.h"
 #include "dabradio.h"
 
-OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer) :
-  mpRadioInterface(ipMr),
-  mFreqInterleaver(),
-  mpIqBuffer(ipIqBuffer),
-  mpCarrBuffer(ipCarrBuffer)
+constexpr f32 cMinNoiseLevel = 1.0f / 32767.0f; // assuming 16 bit sample
+constexpr f32 cMinNoisePower = cMinNoiseLevel * cMinNoiseLevel;
+
+OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer)
+  : mpRadioInterface(ipMr)
+  , mpIqBuffer(ipIqBuffer)
+  , mpCarrBuffer(ipCarrBuffer)
 {
   mMeanNullLevel.resize(cTu);
   mMeanNullPowerWithoutTII.resize(cTu);
@@ -63,8 +65,7 @@ OfdmDecoder::~OfdmDecoder()
 {
 }
 
-cf32 OfdmDecoder::cmplx_from_phase2(f32 x)
-//static inline cf32 cmplx_from_phase2(f32 x)
+cf32 OfdmDecoder::cmplx_from_phase2(const f32 x) const
 {
   /*
    * Minimax polynomial for sin(x) and cos(x) on [-pi/4, pi/4]
@@ -72,13 +73,13 @@ cf32 OfdmDecoder::cmplx_from_phase2(f32 x)
    * Max |error| < 1.5e-4 for sinus, < 6e-4 for cosinus
    */
   const f32 x2 = x * x;
-  const f32 s1 =  0.99903142452239990234375f;
-  const f32 s2 = -0.16034401953220367431640625;
+  constexpr f32 s1 =  0.99903142452239990234375f;
+  constexpr f32 s2 = -0.16034401953220367431640625;
   const f32 sine = x * (x2 * s2 + s1);
 
-  const f32 c1 =  0.9994032382965087890625f;
-  const f32 c2 = -0.495580852031707763671875;
-  const f32 c3 =  3.679168224334716796875e-2;
+  constexpr f32 c1 =  0.9994032382965087890625f;
+  constexpr f32 c2 = -0.495580852031707763671875;
+  constexpr f32 c3 =  3.679168224334716796875e-2;
   const f32 cosine = c1 + x2 * (x2 * c3 + c2);
 
   return cf32(cosine, sine);
@@ -120,8 +121,8 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII
   for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
   {
     // Consider FFT shift and skipping DC (0 Hz) bin.
-    const i32 fftIdx = fft_shift_skip_dc(idx, cTu);
-    const f32 power = std::norm(iV[fftIdx]);
+    const i32 fftIdx = fft_shift_skip_dc<cTu>(idx);
+    const f32 power = std::norm(iV[fftIdx]) + cMinNoisePower; // add a small noise floor to avoid division by zero (this value is too small to be seen in the statistics)
     mean_filter(mMeanNullPowerWithoutTII[fftIdx], power, ALPHA);
   }
 }
@@ -291,14 +292,14 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
 
     stdDevSqOvrAll /= (f32)cK;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 / stdDevSqOvrAll);
+    mLcdData.MER = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 / stdDevSqOvrAll);
     //mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
     mLcdData.MeanSigmaSqFreqCorr = sqrt(mMeanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (f32)cCarrDiff;
 
-    emit signal_show_lcd_data(&mLcdData);
+    emit signal_show_lcd_data(mLcdData);
 
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % cL;
@@ -314,9 +315,13 @@ f32 OfdmDecoder::_compute_noise_Power() const
   for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
   {
     // Consider FFT shift and skipping DC (0 Hz) bin.
-    const i32 fftIdx = fft_shift_skip_dc(idx, cTu);
+    const i32 fftIdx = fft_shift_skip_dc<cTu>(idx);
     sumNoise += mMeanNullPowerWithoutTII[fftIdx]; // the component already squared
   }
+
+  // There are artificial sample files which contains null samples in the null symbol, substituted noise power with a reasonable value.
+  if (sumNoise == 0.0f) sumNoise = cMinNoisePower * cK;
+
   return sumNoise / (f32)cK;
 }
 
@@ -331,8 +336,8 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
     for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
     {
       // Consider FFT shift and skipping DC (0 Hz) bin.
-      const i32 fftIdx = fft_shift_skip_dc(idx, cTu);
-      const f32 level = log10_times_10(std::norm(iV[fftIdx]));
+      const i32 fftIdx = fft_shift_skip_dc<cTu>(idx);
+      const f32 level = log10_times_10(std::norm(iV[fftIdx]) + cMinNoisePower);
       f32 & meanNullLevelRef = mMeanNullLevel[fftIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
 
@@ -347,8 +352,8 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
     for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
     {
       // Consider FFT shift and skipping DC (0 Hz) bin.
-      const i32 fftIdx = fft_shift_skip_dc(idx, cTu);
-      const f32 level = std::abs(iV[fftIdx]);
+      const i32 fftIdx = fft_shift_skip_dc<cTu>(idx);
+      const f32 level = std::abs(iV[fftIdx]) + cMinNoiseLevel;
       f32 & meanNullLevelRef = mMeanNullLevel[fftIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
 

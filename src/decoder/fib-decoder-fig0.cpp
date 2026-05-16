@@ -424,6 +424,11 @@ void FibDecoder::_process_Fig0s9(const u8 * const d)
   fig0s9.Ensemble_ECC = getBits_8(d, offset + 8);
   fig0s9.InterTableId = getBits_8(d, offset + 16);
 
+  if (fig0s9.Ext_Flag == 1)
+  {
+    qWarning() << "Fig0s9 Ext-fields are not evaluated";
+  }
+
   fig0s9.set_current_time();
   mpFibConfigFig0Curr->Fig0s9_CountryLtoInterTabVec.emplace_back(fig0s9);
   _retrigger_timer_data_loaded_slow("Fig0s9");

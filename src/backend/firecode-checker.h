@@ -33,8 +33,7 @@
 //	within the DAB/DAB+ sdr-j receiver software
 //	all rights are acknowledged.
 
-#ifndef  FIRECODE_CHECKER_H
-#define  FIRECODE_CHECKER_H
+#pragma once
 
 #include "glob_data_types.h"
 
@@ -73,5 +72,4 @@ private:
   void fill_crc_table(u16 *crc_table, const u16 poly);
 };
 
-#endif
 

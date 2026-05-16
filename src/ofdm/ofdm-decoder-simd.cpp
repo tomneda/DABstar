@@ -18,17 +18,18 @@
 // shortcut syntax to get better overview
 #define LOOP_OVER_K   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
 
+constexpr f32 cMinNoiseLevel = 1.0f / 32767.0f; // assuming 16 bit sample
+constexpr f32 cMinNoisePower = cMinNoiseLevel * cMinNoiseLevel;
 
 OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer)
   : mpRadioInterface(ipMr)
-  , mFreqInterleaver()
   , mpIqBuffer(ipIqBuffer)
   , mpCarrBuffer(ipCarrBuffer)
 {
   mIqVector.resize(cK);
   mCarrVector.resize(cK);
 
-  qInfo() << "Using VOLK machine:" << volk_get_machine();
+  qInfo() << "Using VOLK machine" << volk_get_machine() << "with alignment" << volk_get_alignment();
 
   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
@@ -51,8 +52,7 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuf
     assert(fftIdx < cTu);
     mMapNomToRealCarrIdx[nomCarrIdx] = realCarrRelIdx;
     mMapNomToFftIdx[nomCarrIdx] = fftIdx;
-    mSimdVecPhaseConst[nomCarrIdx] = F_M_PI / 1024.0f * (cK / 2 - realCarrRelIdx) / (cK / 2);
-
+    mSimdVecPhaseConst[nomCarrIdx] = F_M_PI / 1024.0f * (f32)(cK / 2 - realCarrRelIdx) / (f32)(cK / 2);
   }
 
   connect(this, &OfdmDecoder::signal_slot_show_iq, mpRadioInterface, &DabRadio::slot_show_iq);
@@ -98,7 +98,7 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iFftBuffer)
   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
     const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
-    mSimdVecTemp1Float[nomCarrIdx] = std::norm(iFftBuffer[fftIdx]); // noise power
+    mSimdVecTemp1Float[nomCarrIdx] = std::norm(iFftBuffer[fftIdx]) + cMinNoisePower; // noise power
   }
 
   constexpr f32 cAlpha = 0.1f;
@@ -261,17 +261,17 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
 
   if (showStatisticData)
   {
-    const f32 noisePow = _compute_noise_Power();
+    const f32 noisePow = mSimdVecMeanNullPowerWithoutTII.get_sum_of_elements() / (f32)cK + cMinNoisePower;
     f32 snr = (mMeanPowerOvrAll - noisePow) / noisePow;
     if (snr <= 0.0f) snr = 0.1f;
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
-    mLcdData.ModQuality = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / mSimdVecStdDevSqPhaseVec.get_sum_of_elements());
+    mLcdData.MER = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 * cK / mSimdVecStdDevSqPhaseVec.get_sum_of_elements());
     mLcdData.MeanSigmaSqFreqCorr = sqrt(mMeanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (f32)cK;
 
-    emit signal_show_lcd_data(&mLcdData);
+    emit signal_show_lcd_data(mLcdData);
 
     mShowCntStatistics = 0;
     mNextShownOfdmSymbIdx = (mNextShownOfdmSymbIdx + 1) % cL;
@@ -280,11 +280,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
 
   // copy current FFT values as next OFDM reference
   memcpy(mSimdVecPhaseReference, mSimdVecNomCarrier, cK * sizeof(cf32));
-}
-
-f32 OfdmDecoder::_compute_noise_Power() const
-{
-  return mSimdVecMeanNullPowerWithoutTII.get_sum_of_elements() / (f32)cK;
 }
 
 void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
@@ -297,7 +292,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
     for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
       const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
-      const f32 level = log10_times_10(std::norm(iFftBuffer[fftIdx]));
+      const f32 level = log10_times_10(std::norm(iFftBuffer[fftIdx]) + cMinNoisePower);
       f32 & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, cAlpha);
 
@@ -312,7 +307,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
     for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
     {
       const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
-      const f32 level = std::abs(iFftBuffer[fftIdx]);
+      const f32 level = std::abs(iFftBuffer[fftIdx]) + cMinNoiseLevel;
       f32 & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, cAlpha);
 

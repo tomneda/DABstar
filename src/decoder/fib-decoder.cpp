@@ -134,12 +134,12 @@ void FibDecoder::disconnect_channel()
   mpFibConfigFig1->reset();
 }
 
-void FibDecoder::set_SId_for_fast_audio_selection(u32 iSId)
+void FibDecoder::set_SId_for_fast_audio_selection(const u32 iSId)
 {
   if (mFibLoadingState >= EFibLoadingState::S3_FullyAudioDataLoaded)
   {
     qDebug() << "SId" << iSId << "set for fast audio but ignored because necessary FIB data already loaded";
-    mSIdForFastAudioSelection = 0; // feature not more necessary if FIB data fully collected
+    mSIdForFastAudioSelection = 0; // feature not more necessary if FIB audio data fully collected
   }
   else
   {
@@ -165,7 +165,7 @@ void FibDecoder::get_data_for_audio_service(const u32 iSId, SAudioData & oAD) co
 
   if (pFig0s2 == nullptr)
   {
-    qWarning() << "SId" << iSId << "in FIG 0/2 not found (1)";
+    qWarning() << "SId" << hex_str(iSId) << "in FIG 0/2 not found (1)";
     return;
   }
 
@@ -499,7 +499,7 @@ void FibDecoder::get_SId_SCIdS_from_service_label(const QString & iServiceLabel,
   }
 }
 
-i32 FibDecoder::get_ensembleId() const
+i32 FibDecoder::get_EId() const
 {
   QMutexLocker lock(&mMutex);
   if (!mpFibConfigFig1->Fig1s0_EnsembleLabelVec.empty())
@@ -791,7 +791,7 @@ void FibDecoder::_process_fast_audio_selection()
     if (const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(pFig0s2->ServiceComp_C.TMId00.SubChId);
         pFig0s1 != nullptr)
     {
-      qDebug() << "Fast audio selection for SId" << mSIdForFastAudioSelection << "successful";
+      qDebug() << "Fast audio selection for SId" << hex_str(mSIdForFastAudioSelection) << "successful";
       mSIdForFastAudioSelection = 0;
 
       if (mFibLoadingState < EFibLoadingState::S1_FastAudioDataLoaded) // emit only a higher state as before except of the deferred data
@@ -805,7 +805,7 @@ void FibDecoder::_process_fast_audio_selection()
 
 bool FibDecoder::_check_audio_data_completeness() const
 {
-  qDebug() << "Check audio data completeness";
+  qDebug() << "Check audio data completeness with" << mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec.size() << "FIG0/2 elements";
 
   if (mFibLoadingState != EFibLoadingState::S2_PrimaryBaseDataLoaded)
   {
@@ -813,19 +813,29 @@ bool FibDecoder::_check_audio_data_completeness() const
     return false;
   }
 
+  bool audioDataFound = false; // we expect always audio data
+
   // In the case, not all FIG0/2 where loaded a wrong decision could be made here.
   // The information form FIG 0/7 would help here but they are seldom transferred.
   for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::StreamModeAudio) // maybe flag also already made positive checks
     {
+      audioDataFound = true;
       if (!_get_data_for_audio_service(fig0s2, nullptr))
       {
-        qDebug().noquote() << " --> Some audio FIG data for SId" << hex_str(fig0s2.get_SId()) << "missing";
+        qWarning().noquote() << " --> Some audio FIG data for SId" << hex_str(fig0s2.get_SId()) << "missing";
         return false;
       }
     }
   }
+
+  if (!audioDataFound)
+  {
+    qWarning() << " --> no Audio FIG2/0 data found";
+    return false;
+  }
+
   qDebug() << " --> Audio data complete";
   return true;
 }

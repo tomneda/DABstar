@@ -1,5 +1,4 @@
-#ifndef  RSPII_HANDLER_H
-#define  RSPII_HANDLER_H
+#pragma once
 
 #include  "Rsp-device.h"
 
@@ -20,7 +19,6 @@ public:
   bool set_notch(bool) override;
 };
 
-#endif
 
 
 

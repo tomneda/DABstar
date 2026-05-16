@@ -29,7 +29,7 @@
         <string> ppm</string>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the offset (in ppm) of the observed oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oscillator frequency correction in ppm. Enter the observed frequency offset of the device&apos;s oscillator.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="minimum">
         <double>-150.0</double>
@@ -53,7 +53,7 @@
      <item>
       <widget class="QComboBox" name="gainControl">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set IF gain in dB, only possible values are displayed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;IF gain in dB. Only the discrete values supported by the device are shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -151,7 +151,7 @@
      <item>
       <widget class="QCheckBox" name="filterSelector">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DABsticks do not have much filtering. A software filter - 1560KHz wide - can be selected&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RTL-SDR devices have limited hardware filtering. Enable a 1560 kHz software bandpass filter here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Filter depth</string>
@@ -161,7 +161,7 @@
      <item>
       <widget class="QSpinBox" name="filterDepth">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;select the depth of the software 1560 KHz filter. Be aware that for a filter depth N N* 2048000 extra additions and complex multiplications are done&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depth of the 1560 kHz software filter. A depth of N requires N &amp;times; 2,048,000 extra additions and complex multiplications per second.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="minimum">
         <number>5</number>

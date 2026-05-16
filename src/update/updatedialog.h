@@ -30,8 +30,7 @@
  * SOFTWARE.
  */
 
-#ifndef UPDATEDIALOG_H
-#define UPDATEDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -52,4 +51,3 @@ private:
   Ui::UpdateDialog * ui;
 };
 
-#endif  // UPDATEDIALOG_H

@@ -24,8 +24,7 @@
 //	For the different formats for input, we have
 //	different readers, with one "mother" reader.
 //	Note that the cardreader is quite different here
-#ifndef	__VIRTUAL_READER__
-#define	__VIRTUAL_READER__
+#pragma once
 
 #include	<stdint.h>
 #include	<cstdio>
@@ -61,5 +60,4 @@ private:
 	
 };
 
-#endif
 

@@ -95,7 +95,7 @@
      <item>
       <widget class="QDoubleSpinBox" name="tcp_ppm">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the offset (in ppm) of the observed oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oscillator frequency correction in ppm. Enter the observed frequency offset of the device&apos;s oscillator.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="suffix">
         <string> ppm</string>

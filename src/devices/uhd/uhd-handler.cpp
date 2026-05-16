@@ -69,7 +69,7 @@ void uhd_streamer::run()
     if (size == 0)
     {
       // no room in ring buffer, wait for main thread to process the data
-      usleep(100); // wait 100 us
+      usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
       continue;
     }
 

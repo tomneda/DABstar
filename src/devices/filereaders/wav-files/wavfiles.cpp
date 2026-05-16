@@ -149,7 +149,7 @@ void WavFileHandler::stopReader()
     mpWavReader->stop_reader();
     while (mpWavReader->isRunning())
     {
-      usleep(100);
+      usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
     }
     mpWavReader.reset();
   }
@@ -166,7 +166,7 @@ i32 WavFileHandler::getSamples(cf32 * V, const i32 size)
 
   while (mRingBuffer.get_ring_buffer_read_available() < size)
   {
-    usleep(100);
+    usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
   }
 
   return mRingBuffer.get_data_from_ring_buffer(V, size);

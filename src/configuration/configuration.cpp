@@ -15,8 +15,36 @@
 #include "setting-helper.h"
 #include "ui_configuration.h"
 #include "dabradio.h"
-#include <QSettings>
 #include <QDir>
+#include <QDoubleValidator>
+#include <QFileDialog>
+#include <QLocale>
+#include <QRegularExpression>
+#include <QSettings>
+
+class CoordDoubleValidator : public QDoubleValidator
+{
+  using QDoubleValidator::QDoubleValidator;
+
+  QValidator::State validate(QString & input, i32 &) const override
+  {
+    const QRegularExpression regExpAllowed("^-?\\d*(\\.\\d*)?$");
+    if (const QRegularExpressionMatch match = regExpAllowed.match(input); !match.hasMatch())
+    {
+      return Invalid;
+    }
+    const QLocale englishLocale(QLocale::English, QLocale::UnitedStates);
+    const QLocale previousLocale = QLocale::system();
+    QLocale::setDefault(englishLocale);
+    const f64 val = input.toDouble();
+    QLocale::setDefault(previousLocale);
+    if (val < bottom() || val > top())
+    {
+      return Invalid;
+    }
+    return Acceptable;
+  }
+};
 
 
 Configuration::Configuration(DabRadio * ipRI) :
@@ -25,11 +53,12 @@ Configuration::Configuration(DabRadio * ipRI) :
 {
   setupUi(this);
 
-  Settings::Config::posAndSize.read_widget_geometry(this, 720, 276, true);
+  Settings::Config::posAndSize.read_widget_geometry(this, 895, 0, true);
 
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
-  sliderTest->hide(); // only used for test
+  // btnSelectBasePath->setIconSize(QSize(16, 16));
+  // btnSelectBasePath->setFixedSize(QSize(24, 24));
 
   // register UI elements to setting manager and provide default setting
   Settings::Config::sbTiiThreshold.register_widget_and_update_ui_from_setting(sbTiiThreshold, 8);
@@ -41,8 +70,8 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::cbUseUtcTime.register_widget_and_update_ui_from_setting(cbUseUtcTime, 0);
   Settings::Config::cbAlwaysOnTop.register_widget_and_update_ui_from_setting(cbAlwaysOnTop, 0);
   Settings::Config::cbManualBrowserStart.register_widget_and_update_ui_from_setting(cbManualBrowserStart, 0);
-  Settings::Config::cmbMotObjectSaving.register_widget_and_update_ui_from_setting(cmbMotObjectSaving, "");
-  Settings::Config::cmbEpgObjectSaving.register_widget_and_update_ui_from_setting(cmbEpgObjectSaving, "");
+  Settings::Config::cmbMotObjectSaving5.register_widget_and_update_ui_from_setting(cmbMotObjectSaving5, "");
+  Settings::Config::cmbEpgObjectSaving5.register_widget_and_update_ui_from_setting(cmbEpgObjectSaving5, "");
   Settings::Config::cbSaveTransToCsv.register_widget_and_update_ui_from_setting(cbSaveTransToCsv, 0);
   Settings::Config::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
   Settings::Config::cbDoDcCorrOnly.register_widget_and_update_ui_from_setting(cbDoDcCorrOnly, 0);
@@ -53,48 +82,30 @@ Configuration::Configuration(DabRadio * ipRI) :
   Settings::Config::cmbSoundOutput.register_widget_and_update_ui_from_setting(cmbSoundOutput, "default");
   Settings::Config::cbCheckForUpdates.register_widget_and_update_ui_from_setting(cbCheckForUpdates, 2);
   Settings::Config::sbUpdateCheckDays.register_widget_and_update_ui_from_setting(sbUpdateCheckDays, 1);
+  Settings::Config::sbPeakLevelDelay.register_widget_and_update_ui_from_setting(sbPeakLevelDelay, 4);
 
-  // QDir tempPath = QDir::tempPath();
-  QDir tempPath = QDir::homePath();
-  tempPath.setPath(tempPath.filePath(PRJ_NAME));
-  const QString tempPicPath = tempPath.filePath("PIC").append('/');
-  const QString tempMotPath = tempPath.filePath("MOT").append('/');
-  const QString tempEpgPath = tempPath.filePath("EPG").append('/');
+  const QString defaultBasePath = QDir(QDir::homePath()).filePath(PRJ_NAME"5") + "/";  // as the file structure with v5 has changed, add a "5" to the default path
+  Settings::Config::varDataBasePath5.define_default_value(defaultBasePath);
+  lblDataBasePath->setText(Settings::Config::varDataBasePath5.read().toString());
 
-  Settings::Config::varPicturesPath.define_default_value(tempPicPath);
-  Settings::Config::varMotPath.define_default_value(tempMotPath);
-  Settings::Config::varEpgPath.define_default_value(tempEpgPath);
   Settings::Config::varSkipFile.define_default_value("");
   Settings::Config::varTiiFile.define_default_value("");
 
-  QPalette lcdPalette;
-#ifndef __MAC__
-  lcdPalette.setColor(QPalette::Window, Qt::white);
-  lcdPalette.setColor(QPalette::Base, Qt::black);
-#endif
-
-  connect(this, &Configuration::signal_handle_dc_and_iq_corr, mpRadioInterface, &DabRadio::slot_handle_dc_and_iq_corr);
-  connect(loadTableButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_load_table);
-  connect(sliderTest, &QSlider::valueChanged, mpRadioInterface, &DabRadio::slot_test_slider);
-  connect(dlTextButton, &QPushButton::clicked, mpRadioInterface,  &DabRadio::slot_handle_dl_text_button);
-  connect(cmbSoundOutput, qOverload<i32>(&QComboBox::activated), mpRadioInterface, &DabRadio::slot_set_stream_selector);
-  connect(portSelector, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_handle_port_selector);
-  connect(set_coordinatesButton, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_handle_set_coordinates_button);
-  connect(cbUseDcAvoidance, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_dc_avoidance_algorithm);
+  connect(btnSelectBasePath, &QPushButton::clicked, this, &Configuration::_slot_select_base_path);
   connect(cbDoDcCorrOnly, &QCheckBox::clicked, this, &Configuration::_slot_handle_dc_corr);
   connect(cbDoDcAndIqCorr, &QCheckBox::clicked, this, &Configuration::_slot_handle_dc_and_iq_corr);
-  connect(sbTiiThreshold, &QSpinBox::valueChanged, mpRadioInterface, &DabRadio::slot_handle_tii_threshold);
-  connect(cbTiiCollisions, &QCheckBox::clicked, mpRadioInterface, &DabRadio::slot_handle_tii_collisions);
-  connect(sbTiiSubId, &QSpinBox::valueChanged, mpRadioInterface, &DabRadio::slot_handle_tii_subid);
-  connect(cmbMotObjectSaving, qOverload<i32>(&QComboBox::activated), mpRadioInterface, &DabRadio::slot_handle_mot_saving_selector);
-  connect(btnCheckForUpdate, &QPushButton::clicked, mpRadioInterface, &DabRadio::slot_check_for_update);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(cbUseStrongestPeak, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_use_strongest_peak);
-  connect(cbActivateLogger, &QCheckBox::checkStateChanged, mpRadioInterface, &DabRadio::slot_handle_logger_button);
-#else
-  connect(cbUseStrongestPeak, &QCheckBox::stateChanged, mpRadioInterface, &DabRadio::slot_use_strongest_peak);
-  connect(cbActivateLogger, &QCheckBox::stateChanged, mpRadioInterface, &DabRadio::slot_handle_logger_button);
-#endif
+  connect(leLatitudeVal, &QLineEdit::editingFinished, this, &Configuration::_slot_coordinate_edited);
+  connect(leLongitudeVal, &QLineEdit::editingFinished, this, &Configuration::_slot_coordinate_edited);
+  connect(leMapPortVal, &QLineEdit::editingFinished, this, &Configuration::_slot_map_port_edited);
+
+  leLatitudeVal->setValidator(new CoordDoubleValidator(-90.0, 90.0, 5, leLatitudeVal));
+  leLatitudeVal->setText(Settings::Config::varLatitude.read().toString());
+
+  leLongitudeVal->setValidator(new CoordDoubleValidator(-180.0, 180.0, 5, leLongitudeVal));
+  leLongitudeVal->setText(Settings::Config::varLongitude.read().toString());
+
+  leMapPortVal->setValidator(new QIntValidator(1, 65535, leMapPortVal));
+  leMapPortVal->setText(Settings::Config::varMapPort.read().toString());
 }
 
 void Configuration::save_position_and_config()
@@ -106,16 +117,48 @@ void Configuration::_slot_handle_dc_corr(const bool iChecked)
 {
   if (iChecked)
   {
-    cbDoDcAndIqCorr->setChecked(false);
+    cbDoDcAndIqCorr->setChecked(false); // fields are mutual excluded to be active
   }
   emit signal_handle_dc_and_iq_corr(iChecked, false);
+}
+
+void Configuration::_slot_map_port_edited()
+{
+  Settings::Config::varMapPort.write(leMapPortVal->text());
+}
+
+void Configuration::_slot_coordinate_edited()
+{
+  Settings::Config::varLatitude.write(leLatitudeVal->text());
+  Settings::Config::varLongitude.write(leLongitudeVal->text());
+  emit signal_coordinates_changed();
 }
 
 void Configuration::_slot_handle_dc_and_iq_corr(const bool iChecked)
 {
   if (iChecked)
   {
-    cbDoDcCorrOnly->setChecked(false);
+    cbDoDcCorrOnly->setChecked(false); // fields are mutual excluded to be active
   }
   emit signal_handle_dc_and_iq_corr(iChecked, iChecked);
+}
+
+void Configuration::_slot_select_base_path()
+{
+  const QString current = Settings::Config::varDataBasePath5.read().toString();
+  const bool useNativeFileDialog = Settings::Config::cbUseNativeFileDialog.read().toBool();
+
+  QString dir = QFileDialog::getExistingDirectory(this, "Select Data Base Path", current, QFileDialog::ShowDirsOnly | (useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog));
+
+  if (dir.isEmpty())
+  {
+    return;
+  }
+  if (!dir.endsWith('/'))
+  {
+    dir += '/';
+  }
+  Settings::Config::varDataBasePath5.write(dir);
+  lblDataBasePath->setText(dir);
+  emit signal_data_base_path_changed();
 }

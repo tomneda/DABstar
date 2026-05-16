@@ -105,6 +105,7 @@ void RawReader::jump_to_relative_position_per_mill(i32 iPerMill)
 void RawReader::run()
 {
   connect(this, &RawReader::signal_set_progress, mParent, &RawFileHandler::slot_set_progress);
+  connect(this, &RawReader::signal_file_looped, mParent, &RawFileHandler::signal_file_looped);
 
   fseek(mpFile, 0, SEEK_SET);
 
@@ -119,7 +120,7 @@ void RawReader::run()
   {
     while (mRunning.load() && mpRingBuffer->get_ring_buffer_write_available() < cBufferSize + 10) // why that 10
     {
-      usleep(100);
+      usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
     }
 
     if (mSetNewFilePos >= 0)
@@ -146,6 +147,7 @@ void RawReader::run()
       {
         break;
       }
+      emit signal_file_looped();
     }
 
     nextStop_us += (n * 1000) / (2 * 2048); // add runtime in us for n numbers of entries

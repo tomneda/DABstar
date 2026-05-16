@@ -110,7 +110,7 @@ if (HACKRF)
           hackrf-handler
   )
 
-  set($(devicesLibName)_HDRS
+  set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           hackrf-handler/hackrf-handler.h
   )
@@ -129,7 +129,7 @@ if (PLUTO)
           pluto-handler-2
   )
 
-  set($(devicesLibName)_HDRS
+  set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           pluto-handler-2/pluto-handler.h
   )
@@ -148,7 +148,7 @@ if (LIMESDR)
           lime-handler
   )
 
-  set($(devicesLibName)_HDRS
+  set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
           lime-handler/lime-handler.h
           lime-handler/lime-widget.h

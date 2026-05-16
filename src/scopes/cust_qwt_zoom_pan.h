@@ -11,8 +11,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CUSTOMZOOMPAN_H
-#define CUSTOMZOOMPAN_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <QObject>
@@ -78,4 +77,3 @@ private:
   void _handle_wheel_event(const QWheelEvent * event);
 };
 
-#endif // CUSTOMZOOMPAN_H

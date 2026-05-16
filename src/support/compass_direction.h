@@ -10,8 +10,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef COMPASS_DIRECTION_H
-#define COMPASS_DIRECTION_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <string>
@@ -26,4 +25,3 @@ public:
 };
 
 
-#endif // COMPASS_DIRECTION_H

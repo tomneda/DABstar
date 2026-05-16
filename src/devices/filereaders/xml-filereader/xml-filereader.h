@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  XML_FILEREADER_H
-#define  XML_FILEREADER_H
+#pragma once
 
 #include  <QObject>
 #include  <QString>
@@ -85,7 +84,9 @@ public slots:
   void slot_slider_pressed();
   void slot_slider_released();
   void slot_slider_moved(i32);
+
+signals:
+  void signal_file_looped();
 };
 
-#endif
 

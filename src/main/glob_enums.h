@@ -13,8 +13,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef GLOB_ENUMS_H
-#define GLOB_ENUMS_H
+#pragma once
 
 enum class EIqPlotType
 {
@@ -54,4 +53,21 @@ enum class ESoftBitType  // adapt RadioInterface::get_soft_bit_gen_names() too i
   DEFAULT = SOFTDEC1   // use 3rd version for startup constellation
 };
 
-#endif // GLOB_ENUMS_H
+enum class EInfoReason // this is the info given back from DabRadio to the EnsembleList
+{
+  InvalidFile,   // a given file is invalid (e.g., it is an audio wav file)
+  NoNullSymbDet, // no null symbol detected
+  WeakSignalDet, // null symbol detected but no FIB decoding possible after a while
+  NewFib,        // FIB data decoded (inclusive ensemble name)
+  DeferredData,  // data which are received or evaluated later
+  NewSId         // service is already running, FIB loaded, only update current SID in service
+};
+
+enum class EScanLevel // this is the info contained in EnsembleList or which to be retrieved from FIB/etc
+{
+  SL0_Init,
+  SL1_ScanFailed, // scan tried but no signal detected
+  SL2_FibData,    // relates to UpdateSL2FibData (includes Ensemble name)
+  SL3_MedRun      // relates to UpdateSL3MedRunData (like DAB time, SNR, Ensemble name, etc)
+};
+

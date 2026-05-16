@@ -28,20 +28,13 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#pragma once
 
-/*
- * 	FIC data
- */
-#ifndef  FIC_HANDLER_H
-#define  FIC_HANDLER_H
-
-#include  "viterbi-spiral.h"
-#include  "fib-decoder_if.h"
-#include  <QObject>
-#include  <vector>
-#include  <atomic>
-#include  <cstdio>
-#include  <cstdint>
+#include "viterbi-spiral.h"
+#include "fib-decoder_if.h"
+#include <QObject>
+#include <vector>
+#include <atomic>
 
 class DabRadio;
 class DabParams;
@@ -71,7 +64,9 @@ private:
   std::array<std::byte, cFicPerFrame * cFicSizeVitOut> mFibBitsEntireFrame;
   std::array<std::byte, cFicSizeVitOut> mPRBS;
   std::array<i16, cFicSizeVitIn> mFicViterbiSoftInput;
-  std::array<u8, cViterbiBlockSize> mPunctureTable{false};
+  std::array<u8, cViterbiBlockSize> mPunctureTable{false}; // TODO: mViterbiBlockAddresses would be a substitute for this but still needed for BER measurement
+  std::vector<i16 *> mViterbiBlockAddresses; // this holds the addresses of mViterbiBlock where non-punctured data is stored
+  std::array<i16, cViterbiBlockSize> mViterbiBlock{0}; // Viterbi input buffer with punctuation
   std::array<bool, 4> mFicValid{false};
   i16 mIndex = 0;
   i16 mFicIdx = 0;
@@ -88,7 +83,5 @@ private:
 signals:
   void signal_fic_status(i32, f32);
 };
-
-#endif
 
 

@@ -37,14 +37,7 @@
 #include  <QDomDocument>
 #include  <cstdio>
 
-struct SDabFrequencies
-{
-  QString key;
-  i32 fKHz;
-  bool skip;
-};
-
-static SDabFrequencies frequencies_1[] =
+static BandHandler::SDabFrequencies frequencies_1[] =
 {
   {"05A", 174928, false},
   {"05B", 176640, false},
@@ -94,10 +87,10 @@ static SDabFrequencies frequencies_1[] =
   {"17C", 262352, false},
   {"17D", 264064, false},
 #endif
-    {nullptr, 0, false}
+  {nullptr, 0, false}  // init a QString with a nullptr results in an empty QString
 };
 
-static SDabFrequencies frequencies_2[] =
+static BandHandler::SDabFrequencies frequencies_2[] =
 {
   {"LA", 1452960, false},
   {"LB", 1454672, false},
@@ -115,11 +108,11 @@ static SDabFrequencies frequencies_2[] =
   {"LN", 1475216, false},
   {"LO", 1476928, false},
   {"LP", 1478640, false},
-  {nullptr, 0, false}
+  {nullptr,    0, false}  // init a QString with a nullptr results in an empty QString
 };
 
 
-static SDabFrequencies alternatives[100];
+static BandHandler::SDabFrequencies alternatives[100];
 
 BandHandler::BandHandler(const QString & a_band, QSettings * s)
   : theTable(nullptr)
@@ -171,14 +164,14 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s)
       continue;
     }
     fprintf(stderr, "adding %s %d\n", channelName, freq);
-    alternatives[filler].key = QString(channelName);
+    alternatives[filler].channel = QString(channelName);
     alternatives[filler].fKHz = freq;
     alternatives[filler].skip = false;
     filler++;
   }
 
   free(line);
-  alternatives[filler].key = "";
+  alternatives[filler].channel = "";
   alternatives[filler].fKHz = 0;
   fclose(f);
   selectedBand = alternatives;
@@ -199,14 +192,11 @@ BandHandler::~BandHandler()
 
 //
 //	The main program calls this once, the combobox will be filled
-void BandHandler::setupChannels(QComboBox * s, u8 band)
+void BandHandler::setupChannels(QComboBox * s, const EBand iBand)
 {
-  i16 i;
-  i16 c = s->count();
-
   if (selectedBand == nullptr)
   {  // no preset band
-    if (band == BAND_III)
+    if (iBand == EBand::BAND_III)
     {
       selectedBand = frequencies_1;
     }
@@ -216,18 +206,25 @@ void BandHandler::setupChannels(QComboBox * s, u8 band)
     }
   }
 
-  //	clear the fields in the comboBox
-  for (i = 0; i < c; i++)
+  if (s != nullptr)
   {
-    s->removeItem(c - (i + 1));
+    //	clear the fields in the comboBox
+    const i16 c = s->count();
+    for (i16 i = 0; i < c; i++)
+    {
+      s->removeItem(c - (i + 1));
+    }
+    for (i32 i = 0; selectedBand[i].fKHz != 0; i++)
+    {
+      s->insertItem(i, selectedBand[i].channel, QVariant(i));
+    }
   }
-  //
-  //	The table elements are by default all "+";
+
+  // The table elements are by default all "+";
   for (i32 i = 0; selectedBand[i].fKHz != 0; i++)
   {
-    s->insertItem(i, selectedBand[i].key, QVariant(i));
     theTable.insertRow(i);
-    theTable.setItem(i, 0, new QTableWidgetItem(selectedBand[i].key));
+    theTable.setItem(i, 0, new QTableWidgetItem(selectedBand[i].channel));
     theTable.setItem(i, 1, new QTableWidgetItem(QString("+")));
   }
 }
@@ -248,11 +245,11 @@ void BandHandler::saveSettings()
     {
       if (selectedBand[i].skip)
       {
-        dabSettings->setValue(selectedBand[i].key, 1);
+        dabSettings->setValue(selectedBand[i].channel, 1);
       }
       else
       {
-        dabSettings->remove(selectedBand[i].key);
+        dabSettings->remove(selectedBand[i].channel);
       }
     }
     dabSettings->endGroup();
@@ -272,7 +269,7 @@ void BandHandler::saveSettings()
         continue;
       }
       QDomElement skipElement = skipList.createElement("BAND_ELEMENT");
-      skipElement.setAttribute("CHANNEL", selectedBand[i].key);
+      skipElement.setAttribute("CHANNEL", selectedBand[i].channel);
       skipElement.setAttribute("VALUE", "-");
       root.appendChild(skipElement);
     }
@@ -303,7 +300,8 @@ void BandHandler::setup_skipList(const QString & fileName)
   }
 
   this->fileName = fileName;
-  if (fileName == "")
+
+  if (fileName.isEmpty())
   {
     default_skipList();
   }
@@ -322,7 +320,7 @@ void BandHandler::default_skipList() const
   dabSettings->beginGroup("skipTable");
   for (i32 i = 0; selectedBand[i].fKHz != 0; i++)
   {
-    bool skipValue = dabSettings->value(selectedBand[i].key, 0).toInt() == 1;
+    bool skipValue = dabSettings->value(selectedBand[i].channel, 0).toInt() == 1;
     if (skipValue)
     {
       selectedBand[i].skip = true;
@@ -360,9 +358,9 @@ void BandHandler::file_skipList(const QString & fileName) const
 
 void BandHandler::updateEntry(const QString & channel) const
 {
-  for (i32 i = 0; selectedBand[i].key != nullptr; i++)
+  for (i32 i = 0; selectedBand[i].channel != nullptr; i++)
   {
-    if (selectedBand[i].key == channel)
+    if (selectedBand[i].channel == channel)
     {
       selectedBand[i].skip = true;
       theTable.item(i, 1)->setText("-");
@@ -375,11 +373,10 @@ void BandHandler::updateEntry(const QString & channel) const
 i32 BandHandler::get_frequency_Hz(const QString & Channel) const
 {
   i32 tunedFrequency = 0;
-  i32 i;
 
-  for (i = 0; selectedBand[i].key != nullptr; i++)
+  for (i32 i = 0; selectedBand[i].channel != nullptr; i++)
   {
-    if (selectedBand[i].key == Channel)
+    if (selectedBand[i].channel == Channel)
     {
       tunedFrequency = kHz(selectedBand[i].fKHz);
       break;
@@ -408,19 +405,18 @@ i32 BandHandler::firstChannel() const
   return index;
 }
 
-i32 BandHandler::nextChannel(i32 index) const
+i32 BandHandler::nextChannel(i32 index) const // should finally return a index of element with f == 0
 {
-  i32 hulp = index;
   do
   {
-    hulp++;
-    if (selectedBand[hulp].fKHz == 0)
+    index++;
+    if (selectedBand[index].fKHz == 0) // we are at the end
     {
-      index = 0;
+      return index;
     }
   }
-  while (selectedBand[hulp].skip && (hulp != index));
-  return hulp;
+  while (selectedBand[index].skip);
+  return index;
 }
 
 // i32 BandHandler::lastOf(SDabFrequencies * b) const
@@ -480,4 +476,22 @@ void BandHandler::hide()
 bool BandHandler::isHidden() const
 {
   return theTable.isHidden();
+}
+
+QVector<BandHandler::SDabFrequencies> BandHandler::get_channel_entry_list() const
+{
+  assert(selectedBand != nullptr);
+
+  QVector<SDabFrequencies> list;
+  list.reserve(38);
+
+  for (i32 i = 0; selectedBand[i].channel != nullptr; i++)
+  {
+    SDabFrequencies entry;
+    entry.channel = selectedBand[i].channel;
+    entry.fKHz = selectedBand[i].fKHz;
+    list.emplace_back(entry);
+  }
+
+  return list;
 }

@@ -1,5 +1,4 @@
-#ifndef  __FILEREADER_WIDGET__
-#define  __FILEREADER_WIDGET__
+#pragma once
 
 #include  <QLabel>
 #include  <QLCDNumber>
@@ -33,6 +32,7 @@ public:
   {
     lblTitle = new QLabel("Playing pre-recorded file");
     lblFileName = new QLabel();
+    lblFileName->setWordWrap(true);
     sliderFilePos = new QSlider();
     sliderFilePos->setOrientation(Qt::Orientation::Horizontal);
     sliderFilePos->setRange(0, 1000);
@@ -89,5 +89,4 @@ public:
   }
 };
 
-#endif
 

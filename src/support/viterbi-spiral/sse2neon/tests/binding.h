@@ -1,5 +1,4 @@
-#ifndef SSE2NEONBINDING_H
-#define SSE2NEONBINDING_H
+#pragma once
 
 #include <stdlib.h>
 
@@ -16,4 +15,3 @@ void platformAlignedFree(void *ptr);
 
 }  // namespace SSE2NEON
 
-#endif

@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  WAV_FILES_H
-#define  WAV_FILES_H
+#pragma once
 
 #include  "dab-constants.h"
 #include  "device-handler.h"
@@ -80,7 +79,9 @@ public slots:
   void slot_slider_pressed();
   void slot_slider_released();
   void slot_slider_moved(i32);
+
+signals:
+  void signal_file_looped();
 };
 
-#endif
 

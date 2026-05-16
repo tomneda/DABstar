@@ -30,8 +30,7 @@
  * SOFTWARE.
  */
 
-#ifndef APPVERSION_H
-#define APPVERSION_H
+#pragma once
 
 #include <QDebug>
 #include <QRegularExpression>
@@ -82,4 +81,3 @@ private:
   [[nodiscard]] uint64_t toUInt64() const { return uint64_t((m_major << 30) + (m_minor << 20) + (m_patch << 10) + m_git); }
 };
 
-#endif  // APPVERSION_H

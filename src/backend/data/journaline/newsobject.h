@@ -47,8 +47,7 @@
  *
  */
 
-#ifndef __NEWS_OBJECT__
-#define __NEWS_OBJECT__
+#pragma once
 /**
 ***             techidee GmbH
 *** Projekt:    NewsBox
@@ -118,4 +117,3 @@ private:
     object_type_id_t convertObjectType(unsigned char in);
 };
 
-#endif

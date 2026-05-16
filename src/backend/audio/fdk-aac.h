@@ -30,10 +30,8 @@
  *
  *	Use the fdk-aac library.
  */
+#pragma once
 #ifdef  __WITH_FDK_AAC__
-
-#ifndef  FDK_AAC_H
-#define  FDK_AAC_H
 
 #include  <QObject>
 #include  <stdint.h>
@@ -74,5 +72,4 @@ signals:
   void signal_new_audio(i32, u32, u32);
 };
 
-#endif
 #endif

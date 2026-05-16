@@ -21,8 +21,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __ELAD_WORKER__
-#define	__ELAD_WORKER__
+#pragma once
 
 #include	<stdlib.h>
 #include	<cstdio>
@@ -55,5 +54,4 @@ private:
 	long i32		eladFrequency;
 	std::atomic<bool>	running;
 };
-#endif
 

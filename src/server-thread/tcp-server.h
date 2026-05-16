@@ -22,8 +22,7 @@
  *	Simple streaming server, for e.g. epg data and tpg data
  */
 
-#ifndef	__TCP_SERVER__
-#define	__TCP_SERVER__
+#pragma once
 
 #include	<stdint.h>
 #include	<ringbuffer.h>
@@ -48,5 +47,4 @@ private:
 	std::atomic<bool>	connected;
 	i32			socketDesc;
 };
-#endif
 

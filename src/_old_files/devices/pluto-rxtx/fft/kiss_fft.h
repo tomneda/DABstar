@@ -6,8 +6,7 @@
  *  See COPYING file for more information.
  */
 
-#ifndef KISS_FFT_H
-#define KISS_FFT_H
+#pragma once
 
 #include <stdlib.h>
 #include <cstdio>
@@ -129,4 +128,3 @@ i32 kiss_fft_next_fast_size(i32 n);
 } 
 #endif
 
-#endif

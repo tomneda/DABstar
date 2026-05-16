@@ -34,7 +34,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touch to switch on automatic gain control - based on the setting of the lnastate and the ifgain.&lt;/p&gt;&lt;p&gt;If switched on, the lnastate switch and the ifgain slider are switched off&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable automatic gain control (AGC), based on the LNA state and IF gain settings. When active, the LNA state and IF gain controls are disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>agc</string>
@@ -80,7 +80,7 @@
         <string> ppm</string>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ppm control. Tells the device the offset (in ppm) of the observed oscillator offset.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oscillator frequency correction in ppm. Enter the observed frequency offset of the device&apos;s oscillator.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="minimum">
         <double>-150.0</double>

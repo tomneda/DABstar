@@ -25,8 +25,7 @@
  *
  */
 #
-#ifndef __SOUND_CONSTANTS
-#define	__SOUND_CONSTANTS
+#pragma once
 
 #include	<math.h>
 #include	<complex>
@@ -67,4 +66,3 @@ static inline
 float	get_db (DSPFLOAT x) {
 	return 20 * log10 ((x + 1) / (float)(256 * 65536));
 }
-#endif

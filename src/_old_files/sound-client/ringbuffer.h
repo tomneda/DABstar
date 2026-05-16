@@ -65,8 +65,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __RINGBUFFER
-#define	__RINGBUFFER
+#pragma once
 #include	<stdlib.h>
 #include	<cstdio>
 #include	<string.h>
@@ -316,5 +315,4 @@ int32_t	skipDataInBuffer (uint32_t n_values) {
 }
 
 };
-#endif
 

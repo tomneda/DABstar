@@ -53,15 +53,18 @@ i32 main(i32 argc, char ** argv)
 #endif
 
   qRegisterMetaType<QVector<i32>>("QVector<i32>");  // windows needs that...
+  qRegisterMetaType<OfdmDecoder::SLcdData>("OfdmDecoder::SLcdData");
+
+  const QString dBVersionNr = "04"; // to ensure same database version for service list and ensemble list
 
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
   const QString initFileName02 = QDir::toNativeSeparators(configPath +  "settings02.ini");
   const QString initFileName03 = QDir::toNativeSeparators(configPath +  "settings03.ini");
-  const QString dbFileName = QDir::toNativeSeparators(configPath + "servicelist03.db");
+  const QString dbServiceListFileName = QDir::toNativeSeparators(configPath + QString("servicelist%1.db").arg(dBVersionNr));
+  const QString dbEnsembleListFileName = QDir::toNativeSeparators(configPath + QString("ensemblelist%1.db").arg(dBVersionNr));
 
   // Default values
   i32 dataPort = 8888;
-  QString altFreqList = "";
 
   QCoreApplication::setApplicationName(PRJ_NAME);
   QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
@@ -71,13 +74,11 @@ i32 main(i32 argc, char ** argv)
 #endif
 
   i32 opt;
-  while ((opt = getopt(argc, argv, "C:P:Q:A:TM:F:")) != -1)
+  while ((opt = getopt(argc, argv, "P:")) != -1)
   {
     switch (opt)
     {
     case 'P': dataPort = atoi(optarg);
-      break;
-    case 'A': altFreqList = optarg;
       break;
     default: ;
     }
@@ -133,7 +134,7 @@ i32 main(i32 argc, char ** argv)
                          "such as the map coordinates.");
   }
 
-  const auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbFileName, altFreqList, dataPort, nullptr));
+  const auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbServiceListFileName, dbEnsembleListFileName, dataPort, nullptr));
   radioInterface->show();
 
   QApplication::exec();

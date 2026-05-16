@@ -33,7 +33,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display. &lt;/p&gt;&lt;p&gt;Time synchronization is done by correlation. The first found peak over the threshold line is the one at (or near) sample 504. &lt;/p&gt;&lt;p&gt;The signal is in dB and normed to the threshold level. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zooming&lt;/span&gt;&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;CTRL&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;vertical&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;SHIFT&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;horizontal&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Use mouse wheel for zooming.&lt;br/&gt;Press left mouse button for panning.&lt;br/&gt;Press right mouse button to reset zoom.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display.&lt;/p&gt;&lt;p&gt;Time synchronization is performed by correlation. The first peak above the threshold line corresponds to sample 504 (or nearby).&lt;/p&gt;&lt;p&gt;The signal is shown in dB, normalised to the threshold level.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zooming&lt;/span&gt;&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;CTRL&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;vertical&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;SHIFT&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;horizontal&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Use mouse wheel for zooming.&lt;br/&gt;Press left mouse button for panning.&lt;br/&gt;Press right mouse button to reset zoom.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -50,7 +50,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The spectrum of the incoming signal.&lt;/p&gt;&lt;p&gt;Use the slider on the left to zoom into the signal.&lt;/p&gt;&lt;p&gt;The scaling is done automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The spectrum of the incoming signal.&lt;/p&gt;&lt;p&gt;Use the slider at the bottom to zoom into the signal.&lt;/p&gt;&lt;p&gt;The scaling is done automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -65,7 +65,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If more than one transmitter is detected, the relative distance is shown between the transmitter that is used, and the other transmitter. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If more than one transmitter is detected, shows the relative distance between the transmitter in use and the others.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">QLabel { background-color: rgb(165, 29, 45); }</string>
@@ -123,10 +123,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IQ
-                                                    constallation of the decoded signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ideally one sees 4 dots, one in each quadrant
-                                                    &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                                                </string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IQ constellation of the decoded signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ideally four dots are visible, one in each quadrant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -281,7 +278,7 @@
          <item row="4" column="1">
           <widget class="QLCDNumber" name="lcdPhaseCorr">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The frequency correction standard deviation in Hz after doing the frequency correction.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Standard deviation of the residual frequency error in Hz after frequency correction.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::Shape::NoFrame</enum>
@@ -333,7 +330,7 @@
          <item row="6" column="1">
           <widget class="QLCDNumber" name="lcdSnr">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Averaged Signal Noise Ratio in the OFDM symbol.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Averaged Signal-to-Noise Ratio (SNR) in the OFDM symbol.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::Shape::NoFrame</enum>
@@ -478,7 +475,7 @@
            <item>
             <widget class="QComboBox" name="cmbIqScope">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the IQ scope.&lt;/p&gt;&lt;p&gt;See tool tip of IQ scope for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the IQ scope.&lt;/p&gt;&lt;p&gt;See the IQ scope tooltip for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -505,7 +502,7 @@
            <item>
             <widget class="QComboBox" name="cmbCarrier">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the carrier plot.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;See tool tip of carrier plot for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the carrier plot.&lt;/p&gt;&lt;p&gt;See the carrier plot tooltip for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -530,7 +527,7 @@
          <item row="14" column="1">
           <widget class="QCheckBox" name="cbNomChIdx">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order carriers in the carrier plot in nominal sequence, not physically sequence. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order carriers in the carrier plot in nominal sequence rather than physical sequence.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Nom. Carrier</string>
@@ -637,7 +634,7 @@
          <item>
           <widget class="QwtThermo" name="thermoDigLevel">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;RMS and peak Level in dBFS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The peak level is the maximum vector length of the input signal within 10 frames (about 1 second). &lt;/p&gt;&lt;p&gt;In digital systems it is generell recommended to keep the scale (slightly) below 0dB but as we here have a pure phase modulation the signal detection could still get better even if (some) input samples got overdriven to raise the EVM of the low gain samples.&lt;/p&gt;&lt;p&gt;Better is to maximize the Modulation Quality with the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;RMS and peak Level in dBFS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The peak level is the maximum vector length of the input signal over 10 frames (approximately 1 second).&lt;/p&gt;&lt;p&gt;In digital systems it is generally recommended to keep the level slightly below 0 dBFS. However, since DAB uses phase modulation, some input overdrive may still yield acceptable results; the best approach is to maximise the Modulation Quality using the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound">
             <double>-24.000000000000000</double>
@@ -710,7 +707,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

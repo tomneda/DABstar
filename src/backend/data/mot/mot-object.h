@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef  MOT_OBJECT_H
-#define  MOT_OBJECT_H
+#pragma once
 
 #include  "dab-constants.h"
 #include  "mot-content-types.h"
@@ -48,8 +47,8 @@ class MotObject : public QObject
 {
 Q_OBJECT
 public:
-  MotObject(DabRadio * mr, bool dirElement);
-  MotObject(DabRadio * mr, bool dirElement, u16 transportId, const u8 * segment, i32 segmentSize, bool lastFlag);
+  MotObject(DabRadio * ipDR, bool iDirElement);
+  MotObject(DabRadio * ipDR, bool iDirElement, u16 iTransportId, const u8 * ipSegment, i32 iSegmentSize, bool iLastFlag);
   ~MotObject() override = default;
 
   void set_header(const u8 * iSegment, i32 iSegmentSize, bool iLastFlag, i32 iTransportId);
@@ -75,8 +74,7 @@ private:
   void _process_parameter_id(const u8 * ipSegment, i32 & ioPointer, u8 iParamId, u16 iLength);
 
 signals:
-  void signal_new_MOT_object(const QByteArray &, const QString &, int, bool);
+  void signal_new_MOT_object(const QByteArray & iData, const QString & iName, int iContentType, bool iDirElement);
 };
 
-#endif
 

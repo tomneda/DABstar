@@ -19,8 +19,7 @@
  *    along with Qt-DAB if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef __SOAPY_WORKER__
-#define __SOAPY_WORKER__
+#pragma once
 #include <QThread>
 #include <glob_defs.h>
 
@@ -33,6 +32,5 @@ class   soapyWorker: public QThread
     virtual i32 getSamples(cf32 *, i32);
 };
 
-#endif
 
 

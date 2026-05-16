@@ -30,8 +30,7 @@
  *
  */
 
-#ifndef  AUDIO_SINK_H
-#define  AUDIO_SINK_H
+#pragma once
 
 #include  <QString>
 #include  <vector>
@@ -86,5 +85,4 @@ protected:
   static int paCallback_o(const void * input, void * output, unsigned long framesperBuffer, const PaStreamCallbackTimeInfo * timeInfo, PaStreamCallbackFlags statusFlags, void * userData);
 };
 
-#endif
 

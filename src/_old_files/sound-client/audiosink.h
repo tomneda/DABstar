@@ -21,8 +21,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __AUDIO_SINK__
-#define	__AUDIO_SINK__
+#pragma once
 #include	"sound-constants.h"
 #include	<QString>
 #include	<portaudio.h>
@@ -69,5 +68,4 @@ static	int		paCallback_o	(const void	*input,
 	                                 void		*userData);
 };
 
-#endif
 

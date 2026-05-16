@@ -47,8 +47,7 @@
  *
  */
 
-#ifndef __DAB_DGDEC_IMPL__
-#define __DAB_DGDEC_IMPL__
+#pragma once
 /**
 ***             techidee GmbH
 *** Projekt:    NewsBox
@@ -86,4 +85,3 @@ int DAB_DGDEC_IMPL_checkCrc(const unsigned char * buf, unsigned long len, unsign
 }
 #endif
 
-#endif /* __DAB_DGDEC_IMPL__ */

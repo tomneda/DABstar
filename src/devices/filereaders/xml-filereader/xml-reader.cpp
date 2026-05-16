@@ -96,6 +96,7 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 fileP
   }
 
   connect(this, &XmlReader::signal_set_progress, parent, &XmlFileReader::slot_set_progress);
+  connect(this, &XmlReader::signal_file_looped, parent, &XmlFileReader::signal_file_looped);
 
   // fprintf(stderr, "reader task wordt gestart\n");
   mSetNewFilePos = -1;
@@ -200,6 +201,10 @@ void XmlReader::run()
       }
     }
     emit signal_set_progress(0, parent->samplesToRead);
+    if (running.load() && continuous.load())
+    {
+      emit signal_file_looped();
+    }
     filePointer = startPoint;
     fseek(file, filePointer, SEEK_SET);
   }

@@ -11,8 +11,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DABSTAR_CIRCLEPUSHBUTTON_H
-#define DABSTAR_CIRCLEPUSHBUTTON_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <QPushButton>
@@ -43,4 +42,3 @@ private:
   i32 mTimerMs = 50;
 };
 
-#endif // DABSTAR_CIRCLEPUSHBUTTON_H

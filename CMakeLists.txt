@@ -13,7 +13,7 @@ try_find_vcpkg_toolset_path()
 print(CMAKE_TOOLCHAIN_FILE)
 
 ##############################
-project(DABstar VERSION 4.7.0)
+project(DABstar VERSION 4.99.0)
 ##############################
 
 set(objectName "dabstar")
@@ -112,7 +112,7 @@ print(CMAKE_MODULE_PATH)
 # As I (tomneda) possess not all of these devices I place an "untested" behind. They may run, or not run.
 option(AIRSPY     "Use AirSpy"     OFF)  # untested
 option(SPYSERVER  "Use SpyServer"  OFF)  # untested
-option(SDRPLAY    "Use SdrPlay"    OFF)
+option(SDRPLAY    "Use SDRplay"    OFF)
 option(HACKRF     "Use HackRf"     OFF)
 option(LIMESDR    "Use LimeSdr"    OFF)  # untested
 option(RTL_TCP    "Use RtlTcp"     OFF)
@@ -143,7 +143,7 @@ option(SSE_OR_AVX    "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  #
 
 ########################################################################
 if (USE_LIQUID)
-    set($(objectName)_HDRS
+    set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/support/halfbandfilter.h
     )
@@ -175,9 +175,10 @@ set(main_ui
         forms/spectrum_viewer.ui
         forms/techdata.ui
         forms/updatedialog.ui
+        forms/ensemble-list.ui
 )
 
-find_package(FFTW3f)
+find_package(FFTW3F)
 if (NOT FFTW3F_FOUND)
     message(FATAL_ERROR "Please install FFTW3")
 endif ()
@@ -201,7 +202,7 @@ search_for_library(ZLIB zlib)
 search_for_library(LIBSNDFILE sndfile)
 
 if (SSE_OR_AVX)
-    set($(objectName)_HDRS
+    set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/support/simd_extensions.h
             src/ofdm/ofdm-decoder-simd.h
@@ -275,6 +276,7 @@ include_directories(
         src/eti-handler
         src/service-list
         src/configuration
+        src/ensemble-list
         src/update
         #/usr/include/
 )
@@ -282,6 +284,11 @@ include_directories(
 set(${objectName}_HDRS
         ${${objectName}_HDRS}
         src/main/dabradio.h
+        src/main/audio_manager.h
+        src/main/epg_mot_handler.h
+        src/main/tii_manager.h
+        src/main/gap_progress_bar.h
+        src/main/dab_channel_desc.h
         src/main/glob_defs.h
         src/main/glob_enums.h
         src/main/dab-processor.h
@@ -342,6 +349,7 @@ set(${objectName}_HDRS
         src/audio/audiofifo.h
         src/audio/audiooutput.h
         src/audio/audioiodevice.h
+        src/audio/test_tone.h
         src/audio/audiooutputqt.h
         src/support/fir-filters.h
         src/support/ringbuffer.h
@@ -355,15 +363,11 @@ set(${objectName}_HDRS
         src/support/openfiledialog.h
         src/support/content-table.h
         src/support/dl-cache.h
-        src/support/ITU_Region_1.h
-        src/support/coordinates.h
-        src/support/mapport.h
+        src/support/itu-regions.h
         src/support/map-http-server.h
         src/support/tii-library/tii-codes.h
-        src/support/buttons/newpushbutton.h
-        src/support/buttons/normalpushbutton.h
-        src/support/buttons/circlepushbutton.h
         src/support/custom_frame.h
+        src/support/gui-helpers.h
         src/support/setting-helper.h
         src/support/wav_writer.h
         src/support/compass_direction.h
@@ -383,6 +387,9 @@ set(${objectName}_HDRS
         src/service-list/service-list-handler.h
         src/service-list/service-db.h
         src/configuration/configuration.h
+        src/ensemble-list/ensemble-list.h
+        src/ensemble-list/ensemble-list-db.h
+        src/ensemble-list/ensemble-list-db-handler.h
         src/update/updatechecker.h
         src/update/updatedialog.h
 )
@@ -392,7 +399,13 @@ set(${objectName}_SRCS
         src/main/main.cpp
         src/main/dabradio.cpp
         src/main/dabradio_ui.cpp
-        src/main/dabradio_audio.cpp
+        src/main/dabradio_dump.cpp
+        src/main/audio_manager.cpp
+        src/main/epg_mot_handler.cpp
+        src/main/tii_manager.cpp
+        src/main/dabradio_el.cpp
+        src/main/dabradio_ctrl.cpp
+        src/main/dab_channel_desc.cpp
         src/main/dab-processor.cpp
         src/support/techdata.cpp
         src/eti-handler/eti-generator.cpp
@@ -445,28 +458,25 @@ set(${objectName}_SRCS
         src/backend/data/mot/mot-dir.cpp
         src/backend/data/data-processor.cpp
         src/audio/audioiodevice.cpp
+        src/audio/test_tone.cpp
         src/audio/audiooutputqt.cpp
         src/support/fir-filters.cpp
         src/support/ringbuffer.cpp
         src/support/Xtan2.cpp
         src/support/band-handler.cpp
         src/support/dab-tables.cpp
-        src/support/buttons/newpushbutton.cpp
-        src/support/buttons/normalpushbutton.cpp
-        src/support/buttons/circlepushbutton.cpp
         src/support/viterbi-spiral/viterbi-spiral.cpp
         src/support/color-selector.cpp
         src/support/time-table.cpp
         src/support/openfiledialog.cpp
         src/support/content-table.cpp
         src/support/dl-cache.cpp
-        src/support/ITU_Region_1.cpp
-        src/support/coordinates.cpp
-        src/support/mapport.cpp
+        src/support/itu-regions.cpp
         src/support/map-http-server.cpp
         src/support/tii_list_display.cpp
         src/support/tii-library/tii-codes.cpp
         src/support/custom_frame.cpp
+        src/support/gui-helpers.cpp
         src/support/setting-helper.cpp
         src/support/wav_writer.cpp
         src/support/compass_direction.cpp
@@ -485,6 +495,9 @@ set(${objectName}_SRCS
         src/service-list/service-list-handler.cpp
         src/service-list/service-db.cpp
         src/configuration/configuration.cpp
+        src/ensemble-list/ensemble-list.cpp
+        src/ensemble-list/ensemble-list-db.cpp
+        src/ensemble-list/ensemble-list-db-handler.cpp
         src/update/updatechecker.cpp
         src/update/updatedialog.cpp
 )
@@ -497,7 +510,7 @@ if (FDK_AAC)
         message(FATAL_ERROR, "Please install libfdk-aac")
     endif ()
     include_directories(${FDK_AAC_INCLUDE_DIR}/fdk-aac)
-    set($(objectName)_HDRS
+    set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/backend/audio/fdk-aac.h
     )

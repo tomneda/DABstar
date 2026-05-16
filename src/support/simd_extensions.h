@@ -16,8 +16,7 @@
 // https://wiki.gnuradio.org/index.php/Volk
 // https://www.gnuradio.org/doc/doxygen-3.7/volk_guide.html
 
-#ifndef SIMD_EXTENSIONS_H
-#define SIMD_EXTENSIONS_H
+#pragma once
 
 #include "glob_defs.h"
 #include <pmmintrin.h>
@@ -416,4 +415,3 @@ private:
 
 
 
-#endif //SIMD_EXTENSIONS_H

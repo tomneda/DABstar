@@ -1,5 +1,4 @@
-#ifndef	__LIME_WIDGET__
-#define	__LIME_WIDGET__
+#pragma once
 
 #include	<QLabel>
 #include	<QSpinBox>
@@ -87,5 +86,4 @@ void	setupUi		(QWidget *qw) {
 }
 };
 
-#endif
 

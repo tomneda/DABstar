@@ -6,503 +6,667 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>737</width>
-    <height>313</height>
+    <width>789</width>
+    <height>503</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Configuration and Control</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
+  <layout class="QVBoxLayout" name="vl_main">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0,1,0,1">
+    <layout class="QHBoxLayout" name="hl_columns" stretch="0,1,1">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="vl_col1">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
-         <item>
-          <widget class="QPushButton" name="portSelector">
-           <property name="text">
-            <string>Maps Port</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="dlTextButton">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the lines of text that appear as dynamic label&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>DL Text</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <widget class="QPushButton" name="skipList_button">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show or hide the skipList. Updates in the skipList will be saved.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Skip List</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="skipFile_button">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a file for the skipList. If the file does not exist yet, it will be created and initialized with a skipList with no channels set to skip.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Skip File</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <item>
-          <widget class="QPushButton" name="set_coordinatesButton">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enter your local map coordinates&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is necessary to show the correct direction and distance of the received TII information.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Coordinates</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="loadTableButton">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Touching this button instructs the software to (try to) load a so-called tii table, a table with the&lt;/p&gt;&lt;p&gt;encodings of tii data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Load TII Table</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <widget class="QPushButton" name="dumpButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Push this button to save the raw input. Pushing will cause a menu to appear where a filename can be selected. Please note the big filesizes!&lt;/p&gt;&lt;p&gt;Push again to stop recording. You can reload it by using the file input (*.sdr or *.uff) option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Dump RAW</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="etiButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate ETI files. &lt;/p&gt;&lt;p&gt;Note that building up an ETI file requires quite some resources.&lt;/p&gt;&lt;p&gt;Touching that button shows a fileselection menu, after selecting a file the content of the ensemble is sent in ETI format to the file. The eti session stops when the eti button is touched again, or switching to another channel.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Dump ETI</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_9">
-         <item>
-          <widget class="QPushButton" name="resetButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Push this button to reset, i.e. restart synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QPushButton { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(158, 58, 58, 255),stop:1 rgba(118, 18, 18, 255)); color: #ffffff; }
-            </string>
-           </property>
-           <property name="text">
-            <string>Reset</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnCheckForUpdate">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check for update on Github.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Check update</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_10">
-         <item>
-          <widget class="QComboBox" name="cmbSoftBitGen">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are several ideas on how to calculate the soft bit values for the Virterbi decoder. In some weak reception conditions, this may cause a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QComboBox" name="cmbSoundOutput"/>
-       </item>
-       <item>
-        <widget class="QComboBox" name="deviceSelector">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select input device&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QGroupBox" name="gbActions">
+         <property name="title">
+          <string>Actions</string>
          </property>
+         <layout class="QVBoxLayout" name="vl_actions">
+          <item>
+           <layout class="QHBoxLayout" name="hl_a1">
+            <item>
+             <widget class="QPushButton" name="dumpButton">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to save the raw input signal to a file. A file selection dialog will open to choose a filename. Note that the file sizes can be very large.&lt;/p&gt;&lt;p&gt;Click again to stop recording. The file can be reloaded using the &amp;quot;Ensemble List&amp;quot; (&amp;quot;EL&amp;quot; button).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Dump RAW</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="etiButton">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate an ETI file.&lt;/p&gt;&lt;p&gt;Note that generating an ETI file requires considerable resources.&lt;/p&gt;&lt;p&gt;Clicking this button opens a file selection dialog. After selecting a file, the ensemble content is written in ETI format. The ETI session stops when this button is clicked again or when switching to another channel.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Dump ETI</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QPushButton" name="resetButton">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to restart synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(158, 58, 58, 255),stop:1 rgba(118, 18, 18, 255)); color: #ffffff; }
+             </string>
+              </property>
+              <property name="text">
+               <string>Reset Synchronization</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="dlTextButton">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the dynamic label text to a file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Save DL Text</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gbAudio">
+         <property name="title">
+          <string>Audio</string>
+         </property>
+         <layout class="QVBoxLayout" name="vl_audio">
+          <item>
+           <widget class="QLabel" name="lbl_sound_output">
+            <property name="text">
+             <string>Sound output:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cmbSoundOutput"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="hl_audio2">
+            <item>
+             <widget class="QCheckBox" name="cbTestTone">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable or disable the calibration test tone (short tone pings) used to calibrate the peak level delay setting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Test tone</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lblPeakDelay">
+              <property name="text">
+               <string>Peak level delay:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sbPeakLevelDelay">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delay for the peak level meter. Use the test tone to calibrate the optimal setting — adjust until the peak level meter reacts in sync with the tone. Use the smallest value that works.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>19</number>
+              </property>
+              <property name="value">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gbMapNetwork">
+         <property name="title">
+          <string>Map Network</string>
+         </property>
+         <layout class="QVBoxLayout" name="vl_map">
+          <item>
+           <widget class="QCheckBox" name="cbManualBrowserStart">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, a browser must be started manually when the map HTTP service starts. By default, a browser is opened automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Start map browser manually</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbSaveTransToCsv">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;While the HTTP map is shown, the transmitter descriptions are also stored in a &amp;quot;.csv&amp;quot; and a &amp;quot;.kml&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the map HTTP server, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Save transmitters to CSV and KML</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblMapUrlHint">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Get home coordinates from (e.g.):&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="openExternalLinks">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblMapUrlHint_2">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://www.google.com/maps&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#7983ff;&quot;&gt;Google Maps&lt;/span&gt;&lt;/a&gt;, &lt;a href=&quot;https://www.openstreetmap.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#7983ff;&quot;&gt;OpenStreetMap&lt;/span&gt;&lt;/a&gt;, &lt;a href=&quot;https://mapy.cz&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#7983ff;&quot;&gt;Mapy.cz&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="openExternalLinks">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="hl_map_btns">
+            <item>
+             <widget class="QLabel" name="lblLatPrefix">
+              <property name="text">
+               <string>Lat:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="leLatitudeVal">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Home latitude coordinate&lt;/span&gt;&lt;/p&gt;&lt;p&gt;decimal, -90° to 90°&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignRight</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lblLonPrefix">
+              <property name="text">
+               <string>Lon:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="leLongitudeVal">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Home longitude coordinate&lt;/span&gt;&lt;/p&gt;&lt;p&gt;decimal, -180° to 180°&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignRight</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLabel" name="lblPortPrefix">
+              <property name="text">
+               <string>Web server port:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="leMapPortVal">
+              <property name="toolTip">
+               <string>Maps HTTP server port number (1-65535)</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignRight</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="sp_col1_bot">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
      <item>
-      <widget class="Line" name="line_2">
-       <property name="styleSheet">
-        <string notr="true">background-color: black;</string>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="vl_col2">
        <item>
-        <widget class="QCheckBox" name="cbAlwaysOnTop">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set in the configuration whether or not the main widget should ALWAYS be op top. Note that setting will be applied the next time the program will start.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QGroupBox" name="gbGeneral">
+         <property name="title">
+          <string>General</string>
          </property>
-         <property name="text">
-          <string>Main widget always on top</string>
-         </property>
+         <layout class="QVBoxLayout" name="vl_general">
+          <item>
+           <widget class="QCheckBox" name="cbAlwaysOnTop">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Keep the main window always on top of other windows. This setting takes effect the next time the program starts.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Main widget always on top</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbCloseDirect">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, the application closes immediately without a confirmation dialog.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Close without asking</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbUseUtcTime">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Display time in UTC if selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Use UTC time</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbUrlClickable">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;URLs are clickable in dynamic label text&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The dynamic label text is scanned for URLs and email addresses and the links are (tried to) converted into clickable links. So the web browser or email program should be opened automatically by clicking on them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>URLs clickable in dyn. label</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbUseNativeFileDialog">
+            <property name="text">
+             <string>Use native file dialogs</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbCloseDirect">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If you are bored with the explicit request to stop, touch this one, and stopping is direct&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QGroupBox" name="gbFileSaving">
+         <property name="title">
+          <string>File Saving</string>
          </property>
-         <property name="text">
-          <string>Close without asking</string>
-         </property>
+         <layout class="QVBoxLayout" name="vl_filesaving">
+          <item>
+           <layout class="QHBoxLayout" name="hl_base_path" stretch="0,0">
+            <item>
+             <widget class="QLabel" name="lbl_base_path_header">
+              <property name="text">
+               <string>Base MOT/EPG path:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="btnSelectBasePath">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open a directory dialog to choose the base directory for MOT and EPG data. Subdirectories MOT/, EPG/, and PIC/ will be created inside it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="icon">
+               <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblDataBasePath">
+            <property name="toolTip">
+             <string>Current base directory for MOT and EPG data storage.</string>
+            </property>
+            <property name="text">
+             <string>-</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cmbMotObjectSaving5">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether MOT objects (such as slides/images) should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Files can be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>Do not save MOT objects</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Save MOT objects in the MOT base folder</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Save MOT obj. in a sub-folder &lt;ensemble&gt;</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Save MOT obj. in a sub-folder &lt;ens&gt;/&lt;service&gt;</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cmbEpgObjectSaving5">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether EPG data should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Files can be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>Do not save EPG objects</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Save EPG objects in the EPG base folder</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Save EPG obj. in a sub-folder &lt;ensemble&gt;</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Save EPG obj. in a sub-folder &lt;ens&gt;/&lt;service&gt;</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbUseNativeIqFormat">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use native IQ format of most input devices in 'Dump RAW' if selected. Not available for Soapy, UHD, Spyserver and file device.&lt;/p&gt;
+            &lt;p&gt;If not selected, 'Dump RAW' writes WAV files with 16 bits and 2048000 samples/s.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Use native IQ format (Dump RAW)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbActivateLogger">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sometime one wants to see what was done, the logger just dumps some data into a file, showing the selections made.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QGroupBox" name="gbUpdates">
+         <property name="title">
+          <string>Updates</string>
          </property>
-         <property name="text">
-          <string>Activate logger</string>
-         </property>
+         <layout class="QVBoxLayout" name="vl_updates">
+          <item>
+           <layout class="QHBoxLayout" name="hl_updates" stretch="1,0">
+            <item>
+             <widget class="QCheckBox" name="cbCheckForUpdates">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically check for a new version of DABstar after startup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Check for updates every:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sbUpdateCheckDays">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Interval in days between automatic update checks.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="suffix">
+               <string> days</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>30</number>
+              </property>
+              <property name="value">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnCheckForUpdate">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to check for an update on GitHub immediately.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Check for Update Now</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbUseNativeFileDialog">
-         <property name="text">
-          <string>Use native file dialogs</string>
+        <spacer name="sp_col2_bot">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbUseNativeIqFormat">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use native IQ format of most input devices in 'Dump RAW' if selected. Not available for Soapy, UHD, Spyserver and file device.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-            &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If not selected, 'Dump RAW' writes WAV files with 16 bits and 2048000 samples/s.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
          </property>
-         <property name="text">
-          <string>Use native IQ format</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbUseUtcTime">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Display time in UTC if selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Use UTC time</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbUrlClickable">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;URLs are clickable in dynamic label text&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The dynamic label text is scanned for URLs and email addresses and the links are (tried to) converted into clickable links. So the web browser or email program should be opened automatically by clicking on them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>URLs clickable in dyn. label</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="cmbMotObjectSaving">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether MOT objects (such slices/images) should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;You can choose whether the files should be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;p&gt;The base folder is &lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;$(HOME)/DABstar/PIC/&lt;/span&gt; or&lt;span style=&quot; font-weight:700;&quot;&gt;&lt;br/&gt;$(HOME)/DABstar/MOT/&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <item>
-          <property name="text">
-           <string>Do not save MOT objects</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Save MOT objects in a single folder</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Save MOT objects in a directory tree</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="cmbEpgObjectSaving">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether EPG data should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;You can choose whether the files should be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;p&gt;The base folder is&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;$(HOME)/DABstar/EPG/&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <item>
-          <property name="text">
-           <string>Do not save EPG objects</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Save EPG objects in a single folder</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Save EPG objects in a directory tree</string>
-          </property>
-         </item>
-        </widget>
+        </spacer>
        </item>
       </layout>
      </item>
      <item>
-      <widget class="Line" name="line">
-       <property name="styleSheet">
-        <string notr="true">background-color: black;</string>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="vl_col3">
        <item>
-        <widget class="QCheckBox" name="cbManualBrowserStart">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set in the configuration that on starting the http service a browser will have to be started manually. Default is browser starts automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QGroupBox" name="gbSignalProc">
+         <property name="title">
+          <string>Signal Processing</string>
          </property>
-         <property name="text">
-          <string>Start map browser manually</string>
-         </property>
+         <layout class="QVBoxLayout" name="vl_signal">
+          <item>
+           <widget class="QCheckBox" name="cbUseDcAvoidance">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Try to avoid a DC component on the OFDM bins around the 0 Hz OFDM bin.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Many SDR devices use an analogue IQ receiving concept, which tends to introduce a DC component at 0 Hz baseband.&lt;/p&gt;&lt;p&gt;This feature tries to use the RF synthesizer on the SDR device to shift the DC component to the unused 0 Hz OFDM bin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Use DC avoidance algorithm</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbDoDcCorrOnly">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Do DC correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal. &lt;/p&gt;&lt;p&gt;Mutually exclusive with &amp;quot;Do DC and IQ correction&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Do DC correction (without IQ)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbDoDcAndIqCorr">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Do DC and IQ correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes also a possible IQ misalignment from the input signal. &lt;/p&gt;&lt;p&gt;Mutually exclusive with &amp;quot;Do DC correction (without IQ)&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Do DC and IQ correction</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbUseStrongestPeak">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Use strongest correlation peak</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="hl_softbit">
+            <item>
+             <widget class="QLabel" name="lbl_soft_bit_gen">
+              <property name="text">
+               <string>Soft bit generation:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cmbSoftBitGen">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are several ideas on how to calculate the soft bit values for the Viterbi decoder. In some weak reception conditions, this may cause a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbSaveTransToCsv">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;While the HTTP map is shown, the transmitter descriptions are also stored in a &amp;quot;.csv&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the map HTTP server, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QGroupBox" name="gbTii">
+         <property name="title">
+          <string>TII Settings</string>
          </property>
-         <property name="text">
-          <string>Save transmitters to CSV</string>
-         </property>
+         <layout class="QVBoxLayout" name="vl_tii">
+          <item>
+           <widget class="QCheckBox" name="cbAutoIterTiiEntries">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Automatically iterate over TII entries&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The TII location list in the main window can be iterated automatically. If not selected then always the first (strongest) TII entry is shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Auto. iterate over TII entries</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="hl_tii_coll" stretch="1,0">
+            <item>
+             <widget class="QCheckBox" name="cbTiiCollisions">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show TII collisions (entries sharing the same sub-ID) as main ID = 99.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Show TII coll. for Sub ID:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sbTiiSubId">
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>23</number>
+              </property>
+              <property name="value">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="hl_tii_thresh" stretch="1,0">
+            <item>
+             <widget class="QLabel" name="lbl_tii_threshold">
+              <property name="text">
+               <string>TII threshold:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sbTiiThreshold">
+              <property name="toolTip">
+               <string>Minimum TII signal level above the noise floor in dB.</string>
+              </property>
+              <property name="suffix">
+               <string> dB</string>
+              </property>
+              <property name="minimum">
+               <number>3</number>
+              </property>
+              <property name="maximum">
+               <number>9</number>
+              </property>
+              <property name="value">
+               <number>6</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="loadTableButton">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to load a TII table — a file containing the TII data encodings used for transmitter identification.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Load TII Table</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbUseDcAvoidance">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Try to avoid a DC compoment on used OFDM-bins around the 0Hz-OFDM-bin.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Many SDR devices have an analog IQ receiving concept. This tends to have a DC component at 0Hz baseband. &lt;/p&gt;&lt;p&gt;Therefore, the DAB standard do not use the OFDM-bin at 0Hz to avoid decoding problems. But as the frequency correction is usually done only in the baseband, the DC could be seen also in the neighbor OFDM-bins where the demodulation of the data could be bad.&lt;/p&gt;&lt;p&gt;This feature tries to use the RF synthesizer on the SDR device to shift the DC component to the unsused 0Hz-OFDM-bin again. The remaining frequency correction is still done in the baseband.&lt;/p&gt;&lt;p&gt;Not all devices allows fine RF frequency tuning (and not on all relevant frequencies), so this is not always working fully well, but should also not cause any harm.&lt;/p&gt;&lt;p&gt;This should make a difference in bad reception conditions. See needed RS (Reed-Solomon) correction.&lt;/p&gt;&lt;p&gt;While switching audio could drop for a short time.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <spacer name="sp_col3_bot">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
-         <property name="text">
-          <string>Use DC avoidance algorithm</string>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbDoDcCorrOnly">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Do DC correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal. &lt;/p&gt;&lt;p&gt;Together with the &lt;span style=&quot; font-style:italic;&quot;&gt;DC Avoidance Algrithm&lt;/span&gt; this should be of an advantage. But with not all situations and devices this will work well.&lt;/p&gt;&lt;p&gt;You would see the DC on the &amp;quot;needle&amp;quot; in the spectrum view (upper right corner).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Do DC correction (without IQ)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbDoDcAndIqCorr">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Do DC and IQ correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;For the DC correction see the button above. &lt;br/&gt;This must be implicitly done with the IQ misalignment correction.&lt;/p&gt;&lt;p&gt;This removes also a possible IQ misalignment from the input signal. &lt;/p&gt;&lt;p&gt;This is quite seldom a problem with certain devices and take some CPU power.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Do DC and IQ correction</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbUseStrongestPeak">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Use strongest correlation peak</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbAutoIterTiiEntries">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Automatically iterate over TII entries&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The TII location list in the main window can be iterated automatically. If not selected then always the first (strongest) TII entry is shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Autom. iterate over TII entries</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="3,1">
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>TII threshold</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="sbTiiThreshold">
-           <property name="toolTip">
-            <string>Threshold above noise level</string>
-           </property>
-           <property name="suffix">
-            <string> dB</string>
-           </property>
-           <property name="minimum">
-            <number>3</number>
-           </property>
-           <property name="maximum">
-            <number>9</number>
-           </property>
-           <property name="value">
-            <number>6</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,1">
-         <item>
-          <widget class="QCheckBox" name="cbTiiCollisions">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows TII collisions as main id = 99&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Show TII coll. for Sub Id</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="sbTiiSubId">
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>23</number>
-           </property>
-           <property name="value">
-            <number>0</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,1">
-         <item>
-          <widget class="QCheckBox" name="cbCheckForUpdates">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check for a new update of DABstar after startup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Check for updates days</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="sbUpdateCheckDays">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of days when the next update check is made.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>30</number>
-           </property>
-           <property name="value">
-            <number>1</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        </spacer>
        </item>
       </layout>
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="QSlider" name="sliderTest">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Slider for different tests. Normally no need to change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="maximum">
-      <number>10</number>
-     </property>
-     <property name="pageStep">
-      <number>1</number>
-     </property>
-     <property name="value">
-      <number>0</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

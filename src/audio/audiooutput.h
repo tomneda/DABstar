@@ -52,8 +52,10 @@ public slots:
   virtual void slot_start(SAudioFifo * iBuffer) = 0;
   virtual void slot_restart(SAudioFifo * iBuffer) = 0;
   virtual void slot_stop() = 0;
-  virtual void slot_mute(bool on) = 0;
-  virtual void slot_setVolume(i32 value) = 0;
+  virtual void slot_set_mute(bool iActive) = 0;
+  virtual void slot_set_test_tone(bool iActive) = 0;
+  virtual void slot_set_peak_level_delay(i32 iDelaySteps) = 0;
+  virtual void slot_set_volume(i32 value) = 0;
   virtual void slot_set_audio_device(const QByteArray & deviceId) = 0;
 
 signals:

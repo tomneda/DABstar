@@ -21,8 +21,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__DUMP_VIEWER__
-#define	__DUMP_VIEWER__
+#pragma once
 #include	<QDialog>
 #include        <qwt.h>
 #include        <qwt_plot.h>
@@ -67,6 +66,5 @@ private:
         QColor          gridColor;
         QColor          curveColor;
 };
-#endif
 
 

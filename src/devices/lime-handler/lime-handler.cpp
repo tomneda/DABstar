@@ -179,7 +179,7 @@ LimeHandler::~LimeHandler()
   stopReader();
   running.store(false);
   while (isRunning())
-     usleep(100);
+     usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
   myFrame.hide();
   limeSettings->beginGroup("limeSettings");
   limeSettings->setValue("antenna", antennaList->currentText());

@@ -1,5 +1,4 @@
-#ifndef  DL_CACHE_H
-#define  DL_CACHE_H
+#pragma once
 
 #include  <QString>
 #include  <vector>
@@ -18,4 +17,3 @@ public:
   bool add_if_new(const QString & s);
 };
 
-#endif

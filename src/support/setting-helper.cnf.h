@@ -22,6 +22,7 @@
   #define CATEGORY_BEGIN_NEW_NAME(category_, newCatName_)  struct category_ { static QString category;
   #define CATEGORY_END(category_)                                           };
   #define DEFINE_POS_SIZE(category_)                       static PosAndSize posAndSize;
+  #define DEFINE_POS_SIZE_NAMED(category_, name_)          static PosAndSize name_;
   #define DEFINE_VARIANT_NODEF(category_, name_)           static Variant name_;
   #define DEFINE_VARIANT(category_, name_, default_)       static Variant name_;
   #define DEFINE_WIDGET(category_, name_)                  static Widget name_;
@@ -32,6 +33,7 @@
   #define CATEGORY_BEGIN_NEW_NAME(category_, newCatName_)  QString category_::category = newCatName_;
   #define CATEGORY_END(category_)
   #define DEFINE_POS_SIZE(category_)                       PosAndSize category_::posAndSize{category};
+  #define DEFINE_POS_SIZE_NAMED(category_, name_)          PosAndSize category_::name_{category, #name_};
   #define DEFINE_VARIANT_NODEF(category_, name_)           Variant category_::name_{category, #name_};
   #define DEFINE_VARIANT(category_, name_, default_)       Variant category_::name_{category, #name_, default_};
   #define DEFINE_WIDGET(category_, name_)                  Widget category_::name_{category, #name_};
@@ -47,19 +49,19 @@ CATEGORY_BEGIN(Main)
   DEFINE_POS_SIZE(Main)
   DEFINE_VARIANT(Main, varDeviceUiVisible, true)
   DEFINE_VARIANT(Main, varSdrDevice, "no device")
-  DEFINE_VARIANT(Main, varDeviceFile, "")
-  DEFINE_VARIANT(Main, varPresetChannel, "")
-  DEFINE_VARIANT(Main, varPresetSId, 0)
-  DEFINE_VARIANT(Main, varChannel, "")
+  DEFINE_VARIANT(Main, varDeviceFilePlayerId, 0)
+  DEFINE_VARIANT(Main, varPresetCh, "")
+  DEFINE_VARIANT(Main, varPresetFId, 0)
+  DEFINE_VARIANT(Main, varPresetFSId, 0) // SId for file mode
+  DEFINE_VARIANT(Main, varPresetCSId, 0) // CSId for channel mode
   DEFINE_VARIANT(Main, varUpdateCheckTime, QDateTime())
+  DEFINE_WIDGET(Main, cbAutoNextService)
   DEFINE_WIDGET(Main, sliderVolume)
 CATEGORY_END(Main)
 
 CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configuration" as category name in ini file instead of "Config"
   DEFINE_POS_SIZE(Config)
-  DEFINE_VARIANT_NODEF(Config, varPicturesPath) // with ..._NODEF the defaults are set later in the code
-  DEFINE_VARIANT_NODEF(Config, varMotPath)
-  DEFINE_VARIANT_NODEF(Config, varEpgPath)
+  DEFINE_VARIANT_NODEF(Config, varDataBasePath5) // with ..._NODEF the default is set later in the code, "5" is for >= v5 DABstar version
   DEFINE_VARIANT_NODEF(Config, varSkipFile)
   DEFINE_VARIANT_NODEF(Config, varTiiFile)
   DEFINE_VARIANT(Config, varBrowserAddress, "http://localhost")
@@ -73,8 +75,8 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_WIDGET(Config, cbUseUtcTime)
   DEFINE_WIDGET(Config, cbAlwaysOnTop)
   DEFINE_WIDGET(Config, cbManualBrowserStart)
-  DEFINE_WIDGET(Config, cmbMotObjectSaving)
-  DEFINE_WIDGET(Config, cmbEpgObjectSaving)
+  DEFINE_WIDGET(Config, cmbMotObjectSaving5)
+  DEFINE_WIDGET(Config, cmbEpgObjectSaving5)
   DEFINE_WIDGET(Config, cbSaveTransToCsv)
   DEFINE_WIDGET(Config, cbUseDcAvoidance)
   DEFINE_WIDGET(Config, cbDoDcCorrOnly)
@@ -87,6 +89,7 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_WIDGET(Config, cmbSoundOutput)
   DEFINE_WIDGET(Config, cbCheckForUpdates)
   DEFINE_WIDGET(Config, sbUpdateCheckDays)
+  DEFINE_WIDGET(Config, sbPeakLevelDelay)
 CATEGORY_END(Config)
 
 CATEGORY_BEGIN(SpectrumViewer)
@@ -149,6 +152,21 @@ CATEGORY_BEGIN(FileReaderWav)
   DEFINE_POS_SIZE(FileReaderWav)
 CATEGORY_END(FileReaderWav)
 
+CATEGORY_BEGIN(EnsembleList)
+  DEFINE_POS_SIZE_NAMED(EnsembleList, posAndSizeChMode)
+  DEFINE_POS_SIZE_NAMED(EnsembleList, posAndSizeFMode)
+  DEFINE_WIDGET(EnsembleList, ledPathToScan)
+  DEFINE_WIDGET(EnsembleList, cbShowELNoSignal)
+  DEFINE_WIDGET(EnsembleList, cbShowELNotScanned)
+  DEFINE_WIDGET(EnsembleList, cbShowELScanned)
+  DEFINE_WIDGET(EnsembleList, spMinFileSizeMB);
+  DEFINE_VARIANT(EnsembleList, varShowSLCurChOnlyChMode, false)
+  DEFINE_VARIANT(EnsembleList, varShowSLCurChOnlyFMode, true)
+  DEFINE_VARIANT(EnsembleList, varUiVisible, true)
+  DEFINE_VARIANT(EnsembleList, varSortCol, 0)
+  DEFINE_VARIANT(EnsembleList, varSortDesc, false)
+CATEGORY_END(EnsembleList)
+
 CATEGORY_BEGIN(FibContentViewer)
   DEFINE_POS_SIZE(FibContentViewer)
 CATEGORY_END(FibContentViewer)
@@ -165,6 +183,7 @@ CATEGORY_END(Journaline)
 #undef CATEGORY_BEGIN_NEW_NAME
 #undef CATEGORY_END
 #undef DEFINE_POS_SIZE
+#undef DEFINE_POS_SIZE_NAMED
 #undef DEFINE_VARIANT_NODEF
 #undef DEFINE_VARIANT
 #undef DEFINE_WIDGET

@@ -25,8 +25,7 @@
 //	We use a straightforward class "eladLoader"  both as
 //	loader and as container	for the dll functions.
 
-#ifndef	__ELAD_LOADER__
-#define	__ELAD_LOADER__
+#pragma once
 #include	"dab-constants.h"
 #include	<stdint.h>
 #include	<libusb-1.0/libusb.h>
@@ -77,6 +76,5 @@ const	char		*cwLibname;
 	i32		theRate;
 };
 
-#endif
 
 

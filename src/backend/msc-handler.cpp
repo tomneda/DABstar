@@ -93,7 +93,7 @@ void MscHandler::stop_all_services()
   QMutexLocker lock(&mMutex);
   for (auto & b: mBackendList)
   {
-    qDebug() << "Stopping SId" << b->serviceId << "SubChannel" << b->subChId << "ProcessFlag" << (b->processFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
+    qDebug() << "Stopping SId" << Qt::hex << Qt::showbase << b->serviceId << Qt::dec << "SubChannel" << b->subChId << "ProcessFlag" << (b->processFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
     b->stop_running();
     b.reset();
   }
@@ -115,7 +115,7 @@ bool MscHandler::is_service_running(const i32 iSubChId, const EProcessFlag iProc
 
 bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, const EProcessFlag iProcessFlag)
 {
-  qInfo() << "Create backend" << mBackendList.size() + 1 << "for SId" << d->SId
+  qInfo() << "Create backend" << mBackendList.size() + 1 << "for SId" <<  Qt::hex << Qt::showbase << d->SId
           << "and ServiceLabel" << (d->serviceLabel.isEmpty() ? "(Unknown yet)" : d->serviceLabel.trimmed())
           << "Audio" << (ipoAudioBuffer != nullptr) << "Data" << (ipoDataBuffer != nullptr)
           << "ProcessFlag" << (iProcessFlag == EProcessFlag::Primary ? "Primary" : "Secondary");

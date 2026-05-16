@@ -10,8 +10,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef DABSTAR_FIB_HELPER_H
-#define DABSTAR_FIB_HELPER_H
+#pragma once
 
 #include <QString>
 #include <chrono>
@@ -51,4 +50,3 @@ public:
 };
 
 
-#endif //DABSTAR_FIB_HELPER_H

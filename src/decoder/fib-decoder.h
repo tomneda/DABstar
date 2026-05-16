@@ -10,8 +10,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  FIB_DECODER_H
-#define  FIB_DECODER_H
+#pragma once
 
 #include "fib-decoder_if.h"
 #include "fib-config-fig0.h"
@@ -45,7 +44,7 @@ public:
   const QString & get_service_label_from_SId_SCIdS(u32, i32) const override;
   void get_SId_SCIdS_from_service_label(const QString & iServiceLabel, u32 & oSId, i32 & oSCIdS) const override;
   u8 get_ecc() const override;
-  i32 get_ensembleId() const override;
+  i32 get_EId() const override;
   QString get_ensemble_name() const override;
   std::vector<i8> get_sub_channel_id_list() const override;
   void get_sub_channel_info(SChannelData *, i32) const override;
@@ -147,4 +146,3 @@ private slots:
   void _slot_timer_check_state_and_print_FIGs();
 };
 
-#endif

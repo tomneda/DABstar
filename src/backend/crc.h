@@ -34,8 +34,6 @@
 //	all rights are acknowledged.
 
 #pragma once
-#ifndef  CRC_H
-#define  CRC_H
 
 #include "glob_data_types.h"
 //#include <cstdint>
@@ -44,4 +42,3 @@ u16 calc_crc(const u8 * const data, const i32 length);
 bool check_crc_bytes(const u8 * const msg, const i32 len);
 bool check_CRC_bits(const u8 * const iIn, const i32 iSize);
 
-#endif

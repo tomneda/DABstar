@@ -47,8 +47,7 @@
  *
  */
 
-#ifndef __CPP_LOG__
-#define __CPP_LOG__
+#pragma once
 
 #ifdef _MSC_VER
 #pragma warning(push,3)
@@ -71,4 +70,3 @@
 #define endmsg std::endl; }
 
 
-#endif

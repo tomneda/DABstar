@@ -1,5 +1,4 @@
-#ifndef  RSP_DEVICE_H
-#define  RSP_DEVICE_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <QObject>
@@ -41,6 +40,5 @@ signals:
   void signal_show_lnaGain(i32);
 };
 
-#endif
 
 

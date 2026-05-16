@@ -30,45 +30,21 @@
  */
 
 #include  "audio-display.h"
-#include  "color-selector.h"
 #include  <QColor>
 #include  <QPen>
-#include  <qwt_plot_picker.h>
-#include  <qwt_picker_machine.h>
 
 AudioDisplay::AudioDisplay(DabRadio * mr, QwtPlot * plotGrid, QSettings * dabSettings)
   : mpRadioInterface(mr)
   , mpDabSettings(dabSettings)
   , pPlotGrid(plotGrid)
 {
-  dabSettings->beginGroup(SETTING_GROUP_NAME);
-  QString colorString = dabSettings->value("gridColor", "#5e5c64").toString();
-  this->GridColor = QColor(colorString);
-  colorString = dabSettings->value("curveColor", "#62a0ea").toString();
-  this->mCurveColor = QColor(colorString);
-  dabSettings->endGroup();
-
-  mGrid.setMajorPen(QPen(GridColor, 0, Qt::DashLine));
-  mGrid.setMinorPen(QPen(GridColor, 0, Qt::NoPen));
+  mGrid.setMajorPen(QPen(QColor(0x5e5c64), 0, Qt::DashLine));
+  mGrid.setMinorPen(QPen(QColor(0x5e5c64), 0, Qt::NoPen));
   mGrid.enableXMin(false);
   mGrid.enableYMin(false);
   mGrid.attach(plotGrid);
-  QwtPlotPicker * pLmPicker = new QwtPlotPicker(plotGrid->canvas());
-  QwtPickerMachine * pLPickerMachine = new QwtPickerClickPointMachine();
 
-  pLmPicker->setStateMachine(pLPickerMachine);
-  pLmPicker->setMousePattern(QwtPlotPicker::MouseSelect1, Qt::RightButton);
-
-#ifdef _WIN32
-  // It is strange, the non-macro based variant seems not working on windows, so use the macro-base version here.
-  connect(pLmPicker, SIGNAL(selected(const QPointF&)), this, SLOT(_slot_rightMouseClick(const QPointF &)));
-#else
-  // The non macro-based variant is type-secure so it should be preferred.
-  // Clang-glazy mentioned that QwtPlotPicker::selected would be no signal, but it is?!
-  connect(pLmPicker, qOverload<const QPointF &>(&QwtPlotPicker::selected), this, &AudioDisplay::_slot_rightMouseClick);
-#endif
-
-  mSpectrumCurve.setPen(QPen(mCurveColor, 2.0));
+  mSpectrumCurve.setPen(QPen(QColor(0x62a0ea), 2.0));
   mSpectrumCurve.setOrientation(Qt::Horizontal);
   mSpectrumCurve.attach(plotGrid);
 
@@ -129,25 +105,4 @@ void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const i32 iNu
 
   mSpectrumCurve.setSamples(mXDispBuffer.data(), mYDispBuffer.data(), cDisplaySize);
   pPlotGrid->replot();
-}
-
-void AudioDisplay::_slot_rightMouseClick(const QPointF & point)
-{
-  (void)point;
-
-  if (!ColorSelector::show_dialog(GridColor, ColorSelector::GRIDCOLOR))
-  {
-    return;
-  }
-
-  if (!ColorSelector::show_dialog(mCurveColor, ColorSelector::CURVECOLOR))
-  {
-    return;
-  }
-
-  mpDabSettings->beginGroup(SETTING_GROUP_NAME);
-  mpDabSettings->setValue("gridColor", GridColor.name());
-  mpDabSettings->setValue("curveColor", mCurveColor.name());
-  mpDabSettings->endGroup();
-  mSpectrumCurve.setPen(QPen(this->mCurveColor, 2.0));
 }

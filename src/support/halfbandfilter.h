@@ -15,8 +15,7 @@
  */
 
 
-#ifndef HALFBANDFILTER_H
-#define HALFBANDFILTER_H
+#pragma once
 
 #include "glob_defs.h"
 #include <cstdlib>
@@ -43,4 +42,3 @@ private:
   std::vector<SLevel> mLevelVec;
 };
 
-#endif // HALFBANDFILTER_H

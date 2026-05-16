@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	EPG_DECODER2_H
-#define	EPG_DECODER2_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <QObject>
@@ -146,5 +145,4 @@ signals:
   void signal_set_epg_data(int, int, const QString &, const QString &);
 };
 
-#endif
 

@@ -29,8 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef  WATERFALLSCOPE_H
-#define  WATERFALLSCOPE_H
+#pragma once
 
 #include <QObject>
 #include <qwt_plot_spectrogram.h>
@@ -65,4 +64,3 @@ public slots:
   void slot_scaling_changed(i32);
 };
 
-#endif

@@ -30,8 +30,7 @@
  *   Software.
  */
 
-#ifndef  FFT_COMPLEX_H
-#define  FFT_COMPLEX_H
+#pragma once
 
 #include "glob_defs.h"
 
@@ -82,4 +81,3 @@ bool Fft_convolve(const cmplx xvec[], const cmplx yvec[], cmplx outvec[], size_t
 }
 #endif
 
-#endif

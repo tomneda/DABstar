@@ -1,5 +1,4 @@
-#ifndef LIBLOADER_H
-#define LIBLOADER_H
+#pragma once
 
 #ifndef __linux__
 #  include <windows.h>
@@ -168,4 +167,3 @@ private:
     pSetFrequency m_setFrequency              { nullptr };
 };
 
-#endif // LIBLOADER_H

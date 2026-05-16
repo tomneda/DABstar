@@ -24,8 +24,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef	__RTP_STREAMER
-#define	__RTP_STREAMER
+#pragma once
 
 #include	<dab-constants.h>
 #include	<QString>
@@ -64,5 +63,4 @@ RingBuffer<float>	*inBuffer;
 	int		mapTable_int [481];
 	float		mapTable_float [481];
 };
-#endif
 

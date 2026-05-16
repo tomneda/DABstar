@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2013, 2014, 2015, 2016, 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,11 +28,10 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include	"mapport.h"
-#include	<QFormLayout>
-#include	<QVBoxLayout>
-#include	<QPushButton>
-
+#include "mapport.h"
+#include <QFormLayout>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include "setting-helper.h"
 
 MapPortHandler::MapPortHandler()
@@ -42,7 +49,7 @@ MapPortHandler::MapPortHandler()
   total->addWidget(acceptButton);
   setLayout(total);
   mapPortSetting->setText(Settings::Config::varMapPort.read().toString());
-  connect(acceptButton, SIGNAL(clicked ()), this, SLOT(handle_acceptButton ()));
+  connect(acceptButton, &QPushButton::clicked, this, &MapPortHandler::_slot_handle_accept_button);
   show();
 }
 
@@ -54,7 +61,7 @@ MapPortHandler::~MapPortHandler()
   delete acceptButton;
 }
 
-void MapPortHandler::handle_acceptButton()
+void MapPortHandler::_slot_handle_accept_button()
 {
   Settings::Config::varMapPort.write(mapPortSetting->text());
   QDialog::done(0);

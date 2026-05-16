@@ -62,7 +62,7 @@
 /// handling of NML (news markup language for Journaline) data
 ///
 /// @file       NML.h
-/// @author     Michael Reichenbächer <rbr@iis.fraunhofer.de>
+/// @author     Michael Reichenbcher <rbr@iis.fraunhofer.de>
 ///
 /// $Id: NML.h,v 1.3 2008/12/26 20:04:53 jcable Exp $
 ///
@@ -76,8 +76,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef _NML_H_
-#define _NML_H_
+#pragma once
 
 #ifdef _MSC_VER
 #pragma warning(push,3)
@@ -392,4 +391,3 @@ private:
 };
 
 
-#endif

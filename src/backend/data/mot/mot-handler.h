@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  MOT_HANDLER_H
-#define  MOT_HANDLER_H
+#pragma once
 
 #include  "dab-constants.h"
 #include  "virtual-datahandler.h"
@@ -64,5 +63,4 @@ private:
   MotObject * getHandle(u16);
 };
 
-#endif
 

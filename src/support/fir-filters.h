@@ -22,8 +22,7 @@
  *
  */
 
-#ifndef __FIR_LOWPASSFILTER__
-#define __FIR_LOWPASSFILTER__
+#pragma once
 
 #include	"dab-constants.h"
 #include	<vector>
@@ -47,5 +46,4 @@ private:
 	f32		frequency;
 };
 
-#endif
 

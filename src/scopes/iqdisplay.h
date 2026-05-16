@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  IQDISPLAY_H
-#define  IQDISPLAY_H
+#pragma once
 
 #include  "glob_enums.h"
 #include  "dab-constants.h"
@@ -83,5 +82,4 @@ private:
   static SCustPlot _get_plot_type_data(const EIqPlotType iPlotType);
 };
 
-#endif
 

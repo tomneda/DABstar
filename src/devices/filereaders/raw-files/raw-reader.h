@@ -28,8 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  RAW_READER_H
-#define  RAW_READER_H
+#pragma once
 
 #include  <QThread>
 #include  "dab-constants.h"
@@ -70,7 +69,7 @@ private:
 
 signals:
   void signal_set_progress(i32, f32);
+  void signal_file_looped();
 };
 
-#endif
 

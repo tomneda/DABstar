@@ -14,8 +14,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PHASE_CARR_DISP_H
-#define PHASE_CARR_DISP_H
+#pragma once
 
 #include "glob_enums.h"
 #include <qwt.h>
@@ -75,4 +74,3 @@ private:
   void _setup_x_axis();
 };
 
-#endif // PHASE_CARR_DISP_H

@@ -28,9 +28,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-#ifndef  BANDHANDLER_H
-#define  BANDHANDLER_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <QComboBox>
@@ -42,17 +40,29 @@
 #include <QtXml>
 #include <cstdio>
 
-struct SDabFrequencies;
-
 class BandHandler : public QObject
 {
 Q_OBJECT
 public:
+  enum class EBand
+  {
+    BAND_III,
+    L_BAND,
+    A_BAND
+  };
+
+  struct SDabFrequencies
+  {
+    QString channel;
+    i32 fKHz;
+    bool skip;
+  };
+
   BandHandler(const QString &, QSettings *);
   ~BandHandler() override;
 
   void saveSettings();
-  void setupChannels(QComboBox * s, u8 band);
+  void setupChannels(QComboBox * s, EBand iBand);
   void setup_skipList(const QString &);
   i32 get_frequency_Hz(const QString & Channel) const;
   i32 firstChannel() const;
@@ -61,6 +71,7 @@ public:
   void show();
   void hide();
   bool isHidden() const;
+  QVector<SDabFrequencies> get_channel_entry_list() const;
 
 public slots:
   void slot_cell_selected(i32, i32) const;
@@ -76,6 +87,3 @@ private:
   void file_skipList(const QString &) const;
   void updateEntry(const QString &) const;
 };
-
-#endif
-

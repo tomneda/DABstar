@@ -129,6 +129,7 @@ void WavReader::jump_to_relative_position_per_mill(i32 iPerMill)
 void WavReader::run()
 {
   connect(this, &WavReader::signal_set_progress, mpParent, &WavFileHandler::slot_set_progress);
+  connect(this, &WavReader::signal_file_looped, mpParent, &WavFileHandler::signal_file_looped);
 
   sf_seek(mpFile, 0, SEEK_SET);
 
@@ -141,7 +142,7 @@ void WavReader::run()
   {
     while (mRunning.load() && mpRingBuffer->get_ring_buffer_write_available() < cBufferSize)
     {
-      usleep(100);
+      usleep(1000);  // use minimum 1000us as Windows will ignore smaller values
     }
 
     if (mSetNewFilePos >= 0)
@@ -175,6 +176,7 @@ void WavReader::run()
       {
         break;
       }
+      emit signal_file_looped();
     }
 
     if (mSampleRate != INPUT_RATE)

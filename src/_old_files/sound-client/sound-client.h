@@ -27,8 +27,7 @@
  *	have the sound locally
  */
 
-#ifndef	__SOUND_CLIENT__
-#define	__SOUND_CLIENT__
+#pragma once
 #include	"sound-constants.h"
 #include	<QDialog>
 #include	<QSettings>
@@ -69,6 +68,5 @@ private:
 	                                 int16_t	*);
 	QTimer		*connectionTimer;
 };
-#endif
 
 

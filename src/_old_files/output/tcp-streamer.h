@@ -24,8 +24,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __TCP_STREAMER__
-#define	__TCP_STREAMER__
+#pragma once
 
 #include	"dab-constants.h"
 #include	"ringbuffer.h"
@@ -57,5 +56,4 @@ public slots:
 signals:
 	void			handleSamples		(void);
 };
-#endif
 

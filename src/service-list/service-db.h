@@ -10,9 +10,7 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-#ifndef DABSTAR_SERVICE_DB_H
-#define DABSTAR_SERVICE_DB_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <QtSql/QSqlDatabase>
@@ -20,16 +18,18 @@
 class QTableView;
 class QAbstractItemModel;
 
-class ServiceDB
+class ServiceDB : public QObject
 {
+  Q_OBJECT
 public:
   explicit ServiceDB(const QString iDbFileName); // copy is intended
   ~ServiceDB();
 
   enum class EDataMode
   {
-    Permanent,
-    Temporary
+    DevicePlayer,
+    FilePlayer
+    // Temporary
   };
 
   enum EColIdx
@@ -41,24 +41,35 @@ public:
     CI_MAX 
   };
 
+  enum class ESortDir
+  {
+    ChangeSortDirection,
+    KeepSortDirection,  // keep sorting-direction only if same column is chosen again, else it is forced to ascend sorting
+    ForceSortAsc,
+    ForceSortDesc
+  };
+
   void set_data_mode(EDataMode iDataMode);
   void open_db();
   void create_table();
   void delete_table(const bool iDeleteFavorites);
   bool add_entry(const QString & iChannel, const QString & iServiceLabel, u32 iSId);
   bool delete_entry(const QString & iChannel, u32 iSId);
-  void sort_column(EColIdx iColIdx, bool iForceSortAsc);
-  bool is_sort_desc() const;
+  bool delete_channel(const QString & iChannel);
+  void sort_column(EColIdx iColIdx, ESortDir iSortDir);
+
   void set_favorite(const QString & iChannel, u32 iSId, bool iIsFavorite) const;
   void retrieve_favorites_from_backup_table();
-  QAbstractItemModel * create_model();
+  [[nodiscard]] QList<QString> get_list_of_channels() const;
+  [[nodiscard]] bool is_sort_desc() const;
+  QAbstractItemModel * create_model(const QString & iFilterToFIdOrCh);
 
 private:
   QSqlDatabase mDB;
   QString mDbFileName;
   EColIdx mSortColIdx = CI_Service;
   bool mSortDesc = false;
-  EDataMode mDataMode = EDataMode::Permanent;
+  EDataMode mDataMode = EDataMode::DevicePlayer;
 
   [[nodiscard]] QString _error_str() const;
   void _delete_db_file();
@@ -68,5 +79,3 @@ private:
   void _set_favorite(const QString & iChannel, u32 iSId, bool iIsFavorite, bool iStoreInFavTable) const;
   [[nodiscard]] const QString & _cur_tab_name() const;
 };
-
-#endif

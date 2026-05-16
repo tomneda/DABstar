@@ -16,8 +16,7 @@
 
 // Keep this Qt-free as also needed for Qt-free libs
 
-#ifndef GLOB_DEFS_H
-#define GLOB_DEFS_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <complex>
@@ -277,14 +276,14 @@ inline i32 get_range_from_bit_depth(i32 iBitDepth)
   return range;
 }
 
-template<typename T> inline T fft_shift(const T iIdx, const i32 iFftSize)
+template<i32 FftSize, typename T> inline T fft_shift(const T iIdx)
 {
-  return (iIdx < 0 ? iIdx + iFftSize : iIdx);
+  return (iIdx < 0 ? iIdx + FftSize : iIdx);
 }
 
-template<typename T> inline T fft_shift_skip_dc(const T iIdx, const i32 iFftSize)
+template <i32 FftSize, typename T> inline T fft_shift_skip_dc(const T iIdx)
 {
-  return (iIdx < 0 ? iIdx + iFftSize : iIdx + 1);
+  return (iIdx < 0 ? iIdx + FftSize : iIdx + 1);
 }
 
 inline std::string cmplx_to_polar_str(const cf32 & iVal)
@@ -294,4 +293,13 @@ inline std::string cmplx_to_polar_str(const cf32 & iVal)
   return s.str();
 }
 
-#endif // GLOB_DEFS_H
+template<typename T> inline T constrain_pi(const T iVal)
+{
+  // constrains iVal to [0, 2*pi[
+  constexpr T c2Pi = (2 * M_PI);
+  if (0 <= iVal && iVal < c2Pi) return iVal;
+  else if (iVal >= c2Pi)        return fmod(iVal, c2Pi);
+  else if (iVal > -c2Pi)        return iVal + c2Pi;
+  else                          return c2Pi - fmod(-iVal, c2Pi);
+}
+

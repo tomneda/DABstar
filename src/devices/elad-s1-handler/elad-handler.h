@@ -21,8 +21,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __ELAD_HANDLER__
-#define	__ELAD_HANDLER__
+#pragma once
 
 #include	<QObject>
 #include	<QFrame>
@@ -85,5 +84,4 @@ private:
         f32		mapTable_float	[INPUT_RATE / 1000];
 	i32		convIndex;
 };
-#endif
 

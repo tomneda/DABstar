@@ -14,7 +14,7 @@
    <string>Pluto control</string>
   </property>
   <property name="toolTip">
-   <string>Pluto support is experimental. I do not have one so testing was limited.</string>
+   <string>Pluto support is experimental. Testing has been limited.</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -55,7 +55,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="toolTip">
-      <string>Experimental interface for Adalm Pluto. No garantees!!</string>
+      <string>Experimental interface for the ADALM-PLUTO. No guarantees.</string>
      </property>
      <property name="text">
       <string>Pluto interface</string>
@@ -81,9 +81,7 @@
      <item>
       <widget class="QPushButton" name="filterButton">
        <property name="toolTip">
-        <string>The filter button. The pluto has a possibility of loading a filter configuration and enabling (or
-disabling it). By default a filter configuration is loaded and enabled. The text on the button states what the effect of touching it is. If the button text reads &quot;filter on&quot;, it therefore means that the
-filter is disabled, but will be enabled by touching the button.</string>
+        <string>Load and enable or disable a filter configuration on the Pluto. A filter is loaded and enabled by default. The button label shows the current state: &quot;filter on&quot; means the filter is currently disabled and will be enabled on click.</string>
        </property>
        <property name="text">
         <string>filter</string>

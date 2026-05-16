@@ -1,5 +1,4 @@
-#ifndef SSE2NEON_H
-#define SSE2NEON_H
+#pragma once
 
 // This header file provides a simple API translation layer
 // between SSE intrinsics to their corresponding Arm/Aarch64 NEON versions
@@ -4148,4 +4147,3 @@ FORCE_INLINE u64 _mm_crc32_u64(u64 crc, u64 v)
 #pragma pop_macro("FORCE_INLINE")
 #endif
 
-#endif

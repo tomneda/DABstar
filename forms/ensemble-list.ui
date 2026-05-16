@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ensembleList</class>
+ <widget class="QWidget" name="ensembleList">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1137</width>
+    <height>378</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Ensemble List</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="3,0,0,0,1">
+   <item>
+    <widget class="QTableView" name="tblEnsembleList"/>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>8</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Progress bar while scanning&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="value">
+      <number>24</number>
+     </property>
+     <property name="textVisible">
+      <bool>false</bool>
+     </property>
+     <property name="format">
+      <string notr="true"/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="ContainerFilter" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QPushButton" name="btnResetDataBase">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clear the current database&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The channel list and the file list databases are stored separately.&lt;/p&gt;&lt;p&gt;Use this if you experience inconsistencies in the data (which should not normally occur).&lt;/p&gt;&lt;p&gt;Note: a large file list may take a long time to rescan afterwards.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Reset database</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnRemoveFilesWithoutSignal">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Remove entries detected as 'No signal' during scanning&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Removes file list entries that contain no valid sample data.&lt;/p&gt;&lt;p&gt;Activate the &amp;quot;No signal&amp;quot; filter to enable this button. Only the highlighted (reddish) rows will be removed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Remove 'No signal' files</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_2">
+        <property name="styleSheet">
+         <string notr="true">background-color: #333333;</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="Line" name="line_5">
+        <property name="styleSheet">
+         <string notr="true">background-color: #333333;</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblShowInList">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose one or more filters on the right to filter the list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The filter state may change automatically in certain situations.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Show in ensemble list:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbShowELNotScanned">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show entries not yet scanned&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Entries are shown with a greenish background.&lt;/p&gt;&lt;p&gt;No metadata has been collected for these entries yet. Clicking an entry (or using &amp;quot;Auto scan&amp;quot;) will attempt to scan it. If scanning fails, the entry becomes &amp;quot;No signal&amp;quot;; otherwise it becomes &amp;quot;Scanned&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Not scanned</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbShowELScanned">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show valid scanned entries&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The entries are shown with a grayish background. &lt;/p&gt;&lt;p&gt;These are the main entries to use. Clicking an entry activates the file or channel, resuming the last played service (or the first in the service list).&lt;/p&gt;&lt;p&gt;If an entry can no longer be received, it moves to the &amp;quot;No signal&amp;quot; state.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Scanned</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbShowELNoSignal">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show invalid scanned entries where no valid signal could be detected&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The entries are shown with a reddish background. &lt;/p&gt;&lt;p&gt;These entries had no valid signal detected. Clicking an entry will attempt to rescan it.&lt;/p&gt;&lt;p&gt;For files, you can remove all reddish entries using &amp;quot;Remove 'No signal' files&amp;quot;. This is not available for channel lists.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>No signal</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_4">
+        <property name="styleSheet">
+         <string notr="true">background-color: #333333;</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="Line" name="line_6">
+        <property name="styleSheet">
+         <string notr="true">background-color: #333333;</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbShowSLCurChOnly">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Filter the service list (main window) to show only the current ensemble&lt;/span&gt;&lt;/p&gt;&lt;p&gt;A convenience filter for a quicker overview of the available services.&lt;/p&gt;&lt;p&gt;This is activated automatically after &amp;quot;Add a single file to play&amp;quot;.&lt;/p&gt;&lt;p&gt;This setting is stored separately for channel and file playback.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Show current ensemble in service list only</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_10">
+        <property name="styleSheet">
+         <string notr="true">background-color: #333333;</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnScanStart">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Automatically scan all entries in the current list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Only the currently visible (filtered) list is scanned. Use the filter controls to select what to scan.&lt;/p&gt;&lt;p&gt;This is equivalent to clicking each row individually, except that no service is played during the scan.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Auto scan</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="containerFilePath" native="true">
+     <layout class="QHBoxLayout" name="horLayoutFilePath">
+      <item>
+       <widget class="QPushButton" name="btnPathToScan">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select the base folder for sample files&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the base folder containing one or more sample data files. The chosen path is shown to the right.&lt;/p&gt;&lt;p&gt;Use &amp;quot;Add files in folder to list&amp;quot; to add all files in the selected folder (and subfolders) to the ensemble list as &amp;quot;Not scanned&amp;quot; entries (greenish).&lt;/p&gt;&lt;p&gt;You can repeat this with a different base folder to add more files.&lt;/p&gt;&lt;p&gt;Invalid sample files are permitted; they will eventually be marked as &amp;quot;No signal&amp;quot;. File types are detected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Folder with files to add</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="ledPathToScan">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;The base folder for the files to add&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use the &amp;quot;Folder with files to add&amp;quot; button to choose the folder, or type the path directly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnAddFilesInPath">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add the files from the given base folder (left) to the ensemble list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Add all files from the selected base folder to the ensemble list.&lt;/p&gt;&lt;p&gt;Only files of at least 4 MB are accepted. Use the spin box on the right to set a higher minimum file size to exclude files that are too short to be useful.&lt;/p&gt;&lt;p&gt;Files are added with the state &amp;quot;Not scanned&amp;quot; (greenish entries). You can repeat this with a different folder to add more files.&lt;/p&gt;&lt;p&gt;Invalid sample files are permitted; they will eventually be marked as &amp;quot;No signal&amp;quot;. File types are detected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Add files in folder to list</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spMinFileSizeMB">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Minimum file size in MB&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Files smaller than 4 MB are always ignored.&lt;/p&gt;&lt;p&gt;Increase this value to exclude files with too short a playback duration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="minimum">
+         <number>4</number>
+        </property>
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+        <property name="stepType">
+         <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="styleSheet">
+         <string notr="true">background-color: #333333;</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnAddSingleFile">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add a single file to the ensemble list and start it immediately&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This replaces the former &amp;quot;Eject&amp;quot; button on the main window.&lt;/p&gt;&lt;p&gt;The chosen file is added to the ensemble list if not already present. If it already exists, it is selected and played immediately.&lt;/p&gt;&lt;p&gt;The minimum file size setting is ignored (only the absolute 4 MB minimum applies).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Add a single file and play</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="teScanResult">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Status output&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Status output, including warnings and errors.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -83,10 +83,5 @@ private:
   fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex *)mFftOutBuffer.data(), FFTW_ESTIMATE)};
 #endif
 
-  QColor GridColor;
-  QColor mCurveColor;
   i32 mSampleRateLast = 0;
-
-private slots:
-  void _slot_rightMouseClick(const QPointF &);
 };

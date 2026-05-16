@@ -73,8 +73,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RINGBUFFER_H
-#define RINGBUFFER_H
+#pragma once
 
 #include "glob_defs.h"
 #include <array>
@@ -485,5 +484,4 @@ extern RingBufferFactory<ci16> sRingBufferFactoryCmplx16;
 extern RingBufferFactory<f32>   sRingBufferFactoryFloat;
 extern RingBufferFactory<cf32>   sRingBufferFactoryCmplx;
 
-#endif
 

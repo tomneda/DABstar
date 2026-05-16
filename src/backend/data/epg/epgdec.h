@@ -27,8 +27,7 @@
  *
 \******************************************************************************/
 
-#ifndef _EPGDEC_H
-#define _EPGDEC_H
+#pragma once
 
 #include "glob_data_types.h"
 #include <vector>
@@ -78,5 +77,4 @@ protected:
 	int iYear, iDay, iMonth;
 };
 
-#endif
 

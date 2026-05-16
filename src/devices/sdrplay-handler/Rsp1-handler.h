@@ -18,8 +18,7 @@
  *    along with Qt-Dab if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef  RSP1_HANDLER_H
-#define  RSP1_HANDLER_H
+#pragma once
 
 #include	"Rsp-device.h"
 
@@ -35,6 +34,5 @@ public:
 	bool set_lna(i32 lnaState) override;
 };
 
-#endif
 
 

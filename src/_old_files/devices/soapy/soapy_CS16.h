@@ -19,8 +19,7 @@
  *    along with Qt-DAB if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	SOAPY_CS16
-#define	SOAPY_CS16
+#pragma once
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Formats.hpp>
@@ -48,4 +47,3 @@ private:
   bool running;
 };
 
-#endif
