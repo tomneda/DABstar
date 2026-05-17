@@ -32,7 +32,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"4.99.0\\\"
+DEFINES		+= PRJ_VERS=\\\"5.0.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -114,9 +114,14 @@ INCLUDEPATH += \
 
 HEADERS += \
     src/main/dabradio.h \
+    src/main/audio_manager.h \
+    src/main/epg_mot_handler.h \
+    src/main/tii_manager.h \
+    src/main/gap_progress_bar.h \
     src/main/dab_channel_desc.h \
     src/main/glob_defs.h \
     src/main/glob_enums.h \
+    src/main/glob_data_types.h \
     src/main/dab-processor.h \
     src/main/dab-constants.h \
     src/main/mot-content-types.h \
@@ -176,6 +181,9 @@ HEADERS += \
     src/audio/audiooutput.h \
     src/audio/audiooutputqt.h \
     src/audio/audioiodevice.h \
+    src/audio/test_tone.h \
+    src/audio/delay_line.h \
+    src/audio/resampler.h \
     src/support/fir-filters.h \
     src/support/ringbuffer.h \
     src/support/techdata.h \
@@ -237,7 +245,10 @@ SOURCES += \
     src/main/main.cpp \
     src/main/dabradio.cpp \
     src/main/dabradio_ui.cpp \
-    src/main/dabradio_audio.cpp \
+    src/main/dabradio_dump.cpp \
+    src/main/audio_manager.cpp \
+    src/main/epg_mot_handler.cpp \
+    src/main/tii_manager.cpp \
     src/main/dabradio_el.cpp \
     src/main/dabradio_ctrl.cpp \
     src/main/dab_channel_desc.cpp \
@@ -293,6 +304,7 @@ SOURCES += \
     src/backend/data/mot/mot-dir.cpp \
     src/backend/data/data-processor.cpp \
     src/audio/audioiodevice.cpp \
+    src/audio/test_tone.cpp \
     src/audio/audiooutputqt.cpp \
     src/support/fir-filters.cpp \
     src/support/ringbuffer.cpp \

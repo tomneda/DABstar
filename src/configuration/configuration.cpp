@@ -57,9 +57,6 @@ Configuration::Configuration(DabRadio * ipRI) :
 
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
-  // btnSelectBasePath->setIconSize(QSize(16, 16));
-  // btnSelectBasePath->setFixedSize(QSize(24, 24));
-
   // register UI elements to setting manager and provide default setting
   Settings::Config::sbTiiThreshold.register_widget_and_update_ui_from_setting(sbTiiThreshold, 8);
   Settings::Config::sbTiiSubId.register_widget_and_update_ui_from_setting(sbTiiSubId, 2);

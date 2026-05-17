@@ -787,6 +787,11 @@ void DabRadio::slot_name_of_ensemble(const i32 iEId, const QString & iEnsName, c
 
 void DabRadio::_slot_handle_content_button()
 {
+  if (mpDabProcessor == nullptr)
+  {
+    return;
+  }
+
   if (mpFibContentTable != nullptr)
   {
     const bool isShown = mpFibContentTable->is_visible();

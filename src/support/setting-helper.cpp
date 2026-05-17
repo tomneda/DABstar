@@ -288,8 +288,11 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidt
     }
     else
     {
-      const auto curHeight = iopWidget->height();
+      iopWidget->adjustSize();
+      const i32 curWidth = iopWidget->width();
+      const i32 curHeight = iopWidget->height();
       iopWidget->setFixedHeight(curHeight); // fix the current height
+      iopWidget->setMaximumWidth(curWidth);
     }
   }
 }
