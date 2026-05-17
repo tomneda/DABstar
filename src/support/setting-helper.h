@@ -83,7 +83,7 @@ class PosAndSize
 public:
   explicit PosAndSize(const QString & iCat);
   PosAndSize(const QString & iCat, const QString & iName);
-  void read_widget_geometry(QWidget * iopWidget, i32 iWidthDef = -1, i32 iHeightDef = -1, bool iIsFixedSized = false) const;
+  void read_widget_geometry(QWidget * const iopWidget, bool iIsFixedWidth = false, bool iIsFixedHeight = false, i32 iWidthOffs = 0, i32 iHeightOffs = 0) const;
   void write_widget_geometry(const QWidget * ipWidget) const;
 
 private:

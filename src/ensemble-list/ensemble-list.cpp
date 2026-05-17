@@ -53,6 +53,7 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
 
   mpDbHandler.reset(new EnsembleListDbHandler(iDbFileName, ui->tblEnsembleList));
   mpDbHandler->set_data_mode(EnsembleListDbHandler::EDataMode::Device);
+  mListMode = EListMode::PlayFromDevice;
 
   mBandHandler.setupChannels(nullptr, BandHandler::EBand::BAND_III);
   const QString skipFileName = Settings::Config::varSkipFile.read().toString();
@@ -60,7 +61,7 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
 
   if (_get_nr_rows_in_table() == 0) // only for EnsembleListDbHandler::EDataMode::Device
   {
-    _add_channel_entries_to_db();
+    _slot_handle_reset_data_base_button();
   }
 
   connect(&mFrame, &CustomFrame::signal_frame_closed, []{ Settings::EnsembleList::varUiVisible.write(false); });
@@ -83,9 +84,9 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   connect(ui->cbShowELNoSignal, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
 #endif
 
-  Settings::EnsembleList::cbShowELNoSignal.register_widget_and_update_ui_from_setting(ui->cbShowELNoSignal, 0);
-  Settings::EnsembleList::cbShowELNotScanned.register_widget_and_update_ui_from_setting(ui->cbShowELNotScanned, 0);
-  Settings::EnsembleList::cbShowELScanned.register_widget_and_update_ui_from_setting(ui->cbShowELScanned, 0);
+  Settings::EnsembleList::cbShowELNoSignal.register_widget_and_update_ui_from_setting(ui->cbShowELNoSignal, 2);
+  Settings::EnsembleList::cbShowELNotScanned.register_widget_and_update_ui_from_setting(ui->cbShowELNotScanned, 2);
+  Settings::EnsembleList::cbShowELScanned.register_widget_and_update_ui_from_setting(ui->cbShowELScanned, 2);
   Settings::EnsembleList::spMinFileSizeMB.register_widget_and_update_ui_from_setting(ui->spMinFileSizeMB, 100);
 
   _slot_handle_ensemble_list_filter();

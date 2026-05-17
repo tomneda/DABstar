@@ -37,7 +37,7 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
 
   setupUi(&mFrame);
 
-  Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame, 310, 640, true);
+  Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame, true, true);
 
   formLayout->setLabelAlignment(Qt::AlignLeft);
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon

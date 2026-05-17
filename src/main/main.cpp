@@ -58,6 +58,12 @@ i32 main(i32 argc, char ** argv)
   const QString dBVersionNr = "04"; // to ensure same database version for service list and ensemble list
 
   const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
+  if (!QDir().mkpath(configPath))
+  {
+    qFatal() << "Could not create directory:" << configPath;
+    return -1;
+  }
+
   const QString initFileName02 = QDir::toNativeSeparators(configPath +  "settings02.ini");
   const QString initFileName03 = QDir::toNativeSeparators(configPath +  "settings03.ini");
   const QString dbServiceListFileName = QDir::toNativeSeparators(configPath + QString("servicelist%1.db").arg(dBVersionNr));

@@ -51,7 +51,7 @@ TiiListDisplay::TiiListDisplay()
   mpWidget->setWindowTitle("TII list");
   mpWidget->setWidget(mpTableWidget.get());
 
-  Settings::TiiViewer::posAndSize.read_widget_geometry(mpWidget.get(), 660, 250, false);
+  Settings::TiiViewer::posAndSize.read_widget_geometry(mpWidget.get());
 
   connect(mpWidget.get(), &CustomScrollArea::signal_frame_closed, this, &TiiListDisplay::signal_frame_closed);
 }

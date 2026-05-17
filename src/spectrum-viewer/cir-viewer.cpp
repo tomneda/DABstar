@@ -20,7 +20,7 @@ CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
 
   setupUi(&mFrame);
 
-  Settings::CirViewer::posAndSize.read_widget_geometry(&mFrame, 500, 250, false);
+  Settings::CirViewer::posAndSize.read_widget_geometry(&mFrame);
 
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mFrame.hide();

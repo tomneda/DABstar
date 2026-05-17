@@ -78,7 +78,7 @@ DabProcessor::~DabProcessor()
     wait(); // This blocks the destructor until run() actually returns
   }
   fftwf_destroy_plan(mFftPlan);  // destroy this only after the accessing thread has really finished
-  qWarning() << "DabProcessor has stopped";
+  qDebug() << "DabProcessor has stopped";
 }
 
 void DabProcessor::start()

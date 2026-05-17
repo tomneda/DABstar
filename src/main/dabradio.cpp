@@ -78,8 +78,6 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   , mOpenFileDialog(ipSettings)
   , mDeviceSelector(ipSettings)
 {
-  // qRegisterMetaType<FilePlayer::SScanResult>("FilePlayer::SScanResult");
-
   // "mProcessParams" is introduced to reduce the number of parameters for the dabProcessor
   mProcessParams.spectrumBuffer = mpSpectrumBuffer;
   mProcessParams.iqBuffer = mpIqBuffer;
@@ -100,7 +98,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
 
   setWindowTitle(PRJ_NAME);
 
-  Settings::Main::posAndSize.read_widget_geometry(this, (cShowSIdInServiceList ? 40 : 0) + 730, 0 /*560*/, true);
+  Settings::Main::posAndSize.read_widget_geometry(this, false, true, 0, 30 /*reserve height of dyn. info fields*/);
   Settings::Main::cbAutoNextService.register_widget_and_update_ui_from_setting(ui->cbAutoNextService, 0);
 
   mpServiceListHandler.reset(new ServiceListHandler(iServiceListDbFileName, ui->tblServiceList));
@@ -149,9 +147,9 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
 
   _show_or_hide_windows_from_config();
 
-
   // Preselect if it is device or file mode, this finally starts the DAB processor
   const i32 deviceFilePlayerId = Settings::Main::varDeviceFilePlayerId.read().toInt(); // device or file player?
+
   _slot_service_list_src_change(deviceFilePlayerId);
 
   QTimer::singleShot(5000, this, &DabRadio::_slot_check_for_update);
@@ -401,11 +399,6 @@ void DabRadio::_slot_handle_reset_button()
 
 void DabRadio::_slot_handle_spectrum_button()
 {
-  if (!mIsChannelRunning)
-  {
-    return;
-  }
-
   mpSpectrumViewer->setVisible(mpSpectrumViewer->is_hidden());
   Settings::SpectrumViewer::varUiVisible.write(!mpSpectrumViewer->is_hidden());
 }

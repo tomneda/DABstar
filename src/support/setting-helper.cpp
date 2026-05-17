@@ -261,39 +261,59 @@ PosAndSize::PosAndSize(const QString & iCat, const QString & iName)
 : mKey(iCat + "/" + iName)
 {}
 
-void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef /*= -1*/, const i32 iHeightDef /*= -1*/, const bool iIsFixedSized /*= false*/) const
+// void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef /*= -1*/, const i32 iHeightDef /*= -1*/, const bool iIsFixedSized /*= false*/, i32 iHeightOffs /*= 0*/) const
+void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, i32 iWidthOffs /*= 0*/, i32 iHeightOffs /*= 0*/) const
 {
   const i32 x = Storage::instance().value(mKey + "-x", -1).toInt();
   const i32 y = Storage::instance().value(mKey + "-y", -1).toInt();
-  const i32 w = Storage::instance().value(mKey + "-w", iWidthDef).toInt();
-  const i32 h = Storage::instance().value(mKey + "-h", iHeightDef).toInt();
+  const i32 w = Storage::instance().value(mKey + "-w", -1).toInt();
+  const i32 h = Storage::instance().value(mKey + "-h", -1).toInt();
 
   if (x >= 0 && y >= 0) // entries valid?
   {
     iopWidget->move(QPoint(x, y));
   }
 
-  if (w > 0 && h > 0) // entries valid?
+  // const i32 curWidth = iopWidget->width();
+  // const i32 curHeight = iopWidget->height();
+  iopWidget->adjustSize();
+  i32 newWidth = iopWidget->width();
+  i32 newHeight = iopWidget->height();
+
+  // qDebug() << "Window adjustment" << iopWidget->objectName() << curWidth << curHeight << "->" << newWidth << newHeight << iHeightOffs;
+
+  if (iIsFixedWidth)
   {
-    iopWidget->resize(QSize(w, h));
+    iopWidget->setFixedWidth(newWidth);
+  }
+  else if (w > 0)
+  {
+    iopWidget->resize(QSize(w, newHeight));
+    newWidth = iopWidget->width();
+    // qDebug() << "Window width adjustment" << iopWidget->objectName() << w << newWidth << newHeight;
+  }
+  else
+  {
+    iopWidget->resize(QSize(newWidth + iWidthOffs, newHeight));
+    newWidth = iopWidget->width();
+    // qDebug() << "Window height adjustment (w invalid)" << w << newWidth << newHeight;
   }
 
-  if (iIsFixedSized) // overwrite read settings if fixed-sized in width and height, take only over the position
+  if (iIsFixedHeight)
   {
-    // switch-off fix-size-width as the final width fits not always on different platforms (Windows, XFCE, Gnome, ...), so better let Qt decide.
-    // iopWidget->setFixedSize(QSize(iWidthDef, iHeightDef));
-    if (iHeightDef > 0)
-    {
-      iopWidget->setFixedHeight(iHeightDef);
-    }
-    else
-    {
-      iopWidget->adjustSize();
-      const i32 curWidth = iopWidget->width();
-      const i32 curHeight = iopWidget->height();
-      iopWidget->setFixedHeight(curHeight); // fix the current height
-      iopWidget->setMaximumWidth(curWidth);
-    }
+    iopWidget->setFixedHeight(newHeight + iHeightOffs); // the extra height is for dynamic elements which are not known yet
+  }
+  else if (h > 0)
+  {
+    iopWidget->resize(QSize(newWidth, h)); // iHeightOffs is already included in h
+    // newHeight = iopWidget->height();
+    // qDebug() << "Window height adjustment" << iopWidget->objectName() << h << newWidth << newHeight;
+  }
+  else
+  {
+    iopWidget->resize(QSize(newWidth, newHeight + iHeightOffs));
+    // newHeight = iopWidget->height();
+    // qDebug() << "Window height adjustment (h invalid)" << iopWidget->objectName() << h << newWidth << newHeight;
   }
 }
 

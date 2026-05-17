@@ -337,7 +337,10 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::DevicePlayer);
     const QString ch = Settings::Main::varPresetCh.read().toString();
     const u32 sIdNext = Settings::Main::varPresetCSId.read().toUInt();
-    emit signal_FId_or_Ch_selected(ch, sIdNext);
+    if (!ch.isEmpty()) // is empty at first start
+    {
+      emit signal_FId_or_Ch_selected(ch, sIdNext);
+    }
     break;
   }
 
@@ -354,7 +357,10 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::FilePlayer);
     const QString fId = Settings::Main::varPresetFId.read().toString();
     const u32 sIdNext = Settings::Main::varPresetFSId.read().toUInt();
-    emit signal_FId_or_Ch_selected(fId, sIdNext);
+    if (!fId.isEmpty()) // is empty at first start
+    {
+      emit signal_FId_or_Ch_selected(fId, sIdNext);
+    }
     break;
   }
   }

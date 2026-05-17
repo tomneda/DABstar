@@ -49,7 +49,7 @@ public:
   EnsembleList(const QString & iDbFileName);
   ~EnsembleList() override;
 
-  enum class EListMode { Invalid, PlayFromFiles, PlayFromDevice };
+  enum class EListMode { Invalid, PlayFromDevice, PlayFromFiles };
   void set_list_mode(EListMode iListMode);
   EListMode get_list_mode() const { return mListMode; }
   const BandHandler & get_band_handler() { return mBandHandler; }
@@ -92,6 +92,7 @@ private:
   [[nodiscard]] i32 _get_nr_rows_in_table() const;
   bool _get_ident_info_from_row_idx(SIdentInfoEL & oIdentInfo, i32 iRowIdx);
   void _signal_ident_info(const SIdentInfoEL & iIdentInfo);
+  void _update_remove_invalid_files_button_state() const;
 
 public slots:
   void slot_select_FId_or_Ch(const QString & iFIdOrCh, u32 iSId);   // trigger this will sent signal_file_or_channel_to_play back to DabRadio
@@ -104,7 +105,6 @@ private slots:
   void _slot_handle_path_with_files_to_add_button();
   void _slot_handle_add_files_in_path();
   void _slot_handle_add_single_file();
-  void _update_remove_invalid_files_button_state() const;
   void _slot_handle_ensemble_list_filter(int iState = 0);
   void _slot_handle_show_current_FId_or_Ch_only(int iState);
   void _slot_handle_table_click(const QModelIndex &index);

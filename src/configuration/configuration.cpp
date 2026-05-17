@@ -53,14 +53,14 @@ Configuration::Configuration(DabRadio * ipRI) :
 {
   setupUi(this);
 
-  Settings::Config::posAndSize.read_widget_geometry(this, 895, 0, true);
+  Settings::Config::posAndSize.read_widget_geometry(this, false, true);
 
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   // register UI elements to setting manager and provide default setting
   Settings::Config::sbTiiThreshold.register_widget_and_update_ui_from_setting(sbTiiThreshold, 8);
   Settings::Config::sbTiiSubId.register_widget_and_update_ui_from_setting(sbTiiSubId, 2);
-  Settings::Config::cbCloseDirect.register_widget_and_update_ui_from_setting(cbCloseDirect, 0);
+  Settings::Config::cbCloseDirect.register_widget_and_update_ui_from_setting(cbCloseDirect, 2);
   Settings::Config::cbUseStrongestPeak.register_widget_and_update_ui_from_setting(cbUseStrongestPeak, 0);
   Settings::Config::cbUseNativeFileDialog.register_widget_and_update_ui_from_setting(cbUseNativeFileDialog, 0);
   Settings::Config::cbUseNativeIqFormat.register_widget_and_update_ui_from_setting(cbUseNativeIqFormat, 2);

@@ -79,7 +79,7 @@ FibContentTable::FibContentTable(DabRadio * ipDabRadio, QSettings * /*s*/, const
   , mpDabRadio(ipDabRadio)
 {
   mpScrollArea.reset(new QScrollArea(nullptr));
-  Settings::FibContentViewer::posAndSize.read_widget_geometry(mpScrollArea.get(), 400, 400);;
+  Settings::FibContentViewer::posAndSize.read_widget_geometry(mpScrollArea.get());;
   mpScrollArea->setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mpScrollArea->setWindowTitle("FIB content of current ensemble");
   mpScrollArea->setWidgetResizable(true);
