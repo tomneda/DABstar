@@ -22,7 +22,7 @@
 #ifdef __WITH_FDK_AAC__
   #include <aacdecoder_lib.h>
 #else
-  #include <faad.h> // faad2
+  #include <neaacdec.h> // faad2
 #endif
 #ifdef HAVE_LIQUID
   #include <liquid/liquid.h>
@@ -60,7 +60,12 @@ QString get_copyright_text()
   QString faadVers;
 #else
   QString usedDecoder = ", libfaad";
-  QString faadVers = "Faad " + QString(FAAD2_VERSION) + "<br>";
+  char * faadIdString = nullptr;
+  char * faadCopyrightString = nullptr;
+  NeAACDecGetVersion(&faadIdString, &faadCopyrightString);
+  QString faadVers = (faadIdString != nullptr ? "Faad " + QString(faadIdString) : QString("Faad unknown")) +
+                     // "  (" + (faadCopyrightString != nullptr ? QString(faadCopyrightString) : QString("")) + ")"
+                     + "<br>";
   QString fdkVers;
 #endif
 
