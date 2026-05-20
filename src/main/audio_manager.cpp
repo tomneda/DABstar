@@ -25,14 +25,6 @@
 #include <cstdio>
 #include <qwt_thermo.h>
 
-static void seconds_to_timestring(char * text, const uint32_t timer)
-{
-  const int sec  = timer % 60;
-  const int min  = (timer / 60) % 60;
-  const int hour = timer / 3600;
-  sprintf(text, "%d:%02d:%02d", hour, min, sec);
-}
-
 AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   : QObject(parent)
   , mpAudioBufferFromDecoder(cfg.pAudioBufferFromDecoder)
@@ -104,6 +96,11 @@ AudioManager::~AudioManager()
   }
 }
 
+QString AudioManager::_seconds_to_timestring(const u32 iTimer) const
+{
+  return QString::asprintf("%d:%02d:%02d", iTimer / 3600, (iTimer / 60) % 60, iTimer % 60);
+}
+
 void AudioManager::stop_audio_output()
 {
   emit signal_stop_audio();
@@ -117,19 +114,16 @@ void AudioManager::stop_all_dumping()
   _stop_audio_dumping();
 }
 
-void AudioManager::update_dump_timers()
+void AudioManager::update_dump_timers() const
 {
   if (mpAudioFrameDumper != nullptr)
   {
-    char text[10];
-    seconds_to_timestring(text, mFrameDumpTimer++);
-    mpTechDataWidget->framedumpButton->setText(text);
+    mpTechDataWidget->framedumpButton->setText(_seconds_to_timestring(mFrameDumpTimer++));
   }
+
   if (mAudioDumpState == EAudioDumpState::Running)
   {
-    char text[10];
-    seconds_to_timestring(text, mAudioDumpTimer++);
-    mpTechDataWidget->audiodumpButton->setText(text);
+    mpTechDataWidget->audiodumpButton->setText(_seconds_to_timestring(mAudioDumpTimer++));
   }
 }
 

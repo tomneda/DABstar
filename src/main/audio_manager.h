@@ -67,7 +67,7 @@ public:
 
   void stop_audio_output();   // called when channel/app stops
   void stop_all_dumping();    // stop WAV and frame dump (called when channel stops)
-  void update_dump_timers();  // called every second from DabRadio's display timer
+  void update_dump_timers() const;  // called every second from DabRadio's display timer
 
   // Called from DabRadio wrappers (not slots — invoked directly)
   void new_audio(i32 iAmount, u32 iAudioSampleRate, u32 iAudioFlags);
@@ -158,6 +158,7 @@ private:
   void _start_audio_frame_dumping();
   void _stop_audio_frame_dumping();
   void _emphasize_pushbutton(QPushButton * ipPB, bool iEmphasize) const;
+  QString _seconds_to_timestring(const u32 iTimer) const;
 
 private slots:
   void _slot_audio_level_decay_timeout();
