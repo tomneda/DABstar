@@ -406,7 +406,7 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
   switch (timeSyncState)
   {
   case TimeSyncer::EState::TIMESYNC_ESTABLISHED:
-    if (timeSyncState != mTimeSyncerStateLast)  qDebug() << "Time sync established";
+    // if (timeSyncState != mTimeSyncerStateLast)  qDebug() << "Time sync established";
     mTimeSyncAttemptCount = 0;
     return true;
   case TimeSyncer::EState::NO_DIP_FOUND:
@@ -442,13 +442,13 @@ void DabProcessor::activate_cir_viewer(bool iActivate)
 
 bool DabProcessor::is_service_running(const SDescriptorType & iDT, const EProcessFlag iProcessFlag) const
 {
-  assert(!mScanMode);
+  // assert(!mScanMode);
   return mMscHandler.is_service_running(iDT.SubChId, iProcessFlag);
 }
 
 bool DabProcessor::is_service_running(const i32 iSubChId, const EProcessFlag iProcessFlag) const
 {
-  assert(!mScanMode);
+  // assert(!mScanMode);
   return mMscHandler.is_service_running(iSubChId, iProcessFlag);
 }
 

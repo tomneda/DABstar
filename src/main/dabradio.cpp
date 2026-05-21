@@ -173,7 +173,10 @@ void DabRadio::_slot_device_selected(const QString & iDeviceName)
   _create_new_input_device_and_dab_processor(iDeviceName);
   const QString ch = Settings::Main::varPresetCh.read().toString();
   const u32 sIdNext = Settings::Main::varPresetCSId.read().toUInt();
-  emit signal_FId_or_Ch_selected(ch, sIdNext);
+  if (!ch.isEmpty() && ch != "0")
+  {
+    emit signal_FId_or_Ch_selected(ch, sIdNext);
+  }
 }
 
 // might be called when scanning only from DAB processor and security timer
@@ -495,7 +498,6 @@ void DabRadio::_slot_service_changed(const QString & iFIdOrCh, const QString & /
   if (!mIsScanning)
   {
     emit signal_FId_or_Ch_selected(iFIdOrCh, iSId);
-    // _start_playing(iChannel, iSId);
   }
 }
 
@@ -505,7 +507,6 @@ void DabRadio::slot_handle_fib_content_selector(const u32 iSId)
   if (!mIsScanning)
   {
     emit signal_FId_or_Ch_selected(mChannelDesc.get_fId_or_ch(), iSId);
-    // _start_playing(mChannelDesc.get_fId_or_ch(), iSId);
   }
 }
 

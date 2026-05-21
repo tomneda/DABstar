@@ -86,6 +86,11 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
 
   _slot_handle_ensemble_list_filter();
 
+  if (_get_nr_rows_in_table() == 0) // init device database if not existing
+  {
+    _slot_handle_reset_data_base_button();
+  }
+
   if (Settings::EnsembleList::varUiVisible.read().toBool())
   {
     mFrame.show();
@@ -101,7 +106,7 @@ EnsembleList::~EnsembleList()
   delete ui;
 }
 
-void EnsembleList::_add_channel_entries_to_db()
+void EnsembleList::_add_channel_entries_to_db() const
 {
   const auto channelList = mBandHandler.get_channel_entry_list();
 
@@ -115,11 +120,7 @@ void EnsembleList::_add_channel_entries_to_db()
     }
   }
 
-  if (!channelList.isEmpty()) // start with first entry
-  {
-    _log_to_result_display(ELogType::INFOACK, QString("Added %1 channels to list").arg(channelList.size()));
-    slot_select_FId_or_Ch(channelList.first().channel, 0);
-  }
+  _log_to_result_display(ELogType::INFOACK, QString("Added %1 channels to list").arg(_get_nr_rows_in_table()));
 }
 
 i32 EnsembleList::_get_nr_rows_in_table() const
@@ -142,11 +143,6 @@ void EnsembleList::set_list_mode(const EListMode iListMode)
   }
 
   mpDbHandler->set_data_mode(dataMode);
-
-  if (!mpDbHandler->is_table_existing(dataMode) || _get_nr_rows_in_table() == 0) // init database if not existing
-  {
-    _slot_handle_reset_data_base_button();
-  }
 
   _read_pos_and_size(); // restore geometry for the incoming mode
   _setup_ui_regarding_list_mode();
@@ -376,7 +372,7 @@ void EnsembleList::slot_decoded_data_status(const SScanResultEL & iResult)
   }
 
   case EInfoReason::NewSId:
-    _log_to_result_display(ELogType::INFOACK, "New SId detected: " + iResult.S0Ws.sIdPlayed, 1);
+    _log_to_result_display(ELogType::INFOACK, "New SId selected: " + iResult.S0Ws.sIdPlayed, 1);
     if (iResult.S0Ws.get_sid_played() > 0)
     {
       mpDbHandler->insert_or_update_entry(ed, EnsembleListDB::EDbDataType::UpdateLastPlayedSId);

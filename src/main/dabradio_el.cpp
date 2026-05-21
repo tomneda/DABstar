@@ -73,10 +73,10 @@ void DabRadio::_slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo)
 // This is called by the EnsembleList to start or stop a scan (both for device and file scan)
 void DabRadio::_slot_start_stop_scan(const bool iIsScanning)
 {
-  if (!mIsChannelRunning)
-  {
-    return;
-  }
+  // if (!mIsChannelRunning)
+  // {
+  //   return;
+  // }
 
   if (iIsScanning && !mIsScanning)
   {
@@ -337,7 +337,7 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::DevicePlayer);
     const QString ch = Settings::Main::varPresetCh.read().toString();
     const u32 sIdNext = Settings::Main::varPresetCSId.read().toUInt();
-    if (!ch.isEmpty()) // is empty at first start
+    if (!ch.isEmpty() && ch != "0") // is empty at first start
     {
       emit signal_FId_or_Ch_selected(ch, sIdNext);
     }
@@ -357,7 +357,7 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::FilePlayer);
     const QString fId = Settings::Main::varPresetFId.read().toString();
     const u32 sIdNext = Settings::Main::varPresetFSId.read().toUInt();
-    if (!fId.isEmpty()) // is empty at first start
+    if (!fId.isEmpty() && fId != "0") // is empty at first start
     {
       emit signal_FId_or_Ch_selected(fId, sIdNext);
     }

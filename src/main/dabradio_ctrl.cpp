@@ -23,6 +23,7 @@ void DabRadio::_create_and_init_dab_processor()
   mpEpgMotHandler->set_dab_processor(mpDabProcessor.get());
   mpTiiManager->set_dab_processor(mpDabProcessor.get());
 
+  mpDabProcessor->set_scan_mode(mIsScanning);
   mpDabProcessor->set_sync_on_strongest_peak(Settings::Config::cbUseStrongestPeak.read().toBool());
   mpDabProcessor->set_dc_avoidance_algorithm(Settings::Config::cbUseDcAvoidance.read().toBool());
   mpDabProcessor->set_dc_and_iq_correction(Settings::Config::cbDoDcCorrOnly.read().toBool() || Settings::Config::cbDoDcAndIqCorr.read().toBool(),
