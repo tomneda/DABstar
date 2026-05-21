@@ -85,7 +85,7 @@ private:
   void _setup_ui_regarding_scan_mode(bool iScanMode) const;
   QString _add_file_to_file_scan_list(const QString & iFileName, i64 iMinFileSize) const;
   void _signal_FId_or_Ch_from_table_index(i32 iRowIdx, u32 iSId = 0);
-  void _add_channel_entries_to_db() const;
+  void _add_channel_entries_to_db();
   QString _get_FId_or_Ch_from_table_index(i32 iRowIdx) const;
   const QString & _list_mode_str(const QString & iTextDeviceMode, const QString & iTextFileMode) const;
   void _set_EL_filter_check_states_active() const;

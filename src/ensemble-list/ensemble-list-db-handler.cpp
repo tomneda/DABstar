@@ -175,6 +175,11 @@ void EnsembleListDbHandler::create_new_table()
   _fill_table_view_from_db();
 }
 
+bool EnsembleListDbHandler::is_table_existing(const EDataMode iDataMode) const
+{
+  return mEnsembleListDb.is_table_existing(iDataMode);
+}
+
 i32 EnsembleListDbHandler::set_selector(const QString & iFIdOrCh)
 {
   mFIdOrChLast = iFIdOrCh;

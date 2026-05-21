@@ -110,6 +110,13 @@ void EnsembleListDB::delete_table()
   _exec_simple_query("DROP TABLE IF EXISTS " + _cur_tab_name() + ";");
 }
 
+bool EnsembleListDB::is_table_existing(const EDataMode iDataMode) const
+{
+  assert(iDataMode != EDataMode::Invalid);
+  const QString & tabName = (iDataMode == EDataMode::Device ? sTabDeviceEnsList : sTabFileEnsList);
+  return mDB.tables().contains(tabName);
+}
+
 bool EnsembleListDB::insert_or_update_entry(const SDbEntryData & iEntryData, const EDbDataType iDataType) const
 {
   // add new entry (UNIQUE constraint on FId will cause REPLACE if it already exists due to CREATE TABLE definition)

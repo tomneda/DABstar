@@ -115,6 +115,7 @@ public:
   void open_db();
   void create_table();
   void delete_table();
+  [[nodiscard]] bool is_table_existing(EDataMode iDataMode) const;
   bool insert_or_update_entry(const SDbEntryData & iEntryData, EDbDataType iDataType) const;
   bool delete_entry(const QString & iFIdOrCh) const;
   bool delete_invalid_entries() const;
@@ -137,4 +138,3 @@ private:
   void _exec_simple_query(const QString & iQuery);
   [[nodiscard]] const QString & _cur_tab_name() const;
 };
-

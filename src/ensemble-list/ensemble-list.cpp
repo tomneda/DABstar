@@ -59,11 +59,6 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   const QString skipFileName = Settings::Config::varSkipFile.read().toString();
   mBandHandler.setup_skipList(skipFileName);
 
-  if (_get_nr_rows_in_table() == 0) // only for EnsembleListDbHandler::EDataMode::Device
-  {
-    _slot_handle_reset_data_base_button();
-  }
-
   connect(&mFrame, &CustomFrame::signal_frame_closed, []{ Settings::EnsembleList::varUiVisible.write(false); });
   connect(ui->btnResetDataBase, &QPushButton::clicked, this, &EnsembleList::_slot_handle_reset_data_base_button);
   connect(ui->btnRemoveFilesWithoutSignal, &QPushButton::clicked, this, &EnsembleList::_slot_handle_remove_invalid_entries_button);
@@ -106,7 +101,7 @@ EnsembleList::~EnsembleList()
   delete ui;
 }
 
-void EnsembleList::_add_channel_entries_to_db() const
+void EnsembleList::_add_channel_entries_to_db()
 {
   const auto channelList = mBandHandler.get_channel_entry_list();
 
@@ -118,6 +113,12 @@ void EnsembleList::_add_channel_entries_to_db() const
       ed.key.fIdOrCh = entry.channel;
       mpDbHandler->insert_or_update_entry(ed, EnsembleListDB::EDbDataType::InsertKeyAndS0WsData); // this will overwrite existing entries in the DB
     }
+  }
+
+  if (!channelList.isEmpty()) // start with first entry
+  {
+    _log_to_result_display(ELogType::INFOACK, QString("Added %1 channels to list").arg(channelList.size()));
+    slot_select_FId_or_Ch(channelList.first().channel, 0);
   }
 }
 
@@ -131,16 +132,20 @@ void EnsembleList::set_list_mode(const EListMode iListMode)
   _write_pos_and_size(); // save geometry for the outgoing mode before switching
 
   mListMode = iListMode;
+  EnsembleListDbHandler::EDataMode dataMode;;
 
   switch (mListMode)
   {
-  case EListMode::PlayFromFiles:
-    mpDbHandler->set_data_mode(EnsembleListDbHandler::EDataMode::Files);
-    break;
-  case EListMode::PlayFromDevice:
-    mpDbHandler->set_data_mode(EnsembleListDbHandler::EDataMode::Device);
-    break;
+  case EListMode::PlayFromFiles:  dataMode = EnsembleListDbHandler::EDataMode::Files;  break;
+  case EListMode::PlayFromDevice: dataMode = EnsembleListDbHandler::EDataMode::Device; break;
   default: qFatal("Invalid list mode");
+  }
+
+  mpDbHandler->set_data_mode(dataMode);
+
+  if (!mpDbHandler->is_table_existing(dataMode) || _get_nr_rows_in_table() == 0) // init database if not existing
+  {
+    _slot_handle_reset_data_base_button();
   }
 
   _read_pos_and_size(); // restore geometry for the incoming mode

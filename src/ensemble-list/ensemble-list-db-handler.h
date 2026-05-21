@@ -60,6 +60,7 @@ public:
   void set_data_mode(EDataMode iDataMode);
   void delete_table();
   void create_new_table();
+  [[nodiscard]] bool is_table_existing(EDataMode iDataMode) const;
   void insert_or_update_entry(const EnsembleListDB::SDbEntryData & iEntryData, EnsembleListDB::EDbDataType iDataType);
   bool delete_entry(const QString & iFIdOrCh);
   bool delete_invalid_entries();
@@ -95,4 +96,3 @@ private slots:
 signals:
   void signal_selection_changed(const QString & oFId);
 };
-

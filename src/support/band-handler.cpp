@@ -487,10 +487,7 @@ QVector<BandHandler::SDabFrequencies> BandHandler::get_channel_entry_list() cons
 
   for (i32 i = 0; selectedBand[i].channel != nullptr; i++)
   {
-    SDabFrequencies entry;
-    entry.channel = selectedBand[i].channel;
-    entry.fKHz = selectedBand[i].fKHz;
-    list.emplace_back(entry);
+    list.emplace_back(selectedBand[i]);
   }
 
   return list;
