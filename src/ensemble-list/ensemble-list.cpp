@@ -343,11 +343,20 @@ void EnsembleList::slot_decoded_data_status(const SScanResultEL & iResult)
 
   switch (iResult.infoReason)
   {
-  case EInfoReason::InvalidFile:
-    assert(mListMode == EListMode::PlayFromFiles);
-    _log_to_result_display(ELogType::INFONACK,  "Invalid file: " + iResult.S0Ws.fileName + "  (in path: " + iResult.S0Ws.filePath + ")", 1);
-    mpDbHandler->insert_or_update_entry(ed, EnsembleListDB::EDbDataType::UpdateSL1Failed);
-    mCountScanFailed++;
+  case EInfoReason::InvalidFileOrDevice:
+    if (mListMode == EListMode::PlayFromFiles)
+    {
+      _log_to_result_display(ELogType::INFONACK,  "Invalid file: " + iResult.S0Ws.fileName + "  (in path: " + iResult.S0Ws.filePath + ")", 1);
+      mpDbHandler->insert_or_update_entry(ed, EnsembleListDB::EDbDataType::UpdateSL1Failed);
+      mCountScanFailed++;
+    }
+    else if (mIsScanning)
+    {
+      _stop_scan_process();
+      _log_to_result_display(ELogType::ERROR2, "The scan was premature finished as there is no device selected yet");
+      return;
+    }
+
     break;
 
   case EInfoReason::NewFib:
@@ -566,6 +575,7 @@ void EnsembleList::_slot_handle_add_files_in_path()
       return;
     }
   }
+  _log_to_result_display(ELogType::INFOACK, QString("a %1 files to list").arg(fileCount));
 }
 
 void EnsembleList::_slot_handle_add_single_file()

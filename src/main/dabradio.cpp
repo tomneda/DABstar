@@ -972,7 +972,7 @@ void DabRadio::_start_scanning(SChannelDescriptor & ioChannelDesc)
   mScanResult = {};
   ui->lblDynLabel->setText(_get_scan_message(false));
 
-  mpDabProcessor->set_scan_mode(true); // avoid MSC activities
+  if (mpDabProcessor != nullptr) mpDabProcessor->set_scan_mode(true); // avoid MSC activities
 
   ui->rbDevicePlayer->setEnabled(false);
   ui->rbFilePlayer->setEnabled(false);
@@ -992,7 +992,7 @@ void DabRadio::_stop_scanning(SChannelDescriptor & ioChannelDesc)
 {
   if (mIsScanning)
   {
-    mpDabProcessor->set_scan_mode(false);
+    if (mpDabProcessor != nullptr) mpDabProcessor->set_scan_mode(false);
     ui->lblDynLabel->setText(_get_scan_message(true));
     mEnsListRetriggerTimer.stop();
     mScanSecurityTimer.stop();

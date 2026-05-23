@@ -50,12 +50,12 @@ void DabRadio::_slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo)
 
   if (mpInputDevice == nullptr)
   {
-    if (mIsFileMode)
+    _inform_ensemble_list(mChannelDesc.get_ident_info(), EInfoReason::InvalidFileOrDevice);
+    if (!mIsFileMode)
     {
-      _inform_ensemble_list(mChannelDesc.get_ident_info(), EInfoReason::InvalidFile);
-      return;
+      const QString warnMsg = "No input device found. Is a device selected?";
+      _write_warning_message(warnMsg);
     }
-    qWarning() << "No input device found. Is a device selected?";
     return;
   }
   assert(mpDabProcessor != nullptr);
@@ -73,11 +73,6 @@ void DabRadio::_slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo)
 // This is called by the EnsembleList to start or stop a scan (both for device and file scan)
 void DabRadio::_slot_start_stop_scan(const bool iIsScanning)
 {
-  // if (!mIsChannelRunning)
-  // {
-  //   return;
-  // }
-
   if (iIsScanning && !mIsScanning)
   {
     _start_scanning(mChannelDesc);
@@ -328,7 +323,6 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     // Switch to device mode
     mIsFileMode = false;
     mpTiiManager->set_file_mode(false);
-    // mChannelDesc.set_to_file_mode(false);
     _adapt_gui_for_device_or_file_play(true);
     _create_new_input_device_and_dab_processor(mChannelDesc.get_device_or_file_name());
     ui->cmbDeviceSelect->setEnabled(true);

@@ -55,12 +55,12 @@ enum class ESoftBitType  // adapt RadioInterface::get_soft_bit_gen_names() too i
 
 enum class EInfoReason // this is the info given back from DabRadio to the EnsembleList
 {
-  InvalidFile,   // a given file is invalid (e.g., it is an audio wav file)
-  NoNullSymbDet, // no null symbol detected
-  WeakSignalDet, // null symbol detected but no FIB decoding possible after a while
-  NewFib,        // FIB data decoded (inclusive ensemble name)
-  DeferredData,  // data which are received or evaluated later
-  NewSId         // service is already running, FIB loaded, only update current SID in service
+  InvalidFileOrDevice, // a given file is invalid (e.g., it is an audio wav file) or no given device
+  NoNullSymbDet,       // no null symbol detected
+  WeakSignalDet,       // null symbol detected but no FIB decoding possible after a while
+  NewFib,              // FIB data decoded (inclusive ensemble name)
+  DeferredData,        // data which are received or evaluated later
+  NewSId               // service is already running, FIB loaded, only update current SID in service
 };
 
 enum class EScanLevel // this is the info contained in EnsembleList or which to be retrieved from FIB/etc
