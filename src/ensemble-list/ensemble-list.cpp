@@ -266,8 +266,8 @@ QString EnsembleList::_add_file_to_file_scan_list(const QString & iFileName, con
 
   if (file.open(QIODevice::ReadOnly))
   {
-    file.seek(3 * 1024 * 1024); // the file size should be at least 4 MB, create the hash from this place to get more sure about the uniqueness of the sample data
-    const QByteArray buffer = file.read(64 * 1024);
+    file.seek(3LL * 1024LL * 1024LL); // the file size should be at least 4 MB, create the hash from this place to get more sure about the uniqueness of the sample data
+    const QByteArray buffer = file.read(64LL * 1024LL);
     const QByteArray sha1 = QCryptographicHash::hash(buffer, QCryptographicHash::Sha1);
     const QString fId = sha1.left(4).toHex();
 
@@ -553,11 +553,18 @@ void EnsembleList::_slot_handle_add_files_in_path()
 
   i64 minFileSize = ui->spMinFileSizeMB->value() * 1024 * 1024;
   if (minFileSize < cMinFileSize) minFileSize = cMinFileSize;
+  i32 fileCount = 0;
 
   while (it.hasNext())
   {
     const QString filePath = it.next();
     (void)_add_file_to_file_scan_list(filePath, minFileSize);
+    constexpr i32 cMaxFileCount = 10000; // plausibility check to not throttle the system
+    if (fileCount++ > cMaxFileCount)
+    {
+      _log_to_result_display(ELogType::ERROR2, QString("File folder contains more than %1 files. Is the correct base directory chosen?").arg(cMaxFileCount));
+      return;
+    }
   }
 }
 
