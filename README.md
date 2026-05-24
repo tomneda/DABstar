@@ -178,10 +178,10 @@ device or from pre-recorded IQ sample files.
 #### Two operation modes
 (Select them on the main window, left from the "EL" button)
 
-| Mode | Description |
-|------|-------------|
-| Device / Channel scan | Scans all standard DAB channels via the connected SDR device and stores the result for each channel. |
-| File scan | Scans a folder (or several folders) of recorded DAB IQ files and catalogs which ones contain valid signal data. |
+| Mode                  | Description                                                                                                     |
+|-----------------------|-----------------------------------------------------------------------------------------------------------------|
+| Device / Channel scan | Scans all standard DAB channels via the connected SDR device and stores the result for each channel.            |
+| File scan             | Scans a folder (or several folders) of recorded DAB IQ files and catalogs which ones contain valid signal data. |
 
 #### Controls
 
@@ -200,21 +200,21 @@ device or from pre-recorded IQ sample files.
 
 The table uses background colors to give a quick status overview:
 
-| Color | Meaning |
-|-------|---------|
+| Color    | Meaning                        |
+|----------|--------------------------------|
 | Greenish | Channel / file not yet scanned |
-| Grayish | Successfully scanned entry |
-| Reddish | No signal detected (failed) |
+| Grayish  | Successfully scanned entry     |
+| Reddish  | No signal detected (failed)    |
 
 #### Filter checkboxes
 
 Three filter checkboxes control which entries are visible in the table.
 Their state may be changed automatically when a certain scan situation arises.
 
-| Checkbox    | Shows |
-|-------------|-------|
-| Not scanned | Entries that have not been scanned yet |
-| Scanned     | Entries that already have scan data |
+| Checkbox    | Shows                                       |
+|-------------|---------------------------------------------|
+| Not scanned | Entries that have not been scanned yet      |
+| Scanned     | Entries that already have scan data         |
 | No signal   | Entries where no valid DAB signal was found |
 
 #### Stored data per ensemble
