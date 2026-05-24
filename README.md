@@ -2,6 +2,9 @@
 
 ## Table of Content
 <!-- TOC -->
+  * [Pictures from version V4.7.0 / V5.0.0](#pictures-from-version-v470--v500)
+    * [Ensemble List window (device mode)](#ensemble-list-window-device-mode)
+    * [Ensemble List window (file mode)](#ensemble-list-window-file-mode)
   * [Pictures from version V4.0.0 to V4.6.0](#pictures-from-version-v400-to-v460-)
     * [Main window](#main-window-)
     * [Scope Spectrum Correlation Statistic window](#scope-spectrum-correlation-statistic-window)
@@ -16,6 +19,12 @@
     * [Some of the device windows](#some-of-the-device-windows)
   * [Releases](#releases)
   * [Introduction and history](#introduction-and-history)
+  * [What is new in V4.7.0 and V5.0.0](#what-is-new-in-v470-and-v500)
+    * [Ensemble List](#ensemble-list)
+    * [Performance improvements with VOLK](#performance-improvements-with-volk)
+    * [Audio decoder improvements](#audio-decoder-improvements)
+    * [SDRplay and device improvements](#sdrplay-and-device-improvements)
+    * [Soapy SDR handler](#soapy-sdr-handler)
   * [V3.x.y](#v3xy)
   * [Version 2.3.0 and above](#version-230-and-above)
   * [What is new in 2.2.0](#what-is-new-in-220)
@@ -42,7 +51,29 @@
 <!-- TOC -->
 
 ---
-## Pictures from version V4.0.0 to V4.6.0 
+
+## Pictures from version V4.7.0 / V5.0.0
+
+### Ensemble List window (device mode)
+
+The Ensemble List in device/channel scan mode. The table shows all known DAB channels with their
+scan status, ensemble name, ensemble ID, ITU country code, signal quality (SNR/MER) and more.
+Color coding gives a quick overview: not-yet-scanned channels appear brownish, successfully scanned
+ones in a neutral dark color, and channels with no detectable signal are highlighted in red.
+
+![](res/for_readme/ensemble-list-device.png)
+
+### Ensemble List window (file mode)
+
+The Ensemble List in file playback mode. Here you can add recorded DAB IQ sample files,
+have them scanned automatically and keep track of which files contain usable DAB signals.
+The "Remove 'No signal' files" button helps clean up the list of invalid recordings.
+
+![](res/for_readme/ensemble-list-file.png)
+
+---
+
+## Pictures from version V4.0.0 to V4.6.0
 
 ### Main window                                 
 
@@ -122,6 +153,86 @@ As this README got meanwhile quite long, I cut off the description regarding ver
 it here: [README.md of V1.7.1](https://github.com/tomneda/DABstar/blob/649431e0f5297a5f44cd7aab0c016370e010ed3e/README.md)
 
 
+## What is new in V5.0.0
+
+### Ensemble List
+
+The biggest new addition in this development cycle is the **Ensemble List** — a dedicated window
+for cataloging and scanning DAB ensembles (groups of radio stations) either from a live SDR
+device or from pre-recorded IQ sample files.
+
+**How to open it:** Click the blue "EL" (Ensemble List) button in the main window toolbar.
+
+#### Two operation modes
+(Select them on the main window, left from the "EL" button)
+
+| Mode | Description                                                                                                      |
+|------|------------------------------------------------------------------------------------------------------------------|
+| **Device / Channel scan** | Scans all standard DAB channels via the connected SDR device and stores the result for each channel.             |
+| **File scan** | Scans a folder (or serveral folders) of recorded DAB IQ files and catalogs which ones contain valid signal data. |
+
+#### Controls
+
+| Control | Mode | Description |
+|---------|------|-------------|
+| **Reset database** | both | Clears the entire database for the current mode. Use this to force a complete rescan. *Note: rescanning a large set of files takes time.* |
+| **Auto Scan** | both | Scans all entries currently visible in the list. Individual rows can also be scanned by clicking them directly. |
+| **Remove 'No signal' files** | file only | Removes entries identified as containing no valid DAB signal. The "No signal" filter checkbox must be active to enable this button. |
+| **Folder with files to add** | file only | Specifies the folder path whose files will be added to the database. |
+| **Add files in folder to list** | file only | Adds all files from the selected folder to the database. Non-sample files are accepted and will be flagged as invalid during scanning. Minimum 4 MB per file; maximum 10 000 files to avoid system slowdown. |
+| **Minimum file size (MB)** | file only | Files smaller than this threshold are skipped when adding files to the database. |
+| **Add a single file and play** | file only | Adds one recording to the database and starts playback immediately. Replaces the former "Eject" button. If the file is already in the database it is selected and played. The minimum size threshold does not apply (only the hard 4 MB minimum). |
+
+#### Color coding in the table
+
+The table uses background colors to give a quick status overview:
+
+| Color | Meaning |
+|-------|---------|
+| Greenish | Channel / file not yet scanned |
+| Grayish | Successfully scanned entry |
+| Reddish | No signal detected (failed) |
+
+#### Filter checkboxes
+
+Three filter checkboxes control which entries are visible in the table.
+They may also be changed automatically when a certain scan situation arises.
+
+| Checkbox | Shows |
+|----------|-------|
+| **Not Scanned** | Entries that have not been scanned yet |
+| **Scanned** | Entries that already have scan data |
+| **No Signal** | Entries where no valid DAB signal was found |
+
+#### Stored data per ensemble
+
+The SQLite database stores the following information for each entry (exact fields differ between device and file mode):
+
+| Field | Description |
+|-------|-------------|
+| Channel / file path | DAB channel name (device mode) or full file path (file mode) |
+| FId | Unique file identifier — hash of part of the file content (file mode only) |
+| Ensemble name & EId | Human-readable ensemble name and its numeric ensemble ID |
+| ITU country code | Country of origin encoded per ITU standard |
+| Frequency / baseband offset | Nominal frequency (if known) and measured baseband offset |
+| Error protection | Error protection level and scheme parameters |
+| DSCTy / AppType | Service type information, e.g., Journaline, EPG |
+| SNR / MER | Signal-to-Noise Ratio and Modulation Error Ratio |
+| Last SId | Last played Service ID — used to resume the same service after switching ensembles |
+| Scan level | Highest scan level reached (not shown as a column in the list) |
+
+
+---
+
+### Performance improvements with VOLK
+
+Several parts (not only the OFDM decoder) use the [VOLK](https://www.libvolk.org/)
+(Vector-Optimized Library of Kernels) library for vectorized signal-processing operations.
+This noticeably reduces CPU load especially on machines with SSE/AVX capable processors.
+Volk version 3.3.0 or newer is recommended.
+
+---
+
 ## V3.x.y
 I and old-dab made big changes on the mainline, including the upgrade from Qt 5 to Qt 6.
 So, I decided to raise the major version to 3.
@@ -135,29 +246,26 @@ for a more detailed description of the changes.
 
 ## What is new in 2.2.0
 
-- A bigger fix replaying files regarding my new service list. 
-  There is still the small issue that the channel name does not (necessarily) fit to the file content.
-- There is only one file-reading dialog now. The file type selection happens in the file dialog field. 
-  It is selectable whether the QT or native file dialog should be shown.   
-- Improve error checking for file handling.
-- Refine the setting management. 
-  This causes that the setting file (in `~/.config/dabstar/`) got a new filename. 
-  So, the settings has to be put-in new.  
-  Same happens to the service-list database file, so possibly already made favorites got lost.
-  Sorry for that circumstance.
-- Small UI refinements.
-- Many small refinements under the hood.
+| Change | Details |
+|--------|---------|
+| File replay fix | Bigger fix for replaying files with the new service list. The channel name may still not match the file content exactly. |
+| Unified file dialog | Only one file-reading dialog now; file type is selected inside the dialog. Optionally use the native or Qt dialog. |
+| Error checking | Improved error checking for file handling. |
+| Settings management | Settings file in `~/.config/dabstar/` got a new filename — settings must be re-entered. The service-list database was also renamed, so previously stored favorites may be lost. |
+| UI refinements | Small UI improvements and various under-the-hood cleanups. |
 
 ## What is new in 2.1.0
 
-- Some minor fixes and refinings made.
-- Add status information to the main Widget, see below the MOT picture: 
-  - Show the ACC decoder input bit rate.
-  - Show whether Stereo mode is active.
-  - Show whether EPG (Electronic Program Guide) data are available
-  - Show whether SBR (Spectrum Band Replication) mode is active
-  - Show whether PS (Parameter Stereo) mode is active
-  - Show whether an announcement is currently made.
+Some minor fixes and refinements, plus new status indicators added to the main widget (visible below the MOT picture):
+
+| Indicator | Meaning |
+|-----------|---------|
+| Bit rate | ACC decoder input bit rate |
+| Stereo | Whether stereo mode is active |
+| EPG | Whether Electronic Program Guide data are available |
+| SBR | Whether Spectral Band Replication mode is active |
+| PS | Whether Parametric Stereo mode is active |
+| Announcement | Whether an announcement is currently being broadcast |
 
 ![](res/for_readme/mainwidget.png)
 
@@ -420,15 +528,18 @@ Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and ot
 
 Rights of other contributors gratefully acknowledged.
 
-As I use some icons, I get them from [FlatIcon](https://www.flaticon.com/). The work of the icon authors is very acknowledged: 
-- <a href="https://www.flaticon.com/free-icons/electromagnetic" title="Electromagnetic icons">Electromagnetic icons created by muh zakaria - Flaticon</a>
-- <a href="https://www.flaticon.com/free-icons/radio-tower" title="radio tower icons">Radio tower icons created by sonnycandra - Flaticon</a>
-- <a href="https://www.flaticon.com/free-icons/frequency" title="frequency icons">Frequency icons created by DinosoftLabs - Flaticon</a>
-- <a href="https://www.flaticon.com/free-icons/spectrum" title="spectrum icons">Spectrum icons created by JunGSa - Flaticon</a>
-- <a href="https://www.flaticon.com/free-icons/spectrum" title="spectrum icons">Spectrum icons created by Eucalyp - Flaticon</a>
-- <a href="https://www.flaticon.com/free-icons/target" title="target icons">Target icons created by Pixel perfect - Flaticon</a>
-- <a href="https://www.flaticon.com/free-icons/eject-button" title="eject button icons">Eject button icons created by Yudhi Restu - Flaticon</a>
-- <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by gariebaldy - Flaticon</a>
+As I use some icons, I get them from [FlatIcon](https://www.flaticon.com/). The work of the icon authors is very acknowledged:
+
+| Icon set | Author |
+|----------|--------|
+| [Electromagnetic icons](https://www.flaticon.com/free-icons/electromagnetic) | muh zakaria |
+| [Radio tower icons](https://www.flaticon.com/free-icons/radio-tower) | sonnycandra |
+| [Frequency icons](https://www.flaticon.com/free-icons/frequency) | DinosoftLabs |
+| [Spectrum icons](https://www.flaticon.com/free-icons/spectrum) | JunGSa |
+| [Spectrum icons](https://www.flaticon.com/free-icons/spectrum) | Eucalyp |
+| [Target icons](https://www.flaticon.com/free-icons/target) | Pixel perfect |
+| [Eject button icons](https://www.flaticon.com/free-icons/eject-button) | Yudhi Restu |
+| [Folder icons](https://www.flaticon.com/free-icons/folder) | gariebaldy |
    
 ### Journaline
 
