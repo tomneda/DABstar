@@ -52,7 +52,7 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
   connect(this, &SampleReader::signal_show_cir     , mr, &DabRadio::slot_show_cir);
 }
 
-void SampleReader::setRunning(bool b)
+void SampleReader::set_running(bool b)
 {
   running.store(b);
 
@@ -71,13 +71,13 @@ void SampleReader::setRunning(bool b)
   }
 }
 
-cf32 SampleReader::getSample(i32 phaseOffset)
+cf32 SampleReader::get_sample(const i32 iPhaseOffset)
 {
-  getSamples(mSampleBuffer, 0, 1, phaseOffset, true); // show spectrum while scanning
+  get_samples(mSampleBuffer, 0, 1, iPhaseOffset, true); // show spectrum while scanning
   return mSampleBuffer[0];
 }
 
-void SampleReader::getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, bool iShowSpec)
+void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, const bool iShowSpec)
 {
   assert((signed)oV.size() >= iStartIdx + iNoSamples);
 
@@ -290,7 +290,7 @@ void SampleReader::_dump_samples_to_file(const cf32 * const ipV, const i32 iNoSa
   }
 }
 
-void SampleReader::startDumping(SNDFILE * f)
+void SampleReader::start_dumping(SNDFILE * f)
 {
   dumpIndex = 0;
   dumpfilePointer.store(f);

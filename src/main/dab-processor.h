@@ -94,6 +94,7 @@ public:
   // for the MscHandler
   bool is_service_running(const SDescriptorType & iDT, EProcessFlag iProcessFlag) const;
   bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag) const;
+  bool is_sample_reader_running() const { return mSampleReader.is_running(); }
   void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);
   void stop_all_services();
   bool set_audio_channel(const SAudioData & iAD, RingBuffer<i16> * ipoAudioBuffer, EProcessFlag iProcessFlag);
@@ -166,7 +167,8 @@ public slots:
   void slot_soft_bit_gen_type(ESoftBitType iSoftBitType);
 
 signals:
-  void signal_no_signal_found();
+  void signal_no_dip_sync_found();
+  void signal_dip_sync_found();
   void signal_show_tii(const std::vector<STiiResult> & iTr);
   void signal_show_spectrum(i32);
   void signal_show_clock_err(f32);

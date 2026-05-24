@@ -71,7 +71,7 @@ DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevi
 
 DabProcessor::~DabProcessor()
 {
-  mSampleReader.setRunning(false);
+  mSampleReader.set_running(false);
 
   if (isRunning())
   {
@@ -93,7 +93,7 @@ void DabProcessor::start()
 
 void DabProcessor::stop()
 {
-  mSampleReader.setRunning(false);
+  mSampleReader.set_running(false);
   while (isRunning())
   {
     wait();
@@ -109,7 +109,7 @@ void DabProcessor::run()  // run QThread
   i32 sampleCount = 0;
   mRfFreqShiftUsed = false;
 
-  mSampleReader.setRunning(true);  // useful after a restart
+  mSampleReader.set_running(true);  // useful after a restart
 
   enum class EState
   {
@@ -131,7 +131,7 @@ void DabProcessor::run()  // run QThread
     // To get some idea of the signal strength
     for (int32_t i = 0; i < 20; i++)
     {
-      mSampleReader.getSamples(mOfdmBuffer, 0, cTu, 0, false);
+      mSampleReader.get_samples(mOfdmBuffer, 0, cTu, 0, false);
     }
 
     while (true)
@@ -261,7 +261,7 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
 void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
 {
   // We are at the end of the frame and we read the next T_n null samples
-  mSampleReader.getSamples(mOfdmBuffer, 0, cTn, mFreqOffsBBHz, false);
+  mSampleReader.get_samples(mOfdmBuffer, 0, cTn, mFreqOffsBBHz, false);
   ioSampleCount += cTn;
 
   // is this null symbol with TII?
@@ -312,7 +312,7 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
 
   for (i16 ofdmSymbIdx = 1; ofdmSymbIdx < cL; ofdmSymbIdx++)
   {
-    mSampleReader.getSamples(mOfdmBuffer, 0, cTs, mFreqOffsBBHz, true);
+    mSampleReader.get_samples(mOfdmBuffer, 0, cTs, mFreqOffsBBHz, true);
     ioSampleCount += cTs;
 
     for (i32 i = cTu; i < cTs; i++)
@@ -376,7 +376,7 @@ void DabProcessor::_set_rf_freq_offs_Hz(const f32 iFreqHz)
 bool DabProcessor::_state_eval_sync_symbol(i32 & oSampleCount, const f32 iThreshold)
 {
   // get first OFDM symbol after time sync marker
-  mSampleReader.getSamples(mOfdmBuffer, 0, cTu, mFreqOffsBBHz, false);
+  mSampleReader.get_samples(mOfdmBuffer, 0, cTu, mFreqOffsBBHz, false);
 
   const i32 startIndex = mPhaseReference.correlate_with_phase_ref_and_find_max_peak(mOfdmBuffer, iThreshold);
 
@@ -393,7 +393,7 @@ bool DabProcessor::_state_eval_sync_symbol(i32 & oSampleCount, const f32 iThresh
 
     // move/read OFDM symbol 0 which contains the synchronization data
     memmove(mOfdmBuffer.data(), &(mOfdmBuffer[startIndex]), nextOfdmBufferIdx * sizeof(cf32)); // memmove can move overlapping segments correctly
-    mSampleReader.getSamples(mOfdmBuffer, nextOfdmBufferIdx, cTu - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
+    mSampleReader.get_samples(mOfdmBuffer, nextOfdmBufferIdx, cTu - nextOfdmBufferIdx, mFreqOffsBBHz, false); // get reference symbol
 
     oSampleCount = startIndex + cTu;
     return true;
@@ -408,13 +408,14 @@ bool DabProcessor::_state_wait_for_time_sync_marker()
   case TimeSyncer::EState::TIMESYNC_ESTABLISHED:
     // if (timeSyncState != mTimeSyncerStateLast)  qDebug() << "Time sync established";
     mTimeSyncAttemptCount = 0;
+    emit signal_dip_sync_found();
     return true;
   case TimeSyncer::EState::NO_DIP_FOUND:
     if (++mTimeSyncAttemptCount >= 8)
     {
       if (timeSyncState != mTimeSyncerStateLast) qWarning() << "No DIP found after" << mTimeSyncAttemptCount << "attempts";
       mTimeSyncAttemptCount = 0;
-      emit signal_no_signal_found();
+      emit signal_no_dip_sync_found();
     }
     break;
   case TimeSyncer::EState::NO_END_OF_DIP_FOUND:
@@ -494,7 +495,7 @@ bool DabProcessor::set_data_channel(const SPacketData & iPD, RingBuffer<u8> * ip
 
 void DabProcessor::start_dumping(SNDFILE * f)
 {
-  mSampleReader.startDumping(f);
+  mSampleReader.start_dumping(f);
 }
 
 void DabProcessor::stop_dumping()

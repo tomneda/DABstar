@@ -55,11 +55,12 @@ public:
   SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer = nullptr);
   ~SampleReader() override = default;
 
-  void setRunning(bool b);
+  void set_running(bool b);
+  bool is_running() const { return running.load(); }
   void get_linear_peak_level_and_clear(f32 & oLevelPeak, f32 & oLevelMean);
-  cf32 getSample(i32);
-  void getSamples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, bool iShowSpec);
-  void startDumping(SNDFILE *);
+  cf32 get_sample(i32);
+  void get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, bool iShowSpec);
+  void start_dumping(SNDFILE *);
   void stop_dumping();
   void set_dc_and_iq_correction(bool iDoDcCorr, bool iDoIqCorr);
   void set_cir_buffer(RingBuffer<cf32> * iCirBuffer);
@@ -74,7 +75,7 @@ private:
 
   const DabRadio * const myRadioInterface;
   IDeviceHandler * const theRig;
-  RingBuffer<cf32> * spectrumBuffer;
+  RingBuffer<cf32> * const spectrumBuffer;
   RingBuffer<cf32> * cirBuffer = nullptr;
   std::array<cf32, SPEC_BUFF_SIZE> specBuff;
   TArrayTn mSampleBuffer;

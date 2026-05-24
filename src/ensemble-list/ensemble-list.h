@@ -93,6 +93,7 @@ private:
   bool _get_ident_info_from_row_idx(SIdentInfoEL & oIdentInfo, i32 iRowIdx);
   void _signal_ident_info(const SIdentInfoEL & iIdentInfo);
   void _update_remove_invalid_files_button_state() const;
+  void _stop_scan_process();
 
 public slots:
   void slot_select_FId_or_Ch(const QString & iFIdOrCh, u32 iSId);   // trigger this will sent signal_file_or_channel_to_play back to DabRadio
@@ -108,7 +109,6 @@ private slots:
   void _slot_handle_ensemble_list_filter(int iState = 0);
   void _slot_handle_show_current_FId_or_Ch_only(int iState);
   void _slot_handle_table_click(const QModelIndex &index);
-  void _stop_scan_process();
 
 signals:
   void signal_start_stop_scan(bool oIsScanning);

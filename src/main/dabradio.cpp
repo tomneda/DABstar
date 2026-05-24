@@ -180,21 +180,28 @@ void DabRadio::_slot_device_selected(const QString & iDeviceName)
 }
 
 // might be called when scanning only from DAB processor and security timer
-void DabRadio::_slot_scanning_no_signal_timeout()
+void DabRadio::_slot_no_dip_sync_found()
 {
-  qCDebug(sLogDabRadio) << Q_FUNC_INFO;
   mScanSecurityTimer.stop();
-  _inform_ensemble_list(mChannelDesc.get_ident_info(), EInfoReason::NoNullSymbDet);
+  if (mDipSyncState != EDipSyncState::DipNotFound) // avoid repeated calls to the ensemble list
+  {
+    mDipSyncState = EDipSyncState::DipNotFound;
+    _inform_ensemble_list(mChannelDesc.get_ident_info(), EInfoReason::NoNullSymbDet);
+  }
+}
+
+void DabRadio::_slot_dip_sync_found()
+{
+  mDipSyncState = EDipSyncState::DipFound;
 }
 
 // triggers when the security timer timed-out to ensure a stable behavior
 void DabRadio::_slot_scanning_security_timeout()
 {
   qCWarning(sLogDabRadio).noquote() << "Scanning security timeout triggered for" << mChannelDesc.get_type_info() << " (too weak signal received)";
-  _inform_ensemble_list(mChannelDesc.get_ident_info(), EInfoReason::WeakSignalDet);
+  _inform_ensemble_list(mChannelDesc.get_ident_info(), (mDipSyncState == EDipSyncState::DipFound ? EInfoReason::WeakSignalDet : EInfoReason::NoNullSymbDet));
 }
 
-//
 // sendDatagram is triggered by the ip handler,
 void DabRadio::slot_send_datagram(i32 iLength)
 {
@@ -418,7 +425,8 @@ void DabRadio::_connect_dab_processor_signals()
   {
     // DAB processor related connections
     connect(mpDabProcessor->get_fib_decoder(), &IFibDecoder::signal_fib_loaded_state, this, &DabRadio::_slot_fib_loaded_state, Qt::QueuedConnection),
-    connect(mpDabProcessor.get(), &DabProcessor::signal_no_signal_found, this, &DabRadio::_slot_scanning_no_signal_timeout),
+    connect(mpDabProcessor.get(), &DabProcessor::signal_no_dip_sync_found, this, &DabRadio::_slot_no_dip_sync_found),
+    connect(mpDabProcessor.get(), &DabProcessor::signal_dip_sync_found, this, &DabRadio::_slot_dip_sync_found),
     connect(mpSpectrumViewer.get(), &SpectrumViewer::signal_cb_nom_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_show_nominal_carrier),
     connect(mpSpectrumViewer.get(), &SpectrumViewer::signal_cmb_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_select_carrier_plot_type),
     connect(mpSpectrumViewer.get(), &SpectrumViewer::signal_cmb_iqscope_changed, mpDabProcessor.get(), &DabProcessor::slot_select_iq_plot_type),

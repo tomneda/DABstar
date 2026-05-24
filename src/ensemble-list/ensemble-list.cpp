@@ -230,6 +230,7 @@ void EnsembleList::_setup_ui_regarding_list_mode() const
   const bool isFileMode = (mListMode == EListMode::PlayFromFiles);
   ui->containerFilePath->setVisible(isFileMode);
   ui->btnRemoveFilesWithoutSignal->setVisible(isFileMode);
+  ui->teScanResult->clear();
   _update_remove_invalid_files_button_state();
 
   if (isFileMode)

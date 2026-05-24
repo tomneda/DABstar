@@ -231,6 +231,8 @@ private:
   // Enums
   enum class EServiceListSrc { DEVICE_PLAYER, FILE_PLAYER };
   EServiceListSrc mEnsListServiceListSrc = EServiceListSrc::DEVICE_PLAYER;
+  enum class EDipSyncState { NotSetYet, DipFound, DipNotFound };
+  EDipSyncState mDipSyncState = EDipSyncState::NotSetYet;
 
   // Structures
   StatusInfo mStatusInfo{};
@@ -453,7 +455,8 @@ private slots:
   void _slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingState);
   void _slot_update_time_display();
   void _slot_scanning_security_timeout();
-  void _slot_scanning_no_signal_timeout();
+  void _slot_no_dip_sync_found();
+  void _slot_dip_sync_found();
   void _slot_ensemble_list_retrigger_timeout();
 
   // UI Styling and Display

@@ -114,7 +114,7 @@ void DabRadio::_start_channel(const QString & iFIdOrCh, const u32 iSId)
   const i32 tunedFrequencyHz = (mIsFileMode ? mpInputDevice->getVFOFrequency() : mpEnsembleList->get_band_handler().get_frequency_Hz(iFIdOrCh));
   mChannelDesc.deferredData.nomFreqkHz = tunedFrequencyHz / 1'000;
   mpSpectrumViewer->show_nominal_frequency_MHz((f32)tunedFrequencyHz / 1'000'000.0f);
-
+  mDipSyncState = EDipSyncState::NotSetYet;
   mpInputDevice->resetBuffer();
   mpInputDevice->restartReader(tunedFrequencyHz);
 
@@ -148,7 +148,7 @@ void DabRadio::_start_channel(const QString & iFIdOrCh, const u32 iSId)
     mEpgTimer.start(cEpgTimeoutMs);
   }
 
-  mIsChannelRunning = true;
+  mIsChannelRunning.store(true);
   mpAudioManager->set_channel_running(true);
   mpEpgMotHandler->set_channel_running(true);
   mpTiiManager->set_channel_running(true);
@@ -204,7 +204,7 @@ void DabRadio::_stop_channel()
   _clean_screen(mStatusInfo);
   mpTiiManager->clear_tii_list_and_label();
 
-  mIsChannelRunning = false;
+  mIsChannelRunning.store(false);
   mpAudioManager->set_channel_running(false);
   mpEpgMotHandler->set_channel_running(false);
   mpTiiManager->set_channel_running(false);
