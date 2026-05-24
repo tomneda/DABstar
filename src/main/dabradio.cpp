@@ -844,8 +844,12 @@ void DabRadio::_slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingS
     if (mChannelDesc.ecc_byte != 0)
     {
       mChannelDesc.ecc_checked = true;
-      mChannelDesc.deferredData.countryName = mpItuTables->find_ITU_entry(mChannelDesc.ecc_byte, (mChannelDesc.Eid >> 12) & 0xF).Country;
-      ui->lblCountryName->setText(mChannelDesc.deferredData.countryName.value());
+      const u8 countryId = (mChannelDesc.Eid >> 12) & 0xF;
+      const auto & itu = mpItuTables->find_ITU_entry(mChannelDesc.ecc_byte, countryId);
+      // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.Country).arg(itu.ITU_Code);
+      // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.ITU_Code).arg(itu.Country);
+      mChannelDesc.deferredData.countryName = QString("%1(%2/%3)").arg(itu.ITU_Code).arg(mChannelDesc.ecc_byte, 2, 16, QChar('0')).arg(countryId, 1, 16, QChar('0'));
+      ui->lblCountryName->setText(itu.Country);
       // qDebug() << "Ch/FId" << mChannelDesc.get_fId_or_ch() << Qt::hex << Qt::showbase << "with EId" << mChannelDesc.Eid <<  "has ECC byte"  << mChannelDesc.ecc_byte << "with country name" << mChannelDesc.deferredData.countryName.value();
     }
   }

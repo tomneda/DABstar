@@ -93,7 +93,8 @@ private:
   TpFn_loadTable mpFn_loadTable = nullptr;
 
   bool _load_library();
-  f32 _convert(const QString & s) const;
+  f32 _get_flt(const QString & s) const;
+  i32 _get_int(const QString & s) const;
   u16 _get_E_id(const QString & s) const;
   u8 _get_main_id(const QString & s) const;
   u8 _get_sub_id(const QString & s) const;

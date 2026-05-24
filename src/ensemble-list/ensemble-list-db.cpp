@@ -309,7 +309,7 @@ QAbstractItemModel * EnsembleListDB::create_model()
   cols << sTeScanLevel         + " AS 'SL'"; // see CI_CSL and CI_FSL
   cols << sTeEnsembleName      + " AS 'Ensemble\nName'";
   cols << sTeEnsembleId        + " AS 'EId'";
-  cols << sTeItuCode           + " AS 'ITU\nCountry'";
+  cols << sTeItuCode           + " AS 'ITU\nCode'";
   cols << sTeLastPlayedSId     + " AS 'Played\nSId'";
   cols << sTeNumDabDabPlus     + " AS 'Audio\nDAB|DAB+'";
   cols << sTeAudioDataRates    + " AS 'Data Rates\n[kbps]'";

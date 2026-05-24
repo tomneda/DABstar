@@ -781,7 +781,7 @@ void DabRadio::slot_name_of_ensemble(const i32 iEId, const QString & iEnsName, c
   mpEpgMotHandler->set_channel_info(mChannelDesc.get_fId_or_ch_descr(), iEnsName);
   mpTiiManager->set_channel_info(mChannelDesc.get_fId_or_ch(),
                                  mChannelDesc.Eid,
-                                 mChannelDesc.deferredData.countryName.value_or(""),
+                                 mChannelDesc.deferredData.countryName.value_or("-"),
                                  mChannelDesc.get_type_info());
 }
 

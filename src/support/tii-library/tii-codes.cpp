@@ -234,10 +234,21 @@ f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitu
   return ((3 * F_M_PI_2 + azimuth) / F_M_PI * 180);
 }
 
-f32 TiiHandler::_convert(const QString & s) const
+f32 TiiHandler::_get_flt(const QString & s) const
 {
   bool flag;
   f32 v = s.trimmed().toFloat(&flag);
+  if (!flag)
+  {
+    v = 0;
+  }
+  return v;
+}
+
+i32 TiiHandler::_get_int(const QString & s) const
+{
+  bool flag;
+  i32 v = s.trimmed().toInt(&flag);
   if (!flag)
   {
     v = 0;
@@ -300,7 +311,7 @@ void TiiHandler::_read_file(QFile & fp)
     {
       continue;
     }
-    ed.id = _convert(columnVector[ID]);
+    ed.id = _get_int(columnVector[ID]);
     ed.country = columnVector[COUNTRY].trimmed();
     ed.Eid = _get_E_id(columnVector[EID]);
     ed.mainId = _get_main_id(columnVector[TII]);
@@ -309,13 +320,13 @@ void TiiHandler::_read_file(QFile & fp)
     ed.patch_channel_name();
     ed.ensemble = columnVector[LABEL].trimmed();
     ed.transmitterName = columnVector[LOCATION];
-    ed.latitude = _convert(columnVector[LATITUDE]);
-    ed.longitude = _convert(columnVector[LONGITUDE]);
-    ed.power = _convert(columnVector[POWER]);
-    ed.altitude = _convert(columnVector[ALTITUDE]);
-    ed.height = _convert(columnVector[HEIGHT]);
+    ed.latitude = _get_flt(columnVector[LATITUDE]);
+    ed.longitude = _get_flt(columnVector[LONGITUDE]);
+    ed.power = _get_flt(columnVector[POWER]);
+    ed.altitude = _get_int(columnVector[ALTITUDE]);
+    ed.height = _get_int(columnVector[HEIGHT]);
     ed.polarization = columnVector[POLARIZATION].trimmed();
-    ed.frequency = _convert(columnVector[FREQUENCY]);
+    ed.frequency = _get_flt(columnVector[FREQUENCY]);
     ed.direction = columnVector[DIRECTION].trimmed();
 
     const u32 key = ed.make_key_base();

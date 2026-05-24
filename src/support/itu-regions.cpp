@@ -302,7 +302,8 @@ const ItuTables::SItuEntry & ItuTables::find_ITU_entry(const u8 iEcc, const u8 i
 
   static SItuEntry failStruct;
   static std::array<char, 32> failStr;
-  snprintf(failStr.data(), failStr.size(), "ECC %02X|CId %02X", iEcc, iCountryId);
+  // snprintf(failStr.data(), failStr.size(), "ECC %02X|CId %02X", iEcc, iCountryId);
+  snprintf(failStr.data(), failStr.size(), "---");
   failStruct.ITU_Code = failStr.data();
   failStruct.Country = failStr.data();
 
