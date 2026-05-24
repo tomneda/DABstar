@@ -45,8 +45,8 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   _setup_ui_regarding_list_mode();
 
   const QColor fg("white");
-  ui->btnScanStart->setStyleSheet(get_bg_style_sheet(0x4846FF, fg));
-  ui->btnResetDataBase->setStyleSheet(get_bg_style_sheet(0xC50F09, fg));
+  ui->btnScanStart->setStyleSheet(get_bg_style_sheet(cBgColorAutoScanInactive, fg));
+  ui->btnResetDataBase->setStyleSheet(get_bg_style_sheet(cBgColorBtnResetDataBase, fg));
   ui->cbShowELNotScanned->setStyleSheet(get_bg_style_sheet(cBgColorNotScanned, fg));
   ui->cbShowELScanned->setStyleSheet(get_bg_style_sheet(cBgColorUnselected, fg));
   ui->cbShowELNoSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, fg));
@@ -438,6 +438,7 @@ void EnsembleList::_stop_scan_process()
   mIsScanning = false;
   ui->progressBar->setValue(0);
   ui->btnScanStart->setText("Auto scan");
+  ui->btnScanStart->setStyleSheet(get_bg_style_sheet(cBgColorAutoScanInactive, Qt::white));
   ui->cbShowELNoSignal->setEnabled(true);
   mIdentInfoListForScan.clear();
 
@@ -474,6 +475,7 @@ void EnsembleList::_slot_handle_scan_button()
 
   _setup_ui_regarding_scan_mode(true);
   ui->btnScanStart->setText("Stop scan");
+  ui->btnScanStart->setStyleSheet(get_bg_style_sheet(cBgColorAutoScanActive, Qt::white));
 
   mpDbHandler->set_selector(""); // deselect current marked row
   mpDbHandler->set_sorting_to_FId_or_Ch(false); // needed as DB content may change while scan, so sorting could be changed while scan

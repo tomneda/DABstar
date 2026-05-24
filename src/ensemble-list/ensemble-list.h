@@ -61,7 +61,12 @@ public:
   void init_after_connect();
 
 private:
-  static constexpr i64 cMinFileSize = 4 * 1024 * 1024;
+  static constexpr u32 cBgColorAutoScanInactive = 0x4846FF;
+  static constexpr u32 cBgColorAutoScanActive   = 0xFF4648;
+  static constexpr u32 cBgColorBtnResetDataBase = 0xC50F09;
+
+  static constexpr i64 cMinFileSize = 4LL * 1024LL * 1024LL;
+
   Ui_ensembleList * const ui;
   CustomFrame mFrame;
   QScopedPointer<EnsembleListDbHandler> mpDbHandler;
