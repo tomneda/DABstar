@@ -26,7 +26,6 @@
       * [Color coding in the table](#color-coding-in-the-table)
       * [Filter checkboxes](#filter-checkboxes)
       * [Stored data per ensemble](#stored-data-per-ensemble)
-    * [Performance improvements with VOLK](#performance-improvements-with-volk)
   * [Service List](#service-list)
     * [Favorites](#favorites)
     * [Sorting](#sorting)
@@ -36,6 +35,7 @@
     * [Some help for scanning](#some-help-for-scanning)
   * [How to apply TII info](#how-to-apply-tii-info)
   * [Installing on Linux from current mainline](#installing-on-linux-from-current-mainline)
+    * [Installing VOLK](#installing-volk)
     * [Building DABstar](#building-dabstar)
     * [RTL-SDR driver installation](#rtl-sdr-driver-installation)
     * [Installing USRP UHD](#installing-usrp-uhd)
@@ -235,15 +235,6 @@ The SQLite database stores the following information for each entry (exact field
 
 ---
 
-### Performance improvements with VOLK
-
-Several parts (not only the OFDM decoder) use the [VOLK](https://www.libvolk.org/)
-(Vector-Optimized Library of Kernels) library for vectorized signal-processing operations.
-This noticeably reduces CPU load especially on machines with SSE/AVX capable processors.
-Volk version 3.3.0 or newer is recommended.
-
----
-
 ## Service List
 
 The service selector on the left side of the main window is stored as a SQLite database in the
@@ -327,10 +318,28 @@ sudo apt-get install qt6-multimedia-dev
 sudo apt-get install qt6-charts-dev
 ```
 
-If you want to build with qmake:
+### Installing VOLK
+
+Several parts (not only the OFDM decoder) use the [VOLK](https://www.libvolk.org/)
+(Vector-Optimized Library of Kernels) library for vectorized signal-processing operations.
+This noticeably reduces CPU load especially on machines with SSE/AVX capable processors.
+VOLK version 3.3.0 or newer is recommended.
+
+Ubuntu 24.04 ships VOLK 3.1; install the packaged version or build from source for ≥ 3.3.0:
 ```
-sudo apt-get install qmake6
+sudo apt-get install libvolk-dev
 ```
+or build from source:
+```
+git clone --recursive https://github.com/gnuradio/volk.git
+cd volk
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j4
+sudo make install
+sudo ldconfig
+```
+Enable VOLK in the DABstar build by adding `-DSSE_OR_AVX=ON` to the `cmake` command (see below).
 
 As libfaad had issues with low-rate services I switched over to FDK-AAC.
 But also the repository version in Ubuntu 24.04 has still flaws with PS (Parametric Stereo) services.
@@ -352,14 +361,14 @@ git clone https://github.com/tomneda/DABstar.git
 cd DABstar
 mkdir build
 cd build
-cmake .. -DAIRSPY=ON -DSDRPLAY=ON -DHACKRF=ON -DLIMESDR=ON -DRTL_TCP=ON -DPLUTO=ON -DUHD=ON -DRTLSDR=ON -DUSE_HBF=OFF -DDATA_STREAMER=OFF -DVITERBI_SSE=ON -DVITERBI_NEON=OFF -DFDK_AAC=ON
+cmake .. -DAIRSPY=ON -DSDRPLAY=ON -DHACKRF=ON -DLIMESDR=ON -DRTL_TCP=ON -DPLUTO=ON -DUHD=ON -DRTLSDR=ON -DVITERBI_SSE2=ON -DVITERBI_NEON=OFF -DFDK_AAC=ON -DSSE_OR_AVX=ON
 make
 ```
 Reduce or adapt the `cmake` command line for the devices/features you need.
 
 E.G.: If you have an RTL-SDR stick and work on a desktop PC (I have only tested this on an Intel-PC), this should be the minimum recommendation:
 ```
-cmake .. -DRTLSDR=ON -DVITERBI_SSE=ON
+cmake .. -DRTLSDR=ON -DVITERBI_SSE2=ON -DSSE_OR_AVX=ON
 ```
 
 To speed up compilation you can provide `-j<n>` as argument with `<n>` number of threads after the `make` command. E.G. `make -j4`.
