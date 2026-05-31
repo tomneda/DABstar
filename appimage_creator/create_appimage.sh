@@ -34,8 +34,8 @@ chmod a+x "$LINUXDEPLOYQT"
 
 if ./"$LINUXDEPLOYQT" ./appdir/usr/share/applications/* -appimage -no-translations; then
   echo "linuxdeployqt runs successfully"
-  APP_NAME="@PROJECT_NAME@"
-  APP_VERS="@PROJECT_VERSION@"
+  APP_NAME="DABstar"
+  APP_VERS="5.0.0"
   APP_ARCH="x86_64"
   FN_SRC="${APP_NAME}-${APP_ARCH}.AppImage"
   FN_DST="${APP_NAME}-${APP_VERS}-${APP_ARCH}.AppImage"

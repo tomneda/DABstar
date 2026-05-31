@@ -13,3 +13,5 @@ build*/
 /.vscode/
 /*.7z
 /*.bundle
+/win-cross-build/
+/aqtinstall.log
