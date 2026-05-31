@@ -143,6 +143,10 @@ option(SSE_OR_AVX    "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  #
 #add_definitions (-D__EPG_TRACE__)
 
 ########################################################################
+if (WIN32)
+    include_directories(${CMAKE_SOURCE_DIR}/../dabstar-libs/include)
+endif ()
+
 if (USE_LIQUID)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
