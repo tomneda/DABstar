@@ -34,23 +34,19 @@
 #include  <array>
 #include  <QSettings>
 #include  <QObject>
-#include  <qwt_plot.h>
-#include  <qwt_plot_marker.h>
-#include  <qwt_plot_grid.h>
-#include  <qwt_plot_curve.h>
-#include  <qwt_color_map.h>
-#include  <qwt_scale_widget.h>
+#include  <QLineSeries>
 #include  <fftw3.h>
 
 #define USE_C2C_FFT
 
 class DabRadio;
+class PlotWidget;
 
 class AudioDisplay : public QObject
 {
 Q_OBJECT
 public:
-  AudioDisplay(DabRadio *, QwtPlot *, QSettings *);
+  AudioDisplay(DabRadio *, PlotWidget *, QSettings *);
   ~AudioDisplay() override;
 
   void create_spectrum(const i16 *, i32, i32);
@@ -63,9 +59,8 @@ private:
 
   DabRadio * const mpRadioInterface;
   QSettings * const mpDabSettings;
-  QwtPlot * const pPlotGrid;
-  QwtPlotCurve mSpectrumCurve{""};
-  QwtPlotGrid mGrid;
+  PlotWidget * const mpPlot;
+  QLineSeries * mpCurve = nullptr;
 
   std::array<f32, cDisplaySize>  mXDispBuffer{};
   std::array<f32, cDisplaySize>  mYDispBuffer{};

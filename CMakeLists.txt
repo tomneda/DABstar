@@ -47,7 +47,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") #
 #else ()
 #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math")
 #endif ()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math -fsingle-precision-constant")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math -fsingle-precision-constant")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math")
 
 # as MSVC compiler does not like VLAs (Variable Length Array) inhibit them for GCC also
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -166,6 +167,7 @@ find_package(Qt6Network REQUIRED)
 find_package(Qt6Xml REQUIRED)
 find_package(Qt6Sql REQUIRED)
 find_package(Qt6Multimedia REQUIRED)
+find_package(Qt6Charts REQUIRED)
 
 set(main_ui
         forms/cir-widget.ui
@@ -184,19 +186,6 @@ if (NOT FFTW3F_FOUND)
 endif ()
 include_directories(${FFTW3F_INCLUDE_DIRS})
 list(APPEND extraLibs ${FFTW3F_LIBRARIES})
-
-# Qwt6.3.0 built with Qt6 has an unusual installation path for its Qt6Qwt6.pc file, so add it here
-if (WIN32)
-    # set(ENV{PKG_CONFIG_PATH} "C:/Qwt-6.3.0/:$ENV{PKG_CONFIG_PATH}")
-    # set(Qt6Qwt6_DIR "C:/Qwt-6.3.0/")
-    find_package(Qwt REQUIRED) # environment variable QWT_ROOT has to be defined!
-    include_directories(${QWT_INCLUDE_DIRS})
-    include_directories(../dabstar-libs/include)
-    list(APPEND extraLibs ${QWT_LIBRARIES})
-else ()
-    set(ENV{PKG_CONFIG_PATH} "/usr/local/qwt-6.3.0/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-    search_for_library(QWT Qt6Qwt6) # maybe try change this to Qwt instead of Qt6Qwt6
-endif ()
 
 search_for_library(ZLIB zlib)
 search_for_library(LIBSNDFILE sndfile)
@@ -376,8 +365,8 @@ set(${objectName}_HDRS
         src/scopes/iqdisplay.h
         src/scopes/carrier-display.h
         src/scopes/audio-display.h
-        src/scopes/spectrogramdata.h
-        src/scopes/cust_qwt_zoom_pan.h
+        src/scopes/plot_widget.h
+        src/scopes/level_meter.h
         src/spectrum-viewer/spectrum-viewer.h
         src/spectrum-viewer/cir-viewer.h
         src/spectrum-viewer/spectrum-scope.h
@@ -484,8 +473,8 @@ set(${objectName}_SRCS
         src/scopes/iqdisplay.cpp
         src/scopes/carrier-display.cpp
         src/scopes/audio-display.cpp
-        src/scopes/spectrogramdata.cpp
-        src/scopes/cust_qwt_zoom_pan.cpp
+        src/scopes/plot_widget.cpp
+        src/scopes/level_meter.cpp
         src/spectrum-viewer/spectrum-viewer.cpp
         src/spectrum-viewer/spectrum-scope.cpp
         src/spectrum-viewer/waterfall-scope.cpp
@@ -614,6 +603,7 @@ target_link_libraries(${objectName}
         Qt6::Xml
         Qt6::Sql
         Qt6::Multimedia
+        Qt6::Charts
         ${extraLibs}
         ${FAAD_LIBRARIES}
         ${CMAKE_DL_LIBS}

@@ -23,7 +23,7 @@
       <number>0</number>
      </property>
      <item row="0" column="0">
-      <widget class="QwtPlot" name="cirPlot">
+      <widget class="PlotWidget" name="cirPlot">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -41,10 +41,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QwtPlot</class>
-   <extends>QFrame</extends>
-   <header>qwt_plot.h</header>
-   <container>1</container>
+   <class>PlotWidget</class>
+   <extends>QChartView</extends>
+   <header>plot_widget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

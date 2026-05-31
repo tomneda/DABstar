@@ -33,35 +33,44 @@
 #include <QSettings>
 #include <QPen>
 #include <QLabel>
+#include <QChart>
 #include "glob_defs.h"
 #include "dab-constants.h"
 
-CorrelationViewer::CorrelationViewer(QwtPlot * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<f32> * b)
+CorrelationViewer::CorrelationViewer(PlotWidget * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<f32> * b)
   : mpSettings(s)
   , mpResponseBuffer(b)
-  , mpQwtPlot(pPlot)
+  , mpPlot(pPlot)
   , mpIndexDisplay(pLabel)
-  , mZoomPan(pPlot, CustQwtZoomPan::SRange(0, 2047))
 {
-  mQwtGrid.setMajorPen(QPen(QColor(0x5e5c64), 0, Qt::DotLine));
-  mQwtGrid.setMinorPen(QPen(QColor(0x5e5c64), 0, Qt::DotLine));
-  mQwtGrid.enableXMin(true);
-  mQwtGrid.enableYMin(false);
-  mQwtGrid.attach(mpQwtPlot);
+  mpPlot->get_x_axis()->setGridLineVisible(true);
+  mpPlot->get_x_axis()->setMinorGridLineVisible(true);
+  mpPlot->get_y_axis()->setGridLineVisible(true);
+  mpPlot->get_y_axis()->setMinorGridLineVisible(false);
 
-  mQwtPlotCurve.setPen(QPen(QColor(0xffbe6f), 2.0));
-  mQwtPlotCurve.setBaseline(0);
-  mQwtPlotCurve.attach(mpQwtPlot);
+  mpCurve = new QLineSeries();
+  mpCurve->setPen(QPen(QColor(0xffbe6f), 2.0));
+  mpPlot->chart()->addSeries(mpCurve);
+  mpCurve->attachAxis(mpPlot->get_x_axis());
+  mpCurve->attachAxis(mpPlot->get_y_axis());
 
-  mpQwtPlot->enableAxis(QwtPlot::yLeft);
+  // Horizontal threshold line at y=0 (threshold is normed to 0 dB)
+  mpThresholdLine = new QLineSeries();
+  mpThresholdLine->setPen(QPen(Qt::darkYellow, 1, Qt::DashLine));
+  mpThresholdLine->append(-1e9, 0);
+  mpThresholdLine->append(+1e9, 0);
+  mpPlot->chart()->addSeries(mpThresholdLine);
+  mpThresholdLine->attachAxis(mpPlot->get_x_axis());
+  mpThresholdLine->attachAxis(mpPlot->get_y_axis());
 
-  mpThresholdMarker = new QwtPlotMarker();
-  mpThresholdMarker->setLineStyle(QwtPlotMarker::HLine);
-  mpThresholdMarker->setLinePen(QPen(Qt::darkYellow, 0, Qt::DashLine));
-  mpThresholdMarker->setYValue(0); // threshold line is normed to 0dB
-  mpThresholdMarker->attach(mpQwtPlot);
-  mpQwtPlot->setAxisScale(QwtPlot::xBottom, 0, 2047);
-  mpQwtPlot->enableAxis(QwtPlot::xBottom);
+  mpPlot->set_x_tick_count(0.0, 9);
+  mpPlot->set_x_range(0, 2047);
+  mpPlot->setup_x_zoom(PlotWidget::SRange(0, 2047));
+
+  // Reposition text labels whenever zoom, pan, or resize changes the plot geometry
+  connect(mpPlot->get_x_axis(), &QValueAxis::rangeChanged, this, [this](f64, f64) { _update_tii_label_positions(); });
+  connect(mpPlot->get_y_axis(), &QValueAxis::rangeChanged, this, [this](f64, f64) { _update_tii_label_positions(); });
+  connect(mpPlot, &PlotWidget::signal_plot_area_changed,   this, [this](int, int)  { _update_tii_label_positions(); });
 }
 
 void CorrelationViewer::showCorrelation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr)
@@ -78,7 +87,6 @@ void CorrelationViewer::showCorrelation(f32 threshold, const QVector<i32> & v, c
 
   if (numRead != cPlotLength)
   {
-    // TODO: sometimes this happens in windows while startup
     qWarning("numRead != cPlotLength in correlation plot)");
     return;
   }
@@ -91,7 +99,7 @@ void CorrelationViewer::showCorrelation(f32 threshold, const QVector<i32> & v, c
   for (u16 i = 0; i < cPlotLength; ++i)
   {
     X_axis[i] = (f32)i;
-    Y_values[i] = 20.0f * std::log10(data[i]) - threshold_dB; // norm to threshold value
+    Y_values[i] = 20.0f * std::log10(data[i]) - threshold_dB;
 
     if (Y_values[i] > maxYVal)
     {
@@ -106,39 +114,74 @@ void CorrelationViewer::showCorrelation(f32 threshold, const QVector<i32> & v, c
 
   mean_filter(mMaxValFlt, maxYVal, cScalerFltAlpha1);
 
-  mZoomPan.set_y_range(CustQwtZoomPan::SRange(mMinValFlt - 8, mMaxValFlt + 3, -20.0, 20.0));
-  mpQwtPlot->enableAxis(QwtPlot::yLeft);
-  mQwtPlotCurve.setSamples(X_axis.data(), Y_values.data(), cPlotLength);
-  mpQwtPlot->replot();
+  mpPlot->setup_y_zoom(PlotWidget::SRange(mMinValFlt - 8, mMaxValFlt + 3, -20.0, 20.0));
+
+  QList<QPointF> pts;
+  pts.reserve(cPlotLength);
+  for (i32 i = 0; i < cPlotLength; i++)
+  {
+    pts.append(QPointF(X_axis[i], Y_values[i]));
+  }
+  mpCurve->replace(pts);
 
   mpIndexDisplay->setText(_get_best_match_text(v));
 
-  // delete old markers
-  for (auto & p : mQwtPlotMarkerVec)
+  // Remove old TII markers (line + label)
+  for (auto & marker : mTiiMarkerVec)
   {
-    p->detach();
-    delete p;
-    p = nullptr;
+    mpPlot->chart()->removeSeries(marker.pLine);
+    delete marker.pLine;
+    delete marker.pText;
   }
+  mTiiMarkerVec.clear();
 
-  // ...a vertical line for each TII
-  const i32 noMarkers = iTr.size();
-  mQwtPlotMarkerVec.resize(noMarkers);
-  for (i32 i = 0; i < noMarkers; ++i)
+  // Add vertical line + text label for each TII result
+  for (const auto & tiiResult : iTr)
   {
-    mQwtPlotMarkerVec[i] = new QwtPlotMarker();
-    QwtPlotMarker * const p = mQwtPlotMarkerVec[i];
-    QString tii = QString::number(iTr[i].mainId) + "-" + QString::number(iTr[i].subId);
-    p->setLabel(tii);
-    p->setLabelAlignment(Qt::AlignLeft | Qt::AlignTop);
-    p->setLabelOrientation(Qt::Vertical);
-    p->setLineStyle(QwtPlotMarker::VLine);
-    p->setLinePen(Qt::white, 0, Qt::DashDotLine);
-    f32 sample = (f32)iTr[i].phaseDeg * 2048 / 360 + 400;
+    STiiMarker marker;
+
+    f32 sample = (f32)tiiResult.phaseDeg * 2048 / 360 + 400;
     if (sample < 0) sample += 2048;
     else if (sample > 2407) sample -= 2048;
-    p->setXValue(sample);
-    p->attach(mpQwtPlot);
+    marker.xPos = sample;
+
+    marker.pLine = new QLineSeries();
+    marker.pLine->setPen(QPen(Qt::white, 1, Qt::DashDotLine));
+    marker.pLine->append(sample, -1e9);
+    marker.pLine->append(sample, +1e9);
+    mpPlot->chart()->addSeries(marker.pLine);
+    marker.pLine->attachAxis(mpPlot->get_x_axis());
+    marker.pLine->attachAxis(mpPlot->get_y_axis());
+
+    const QString tii = QString::number(tiiResult.mainId) + "-" + QString::number(tiiResult.subId);
+    marker.pText = new QGraphicsSimpleTextItem(tii, mpPlot->chart());
+    marker.pText->setBrush(Qt::white);
+    marker.pText->setRotation(-90);
+    marker.pText->setZValue(10);
+
+    // make the font smaller
+    QFont font = marker.pText->font();
+    font.setPointSize(8);
+    marker.pText->setFont(font);
+
+    mTiiMarkerVec.push_back(std::move(marker));
+  }
+
+  _update_tii_label_positions();
+}
+
+void CorrelationViewer::_update_tii_label_positions() const
+{
+  const f64 yTop = mpPlot->get_y_axis()->max();
+  for (const auto & marker : mTiiMarkerVec)
+  {
+    if (!marker.pText) continue;
+    // Map data position (xPos, yTop) to chart widget coordinates
+    const QPointF pos = mpPlot->chart()->mapToPosition(QPointF(marker.xPos, yTop));
+    const f64 textW = marker.pText->boundingRect().width();
+    // After -90° rotation world-x spans [px, px+textH] and world-y spans [py-textW, py].
+    // Use a small fixed offset so the text starts just to the right of the line.
+    marker.pText->setPos(pos.x() + 2.0, pos.y() + textW);
   }
 }
 
@@ -150,10 +193,10 @@ QString CorrelationViewer::_get_best_match_text(const QVector<i32> & v)
   {
     txt = "Best matches at (km): ";
     constexpr i32 MAX_NO_ELEM = 7;
-    const i32 vSize = (v.size() < MAX_NO_ELEM ? v.size() : MAX_NO_ELEM); // limit size as display will broaden
+    const i32 vSize = (v.size() < MAX_NO_ELEM ? v.size() : MAX_NO_ELEM);
     for (i32 i = 0; i < vSize; i++)
     {
-      txt += "<b>" + QString::number(v[i]) + "</b>"; // display in "bold"
+      txt += "<b>" + QString::number(v[i]) + "</b>";
 
       if (i > 0)
       {

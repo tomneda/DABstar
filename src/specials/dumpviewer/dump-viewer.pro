@@ -1,18 +1,20 @@
 #
 TEMPLATE    = app
 CONFIG      += console
-QT          += widgets
+QT          += widgets charts
 
 INCLUDEPATH += . \
-	      /usr/include/qt5/qwt
+               ../../scopes \
+               ../../main
 
-HEADERS     = ./dump-viewer.h 
-SOURCES     = ./dump-viewer.cpp main.cpp
+HEADERS     = ./dump-viewer.h \
+              ../../scopes/plot_widget.h
+SOURCES     = ./dump-viewer.cpp main.cpp \
+              ../../scopes/plot_widget.cpp
 TARGET      = dumpViewer
 FORMS		+= ./dumpwidget.ui
 
 unix{
 DESTDIR     = ./linux-bin
-LIBS		+= -lqwt-qt5
 }
 

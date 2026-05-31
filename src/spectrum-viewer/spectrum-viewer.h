@@ -45,15 +45,11 @@
 #include  <array>
 #include  <QObject>
 #include  <QTimer>
-#include  <qwt.h>
-#include  <qwt_plot_curve.h>
-#include  <qwt_scale_widget.h>
 #include  <fftw3.h>
 
 constexpr i32 SP_DISPLAYSIZE = 512;
 constexpr i32 SP_SPECTRUMSIZE = 2048;
 constexpr i32 SP_SPEC_OVR_SMP_FAC = (SP_SPECTRUMSIZE / SP_DISPLAYSIZE);
-
 
 class DabRadio;
 class QSettings;
@@ -89,7 +85,6 @@ public:
   void set_spectrum_averaging_rate(EAvrRate iAvrRate);
 
 private:
-
   CustomFrame myFrame{ nullptr };
   DabRadio * const mpRadioInterface;
   QSettings * const mpDabSettings;
@@ -133,7 +128,7 @@ private slots:
 
 signals:
   void signal_cmb_carrier_changed(ECarrierPlotType);
-  void signal_cmb_iqscope_changed(EIqPlotType);
+  void signal_cmb_iq_scope_changed(EIqPlotType);
   void signal_cb_nom_carrier_changed(bool);
   void signal_window_closed();
 };

@@ -30,7 +30,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QwtPlot" name="viewerWindow">
+      <widget class="PlotWidget" name="viewerWindow">
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SNR viewer. Shows a recording of the stream SNR data. The Y-axis shows the level in dB; the X-axis shows the time in seconds.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -76,9 +76,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QwtPlot</class>
-   <extends>QFrame</extends>
-   <header>qwt_plot.h</header>
+   <class>PlotWidget</class>
+   <extends>QChartView</extends>
+   <header>plot_widget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

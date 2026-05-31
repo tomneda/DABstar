@@ -1,66 +1,53 @@
 /*
- * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ * Copyright (c) 2026 by Thomas Neder (https://github.com/tomneda)
  *
- * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
- * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2 of the License, or any later version.
  *
- * The original copyright information is preserved below and is acknowledged.
+ * DABstar is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
+ * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-/*
- *    Copyright (C) 2008, 2009, 2010
- *    Jan van Katwijk (J.vanKatwijk@gmail.com)
- *    Lazy Chair Computing
- *
- *    This file is part of Qt-DAB
- *
- *    Qt-DAB is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    Qt-DAB is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with Qt-DAB; if not, write to the Free Software
- *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #pragma once
 
 #include <QObject>
-#include <qwt_plot_spectrogram.h>
-#include <cstdint>
-#include "spectrogramdata.h"
+#include <QWidget>
+#include <QImage>
+#include <array>
+#include <vector>
 #include "dab-constants.h"
 
-class QwtLinearColorMap;
+// It is a plain QWidget (promoted in Qt Designer) showing a scrolling
+// waterfall image. Call init() after setupUi() to provide the size parameters.
 
-class WaterfallScope : public QObject, public QwtPlotSpectrogram
+class WaterfallScope : public QWidget
 {
 Q_OBJECT
 public:
-  WaterfallScope(QwtPlot *, i32, i32);
-  ~WaterfallScope() override;
+  explicit WaterfallScope(QWidget * parent = nullptr);
+  ~WaterfallScope() override = default;
 
-  void show_waterfall(const f64 *, const f64 *, const SpecViewLimits<f64> & iSpecViewLimits);
+  void init(i32 iDisplaySize, i32 iRasterSize);
+  void show_waterfall(const f64 * ipY1_value, const SpecViewLimits<f64> & iSpecViewLimits);
+
+public slots:
+  void slot_scaling_changed(i32 iScale);
+  void slot_set_horizontal_margins(int iLeft, int iRight);
+
+protected:
+  void paintEvent(QPaintEvent * ipEvent) override;
 
 private:
-  QwtPlot * const mpPlotgrid;
-  const i32 mDisplaySize;
-  const i32 mRasterSize;
-  i32 mOrig = 0;
-  i32 mWidth = 0;
-  SpectrogramData * mpWaterfallData = nullptr;
-  QwtLinearColorMap * mpColorMap = nullptr;
-  std::vector<f64> mPlotDataVec;
-  f64 mScale = 0.0;
+  i32 mDisplaySize  = 0;
+  i32 mRasterSize   = 0;
+  f64 mScale        = 0.0;
+  int mLeftMargin   = 0;
+  int mRightMargin  = 0;
 
-  void _gen_color_map(const i32 iStyleNr);
-public slots:
-  void slot_scaling_changed(i32);
+  QImage mImage;
+  std::array<QRgb, 256> mColorLut;
+
+  void _build_color_lut();
 };
-

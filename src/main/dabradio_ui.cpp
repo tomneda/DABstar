@@ -14,6 +14,7 @@
 #include "configuration.h"
 #include "gui-helpers.h"
 #include "audio_manager.h"
+#include "level_meter.h"
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
@@ -206,17 +207,16 @@ void DabRadio::_initialize_dynamic_label() const
 
 void DabRadio::_initialize_thermo_peak_levels()
 {
-  auto setup_thermo_peak_level_widget = [](QwtThermo * ipThermo)
+  auto setup_thermo_peak_level_widget = [](LevelMeter * ipThermo)
   {
-    ipThermo->setValue(-40.0);
-    ipThermo->setBorderWidth(0);
+    ipThermo->set_value(-40.0);
     ipThermo->setStyleSheet("background-color: black;");
-
-    QwtLinearColorMap * pColorMap = new QwtLinearColorMap();
-    pColorMap->setColorInterval(QColor(0, 100, 200), QColor(255, 0, 0));
-    pColorMap->addColorStop(0.72727273, QColor(200, 200, 0)); // -6dBFS
-    pColorMap->addColorStop(0.45454545, QColor(0, 200, 0));   // -12dBFS
-    ipThermo->setColorMap(pColorMap);
+    ipThermo->set_color_stops({
+      { 0.00000000, 0x0064C8 },  // dark blue  (low level)
+      { 0.45454545, 0x00C800 },  // green      (-12 dBFS)
+      { 0.72727273, 0xC8C800 },  // yellow     (-6 dBFS)
+      { 1.00000000, 0xFF0000 },  // red        (0 dBFS / top)
+    });
   };
 
   setup_thermo_peak_level_widget(ui->thermoPeakLevelLeft);

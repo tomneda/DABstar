@@ -30,127 +30,116 @@
  */
 
 #include "waterfall-scope.h"
-#include <qwt.h>
-#include <qwt_plot.h>
-#include <qwt_color_map.h>
-#include <qwt_scale_widget.h>
+#include <QPainter>
+#include <QPaintEvent>
+#include <algorithm>
+#include <cstring>
 
-WaterfallScope::WaterfallScope(QwtPlot * scope, i32 displaySize, i32 rasterSize) :
-  QwtPlotSpectrogram(),
-  mpPlotgrid(scope),
-  mDisplaySize(displaySize),
-  mRasterSize(rasterSize)
+WaterfallScope::WaterfallScope(QWidget * const parent)
+  : QWidget(parent)
 {
-  mPlotDataVec.resize(displaySize * rasterSize);
-  std::fill(mPlotDataVec.begin(), mPlotDataVec.end(), -100.0);
-
-  _gen_color_map(0);
-
-  setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
-
-  mpPlotgrid->enableAxis(QwtPlot::yLeft, true);
-  mpPlotgrid->setAxisScale(QwtPlot::yLeft, -rasterSize, 0);
-  mpPlotgrid->enableAxis(QwtPlot::xBottom, false);
-  mpPlotgrid->enableAxis(QwtPlot::xTop, true);
-  mpPlotgrid->axisScaleDraw(QwtPlot::xTop)->enableComponent(QwtAbstractScaleDraw::Labels, false); // disable labels (labels from spectrum used)
-
-  mpPlotgrid->replot();
+  _build_color_lut();
 }
 
-WaterfallScope::~WaterfallScope()
+void WaterfallScope::init(const i32 iDisplaySize, const i32 iRasterSize)
 {
-  detach();
+  mDisplaySize = iDisplaySize;
+  mRasterSize  = iRasterSize;
+  mImage = QImage(iDisplaySize, iRasterSize, QImage::Format_RGB32);
+  mImage.fill(Qt::black);
 }
 
-void WaterfallScope::show_waterfall(const f64 * ipX_axis, const f64 * ipY1_value, const SpecViewLimits<f64> & iSpecViewLimits)
+void WaterfallScope::show_waterfall(const f64 * ipY1_value, const SpecViewLimits<f64> & iSpecViewLimits)
 {
-  const i32 orig = (i32)(ipX_axis[0]);
+  if (mDisplaySize == 0 || mRasterSize == 0) return;
 
-  if (const i32 width = (i32)(ipX_axis[mDisplaySize - 1] - orig);
-      mOrig != orig || mWidth != width)
-  {
-    mpWaterfallData = new SpectrogramData(mPlotDataVec.data(), orig, width, -mRasterSize, mDisplaySize);
-    detach();
-    setData(mpWaterfallData);                                                                                
-    attach(mpPlotgrid);
-    mOrig = orig;
-    mWidth = width;
-  }
-
-  // weight with slider (scale) between global and local minimum and maximum level values
+  // Compute dynamic scale range
   const f64 yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
   const f64 yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
-  mpWaterfallData->set_min_max_z_value(yMin, yMax);
+  const f64 yRange = yMax - yMin;
+  if (yRange <= 0.0) return;
 
-  constexpr i32 elemSize = sizeof(decltype(mPlotDataVec.back()));
-  memmove(&mPlotDataVec[mDisplaySize], &mPlotDataVec[0], (mRasterSize - 1) * mDisplaySize * elemSize); // move rows one row further
-  memcpy(&mPlotDataVec[0], ipY1_value, mDisplaySize * elemSize);
+  // Shift image down by one row (new data goes at row 0)
+  const i32 rowBytes = mDisplaySize * (i32)sizeof(QRgb);
+  for (i32 row = mRasterSize - 1; row > 0; --row)
+  {
+    memcpy(mImage.scanLine(row), mImage.scanLine(row - 1), (size_t)rowBytes);
+  }
 
-  mpPlotgrid->setAxisScale(QwtPlot::xBottom, ipX_axis[0], ipX_axis[mDisplaySize - 1]); // for plot
-  mpPlotgrid->setAxisScale(QwtPlot::xTop, ipX_axis[0], ipX_axis[mDisplaySize - 1]); // for ticks
+  // Map new data row to colours at row 0
+  QRgb * const topRow = reinterpret_cast<QRgb *>(mImage.scanLine(0));
+  for (i32 x = 0; x < mDisplaySize; ++x)
+  {
+    const f64 t = std::clamp((ipY1_value[x] - yMin) / yRange, 0.0, 1.0);
+    const i32 lutIdx = (i32)(t * 255.0);
+    topRow[x] = mColorLut[(size_t)lutIdx];
+  }
 
-  mpPlotgrid->replot();
+  update();
 }
 
-void WaterfallScope::_gen_color_map(const i32 iStyleNr)
-{
-  switch (iStyleNr)
-  {
-  case 0:
-  {
-    mpColorMap = new QwtLinearColorMap(Qt::black, Qt::white);
-    mpColorMap->addColorStop(0.2, Qt::darkBlue);
-    mpColorMap->addColorStop(0.4, Qt::blue);
-    mpColorMap->addColorStop(0.6, Qt::yellow);
-    mpColorMap->addColorStop(0.8, Qt::red);
-    break;
-  }
-
-  case 1:
-  {
-    mpColorMap = new QwtLinearColorMap(Qt::black, Qt::white);
-    mpColorMap->addColorStop(0.2, 0x2020A0);
-    mpColorMap->addColorStop(0.4, 0xFF2020);
-    mpColorMap->addColorStop(0.6, 0xFF40FF);
-    mpColorMap->addColorStop(0.8, 0xFFFF40);
-    break;
-  }
-
-  case 2:
-  {
-    constexpr i32 COL_STEPS = 16;
-
-    const i32 R_start = 0x40;
-    const i32 G_start = 0x00;
-    const i32 B_start = 0x00;
-
-    const i32 R_stop = 0xA0;
-    const i32 G_stop = 0x80;
-    const i32 B_stop = 0xFF;
-
-    const f64 R_step = (f64)(R_stop - R_start) / COL_STEPS;
-    const f64 G_step = (f64)(G_stop - G_start) / COL_STEPS;
-    const f64 B_step = (f64)(B_stop - B_start) / COL_STEPS;
-
-    mpColorMap = new QwtLinearColorMap(Qt::black, R_stop << 16 | G_stop << 8 | B_stop);
-
-    for (i32 colIdx = 1; colIdx < COL_STEPS; ++colIdx)
-    {
-      const i32 R_val = (i32)(R_step * colIdx) + R_start;
-      const i32 G_val = (i32)(G_step * colIdx) + G_start;
-      const i32 B_val = (i32)(B_step * colIdx) + B_start;
-      const i32 col_val = R_val << 16 | G_val << 8 | B_val;
-      mpColorMap->addColorStop((f64)colIdx / COL_STEPS, col_val);
-    }
-    break;
-  }
-  default: qFatal("Invalid waterfall color style number %d", iStyleNr);
-  }
-
-  setColorMap(mpColorMap);
-}
-
-void WaterfallScope::slot_scaling_changed(i32 iScale)
+void WaterfallScope::slot_scaling_changed(const i32 iScale)
 {
   mScale = (f64)iScale / 100.0;
+}
+
+void WaterfallScope::slot_set_horizontal_margins(const int iLeft, const int iRight)
+{
+  mLeftMargin  = iLeft;
+  mRightMargin = iRight;
+  update();
+}
+
+void WaterfallScope::paintEvent(QPaintEvent * const /*ipEvent*/)
+{
+  QPainter painter(this);
+  painter.fillRect(rect(), Qt::black);
+
+  if (!mImage.isNull())
+  {
+    painter.drawImage(rect().adjusted(mLeftMargin, 0, -mRightMargin, 0), mImage);
+  }
+}
+
+void WaterfallScope::_build_color_lut()
+{
+  // Colour stops
+  //   0.0 → black
+  //   0.2 → dark blue
+  //   0.4 → blue
+  //   0.6 → yellow
+  //   0.8 → red
+  //   1.0 → white
+  struct Stop { double pos; int r, g, b; };
+  static constexpr Stop stops[] = {
+    { 0.0, 0,   0,   0   },
+    { 0.2, 0,   0,   128 },
+    { 0.4, 0,   0,   255 },
+    { 0.6, 255, 255, 0   },
+    { 0.8, 255, 0,   0   },
+    { 1.0, 255, 255, 255 },
+  };
+  constexpr i32 nStops = (i32)(sizeof(stops) / sizeof(stops[0]));
+
+  for (i32 i = 0; i < 256; ++i)
+  {
+    const double t = (double)i / 255.0;
+
+    // find segment
+    i32 seg = 0;
+    for (i32 s = 1; s < nStops - 1; ++s)
+    {
+      if (t >= stops[s].pos) seg = s;
+    }
+
+    const double t0 = stops[seg].pos;
+    const double t1 = stops[seg + 1].pos;
+    const double frac = (t1 > t0) ? (t - t0) / (t1 - t0) : 0.0;
+
+    const int r = (int)(stops[seg].r + frac * (stops[seg + 1].r - stops[seg].r));
+    const int g = (int)(stops[seg].g + frac * (stops[seg + 1].g - stops[seg].g));
+    const int b = (int)(stops[seg].b + frac * (stops[seg + 1].b - stops[seg].b));
+
+    mColorLut[(size_t)i] = qRgb(r, g, b);
+  }
 }

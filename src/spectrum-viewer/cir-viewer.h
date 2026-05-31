@@ -7,11 +7,9 @@
 #include "ringbuffer.h"
 #include "phasetable.h"
 #include "custom_frame.h"
+#include "plot_widget.h"
 #include <fftw3.h>
-#include <qwt.h>
-#include <qwt_plot.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_curve.h>
+#include <QLineSeries>
 #include <QObject>
 
 constexpr i32 CIR_SPECTRUMSIZE = 2048*97;
@@ -35,8 +33,7 @@ public:
 private:
   CustomFrame mFrame;
   RingBuffer<cf32> * const mpCirBuffer;
-  QwtPlotCurve mCurve;
-  QwtPlotGrid mGrid;
+  QLineSeries * mpCurve = nullptr;
   alignas(64) TArrayTu mFftInBuffer;
   alignas(64) TArrayTu mFftOutBuffer;
   fftwf_plan mFftPlanFwd;
@@ -46,4 +43,3 @@ private:
 signals:
   void signal_frame_closed();
 };
-

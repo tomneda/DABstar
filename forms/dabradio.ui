@@ -1072,81 +1072,57 @@
           <number>1</number>
          </property>
          <item>
-          <widget class="QwtThermo" name="thermoPeakLevelLeft">
+          <widget class="LevelMeter" name="thermoPeakLevelLeft" native="true">
            <property name="minimumSize">
             <size>
              <width>0</width>
              <height>0</height>
             </size>
            </property>
-           <property name="lowerBound">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>8</height>
+            </size>
+           </property>
+           <property name="lowerBound" stdset="0">
             <double>-22.000000000000000</double>
            </property>
-           <property name="upperBound">
+           <property name="upperBound" stdset="0">
             <double>0.000000000000000</double>
            </property>
-           <property name="scaleMaxMajor">
-            <number>9</number>
-           </property>
-           <property name="scaleMaxMinor">
-            <number>3</number>
-           </property>
-           <property name="scaleStepSize">
-            <double>3.000000000000000</double>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="scalePosition">
-            <enum>QwtThermo::ScalePosition::NoScale</enum>
-           </property>
-           <property name="borderWidth">
-            <number>0</number>
-           </property>
-           <property name="pipeWidth">
-            <number>7</number>
+           <property name="showScale" stdset="0">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QwtThermo" name="thermoPeakLevelRight">
+          <widget class="LevelMeter" name="thermoPeakLevelRight" native="true">
            <property name="minimumSize">
             <size>
              <width>0</width>
              <height>0</height>
             </size>
            </property>
-           <property name="lowerBound">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>8</height>
+            </size>
+           </property>
+           <property name="lowerBound" stdset="0">
             <double>-22.000000000000000</double>
            </property>
-           <property name="upperBound">
+           <property name="upperBound" stdset="0">
             <double>0.000000000000000</double>
            </property>
-           <property name="scaleMaxMajor">
-            <number>9</number>
-           </property>
-           <property name="scaleMaxMinor">
-            <number>3</number>
-           </property>
-           <property name="scaleStepSize">
-            <double>3.000000000000000</double>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="scalePosition">
-            <enum>QwtThermo::ScalePosition::NoScale</enum>
-           </property>
-           <property name="borderWidth">
-            <number>0</number>
-           </property>
-           <property name="pipeWidth">
-            <number>7</number>
+           <property name="showScale" stdset="0">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QwtThermo" name="thermoPeakScale">
+          <widget class="LevelMeter" name="thermoPeakScale" native="true">
            <property name="font">
             <font>
              <pointsize>6</pointsize>
@@ -1155,35 +1131,14 @@
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Peak level in dBFS&lt;/p&gt;&lt;p&gt;- Top: left channel&lt;br/&gt;- Bottom: right channel&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
-           <property name="lowerBound">
+           <property name="lowerBound" stdset="0">
             <double>-22.000000000000000</double>
            </property>
-           <property name="upperBound">
+           <property name="upperBound" stdset="0">
             <double>0.000000000000000</double>
            </property>
-           <property name="scaleMaxMajor">
-            <number>9</number>
-           </property>
-           <property name="scaleMaxMinor">
-            <number>3</number>
-           </property>
-           <property name="scaleStepSize">
-            <double>3.000000000000000</double>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="scalePosition">
-            <enum>QwtThermo::ScalePosition::LeadingScale</enum>
-           </property>
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <property name="borderWidth">
-            <number>0</number>
-           </property>
-           <property name="pipeWidth">
-            <number>1</number>
+           <property name="barVisible" stdset="0">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -1210,9 +1165,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QwtThermo</class>
+   <class>LevelMeter</class>
    <extends>QWidget</extends>
-   <header>qwt_thermo.h</header>
+   <header>level_meter.h</header>
   </customwidget>
   <customwidget>
    <class>GapProgressBar</class>

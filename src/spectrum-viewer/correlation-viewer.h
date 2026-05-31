@@ -34,17 +34,9 @@
 #include <QObject>
 #include <QColor>
 #include <QVector>
-#include <qwt.h>
-#include <qwt_plot.h>
-#include <qwt_plot_marker.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_curve.h>
-#include <qwt_color_map.h>
-#include <qwt_plot_textlabel.h>
-#include <qwt_plot_canvas.h>
-#include <qwt_plot_layout.h>
-#include <qwt_scale_widget.h>
-#include "cust_qwt_zoom_pan.h"
+#include <QLineSeries>
+#include <QGraphicsSimpleTextItem>
+#include "plot_widget.h"
 #include "ringbuffer.h"
 #include "tii-detector.h"
 
@@ -56,29 +48,34 @@ class CorrelationViewer : public QObject
 {
 Q_OBJECT
 public:
-  CorrelationViewer(QwtPlot *, QLabel *, QSettings *, RingBuffer<f32> *);
+  CorrelationViewer(PlotWidget *, QLabel *, QSettings *, RingBuffer<f32> *);
   ~CorrelationViewer() override = default;
 
   void showCorrelation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr);
 
 private:
+  struct STiiMarker
+  {
+    QLineSeries * pLine = nullptr;
+    QGraphicsSimpleTextItem * pText = nullptr;
+    f32 xPos = 0;
+  };
+
   static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";
   static QString _get_best_match_text(const QVector<i32> & v);
+  void _update_tii_label_positions() const;
 
   QSettings * const mpSettings = nullptr;
   RingBuffer<f32> * const mpResponseBuffer;
-  QwtPlot * const mpQwtPlot;
+  PlotWidget * const mpPlot;
   QLabel * const mpIndexDisplay;
-  QwtPlotMarker * mpThresholdMarker = nullptr;
-  QwtPlotCurve mQwtPlotCurve;
-  QwtPlotGrid mQwtGrid;
+
+  QLineSeries * mpCurve = nullptr;
+  QLineSeries * mpThresholdLine = nullptr;         // horizontal threshold line
+  std::vector<STiiMarker> mTiiMarkerVec;           // vertical TII lines + labels
+
+  PlotWidget::SRange mXZoomRange{0, 2047};
   std::vector<i32> mIndexVector;
-  QColor mGridColor;
-  QColor mCurveColor;
   f32 mMinValFlt = -15;
   f32 mMaxValFlt = 10;
-  std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
-  CustQwtZoomPan mZoomPan;
 };
-
-

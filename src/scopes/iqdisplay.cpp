@@ -1,67 +1,53 @@
 /*
- * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ * Copyright (c) 2026 by Thomas Neder (https://github.com/tomneda)
  *
- * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
- * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ * DABstar is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2 of the License, or any later version.
  *
- * The original copyright information is preserved below and is acknowledged.
- */
-
-/*
- *    Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013
- *    Jan van Katwijk (J.vanKatwijk@gmail.com)
- *    Lazy Chair Computing
+ * DABstar is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- *    This file is part of Qt-DAB
- *
- *    Qt-DAB is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    Qt-DAB is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with Qt-DAB; if not, write to the Free Software
- *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
+ * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "iqdisplay.h"
-#include "spectrogramdata.h"
-#include <qwt_color_map.h>
+#include <QPainter>
+#include <QPaintEvent>
+#include <cmath>
 
-IQDisplay::IQDisplay(QwtPlot * const ipPlot)
-  : QwtPlotSpectrogram()
+IQDisplay::IQDisplay(QWidget * const parent)
+  : QWidget(parent)
 {
-  auto * const colorMap = new QwtLinearColorMap(QColor(0, 0, 255, 20), QColor(255, 255, 178, 255));
+  setAttribute(Qt::WA_OpaquePaintEvent);
+  mPixelBuffer.resize(c2Radius * c2Radius, 0);
+  mImage = QImage(c2Radius, c2Radius, QImage::Format_RGB32);
 
-  setRenderThreadCount(1);
-  mPlotgrid = ipPlot;
-  setColorMap(colorMap);
-  mPlotDataBackgroundBuffer.resize(2 * cRadius * 2 * cRadius, 0.0);
-  mPlotDataDrawBuffer.resize(2 * cRadius * 2 * cRadius, 0.0);
-  mpIQData = new SpectrogramData(mPlotDataDrawBuffer.data(), 0, 2 * cRadius, 2 * cRadius, 2 * cRadius);
-  mpIQData->set_min_max_z_value(0.0, 50.0);
-  setData(mpIQData);
-  ipPlot->enableAxis(QwtPlot::xBottom, false);
-  ipPlot->enableAxis(QwtPlot::yLeft, false);
-  setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
+  // IQ dot color: fully-opaque yellowish-white
+  mDotColor = qRgb(255, 255, 178);
+
+  // Per-row background gradient matching the global application stylesheet:
+  //   top (y=0)        → rgb(58, 58, 58)
+  //   bottom (y=cDim)  → rgb(18, 18, 18)
+  for (i32 y = 0; y < c2Radius; ++y)
+  {
+    const float t = (float)y / (float)(c2Radius - 1);
+    const int v = (int)(58.0f + t * (18.0f - 58.0f));
+    mBgGradient[(size_t)y] = qRgb(v, v, v);
+  }
+
+  for (i32 y = 0; y < c2Radius; ++y)
+  {
+    const QRgb bg = mBgGradient[(size_t)y];
+    const int r = (114 * 102 + 141 * qRed(bg))   / 255;
+    const int g = (114 * 102 + 141 * qGreen(bg)) / 255;
+    const int b = (114 * 224 + 141 * qBlue(bg))  / 255;
+    mCrossGradient[(size_t)y] = qRgb(r, g, b);
+  }
 
   select_plot_type(EIqPlotType::DEFAULT);
-  attach(mPlotgrid);
-
-  mPlotgrid->replot();
 }
 
-IQDisplay::~IQDisplay()
-{
-  detach();
-  // delete mIQData; // delete here will cause an exception
-}
-
-inline void IQDisplay::set_point(const i32 iX, const i32 iY, i32 iVal)
+inline void IQDisplay::_set_point(const i32 iX, const i32 iY, const u8 iVal)
 {
   i32 x, y;
 
@@ -72,16 +58,16 @@ inline void IQDisplay::set_point(const i32 iX, const i32 iY, i32 iVal)
       if (iY < 0) { x = -iX; y = -iY; }
       else        { x =  iY; y = -iX; }
     }
-    else // ix >= 0
+    else
     {
-      if (iY < 0) { x = -iY; y = iX; }
-      else        { x =  iX; y = iY; }
+      if (iY < 0) { x = -iY; y =  iX; }
+      else        { x =  iX; y =  iY; }
     }
 
-    limit_symmetrically(x, 2 * cRadius - 1);
-    limit_symmetrically(y, 2 * cRadius - 1);
+    limit_symmetrically(x, c2Radius - 1);
+    limit_symmetrically(y, c2Radius - 1);
 
-    mPlotDataBackgroundBuffer[y * 2 * cRadius + x] = iVal;
+    mPixelBuffer[(size_t)((c2Radius - 1 - y) * c2Radius + x)] = iVal;
   }
   else
   {
@@ -91,7 +77,7 @@ inline void IQDisplay::set_point(const i32 iX, const i32 iY, i32 iVal)
     limit_symmetrically(x, cRadius - 1);
     limit_symmetrically(y, cRadius - 1);
 
-    mPlotDataBackgroundBuffer[(y + cRadius - 1) * 2 * cRadius + x + cRadius - 1] = iVal;
+    mPixelBuffer[(size_t)((cRadius - 1 - y) * c2Radius + x + cRadius - 1)] = iVal;
   }
 }
 
@@ -102,12 +88,12 @@ void IQDisplay::display_iq(const std::vector<cf32> & iIQ, const f32 iScale)
     mPoints.resize(iIQ.size(), { 0, 0 });
   }
 
-  const f32 scale = std::pow(10.0f, 2.0f * iScale - 1.0f); // scale [0.0..1.0] to [0.1..10.0]
+  const f32 scale = std::pow(10.0f, 2.0f * iScale - 1.0f);
   const f32 scaleNormed = scale * mRadius;
 
-  clean_screen_from_old_data_points();
-  draw_cross();
-  repaint_circle(scale);
+  _clean_screen_from_old_data_points();
+  _draw_cross();
+  _repaint_circle(scale);
 
   for (u32 i = 0; i < iIQ.size(); i++)
   {
@@ -115,90 +101,109 @@ void IQDisplay::display_iq(const std::vector<cf32> & iIQ, const f32 iScale)
     auto y = (i32)(scaleNormed * imag(iIQ[i]));
 
     mPoints[i] = std::complex<i32>(x, y);
-    set_point(x, y, 100);
+    _set_point(x, y, 100);
   }
 
-  constexpr i32 elemSize = sizeof(decltype(mPlotDataBackgroundBuffer.back()));
-  memcpy(mPlotDataDrawBuffer.data(), mPlotDataBackgroundBuffer.data(), 2 * 2 * cRadius * cRadius * elemSize);
-
-  mPlotgrid->replot();
+  _rebuild_image();
+  update();
 }
 
-void IQDisplay::clean_screen_from_old_data_points()
+void IQDisplay::_clean_screen_from_old_data_points()
 {
   for (const auto & p : mPoints)
   {
-    set_point(real(p), imag(p), 0);
+    _set_point(real(p), imag(p), 0);
   }
 }
 
-void IQDisplay::draw_cross()
+void IQDisplay::_draw_cross()
 {
   if (mMap1stQuad)
   {
-    for (i32 i = 0; i < 2 * cRadius; i++)
+    for (i32 i = 0; i < c2Radius; i++)
     {
-      set_point(0, i, 20); // vertical line
-      set_point(i, 0, 20); // horizontal line
+      _set_point(0, i, 20);
+      _set_point(i, 0, 20);
     }
   }
   else
   {
     for (i32 i = -(cRadius - 1); i < cRadius; i++)
     {
-      set_point(0, i, 20); // vertical line
-      set_point(i, 0, 20); // horizontal line
+      _set_point(0, i, 20);
+      _set_point(i, 0, 20);
     }
   }
 }
 
-void IQDisplay::draw_circle(const f32 iScale, const i32 iVal)
+void IQDisplay::_draw_circle(const f32 iScale, const u8 iVal)
 {
-  const i32 MAX_CIRCLE_POINTS = static_cast<i32>(180 * iScale); // per quarter
+  const i32 maxCirclePoints = (i32)(180 * iScale);
 
-  for (i32 i = 0; i < MAX_CIRCLE_POINTS; ++i)
+  for (i32 i = 0; i < maxCirclePoints; ++i)
   {
-    const f32 phase = 0.5f * (f32)M_PI * (f32)i / MAX_CIRCLE_POINTS;
-
+    const f32 phase = 0.5f * (f32)M_PI * (f32)i / maxCirclePoints;
     auto h = (i32)(mRadius * iScale * std::cos(phase));
     auto v = (i32)(mRadius * iScale * std::sin(phase));
 
-    // as h and v covers only the top right segment, fill also other segments
     if (!mMap1stQuad)
     {
-      set_point(-h, -v, iVal);
-      set_point(-h, +v, iVal);
-      set_point(+h, -v, iVal);
+      _set_point(-h, -v, iVal);
+      _set_point(-h, +v, iVal);
+      _set_point(+h, -v, iVal);
     }
-    set_point(+h, +v, iVal);
+    _set_point(+h, +v, iVal);
   }
 }
 
-void IQDisplay::repaint_circle(const f32 iSize)
+void IQDisplay::_repaint_circle(const f32 iSize)
 {
   if (iSize != mLastCircleSize)
   {
-    draw_circle(mLastCircleSize, 0); // clear old circle
+    _draw_circle(mLastCircleSize, 0); // erase old circle
     mLastCircleSize = iSize;
   }
-  draw_circle(iSize, 20);
+  _draw_circle(iSize, 20);
+}
+
+void IQDisplay::_rebuild_image()
+{
+  for (i32 y = 0; y < c2Radius; ++y)
+  {
+    QRgb * const line = reinterpret_cast<QRgb *>(mImage.scanLine(y));
+    const u8 * const row = mPixelBuffer.data() + y * c2Radius;
+    const QRgb bgColor    = mBgGradient[(size_t)y];
+    const QRgb crossColor = mCrossGradient[(size_t)y];
+    for (i32 x = 0; x < c2Radius; ++x)
+    {
+      switch (row[x])
+      {
+      case 0:   line[x] = bgColor;    break;
+      case 20:  line[x] = crossColor; break;
+      default:  line[x] = mDotColor;  break;
+      }
+    }
+  }
+}
+
+void IQDisplay::paintEvent(QPaintEvent * const /*ipEvent*/)
+{
+  QPainter painter(this);
+  // Scale the 200×200 image to fill the widget (keeps square if widget is square)
+  painter.drawImage(rect(), mImage);
 }
 
 void IQDisplay::select_plot_type(const EIqPlotType iPlotType)
 {
-  customize_plot(_get_plot_type_data(iPlotType));
+  const SCustPlot cp = _get_plot_type_data(iPlotType);
+  setToolTip(cp.ToolTip);
 }
 
-void IQDisplay::set_map_1st_quad(bool iMap1stQuad)
+void IQDisplay::set_map_1st_quad(const bool iMap1stQuad)
 {
   mMap1stQuad = iMap1stQuad;
   mRadius = (f32)cRadius * (iMap1stQuad ? 2.0f : 1.0f);
-  std::fill(mPlotDataBackgroundBuffer.begin(), mPlotDataBackgroundBuffer.end(), 0.0);
-}
-
-void IQDisplay::customize_plot(const SCustPlot & iCustPlot)
-{
-  mPlotgrid->setToolTip(iCustPlot.ToolTip);
+  std::fill(mPixelBuffer.begin(), mPixelBuffer.end(), 0);
 }
 
 IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)

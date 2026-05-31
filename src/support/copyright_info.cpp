@@ -12,7 +12,6 @@
  */
 
 #include "copyright_info.h"
-#include <qwt.h>
 #include <fftw3.h>
 #include <sndfile.h>
 #include <zlib.h>
@@ -81,8 +80,7 @@ QString get_copyright_text()
   versionText = "<h3>" + QString(PRJ_NAME) + " " + PRJ_VERS + "</h3>";
   versionText += "<p><b>Built on " + QString(__DATE__) + "&nbsp;&nbsp;" + QString(__TIME__) + QString("<br/>Commit ") + QString(GITHASH) + "</b></p>"; // __TIMESTAMP__ seems to use the file date not the compile date
   versionText += "<p><b>Used libs with version:</b><br>"
-                 "Qt " QT_VERSION_STR "<br>"
-                 "Qwt " QWT_VERSION_STR "<br>" +
+                 "Qt " QT_VERSION_STR "<br>" +
                  volkVers +
                  fftwf_version  + "<br>" +
                  faadVers +
@@ -95,7 +93,7 @@ QString get_copyright_text()
                  "(" + hyperlink("https://github.com/tomneda/DABstar") + ").<br/>"
                  "For Qt-DAB see " + hyperlink("https://github.com/JvanKatwijk/qt-dab") + " by Jan van Katwijk<br/>"
                  "(" + hyperlink("J.vanKatwijk@gmail.com", true) + ").</p>";
-  versionText += "<p>Rights of Qt, Qwt, FFTW" + usedDecoder + useVolk + useLiquid + ", libsndfile and zlib gratefully acknowledged.<br/>"
+  versionText += "<p>Rights of Qt, FFTW" + usedDecoder + useVolk + useLiquid + ", libsndfile and zlib gratefully acknowledged.<br/>"
                  "Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.<br/>"
                  "Rights of other contributors gratefully acknowledged.</p>";
   versionText += "Features NewsService Journaline(R) decoder technology by Fraunhofer IIS, Erlangen, Germany. For more information visit "

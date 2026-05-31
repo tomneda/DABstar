@@ -32,10 +32,12 @@
 #include "spectrum-viewer.h"
 #include "spectrum-scope.h"
 #include "waterfall-scope.h"
+#include "plot_widget.h"
 #include "correlation-viewer.h"
 #include "carrier-display.h"
 #include "iqdisplay.h"
 #include "setting-helper.h"
+#include "level_meter.h"
 #include <QSettings>
 #include <QColor>
 #include <algorithm>
@@ -61,11 +63,12 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
   //create_blackman_window(mWindowVec.data(), SP_SPECTRUMSIZE);
   create_flattop_window(mWindowVec.data(), SP_SPECTRUMSIZE);
 
-  mpSpectrumScope = new SpectrumScope(dabScope, SP_DISPLAYSIZE, ipDabSettings);
-  mpWaterfallScope = new WaterfallScope(dabWaterfall, SP_DISPLAYSIZE, 50);
-  mpIQDisplay = new IQDisplay(iqDisplay);
-  mpCarrierDisp = new CarrierDisp(phaseCarrPlot);
-  mpCorrelationViewer = new CorrelationViewer(impulseGrid, indexDisplay, ipDabSettings, mpCorrelationBuffer);
+  mpSpectrumScope = new SpectrumScope(plotRfFft, SP_DISPLAYSIZE, ipDabSettings);
+  dabWaterfall->init(SP_DISPLAYSIZE, 50);
+  mpWaterfallScope = dabWaterfall;
+  mpIQDisplay = iqDisplay;
+  mpCarrierDisp = new CarrierDisp(plotPhaseCarr);
+  mpCorrelationViewer = new CorrelationViewer(plotCorrelation, lblIndexList, ipDabSettings, mpCorrelationBuffer);
 
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
   cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
@@ -77,6 +80,7 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
 
   connect(sliderRfScopeZoom, &QSlider::valueChanged, mpWaterfallScope, &WaterfallScope::slot_scaling_changed);
   connect(sliderRfScopeZoom, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
+  connect(plotRfFft, &PlotWidget::signal_plot_area_changed, mpWaterfallScope, &WaterfallScope::slot_set_horizontal_margins);
   connect(cmbCarrier, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
@@ -101,9 +105,8 @@ SpectrumViewer::~SpectrumViewer()
 
   delete mpCorrelationViewer;
   delete mpCarrierDisp;
-  delete mpIQDisplay;
+  // mpIQDisplay and mpWaterfallScope are UI-owned promoted widgets — do not delete
   delete mpSpectrumScope;
-  delete mpWaterfallScope;
 
   fftwf_destroy_plan(mFftPlan);
 }
@@ -228,7 +231,7 @@ void SpectrumViewer::show_spectrum(const i32 vfoFrequency)
     _calc_spectrum_display_limits(mSpecViewLimits.Loc);
   }
 
-  mpWaterfallScope->show_waterfall(mXAxisVec.data(), mDisplayBuffer.data(), mSpecViewLimits);
+  mpWaterfallScope->show_waterfall(mDisplayBuffer.data(), mSpecViewLimits);
   mpSpectrumScope->show_spectrum(mXAxisVec.data(), mDisplayBuffer.data(), mSpecViewLimits);
 }
 
@@ -282,14 +285,16 @@ void SpectrumViewer::show_lcd_data(const i32 /*iOfdmSymbNo*/, const f32 iModQual
   lcdPhaseCorr->display(QString("%1").arg(iMeanSigmaSqFreqCorr, 0, 'f', 1));
   lcdModQuality->display(QString("%1").arg(iModQual, 0, 'f', 1));
 
-  // Very strange thing: the configuration of the ThermoWidget colors has to be done in the calling thread.
   if (!mThermoModQualConfigured)
   {
-    thermoModQual->setColorMap(new QwtLinearColorMap(0x7777CC, 0x0000FF));
+    thermoModQual->set_color_stops({
+      { 0.0, 0x7777CC },
+      { 1.0, 0x0000FF },
+    });
     mThermoModQualConfigured = true;
   }
 
-  thermoModQual->setValue(iModQual);
+  thermoModQual->set_value(iModQual);
 }
 
 void SpectrumViewer::show_fic_ber(const f32 ber) const
@@ -336,7 +341,7 @@ void SpectrumViewer::_slot_handle_cmb_iqscope(i32 iSel)
 {
   const auto pt = static_cast<EIqPlotType>(iSel);
   mpIQDisplay->select_plot_type(pt);
-  emit signal_cmb_iqscope_changed(pt);
+  emit signal_cmb_iq_scope_changed(pt);
 }
 
 void SpectrumViewer::_slot_handle_cb_nom_carrier(i32 iSel)
@@ -363,8 +368,8 @@ void SpectrumViewer::show_digital_peak_and_rms_level(const f32 iDigLevelPeak, co
   const f32 valuedBRms  = log10_times_20(iDigLevelRms);
   const f32 valuedBPeak = log10_times_20(iDigLevelPeak);
 
-  const f64 minValue = thermoDigLevel->minimum();
-  const f64 maxValue = thermoDigLevel->maximum();
+  const f64 minValue = thermoDigLevel->get_lower_bound();
+  const f64 maxValue = thermoDigLevel->get_upper_bound();
   const f64 range = maxValue - minValue;
   if (range <= 0) return; // should never happen
 
@@ -372,16 +377,26 @@ void SpectrumViewer::show_digital_peak_and_rms_level(const f32 iDigLevelPeak, co
   f64 relPosPeak = (valuedBPeak - minValue) / range;
   const f64 relPos0dB  = (0 - minValue) / range;
 
+  // relPosPeak is clamped to 0 dBFS so it marks the orange→red boundary.
+  // setValue() uses the unclamped valuedBPeak so the bar can extend into the red zone.
   relPosRms  = std::clamp<f64>(relPosRms,  0.0, relPos0dB);
   relPosPeak = std::clamp<f64>(relPosPeak, 0.0, relPos0dB);
-  
-  QwtLinearColorMap * colorMap = new QwtLinearColorMap(0xEEBB00, Qt::black);
-  colorMap->setMode(QwtLinearColorMap::FixedColors);
-  colorMap->addColorStop(relPosRms, 0xEE8800);
-  colorMap->addColorStop(relPosPeak, 0xEE5500);
-  thermoDigLevel->setColorMap(colorMap);
+  relPosRms  = std::min(relPosRms, relPosPeak);
 
-  thermoDigLevel->setValue(valuedBPeak);
+  constexpr f64 eps = 1.0 / 255.0;
+  const f64 rmsNext  = std::min(relPosRms, relPosPeak - eps);
+  const f64 peakNext = std::min(relPosPeak, 1.0 - eps);
+
+  thermoDigLevel->set_color_stops({
+    { 0.0,        0xEEBB00 },  // yellow      (0 → RMS)
+    { relPosRms,  0xEEBB00 },
+    { rmsNext,    0xEE8800 },  // hard jump → orange     (RMS → 0 dBFS)
+    { relPosPeak, 0xEE8800 },
+    { peakNext,   0xEE5500 },  // hard jump → red-orange (above 0 dBFS)
+    { 1.0,        0xEE5500 },
+  });
+
+  thermoDigLevel->set_value(valuedBPeak);
 }
 
 void SpectrumViewer::set_spectrum_averaging_rate(SpectrumViewer::EAvrRate iAvrRate)

@@ -1,38 +1,39 @@
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original file originated from Qt-DAB but carried no copyright notice.
+ */
+
 #pragma once
 
 #include  "dab-constants.h"
 #include  <QObject>
-#include  <QColor>
-#include  <qwt_plot_curve.h>
+#include  <QLineSeries>
 
 class QSettings;
-class QwtPlot;
-class QwtPlotPicker;
-class QwtPlotGrid;
+class PlotWidget;
 
 class SpectrumScope : public QObject
 {
 Q_OBJECT
 public:
-  SpectrumScope(QwtPlot *, i32, QSettings *);
-  ~SpectrumScope() override;
+  SpectrumScope(PlotWidget *, i32, QSettings *);
+  ~SpectrumScope() override = default;
 
   void show_spectrum(const f64 *, const f64 *, const SpecViewLimits<f64> & iSpecViewLimits);
 
 private:
-  static constexpr char SETTING_GROUP_NAME[] = "spectrumScope";
-
-  QwtPlotCurve mSpectrumCurve;
-  QSettings * const mpDabSettings;
+  PlotWidget * mpPlot = nullptr;
+  QLineSeries * mpCurve = nullptr;
+  QList<QPointF> mPoints;
   const i32 mDisplaySize;
   f64 mScale = 0.0;
 
-  QwtPlot * mpPlotgrid = nullptr;
-  QwtPlotGrid * mpGrid = nullptr;
   std::vector<f64> mYValVec;
-  
+
 public slots:
   void slot_scaling_changed(i32);
 };
-
-

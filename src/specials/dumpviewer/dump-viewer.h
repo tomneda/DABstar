@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -22,49 +21,28 @@
  */
 
 #pragma once
-#include	<QDialog>
-#include        <qwt.h>
-#include        <qwt_plot.h>
-#include        <qwt_plot_marker.h>
-#include        <qwt_plot_grid.h>
-#include        <qwt_plot_curve.h>
-#include        <qwt_color_map.h>
-#include        <qwt_plot_zoomer.h>
-#include        <qwt_plot_textlabel.h>
-#include        <qwt_plot_panner.h>
-#include        <qwt_plot_layout.h>
-#include        <qwt_picker_machine.h>
-#include        <qwt_scale_widget.h>
+#include <QDialog>
+#include <QLineSeries>
+#include "plot_widget.h"
+#include "ui_dumpwidget.h"
 
-#include	<QLabel>
-#include	<QMessageBox>
-#include	"ui_dumpwidget.h"
-//
-
-class	dumpViewer:public QDialog,
-	            public Ui_dumpViewer {
+class dumpViewer : public QDialog, public Ui_dumpViewer
+{
 Q_OBJECT
 public:
-		dumpViewer	(FILE *, QWidget *parent = NULL);
-		~dumpViewer	(void);
+  dumpViewer(FILE *, QWidget * parent = nullptr);
+  ~dumpViewer() override = default;
 
-private	slots:
-	void	handle_viewSlider	(i32);
-	void	handle_amplitudeSlider	(i32);
-	void	handle_compressor	(i32);
+private slots:
+  void handle_viewSlider(i32);
+  void handle_amplitudeSlider(i32);
+  void handle_compressor(i32);
+
 private:
-	FILE		*theFile;
-	f32		seconds_per_frame;
-	f32		seconds_per_sample;
-	void		show_segment	(i32, i32);
-	i32		fileLength;
-	QwtPlot         *plotgrid;
-        QwtPlotGrid     *grid;
-        QwtPlotCurve    *spectrumCurve;
-        QwtPlotPicker   *lm_picker;
-        QColor          displayColor;
-        QColor          gridColor;
-        QColor          curveColor;
+  FILE * theFile;
+  f32 seconds_per_frame;
+  f32 seconds_per_sample;
+  void show_segment(i32, i32);
+  i32 fileLength;
+  QLineSeries * mpCurve = nullptr;
 };
-
-

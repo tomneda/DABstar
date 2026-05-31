@@ -17,20 +17,17 @@
 #pragma once
 
 #include "glob_enums.h"
-#include <qwt.h>
-#include <qwt_plot.h>
-#include <qwt_plot_marker.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
+#include "plot_widget.h"
+#include <QLineSeries>
+#include <QScatterSeries>
 #include <vector>
-#include "cust_qwt_zoom_pan.h"
 
 
 class CarrierDisp : public QObject
 {
 Q_OBJECT
 public:
-  explicit CarrierDisp(QwtPlot * plot);
+  explicit CarrierDisp(PlotWidget * plot);
   ~CarrierDisp() override = default;
 
   struct SCustPlot
@@ -44,10 +41,10 @@ public:
 
     f64 YTopValue;
     f64 YBottomValue;
-    f64 YTopValueRangeExt = 0;    // this zoom range extension value must be zero or positive
-    f64 YBottomValueRangeExt = 0; // this zoom range extension value must be zero or negative
+    f64 YTopValueRangeExt = 0;
+    f64 YBottomValueRangeExt = 0;
     i32 YValueElementNo = 0;
-    i32 MarkerYValueStep = 0; // if not each Y value a marker should set (0 = to set no marker)
+    i32 MarkerYValueStep = 0;
     bool DrawXGrid = true;
     bool DrawYGrid = true;
     bool DrawTiiSegments = false;
@@ -58,19 +55,22 @@ public:
   static QStringList get_plot_type_names();
 
 private:
-  QwtPlot * const mpQwtPlot = nullptr;
-  CustQwtZoomPan mZoomPan;
-  QwtPlotCurve mQwtPlotCurve;
-  QwtPlotGrid mQwtGrid;
-  std::vector<QwtPlotMarker *> mQwtPlotMarkerVec;
-  std::vector<QwtPlotMarker *> mQwtPlotTiiMarkerVec;
+  PlotWidget * const mpPlot = nullptr;
+  QLineSeries * mpLineSeries = nullptr;
+  QScatterSeries * mpDotSeries = nullptr;
+
+  std::vector<QLineSeries *> mpMarkerLines;    // horizontal Y-value markers
+  std::vector<QLineSeries *> mpTiiLines;       // vertical TII segment lines
+
   std::vector<f32> mX_axis_vec;
   i32 mDataSize = 0;
   ECarrierPlotType mPlotType = ECarrierPlotType::DEFAULT;
   bool mPlotTypeChanged = false;
+  SCustPlot::EStyle mCurrentStyle = SCustPlot::EStyle::LINES;
 
   void _customize_plot(const SCustPlot & iCustPlot);
   static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);
   void _setup_x_axis();
+  void _clear_marker_lines();
+  void _clear_tii_lines();
 };
-

@@ -16,31 +16,44 @@
 
 #include "glob_defs.h"
 #include "carrier-display.h"
-#include <qwt_scale_div.h>
 #include <QPen>
+#include <QChart>
 
-CarrierDisp::CarrierDisp(QwtPlot * ipPlot)
-  : mpQwtPlot(ipPlot)
-  , mZoomPan(ipPlot, CustQwtZoomPan::SRange(-1536.0 / 2, 1536.0 / 2)) // TODO: remove magic numbers
+CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
+  : mpPlot(ipPlot)
 {
-  mQwtPlotCurve.setPen(QPen(Qt::yellow, 2.0));
-  mQwtPlotCurve.setOrientation(Qt::Vertical); // only for TII "stick" which are should shown vertically
-  mQwtPlotCurve.attach(mpQwtPlot);
+  // Line series for LINES and STICKS styles
+  mpLineSeries = new QLineSeries();
+  mpLineSeries->setPen(QPen(Qt::yellow, 2.0));
+  mpLineSeries->setUseOpenGL(false);
+  mpPlot->chart()->addSeries(mpLineSeries);
+  mpLineSeries->attachAxis(mpPlot->get_x_axis());
+  mpLineSeries->attachAxis(mpPlot->get_y_axis());
 
-  mQwtGrid.setMajorPen(QPen(QColor(0x5e5c64), 0, Qt::DotLine));
-  mQwtGrid.setMinorPen(QPen(Qt::black, 0, Qt::NoPen));
-  mQwtGrid.enableX(true);
-  mQwtGrid.enableY(true);
-  mQwtGrid.enableXMin(true);
-  mQwtGrid.enableYMin(false);
-  mQwtGrid.attach(mpQwtPlot);
+  // Scatter series for DOTS style
+  mpDotSeries = new QScatterSeries();
+  mpDotSeries->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+  mpDotSeries->setMarkerSize(3.0);
+  mpDotSeries->setColor(Qt::yellow);
+  mpDotSeries->setBorderColor(Qt::transparent);
+  mpDotSeries->setUseOpenGL(false);
+  mpPlot->chart()->addSeries(mpDotSeries);
+  mpDotSeries->attachAxis(mpPlot->get_x_axis());
+  mpDotSeries->attachAxis(mpPlot->get_y_axis());
+
+  mpPlot->get_x_axis()->setGridLineVisible(true);
+  mpPlot->get_x_axis()->setMinorGridLineVisible(true);
+  mpPlot->get_y_axis()->setGridLineVisible(true);
+  mpPlot->get_y_axis()->setMinorGridLineVisible(false);
+  mpPlot->set_x_tick_count(0.0, 17);
+
+  mpPlot->setup_x_zoom(PlotWidget::SRange(-1536.0 / 2, 1536.0 / 2));
 
   select_plot_type(ECarrierPlotType::DEFAULT);
 }
 
 void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
 {
-  // customize plot first with new data to avoid flickering after plot type change
   if (mPlotTypeChanged)
   {
     mPlotTypeChanged = false;
@@ -53,130 +66,127 @@ void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
     _setup_x_axis();
   }
 
-  mQwtPlotCurve.setSamples(mX_axis_vec.data(), iYValVec.data(), mDataSize);
-  mpQwtPlot->replot();
+  QList<QPointF> pts;
+  pts.reserve(mDataSize);
+  for (i32 i = 0; i < mDataSize; i++)
+  {
+    pts.append(QPointF(mX_axis_vec[i], iYValVec[i]));
+  }
+
+  if (mCurrentStyle == SCustPlot::EStyle::DOTS)
+  {
+    mpDotSeries->replace(pts);
+    mpLineSeries->clear();
+  }
+  else if (mCurrentStyle == SCustPlot::EStyle::STICKS)
+  {
+    QList<QPointF> stickPts;
+    stickPts.reserve(mDataSize * 3);
+    for (i32 i = 0; i < mDataSize; i++)
+    {
+      stickPts.append(QPointF(mX_axis_vec[i], 0.0));
+      stickPts.append(QPointF(mX_axis_vec[i], iYValVec[i]));
+      stickPts.append(QPointF(mX_axis_vec[i], qQNaN())); // "lift" the pen
+    }
+    mpLineSeries->replace(stickPts);
+    mpDotSeries->clear();
+  }
+  else
+  {
+    mpLineSeries->replace(pts);
+    mpDotSeries->clear();
+  }
 }
 
 void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 {
   mPlotType = iPlotType;
-  mPlotTypeChanged = true; // configure plot first time with new data
+  mPlotTypeChanged = true;
+}
+
+void CarrierDisp::_clear_marker_lines()
+{
+  for (auto * p : mpMarkerLines)
+  {
+    mpPlot->chart()->removeSeries(p);
+    delete p;
+  }
+  mpMarkerLines.clear();
+}
+
+void CarrierDisp::_clear_tii_lines()
+{
+  for (auto * p : mpTiiLines)
+  {
+    mpPlot->chart()->removeSeries(p);
+    delete p;
+  }
+  mpTiiLines.clear();
 }
 
 void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 {
-  mpQwtPlot->setToolTip(iCustPlot.ToolTip);
+  mpPlot->setToolTip(iCustPlot.ToolTip);
+  mCurrentStyle = iCustPlot.Style;
 
   assert(iCustPlot.YTopValue > iCustPlot.YBottomValue);
 
-#if 0  // is not more usable with pan and zoom functionality
-  // draw vertical ticks
-  if (iCustPlot.YValueElementNo > 0)
+  mpPlot->setup_y_zoom(PlotWidget::SRange(iCustPlot.YBottomValue, iCustPlot.YTopValue,
+                                          iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
+  mpPlot->reset_x_zoom();
+  mpPlot->reset_y_zoom();
+
+  _clear_marker_lines();
+  _clear_tii_lines();
+
+  mpPlot->get_x_axis()->setGridLineVisible(iCustPlot.DrawXGrid);
+  mpPlot->get_y_axis()->setGridLineVisible(iCustPlot.DrawYGrid);
+
+  // Horizontal marker lines at specific Y values
+  if (iCustPlot.MarkerYValueStep > 0)
   {
     assert(iCustPlot.YValueElementNo >= 2);
     const f64 diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
-    QList<f64> tickList;
+    const i32 noMarkers = (iCustPlot.YValueElementNo + iCustPlot.MarkerYValueStep - 1) / iCustPlot.MarkerYValueStep;
 
-    for (i32 elemIdx = 0; elemIdx < iCustPlot.YValueElementNo; ++elemIdx)
+    for (i32 markerIdx = 0; markerIdx < noMarkers; ++markerIdx)
     {
-      tickList.push_back(iCustPlot.YBottomValue + elemIdx * diffVal);
-    }
-
-    mZoomPan.set_y_range(CustQwtZoomPan::SRange(tickList[0], tickList[tickList.size() - 1], iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
-    mpQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv(tickList[0], tickList[tickList.size() - 1], QList<f64>(), QList<f64>(), tickList));
-  }
-  else
-  {
-    mZoomPan.set_y_range(CustQwtZoomPan::SRange(iCustPlot.YBottomValue, iCustPlot.YTopValue, iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
-    mpQwtPlot->setAxisScaleDiv(QwtPlot::yLeft, QwtScaleDiv());
-  }
-#else
-  mZoomPan.set_y_range(CustQwtZoomPan::SRange(iCustPlot.YBottomValue, iCustPlot.YTopValue, iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
-#endif
-
-  mZoomPan.reset_x_zoom();
-  mZoomPan.reset_y_zoom();
-
-  // draw horizontal marker lines at -90, 0 , 90 degrees
-  {
-    // delete old markers
-    for (auto & p : mQwtPlotTiiMarkerVec)
-    {
-      p->detach();
-      delete p;
-    }
-    mQwtPlotTiiMarkerVec.clear();
-
-    for (auto & p : mQwtPlotMarkerVec)
-    {
-      p->detach();
-      delete p;
-    }
-    mQwtPlotMarkerVec.clear();
-
-    if (iCustPlot.MarkerYValueStep > 0)
-    {
-      assert(iCustPlot.YValueElementNo >= 2);
-      const f64 diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
-      const i32 noMarkers = (iCustPlot.YValueElementNo + iCustPlot.MarkerYValueStep - 1) / iCustPlot.MarkerYValueStep;
-      mQwtPlotMarkerVec.resize(noMarkers);
-
-      for (i32 markerIdx = 0; markerIdx < noMarkers; ++markerIdx)
-      {
-        mQwtPlotMarkerVec[markerIdx] = new QwtPlotMarker();
-        QwtPlotMarker * const p = mQwtPlotMarkerVec[markerIdx];
-        p->setLineStyle(QwtPlotMarker::HLine);
-        if (iCustPlot.Style == SCustPlot::EStyle::DOTS)
-        {
-          p->setLinePen(QColor(Qt::gray), 0.0, Qt::SolidLine);
-        }
-        else
-        {
-          p->setLinePen(QColor(Qt::darkGray), 0.0, Qt::DashLine);
-        }
-        p->setValue(0, iCustPlot.YBottomValue + diffVal * markerIdx * iCustPlot.MarkerYValueStep);
-        p->attach(mpQwtPlot);
-      }
+      const f64 yVal = iCustPlot.YBottomValue + diffVal * markerIdx * iCustPlot.MarkerYValueStep;
+      auto * line = new QLineSeries();
+      line->setPen(iCustPlot.Style == SCustPlot::EStyle::DOTS
+                   ? QPen(Qt::gray,     0.0, Qt::SolidLine)
+                   : QPen(Qt::darkGray, 0.0, Qt::DashLine));
+      line->append(-1e9, yVal);
+      line->append(+1e9, yVal);
+      mpPlot->chart()->addSeries(line);
+      line->attachAxis(mpPlot->get_x_axis());
+      line->attachAxis(mpPlot->get_y_axis());
+      mpMarkerLines.push_back(line);
     }
   }
 
-  // enable/disable standard grid
-  mQwtGrid.enableX(iCustPlot.DrawXGrid);
-  mQwtGrid.enableY(iCustPlot.DrawYGrid);
-
+  // Vertical TII segment boundary lines
   if (iCustPlot.DrawTiiSegments)
   {
     std::array<f64, 4 * 8 + 1> xPoints;
-    mQwtPlotTiiMarkerVec.resize(xPoints.size());
-
     i32 c = 0;
     for (i32 j = -16; j <= -1; ++j) xPoints[c++] = 48.0 * j - 0.5;
     xPoints[c++] = 0;
     for (i32 j =   1; j <= 16; ++j) xPoints[c++] = 48.0 * j + 0.5;
     assert(c == (i32)xPoints.size());
 
-    for (i32 markerIdx = 0; markerIdx < (i32)mQwtPlotTiiMarkerVec.size(); ++markerIdx)
+    for (i32 i = 0; i < (i32)xPoints.size(); ++i)
     {
-      mQwtPlotTiiMarkerVec[markerIdx] = new QwtPlotMarker();
-      QwtPlotMarker * const p = mQwtPlotTiiMarkerVec[markerIdx];
-      p->setLineStyle(QwtPlotMarker::VLine);
-      p->setLinePen((markerIdx - 16) % 8 == 0 ? 0x5555BB : 0xAA4444, 0.0, Qt::SolidLine);
-      p->setValue(xPoints[markerIdx], 0);
-      p->attach(mpQwtPlot);
+      auto * vline = new QLineSeries();
+      const QColor col = ((i - 16) % 8 == 0) ? QColor(0x5555BB) : QColor(0xAA4444);
+      vline->setPen(QPen(col, 0.0, Qt::SolidLine));
+      vline->append(xPoints[i], -1e9);
+      vline->append(xPoints[i], +1e9);
+      mpPlot->chart()->addSeries(vline);
+      vline->attachAxis(mpPlot->get_x_axis());
+      vline->attachAxis(mpPlot->get_y_axis());
+      mpTiiLines.push_back(vline);
     }
-  }
-
-  switch (iCustPlot.Style)
-  {
-  case SCustPlot::EStyle::DOTS:
-    mQwtPlotCurve.setStyle(QwtPlotCurve::Dots);
-    break;
-  case SCustPlot::EStyle::LINES:
-    mQwtPlotCurve.setStyle(QwtPlotCurve::Lines);
-    break;
-  case SCustPlot::EStyle::STICKS:
-    mQwtPlotCurve.setStyle(QwtPlotCurve::Sticks);
-    break;
   }
 }
 
@@ -185,14 +195,13 @@ void CarrierDisp::_setup_x_axis()
   const i32 displaySizeHalf = mDataSize / 2;
   mX_axis_vec.resize(mDataSize);
 
-  // the vector iPhaseVec does not contain data for the zero point, so skip the zero also in the x-vector
   for (i32 i = 0; i < displaySizeHalf; i++)
   {
     mX_axis_vec[i] = (f32)(i - displaySizeHalf);
     mX_axis_vec[i + displaySizeHalf] = (f32)(i + 1);
   }
 
-  mpQwtPlot->setAxisScale(QwtPlot::xBottom, mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
+  mpPlot->set_x_range(mX_axis_vec[0], mX_axis_vec[mX_axis_vec.size() - 1]);
 }
 
 CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType iPlotType)
@@ -208,8 +217,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.Name = "Soft-Bit Weight";
     cp.YTopValue = 100.0;
     cp.YBottomValue = 0.0;
-    // cp.YTopValueRangeExt = 200.0;
-    // cp.YBottomValueRangeExt = -20.0;
     break;
 
   case ECarrierPlotType::EVM_PER:

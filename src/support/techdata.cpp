@@ -1,4 +1,13 @@
 /*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
  *    Copyright (C)  2015, 2016, 2017, 2018, 2019, 2020, 2021
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
  *    Lazy Chair Computing
@@ -37,13 +46,13 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
 
   setupUi(&mFrame);
 
-  Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame, true, true);
+  Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame);
 
   formLayout->setLabelAlignment(Qt::AlignLeft);
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mFrame.hide();
   timeTable_button->setEnabled(false);
-  mpAudioDisplay = new AudioDisplay(mr, audio, &Settings::Storage::instance());
+  mpAudioDisplay = new AudioDisplay(mr, plotAudioFft, &Settings::Storage::instance());
 
   cleanUp();
 

@@ -29,7 +29,7 @@ class QThread;
 class QPushButton;
 class QProgressBar;
 class QSlider;
-class QwtThermo;
+class LevelMeter;
 
 class AudioManager : public QObject
 {
@@ -47,8 +47,8 @@ public:
     Configuration * pConfig;
     TechData * pTechDataWidget;
     QProgressBar * pProgBarAudioBuffer;
-    QwtThermo * pThermoPeakLevelLeft;
-    QwtThermo * pThermoPeakLevelRight;
+    LevelMeter * pThermoPeakLevelLeft;
+    LevelMeter * pThermoPeakLevelRight;
     QSlider * pSliderVolume;
     OpenFileDialog * pOpenFileDialog;
   };
@@ -116,8 +116,8 @@ private:
   Configuration * const mpConfig;
   TechData * const mpTechDataWidget;
   QProgressBar * const mpProgBarAudioBuffer;
-  QwtThermo * const mpThermoPeakLevelLeft;
-  QwtThermo * const mpThermoPeakLevelRight;
+  LevelMeter * const mpThermoPeakLevelLeft;
+  LevelMeter * const mpThermoPeakLevelRight;
   QSlider * const mpSliderVolume;
   OpenFileDialog * const mpOpenFileDialog;
 

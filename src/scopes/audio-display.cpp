@@ -30,26 +30,31 @@
  */
 
 #include  "audio-display.h"
+#include  "plot_widget.h"
 #include  <QColor>
 #include  <QPen>
+#include  <QChart>
+#include  <QValueAxis>
 
-AudioDisplay::AudioDisplay(DabRadio * mr, QwtPlot * plotGrid, QSettings * dabSettings)
+AudioDisplay::AudioDisplay(DabRadio * mr, PlotWidget * pPlot, QSettings * dabSettings)
   : mpRadioInterface(mr)
   , mpDabSettings(dabSettings)
-  , pPlotGrid(plotGrid)
+  , mpPlot(pPlot)
 {
-  mGrid.setMajorPen(QPen(QColor(0x5e5c64), 0, Qt::DashLine));
-  mGrid.setMinorPen(QPen(QColor(0x5e5c64), 0, Qt::NoPen));
-  mGrid.enableXMin(false);
-  mGrid.enableYMin(false);
-  mGrid.attach(plotGrid);
+  mpCurve = new QLineSeries();
+  mpCurve->setPen(QPen(QColor(0x62a0ea), 2.0));
+  mpCurve->setUseOpenGL(false);
+  mpPlot->chart()->addSeries(mpCurve);
+  mpCurve->attachAxis(mpPlot->get_x_axis());
+  mpCurve->attachAxis(mpPlot->get_y_axis());
 
-  mSpectrumCurve.setPen(QPen(QColor(0x62a0ea), 2.0));
-  mSpectrumCurve.setOrientation(Qt::Horizontal);
-  mSpectrumCurve.attach(plotGrid);
+  mpPlot->get_x_axis()->setGridLineVisible(true);
+  mpPlot->get_x_axis()->setMinorGridLineVisible(false);
+  mpPlot->get_y_axis()->setGridLineVisible(true);
+  mpPlot->get_y_axis()->setMinorGridLineVisible(false);
+  mpPlot->set_x_tick_dynamic(0.0, 4.0);
 
-  pPlotGrid->enableAxis(QwtPlot::xBottom);
-  pPlotGrid->setAxisScale(QwtPlot::yLeft, -120, -20);
+  mpPlot->set_y_range(-120, -20);
 
   create_blackman_window(mWindow.data(), cSpectrumSize);
 }
@@ -71,7 +76,6 @@ void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const i32 iNu
   for (i32 i = 0; i < numStereoSamples; i++)
   {
     mFftInBuffer[i] = ((f32)ipSampleData[2 * i + 0] + (f32)ipSampleData[2 * i + 1]) / (2.0f * (f32)INT16_MAX);
-    // mFftInBuffer[i] = 0.01f * std::cos(F_2_M_PI * 12000.0f * (f32)i / (f32)iSampleRate);
   }
 
   // and window it
@@ -89,20 +93,25 @@ void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const i32 iNu
     mSampleRateLast = iSampleRate;
     for (i32 i = 0; i < cDisplaySize; i++)
     {
-      mXDispBuffer[i] = (f32)i * (f32)iSampleRate / (f32)cSpectrumSize / 1000.0f; // we use only the half spectrum
+      mXDispBuffer[i] = (f32)i * (f32)iSampleRate / (f32)cSpectrumSize / 1000.0f;
     }
-    pPlotGrid->setAxisScale(QwtPlot::xBottom, (f64)mXDispBuffer[0], mXDispBuffer[cDisplaySize - 1]);
+    mpPlot->set_x_range(mXDispBuffer[0], mXDispBuffer[cDisplaySize - 1]);
   }
 
   // and map the spectrumSize values onto displaySize elements
   for (i32 i = 0; i < cDisplaySize; i++)
   {
-    static const f32 fftOffset = 20.0f * std::log10(cSpectrumSize / 4); // do not use constexpr as it is not supported by all compilers for std::log10()
+    static const f32 fftOffset = 20.0f * std::log10(cSpectrumSize / 4);
     const f32 yVal = log10_times_10(std::norm(mFftOutBuffer[i])) - fftOffset;
-    mYDispBuffer[i] = (f32)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal; // average the image a little
+    mYDispBuffer[i] = (f32)(averageCount - 1) / averageCount * mYDispBuffer[i] + 1.0f / averageCount * yVal;
   }
   mYDispBuffer[0] -= 3.01; // compensate for the DC bin offset
 
-  mSpectrumCurve.setSamples(mXDispBuffer.data(), mYDispBuffer.data(), cDisplaySize);
-  pPlotGrid->replot();
+  QList<QPointF> pts;
+  pts.reserve(cDisplaySize);
+  for (i32 i = 0; i < cDisplaySize; i++)
+  {
+    pts.append(QPointF(mXDispBuffer[i], mYDispBuffer[i]));
+  }
+  mpCurve->replace(pts);
 }

@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2020
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -21,115 +20,86 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include	<QCoreApplication>
-#include	"dump-viewer.h"
-//
+#include <QCoreApplication>
+#include <QPen>
+#include <QChart>
+#include "dump-viewer.h"
 
-	dumpViewer::dumpViewer (FILE *f, QWidget *parent):
-	                                       QDialog (parent) {
-i16	i;
+dumpViewer::dumpViewer(FILE * f, QWidget * parent)
+  : QDialog(parent)
+  , theFile(f)
+{
+  setupUi(this);
 
-	this	-> theFile	= f;
-	setupUi (this);
-	displayColor	= QColor	("white");
-	gridColor	= QColor	("red");
-	curveColor	= QColor	("red");
-	plotgrid	= viewerWindow;
-	plotgrid	-> setCanvasBackground (displayColor);
-	grid		= new QwtPlotGrid;
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-	grid		-> setMajPen (QPen(gridColor, 0, Qt::DotLine));
-#else
-	grid		-> setMajorPen (QPen(gridColor, 0, Qt::DotLine));
-#endif
-	grid		-> enableXMin (true);
-	grid		-> enableYMin (true);
-#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
-	grid		-> setMinPen (QPen(gridColor, 0, Qt::DotLine));
-#else
-	grid		-> setMinorPen (QPen(gridColor, 0, Qt::DotLine));
-#endif
-	grid		-> attach (plotgrid);
+  viewerWindow->get_x_axis()->setGridLineVisible(true);
+  viewerWindow->get_x_axis()->setMinorGridLineVisible(true);
+  viewerWindow->get_y_axis()->setGridLineVisible(true);
+  viewerWindow->get_y_axis()->setMinorGridLineVisible(false);
 
-	lm_picker       = new QwtPlotPicker (plotgrid -> canvas ());
-        QwtPickerMachine *lpickerMachine =
-                             new QwtPickerClickPointMachine ();
+  mpCurve = new QLineSeries();
+  mpCurve->setPen(QPen(Qt::red, 2.0));
+  mpCurve->setUseOpenGL(false);
+  viewerWindow->chart()->addSeries(mpCurve);
+  mpCurve->attachAxis(viewerWindow->get_x_axis());
+  mpCurve->attachAxis(viewerWindow->get_y_axis());
 
-        lm_picker       -> setStateMachine (lpickerMachine);
-        lm_picker       -> setMousePattern (QwtPlotPicker::MouseSelect1,
-                                            Qt::RightButton);
-//	connect (lm_picker, SIGNAL (selected (const QPointF&)),
-//	         this, SLOT (rightMouseClick (const QPointF &)));
+  connect(viewSlider,      &QSlider::valueChanged, this, &dumpViewer::handle_viewSlider);
+  connect(amplitudeSlider, &QSlider::valueChanged, this, &dumpViewer::handle_amplitudeSlider);
+  connect(compressor,      &QSlider::valueChanged, this, &dumpViewer::handle_compressor);
 
-	spectrumCurve	= new QwtPlotCurve ("");
-   	spectrumCurve	-> setPen (QPen(curveColor, 2.0));
-	spectrumCurve	-> setOrientation (Qt::Horizontal);
-	spectrumCurve	-> setBaseline	(0);
-	spectrumCurve	-> attach (plotgrid);
-	plotgrid	-> enableAxis (QwtPlot::yLeft);
-	connect (viewSlider, SIGNAL (valueChanged (int)),
-	         this, SLOT (handle_viewSlider (int)));
-	connect (amplitudeSlider, SIGNAL (valueChanged (int)),
-	         this, SLOT (handle_amplitudeSlider (int)));
-	connect (compressor, SIGNAL (valueChanged (int)),
-	         this, SLOT (handle_compressor (int)));
-//
-//	Now looking at the file
-	seconds_per_frame	= 12.0 / 125;
-	seconds_per_sample	= 2 * seconds_per_frame;
-	fseek (theFile, 0, SEEK_END);
-	fileLength	= ftell (theFile);
-	fseek (theFile, 0, SEEK_SET);
-	fprintf (stderr, "samples per minute: %d\n",
-	                          (i32)(60 / seconds_per_sample));
-	fprintf (stderr, "duration of record: %d seconds\n", 
-	                     (i32)(fileLength / sizeof (f32) * seconds_per_sample));
-	show_segment (0, 1);
-}
-//
+  seconds_per_frame  = 12.0f / 125.0f;
+  seconds_per_sample = 2.0f * seconds_per_frame;
 
-	dumpViewer::~dumpViewer	(void) {
+  fseek(theFile, 0, SEEK_END);
+  fileLength = ftell(theFile);
+  fseek(theFile, 0, SEEK_SET);
+
+  fprintf(stderr, "samples per minute: %d\n",  (i32)(60.0f / seconds_per_sample));
+  fprintf(stderr, "duration of record: %d seconds\n", (i32)(fileLength / sizeof(f32) * seconds_per_sample));
+
+  show_segment(0, 1);
 }
 
-void	dumpViewer::handle_viewSlider	(i32 pos) {
-	show_segment (pos, compressor -> value ());
+void dumpViewer::handle_viewSlider(i32 pos)
+{
+  show_segment(pos, compressor->value());
 }
 
-void	dumpViewer::handle_amplitudeSlider (i32 h) {
-	(void)h;
-	show_segment (viewSlider -> value (), 
-	              compressor -> value ());
+void dumpViewer::handle_amplitudeSlider(i32)
+{
+  show_segment(viewSlider->value(), compressor->value());
 }
 
-void	dumpViewer::handle_compressor	(i32 h) {
-	show_segment (viewSlider -> value (), h);
+void dumpViewer::handle_compressor(i32 h)
+{
+  show_segment(viewSlider->value(), h);
 }
 
-//
-//	pos is the pos of the slider, so a value between 0 .. 100
-void	dumpViewer::show_segment (i32 pos, i32 compression) {
-f64	X_axis [512];
-f64	Y_Values [512];
-	auto * const temp = make_vla (f32, 512 * compression);
-i32	lengthF	=  fileLength / sizeof (f32);
-i32	p	= pos * lengthF / 100;
-	for (i32 i = 0; i < 512; i ++)
-	   X_axis [i] = (p + i) * compression * seconds_per_sample;
+// pos is the slider position (0..100)
+void dumpViewer::show_segment(i32 pos, i32 compression)
+{
+  constexpr i32 cPlotSize = 512;
+  auto * const temp = make_vla(f32, cPlotSize * compression);
+  const i32 lengthF = fileLength / (i32)sizeof(f32);
+  const i32 p = pos * lengthF / 100;
 
-	memset (Y_Values, 0, sizeof (f64) * 512);
-	fseek (theFile, p * sizeof (f32), SEEK_SET);
-	i32 length = fread (temp, sizeof (f32), 512 * compression, theFile);
-	for (i32 i = 0; i < length / compression; i ++)
-	   Y_Values [i] = temp [i * compression];
+  const f64 xStart = (f64)(p * compression) * seconds_per_sample;
+  const f64 xEnd   = (f64)((p + cPlotSize) * compression) * seconds_per_sample;
+  const f64 yMax   = (f64)amplitudeSlider->value();
 
-	plotgrid        -> setAxisScale (QwtPlot::xBottom,
-                                         f64 (p * compression * seconds_per_sample),
-                                         (f64)((p + 512) * compression * seconds_per_sample));
-        plotgrid        -> enableAxis (QwtPlot::xBottom);
-        plotgrid        -> setAxisScale (QwtPlot::yLeft,
-                                         0, amplitudeSlider -> value ());
-        plotgrid        -> enableAxis (QwtPlot::yLeft);
-        spectrumCurve   -> setBaseline  (0);
-        spectrumCurve   -> setSamples (X_axis, Y_Values, 512);
-        plotgrid        -> replot();
+  viewerWindow->set_x_range((f32)xStart, (f32)xEnd);
+  viewerWindow->set_y_range(0, (f32)yMax);
+
+  fseek(theFile, p * (i32)sizeof(f32), SEEK_SET);
+  const i32 length = (i32)fread(temp, sizeof(f32), cPlotSize * compression, theFile);
+
+  QList<QPointF> pts;
+  pts.reserve(cPlotSize);
+  for (i32 i = 0; i < cPlotSize; i++)
+  {
+    const f64 xVal = (f64)((p + i) * compression) * seconds_per_sample;
+    const f64 yVal = (i * compression < length) ? (f64)temp[i * compression] : 0.0;
+    pts.append(QPointF(xVal, yVal));
+  }
+  mpCurve->replace(pts);
 }

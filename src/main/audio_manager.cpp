@@ -23,7 +23,7 @@
 #include <QPushButton>
 #include <cassert>
 #include <cstdio>
-#include <qwt_thermo.h>
+#include "level_meter.h"
 
 AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   : QObject(parent)
@@ -135,8 +135,8 @@ void AudioManager::slot_show_audio_peak_level(const f32 iPeakLeft, const f32 iPe
 
 void AudioManager::_slot_audio_level_decay_timeout()
 {
-  mpThermoPeakLevelLeft->setValue(mPeakLeftDamped);
-  mpThermoPeakLevelRight->setValue(mPeakRightDamped);
+  mpThermoPeakLevelLeft->set_value(mPeakLeftDamped);
+  mpThermoPeakLevelRight->set_value(mPeakRightDamped);
 
   constexpr float cMinPeakLevelValue   = -23.0f;
   constexpr float cPeakLevelDecayValue =   0.5f;
