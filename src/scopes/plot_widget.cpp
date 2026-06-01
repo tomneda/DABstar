@@ -68,6 +68,16 @@ void PlotWidget::set_x_range(const f64 iMin, const f64 iMax) const
 void PlotWidget::set_y_range(const f64 iMin, const f64 iMax) const
 {
   mpYAxis->setRange(iMin, iMax);
+  _update_y_label_format();
+}
+
+void PlotWidget::_update_y_label_format() const
+{
+  const f64 span = mpYAxis->max() - mpYAxis->min();
+  const f64 interval = span / std::max(mpYAxis->tickCount() - 1, 1);
+  if (interval <= 0.0) return;
+  const i32 decimals = std::max(0, (i32)-std::floor(std::log10(interval)));
+  mpYAxis->setLabelFormat(QString::asprintf("%%.%df", decimals));
 }
 
 void PlotWidget::set_x_tick_count(const f64 iAnchor, const i32 iCount) const

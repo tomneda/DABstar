@@ -100,6 +100,7 @@ private:
 
   void _init_axis_data(SAxisData & oData, const SRange & iRange) const;
   void _apply_x_default_range() const;
+  void _update_y_label_format() const;
   void _zoom_axis(QValueAxis * iopAxis, SAxisData & ioData, f64 iPivot, f64 iScale) const;
   void _pan_axis(QValueAxis * iopAxis, const SAxisData & ioData, f64 iDeltaValue) const;
   i32 _nice_minor_tick_count(const f64 iMajorInterval, const int iMaxMinorSteps = 5) const;
