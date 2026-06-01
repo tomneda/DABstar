@@ -35,7 +35,8 @@ PlotWidget::PlotWidget(QWidget * const parent)
   mpXAxis->setLabelFormat("%.0f");
   mpXAxis->setLabelsColor(Qt::lightGray);
   mpXAxis->setGridLineColor(QColor(0x5e5c64));
-  mpXAxis->setMinorGridLineColor(QColor(0x3a3840));
+  mpXAxis->setMinorGridLinePen(Qt::NoPen);
+  mpXAxis->setMinorGridLineVisible(false);
   mpXAxis->setTickCount(7);
   mpXAxis->setMinorTickCount(1);
 
