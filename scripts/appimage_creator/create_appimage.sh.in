@@ -18,10 +18,10 @@ mkdir -p "$DST/appdir/usr/share/icons/hicolor/256x256/apps/"
 #mkdir -p "$DST/appdir/usr/share/icons/hicolor/scalable/apps/"
 
 cp dabstar.desktop              "$DST/appdir/usr/share/applications"
-#cp ../res/logo/dabstar.png     "$DST/appdir/"
-cp ../res/logo/dabstar.png      "$DST/appdir/usr/share/icons/hicolor/256x256/apps/"
-#cp ../res/logo/dabstar.svg     "$DST/appdir/"
-#cp ../res/logo/dabstar.svg     "$DST/appdir/usr/share/icons/hicolor/scalable/apps/"
+#cp ../../res/logo/dabstar.png   "$DST/appdir/"
+cp ../../res/logo/dabstar.png   "$DST/appdir/usr/share/icons/hicolor/256x256/apps/"
+#cp ../../res/logo/dabstar.svg   "$DST/appdir/"
+#cp ../../res/logo/dabstar.svg   "$DST/appdir/usr/share/icons/hicolor/scalable/apps/"
 cp /usr/local/lib/librtlsdr.so  "$DST/appdir/usr/lib/"
 
 cd "$DST"
@@ -32,7 +32,41 @@ cp build/dabstar appdir/usr/bin/
 wget -q --show-progress -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/$LINUXDEPLOYQT"
 chmod a+x "$LINUXDEPLOYQT"
 
-if ./"$LINUXDEPLOYQT" ./appdir/usr/share/applications/* -appimage -no-translations; then
+# Some Qt SQL driver plugins depend on libraries that are not installed on this machine
+# (e.g. libfbclient.so.2 for Firebird, libmimerapi.so for Mimer SQL, etc.).
+# linuxdeployqt runs ldd on every discovered plugin and aborts on missing dependencies.
+# Solution: scan all sqldrivers for "not found" entries, create minimal stub shared
+# libraries for each, and tell linuxdeployqt to exclude them from bundling.
+STUB_DIR=$(mktemp -d)
+trap 'rm -rf "$STUB_DIR"' EXIT
+
+QT_SQLDRIVERS_DIR="/home/work/fs_Qt/$QT_VERSION/gcc_64/plugins/sqldrivers"
+
+# Collect all libraries reported as "not found" by ldd across all SQL driver plugins.
+MISSING_LIBS=""
+if [ -d "$QT_SQLDRIVERS_DIR" ]; then
+  while IFS= read -r lib; do
+    [ -n "$lib" ] && MISSING_LIBS="$MISSING_LIBS $lib"
+  done < <(ldd "$QT_SQLDRIVERS_DIR"/*.so 2>/dev/null \
+            | awk '/not found/ {print $1}' \
+            | sort -u)
+fi
+
+# Create a stub shared library for each missing dependency.
+EXCLUDE_LIBS=""
+for lib in $MISSING_LIBS; do
+  gcc -shared -fPIC -o "$STUB_DIR/$lib" -x c /dev/null 2>/dev/null \
+    && echo "Created stub: $lib" || true
+  EXCLUDE_LIBS="${EXCLUDE_LIBS:+$EXCLUDE_LIBS,}$lib"
+done
+
+export LD_LIBRARY_PATH="$STUB_DIR:$LD_LIBRARY_PATH"
+
+DEPLOYQT_ARGS="-appimage -no-translations"
+[ -n "$EXCLUDE_LIBS" ] && DEPLOYQT_ARGS="$DEPLOYQT_ARGS -exclude-libs=$EXCLUDE_LIBS"
+
+# shellcheck disable=SC2086
+if ./"$LINUXDEPLOYQT" ./appdir/usr/share/applications/* $DEPLOYQT_ARGS; then
   echo "linuxdeployqt runs successfully"
   APP_NAME="@PROJECT_NAME@"
   APP_VERS="@PROJECT_VERSION@"

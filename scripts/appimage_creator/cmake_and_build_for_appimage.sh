@@ -3,7 +3,7 @@ set -euo pipefail
 
 QT_VERSION=6.11.1
 CUD=$PWD
-SRC=$CUD/..
+SRC=$CUD/../..
 DST=~/DABstarAppImage/build
 CMFLAG=-DCONV_IN_FILES=OFF #switch off .in-files conversion as repo access could only be read-only
 QtPath=-DCMAKE_PREFIX_PATH=/home/work/fs_Qt/$QT_VERSION/gcc_64/
