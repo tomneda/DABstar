@@ -32,7 +32,6 @@ SpectrumScope::SpectrumScope(PlotWidget * pPlot, i32 displaySize, QSettings * /*
   mpPlot->get_x_axis()->setMinorGridLineVisible(true);
   mpPlot->get_y_axis()->setGridLineVisible(true);
   mpPlot->get_y_axis()->setMinorGridLineVisible(false);
-  mpPlot->set_x_tick_dynamic(0.0, 200.0);
 }
 
 void SpectrumScope::show_spectrum(const f64 * X_axis, const f64 * Y_value, const SpecViewLimits<f64> & iSpecViewLimits)

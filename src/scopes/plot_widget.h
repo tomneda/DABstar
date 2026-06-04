@@ -18,6 +18,7 @@
 #include <QValueAxis>
 #include <QLineSeries>
 #include <QMouseEvent>
+#include <QResizeEvent>
 #include <QWheelEvent>
 
 // PlotWidget is a QChartView subclass that provides:
@@ -32,8 +33,7 @@ class PlotWidget : public QChartView
 public:
   struct SRange
   {
-    explicit SRange(const f64 iMinDefault = 0, const f64 iMaxDefault = 0,
-                    const f64 iMinZoomOutDelta = 0, const f64 iMaxZoomOutDelta = 0)
+    explicit SRange(const f64 iMinDefault = 0, const f64 iMaxDefault = 0, const f64 iMinZoomOutDelta = 0, const f64 iMaxZoomOutDelta = 0)
       : MinDefault(iMinDefault)
       , MaxDefault(iMaxDefault)
       , MinZoomOutDelta(iMinZoomOutDelta)
@@ -62,6 +62,13 @@ public:
   // the center point and step size are meaningful (spectrum, audio FFT, etc.).
   void set_x_tick_dynamic(f64 iAnchor, f64 iInterval) const;
 
+  // Fixed mode: n evenly-spaced ticks (Qt divides range by n-1).
+  void set_y_tick_count(const f64 iAnchor, int iCount) const;
+
+  // Same as set_x_tick_dynamic but for the Y-axis. Pass iMinorTickCount >= 0
+  // to set minor ticks explicitly; -1 lets the helper compute a nice count.
+  void set_y_tick_dynamic(f64 iAnchor, f64 iInterval) const;
+
   // Configure zoom-out limits (call once, then zoom/pan are bounded)
   void setup_x_zoom(const SRange & iRange);
   void setup_y_zoom(const SRange & iRange);
@@ -76,10 +83,13 @@ protected:
   void mousePressEvent(QMouseEvent * iopEvent) override;
   void mouseReleaseEvent(QMouseEvent * iopEvent) override;
   void mouseMoveEvent(QMouseEvent * iopEvent) override;
+  void resizeEvent(QResizeEvent * iopEvent) override;
 
 private:
   static constexpr f64 cZoomFactor = 0.1;
   static constexpr f64 cMaxZoomFactor = 100.0;
+  static constexpr f64 cMinPixelsPerXTick = 60.0;  // min px between major x-axis labels
+  static constexpr f64 cMinPixelsPerYTick = 25.0;  // min px between major y-axis labels
 
   QValueAxis * mpXAxis = nullptr;
   QValueAxis * mpYAxis = nullptr;
@@ -87,21 +97,27 @@ private:
   struct SAxisData
   {
     SRange range{};
-    f64    minRange = 0;      // minimum span (max zoom-in)
-    bool   allowChange = false;
-    bool   isZoomed = false;
+    f64 minRange = 0;      // minimum span (max zoom-in)
+    bool allowChange = false;
+    bool isZoomed = false;
   };
 
   SAxisData mXData{};
   SAxisData mYData{};
 
-  bool   mPanning = false;
+  mutable bool mXTickAuto = true;  // false when caller overrides ticks explicitly
+  mutable bool mYTickAuto = true;
+
+  bool mPanning = false;
   QPoint mLastPos{};
 
   void _init_axis_data(SAxisData & oData, const SRange & iRange) const;
   void _apply_x_default_range() const;
+  void _apply_y_default_range() const;
   void _update_y_label_format() const;
   void _zoom_axis(QValueAxis * iopAxis, SAxisData & ioData, f64 iPivot, f64 iScale) const;
   void _pan_axis(QValueAxis * iopAxis, const SAxisData & ioData, f64 iDeltaValue) const;
   i32 _nice_minor_tick_count(const f64 iMajorInterval, const int iMaxMinorSteps = 5) const;
+  f64 _nice_major_interval(f64 iRangeSpan, i32 iTargetIntervals = 5) const;
+  void _reapply_auto_ticks() const;
 };

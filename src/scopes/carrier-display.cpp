@@ -45,7 +45,6 @@ CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
   mpPlot->get_x_axis()->setMinorGridLineVisible(true);
   mpPlot->get_y_axis()->setGridLineVisible(true);
   mpPlot->get_y_axis()->setMinorGridLineVisible(false);
-  mpPlot->set_x_tick_count(0.0, 17);
 
   mpPlot->setup_x_zoom(PlotWidget::SRange(-1536.0 / 2, 1536.0 / 2));
 

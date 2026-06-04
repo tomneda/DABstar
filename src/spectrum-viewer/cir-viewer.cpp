@@ -30,7 +30,7 @@ CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
   cirPlot->get_x_axis()->setGridLineVisible(true);
   cirPlot->get_x_axis()->setMinorGridLineVisible(true);
   cirPlot->get_y_axis()->setGridLineVisible(true);
-  cirPlot->get_y_axis()->setMinorGridLineVisible(false);
+  cirPlot->get_y_axis()->setMinorGridLineVisible(true);
 
   mpCurve = new QLineSeries();
   mpCurve->setPen(QPen(QColor(0xffbe6f), 2.0));
@@ -41,7 +41,6 @@ CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
 
   cirPlot->set_x_range(0, 96);
   cirPlot->set_y_range(0, 1.0);
-  cirPlot->set_x_tick_dynamic(0.0, 10.0);
 
   connect(&mFrame, &CustomFrame::signal_frame_closed, this, &CirViewer::signal_frame_closed);
 }

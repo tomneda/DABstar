@@ -64,18 +64,33 @@ PlotWidget::PlotWidget(QWidget * const parent)
 void PlotWidget::set_x_range(const f64 iMin, const f64 iMax) const
 {
   mpXAxis->setRange(iMin, iMax);
+  mpXAxis->setTickType(QValueAxis::TicksDynamic);
+  mpXAxis->setTickAnchor(0.0);
+  mXTickAuto = true;
+  _reapply_auto_ticks();
 }
 
 void PlotWidget::set_y_range(const f64 iMin, const f64 iMax) const
 {
   mpYAxis->setRange(iMin, iMax);
-  _update_y_label_format();
+  mpYAxis->setTickType(QValueAxis::TicksDynamic);
+  mpYAxis->setTickAnchor(0.0);
+  mYTickAuto = true;
+  _reapply_auto_ticks();
 }
 
 void PlotWidget::_update_y_label_format() const
 {
-  const f64 span = mpYAxis->max() - mpYAxis->min();
-  const f64 interval = span / std::max(mpYAxis->tickCount() - 1, 1);
+  f64 interval;
+  if (mpYAxis->tickType() == QValueAxis::TicksDynamic)
+  {
+    interval = mpYAxis->tickInterval();
+  }
+  else
+  {
+    const f64 span = mpYAxis->max() - mpYAxis->min();
+    interval = span / std::max(mpYAxis->tickCount() - 1, 1);
+  }
   if (interval <= 0.0) return;
   const i32 decimals = std::max(0, (i32)-std::floor(std::log10(interval)));
   mpYAxis->setLabelFormat(QString::asprintf("%%.%df", decimals));
@@ -83,6 +98,7 @@ void PlotWidget::_update_y_label_format() const
 
 void PlotWidget::set_x_tick_count(const f64 iAnchor, const i32 iCount) const
 {
+  mXTickAuto = false;
   mpXAxis->setTickType(QValueAxis::TicksFixed);
   mpXAxis->setTickCount(iCount);
   mpXAxis->setTickAnchor(iAnchor);
@@ -90,10 +106,29 @@ void PlotWidget::set_x_tick_count(const f64 iAnchor, const i32 iCount) const
 
 void PlotWidget::set_x_tick_dynamic(const f64 iAnchor, const f64 iInterval) const
 {
+  mXTickAuto = false;
   mpXAxis->setTickType(QValueAxis::TicksDynamic);
   mpXAxis->setTickInterval(iInterval);
   mpXAxis->setTickAnchor(iAnchor);
   mpXAxis->setMinorTickCount(_nice_minor_tick_count(iInterval));
+}
+
+void PlotWidget::set_y_tick_count(const f64 iAnchor, const i32 iCount) const
+{
+  mYTickAuto = false;
+  mpYAxis->setTickType(QValueAxis::TicksFixed);
+  mpYAxis->setTickCount(iCount);
+  mpYAxis->setTickAnchor(iAnchor);
+}
+
+void PlotWidget::set_y_tick_dynamic(const f64 iAnchor, const f64 iInterval) const
+{
+  mYTickAuto = false;
+  mpYAxis->setTickType(QValueAxis::TicksDynamic);
+  mpYAxis->setTickInterval(iInterval);
+  mpYAxis->setTickAnchor(iAnchor);
+  mpYAxis->setMinorTickCount(_nice_minor_tick_count(iInterval));
+  _update_y_label_format();
 }
 
 void PlotWidget::setup_x_zoom(const SRange & iRange)
@@ -110,7 +145,7 @@ void PlotWidget::setup_y_zoom(const SRange & iRange)
   _init_axis_data(mYData, iRange);
   if (!mYData.isZoomed)
   {
-    mpYAxis->setRange(mYData.range.MinDefault, mYData.range.MaxDefault);
+    _apply_y_default_range();
   }
 }
 
@@ -125,14 +160,12 @@ void PlotWidget::reset_x_zoom()
 
 void PlotWidget::_apply_x_default_range() const
 {
-  const f64 fullRange = mXData.range.MaxDefault - mXData.range.MinDefault;
-  mpXAxis->setRange(mXData.range.MinDefault, mXData.range.MaxDefault);
+  set_x_range(mXData.range.MinDefault, mXData.range.MaxDefault);
+}
 
-  const f64 majorInterval = (mpXAxis->tickType() == QValueAxis::TicksDynamic)
-                              ? mpXAxis->tickInterval()
-                              : fullRange / std::max(mpXAxis->tickCount() - 1, 1);
-
-  mpXAxis->setMinorTickCount(_nice_minor_tick_count(majorInterval));
+void PlotWidget::_apply_y_default_range() const
+{
+  set_y_range(mYData.range.MinDefault, mYData.range.MaxDefault);
 }
 
 void PlotWidget::reset_y_zoom()
@@ -140,7 +173,7 @@ void PlotWidget::reset_y_zoom()
   mYData.isZoomed = false;
   if (mYData.allowChange)
   {
-    mpYAxis->setRange(mYData.range.MinDefault, mYData.range.MaxDefault);
+    _apply_y_default_range();
   }
 }
 
@@ -173,13 +206,24 @@ void PlotWidget::_zoom_axis(QValueAxis * const iopAxis, SAxisData & ioData, cons
 
   iopAxis->setRange(newMin, newMax);
 
-  if (iopAxis == mpXAxis && ioData.allowChange)
+  // For auto-managed axes, recompute major interval for the new span so that
+  // zooming in adds denser ticks and zooming out removes them.
+  // For manually-overridden axes, just keep minor ticks consistent.
+  const bool isAutoAxis = (iopAxis == mpXAxis) ? mXTickAuto : mYTickAuto;
+  if (isAutoAxis)
+  {
+    _reapply_auto_ticks();
+  }
+  else
   {
     const f64 majorInterval = (iopAxis->tickType() == QValueAxis::TicksDynamic)
                                 ? iopAxis->tickInterval()
                                 : (newMax - newMin) / std::max(iopAxis->tickCount() - 1, 1);
-
     iopAxis->setMinorTickCount(_nice_minor_tick_count(majorInterval));
+    if (iopAxis == mpYAxis)
+    {
+      _update_y_label_format();
+    }
   }
 }
 
@@ -277,8 +321,73 @@ void PlotWidget::mouseMoveEvent(QMouseEvent * const iopEvent)
   QChartView::mouseMoveEvent(iopEvent);
 }
 
+void PlotWidget::resizeEvent(QResizeEvent * const iopEvent)
+{
+  QChartView::resizeEvent(iopEvent);
+  _reapply_auto_ticks();
+}
+
+// Recomputes tick intervals for auto-managed axes based on the current plot-area
+// pixel size. Falls back to 5 target intervals when called before first layout.
+void PlotWidget::_reapply_auto_ticks() const
+{
+  const QRectF plotArea = chart()->plotArea();
+
+  if (mXTickAuto && mpXAxis->tickType() == QValueAxis::TicksDynamic)
+  {
+    const f64 span = mpXAxis->max() - mpXAxis->min();
+    const i32 target = plotArea.isEmpty()
+                         ? 5
+                         : std::max(2, static_cast<i32>(plotArea.width() / cMinPixelsPerXTick));
+    const f64 interval = _nice_major_interval(span, target);
+    mpXAxis->setTickInterval(interval);
+    mpXAxis->setMinorTickCount(_nice_minor_tick_count(interval));
+  }
+
+  if (mYTickAuto && mpYAxis->tickType() == QValueAxis::TicksDynamic)
+  {
+    const f64 span = mpYAxis->max() - mpYAxis->min();
+    const i32 target = plotArea.isEmpty()
+                         ? 5
+                         : std::max(2, static_cast<i32>(plotArea.height() / cMinPixelsPerYTick));
+    f64 interval = _nice_major_interval(span, target);
+    // Guarantee at least 2 major ticks visible. With TicksDynamic anchored at 0,
+    // ticks land at n*interval — the range may contain only one depending on alignment.
+    // Halve the interval until at least 2 ticks fall inside [axMin, axMax].
+    const f64 axMin = mpYAxis->min();
+    const f64 axMax = mpYAxis->max();
+    while (interval > 0.0)
+    {
+      const i32 nVisible = (i32)std::floor(axMax / interval) - (i32)std::ceil(axMin / interval) + 1;
+      if (nVisible >= 2) break;
+      interval /= 2.0;
+    }
+    mpYAxis->setTickInterval(interval);
+    mpYAxis->setMinorTickCount(_nice_minor_tick_count(interval));
+    _update_y_label_format();
+  }
+}
+
+// Rounds rangeSpan/iTargetIntervals UP to the nearest {2,5,10}×10^n value.
+// iTargetIntervals=5 matches Qwt's default, giving identical major tick spacing.
+f64 PlotWidget::_nice_major_interval(const f64 iRangeSpan, const i32 iTargetIntervals /*= 5*/) const
+{
+  if (iRangeSpan <= 0.0 || iTargetIntervals <= 0) return iRangeSpan;
+  const f64 v = iRangeSpan / static_cast<f64>(iTargetIntervals) * (1.0 - 1e-6);
+  const f64 p = std::floor(std::log10(v));
+  const f64 frac = std::pow(10.0, std::log10(v) - p);  // ∈ [1, 10)
+
+  // Halving loop — identical to Qwt: n/2 uses integer division, so the
+  // effective thresholds are frac≤2→n=2, frac≤5→n=5, frac>5→n=10,
+  // i.e. the raw interval is always rounded UP to the next nice number.
+  i32 n = 10;
+  while (n > 1 && frac <= static_cast<f64>(n / 2)) n /= 2;
+
+  return static_cast<f64>(n) * std::pow(10.0, p);
+}
+
 // Computes minor tick count between two major ticks using the same {1, 2, 5}×10^n
-// Minor tick spacing is guaranteed to be >= 1 data unit (returns 0 if not possible).
+// scaling as the major ticks. Works for any scale (including intervals < 1).
 i32 PlotWidget::_nice_minor_tick_count(const f64 iMajorInterval, const i32 iMaxMinorSteps /*= 5*/) const
 {
   if (iMajorInterval <= 0.0 || iMaxMinorSteps <= 0) return 0;
@@ -290,9 +399,9 @@ i32 PlotWidget::_nice_minor_tick_count(const f64 iMajorInterval, const i32 iMaxM
 
   // Halving loop (integer division): rounds frac down to {1, 2, 5, 10}
   i32 n = 10;
-  while (n > 1 && frac <= static_cast<f64>(n / 2)) n /= 2;
+  while (n > 1 && frac <= (f64)(n / 2)) n /= 2;
 
-  const f64 minorStep = std::max(1.0, static_cast<f64>(n) * std::pow(10.0, p));
+  const f64 minorStep = (f64)n * std::pow(10.0, p);
 
-  return std::clamp(static_cast<i32>(std::ceil(iMajorInterval / minorStep)) - 1, 0, iMaxMinorSteps - 1);
+  return std::clamp((i32)(std::ceil(iMajorInterval / minorStep)) - 1, 0, iMaxMinorSteps - 1);
 }
