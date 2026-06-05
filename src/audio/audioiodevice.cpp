@@ -311,6 +311,7 @@ void AudioIODevice::_slot_timer_level_meter()
 
   if (numFloats >= 4)
   {
+#ifdef _WIN32
     // On Windows: timer resolution is coarse (~15ms) and audio blocks are large, so multiple
     // packets may accumulate. Skip stale ones and keep only the latest.
     const i32 numPackets = numFloats / 4;
@@ -318,6 +319,8 @@ void AudioIODevice::_slot_timer_level_meter()
     {
       mpLevelMeterBuffer->advance_ring_buffer_read_index((numPackets - 1) * 4);
     }
+#endif
+
     mpLevelMeterBuffer->get_data_from_ring_buffer(mLastSpl.buffer.data(), mLastSpl.buffer.size());
   }
   // else: buffer underflow — no new packet since last timer fire (can happen on Windows when the

@@ -64,6 +64,7 @@ private:
   static constexpr f32 cDecayFactor = 0.89125094; // == std::pow(10.0f, -1.0f / 20.0f);
   union SStereoPeakLevel { std::array<f32, 4> buffer;  struct { f32 peakLeft = -40.0f, peakRight = -40.0f; f32 rmsLeft = -40.0f, rmsRight = -40.0f; }; };
   DelayLine<SStereoPeakLevel> mDelayLine{SStereoPeakLevel()};
+  SStereoPeakLevel mLastSpl{};  // last received level, re-used on timer underflow (Windows)
   u32 mPeakLevelCurSampleCnt = 0;
   u32 mPeakLevelSampleCntBothChannels = 0;
   i16 mAbsPeakLeft = 0;
@@ -71,7 +72,6 @@ private:
   f32 mMeanSqLeft = 0;
   f32 mMeanSqRight = 0;
   f32 mRmsAlpha = 1;
-  SStereoPeakLevel mLastSpl{};  // last received level, re-used on timer underflow (Windows)
 
   QTimer * mpTimerPeakLevel = nullptr;
 
