@@ -3,7 +3,7 @@
 ## Table of Content
 <!-- TOC -->
   * [Table of Content](#table-of-content)
-  * [Pictures from V5.0.0](#pictures-from-v500)
+  * [Pictures from V5.x.x](#pictures-from-v5xx)
     * [Ensemble List window (device mode)](#ensemble-list-window-device-mode)
     * [Ensemble List window (file mode)](#ensemble-list-window-file-mode)
     * [Main window](#main-window)
@@ -46,7 +46,7 @@
 
 ---
 
-## Pictures from V5.0.0
+## Pictures from V5.x.x
 
 ### Ensemble List window (device mode)
 
