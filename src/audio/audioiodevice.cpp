@@ -305,7 +305,7 @@ void AudioIODevice::_slot_timer_level_meter()
   if ((numFloats % 4) != 0)
   {
     qWarning() << "buffer not correct aligned";
-    mpLevelMeterBuffer->advance_ring_buffer_read_index(numFloats); // clear buffer
+    mpLevelMeterBuffer->flush_ring_buffer();
     return;
   }
 
@@ -313,6 +313,14 @@ void AudioIODevice::_slot_timer_level_meter()
   {
     // qWarning() << "buffer underflow with" << num << "elements" ;
     return;
+  }
+
+  // On Windows the timer resolution is coarse (~15ms) so multiple packets may accumulate.
+  // Skip stale ones and keep only the latest to avoid the meter appearing to hang.
+  const i32 numPackets = numFloats / 4;
+  if (numPackets > 1)
+  {
+    mpLevelMeterBuffer->advance_ring_buffer_read_index((numPackets - 1) * 4);
   }
 
   SStereoPeakLevel spl;
