@@ -145,36 +145,14 @@ void AudioManager::_update_level_meter(LevelMeter * const ipMeter, const f32 iPe
 
   // Each segment: dark start → bright end (gradient within segment).
   // Boundary is visible as a hard bright→dark jump between segments.
-
-  // Option A — VU meter (mauve → amber → red)
   ipMeter->set_color_stops({
-    { 0.0,        0x502343 },  // dark mauve          (RMS start)
-    { relPosRms,  0x704363 },  // bright mauve        (RMS end)
-    { rmsNext,    0xA07828 },  // dark amber           (Peak start — boundary)
-    { relPosPeak, 0xF0B414 },  // bright amber        (Peak end)
+    { 0.0,        0x993300 },  // dark rust            (RMS start)
+    { relPosRms,  0xDD7700 },  // bright orange        (RMS end)
+    { rmsNext,    0xBB8800 },  // dark amber           (Peak start — boundary)
+    { relPosPeak, 0xDDCC00 },  // bright yellow        (Peak end)
     { peakNext,   0x781414 },  // dark red              (Overflow start — boundary)
     { 1.0,        0xFF2828 },  // bright red            (Overflow end)
   });
-
-  // Option B — Cold steel (steel blue → cyan → red)
-  // ipMeter->set_color_stops({
-  //   { 0.0,        0x185878 },  // lighter steel blue  (RMS start)
-  //   { relPosRms,  0x1878A0 },  // bright steel        (RMS end)
-  //   { rmsNext,    0x1A7080 },  // lighter teal         (Peak start — boundary)
-  //   { relPosPeak, 0x40C0E0 },  // bright cyan         (Peak end)
-  //   { peakNext,   0x601010 },  // dark red               (Overflow start — boundary)
-  //   { 1.0,        0xCC2020 },  // bright red          (Overflow end)
-  // });
-
-  // Option C — Warm phosphor (oscilloscope green → red)
-  // ipMeter->set_color_stops({
-  //   { 0.0,        0x107040 },  // dark green  (RMS start)
-  //   { relPosRms,  0x208050 },  // mid green        (RMS end)
-  //   { rmsNext,    0x207030 },  // dark green        (Peak start — boundary)
-  //   { relPosPeak, 0x50CCA0 },  // bright phosphor  (Peak end)
-  //   { peakNext,   0x601010 },  // dark red           (Overflow start — boundary)
-  //   { 1.0,        0xCC2020 },  // bright red       (Overflow end)
-  // });
 
   ipMeter->set_value(iPeak);
 };
