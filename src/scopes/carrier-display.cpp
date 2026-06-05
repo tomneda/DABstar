@@ -167,20 +167,23 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
   // Vertical TII segment boundary lines
   if (iCustPlot.DrawTiiSegments)
   {
-    std::array<f64, 4 * 8 + 1> xPoints;
+    std::array<f64, 4 * 8 - 1> xPoints;
     i32 c = 0;
-    for (i32 j = -16; j <= -1; ++j) xPoints[c++] = 48.0 * j - 0.5;
+    for (i32 j = -15; j <= -1; ++j) xPoints[c++] = 48.0 * j - 0.5;
     xPoints[c++] = 0;
-    for (i32 j =   1; j <= 16; ++j) xPoints[c++] = 48.0 * j + 0.5;
+    for (i32 j =   1; j <= 15; ++j) xPoints[c++] = 48.0 * j + 0.5;
     assert(c == (i32)xPoints.size());
+
+    const f64 yLineMin = iCustPlot.YBottomValue + iCustPlot.YBottomValueRangeExt - 1.0;
+    const f64 yLineMax = iCustPlot.YTopValue    + iCustPlot.YTopValueRangeExt    + 1.0;
 
     for (i32 i = 0; i < (i32)xPoints.size(); ++i)
     {
       auto * vline = new QLineSeries();
-      const QColor col = ((i - 16) % 8 == 0) ? QColor(0x5555BB) : QColor(0xAA4444);
+      const QColor col = ((i - 15) % 8 == 0) ? QColor(0x5555BB) : QColor(0xAA4444);
       vline->setPen(QPen(col, 0.0, Qt::SolidLine));
-      vline->append(xPoints[i], -1e9);
-      vline->append(xPoints[i], +1e9);
+      vline->append(xPoints[i], yLineMin);
+      vline->append(xPoints[i], yLineMax);
       mpPlot->chart()->addSeries(vline);
       vline->attachAxis(mpPlot->get_x_axis());
       vline->attachAxis(mpPlot->get_y_axis());
