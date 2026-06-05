@@ -20,7 +20,6 @@
 #include <QProgressBar>
 #include <QSlider>
 #include <QThread>
-#include <QPushButton>
 #include <cassert>
 #include <cstdio>
 #include "level_meter.h"
@@ -58,6 +57,8 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   connect(mpAudioOutput->get_audio_io_device(), &AudioIODevice::signal_show_audio_peak_level, this, &AudioManager::slot_show_audio_peak_level, Qt::QueuedConnection);
   connect(mpAudioOutput->get_audio_io_device(), &AudioIODevice::signal_audio_data_available, mpTechDataWidget, &TechData::slot_audio_data_available, Qt::QueuedConnection);
   connect(mpConfig->sbPeakLevelDelay, &QSpinBox::valueChanged, this, &AudioManager::slot_update_peak_level_delay);
+
+  mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #b78620; }");
 
   Settings::Main::sliderVolume.register_widget_and_update_ui_from_setting(mpSliderVolume, 100);
 
@@ -139,21 +140,41 @@ void AudioManager::_update_level_meter(LevelMeter * const ipMeter, const f32 iPe
   relPosRms  = std::min(relPosRms, relPosPeak);
 
   constexpr f64 eps = 1.0 / 255.0;
-  const f64 rmsNext  = std::min(relPosRms, relPosPeak - eps);
-  // const f64 peakNext = std::min(relPosPeak, 1.0 - eps);
+  const f64 rmsNext  = std::min(relPosRms,  relPosPeak - eps);
+  const f64 peakNext = std::min(relPosPeak, 1.0 - eps);
 
-  constexpr u32 colorRms = 0xEEBB00;
-  constexpr u32 colorPeak = 0xEE8800;
-  // constexpr u32 colorAbove0dB = 0xEE5500;
+  // Each segment: dark start → bright end (gradient within segment).
+  // Boundary is visible as a hard bright→dark jump between segments.
 
+  // Option A — VU meter (mauve → amber → red)
   ipMeter->set_color_stops({
-    { 0.0,        colorRms },
-    { relPosRms,  colorRms },
-    { rmsNext,    colorPeak },
-    { relPosPeak, colorPeak },
-    // { peakNext,   colorAbove0dB },
-    // { 1.0,        colorAbove0dB },
+    { 0.0,        0x502343 },  // dark mauve          (RMS start)
+    { relPosRms,  0x704363 },  // bright mauve        (RMS end)
+    { rmsNext,    0xA07828 },  // dark amber           (Peak start — boundary)
+    { relPosPeak, 0xF0B414 },  // bright amber        (Peak end)
+    { peakNext,   0x781414 },  // dark red              (Overflow start — boundary)
+    { 1.0,        0xFF2828 },  // bright red            (Overflow end)
   });
+
+  // Option B — Cold steel (steel blue → cyan → red)
+  // ipMeter->set_color_stops({
+  //   { 0.0,        0x185878 },  // lighter steel blue  (RMS start)
+  //   { relPosRms,  0x1878A0 },  // bright steel        (RMS end)
+  //   { rmsNext,    0x1A7080 },  // lighter teal         (Peak start — boundary)
+  //   { relPosPeak, 0x40C0E0 },  // bright cyan         (Peak end)
+  //   { peakNext,   0x601010 },  // dark red               (Overflow start — boundary)
+  //   { 1.0,        0xCC2020 },  // bright red          (Overflow end)
+  // });
+
+  // Option C — Warm phosphor (oscilloscope green → red)
+  // ipMeter->set_color_stops({
+  //   { 0.0,        0x107040 },  // dark green  (RMS start)
+  //   { relPosRms,  0x208050 },  // mid green        (RMS end)
+  //   { rmsNext,    0x207030 },  // dark green        (Peak start — boundary)
+  //   { relPosPeak, 0x50CCA0 },  // bright phosphor  (Peak end)
+  //   { peakNext,   0x601010 },  // dark red           (Overflow start — boundary)
+  //   { 1.0,        0xCC2020 },  // bright red       (Overflow end)
+  // });
 
   ipMeter->set_value(iPeak);
 };
@@ -297,11 +318,6 @@ void AudioManager::new_audio(const i32 iAmount, const u32 iAudioSampleRate, cons
       mWavWriter.write(mAudioTempBuffer.data(), availableBytes);
     }
 
-    if (!mProgBarAudioBufferFullColorSet)
-    {
-      mProgBarAudioBufferFullColorSet = true;
-      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #16B3A5; }");
-    }
   }
 
   emit signal_audio_buffer_filled_state((i32)mAudioBufferFillFiltered);
@@ -340,7 +356,7 @@ void AudioManager::_start_audio_dumping()
     return;
   }
 
-  _emphasize_pushbutton(mpTechDataWidget->audiodumpButton, true);
+  mpTechDataWidget->set_audio_dump_button_emphasized(true);
   mAudioDumpState = EAudioDumpState::WaitForInit;
   mAudioDumpTimer = 0;
 }
@@ -354,7 +370,7 @@ void AudioManager::_stop_audio_dumping()
 
   mAudioDumpState = EAudioDumpState::Stopped;
   mWavWriter.close();
-  _emphasize_pushbutton(mpTechDataWidget->audiodumpButton, false);
+  mpTechDataWidget->set_audio_dump_button_emphasized(false);
   mpTechDataWidget->audiodumpButton->setText("Dump WAV");
 }
 
@@ -389,7 +405,7 @@ void AudioManager::_start_audio_frame_dumping()
     return;
   }
 
-  _emphasize_pushbutton(mpTechDataWidget->framedumpButton, true);
+  mpTechDataWidget->set_frame_dump_button_emphasized(true);
   mFrameDumpTimer = 0;
 }
 
@@ -401,7 +417,7 @@ void AudioManager::_stop_audio_frame_dumping()
   }
 
   fclose(mpAudioFrameDumper);
-  _emphasize_pushbutton(mpTechDataWidget->framedumpButton, false);
+  mpTechDataWidget->set_frame_dump_button_emphasized(false);
   mpAudioFrameDumper = nullptr;
 
   if (mAudioFrameType == EAudioFrameType::AAC)
@@ -438,7 +454,3 @@ void AudioManager::new_aac_mp2_frame() const
   }
 }
 
-void AudioManager::_emphasize_pushbutton(QPushButton * const ipPB, const bool iEmphasize) const
-{
-  ipPB->setStyleSheet(iEmphasize ? "background-color: #AE2B05; color: #EEEE00; font-weight: bold;" : "");
-}

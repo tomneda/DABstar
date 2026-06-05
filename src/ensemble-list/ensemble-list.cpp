@@ -40,13 +40,16 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
 
   ui->teScanResult->setAcceptRichText(true);
   ui->progressBar->setValue(0);
-  ui->progressBar->setStyleSheet("color: lightgray");
+  ui->progressBar->setStyleSheet("color: #bbb");
 
   _setup_ui_regarding_list_mode();
 
   const QColor fg("white");
   ui->btnScanStart->setStyleSheet(get_bg_style_sheet(cBgColorAutoScanInactive, fg));
   ui->btnResetDataBase->setStyleSheet(get_bg_style_sheet(cBgColorBtnResetDataBase, fg));
+  ui->btnPathToScan->setStyleSheet(get_bg_style_sheet(0x4A7898, fg));
+  ui->btnAddFilesInPath->setStyleSheet(get_bg_style_sheet(0x408870, fg));
+  ui->btnAddSingleFile->setStyleSheet(get_bg_style_sheet(0x3A7A60, fg));
   ui->cbShowELNotScanned->setStyleSheet(get_bg_style_sheet(cBgColorNotScanned, fg));
   ui->cbShowELScanned->setStyleSheet(get_bg_style_sheet(cBgColorUnselected, fg));
   ui->cbShowELNoSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, fg));
@@ -617,7 +620,7 @@ void EnsembleList::_update_remove_invalid_files_button_state() const
     else
     {
       ui->btnRemoveFilesWithoutSignal->setEnabled(false);
-      ui->btnRemoveFilesWithoutSignal->setStyleSheet("");
+      ui->btnRemoveFilesWithoutSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, "white"));
     }
   }
 }

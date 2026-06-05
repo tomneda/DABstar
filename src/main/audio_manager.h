@@ -26,7 +26,6 @@ class IAudioOutput;
 class TechData;
 class Configuration;
 class QThread;
-class QPushButton;
 class QProgressBar;
 class QSlider;
 class LevelMeter;
@@ -148,7 +147,6 @@ private:
 
   f32 mAudioBufferFillFiltered = 0.0f;
   i32 mAudioFrameCnt = 0;
-  bool mProgBarAudioBufferFullColorSet = false;
   mutable uint32_t mAudioDumpTimer = 0;
   mutable uint32_t mFrameDumpTimer = 0;
 
@@ -157,6 +155,5 @@ private:
   void _stop_audio_dumping();
   void _start_audio_frame_dumping();
   void _stop_audio_frame_dumping();
-  void _emphasize_pushbutton(QPushButton * ipPB, bool iEmphasize) const;
   QString _seconds_to_timestring(const u32 iTimer) const;
 };

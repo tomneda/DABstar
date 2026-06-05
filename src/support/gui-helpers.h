@@ -14,4 +14,5 @@
 
 #include <QColor>
 
-QString get_bg_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor = "black");
+QString get_bg_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor = Qt::black);
+QString get_combo_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor = Qt::white);

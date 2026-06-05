@@ -78,7 +78,7 @@ void DabRadio::_start_source_dumping(const SChannelDescriptor & iChannelDesc, SD
   }
   ioDumpStatus.rawDumpActive = true;
   mRawDumpTimer = 0;
-  _emphasize_pushbutton(mpConfig->dumpButton, true);
+  mpConfig->set_dump_button_emphasized(true);
 }
 
 void DabRadio::_stop_source_dumping(SDumpStatus & ioDumpStatus) const
@@ -96,7 +96,7 @@ void DabRadio::_stop_source_dumping(SDumpStatus & ioDumpStatus) const
   }
   ioDumpStatus.rawDumpActive = false;
   ioDumpStatus.pRawDumper = nullptr;
-  _emphasize_pushbutton(mpConfig->dumpButton, false);
+  mpConfig->set_dump_button_emphasized(false);
   mpConfig->dumpButton->setText("Dump RAW");
 }
 
@@ -156,7 +156,7 @@ void DabRadio::_start_ETI_handler(const SChannelDescriptor & iChannelDesc, SDump
 
   if (ioDumpStatus.etiDumpActive)
   {
-    _emphasize_pushbutton(mpConfig->etiButton, true);
+    mpConfig->set_eti_button_emphasized(true);
     mEtiDumpTimer = 0;
   }
 }
@@ -171,6 +171,6 @@ void DabRadio::_stop_ETI_handler(SDumpStatus & ioDumpStatus) const
   mpDabProcessor->stop_eti_generator();
   ioDumpStatus.etiDumpActive = false;
 
-  _emphasize_pushbutton(mpConfig->etiButton, false);
+  mpConfig->set_eti_button_emphasized(false);
   mpConfig->etiButton->setText("Dump ETI");
 }

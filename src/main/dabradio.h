@@ -312,7 +312,6 @@ private:
   enum class EHttpButtonState { Off, On, Waiting };
   void _set_http_server_button(EHttpButtonState iHttpServerState) const;
   void _set_clock_text(const QString & iText = QString());
-  void _emphasize_pushbutton(QPushButton * ipPB, bool iEmphasize) const;
   void _enable_ui_elements_for_safety(bool iEnable) const;
   void _adapt_gui_for_device_or_file_play(bool iPlayingDevice) const;
   void _cleanup_ui() const;

@@ -58,6 +58,9 @@ public:
   void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool isHidden() const;
 
+  void set_audio_dump_button_emphasized(bool iEmphasized) const;
+  void set_frame_dump_button_emphasized(bool iEmphasized) const;
+
 private:
   DabRadio * const mpRadioInterface;
   RingBuffer<i16> * mpAudioBuffer;

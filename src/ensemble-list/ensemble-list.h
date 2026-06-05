@@ -61,7 +61,7 @@ public:
   void init_after_connect();
 
 private:
-  static constexpr u32 cBgColorAutoScanInactive = 0x4846FF;
+  static constexpr u32 cBgColorAutoScanInactive = 0x4858C8;
   static constexpr u32 cBgColorAutoScanActive   = 0xFF4648;
   static constexpr u32 cBgColorBtnResetDataBase = 0xC50F09;
 

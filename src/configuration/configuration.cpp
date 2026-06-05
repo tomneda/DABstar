@@ -15,6 +15,7 @@
 #include "setting-helper.h"
 #include "ui_configuration.h"
 #include "dabradio.h"
+#include "gui-helpers.h"
 #include <QDir>
 #include <QDoubleValidator>
 #include <QFileDialog>
@@ -103,6 +104,18 @@ Configuration::Configuration(DabRadio * ipRI) :
 
   leMapPortVal->setValidator(new QIntValidator(1, 65535, leMapPortVal));
   leMapPortVal->setText(Settings::Config::varMapPort.read().toString());
+
+  dumpButton->setStyleSheet(get_bg_style_sheet(0x4A7898, Qt::white));
+  etiButton->setStyleSheet(get_bg_style_sheet(0x5060A0, Qt::white));
+
+  dlTextButton->setStyleSheet(get_bg_style_sheet(0x408870, Qt::white));
+  btnCheckForUpdate->setStyleSheet(get_bg_style_sheet(0x2878C0, Qt::white));
+  loadTableButton->setStyleSheet(get_bg_style_sheet(0x607898, Qt::white));
+
+  cmbSoundOutput->setStyleSheet(get_combo_style_sheet(0xB87828));        // amber  — audio output
+  cmbSoftBitGen->setStyleSheet(get_combo_style_sheet(0x5060A0));         // indigo — decoding algorithm
+  cmbMotObjectSaving5->setStyleSheet(get_combo_style_sheet(0x4A7898));   // steel blue — MOT saving
+  cmbEpgObjectSaving5->setStyleSheet(get_combo_style_sheet(0x408870));   // teal — EPG saving
 }
 
 void Configuration::save_position_and_config()
@@ -158,4 +171,16 @@ void Configuration::_slot_select_base_path()
   Settings::Config::varDataBasePath5.write(dir);
   lblDataBasePath->setText(dir);
   emit signal_data_base_path_changed();
+}
+
+void Configuration::set_eti_button_emphasized(const bool iEmphasized) const
+{
+  static const QString sEmphasizedStyle{"background-color: #AE2B05; color: #EEEE00; font-weight: bold;"};
+  etiButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x5060A0, Qt::white));
+}
+
+void Configuration::set_dump_button_emphasized(const bool iEmphasized) const
+{
+  static const QString sEmphasizedStyle{"background-color: #AE2B05; color: #EEEE00; font-weight: bold;"};
+  dumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x4A7898, Qt::white));
 }

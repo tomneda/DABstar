@@ -38,6 +38,7 @@
 #include "iqdisplay.h"
 #include "setting-helper.h"
 #include "level_meter.h"
+#include "gui-helpers.h"
 #include <QSettings>
 #include <QColor>
 #include <algorithm>
@@ -53,6 +54,7 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
   mpCorrelationBuffer(ipCorrBuffer)
 {
   setupUi(&myFrame);
+  lblFreqCorrRF->setText("0");
 
   connect(&myFrame, &CustomFrame::signal_frame_closed, this, &SpectrumViewer::signal_window_closed);
 
@@ -72,6 +74,9 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
 
   cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
   cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
+
+  cmbIqScope->setStyleSheet(get_combo_style_sheet(0x507898));   // steel blue — IQ display
+  cmbCarrier->setStyleSheet(get_combo_style_sheet(0x487060));   // teal — carrier/phase plot
 
   set_spectrum_averaging_rate(EAvrRate::DEFAULT);
 
@@ -279,17 +284,18 @@ void SpectrumViewer::show_lcd_data(const i32 /*iOfdmSymbNo*/, const f32 iModQual
   }
 
   //lcdOfdmSymbNo->display(iOfdmSymbNo);
-  lcdTestData1->display(QString("%1").arg(iTestData1, 0, 'f', 2));
-  lcdTestData2->display(QString("%1").arg(iTestData2, 0, 'f', 2));
-  lcdSnr->display(QString("%1").arg(iSNR, 0, 'f', 1));
-  lcdPhaseCorr->display(QString("%1").arg(iMeanSigmaSqFreqCorr, 0, 'f', 1));
-  lcdModQuality->display(QString("%1").arg(iModQual, 0, 'f', 1));
+  lblTestData1->setText(QString("%1").arg(iTestData1, 0, 'f', 2));
+  lblTestData2->setText(QString("%1").arg(iTestData2, 0, 'f', 2));
+  lblSnr->setText(QString("%1").arg(iSNR, 0, 'f', 1));
+  lblPhaseCorr->setText(QString("%1").arg(iMeanSigmaSqFreqCorr, 0, 'f', 1));
+  lblModQuality->setText(QString("%1").arg(iModQual, 0, 'f', 1));
 
   if (!mThermoModQualConfigured)
   {
     thermoModQual->set_color_stops({
-      { 0.0, 0x7777CC },
-      { 1.0, 0x0000FF },
+      { 0.0, 0x003820 },  // dark phosphor green  (low MER)
+      { 0.6, 0x00A840 },  // mid phosphor green
+      { 1.0, 0x80FF90 },  // bright phosphor peak (high MER)
     });
     mThermoModQualConfigured = true;
   }
@@ -301,28 +307,28 @@ void SpectrumViewer::show_fic_ber(const f32 ber) const
 {
   if (!myFrame.isHidden())
   {
-    lcdBER->display(QString("%1").arg(ber, 0, 'e', 1));
+    lblBER->setText(QString("%1").arg(ber, 0, 'e', 1));
   }
 }
 
 void SpectrumViewer::show_nominal_frequency_MHz(const f32 iFreqMHz) const
 {
-  lcdNomFrequency->display(QString("%1").arg(iFreqMHz, 0, 'f', 3));
+  lblNomFrequency->setText(QString("%1").arg(iFreqMHz, 0, 'f', 3));
 }
 
 void SpectrumViewer::show_freq_corr_rf_Hz(const i32 iFreqCorrRF) const
 {
-  lcdFreqCorrRF->display(iFreqCorrRF);
+  lblFreqCorrRF->setText(QString::number(iFreqCorrRF));
 }
 
 void SpectrumViewer::show_freq_corr_bb_Hz(const i32 iFreqCorrBB) const
 {
-  lcdFreqCorrBB->display(iFreqCorrBB);
+  lblFreqCorrBB->setText(QString::number(iFreqCorrBB));
 }
 
 void SpectrumViewer::show_clock_error(const f32 iClockErr) const
 {
-  lcdClockError->display(QString("%1").arg(iClockErr, 0, 'f', 2));
+  lblClockError->setText(QString("%1").arg(iClockErr, 0, 'f', 2));
 }
 
 void SpectrumViewer::show_correlation(const f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr) const
@@ -388,12 +394,12 @@ void SpectrumViewer::show_digital_peak_and_rms_level(const f32 iDigLevelPeak, co
   const f64 peakNext = std::min(relPosPeak, 1.0 - eps);
 
   thermoDigLevel->set_color_stops({
-    { 0.0,        0xEEBB00 },  // yellow      (0 → RMS)
-    { relPosRms,  0xEEBB00 },
-    { rmsNext,    0xEE8800 },  // hard jump → orange     (RMS → 0 dBFS)
-    { relPosPeak, 0xEE8800 },
-    { peakNext,   0xEE5500 },  // hard jump → red-orange (above 0 dBFS)
-    { 1.0,        0xEE5500 },
+    { 0.0,        0x1E5A38 },  // lighter dark green  (RMS start)
+    { relPosRms,  0x30A060 },  // bright green        (RMS end)
+    { rmsNext,    0x806020 },  // lighter dark amber   (Peak start — boundary)
+    { relPosPeak, 0xC09010 },  // bright amber        (Peak end)
+    { peakNext,   0x801010 },  // dark red              (Overflow start — boundary)
+    { 1.0,        0xCC2020 },  // bright red          (Overflow end)
   });
 
   thermoDigLevel->set_value(valuedBPeak);

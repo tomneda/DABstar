@@ -6,46 +6,342 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>272</width>
-    <height>642</height>
+    <width>300</width>
+    <height>530</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Technical Details</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,1">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,1">
+   <property name="spacing"><number>4</number></property>
+   <property name="leftMargin"><number>6</number></property>
+   <property name="topMargin"><number>6</number></property>
+   <property name="rightMargin"><number>6</number></property>
+   <property name="bottomMargin"><number>6</number></property>
+
+   <!-- 1. Service name -->
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="programName">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>40</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>14</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Service long label&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>-</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-      </layout>
+    <widget class="QLabel" name="lblProgramName">
+     <property name="maximumSize">
+      <size><width>16777215</width><height>36</height></size>
+     </property>
+     <property name="font">
+      <font><pointsize>14</pointsize></font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Service long label&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text"><string>-</string></property>
+     <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+    </widget>
+   </item>
+
+   <!-- Separator -->
+   <item>
+    <widget class="QFrame" name="line1">
+     <property name="frameShape"><enum>QFrame::Shape::HLine</enum></property>
+     <property name="frameShadow"><enum>QFrame::Shadow::Sunken</enum></property>
+    </widget>
+   </item>
+
+   <!-- 2. Quality bars (most dynamic — at top) -->
+   <item>
+    <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+     <property name="verticalSpacing"><number>2</number></property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="frameErrorLabel">
+       <property name="text"><string>Frame</string></property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QProgressBar" name="frameError_display">
+       <property name="maximumSize">
+        <size><width>16777215</width><height>16</height></size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DAB+ frame detection quality indicator. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QProgressBar { color: #555555; } QProgressBar::chunk { background: #52A824; }</string>
+       </property>
+       <property name="value"><number>0</number></property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="rsErrorLabel">
+       <property name="text"><string>RS</string></property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QProgressBar" name="rsError_display">
+       <property name="maximumSize">
+        <size><width>16777215</width><height>16</height></size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DAB+ Reed-Solomon correction quality indicator.&lt;/p&gt;&lt;p&gt;Shows how often frames contain more errors than the Reed-Solomon decoder can correct. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QProgressBar { color: #555555; } QProgressBar::chunk { background: #52A824; }</string>
+       </property>
+       <property name="value"><number>0</number></property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="aacErrorLabel">
+       <property name="text"><string>AAC</string></property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QProgressBar" name="aacError_display">
+       <property name="maximumSize">
+        <size><width>16777215</width><height>16</height></size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Success rate of AAC frame decoding in the DAB+ transmission. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QProgressBar { color: #555555; } QProgressBar::chunk { background: #52A824; }</string>
+       </property>
+       <property name="value"><number>0</number></property>
+      </widget>
      </item>
     </layout>
    </item>
+
+   <!-- Separator -->
+   <item>
+    <widget class="QFrame" name="line2">
+     <property name="frameShape"><enum>QFrame::Shape::HLine</enum></property>
+     <property name="frameShadow"><enum>QFrame::Shadow::Sunken</enum></property>
+    </widget>
+   </item>
+
+   <!-- 3. Audio + channel info (changes when service starts) -->
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="verticalSpacing"><number>2</number></property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text"><string>Type:</string></property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="lblAscTy">
+       <property name="text"><string>-</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="l6">
+       <property name="text"><string>Bitrate [kbps]:</string></property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="lblBitrate">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bitrate of the AAC audio stream in kbps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text"><string>Sample rate [kSps]:</string></property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="lblAudioRate">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio sample rate in kilo-samples per second (kSps).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_13">
+       <property name="text"><string>SBR / PS:</string></property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="lblSbrUsed">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows whether audio uses &lt;span style=&quot; font-weight:600;&quot;&gt;S&lt;/span&gt;pectral &lt;span style=&quot; font-weight:600;&quot;&gt;B&lt;/span&gt;and &lt;span style=&quot; font-weight:600;&quot;&gt;R&lt;/span&gt;eplication and &lt;span style=&quot; font-weight:600;&quot;&gt;P&lt;/span&gt;arametric &lt;span style=&quot; font-weight:600;&quot;&gt;S&lt;/span&gt;tereo&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text"><string>-</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text"><string>RS corrections:</string></property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="lblRsCorrections">
+       <property name="toolTip">
+        <string>Number of corrections made by the Reed-Solomon algorithm over 100 DAB+ frames. This count does not relate to classic DAB/MP2 frames.</string>
+       </property>
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text"><string>EC errors:</string></property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="lblEcCorrections">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RS decoding uses parity bits to recover errors. If a parity bit itself is faulty, the recovery may introduce additional errors. The CRC check following recovery should detect this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text"><string>Protection level:</string></property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="lblUepField">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows Protection Level and Type (A or B)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text"><string>-</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text"><string>Code rate:</string></property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLabel" name="lblCodeRate">
+       <property name="text"><string>-</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Separator -->
+   <item>
+    <widget class="QFrame" name="line3">
+     <property name="frameShape"><enum>QFrame::Shape::HLine</enum></property>
+     <property name="frameShadow"><enum>QFrame::Shadow::Sunken</enum></property>
+    </widget>
+   </item>
+
+   <!-- 4. Static DAB service parameters (change only on service switch) -->
+   <item>
+    <layout class="QFormLayout" name="formLayout_2">
+     <property name="verticalSpacing"><number>2</number></property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text"><string>Service ID:</string></property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="lblServiceId">
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text"><string>Subchannel ID:</string></property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="lblSubChId">
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text"><string>CU start:</string></property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="lblStartAddress">
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text"><string>CU size:</string></property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="lblLength">
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="text"><string>Language:</string></property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="lblLanguage">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Language (defined by provider)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text"><string>-</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="fmLabel">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This DAB service is on FM as well. Feature only used by some DAB services.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text"><string>Also on FM:</string></property>
+       <property name="visible"><bool>false</bool></property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="lblFmFrequency">
+       <property name="text"><string>-</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set></property>
+       <property name="styleSheet"><string>font-weight: bold;</string></property>
+       <property name="visible"><bool>false</bool></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Separator -->
+   <item>
+    <widget class="QFrame" name="line4">
+     <property name="frameShape"><enum>QFrame::Shape::HLine</enum></property>
+     <property name="frameShadow"><enum>QFrame::Shadow::Sunken</enum></property>
+    </widget>
+   </item>
+
+   <!-- 5. Dump buttons (moved to bottom — infrequently used) -->
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
@@ -53,9 +349,7 @@
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio services are encoded in MP2 or AAC format.&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the audio frames to a file.&lt;/p&gt;&lt;p&gt;Click again to close the output file. Programs such as VLC can play these files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="text">
-        <string>Dump AAC</string>
-       </property>
+       <property name="text"><string>Dump AAC</string></property>
       </widget>
      </item>
      <item>
@@ -63,9 +357,7 @@
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the audio output as an uncompressed PCM file.&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the PCM data.&lt;/p&gt;&lt;p&gt;The output is a standard &amp;quot;.wav&amp;quot; file compatible with most audio programs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="text">
-        <string>Dump WAV</string>
-       </property>
+       <property name="text"><string>Dump WAV</string></property>
       </widget>
      </item>
      <item>
@@ -73,387 +365,17 @@
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If configured, opens a window with an SPI (formerly EPG) timetable preview.&lt;/p&gt;&lt;p&gt;Note: this feature is still a work in progress.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="text">
-        <string>Time Table</string>
-       </property>
+       <property name="text"><string>Time Table</string></property>
       </widget>
      </item>
     </layout>
    </item>
-   <item>
-    <layout class="QFormLayout" name="formLayout">
-     <property name="verticalSpacing">
-      <number>2</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Service Id</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLCDNumber" name="serviceIdDisplay">
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="mode">
-        <enum>QLCDNumber::Mode::Hex</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::SegmentStyle::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Start Address of CU</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLCDNumber" name="startAddressDisplay">
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::SegmentStyle::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Used CUs</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLCDNumber" name="lengthDisplay">
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::SegmentStyle::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Subchannel ID</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLCDNumber" name="subChIdDisplay">
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::SegmentStyle::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>RS corrections</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLCDNumber" name="rsCorrections">
-       <property name="toolTip">
-        <string>Number of corrections made by the Reed-Solomon algorithm over 100 DAB+ frames. This count does not relate to classic DAB/MP2 frames.</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::SegmentStyle::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>EC errors </string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLCDNumber" name="ecCorrections">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RS decoding uses parity bits to recover errors. If a parity bit itself is faulty, the recovery may introduce additional errors. The CRC check following recovery should detect this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::SegmentStyle::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="l6">
-       <property name="text">
-        <string>Bitrate [kbps]</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLCDNumber" name="bitrateDisplay">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bitrate of the AAC audio stream in kbps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::SegmentStyle::Flat</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Audiorate [kSps]</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QLCDNumber" name="audioRate">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio sample rate in kilo-samples per second (kSps).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::SegmentStyle::Flat</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <property name="verticalSpacing">
-      <number>2</number>
-     </property>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_12">
-       <property name="text">
-        <string>Code rate:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Type:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>17</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Prot. level:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLabel" name="ASCTy">
-       <property name="text">
-        <string>-</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="language">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Language (defined by provider)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>-</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="uepField">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows Protection Level and Type (A or B)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>-</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="codeRate">
-       <property name="text">
-        <string>-</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>Language:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_13">
-       <property name="text">
-        <string>SBR / PS:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="lblSbrUsed">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows whether audio uses &lt;span style=&quot; font-weight:600;&quot;&gt;S&lt;/span&gt;pectral &lt;span style=&quot; font-weight:600;&quot;&gt;B&lt;/span&gt;and&lt;span style=&quot; font-weight:600;&quot;&gt; R&lt;/span&gt;eplication and &lt;span style=&quot; font-weight:600;&quot;&gt;P&lt;/span&gt;arametric &lt;span style=&quot; font-weight:600;&quot;&gt;S&lt;/span&gt;tereo&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>-</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="fmLabel">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This DAB service is on FM as well. Feature only used by some DAB services.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>also on FM:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="fmFrequency">
-       <property name="text">
-        <string>-</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="2">
-      <widget class="QProgressBar" name="aacError_display">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>20</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Success rate of AAC frame decoding in the DAB+ transmission. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
-       </property>
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QProgressBar" name="frameError_display">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>20</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DAB+ frame detection quality indicator. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
-       </property>
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0" colspan="2">
-      <widget class="QLabel" name="frameErrorLabel">
-       <property name="text">
-        <string>Frame</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QProgressBar" name="rsError_display">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>20</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DAB+ Reed-Solomon correction quality indicator.&lt;/p&gt;&lt;p&gt;Shows how often frames contain more errors than the Reed-Solomon decoder can correct. 100 is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QProgressBar::chunk { background: #e6e600; }</string>
-       </property>
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0" colspan="2">
-      <widget class="QLabel" name="rsErrorLabel">
-       <property name="text">
-        <string>RS</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QLabel" name="aacErrorLabel">
-       <property name="text">
-        <string>AAC</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
+
+   <!-- 6. Audio FFT plot (stretches to fill remaining space) -->
    <item>
     <widget class="PlotWidget" name="plotAudioFft" native="true"/>
    </item>
+
   </layout>
  </widget>
  <customwidgets>

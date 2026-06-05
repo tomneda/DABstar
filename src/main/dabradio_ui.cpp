@@ -95,11 +95,6 @@ template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32> &, u32)
 template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32> &, i32) const;
 template void DabRadio::_set_status_info_status<const char *>(StatusInfoElem<const char *> &, const char * const) const;
 
-void DabRadio::_emphasize_pushbutton(QPushButton * const ipPB, const bool iEmphasize) const
-{
-  ipPB->setStyleSheet(iEmphasize ? "background-color: #AE2B05; color: #EEEE00; font-weight: bold;" : "");
-}
-
 void DabRadio::_reset_status_info(StatusInfo & ioStatusInfo) const
 {
   _set_status_info_status(ioStatusInfo.InpBitRate, (i32)0);
@@ -130,20 +125,23 @@ void DabRadio::_initialize_ui_elements()
   ui->rbFilePlayer->setChecked(deviceFilePlayerId == (int)EServiceListSrc::FILE_PLAYER);
 
   // setup styles and colors of controls
-  ui->btnMuteAudio->setStyleSheet(get_bg_style_sheet(0xFF3C3C));
-  ui->btnDeviceWidget->setStyleSheet(get_bg_style_sheet(0x57E6EC));
-  ui->configButton->setStyleSheet(get_bg_style_sheet(0x509B50));
-  ui->btnTechDetails->setStyleSheet(get_bg_style_sheet(0xFFFF64));
-  ui->btnSpectrumScope->setStyleSheet(get_bg_style_sheet(0xC545F0));
-  ui->btnPrevService->setStyleSheet(get_bg_style_sheet(0xC86128));
-  ui->btnNextService->setStyleSheet(get_bg_style_sheet(0xC86128));
-  ui->btnTargetService->setStyleSheet(get_bg_style_sheet(0x216A69));
-  ui->btnToggleFavorite->setStyleSheet(get_bg_style_sheet(0x6464FF));
-  ui->btnFib->setStyleSheet(get_bg_style_sheet(0xDC6498));
-  ui->btnTii->setStyleSheet(get_bg_style_sheet(0xFF6400));
-  ui->btnCir->setStyleSheet(get_bg_style_sheet(0xDC25C0));
-  ui->btnEnsembleList->setStyleSheet(get_bg_style_sheet(0x6464FF));
-  ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));
+  ui->btnMuteAudio->setStyleSheet(get_bg_style_sheet(0xFF3C3C));       // red      — mute (warning)
+  ui->btnDeviceWidget->setStyleSheet(get_bg_style_sheet(0x38A8C0));    // cyan     — hardware device
+  ui->configButton->setStyleSheet(get_bg_style_sheet(0x509B50));       // green    — settings
+  ui->btnTechDetails->setStyleSheet(get_bg_style_sheet(0xD8C040));     // yellow   — info panel
+  ui->btnSpectrumScope->setStyleSheet(get_bg_style_sheet(0x9050C8));   // purple   — spectrum view
+  ui->btnPrevService->setStyleSheet(get_bg_style_sheet(0xC86128));     // orange   — navigate prev
+  ui->btnNextService->setStyleSheet(get_bg_style_sheet(0xC86128));     // orange   — navigate next
+  ui->btnTargetService->setStyleSheet(get_bg_style_sheet(0x308878));   // teal     — target service
+  ui->btnToggleFavorite->setStyleSheet(get_bg_style_sheet(0x6464FF));  // blue     — favourite
+  ui->btnFib->setStyleSheet(get_bg_style_sheet(0xB84878));             // rose     — FIB data
+  ui->btnTii->setStyleSheet(get_bg_style_sheet(0x6868A8));             // lavender — TII
+  ui->btnCir->setStyleSheet(get_bg_style_sheet(0xB030A0));             // magenta  — CIR view
+  ui->btnEnsembleList->setStyleSheet(get_bg_style_sheet(0x4848C8));    // indigo   — ensemble list
+  ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));   // gold     — picture folder
+
+  ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
+  ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));      // slate blue — TII transmitter list
 
   _set_http_server_button(EHttpButtonState::Off);
   mpEpgMotHandler->slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving5->currentIndex());
@@ -563,11 +561,11 @@ void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
   {
     if (iSuccessPercent < 85)
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: red; }");
+      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #CC3333; }");
     }
     else
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #72CE03; }");
+      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #52A824; }");
     }
 
     ui->progBarFicError->setValue(iSuccessPercent);

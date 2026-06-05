@@ -35,6 +35,7 @@
 #include  "audio-display.h"
 #include  "dab-tables.h"
 #include  "color-selector.h"
+#include  "gui-helpers.h"
 #include "setting-helper.h"
 
 TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
@@ -49,6 +50,12 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame);
 
   formLayout->setLabelAlignment(Qt::AlignLeft);
+  formLayout_2->setLabelAlignment(Qt::AlignLeft);
+
+  framedumpButton->setStyleSheet(get_bg_style_sheet(0x4A7898, Qt::white));
+  audiodumpButton->setStyleSheet(get_bg_style_sheet(0x408870, Qt::white));
+  timeTable_button->setStyleSheet(get_bg_style_sheet(0xB89028, Qt::white));
+
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mFrame.hide();
   timeTable_button->setEnabled(false);
@@ -74,11 +81,11 @@ TechData::~TechData()
 void TechData::cleanUp()
 {
   const QString es("-");
-  programName->setText(es);
-  uepField->setText(es);
-  codeRate->setText(es);
-  ASCTy->setText(es);
-  language->setText(es);
+  lblProgramName->setText(es);
+  lblUepField->setText(es);
+  lblCodeRate->setText(es);
+  lblAscTy->setText(es);
+  lblLanguage->setText(es);
   lblSbrUsed->setText(es);
   framedumpButton->setEnabled(false);
   audiodumpButton->setEnabled(false);
@@ -86,12 +93,12 @@ void TechData::cleanUp()
   frameError_display->setValue(0);
   rsError_display->setValue(0);
   aacError_display->setValue(0);
-  bitrateDisplay->display(0);
-  startAddressDisplay->display(0);
-  lengthDisplay->display(0);
-  subChIdDisplay->display(0);
+  lblBitrate->setText("0");
+  lblStartAddress->setText("0");
+  lblLength->setText("0");
+  lblSubChId->setText("0");
   timeTable_button->setEnabled(false);
-  audioRate->display(0);
+  lblAudioRate->setText("0");
 }
 
 void TechData::show_service_data(const SAudioData * ad) const
@@ -136,11 +143,11 @@ void TechData::slot_show_frame_error_bar(i32 e) const
   QPalette p = frameError_display->palette();
   if (100 - 4 * e < 80)
   {
-    p.setColor(QPalette::Highlight, Qt::red);
+    p.setColor(QPalette::Highlight, QColor(0xCC3333));
   }
   else
   {
-    p.setColor(QPalette::Highlight, Qt::green);
+    p.setColor(QPalette::Highlight, QColor(0x52A824));
   }
 
   frameError_display->setPalette(p);
@@ -152,11 +159,11 @@ void TechData::slot_show_aac_error_bar(i32 e) const
   QPalette p = aacError_display->palette();
   if (100 - 4 * e < 80)  // e is error out of 25 frames so times 4
   {
-    p.setColor(QPalette::Highlight, Qt::red);
+    p.setColor(QPalette::Highlight, QColor(0xCC3333));
   }
   else
   {
-    p.setColor(QPalette::Highlight, Qt::green);
+    p.setColor(QPalette::Highlight, QColor(0x52A824));
   }
   aacError_display->setPalette(p);
   aacError_display->setValue(100 - 4 * e);
@@ -167,11 +174,11 @@ void TechData::slot_show_rs_error_bar(i32 e) const
   QPalette p = rsError_display->palette();
   if (100 - 4 * e < 80)
   {
-    p.setColor(QPalette::Highlight, Qt::red);
+    p.setColor(QPalette::Highlight, QColor(0xCC3333));
   }
   else
   {
-    p.setColor(QPalette::Highlight, Qt::green);
+    p.setColor(QPalette::Highlight, QColor(0x52A824));
   }
   rsError_display->setPalette(p);
   rsError_display->setValue(100 - 4 * e);
@@ -179,17 +186,15 @@ void TechData::slot_show_rs_error_bar(i32 e) const
 
 void TechData::slot_show_rs_corrections(i32 c, i32 ec) const
 {
-  // highlight non-zero values with color
-  auto set_val_with_col = [](QLCDNumber * ipLCD, i32 iVal)
+  // highlight non-zero values with amber color
+  auto set_val_with_col = [](QLabel * ipLbl, i32 iVal)
   {
-    QPalette p = ipLCD->palette();
-    p.setColor(QPalette::WindowText, (iVal > 0 ? Qt::yellow : Qt::white));
-    ipLCD->setPalette(p);
-    ipLCD->display(iVal);
+    ipLbl->setStyleSheet(iVal > 0 ? "font-weight: bold; color: #D4A030;" : "font-weight: bold;");
+    ipLbl->setText(QString::number(iVal));
   };
 
-  set_val_with_col(rsCorrections, c);
-  set_val_with_col(ecCorrections, ec);
+  set_val_with_col(lblRsCorrections, c);
+  set_val_with_col(lblEcCorrections, ec);
 }
 
 void TechData::slot_show_timetableButton(bool b) const
@@ -206,47 +211,43 @@ void TechData::slot_show_timetableButton(bool b) const
 
 void TechData::_show_service_label(const QString & s) const
 {
-  programName->setText(s);
+  lblProgramName->setText(s);
 }
 
 void TechData::_show_SId(u32 iSId) const
 {
-  serviceIdDisplay->display((i32)iSId);
-  if ((iSId & 0x8000'0000) != 0) // display only knows negative numbers but not u32, should this ever happen?
-  {
-    qWarning() << "Service ID can not displayed correctly";
-  }
+  lblServiceId->setText(QString::asprintf("0x%X", iSId));
 }
 
 void TechData::_show_bitrate(i32 br) const
 {
-  bitrateDisplay->display(br);
+  lblBitrate->setText(QString::number(br));
 }
 
 void TechData::_show_CU_start_address(i32 sa) const
 {
-  startAddressDisplay->display(sa);
+  lblStartAddress->setText(QString::number(sa));
 }
 
 void TechData::_show_CU_size(i32 l) const
 {
-  lengthDisplay->display(l);
+  lblLength->setText(QString::number(l));
 }
 
 void TechData::_show_subChId(i32 subChId) const
 {
-  subChIdDisplay->display(subChId);
+  lblSubChId->setText(QString::number(subChId));
 }
 
 void TechData::slot_show_language(i32 l) const
 {
-  language->setText(getLanguage(l));
+  lblLanguage->setText(getLanguage(l));
 }
 
 void TechData::_show_ASCTy(i32 a) const
 {
   const bool isDabPlus = (a == 077);
-  ASCTy->setText(isDabPlus ? "DAB+" : "DAB");
+  lblAscTy->setText(isDabPlus ? "DAB+" : "DAB");
   framedumpButton->setText(isDabPlus ? "Dump AAC" : "Dump MP2");
   aacError_display->setEnabled(isDabPlus);
   aacErrorLabel->setEnabled(isDabPlus);
@@ -257,28 +258,40 @@ void TechData::_show_ASCTy(i32 a) const
 void TechData::_show_uep_eep(i32 shortForm, i32 protLevel) const
 {
   QString protL = getProtectionLevel(shortForm, protLevel);
-  uepField->setText(protL);
+  lblUepField->setText(protL);
 }
 
 void TechData::_show_coderate(i32 shortForm, i32 protLevel) const
 {
-  codeRate->setText(getCodeRate(shortForm, protLevel));
+  lblCodeRate->setText(getCodeRate(shortForm, protLevel));
+}
+
+void TechData::set_audio_dump_button_emphasized(const bool iEmphasized) const
+{
+  static const QString sEmphasizedStyle{"background-color: #AE2B05; color: #EEEE00; font-weight: bold;"};
+  audiodumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x408870, Qt::white));
+}
+
+void TechData::set_frame_dump_button_emphasized(const bool iEmphasized) const
+{
+  static const QString sEmphasizedStyle{"background-color: #AE2B05; color: #EEEE00; font-weight: bold;"};
+  framedumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x4A7898, Qt::white));
 }
 
 void TechData::slot_show_fm(i32 freq) const
 {
   if (freq == -1)
   {
-    fmFrequency->hide();
+    lblFmFrequency->hide();
     fmLabel->hide();
   }
   else
   {
     fmLabel->show();
-    fmFrequency->show();
+    lblFmFrequency->show();
     QString f = QString::number(freq);
     f.append(" Khz");
-    fmFrequency->setText(f);
+    lblFmFrequency->setText(f);
   }
 }
 
@@ -303,7 +316,7 @@ void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate) c
 
 void TechData::slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed) const
 {
-  audioRate->display(iSampleRate / 1000);
+  lblAudioRate->setText(QString::number(iSampleRate / 1000));
   QString afs;
   afs += (iSbrUsed ? "YES / " : "NO / ");
   afs += (iPsUsed ? "YES" : "NO");
