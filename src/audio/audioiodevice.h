@@ -71,6 +71,7 @@ private:
   f32 mMeanSqLeft = 0;
   f32 mMeanSqRight = 0;
   f32 mRmsAlpha = 1;
+  SStereoPeakLevel mLastSpl{};  // last received level, re-used on timer underflow (Windows)
 
   QTimer * mpTimerPeakLevel = nullptr;
 

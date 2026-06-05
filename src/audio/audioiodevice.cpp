@@ -309,24 +309,21 @@ void AudioIODevice::_slot_timer_level_meter()
     return;
   }
 
-  if (numFloats < 1*4)
+  if (numFloats >= 4)
   {
-    // qWarning() << "buffer underflow with" << num << "elements" ;
-    return;
+    // On Windows: timer resolution is coarse (~15ms) and audio blocks are large, so multiple
+    // packets may accumulate. Skip stale ones and keep only the latest.
+    const i32 numPackets = numFloats / 4;
+    if (numPackets > 1)
+    {
+      mpLevelMeterBuffer->advance_ring_buffer_read_index((numPackets - 1) * 4);
+    }
+    mpLevelMeterBuffer->get_data_from_ring_buffer(mLastSpl.buffer.data(), mLastSpl.buffer.size());
   }
+  // else: buffer underflow — no new packet since last timer fire (can happen on Windows when the
+  // audio block period exceeds 50ms). Re-use the last known level so the meter does not freeze.
 
-  // On Windows the timer resolution is coarse (~15ms) so multiple packets may accumulate.
-  // Skip stale ones and keep only the latest to avoid the meter appearing to hang.
-  const i32 numPackets = numFloats / 4;
-  if (numPackets > 1)
-  {
-    mpLevelMeterBuffer->advance_ring_buffer_read_index((numPackets - 1) * 4);
-  }
-
-  SStereoPeakLevel spl;
-  mpLevelMeterBuffer->get_data_from_ring_buffer(spl.buffer.data(), spl.buffer.size());
-
-  const SStereoPeakLevel delayed = mDelayLine.get_set_value(spl);
+  const SStereoPeakLevel delayed = mDelayLine.get_set_value(mLastSpl);
   // qDebug() << "emit signal_show_audio_peak_level";
   emit signal_show_audio_peak_level(delayed.peakLeft, delayed.peakRight, delayed.rmsLeft, delayed.rmsRight);
 }
