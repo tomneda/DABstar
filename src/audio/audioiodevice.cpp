@@ -14,9 +14,13 @@ Q_LOGGING_CATEGORY(sLogAudioIODevice, "AudioIODevice", QtInfoMsg)
 AudioIODevice::AudioIODevice(QObject * const iParent)
   : QIODevice(iParent)
   , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<i16>::EId::TechDataBuffer).get())
+  , mpLevelMeterBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<f32>::EId::LevelMeterBuffer).get())
 {
-  mTimerPeakLevel.setSingleShot(true);
-  mTimerPeakLevel.start(50);
+  mpTimerPeakLevel = new QTimer(this); // must be a Qt child so it moves with AudioIODevice when QAudioSink relocates it to the audio thread
+  mpTimerPeakLevel->setSingleShot(false);
+  mpTimerPeakLevel->setInterval(1000 / cNumPeakLevelPerSecond);
+  connect(mpTimerPeakLevel, &QTimer::timeout, this, &AudioIODevice::_slot_timer_level_meter);
+  mpTimerPeakLevel->start();
 }
 
 void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
@@ -26,6 +30,7 @@ void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
 
   mSampleRateKHz = iBuffer->sampleRate / 1000;
   mPeakLevelSampleCntBothChannels = iBuffer->sampleRate / cNumPeakLevelPerSecond; // 20 "peaks" per second
+  mRmsAlpha = 5.0f / (f32)iBuffer->sampleRate;
   mTestTone.set_sample_rate(mSampleRateKHz);
 }
 
@@ -204,7 +209,6 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
     // mute can be requested when there is not enough samples or from HMI
     _fade_out_audio_samples(opDataSamplesBothChannels, maxWantedSamplesStereoPairForFading);
     mPlaybackState = EPlaybackState::Muted; // muted
-    mDelayLine.reset();
   }
 
   _eval_peak_audio_level(opDataSamplesBothChannels, maxWantedSamplesBothChannels);
@@ -257,24 +261,65 @@ void AudioIODevice::_eval_peak_audio_level(const i16 * const ipData, const i32 i
 
     if (absLeft  > mAbsPeakLeft)  mAbsPeakLeft  = absLeft;
     if (absRight > mAbsPeakRight) mAbsPeakRight = absRight;
+    
+    const f32 meanSqLeft  = (f32)absLeft  * (f32)absLeft;
+    const f32 meanSqRight = (f32)absRight * (f32)absRight;
+    
+    mMeanSqLeft  += mRmsAlpha * (meanSqLeft - mMeanSqLeft);
+    mMeanSqRight += mRmsAlpha * (meanSqRight - mMeanSqRight);
 
-    mPeakLevelCurSampleCnt++;
+    ++mPeakLevelCurSampleCnt;
 
     if (mPeakLevelCurSampleCnt > mPeakLevelSampleCntBothChannels) // collect many enough samples? (also over more blocks)
     {
       static const f32 cOffs_dB = 20 * std::log10((f32)std::numeric_limits<i16>::max()); // do not use constexpr as it is not supported by all compilers for std::log10()
       SStereoPeakLevel spl;
-      spl.left  = (mAbsPeakLeft  > 0 ? 20.0f * std::log10((f32) mAbsPeakLeft)  - cOffs_dB : -40.0f);
-      spl.right = (mAbsPeakRight > 0 ? 20.0f * std::log10((f32) mAbsPeakRight) - cOffs_dB : -40.0f);
+      spl.peakLeft  = (mAbsPeakLeft  > 0 ? 20.0f * std::log10((f32) mAbsPeakLeft)  - cOffs_dB : -40.0f);
+      spl.peakRight = (mAbsPeakRight > 0 ? 20.0f * std::log10((f32) mAbsPeakRight) - cOffs_dB : -40.0f);
+      spl.rmsLeft   = (mMeanSqLeft   > 0 ? 10.0f * std::log10(mMeanSqLeft)  - cOffs_dB : -40.0f);
+      spl.rmsRight  = (mMeanSqRight  > 0 ? 10.0f * std::log10(mMeanSqRight) - cOffs_dB : -40.0f);
 
-      const SStereoPeakLevel delayed = mDelayLine.get_set_value(spl);
-      emit signal_show_audio_peak_level(delayed.left, delayed.right);
+      // Peak-level packets are produced every 1 / cNumPeakLevelPerSecond.
+      // Since the ring buffer is more than twice that interval, use this small buffer to read each packet back at a constant rate.
+      if (mpLevelMeterBuffer->put_data_into_ring_buffer(spl.buffer.data(), spl.buffer.size()) != spl.buffer.size())
+      {
+        // qDebug() << "Level meter ring buffer full -> flush buffer";
+        mpLevelMeterBuffer->flush_ring_buffer();
+      }
 
       mPeakLevelCurSampleCnt = 0;
-      mAbsPeakLeft = 0.0f;
-      mAbsPeakRight = 0.0f;
-      // break; // send only one time the peak level in the same block (call of this method)
+
+      // decay the peak level each 1 / cNumPeakLevelPerSecond (50 ms) about 1dB
+      mAbsPeakLeft  *= cDecayFactor;
+      mAbsPeakRight *= cDecayFactor;
+      // mMeanSqLeft   *= cDecayFactor;
+      // mMeanSqRight  *= cDecayFactor;
     }
   }
+}
+
+void AudioIODevice::_slot_timer_level_meter()
+{
+  const i32 numFloats = mpLevelMeterBuffer->get_ring_buffer_read_available();
+
+  if ((numFloats % 4) != 0)
+  {
+    qWarning() << "buffer not correct aligned";
+    mpLevelMeterBuffer->advance_ring_buffer_read_index(numFloats); // clear buffer
+    return;
+  }
+
+  if (numFloats < 1*4)
+  {
+    // qWarning() << "buffer underflow with" << num << "elements" ;
+    return;
+  }
+
+  SStereoPeakLevel spl;
+  mpLevelMeterBuffer->get_data_from_ring_buffer(spl.buffer.data(), spl.buffer.size());
+
+  const SStereoPeakLevel delayed = mDelayLine.get_set_value(spl);
+  // qDebug() << "emit signal_show_audio_peak_level";
+  emit signal_show_audio_peak_level(delayed.peakLeft, delayed.peakRight, delayed.rmsLeft, delayed.rmsRight);
 }
 

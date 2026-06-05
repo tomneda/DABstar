@@ -1072,7 +1072,12 @@
           <number>1</number>
          </property>
          <item>
-          <widget class="LevelMeter" name="thermoPeakLevelLeft" native="true">
+          <widget class="LevelMeter" name="levelMeterLeft" native="true">
+           <property name="font">
+            <font>
+             <pointsize>6</pointsize>
+            </font>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -1097,7 +1102,12 @@
           </widget>
          </item>
          <item>
-          <widget class="LevelMeter" name="thermoPeakLevelRight" native="true">
+          <widget class="LevelMeter" name="levelMeterRight" native="true">
+           <property name="font">
+            <font>
+             <pointsize>6</pointsize>
+            </font>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -1122,14 +1132,14 @@
           </widget>
          </item>
          <item>
-          <widget class="LevelMeter" name="thermoPeakScale" native="true">
+          <widget class="LevelMeter" name="levelMeterScale" native="true">
            <property name="font">
             <font>
              <pointsize>6</pointsize>
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Peak level in dBFS&lt;/p&gt;&lt;p&gt;- Top: left channel&lt;br/&gt;- Bottom: right channel&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RMS and Peak level in dBFS&lt;/p&gt;&lt;p&gt;- Top: left channel&lt;br/&gt;- Bottom: right channel&lt;/p&gt;&lt;p&gt;Use the test-tone in the configuration to calibrate the timing&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound" stdset="0">
             <double>-22.000000000000000</double>

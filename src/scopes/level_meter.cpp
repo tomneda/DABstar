@@ -95,7 +95,7 @@ i32 LevelMeter::_get_scale_area_size() const
 i32 LevelMeter::_get_edge_margin() const
 {
   const f64 range = mUpper - mLower;
-  if (range <= 0.0 || !mShowScale) return 0;
+  if (range <= 0.0) return 0;
 
   const f64 firstMajor = std::ceil(mLower / cMajorStep - 1e-9) * cMajorStep;
   const f64 lastMajor  = std::floor(mUpper / cMajorStep + 1e-9) * cMajorStep;

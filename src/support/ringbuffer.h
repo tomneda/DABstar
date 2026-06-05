@@ -417,7 +417,8 @@ public:
     AudioToOutput,
     TechDataBuffer,
     DeviceSampleBuffer,
-    CirBuffer
+    CirBuffer,
+    LevelMeterBuffer
   };
 
   struct SListPar

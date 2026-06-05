@@ -55,18 +55,24 @@ private:
   u32 mSampleRateKHz = 0;
   bool mDoStop = false;
   RingBuffer<i16> * const mpTechDataBuffer;
+  RingBuffer<f32> * const mpLevelMeterBuffer;
 
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
 
   // peak level meter
-  struct SStereoPeakLevel { f32 left = -40.0f, right = -40.0f; };
+  static constexpr f32 cDecayFactor = 0.89125094; // == std::pow(10.0f, -1.0f / 20.0f);
+  union SStereoPeakLevel { std::array<f32, 4> buffer;  struct { f32 peakLeft = -40.0f, peakRight = -40.0f; f32 rmsLeft = -40.0f, rmsRight = -40.0f; }; };
   DelayLine<SStereoPeakLevel> mDelayLine{SStereoPeakLevel()};
   u32 mPeakLevelCurSampleCnt = 0;
   u32 mPeakLevelSampleCntBothChannels = 0;
   i16 mAbsPeakLeft = 0;
   i16 mAbsPeakRight = 0;
-  QTimer mTimerPeakLevel;
+  f32 mMeanSqLeft = 0;
+  f32 mMeanSqRight = 0;
+  f32 mRmsAlpha = 1;
+
+  QTimer * mpTimerPeakLevel = nullptr;
 
   TestTone mTestTone{};
 
@@ -75,7 +81,10 @@ private:
   void _fade_out_audio_samples(i16 * opData, i32 iNumStereoSamples) const;
   void _eval_peak_audio_level(const i16 * ipData, i32 iNumSamples);
 
+private slots:
+  void _slot_timer_level_meter();
+
 signals:
-  void signal_show_audio_peak_level(f32, f32) const;
+  void signal_show_audio_peak_level(f32 iPeakLeftDb, f32 iPeakRightDb, f32 iRmsLeftDb, f32 iRmsRightDb) const;
   void signal_audio_data_available(i32 iNumSamples, i32 iSampleRate);
 };

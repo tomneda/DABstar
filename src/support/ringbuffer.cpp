@@ -25,21 +25,22 @@ template <>
 RingBufferFactory<i16>::RingBufferFactory()
 {
   create_ringbuffer(EId::AudioFromDecoder, "AudioFromDecoder", 4096 * 2 /*stereo*/ * 2 /*security*/);
-  create_ringbuffer(EId::AudioToOutput,    "AudioToOutput",    SAudioFifo::cAudioFifoSizeSamplesBothChannels, true);
+  create_ringbuffer(EId::AudioToOutput,    "AudioToOutput",    SAudioFifo::cAudioFifoSizeSamplesBothChannels);
   create_ringbuffer(EId::TechDataBuffer,   "TechDataBuffer",   2 * 1024);
 }
 
 template <>
 RingBufferFactory<ci16>::RingBufferFactory()
 {
-  create_ringbuffer(EId::DeviceSampleBuffer,  "DeviceSampleBuffer", 4 * 1024 * 1024);
+  create_ringbuffer(EId::DeviceSampleBuffer, "DeviceSampleBuffer", 4 * 1024 * 1024);
 }
 
 template <>
 RingBufferFactory<f32>::RingBufferFactory()
 {
-  create_ringbuffer(EId::CarrBuffer,     "CarrBuffer",     2 * 1536);
-  create_ringbuffer(EId::ResponseBuffer, "ResponseBuffer", 2 * 2048 /*32768*/);
+  create_ringbuffer(EId::CarrBuffer,       "CarrBuffer",     2 * 1536);
+  create_ringbuffer(EId::ResponseBuffer,   "ResponseBuffer", 2 * 2048 /*32768*/);
+  create_ringbuffer(EId::LevelMeterBuffer, "LevelMeterBuffer", 4 * 4, true);
 }
 
 template <>

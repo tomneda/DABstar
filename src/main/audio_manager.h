@@ -47,8 +47,8 @@ public:
     Configuration * pConfig;
     TechData * pTechDataWidget;
     QProgressBar * pProgBarAudioBuffer;
-    LevelMeter * pThermoPeakLevelLeft;
-    LevelMeter * pThermoPeakLevelRight;
+    LevelMeter * pLevelMeterLeft;
+    LevelMeter * pLevelMeterRight;
     QSlider * pSliderVolume;
     OpenFileDialog * pOpenFileDialog;
   };
@@ -75,7 +75,7 @@ public:
 
 public slots:
   // Connected from AudioIODevice (internally)
-  void slot_show_audio_peak_level(f32 iPeakLeft, f32 iPeakRight);
+  void slot_show_audio_peak_level(f32 iPeakLeftDb, f32 iPeakRightDb, f32 iRmsLeftDb, f32 iRmsRightDb);
   // Connected from TechData buttons
   void slot_handle_audio_dump_button();
   void slot_handle_frame_dump_button();
@@ -88,6 +88,9 @@ public slots:
   void slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
   // Connected from config spinbox
   void slot_update_peak_level_delay(i32 iDelaySteps = -1);
+
+private:
+  void _update_level_meter(LevelMeter * ipMeter, const f32 iPeak, const f32 iRms) const;
 
 signals:
   // Forwarded to IAudioOutput (queued - IAudioOutput is in a different thread)
@@ -116,8 +119,8 @@ private:
   Configuration * const mpConfig;
   TechData * const mpTechDataWidget;
   QProgressBar * const mpProgBarAudioBuffer;
-  LevelMeter * const mpThermoPeakLevelLeft;
-  LevelMeter * const mpThermoPeakLevelRight;
+  LevelMeter * const mpLevelMeterLeft;
+  LevelMeter * const mpLevelMeterRight;
   QSlider * const mpSliderVolume;
   OpenFileDialog * const mpOpenFileDialog;
 
@@ -127,7 +130,6 @@ private:
   WavWriter mWavWriter;
   SAudioFifo mAudioFifo{};
   SAudioFifo * mpCurAudioFifo = nullptr;
-  QTimer mAudioLevelDecayTimer;
   FILE * mpAudioFrameDumper = nullptr;
 
   // State received from DabRadio
@@ -145,8 +147,6 @@ private:
   QString mAudioWavDumpFileName;
 
   f32 mAudioBufferFillFiltered = 0.0f;
-  f32 mPeakLeftDamped = -100.0f;
-  f32 mPeakRightDamped = -100.0f;
   i32 mAudioFrameCnt = 0;
   bool mProgBarAudioBufferFullColorSet = false;
   mutable uint32_t mAudioDumpTimer = 0;
@@ -159,7 +159,4 @@ private:
   void _stop_audio_frame_dumping();
   void _emphasize_pushbutton(QPushButton * ipPB, bool iEmphasize) const;
   QString _seconds_to_timestring(const u32 iTimer) const;
-
-private slots:
-  void _slot_audio_level_decay_timeout();
 };

@@ -33,8 +33,8 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   , mpConfig(cfg.pConfig)
   , mpTechDataWidget(cfg.pTechDataWidget)
   , mpProgBarAudioBuffer(cfg.pProgBarAudioBuffer)
-  , mpThermoPeakLevelLeft(cfg.pThermoPeakLevelLeft)
-  , mpThermoPeakLevelRight(cfg.pThermoPeakLevelRight)
+  , mpLevelMeterLeft(cfg.pLevelMeterLeft)
+  , mpLevelMeterRight(cfg.pLevelMeterRight)
   , mpSliderVolume(cfg.pSliderVolume)
   , mpOpenFileDialog(cfg.pOpenFileDialog)
 {
@@ -79,11 +79,6 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   {
     emit signal_set_audio_device(QByteArray()); // activates the default audio device
   }
-
-  mAudioLevelDecayTimer.setInterval(50);
-  mAudioLevelDecayTimer.setSingleShot(false);
-  connect(&mAudioLevelDecayTimer, &QTimer::timeout, this, &AudioManager::_slot_audio_level_decay_timeout);
-  mAudioLevelDecayTimer.start();
 }
 
 AudioManager::~AudioManager()
@@ -127,25 +122,47 @@ void AudioManager::update_dump_timers() const
   }
 }
 
-void AudioManager::slot_show_audio_peak_level(const f32 iPeakLeft, const f32 iPeakRight)
+void AudioManager::_update_level_meter(LevelMeter * const ipMeter, const f32 iPeak, const f32 iRms) const
 {
-  if (iPeakLeft  >= mPeakLeftDamped)  mPeakLeftDamped  = iPeakLeft;
-  if (iPeakRight >= mPeakRightDamped) mPeakRightDamped = iPeakRight;
-}
+  const f64 minValue = ipMeter->get_lower_bound();
+  const f64 maxValue = ipMeter->get_upper_bound();
+  const f64 range = maxValue - minValue;
+  if (range <= 0) return;
 
-void AudioManager::_slot_audio_level_decay_timeout()
+  f64 relPosRms  = (static_cast<f64>(iRms) - minValue) / range;
+  f64 relPosPeak = (static_cast<f64>(iPeak) - minValue) / range;
+
+  const f64 relPos0dB = (0.0 - minValue) / range;
+
+  relPosRms  = std::clamp<f64>(relPosRms,  0.0, relPos0dB);
+  relPosPeak = std::clamp<f64>(relPosPeak, 0.0, relPos0dB);
+  relPosRms  = std::min(relPosRms, relPosPeak);
+
+  constexpr f64 eps = 1.0 / 255.0;
+  const f64 rmsNext  = std::min(relPosRms, relPosPeak - eps);
+  // const f64 peakNext = std::min(relPosPeak, 1.0 - eps);
+
+  constexpr u32 colorRms = 0xEEBB00;
+  constexpr u32 colorPeak = 0xEE8800;
+  // constexpr u32 colorAbove0dB = 0xEE5500;
+
+  ipMeter->set_color_stops({
+    { 0.0,        colorRms },
+    { relPosRms,  colorRms },
+    { rmsNext,    colorPeak },
+    { relPosPeak, colorPeak },
+    // { peakNext,   colorAbove0dB },
+    // { 1.0,        colorAbove0dB },
+  });
+
+  ipMeter->set_value(iPeak);
+};
+
+void AudioManager::slot_show_audio_peak_level(const f32 iPeakLeftDb, const f32 iPeakRightDb, const f32 iRmsLeftDb, const f32 iRmsRightDb)
 {
-  mpThermoPeakLevelLeft->set_value(mPeakLeftDamped);
-  mpThermoPeakLevelRight->set_value(mPeakRightDamped);
-
-  constexpr float cMinPeakLevelValue   = -23.0f;
-  constexpr float cPeakLevelDecayValue =   0.5f;
-
-  mPeakLeftDamped  -= cPeakLevelDecayValue;
-  mPeakRightDamped -= cPeakLevelDecayValue;
-
-  if (mPeakLeftDamped  < cMinPeakLevelValue) mPeakLeftDamped  = cMinPeakLevelValue;
-  if (mPeakRightDamped < cMinPeakLevelValue) mPeakRightDamped = cMinPeakLevelValue;
+  // each 50ms...
+  _update_level_meter(mpLevelMeterLeft,  iPeakLeftDb,  iRmsLeftDb);
+  _update_level_meter(mpLevelMeterRight, iPeakRightDb, iRmsRightDb);
 }
 
 void AudioManager::_setup_audio_output(const u32 iSampleRate)
@@ -283,7 +300,7 @@ void AudioManager::new_audio(const i32 iAmount, const u32 iAudioSampleRate, cons
     if (!mProgBarAudioBufferFullColorSet)
     {
       mProgBarAudioBufferFullColorSet = true;
-      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #EF8B2A; }");
+      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #16B3A5; }");
     }
   }
 

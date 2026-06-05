@@ -115,7 +115,6 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   _initialize_ensemble_list();
   _initialize_status_info();
   _initialize_dynamic_label();
-  _initialize_thermo_peak_levels();
   _initialize_time_table();
   _initialize_version_and_copyright_info();
   _initialize_device_selector(mChannelDesc);
@@ -1194,9 +1193,13 @@ QString DabRadio::_convert_links_to_clickable(const QString & iText) const
 {
   // qDebug() << "iText: " << iText << iText.length();
 
+  // Strip null characters that may trail the actual content (e.g. from fixed-width DAB fields)
+  QString cleanText = iText;
+  cleanText.remove(QChar('\0'));
+
   if (!mpConfig->cbUrlClickable->isChecked())
   {
-    return iText;
+    return cleanText;
   }
 
   // Allow uppercase also in top-level-domain as some texts are overall in uppercase letters.
@@ -1204,8 +1207,8 @@ QString DabRadio::_convert_links_to_clickable(const QString & iText) const
   static const QRegularExpression regex2(R"([\w\-äöüÄÖÜ]{2,}\.[a-zA-Z]{2}[a-zA-Z0-9/\.]{0,}$)");
   static const QRegularExpression regex1("\\s+"); // match any whitespace
 
-  QStringList wordList = iText.split(regex1, Qt::SkipEmptyParts);
-  QString result = iText;
+  QStringList wordList = cleanText.split(regex1, Qt::SkipEmptyParts);
+  QString result = cleanText;
 
   for (const QString & word : wordList)
   {
@@ -1260,8 +1263,8 @@ void DabRadio::_initialize_audio_output()
   cfg.pConfig                 = mpConfig.get();
   cfg.pTechDataWidget         = mpTechDataWidget.get();
   cfg.pProgBarAudioBuffer     = ui->progBarAudioBuffer;
-  cfg.pThermoPeakLevelLeft    = ui->thermoPeakLevelLeft;
-  cfg.pThermoPeakLevelRight   = ui->thermoPeakLevelRight;
+  cfg.pLevelMeterLeft         = ui->levelMeterLeft;
+  cfg.pLevelMeterRight        = ui->levelMeterRight;
   cfg.pSliderVolume           = ui->sliderVolume;
   cfg.pOpenFileDialog         = &mOpenFileDialog;
 

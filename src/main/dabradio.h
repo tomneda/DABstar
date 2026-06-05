@@ -341,7 +341,6 @@ private:
   void _initialize_ui_elements();
   void _initialize_status_info();
   void _initialize_dynamic_label() const;
-  void _initialize_thermo_peak_levels();
   void _initialize_audio_output();
   void _initialize_epg_mot_handler();
   void _initialize_tii_manager();

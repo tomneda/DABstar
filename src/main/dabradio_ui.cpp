@@ -205,24 +205,6 @@ void DabRadio::_initialize_dynamic_label() const
   ui->lblDynLabel->setOpenExternalLinks(true);
 }
 
-void DabRadio::_initialize_thermo_peak_levels()
-{
-  auto setup_thermo_peak_level_widget = [](LevelMeter * ipThermo)
-  {
-    ipThermo->set_value(-40.0);
-    ipThermo->setStyleSheet("background-color: black;");
-    ipThermo->set_color_stops({
-      { 0.00000000, 0x0064C8 },  // dark blue  (low level)
-      { 0.45454545, 0x00C800 },  // green      (-12 dBFS)
-      { 0.72727273, 0xC8C800 },  // yellow     (-6 dBFS)
-      { 1.00000000, 0xFF0000 },  // red        (0 dBFS / top)
-    });
-  };
-
-  setup_thermo_peak_level_widget(ui->thermoPeakLevelLeft);
-  setup_thermo_peak_level_widget(ui->thermoPeakLevelRight);
-}
-
 void DabRadio::_initialize_device_selector(SChannelDescriptor & ioChannelDesc) const
 {
   ui->cmbDeviceSelect->addItems(mDeviceSelector.get_device_name_list());
@@ -585,7 +567,7 @@ void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
     }
     else
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #E6E600; }");
+      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #72CE03; }");
     }
 
     ui->progBarFicError->setValue(iSuccessPercent);
