@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>681</width>
-    <height>230</height>
+    <height>231</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,14 +45,11 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,2,3,0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLCDNumber" name="currentTime">
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="smallDecimalPoint">
-        <bool>true</bool>
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::SegmentStyle::Flat</enum>
@@ -73,9 +70,6 @@
       <widget class="QLCDNumber" name="totalTime">
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="smallDecimalPoint">
-        <bool>true</bool>
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::SegmentStyle::Flat</enum>
@@ -133,8 +127,14 @@
        </item>
        <item row="0" column="1">
         <widget class="QLabel" name="modulationtypeLabel">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>TextLabel</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -147,8 +147,14 @@
        </item>
        <item row="1" column="1">
         <widget class="QLabel" name="iqOrderLabel">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>TextLabel</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -161,8 +167,14 @@
        </item>
        <item row="2" column="1">
         <widget class="QLabel" name="containerLabel">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>TextLabel</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -175,8 +187,14 @@
        </item>
        <item row="3" column="1">
         <widget class="QLabel" name="byteOrderLabel">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>TextLabel</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -189,8 +207,14 @@
        </item>
        <item row="4" column="1">
         <widget class="QLabel" name="typeofUnitLabel">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>TextLabel</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -220,8 +244,14 @@
        </item>
        <item row="0" column="1">
         <widget class="QLabel" name="recorderName">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>recorderName</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -234,8 +264,14 @@
        </item>
        <item row="1" column="1">
         <widget class="QLabel" name="recorderVersion">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>recorderVersion</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -248,8 +284,14 @@
        </item>
        <item row="2" column="1">
         <widget class="QLabel" name="deviceModel">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>deviceModel</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -262,8 +304,14 @@
        </item>
        <item row="3" column="1">
         <widget class="QLabel" name="deviceModelName">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>deviceVersion</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -276,8 +324,14 @@
        </item>
        <item row="4" column="1">
         <widget class="QLabel" name="recordingTime">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>recordingTime</string>
+          <string>-</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -303,18 +357,15 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLCDNumber" name="nrBitsDisplay">
-         <property name="frameShape">
-          <enum>QFrame::Shape::NoFrame</enum>
+        <widget class="QLabel" name="nrBitsDisplay">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
          </property>
-         <property name="smallDecimalPoint">
-          <bool>true</bool>
+         <property name="text">
+          <string>0</string>
          </property>
-         <property name="digitCount">
-          <number>10</number>
-         </property>
-         <property name="segmentStyle">
-          <enum>QLCDNumber::SegmentStyle::Flat</enum>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -326,18 +377,15 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLCDNumber" name="nrElementsDisplay">
-         <property name="frameShape">
-          <enum>QFrame::Shape::NoFrame</enum>
+        <widget class="QLabel" name="nrElementsDisplay">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
          </property>
-         <property name="smallDecimalPoint">
-          <bool>true</bool>
+         <property name="text">
+          <string>0</string>
          </property>
-         <property name="digitCount">
-          <number>10</number>
-         </property>
-         <property name="segmentStyle">
-          <enum>QLCDNumber::SegmentStyle::Flat</enum>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -349,18 +397,15 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLCDNumber" name="samplerateDisplay">
-         <property name="frameShape">
-          <enum>QFrame::Shape::NoFrame</enum>
+        <widget class="QLabel" name="samplerateDisplay">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
          </property>
-         <property name="smallDecimalPoint">
-          <bool>true</bool>
+         <property name="text">
+          <string>0</string>
          </property>
-         <property name="digitCount">
-          <number>10</number>
-         </property>
-         <property name="segmentStyle">
-          <enum>QLCDNumber::SegmentStyle::Flat</enum>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -378,18 +423,15 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLCDNumber" name="frequencyDisplay">
-         <property name="frameShape">
-          <enum>QFrame::Shape::NoFrame</enum>
+        <widget class="QLabel" name="frequencyDisplay">
+         <property name="styleSheet">
+          <string>font-weight: bold;</string>
          </property>
-         <property name="smallDecimalPoint">
-          <bool>true</bool>
+         <property name="text">
+          <string>0</string>
          </property>
-         <property name="digitCount">
-          <number>10</number>
-         </property>
-         <property name="segmentStyle">
-          <enum>QLCDNumber::SegmentStyle::Flat</enum>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>

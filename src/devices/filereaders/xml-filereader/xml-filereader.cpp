@@ -85,12 +85,12 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
 
   sliderFilePos->setValue(0);
   currentTime->display(0);
-  samplerateDisplay->display(theDescriptor->sampleRate);
-  nrBitsDisplay->display(theDescriptor->bitsperChannel);
+  samplerateDisplay->setText(QString::number(theDescriptor->sampleRate));
+  nrBitsDisplay->setText(QString::number(theDescriptor->bitsperChannel));
   containerLabel->setText(theDescriptor->container);
   iqOrderLabel->setText(theDescriptor->iqOrder);
   byteOrderLabel->setText(theDescriptor->byteOrder);
-  frequencyDisplay->display(theDescriptor->blockList[0].frequency / (double)1000.0);
+  frequencyDisplay->setText(QString::number(theDescriptor->blockList[0].frequency / 1000.0));
   typeofUnitLabel->setText(theDescriptor->blockList[0].typeofUnit);
   modulationtypeLabel->setText(theDescriptor->blockList[0].modType);
 
@@ -107,7 +107,7 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
     samplesToRead += compute_nrSamples(theDescriptor, blocks);
     nrElements += theDescriptor->blockList[blocks].nrElements;
   }
-  nrElementsDisplay->display((double)nrElements);
+  nrElementsDisplay->setText(QString::number(nrElements));
   totalTime->display(QString("%1").arg((float)samplesToRead / theDescriptor->sampleRate, 0, 'f', 1));
 
   fseek(theFile, 0, SEEK_END);
