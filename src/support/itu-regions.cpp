@@ -11,6 +11,7 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "itu-regions.h"
+#include <array>
 #include <unordered_map>
 #include <QDebug>
 
@@ -268,16 +269,59 @@ static constexpr std::array cTable3to7 =
   SRawEntry{ 0xA0, 0x0E, "VIR", "Virgin Islands (USA)"    },
 
   // Table 7: ITU Region 3 (Asia and Pacific)
-  SRawEntry{ 0xF0, 0x0A, "AFG", "Afghanistan"  },
-  SRawEntry{ 0xF0, 0x09, "ARS", "Saudi Arabia" },
-  SRawEntry{ 0xF0, 0x01, "acc", "Australia"    }, // capital cities (commercial and community) — was "AU" (wrong)
-  SRawEntry{ 0xF0, 0x02, "arn", "Australia"    }, // regional New South Wales and ACT
-  SRawEntry{ 0xF0, 0x03, "acn", "Australia"    }, // capital cities (national broadcasters)
-  SRawEntry{ 0xF0, 0x04, "arq", "Australia"    }, // regional Queensland
-  SRawEntry{ 0xF0, 0x05, "arc", "Australia"    }, // regional South Australia and Northern Territory
-  SRawEntry{ 0xF0, 0x06, "arw", "Australia"    }, // regional Western Australia
-  SRawEntry{ 0xF0, 0x07, "arv", "Australia"    }, // regional Victoria and Tasmania — was duplicate (F0, 6, "arc") (wrong)
-  SRawEntry{ 0xF0, 0x08, "arf", "Australia"    }  // regional (future) — was missing
+  SRawEntry{ 0xF0, 0x0A, "AFG", "Afghanistan"          },
+  SRawEntry{ 0xF0, 0x09, "ARS", "Saudi Arabia"         },
+  SRawEntry{ 0xF0, 0x01, "acc", "Australia"            }, // capital cities (commercial and community) — was "AU" (wrong)
+  SRawEntry{ 0xF0, 0x02, "arn", "Australia"            }, // regional New South Wales and ACT
+  SRawEntry{ 0xF0, 0x03, "acn", "Australia"            }, // capital cities (national broadcasters)
+  SRawEntry{ 0xF0, 0x04, "arq", "Australia"            }, // regional Queensland
+  SRawEntry{ 0xF0, 0x05, "arc", "Australia"            }, // regional South Australia and Northern Territory
+  SRawEntry{ 0xF0, 0x06, "arw", "Australia"            }, // regional Western Australia
+  SRawEntry{ 0xF0, 0x07, "arv", "Australia"            }, // regional Victoria and Tasmania — was duplicate (F0, 6, "arc") (wrong)
+  SRawEntry{ 0xF0, 0x08, "arf", "Australia"            }, // regional (future) — was missing
+  SRawEntry{ 0xF0, 0x0E, "BHR", "Bahrain"              },
+  SRawEntry{ 0xF1, 0x03, "BGD", "Bangladesh"           },
+  SRawEntry{ 0xF1, 0x02, "BTN", "Bhutan"               },
+  SRawEntry{ 0xF0, 0x0B, "BRM", "Myanmar (Burma)"      },
+  SRawEntry{ 0xF1, 0x0B, "BRU", "Brunei Darussalam"    },
+  SRawEntry{ 0xF2, 0x03, "CBG", "Cambodia"             },
+  SRawEntry{ 0xF0, 0x0C, "CHN", "China"                },
+  SRawEntry{ 0xF1, 0x0C, "CLN", "Sri Lanka"            },
+  SRawEntry{ 0xF1, 0x05, "FJI", "Fiji"                 },
+  SRawEntry{ 0xF1, 0x0F, "HKG", "Hong Kong"            },
+  SRawEntry{ 0xF2, 0x05, "IND", "India"                },
+  SRawEntry{ 0xF2, 0x0C, "INS", "Indonesia"            },
+  SRawEntry{ 0xF1, 0x08, "IRN", "Iran"                 },
+  SRawEntry{ 0xE1, 0x0B, "IRQ", "Iraq"                 }, // duplicate key (E1,B): already in Table 3; Table 3 wins
+  SRawEntry{ 0xF2, 0x09, "J",   "Japan"                },
+  SRawEntry{ 0xF1, 0x01, "KIR", "Kiribati"             },
+  SRawEntry{ 0xF0, 0x0D, "KRE", "Korea (North)"        },
+  SRawEntry{ 0xF1, 0x0E, "KOR", "Korea (South)"        },
+  SRawEntry{ 0xF2, 0x01, "KWT", "Kuwait"               },
+  SRawEntry{ 0xF3, 0x01, "LAO", "Laos"                 },
+  SRawEntry{ 0xF2, 0x06, "MAC", "Macau"                },
+  SRawEntry{ 0xF0, 0x0F, "MLA", "Malaysia"             },
+  SRawEntry{ 0xF2, 0x0B, "MLD", "Maldives"             },
+  SRawEntry{ 0xF3, 0x0E, "FSM", "Micronesia"           },
+  SRawEntry{ 0xF3, 0x0F, "MNG", "Mongolia"             },
+  SRawEntry{ 0xF1, 0x07, "NRU", "Nauru"                },
+  SRawEntry{ 0xF2, 0x0E, "NPL", "Nepal"                },
+  SRawEntry{ 0xF1, 0x09, "NZL", "New Zealand"          },
+  SRawEntry{ 0xF1, 0x06, "OMA", "Oman"                 },
+  SRawEntry{ 0xF1, 0x04, "PAK", "Pakistan"             },
+  SRawEntry{ 0xF3, 0x09, "PNG", "Papua New Guinea"     },
+  SRawEntry{ 0xF2, 0x08, "PHL", "Philippines"          },
+  SRawEntry{ 0xF2, 0x02, "QAT", "Qatar"                },
+  SRawEntry{ 0xF1, 0x0A, "SLM", "Solomon Islands"      },
+  SRawEntry{ 0xF2, 0x04, "SMO", "Western Samoa"        },
+  SRawEntry{ 0xF2, 0x0A, "SNG", "Singapore"            },
+  SRawEntry{ 0xF1, 0x0D, "---", "Taiwan"               }, // no ITU code per standard
+  SRawEntry{ 0xF3, 0x02, "THA", "Thailand"             },
+  SRawEntry{ 0xF3, 0x03, "TON", "Tonga"                },
+  SRawEntry{ 0xF2, 0x0D, "UAE", "United Arab Emirates" },
+  SRawEntry{ 0xF2, 0x07, "VTN", "Vietnam"              },
+  SRawEntry{ 0xF2, 0x0F, "VUT", "Vanuatu"              },
+  SRawEntry{ 0xF3, 0x0B, "YEM", "Yemen"                },
 };
 
 
