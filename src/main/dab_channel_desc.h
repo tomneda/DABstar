@@ -66,7 +66,7 @@ public:
   u8 subId = 0;
   u32 Eid = 0;
   bool tiiFile = false;
-  bool ecc_checked = false;
+  bool itu_code_decoded = false;
   u8 ecc_byte = 0;
   // QString countryName;
   i32 nrTransmitters = 0;
@@ -94,7 +94,7 @@ public:
     ensembleName = "";
     nrTransmitters = 0;
     Eid = 0;
-    ecc_checked = false;
+    itu_code_decoded = false;
     fibDataSentToEL = false;
     snrLast = 0.0f;
     merLast = 0.0f;

@@ -763,6 +763,10 @@ void DabRadio::slot_name_of_ensemble(const i32 iEId, const QString & iEnsName, c
                                  mChannelDesc.Eid,
                                  mChannelDesc.deferredData.countryName.value_or("-"),
                                  mChannelDesc.get_type_info());
+  if (!mChannelDesc.itu_code_decoded)
+  {
+    _check_for_ITU_code();
+  }
 }
 
 void DabRadio::_slot_handle_content_button()

@@ -825,6 +825,21 @@ void DabRadio::_update_scan_statistics(const QString & iFIdOrCh, const SServiceI
   }
 }
 
+void DabRadio::_check_for_ITU_code()
+{
+  if (mChannelDesc.ecc_byte != 0 && mChannelDesc.Eid != 0)
+  {
+    mChannelDesc.itu_code_decoded = true;
+    const u8 countryId = (mChannelDesc.Eid >> 12) & 0xF;
+    const auto & itu = mpItuTables->find_ITU_entry(mChannelDesc.ecc_byte, countryId);
+    // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.Country).arg(itu.ITU_Code);
+    // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.ITU_Code).arg(itu.Country);
+    mChannelDesc.deferredData.countryName = QString("%1(%2/%3)").arg(itu.ITU_Code).arg(mChannelDesc.ecc_byte, 2, 16, QChar('0')).arg(countryId, 1, 16, QChar('0'));
+    ui->lblCountryName->setText(itu.Country);
+    // qDebug() << "Ch/FId" << mChannelDesc.get_fId_or_ch() << Qt::hex << Qt::showbase << "with EId" << mChannelDesc.Eid <<  "has ECC byte"  << mChannelDesc.ecc_byte << "with country name" << mChannelDesc.deferredData.countryName.value();
+  }
+}
+
 void DabRadio::_slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingState)
 {
   qDebug() << "FIB data loading state" << (i32)iFibLoadingState;
@@ -837,20 +852,10 @@ void DabRadio::_slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingS
     return;
   }
 
-  if (!mChannelDesc.ecc_checked)
+  if (!mChannelDesc.itu_code_decoded)
   {
     mChannelDesc.ecc_byte = mpDabProcessor->get_fib_decoder()->get_ecc();
-    if (mChannelDesc.ecc_byte != 0)
-    {
-      mChannelDesc.ecc_checked = true;
-      const u8 countryId = (mChannelDesc.Eid >> 12) & 0xF;
-      const auto & itu = mpItuTables->find_ITU_entry(mChannelDesc.ecc_byte, countryId);
-      // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.Country).arg(itu.ITU_Code);
-      // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.ITU_Code).arg(itu.Country);
-      mChannelDesc.deferredData.countryName = QString("%1(%2/%3)").arg(itu.ITU_Code).arg(mChannelDesc.ecc_byte, 2, 16, QChar('0')).arg(countryId, 1, 16, QChar('0'));
-      ui->lblCountryName->setText(itu.Country);
-      // qDebug() << "Ch/FId" << mChannelDesc.get_fId_or_ch() << Qt::hex << Qt::showbase << "with EId" << mChannelDesc.Eid <<  "has ECC byte"  << mChannelDesc.ecc_byte << "with country name" << mChannelDesc.deferredData.countryName.value();
-    }
+    _check_for_ITU_code();
   }
 
   if (iFibLoadingState == IFibDecoder::EFibLoadingState::S5_DeferredDataLoaded)

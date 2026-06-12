@@ -283,6 +283,7 @@ private:
   void _start_scanning(SChannelDescriptor & ioChannelDesc);
   void _stop_scanning(SChannelDescriptor & ioChannelDesc);
   void _update_scan_statistics(const QString & iFIdOrCh, const SServiceId & sl);
+  void _check_for_ITU_code();
   QString _get_scan_message(bool iEndMsg) const;
 
   // Dumping and Recording
