@@ -50,9 +50,9 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   ui->btnPathToScan->setStyleSheet(get_bg_style_sheet(0x4A7898, fg));
   ui->btnAddFilesInPath->setStyleSheet(get_bg_style_sheet(0x408870, fg));
   ui->btnAddSingleFile->setStyleSheet(get_bg_style_sheet(0x3A7A60, fg));
-  ui->cbShowELNotScanned->setStyleSheet(get_bg_style_sheet(cBgColorNotScanned, fg));
-  ui->cbShowELScanned->setStyleSheet(get_bg_style_sheet(cBgColorUnselected, fg));
-  ui->cbShowELNoSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, fg));
+  ui->cbShowELNewEntries->setStyleSheet(get_bg_style_sheet(cBgColorNewEntries, fg));
+  ui->cbShowELValidSignals->setStyleSheet(get_bg_style_sheet(cBgColorUnselected, fg));
+  ui->cbShowELNoSignals->setStyleSheet(get_bg_style_sheet(cBgColorFailed, fg));
 
   mpDbHandler.reset(new EnsembleListDbHandler(iDbFileName, ui->tblEnsembleList));
   mpDbHandler->set_data_mode(EnsembleListDbHandler::EDataMode::Device);
@@ -72,19 +72,19 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   connect(ui->tblEnsembleList, &QTableView::clicked, this, &EnsembleList::_slot_handle_table_click);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
   connect(ui->cbShowSLCurChOnly, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_show_current_FId_or_Ch_only);
-  connect(ui->cbShowELNotScanned, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-  connect(ui->cbShowELScanned, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-  connect(ui->cbShowELNoSignal, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->cbShowELNewEntries, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->cbShowELValidSignals, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->cbShowELNoSignals, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
 #else
   connect(ui->cbShowSLCurChOnly, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_show_current_FId_or_Ch_only);
-  connect(ui->cbShowELNotScanned, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-  connect(ui->cbShowELScanned, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-  connect(ui->cbShowELNoSignal, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->cbShowELNewEntries, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->cbShowELValidSignals, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->cbShowELNoSignals, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
 #endif
 
-  Settings::EnsembleList::cbShowELNoSignal.register_widget_and_update_ui_from_setting(ui->cbShowELNoSignal, 2);
-  Settings::EnsembleList::cbShowELNotScanned.register_widget_and_update_ui_from_setting(ui->cbShowELNotScanned, 2);
-  Settings::EnsembleList::cbShowELScanned.register_widget_and_update_ui_from_setting(ui->cbShowELScanned, 2);
+  Settings::EnsembleList::cbShowELNoSignals.register_widget_and_update_ui_from_setting(ui->cbShowELNoSignals, 2);
+  Settings::EnsembleList::cbShowELNewEntries.register_widget_and_update_ui_from_setting(ui->cbShowELNewEntries, 2);
+  Settings::EnsembleList::cbShowELValidSignals.register_widget_and_update_ui_from_setting(ui->cbShowELValidSignals, 2);
   Settings::EnsembleList::spMinFileSizeMB.register_widget_and_update_ui_from_setting(ui->spMinFileSizeMB, 100);
 
   _slot_handle_ensemble_list_filter();
@@ -256,7 +256,7 @@ void EnsembleList::_setup_ui_regarding_scan_mode(bool iScanMode) const
 
 QString EnsembleList::_add_file_to_file_scan_list(const QString & iFileName, const i64 iMinFileSize) const
 {
-  ui->cbShowELNotScanned->setCheckState(Qt::CheckState::Checked);
+  ui->cbShowELNewEntries->setCheckState(Qt::CheckState::Checked);
 
   const QFileInfo fileInfo(iFileName);
 
@@ -318,9 +318,9 @@ void EnsembleList::slot_select_FId_or_Ch(const QString & iFIdOrCh, const u32 iSI
   };
 
   // If rowIdx is < 0 then maybe the current filter inhibits showing this row, so open the filter step by step
-  consider_filter(ui->cbShowELScanned);
-  consider_filter(ui->cbShowELNotScanned);
-  consider_filter(ui->cbShowELNoSignal);
+  consider_filter(ui->cbShowELValidSignals);
+  consider_filter(ui->cbShowELNewEntries);
+  consider_filter(ui->cbShowELNoSignals);
 
   if (rowIdx >= 0)
   {
@@ -433,16 +433,16 @@ void EnsembleList::slot_decoded_data_status(const SScanResultEL & iResult)
 void EnsembleList::_stop_scan_process()
 {
   // set filter to a reasonable state after scan
-  ui->cbShowELNoSignal->setCheckState(Qt::CheckState::Unchecked);
-  ui->cbShowELScanned->setCheckState(Qt::CheckState::Checked);
-  ui->cbShowELNotScanned->setCheckState(Qt::CheckState::Unchecked);
+  ui->cbShowELNoSignals->setCheckState(Qt::CheckState::Unchecked);
+  ui->cbShowELValidSignals->setCheckState(Qt::CheckState::Checked);
+  ui->cbShowELNewEntries->setCheckState(Qt::CheckState::Unchecked);
 
   mIndentGlobal = 0;
   mIsScanning = false;
   ui->progressBar->setValue(0);
   ui->btnScanStart->setText("Auto scan");
   ui->btnScanStart->setStyleSheet(get_bg_style_sheet(cBgColorAutoScanInactive, Qt::white));
-  ui->cbShowELNoSignal->setEnabled(true);
+  ui->cbShowELNoSignals->setEnabled(true);
   mIdentInfoListForScan.clear();
 
   _setup_ui_regarding_scan_mode(false);
@@ -515,9 +515,9 @@ void EnsembleList::_slot_handle_scan_button()
 
 void EnsembleList::_set_EL_filter_check_states_active() const
 {
-  ui->cbShowELNoSignal->setCheckState(Qt::CheckState::Checked);
-  ui->cbShowELScanned->setCheckState(Qt::CheckState::Checked);
-  ui->cbShowELNotScanned->setCheckState(Qt::CheckState::Checked);
+  ui->cbShowELNoSignals->setCheckState(Qt::CheckState::Checked);
+  ui->cbShowELValidSignals->setCheckState(Qt::CheckState::Checked);
+  ui->cbShowELNewEntries->setCheckState(Qt::CheckState::Checked);
 }
 
 void EnsembleList::_slot_handle_reset_data_base_button()
@@ -612,7 +612,7 @@ void EnsembleList::_update_remove_invalid_files_button_state() const
 {
   if (mListMode == EListMode::PlayFromFiles)
   {
-    if (ui->cbShowELNoSignal->isChecked())
+    if (ui->cbShowELNoSignals->isChecked())
     {
       ui->btnRemoveFilesWithoutSignal->setEnabled(true);
       ui->btnRemoveFilesWithoutSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, "white"));
@@ -630,9 +630,9 @@ void EnsembleList::_slot_handle_ensemble_list_filter(const int /*iState*/)
   // To work correctly, this slot must be called directly from the UI thread
   assert(QThread::currentThread() == thread());
   
-  mDataFilter.showNoSignalEntries = ui->cbShowELNoSignal->isChecked();
-  mDataFilter.showScannedEntries = ui->cbShowELScanned->isChecked();
-  mDataFilter.showNotScannedEntries = ui->cbShowELNotScanned->isChecked();
+  mDataFilter.showNoSignalEntries = ui->cbShowELNoSignals->isChecked();
+  mDataFilter.showScannedEntries = ui->cbShowELValidSignals->isChecked();
+  mDataFilter.showNotScannedEntries = ui->cbShowELNewEntries->isChecked();
   // qDebug() << "Filter changed: NoSignal=" << mDataFilter.showNoSignalEntries << ", Scanned=" << mDataFilter.showScannedEntries << ", NotScanned=" << mDataFilter.showNotScannedEntries;
 
   mpDbHandler->set_data_filter(mDataFilter);

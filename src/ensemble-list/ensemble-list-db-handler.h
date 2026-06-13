@@ -22,7 +22,7 @@ class QTableView;
 class QSettings;
 
 constexpr u32 cBgColorUnselected = 0x423e3a;
-constexpr u32 cBgColorNotScanned = 0x574728;
+constexpr u32 cBgColorNewEntries = 0x574728;
 constexpr u32 cBgColorFailed     = 0x652C2C;
 
 class CustomItemDelegate2 final: public QStyledItemDelegate

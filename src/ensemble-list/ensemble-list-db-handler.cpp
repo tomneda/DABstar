@@ -40,7 +40,7 @@ void CustomItemDelegate2::paint(QPainter * painter, const QStyleOptionViewItem &
   {
     switch (scanLevel)
     {
-    case EScanLevel::SL0_Init: bgColor = cBgColorNotScanned; break;
+    case EScanLevel::SL0_Init: bgColor = cBgColorNewEntries; break;
     case EScanLevel::SL1_ScanFailed: bgColor = cBgColorFailed; break;
     default: bgColor = cBgColorUnselected;
     }

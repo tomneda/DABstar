@@ -104,37 +104,37 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose one or more filters on the right to filter the list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The filter state may change automatically in certain situations.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Show in ensemble list:</string>
+         <string>Show in list:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="cbShowELNotScanned">
+       <widget class="QCheckBox" name="cbShowELNewEntries">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show entries not yet scanned&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Entries are shown with a greenish background.&lt;/p&gt;&lt;p&gt;No metadata has been collected for these entries yet. Clicking an entry (or using &amp;quot;Auto scan&amp;quot;) will attempt to scan it. If scanning fails, the entry becomes &amp;quot;No signal&amp;quot;; otherwise it becomes &amp;quot;Scanned&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show new entries (not yet scanned)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Entries are shown with a greenish background.&lt;/p&gt;&lt;p&gt;No metadata has been collected for these entries yet. Clicking an entry (or using &amp;quot;Auto scan&amp;quot;) will attempt to scan it. If scanning fails, the entry becomes &amp;quot;No signals&amp;quot;; otherwise it becomes &amp;quot;Valid signals&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Not scanned</string>
+         <string>New entries</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="cbShowELScanned">
+       <widget class="QCheckBox" name="cbShowELValidSignals">
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show valid scanned entries&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The entries are shown with a grayish background. &lt;/p&gt;&lt;p&gt;These are the main entries to use. Clicking an entry activates the file or channel, resuming the last played service (or the first in the service list).&lt;/p&gt;&lt;p&gt;If an entry can no longer be received, it moves to the &amp;quot;No signal&amp;quot; state.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Scanned</string>
+         <string>Valid signals</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="cbShowELNoSignal">
+       <widget class="QCheckBox" name="cbShowELNoSignals">
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show invalid scanned entries where no valid signal could be detected&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The entries are shown with a reddish background. &lt;/p&gt;&lt;p&gt;These entries had no valid signal detected. Clicking an entry will attempt to rescan it.&lt;/p&gt;&lt;p&gt;For files, you can remove all reddish entries using &amp;quot;Remove 'No signal' files&amp;quot;. This is not available for channel lists.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>No signal</string>
+         <string>No signals</string>
         </property>
        </widget>
       </item>
