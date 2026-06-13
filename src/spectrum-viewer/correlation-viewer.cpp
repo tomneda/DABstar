@@ -191,8 +191,8 @@ QString CorrelationViewer::_get_best_match_text(const QVector<i32> & v)
   if (!v.empty())
   {
     txt = "Best matches at (km): ";
-    constexpr i32 MAX_NO_ELEM = 7;
-    const i32 vSize = (v.size() < MAX_NO_ELEM ? v.size() : MAX_NO_ELEM);
+    constexpr i32 MAX_NO_ELEM = 6; // maximum number of elements which can be display at a narrow window
+    const i32 vSize = std::min((i32)v.size(), MAX_NO_ELEM);
     for (i32 i = 0; i < vSize; i++)
     {
       txt += "<b>" + QString::number(v[i]) + "</b>";
@@ -203,7 +203,7 @@ QString CorrelationViewer::_get_best_match_text(const QVector<i32> & v)
         txt += " (" + QString::number(distKm, 'f', 1) + ")";
       }
 
-      if (i + 1 < v.size())
+      if (i + 1 < vSize)
       {
         txt += ", ";
       }
