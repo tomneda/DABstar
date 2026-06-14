@@ -421,7 +421,7 @@ void RtlSdrHandler::set_ppmCorrection(f64 ppm)
   if (rtlsdr_set_freq_correction_ppb != nullptr)
     this->rtlsdr_set_freq_correction_ppb(theDevice, corr);
   else
-    this->rtlsdr_set_freq_correction(theDevice, (i32)round(ppm));
+    this->rtlsdr_set_freq_correction(theDevice, (i32)std::round(ppm));
 }
 
 i32 RtlSdrHandler::getSamples(cf32 * V, i32 size)

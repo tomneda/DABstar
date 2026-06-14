@@ -35,7 +35,7 @@
   };
 
   // Normalize the angle to be within [0, 360] degrees
-  iAngleInDegree = fmod(iAngleInDegree, 360.0);
+  iAngleInDegree = std::fmod(iAngleInDegree, 360.0);
   if (iAngleInDegree < 0)
   {
     iAngleInDegree += 360.0;

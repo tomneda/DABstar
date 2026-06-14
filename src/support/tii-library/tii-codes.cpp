@@ -175,9 +175,9 @@ f64 TiiHandler::_distance_2(f32 latitude1, f32 longitude1, f32 latitude2, f32 lo
   // const f64 a = sin(dPhi / 2) * sin(dPhi / 2) + cos(Phi1) * cos(Phi2) * sin(dDelta / 2) * sin(dDelta / 2);
   // const f64 c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-  const f64 x = dDelta * cos((Phi1 + Phi2) / 2);
+  const f64 x = dDelta * std::cos((Phi1 + Phi2) / 2);
   const f64 y = (Phi2 - Phi1);
-  const f64 d = sqrt(x * x + y * y);
+  const f64 d = std::sqrt(x * x + y * y);
 
   return (R * d + 0.5);
 }
@@ -197,7 +197,7 @@ f32 TiiHandler::distance(f32 latitude1, f32 longitude1, f32 latitude2, f32 longi
     dx = _distance_2(latitude2, longitude1, latitude2, longitude2);
   }
 
-  return (f32) sqrt(dx * dx + dy * dy);
+  return (f32) std::sqrt(dx * dx + dy * dy);
 }
 
 f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitude2) const

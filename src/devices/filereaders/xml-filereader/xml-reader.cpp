@@ -81,7 +81,7 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 fileP
     for (i32 i = 0; i < 2048; i++)
     {
       const f32 inVal = f32(fd->sampleRate / 1000);
-      mapTable_int[i] = (i16)(floor(i * (inVal / 2048.0)));
+      mapTable_int[i] = (i16)(std::floor(i * (inVal / 2048.0)));
       mapTable_float[i] = i * (inVal / 2048.0f) - mapTable_int[i];
     }
 #endif

@@ -93,7 +93,7 @@ void CirViewer::show_cir()
       if(x > max)
         max = x;
     }
-    Y_value[j] = sqrt(max) / 26000.0;
+    Y_value[j] = std::sqrt(max) / 26000.0;
 #endif
     X_axis[j] = (f32)(j) / 4.0f;
   }

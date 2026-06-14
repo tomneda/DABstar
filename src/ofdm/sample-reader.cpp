@@ -43,8 +43,8 @@ SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBu
 #ifndef HAVE_SSE_OR_AVX
   for (i32 i = 0; i < INPUT_RATE; i++)
   {
-    oscillatorTable[i] = cf32((f32)cos(2.0 * M_PI * i / INPUT_RATE),
-                              (f32)sin(2.0 * M_PI * i / INPUT_RATE));
+    oscillatorTable[i] = cf32((f32)std::cos(2.0 * M_PI * i / INPUT_RATE),
+                              (f32)std::sin(2.0 * M_PI * i / INPUT_RATE));
   }
 #endif
 

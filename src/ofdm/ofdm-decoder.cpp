@@ -294,7 +294,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     mLcdData.CurOfdmSymbolNo = iCurOfdmSymbIdx + 1; // as "idx" goes from 0...(L-1)
     mLcdData.MER = 10.0f * std::log10(F_M_PI_4 * F_M_PI_4 / stdDevSqOvrAll);
     //mLcdData.PhaseCorr = -conv_rad_to_deg(iPhaseCorr);
-    mLcdData.MeanSigmaSqFreqCorr = sqrt(mMeanSigmaSqFreqCorr);
+    mLcdData.MeanSigmaSqFreqCorr = std::sqrt(mMeanSigmaSqFreqCorr);
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (f32)cCarrDiff;
