@@ -125,33 +125,33 @@ void AudioManager::update_dump_timers() const
 
 void AudioManager::_update_level_meter(LevelMeter * const ipMeter, const f32 iPeak, const f32 iRms) const
 {
-  const f64 minValue = ipMeter->get_lower_bound();
-  const f64 maxValue = ipMeter->get_upper_bound();
-  const f64 range = maxValue - minValue;
+  const f32 minValue = ipMeter->get_lower_bound();
+  const f32 maxValue = ipMeter->get_upper_bound();
+  const f32 range = maxValue - minValue;
   if (range <= 0) return;
 
-  f64 relPosRms  = (static_cast<f64>(iRms) - minValue) / range;
-  f64 relPosPeak = (static_cast<f64>(iPeak) - minValue) / range;
+  f32 relPosRms  = (iRms  - minValue) / range;
+  f32 relPosPeak = (iPeak - minValue) / range;
 
-  const f64 relPos0dB = (0.0 - minValue) / range;
+  const f32 relPos0dB = (0.0f - minValue) / range;
 
-  relPosRms  = std::clamp<f64>(relPosRms,  0.0, relPos0dB);
-  relPosPeak = std::clamp<f64>(relPosPeak, 0.0, relPos0dB);
+  relPosRms  = std::clamp<f32>(relPosRms,  0.0f, relPos0dB);
+  relPosPeak = std::clamp<f32>(relPosPeak, 0.0f, relPos0dB);
   relPosRms  = std::min(relPosRms, relPosPeak);
 
-  constexpr f64 eps = 1.0 / 255.0;
-  const f64 rmsNext  = std::min(relPosRms,  relPosPeak - eps);
-  const f64 peakNext = std::min(relPosPeak, 1.0 - eps);
+  constexpr f32 eps = 1.0f / 255.0f;
+  const f32 rmsNext  = std::min(relPosRms,  relPosPeak - eps);
+  const f32 peakNext = std::min(relPosPeak, 1.0f - eps);
 
   // Each segment: dark start → bright end (gradient within segment).
   // Boundary is visible as a hard bright→dark jump between segments.
   ipMeter->set_color_stops({
-    { 0.0,        0x993300 },  // dark rust            (RMS start)
+    { 0.0f,       0x993300 },  // dark rust            (RMS start)
     { relPosRms,  0xDD7700 },  // bright orange        (RMS end)
     { rmsNext,    0xBB8800 },  // dark amber           (Peak start — boundary)
     { relPosPeak, 0xDDCC00 },  // bright yellow        (Peak end)
     { peakNext,   0x781414 },  // dark red              (Overflow start — boundary)
-    { 1.0,        0xFF2828 },  // bright red            (Overflow end)
+    { 1.0f,       0xFF2828 },  // bright red            (Overflow end)
   });
 
   ipMeter->set_value(iPeak);

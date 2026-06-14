@@ -72,17 +72,15 @@ CorrelationViewer::CorrelationViewer(PlotWidget * pPlot, QLabel * pLabel, QSetti
   connect(mpPlot, &PlotWidget::signal_plot_area_changed,   this, [this](int, int)  { _update_tii_label_positions(); });
 }
 
-void CorrelationViewer::showCorrelation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr)
+void CorrelationViewer::show_correlation(const f32 iThreshold, const QVector<i32> & iV, const std::vector<STiiResult> & iTiiResultList)
 {
   constexpr i32 cPlotLength = 2048;
   auto * const data = make_vla(f32, cPlotLength);
-  // using log10_times_10() (not times 20) as the correlation is some kind of energy signal
-  const f32 threshold_dB = 20 * log10(threshold);
+  const f32 threshold_dB = 20 * std::log10(iThreshold);
   constexpr f32 cScalerFltAlpha1 = (f32)0.1;
   constexpr f32 cScalerFltAlpha2 = cScalerFltAlpha1 / (f32)cPlotLength;
 
   const i32 numRead = mpResponseBuffer->get_data_from_ring_buffer(data, cPlotLength);
-  (void)numRead;
 
   if (numRead != cPlotLength)
   {
@@ -123,10 +121,10 @@ void CorrelationViewer::showCorrelation(f32 threshold, const QVector<i32> & v, c
   }
   mpCurve->replace(pts);
 
-  mpIndexDisplay->setText(_get_best_match_text(v));
+  mpIndexDisplay->setText(_get_best_match_text(iV));
 
   // Remove old TII markers (line + label)
-  for (auto & marker : mTiiMarkerVec)
+  for (const auto & marker : mTiiMarkerVec)
   {
     mpPlot->chart()->removeSeries(marker.pLine);
     delete marker.pLine;
@@ -135,7 +133,7 @@ void CorrelationViewer::showCorrelation(f32 threshold, const QVector<i32> & v, c
   mTiiMarkerVec.clear();
 
   // Add vertical line + text label for each TII result
-  for (const auto & tiiResult : iTr)
+  for (const auto & tiiResult : iTiiResultList)
   {
     STiiMarker marker;
 

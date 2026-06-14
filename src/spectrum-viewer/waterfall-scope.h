@@ -30,7 +30,7 @@ public:
   ~WaterfallScope() override = default;
 
   void init(i32 iDisplaySize, i32 iRasterSize);
-  void show_waterfall(const f64 * ipY1_value, const SpecViewLimits<f64> & iSpecViewLimits);
+  void show_waterfall(const f32 * ipY1_value, const SpecViewLimits<f32> & iSpecViewLimits);
 
 public slots:
   void slot_scaling_changed(i32 iScale);
@@ -42,7 +42,7 @@ protected:
 private:
   i32 mDisplaySize  = 0;
   i32 mRasterSize   = 0;
-  f64 mScale        = 0.0;
+  f32 mScale        = 0.0f;
   int mLeftMargin   = 0;
   int mRightMargin  = 0;
 

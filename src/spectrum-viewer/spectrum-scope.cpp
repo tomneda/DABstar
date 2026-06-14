@@ -18,7 +18,7 @@ SpectrumScope::SpectrumScope(PlotWidget * pPlot, i32 displaySize, QSettings * /*
   mDisplaySize(displaySize)
 {
   mYValVec.resize(mDisplaySize);
-  std::fill(mYValVec.begin(), mYValVec.end(), 0.0);
+  std::fill(mYValVec.begin(), mYValVec.end(), 0.0f);
   mpPlot = pPlot;
 
   mpCurve = new QLineSeries();
@@ -34,14 +34,13 @@ SpectrumScope::SpectrumScope(PlotWidget * pPlot, i32 displaySize, QSettings * /*
   mpPlot->get_y_axis()->setMinorGridLineVisible(false);
 }
 
-void SpectrumScope::show_spectrum(const f64 * X_axis, const f64 * Y_value, const SpecViewLimits<f64> & iSpecViewLimits)
+void SpectrumScope::show_spectrum(const f32 * X_axis, const f32 * Y_value, const SpecViewLimits<f32> & iSpecViewLimits)
 {
   mpPlot->set_x_range(X_axis[0], X_axis[mDisplaySize - 1]);
   mpPlot->set_x_tick_dynamic(X_axis[mDisplaySize / 2], 512.0); // FFT "DC" frequency point
-  // qDebug() << "X_axis[0] = " << X_axis[0] << " X_axis[mDisplaySize - 1] = " << X_axis[mDisplaySize - 1] << "Half =" << X_axis[mDisplaySize / 2];
   // weight with slider (scale) between global and local minimum and maximum level values
-  const f64 yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
-  const f64 yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
+  const f32 yMax = (iSpecViewLimits.Glob.Max + 5.0f) * (1.0f - mScale) + iSpecViewLimits.Loc.Max * mScale;
+  const f32 yMin = iSpecViewLimits.Glob.Min * (1.0f - mScale) + iSpecViewLimits.Loc.Min * mScale;
 
   mpPlot->set_y_range(yMin, yMax);
 
@@ -56,5 +55,5 @@ void SpectrumScope::show_spectrum(const f64 * X_axis, const f64 * Y_value, const
 
 void SpectrumScope::slot_scaling_changed(i32 iScale)
 {
-  mScale = (f64)iScale / 100.0;
+  mScale = (f32)iScale / 100.0f;
 }

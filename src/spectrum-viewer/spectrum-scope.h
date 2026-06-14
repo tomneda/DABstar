@@ -23,16 +23,16 @@ public:
   SpectrumScope(PlotWidget *, i32, QSettings *);
   ~SpectrumScope() override = default;
 
-  void show_spectrum(const f64 *, const f64 *, const SpecViewLimits<f64> & iSpecViewLimits);
+  void show_spectrum(const f32 *, const f32 *, const SpecViewLimits<f32> & iSpecViewLimits);
 
 private:
   PlotWidget * mpPlot = nullptr;
   QLineSeries * mpCurve = nullptr;
   QList<QPointF> mPoints;
   const i32 mDisplaySize;
-  f64 mScale = 0.0;
+  f32 mScale = 0.0f;
 
-  std::vector<f64> mYValVec;
+  std::vector<f32> mYValVec;
 
 public slots:
   void slot_scaling_changed(i32);

@@ -95,17 +95,17 @@ private:
   std::vector<cf32> mIqValuesVec;
   std::vector<f32> mCarrValuesVec;
   mutable bool mThermoModQualConfigured = false;
-  SpecViewLimits<f64> mSpecViewLimits;
-  f64 mAvrAlpha = 0.1;
+  SpecViewLimits<f32> mSpecViewLimits;
+  f32 mAvrAlpha = 0.1f;
 
   alignas(64) std::array<cf32, SP_SPECTRUMSIZE> mFftInBuffer;
   alignas(64) std::array<cf32, SP_SPECTRUMSIZE> mFftOutBuffer;
   fftwf_plan mFftPlan{fftwf_plan_dft_1d(SP_SPECTRUMSIZE, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE)};
 
   std::array<f32, SP_SPECTRUMSIZE> mWindowVec{ 0 };
-  std::array<f64, SP_DISPLAYSIZE> mXAxisVec{ 0 };
-  std::array<f64, SP_DISPLAYSIZE> mYValVec{ 0 };
-  std::array<f64, SP_DISPLAYSIZE> mDisplayBuffer{ 0 };
+  std::array<f32, SP_DISPLAYSIZE> mXAxisVec{ 0 };
+  std::array<f32, SP_DISPLAYSIZE> mYValVec{ 0 };
+  std::array<f32, SP_DISPLAYSIZE> mDisplayBuffer{ 0 };
 
   i32 mLastVcoFreq = -1; // do not use 0 as input files can have 0Hz center frequencies and this cache would be "valid"
 
@@ -115,7 +115,7 @@ private:
   WaterfallScope * mpWaterfallScope = nullptr;
   CorrelationViewer * mpCorrelationViewer = nullptr;
 
-  bool _calc_spectrum_display_limits(SpecViewLimits<f64>::SMaxMin & ioMaxMin) const;
+  bool _calc_spectrum_display_limits(SpecViewLimits<f32>::SMaxMin & ioMaxMin) const;
 
 public slots:
   void slot_update_settings();

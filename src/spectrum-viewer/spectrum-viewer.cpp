@@ -116,10 +116,10 @@ SpectrumViewer::~SpectrumViewer()
   fftwf_destroy_plan(mFftPlan);
 }
 
-bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<f64>::SMaxMin & ioMaxMin) const
+bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<f32>::SMaxMin & ioMaxMin) const
 {
-  constexpr f64 cMinShownLevel = -99.0;
-  constexpr f64 cMinLevelRange = 20.0;
+  constexpr f32 cMinShownLevel = -99.0f;
+  constexpr f32 cMinLevelRange = 20.0f;
   bool limitChanged = false;
 
   // first avoid drifting down lower than -99dB, as the display content will jump then, keep the top level for the first
@@ -133,7 +133,7 @@ bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<f64>::SMaxMin 
   if (ioMaxMin.Max - ioMaxMin.Min < cMinLevelRange)
   {
     limitChanged = true;
-    const f64 mean = (ioMaxMin.Max + ioMaxMin.Min) / 2;
+    const f32 mean = (ioMaxMin.Max + ioMaxMin.Min) / 2;
     ioMaxMin.Min = mean - cMinLevelRange / 2;
     ioMaxMin.Max = mean + cMinLevelRange / 2;
     if (ioMaxMin.Min < cMinShownLevel) // maybe we shifted now too low? -> correct this
@@ -165,10 +165,10 @@ void SpectrumViewer::show_spectrum(const i32 vfoFrequency)
   if (vfoFrequency != mLastVcoFreq) // same a bit time
   {
     mLastVcoFreq = vfoFrequency;
-    constexpr f64 temp = (f64)INPUT_RATE / 2 / SP_DISPLAYSIZE;
+    constexpr f32 temp = (f32)INPUT_RATE / 2 / SP_DISPLAYSIZE;
     for (i32 i = 0; i < SP_DISPLAYSIZE; i++)
     {
-      mXAxisVec[i] = ((f64)vfoFrequency - (f64)(INPUT_RATE / 2) + (i * 2.0 * temp)) / 1000.0;
+      mXAxisVec[i] = ((f32)vfoFrequency - (f32)(INPUT_RATE / 2) + (i * 2.0f * temp)) / 1000.0f;
     }
   }
 
@@ -183,13 +183,13 @@ void SpectrumViewer::show_spectrum(const i32 vfoFrequency)
   // map the SP_SPECTRUMSIZE values onto SP_DISPLAYSIZE elements
   for (i32 i = 0; i < SP_DISPLAYSIZE / 2; i++)
   {
-    f64 f = 0;
+    f32 f = 0;
     for (i32 j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
     {
       f += std::abs(mFftOutBuffer[SP_SPEC_OVR_SMP_FAC * i + j]);
     }
 
-    mYValVec[SP_DISPLAYSIZE / 2 + i] = f / (f64)SP_SPEC_OVR_SMP_FAC;
+    mYValVec[SP_DISPLAYSIZE / 2 + i] = f / (f32)SP_SPEC_OVR_SMP_FAC;
 
     f = 0;
     for (i32 j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
@@ -200,10 +200,10 @@ void SpectrumViewer::show_spectrum(const i32 vfoFrequency)
     mYValVec[i] = f / SP_SPEC_OVR_SMP_FAC;
   }
 
-  f64 valdBGlobMin =  1000.0;
-  f64 valdBGlobMax = -1000.0;
-  f64 valdBLocMin =  1000.0;
-  f64 valdBLocMax = -1000.0;
+  f32 valdBGlobMin =  1000.0f;
+  f32 valdBGlobMax = -1000.0f;
+  f32 valdBLocMin =  1000.0f;
+  f32 valdBLocMax = -1000.0f;
 
   constexpr i32 signalBeginIdx = (i32)(SP_DISPLAYSIZE * (1.0 - (1536000.0  / INPUT_RATE)) / 2.0);
   constexpr i32 signalEndIdx   = SP_DISPLAYSIZE - signalBeginIdx - 1;
@@ -211,9 +211,9 @@ void SpectrumViewer::show_spectrum(const i32 vfoFrequency)
   // average the image a little.
   for (i32 i = 0; i < SP_DISPLAYSIZE; i++)
   {
-    const f64 val = 20.0 * std::log10(mYValVec[i] / (f64)SP_DISPLAYSIZE + 1.0e-6);
-    f64 & valdBMean = mDisplayBuffer[i];
-    mean_filter(valdBMean, val, (double)1.0 / averageCount);
+    const f32 val = 20.0f * std::log10(mYValVec[i] / (f32)SP_DISPLAYSIZE + 1.0e-6f);
+    f32 & valdBMean = mDisplayBuffer[i];
+    mean_filter(valdBMean, val, (f32)1.0f / averageCount);
 
     if (valdBMean > valdBGlobMax) valdBGlobMax = valdBMean;
     if (valdBMean < valdBGlobMin) valdBGlobMin = valdBMean;
@@ -293,9 +293,9 @@ void SpectrumViewer::show_lcd_data(const i32 /*iOfdmSymbNo*/, const f32 iModQual
   if (!mThermoModQualConfigured)
   {
     thermoModQual->set_color_stops({
-      { 0.0, 0x003820 },  // dark phosphor green  (low MER)
-      { 0.6, 0x00A840 },  // mid phosphor green
-      { 1.0, 0x80FF90 },  // bright phosphor peak (high MER)
+      { 0.0f, 0x003820 },  // dark phosphor green  (low MER)
+      { 0.6f, 0x00A840 },  // mid phosphor green
+      { 1.0f, 0x80FF90 },  // bright phosphor peak (high MER)
     });
     mThermoModQualConfigured = true;
   }
@@ -333,7 +333,7 @@ void SpectrumViewer::show_clock_error(const f32 iClockErr) const
 
 void SpectrumViewer::show_correlation(const f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr) const
 {
-  mpCorrelationViewer->showCorrelation(threshold, v, iTr);
+  mpCorrelationViewer->show_correlation(threshold, v, iTr);
 }
 
 void SpectrumViewer::_slot_handle_cmb_carrier(i32 iSel)
@@ -374,32 +374,32 @@ void SpectrumViewer::show_digital_peak_and_rms_level(const f32 iDigLevelPeak, co
   const f32 valuedBRms  = log10_times_20(iDigLevelRms);
   const f32 valuedBPeak = log10_times_20(iDigLevelPeak);
 
-  const f64 minValue = thermoDigLevel->get_lower_bound();
-  const f64 maxValue = thermoDigLevel->get_upper_bound();
-  const f64 range = maxValue - minValue;
+  const f32 minValue = thermoDigLevel->get_lower_bound();
+  const f32 maxValue = thermoDigLevel->get_upper_bound();
+  const f32 range = maxValue - minValue;
   if (range <= 0) return; // should never happen
 
-  f64 relPosRms  = (valuedBRms  - minValue) / range;
-  f64 relPosPeak = (valuedBPeak - minValue) / range;
-  const f64 relPos0dB  = (0 - minValue) / range;
+  f32 relPosRms  = (valuedBRms  - minValue) / range;
+  f32 relPosPeak = (valuedBPeak - minValue) / range;
+  const f32 relPos0dB  = (0 - minValue) / range;
 
   // relPosPeak is clamped to 0 dBFS so it marks the orange→red boundary.
   // setValue() uses the unclamped valuedBPeak so the bar can extend into the red zone.
-  relPosRms  = std::clamp<f64>(relPosRms,  0.0, relPos0dB);
-  relPosPeak = std::clamp<f64>(relPosPeak, 0.0, relPos0dB);
+  relPosRms  = std::clamp<f32>(relPosRms,  0.0f, relPos0dB);
+  relPosPeak = std::clamp<f32>(relPosPeak, 0.0f, relPos0dB);
   relPosRms  = std::min(relPosRms, relPosPeak);
 
-  constexpr f64 eps = 1.0 / 255.0;
-  const f64 rmsNext  = std::min(relPosRms, relPosPeak - eps);
-  const f64 peakNext = std::min(relPosPeak, 1.0 - eps);
+  constexpr f32 eps = 1.0f / 255.0f;
+  const f32 rmsNext  = std::min(relPosRms, relPosPeak - eps);
+  const f32 peakNext = std::min(relPosPeak, 1.0f - eps);
 
   thermoDigLevel->set_color_stops({
-    { 0.0,        0x1E5A38 },  // lighter dark green  (RMS start)
+    { 0.0f,       0x1E5A38 },  // lighter dark green  (RMS start)
     { relPosRms,  0x30A060 },  // bright green        (RMS end)
     { rmsNext,    0x806020 },  // lighter dark amber   (Peak start — boundary)
     { relPosPeak, 0xC09010 },  // bright amber        (Peak end)
     { peakNext,   0x801010 },  // dark red              (Overflow start — boundary)
-    { 1.0,        0xCC2020 },  // bright red          (Overflow end)
+    { 1.0f,       0xCC2020 },  // bright red          (Overflow end)
   });
 
   thermoDigLevel->set_value(valuedBPeak);
@@ -409,8 +409,8 @@ void SpectrumViewer::set_spectrum_averaging_rate(SpectrumViewer::EAvrRate iAvrRa
 {
   switch (iAvrRate)
   {
-  case EAvrRate::SLOW:   mAvrAlpha = 0.01; break;
-  case EAvrRate::MEDIUM: mAvrAlpha = 0.10; break;
-  case EAvrRate::FAST:   mAvrAlpha = 1.00; break;
+  case EAvrRate::SLOW:   mAvrAlpha = 0.01f; break;
+  case EAvrRate::MEDIUM: mAvrAlpha = 0.10f; break;
+  case EAvrRate::FAST:   mAvrAlpha = 1.00f; break;
   }
 }

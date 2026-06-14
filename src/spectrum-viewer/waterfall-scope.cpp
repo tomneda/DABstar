@@ -49,15 +49,15 @@ void WaterfallScope::init(const i32 iDisplaySize, const i32 iRasterSize)
   mImage.fill(Qt::black);
 }
 
-void WaterfallScope::show_waterfall(const f64 * ipY1_value, const SpecViewLimits<f64> & iSpecViewLimits)
+void WaterfallScope::show_waterfall(const f32 * ipY1_value, const SpecViewLimits<f32> & iSpecViewLimits)
 {
   if (mDisplaySize == 0 || mRasterSize == 0) return;
 
   // Compute dynamic scale range
-  const f64 yMax = (iSpecViewLimits.Glob.Max + 5.0) * (1.0 - mScale) + iSpecViewLimits.Loc.Max * mScale;
-  const f64 yMin = iSpecViewLimits.Glob.Min * (1.0 - mScale) + iSpecViewLimits.Loc.Min * mScale;
-  const f64 yRange = yMax - yMin;
-  if (yRange <= 0.0) return;
+  const f32 yMax = (iSpecViewLimits.Glob.Max + 5.0f) * (1.0f - mScale) + iSpecViewLimits.Loc.Max * mScale;
+  const f32 yMin = iSpecViewLimits.Glob.Min * (1.0f - mScale) + iSpecViewLimits.Loc.Min * mScale;
+  const f32 yRange = yMax - yMin;
+  if (yRange <= 0.0f) return;
 
   // Shift image down by one row (new data goes at row 0)
   const i32 rowBytes = mDisplaySize * (i32)sizeof(QRgb);
@@ -70,8 +70,8 @@ void WaterfallScope::show_waterfall(const f64 * ipY1_value, const SpecViewLimits
   QRgb * const topRow = reinterpret_cast<QRgb *>(mImage.scanLine(0));
   for (i32 x = 0; x < mDisplaySize; ++x)
   {
-    const f64 t = std::clamp((ipY1_value[x] - yMin) / yRange, (f64)0.0, (f64)1.0);
-    const i32 lutIdx = (i32)(t * 255.0);
+    const f32 t = std::clamp((ipY1_value[x] - yMin) / yRange, 0.0f, 1.0f);
+    const i32 lutIdx = (i32)(t * 255.0f);
     topRow[x] = mColorLut[(size_t)lutIdx];
   }
 
@@ -80,7 +80,7 @@ void WaterfallScope::show_waterfall(const f64 * ipY1_value, const SpecViewLimits
 
 void WaterfallScope::slot_scaling_changed(const i32 iScale)
 {
-  mScale = (f64)iScale / 100.0;
+  mScale = (f32)iScale / 100.0f;
 }
 
 void WaterfallScope::slot_set_horizontal_margins(const int iLeft, const int iRight)
@@ -110,20 +110,20 @@ void WaterfallScope::_build_color_lut()
   //   0.6 → yellow
   //   0.8 → red
   //   1.0 → white
-  struct Stop { double pos; int r, g, b; };
+  struct Stop { f32 pos; int r, g, b; };
   static constexpr Stop stops[] = {
-    { 0.0, 0,   0,   0   },
-    { 0.2, 0,   0,   128 },
-    { 0.4, 0,   0,   255 },
-    { 0.6, 255, 255, 0   },
-    { 0.8, 255, 0,   0   },
-    { 1.0, 255, 255, 255 },
+    { 0.0f, 0,   0,   0   },
+    { 0.2f, 0,   0,   128 },
+    { 0.4f, 0,   0,   255 },
+    { 0.6f, 255, 255, 0   },
+    { 0.8f, 255, 0,   0   },
+    { 1.0f, 255, 255, 255 },
   };
   constexpr i32 nStops = (i32)(sizeof(stops) / sizeof(stops[0]));
 
   for (i32 i = 0; i < 256; ++i)
   {
-    const double t = (double)i / 255.0;
+    const f32 t = (f32)i / 255.0f;
 
     // find segment
     i32 seg = 0;
@@ -132,9 +132,9 @@ void WaterfallScope::_build_color_lut()
       if (t >= stops[s].pos) seg = s;
     }
 
-    const double t0 = stops[seg].pos;
-    const double t1 = stops[seg + 1].pos;
-    const double frac = (t1 > t0) ? (t - t0) / (t1 - t0) : 0.0;
+    const f32 t0 = stops[seg].pos;
+    const f32 t1 = stops[seg + 1].pos;
+    const f32 frac = (t1 > t0) ? (t - t0) / (t1 - t0) : 0.0f;
 
     const int r = (int)(stops[seg].r + frac * (stops[seg + 1].r - stops[seg].r));
     const int g = (int)(stops[seg].g + frac * (stops[seg + 1].g - stops[seg].g));

@@ -51,7 +51,7 @@ public:
   CorrelationViewer(PlotWidget *, QLabel *, QSettings *, RingBuffer<f32> *);
   ~CorrelationViewer() override = default;
 
-  void showCorrelation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr);
+  void show_correlation(f32 iThreshold, const QVector<i32> & iV, const std::vector<STiiResult> & iTiiResultList);
 
 private:
   struct STiiMarker

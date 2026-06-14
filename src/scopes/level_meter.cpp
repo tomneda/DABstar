@@ -19,15 +19,15 @@
 #include <cmath>
 
 // Default gradient: black → dark blue → green → yellow → red
-static QVector<QPair<f64, u32>> default_stops()
+static QVector<QPair<f32, u32>> default_stops()
 {
   return
   {
-    { 0.00, 0x000000 },
-    { 0.25, 0x000080 }, 
-    { 0.55, 0x00FF00 },
-    { 0.80, 0xFFFF00 },
-    { 1.00, 0xFF0000 },
+    { 0.00f, 0x000000 },
+    { 0.25f, 0x000080 },
+    { 0.55f, 0x00FF00 },
+    { 0.80f, 0xFFFF00 },
+    { 1.00f, 0xFF0000 },
   };
 }
 
@@ -38,13 +38,13 @@ LevelMeter::LevelMeter(QWidget * const parent)
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }
 
-void LevelMeter::set_lower_bound(const f64 iV)
+void LevelMeter::set_lower_bound(const f32 iV)
 {
   mLower = iV;
   update();
 }
 
-void LevelMeter::set_upper_bound(const f64 iV)
+void LevelMeter::set_upper_bound(const f32 iV)
 {
   mUpper = iV;
   update();
@@ -56,7 +56,7 @@ void LevelMeter::set_orientation(const Qt::Orientation iO)
   update();
 }
 
-void LevelMeter::set_value(const f64 iV)
+void LevelMeter::set_value(const f32 iV)
 {
   mValue = iV;
   update();
@@ -76,7 +76,7 @@ void LevelMeter::set_bar_visible(const bool iV)
   update();
 }
 
-void LevelMeter::set_color_stops(const QVector<QPair<f64, u32>> & iStops)
+void LevelMeter::set_color_stops(const QVector<QPair<f32, u32>> & iStops)
 {
   mStops = iStops;
   update();
@@ -94,11 +94,11 @@ i32 LevelMeter::_get_scale_area_size() const
 // so that extreme labels are not clipped at the widget border.
 i32 LevelMeter::_get_edge_margin() const
 {
-  const f64 range = mUpper - mLower;
-  if (range <= 0.0) return 0;
+  const f32 range = mUpper - mLower;
+  if (range <= 0.0f) return 0;
 
-  const f64 firstMajor = std::ceil(mLower / cMajorStep - 1e-9) * cMajorStep;
-  const f64 lastMajor  = std::floor(mUpper / cMajorStep + 1e-9) * cMajorStep;
+  const f32 firstMajor = std::ceil(mLower / cMajorStep - 1e-6f) * cMajorStep;
+  const f32 lastMajor  = std::floor(mUpper / cMajorStep + 1e-6f) * cMajorStep;
 
   const QFontMetrics fm = fontMetrics();
 
@@ -132,11 +132,11 @@ QSize LevelMeter::minimumSizeHint() const
 
 void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, const i32 iMargin) const
 {
-  const f64 range = mUpper - mLower;
-  if (range <= 0.0) return;
+  const f32 range = mUpper - mLower;
+  if (range <= 0.0f) return;
 
-  const f64 firstMajor = std::ceil(mLower / cMajorStep - 1e-9) * cMajorStep;
-  const f64 firstMinor = std::ceil(mLower / cMinorStep - 1e-9) * cMinorStep;
+  const f32 firstMajor = std::ceil(mLower / cMajorStep - 1e-6f) * cMajorStep;
+  const f32 firstMinor = std::ceil(mLower / cMinorStep - 1e-6f) * cMinorStep;
 
   const QFontMetrics fm = fontMetrics();
   const i32 textH = fm.height();
@@ -147,9 +147,9 @@ void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, con
 
   // Helper: map a value in [mLower..mUpper] to a pixel coordinate within the
   // scale rect, respecting the edge margin on both sides.
-  auto toPixel = [&](const f64 val) -> i32
+  auto toPixel = [&](const f32 val) -> i32
   {
-    const f64 pos = (val - mLower) / range;
+    const f32 pos = (val - mLower) / range;
     if (mOrientation == Qt::Horizontal)
       return iScaleRect.left() + iMargin + (i32)(pos * (iScaleRect.width() - 2 * iMargin - 1));
     else
@@ -160,12 +160,12 @@ void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, con
   const i32 maxMinorIdx = (i32)std::ceil((mUpper - firstMinor) / cMinorStep) + 2;
   for (i32 i = 0; i < maxMinorIdx; ++i)
   {
-    const f64 tick = firstMinor + i * cMinorStep;
-    if (tick < mLower - cMinorStep * 0.01) continue;
-    if (tick > mUpper + cMinorStep * 0.01) break;
+    const f32 tick = firstMinor + i * cMinorStep;
+    if (tick < mLower - cMinorStep * 0.01f) continue;
+    if (tick > mUpper + cMinorStep * 0.01f) break;
 
-    const f64 relToMajor = std::fmod(std::abs(tick - firstMajor) + 1e12 * cMajorStep, cMajorStep);
-    if (relToMajor < cMajorStep * 1e-5 || relToMajor > cMajorStep * (1.0 - 1e-5)) continue;
+    const f32 relToMajor = std::fmod(std::abs(tick - firstMajor), cMajorStep);
+    if (relToMajor < cMajorStep * 1e-5f || relToMajor > cMajorStep * (1.0f - 1e-5f)) continue;
 
     const i32 px = toPixel(tick);
     if (mOrientation == Qt::Horizontal)
@@ -175,9 +175,9 @@ void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, con
   }
 
   // --- Major ticks with labels ---
-  for (f64 tick = firstMajor; tick <= mUpper + cMajorStep * 0.01; tick += cMajorStep)
+  for (f32 tick = firstMajor; tick <= mUpper + cMajorStep * 0.01f; tick += cMajorStep)
   {
-    if (tick < mLower - cMajorStep * 0.01) continue;
+    if (tick < mLower - cMajorStep * 0.01f) continue;
 
     const i32 px = toPixel(tick);
     const QString lbl = _get_format_tick(tick);
@@ -196,11 +196,11 @@ void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, con
   }
 }
 
-QColor LevelMeter::_get_stops_color(const f64 iRelPos) const
+QColor LevelMeter::_get_stops_color(const f32 iRelPos) const
 {
   if (mStops.size() < 2) return { Qt::gray };
 
-  const f64 t = std::clamp(iRelPos, (f64)0.0, (f64)1.0);
+  const f32 t = std::clamp(iRelPos, 0.0f, 1.0f);
 
   i32 seg = mStops.size() - 2;
   for (i32 s = 0; s < mStops.size() - 1; ++s)
@@ -208,12 +208,12 @@ QColor LevelMeter::_get_stops_color(const f64 iRelPos) const
     if (t <= mStops[s + 1].first) { seg = s; break; }
   }
 
-  const f64 t0 = mStops[seg].first;
-  const f64 t1 = mStops[seg + 1].first;
+  const f32 t0 = mStops[seg].first;
+  const f32 t1 = mStops[seg + 1].first;
   const QColor c0(mStops[seg].second);
   const QColor c1(mStops[seg + 1].second);
 
-  const f64 frac = (t1 > t0) ? std::clamp((t - t0) / (t1 - t0), (f64)0.0, (f64)1.0) : (f64)0.0;
+  const f32 frac = (t1 > t0) ? std::clamp((t - t0) / (t1 - t0), 0.0f, 1.0f) : 0.0f;
   return {
     static_cast<i32>(c0.red()   + frac * (c1.red()   - c0.red())),
     static_cast<i32>(c0.green() + frac * (c1.green() - c0.green())),
@@ -256,11 +256,11 @@ void LevelMeter::paintEvent(QPaintEvent * const /*ipEvent*/)
   // Draw bar
   if (mBarVisible && barRect.height() > 0 && barRect.width() > 0)
   {
-    const f64 range = mUpper - mLower;
-    if (range > 0.0)
+    const f32 range = mUpper - mLower;
+    if (range > 0.0f)
     {
-      const f64 clampedValue = std::clamp(mValue, mLower, mUpper);
-      const f64 fillFraction = (clampedValue - mLower) / range;
+      const f32 clampedValue = std::clamp(mValue, mLower, mUpper);
+      const f32 fillFraction = (clampedValue - mLower) / range;
 
       if (mOrientation == Qt::Horizontal)
       {
@@ -269,7 +269,7 @@ void LevelMeter::paintEvent(QPaintEvent * const /*ipEvent*/)
 
         for (i32 x = 0; x < fillW; ++x)
         {
-          const f64 rel = static_cast<f64>(x) / totalW;
+          const f32 rel = static_cast<f32>(x) / totalW;
           painter.setPen(_get_stops_color(rel));
           const i32 px = barRect.left() + margin + x;
           painter.drawLine(px, barRect.top(), px, barRect.bottom());
@@ -282,7 +282,7 @@ void LevelMeter::paintEvent(QPaintEvent * const /*ipEvent*/)
 
         for (i32 y = 0; y < fillH; ++y)
         {
-          const f64 rel = static_cast<f64>(y) / totalH;
+          const f32 rel = static_cast<f32>(y) / totalH;
           painter.setPen(_get_stops_color(rel));
           const i32 screenY = barRect.bottom() - margin - y;
           painter.drawLine(barRect.left(), screenY, barRect.right(), screenY);
