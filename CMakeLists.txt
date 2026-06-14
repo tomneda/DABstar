@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.16...3.30)
 
 # set CMAKE_BUILD_TYPE to "Release" if not defined (like call from command line)
 if(NOT CMAKE_BUILD_TYPE)
@@ -13,7 +13,7 @@ try_find_vcpkg_toolset_path()
 print(CMAKE_TOOLCHAIN_FILE)
 
 ##############################
-project(DABstar VERSION 5.2.0)
+project(DABstar VERSION 5.3.0)
 ##############################
 
 set(objectName "dabstar")
