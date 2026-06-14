@@ -50,7 +50,6 @@
 #include <QStringList>
 #include <QVector>
 #include <QByteArray>
-#include <QPushButton>
 #include <QLabel>
 #include <QTimer>
 #include <sndfile.h>
@@ -76,11 +75,9 @@ struct SDabService
   // Basic data (enough for audio playback)
   u32 SId = 0;
   i32 SubChId = 0;
-  // bool isAudio = false;
 
   // Extended data (needs more data from the FIB which could take a bit longer to be received)
   i32 SCIdS = 0;
-  // QString channel;
   QString serviceLabel;
 };
 
@@ -143,7 +140,6 @@ private:
     u32 nrChannels = 0;
     u32 nrAudioServices = 0;
     u32 nrNonAudioServices = 0;
-    // QString fIdOrCh;
     QString lastFIdOrCh;
   };
 
@@ -153,14 +149,6 @@ private:
     bool rawDumpActive = false;
     SNDFILE * pRawDumper = nullptr;
   };
-
-  // struct SRfDataForSL
-  // {
-  //   f32 MER = 0;
-  //   f32 SNR = 0;
-  //   u32 nomFreqkHz = 0;
-  //   i32 bbOffset = 0;
-  // };
 
   Ui_DabRadio * const ui;
 

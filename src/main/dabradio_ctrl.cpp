@@ -25,7 +25,7 @@ void DabRadio::_create_and_init_dab_processor()
 
   mpDabProcessor->set_scan_mode(mIsScanning);
   mpDabProcessor->set_sync_on_strongest_peak(Settings::Config::cbUseStrongestPeak.read().toBool());
-  mpDabProcessor->set_dc_avoidance_algorithm(Settings::Config::cbUseDcAvoidance.read().toBool());
+  mpDabProcessor->set_dc_avoidance_algorithm(!mIsFileMode && Settings::Config::cbUseDcAvoidance.read().toBool());
   mpDabProcessor->set_dc_and_iq_correction(Settings::Config::cbDoDcCorrOnly.read().toBool() || Settings::Config::cbDoDcAndIqCorr.read().toBool(),
                                            Settings::Config::cbDoDcAndIqCorr.read().toBool());
   mpDabProcessor->set_tii_collisions(Settings::Config::cbTiiCollisions.read().toBool());

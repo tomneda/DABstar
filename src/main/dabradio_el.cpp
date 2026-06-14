@@ -351,6 +351,7 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::FilePlayer);
     const QString fId = Settings::Main::varPresetFId.read().toString();
     const u32 sIdNext = Settings::Main::varPresetFSId.read().toUInt();
+    slot_set_and_show_freq_corr_rf_Hz(0); // set the "Rf Freq. Corr." display to 0 as "DC avoidance algorithm" is switched off while file play
     if (!fId.isEmpty() && fId != "0") // is empty at first start
     {
       emit signal_FId_or_Ch_selected(fId, sIdNext);

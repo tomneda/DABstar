@@ -1128,7 +1128,7 @@ void DabRadio::_slot_handle_time_table()
 void DabRadio::slot_handle_dc_avoidance_algorithm(bool iIsChecked)
 {
   assert(mpDabProcessor != nullptr);
-  mpDabProcessor->set_dc_avoidance_algorithm(iIsChecked);
+  mpDabProcessor->set_dc_avoidance_algorithm(!mIsFileMode && iIsChecked);
 }
 
 void DabRadio::slot_handle_dc_and_iq_corr(const bool iDcCorr, const bool iIqCorr)
