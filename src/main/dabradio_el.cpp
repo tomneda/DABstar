@@ -206,7 +206,7 @@ bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDe
   if (!iChannelDesc.deferredData.countryName.has_value() ||
       !iChannelDesc.deferredData.snr.has_value() ||
       !iChannelDesc.deferredData.mer.has_value() ||
-      !iChannelDesc.deferredData.nomFreqkHz.has_value() ||
+      !iChannelDesc.deferredData.nomFreqHz.has_value() ||
       !iChannelDesc.deferredData.bbOffset.has_value())
   {
     qDebug() << "Deferred data is not set yet, wait a bit longer for FIB data for FId/Ch" << iChannelDesc.get_fId_or_ch() << "( count" << mEnsListRetriggerCnt << ")";
@@ -252,7 +252,7 @@ bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDe
   sr.S2MedRun.mer = std::round(iChannelDesc.deferredData.mer.value_or(iChannelDesc.merLast) * 10) / 10.0;
   sr.S2MedRun.snr = std::round(iChannelDesc.deferredData.snr.value_or(iChannelDesc.snrLast) * 10) / 10.0;
   sr.S2MedRun.basebandOffset = iChannelDesc.deferredData.bbOffset.value_or(0);
-  sr.S2MedRun.nomFreqkHz = iChannelDesc.deferredData.nomFreqkHz.value_or(0);
+  sr.S2MedRun.nomFreqkHz = iChannelDesc.deferredData.nomFreqHz.value_or(0) / 1000;
 
   // get UTC date from FIB
   if (mjd == 0)

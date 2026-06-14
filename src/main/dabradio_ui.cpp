@@ -364,11 +364,11 @@ void DabRadio::_slot_handle_config_button()
   mpConfig->setVisible(mpConfig->isHidden());
 }
 
-void DabRadio::slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF)
+void DabRadio::slot_set_and_show_freq_corr_rf_Hz(const i32 iFreqCorrRF)
 {
-  if (mpInputDevice != nullptr && mChannelDesc.deferredData.nomFreqkHz.has_value())
+  if (mpInputDevice != nullptr && mChannelDesc.deferredData.nomFreqHz.has_value())
   {
-    mpInputDevice->setVFOFrequency(mChannelDesc.deferredData.nomFreqkHz.value() + iFreqCorrRF);
+    mpInputDevice->setVFOFrequency(mChannelDesc.deferredData.nomFreqHz.value() + iFreqCorrRF);
   }
 
   mpSpectrumViewer->show_freq_corr_rf_Hz(iFreqCorrRF);

@@ -46,7 +46,7 @@ public:
     std::optional<QString> countryName;
     std::optional<f32> snr;
     std::optional<f32> mer;
-    std::optional<i32> nomFreqkHz = -1;
+    std::optional<i32> nomFreqHz = -1;
     std::optional<i32> bbOffset = 0;
 
     void reset()
@@ -54,7 +54,7 @@ public:
       countryName.reset();
       snr.reset();
       mer.reset();
-      nomFreqkHz.reset();
+      nomFreqHz.reset();
       bbOffset.reset();
     }
   };

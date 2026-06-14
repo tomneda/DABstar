@@ -112,7 +112,7 @@ void DabRadio::_start_channel(const QString & iFIdOrCh, const u32 iSId)
 {
   assert(mpInputDevice != nullptr);
   const i32 tunedFrequencyHz = (mIsFileMode ? mpInputDevice->getVFOFrequency() : mpEnsembleList->get_band_handler().get_frequency_Hz(iFIdOrCh));
-  mChannelDesc.deferredData.nomFreqkHz = tunedFrequencyHz / 1'000;
+  mChannelDesc.deferredData.nomFreqHz = tunedFrequencyHz;
   mpSpectrumViewer->show_nominal_frequency_MHz((f32)tunedFrequencyHz / 1'000'000.0f);
   mDipSyncState = EDipSyncState::NotSetYet;
   mpInputDevice->resetBuffer();
