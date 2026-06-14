@@ -200,7 +200,7 @@ QColor LevelMeter::_get_stops_color(const f64 iRelPos) const
 {
   if (mStops.size() < 2) return { Qt::gray };
 
-  const f64 t = std::clamp(iRelPos, 0.0, 1.0);
+  const f64 t = std::clamp(iRelPos, (f64)0.0, (f64)1.0);
 
   i32 seg = mStops.size() - 2;
   for (i32 s = 0; s < mStops.size() - 1; ++s)
@@ -213,7 +213,7 @@ QColor LevelMeter::_get_stops_color(const f64 iRelPos) const
   const QColor c0(mStops[seg].second);
   const QColor c1(mStops[seg + 1].second);
 
-  const f64 frac = (t1 > t0) ? std::clamp((t - t0) / (t1 - t0), 0.0, 1.0) : 0.0;
+  const f64 frac = (t1 > t0) ? std::clamp((t - t0) / (t1 - t0), (f64)0.0, (f64)1.0) : (f64)0.0;
   return {
     static_cast<i32>(c0.red()   + frac * (c1.red()   - c0.red())),
     static_cast<i32>(c0.green() + frac * (c1.green() - c0.green())),

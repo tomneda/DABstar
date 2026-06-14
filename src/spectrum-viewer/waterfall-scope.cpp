@@ -70,7 +70,7 @@ void WaterfallScope::show_waterfall(const f64 * ipY1_value, const SpecViewLimits
   QRgb * const topRow = reinterpret_cast<QRgb *>(mImage.scanLine(0));
   for (i32 x = 0; x < mDisplaySize; ++x)
   {
-    const f64 t = std::clamp((ipY1_value[x] - yMin) / yRange, 0.0, 1.0);
+    const f64 t = std::clamp((ipY1_value[x] - yMin) / yRange, (f64)0.0, (f64)1.0);
     const i32 lutIdx = (i32)(t * 255.0);
     topRow[x] = mColorLut[(size_t)lutIdx];
   }

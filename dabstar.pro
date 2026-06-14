@@ -16,7 +16,7 @@ use_lto	{
 
 # math optimizations
 QMAKE_CFLAGS	+= -ffast-math
-QMAKE_CXXFLAGS	+= -ffast-math -fsingle-precision-constant
+QMAKE_CXXFLAGS	+= -Wall -Werror=return-type -ffast-math -fsingle-precision-constant
 QMAKE_LFLAGS	+= -ffast-math
 
 QMAKE_CXXFLAGS	+= -Wvla 
