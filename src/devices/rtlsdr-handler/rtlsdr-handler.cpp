@@ -273,7 +273,8 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   biasControl->setChecked(rtlsdrSettings->value("biasControl", 0).toInt());
   bandwidth->setValue(rtlsdrSettings->value("bandwidth", 1750).toInt());
   ppmSerial = "ppmCorrection_" + QString(serial);
-  ppm_correction->setValue(rtlsdrSettings->value(ppmSerial, 0.0).toDouble());
+  // Try to read the setting with serial number. If not found, try reading the former keyvalue as default.
+  ppm_correction->setValue(rtlsdrSettings->value(ppmSerial, rtlsdrSettings->value("ppm_correction", 0.0).toDouble()).toDouble());
   rtlsdrSettings->endGroup();
 
   //    all values are set to previous values, now do the settings
