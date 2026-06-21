@@ -593,11 +593,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
    **/
   // Segmentation header (repetitionCount + segmentSize)
   const i32 segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1]; // in bytes, 13 bit
-  const u16 repetitionCount = (iData[index + 0] & 0xE0) >> 5;
-  if (repetitionCount < 7)
-  {
-    qDebug() << "segmentSize" << segmentSize << "repetitionCount" << repetitionCount;
-  }
+  // const u16 repetitionCount = (iData[index + 0] & 0xE0) >> 5;
 
   //	handling MOT in the PAD, we only deal here with type 3/4
   switch (groupType)
