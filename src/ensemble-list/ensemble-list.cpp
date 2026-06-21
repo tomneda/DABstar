@@ -71,12 +71,12 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   connect(ui->btnScanStart, &QPushButton::clicked, this, &EnsembleList::_slot_handle_scan_button);
   connect(ui->tblEnsembleList, &QTableView::clicked, this, &EnsembleList::_slot_handle_table_click);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(ui->cbShowSLCurChOnly, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_show_current_FId_or_Ch_only);
+  connect(ui->cbShowSLCurChOnly, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_show_current_fid_or_ch_only);
   connect(ui->cbShowELNewEntries, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->cbShowELValidSignals, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->cbShowELNoSignals, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
 #else
-  connect(ui->cbShowSLCurChOnly, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_show_current_FId_or_Ch_only);
+  connect(ui->cbShowSLCurChOnly, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_show_current_fid_or_ch_only);
   connect(ui->cbShowELNewEntries, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->cbShowELValidSignals, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->cbShowELNoSignals, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
@@ -185,7 +185,7 @@ void EnsembleList::show()
 
 void EnsembleList::init_after_connect()
 {
-  emit signal_show_current_FId_or_Ch_only(ui->cbShowSLCurChOnly->isChecked());
+  emit signal_show_current_fid_or_ch_only(ui->cbShowSLCurChOnly->isChecked());
 }
 
 void EnsembleList::_log_to_result_display(const ELogType iLogType, const QString & iMessage, const i32 iAddIndent /*= 0*/) const
@@ -303,7 +303,7 @@ QString EnsembleList::_add_file_to_file_scan_list(const QString & iFileName, con
   return {};
 }
 
-void EnsembleList::slot_select_FId_or_Ch(const QString & iFIdOrCh, const u32 iSId)
+void EnsembleList::slot_select_fid_or_ch(const QString & iFIdOrCh, const u32 iSId)
 {
   i32 rowIdx = mpDbHandler->set_selector(iFIdOrCh); // mark the current processed line
 
@@ -324,7 +324,7 @@ void EnsembleList::slot_select_FId_or_Ch(const QString & iFIdOrCh, const u32 iSI
 
   if (rowIdx >= 0)
   {
-    _signal_FId_or_Ch_from_table_index(rowIdx, iSId);
+    _signal_fid_or_ch_from_table_index(rowIdx, iSId);
   }
   else
   {
@@ -423,8 +423,8 @@ void EnsembleList::slot_decoded_data_status(const SScanResultEL & iResult)
   {
     if (mRowIdxClickOnList >= 0 && ed.S0Ws.get_sid_played() > 0)
     {
-      qDebug() << "Call _signal_FId_or_Ch_from_table_index() again with SId" << ed.S0Ws.sIdPlayed;
-      _signal_FId_or_Ch_from_table_index(mRowIdxClickOnList, ed.S0Ws.get_sid_played());
+      qDebug() << "Call _signal_fid_or_ch_from_table_index() again with SId" << ed.S0Ws.sIdPlayed;
+      _signal_fid_or_ch_from_table_index(mRowIdxClickOnList, ed.S0Ws.get_sid_played());
     }
     _setup_ui_regarding_scan_mode(false);
   }
@@ -513,7 +513,7 @@ void EnsembleList::_slot_handle_scan_button()
   _signal_ident_info(mIdentInfoListForScan[0]);
 }
 
-void EnsembleList::_set_EL_filter_check_states_active() const
+void EnsembleList::_set_el_filter_check_states_active() const
 {
   ui->cbShowELNoSignals->setCheckState(Qt::CheckState::Checked);
   ui->cbShowELValidSignals->setCheckState(Qt::CheckState::Checked);
@@ -522,10 +522,10 @@ void EnsembleList::_set_EL_filter_check_states_active() const
 
 void EnsembleList::_slot_handle_reset_data_base_button()
 {
-  _set_EL_filter_check_states_active();
+  _set_el_filter_check_states_active();
   mpDbHandler->delete_table();
   mpDbHandler->create_new_table();
-  emit signal_delete_unused_FId_or_Ch(QStringList()); // clear all entries in the service list, too
+  emit signal_delete_unused_fid_or_ch(QStringList()); // clear all entries in the service list, too
   _log_to_result_display(ELogType::INFONEUT, "Database cleared");
 
   if (mListMode == EListMode::PlayFromDevice)
@@ -602,7 +602,7 @@ void EnsembleList::_slot_handle_add_single_file()
       if (rowIdx >= 0)
       {
         ui->cbShowSLCurChOnly->setChecked(true);
-        _signal_FId_or_Ch_from_table_index(rowIdx);
+        _signal_fid_or_ch_from_table_index(rowIdx);
       }
     }
   }
@@ -640,7 +640,7 @@ void EnsembleList::_slot_handle_ensemble_list_filter(const int /*iState*/)
   _update_remove_invalid_files_button_state();
 }
 
-void EnsembleList::_slot_handle_show_current_FId_or_Ch_only(const int iState)
+void EnsembleList::_slot_handle_show_current_fid_or_ch_only(const int iState)
 {
   if (mListMode == EListMode::PlayFromFiles)
   {
@@ -651,14 +651,14 @@ void EnsembleList::_slot_handle_show_current_FId_or_Ch_only(const int iState)
     Settings::EnsembleList::varShowSLCurChOnlyChMode.write(ui->cbShowSLCurChOnly->isChecked());
   }
 
-  emit signal_show_current_FId_or_Ch_only(iState == Qt::CheckState::Checked);
+  emit signal_show_current_fid_or_ch_only(iState == Qt::CheckState::Checked);
 }
 
 bool EnsembleList::_get_ident_info_from_row_idx(SIdentInfoEL & oIdentInfo, const i32 iRowIdx)
 {
   oIdentInfo.curPacketIdx = iRowIdx;
   oIdentInfo.nrPackets = _get_nr_rows_in_table();
-  oIdentInfo.fIdOrCh = _get_FId_or_Ch_from_table_index(iRowIdx);
+  oIdentInfo.fIdOrCh = _get_fid_or_ch_from_table_index(iRowIdx);
 
   if (oIdentInfo.nrPackets == 0)
   {
@@ -688,7 +688,7 @@ void EnsembleList::_signal_ident_info(const SIdentInfoEL & iIdentInfo)
   emit signal_file_or_channel_to_play(iIdentInfo);
 }
 
-void EnsembleList::_signal_FId_or_Ch_from_table_index(const i32 iRowIdx, const u32 iSId /*= 0*/)
+void EnsembleList::_signal_fid_or_ch_from_table_index(const i32 iRowIdx, const u32 iSId /*= 0*/)
 {
   SIdentInfoEL ii;
   if (!_get_ident_info_from_row_idx(ii, iRowIdx))
@@ -706,7 +706,7 @@ void EnsembleList::_signal_FId_or_Ch_from_table_index(const i32 iRowIdx, const u
   _signal_ident_info(ii);
 }
 
-QString EnsembleList::_get_FId_or_Ch_from_table_index(const i32 iRowIdx) const
+QString EnsembleList::_get_fid_or_ch_from_table_index(const i32 iRowIdx) const
 {
   const QAbstractItemModel * pModel = ui->tblEnsembleList->model();
   return pModel->data(pModel->index(iRowIdx, (mListMode == EListMode::PlayFromFiles ? EnsembleListDB::CI_FId : EnsembleListDB::CI_CH))).toString();
@@ -731,5 +731,5 @@ void EnsembleList::_slot_handle_table_click(const QModelIndex & index)
 
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-  _signal_FId_or_Ch_from_table_index(index.row());
+  _signal_fid_or_ch_from_table_index(index.row());
 }

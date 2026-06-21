@@ -130,15 +130,15 @@ void DabRadio::_slot_handle_eti_button()
 
   if (mDumpStatus.etiDumpActive)
   {
-    _stop_ETI_handler(mDumpStatus);
+    _stop_eti_handler(mDumpStatus);
   }
   else
   {
-    _start_ETI_handler(mChannelDesc, mDumpStatus);
+    _start_eti_handler(mChannelDesc, mDumpStatus);
   }
 }
 
-void DabRadio::_start_ETI_handler(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus)
+void DabRadio::_start_eti_handler(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus)
 {
   if (ioDumpStatus.etiDumpActive)
   {
@@ -161,7 +161,7 @@ void DabRadio::_start_ETI_handler(const SChannelDescriptor & iChannelDesc, SDump
   }
 }
 
-void DabRadio::_stop_ETI_handler(SDumpStatus & ioDumpStatus) const
+void DabRadio::_stop_eti_handler(SDumpStatus & ioDumpStatus) const
 {
   if (!ioDumpStatus.etiDumpActive)
   {

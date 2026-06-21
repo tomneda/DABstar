@@ -60,7 +60,7 @@ private:
   std::array<SMotTable, 15> mMotTable; // TODO: are 55 or 15 the better number?
 
   void setHandle(MotObject *, u16);
-  MotObject * getHandle(u16);
+  MotObject * getHandle(u16) const;
 };
 
 

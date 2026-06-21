@@ -139,6 +139,7 @@ u16 extensionLength	= (dir_segments [currentBase] << 8) |
 	   u8 *segment	= &dir_segments [currentBase + 2];
 	   MotObject *handle	= new MotObject (myRadioInterface,
                                          true,
+                                         false,
                                          transportId,
                                          segment,
                                          -1,

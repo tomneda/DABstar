@@ -51,7 +51,7 @@ private:
 PadHandler::PadHandler(DabRadio * mr)
   : mpRadioInterface(mr)
 {
-  mpMotObject.reset(new MotObject(mr, false));
+  mpMotObject.reset(new MotObject(mr, false, true));
 
   connect(this, &PadHandler::signal_show_label, mr, &DabRadio::slot_show_label);
   connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_trigger_mot_indicator);
@@ -212,15 +212,12 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
   //	If an xpadfield shows with a CI_flag == 0, and if we are
   //	dealing with an msc field, the size to be taken is
   //	the size of the latest xpadfield that had a CI_flag != 0
-  //fprintf(stderr, "CI_flag=%x, last=%d, ", CI_flag, last);
   if (!iCiFlag)
   {
-    //fprintf(stderr,"mscGroupElement=%d, last_appType=%d\n", mscGroupElement, last_appType);
     if (mXPadLength > 0)
     {
       if (iLast < mXPadLength - 1)
       {
-        // fprintf(stdout, "handle_variablePAD: last < xpadLength - 1\n");
         return;
       }
 
@@ -473,19 +470,18 @@ void PadHandler::_new_MSC_element(const std::vector<u8> & data)
   //	   show_motHandling (true);
   //	}
 
+  mMscDataGroupBuffer.clear();
+
   if (data.size() >= (u16)mDataGroupLength)
   {
     // msc element is single item
-    mMscDataGroupBuffer.clear();
     _build_MSC_segment(data);
     mMscGroupElement = false;
     emit signal_show_mot_handling();
-    //	   fprintf (stdout, "msc element is single\n");
     return;
   }
 
   mMscGroupElement = true;
-  mMscDataGroupBuffer.clear();
   mMscDataGroupBuffer = data;
   emit signal_show_mot_handling();
 }
@@ -493,25 +489,15 @@ void PadHandler::_new_MSC_element(const std::vector<u8> & data)
 //
 void PadHandler::_add_MSC_element(const std::vector<u8> & data)
 {
-  const i32 currentLength = mMscDataGroupBuffer.size();
-
   //	just to ensure that, when a "12" appType is missing, the
   //	data of "13" appType elements is not endlessly collected.
-  if (currentLength == 0)
+  if (mMscDataGroupBuffer.empty())
   {
     // qCWarning(sLogPadHandler) << "MSC element without AppType 12 element";
     return;
   }
 
-  // The GCC compiler (V13.3.0) complains about the insert() function below, but it seems correct.
-  // Do a workaround with a dedicated for-loop. The reserve is obsolete as enough space is reserved,
-  // and push_back() will do it if necessary.
-  // mMscDataGroupBuffer.reserve(mMscDataGroupBuffer.size() + data.size());
-  // mMscDataGroupBuffer.insert(mMscDataGroupBuffer.cend(), data.cbegin(), data.cend());
-  for (auto & d : data)
-  {
-    mMscDataGroupBuffer.push_back(d);
-  }
+  mMscDataGroupBuffer.insert(mMscDataGroupBuffer.cend(), data.cbegin(), data.cend());
 
   if (mMscDataGroupBuffer.size() >= (u32)mDataGroupLength)
   {
@@ -522,9 +508,10 @@ void PadHandler::_add_MSC_element(const std::vector<u8> & data)
   }
 }
 
+// see chapter 5.3.3 in ETSI EN 300 401
 void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 {
-  struct SDataGrpHeader0 { u8 DataGroupType : 4;  u8 UserAccessFlag : 1; u8 SegmentFlag : 1;  u8 CrcFlag : 1; u8 ExtensionFlag : 1; };
+  struct SDataGrpHeader0 { u8 DataGroupType : 4; u8 UserAccessFlag : 1; u8 SegmentFlag : 1;  u8 CrcFlag : 1; u8 ExtensionFlag : 1; };
   struct SDataGrpHeader1 { u8 RepetitionIdx : 4; u8 ContinuityIdx : 4; };
 
   // we have a MOT segment, let us look what is in it according to DAB 300 401 (page 37) the header (MSC data group)
@@ -548,12 +535,17 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
     }
     // qCDebug(sLogPadHandler) << "CRC check ok";
   }
+  else
+  {
+    qWarning("CRC flag is not set"); // should be not more used without CRC
+  }
 
   i16 segmentNumber = -1; // default
   const u8 groupType = dataGrpHeader0.DataGroupType;
 
-  if ((groupType != 3) && (groupType != 4))
+  if (groupType != 3 && groupType != 4)
   {
+    qWarning() << "Data group type is not 3 or 4:" << groupType;
     return;    // do not know yet
   }
 
@@ -571,34 +563,41 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
   }
 
   u16 transportId = 0;   // default
-  bool transportIdSet = false;
+  bool transportIdFlag = false;
 
   //	if the user access flag is on there is a user accessfield
   if (dataGrpHeader0.UserAccessFlag != 0)
   {
-    const i16 lengthIndicator = iData[index] & 0x0F;
-    if ((iData[index] & 0x10) != 0)
+    const u16 userAccessStart = index;
+    const i16 lengthIndicator = iData[index] & 0x0F;  // indicate the length n in bytes of the Transport Id and End user address fields
+    transportIdFlag = (iData[index] & 0x10) != 0; // Transport Id flag, is transportId exisiting?
+
+    if (transportIdFlag)
     {
       transportId = iData[index + 1] << 8 | iData[index + 2];
-      transportIdSet = true;
-      // qCDebug(sLogPadHandler) << "transportId" << transportId;
-      index += 3;
     }
-    /*else
-    {
-      fprintf (stderr, "sorry no transportId\n");
-    }*/
-    index += (lengthIndicator - 2);
+    index = userAccessStart + 1 + lengthIndicator; // always advance past entire user access field -> begin "MSC data group data field"
   }
   // qWarning() << "build_MSC_segment() transportId is " << transportId << "segmentNumber is " << segmentNumber;
 
-  if (!transportIdSet)
+  if (!transportIdFlag)
   {
-    qCritical() << "TransportId not set";
+    qWarning() << "TransportId not set";
     return;
   }
 
-  const u32 segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1];
+  /* now, the MOT data are decoded, see EN 301 234 (MOT protocol), Section 5.1 + Figure 6 (page 17)
+   * "segmentSize" indicates the SegmentSize in bytes that will be used for the segmentation of objects within the MOT data
+   * carousel. A value of 0 indicates that objects within the data carousel may have different segmentation sizes.
+   * The last segment of an object may be smaller than this SegmentSize.
+   **/
+  // Segmentation header (repetitionCount + segmentSize)
+  const i32 segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1]; // in bytes, 13 bit
+  const u16 repetitionCount = (iData[index + 0] & 0xE0) >> 5;
+  if (repetitionCount < 7)
+  {
+    qDebug() << "segmentSize" << segmentSize << "repetitionCount" << repetitionCount;
+  }
 
   //	handling MOT in the PAD, we only deal here with type 3/4
   switch (groupType)

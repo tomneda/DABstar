@@ -68,20 +68,19 @@ MotHandler::~MotHandler()
 
 void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
 {
-  u8 * data = (u8 *)(msc.data());
-  bool extensionFlag = getBits_1(data, 0) != 0;
-  bool crcFlag = getBits_1(data, 1) != 0;
-  bool segmentFlag = getBits_1(data, 2) != 0;
-  bool userAccessFlag = getBits_1(data, 3) != 0;
-  u8 groupType = getBits_4(data, 4);
-  u8 CI = getBits_4(data, 8);
+  const u8 * const data = msc.data();
+  const bool extensionFlag = getBits_1(data, 0) != 0;
+  const bool crcFlag = getBits_1(data, 1) != 0;
+  const bool segmentFlag = getBits_1(data, 2) != 0;
+  const bool userAccessFlag = getBits_1(data, 3) != 0;
+  const u8 groupType = getBits_4(data, 4);
+  const u8 CI = getBits_4(data, 8);
   i32 next = 16;    // bits
   bool lastFlag = false;
   u16 segmentNumber = 0;
   bool transportIdFlag = false;
   u16 transportId = 0;
   u8 lengthInd;
-  i32 i;
 
   (void)CI;
   if (msc.size() <= 0)
@@ -127,7 +126,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
 
   std::vector<u8> motVector;
   motVector.resize(sizeinBits / 8);
-  for (i = 0; i < sizeinBits / 8; i++)
+  for (i32 i = 0; i < sizeinBits / 8; i++)
   {
     u8 t = 0;
     for (i32 j = 0; j < 8; j++)
@@ -148,7 +147,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
       {
         break;
       }
-      h = new MotObject(mpRadioInterface, false,  // not within a directory
+      h = new MotObject(mpRadioInterface, false, false, // not within a directory
                         transportId, &motVector[2], segmentSize, lastFlag);
       setHandle(h, transportId);
     }
@@ -159,7 +158,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
     MotObject * h = getHandle(transportId);
     if (h == nullptr)
     {
-      h = new MotObject(mpRadioInterface, false,  // not within a directory
+      h = new MotObject(mpRadioInterface, false, false, // not within a directory
                         transportId, &motVector[2], segmentSize, lastFlag);
       setHandle(h, transportId);
     }
@@ -186,8 +185,8 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
 
       i32 segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
       u8 * segment = &motVector[2];
-      i32 dirSize = ((segment[0] & 0x3F) << 24) | ((segment[1]) << 16) | ((segment[2]) << 8) | segment[3];
-      u16 numObjects = (segment[4] << 8) | segment[5];
+      const i32 dirSize = ((segment[0] & 0x3F) << 24) | ((segment[1]) << 16) | ((segment[2]) << 8) | segment[3];
+      const u16 numObjects = (segment[4] << 8) | segment[5];
       //	         i32 period = (segment [6] << 16) |
       //	                          (segment [7] <<  8) | segment [8];
       //	         i32 segSize
@@ -209,10 +208,11 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
   }
 }
 
-MotObject * MotHandler::getHandle(u16 transportId)
+MotObject * MotHandler::getHandle(u16 transportId) const
 {
   for (const auto & mt: mMotTable)
   {
+    qDebug() << "motHandler getHandle transportId" << transportId << "orderNumber" << mt.orderNumber << "transportId" << mt.transportId;
     if ((mt.orderNumber >= 0) && (mt.transportId == transportId))
     {
       return mt.motSlide;

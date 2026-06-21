@@ -46,6 +46,7 @@
 #include "ensemble-list.h"
 #include "itu-regions.h"
 #include "audio_manager.h"
+#include "mot_slide_progress.h"
 #include <QMessageBox>
 #include <QDesktopServices>
 
@@ -104,6 +105,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   mpServiceListHandler.reset(new ServiceListHandler(iServiceListDbFileName, ui->tblServiceList));
   mpTechDataWidget.reset(new TechData(this, mpTechDataBuffer));
   mpEnsembleList.reset(new EnsembleList(iEnsembleListDbFileName));
+  mpMotSlideProgress.reset(new MotSlideProgress(ui->gapProgBarMot));
 
   qDebug("Using Qt version: " QT_VERSION_STR);
 
@@ -119,7 +121,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   _initialize_version_and_copyright_info();
   _initialize_device_selector(mChannelDesc);
 
-  _show_pause_slide();
+  mpEpgMotHandler->show_pause_slide();
   _set_clock_text();
 
   _get_local_position_from_config(mLocalPos);
@@ -174,7 +176,7 @@ void DabRadio::_slot_device_selected(const QString & iDeviceName)
   const u32 sIdNext = Settings::Main::varPresetCSId.read().toUInt();
   if (!ch.isEmpty() && ch != "0")
   {
-    emit signal_FId_or_Ch_selected(ch, sIdNext);
+    emit signal_fid_or_ch_selected(ch, sIdNext);
   }
 }
 
@@ -504,7 +506,7 @@ void DabRadio::_slot_service_changed(const QString & iFIdOrCh, const QString & /
 {
   if (!mIsScanning)
   {
-    emit signal_FId_or_Ch_selected(iFIdOrCh, iSId);
+    emit signal_fid_or_ch_selected(iFIdOrCh, iSId);
   }
 }
 
@@ -513,46 +515,8 @@ void DabRadio::slot_handle_fib_content_selector(const u32 iSId)
 {
   if (!mIsScanning)
   {
-    emit signal_FId_or_Ch_selected(mChannelDesc.get_fId_or_ch(), iSId);
+    emit signal_fid_or_ch_selected(mChannelDesc.get_fId_or_ch(), iSId);
   }
-}
-
-void DabRadio::_stop_services(const bool iStopAlsoGlobServices)
-{
-  mEnsListRetriggerTimer.stop();
-  mScanSecurityTimer.stop();
-
-  if (mpDabProcessor == nullptr)
-  {
-    return;
-  }
-
-  mpAudioManager->stop_all_dumping();
-
-  mpTechDataWidget->cleanUp(); // clean up the technical widget
-  _cleanup_ui(); // clean up this main widget
-
-  mpAudioManager->stop_audio_output();
-
-  if (iStopAlsoGlobServices)
-  {
-    mpDabProcessor->stop_all_services();
-  }
-  else
-  {
-    // TODO: keep "global" services like EPGs running, but currently clear all services in the MSC handler
-    mpDabProcessor->stop_all_services();
-  }
-
-  mCurPrimaryAudioService = {};
-  mCurPrimaryPacketService = {};
-  mCurSecondaryServiceVec.clear();
-
-  mpAudioManager->set_audio_frame_type(AudioManager::EAudioFrameType::None);
-  mpEpgMotHandler->on_stop_services();
-
-  _show_pause_slide();
-  _clean_screen(mStatusInfo);
 }
 
 void DabRadio::_display_service_label(const QString & iServiceLabel) const
@@ -565,7 +529,7 @@ void DabRadio::_display_service_label(const QString & iServiceLabel) const
   ui->lblServiceName->setText(iServiceLabel);
 }
 
-void DabRadio::_write_SId_to_settings(const u32 iSId) const
+void DabRadio::_write_sid_to_settings(const u32 iSId) const
 {
   if (mIsFileMode)
   {
@@ -577,7 +541,7 @@ void DabRadio::_write_SId_to_settings(const u32 iSId) const
   }
 }
 
-void DabRadio::_write_FId_or_Ch_to_settings(const QString & iFIdOrCh) const
+void DabRadio::_write_fid_or_Ch_to_settings(const QString & iFIdOrCh) const
 {
   if (mIsFileMode)
   {
@@ -650,7 +614,7 @@ bool DabRadio::_start_primary_and_secondary_service(const u32 iSId, const bool i
     if (!iStartPrimaryAudioOnly) // only if FIB data complete loaded
     {
       // Store primary channel to settings file
-      _write_SId_to_settings(mCurPrimaryAudioService.SId);
+      _write_sid_to_settings(mCurPrimaryAudioService.SId);
 
       std::vector<SPacketData> pdVec;
       mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(iSId, pdVec);
@@ -825,7 +789,7 @@ void DabRadio::_update_scan_statistics(const QString & iFIdOrCh, const SServiceI
   }
 }
 
-void DabRadio::_check_for_ITU_code()
+void DabRadio::_check_for_itu_code()
 {
   if (mChannelDesc.ecc_byte != 0 && mChannelDesc.Eid != 0)
   {
@@ -855,7 +819,7 @@ void DabRadio::_slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingS
   if (!mChannelDesc.itu_code_decoded)
   {
     mChannelDesc.ecc_byte = mpDabProcessor->get_fib_decoder()->get_ecc();
-    _check_for_ITU_code();
+    _check_for_itu_code();
   }
 
   if (iFibLoadingState == IFibDecoder::EFibLoadingState::S5_DeferredDataLoaded)
@@ -1189,11 +1153,6 @@ void DabRadio::slot_http_terminate()
   _set_http_server_button(EHttpButtonState::Off);
 }
 
-void DabRadio::_show_pause_slide() const
-{
-  mpEpgMotHandler->show_pause_slide();
-}
-
 QString DabRadio::_convert_links_to_clickable(const QString & iText) const
 {
   // qDebug() << "iText: " << iText << iText.length();
@@ -1301,12 +1260,6 @@ void DabRadio::slot_handle_mot_object(const QByteArray & iResult, const QString 
 void DabRadio::slot_trigger_mot_indicator() const
 {
   mpEpgMotHandler->trigger_mot_indicator();
-  static i32 motCntStart = 0;
-  static i32 motCntEnd = 20;
-  // qDebug() << "MOT progress: " << motCntStart << motCntEnd;
-  // _set_MOT_progress(motCntStart, motCntEnd);
-  motCntStart = (motCntStart + 3) % 100;
-  motCntEnd = (motCntEnd + 3) % 100;
 }
 
 void DabRadio::_initialize_epg_mot_handler()

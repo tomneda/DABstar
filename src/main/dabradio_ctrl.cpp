@@ -11,6 +11,7 @@
 #include "ui_dabradio.h"
 #include "configuration.h"
 #include "audio_manager.h"
+#include "mot_slide_progress.h"
 
 
 void DabRadio::_create_and_init_dab_processor()
@@ -108,6 +109,45 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
   }
 }
 
+void DabRadio::_stop_services(const bool iStopAlsoGlobServices)
+{
+  mEnsListRetriggerTimer.stop();
+  mScanSecurityTimer.stop();
+
+  if (mpDabProcessor == nullptr)
+  {
+    return;
+  }
+
+  mpAudioManager->stop_all_dumping();
+
+  mpTechDataWidget->cleanUp(); // clean up the technical widget
+  _cleanup_ui(); // clean up this main widget
+
+  mpAudioManager->stop_audio_output();
+
+  if (iStopAlsoGlobServices)
+  {
+    mpDabProcessor->stop_all_services();
+  }
+  else
+  {
+    // TODO: keep "global" services like EPGs running, but currently clear all services in the MSC handler
+    mpDabProcessor->stop_all_services();
+  }
+
+  mCurPrimaryAudioService = {};
+  mCurPrimaryPacketService = {};
+  mCurSecondaryServiceVec.clear();
+
+  mpAudioManager->set_audio_frame_type(AudioManager::EAudioFrameType::None);
+  mpEpgMotHandler->on_stop_services();
+  mpMotSlideProgress->reset();
+
+  mpEpgMotHandler->show_pause_slide();
+  _clean_screen(mStatusInfo);
+}
+
 void DabRadio::_start_channel(const QString & iFIdOrCh, const u32 iSId)
 {
   assert(mpInputDevice != nullptr);
@@ -144,7 +184,7 @@ void DabRadio::_start_channel(const QString & iFIdOrCh, const u32 iSId)
 
   if (!mIsScanning)
   {
-    _write_FId_or_Ch_to_settings(iFIdOrCh);
+    _write_fid_or_Ch_to_settings(iFIdOrCh);
     mEpgTimer.start(cEpgTimeoutMs);
   }
 
@@ -162,7 +202,7 @@ void DabRadio::_stop_channel()
     return;
   }
 
-  _stop_ETI_handler(mDumpStatus);
+  _stop_eti_handler(mDumpStatus);
   _stop_services(true);
   _stop_source_dumping(mDumpStatus);
 
@@ -183,9 +223,6 @@ void DabRadio::_stop_channel()
   mpDabProcessor->stop();
   usleep(1000); // minimum task-switch time on Windows; lets the processor threads wind down
   mpTechDataWidget->cleanUp();
-
-  _show_pause_slide();
-
   mEnsListRetriggerTimer.stop();
   mScanSecurityTimer.stop();
 

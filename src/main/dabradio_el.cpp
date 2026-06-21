@@ -14,10 +14,10 @@ void DabRadio::_initialize_ensemble_list()
 {
   connect(mpEnsembleList.get(), &EnsembleList::signal_file_or_channel_to_play, this, &DabRadio::_slot_file_or_channel_to_play);
   connect(mpEnsembleList.get(), &EnsembleList::signal_start_stop_scan, this, &DabRadio::_slot_start_stop_scan);
-  connect(mpEnsembleList.get(), &EnsembleList::signal_delete_unused_FId_or_Ch, this, [this](const QStringList & iUsedChOrFIdList) {mpServiceListHandler->delete_not_existing_channel(iUsedChOrFIdList); });
-  connect(mpEnsembleList.get(), &EnsembleList::signal_show_current_FId_or_Ch_only, this, &DabRadio::_slot_show_current_FId_or_Ch_only);
+  connect(mpEnsembleList.get(), &EnsembleList::signal_delete_unused_fid_or_ch, this, [this](const QStringList & iUsedChOrFIdList) {mpServiceListHandler->delete_not_existing_channel(iUsedChOrFIdList); });
+  connect(mpEnsembleList.get(), &EnsembleList::signal_show_current_fid_or_ch_only, this, &DabRadio::_slot_show_current_fid_or_ch_only);
   connect(this, &DabRadio::signal_fib_data_status, mpEnsembleList.get(), &EnsembleList::slot_decoded_data_status);
-  connect(this, &DabRadio::signal_FId_or_Ch_selected, mpEnsembleList.get(), &EnsembleList::slot_select_FId_or_Ch);
+  connect(this, &DabRadio::signal_fid_or_ch_selected, mpEnsembleList.get(), &EnsembleList::slot_select_fid_or_ch);
   connect(ui->btnEnsembleList, &QPushButton::clicked, this, &DabRadio::_slot_handle_ensemble_list_button);
 
   mpEnsembleList->init_after_connect();
@@ -263,7 +263,7 @@ bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDe
   else
   {
     i32 year, month, day;
-    _get_YMD_from_mod_julian_date(year, month, day, mjd);
+    _get_ymd_from_mod_julian_date(year, month, day, mjd);
     sr.S2MedRun.dateUtc = QDate(year, month, day).toString("yyyy-MM-dd");
   }
 
@@ -303,7 +303,7 @@ void DabRadio::_slot_handle_ensemble_list_button() const
   mpEnsembleList->setVisible(mpEnsembleList->is_hidden());
 }
 
-void DabRadio::_slot_show_current_FId_or_Ch_only(const bool iShowOnlyCurrentFIdOrCh) const
+void DabRadio::_slot_show_current_fid_or_ch_only(const bool iShowOnlyCurrentFIdOrCh) const
 {
   mpServiceListHandler->set_sort_to_FId_Or_Ch(iShowOnlyCurrentFIdOrCh);
   mpServiceListHandler->set_selector(mChannelDesc.get_fId_or_ch(), mChannelDesc.get_sId_next());
@@ -333,7 +333,7 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     const u32 sIdNext = Settings::Main::varPresetCSId.read().toUInt();
     if (!ch.isEmpty() && ch != "0") // is empty at first start
     {
-      emit signal_FId_or_Ch_selected(ch, sIdNext);
+      emit signal_fid_or_ch_selected(ch, sIdNext);
     }
     break;
   }
@@ -354,7 +354,7 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     slot_set_and_show_freq_corr_rf_Hz(0); // set the "Rf Freq. Corr." display to 0 as "DC avoidance algorithm" is switched off while file play
     if (!fId.isEmpty() && fId != "0") // is empty at first start
     {
-      emit signal_FId_or_Ch_selected(fId, sIdNext);
+      emit signal_fid_or_ch_selected(fId, sIdNext);
     }
     break;
   }

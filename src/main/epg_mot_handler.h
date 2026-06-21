@@ -103,10 +103,10 @@ private:
   // File handles
   FILE * mpDlTextFile = nullptr;
 
-  bool _save_MOT_EPG_data(const QByteArray & iResult, const QString & iObjectName, i32 iContentType) const;
-  void _save_MOT_object(const QByteArray & iResult, const QString & iName);
-  void _save_MOT_text(const QByteArray & iResult, i32 iContentType, const QString & iName) const;
-  void _show_MOT_image(const QByteArray & iData, i32 iContentType, const QString & iPictureName, i32 iDirs);
+  bool _save_mot_epg_data(const QByteArray & iResult, const QString & iObjectName, i32 iContentType) const;
+  void _save_mot_object(const QByteArray & iResult, const QString & iName);
+  void _save_mot_text(const QByteArray & iResult, i32 iContentType, const QString & iName) const;
+  void _show_mot_image(const QByteArray & iData, i32 iContentType, const QString & iPictureName, i32 iDirs);
   void _write_picture(const QPixmap & iPixMap) const;
   QString _check_and_create_dir(const QString & iPath) const;
   void _create_directory(const QString & iDirOrPath, bool iContainsFileName) const;

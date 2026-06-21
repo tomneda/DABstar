@@ -89,11 +89,11 @@ private:
   void _setup_ui_regarding_list_mode() const;
   void _setup_ui_regarding_scan_mode(bool iScanMode) const;
   QString _add_file_to_file_scan_list(const QString & iFileName, i64 iMinFileSize) const;
-  void _signal_FId_or_Ch_from_table_index(i32 iRowIdx, u32 iSId = 0);
+  void _signal_fid_or_ch_from_table_index(i32 iRowIdx, u32 iSId = 0);
   void _add_channel_entries_to_db() const;
-  QString _get_FId_or_Ch_from_table_index(i32 iRowIdx) const;
+  QString _get_fid_or_ch_from_table_index(i32 iRowIdx) const;
   const QString & _list_mode_str(const QString & iTextDeviceMode, const QString & iTextFileMode) const;
-  void _set_EL_filter_check_states_active() const;
+  void _set_el_filter_check_states_active() const;
   [[nodiscard]] i32 _get_nr_rows_in_table() const;
   bool _get_ident_info_from_row_idx(SIdentInfoEL & oIdentInfo, i32 iRowIdx);
   void _signal_ident_info(const SIdentInfoEL & iIdentInfo);
@@ -101,7 +101,7 @@ private:
   void _stop_scan_process();
 
 public slots:
-  void slot_select_FId_or_Ch(const QString & iFIdOrCh, u32 iSId);   // trigger this will sent signal_file_or_channel_to_play back to DabRadio
+  void slot_select_fid_or_ch(const QString & iFIdOrCh, u32 iSId);   // trigger this will sent signal_file_or_channel_to_play back to DabRadio
   void slot_decoded_data_status(const SScanResultEL & iResult); // this will fill up the database if valid
 
 private slots:
@@ -112,14 +112,14 @@ private slots:
   void _slot_handle_add_files_in_path();
   void _slot_handle_add_single_file();
   void _slot_handle_ensemble_list_filter(int iState = 0);
-  void _slot_handle_show_current_FId_or_Ch_only(int iState);
+  void _slot_handle_show_current_fid_or_ch_only(int iState);
   void _slot_handle_table_click(const QModelIndex &index);
 
 signals:
   void signal_start_stop_scan(bool oIsScanning);
   void signal_file_or_channel_to_play(const SIdentInfoEL & oIdentInfo); // starts playing (also while scan), provide a file or channel name, called with slot_select_FId_or_Ch or by a click in the table
-  void signal_delete_unused_FId_or_Ch(QStringList oFIds);
-  void signal_show_current_FId_or_Ch_only(bool oShow);
+  void signal_delete_unused_fid_or_ch(QStringList oFIds);
+  void signal_show_current_fid_or_ch_only(bool oShow);
 };
 
  // Q_DECLARE_METATYPE(FilePlayer::SScanResult)

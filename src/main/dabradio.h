@@ -67,6 +67,7 @@ class MapHttpServer;
 class EnsembleList;
 class ItuTables;
 class AudioManager;
+class MotSlideProgress;
 struct SIdentInfoEL;
 struct SScanResultEL;
 
@@ -179,6 +180,7 @@ private:
   QScopedPointer<AudioManager> mpAudioManager;
   QScopedPointer<EpgMotHandler> mpEpgMotHandler;
   QScopedPointer<TiiManager> mpTiiManager;
+  QScopedPointer<MotSlideProgress> mpMotSlideProgress;
   std::unique_ptr<IDeviceHandler> mpInputDevice;
 
   // Counters and indices
@@ -271,17 +273,17 @@ private:
   void _start_scanning(SChannelDescriptor & ioChannelDesc);
   void _stop_scanning(SChannelDescriptor & ioChannelDesc);
   void _update_scan_statistics(const QString & iFIdOrCh, const SServiceId & sl);
-  void _check_for_ITU_code();
+  void _check_for_itu_code();
   QString _get_scan_message(bool iEndMsg) const;
 
   // Dumping and Recording
-  void _start_ETI_handler(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus);
-  void _stop_ETI_handler(SDumpStatus & ioDumpStatus) const;
+  void _start_eti_handler(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus);
+  void _stop_eti_handler(SDumpStatus & ioDumpStatus) const;
   void _start_source_dumping(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus);
   void _stop_source_dumping(SDumpStatus & ioDumpStatus) const;
 
   // Time and Date Handling
-  void _get_YMD_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const;
+  void _get_ymd_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const;
   i32 _get_local_time(i32 & oLocalHour, i32 & oLocalMinute, i32 iUtcHour, i32 iUtcMinute, i32 iLtoMinutes) const;
   QString _conv_to_time_str(i32 iYear, i32 iMonth, i32 iDay, i32 iHours, i32 iMinutes, i32 iSeconds = -1) const;
   QString _seconds_to_timestring(u32 iTimer) const;
@@ -293,7 +295,6 @@ private:
   void _reset_status_info(StatusInfo & ioStatusInfo) const;
   void _display_service_label(const QString & iServiceLabel) const;
   void _write_warning_message(const QString & iMsg) const;
-  void _show_pause_slide() const;  // delegates to mpEpgMotHandler
 
   // UI Controls and Styling
   void _set_favorite_button_style();
@@ -304,11 +305,11 @@ private:
   void _enable_ui_elements_for_safety(bool iEnable) const;
   void _adapt_gui_for_device_or_file_play(bool iPlayingDevice) const;
   void _cleanup_ui() const;
-  void _set_MOT_progress(i32 iMotStart, i32 iMotEnd) const;
+  void _set_mot_progress(i32 iMotStart, i32 iMotEnd) const;
 
   // Settings and Configuration
-  void _write_SId_to_settings(u32 iSId) const;
-  void _write_FId_or_Ch_to_settings(const QString & iFIdOrCh) const;
+  void _write_sid_to_settings(u32 iSId) const;
+  void _write_fid_or_Ch_to_settings(const QString & iFIdOrCh) const;
   void _get_local_position_from_config(cf32 & oLocalPos) const;
   void _show_or_hide_windows_from_config();
 
@@ -371,6 +372,7 @@ public slots:
   void slot_show_digital_peak_and_rms_level(f32 iLevelPeak, f32 iLevelRms) const;
 
   // MOT (Multimedia Object Transfer) — thin wrappers delegating to mpEpgMotHandler
+  void slot_pad_mot_progress(i32 iPercent) const;
   void slot_handle_mot_object(const QByteArray & iResult, const QString & iObjectName, i32 iContentType, bool iDirElement) const;
   void slot_trigger_mot_indicator() const;
 
@@ -434,7 +436,7 @@ private slots:
   void _slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo);
   void _slot_start_stop_scan(bool iIsScanning);
   void _slot_service_list_src_change(int iIdClicked);
-  void _slot_show_current_FId_or_Ch_only(bool iShowOnlyCurrentFIdOrCh) const;
+  void _slot_show_current_fid_or_ch_only(bool iShowOnlyCurrentFIdOrCh) const;
 
   // State Updates and Timers
   void _slot_favorite_changed(bool iIsFav);
@@ -456,5 +458,5 @@ private slots:
 signals:
   void signal_dab_processor_started();
   void signal_fib_data_status(const SScanResultEL &) const;
-  void signal_FId_or_Ch_selected(const QString & oFIdOrCh, u32 oSId);
+  void signal_fid_or_ch_selected(const QString & oFIdOrCh, u32 oSId);
 };

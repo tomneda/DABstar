@@ -1,0 +1,180 @@
+@startuml mot-object-hierarchy
+
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor White
+  BorderColor #444444
+  ArrowColor #444444
+}
+skinparam note {
+  BackgroundColor LightYellow
+  BorderColor #888888
+}
+
+title MOT Object — Caller Hierarchy (DABstar)
+
+'──────────────────────────────────────────────
+' External / top-level
+'──────────────────────────────────────────────
+class DabRadio <<QMainWindow>> {
+  +slot_handle_mot_object(data, name, type, dir)
+  +slot_mot_progress(type, start, end, max)
+  +slot_trigger_mot_indicator()
+  -mpEpgMotHandler : EpgMotHandler*
+}
+
+class EpgMotHandler <<QObject>> {
+  +handle_mot_object(data, name, type, dir)
+  ~signal_mot_indicator(bool)
+  ~signal_epg_indicator(bool)
+}
+
+'──────────────────────────────────────────────
+' Backend data layer
+'──────────────────────────────────────────────
+class MscHandler {
+  +process_MSCdata(...)
+}
+
+class Backend {
+  +driver : BackendDriver
+}
+
+class BackendDriver {
+  -mpFrameProcessor : unique_ptr<FrameProcessor>
+}
+
+abstract class FrameProcessor {
+  +add_to_frame(data) = 0
+}
+
+class Mp2Processor <<QObject, FrameProcessor>> {
+  +add_to_frame(data)
+  -my_padhandler : PadHandler
+}
+
+class Mp4Processor <<QObject, FrameProcessor>> {
+  +add_to_frame(data)
+  -mPadhandler : PadHandler
+}
+
+class PadHandler <<QObject>> {
+  +processPAD(...)
+  -mpMotObject : QScopedPointer<MotObject>
+}
+
+abstract class VirtualDataHandler {
+  +add_MSC_data_group(data) = 0
+}
+
+class MotHandler <<VirtualDataHandler>> {
+  +add_MSC_data_group(data)
+  -mMotTable[15] : MotObject*
+  -mpDirectory : MotDirectory*
+  +setHandle(obj, id)
+  +getHandle(id) : MotObject*
+}
+
+class MotDirectory {
+  +directorySegment(...)
+  +analyse_theDirectory()
+  +setHandle(obj, id)
+  +getHandle(id) : MotObject*
+  -motComponents : vector<MotObject*>
+}
+
+'──────────────────────────────────────────────
+' Core class under scrutiny
+'──────────────────────────────────────────────
+class MotObject <<QObject>> {
+  +MotObject(dr, dirElement)
+  +MotObject(dr, dirElement, transportId, segment, size, last)
+  +set_header(segment, size, last, transportId)
+  +add_body_segment(body, segNum, size, last, transportId)
+  +get_header_size() : int
+  +reset()
+  ~signal_new_mot_object(data, name, type, dirElement)
+  ~signal_mot_progress(type, start, end, max)
+  -mpDR : DabRadio*
+  -mDirElement : bool
+  -mTransportId : i32
+  -mContentType : MOTContentType
+  -mMotMap : map<int, QByteArray>
+}
+
+'──────────────────────────────────────────────
+' Support types
+'──────────────────────────────────────────────
+enum MOTContentType <<mot-content-types.h>> {
+  PNG
+  JPEG
+  ASCII
+  ...
+}
+
+'──────────────────────────────────────────────
+' Ownership relationships
+'──────────────────────────────────────────────
+DabRadio        *-right- EpgMotHandler   : owns (QScopedPointer)
+
+MscHandler      *--      Backend         : owns (QSharedPointer)
+Backend         *--      BackendDriver   : owns (member)
+BackendDriver   *--      Mp2Processor    : owns (unique_ptr)
+BackendDriver   *--      Mp4Processor    : owns (unique_ptr)
+Mp2Processor    --|>     FrameProcessor
+Mp4Processor    --|>     FrameProcessor
+
+Mp2Processor    *--      PadHandler      : owns (member)
+Mp4Processor    *--      PadHandler      : owns (member)
+
+PadHandler      *--      MotObject       : owns one\n(QScopedPointer,\niDirElement=false)
+
+MotHandler      --|>     VirtualDataHandler
+MotHandler      o--      MotObject       : caches up to 15\n(mMotTable[])
+MotHandler      *--      MotDirectory    : owns (mpDirectory)
+
+MotDirectory    o--      MotObject       : owns directory\nentries\n(motComponents[])
+
+MotObject       ..>      MOTContentType  : uses
+MotObject       ..>      DabRadio        : back-ref (mpDR)
+
+'──────────────────────────────────────────────
+' Qt Signal / Slot connections
+'──────────────────────────────────────────────
+MotObject       ..>      DabRadio        : <<signal>>\nsignal_new_mot_object\n→ slot_handle_mot_object
+MotObject       ..>      DabRadio        : <<signal>>\nsignal_mot_progress\n→ slot_mot_progress
+
+DabRadio        ..>      EpgMotHandler   : calls\nhandle_mot_object()
+
+'──────────────────────────────────────────────
+' Creation flow notes
+'──────────────────────────────────────────────
+note bottom of BackendDriver
+  Creates Mp2Processor or Mp4Processor
+  depending on DAB service type.
+  Both carry an embedded PadHandler
+  as a direct value member.
+end note
+
+note bottom of MotHandler
+  Creates MotObject on group type 3/4.
+  Delegates group type 6 to MotDirectory.
+  Evicts oldest entry when cache (15) is full.
+end note
+
+note bottom of MotDirectory
+  analyse_theDirectory() creates one
+  MotObject per directory entry
+  (iDirElement = true).
+end note
+
+note right of MotObject
+  State machine:
+  1. set_header()        — parse metadata
+  2. add_body_segment()  — accumulate data
+  3. _check_if_complete()— verify all segments
+  4. _handle_complete()  — emit signals
+  5. reset()             — clear for reuse
+end note
+
+@enduml

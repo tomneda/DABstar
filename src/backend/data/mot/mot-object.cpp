@@ -34,31 +34,36 @@
 
 #include "mot-object.h"
 #include "dabradio.h"
+#include "bit-extractors.h"
 #include <QLoggingCategory>
 
 // Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtWarningMsg)
 
 
-MotObject::MotObject(DabRadio * ipDR, bool iDirElement, u16 iTransportId, const u8 * ipSegment, i32 iSegmentSize, bool iLastFlag)
+MotObject::MotObject(DabRadio * ipDR, const bool iDirElement, const bool iPadElement, const u16 iTransportId, const u8 * const ipSegment, const i32 iSegmentSize, const bool iLastFlag)
   : mpDR(ipDR)
-  , mDirElement(iDirElement)
+  , mIsDirElement(iDirElement)
+  , mIsPadElement(iPadElement)
 {
   qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << iDirElement << "and transportId" << iTransportId << "and segmentSize" << iSegmentSize << "and lastFlag" << iLastFlag;
   qCWarning(sLogMotObject()) << "This is not working well yet";
 
-  connect(this, &MotObject::signal_new_MOT_object, ipDR, &DabRadio::slot_handle_mot_object);
+  connect(this, &MotObject::signal_new_mot_object, ipDR, &DabRadio::slot_handle_mot_object);
+  connect(this, &MotObject::signal_pad_mot_progress, ipDR, &DabRadio::slot_pad_mot_progress);
 
   set_header(ipSegment, iSegmentSize, iLastFlag, iTransportId);
 }
 
-MotObject::MotObject(DabRadio * ipDR, bool iDirElement)
+MotObject::MotObject(DabRadio * const ipDR, const bool iDirElement, const bool iPadElement)
   : mpDR(ipDR)
-  , mDirElement(iDirElement)
+  , mIsDirElement(iDirElement)
+  , mIsPadElement(iPadElement)
 {
   qCDebug(sLogMotObject()) << "Init MotObject() (2) with dirElement" << iDirElement;
 
-  connect(this, &MotObject::signal_new_MOT_object, ipDR, &DabRadio::slot_handle_mot_object);
+  connect(this, &MotObject::signal_new_mot_object, ipDR, &DabRadio::slot_handle_mot_object);
+  connect(this, &MotObject::signal_pad_mot_progress, ipDR, &DabRadio::slot_pad_mot_progress);
 }
 
 
@@ -73,41 +78,33 @@ void MotObject::set_header(const u8 * const iSegment, const i32 iSegmentSize, co
   }
 
   mTransportId = iTransportId;
-  mSegmentSize = iSegmentSize;
-  mHeaderSize = /*((segment [3] & 0x0F) << 9) |*/ (iSegment[4] << 1) | ((iSegment[5] >> 7) & 0x01);
-  mBodySize = (iSegment[0] << 20) | (iSegment[1] << 12) | (iSegment[2] << 4) | ((iSegment[3] & 0xF0) >> 4);
-  mContentType = static_cast<MOTContentType>((((iSegment[5] >> 1) & 0x3F) << 8) | ((iSegment[5] & 0x01) << 8) | iSegment[6]);
 
-  qCDebug(sLogMotObject) << "HeaderSize" << mHeaderSize << "BodySize" << mBodySize << "ContentType" << (int)mContentType;
+  // ETSI EN301 234, ch. 6.1 "Header core" — 7-byte big-endian bitfield (b55 = MSB of iSegment[0])
+  mHeaderCore.bodySize       = (i32)extract_bits_from_byte_stream(iSegment, 55-55, 28); // b55..b28
+  mHeaderCore.headerSize     = (i32)extract_bits_from_byte_stream(iSegment, 55-27, 13); // b27..b15
+  mHeaderCore.contentType    = (i32)extract_bits_from_byte_stream(iSegment, 55-14,  6); // b14..b9
+  mHeaderCore.contentSubType = (i32)extract_bits_from_byte_stream(iSegment, 55- 8,  9); // b8..b0
 
-  i32 pointer = 7;
-
-  while ((u16)pointer < mHeaderSize)
+  // check if method mHeaderCore.get_content_type() is compatible
+  if (mHeaderCore.contentType > (MOTCTBaseTypeMask >> 8) || mHeaderCore.contentSubType > MOTCTSubTypeMask)
   {
-    const u8 PLI = (iSegment[pointer] & 0xC0) >> 6;
-    const u8 paramId = (iSegment[pointer] & 0x3F);
-    u16 length = 0;
+    qCritical() << "Incompatible contentType" << mHeaderCore.contentType << "contentSubType" << mHeaderCore.contentSubType;
+  }
 
-    switch (PLI)
-    {
-    case 0x0: pointer += 1; break;
-    case 0x1: pointer += 2; break;
-    case 0x2: pointer += 5; break;
-    case 0x3:
-      if ((iSegment[pointer + 1] & 0x80) != 0)
-      {
-        length = (iSegment[pointer + 1] & 0x7F) << 8 | iSegment[pointer + 2];
-        pointer += 3;
-      }
-      else
-      {
-        length = iSegment[pointer + 1] & 0x7F;
-        pointer += 2;
-      }
-      qCDebug(sLogMotObject()) << "Process parameter id with length" << length << "at pointer" << pointer << "for paramId" << paramId;
-      _process_parameter_id(iSegment, pointer, paramId, length);
-    default:; // never happened as we have only 2 bits to process
-    }
+  mHeaderCore.initialized = true;
+
+  qCDebug(sLogMotObject) << "HeaderSize" << mHeaderCore.headerSize << "BodySize" << mHeaderCore.bodySize << "ContentType" << mHeaderCore.contentType << "ContentSubType" << mHeaderCore.contentSubType;
+
+  i32 pointer = 7; // 7 bytes are the HeaderCore size
+
+  while (pointer < (signed)mHeaderCore.headerSize) // Header extension data available?
+  {
+    _process_header_extension(iSegment, pointer);
+  }
+
+  if (pointer != (signed)mHeaderCore.headerSize)
+  {
+    qCritical() << "Header size mismatch" << pointer << "!=" << mHeaderCore.headerSize;
   }
 
   if (_check_if_complete()) // maybe only the header was missed finally
@@ -124,31 +121,19 @@ void MotObject::add_body_segment(const u8 * const iBodySegment, const i16 iSegme
     return;
   }
 
-  // Note that the last segment may have a different size
-  if ((!iLastFlag || iSegmentNumber == 0) && mSegmentSize == -1)
-  {
-    mSegmentSize = iSegmentSize;
-  }
-
   if (mTransportId != iTransportId)
   {
-    reset();
     qCDebug(sLogMotObject) << "TransportId changed from" << mTransportId << "to" << iTransportId;
+    reset();
     mTransportId = iTransportId;
   }
 
   if (mMotMap.find(iSegmentNumber) == mMotMap.end())
   {
     qCDebug(sLogMotObject) << "Adding segment" << iSegmentNumber << "to motMap with size" << iSegmentSize << "- lastFlag" << iLastFlag << "- transportId" << mTransportId;
-    QByteArray segment;
-    segment.resize(iSegmentSize);
-
-    for (i32 i = 0; i < iSegmentSize; i++)
-    {
-      segment[i] = iBodySegment[i]; // TODO: check if there is a way without the copy
-    }
-
-    mMotMap.insert(std::make_pair(iSegmentNumber, segment));
+    QByteArray segment(reinterpret_cast<const char *>(iBodySegment), iSegmentSize);
+    mMotMap.emplace(iSegmentNumber, std::move(segment));
+    mSumSegmentSize += iSegmentSize;
   }
   else
   {
@@ -159,6 +144,27 @@ void MotObject::add_body_segment(const u8 * const iBodySegment, const i16 iSegme
   if (iLastFlag) // now we know how many segments there are
   {
     mNumOfSegments = iSegmentNumber + 1;
+  }
+
+  if (mStartSegment < 0)
+  {
+    mStartSegment = iSegmentNumber;
+  }
+
+  if (mNumOfSegments > 0 && mProgressMax < 0)
+  {
+    mProgressMax = mNumOfSegments - 1;
+  }
+
+  if (mIsPadElement && mHeaderCore.bodySize > 0 && getContentBaseType(mHeaderCore.get_content_type()) == MOTBaseTypeImage) // emit only picture based content
+  {
+    i32 loadedPart = 100 * mSumSegmentSize / mHeaderCore.bodySize;
+    if (loadedPart > 100)
+    {
+      qCWarning(sLogMotObject) << "Loaded part is greater than 100% with" << loadedPart;
+      loadedPart = 100;
+    }
+    emit signal_pad_mot_progress(loadedPart);
   }
 
   if (_check_if_complete()) // hopefully we collected all segments already
@@ -191,20 +197,50 @@ void MotObject::_process_parameter_id(const u8 * const ipSegment, i32 & ioPointe
   case 0x0A:  // priority
   case 0x0B:  // label
   case 0x0F:  // content description
-    ioPointer += iLength;
     break;
 
-  default: ioPointer += mHeaderSize;  // this is so wrong!!!
+  default:
+    qWarning() << "MOT object" << mTransportId << "has unknown parameter" << iParamId << "of length" << iLength;
+    ioPointer += iLength;
     break;
   }
 }
 
+void MotObject::_process_header_extension(const u8 * const iSegment, i32 & ioPointer)
+{
+  const u8 PLI = (iSegment[ioPointer] & 0xC0) >> 6;
+  const u8 paramId = (iSegment[ioPointer] & 0x3F);
+
+  u16 length = 0;
+
+  switch (PLI) // PLI = Parameter Length Indicator
+  {
+  case 0x0: ioPointer += 1; break;
+  case 0x1: ioPointer += 2; break;
+  case 0x2: ioPointer += 5; break;
+  case 0x3:
+    if ((iSegment[ioPointer + 1] & 0x80) != 0) // Ext field: 7 or 15 bit length field is used
+    {
+      length = (iSegment[ioPointer + 1] & 0x7F) << 8 | iSegment[ioPointer + 2];
+      ioPointer += 3;
+    }
+    else
+    {
+      length = iSegment[ioPointer + 1] & 0x7F;
+      ioPointer += 2;
+    }
+    qCDebug(sLogMotObject) << "Process parameter id" << paramId << "with length" << length << "at pointer" << ioPointer;
+    _process_parameter_id(iSegment, ioPointer, paramId, length);
+    break;
+  default:; // never happened as we have only 2 bits to process
+  }
+}
 
 bool MotObject::_check_if_complete()
 {
-  if (mSegmentSize < 0)
+  if (!mHeaderCore.initialized)
   {
-    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing segment size";
+    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing header core information";
     return false;
   }
 
@@ -227,7 +263,7 @@ bool MotObject::_check_if_complete()
     if (mMotMap.find(i) == mMotMap.end())
     {
       qCWarning(sLogMotObject) << "MOT object" << mTransportId << "not complete yet, missing segment" << i;
-      missed = true; // show all possible missing segments
+      missed = true; // do not break, show all possible missing segments
     }
   }
 
@@ -243,9 +279,11 @@ bool MotObject::_check_if_complete()
 
 void MotObject::_handle_complete()
 {
+  assert(mHeaderCore.initialized);
   qCDebug(sLogMotObject) << "MOT object" << mTransportId << "complete with mNumOfSegments" << mNumOfSegments << "and" << mMotMap.size() << "segments in motMap";
 
   QByteArray result;
+  result.reserve(mHeaderCore.bodySize);
   for (const auto & it : mMotMap)
   {
     result.append(it.second);
@@ -253,29 +291,32 @@ void MotObject::_handle_complete()
 
   if (mName.isEmpty())
   {
-    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has no name, using trid_" << mTransportId;
     mName = QString("trid_") + QString::number(mTransportId);
+    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has no name, using" << mName;
   }
 
-  qCDebug(sLogMotObject) << "emit signal_new_MOT_object" << mTransportId << "with name" << mName << "and content type" << (int)mContentType << "and dirElement" << mDirElement;
-  emit signal_new_MOT_object(result, mName, (int)mContentType, mDirElement);
-
-  reset();
+  qCDebug(sLogMotObject) << "emit signal_new_mot_object" << mTransportId << "with name" << mName << "and content type" << mHeaderCore.get_content_type() << "and dirElement" << mIsDirElement;
+  emit signal_new_mot_object(result, mName, mHeaderCore.get_content_type(), mIsDirElement);
 }
 
-int MotObject::get_header_size()
+int MotObject::get_header_size() const
 {
-  return mHeaderSize;
+  if (!mHeaderCore.initialized)
+  {
+    qCritical() << "Header size not known yet";
+    return 0;
+  }
+  return mHeaderCore.headerSize;
 }
 
 void MotObject::reset()
 {
   qCDebug(sLogMotObject) << "reset()";
+  mStartSegment = -1;
+  mProgressMax = -1;
   mNumOfSegments = -1;
-  mSegmentSize = -1;
-  mHeaderSize = 0;
-  mBodySize = 0;
-  mContentType = (MOTContentType)0;
+  mSumSegmentSize = 0;
+  mHeaderCore = {};
   mName.clear();
   mMotMap.clear();
 }

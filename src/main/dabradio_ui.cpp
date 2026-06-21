@@ -14,7 +14,8 @@
 #include "configuration.h"
 #include "gui-helpers.h"
 #include "audio_manager.h"
-#include "level_meter.h"
+#include "mot-content-types.h"
+#include "mot_slide_progress.h"
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
@@ -254,12 +255,6 @@ void DabRadio::_cleanup_ui() const
   ui->progBarAudioBuffer->setValue(0);
 }
 
-void DabRadio::_set_MOT_progress(const i32 iMotStart, const i32 iMotEnd) const
-{
-  ui->gapProgBarMot->setOrigin(iMotStart);
-  ui->gapProgBarMot->setValue(iMotEnd);
-}
-
 void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
 {
   if (!iText.isEmpty())
@@ -380,7 +375,7 @@ void DabRadio::slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB)
   mpSpectrumViewer->show_freq_corr_bb_Hz(iFreqCorrBB);
 }
 
-void DabRadio::_get_YMD_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const
+void DabRadio::_get_ymd_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const
 {
   // Convert Modified Julian Date (MJD) to Gregorian calendar date (year, month, day)
   // This algorithm follows the method described by Jean Meeus in "Astronomical Algorithms"
@@ -476,11 +471,11 @@ void DabRadio::slot_fib_time(const IFibDecoder::SUtcTimeSet & iFibTimeInfo)
   mUTC.minute = iFibTimeInfo.Minute;
   mUTC.second = mLocalTime.second = iFibTimeInfo.Second;
 
-  _get_YMD_from_mod_julian_date(mUTC.year, mUTC.month, mUTC.day, iFibTimeInfo.ModJulianDate);
+  _get_ymd_from_mod_julian_date(mUTC.year, mUTC.month, mUTC.day, iFibTimeInfo.ModJulianDate);
 
   if (daysOffs != 0) // save a bit calculation time if local date is same than UTC date
   {
-    _get_YMD_from_mod_julian_date(mLocalTime.year, mLocalTime.month, mLocalTime.day, iFibTimeInfo.ModJulianDate + daysOffs);
+    _get_ymd_from_mod_julian_date(mLocalTime.year, mLocalTime.month, mLocalTime.day, iFibTimeInfo.ModJulianDate + daysOffs);
   }
   else
   {
@@ -684,6 +679,11 @@ void DabRadio::slot_show_digital_peak_and_rms_level(const f32 iLevelPeak, const 
   mpSpectrumViewer->show_digital_peak_and_rms_level(iLevelPeak, iLevelRms);
 }
 
+void DabRadio::slot_pad_mot_progress(const i32 iPercent) const
+{
+  mpMotSlideProgress->do_progress(iPercent);
+}
+
 // called from the MP4 decoder
 void DabRadio::slot_show_rs_corrections(const i32 iC, const i32 iEc)
 {
@@ -765,7 +765,7 @@ void DabRadio::slot_name_of_ensemble(const i32 iEId, const QString & iEnsName, c
                                  mChannelDesc.get_type_info());
   if (!mChannelDesc.itu_code_decoded)
   {
-    _check_for_ITU_code();
+    _check_for_itu_code();
   }
 }
 

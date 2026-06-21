@@ -159,3 +159,30 @@ static inline bool check_get_bits(T & ioNewExpected, const u8 * const ipData, co
   return false;
 }
 
+// ---------------------------------------------------------------------------
+// Byte-packed big-endian bit extraction (each array element holds 8 bits)
+// NOTE: the functions above work on BIT arrays (one bit per element).
+//       This function works on BYTE arrays (eight bits per element).
+// ---------------------------------------------------------------------------
+
+// Extracts iNumBits bits from a big-endian byte stream ipData.
+// iBitOffset: 0-based bit offset counting from the MSB of ipData[0].
+// Returns the extracted value (1..32 bits).
+static inline u32 extract_bits_from_byte_stream(const u8 * const ipData, const i32 iBitOffset, const i32 iNumBits)
+{
+  assert(ipData != nullptr);
+  assert(iBitOffset >= 0);
+  assert(iNumBits >= 1);
+  assert(iNumBits <= 32); // guarantees at most 5 bytes are loaded into accum (40 bits << 64 bits), so no u64 overflow possible
+
+  u64 accum = 0;
+  const i32 firstByte = iBitOffset / 8;
+  const i32 lastByte = (iBitOffset + iNumBits - 1) / 8;
+  for (i32 i = firstByte; i <= lastByte; ++i)
+  {
+    accum = (accum << 8) | ipData[i];
+  }
+  const i32 shift = (lastByte + 1) * 8 - (iBitOffset + iNumBits);
+  return static_cast<u32>((accum >> shift) & ((1ULL << iNumBits) - 1));
+}
+

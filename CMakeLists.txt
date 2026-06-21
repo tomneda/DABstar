@@ -287,6 +287,7 @@ set(${objectName}_HDRS
         src/main/dab-processor.h
         src/main/dab-constants.h
         src/main/mot-content-types.h
+        src/main/mot_slide_progress.h
         src/eti-handler/eti-generator.h
         src/main/bit-extractors.h
         src/ofdm/sample-reader.h
@@ -401,6 +402,7 @@ set(${objectName}_SRCS
         src/main/dab_channel_desc.cpp
         src/main/dab-processor.cpp
         src/support/techdata.cpp
+        src/main/mot_slide_progress.cpp
         src/eti-handler/eti-generator.cpp
         src/ofdm/sample-reader.cpp
         src/ofdm/phasereference.cpp

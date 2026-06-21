@@ -108,6 +108,7 @@ HEADERS += \
     src/main/dabradio.h \
     src/main/audio_manager.h \
     src/main/epg_mot_handler.h \
+    src/main/mot_slide_progress.h \
     src/main/tii_manager.h \
     src/main/gap_progress_bar.h \
     src/main/dab_channel_desc.h \
@@ -240,6 +241,7 @@ SOURCES += \
     src/main/dabradio_dump.cpp \
     src/main/audio_manager.cpp \
     src/main/epg_mot_handler.cpp \
+    src/main/mot_slide_progress.cpp \
     src/main/tii_manager.cpp \
     src/main/dabradio_el.cpp \
     src/main/dabradio_ctrl.cpp \

@@ -111,13 +111,13 @@ void EpgMotHandler::handle_mot_object(const QByteArray & iResult, const QString 
   switch (getContentBaseType((MOTContentType)iContentType))
   {
   case MOTBaseTypeGeneralData: break;
-  case MOTBaseTypeText:        _save_MOT_text(iResult, iContentType, iObjectName); break;
-  case MOTBaseTypeImage:       _show_MOT_image(iResult, iContentType, iObjectName, 0); break;
+  case MOTBaseTypeText:        _save_mot_text(iResult, iContentType, iObjectName); break;
+  case MOTBaseTypeImage:       _show_mot_image(iResult, iContentType, iObjectName, 0); break;
   case MOTBaseTypeAudio: break;
   case MOTBaseTypeVideo: break;
-  case MOTBaseTypeTransport:   _save_MOT_object(iResult, iObjectName); break;
+  case MOTBaseTypeTransport:   _save_mot_object(iResult, iObjectName); break;
   case MOTBaseTypeSystem: break;
-  case MOTBaseTypeApplication: _save_MOT_EPG_data(iResult, iObjectName, iContentType); break;
+  case MOTBaseTypeApplication: _save_mot_epg_data(iResult, iObjectName, iContentType); break;
   case MOTBaseTypeProprietary: break;
   }
 }
@@ -166,7 +166,7 @@ void EpgMotHandler::_slot_mot_timer_timeout()
   emit signal_mot_indicator(false);
 }
 
-bool EpgMotHandler::_save_MOT_EPG_data(const QByteArray & iResult, const QString & iObjectName, const i32 iContentType) const
+bool EpgMotHandler::_save_mot_epg_data(const QByteArray & iResult, const QString & iObjectName, const i32 iContentType) const
 {
   if (mEpgPath.isEmpty() || mpDabProcessor == nullptr)
   {
@@ -196,7 +196,7 @@ bool EpgMotHandler::_save_MOT_EPG_data(const QByteArray & iResult, const QString
   return true;
 }
 
-void EpgMotHandler::_save_MOT_text(const QByteArray & iResult, const i32 /*iContentType*/, const QString & /*iName*/) const
+void EpgMotHandler::_save_mot_text(const QByteArray & iResult, const i32 /*iContentType*/, const QString & /*iName*/) const
 {
   if (mMotPath.isEmpty())
   {
@@ -213,33 +213,33 @@ void EpgMotHandler::_save_MOT_text(const QByteArray & iResult, const i32 /*iCont
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly))
     {
-      qCCritical(sLogEpgMot, "_save_MOT_text(): cannot write file %s", path.toUtf8().data());
+      qCCritical(sLogEpgMot, "_save_mot_text(): cannot write file %s", path.toUtf8().data());
     }
     else
     {
-      qCDebug(sLogEpgMot, "_save_MOT_text(): going to write MOT file %s", path.toUtf8().data());
+      qCDebug(sLogEpgMot, "_save_mot_text(): going to write MOT file %s", path.toUtf8().data());
       file.write(iResult);
     }
   }
   else
   {
-    qCDebug(sLogEpgMot, "_save_MOT_text(): file %s already exists", path.toUtf8().data());
+    qCDebug(sLogEpgMot, "_save_mot_text(): file %s already exists", path.toUtf8().data());
   }
 }
 
-void EpgMotHandler::_save_MOT_object(const QByteArray & iResult, const QString & iName)
+void EpgMotHandler::_save_mot_object(const QByteArray & iResult, const QString & iName)
 {
   if (mMotPath.isEmpty())
   {
     return;
   }
 
-  // _create_directory(mMotPath, false) is called in _save_MOT_text()
+  // _create_directory(mMotPath, false) is called in _save_mot_text()
   const QString effectiveName = (iName.isEmpty() ? "motObject_" + QString::number(mMotObjectCnt++) : iName);
-  _save_MOT_text(iResult, 5, effectiveName);
+  _save_mot_text(iResult, 5, effectiveName);
 }
 
-void EpgMotHandler::_show_MOT_image(const QByteArray & iData, const i32 iContentType, const QString & iPictureName, const i32 iDirs)
+void EpgMotHandler::_show_mot_image(const QByteArray & iData, const i32 iContentType, const QString & iPictureName, const i32 iDirs)
 {
   if (!mIsChannelRunning || iPictureName.isEmpty())
   {
@@ -254,7 +254,9 @@ void EpgMotHandler::_show_MOT_image(const QByteArray & iData, const i32 iContent
   case MOTCTImageJFIF: type = "jpg"; break;
   case MOTCTImageBMP:  type = "bmp"; break;
   case MOTCTImagePNG:  type = "png"; break;
-  default: qWarning() << "Unknown content type 0x" << QString::number(iContentType, 16) << "for picture"; return;
+  default:
+    qWarning() << "Unknown content type 0x" << QString::number(iContentType, 16) << "for picture";
+    return;
   }
 
   qCDebug(sLogEpgMot, "show_MOTlabel %s, contentType 0x%x, dirs %d, type %s", iPictureName.toLocal8Bit().constData(), iContentType, iDirs, type);
