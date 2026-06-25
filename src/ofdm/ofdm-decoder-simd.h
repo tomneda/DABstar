@@ -80,7 +80,6 @@ private:
   SimdVec<cf32> mSimdVecPhaseReferenceNormed{0};
   SimdVec<cf32> mSimdVecNomCarrier{0};
   SimdVec<cf32> mSimdVecPhaseReference{0};
-  SimdVec<f32> mSimdVecWeightPerBin{0};
   SimdVec<f32> mSimdVecFftBinWrapped{0};
   SimdVec<f32> mSimdVecFftBinPhaseCorrArg{0};
   SimdVec<f32> mSimdVecFftBinLevel{0};

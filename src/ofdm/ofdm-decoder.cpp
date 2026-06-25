@@ -1,3 +1,4 @@
+
 /*
  * This file is adapted by Thomas Neder (https://github.com/tomneda)
  *
@@ -116,7 +117,7 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII
     _eval_null_symbol_statistics(iV);
   }
 
-  constexpr f32 ALPHA = 0.1f;
+  constexpr f32 ALPHA = 0.05f;
 
   for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
   {
@@ -169,7 +170,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
      * Decoding is computing the phase difference between carriers with the same index in subsequent blocks.
      * The carrier of a block is the reference for the carrier on the same position in the next block.
      */
-    const cf32 fftBinRaw = iV[fftIdx] * norm_to_length_one(conj(mPhaseReference[fftIdx])); // PI/4-DQPSK demodulation
+    const f32 PhaseReferenceAbs = std::abs(mPhaseReference[fftIdx]);
+    const cf32 fftBinRaw = iV[fftIdx] * conj(mPhaseReference[fftIdx]) / PhaseReferenceAbs; // PI/4-DQPSK demodulation
 
     f32 & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
     const f32 phaseErr = iClockErr / 1024.0f * M_PI * (cK / 2 - realCarrRelIdx) / (cK / 2) + integAbsPhasePerBinRef;
@@ -209,18 +211,29 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     if (signalPower <= 0.0f) signalPower = 0.1f;
 
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
-    f32 w1 = std::sqrt(std::abs(fftBin) * std::abs(mPhaseReference[fftIdx])); // input level
-    if(mSoftBitType == ESoftBitType::SOFTDEC3)
-      w1 *= meanPowerPerBinRef;
-    else if(mSoftBitType == ESoftBitType::SOFTDEC2)
-      w1 *= std::sqrt(meanLevelPerBinRef) * meanLevelPerBinRef;
-    else
-      w1 *= meanLevelPerBinRef;
-    w1 /= meanSigmaSqPerBinRef;
-    w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) +
-          (mSoftBitType == ESoftBitType::SOFTDEC3 ? 2.0f : 1.0f); // 1/SNR + (1 or 2)
-    const cf32 r1 = norm_to_length_one(fftBin) * w1;
-    f32 w2 = -100 / mMeanValue;
+    cf32 r1;
+    f32 w2;
+    if(mSoftBitType == ESoftBitType::SOFTDEC3) //Optimal 1
+    {
+      r1 = fftBin * PhaseReferenceAbs; // input level
+      w2 = -140 / mMeanValue;
+    }
+    else if(mSoftBitType == ESoftBitType::SOFTDEC2) //Optimal 2
+    {
+      f32 w1 = PhaseReferenceAbs / meanSigmaSqPerBinRef;
+      w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
+      r1 = fftBin * w1;
+      w2 = -140 / mMeanValue;
+    }
+    else // Optimal 3
+    {
+      const f32 fftBinAbs = std::sqrt(fftBinPower);
+      f32 w1 = std::sqrt(fftBinAbs * PhaseReferenceAbs) * meanLevelPerBinRef;
+      w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
+      w1 /= meanSigmaSqPerBinRef * fftBinAbs;
+      r1 = fftBin * w1;
+      w2 = -100 / mMeanValue;
+    }
 
     // split the real and the imaginary part and scale it
     oBits[0  + nomCarrIdx] = (i16)(real(r1) * w2);

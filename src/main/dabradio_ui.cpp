@@ -243,9 +243,9 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
   QStringList sl;
 
   // ATTENTION: use same sequence as in ESoftBitType
-  sl << "Soft decision 1"; // ESoftBitType::SOFTDEC1
-  sl << "Soft decision 2"; // ESoftBitType::SOFTDEC2
-  sl << "Soft decision 3"; // ESoftBitType::SOFTDEC3
+  sl << "Optimal 3";       // ESoftBitType::SOFTDEC1
+  sl << "Optimal 2";       // ESoftBitType::SOFTDEC2
+  sl << "Optimal 1";       // ESoftBitType::SOFTDEC3
   return sl;
 }
 

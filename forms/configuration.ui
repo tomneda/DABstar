@@ -551,7 +551,11 @@
             <item>
              <widget class="QComboBox" name="cmbSoftBitGen">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;There are several ideas on how to calculate the soft bit values for the Viterbi decoder. In some weak reception conditions, this may cause a change.&lt;/p&gt;&lt;p&gt;See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;
+                The designations refer to the document "SOFT DECISIONS FOR DQPSK DEMODULATION FOR THE VITERBI DECODING OF THE CONVOLUTIONAL CODES".
+                The use of an optimal soft decision algorithm compared to the conventional soft decision algorithm gives a performance improvement equivalent to an SNR gain of up to 5dB. 
+                In a time invariant propagation environment, Optimal 3 gives the best performance whereas in time selective environment, Optimal 2 gives the best performance.&lt;/p&gt;&lt;p&gt;
+                See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>

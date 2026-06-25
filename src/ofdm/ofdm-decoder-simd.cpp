@@ -101,7 +101,7 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iFftBuffer)
     mSimdVecTemp1Float[nomCarrIdx] = std::norm(iFftBuffer[fftIdx]) + cMinNoisePower; // noise power
   }
 
-  constexpr f32 cAlpha = 0.1f;
+  constexpr f32 cAlpha = 0.05f;
   mSimdVecMeanNullPowerWithoutTII.modify_mean_filter_each_element(mSimdVecTemp1Float, cAlpha);
 }
 
@@ -136,7 +136,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
 
   // No element of mSimdVecPhaseReference may be zero
   mSimdVecPhaseReferenceNormed.set_normalize_each_element(mSimdVecPhaseReference);
-  mSimdVecFftBinRaw.set_multiply_conj_each_element(mSimdVecNomCarrier, mSimdVecPhaseReferenceNormed);  // PI/4-DQPSK demodulation
+  mSimdVecFftBinRaw.set_multiply_conj_each_element(mSimdVecNomCarrier, mSimdVecPhaseReferenceNormed); // DQPSK demodulation
 
   // -------------------------------
   mSimdVecPhaseErr.modify_accumulate_each_element(mSimdVecIntegAbsPhase);
@@ -179,35 +179,30 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
   mSimdVecMeanNettoPower.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
   mSimdVecMeanNettoPower.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f);
   mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecMeanNettoPower);  // T2 = 1/SNR
-  mSimdVecTemp2Float.modify_add_scalar_each_element(mSoftBitType == ESoftBitType::SOFTDEC3 ? 2.0f : 1.0f); // T2 += (1 or 2)
+  mSimdVecTemp2Float.modify_add_scalar_each_element(0.7f); // T2 += 0.7
+  mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference); // T1 = abs(phaseRef)
 
-  // -------------------------------
-  if (mSoftBitType == ESoftBitType::SOFTDEC3)
+  int factor;
+  if(mSoftBitType == ESoftBitType::SOFTDEC1) // Optimal 3
   {
-    mSimdVecWeightPerBin.set_divide_each_element(mSimdVecMeanPower, mSimdVecMeanSigmaSq);  // w1 = meanPowerPerBinRef / meanSigmaSqPerBinRef;
-  }
-  else if (mSoftBitType == ESoftBitType::SOFTDEC2)
-  {
-    mSimdVecTemp1Float.set_sqrt_each_element(mSimdVecMeanLevel);                           // T1 = sqrt(meanLevelPerBinRef)
-    mSimdVecTemp1Float.modify_multiply_each_element(mSimdVecMeanLevel);                    // T1 *= meanLevelPerBinRef
-    mSimdVecWeightPerBin.set_divide_each_element(mSimdVecTemp1Float, mSimdVecMeanSigmaSq); // w1 = T1 / meanSigmaSqPerBinRef;
+    factor = -100;
+    mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecFftBinLevel);   // T1 /= abs(fftBin)
+    mSimdVecTemp1Float.modify_sqrt_each_element();                                         // T1 = sqrt(T1)
+    mSimdVecTemp2Float.set_multiply_each_element(mSimdVecTemp2Float, mSimdVecMeanSigmaSq); // T2 *= meanSigmaSqPerBinRef
+    mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanLevel, mSimdVecTemp2Float);     // T2 = meanLevelPerBinRef / T2;
+    mSimdVecTemp1Float.set_multiply_each_element(mSimdVecTemp1Float, mSimdVecTemp2Float);  // T1 *= T2
   }
   else
   {
-    mSimdVecWeightPerBin.set_divide_each_element(mSimdVecMeanLevel, mSimdVecMeanSigmaSq);  // w1 = meanLevelPerBinRef / meanSigmaSqPerBinRef;
+    factor = -140;
+    if(mSoftBitType == ESoftBitType::SOFTDEC2) // Optimal 2
+    {
+      mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecTemp2Float);   // T1 /= T2
+      mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecMeanSigmaSq);  // T1 /= meanSigmaSqPerBinRef
+    }
   }
-  mSimdVecWeightPerBin.set_divide_each_element(mSimdVecWeightPerBin, mSimdVecTemp2Float);  // w1 /= T2
-
-  // -------------------------------
-  mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference); // T1 = abs(phaseRef)
-  mSimdVecTemp1Float.modify_multiply_each_element(mSimdVecFftBinLevel);  // T1 *= abs(fftBin)
-  mSimdVecTemp1Float.modify_sqrt_each_element();                         // T1 = sqrt(T1)
-  mSimdVecWeightPerBin.modify_multiply_each_element(mSimdVecTemp1Float); // w1 *= T1
-
-  // No element of mSimdVecFftBinLevel may be zero
-  mSimdVecWeightPerBin.set_divide_each_element(mSimdVecWeightPerBin, mSimdVecFftBinLevel); // w /= abs(fftBin)
-  mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecWeightPerBin); // real *= w1
-  mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecWeightPerBin); // imag *= w1
+  mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecTemp1Float); // real *= T1
+  mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecTemp1Float); // imag *= T1
 
   // -------------------------------
   mSimdVecTemp1Float.set_squared_magnitude_of_elements(mSimdVecDecodingReal, mSimdVecDecodingImag);
@@ -216,7 +211,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
 
   // -------------------------------
   // apply weight w2 to be conform to the viterbi input range
-  const f32 w2 = -100.0f / mMeanValue;
+  const f32 w2 = factor / mMeanValue;
   mSimdVecDecodingReal.modify_multiply_scalar_each_element(w2);
   mSimdVecDecodingImag.modify_multiply_scalar_each_element(w2);
   // -------------------------------

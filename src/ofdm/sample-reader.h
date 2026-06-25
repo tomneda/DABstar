@@ -91,7 +91,7 @@ private:
 #endif
   i32 specBuffIdx = 0;
   std::atomic<bool> running;
-  f32 sLevel = 0.0f;
+  f32 sLevel = 0.1f;
   i32 sampleCount = 0;
   bool dumping;
   i16 dumpIndex = 0;

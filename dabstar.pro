@@ -1,6 +1,6 @@
 TARGET		= dabstar
 TEMPLATE	= app
-QT		    += widgets xml sql multimedia charts
+QT			+= widgets xml sql multimedia charts
 CONFIG		+= console
 #CONFIG		+= debug
 
@@ -27,7 +27,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"5.0.0\\\"
+DEFINES		+= PRJ_VERS=\\\"5.3.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -47,7 +47,7 @@ isEmpty(GITHASHSTRING) {
     DEFINES += GITHASH=\\\"(unknown)\\\"
 }
 
-#DESTDIR 	= ../../DABstar-Qt6.8.3
+#DESTDIR 	= ../../DABstar-Qt6.11.1
 LIBS		+= -L../../dabstar-libs/lib
 CONFIG		+= airspy
 CONFIG		+= spyServer
@@ -66,7 +66,7 @@ CONFIG		+= volk
 LIBS		+= -lsndfile.dll
 LIBS		+= -lwinpthread
 LIBS		+= -lws2_32
-LIBS		+= -lzlib.dll
+LIBS		+= -lz.dll
 LIBS		+= -lfftw3f.dll
 # very experimental, simple server for connecting to a tdc handler
 #CONFIG		+= datastreamer
