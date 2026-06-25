@@ -232,6 +232,24 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="QLabel" name="Label7">
+       <property name="text">
+        <string>S/N:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="serialNumber">
+       <property name="text">
+        <string></string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QLabel" name="product_display">
      <property name="frameShape">
       <enum>QFrame::Box</enum>

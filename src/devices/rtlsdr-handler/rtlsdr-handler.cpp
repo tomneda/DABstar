@@ -268,6 +268,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   rtlsdr_get_usb_strings(theDevice, manufac, product, serial);
   fprintf(stdout, "%s %s %s\n", manufac, product, serial);
   product_display->setText(product);
+  serialNumber->setText(serial);
 
   agcControl = rtlsdrSettings->value("autogain", 2).toInt();
   biasControl->setChecked(rtlsdrSettings->value("biasControl", 0).toInt());
