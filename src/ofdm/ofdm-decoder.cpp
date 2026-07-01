@@ -184,7 +184,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     const cf32 fftBinRaw = iV[fftIdx] * std::conj(mPhaseReference[fftIdx]) / PhaseReferenceAbs; // DQPSK demodulation
 
     f32 & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
-    const f32 phaseErr = iClockErr / 1024.0f * M_PI * (cK / 2 - realCarrRelIdx) / (cK / 2) + integAbsPhasePerBinRef;
+    const f32 phaseErr = iClockErr / 1024.0f * F_M_PI * (cK / 2 - realCarrRelIdx) / (cK / 2) + integAbsPhasePerBinRef;
 
     const cf32 fftBin = fftBinRaw * cmplx_from_phase2(-phaseErr);
 
@@ -273,8 +273,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
       case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanSigmaSqPerBinRef / meanPowerPerBinRef); break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
       case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(phaseErr); break;
-      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
       case ECarrierPlotType::PRS_PHASE:       mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(mPRSBuffer[fftIdx])); break;
+      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
       case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
       case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
       case ECarrierPlotType::NULL_TII_LIN:

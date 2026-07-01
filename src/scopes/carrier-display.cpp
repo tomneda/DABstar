@@ -254,10 +254,10 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YBottomValue = -60.0;
     break;
 
-  case ECarrierPlotType::FOUR_QUAD_PHASE:
-    cp.ToolTip = "Shows the 4 phase segments in degree for each OFDM carrier.";
+  case ECarrierPlotType::PRS_PHASE:
+    cp.ToolTip = "Shows the phase in degree of the decoded PRS symbols.";
     cp.Style = SCustPlot::EStyle::DOTS;
-    cp.Name = "4-quadr. Phase";
+    cp.Name = "PRS Phase";
     cp.YTopValue = 180.0;
     cp.YBottomValue = -180.0;
     cp.YValueElementNo = 9;
@@ -265,10 +265,10 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.DrawYGrid = false;
     break;
 
-  case ECarrierPlotType::PRS_PHASE:
-    cp.ToolTip = "Shows the phase in degree of the decoded PRS symbols.";
+  case ECarrierPlotType::FOUR_QUAD_PHASE:
+    cp.ToolTip = "Shows the 4 phase segments in degree for each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::DOTS;
-    cp.Name = "PRS Phase";
+    cp.Name = "4-quadr. Phase";
     cp.YTopValue = 180.0;
     cp.YBottomValue = -180.0;
     cp.YValueElementNo = 9;
