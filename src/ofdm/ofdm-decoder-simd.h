@@ -18,13 +18,14 @@
 #include "glob_enums.h"
 #include "freq-interleaver.h"
 #include "ringbuffer.h"
+#include "phasetable.h"
 #include "simd_extensions.h"
 #include <QObject>
 #include <vector>
 
 class DabRadio;
 
-class OfdmDecoder : public QObject
+class OfdmDecoder : public QObject, private PhaseTable
 {
 Q_OBJECT
 public:
@@ -74,6 +75,7 @@ private:
   std::vector<f32> mCarrVector;
   std::array<i16, cK> mMapNomToRealCarrIdx{};
   std::array<i16, cK> mMapNomToFftIdx{};
+  std::array<cf32, cK> mPRSBuffer{};
 
   SimdVec<cf32> mSimdVecFftBinPhaseCorr{2, 1};
   SimdVec<cf32> mSimdVecFftBinRaw{0};

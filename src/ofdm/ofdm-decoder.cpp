@@ -35,20 +35,21 @@
  *    its invocation results in 2 * Tu bits
  */
 #include "ofdm-decoder.h"
-#include "phasetable.h"
 #include "dabradio.h"
 
 constexpr f32 cMinNoiseLevel = 1.0f / 32767.0f; // assuming 16 bit sample
 constexpr f32 cMinNoisePower = cMinNoiseLevel * cMinNoiseLevel;
 
 OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer)
-  : mpRadioInterface(ipMr)
+  : PhaseTable()
+  , mpRadioInterface(ipMr)
   , mpIqBuffer(ipIqBuffer)
   , mpCarrBuffer(ipCarrBuffer)
 {
   mMeanNullLevel.resize(cTu);
   mMeanNullPowerWithoutTII.resize(cTu);
   mPhaseReference.resize(cTu);
+  mPRSBuffer.resize(cTu);
   mIqVector.resize(cK);
   mCarrVector.resize(cK);
   mStdDevSqPhaseVector.resize(cK);
@@ -132,6 +133,15 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iBuffer)
 {
   // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
   memcpy(mPhaseReference.data(), iBuffer.data(), cTu * sizeof(cf32));
+
+  if (mCarrierPlotType == ECarrierPlotType::PRS_PHASE)
+  {
+    for (i32 idx = -cK / 2; idx < cK / 2; ++idx)
+    {
+      const i32 fftIdx = fft_shift_skip_dc<cTu>(idx);
+      mPRSBuffer[fftIdx] = mPhaseReference[fftIdx] * std::conj(PhaseTable::mRefTable[fftIdx]);
+    }
+  }
 }
 
 void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits)
@@ -171,7 +181,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
      * The carrier of a block is the reference for the carrier on the same position in the next block.
      */
     const f32 PhaseReferenceAbs = std::abs(mPhaseReference[fftIdx]);
-    const cf32 fftBinRaw = iV[fftIdx] * conj(mPhaseReference[fftIdx]) / PhaseReferenceAbs; // PI/4-DQPSK demodulation
+    const cf32 fftBinRaw = iV[fftIdx] * std::conj(mPhaseReference[fftIdx]) / PhaseReferenceAbs; // DQPSK demodulation
 
     f32 & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
     const f32 phaseErr = iClockErr / 1024.0f * M_PI * (cK / 2 - realCarrRelIdx) / (cK / 2) + integAbsPhasePerBinRef;
@@ -264,6 +274,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
       case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
       case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(phaseErr); break;
       case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
+      case ECarrierPlotType::PRS_PHASE:       mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(mPRSBuffer[fftIdx])); break;
       case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
       case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
       case ECarrierPlotType::NULL_TII_LIN:

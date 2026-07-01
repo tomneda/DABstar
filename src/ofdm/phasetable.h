@@ -47,7 +47,7 @@ public:
   explicit PhaseTable();
   ~PhaseTable() = default;
 
-protected:
+//protected:
   alignas(64) TArrayTu mRefTable;
 
 private:

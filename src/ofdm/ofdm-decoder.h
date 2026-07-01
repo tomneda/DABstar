@@ -36,12 +36,13 @@
 #include "glob_enums.h"
 #include "freq-interleaver.h"
 #include "ringbuffer.h"
+#include "phasetable.h"
 #include <QObject>
 #include <vector>
 
 class DabRadio;
 
-class OfdmDecoder : public QObject
+class OfdmDecoder : public QObject, private PhaseTable
 {
 Q_OBJECT
 public:
@@ -88,6 +89,7 @@ private:
   i32 mShowCntIqScope = 0;
   i32 mNextShownOfdmSymbIdx = 1;
   std::vector<cf32> mPhaseReference;
+  std::vector<cf32> mPRSBuffer;
   std::vector<cf32> mIqVector;
   std::vector<f32> mCarrVector;
   std::vector<f32> mStdDevSqPhaseVector;

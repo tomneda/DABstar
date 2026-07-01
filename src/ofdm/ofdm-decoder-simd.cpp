@@ -10,7 +10,6 @@
  * You should have received a copy of the GNU General Public License along with DABstar. If not, write to the Free Software
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include "phasetable.h"
 #include "dabradio.h"
 #include "ofdm-decoder-simd.h"
 #include <volk/volk.h>
@@ -22,7 +21,8 @@ constexpr f32 cMinNoiseLevel = 1.0f / 32767.0f; // assuming 16 bit sample
 constexpr f32 cMinNoisePower = cMinNoiseLevel * cMinNoiseLevel;
 
 OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer)
-  : mpRadioInterface(ipMr)
+  : PhaseTable()
+  , mpRadioInterface(ipMr)
   , mpIqBuffer(ipIqBuffer)
   , mpCarrBuffer(ipCarrBuffer)
 {
@@ -114,6 +114,8 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
   {
     const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
     mSimdVecPhaseReference[nomCarrIdx] = iFftBuffer[fftIdx];
+    if (mCarrierPlotType == ECarrierPlotType::PRS_PHASE)
+      mPRSBuffer[nomCarrIdx] = iFftBuffer[fftIdx] * std::conj(PhaseTable::mRefTable[fftIdx]);
   }
 }
 
@@ -393,6 +395,7 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(mSimdVecStdDevSqPhaseVec[nomCarrIdx])); break;
     case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(mSimdVecPhaseErr[nomCarrIdx]); break;
     case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(mSimdVecFftBinPhaseCorr[nomCarrIdx])); break;
+    case ECarrierPlotType::PRS_PHASE:       mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(mPRSBuffer[nomCarrIdx])); break;
     case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mMeanPowerOvrAll); break;
     case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mSimdVecMeanNullPowerWithoutTII[nomCarrIdx]); break;
     case ECarrierPlotType::NULL_TII_LIN:
