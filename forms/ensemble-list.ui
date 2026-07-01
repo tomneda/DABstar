@@ -61,7 +61,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Remove entries detected as 'No signal' during scanning&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Removes file list entries that contain no valid sample data.&lt;/p&gt;&lt;p&gt;Activate the &amp;quot;No signal&amp;quot; filter to enable this button. Only the highlighted (reddish) rows will be removed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Remove 'No signal' files</string>
+         <string>Remove 'No signals' files</string>
         </property>
        </widget>
       </item>
