@@ -14,10 +14,8 @@
 #include "glob_data_types.h"
 #include <sstream>
 #include <cassert>
-#include <QLoggingCategory>
+// #include <QDebug>
 
-Q_LOGGING_CATEGORY(sLogGuiHelpers, "LogGuiHelpers", QtWarningMsg)
-// Q_LOGGING_CATEGORY(sLogGuiHelpers, "LogGuiHelpers", QtDebugMsg)
 
 static void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseColor2, const QColor & iBgBaseColor, const f32 iRefLuminance)
 {
@@ -42,14 +40,14 @@ static void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseCol
   corrClip = std::min(255.0f / (f32)g1, corrClip);
   corrClip = std::min(255.0f / (f32)b1, corrClip);
 
-  qCDebug(sLogGuiHelpers) << "y=" << luminance << corrFac << corrClip;
+  // qDebug() << "luminance=" << luminance << corrFac << corrClip;
 
   if (corrClip < 1.0f)
   {
     r1 = r1 * corrClip;
     g1 = g1 * corrClip;
     b1 = b1 * corrClip;
-    qCDebug(sLogGuiHelpers) << "Clamped color components" << r1 << g1 << b1 << corrClip;
+    // qDebug() << "Clamped color components" << r1 << g1 << b1 << corrClip;
   }
   oBgBaseColor1 = QColor(r1, g1, b1);
 
