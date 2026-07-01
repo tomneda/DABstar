@@ -428,7 +428,6 @@ void DabRadio::_connect_dab_processor_signals()
     connect(mpDabProcessor->get_fib_decoder(), &IFibDecoder::signal_fib_loaded_state, this, &DabRadio::_slot_fib_loaded_state, Qt::QueuedConnection),
     connect(mpDabProcessor.get(), &DabProcessor::signal_no_dip_sync_found, this, &DabRadio::_slot_no_dip_sync_found),
     connect(mpDabProcessor.get(), &DabProcessor::signal_dip_sync_found, this, &DabRadio::_slot_dip_sync_found),
-    connect(mpSpectrumViewer.get(), &SpectrumViewer::signal_cb_nom_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_show_nominal_carrier),
     connect(mpSpectrumViewer.get(), &SpectrumViewer::signal_cmb_carrier_changed, mpDabProcessor.get(), &DabProcessor::slot_select_carrier_plot_type),
     connect(mpSpectrumViewer.get(), &SpectrumViewer::signal_cmb_iq_scope_changed, mpDabProcessor.get(), &DabProcessor::slot_select_iq_plot_type),
     connect(mpConfig->cmbSoftBitGen, qOverload<i32>(&QComboBox::currentIndexChanged), mpDabProcessor.get(), [this](i32 idx) { mpDabProcessor->slot_soft_bit_gen_type((ESoftBitType)idx); })

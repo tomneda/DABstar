@@ -123,12 +123,10 @@ public slots:
 private slots:
   void _slot_handle_cmb_carrier(i32);
   void _slot_handle_cmb_iqscope(i32);
-  void _slot_handle_cb_nom_carrier(i32);
   void _slot_handle_cb_map_1st_quad(i32);
 
 signals:
   void signal_cmb_carrier_changed(ECarrierPlotType);
   void signal_cmb_iq_scope_changed(EIqPlotType);
-  void signal_cb_nom_carrier_changed(bool);
   void signal_window_closed();
 };

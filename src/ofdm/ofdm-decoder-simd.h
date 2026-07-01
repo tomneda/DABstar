@@ -51,7 +51,6 @@ public:
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);
   void set_soft_bit_gen_type(ESoftBitType iSoftBitType);
-  void set_show_nominal_carrier(bool iShowNominalCarrier);
 
   inline void set_dc_offset(cf32 iDcOffset) { mDcAdc = iDcOffset; };
 private:
@@ -65,8 +64,6 @@ private:
   ECarrierPlotType mCarrierPlotType = ECarrierPlotType::DEFAULT;
   EIqPlotType mIqPlotType = EIqPlotType::DEFAULT;
   ESoftBitType mSoftBitType = ESoftBitType::DEFAULT;
-
-  bool mShowNomCarrier = false;
 
   i32 mShowCntStatistics = 0;
   i32 mShowCntIqScope = 0;

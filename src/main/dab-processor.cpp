@@ -569,11 +569,6 @@ void DabProcessor::slot_soft_bit_gen_type(ESoftBitType iSoftBitType)
   mOfdmDecoder.set_soft_bit_gen_type(iSoftBitType);
 }
 
-void DabProcessor::slot_show_nominal_carrier(bool iShowNominalCarrier)
-{
-  mOfdmDecoder.set_show_nominal_carrier(iShowNominalCarrier);
-}
-
 void DabProcessor::set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm)
 {
   if (!iUseDcAvoidanceAlgorithm)

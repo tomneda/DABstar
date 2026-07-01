@@ -172,8 +172,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
       realCarrRelIdx += cK / 2 - 1;
     }
 
-    const i16 dataVecCarrIdx = (mShowNomCarrier ? nomCarrIdx : realCarrRelIdx);
-
     constexpr f32 ALPHA = 0.005f;
 
     /*
@@ -267,20 +265,20 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
         // Convert and limit the soft bit weigth to percent
         w2 = (std::abs(real(r1)) + std::abs(imag(r1))) / 2.0f * (-w2);
         limit_min_max(w2, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
-        mCarrVector[dataVecCarrIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * w2;
+        mCarrVector[realCarrRelIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * w2;
         break;
-      case ECarrierPlotType::EVM_PER:         mCarrVector[dataVecCarrIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
-      case ECarrierPlotType::EVM_DB:          mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanSigmaSqPerBinRef / meanPowerPerBinRef); break;
-      case ECarrierPlotType::STD_DEV:         mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
-      case ECarrierPlotType::PHASE_ERROR:     mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(phaseErr); break;
-      case ECarrierPlotType::PRS_PHASE:       mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(mPRSBuffer[fftIdx])); break;
-      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[dataVecCarrIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
-      case ECarrierPlotType::REL_POWER:       mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
-      case ECarrierPlotType::SNR:             mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
+      case ECarrierPlotType::EVM_PER:         mCarrVector[realCarrRelIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
+      case ECarrierPlotType::EVM_DB:          mCarrVector[realCarrRelIdx] = 10.0f * std::log10(meanSigmaSqPerBinRef / meanPowerPerBinRef); break;
+      case ECarrierPlotType::STD_DEV:         mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
+      case ECarrierPlotType::PHASE_ERROR:     mCarrVector[realCarrRelIdx] = conv_rad_to_deg(phaseErr); break;
+      case ECarrierPlotType::PRS_PHASE:       mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(mPRSBuffer[fftIdx])); break;
+      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
+      case ECarrierPlotType::REL_POWER:       mCarrVector[realCarrRelIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
+      case ECarrierPlotType::SNR:             mCarrVector[realCarrRelIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
       case ECarrierPlotType::NULL_TII_LIN:
       case ECarrierPlotType::NULL_TII_LOG:
-      case ECarrierPlotType::NULL_NO_TII:     mCarrVector[dataVecCarrIdx] = mAbsNullLevelGain * (mMeanNullLevel[fftIdx] - mAbsNullLevelMin); break;
-      case ECarrierPlotType::NULL_OVR_POW:    mCarrVector[dataVecCarrIdx] = 10.0f * std::log10(mMeanNullPowerWithoutTII[fftIdx] / mMeanPowerOvrAll); break;
+      case ECarrierPlotType::NULL_NO_TII:     mCarrVector[realCarrRelIdx] = mAbsNullLevelGain * (mMeanNullLevel[fftIdx] - mAbsNullLevelMin); break;
+      case ECarrierPlotType::NULL_OVR_POW:    mCarrVector[realCarrRelIdx] = 10.0f * std::log10(mMeanNullPowerWithoutTII[fftIdx] / mMeanPowerOvrAll); break;
       }
     }
   } // for (nomCarrIdx...
@@ -418,11 +416,6 @@ void OfdmDecoder::set_select_iq_plot_type(EIqPlotType iPlotType)
 void OfdmDecoder::set_soft_bit_gen_type(ESoftBitType iSoftBitType)
 {
   mSoftBitType = iSoftBitType;
-}
-
-void OfdmDecoder::set_show_nominal_carrier(bool iShowNominalCarrier)
-{
-  mShowNomCarrier = iShowNominalCarrier;
 }
 
 cf32 OfdmDecoder::_interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar)

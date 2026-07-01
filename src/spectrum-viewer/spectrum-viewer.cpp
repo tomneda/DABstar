@@ -89,10 +89,8 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
   connect(cmbCarrier, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(cbNomChIdx, &QCheckBox::checkStateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
   connect(cbMap1stQuad, &QCheckBox::checkStateChanged, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
 #else
-  connect(cbNomChIdx, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_nom_carrier);
   connect(cbMap1stQuad, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
 #endif
 
@@ -348,11 +346,6 @@ void SpectrumViewer::_slot_handle_cmb_iqscope(i32 iSel)
   const auto pt = static_cast<EIqPlotType>(iSel);
   mpIQDisplay->select_plot_type(pt);
   emit signal_cmb_iq_scope_changed(pt);
-}
-
-void SpectrumViewer::_slot_handle_cb_nom_carrier(i32 iSel)
-{
-  emit signal_cb_nom_carrier_changed(iSel != 0);
 }
 
 void SpectrumViewer::_slot_handle_cb_map_1st_quad(i32 iSel)
