@@ -24,6 +24,8 @@
 #include <QFile>
 #include <QFileDialog>
 
+constexpr f32 cRefLuminance = 0.40f;
+
 
 EnsembleList::EnsembleList(const QString & iDbFileName)
   : ui(new Ui_ensembleList)
@@ -50,9 +52,9 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   ui->btnPathToScan->setStyleSheet(get_bg_style_sheet(0x4A7898, fg));
   ui->btnAddFilesInPath->setStyleSheet(get_bg_style_sheet(0x408870, fg));
   ui->btnAddSingleFile->setStyleSheet(get_bg_style_sheet(0x3A7A60, fg));
-  ui->cbShowELNewEntries->setStyleSheet(get_bg_style_sheet(cBgColorNewEntries, fg));
-  ui->cbShowELValidSignals->setStyleSheet(get_bg_style_sheet(cBgColorUnselected, fg));
-  ui->cbShowELNoSignals->setStyleSheet(get_bg_style_sheet(cBgColorFailed, fg));
+  ui->cbShowELNewEntries->setStyleSheet(get_bg_style_sheet(cBgColorNewEntries, fg, cRefLuminance));
+  ui->cbShowELValidSignals->setStyleSheet(get_bg_style_sheet(cBgColorUnselected, fg, cRefLuminance));
+  ui->cbShowELNoSignals->setStyleSheet(get_bg_style_sheet(cBgColorFailed, fg, cRefLuminance));
 
   mpDbHandler.reset(new EnsembleListDbHandler(iDbFileName, ui->tblEnsembleList));
   mpDbHandler->set_data_mode(EnsembleListDbHandler::EDataMode::Device);
@@ -615,12 +617,12 @@ void EnsembleList::_update_remove_invalid_files_button_state() const
     if (ui->cbShowELNoSignals->isChecked())
     {
       ui->btnRemoveFilesWithoutSignal->setEnabled(true);
-      ui->btnRemoveFilesWithoutSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, "white"));
+      ui->btnRemoveFilesWithoutSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, "white", cRefLuminance));
     }
     else
     {
       ui->btnRemoveFilesWithoutSignal->setEnabled(false);
-      ui->btnRemoveFilesWithoutSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, "white"));
+      ui->btnRemoveFilesWithoutSignal->setStyleSheet(get_bg_style_sheet(cBgColorFailed, "white", cRefLuminance));
     }
   }
 }
