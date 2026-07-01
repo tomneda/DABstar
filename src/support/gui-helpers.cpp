@@ -18,26 +18,29 @@
 
 static void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseColor2, const QColor & iBgBaseColor)
 {
-  constexpr f32 fadingFac = 0.69f;
-  constexpr f32 refY = 0.60f;
+  constexpr f32 cGradientFactor = 0.69f;
+  constexpr f32 cRefLuminance = 0.60f;
 
-  i32 r1 = iBgBaseColor.red();
-  i32 g1 = iBgBaseColor.green();
-  i32 b1 = iBgBaseColor.blue();
-  // const float y = ((f32)r1 * 0.299f + (f32)g1 * 0.587f + (f32)b1 * 0.114f) / 255.0f; // BT.601
-  const float y = ((f32)r1 * 0.2126f + (f32)g1 * 0.7152f + (f32)b1 * 0.0722f) / 255.0f; // BT.709
-  const float corrFac = refY / y;
+  static_assert(cGradientFactor >= 0.0f && cGradientFactor <= 1.0f, "Gradient factor must be between 0 and 1");
+
+  f32 r1 = iBgBaseColor.red();
+  f32 g1 = iBgBaseColor.green();
+  f32 b1 = iBgBaseColor.blue();
+  // const f32 luminance = (r1 * 0.299f + g1 * 0.587f + b1 * 0.114f) / 255.0f; // BT.601
+  const f32 luminance = (r1 * 0.2126f + g1 * 0.7152f + b1 * 0.0722f) / 255.0f; // BT.709
+  const f32 corrFac = cRefLuminance / luminance;
 
   r1 = r1 * corrFac;
   g1 = g1 * corrFac;
   b1 = b1 * corrFac;
 
-  float corrClip = 1.0f;
+  // is any value > 255?
+  f32 corrClip = 1.0f;
   corrClip = std::min(255.0f / (f32)r1, corrClip);
   corrClip = std::min(255.0f / (f32)g1, corrClip);
   corrClip = std::min(255.0f / (f32)b1, corrClip);
 
-  qDebug() << "y=" << y << corrFac << corrClip;
+  qDebug() << "y=" << luminance << corrFac << corrClip;
 
   if (corrClip < 1.0f)
   {
@@ -49,24 +52,31 @@ static void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseCol
   }
   oBgBaseColor1 = QColor(r1, g1, b1);
 
-  const i32 r2 = (i32)((f32)r1 * fadingFac);
-  const i32 g2 = (i32)((f32)g1 * fadingFac);
-  const i32 b2 = (i32)((f32)b1 * fadingFac);
+  const i32 r2 = (i32)(r1 * cGradientFactor);
+  const i32 g2 = (i32)(g1 * cGradientFactor);
+  const i32 b2 = (i32)(b1 * cGradientFactor);
   oBgBaseColor2 = QColor(r2, g2, b2);
 }
 
-static void _calc_blended_bg_colors(QColor & oBgDisabled1, QColor & oBgDisabled2, QColor & iBgBaseColor1, QColor & iBgBaseColor2)
+static void _calc_blended_bg_colors(QColor & oBgDisabled1, QColor & oBgDisabled2, const QColor & iBgBaseColor1, const QColor & iBgBaseColor2)
 {
   // Disabled: blend the button color 35% toward a dark neutral so the
   // hue identity is still faintly visible but the button clearly looks inactive.
-  constexpr f32 blend = 0.35f;
-  constexpr i32 gray  = 0x40;
-  const i32 rd1 = (i32)(iBgBaseColor1.red() * blend + gray * (1.0f - blend));
-  const i32 gd1 = (i32)(iBgBaseColor1.green() * blend + gray * (1.0f - blend));
-  const i32 bd1 = (i32)(iBgBaseColor1.blue() * blend + gray * (1.0f - blend));
-  const i32 rd2 = (i32)(iBgBaseColor2.red() * blend + gray * (1.0f - blend));
-  const i32 gd2 = (i32)(iBgBaseColor2.green() * blend + gray * (1.0f - blend));
-  const i32 bd2 = (i32)(iBgBaseColor2.blue() * blend + gray * (1.0f - blend));
+  constexpr f32 cBlendFactor = 0.35f;
+  constexpr i32 cBaseGrayValue  = 0x40;
+
+  auto weight_color = [](const i32 iColValue) ->i32
+  {
+    return (i32)(iColValue * cBlendFactor + cBaseGrayValue * (1.0f - cBlendFactor));
+  };
+
+  const i32 rd1 = weight_color(iBgBaseColor1.red());
+  const i32 gd1 = weight_color(iBgBaseColor1.green());
+  const i32 bd1 = weight_color(iBgBaseColor1.blue());
+  const i32 rd2 = weight_color(iBgBaseColor2.red());
+  const i32 gd2 = weight_color(iBgBaseColor2.green());
+  const i32 bd2 = weight_color(iBgBaseColor2.blue());
+
   oBgDisabled1 = QColor(rd1, gd1, bd1);
   oBgDisabled2 = QColor(rd2, gd2, bd2);
 }
