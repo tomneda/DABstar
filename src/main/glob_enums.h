@@ -33,6 +33,7 @@ enum class ECarrierPlotType
   EVM_DB,
   STD_DEV,
   PHASE_ERROR,
+  PRS_PHASE,
   FOUR_QUAD_PHASE,
   REL_POWER,
   SNR,

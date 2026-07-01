@@ -354,8 +354,8 @@ QStringList CarrierDisp::get_plot_type_names()
   sl << _get_plot_type_data(ECarrierPlotType::EVM_DB).Name;
   sl << _get_plot_type_data(ECarrierPlotType::STD_DEV).Name;
   sl << _get_plot_type_data(ECarrierPlotType::PHASE_ERROR).Name;
-  sl << _get_plot_type_data(ECarrierPlotType::FOUR_QUAD_PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::PRS_PHASE).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::FOUR_QUAD_PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::REL_POWER).Name;
   sl << _get_plot_type_data(ECarrierPlotType::SNR).Name;
   sl << _get_plot_type_data(ECarrierPlotType::NULL_TII_LIN).Name;
