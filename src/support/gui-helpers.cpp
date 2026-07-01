@@ -14,37 +14,75 @@
 #include "glob_data_types.h"
 #include <sstream>
 #include <cassert>
-// #include <QDebug>
+#include <QDebug>
 
-QString get_bg_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor /*= "black"*/)
+static void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseColor2, const QColor & iBgBaseColor)
 {
-  constexpr f32 fac = 0.6f;
-  const i32 r1 = iBgBaseColor.red();
-  const i32 g1 = iBgBaseColor.green();
-  const i32 b1 = iBgBaseColor.blue();
-  const i32 r2 = (i32)((f32)r1 * fac);
-  const i32 g2 = (i32)((f32)g1 * fac);
-  const i32 b2 = (i32)((f32)b1 * fac);
-  assert(r2 >= 0);
-  assert(g2 >= 0);
-  assert(b2 >= 0);
-  const QColor BgBaseColor2(r2, g2, b2);
+  constexpr f32 fadingFac = 0.69f;
+  constexpr f32 refY = 0.60f;
 
+  i32 r1 = iBgBaseColor.red();
+  i32 g1 = iBgBaseColor.green();
+  i32 b1 = iBgBaseColor.blue();
+  // const float y = ((f32)r1 * 0.299f + (f32)g1 * 0.587f + (f32)b1 * 0.114f) / 255.0f; // BT.601
+  const float y = ((f32)r1 * 0.2126f + (f32)g1 * 0.7152f + (f32)b1 * 0.0722f) / 255.0f; // BT.709
+  const float corrFac = refY / y;
+
+  r1 = r1 * corrFac;
+  g1 = g1 * corrFac;
+  b1 = b1 * corrFac;
+
+  float corrClip = 1.0f;
+  corrClip = std::min(255.0f / (f32)r1, corrClip);
+  corrClip = std::min(255.0f / (f32)g1, corrClip);
+  corrClip = std::min(255.0f / (f32)b1, corrClip);
+
+  qDebug() << "y=" << y << corrFac << corrClip;
+
+  if (corrClip < 1.0f)
+  {
+    qDebug() << "Clamping color components" << r1 << g1 << b1;
+    r1 = r1 * corrClip;
+    g1 = g1 * corrClip;
+    b1 = b1 * corrClip;
+    qDebug() << "Clamped color components" << r1 << g1 << b1;
+  }
+  oBgBaseColor1 = QColor(r1, g1, b1);
+
+  const i32 r2 = (i32)((f32)r1 * fadingFac);
+  const i32 g2 = (i32)((f32)g1 * fadingFac);
+  const i32 b2 = (i32)((f32)b1 * fadingFac);
+  oBgBaseColor2 = QColor(r2, g2, b2);
+}
+
+static void _calc_blended_bg_colors(QColor & oBgDisabled1, QColor & oBgDisabled2, QColor & iBgBaseColor1, QColor & iBgBaseColor2)
+{
   // Disabled: blend the button color 35% toward a dark neutral so the
   // hue identity is still faintly visible but the button clearly looks inactive.
   constexpr f32 blend = 0.35f;
   constexpr i32 gray  = 0x40;
-  const i32 rd1 = (i32)(r1 * blend + gray * (1.0f - blend));
-  const i32 gd1 = (i32)(g1 * blend + gray * (1.0f - blend));
-  const i32 bd1 = (i32)(b1 * blend + gray * (1.0f - blend));
-  const QColor BgDisabled1(rd1, gd1, bd1);
-  const QColor BgDisabled2((i32)((f32)rd1 * fac), (i32)((f32)gd1 * fac), (i32)((f32)bd1 * fac));
+  const i32 rd1 = (i32)(iBgBaseColor1.red() * blend + gray * (1.0f - blend));
+  const i32 gd1 = (i32)(iBgBaseColor1.green() * blend + gray * (1.0f - blend));
+  const i32 bd1 = (i32)(iBgBaseColor1.blue() * blend + gray * (1.0f - blend));
+  const i32 rd2 = (i32)(iBgBaseColor2.red() * blend + gray * (1.0f - blend));
+  const i32 gd2 = (i32)(iBgBaseColor2.green() * blend + gray * (1.0f - blend));
+  const i32 bd2 = (i32)(iBgBaseColor2.blue() * blend + gray * (1.0f - blend));
+  oBgDisabled1 = QColor(rd1, gd1, bd1);
+  oBgDisabled2 = QColor(rd2, gd2, bd2);
+}
+
+QString get_bg_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor /*= "black"*/)
+{
+  QColor bgBaseColor1, bgBaseColor2, bgDisabled1, bgDisabled2;
+
+  _calc_adjusted_bg_colors(bgBaseColor1, bgBaseColor2, iBgBaseColor);
+  _calc_blended_bg_colors(bgDisabled1, bgDisabled2, bgBaseColor1, bgBaseColor2);
 
   std::stringstream ts; // QTextStream did not work well here?!
-  ts << "QWidget { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << iBgBaseColor.name().toStdString()
-     << ", stop:1 " << BgBaseColor2.name().toStdString() << "); color: " << iFgBaseColor.name().toStdString() << "; } "
-     << "QWidget:disabled { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << BgDisabled1.name().toStdString()
-     << ", stop:1 " << BgDisabled2.name().toStdString() << "); color: #707070; } "
+  ts << "QWidget { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << bgBaseColor1.name().toStdString()
+     << ", stop:1 " << bgBaseColor2.name().toStdString() << "); color: " << iFgBaseColor.name().toStdString() << "; } "
+     << "QWidget:disabled { background-color: qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " << bgDisabled1.name().toStdString()
+     << ", stop:1 " << bgDisabled2.name().toStdString() << "); color: #707070; } "
      << "QToolTip { color: black; background-color: #ffffdc; border: 1px solid black; }"; // add original tooltip color again (works unfortunately only here, not global)
   // qDebug() <<  "*** Style sheet:" << ts.str().c_str();
 
