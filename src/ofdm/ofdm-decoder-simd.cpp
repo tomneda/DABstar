@@ -114,8 +114,10 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
   {
     const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
     mSimdVecPhaseReference[nomCarrIdx] = iFftBuffer[fftIdx];
-    if (mCarrierPlotType == ECarrierPlotType::PRS_PHASE)
+    if (mCarrierPlotType == ECarrierPlotType::PRS_PHASE || mCarrierPlotType == ECarrierPlotType::PRS_PHASE_UNWRAP)
+    {
       mPRSBuffer[nomCarrIdx] = iFftBuffer[fftIdx] * std::conj(PhaseTable::mRefTable[fftIdx]);
+    }
   }
 }
 
@@ -388,6 +390,7 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     case ECarrierPlotType::EVM_DB:          mCarrVector[realCarrRelIdx] = 10.0f * std::log10(mSimdVecMeanSigmaSq[nomCarrIdx] / mSimdVecMeanPower[nomCarrIdx]); break;
     case ECarrierPlotType::STD_DEV:         mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::sqrt(mSimdVecStdDevSqPhaseVec[nomCarrIdx])); break;
     case ECarrierPlotType::PHASE_ERROR:     mCarrVector[realCarrRelIdx] = conv_rad_to_deg(mSimdVecPhaseErr[nomCarrIdx]); break;
+    case ECarrierPlotType::PRS_PHASE_UNWRAP:
     case ECarrierPlotType::PRS_PHASE:       mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(mPRSBuffer[nomCarrIdx])); break;
     case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(mSimdVecFftBinPhaseCorr[nomCarrIdx])); break;
     case ECarrierPlotType::REL_POWER:       mCarrVector[realCarrRelIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mMeanPowerOvrAll); break;
@@ -398,4 +401,14 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     case ECarrierPlotType::NULL_OVR_POW:    mCarrVector[realCarrRelIdx] = 10.0f * std::log10(mSimdVecMeanNullPowerWithoutTII[nomCarrIdx] / mMeanPowerOvrAll); break;
     }
   } // for (nomCarrIdx...
+
+  if (mCarrierPlotType == ECarrierPlotType::PRS_PHASE_UNWRAP)
+  {
+    for (i32 i = 1; i < cK; ++i)
+    {
+      f32 diff = mCarrVector[i] - mCarrVector[i - 1];
+      diff -= 360.0f * std::round(diff / 360.0f);
+      mCarrVector[i] = mCarrVector[i - 1] + diff;
+    }
+  }
 }

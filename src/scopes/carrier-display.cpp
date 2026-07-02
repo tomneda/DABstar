@@ -265,6 +265,19 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.DrawYGrid = false;
     break;
 
+  case ECarrierPlotType::PRS_PHASE_UNWRAP:
+    cp.ToolTip = "Shows the unwrapped phase in degree of the decoded PRS symbols.";
+    cp.Style = SCustPlot::EStyle::LINES;
+    cp.Name = "PRS Phase unwrapped";
+    cp.YTopValue = 180.0*100;
+    cp.YBottomValue = -180.0*100;
+    cp.YTopValueRangeExt = 180.0*1000;
+    cp.YBottomValueRangeExt = -180.0*1000;
+    cp.YValueElementNo = 9;
+    cp.MarkerYValueStep = 2;
+    cp.DrawYGrid = false;
+    break;
+
   case ECarrierPlotType::FOUR_QUAD_PHASE:
     cp.ToolTip = "Shows the 4 phase segments in degree for each OFDM carrier.";
     cp.Style = SCustPlot::EStyle::DOTS;
@@ -355,6 +368,7 @@ QStringList CarrierDisp::get_plot_type_names()
   sl << _get_plot_type_data(ECarrierPlotType::STD_DEV).Name;
   sl << _get_plot_type_data(ECarrierPlotType::PHASE_ERROR).Name;
   sl << _get_plot_type_data(ECarrierPlotType::PRS_PHASE).Name;
+  sl << _get_plot_type_data(ECarrierPlotType::PRS_PHASE_UNWRAP).Name;
   sl << _get_plot_type_data(ECarrierPlotType::FOUR_QUAD_PHASE).Name;
   sl << _get_plot_type_data(ECarrierPlotType::REL_POWER).Name;
   sl << _get_plot_type_data(ECarrierPlotType::SNR).Name;
