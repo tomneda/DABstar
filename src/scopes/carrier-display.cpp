@@ -262,7 +262,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YBottomValue = -180.0;
     cp.YValueElementNo = 9;
     cp.MarkerYValueStep = 2;
-    cp.DrawYGrid = false;
     break;
 
   case ECarrierPlotType::PRS_PHASE_UNWRAP:
@@ -275,7 +274,6 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YBottomValueRangeExt = -180.0*1000;
     cp.YValueElementNo = 9;
     cp.MarkerYValueStep = 2;
-    cp.DrawYGrid = false;
     break;
 
   case ECarrierPlotType::FOUR_QUAD_PHASE:
