@@ -9,7 +9,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # Qt Designer's promoted PlotWidget lives in the forms directory
-set(CMAKE_AUTOUIC_SEARCH_PATHS ../../../../forms)
+set(CMAKE_AUTOUIC_SEARCH_PATHS ../../forms)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Charts)
 
@@ -19,7 +19,7 @@ add_executable(dumpViewer
         dump_viewer.cpp
         ../../scopes/plot_widget.h
         ../../scopes/plot_widget.cpp
-        ../../../../forms/dumpwidget.ui
+        ../../forms/dumpwidget.ui
 )
 
 target_include_directories(dumpViewer PRIVATE
