@@ -497,7 +497,17 @@ void PadHandler::_add_MSC_element(const std::vector<u8> & data)
     return;
   }
 
+  // GCC 13 false positive: optimizer loses track of vector bounds through deep inlining of
+  // vector::insert, producing a bogus "-Wstringop-overflow" warning about writing into a
+  // "region of size 0". The buffer is guaranteed non-empty by the check above.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
   mMscDataGroupBuffer.insert(mMscDataGroupBuffer.cend(), data.cbegin(), data.cend());
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
   if (mMscDataGroupBuffer.size() >= (u32)mDataGroupLength)
   {
