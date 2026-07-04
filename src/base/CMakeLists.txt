@@ -352,6 +352,10 @@ set(${baseLibName}_HDRS
 
 add_library(${baseLibName} STATIC ${${baseLibName}_SRCS} ${${baseLibName}_HDRS})
 
+if (extraLibDirs)
+  target_link_directories(${baseLibName} PUBLIC ${extraLibDirs})
+endif ()
+
 target_include_directories(${baseLibName}
         PUBLIC
         ${CMAKE_SOURCE_DIR}/src

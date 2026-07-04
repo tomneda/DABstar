@@ -91,7 +91,6 @@ endif ()
 
 if (MINGW)
   add_compile_options(-municode)
-  add_link_options(-municode)
 endif ()
 
 # handle GIT hash
