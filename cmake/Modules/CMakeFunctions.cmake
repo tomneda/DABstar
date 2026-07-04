@@ -38,7 +38,9 @@ endfunction()
 
 
 macro(search_for_library preFixName moduleName)
-  pkg_check_modules(${preFixName} ${moduleName})
+  if (PKG_CONFIG_FOUND)
+    pkg_check_modules(${preFixName} ${moduleName})
+  endif ()
   if (${preFixName}_FOUND)
     link_directories(${${preFixName}_LIBRARY_DIRS})
   else ()
@@ -48,9 +50,7 @@ macro(search_for_library preFixName moduleName)
     endif ()
   endif ()
   list(APPEND extraLibs ${${preFixName}_LIBRARIES})
-  #list(APPEND extraLibs ${${preFixName}_LIBRARY})
   include_directories(${${preFixName}_INCLUDE_DIRS})
-  #print_all_vars(${preFixName})
 endmacro()
 
 

@@ -5,6 +5,9 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Set build type to Release if not specified" FORCE)
 endif ()
 
+### make sure our local CMake Modules path comes first (must be before any find_package calls)
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Modules/CMakeFunctions.cmake)
 
 # First, we need to include vcpkg's auto-loader script, it sets up CMAKE_TOOLCHAIN_FILE
@@ -23,8 +26,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(USE_SANITIZERS "Enable address/undefined sanitizers in Debug builds" OFF)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND USE_SANITIZERS)
-  add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
-  add_link_options(-fsanitize=address,undefined)
+  if (NOT MSVC)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
+    add_link_options(-fsanitize=address,undefined)
+  else ()
+    message(WARNING "USE_SANITIZERS is not supported with MSVC, ignoring")
+  endif ()
 endif ()
 
 option(USE_LTO "Set -flto flag" OFF)  # switch off to save compile/link time while development
@@ -35,27 +42,32 @@ set(CMAKE_AUTOUIC OFF)
 set(CMAKE_AUTORCC ON)
 
 # special release version flags
-if (USE_LTO)
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+if (USE_LTO AND NOT MSVC)
+  include(ProcessorCount)
+  ProcessorCount(N)
+  if (N GREATER 1)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=${N}")
+  else ()
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=auto")
+  endif ()
 endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
 
-# common flags
-#if (WIN32)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math -DALLOW_SMP_DANGERS -D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
-#else ()
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math")
-#endif ()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math -fsingle-precision-constant")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math")
+# common compiler flags (platform-specific)
+if (MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /we4716 /fp:fast /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+else ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math -fsingle-precision-constant")
+endif ()
 
 # as MSVC compiler does not like VLAs (Variable Length Array) inhibit them for GCC also
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   add_compile_options(-Wvla -Werror=vla)
 endif ()
 
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+# Linux-only: override install prefix default
+if (UNIX AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/usr/local/bin" CACHE PATH "default install path" FORCE)
 endif ()
 
@@ -78,7 +90,8 @@ if (CONV_IN_FILES)
 endif ()
 
 if (MINGW)
-  add_definitions(-municode)
+  add_compile_options(-municode)
+  add_link_options(-municode)
 endif ()
 
 # handle GIT hash
@@ -90,19 +103,6 @@ else ()
   add_definitions("-DGITHASH=\"(unknown)\"")
 endif ()
 
-
-########################################################################
-# select the release build type by default to get optimization flags
-########################################################################
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release")
-  message(STATUS "Build type not specified: defaulting to release.")
-endif (NOT CMAKE_BUILD_TYPE)
-set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
-print(CMAKE_BUILD_TYPE)
-
-### make sure our local CMake Modules path comes first
-list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 print(CMAKE_MODULE_PATH)
 
 ######################################################################
@@ -148,7 +148,12 @@ if (WIN32)
 endif ()
 
 find_package(PkgConfig) # imports pkg_check_modules() macros
-find_package(LSBId REQUIRED)
+
+# LSBId is Linux-only (uses lsb_release to detect the distribution)
+if (UNIX)
+  find_package(LSBId REQUIRED)
+endif ()
+
 find_package(Qt6Core REQUIRED)
 find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Network REQUIRED)
@@ -157,25 +162,14 @@ find_package(Qt6Sql REQUIRED)
 find_package(Qt6Multimedia REQUIRED)
 find_package(Qt6Charts REQUIRED)
 
-if (NOT APPLE AND NOT WIN32)
+if (UNIX AND NOT APPLE)
   find_library(PTHREADS pthread)
-  if (NOT (PTHREADS))
+  if (NOT PTHREADS)
     message(FATAL_ERROR "Please install libpthread")
-  else (NOT (PTHREADS))
+  else ()
     set(extraLibs ${extraLibs} ${PTHREADS})
-  endif (NOT (PTHREADS))
+  endif ()
 endif ()
-
-#if (WIN32)
-#    find_package(dlfcn-win32 REQUIRED)
-#    list(APPEND extraLibs dlfcn-win32::dl)
-#endif ()
-
-#if (WIN32)
-#    find_library(WS2_32_LIBRARY NAMES ws2_32)
-#    print(WS2_32_LIBRARY)
-#    list(APPEND extraLibs ${WS2_32_LIBRARY})
-#endif ()
 
 print(CMAKE_SOURCE_DIR)
 print(CMAKE_CURRENT_BINARY_DIR)

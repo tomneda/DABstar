@@ -34,6 +34,6 @@ private:
   OpenFileDialog mOpenFileDialog;
   mutable QString mMessage;
 
-  std::unique_ptr<IDeviceHandler> _create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings) const;
+  std::unique_ptr<IDeviceHandler> _create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice) const;
   std::unique_ptr<IDeviceHandler> _open_input_file_device_from_file_type(const QString & iFilepath) const;
 };

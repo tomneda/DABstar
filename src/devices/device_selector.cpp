@@ -132,7 +132,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iD
 
   try
   {
-    inputDevice = _create_device(iDeviceNameOrFileName, iIsFileDevice, iSuppressWarnings);
+    inputDevice = _create_device(iDeviceNameOrFileName, iIsFileDevice);
   }
   catch (const std::exception & e)
   {
@@ -167,7 +167,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_open_input_file_device_from_fil
   return nullptr;
 }
 
-std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings) const
+std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice) const
 {
   std::unique_ptr<IDeviceHandler> inputDevice;
 

@@ -1,19 +1,6 @@
 
 set(baseLibName ${objectName}_base)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC OFF)
-set(CMAKE_AUTORCC ON)
-
-find_package(Qt6Core REQUIRED)
-find_package(Qt6Widgets REQUIRED)
-find_package(Qt6Network REQUIRED)
-find_package(Qt6Xml REQUIRED)
-find_package(Qt6Sql REQUIRED)
-find_package(Qt6Multimedia REQUIRED)
-find_package(Qt6Charts REQUIRED)
-
 find_package(FFTW3F)
 if (NOT FFTW3F_FOUND)
     message(FATAL_ERROR "Please install FFTW3")
@@ -106,12 +93,12 @@ if (DATA_STREAMER)
             server_thread/tcp_server.cpp
     )
     add_definitions(-DDATA_STREAMER)
-endif (DATA_STREAMER)
+endif ()
 
 if (FDK_AAC)
     find_package(Fdk-AAC)
     if (NOT LIBFDK_AAC_FOUND)
-        message(FATAL_ERROR, "Please install libfdk-aac")
+        message(FATAL_ERROR "Please install libfdk-aac")
     endif ()
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
@@ -123,7 +110,7 @@ if (FDK_AAC)
     )
     list(APPEND baseExtraLibs ${FDK_AAC_LIBRARIES})
     add_definitions(-D__WITH_FDK_AAC__)
-elseif (NOT FDK_AAC)
+else ()
     find_package(Faad)
     if (NOT FAAD_FOUND)
         message(FATAL_ERROR "Please install libfaad")
@@ -138,7 +125,7 @@ elseif (NOT FDK_AAC)
     )
     list(APPEND baseExtraLibs ${FAAD_LIBRARIES})
     add_definitions(-D__WITH_FAAD__)
-endif (FDK_AAC)
+endif ()
 
 #########################################################################
 
