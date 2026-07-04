@@ -175,6 +175,7 @@ void PlotWidget::reset_y_zoom()
   {
     _apply_y_default_range();
   }
+  emit signal_y_zoom_reset();
 }
 
 void PlotWidget::_init_axis_data(SAxisData & oData, const SRange & iRange) const

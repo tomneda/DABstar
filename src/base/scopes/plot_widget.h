@@ -77,6 +77,7 @@ public:
 
 signals:
   void signal_plot_area_changed(int iLeftMargin, int iRightMargin);
+  void signal_y_zoom_reset();
 
 protected:
   void wheelEvent(QWheelEvent * iopEvent) override;

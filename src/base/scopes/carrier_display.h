@@ -67,10 +67,12 @@ private:
   ECarrierPlotType mPlotType = ECarrierPlotType::DEFAULT;
   bool mPlotTypeChanged = false;
   SCustPlot::EStyle mCurrentStyle = SCustPlot::EStyle::LINES;
+  SCustPlot mCurrentCustPlot{};
 
   void _customize_plot(const SCustPlot & iCustPlot);
   static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);
   void _setup_x_axis();
   void _clear_marker_lines();
   void _clear_tii_lines();
+  void _update_y_markers(f64 yMin, f64 yMax);
 };

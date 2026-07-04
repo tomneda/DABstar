@@ -18,6 +18,7 @@
 #include "carrier_display.h"
 #include <QPen>
 #include <QChart>
+#include <cmath>
 
 CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
   : mpPlot(ipPlot)
@@ -48,6 +49,16 @@ CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
 
   mpPlot->setup_x_zoom(PlotWidget::SRange(-1536.0 / 2, 1536.0 / 2));
 
+  connect(mpPlot->get_y_axis(), &QValueAxis::rangeChanged, this, [this](const f64 min, const f64 max)
+  {
+    _update_y_markers(min, max);
+  });
+
+  connect(mpPlot, &PlotWidget::signal_y_zoom_reset, this, [this]()
+  {
+    _update_y_markers(mpPlot->get_y_axis()->min(), mpPlot->get_y_axis()->max());
+  });
+
   select_plot_type(ECarrierPlotType::DEFAULT);
 }
 
@@ -67,6 +78,7 @@ void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
 
   QList<QPointF> pts;
   pts.reserve(mDataSize);
+
   for (i32 i = 0; i < mDataSize; i++)
   {
     pts.append(QPointF(mX_axis_vec[i], iYValVec[i]));
@@ -108,7 +120,7 @@ void CarrierDisp::_clear_marker_lines()
   for (auto * p : mpMarkerLines)
   {
     mpPlot->chart()->removeSeries(p);
-    delete p;
+    delete p; // this is correct despite p holds a Qt object
   }
   mpMarkerLines.clear();
 }
@@ -118,9 +130,67 @@ void CarrierDisp::_clear_tii_lines()
   for (auto * p : mpTiiLines)
   {
     mpPlot->chart()->removeSeries(p);
-    delete p;
+    delete p; // this is correct despite p holds a Qt object
   }
   mpTiiLines.clear();
+}
+
+void CarrierDisp::_update_y_markers(const f64 yMin, const f64 yMax)
+{
+  _clear_marker_lines();
+
+  if (mCurrentCustPlot.MarkerYValueStep <= 0 || mCurrentCustPlot.YValueElementNo < 2)
+  {
+    return;
+  }
+
+  const f64 diffVal = (mCurrentCustPlot.YTopValue - mCurrentCustPlot.YBottomValue) / (mCurrentCustPlot.YValueElementNo - 1);
+  const f64 baseStep = diffVal * mCurrentCustPlot.MarkerYValueStep;
+  const f64 visibleSpan = yMax - yMin;
+
+  // Subdivide baseStep by powers of 2 until at least 3 marker lines are visible,
+  // then cap by doubling to avoid excessive lines when zoomed far out.
+  constexpr i32 cMinMarkerCount = 3;
+  constexpr i32 cMaxMarkerCount = 5;
+  f64 step = baseStep;
+
+  while (step > 0.0 && visibleSpan / step < cMinMarkerCount)
+  {
+    step *= 0.5;
+  }
+
+  while (step > 0.0 && visibleSpan / step > cMaxMarkerCount)
+  {
+    step *= 2.0;
+  }
+
+  if (step <= 0.0)
+  {
+    return;
+  }
+
+  // Align Y-axis ticks with the marker lines
+  mpPlot->set_y_tick_dynamic(0.0, step);
+
+  const QPen pen = (mCurrentCustPlot.Style == SCustPlot::EStyle::DOTS)
+                   ? QPen(Qt::gray,     0.0, Qt::SolidLine)
+                   : QPen(Qt::darkGray, 0.0, Qt::DashLine);
+
+  const i64 firstIdx = (i64)std::floor(yMin / step);
+  const i64 lastIdx  = (i64)std::ceil(yMax / step);
+
+  for (i64 idx = firstIdx; idx <= lastIdx; ++idx)
+  {
+    const f64 yVal = (f64)idx * step;
+    auto * line = new QLineSeries();
+    line->setPen(pen);
+    line->append(-1e9, yVal);
+    line->append(+1e9, yVal);
+    mpPlot->chart()->addSeries(line);
+    line->attachAxis(mpPlot->get_x_axis());
+    line->attachAxis(mpPlot->get_y_axis());
+    mpMarkerLines.push_back(line);
+  }
 }
 
 void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
@@ -130,39 +200,22 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 
   assert(iCustPlot.YTopValue > iCustPlot.YBottomValue);
 
+  // Clear old overlays before zoom setup triggers rangeChanged → _update_y_markers
+  _clear_marker_lines();
+  _clear_tii_lines();
+  mCurrentCustPlot = iCustPlot;
+
   mpPlot->setup_y_zoom(PlotWidget::SRange(iCustPlot.YBottomValue, iCustPlot.YTopValue,
                                           iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
   mpPlot->reset_x_zoom();
   mpPlot->reset_y_zoom();
 
-  _clear_marker_lines();
-  _clear_tii_lines();
-
   mpPlot->get_x_axis()->setGridLineVisible(iCustPlot.DrawXGrid);
   mpPlot->get_y_axis()->setGridLineVisible(iCustPlot.DrawYGrid);
 
-  // Horizontal marker lines at specific Y values
-  if (iCustPlot.MarkerYValueStep > 0)
-  {
-    assert(iCustPlot.YValueElementNo >= 2);
-    const f64 diffVal = (iCustPlot.YTopValue - iCustPlot.YBottomValue) / (iCustPlot.YValueElementNo - 1);
-    const i32 noMarkers = (iCustPlot.YValueElementNo + iCustPlot.MarkerYValueStep - 1) / iCustPlot.MarkerYValueStep;
-
-    for (i32 markerIdx = 0; markerIdx < noMarkers; ++markerIdx)
-    {
-      const f64 yVal = iCustPlot.YBottomValue + diffVal * markerIdx * iCustPlot.MarkerYValueStep;
-      auto * line = new QLineSeries();
-      line->setPen(iCustPlot.Style == SCustPlot::EStyle::DOTS
-                   ? QPen(Qt::gray,     0.0, Qt::SolidLine)
-                   : QPen(Qt::darkGray, 0.0, Qt::DashLine));
-      line->append(-1e9, yVal);
-      line->append(+1e9, yVal);
-      mpPlot->chart()->addSeries(line);
-      line->attachAxis(mpPlot->get_x_axis());
-      line->attachAxis(mpPlot->get_y_axis());
-      mpMarkerLines.push_back(line);
-    }
-  }
+  // set_y_range (called via reset_y_zoom) resets mYTickAuto=true and re-applies auto ticks
+  // after rangeChanged fires, so call _update_y_markers explicitly here to fix up ticks and markers.
+  _update_y_markers(mpPlot->get_y_axis()->min(), mpPlot->get_y_axis()->max());
 
   // Vertical TII segment boundary lines
   if (iCustPlot.DrawTiiSegments)
@@ -262,6 +315,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YBottomValue = -180.0;
     cp.YValueElementNo = 9;
     cp.MarkerYValueStep = 2;
+    cp.DrawYGrid = false;
     break;
 
   case ECarrierPlotType::PRS_PHASE_UNWRAP:
@@ -274,6 +328,7 @@ CarrierDisp::SCustPlot CarrierDisp::_get_plot_type_data(const ECarrierPlotType i
     cp.YBottomValueRangeExt = -180.0*1000;
     cp.YValueElementNo = 9;
     cp.MarkerYValueStep = 2;
+    cp.DrawYGrid = false;
     break;
 
   case ECarrierPlotType::FOUR_QUAD_PHASE:
