@@ -3,7 +3,7 @@
 //
 #include "dabradio.h"
 #include "ui_dabradio.h"
-#include "setting-helper.h"
+#include "setting_helper.h"
 #include "configuration.h"
 #include "audio_manager.h"
 

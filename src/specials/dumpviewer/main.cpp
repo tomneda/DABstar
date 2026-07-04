@@ -24,7 +24,7 @@
  */
 #include	<QApplication>
 #include	<cstdio>
-#include	"dump-viewer.h"
+#include	"dump_viewer.h"
 
 i32	main (i32 argc, char **argv) {
 dumpViewer	*theViewer;

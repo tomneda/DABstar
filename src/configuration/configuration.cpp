@@ -12,10 +12,10 @@
  */
 
 #include "configuration.h"
-#include "setting-helper.h"
+#include "setting_helper.h"
 #include "ui_configuration.h"
 #include "dabradio.h"
-#include "gui-helpers.h"
+#include "gui_helpers.h"
 #include <QDir>
 #include <QDoubleValidator>
 #include <QFileDialog>

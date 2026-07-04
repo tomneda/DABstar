@@ -1,0 +1,107 @@
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
+ *    Copyright (C) 2014 .. 2022
+ *    Jan van Katwijk (J.vanKatwijk@gmail.com)
+ *    Lazy Chair Computing
+ *
+ *    This file is part of Qt-DAB
+ *
+ *    Qt-DAB is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation recorder 2 of the License.
+ *
+ *    Qt-DAB is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Qt-DAB if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+#pragma once
+
+#include <QString>
+#include <QLibrary>
+#include <QFile>
+#include "dab_constants.h"
+
+struct STiiDataEntry
+{
+  i32 id;
+  QString country;
+  QString channel;
+  QString ensemble;
+  u16 Eid;
+  u8 mainId;
+  u8 subId;
+  QString transmitterName;
+  f32 latitude;
+  f32 longitude;
+  f32 power;
+  i32 altitude;
+  i32 height;
+  QString polarization;
+  f32 frequency;
+  QString direction;
+
+  void patch_channel_name() { if (channel.length() < 3) channel = "0" + channel; } // patch as channel input data are now with leading zeros also
+  static u32 make_key_base(const u16 iEid, const u8 iMainId, const u8 iSubId)
+  {
+    return ((u32)iEid << 16) | ((u32)iMainId << 8) | (u32)iSubId;
+  }
+  u32 make_key_base() const
+  {
+    return ((u32)Eid << 16) | ((u32)mainId << 8) | (u32)subId;
+  }
+};
+
+// DLL and ".so" function prototypes
+using TpFn_init_tii = void * (*)();
+using TpFn_close_tii = void (*)(void *);
+using TpFn_loadTable = void (*)(void *, const std::string &);
+
+class TiiHandler
+{
+public:
+  TiiHandler() = default;
+  ~TiiHandler();
+
+  bool fill_cache_from_tii_file(const QString &);
+  const STiiDataEntry * get_transmitter_data(const QString &iChannel, u16 iEid, u8 iMainId, u8 iSubId);
+  [[nodiscard]] f32 distance(f32, f32, f32, f32) const;
+  f32 corner(f32, f32, f32, f32) const;
+  bool is_valid() const;
+  void loadTable(const QString & iTiiFileName);
+
+private:
+  std::map<u32, STiiDataEntry> mContentCacheMap;
+  u8 mShift = 0;
+  QString mTiiFileName;
+  void * mpTiiLibHandler = nullptr;
+  QLibrary * mphandle = nullptr;
+  TpFn_init_tii mpFn_init_tii = nullptr;
+  TpFn_close_tii mpFn_close_tii = nullptr;
+  TpFn_loadTable mpFn_loadTable = nullptr;
+
+  bool _load_library();
+  f32 _get_flt(const QString & s) const;
+  i32 _get_int(const QString & s) const;
+  u16 _get_E_id(const QString & s) const;
+  u8 _get_main_id(const QString & s) const;
+  u8 _get_sub_id(const QString & s) const;
+  f64 _distance_2(f32, f32, f32, f32) const;
+  i32 _read_columns(std::vector<QString> & oV, const char * b, i32 N) const;
+  void _read_file(QFile & fp);
+  char * _eread(char * buffer, i32 amount, QFile & fp) const;
+  bool _load_dyn_library_functions();
+};
+

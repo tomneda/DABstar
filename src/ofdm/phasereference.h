@@ -31,8 +31,8 @@
 #pragma once
 
 #include  "phasetable.h"
-#include  "dab-constants.h"
-#include  "process-params.h"
+#include  "dab_constants.h"
+#include  "process_params.h"
 #include  "ringbuffer.h"
 #include  <QObject>
 #include  <cstdio>

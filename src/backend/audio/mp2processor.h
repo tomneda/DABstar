@@ -37,9 +37,9 @@
 
 #pragma once
 
-#include  "frame-processor.h"
+#include  "frame_processor.h"
 #include  "ringbuffer.h"
-#include  "pad-handler.h"
+#include  "pad_handler.h"
 
 #define KJMP2_MAX_FRAME_SIZE    1440  // the maximum size of a frame
 #define KJMP2_SAMPLES_PER_FRAME 1152  // the number of samples per frame

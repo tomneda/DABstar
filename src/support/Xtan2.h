@@ -11,7 +11,7 @@
 #include	<stdint.h>
 #include	<cstdlib>
 #include	<limits>
-#include	"dab-constants.h"
+#include	"dab_constants.h"
 #
 class	compAtan {
 public:

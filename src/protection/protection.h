@@ -31,7 +31,7 @@
  */
 #pragma once
 
-#include "viterbi-spiral.h"
+#include "viterbi_spiral.h"
 #include "glob_data_types.h"
 #include <vector>
 

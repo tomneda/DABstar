@@ -15,15 +15,15 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Charts)
 
 add_executable(dumpViewer
     main.cpp
-    dump-viewer.h
-    dump-viewer.cpp
+    dump_viewer.h
+    dump_viewer.cpp
     ../../scopes/plot_widget.h
     ../../scopes/plot_widget.cpp
     ../../../forms/dumpwidget.ui
 )
 
 target_include_directories(dumpViewer PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}           # dump-viewer.h, ui_dumpwidget.h
+    ${CMAKE_CURRENT_SOURCE_DIR}           # dump_viewer.h, ui_dumpwidget.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../scopes  # plot_widget.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../main    # glob_data_types.h, glob_defs.h (make_vla)
 )

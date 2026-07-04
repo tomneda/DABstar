@@ -15,7 +15,7 @@
 #include "audioiodevice.h"
 #include "configuration.h"
 #include "techdata.h"
-#include "setting-helper.h"
+#include "setting_helper.h"
 #include "glob_defs.h"
 #include <QProgressBar>
 #include <QSlider>

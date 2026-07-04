@@ -12,7 +12,7 @@
  */
 
 #include "test_tone.h"
-#include "dab-constants.h"
+#include "dab_constants.h"
 
 void TestTone::set_sample_rate(const u32 iSampleRateKHz)
 {

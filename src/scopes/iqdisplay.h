@@ -13,7 +13,7 @@
 #pragma once
 
 #include "glob_enums.h"
-#include "dab-constants.h"
+#include "dab_constants.h"
 #include <vector>
 #include <array>
 #include <QWidget>

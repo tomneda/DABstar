@@ -649,7 +649,7 @@
   <customwidget>
    <class>WaterfallScope</class>
    <extends>QWidget</extends>
-   <header>waterfall-scope.h</header>
+   <header>waterfall_scope.h</header>
   </customwidget>
  </customwidgets>
  <resources>

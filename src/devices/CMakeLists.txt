@@ -11,42 +11,42 @@ find_package(Qt6Xml REQUIRED)
 
 # UI files with no filtered preselection
 set(devices_ui
-        forms/colibri-widget.ui
-        forms/elad-files.ui
-        forms/elad-widget.ui
-        forms/extio-widget.ui
+        forms/colibri_widget.ui
+        forms/elad_files.ui
+        forms/elad_widget.ui
+        forms/extio_widget.ui
         forms/xmlfiles.ui
 )
 
 if (SDRPLAY)
   include_directories(
-          sdrplay-handler
+          sdrplay_handler
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          sdrplay-handler/sdrplay-handler.h
-          sdrplay-handler/sdrplay-commands.h
-          sdrplay-handler/Rsp-device.h
-          sdrplay-handler/Rsp1-handler.h
-          sdrplay-handler/Rsp1A-handler.h
-          sdrplay-handler/Rsp2-handler.h
-          sdrplay-handler/RspDuo-handler.h
-          sdrplay-handler/RspDx-handler.h
+          sdrplay_handler/sdrplay_handler.h
+          sdrplay_handler/sdrplay_commands.h
+          sdrplay_handler/Rsp_device.h
+          sdrplay_handler/Rsp1_handler.h
+          sdrplay_handler/Rsp1A_handler.h
+          sdrplay_handler/Rsp2_handler.h
+          sdrplay_handler/RspDuo_handler.h
+          sdrplay_handler/RspDx_handler.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          sdrplay-handler/sdrplay-handler.cpp
-          sdrplay-handler/Rsp-device.cpp
-          sdrplay-handler/Rsp1-handler.cpp
-          sdrplay-handler/Rsp1A-handler.cpp
-          sdrplay-handler/Rsp2-handler.cpp
-          sdrplay-handler/RspDuo-handler.cpp
-          sdrplay-handler/RspDx-handler.cpp
+          sdrplay_handler/sdrplay_handler.cpp
+          sdrplay_handler/Rsp_device.cpp
+          sdrplay_handler/Rsp1_handler.cpp
+          sdrplay_handler/Rsp1A_handler.cpp
+          sdrplay_handler/Rsp2_handler.cpp
+          sdrplay_handler/RspDuo_handler.cpp
+          sdrplay_handler/RspDx_handler.cpp
   )
 
-  list(APPEND devices_ui forms/sdrplay-widget.ui)
+  list(APPEND devices_ui forms/sdrplay_widget.ui)
   add_definitions(-DHAVE_SDRPLAY)
 endif (SDRPLAY)
 
@@ -58,20 +58,20 @@ if (AIRSPY)
   # ## include_directories (${AIRSPYLIB_INCLUDE_DIR})
 
   include_directories(
-          airspy-handler
+          airspy_handler
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          airspy-handler/airspy-handler.h
+          airspy_handler/airspy_handler.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          airspy-handler/airspy-handler.cpp
+          airspy_handler/airspy_handler.cpp
   )
 
-  list(APPEND devices_ui forms/airspy-widget.ui)
+  list(APPEND devices_ui forms/airspy_widget.ui)
   add_definitions(-DHAVE_AIRSPY)
 endif (AIRSPY)
 
@@ -83,82 +83,82 @@ if (SPYSERVER)
   # ## include_directories (${AIRSPYLIB_INCLUDE_DIR})
 
   include_directories(
-          spy-server
+          spy_server
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          spy-server/spyserver-handler.h
-          spy-server/spyserver-client.h
-          spy-server/spyserver-protocol.h
-          spy-server/spyserver-tcp-client.h
+          spy_server/spyserver_handler.h
+          spy_server/spyserver_client.h
+          spy_server/spyserver_protocol.h
+          spy_server/spyserver_tcp_client.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          spy-server/spyserver-handler.cpp
-          spy-server/spyserver-client.cpp
-          spy-server/spyserver-tcp-client.cpp
+          spy_server/spyserver_handler.cpp
+          spy_server/spyserver_client.cpp
+          spy_server/spyserver_tcp_client.cpp
   )
 
-  list(APPEND devices_ui forms/spyserver-client.ui)
+  list(APPEND devices_ui forms/spyserver_client.ui)
   add_definitions(-DHAVE_SPYSERVER)
 endif (SPYSERVER)
 
 if (HACKRF)
   include_directories(
-          hackrf-handler
+          hackrf_handler
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          hackrf-handler/hackrf-handler.h
+          hackrf_handler/hackrf_handler.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          hackrf-handler/hackrf-handler.cpp
+          hackrf_handler/hackrf_handler.cpp
   )
 
-  list(APPEND devices_ui forms/hackrf-widget.ui)
+  list(APPEND devices_ui forms/hackrf_widget.ui)
   add_definitions(-DHAVE_HACKRF)
 endif (HACKRF)
 
 if (PLUTO)
   include_directories(
-          pluto-handler-2
+          pluto_handler_2
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          pluto-handler-2/pluto-handler.h
+          pluto_handler_2/pluto_handler.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          pluto-handler-2/pluto-handler.cpp
+          pluto_handler_2/pluto_handler.cpp
   )
 
-  list(APPEND devices_ui forms/pluto-widget.ui)
+  list(APPEND devices_ui forms/pluto_widget.ui)
   add_definitions(-DHAVE_PLUTO)
 endif (PLUTO)
 
 if (LIMESDR)
   include_directories(
-          lime-handler
+          lime_handler
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          lime-handler/lime-handler.h
-          lime-handler/lime-widget.h
-          lime-handler/LimeSuite.h
-          lime-handler/LMS7002M_parameters.h
+          lime_handler/lime_handler.h
+          lime_handler/lime_widget.h
+          lime_handler/LimeSuite.h
+          lime_handler/LMS7002M_parameters.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          lime-handler/lime-handler.cpp
+          lime_handler/lime_handler.cpp
   )
 
   add_definitions(-DHAVE_LIME)
@@ -166,20 +166,20 @@ endif (LIMESDR)
 
 if (RTLSDR)
   include_directories(
-          rtlsdr-handler
+          rtlsdr_handler
   )
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          rtlsdr-handler/rtlsdr-handler.h
+          rtlsdr_handler/rtlsdr_handler.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          rtlsdr-handler/rtlsdr-handler.cpp
+          rtlsdr_handler/rtlsdr_handler.cpp
   )
 
-  list(APPEND devices_ui forms/rtlsdr-widget.ui)
+  list(APPEND devices_ui forms/rtlsdr_widget.ui)
   add_definitions(-DHAVE_RTLSDR)
 endif ()
 
@@ -196,15 +196,15 @@ if (UHD)
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          uhd/uhd-handler.h
+          uhd/uhd_handler.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          uhd/uhd-handler.cpp
+          uhd/uhd_handler.cpp
   )
 
-  list(APPEND devices_ui forms/uhd-widget.ui)
+  list(APPEND devices_ui forms/uhd_widget.ui)
   add_definitions(-DHAVE_UHD)
 endif ()
 
@@ -225,7 +225,7 @@ if (RTL_TCP)
           rtl_tcp/rtl_tcp_client.cpp
   )
 
-  list(APPEND devices_ui forms/rtl_tcp-widget.ui)
+  list(APPEND devices_ui forms/rtl_tcp_widget.ui)
   set(RTLTCP_lib Qt6::Network)
   add_definitions(-DHAVE_RTL_TCP)
 endif (RTL_TCP)
@@ -238,19 +238,19 @@ if (SOAPY)
 
   set(${devicesLibName}_HDRS
           ${${devicesLibName}_HDRS}
-          soapy/soapy-handler.h
-          soapy/soapy-worker.h
-          soapy/soapy-converter.h
+          soapy/soapy_handler.h
+          soapy/soapy_worker.h
+          soapy/soapy_converter.h
   )
 
   set(${devicesLibName}_SRCS
           ${${devicesLibName}_SRCS}
-          soapy/soapy-handler.cpp
-          soapy/soapy-worker.cpp
-          soapy/soapy-converter.cpp
+          soapy/soapy_handler.cpp
+          soapy/soapy_worker.cpp
+          soapy/soapy_converter.cpp
   )
 
-  list(APPEND devices_ui forms/soapy-handler.ui)
+  list(APPEND devices_ui forms/soapy_handler.ui)
   set(LIBSOAPY "-lSoapySDR")
   list(APPEND extraLibs ${LIBSOAPY})
   add_definitions(-DHAVE_SOAPY)
@@ -269,36 +269,36 @@ include_directories(
         ../support
         dummy-handler
         filereaders/filereader
-        filereaders/xml-filereader
-        filereaders/raw-files
-        filereaders/wav-files
+        filereaders/xml_filereader
+        filereaders/raw_files
+        filereaders/wav_files
 )
 
 
 set(${devicesLibName}_HDRS
         ${${devicesLibName}_HDRS}
-        device-selector.h
+        device_selector.h
         dongleselect.h
-        filereaders/xml-filereader/xml-filereader.h
-        filereaders/xml-filereader/xml-reader.h
-        filereaders/xml-filereader/xml-descriptor.h
-        filereaders/raw-files/rawfiles.h
-        filereaders/raw-files/raw-reader.h
-        filereaders/wav-files/wavfiles.h
-        filereaders/wav-files/wav-reader.h
+        filereaders/xml_filereader/xml_filereader.h
+        filereaders/xml_filereader/xml_reader.h
+        filereaders/xml_filereader/xml_descriptor.h
+        filereaders/raw_files/rawfiles.h
+        filereaders/raw_files/raw_reader.h
+        filereaders/wav_files/wavfiles.h
+        filereaders/wav_files/wav_reader.h
 )
 
 set(${devicesLibName}_SRCS
         ${${devicesLibName}_SRCS}
-        device-selector.cpp
+        device_selector.cpp
         dongleselect.cpp
-        filereaders/xml-filereader/xml-filereader.cpp
-        filereaders/xml-filereader/xml-reader.cpp
-        filereaders/xml-filereader/xml-descriptor.cpp
-        filereaders/raw-files/rawfiles.cpp
-        filereaders/raw-files/raw-reader.cpp
-        filereaders/wav-files/wavfiles.cpp
-        filereaders/wav-files/wav-reader.cpp
+        filereaders/xml_filereader/xml_filereader.cpp
+        filereaders/xml_filereader/xml_reader.cpp
+        filereaders/xml_filereader/xml_descriptor.cpp
+        filereaders/raw_files/rawfiles.cpp
+        filereaders/raw_files/raw_reader.cpp
+        filereaders/wav_files/wavfiles.cpp
+        filereaders/wav_files/wav_reader.cpp
 )
 
 qt6_wrap_ui(${devicesLibName}_UI_HDRS

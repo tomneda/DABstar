@@ -30,21 +30,21 @@
  */
 #pragma once
 
-#include "dab-constants.h"
-#include "dab-processor.h"
+#include "dab_constants.h"
+#include "dab_processor.h"
 #include "ringbuffer.h"
-#include "band-handler.h"
-#include "process-params.h"
-#include "dl-cache.h"
-#include "content-table.h"
+#include "band_handler.h"
+#include "process_params.h"
+#include "dl_cache.h"
+#include "content_table.h"
 #include "openfiledialog.h"
-#include "device-selector.h"
+#include "device_selector.h"
 #include "epg_mot_handler.h"
 #include "tii_manager.h"
-#include "ensemble-list.h"
+#include "ensemble_list.h"
 #include "dab_channel_desc.h"
 #ifdef  DATA_STREAMER
-  #include    "tcp-server.h"
+  #include    "tcp_server.h"
 #endif
 #include <memory>
 #include <QStringList>

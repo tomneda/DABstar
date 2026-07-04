@@ -3,12 +3,12 @@
 //
 #include "configuration.h"
 #include "dabradio.h"
-#include "service-list-handler.h"
+#include "service_list_handler.h"
 #include "ui_dabradio.h"
-#include "ensemble-list.h"
-#include "setting-helper.h"
-#include "dab-tables.h"
-#include "itu-regions.h"
+#include "ensemble_list.h"
+#include "setting_helper.h"
+#include "dab_tables.h"
+#include "itu_regions.h"
 
 void DabRadio::_initialize_ensemble_list()
 {

@@ -33,8 +33,8 @@
 #pragma once
 
 #include  "ui_techdata.h"
-#include  "dab-constants.h"
-#include  "audio-display.h"
+#include  "dab_constants.h"
+#include  "audio_display.h"
 #include  "ringbuffer.h"
 #include  "custom_frame.h"
 #include  <QObject>

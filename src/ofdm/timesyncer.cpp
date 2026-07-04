@@ -29,7 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include  "timesyncer.h"
-#include  "sample-reader.h"
+#include  "sample_reader.h"
 #include  <QDebug>
 
 TimeSyncer::TimeSyncer(SampleReader * mr)

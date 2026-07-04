@@ -1,0 +1,409 @@
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
+ *    Copyright (C)  2014 .. 2017
+ *    Jan van Katwijk (J.vanKatwijk@gmail.com)
+ *    Lazy Chair Computing
+ *
+ *    This file is part of Qt-DAB
+ *
+ *    Qt-DAB is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; either version 2 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Qt-DAB is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Qt-DAB; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "spectrum_viewer.h"
+#include "spectrum_scope.h"
+#include "waterfall_scope.h"
+#include "plot_widget.h"
+#include "correlation_viewer.h"
+#include "carrier_display.h"
+#include "iqdisplay.h"
+#include "setting_helper.h"
+#include "level_meter.h"
+#include "gui_helpers.h"
+#include <QSettings>
+#include <QColor>
+#include <algorithm>
+
+SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cf32> * ipSpecBuffer,
+                               RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer, RingBuffer<f32> * ipCorrBuffer) :
+  Ui_scopeWidget(),
+  mpRadioInterface(ipRI),
+  mpDabSettings(ipDabSettings),
+  mpSpectrumBuffer(ipSpecBuffer),
+  mpIqBuffer(ipIqBuffer),
+  mpCarrBuffer(ipCarrBuffer),
+  mpCorrelationBuffer(ipCorrBuffer)
+{
+  setupUi(&myFrame);
+  lblFreqCorrRF->setText("0");
+
+  connect(&myFrame, &CustomFrame::signal_frame_closed, this, &SpectrumViewer::signal_window_closed);
+
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  Settings::SpectrumViewer::posAndSize.read_widget_geometry(&myFrame);
+  myFrame.hide();
+
+  //create_blackman_window(mWindowVec.data(), SP_SPECTRUMSIZE);
+  create_flattop_window(mWindowVec.data(), SP_SPECTRUMSIZE);
+
+  mpSpectrumScope = new SpectrumScope(plotRfFft, SP_DISPLAYSIZE, ipDabSettings);
+  dabWaterfall->init(SP_DISPLAYSIZE, 50);
+  mpWaterfallScope = dabWaterfall;
+  mpIQDisplay = iqDisplay;
+  mpCarrierDisp = new CarrierDisp(plotPhaseCarr);
+  mpCorrelationViewer = new CorrelationViewer(plotCorrelation, lblIndexList, ipDabSettings, mpCorrelationBuffer);
+
+  cmbCarrier->addItems(CarrierDisp::get_plot_type_names()); // fill combobox with text elements
+  cmbIqScope->addItems(IQDisplay::get_plot_type_names()); // fill combobox with text elements
+
+  cmbIqScope->setStyleSheet(get_combo_style_sheet(0x507898));   // steel blue — IQ display
+  cmbCarrier->setStyleSheet(get_combo_style_sheet(0x487060));   // teal — carrier/phase plot
+
+  set_spectrum_averaging_rate(EAvrRate::DEFAULT);
+
+  Settings::SpectrumViewer::cmbIqScope.register_widget_and_update_ui_from_setting(cmbIqScope, "default");
+  Settings::SpectrumViewer::cmbCarrier.register_widget_and_update_ui_from_setting(cmbCarrier, "default");
+
+  connect(sliderRfScopeZoom, &QSlider::valueChanged, mpWaterfallScope, &WaterfallScope::slot_scaling_changed);
+  connect(sliderRfScopeZoom, &QSlider::valueChanged, mpSpectrumScope, &SpectrumScope::slot_scaling_changed);
+  connect(plotRfFft, &PlotWidget::signal_plot_area_changed, mpWaterfallScope, &WaterfallScope::slot_set_horizontal_margins);
+  connect(cmbCarrier, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
+  connect(cmbIqScope, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+  connect(cbMap1stQuad, &QCheckBox::checkStateChanged, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
+#else
+  connect(cbMap1stQuad, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
+#endif
+
+  // register after connect() calls the suitable slots
+  Settings::SpectrumViewer::sliderRfScopeZoom.register_widget_and_update_ui_from_setting(sliderRfScopeZoom, 0);
+  Settings::SpectrumViewer::sliderIqScopeZoomExp.register_widget_and_update_ui_from_setting(sliderIqScopeZoom, 40); // 36.949 -> 0.5 after 10^(2*x-1)
+  Settings::SpectrumViewer::cbMap1stQuad.register_widget_and_update_ui_from_setting(cbMap1stQuad, 0);
+}
+
+SpectrumViewer::~SpectrumViewer()
+{
+  Settings::SpectrumViewer::posAndSize.write_widget_geometry(&myFrame);
+
+  myFrame.hide();
+
+  delete mpCorrelationViewer;
+  delete mpCarrierDisp;
+  // mpIQDisplay and mpWaterfallScope are UI-owned promoted widgets — do not delete
+  delete mpSpectrumScope;
+
+  fftwf_destroy_plan(mFftPlan);
+}
+
+bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<f32>::SMaxMin & ioMaxMin) const
+{
+  constexpr f32 cMinShownLevel = -99.0f;
+  constexpr f32 cMinLevelRange = 20.0f;
+  bool limitChanged = false;
+
+  // first avoid drifting down lower than -99dB, as the display content will jump then, keep the top level for the first
+  if (ioMaxMin.Min < cMinShownLevel)
+  {
+    limitChanged = true;
+    ioMaxMin.Min = cMinShownLevel;
+  }
+
+  // now check if the minimum shown range is not < 20dB, set the line in the middle, if possible
+  if (ioMaxMin.Max - ioMaxMin.Min < cMinLevelRange)
+  {
+    limitChanged = true;
+    const f32 mean = (ioMaxMin.Max + ioMaxMin.Min) / 2;
+    ioMaxMin.Min = mean - cMinLevelRange / 2;
+    ioMaxMin.Max = mean + cMinLevelRange / 2;
+    if (ioMaxMin.Min < cMinShownLevel) // maybe we shifted now too low? -> correct this
+    {
+      ioMaxMin.Max += cMinShownLevel - ioMaxMin.Min; // maintain level range
+      ioMaxMin.Min = cMinShownLevel;
+    }
+  }
+  return limitChanged;
+}
+
+void SpectrumViewer::show_spectrum(const i32 vfoFrequency)
+{
+  constexpr i32 averageCount = 5;
+
+  if (mpSpectrumBuffer->get_ring_buffer_read_available() < SP_SPECTRUMSIZE)
+  {
+    return;
+  }
+
+  mpSpectrumBuffer->get_data_from_ring_buffer(mFftInBuffer.data(), SP_SPECTRUMSIZE);
+  mpSpectrumBuffer->flush_ring_buffer();
+
+  if (myFrame.isHidden())
+  {
+    return;
+  }
+
+  if (vfoFrequency != mLastVcoFreq) // same a bit time
+  {
+    mLastVcoFreq = vfoFrequency;
+    constexpr f32 temp = (f32)INPUT_RATE / 2 / SP_DISPLAYSIZE;
+    for (i32 i = 0; i < SP_DISPLAYSIZE; i++)
+    {
+      mXAxisVec[i] = ((f32)vfoFrequency - (f32)(INPUT_RATE / 2) + (i * 2.0f * temp)) / 1000.0f;
+    }
+  }
+
+  //    and window it
+  for (i32 i = 0; i < SP_SPECTRUMSIZE; i++)
+  {
+    mFftInBuffer[i] *= mWindowVec[i];
+  }
+
+  fftwf_execute(mFftPlan);
+
+  // map the SP_SPECTRUMSIZE values onto SP_DISPLAYSIZE elements
+  for (i32 i = 0; i < SP_DISPLAYSIZE / 2; i++)
+  {
+    f32 f = 0;
+    for (i32 j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
+    {
+      f += std::abs(mFftOutBuffer[SP_SPEC_OVR_SMP_FAC * i + j]);
+    }
+
+    mYValVec[SP_DISPLAYSIZE / 2 + i] = f / (f32)SP_SPEC_OVR_SMP_FAC;
+
+    f = 0;
+    for (i32 j = 0; j < SP_SPEC_OVR_SMP_FAC; j++)
+    {
+      f += std::abs(mFftOutBuffer[SP_SPECTRUMSIZE / 2 + SP_SPEC_OVR_SMP_FAC * i + j]);
+    }
+
+    mYValVec[i] = f / SP_SPEC_OVR_SMP_FAC;
+  }
+
+  f32 valdBGlobMin =  1000.0f;
+  f32 valdBGlobMax = -1000.0f;
+  f32 valdBLocMin =  1000.0f;
+  f32 valdBLocMax = -1000.0f;
+
+  constexpr i32 signalBeginIdx = (i32)(SP_DISPLAYSIZE * (1.0 - (1536000.0  / INPUT_RATE)) / 2.0);
+  constexpr i32 signalEndIdx   = SP_DISPLAYSIZE - signalBeginIdx - 1;
+
+  // average the image a little.
+  for (i32 i = 0; i < SP_DISPLAYSIZE; i++)
+  {
+    const f32 val = 20.0f * std::log10(mYValVec[i] / (f32)SP_DISPLAYSIZE + 1.0e-6f);
+    f32 & valdBMean = mDisplayBuffer[i];
+    mean_filter(valdBMean, val, (f32)1.0f / averageCount);
+
+    if (valdBMean > valdBGlobMax) valdBGlobMax = valdBMean;
+    if (valdBMean < valdBGlobMin) valdBGlobMin = valdBMean;
+    if (i >= signalBeginIdx && i <= signalEndIdx)
+    {
+      if (valdBMean > valdBLocMax) valdBLocMax = valdBMean;
+      if (valdBMean < valdBLocMin) valdBLocMin = valdBMean;
+    }
+  }
+
+  mean_filter(mSpecViewLimits.Glob.Max, valdBGlobMax, mAvrAlpha);
+  mean_filter(mSpecViewLimits.Glob.Min, valdBGlobMin, mAvrAlpha);
+  mean_filter(mSpecViewLimits.Loc.Min, valdBLocMin, mAvrAlpha);
+  mean_filter(mSpecViewLimits.Loc.Max, valdBLocMax, mAvrAlpha);
+
+  // avoid scaling jumps if <= -100 occurs in the display (seldom, correct other values accordingly)
+  if (_calc_spectrum_display_limits(mSpecViewLimits.Glob))
+  {
+    // if the global values has change, crosscheck also the local values
+    _calc_spectrum_display_limits(mSpecViewLimits.Loc);
+  }
+
+  mpWaterfallScope->show_waterfall(mDisplayBuffer.data(), mSpecViewLimits);
+  mpSpectrumScope->show_spectrum(mXAxisVec.data(), mDisplayBuffer.data(), mSpecViewLimits);
+}
+
+void SpectrumViewer::show()
+{
+  myFrame.show();
+}
+
+void SpectrumViewer::hide()
+{
+  myFrame.hide();
+}
+
+bool SpectrumViewer::is_hidden() const
+{
+  return myFrame.isHidden();
+}
+
+void SpectrumViewer::show_iq(const i32 iAmount, const f32 /*iAvg*/)
+{
+  if (mIqValuesVec.size() != (unsigned)iAmount)
+  {
+    mIqValuesVec.resize(iAmount);
+    mCarrValuesVec.resize(iAmount);
+  }
+
+  mpIqBuffer->get_data_from_ring_buffer(mIqValuesVec.data(), (i32)mIqValuesVec.size());
+  mpCarrBuffer->get_data_from_ring_buffer(mCarrValuesVec.data(), (i32)mCarrValuesVec.size());
+
+  if (myFrame.isHidden())
+  {
+    return;
+  }
+
+  const i32 scopeWidth = sliderIqScopeZoom->value();
+  mpIQDisplay->display_iq(mIqValuesVec, (f32)scopeWidth / 100.0f);
+  mpCarrierDisp->display_carrier_plot(mCarrValuesVec);
+}
+
+void SpectrumViewer::show_lcd_data(const i32 /*iOfdmSymbNo*/, const f32 iModQual, const f32 iTestData1, const f32 iTestData2, const f32 iMeanSigmaSqFreqCorr, const f32 iSNR) const
+{
+  if (myFrame.isHidden())
+  {
+    return;
+  }
+
+  //lcdOfdmSymbNo->display(iOfdmSymbNo);
+  lblTestData1->setText(QString("%1").arg(iTestData1, 0, 'f', 2));
+  lblTestData2->setText(QString("%1").arg(iTestData2, 0, 'f', 2));
+  lblSnr->setText(QString("%1").arg(iSNR, 0, 'f', 1));
+  lblPhaseCorr->setText(QString("%1").arg(iMeanSigmaSqFreqCorr, 0, 'f', 1));
+  lblModQuality->setText(QString("%1").arg(iModQual, 0, 'f', 1));
+
+  if (!mThermoModQualConfigured)
+  {
+    thermoModQual->set_color_stops({
+      { 0.0f, 0x003820 },  // dark phosphor green  (low MER)
+      { 0.6f, 0x00A840 },  // mid phosphor green
+      { 1.0f, 0x80FF90 },  // bright phosphor peak (high MER)
+    });
+    mThermoModQualConfigured = true;
+  }
+
+  thermoModQual->set_value(iModQual);
+}
+
+void SpectrumViewer::show_fic_ber(const f32 ber) const
+{
+  if (!myFrame.isHidden())
+  {
+    lblBER->setText(QString("%1").arg(ber, 0, 'e', 1));
+  }
+}
+
+void SpectrumViewer::show_nominal_frequency_MHz(const f32 iFreqMHz) const
+{
+  lblNomFrequency->setText(QString("%1").arg(iFreqMHz, 0, 'f', 3));
+}
+
+void SpectrumViewer::show_freq_corr_rf_Hz(const i32 iFreqCorrRF) const
+{
+  lblFreqCorrRF->setText(QString::number(iFreqCorrRF));
+}
+
+void SpectrumViewer::show_freq_corr_bb_Hz(const i32 iFreqCorrBB) const
+{
+  lblFreqCorrBB->setText(QString::number(iFreqCorrBB));
+}
+
+void SpectrumViewer::show_clock_error(const f32 iClockErr) const
+{
+  lblClockError->setText(QString("%1").arg(iClockErr, 0, 'f', 2));
+}
+
+void SpectrumViewer::show_correlation(const f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr) const
+{
+  mpCorrelationViewer->show_correlation(threshold, v, iTr);
+}
+
+void SpectrumViewer::_slot_handle_cmb_carrier(i32 iSel)
+{
+  const auto pt = static_cast<ECarrierPlotType>(iSel);
+  mpCarrierDisp->select_plot_type(pt);
+  emit signal_cmb_carrier_changed(pt);
+}
+
+void SpectrumViewer::_slot_handle_cmb_iqscope(i32 iSel)
+{
+  const auto pt = static_cast<EIqPlotType>(iSel);
+  mpIQDisplay->select_plot_type(pt);
+  emit signal_cmb_iq_scope_changed(pt);
+}
+
+void SpectrumViewer::_slot_handle_cb_map_1st_quad(i32 iSel)
+{
+  mpIQDisplay->set_map_1st_quad(iSel != 0);
+}
+
+void SpectrumViewer::slot_update_settings()
+{
+  // This is called when the DabProcessor has been started. Trigger resending UI state to DabProcessor.
+  _slot_handle_cmb_carrier(cmbCarrier->currentIndex());
+  _slot_handle_cmb_iqscope(cmbIqScope->currentIndex());
+}
+
+void SpectrumViewer::show_digital_peak_and_rms_level(const f32 iDigLevelPeak, const f32 iDigLevelRms) const
+{
+  assert(iDigLevelPeak >= 0.0f); // exact 0.0 is considered in log10_times_20
+
+  const f32 valuedBRms  = log10_times_20(iDigLevelRms);
+  const f32 valuedBPeak = log10_times_20(iDigLevelPeak);
+
+  const f32 minValue = thermoDigLevel->get_lower_bound();
+  const f32 maxValue = thermoDigLevel->get_upper_bound();
+  const f32 range = maxValue - minValue;
+  if (range <= 0) return; // should never happen
+
+  f32 relPosRms  = (valuedBRms  - minValue) / range;
+  f32 relPosPeak = (valuedBPeak - minValue) / range;
+  const f32 relPos0dB  = (0 - minValue) / range;
+
+  // relPosPeak is clamped to 0 dBFS so it marks the orange→red boundary.
+  // setValue() uses the unclamped valuedBPeak so the bar can extend into the red zone.
+  relPosRms  = std::clamp<f32>(relPosRms,  0.0f, relPos0dB);
+  relPosPeak = std::clamp<f32>(relPosPeak, 0.0f, relPos0dB);
+  relPosRms  = std::min(relPosRms, relPosPeak);
+
+  constexpr f32 eps = 1.0f / 255.0f;
+  const f32 rmsNext  = std::min(relPosRms, relPosPeak - eps);
+  const f32 peakNext = std::min(relPosPeak, 1.0f - eps);
+
+  thermoDigLevel->set_color_stops({
+    { 0.0f,       0x1E5A38 },  // lighter dark green  (RMS start)
+    { relPosRms,  0x30A060 },  // bright green        (RMS end)
+    { rmsNext,    0x806020 },  // lighter dark amber   (Peak start — boundary)
+    { relPosPeak, 0xC09010 },  // bright amber        (Peak end)
+    { peakNext,   0x801010 },  // dark red              (Overflow start — boundary)
+    { 1.0f,       0xCC2020 },  // bright red          (Overflow end)
+  });
+
+  thermoDigLevel->set_value(valuedBPeak);
+}
+
+void SpectrumViewer::set_spectrum_averaging_rate(SpectrumViewer::EAvrRate iAvrRate)
+{
+  switch (iAvrRate)
+  {
+  case EAvrRate::SLOW:   mAvrAlpha = 0.01f; break;
+  case EAvrRate::MEDIUM: mAvrAlpha = 0.10f; break;
+  case EAvrRate::FAST:   mAvrAlpha = 1.00f; break;
+  }
+}

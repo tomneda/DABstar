@@ -30,8 +30,8 @@
  */
 
 #include "openfiledialog.h"
-#include "setting-helper.h"
-#include "dab-constants.h"
+#include "setting_helper.h"
+#include "dab_constants.h"
 #include <QDebug>
 #include <QFileDialog>
 #include <QDateTime>

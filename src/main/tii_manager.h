@@ -12,9 +12,9 @@
  */
 #pragma once
 
-#include "dab-constants.h"
-#include "tii-codes.h"
-#include "tii-detector.h"
+#include "dab_constants.h"
+#include "tii_codes.h"
+#include "tii_detector.h"
 #include "tii_list_display.h"
 #include <QObject>
 #include <QTimer>

@@ -12,7 +12,7 @@
  */
 
 #include "circlepushbutton.h"
-#include "dab-constants.h"
+#include "dab_constants.h"
 
 #include <QPainter>
 #include <QPixmap>

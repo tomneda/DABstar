@@ -4,8 +4,8 @@
 #pragma once
 
 #include "glob_data_types.h"
-#include "ensemble-list.h"
-#include "dab-constants.h"
+#include "ensemble_list.h"
+#include "dab_constants.h"
 #include <QString>
 #include <set>
 

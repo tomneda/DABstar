@@ -28,8 +28,8 @@
 #include    <QHostAddress>
 #include    "rtl_tcp_client.h"
 #include    "rtl-sdr.h"
-#include    "xml-filewriter.h"
-#include    "device-exceptions.h"
+#include    "xml_filewriter.h"
+#include    "device_exceptions.h"
 #include    "openfiledialog.h"
 
 #if !defined(_WIN32)

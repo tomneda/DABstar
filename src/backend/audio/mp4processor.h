@@ -32,19 +32,19 @@
 
 // Handling superframes for DAB+ and delivering frames into the ffmpeg or faad decoding library
 
-#include "dab-constants.h"
-#include "frame-processor.h"
-#include "firecode-checker.h"
-#include "reed-solomon.h"
-#include "pad-handler.h"
+#include "dab_constants.h"
+#include "frame_processor.h"
+#include "firecode_checker.h"
+#include "reed_solomon.h"
+#include "pad_handler.h"
 #include <QObject>
 #include <vector>
 
 #ifdef  __WITH_FDK_AAC__
-#include	"fdk-aac.h"
+#include	"fdk_aac.h"
 #else
 
-#include  "faad-decoder.h"
+#include  "faad_decoder.h"
 
 #endif
 

@@ -12,9 +12,9 @@
  */
 #include "tii_manager.h"
 #include "configuration.h"
-#include "dab-processor.h"
-#include "map-http-server.h"
-#include "setting-helper.h"
+#include "dab_processor.h"
+#include "map_http_server.h"
+#include "setting_helper.h"
 #include "compass_direction.h"
 #include <QDir>
 #include <QComboBox>

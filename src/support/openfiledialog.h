@@ -30,7 +30,7 @@
  */
 #pragma once
 
-#include "dab-constants.h"
+#include "dab_constants.h"
 #include <QSettings>
 #include <QString>
 #include <sndfile.h>

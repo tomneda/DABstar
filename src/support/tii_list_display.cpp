@@ -29,7 +29,7 @@
  */
 #include "tii_list_display.h"
 #include "dabradio.h"
-#include "setting-helper.h"
+#include "setting_helper.h"
 
 
 void CustomScrollArea::closeEvent(QCloseEvent *event)

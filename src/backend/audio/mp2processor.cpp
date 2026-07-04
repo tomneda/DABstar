@@ -37,8 +37,8 @@
 //
 #include "mp2processor.h"
 #include "dabradio.h"
-#include "bit-extractors.h"
-#include "pad-handler.h"
+#include "bit_extractors.h"
+#include "pad_handler.h"
 
 #ifdef _MSC_VER
   #define FASTCALL __fastcall

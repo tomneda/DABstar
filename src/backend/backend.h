@@ -31,8 +31,8 @@
 #pragma once
 
 #include  "ringbuffer.h"
-#include  "backend-driver.h"
-#include  "backend-deconvolver.h"
+#include  "backend_driver.h"
+#include  "backend_deconvolver.h"
 #include <vector>
 #ifdef  __THREADED_BACKEND__
   #include <QSemaphore>

@@ -12,11 +12,11 @@
  */
 #include "epg_mot_handler.h"
 #include "configuration.h"
-#include "dab-processor.h"
+#include "dab_processor.h"
 #include "epgdec.h"
-#include "epg-decoder.h"
-#include "mot-content-types.h"
-#include "setting-helper.h"
+#include "epg_decoder.h"
+#include "mot_content_types.h"
+#include "setting_helper.h"
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDir>

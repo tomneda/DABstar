@@ -82,27 +82,27 @@ INCLUDEPATH += \
     src/backend/data \
     src/backend/data/journaline \
     src/backend/data/mot \
-    src/backend/data/epg-2 \
+    src/backend/data/epg_2 \
     src/backend/data/epg \
     src/support \
-    src/support/tii-library \
+    src/support/tii_library \
     src/support/buttons \
-    src/support/viterbi-spiral \
+    src/support/viterbi_spiral \
     src/audio \
     src/scopes \
-    src/spectrum-viewer \
-    src/file-devices/xml-filewriter \
-    src/eti-handler \
-    src/service-list \
+    src/spectrum_viewer \
+    src/file_devices/xml_filewriter \
+    src/eti_handler \
+    src/service_list \
     src/configuration \
     src/update \
     src/devices \
     src/devices/filereaders/filereader \
-    src/devices/filereaders/xml-filereader \
-    src/devices/filereaders/raw-files \
-    src/devices/filereaders/wav-files \
+    src/devices/filereaders/xml_filereader \
+    src/devices/filereaders/raw_files \
+    src/devices/filereaders/wav_files \
     src/devices/dummy-handler \
-    src/ensemble-list
+    src/ensemble_list
 
 HEADERS += \
     src/main/dabradio.h \
@@ -115,45 +115,45 @@ HEADERS += \
     src/main/glob_defs.h \
     src/main/glob_enums.h \
     src/main/glob_data_types.h \
-    src/main/dab-processor.h \
-    src/main/dab-constants.h \
-    src/main/mot-content-types.h \
-    src/eti-handler/eti-generator.h \
-    src/main/bit-extractors.h \
-    src/ofdm/sample-reader.h \
+    src/main/dab_processor.h \
+    src/main/dab_constants.h \
+    src/main/mot_content_types.h \
+    src/eti_handler/eti_generator.h \
+    src/main/bit_extractors.h \
+    src/ofdm/sample_reader.h \
     src/ofdm/phasereference.h \
     src/ofdm/phasetable.h \
-    src/ofdm/freq-interleaver.h \
-    src/ofdm/tii-detector.h \
+    src/ofdm/freq_interleaver.h \
+    src/ofdm/tii_detector.h \
     src/ofdm/timesyncer.h \
-    src/decoder/fib-decoder_if.h \
-    src/decoder/fib-decoder.h \
-    src/decoder/fib-config-fig0.h \
-    src/decoder/fib-config-fig1.h \
-    src/decoder/fib-table.h \
-    src/decoder/fib-helper.h \
-    src/decoder/fic-decoder.h \
+    src/decoder/fib_decoder_if.h \
+    src/decoder/fib_decoder.h \
+    src/decoder/fib_config_fig0.h \
+    src/decoder/fib_config_fig1.h \
+    src/decoder/fib_table.h \
+    src/decoder/fib_helper.h \
+    src/decoder/fic_decoder.h \
     src/protection/protTables.h \
     src/protection/protection.h \
-    src/protection/uep-protection.h \
-    src/protection/eep-protection.h \
-    src/backend/firecode-checker.h \
+    src/protection/uep_protection.h \
+    src/protection/eep_protection.h \
+    src/backend/firecode_checker.h \
     src/backend/crc.h \
-    src/backend/frame-processor.h \
+    src/backend/frame_processor.h \
     src/backend/charsets.h \
     src/backend/galois.h \
-    src/backend/reed-solomon.h \
-    src/backend/msc-handler.h \
+    src/backend/reed_solomon.h \
+    src/backend/msc_handler.h \
     src/backend/backend.h \
-    src/backend/backend-deconvolver.h \
-    src/backend/backend-driver.h \
+    src/backend/backend_deconvolver.h \
+    src/backend/backend_driver.h \
     src/backend/audio/mp4processor.h \
-    src/backend/audio/bit-writer.h \
+    src/backend/audio/bit_writer.h \
     src/backend/audio/mp2processor.h \
-    src/backend/data/ip-datahandler.h \
-    src/backend/data/tdc-datahandler.h \
-    src/backend/data/journaline-datahandler.h \
-    src/backend/data/journaline-viewer.h \
+    src/backend/data/ip_datahandler.h \
+    src/backend/data/tdc_datahandler.h \
+    src/backend/data/journaline_datahandler.h \
+    src/backend/data/journaline_viewer.h \
     src/backend/data/journaline/dabdatagroupdecoder.h \
     src/backend/data/journaline/crc_8_16.h \
     src/backend/data/journaline/log.h \
@@ -163,13 +163,13 @@ HEADERS += \
     src/backend/data/journaline/newsobject.h \
     src/backend/data/journaline/NML.h \
     src/backend/data/epg/epgdec.h \
-    src/backend/data/epg-2/epg-decoder.h \
-    src/backend/data/virtual-datahandler.h \
-    src/backend/data/pad-handler.h \
-    src/backend/data/mot/mot-handler.h \
-    src/backend/data/mot/mot-object.h \
-    src/backend/data/mot/mot-dir.h \
-    src/backend/data/data-processor.h \
+    src/backend/data/epg_2/epg_decoder.h \
+    src/backend/data/virtual_datahandler.h \
+    src/backend/data/pad_handler.h \
+    src/backend/data/mot/mot_handler.h \
+    src/backend/data/mot/mot_object.h \
+    src/backend/data/mot/mot_dir.h \
+    src/backend/data/data_processor.h \
     src/audio/audiofifo.h \
     src/audio/audiooutput.h \
     src/audio/audiooutputqt.h \
@@ -177,62 +177,62 @@ HEADERS += \
     src/audio/test_tone.h \
     src/audio/delay_line.h \
     src/audio/resampler.h \
-    src/support/fir-filters.h \
+    src/support/fir_filters.h \
     src/support/ringbuffer.h \
     src/support/techdata.h \
     src/support/Xtan2.h \
-    src/support/band-handler.h \
-    src/support/dab-tables.h \
+    src/support/band_handler.h \
+    src/support/dab_tables.h \
     src/support/tii_list_display.h \
-    src/support/viterbi-spiral/viterbi-spiral.h \
-    src/support/color-selector.h \
-    src/support/time-table.h \
+    src/support/viterbi_spiral/viterbi_spiral.h \
+    src/support/color_selector.h \
+    src/support/time_table.h \
     src/support/openfiledialog.h \
-    src/support/content-table.h \
-    src/support/dl-cache.h \
-    src/support/itu-regions.h \
-    src/support/map-http-server.h \
-    src/support/tii-library/tii-codes.h \
+    src/support/content_table.h \
+    src/support/dl_cache.h \
+    src/support/itu_regions.h \
+    src/support/map_http_server.h \
+    src/support/tii_library/tii_codes.h \
     #src/support/buttons/newpushbutton.h \
     #src/support/buttons/normalpushbutton.h \
     #src/support/buttons/circlepushbutton.h \
     src/support/custom_frame.h \
-    src/support/gui-helpers.h \
-    src/support/setting-helper.h \
+    src/support/gui_helpers.h \
+    src/support/setting_helper.h \
     src/support/wav_writer.h \
     src/support/compass_direction.h \
     src/support/time_meas.h \
     src/support/copyright_info.h \
     src/scopes/iqdisplay.h \
-    src/scopes/carrier-display.h \
-    src/scopes/audio-display.h \
+    src/scopes/carrier_display.h \
+    src/scopes/audio_display.h \
     src/scopes/plot_widget.h \
     src/scopes/level_meter.h \
-    src/spectrum-viewer/spectrum-viewer.h \
-    src/spectrum-viewer/spectrum-scope.h \
-    src/spectrum-viewer/waterfall-scope.h \
-    src/spectrum-viewer/correlation-viewer.h \
-    src/spectrum-viewer/cir-viewer.h \
-    src/file-devices/xml-filewriter/xml-filewriter.h \
-    src/service-list/service-list-handler.h \
-    src/service-list/service-db.h \
+    src/spectrum_viewer/spectrum_viewer.h \
+    src/spectrum_viewer/spectrum_scope.h \
+    src/spectrum_viewer/waterfall_scope.h \
+    src/spectrum_viewer/correlation_viewer.h \
+    src/spectrum_viewer/cir_viewer.h \
+    src/file_devices/xml_filewriter/xml_filewriter.h \
+    src/service_list/service_list_handler.h \
+    src/service_list/service_db.h \
     src/configuration/configuration.h \
-    src/ensemble-list/ensemble-list.h \
-    src/ensemble-list/ensemble-list-db.h \
-    src/ensemble-list/ensemble-list-db-handler.h \
+    src/ensemble_list/ensemble_list.h \
+    src/ensemble_list/ensemble_list_db.h \
+    src/ensemble_list/ensemble_list_db_handler.h \
     src/update/updatechecker.h \
     src/update/updatedialog.h \
-    src/devices/device-handler.h \
-    src/devices/device-exceptions.h \
-    src/devices/device-selector.h \
+    src/devices/device_handler.h \
+    src/devices/device_exceptions.h \
+    src/devices/device_selector.h \
     src/devices/dongleselect.h \
-    src/devices/filereaders/xml-filereader/xml-filereader.h \
-    src/devices/filereaders/xml-filereader/xml-reader.h \
-    src/devices/filereaders/xml-filereader/xml-descriptor.h \
-    src/devices/filereaders/raw-files/rawfiles.h \
-    src/devices/filereaders/raw-files/raw-reader.h \
-    src/devices/filereaders/wav-files/wavfiles.h \
-    src/devices/filereaders/wav-files/wav-reader.h
+    src/devices/filereaders/xml_filereader/xml_filereader.h \
+    src/devices/filereaders/xml_filereader/xml_reader.h \
+    src/devices/filereaders/xml_filereader/xml_descriptor.h \
+    src/devices/filereaders/raw_files/rawfiles.h \
+    src/devices/filereaders/raw_files/raw_reader.h \
+    src/devices/filereaders/wav_files/wavfiles.h \
+    src/devices/filereaders/wav_files/wav_reader.h
 
 SOURCES += \
     src/main/main.cpp \
@@ -246,42 +246,42 @@ SOURCES += \
     src/main/dabradio_el.cpp \
     src/main/dabradio_ctrl.cpp \
     src/main/dab_channel_desc.cpp \
-    src/main/dab-processor.cpp \
+    src/main/dab_processor.cpp \
     src/support/techdata.cpp \
-    src/eti-handler/eti-generator.cpp \
-    src/ofdm/sample-reader.cpp \
+    src/eti_handler/eti_generator.cpp \
+    src/ofdm/sample_reader.cpp \
     src/ofdm/phasereference.cpp \
     src/ofdm/phasetable.cpp \
-    src/ofdm/freq-interleaver.cpp \
-    src/ofdm/tii-detector.cpp \
+    src/ofdm/freq_interleaver.cpp \
+    src/ofdm/tii_detector.cpp \
     src/ofdm/timesyncer.cpp \
-    src/decoder/fib-config-fig0.cpp \
-    src/decoder/fib-config-fig1.cpp \
-    src/decoder/fib-decoder.cpp \
-    src/decoder/fib-decoder-fig0.cpp \
-    src/decoder/fib-decoder-fig1.cpp \
-    src/decoder/fib-decoder-string-getter.cpp \
-    src/decoder/fib-helper.cpp \
-    src/decoder/fic-decoder.cpp \
+    src/decoder/fib_config_fig0.cpp \
+    src/decoder/fib_config_fig1.cpp \
+    src/decoder/fib_decoder.cpp \
+    src/decoder/fib_decoder_fig0.cpp \
+    src/decoder/fib_decoder_fig1.cpp \
+    src/decoder/fib_decoder_string_getter.cpp \
+    src/decoder/fib_helper.cpp \
+    src/decoder/fic_decoder.cpp \
     src/protection/protTables.cpp \
     src/protection/protection.cpp \
-    src/protection/eep-protection.cpp \
-    src/protection/uep-protection.cpp \
-    src/backend/firecode-checker.cpp \
+    src/protection/eep_protection.cpp \
+    src/protection/uep_protection.cpp \
+    src/backend/firecode_checker.cpp \
     src/backend/crc.cpp \
     src/backend/charsets.cpp \
     src/backend/galois.cpp \
-    src/backend/reed-solomon.cpp \
-    src/backend/msc-handler.cpp \
+    src/backend/reed_solomon.cpp \
+    src/backend/msc_handler.cpp \
     src/backend/backend.cpp \
-    src/backend/backend-deconvolver.cpp \
-    src/backend/backend-driver.cpp \
+    src/backend/backend_deconvolver.cpp \
+    src/backend/backend_driver.cpp \
     src/backend/audio/mp4processor.cpp \
-    src/backend/audio/bit-writer.cpp \
+    src/backend/audio/bit_writer.cpp \
     src/backend/audio/mp2processor.cpp \
-    src/backend/data/ip-datahandler.cpp \
-    src/backend/data/journaline-datahandler.cpp \
-    src/backend/data/journaline-viewer.cpp \
+    src/backend/data/ip_datahandler.cpp \
+    src/backend/data/journaline_datahandler.cpp \
+    src/backend/data/journaline_viewer.cpp \
     src/backend/data/journaline/crc_8_16.c \
     src/backend/data/journaline/log.c \
     src/backend/data/journaline/newssvcdec_impl.cpp \
@@ -289,76 +289,76 @@ SOURCES += \
     src/backend/data/journaline/dabdgdec_impl.c \
     src/backend/data/journaline/newsobject.cpp \
     src/backend/data/journaline/NML.cpp \
-    src/backend/data/epg-2/epg-decoder.cpp \
+    src/backend/data/epg_2/epg_decoder.cpp \
     src/backend/data/epg/epgdec.cpp \
-    src/backend/data/tdc-datahandler.cpp \
-    src/backend/data/pad-handler.cpp \
-    src/backend/data/mot/mot-handler.cpp \
-    src/backend/data/mot/mot-object.cpp \
-    src/backend/data/mot/mot-dir.cpp \
-    src/backend/data/data-processor.cpp \
+    src/backend/data/tdc_datahandler.cpp \
+    src/backend/data/pad_handler.cpp \
+    src/backend/data/mot/mot_handler.cpp \
+    src/backend/data/mot/mot_object.cpp \
+    src/backend/data/mot/mot_dir.cpp \
+    src/backend/data/data_processor.cpp \
     src/audio/audioiodevice.cpp \
     src/audio/test_tone.cpp \
     src/audio/audiooutputqt.cpp \
-    src/support/fir-filters.cpp \
+    src/support/fir_filters.cpp \
     src/support/ringbuffer.cpp \
     src/support/Xtan2.cpp \
-    src/support/band-handler.cpp \
-    src/support/dab-tables.cpp \
+    src/support/band_handler.cpp \
+    src/support/dab_tables.cpp \
     #src/support/buttons/newpushbutton.cpp \
     #src/support/buttons/normalpushbutton.cpp \
     #src/support/buttons/circlepushbutton.cpp \
-    src/support/viterbi-spiral/viterbi-spiral.cpp \
-    src/support/color-selector.cpp \
-    src/support/time-table.cpp \
+    src/support/viterbi_spiral/viterbi_spiral.cpp \
+    src/support/color_selector.cpp \
+    src/support/time_table.cpp \
     src/support/openfiledialog.cpp \
-    src/support/content-table.cpp \
-    src/support/dl-cache.cpp \
-    src/support/itu-regions.cpp \
-    src/support/map-http-server.cpp \
+    src/support/content_table.cpp \
+    src/support/dl_cache.cpp \
+    src/support/itu_regions.cpp \
+    src/support/map_http_server.cpp \
     src/support/tii_list_display.cpp \
-    src/support/tii-library/tii-codes.cpp \
+    src/support/tii_library/tii_codes.cpp \
     src/support/custom_frame.cpp \
-    src/support/gui-helpers.cpp \
-    src/support/setting-helper.cpp \
+    src/support/gui_helpers.cpp \
+    src/support/setting_helper.cpp \
     src/support/wav_writer.cpp \
     src/support/compass_direction.cpp \
     src/support/copyright_info.cpp \
     src/scopes/iqdisplay.cpp \
-    src/scopes/carrier-display.cpp \
-    src/scopes/audio-display.cpp \
+    src/scopes/carrier_display.cpp \
+    src/scopes/audio_display.cpp \
     src/scopes/plot_widget.cpp \
     src/scopes/level_meter.cpp \
-    src/spectrum-viewer/spectrum-viewer.cpp \
-    src/spectrum-viewer/spectrum-scope.cpp \
-    src/spectrum-viewer/waterfall-scope.cpp \
-    src/spectrum-viewer/correlation-viewer.cpp \
-    src/spectrum-viewer/cir-viewer.cpp \
-    src/file-devices/xml-filewriter/xml-filewriter.cpp \
-    src/service-list/service-list-handler.cpp \
-    src/service-list/service-db.cpp \
+    src/spectrum_viewer/spectrum_viewer.cpp \
+    src/spectrum_viewer/spectrum_scope.cpp \
+    src/spectrum_viewer/waterfall_scope.cpp \
+    src/spectrum_viewer/correlation_viewer.cpp \
+    src/spectrum_viewer/cir_viewer.cpp \
+    src/file_devices/xml_filewriter/xml_filewriter.cpp \
+    src/service_list/service_list_handler.cpp \
+    src/service_list/service_db.cpp \
     src/configuration/configuration.cpp \
-    src/ensemble-list/ensemble-list.cpp \
-    src/ensemble-list/ensemble-list-db.cpp \
-    src/ensemble-list/ensemble-list-db-handler.cpp \
+    src/ensemble_list/ensemble_list.cpp \
+    src/ensemble_list/ensemble_list_db.cpp \
+    src/ensemble_list/ensemble_list_db_handler.cpp \
     src/update/updatechecker.cpp \
     src/update/updatedialog.cpp \
-    src/devices/device-selector.cpp \
+    src/devices/device_selector.cpp \
     src/devices/dongleselect.cpp \
-    src/devices/filereaders/xml-filereader/xml-filereader.cpp \
-    src/devices/filereaders/xml-filereader/xml-reader.cpp \
-    src/devices/filereaders/xml-filereader/xml-descriptor.cpp \
-    src/devices/filereaders/raw-files/rawfiles.cpp \
-    src/devices/filereaders/raw-files/raw-reader.cpp \
-    src/devices/filereaders/wav-files/wavfiles.cpp \
-    src/devices/filereaders/wav-files/wav-reader.cpp
+    src/devices/filereaders/xml_filereader/xml_filereader.cpp \
+    src/devices/filereaders/xml_filereader/xml_reader.cpp \
+    src/devices/filereaders/xml_filereader/xml_descriptor.cpp \
+    src/devices/filereaders/raw_files/rawfiles.cpp \
+    src/devices/filereaders/raw_files/raw_reader.cpp \
+    src/devices/filereaders/wav_files/wavfiles.cpp \
+    src/devices/filereaders/wav_files/wav_reader.cpp
 
 FORMS += \
-    forms/cir-widget.ui \
+    forms/cir_widget.ui \
     forms/configuration.ui \
     forms/dabradio.ui \
     forms/dumpwidget.ui \
-    forms/ensemble-list.ui \
+    forms/ensemble_list.ui \
     forms/spectrum_viewer.ui \
     forms/techdata.ui \
     forms/updatedialog.ui \
@@ -369,10 +369,10 @@ FORMS += \
 #	linux version loads the function from the so
 dabstick {
     DEFINES		+= HAVE_RTLSDR
-    INCLUDEPATH	+= src/devices/rtlsdr-handler
-    HEADERS		+= src/devices/rtlsdr-handler/rtlsdr-handler.h
-    SOURCES		+= src/devices/rtlsdr-handler/rtlsdr-handler.cpp
-    FORMS		+= src/devices/forms/rtlsdr-widget.ui
+    INCLUDEPATH	+= src/devices/rtlsdr_handler
+    HEADERS		+= src/devices/rtlsdr_handler/rtlsdr_handler.h
+    SOURCES		+= src/devices/rtlsdr_handler/rtlsdr_handler.cpp
+    FORMS		+= src/devices/forms/rtlsdr_widget.ui
 }
 
 #
@@ -380,24 +380,24 @@ dabstick {
 #
 sdrplay {
     DEFINES		+= HAVE_SDRPLAY
-    INCLUDEPATH	+= src/devices/sdrplay-handler \
+    INCLUDEPATH	+= src/devices/sdrplay_handler \
                ../dabstar-libs/include/sdrplay
-    HEADERS		+= src/devices/sdrplay-handler/sdrplay-handler.h \
-               src/devices/sdrplay-handler/sdrplay-commands.h \
-               src/devices/sdrplay-handler/Rsp-device.h \
-               src/devices/sdrplay-handler/Rsp1-handler.h \
-               src/devices/sdrplay-handler/Rsp1A-handler.h \
-               src/devices/sdrplay-handler/Rsp2-handler.h \
-               src/devices/sdrplay-handler/RspDuo-handler.h \
-               src/devices/sdrplay-handler/RspDx-handler.h
-    SOURCES		+= src/devices/sdrplay-handler/Rsp-device.cpp \
-               src/devices/sdrplay-handler/sdrplay-handler.cpp \
-               src/devices/sdrplay-handler/Rsp1-handler.cpp \
-               src/devices/sdrplay-handler/Rsp1A-handler.cpp \
-               src/devices/sdrplay-handler/Rsp2-handler.cpp \
-               src/devices/sdrplay-handler/RspDuo-handler.cpp \
-               src/devices/sdrplay-handler/RspDx-handler.cpp
-    FORMS		+= src/devices/forms/sdrplay-widget.ui
+    HEADERS		+= src/devices/sdrplay_handler/sdrplay_handler.h \
+               src/devices/sdrplay_handler/sdrplay_commands.h \
+               src/devices/sdrplay_handler/Rsp_device.h \
+               src/devices/sdrplay_handler/Rsp1_handler.h \
+               src/devices/sdrplay_handler/Rsp1A_handler.h \
+               src/devices/sdrplay_handler/Rsp2_handler.h \
+               src/devices/sdrplay_handler/RspDuo_handler.h \
+               src/devices/sdrplay_handler/RspDx_handler.h
+    SOURCES		+= src/devices/sdrplay_handler/Rsp_device.cpp \
+               src/devices/sdrplay_handler/sdrplay_handler.cpp \
+               src/devices/sdrplay_handler/Rsp1_handler.cpp \
+               src/devices/sdrplay_handler/Rsp1A_handler.cpp \
+               src/devices/sdrplay_handler/Rsp2_handler.cpp \
+               src/devices/sdrplay_handler/RspDuo_handler.cpp \
+               src/devices/sdrplay_handler/RspDx_handler.cpp
+    FORMS		+= src/devices/forms/sdrplay_widget.ui
 }
 
 #
@@ -405,10 +405,10 @@ sdrplay {
 #
 lime  {
     DEFINES		+= HAVE_LIME
-    INCLUDEPATH	+= src/devices/lime-handler
-    HEADERS		+= src/devices/lime-handler/lime-handler.h \
-               src/devices/lime-handler/lime-widget.h
-    SOURCES		+= src/devices/lime-handler/lime-handler.cpp
+    INCLUDEPATH	+= src/devices/lime_handler
+    HEADERS		+= src/devices/lime_handler/lime_handler.h \
+               src/devices/lime_handler/lime_widget.h
+    SOURCES		+= src/devices/lime_handler/lime_handler.cpp
 }
 
 #
@@ -416,10 +416,10 @@ lime  {
 #
 hackrf {
     DEFINES		+= HAVE_HACKRF
-    INCLUDEPATH	+= src/devices/hackrf-handler
-    HEADERS		+= src/devices/hackrf-handler/hackrf-handler.h
-    SOURCES		+= src/devices/hackrf-handler/hackrf-handler.cpp
-    FORMS		+= src/devices/forms/hackrf-widget.ui
+    INCLUDEPATH	+= src/devices/hackrf_handler
+    HEADERS		+= src/devices/hackrf_handler/hackrf_handler.h
+    SOURCES		+= src/devices/hackrf_handler/hackrf_handler.cpp
+    FORMS		+= src/devices/forms/hackrf_widget.ui
 }
 
 #
@@ -427,23 +427,23 @@ hackrf {
 #
 airspy {
     DEFINES		+= HAVE_AIRSPY
-    INCLUDEPATH	+= src/devices/airspy-handler
-    HEADERS		+= src/devices/airspy-handler/airspy-handler.h
-    SOURCES		+= src/devices/airspy-handler/airspy-handler.cpp
-    FORMS		+= src/devices/forms/airspy-widget.ui
+    INCLUDEPATH	+= src/devices/airspy_handler
+    HEADERS		+= src/devices/airspy_handler/airspy_handler.h
+    SOURCES		+= src/devices/airspy_handler/airspy_handler.cpp
+    FORMS		+= src/devices/forms/airspy_widget.ui
 }
 
 #	extio dependencies, windows only
 #
 extio {
     DEFINES		+= HAVE_EXTIO
-    INCLUDEPATH	+= src/devices/extio-handler
-    HEADERS		+= src/devices/extio-handler/extio-handler.h \
-               src/devices/extio-handler/common-readers.h \
-               src/devices/extio-handler/virtual-reader.h
-    SOURCES		+= src/devices/extio-handler/extio-handler.cpp \
-               src/devices/extio-handler/common-readers.cpp \
-               src/devices/extio-handler/virtual-reader.cpp
+    INCLUDEPATH	+= src/devices/extio_handler
+    HEADERS		+= src/devices/extio_handler/extio_handler.h \
+               src/devices/extio_handler/common_readers.h \
+               src/devices/extio_handler/virtual_reader.h
+    SOURCES		+= src/devices/extio_handler/extio_handler.cpp \
+               src/devices/extio_handler/common_readers.cpp \
+               src/devices/extio_handler/virtual_reader.cpp
 }
 
 #
@@ -453,118 +453,118 @@ rtl_tcp {
     INCLUDEPATH	+= src/devices/rtl_tcp
     HEADERS		+= src/devices/rtl_tcp/rtl_tcp_client.h
     SOURCES		+= src/devices/rtl_tcp/rtl_tcp_client.cpp
-    FORMS		+= src/devices/forms/rtl_tcp-widget.ui
+    FORMS		+= src/devices/forms/rtl_tcp_widget.ui
 }
 
 soapy {
     DEFINES		+= HAVE_SOAPY
     INCLUDEPATH	+= src/devices/soapy
-    HEADERS		+= src/devices/soapy/soapy-handler.h \
-               src/devices/soapy/soapy-worker.h \
-               src/devices/soapy/soapy-converter.h
-    SOURCES		+= src/devices/soapy/soapy-handler.cpp \
-               src/devices/soapy/soapy-worker.cpp \
-               src/devices/soapy/soapy-converter.cpp
-    FORMS		+= src/devices/forms/soapy-handler.ui
+    HEADERS		+= src/devices/soapy/soapy_handler.h \
+               src/devices/soapy/soapy_worker.h \
+               src/devices/soapy/soapy_converter.h
+    SOURCES		+= src/devices/soapy/soapy_handler.cpp \
+               src/devices/soapy/soapy_worker.cpp \
+               src/devices/soapy/soapy_converter.cpp
+    FORMS		+= src/devices/forms/soapy_handler.ui
     LIBS		+= -lSoapySDR
 }
 
 pluto	{
     DEFINES		+= HAVE_PLUTO
     QT		+= network
-    INCLUDEPATH	+= src/devices/pluto-handler-2
-    HEADERS		+= src/devices/pluto-handler-2/dabFilter.h
-    HEADERS		+= src/devices/pluto-handler-2/pluto-handler.h
-    SOURCES		+= src/devices/pluto-handler-2/pluto-handler.cpp
-    FORMS		+= src/devices/forms/pluto-widget.ui
+    INCLUDEPATH	+= src/devices/pluto_handler_2
+    HEADERS		+= src/devices/pluto_handler_2/dabFilter.h
+    HEADERS		+= src/devices/pluto_handler_2/pluto_handler.h
+    SOURCES		+= src/devices/pluto_handler_2/pluto_handler.cpp
+    FORMS		+= src/devices/forms/pluto_widget.ui
 }
 
 elad-device	{
     DEFINES		+= HAVE_ELAD
-    INCLUDEPATH	+= src/devices/elad-s1-handler
-    HEADERS		+= src/devices/elad-s1-handler/elad-handler.h
-    HEADERS		+= src/devices/elad-s1-handler/elad-loader.h
-    HEADERS		+= src/devices/elad-s1-handler/elad-worker.h
-    SOURCES		+= src/devices/elad-s1-handler/elad-handler.cpp
-    SOURCES		+= src/devices/elad-s1-handler/elad-loader.cpp
-    SOURCES		+= src/devices/elad-s1-handler/elad-worker.cpp
-    FORMS		+= src/devices/forms/elad-widget.ui
+    INCLUDEPATH	+= src/devices/elad_s1_handler
+    HEADERS		+= src/devices/elad_s1_handler/elad_handler.h
+    HEADERS		+= src/devices/elad_s1_handler/elad_loader.h
+    HEADERS		+= src/devices/elad_s1_handler/elad_worker.h
+    SOURCES		+= src/devices/elad_s1_handler/elad_handler.cpp
+    SOURCES		+= src/devices/elad_s1_handler/elad_loader.cpp
+    SOURCES		+= src/devices/elad_s1_handler/elad_worker.cpp
+    FORMS		+= src/devices/forms/elad_widget.ui
 }
 
 spyServer  {
     DEFINES		+= HAVE_SPYSERVER
-    INCLUDEPATH	+= src/devices/spy-server
-    HEADERS		+= src/devices/spy-server/spyserver-protocol.h \
-               src/devices/spy-server/spyserver-tcp-client.h \
-               src/devices/spy-server/spyserver-handler.h \
-               src/devices/spy-server/spyserver-client.h
-    SOURCES		+= src/devices/spy-server/spyserver-tcp-client.cpp \
-               src/devices/spy-server/spyserver-handler.cpp \
-               src/devices/spy-server/spyserver-client.cpp
-    FORMS		+= src/devices/forms/spyserver-client.ui
+    INCLUDEPATH	+= src/devices/spy_server
+    HEADERS		+= src/devices/spy_server/spyserver_protocol.h \
+               src/devices/spy_server/spyserver_tcp_client.h \
+               src/devices/spy_server/spyserver_handler.h \
+               src/devices/spy_server/spyserver_client.h
+    SOURCES		+= src/devices/spy_server/spyserver_tcp_client.cpp \
+               src/devices/spy_server/spyserver_handler.cpp \
+               src/devices/spy_server/spyserver_client.cpp
+    FORMS		+= src/devices/forms/spyserver_client.ui
 }
 
 uhd	{
     DEFINES		+= HAVE_UHD
     INCLUDEPATH	+= src/devices/uhd
-    HEADERS		+= src/devices/uhd/uhd-handler.h
-    SOURCES		+= src/devices/uhd/uhd-handler.cpp
-    FORMS		+= src/devices/forms/uhd-widget.ui
+    HEADERS		+= src/devices/uhd/uhd_handler.h
+    SOURCES		+= src/devices/uhd/uhd_handler.cpp
+    FORMS		+= src/devices/forms/uhd_widget.ui
     LIBS		+= -luhd
 }
 
 colibri	{
     DEFINES		+= HAVE_COLIBRI
-    INCLUDEPATH	+= src/devices/colibri-handler
-    HEADERS		+= src/devices/colibri-handler/common.h
-    HEADERS		+= src/devices/colibri-handler/LibLoader.h
-    HEADERS		+= src/devices/colibri-handler/colibri-handler.h
-    SOURCES		+= src/devices/colibri-handler/LibLoader.cpp
-    SOURCES		+= src/devices/colibri-handler/colibri-handler.cpp
-    FORMS		+= src/devices/forms/colibri-widget.ui
+    INCLUDEPATH	+= src/devices/colibri_handler
+    HEADERS		+= src/devices/colibri_handler/common.h
+    HEADERS		+= src/devices/colibri_handler/LibLoader.h
+    HEADERS		+= src/devices/colibri_handler/colibri_handler.h
+    SOURCES		+= src/devices/colibri_handler/LibLoader.cpp
+    SOURCES		+= src/devices/colibri_handler/colibri_handler.cpp
+    FORMS		+= src/devices/forms/colibri_widget.ui
 }
 
 datastreamer	{
     DEFINES		+= DATA_STREAMER
     DEFINES		+= CLOCK_STREAMER
-    INCLUDEPATH	+= src/server-thread
-    HEADERS		+= src/server-thread/tcp-server.h
-    SOURCES		+= src/server-thread/tcp-server.cpp
+    INCLUDEPATH	+= src/server_thread
+    HEADERS		+= src/server_thread/tcp_server.h
+    SOURCES		+= src/server_thread/tcp_server.cpp
 }
 
 avx2	{
     QMAKE_CXXFLAGS	+= -mavx2
     DEFINES		+= HAVE_VITERBI_AVX2
-    HEADERS		+= src/support/viterbi-spiral/viterbi_16way.h
+    HEADERS		+= src/support/viterbi_spiral/viterbi_16way.h
 }else:sse2	{
     DEFINES		+= HAVE_VITERBI_SSE2
-    HEADERS		+= src/support/viterbi-spiral/viterbi_8way.h
+    HEADERS		+= src/support/viterbi_spiral/viterbi_8way.h
 }else	{
-    HEADERS		+= src/support/viterbi-spiral/viterbi_scalar.h
+    HEADERS		+= src/support/viterbi_spiral/viterbi_scalar.h
 }
 
 
 fdk-aac {
     DEFINES		+= __WITH_FDK_AAC__
     INCLUDEPATH	+= ../dabstar-libs/include/fdk-aac
-    HEADERS		+= src/backend/audio/fdk-aac.h
-    SOURCES		+= src/backend/audio/fdk-aac.cpp
+    HEADERS		+= src/backend/audio/fdk_aac.h
+    SOURCES		+= src/backend/audio/fdk_aac.cpp
     LIBS		+= -lfdk-aac.dll
 }else	{
-    HEADERS		+= src/backend/audio/faad-decoder.h
-    SOURCES		+= src/backend/audio/faad-decoder.cpp
+    HEADERS		+= src/backend/audio/faad_decoder.h
+    SOURCES		+= src/backend/audio/faad_decoder.cpp
     LIBS		+= -lfaad.dll
 }
 
 volk	{
     DEFINES		+= HAVE_SSE_OR_AVX
     HEADERS		+= src/support/simd_extensions.h \
-               src/ofdm/ofdm-decoder-simd.h
-    SOURCES		+= src/ofdm/ofdm-decoder-simd.cpp
+               src/ofdm/ofdm_decoder_simd.h
+    SOURCES		+= src/ofdm/ofdm_decoder_simd.cpp
     LIBS		+= -lvolk.dll
 }else	{
-    HEADERS		+= src/ofdm/ofdm-decoder.h
-    SOURCES		+= src/ofdm/ofdm-decoder.cpp
+    HEADERS		+= src/ofdm/ofdm_decoder.h
+    SOURCES		+= src/ofdm/ofdm_decoder.cpp
 }
 
 liquid	{

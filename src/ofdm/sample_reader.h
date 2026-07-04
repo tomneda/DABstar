@@ -1,0 +1,118 @@
+
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
+/*
+ *    Copyright (C) 2013 .. 2020
+ *    Jan van Katwijk (J.vanKatwijk@gmail.com)
+ *    Lazy Chair Computing
+ *
+ *    This file is part of the Qt-DAB program
+ *
+ *    Qt-DAB is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; either version 2 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Qt-DAB is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Qt-DAB; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+#pragma once
+
+#include "dab_constants.h"
+#include <QObject>
+#include <sndfile.h>
+#include <cstdint>
+#include <atomic>
+#include <vector>
+#include <array>
+#include "device_handler.h"
+#include "ringbuffer.h"
+#include <random>
+
+#ifdef HAVE_SSE_OR_AVX
+  #include <volk/volk.h>
+#endif
+
+class DabRadio;
+
+class SampleReader : public QObject
+{
+Q_OBJECT
+public:
+  SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer = nullptr);
+  ~SampleReader() override = default;
+
+  void set_running(bool b);
+  bool is_running() const { return running.load(); }
+  void get_linear_peak_level_and_clear(f32 & oLevelPeak, f32 & oLevelMean);
+  cf32 get_sample(i32);
+  void get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, bool iShowSpec);
+  void start_dumping(SNDFILE *);
+  void stop_dumping();
+  void set_dc_and_iq_correction(bool iDoDcCorr, bool iDoIqCorr);
+  void set_cir_buffer(RingBuffer<cf32> * iCirBuffer);
+
+  [[nodiscard]] cf32 get_dc_offset() const { return { meanI, meanQ }; }
+  [[nodiscard]] f32 get_sLevel() const { return sLevel; }
+
+private:
+  static constexpr u16 DUMP_SIZE = 4096;
+  static constexpr i32 SPEC_BUFF_SIZE = 2048;
+  static constexpr i32 CIR_BUFF_SIZE = 2048*97;
+
+  const DabRadio * const myRadioInterface;
+  IDeviceHandler * const theRig;
+  RingBuffer<cf32> * const spectrumBuffer;
+  RingBuffer<cf32> * cirBuffer = nullptr;
+  std::array<cf32, SPEC_BUFF_SIZE> specBuff;
+  TArrayTn mSampleBuffer;
+#ifdef HAVE_SSE_OR_AVX
+  alignas(64) f32 mVolkFloat1[cTn];
+  alignas(64) f32 mVolkFloat2[cTn];
+  alignas(64) f32 mVolkFloat3[cTn];
+  alignas(64) f32 mVolkFloat4[cTn];
+  cf32 phase = {1.0f, 0.0f};
+#else
+  std::array<cf32, INPUT_RATE> oscillatorTable{};
+  i32 currentPhase = 0;
+#endif
+  i32 specBuffIdx = 0;
+  std::atomic<bool> running;
+  f32 sLevel = 0.1f;
+  i32 sampleCount = 0;
+  bool dumping;
+  i16 dumpIndex = 0;
+  std::array<i16, DUMP_SIZE> dumpBuffer{};
+  std::atomic<SNDFILE *> dumpfilePointer;
+  f32 peakLevel = -1.0e6;
+  f32 meanI = 0.0f;
+  f32 meanQ = 0.0f;
+  f32 meanII = 1.0f;
+  f32 meanQQ = 1.0f;
+  f32 meanIQ = 0.0f;
+  bool mDoDcOrIqCorr = false;
+  bool mDoIqCorr = false;
+  i32 mWholeFrameIndex = 0;
+  i32 mWholeFrameCount = 0;
+  cf32  mWholeFrameBuff[CIR_BUFF_SIZE];
+
+  void _dump_samples_to_file(const cf32 * const ipV, const i32 iNoSamples);
+
+signals:
+  void signal_show_spectrum(i32);
+  void signal_show_cir(i32);
+};
+

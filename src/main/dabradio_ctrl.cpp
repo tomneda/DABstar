@@ -2,11 +2,11 @@
 // Created by tomneda on 2026-04-04.
 //
 #include "dabradio.h"
-#include "spectrum-viewer.h"
-#include "cir-viewer.h"
-#include "service-list-handler.h"
-#include "map-http-server.h"
-#include "setting-helper.h"
+#include "spectrum_viewer.h"
+#include "cir_viewer.h"
+#include "service_list_handler.h"
+#include "map_http_server.h"
+#include "setting_helper.h"
 #include "techdata.h"
 #include "ui_dabradio.h"
 #include "configuration.h"

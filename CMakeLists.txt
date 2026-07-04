@@ -174,14 +174,14 @@ find_package(Qt6Multimedia REQUIRED)
 find_package(Qt6Charts REQUIRED)
 
 set(main_ui
-        forms/cir-widget.ui
+        forms/cir_widget.ui
         forms/configuration.ui
         forms/dabradio.ui
         forms/dumpwidget.ui
         forms/spectrum_viewer.ui
         forms/techdata.ui
         forms/updatedialog.ui
-        forms/ensemble-list.ui
+        forms/ensemble_list.ui
 )
 
 find_package(FFTW3F)
@@ -198,12 +198,12 @@ if (SSE_OR_AVX)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
             src/support/simd_extensions.h
-            src/ofdm/ofdm-decoder-simd.h
+            src/ofdm/ofdm_decoder_simd.h
     )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            src/ofdm/ofdm-decoder-simd.cpp
+            src/ofdm/ofdm_decoder_simd.cpp
     )
     find_package(Volk REQUIRED)
     include_directories(${VOLK_INCLUDE_DIRS})
@@ -213,12 +213,12 @@ if (SSE_OR_AVX)
 else ()
     set($(objectName)_HDRS
             ${${objectName}_HDRS}
-            src/ofdm/ofdm-decoder.h
+            src/ofdm/ofdm_decoder.h
     )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            src/ofdm/ofdm-decoder.cpp
+            src/ofdm/ofdm_decoder.cpp
     )
 endif ()
 
@@ -256,20 +256,20 @@ include_directories(
         src/backend/data
         src/backend/data/journaline
         src/backend/data/mot
-        src/backend/data/epg-2
+        src/backend/data/epg_2
         src/backend/data/epg
         src/support
-        src/support/tii-library
+        src/support/tii_library
         src/support/buttons
-        src/support/viterbi-spiral
+        src/support/viterbi_spiral
         src/audio
         src/scopes
-        src/spectrum-viewer
-        src/file-devices/xml-filewriter
-        src/eti-handler
-        src/service-list
+        src/spectrum_viewer
+        src/file_devices/xml_filewriter
+        src/eti_handler
+        src/service_list
         src/configuration
-        src/ensemble-list
+        src/ensemble_list
         src/update
         #/usr/include/
 )
@@ -284,46 +284,46 @@ set(${objectName}_HDRS
         src/main/dab_channel_desc.h
         src/main/glob_defs.h
         src/main/glob_enums.h
-        src/main/dab-processor.h
-        src/main/dab-constants.h
-        src/main/mot-content-types.h
+        src/main/dab_processor.h
+        src/main/dab_constants.h
+        src/main/mot_content_types.h
         src/main/mot_slide_progress.h
-        src/eti-handler/eti-generator.h
-        src/main/bit-extractors.h
-        src/ofdm/sample-reader.h
+        src/eti_handler/eti_generator.h
+        src/main/bit_extractors.h
+        src/ofdm/sample_reader.h
         src/ofdm/phasereference.h
         src/ofdm/phasetable.h
-        src/ofdm/freq-interleaver.h
-        src/decoder/fib-decoder_if.h
-        src/decoder/fib-decoder.h
-        src/decoder/fib-config-fig0.h
-        src/decoder/fib-config-fig1.h
-        src/decoder/fib-table.h
-        src/decoder/fic-decoder.h
-        src/decoder/fib-helper.h
-        src/ofdm/tii-detector.h
+        src/ofdm/freq_interleaver.h
+        src/decoder/fib_decoder_if.h
+        src/decoder/fib_decoder.h
+        src/decoder/fib_config_fig0.h
+        src/decoder/fib_config_fig1.h
+        src/decoder/fib_table.h
+        src/decoder/fic_decoder.h
+        src/decoder/fib_helper.h
+        src/ofdm/tii_detector.h
         src/ofdm/timesyncer.h
         src/protection/protTables.h
         src/protection/protection.h
-        src/protection/uep-protection.h
-        src/protection/eep-protection.h
-        src/backend/firecode-checker.h
+        src/protection/uep_protection.h
+        src/protection/eep_protection.h
+        src/backend/firecode_checker.h
         src/backend/crc.h
-        src/backend/frame-processor.h
+        src/backend/frame_processor.h
         src/backend/charsets.h
         src/backend/galois.h
-        src/backend/reed-solomon.h
-        src/backend/msc-handler.h
+        src/backend/reed_solomon.h
+        src/backend/msc_handler.h
         src/backend/backend.h
-        src/backend/backend-deconvolver.h
-        src/backend/backend-driver.h
+        src/backend/backend_deconvolver.h
+        src/backend/backend_driver.h
         src/backend/audio/mp4processor.h
-        src/backend/audio/bit-writer.h
+        src/backend/audio/bit_writer.h
         src/backend/audio/mp2processor.h
-        src/backend/data/ip-datahandler.h
-        src/backend/data/tdc-datahandler.h
-        src/backend/data/journaline-datahandler.h
-        src/backend/data/journaline-viewer.h
+        src/backend/data/ip_datahandler.h
+        src/backend/data/tdc_datahandler.h
+        src/backend/data/journaline_datahandler.h
+        src/backend/data/journaline_viewer.h
         src/backend/data/journaline/dabdatagroupdecoder.h
         src/backend/data/journaline/crc_8_16.h
         src/backend/data/journaline/log.h
@@ -333,57 +333,57 @@ set(${objectName}_HDRS
         src/backend/data/journaline/newsobject.h
         src/backend/data/journaline/NML.h
         src/backend/data/epg/epgdec.h
-        src/backend/data/epg-2/epg-decoder.h
-        src/backend/data/virtual-datahandler.h
-        src/backend/data/pad-handler.h
-        src/backend/data/mot/mot-handler.h
-        src/backend/data/mot/mot-object.h
-        src/backend/data/mot/mot-dir.h
-        src/backend/data/data-processor.h
+        src/backend/data/epg_2/epg_decoder.h
+        src/backend/data/virtual_datahandler.h
+        src/backend/data/pad_handler.h
+        src/backend/data/mot/mot_handler.h
+        src/backend/data/mot/mot_object.h
+        src/backend/data/mot/mot_dir.h
+        src/backend/data/data_processor.h
         src/audio/audiofifo.h
         src/audio/audiooutput.h
         src/audio/audioiodevice.h
         src/audio/test_tone.h
         src/audio/audiooutputqt.h
-        src/support/fir-filters.h
+        src/support/fir_filters.h
         src/support/ringbuffer.h
         src/support/Xtan2.h
-        src/support/band-handler.h
-        src/support/dab-tables.h
+        src/support/band_handler.h
+        src/support/dab_tables.h
         src/support/tii_list_display.h
-        src/support/viterbi-spiral/viterbi-spiral.h
-        src/support/color-selector.h
-        src/support/time-table.h
+        src/support/viterbi_spiral/viterbi_spiral.h
+        src/support/color_selector.h
+        src/support/time_table.h
         src/support/openfiledialog.h
-        src/support/content-table.h
-        src/support/dl-cache.h
-        src/support/itu-regions.h
-        src/support/map-http-server.h
-        src/support/tii-library/tii-codes.h
+        src/support/content_table.h
+        src/support/dl_cache.h
+        src/support/itu_regions.h
+        src/support/map_http_server.h
+        src/support/tii_library/tii_codes.h
         src/support/custom_frame.h
-        src/support/gui-helpers.h
-        src/support/setting-helper.h
+        src/support/gui_helpers.h
+        src/support/setting_helper.h
         src/support/wav_writer.h
         src/support/compass_direction.h
         src/support/time_meas.h
         src/support/copyright_info.h
         src/scopes/iqdisplay.h
-        src/scopes/carrier-display.h
-        src/scopes/audio-display.h
+        src/scopes/carrier_display.h
+        src/scopes/audio_display.h
         src/scopes/plot_widget.h
         src/scopes/level_meter.h
-        src/spectrum-viewer/spectrum-viewer.h
-        src/spectrum-viewer/cir-viewer.h
-        src/spectrum-viewer/spectrum-scope.h
-        src/spectrum-viewer/waterfall-scope.h
-        src/spectrum-viewer/correlation-viewer.h
-        src/file-devices/xml-filewriter/xml-filewriter.h
-        src/service-list/service-list-handler.h
-        src/service-list/service-db.h
+        src/spectrum_viewer/spectrum_viewer.h
+        src/spectrum_viewer/cir_viewer.h
+        src/spectrum_viewer/spectrum_scope.h
+        src/spectrum_viewer/waterfall_scope.h
+        src/spectrum_viewer/correlation_viewer.h
+        src/file_devices/xml_filewriter/xml_filewriter.h
+        src/service_list/service_list_handler.h
+        src/service_list/service_db.h
         src/configuration/configuration.h
-        src/ensemble-list/ensemble-list.h
-        src/ensemble-list/ensemble-list-db.h
-        src/ensemble-list/ensemble-list-db-handler.h
+        src/ensemble_list/ensemble_list.h
+        src/ensemble_list/ensemble_list_db.h
+        src/ensemble_list/ensemble_list_db_handler.h
         src/update/updatechecker.h
         src/update/updatedialog.h
 )
@@ -400,43 +400,43 @@ set(${objectName}_SRCS
         src/main/dabradio_el.cpp
         src/main/dabradio_ctrl.cpp
         src/main/dab_channel_desc.cpp
-        src/main/dab-processor.cpp
+        src/main/dab_processor.cpp
         src/support/techdata.cpp
         src/main/mot_slide_progress.cpp
-        src/eti-handler/eti-generator.cpp
-        src/ofdm/sample-reader.cpp
+        src/eti_handler/eti_generator.cpp
+        src/ofdm/sample_reader.cpp
         src/ofdm/phasereference.cpp
         src/ofdm/phasetable.cpp
-        src/ofdm/freq-interleaver.cpp
-        src/decoder/fib-config-fig0.cpp
-        src/decoder/fib-config-fig1.cpp
-        src/decoder/fib-decoder.cpp
-        src/decoder/fib-decoder-fig0.cpp
-        src/decoder/fib-decoder-fig1.cpp
-        src/decoder/fib-decoder-string-getter.cpp
-        src/decoder/fic-decoder.cpp
-        src/decoder/fib-helper.cpp
-        src/ofdm/tii-detector.cpp
+        src/ofdm/freq_interleaver.cpp
+        src/decoder/fib_config_fig0.cpp
+        src/decoder/fib_config_fig1.cpp
+        src/decoder/fib_decoder.cpp
+        src/decoder/fib_decoder_fig0.cpp
+        src/decoder/fib_decoder_fig1.cpp
+        src/decoder/fib_decoder_string_getter.cpp
+        src/decoder/fic_decoder.cpp
+        src/decoder/fib_helper.cpp
+        src/ofdm/tii_detector.cpp
         src/ofdm/timesyncer.cpp
         src/protection/protTables.cpp
         src/protection/protection.cpp
-        src/protection/eep-protection.cpp
-        src/protection/uep-protection.cpp
-        src/backend/firecode-checker.cpp
+        src/protection/eep_protection.cpp
+        src/protection/uep_protection.cpp
+        src/backend/firecode_checker.cpp
         src/backend/crc.cpp
         src/backend/charsets.cpp
         src/backend/galois.cpp
-        src/backend/reed-solomon.cpp
-        src/backend/msc-handler.cpp
+        src/backend/reed_solomon.cpp
+        src/backend/msc_handler.cpp
         src/backend/backend.cpp
-        src/backend/backend-deconvolver.cpp
-        src/backend/backend-driver.cpp
+        src/backend/backend_deconvolver.cpp
+        src/backend/backend_driver.cpp
         src/backend/audio/mp4processor.cpp
-        src/backend/audio/bit-writer.cpp
+        src/backend/audio/bit_writer.cpp
         src/backend/audio/mp2processor.cpp
-        src/backend/data/ip-datahandler.cpp
-        src/backend/data/journaline-datahandler.cpp
-        src/backend/data/journaline-viewer.cpp
+        src/backend/data/ip_datahandler.cpp
+        src/backend/data/journaline_datahandler.cpp
+        src/backend/data/journaline_viewer.cpp
         src/backend/data/journaline/crc_8_16.c
         src/backend/data/journaline/log.c
         src/backend/data/journaline/newssvcdec_impl.cpp
@@ -444,55 +444,55 @@ set(${objectName}_SRCS
         src/backend/data/journaline/dabdgdec_impl.c
         src/backend/data/journaline/newsobject.cpp
         src/backend/data/journaline/NML.cpp
-        src/backend/data/epg-2/epg-decoder.cpp
+        src/backend/data/epg_2/epg_decoder.cpp
         src/backend/data/epg/epgdec.cpp
-        src/backend/data/tdc-datahandler.cpp
-        src/backend/data/pad-handler.cpp
-        src/backend/data/mot/mot-handler.cpp
-        src/backend/data/mot/mot-object.cpp
-        src/backend/data/mot/mot-dir.cpp
-        src/backend/data/data-processor.cpp
+        src/backend/data/tdc_datahandler.cpp
+        src/backend/data/pad_handler.cpp
+        src/backend/data/mot/mot_handler.cpp
+        src/backend/data/mot/mot_object.cpp
+        src/backend/data/mot/mot_dir.cpp
+        src/backend/data/data_processor.cpp
         src/audio/audioiodevice.cpp
         src/audio/test_tone.cpp
         src/audio/audiooutputqt.cpp
-        src/support/fir-filters.cpp
+        src/support/fir_filters.cpp
         src/support/ringbuffer.cpp
         src/support/Xtan2.cpp
-        src/support/band-handler.cpp
-        src/support/dab-tables.cpp
-        src/support/viterbi-spiral/viterbi-spiral.cpp
-        src/support/color-selector.cpp
-        src/support/time-table.cpp
+        src/support/band_handler.cpp
+        src/support/dab_tables.cpp
+        src/support/viterbi_spiral/viterbi_spiral.cpp
+        src/support/color_selector.cpp
+        src/support/time_table.cpp
         src/support/openfiledialog.cpp
-        src/support/content-table.cpp
-        src/support/dl-cache.cpp
-        src/support/itu-regions.cpp
-        src/support/map-http-server.cpp
+        src/support/content_table.cpp
+        src/support/dl_cache.cpp
+        src/support/itu_regions.cpp
+        src/support/map_http_server.cpp
         src/support/tii_list_display.cpp
-        src/support/tii-library/tii-codes.cpp
+        src/support/tii_library/tii_codes.cpp
         src/support/custom_frame.cpp
-        src/support/gui-helpers.cpp
-        src/support/setting-helper.cpp
+        src/support/gui_helpers.cpp
+        src/support/setting_helper.cpp
         src/support/wav_writer.cpp
         src/support/compass_direction.cpp
         src/support/copyright_info.cpp
         src/scopes/iqdisplay.cpp
-        src/scopes/carrier-display.cpp
-        src/scopes/audio-display.cpp
+        src/scopes/carrier_display.cpp
+        src/scopes/audio_display.cpp
         src/scopes/plot_widget.cpp
         src/scopes/level_meter.cpp
-        src/spectrum-viewer/spectrum-viewer.cpp
-        src/spectrum-viewer/spectrum-scope.cpp
-        src/spectrum-viewer/waterfall-scope.cpp
-        src/spectrum-viewer/correlation-viewer.cpp
-        src/spectrum-viewer/cir-viewer.cpp
-        src/file-devices/xml-filewriter/xml-filewriter.cpp
-        src/service-list/service-list-handler.cpp
-        src/service-list/service-db.cpp
+        src/spectrum_viewer/spectrum_viewer.cpp
+        src/spectrum_viewer/spectrum_scope.cpp
+        src/spectrum_viewer/waterfall_scope.cpp
+        src/spectrum_viewer/correlation_viewer.cpp
+        src/spectrum_viewer/cir_viewer.cpp
+        src/file_devices/xml_filewriter/xml_filewriter.cpp
+        src/service_list/service_list_handler.cpp
+        src/service_list/service_db.cpp
         src/configuration/configuration.cpp
-        src/ensemble-list/ensemble-list.cpp
-        src/ensemble-list/ensemble-list-db.cpp
-        src/ensemble-list/ensemble-list-db-handler.cpp
+        src/ensemble_list/ensemble_list.cpp
+        src/ensemble_list/ensemble_list_db.cpp
+        src/ensemble_list/ensemble_list_db_handler.cpp
         src/update/updatechecker.cpp
         src/update/updatedialog.cpp
 )
@@ -507,11 +507,11 @@ if (FDK_AAC)
     include_directories(${FDK_AAC_INCLUDE_DIR}/fdk-aac)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            src/backend/audio/fdk-aac.h
+            src/backend/audio/fdk_aac.h
     )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            src/backend/audio/fdk-aac.cpp
+            src/backend/audio/fdk_aac.cpp
     )
     list(APPEND extraLibs ${FDK_AAC_LIBRARIES})
     add_definitions(-D__WITH_FDK_AAC__)
@@ -522,11 +522,11 @@ elseif (NOT FDK_AAC)
     endif ()
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            src/backend/audio/faad-decoder.h
+            src/backend/audio/faad_decoder.h
     )
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            src/backend/audio/faad-decoder.cpp
+            src/backend/audio/faad_decoder.cpp
     )
     add_definitions(-D__WITH_FAAD__)
 endif (FDK_AAC)
@@ -534,42 +534,42 @@ endif (FDK_AAC)
 if (VITERBI_AVX2)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            src/support/viterbi-spiral/viterbi_16way.h
+            src/support/viterbi_spiral/viterbi_16way.h
     )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
     add_definitions(-DHAVE_VITERBI_AVX2)
 elseif (VITERBI_SSE2)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            src/support/viterbi-spiral/viterbi_8way.h
+            src/support/viterbi_spiral/viterbi_8way.h
     )
     add_definitions(-DHAVE_VITERBI_SSE2)
 elseif (VITERBI_NEON)
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            src/support/viterbi-spiral/sse2neon.h
+            src/support/viterbi_spiral/sse2neon.h
     )
     add_definitions(-DHAVE_VITERBI_NEON)
 else ()
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            src/support/viterbi-spiral/viterbi_scalar.h
+            src/support/viterbi_spiral/viterbi_scalar.h
     )
 endif ()
 
 if (DATA_STREAMER)
     include_directories(
-            src/server-thread
+            src/server_thread
     )
 
     set(${objectName}_HDRS
             ${${objectName}_HDRS}
-            src/server-thread/tcp-server.h
+            src/server_thread/tcp_server.h
     )
 
     set(${objectName}_SRCS
             ${${objectName}_SRCS}
-            src/server-thread/tcp-server.cpp
+            src/server_thread/tcp_server.cpp
     )
     add_definitions(-DDATA_STREAMER)
 endif (DATA_STREAMER)

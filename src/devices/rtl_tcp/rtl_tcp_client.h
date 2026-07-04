@@ -34,10 +34,10 @@
 #include  <QSettings>
 #include  <QLineEdit>
 #include  <QTcpSocket>
-#include  "dab-constants.h"
-#include  "device-handler.h"
+#include  "dab_constants.h"
+#include  "device_handler.h"
 #include  "ringbuffer.h"
-#include  "ui_rtl_tcp-widget.h"
+#include  "ui_rtl_tcp_widget.h"
 
 class XmlFileWriter;
 

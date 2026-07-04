@@ -12,7 +12,7 @@
  */
 #pragma once
 
-#include "dab-constants.h"
+#include "dab_constants.h"
 #include "ringbuffer.h"
 #include "wav_writer.h"
 #include "audiofifo.h"

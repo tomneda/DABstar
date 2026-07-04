@@ -29,7 +29,7 @@
  */
 #pragma once
 
-#include "tii-codes.h"
+#include "tii_codes.h"
 #include <QString>
 #include <QWidget>
 #include <QScrollArea>

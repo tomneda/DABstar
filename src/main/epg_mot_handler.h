@@ -12,10 +12,10 @@
  */
 #pragma once
 
-#include "dab-constants.h"
+#include "dab_constants.h"
 #include "openfiledialog.h"
 #include "epgdec.h"
-#include "epg-decoder.h"
+#include "epg_decoder.h"
 #include <QObject>
 #include <QTimer>
 #include <QString>

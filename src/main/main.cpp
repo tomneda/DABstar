@@ -30,7 +30,7 @@
  *
  *      Main program
  */
-#include "setting-helper.h"
+#include "setting_helper.h"
 #include "dabradio.h"
 #include <QApplication>
 #include <QDir>

@@ -32,11 +32,11 @@
 #include  <QSettings>
 #include  "techdata.h"
 #include  "dabradio.h"
-#include  "audio-display.h"
-#include  "dab-tables.h"
-#include  "color-selector.h"
-#include  "gui-helpers.h"
-#include "setting-helper.h"
+#include  "audio_display.h"
+#include  "dab_tables.h"
+#include  "color_selector.h"
+#include  "gui_helpers.h"
+#include "setting_helper.h"
 
 TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   : Ui_technical_data(),
