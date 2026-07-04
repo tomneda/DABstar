@@ -77,7 +77,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   , mpConfig(new Configuration(this))
   , mpItuTables(new ItuTables())
   , mOpenFileDialog(ipSettings)
-  , mDeviceSelector(ipSettings)
+  , mpDeviceSelector(create_device_selector(ipSettings))
 {
   // "mProcessParams" is introduced to reduce the number of parameters for the dabProcessor
   mProcessParams.spectrumBuffer = mpSpectrumBuffer;

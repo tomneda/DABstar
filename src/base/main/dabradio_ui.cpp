@@ -206,7 +206,7 @@ void DabRadio::_initialize_dynamic_label() const
 
 void DabRadio::_initialize_device_selector(SChannelDescriptor & ioChannelDesc) const
 {
-  ui->cmbDeviceSelect->addItems(mDeviceSelector.get_device_name_list());
+  ui->cmbDeviceSelect->addItems(mpDeviceSelector->get_device_name_list());
 
   const QString h = Settings::Main::varSdrDevice.read().toString();
   const i32 k = ui->cmbDeviceSelect->findText(h);

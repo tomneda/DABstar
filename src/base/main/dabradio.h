@@ -38,7 +38,7 @@
 #include "dl_cache.h"
 #include "content_table.h"
 #include "openfiledialog.h"
-#include "device_selector.h"
+#include "device_selector_if.h"
 #include "epg_mot_handler.h"
 #include "tii_manager.h"
 #include "ensemble_list.h"
@@ -243,7 +243,7 @@ private:
   DynLinkCache mDynLabelCache{10};
   OpenFileDialog mOpenFileDialog;
   ProcessParams mProcessParams;
-  DeviceSelector mDeviceSelector;
+  std::unique_ptr<IDeviceSelector> mpDeviceSelector;
 
 #ifdef DATA_STREAMER
   tcpServer * dataStreamer = nullptr;

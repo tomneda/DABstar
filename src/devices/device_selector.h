@@ -10,26 +10,23 @@
 
 #pragma once
 
-#include <memory>
-#include <QString>
-#include <QStringList>
-#include <QWidget>
-
-#include "device_handler.h"
+#include "device_selector_if.h"
 #include "openfiledialog.h"
+#include <QString>
+#include <QWidget>
 
 class QSettings;
 
-class DeviceSelector : public QWidget
+class DeviceSelector : public QWidget, public IDeviceSelector
 {
   Q_OBJECT
 public:
   explicit DeviceSelector(QSettings * ipSettings);
   ~DeviceSelector() override = default;
 
-  QStringList get_device_name_list() const;
-  std::unique_ptr<IDeviceHandler> create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings);
-  const QString & get_message() const { return mMessage; }
+  QStringList get_device_name_list() const override;
+  std::unique_ptr<IDeviceHandler> create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings) override;
+  const QString & get_message() const override { return mMessage; }
 
 private:
   QSettings * const mpSettings;
@@ -40,5 +37,3 @@ private:
   std::unique_ptr<IDeviceHandler> _create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings) const;
   std::unique_ptr<IDeviceHandler> _open_input_file_device_from_file_type(const QString & iFilepath) const;
 };
-
-

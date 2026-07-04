@@ -76,13 +76,13 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
 
   // Here, a new device handler will created, a maybe former existing will be destroyed
   // If it is a file and the file is invalid, then it returns nullptr else well
-  mpInputDevice = mDeviceSelector.create_device(iDeviceNameOrFileName, mIsFileMode, mIsScanning);
+  mpInputDevice = mpDeviceSelector->create_device(iDeviceNameOrFileName, mIsFileMode, mIsScanning);
 
   if (mpInputDevice == nullptr) // something went wrong with the device creation
   {
     if (!mIsScanning)
     {
-      _write_warning_message(mDeviceSelector.get_message());
+      _write_warning_message(mpDeviceSelector->get_message());
     }
     return; // nothing will happen
   }

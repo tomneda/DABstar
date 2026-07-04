@@ -48,6 +48,7 @@
   #include  "uhd_handler.h"
 #endif
 #include "device_selector.h"
+#include <QSettings>
 #include "xml_filereader.h"
 #include "wavfiles.h"
 #include "rawfiles.h"
@@ -299,4 +300,9 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   }
 
   return inputDevice;
+}
+
+std::unique_ptr<IDeviceSelector> create_device_selector(QSettings * const ipSettings)
+{
+  return std::make_unique<DeviceSelector>(ipSettings);
 }

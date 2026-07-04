@@ -275,7 +275,7 @@ include_directories(
 
 set(${devicesLibName}_HDRS
         ${${devicesLibName}_HDRS}
-        ${CMAKE_SOURCE_DIR}/src/common/device_selector.h
+        device_selector.h
         dongleselect.h
         filereaders/xml_filereader/xml_filereader.h
         filereaders/xml_filereader/xml_reader.h
