@@ -29,8 +29,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "sample_reader.h"
-#include  "dabradio.h"
-#include  <ctime>
+#include "dabradio.h"
+#include <ctime>
 
 SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer)
   : myRadioInterface(mr)

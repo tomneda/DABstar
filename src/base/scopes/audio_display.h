@@ -30,12 +30,12 @@
  */
 #pragma once
 
-#include  "dab_constants.h"
-#include  <array>
-#include  <QSettings>
-#include  <QObject>
-#include  <QLineSeries>
-#include  <fftw3.h>
+#include "dab_constants.h"
+#include <array>
+#include <QSettings>
+#include <QObject>
+#include <QLineSeries>
+#include <fftw3.h>
 
 #define USE_C2C_FFT
 

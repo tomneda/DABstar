@@ -22,7 +22,7 @@
 //
 //
 #include "time_table.h"
-#include  "dabradio.h"
+#include "dabradio.h"
 
 TimeTableHandler::TimeTableHandler(DabRadio * radio)
   : QListView(nullptr)

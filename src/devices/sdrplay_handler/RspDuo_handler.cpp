@@ -1,5 +1,5 @@
-#include  "RspDuo_handler.h"
-#include  "sdrplay_handler.h"
+#include "RspDuo_handler.h"
+#include "sdrplay_handler.h"
 
 RspDuo_handler::RspDuo_handler(SdrPlayHandler *mpParent, sdrplay_api_DeviceT *chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
   : Rsp_device(mpParent, chosenDevice, freq, agcMode, lnaState, GRdB, ppmValue)

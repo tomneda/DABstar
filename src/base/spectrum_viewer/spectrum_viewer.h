@@ -36,16 +36,16 @@
 //
 #pragma once
 
-#include  "dab_constants.h"
-#include  "glob_enums.h"
-#include  "ui_spectrum_viewer.h"
-#include  "ringbuffer.h"
-#include  "custom_frame.h"
-#include  "tii_detector.h"
-#include  <array>
-#include  <QObject>
-#include  <QTimer>
-#include  <fftw3.h>
+#include "dab_constants.h"
+#include "glob_enums.h"
+#include "ui_spectrum_viewer.h"
+#include "ringbuffer.h"
+#include "custom_frame.h"
+#include "tii_detector.h"
+#include <array>
+#include <QObject>
+#include <QTimer>
+#include <fftw3.h>
 
 constexpr i32 SP_DISPLAYSIZE = 512;
 constexpr i32 SP_SPECTRUMSIZE = 2048;

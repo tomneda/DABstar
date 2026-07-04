@@ -29,12 +29,12 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "audio_display.h"
-#include  "plot_widget.h"
-#include  <QColor>
-#include  <QPen>
-#include  <QChart>
-#include  <QValueAxis>
+#include "audio_display.h"
+#include "plot_widget.h"
+#include <QColor>
+#include <QPen>
+#include <QChart>
+#include <QValueAxis>
 
 AudioDisplay::AudioDisplay(DabRadio * mr, PlotWidget * pPlot, QSettings * dabSettings)
   : mpRadioInterface(mr)

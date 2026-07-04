@@ -22,11 +22,11 @@
 
 #pragma once
 
-#include  "dabradio.h"
-#include  <QListView>
-#include  <QStringList>
-#include  <QStringListModel>
-#include  <QModelIndex>
+#include "dabradio.h"
+#include <QListView>
+#include <QStringList>
+#include <QStringListModel>
+#include <QModelIndex>
 
 class DabRadio;
 

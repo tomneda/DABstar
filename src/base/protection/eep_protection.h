@@ -29,7 +29,7 @@
  */
 #pragma once
 
-#include  "protection.h"
+#include "protection.h"
 
 class EepProtection : public Protection
 {

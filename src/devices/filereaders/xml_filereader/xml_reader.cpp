@@ -28,11 +28,11 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include  "xml_reader.h"
-#include  "xml_descriptor.h"
-#include  "xml_filereader.h"
-#include  <cstdio>
-#include  <sys/time.h>
+#include "xml_reader.h"
+#include "xml_descriptor.h"
+#include "xml_filereader.h"
+#include <cstdio>
+#include <sys/time.h>
 
 // this is a wrapper to avoid "ignoring return value of ... declared with attribute ‘warn_unused_result’"
 static size_t fread_chk(void * iPtr, size_t iSize, size_t iN, FILE * iStream)

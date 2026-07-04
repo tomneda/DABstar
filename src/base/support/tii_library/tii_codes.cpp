@@ -28,9 +28,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "tii_codes.h"
-#include  <array>
-#include  <cstdio>
-#include  <QSettings>
+#include <array>
+#include <cstdio>
+#include <QSettings>
 
 enum
 {

@@ -31,14 +31,14 @@
 #pragma once
 
 #include "phasetable.h"
-#include  "dab_constants.h"
-#include  "process_params.h"
-#include  "ringbuffer.h"
-#include  <QObject>
-#include  <cstdio>
-#include  <cstdint>
-#include  <vector>
-#include  <fftw3.h>
+#include "dab_constants.h"
+#include "process_params.h"
+#include "ringbuffer.h"
+#include <QObject>
+#include <cstdio>
+#include <cstdint>
+#include <vector>
+#include <fftw3.h>
 
 class DabRadio;
 

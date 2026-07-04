@@ -30,7 +30,7 @@
  */
 
 #include "phasetable.h"
-#include  <array>
+#include <array>
 
 static const std::array<PhaseTable::SPhaseTableElement, 49> modeI_table {{
   { -768,  -737,  0, 1 },

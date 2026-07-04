@@ -34,10 +34,10 @@
  */
 #pragma once
 
-#include  <QIODevice>
-#include  <QObject>
-#include  "dab-constants.h"
-#include  "ringbuffer.h"
+#include <QIODevice>
+#include <QObject>
+#include "dab-constants.h"
+#include "ringbuffer.h"
 
 class QtAudioDevice : public QIODevice
 {

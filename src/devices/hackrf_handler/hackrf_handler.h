@@ -34,18 +34,18 @@
 
 #pragma once
 
-#include  <QObject>
-#include  <QFrame>
-#include  <QSettings>
-#include  <atomic>
-#include  "dab_constants.h"
-#include  "ringbuffer.h"
+#include <QObject>
+#include <QFrame>
+#include <QSettings>
+#include <atomic>
+#include "dab_constants.h"
+#include "ringbuffer.h"
 #include "device_handler_if.h"
-#include  "ui_hackrf_widget.h"
-#include  <libhackrf/hackrf.h>
-#include  <QLibrary>
+#include "ui_hackrf_widget.h"
+#include <libhackrf/hackrf.h>
+#include <QLibrary>
 #ifdef HAVE_LIQUID
-  #include  "halfbandfilter.h"
+  #include "halfbandfilter.h"
 #endif
 
 using hackrf_sample_block_cb_fn = i32 (*)(hackrf_transfer * transfer);

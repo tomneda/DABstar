@@ -24,8 +24,8 @@
 #pragma once
 
 #include	<QObject>
-#include        <QMessageBox>
-#include        <QByteArray>
+#include <QMessageBox>
+#include <QByteArray>
 #include	<QFrame>
 #include	<QSettings>
 #include	<atomic>
@@ -34,19 +34,19 @@
 #include	"ringbuffer.h"
 #include	"device-handler.h"
 #include	"ui_pluto-rxtx-widget.h"
-#include        <qwt.h>
-#include        <qwt_plot.h>
-#include        <qwt_plot_marker.h>
-#include        <qwt_plot_grid.h>
-#include        <qwt_plot_curve.h>
-#include        <qwt_plot_marker.h>
-#include        <qwt_color_map.h>
-#include        <qwt_plot_zoomer.h>
-#include        <qwt_plot_textlabel.h>
-#include        <qwt_plot_panner.h>
-#include        <qwt_plot_layout.h>
-#include        <qwt_picker_machine.h>
-#include        <qwt_scale_widget.h>
+#include <qwt.h>
+#include <qwt_plot.h>
+#include <qwt_plot_marker.h>
+#include <qwt_plot_grid.h>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_marker.h>
+#include <qwt_color_map.h>
+#include <qwt_plot_zoomer.h>
+#include <qwt_plot_textlabel.h>
+#include <qwt_plot_panner.h>
+#include <qwt_plot_layout.h>
+#include <qwt_picker_machine.h>
+#include <qwt_scale_widget.h>
 
 #include	"up-filter.h"
 #ifdef _WIN32

@@ -30,9 +30,9 @@
  */
 #pragma once
 
-#include  "dab_constants.h"
-#include  <QObject>
-#include  <vector>
+#include "dab_constants.h"
+#include <QObject>
+#include <vector>
 
 
 class VirtualDataHandler : public QObject

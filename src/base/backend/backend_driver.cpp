@@ -29,9 +29,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "backend_driver.h"
-#include  "mp2processor.h"
-#include  "mp4processor.h"
-#include  "data_processor.h"
+#include "mp2processor.h"
+#include "mp4processor.h"
+#include "data_processor.h"
 
 // Driver program for the selected backend. Embodying that in a separate class simplifies the "Backend" class.
 

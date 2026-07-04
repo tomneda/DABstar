@@ -30,10 +30,10 @@
  */
 #pragma once
 
-#include  <QDialog>
-#include  <QLabel>
-#include  <QLineEdit>
-#include  <QPushButton>
+#include <QDialog>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
 
 class QSettings;
 

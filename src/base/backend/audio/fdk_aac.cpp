@@ -31,9 +31,9 @@
  *  Use the fdk-aac library.
  */
 #include "mp4processor.h"
-#include  "dabradio.h"
-#include  <cstring>
-#include  "charsets.h"
+#include "dabradio.h"
+#include <cstring>
+#include "charsets.h"
 #include "fdk_aac.h"
 
 /**

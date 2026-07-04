@@ -21,10 +21,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include    "lime_handler.h"
-#include    "xml_filewriter.h"
-#include    "device_exceptions.h"
-#include    "openfiledialog.h"
+#include "lime_handler.h"
+#include "xml_filewriter.h"
+#include "device_exceptions.h"
+#include "openfiledialog.h"
 
 #define FIFO_SIZE   32768
 static i16 localBuffer [4 * FIFO_SIZE];

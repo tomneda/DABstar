@@ -1,5 +1,5 @@
-#include  <cstdio>
-#include  <stdint.h>
+#include <cstdio>
+#include <stdint.h>
 
 /*
  * If DABstar shows errors like: "libpng warning: iCCP: known incorrect sRGB profile"

@@ -29,10 +29,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  <QSettings>
+#include <QSettings>
 #include "techdata.h"
-#include  "dabradio.h"
-#include  "audio_display.h"
+#include "dabradio.h"
+#include "audio_display.h"
 #include "dab_tables.h"
 #include "color_selector.h"
 #include "gui_helpers.h"

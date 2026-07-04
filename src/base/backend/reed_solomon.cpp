@@ -13,8 +13,8 @@
  * May be used under the terms of the GNU General Public License (GPL)
  */
 #include "reed_solomon.h"
-#include  <cstring>
-#include  "glob_defs.h"
+#include <cstring>
+#include "glob_defs.h"
 
 /*
  *	Reed-Solomon decoder

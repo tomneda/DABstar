@@ -13,7 +13,7 @@
 #pragma once
 
 #include "glob_data_types.h"
-#include  <vector>
+#include <vector>
 
 template <typename T>
 class DelayLine

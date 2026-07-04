@@ -28,11 +28,11 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "wav_reader.h"
-#include  "wavfiles.h"
-#include  "device_exceptions.h"
-#include  <sys/time.h>
-#include  <cinttypes>
+#include "wav_reader.h"
+#include "wavfiles.h"
+#include "device_exceptions.h"
+#include <sys/time.h>
+#include <cinttypes>
 
 static inline i64 getMyTime()
 {

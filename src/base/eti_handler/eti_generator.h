@@ -46,16 +46,16 @@
 
 #pragma once
 
-#include  <cstdio>
-#include  <stdint.h>
-#include  <cstdio>
-#include  <vector>
-#include  <mutex>
-#include  <atomic>
-#include  "dab_constants.h"
-#include  "ringbuffer.h"
-#include  "fic_decoder.h"
-#include  "protection.h"
+#include <cstdio>
+#include <stdint.h>
+#include <cstdio>
+#include <vector>
+#include <mutex>
+#include <atomic>
+#include "dab_constants.h"
+#include "ringbuffer.h"
+#include "fic_decoder.h"
+#include "protection.h"
 
 class DabRadio;
 class parameter;

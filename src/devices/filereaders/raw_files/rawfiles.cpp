@@ -32,20 +32,20 @@
  *  For the (former) files with 8 bit raw data from the
  *  dabsticks
  */
-#include  "rawfiles.h"
-#include  "raw_reader.h"
-#include  "openfiledialog.h"
-#include  "setting_helper.h"
-#include  <cstdio>
-#include  <cstdlib>
-#include  <fcntl.h>
-#include  <ctime>
-#include  <QString>
+#include "rawfiles.h"
+#include "raw_reader.h"
+#include "openfiledialog.h"
+#include "setting_helper.h"
+#include <cstdio>
+#include <cstdlib>
+#include <fcntl.h>
+#include <ctime>
+#include <QString>
 
 #ifdef _WIN32
 #else
-  #include  <unistd.h>
-  #include  <sys/time.h>
+  #include <unistd.h>
+  #include <sys/time.h>
 #endif
 
 constexpr u32 cInputFrameBufferSize = 8 * 32768;

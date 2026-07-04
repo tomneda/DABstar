@@ -31,17 +31,17 @@
 
 #pragma once
 
-#include  <QObject>
-#include  <QPoint>
-#include  <QFrame>
-#include  <QSettings>
-#include  <atomic>
-#include  "dab-constants.h"
-#include  "ringbuffer.h"
-#include  "device-handler.h"
-#include  "ui_sdrplay-widget-v2.h"
-#include  "mirsdrapi-rsp.h"
-#include  <QLibrary>
+#include <QObject>
+#include <QPoint>
+#include <QFrame>
+#include <QSettings>
+#include <atomic>
+#include "dab-constants.h"
+#include "ringbuffer.h"
+#include "device-handler.h"
+#include "ui_sdrplay-widget-v2.h"
+#include "mirsdrapi-rsp.h"
+#include <QLibrary>
 
 typedef void (* mir_sdr_StreamCallback_t)(i16 * xi, i16 * xq, u32 firstSampleNum, i32 grChanged, i32 rfChanged, i32 fsChanged, u32 numSamples, u32 reset, u32 hwRemoved, void * cbContext);
 typedef void (* mir_sdr_GainChangeCallback_t)(u32 gRdB, u32 lnaGRdB, void * cbContext);

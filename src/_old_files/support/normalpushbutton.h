@@ -30,8 +30,8 @@
  */
 #pragma once
 
-#include  <QPushButton>
-#include  <QSize>
+#include <QPushButton>
+#include <QSize>
 
 //	just redefining sizeHint
 class normalPushButton : public QPushButton

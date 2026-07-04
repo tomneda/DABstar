@@ -28,18 +28,18 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include  "wavfiles.h"
-#include  "openfiledialog.h"
-#include  "setting_helper.h"
-#include  <cstdio>
-#include  <cstdlib>
-#include  <fcntl.h>
-#include  <ctime>
-#include  <QString>
+#include "wavfiles.h"
+#include "openfiledialog.h"
+#include "setting_helper.h"
+#include <cstdio>
+#include <cstdlib>
+#include <fcntl.h>
+#include <ctime>
+#include <QString>
 #ifdef _WIN32
 #else
-  #include  <unistd.h>
-  #include  <sys/time.h>
+  #include <unistd.h>
+  #include <sys/time.h>
 #endif
 
 

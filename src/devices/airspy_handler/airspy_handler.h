@@ -24,18 +24,18 @@
  */
 #pragma once
 
-#include  <QObject>
-#include  <QSettings>
-#include  <QFrame>
-#include  <QLibrary>
-#include  <vector>
-#include  <atomic>
-#include  "dab_constants.h"
-#include  "ringbuffer.h"
-#include  "fir_filters.h"
+#include <QObject>
+#include <QSettings>
+#include <QFrame>
+#include <QLibrary>
+#include <vector>
+#include <atomic>
+#include "dab_constants.h"
+#include "ringbuffer.h"
+#include "fir_filters.h"
 #include "device_handler_if.h"
-#include  "ui_airspy_widget.h"
-#include  "libairspy/airspy.h"
+#include "ui_airspy_widget.h"
+#include "libairspy/airspy.h"
 
 class XmlFileWriter;
 

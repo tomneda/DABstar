@@ -29,9 +29,9 @@
 */
 #pragma once
 
-#include        <QObject>
-#include        "neaacdec.h"
-#include        "ringbuffer.h"
+#include <QObject>
+#include "neaacdec.h"
+#include "ringbuffer.h"
 
 class DabRadio;
 

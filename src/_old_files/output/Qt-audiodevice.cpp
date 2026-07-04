@@ -29,7 +29,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "Qt-audiodevice.h"
+#include "Qt-audiodevice.h"
 
 //	Create a "device"
 QtAudioDevice::QtAudioDevice(RingBuffer<float> * ipBuffer, QObject * parent) :

@@ -32,13 +32,13 @@
 #pragma once
 
 #include "dab_constants.h"
-#include  <QThread>
-#include  <QMessageBox>
-#include  <cstdio>
-#include  "ringbuffer.h"
-#include  <stdint.h>
-#include  <vector>
-#include  <atomic>
+#include <QThread>
+#include <QMessageBox>
+#include <cstdio>
+#include "ringbuffer.h"
+#include <stdint.h>
+#include <vector>
+#include <atomic>
 #ifdef HAVE_LIQUID
   #include <liquid/liquid.h>
 #endif

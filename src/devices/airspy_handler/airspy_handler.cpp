@@ -15,11 +15,11 @@
  *  Lazy Chair Computing
  */
 
-#include    "airspy_handler.h"
-#include    "dongleselect.h"
-#include    "xml_filewriter.h"
-#include    "device_exceptions.h"
-#include    "openfiledialog.h"
+#include "airspy_handler.h"
+#include "dongleselect.h"
+#include "xml_filewriter.h"
+#include "device_exceptions.h"
+#include "openfiledialog.h"
 
 AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
                              myFrame(nullptr),

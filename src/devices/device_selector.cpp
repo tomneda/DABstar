@@ -13,18 +13,18 @@
 // #include "spy-handler.h"
 #endif
 #ifdef  HAVE_RTLSDR
-  #include  "rtlsdr_handler.h"
+  #include "rtlsdr_handler.h"
 #endif
 #ifdef  HAVE_SDRPLAY
-  #include  "sdrplay_handler.h"
+  #include "sdrplay_handler.h"
 #endif
 #ifdef  _WIN32
   #ifdef  HAVE_EXTIO
-    #include  "extio_handler.h"
+    #include "extio_handler.h"
   #endif
 #endif
 #ifdef  HAVE_RTL_TCP
-  #include  "rtl_tcp_client.h"
+  #include "rtl_tcp_client.h"
 #endif
 #ifdef  HAVE_AIRSPY
   #include "airspy_handler.h"
@@ -33,19 +33,19 @@
   #include "hackrf_handler.h"
 #endif
 #ifdef  HAVE_LIME
-  #include  "lime_handler.h"
+  #include "lime_handler.h"
 #endif
 #ifdef  HAVE_PLUTO
-  #include  "pluto_handler.h"
+  #include "pluto_handler.h"
 #endif
 #ifdef  HAVE_SOAPY
-  #include  "soapy_handler.h"
+  #include "soapy_handler.h"
 #endif
 #ifdef  HAVE_ELAD
-  #include  "elad_handler.h"
+  #include "elad_handler.h"
 #endif
 #ifdef  HAVE_UHD
-  #include  "uhd_handler.h"
+  #include "uhd_handler.h"
 #endif
 #include "device_selector.h"
 #include <QSettings>

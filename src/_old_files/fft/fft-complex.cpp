@@ -36,8 +36,8 @@
 
 //#define _USE_MATH_DEFINES
 
-#include  <cmath>
-#include  <cstring>
+#include <cmath>
+#include <cstring>
 
 // Private function prototypes
 static size_t reverse_bits(size_t val, int width);

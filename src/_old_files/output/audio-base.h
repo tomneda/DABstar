@@ -31,14 +31,14 @@
 
 #pragma once
 
-#include  "dab-constants.h"
-#include  <cstdio>
-#include  <samplerate.h>
-#include  <sndfile.h>
-#include  <QMutex>
-#include  <QObject>
-#include  "newconverter.h"
-#include  "ringbuffer.h"
+#include "dab-constants.h"
+#include <cstdio>
+#include <samplerate.h>
+#include <sndfile.h>
+#include <QMutex>
+#include <QObject>
+#include "newconverter.h"
+#include "ringbuffer.h"
 
 
 class AudioBase : public QObject

@@ -20,10 +20,10 @@
  */
 #pragma once
 
-#include  "dab_constants.h"
-#include  <vector>
+#include "dab_constants.h"
+#include <vector>
 #include "virtual_datahandler.h"
-#include  "ringbuffer.h"
+#include "ringbuffer.h"
 
 class DabRadio;
 

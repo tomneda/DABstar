@@ -32,10 +32,10 @@
 // #define ADD_DAB_CABLE_CHANNELS
 
 #include "band_handler.h"
-#include  "dab_constants.h"
-#include  <QHeaderView>
-#include  <QDomDocument>
-#include  <cstdio>
+#include "dab_constants.h"
+#include <QHeaderView>
+#include <QDomDocument>
+#include <cstdio>
 
 static BandHandler::SDabFrequencies frequencies_1[] =
 {

@@ -44,7 +44,7 @@
 #include "ensemble_list.h"
 #include "dab_channel_desc.h"
 #ifdef  DATA_STREAMER
-  #include    "tcp_server.h"
+  #include "tcp_server.h"
 #endif
 #include <memory>
 #include <QStringList>

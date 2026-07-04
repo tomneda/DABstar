@@ -33,10 +33,10 @@
 #pragma once
 #ifdef  __WITH_FDK_AAC__
 
-#include  <QObject>
-#include  <stdint.h>
-#include  <aacdecoder_lib.h>
-#include  "ringbuffer.h"
+#include <QObject>
+#include <stdint.h>
+#include <aacdecoder_lib.h>
+#include "ringbuffer.h"
 
 
 struct SStreamParms

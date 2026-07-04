@@ -44,7 +44,7 @@
 #include "fdk_aac.h"
 #else
 
-#include  "faad_decoder.h"
+#include "faad_decoder.h"
 
 #endif
 

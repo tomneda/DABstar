@@ -29,8 +29,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "newconverter.h"
-#include  <cstdio>
+#include "newconverter.h"
+#include <cstdio>
 
 newConverter::newConverter(int32_t inRate, int32_t outRate, int32_t inSize)
 {

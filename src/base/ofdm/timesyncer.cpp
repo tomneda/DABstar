@@ -30,7 +30,7 @@
  */
 #include "timesyncer.h"
 #include "sample_reader.h"
-#include  <QDebug>
+#include <QDebug>
 
 TimeSyncer::TimeSyncer(SampleReader * mr)
   : mpSampleReader(mr)

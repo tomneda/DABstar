@@ -36,16 +36,16 @@
 
 #pragma once
 
-#include  <QObject>
-#include  <QSettings>
-#include  <QString>
-#include  <atomic>
-#include  "dab_constants.h"
-#include  "fir_filters.h"
+#include <QObject>
+#include <QSettings>
+#include <QString>
+#include <atomic>
+#include "dab_constants.h"
+#include "fir_filters.h"
 #include "device_handler_if.h"
-#include  "ringbuffer.h"
-#include  "ui_rtlsdr_widget.h"
-#include  <QLibrary>
+#include "ringbuffer.h"
+#include "ui_rtlsdr_widget.h"
+#include <QLibrary>
 
 class dll_driver;
 class XmlFileWriter;

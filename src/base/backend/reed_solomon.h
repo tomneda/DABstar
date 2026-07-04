@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include  <cstdint>
+#include <cstdint>
 #include "galois.h"
-#include  <vector>
+#include <vector>
 
 class ReedSolomon
 {

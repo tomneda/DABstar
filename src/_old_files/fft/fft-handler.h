@@ -34,7 +34,7 @@
 #include <vector>
 
 #ifdef  __FFTW3__
-  #include  <fftw3.h>
+  #include <fftw3.h>
 #elif __KISS_FFT__
   #include "kiss_fft.h"
 #elif __NAYUKI__

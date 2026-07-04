@@ -22,7 +22,7 @@
  */
 
 #include "glob_data_types.h"
-#include  "xml_descriptor.h"
+#include "xml_descriptor.h"
 
 void XmlDescriptor::printDescriptor()
 {

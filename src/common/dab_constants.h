@@ -32,14 +32,14 @@
 #pragma once
 
 #include "glob_defs.h"
-#include  <QString>
-#include  <cmath>
-#include  <unistd.h>
+#include <QString>
+#include <cmath>
+#include <unistd.h>
 
 #if defined(_WIN32)
   #include	"windows.h"
 #else
-  #include  "dlfcn.h"
+  #include "dlfcn.h"
   using HINSTANCE = void *;
 #endif
 

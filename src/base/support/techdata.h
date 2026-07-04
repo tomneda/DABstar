@@ -32,13 +32,13 @@
 
 #pragma once
 
-#include  "ui_techdata.h"
-#include  "dab_constants.h"
-#include  "audio_display.h"
+#include "ui_techdata.h"
+#include "dab_constants.h"
+#include "audio_display.h"
 #include "ringbuffer.h"
 #include "custom_frame.h"
-#include  <QObject>
-#include  <QTimer>
+#include <QObject>
+#include <QTimer>
 
 class DabRadio;
 class QSettings;

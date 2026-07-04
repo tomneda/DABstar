@@ -29,8 +29,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #include "faad_decoder.h"
-#include        "neaacdec.h"
-#include        "dabradio.h"
+#include "neaacdec.h"
+#include "dabradio.h"
 
 faadDecoder::faadDecoder(DabRadio * mr, RingBuffer<i16> * buffer)
 {

@@ -31,7 +31,7 @@
 #include	"ringbuffer.h"
 #include	<SoapySDR/Device.hpp>
 #include	<SoapySDR/Formats.hpp>
-#include  <SoapySDR/Errors.hpp>
+#include <SoapySDR/Errors.hpp>
 #include	"device-handler.h"
 #include	"ui_soapy-handler.h"
 #include	"soapy-worker.h"

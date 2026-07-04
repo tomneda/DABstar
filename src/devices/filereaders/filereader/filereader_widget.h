@@ -1,12 +1,12 @@
 #pragma once
 
-#include  <QLabel>
-#include  <QLCDNumber>
-#include  <QHBoxLayout>
-#include  <QVBoxLayout>
-#include  <QCheckBox>
-#include  <QSlider>
-#include  <QSpacerItem>
+#include <QLabel>
+#include <QLCDNumber>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QCheckBox>
+#include <QSlider>
+#include <QSpacerItem>
 
 class FileReaderWidget
 {

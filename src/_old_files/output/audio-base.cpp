@@ -29,8 +29,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "audio-base.h"
-#include  <cstdio>
+#include "audio-base.h"
+#include <cstdio>
 
 /*
  *	The class is the abstract sink for the data generated

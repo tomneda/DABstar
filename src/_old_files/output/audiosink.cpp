@@ -29,10 +29,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "audiosink.h"
-#include  <cstdio>
-#include  <QDebug>
-#include  <QComboBox>
+#include "audiosink.h"
+#include <cstdio>
+#include <QDebug>
+#include <QComboBox>
 
 AudioSink::AudioSink(int16_t latency) :
   _O_Buffer(8 * 32768)

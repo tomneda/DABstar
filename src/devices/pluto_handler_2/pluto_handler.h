@@ -23,19 +23,19 @@
 
 #pragma once
 
-#include    <QtNetwork>
-#include    <QMessageBox>
-#include    <QThread>
-#include    <QFrame>
-#include    <QByteArray>
-#include    <QSettings>
-#include    <QLibrary>
-#include    <atomic>
-#include    <iio.h>
-#include    "dab_constants.h"
-#include    "ringbuffer.h"
+#include <QtNetwork>
+#include <QMessageBox>
+#include <QThread>
+#include <QFrame>
+#include <QByteArray>
+#include <QSettings>
+#include <QLibrary>
+#include <atomic>
+#include <iio.h>
+#include "dab_constants.h"
+#include "ringbuffer.h"
 #include "device_handler_if.h"
-#include    "ui_pluto_widget.h"
+#include "ui_pluto_widget.h"
 
 class   XmlFileWriter;
 

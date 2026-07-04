@@ -29,8 +29,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "backend_deconvolver.h"
-#include  "eep_protection.h"
-#include  "uep_protection.h"
+#include "eep_protection.h"
+#include "uep_protection.h"
 
 BackendDeconvolver::BackendDeconvolver(const SDescriptorType * d)
 {

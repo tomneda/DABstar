@@ -31,18 +31,18 @@
 
 #pragma once
 
-#include  <QThread>
-#include  <QFrame>
-#include  <QSettings>
-#include  <QSemaphore>
-#include  <QLibrary>
-#include  <atomic>
-#include  <queue>
-#include  "dab_constants.h"
-#include  "ringbuffer.h"
+#include <QThread>
+#include <QFrame>
+#include <QSettings>
+#include <QSemaphore>
+#include <QLibrary>
+#include <atomic>
+#include <queue>
+#include "dab_constants.h"
+#include "ringbuffer.h"
 #include "device_handler_if.h"
-#include  "ui_sdrplay_widget.h"
-#include  <sdrplay_api.h>
+#include "ui_sdrplay_widget.h"
+#include <sdrplay_api.h>
 
 class Rsp_device;
 class generalCommand;

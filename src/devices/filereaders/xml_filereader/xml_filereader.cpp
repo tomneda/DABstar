@@ -29,25 +29,25 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  "xml_filereader.h"
-#include  "openfiledialog.h"
-#include  "setting_helper.h"
+#include "xml_filereader.h"
+#include "openfiledialog.h"
+#include "setting_helper.h"
 
-#include  <cstdio>
-#include  <cstdlib>
-#include  <fcntl.h>
-#include  <ctime>
+#include <cstdio>
+#include <cstdlib>
+#include <fcntl.h>
+#include <ctime>
 
 #ifdef _WIN32
 #else
 
-  #include  <unistd.h>
-  #include  <sys/time.h>
+  #include <unistd.h>
+  #include <sys/time.h>
 
 #endif
 
-#include  "xml_descriptor.h"
-#include  "xml_reader.h"
+#include "xml_descriptor.h"
+#include "xml_reader.h"
 
 constexpr u32 cInputFrameBufferSize = 8 * 32768;
 

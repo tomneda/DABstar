@@ -20,15 +20,15 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include    <QLabel>
-#include    <QDebug>
-#include    "pluto_handler.h"
-#include    "xml_filewriter.h"
-#include    "device_exceptions.h"
-#include    "openfiledialog.h"
+#include <QLabel>
+#include <QDebug>
+#include "pluto_handler.h"
+#include "xml_filewriter.h"
+#include "device_exceptions.h"
+#include "openfiledialog.h"
 
 //  Description for the fir-filter is here:
-#include    "dabFilter.h"
+#include "dabFilter.h"
 
 /* static scratch mem for strings */
 static char tmpstr[64];

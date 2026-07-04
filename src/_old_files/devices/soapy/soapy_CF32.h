@@ -23,7 +23,7 @@
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Formats.hpp>
-#include        <SoapySDR/Errors.hpp>
+#include <SoapySDR/Errors.hpp>
 #include <cstdio> //printf
 #include <stdlib.h> //free
 #include <complex.h>

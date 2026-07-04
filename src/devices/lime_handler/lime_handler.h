@@ -31,18 +31,18 @@
 
 #pragma once
 
-#include  <QThread>
-#include  <QFrame>
-#include  <QSettings>
-#include  <QLibrary>
-#include  <atomic>
-#include  <vector>
-#include  "dab_constants.h"
-#include  "ringbuffer.h"
-#include  <LimeSuite.h>
+#include <QThread>
+#include <QFrame>
+#include <QSettings>
+#include <QLibrary>
+#include <atomic>
+#include <vector>
+#include "dab_constants.h"
+#include "ringbuffer.h"
+#include <LimeSuite.h>
 #include "device_handler_if.h"
-#include  "lime_widget.h"
-#include  "fir_filters.h"
+#include "lime_widget.h"
+#include "fir_filters.h"
 
 class XmlFileWriter;
 

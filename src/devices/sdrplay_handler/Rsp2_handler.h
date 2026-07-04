@@ -1,6 +1,6 @@
 #pragma once
 
-#include  "Rsp_device.h"
+#include "Rsp_device.h"
 
 class SdrPlayHandler;
 

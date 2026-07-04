@@ -7,12 +7,12 @@
  * The original file originated from Qt-DAB but carried no copyright notice.
  */
 
-#include  "spectrum_scope.h"
-#include  "plot_widget.h"
-#include  <QSettings>
-#include  <QColor>
-#include  <QPen>
-#include  <QChart>
+#include "spectrum_scope.h"
+#include "plot_widget.h"
+#include <QSettings>
+#include <QColor>
+#include <QPen>
+#include <QChart>
 
 SpectrumScope::SpectrumScope(PlotWidget * pPlot, i32 displaySize, QSettings * /*dabSettings*/) :
   mDisplaySize(displaySize)

@@ -19,8 +19,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include    "dongleselect.h"
-#include    <QVBoxLayout>
+#include "dongleselect.h"
+#include <QVBoxLayout>
 
 //  Whenever there are two or more devices connected
 //  to the computer, the user is asked to make a choice.

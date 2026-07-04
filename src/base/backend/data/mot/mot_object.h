@@ -31,14 +31,14 @@
 
 #pragma once
 
-#include  "dab_constants.h"
-#include  "mot_content_types.h"
-#include  <QObject>
-#include  <QLabel>
-#include  <QByteArray>
-#include  <QString>
-#include  <QDir>
-#include  <map>
+#include "dab_constants.h"
+#include "mot_content_types.h"
+#include <QObject>
+#include <QLabel>
+#include <QByteArray>
+#include <QString>
+#include <QDir>
+#include <map>
 
 class DabRadio;
 

@@ -30,10 +30,10 @@
  */
 #pragma once
 
-#include  <QThread>
-#include  "dab_constants.h"
-#include  "ringbuffer.h"
-#include  <atomic>
+#include <QThread>
+#include "dab_constants.h"
+#include "ringbuffer.h"
+#include <atomic>
 
 class RawFileHandler;
 

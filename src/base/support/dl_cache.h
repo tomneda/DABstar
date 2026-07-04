@@ -1,7 +1,7 @@
 #pragma once
 
-#include  <QString>
-#include  <vector>
+#include <QString>
+#include <vector>
 
 class DynLinkCache
 {

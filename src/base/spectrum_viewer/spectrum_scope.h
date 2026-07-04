@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include  "dab_constants.h"
-#include  <QObject>
-#include  <QLineSeries>
+#include "dab_constants.h"
+#include <QObject>
+#include <QLineSeries>
 
 class QSettings;
 class PlotWidget;

@@ -23,14 +23,14 @@
  *    A simple client for rtl_tcp
  */
 
-#include    <QLabel>
-#include    <QMessageBox>
-#include    <QHostAddress>
-#include    "rtl_tcp_client.h"
-#include    "rtl-sdr.h"
-#include    "xml_filewriter.h"
-#include    "device_exceptions.h"
-#include    "openfiledialog.h"
+#include <QLabel>
+#include <QMessageBox>
+#include <QHostAddress>
+#include "rtl_tcp_client.h"
+#include "rtl-sdr.h"
+#include "xml_filewriter.h"
+#include "device_exceptions.h"
+#include "openfiledialog.h"
 
 #if !defined(_WIN32)
   #include <netinet/in.h>  // for macro htonl

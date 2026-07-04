@@ -24,8 +24,8 @@
 #pragma once
 
 #include	<QtNetwork>
-#include        <QMessageBox>
-#include        <QByteArray>
+#include <QMessageBox>
+#include <QByteArray>
 #include	<QThread>
 #include	<QFrame>
 #include	<QSettings>

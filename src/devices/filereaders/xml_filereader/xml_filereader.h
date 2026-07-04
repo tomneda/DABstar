@@ -30,14 +30,14 @@
  */
 #pragma once
 
-#include  <QObject>
-#include  <QString>
-#include  <QFrame>
-#include  <atomic>
-#include  "dab_constants.h"
+#include <QObject>
+#include <QString>
+#include <QFrame>
+#include <atomic>
+#include "dab_constants.h"
 #include "device_handler_if.h"
-#include  "ringbuffer.h"
-#include  "ui_xmlfiles.h"
+#include "ringbuffer.h"
+#include "ui_xmlfiles.h"
 
 class QSettings;
 class XmlDescriptor;

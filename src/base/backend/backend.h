@@ -30,7 +30,7 @@
  */
 #pragma once
 
-#include  "ringbuffer.h"
+#include "ringbuffer.h"
 #include "backend_driver.h"
 #include "backend_deconvolver.h"
 #include <vector>

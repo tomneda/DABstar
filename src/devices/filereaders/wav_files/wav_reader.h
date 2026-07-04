@@ -36,7 +36,7 @@
 #include	"ringbuffer.h"
 #include	<atomic>
 #ifdef HAVE_LIQUID
-  #include  <liquid/liquid.h>
+  #include <liquid/liquid.h>
 #endif
 
 class WavFileHandler;

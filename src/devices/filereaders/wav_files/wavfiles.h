@@ -30,17 +30,17 @@
  */
 #pragma once
 
-#include  "dab_constants.h"
+#include "dab_constants.h"
 #include "device_handler_if.h"
-#include  "ringbuffer.h"
-#include  "filereader_widget.h"
-#include  "wav_reader.h"
-#include  <memory>
-#include  <QObject>
-#include  <QString>
-#include  <QFrame>
-#include  <sndfile.h>
-#include  <atomic>
+#include "ringbuffer.h"
+#include "filereader_widget.h"
+#include "wav_reader.h"
+#include <memory>
+#include <QObject>
+#include <QString>
+#include <QFrame>
+#include <sndfile.h>
+#include <atomic>
 
 class WavFileHandler final : public QObject, public IDeviceHandler, public FileReaderWidget
 {

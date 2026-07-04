@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include  "dab_constants.h"
+#include "dab_constants.h"
 
 class PhaseTable
 {

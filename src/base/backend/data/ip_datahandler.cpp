@@ -30,9 +30,9 @@
  */
 
 #include "ip_datahandler.h"
-#include  "dabradio.h"
-#include  "bit_extractors.h"
-#include  "crc.h"
+#include "dabradio.h"
+#include "bit_extractors.h"
+#include "crc.h"
 
 IpDataHandler::IpDataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer)
 {

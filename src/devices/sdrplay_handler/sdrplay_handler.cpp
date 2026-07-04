@@ -28,24 +28,24 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include  <QLabel>
-#include  "sdrplay_handler.h"
-#include  "sdrplay_commands.h"
-#include  "xml_filewriter.h"
-#include  "setting_helper.h"
+#include <QLabel>
+#include "sdrplay_handler.h"
+#include "sdrplay_commands.h"
+#include "xml_filewriter.h"
+#include "setting_helper.h"
 
 //  The Rsp's
-#include  "Rsp_device.h"
-#include  "Rsp1_handler.h"
-#include  "Rsp1A_handler.h"
-#include  "Rsp2_handler.h"
-#include  "RspDuo_handler.h"
-#include  "RspDx_handler.h"
+#include "Rsp_device.h"
+#include "Rsp1_handler.h"
+#include "Rsp1A_handler.h"
+#include "Rsp2_handler.h"
+#include "RspDuo_handler.h"
+#include "RspDx_handler.h"
 
-#include  "device_exceptions.h"
-#include  "openfiledialog.h"
-#include  <chrono>
-#include  <thread>
+#include "device_exceptions.h"
+#include "openfiledialog.h"
+#include <chrono>
+#include <thread>
 
 std::string errorMessage(i32 errorCode)
 {

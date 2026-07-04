@@ -37,7 +37,7 @@
 
 #ifdef _WIN32
 #else
-  #include  <unistd.h>
+  #include <unistd.h>
 #endif
 
 Q_LOGGING_CATEGORY(sLogRawReader, "RawReader", QtInfoMsg)

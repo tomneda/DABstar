@@ -30,13 +30,13 @@
  */
 #pragma once
 
-#include  "dab_constants.h"
+#include "dab_constants.h"
 #include "virtual_datahandler.h"
-#include  "dabdatagroupdecoder.h"
+#include "dabdatagroupdecoder.h"
 #include "journaline_viewer.h"
-#include  "NML.h"
-#include  <vector>
-#include  <QObject>
+#include "NML.h"
+#include <vector>
+#include <QObject>
 
 class DabRadio;
 

@@ -30,9 +30,9 @@
  */
 
 #include "epg_decoder.h"
-#include  "glob_defs.h"
-#include  <cstdio>
-#include  <QDate>
+#include "glob_defs.h"
+#include <cstdio>
+#include <QDate>
 
 //#define	 __EPG_TRACE__
 #define  EPG_TAG      0X02

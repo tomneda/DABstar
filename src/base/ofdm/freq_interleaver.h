@@ -30,9 +30,9 @@
  */
 #pragma once
 
-#include  <cstdint>
-#include  <vector>
-#include  "dab_constants.h"
+#include <cstdint>
+#include <vector>
+#include "dab_constants.h"
 
 /**
   *	\class FreqInterleaver

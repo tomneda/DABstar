@@ -30,13 +30,13 @@
  */
 #pragma once
 
-#include  <cmath>
-#include  <complex>
-#include  <cstdint>
-#include  <vector>
-#include  <limits>
-#include  <samplerate.h>
-#include  "dab-constants.h"
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <vector>
+#include <limits>
+#include <samplerate.h>
+#include "dab-constants.h"
 
 class newConverter
 {

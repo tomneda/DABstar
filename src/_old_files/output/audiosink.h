@@ -32,13 +32,13 @@
 
 #pragma once
 
-#include  <QString>
-#include  <vector>
-#include  "dab-constants.h"
-#include  <portaudio.h>
-#include  <cstdio>
-#include  "audio-base.h"
-#include  "ringbuffer.h"
+#include <QString>
+#include <vector>
+#include "dab-constants.h"
+#include <portaudio.h>
+#include <cstdio>
+#include "audio-base.h"
+#include "ringbuffer.h"
 
 class QComboBox;
 

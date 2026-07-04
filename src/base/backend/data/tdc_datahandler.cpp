@@ -20,9 +20,9 @@
  */
 
 #include "tdc_datahandler.h"
-#include  "dabradio.h"
-#include  "bit_extractors.h"
-#include  "crc.h"
+#include "dabradio.h"
+#include "bit_extractors.h"
+#include "crc.h"
 
 tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer, i16 /*appType*/)
 {

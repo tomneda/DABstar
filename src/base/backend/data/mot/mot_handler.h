@@ -30,9 +30,9 @@
  */
 #pragma once
 
-#include  "dab_constants.h"
-#include  "virtual_datahandler.h"
-#include  <vector>
+#include "dab_constants.h"
+#include "virtual_datahandler.h"
+#include <vector>
 
 class DabRadio;
 class MotObject;

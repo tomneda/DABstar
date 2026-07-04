@@ -1,7 +1,7 @@
 #pragma once
 
-#include  <stdint.h>
-#include  <complex>
+#include <stdint.h>
+#include <complex>
 #include "ringbuffer.h"
 
 class ProcessParams
