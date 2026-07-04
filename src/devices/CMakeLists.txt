@@ -265,8 +265,8 @@ include_directories(
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
         ${QT_QTCORE_INCLUDE_DIR}
-        ../main
-        ../support
+#        ../base/main
+#        ../base/support
         dummy-handler
         filereaders/filereader
         filereaders/xml_filereader
