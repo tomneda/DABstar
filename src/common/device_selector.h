@@ -8,6 +8,8 @@
  * The original copyright information is acknowledged.
  */
 
+#pragma once
+
 #include <memory>
 #include <QString>
 #include <QStringList>

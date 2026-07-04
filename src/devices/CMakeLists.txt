@@ -265,8 +265,6 @@ include_directories(
         ${QT_QTCORE_INCLUDE_DIR}
         ${QT_QTGUI_INCLUDE_DIR}
         ${QT_QTCORE_INCLUDE_DIR}
-#        ../base/main
-#        ../base/support
         dummy-handler
         filereaders/filereader
         filereaders/xml_filereader
@@ -277,7 +275,7 @@ include_directories(
 
 set(${devicesLibName}_HDRS
         ${${devicesLibName}_HDRS}
-        device_selector.h
+        ${CMAKE_SOURCE_DIR}/src/common/device_selector.h
         dongleselect.h
         filereaders/xml_filereader/xml_filereader.h
         filereaders/xml_filereader/xml_reader.h
@@ -313,6 +311,8 @@ set(${devicesLibName}_HDRS
 add_library(${devicesLibName} STATIC ${${devicesLibName}_SRCS} ${${devicesLibName}_HDRS})
 
 target_link_libraries(${devicesLibName}
+        PUBLIC
+        ${objectName}_common
         PRIVATE
         Qt6::Widgets
         Qt6::Xml

@@ -151,10 +151,8 @@ set(${baseLibName}_HDRS
         main/tii_manager.h
         main/gap_progress_bar.h
         main/dab_channel_desc.h
-        main/glob_defs.h
         main/glob_enums.h
         main/dab_processor.h
-        main/dab_constants.h
         main/mot_content_types.h
         main/mot_slide_progress.h
         eti_handler/eti_generator.h
@@ -214,8 +212,6 @@ set(${baseLibName}_HDRS
         audio/audioiodevice.h
         audio/test_tone.h
         audio/audiooutputqt.h
-        support/fir_filters.h
-        support/ringbuffer.h
         support/Xtan2.h
         support/band_handler.h
         support/dab_tables.h
@@ -223,7 +219,6 @@ set(${baseLibName}_HDRS
         support/viterbi_spiral/viterbi_spiral.h
         support/color_selector.h
         support/time_table.h
-        support/openfiledialog.h
         support/content_table.h
         support/dl_cache.h
         support/itu_regions.h
@@ -231,7 +226,6 @@ set(${baseLibName}_HDRS
         support/tii_library/tii_codes.h
         support/custom_frame.h
         support/gui_helpers.h
-        support/setting_helper.h
         support/wav_writer.h
         support/compass_direction.h
         support/time_meas.h
@@ -246,7 +240,6 @@ set(${baseLibName}_HDRS
         spectrum_viewer/spectrum_scope.h
         spectrum_viewer/waterfall_scope.h
         spectrum_viewer/correlation_viewer.h
-        file_devices/xml_filewriter/xml_filewriter.h
         service_list/service_list_handler.h
         service_list/service_db.h
         configuration/configuration.h
@@ -324,7 +317,6 @@ set(${baseLibName}_SRCS
         audio/audioiodevice.cpp
         audio/test_tone.cpp
         audio/audiooutputqt.cpp
-        support/fir_filters.cpp
         support/ringbuffer.cpp
         support/Xtan2.cpp
         support/band_handler.cpp
@@ -332,7 +324,6 @@ set(${baseLibName}_SRCS
         support/viterbi_spiral/viterbi_spiral.cpp
         support/color_selector.cpp
         support/time_table.cpp
-        support/openfiledialog.cpp
         support/content_table.cpp
         support/dl_cache.cpp
         support/itu_regions.cpp
@@ -341,7 +332,6 @@ set(${baseLibName}_SRCS
         support/tii_library/tii_codes.cpp
         support/custom_frame.cpp
         support/gui_helpers.cpp
-        support/setting_helper.cpp
         support/wav_writer.cpp
         support/compass_direction.cpp
         support/copyright_info.cpp
@@ -355,7 +345,6 @@ set(${baseLibName}_SRCS
         spectrum_viewer/waterfall_scope.cpp
         spectrum_viewer/correlation_viewer.cpp
         spectrum_viewer/cir_viewer.cpp
-        file_devices/xml_filewriter/xml_filewriter.cpp
         service_list/service_list_handler.cpp
         service_list/service_db.cpp
         configuration/configuration.cpp
@@ -400,12 +389,12 @@ target_include_directories(${baseLibName}
         audio
         scopes
         spectrum_viewer
-        file_devices/xml_filewriter
         eti_handler
         service_list
         configuration
         ensemble_list
         update
+        server_thread
         PRIVATE
         ${FFTW3F_INCLUDE_DIRS}
         ${FDK_AAC_INCLUDE_DIR}/fdk-aac
@@ -415,6 +404,7 @@ target_include_directories(${baseLibName}
 
 target_link_libraries(${baseLibName}
         PUBLIC
+        ${objectName}_common
         Qt6::Widgets
         Qt6::Xml
         Qt6::Sql
@@ -422,6 +412,8 @@ target_link_libraries(${baseLibName}
         Qt6::Charts
         Qt6::Network
         ${FFTW3F_LIBRARIES}
+        ${ZLIB_LIBRARIES}
+        ${LIBSNDFILE_LIBRARIES}
         ${baseExtraLibs}
         ${CMAKE_DL_LIBS}
 )

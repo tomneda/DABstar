@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16...3.30)
 
 # set CMAKE_BUILD_TYPE to "Release" if not defined (like call from command line)
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Set build type to Release if not specified" FORCE)
-endif()
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Set build type to Release if not specified" FORCE)
+endif ()
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Modules/CMakeFunctions.cmake)
 
@@ -23,9 +23,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(USE_SANITIZERS "Enable address/undefined sanitizers in Debug builds" OFF)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND USE_SANITIZERS)
-    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
-    add_link_options(-fsanitize=address,undefined)
-endif()
+  add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
+  add_link_options(-fsanitize=address,undefined)
+endif ()
 
 option(USE_LTO "Set -flto flag" OFF)  # switch off to save compile/link time while development
 
@@ -36,7 +36,7 @@ set(CMAKE_AUTORCC ON)
 
 # special release version flags
 if (USE_LTO)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
@@ -52,11 +52,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type -ffast-math -f
 
 # as MSVC compiler does not like VLAs (Variable Length Array) inhibit them for GCC also
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-Wvla -Werror=vla)
+  add_compile_options(-Wvla -Werror=vla)
 endif ()
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "/usr/local/bin" CACHE PATH "default install path" FORCE)
+  set(CMAKE_INSTALL_PREFIX "/usr/local/bin" CACHE PATH "default install path" FORCE)
 endif ()
 
 print(PROJECT_NAME)
@@ -71,23 +71,23 @@ add_definitions(-DPRJ_VERS="${PROJECT_VERSION}")
 option(CONV_IN_FILES "Convert .in-files" ON)
 
 if (CONV_IN_FILES)
-    configure_file("${PROJECT_SOURCE_DIR}/scripts/appimage_creator/dabstar.desktop.in"
-                   "${PROJECT_SOURCE_DIR}/scripts/appimage_creator/dabstar.desktop" @ONLY)
-    configure_file("${PROJECT_SOURCE_DIR}/scripts/appimage_creator/create_appimage.sh.in"
-                   "${PROJECT_SOURCE_DIR}/scripts/appimage_creator/create_appimage.sh" @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/scripts/appimage_creator/dabstar.desktop.in"
+          "${PROJECT_SOURCE_DIR}/scripts/appimage_creator/dabstar.desktop" @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/scripts/appimage_creator/create_appimage.sh.in"
+          "${PROJECT_SOURCE_DIR}/scripts/appimage_creator/create_appimage.sh" @ONLY)
 endif ()
 
 if (MINGW)
-    add_definitions(-municode)
+  add_definitions(-municode)
 endif ()
 
 # handle GIT hash
 get_git_commit_hash() # returns GIT_COMMIT_HASH
 print(GIT_COMMIT_HASH)
 if (GIT_COMMIT_HASH)
-    add_definitions("-DGITHASH=\"${GIT_COMMIT_HASH}\"")
+  add_definitions("-DGITHASH=\"${GIT_COMMIT_HASH}\"")
 else ()
-    add_definitions("-DGITHASH=\"(unknown)\"")
+  add_definitions("-DGITHASH=\"(unknown)\"")
 endif ()
 
 
@@ -95,8 +95,8 @@ endif ()
 # select the release build type by default to get optimization flags
 ########################################################################
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
-    message(STATUS "Build type not specified: defaulting to release.")
+  set(CMAKE_BUILD_TYPE "Release")
+  message(STATUS "Build type not specified: defaulting to release.")
 endif (NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 print(CMAKE_BUILD_TYPE)
@@ -111,30 +111,30 @@ print(CMAKE_MODULE_PATH)
 # select one or more devices (set to ON)
 # attention: option() does not overwrite the CMake cache entries, so use CMake command line or your IDE to overwrite this
 # As I (tomneda) possess not all of these devices I place an "untested" behind. They may run, or not run.
-option(AIRSPY     "Use AirSpy"     OFF)  # untested
-option(SPYSERVER  "Use SpyServer"  OFF)  # untested
-option(SDRPLAY    "Use SDRplay"    OFF)
-option(HACKRF     "Use HackRf"     OFF)
-option(LIMESDR    "Use LimeSdr"    OFF)  # untested
-option(RTL_TCP    "Use RtlTcp"     OFF)
-option(PLUTO      "Use Pluto"      OFF)  # untested
-option(UHD        "Use UHD"        OFF)
-option(RTLSDR     "Use RtlSdr"      ON)
-option(SOAPY      "Use SoapySdr"   OFF)  # partly untested
+option(AIRSPY "Use AirSpy" OFF)  # untested
+option(SPYSERVER "Use SpyServer" OFF)  # untested
+option(SDRPLAY "Use SDRplay" OFF)
+option(HACKRF "Use HackRf" OFF)
+option(LIMESDR "Use LimeSdr" OFF)  # untested
+option(RTL_TCP "Use RtlTcp" OFF)
+option(PLUTO "Use Pluto" OFF)  # untested
+option(UHD "Use UHD" OFF)
+option(RTLSDR "Use RtlSdr" ON)
+option(SOAPY "Use SoapySdr" OFF)  # partly untested
 
 
 # additional options
-option(USE_LIQUID    "Use LiquidDsp for HBF and Resampler"    OFF)  # this needs LiquidDsp (https://github.com/jgaeddert/liquid-dsp)
-option(DATA_STREAMER "Use DataStreamer"                       OFF)  # untested
-option(FDK_AAC       "Use FDK-AAC instead of FAAD"             ON)
+option(USE_LIQUID "Use LiquidDsp for HBF and Resampler" OFF)  # this needs LiquidDsp (https://github.com/jgaeddert/liquid-dsp)
+option(DATA_STREAMER "Use DataStreamer" OFF)  # untested
+option(FDK_AAC "Use FDK-AAC instead of FAAD" ON)
 
 # choose only one of the next three, otherwise the first ON-entry is valid
-option(VITERBI_AVX2  "Use AVX2 for Viterbi" OFF)  # fastest, for modern Intel/AMD processors
-option(VITERBI_SSE2  "Use SSE2 for Viterbi" OFF)  # quite fast, for bit older Intel/AMD processors
-option(VITERBI_NEON  "Use NEON for Viterbi" OFF)  # for ARM processors like Raspi (not tested)
+option(VITERBI_AVX2 "Use AVX2 for Viterbi" OFF)  # fastest, for modern Intel/AMD processors
+option(VITERBI_SSE2 "Use SSE2 for Viterbi" OFF)  # quite fast, for bit older Intel/AMD processors
+option(VITERBI_NEON "Use NEON for Viterbi" OFF)  # for ARM processors like Raspi (not tested)
 
 # there are other places like the OFDM decoder which can use SSE/AVX
-option(SSE_OR_AVX    "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  # needs VOLK (https://github.com/gnuradio/volk)
+option(SSE_OR_AVX "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  # needs VOLK (https://github.com/gnuradio/volk)
 
 ######################################################################
 ######################################################################
@@ -144,7 +144,7 @@ option(SSE_OR_AVX    "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  #
 
 ########################################################################
 if (WIN32)
-    include_directories(${CMAKE_SOURCE_DIR}/../dabstar-libs/include)
+  include_directories(${CMAKE_SOURCE_DIR}/../dabstar-libs/include)
 endif ()
 
 find_package(PkgConfig) # imports pkg_check_modules() macros
@@ -158,12 +158,12 @@ find_package(Qt6Multimedia REQUIRED)
 find_package(Qt6Charts REQUIRED)
 
 if (NOT APPLE AND NOT WIN32)
-    find_library(PTHREADS pthread)
-    if (NOT (PTHREADS))
-        message(FATAL_ERROR "Please install libpthread")
-    else (NOT (PTHREADS))
-        set(extraLibs ${extraLibs} ${PTHREADS})
-    endif (NOT (PTHREADS))
+  find_library(PTHREADS pthread)
+  if (NOT (PTHREADS))
+    message(FATAL_ERROR "Please install libpthread")
+  else (NOT (PTHREADS))
+    set(extraLibs ${extraLibs} ${PTHREADS})
+  endif (NOT (PTHREADS))
 endif ()
 
 #if (WIN32)
@@ -188,8 +188,7 @@ add_executable(${objectName}
 # Add subsequent libraries
 ########################################################################
 
-add_subdirectory(src/base)
-add_subdirectory(src/devices)
+add_subdirectory(src)
 
 target_link_libraries(${objectName}
         PRIVATE
