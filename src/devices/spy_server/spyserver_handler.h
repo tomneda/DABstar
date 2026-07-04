@@ -32,7 +32,7 @@
 
 #include "spyserver_tcp_client.h"
 #include "spyserver_protocol.h"
-#include "device_handler.h"
+#include "device_handler_if.h"
 #include "ringbuffer.h"
 #include <atomic>
 #include <QThread>

@@ -207,7 +207,7 @@ set(${baseLibName}_HDRS
         backend/data/mot/mot_dir.h
         backend/data/data_processor.h
         audio/audiofifo.h
-        audio/audiooutput.h
+        audio/audiooutput_if.h
         audio/audioiodevice.h
         audio/test_tone.h
         audio/audiooutputqt.h

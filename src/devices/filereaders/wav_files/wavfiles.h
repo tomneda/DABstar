@@ -31,7 +31,7 @@
 #pragma once
 
 #include  "dab_constants.h"
-#include  "device_handler.h"
+#include "device_handler_if.h"
 #include  "ringbuffer.h"
 #include  "filereader_widget.h"
 #include  "wav_reader.h"

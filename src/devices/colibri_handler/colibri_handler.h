@@ -33,7 +33,7 @@
 #include	"common.h"
 #include	"LibLoader.h"
 #include	"ringbuffer.h"
-#include	"device_handler.h"
+#include "device_handler_if.h"
 
 	class	colibriHandler: public deviceHandler, public Ui_colibriWidget {
 Q_OBJECT

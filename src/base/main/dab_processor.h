@@ -38,7 +38,7 @@
 #include "phasereference.h"
 #include "fic_decoder.h"
 #include "msc_handler.h"
-#include "device_handler.h"
+#include "device_handler_if.h"
 #include "ringbuffer.h"
 #include "tii_detector.h"
 #include "timesyncer.h"

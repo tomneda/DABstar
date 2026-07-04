@@ -38,7 +38,7 @@
 #include <atomic>
 #include <vector>
 #include <array>
-#include "device_handler.h"
+#include "device_handler_if.h"
 #include "ringbuffer.h"
 #include <random>
 

@@ -30,7 +30,7 @@
 #include  <QObject>
 #include  <uhd/usrp/multi_usrp.hpp>
 #include  "ui_uhd_widget.h"
-#include  "device_handler.h"
+#include "device_handler_if.h"
 #include  "ringbuffer.h"
 
 class UhdHandler;

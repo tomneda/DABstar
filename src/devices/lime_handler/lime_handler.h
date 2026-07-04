@@ -40,7 +40,7 @@
 #include  "dab_constants.h"
 #include  "ringbuffer.h"
 #include  <LimeSuite.h>
-#include  "device_handler.h"
+#include "device_handler_if.h"
 #include  "lime_widget.h"
 #include  "fir_filters.h"
 

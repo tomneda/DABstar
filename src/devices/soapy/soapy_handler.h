@@ -26,7 +26,7 @@
 #include <QFrame>
 #include <QSettings>
 #include <atomic>
-#include "device_handler.h"
+#include "device_handler_if.h"
 #include "ringbuffer.h"
 #include "ui_soapy_handler.h"
 #include "soapy_worker.h"

@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include "audiooutput.h"
+#include "audiooutput_if.h"
 #include "audiofifo.h"
 #include "glob_defs.h"
 #include <QIODevice>

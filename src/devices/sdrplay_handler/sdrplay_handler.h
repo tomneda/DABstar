@@ -40,7 +40,7 @@
 #include  <queue>
 #include  "dab_constants.h"
 #include  "ringbuffer.h"
-#include  "device_handler.h"
+#include "device_handler_if.h"
 #include  "ui_sdrplay_widget.h"
 #include  <sdrplay_api.h>
 

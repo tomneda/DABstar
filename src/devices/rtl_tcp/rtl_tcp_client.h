@@ -35,7 +35,7 @@
 #include  <QLineEdit>
 #include  <QTcpSocket>
 #include  "dab_constants.h"
-#include  "device_handler.h"
+#include "device_handler_if.h"
 #include  "ringbuffer.h"
 #include  "ui_rtl_tcp_widget.h"
 

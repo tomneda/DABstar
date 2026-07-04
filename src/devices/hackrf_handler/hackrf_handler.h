@@ -40,7 +40,7 @@
 #include  <atomic>
 #include  "dab_constants.h"
 #include  "ringbuffer.h"
-#include  "device_handler.h"
+#include "device_handler_if.h"
 #include  "ui_hackrf_widget.h"
 #include  <libhackrf/hackrf.h>
 #include  <QLibrary>

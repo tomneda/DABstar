@@ -27,7 +27,7 @@
 #include	<QWidget>
 #include	<QComboBox>
 #include	<QString>
-#include	"device_handler.h"
+#include "device_handler_if.h"
 #include	"ringbuffer.h"
 
 class		QSettings;

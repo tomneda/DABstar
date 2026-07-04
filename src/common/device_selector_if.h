@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "device_handler.h"
+#include "device_handler_if.h"
 #include <memory>
 #include <QString>
 #include <QStringList>

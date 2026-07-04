@@ -27,7 +27,7 @@
 #include	<sndfile.h>
 #include	<atomic>
 #include	"dab_constants.h"
-#include	"device_handler.h"
+#include  "device_handler_if.h"
 #include	"ringbuffer.h"
 
 #include	"ui_elad_files.h"

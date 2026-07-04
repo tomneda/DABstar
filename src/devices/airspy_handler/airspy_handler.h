@@ -33,7 +33,7 @@
 #include  "dab_constants.h"
 #include  "ringbuffer.h"
 #include  "fir_filters.h"
-#include  "device_handler.h"
+#include "device_handler_if.h"
 #include  "ui_airspy_widget.h"
 #include  "libairspy/airspy.h"
 

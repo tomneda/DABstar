@@ -34,7 +34,7 @@
 #include    <iio.h>
 #include    "dab_constants.h"
 #include    "ringbuffer.h"
-#include    "device_handler.h"
+#include "device_handler_if.h"
 #include    "ui_pluto_widget.h"
 
 class   XmlFileWriter;
