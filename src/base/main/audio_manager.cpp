@@ -94,7 +94,7 @@ AudioManager::~AudioManager()
 
 QString AudioManager::_seconds_to_timestring(const u32 iTimer) const
 {
-  return QString::asprintf("%d:%02d:%02d", iTimer / 3600, (iTimer / 60) % 60, iTimer % 60);
+  return QString::asprintf("%d:%02d:%02d", iTimer / 36000, (iTimer / 60) % 60, iTimer % 60);
 }
 
 void AudioManager::stop_audio_output()
@@ -228,6 +228,95 @@ void AudioManager::slot_update_peak_level_delay(i32 /*iDelaySteps = -1*/)
   emit signal_audio_peak_level_delay(mpConfig->sbPeakLevelDelay->value());
 }
 
+void AudioManager::_check_and_adapt_sample_rate_mode()
+{
+  const ESampleAdaptMode currSampleAdaptMode = mSampleAdaptMode;
+
+  switch (mSampleAdaptMode)
+  {
+  case ESampleAdaptMode::NoChange:
+    if      (mAudioBufferFillFiltered < 20) mSampleAdaptMode = ESampleAdaptMode::AddSamples;
+    else if (mAudioBufferFillFiltered > 80) mSampleAdaptMode = ESampleAdaptMode::RemoveSamples;
+    break;
+  case ESampleAdaptMode::RemoveSamples:
+    if (mAudioBufferFillFiltered <= 50) mSampleAdaptMode = ESampleAdaptMode::NoChange;
+    break;
+  case ESampleAdaptMode::AddSamples:
+    if (mAudioBufferFillFiltered >= 50) mSampleAdaptMode = ESampleAdaptMode::NoChange;
+    break;
+  case ESampleAdaptMode::Idle:  // avoid rate adaptions while startup
+    if (mAudioBufferFillFiltered >= 40) mSampleAdaptMode = ESampleAdaptMode::NoChange;
+    break;
+  }
+
+  if (mSampleAdaptMode != currSampleAdaptMode)
+  {
+    if (mSampleAdaptMode == ESampleAdaptMode::NoChange)
+    {
+      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #b78620; }");
+    }
+    else
+    {
+      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #b74620; }");
+    }
+  }
+}
+
+void AudioManager::_push_rate_adaptive_samples_to_audio_buffer(const i32 iAvailableBytes)
+{
+  if (mSampleAdaptMode == ESampleAdaptMode::NoChange || mSampleAdaptMode == ESampleAdaptMode::Idle)
+  {
+    mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data(), iAvailableBytes);
+  }
+  else // sample rate adaptions mode
+  {
+    i32 locSampleCount = 0;
+    i32 remainingSamples = 0;
+
+    // are there remaining samples from previous round?
+    if (mRemainingSampleCount > 0)
+    {
+      mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data(), mRemainingSampleCount);
+      locSampleCount += mRemainingSampleCount;
+    }
+
+    if (mSampleAdaptMode == ESampleAdaptMode::AddSamples)
+    {
+      while (iAvailableBytes - locSampleCount >= cInsertSamplesToPatchSampleRelation)
+      {
+        mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data() + locSampleCount, 2); // pre-fill extra stereo sample
+        mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data() + locSampleCount, cInsertSamplesToPatchSampleRelation);
+        locSampleCount += cInsertSamplesToPatchSampleRelation;
+      }
+
+      remainingSamples = iAvailableBytes - locSampleCount;
+
+      if (remainingSamples >= 2)
+      {
+        mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data() + locSampleCount, 2); // pre-fill extra stereo sample
+        mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data() + locSampleCount, remainingSamples);
+      }
+    }
+    else if (mSampleAdaptMode == ESampleAdaptMode::RemoveSamples)
+    {
+      while (iAvailableBytes - locSampleCount >= cInsertSamplesToPatchSampleRelation)
+      {
+        mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data() + locSampleCount + 2, cInsertSamplesToPatchSampleRelation - 2); // left out a stereo sample
+        locSampleCount += cInsertSamplesToPatchSampleRelation;
+      }
+
+      remainingSamples = iAvailableBytes - locSampleCount;
+
+      if (remainingSamples >= 4)
+      {
+        mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data() + locSampleCount + 2, remainingSamples - 2); // left out a stereo sample
+      }
+    }
+
+    mRemainingSampleCount = cInsertSamplesToPatchSampleRelation - remainingSamples;
+  }
+}
+
 void AudioManager::new_audio(const i32 iAmount, const u32 iAudioSampleRate, const u32 iAudioFlags)
 {
   if (!mIsChannelRunning)
@@ -252,7 +341,9 @@ void AudioManager::new_audio(const i32 iAmount, const u32 iAudioSampleRate, cons
 
   if (mpCurAudioFifo == nullptr || mpCurAudioFifo->sampleRate != iAudioSampleRate)
   {
+    mRemainingSampleCount = 0;
     mAudioBufferFillFiltered = 0.0f;
+    mSampleAdaptMode = ESampleAdaptMode::Idle;
     _setup_audio_output(iAudioSampleRate);
   }
   assert(mpCurAudioFifo != nullptr);
@@ -279,23 +370,24 @@ void AudioManager::new_audio(const i32 iAmount, const u32 iAudioSampleRate, cons
     mAudioTempBuffer.resize(availableBytes);
     mean_filter(mAudioBufferFillFiltered, mpAudioBufferToOutput->get_fill_state_in_percent(), 0.2f);
 
+    _check_and_adapt_sample_rate_mode();
+
     mpAudioBufferFromDecoder->get_data_from_ring_buffer(mAudioTempBuffer.data(), availableBytes);
 
     Q_ASSERT(mpCurAudioFifo != nullptr);
 
-    if (availableBytes > mpAudioBufferToOutput->get_ring_buffer_write_available())
+    if (availableBytes * 1.02 > mpAudioBufferToOutput->get_ring_buffer_write_available())  // *1.02 : for buffer underrun compensation we need some extra space
     {
       mpAudioBufferToOutput->flush_ring_buffer();
       qWarning("AudioManager::new_audio: Audio output buffer is full, try to start from new");
     }
 
-    mpAudioBufferToOutput->put_data_into_ring_buffer(mAudioTempBuffer.data(), availableBytes);
+    _push_rate_adaptive_samples_to_audio_buffer(availableBytes);
 
     if (mAudioDumpState == EAudioDumpState::Running)
     {
       mWavWriter.write(mAudioTempBuffer.data(), availableBytes);
     }
-
   }
 
   emit signal_audio_buffer_filled_state((i32)mAudioBufferFillFiltered);

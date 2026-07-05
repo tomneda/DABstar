@@ -34,8 +34,6 @@ class AudioManager : public QObject
 {
   Q_OBJECT
 public:
-  enum class EPlaybackState { Stopped, WaitForInit, Running };
-  enum class EAudioDumpState { Stopped, WaitForInit, Running };
   enum class EAudioFrameType { None, MP2, AAC };
 
   struct SResourceConfig
@@ -72,44 +70,6 @@ public:
   void new_audio(i32 iAmount, u32 iAudioSampleRate, u32 iAudioFlags);
   void new_aac_mp2_frame() const;
 
-public slots:
-  // Connected from AudioIODevice (internally)
-  void slot_show_audio_peak_level(f32 iPeakLeftDb, f32 iPeakRightDb, f32 iRmsLeftDb, f32 iRmsRightDb);
-  // Connected from TechData buttons
-  void slot_handle_audio_dump_button();
-  void slot_handle_frame_dump_button();
-  // Connected from UI elements
-  void slot_handle_volume_slider(i32 iSliderValue);
-  void slot_set_mute(bool iMuted);
-  void slot_set_test_tone(bool iActive);
-  void slot_set_audio_device(const QByteArray & iDeviceId);
-  // Connected from IAudioOutput
-  void slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
-  // Connected from config spinbox
-  void slot_update_peak_level_delay(i32 iDelaySteps = -1);
-
-private:
-  void _update_level_meter(LevelMeter * ipMeter, const f32 iPeak, const f32 iRms) const;
-
-signals:
-  // Forwarded to IAudioOutput (queued - IAudioOutput is in a different thread)
-  void signal_start_audio(SAudioFifo * buffer);
-  void signal_switch_audio(SAudioFifo * buffer);
-  void signal_stop_audio();
-  void signal_audio_mute(bool iMuted);
-  void signal_set_audio_device(const QByteArray & deviceId);
-  void signal_audio_test_tone(bool active);
-  void signal_audio_peak_level_delay(i32 delaySteps);
-  void signal_audio_buffer_filled_state(i32 percent);
-
-  // Status info updates to DabRadio (DabRadio updates its status labels)
-  void signal_sbr_used(bool used);
-  void signal_ps_used(bool used);
-  void signal_output_sample_rate(u32 kSps);
-
-  // Mute state: emitted when volume slider unmutes
-  void signal_unmute_requested();
-
 private:
   // Non-owned resources (passed in constructor)
   RingBuffer<i16> * const mpAudioBufferFromDecoder;
@@ -138,9 +98,17 @@ private:
   QString mServiceLabel;
 
   // Internal audio state
+  enum class EPlaybackState { Stopped, WaitForInit, Running };
+  enum class EAudioDumpState { Stopped, WaitForInit, Running };
   EPlaybackState mPlaybackState = EPlaybackState::Stopped;
   EAudioDumpState mAudioDumpState = EAudioDumpState::Stopped;
   EAudioFrameType mAudioFrameType = EAudioFrameType::None;
+
+  // Buffer underflow/overflow handling
+  static constexpr i32 cInsertSamplesToPatchSampleRelation = 100 * 2 /*stereo*/;  // How many stereo samples are used for one added/removed sample?
+  enum class ESampleAdaptMode { Idle, NoChange, RemoveSamples, AddSamples };
+  ESampleAdaptMode mSampleAdaptMode = ESampleAdaptMode::Idle;
+  i32 mRemainingSampleCount = 0;
 
   std::vector<i16> mAudioTempBuffer;
   QString mAudioWavDumpFileName;
@@ -150,10 +118,48 @@ private:
   mutable uint32_t mAudioDumpTimer = 0;
   mutable uint32_t mFrameDumpTimer = 0;
 
+  void _update_level_meter(LevelMeter * ipMeter, const f32 iPeak, const f32 iRms) const;
   void _setup_audio_output(u32 iSampleRate);
   void _start_audio_dumping();
   void _stop_audio_dumping();
   void _start_audio_frame_dumping();
   void _stop_audio_frame_dumping();
   QString _seconds_to_timestring(const u32 iTimer) const;
+
+public slots:
+  // Connected from AudioIODevice (internally)
+  void slot_show_audio_peak_level(f32 iPeakLeftDb, f32 iPeakRightDb, f32 iRmsLeftDb, f32 iRmsRightDb);
+  // Connected from TechData buttons
+  void slot_handle_audio_dump_button();
+  void slot_handle_frame_dump_button();
+  // Connected from UI elements
+  void slot_handle_volume_slider(i32 iSliderValue);
+  void slot_set_mute(bool iMuted);
+  void slot_set_test_tone(bool iActive);
+  void slot_set_audio_device(const QByteArray & iDeviceId);
+  // Connected from IAudioOutput
+  void slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
+  // Connected from config spinbox
+  void slot_update_peak_level_delay(i32 iDelaySteps = -1);
+  void _check_and_adapt_sample_rate_mode();
+  void _push_rate_adaptive_samples_to_audio_buffer(i32 iAvailableBytes);
+
+signals:
+  // Forwarded to IAudioOutput (queued - IAudioOutput is in a different thread)
+  void signal_start_audio(SAudioFifo * buffer);
+  void signal_switch_audio(SAudioFifo * buffer);
+  void signal_stop_audio();
+  void signal_audio_mute(bool iMuted);
+  void signal_set_audio_device(const QByteArray & deviceId);
+  void signal_audio_test_tone(bool active);
+  void signal_audio_peak_level_delay(i32 delaySteps);
+  void signal_audio_buffer_filled_state(i32 percent);
+
+  // Status info updates to DabRadio (DabRadio updates its status labels)
+  void signal_sbr_used(bool used);
+  void signal_ps_used(bool used);
+  void signal_output_sample_rate(u32 kSps);
+
+  // Mute state: emitted when volume slider unmutes
+  void signal_unmute_requested();
 };

@@ -51,7 +51,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../resources.qrc">:/res/icons/copyright24.png</pixmap>
+          <pixmap resource="../../../resources.qrc">:/res/icons/copyright24.png</pixmap>
          </property>
         </widget>
        </item>
@@ -138,7 +138,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle the current service as a favourite.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../../resources.qrc">
            <normaloff>:/res/icons/starempty24.png</normaloff>:/res/icons/starempty24.png</iconset>
          </property>
          <property name="iconSize">
@@ -180,7 +180,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Step one list entry up.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../../resources.qrc">
            <normaloff>:/res/icons/upwht24.png</normaloff>:/res/icons/upwht24.png</iconset>
          </property>
          <property name="iconSize">
@@ -209,7 +209,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Step one list entry down.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../../resources.qrc">
            <normaloff>:/res/icons/downwht24.png</normaloff>:/res/icons/downwht24.png</iconset>
          </property>
          <property name="iconSize">
@@ -251,7 +251,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scroll the service list to show the currently playing service in the centre.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../../resources.qrc">
            <normaloff>:/res/icons/targetwht24.png</normaloff>:/res/icons/targetwht24.png</iconset>
          </property>
          <property name="iconSize">
@@ -368,7 +368,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show the Ensemble List&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use this to scan sample files or live channels with an SDR device.&lt;/p&gt;&lt;p&gt;Select &amp;quot;Play files&amp;quot; or &amp;quot;Play on ...&amp;quot; to switch between the file list and the channel list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../../resources.qrc">
            <normaloff>:/res/icons/el32.svg</normaloff>:/res/icons/el32.svg</iconset>
          </property>
          <property name="iconSize">
@@ -494,7 +494,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Start or stop the map web server&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Displays a map showing the locations of detected transmitters.&lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; color:#26a269;&quot;&gt;Green: &lt;/span&gt;Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;off&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700; color:#ff7800;&quot;&gt;Orange:&lt;/span&gt; Webserver is &lt;span style=&quot; font-weight:600;&quot;&gt;active&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/maps24.png</normaloff>:/res/icons/maps24.png</iconset>
            </property>
            <property name="iconSize">
@@ -529,7 +529,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the FIB content list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click a column header to sort by that column.&lt;br/&gt;Single-click a row to start the service.&lt;br/&gt;Double-click to export the table to a CSV file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/fib32.svg</normaloff>:/res/icons/fib32.svg</iconset>
            </property>
            <property name="iconSize">
@@ -564,7 +564,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the detailed TII list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This works only if the receiver's map coordinates are set in the configuration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/tii32.svg</normaloff>:/res/icons/tii32.svg</iconset>
            </property>
            <property name="iconSize">
@@ -599,7 +599,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the CIR&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Opens a window showing the Channel Impulse Response (CIR) for the whole DAB frame.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/cir32.svg</normaloff>:/res/icons/cir32.svg</iconset>
            </property>
            <property name="iconSize">
@@ -634,7 +634,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide a widget showing details of the currently selected service&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/details24.png</normaloff>:/res/icons/details24.png</iconset>
            </property>
            <property name="iconSize">
@@ -674,7 +674,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the spectrum, constellation, and other DAB signal views&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/meas24.png</normaloff>:/res/icons/meas24.png</iconset>
            </property>
            <property name="iconSize">
@@ -709,7 +709,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the control widget of the SDR device&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/tower24.png</normaloff>:/res/icons/tower24.png</iconset>
            </property>
            <property name="iconSize">
@@ -821,7 +821,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Mute or unmute the audio&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/unmuted24.png</normaloff>:/res/icons/unmuted24.png</iconset>
            </property>
            <property name="iconSize">
@@ -893,7 +893,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open folder where the slides are stored&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Only enabled when MOT picture saving is activated (see the configuration window).&lt;/p&gt;&lt;p&gt;If no slide picture is shown yet then the base picture folder is opened.&lt;br/&gt;If a slide picture is shown then the folder where this picture is stored is opened.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/folder24.png</normaloff>:/res/icons/folder24.png</iconset>
            </property>
            <property name="iconSize">
@@ -928,7 +928,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the configuration-control widget&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources.qrc">
+            <iconset resource="../../../resources.qrc">
              <normaloff>:/res/icons/setting24.png</normaloff>:/res/icons/setting24.png</iconset>
            </property>
            <property name="iconSize">
@@ -1033,7 +1033,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;p&gt;If the bar turns red then a tiny, barely hearable, audio rate adaption is made to refill the buffer to about 50% state.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="styleSheet">
             <string notr="true">QProgressBar::chunk { background: #EF8B2A; }</string>
@@ -1073,11 +1073,6 @@
          </property>
          <item>
           <widget class="LevelMeter" name="levelMeterLeft" native="true">
-           <property name="font">
-            <font>
-             <pointsize>6</pointsize>
-            </font>
-           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -1089,6 +1084,11 @@
              <width>16777215</width>
              <height>8</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>6</pointsize>
+            </font>
            </property>
            <property name="lowerBound" stdset="0">
             <double>-22.000000000000000</double>
@@ -1103,11 +1103,6 @@
          </item>
          <item>
           <widget class="LevelMeter" name="levelMeterRight" native="true">
-           <property name="font">
-            <font>
-             <pointsize>6</pointsize>
-            </font>
-           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -1119,6 +1114,11 @@
              <width>16777215</width>
              <height>8</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>6</pointsize>
+            </font>
            </property>
            <property name="lowerBound" stdset="0">
             <double>-22.000000000000000</double>
@@ -1186,7 +1186,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../../../resources.qrc"/>
  </resources>
  <connections/>
  <buttongroups>
