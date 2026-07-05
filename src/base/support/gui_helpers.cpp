@@ -16,8 +16,9 @@
 #include <cassert>
 // #include <QDebug>
 
+namespace {
 
-static void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseColor2, const QColor & iBgBaseColor, const f32 iRefLuminance)
+void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseColor2, const QColor & iBgBaseColor, const f32 iRefLuminance)
 {
   constexpr f32 cGradientFactor = 0.69f;
 
@@ -30,26 +31,29 @@ static void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseCol
   const f32 luminance = (r1 * 0.2126f + g1 * 0.7152f + b1 * 0.0722f) / 255.0f; // BT.709
   const f32 corrFac = iRefLuminance / luminance;
 
-  r1 = r1 * corrFac;
-  g1 = g1 * corrFac;
-  b1 = b1 * corrFac;
+  // qDebug() << "luminance=" << luminance << corrFac;
 
-  // is any value > 255?
-  f32 corrClip = 1.0f;
-  corrClip = std::min(255.0f / (f32)r1, corrClip);
-  corrClip = std::min(255.0f / (f32)g1, corrClip);
-  corrClip = std::min(255.0f / (f32)b1, corrClip);
-
-  // qDebug() << "luminance=" << luminance << corrFac << corrClip;
-
-  if (corrClip < 1.0f)
+  if (corrFac > 1) // only allow to bright up, keep already bright colors
   {
-    r1 = r1 * corrClip;
-    g1 = g1 * corrClip;
-    b1 = b1 * corrClip;
-    // qDebug() << "Clamped color components" << r1 << g1 << b1 << corrClip;
+    r1 = r1 * corrFac;
+    g1 = g1 * corrFac;
+    b1 = b1 * corrFac;
+
+    // is any value > 255?
+    f32 corrClip = 1.0f;
+    corrClip = std::min(255.0f / (f32)r1, corrClip);
+    corrClip = std::min(255.0f / (f32)g1, corrClip);
+    corrClip = std::min(255.0f / (f32)b1, corrClip);
+
+    if (corrClip < 1.0f)
+    {
+      r1 = r1 * corrClip;
+      g1 = g1 * corrClip;
+      b1 = b1 * corrClip;
+      // qDebug() << "Clamped color components" << r1 << g1 << b1 << corrClip;
+    }
   }
-  oBgBaseColor1 = QColor(r1, g1, b1);
+  oBgBaseColor1 = QColor((int)r1, (int)g1, (int)b1);
 
   const i32 r2 = (i32)(r1 * cGradientFactor);
   const i32 g2 = (i32)(g1 * cGradientFactor);
@@ -57,7 +61,7 @@ static void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseCol
   oBgBaseColor2 = QColor(r2, g2, b2);
 }
 
-static void _calc_blended_bg_colors(QColor & oBgDisabled1, QColor & oBgDisabled2, const QColor & iBgBaseColor1, const QColor & iBgBaseColor2)
+void _calc_blended_bg_colors(QColor & oBgDisabled1, QColor & oBgDisabled2, const QColor & iBgBaseColor1, const QColor & iBgBaseColor2)
 {
   // Disabled: blend the button color 35% toward a dark neutral so the
   // hue identity is still faintly visible but the button clearly looks inactive.
@@ -78,6 +82,7 @@ static void _calc_blended_bg_colors(QColor & oBgDisabled1, QColor & oBgDisabled2
 
   oBgDisabled1 = QColor(rd1, gd1, bd1);
   oBgDisabled2 = QColor(rd2, gd2, bd2);
+}
 }
 
 QString get_bg_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor /*= "black"*/, const f32 iRefLuminance /*= 0.60f*/)
