@@ -76,36 +76,41 @@ void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
     _setup_x_axis();
   }
 
-  QList<QPointF> pts;
-  pts.reserve(mDataSize);
-
-  for (i32 i = 0; i < mDataSize; i++)
-  {
-    pts.append(QPointF(mX_axis_vec[i], iYValVec[i]));
-  }
-
-  if (mCurrentStyle == SCustPlot::EStyle::DOTS)
-  {
-    mpDotSeries->replace(pts);
-    mpLineSeries->clear();
-  }
-  else if (mCurrentStyle == SCustPlot::EStyle::STICKS)
+  if (mCurrentStyle == SCustPlot::EStyle::STICKS)
   {
     QList<QPointF> stickPts;
     stickPts.reserve(mDataSize * 3);
+
     for (i32 i = 0; i < mDataSize; i++)
     {
       stickPts.append(QPointF(mX_axis_vec[i], 0.0));
       stickPts.append(QPointF(mX_axis_vec[i], iYValVec[i]));
       stickPts.append(QPointF(mX_axis_vec[i], qQNaN())); // "lift" the pen
     }
+
     mpLineSeries->replace(stickPts);
     mpDotSeries->clear();
   }
   else
   {
-    mpLineSeries->replace(pts);
-    mpDotSeries->clear();
+    QList<QPointF> pts;
+    pts.reserve(mDataSize);
+
+    for (i32 i = 0; i < mDataSize; i++)
+    {
+      pts.append(QPointF(mX_axis_vec[i], iYValVec[i]));
+    }
+
+    if (mCurrentStyle == SCustPlot::EStyle::DOTS)
+    {
+      mpDotSeries->replace(pts);
+      mpLineSeries->clear();
+    }
+    else // EStyle::LINES
+    {
+      mpLineSeries->replace(pts);
+      mpDotSeries->clear();
+    }
   }
 }
 
@@ -172,18 +177,14 @@ void CarrierDisp::_update_y_markers(const f64 yMin, const f64 yMax)
   // Align Y-axis ticks with the marker lines
   mpPlot->set_y_tick_dynamic(0.0, step);
 
-  const QPen pen = (mCurrentCustPlot.Style == SCustPlot::EStyle::DOTS)
-                   ? QPen(Qt::gray,     0.0, Qt::SolidLine)
-                   : QPen(Qt::darkGray, 0.0, Qt::DashLine);
-
-  const i64 firstIdx = (i64)std::floor(yMin / step);
-  const i64 lastIdx  = (i64)std::ceil(yMax / step);
+  const i64 firstIdx = (i64)std::floor(yMin / step) + 1; // do not draw the bottom line (+1)
+  const i64 lastIdx  = (i64)std::ceil(yMax / step);      // but draw the top line
 
   for (i64 idx = firstIdx; idx <= lastIdx; ++idx)
   {
     const f64 yVal = (f64)idx * step;
     auto * line = new QLineSeries();
-    line->setPen(pen);
+    line->setPen(QPen(0x606060));
     line->append(-1e9, yVal);
     line->append(+1e9, yVal);
     mpPlot->chart()->addSeries(line);
