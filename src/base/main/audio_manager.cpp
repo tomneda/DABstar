@@ -94,7 +94,7 @@ AudioManager::~AudioManager()
 
 QString AudioManager::_seconds_to_timestring(const u32 iTimer) const
 {
-  return QString::asprintf("%d:%02d:%02d", iTimer / 36000, (iTimer / 60) % 60, iTimer % 60);
+  return QString::asprintf("%d:%02d:%02d", iTimer / 3600, (iTimer / 60) % 60, iTimer % 60);
 }
 
 void AudioManager::stop_audio_output()
