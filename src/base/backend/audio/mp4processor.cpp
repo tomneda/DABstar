@@ -369,6 +369,11 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
     {
       mCrcErrors++;
       mSumCrcErrors++;
+      // Conceal the missing AU with a decaying repetition of the last good frame so the
+      // audio stream stays gapless. DAB+ uses a 960-sample core AAC frame; SBR doubles it.
+      // Output is always stereo.
+      const i32 numConcealSamples = (streamParameters.sbrFlag ? 1920 : 960) * 2;
+      aacDecoder->conceal_lost_frame(numConcealSamples);
     }
     //
     //	what would happen if the errors were in the 10 parity bytes

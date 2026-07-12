@@ -140,9 +140,13 @@ i16 faadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
     return -1;
   }
 
+  const i32 stereoSamples = 2 * samples;
+
   if (channels == 2)
   {
     audioBuffer->put_data_into_ring_buffer(outBuffer, samples);
+    mLastGoodFrame.assign(outBuffer, outBuffer + samples);
+
     if (audioBuffer->get_ring_buffer_read_available() > (i32)sampleRate / 10)
     {
       emit signal_new_audio((i32)sampleRate / 10, sampleRate,
@@ -152,12 +156,16 @@ i16 faadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
   }
   else if (channels == 1) // TODO: this is not called with a mono service but the stereo above
   {
-    auto * const buffer = make_vla(i16, 2 * samples);
+    auto * const buffer = make_vla(i16, stereoSamples);
+
     for (i16 i = 0; i < samples; i++)
     {
       buffer[2 * i + 0] = buffer[2 * i + 1] = outBuffer[i];
     }
-    audioBuffer->put_data_into_ring_buffer(buffer, 2 * samples);
+
+    audioBuffer->put_data_into_ring_buffer(buffer, stereoSamples);
+    mLastGoodFrame.assign(buffer, buffer + stereoSamples);
+
     if (audioBuffer->get_ring_buffer_read_available() > (i32)sampleRate / 10)
     {
       emit signal_new_audio((i32)sampleRate / 10, sampleRate,
@@ -170,5 +178,29 @@ i16 faadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
     fprintf(stderr, "Cannot handle these channels\n");
   }
 
+  mConcealDecay = 1.0f;
   return channels;
+}
+
+void faadDecoder::conceal_lost_frame(const i32 iNumSamples)
+{
+  // Packet-loss concealment: repeat the last good frame with exponential amplitude decay.
+  // Each successive call attenuates by cConcealDecayFactor, fading to silence over ~200 ms
+  // (10 frames × 20 ms/frame at 48 kHz core, or ~400 ms with SBR).
+  // Falls back to true silence when no good frame has been stored yet.
+  if ((i32)mLastGoodFrame.size() != iNumSamples)
+  {
+    std::vector<i16> silence(iNumSamples, 0);
+    audioBuffer->put_data_into_ring_buffer(silence.data(), iNumSamples);
+    return;
+  }
+
+  std::vector<i16> concealed(iNumSamples);
+  for (i32 i = 0; i < iNumSamples; ++i)
+  {
+    concealed[i] = (i16)((f32)mLastGoodFrame[i] * mConcealDecay);
+  }
+  mConcealDecay *= cConcealDecayFactor;
+
+  audioBuffer->put_data_into_ring_buffer(concealed.data(), iNumSamples);
 }

@@ -30,6 +30,7 @@
 #pragma once
 
 #include <QObject>
+#include <vector>
 #include "neaacdec.h"
 #include "ringbuffer.h"
 
@@ -56,8 +57,11 @@ public:
   ~faadDecoder();
 
   i16 convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * ipBuffer, i16 iBufferLength);
+  void conceal_lost_frame(i32 iNumSamples);
 
 private:
+  static constexpr f32 cConcealDecayFactor = 0.75f;
+
   bool initialize(const SStreamParms *);
 
   bool processorOK;
@@ -68,6 +72,8 @@ private:
   NeAACDecFrameInfo hInfo;
   i32 baudRate;
   RingBuffer<i16> * audioBuffer;
+  std::vector<i16> mLastGoodFrame;
+  f32 mConcealDecay = 1.0f;
 
 signals:
   void signal_new_audio(i32, u32, u32);

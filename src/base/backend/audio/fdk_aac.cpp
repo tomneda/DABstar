@@ -114,9 +114,13 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
     return -7;
   }
 
+  const i32 stereoFrameSize = info->frameSize * 2;
+
   if (info->numChannels == 2)
   {
-    mpAudioBuffer->put_data_into_ring_buffer(bufp, info->frameSize * 2);
+    mpAudioBuffer->put_data_into_ring_buffer(bufp, stereoFrameSize);
+    mLastGoodFrame.assign(bufp, bufp + stereoFrameSize);
+
     if (mpAudioBuffer->get_ring_buffer_read_available() > (i32)info->sampleRate / 8)
     {
       emit signal_new_audio(info->frameSize, info->sampleRate,  (iSP->psFlag ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
@@ -124,13 +128,16 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
   }
   else if (info->numChannels == 1)
   {
-    auto * const buffer = make_vla(i16, 2 * info->frameSize);
+    auto * const buffer = make_vla(i16, stereoFrameSize);
 
     for (i32 i = 0; i < info->frameSize; i++)
     {
       buffer[2 * i + 0] = buffer[2 * i + 1] = bufp[i];
     }
-    mpAudioBuffer->put_data_into_ring_buffer(buffer, info->frameSize * 2);
+
+    mpAudioBuffer->put_data_into_ring_buffer(buffer, stereoFrameSize);
+    mLastGoodFrame.assign(buffer, buffer + stereoFrameSize);
+
     if (mpAudioBuffer->get_ring_buffer_read_available() > info->sampleRate / 8)
     {
       emit signal_new_audio(info->frameSize, info->sampleRate, (iSP->psFlag ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
@@ -141,6 +148,30 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
     fprintf(stderr, "Cannot handle these channels\n");
   }
 
+  mConcealDecay = 1.0f;
   return info->numChannels;
+}
+
+void FdkAAC::conceal_lost_frame(const i32 iNumSamples)
+{
+  // Packet-loss concealment: repeat the last good frame with exponential amplitude decay.
+  // Each successive call attenuates by cConcealDecayFactor, fading to silence over ~200 ms
+  // (10 frames × 20 ms/frame at 48 kHz core, or ~400 ms with SBR).
+  // Falls back to true silence when no good frame has been stored yet.
+  if ((i32)mLastGoodFrame.size() != iNumSamples)
+  {
+    std::vector<i16> silence(iNumSamples, 0);
+    mpAudioBuffer->put_data_into_ring_buffer(silence.data(), iNumSamples);
+    return;
+  }
+
+  std::vector<i16> concealed(iNumSamples);
+  for (i32 i = 0; i < iNumSamples; ++i)
+  {
+    concealed[i] = (i16)((f32)mLastGoodFrame[i] * mConcealDecay);
+  }
+  mConcealDecay *= cConcealDecayFactor;
+
+  mpAudioBuffer->put_data_into_ring_buffer(concealed.data(), iNumSamples);
 }
 

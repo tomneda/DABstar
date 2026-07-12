@@ -35,6 +35,7 @@
 
 #include <QObject>
 #include <stdint.h>
+#include <vector>
 #include <aacdecoder_lib.h>
 #include "ringbuffer.h"
 
@@ -62,11 +63,16 @@ public:
   ~FdkAAC() override;
 
   i16 convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * ipBuffer, i16 iPacketLength);
+  void conceal_lost_frame(i32 iNumSamples);
 
 private:
+  static constexpr f32 cConcealDecayFactor = 0.75f;
+
   RingBuffer<i16> * const mpAudioBuffer;
   bool mIsWorking = false;
   HANDLE_AACDECODER handle;
+  std::vector<i16> mLastGoodFrame;
+  f32 mConcealDecay = 1.0f;
 
 signals:
   void signal_new_audio(i32, u32, u32);
