@@ -39,6 +39,7 @@
 #include "pad_handler.h"
 #include <QObject>
 #include <vector>
+#include <memory>
 
 #ifdef  __WITH_FDK_AAC__
 #include "fdk_aac.h"
@@ -55,7 +56,7 @@ class Mp4Processor : public QObject, public FrameProcessor
 Q_OBJECT
 public:
   Mp4Processor(DabRadio *, i16, RingBuffer<i16> *, RingBuffer<u8> *);
-  ~Mp4Processor() override;
+  ~Mp4Processor() override = default;
 
   void add_to_frame(const std::vector<u8> &) override;
 
@@ -93,13 +94,13 @@ private:
   std::array<i16, 10> mAuStartArr;
   FirecodeChecker mFireCode;
 #ifdef  __WITH_FDK_AAC__
-  FdkAAC *aacDecoder;
+  std::unique_ptr<FdkAAC> mpAacDecoder;
 #else
-  faadDecoder * aacDecoder;
+  std::unique_ptr<FaadDecoder> mpAacDecoder;
 #endif
 
   bool _process_reed_solomon_frame(const u8 * ipFrameBytes, i16 iBase);
-  bool _process_super_frame(u8 [], i16);
+  bool _process_super_frame(const u8[], i16);
   i32 _build_aac_stream(i16 iAacFrameLen, const SStreamParms * iSp, const u8 * iData, std::vector<u8> & oFileBuffer) const;
 
 signals:

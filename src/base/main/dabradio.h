@@ -365,7 +365,7 @@ public slots:
   void slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB);
 
   // Audio
-  void slot_new_audio(i32 iAmount, u32 iAudioSampleRate, u32 iAudioFlags);
+  void slot_new_audio(i32 iNumSamples, u32 iAudioSampleRate, u32 iAudioFlags);
   void slot_set_stereo(bool iStereo);
   void slot_set_stream_selector(i32 iIndex);
   void slot_new_aac_mp2_frame();

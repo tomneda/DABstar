@@ -49,33 +49,32 @@ struct SStreamParms
 };
 
 
-class faadDecoder : public QObject
+class FaadDecoder : public QObject
 {
 Q_OBJECT
 public:
-  faadDecoder(DabRadio * mr, RingBuffer<i16> * buffer);
-  ~faadDecoder();
+  FaadDecoder(const DabRadio * ipDR, RingBuffer<i16> * ipBuffer);
+  ~FaadDecoder();
 
   i16 convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * ipBuffer, i16 iBufferLength);
   void conceal_lost_frame(i32 iNumSamples);
 
 private:
   static constexpr f32 cConcealDecayFactor = 0.75f;
-
-  bool initialize(const SStreamParms *);
-
-  bool processorOK;
-  bool aacInitialized;
-  u32 aacCap;
-  NeAACDecHandle aacHandle;
-  NeAACDecConfigurationPtr aacConf;
-  NeAACDecFrameInfo hInfo;
-  i32 baudRate;
-  RingBuffer<i16> * audioBuffer;
+  bool mAacInitialized = false;
+  u32 mAacCap;
+  NeAACDecHandle mAacHandle;
+  NeAACDecConfigurationPtr mAacConf;
+  RingBuffer<i16> * mpAudioBuffer;
   std::vector<i16> mLastGoodFrame;
   f32 mConcealDecay = 1.0f;
+  i32 mLastAudioBufferFillSize = 0;
+  u32 mLastSampleRate = 0;
+  u32 mLastAudioFlags = 0;
+
+  bool _initialize(const SStreamParms *);
 
 signals:
-  void signal_new_audio(i32, u32, u32);
+  void signal_new_audio(i32 oNumSamples, u32 oSampleRate, u32 oAudioFlags);
 };
 

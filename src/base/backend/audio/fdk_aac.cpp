@@ -32,8 +32,6 @@
  */
 #include "mp4processor.h"
 #include "dabradio.h"
-#include <cstring>
-#include "charsets.h"
 #include "fdk_aac.h"
 
 /**
@@ -41,17 +39,17 @@
   * the class proper processes input and extracts the aac frames
   * that are processed by the "faadDecoder" class
   */
-FdkAAC::FdkAAC(DabRadio * mr, RingBuffer<i16> * iipBuffer)
-  : mpAudioBuffer(iipBuffer)
+FdkAAC::FdkAAC(const DabRadio * const ipDR, RingBuffer<i16> * const ipBuffer)
+  : mpAudioBuffer(ipBuffer)
 {
-  handle = aacDecoder_Open(TT_MP4_LOAS, 1);
+  mAacHandle = aacDecoder_Open(TT_MP4_LOAS, 1);
 
-  if (handle == nullptr)
+  if (mAacHandle == nullptr)
   {
     return;
   }
 
-  connect(this, &FdkAAC::signal_new_audio, mr, &DabRadio::slot_new_audio);
+  connect(this, &FdkAAC::signal_new_audio, ipDR, &DabRadio::slot_new_audio);
 
   mIsWorking = true;
 }
@@ -60,16 +58,16 @@ FdkAAC::~FdkAAC()
 {
   if (mIsWorking)
   {
-    aacDecoder_Close(handle);
+    aacDecoder_Close(mAacHandle);
   }
 }
 
-i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuffer, const i16 iPacketLength)
+i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * const ipBuffer, const i16 iPacketLength)
 {
   static_assert(sizeof(i16) == sizeof(INT_PCM));
   INT_PCM decode_buf[8 * sizeof(INT_PCM) * 2048];
   INT_PCM * bufp = &decode_buf[0];
-  i32 output_size = 8 * 2048;
+  constexpr i32 cOutputSize = 8 * 2048;
 
   if (!mIsWorking)
   {
@@ -89,14 +87,14 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
   }
 
   u32 validBytes = packet_size; // to remove const-ness
-  AAC_DECODER_ERROR err = aacDecoder_Fill(handle, const_cast<u8 **>(&ipBuffer), &packet_size, &validBytes);
+  AAC_DECODER_ERROR err = aacDecoder_Fill(mAacHandle, const_cast<u8 **>(&ipBuffer), &packet_size, &validBytes);
 
   if (err != AAC_DEC_OK)
   {
     return -4;
   }
 
-  err = aacDecoder_DecodeFrame(handle, bufp, output_size, 0);
+  err = aacDecoder_DecodeFrame(mAacHandle, bufp, cOutputSize, 0);
 
   if (err == AAC_DEC_NOT_ENOUGH_BITS)
   {
@@ -108,22 +106,25 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
     return -6;
   }
 
-  const CStreamInfo * info = aacDecoder_GetStreamInfo(handle);
+  const CStreamInfo * info = aacDecoder_GetStreamInfo(mAacHandle);
   if (!info || info->sampleRate <= 0)
   {
     return -7;
   }
 
+  const i32 audioBufferFillSize = info->sampleRate / 8; // 6000S@48000Sps -> 125ms
   const i32 stereoFrameSize = info->frameSize * 2;
+  const u32 audioFlags = (iSP->psFlag  ? DabRadio::AFL_PS_USED  : DabRadio::AFL_NONE) |
+                         (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE);
 
   if (info->numChannels == 2)
   {
     mpAudioBuffer->put_data_into_ring_buffer(bufp, stereoFrameSize);
     mLastGoodFrame.assign(bufp, bufp + stereoFrameSize);
 
-    if (mpAudioBuffer->get_ring_buffer_read_available() > (i32)info->sampleRate / 8)
+    if (mpAudioBuffer->get_ring_buffer_read_available() > audioBufferFillSize)
     {
-      emit signal_new_audio(info->frameSize, info->sampleRate,  (iSP->psFlag ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
+      emit signal_new_audio(audioBufferFillSize, info->sampleRate, audioFlags);
     }
   }
   else if (info->numChannels == 1)
@@ -138,9 +139,9 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
     mpAudioBuffer->put_data_into_ring_buffer(buffer, stereoFrameSize);
     mLastGoodFrame.assign(buffer, buffer + stereoFrameSize);
 
-    if (mpAudioBuffer->get_ring_buffer_read_available() > info->sampleRate / 8)
+    if (mpAudioBuffer->get_ring_buffer_read_available() > audioBufferFillSize)
     {
-      emit signal_new_audio(info->frameSize, info->sampleRate, (iSP->psFlag ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) | (iSP->sbrFlag ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
+      emit signal_new_audio(audioBufferFillSize, info->sampleRate, audioFlags);
     }
   }
   else
@@ -149,6 +150,9 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * const ipBuff
   }
 
   mConcealDecay = 1.0f;
+  mLastAudioBufferFillSize = audioBufferFillSize;
+  mLastSampleRate = info->sampleRate;
+  mLastAudioFlags = audioFlags;
   return info->numChannels;
 }
 
@@ -160,7 +164,7 @@ void FdkAAC::conceal_lost_frame(const i32 iNumSamples)
   // Falls back to true silence when no good frame has been stored yet.
   if ((i32)mLastGoodFrame.size() != iNumSamples)
   {
-    std::vector<i16> silence(iNumSamples, 0);
+    const std::vector<i16> silence(iNumSamples, 0);
     mpAudioBuffer->put_data_into_ring_buffer(silence.data(), iNumSamples);
     return;
   }
@@ -173,5 +177,12 @@ void FdkAAC::conceal_lost_frame(const i32 iNumSamples)
   mConcealDecay *= cConcealDecayFactor;
 
   mpAudioBuffer->put_data_into_ring_buffer(concealed.data(), iNumSamples);
+
+  // Trigger the audio pipeline the same way convert_mp4_to_pcm() does, so the concealed
+  // samples are not stranded in the decoder ring buffer during a sustained error run.
+  if (mLastSampleRate > 0 && mpAudioBuffer->get_ring_buffer_read_available() > mLastAudioBufferFillSize)
+  {
+    emit signal_new_audio(mLastAudioBufferFillSize, mLastSampleRate, mLastAudioFlags);
+  }
 }
 

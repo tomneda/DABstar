@@ -34,7 +34,6 @@
 #ifdef  __WITH_FDK_AAC__
 
 #include <QObject>
-#include <stdint.h>
 #include <vector>
 #include <aacdecoder_lib.h>
 #include "ringbuffer.h"
@@ -59,7 +58,7 @@ class FdkAAC : public QObject
 {
   Q_OBJECT
 public:
-  FdkAAC(DabRadio * mr, RingBuffer<i16> * iipBuffer);
+  FdkAAC(const DabRadio * ipDR, RingBuffer<i16> * ipBuffer);
   ~FdkAAC() override;
 
   i16 convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * ipBuffer, i16 iPacketLength);
@@ -70,9 +69,12 @@ private:
 
   RingBuffer<i16> * const mpAudioBuffer;
   bool mIsWorking = false;
-  HANDLE_AACDECODER handle;
+  HANDLE_AACDECODER mAacHandle;
   std::vector<i16> mLastGoodFrame;
   f32 mConcealDecay = 1.0f;
+  i32 mLastAudioBufferFillSize = 0;
+  u32 mLastSampleRate = 0;
+  u32 mLastAudioFlags = 0;
 
 signals:
   void signal_new_audio(i32, u32, u32);
