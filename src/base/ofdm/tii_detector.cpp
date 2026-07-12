@@ -232,12 +232,6 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
     }
   }
 
-  // reduce TII values of "old" data (> about 2 minutes collection) to allow new TII data to be more present
-  if (max > 4'000'000)
-  {
-    for (auto & db : mDecodedBufferArr) db *= 0.9f;
-  }
-
   _reset_null_symbol_buffer();
 
   // Sort the elements according to their strength
@@ -257,7 +251,8 @@ void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, co
   {
     const i32 fftIdx = fft_shift_skip_dc<cTu>(k);
     const cf32 prod = iVec[fftIdx] * conj(iVec[fftIdx + 1]); // TII carriers are given in pairs
-    ioVec[i] += prod;
+    // reduce TII values of "old" data (> about 2 minutes collection) to allow new TII data to be more present
+    mean_filter(ioVec[i], prod, 0.01f);
 
 #if 0
     if (std::abs(prod) > 1000.0f)
