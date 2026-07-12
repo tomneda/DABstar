@@ -214,7 +214,7 @@ template<typename T> inline T calc_adaptive_alpha(const T iAlphaBegin, const T i
   return alpha;
 }
 
-template<typename T> inline void mean_filter(T & ioVal, const T iVal, const T iAlpha)
+template<typename T> inline void mean_filter(T & ioVal, const T iVal, const f32 iAlpha)
 {
   ioVal += iAlpha * (iVal - ioVal);
 }
