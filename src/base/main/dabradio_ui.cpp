@@ -190,7 +190,7 @@ void DabRadio::_initialize_status_info()
   _add_status_label_elem(mStatusInfo.EPG,         0xf2c629, "EPG",         "Electronic Program Guide");
   _add_status_label_elem(mStatusInfo.Announce,    0xf2c629, "ANN",         "Announcement");
   _add_status_label_elem(mStatusInfo.RsError,     0xFF5749, "RS",          "Reed Solomon Error occurred");
-  _add_status_label_elem(mStatusInfo.CrcError,    0xFF5749, "CRC",         "CRC Error occurred");
+  _add_status_label_elem(mStatusInfo.CrcError,    0xFF5749, "CRC",         "CRC Error occurred<p>You will hear audible distortions if this occurs</p>");
 
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 

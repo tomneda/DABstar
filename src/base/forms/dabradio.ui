@@ -1033,7 +1033,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;p&gt;If the bar turns red then a tiny, barely hearable, audio rate adaption is made to refill the buffer to about 50% state.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;p&gt;If the bar turns reddish then a tiny, barely audible, audio rate adaption is made to refill the buffer to about 50% state.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="styleSheet">
             <string notr="true">QProgressBar::chunk { background: #EF8B2A; }</string>
