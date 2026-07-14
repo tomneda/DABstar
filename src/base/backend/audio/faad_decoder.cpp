@@ -32,20 +32,19 @@
 #include "neaacdec.h"
 #include "dabradio.h"
 
-faadDecoder::faadDecoder(DabRadio * mr, RingBuffer<i16> * buffer)
+FaadDecoder::FaadDecoder(const DabRadio * const ipDR, RingBuffer<i16> * ipBuffer)
 {
-  this->audioBuffer = buffer;
-  aacCap = NeAACDecGetCapabilities();
-  aacHandle = NeAACDecOpen();
-  aacConf = NeAACDecGetCurrentConfiguration(aacHandle);
-  aacInitialized = false;
-  baudRate = 48000;
-  connect(this, &faadDecoder::signal_new_audio, mr, &DabRadio::slot_new_audio);
+  mpAudioBuffer = ipBuffer;
+  mAacCap = NeAACDecGetCapabilities();
+  mAacHandle = NeAACDecOpen();
+  mAacConf = NeAACDecGetCurrentConfiguration(mAacHandle);
+
+  connect(this, &FaadDecoder::signal_new_audio, ipDR, &DabRadio::slot_new_audio);
 }
 
-faadDecoder::~faadDecoder()
+FaadDecoder::~FaadDecoder()
 {
-  NeAACDecClose(aacHandle);
+  NeAACDecClose(mAacHandle);
 }
 
 i32 get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
@@ -63,7 +62,7 @@ i32 get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
   }
 }
 
-bool faadDecoder::initialize(const SStreamParms * iSP)
+bool FaadDecoder::_initialize(const SStreamParms * iSP)
 {
   /* AudioSpecificConfig structure (the only way to select 960 transform here!)
    *
@@ -82,8 +81,9 @@ bool faadDecoder::initialize(const SStreamParms * iSP)
    * support AudioObjectType 29 (PS)
    */
 
-  i32 core_sr_index = iSP->dacRate ? (iSP->sbrFlag ? 6 : 3) : (iSP->sbrFlag ? 8 : 5);   // 24/48/16/32 kHz
-  i32 core_ch_config = get_aac_channel_configuration(iSP->mpegSurround, iSP->aacChannelMode);
+  const i32 core_sr_index = iSP->dacRate ? (iSP->sbrFlag ? 6 : 3) : (iSP->sbrFlag ? 8 : 5);   // 24/48/16/32 kHz
+  const i32 core_ch_config = get_aac_channel_configuration(iSP->mpegSurround, iSP->aacChannelMode);
+
   if (core_ch_config == -1)
   {
     printf("Unrecognized mpeg surround config (ignored): %d\n", iSP->mpegSurround);
@@ -95,74 +95,70 @@ bool faadDecoder::initialize(const SStreamParms * iSP)
   asc[1] = (core_sr_index & 0x01) << 7 | core_ch_config << 3 | 0b100;
   long unsigned int sample_rate;  // keep this as Type "long" seems to be 32bit on Win, but 64bit on Linux
   u8 channels;
-  const i32 init_result = NeAACDecInit2(aacHandle, asc, sizeof(asc), &sample_rate, &channels);
+  const i32 init_result = NeAACDecInit2(mAacHandle, asc, sizeof(asc), &sample_rate, &channels);
 
   if (init_result != 0)
   {
     /*      If some error initializing occured, skip the file */
     printf("Error initializing decoder library: %s\n", NeAACDecGetErrorMessage(-init_result));
-    NeAACDecClose(aacHandle);
+    NeAACDecClose(mAacHandle);
     return false;
   }
   return true;
 }
 
-i16 faadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * const ipBuffer, const i16 iBufferLength)
+i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * const ipBuffer, const i16 iBufferLength)
 {
-  NeAACDecFrameInfo hInfo;
-
-  if (!aacInitialized)
+  if (!mAacInitialized)
   {
-    if (!initialize(iSP))
+    if (!_initialize(iSP))
     {
       return 0;
     }
-    aacInitialized = true;
+    mAacInitialized = true;
   }
 
-  const i16 * const outBuffer = (i16 *)NeAACDecDecode(aacHandle, &hInfo, const_cast<u8*>(ipBuffer), iBufferLength);
-  const u64 sampleRate = hInfo.samplerate;
+  NeAACDecFrameInfo aacInfo;
+  const i16 * const outBuffer = (i16 *)NeAACDecDecode(mAacHandle, &aacInfo, const_cast<u8*>(ipBuffer), iBufferLength);
+  const u32 sampleRate = aacInfo.samplerate;
+  const i16 samples = aacInfo.samples;
+  const i32 audioBufferFillSize = sampleRate / 8; // 125ms
 
-  const i16 samples = hInfo.samples;
-  if ((sampleRate == 24000) || (sampleRate == 32000) || (sampleRate == 48000) || (sampleRate != (u64)baudRate))
+  if (aacInfo.error != 0)
   {
-    baudRate = sampleRate;
-  }
-
-  //fprintf (stdout, "bytes consumed %d\n", (i32)(hInfo. bytesconsumed));
-  //fprintf (stdout, "samplerate = %lu, samples = %d, channels = %d, error = %d, sbr = %d\n", sampleRate, samples, hInfo. channels, hInfo.error, hInfo.sbr);
-  //fprintf (stdout, "header = %d\n", hInfo. header_type);
-
-  const u8 channels = hInfo.channels;
-  if (hInfo.error != 0)
-  {
-    fprintf(stderr, "Warning: %s\n", faacDecGetErrorMessage(hInfo.error));
+    qWarning() << "faacDecGetErrorMessage: " << faacDecGetErrorMessage(aacInfo.error);
     return -1;
   }
 
-  if (channels == 2)
+  const u32 audioFlags = (aacInfo.ps  ? DabRadio::AFL_PS_USED  : DabRadio::AFL_NONE) |
+                         (aacInfo.sbr ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE);
+
+  if (aacInfo.channels == 2)
   {
-    audioBuffer->put_data_into_ring_buffer(outBuffer, samples);
-    if (audioBuffer->get_ring_buffer_read_available() > (i32)sampleRate / 10)
+    mpAudioBuffer->put_data_into_ring_buffer(outBuffer, samples);
+    mLastGoodFrame.assign(outBuffer, outBuffer + samples);
+
+    if (mpAudioBuffer->get_ring_buffer_read_available() > audioBufferFillSize) // 125ms
     {
-      emit signal_new_audio((i32)sampleRate / 10, sampleRate,
-                            (hInfo.ps ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) |
-                            (hInfo.sbr ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
+      emit signal_new_audio(audioBufferFillSize, sampleRate, audioFlags);
     }
   }
-  else if (channels == 1) // TODO: this is not called with a mono service but the stereo above
+  else if (aacInfo.channels == 1) // TODO: this is not called with a mono service but the stereo above
   {
-    auto * const buffer = make_vla(i16, 2 * samples);
-    for (i16 i = 0; i < samples; i++)
+    const i32 stereoSamples = 2 * samples; // we nevertheless send "stereo" samples
+    auto * const buffer = make_vla(i16, stereoSamples);
+
+    for (i16 i = 0; i < samples; ++i)
     {
       buffer[2 * i + 0] = buffer[2 * i + 1] = outBuffer[i];
     }
-    audioBuffer->put_data_into_ring_buffer(buffer, 2 * samples);
-    if (audioBuffer->get_ring_buffer_read_available() > (i32)sampleRate / 10)
+
+    mpAudioBuffer->put_data_into_ring_buffer(buffer, stereoSamples);
+    mLastGoodFrame.assign(buffer, buffer + stereoSamples);
+
+    if (mpAudioBuffer->get_ring_buffer_read_available() > audioBufferFillSize)
     {
-      emit signal_new_audio((i32)sampleRate / 10, sampleRate,
-                            (hInfo.ps ? DabRadio::AFL_PS_USED : DabRadio::AFL_NONE) |
-                            (hInfo.sbr ? DabRadio::AFL_SBR_USED : DabRadio::AFL_NONE));
+      emit signal_new_audio(audioBufferFillSize, sampleRate, audioFlags);
     }
   }
   else
@@ -170,5 +166,39 @@ i16 faadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
     fprintf(stderr, "Cannot handle these channels\n");
   }
 
-  return channels;
+  mConcealDecay = 1.0f;
+  mLastAudioBufferFillSize = audioBufferFillSize;
+  mLastSampleRate = sampleRate;
+  mLastAudioFlags = audioFlags;
+  return aacInfo.channels;
+}
+
+void FaadDecoder::conceal_lost_frame(const i32 iNumSamples)
+{
+  // Packet-loss concealment: repeat the last good frame with exponential amplitude decay.
+  // Each successive call attenuates by cConcealDecayFactor, fading to silence over ~200 ms
+  // (10 frames × 20 ms/frame at 48 kHz core, or ~400 ms with SBR).
+  // Falls back to true silence when no good frame has been stored yet.
+  if ((i32)mLastGoodFrame.size() != iNumSamples)
+  {
+    const std::vector<i16> silence(iNumSamples, 0);
+    mpAudioBuffer->put_data_into_ring_buffer(silence.data(), iNumSamples);
+    return;
+  }
+
+  std::vector<i16> concealed(iNumSamples);
+  for (i32 i = 0; i < iNumSamples; ++i)
+  {
+    concealed[i] = (i16)((f32)mLastGoodFrame[i] * mConcealDecay);
+  }
+  mConcealDecay *= cConcealDecayFactor;
+
+  mpAudioBuffer->put_data_into_ring_buffer(concealed.data(), iNumSamples);
+
+  // Trigger the audio pipeline the same way convert_mp4_to_pcm() does, so the concealed
+  // samples are not stranded in the decoder ring buffer during a sustained error run.
+  if (mLastSampleRate > 0 && mpAudioBuffer->get_ring_buffer_read_available() > mLastAudioBufferFillSize)
+  {
+    emit signal_new_audio(mLastAudioBufferFillSize, mLastSampleRate, mLastAudioFlags);
+  }
 }

@@ -68,19 +68,14 @@ Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> *
   connect(this, &Mp4Processor::signal_show_rs_corrections, iRI, &DabRadio::slot_show_rs_corrections);
 
 #ifdef  __WITH_FDK_AAC__
-  aacDecoder = new FdkAAC(iRI, iopAudioBuffer);
+  mpAacDecoder = std::make_unique<FdkAAC>(iRI, iopAudioBuffer);
 #else
-  aacDecoder = new faadDecoder(iRI, iopAudioBuffer);
+  mpAacDecoder = std::make_unique<FaadDecoder>(iRI, iopAudioBuffer);
 #endif
 
   mSuperFrameSize = 110 * (iBitRate / 8);
   mFrameByteVec.resize(mRsDims * 120);  // input
   mOutVec.resize(mRsDims * 110);
-}
-
-Mp4Processor::~Mp4Processor()
-{
-  delete aacDecoder;
 }
 
 /**
@@ -246,8 +241,11 @@ bool Mp4Processor::_process_reed_solomon_frame(const u8 * const ipFrameBytes, co
   *	First, we know the firecode checker gave green light
   *	We correct the errors using RS
   */
-bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
+bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase)
 {
+  // When RS/firecode fails the entire superframe is unrecoverable: numAUs and sbrFlag are
+  // unknown so we cannot call conceal_lost_frame() with the right sizes.  The decoder's
+  // previous-frame decay will naturally apply on the next CRC-fail path once sync resumes.
   if (!_process_reed_solomon_frame(ipFrameBytes, iBase)) return false; // fills mOutVec
 
   // bits 0 .. 15 is firecode
@@ -306,15 +304,21 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
     * extract the AU's, and prepare a buffer,  with the sufficient
     * lengthy for conversion to PCM samples
     */
+  // DAB+ uses a 960-sample core AAC frame; SBR doubles the output; output is always stereo.
+  constexpr i32 cAacCoreFrameBytes = 960;
+  const i32 numConcealSamples = cAacCoreFrameBytes * (streamParameters.sbrFlag ? 2 : 1) * 2;
+
   for (i16 auIdx = 0; auIdx < numAUs; ++auIdx)
   {
     const i32 aacFrameLen = mAuStartArr[auIdx + 1] - mAuStartArr[auIdx] - 2;
 
     // Just a sanity check
-    if (aacFrameLen > 960 || aacFrameLen < 0) // TODO: are 960 the max, not only 959?
+    if (aacFrameLen > cAacCoreFrameBytes || aacFrameLen < 0)
     {
       qWarning() << "Invalid aacFrameLen =" << aacFrameLen;
-      return false;
+      // Conceal this AU and continue rather than abandoning all remaining AUs.
+      mpAacDecoder->conceal_lost_frame(numConcealSamples);
+      continue;
     }
 
     //	but first the crc check
@@ -325,6 +329,7 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
       const i32 segmentSize = _build_aac_stream(aacFrameLen, &streamParameters, &(mOutVec[mAuStartArr[auIdx]]), aacStreamBuffer);
 
       mSum_good_crcs++;
+
       mpFrameBuffer->put_data_into_ring_buffer(aacStreamBuffer.data(), segmentSize); // This is used by the "ACC dump button" in the TechData widget
       emit signal_new_aac_frame();
 
@@ -341,21 +346,24 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
 
       //	then handle the audio
 #ifdef  __WITH_FDK_AAC__
-      const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, aacStreamBuffer.data(), segmentSize);
+      const i32 aacErr = mpAacDecoder->convert_mp4_to_pcm(&streamParameters, aacStreamBuffer.data(), segmentSize);
 #else
-      std::array<u8, 960 + 10> theAudioUnit;  // max size is ensured above but for what are the +10?
-      assert(aacFrameLen <= 960);
+      std::array<u8, cAacCoreFrameBytes + 10> theAudioUnit;  // max size is ensured above but for what are the +10?
+      assert(aacFrameLen <= cAacCoreFrameBytes);
       memcpy(theAudioUnit.data(), &mOutVec[mAuStartArr[auIdx]], aacFrameLen);
       memset(&theAudioUnit[aacFrameLen], 0, 10);
 
-      const i32 tmp = aacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit.data(), aacFrameLen);
+      const i32 aacErr = mpAacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit.data(), aacFrameLen);
 #endif
-      emit signal_is_stereo((streamParameters.aacChannelMode == 1) || (streamParameters.psFlag == 1));
 
-      if (tmp <= 0)
+      emit signal_is_stereo(streamParameters.aacChannelMode == 1 || streamParameters.psFlag == 1);
+
+      if (aacErr <= 0)
       {
-        qWarning() << "AAC decoding error: " << tmp;
+        qWarning() << "AAC decoding error: " << aacErr;
         mAacErrors++;
+        // The AAC decoder produced no PCM; conceal the gap to avoid a buffer hole.
+        mpAacDecoder->conceal_lost_frame(numConcealSamples);
       }
 
       if (++mAacFrames > 25)
@@ -369,10 +377,9 @@ bool Mp4Processor::_process_super_frame(u8 ipFrameBytes[], const i16 iBase)
     {
       mCrcErrors++;
       mSumCrcErrors++;
+      mpAacDecoder->conceal_lost_frame(numConcealSamples);
     }
-    //
-    //	what would happen if the errors were in the 10 parity bytes
-    //	rather than in the 110 payload bytes?
+    //	TODO: what would happen if the errors were in the 10 parity bytes	rather than in the 110 payload bytes?
   }
   return true;
 }

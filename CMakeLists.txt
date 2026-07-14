@@ -16,7 +16,7 @@ try_find_vcpkg_toolset_path()
 print(CMAKE_TOOLCHAIN_FILE)
 
 ##############################
-project(DABstar VERSION 5.3.0)
+project(DABstar VERSION 5.4.0)
 ##############################
 
 set(objectName "dabstar")

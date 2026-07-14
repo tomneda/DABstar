@@ -67,7 +67,7 @@ public:
   void update_dump_timers() const;  // called every second from DabRadio's display timer
 
   // Called from DabRadio wrappers (not slots — invoked directly)
-  void new_audio(i32 iAmount, u32 iAudioSampleRate, u32 iAudioFlags);
+  void new_audio(i32 iNumSamples, u32 iAudioSampleRate, u32 iAudioFlags);
   void new_aac_mp2_frame() const;
 
 private:

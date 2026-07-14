@@ -436,7 +436,8 @@ i32 Mp2Processor::_mp2_decode_frame(const std::vector<u8> & iFrame, i16 * opPcm)
     _get_bits(2);
     bound = (mode == MONO) ? 0 : 32;
   }
-  emit signal_is_stereo((mode == JOINT_STEREO) || (mode == STEREO));
+
+  emit signal_is_stereo(mode == JOINT_STEREO || mode == STEREO);
 
   // discard the last 4 bits of the header and the CRC value, if present
   _get_bits(4);
@@ -675,6 +676,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
   i16 lf = sampleRate == 48000 ? MP2framesize : 2 * MP2framesize;
   const i16 amount = MP2framesize;
   assert(amount == (i16)iBits.size());
+  const i32 audioBufferFillSize = sampleRate / 8; // 6000S@48000Sps -> 125us
 
   for (i16 i = 0; i < amount; i++)
   {
@@ -694,10 +696,10 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
           frameBuffer->put_data_into_ring_buffer(MP2frame.data(), frameSize); // this is used by the "MP2 dump button" in the TechData widget
           audioBuffer->put_data_into_ring_buffer(sample_buf, 2 * (i32)KJMP2_SAMPLES_PER_FRAME);
 
-          if (audioBuffer->get_ring_buffer_read_available() > sampleRate / 8)
+          if (audioBuffer->get_ring_buffer_read_available() > audioBufferFillSize) // all 125ms
           {
             emit signal_new_mp2_frame();
-            emit signal_new_audio(2 * (i32)KJMP2_SAMPLES_PER_FRAME, sampleRate, 0);
+            emit signal_new_audio(audioBufferFillSize, sampleRate, 0);
           }
         }
 

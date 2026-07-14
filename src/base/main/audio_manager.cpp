@@ -317,7 +317,7 @@ void AudioManager::_push_rate_adaptive_samples_to_audio_buffer(const i32 iAvaila
   }
 }
 
-void AudioManager::new_audio(const i32 iAmount, const u32 iAudioSampleRate, const u32 iAudioFlags)
+void AudioManager::new_audio(const i32 iNumSamples, const u32 iAudioSampleRate, const u32 iAudioFlags)
 {
   if (!mIsChannelRunning)
   {
@@ -361,32 +361,32 @@ void AudioManager::new_audio(const i32 iAmount, const u32 iAudioSampleRate, cons
     }
   }
 
-  assert((iAmount & 1) == 0);
+  assert((iNumSamples & 1) == 0); // we have always stereo samples, so an even number of samples
 
-  const i32 availableBytes = mpAudioBufferFromDecoder->get_ring_buffer_read_available();
+  const i32 availableSamples = mpAudioBufferFromDecoder->get_ring_buffer_read_available();
 
-  if (availableBytes >= iAmount)
+  if (availableSamples >= iNumSamples)
   {
-    mAudioTempBuffer.resize(availableBytes);
+    mAudioTempBuffer.resize(availableSamples);
     mean_filter(mAudioBufferFillFiltered, mpAudioBufferToOutput->get_fill_state_in_percent(), 0.2f);
 
     _check_and_adapt_sample_rate_mode();
 
-    mpAudioBufferFromDecoder->get_data_from_ring_buffer(mAudioTempBuffer.data(), availableBytes);
+    mpAudioBufferFromDecoder->get_data_from_ring_buffer(mAudioTempBuffer.data(), availableSamples);
 
     Q_ASSERT(mpCurAudioFifo != nullptr);
 
-    if (availableBytes * 1.02 > mpAudioBufferToOutput->get_ring_buffer_write_available())  // *1.02 : for buffer underrun compensation we need some extra space
+    if (availableSamples * 1.02 > mpAudioBufferToOutput->get_ring_buffer_write_available())  // *1.02 : for buffer underrun compensation we need some extra space
     {
       mpAudioBufferToOutput->flush_ring_buffer();
       qWarning("AudioManager::new_audio: Audio output buffer is full, try to start from new");
     }
 
-    _push_rate_adaptive_samples_to_audio_buffer(availableBytes);
+    _push_rate_adaptive_samples_to_audio_buffer(availableSamples);
 
     if (mAudioDumpState == EAudioDumpState::Running)
     {
-      mWavWriter.write(mAudioTempBuffer.data(), availableBytes);
+      mWavWriter.write(mAudioTempBuffer.data(), availableSamples);
     }
   }
 

@@ -1239,9 +1239,9 @@ void DabRadio::_initialize_audio_output()
   connect(mpAudioManager.get(), &AudioManager::signal_unmute_requested,   this, [this](){ _slot_update_mute_state(false); });
 }
 
-void DabRadio::slot_new_audio(const i32 iAmount, const u32 iAudioSampleRate, const u32 iAudioFlags)
+void DabRadio::slot_new_audio(const i32 iNumSamples, const u32 iAudioSampleRate, const u32 iAudioFlags)
 {
-  mpAudioManager->new_audio(iAmount, iAudioSampleRate, iAudioFlags);
+  mpAudioManager->new_audio(iNumSamples, iAudioSampleRate, iAudioFlags);
 }
 
 void DabRadio::slot_new_aac_mp2_frame()
