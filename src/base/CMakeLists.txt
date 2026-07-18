@@ -30,7 +30,7 @@ if (USE_LIQUID)
             support/halfbandfilter.cpp
     )
     list(APPEND baseExtraLibs liquid)
-    add_definitions(-DHAVE_LIQUID)
+    list(APPEND baseCompileDefs HAVE_LIQUID)
 endif ()
 
 if (SSE_OR_AVX)
@@ -45,7 +45,7 @@ if (SSE_OR_AVX)
     )
     find_package(Volk REQUIRED)
     list(APPEND baseExtraLibs ${VOLK_LIBRARIES})
-    add_definitions(-DHAVE_SSE_OR_AVX)
+    list(APPEND baseCompileDefs HAVE_SSE_OR_AVX)
 else ()
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
@@ -63,19 +63,19 @@ if (VITERBI_AVX2)
             support/viterbi_spiral/viterbi_16way.h
     )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
-    add_definitions(-DHAVE_VITERBI_AVX2)
+    list(APPEND baseCompileDefs HAVE_VITERBI_AVX2)
 elseif (VITERBI_SSE2)
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
             support/viterbi_spiral/viterbi_8way.h
     )
-    add_definitions(-DHAVE_VITERBI_SSE2)
+    list(APPEND baseCompileDefs HAVE_VITERBI_SSE2)
 elseif (VITERBI_NEON)
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
             support/viterbi_spiral/sse2neon.h
     )
-    add_definitions(-DHAVE_VITERBI_NEON)
+    list(APPEND baseCompileDefs HAVE_VITERBI_NEON)
 else ()
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
@@ -92,7 +92,7 @@ if (DATA_STREAMER)
             ${${baseLibName}_SRCS}
             server_thread/tcp_server.cpp
     )
-    add_definitions(-DDATA_STREAMER)
+    list(APPEND baseCompileDefs DATA_STREAMER)
 endif ()
 
 if (FDK_AAC)
@@ -109,7 +109,7 @@ if (FDK_AAC)
             backend/audio/fdk_aac.cpp
     )
     list(APPEND baseExtraLibs ${FDK_AAC_LIBRARIES})
-    add_definitions(-D__WITH_FDK_AAC__)
+    list(APPEND baseCompileDefs __WITH_FDK_AAC__)
 else ()
     find_package(Faad)
     if (NOT FAAD_FOUND)
@@ -124,7 +124,7 @@ else ()
             backend/audio/faad_decoder.cpp
     )
     list(APPEND baseExtraLibs ${FAAD_LIBRARIES})
-    add_definitions(-D__WITH_FAAD__)
+    list(APPEND baseCompileDefs __WITH_FAAD__)
 endif ()
 
 #########################################################################
@@ -353,6 +353,17 @@ set(${baseLibName}_HDRS
 )
 
 add_library(${baseLibName} STATIC ${${baseLibName}_SRCS} ${${baseLibName}_HDRS})
+
+# These feature switches change the contents/layout of public base headers
+# (e.g. dabradio.h, dab_processor.h, ofdm_decoder*.h). They must be visible to
+# every consumer of these headers - most importantly the executable target that
+# compiles main.cpp - otherwise different translation units see different class
+# definitions, violating the ODR (LTO reports this via -Wodr / -Wlto-type-mismatch).
+# Hence PUBLIC (propagates to targets linking ${baseLibName}) rather than the
+# directory-scoped add_definitions() which only reached this library's own sources.
+if (baseCompileDefs)
+  target_compile_definitions(${baseLibName} PUBLIC ${baseCompileDefs})
+endif ()
 
 if (extraLibDirs)
   target_link_directories(${baseLibName} PUBLIC ${extraLibDirs})
