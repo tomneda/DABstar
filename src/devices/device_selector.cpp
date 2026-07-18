@@ -75,6 +75,13 @@ DeviceSelector::DeviceSelector(QSettings * ipSettings) :
 {
 }
 
+// Out-of-line so DeviceSelector has a key function: this anchors the vtable,
+// typeinfo and destructor to a single translation unit. Without it the
+// defaulted inline dtor makes them weak/COMDAT symbols emitted in both
+// device_selector.cpp and moc_device_selector.cpp, which breaks under
+// Windows + -flto (reported as a duplicate/multiple definition).
+DeviceSelector::~DeviceSelector() = default;
+
 QStringList DeviceSelector::get_device_name_list() const
 {
   QStringList sl;
