@@ -13,13 +13,11 @@
 #include "device_selector_if.h"
 #include "openfiledialog.h"
 #include <QString>
-#include <QWidget>
 
 class QSettings;
 
-class DeviceSelector : public QWidget, public IDeviceSelector
+class DeviceSelector : public IDeviceSelector
 {
-  Q_OBJECT
 public:
   explicit DeviceSelector(QSettings * ipSettings);
   ~DeviceSelector() override;
