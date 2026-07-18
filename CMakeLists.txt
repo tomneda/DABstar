@@ -153,6 +153,39 @@ option(SSE_OR_AVX "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  # ne
 ######################################################################
 ######################################################################
 
+# ---------------------------------------------------------------------------
+# Feature switches that change the contents/layout of headers shared across
+# targets (dabradio.h, dab_processor.h, ofdm_decoder*.h, device headers, ...).
+# They must be defined identically for EVERY translation unit - the executable
+# (main.cpp) as well as all libraries - otherwise different TUs see different
+# class definitions, which violates the ODR (LTO reports this as -Wodr /
+# -Wlto-type-mismatch). Defining them here, before add_executable() and
+# add_subdirectory(), guarantees that. The matching source-file / find_package()
+# selection stays keyed on the same option() in each subdirectory.
+# ---------------------------------------------------------------------------
+if (USE_LIQUID)
+  add_compile_definitions(HAVE_LIQUID)
+endif ()
+if (SSE_OR_AVX)
+  add_compile_definitions(HAVE_SSE_OR_AVX)
+endif ()
+if (DATA_STREAMER)
+  add_compile_definitions(DATA_STREAMER)
+endif ()
+if (FDK_AAC)
+  add_compile_definitions(__WITH_FDK_AAC__)
+else ()
+  add_compile_definitions(__WITH_FAAD__)
+endif ()
+# choose only one - the first ON entry wins (matches the Viterbi source selection)
+if (VITERBI_AVX2)
+  add_compile_definitions(HAVE_VITERBI_AVX2)
+elseif (VITERBI_SSE2)
+  add_compile_definitions(HAVE_VITERBI_SSE2)
+elseif (VITERBI_NEON)
+  add_compile_definitions(HAVE_VITERBI_NEON)
+endif ()
+
 #add_definitions(-D__THREADED_BACKEND__) # uncomment for use for an RPI
 #add_definitions (-D__EPG_TRACE__)
 
