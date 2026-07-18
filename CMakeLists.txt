@@ -50,6 +50,21 @@ if (USE_LTO AND NOT MSVC)
   else ()
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=auto")
   endif ()
+
+  # LTO produces slim objects that plain ar/ranlib cannot index ("plugin
+  # needed to handle lto object" -> undefined references from static libs).
+  # Use the compiler's plugin-aware wrappers (gcc-ar/gcc-ranlib on GCC,
+  # llvm-ar/llvm-ranlib on Clang). CMake fills these in on Linux and MinGW.
+  if (CMAKE_CXX_COMPILER_AR)
+    set(CMAKE_AR "${CMAKE_CXX_COMPILER_AR}")
+    set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qc <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qc <TARGET> <LINK_FLAGS> <OBJECTS>")
+  endif ()
+  if (CMAKE_CXX_COMPILER_RANLIB)
+    set(CMAKE_RANLIB "${CMAKE_CXX_COMPILER_RANLIB}")
+    set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> <TARGET>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> <TARGET>")
+  endif ()
 endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
@@ -173,8 +188,13 @@ endif ()
 print(CMAKE_SOURCE_DIR)
 print(CMAKE_CURRENT_BINARY_DIR)
 
+# NOTE: main.cpp must live in the executable target itself, NOT in a static
+# library. With LTO enabled (-flto) the linker will not extract the entry point
+# from a static archive, which fails as "undefined reference to WinMain/main"
+# (seen on MinGW, but the hazard applies to GCC/Clang LTO on Linux too).
 add_executable(${objectName}
         resources.qrc
+        src/base/main/main.cpp
 )
 
 ########################################################################

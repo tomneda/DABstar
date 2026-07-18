@@ -238,7 +238,9 @@ set(${baseLibName}_HDRS
 
 set(${baseLibName}_SRCS
         ${${baseLibName}_SRCS}
-        main/main.cpp
+        # main/main.cpp intentionally NOT here: the entry point is compiled
+        # directly into the executable target (see top-level CMakeLists.txt),
+        # otherwise LTO cannot extract main() from this static archive.
         main/dabradio.cpp
         main/dabradio_ui.cpp
         main/dabradio_dump.cpp
