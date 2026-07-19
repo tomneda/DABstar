@@ -31,6 +31,8 @@
 #include "faad_decoder.h"
 #include "neaacdec.h"
 #include "dabradio.h"
+#include <algorithm>
+#include <cmath>
 
 FaadDecoder::FaadDecoder(const DabRadio * const ipDR, RingBuffer<i16> * ipBuffer)
 {
@@ -135,7 +137,18 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
 
   if (aacInfo.channels == 2)
   {
-    mpAudioBuffer->put_data_into_ring_buffer(outBuffer, samples);
+    // _apply_exit_crossfade() extrapolates the concealment from the *previous* good frame,
+    // still held in mLastGoodFrame, so it must run before that buffer is overwritten below.
+    if (mConcealActive)
+    {
+      std::vector<i16> pcm(outBuffer, outBuffer + samples);
+      _apply_exit_crossfade(pcm.data(), samples);
+      mpAudioBuffer->put_data_into_ring_buffer(pcm.data(), samples);
+    }
+    else
+    {
+      mpAudioBuffer->put_data_into_ring_buffer(outBuffer, samples);
+    }
     mLastGoodFrame.assign(outBuffer, outBuffer + samples);
 
     if (mpAudioBuffer->get_ring_buffer_read_available() > audioBufferFillSize) // 125ms
@@ -153,6 +166,11 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
       buffer[2 * i + 0] = buffer[2 * i + 1] = outBuffer[i];
     }
 
+    if (mConcealActive)
+    {
+      _apply_exit_crossfade(buffer, stereoSamples);
+    }
+
     mpAudioBuffer->put_data_into_ring_buffer(buffer, stereoSamples);
     mLastGoodFrame.assign(buffer, buffer + stereoSamples);
 
@@ -166,6 +184,9 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
     fprintf(stderr, "Cannot handle these channels\n");
   }
 
+  // A good frame ended any concealment run.
+  mConcealActive = false;
+  mConcealPhase = 0;
   mConcealDecay = 1.0f;
   mLastAudioBufferFillSize = audioBufferFillSize;
   mLastSampleRate = sampleRate;
@@ -173,24 +194,165 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
   return aacInfo.channels;
 }
 
+i32 FaadDecoder::_estimate_pitch_period() const
+{
+  // Estimate the per-channel pitch period of the last good frame by normalised
+  // autocorrelation on the left channel. Returns 0 when the audio is essentially
+  // unvoiced/noise (no clear periodicity), so the caller repeats the whole frame instead of
+  // imposing a false tone.
+  const i32 histPerCh = (i32)mLastGoodFrame.size() / 2;
+
+  if (histPerCh <= 0 || mLastSampleRate == 0)
+  {
+    return 0;
+  }
+
+  const i32 pmin = std::max<i32>(1, (i32)(mLastSampleRate / 400)); // up to 400 Hz
+  i32 pmax = (i32)(mLastSampleRate / 70);                          // down to 70 Hz
+
+  if (pmax >= histPerCh)
+  {
+    pmax = histPerCh - 1;
+  }
+  if (pmax <= pmin)
+  {
+    return 0;
+  }
+
+  const i32 win = std::min<i32>(histPerCh - pmax, (i32)(mLastSampleRate / 100)); // ~10 ms reference window
+
+  if (win <= 0)
+  {
+    return 0;
+  }
+
+  const i16 * const x = mLastGoodFrame.data(); // interleaved; left channel at even indices
+  const i32 base = histPerCh - 1;              // per-channel index of the last sample
+
+  f64 refEnergy = 0.0;
+  for (i32 i = 0; i < win; ++i)
+  {
+    const f64 v = x[2 * (base - i)];
+    refEnergy += v * v;
+  }
+  if (refEnergy <= 0.0)
+  {
+    return 0;
+  }
+
+  f64 bestScore = 0.0;
+  i32 bestLag = 0;
+
+  for (i32 lag = pmin; lag <= pmax; ++lag)
+  {
+    f64 corr = 0.0;
+    f64 lagEnergy = 0.0;
+
+    for (i32 i = 0; i < win; ++i)
+    {
+      const f64 a = x[2 * (base - i)];
+      const f64 b = x[2 * (base - i - lag)];
+      corr += a * b;
+      lagEnergy += b * b;
+    }
+
+    if (lagEnergy <= 0.0)
+    {
+      continue;
+    }
+
+    const f64 score = corr / std::sqrt(refEnergy * lagEnergy);
+
+    if (score > bestScore)
+    {
+      bestScore = score;
+      bestLag = lag;
+    }
+  }
+
+  return (bestScore >= 0.30) ? bestLag : 0;
+}
+
+void FaadDecoder::_apply_exit_crossfade(i16 * const ioPcm, const i32 iNumSamples) const
+{
+  // Smooth the transition from concealed audio back to real audio with a short linear
+  // cross-fade so the boundary does not click. The concealment is extrapolated a few more
+  // samples (continuing its pitch phase from the previous good frame still held in
+  // mLastGoodFrame) and faded out while the fresh good frame is faded in.
+  const i32 prevHistSize = (i32)mLastGoodFrame.size();
+
+  if (prevHistSize == 0 || prevHistSize != iNumSamples)
+  {
+    return;
+  }
+
+  const i32 perCh = iNumSamples / 2;
+  const i32 histPerCh = prevHistSize / 2;
+  const i32 period = (mPitchPeriod > 0) ? mPitchPeriod : histPerCh;
+
+  i32 xf = (mLastSampleRate > 0) ? (i32)(mLastSampleRate / 200) : 240; // ~5 ms
+  xf = std::min(xf, perCh);
+
+  for (i32 n = 0; n < xf; ++n)
+  {
+    const f32 good = (f32)(n + 1) / (f32)(xf + 1); // good-signal weight ramps 0 -> 1
+    const i32 srcPerCh = histPerCh - period + ((mConcealPhase + n) % period);
+
+    for (i32 ch = 0; ch < 2; ++ch)
+    {
+      const f32 conceal = (f32)mLastGoodFrame[srcPerCh * 2 + ch] * mConcealDecay;
+      ioPcm[n * 2 + ch] = (i16)((1.0f - good) * conceal + good * (f32)ioPcm[n * 2 + ch]);
+    }
+  }
+}
+
 void FaadDecoder::conceal_lost_frame(const i32 iNumSamples)
 {
-  // Packet-loss concealment: repeat the last good frame with exponential amplitude decay.
-  // Each successive call attenuates by cConcealDecayFactor, fading to silence over ~200 ms
-  // (10 frames × 20 ms/frame at 48 kHz core, or ~400 ms with SBR).
-  // Falls back to true silence when no good frame has been stored yet.
-  if ((i32)mLastGoodFrame.size() != iNumSamples)
+  // Pitch-synchronous packet-loss concealment. Instead of repeating the whole last frame
+  // (which makes the filler periodic at the 20/40 ms frame rate - an audible buzz), we
+  // repeat a single pitch period taken from the last good frame. The filler is then periodic
+  // at the voice/instrument pitch, which is far less objectionable. Starting one period back
+  // (histPerCh - period) makes the filler phase-continuous with the last good sample, and the
+  // running phase (mConcealPhase) keeps it continuous across successive lost frames. An
+  // exponential amplitude decay fades sustained loss to silence so it does not drone.
+  const i32 histSize = (i32)mLastGoodFrame.size();
+
+  // No usable history yet, or an unexpected size -> plain silence keeps the timeline intact.
+  if (histSize == 0 || histSize != iNumSamples)
   {
     const std::vector<i16> silence(iNumSamples, 0);
     mpAudioBuffer->put_data_into_ring_buffer(silence.data(), iNumSamples);
     return;
   }
 
-  std::vector<i16> concealed(iNumSamples);
-  for (i32 i = 0; i < iNumSamples; ++i)
+  const i32 perCh = iNumSamples / 2;
+  const i32 histPerCh = histSize / 2;
+
+  if (!mConcealActive)
   {
-    concealed[i] = (i16)((f32)mLastGoodFrame[i] * mConcealDecay);
+    // First lost frame of a run: analyse the pitch of the audio we are about to extend.
+    mPitchPeriod = _estimate_pitch_period();
+    mConcealPhase = 0;
+    mConcealActive = true;
   }
+
+  // When no clear pitch was found (unvoiced/noise) fall back to repeating the whole frame:
+  // for noise-like content that is indistinguishable and avoids inventing a tone.
+  const i32 period = (mPitchPeriod > 0) ? mPitchPeriod : histPerCh;
+
+  std::vector<i16> concealed(iNumSamples);
+
+  for (i32 n = 0; n < perCh; ++n)
+  {
+    const i32 srcPerCh = histPerCh - period + ((mConcealPhase + n) % period);
+
+    for (i32 ch = 0; ch < 2; ++ch)
+    {
+      concealed[n * 2 + ch] = (i16)((f32)mLastGoodFrame[srcPerCh * 2 + ch] * mConcealDecay);
+    }
+  }
+
+  mConcealPhase += perCh;
   mConcealDecay *= cConcealDecayFactor;
 
   mpAudioBuffer->put_data_into_ring_buffer(concealed.data(), iNumSamples);

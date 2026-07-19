@@ -66,13 +66,20 @@ private:
   NeAACDecHandle mAacHandle;
   NeAACDecConfigurationPtr mAacConf;
   RingBuffer<i16> * mpAudioBuffer;
-  std::vector<i16> mLastGoodFrame;
+  std::vector<i16> mLastGoodFrame; // last good frame, stereo-interleaved; also the concealment history
   f32 mConcealDecay = 1.0f;
   i32 mLastAudioBufferFillSize = 0;
   u32 mLastSampleRate = 0;
   u32 mLastAudioFlags = 0;
 
+  // Packet-loss concealment state
+  bool mConcealActive = false; // true while inside a run of consecutive lost frames
+  i32 mPitchPeriod = 0;        // per-channel pitch period (samples) estimated at loss onset; 0 => unvoiced
+  i32 mConcealPhase = 0;       // per-channel samples emitted so far in the current loss run
+
   bool _initialize(const SStreamParms *);
+  i32 _estimate_pitch_period() const;
+  void _apply_exit_crossfade(i16 * ioPcm, i32 iNumSamples) const;
 
 signals:
   void signal_new_audio(i32 oNumSamples, u32 oSampleRate, u32 oAudioFlags);
