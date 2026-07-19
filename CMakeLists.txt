@@ -191,7 +191,12 @@ endif ()
 
 ########################################################################
 if (WIN32)
-  include_directories(${CMAKE_SOURCE_DIR}/../dabstar-libs/include)
+  # SYSTEM: these are bundled third-party headers (liquid-dsp, ...) we do not
+  # control. Marking the directory as a system include makes the compiler
+  # suppress their warnings (e.g. liquid's -Wdeprecated-declarations) while still
+  # fully warning on our own code - matching the Linux behaviour where these libs
+  # are found in a system location.
+  include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../dabstar-libs/include)
 endif ()
 
 find_package(PkgConfig) # imports pkg_check_modules() macros
