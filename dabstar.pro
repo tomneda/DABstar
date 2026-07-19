@@ -237,7 +237,6 @@ HEADERS += \
     src/base/support/time_meas.h \
     src/base/support/time_table.h \
     src/base/support/wav_writer.h \
-    src/base/support/Xtan2.h \
     src/base/support/tii_library/tii_codes.h \
     src/base/support/viterbi_spiral/viterbi_spiral.h \
     src/base/update/appversion.h \
@@ -362,7 +361,6 @@ SOURCES += \
     src/base/support/tii_list_display.cpp \
     src/base/support/time_table.cpp \
     src/base/support/wav_writer.cpp \
-    src/base/support/Xtan2.cpp \
     src/base/support/tii_library/tii_codes.cpp \
     src/base/support/viterbi_spiral/viterbi_spiral.cpp \
     src/base/update/updatechecker.cpp \

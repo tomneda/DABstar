@@ -179,7 +179,6 @@ set(${baseLibName}_HDRS
         audio/audioiodevice.h
         audio/test_tone.h
         audio/audiooutputqt.h
-        support/Xtan2.h
         support/band_handler.h
         support/dab_tables.h
         support/tii_list_display.h
@@ -287,7 +286,6 @@ set(${baseLibName}_SRCS
         audio/test_tone.cpp
         audio/audiooutputqt.cpp
         support/ringbuffer.cpp
-        support/Xtan2.cpp
         support/band_handler.cpp
         support/dab_tables.cpp
         support/viterbi_spiral/viterbi_spiral.cpp
