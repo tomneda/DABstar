@@ -572,6 +572,8 @@ void EnsembleList::_slot_handle_add_files_in_path()
   if (minFileSize < cMinFileSize) minFileSize = cMinFileSize;
   i32 fileCount = 0;
 
+  _log_to_result_display(ELogType::INFOACK, QString("Adding files to list (may take a while) ..."));
+
   while (it.hasNext())
   {
     const QString filePath = it.next();
@@ -583,7 +585,7 @@ void EnsembleList::_slot_handle_add_files_in_path()
       return;
     }
   }
-  _log_to_result_display(ELogType::INFOACK, QString("a %1 files to list").arg(fileCount));
+  _log_to_result_display(ELogType::INFOACK, QString("Added %1 files to list").arg(fileCount));
 }
 
 void EnsembleList::_slot_handle_add_single_file()
