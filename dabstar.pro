@@ -72,8 +72,12 @@ LIBS		+= -lfftw3f.dll
 #CONFIG		+= datastreamer
 
 # --- external ---
-INCLUDEPATH += \
-    ../dabstar-libs/include
+# Bundled third-party headers (liquid-dsp, ...) we do not control. Use -isystem
+# instead of INCLUDEPATH (-I) so the compiler suppresses their warnings (e.g.
+# liquid's -Wdeprecated-declarations) while still fully warning on our own code.
+# Matches the CMake include_directories(SYSTEM ...) treatment.
+QMAKE_CXXFLAGS += -isystem ../dabstar-libs/include
+QMAKE_CFLAGS   += -isystem ../dabstar-libs/include
 
 # --- src/common ---
 INCLUDEPATH += \
@@ -600,7 +604,7 @@ volk	{
 
 liquid	{
     DEFINES		+= HAVE_LIQUID
-    HEADERS		+= src/base/support/halfbandfilter.h
-    SOURCES		+= src/base/support/halfbandfilter.cpp
+    HEADERS		+= src/common/halfbandfilter.h
+    SOURCES		+= src/common/halfbandfilter.cpp
     LIBS		+= -lliquid.dll
 }
