@@ -65,13 +65,9 @@ public:
   void conceal_lost_frame(i32 iNumSamples);
 
 private:
-  static constexpr f32 cConcealDecayFactor = 0.75f;
-
   RingBuffer<i16> * const mpAudioBuffer;
   bool mIsWorking = false;
   HANDLE_AACDECODER mAacHandle;
-  std::vector<i16> mLastGoodFrame;
-  f32 mConcealDecay = 1.0f;
   i32 mLastAudioBufferFillSize = 0;
   u32 mLastSampleRate = 0;
   u32 mLastAudioFlags = 0;
