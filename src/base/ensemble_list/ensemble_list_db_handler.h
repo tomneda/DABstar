@@ -21,9 +21,9 @@
 class QTableView;
 class QSettings;
 
-constexpr u32 cBgColorUnselected = 0x423e3a;
-constexpr u32 cBgColorNewEntries = 0x574728;
-constexpr u32 cBgColorFailed     = 0x652C2C;
+constexpr u32 cBgColorUnselected = 0x3a3e46;
+constexpr u32 cBgColorNewEntries = 0x1e6b52;
+constexpr u32 cBgColorFailed     = 0x5a2f3a;
 
 class CustomItemDelegate2 final: public QStyledItemDelegate
 {
@@ -36,6 +36,7 @@ public:
 
 protected:
   void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+  QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const override;
   bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 private:
