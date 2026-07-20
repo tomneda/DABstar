@@ -31,7 +31,11 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
   const bool isLiveService = (pModel->data(modIdxServiceId).toUInt() == mCurSId);
 
   // see: https://colorpicker.me
-  painter->fillRect(option.rect, (isLiveChannel ? (isLiveService ? 0x864e1a : 0x483421) : 0x423e3a)); // background color
+  painter->fillRect(option.rect, (isLiveChannel ? (isLiveService ? 0x1a5e86 : 0x21344a) : 0x3a3e46)); // background color
+
+  // Highlight the text of the currently played service (lightest-blue row)
+  const bool isLivePlayed = (isLiveChannel && isLiveService);
+  const QColor textColor = isLivePlayed ? QColor(0xff, 0xd2, 0x4a) : option.palette.color(QPalette::Text);
 
   if constexpr (cShowSIdInServiceList)
   {
@@ -43,7 +47,9 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
       QStyleOptionViewItem opt = option;
       initStyleOption(&opt, index);
 
-      painter->setPen(opt.palette.color(QPalette::Text));
+      opt.font.setBold(isLivePlayed);
+      painter->setFont(opt.font);
+      painter->setPen(textColor);
       painter->drawText(opt.rect, opt.displayAlignment, hexText);
 
       return;
@@ -62,7 +68,25 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
     return;
   }
 
-  QStyledItemDelegate::paint(painter, option, index);
+  QStyleOptionViewItem opt = option;
+  if (isLivePlayed)
+  {
+    opt.palette.setColor(QPalette::Text, textColor);
+    opt.font.setBold(true);
+  }
+  QStyledItemDelegate::paint(painter, opt, index);
+}
+
+QSize CustomItemDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
+{
+  // Any row can become the currently-played (bold) row, and bold text is always at
+  // least as wide as the regular text. So measure every cell with the bold font and
+  // let the base delegate add the usual margins. This reserves enough width in all
+  // columns and keeps the column width constant (no jitter when the bold row changes).
+  QStyleOptionViewItem opt = option;
+  opt.font.setBold(true);
+  opt.fontMetrics = QFontMetrics(opt.font);
+  return QStyledItemDelegate::sizeHint(opt, index);
 }
 
 bool CustomItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
@@ -392,7 +416,7 @@ void ServiceListHandler::_slot_selection_changed_with_fav(const QString & iChann
   mServiceIdLast = iSId;
   mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
   mpTableView->update();
-  
+
   emit signal_selection_changed(iChannel, iServiceLabel, iSId);  // triggers an service change in radio.h
   emit signal_favorite_status(iIsFav); // this emit speeds up the FavButton setting, the other one is more important
 }

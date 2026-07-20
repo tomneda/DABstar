@@ -13,16 +13,14 @@
 #include "device_selector_if.h"
 #include "openfiledialog.h"
 #include <QString>
-#include <QWidget>
 
 class QSettings;
 
-class DeviceSelector : public QWidget, public IDeviceSelector
+class DeviceSelector : public IDeviceSelector
 {
-  Q_OBJECT
 public:
   explicit DeviceSelector(QSettings * ipSettings);
-  ~DeviceSelector() override = default;
+  ~DeviceSelector() override;
 
   QStringList get_device_name_list() const override;
   std::unique_ptr<IDeviceHandler> create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings) override;

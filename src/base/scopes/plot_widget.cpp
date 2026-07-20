@@ -22,8 +22,8 @@ PlotWidget::PlotWidget(QWidget * const parent)
 {
   QLinearGradient bgGradient(0, 0, 0, 1);
   bgGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-  bgGradient.setColorAt(0.0, QColor(58, 58, 58));
-  bgGradient.setColorAt(1.0, QColor(18, 18, 18));
+  bgGradient.setColorAt(0.0, QColor(50, 55, 67));
+  bgGradient.setColorAt(1.0, QColor(15, 17, 21));
 
   auto * const ch = new QChart();
   ch->setBackgroundBrush(bgGradient);

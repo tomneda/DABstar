@@ -20,18 +20,6 @@ set(base_ui
         ${CMAKE_CURRENT_SOURCE_DIR}/forms/ensemble_list.ui
 )
 
-if (USE_LIQUID)
-    set(${baseLibName}_HDRS
-            ${${baseLibName}_HDRS}
-            support/halfbandfilter.h
-    )
-    set(${baseLibName}_SRCS
-            ${${baseLibName}_SRCS}
-            support/halfbandfilter.cpp
-    )
-    list(APPEND baseExtraLibs liquid)
-    add_definitions(-DHAVE_LIQUID)
-endif ()
 
 if (SSE_OR_AVX)
     set(${baseLibName}_HDRS
@@ -45,7 +33,6 @@ if (SSE_OR_AVX)
     )
     find_package(Volk REQUIRED)
     list(APPEND baseExtraLibs ${VOLK_LIBRARIES})
-    add_definitions(-DHAVE_SSE_OR_AVX)
 else ()
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
@@ -63,19 +50,16 @@ if (VITERBI_AVX2)
             support/viterbi_spiral/viterbi_16way.h
     )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
-    add_definitions(-DHAVE_VITERBI_AVX2)
 elseif (VITERBI_SSE2)
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
             support/viterbi_spiral/viterbi_8way.h
     )
-    add_definitions(-DHAVE_VITERBI_SSE2)
 elseif (VITERBI_NEON)
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
             support/viterbi_spiral/sse2neon.h
     )
-    add_definitions(-DHAVE_VITERBI_NEON)
 else ()
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
@@ -92,7 +76,6 @@ if (DATA_STREAMER)
             ${${baseLibName}_SRCS}
             server_thread/tcp_server.cpp
     )
-    add_definitions(-DDATA_STREAMER)
 endif ()
 
 if (FDK_AAC)
@@ -109,7 +92,6 @@ if (FDK_AAC)
             backend/audio/fdk_aac.cpp
     )
     list(APPEND baseExtraLibs ${FDK_AAC_LIBRARIES})
-    add_definitions(-D__WITH_FDK_AAC__)
 else ()
     find_package(Faad)
     if (NOT FAAD_FOUND)
@@ -124,7 +106,6 @@ else ()
             backend/audio/faad_decoder.cpp
     )
     list(APPEND baseExtraLibs ${FAAD_LIBRARIES})
-    add_definitions(-D__WITH_FAAD__)
 endif ()
 
 #########################################################################
@@ -198,7 +179,6 @@ set(${baseLibName}_HDRS
         audio/audioiodevice.h
         audio/test_tone.h
         audio/audiooutputqt.h
-        support/Xtan2.h
         support/band_handler.h
         support/dab_tables.h
         support/tii_list_display.h
@@ -238,7 +218,9 @@ set(${baseLibName}_HDRS
 
 set(${baseLibName}_SRCS
         ${${baseLibName}_SRCS}
-        main/main.cpp
+        # main/main.cpp intentionally NOT here: the entry point is compiled
+        # directly into the executable target (see top-level CMakeLists.txt),
+        # otherwise LTO cannot extract main() from this static archive.
         main/dabradio.cpp
         main/dabradio_ui.cpp
         main/dabradio_dump.cpp
@@ -304,7 +286,6 @@ set(${baseLibName}_SRCS
         audio/test_tone.cpp
         audio/audiooutputqt.cpp
         support/ringbuffer.cpp
-        support/Xtan2.cpp
         support/band_handler.cpp
         support/dab_tables.cpp
         support/viterbi_spiral/viterbi_spiral.cpp

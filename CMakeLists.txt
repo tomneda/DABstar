@@ -50,6 +50,21 @@ if (USE_LTO AND NOT MSVC)
   else ()
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=auto")
   endif ()
+
+  # LTO produces slim objects that plain ar/ranlib cannot index ("plugin
+  # needed to handle lto object" -> undefined references from static libs).
+  # Use the compiler's plugin-aware wrappers (gcc-ar/gcc-ranlib on GCC,
+  # llvm-ar/llvm-ranlib on Clang). CMake fills these in on Linux and MinGW.
+  if (CMAKE_CXX_COMPILER_AR)
+    set(CMAKE_AR "${CMAKE_CXX_COMPILER_AR}")
+    set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qc <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qc <TARGET> <LINK_FLAGS> <OBJECTS>")
+  endif ()
+  if (CMAKE_CXX_COMPILER_RANLIB)
+    set(CMAKE_RANLIB "${CMAKE_CXX_COMPILER_RANLIB}")
+    set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> <TARGET>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> <TARGET>")
+  endif ()
 endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT") # inhibits qDebug outputs in release version
@@ -138,12 +153,50 @@ option(SSE_OR_AVX "Use SSE or AVX for OFDM and others beside Viterbi" OFF)  # ne
 ######################################################################
 ######################################################################
 
+# ---------------------------------------------------------------------------
+# Feature switches that change the contents/layout of headers shared across
+# targets (dabradio.h, dab_processor.h, ofdm_decoder*.h, device headers, ...).
+# They must be defined identically for EVERY translation unit - the executable
+# (main.cpp) as well as all libraries - otherwise different TUs see different
+# class definitions, which violates the ODR (LTO reports this as -Wodr /
+# -Wlto-type-mismatch). Defining them here, before add_executable() and
+# add_subdirectory(), guarantees that. The matching source-file / find_package()
+# selection stays keyed on the same option() in each subdirectory.
+# ---------------------------------------------------------------------------
+if (USE_LIQUID)
+  add_compile_definitions(HAVE_LIQUID)
+endif ()
+if (SSE_OR_AVX)
+  add_compile_definitions(HAVE_SSE_OR_AVX)
+endif ()
+if (DATA_STREAMER)
+  add_compile_definitions(DATA_STREAMER)
+endif ()
+if (FDK_AAC)
+  add_compile_definitions(__WITH_FDK_AAC__)
+else ()
+  add_compile_definitions(__WITH_FAAD__)
+endif ()
+# choose only one - the first ON entry wins (matches the Viterbi source selection)
+if (VITERBI_AVX2)
+  add_compile_definitions(HAVE_VITERBI_AVX2)
+elseif (VITERBI_SSE2)
+  add_compile_definitions(HAVE_VITERBI_SSE2)
+elseif (VITERBI_NEON)
+  add_compile_definitions(HAVE_VITERBI_NEON)
+endif ()
+
 #add_definitions(-D__THREADED_BACKEND__) # uncomment for use for an RPI
 #add_definitions (-D__EPG_TRACE__)
 
 ########################################################################
 if (WIN32)
-  include_directories(${CMAKE_SOURCE_DIR}/../dabstar-libs/include)
+  # SYSTEM: these are bundled third-party headers (liquid-dsp, ...) we do not
+  # control. Marking the directory as a system include makes the compiler
+  # suppress their warnings (e.g. liquid's -Wdeprecated-declarations) while still
+  # fully warning on our own code - matching the Linux behaviour where these libs
+  # are found in a system location.
+  include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../dabstar-libs/include)
 endif ()
 
 find_package(PkgConfig) # imports pkg_check_modules() macros
@@ -173,8 +226,13 @@ endif ()
 print(CMAKE_SOURCE_DIR)
 print(CMAKE_CURRENT_BINARY_DIR)
 
+# NOTE: main.cpp must live in the executable target itself, NOT in a static
+# library. With LTO enabled (-flto) the linker will not extract the entry point
+# from a static archive, which fails as "undefined reference to WinMain/main"
+# (seen on MinGW, but the hazard applies to GCC/Clang LTO on Linux too).
 add_executable(${objectName}
         resources.qrc
+        src/base/main/main.cpp
 )
 
 ########################################################################

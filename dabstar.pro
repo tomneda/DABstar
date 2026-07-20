@@ -72,8 +72,12 @@ LIBS		+= -lfftw3f.dll
 #CONFIG		+= datastreamer
 
 # --- external ---
-INCLUDEPATH += \
-    ../dabstar-libs/include
+# Bundled third-party headers (liquid-dsp, ...) we do not control. Use -isystem
+# instead of INCLUDEPATH (-I) so the compiler suppresses their warnings (e.g.
+# liquid's -Wdeprecated-declarations) while still fully warning on our own code.
+# Matches the CMake include_directories(SYSTEM ...) treatment.
+QMAKE_CXXFLAGS += -isystem ../dabstar-libs/include
+QMAKE_CFLAGS   += -isystem ../dabstar-libs/include
 
 # --- src/common ---
 INCLUDEPATH += \
@@ -237,7 +241,6 @@ HEADERS += \
     src/base/support/time_meas.h \
     src/base/support/time_table.h \
     src/base/support/wav_writer.h \
-    src/base/support/Xtan2.h \
     src/base/support/tii_library/tii_codes.h \
     src/base/support/viterbi_spiral/viterbi_spiral.h \
     src/base/update/appversion.h \
@@ -362,7 +365,6 @@ SOURCES += \
     src/base/support/tii_list_display.cpp \
     src/base/support/time_table.cpp \
     src/base/support/wav_writer.cpp \
-    src/base/support/Xtan2.cpp \
     src/base/support/tii_library/tii_codes.cpp \
     src/base/support/viterbi_spiral/viterbi_spiral.cpp \
     src/base/update/updatechecker.cpp \
@@ -602,7 +604,7 @@ volk	{
 
 liquid	{
     DEFINES		+= HAVE_LIQUID
-    HEADERS		+= src/base/support/halfbandfilter.h
-    SOURCES		+= src/base/support/halfbandfilter.cpp
+    HEADERS		+= src/common/halfbandfilter.h
+    SOURCES		+= src/common/halfbandfilter.cpp
     LIBS		+= -lliquid.dll
 }

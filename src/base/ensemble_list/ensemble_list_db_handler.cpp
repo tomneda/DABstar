@@ -34,7 +34,7 @@ void CustomItemDelegate2::paint(QPainter * painter, const QStyleOptionViewItem &
 
   if (isLiveFile)
   {
-    bgColor = 0x864e1a;
+    bgColor = 0x1a5e86;
   }
   else
   {
@@ -48,7 +48,25 @@ void CustomItemDelegate2::paint(QPainter * painter, const QStyleOptionViewItem &
 
   painter->fillRect(option.rect, bgColor); // background color
 
-  QStyledItemDelegate::paint(painter, option, index);
+  QStyleOptionViewItem opt = option;
+  if (isLiveFile) // paint the currently played file in bold gold
+  {
+    opt.font.setBold(true);
+    opt.palette.setColor(QPalette::Text, QColor(0xff, 0xd2, 0x4a));
+  }
+  QStyledItemDelegate::paint(painter, opt, index);
+}
+
+QSize CustomItemDelegate2::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
+{
+  // Any row can become the currently-played (bold) row, and bold text is always at
+  // least as wide as the regular text. So measure every cell with the bold font and
+  // let the base delegate add the usual margins. This reserves enough width in all
+  // columns and keeps the column width constant (no jitter when the bold row changes).
+  QStyleOptionViewItem opt = option;
+  opt.font.setBold(true);
+  opt.fontMetrics = QFontMetrics(opt.font);
+  return QStyledItemDelegate::sizeHint(opt, index);
 }
 
 bool CustomItemDelegate2::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)

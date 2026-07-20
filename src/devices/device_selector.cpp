@@ -75,6 +75,11 @@ DeviceSelector::DeviceSelector(QSettings * ipSettings) :
 {
 }
 
+// Out-of-line so DeviceSelector (polymorphic via IDeviceSelector) has a key
+// function: this anchors the vtable, typeinfo and destructor to this single
+// translation unit instead of emitting them as weak/COMDAT symbols.
+DeviceSelector::~DeviceSelector() = default;
+
 QStringList DeviceSelector::get_device_name_list() const
 {
   QStringList sl;
