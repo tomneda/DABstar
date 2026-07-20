@@ -27,7 +27,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"5.3.0\\\"
+DEFINES		+= PRJ_VERS=\\\"5.4.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -60,9 +60,9 @@ CONFIG		+= lime
 CONFIG		+= soapy
 CONFIG		+= sse2
 #CONFIG		+= avx2
-#CONFIG		+= fdk-aac
+CONFIG		+= fdk-aac
 CONFIG		+= volk
-#CONFIG		+= liquid
+CONFIG		+= liquid
 LIBS		+= -lsndfile.dll
 LIBS		+= -lwinpthread
 LIBS		+= -lws2_32
@@ -76,8 +76,9 @@ LIBS		+= -lfftw3f.dll
 # instead of INCLUDEPATH (-I) so the compiler suppresses their warnings (e.g.
 # liquid's -Wdeprecated-declarations) while still fully warning on our own code.
 # Matches the CMake include_directories(SYSTEM ...) treatment.
-QMAKE_CXXFLAGS += -isystem ../dabstar-libs/include
-QMAKE_CFLAGS   += -isystem ../dabstar-libs/include
+EXT_INC = ../../dabstar-libs/include
+QMAKE_CXXFLAGS += -isystem $$EXT_INC
+QMAKE_CFLAGS   += -isystem $$EXT_INC
 
 # --- src/common ---
 INCLUDEPATH += \
@@ -414,7 +415,7 @@ dabstick {
 sdrplay {
     DEFINES		+= HAVE_SDRPLAY
     INCLUDEPATH	+= src/devices/sdrplay_handler \
-               ../dabstar-libs/include/sdrplay
+               $$EXT_INC/sdrplay
     HEADERS		+= src/devices/sdrplay_handler/sdrplay_handler.h \
                src/devices/sdrplay_handler/sdrplay_commands.h \
                src/devices/sdrplay_handler/Rsp_device.h \
@@ -581,7 +582,7 @@ avx2	{
 
 fdk-aac {
     DEFINES		+= __WITH_FDK_AAC__
-    INCLUDEPATH	+= ../dabstar-libs/include/fdk-aac
+    INCLUDEPATH	+= $$EXT_INC/fdk-aac
     HEADERS		+= src/base/backend/audio/fdk_aac.h
     SOURCES		+= src/base/backend/audio/fdk_aac.cpp
     LIBS		+= -lfdk-aac.dll
