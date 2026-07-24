@@ -34,6 +34,56 @@
 #include "ui_updatedialog.h"
 #include <QDesktopServices>
 #include <QPushButton>
+#include <QRegularExpression>
+#include <QTextDocument>
+
+namespace
+{
+  // The permissive autolink parser behind QTextDocument::setMarkdown() cuts bare URLs short at
+  // certain character sequences, e.g. it stops at the "..." of a GitHub compare link and leaves
+  // the remainder as plain text. Explicit "[url](url)" links are parsed correctly, so rewrite the
+  // bare URLs before importing. URLs that already are part of a link ("](url)", "<url>",
+  // "[url](...)" or a "[ref]: url" definition) are left alone.
+  QString wrap_bare_urls_in_markdown_links(const QString & iMarkdown)
+  {
+    static const QRegularExpression sReBareUrl(R"((?<![(<\[])(?<!\]: )\bhttps?://[^\s<>()\[\]]+)");
+    static const QString sTrailingPunctuation(".,;:!?");
+
+    QString result;
+    qsizetype copiedUpTo = 0;
+
+    QRegularExpressionMatchIterator it = sReBareUrl.globalMatch(iMarkdown);
+
+    while (it.hasNext())
+    {
+      const QRegularExpressionMatch match = it.next();
+      QString url = match.captured();
+
+      // Punctuation at the very end belongs to the sentence, not to the URL.
+      while (!url.isEmpty() && sTrailingPunctuation.contains(url.back()))
+      {
+        url.chop(1);
+      }
+
+      if (url.isEmpty())
+      {
+        continue;
+      }
+
+      // The link label still shows the plain URL, but its "://" has to be escaped, otherwise the
+      // autolink parser kicks in a second time on the label and nests a truncated link inside.
+      QString label = url;
+      label.replace("://", "\\://");
+
+      result += iMarkdown.mid(copiedUpTo, match.capturedStart() - copiedUpTo);
+      result += '[' + label + "](" + url + ')';
+      copiedUpTo = match.capturedStart() + url.size();
+    }
+
+    result += iMarkdown.mid(copiedUpTo);
+    return result;
+  }
+}
 
 
 UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, int32_t updateIntervalDays, QWidget * parent)
@@ -61,8 +111,8 @@ UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes
   ui->versionLabel->setTextFormat(Qt::RichText);
   ui->versionLabel->setText(tableHtml);
 
-  ui->releaseNotes->document()->setDefaultStyleSheet("a { color: lightblue; }"); // TODO: this way or other ways do not work changing the link color
-  ui->releaseNotes->document()->setMarkdown(releaseNotes, QTextDocument::MarkdownDialectGitHub);
+  // The link color comes from the application palette which is set up in main().
+  ui->releaseNotes->document()->setMarkdown(wrap_bare_urls_in_markdown_links(releaseNotes), QTextDocument::MarkdownDialectGitHub);
   ui->releaseNotes->setOpenExternalLinks(true);
   ui->releaseNotes->moveCursor(QTextCursor::Start);
 

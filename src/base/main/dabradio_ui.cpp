@@ -246,9 +246,7 @@ void DabRadio::_show_copyright_window()
 
   auto * const pBrowser = new QTextBrowser(pDialog);
   pBrowser->setOpenExternalLinks(true); // makes the links in the text clickable
-  // Use the app's accent blue for links so they stay readable on the dark background
-  // (must be set before setHtml()).
-  pBrowser->document()->setDefaultStyleSheet("a { color: #2f9fe0; }");
+  // The link color comes from the application palette which is set up in main().
   pBrowser->setHtml(get_copyright_text());
 
   auto * const pButtonBox = new QDialogButtonBox(QDialogButtonBox::Close, pDialog);

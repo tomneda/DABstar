@@ -35,6 +35,7 @@
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
+#include <QPalette>
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
@@ -128,6 +129,16 @@ i32 main(i32 argc, char ** argv)
   else
   {
     qFatal("Could not open stylesheet resource");
+  }
+
+  // Rich text (e.g. the markdown of the update dialog) takes its link color from the application
+  // palette and writes it directly into the character formats. A style sheet cannot override that
+  // afterwards, so set the app's accent blue here to keep links readable on the dark background.
+  {
+    QPalette pal = QApplication::palette();
+    pal.setColor(QPalette::Link, QColor("#2f9fff"));
+    pal.setColor(QPalette::LinkVisited, QColor("#2f9fff"));
+    QApplication::setPalette(pal);
   }
 
   QApplication::setWindowIcon(QIcon(":res/logo/dabstar.png"));
