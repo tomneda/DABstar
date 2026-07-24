@@ -424,7 +424,7 @@
            <widget class="QCheckBox" name="cbUseNativeIqFormat">
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use native IQ format of most input devices in 'Dump RAW' if selected. Not available for Soapy, UHD, Spyserver and file device.&lt;/p&gt;
-            &lt;p&gt;If not selected, 'Dump RAW' writes WAV files with 16 bits and 2048000 samples/s.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            &lt;p&gt;If not selected, 'Dump RAW' writes WAV files with 16 bits and 2048 kS/s.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Use native IQ format (Dump RAW)</string>
