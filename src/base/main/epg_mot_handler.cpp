@@ -80,8 +80,9 @@ void EpgMotHandler::on_stop_services()
 
 void EpgMotHandler::show_pause_slide() const
 {
-  const bool showSecondSlide = (QDateTime::currentDateTime().time().second() / 10 & 0x1) == 0;
-  const char * const picFile = (showSecondSlide ? ":res/logo/dabinvlogo.png" : ":res/logo/dabstar320x240.png");
+  // const bool showSecondSlide = (QDateTime::currentDateTime().time().second() / 10 & 0x1) == 0;
+  // const char * const picFile = (showSecondSlide ? ":res/logo/dabinvlogo.png" : ":res/logo/dabstar320x240.png");
+  const char * const picFile = ":res/logo/dabstar320x240.png";
 
   QPixmap p;
   if (p.load(picFile, "png"))
