@@ -42,7 +42,8 @@ jobs:
             texlive-fonts-recommended
 
       - name: Build the PDF
-        run: ./doc/manual/build-manual.sh DABstar-Manual.pdf
+        # called via bash so that it does not depend on the executable bit of the checkout
+        run: bash doc/manual/build-manual.sh DABstar-Manual.pdf
 
       - uses: actions/upload-artifact@v4
         with:

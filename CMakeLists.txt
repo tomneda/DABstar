@@ -273,8 +273,9 @@ add_custom_target(uninstall
 find_program(PANDOC_EXECUTABLE pandoc)
 
 if (UNIX AND PANDOC_EXECUTABLE)
+  # called via bash so that it does not depend on the executable bit of the checkout
   add_custom_target(manual
-          COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/doc/manual/build-manual.sh
+          COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/doc/manual/build-manual.sh
                   ${CMAKE_CURRENT_BINARY_DIR}/DABstar-Manual.pdf
           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
           COMMENT "Building the DABstar user manual PDF"
