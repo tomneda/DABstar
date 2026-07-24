@@ -1,0 +1,57 @@
+name: Manual
+
+# Builds the PDF version of the user manual.
+#
+# - on changes below doc/manual: the PDF is built as a check and kept as a build artifact
+# - on a published release:      the PDF is additionally attached to the release assets
+# - workflow_dispatch:           build it manually at any time
+
+on:
+  push:
+    paths:
+      - 'doc/manual/**'
+      - 'res/for_readme/**'
+      - '.github/workflows/manual.yml'
+  pull_request:
+    paths:
+      - 'doc/manual/**'
+      - 'res/for_readme/**'
+      - '.github/workflows/manual.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build manual PDF
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write  # needed to attach the PDF to a release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # build-manual.sh takes the document date from the git history
+
+      - name: Install pandoc and XeLaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pandoc texlive-xetex texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended
+
+      - name: Build the PDF
+        run: ./doc/manual/build-manual.sh DABstar-Manual.pdf
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DABstar-Manual
+          path: DABstar-Manual.pdf
+          if-no-files-found: error
+
+      - name: Attach the PDF to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" DABstar-Manual.pdf --clobber

@@ -1,0 +1,43 @@
+# Pandoc defaults for the DABstar user manual.
+#
+# All paths in here are relative to the repository root, so pandoc has to be started from there.
+# Use doc/manual/build-manual.sh, it takes care of that.
+
+from: markdown
+to: pdf
+pdf-engine: xelatex
+standalone: true
+
+toc: true
+toc-depth: 2
+number-sections: true
+
+# First entry resolves the "../../res/for_readme/..." image paths used in the chapter files,
+# second one is the fallback for anything given relative to the repository root.
+resource-path:
+  - doc/manual
+  - .
+
+filters:
+  - doc/manual/template/links.lua
+
+include-in-header:
+  - doc/manual/template/header.tex
+
+metadata:
+  title: DABstar
+  author: Thomas Neder
+  lang: en
+  # 'subtitle' and 'date' are set by build-manual.sh - do not add them here, pandoc appends
+  # the values given on the command line to the ones from this file instead of replacing them
+
+variables:
+  documentclass: report
+  papersize: a4
+  fontsize: 11pt
+  geometry: margin=2.5cm
+  colorlinks: true
+  linkcolor: NavyBlue
+  urlcolor: NavyBlue
+  toccolor: black
+  secnumdepth: 3

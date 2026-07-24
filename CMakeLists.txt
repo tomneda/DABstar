@@ -16,7 +16,7 @@ try_find_vcpkg_toolset_path()
 print(CMAKE_TOOLCHAIN_FILE)
 
 ##############################
-project(DABstar VERSION 5.4.0)
+project(DABstar VERSION 5.5.0)
 ##############################
 
 set(objectName "dabstar")
@@ -261,3 +261,25 @@ configure_file(
 
 add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+########################################################################
+# Create the PDF version of the user manual (not built by default)
+#
+#   cmake --build <build-dir> --target manual
+#
+# Needs pandoc and XeLaTeX, see doc/manual/README.md
+########################################################################
+
+find_program(PANDOC_EXECUTABLE pandoc)
+
+if (UNIX AND PANDOC_EXECUTABLE)
+  add_custom_target(manual
+          COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/doc/manual/build-manual.sh
+                  ${CMAKE_CURRENT_BINARY_DIR}/DABstar-Manual.pdf
+          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+          COMMENT "Building the DABstar user manual PDF"
+          VERBATIM
+          USES_TERMINAL)
+elseif (UNIX)
+  message(STATUS "pandoc not found -> target 'manual' (user manual PDF) is not available")
+endif ()

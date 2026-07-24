@@ -1,0 +1,25 @@
+% Additional LaTeX setup for the DABstar user manual PDF.
+
+% Keep screenshots where they are written in the text instead of letting them float away.
+\usepackage{float}
+\floatplacement{figure}{H}
+
+% The description columns of the tables are wide, so give them a smaller font.
+\usepackage{etoolbox}
+\AtBeginEnvironment{longtable}{\small}
+
+% Slightly more air around the figures.
+\setlength{\intextsep}{1.2\baselineskip}
+
+% Running header with the chapter name, page number in the footer.
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
