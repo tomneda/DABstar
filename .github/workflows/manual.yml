@@ -35,11 +35,14 @@ jobs:
           fetch-depth: 0  # build-manual.sh takes the document date from the git history
 
       - name: Install pandoc and XeLaTeX
+        # lmodern and fonts-lmodern are only 'Recommends' of the texlive packages, so they have
+        # to be named explicitly here: pandoc's LaTeX template loads lmodern.sty unconditionally
+        # and, on the XeTeX path, unicode-math needs latinmodern-math.otf from fonts-lmodern.
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             pandoc texlive-xetex texlive-latex-recommended texlive-latex-extra \
-            texlive-fonts-recommended
+            texlive-fonts-recommended lmodern fonts-lmodern
 
       - name: Build the PDF
         # called via bash so that it does not depend on the executable bit of the checkout

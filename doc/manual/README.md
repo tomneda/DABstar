@@ -38,6 +38,10 @@ cmake --build <build-dir> --target manual
 |--------------|-------------------------------------------------------------------------------------------|
 | pandoc       | `pandoc`                                                                                |
 | XeLaTeX      | `texlive-xetex texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended` |
+| Fonts        | `lmodern fonts-lmodern`                                                                 |
+
+The two font packages are only *recommended* by texlive, so a minimal installation
+(`--no-install-recommends`) misses them and the build stops with `lmodern.sty not found`.
 
 If you do not want to install a full TeX distribution, install
 [tectonic](https://tectonic-typesetting.github.io) instead — a single binary that downloads the

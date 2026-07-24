@@ -6,7 +6,8 @@
 #
 # Needs pandoc and a XeLaTeX installation:
 #   sudo apt-get install pandoc texlive-xetex texlive-latex-recommended \
-#                        texlive-latex-extra texlive-fonts-recommended
+#                        texlive-latex-extra texlive-fonts-recommended \
+#                        lmodern fonts-lmodern
 #
 # If XeLaTeX is not installed, tectonic (https://tectonic-typesetting.github.io) is used
 # instead. That is a single binary needing no TeX installation, it downloads the LaTeX
@@ -21,7 +22,7 @@ OUTPUT="${1:-${SCRIPT_DIR}/DABstar-Manual.pdf}"
 
 case "${1:-}" in
   -h|--help)
-    sed -n '3,13p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    sed -n '3,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
     exit 0
     ;;
 esac
@@ -31,7 +32,8 @@ usage_hint()
   echo "" >&2
   echo "On Debian/Ubuntu install them with:" >&2
   echo "  sudo apt-get install pandoc texlive-xetex texlive-latex-recommended \\" >&2
-  echo "                       texlive-latex-extra texlive-fonts-recommended" >&2
+  echo "                       texlive-latex-extra texlive-fonts-recommended \\" >&2
+  echo "                       lmodern fonts-lmodern" >&2
 }
 
 if ! command -v pandoc >/dev/null 2>&1; then
