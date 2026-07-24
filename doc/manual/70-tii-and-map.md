@@ -18,14 +18,14 @@ cannot be resolved to a transmitter name and location.
 
 ## TII list
 
-![TII list with the received transmitter details](../../res/for_readme/TII-list.png){width=100%}
+![TII list with the received transmitter details](../../res/for_readme/TII-list.png)
 
 The TII list shows the details of the currently received transmitters. When several transmitters of
 the same single frequency network are received, each of them appears with its own entry.
 
 ## Map view
 
-![Map view of the received transmitters](../../res/for_readme/map.png){width=100%}
+![Map view of the received transmitters](../../res/for_readme/map.png)
 
 The map view plots the received transmitters geographically. It is not a DABstar window: the map is
 served by an internal HTTP server and opens in your default web browser. If the automatic browser

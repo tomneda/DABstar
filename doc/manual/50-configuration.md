@@ -2,7 +2,7 @@
 
 The **Configuration and Control** window holds the global settings of DABstar.
 
-![The configuration and control window](../../res/for_readme/configuration.png){width=100%}
+![The configuration and control window](../../res/for_readme/configuration.png)
 
 Nearly every element of this window carries a tooltip with a detailed explanation, so hover over the
 control in question for the full description.

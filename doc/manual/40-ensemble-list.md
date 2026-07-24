@@ -14,12 +14,12 @@ Select the mode on the main window, left from the **EL** button.
 | Device / Channel scan | Scans all standard DAB channels via the connected SDR device and stores the result for each channel.            |
 | File scan             | Scans a folder (or several folders) of recorded DAB IQ files and catalogs which ones contain valid signal data. |
 
-![Ensemble List in device / channel scan mode](../../res/for_readme/ensemble-list-device.png){width=100%}
+![Ensemble List in device / channel scan mode](../../res/for_readme/ensemble-list-device.png)
 
 The table shows all known DAB channels with their scan status, ensemble name, ensemble ID, ITU
 country code, signal quality (SNR/MER) and more.
 
-![Ensemble List in file playback mode](../../res/for_readme/ensemble-list-file.png){width=100%}
+![Ensemble List in file playback mode](../../res/for_readme/ensemble-list-file.png)
 
 In file mode you can add recorded DAB IQ sample files, have them scanned automatically and keep
 track of which files contain usable DAB signals. The "Remove 'No signal' files" button helps clean

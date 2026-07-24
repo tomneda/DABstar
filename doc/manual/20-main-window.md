@@ -1,6 +1,6 @@
 # Main Window
 
-![The DABstar main window](../../res/for_readme/mainwidget.png){width=85%}
+![The DABstar main window](../../res/for_readme/mainwidget.png)
 
 The main window is the central control of DABstar. It contains the
 [service list](30-service-list.md) on the left, the currently played service with its dynamic label
@@ -38,8 +38,8 @@ one coded within the DAB signal, not the system time of the computer.
 | Button                                                        | Function                                                     |
 |---------------------------------------------------------------|----------------------------------------------------------------|
 | **EL**                                                        | Opens the [Ensemble List](40-ensemble-list.md)               |
-| ![](../../res/for_readme/device-button.png){height=1.1em}     | Opens the device widget of the currently selected device     |
-| ![](../../res/for_readme/scope-button.png){height=1.1em}      | Opens the [Spectrum Scope](60-scope-and-spectrum.md)         |
-| ![](../../res/for_readme/target-button.png){height=1.1em}     | Scrolls the service list to the current service              |
-| ![](../../res/for_readme/favorite-button.png){height=1.1em}   | Toggles the favorite state of the current service            |
-| ![](../../res/for_readme/updown-buttons.png){height=1.1em}    | Steps one service up or down in the service list             |
+| ![](../../res/for_readme/device-button.png)     | Opens the device widget of the currently selected device     |
+| ![](../../res/for_readme/scope-button.png)      | Opens the [Spectrum Scope](60-scope-and-spectrum.md)         |
+| ![](../../res/for_readme/target-button.png)     | Scrolls the service list to the current service              |
+| ![](../../res/for_readme/favorite-button.png)   | Toggles the favorite state of the current service            |
+| ![](../../res/for_readme/updown-buttons.png)    | Steps one service up or down in the service list             |

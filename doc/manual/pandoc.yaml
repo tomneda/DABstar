@@ -20,6 +20,7 @@ resource-path:
 
 filters:
   - doc/manual/template/links.lua
+  - doc/manual/template/images.lua
 
 include-in-header:
   - doc/manual/template/header.tex

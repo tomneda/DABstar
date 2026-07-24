@@ -56,9 +56,11 @@ falls back to tectonic otherwise.
 * Each file starts with exactly one level-1 heading (`#`), which becomes a PDF chapter.
 * Image paths are relative to this folder, i.e. `../../res/for_readme/<file>.png`. This works both
   on GitHub and in the PDF build.
-* Always give images a size attribute, otherwise wide screenshots overflow the PDF text block:
-  * full width screenshot: `{width=100%}`
-  * inline button icon: `{height=1.1em}`
+* Write images as plain Markdown, without a size attribute. GitHub does not understand pandoc's
+  `{width=50%}` syntax and would show it as literal text, so the sizes for the PDF are kept in
+  [`template/images.lua`](template/images.lua) instead. Every image gets the full text width
+  there unless it is listed with a smaller one — add a new entry for a screenshot that is higher
+  than it is wide, or for a button icon that is used inside a sentence.
 * Text in the alt position becomes the figure caption in the PDF, so use it for real screenshots
   and leave it empty for inline icons.
 * Cross-chapter links use the plain file name (`[Ensemble List](40-ensemble-list.md)`); pandoc
