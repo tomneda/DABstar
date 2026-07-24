@@ -16,6 +16,10 @@
 #include "audio_manager.h"
 #include "mot_content_types.h"
 #include "mot_slide_progress.h"
+#include <QDialog>
+#include <QTextBrowser>
+#include <QVBoxLayout>
+#include <QDialogButtonBox>
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
@@ -220,14 +224,51 @@ void DabRadio::_initialize_device_selector(SChannelDescriptor & ioChannelDesc) c
 
 void DabRadio::_initialize_version_and_copyright_info()
 {
-  const QString crt = get_copyright_text();
   ui->lblVersion->setText(QString("V" + mVersionStr));
-  ui->lblVersion->setToolTip(crt);
-  ui->lblVersion->setCursor(Qt::WaitCursor);
-  ui->lblCopyrightIcon->setToolTip(crt);
-  ui->lblCopyrightIcon->setTextInteractionFlags(Qt::TextBrowserInteraction);
-  ui->lblCopyrightIcon->setOpenExternalLinks(true);
-  ui->lblCopyrightIcon->setCursor(Qt::WaitCursor);
+
+  // A click on the version label or the copyright icon opens a dedicated window with the copyright
+  // text, so the contained links become clickable (which is not possible within a tool tip).
+  const QString tip("Click to show version and copyright information");
+  ui->lblVersion->setToolTip(tip);
+  ui->lblVersion->setCursor(Qt::PointingHandCursor);
+  ui->lblVersion->installEventFilter(this);
+  ui->lblCopyrightIcon->setToolTip(tip);
+  ui->lblCopyrightIcon->setCursor(Qt::PointingHandCursor);
+  ui->lblCopyrightIcon->installEventFilter(this);
+}
+
+void DabRadio::_show_copyright_window()
+{
+  auto * const pDialog = new QDialog(this);
+  pDialog->setAttribute(Qt::WA_DeleteOnClose);
+  pDialog->setWindowTitle("Version and Copyright Information");
+  pDialog->resize(600, 500);
+
+  auto * const pBrowser = new QTextBrowser(pDialog);
+  pBrowser->setOpenExternalLinks(true); // makes the links in the text clickable
+  // Use the app's accent blue for links so they stay readable on the dark background
+  // (must be set before setHtml()).
+  pBrowser->document()->setDefaultStyleSheet("a { color: #2f9fe0; }");
+  pBrowser->setHtml(get_copyright_text());
+
+  auto * const pButtonBox = new QDialogButtonBox(QDialogButtonBox::Close, pDialog);
+  connect(pButtonBox, &QDialogButtonBox::rejected, pDialog, &QDialog::reject);
+
+  auto * const pLayout = new QVBoxLayout(pDialog);
+  pLayout->addWidget(pBrowser);
+  pLayout->addWidget(pButtonBox);
+
+  pDialog->show();
+}
+
+bool DabRadio::eventFilter(QObject * ipObj, QEvent * ipEvent)
+{
+  if (ipEvent->type() == QEvent::MouseButtonRelease && (ipObj == ui->lblVersion || ipObj == ui->lblCopyrightIcon))
+  {
+    _show_copyright_window();
+    return true;
+  }
+  return QWidget::eventFilter(ipObj, ipEvent);
 }
 
 

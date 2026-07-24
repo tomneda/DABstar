@@ -335,8 +335,12 @@ private:
   void _initialize_tii_manager();
   void _initialize_time_table();
   void _initialize_version_and_copyright_info();
+  void _show_copyright_window();
   void _initialize_and_start_timers();
   void _initialize_device_selector(SChannelDescriptor & ioChannelDesc) const;
+
+protected:
+  bool eventFilter(QObject * ipObj, QEvent * ipEvent) override;
 
 public slots:
   // Ensemble and Service Information
