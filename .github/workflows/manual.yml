@@ -2,24 +2,17 @@ name: Manual
 
 # Builds the PDF version of the user manual.
 #
-# - on changes below doc/manual: the PDF is built as a check and kept as a build artifact
-# - on a published release:      the PDF is additionally attached to the release assets
-# - workflow_dispatch:           build it manually at any time
+# Started by hand only: Actions -> Manual -> "Run workflow".
+# The PDF is always kept as a build artifact of the run. If a release tag is given when starting
+# the workflow, the PDF is additionally attached to the assets of that release.
 
 on:
-  push:
-    paths:
-      - 'doc/manual/**'
-      - 'res/for_readme/**'
-      - '.github/workflows/manual.yml'
-  pull_request:
-    paths:
-      - 'doc/manual/**'
-      - 'res/for_readme/**'
-      - '.github/workflows/manual.yml'
-  release:
-    types: [published]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Attach the PDF to the release with this tag (empty: only build the artifact)'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -55,7 +48,7 @@ jobs:
           if-no-files-found: error
 
       - name: Attach the PDF to the release
-        if: github.event_name == 'release'
+        if: inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.event.release.tag_name }}" DABstar-Manual.pdf --clobber
+        run: gh release upload "${{ inputs.release_tag }}" DABstar-Manual.pdf --clobber
