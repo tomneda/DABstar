@@ -177,8 +177,11 @@ void CarrierDisp::_update_y_markers(const f64 yMin, const f64 yMax)
   // Align Y-axis ticks with the marker lines
   mpPlot->set_y_tick_dynamic(0.0, step);
 
-  const i64 firstIdx = (i64)std::floor(yMin / step) + 1; // do not draw the bottom line (+1)
-  const i64 lastIdx  = (i64)std::ceil(yMax / step);      // but draw the top line
+  // The axis maximum is minimally widened (see PlotWidget::_widened_max) - the tolerance keeps that
+  // from adding a marker line above the top value.
+  constexpr f64 cIdxTolerance = 1e-6;
+  const i64 firstIdx = (i64)std::floor(yMin / step) + 1;              // do not draw the bottom line (+1)
+  const i64 lastIdx  = (i64)std::ceil(yMax / step - cIdxTolerance);   // but draw the top line
 
   for (i64 idx = firstIdx; idx <= lastIdx; ++idx)
   {

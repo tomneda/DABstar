@@ -91,6 +91,8 @@ private:
   static constexpr f64 cMaxZoomFactor = 100.0;
   static constexpr f64 cMinPixelsPerXTick = 60.0;  // min px between major x-axis labels
   static constexpr f64 cMinPixelsPerYTick = 25.0;  // min px between major y-axis labels
+  static constexpr f64 cLabelHeightFactor = 1.4;   // min px between major y-axis labels in units of the label text height
+  static constexpr f64 cRangeEpsilon = 1e-9;       // range widening (relative) to keep the top grid line inside the plot rect
 
   QValueAxis * mpXAxis = nullptr;
   QValueAxis * mpYAxis = nullptr;
@@ -120,5 +122,7 @@ private:
   void _pan_axis(QValueAxis * iopAxis, const SAxisData & ioData, f64 iDeltaValue) const;
   i32 _nice_minor_tick_count(const f64 iMajorInterval, const int iMaxMinorSteps = 5) const;
   f64 _nice_major_interval(f64 iRangeSpan, i32 iTargetIntervals = 5) const;
+  f64 _min_pixels_per_y_tick() const;
+  static f64 _widened_max(f64 iMin, f64 iMax);
   void _reapply_auto_ticks() const;
 };

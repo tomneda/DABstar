@@ -13,6 +13,7 @@
 
 #include "plot_widget.h"
 #include <QChart>
+#include <QFontMetricsF>
 #include <QGraphicsLayout>
 #include <QPainter>
 #include <cmath>
@@ -39,12 +40,16 @@ PlotWidget::PlotWidget(QWidget * const parent)
   mpXAxis->setMinorGridLineVisible(false);
   mpXAxis->setTickCount(7);
   mpXAxis->setMinorTickCount(1);
+  mpXAxis->setTruncateLabels(false);
 
   mpYAxis = new QValueAxis();
   mpYAxis->setLabelFormat("%.0f");
   mpYAxis->setLabelsColor(Qt::lightGray);
   mpYAxis->setGridLineColor(QColor(0x5e5c64));
   mpYAxis->setMinorGridLineColor(QColor(0x3a3840));
+  // Qt sizes the label space with (axisHeight / labelCount) which can be below the text height even
+  // when the ticks are far enough apart. It then replaces the labels with "..." -- turn that off.
+  mpYAxis->setTruncateLabels(false);
 
   ch->addAxis(mpXAxis, Qt::AlignBottom);
   ch->addAxis(mpYAxis, Qt::AlignLeft);
@@ -61,9 +66,18 @@ PlotWidget::PlotWidget(QWidget * const parent)
   });
 }
 
+// Qt shows a grid line only while its pixel position lies within the plot rect, compared exactly.
+// The line of the range maximum sits right on that border and the rounding error of Qt's value-to-
+// pixel mapping pushes it outside for some plot sizes, so the top grid line and its tick mark
+// disappear. Widening the range by a negligible epsilon keeps that line strictly inside.
+f64 PlotWidget::_widened_max(const f64 iMin, const f64 iMax)
+{
+  return iMax + (iMax - iMin) * cRangeEpsilon;
+}
+
 void PlotWidget::set_x_range(const f64 iMin, const f64 iMax) const
 {
-  mpXAxis->setRange(iMin, iMax);
+  mpXAxis->setRange(iMin, _widened_max(iMin, iMax));
   mpXAxis->setTickType(QValueAxis::TicksDynamic);
   mpXAxis->setTickAnchor(0.0);
   mXTickAuto = true;
@@ -72,7 +86,7 @@ void PlotWidget::set_x_range(const f64 iMin, const f64 iMax) const
 
 void PlotWidget::set_y_range(const f64 iMin, const f64 iMax) const
 {
-  mpYAxis->setRange(iMin, iMax);
+  mpYAxis->setRange(iMin, _widened_max(iMin, iMax));
   mpYAxis->setTickType(QValueAxis::TicksDynamic);
   mpYAxis->setTickAnchor(0.0);
   mYTickAuto = true;
@@ -199,11 +213,12 @@ void PlotWidget::_zoom_axis(QValueAxis * const iopAxis, SAxisData & ioData, cons
   f64 newMin = iPivot - newRange * t;
   f64 newMax = iPivot + newRange * (1.0 - t);
 
-  // Clamp to zoom-out limits
+  // Clamp to zoom-out limits. Zooming back out ends on the default maximum, so it needs the same
+  // epsilon as set_x_range()/set_y_range() to keep the top grid line inside the plot rect.
   const f64 hardMin = ioData.range.MinDefault + ioData.range.MinZoomOutDelta;
   const f64 hardMax = ioData.range.MaxDefault + ioData.range.MaxZoomOutDelta;
   if (newMin < hardMin) newMin = hardMin;
-  if (newMax > hardMax) newMax = hardMax;
+  if (newMax > hardMax) newMax = _widened_max(newMin, hardMax);
 
   iopAxis->setRange(newMin, newMax);
 
@@ -350,7 +365,7 @@ void PlotWidget::_reapply_auto_ticks() const
     const f64 span = mpYAxis->max() - mpYAxis->min();
     const i32 target = plotArea.isEmpty()
                          ? 5
-                         : std::max(2, static_cast<i32>(plotArea.height() / cMinPixelsPerYTick));
+                         : std::max(2, static_cast<i32>(plotArea.height() / _min_pixels_per_y_tick()));
     f64 interval = _nice_major_interval(span, target);
     // Guarantee at least 2 major ticks visible. With TicksDynamic anchored at 0,
     // ticks land at n*interval — the range may contain only one depending on alignment.
@@ -367,6 +382,15 @@ void PlotWidget::_reapply_auto_ticks() const
     mpYAxis->setMinorTickCount(_nice_minor_tick_count(interval));
     _update_y_label_format();
   }
+}
+
+// Minimum pixel distance between two major y-axis labels. Qt hides a label that would overlap its
+// lower neighbor, and the top-most label (the one at the axis maximum) is the first candidate for
+// that. Keep the distance above the real text height so no label is ever dropped.
+f64 PlotWidget::_min_pixels_per_y_tick() const
+{
+  const f64 labelHeight = QFontMetricsF(mpYAxis->labelsFont()).height();
+  return std::max(cMinPixelsPerYTick, labelHeight * cLabelHeightFactor);
 }
 
 // Rounds rangeSpan/iTargetIntervals UP to the nearest {2,5,10}×10^n value.
