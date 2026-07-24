@@ -87,6 +87,7 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_WIDGET(Config, cbUrlClickable)
   DEFINE_WIDGET(Config, cbAutoIterTiiEntries)
   DEFINE_WIDGET(Config, cmbSoundOutput)
+  DEFINE_WIDGET(Config, cbAudioConcealment)
   DEFINE_WIDGET(Config, cbCheckForUpdates)
   DEFINE_WIDGET(Config, sbUpdateCheckDays)
   DEFINE_WIDGET(Config, sbPeakLevelDelay)

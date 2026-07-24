@@ -43,6 +43,7 @@
 #include "pad_handler.h"
 #include "crc.h"
 #include "bit_writer.h"
+#include "setting_helper.h"
 #include <cstring>
 
 // #define SHOW_ERROR_STATISTICS
@@ -308,6 +309,10 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
   constexpr i32 cAacCoreFrameBytes = 960;
   const i32 numConcealSamples = cAacCoreFrameBytes * (streamParameters.sbrFlag ? 2 : 1) * 2;
 
+  // When concealment is switched off in the configuration, lost frames are left as gaps (the
+  // audio buffer is not filled at all) - the former behaviour before packet-loss concealment.
+  const bool concealDropouts = Settings::Config::cbAudioConcealment.read().toBool();
+
   for (i16 auIdx = 0; auIdx < numAUs; ++auIdx)
   {
     const i32 aacFrameLen = mAuStartArr[auIdx + 1] - mAuStartArr[auIdx] - 2;
@@ -317,7 +322,7 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
     {
       qWarning() << "Invalid aacFrameLen =" << aacFrameLen;
       // Conceal this AU and continue rather than abandoning all remaining AUs.
-      mpAacDecoder->conceal_lost_frame(numConcealSamples);
+      if (concealDropouts) mpAacDecoder->conceal_lost_frame(numConcealSamples);
       continue;
     }
 
@@ -363,7 +368,7 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
         qWarning() << "AAC decoding error: " << aacErr;
         mAacErrors++;
         // The AAC decoder produced no PCM; conceal the gap to avoid a buffer hole.
-        mpAacDecoder->conceal_lost_frame(numConcealSamples);
+        if (concealDropouts) mpAacDecoder->conceal_lost_frame(numConcealSamples);
       }
 
       if (++mAacFrames > 25)
@@ -377,7 +382,7 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
     {
       mCrcErrors++;
       mSumCrcErrors++;
-      mpAacDecoder->conceal_lost_frame(numConcealSamples);
+      if (concealDropouts) mpAacDecoder->conceal_lost_frame(numConcealSamples);
     }
     //	TODO: what would happen if the errors were in the 10 parity bytes	rather than in the 110 payload bytes?
   }

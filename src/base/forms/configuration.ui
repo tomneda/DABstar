@@ -132,6 +132,16 @@
             </item>
            </layout>
           </item>
+          <item>
+           <widget class="QCheckBox" name="cbAudioConcealment">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Conceal short audio dropouts caused by reception errors.&lt;/p&gt;&lt;p&gt;When &lt;b&gt;enabled&lt;/b&gt;, a lost audio frame is replaced by a synthesised frame instead of leaving a gap, reducing clicks and interruptions. The concealment method depends on the AAC decoder this build uses:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;FDK-AAC&lt;/b&gt;: spectral-domain concealment built into the decoder - seamless, click-free and the better sounding option (recommended, if available in this build).&lt;/li&gt;&lt;li&gt;&lt;b&gt;FAAD&lt;/b&gt;: pitch-synchronous extrapolation of the last good frame in the PCM domain - good, but not as clean as FDK-AAC.&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;When &lt;b&gt;disabled&lt;/b&gt;, lost frames are left as gaps (no audio is inserted), as in earlier versions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Conceal audio dropouts</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -552,7 +562,7 @@
              <widget class="QComboBox" name="cmbSoftBitGen">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;
-                The designations refer to the document "SOFT DECISIONS FOR DQPSK DEMODULATION FOR THE VITERBI DECODING OF THE CONVOLUTIONAL CODES".
+                The designations refer to the document &quot;SOFT DECISIONS FOR DQPSK DEMODULATION FOR THE VITERBI DECODING OF THE CONVOLUTIONAL CODES&quot;.
                 The use of an optimal soft decision algorithm compared to the conventional soft decision algorithm gives a performance improvement equivalent to an SNR gain of up to 5dB. 
                 In a time invariant propagation environment, Optimal 3 gives the best performance whereas in time selective environment, Optimal 2 gives the best performance.&lt;/p&gt;&lt;p&gt;
                 See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -670,7 +680,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../../../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
