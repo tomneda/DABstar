@@ -33,6 +33,7 @@ class LevelMeter : public QWidget
   Q_PROPERTY(Qt::Orientation orientation READ get_orientation WRITE set_orientation)
   Q_PROPERTY(bool showScale READ get_show_scale WRITE set_show_scale)
   Q_PROPERTY(bool barVisible READ get_bar_visible WRITE set_bar_visible)
+  Q_PROPERTY(bool stepped READ get_stepped WRITE set_stepped)
   Q_PROPERTY(f32 majorStep READ get_major_step WRITE set_major_step)
   Q_PROPERTY(f32 minorStep READ get_minor_step WRITE set_minor_step)
 
@@ -45,6 +46,7 @@ public:
   [[nodiscard]] f32 get_upper_bound() const { return mUpper; }
   [[nodiscard]] bool get_show_scale() const { return mShowScale; }
   [[nodiscard]] bool get_bar_visible() const { return mBarVisible; }
+  [[nodiscard]] bool get_stepped() const { return mStepped; }
   [[nodiscard]] f32 get_major_step() const { return mMajorStep; }
   [[nodiscard]] f32 get_minor_step() const { return mMinorStep; }
 
@@ -54,6 +56,7 @@ public:
   void set_value(f32 iV);
   void set_show_scale(bool iV);
   void set_bar_visible(bool iV);
+  void set_stepped(bool iV);
   void set_major_step(f32 iV);
   void set_minor_step(f32 iV);
 
@@ -73,6 +76,7 @@ private:
   Qt::Orientation mOrientation = Qt::Horizontal;
   bool mShowScale = true;
   bool mBarVisible = true;
+  bool mStepped = false;
   f32 mMajorStep = 3.0f;
   f32 mMinorStep = 1.0f;
 

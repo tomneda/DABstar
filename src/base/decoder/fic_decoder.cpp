@@ -202,7 +202,7 @@ void FicDecoder::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 
   if (mFicBlock == 40) // 4 blocks per frame, 10 frames per sec
   {
-    emit signal_fic_status(mFicDecodeSuccessRatio * 10, (f32)mFicErrors / (f32)mFicBits);
+    emit signal_fic_status((f32)mFicDecodeSuccessRatio * 10.0f, (f32)mFicErrors / (f32)mFicBits);
     // printf("framebits = %d, bits = %d, errors = %d, %e\n", 3072, mFicBits, mFicErrors, (f32)mFicErrors/mFicBits);
     mFicBlock = 0;
     mFicErrors /= 2;

@@ -76,6 +76,12 @@ void LevelMeter::set_bar_visible(const bool iV)
   update();
 }
 
+void LevelMeter::set_stepped(const bool iV)
+{
+  mStepped = iV;
+  update();
+}
+
 void LevelMeter::set_major_step(const f32 iV)
 {
   mMajorStep = iV;
@@ -224,6 +230,8 @@ QColor LevelMeter::_get_stops_color(const f32 iRelPos) const
   const f32 t1 = mStops[seg + 1].first;
   const QColor c0(mStops[seg].second);
   const QColor c1(mStops[seg + 1].second);
+
+  if (mStepped) return c0;
 
   const f32 frac = (t1 > t0) ? std::clamp((t - t0) / (t1 - t0), 0.0f, 1.0f) : 0.0f;
   return {

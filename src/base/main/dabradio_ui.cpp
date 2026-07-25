@@ -584,7 +584,7 @@ void DabRadio::slot_show_aac_errors(i32 iAacErrors)
 }
 
 // called from the ficHandler
-void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
+void DabRadio::slot_show_fic_status(const f32 iSuccessPercent, const f32 iBER)
 {
   if (!mIsChannelRunning.load())
   {
@@ -593,15 +593,6 @@ void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
 
   if (ui->progBarFicError->get_value() != iSuccessPercent)
   {
-    if (iSuccessPercent < 85)
-    {
-      ui->progBarFicError->set_color_stops({ { 0.0f, 0xCC3333 }, { 1.0f, 0xCC3333 } });
-    }
-    else
-    {
-      ui->progBarFicError->set_color_stops({ { 0.0f, 0x52A824 }, { 1.0f, 0x52A824 } });
-    }
-
     ui->progBarFicError->set_value(iSuccessPercent);
   }
 

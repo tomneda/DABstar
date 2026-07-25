@@ -81,7 +81,7 @@ private:
   void _dump_fib_to_file(const std::byte * ipOneFibBits) const;
 
 signals:
-  void signal_fic_status(i32, f32);
+  void signal_fic_status(f32, f32);
 };
 
 
