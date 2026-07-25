@@ -115,5 +115,5 @@ QScrollBar::sub-line:vertical { background-color: qlineargradient(x1:1, y1:0, x2
 QScrollBar::up-arrow:vertical { width: 6px; height: 6px; }
 QScrollBar::down-arrow:vertical { width: 6px; height: 6px; }
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
-QProgressBar { border: 1px solid #5c6472; text-align: center; color: #000; font-weight: bold; }
+QProgressBar { border: none; background-color: black; text-align: center; color: #fff; font-weight: bold; }
 QProgressBar::chunk { background-color: #b78620; }

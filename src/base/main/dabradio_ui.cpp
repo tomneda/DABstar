@@ -595,11 +595,11 @@ void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
   {
     if (iSuccessPercent < 85)
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #CC3333; }");
+      ui->progBarFicError->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #CC3333; }");
     }
     else
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #52A824; }");
+      ui->progBarFicError->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #52A824; }");
     }
 
     ui->progBarFicError->setValue(iSuccessPercent);

@@ -58,7 +58,8 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   connect(mpAudioOutput->get_audio_io_device(), &AudioIODevice::signal_audio_data_available, mpTechDataWidget, &TechData::slot_audio_data_available, Qt::QueuedConnection);
   connect(mpConfig->sbPeakLevelDelay, &QSpinBox::valueChanged, this, &AudioManager::slot_update_peak_level_delay);
 
-  mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #b78620; }");
+  mpProgBarAudioBuffer->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #b78620; }");
+  mpProgBarAudioBuffer->setTextVisible(false);
 
   Settings::Main::sliderVolume.register_widget_and_update_ui_from_setting(mpSliderVolume, 100);
 
@@ -258,11 +259,11 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
   {
     if (mSampleAdaptMode == ESampleAdaptMode::NoChange)
     {
-      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #b78620; }");
+      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #b78620; }");
     }
     else
     {
-      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { color: #555555; } QProgressBar::chunk { background-color: #b74620; }");
+      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #b74620; }");
     }
   }
 }

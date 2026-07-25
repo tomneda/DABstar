@@ -96,6 +96,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   }
 
   ui->setupUi(this);
+  ui->progBarFicError->setTextVisible(false);
 
   setWindowTitle(PRJ_NAME);
 
