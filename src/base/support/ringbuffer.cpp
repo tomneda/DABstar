@@ -25,7 +25,7 @@ template <>
 RingBufferFactory<i16>::RingBufferFactory()
 {
   create_ringbuffer(EId::AudioFromDecoder, "AudioFromDecoder", 4096 * 2 /*stereo*/ * 2 /*security*/); // for 48000Sps the buffer is filled for 125us = 2*3000 samples
-  create_ringbuffer(EId::AudioToOutput,    "AudioToOutput",    SAudioFifo::cAudioFifoSizeSamplesBothChannels);
+  create_ringbuffer(EId::AudioToOutput,    "AudioToOutput",    SAudioFifo::cAudioFifoSizeSamplesBothChannels * 2); // we use twice the buffer size to have reserve for the rate adaption procedure
   create_ringbuffer(EId::TechDataBuffer,   "TechDataBuffer",   2 * 1024);
 }
 

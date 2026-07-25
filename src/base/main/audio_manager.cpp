@@ -230,22 +230,27 @@ void AudioManager::slot_update_peak_level_delay(i32 /*iDelaySteps = -1*/)
 
 void AudioManager::_check_and_adapt_sample_rate_mode()
 {
+  constexpr i32 cBufferSizePercentMin  = 20;
+  constexpr i32 cBufferSizePercentMax  = 95; // we can afford more buffer to the top as the audio buffer is twice in size
+  constexpr i32 cBufferSizePercentUsed = 60;
+  constexpr i32 cBufferSizePercentStartSize = cBufferSizePercentMin + 20;
+
   const ESampleAdaptMode currSampleAdaptMode = mSampleAdaptMode;
 
   switch (mSampleAdaptMode)
   {
   case ESampleAdaptMode::NoChange:
-    if      (mAudioBufferFillFiltered < 20) mSampleAdaptMode = ESampleAdaptMode::AddSamples;
-    else if (mAudioBufferFillFiltered > 80) mSampleAdaptMode = ESampleAdaptMode::RemoveSamples;
+    if      (mAudioBufferFillFiltered < cBufferSizePercentMin) mSampleAdaptMode = ESampleAdaptMode::AddSamples;
+    else if (mAudioBufferFillFiltered > cBufferSizePercentMax) mSampleAdaptMode = ESampleAdaptMode::RemoveSamples;
     break;
   case ESampleAdaptMode::RemoveSamples:
-    if (mAudioBufferFillFiltered <= 50) mSampleAdaptMode = ESampleAdaptMode::NoChange;
+    if (mAudioBufferFillFiltered <= cBufferSizePercentUsed) mSampleAdaptMode = ESampleAdaptMode::NoChange;
     break;
   case ESampleAdaptMode::AddSamples:
-    if (mAudioBufferFillFiltered >= 50) mSampleAdaptMode = ESampleAdaptMode::NoChange;
+    if (mAudioBufferFillFiltered >= cBufferSizePercentUsed) mSampleAdaptMode = ESampleAdaptMode::NoChange;
     break;
   case ESampleAdaptMode::Idle:  // avoid rate adaptions while startup
-    if (mAudioBufferFillFiltered >= 40) mSampleAdaptMode = ESampleAdaptMode::NoChange;
+    if (mAudioBufferFillFiltered >= cBufferSizePercentStartSize) mSampleAdaptMode = ESampleAdaptMode::NoChange;
     break;
   }
 
@@ -368,7 +373,8 @@ void AudioManager::new_audio(const i32 iNumSamples, const u32 iAudioSampleRate, 
   if (availableSamples >= iNumSamples)
   {
     mAudioTempBuffer.resize(availableSamples);
-    mean_filter(mAudioBufferFillFiltered, mpAudioBufferToOutput->get_fill_state_in_percent(), 0.2f);
+    const f32 audioBufferFillStatePercent = mpAudioBufferToOutput->get_fill_state_in_percent() * 2; // buffer is double sized as normal used
+    mean_filter(mAudioBufferFillFiltered, audioBufferFillStatePercent, (mSampleAdaptMode == ESampleAdaptMode::Idle ? 1.0f : 0.2f));
 
     _check_and_adapt_sample_rate_mode();
 
@@ -376,7 +382,7 @@ void AudioManager::new_audio(const i32 iNumSamples, const u32 iAudioSampleRate, 
 
     Q_ASSERT(mpCurAudioFifo != nullptr);
 
-    if (availableSamples * 1.02 > mpAudioBufferToOutput->get_ring_buffer_write_available())  // *1.02 : for buffer underrun compensation we need some extra space
+    if (availableSamples > mpAudioBufferToOutput->get_ring_buffer_write_available())  // the buffer is double sized as normal used, so this is the final hard top limit
     {
       mpAudioBufferToOutput->flush_ring_buffer();
       qWarning("AudioManager::new_audio: Audio output buffer is full, try to start from new");

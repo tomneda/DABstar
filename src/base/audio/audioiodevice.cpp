@@ -119,8 +119,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
   {
     // muted
     // condition to unmute is enough samples
-    //if (numSamplesAvailBothChannels > 500 * mSampleRateKHz * 2 /*channels*/)    // 500ms of signal
-    if (availableSamplesBothChannels > SAudioFifo::cAudioFifoSizeSamplesBothChannels >> 1) // wait for half buffer is filled
+    if (availableSamplesBothChannels > (SAudioFifo::cAudioFifoSizeSamplesBothChannels / 2) + maxWantedSamplesBothChannels) // wait for at least half buffer is filled, maxWantedSamplesBothChannels will immediately be used bellow
     {
       assert(maxWantedSamplesBothChannels <= availableSamplesBothChannels); // numSamplesWantedBothChannels is usually 16384 bytes so this should be fulfilled!? (if happened there is no memory issue)
 

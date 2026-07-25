@@ -36,8 +36,7 @@
 
 struct SAudioFifo
 {
-  static constexpr i32 cAudioFifoSizeSamplesBothChannels = 131072;
-  static constexpr i32 cAudioFifoSizeBytesBothChannels = cAudioFifoSizeSamplesBothChannels * sizeof(i16);
+  static constexpr i32 cAudioFifoSizeSamplesBothChannels = 131072 / 2; // the buffer size is twice the size of the needed audio buffer to have reserve for the rate adaption procedure
   RingBuffer<i16> * pRingbuffer;
   u32 sampleRate;
 };

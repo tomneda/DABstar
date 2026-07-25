@@ -37,6 +37,7 @@ public:
   void set_peak_level_delay(i32 iDelaySteps);
   bool is_muted() const { return mPlaybackState == EPlaybackState::Muted; }
 
+protected:
   qint64 readData(char * opData, qint64 maxlen) override;
   qint64 writeData(const char * data, qint64 len) override;
   qint64 bytesAvailable() const override;
