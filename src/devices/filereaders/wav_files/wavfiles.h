@@ -62,6 +62,9 @@ public:
   void resetBuffer() override;
   QString deviceName() override;
 
+protected:
+  bool eventFilter(QObject * obj, QEvent * event) override;
+
 private:
   QFrame mFrame;
   QString mFileName;

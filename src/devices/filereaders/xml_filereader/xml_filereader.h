@@ -65,6 +65,9 @@ public:
   i64 samplesToRead = 0;
   i64 mFileLength = 0;
 
+protected:
+  bool eventFilter(QObject * obj, QEvent * event) override;
+
 private:
   QFrame myFrame;
   std::atomic<bool> running = false;

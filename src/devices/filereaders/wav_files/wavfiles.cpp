@@ -31,6 +31,8 @@
 #include "wavfiles.h"
 #include "openfiledialog.h"
 #include "setting_helper.h"
+#include <QMouseEvent>
+#include <QStyle>
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
@@ -108,6 +110,8 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   connect(sliderFilePos, &QSlider::sliderPressed, this, &WavFileHandler::slot_slider_pressed);
   connect(sliderFilePos, &QSlider::sliderReleased, this, &WavFileHandler::slot_slider_released);
   connect(sliderFilePos, &QSlider::sliderMoved, this, &WavFileHandler::slot_slider_moved);
+
+  sliderFilePos->installEventFilter(this);
 
   mIsRunning.store(false);
 }
@@ -251,6 +255,29 @@ void WavFileHandler::slot_slider_released()
 
 void WavFileHandler::slot_slider_moved(const i32 iPos)
 {
+  if (mpWavReader == nullptr)
+    return;
   mSliderMovementPos = iPos; // iPos = [0; 1000]
   mpWavReader->jump_to_relative_position_per_mill(iPos);
+}
+
+bool WavFileHandler::eventFilter(QObject * obj, QEvent * event)
+{
+  if (obj == sliderFilePos && event->type() == QEvent::MouseButtonPress)
+  {
+    const QMouseEvent * const mouseEvent = static_cast<QMouseEvent *>(event);
+
+    if (mouseEvent->button() == Qt::LeftButton)
+    {
+      const int newVal = QStyle::sliderValueFromPosition(sliderFilePos->minimum(), sliderFilePos->maximum(), mouseEvent->pos().x(), sliderFilePos->width());
+      sliderFilePos->setValue(newVal);
+      sliderFilePos->setSliderPosition(newVal);
+      slot_slider_moved(newVal);
+
+      // Return false to let QSlider handle the event.
+      // Since the handle is now at the mouse position, QSlider will start dragging.
+      return false;
+    }
+  }
+  return QObject::eventFilter(obj, event);
 }
