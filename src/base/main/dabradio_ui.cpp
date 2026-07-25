@@ -290,8 +290,8 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
 
 void DabRadio::_cleanup_ui() const
 {
-  ui->progBarFicError->setValue(0);
-  ui->progBarAudioBuffer->setValue(0);
+  ui->progBarFicError->set_value(0);
+  ui->progBarAudioBuffer->set_value(0);
 }
 
 void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
@@ -591,18 +591,18 @@ void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER)
     return;
   }
 
-  if (ui->progBarFicError->value() != iSuccessPercent)
+  if (ui->progBarFicError->get_value() != iSuccessPercent)
   {
     if (iSuccessPercent < 85)
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #CC3333; }");
+      ui->progBarFicError->set_color_stops({ { 0.0f, 0xCC3333 }, { 1.0f, 0xCC3333 } });
     }
     else
     {
-      ui->progBarFicError->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #52A824; }");
+      ui->progBarFicError->set_color_stops({ { 0.0f, 0x52A824 }, { 1.0f, 0x52A824 } });
     }
 
-    ui->progBarFicError->setValue(iSuccessPercent);
+    ui->progBarFicError->set_value(iSuccessPercent);
   }
 
   if (!mpSpectrumViewer->is_hidden())

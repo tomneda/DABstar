@@ -52,14 +52,15 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   connect(this, &AudioManager::signal_audio_mute, mpAudioOutput, &IAudioOutput::slot_set_mute, Qt::QueuedConnection);
   connect(this, &AudioManager::signal_audio_test_tone, mpAudioOutput, &IAudioOutput::slot_set_test_tone);
   connect(this, &AudioManager::signal_audio_peak_level_delay, mpAudioOutput, &IAudioOutput::slot_set_peak_level_delay);
-  connect(this, &AudioManager::signal_audio_buffer_filled_state, mpProgBarAudioBuffer, &QProgressBar::setValue);
+  connect(this, &AudioManager::signal_audio_buffer_filled_state, mpProgBarAudioBuffer, &LevelMeter::set_value);
   connect(mpSliderVolume, &QSlider::valueChanged, this, &AudioManager::slot_handle_volume_slider);
   connect(mpAudioOutput->get_audio_io_device(), &AudioIODevice::signal_show_audio_peak_level, this, &AudioManager::slot_show_audio_peak_level, Qt::QueuedConnection);
   connect(mpAudioOutput->get_audio_io_device(), &AudioIODevice::signal_audio_data_available, mpTechDataWidget, &TechData::slot_audio_data_available, Qt::QueuedConnection);
   connect(mpConfig->sbPeakLevelDelay, &QSpinBox::valueChanged, this, &AudioManager::slot_update_peak_level_delay);
 
-  mpProgBarAudioBuffer->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #b78620; }");
-  mpProgBarAudioBuffer->setTextVisible(false);
+  mpProgBarAudioBuffer->set_color_stops({ { 0.0f, 0xb78620 }, { 1.0f, 0xb78620 } });
+  mpProgBarAudioBuffer->set_lower_bound(0.0f);
+  mpProgBarAudioBuffer->set_upper_bound(100.0f);
 
   Settings::Main::sliderVolume.register_widget_and_update_ui_from_setting(mpSliderVolume, 100);
 
@@ -259,11 +260,11 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
   {
     if (mSampleAdaptMode == ESampleAdaptMode::NoChange)
     {
-      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #b78620; }");
+      mpProgBarAudioBuffer->set_color_stops({ { 0.0f, 0xb78620 }, { 1.0f, 0xb78620 } });
     }
     else
     {
-      mpProgBarAudioBuffer->setStyleSheet("QProgressBar { background-color: black; border: none; } QProgressBar::chunk { background-color: #b74620; }");
+      mpProgBarAudioBuffer->set_color_stops({ { 0.0f, 0xb74620 }, { 1.0f, 0xb74620 } });
     }
   }
 }

@@ -76,6 +76,18 @@ void LevelMeter::set_bar_visible(const bool iV)
   update();
 }
 
+void LevelMeter::set_major_step(const f32 iV)
+{
+  mMajorStep = iV;
+  update();
+}
+
+void LevelMeter::set_minor_step(const f32 iV)
+{
+  mMinorStep = iV;
+  update();
+}
+
 void LevelMeter::set_color_stops(const QVector<QPair<f32, u32>> & iStops)
 {
   mStops = iStops;
@@ -97,8 +109,8 @@ i32 LevelMeter::_get_edge_margin() const
   const f32 range = mUpper - mLower;
   if (range <= 0.0f) return 0;
 
-  const f32 firstMajor = std::ceil(mLower / cMajorStep - 1e-6f) * cMajorStep;
-  const f32 lastMajor  = std::floor(mUpper / cMajorStep + 1e-6f) * cMajorStep;
+  const f32 firstMajor = std::ceil(mLower / mMajorStep - 1e-6f) * mMajorStep;
+  const f32 lastMajor  = std::floor(mUpper / mMajorStep + 1e-6f) * mMajorStep;
 
   const QFontMetrics fm = fontMetrics();
 
@@ -120,9 +132,9 @@ QSize LevelMeter::sizeHint() const
   const i32 barThick = mBarVisible ? 8 : 0;
 
   if (mOrientation == Qt::Horizontal)
-    return QSize(200, barThick + scale);
+    return QSize(20, barThick + scale);
   else
-    return QSize(barThick + scale, 100);
+    return QSize(barThick + scale, 20);
 }
 
 QSize LevelMeter::minimumSizeHint() const
@@ -135,8 +147,8 @@ void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, con
   const f32 range = mUpper - mLower;
   if (range <= 0.0f) return;
 
-  const f32 firstMajor = std::ceil(mLower / cMajorStep - 1e-6f) * cMajorStep;
-  const f32 firstMinor = std::ceil(mLower / cMinorStep - 1e-6f) * cMinorStep;
+  const f32 firstMajor = std::ceil(mLower / mMajorStep - 1e-6f) * mMajorStep;
+  const f32 firstMinor = std::ceil(mLower / mMinorStep - 1e-6f) * mMinorStep;
 
   const QFontMetrics fm = fontMetrics();
   const i32 textH = fm.height();
@@ -157,15 +169,15 @@ void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, con
   };
 
   // --- Minor ticks (no labels) ---
-  const i32 maxMinorIdx = (i32)std::ceil((mUpper - firstMinor) / cMinorStep) + 2;
+  const i32 maxMinorIdx = (i32)std::ceil((mUpper - firstMinor) / mMinorStep) + 2;
   for (i32 i = 0; i < maxMinorIdx; ++i)
   {
-    const f32 tick = firstMinor + i * cMinorStep;
-    if (tick < mLower - cMinorStep * 0.01f) continue;
-    if (tick > mUpper + cMinorStep * 0.01f) break;
+    const f32 tick = firstMinor + i * mMinorStep;
+    if (tick < mLower - mMinorStep * 0.01f) continue;
+    if (tick > mUpper + mMinorStep * 0.01f) break;
 
-    const f32 relToMajor = std::fmod(std::abs(tick - firstMajor), cMajorStep);
-    if (relToMajor < cMajorStep * 1e-5f || relToMajor > cMajorStep * (1.0f - 1e-5f)) continue;
+    const f32 relToMajor = std::fmod(std::abs(tick - firstMajor), mMajorStep);
+    if (relToMajor < mMajorStep * 1e-5f || relToMajor > mMajorStep * (1.0f - 1e-5f)) continue;
 
     const i32 px = toPixel(tick);
     if (mOrientation == Qt::Horizontal)
@@ -175,9 +187,9 @@ void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, con
   }
 
   // --- Major ticks with labels ---
-  for (f32 tick = firstMajor; tick <= mUpper + cMajorStep * 0.01f; tick += cMajorStep)
+  for (f32 tick = firstMajor; tick <= mUpper + mMajorStep * 0.01f; tick += mMajorStep)
   {
-    if (tick < mLower - cMajorStep * 0.01f) continue;
+    if (tick < mLower - mMajorStep * 0.01f) continue;
 
     const i32 px = toPixel(tick);
     const QString lbl = _get_format_tick(tick);

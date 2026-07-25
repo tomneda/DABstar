@@ -27,20 +27,26 @@
 class LevelMeter : public QWidget
 {
   Q_OBJECT
+  Q_PROPERTY(f32 value READ get_value WRITE set_value)
   Q_PROPERTY(f32 lowerBound READ get_lower_bound WRITE set_lower_bound)
   Q_PROPERTY(f32 upperBound READ get_upper_bound WRITE set_upper_bound)
   Q_PROPERTY(Qt::Orientation orientation READ get_orientation WRITE set_orientation)
   Q_PROPERTY(bool showScale READ get_show_scale WRITE set_show_scale)
   Q_PROPERTY(bool barVisible READ get_bar_visible WRITE set_bar_visible)
+  Q_PROPERTY(f32 majorStep READ get_major_step WRITE set_major_step)
+  Q_PROPERTY(f32 minorStep READ get_minor_step WRITE set_minor_step)
 
 public:
   explicit LevelMeter(QWidget * parent = nullptr);
 
+  [[nodiscard]] f32 get_value() const { return mValue; }
   [[nodiscard]] Qt::Orientation get_orientation() const { return mOrientation; }
   [[nodiscard]] f32 get_lower_bound() const { return mLower; }
   [[nodiscard]] f32 get_upper_bound() const { return mUpper; }
   [[nodiscard]] bool get_show_scale() const { return mShowScale; }
   [[nodiscard]] bool get_bar_visible() const { return mBarVisible; }
+  [[nodiscard]] f32 get_major_step() const { return mMajorStep; }
+  [[nodiscard]] f32 get_minor_step() const { return mMinorStep; }
 
   void set_lower_bound(f32 iV);
   void set_upper_bound(f32 iV);
@@ -48,6 +54,8 @@ public:
   void set_value(f32 iV);
   void set_show_scale(bool iV);
   void set_bar_visible(bool iV);
+  void set_major_step(f32 iV);
+  void set_minor_step(f32 iV);
 
   // Set a gradient from a list of (relative_position [0..1], color) stops.
   void set_color_stops(const QVector<QPair<f32, u32>> & iStops);
@@ -65,11 +73,10 @@ private:
   Qt::Orientation mOrientation = Qt::Horizontal;
   bool mShowScale = true;
   bool mBarVisible = true;
+  f32 mMajorStep = 3.0f;
+  f32 mMinorStep = 1.0f;
 
   QVector<QPair<f32, u32>> mStops;
-
-  static constexpr f32 cMajorStep = 3.0f;   // dB between labeled ticks
-  static constexpr f32 cMinorStep = 1.0f;   // dB between minor ticks
 
   [[nodiscard]] int _get_scale_area_size() const;
   [[nodiscard]] int _get_edge_margin() const;

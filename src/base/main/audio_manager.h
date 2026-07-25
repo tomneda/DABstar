@@ -23,12 +23,11 @@
 #include <vector>
 
 class IAudioOutput;
+class LevelMeter;
 class TechData;
 class Configuration;
 class QThread;
-class QProgressBar;
 class QSlider;
-class LevelMeter;
 
 class AudioManager : public QObject
 {
@@ -43,7 +42,7 @@ public:
     RingBuffer<u8> * pFrameBuffer;
     Configuration * pConfig;
     TechData * pTechDataWidget;
-    QProgressBar * pProgBarAudioBuffer;
+    LevelMeter * pProgBarAudioBuffer;
     LevelMeter * pLevelMeterLeft;
     LevelMeter * pLevelMeterRight;
     QSlider * pSliderVolume;
@@ -77,7 +76,7 @@ private:
   RingBuffer<u8> * const mpFrameBuffer;
   Configuration * const mpConfig;
   TechData * const mpTechDataWidget;
-  QProgressBar * const mpProgBarAudioBuffer;
+  LevelMeter * const mpProgBarAudioBuffer;
   LevelMeter * const mpLevelMeterLeft;
   LevelMeter * const mpLevelMeterRight;
   QSlider * const mpSliderVolume;
