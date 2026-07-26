@@ -252,7 +252,7 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
     if (mAudioBufferFillFiltered >= cBufferSizePercentUsed) mSampleAdaptMode = ESampleAdaptMode::NoChange;
     break;
   case ESampleAdaptMode::Idle:  // avoid rate adaptions while startup
-    if (mAudioBufferFillFiltered >= cBufferSizePercentStartSize) mSampleAdaptMode = ESampleAdaptMode::AddSamples;
+    if (mAudioBufferFillFiltered >= cBufferSizePercentStartSize) mSampleAdaptMode = ESampleAdaptMode::NoChange;
     break;
   }
 
