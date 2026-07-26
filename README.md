@@ -3,10 +3,10 @@
 ## Table of Content
 <!-- TOC -->
   * [Table of Content](#table-of-content)
-  * [Pictures from V5.x.x](#pictures-from-v5xx)
+  * [Pictures from V5.5.0](#pictures-from-v550)
+    * [Main window](#main-window)
     * [Ensemble List window (device mode)](#ensemble-list-window-device-mode)
     * [Ensemble List window (file mode)](#ensemble-list-window-file-mode)
-    * [Main window](#main-window)
     * [Configuration window](#configuration-window)
     * [Scope Spectrum Correlation Statistic window](#scope-spectrum-correlation-statistic-window)
     * [FIB content window](#fib-content-window)
@@ -14,6 +14,7 @@
     * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
     * [Map view of received transmitters](#map-view-of-received-transmitters)
     * [DABstar version update dialog](#dabstar-version-update-dialog)
+    * [Copyright information window](#copyright-information-window)
     * [Technical details window of the selected service](#technical-details-window-of-the-selected-service)
     * [The PRS correlation window of a whole DAB frame (CIR)](#the-prs-correlation-window-of-a-whole-dab-frame-cir)
     * [Some of the device windows](#some-of-the-device-windows)
@@ -46,24 +47,7 @@
 
 ---
 
-## Pictures from V5.x.x
-
-### Ensemble List window (device mode)
-
-The Ensemble List in device/channel scan mode. The table shows all known DAB channels with their
-scan status, ensemble name, ensemble ID, ITU country code, signal quality (SNR/MER) and more.
-Color coding gives a quick overview: not-yet-scanned channels appear greenish, successfully scanned
-ones in a neutral gray, and channels with no detectable signal are highlighted in red.
-
-![](res/for_readme/ensemble-list-device.png)
-
-### Ensemble List window (file mode)
-
-The Ensemble List in file playback mode. Here you can add recorded DAB IQ sample files,
-have them scanned automatically and keep track of which files contain usable DAB signals.
-The "Remove 'No signal' files" button helps clean up the list of invalid recordings.
-
-![](res/for_readme/ensemble-list-file.png)
+## Pictures from V5.5.0
 
 ### Main window
 
@@ -87,6 +71,22 @@ The status bar below the MOT picture shows:
 | RS        | For DAB+: The Reed Solomon decoder has detected errors (and almost repaired them)  |
 | CRC       | The RS decoder was not able to repair the error. Audible noise may occur           |                                                                     
 
+### Ensemble List window (device mode)
+
+The Ensemble List in device/channel scan mode. The table shows all known DAB channels with their
+scan status, ensemble name, ensemble ID, ITU country code, signal quality (SNR/MER) and more.
+Color coding gives a quick overview: not-yet-scanned channels appear greenish, successfully scanned
+ones in a neutral gray, and channels with no detectable signal are highlighted in red.
+
+![](res/for_readme/ensemble-list-device.png)
+
+### Ensemble List window (file mode)
+
+The Ensemble List in file playback mode. Here you can add recorded DAB IQ sample files,
+have them scanned automatically and keep track of which files contain usable DAB signals.
+The "Remove 'No signal' files" button helps clean up the list of invalid recordings.
+
+![](res/for_readme/ensemble-list-file.png)
 
 ### Configuration window
 
@@ -119,7 +119,9 @@ The status bar below the MOT picture shows:
 
 ![](res/for_readme/update.png)
 
-(unfortunately, the link coloring could not be made more readable; it looks better in Windows)
+### Copyright information window
+
+![](res/for_readme/copyright-information.png)
 
 ### Technical details window of the selected service
 
