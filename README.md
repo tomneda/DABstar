@@ -13,8 +13,8 @@
     * [Journaline window](#journaline-window)
     * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
     * [Map view of received transmitters](#map-view-of-received-transmitters)
-    * [DABstar version update dialog](#dabstar-version-update-dialog)
-    * [Copyright information window](#copyright-information-window)
+    * [Application update dialog](#application-update-dialog)
+    * [Version and Copyright Information window](#version-and-copyright-information-window)
     * [Technical details window of the selected service](#technical-details-window-of-the-selected-service)
     * [The PRS correlation window of a whole DAB frame (CIR)](#the-prs-correlation-window-of-a-whole-dab-frame-cir)
     * [Some of the device windows](#some-of-the-device-windows)
@@ -115,11 +115,11 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 
 ![](res/for_readme/map.png)
 
-### DABstar version update dialog
+### Application update dialog
 
 ![](res/for_readme/update.png)
 
-### Copyright information window
+### Version and Copyright Information window
 
 ![](res/for_readme/copyright-information.png)
 
