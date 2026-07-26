@@ -270,16 +270,11 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
         { 1.00f, 0x992222 }  // Red
       });
     }
-    else
+    else // adjustment in progress
     {
       mpProgBarAudioBuffer->set_color_stops({
-        { 0.00f, 0x992222 }, // Red
-        { 0.20f, 0xB26620 }, // Orange
-        { 0.40f, 0x999900 }, // Yellow
-        { 0.60f, 0xaaaa00 }, // more Yellow (adaption)
-        { 0.80f, 0x999900 }, // Yellow
-        { 0.95f, 0xB26620 }, // Orange
-        { 1.00f, 0x992222 }  // Red
+        { 0.00f, 0xB11F8C }, // Magenta
+        { 1.00f, 0xB11F8C }, // Magenta
       });
     }
   }
