@@ -13,12 +13,13 @@ if (USE_LIQUID)
     list(APPEND ${commonLibName}_SRCS halfbandfilter.cpp)
 endif ()
 
+configure_file(git_hash.h.in ${CMAKE_CURRENT_BINARY_DIR}/git_hash.h @ONLY)
+
 add_library(${commonLibName} STATIC ${${commonLibName}_SRCS})
 
 target_include_directories(${commonLibName}
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 

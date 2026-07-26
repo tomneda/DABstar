@@ -111,10 +111,8 @@ endif ()
 # handle GIT hash
 get_git_commit_hash() # returns GIT_COMMIT_HASH
 print(GIT_COMMIT_HASH)
-if (GIT_COMMIT_HASH)
-  add_definitions("-DGITHASH=\"${GIT_COMMIT_HASH}\"")
-else ()
-  add_definitions("-DGITHASH=\"(unknown)\"")
+if (NOT GIT_COMMIT_HASH)
+  set(GIT_COMMIT_HASH "(unknown)")
 endif ()
 
 print(CMAKE_MODULE_PATH)
@@ -261,3 +259,4 @@ configure_file(
 
 add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+ 

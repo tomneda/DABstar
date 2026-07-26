@@ -1,0 +1,3 @@
+#pragma once
+
+#define GITHASH "@GIT_COMMIT_HASH@"

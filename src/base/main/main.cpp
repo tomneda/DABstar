@@ -32,6 +32,7 @@
  */
 #include "setting_helper.h"
 #include "dabradio.h"
+#include "git_hash.h"
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>

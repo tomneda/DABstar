@@ -38,14 +38,18 @@ DEFINES		+= PRJ_VERS=\\\"5.4.0\\\"
 
 exists (".git") {
    GITHASHSTRING = $$system(git rev-parse --short HEAD)
-   !isEmpty(GITHASHSTRING) {
-       message("Current git hash = $$GITHASHSTRING")
-       DEFINES += GITHASH=\\\"$$GITHASHSTRING\\\"
-   }
 }
-isEmpty(GITHASHSTRING) {
-    DEFINES += GITHASH=\\\"(unknown)\\\"
-}
+isEmpty(GITHASHSTRING): GITHASHSTRING = "(unknown)"
+
+message("Current git hash = $$GITHASHSTRING")
+
+# Generate git_hash.h in the build directory to avoid global rebuilds
+GIT_HASH_LINES = "$${LITERAL_HASH}pragma once"
+GIT_HASH_LINES += ""
+GIT_HASH_LINES += "$${LITERAL_HASH}define GITHASH \"$$GITHASHSTRING\""
+
+write_file($$OUT_PWD/git_hash.h, GIT_HASH_LINES)
+INCLUDEPATH += $$OUT_PWD
 
 #DESTDIR 	= ../../DABstar-Qt6.11.1
 LIBS		+= -L../../dabstar-libs/lib

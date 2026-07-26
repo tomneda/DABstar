@@ -12,6 +12,7 @@
  */
 
 #include "copyright_info.h"
+#include "git_hash.h"
 #include <fftw3.h>
 #include <sndfile.h>
 #include <zlib.h>
