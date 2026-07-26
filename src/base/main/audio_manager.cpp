@@ -261,25 +261,20 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
     if (mSampleAdaptMode == ESampleAdaptMode::NoChange)
     {
       mpProgBarAudioBuffer->set_color_stops({
-        { 0.00f, 0x992222 }, // Red
-        { 0.20f, 0xB26620 }, // Orange
-        { 0.40f, 0x999900 }, // Yellow
+        { 0.00f, 0x00008B }, // Dark Blue
+        { 0.20f, 0x0055AA }, // Medium Blue
+        { 0.40f, 0x00AAAA }, // Cyan
         { 0.60f, 0x336618 }, // Green
-        { 0.80f, 0x999900 }, // Yellow
-        { 0.95f, 0xB26620 }, // Orange
-        { 1.00f, 0x992222 }  // Red
+        { 0.80f, 0x00AAAA }, // Cyan
+        { 0.95f, 0x0055AA }, // Medium Blue
+        { 1.00f, 0x00008B }  // Dark Blue
       });
     }
-    else
+    else // adjustment in progress
     {
       mpProgBarAudioBuffer->set_color_stops({
-        { 0.00f, 0x992222 }, // Red
-        { 0.20f, 0xB26620 }, // Orange
-        { 0.40f, 0x999900 }, // Yellow
-        { 0.60f, 0xaaaa00 }, // more Yellow (adaption)
-        { 0.80f, 0x999900 }, // Yellow
-        { 0.95f, 0xB26620 }, // Orange
-        { 1.00f, 0x992222 }  // Red
+        { 0.00f, 0xB11F8C }, // Magenta
+        { 1.00f, 0xB11F8C }, // Magenta
       });
     }
   }
