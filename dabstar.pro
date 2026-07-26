@@ -27,7 +27,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"5.4.0\\\"
+DEFINES		+= PRJ_VERS=\\\"5.5.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
