@@ -1038,34 +1038,6 @@
           <number>0</number>
          </property>
          <item alignment="Qt::AlignmentFlag::AlignTop">
-          <widget class="LevelMeter" name="progBarAudioBuffer" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>8</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;p&gt;If the bar turns to solid magenta then a tiny, barely audible, audio rate adaption is made to fill or flush the buffer to about 60% state.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="showScale" stdset="0">
-            <bool>false</bool>
-           </property>
-           <property name="lowerBound" stdset="0">
-            <double>0.000000000000000</double>
-           </property>
-           <property name="upperBound" stdset="0">
-            <double>100.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item alignment="Qt::AlignmentFlag::AlignTop">
           <widget class="LevelMeter" name="progBarFicError" native="true">
            <property name="minimumSize">
             <size>
@@ -1081,6 +1053,34 @@
            </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quality indicator for FIC (Fast Information Channel) processing.&lt;/p&gt;&lt;p&gt;FIC data defines the directory structure for the MSC data. If not at 100%, decoding may fail.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="showScale" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="lowerBound" stdset="0">
+            <double>0.000000000000000</double>
+           </property>
+           <property name="upperBound" stdset="0">
+            <double>100.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item alignment="Qt::AlignmentFlag::AlignTop">
+          <widget class="LevelMeter" name="progBarAudioBuffer" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>8</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio buffer fill state in percent&lt;/p&gt;&lt;p&gt;If the bar turns to solid magenta then a tiny, barely audible, audio rate adaption is made to fill or flush the buffer to about 60% state.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="showScale" stdset="0">
             <bool>false</bool>
