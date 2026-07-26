@@ -49,7 +49,8 @@ AudioDisplay::AudioDisplay(DabRadio * mr, PlotWidget * pPlot, QSettings * dabSet
   mpCurve->attachAxis(mpPlot->get_y_axis());
 
   mpPlot->get_x_axis()->setGridLineVisible(true);
-  mpPlot->get_x_axis()->setMinorGridLineVisible(false);
+  mpPlot->get_x_axis()->setMinorGridLinePen(QPen(QColor(0x3a3840)));
+  mpPlot->get_x_axis()->setMinorGridLineVisible(true);
   mpPlot->get_y_axis()->setGridLineVisible(true);
   mpPlot->get_y_axis()->setMinorGridLineVisible(false);
   mpPlot->set_y_range(-120, -20);
@@ -94,7 +95,7 @@ void AudioDisplay::create_spectrum(const i16 * const ipSampleData, const i32 iNu
       mXDispBuffer[i] = (f32)i * (f32)iSampleRate / (f32)cSpectrumSize / 1000.0f;
     }
     mpPlot->set_x_range(mXDispBuffer[0], mXDispBuffer[cDisplaySize - 1]);
-    mpPlot->set_x_tick_dynamic(0.0, 4.0);
+    mpPlot->set_x_tick_dynamic(0.0, 2.0);
   }
 
   // and map the spectrumSize values onto displaySize elements
