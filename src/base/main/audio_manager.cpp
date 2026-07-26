@@ -263,9 +263,9 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
       mpProgBarAudioBuffer->set_color_stops({
         { 0.00f, 0x00008B }, // Dark Blue
         { 0.20f, 0x0055AA }, // Medium Blue
-        { 0.40f, 0x00AAAA }, // Cyan
+        { 0.40f, 0x008888 }, // Cyan
         { 0.60f, 0x336618 }, // Green
-        { 0.80f, 0x00AAAA }, // Cyan
+        { 0.80f, 0x008888 }, // Cyan
         { 0.95f, 0x0055AA }, // Medium Blue
         { 1.00f, 0x00008B }  // Dark Blue
       });

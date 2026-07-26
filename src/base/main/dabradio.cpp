@@ -99,11 +99,11 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
 
   // ui->progBarFicError->set_stepped(true);
   ui->progBarFicError->set_color_stops({
-    { 0.0f, 0x992222 }, // Red
-    { 0.4f, 0xB26620 }, // Orange
-    { 0.7f, 0x999900 }, // Yellow
-    { 0.8f, 0x336618 }, // Green
-    { 1.0f, 0x336618 }  // Green (sentinel)
+    { 0.0f, 0x00008B }, // Dark Blue
+    { 0.3f, 0x0055AA }, // Medium Blue
+    { 0.7f, 0x008888 }, // Cyan
+    { 0.9f, 0x336618 }, // Green
+    { 1.0f, 0x336618 }  // Green
   });
 
   setWindowTitle(PRJ_NAME);
