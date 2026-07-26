@@ -100,9 +100,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   // ui->progBarFicError->set_stepped(true);
   ui->progBarFicError->set_color_stops({
     { 0.0f, 0x992222 }, // Red
-    { 0.2f, 0xB26620 }, // Orange
-    { 0.4f, 0x999900 }, // Yellow
-    { 0.6f, 0x669966 }, // Light Green
+    { 0.4f, 0xB26620 }, // Orange
+    { 0.7f, 0x999900 }, // Yellow
     { 0.8f, 0x336618 }, // Green
     { 1.0f, 0x336618 }  // Green (sentinel)
   });

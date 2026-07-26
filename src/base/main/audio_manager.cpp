@@ -58,9 +58,9 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   connect(mpAudioOutput->get_audio_io_device(), &AudioIODevice::signal_audio_data_available, mpTechDataWidget, &TechData::slot_audio_data_available, Qt::QueuedConnection);
   connect(mpConfig->sbPeakLevelDelay, &QSpinBox::valueChanged, this, &AudioManager::slot_update_peak_level_delay);
 
-  mpProgBarAudioBuffer->set_color_stops({ { 0.0f, 0xb78620 }, { 1.0f, 0xb78620 } });
   mpProgBarAudioBuffer->set_lower_bound(0.0f);
   mpProgBarAudioBuffer->set_upper_bound(100.0f);
+  // color stops for mpProgBarAudioBuffer are defined later
 
   Settings::Main::sliderVolume.register_widget_and_update_ui_from_setting(mpSliderVolume, 100);
 
@@ -232,10 +232,10 @@ void AudioManager::slot_update_peak_level_delay(i32 /*iDelaySteps = -1*/)
 
 void AudioManager::_check_and_adapt_sample_rate_mode()
 {
-  constexpr i32 cBufferSizePercentMin  = 20;
-  constexpr i32 cBufferSizePercentMax  = 95; // we can afford more buffer to the top as the audio buffer is twice in size
-  constexpr i32 cBufferSizePercentUsed = 60;
-  constexpr i32 cBufferSizePercentStartSize = cBufferSizePercentMin + 20;
+  constexpr f32 cBufferSizePercentMin  = 20;
+  constexpr f32 cBufferSizePercentMax  = 95; // we can afford more buffer to the top as the audio buffer is twice in size
+  constexpr f32 cBufferSizePercentUsed = 60;
+  constexpr f32 cBufferSizePercentStartSize = cBufferSizePercentMin + 20;
 
   const ESampleAdaptMode currSampleAdaptMode = mSampleAdaptMode;
 
@@ -252,7 +252,7 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
     if (mAudioBufferFillFiltered >= cBufferSizePercentUsed) mSampleAdaptMode = ESampleAdaptMode::NoChange;
     break;
   case ESampleAdaptMode::Idle:  // avoid rate adaptions while startup
-    if (mAudioBufferFillFiltered >= cBufferSizePercentStartSize) mSampleAdaptMode = ESampleAdaptMode::NoChange;
+    if (mAudioBufferFillFiltered >= cBufferSizePercentStartSize) mSampleAdaptMode = ESampleAdaptMode::AddSamples;
     break;
   }
 
@@ -260,11 +260,27 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
   {
     if (mSampleAdaptMode == ESampleAdaptMode::NoChange)
     {
-      mpProgBarAudioBuffer->set_color_stops({ { 0.0f, 0xb78620 }, { 1.0f, 0xb78620 } });
+      mpProgBarAudioBuffer->set_color_stops({
+        { 0.00f, 0x992222 }, // Red
+        { 0.20f, 0xB26620 }, // Orange
+        { 0.40f, 0x999900 }, // Yellow
+        { 0.60f, 0x336618 }, // Green
+        { 0.80f, 0x999900 }, // Yellow
+        { 0.95f, 0xB26620 }, // Orange
+        { 1.00f, 0x992222 }  // Red
+      });
     }
     else
     {
-      mpProgBarAudioBuffer->set_color_stops({ { 0.0f, 0xb74620 }, { 1.0f, 0xb74620 } });
+      mpProgBarAudioBuffer->set_color_stops({
+        { 0.00f, 0x992222 }, // Red
+        { 0.20f, 0xB26620 }, // Orange
+        { 0.40f, 0x999900 }, // Yellow
+        { 0.60f, 0xaaaa00 }, // more Yellow (adaption)
+        { 0.80f, 0x999900 }, // Yellow
+        { 0.95f, 0xB26620 }, // Orange
+        { 1.00f, 0x992222 }  // Red
+      });
     }
   }
 }
