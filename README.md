@@ -244,13 +244,12 @@ folder `~/.config/dabstar`.
 
 ![](./res/for_readme/service-selector.png)
 
-The current selected service is shown with an orange background.
-With the brown colored entries, you will find other services from the same channel (here 12D).
+The current selected service is shown with a light blue background and bold yellow text.
+With the dark blue colored entries, you will find other services from the same channel (here 12D).
 When you click on such services the switching time is quite short.
 
 The services with a gray background are from another channel.
 Selecting this will take a bit longer time (about 3 seconds) till audio comes up.
-Note: Not each service entry has audio, especially that with SPI and EPG in its name.
 
 ### Favorites
 
@@ -271,7 +270,7 @@ Change the sorting of the list if you only want mainly to step within the favori
 
 ### Target Button
 
-If you "lose" the orange current service selection you can click this button ![](./res/for_readme/target-button.png).
+If you "lose" the current service selection you can click this button ![](./res/for_readme/target-button.png).
 The current service will be shown in the list center (if possible).
 
 ### ANS (Automatic Next Service)
