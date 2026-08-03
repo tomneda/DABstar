@@ -26,6 +26,11 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QHostAddress>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QCheckBox>
+#include <QRadioButton>
 #include "rtl_tcp_client.h"
 #include "rtl-sdr.h"
 #include "xml_filewriter.h"
@@ -81,17 +86,21 @@ RtlTcpClient::RtlTcpClient(QSettings *s, const QString &recorderVersion):myFrame
   _I_Buffer = new RingBuffer<cf32>(32 * 32768);
   connected = false;
 
-  connect(tcp_connect, SIGNAL(clicked(void)), this, SLOT(wantConnect(void)));
-  connect(tcp_disconnect, SIGNAL(clicked(void)), this, SLOT(setDisconnect(void)));
-  connect(tcp_gain, SIGNAL(valueChanged(int)), this, SLOT(sendGain(int)));
-  connect(tcp_ppm, SIGNAL(valueChanged(double)), this, SLOT(set_fCorrection(double)));
-  connect(hw_agc, SIGNAL(clicked()), this, SLOT(handle_hw_agc()));
-  connect(sw_agc, SIGNAL(clicked()), this, SLOT(handle_sw_agc()));
-  connect(manual, SIGNAL(clicked()), this, SLOT(handle_manual()));
-  connect(tcp_biast, SIGNAL(stateChanged(int)), this, SLOT(setBiasT(int)));
-  connect(tcp_bandwidth, SIGNAL(valueChanged(int)), this, SLOT(setBandwidth(int)));
-  connect(tcp_port, SIGNAL(valueChanged(int)), this, SLOT(setPort(int)));
-  connect(tcp_address, SIGNAL(returnPressed()), this, SLOT(setAddress()));
+  connect(tcp_connect, &QPushButton::clicked, this, &RtlTcpClient::wantConnect);
+  connect(tcp_disconnect, &QPushButton::clicked, this, &RtlTcpClient::setDisconnect);
+  connect(tcp_gain, qOverload<int>(&QSpinBox::valueChanged), this, &RtlTcpClient::sendGain);
+  connect(tcp_ppm, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &RtlTcpClient::set_fCorrection);
+  connect(hw_agc, &QRadioButton::clicked, this, &RtlTcpClient::handle_hw_agc);
+  connect(sw_agc, &QRadioButton::clicked, this, &RtlTcpClient::handle_sw_agc);
+  connect(manual, &QRadioButton::clicked, this, &RtlTcpClient::handle_manual);
+  connect(tcp_bandwidth, qOverload<int>(&QSpinBox::valueChanged), this, &RtlTcpClient::setBandwidth);
+  connect(tcp_port, qOverload<int>(&QSpinBox::valueChanged), this, &RtlTcpClient::setPort);
+  connect(tcp_address, &QLineEdit::returnPressed, this, &RtlTcpClient::setAddress);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+  connect(tcp_biast, &QCheckBox::checkStateChanged, this, &RtlTcpClient::setBiasT);
+#else
+  connect(tcp_biast, &QCheckBox::stateChanged, this, &RtlTcpClient::setBiasT);
+#endif
   theState->setText("waiting to start");
 
   xmlDumper = nullptr;
@@ -171,7 +180,7 @@ bool RtlTcpClient::restartReader(i32 freq)
   vfoFrequency = freq;
   // here the command to set the frequency
   sendVFO(freq);
-  connect(&toServer, SIGNAL(readyRead(void)), this, SLOT(readData(void)));
+  connect(&toServer, &QTcpSocket::readyRead, this, &RtlTcpClient::readData);
   return true;
 }
 
@@ -180,7 +189,7 @@ void RtlTcpClient::stopReader()
   if (!connected)
     return;
   stopDumping();
-  disconnect(&toServer, SIGNAL(readyRead(void)), this, SLOT(readData(void)));
+  disconnect(&toServer, &QTcpSocket::readyRead, this, &RtlTcpClient::readData);
 }
 
 //
