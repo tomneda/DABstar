@@ -63,7 +63,16 @@ private:
 
   // peak level meter
   static constexpr f32 cDecayFactor = 0.89125094; // == std::pow(10.0f, -1.0f / 20.0f);
-  union SStereoPeakLevel { std::array<f32, 4> buffer;  struct { f32 peakLeft = -40.0f, peakRight = -40.0f; f32 rmsLeft = -40.0f, rmsRight = -40.0f; }; };
+
+  union SStereoPeakLevel
+  {
+    std::array<f32, 4> buffer;
+    struct { f32 peakLeft, peakRight, rmsLeft, rmsRight; };
+    // MSVC causes error C2926: a default member initializer is not allowed
+    // so we initialize in the constructor (see issue https://github.com/tomneda/DABstar/issues/126)
+    SStereoPeakLevel() : peakLeft(-40.0f), peakRight(-40.0f), rmsLeft(-40.0f), rmsRight(-40.0f) {}
+  };
+
   DelayLine<SStereoPeakLevel> mDelayLine{SStereoPeakLevel()};
   SStereoPeakLevel mLastSpl{};  // last received level, re-used on timer underflow (Windows)
   u32 mPeakLevelCurSampleCnt = 0;
