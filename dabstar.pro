@@ -519,18 +519,6 @@ pluto	{
     FORMS		+= src/devices/forms/pluto_widget.ui
 }
 
-elad-device	{
-    DEFINES		+= HAVE_ELAD
-    INCLUDEPATH	+= src/devices/elad_s1_handler
-    HEADERS		+= src/devices/elad_s1_handler/elad_handler.h \
-               src/devices/elad_s1_handler/elad_loader.h \
-               src/devices/elad_s1_handler/elad_worker.h
-    SOURCES		+= src/devices/elad_s1_handler/elad_handler.cpp \
-               src/devices/elad_s1_handler/elad_loader.cpp \
-               src/devices/elad_s1_handler/elad_worker.cpp
-    FORMS		+= src/devices/forms/elad_widget.ui
-}
-
 spyServer  {
     DEFINES		+= HAVE_SPYSERVER
     INCLUDEPATH	+= src/devices/spy_server

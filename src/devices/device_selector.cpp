@@ -41,9 +41,6 @@
 #ifdef  HAVE_SOAPY
   #include "soapy_handler.h"
 #endif
-#ifdef  HAVE_ELAD
-  #include "elad_handler.h"
-#endif
 #ifdef  HAVE_UHD
   #include "uhd_handler.h"
 #endif
@@ -66,7 +63,6 @@
 [[maybe_unused]] static const char DN_PLUTO[]     = "Pluto";
 [[maybe_unused]] static const char DN_SOAPY[]     = "SoapySDR (exp.)";
 [[maybe_unused]] static const char DN_EXTIO[]     = "ExtIO";
-[[maybe_unused]] static const char DN_ELAD[]      = "Elad-S1";
 [[maybe_unused]] static const char DN_UHD[]       = "UHD/USRP";
 
 DeviceSelector::DeviceSelector(QSettings * ipSettings) :
@@ -113,9 +109,6 @@ QStringList DeviceSelector::get_device_name_list() const
 #endif
 #ifdef  HAVE_EXTIO
   sl << DN_EXTIO;
-#endif
-#ifdef  HAVE_ELAD
-  sl << DN_ELAD;
 #endif
 #ifdef  HAVE_UHD
   sl << DN_UHD;
@@ -248,13 +241,6 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   if (iDeviceNameOrFileName == DN_RTLTCP)
   {
     inputDevice = std::make_unique<RtlTcpClient>(mpSettings, mVersionStr);
-  }
-  else
-#endif
-#ifdef  HAVE_ELAD
-  if (iDeviceNameOrFileName == DN_ELAD)
-  {
-    inputDevice = std::make_unique<eladHandler>(mpSettings);
   }
   else
 #endif

@@ -4,8 +4,6 @@ set(devicesLibName ${objectName}_devices)
 # UI files with no filtered preselection
 set(devices_ui
         forms/colibri_widget.ui
-        forms/elad_files.ui
-        forms/elad_widget.ui
         forms/extio_widget.ui
         forms/xmlfiles.ui
 )
