@@ -541,17 +541,6 @@ uhd	{
     LIBS		+= -luhd
 }
 
-colibri	{
-    DEFINES		+= HAVE_COLIBRI
-    INCLUDEPATH	+= src/devices/colibri_handler
-    HEADERS		+= src/devices/colibri_handler/common.h \
-               src/devices/colibri_handler/LibLoader.h \
-               src/devices/colibri_handler/colibri_handler.h
-    SOURCES		+= src/devices/colibri_handler/LibLoader.cpp \
-               src/devices/colibri_handler/colibri_handler.cpp
-    FORMS		+= src/devices/forms/colibri_widget.ui
-}
-
 datastreamer	{
     DEFINES		+= DATA_STREAMER
     DEFINES		+= CLOCK_STREAMER
