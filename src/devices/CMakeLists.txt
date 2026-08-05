@@ -3,7 +3,6 @@ set(devicesLibName ${objectName}_devices)
 
 # UI files with no filtered preselection
 set(devices_ui
-        forms/extio_widget.ui
         forms/xmlfiles.ui
 )
 

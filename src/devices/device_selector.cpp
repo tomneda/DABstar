@@ -18,11 +18,6 @@
 #ifdef  HAVE_SDRPLAY
   #include "sdrplay_handler.h"
 #endif
-#ifdef  _WIN32
-  #ifdef  HAVE_EXTIO
-    #include "extio_handler.h"
-  #endif
-#endif
 #ifdef  HAVE_RTL_TCP
   #include "rtl_tcp_client.h"
 #endif
@@ -62,7 +57,6 @@
 [[maybe_unused]] static const char DN_LIMESDR[]   = "LimeSDR";
 [[maybe_unused]] static const char DN_PLUTO[]     = "Pluto";
 [[maybe_unused]] static const char DN_SOAPY[]     = "SoapySDR (exp.)";
-[[maybe_unused]] static const char DN_EXTIO[]     = "ExtIO";
 [[maybe_unused]] static const char DN_UHD[]       = "UHD/USRP";
 
 DeviceSelector::DeviceSelector(QSettings * ipSettings) :
@@ -106,9 +100,6 @@ QStringList DeviceSelector::get_device_name_list() const
 #endif
 #ifdef  HAVE_SOAPY
   sl << DN_SOAPY;
-#endif
-#ifdef  HAVE_EXTIO
-  sl << DN_EXTIO;
 #endif
 #ifdef  HAVE_UHD
   sl << DN_UHD;
@@ -255,14 +246,6 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   if (iDeviceNameOrFileName == DN_SOAPY)
   {
     inputDevice = std::make_unique<SoapyHandler>(mpSettings);
-  }
-  else
-#endif
-#ifdef  HAVE_EXTIO
-  // extio is - in its current settings - for Windows, it is a wrap around the dll
-  if (iDeviceNameOrFileName == DN_EXTIO)
-  {
-    inputDevice = std::make_unique<extioHandler>(mpSettings);
   }
   else
 #endif

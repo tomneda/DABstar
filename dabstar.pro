@@ -473,19 +473,6 @@ airspy {
     FORMS		+= src/devices/forms/airspy_widget.ui
 }
 
-#	extio dependencies, windows only
-#
-extio {
-    DEFINES		+= HAVE_EXTIO
-    INCLUDEPATH	+= src/devices/extio_handler
-    HEADERS		+= src/devices/extio_handler/extio_handler.h \
-               src/devices/extio_handler/common_readers.h \
-               src/devices/extio_handler/virtual_reader.h
-    SOURCES		+= src/devices/extio_handler/extio_handler.cpp \
-               src/devices/extio_handler/common_readers.cpp \
-               src/devices/extio_handler/virtual_reader.cpp
-}
-
 #
 rtl_tcp {
     DEFINES		+= HAVE_RTL_TCP
