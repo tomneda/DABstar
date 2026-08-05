@@ -35,6 +35,7 @@
 #include "techdata.h"
 #include "service_list_handler.h"
 #include "setting_helper.h"
+#include "qt_compat.h"
 #include "time_table.h"
 #include "map_http_server.h"
 #include "updatechecker.h"
@@ -1462,11 +1463,7 @@ void DabRadio::_initialize_signal_slot_connections()
   connect(mpConfig->dlTextButton, &QPushButton::clicked, mpEpgMotHandler.get(), &EpgMotHandler::slot_handle_dl_text_button);
   connect(mpConfig.get(), &Configuration::signal_data_base_path_changed, mpEpgMotHandler.get(), &EpgMotHandler::slot_init_paths);
   connect(mpConfig->btnCheckForUpdate, &QPushButton::clicked, this, &DabRadio::slot_check_for_update);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(mpConfig->cbUseStrongestPeak, &QCheckBox::checkStateChanged, mpTiiManager.get(), &TiiManager::slot_use_strongest_peak);
-#else
-  connect(mpConfig->cbUseStrongestPeak, &QCheckBox::stateChanged, mpTiiManager.get(), &TiiManager::slot_use_strongest_peak);
-#endif
+  connect(mpConfig->cbUseStrongestPeak, &QCheckBox::stateChangedSubst, mpTiiManager.get(), &TiiManager::slot_use_strongest_peak);
 
   // Tech data connections
   assert(mpTechDataWidget != nullptr);

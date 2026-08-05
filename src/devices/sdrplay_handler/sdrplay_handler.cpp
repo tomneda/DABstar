@@ -33,6 +33,7 @@
 #include "sdrplay_commands.h"
 #include "xml_filewriter.h"
 #include "setting_helper.h"
+#include "qt_compat.h"
 
 //  The Rsp's
 #include "Rsp_device.h"
@@ -108,15 +109,9 @@ SdrPlayHandler::SdrPlayHandler(QSettings *s, const QString & recorderVersion)
   connect(GRdBSelector, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler::set_ifgainReduction);
   connect(lnaGainSetting, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler::set_lnagainReduction);
   connect(ppmControl, SIGNAL(valueChanged(double)), this, SLOT(set_ppmControl(double)));
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(agcControl, &QCheckBox::checkStateChanged, this, &SdrPlayHandler::set_agcControl);
-  connect(biasT_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler::set_biasT);
-  connect(notch_selector, &QCheckBox::checkStateChanged, this, &SdrPlayHandler::set_notch);
-#else
-  connect(agcControl, &QCheckBox::stateChanged, this, &SdrPlayHandler::set_agcControl);
-  connect(biasT_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler::set_biasT);
-  connect(notch_selector, &QCheckBox::stateChanged, this, &SdrPlayHandler::set_notch);
-#endif
+  connect(agcControl, &QCheckBox::stateChangedSubst, this, &SdrPlayHandler::set_agcControl);
+  connect(biasT_selector, &QCheckBox::stateChangedSubst, this, &SdrPlayHandler::set_biasT);
+  connect(notch_selector, &QCheckBox::stateChangedSubst, this, &SdrPlayHandler::set_notch);
   connect(antennaSelector, &QComboBox::textActivated, this, &SdrPlayHandler::set_selectAntenna);
   connect(this, SIGNAL(new_lnaValue(int)), lnaGainSetting, SLOT(setValue(int)));
 

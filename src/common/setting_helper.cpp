@@ -15,6 +15,7 @@
  */
 
 #include "setting_helper.h"
+#include "qt_compat.h"
 #include <QWidget>
 #include <QObject>
 #include <QVariant>
@@ -81,11 +82,7 @@ void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget
 
   if (const auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
   {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-    connect(pD, &QCheckBox::checkStateChanged, [this](i32 /*iState*/){ _update_ui_state_to_setting(); });
-#else
-    connect(pD, &QCheckBox::stateChanged, [this](i32 /*iState*/){ _update_ui_state_to_setting(); });
-#endif
+    connect(pD, &QCheckBox::stateChangedSubst, [this](i32 /*iState*/){ _update_ui_state_to_setting(); });
     return;
   }
 

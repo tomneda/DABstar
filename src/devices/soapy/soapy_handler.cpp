@@ -24,6 +24,7 @@
 #include "soapy_converter.h"
 #include "dongleselect.h"
 #include "device_exceptions.h"
+#include "qt_compat.h"
 
 SoapyHandler::SoapyHandler(QSettings * soapySettings)
   : myFrame(nullptr)
@@ -199,12 +200,7 @@ void SoapyHandler::createDevice(QString driver, QString serial)
     agcControl->show();
     if (device->getGainMode(dir, chan))
       agcControl->setChecked(true);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-    connect(agcControl, &QCheckBox::checkStateChanged,
-#else
-    connect(agcControl, &QCheckBox::stateChanged,
-#endif
-            this, &SoapyHandler::set_agcControl);
+    connect(agcControl, &QCheckBox::stateChangedSubst, this, &SoapyHandler::set_agcControl);
   }
   else
     agcControl->hide();

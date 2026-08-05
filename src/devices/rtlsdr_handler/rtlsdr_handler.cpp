@@ -31,6 +31,7 @@
 #include "xml_filewriter.h"
 #include "device_exceptions.h"
 #include "openfiledialog.h"
+#include "qt_compat.h"
 #include <QMessageBox>
 #include <QPushButton>
 #include <QCheckBox>
@@ -294,13 +295,8 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   connect(manual, &QPushButton::clicked, this, &RtlSdrHandler::handle_manual);
   connect(bandwidth, QOverload<int>::of(&QSpinBox::valueChanged), this, &RtlSdrHandler::set_bandwidth);
   connect(this, &RtlSdrHandler::signal_timer, this, &RtlSdrHandler::slot_timer);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(biasControl, &QCheckBox::checkStateChanged, this, &RtlSdrHandler::set_biasControl);
-  connect(filterSelector, &QCheckBox::checkStateChanged, this, &RtlSdrHandler::set_filter);
-#else
-  connect(biasControl, &QCheckBox::stateChanged, this, &RtlSdrHandler::set_biasControl);
-  connect(filterSelector, &QCheckBox::stateChanged, this, &RtlSdrHandler::set_filter);
-#endif
+  connect(biasControl, &QCheckBox::stateChangedSubst, this, &RtlSdrHandler::set_biasControl);
+  connect(filterSelector, &QCheckBox::stateChangedSubst, this, &RtlSdrHandler::set_filter);
 
   xmlDumper = nullptr;
   xml_dumping.store(false);

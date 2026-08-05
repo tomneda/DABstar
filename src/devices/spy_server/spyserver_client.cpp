@@ -42,6 +42,7 @@
 #include "dab_constants.h"
 #include "device_exceptions.h"
 #include "setting_helper.h"
+#include "qt_compat.h"
 #include <iostream>
 #include <QMessageBox>
 #include <QTimer>
@@ -92,11 +93,7 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   mByteBuffer.resize(mSettings.batchSize * 2);
 
   connect(btnConnect, &QPushButton::clicked, this, &SpyServerClient::_slot_handle_connect_button);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(cbAutoGain, &QCheckBox::checkStateChanged, this, &SpyServerClient::_slot_handle_autogain);
-#else
-  connect (cbAutoGain, &QCheckBox::stateChanged, this, &SpyServerClient::_slot_handle_autogain);
-#endif
+  connect(cbAutoGain, &QCheckBox::stateChangedSubst, this, &SpyServerClient::_slot_handle_autogain);
   connect(sbGain, qOverload<i32>(&QSpinBox::valueChanged), this, &SpyServerClient::_slot_handle_gain);
   // connect(portNumber, qOverload<i32>(&QSpinBox::valueChanged), this, &spyServer_client_8::set_portNumber);
   // connect(editIpAddress, &QLineEdit::textChanged, this, &spyServer_client_8::_check_and_cleanup_ip_address);

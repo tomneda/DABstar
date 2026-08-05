@@ -17,6 +17,7 @@
 #include "ensemble_list_db_handler.h"
 #include "band_handler.h"
 #include "gui_helpers.h"
+#include "qt_compat.h"
 #include <QDir>
 #include <QDirIterator>
 #include <QCryptographicHash>
@@ -72,17 +73,10 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   connect(ui->btnAddSingleFile, &QPushButton::clicked, this, &EnsembleList::_slot_handle_add_single_file);
   connect(ui->btnScanStart, &QPushButton::clicked, this, &EnsembleList::_slot_handle_scan_button);
   connect(ui->tblEnsembleList, &QTableView::clicked, this, &EnsembleList::_slot_handle_table_click);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(ui->cbShowSLCurChOnly, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_show_current_fid_or_ch_only);
-  connect(ui->cbShowELNewEntries, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-  connect(ui->cbShowELValidSignals, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-  connect(ui->cbShowELNoSignals, &QCheckBox::checkStateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-#else
-  connect(ui->cbShowSLCurChOnly, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_show_current_fid_or_ch_only);
-  connect(ui->cbShowELNewEntries, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-  connect(ui->cbShowELValidSignals, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-  connect(ui->cbShowELNoSignals, &QCheckBox::stateChanged, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
-#endif
+  connect(ui->cbShowSLCurChOnly, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_show_current_fid_or_ch_only);
+  connect(ui->cbShowELNewEntries, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->cbShowELValidSignals, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->cbShowELNoSignals, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
 
   Settings::EnsembleList::cbShowELNoSignals.register_widget_and_update_ui_from_setting(ui->cbShowELNoSignals, 2);
   Settings::EnsembleList::cbShowELNewEntries.register_widget_and_update_ui_from_setting(ui->cbShowELNewEntries, 2);

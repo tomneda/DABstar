@@ -42,6 +42,7 @@
 #include "xml_filewriter.h"
 #include "device_exceptions.h"
 #include "openfiledialog.h"
+#include "qt_compat.h"
 #include <string.h>
 
 #define CHECK_ERR_RETURN(x_)              if (!check_err(x_, __FUNCTION__, __LINE__)) return
@@ -142,13 +143,8 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   //    and be prepared for future changes in the settings
   connect(sliderLnaGain, &QSlider::valueChanged, this, &HackRfHandler::slot_set_lna_gain);
   connect(sliderVgaGain, &QSlider::valueChanged, this, &HackRfHandler::slot_set_vga_gain);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(btnBiasTEnable, &QCheckBox::checkStateChanged, this, &HackRfHandler::slot_enable_bias_t);
-  connect(btnAmpEnable, &QCheckBox::checkStateChanged, this, &HackRfHandler::slot_enable_amp);
-#else
-  connect(btnBiasTEnable, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_bias_t);
-  connect(btnAmpEnable, &QCheckBox::stateChanged, this, &HackRfHandler::slot_enable_amp);
-#endif
+  connect(btnBiasTEnable, &QCheckBox::stateChangedSubst, this, &HackRfHandler::slot_enable_bias_t);
+  connect(btnAmpEnable, &QCheckBox::stateChangedSubst, this, &HackRfHandler::slot_enable_amp);
   connect(ppm_correction, qOverload<i32>(&QSpinBox::valueChanged), this, &HackRfHandler::slot_set_ppm_correction);
   connect(this, &HackRfHandler::signal_new_ant_enable, btnBiasTEnable, &QCheckBox::setChecked);
   connect(this, &HackRfHandler::signal_new_amp_enable, btnAmpEnable, &QCheckBox::setChecked);

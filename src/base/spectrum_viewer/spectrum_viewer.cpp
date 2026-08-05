@@ -39,6 +39,7 @@
 #include "setting_helper.h"
 #include "level_meter.h"
 #include "gui_helpers.h"
+#include "qt_compat.h"
 #include <QSettings>
 #include <QColor>
 #include <algorithm>
@@ -88,11 +89,7 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
   connect(plotRfFft, &PlotWidget::signal_plot_area_changed, mpWaterfallScope, &WaterfallScope::slot_set_horizontal_margins);
   connect(cmbCarrier, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_carrier);
   connect(cmbIqScope, qOverload<i32>(&QComboBox::currentIndexChanged), this, &SpectrumViewer::_slot_handle_cmb_iqscope);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(cbMap1stQuad, &QCheckBox::checkStateChanged, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
-#else
-  connect(cbMap1stQuad, &QCheckBox::stateChanged, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
-#endif
+  connect(cbMap1stQuad, &QCheckBox::stateChangedSubst, this, &SpectrumViewer::_slot_handle_cb_map_1st_quad);
 
   // register after connect() calls the suitable slots
   Settings::SpectrumViewer::sliderRfScopeZoom.register_widget_and_update_ui_from_setting(sliderRfScopeZoom, 0);
