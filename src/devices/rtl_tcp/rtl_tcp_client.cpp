@@ -36,6 +36,7 @@
 #include "xml_filewriter.h"
 #include "device_exceptions.h"
 #include "openfiledialog.h"
+#include "qt_compat.h"
 
 #if !defined(_WIN32)
   #include <netinet/in.h>  // for macro htonl
@@ -95,12 +96,7 @@ RtlTcpClient::RtlTcpClient(QSettings *s, const QString &recorderVersion):myFrame
   connect(manual, &QRadioButton::clicked, this, &RtlTcpClient::handle_manual);
   connect(tcp_bandwidth, qOverload<int>(&QSpinBox::valueChanged), this, &RtlTcpClient::setBandwidth);
   connect(tcp_port, qOverload<int>(&QSpinBox::valueChanged), this, &RtlTcpClient::setPort);
-  connect(tcp_address, &QLineEdit::returnPressed, this, &RtlTcpClient::setAddress);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-  connect(tcp_biast, &QCheckBox::checkStateChanged, this, &RtlTcpClient::setBiasT);
-#else
-  connect(tcp_biast, &QCheckBox::stateChanged, this, &RtlTcpClient::setBiasT);
-#endif
+  connect(tcp_biast, &QCheckBox::stateChangedSubst, this, &RtlTcpClient::setBiasT);
   theState->setText("waiting to start");
 
   xmlDumper = nullptr;
@@ -125,15 +121,25 @@ RtlTcpClient::~RtlTcpClient()
   remoteSettings->setValue("RtlTcpClient-bw", Bandwidth);
   remoteSettings->endGroup();
   myFrame.hide();
+  usleep(1000);
   toServer.close();
   delete _I_Buffer;
 }
 
 void RtlTcpClient::wantConnect()
 {
-
   if (connected)
     return;
+
+  tcp_address->setInputMask("000.000.000.000");
+  ipAddress = tcp_address->text();
+
+  QHostAddress hostAddress;
+  if (!hostAddress.setAddress(ipAddress))
+  {
+    QMessageBox::warning(&myFrame, tr("sdr"), tr("ip address invalid\n"));
+    return;
+  }
 
   QString s = ipAddress;
   qDebug().noquote().nospace() << "Connect to " << s << ":" << basePort;
@@ -152,11 +158,6 @@ void RtlTcpClient::wantConnect()
   setBiasT(BiasT);
   toServer.waitForBytesWritten();
   dongle_info_received = false;
-}
-
-i32 RtlTcpClient::defaultFrequency()
-{
-  return DEFAULT_FREQUENCY; // choose any legal frequency here
 }
 
 void RtlTcpClient::setVFOFrequency(i32 newFrequency)
@@ -190,6 +191,7 @@ void RtlTcpClient::stopReader()
     return;
   stopDumping();
   disconnect(&toServer, &QTcpSocket::readyRead, this, &RtlTcpClient::readData);
+  resetBuffer();
 }
 
 //
@@ -351,12 +353,6 @@ void RtlTcpClient::setPort(i32 port)
   basePort = port;
 }
 
-void RtlTcpClient::setAddress()
-{
-  tcp_address->setInputMask("000.000.000.000");
-  ipAddress = tcp_address->text();
-}
-
 void RtlTcpClient::setDisconnect()
 {
   if (connected) // close previous connection
@@ -384,7 +380,7 @@ void RtlTcpClient::show()
 
 void RtlTcpClient::hide()
 {
-  //myFrame.hide();
+  myFrame.hide();
 }
 
 bool RtlTcpClient::isHidden()
@@ -394,6 +390,7 @@ bool RtlTcpClient::isHidden()
 
 void RtlTcpClient::resetBuffer()
 {
+  _I_Buffer->flush_ring_buffer();
 }
 
 QString RtlTcpClient::deviceName()

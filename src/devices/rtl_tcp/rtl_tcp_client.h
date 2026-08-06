@@ -58,8 +58,6 @@ public:
   bool isHidden() override;
   QString deviceName() override;
   void resetBuffer() override;
-  i32 getRate();
-  i32 defaultFrequency();
   bool hasDump() override;
   bool startDumping() override;
   void stopDumping() override;
@@ -105,7 +103,6 @@ private slots:
   void setBiasT(i32);
   void setBandwidth(i32);
   void setPort(i32);
-  void setAddress();
   void handle_hw_agc();
   void handle_sw_agc();
   void handle_manual();
