@@ -32,6 +32,8 @@
 #include <QString>
 #include <QLibrary>
 #include <QFile>
+#include <map>
+#include <set>
 #include "dab_constants.h"
 
 struct STiiDataEntry
@@ -56,11 +58,11 @@ struct STiiDataEntry
   void patch_channel_name() { if (channel.length() < 3) channel = "0" + channel; } // patch as channel input data are now with leading zeros also
   static u32 make_key_base(const u16 iEid, const u8 iMainId, const u8 iSubId)
   {
-    return ((u32)iEid << 16) | ((u32)iMainId << 8) | (u32)iSubId;
+    return ((u32)iEid << 16u) | ((u32)iMainId << 8u) | (u32)iSubId;
   }
   u32 make_key_base() const
   {
-    return ((u32)Eid << 16) | ((u32)mainId << 8) | (u32)subId;
+    return ((u32)Eid << 16u) | ((u32)mainId << 8u) | (u32)subId;
   }
 };
 
@@ -75,6 +77,9 @@ public:
   TiiHandler() = default;
   ~TiiHandler();
 
+  // pass this as channel name if the channel is unknown (e.g. while playing a file)
+  static constexpr const char * cChannelAny = "any";
+
   bool fill_cache_from_tii_file(const QString &);
   const STiiDataEntry * get_transmitter_data(const QString &iChannel, u16 iEid, u8 iMainId, u8 iSubId);
   [[nodiscard]] f32 distance(f32, f32, f32, f32) const;
@@ -83,7 +88,10 @@ public:
   void loadTable(const QString & iTiiFileName);
 
 private:
-  std::map<u32, STiiDataEntry> mContentCacheMap;
+  // The key does not contain the channel as one and the same ensemble (Eid) can be transmitted on several channels
+  // (e.g. regional windows of a nationwide multiplex). So each key can hold several entries, one per channel.
+  std::multimap<u32, STiiDataEntry> mContentCacheMap;
+  std::set<std::pair<u32, QString>> mReportedChannelMismatches; // to warn only once per key/channel combination
   u8 mShift = 0;
   QString mTiiFileName;
   void * mpTiiLibHandler = nullptr;
@@ -99,6 +107,7 @@ private:
   u8 _get_main_id(const QString & s) const;
   u8 _get_sub_id(const QString & s) const;
   f64 _distance_2(f32, f32, f32, f32) const;
+  bool _is_already_cached(u32 iKey, const QString & iChannel) const;
   i32 _read_columns(std::vector<QString> & oV, const char * b, i32 N) const;
   void _read_file(QFile & fp);
   char * _eread(char * buffer, i32 amount, QFile & fp) const;

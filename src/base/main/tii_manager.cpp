@@ -173,7 +173,8 @@ void TiiManager::show_tii(const std::vector<STiiResult> & iTiiList)
       mpLblTii->setText(a);
     }
 
-    const STiiDataEntry * pTr = mTiiHandler.get_transmitter_data((mIsFileMode ? "any" : mCurFIdOrCh), mCurEid, tii.mainId, tii.subId);
+    // while playing a file the channel is unknown, so the database lookup has to be done channel independent
+    const STiiDataEntry * pTr = mTiiHandler.get_transmitter_data((mIsFileMode ? TiiHandler::cChannelAny : mCurFIdOrCh), mCurEid, tii.mainId, tii.subId);
     const bool dataValid = (pTr != nullptr);
 
     if (!dataValid)

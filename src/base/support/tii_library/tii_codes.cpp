@@ -125,6 +125,7 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
   }
 
   mContentCacheMap.clear();
+  mReportedChannelMismatches.clear();
 
   QFile fp(iTiiFileName);
 
@@ -141,20 +142,40 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
 
 const STiiDataEntry * TiiHandler::get_transmitter_data(const QString & iChannel, const u16 iEid, const u8 iMainId, const u8 iSubId)
 {
-  const u64 key = STiiDataEntry::make_key_base(iEid, iMainId, iSubId);
-  const auto it = mContentCacheMap.find(key);
+  const u32 key = STiiDataEntry::make_key_base(iEid, iMainId, iSubId);
+  const auto [itFirst, itEnd] = mContentCacheMap.equal_range(key);
 
-  if (it != mContentCacheMap.end())
+  if (itFirst == itEnd)
   {
-    const STiiDataEntry & ce = it->second;
-    if (iChannel != "any" && ce.channel != iChannel)
-    {
-      qWarning() << "TII database channel mismatch" << ce.channel << iChannel << "for EId/TII" << iEid << iMainId << iSubId << "- Transmitter name" << ce.transmitterName;
-    }
-    return &ce;
+    return nullptr;
   }
 
-  return nullptr;
+  // While playing a file the channel is unknown, so take the first entry found.
+  const bool channelIsKnown = (iChannel != cChannelAny);
+
+  if (channelIsKnown)
+  {
+    for (auto it = itFirst; it != itEnd; ++it) // find the entry which was recorded for the current channel
+    {
+      if (it->second.channel == iChannel)
+      {
+        return &it->second;
+      }
+    }
+  }
+
+  // No entry for this channel, so fall back to the first entry with matching EId/TII. This is typically still the
+  // correct transmitter (e.g. as the database is not up-to-date after a channel change of a multiplex), only the
+  // channel differs. Report this once per key/channel combination to avoid flooding the log.
+  const STiiDataEntry & ce = itFirst->second;
+
+  if (channelIsKnown && mReportedChannelMismatches.insert({ key, iChannel }).second /*returns "inserted"*/ )
+  {
+    qWarning() << "TII database channel mismatch: database says" << ce.channel << "but current channel is" << iChannel
+               << "for EId/TII" << Qt::hex << iEid << Qt::dec << iMainId << iSubId << "- Transmitter name" << ce.transmitterName;
+  }
+
+  return &ce;
 }
 
 //  Great circle distance https://towardsdatascience.com/calculating-the-distance-between-two-locations-using-geocodes-1136d810e517 and
@@ -292,6 +313,7 @@ u8 TiiHandler::_get_sub_id(const QString & s) const
 void TiiHandler::_read_file(QFile & fp)
 {
   u32 count = 0;
+  u32 countTunnels = 0;
   u32 countDuplicates = 0;
   std::array<char, 1024> buffer;
   std::vector<QString> columnVector;
@@ -305,12 +327,15 @@ void TiiHandler::_read_file(QFile & fp)
     {
       break;
     }
+
     columnVector.clear();
-    i32 columns = _read_columns(columnVector, buffer.data(), NR_COLUMNS);
+    const i32 columns = _read_columns(columnVector, buffer.data(), NR_COLUMNS);
+
     if (columns < NR_COLUMNS)
     {
       continue;
     }
+
     ed.id = _get_int(columnVector[ID]);
     ed.country = columnVector[COUNTRY].trimmed();
     ed.Eid = _get_E_id(columnVector[EID]);
@@ -331,9 +356,9 @@ void TiiHandler::_read_file(QFile & fp)
 
     const u32 key = ed.make_key_base();
 
-    if (mContentCacheMap.find(key) == mContentCacheMap.end())
+    if (!_is_already_cached(key, ed.channel))
     {
-      // qInfo() << QString::number(key, 16) << " : channel" << ed.channel << "Eid" << QString::number(ed.Eid, 16) << "TII" << ed.mainId << ed.subId;
+      // qInfo() << ed.transmitterName << QString::number(key, 16) << " : channel" << ed.channel << "Eid" << QString::number(ed.Eid, 16) << "TII" << ed.mainId << ed.subId;
 
       if (!ed.transmitterName.contains("tunnel", Qt::CaseInsensitive))
       {
@@ -341,6 +366,7 @@ void TiiHandler::_read_file(QFile & fp)
       }
       else
       {
+        countTunnels++;
         // qWarning() << "tunnel found" << ed.transmitterName;
       }
     }
@@ -353,7 +379,22 @@ void TiiHandler::_read_file(QFile & fp)
     count++;
   }
 
-  qInfo() << "Read" << mContentCacheMap.size() << "valid entries from" << count << "entries from database with" << countDuplicates << "duplicates";
+  qInfo() << "Read" << mContentCacheMap.size() << "entries from" << count << "entries from database with" << countDuplicates << "duplicates," << countTunnels << "tunnels ignored";
+}
+
+bool TiiHandler::_is_already_cached(const u32 iKey, const QString & iChannel) const
+{
+  const auto [itFirst, itEnd] = mContentCacheMap.equal_range(iKey);
+
+  for (auto it = itFirst; it != itEnd; ++it)
+  {
+    if (it->second.channel == iChannel)
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 i32 TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, i32 N) const
