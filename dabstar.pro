@@ -52,7 +52,7 @@ write_file($$OUT_PWD/git_hash.h, GIT_HASH_LINES)
 INCLUDEPATH += $$OUT_PWD
 
 #DESTDIR 	= ../../DABstar-Qt6.11.1
-LIBS		+= -L../../dabstar-libs/lib
+LIBS		+= -L$$_PRO_FILE_PWD_/../dabstar-libs/lib
 CONFIG		+= airspy
 CONFIG		+= spyServer
 CONFIG		+= rtl_tcp
@@ -80,7 +80,7 @@ LIBS		+= -lfftw3f.dll
 # instead of INCLUDEPATH (-I) so the compiler suppresses their warnings (e.g.
 # liquid's -Wdeprecated-declarations) while still fully warning on our own code.
 # Matches the CMake include_directories(SYSTEM ...) treatment.
-EXT_INC = ../../dabstar-libs/include
+EXT_INC = $$_PRO_FILE_PWD_/../dabstar-libs/include
 QMAKE_CXXFLAGS += -isystem $$EXT_INC
 QMAKE_CFLAGS   += -isystem $$EXT_INC
 
