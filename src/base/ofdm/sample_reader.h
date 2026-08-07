@@ -57,6 +57,7 @@ public:
 
   void set_running(bool b);
   bool is_running() const { return running.load(); }
+  void discard_samples(i32 iSampleCnt);
   void get_linear_peak_level_and_clear(f32 & oLevelPeak, f32 & oLevelMean);
   cf32 get_sample(i32);
   void get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, bool iShowSpec);

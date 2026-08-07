@@ -42,6 +42,11 @@
   * local are classes OfdmDecoder, FicHandler and mschandler.
   */
 
+// Settle time after a (re-)tune, formerly a sleep in DabRadio::_start_channel(). Counting samples instead of
+// wall-clock time has to happen here in the processor thread: the GUI thread must stay responsive, else devices
+// which read their samples there (rtl_tcp) deliver nothing at all during the settle time.
+static constexpr i32 cSettleSampleCnt = INPUT_RATE / 4; // 250 ms
+
 DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
   : mpRadioInterface(mr)
   , mSampleReader(mr, inputDevice, p->spectrumBuffer)
@@ -128,6 +133,8 @@ void DabProcessor::run()  // run QThread
 
   try // mSampleReader.getSample() can trigger an exception
   {
+    mSampleReader.discard_samples(cSettleSampleCnt); // let the tuner settle before anything is evaluated
+
     // To get some idea of the signal strength
     for (int32_t i = 0; i < 20; i++)
     {

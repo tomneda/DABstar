@@ -2,6 +2,7 @@
 // Created by tomneda on 2026-04-04.
 //
 #include "dabradio.h"
+#include "device_notifier_if.h"
 #include "spectrum_viewer.h"
 #include "cir_viewer.h"
 #include "service_list_handler.h"
@@ -89,11 +90,18 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
 
   mpTiiManager->hide_tii_display();
 
-  if (mIsFileMode)
+  // Only the device handlers with asynchronous events derive from IDeviceNotifier, the others simply never emit
+  if (const auto * const pDeviceNotifier = dynamic_cast<IDeviceNotifier *>(mpInputDevice.get()))
   {
-    if (auto * const pDeviceAsQObject = dynamic_cast<QObject *>(mpInputDevice.get()))
+    if (mIsFileMode)
     {
-      connect(pDeviceAsQObject, SIGNAL(signal_file_looped()), this, SLOT(_slot_handle_file_looped()));
+      connect(pDeviceNotifier, &IDeviceNotifier::signal_file_looped, this, &DabRadio::_slot_handle_file_looped);
+    }
+    else
+    {
+      // Network devices (rtl_tcp) are created while their server connection is not yet established. Only after
+      // the connection is announced here the channel is able to deliver samples.
+      connect(pDeviceNotifier, &IDeviceNotifier::signal_device_connected, this, &DabRadio::_slot_device_connected, Qt::QueuedConnection);
     }
   }
 
@@ -168,10 +176,9 @@ void DabRadio::_start_channel(const QString & iFIdOrCh, const u32 iSId)
     mpHttpHandler->add_transmitter_location_entry(MAP_RESET, nullptr, "", 0, 0, 0, false);
   }
 
-  if (!mIsFileMode)
-  {
-    usleep(250'000); // wait for the reader to start as some LOs on some devices need some more time to swing-in (TODO: better reset FIB decoder later?)
-  }
+  // No waiting for the tuner to swing-in here: blocking the GUI thread stops the sample delivery of devices which
+  // read their samples in this thread (rtl_tcp) and their stale samples would be decoded afterwards. The settle
+  // time is skipped sample-wise in DabProcessor::run() instead.
 
   _enable_ui_elements_for_safety(!mIsScanning);
 
@@ -246,6 +253,30 @@ void DabRadio::_stop_channel()
   mpEpgMotHandler->set_channel_running(false);
   mpTiiManager->set_channel_running(false);
   qDebug() << "Channel stopped";
+}
+
+// A network device (rtl_tcp) can get connected long after it was created, so a former _start_channel() found a
+// dead device and could neither tune it nor read samples from it. Retrigger it here to start decoding at once.
+void DabRadio::_slot_device_connected()
+{
+  if (mpInputDevice == nullptr || mpDabProcessor == nullptr || mIsFileMode || mIsScanning)
+  {
+    return;
+  }
+
+  if (mIsChannelRunning)
+  {
+    // Do a full restart (as the reset button does) to get the tune command sent and the FIB decoder reset.
+    _stop_channel();
+    mChannelDesc.clean_channel();
+    _start_channel(mChannelDesc.get_fId_or_ch(), mChannelDesc.get_sId_next());
+  }
+  else if (const QString ch = Settings::Main::varPresetCh.read().toString();
+           !ch.isEmpty() && ch != "0") // is empty at first start
+  {
+    // No channel was running so far, take the stored preset as the user would have selected it.
+    emit signal_fid_or_ch_selected(ch, Settings::Main::varPresetCSId.read().toUInt());
+  }
 }
 
 // This is called after selecting the device or new file

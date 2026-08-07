@@ -97,7 +97,7 @@ QString get_copyright_text()
                  liquidVers +
                  hyperlink_text("https://www.zlib.net", "zlib " + QString(ZLIB_VERSION)) +
                  "</p>";
-  versionText += "<p>Forked from Qt-DAB, then extensively changed, extended and partly reduced, by Thomas Neder "
+  versionText += "<p>Forked from Qt-DAB in June 2023, then extensively changed, extended and partly reduced, by Thomas Neder "
                  "(" + hyperlink("https://github.com/tomneda/DABstar") + ").<br/>"
                  "For Qt-DAB see " + hyperlink("https://github.com/JvanKatwijk/qt-dab") + " by Jan van Katwijk "
                  "(" + hyperlink("J.vanKatwijk@gmail.com", true) + ").</p>";

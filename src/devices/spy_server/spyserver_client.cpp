@@ -66,7 +66,8 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   lblHelp->setText(htmlLink);
   lblHelp->setOpenExternalLinks(true);
 
-  Settings::SpyServer::posAndSize.read_widget_geometry(&mFrame, 240, 220, true);
+  Settings::SpyServer::posAndSize.read_widget_geometry(&mFrame, false, true);
+
   Settings::SpyServer::sbGain.register_widget_and_update_ui_from_setting(sbGain, 20);
   Settings::SpyServer::cbAutoGain.register_widget_and_update_ui_from_setting(cbAutoGain, 2); // 2 = checked
 

@@ -7,6 +7,7 @@ set(${commonLibName}_SRCS
         openfiledialog.cpp
         xml_filewriter.cpp
         setting_helper.cpp
+        device_notifier_if.h
 )
 
 if (USE_LIQUID)

@@ -69,6 +69,8 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
   // The caller already does CRC16 check.
   i32 processedBytes = 0;
 
+  mRestartFibDecoding = false;
+
   while (processedBytes < 30)
   {
     const u8 * const d = reinterpret_cast<const u8 *>(iFibBits.data()) + processedBytes * 8;
@@ -89,6 +91,11 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
       qDebug() << QString("Fig type %1 not handled").arg(figType);
     }
 
+    if (mRestartFibDecoding)
+    {
+      break; // an impossible content was found, so the whole FIB is untrustworthy -> continue with the next one
+    }
+
     processedBytes += figLength + 1; // data length plus header length
   }
 
@@ -100,8 +107,9 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
 
 void FibDecoder::_reset()
 {
-  mpTimerDataConsistencyCheck->stop();
-  mpTimerCheckStateAndPrintFigs->stop();
+  // the timers live in another thread than the FIB processing, so they must not be touched directly (see also _retrigger_timer_data_loaded_fast())
+  QMetaObject::invokeMethod(mpTimerDataConsistencyCheck, "stop", Qt::QueuedConnection);
+  QMetaObject::invokeMethod(mpTimerCheckStateAndPrintFigs, "stop", Qt::QueuedConnection);
   mFibLoadingState = EFibLoadingState::S0_Init;
   mDiffTimeMax = {};
   mLastTimePoint = {};
@@ -115,6 +123,21 @@ void FibDecoder::_reset()
   mUtcTimeSet = {};
   mUnhandledFig0Set.clear();
   mUnhandledFig1Set.clear();
+}
+
+// Some collected FIG content turned out to be physically impossible, so at least one FIB was decoded wrongly
+// (this typically happens with stale sample data at channel start). As it cannot be told which of the collected
+// data sets is the faulty one, everything is thrown away and the collection starts from scratch.
+void FibDecoder::_restart_fib_decoding(const QString & iReason)
+{
+  qWarning().noquote() << "Restart FIB decoding:" << iReason;
+
+  mpFibConfigFig0Curr->reset();
+  mpFibConfigFig0Next->reset();
+  mpFibConfigFig1->reset();
+  _reset();
+
+  mRestartFibDecoding = true; // let the callers unwind, the remainder of the current FIB is not evaluated anymore
 }
 
 void FibDecoder::connect_channel()

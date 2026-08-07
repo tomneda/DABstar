@@ -31,21 +31,22 @@
 
 #pragma once
 
-#include <QSettings>
-#include <QLineEdit>
-#include <QTcpSocket>
 #include "dab_constants.h"
 #include "device_handler_if.h"
+#include "device_notifier_if.h"
 #include "ringbuffer.h"
 #include "ui_rtl_tcp_widget.h"
+#include <memory>
+#include <QTcpSocket>
 
 class XmlFileWriter;
+class QSettings;
 
-class RtlTcpClient final : public QObject, public IDeviceHandler, Ui_rtl_tcp_widget
+class RtlTcpClient final : public IDeviceNotifier, public IDeviceHandler, private Ui_rtl_tcp_widget
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  explicit RtlTcpClient(QSettings *, const QString & recorderVersion);
+  explicit RtlTcpClient(QSettings *, const QString & iRecorderVersion);
   ~RtlTcpClient() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
@@ -63,49 +64,57 @@ public:
   void stopDumping() override;
 
 private:
-  QFrame myFrame;
-  void sendVFO(i32);
-  void sendRate(i32);
-  void sendCommand(u8, i32);
-  QLineEdit * hostLineEdit;
-  bool isvalidRate(i32);
-  void setAgcMode(i32);
-  QSettings * remoteSettings;
-  i32 Bitrate;
-  i32 vfoFrequency;
-  RingBuffer<cf32> * _I_Buffer;
-  bool connected;
-  i16 Gain;
-  f64 Ppm;
-  i16 AgcMode;
-  i16 BiasT;
-  i16 Bandwidth;
-  QString ipAddress;
-  QTcpSocket toServer;
-  qint64 basePort;
-  i32 vfoOffset = 0;
-  FILE * dumpfilePointer;
-  f32 mapTable[256];
-  bool dongle_info_received = false;
-  QString recorderVersion;
-  QString tuner_text;
-  FILE * xmlDumper;
-  XmlFileWriter * xmlWriter;
-  std::atomic<bool> xml_dumping;
-  bool setup_xmlDump();
+  enum class EAgcMode { HW = 0, OFF = 1, SW = 2 };
+
+  QFrame mFrame;
+  QSettings * const mpSettings;
+  std::array<f32, 256> mMapTable;
+  std::unique_ptr<RingBuffer<cf32>> mpBuffer;
+  i32 mBitRate;
+  i32 mVfoFrequency;
+  bool mIsConnected = false;
+  i16 mGain;
+  f64 mPpm;
+  EAgcMode mAgcMode;
+  i16 mBiasT;
+  i16 mBandwidthKhz;
+  QString mServerAddress;
+  i32 mPort;
+  QTcpSocket mTcpSocket;
+  bool mDongleInfoReceived = false;
+  const QString mRecorderVersion;
+  QString mTunerText;
+  FILE * mpXmlDumper = nullptr;
+  std::unique_ptr<XmlFileWriter> mpXmlWriter;
+  std::atomic<bool> mIsXmlDumping;
+
+  // Sample flow supervision: with rtl_tcp the samples are fetched in the GUI thread, so any longer
+  // blocking of the GUI lets the socket data pile up and the input ring buffer can overflow. The
+  // resulting gaps corrupt the OFDM/FIC decoding, so they must not stay unnoticed.
+  u64 mTotalSampleCnt = 0;
+  u64 mDroppedSampleCnt = 0;
+  u64 mDroppedSampleCntLastBurst = 0;
+  bool mOverflowActive = false;
+
+  void _send_vfo(i32);
+  void _send_rate(i32);
+  void _send_command(u8, i32);
+  bool _setup_xml_dump();
+  bool _setup_connection();
+  bool _check_and_cleanup_ip_address();
+  void _set_agc_mode(EAgcMode iAgcMode);
+  void _show_connection_state(bool iIsConnected);
+  void _show_error_state(const QString & iText);
 
 private slots:
-  void sendGain(i32);
-  void set_fCorrection(f64);
-  void readData();
-  void wantConnect();
-  void setDisconnect();
-  void setBiasT(i32);
-  void setBandwidth(i32);
-  void setPort(i32);
-  void handle_hw_agc();
-  void handle_sw_agc();
-  void handle_manual();
+  void _slot_socket_error(QAbstractSocket::SocketError iSocketError);
+  void _slot_socket_disconnected();
+  void _slot_handle_connect_button();
+  void _slot_handle_gain(i32);
+  void _slot_handle_ppm(f64);
+  void _slot_handle_biast(i32);
+  void _slot_handle_bandwidth(i32);
+  void _slot_read_data();
 };
 
 

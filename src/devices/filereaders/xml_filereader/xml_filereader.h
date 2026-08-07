@@ -36,6 +36,7 @@
 #include <atomic>
 #include "dab_constants.h"
 #include "device_handler_if.h"
+#include "device_notifier_if.h"
 #include "ringbuffer.h"
 #include "ui_xmlfiles.h"
 
@@ -43,7 +44,7 @@ class QSettings;
 class XmlDescriptor;
 class XmlReader;
 
-class XmlFileReader final : public QObject, public IDeviceHandler, public Ui_xmlfile_widget
+class XmlFileReader final : public IDeviceNotifier, public IDeviceHandler, public Ui_xmlfile_widget
 {
 Q_OBJECT
 public:
@@ -87,9 +88,6 @@ public slots:
   void slot_slider_pressed();
   void slot_slider_released();
   void slot_slider_moved(i32);
-
-signals:
-  void signal_file_looped();
 };
 
 

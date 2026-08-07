@@ -30,6 +30,7 @@
  */
 #include "sample_reader.h"
 #include "dabradio.h"
+#include <algorithm>
 #include <ctime>
 
 SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer)
@@ -68,6 +69,27 @@ void SampleReader::set_running(bool b)
       readSampleSize = theRig->getSamples(mSampleBuffer.data(), (i32)mSampleBuffer.size());
     }
     while(readSampleSize >= (i32)mSampleBuffer.size()); // repeat if full buffer could be read-in as there could be more
+  }
+}
+
+// Read and throw away the samples of the settle time after a (re-)tune. The LO of some devices needs some time to
+// swing-in and the sample stream may still contain samples of the formerly tuned frequency. Sleeping instead of
+// reading would not work: devices which deliver their samples in the GUI thread (rtl_tcp) do not produce anything
+// while that thread is blocked, so the stale samples would only pile up in the socket and be decoded afterwards.
+void SampleReader::discard_samples(const i32 iSampleCnt)
+{
+  if (theRig->isFileInput()) // no LO to settle here and we do not want to skip the begin of the file
+  {
+    return;
+  }
+
+  i32 remainingCnt = iSampleCnt;
+
+  while (running.load() && remainingCnt > 0)
+  {
+    const i32 chunkSize = std::min(remainingCnt, (i32)mSampleBuffer.size());
+    get_samples(mSampleBuffer, 0, chunkSize, 0, false); // no spectrum display of the settle phase
+    remainingCnt -= chunkSize;
   }
 }
 

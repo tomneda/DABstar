@@ -80,6 +80,7 @@ private:
   std::chrono::milliseconds mDiffTimeMax{};
   std::chrono::time_point<std::chrono::system_clock> mLastTimePoint{};
   FibHelper::TTP mFirstFigTimePoint{};
+  bool mRestartFibDecoding = false; // set while the remainder of the currently processed FIB has to be discarded
 
   struct SFigHeader // plus flags
   {
@@ -90,6 +91,7 @@ private:
   };
 
   void _reset();
+  void _restart_fib_decoding(const QString & iReason);
 
   FibConfigFig0 * _get_config_ptr(const u8 iCN_Bit) const { return iCN_Bit == 0 ? mpFibConfigFig0Curr.get() : mpFibConfigFig0Next.get(); }
   SFigHeader _get_fig_header(const u8 *) const;

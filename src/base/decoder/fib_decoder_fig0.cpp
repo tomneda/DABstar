@@ -66,7 +66,7 @@ void FibDecoder::_process_Fig0(const u8 * const d)
     }
   }
 
-  if (mSIdForFastAudioSelection > 0 && (extension == 1 || extension == 2))
+  if (!mRestartFibDecoding && mSIdForFastAudioSelection > 0 && (extension == 1 || extension == 2))
   {
     _process_fast_audio_selection();
   }
@@ -79,6 +79,7 @@ void FibDecoder::_process_fig0_loop(const u8 * const d, const TFnFibProc fn)
   while (used <= fh.Length) // one byte in "used" is already included in the length
   {
     used = (this->*fn)(d, used, fh);
+    if (mRestartFibDecoding) return; // the FIG content is untrustworthy, do not evaluate its remainder
   }
 
   if (used != fh.Length + 1) qWarning() << "FIG-used" << used << "FIG-length" << fh.Length;
@@ -109,6 +110,32 @@ void FibDecoder::_process_Fig0s0(const u8 * const d)
   }
 
   mPrevChangeFlag = fig0s0.ChangeFlags;
+}
+
+// A CIF offers 864 Capacity Units (CU). Each sub-channel occupies one contiguous CU range within it, so no
+// sub-channel can reach beyond the CIF end and two sub-channels can never claim the same CU.
+static constexpr i16 cNumCuPerCif = 864;
+
+// Returns the already collected sub-channel description whose CU range collides with the given candidate, nullptr if there is none.
+static const FibConfigFig0::SFig0s1_BasicSubChannelOrganization * _find_colliding_Fig0s1(const std::vector<FibConfigFig0::SFig0s1_BasicSubChannelOrganization> & iVec,
+                                                                                         const FibConfigFig0::SFig0s1_BasicSubChannelOrganization & iCand)
+{
+  for (const auto & e : iVec)
+  {
+    if (e.StartAddr < 0 || e.SubChannelSize <= 0) continue; // not usable entry, cannot collide
+
+    if (iCand.StartAddr < e.StartAddr + e.SubChannelSize &&
+        e.StartAddr < iCand.StartAddr + iCand.SubChannelSize)
+    {
+      return &e;
+    }
+  }
+  return nullptr;
+}
+
+static QString _get_cu_range_str(const FibConfigFig0::SFig0s1_BasicSubChannelOrganization & iFig0s1)
+{
+  return QString("SubChId %1 (CU %2..%3)").arg((i32)iFig0s1.SubChId).arg(iFig0s1.StartAddr).arg(iFig0s1.StartAddr + iFig0s1.SubChannelSize - 1);
 }
 
 // Basic Sub Channels Organization 6.2.1
@@ -170,6 +197,23 @@ i16 FibDecoder::_subprocess_Fig0s1(const u8 * const d, const i16 offset, const S
       else qWarning() << "Option" << fig0s1.Option << "not supported";
       bitOffset += 32;
     }
+
+    // The CU range of a sub-channel must fit into a CIF and must not touch the range of an already known sub-channel.
+    // If it does, this or a formerly collected description was decoded from corrupted data (e.g. stale samples at
+    // channel start) and the whole collected FIB content has to be discarded.
+    if (fig0s1.StartAddr + fig0s1.SubChannelSize > cNumCuPerCif)
+    {
+      _restart_fib_decoding(_get_cu_range_str(fig0s1) + QString(" exceeds the %1 CUs of a CIF").arg(cNumCuPerCif));
+      return (i16)(bitOffset / 8);
+    }
+
+    if (const auto * const pColliding = _find_colliding_Fig0s1(pConfig->Fig0s1_BasicSubChannelOrganizationVec, fig0s1);
+        pColliding != nullptr)
+    {
+      _restart_fib_decoding(_get_cu_range_str(fig0s1) + " overlaps " + _get_cu_range_str(*pColliding));
+      return (i16)(bitOffset / 8);
+    }
+
     fig0s1.set_current_time();
     pConfig->Fig0s1_BasicSubChannelOrganizationVec.emplace_back(fig0s1);
     _retrigger_timer_data_loaded_fast("Fig0s1");

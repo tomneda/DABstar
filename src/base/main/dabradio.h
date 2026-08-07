@@ -436,6 +436,7 @@ private slots:
 
   // Service and Channel Management
   void _slot_device_selected(const QString &);
+  void _slot_device_connected();
   void _slot_service_changed(const QString & iFIdOrCh, const QString & iService, u32 iSId);
   void _slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo);
   void _slot_start_stop_scan(bool iIsScanning);

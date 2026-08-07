@@ -258,7 +258,6 @@ PosAndSize::PosAndSize(const QString & iCat, const QString & iName)
 : mKey(iCat + "/" + iName)
 {}
 
-// void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const i32 iWidthDef /*= -1*/, const i32 iHeightDef /*= -1*/, const bool iIsFixedSized /*= false*/, i32 iHeightOffs /*= 0*/) const
 void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, i32 iWidthOffs /*= 0*/, i32 iHeightOffs /*= 0*/) const
 {
   const i32 x = Storage::instance().value(mKey + "-x", -1).toInt();

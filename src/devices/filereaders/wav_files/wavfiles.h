@@ -32,6 +32,7 @@
 
 #include "dab_constants.h"
 #include "device_handler_if.h"
+#include "device_notifier_if.h"
 #include "ringbuffer.h"
 #include "filereader_widget.h"
 #include "wav_reader.h"
@@ -42,7 +43,7 @@
 #include <sndfile.h>
 #include <atomic>
 
-class WavFileHandler final : public QObject, public IDeviceHandler, public FileReaderWidget
+class WavFileHandler final : public IDeviceNotifier, public IDeviceHandler, public FileReaderWidget
 {
 Q_OBJECT
 public:
@@ -82,9 +83,6 @@ public slots:
   void slot_slider_pressed();
   void slot_slider_released();
   void slot_slider_moved(i32);
-
-signals:
-  void signal_file_looped();
 };
 
 

@@ -141,6 +141,16 @@ CATEGORY_BEGIN(SpyServer)
   DEFINE_VARIANT(SpyServer, varIpAddress, "localhost")
 CATEGORY_END(SpyServer)
 
+CATEGORY_BEGIN(RtlTcp)
+  DEFINE_POS_SIZE(RtlTcp)
+  DEFINE_WIDGET(RtlTcp, sbGain)
+  DEFINE_WIDGET(RtlTcp, sbPpm)
+  DEFINE_WIDGET(RtlTcp, sbBandwidth)
+  DEFINE_WIDGET(RtlTcp, cbBiasT)
+  DEFINE_VARIANT(RtlTcp, varIpAddress, "127.0.0.1:1234")
+  DEFINE_VARIANT(RtlTcp, varAgcMode, 2) // 2 == EAgcMode::SW
+CATEGORY_END(RtlTcp)
+
 CATEGORY_BEGIN(FileReaderXml)
   DEFINE_POS_SIZE(FileReaderXml)
 CATEGORY_END(FileReaderXml)
