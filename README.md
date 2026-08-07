@@ -134,6 +134,7 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 ### Some of the device windows
 
 ![](res/for_readme/device-rtlsdr.png)
+![](res/for_readme/device-rtltcp.png)
 ![](res/for_readme/device-hackrf.png)
 ![](res/for_readme/device-sdrplay.png)
 
