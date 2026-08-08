@@ -13,7 +13,6 @@ set(base_ui
         ${CMAKE_CURRENT_SOURCE_DIR}/forms/cir_widget.ui
         ${CMAKE_CURRENT_SOURCE_DIR}/forms/configuration.ui
         ${CMAKE_CURRENT_SOURCE_DIR}/forms/dabradio.ui
-        ${CMAKE_CURRENT_SOURCE_DIR}/forms/dumpwidget.ui
         ${CMAKE_CURRENT_SOURCE_DIR}/forms/spectrum_viewer.ui
         ${CMAKE_CURRENT_SOURCE_DIR}/forms/techdata.ui
         ${CMAKE_CURRENT_SOURCE_DIR}/forms/updatedialog.ui

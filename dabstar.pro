@@ -392,7 +392,6 @@ FORMS += \
     src/base/forms/cir_widget.ui \
     src/base/forms/configuration.ui \
     src/base/forms/dabradio.ui \
-    src/base/forms/dumpwidget.ui \
     src/base/forms/ensemble_list.ui \
     src/base/forms/spectrum_viewer.ui \
     src/base/forms/techdata.ui \
