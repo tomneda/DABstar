@@ -322,10 +322,17 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
     mSampleReader.get_samples(mOfdmBuffer, 0, cTs, mFreqOffsBBHz, true);
     ioSampleCount += cTs;
 
+    // eval phase shift in cyclic prefix part
+#ifdef HAVE_SSE_OR_AVX
+    cf32 result;
+    volk_32fc_x2_conjugate_dot_prod_32fc_a(&result, &mOfdmBuffer[cTu], &mOfdmBuffer[0], cTg);
+    freqCorr += result;
+#else
     for (i32 i = cTu; i < cTs; i++)
     {
-      freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - cTu]); // eval phase shift in cyclic prefix part
+      freqCorr += mOfdmBuffer[i] * conj(mOfdmBuffer[i - cTu]);
     }
+#endif
 
     mOfdmDecoder.set_dc_offset(mSampleReader.get_dc_offset());
     memcpy(mFftInBuffer.data(), &(mOfdmBuffer[cTg]), cTu * sizeof(cf32));
