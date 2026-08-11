@@ -64,9 +64,12 @@ void DabRadio::_clean_up_dab_processor_and_input_device()
 
   if (mpInputDevice != nullptr)
   {
-    // Unload former device and give it a bit time to unload
     mpInputDevice.reset();
-    usleep(250'000);
+    if (!mIsFileMode)
+    {
+      // Give the library time to unload (a fast reload can fail afterwards)
+      usleep(250'000);
+    }
   }
 }
 
